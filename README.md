@@ -1,4 +1,4 @@
-[![Pypi](https://img.shields.io/pypi/dm/qiling?label=pypi)](https://pypi.org/project/qiling/)
+[![Downloads](https://pepy.tech/badge/qiling)](https://pepy.tech/project/qiling)
 [![Gitter](https://badges.gitter.im/qilingframework/community.svg)](https://gitter.im/qilingframework/community)
 [![Build Status](https://travis-ci.com/qilingframework/qiling.svg?branch=dev)](https://travis-ci.com/qilingframework/qiling)
 ![Docker Image CI](https://github.com/qilingframework/qiling/workflows/Docker%20Image%20CI/badge.svg?branch=dev)
@@ -13,17 +13,18 @@ Qiling is an advanced binary emulation framework, with the following features:
 - Cross platform: Windows, MacOS, Linux, BSD, UEFI, DOS, MBR
 - Cross architecture: X86, X86_64, Arm, Arm64, MIPS, 8086
 - Multiple file formats: PE, MachO, ELF, COM, MBR
+- Support Windows Driver (.sys), Linux Kernel Module (.ko) & MacOS Kernel (.kext) via [Demigod](https://groundx.io/demigod/)
 - Emulates & sandbox machine code in an isolated environment
 - Provides a fully configurable sandbox
 - Provides in-dept memory, register, OS level and filesystem level API
 - Fine-grain instrumentation: allows hooks at various levels (instruction/basic-block/memory-access/exception/syscall/IO/etc)
-- Provides virtual machine level API such as save and restore current execution state.
+- Provides virtual machine level API such as save and restore current execution state
 - Supports cross architecture and platform debugging capabilities
 - Built-in debugger with reverse debugging capability
 - Allows dynamic hotpatch on-the-fly running code, including the loaded library
 - True framework in Python, making it easy to build customized security analysis tools on top
 
-Qiling also made its way to various international conferences
+Qiling also made its way to various international conferences.
 
 2020:
 
@@ -59,17 +60,17 @@ There are many open source emulators, but two projects closest to Qiling are [Un
 
 Built on top of Unicorn, but Qiling & Unicorn are two different animals.
 
-- Unicorn is just a CPU emulator, so it focuses on emulating CPU instructions, that can understand emulator memory. Beyond that, Unicorn is not aware of higher level concepts, such as dynamic libraries, system calls, I/O handling or executable formats like PE, MachO or ELF. As a result, Unicorn can only emulate raw machine instructions, without Operating System (OS) context.
-- Qiling is designed as a higher level framework, that leverages Unicorn to emulate CPU instructions, but can understand OS: it has executable format loaders (for PE, MachO & ELF at the moment), dynamic linkers (so we can load & relocate shared libraries), syscall & IO handlers. For this reason, Qiling can run executable binary without requiring its native OS.
+- Unicorn is just a CPU emulator, so it focuses on emulating CPU instructions, that can understand emulator memory. Beyond that, Unicorn is not aware of higher level concepts, such as dynamic libraries, system calls, I/O handling or executable formats like PE, MachO or ELF. As a result, Unicorn can only emulate raw machine instructions, without Operating System (OS) context
+- Qiling is designed as a higher level framework, that leverages Unicorn to emulate CPU instructions, but can understand OS: it has executable format loaders (for PE, MachO & ELF at the moment), dynamic linkers (so we can load & relocate shared libraries), syscall & IO handlers. For this reason, Qiling can run executable binary without requiring its native OS
 
 ##### Qiling vs Qemu usermode
 
 Qemu usermode does similar thing to our emulator, that is to emulate whole executable binaries in cross-architecture way. However, Qiling offers some important differences against Qemu usermode.
 
-- Qiling is a true analysis framework, that allows you to build your own dynamic analysis tools on top (in friendly Python language). Meanwhile, Qemu is just a tool, not a framework.
-- Qiling can perform dynamic instrumentation, and can even hotpatch code at runtime. Qemu does not do either.
-- Not only working cross-architecture, Qiling is also cross-platform, so for example you can run Linux ELF file on top of Windows. In contrast, Qemu usermode only run binary of the same OS, such as Linux ELF on Linux, due to the way it forwards syscall from emulated code to native OS.
-- Qiling supports more platforms, including Windows, MacOS, Linux & BSD. Qemu usermode can only handle Linux & BSD.
+- Qiling is a true analysis framework, that allows you to build your own dynamic analysis tools on top (in friendly Python language). Meanwhile, Qemu is just a tool, not a framework
+- Qiling can perform dynamic instrumentation, and can even hotpatch code at runtime. Qemu does not do either
+- Not only working cross-architecture, Qiling is also cross-platform, so for example you can run Linux ELF file on top of Windows. In contrast, Qemu usermode only run binary of the same OS, such as Linux ELF on Linux, due to the way it forwards syscall from emulated code to native OS
+- Qiling supports more platforms, including Windows, MacOS, Linux & BSD. Qemu usermode can only handle Linux & BSD
 
 ---
 
@@ -80,7 +81,7 @@ Please see [setup guide](https://docs.qiling.io/en/latest/install/) file for how
 
 #### Examples
 
-- Below example shows how to use Qiling framework to emulate a Windows EXE on a Linux machine.
+- Below example shows how to use Qiling framework to emulate a Windows EXE on a Linux machine
 
 ```python
 from qiling import *
@@ -97,7 +98,7 @@ if __name__ == "__main__":
     my_sandbox(["examples/rootfs/x86_windows/bin/x86_hello.exe"], "examples/rootfs/x86_windows")
 ```
 
-- Below example shows how to use Qiling framework to dynamically patch a Windows crackme, make it always display "Congratulation" dialog.
+- Below example shows how to use Qiling framework to dynamically patch a Windows crackme, make it always display "Congratulation" dialog
 
 ```python
 from qiling import *
@@ -135,7 +136,7 @@ The below Youtube video shows how the above example works.
 
 #### Qiling's IDAPro Plugin: Instrument and Decrypt Mirai's Secret
 
-- This video demonstrate how Qiling's IDAPro plugin able to make IDApro run with Qiling instrumentation engine.
+- This video demonstrate how Qiling's IDAPro plugin able to make IDApro run with Qiling instrumentation engine
 
 [![](http://img.youtube.com/vi/ZWMWTq2WTXk/0.jpg)](http://www.youtube.com/watch?v=ZWMWTq2WTXk "iling's IDAPro Plugin: Instrument and Decrypt Mirai's Secret")
 
@@ -192,6 +193,14 @@ With code coverage collection (UEFI only for now):
 $ ./qltool run -f examples/rootfs/x8664_efi/bin/TcgPlatformSetupPolicy --rootfs examples/rootfs/x8664_efi --coverage-format drcov --coverage-file TcgPlatformSetupPolicy.cov
 ```
 ---
+
+With json output (Windows mainly):
+
+```
+$ ./qltool run -f examples/rootfs/x86_windows/bin/x86_hello.exe --rootfs  examples/rootfs/x86_windows/ --console False --json
+```
+---
+
 
 #### Contact
 

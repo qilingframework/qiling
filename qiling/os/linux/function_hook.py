@@ -197,7 +197,7 @@ class HookFunc:
 
         # ARM64
         elif self.ql.archtype== QL_ARCH.ARM64:
-            return self.ql.unpack(self.ql.mem.read(self.ql.reg.sp, self.ql.pointersize))
+            return self.ql.reg.x30
 
         # X86
         elif  self.ql.archtype== QL_ARCH.X86:
@@ -220,7 +220,7 @@ class HookFunc:
 
         # ARM64
         elif self.ql.archtype== QL_ARCH.ARM64:
-            self.ql.reg.esp = self.ql.reg.sp + self.ql.pointersize
+            pass
 
         # X86
         elif  self.ql.archtype== QL_ARCH.X86:

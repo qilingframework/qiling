@@ -2,13 +2,15 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 # Learn how to use? Please visit https://docs.qiling.io/en/latest/ida/
 
-# Plugin Author: kabeor <kabeor@qiling.io>
-
 UseAsScript = True
-RELEASE = True
 
 import sys
 import collections
+import time
+import struct
+import logging
+from enum import Enum
+from elftools.elf.elffile import ELFFile
 
 # Qiling
 from qiling import *
@@ -24,23 +26,381 @@ from qiling.utils import ql_get_arch_bits
 from qiling import __version__ as QLVERSION
 from qiling.os.filestruct import ql_file
 
-if RELEASE:
-    # IDA Python SDK
-    from idaapi import *
-    from idc import *
-    from idautils import *
-    # PyQt
-    from PyQt5 import QtCore, QtWidgets
-    from PyQt5.QtWidgets import (QPushButton, QHBoxLayout)
-
-else:
-    sys.path.append("./idapython3")
-    from idapython3 import *
+# IDA Python SDK
+from idaapi import *
+from idc import *
+from idautils import *
+import idc
+import ida_ua
+import ida_idaapi
+import ida_funcs
+import ida_nalt
+import idautils
+import ida_xref
+import ida_kernwin
+import ida_ida
+import ida_bytes
+import ida_segment
+import ida_name
+import ida_gdl
+import ida_frame
+import ida_idp
+import ida_auto
+import ida_netnode
+# PyQt
+from PyQt5 import QtCore, QtWidgets
+from PyQt5.QtWidgets import (QPushButton, QHBoxLayout)
 
 QilingHomePage = 'https://www.qiling.io'
-QilingGithubVersion = 'https://raw.githubusercontent.com/qilingframework/qiling/dev/qiling/core.py'
+QilingStableVersionURL = 'https://raw.githubusercontent.com/qilingframework/qiling/master/qiling/__version__.py'
+logging.basicConfig(level=logging.INFO, format='[%(levelname)s][%(module)s:%(lineno)d] %(message)s')
+
+class Colors(Enum):
+    Blue = 0xE8864A
+    Pink = 0xC0C0FB
+    White = 0xFFFFFF
+    Black = 0x000000
+    Green = 0xd3ead9
+    Gray = 0xd9d9d9
+    Beige = 0xCCF2FF
+
+class IDA:
+    def __init__(self):
+        pass
+    
+    @staticmethod
+    def get_function(addr):
+        return ida_funcs.get_func(addr)
+    
+    @staticmethod
+    def get_function_start(addr):
+        return IDA.get_function(addr).start_ea
+
+    @staticmethod
+    def get_function_end(addr):
+        return IDA.get_function(addr).end_ea
+    
+    @staticmethod
+    def get_function_framesize(addr):
+        return IDA.get_function(addr).frsize
+
+    @staticmethod
+    def get_function_name(addr):
+        return ida_funcs.get_func_name(addr)
+
+    @staticmethod
+    def get_functions():
+        return [IDA.get_function(func) for func in idautils.Functions()]
+
+    @staticmethod
+    def set_color(addr, what, color):
+        return idc.set_color(addr, what, color)
+
+    @staticmethod
+    def color_block(bb, color):
+        for i in range(bb.start_ea, bb.end_ea):
+            IDA.set_color(i, idc.CIC_ITEM, color)
+
+    # note:
+    # corresponds to IDA graph view
+    # a good example to iterate the graph
+    # https://github.com/idapython/src/blob/bc9b51b1c70083815a574a57b7a783698de3698d/examples/core/dump_flowchart.py
+    # arg can be a function or a (start, end) tuple or an address in the function
+    @staticmethod
+    def get_flowchart(arg):
+        if type(arg) is int:
+            func = IDA.get_function(arg)
+            if func is None:
+                return None
+            return ida_gdl.FlowChart(func)
+        return ida_gdl.FlowChart(arg)
+
+    @staticmethod
+    def get_block(addr):
+        flowchart = IDA.get_flowchart(addr)
+        for bb in flowchart:
+            if bb.start_ea <= addr and addr < bb.end_ea:
+                return bb
+        return None
+
+    @staticmethod
+    def block_is_terminating(bb):
+        # fcb_ret: has a retn instruction in the end
+        # fcb_noret: in most cases, exit() is called
+        # fcb_indjump: jmp $eax
+        if (bb.type == ida_gdl.fcb_ret or bb.type == ida_gdl.fcb_noret or
+                (bb.type == ida_gdl.fcb_indjump and len(list(bb.succs())) == 0)):
+            return True
+        for b in bb.succs():
+            if b.type == ida_gdl.fcb_extern:
+                return True
+        return False
+
+    @staticmethod
+    def get_starting_block(addr):
+        flowchart = IDA.get_flowchart(addr)
+        if flowchart is None:
+            return None
+        func = IDA.get_function(addr)
+        for bb in flowchart:
+            if bb.start_ea == func.start_ea:
+                return bb
+        return None
+    
+    @staticmethod
+    def get_terminating_blocks(addr):
+        flowchart = IDA.get_flowchart(addr)
+        return [bb for bb in flowchart if IDA.block_is_terminating(bb)]
+
+    @staticmethod
+    def get_prev_head(addr, minea=0):
+        return ida_bytes.prev_head(addr, minea)
+
+    @staticmethod
+    def get_segments():
+        r = []
+        seg = ida_segment.get_first_seg()
+        while seg is not None:
+            r.append(seg)
+            seg = ida_segment.get_next_seg(seg.start_ea)
+        return r
+    
+    @staticmethod
+    def get_segment_name(s):
+        return ida_segment.get_segm_name(s)
+
+    @staticmethod
+    def get_segment_by_name(name):
+        return ida_segment.get_segm_by_name(name)
+    
+    @staticmethod
+    def __addr_in_seg(addr):
+        segs = IDA.get_segments()
+        for seg in segs:
+            if addr < seg.end_ea and addr >= seg.start_ea:
+                return seg
+        return None
+
+    # note: accept name and address in the segment
+    @staticmethod
+    def get_segment(arg):
+        if type(arg) is int:
+            return IDA.__addr_in_seg(arg)
+        else: # str
+            return IDA.get_segment_by_name(arg)
+
+    @staticmethod
+    def get_segment_start(arg):
+        seg = IDA.get_segment(arg)
+        if seg is not None:
+            return seg.start_ea
+        return None
+    
+    @staticmethod
+    def get_segment_end(arg):
+        seg = IDA.get_segment(arg)
+        if seg is not None:
+            return seg.end_ea
+        return None
+
+    @staticmethod
+    def get_segment_perm(arg):
+        seg = IDA.get_segment(arg)
+        if seg is not None:
+            return seg.perm # RWX e.g. 0b101 = R + X
+        return None
+    
+    @staticmethod
+    def get_segment_type(arg):
+        seg = IDA.get_segment(arg)
+        if seg is not None:
+            return seg.type # 0x1 SEG_DATA 0x2 SEG_CODE See doc for details
+        return None
+
+    @staticmethod
+    def get_instruction(addr):
+        r = ida_ua.print_insn_mnem(addr)
+        if r == "":
+            return None
+        return r
+
+    # immidiate value
+    @staticmethod
+    def get_operand(addr, n):
+        return (idc.get_operand_type(addr, n), idc.get_operand_value(addr, n))
+
+    # eax, ecx, etc
+    @staticmethod
+    def print_operand(addr, n):
+        return idc.print_operand(addr, n)
+
+    @staticmethod
+    def get_instruction_size(addr):
+        return ida_bytes.get_item_size(addr)
+
+    @staticmethod
+    def get_instructions_count(begin, end):
+        p = begin
+        cnt = 0
+        while p < end:
+            sz = IDA.get_instruction_size(p)
+            cnt += 1
+            p += sz
+        return cnt
+
+    @staticmethod
+    def get_name(addr):
+        return ida_name.get_name(addr)
+    
+    @staticmethod
+    def get_name_address(name, addr=0):
+        return ida_name.get_name_ea(addr, name)
+
+    @staticmethod
+    def get_bytes(addr, l):
+        return ida_bytes.get_bytes(addr, l)
+
+    @staticmethod
+    def get_byte(addr):
+        return ida_bytes.get_byte(addr)
+
+    @staticmethod
+    def get_word(addr):
+        return ida_bytes.get_word(addr)
+
+    @staticmethod
+    def get_dword(addr):
+        return ida_bytes.get_dword(addr)
+    
+    @staticmethod
+    def get_qword(addr):
+        return ida_bytes.get_qword(addr)
+
+    @staticmethod
+    def get_xrefsto(addr, flags=ida_xref.XREF_ALL):
+        return [ref.frm for ref in idautils.XrefsTo(addr, flags)]
+
+    @staticmethod
+    def get_xrefsfrom(addr, flags=ida_xref.XREF_ALL):
+        return [ref.frm for ref in idautils.XrefsFrom(addr, flags)]
+
+    @staticmethod
+    def get_input_file_path():
+        return ida_nalt.get_input_file_path()
+    
+    @staticmethod
+    def get_info_structure():
+        return ida_idaapi.get_inf_structure()
+
+    @staticmethod
+    def get_main_address():
+        return IDA.get_info_structure().main
+    
+    @staticmethod
+    def get_max_address():
+        return IDA.get_info_structure().max_ea
+    
+    @staticmethod
+    def get_min_address():
+        return IDA.get_info_structure().min_ea
+
+    @staticmethod
+    def is_big_endian():
+        return IDA.get_info_structure().is_be()
+
+    @staticmethod
+    def is_little_endian():
+        return not IDA.is_big_endian()
+
+    @staticmethod
+    def get_filetype():
+        info = IDA.get_info_structure()
+        ftype = info.filetype
+        if ftype == ida_ida.f_MACHO:
+            return "macho"
+        elif ftype == ida_ida.f_PE or ftype == ida_ida.f_EXE or ftype == ida_ida.f_EXE_old: # is this correct?
+            return "pe"
+        elif ftype == ida_ida.f_ELF:
+            return "elf"
+        else:
+            return None
+
+    @staticmethod
+    def get_ql_arch_string():
+        info = IDA.get_info_structure()
+        proc = info.get_procName()
+        result = None
+        if proc == "metapc":
+            result = "x86"
+            if info.is_64bit():
+                result = "x8664"
+        elif "mips" in proc:
+            result = "mips"
+        elif "arm" in proc:
+            result = "arm32"
+            if info.is_64bit():
+                result = "arm64"
+        # That's all we support :(
+        return result
+    
+    @staticmethod
+    def get_current_address():
+        return ida_kernwin.get_screen_ea()
+
+    # return (?, start, end)
+    @staticmethod
+    def get_last_selection():
+        return ida_kernwin.read_range_selection(None)
+    
+    # Use with skipcalls
+    # note that the address is the end of target instruction
+    # e.g.:
+    # 0x1 push eax
+    # 0x4 mov eax, 0
+    # call get_frame_sp_delta(0x4) and get -4.
+    @staticmethod
+    def get_frame_sp_delta(addr):
+        return ida_frame.get_sp_delta(IDA.get_function(addr), addr)
+    
+    @staticmethod
+    def patch_bytes(addr, bs):
+        return ida_bytes.patch_bytes(addr, bs)
+    
+    @staticmethod
+    def fill_bytes(start, end, bs = b'\x90'):
+        return ida_bytes.patch_bytes(start, bs*(end-start))
+    
+    @staticmethod
+    def nop_selection():
+        _, start, end = IDA.get_last_selection()
+        return IDA.fill_bytes(start, end)
+    
+    @staticmethod
+    def fill_block(bb, bs=b'\x90'):
+        return IDA.fill_bytes(bb.start_ea, bb.end_ea, bs)
+
+    @staticmethod
+    def assemble(ea, cs, ip, use32, line):
+        return ida_idp.assemble(ea, cs, ip, use32, line)
+
+    @staticmethod
+    def create_data(ea, dataflag, size, tid=ida_netnode.BADNODE):
+        return ida_bytes.create_data(ea, dataflag, size, tid)
+
+    @staticmethod
+    def create_bytes_array(start, end):
+        return IDA.create_data(start, ida_bytes.byte_flag(), end-start)
+
+    @staticmethod
+    def create_byte(ea, length, force=False):
+        return ida_bytes.create_byte(ea, length, force)
+
+    @staticmethod
+    def perform_analysis(start, end, final_pass=True):
+        return ida_auto.plan_and_wait(start, end)
 
 ### View Class
+
 class QlEmuRegView(simplecustviewer_t):
     def __init__(self, ql_emu_plugin):
         super(QlEmuRegView, self).__init__()
@@ -90,7 +450,7 @@ class QlEmuRegView(simplecustviewer_t):
         self.ClearLines()
 
         view_title = COLSTR("Reg value at { ", SCOLOR_AUTOCMT)
-        view_title += COLSTR("IDA Address:0x%X | QL Address:0x%X" % (addr, addr - self.ql_emu_plugin.qlemu.baseaddr + get_imagebase()), SCOLOR_DREF)
+        view_title += COLSTR("IDA Address:0x%X | QL Address:0x%X" % (addr - self.ql_emu_plugin.qlemu.baseaddr + get_imagebase(), addr), SCOLOR_DREF)
         # TODO: Add disass should be better
         view_title += COLSTR(" }", SCOLOR_AUTOCMT)
         self.AddLine(view_title)
@@ -244,7 +604,6 @@ class QlEmuMemView(simplecustviewer_t):
     def OnClose(self):
         self.ql_emu_plugin.ql_close_mem_view(self.viewid)
 
-
 ### Dialog Class
 class QlEmuMemDialog(Form):
     def __init__(self):
@@ -271,7 +630,7 @@ Setup Qiling
 <#Custom script path   #Custom script path\: :{script_name}>
 """, {
         'path_name': Form.DirInput(swidth=50),
-        'script_name': Form.DirInput(swidth=50),
+        'script_name': Form.FileInput(swidth=50, open=True),
     })
  
 class QlEmuSaveDialog(Form):
@@ -303,8 +662,11 @@ class QlEmuAboutDialog(Form):
 BUTTON YES* Open Qiling Website
 Qiling:: About
             {FormChangeCb}
-            Qiling IDA plugin v%s, using Qiling Engine v%s.
-            (c) Qiling Team, 2020.
+            Qiling IDA plugin v%s with Qiling Framework v%s.
+            Author:
+            Ziqiao Kong,
+            Chenxu Wu,
+            Qiling Team.
             Qiling is released under the GPL v2.
             Find more info at https://www.qiling.io
             """ %(version, QLVERSION), {
@@ -392,9 +754,7 @@ class QlEmuRegDialog(Choose):
     def OnClose(self):
         pass
 
-
 ### Misc
-
 class QlEmuMisc:
     MenuItem = collections.namedtuple("MenuItem", ["action", "handler", "title", "tooltip", "shortcut", "popup"])
     class menu_action_handler(action_handler_t):
@@ -482,8 +842,7 @@ class QlEmuMisc:
         def isatty(self):
             return False   
 
-
-### Qiling
+### Qiling wrapper
 
 class QlEmuQiling:
     def __init__(self):
@@ -507,7 +866,16 @@ class QlEmuQiling:
         
         self.exit_addr = self.ql.os.exit_point
         if self.ql.ostype == QL_OS.LINUX:
-            self.baseaddr = self.ql.os.elf_mem_start
+            f = open(self.ql.path, 'rb')
+            elffile = ELFFile(f)
+            elf_header = elffile.header
+            if elf_header['e_type'] == 'ET_EXEC':
+                self.baseaddr = self.ql.os.elf_mem_start
+            elif elf_header['e_type'] == 'ET_DYN':
+                if self.ql.archbit == 32:
+                    self.baseaddr = int(self.ql.os.profile.get("OS32", "load_address"), 16)
+                elif self.ql.archbit == 64:
+                    self.baseaddr = int(self.ql.os.profile.get("OS64", "load_address"), 16)
         else:
             self.baseaddr = 0x0
 
@@ -536,7 +904,7 @@ class QlEmuQiling:
         savepath = savedlg.path_name.value
 
         self.ql.save(reg=True, mem=True,fd=True, cpu_context=True, snapshot=savepath)
-        print('Save to ' + savepath)
+        logging.info('Save to ' + savepath)
         return True
     
     def load(self):
@@ -549,7 +917,7 @@ class QlEmuQiling:
         loadname = loaddlg.file_name.value
 
         self.ql.restore(snapshot=loadname)
-        print('Restore from ' + loadname)
+        logging.info('Restore from ' + loadname)
         return True
 
     def remove_ql(self):
@@ -564,7 +932,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
 
     popup_menu_hook = None
 
-    flags = PLUGIN_KEEP
+    flags = PLUGIN_HIDE
     comment = ""
 
     help = "Qiling Emulator"
@@ -586,25 +954,32 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         self.stephook = None
         self.qlinit = False
         self.lastaddr = None
+        self.is_change_addr = -1
         self.userobj = None
         self.customscriptpath = None
+        self.bb_mapping = {}
 
     ### Main Framework
 
     def init(self):
         # init data
-        print('---------------------------------------------------------------------------------------')
-        print('Qiling Emulator Plugin For IDA, by Qiling Team. Version {0}, 2020'.format(QLVERSION))
-        print('Based on Qiling v{0}'.format(QLVERSION))
-        print('Find more information about Qiling at https://qiling.io')
-        print('---------------------------------------------------------------------------------------')
+        logging.info('---------------------------------------------------------------------------------------')
+        logging.info('Qiling Emulator Plugin For IDA, by Qiling Team. Version {0}, 2020'.format(QLVERSION))
+        logging.info('Based on Qiling v{0}'.format(QLVERSION))
+        logging.info('Find more information about Qiling at https://qiling.io')
+        logging.info('---------------------------------------------------------------------------------------')
         self.qlemu = QlEmuQiling()
         self.ql_hook_ui_actions()
         return PLUGIN_KEEP
 
     def run(self, arg = 0):
+        logging.info(f"Registering actions.")
         self.ql_register_menu_actions()
         self.ql_attach_main_menu_actions()
+
+    def ready_to_run(self):
+        logging.info(f"UI is ready, register our menu actions.")
+        self.run()
 
     def term(self):
         self.qlemu.remove_ql()
@@ -618,7 +993,8 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         if self.qlemu is None:
             self.qlemu = QlEmuQiling()
         if self.ql_set_rootfs():
-            print('Set rootfs success')
+            logging.info(f'Rootfs: {self.qlemu.rootfs}')
+            logging.info(f"Custom user script: {self.customscriptpath}")
             show_wait_box("Qiling is processing ...")
             try:
                 self.qlemu.start()
@@ -626,7 +1002,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 self.lastaddr = None
             finally:
                 hide_wait_box()
-                print("Qiling initialized done")
+                logging.info("Qiling is initialized successfully.")
         if self.customscriptpath is not None:
             self.ql_load_user_script()
             self.userobj.custom_prepare(self.qlemu.ql)
@@ -635,13 +1011,13 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         if self.qlinit :
             self.ql_get_user_script(is_reload=True, is_start=True)
         else:
-            print('Please setup Qiling first')
+            logging.error('Qiling should be setup firstly.')
 
     def ql_reload_user_script(self):
         if self.qlinit:
             self.ql_get_user_script(is_reload=True)
         else:
-            print('Please setup Qiling first')
+            logging.error('Qiling should be setup firstly.')
 
     def ql_continue(self):
         if self.qlinit:
@@ -668,7 +1044,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                     self.qlemu.ql.hook_del(hook)
             self.ql_update_views(self.qlemu.ql.reg.arch_pc, self.qlemu.ql)
         else:
-            print('Please setup Qiling first')
+            logging.error('Qiling should be setup firstly.')
 
     def ql_run_to_here(self):
         if self.qlinit:
@@ -693,7 +1069,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             self.qlemu.status = self.qlemu.ql.save()
             self.ql_update_views(self.qlemu.ql.reg.arch_pc, self.qlemu.ql)
         else:
-            print('Please setup Qiling first')
+            logging.error('Qiling should be setup firstly.')
 
     def ql_step(self):
         if self.qlinit:
@@ -702,28 +1078,28 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             self.qlemu.ql.restore(saved_states=self.qlemu.status)
             self.stephook = self.qlemu.ql.hook_code(callback=self.ql_step_hook)
             if self.userobj is not None:
-                userhook = self.userobj.custom_step(self.qlemu.ql, self.stepflag)
+                userhook = self.userobj.custom_step(self.qlemu.ql)
             self.qlemu.run(begin=self.qlemu.ql.reg.arch_pc, end=self.qlemu.exit_addr)
             if userhook and userhook is not None:
                 for hook in userhook:
                     self.qlemu.ql.hook_del(hook)
             self.ql_update_views(self.qlemu.ql.reg.arch_pc, self.qlemu.ql)
         else:
-            print('Please setup Qiling first')
+            logging.error('Qiling should be setup firstly.')
 
     def ql_save(self):
         if self.qlinit:
             if self.qlemu.save() != True:
-                print('ERROR: Save failed')
+                logging.error('Fail to save the snapshot.')
         else:
-            print('Please setup Qiling first')
+            logging.error('Qiling should be setup firstly.')
 
     def ql_load(self):
         if self.qlinit:
             if self.qlemu.load() != True:
-                print('ERROR: Load failed')
+                logging.error('Fail to load the snapshot.')
         else:
-            print('Please setup Qiling first')
+            logging.error('Qiling should be setup firstly.')
 
     def ql_chang_reg(self):
         if self.qlinit:
@@ -731,7 +1107,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             self.ql_update_views(self.qlemu.ql.reg.arch_pc, self.qlemu.ql)
             self.qlemu.status = self.qlemu.ql.save()
         else:
-            print('Please setup Qiling first')       
+            logging.error('Qiling should be setup firstly.')    
 
     def ql_reset(self):
         if self.qlinit:
@@ -739,7 +1115,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             self.qlemu = QlEmuQiling()
             self.ql_start()
         else:
-            print('Please setup Qiling first')
+            logging.error('Qiling should be setup firstly.')
 
     def ql_close(self):
         if self.qlinit:
@@ -750,9 +1126,9 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             del self.qlemu
             self.qlemu = None
             self.qlinit = False
-            print('Qiling closed')
+            logging.info('Qiling is deleted.')
         else:
-            print('Qiling is not started')
+            logging.error('Qiling is not started.')
 
     def ql_show_reg_view(self):
         if self.qlinit:
@@ -764,7 +1140,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 self.qlemuregview.Show()
                 self.qlemuregview.Refresh()
         else:
-            print('Please start Qiling first')
+            logging.error('Qiling should be setup firstly.')
 
     def ql_show_stack_view(self):
         if self.qlinit:
@@ -775,7 +1151,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 self.qlemustackview.Show()
                 self.qlemustackview.Refresh()
         else:
-            print('Please Start Qiling First')
+            logging.error('Qiling should be setup firstly.')
 
     def ql_show_mem_view(self, addr=get_screen_ea(), size=0x10):
         if self.qlinit:
@@ -809,7 +1185,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 self.qlemumemview[mem_addr].Show()
                 self.qlemumemview[mem_addr].Refresh() 
         else:
-            print('Please start Qiling first')
+            logging.error('Qiling should be setup firstly.')
 
     def ql_unload_plugin(self):
         heads = Heads(get_segm_start(get_screen_ea()), get_segm_end(get_screen_ea()))
@@ -818,7 +1194,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         self.ql_close()
         self.ql_detach_main_menu_actions()
         self.ql_unregister_menu_actions()
-        print('Unload successed')
+        logging.info('Unload plugin successfully!')
 
     def ql_menu_null(self):
         pass
@@ -829,13 +1205,14 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         self.aboutdlg.Free()
 
     def ql_check_update(self):
-        (r, content) = QlEmuMisc.url_download(QilingGithubVersion)
-        content = to_string(content)
+        (r, content) = QlEmuMisc.url_download(QilingStableVersionURL)
+        content = content.decode("utf-8")
         if r == 0:
-            # find stable version
-            sig = '__version__'
-            begin = content.find(sig.encode())+len(sig)
-            version_stable = content[begin+4:begin+20].decode().split('\n')[0].replace('\"', '').replace(' ', '').replace('+', '')
+            try:
+                version_stable = re.findall(r"\"([\d\.]+)\"", content)[0]
+            except (TypeError, IndexError):
+                warning("ERROR: Failed to find the Qiling version string from response.")
+                logging.warning("Failed to find the Qiling version string from response.")
 
             # compare with the current version
             if version_stable == QLVERSION:
@@ -848,9 +1225,242 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 self.updatedlg.Free()
         else:
             # fail to download
-            warning("ERROR: Qiling failed to connect to internet (Github). Try again later.")
-            print("Qiling: FAILED to connect to Github to check for latest update. Try again later.")
- 
+            warning("ERROR: Failed to connect to Github. Try again later.")
+            logging.warning("Failed to connect to Github when checking for the latest update. Try again later.")
+    
+    def _remove_from_bb_lists(self, bbid):
+        if bbid in self.real_blocks:
+            self.real_blocks.remove(bbid)
+        elif bbid in self.fake_blocks:
+            self.fake_blocks.remove(bbid)
+        elif bbid in self.retn_blocks:
+            self.retn_blocks.remove(bbid)
+
+    def ql_mark_real(self):
+        cur_addr = IDA.get_current_address()
+        cur_block = IDA.get_block(cur_addr)
+        self._remove_from_bb_lists(cur_block.id)
+        self.real_blocks.append(cur_block.id)
+        IDA.color_block(cur_block, Colors.Green.value)
+
+    def ql_mark_fake(self):
+        cur_addr = IDA.get_current_address()
+        cur_block = IDA.get_block(cur_addr)
+        self._remove_from_bb_lists(cur_block.id)
+        self.fake_blocks.append(cur_block.id)
+        IDA.color_block(cur_block, Colors.Gray.value)
+
+    def ql_mark_retn(self):
+        cur_addr = IDA.get_current_address()
+        cur_block = IDA.get_block(cur_addr)
+        self._remove_from_bb_lists(cur_block.id)
+        self.retn_blocks.append(cur_block.id)
+        IDA.color_block(cur_block, Colors.Pink.value)
+
+    def _guide_hook(self, ql, addr, data):
+        logging.info(f"Executing: {hex(addr)}")
+        start_bb_id = self.hook_data['startbb']
+        cur_bb = IDA.get_block(addr)
+        if "force" in self.hook_data and addr in self.hook_data['force']:
+            if self.hook_data['force'][addr]:
+                reg1 = IDA.print_operand(addr, 0)
+                reg2 = IDA.print_operand(addr, 1)
+                reg2_val = ql.reg.__getattribute__(reg2)
+                ql.reg.__setattr__(reg1, reg2_val)
+            else:
+                pass
+            ins_size = IDA.get_instruction_size(addr)
+            ql.reg.arch_pc += ins_size
+        # TODO: Maybe we can detect whether the program will access unmapped
+        #       here so that we won't map the memory.
+        next_ins = IDA.get_instruction(addr)
+        if "call" in next_ins:
+            ql.reg.arch_pc += IDA.get_instruction_size(addr)
+            return
+        if start_bb_id == cur_bb.id:
+            return
+        if cur_bb.id in self.real_blocks or cur_bb.id in self.retn_blocks:
+            if cur_bb.id not in self.paths[start_bb_id]:
+                self.paths[start_bb_id].append(cur_bb.id)
+            ql.emu_stop()
+
+    def _skip_unmapped_rw(self, ql, type, addr, size, value):
+        map_addr = ql.mem.align(addr)
+        map_size = ql.mem.align(size)
+        if not ql.mem.is_mapped(map_addr, map_size):
+            logging.warning(f"Invalid memory R/W, trying to map {hex(map_size)} at {hex(map_addr)}")
+            ql.mem.map(map_addr, map_size)
+            ql.mem.write(map_addr, b'\x00'*map_size)
+        return True
+
+    def _find_branch_in_real_block(self, bb):
+        paddr = bb.start_ea
+        while paddr < bb.end_ea:
+            ins = IDA.get_instruction(paddr)
+            sz = IDA.get_instruction_size(paddr)
+            if ins.lower().startswith("cmov"):
+                return paddr
+            paddr += sz
+        return None
+
+    def _log_paths_str(self):
+        for bbid, succs in self.paths.items():
+            if len(succs) == 1:
+                logging.info(f"{self._block_str(bbid)} -> {self._block_str(succs[0])}")
+            elif len(succs) == 2:
+                logging.info(f"{self._block_str(bbid)} --(force jump)--> {self._block_str(succs[0])}")
+                logging.info(f"|----(skip jump)----> {self._block_str(succs[1])}")
+
+    def _search_path(self):
+        self.paths = {bbid: [] for bbid in self.bb_mapping.keys()}
+        reals = [self.first_block, *self.real_blocks]
+        self.deflatqlemu = QlEmuQiling() 
+        self.deflatqlemu.rootfs = self.qlemu.rootfs
+        self.deflatqlemu.start()
+        ql = self.deflatqlemu.ql
+        self.hook_data = None
+        ql.hook_code(self._guide_hook)
+        ql.hook_mem_read_invalid(self._skip_unmapped_rw)
+        ql.hook_mem_write_invalid(self._skip_unmapped_rw)
+        ql.hook_mem_unmapped(self._skip_unmapped_rw)
+        for bbid in reals:
+            bb = self.bb_mapping[bbid]
+            braddr = self._find_branch_in_real_block(bb)
+            self.hook_data = {
+                "startbb": bbid
+            }
+            if braddr is None:
+                ql.run(begin=bb.start_ea)
+            else:
+                self.hook_data['force'] = {braddr: True}
+                ql.run(begin=bb.start_ea)
+                self.hook_data['force'] = {braddr: False}
+                ql.run(begin=bb.start_ea)
+        del self.deflatqlemu
+        self.deflatqlemu = None
+        self._log_paths_str()
+
+    def _patch_codes(self):
+        if len(self.paths[self.first_block]) != 1:
+            logging.error(f"Found wrong ways in first block: {self._block_str(self.bb_mapping[self.first_block])}, should be 1 path but get {len(self.paths[self.first_block])}, exit.")
+            return
+        logging.info("NOP dispatcher block")
+        dispatcher_bb = self.bb_mapping[self.dispatcher]
+        IDA.fill_block(dispatcher_bb, b'\x00')
+        first_jmp_addr = dispatcher_bb.start_ea
+        instr_to_assemble = f"jmp {self.bb_mapping[self.paths[self.first_block][0]].start_ea:x}h"
+        logging.info(f"Assemble {instr_to_assemble} at {hex(first_jmp_addr)}")
+        IDA.assemble(first_jmp_addr, 0, first_jmp_addr, True, instr_to_assemble)
+        for bbid in self.real_blocks:
+            bb = self.bb_mapping[bbid]
+            braddr = self._find_branch_in_real_block(bb)
+            if braddr is None:
+                last_instr_address = IDA.get_prev_head(bb.end_ea)
+                logging.info(f"Patch NOP from {hex(last_instr_address)} to {hex(bb.end_ea)}")
+                IDA.fill_bytes(last_instr_address, bb.end_ea, b'\x00')
+                if len(self.paths[bbid]) != 1:
+                    logging.warning(f"Found wrong ways in block: {self._block_str(bb)}, should be 1 path but get {len(self.paths[bbid])}")
+                    continue
+                instr_to_assemble = f"jmp {self.bb_mapping[self.paths[bbid][0]].start_ea:x}h"
+                logging.info(f"Assemble {instr_to_assemble} at {hex(last_instr_address)}")
+                IDA.assemble(last_instr_address, 0, last_instr_address, True, instr_to_assemble)
+                IDA.perform_analysis(bb.start_ea, bb.end_ea)
+            else:
+                if len(self.paths[bbid]) != 2:
+                    logging.warning(f"Found wrong ways in block: {self._block_str(bb)}, should be 2 paths but get {len(self.paths[bbid])}")
+                    continue
+                cmov_instr = IDA.get_instruction(braddr).lower()
+                logging.info(f"Patch NOP from {hex(braddr)} to {hex(bb.end_ea)}")
+                IDA.fill_bytes(braddr, bb.end_ea, b'\x00')
+                jmp_instr = f"j{cmov_instr[4:]}"
+                instr_to_assemble = f"{jmp_instr} {self.bb_mapping[self.paths[bbid][0]].start_ea:x}h"
+                logging.info(f"Assemble {instr_to_assemble} at {hex(braddr)}")
+                IDA.assemble(braddr, 0, braddr, True, instr_to_assemble)
+                IDA.perform_analysis(bb.start_ea, bb.end_ea)
+                time.sleep(0.5)
+                next_instr_address = IDA.get_instruction_size(braddr) + braddr
+                instr_to_assemble = f"jmp {self.bb_mapping[self.paths[bbid][1]].start_ea:x}h"      
+                logging.info(f"Assemble {instr_to_assemble} at {hex(next_instr_address)}")
+                IDA.assemble(next_instr_address, 0, next_instr_address, True, instr_to_assemble)
+                IDA.perform_analysis(bb.start_ea, bb.end_ea)
+        for bbid in self.fake_blocks:
+            bb = self.bb_mapping[bbid]
+            logging.info(f"Patch NOP for block: {self._block_str(bb)}")
+            IDA.fill_block(bb, b'\x00')
+        logging.info(f"Patch NOP for pre_dispatcher.")
+        bb = self.bb_mapping[self.pre_dispatcher]
+        IDA.fill_block(bb, b'\x00')
+    
+    def ql_deflat(self):
+        if len(self.bb_mapping) == 0:
+            self.ql_parse_blocks_for_deobf()
+        self._search_path()
+        self._patch_codes()
+        IDA.perform_analysis(self.deflat_func.start_ea, self.deflat_func.end_ea)
+
+    def _block_str(self, bb):
+        if type(bb) is int:
+            bb = self.bb_mapping[bb]
+        return f"Block id: {bb.id}, start_address: {bb.start_ea:x}, end_address: {bb.end_ea:x}, type: {bb.type}"
+
+    def ql_parse_blocks_for_deobf(self):
+        cur_addr = IDA.get_current_address()
+        flowchart = IDA.get_flowchart(cur_addr)
+        self.deflat_func = IDA.get_function(cur_addr)
+        self.bb_mapping = {bb.id:bb for bb in flowchart}
+        if flowchart is None:
+            return
+        bb_count = {}
+        for bb in flowchart:
+            for succ in bb.succs():
+                if succ.id not in bb_count:
+                    bb_count[succ.id] = 0
+                bb_count[succ.id] += 1
+        max_ref_bb_id = None
+        max_ref = 0
+        for bb_id, ref in bb_count.items():
+            if ref > max_ref:
+                max_ref = ref
+                max_ref_bb_id = bb_id
+        self.pre_dispatcher = max_ref_bb_id
+        try:
+            self.dispatcher = list(self.bb_mapping[self.pre_dispatcher].succs())[0].id
+            self.first_block = flowchart[0].id
+        except IndexError:
+            logging.error("Fail to get dispatcher and first_block.")
+            return
+        self.real_blocks = []
+        self.fake_blocks = []
+        self.retn_blocks = []
+        for bb in flowchart:
+            if self.pre_dispatcher in [b.id for b in bb.succs()] and IDA.get_instructions_count(bb.start_ea, bb.end_ea) > 1:
+                self.real_blocks.append(bb.id)
+            elif IDA.block_is_terminating(bb):
+                self.retn_blocks.append(bb.id)
+            elif bb.id != self.first_block and bb.id != self.pre_dispatcher and bb.id != self.dispatcher:
+                self.fake_blocks.append(bb.id)
+        for bbid in self.real_blocks:
+            IDA.color_block(self.bb_mapping[bbid], Colors.Green.value)
+        for bbid in self.fake_blocks:
+            IDA.color_block(self.bb_mapping[bbid], Colors.Gray.value)
+        for bbid in self.retn_blocks:
+            IDA.color_block(self.bb_mapping[bbid], Colors.Pink.value)
+        IDA.color_block(self.bb_mapping[self.dispatcher], Colors.Blue.value)
+        IDA.color_block(self.bb_mapping[self.pre_dispatcher], Colors.Blue.value)
+        IDA.color_block(self.bb_mapping[self.first_block], Colors.Beige.value)
+        logging.info(f"First block: {self._block_str(self.first_block)}")
+        logging.info(f"Dispatcher: {self._block_str(self.dispatcher)}")
+        logging.info(f"Pre dispatcher: {self._block_str(self.pre_dispatcher)}")
+        logging.info(f"Real blocks:")
+        for s in map(self._block_str, self.real_blocks): logging.info(s)
+        logging.info(f"Fake blocks:")
+        for s in map(self._block_str, self.fake_blocks): logging.info(s)
+        logging.info(f"Return blocks:")
+        for s in map(self._block_str, self.retn_blocks): logging.info(s)
+        logging.info(f"Auto analysis finished, please check whether the result is correct.")
+        logging.info(f"You may change the property of each block manually if necessary.")
+
+
     ### Hook
 
     def ql_step_hook(self, ql, addr, size):
@@ -872,11 +1482,16 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         if bp_count > 0:
             for num in range(0, bp_count):
                 bp_list.append(get_bpt_ea(num))
-            if addr in bp_list and addr != self.lastaddr:
+
+            if addr in bp_list and (addr != self.lastaddr or self.is_change_addr>1):
                 self.qlemu.status = ql.save()
                 ql.os.stop()
                 self.lastaddr = addr
+                self.is_change_addr = -1
                 jumpto(addr)
+
+            self.is_change_addr += 1
+            
 
     def ql_untill_hook(self, ql, addr, size):
         addr = addr - self.qlemu.baseaddr + get_imagebase()
@@ -906,11 +1521,11 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         self.userobj = get_user_scripts_obj(self.customscriptpath, 'QILING_IDA', is_reload)
         if self.userobj is not None:
             if is_reload and not is_start:
-                print('User Script Reload')
+                logging.info('Custom user script is reloaded.')
             else:
-                print('User Script Load')
+                logging.info('Custom user script is loaded successfully.')
         else:
-            print('There Is No User Scripts')
+            logging.info('Custom user script not found.')
 
     ### Dialog
 
@@ -973,8 +1588,16 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             self.menuitems.append(QlEmuMisc.MenuItem("-",                                     self.ql_menu_null,              "",                           None,                        None,                   False  ))  
         self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":about",             self.ql_about,                 "About",                      "About",                     None,                   False  ))
         self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":checkupdate",       self.ql_check_update,           "Check Update",               "Check Update",              None,                   False  ))
+        self.menuitems.append(QlEmuMisc.MenuItem("-",                                     self.ql_menu_null,              "",                           None,                        None,                   True   ))
+        self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":parseblocks",       self.ql_parse_blocks_for_deobf,           "Auto Analysis For Deflat",               "Auto Analysis For Deflat",              None,                   True  ))
+        self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":markreal",       self.ql_mark_real,           "Mark as Real Block",               "Mark as Real Block",              None,                   True  ))
+        self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":markfake",       self.ql_mark_fake,           "Mark as Fake Block",               "Mark as Fake Block",              None,                   True  ))
+        self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":markretn",       self.ql_mark_retn,           "Mark as Return Block",               "Mark as Return Block",              None,                   True  ))
+        self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":deflat",       self.ql_deflat,           "Deflat",               "Deflat",              None,                   True  ))
 
         for item in self.menuitems:
+            if item.action == "-":
+                continue
             self.ql_register_new_action(item.action, item.title, QlEmuMisc.menu_action_handler(self, item.action), item.shortcut, item.tooltip,  -1)
 
     def ql_unregister_menu_actions(self):

@@ -3,9 +3,10 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-import types, os, struct
+import types, os, struct, time
 
 from unicorn import *
+from qiling.const import QL_INTERCEPT
 from qiling.os.os import QlOs
 from qiling.os.utils import PathUtils
 from qiling.exception import QlErrorSyscallError
@@ -145,6 +146,13 @@ COLORS_MAPPING = {
 
 REVERSE_COLORS_MAPPING = {v : k for k, v in COLORS_MAPPING.items()}
 
+
+def BIN2BCD(val: int):
+    return val % 10 + (((val//10)%10) << 4) + (((val//100)%10)<<8) + (((val//1000)%10)<<12)
+
+def BCD2BIN(val: int):
+    return (val&0xF) + ((val>>4)&0xF) * 10 + ((val>>8)&0xF) * 100 + ((val>>12)&0xF) * 1000
+
 class INT13DiskError(Enum):
     NoError = 0
     BadCommand = 1
@@ -184,7 +192,11 @@ class QlOsDos(QlOs):
         self.revese_color_pairs = {}
         self.stdscr = None
         self.dos_ver = int(self.ql.profile.get("KERNEL", "version"), 16)
-    
+
+        # Interrupts hooks
+        self.before_interrupt = {}
+        self.after_interrupt = {}
+
     def __del__(self):
         # resume terminal
         if self.stdscr is not None:
@@ -192,6 +204,12 @@ class QlOsDos(QlOs):
             curses.echo()
             curses.nocbreak()
             curses.endwin()
+
+    def add_function_hook(self, interrupt_tuple, intercept_function, intercept=None):
+        if intercept == QL_INTERCEPT.EXIT:
+            self.after_interrupt[interrupt_tuple] = intercept_function
+        else:
+            self.before_interrupt[interrupt_tuple] = intercept_function
 
     # https://en.wikipedia.org/wiki/FLAGS_register
     # 0  CF 0x0001
@@ -451,7 +469,7 @@ class QlOsDos(QlOs):
             idx = self.ql.reg.dl
             dapbs = self.ql.mem.read(self.calculate_address(ds, si), 0x10)
             _, _, cnt, offset, segment, lba = self._parse_dap(dapbs)
-            self.ql.nprint(f"Reading from disk {hex(idx)} with LBA {lba}")
+            self.ql.nprint(f"Reading {cnt} sectors from disk {hex(idx)} with LBA {lba}")
             if not self.ql.os.fs_mapper.has_mapping(idx):
                 self.ql.nprint(f"[!] Warning: No such disk: {hex(idx)}")
                 self.ql.reg.ah = INT13DiskError.BadCommand.value
@@ -466,7 +484,7 @@ class QlOsDos(QlOs):
             idx = self.ql.reg.dl
             dapbs = self.ql.mem.read(self.calculate_address(ds, si), 0x10)
             _, _, cnt, offset, segment, lba = self._parse_dap(dapbs)
-            self.ql.nprint(f"Write to disk {hex(idx)} with LBA {lba}")
+            self.ql.nprint(f"Write {cnt} sectors to disk {hex(idx)} with LBA {lba}")
             if not self.ql.os.fs_mapper.has_mapping(idx):
                 self.ql.nprint(f"[!] Warning: No such disk: {hex(idx)}")
                 self.ql.reg.ah = INT13DiskError.BadCommand.value
@@ -481,6 +499,26 @@ class QlOsDos(QlOs):
             self.ql.nprint("Exception: int 13h syscall Not Found, ah: %s" % hex(ah))
             raise NotImplementedError()
     
+    def int15(self):
+        ah = self.ql.reg.ah
+        if ah == 0:
+            pass
+        elif ah == 1:
+            pass
+        elif ah == 0x86:
+            dx = self.ql.reg.dx
+            cx = self.ql.reg.cx
+            full_secs = ((cx << 16) + dx) / 1000000
+            self.ql.nprint(f"Goint to sleep {full_secs} seconds")
+            time.sleep(full_secs)
+
+            # Note: Since we are in a single thread environment, we assume
+            # that no one will wait at the same time.
+            self.ql.reg.cf = 0
+            self.ql.reg.ah = 0x80
+        else:
+            raise NotImplementedError()
+
     def _parse_key(self, ky):
         # https://stackoverflow.com/questions/27200597/c-ncurses-key-backspace-not-working
         # https://stackoverflow.com/questions/44943249/detecting-key-backspace-in-ncurses
@@ -499,13 +537,17 @@ class QlOsDos(QlOs):
     def int16(self):
         ah = self.ql.reg.ah
         if ah == 0x0:
+            curses.nonl()
             key = self._parse_key(self.stdscr.getch())
+            self.ql.dprint(0, f"Get key: {hex(key)}")
             if curses.ascii.isascii(key):
                 self.ql.reg.al = key
             else:
                 self.ql.reg.al = 0
             self.ql.reg.ah = self._get_scan_code(key)
+            curses.nl()
         elif ah == 0x1:
+            curses.nonl()
             # set non-blocking
             self.stdscr.timeout(0)
             key = self._parse_key(self.stdscr.getch())
@@ -520,6 +562,7 @@ class QlOsDos(QlOs):
                 # Buffer shouldn't be removed in this interrupt.
                 curses.ungetch(key)
             self.stdscr.timeout(-1)
+            curses.nl()
 
     def int19(self):
         # Note: Memory is not cleaned.
@@ -539,12 +582,45 @@ class QlOsDos(QlOs):
 
     def int1a(self):
         ah = self.ql.reg.ah
-        if ah == 0:
+        if ah in [0, 1]:
             now = datetime.now()
             tick = int((now - self.start_time).total_seconds() * self.ticks_per_second)
-            self.ql.reg.al=0
             self.ql.reg.cx= (tick & 0xFFFF0000) >> 16
             self.ql.reg.dx= tick & 0xFFFF
+            if ah == 0:
+                self.ql.reg.al = 0
+        elif ah in [2 ,3]:
+            now = datetime.now()
+            self.ql.reg.ch = BIN2BCD(now.hour)
+            self.ql.reg.cl = BIN2BCD(now.minute)
+            self.ql.reg.dh = BIN2BCD(now.second)
+            self.ql.reg.dl = 0
+            self.clear_cf()
+        elif ah in [4, 5]:
+            now = datetime.now()
+            # See https://sites.google.com/site/liangweiqiang/Home/e5006/e5006classnote/jumptiming/int1ahclockservice
+            self.ql.reg.ch = BIN2BCD((now.year - 1)//100)
+            self.ql.reg.cl = BIN2BCD(now.year%100)
+            self.ql.reg.dh = BIN2BCD(now.month)
+            self.ql.reg.dl = BIN2BCD(now.day)
+            self.clear_cf()
+        elif ah in [6, 7, 9]:
+            # alarm support
+            # TODO: Implement clock interrupt.
+            self.set_cf()
+        elif ah == 8:
+            # Set RTC
+            pass
+        elif ah == 0xA:
+            now = datetime.now()
+            self.ql.reg.cx = (now - datetime(1980, 1, 1)).days
+        elif ah == 0xB:
+            pass
+        else:
+            raise NotImplementedError()
+            
+        
+
 
     def int20(self):
         ah = self.ql.reg.ah
@@ -665,12 +741,22 @@ class QlOsDos(QlOs):
 
     def hook_syscall(self):
         def cb(ql, intno, user_data=None):
+            ah = self.ql.reg.ah
+            self.ql.dprint(0, f"INT {intno:x} with ah={hex(ah)}")
+            interrupt_tuple = (intno, ah)
+            before = self.before_interrupt.get(interrupt_tuple, None)
+            after = self.after_interrupt.get(interrupt_tuple, None)
+
+            if before is not None:
+                before(self.ql)
             # http://spike.scu.edu.au/~barry/interrupts.html
             # http://www2.ift.ulaval.ca/~marchand/ift17583/dosints.pdf
             if intno == 0x21:
                 self.int21()
             elif intno == 0x10:
                 self.int10()
+            elif intno == 0x15:
+                self.int15()
             elif intno == 0x16:
                 self.int16()
             elif intno == 0x13:
@@ -683,6 +769,8 @@ class QlOsDos(QlOs):
                 self.int20()                
             else:
                 raise NotImplementedError()
+            if after is not None:
+                after(self.ql)
         self.ql.hook_intr(cb)
 
     def run(self):

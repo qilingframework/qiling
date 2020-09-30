@@ -187,10 +187,10 @@ class QlOsUtils:
         ret = self.ql.stack_read(0)
 
         def restore(ql):
-            ql.dprint(D_INFO, "[+] Executed code from %d to %d " % (start, end))
+            ql.dprint(D_INFO, f"[+] Executed code from 0x{start:x} to 0x{end:x}")
             # now we can restore the register to be where we were supposed to
             old_hook_addr = ql.reg.arch_pc
-            ql.reg.arch_sp = old_sp
+            ql.reg.arch_sp = old_sp + (ql.archbit // 8)
             ql.reg.arch_pc = ret
             # we want to execute the code once, not more
             ql.hook_address(lambda q: None, old_hook_addr)

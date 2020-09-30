@@ -52,6 +52,12 @@ class ql_socket:
     def close(self):
         return os.close(self.__fd)
     
+    def fcntl(self, fcntl_cmd, fcntl_arg):
+        try:
+            return fcntl.fcntl(self.__fd, fcntl_cmd, fcntl_arg)
+        except Exception:
+            pass
+
     def ioctl(self, ioctl_cmd, ioctl_arg):
         try:
             return fcntl.ioctl(self.__fd, ioctl_cmd, ioctl_arg)
@@ -82,8 +88,12 @@ class ql_socket:
         return self.__socket.getpeername()
     
     def accept(self):
-        con, addr = self.__socket.accept()
-        new_ql_socket = ql_socket(con)
+        try:
+            con, addr = self.__socket.accept()
+            new_ql_socket = ql_socket(con)
+        except BlockingIOError:
+            # For support non-blocking sockets
+            return None, None
         return new_ql_socket, addr
     
     def recv(self, recv_len, recv_flags):
@@ -92,9 +102,20 @@ class ql_socket:
     def send(self, send_buf, send_flags):
         return self.__socket.send(send_buf, send_flags)
 
+    def recvfrom(self, recvfrom_len, recvfrom_flags):
+        return self.__socket.recvfrom(recvfrom_len, recvfrom_flags)
+
+    def sendto(self, sendto_buf, sendto_flags, sendto_addr):
+        return self.__socket.sendto(sendto_buf, sendto_flags, sendto_addr)
+
     @property
     def family(self):
         return self.__socket.family
+
+    @property
+    def socktype(self):
+        return self.__socket.type
+
     @property
     def socket(self):
         return self.__socket
@@ -126,6 +147,12 @@ class ql_pipe:
     def close(self):
         return os.close(self.__fd)
     
+    def fcntl(self, fcntl_cmd, fcntl_arg):
+        try:
+            return fcntl.fcntl(self.__fd, fcntl_cmd, fcntl_arg)
+        except Exception:
+            pass
+
     def ioctl(self, ioctl_cmd, ioctl_arg):
         try:
             return fcntl.ioctl(self.__fd, ioctl_cmd, ioctl_arg)

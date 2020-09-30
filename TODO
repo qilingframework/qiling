@@ -46,7 +46,7 @@ Android
 
 -------------------- CHECKLIST before TAG --------------------
 Release 
-1. core.py
+1. qiling/__version__.py
     - __version__ = "1.[x].[x]"
 2. Make sure development status classifer in setup.py is correct.
     - 'Development Status :: 5 - Production/Stable'

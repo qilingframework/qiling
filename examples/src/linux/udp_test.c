@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 #include <netdb.h>
 
+// reference: https://gist.github.com/saxbophone/f770e86ceff9d488396c0c32d47b757e
 
 #define PORT_DEFAULT  "22033"
 
@@ -16,7 +17,7 @@ static int socket_server(const char *host, const char *port)
 
     memset(&hints, 0, sizeof(struct addrinfo));
     hints.ai_family = AF_UNSPEC;
-    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_socktype = SOCK_DGRAM;
     hints.ai_flags = AI_PASSIVE;
     hints.ai_protocol = 0;
     hints.ai_canonname = NULL;
@@ -40,12 +41,7 @@ static int socket_server(const char *host, const char *port)
             continue;
         }
         ret = bind(sockfd, rp->ai_addr, rp->ai_addrlen);
-        if (ret == -1) {
-            close(sockfd);
-            continue;
-        }
-        ret = listen(sockfd, 32);
-        if (ret == 0) {
+        if (ret == 0){
             break;
         }
         /* else close sockfd and continue the loop */
@@ -66,7 +62,7 @@ static int socket_client(const char *host, const char *port)
 
     memset(&hints, 0, sizeof(struct addrinfo));
     hints.ai_family = AF_UNSPEC;
-    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_socktype = SOCK_DGRAM;
     hints.ai_flags = 0;
     hints.ai_protocol = 0;
     hints.ai_canonname = NULL;
@@ -101,9 +97,11 @@ static int socket_client(const char *host, const char *port)
 static int process_server(const char *port)
 {
     int ret;
-    int sockfd, client;
+    int sockfd;
     int len;
     char buf[256];
+    struct sockaddr_storage peer_addr;
+    int peer_addr_len;
 
     for(;;) {
         sockfd = socket_server("127.0.0.1", port);
@@ -111,31 +109,23 @@ static int process_server(const char *port)
             fprintf(stderr, "server port %s error.\n", port);
             return 1;
         }
-        client = accept(sockfd, NULL, NULL);
-        if (client == -1) {
-            close(sockfd);
-            fprintf(stderr, "+++ accept %d error, close %d.\n", client, sockfd);
-            return 1;
-        }
         for(;;) {
-            len = recv(client, buf, sizeof(buf), 0);
-            fprintf(stderr, "server recv() return %d.\n", len);
+            peer_addr_len = sizeof(struct sockaddr_storage);
+            len = recvfrom(sockfd, buf, sizeof(buf), 0, (struct sockaddr *) &peer_addr, &peer_addr_len);
+            fprintf(stderr, "server recvfrom() return %d.\n", len);
             if (len <= 0) {
-                fprintf(stderr, "read %d error.\n", len);
+                fprintf(stderr, "recvfrom %d error.\n", len);
                 close(sockfd);
-                close(client);
                 return 1;
             } else {
                 /* echo */
-                ret = send(client, buf, len, 0);
-                fprintf(stderr, "server send() %d return %d.\n", len, ret);
+                ret = sendto(sockfd, buf, len, 0, (struct sockaddr *) &peer_addr, peer_addr_len);
+                fprintf(stderr, "server sendto() %d return %d.\n", len, ret);
                 if (ret != len) {
                     close(sockfd);
-                    close(client);
                     return 1;
                 }
             }
-            close(client);
             break;
         }
         close(sockfd);
@@ -167,6 +157,7 @@ static int process_client(const char *port)
                 close(sockfd);
                 return 1;
             }
+
             len = read(sockfd, buf, sizeof(buf));
             fprintf(stderr, "client read() return %d.\n", len);
             if (len <= 0) {
