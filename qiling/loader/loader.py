@@ -11,5 +11,6 @@ class QlLoader():
     def __init__(self, ql):
         self.ql     = ql
         self.env    = self.ql.env
+        self.argv   = self.ql.argv
         self.images = []
         self.coverage_image = namedtuple('Image', 'base end path')

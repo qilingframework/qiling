@@ -99,7 +99,6 @@ class QlLoaderELF(QlLoader, ELFParse):
         ELFParse.__init__(self, self.path, self.ql)
         self.interp_address = 0
         self.mmap_address = 0
-        self.argv = self.ql.argv
         self.ql.mem.map(stack_address, stack_size, info="[stack]") 
         self.load_with_ld(stack_address + stack_size, argv = self.argv, env = self.env)
         self.stack_address  = self.new_stack
@@ -111,14 +110,6 @@ class QlLoaderELF(QlLoader, ELFParse):
             self.ql.reg.rbp = init_rbp
             self.ql.reg.rdi = init_rdi
             self.ql.reg.r14 = init_rdi
-
-    def pack(self, data):
-        if self.ql.archbit == 64:
-            return self.ql.pack64(data)
-        elif self.ql.archbit == 32:
-            return self.ql.pack32(data)
-        else:
-            return self.ql.pack32(data)
 
     def copy_str(self, addr, l):
         l_addr = []
@@ -258,7 +249,7 @@ class QlLoaderELF(QlLoader, ELFParse):
         #if self.ql.archbit == 32:
         #    elf_table += self.ql.pack32(len(argv))
         #else:
-        elf_table += self.pack(len(argv))
+        elf_table += self.ql.pack(len(argv))
 
         # Set argv
         if len(argv) != 0:
