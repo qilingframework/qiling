@@ -72,3 +72,4 @@ Pre-release/dev
 7. git tag 1.[x].[x]-rc[x]
 8. git push origin --tags
 9. check for new pre-release Pypi package @ https://pypi.org/project/qiling/#history
+10. pip3 install qiling --upgrade
