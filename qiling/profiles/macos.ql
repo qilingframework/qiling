@@ -35,3 +35,4 @@ split = False
 # maily for multiple times Ql run with one file
 # usage: append = test1
 append =
+current_path = /

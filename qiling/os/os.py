@@ -20,8 +20,8 @@ class QlOs(QlOsUtils):
         self.fs_mapper = QlFsMapper(ql)
         self.child_processes = False
         self.thread_management = None
-        self.current_path = '/'
         self.profile = self.ql.profile
+        self.current_path = self.profile.get("MISC", "current_path")
         self.exit_code = 0
         self.elf_mem_start = 0x0
 
