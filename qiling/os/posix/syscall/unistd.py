@@ -441,7 +441,7 @@ def ql_syscall_execve(ql, execve_pathname, execve_argv, execve_envp, *args, **kw
 
     if ql.shellcoder:
         return
-    
+
     ql.argv             = argv
     ql.env              = env
     ql.path             = real_path

@@ -89,7 +89,12 @@ class QlCoreUtils(object):
 
         if int(self.verbose) >= level and self.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
             if int(self.verbose) >= D_DRPT:
-                args = (("0x%x:" % self.reg.arch_pc), *args)
+                try:
+                    current_pc = self.reg.arch_pc
+                except:
+                    current_pc = 0    
+
+                args = (("0x%x:" % current_pc), *args)        
                 
             self.nprint(*args, **kw)
 
