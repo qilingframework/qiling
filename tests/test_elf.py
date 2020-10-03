@@ -1042,6 +1042,13 @@ class ELFTest(unittest.TestCase):
     def test_elf_linux_execve_x8664(self):
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/posix_syscall_execve"],  "../examples/rootfs/x8664_linux", output="debug")
         ql.run()
+        for key, value in ql.loader.env.items():
+            QL_TEST=value
+
+        self.assertEqual("TEST_QUERY", QL_TEST)
+        self.assertEqual("child", ql.loader.argv[0])
+
+        del QL_TEST
         del ql
 
     def test_x86_fake_urandom_multiple_times(self):
