@@ -1,18 +1,3 @@
-# IDE left over
-.DS_Store
-.vscode
-.idea
-*.pyc
-*.cache
-.*.swp
-
-# cache and misc
-qiling.egg-info/
-__pycache__/
-*.py[cod]
-build
-dist
-
 # dont keep raw malware
 wannacry.bin
 UselessDisk.bin
