@@ -9,11 +9,11 @@ class QlSanitizedMemoryHeap():
     """
     Clients can enable the santized heap using the following snippet:
 
-    ql.loader.heap = qiling.os.memory.QlSanitizedMemoryHeap(ql, ql.loader.heap)
-    ql.loader.heap.oob_handler = my_oob_handler
-    ql.loader.heap.bo_handler = my_bo_handler
-    ql.loader.heap.bad_free_handler = my_bad_free_handler
-    ql.loader.heap.uaf_handler = my_uaf_handler
+    ql.os.heap = qiling.os.memory.QlSanitizedMemoryHeap(ql, ql.os.heap)
+    ql.os.heap.oob_handler = my_oob_handler
+    ql.os.heap.bo_handler = my_bo_handler
+    ql.os.heap.bad_free_handler = my_bad_free_handler
+    ql.os.heap.uaf_handler = my_uaf_handler
     """
 
     def __init__(self, ql, heap, fault_rate=0, canary_byte=b'\xCD'):

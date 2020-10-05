@@ -1,0 +1,24 @@
+# IDE left over
+.DS_Store
+.vscode
+.idea
+*.pyc
+*.cache
+.*.swp
+
+# cache and misc
+qiling.egg-info/
+__pycache__/
+*.py[cod]
+build
+dist
+
+# dont keep raw malware
+wannacry.bin
+UselessDisk.bin
+GandCrab.bin
+GandCrab502.bin
+al-khaser.bin
+sality.dll
+SuperRootkit.kext
+m0hamed_rootkit.ko

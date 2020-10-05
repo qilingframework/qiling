@@ -1194,7 +1194,7 @@ class ELFTest(unittest.TestCase):
 
         ql.run()
         
-        self.assertEqual(pipe.buf, b'yay!\nyay!\n')
+        self.assertEqual(pipe.buf, b'test_complete\n\ntest_complete\n\n')
 
         del ql
 

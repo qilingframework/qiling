@@ -5,7 +5,7 @@
 
 void read_and_print(){
 	char data[4096];
-	FILE* f = fopen("/yay.txt", "r");
+	FILE* f = fopen("/absolutepath_test.txt", "r");
 	int count = fread(data, 1, 4096, f);
 	fclose(f);
 	data[count] = 0;

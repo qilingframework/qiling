@@ -8,7 +8,7 @@ from .fncc import *
 pointer_size = ctypes.sizeof(ctypes.c_void_p)
 
 def free_pointers(ql, address, params):
-    ql.loader.heap.free(address)
+    ql.os.heap.free(address)
     return EFI_SUCCESS
 
 @dxeapi(params={
@@ -22,7 +22,7 @@ def hook_SMM_SW_DISPATCH2_Register(ql, address, params):
     ql.reg.rsp -= pointer_size * 4 
     ql.stack_push(ql.loader.OOO_EOE_ptr) # Return address from the notify function.
     ql.stack_push(params["DispatchFunction"]) # Return address from here -> the dispatch function.
-    out_pointers = ql.loader.heap.alloc(pointer_size * 2)
+    out_pointers = ql.os.heap.alloc(pointer_size * 2)
     ql.loader.OOO_EOE_callbacks.append((free_pointers, ql, out_pointers, params)) # We don't need a callback.
     ql.reg.rcx = params["DispatchHandle"]
     ql.reg.rdx = params["RegisterContext"]
