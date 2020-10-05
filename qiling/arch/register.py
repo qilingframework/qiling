@@ -17,7 +17,7 @@ class QlRegisterManager():
         self.ql = ql
         self.uc_pc = 0
         self.uc_sp = 0
-
+        
 
     def __getattribute__(self, name):
         if name in ("register_mapping", "ql", "uc_pc", "uc_sp"):

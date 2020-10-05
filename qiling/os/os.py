@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+# Built on top of Unicorn emulator (www.unicorn-engine.org)
 
 import os, sys, types
 
@@ -11,6 +11,8 @@ from .filestruct import ql_file
 from .mapper import QlFsMapper
 
 from qiling.const import *
+
+from unicorn.x86_const import *
 
 class QlOs(QlOsUtils):
     def __init__(self, ql):
@@ -23,13 +25,23 @@ class QlOs(QlOsUtils):
         self.profile = self.ql.profile
         self.current_path = self.profile.get("MISC", "current_path")
         self.exit_code = 0
+        self.services = {}
         self.elf_mem_start = 0x0
 
         if "fileno" not in dir(sys.stdin) or "fileno" not in dir(sys.stdout) or "fileno" not in dir(sys.stderr):
             # IDAPython has some hack on standard io streams and thus they don't have corresponding fds.
-            self.stdin = sys.stdin
-            self.stdout = sys.stdout
-            self.stderr = sys.stderr
+            if "buffer" in dir(sys.stdin):
+                self.stdin = sys.stdin.buffer
+            else:
+                self.stdin = sys.stdin
+            if "buffer" in dir(sys.stdout):
+                self.stdout = sys.stdout.buffer
+            else:
+                self.stdout = sys.stdout
+            if "buffer" in dir(sys.stderr):
+                self.stderr = sys.stderr.buffer
+            else:
+                self.stderr = sys.stderr
         else:
             self.stdin = ql_file('stdin', sys.stdin.fileno())
             self.stdout = ql_file('stdout', sys.stdout.fileno())
@@ -37,10 +49,10 @@ class QlOs(QlOsUtils):
 
         if self.ql.stdin != 0:
             self.stdin = self.ql.stdin
-        
+
         if self.ql.stdout != 0:
             self.stdout = self.ql.stdout
-        
+
         if self.ql.stderr != 0:
             self.stderr = self.ql.stderr
 
@@ -48,6 +60,7 @@ class QlOs(QlOsUtils):
             EMU_END = 0x8fffffff
         elif self.ql.archbit == 64:
             EMU_END = 0xffffffffffffffff
+        
         elif self.ql.archbit == 16:
             # 20bit address lane
             EMU_END = 0xfffff   
@@ -70,19 +83,18 @@ class QlOs(QlOsUtils):
 
     def find_containing_image(self, pc):
         for image in self.ql.loader.images:
-            if image.base <= pc <= image.end:
+            if image.base <= pc < image.end:
                 return image
 
     def emu_error(self):
-        self.ql.nprint("[!] Emulation Error")
-        
         self.ql.nprint("\n")
+
         for reg in self.ql.reg.register_mapping:
             if isinstance(reg, str):
                 REG_NAME = reg
                 REG_VAL = self.ql.reg.read(reg)
                 self.ql.nprint("[-] %s\t:\t 0x%x" % (REG_NAME, REG_VAL))
-        
+
         self.ql.nprint("\n")
         self.ql.nprint("[+] PC = 0x%x" % (self.ql.reg.arch_pc), end="")
         containing_image = self.find_containing_image(self.ql.reg.arch_pc)
@@ -92,15 +104,37 @@ class QlOs(QlOsUtils):
         else:
             self.ql.nprint("\n")
         self.ql.mem.show_mapinfo()
-        
+
         try:
             buf = self.ql.mem.read(self.ql.reg.arch_pc, 8)
             self.ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
-            
+
             self.ql.nprint("\n")
             self.disassembler(self.ql, self.ql.reg.arch_pc, 64)
         except:
             self.ql.nprint("[!] Error: PC(0x%x) Unreachable" % self.ql.reg.arch_pc)
+
+
+    def _x86_set_args(self, args):
+        for i in range(len(args)):
+            # skip ret_addr
+            self.ql.stack_write((i + 1) * 4, args[i])
+
+
+    def _x8664_set_args(self, args):
+        if self.ostype == QL_OS.LINUX:
+            reg_list = [UC_X86_REG_RDI, UC_X86_REG_RSI, UC_X86_REG_RDX, UC_X86_REG_R10, UC_X86_REG_R8, UC_X86_REG_R9]
+        elif self.ostype == QL_OS.WINDOWS:
+            reg_list = [UC_X86_REG_RCX, UC_X86_REG_RDX, UC_X86_REG_R8, UC_X86_REG_R9]
+        for i in range(len(args)):
+            self.ql.uc.reg_write(reg_list[i], args[i])
+
+
+    def set_function_args(self, args):
+        if self.ql.archtype == QL_ARCH.X86:   # 32bit
+            self._x86_set_args(args)
+        else:   # 64bit
+            self._x8664_set_args(args)
 
 
     def _x86_get_params_by_index(self, index):
@@ -216,21 +250,21 @@ class QlOs(QlOsUtils):
     # stdcall cdecl fastcall cc
     #
 
-    def __x86_cc(self, param_num, params, func, args, kwargs):
+    def __x86_cc(self, param_num, params, func, args, kwargs, passthru=False):
         # read params
         if params is not None:
             param_num = self.set_function_params(params, args[2])
-        
+
         if isinstance(self.winapi_func_onenter, types.FunctionType):
             address, params = self.winapi_func_onenter(*args, **kwargs)
             args = (self.ql, address, params)
             onEnter = True
         else:
-            onEnter = False  
+            onEnter = False
 
         # call function
         result = func(*args, **kwargs)
-        
+
         if isinstance(self.winapi_func_onexit, types.FunctionType):
             self.winapi_func_onexit(*args, **kwargs)
 
@@ -238,7 +272,7 @@ class QlOs(QlOsUtils):
         if result is not None:
             self.set_return_value(result)
         # print
-        self.print_function(args[1], func.__name__, args[2], result)
+        self.print_function(args[1], func.__name__, args[2], result, passthru)
 
         return result, param_num
 
@@ -261,7 +295,7 @@ class QlOs(QlOsUtils):
         self.ql.os.syscalls_counter += 1
 
 
-    def x86_stdcall(self, param_num, params, func, args, kwargs):
+    def x86_stdcall(self, param_num, params, func, args, kwargs, passthru=False):
         # if we check ret_addr before the call, we can't modify the ret_addr from inside the hook
         result, param_num = self.__x86_cc(param_num, params, func, args, kwargs)
 
@@ -274,32 +308,32 @@ class QlOs(QlOsUtils):
         # update stack pointer
         self.ql.reg.arch_sp = self.ql.reg.arch_sp + ((param_num + 1) * 4)
 
-        if self.PE_RUN:
+        if not passthru and self.PE_RUN:
             self.ql.reg.arch_pc = ret_addr
 
         return result
 
 
-    def x86_cdecl(self, param_num, params, func, args, kwargs):
+    def x86_cdecl(self, param_num, params, func, args, kwargs, passthru=False):
         result, param_num = self.__x86_cc(param_num, params, func, args, kwargs)
         old_pc = self.ql.reg.arch_pc
         # append syscall to list
         self._call_api(func.__name__, params, result, old_pc, self.ql.stack_read(0))
 
-        if self.PE_RUN:
+        if not passthru and self.PE_RUN:
             self.ql.reg.arch_pc = self.ql.stack_pop()
 
         return result
 
 
-    def x8664_fastcall(self, param_num, params, func, args, kwargs):
+    def x8664_fastcall(self, param_num, params, func, args, kwargs, passthru=False):
         result, param_num = self.__x86_cc(param_num, params, func, args, kwargs)
 
         old_pc = self.ql.reg.arch_pc
         # append syscall to list
         self._call_api(func.__name__, params, result, old_pc, self.ql.stack_read(0))
 
-        if self.PE_RUN:
+        if not passthru and self.PE_RUN:
            self.ql.reg.arch_pc = self.ql.stack_pop()
 
         return result

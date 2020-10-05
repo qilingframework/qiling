@@ -63,3 +63,9 @@ class HandleManager:
             if handle.name == name:
                 return handle
         return None
+
+    def search_by_obj(self, obj):
+        for handle in self.handles.values():
+            if handle.obj == obj:
+                return handle
+        return None

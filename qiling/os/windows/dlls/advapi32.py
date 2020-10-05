@@ -279,6 +279,32 @@ def hook_RegSetValueA(ql, address, params):
 
     return ret
 
+# LSTATUS RegSetValueExA(
+#   HKEY       hKey,
+#   LPCSTR     lpValueName,
+#   DWORD      Reserved,
+#   DWORD      dwType,
+#   const BYTE *lpData,
+#   DWORD      cbData
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname)
+def hook_RegSetValueExA(ql, address, params):
+    ret = ERROR_SUCCESS
+
+    hKey = params["hKey"]
+    s_lpValueName = params["lpValueName"]
+    dwType = params["dwType"]
+    s_lpData = params["lpData"]
+    cbData = params["cbData"]
+
+    s_hKey = ql.os.handle_manager.get(hKey).obj
+    params["hKey"] = s_hKey
+
+    ql.os.registry_manager.write(s_hKey, s_lpValueName, dwType, s_lpData)
+
+    return ret
+
+
 
 # LSTATUS RegSetValueExW(
 #   HKEY       hKey,
@@ -413,6 +439,112 @@ def hook_GetSidSubAuthority(ql, address, params):
     addr_authority = sid.addr + 8 + (ql.pointersize * num)
     return addr_authority
 
+# LSTATUS RegEnumValueA(
+#   HKEY    hKey,
+#   DWORD   dwIndex,
+#   LPSTR   lpValueName,
+#   LPDWORD lpcchValueName,
+#   LPDWORD lpReserved,
+#   LPDWORD lpType,
+#   LPBYTE  lpData,
+#   LPDWORD lpcbData
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname)
+def hook_RegEnumValueA(ql, address, params):
+    return 259 # ERROR_NO_MORE_ITEMS
+
+# SC_HANDLE OpenSCManagerA(
+#   LPCSTR lpMachineName,
+#   LPCSTR lpDatabaseName,
+#   DWORD  dwDesiredAccess
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname)
+def hook_OpenSCManagerA(ql, address, params):
+    lpMachineName = params["lpMachineName"]
+    lpDatabaseName = params["lpDatabaseName"]
+    sc_handle_name = "sc_%s_%s" % (lpMachineName, lpDatabaseName)
+    new_handle = ql.os.handle_manager.search(sc_handle_name)
+    if new_handle is None:
+        new_handle = Handle(name=sc_handle_name)
+        ql.os.handle_manager.append(new_handle)
+    return new_handle.id
+
+# SC_HANDLE CreateServiceA(
+#   SC_HANDLE hSCManager,
+#   LPCSTR    lpServiceName,
+#   LPCSTR    lpDisplayName,
+#   DWORD     dwDesiredAccess,
+#   DWORD     dwServiceType,
+#   DWORD     dwStartType,
+#   DWORD     dwErrorControl,
+#   LPCSTR    lpBinaryPathName,
+#   LPCSTR    lpLoadOrderGroup,
+#   LPDWORD   lpdwTagId,
+#   LPCSTR    lpDependencies,
+#   LPCSTR    lpServiceStartName,
+#   LPCSTR    lpPassword
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={
+    "hSCManager":HANDLE,
+    "lpServiceName": STRING,
+    "lpDisplayName": STRING,
+    "dwDesiredAccess": DWORD,
+    "dwServiceType": DWORD,
+    "dwStartType": DWORD,
+    "dwErrorControl": DWORD,
+    "lpBinaryPathName": STRING,
+    "lpLoadOrderGroup": STRING,
+    "lpdwTagId": POINTER,
+    "lpDependencies": STRING,
+    "lpServiceStartName": STRING,
+    "lpPassword": STRING
+    })
+def hook_CreateServiceA(ql, address, params):
+    hSCManager = params["hSCManager"]
+    lpServiceName = params["lpServiceName"]
+    lpBinaryPathName = params["lpBinaryPathName"]
+    ql.os.services[lpServiceName] = lpBinaryPathName
+    new_handle = Handle(obj=hSCManager, name=lpServiceName)
+    ql.os.handle_manager.append(new_handle)
+    return new_handle.id
+
+# SC_HANDLE OpenServiceA(
+#   SC_HANDLE hSCManager,
+#   LPCSTR    lpServiceName,
+#   DWORD     dwDesiredAccess
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname,replace_params={
+    "hSCManager":HANDLE,
+    "lpServiceName": STRING,
+    "dwDesiredAccess": DWORD    
+})
+def hook_OpenServiceA(ql, address, params):
+    hSCManager = params["hSCManager"]
+    lpServiceName = params["lpServiceName"]
+    if lpServiceName in ql.os.services:
+        new_handle = Handle(obj=hSCManager, name=lpServiceName)
+        ql.os.handle_manager.append(new_handle)
+        return new_handle.id
+    else:
+        return 0
+
+# BOOL CloseServiceHandle(
+#   SC_HANDLE hSCObject
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={"hSCObject":HANDLE})
+def hook_CloseServiceHandle(ql, address, params):
+    hSCObject = params["hSCObject"]
+    ql.os.handle_manager.delete(hSCObject)
+    return 1
+
+# BOOL StartServiceA(
+#   SC_HANDLE hService,
+#   DWORD     dwNumServiceArgs,
+#   LPCSTR    *lpServiceArgVectors
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname)
+def hook_StartServiceA(ql, address, params):
+    return 1
 
 # BOOL AllocateAndInitializeSid(
 #   PSID_IDENTIFIER_AUTHORITY pIdentifierAuthority,

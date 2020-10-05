@@ -420,6 +420,8 @@ class QlMemoryHeap:
         self.current_alloc = 0
         # curent use memory size
         self.current_use = 0
+        # save all memory regions allocated
+        self.mem_alloc = []
 
     def alloc(self, size):
         
@@ -444,6 +446,7 @@ class QlMemoryHeap:
                 return 0
             self.ql.mem.map(self.start_address + self.current_alloc, real_size, info="[heap]")
             chunk = Chunk(self.start_address + self.current_use, size)
+            self.mem_alloc.append((self.start_address + self.current_alloc, real_size))
             self.current_alloc += real_size
             self.current_use += size
             self.chunks.append(chunk)
@@ -468,6 +471,19 @@ class QlMemoryHeap:
                 chunk.inuse = False
                 return True
         return False
+
+    # clear all memory regions alloc
+    def clear(self):
+        for chunk in self.chunks:
+            chunk.inuse = False
+
+        for addr, size in self.mem_alloc:
+            self.ql.mem.unmap(addr, size)
+
+        self.mem_alloc.clear()
+
+        self.current_alloc = 0
+        self.current_use = 0
 
     def _find(self, addr):
         for chunk in self.chunks:

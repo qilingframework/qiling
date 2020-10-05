@@ -4,6 +4,9 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
 import sys, unittest, subprocess, string, random, os
+
+from unicorn import UcError, UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
+
 sys.path.append("..")
 from qiling import *
 from qiling.const import *
@@ -1158,7 +1161,16 @@ class ELFTest(unittest.TestCase):
     def test_x8664_symlink(self):
         ql = Qiling(["../examples/rootfs/x8664_linux_symlink/bin/x8664_hello"],  "../examples/rootfs/x8664_linux_symlink", output="debug")
         ql.run()
-        del ql   
+        del ql
+
+    def test_demigod_m0hamed(self):
+        ql = Qiling(["../examples/rootfs/x8664_linux/kernel/m0hamed_rootkit.ko"],  "../examples/rootfs/x8664_linux", output="disasm")
+        try:
+            ql.run()
+        except UcError as e:
+            print(e)
+            sys.exit(-1)
+        del ql         
     
     def test_x8664_absolute_path(self):
         class MyPipe():

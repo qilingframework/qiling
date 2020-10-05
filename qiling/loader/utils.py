@@ -3,12 +3,18 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
+import magic, os
+
 import pefile
-import magic
+
 from qiling.const import QL_OS, QL_OS_ALL, QL_ARCH, QL_ENDIAN
 from qiling.exception import QlErrorArch, QlErrorOsType
 
 def ql_checkostype(path):
+
+    if os.path.isdir(path) and (str(path)).endswith(".kext"):
+        return QL_ARCH.X8664, QL_OS.MACOS, QL_ENDIAN.EL
+
     arch = None
     ostype = None
     archendian = None
@@ -98,6 +104,7 @@ def ql_elf_check_archtype(path):
     return arch, ostype, archendian
 
 def ql_macho_check_archtype(path):
+   
     def getident():
         return machodata
 

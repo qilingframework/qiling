@@ -7,6 +7,7 @@ from qiling.os.windows.const import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.thread import *
 from qiling.exception import *
+import configparser
 from qiling.os.windows.structs import *
 
 dllname = 'kernel32_dll'
@@ -411,6 +412,26 @@ def hook_GetUserNameA(ql, address, params):
         ql.mem.write(dst, username)
     return 1
 
+# BOOL GetUserNameA(
+#   LPCSTR  lpBuffer,
+#   LPDWORD pcbBuffer
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={
+    "lpBuffer": POINTER,
+    "pcbBuffer": POINTER
+})
+def hook_GetUserNameA(ql, address, params):
+    username = (ql.os.profile["USER"]["username"] + "\x00").encode()
+    dst = params["lpBuffer"]
+    max_size = params["pcbBuffer"]
+    ql.mem.write(max_size, len(username).to_bytes(4, byteorder="little"))
+    if len(username) > max_size:
+        ql.os.last_error = ERROR_INSUFFICIENT_BUFFER
+        return 0
+    else:
+        ql.mem.write(dst, username)
+    return 1
+
 
 # BOOL GetComputerNameW(
 #   LPWSTR  lpBuffer,
@@ -420,10 +441,11 @@ def hook_GetUserNameA(ql, address, params):
 def hook_GetComputerNameW(ql, address, params):
     computer = (ql.os.profile["SYSTEM"]["computername"] + "\x00").encode("utf-16le")
     dst = params["lpBuffer"]
-    max_size = params["nSize"]
-    ql.mem.write(max_size, (len(computer) - 2).to_bytes(4, byteorder="little"))
-    if len(computer) > max_size:
-        ql.os.last_error = ERROR_BUFFER_OVERFLOW
+    pointer_to_max_size = params["nSize"]
+    nSize = int.from_bytes(ql.mem.read(pointer_to_max_size, ql.pointersize), byteorder="little")
+    ql.mem.write(pointer_to_max_size, (len(computer)-2).to_bytes(4, byteorder="little"))
+    if len(computer) > nSize:
+        #ql.os.last_error = ERROR_BUFFER_OVERFLOW
         return 0
     else:
         ql.mem.write(dst, computer)
@@ -446,3 +468,157 @@ def hook_GetComputerNameA(ql, address, params):
     else:
         ql.mem.write(dst, computer)
     return 1
+
+# DWORD GetPrivateProfileStringA(
+#   LPCSTR lpAppName,
+#   LPCSTR lpKeyName,
+#   LPCSTR lpDefault,
+#   LPSTR  lpReturnedString,
+#   DWORD  nSize,
+#   LPCSTR lpFileName
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={
+    "lpAppName": STRING,
+    "lpKeyName": STRING,
+    "lpDefault": STRING,
+    "lpReturnedString": POINTER,
+    "nSize": DWORD,
+    "lpFileName": STRING
+
+})
+def hook_GetPrivateProfileStringA(ql, address, params):
+    lpAppName = params["lpAppName"]
+    lpKeyName = params["lpKeyName"]
+    lpDefault = params["lpDefault"]
+    lpReturnedString = params["lpReturnedString"]
+    nSize = params["nSize"]
+    lpFileName = params['lpFileName']
+
+    try:
+        f = open(lpFileName)
+    except:
+        ql.os.last_error = ERROR_OLD_WIN_VERSION
+        return 0
+    config = configparser.ConfigParser()
+    config.read_file(f)
+    if lpAppName in config and lpKeyName in config[lpAppName]:
+        value = (config[lpAppName][lpKeyName]).encode("utf-8")
+    else:
+        value = lpDefault
+    write_len = len(value)
+    if write_len > nSize-1:
+        write_len = nSize-1
+    ql.mem.write(lpReturnedString, value[write_len:] + b"\x00")
+    f.close()
+    return write_len
+    
+# BOOL WritePrivateProfileStringA(
+#   LPCSTR lpAppName,
+#   LPCSTR lpKeyName,
+#   LPCSTR lpString,
+#   LPCSTR lpFileName
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={
+    "lpAppName": STRING,
+    "lpKeyName": STRING,
+    "lpString": STRING,
+    "lpFileName": STRING
+
+})
+def hook_WritePrivateProfileStringA(ql, address, params):
+    pass
+
+# UINT GetSystemDirectoryA(
+#   LPSTR lpBuffer,
+#   UINT  uSize
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={
+    "lpBuffer": POINTER,
+    "uSize": DWORD
+})
+def hook_GetSystemDirectoryA(ql, address, params):
+    lpBuffer = params["lpBuffer"]
+    uSize = params["uSize"]
+    value = "C:\\Windows\\System32\x00".encode("utf-8")
+    ql.mem.write(lpBuffer, value)
+    return len(value)
+
+# UINT GetWindowsDirectoryA(
+#   LPSTR lpBuffer,
+#   UINT  uSize
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={
+    "lpBuffer": POINTER,
+    "uSize": DWORD
+})
+def hook_GetWindowsDirectoryA(ql, address, params):
+    lpBuffer = params["lpBuffer"]
+    uSize = params["uSize"]
+    value = "C:\\Windows\x00".encode("utf-8")
+    ql.mem.write(lpBuffer, value)
+    return len(value)
+
+# DWORD CharLowerBuffA(
+#   LPSTR lpsz,
+#   DWORD cchLength
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={
+    "lpsz": POINTER,
+    "cchLength": DWORD
+})
+def hook_CharLowerBuffA(ql, address, params):
+    lpBuffer = params["lpBuffer"]
+    cchLength = params["cchLength"]
+    data = ql.mem.read(lpBuffer, cchLength)
+    data = data.decode("utf-8")
+    data = data.tolower()
+    data = data.encode("utf-8")
+    ql.mem.write(lpBuffer, data)
+    return len(data)
+
+# LPSTR CharLowerA(
+#   LPSTR lpsz
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={
+    "lpsz": POINTER,
+})
+def hook_CharLowerA(ql, address, params):
+    lpsz = params["lpsz"]
+    if (lpsz >> 16) > 0:
+        value = read_cstring(ql, lpsz)
+        value = value.lower()
+        value = value.encode("utf-8")
+        ql.mem.write(lpsz, value)
+        return len(value)
+    else:
+        value = chr(lpsz & 0xffff)
+        return value.lower()
+
+# void ExitThread(
+#   DWORD dwExitCode
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={
+    "dwExitCode": DWORD
+})
+def hook_ExitThread(ql, address, params):
+    #ql.emu_stop()
+    pass
+
+# BOOL FreeLibrary(
+#   HMODULE hLibModule
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={
+    "hLibModule": HANDLE
+})
+def hook_FreeLibrary(ql, address, params):
+    return 1
+
+# BOOL DeleteFileA(
+#   LPCSTR lpFileName
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={
+    "lpFileName": STRING
+})
+def hook_DeleteFileA(ql, address, params):
+    return 1
+

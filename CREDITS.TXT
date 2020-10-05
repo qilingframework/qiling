@@ -20,6 +20,12 @@ CHEN huitao (null) <null@qiling.io>
 YU tong (sp1ke) <spikeinhouse@gmail.com>
 Earl MARCUS (klks84) klks84@gmail.com
 
+Demigod team (https://groundx.io/demigod)
+=========================================
+NGUYEN Anh Quynh
+NGUYEN Hong Quang
+DO Minh Tuan
+
 Key Contributors (in no particular order)
 =========================================
 lazymio
@@ -58,3 +64,4 @@ sashs
 knownsec
 hwiosec
 iamyeh
+

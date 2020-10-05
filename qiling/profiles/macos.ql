@@ -8,6 +8,8 @@ stack_address = 0x7ffcf0000000
 stack_size = 0x19a00000
 vmmap_trap_address = 0x4000000f4000
 mmap_address = 0x7ffbf0100000
+heap_address = 0x500000000
+heap_size = 0x5000000
 
 
 [SHELLCODER]

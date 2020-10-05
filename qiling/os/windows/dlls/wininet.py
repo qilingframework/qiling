@@ -8,6 +8,7 @@ from qiling.os.windows.fncc import *
 from qiling.os.const import *
 from qiling.os.windows.utils import *
 
+
 dllname = 'wininet_dll'
 
 # void InternetOpenA(

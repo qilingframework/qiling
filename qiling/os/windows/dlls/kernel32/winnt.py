@@ -6,6 +6,7 @@
 from qiling.os.windows.const import *
 from qiling.os.windows.fncc import *
 
+
 dllname = 'kernel32_dll'
 
 # LONG InterlockedExchange(

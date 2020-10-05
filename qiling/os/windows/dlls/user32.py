@@ -609,6 +609,37 @@ def hook_GetKeyboardType(ql, address, params):
         return 12
     return 0
 
+# int wvsprintfA(
+# LPTSTR lpOutput, 
+# LPCTSTR lpFormat, 
+# va_list ArgList
+# );
+@winsdkapi(cc=CDECL, dllname=dllname, replace_params_type={            
+            "lpOutput": POINTER,
+            "lpFormat": POINTER,
+            "ArgList": POINTER,
+        })
+def hook_wvsprintfA(ql, address, params):
+    return None
+
+
+# int wsprintfA(
+#    char *buffer,
+#    const char *format,
+# );
+@winsdkapi(cc=CDECL, dllname=dllname, param_num=3)
+def hook_wsprintfA(ql, address, params):
+    dst, p_format, p_args = ql.os.get_function_param(3)
+    format_string = read_cstring(ql, p_format)
+    size, string = printf(ql, address, format_string, p_args, "wsprintfA")
+
+    count = format_string.count('%')
+    if ql.archtype== QL_ARCH.X8664:
+        # We must pop the stack correctly
+        raise QlErrorNotImplemented("[!] API not implemented")
+
+    ql.mem.write(dst, (string + "\x00").encode("utf-8"))
+    return size
 
 # int MessageBoxW(
 #   HWND    hWnd,
