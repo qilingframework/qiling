@@ -5,13 +5,18 @@
 import sys
 import os
 import string
+
 from elftools.elf.elffile import ELFFile
+from elftools.elf.relocation import RelocationSection
+from elftools.elf.sections import SymbolTableSection
+from elftools.elf.descriptions import describe_reloc_type
 
 from qiling.const import *
 from qiling.exception import *
 from .loader import QlLoader
 from qiling.os.linux.function_hook import FunctionHook
-
+from qiling.os.linux.syscall_nums import *
+from qiling.os.linux.kernel_api.hook import *
 
 AT_NULL = 0
 AT_IGNORE = 1
@@ -39,6 +44,15 @@ AT_EXECFN = 31
 
 FILE_DES = []
 
+# start area memory for API hooking
+# we will reserve 0x1000 bytes for this (which contains multiple slots of 4/8 bytes, each for one api)
+API_HOOK_MEM = 0x1000000
+
+# SYSCALL_MEM = 0xffff880000000000
+# memory for syscall table
+SYSCALL_MEM = API_HOOK_MEM + 0x1000
+
+
 
 class ELFParse():
     def __init__(self, path, ql):
@@ -55,6 +69,11 @@ class ELFParse():
             raise QlErrorELFFormat("[!] ERROR: NOT a ELF")
 
         self.elfhead = self.parse_header()
+        if self.elfhead['e_type'] == "ET_REL":   # kernel driver
+            self.is_driver = True
+        else:
+            self.is_driver = False
+
 
     def getelfdata(self, offest, size):
         return self.elfdata[offest : offest + size]
@@ -99,16 +118,29 @@ class QlLoaderELF(QlLoader, ELFParse):
         ELFParse.__init__(self, self.path, self.ql)
         self.interp_address = 0
         self.mmap_address = 0
-        self.ql.mem.map(stack_address, stack_size, info="[stack]") 
-        self.load_with_ld(stack_address + stack_size, argv = self.argv, env = self.env)
-        self.ql.reg.arch_sp = self.stack_address
+        self.ql.mem.map(stack_address, stack_size, info="[stack]")
 
         if self.ql.ostype == QL_OS.FREEBSD:
-            init_rbp = self.stack_address + 0x40
-            init_rdi = self.stack_address
+            init_rbp = stack_address + 0x40
+            init_rdi = stack_address
             self.ql.reg.rbp = init_rbp
             self.ql.reg.rdi = init_rdi
             self.ql.reg.r14 = init_rdi
+
+
+        if not self.is_driver:
+            self.load_with_ld(stack_address + stack_size, argv = self.argv, env = self.env)
+        else:
+            
+            # Linux kernel driver
+            if self.load_driver(self.ql, stack_address + stack_size):
+                raise QlErrorFileType("Unsupported FileType")
+            # hook Linux kernel api
+            self.ql.hook_code(hook_kernel_api)
+
+        self.ql.reg.arch_sp = self.stack_address
+        self.ql.os.stack_address  = self.stack_address
+
 
     def copy_str(self, addr, l):
         l_addr = []
@@ -127,11 +159,13 @@ class QlLoaderELF(QlLoader, ELFParse):
             l_addr.append(s_addr)
         return l_addr, s_addr
 
+
     def alignment(self, val):
         if self.ql.archbit == 64:
             return (val // 8) * 8
         elif self.ql.archbit == 32:
             return (val // 4) * 4
+
 
     def NEW_AUX_ENT(self, key, val):
         if self.ql.archbit == 32:
@@ -139,11 +173,12 @@ class QlLoaderELF(QlLoader, ELFParse):
         elif self.ql.archbit == 64:
             return self.ql.pack64(int(key)) + self.ql.pack64(int(val))
 
+
     def NullStr(self, s):
         return s[ : s.find(b'\x00')]
 
-    def load_with_ld(self, stack_addr, load_address = -1, argv = [], env = {}):
 
+    def load_with_ld(self, stack_addr, load_address = -1, argv = [], env = {}):
         if load_address <= 0:
             if self.ql.archbit == 64:
                 load_address = int(self.ql.os.profile.get("OS64", "load_address"), 16)
@@ -172,7 +207,7 @@ class QlLoaderELF(QlLoader, ELFParse):
         if elfhead['e_type'] == 'ET_EXEC':
             load_address = 0
         elif elfhead['e_type'] != 'ET_DYN':
-            self.ql.nprint("[+] Some error in head e_type: %u!" %elfhead['e_type'])
+            self.ql.dprint(D_INFO, "[+] Some error in head e_type: %i!", elfhead['e_type'])
             return -1
 
         for i in super().parse_segments():
@@ -278,7 +313,6 @@ class QlLoaderELF(QlLoader, ELFParse):
             elf_table += self.ql.pack64(0)
 
         new_stack = self.alignment(new_stack)
-
         randstr = 'a' * 0x10
         cpustr = 'i686'
         (addr, new_stack) = self.copy_str(new_stack, [randstr, cpustr])
@@ -340,6 +374,7 @@ class QlLoaderELF(QlLoader, ELFParse):
         self.load_address = load_address
         self.images.append(self.coverage_image(load_address, load_address + mem_end, self.path))
         self.ql.os.function_hook = FunctionHook(self.ql, self.elf_phdr + mem_start, self.elf_phnum, self.elf_phent, load_address, load_address + mem_end)
+        self.init_sp = self.ql.reg.arch_sp
 
         # map vsyscall section for some specific needs
         if self.ql.archtype == QL_ARCH.X8664 and self.ql.ostype == QL_OS.LINUX:
@@ -362,3 +397,225 @@ class QlLoaderELF(QlLoader, ELFParse):
 
                 for idx, val in enumerate(_vsyscall_entry_asm):
                     self.ql.mem.write(_vsyscall_addr + idx * 0x400, _compile(val + "; syscall; ret"))
+    # get file offset of init module function
+    def lkm_get_init(self, ql):
+        elffile = ELFFile(open(ql.path, 'rb'))
+        symbol_tables = [s for s in elffile.iter_sections() if isinstance(s, SymbolTableSection)]
+        for section in symbol_tables:
+            for nsym, symbol in enumerate(section.iter_symbols()):
+                if symbol.name == 'init_module':
+                    addr = symbol.entry.st_value + elffile.get_section(symbol['st_shndx'])['sh_offset']
+                    ql.nprint("init_module = 0x%x" %addr)
+                    return addr
+
+        # not found. FIXME: report error on invalid module??
+        return -1
+
+
+    def lkm_dynlinker(self, ql, mem_start):
+        def get_symbol(elffile, name):
+            section = elffile.get_section_by_name('.symtab')
+            for symbol in section.iter_symbols():
+                if symbol.name == name:
+                    return symbol
+            return None
+
+
+        elffile = ELFFile(open(ql.path, 'rb'))
+
+        all_symbols = []
+        self.ql.os.hook_addr = API_HOOK_MEM
+        # map address to symbol name
+        ql.import_symbols = {}
+        # reverse dictionary to map symbol name -> address
+        rev_reloc_symbols = {}
+
+        #dump_mem("XX Original code at 15a1 = ", ql.mem.read(0x15a1, 8))
+        for section in elffile.iter_sections():
+            # only care about reloc section
+            if not isinstance(section, RelocationSection):
+                continue
+
+            # ignore reloc for module section
+            if section.name == ".rela.gnu.linkonce.this_module":
+                continue
+
+            # The symbol table section pointed to in sh_link
+            symtable = elffile.get_section(section['sh_link'])
+
+            for rel in section.iter_relocations():
+                if rel['r_info_sym'] == 0:
+                    continue
+
+                symbol = symtable.get_symbol(rel['r_info_sym'])
+
+                # Some symbols have zero 'st_name', so instead what's used is
+                # the name of the section they point at.
+                if symbol['st_name'] == 0:
+                    symsec = elffile.get_section(symbol['st_shndx']) # save sh_addr of this section
+                    symbol_name = symsec.name
+                    sym_offset = symsec['sh_offset']
+                    # we need to do reverse lookup from symbol to address
+                    rev_reloc_symbols[symbol_name] = sym_offset + mem_start
+                else:
+                    symbol_name = symbol.name
+                    # get info about related section to be patched
+                    info_section = elffile.get_section(section['sh_info'])
+                    sym_offset = info_section['sh_offset']
+
+                    if not symbol_name in all_symbols:
+                        _symbol = get_symbol(elffile, symbol_name)
+                        if _symbol['st_shndx'] == 'SHN_UNDEF':
+                            # external symbol
+                            # only save symbols of APIs
+                            all_symbols.append(symbol_name)
+                            # we need to lookup from address to symbol, so we can find the right callback
+                            # for sys_xxx handler for syscall, the address must be aligned to 8
+                            if symbol_name.startswith('sys_'):
+                                if self.ql.os.hook_addr % 8 != 0:
+                                    self.ql.os.hook_addr = (int(self.ql.os.hook_addr / 8) + 1) * 8
+                                    # print("hook_addr = %x" %self.ql.os.hook_addr)
+                            ql.import_symbols[self.ql.os.hook_addr] = symbol_name
+                            # ql.nprint(":: Demigod is hooking %s(), at slot %x" %(symbol_name, self.ql.os.hook_addr))
+
+                            if symbol_name == "page_offset_base":
+                                # FIXME: this is for rootkit to scan for syscall table from page_offset_base
+                                # write address of syscall table to this slot,
+                                # so syscall scanner can quickly find it
+                                ql.mem.write(self.ql.os.hook_addr, struct.pack("<Q", SYSCALL_MEM))
+
+                            # we also need to do reverse lookup from symbol to address
+                            rev_reloc_symbols[symbol_name] = self.ql.os.hook_addr
+                            sym_offset = self.ql.os.hook_addr - mem_start
+                            self.ql.os.hook_addr += 8  # FIXME: 8 is only for x64, but x32 only need 4
+                        else:
+                            # local symbol
+                            all_symbols.append(symbol_name)
+                            _section = elffile.get_section(_symbol['st_shndx'])
+                            rev_reloc_symbols[symbol_name] = _section['sh_offset'] + _symbol['st_value'] + mem_start
+                            # ql.nprint(":: Add reverse lookup for %s to %x (%x, %x)" %(symbol_name, rev_reloc_symbols[symbol_name], _section['sh_offset'], _symbol['st_value']))
+                            # ql.nprint(":: Add reverse lookup for %s to %x" %(symbol_name, rev_reloc_symbols[symbol_name]))
+                    else:
+                        sym_offset = rev_reloc_symbols[symbol_name] - mem_start
+
+                # ql.nprint("Relocating symbol %s -> 0x%x" %(symbol_name, rev_reloc_symbols[symbol_name]))
+
+                loc = elffile.get_section(section['sh_info'])['sh_offset'] + rel['r_offset']
+                loc += mem_start
+
+                if describe_reloc_type(rel['r_info_type'], elffile) == 'R_X86_64_32S':
+                    # patch this reloc
+                    if rel['r_addend']:
+                        val = sym_offset + rel['r_addend']
+                        val += mem_start
+                        # ql.nprint('R_X86_64_32S %s: [0x%x] = 0x%x' %(symbol_name, loc, val & 0xFFFFFFFF))
+                        ql.mem.write(loc, ql.pack32(val & 0xFFFFFFFF))
+                    else:
+                        # print("sym_offset = %x, rel = %x" %(sym_offset, rel['r_addend']))
+                        # ql.nprint('R_X86_64_32S %s: [0x%x] = 0x%x' %(symbol_name, loc, rev_reloc_symbols[symbol_name] & 0xFFFFFFFF))
+                        ql.mem.write(loc, ql.pack32(rev_reloc_symbols[symbol_name] & 0xFFFFFFFF & 0xFFFFFFFF))
+
+                if describe_reloc_type(rel['r_info_type'], elffile) == 'R_X86_64_64':
+                    # patch this function?
+                    val = sym_offset + rel['r_addend']
+                    val += 0x2000000    # init_module position: FIXME
+                    # finally patch this reloc
+                    # ql.nprint('R_X86_64_64 %s: [0x%x] = 0x%x' %(symbol_name, loc, val))
+                    ql.mem.write(loc, ql.pack64(val))
+
+                if describe_reloc_type(rel['r_info_type'], elffile) == 'R_X86_64_PC32':
+                    # patch branch address: X86 case
+                    val = rel['r_addend'] - loc
+                    val += rev_reloc_symbols[symbol_name]
+                    # finally patch this reloc
+                    # ql.nprint('R_X86_64_PC32 %s: [0x%x] = 0x%x' %(symbol_name, loc, val & 0xFFFFFFFF))
+                    ql.mem.write(loc, ql.pack32(val & 0xFFFFFFFF))
+
+        return rev_reloc_symbols
+
+
+    def load_driver(self, ql, stack_addr, loadbase = 0):
+        elfhead = super().parse_header()
+
+        # Determine the range of memory space opened up
+        mem_start = -1
+        mem_end = -1
+
+        # for i in super().parse_program_header(ql):
+        #     if i['p_type'] == PT_LOAD:
+        #         if mem_start > i['p_vaddr'] or mem_start == -1:
+        #             mem_start = i['p_vaddr']
+        #         if mem_end < i['p_vaddr'] + i['p_memsz'] or mem_end == -1:
+        #             mem_end = i['p_vaddr'] + i['p_memsz']
+
+        # mem_start = int(mem_start // 0x1000) * 0x1000
+        # mem_end = int(mem_end // 0x1000 + 1) * 0x1000
+
+        # FIXME
+        mem_start = 0x1000
+        mem_end = mem_start + int(len(self.elfdata) / 0x1000 + 1) * 0x1000
+
+        # map some memory to intercept external functions of Linux kernel
+        ql.mem.map(API_HOOK_MEM, 0x1000)
+
+        # print("load addr = %x, size = %x" %(loadbase + mem_start, mem_end - mem_start))
+        ql.mem.map(loadbase + mem_start, mem_end - mem_start)
+
+        ql.nprint("[+] loadbase: %x, mem_start: %x, mem_end: %x" %(loadbase, mem_start, mem_end))
+
+        ql.mem.write(loadbase + mem_start, self.elfdata)
+        #dump_mem("Dumping some bytes:", self.elfdata[0x64 : 0x84])
+
+        entry_point = self.lkm_get_init(ql) + loadbase + mem_start
+
+        ql.brk_address = mem_end + loadbase
+
+        # Set MMAP addr
+        if self.ql.archbit == 64:
+            self.mmap_address = int(self.ql.os.profile.get("OS64", "mmap_address"),16)
+        else:
+            self.mmap_address = int(self.ql.os.profile.get("OS32", "mmap_address"),16)
+
+        self.ql.dprint(D_INFO, "[+] mmap_address is : 0x%x" % (self.mmap_address))
+
+        new_stack = stack_addr
+        new_stack = self.alignment(new_stack)
+
+        # self.ql.os.elf_entry = self.elf_entry = loadbase + elfhead['e_entry']
+
+        self.ql.os.entry_point = self.entry_point = entry_point
+        self.elf_entry = self.ql.os.elf_entry = self.ql.os.entry_point
+
+        self.stack_address = new_stack
+        self.load_address = loadbase
+
+        rev_reloc_symbols = self.lkm_dynlinker(ql, mem_start)
+
+        # remember address of syscall table, so external tools can access to it
+        ql.os.syscall_addr = SYSCALL_MEM
+        # setup syscall table
+        ql.mem.map(SYSCALL_MEM, 0x1000)
+        # zero out syscall table memory
+        ql.mem.write(SYSCALL_MEM, b'\x00' * 0x1000)
+
+        #print("sys_close = %x" %rev_reloc_symbols['sys_close'])
+        # print(rev_reloc_symbols.keys())
+        for sc in rev_reloc_symbols.keys():
+            if sc != 'sys_call_table' and sc.startswith('sys_'):
+                # print("> sc = %s" %sc)
+                syscall_id = globals()[sc.replace("sys_", "NR_")]
+                print("Writing syscall %s to [0x%x]" %(sc, SYSCALL_MEM + 8 * syscall_id))
+                ql.mem.write(SYSCALL_MEM + 8 * syscall_id, ql.pack64(rev_reloc_symbols[sc]))
+
+        # write syscall addresses into syscall table
+        #ql.mem.write(SYSCALL_MEM + 0, struct.pack("<Q", hook_sys_read))
+        ql.mem.write(SYSCALL_MEM + 0, struct.pack("<Q", self.ql.os.hook_addr))
+        #ql.mem.write(SYSCALL_MEM + 1  * 8, struct.pack("<Q", hook_sys_write))
+        ql.mem.write(SYSCALL_MEM + 1  * 8, struct.pack("<Q", self.ql.os.hook_addr + 1 * 8))
+        #ql.mem.write(SYSCALL_MEM + 2  * 8, struct.pack("<Q", hook_sys_open))
+        ql.mem.write(SYSCALL_MEM + 2  * 8, struct.pack("<Q", self.ql.os.hook_addr + 2 * 8))
+
+        # setup hooks for read/write/open syscalls
+        ql.import_symbols[self.ql.os.hook_addr] = hook_sys_read
+        ql.import_symbols[self.ql.os.hook_addr + 1 * 8] = hook_sys_write
+        ql.import_symbols[self.ql.os.hook_addr + 1 * 8] = hook_sys_open

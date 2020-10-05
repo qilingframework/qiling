@@ -14,6 +14,7 @@ from qiling.os.windows.handle import *
 from qiling.exception import *
 from qiling.const import *
 
+
 dllname = 'kernel32_dll'
 
 # HANDLE CreateToolhelp32Snapshot(

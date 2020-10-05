@@ -3,7 +3,8 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
-import os
+import struct, time, os
+from shutil import copyfile
 from datetime import datetime
 
 from qiling.exception import *
@@ -14,6 +15,8 @@ from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
 from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
+from qiling.os.windows.utils import canonical_path
+from qiling.exception import *
 from qiling.os.windows.structs import *
 
 dllname = 'kernel32_dll'
@@ -164,7 +167,13 @@ def hook_ReadFile(ql, address, params):
 #   LPDWORD      lpNumberOfBytesWritten,
 #   LPOVERLAPPED lpOverlapped
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname)
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={
+    "hFile": HANDLE,
+    "lpBuffer": POINTER,
+    "nNumberOfBytesToWrite": DWORD,
+    "lpNumberOfBytesWritten": POINTER,
+    "lpOverlapped": POINTER
+})
 def hook_WriteFile(ql, address, params):
     ret = 1
     hFile = params["hFile"]
@@ -231,7 +240,15 @@ def _CreateFile(ql, address, params, name):
 #   DWORD                 dwFlagsAndAttributes,
 #   HANDLE                hTemplateFile
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname)
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={
+    "lpFileName": STRING,
+    "dwDesiredAccess": DWORD,
+    "dwShareMode": DWORD,
+    "lpSecurityAttributes": POINTER,
+    "dwCreationDisposition": DWORD,
+    "dwFlagsAndAttributes": DWORD,
+    "hTemplateFile": HANDLE
+})
 def hook_CreateFileA(ql, address, params):
     ret = _CreateFile(ql, address, params, "CreateFileA")
     return ret
@@ -266,6 +283,22 @@ def hook_GetTempPathW(ql, address, params):
     ql.mem.write(dest, temp)
     return len(temp)
 
+# DWORD GetTempPathA(
+#   DWORD  nBufferLength,
+#   LPSTR lpBuffer
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={
+    "nBufferLength": DWORD,
+    "lpBuffer": POINTER
+})
+def hook_GetTempPathA(ql, address, params):
+    temp = (ql.os.windir + "Temp" + "\\\x00").encode('utf-8')
+    dest = params["lpBuffer"]
+    temp_path = os.path.join(ql.rootfs, "Windows", "Temp")
+    if not os.path.exists(temp_path):
+        os.makedirs(temp_path, 0o755)
+    ql.mem.write(dest, temp)
+    return len(temp)
 
 # DWORD GetShortPathNameW(
 #   LPCWSTR lpszLongPath,
@@ -408,25 +441,141 @@ def hook_GetFileSize(ql, address, params):
     try:
         handle = ql.handle_manager.get(params['hFile'].file)
         return os.path.getsize(handle.name)
-    except FileNotFoundError:
-        ql.os.last_error = ERROR_INVALID_HANDLE
-        return 0xFFFFFFFF  # INVALID_FILE_SIZE
+    except:
+        ql.os.last_error = ERROR_INVALID_HANDLE 
+        return 0xFFFFFFFF #INVALID_FILE_SIZE
+
+# HANDLE CreateFileMappingA(
+#   HANDLE                hFile,
+#   LPSECURITY_ATTRIBUTES lpFileMappingAttributes,
+#   DWORD                 flProtect,
+#   DWORD                 dwMaximumSizeHigh,
+#   DWORD                 dwMaximumSizeLow,
+#   LPCSTR                lpName
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={
+    "hFile": HANDLE,
+    "lpFileMappingAttributes": POINTER,
+    "flProtect": DWORD,
+    "dwMaximumSizeHigh": DWORD,
+    "dwMaximumSizeLow": DWORD,
+    "lpName": STRING,
+})
+def hook_CreateFileMappingA(ql, address, params):
+    hFile = params['hFile']
+    lpName = params['lpName']
+    new_handle = Handle(obj=hFile, name=lpName)
+    ql.os.handle_manager.append(new_handle)
+    ret = new_handle.id
+
+    return ret
+
+# HANDLE CreateFileMappingW(
+#   HANDLE                hFile,
+#   LPSECURITY_ATTRIBUTES lpFileMappingAttributes,
+#   DWORD                 flProtect,
+#   DWORD                 dwMaximumSizeHigh,
+#   DWORD                 dwMaximumSizeLow,
+#   LPCWSTR               lpName
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={
+    "hFile": HANDLE,
+    "lpFileMappingAttributes": POINTER,
+    "flProtect": DWORD,
+    "dwMaximumSizeHigh": DWORD,
+    "dwMaximumSizeLow": DWORD,
+    "lpName": WSTRING,
+})
+def hook_CreateFileMappingW(ql, address, params):
+    hFile = params['hFile']
+    lpName = params['lpName']
+    new_handle = Handle(obj=hFile, name=lpName)
+    ql.os.handle_manager.append(new_handle)
+    ret = new_handle.id
+
+    return ret
+
+# LPVOID MapViewOfFile(
+#   HANDLE hFileMappingObject,
+#   DWORD  dwDesiredAccess,
+#   DWORD  dwFileOffsetHigh,
+#   DWORD  dwFileOffsetLow,
+#   SIZE_T dwNumberOfBytesToMap
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={
+    "hFileMappingObject": HANDLE,
+    "dwDesiredAccess": DWORD,
+    "dwFileOffsetHigh": DWORD,
+    "dwFileOffsetLow": DWORD,
+    "dwNumberOfBytesToMap": DWORD
+})
+def hook_MapViewOfFile(ql, address, params):
+    hFileMappingObject = params['hFileMappingObject']
+    dwFileOffsetLow = params['dwFileOffsetLow']
+    dwNumberOfBytesToMap = params['dwNumberOfBytesToMap']
+
+    map_file_handle = ql.os.handle_manager.search_by_obj(hFileMappingObject)
+    if map_file_handle is None:
+        ret = ql.os.heap.alloc(dwNumberOfBytesToMap)
+        new_handle = Handle(obj=hFileMappingObject, name=ret)
+        ql.os.handle_manager.append(new_handle)
+    else:
+        ret = map_file_handle.name
+    hFile = ql.os.handle_manager.get(hFileMappingObject).obj
+    if ql.os.handle_manager.get(hFile):
+        f = ql.os.handle_manager.get(hFile).obj
+        if type(f) is file:
+            f.seek(dwFileOffsetLow, 0)
+            data = f.read(dwNumberOfBytesToMap)
+            ql.mem.write(ret, data)
+    return ret
 
 
-# BOOL AreFileApisANSI();
-@winsdkapi(cc=STDCALL, dllname=dllname)
-def hook_AreFileApisANSI(ql, address, params):
-    # TODO make this coherent with SetFileApisToANSI/OEM calls
+# BOOL UnmapViewOfFile(
+#   LPCVOID lpBaseAddress
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={
+    "lpBaseAddress": POINTER
+})
+def hook_UnmapViewOfFile(ql, address, params):
+    lpBaseAddress = params['lpBaseAddress']
+
+    map_file_hande = ql.os.handle_manager.search(lpBaseAddress)
+    if not map_file_hande:
+        return 0
+    ql.os.heap.free(map_file_hande.name)
+    ql.os.handle_manager.delete(map_file_hande.id)
     return 1
 
 
-# void SetFileApisToANSI();
-@winsdkapi(cc=STDCALL, dllname=dllname)
-def hook_SetFileApisToANSI(ql, address, params):
-    return
 
+# BOOL CopyFileA(
+#   LPCSTR lpExistingFileName,
+#   LPCSTR lpNewFileName,
+#   BOOL   bFailIfExists
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={
+    "lpExistingFileName": STRING,
+    "lpNewFileName": STRING,
+    "bFailIfExists": DWORD
+})
+def hook_CopyFileA(ql, address, params):
+    lpExistingFileName = canonical_path(ql, params["lpExistingFileName"])
+    lpNewFileName = canonical_path(ql, params["lpNewFileName"])
+    bFailIfExists = params["bFailIfExists"]
+    
+    if bFailIfExists and os.path.exists(lpNewFileName):
+        return 0
+    copyfile(lpExistingFileName, lpNewFileName)
+    return 1
 
-# void SetFileApisToOEM();
-@winsdkapi(cc=STDCALL, dllname=dllname)
-def hook_SetFileApisToOEM(ql, address, params):
-    return
+# BOOL SetFileAttributesA(
+#   LPCSTR lpFileName,
+#   DWORD  dwFileAttributes
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={
+    "lpFileName": STRING,
+    "dwFileAttributes": DWORD
+})
+def hook_SetFileAttributesA(ql, address, params):
+    return 1

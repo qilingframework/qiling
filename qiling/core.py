@@ -8,7 +8,7 @@ import ctypes, logging, ntpath, os, pickle, platform
 from .const import QL_ARCH_ENDIAN, QL_ENDIAN, QL_OS_POSIX, QL_OS_ALL, QL_OUTPUT, QL_OS
 from .exception import QlErrorFileNotFound, QlErrorArch, QlErrorOsType, QlErrorOutput
 from .utils import arch_convert, ostype_convert, output_convert
-from .utils import ql_is_valid_arch, ql_get_arch_bits
+from .utils import ql_is_valid_arch, ql_get_arch_bits, verify_ret
 from .utils import ql_setup_logging_env, ql_setup_logging_stream
 from .core_struct import QlCoreStructs
 from .core_hooks import QlCoreHooks
@@ -80,14 +80,11 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         self.bindtolocalhost = True
         # by turning this on, you must run your analysis with sudo
         self.root = False
-        # generic filter to filter print (WIP)
         self.filter = None
-
 
         """
         Qiling Framework Core Engine
         """
-
         # shellcoder settings
         if self.shellcoder:
             if (self.ostype and type(self.ostype) == str) and (self.archtype and type(self.archtype) == str):
@@ -170,6 +167,9 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
 
         # Run the loader
         self.loader.run()
+        
+        # Setup Outpt
+        self.os.setup_output()
 
 
 
@@ -181,7 +181,7 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         self.exit_point = end
         self.timeout = timeout
         self.count = count
-        
+
         # init debugger
         if self.debugger != False and self.debugger != None:
             self.debugger = self.debugger_setup()
@@ -242,19 +242,6 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
                 raise RuntimeError("Fail to patch %s at address 0x%x" % (filename, addr))
 
 
-    # stop emulation
-    def emu_stop(self):
-        self.uc.emu_stop()
-
-
-    # start emulation
-    def emu_start(self, begin, end, timeout=0, count=0):
-        self.uc.emu_start(begin, end, timeout, count)
-        
-        if self.internal_exception != None:
-            raise self.internal_exception
-
-
     # save all qiling instance states
     def save(self, reg=True, mem=True, fd=False, cpu_context=False, snapshot=None):
         saved_states = {}
@@ -297,3 +284,16 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         
         if "fd" in saved_states:
             self.os.fd.restore(saved_states["fd"])
+
+
+    # stop emulation
+    def emu_stop(self):
+        self.uc.emu_stop()
+
+
+    # start emulation
+    def emu_start(self, begin, end, timeout=0, count=0):
+        self.uc.emu_start(begin, end, timeout, count)
+        
+        if self.internal_exception != None:
+            raise self.internal_exception
