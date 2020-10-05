@@ -110,6 +110,7 @@ matrix:
         - unzip -Pinfected UselessDisk.bin.zip
         - unzip -Pinfected GandCrab502.bin.zip
         - unzip -Pinfected al-khaser.bin.zip
+        - unzip -Pinfected sality.dll.zip
         - cd $TRAVIS_BUILD_DIR/tests
       script:
         - cmd.exe //C '.\test_pe.bat' 

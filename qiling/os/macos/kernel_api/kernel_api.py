@@ -1029,7 +1029,7 @@ def hook__sysctl_unregister_oid(ql, address, params):
     "req": POINTER,
 })
 def hook__sysctl_root(ql, address, params):
-    if params["string_is_canonical"] is "True":
+    if params["string_is_canonical"] == "True":
         ev_name = ql.mem.read(params["namestring"], params["namestringlen"]).decode()
         ev_type = MacOSEventType.EV_SYSCTL
         event = ql.os.ev_manager.get_event_by_name_and_type(ev_name, ev_type)

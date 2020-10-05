@@ -1,6 +1,6 @@
 import enum
 import ctypes
-#from qiling.os.macos.structs import *
+from .macos_structs import label_t, ucred_t, POINTER64, fileglob_t, vnode_t
 #from .macos import *
 from functools import wraps
 
