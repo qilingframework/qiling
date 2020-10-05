@@ -44,7 +44,7 @@ def hook_AllocatePages(ql, address, params):
         address =  read_int64(ql, params["Memory"])
         ql.mem.map(address, params["Pages"]*PageSize)
     else:
-        address = ql.loader.heap.alloc(params["Pages"]*PageSize)
+        address = ql.os.heap.alloc(params["Pages"]*PageSize)
         write_int64(ql, params["Memory"], address)
     return EFI_SUCCESS
 
@@ -71,7 +71,7 @@ def hook_GetMemoryMap(ql, address, params):
     "Buffer": POINTER,
 })
 def hook_AllocatePool(ql, address, params):
-    address = ql.loader.heap.alloc(params["Size"])
+    address = ql.os.heap.alloc(params["Size"])
     write_int64(ql, params["Buffer"], address)
     return EFI_SUCCESS if address else EFI_OUT_OF_RESOURCES
 
@@ -80,7 +80,7 @@ def hook_AllocatePool(ql, address, params):
 })
 def hook_FreePool(ql, address, params):
     address = params["Buffer"]
-    freed = ql.loader.heap.free(address)
+    freed = ql.os.heap.free(address)
     return EFI_SUCCESS if freed else EFI_INVALID_PARAMETER 
 
 @dxeapi(params={
@@ -159,7 +159,7 @@ def hook_InstallProtocolInterface(ql, address, params):
     dic = {}
     handle = read_int64(ql, params["Handle"])
     if handle == 0:
-        handle = ql.loader.heap.alloc(1)
+        handle = ql.os.heap.alloc(1)
     if handle in ql.loader.handle_dict:
         dic = ql.loader.handle_dict[handle]
     dic[params["Protocol"]] = params["Interface"]
@@ -419,7 +419,7 @@ def hook_LocateHandleBuffer(ql, address, params):
     write_int64(ql, params["NoHandles"], len(handles))
     if len(handles) == 0:
         return EFI_NOT_FOUND
-    address = ql.loader.heap.alloc(buffer_size)
+    address = ql.os.heap.alloc(buffer_size)
     write_int64(ql, params["Buffer"], address)
     if address == 0:
         return EFI_OUT_OF_RESOURCES
@@ -441,7 +441,7 @@ def hook_LocateProtocol(ql, address, params):
 def hook_InstallMultipleProtocolInterfaces(ql, address, params):
     handle = read_int64(ql, params["Handle"])
     if handle == 0:
-        handle = ql.loader.heap.alloc(1)
+        handle = ql.os.heap.alloc(1)
     ql.nprint(f'hook_InstallMultipleProtocolInterfaces {handle:x}')
     dic = {}
     if handle in ql.loader.handle_dict:

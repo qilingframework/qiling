@@ -8,19 +8,19 @@ def my_abort(msg):
     os.abort()
 
 def enable_sanitized_heap(ql, fault_rate=0):
-    ql.loader.heap = QlSanitizedMemoryHeap(ql, ql.loader.heap)
-    ql.loader.heap.pool_fault_rate = fault_rate
-    ql.loader.heap.oob_handler = lambda *args: my_abort("Out-of-bounds read detected")
-    ql.loader.heap.bo_handler = lambda *args: my_abort("Buffer overflow/underflow detected")
-    ql.loader.heap.bad_free_handler = lambda *args: my_abort("Double free or bad free detected")
-    ql.loader.heap.uaf_handler = lambda *args: my_abort("Use-after-free detected")
+    ql.os.heap = QlSanitizedMemoryHeap(ql, ql.os.heap)
+    ql.os.heap.pool_fault_rate = fault_rate
+    ql.os.heap.oob_handler = lambda *args: my_abort("Out-of-bounds read detected")
+    ql.os.heap.bo_handler = lambda *args: my_abort("Buffer overflow/underflow detected")
+    ql.os.heap.bad_free_handler = lambda *args: my_abort("Double free or bad free detected")
+    ql.os.heap.uaf_handler = lambda *args: my_abort("Use-after-free detected")
 
 def sanitized_emulate(path, rootfs, fault_type, output="debug", enable_trace=False):
     ql = Qiling([path], rootfs, output=output)
     ql.env['FaultType'] = fault_type
     enable_sanitized_heap(ql)
     ql.run()
-    if not ql.loader.heap.validate():
+    if not ql.os.heap.validate():
         my_abort("Canary corruption detected")
 
 def usage():
