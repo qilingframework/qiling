@@ -62,7 +62,7 @@ class QlLoaderPE_UEFI(QlLoader):
         loaded_image_protocol.ImageDataType = EfiLoaderData
         loaded_image_protocol.Unload = 0
 
-        loaded_image_protocol_ptr = self.heap.alloc(ctypes.sizeof(EFI_LOADED_IMAGE_PROTOCOL))
+        loaded_image_protocol_ptr = self.ql.os.heap.alloc(ctypes.sizeof(EFI_LOADED_IMAGE_PROTOCOL))
         self.ql.mem.write(loaded_image_protocol_ptr, convert_struct_to_bytes(loaded_image_protocol))
         self.handle_dict[image_base] = {self.loaded_image_protocol_guid: loaded_image_protocol_ptr}
         self.loaded_image_protocol_modules.append(image_base)
@@ -155,7 +155,7 @@ class QlLoaderPE_UEFI(QlLoader):
             self.heap_base_address = int(self.ql.os.profile.get("OS32", "heap_address"), 16)
             self.heap_base_size = int(self.ql.os.profile.get("OS32", "heap_size"), 16)
         
-        self.heap = QlMemoryHeap(self.ql, self.heap_base_address, self.heap_base_address + self.heap_base_size)
+        self.ql.os.heap = QlMemoryHeap(self.ql, self.heap_base_address, self.heap_base_address + self.heap_base_size)
         self.entry_point = 0
         self.load_address = 0  
 
@@ -187,7 +187,7 @@ class QlLoaderPE_UEFI(QlLoader):
         # set SystemTable to image base for now
         pointer_size = ctypes.sizeof(ctypes.c_void_p)
         system_table_heap_size = 1024 * 1024
-        system_table_heap = self.heap.alloc(system_table_heap_size)
+        system_table_heap = self.ql.os.heap.alloc(system_table_heap_size)
         self.ql.mem.write(system_table_heap, b'\x90'*system_table_heap_size)
         self.system_table_ptr = system_table_heap
         system_table = EFI_SYSTEM_TABLE()
