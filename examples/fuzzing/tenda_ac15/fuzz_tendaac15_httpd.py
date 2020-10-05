@@ -9,7 +9,7 @@
 # 3. binwalk -e US_AC15V1.0BR_V15.03.05.19_multi_TD01.bin
 # 4. locate squashfs-root
 # 5. rm -rf webroot && mv webroot_ro webroot
-#
+# 5. mv etc_ro etc
 
 import os, pickle, socket, sys, threading
 
