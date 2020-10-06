@@ -349,6 +349,10 @@ class QlLoaderPE(QlLoader, Process):
     def run(self):
         self.path = self.ql.path
         self.init_dlls = [b"ntoskrnl.exe", b"ntdll.dll", b"kernel32.dll", b"user32.dll"]
+
+        if self.ql.shellcoder:
+            self.init_dlls.remove(b"ntoskrnl.exe")
+                    
         #self.filepath = ''
         self.pe_entry_point = 0
         self.sizeOfStackReserve = 0
