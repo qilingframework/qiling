@@ -47,7 +47,7 @@ def ql_syscall_futex(ql, futex_uaddr, futex_op, futex_val, futex_timeout, futex_
                                             ql.os.thread_management.cur_thread,
                                             futex_val)
         ql.nprint("futex(%x, %d, %d, %x) = %d" % (futex_uaddr, futex_op, futex_val, futex_timeout, regreturn))
-    if futex_op & (FUTEX_PRIVATE_FLAG - 1) == FUTEX_WAIT_BITSET:
+    elif futex_op & (FUTEX_PRIVATE_FLAG - 1) == FUTEX_WAIT_BITSET:
         regreturn = ql.os.futexm.futex_wait(ql, futex_uaddr,
                                             ql.os.thread_management.cur_thread,
                                             futex_val,
