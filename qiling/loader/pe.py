@@ -343,20 +343,25 @@ class Process():
 class QlLoaderPE(QlLoader, Process):
     def __init__(self, ql):
         super(QlLoaderPE, self).__init__(ql)
-        self.ql = ql
-        self.libcache = self.ql.libcache
+        self.ql         = ql
+        self.libcache   = self.ql.libcache
+        self.is_driver  = False
+        self.path       = self.ql.path
 
     def run(self):
-        self.path = self.ql.path
-        self.init_dlls = [b"ntoskrnl.exe", b"ntdll.dll", b"kernel32.dll", b"user32.dll"]
-
-        if self.ql.shellcoder:
-            self.init_dlls.remove(b"ntoskrnl.exe")
-                    
-        #self.filepath = ''
+        self.init_dlls = [b"ntdll.dll", b"kernel32.dll", b"user32.dll"]
+        self.sys_dlls = [b"ntdll.dll", b"kernel32.dll"]
         self.pe_entry_point = 0
-        self.sizeOfStackReserve = 0
+        self.sizeOfStackReserve = 0        
 
+        if not self.ql.shellcoder:
+            self.pe = pefile.PE(self.path, fast_load=True)
+            # is this a system driver .SYS?
+            if self.pe.OPTIONAL_HEADER.Subsystem == 1:
+                self.is_driver = True
+                self.init_dlls.append(b"ntoskrnl.exe")
+                self.sys_dlls.append(b"ntoskrnl.exe")
+            
         if self.ql.archtype == QL_ARCH.X86:
             self.stack_address = int(self.ql.os.profile.get("OS32", "stack_address"), 16)
             self.stack_size = int(self.ql.os.profile.get("OS32", "stack_size"), 16)
@@ -406,10 +411,6 @@ class QlLoaderPE(QlLoader, Process):
         self.ql.mem.map(self.stack_address, self.stack_size, info="[stack]")
 
         if self.path and not self.ql.shellcoder:
-            self.pe = pefile.PE(self.path, fast_load=True)
-            # is this a system driver .SYS?
-            self.is_driver = (self.pe.OPTIONAL_HEADER.Subsystem == 1)
-
             # for simplicity, no image base relocation
             self.pe_image_address = self.pe.OPTIONAL_HEADER.ImageBase
             self.pe_image_address_size = self.ql.mem.align(self.pe.OPTIONAL_HEADER.SizeOfImage, 0x1000)
@@ -516,7 +517,7 @@ class QlLoaderPE(QlLoader, Process):
                 super().add_ldr_data_table_entry(mod_name)
 
             # load system dlls
-            sys_dlls = [b"ntoskrnl.exe", b"ntdll.dll", b"kernel32.dll"]
+            sys_dlls = self.sys_dlls
             for each in sys_dlls:
                 super().load_dll(each, self.is_driver)
             # parse directory entry import
