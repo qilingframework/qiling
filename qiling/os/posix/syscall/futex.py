@@ -43,16 +43,26 @@ def ql_syscall_futex(ql, futex_uaddr, futex_op, futex_val, futex_timeout, futex_
         #         return False
         #     else:
         #         return True
-        if ql.unpack32(ql.mem.read(futex_uaddr, 4)) == futex_val:
-            ql.emu_stop()
-            regreturn = 0
-            ql.os.futexm.futex_wait(futex_uaddr, ql.os.thread_management.cur_thread)
-        else:
-            regreturn = -1
+        regreturn = ql.os.futexm.futex_wait(ql, futex_uaddr,
+                                            ql.os.thread_management.cur_thread,
+                                            futex_val)
         ql.nprint("futex(%x, %d, %d, %x) = %d" % (futex_uaddr, futex_op, futex_val, futex_timeout, regreturn))
+    if futex_op & (FUTEX_PRIVATE_FLAG - 1) == FUTEX_WAIT_BITSET:
+        regreturn = ql.os.futexm.futex_wait(ql, futex_uaddr,
+                                            ql.os.thread_management.cur_thread,
+                                            futex_val,
+                                            futex_val3)
+        ql.nprint("futex(%x, %d, %d, %x, %x, %x) = %d" % (futex_uaddr,
+                                                          futex_op, futex_val,
+                                                          futex_timeout,
+                                                          futex_uaddr2,
+                                                          futex_val3,
+                                                          regreturn))
     elif futex_op & (FUTEX_PRIVATE_FLAG - 1) == FUTEX_WAKE:
-        regreturn = 0
-        ql.os.futexm.futex_wake(futex_uaddr, futex_val)
+        regreturn = ql.os.futexm.futex_wake(futex_uaddr, futex_val)
+        ql.nprint("futex(%x, %d, %d) = %d" % (futex_uaddr, futex_op, futex_val, regreturn))
+    elif futex_op & (FUTEX_PRIVATE_FLAG - 1) == FUTEX_WAKE_BITSET:
+        regreturn = ql.os.futexm.futex_wake(futex_uaddr, futex_val, futex_val3)
         ql.nprint("futex(%x, %d, %d) = %d" % (futex_uaddr, futex_op, futex_val, regreturn))
     else:
         ql.nprint("futex(%x, %d, %d) = ?" % (futex_uaddr, futex_op, futex_val))
