@@ -114,7 +114,7 @@ def hook_DbgPrintEx(ql, address, _):
 
     ret, _ = printf(ql, address, format_string, param_addr, "DbgPrintEx")
 
-    set_return_value(ql, ret)
+    ql.os.set_return_value(ret)
 
     count = format_string.count('%')
     # x8664 fastcall does not known the real number of parameters
@@ -144,7 +144,7 @@ def hook_DbgPrint(ql, address, _):
 
     ret, _ = printf(ql, address, format_string, param_addr, "DbgPrint")
 
-    set_return_value(ql, ret)
+    ql.os.set_return_value(ql)
 
     count = format_string.count('%')
     # x8664 fastcall does not known the real number of parameters
