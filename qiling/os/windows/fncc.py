@@ -12,7 +12,8 @@ from qiling.os.const import *
 from qiling.os.windows.utils import *
 from qiling.const import *
 from qiling.exception import *
-
+from qiling.os.windows.structs import *
+        
 
 def replacetype(type, specialtype=None):
     if specialtype is None:
@@ -27,7 +28,7 @@ def replacetype(type, specialtype=None):
         return type
 
 # x86/x8664 PE should share Windows APIs
-def winsdkapi(cc, param_num=None, dllname=None, replace_params_type=None, replace_params={}):
+def winsdkapi(cc, param_num=None, dllname=None, replace_params_type=None, replace_params={}, passthru=False):
     """
     @cc: windows api calling convention, only x86 needs this, x64 is always fastcall
     @param_num: the number of function params, used by variadic functions, e.g printf
@@ -86,11 +87,11 @@ def winsdkapi(cc, param_num=None, dllname=None, replace_params_type=None, replac
 
             if ql.archtype == QL_ARCH.X86:
                 if cc == STDCALL:
-                    return ql.os.x86_stdcall(param_num, params, func, args, kwargs)
+                    return ql.os.x86_stdcall(param_num, params, func, args, kwargs, passthru)
                 elif cc == CDECL:
-                    return ql.os.x86_cdecl(param_num, params, func, args, kwargs)
+                    return ql.os.x86_cdecl(param_num, params, func, args, kwargs, passthru)
             elif ql.archtype == QL_ARCH.X8664:
-                return ql.os.x8664_fastcall(param_num, params, func, args, kwargs)
+                return ql.os.x8664_fastcall(param_num, params, func, args, kwargs, passthru)
             else:
                 raise QlErrorArch("[!] Unknown self.ql.arch")
         return wrapper

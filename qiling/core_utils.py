@@ -222,9 +222,9 @@ class QlCoreUtils(object):
     def profile_setup(self):
         if self.profile:
             self.dprint(D_INFO, "[+] Customized profile: %s" % self.profile)
-        
+
         os_profile = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", ostype_convert_str(self.ostype) + ".ql")
-      
+
         if self.profile:
             profiles = [os_profile, self.profile]
         else:

@@ -35,7 +35,6 @@ class MachoParser:
             return f.read()
 
     def parseFile(self):
-
         if not self.binary_file:
             return 
         
@@ -50,7 +49,6 @@ class MachoParser:
         
 
     def parseHeader(self):
-
         self.magic = self.getMagic(self.binary_file)
         
         if self.magic in MAGIC_64:
@@ -80,7 +78,6 @@ class MachoParser:
         return True
 
     def parseLoadCommand(self):
-
         self.ql.dprint(D_INFO, "[+] Parse LoadCommand")
         if not self.header.lc_num or not self.header.lc_size or not self.header.header_size:
             return False
@@ -115,11 +112,19 @@ class MachoParser:
 
     def parseData(self):
         self.segments = []      
+        self.sections = [None]
         for command in self.commands:
             if command.cmd_id == LC_SEGMENT_64:
-                self.segments.append(Segment(command, self.binary_file))
+                tmp = Segment(command, self.binary_file)
+                tmp.sections_index += range(len(self.sections), len(self.sections) + len(tmp.sections))
+                self.segments.append(tmp)
+                for section in tmp.sections:
+                    self.sections.append(section)
             elif command.cmd_id == LC_SEGMENT:
-                self.segments.append(Segment(command, self.binary_file))
+                tmp = Segment(command, self.binary_file)
+                self.segments.append(tmp)
+                for section in tmp.sections:
+                    self.sections.append(section)
             elif command.cmd_id == LC_FUNCTION_STARTS:
                 self.function_starts = FunctionStarts(command, self.binary_file)
             elif command.cmd_id == LC_SYMTAB:

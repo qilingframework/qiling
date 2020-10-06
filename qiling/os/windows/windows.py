@@ -123,7 +123,7 @@ class QlOsWindows(QlOs):
         if self.ql.exit_point is not None:
             self.exit_point = self.ql.exit_point
         
-        if  self.ql.entry_point  is not None:
+        if  self.ql.entry_point is not None:
             self.ql.loader.entry_point = self.ql.entry_point
 
         if self.ql.stdin != 0:

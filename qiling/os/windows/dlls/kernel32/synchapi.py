@@ -15,6 +15,7 @@ from qiling.exception import *
 from qiling.os.windows.structs import *
 from qiling.const import *
 
+
 dllname = 'kernel32_dll'
 
 # void Sleep(

@@ -100,3 +100,4 @@ class QlGdbUtils(object):
         if self.exit_point is not None:
             self.ql.nprint('gdb> Resume at: 0x%x' % self.current_address)
             self.ql.emu_start(self.current_address, self.exit_point)
+            

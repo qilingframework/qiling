@@ -55,7 +55,9 @@ matrix:
         - pip3 install . # Workaround since building from keystone sources doesn't work on Macos. Not sure why and I guess it's due to Travis. :/
       before_script:
         - ./examples/scripts/collectdylib.sh
-        - cd tests
+        - cd $TRAVIS_BUILD_DIR/examples/rootfs/x8664_macos/kext
+        - unzip -Pinfected SuperRootkit.kext.zip
+        - cd $TRAVIS_BUILD_DIR/tests        
       script:
         - ./test_macho.sh
         
@@ -105,11 +107,15 @@ matrix:
 #        - cp /c/Program\ Files\ \(x86\)/keystone/lib/keystone.dll /c/Python36/Lib/site-packages/keystone/
       before_script:
         - cmd.exe //C 'examples\scripts\dllscollector.bat'
+        - wget -O examples/rootfs/x86_windows/Windows/SysWOW64/ntoskrnl.exe.zip https://raw.githubusercontent.com/qilingframework/tests/master/rootfs/x86_windows/SysWOW64/ntoskrnl.exe.zip
+        - cd $TRAVIS_BUILD_DIR/examples/rootfs/x86_windows/Windows/SysWOW64
+        - unzip -Pinfected ntoskrnl.exe.zip
         - cd $TRAVIS_BUILD_DIR/examples/rootfs/x86_windows/bin
         - unzip -Pinfected wannacry.bin.zip
         - unzip -Pinfected UselessDisk.bin.zip
         - unzip -Pinfected GandCrab502.bin.zip
         - unzip -Pinfected al-khaser.bin.zip
+        - unzip -Pinfected sality.dll.zip
         - cd $TRAVIS_BUILD_DIR/tests
       script:
         - cmd.exe //C '.\test_pe.bat' 
