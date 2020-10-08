@@ -104,6 +104,8 @@ class QlOsLinux(QlOsPosix):
                     if self.ql.loader.elf_entry != self.ql.loader.entry_point:
                         main_thread.set_exit_point(self.ql.loader.elf_entry)
                         thread_management.run()
+                        if main_thread.ql.arch.get_pc() != self.ql.loader.elf_entry:
+                            raise QlErrorExecutionStop('Dynamic library .init() failed!')
                         self.ql.enable_lib_patch()
                         self.run_function_after_load()
 
