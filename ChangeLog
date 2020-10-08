@@ -4,6 +4,8 @@ This file details the changelog of Qiling Framework.
 [Version 1.2]: October [SOMETHING], 2020
 - Demigod finally arrived, more information about [Demigod](https://groundx.io/demigod/)
 - Linux: Implement futex bitset && Check library initialization
+- Linux: vfork and fork syscall mappings
+- execve() ql.argv and ql.env fix
 
 
 ------------------------------------
