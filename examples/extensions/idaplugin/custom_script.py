@@ -31,3 +31,8 @@ class QILING_IDA():
         hook = []
         hook.append(ql.hook_code(step_hook))
         return hook
+    
+    def custom_execute_selection(self, ql:Qiling):
+        logging.info('custom execute selection hook')
+        hook = []
+        return hook
