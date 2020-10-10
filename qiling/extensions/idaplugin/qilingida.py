@@ -1647,6 +1647,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":markfake",       self.ql_mark_fake,           "Mark as Fake Block",               "Mark as Fake Block",              None,                   True  ))
         self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":markretn",       self.ql_mark_retn,           "Mark as Return Block",               "Mark as Return Block",              None,                   True  ))
         self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":deflat",       self.ql_deflat,           "Deflat",               "Deflat",              None,                   True  ))
+        self.menuitems.append(QlEmuMisc.MenuItem("-",                                     self.ql_menu_null,              "",                           None,                        None,                   True   ))
         self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":removejunkcodebypatterns",       self.ql_remove_junk_code_by_patterns,           "Remove Junk Code by Patterns",               "Remove Junk Code by Patterns",              None,                   True  ))
 
         for item in self.menuitems:
