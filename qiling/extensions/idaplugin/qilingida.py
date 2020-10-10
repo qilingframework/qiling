@@ -1477,6 +1477,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             patterns.append( re.compile(re.escape(bytes([r_opc])) + rb'.' + re.escape(bytes([opc])) + rb'.') )
         
         for pattern in patterns:
+            logging.debug(f"Start with pattern: {pattern}")
             tmpbs = bs
             result = re.search(pattern, tmpbs)
             while result is not None:
