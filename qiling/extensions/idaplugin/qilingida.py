@@ -9,6 +9,7 @@ import collections
 import time
 import struct
 import logging
+import re
 from enum import Enum
 from elftools.elf.elffile import ELFFile
 
@@ -398,6 +399,26 @@ class IDA:
     @staticmethod
     def perform_analysis(start, end, final_pass=True):
         return ida_auto.plan_and_wait(start, end)
+
+    @staticmethod
+    def get_item_head(ea):
+        return ida_bytes.get_item_head(ea)
+    
+    @staticmethod
+    def get_item_end(ea):
+        return ida_bytes.get_item_end(ea)
+
+    @staticmethod
+    def get_item_size(ea):
+        return ida_bytes.get_item_size(ea)
+    
+    @staticmethod
+    def get_item(ea):
+        return (IDA.get_item_head(ea), IDA.get_item_end(ea))
+    
+    @staticmethod
+    def is_colored_item(ea):
+        return ida_nalt.is_colored_item(ea)
 
 ### View Class
 
@@ -1046,6 +1067,44 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         else:
             logging.error('Qiling should be setup firstly.')
 
+    def _color_path(self, color):
+        def _cb(ql, addr, size):
+            real_addr = addr - self.qlemu.baseaddr + get_imagebase()
+            set_color(real_addr, CIC_ITEM, color)
+        return _cb
+
+    def ql_run_selection(self):
+        if self.qlinit:
+            _, start, end = IDA.get_last_selection()
+            # Drop all previous status
+            self.qlemu.status = None
+            if self.userobj is not None:
+                userhook = self.userobj.custom_execute_selection(self.qlemu.ql)
+            colorhook = self.qlemu.ql.hook_code(self._color_path(Colors.Pink.value))
+            show_wait_box("Qiling is processing ...")
+            try:
+                self.qlemu.run(begin=start, end=end)
+            finally:
+                hide_wait_box()
+            self.qlemu.ql.hook_del(colorhook)
+            if userhook and userhook is not None:
+                for hook in userhook:
+                    self.qlemu.ql.hook_del(hook)
+            self.qlemu.status = self.qlemu.ql.save()
+            self.ql_update_views(self.qlemu.ql.reg.arch_pc, self.qlemu.ql)
+        else:
+            logging.error('Qiling should be setup firstly.')
+
+    def ql_set_pc(self):
+        if self.qlinit:
+            ea = IDA.get_current_address()
+            self.qlemu.ql.reg.arch_pc = ea
+            logging.info(f"QIling PC set to {hex(ea)}")
+            self.qlemu.status = self.qlemu.ql.save()
+            self.ql_update_views(self.qlemu.ql.reg.arch_pc, self.qlemu.ql)
+        else:
+            logging.error('Qiling should be setup firstly.')
+
     def ql_run_to_here(self):
         if self.qlinit:
             curr_addr = get_screen_ea()
@@ -1459,7 +1518,69 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         for s in map(self._block_str, self.retn_blocks): logging.info(s)
         logging.info(f"Auto analysis finished, please check whether the result is correct.")
         logging.info(f"You may change the property of each block manually if necessary.")
+    
+    # jb addr
+    # jnb addr
+    # <=>
+    # jmp addr / nop
+    # nop
+    def _junk_useless_jcc(self, start, end):
+        bs = IDA.get_bytes(start, end-start)
+        patterns = []
+        # Volume 2 Table A-2
+        for opc in range(0x70, 0x7F, 2):
+            # jb -> jnb
+            r_opc = opc + 1
+            patterns.append( re.compile(re.escape(bytes([opc])) + rb'.' + re.escape(bytes([r_opc])) + rb'.') )
+            patterns.append( re.compile(re.escape(bytes([r_opc])) + rb'.' + re.escape(bytes([opc])) + rb'.') )
+        
+        for pattern in patterns:
+            logging.debug(f"Start with pattern: {pattern}")
+            tmpbs = bs
+            result = re.search(pattern, tmpbs)
+            while result is not None:
+                l = result.span()[0]
+                r = result.span()[1]
+                l_offset = tmpbs[l+1]
+                r_offset = tmpbs[l+3]
+                tmpbs = tmpbs[r:]
+                result = re.search(pattern, tmpbs)
+                if l_offset == r_offset + 2:
+                    logging.info(f"Get a junk jcc at [{hex(start+l)}, {hex(start+r)}] with offset {hex(l_offset)}.")
+                    # If it jumps down, check if we can fill the codes with nops safely.
+                    if l_offset <= 0x7F:
+                        can_fill_with_nops = True
+                        for addr in range(start+l, start + l +  2 + l_offset):
+                            if len(IDA.get_xrefsto(addr, flags=ida_xref.XREF_FAR)) != 0:
+                                logging.info(f"Find multiple Xrefs at {hex(addr)}, patch a jmp...")
+                                can_fill_with_nops = False
+                                break
+                        if can_fill_with_nops:
+                            logging.info(f"Fill NOPs from {hex(start+l)} to {hex(start + l + 2 + l_offset)}.")
+                            IDA.fill_bytes(start+l, start + l + 2 + l_offset)
+                            continue
+                    # Or we simply patch a jmp.
+                    logging.info(f"Patch a jmp at {start+l:x}.")
+                    IDA.fill_bytes(start+l, start+r)
+                    IDA.patch_bytes(start+l, b"\xeb" + bytes([l_offset]))
+                
 
+    # Remove junk code by fixed patterns.
+    # If you find new patterns, please fire an issue or PR!
+    # TODO: Find some samples to add more patterns.
+    def ql_remove_junk_code_by_patterns(self):
+        _, start, end = IDA.get_last_selection()
+        self._junk_useless_jcc(start, end)
+
+
+    def ql_nop_items_without_colors(self):
+        _, start, end = IDA.get_last_selection()
+        cur_start, cur_end = IDA.get_item(start)
+        while cur_start < end:
+            if not IDA.is_colored_item(cur_start):
+                logging.info(f"Item at [{hex(cur_start)}, {hex(cur_end)}) doesn't have a color, nop it.")
+                IDA.fill_bytes(cur_start, cur_end)
+            cur_start, cur_end = IDA.get_item(cur_end)
 
     ### Hook
 
@@ -1569,7 +1690,9 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":reloaduserscripts", self.ql_reload_user_script,      "Reload User Scripts",        "Reload User Scripts",       None,                   True   ))
         self.menuitems.append(QlEmuMisc.MenuItem("-",                                     self.ql_menu_null,              "",                           None,                        None,                   True   ))        
         self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":runtohere",         self.ql_run_to_here,             "Execute Till",               "Execute Till",              None,                   True   ))
+        self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":runselection",      self.ql_run_selection,           "Execute Selection",         "Execute Selection",              None,                True))
         self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":runfromhere",       self.ql_continue,              "Continue",                   "Continue",                  None,                   True   ))
+        self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":setpc",             self.ql_set_pc,                "Set PC",                     "Set PC",              None,                True))
         self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":step",              self.ql_step,                  "Step",                       "Step (CTRL+SHIFT+F9)",      "CTRL+SHIFT+F9",        True   ))
         self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":changreg",          self.ql_chang_reg,              "Edit Register",              "Edit Register",             None,                   True   ))
         self.menuitems.append(QlEmuMisc.MenuItem("-",                                     self.ql_menu_null,              "",                           None,                        None,                   True   ))
@@ -1594,7 +1717,10 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":markfake",       self.ql_mark_fake,           "Mark as Fake Block",               "Mark as Fake Block",              None,                   True  ))
         self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":markretn",       self.ql_mark_retn,           "Mark as Return Block",               "Mark as Return Block",              None,                   True  ))
         self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":deflat",       self.ql_deflat,           "Deflat",               "Deflat",              None,                   True  ))
-
+        self.menuitems.append(QlEmuMisc.MenuItem("-",                                     self.ql_menu_null,              "",                           None,                        None,                   True   ))
+        self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":removejunkcodebypatterns",       self.ql_remove_junk_code_by_patterns,           "Remove Junk Code by Patterns",               "Remove Junk Code by Patterns",              None,                   True  ))
+        self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":nopinstructions",       self.ql_nop_items_without_colors,           "Nop Items without Color",               "Nop Items without Color",              None,                   True  ))
+        
         for item in self.menuitems:
             if item.action == "-":
                 continue
