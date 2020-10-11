@@ -107,7 +107,7 @@ def ql_syscall_fcntl(ql, fcntl_fd, fcntl_cmd, *args, **kw):
     ql.os.definesyscall_return(regreturn)
 
 
-def ql_syscall_fcntl64(ql, fcntl_fd, fcntl_cmd, fcntl_arg, null1, null2, null3):
+def ql_syscall_fcntl64(ql, fcntl_fd, fcntl_cmd, fcntl_arg, *args, **kw):
 
     F_GETFD = 1
     F_SETFD = 2
@@ -127,4 +127,11 @@ def ql_syscall_fcntl64(ql, fcntl_fd, fcntl_cmd, fcntl_arg, null1, null2, null3):
         regreturn = 0
 
     ql.nprint("fcntl64(%d, %d, %d) = %d" % (fcntl_fd, fcntl_cmd, fcntl_arg, regreturn))
+    ql.os.definesyscall_return(regreturn)
+
+
+def ql_syscall_flock(ql, flock_fd, flock_operation, *args, **kw):
+    # Should always return 0, we don't need a actual file lock
+    regreturn = 0
+    ql.nprint("flock(%d) = %d" % (flock_operation, regreturn))
     ql.os.definesyscall_return(regreturn)
