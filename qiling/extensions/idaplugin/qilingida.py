@@ -1414,7 +1414,9 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 ql.run(begin=ql_bb_start_ea)
             else:
                 self.hook_data['force'] = {braddr: True}
+                ctx = ql.save()
                 ql.run(begin=ql_bb_start_ea)
+                ql.restore(ctx)
                 self.hook_data['force'] = {braddr: False}
                 ql.run(begin=ql_bb_start_ea)
         del self.deflatqlemu
