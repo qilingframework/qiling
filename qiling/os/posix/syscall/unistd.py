@@ -5,6 +5,8 @@
 
 import stat, logging, itertools, pathlib
 
+from multiprocessing import Process
+
 from qiling.const import *
 from qiling.os.linux.thread import *
 from qiling.const import *
@@ -374,7 +376,14 @@ def ql_syscall_getppid(ql, *args, **kw):
 
 
 def ql_syscall_vfork(ql, *args, **kw):
-    pid = os.fork()
+    if ql.platform == QL_OS.WINDOWS:
+        try:
+            pid = Process()
+            pid = 0 
+        except:
+            pid = -1  
+    else:
+        pid = os.fork()
 
     if pid == 0:
         ql.os.child_processes = True

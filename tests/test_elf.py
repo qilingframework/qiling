@@ -13,6 +13,7 @@ from qiling.const import *
 from qiling.exception import *
 from qiling.os.posix import syscall
 from qiling.os.mapper import QlFsMappedObject
+from qiling.os.stat import Fstat
 
 class ELFTest(unittest.TestCase):
 
@@ -987,7 +988,7 @@ class ELFTest(unittest.TestCase):
                 return 0
 
             def fstat(self):
-                return os.fstat(sys.stdin.fileno())
+                return Fstat(sys.stdin.fileno())
  
             def show(self):
                 pass
@@ -1187,7 +1188,7 @@ class ELFTest(unittest.TestCase):
                 return 0
 
             def fstat(self):
-                return os.fstat(sys.stdin.fileno())
+                return Fstat(sys.stdin.fileno())
  
             def show(self):
                 pass
@@ -1225,7 +1226,7 @@ class ELFTest(unittest.TestCase):
                 return 0
 
             def fstat(self):
-                return os.fstat(sys.stdin.fileno())
+                return Fstat(sys.stdin.fileno())
  
             def show(self):
                 pass

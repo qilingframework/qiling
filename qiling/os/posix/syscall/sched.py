@@ -3,6 +3,9 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
+import types
+from multiprocessing import Process
+
 from qiling.const import *
 from qiling.os.linux.thread import *
 from qiling.const import *
@@ -54,13 +57,16 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
 
     # Shared virtual memory
     if clone_flags & CLONE_VM != CLONE_VM:
-        pid = os.fork()
-        
-        if pid != 0:
-            regreturn = pid
-            ql.nprint("clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d" % (clone_child_stack, clone_flags, clone_newtls, clone_parent_tidptr, clone_child_tidptr, regreturn))
-            ql.os.definesyscall_return(regreturn)
+        if ql.platform == QL_OS.WINDOWS:
+            try:
+                pid = Process()
+                pid = 0 
+            except:
+                pid = -1  
         else:
+            pid = os.fork()
+
+        if pid == 0:
             ql.os.child_processes = True
 
             f_th.update_global_thread_id()
@@ -78,6 +84,11 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
             regreturn = 0
             ql.nprint("clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d" % (clone_child_stack, clone_flags, clone_newtls, clone_parent_tidptr, clone_child_tidptr, regreturn))
             ql.os.definesyscall_return(regreturn)
+        else:
+            regreturn = pid
+            ql.nprint("clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d" % (clone_child_stack, clone_flags, clone_newtls, clone_parent_tidptr, clone_child_tidptr, regreturn))
+            ql.os.definesyscall_return(regreturn)            
+        
         ql.emu_stop()
         return
 
