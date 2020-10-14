@@ -90,8 +90,8 @@ def ql_syscall_connect(ql, connect_sockfd, connect_addr, connect_addrlen, *args,
 
 
 def ql_syscall_setsockopt(ql, *args, **kw):
-    ql.nprint("setsockopt")
     regreturn = 0
+    ql.nprint("setsockopt() = %d" % (regreturn))
     ql.os.definesyscall_return(regreturn)
 
 
