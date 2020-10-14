@@ -48,6 +48,8 @@ import ida_frame
 import ida_idp
 import ida_auto
 import ida_netnode
+import ida_hexrays
+import ida_range
 # PyQt
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import (QPushButton, QHBoxLayout)
@@ -419,6 +421,18 @@ class IDA:
     @staticmethod
     def is_colored_item(ea):
         return ida_nalt.is_colored_item(ea)
+    
+    # NOTE: The [start, end) range should include all control flows except long calls.
+    @staticmethod
+    def get_micro_code_mba(start, end, decomp_flags=ida_hexrays.DECOMP_WARNINGS, maturity=7):
+        mbrgs = ida_hexrays.mba_ranges_t()
+        rg = ida_range.range_t(start, end)
+        mbrgs.ranges.push_back(rg)
+        fl = ida_hexrays.hexrays_failure_t()
+        mba = ida_hexrays.gen_microcode(mbrgs, fl, decomp_flags, maturity)
+        if mba is None:
+            logging.error(f"Fail to get mba because: {fl}")
+        return mba
 
 ### View Class
 
