@@ -1727,6 +1727,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":checkupdate",       self.ql_check_update,           "Check Update",               "Check Update",              None,                   False  ))
         self.menuitems.append(QlEmuMisc.MenuItem("-",                                     self.ql_menu_null,              "",                           None,                        None,                   True   ))
         self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":parseblocks",       self.ql_parse_blocks_for_deobf,           "Auto Analysis For Deflat",               "Auto Analysis For Deflat",              None,                   True  ))
+        # TODO: Dispatcher blocks should support assignment.
         self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":markreal",       self.ql_mark_real,           "Mark as Real Block",               "Mark as Real Block",              None,                   True  ))
         self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":markfake",       self.ql_mark_fake,           "Mark as Fake Block",               "Mark as Fake Block",              None,                   True  ))
         self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":markretn",       self.ql_mark_retn,           "Mark as Return Block",               "Mark as Return Block",              None,                   True  ))
