@@ -959,6 +959,12 @@ class QlEmuQiling:
         if self.ql is not None:
             del self.ql
             self.ql = None
+    
+    def ql_addr_from_ida(self, addr):
+        return addr - get_imagebase() + self.baseaddr
+
+    def ida_addr_from_ql_addr(self, addr):
+        return addr - self.baseaddr + get_imagebase()
 
 ### Plugin
 
@@ -1333,22 +1339,23 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
     def _guide_hook(self, ql, addr, data):
         logging.info(f"Executing: {hex(addr)}")
         start_bb_id = self.hook_data['startbb']
-        cur_bb = IDA.get_block(addr)
-        if "force" in self.hook_data and addr in self.hook_data['force']:
-            if self.hook_data['force'][addr]:
-                reg1 = IDA.print_operand(addr, 0)
-                reg2 = IDA.print_operand(addr, 1)
+        ida_addr = self.deflatqlemu.ida_addr_from_ql_addr(addr)
+        cur_bb = IDA.get_block(ida_addr)
+        if "force" in self.hook_data and ida_addr in self.hook_data['force']:
+            if self.hook_data['force'][ida_addr]:
+                reg1 = IDA.print_operand(ida_addr, 0)
+                reg2 = IDA.print_operand(ida_addr, 1)
                 reg2_val = ql.reg.__getattribute__(reg2)
                 ql.reg.__setattr__(reg1, reg2_val)
             else:
                 pass
-            ins_size = IDA.get_instruction_size(addr)
+            ins_size = IDA.get_instruction_size(ida_addr)
             ql.reg.arch_pc += ins_size
         # TODO: Maybe we can detect whether the program will access unmapped
         #       here so that we won't map the memory.
-        next_ins = IDA.get_instruction(addr)
+        next_ins = IDA.get_instruction(ida_addr)
         if "call" in next_ins:
-            ql.reg.arch_pc += IDA.get_instruction_size(addr)
+            ql.reg.arch_pc += IDA.get_instruction_size(ida_addr)
             return
         if start_bb_id == cur_bb.id:
             return
@@ -1402,13 +1409,14 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             self.hook_data = {
                 "startbb": bbid
             }
+            ql_bb_start_ea = self.deflatqlemu.ql_addr_from_ida(bb.start_ea)
             if braddr is None:
-                ql.run(begin=bb.start_ea)
+                ql.run(begin=ql_bb_start_ea)
             else:
                 self.hook_data['force'] = {braddr: True}
-                ql.run(begin=bb.start_ea)
+                ql.run(begin=ql_bb_start_ea)
                 self.hook_data['force'] = {braddr: False}
-                ql.run(begin=bb.start_ea)
+                ql.run(begin=ql_bb_start_ea)
         del self.deflatqlemu
         self.deflatqlemu = None
         self._log_paths_str()
