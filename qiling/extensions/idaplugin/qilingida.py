@@ -429,7 +429,7 @@ class IDA:
         rg = ida_range.range_t(start, end)
         mbrgs.ranges.push_back(rg)
         fl = ida_hexrays.hexrays_failure_t()
-        mba = ida_hexrays.gen_microcode(mbrgs, fl, decomp_flags, maturity)
+        mba = ida_hexrays.gen_microcode(mbrgs, fl, None, decomp_flags, maturity)
         if mba is None:
             logging.error(f"Fail to get mba because: {fl}")
         return mba
@@ -1374,13 +1374,24 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         return True
 
     def _find_branch_in_real_block(self, bb):
-        paddr = bb.start_ea
-        while paddr < bb.end_ea:
-            ins = IDA.get_instruction(paddr)
-            sz = IDA.get_instruction_size(paddr)
-            if ins.lower().startswith("cmov"):
-                return paddr
-            paddr += sz
+        #paddr = bb.start_ea
+        #while paddr < bb.end_ea:
+        #    ins = IDA.get_instruction(paddr)
+        #    sz = IDA.get_instruction_size(paddr)
+        #    if ins.lower().startswith("cmov"):
+        #        return paddr
+        #    paddr += sz
+
+        # microcode implementation
+        #  Is it possible for the address of a microcode instruction not equal 
+        #  to any start address of a real instruction? IDK, only Hexrays knows.
+        #  So we iterate all addresses so that we won't miss any posssible branchs.
+        for addr in range(bb.start_ea, bb.end_ea):
+            if addr in self.insns:
+                for insn in self.insns[addr]:
+                    opcode = insn.opcode
+                    if ida_hexrays.is_mcode_jcond(opcode):
+                        return addr
         return None
 
     def _log_paths_str(self):
@@ -1460,6 +1471,10 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 logging.info(f"Assemble {instr_to_assemble} at {hex(braddr)}")
                 IDA.assemble(braddr, 0, braddr, True, instr_to_assemble)
                 IDA.perform_analysis(bb.start_ea, bb.end_ea)
+                # Some notes for myself:
+                #   Why a sleep here essential?
+                #   We have to give IDA some time to identify the instruction we assembled just now
+                #   even if we have forced IDA to perform analysis.
                 time.sleep(0.5)
                 next_instr_address = IDA.get_instruction_size(braddr) + braddr
                 instr_to_assemble = f"jmp {self.bb_mapping[self.paths[bbid][1]].start_ea:x}h"      
@@ -1474,9 +1489,27 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         bb = self.bb_mapping[self.pre_dispatcher]
         IDA.fill_block(bb, b'\x00')
     
+    def _prepare_microcodes(self):
+        dispatcher_bb = self.bb_mapping[self.dispatcher]
+        target_function = IDA.get_function(dispatcher_bb.start_ea)
+        self.mba = IDA.get_micro_code_mba(target_function.start_ea, target_function.end_ea)
+        self.insns = {}
+        self.mbbs = {}
+        for i in range(self.mba.qty):
+            mbb = self.mba.get_mblock(i)
+            self.mbbs[i] = mbb
+            cur_insn = mbb.head
+            while cur_insn != None:
+                insn_ea = cur_insn.ea
+                if insn_ea not in self.insns:
+                    self.insns[insn_ea] = []
+                self.insns[insn_ea].append(cur_insn)
+                cur_insn = cur_insn.next
+
     def ql_deflat(self):
         if len(self.bb_mapping) == 0:
             self.ql_parse_blocks_for_deobf()
+        self._prepare_microcodes()
         self._search_path()
         self._patch_codes()
         IDA.perform_analysis(self.deflat_func.start_ea, self.deflat_func.end_ea)
