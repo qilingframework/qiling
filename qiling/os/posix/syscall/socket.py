@@ -44,7 +44,6 @@ def ql_syscall_socket(ql, socket_domain, socket_type, socket_protocol, *args, **
 
     ql.nprint("socket(%d, %d, %d) = %d" % (socket_domain, socket_type, socket_protocol, regreturn))
 
-
     socket_type = socket_type_mapping(socket_type, ql.archtype)
     socket_domain = socket_domain_mapping(socket_domain, ql.archtype)
     ql.dprint(D_INFO, "[+] socket(%s, %s, %s) = %d" % (socket_domain, socket_type, socket_protocol, regreturn))
@@ -96,14 +95,13 @@ def ql_syscall_setsockopt(ql, *args, **kw):
 
 
 def ql_syscall_shutdown(ql, shutdown_fd, shutdown_how, *args, **kw):
-    ql.nprint("shutdown(%d, %d)" % (shutdown_fd, shutdown_how))
-    
     if shutdown_fd >=0 and shutdown_fd < 256 and ql.os.fd[shutdown_fd] != 0:
         try:
             ql.os.fd[shutdown_fd].shutdown(shutdown_how)
             regreturn = 0
         except:
             regreturn = -1
+    ql.nprint("shutdown(%d, %d) = %d" % (shutdown_fd, shutdown_how, regreturn = 0))            
     ql.os.definesyscall_return(regreturn)
 
 
@@ -151,7 +149,7 @@ def ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen,  *args, **kw):
         ql.nprint("bind(%d, %s, %d) = %d" % (bind_fd, path, bind_addrlen, regreturn))
     else:
         ql.nprint("bind(%d,%s:%d,%d) = %d" % (bind_fd, host, port, bind_addrlen,regreturn))
-        ql.dprint (0, "[+] syscall bind host: %s and port: %i sin_family: %i" % (ql_bin_to_ip(host), port, sin_family))
+        ql.dprint (D_INFO, "[+] syscall bind host: %s and port: %i sin_family: %i" % (ql_bin_to_ip(host), port, sin_family))
 
     ql.os.definesyscall_return(regreturn)
 
@@ -171,7 +169,6 @@ def ql_syscall_getsockname(ql, sockfd, addr, addrlenptr, *args, **kw):
         regreturn = -1
 
     ql.nprint("getsockname(%d, 0x%x, 0x%x) = %d" % (sockfd, addr, addrlenptr, regreturn))
-  
     ql.os.definesyscall_return(regreturn)  
 
 
@@ -190,7 +187,6 @@ def ql_syscall_getpeername(ql, sockfd, addr, addrlenptr, *args, **kw):
         regreturn = -1
 
     ql.nprint("getpeername(%d, 0x%x, 0x%x) = %d" % (sockfd, addr, addrlenptr, regreturn))
-  
     ql.os.definesyscall_return(regreturn)  
 
 
@@ -205,6 +201,7 @@ def ql_syscall_listen(ql, listen_sockfd, listen_backlog, *args, **kw):
             regreturn = -1
     else:
         regreturn = -1
+
     ql.nprint("listen(%d, %d) = %d" % (listen_sockfd, listen_backlog, regreturn))
     ql.os.definesyscall_return(regreturn)
 
@@ -246,6 +243,7 @@ def ql_syscall_accept(ql, accept_sockfd, accept_addr, accept_addrlen, *args, **k
         if ql.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
             raise
         regreturn = -1
+
     ql.nprint("accept(%d, %x, %x) = %d" %(accept_sockfd, accept_addr, accept_addrlen, regreturn))
     ql.os.definesyscall_return(regreturn)
 
@@ -260,6 +258,7 @@ def ql_syscall_recv(ql, recv_sockfd, recv_buf, recv_len, recv_flags, *args, **kw
         regreturn = len(tmp_buf)
     else:
         regreturn = -1
+
     ql.nprint("recv(%d, %x, %d, %x) = %d" % (recv_sockfd, recv_buf, recv_len, recv_flags, regreturn))
     ql.os.definesyscall_return(regreturn)
 
@@ -269,8 +268,7 @@ def ql_syscall_send(ql, send_sockfd, send_buf, send_len, send_flags, *args, **kw
     if send_sockfd < 256 and ql.os.fd[send_sockfd] != 0:
         try:
             ql.dprint(D_CTNT, "[+] debug send() start")
-            tmp_buf = ql.mem.read(send_buf, send_len)
-            
+            tmp_buf = ql.mem.read(send_buf, send_len)  
             ql.dprint(D_CTNT, "[+] fd is " + str(send_sockfd))
             ql.dprint(D_CTNT, "[+] send() CONTENT:")
             ql.dprint(D_CTNT, "%s" % str(tmp_buf))
@@ -284,6 +282,7 @@ def ql_syscall_send(ql, send_sockfd, send_buf, send_len, send_flags, *args, **kw
                 raise
     else:
         regreturn = -1
+
     ql.nprint("send(%d, %x, %d, %x) = %d" % (send_sockfd, send_buf, send_len, send_flags, regreturn))
     ql.os.definesyscall_return(regreturn)
 
@@ -317,6 +316,7 @@ def ql_syscall_recvfrom(ql, recvfrom_sockfd, recvfrom_buf, recvfrom_len, recvfro
             regreturn = len(tmp_buf)
         else:
             regreturn = -1
+
         ql.nprint("recvfrom(%d, %#x, %d, %#x, %#x, %#x) = %d" % (recvfrom_sockfd, recvfrom_buf, recvfrom_len, recvfrom_flags, recvfrom_addr, recvfrom_addrlen, regreturn))
         ql.os.definesyscall_return(regreturn)
 
@@ -364,5 +364,6 @@ def ql_syscall_sendto(ql, sendto_sockfd, sendto_buf, sendto_len, sendto_flags, s
                     raise
         else:
             regreturn = -1
+            
         ql.nprint("sendto(%d, %#x, %d, %#x, %#x, %#x) = %d" % (sendto_sockfd, sendto_buf, sendto_len, sendto_flags, sendto_addr, sendto_addrlen, regreturn))
         ql.os.definesyscall_return(regreturn)

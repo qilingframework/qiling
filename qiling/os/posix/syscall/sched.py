@@ -57,6 +57,7 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
 
     # Shared virtual memory
     if clone_flags & CLONE_VM != CLONE_VM:
+        # FIXME: need a proper os.fork() for Windows
         if ql.platform == QL_OS.WINDOWS:
             try:
                 pid = Process()
