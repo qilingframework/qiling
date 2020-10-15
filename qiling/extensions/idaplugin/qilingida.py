@@ -433,6 +433,14 @@ class IDA:
         if mba is None:
             logging.error(f"Fail to get mba because: {fl}")
         return mba
+    
+    @staticmethod
+    def micro_code_from_mbb(mbb):
+        cur = mbb.head
+        while cur is not None:
+            yield cur
+            cur = cur.next
+        return
 
 ### View Class
 
@@ -1336,21 +1344,131 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         self.retn_blocks.append(cur_block.id)
         IDA.color_block(cur_block, Colors.Pink.value)
 
+    def __in_bb(self, addr, bb):
+        return addr < bb.end_ea and addr >= bb.start_ea
+
+    def __is_jmp_mbb(self, mbb):
+        ins_list = list(IDA.micro_code_from_mbb(mbb))
+        if len(ins_list) == 0:
+            logging.warning(f"Get an empty mbb at {hex(mbb.start)}?!")
+            return False
+        last_ins = ins_list[-1]
+        if last_ins.opcode != ida_hexrays.m_goto:
+            logging.warning(f"jmp_mbb at {hex(mbb.start)} the opcode of last instruction {last_ins._print()} isn't goto")
+            return False
+        if last_ins.l.t != ida_hexrays.mop_b:
+            logging.warning(f"jmp_mbb at {hex(mbb.start)} the l of last instruction {last_ins._print()} doesn't have a microcode block reference")
+            return False
+        goto_mbb = self.mbbs[last_ins.l.b]
+        mbb_start = goto_mbb.start
+        dispatcher_bb = self.bb_mapping[self.dispatcher]
+        pre_dispatcher_bb = self.bb_mapping[self.pre_dispatcher]
+        if self.__in_bb(mbb_start, dispatcher_bb) or self.__in_bb(mbb_start, pre_dispatcher_bb):
+            return True
+        logging.warning(f"The address {hex(mbb_start)} where jmp_mbb goes isn't pre_dispatcher or dispatcher block!")
+        return False
+    
+    def __is_next_mbb(self, mbb):
+        ins_list = list(IDA.micro_code_from_mbb(mbb))
+        if len(ins_list) == 0:
+            logging.warning(f"Get an empty mbb at {hex(mbb.start)}?!")
+            return False
+        first_ins = ins_list[0]
+        if first_ins.opcode != ida_hexrays.m_mov:
+            logging.warning(f"next_mbb at {hex(mbb.start)} the opcode of first instruction {first_ins._print()} isn't mov")
+            return False
+        if first_ins.l.t != ida_hexrays.mop_n:
+            logging.warning(f"next_mbb at {hex(mbb.start)} the l of first instruction {first_ins._print()} isn't an immediate number")
+            return False
+        if first_ins.d.t != ida_hexrays.mop_r:
+            logging.warning(f"next_mbb at {hex(mbb.start)} the d of first instruction {first_ins._print()} isn't a reg")
+            return False
+        if len(ins_list) == 1:
+            logging.info(f"A block with only one instruction which is `mov #imm, reg` at {hex(mbb.start)}.")
+        return True
+
+    def _get_jmp_ins(self, ida_addr):
+        ins_list = self.insns[ida_addr]
+        result = []
+        for bbid, ins in ins_list:
+            if ida_hexrays.is_mcode_jcond(ins.opcode):
+                result.append((bbid, ins))
+        if len(result) > 1:
+            logging.warning(f"More than one conditional jmp detected at {hex(ida_addr)}!")
+        elif len(result) == 0:
+            logging.warning(f"No conditional jmp found at {hex(ida_addr)}!")
+            return (None, None)
+        return result[0]
+
+    # cmov/it eq:
+    #   < ... condiontal jump > --> < mov imm, reg > (next_bb) --> < dispatcher >
+    #                           |-> < dispatcher > (jmp_mbb)
+    # NOTE:
+    #   LLVM IR -> ASM -> IDA IR
+    #   I guess this pattern is stable enough for us to rely on.
+    def _force_execution_with_microcode(self, ql, ida_addr):
+        bbid, ins = self._get_jmp_ins(ida_addr)
+        if ins is None:
+            return False
+        # According to comments in hexrays.hpp, it may be a mop_v. I guess that shouldn't exist
+        # so we add a sanity check here.
+        if ins.d.t != ida_hexrays.mop_b:
+            logging.warning(f"Sanity check: microcode {ins._print()} doesn't refer a block!")
+        jmp_mbb = self.mbbs[ins.d.b]
+        next_mbb = self.mbbs[bbid].nextb
+        if not (self.__is_next_mbb(next_mbb) and self.__is_jmp_mbb(jmp_mbb)):
+            # Switch the branch and try again?
+            logging.info("Switch the jmp_bb and next_bb and try again...")
+            if self.__is_jmp_mbb(next_mbb) and self.__is_next_mbb(jmp_mbb):
+                jmp_mbb, next_mbb = next_mbb, jmp_mbb
+            else:
+                logging.error(f"Fail to identify microcode blocks at {hex(ida_addr)}")
+                return False
+        ins_list = list(IDA.micro_code_from_mbb(next_mbb))
+        first_ins = ins_list[0]
+        imm = first_ins.l.nnn.value
+        reg_name = ida_hexrays.get_mreg_name(first_ins.d.r, ql.pointersize)
+        ql.reg.__setattr__(reg_name, imm)
+        return True
+
+    def _ida_address_after_branch(self, ida_addr):
+        _, ins = self._get_jmp_ins(ida_addr)
+        if ins is None:
+            return None
+        # No need to check whether it is jmp_mbb here.
+        return self.mbbs[ins.d.b].start
+
+    # legacy approach
+    # only suport x86_64 now
+    def _force_execution_by_parsing_assembly(self, ql, ida_addr):
+        reg1 = IDA.print_operand(ida_addr, 0)
+        reg2 = IDA.print_operand(ida_addr, 1)
+        reg2_val = ql.reg.__getattribute__(reg2)
+        ql.reg.__setattr__(reg1, reg2_val)
+        return True
+
+
     def _guide_hook(self, ql, addr, data):
-        logging.info(f"Executing: {hex(addr)}")
+        logging.debug(f"Executing: {hex(addr)}")
         start_bb_id = self.hook_data['startbb']
         ida_addr = self.deflatqlemu.ida_addr_from_ql_addr(addr)
         cur_bb = IDA.get_block(ida_addr)
         if "force" in self.hook_data and ida_addr in self.hook_data['force']:
             if self.hook_data['force'][ida_addr]:
-                reg1 = IDA.print_operand(ida_addr, 0)
-                reg2 = IDA.print_operand(ida_addr, 1)
-                reg2_val = ql.reg.__getattribute__(reg2)
-                ql.reg.__setattr__(reg1, reg2_val)
+                logging.info(f"Force execution at {hex(ida_addr)}")
+                result = self._force_execution_with_microcode(ql, ida_addr)
+                if not result:
+                    logging.warning(f"Fail to force execution by microcode at {hex(ida_addr)}, trying legacy approach")
+                    result = self._force_execution_by_parsing_assembly(ql, ida_addr)
+                    if not result:
+                        logging.error(f"Fail to force execution by legacy approach at {hex(ida_addr)}, stop now...")
+                        ql.emu_stop()
+                        return
             else:
                 pass
-            ins_size = IDA.get_instruction_size(ida_addr)
-            ql.reg.arch_pc += ins_size
+            next_ida_addr = self._ida_address_after_branch(ida_addr)
+            logging.info(f"Goto {hex(next_ida_addr)} after branch...")
+            ql.reg.arch_pc = self.deflatqlemu.ql_addr_from_ida(next_ida_addr)
         # TODO: Maybe we can detect whether the program will access unmapped
         #       here so that we won't map the memory.
         next_ins = IDA.get_instruction(ida_addr)
@@ -1388,7 +1506,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         #  So we iterate all addresses so that we won't miss any posssible branchs.
         for addr in range(bb.start_ea, bb.end_ea):
             if addr in self.insns:
-                for insn in self.insns[addr]:
+                for _, insn in self.insns[addr]:
                     opcode = insn.opcode
                     if ida_hexrays.is_mcode_jcond(opcode):
                         return addr
@@ -1503,7 +1621,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 insn_ea = cur_insn.ea
                 if insn_ea not in self.insns:
                     self.insns[insn_ea] = []
-                self.insns[insn_ea].append(cur_insn)
+                self.insns[insn_ea].append((i, cur_insn))
                 cur_insn = cur_insn.next
 
     def ql_deflat(self):
