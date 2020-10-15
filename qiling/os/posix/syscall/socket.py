@@ -101,7 +101,7 @@ def ql_syscall_shutdown(ql, shutdown_fd, shutdown_how, *args, **kw):
             regreturn = 0
         except:
             regreturn = -1
-    ql.nprint("shutdown(%d, %d) = %d" % (shutdown_fd, shutdown_how, regreturn = 0))            
+    ql.nprint("shutdown(%d, %d) = %d" % (shutdown_fd, shutdown_how, regreturn))            
     ql.os.definesyscall_return(regreturn)
 
 
@@ -364,6 +364,6 @@ def ql_syscall_sendto(ql, sendto_sockfd, sendto_buf, sendto_len, sendto_flags, s
                     raise
         else:
             regreturn = -1
-            
+
         ql.nprint("sendto(%d, %#x, %d, %#x, %#x, %#x) = %d" % (sendto_sockfd, sendto_buf, sendto_len, sendto_flags, sendto_addr, sendto_addrlen, regreturn))
         ql.os.definesyscall_return(regreturn)
