@@ -1346,7 +1346,12 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
 
     def __in_bb(self, addr, bb):
         return addr < bb.end_ea and addr >= bb.start_ea
-
+    
+    # Identify if the given microcode block is a jmp_mbb.
+    # Core patterns:
+    #     ...
+    #     ...
+    #     goto @dispatcher
     def __is_jmp_mbb(self, mbb):
         ins_list = list(IDA.micro_code_from_mbb(mbb))
         if len(ins_list) == 0:
@@ -1368,6 +1373,9 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         logging.warning(f"The address {hex(mbb_start)} where jmp_mbb goes isn't pre_dispatcher or dispatcher block!")
         return False
     
+    # Identify if the given microcode block is a next_mbb.
+    # Core patterns:
+    #     mov #imm, reg
     def __is_next_mbb(self, mbb):
         ins_list = list(IDA.micro_code_from_mbb(mbb))
         if len(ins_list) == 0:
