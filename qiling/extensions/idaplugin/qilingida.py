@@ -1622,6 +1622,8 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             return
         logging.info("NOP dispatcher block")
         dispatcher_bb = self.bb_mapping[self.dispatcher]
+        # Some notes:
+        #    Patching b'\x00' instead of 'nop' can help IDA decompile a better result. Don't know why...
         IDA.fill_block(dispatcher_bb, b'\x00')
         first_jmp_addr = dispatcher_bb.start_ea
         instr_to_assemble = self._arch_jmp_instruction(f"{self.bb_mapping[self.paths[self.first_block][0]].start_ea:x}h")
