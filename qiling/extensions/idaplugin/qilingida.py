@@ -26,6 +26,7 @@ from qiling.arch.mips_const import reg_map as mips_reg_map
 from qiling.utils import ql_get_arch_bits
 from qiling import __version__ as QLVERSION
 from qiling.os.filestruct import ql_file
+from keystone import *
 
 # IDA Python SDK
 from idaapi import *
@@ -1007,6 +1008,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         self.userobj = None
         self.customscriptpath = None
         self.bb_mapping = {}
+        self.ks = None
 
     ### Main Framework
 
@@ -1569,9 +1571,48 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 ql.restore(ctx)
                 self.hook_data['force'] = {braddr: False}
                 ql.run(begin=ql_bb_start_ea)
-        del self.deflatqlemu
-        self.deflatqlemu = None
         self._log_paths_str()
+
+    def _initialize_keystone(self):
+        if self.ks is None:
+            self.ks = self.deflatqlemu.ql.os.create_assembler()
+
+    # IDA doesn't support arm assembling, so it's a good chance to replace IDA
+    # assembler implmentation with keystone.
+    def _assemble(self, addr, instr):
+        self._initialize_keystone()
+        logging.debug(f"Keystone: Assemble {instr} at {hex(addr)}")
+        bs, _ = self.ks.asm(instr, addr)
+        IDA.patch_bytes(addr, bs)
+        IDA.perform_analysis(addr, addr + len(bs))  
+
+    # Patching microcode is TOO complex.
+    # I would rahter write another 1e10 llvm passes than a single hexrays decompiler pass.
+    def _arch_jmp_instruction(self, addr):
+        arch = IDA.get_ql_arch_string()
+        op = None
+        if "x86" in arch:
+            op = "jmp"
+        elif "arm" in arch:
+            op = "B"
+        elif "mips" in arch:
+            op = "j"
+        return f"{op} {addr}"
+
+    # See comments below.
+    def _arch_branch_patch(self, braddr, bbid):
+        bb = self.bb_mapping[bbid]
+        arch = IDA.get_ql_arch_string()
+        if "x86" in arch:
+            cmov_instr = IDA.get_instruction(braddr).lower()
+            logging.info(f"Patch NOP from {hex(braddr)} to {hex(bb.end_ea)}")
+            IDA.fill_bytes(braddr, bb.end_ea, b'\x00')
+            jmp_instr = f"j{cmov_instr[4:]}"
+            instr_to_assemble = f"{jmp_instr} {self.bb_mapping[self.paths[bbid][0]].start_ea:x}h"
+            logging.info(f"Assemble {instr_to_assemble} at {hex(braddr)}")
+            self._assemble(braddr, instr_to_assemble)
+        elif "arm" in arch:
+            pass
 
     def _patch_codes(self):
         if len(self.paths[self.first_block]) != 1:
@@ -1581,9 +1622,9 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         dispatcher_bb = self.bb_mapping[self.dispatcher]
         IDA.fill_block(dispatcher_bb, b'\x00')
         first_jmp_addr = dispatcher_bb.start_ea
-        instr_to_assemble = f"jmp {self.bb_mapping[self.paths[self.first_block][0]].start_ea:x}h"
+        instr_to_assemble = self._arch_jmp_instruction(f"{self.bb_mapping[self.paths[self.first_block][0]].start_ea:x}h")
         logging.info(f"Assemble {instr_to_assemble} at {hex(first_jmp_addr)}")
-        IDA.assemble(first_jmp_addr, 0, first_jmp_addr, True, instr_to_assemble)
+        self._assemble(first_jmp_addr, instr_to_assemble)
         for bbid in self.real_blocks:
             bb = self.bb_mapping[bbid]
             braddr = self._find_branch_in_real_block(bb)
@@ -1594,21 +1635,15 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 if len(self.paths[bbid]) != 1:
                     logging.warning(f"Found wrong ways in block: {self._block_str(bb)}, should be 1 path but get {len(self.paths[bbid])}")
                     continue
-                instr_to_assemble = f"jmp {self.bb_mapping[self.paths[bbid][0]].start_ea:x}h"
+                instr_to_assemble = self._arch_jmp_instruction(f"{self.bb_mapping[self.paths[bbid][0]].start_ea:x}h")
                 logging.info(f"Assemble {instr_to_assemble} at {hex(last_instr_address)}")
-                IDA.assemble(last_instr_address, 0, last_instr_address, True, instr_to_assemble)
+                self._assemble(last_instr_address, instr_to_assemble)
                 IDA.perform_analysis(bb.start_ea, bb.end_ea)
             else:
                 if len(self.paths[bbid]) != 2:
                     logging.warning(f"Found wrong ways in block: {self._block_str(bb)}, should be 2 paths but get {len(self.paths[bbid])}")
                     continue
-                cmov_instr = IDA.get_instruction(braddr).lower()
-                logging.info(f"Patch NOP from {hex(braddr)} to {hex(bb.end_ea)}")
-                IDA.fill_bytes(braddr, bb.end_ea, b'\x00')
-                jmp_instr = f"j{cmov_instr[4:]}"
-                instr_to_assemble = f"{jmp_instr} {self.bb_mapping[self.paths[bbid][0]].start_ea:x}h"
-                logging.info(f"Assemble {instr_to_assemble} at {hex(braddr)}")
-                IDA.assemble(braddr, 0, braddr, True, instr_to_assemble)
+                self._arch_branch_patch(braddr, bbid)
                 IDA.perform_analysis(bb.start_ea, bb.end_ea)
                 # Some notes for myself:
                 #   Why a sleep here essential?
@@ -1616,9 +1651,9 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 #   even if we have forced IDA to perform analysis.
                 time.sleep(0.5)
                 next_instr_address = IDA.get_instruction_size(braddr) + braddr
-                instr_to_assemble = f"jmp {self.bb_mapping[self.paths[bbid][1]].start_ea:x}h"      
+                instr_to_assemble = self._arch_jmp_instruction(f"{self.bb_mapping[self.paths[bbid][1]].start_ea:x}h")
                 logging.info(f"Assemble {instr_to_assemble} at {hex(next_instr_address)}")
-                IDA.assemble(next_instr_address, 0, next_instr_address, True, instr_to_assemble)
+                self._initialize_keystoneassemble(next_instr_address, 0, instr_to_assemble)
                 IDA.perform_analysis(bb.start_ea, bb.end_ea)
         for bbid in self.fake_blocks:
             bb = self.bb_mapping[bbid]
@@ -1652,6 +1687,9 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         self._search_path()
         self._patch_codes()
         IDA.perform_analysis(self.deflat_func.start_ea, self.deflat_func.end_ea)
+        del self.deflatqlemu
+        self.deflatqlemu = None
+        self.ks = None
 
     def _block_str(self, bb):
         if type(bb) is int:
