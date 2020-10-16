@@ -1537,7 +1537,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             elif len(succs) == 2:
                 logging.info(f"{self._block_str(bbid)} --(force jump)--> {self._block_str(succs[0])}")
                 logging.info(f"|----(skip jump)----> {self._block_str(succs[1])}")
-            else:
+            elif len(succs) > 2:
                 logging.warning(f"succs: {succs} found from {self._block_str(bbid)}!")
 
     # Q: Why we need emulation to help us find real control flow considering there are some 
@@ -1585,18 +1585,24 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             ql.restore(ctx)
         self._log_paths_str()
 
+
+    # IDA doesn't support arm assembling, so it's a good chance to replace IDA
+    # assembler implmentation with keystone.
     def _initialize_keystone(self):
         if self.ks is None:
             self.ks = self.deflatqlemu.ql.os.create_assembler()
 
-    # IDA doesn't support arm assembling, so it's a good chance to replace IDA
-    # assembler implmentation with keystone.
-    def _assemble(self, addr, instr):
+    
+    def _asm(self, *args, **kwargs):
         self._initialize_keystone()
+        return self.ks.asm(*args, **kwargs)
+
+    def _assemble(self, instr, addr):
         logging.debug(f"Keystone: Assemble {instr} at {hex(addr)}")
-        bs, _ = self.ks.asm(instr, addr)
+        bs, count = self._asm(instr, addr)
         IDA.patch_bytes(addr, bytes(bs))
-        IDA.perform_analysis(addr, addr + len(bs))  
+        IDA.perform_analysis(addr, addr + len(bs))
+        return bs, count
 
     # Patching microcode is TOO complex.
     # I would rahter write another 1e10 llvm passes than a single hexrays decompiler pass.
@@ -1611,20 +1617,67 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             op = "j"
         return f"{op} {addr}"
 
-    # See comments below.
+    # See comments above.
+    def _arch_cond_jmp_instruction(self, cond, addr):
+        arch = IDA.get_ql_arch_string()
+        op = None
+        if "x86" in arch:
+            op = f"j{cond}"
+        elif "arm" in arch:
+            op = f"b{cond}"
+        elif "mips" in arch:
+            op = f"j{cond}"
+        return f"{op} {addr}"
+        
+    # See comments above.
+    def _arch_parse_cond_from_addr(self, braddr):
+        arch = IDA.get_ql_arch_string()
+        instr = IDA.get_instruction(braddr).lower()
+        if "x86" in arch: # cmovge
+            return instr[4:]
+        elif "arm" in arch:
+            if instr.startswith("it"): # itt eq
+                tks = instr.split(" ")
+                if len(tks) != 2:
+                    logging.error(f"Can't get condition from {instr}")
+                    return None
+                return tks[-1]
+            elif "csel" in instr:
+                return IDA.print_operand(braddr, 3)
+        # TODO: mips
+        return None
+
+    # Really FORCE ida to analyse again.
+    def _force_analysis(self, start, end):
+        ida_bytes.del_items(start, 0, end-start)
+        ida_auto.plan_and_wait(start, end)
+        return
+
+    # The only way to make IDA generate right assembly is to undefine bytes patched just now
+    # and call IDA to analyse it again. Nice job again as always, Hexrays!
+    def _patch_bytes_with_force_analysis(self, start, bs):
+        IDA.patch_bytes(start, bs)
+        return self._force_analysis(start, start+len(bs))
+
     def _arch_branch_patch(self, braddr, bbid):
         bb = self.bb_mapping[bbid]
-        arch = IDA.get_ql_arch_string()
-        if "x86" in arch:
-            cmov_instr = IDA.get_instruction(braddr).lower()
-            logging.info(f"Patch NOP from {hex(braddr)} to {hex(bb.end_ea)}")
-            IDA.fill_bytes(braddr, bb.end_ea, b'\x00')
-            jmp_instr = f"j{cmov_instr[4:]}"
-            instr_to_assemble = f"{jmp_instr} {self.bb_mapping[self.paths[bbid][0]].start_ea:x}h"
-            logging.info(f"Assemble {instr_to_assemble} at {hex(braddr)}")
-            self._assemble(braddr, instr_to_assemble)
-        elif "arm" in arch:
-            pass
+        force_addr = self.bb_mapping[self.paths[bbid][0]].start_ea
+        normal_addr = self.bb_mapping[self.paths[bbid][1]].start_ea
+        # Parse condition before patching nop.
+        cond = self._arch_parse_cond_from_addr(braddr)
+        buffer = [0] * (bb.end_ea - braddr)
+        instr_to_assemble = self._arch_cond_jmp_instruction(cond, f"{force_addr:x}h")
+        logging.info(f"Assemble {instr_to_assemble} at {hex(force_addr)}")
+        bs1, _ = self._asm(instr_to_assemble, braddr)
+        buffer[:len(bs1)] = bs1
+        next_instr_address = braddr + len(bs1)
+        instr_to_assemble = self._arch_jmp_instruction(f"{normal_addr:x}h")
+        logging.info(f"Assemble {instr_to_assemble} at {hex(normal_addr)}")
+        bs2, _ = self._asm(instr_to_assemble, next_instr_address)
+        buffer[len(bs1):len(bs1) + len(bs2)] = bs2
+        logging.info(f"Patch real block with branch from {hex(braddr)} to {hex(bb.end_ea)}")
+        self._patch_bytes_with_force_analysis(braddr, bytes(buffer))
+    
 
     def _patch_codes(self):
         if len(self.paths[self.first_block]) != 1:
@@ -1634,48 +1687,43 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         dispatcher_bb = self.bb_mapping[self.dispatcher]
         # Some notes:
         #    Patching b'\x00' instead of 'nop' can help IDA decompile a better result. Don't know why...
-        IDA.fill_block(dispatcher_bb, b'\x00')
+        #    Besides 
+        buffer = [0] * (dispatcher_bb.end_ea - dispatcher_bb.start_ea)
         first_jmp_addr = dispatcher_bb.start_ea
         instr_to_assemble = self._arch_jmp_instruction(f"{self.bb_mapping[self.paths[self.first_block][0]].start_ea:x}h")
         logging.info(f"Assemble {instr_to_assemble} at {hex(first_jmp_addr)}")
-        self._assemble(first_jmp_addr, instr_to_assemble)
+        bs, _ = self._asm(instr_to_assemble, first_jmp_addr)
+        buffer[:len(bs)] = bs
+        logging.info(f"Patch first jump at {hex(first_jmp_addr)}")
+        self._patch_bytes_with_force_analysis(first_jmp_addr, bytes(buffer))
         for bbid in self.real_blocks:
+            logging.debug(f"Patching real block: {self._block_str(bbid)}")
             bb = self.bb_mapping[bbid]
             braddr = self._find_branch_in_real_block(bb)
             if braddr is None:
                 last_instr_address = IDA.get_prev_head(bb.end_ea)
-                logging.info(f"Patch NOP from {hex(last_instr_address)} to {hex(bb.end_ea)}")
-                IDA.fill_bytes(last_instr_address, bb.end_ea, b'\x00')
+                buffer = [0x90] * (bb.end_ea - last_instr_address)
                 if len(self.paths[bbid]) != 1:
                     logging.warning(f"Found wrong ways in block: {self._block_str(bb)}, should be 1 path but get {len(self.paths[bbid])}")
                     continue
                 instr_to_assemble = self._arch_jmp_instruction(f"{self.bb_mapping[self.paths[bbid][0]].start_ea:x}h")
                 logging.info(f"Assemble {instr_to_assemble} at {hex(last_instr_address)}")
-                self._assemble(last_instr_address, instr_to_assemble)
-                IDA.perform_analysis(bb.start_ea, bb.end_ea)
+                bs, _ = self._asm(instr_to_assemble, last_instr_address)
+                buffer[:len(bs)] = bs
+                logging.info(f"Patch real block from {hex(last_instr_address)} to {hex(bb.end_ea)}")
+                self._patch_bytes_with_force_analysis(last_instr_address, bytes(buffer))
             else:
                 if len(self.paths[bbid]) != 2:
                     logging.warning(f"Found wrong ways in block: {self._block_str(bb)}, should be 2 paths but get {len(self.paths[bbid])}")
                     continue
                 self._arch_branch_patch(braddr, bbid)
-                IDA.perform_analysis(bb.start_ea, bb.end_ea)
-                # Some notes for myself:
-                #   Why a sleep here essential?
-                #   We have to give IDA some time to identify the instruction we assembled just now
-                #   even if we have forced IDA to perform analysis.
-                time.sleep(0.5)
-                next_instr_address = IDA.get_instruction_size(braddr) + braddr
-                instr_to_assemble = self._arch_jmp_instruction(f"{self.bb_mapping[self.paths[bbid][1]].start_ea:x}h")
-                logging.info(f"Assemble {instr_to_assemble} at {hex(next_instr_address)}")
-                self._assemble(next_instr_address, instr_to_assemble)
-                IDA.perform_analysis(bb.start_ea, bb.end_ea)
         for bbid in self.fake_blocks:
             bb = self.bb_mapping[bbid]
             logging.info(f"Patch NOP for block: {self._block_str(bb)}")
-            IDA.fill_block(bb, b'\x00')
+            self._patch_bytes_with_force_analysis(bb.start_ea, b"\x00"*(bb.end_ea-bb.start_ea))
         logging.info(f"Patch NOP for pre_dispatcher.")
         bb = self.bb_mapping[self.pre_dispatcher]
-        IDA.fill_block(bb, b'\x00')
+        self._patch_bytes_with_force_analysis(bb.start_ea, b"\x00"*(bb.end_ea-bb.start_ea))
     
     def _prepare_microcodes(self):
         dispatcher_bb = self.bb_mapping[self.dispatcher]
