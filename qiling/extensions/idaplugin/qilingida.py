@@ -1458,6 +1458,8 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         return True
 
     def _has_call_insn(self, ida_addr):
+        if ida_addr not in self.insns:
+            return False
         ins_list = self.insns[ida_addr]
         for _, ins in ins_list:
             if ida_hexrays.is_mcode_call(ins.opcode):
