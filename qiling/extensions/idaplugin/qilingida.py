@@ -1455,6 +1455,12 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         ql.reg.__setattr__(reg1, reg2_val)
         return True
 
+    def _has_call_insn(self, ida_addr):
+        ins_list = self.insns[ida_addr]
+        for _, ins in ins_list:
+            if ida_hexrays.is_mcode_call(ins.opcode):
+                return True
+        return False
 
     def _guide_hook(self, ql, addr, data):
         logging.debug(f"Executing: {hex(addr)}")
@@ -1477,10 +1483,10 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             next_ida_addr = self._ida_address_after_branch(ida_addr)
             logging.info(f"Goto {hex(next_ida_addr)} after branch...")
             ql.reg.arch_pc = self.deflatqlemu.ql_addr_from_ida(next_ida_addr)
+            ida_addr = next_ida_addr
         # TODO: Maybe we can detect whether the program will access unmapped
         #       here so that we won't map the memory.
-        next_ins = IDA.get_instruction(ida_addr)
-        if "call" in next_ins:
+        if self._has_call_insn(ida_addr):
             ql.reg.arch_pc += IDA.get_instruction_size(ida_addr)
             return
         if start_bb_id == cur_bb.id:
