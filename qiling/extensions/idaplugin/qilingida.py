@@ -1560,7 +1560,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         ql.hook_mem_unmapped(self._skip_unmapped_rw)
         # set up stack before we really run.
         first_block = self.bb_mapping[self.first_block]
-        ql.run(begin=first_block.start_ea, end=first_block.end_ea)
+        ql.run(begin=self.deflatqlemu.ql_addr_from_ida(first_block.start_ea), end=self.deflatqlemu.ql_addr_from_ida(first_block.end_ea))
         # okay, we can set up our core hook now.
         ql.hook_code(self._guide_hook)
         for bbid in reals:
