@@ -1534,6 +1534,13 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 logging.info(f"{self._block_str(bbid)} --(force jump)--> {self._block_str(succs[0])}")
                 logging.info(f"|----(skip jump)----> {self._block_str(succs[1])}")
 
+    # Q: Why we need emulation to help us find real control flow considering there are some 
+    #    switch-case patterns in mircocode which can be analysed statically?
+    # A: Emulation makes the de-obf much more robust and general and can work under less assumptions, like
+    #    the optimization level, the complexity of original control flow or even the verson of the
+    #    Hexrays decompiler because we try to avoid matching fixed microcode patterns. In fact, static
+    #    analysis is always possible since the brain of a reverse engineer is the best decompiler 
+    #    and emulator, isn't it? :D
     def _search_path(self):
         self.paths = {bbid: [] for bbid in self.bb_mapping.keys()}
         reals = [self.first_block, *self.real_blocks]
