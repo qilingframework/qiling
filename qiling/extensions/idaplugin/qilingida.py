@@ -57,7 +57,7 @@ from PyQt5.QtWidgets import (QPushButton, QHBoxLayout)
 
 QilingHomePage = 'https://www.qiling.io'
 QilingStableVersionURL = 'https://raw.githubusercontent.com/qilingframework/qiling/master/qiling/__version__.py'
-logging.basicConfig(level=logging.INFO, format='[%(levelname)s][%(module)s:%(lineno)d] %(message)s')
+logging.basicConfig(level=logging.DEBUG, format='[%(levelname)s][%(module)s:%(lineno)d] %(message)s')
 
 class Colors(Enum):
     Blue = 0xE8864A
@@ -1537,6 +1537,8 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             elif len(succs) == 2:
                 logging.info(f"{self._block_str(bbid)} --(force jump)--> {self._block_str(succs[0])}")
                 logging.info(f"|----(skip jump)----> {self._block_str(succs[1])}")
+            else:
+                logging.warning(f"succs: {succs} found from {self._block_str(bbid)}!")
 
     # Q: Why we need emulation to help us find real control flow considering there are some 
     #    switch-case patterns in mircocode which can be analysed statically?
@@ -1553,26 +1555,34 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         self.deflatqlemu.start()
         ql = self.deflatqlemu.ql
         self.hook_data = None
-        ql.hook_code(self._guide_hook)
         ql.hook_mem_read_invalid(self._skip_unmapped_rw)
         ql.hook_mem_write_invalid(self._skip_unmapped_rw)
         ql.hook_mem_unmapped(self._skip_unmapped_rw)
+        # set up stack before we really run.
+        first_block = self.bb_mapping[self.first_block]
+        ql.run(begin=first_block.start_ea, end=first_block.end_ea)
+        # okay, we can set up our core hook now.
+        ql.hook_code(self._guide_hook)
         for bbid in reals:
+            logging.debug(f"Search control flow for block: {self._block_str(bbid)}")
             bb = self.bb_mapping[bbid]
             braddr = self._find_branch_in_real_block(bb)
             self.hook_data = {
                 "startbb": bbid
             }
             ql_bb_start_ea = self.deflatqlemu.ql_addr_from_ida(bb.start_ea)
+            ctx = ql.save()
+            # `end=0` is a workaround for ql remembering last exit_point.
             if braddr is None:
-                ql.run(begin=ql_bb_start_ea)
+                ql.run(begin=ql_bb_start_ea, end=0)
             else:
                 self.hook_data['force'] = {braddr: True}
-                ctx = ql.save()
-                ql.run(begin=ql_bb_start_ea)
-                ql.restore(ctx)
+                ctx2 = ql.save()
+                ql.run(begin=ql_bb_start_ea, end=0)
+                ql.restore(ctx2)
                 self.hook_data['force'] = {braddr: False}
-                ql.run(begin=ql_bb_start_ea)
+                ql.run(begin=ql_bb_start_ea, end=0)
+            ql.restore(ctx)
         self._log_paths_str()
 
     def _initialize_keystone(self):
