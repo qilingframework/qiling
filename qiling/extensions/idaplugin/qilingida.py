@@ -1585,7 +1585,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         self._initialize_keystone()
         logging.debug(f"Keystone: Assemble {instr} at {hex(addr)}")
         bs, _ = self.ks.asm(instr, addr)
-        IDA.patch_bytes(addr, bs)
+        IDA.patch_bytes(addr, bytes(bs))
         IDA.perform_analysis(addr, addr + len(bs))  
 
     # Patching microcode is TOO complex.
@@ -1655,7 +1655,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 next_instr_address = IDA.get_instruction_size(braddr) + braddr
                 instr_to_assemble = self._arch_jmp_instruction(f"{self.bb_mapping[self.paths[bbid][1]].start_ea:x}h")
                 logging.info(f"Assemble {instr_to_assemble} at {hex(next_instr_address)}")
-                self._initialize_keystoneassemble(next_instr_address, 0, instr_to_assemble)
+                self._assemble(next_instr_address, instr_to_assemble)
                 IDA.perform_analysis(bb.start_ea, bb.end_ea)
         for bbid in self.fake_blocks:
             bb = self.bb_mapping[bbid]
