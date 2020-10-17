@@ -1486,12 +1486,12 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 pass
             next_ida_addr = self._ida_address_after_branch(ida_addr)
             logging.info(f"Goto {hex(next_ida_addr)} after branch...")
-            ql.reg.arch_pc = self.deflatqlemu.ql_addr_from_ida(next_ida_addr)
+            ql.reg.arch_pc = self.deflatqlemu.ql_addr_from_ida(next_ida_addr) + self.append
             ida_addr = next_ida_addr
         # TODO: Maybe we can detect whether the program will access unmapped
         #       here so that we won't map the memory.
         if self._has_call_insn(ida_addr):
-            ql.reg.arch_pc += IDA.get_instruction_size(ida_addr)
+            ql.reg.arch_pc += IDA.get_instruction_size(ida_addr) + self.append
             return
         if start_bb_id == cur_bb.id:
             return
@@ -1544,6 +1544,8 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
     def _thumb_detect(self, ida_addr):
         return IDA.get_instruction_size(ida_addr) == 2
 
+    def _log_instr(self, ql, addr, size):
+        logging.debug(f"addr: {hex(addr)} cpsr: {hex(ql.reg.cpsr)}")
 
     # Q: Why we need emulation to help us find real control flow considering there are some 
     #    switch-case patterns in mircocode which can be analysed statically?
@@ -1557,21 +1559,24 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         reals = [self.first_block, *self.real_blocks]
         self.deflatqlemu = QlEmuQiling() 
         self.deflatqlemu.rootfs = self.qlemu.rootfs
+        first_block = self.bb_mapping[self.first_block]
         if IDA.get_ql_arch_string() == "arm32":
-            if self._thumb_detect(self.bb_mapping[self.first_block].start_ea):
+            if self._thumb_detect(first_block.start_ea):
                 logging.info(f"Thumb detected, enable it.")
                 self.deflatqlemu.start(archtype=QL_ARCH.ARM_THUMB)
                 self.deflatqlemu.ql.reg.cpsr |= 0x20
+                self.append = 1
         else:
             self.deflatqlemu.start()
+            self.append = 0
         ql = self.deflatqlemu.ql
+        ql.hook_code(self._log_instr)
         self.hook_data = None
         ql.hook_mem_read_invalid(self._skip_unmapped_rw)
         ql.hook_mem_write_invalid(self._skip_unmapped_rw)
         ql.hook_mem_unmapped(self._skip_unmapped_rw)
         # set up stack before we really run.
-        first_block = self.bb_mapping[self.first_block]
-        ql.run(begin=self.deflatqlemu.ql_addr_from_ida(first_block.start_ea), end=self.deflatqlemu.ql_addr_from_ida(first_block.end_ea))
+        ql.run(begin=self.deflatqlemu.ql_addr_from_ida(first_block.start_ea) + self.append, end=self.deflatqlemu.ql_addr_from_ida(first_block.end_ea))
         # okay, we can set up our core hook now.
         ql.hook_code(self._guide_hook)
         for bbid in reals:
@@ -1581,7 +1586,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             self.hook_data = {
                 "startbb": bbid
             }
-            ql_bb_start_ea = self.deflatqlemu.ql_addr_from_ida(bb.start_ea)
+            ql_bb_start_ea = self.deflatqlemu.ql_addr_from_ida(bb.start_ea) + self.append
             ctx = ql.save()
             # `end=0` is a workaround for ql remembering last exit_point.
             if braddr is None:
