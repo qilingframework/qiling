@@ -192,7 +192,13 @@ class QlCoreUtils(object):
 
     def loader_setup(self, function_name = None):
         if not self.shellcoder:
-            self.archtype, self.ostype, self.archendian = ql_checkostype(self.path)
+            archtype, ostype, archendian = ql_checkostype(self.path)
+            if self.archtype is None:
+                self.archtype = archtype
+            if self.ostype is None:
+                self.ostype = ostype
+            if self.archendian is None:
+                self.archendian = archendian
 
         if not ql_is_valid_ostype(self.ostype):
             raise QlErrorOsType("[!] Invalid OSType")
