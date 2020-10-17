@@ -36,7 +36,8 @@ class QlOsPosix(QlOs):
             self.uid = self.profile.getint("KERNEL","uid")
             self.gid = self.profile.getint("KERNEL","gid")
 
-        
+        self.ipv6 = self.profile.getboolean("NETWORK","ipv6")
+        self.bindtolocalhost = self.profile.getboolean("NETWORK","bindtolocalhost")
         self.fd = QlFileDes([0] * 256)
         self.dict_posix_syscall = dict()
         self.dict_posix_onEnter_syscall = dict()

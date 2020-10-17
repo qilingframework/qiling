@@ -127,12 +127,12 @@ def ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen,  *args, **kw):
         ql.os.fd[bind_fd].bind(path)
 
     # need a proper fix, for now ipv4 comes first
-    elif sin_family == 2 and ql.bindtolocalhost == True:
+    elif sin_family == 2 and ql.os.bindtolocalhost == True:
         ql.os.fd[bind_fd].bind(('127.0.0.1', port))
         host = "127.0.0.1"
 
     # IPv4 should comes first
-    elif ql.ipv6 == True and sin_family == 10 and ql.bindtolocalhost == True:
+    elif ql.os.ipv6 == True and sin_family == 10 and ql.os.bindtolocalhost == True:
         ql.os.fd[bind_fd].bind(('::1', port))
         host = "::1"
 

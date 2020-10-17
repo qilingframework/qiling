@@ -53,7 +53,6 @@ def my_netgear(path, rootfs):
                 )
 
     ql.root             = False
-    ql.bindtolocalhost  = True
     ql.multithread      = False
     ql.add_fs_mapper('/proc', '/proc')
     ql.set_syscall(4004, my_syscall_write)

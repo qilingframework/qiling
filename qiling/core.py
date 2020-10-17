@@ -74,11 +74,6 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         self.debugger = None
         # due to the instablity of multithreading, added a swtich for multithreading
         self.multithread = False
-        # To use IPv6 or not, to avoid binary double bind. ipv6 and ipv4 bind the same port at the same time
-        self.ipv6 = False
-        # Bind to localhost
-        self.bindtolocalhost = True
-        # by turning this on, you must run your analysis with sudo
         self.root = False
         self.filter = None
 
