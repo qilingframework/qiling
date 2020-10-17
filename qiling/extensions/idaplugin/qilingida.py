@@ -1540,6 +1540,10 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             elif len(succs) > 2:
                 logging.warning(f"succs: {succs} found from {self._block_str(bbid)}!")
 
+    # Is this correct?
+    def _thumb_detect(self, ida_addr):
+        return IDA.get_instruction_size(ida_addr) == 2
+
     # Q: Why we need emulation to help us find real control flow considering there are some 
     #    switch-case patterns in mircocode which can be analysed statically?
     # A: Emulation makes the de-obf much more robust and general and can work under less assumptions, like
@@ -1554,6 +1558,10 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         self.deflatqlemu.rootfs = self.qlemu.rootfs
         self.deflatqlemu.start()
         ql = self.deflatqlemu.ql
+        if ql.archtype in [QL_ARCH.ARM, QL_ARCH.ARM_THUMB]:
+            if self._thumb_detect(self.bb_mapping[self.first_block].start_ea):
+                logging.info(f"Thumb detected, enable it.")
+                ql.archtype = QL_ARCH.ARM_THUMB
         self.hook_data = None
         ql.hook_mem_read_invalid(self._skip_unmapped_rw)
         ql.hook_mem_write_invalid(self._skip_unmapped_rw)
