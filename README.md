@@ -217,7 +217,9 @@ Contact us at email info@qiling.io, or via Twitter [@qiling_io](https://twitter.
 - SUN bowen (w1tcher) <w1tcher.bupt@gmail.com>
 - CHEN huitao (null) <null@qiling.io>
 - YU tong (sp1ke) <spikeinhouse@gmail.com>
-- Earl Marcus (klks84) klks84@gmail.com 
+- Earl Marcus (klks84) <klks84@gmail.com>
+- WU chenxu (kabeor) <kabeor@qiling.io>
+- KONG ziqiao <mio@lazym.io>
 
 #### Travis-CI, Docker, Website and Documentation
 
@@ -225,8 +227,6 @@ Contact us at email info@qiling.io, or via Twitter [@qiling_io](https://twitter.
 
 #### Key Contributors (in no particular order)
 
-- lazymio
-- kabeor
 - 0ssigeno
 - liba2k
 - assafcarlsbad
