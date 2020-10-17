@@ -332,7 +332,7 @@ class IDA:
     @staticmethod
     def get_ql_arch_string():
         info = IDA.get_info_structure()
-        proc = info.get_procName()
+        proc = info.get_procName().lower()
         result = None
         if proc == "metapc":
             result = "x86"
@@ -897,16 +897,16 @@ class QlEmuQiling:
         self.exit_addr = None
         self.baseaddr = None
 
-    def start(self):
+    def start(self, *args, **kwargs):
         if sys.platform != 'win32':
             qlstdin = QlEmuMisc.QLStdIO('stdin', sys.__stdin__.fileno())
             qlstdout = QlEmuMisc.QLStdIO('stdout', sys.__stdout__.fileno())
             qlstderr = QlEmuMisc.QLStdIO('stderr', sys.__stderr__.fileno())
             
         if sys.platform != 'win32':
-            self.ql = Qiling(filename=[self.path], rootfs=self.rootfs, output="debug", stdin=qlstdin, stdout=qlstdout, stderr=qlstderr)
+            self.ql = Qiling(filename=[self.path], rootfs=self.rootfs, output="debug", stdin=qlstdin, stdout=qlstdout, stderr=qlstderr, *args, **kwargs)
         else:
-            self.ql = Qiling(filename=[self.path], rootfs=self.rootfs, output="debug")
+            self.ql = Qiling(filename=[self.path], rootfs=self.rootfs, output="debug", *args, **kwargs)
         
         self.exit_addr = self.ql.os.exit_point
         if self.ql.ostype == QL_OS.LINUX:
@@ -1544,6 +1544,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
     def _thumb_detect(self, ida_addr):
         return IDA.get_instruction_size(ida_addr) == 2
 
+
     # Q: Why we need emulation to help us find real control flow considering there are some 
     #    switch-case patterns in mircocode which can be analysed statically?
     # A: Emulation makes the de-obf much more robust and general and can work under less assumptions, like
@@ -1556,12 +1557,14 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         reals = [self.first_block, *self.real_blocks]
         self.deflatqlemu = QlEmuQiling() 
         self.deflatqlemu.rootfs = self.qlemu.rootfs
-        self.deflatqlemu.start()
-        ql = self.deflatqlemu.ql
-        if ql.archtype in [QL_ARCH.ARM, QL_ARCH.ARM_THUMB]:
+        if IDA.get_ql_arch_string() == "arm32":
             if self._thumb_detect(self.bb_mapping[self.first_block].start_ea):
                 logging.info(f"Thumb detected, enable it.")
-                ql.archtype = QL_ARCH.ARM_THUMB
+                self.deflatqlemu.start(archtype=QL_ARCH.ARM_THUMB)
+                self.deflatqlemu.ql.reg.cpsr |= 0x20
+        else:
+            self.deflatqlemu.start()
+        ql = self.deflatqlemu.ql
         self.hook_data = None
         ql.hook_mem_read_invalid(self._skip_unmapped_rw)
         ql.hook_mem_write_invalid(self._skip_unmapped_rw)
