@@ -1470,6 +1470,11 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         logging.debug(f"Executing: {hex(addr)}")
         start_bb_id = self.hook_data['startbb']
         ida_addr = self.deflatqlemu.ida_addr_from_ql_addr(addr)
+        func = self.hook_data['func']
+        if ida_addr < func.start_ea or ida_addr >= func.end_ea:
+            logging.error(f"Address {hex(ida_addr)} out of function boundaries!")
+            ql.emu_stop()
+            return
         cur_bb = IDA.get_block(ida_addr)
         if "force" in self.hook_data and ida_addr in self.hook_data['force']:
             if self.hook_data['force'][ida_addr]:
@@ -1584,7 +1589,8 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             bb = self.bb_mapping[bbid]
             braddr = self._find_branch_in_real_block(bb)
             self.hook_data = {
-                "startbb": bbid
+                "startbb": bbid,
+                "func": IDA.get_function(first_block.start_ea)
             }
             ql_bb_start_ea = self.deflatqlemu.ql_addr_from_ida(bb.start_ea) + self.append
             ctx = ql.save()
@@ -1764,11 +1770,11 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             self.ql_parse_blocks_for_deobf()
         self._prepare_microcodes()
         self._search_path()
-        self._patch_codes()
-        IDA.perform_analysis(self.deflat_func.start_ea, self.deflat_func.end_ea)
-        del self.deflatqlemu
-        self.deflatqlemu = None
-        self.ks = None
+        #self._patch_codes()
+        #IDA.perform_analysis(self.deflat_func.start_ea, self.deflat_func.end_ea)
+        #del self.deflatqlemu
+        #self.deflatqlemu = None
+        #self.ks = None
 
     def _block_str(self, bb):
         if type(bb) is int:
