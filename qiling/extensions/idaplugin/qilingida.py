@@ -1523,10 +1523,10 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                         self.hook_data['result'] = False
                         ql.emu_stop()
                         return
-                    self.hook_data['legacy_force'] = True
+                    self.hook_data['force_legacy'] = True
             else:
                 pass
-            if not self.hook_data['legacy_force']:
+            if not self.hook_data['force_legacy']:
                 next_ida_addr = self._ida_address_after_branch(ida_addr)
             else:
                 next_ida_addr = ida_addr + IDA.get_instruction_size(ida_addr)
