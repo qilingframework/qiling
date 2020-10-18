@@ -57,7 +57,7 @@ from PyQt5.QtWidgets import (QPushButton, QHBoxLayout)
 
 QilingHomePage = 'https://www.qiling.io'
 QilingStableVersionURL = 'https://raw.githubusercontent.com/qilingframework/qiling/master/qiling/__version__.py'
-logging.basicConfig(level=logging.DEBUG, format='[%(levelname)s][%(module)s:%(lineno)d] %(message)s')
+logging.basicConfig(level=logging.INFO, format='[%(levelname)s][%(module)s:%(lineno)d] %(message)s')
 
 class Colors(Enum):
     Blue = 0xE8864A
@@ -1485,7 +1485,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 return True
             elif "csel" in instr: # csel dst, src1, src2, cond
                 dst = IDA.print_operand(ida_addr, 0).lower()
-                src = IDA.print_operand(ida_addr, 1).lower()
+                src = IDA.print_operand(ida_addr, 2).lower()
                 src_val = ql.reg.__getattribute__(src)
                 logging.info(f"Force set {dst} to {hex(src_val)}")
                 ql.reg.__setattr__(dst, src_val)
@@ -1738,6 +1738,10 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         bb = self.bb_mapping[bbid]
         force_addr = self.bb_mapping[self.paths[bbid][0]].start_ea
         normal_addr = self.bb_mapping[self.paths[bbid][1]].start_ea
+        # Temporary dirty fix.
+        # See comments for _force_execution_by_parsing_assembly.
+        if "arm64" == IDA.get_ql_arch_string():
+            force_addr, normal_addr = normal_addr, force_addr
         # Parse condition before patching nop.
         cond = self._arch_parse_cond_from_addr(braddr)
         buffer = [0] * (bb.end_ea - braddr)
