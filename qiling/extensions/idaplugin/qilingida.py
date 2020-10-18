@@ -1397,8 +1397,8 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             logging.info(f"A block with only one instruction which is `mov #imm, reg` at {hex(mbb.start)}.")
         return True
 
-    def _get_jmp_ins(self, ida_addr):
-        ins_list = self.insns[ida_addr]
+    def _get_jmp_ins(self, ida_addr, insns):
+        ins_list = insns[ida_addr]
         result = []
         for bbid, ins in ins_list:
             if ida_hexrays.is_mcode_jcond(ins.opcode):
@@ -1417,15 +1417,16 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
     #   LLVM IR -> ASM -> IDA IR
     #   I guess this pattern is stable enough for us to rely on.
     def _force_execution_with_microcode(self, ql, ida_addr):
-        bbid, ins = self._get_jmp_ins(ida_addr)
+        _, insns, mbbs = self._prepare_microcodes(maturity=7)
+        bbid, ins = self._get_jmp_ins(ida_addr, insns)
         if ins is None:
             return False
         # According to comments in hexrays.hpp, it may be a mop_v. I guess that shouldn't exist
         # so we add a sanity check here.
         if ins.d.t != ida_hexrays.mop_b:
             logging.warning(f"Sanity check: microcode {ins._print()} doesn't refer a block!")
-        jmp_mbb = self.mbbs[ins.d.b]
-        next_mbb = self.mbbs[bbid].nextb
+        jmp_mbb = mbbs[ins.d.b]
+        next_mbb = mbbs[bbid].nextb
         if not (self.__is_next_mbb(next_mbb) and self.__is_jmp_mbb(jmp_mbb)):
             # Switch the branch and try again?
             logging.info("Switch the jmp_bb and next_bb and try again...")
@@ -1438,11 +1439,12 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         first_ins = ins_list[0]
         imm = first_ins.l.nnn.value
         reg_name = ida_hexrays.get_mreg_name(first_ins.d.r, ql.pointersize)
+        logging.info(f"Froce set {reg_name} to {hex(imm)}")
         ql.reg.__setattr__(reg_name, imm)
         return True
 
     def _ida_address_after_branch(self, ida_addr):
-        _, ins = self._get_jmp_ins(ida_addr)
+        _, ins = self._get_jmp_ins(ida_addr, self.insns)
         if ins is None:
             return None
         # No need to check whether it is jmp_mbb here.
@@ -1467,7 +1469,6 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         return False
 
     def _guide_hook(self, ql, addr, data):
-        logging.debug(f"Executing: {hex(addr)}")
         start_bb_id = self.hook_data['startbb']
         ida_addr = self.deflatqlemu.ida_addr_from_ql_addr(addr)
         func = self.hook_data['func']
@@ -1549,8 +1550,13 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
     def _thumb_detect(self, ida_addr):
         return IDA.get_instruction_size(ida_addr) == 2
 
-    def _log_instr(self, ql, addr, size):
-        logging.debug(f"addr: {hex(addr)} cpsr: {hex(ql.reg.cpsr)}")
+    def _log_verbose(self, ql, addr, size):
+        logging.debug(f"addr: {hex(addr)} ida_addr: {hex(self.deflatqlemu.ida_addr_from_ql_addr(addr))}")
+        registers = [ k for k in ql.reg.register_mapping.keys() if type(k) is str ]
+        for idx in range(0, len(registers), 3):
+            regs = registers[idx:idx+3]
+            s = "\t".join(map(lambda v: f"{v:4}: {ql.reg.__getattribute__(v):016x}", regs))
+            logging.debug(s)
 
     # Q: Why we need emulation to help us find real control flow considering there are some 
     #    switch-case patterns in mircocode which can be analysed statically?
@@ -1575,7 +1581,8 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             self.deflatqlemu.start()
             self.append = 0
         ql = self.deflatqlemu.ql
-        ql.hook_code(self._log_instr)
+        if logging.root.level <= logging.DEBUG:
+            ql.hook_code(self._log_verbose)
         self.hook_data = None
         ql.hook_mem_read_invalid(self._skip_unmapped_rw)
         ql.hook_mem_write_invalid(self._skip_unmapped_rw)
@@ -1596,14 +1603,14 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             ctx = ql.save()
             # `end=0` is a workaround for ql remembering last exit_point.
             if braddr is None:
-                ql.run(begin=ql_bb_start_ea, end=0)
+                ql.run(begin=ql_bb_start_ea, end=0, count=0xFFF)
             else:
                 self.hook_data['force'] = {braddr: True}
                 ctx2 = ql.save()
-                ql.run(begin=ql_bb_start_ea, end=0)
+                ql.run(begin=ql_bb_start_ea, end=0, count=0xFFF)
                 ql.restore(ctx2)
                 self.hook_data['force'] = {braddr: False}
-                ql.run(begin=ql_bb_start_ea, end=0)
+                ql.run(begin=ql_bb_start_ea, end=0, count=0xFFF)
             ql.restore(ctx)
         self._log_paths_str()
 
@@ -1747,35 +1754,39 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         bb = self.bb_mapping[self.pre_dispatcher]
         self._patch_bytes_with_force_analysis(bb.start_ea, b"\x00"*(bb.end_ea-bb.start_ea))
     
-    def _prepare_microcodes(self):
+    def _prepare_microcodes(self, decomp_flags=ida_hexrays.DECOMP_WARNINGS | ida_hexrays.DECOMP_NO_WAIT, maturity=7):
         dispatcher_bb = self.bb_mapping[self.dispatcher]
         target_function = IDA.get_function(dispatcher_bb.start_ea)
         # Reduce optimization to make pattern more stable.
         logging.info(f"Generate microcode from {hex(target_function.start_ea)} to {hex(target_function.end_ea)}")
-        self.mba = IDA.get_micro_code_mba(target_function.start_ea, target_function.end_ea, decomp_flags=ida_hexrays.DECOMP_WARNINGS | ida_hexrays.DECOMP_NO_WAIT, maturity=3)
-        self.insns = {}
-        self.mbbs = {}
-        for i in range(self.mba.qty):
-            mbb = self.mba.get_mblock(i)
-            self.mbbs[i] = mbb
+        mba = IDA.get_micro_code_mba(target_function.start_ea, target_function.end_ea, decomp_flags, maturity)
+        insns = {}
+        mbbs = {}
+        for i in range(mba.qty):
+            mbb = mba.get_mblock(i)
+            mbbs[i] = mbb
             cur_insn = mbb.head
             while cur_insn != None:
                 insn_ea = cur_insn.ea
-                if insn_ea not in self.insns:
-                    self.insns[insn_ea] = []
-                self.insns[insn_ea].append((i, cur_insn))
+                if insn_ea not in insns:
+                    insns[insn_ea] = []
+                insns[insn_ea].append((i, cur_insn))
                 cur_insn = cur_insn.next
+        return mba, insns, mbbs
 
     def ql_deflat(self):
         if len(self.bb_mapping) == 0:
             self.ql_parse_blocks_for_deobf()
-        self._prepare_microcodes()
+        self.mba, self.insns, self.mbbs = self._prepare_microcodes(maturity=3)
+        logging.debug("Microcode generation done. Going to search path.")
         self._search_path()
-        #self._patch_codes()
-        #IDA.perform_analysis(self.deflat_func.start_ea, self.deflat_func.end_ea)
-        #del self.deflatqlemu
-        #self.deflatqlemu = None
-        #self.ks = None
+        logging.debug("Real control flows search done. Going to patch codes.")
+        self._patch_codes()
+        logging.debug("Codes patched. Let's tell IDA to analyse the whole function again.")
+        IDA.perform_analysis(self.deflat_func.start_ea, self.deflat_func.end_ea)
+        del self.deflatqlemu
+        self.deflatqlemu = None
+        self.ks = None
 
     def _block_str(self, bb):
         if type(bb) is int:
