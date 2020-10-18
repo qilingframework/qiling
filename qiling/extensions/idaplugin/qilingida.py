@@ -1751,7 +1751,8 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         dispatcher_bb = self.bb_mapping[self.dispatcher]
         target_function = IDA.get_function(dispatcher_bb.start_ea)
         # Reduce optimization to make pattern more stable.
-        self.mba = IDA.get_micro_code_mba(target_function.start_ea, target_function.end_ea, maturity=3)
+        logging.info(f"Generate microcode from {hex(target_function.start_ea)} to {hex(target_function.end_ea)}")
+        self.mba = IDA.get_micro_code_mba(target_function.start_ea, target_function.end_ea, decomp_flags=ida_hexrays.DECOMP_WARNINGS | ida_hexrays.DECOMP_NO_WAIT, maturity=3)
         self.insns = {}
         self.mbbs = {}
         for i in range(self.mba.qty):
