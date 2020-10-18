@@ -236,7 +236,7 @@ class QlOsUtils:
             ks = Ks(KS_ARCH_X86, KS_MODE_64)
 
         elif self.ql.archtype == QL_ARCH.ARM64:  # QL_ARM64
-            ks = Ks(KS_ARCH_ARM64, KS_MODE_ARM)
+            ks = Ks(KS_ARCH_ARM64, KS_MODE_LITTLE_ENDIAN)
 
         elif self.ql.archtype == QL_ARCH.A8086:  # QL_A8086
             ks = Ks(KS_ARCH_X86, KS_MODE_16)
