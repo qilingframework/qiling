@@ -1447,17 +1447,50 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         _, ins = self._get_jmp_ins(ida_addr, self.insns)
         if ins is None:
             return None
-        # No need to check whether it is jmp_mbb here.
         return self.mbbs[ins.d.b].start
 
-    # legacy approach
-    # only suport x86_64 now
+    # legacy approach for x86_64 and arm64
+    # TODO & NOTE: We still need this fallback since the microcode pattern we match now sometimes may change. A better
+    #              approach is that we fully drop pattern machting and emulates the microcode while recording the correspoding
+    #              branch condition. 
+    #              For example:
+    #                CSEL            W8, W8, W9, LT
+    #                =>
+    #                'LT' -> W9->W8 (the value of W9 can be get from emulation)
+    #                'GT' -> W8->W8
+    #                We assume that the comparison (like cmp W10, 0) is the same between real assembly and microcode and the only 
+    #                difference is the condition of the jump instruction. So the 'LT' and 'GT' here represent condition both in microcode 
+    #                and original assembly.
+    #              For current implementation we don't record 'LT' or 'GT' which makes it hard to patch code after force execution.
     def _force_execution_by_parsing_assembly(self, ql, ida_addr):
-        reg1 = IDA.print_operand(ida_addr, 0)
-        reg2 = IDA.print_operand(ida_addr, 1)
-        reg2_val = ql.reg.__getattribute__(reg2)
-        ql.reg.__setattr__(reg1, reg2_val)
-        return True
+        if "x86" in IDA.get_ql_arch_string(): # cmovlg eax, ebx
+            reg1 = IDA.print_operand(ida_addr, 0).lower()
+            reg2 = IDA.print_operand(ida_addr, 1).lower()
+            reg2_val = ql.reg.__getattribute__(reg2)
+            logging.info(f"Force set {reg1} to {hex(reg2_val)}")
+            ql.reg.__setattr__(reg1, reg2_val)
+            return True
+        elif "arm" in IDA.get_ql_arch_string():
+            instr = IDA.get_instruction(ida_addr).lower()
+            logging.info(f"Going to force execute: {instr}")
+            if instr.startswith("it"): # itt eq\n moveqw low\n movteq high\n
+                ida_addr = ida_addr + IDA.get_instruction_size(ida_addr)
+                low = IDA.get_operand(ida_addr, 1)
+                ida_addr = ida_addr + IDA.get_instruction_size(ida_addr)
+                high = IDA.get_operand(ida_addr, 1)
+                reg = IDA.print_operand(ida_addr, 0).lower()
+                val = (high << 16) + low
+                logging.info(f"Force set {reg1} to {hex(val)}")
+                ql.reg.__setattr__(reg, val)
+                return True
+            elif "csel" in instr: # csel dst, src1, src2, cond
+                dst = IDA.print_operand(ida_addr, 0).lower()
+                src = IDA.print_operand(ida_addr, 1).lower()
+                src_val = ql.reg.__getattribute__(src)
+                logging.info(f"Force set {dst} to {hex(src_val)}")
+                ql.reg.__setattr__(dst, src_val)
+                return True
+        return False
 
     def _has_call_insn(self, ida_addr):
         if ida_addr not in self.insns:
@@ -1468,13 +1501,14 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 return True
         return False
 
-    def _guide_hook(self, ql, addr, data):
+    def _guide_hook(self, ql, addr, size):
         start_bb_id = self.hook_data['startbb']
         ida_addr = self.deflatqlemu.ida_addr_from_ql_addr(addr)
         func = self.hook_data['func']
         if ida_addr < func.start_ea or ida_addr >= func.end_ea:
             logging.error(f"Address {hex(ida_addr)} out of function boundaries!")
             ql.emu_stop()
+            self.hook_data['result'] = False
             return
         cur_bb = IDA.get_block(ida_addr)
         if "force" in self.hook_data and ida_addr in self.hook_data['force']:
@@ -1486,11 +1520,16 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                     result = self._force_execution_by_parsing_assembly(ql, ida_addr)
                     if not result:
                         logging.error(f"Fail to force execution by legacy approach at {hex(ida_addr)}, stop now...")
+                        self.hook_data['result'] = False
                         ql.emu_stop()
                         return
+                    self.hook_data['legacy_force'] = True
             else:
                 pass
-            next_ida_addr = self._ida_address_after_branch(ida_addr)
+            if not self.hook_data['legacy_force']:
+                next_ida_addr = self._ida_address_after_branch(ida_addr)
+            else:
+                next_ida_addr = ida_addr + IDA.get_instruction_size(ida_addr)
             logging.info(f"Goto {hex(next_ida_addr)} after branch...")
             ql.reg.arch_pc = self.deflatqlemu.ql_addr_from_ida(next_ida_addr) + self.append
             ida_addr = next_ida_addr
@@ -1588,7 +1627,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         ql.hook_mem_write_invalid(self._skip_unmapped_rw)
         ql.hook_mem_unmapped(self._skip_unmapped_rw)
         # set up stack before we really run.
-        ql.run(begin=self.deflatqlemu.ql_addr_from_ida(first_block.start_ea) + self.append, end=self.deflatqlemu.ql_addr_from_ida(first_block.end_ea))
+        ql.run(begin=self.deflatqlemu.ql_addr_from_ida(first_block.start_ea) + self.append, end=self.deflatqlemu.ql_addr_from_ida(first_block.end_ea), count=0xFFF)
         # okay, we can set up our core hook now.
         ql.hook_code(self._guide_hook)
         for bbid in reals:
@@ -1597,7 +1636,9 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             braddr = self._find_branch_in_real_block(bb)
             self.hook_data = {
                 "startbb": bbid,
-                "func": IDA.get_function(first_block.start_ea)
+                "func": IDA.get_function(first_block.start_ea),
+                "result": True,
+                "force_legacy": False
             }
             ql_bb_start_ea = self.deflatqlemu.ql_addr_from_ida(bb.start_ea) + self.append
             ctx = ql.save()
@@ -1609,10 +1650,15 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 ctx2 = ql.save()
                 ql.run(begin=ql_bb_start_ea, end=0, count=0xFFF)
                 ql.restore(ctx2)
+                if not self.hook_data['result']:
+                    return False
                 self.hook_data['force'] = {braddr: False}
                 ql.run(begin=ql_bb_start_ea, end=0, count=0xFFF)
             ql.restore(ctx)
+            if not self.hook_data['result']:
+                return False
         self._log_paths_str()
+        return True
 
 
     # IDA doesn't support arm assembling, so it's a good chance to replace IDA
@@ -1695,12 +1741,12 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         # Parse condition before patching nop.
         cond = self._arch_parse_cond_from_addr(braddr)
         buffer = [0] * (bb.end_ea - braddr)
-        instr_to_assemble = self._arch_cond_jmp_instruction(cond, f"{force_addr:x}h")
+        instr_to_assemble = self._arch_cond_jmp_instruction(cond, f"{hex(force_addr)}h")
         logging.info(f"Assemble {instr_to_assemble} at {hex(force_addr)}")
         bs1, _ = self._asm(instr_to_assemble, braddr)
         buffer[:len(bs1)] = bs1
         next_instr_address = braddr + len(bs1)
-        instr_to_assemble = self._arch_jmp_instruction(f"{normal_addr:x}h")
+        instr_to_assemble = self._arch_jmp_instruction(f"{hex(normal_addr)}h")
         logging.info(f"Assemble {instr_to_assemble} at {hex(normal_addr)}")
         bs2, _ = self._asm(instr_to_assemble, next_instr_address)
         buffer[len(bs1):len(bs1) + len(bs2)] = bs2
@@ -1719,7 +1765,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         #    Besides 
         buffer = [0] * (dispatcher_bb.end_ea - dispatcher_bb.start_ea)
         first_jmp_addr = dispatcher_bb.start_ea
-        instr_to_assemble = self._arch_jmp_instruction(f"{self.bb_mapping[self.paths[self.first_block][0]].start_ea:x}h")
+        instr_to_assemble = self._arch_jmp_instruction(f"{hex(self.bb_mapping[self.paths[self.first_block][0]].start_ea)}h")
         logging.info(f"Assemble {instr_to_assemble} at {hex(first_jmp_addr)}")
         bs, _ = self._asm(instr_to_assemble, first_jmp_addr)
         buffer[:len(bs)] = bs
@@ -1735,7 +1781,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 if len(self.paths[bbid]) != 1:
                     logging.warning(f"Found wrong ways in block: {self._block_str(bb)}, should be 1 path but get {len(self.paths[bbid])}")
                     continue
-                instr_to_assemble = self._arch_jmp_instruction(f"{self.bb_mapping[self.paths[bbid][0]].start_ea:x}h")
+                instr_to_assemble = self._arch_jmp_instruction(f"{hex(self.bb_mapping[self.paths[bbid][0]].start_ea)}h")
                 logging.info(f"Assemble {instr_to_assemble} at {hex(last_instr_address)}")
                 bs, _ = self._asm(instr_to_assemble, last_instr_address)
                 buffer[:len(bs)] = bs
@@ -1779,7 +1825,9 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             self.ql_parse_blocks_for_deobf()
         self.mba, self.insns, self.mbbs = self._prepare_microcodes(maturity=3)
         logging.debug("Microcode generation done. Going to search path.")
-        self._search_path()
+        if not self._search_path():
+            logging.info(f"Fail to search path. Please fire an issue to us at https://github.com/qilingframework/qiling with relevant logs!")
+            return
         logging.debug("Real control flows search done. Going to patch codes.")
         self._patch_codes()
         logging.debug("Codes patched. Let's tell IDA to analyse the whole function again.")
