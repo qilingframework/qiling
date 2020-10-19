@@ -104,7 +104,7 @@ def is_thumb(bits):
 
 
 def disasm(ql, address):
-    md = ql.os.create_disassembler()
+    md = ql.create_disassembler()
     return next(md.disasm(_read_inst(ql, address), address))
 
 
