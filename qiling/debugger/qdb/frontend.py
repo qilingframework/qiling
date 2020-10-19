@@ -162,7 +162,7 @@ def print_asm(ql, instructions):
 def context_asm(ql, address, size, *args, **kwargs):
 
     with context_printer(ql, field_name="[Code]"):
-        md = ql.os.create_disassembler()
+        md = ql.create_disassembler()
 
         # assembly before current location
 
