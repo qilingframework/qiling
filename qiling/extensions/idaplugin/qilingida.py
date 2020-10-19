@@ -1665,7 +1665,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
     # assembler implmentation with keystone.
     def _initialize_keystone(self):
         if self.ks is None:
-            self.ks = self.deflatqlemu.ql.os.create_assembler()
+            self.ks = self.deflatqlemu.ql.create_assembler()
 
     
     def _asm(self, *args, **kwargs):

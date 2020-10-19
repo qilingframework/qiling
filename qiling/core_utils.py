@@ -6,6 +6,7 @@
 import os, logging, configparser
 
 from keystone import *
+from capstone import *
 from binascii import unhexlify
 
 from .utils import ql_build_module_import_name, ql_get_module_function
@@ -239,50 +240,110 @@ class QlCoreUtils(object):
         config = configparser.ConfigParser()
         config.read(profiles)
         return config
+    
+    # Assembler/Disassembler API
 
-
-    def compile(self, archtype, runcode, arm_thumb=None):
-        def ks_convert(arch):
+    def create_disassembler(self):
+        if self.archtype == QL_ARCH.ARM:  # QL_ARM
+            reg_cpsr = self.reg.cpsr
+            mode = CS_MODE_ARM
             if self.archendian == QL_ENDIAN.EB:
-                adapter = {
-                    QL_ARCH.X86: (KS_ARCH_X86, KS_MODE_32),
-                    QL_ARCH.X8664: (KS_ARCH_X86, KS_MODE_64),
-                    QL_ARCH.MIPS: (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_BIG_ENDIAN),
-                    QL_ARCH.ARM: (KS_ARCH_ARM, KS_MODE_ARM + KS_MODE_BIG_ENDIAN),
-                    QL_ARCH.ARM_THUMB: (KS_ARCH_ARM, KS_MODE_THUMB),
-                    QL_ARCH.ARM64: (KS_ARCH_ARM64, KS_MODE_LITTLE_ENDIAN),
-                }
+                reg_cpsr_v = 0b100000
+                # reg_cpsr_v = 0b000000
             else:
-                adapter = {
-                    QL_ARCH.X86: (KS_ARCH_X86, KS_MODE_32),
-                    QL_ARCH.X8664: (KS_ARCH_X86, KS_MODE_64),
-                    QL_ARCH.MIPS: (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_LITTLE_ENDIAN),
-                    QL_ARCH.ARM: (KS_ARCH_ARM, KS_MODE_ARM),
-                    QL_ARCH.ARM_THUMB: (KS_ARCH_ARM, KS_MODE_THUMB),
-                    QL_ARCH.ARM64: (KS_ARCH_ARM64, KS_MODE_LITTLE_ENDIAN),
-                }
+                reg_cpsr_v = 0b100000
 
-            return adapter.get(arch, (None,None))
+            if reg_cpsr & reg_cpsr_v != 0:
+                mode = CS_MODE_THUMB
 
+            if self.archendian == QL_ENDIAN.EB:
+                md = Cs(CS_ARCH_ARM, mode)
+                # md = Cs(CS_ARCH_ARM, mode + CS_MODE_BIG_ENDIAN)
+            else:
+                md = Cs(CS_ARCH_ARM, mode)
 
-        def compile_instructions(runcode, archtype, archmode):
+        elif self.archtype == QL_ARCH.ARM_THUMB:
+            md = Cs(CS_ARCH_ARM, CS_MODE_THUMB)
 
-            ks = Ks(archtype, archmode)
-            shellcode = ''
-            try:
-                # Initialize engine in X86-32bit mode
-                encoding, count = ks.asm(runcode)
-                shellcode = ''.join('%02x' % i for i in encoding)
-                shellcode = unhexlify(shellcode)
-            except KsError as e:
-                raise
-            return shellcode
+        elif self.archtype == QL_ARCH.X86:  # QL_X86
+            md = Cs(CS_ARCH_X86, CS_MODE_32)
 
-        if arm_thumb and archtype == QL_ARCH.ARM:
-            archtype = QL_ARCH.ARM_THUMB
+        elif self.archtype == QL_ARCH.X8664:  # QL_X86_64
+            md = Cs(CS_ARCH_X86, CS_MODE_64)
 
-        archtype, archmode = ks_convert(archtype)
-        return compile_instructions(runcode, archtype, archmode)        
+        elif self.archtype == QL_ARCH.ARM64:  # QL_ARM64
+            md = Cs(CS_ARCH_ARM64, CS_MODE_ARM)
+
+        elif self.archtype == QL_ARCH.A8086:  # QL_A8086
+            md = Cs(CS_ARCH_X86, CS_MODE_16)
+
+        elif self.archtype == QL_ARCH.MIPS:  # QL_MIPS32
+            if self.archendian == QL_ENDIAN.EB:
+                md = Cs(CS_ARCH_MIPS, CS_MODE_MIPS32 + CS_MODE_BIG_ENDIAN)
+            else:
+                md = Cs(CS_ARCH_MIPS, CS_MODE_MIPS32 + CS_MODE_LITTLE_ENDIAN)
+
+        else:
+            raise QlErrorArch("[!] Unknown arch defined in utils.py (debug output mode)")
+
+        return md
+    
+    def create_assembler(self):
+        if self.archtype == QL_ARCH.ARM:  # QL_ARM
+            reg_cpsr = self.reg.cpsr
+            mode = KS_MODE_ARM
+            if self.archendian == QL_ENDIAN.EB:
+                reg_cpsr_v = 0b100000
+                # reg_cpsr_v = 0b000000
+            else:
+                reg_cpsr_v = 0b100000
+
+            if reg_cpsr & reg_cpsr_v != 0:
+                mode = KS_MODE_THUMB
+
+            if self.archendian == QL_ENDIAN.EB:
+                ks = Ks(KS_ARCH_ARM, mode)
+                # md = Cs(CS_ARCH_ARM, mode + CS_MODE_BIG_ENDIAN)
+            else:
+                ks = Ks(KS_ARCH_ARM, mode)
+
+        elif self.archtype == QL_ARCH.ARM_THUMB:
+            ks = Ks(KS_ARCH_ARM, KS_MODE_THUMB)
+
+        elif self.archtype == QL_ARCH.X86:  # QL_X86
+            ks = Ks(KS_ARCH_X86, KS_MODE_32)
+
+        elif self.archtype == QL_ARCH.X8664:  # QL_X86_64
+            ks = Ks(KS_ARCH_X86, KS_MODE_64)
+
+        elif self.archtype == QL_ARCH.ARM64:  # QL_ARM64
+            ks = Ks(KS_ARCH_ARM64, KS_MODE_LITTLE_ENDIAN)
+
+        elif self.archtype == QL_ARCH.A8086:  # QL_A8086
+            ks = Ks(KS_ARCH_X86, KS_MODE_16)
+
+        elif self.archtype == QL_ARCH.MIPS:  # QL_MIPS32
+            if self.archendian == QL_ENDIAN.EB:
+                ks = Ks(KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_BIG_ENDIAN)
+            else:
+                ks = Ks(KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_LITTLE_ENDIAN)
+
+        else:
+            raise QlErrorArch("[!] Unknown arch defined in utils.py (debug output mode)")
+
+        return ks
+
+    def compile(self, archtype, runcode, arm_thumb=None, addr=0):
+        
+        # Manual fix for old dependency
+        if arm_thumb and self.archtype == QL_ARCH.ARM:
+            ks = Ks(KS_ARCH_ARM, KS_MODE_THUMB)
+        else:
+            ks = self.create_assembler()
+
+        bs, cnt = ks.asm(runcode, addr)
+        shellcode, _ = ''.join('%02x' % i for i in bs)
+        return unhexlify(shellcode) 
 
 
 class QlFileDes:

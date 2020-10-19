@@ -207,101 +207,10 @@ class QlOsUtils:
         # we want to rewrite the return address to the function
         self.ql.stack_write(0, start)
 
-    def create_assembler(self):
-        if self.ql.archtype == QL_ARCH.ARM:  # QL_ARM
-            reg_cpsr = self.ql.reg.cpsr
-            mode = KS_MODE_ARM
-            if self.ql.archendian == QL_ENDIAN.EB:
-                reg_cpsr_v = 0b100000
-                # reg_cpsr_v = 0b000000
-            else:
-                reg_cpsr_v = 0b100000
-
-            if reg_cpsr & reg_cpsr_v != 0:
-                mode = KS_MODE_THUMB
-
-            if self.ql.archendian == QL_ENDIAN.EB:
-                ks = Ks(KS_ARCH_ARM, mode)
-                # md = Cs(CS_ARCH_ARM, mode + CS_MODE_BIG_ENDIAN)
-            else:
-                ks = Ks(KS_ARCH_ARM, mode)
-
-        elif self.ql.archtype == QL_ARCH.ARM_THUMB:
-            ks = Ks(KS_ARCH_ARM, KS_MODE_THUMB)
-
-        elif self.ql.archtype == QL_ARCH.X86:  # QL_X86
-            ks = Ks(KS_ARCH_X86, KS_MODE_32)
-
-        elif self.ql.archtype == QL_ARCH.X8664:  # QL_X86_64
-            ks = Ks(KS_ARCH_X86, KS_MODE_64)
-
-        elif self.ql.archtype == QL_ARCH.ARM64:  # QL_ARM64
-            ks = Ks(KS_ARCH_ARM64, KS_MODE_LITTLE_ENDIAN)
-
-        elif self.ql.archtype == QL_ARCH.A8086:  # QL_A8086
-            ks = Ks(KS_ARCH_X86, KS_MODE_16)
-
-        elif self.ql.archtype == QL_ARCH.MIPS:  # QL_MIPS32
-            if self.ql.archendian == QL_ENDIAN.EB:
-                ks = Ks(KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_BIG_ENDIAN)
-            else:
-                ks = Ks(KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_LITTLE_ENDIAN)
-
-        else:
-            raise QlErrorArch("[!] Unknown arch defined in utils.py (debug output mode)")
-
-        return ks
-            
-
-    def create_disassembler(self):
-        if self.ql.archtype == QL_ARCH.ARM:  # QL_ARM
-            reg_cpsr = self.ql.reg.cpsr
-            mode = CS_MODE_ARM
-            if self.ql.archendian == QL_ENDIAN.EB:
-                reg_cpsr_v = 0b100000
-                # reg_cpsr_v = 0b000000
-            else:
-                reg_cpsr_v = 0b100000
-
-            if reg_cpsr & reg_cpsr_v != 0:
-                mode = CS_MODE_THUMB
-
-            if self.ql.archendian == QL_ENDIAN.EB:
-                md = Cs(CS_ARCH_ARM, mode)
-                # md = Cs(CS_ARCH_ARM, mode + CS_MODE_BIG_ENDIAN)
-            else:
-                md = Cs(CS_ARCH_ARM, mode)
-
-        elif self.ql.archtype == QL_ARCH.ARM_THUMB:
-            md = Cs(CS_ARCH_ARM, CS_MODE_THUMB)
-
-        elif self.ql.archtype == QL_ARCH.X86:  # QL_X86
-            md = Cs(CS_ARCH_X86, CS_MODE_32)
-
-        elif self.ql.archtype == QL_ARCH.X8664:  # QL_X86_64
-            md = Cs(CS_ARCH_X86, CS_MODE_64)
-
-        elif self.ql.archtype == QL_ARCH.ARM64:  # QL_ARM64
-            md = Cs(CS_ARCH_ARM64, CS_MODE_ARM)
-
-        elif self.ql.archtype == QL_ARCH.A8086:  # QL_A8086
-            md = Cs(CS_ARCH_X86, CS_MODE_16)
-
-        elif self.ql.archtype == QL_ARCH.MIPS:  # QL_MIPS32
-            if self.ql.archendian == QL_ENDIAN.EB:
-                md = Cs(CS_ARCH_MIPS, CS_MODE_MIPS32 + CS_MODE_BIG_ENDIAN)
-            else:
-                md = Cs(CS_ARCH_MIPS, CS_MODE_MIPS32 + CS_MODE_LITTLE_ENDIAN)
-
-        else:
-            raise QlErrorArch("[!] Unknown arch defined in utils.py (debug output mode)")
-
-        return md
-
     def disassembler(self, ql, address, size):
         tmp = self.ql.mem.read(address, size)
 
-        md = self.create_disassembler()
+        md = self.ql.create_disassembler()
 
         insn = md.disasm(tmp, address)
         opsize = int(size)
