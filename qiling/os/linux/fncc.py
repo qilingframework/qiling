@@ -205,7 +205,7 @@ def x86_stdcall(ql, param_num, params, func, args, kwargs):
     result, param_num = __x86_cc(ql, param_num, params, func, args, kwargs)
 
     # update stack pointer
-    ql.sp = ql.sp + ((param_num + 1) * 4)
+    ql.reg.sp = ql.reg.sp + ((param_num + 1) * 4)
 
     ql.reg.arch_pc = ret_addr
 
