@@ -341,8 +341,8 @@ class QlCoreUtils(object):
         else:
             ks = self.create_assembler()
 
-        bs, cnt = ks.asm(runcode, addr)
-        shellcode, _ = ''.join('%02x' % i for i in bs)
+        bs, _ = ks.asm(runcode, addr)
+        shellcode = ''.join('%02x' % i for i in bs)
         return unhexlify(shellcode) 
 
 
