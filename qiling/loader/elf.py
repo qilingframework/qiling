@@ -517,7 +517,7 @@ class QlLoaderELF(QlLoader, ELFParse):
                         # ql.nprint('R_X86_64_32S %s: [0x%x] = 0x%x' %(symbol_name, loc, rev_reloc_symbols[symbol_name] & 0xFFFFFFFF))
                         ql.mem.write(loc, ql.pack32(rev_reloc_symbols[symbol_name] & 0xFFFFFFFF & 0xFFFFFFFF))
 
-                elif describe_reloc_type(rel['r_info_type'], elffile)  == 'R_X86_64_64':
+                elif describe_reloc_type(rel['r_info_type'], elffile) == 'R_X86_64_64':
                     # patch this function?
                     val = sym_offset + rel['r_addend']
                     val += 0x2000000    # init_module position: FIXME
@@ -538,7 +538,7 @@ class QlLoaderELF(QlLoader, ELFParse):
                     val = rev_reloc_symbols[symbol_name] + val - loc
                     ql.mem.write(loc, ql.pack32(val & 0xFFFFFFFF))
 
-                elif describe_reloc_type(rel['r_info_type'], elffile)  == 'R_386_32':
+                elif describe_reloc_type(rel['r_info_type'], elffile) == 'R_386_32':
                     val = ql.unpack(ql.mem.read(loc, 4))
                     val = rev_reloc_symbols[symbol_name] + val
                     ql.mem.write(loc, ql.pack32(val & 0xFFFFFFFF))
@@ -631,4 +631,4 @@ class QlLoaderELF(QlLoader, ELFParse):
         # setup hooks for read/write/open syscalls
         ql.import_symbols[self.ql.os.hook_addr] = hook_sys_read
         ql.import_symbols[self.ql.os.hook_addr + 1 * ql.pointersize] = hook_sys_write
-        ql.import_symbols[self.ql.os.hook_addr + 1 * ql.pointersize] = hook_sys_open
+        ql.import_symbols[self.ql.os.hook_addr + 2 * ql.pointersize] = hook_sys_open
