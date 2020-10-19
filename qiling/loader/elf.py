@@ -386,9 +386,11 @@ class QlLoaderELF(QlLoader, ELFParse):
                 # each syscall should be 1KiB(0x400 bytes) away
                 self.ql.mem.map(_vsyscall_addr, _vsyscall_size, info="[vsyscall]")
                 self.ql.mem.write(_vsyscall_addr, _vsyscall_size * b'\xcc')
+                assembler = self.ql.create_assembler()
 
                 def _compile(asm):
-                    return self.ql.compile(self.ql.archtype, asm)
+                    bs, _ = assembler.asm(asm)
+                    return bytes(bs)
 
                 _vsyscall_entry_asm = [ "mov rax, 0x60;",  # syscall gettimeofday
                                         "mov rax, 0xc9;",  # syscall time

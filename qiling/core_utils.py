@@ -333,19 +333,6 @@ class QlCoreUtils(object):
 
         return ks
 
-    def compile(self, archtype, runcode, arm_thumb=None, addr=0):
-        
-        # Manual fix for old dependency
-        if arm_thumb and self.archtype == QL_ARCH.ARM:
-            ks = Ks(KS_ARCH_ARM, KS_MODE_THUMB)
-        else:
-            ks = self.create_assembler()
-
-        bs, _ = ks.asm(runcode, addr)
-        shellcode = ''.join('%02x' % i for i in bs)
-        return unhexlify(shellcode) 
-
-
 class QlFileDes:
     def __init__(self, init):
         self.__fds = init
