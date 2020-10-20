@@ -1170,7 +1170,6 @@ class ELFTest(unittest.TestCase):
             procfile_read_func_begin = ql.loader.load_address + 0x11e0
             procfile_read_func_end = ql.loader.load_address + 0x11fa
             ql.run(begin=procfile_read_func_begin, end=procfile_read_func_end)
-            ql.run()
         except UcError as e:
             print(e)
             sys.exit(-1)
