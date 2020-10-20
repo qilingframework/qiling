@@ -10,7 +10,7 @@ thoughout the qiling framework
 import importlib, logging, os
 from .exception import *
 from .const import QL_ARCH, QL_ARCH_ALL, QL_OS, QL_OS_ALL, QL_OUTPUT, QL_DEBUGGER, QL_ARCH_32BIT, QL_ARCH_64BIT, QL_ARCH_16BIT
-from .const import debugger_map, arch_map, os_map
+from .const import debugger_map, arch_map, os_map, D_INFO
 
 from unicorn import UcError, UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
 

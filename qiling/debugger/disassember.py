@@ -28,11 +28,11 @@ class QlDisassember():
 
         disasm_result = []
         if self.ql.archtype == QL_ARCH.X86:
-            BASE = int(ql.profile.get("OS32", "load_address"), 16)
+            BASE = int(self.ql.profile.get("OS32", "load_address"), 16)
             seg_start = 0x0
             seg_end = 0x0
 
-            f = open(ql.path, 'rb')
+            f = open(self.ql.path, 'rb')
             elffile = ELFFile(f)
             elf_header = elffile.header
             reladyn = elffile.get_section_by_name(seg_name)
