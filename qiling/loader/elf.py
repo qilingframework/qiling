@@ -515,7 +515,7 @@ class QlLoaderELF(QlLoader, ELFParse):
                     else:
                         # print("sym_offset = %x, rel = %x" %(sym_offset, rel['r_addend']))
                         # ql.nprint('R_X86_64_32S %s: [0x%x] = 0x%x' %(symbol_name, loc, rev_reloc_symbols[symbol_name] & 0xFFFFFFFF))
-                        ql.mem.write(loc, ql.pack32(rev_reloc_symbols[symbol_name] & 0xFFFFFFFF & 0xFFFFFFFF))
+                        ql.mem.write(loc, ql.pack32(rev_reloc_symbols[symbol_name] & 0xFFFFFFFF))
 
                 elif describe_reloc_type(rel['r_info_type'], elffile) == 'R_X86_64_64':
                     # patch this function?
