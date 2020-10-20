@@ -238,8 +238,8 @@ def linux_kernel_api(param_num=None, params=None):
         def wrapper(*args, **kwargs):
             ql = args[0]
             if ql.archtype == QL_ARCH.X86:
-                if cc == STDCALL:
-                    return x86_stdcall(ql, param_num, params, func, args, kwargs)
+                # if cc == STDCALL:
+                return x86_stdcall(ql, param_num, params, func, args, kwargs)
                 #elif cc == CDECL:
                 #    return x86_cdecl(ql, param_num, params, func, args, kwargs)
             elif ql.archtype == QL_ARCH.X8664:
