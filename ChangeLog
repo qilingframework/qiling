@@ -6,6 +6,7 @@ This file details the changelog of Qiling Framework.
 - Linux: Implement futex bitset && Check library initialization
 - Linux: vfork and fork syscall mappings
 - execve() ql.argv and ql.env fix
+- De-flattern with IDA plugin now supports ARM && ARM64 with experimental IDA mircocode API.
 - Welcome Lazymio and Kabeor to the team
 
 
