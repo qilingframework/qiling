@@ -1326,6 +1326,9 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             self.retn_blocks.remove(bbid)
 
     def ql_mark_real(self):
+        if len(self.bb_mapping) == 0:
+            logging.error(f"Please perform auto analysis before marking blocks manually!")
+            return
         cur_addr = IDA.get_current_address()
         cur_block = IDA.get_block(cur_addr)
         self._remove_from_bb_lists(cur_block.id)
@@ -1333,6 +1336,9 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         IDA.color_block(cur_block, Colors.Green.value)
 
     def ql_mark_fake(self):
+        if len(self.bb_mapping) == 0:
+            logging.error(f"Please perform auto analysis before marking blocks manually!")
+            return
         cur_addr = IDA.get_current_address()
         cur_block = IDA.get_block(cur_addr)
         self._remove_from_bb_lists(cur_block.id)
@@ -1340,6 +1346,9 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         IDA.color_block(cur_block, Colors.Gray.value)
 
     def ql_mark_retn(self):
+        if len(self.bb_mapping) == 0:
+            logging.error(f"Please perform auto analysis before marking blocks manually!")
+            return
         cur_addr = IDA.get_current_address()
         cur_block = IDA.get_block(cur_addr)
         self._remove_from_bb_lists(cur_block.id)
