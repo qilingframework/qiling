@@ -23,6 +23,20 @@ class QlSanitizedMemoryHeap():
         self.canary_byte = canary_byte
         self.canaries = []
 
+    def save(self):
+        saved_state = {}
+        saved_state['heap'] = self.heap.save()
+        saved_state['fault_rate'] = self.fault_rate
+        saved_state['canary_byte'] = self.canary_byte
+        saved_state['canaries'] = self.canaries
+        return saved_state
+
+    def restore(self, saved_state):
+        self.heap.restore(saved_state['heap'])
+        self.fault_rate = saved_state['fault_rate']
+        self.canary_byte = saved_state['canary_byte']
+        self.canaries = saved_state['canaries']
+
     @staticmethod
     def bo_handler(ql, access, addr, size, value):
         """

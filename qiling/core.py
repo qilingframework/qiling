@@ -238,7 +238,7 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
 
 
     # save all qiling instance states
-    def save(self, reg=True, mem=True, fd=False, cpu_context=False, snapshot=None):
+    def save(self, reg=True, mem=True, fd=False, cpu_context=False, os_context=True, loader=True, snapshot=None):
         saved_states = {}
 
         if reg == True:
@@ -252,6 +252,12 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
 
         if cpu_context == True:
             saved_states.update({"cpu_context": self.arch.context_save()})
+
+        if os_context == True:
+            saved_states.update({"os_context": self.os.save()})
+        
+        if loader == True:
+            saved_states.update({"loader": self.loader.save()})
 
         if snapshot != None:
             with open(snapshot, "wb") as save_state:
@@ -279,6 +285,12 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         
         if "fd" in saved_states:
             self.os.fd.restore(saved_states["fd"])
+
+        if "os_context" in saved_states:
+            self.os.restore(saved_states["os_context"])
+        
+        if "loader" in saved_states:
+            self.loader.restore(saved_states["loader"])
 
 
     # stop emulation

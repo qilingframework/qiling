@@ -80,6 +80,12 @@ class QlOs(QlOsUtils):
         self.appeared_strings = {}
         self.setup_output()
 
+    def save(self):
+        return {}
+
+    def restore(self, saved_state):
+        pass
+
 
     def find_containing_image(self, pc):
         for image in self.ql.loader.images:

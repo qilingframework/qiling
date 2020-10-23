@@ -422,6 +422,26 @@ class QlMemoryHeap:
         self.current_use = 0
         # save all memory regions allocated
         self.mem_alloc = []
+    
+    def save(self):
+        saved_state = {}
+        saved_state['chunks'] = self.chunks
+        saved_state['start_address'] = self.start_address
+        saved_state['end_address'] = self.end_address
+        saved_state['page_size'] = self.page_size
+        saved_state['current_alloc'] = self.current_alloc
+        saved_state['current_use'] = self.current_use
+        saved_state['mem_alloc'] = self.mem_alloc
+        return saved_state
+
+    def restore(self, saved_state):
+        self.chunks = saved_state['chunks']
+        self.start_address = saved_state['start_address']
+        self.end_address = saved_state['end_address']
+        self.page_size = saved_state['page_size']
+        self.current_alloc = saved_state['current_alloc']
+        self.current_use = saved_state['current_use']
+        self.mem_alloc = saved_state['mem_alloc']
 
     def alloc(self, size):
         
