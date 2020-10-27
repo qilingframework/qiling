@@ -24,11 +24,12 @@ class QlOsUefi(QlOs):
         self.heap = None # Will be initialized by the loader.
     
     def save(self):
-        saved_state = {}
+        saved_state = super(QlOsUefi, self).save()
         saved_state['entry_point'] = self.entry_point
         return saved_state
 
     def restore(self, saved_state):
+        super(QlOsUefi, self).restore(saved_state)
         self.entry_point = saved_state['entry_point']
 
     def run(self):

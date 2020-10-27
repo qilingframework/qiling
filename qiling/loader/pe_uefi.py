@@ -39,7 +39,7 @@ class QlLoaderPE_UEFI(QlLoader):
         self.next_image_base = 0x10000
 
     def save(self):
-        saved_state = {}
+        saved_state = super(QlLoaderPE_UEFI, self).save()
         
         # We can't serialize self.modules since it contain pefile objects. let's remove it now and generate it again when loading.
         modules = []
@@ -59,6 +59,7 @@ class QlLoaderPE_UEFI(QlLoader):
         return saved_state
 
     def restore(self, saved_state):
+        super(QlLoaderPE_UEFI, self).restore(saved_state)
         self.modules = []
         for mod in saved_state['modules']:
             self.modules.append(mod+(pefile.PE(mod[0], fast_load=True),))
