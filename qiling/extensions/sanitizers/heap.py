@@ -4,6 +4,12 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
 import random
+from enum import Enum
+
+class CaneryType(Enum):
+        underflow = 0
+        overflow = 1
+        uaf = 2
 
 class QlSanitizedMemoryHeap():
     """
@@ -36,6 +42,12 @@ class QlSanitizedMemoryHeap():
         self.fault_rate = saved_state['fault_rate']
         self.canary_byte = saved_state['canary_byte']
         self.canaries = saved_state['canaries']
+        for (canary_begin, canary_end, canery_type) in self.canaries:
+            if canery_type == CaneryType.underflow or canery_type == CaneryType.overflow:
+                self.ql.hook_mem_write(self.bo_handler, begin=canary_begin, end=canary_end)
+                self.ql.hook_mem_read(self.oob_handler, begin=canary_begin, end=canary_end)
+            else:
+                self.ql.hook_mem_valid(self.uaf_handler, begin=canary_begin, end=canary_end)
 
     @staticmethod
     def bo_handler(ql, access, addr, size, value):
@@ -76,12 +88,12 @@ class QlSanitizedMemoryHeap():
         self.ql.mem.write(addr, self.canary_byte * (size + 8))
 
         # Install canary hooks for overflow/underflow detection.
-        underflow_canary = (addr, addr + 3)
+        underflow_canary = (addr, addr + 3, CaneryType.underflow)
         self.ql.hook_mem_write(self.bo_handler, begin=underflow_canary[0], end=underflow_canary[1])
         self.ql.hook_mem_read(self.oob_handler, begin=underflow_canary[0], end=underflow_canary[1])
         self.canaries.append(underflow_canary)
 
-        overflow_canary = (addr + 4 + size, addr + 4 + size + 3)
+        overflow_canary = (addr + 4 + size, addr + 4 + size + 3, CaneryType.overflow)
         self.ql.hook_mem_write(self.bo_handler, begin=overflow_canary[0], end=overflow_canary[1])
         self.ql.hook_mem_read(self.oob_handler, begin=overflow_canary[0], end=overflow_canary[1])
         self.canaries.append(overflow_canary)
@@ -100,7 +112,7 @@ class QlSanitizedMemoryHeap():
 
         # Install the UAF canary hook.
         self.ql.mem.write(addr, self.canary_byte * (chunk.size - 8))
-        uaf_canary = (addr, addr + chunk.size - 8 - 1)
+        uaf_canary = (addr, addr + chunk.size - 8 - 1, CaneryType.uaf)
         self.ql.hook_mem_valid(self.uaf_handler, begin=uaf_canary[0], end=uaf_canary[1])
         self.canaries.append(uaf_canary)
 
@@ -109,7 +121,7 @@ class QlSanitizedMemoryHeap():
         return True
 
     def validate(self):
-        for (canary_begin, canary_end) in self.canaries:
+        for (canary_begin, canary_end, canery_type) in self.canaries:
             size = canary_end - canary_begin + 1
             canary = self.ql.mem.read(canary_begin, size)
             if canary.count(self.canary_byte) != len(canary):
