@@ -55,7 +55,7 @@ def RegQueryValue(ql, address, params):
     params["hKey"] = s_hKey
     # read reg_type
     if lpType != 0:
-        reg_type = ql.unpack(ql.mem.read(lpType, 4))
+        reg_type = ql.unpack32(ql.mem.read(lpType, 4))
     else:
         reg_type = Registry.RegNone
     try:
