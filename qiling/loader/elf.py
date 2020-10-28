@@ -142,11 +142,13 @@ class QlLoaderELF(QlLoader, ELFParse):
         self.ql.os.stack_address  = self.stack_address
 
 
-    def copy_str(self, addr, l):
+    # Copy strings to stack.
+    def copy_str(self, addr, strs):
         l_addr = []
         s_addr = addr
-        for i in l:
-            s_addr = s_addr - len(i) - 1
+        for s in strs:
+            bs = s.encode("utf-8") + b"\x00"
+            s_addr = s_addr - len(bs)
             # if isinstance(i, bytes):
             #   self.ql.nprint(type(b'\x00'))
             #   self.ql.nprint(type(i))
@@ -155,7 +157,7 @@ class QlLoaderELF(QlLoader, ELFParse):
             #   self.ql.nprint(type(addr))
             #   self.ql.mem.write(s_addr, i + b'\x00')
             # else:
-            self.ql.mem.write(s_addr, i.encode() + b'\x00')
+            self.ql.mem.write(s_addr, bs)
             l_addr.append(s_addr)
         return l_addr, s_addr
 
