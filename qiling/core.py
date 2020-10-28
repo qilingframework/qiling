@@ -238,7 +238,7 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
 
 
     # save all qiling instance states
-    def save(self, reg=True, mem=True, fd=False, cpu_context=False, os_context=True, loader=True, snapshot=None):
+    def save(self, reg=True, mem=True, fd=False, cpu_context=False, os_context=False, loader=False, snapshot=None):
         saved_states = {}
 
         if reg == True:
