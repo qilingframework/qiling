@@ -21,7 +21,17 @@ class QlOsUefi(QlOs):
         self.user_defined_api_onexit = {}
         self.notify_immediately = False
         self.PE_RUN = True
+        self.heap = None # Will be initialized by the loader.
     
+    def save(self):
+        saved_state = super(QlOsUefi, self).save()
+        saved_state['entry_point'] = self.entry_point
+        return saved_state
+
+    def restore(self, saved_state):
+        super(QlOsUefi, self).restore(saved_state)
+        self.entry_point = saved_state['entry_point']
+
     def run(self):
         if self.ql.exit_point is not None:
             self.exit_point = self.ql.exit_point

@@ -38,6 +38,40 @@ class QlLoaderPE_UEFI(QlLoader):
         self.notify_list = []
         self.next_image_base = 0x10000
 
+    def save(self):
+        saved_state = super(QlLoaderPE_UEFI, self).save()
+        
+        # We can't serialize self.modules since it contain pefile objects. let's remove it now and generate it again when loading.
+        modules = []
+        for mod in self.modules:
+            modules.append(mod[:3])
+        saved_state['modules'] = modules
+
+        saved_state['events'] = self.events
+        saved_state['handle_dict'] = self.handle_dict
+        saved_state['notify_list'] = self.notify_list
+        saved_state['next_image_base'] = self.next_image_base
+        saved_state['loaded_image_protocol_modules'] = self.loaded_image_protocol_modules
+        saved_state['tpl'] = self.tpl
+        saved_state['efi_configuration_table'] = self.efi_configuration_table
+        # since this class initialize the heap (that is hosted by the OS object), we will store it here.
+        saved_state['heap'] = self.ql.os.heap.save()
+        return saved_state
+
+    def restore(self, saved_state):
+        super(QlLoaderPE_UEFI, self).restore(saved_state)
+        self.modules = []
+        for mod in saved_state['modules']:
+            self.modules.append(mod+(pefile.PE(mod[0], fast_load=True),))
+        self.events = saved_state['events']
+        self.handle_dict = saved_state['handle_dict']
+        self.notify_list = saved_state['notify_list']
+        self.next_image_base = saved_state['next_image_base']
+        self.loaded_image_protocol_modules = saved_state['loaded_image_protocol_modules']
+        self.tpl = saved_state['tpl']
+        self.efi_configuration_table = saved_state['efi_configuration_table']
+        self.ql.os.heap.restore(saved_state['heap'])
+
     @contextmanager
     def map_memory(self, addr, size):
         self.ql.mem.map(addr, size)

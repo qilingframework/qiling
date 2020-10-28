@@ -7,6 +7,7 @@ This file details the changelog of Qiling Framework.
 - Linux: vfork and fork syscall mappings
 - execve() ql.argv and ql.env fix
 - De-flattern with IDA plugin now supports ARM && ARM64 with experimental IDA mircocode API.
+- Snapshot mechanism allows saving and restoring of OS and Loader information.
 - Welcome Lazymio and Kabeor to the team
 
 
