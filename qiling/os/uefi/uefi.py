@@ -20,7 +20,6 @@ class QlOsUefi(QlOs):
         self.user_defined_api = {}
         self.user_defined_api_onenter = {}
         self.user_defined_api_onexit = {}
-        self.notify_immediately = False
         self.PE_RUN = True
         self.heap = None # Will be initialized by the loader.
     
