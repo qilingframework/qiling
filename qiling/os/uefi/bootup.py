@@ -115,8 +115,7 @@ def SignalEvent(ql, event_id):
             event["Set"] = True
             notify_func = event["NotifyFunction"]
             notify_context = event["NotifyContext"]
-            else:
-                ql.loader.notify_list.append((event_id, notify_func, notify_context))
+            ql.loader.notify_list.append((event_id, notify_func, notify_context))
         return EFI_SUCCESS
     else:
         return EFI_INVALID_PARAMETER
