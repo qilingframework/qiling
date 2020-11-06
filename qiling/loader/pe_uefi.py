@@ -102,7 +102,7 @@ class QlLoaderPE_UEFI(QlLoader):
         self.loaded_image_protocol_modules.append(image_base)
 
 
-    def map_and_load(self, path, execute_now=False, callback_ctx=None):
+    def map_and_load(self, path, execute_now=False):
         ql = self.ql
         pe = pefile.PE(path, fast_load=True)
 
@@ -130,11 +130,18 @@ class QlLoaderPE_UEFI(QlLoader):
                 self.install_loaded_image_protocol(IMAGE_BASE, IMAGE_SIZE, entry_point)
                 self.images.append(self.coverage_image(IMAGE_BASE, IMAGE_BASE + pe.NT_HEADERS.OPTIONAL_HEADER.SizeOfImage, path))
                 if execute_now:
-                    self.OOO_EOE_callbacks.append(callback_ctx)
-                    # X64 shadow store - The caller is responsible for allocating space for parameters to the callee, and must always allocate sufficient space to store four register parameters
-                    ql.reg.rsp -= pointer_size * 4
-                    self.execute_module(path, IMAGE_BASE, entry_point, self.OOO_EOE_ptr)
-                    ql.stack_push(entry_point) # Return from here to the entry point of the loaded module.
+                    self.ql.nprint(f'[+] Running from 0x{entry_point:x} of {path}')
+                    assembler = self.ql.create_assembler()
+                    code = f"""
+                        mov rcx, {IMAGE_BASE}
+                        mov rdx, {self.system_table_ptr}
+                        mov rax, {entry_point}
+                        call rax
+                    """
+                    runcode, _ = assembler.asm(code)
+                    ptr = ql.os.heap.alloc(len(runcode))
+                    ql.mem.write(ptr, bytes(runcode))
+                    ql.os.exec_arbitrary(ptr, ptr+len(runcode))
 
                 else:
                     self.modules.append((path, IMAGE_BASE, entry_point, pe))
@@ -170,6 +177,8 @@ class QlLoaderPE_UEFI(QlLoader):
         self.ql.nprint(f'[+] Running from 0x{entry_point:x} of {path}')
 
     def execute_next_module(self):
+        if self.ql.os.notify_before_module_execution(self.ql, self.modules[0][0]):
+            return
         path, image_base, entry_point, pe = self.modules.pop(0)
         self.execute_module(path, image_base, entry_point, self.end_of_execution_ptr)
 
@@ -318,10 +327,6 @@ class QlLoaderPE_UEFI(QlLoader):
         self.ql.mem.write(self.end_of_execution_ptr, b'\xcc')
         system_table_heap_ptr += pointer_size
         self.ql.hook_address(hook_EndOfExecution, self.end_of_execution_ptr)
-        self.OOO_EOE_ptr = system_table_heap_ptr
-        self.ql.hook_address(hook_OutOfOrder_EndOfExecution, self.OOO_EOE_ptr)
-        system_table_heap_ptr += pointer_size
-        self.OOO_EOE_callbacks = []
 
         self.execute_next_module()
 

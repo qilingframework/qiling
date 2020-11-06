@@ -115,16 +115,7 @@ def SignalEvent(ql, event_id):
             event["Set"] = True
             notify_func = event["NotifyFunction"]
             notify_context = event["NotifyContext"]
-            if ql.os.notify_immediately:
-                ql.nprint(f'[+] Notify event:{event_id} calling:{notify_func:x} context:{notify_context:x}')
-                # X64 shadow store - The caller is responsible for allocating space for parameters to the callee, and must always allocate sufficient space to store four register parameters
-                ql.reg.rsp -= pointer_size * 4 
-                ql.stack_push(ql.loader.OOO_EOE_ptr) # Return address from the notify function.
-                ql.stack_push(notify_func) # Return address from here -> the notify function.
-                ql.loader.OOO_EOE_callbacks.append(None) # We don't need a callback.
-                ql.reg.rcx = notify_context
-            else:
-                ql.loader.notify_list.append((event_id, notify_func, notify_context))
+            ql.loader.notify_list.append((event_id, notify_func, notify_context))
         return EFI_SUCCESS
     else:
         return EFI_INVALID_PARAMETER

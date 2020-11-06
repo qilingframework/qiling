@@ -16,10 +16,10 @@ class QlOsUefi(QlOs):
         super(QlOsUefi, self).__init__(ql)
         self.ql = ql
         self.entry_point = 0
+        self.running_module = None
         self.user_defined_api = {}
         self.user_defined_api_onenter = {}
         self.user_defined_api_onexit = {}
-        self.notify_immediately = False
         self.PE_RUN = True
         self.heap = None # Will be initialized by the loader.
     
@@ -32,7 +32,17 @@ class QlOsUefi(QlOs):
         super(QlOsUefi, self).restore(saved_state)
         self.entry_point = saved_state['entry_point']
 
+    @staticmethod
+    def notify_after_module_execution(ql, number_of_modules_left):
+        return False
+    
+    @staticmethod
+    def notify_before_module_execution(ql, module):
+        ql.os.running_module = module
+        return False
+
     def run(self):
+        self.notify_before_module_execution(self.ql, self.running_module)
         if self.ql.exit_point is not None:
             self.exit_point = self.ql.exit_point
         
