@@ -1164,7 +1164,18 @@ class ELFTest(unittest.TestCase):
         ql.run()
         del ql
 
-    def test_demigod_m0hamed(self):
+    def test_demigod_m0hamed_x86(self):
+        ql = Qiling(["../examples/rootfs/x86_linux/kernel/m0hamed_rootkit.ko"],  "../examples/rootfs/x86_linux", output="disasm")
+        try:
+            procfile_read_func_begin = ql.loader.load_address + 0x11e0
+            procfile_read_func_end = ql.loader.load_address + 0x11fa
+            ql.run(begin=procfile_read_func_begin, end=procfile_read_func_end)
+        except UcError as e:
+            print(e)
+            sys.exit(-1)
+        del ql
+
+    def test_demigod_m0hamed_x8664(self):
         ql = Qiling(["../examples/rootfs/x8664_linux/kernel/m0hamed_rootkit.ko"],  "../examples/rootfs/x8664_linux", output="disasm")
         try:
             ql.run()

@@ -23,6 +23,13 @@ def hook___fentry__(ql, address, params):
 @linux_kernel_api(params={
     "Ptr": POINTER
 })
+def hook_mcount(ql, address, params):
+    return 0
+
+
+@linux_kernel_api(params={
+    "Ptr": POINTER
+})
 def hook___x86_indirect_thunk_rax(ql, address, params):
     return 0
 

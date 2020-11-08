@@ -476,8 +476,8 @@ class QlLoaderELF(QlLoader, ELFParse):
                             # we need to lookup from address to symbol, so we can find the right callback
                             # for sys_xxx handler for syscall, the address must be aligned to 8
                             if symbol_name.startswith('sys_'):
-                                if self.ql.os.hook_addr % 8 != 0:
-                                    self.ql.os.hook_addr = (int(self.ql.os.hook_addr / 8) + 1) * 8
+                                if self.ql.os.hook_addr % self.ql.pointersize != 0:
+                                    self.ql.os.hook_addr = (int(self.ql.os.hook_addr / self.ql.pointersize) + 1) * self.ql.pointersize
                                     # print("hook_addr = %x" %self.ql.os.hook_addr)
                             ql.import_symbols[self.ql.os.hook_addr] = symbol_name
                             # ql.nprint(":: Demigod is hooking %s(), at slot %x" %(symbol_name, self.ql.os.hook_addr))
@@ -486,12 +486,12 @@ class QlLoaderELF(QlLoader, ELFParse):
                                 # FIXME: this is for rootkit to scan for syscall table from page_offset_base
                                 # write address of syscall table to this slot,
                                 # so syscall scanner can quickly find it
-                                ql.mem.write(self.ql.os.hook_addr, struct.pack("<Q", SYSCALL_MEM))
+                                ql.mem.write(self.ql.os.hook_addr, self.ql.pack(SYSCALL_MEM))
 
                             # we also need to do reverse lookup from symbol to address
                             rev_reloc_symbols[symbol_name] = self.ql.os.hook_addr
                             sym_offset = self.ql.os.hook_addr - mem_start
-                            self.ql.os.hook_addr += 8  # FIXME: 8 is only for x64, but x32 only need 4
+                            self.ql.os.hook_addr += self.ql.pointersize
                         else:
                             # local symbol
                             all_symbols.append(symbol_name)
@@ -517,9 +517,9 @@ class QlLoaderELF(QlLoader, ELFParse):
                     else:
                         # print("sym_offset = %x, rel = %x" %(sym_offset, rel['r_addend']))
                         # ql.nprint('R_X86_64_32S %s: [0x%x] = 0x%x' %(symbol_name, loc, rev_reloc_symbols[symbol_name] & 0xFFFFFFFF))
-                        ql.mem.write(loc, ql.pack32(rev_reloc_symbols[symbol_name] & 0xFFFFFFFF & 0xFFFFFFFF))
+                        ql.mem.write(loc, ql.pack32(rev_reloc_symbols[symbol_name] & 0xFFFFFFFF))
 
-                if describe_reloc_type(rel['r_info_type'], elffile) == 'R_X86_64_64':
+                elif describe_reloc_type(rel['r_info_type'], elffile) == 'R_X86_64_64':
                     # patch this function?
                     val = sym_offset + rel['r_addend']
                     val += 0x2000000    # init_module position: FIXME
@@ -527,12 +527,22 @@ class QlLoaderELF(QlLoader, ELFParse):
                     # ql.nprint('R_X86_64_64 %s: [0x%x] = 0x%x' %(symbol_name, loc, val))
                     ql.mem.write(loc, ql.pack64(val))
 
-                if describe_reloc_type(rel['r_info_type'], elffile) == 'R_X86_64_PC32':
+                elif describe_reloc_type(rel['r_info_type'], elffile) == 'R_X86_64_PC32':
                     # patch branch address: X86 case
                     val = rel['r_addend'] - loc
                     val += rev_reloc_symbols[symbol_name]
                     # finally patch this reloc
                     # ql.nprint('R_X86_64_PC32 %s: [0x%x] = 0x%x' %(symbol_name, loc, val & 0xFFFFFFFF))
+                    ql.mem.write(loc, ql.pack32(val & 0xFFFFFFFF))
+
+                elif describe_reloc_type(rel['r_info_type'], elffile) == 'R_386_PC32':
+                    val = ql.unpack(ql.mem.read(loc, 4))
+                    val = rev_reloc_symbols[symbol_name] + val - loc
+                    ql.mem.write(loc, ql.pack32(val & 0xFFFFFFFF))
+
+                elif describe_reloc_type(rel['r_info_type'], elffile) == 'R_386_32':
+                    val = ql.unpack(ql.mem.read(loc, 4))
+                    val = rev_reloc_symbols[symbol_name] + val
                     ql.mem.write(loc, ql.pack32(val & 0xFFFFFFFF))
 
         return rev_reloc_symbols
@@ -593,7 +603,7 @@ class QlLoaderELF(QlLoader, ELFParse):
         self.stack_address = new_stack
         self.load_address = loadbase
 
-        rev_reloc_symbols = self.lkm_dynlinker(ql, mem_start)
+        rev_reloc_symbols = self.lkm_dynlinker(ql, mem_start + loadbase)
 
         # remember address of syscall table, so external tools can access to it
         ql.os.syscall_addr = SYSCALL_MEM
@@ -606,20 +616,21 @@ class QlLoaderELF(QlLoader, ELFParse):
         # print(rev_reloc_symbols.keys())
         for sc in rev_reloc_symbols.keys():
             if sc != 'sys_call_table' and sc.startswith('sys_'):
-                # print("> sc = %s" %sc)
-                syscall_id = globals()[sc.replace("sys_", "NR_")]
-                print("Writing syscall %s to [0x%x]" %(sc, SYSCALL_MEM + 8 * syscall_id))
-                ql.mem.write(SYSCALL_MEM + 8 * syscall_id, ql.pack64(rev_reloc_symbols[sc]))
+                tmp_sc = sc.replace("sys_", "NR_")
+                if tmp_sc in globals():
+                    syscall_id = globals()[tmp_sc]
+                    print("Writing syscall %s to [0x%x]" %(sc, SYSCALL_MEM + ql.pointersize * syscall_id))
+                    ql.mem.write(SYSCALL_MEM + ql.pointersize * syscall_id, ql.pack(rev_reloc_symbols[sc]))
 
         # write syscall addresses into syscall table
         #ql.mem.write(SYSCALL_MEM + 0, struct.pack("<Q", hook_sys_read))
-        ql.mem.write(SYSCALL_MEM + 0, struct.pack("<Q", self.ql.os.hook_addr))
+        ql.mem.write(SYSCALL_MEM + 0, ql.pack(self.ql.os.hook_addr))
         #ql.mem.write(SYSCALL_MEM + 1  * 8, struct.pack("<Q", hook_sys_write))
-        ql.mem.write(SYSCALL_MEM + 1  * 8, struct.pack("<Q", self.ql.os.hook_addr + 1 * 8))
+        ql.mem.write(SYSCALL_MEM + 1  * ql.pointersize, ql.pack(self.ql.os.hook_addr + 1 * ql.pointersize))
         #ql.mem.write(SYSCALL_MEM + 2  * 8, struct.pack("<Q", hook_sys_open))
-        ql.mem.write(SYSCALL_MEM + 2  * 8, struct.pack("<Q", self.ql.os.hook_addr + 2 * 8))
+        ql.mem.write(SYSCALL_MEM + 2  * ql.pointersize, ql.pack(self.ql.os.hook_addr + 2 * ql.pointersize))
 
         # setup hooks for read/write/open syscalls
         ql.import_symbols[self.ql.os.hook_addr] = hook_sys_read
-        ql.import_symbols[self.ql.os.hook_addr + 1 * 8] = hook_sys_write
-        ql.import_symbols[self.ql.os.hook_addr + 1 * 8] = hook_sys_open
+        ql.import_symbols[self.ql.os.hook_addr + 1 * ql.pointersize] = hook_sys_write
+        ql.import_symbols[self.ql.os.hook_addr + 2 * ql.pointersize] = hook_sys_open
