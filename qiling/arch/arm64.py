@@ -8,11 +8,20 @@ from unicorn.arm64_const import *
 
 from qiling.const import *
 from .arch import QlArch
-from .arm64_const import *
+
+class ARM64Const():
+    @property
+    def reg_map(self):
+        reg_map={}
+        for x in dir(unicorn.arm64_const):
+            if "UC_ARM64_REG_" in x:
+                reg_map[x.replace("UC_ARM64_REG_","").lower()]=eval(x)
+        return reg_map
 
 class QlArchARM64(QlArch):
     def __init__(self, ql):
         super(QlArchARM64, self).__init__(ql)
+        reg_map=ARM64Const().reg_map
 
         register_mappings = [
             reg_map

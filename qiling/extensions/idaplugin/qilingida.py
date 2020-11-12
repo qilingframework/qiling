@@ -16,13 +16,18 @@ from elftools.elf.elffile import ELFFile
 # Qiling
 from qiling import *
 from qiling.const import *
+from qiling.arch.x86_const import reg_map_16 as x86_reg_map_16
 from qiling.arch.x86_const import reg_map_32 as x86_reg_map_32
 from qiling.arch.x86_const import reg_map_64 as x86_reg_map_64
 from qiling.arch.x86_const import reg_map_misc as x86_reg_map_misc
 from qiling.arch.x86_const import reg_map_st as x86_reg_map_st
-from qiling.arch.arm_const import reg_map as arm_reg_map
-from qiling.arch.arm64_const import reg_map as arm64_reg_map
-from qiling.arch.mips_const import reg_map as mips_reg_map
+from qiling.arch.arm import ARMConst
+from qiling.arch.arm64 import ARM64Const
+from qiling.arch.mips import MIPSConst
+arm_reg_map=ARMConst().reg_map
+arm64_reg_map=ARM64Const().reg_map
+mips_reg_map=MIPSConst().reg_map
+
 from qiling.utils import ql_get_arch_bits
 from qiling import __version__ as QLVERSION
 from qiling.os.filestruct import ql_file
@@ -54,6 +59,7 @@ import ida_range
 # PyQt
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import (QPushButton, QHBoxLayout)
+
 
 QilingHomePage = 'https://www.qiling.io'
 QilingStableVersionURL = 'https://raw.githubusercontent.com/qilingframework/qiling/master/qiling/__version__.py'
@@ -819,6 +825,7 @@ class QlEmuMisc:
     @staticmethod
     def get_reg_map(ql:Qiling):
         tables = {
+            QL_ARCH.A8086: list({**x86_reg_map_16, **x86_reg_map_misc}.keys()),
             QL_ARCH.X86     : list({**x86_reg_map_32, **x86_reg_map_misc, **x86_reg_map_st}.keys()),
             QL_ARCH.X8664   : list({**x86_reg_map_64, **x86_reg_map_misc, **x86_reg_map_st}.keys()),
             QL_ARCH.ARM     : list({**arm_reg_map}.keys()),
@@ -826,7 +833,9 @@ class QlEmuMisc:
             QL_ARCH.MIPS    : list({**mips_reg_map}.keys()),
         }
 
-        if ql.archtype == QL_ARCH.X86:
+        if ql.archtype == QL_ARCH.A8086:
+            return tables[QL_ARCH.A8086]
+        elif ql.archtype == QL_ARCH.X86:
             return tables[QL_ARCH.X86]
         elif ql.archtype == QL_ARCH.X8664:
             return tables[QL_ARCH.X8664]

@@ -8,15 +8,23 @@ from unicorn.mips_const import *
 
 from qiling.const import *
 from .arch import QlArch
-from .mips_const import *
+
+class MIPSConst():
+    @property
+    def reg_map(self):
+        reg_map={}
+        for x in dir(mips_const):
+            if "UC_MIPS_REG_" in x:
+                reg_map[x.replace("UC_MIPS_REG_","").lower()]=eval(x)
+        return reg_map
 
 
 class QlArchMIPS(QlArch):
     def __init__(self, ql):
         super(QlArchMIPS, self).__init__(ql)
-
+        reg_map=MIPSConst().reg_map
         register_mappings = [
-            reg_map, reg_map_afpr128
+            reg_map
         ]
 
         for reg_maper in register_mappings:

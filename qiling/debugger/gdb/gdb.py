@@ -20,9 +20,12 @@ from qiling.arch.x86_const import reg_map_32 as x86_reg_map_32
 from qiling.arch.x86_const import reg_map_64 as x86_reg_map_64
 from qiling.arch.x86_const import reg_map_misc as x86_reg_map_misc
 from qiling.arch.x86_const import reg_map_st as x86_reg_map_st
-from qiling.arch.arm_const import reg_map as arm_reg_map
-from qiling.arch.arm64_const import reg_map as arm64_reg_map
-from qiling.arch.mips_const import reg_map as mips_reg_map
+from qiling.arch.arm import ARMConst
+from qiling.arch.arm64 import ARM64Const
+from qiling.arch.mips import MIPSConst
+arm64_reg_map=ARM64Const().reg_map
+arm_reg_map=ARMConst().reg_map
+mips_reg_map=MIPSConst().reg_map
 
 GDB_SIGNAL_INT  = 2
 GDB_SIGNAL_SEGV = 11
@@ -85,7 +88,7 @@ class QlGdb(QlDebugger, object):
            
         self.gdb.bp_insert(self.entry_point)
 
-        
+
 
         #Setup register tables, order of tables is important
         self.tables = {
