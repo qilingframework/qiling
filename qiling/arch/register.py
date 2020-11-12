@@ -20,20 +20,22 @@ class QlRegisterManager():
 
 
     def __getattribute__(self, name):
+        name = name.lower()
         if name in ("register_mapping", "ql", "uc_pc", "uc_sp"):
             return super(QlRegisterManager, self).__getattribute__(name)
-        
-        if name in self.register_mapping:
+
+        elif name in self.register_mapping:
             return self.ql.uc.reg_read(self.register_mapping[name])
 
         return super(QlRegisterManager, self).__getattribute__(name)
 
 
     def __setattr__(self, name, value):
+        name=name.lower()
         if name in ("register_mapping", "ql", "uc_pc", "uc_sp"):
             super(QlRegisterManager, self).__setattr__(name, value)
 
-        if name in self.register_mapping:
+        elif name in self.register_mapping:
             self.ql.uc.reg_write(self.register_mapping[name], value)
         else:
             super(QlRegisterManager, self).__setattr__(name, value)
