@@ -170,11 +170,7 @@ class QlLoaderELF(QlLoader, ELFParse):
 
 
     def NEW_AUX_ENT(self, key, val):
-        if self.ql.archbit == 32:
-            return self.ql.pack32(int(key)) + self.ql.pack32(int(val))
-        elif self.ql.archbit == 64:
-            return self.ql.pack64(int(key)) + self.ql.pack64(int(val))
-
+        return self.ql.pack(int(key)) + self.ql.pack(int(val))    
 
     def NullStr(self, s):
         return s[ : s.find(b'\x00')]
@@ -261,7 +257,7 @@ class QlLoaderELF(QlLoader, ELFParse):
                 self.interp_address = int(self.ql.os.profile.get("OS32", "interp_address"), 16)
 
             self.ql.dprint(D_INFO, "[+] interp_address is : 0x%x" % (self.interp_address))
-            self.ql.mem.map(self.interp_address, int(interp_mem_size), info=os.path.abspath(self.ql.rootfs+interp_path))
+            self.ql.mem.map(self.interp_address, int(interp_mem_size), info=os.path.abspath(self.ql.rootfs + interp_path))
 
             for i in interp.parse_segments():
                 # i =dict(i.header)
@@ -282,37 +278,21 @@ class QlLoaderELF(QlLoader, ELFParse):
         new_stack = stack_addr
 
         # Set argc
-        #if self.ql.archbit == 32:
-        #    elf_table += self.ql.pack32(len(argv))
-        #else:
         elf_table += self.ql.pack(len(argv))
 
         # Set argv
         if len(argv) != 0:
             argv_addr, new_stack = self.copy_str(stack_addr, argv)
+            elf_table += b''.join([self.ql.pack(_) for _ in argv_addr])
 
-            if self.ql.archbit == 32:
-                elf_table += b''.join([self.ql.pack32(_) for _ in argv_addr])
-            elif self.ql.archbit == 64:
-                elf_table += b''.join([self.ql.pack64(_) for _ in argv_addr])
-
-        if self.ql.archbit == 32:
-            elf_table += self.ql.pack32(0)
-        elif self.ql.archbit == 64:
-            elf_table += self.ql.pack64(0)
+        elf_table += self.ql.pack(0)
 
         # Set env
         if len(env) != 0:
             env_addr, new_stack = self.copy_str(new_stack, [key + '=' + value for key, value in env.items()])
-            if self.ql.archbit == 32:
-                elf_table += b''.join([self.ql.pack32(_) for _ in env_addr])
-            elif self.ql.archbit == 64:
-                elf_table += b''.join([self.ql.pack64(_) for _ in env_addr])
+            elf_table += b''.join([self.ql.pack(_) for _ in env_addr])    
 
-        if self.ql.archbit == 32:
-            elf_table += self.ql.pack32(0)
-        elif self.ql.archbit == 64:
-            elf_table += self.ql.pack64(0)
+        elf_table += self.ql.pack(0)
 
         new_stack = self.alignment(new_stack)
         randstr = 'a' * 0x10
@@ -321,11 +301,6 @@ class QlLoaderELF(QlLoader, ELFParse):
         new_stack = self.alignment(new_stack)
 
         # Set AUX
-
-        # self.ql.mem.write(new_stack - 4, self.ql.pack32(0x11111111))
-        # new_stack = new_stack - 4
-        # rand_addr = new_stack - 4
-
         self.elf_phdr     = (load_address + elfhead['e_phoff'])
         self.elf_phent    = (elfhead['e_phentsize'])
         self.elf_phnum    = (elfhead['e_phnum'])
