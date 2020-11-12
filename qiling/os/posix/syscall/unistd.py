@@ -274,7 +274,8 @@ def ql_syscall_write(ql, write_fd, write_buf, write_count, *args, **kw):
             ql.dprint(D_CTNT, "%s" % buf)
 
         ql.nprint("write(%d,%x,%i) = %d" % (write_fd, write_buf, write_count, regreturn))
-        ql.os.fd[write_fd].write(buf)
+        if "write" in dir(ql.os.fd[write_fd]):
+            ql.os.fd[write_fd].write(buf)
         regreturn = write_count
 
     except:
