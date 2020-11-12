@@ -128,12 +128,14 @@ class QlOs(QlOsUtils):
 
 
     def _x8664_set_args(self, args):
-        if self.ostype == QL_OS.LINUX:
+        reg_list=None
+        if self.ql.ostype == QL_OS.LINUX:
             reg_list = [UC_X86_REG_RDI, UC_X86_REG_RSI, UC_X86_REG_RDX, UC_X86_REG_R10, UC_X86_REG_R8, UC_X86_REG_R9]
-        elif self.ostype == QL_OS.WINDOWS:
+        elif self.ql.ostype == QL_OS.WINDOWS:
             reg_list = [UC_X86_REG_RCX, UC_X86_REG_RDX, UC_X86_REG_R8, UC_X86_REG_R9]
-        for i in range(len(args)):
-            self.ql.uc.reg_write(reg_list[i], args[i])
+        if reg_list!=None:
+            for i in range(len(args)):
+                self.ql.uc.reg_write(reg_list[i], args[i])
 
 
     def set_function_args(self, args):
