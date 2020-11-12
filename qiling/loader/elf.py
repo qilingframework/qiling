@@ -5,6 +5,7 @@
 import sys
 import os
 import string
+from heapq import heappush, heappop
 
 from elftools.elf.elffile import ELFFile
 from elftools.elf.relocation import RelocationSection
@@ -53,7 +54,6 @@ API_HOOK_MEM = 0x1000000
 SYSCALL_MEM = API_HOOK_MEM + 0x1000
 
 
-
 class ELFParse():
     def __init__(self, path, ql):
         self.path = os.path.abspath(path)
@@ -63,21 +63,20 @@ class ELFParse():
         elfdata = self.f.read()
         self.elffile = ELFFile(self.f)
 
-        self.elfdata = elfdata.ljust(52, b'\x00')        
+        self.elfdata = elfdata.ljust(52, b'\x00')
 
-        if self.elffile.e_ident_raw[ : 4] != b'\x7fELF':
+        if self.elffile.e_ident_raw[: 4] != b'\x7fELF':
             raise QlErrorELFFormat("[!] ERROR: NOT a ELF")
 
         self.elfhead = self.parse_header()
-        if self.elfhead['e_type'] == "ET_REL":   # kernel driver
+        if self.elfhead['e_type'] == "ET_REL":  # kernel driver
             self.is_driver = True
         else:
             self.is_driver = False
 
-
     def getelfdata(self, offest, size):
-        return self.elfdata[offest : offest + size]
-    
+        return self.elfdata[offest: offest + size]
+
     def parse_header(self):
         return dict(self.elffile.header)
 
@@ -92,8 +91,11 @@ class QlLoaderELF(QlLoader, ELFParse):
     def __init__(self, ql):
         super(QlLoaderELF, self).__init__(ql)
         self.ql = ql
-              
+
     def run(self):
+        stack_address=0
+        stack_size=0
+
         if self.ql.archbit == 32:
             stack_address = int(self.ql.os.profile.get("OS32", "stack_address"), 16)
             stack_size = int(self.ql.os.profile.get("OS32", "stack_size"), 16)
@@ -103,17 +105,17 @@ class QlLoaderELF(QlLoader, ELFParse):
 
         if self.ql.shellcoder:
             self.ql.mem.map(self.ql.os.entry_point, self.ql.os.shellcoder_ram_size, info="[shellcode_stack]")
-            self.ql.os.entry_point  = (self.ql.os.entry_point + 0x200000 - 0x1000)
-            
+            self.ql.os.entry_point = (self.ql.os.entry_point + 0x200000 - 0x1000)
+
             # for ASM file input, will mem.write in qltools
             try:
                 self.ql.mem.write(self.ql.os.entry_point, self.ql.shellcoder)
             except:
-                pass    
-            
+                pass
+
             self.ql.reg.arch_sp = self.ql.os.entry_point
             return
-            
+
         self.path = self.ql.path
         ELFParse.__init__(self, self.path, self.ql)
         self.interp_address = 0
@@ -127,11 +129,10 @@ class QlLoaderELF(QlLoader, ELFParse):
             self.ql.reg.rdi = init_rdi
             self.ql.reg.r14 = init_rdi
 
-
         if not self.is_driver:
-            self.load_with_ld(stack_address + stack_size, argv = self.argv, env = self.env)
+            self.load_with_ld(stack_address + stack_size, argv=self.argv, env=self.env)
         else:
-            
+
             # Linux kernel driver
             if self.load_driver(self.ql, stack_address + stack_size):
                 raise QlErrorFileType("Unsupported FileType")
@@ -139,8 +140,7 @@ class QlLoaderELF(QlLoader, ELFParse):
             self.ql.hook_code(hook_kernel_api)
 
         self.ql.reg.arch_sp = self.stack_address
-        self.ql.os.stack_address  = self.stack_address
-
+        self.ql.os.stack_address = self.stack_address
 
     # Copy strings to stack.
     def copy_str(self, addr, strs):
@@ -161,22 +161,25 @@ class QlLoaderELF(QlLoader, ELFParse):
             l_addr.append(s_addr)
         return l_addr, s_addr
 
-
     def alignment(self, val):
         if self.ql.archbit == 64:
             return (val // 8) * 8
         elif self.ql.archbit == 32:
             return (val // 4) * 4
 
+    def pcalc(self, length, align):
+        tmp = length // align
+        if length % align:
+            tmp = tmp + 1
+        return tmp * align
 
     def NEW_AUX_ENT(self, key, val):
-        return self.ql.pack(int(key)) + self.ql.pack(int(val))    
+        return self.ql.pack(int(key)) + self.ql.pack(int(val))
 
     def NullStr(self, s):
-        return s[ : s.find(b'\x00')]
+        return s[: s.find(b'\x00')]
 
-
-    def load_with_ld(self, stack_addr, load_address = -1, argv = [], env = {}):
+    def load_with_ld(self, stack_addr, load_address=-1, argv=[], env={}):
         if load_address <= 0:
             if self.ql.archbit == 64:
                 load_address = int(self.ql.os.profile.get("OS64", "load_address"), 16)
@@ -185,19 +188,48 @@ class QlLoaderELF(QlLoader, ELFParse):
 
         elfhead = super().parse_header()
 
+        # We need to sort the memory segments first, sometimes they are unordered
+        loadheap = []
+        for entry in super().parse_segments():
+            if entry['p_type'] == 'PT_LOAD' or entry['p_type'] == 'PT_INTERP':
+                paddr = entry['p_vaddr']
+                heappush(loadheap, (paddr, entry))
+        loaddb = [dict(heappop(loadheap)[1].header) for i in range(len(loadheap))]
+
+        pagesize = 1024
+        # Now we calculate the segments based on page alignment
+        _load_segments = {}
+        _last_offset = 0
+        _last_start = 0
+        for entry in loaddb:
+            if entry['p_type'] == 'PT_LOAD':
+                _mem_start = entry['p_vaddr']
+                _mem_len = entry['p_memsz']
+                _mem_end = self.pcalc(entry['p_vaddr'] + entry['p_memsz'], pagesize)
+                _perms = int(bin(entry["p_flags"])[:1:-1], 2)  # reverse bits for perms mapping
+                if _last_offset < _mem_start:
+                    _load_segments[_mem_start] = _mem_end, _perms
+                    _last_start = _mem_start
+                elif _perms == _last_perm:
+                    _load_segments[_last_start] = _mem_end, _perms
+                else:
+                    _load_segments[_mem_start] = _mem_end, _perms
+                    _last_start = _mem_start
+                _last_offset = _mem_end
+                _last_perm = _perms
+
         # Determine the range of memory space opened up
         mem_start = -1
         mem_end = -1
         interp_path = ''
-        for i in super().parse_segments():
-            i = dict(i.header)
-            if i['p_type'] == 'PT_LOAD':
-                if mem_start > i['p_vaddr'] or mem_start == -1:
-                    mem_start = i['p_vaddr']
-                if mem_end < i['p_vaddr'] + i['p_memsz'] or mem_end == -1:
-                    mem_end = i['p_vaddr'] + i['p_memsz']
-            if i['p_type'] == 'PT_INTERP':
-                interp_path = self.NullStr(super().getelfdata(i['p_offset'], i['p_filesz']))
+        for entry in loaddb:
+            if entry['p_type'] == 'PT_LOAD':
+                if mem_start > entry['p_vaddr'] or mem_start == -1:
+                    mem_start = entry['p_vaddr']
+                if mem_end < entry['p_vaddr'] + entry['p_memsz'] or mem_end == -1:
+                    mem_end = entry['p_vaddr'] + entry['p_memsz']
+            if entry['p_type'] == 'PT_INTERP':
+                interp_path = self.NullStr(super().getelfdata(entry['p_offset'], entry['p_filesz']))
 
         mem_start = int(mem_start // 0x1000) * 0x1000
         mem_end = int(mem_end // 0x1000 + 1) * 0x1000
@@ -205,26 +237,40 @@ class QlLoaderELF(QlLoader, ELFParse):
         if elfhead['e_type'] == 'ET_EXEC':
             load_address = 0
         elif elfhead['e_type'] != 'ET_DYN':
-            self.ql.dprint(D_INFO, "[+] Some error in head e_type: %i!", elfhead['e_type'])
+            self.ql.nprint("[+] Some error in head e_type: %i!" , elfhead['e_type'])
             return -1
 
-        for i in super().parse_segments():
-            i = dict(i.header)
-            if i['p_type'] == 'PT_LOAD':
-                _mem_s = ((load_address + i["p_vaddr"]) // 0x1000 ) * 0x1000
-                _mem_e = ((load_address + i["p_vaddr"] + i["p_filesz"]) // 0x1000 + 1) * 0x1000
-                _perms = int(bin(i["p_flags"])[:1:-1], 2) # reverse bits for perms mapping
-
-                self.ql.mem.map(_mem_s, _mem_e-_mem_s, perms=_perms, info=self.path)
+        _highestmapped_e=0
+        # Let's map the memory first
+        for segment in _load_segments:
+            _mem_s = load_address + segment
+            _mem_e = load_address + _load_segments[segment][0]
+            _perms = _load_segments[segment][1]&0xFF
+            try:
+                self.ql.mem.map(_mem_s, _mem_e - _mem_s, perms=_perms,info=self.path)
+                if _mem_e>_highestmapped_e:
+                    _highestmapped_e=_mem_e
                 self.ql.dprint(D_INFO, "[+] load 0x%x - 0x%x" % (_mem_s, _mem_e))
+            except Exception as e:
+                self.ql.dprint(D_INFO, "[!] load 0x%x - 0x%x => %s" % (_mem_s, _mem_e, str(e)))
+                continue
 
-                self.ql.mem.write(load_address+i["p_vaddr"], super().getelfdata(i['p_offset'], i['p_filesz']))
+        # Now we write the segment data to the memory
+        for entry in loaddb:
+            if entry['p_type'] == 'PT_LOAD' and entry['p_filesz'] > 0:
+                try:
+                    _mem_s = load_address + entry["p_vaddr"]
+                    _mem_e = _mem_s + entry['p_filesz']
+                    data = super().getelfdata(entry['p_offset'], entry['p_filesz'])
+                    self.ql.mem.write(_mem_s, data)
+                except Exception as e:
+                    self.ql.dprint(D_INFO, "[!] segment data 0x%x - 0x%x => %s" % (_mem_s, _mem_e, str(e)))
+                    continue
 
         loaded_mem_end = load_address + mem_end
-        if loaded_mem_end > _mem_e:
-            
-            self.ql.mem.map(_mem_e, loaded_mem_end-_mem_e, info=self.path)
-            self.ql.dprint(D_INFO, "[+] load 0x%x - 0x%x" % (_mem_e, loaded_mem_end)) # make sure we map all PT_LOAD tagged area
+        if loaded_mem_end > _highestmapped_e:
+            self.ql.mem.map(_mem_e, loaded_mem_end - _mem_e, info=self.path)
+            self.ql.dprint(D_INFO, "[+] load 0x%x - 0x%x" % (_mem_e, loaded_mem_end))  # make sure we map all PT_LOAD tagged area
 
         entry_point = elfhead['e_entry'] + load_address
         self.ql.os.elf_mem_start = mem_start
@@ -236,14 +282,14 @@ class QlLoaderELF(QlLoader, ELFParse):
 
         if interp_path != '':
             interp_path = str(interp_path, 'utf-8', errors="ignore")
-           
+
             interp = ELFParse(self.ql.rootfs + interp_path, self.ql)
             interphead = interp.parse_header()
             self.ql.dprint(D_INFO, "[+] interp is : %s" % (self.ql.rootfs + interp_path))
 
             interp_mem_size = -1
             for i in interp.parse_segments():
-                i =dict(i.header)
+                i = dict(i.header)
                 if i['p_type'] == 'PT_LOAD':
                     if interp_mem_size < i['p_vaddr'] + i['p_memsz'] or interp_mem_size == -1:
                         interp_mem_size = i['p_vaddr'] + i['p_memsz']
@@ -257,12 +303,12 @@ class QlLoaderELF(QlLoader, ELFParse):
                 self.interp_address = int(self.ql.os.profile.get("OS32", "interp_address"), 16)
 
             self.ql.dprint(D_INFO, "[+] interp_address is : 0x%x" % (self.interp_address))
-            self.ql.mem.map(self.interp_address, int(interp_mem_size), info=os.path.abspath(self.ql.rootfs + interp_path))
+            self.ql.mem.map(self.interp_address, int(interp_mem_size),info=os.path.abspath(self.ql.rootfs + interp_path))
 
             for i in interp.parse_segments():
                 # i =dict(i.header)
                 if i['p_type'] == 'PT_LOAD':
-                    self.ql.mem.write(self.interp_address + i['p_vaddr'], interp.getelfdata(i['p_offset'], i['p_filesz']))
+                    self.ql.mem.write(self.interp_address + i['p_vaddr'],interp.getelfdata(i['p_offset'], i['p_filesz']))
             entry_point = interphead['e_entry'] + self.interp_address
 
         # Set MMAP addr
@@ -290,7 +336,7 @@ class QlLoaderELF(QlLoader, ELFParse):
         # Set env
         if len(env) != 0:
             env_addr, new_stack = self.copy_str(new_stack, [key + '=' + value for key, value in env.items()])
-            elf_table += b''.join([self.ql.pack(_) for _ in env_addr])    
+            elf_table += b''.join([self.ql.pack(_) for _ in env_addr])
 
         elf_table += self.ql.pack(0)
 
@@ -301,15 +347,15 @@ class QlLoaderELF(QlLoader, ELFParse):
         new_stack = self.alignment(new_stack)
 
         # Set AUX
-        self.elf_phdr     = (load_address + elfhead['e_phoff'])
-        self.elf_phent    = (elfhead['e_phentsize'])
-        self.elf_phnum    = (elfhead['e_phnum'])
-        self.elf_pagesz   = 0x1000
-        self.elf_guid     = self.ql.os.uid
-        self.elf_flags    = 0
-        self.elf_entry    = (load_address + elfhead['e_entry'])
-        self.randstraddr  = addr[0]
-        self.cpustraddr   = addr[1]
+        self.elf_phdr = (load_address + elfhead['e_phoff'])
+        self.elf_phent = (elfhead['e_phentsize'])
+        self.elf_phnum = (elfhead['e_phnum'])
+        self.elf_pagesz = 0x1000
+        self.elf_guid = self.ql.os.uid
+        self.elf_flags = 0
+        self.elf_entry = (load_address + elfhead['e_entry'])
+        self.randstraddr = addr[0]
+        self.cpustraddr = addr[1]
         if self.ql.archbit == 64:
             self.elf_hwcap = 0x078bfbfd
         elif self.ql.archbit == 32:
@@ -344,13 +390,14 @@ class QlLoaderELF(QlLoader, ELFParse):
         # for i in range(120):
         #     buf = self.ql.mem.read(new_stack + i * 0x8, 8)
         #     self.ql.nprint("0x%08x : 0x%08x " % (new_stack + i * 0x4, self.ql.unpack64(buf)) + ' '.join(['%02x' % i for i in buf]) + '  ' + ''.join([chr(i) if i in string.printable[ : -5].encode('ascii') else '.' for i in buf]))
-        
+
         self.ql.os.entry_point = self.entry_point = entry_point
         self.ql.os.elf_entry = self.elf_entry = load_address + elfhead['e_entry']
         self.stack_address = new_stack
         self.load_address = load_address
         self.images.append(self.coverage_image(load_address, load_address + mem_end, self.path))
-        self.ql.os.function_hook = FunctionHook(self.ql, self.elf_phdr + mem_start, self.elf_phnum, self.elf_phent, load_address, load_address + mem_end)
+        self.ql.os.function_hook = FunctionHook(self.ql, self.elf_phdr + mem_start, self.elf_phnum, self.elf_phent,
+                                                load_address, load_address + mem_end)
         self.init_sp = self.ql.reg.arch_sp
 
         # map vsyscall section for some specific needs
@@ -369,14 +416,15 @@ class QlLoaderELF(QlLoader, ELFParse):
                     bs, _ = assembler.asm(asm)
                     return bytes(bs)
 
-                _vsyscall_entry_asm = [ "mov rax, 0x60;",  # syscall gettimeofday
-                                        "mov rax, 0xc9;",  # syscall time
-                                        "mov rax, 0x135;", # syscall getcpu
+                _vsyscall_entry_asm = ["mov rax, 0x60;",  # syscall gettimeofday
+                                       "mov rax, 0xc9;",  # syscall time
+                                       "mov rax, 0x135;",  # syscall getcpu
                                        ]
 
                 for idx, val in enumerate(_vsyscall_entry_asm):
                     self.ql.mem.write(_vsyscall_addr + idx * 0x400, _compile(val + "; syscall; ret"))
-    # get file offset of init module function
+
+# get file offset of init module function
     def lkm_get_init(self, ql):
         elffile = ELFFile(open(ql.path, 'rb'))
         symbol_tables = [s for s in elffile.iter_sections() if isinstance(s, SymbolTableSection)]
