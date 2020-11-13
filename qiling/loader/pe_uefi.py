@@ -240,15 +240,16 @@ class QlLoaderPE_UEFI(QlLoader):
         system_table.RuntimeServices = self.runtime_services_ptr
         system_table_heap_ptr += ctypes.sizeof(EFI_RUNTIME_SERVICES)
         system_table_heap_ptr, self.runtime_services = hook_EFI_RUNTIME_SERVICES(self.ql, system_table_heap_ptr)
+        self.runtime_services_end_ptr = system_table_heap_ptr - pointer_size
 
-        boot_services_ptr = system_table_heap_ptr
-        system_table.BootServices = boot_services_ptr
+        self.boot_services_ptr = system_table_heap_ptr
+        system_table.BootServices = self.boot_services_ptr
         system_table_heap_ptr += ctypes.sizeof(EFI_BOOT_SERVICES)
-        system_table_heap_ptr, boot_services, efi_mm_system_table = hook_EFI_BOOT_SERVICES(self.ql, system_table_heap_ptr)
+        system_table_heap_ptr, boot_services = hook_EFI_BOOT_SERVICES(self.ql, system_table_heap_ptr)
+        self.boot_services_end_ptr = system_table_heap_ptr - pointer_size
 
         self.efi_configuration_table_ptr = system_table_heap_ptr
         system_table.ConfigurationTable = self.efi_configuration_table_ptr
-        efi_mm_system_table.MmConfigurationTable = self.efi_configuration_table_ptr
         system_table.NumberOfTableEntries = 2
         system_table_heap_ptr += ctypes.sizeof(EFI_CONFIGURATION_TABLE) * 100 # We don't expect more then a few entries.
         efi_configuration_table = EFI_CONFIGURATION_TABLE()
@@ -273,6 +274,10 @@ class QlLoaderPE_UEFI(QlLoader):
 
         self.mm_system_table_ptr = system_table_heap_ptr
         system_table_heap_ptr += ctypes.sizeof(EFI_MM_SYSTEM_TABLE)
+        system_table_heap_ptr, efi_mm_system_table = create_EFI_MM_SYSTEM_TABLE(self.ql, system_table_heap_ptr)
+        self.mm_system_table_end_ptr = system_table_heap_ptr - pointer_size
+        efi_mm_system_table.MmConfigurationTable = self.efi_configuration_table_ptr
+
         self.smm_base2_protocol_ptr = system_table_heap_ptr
         system_table_heap_ptr += ctypes.sizeof(EFI_SMM_BASE2_PROTOCOL)
         system_table_heap_ptr, smm_base2_protocol, efi_mm_system_table = install_EFI_SMM_BASE2_PROTOCOL(self.ql, system_table_heap_ptr, efi_mm_system_table)
@@ -308,7 +313,7 @@ class QlLoaderPE_UEFI(QlLoader):
         
 
         self.ql.mem.write(self.runtime_services_ptr, convert_struct_to_bytes(self.runtime_services))
-        self.ql.mem.write(boot_services_ptr, convert_struct_to_bytes(boot_services))
+        self.ql.mem.write(self.boot_services_ptr, convert_struct_to_bytes(boot_services))
         self.ql.mem.write(self.system_table_ptr, convert_struct_to_bytes(system_table))
         self.ql.mem.write(self.mm_system_table_ptr, convert_struct_to_bytes(efi_mm_system_table))
         self.ql.mem.write(self.smm_base2_protocol_ptr, convert_struct_to_bytes(smm_base2_protocol))
