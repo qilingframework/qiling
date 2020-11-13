@@ -11,6 +11,8 @@ This file details the changelog of Qiling Framework.
 - Welcome Lazymio and Kabeor to the team
 - Improve register handling (uppercase/lowercase) and add LR register support to arm64
 - Fix ELF Memory mapping issues
+- Fixed directory traversal bug
+
 
 ------------------------------------
 [Version 1.1.3]: September 30, 2020

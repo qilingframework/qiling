@@ -10,7 +10,7 @@ This module is intended for general purpose functions that are only used in qili
 import ctypes, inspect, os, struct, uuid
 
 from json import dumps
-from pathlib import Path, PurePosixPath, PureWindowsPath
+from pathlib import Path, PurePosixPath, PureWindowsPath, PosixPath, WindowsPath
 from unicorn import *
 from unicorn.arm_const import *
 from unicorn.x86_const import *
@@ -55,18 +55,18 @@ class PathUtils:
                 (len(path) >= 3 and path[0].isalpha() and path[2] == '\\'): # \\.\PhysicalDrive0 or \\Server\Share\Directory or X:\
                 # UNC path should be handled in fs mapping. If not, append it to rootfs directly.
                 pw = PureWindowsPath(path)
-                result = rootfs / pw.relative_to(pw.anchor)
+                result = rootfs / PathUtils.normalize(pw)
             else:
                 # code should never reach here.
-                result = rootfs / path
+                result = rootfs / PathUtils.normalize(path)
         else:
             if len(path) >= 3 and path[:3] == r'\\?' or path[:3] == r'\??': # \??\ or \\?\ or \Device\..
                 # Similair to \\.\, it should be handled in fs mapping.
                 pw = PureWindowsPath(path)
-                result = rootfs / cwd / pw.relative_to(pw.anchor)
+                result = rootfs / PathUtils.normalize(cwd / pw.relative_to(pw.anchor).as_posix())
             else:
                 # a normal relative path
-                result = rootfs / cwd / PureWindowsPath(path)
+                result = rootfs / PathUtils.normalize(cwd / PureWindowsPath(path).as_posix())
         return result
 
 
@@ -78,9 +78,9 @@ class PathUtils:
         cwd = PurePosixPath(cwd[1:])
         path = PurePosixPath(path)
         if path.is_absolute():
-            return rootfs / path.relative_to(path.anchor)
+            return rootfs / PathUtils.normalize(path)
         else:
-            return rootfs / cwd / path
+            return rootfs / PathUtils.normalize(cwd / path)
     
     @staticmethod
     def convert_for_native_os(rootfs, cwd, path):
@@ -88,9 +88,36 @@ class PathUtils:
         cwd = PurePosixPath(cwd[1:])
         path = Path(path)
         if path.is_absolute():
-            return rootfs / path.relative_to(path.anchor)
+            return rootfs / PathUtils.normalize(path)
         else:
-            return rootfs / cwd / path
+            return rootfs / PathUtils.normalize(cwd / path.as_posix())
+
+    @staticmethod
+    def normalize(path):
+        if type(path) is PurePosixPath:
+            normalized_path = PurePosixPath()
+        elif type(path) is PureWindowsPath:
+            normalized_path = PureWindowsPath()
+        elif type(path) is PosixPath:
+            normalized_path = PosixPath()
+        elif type(path) is WindowsPath:
+            normalized_path = WindowsPath()
+
+        # remove anchor (necessary for Windows UNC paths) and convert to relative path
+        if path.is_absolute():
+            path = path.relative_to(path.anchor)
+
+        for p in path.parts:
+            if p == '.':
+                continue
+
+            if p == '..':
+                normalized_path = normalized_path.parent
+                continue
+
+            normalized_path /= p
+
+        return normalized_path
 
 class QlOsUtils:
     def __init__(self, ql):
