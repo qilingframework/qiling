@@ -48,6 +48,7 @@ danielhenrymantilla
 iamyeh
 alfink
 bambu
+bkerler (viperbjk)
 
 Alpha testers (in no particular order, named by github id)
 ==========================================================
