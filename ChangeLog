@@ -9,6 +9,8 @@ This file details the changelog of Qiling Framework.
 - De-flattern with IDA plugin now supports ARM && ARM64 with experimental IDA mircocode API.
 - Snapshot mechanism allows saving and restoring of OS and Loader information.
 - Welcome Lazymio and Kabeor to the team
+- Improve register handling (uppercase/lowercase) and add LR register support to arm64
+- Fix ELF Memory mapping issues
 - Fixed directory traversal bug
 
 

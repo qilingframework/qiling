@@ -65,7 +65,7 @@ def hook_GetLocalTime(ql, address, params):
     ptr = params['lpSystemTime']
     d = datetime.datetime.now()
     system_time = SystemTime(ql, d.year, d.month, d.isoweekday(), d.day, d.hour, d.minute, d.second,
-                             d.microsecond * 1000)
+                             d.microsecond // 1000)
     system_time.write(ptr)
     return 0
 
