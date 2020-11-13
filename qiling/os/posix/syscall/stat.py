@@ -213,7 +213,7 @@ def ql_syscall_fstat64(ql, fstat64_fd, fstat64_add, *args, **kw):
 
 def ql_syscall_fstat(ql, fstat_fd, fstat_add, *args, **kw):
 
-    if fstat_fd < 256 and ql.os.fd[fstat_fd] != 0 and "fstat" in dir(ql.os.fd[fstat_fd]):
+    if fstat_fd < 256 and ql.os.fd[fstat_fd] != 0 and hasattr(ql.os.fd[fstat_fd], "fstat"):
         user_fileno = fstat_fd
         fstat_info = ql.os.fd[user_fileno].fstat()
 
