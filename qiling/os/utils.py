@@ -94,37 +94,30 @@ class PathUtils:
 
     @staticmethod
     def normalize(path):
-        sep = path._flavour.sep
-        normalized_path = ""
+        if type(path) is PurePosixPath:
+            normalized_path = PurePosixPath()
+        elif type(path) is PureWindowsPath:
+            normalized_path = PureWindowsPath()
+        elif type(path) is PosixPath:
+            normalized_path = PosixPath()
+        elif type(path) is WindowsPath:
+            normalized_path = WindowsPath()
 
-        # remove anchor (necessary for Windows UNC paths)
+        # remove anchor (necessary for Windows UNC paths) and convert to relative path
         if path.is_absolute():
             path = path.relative_to(path.anchor)
 
-        for name in str(path).split(sep):
-            if not name or name == '.': # current directory
+        for p in path.parts:
+            if p == '.':
                 continue
 
-            if name == '..': # parent directory
-                (normalized_path, _, _) = normalized_path.rpartition(sep)
+            if p == '..':
+                normalized_path = normalized_path.parent
                 continue
 
-            normalized_path += sep + name
+            normalized_path /= p
 
-        if normalized_path == "":
-            normalized_path = sep
-
-        if type(path) is PurePosixPath:
-            normalized_path = PurePosixPath(normalized_path)
-        elif type(path) is PureWindowsPath:
-            normalized_path = PureWindowsPath(normalized_path)
-        elif type(path) is PosixPath:
-            normalized_path = PosixPath(normalized_path)
-        elif type(path) is WindowsPath:
-            normalized_path = WindowsPath(normalized_path)
-
-        # return relative path from root
-        return normalized_path.relative_to(normalized_path.anchor)
+        return normalized_path
 
 class QlOsUtils:
     def __init__(self, ql):
