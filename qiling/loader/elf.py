@@ -221,25 +221,28 @@ class QlLoaderELF(QlLoader, ELFParse):
 
         # Now we calculate the segments based on page alignment
         _load_segments = {}
-        _last_offset = 0
         _last_start = 0
+        _last_end = 0
         _last_perm = 0
         for entry in loaddb:
             if entry['p_type'] == 'PT_LOAD':
                 _mem_start = ((load_address + entry["p_vaddr"]) // pagesize) * pagesize
                 _mem_len = entry['p_memsz']
-                _mem_end = self.pcalc(load_address + entry["p_vaddr"] + entry["p_memsz"], pagesize)
+                _mem_end = self.pcalc(load_address + entry["p_vaddr"] + _mem_len, pagesize)
                 _perms = int(bin(entry["p_flags"])[:1:-1], 2)  # reverse bits for perms mapping
-                if _last_offset < _mem_start:
+                if _last_end < _mem_start:
                     _load_segments[_mem_start] = _mem_end, _perms
                     _last_start = _mem_start
                 elif _perms == _last_perm:
                     _load_segments[_last_start] = _mem_end, _perms
-                else:
+                elif _last_end == _mem_start:
                     _load_segments[_mem_start] = _mem_end, _perms
                     _last_start = _mem_start
-                _last_offset = _mem_end
+                elif _mem_start<_last_end:
+                    _load_segments[_last_start]=_mem_end,_perms
+                _last_end = _mem_end
                 _last_perm = _perms
+
 
         # Let's map the memory first
         _highestmapped_e = 0
@@ -264,7 +267,7 @@ class QlLoaderELF(QlLoader, ELFParse):
                     data = super().getelfdata(entry['p_offset'], entry['p_filesz'])
                     self.ql.mem.write(_mem_s, data)
                 except Exception as e:
-                    self.ql.dprint(D_INFO, "[!] segment data 0x%x - 0x%x => %s" % (_mem_s, _mem_e, str(e)))
+                    self.ql.dprint(D_INFO, "[!] segment data 0x%x - Length 0x%x => %s" % (_mem_s, len(data), str(e)))
                     continue
 
         loaded_mem_end = load_address + mem_end
