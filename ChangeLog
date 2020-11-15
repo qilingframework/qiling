@@ -12,6 +12,7 @@ This file details the changelog of Qiling Framework.
 - Improve register handling (uppercase/lowercase) and add LR register support to arm64
 - Fix ELF Memory mapping issues
 - Fixed directory traversal bug
+- Reimplemented some System Information functions.
 
 
 ------------------------------------

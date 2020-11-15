@@ -40,6 +40,7 @@ def hook_GetVersionExA(ql, address, params):
 # );
 @winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetVersionExW(ql, address, params):
+    # TODO Configurable ql.os.info?
     return 1
 
 
@@ -61,9 +62,8 @@ def hook_GetSystemInfo(ql, address, params):
 # );
 @winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetLocalTime(ql, address, params):
-    import datetime
     ptr = params['lpSystemTime']
-    d = datetime.datetime.now()
+    d = datetime.now()
     system_time = SystemTime(ql, d.year, d.month, d.isoweekday(), d.day, d.hour, d.minute, d.second,
                              d.microsecond // 1000)
     system_time.write(ptr)
@@ -75,14 +75,18 @@ def hook_GetLocalTime(ql, address, params):
 # );
 @winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetSystemTimeAsFileTime(ql, address, params):
-    # TODO
-    pass
+    filetime = (time.time_ns() // 100).to_bytes(8, byteorder="little")
+    pointer = params["lpSystemTimeAsFileTime"]
+    ql.mem.write(pointer, filetime)
+    return 0
 
 
 # DWORD GetTickCount(
 # );
 @winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetTickCount(ql, address, params):
+    # TODO Potential emulation detection technique?
+    # This would require some timekeeping in ql.os
     ret = 200000
     return ret
 
@@ -95,7 +99,7 @@ def hook_GetTickCount(ql, address, params):
 def hook_GetWindowsDirectoryW(ql, address, params):
     dst = params["lpBuffer"]
     value = (ql.os.windir + "\x00").encode("utf-16le")
-    ql.mem.write(dst, value)
+    ql.mem.write(dst, value[:min(params["uSize"], MAX_PATH)])
     return len(value) - 2
 
 # UINT GetSystemWindowsDirectoryW(
@@ -119,12 +123,15 @@ def hook_GetNativeSystemInfo(ql, address, params):
     return 0
 
 # void GetSystemTime(
-#   LPSYSTEMTIME lpSystemTime);
+#   LPSYSTEMTIME lpSystemTime
+# );
 @winsdkapi(cc=STDCALL, dllname=dllname)
-def hook_GetSystemTIme(ql, address, params):
-    dt = datetime.now().microsecond.to_bytes(8, byteorder="little")
-    pointer = params["lpSystemTime"]
-    ql.mem.write(pointer, dt)
+def hook_GetSystemTime(ql, address, params):
+    ptr = params['lpSystemTime']
+    d = datetime.utcnow()
+    system_time = SystemTime(ql, d.year, d.month, d.isoweekday(), d.day, d.hour, d.minute, d.second,
+                             d.microsecond // 1000)
+    system_time.write(ptr)
     return 0
 
 
@@ -138,8 +145,7 @@ def hook_GetSystemTIme(ql, address, params):
 # );
 @winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetSystemTimePreciseAsFileTime(ql, address, params):
-    # todo check if the value is correct
-    dt = datetime.now().microsecond.to_bytes(8, byteorder="little")
+    filetime = (time.time_ns() // 100).to_bytes(8, byteorder="little")
     pointer = params["lpSystemTimeAsFileTime"]
-    ql.mem.write(pointer, dt)
+    ql.mem.write(pointer, filetime)
     return 0
