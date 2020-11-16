@@ -420,6 +420,28 @@ class QlMemoryHeap:
         self.current_alloc = 0
         # curent use memory size
         self.current_use = 0
+        # save all memory regions allocated
+        self.mem_alloc = []
+    
+    def save(self):
+        saved_state = {}
+        saved_state['chunks'] = self.chunks
+        saved_state['start_address'] = self.start_address
+        saved_state['end_address'] = self.end_address
+        saved_state['page_size'] = self.page_size
+        saved_state['current_alloc'] = self.current_alloc
+        saved_state['current_use'] = self.current_use
+        saved_state['mem_alloc'] = self.mem_alloc
+        return saved_state
+
+    def restore(self, saved_state):
+        self.chunks = saved_state['chunks']
+        self.start_address = saved_state['start_address']
+        self.end_address = saved_state['end_address']
+        self.page_size = saved_state['page_size']
+        self.current_alloc = saved_state['current_alloc']
+        self.current_use = saved_state['current_use']
+        self.mem_alloc = saved_state['mem_alloc']
 
     def alloc(self, size):
         
@@ -444,6 +466,7 @@ class QlMemoryHeap:
                 return 0
             self.ql.mem.map(self.start_address + self.current_alloc, real_size, info="[heap]")
             chunk = Chunk(self.start_address + self.current_use, size)
+            self.mem_alloc.append((self.start_address + self.current_alloc, real_size))
             self.current_alloc += real_size
             self.current_use += size
             self.chunks.append(chunk)
@@ -468,6 +491,19 @@ class QlMemoryHeap:
                 chunk.inuse = False
                 return True
         return False
+
+    # clear all memory regions alloc
+    def clear(self):
+        for chunk in self.chunks:
+            chunk.inuse = False
+
+        for addr, size in self.mem_alloc:
+            self.ql.mem.unmap(addr, size)
+
+        self.mem_alloc.clear()
+
+        self.current_alloc = 0
+        self.current_use = 0
 
     def _find(self, addr):
         for chunk in self.chunks:

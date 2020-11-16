@@ -38,6 +38,40 @@ class QlLoaderPE_UEFI(QlLoader):
         self.notify_list = []
         self.next_image_base = 0x10000
 
+    def save(self):
+        saved_state = super(QlLoaderPE_UEFI, self).save()
+        
+        # We can't serialize self.modules since it contain pefile objects. let's remove it now and generate it again when loading.
+        modules = []
+        for mod in self.modules:
+            modules.append(mod[:3])
+        saved_state['modules'] = modules
+
+        saved_state['events'] = self.events
+        saved_state['handle_dict'] = self.handle_dict
+        saved_state['notify_list'] = self.notify_list
+        saved_state['next_image_base'] = self.next_image_base
+        saved_state['loaded_image_protocol_modules'] = self.loaded_image_protocol_modules
+        saved_state['tpl'] = self.tpl
+        saved_state['efi_configuration_table'] = self.efi_configuration_table
+        # since this class initialize the heap (that is hosted by the OS object), we will store it here.
+        saved_state['heap'] = self.ql.os.heap.save()
+        return saved_state
+
+    def restore(self, saved_state):
+        super(QlLoaderPE_UEFI, self).restore(saved_state)
+        self.modules = []
+        for mod in saved_state['modules']:
+            self.modules.append(mod+(pefile.PE(mod[0], fast_load=True),))
+        self.events = saved_state['events']
+        self.handle_dict = saved_state['handle_dict']
+        self.notify_list = saved_state['notify_list']
+        self.next_image_base = saved_state['next_image_base']
+        self.loaded_image_protocol_modules = saved_state['loaded_image_protocol_modules']
+        self.tpl = saved_state['tpl']
+        self.efi_configuration_table = saved_state['efi_configuration_table']
+        self.ql.os.heap.restore(saved_state['heap'])
+
     @contextmanager
     def map_memory(self, addr, size):
         self.ql.mem.map(addr, size)
@@ -62,13 +96,13 @@ class QlLoaderPE_UEFI(QlLoader):
         loaded_image_protocol.ImageDataType = EfiLoaderData
         loaded_image_protocol.Unload = 0
 
-        loaded_image_protocol_ptr = self.heap.alloc(ctypes.sizeof(EFI_LOADED_IMAGE_PROTOCOL))
+        loaded_image_protocol_ptr = self.ql.os.heap.alloc(ctypes.sizeof(EFI_LOADED_IMAGE_PROTOCOL))
         self.ql.mem.write(loaded_image_protocol_ptr, convert_struct_to_bytes(loaded_image_protocol))
         self.handle_dict[image_base] = {self.loaded_image_protocol_guid: loaded_image_protocol_ptr}
         self.loaded_image_protocol_modules.append(image_base)
 
 
-    def map_and_load(self, path, execute_now=False, callback_ctx=None):
+    def map_and_load(self, path, execute_now=False):
         ql = self.ql
         pe = pefile.PE(path, fast_load=True)
 
@@ -96,11 +130,18 @@ class QlLoaderPE_UEFI(QlLoader):
                 self.install_loaded_image_protocol(IMAGE_BASE, IMAGE_SIZE, entry_point)
                 self.images.append(self.coverage_image(IMAGE_BASE, IMAGE_BASE + pe.NT_HEADERS.OPTIONAL_HEADER.SizeOfImage, path))
                 if execute_now:
-                    self.OOO_EOE_callbacks.append(callback_ctx)
-                    # X64 shadow store - The caller is responsible for allocating space for parameters to the callee, and must always allocate sufficient space to store four register parameters
-                    ql.reg.rsp -= pointer_size * 4
-                    self.execute_module(path, IMAGE_BASE, entry_point, self.OOO_EOE_ptr)
-                    ql.stack_push(entry_point) # Return from here to the entry point of the loaded module.
+                    self.ql.nprint(f'[+] Running from 0x{entry_point:x} of {path}')
+                    assembler = self.ql.create_assembler()
+                    code = f"""
+                        mov rcx, {IMAGE_BASE}
+                        mov rdx, {self.system_table_ptr}
+                        mov rax, {entry_point}
+                        call rax
+                    """
+                    runcode, _ = assembler.asm(code)
+                    ptr = ql.os.heap.alloc(len(runcode))
+                    ql.mem.write(ptr, bytes(runcode))
+                    ql.os.exec_arbitrary(ptr, ptr+len(runcode))
 
                 else:
                     self.modules.append((path, IMAGE_BASE, entry_point, pe))
@@ -136,6 +177,8 @@ class QlLoaderPE_UEFI(QlLoader):
         self.ql.nprint(f'[+] Running from 0x{entry_point:x} of {path}')
 
     def execute_next_module(self):
+        if self.ql.os.notify_before_module_execution(self.ql, self.modules[0][0]):
+            return
         path, image_base, entry_point, pe = self.modules.pop(0)
         self.execute_module(path, image_base, entry_point, self.end_of_execution_ptr)
 
@@ -155,7 +198,7 @@ class QlLoaderPE_UEFI(QlLoader):
             self.heap_base_address = int(self.ql.os.profile.get("OS32", "heap_address"), 16)
             self.heap_base_size = int(self.ql.os.profile.get("OS32", "heap_size"), 16)
         
-        self.heap = QlMemoryHeap(self.ql, self.heap_base_address, self.heap_base_address + self.heap_base_size)
+        self.ql.os.heap = QlMemoryHeap(self.ql, self.heap_base_address, self.heap_base_address + self.heap_base_size)
         self.entry_point = 0
         self.load_address = 0  
 
@@ -187,7 +230,7 @@ class QlLoaderPE_UEFI(QlLoader):
         # set SystemTable to image base for now
         pointer_size = ctypes.sizeof(ctypes.c_void_p)
         system_table_heap_size = 1024 * 1024
-        system_table_heap = self.heap.alloc(system_table_heap_size)
+        system_table_heap = self.ql.os.heap.alloc(system_table_heap_size)
         self.ql.mem.write(system_table_heap, b'\x90'*system_table_heap_size)
         self.system_table_ptr = system_table_heap
         system_table = EFI_SYSTEM_TABLE()
@@ -197,15 +240,16 @@ class QlLoaderPE_UEFI(QlLoader):
         system_table.RuntimeServices = self.runtime_services_ptr
         system_table_heap_ptr += ctypes.sizeof(EFI_RUNTIME_SERVICES)
         system_table_heap_ptr, self.runtime_services = hook_EFI_RUNTIME_SERVICES(self.ql, system_table_heap_ptr)
+        self.runtime_services_end_ptr = system_table_heap_ptr - pointer_size
 
-        boot_services_ptr = system_table_heap_ptr
-        system_table.BootServices = boot_services_ptr
+        self.boot_services_ptr = system_table_heap_ptr
+        system_table.BootServices = self.boot_services_ptr
         system_table_heap_ptr += ctypes.sizeof(EFI_BOOT_SERVICES)
-        system_table_heap_ptr, boot_services, efi_mm_system_table = hook_EFI_BOOT_SERVICES(self.ql, system_table_heap_ptr)
+        system_table_heap_ptr, boot_services = hook_EFI_BOOT_SERVICES(self.ql, system_table_heap_ptr)
+        self.boot_services_end_ptr = system_table_heap_ptr - pointer_size
 
         self.efi_configuration_table_ptr = system_table_heap_ptr
         system_table.ConfigurationTable = self.efi_configuration_table_ptr
-        efi_mm_system_table.MmConfigurationTable = self.efi_configuration_table_ptr
         system_table.NumberOfTableEntries = 2
         system_table_heap_ptr += ctypes.sizeof(EFI_CONFIGURATION_TABLE) * 100 # We don't expect more then a few entries.
         efi_configuration_table = EFI_CONFIGURATION_TABLE()
@@ -230,6 +274,10 @@ class QlLoaderPE_UEFI(QlLoader):
 
         self.mm_system_table_ptr = system_table_heap_ptr
         system_table_heap_ptr += ctypes.sizeof(EFI_MM_SYSTEM_TABLE)
+        system_table_heap_ptr, efi_mm_system_table = create_EFI_MM_SYSTEM_TABLE(self.ql, system_table_heap_ptr)
+        self.mm_system_table_end_ptr = system_table_heap_ptr - pointer_size
+        efi_mm_system_table.MmConfigurationTable = self.efi_configuration_table_ptr
+
         self.smm_base2_protocol_ptr = system_table_heap_ptr
         system_table_heap_ptr += ctypes.sizeof(EFI_SMM_BASE2_PROTOCOL)
         system_table_heap_ptr, smm_base2_protocol, efi_mm_system_table = install_EFI_SMM_BASE2_PROTOCOL(self.ql, system_table_heap_ptr, efi_mm_system_table)
@@ -265,7 +313,7 @@ class QlLoaderPE_UEFI(QlLoader):
         
 
         self.ql.mem.write(self.runtime_services_ptr, convert_struct_to_bytes(self.runtime_services))
-        self.ql.mem.write(boot_services_ptr, convert_struct_to_bytes(boot_services))
+        self.ql.mem.write(self.boot_services_ptr, convert_struct_to_bytes(boot_services))
         self.ql.mem.write(self.system_table_ptr, convert_struct_to_bytes(system_table))
         self.ql.mem.write(self.mm_system_table_ptr, convert_struct_to_bytes(efi_mm_system_table))
         self.ql.mem.write(self.smm_base2_protocol_ptr, convert_struct_to_bytes(smm_base2_protocol))
@@ -284,10 +332,6 @@ class QlLoaderPE_UEFI(QlLoader):
         self.ql.mem.write(self.end_of_execution_ptr, b'\xcc')
         system_table_heap_ptr += pointer_size
         self.ql.hook_address(hook_EndOfExecution, self.end_of_execution_ptr)
-        self.OOO_EOE_ptr = system_table_heap_ptr
-        self.ql.hook_address(hook_OutOfOrder_EndOfExecution, self.OOO_EOE_ptr)
-        system_table_heap_ptr += pointer_size
-        self.OOO_EOE_callbacks = []
 
         self.execute_next_module()
 

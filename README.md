@@ -1,7 +1,6 @@
 [![Downloads](https://pepy.tech/badge/qiling)](https://pepy.tech/project/qiling)
-[![Gitter](https://badges.gitter.im/qilingframework/community.svg)](https://gitter.im/qilingframework/community)
+[![Chat on Telegram](https://img.shields.io/badge/Chat%20on-Telegram-brightgreen.svg)](https://t.me/qilingframework)
 [![Build Status](https://travis-ci.com/qilingframework/qiling.svg?branch=dev)](https://travis-ci.com/qilingframework/qiling)
-![Docker Image CI](https://github.com/qilingframework/qiling/workflows/Docker%20Image%20CI/badge.svg?branch=dev)
 ---
 
 <p align="center">
@@ -27,11 +26,12 @@ Qiling is an advanced binary emulation framework, with the following features:
 Qiling also made its way to various international conferences.
 
 2020:
-
+- [Black Hat, Europe](https://www.blackhat.com/eu-20/arsenal/schedule/index.html#qiling-framework-deep-dive-into-obfuscated-binary-analysis-21781)
 - [Black Hat, USA](https://www.blackhat.com/us-20/arsenal/schedule/index.html#qiling-framework-from-dark-to-dawn-----enlightening-the-analysis-of-the-most-mysterious-iot-firmware--21062)
 - [Black Hat, Asia](https://www.blackhat.com/asia-20/arsenal/schedule/index.html#qiling-lightweight-advanced-binary-analyzer-19245)
 - [Hack In The Box, Lockdown 001](https://conference.hitb.org/lockdown-livestream/)
 - [Hack In The Box, Lockdown 002](https://conference.hitb.org/hitb-lockdown002/virtual-labs/virtual-lab-qiling-framework-learn-how-to-build-a-fuzzer-based-on-a-1day-bug/)
+- [Hack In The Box, Cyberweek](https://cyberweek.ae/2020/lab-qiling-framework/)
 - [Nullcon](https://nullcon.net/website/goa-2020/speakers/kaijern-lau.php)
     
 2019:
@@ -219,6 +219,8 @@ Contact us at email info@qiling.io, or via Twitter [@qiling_io](https://twitter.
 - CHEN huitao (null) <null@qiling.io>
 - YU tong (sp1ke) <spikeinhouse@gmail.com>
 - Earl Marcus (klks84) klks84@gmail.com 
+- WU chenxu (kabeor) <kabeor@qiling.io>
+- KONG ziqiao (lazymio) <mio@lazym.io>
 
 #### Travis-CI, Docker, Website and Documentation
 
@@ -226,8 +228,6 @@ Contact us at email info@qiling.io, or via Twitter [@qiling_io](https://twitter.
 
 #### Key Contributors (in no particular order)
 
-- lazymio
-- kabeor
 - 0ssigeno
 - liba2k
 - assafcarlsbad

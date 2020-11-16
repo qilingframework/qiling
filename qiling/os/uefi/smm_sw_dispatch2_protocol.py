@@ -8,7 +8,7 @@ from .fncc import *
 pointer_size = ctypes.sizeof(ctypes.c_void_p)
 
 def free_pointers(ql, address, params):
-    ql.loader.heap.free(address)
+    ql.os.heap.free(address)
     return EFI_SUCCESS
 
 @dxeapi(params={
@@ -18,17 +18,8 @@ def free_pointers(ql, address, params):
     "DispatchHandle": POINTER, #POINTER_T(POINTER_T(None))
 })
 def hook_SMM_SW_DISPATCH2_Register(ql, address, params):
-    # Since we are not really in smm mode, we can just call the function from here
-    ql.reg.rsp -= pointer_size * 4 
-    ql.stack_push(ql.loader.OOO_EOE_ptr) # Return address from the notify function.
-    ql.stack_push(params["DispatchFunction"]) # Return address from here -> the dispatch function.
-    out_pointers = ql.loader.heap.alloc(pointer_size * 2)
-    ql.loader.OOO_EOE_callbacks.append((free_pointers, ql, out_pointers, params)) # We don't need a callback.
-    ql.reg.rcx = params["DispatchHandle"]
-    ql.reg.rdx = params["RegisterContext"]
-    ql.reg.r8 = out_pointers                    # OUT VOID    *CommBuffer 
-    ql.reg.r9 = out_pointers + pointer_size     # OUT UINTN   *CommBufferSize
-
+    # Let's save the dispatch params, so they can be triggered if needed. 
+    ql.os.smm_dispatch.append(params)
     
 @dxeapi(params={
     "This": POINTER, #POINTER_T(struct__EFI_SMM_SW_DISPATCH2_PROTOCOL)

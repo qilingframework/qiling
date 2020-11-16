@@ -11,5 +11,16 @@ class QlLoader():
     def __init__(self, ql):
         self.ql     = ql
         self.env    = self.ql.env
+        self.argv   = self.ql.argv
         self.images = []
         self.coverage_image = namedtuple('Image', 'base end path')
+    
+    def save(self):
+        saved_state = {}
+        saved_state['images'] = list(map(tuple, self.images))
+        return saved_state
+
+    def restore(self, saved_state):
+        for (base, end, path) in saved_state['images']:
+            self.images.append(self.coverage_image(base, end, path))
+

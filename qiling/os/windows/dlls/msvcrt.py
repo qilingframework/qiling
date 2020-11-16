@@ -6,7 +6,6 @@
 import os
 import time
 
-
 from qiling.os.windows.fncc import *
 from qiling.os.const import *
 from qiling.os.windows.const import *
@@ -269,7 +268,6 @@ def hook___stdio_common_vswprintf_s(ql, address, _):
     ql.os.printf(address, fmt, p_args, '__stdio_common_vswprintf_s', wstring=True)
 
     return ret
-
 
 # int lstrlenA(
 #   LPCSTR lpString

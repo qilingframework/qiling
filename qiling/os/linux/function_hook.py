@@ -679,7 +679,7 @@ class FunctionHook:
         self.endian = 0 if ql.archendian == QL_ENDIAN.EL else 1
 
         # ARM
-        if self.ql.archtype== QL_ARCH.ARM:
+        if self.ql.archtype in [QL_ARCH.ARM, QL_ARCH.ARM_THUMB]:
             self.GLOB_DAT = 21
             self.JMP_SLOT = 22
             # orr r1, r1, r1
@@ -963,7 +963,7 @@ class FunctionHook:
             rela_ptr = self.rela
             if self.ql.archbit == 32:
                 self.rela = [ELF32_Rela(rela_buf[_ * self.relaent : (_ + 1) * self.relaent], self.endian, rela_ptr + _ * self.relaent) for _ in range(self.rela_size // self.relaent)]
-            else:
+            elif self.ql.archbit == 64:
                 self.rela = [ELF64_Rela(rela_buf[_ * self.relaent : (_ + 1) * self.relaent], self.endian, rela_ptr + _ * self.relaent) for _ in range(self.rela_size // self.relaent)]
         
         if self.rel != None and self.rel_size != None:
@@ -971,7 +971,7 @@ class FunctionHook:
             rel_ptr = self.rel
             if self.ql.archbit == 32:
                 self.rel = [ELF32_Rel(rel_buf[_ * self.relent : (_ + 1) * self.relent], self.endian, rel_ptr + _ * self.relent) for _ in range(self.rel_size // self.relent)]
-            else:
+            elif self.ql.archbit == 64:
                 self.rel = [ELF64_Rel(rel_buf[_ * self.relent : (_ + 1) * self.relent], self.endian, rel_ptr + _ * self.relent) for _ in range(self.rel_size // self.relent)]
 
         if self.plt_rel != None and self.plt_rel_size != None:
@@ -980,12 +980,12 @@ class FunctionHook:
             if self.plt_rel_type == DT_REL:
                 if self.ql.archbit == 32:
                     self.plt_rel = [ELF32_Rel(plt_rel_buf[_ * self.relent : (_ + 1) * self.relent], self.endian, plt_rel_ptr + _ * self.relent) for _ in range(self.plt_rel_size // self.relent)]
-                else:
+                elif self.ql.archbit == 64:
                     self.plt_rel = [ELF64_Rel(plt_rel_buf[_ * self.relent : (_ + 1) * self.relent], self.endian, plt_rel_ptr + _ * self.relent) for _ in range(self.plt_rel_size // self.relent)]
             else:
                 if self.ql.archbit == 32:
                     self.plt_rel = [ELF32_Rela(plt_rel_buf[_ * self.relaent : (_ + 1) * self.relaent], self.endian, plt_rel_ptr + _ * self.relaent) for _ in range(self.plt_rel_size // self.relaent)]
-                else:
+                elif self.ql.archbit == 64:
                     self.plt_rel = [ELF64_Rela(plt_rel_buf[_ * self.relaent : (_ + 1) * self.relaent], self.endian, plt_rel_ptr + _ * self.relaent) for _ in range(self.plt_rel_size // self.relaent)]
         
         if self.symtab != None:

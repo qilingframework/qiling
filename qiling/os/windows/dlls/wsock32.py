@@ -19,7 +19,7 @@ dllname = 'ws2_32_dll'
 #  WORD      wVersionRequired,
 #  LPWSADATA lpWSAData
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname)
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={"wVersionRequired": DWORD, "LPWSADATA": POINTER})
 def hook_WSAStartup(ql, address, params):
     return 0
 

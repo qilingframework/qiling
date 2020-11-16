@@ -331,7 +331,7 @@ class QlGdb(QlDebugger, object):
                 addr, data = subcmd.split(',')
                 size, data = data.split(':')
                 addr = int(addr, 16)
-                data = int(data, 16)
+                data = bytes.fromhex(data)
                 try:
                     self.ql.mem.write(addr, data)
                     self.send('OK')

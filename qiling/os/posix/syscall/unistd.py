@@ -5,6 +5,8 @@
 
 import stat, logging, itertools, pathlib
 
+from multiprocessing import Process
+
 from qiling.const import *
 from qiling.os.linux.thread import *
 from qiling.const import *
@@ -271,8 +273,11 @@ def ql_syscall_write(ql, write_fd, write_buf, write_count, *args, **kw):
             ql.dprint(D_CTNT, "[+] write() CONTENT:")
             ql.dprint(D_CTNT, "%s" % buf)
 
-        ql.nprint("write(%d,%x,%i) = %d" % (write_fd, write_buf, write_count, regreturn))
-        ql.os.fd[write_fd].write(buf)
+        if hasattr(ql.os.fd[write_fd], "write"):
+            ql.nprint("write(%d,%x,%i) = %d" % (write_fd, write_buf, write_count, regreturn))
+            ql.os.fd[write_fd].write(buf)
+        else:
+            ql.nprint("[!] write(%d,%x,%i) failed due to write_fd" % (write_fd, write_buf, write_count, regreturn))
         regreturn = write_count
 
     except:
@@ -374,7 +379,14 @@ def ql_syscall_getppid(ql, *args, **kw):
 
 
 def ql_syscall_vfork(ql, *args, **kw):
-    pid = os.fork()
+    if ql.platform == QL_OS.WINDOWS:
+        try:
+            pid = Process()
+            pid = 0 
+        except:
+            pid = -1  
+    else:
+        pid = os.fork()
 
     if pid == 0:
         ql.os.child_processes = True
@@ -441,14 +453,14 @@ def ql_syscall_execve(ql, execve_pathname, execve_argv, execve_envp, *args, **kw
 
     if ql.shellcoder:
         return
-    
-    ql.os.stack_address = 0
-    ql.argv             = argv
-    ql.env              = env
+
+    ql.loader.argv      = argv
+    ql.loader.env       = env
     ql.path             = real_path
     ql.mem.map_info     = []
     ql.clear_ql_hooks()
-    ql.uc = ql.arch.init_uc
+    
+    ql.uc               = ql.arch.init_uc
     ql.os.load()
     ql.loader.run()
     ql.run()

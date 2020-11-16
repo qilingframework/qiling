@@ -14,8 +14,6 @@ __pycache__/
 build
 dist
 
-test_syscall_*.txt
-
 # test and logs
 jexamples/
 logs/
@@ -34,11 +32,3 @@ test.file
 *.o
 core
 *.perf
-
-# dont keep raw malware
-wannacry.bin
-UselessDisk.bin
-GandCrab.bin
-GandCrab502.bin
-al-khaser.bin
-

@@ -22,17 +22,17 @@ class QlDisassember():
 
     def disasm_elf(self, seg_name='.text'):
         def disasm(ql, address, size):
-            md = ql.os.create_disassembler()
+            md = ql.create_disassembler()
             md.detail = True
             return md.disasm(ql.mem.read(address, size), address)
 
         disasm_result = []
         if self.ql.archtype == QL_ARCH.X86:
-            BASE = int(ql.profile.get("OS32", "load_address"), 16)
+            BASE = int(self.ql.profile.get("OS32", "load_address"), 16)
             seg_start = 0x0
             seg_end = 0x0
 
-            f = open(ql.path, 'rb')
+            f = open(self.ql.path, 'rb')
             elffile = ELFFile(f)
             elf_header = elffile.header
             reladyn = elffile.get_section_by_name(seg_name)

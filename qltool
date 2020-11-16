@@ -252,8 +252,9 @@ if __name__ == '__main__':
         ql = run_shellcode(options)
         if options.asm == True:
             assembly = read_file(options.filename)
-            ql.shellcoder = ql.compile(ql.archtype, assembly)
-            ql.mem.write(ql.os.entry_point, ql.shellcoder)
+            assembler = ql.create_assembler()
+            ql.shellcoder, _ = assembler.asm(assembly)
+            ql.mem.write(ql.os.entry_point, bytes(ql.shellcoder))
     
     else:
         print("ERROR: Unknown command")

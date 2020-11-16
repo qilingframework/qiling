@@ -3,6 +3,15 @@ This file details the changelog of Qiling Framework.
 ------------------------------------
 [Version 1.2]: October [SOMETHING], 2020
 - Demigod finally arrived, more information about [Demigod](https://groundx.io/demigod/)
+- Linux: Implement futex bitset && Check library initialization
+- Linux: vfork and fork syscall mappings
+- execve() ql.argv and ql.env fix
+- De-flattern with IDA plugin now supports ARM && ARM64 with experimental IDA mircocode API.
+- Snapshot mechanism allows saving and restoring of OS and Loader information.
+- Welcome Lazymio and Kabeor to the team
+- Improve register handling (uppercase/lowercase) and add LR register support to arm64
+- Fix ELF Memory mapping issues
+- Fixed directory traversal bug
 
 
 ------------------------------------

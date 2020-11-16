@@ -10,7 +10,9 @@ thoughout the qiling framework
 import importlib, logging, os
 from .exception import *
 from .const import QL_ARCH, QL_ARCH_ALL, QL_OS, QL_OS_ALL, QL_OUTPUT, QL_DEBUGGER, QL_ARCH_32BIT, QL_ARCH_64BIT, QL_ARCH_16BIT
-from .const import debugger_map, arch_map, os_map
+from .const import debugger_map, arch_map, os_map, D_INFO
+
+from unicorn import UcError, UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
 
 def catch_KeyboardInterrupt(ql):
     def decorator(func):
@@ -226,3 +228,36 @@ def ql_setup_filter(func_names=None):
         return _FalseFilter()
     else:
         return _filter(func_names)
+
+# verify if emulator returns properly
+def verify_ret(ql, err):
+    ql.dprint(D_INFO, "Got exception %u: init SP = %x, current SP = %x, PC = %x" %(err.errno, ql.os.init_sp, ql.reg.arch_sp, ql.reg.arch_pc))
+    # print("Got exception %u: init SP = %x, current SP = %x, PC = %x" %(err.errno, ql.os.init_sp, self.reg.arch_sp, self.reg.arch_pc))
+
+    ql.os.RUN = False
+
+    # timeout is acceptable in this case
+    if err.errno in (UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED):
+        if ql.ostype == QL_OS.MACOS:
+            if ql.loader.kext_name:
+                # FIXME: Should I push saved RIP before every method callings of IOKit object?
+                if ql.os.init_sp == ql.reg.arch_sp - 8:
+                    pass
+                else:
+                    raise
+        
+        if ql.archtype == QL_ARCH.X8664: # Win64
+            if ql.os.init_sp == ql.reg.arch_sp or ql.os.init_sp + 8 == ql.reg.arch_sp or ql.os.init_sp + 0x10 == ql.reg.arch_sp:  # FIXME
+                # [+] 0x11626	 c3	  	ret
+                # print("OK, stack balanced!")
+                pass
+            else:
+                raise
+        else:   # Win32
+            if ql.os.init_sp + 12 == ql.reg.arch_sp:   # 12 = 8 + 4
+                # [+] 0x114dd	 c2 08 00	  	ret 	8
+                pass
+            else:
+                raise
+    else:
+        raise        

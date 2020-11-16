@@ -44,7 +44,7 @@ def hook_AllocatePages(ql, address, params):
         address =  read_int64(ql, params["Memory"])
         ql.mem.map(address, params["Pages"]*PageSize)
     else:
-        address = ql.loader.heap.alloc(params["Pages"]*PageSize)
+        address = ql.os.heap.alloc(params["Pages"]*PageSize)
         write_int64(ql, params["Memory"], address)
     return EFI_SUCCESS
 
@@ -71,7 +71,7 @@ def hook_GetMemoryMap(ql, address, params):
     "Buffer": POINTER,
 })
 def hook_AllocatePool(ql, address, params):
-    address = ql.loader.heap.alloc(params["Size"])
+    address = ql.os.heap.alloc(params["Size"])
     write_int64(ql, params["Buffer"], address)
     return EFI_SUCCESS if address else EFI_OUT_OF_RESOURCES
 
@@ -80,7 +80,7 @@ def hook_AllocatePool(ql, address, params):
 })
 def hook_FreePool(ql, address, params):
     address = params["Buffer"]
-    freed = ql.loader.heap.free(address)
+    freed = ql.os.heap.free(address)
     return EFI_SUCCESS if freed else EFI_INVALID_PARAMETER 
 
 @dxeapi(params={
@@ -115,16 +115,7 @@ def SignalEvent(ql, event_id):
             event["Set"] = True
             notify_func = event["NotifyFunction"]
             notify_context = event["NotifyContext"]
-            if ql.os.notify_immediately:
-                ql.nprint(f'[+] Notify event:{event_id} calling:{notify_func:x} context:{notify_context:x}')
-                # X64 shadow store - The caller is responsible for allocating space for parameters to the callee, and must always allocate sufficient space to store four register parameters
-                ql.reg.rsp -= pointer_size * 4 
-                ql.stack_push(ql.loader.OOO_EOE_ptr) # Return address from the notify function.
-                ql.stack_push(notify_func) # Return address from here -> the notify function.
-                ql.loader.OOO_EOE_callbacks.append(None) # We don't need a callback.
-                ql.reg.rcx = notify_context
-            else:
-                ql.loader.notify_list.append((event_id, notify_func, notify_context))
+            ql.loader.notify_list.append((event_id, notify_func, notify_context))
         return EFI_SUCCESS
     else:
         return EFI_INVALID_PARAMETER
@@ -159,7 +150,7 @@ def hook_InstallProtocolInterface(ql, address, params):
     dic = {}
     handle = read_int64(ql, params["Handle"])
     if handle == 0:
-        handle = ql.loader.heap.alloc(1)
+        handle = ql.os.heap.alloc(1)
     if handle in ql.loader.handle_dict:
         dic = ql.loader.handle_dict[handle]
     dic[params["Protocol"]] = params["Interface"]
@@ -419,7 +410,7 @@ def hook_LocateHandleBuffer(ql, address, params):
     write_int64(ql, params["NoHandles"], len(handles))
     if len(handles) == 0:
         return EFI_NOT_FOUND
-    address = ql.loader.heap.alloc(buffer_size)
+    address = ql.os.heap.alloc(buffer_size)
     write_int64(ql, params["Buffer"], address)
     if address == 0:
         return EFI_OUT_OF_RESOURCES
@@ -441,7 +432,7 @@ def hook_LocateProtocol(ql, address, params):
 def hook_InstallMultipleProtocolInterfaces(ql, address, params):
     handle = read_int64(ql, params["Handle"])
     if handle == 0:
-        handle = ql.loader.heap.alloc(1)
+        handle = ql.os.heap.alloc(1)
     ql.nprint(f'hook_InstallMultipleProtocolInterfaces {handle:x}')
     dic = {}
     if handle in ql.loader.handle_dict:
@@ -533,11 +524,50 @@ def CreateEvent(ql, address, params):
     write_int64(ql, params["Event"], event_id)
     return EFI_SUCCESS
 
+def create_EFI_MM_SYSTEM_TABLE(ql, start_ptr):
+    efi_mm_system_table = EFI_MM_SYSTEM_TABLE()
+
+    ptr = start_ptr
+    efi_mm_system_table.MmAllocatePages = ptr
+    ql.hook_address(hook_AllocatePages, ptr)
+    ptr += pointer_size
+    efi_mm_system_table.MmFreePages = ptr
+    ql.hook_address(hook_FreePages, ptr)
+    ptr += pointer_size
+    efi_mm_system_table.MmAllocatePool = ptr
+    ql.hook_address(hook_AllocatePool, ptr)
+    ptr += pointer_size
+    efi_mm_system_table.MmFreePool = ptr
+    ql.hook_address(hook_FreePool, ptr)
+    ptr += pointer_size
+    efi_mm_system_table.MmInstallProtocolInterface = ptr
+    ql.hook_address(hook_InstallProtocolInterface, ptr)
+    ptr += pointer_size
+    efi_mm_system_table.MmUninstallProtocolInterface = ptr
+    ql.hook_address(hook_UninstallProtocolInterface, ptr)
+    ptr += pointer_size
+    efi_mm_system_table.MmHandleProtocol = ptr
+    ql.hook_address(hook_HandleProtocol, ptr)
+    ptr += pointer_size
+    efi_mm_system_table.MmRegisterProtocolNotify = ptr
+    ql.hook_address(hook_RegisterProtocolNotify, ptr)
+    ptr += pointer_size
+    efi_mm_system_table.MmLocateHandle = ptr
+    ql.hook_address(hook_LocateHandle, ptr)
+    ptr += pointer_size
+    efi_mm_system_table.MmInstallConfigurationTable = ptr
+    ql.hook_address(hook_InstallConfigurationTable, ptr)
+    ptr += pointer_size
+    efi_mm_system_table.MmLocateProtocol = ptr
+    ql.hook_address(hook_LocateProtocol, ptr)
+    ptr += pointer_size
+    return (ptr, efi_mm_system_table)
+
+
 def hook_EFI_BOOT_SERVICES(ql, start_ptr):
     ql.os.monotonic_count = 0
 
     efi_boot_services = EFI_BOOT_SERVICES()
-    efi_mm_system_table = EFI_MM_SYSTEM_TABLE()
 
     ptr = start_ptr
     efi_boot_services.RaiseTPL = ptr
@@ -547,22 +577,18 @@ def hook_EFI_BOOT_SERVICES(ql, start_ptr):
     ql.hook_address(hook_RestoreTPL, ptr)
     ptr += pointer_size
     efi_boot_services.AllocatePages = ptr
-    efi_mm_system_table.MmAllocatePages = ptr
     ql.hook_address(hook_AllocatePages, ptr)
     ptr += pointer_size
     efi_boot_services.FreePages = ptr
-    efi_mm_system_table.MmFreePages = ptr
     ql.hook_address(hook_FreePages, ptr)
     ptr += pointer_size
     efi_boot_services.GetMemoryMap = ptr
     ql.hook_address(hook_GetMemoryMap, ptr)
     ptr += pointer_size
     efi_boot_services.AllocatePool = ptr
-    efi_mm_system_table.MmAllocatePool = ptr
     ql.hook_address(hook_AllocatePool, ptr)
     ptr += pointer_size
     efi_boot_services.FreePool = ptr
-    efi_mm_system_table.MmFreePool = ptr
     ql.hook_address(hook_FreePool, ptr)
     ptr += pointer_size
     efi_boot_services.CreateEvent = ptr
@@ -584,33 +610,27 @@ def hook_EFI_BOOT_SERVICES(ql, start_ptr):
     ql.hook_address(hook_CheckEvent, ptr)
     ptr += pointer_size
     efi_boot_services.InstallProtocolInterface = ptr
-    efi_mm_system_table.MmInstallProtocolInterface = ptr
     ql.hook_address(hook_InstallProtocolInterface, ptr)
     ptr += pointer_size
     efi_boot_services.ReinstallProtocolInterface = ptr
     ql.hook_address(hook_ReinstallProtocolInterface, ptr)
     ptr += pointer_size
     efi_boot_services.UninstallProtocolInterface = ptr
-    efi_mm_system_table.MmUninstallProtocolInterface = ptr
     ql.hook_address(hook_UninstallProtocolInterface, ptr)
     ptr += pointer_size
     efi_boot_services.HandleProtocol = ptr
-    efi_mm_system_table.MmHandleProtocol = ptr
     ql.hook_address(hook_HandleProtocol, ptr)
     ptr += pointer_size
     efi_boot_services.RegisterProtocolNotify = ptr
-    efi_mm_system_table.MmRegisterProtocolNotify = ptr
     ql.hook_address(hook_RegisterProtocolNotify, ptr)
     ptr += pointer_size
     efi_boot_services.LocateHandle = ptr
-    efi_mm_system_table.MmLocateHandle = ptr
     ql.hook_address(hook_LocateHandle, ptr)
     ptr += pointer_size
     efi_boot_services.LocateDevicePath = ptr
     ql.hook_address(hook_LocateDevicePath, ptr)
     ptr += pointer_size
     efi_boot_services.InstallConfigurationTable = ptr
-    efi_mm_system_table.MmInstallConfigurationTable = ptr
     ql.hook_address(hook_InstallConfigurationTable, ptr)
     ptr += pointer_size
     efi_boot_services.LoadImage = ptr
@@ -659,7 +679,6 @@ def hook_EFI_BOOT_SERVICES(ql, start_ptr):
     ql.hook_address(hook_LocateHandleBuffer, ptr)
     ptr += pointer_size
     efi_boot_services.LocateProtocol = ptr
-    efi_mm_system_table.MmLocateProtocol = ptr
     ql.hook_address(hook_LocateProtocol, ptr)
     ptr += pointer_size
     efi_boot_services.InstallMultipleProtocolInterfaces = ptr
@@ -680,5 +699,5 @@ def hook_EFI_BOOT_SERVICES(ql, start_ptr):
     efi_boot_services.CreateEventEx = ptr
     ql.hook_address(hook_CreateEventEx, ptr)
     ptr += pointer_size
-    return (ptr, efi_boot_services, efi_mm_system_table)
+    return (ptr, efi_boot_services)
 

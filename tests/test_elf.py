@@ -4,12 +4,16 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
 import sys, unittest, subprocess, string, random, os
+
+from unicorn import UcError, UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
+
 sys.path.append("..")
 from qiling import *
 from qiling.const import *
 from qiling.exception import *
 from qiling.os.posix import syscall
 from qiling.os.mapper import QlFsMappedObject
+from qiling.os.stat import Fstat
 
 class ELFTest(unittest.TestCase):
 
@@ -984,7 +988,7 @@ class ELFTest(unittest.TestCase):
                 return 0
 
             def fstat(self):
-                return os.fstat(sys.stdin.fileno())
+                return Fstat(sys.stdin.fileno())
  
             def show(self):
                 pass
@@ -1042,6 +1046,13 @@ class ELFTest(unittest.TestCase):
     def test_elf_linux_execve_x8664(self):
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/posix_syscall_execve"],  "../examples/rootfs/x8664_linux", output="debug")
         ql.run()
+        for key, value in ql.loader.env.items():
+            QL_TEST=value
+
+        self.assertEqual("TEST_QUERY", QL_TEST)
+        self.assertEqual("child", ql.loader.argv[0])
+
+        del QL_TEST
         del ql
 
     def test_x86_fake_urandom_multiple_times(self):
@@ -1151,7 +1162,27 @@ class ELFTest(unittest.TestCase):
     def test_x8664_symlink(self):
         ql = Qiling(["../examples/rootfs/x8664_linux_symlink/bin/x8664_hello"],  "../examples/rootfs/x8664_linux_symlink", output="debug")
         ql.run()
-        del ql   
+        del ql
+
+    def test_demigod_m0hamed_x86(self):
+        ql = Qiling(["../examples/rootfs/x86_linux/kernel/m0hamed_rootkit.ko"],  "../examples/rootfs/x86_linux", output="disasm")
+        try:
+            procfile_read_func_begin = ql.loader.load_address + 0x11e0
+            procfile_read_func_end = ql.loader.load_address + 0x11fa
+            ql.run(begin=procfile_read_func_begin, end=procfile_read_func_end)
+        except UcError as e:
+            print(e)
+            sys.exit(-1)
+        del ql
+
+    def test_demigod_m0hamed_x8664(self):
+        ql = Qiling(["../examples/rootfs/x8664_linux/kernel/m0hamed_rootkit.ko"],  "../examples/rootfs/x8664_linux", output="disasm")
+        try:
+            ql.run()
+        except UcError as e:
+            print(e)
+            sys.exit(-1)
+        del ql         
     
     def test_x8664_absolute_path(self):
         class MyPipe():
@@ -1168,7 +1199,7 @@ class ELFTest(unittest.TestCase):
                 return 0
 
             def fstat(self):
-                return os.fstat(sys.stdin.fileno())
+                return Fstat(sys.stdin.fileno())
  
             def show(self):
                 pass
@@ -1187,7 +1218,7 @@ class ELFTest(unittest.TestCase):
 
         ql.run()
         
-        self.assertEqual(pipe.buf, b'yay!\nyay!\n')
+        self.assertEqual(pipe.buf, b'test_complete\n\ntest_complete\n\n')
 
         del ql
 
@@ -1206,7 +1237,7 @@ class ELFTest(unittest.TestCase):
                 return 0
 
             def fstat(self):
-                return os.fstat(sys.stdin.fileno())
+                return Fstat(sys.stdin.fileno())
  
             def show(self):
                 pass

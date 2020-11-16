@@ -20,9 +20,13 @@ class QlOsLinux(QlOsPosix):
         self.futexm = None
         self.function_hook_tmp = []
         self.fh = None
+        self.user_defined_api = {}
         self.function_after_load_list = []
         self.pid = self.profile.getint("KERNEL","pid")
         self.load()
+
+        if self.ql.archtype == QL_ARCH.X8664:
+            ql_x8664_set_gs(self.ql)
 
     def load(self):
         self.futexm = QlLinuxFutexManagement()
@@ -100,6 +104,8 @@ class QlOsLinux(QlOsPosix):
                     if self.ql.loader.elf_entry != self.ql.loader.entry_point:
                         main_thread.set_exit_point(self.ql.loader.elf_entry)
                         thread_management.run()
+                        if main_thread.ql.arch.get_pc() != self.ql.loader.elf_entry:
+                            raise QlErrorExecutionStop('Dynamic library .init() failed!')
                         self.ql.enable_lib_patch()
                         self.run_function_after_load()
 
@@ -124,7 +130,11 @@ class QlOsLinux(QlOsPosix):
 
                     self.ql.emu_start(self.ql.loader.elf_entry, self.exit_point, self.ql.timeout, self.ql.count)
 
-        except:
+        except UcError:
+            # TODO: this is bad We need a better approach for this
+            if self.ql.output != QL_OUTPUT.DEBUG:
+                return
+            
             self.emu_error()
             raise
 
