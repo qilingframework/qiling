@@ -14,7 +14,7 @@ VERSION = gb['__version__']
 
 requirements = [
     "capstone>=4.0.1",
-    "unicorn==1.0.2",
+    "unicorn>=1.0.2",
     "pefile>=2019.4.18",
     "python-registry>=1.3.1",
     "keystone-engine>=0.9.2",
@@ -51,7 +51,7 @@ setup(
         #   3 - Alpha
         #   4 - Beta
         #   5 - Production/Stable
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 5 - Production/Stable',
 
         # Indicate who your project is intended for
         'Intended Audience :: Developers',
