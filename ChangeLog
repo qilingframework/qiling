@@ -20,7 +20,7 @@ This file details the changelog of Qiling Framework.
 
 
 ------------------------------------
-[Version 1.1.3]: September 30, 2020
+[Version 1.1.3]: September 30th, 2020
 
 - Added Doogie example and implement more interrupts
 - Added ollvm de-flattern support for IDA plugin
