@@ -70,17 +70,6 @@ def hook_GetLocalTime(ql, address, params):
     return 0
 
 
-# void GetSystemTimeAsFileTime(
-#   LPFILETIME lpSystemTimeAsFileTime
-# );
-@winsdkapi(cc=STDCALL, dllname=dllname)
-def hook_GetSystemTimeAsFileTime(ql, address, params):
-    filetime = (time.time_ns() // 100).to_bytes(8, byteorder="little")
-    pointer = params["lpSystemTimeAsFileTime"]
-    ql.mem.write(pointer, filetime)
-    return 0
-
-
 # DWORD GetTickCount(
 # );
 @winsdkapi(cc=STDCALL, dllname=dllname)
@@ -140,12 +129,26 @@ def hook_GetSystemTime(ql, address, params):
 #   DWORD dwHighDateTime;
 # } FILETIME, *PFILETIME, *LPFILETIME;
 
+# https://support.microsoft.com/en-us/office/how-to-convert-a-unix-time-t-to-a-win32-filetime-or-systemtime-bf03df72-96e4-59f3-1d02-b6781002dc7f
+filetime_epoch_offset = 116444736000000000
+
+# void GetSystemTimeAsFileTime(
+#   LPFILETIME lpSystemTimeAsFileTime
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname)
+def hook_GetSystemTimeAsFileTime(ql, address, params):
+    filetime = filetime_epoch_offset + int(time.time() * 1000 * 1000 * 10).to_bytes(8, byteorder="little")
+    pointer = params["lpSystemTimeAsFileTime"]
+    ql.mem.write(pointer, filetime)
+    return 0
+
+
 # void GetSystemTimePreciseAsFileTime(
 #   LPFILETIME lpSystemTimeAsFileTime
 # );
 @winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetSystemTimePreciseAsFileTime(ql, address, params):
-    filetime = (time.time_ns() // 100).to_bytes(8, byteorder="little")
+    filetime = filetime_epoch_offset + int(time.time() * 1000 * 1000 * 10).to_bytes(8, byteorder="little")
     pointer = params["lpSystemTimeAsFileTime"]
     ql.mem.write(pointer, filetime)
     return 0
