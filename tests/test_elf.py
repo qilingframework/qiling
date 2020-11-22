@@ -494,6 +494,20 @@ class ELFTest(unittest.TestCase):
         ql.set_syscall(0x5d, test_syscall_ftruncate)
         ql.run()
         del ql
+    
+    def test_elf_linux_mprotect_x8664(self):
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_mprotect"], "../examples/rootfs/x8664_linux", output="debug")
+        ql.exit_code = -1
+
+        def check_exit_code(ql, exit_code, *args, **kw):
+            ql.exit_code = exit_code
+
+        ql.set_syscall("exit", check_exit_code, QL_INTERCEPT.ENTER)
+        ql.run()
+
+        self.assertEqual(42, ql.exit_code)
+
+        del ql
 
 
     def test_elf_linux_arm(self):     
