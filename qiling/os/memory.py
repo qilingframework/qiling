@@ -363,7 +363,7 @@ class QlMemoryManager:
         return address
 
     def protect(self, addr, size, perms):
-        aligned_address = addr & 0xFFFFF000  # Address needs to align with
+        aligned_address = addr & ~0xFFF # Address needs to align with
         aligned_size = self.align((addr & 0xFFF) + size)
         self.ql.uc.mem_protect(aligned_address, aligned_size, perms)
 

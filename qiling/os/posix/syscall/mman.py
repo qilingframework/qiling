@@ -50,6 +50,11 @@ def ql_syscall_madvise(ql, *args, **kw):
 
 def ql_syscall_mprotect(ql, mprotect_start, mprotect_len, mprotect_prot, *args, **kw):
     regreturn = 0
+    try:
+        ql.mem.protect(mprotect_start, mprotect_len, mprotect_prot)
+    except:
+        regreturn = -1
+
     ql.nprint("mprotect(0x%x, 0x%x, 0x%x) = %d" % (mprotect_start, mprotect_len, mprotect_prot, regreturn))
     ql.dprint(D_INFO, "[+] mprotect(0x%x, 0x%x, %s) = %d" % (
     mprotect_start, mprotect_len, mmap_prot_mapping(mprotect_prot), regreturn))
