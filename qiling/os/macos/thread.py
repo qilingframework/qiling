@@ -20,7 +20,7 @@ class QlMachoThread(QlThread):
         pass
 
 
-class QlMachoThreadManagement(QlThreadManagement):
+class QlMachoThreadManagement:
 
     def __init__(self, ql):
         super(QlMachoThreadManagement, self).__init__(ql)

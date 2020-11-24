@@ -59,16 +59,16 @@ def ql_syscall_futex(ql, futex_uaddr, futex_op, futex_val, futex_timeout, futex_
                                                           futex_val3,
                                                           regreturn))
     elif futex_op & (FUTEX_PRIVATE_FLAG - 1) == FUTEX_WAKE:
-        regreturn = ql.os.futexm.futex_wake(futex_uaddr, futex_val)
+        regreturn = ql.os.futexm.futex_wake(ql, futex_uaddr,ql.os.thread_management.cur_thread, futex_val)
         ql.nprint("futex(%x, %d, %d) = %d" % (futex_uaddr, futex_op, futex_val, regreturn))
     elif futex_op & (FUTEX_PRIVATE_FLAG - 1) == FUTEX_WAKE_BITSET:
-        regreturn = ql.os.futexm.futex_wake(futex_uaddr, futex_val, futex_val3)
+        regreturn = ql.os.futexm.futex_wake(ql, futex_uaddr,ql.os.thread_management.cur_thread, futex_val, futex_val3)
         ql.nprint("futex(%x, %d, %d) = %d" % (futex_uaddr, futex_op, futex_val, regreturn))
     else:
         ql.nprint("futex(%x, %d, %d) = ?" % (futex_uaddr, futex_op, futex_val))
         ql.emu_stop()
-        ql.os.thread_management.cur_thread.stop()
-        ql.os.thread_management.cur_thread.stop_event = THREAD_EVENT_EXIT_GROUP_EVENT
+        #ql.os.thread_management.cur_thread.stop()
+        #ql.os.thread_management.cur_thread.stop_event = THREAD_EVENT_EXIT_GROUP_EVENT
         regreturn = 0
 
     ql.os.definesyscall_return(regreturn)

@@ -24,7 +24,16 @@ def ql_syscall_exit(ql, exit_code, *args, **kw):
     if ql.os.child_processes == True:
         os._exit(0)
 
-    ql.os.stop(stop_event = THREAD_EVENT_EXIT_EVENT)
+    if ql.multithread:
+        def _sched_cb_exit(cur_thread):
+            ql.dprint(0, f"[Thread {cur_thread.get_id()}] Terminated.")
+            cur_thread.status = THREAD_STATUS_TERMINATED
+            cur_thread.stop()
+        td = ql.os.thread_management.cur_thread
+        ql.emu_stop()
+        td.sched_cb = _sched_cb_exit
+    else:
+        ql.os.stop()
 
 
 def ql_syscall_exit_group(ql, exit_code, *args, **kw):

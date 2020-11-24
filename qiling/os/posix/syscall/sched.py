@@ -96,8 +96,9 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
     if clone_flags & CLONE_CHILD_SETTID == CLONE_CHILD_SETTID:
         set_child_tid_addr = clone_child_tidptr
 
-    th = ql.os.thread_class(ql, ql.os.thread_management, total_time = f_th.remaining_time(), set_child_tid_addr = set_child_tid_addr)
+    th = ql.os.thread_class.spawn(ql, set_child_tid_addr = set_child_tid_addr)
     th.set_current_path(f_th.get_current_path())
+    ql.dprint(0, f"[thread {th.get_id()}] created.")
 
     if clone_flags & CLONE_PARENT_SETTID == CLONE_PARENT_SETTID:
         ql.mem.write(clone_parent_tidptr, ql.pack32(th.get_thread_id()))
@@ -117,8 +118,9 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
     regreturn = 0
     ql.os.definesyscall_return(regreturn)
     ql.arch.set_sp(clone_child_stack)
-    th.store_regs()
-
+    th.save_regs()
+    if th is None or f_th is None:
+        raise Exception()
     ql.os.thread_management.cur_thread = th
     ql.dprint(D_INFO, "[+] Currently running pid is: %d; tid is: %d " % (
     os.getpid(), ql.os.thread_management.cur_thread.get_thread_id()))

@@ -18,13 +18,8 @@ def ql_syscall_time(ql, *args, **kw):
 
 
 def ql_syscall_nanosleep(ql, nanosleep_req, nanosleep_rem, *args, **kw):
-    def nanosleep_block_fuc(ql, th, arg):
-        st, tm = arg
-        et = ql.os.thread_management.runing_time
-        if et - st >= tm:
-            return False
-        else:
-            return True
+    def _sched_sleep(cur_thread):
+        gevent.sleep(tv_sec)
 
     n = ql.archbit // 8 # 4 for 32-bit , 8 for 64-bit
 
@@ -35,10 +30,8 @@ def ql_syscall_nanosleep(ql, nanosleep_req, nanosleep_rem, *args, **kw):
         time.sleep(tv_sec)
     else:
         ql.emu_stop()
-
+        ql.os.thread_management.cur_thread.sched_cb = _sched_sleep
         th = ql.os.thread_management.cur_thread
-        th.blocking()
-        th.set_blocking_condition(nanosleep_block_fuc, [ql.os.thread_management.runing_time, int(tv_sec * 1000000)])
 
     regreturn = 0
     ql.nprint("nanosleep(0x%x, 0x%x) = %d" % (nanosleep_req, nanosleep_rem, regreturn))

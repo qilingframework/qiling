@@ -95,10 +95,11 @@ class QlOsLinux(QlOsPosix):
                     # start multithreading
                     thread_management = QlLinuxThreadManagement(self.ql)
                     self.ql.os.thread_management = thread_management
-                    main_thread = self.thread_class(self.ql, thread_management, total_time = self.ql.timeout)
-                    main_thread.store_regs()
+                    main_thread = self.thread_class.spawn(self.ql)
+                    main_thread.save_regs()
                     main_thread.set_start_address(self.ql.loader.entry_point)
-                    thread_management.set_main_thread(main_thread)
+                    thread_management.main_thread = main_thread
+                    thread_management.cur_thread = main_thread
 
                     # enable lib patch
                     if self.ql.loader.elf_entry != self.ql.loader.entry_point:
@@ -113,8 +114,8 @@ class QlOsLinux(QlOsPosix):
                         main_thread.set_exit_point(self.exit_point)
                         main_thread.running()
 
-                        thread_management.clean_world()
-                        thread_management.set_main_thread(main_thread)
+                        #thread_management.clean_world()
+                        #thread_management.set_main_thread(main_thread)
     
                     thread_management.run()
 

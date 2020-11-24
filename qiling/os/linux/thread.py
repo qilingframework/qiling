@@ -4,6 +4,9 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
 import os, time
+from os import sched_get_priority_max
+import gevent
+from gevent import Greenlet
 
 from unicorn.mips_const import *
 from unicorn.arm_const import *
@@ -26,11 +29,10 @@ class QlLinuxThread(QlThread):
 # static member for generate unique thread id.
     LINUX_THREAD_ID = 2000
 
-    def __init__(self, ql, thread_management = None, start_address = 0, context = None, total_time = 0, set_child_tid_addr = None):
+    def __init__(self, ql, start_address = 0, context = None, set_child_tid_addr = None):
         super(QlLinuxThread, self).__init__(ql)
         self.thread_id = QlLinuxThread.LINUX_THREAD_ID
         QlLinuxThread.LINUX_THREAD_ID += 1
-        self.total_time = total_time
         self.runing_time = 0
         self.context = context
         self.ql = ql
@@ -40,11 +42,9 @@ class QlLinuxThread(QlThread):
         self.stop_event = THREAD_EVENT_INIT_VAL
         self.stop_return_val = None
         self.return_val = 0
-        self.blocking_condition_fuc = None
-        self.blocking_condition_arg = None
-        self.thread_management = thread_management
         self.current_path = ql.os.current_path
         self.log_file_fd = None
+        self._sched_cb = None
 
         _logger = self.ql.log_file_fd
 
@@ -98,56 +98,50 @@ class QlLinuxThread(QlThread):
         if self.set_child_tid_address != None:
             self.ql.mem.write(self.set_child_tid_address, ql.pack32(self.thread_id))
 
-    def run(self, mode, time_slice = 0, count_slice = 0, bbl_slice = 0):
-        # Set the time of the current run
-        if mode == TIME_MODE:
-            if time_slice == 0 and self.total_time != 0:
-                thread_slice = self.total_time - self.runing_time
-            else:
-                thread_slice = time_slice
-        elif mode == COUNT_MODE:
-            thread_slice = count_slice
-        elif mode == BBL_MODE:
-            thread_slice = bbl_slice
-        else:
-            raise
+    @property
+    def sched_cb(self):
+        return self._sched_cb
+    
+    @sched_cb.setter
+    def sched_cb(self, cb):
+        self._sched_cb = cb
 
-        # Initialize, stop event
-        self.return_val = 0
-        self.stop_event = THREAD_EVENT_INIT_VAL
+    def _default_sched_cb(self):
+        # Give up control.
+        gevent.sleep(0)
 
-        # Restore the context of the currently executing thread and set tls
-        self.restore()
+    def _run(self):
+        while self.status != THREAD_STATUS_TERMINATED:
+            # Restore the context of the currently executing thread and set tls
+            self.restore()
 
-        # Run and log the run event
-        s_time = int(time.time() * 1000000)
-        self.start_address = self.ql.arch.get_pc()
+            # Run and log the run event
+            self.start_address = self.ql.arch.get_pc()
+            self.sched_cb = QlLinuxThread._default_sched_cb
+            
+            self.ql.dprint(0, f"[Thread {self.get_id()}] scheduled.")
+            self.status = THREAD_STATUS_RUNNING
+            self.ql.os.thread_management.cur_thread = self
+            self.ql.emu_start(self.start_address, self.exit_point, timeout = 1000)
 
-        if mode == TIME_MODE:
-            self.ql.emu_start(self.start_address, self.exit_point, timeout = thread_slice)
-        elif mode == COUNT_MODE:
-            self.ql.emu_start(self.start_address, self.exit_point, count = thread_slice)
-        elif mode == BBL_MODE:
-            self.thread_management.set_bbl_count(thread_slice)
-            self.ql.emu_start(self.start_address, self.exit_point)
-        else:
-            raise
+            if self.ql.arch.get_pc() == self.exit_point:
+                self.stop()
+                break
 
-        e_time = int(time.time() * 1000000)
+            self.save()
+            # Note that this callback may be set by UC callbacks.
+            # Some thought on this design:
+            #      1. Never give up control during a UC callback.
+            #      2. emu_stop only sends a signal to unicorn which won't stop it immediately.
+            #      3. According to 1, never call gevent functions in UC callbacks.
+            self.ql.dprint(0, f"[Thread {self.get_id()}] calls sched_cb: {self.sched_cb}")
+            self.sched_cb(self)
 
-        self.runing_time += (e_time - s_time)
-
-        if self.total_time != 0 and self.runing_time >= self.total_time:
-            self.status = THREAD_STATUS_TIMEOUT
-
-        if self.ql.arch.get_pc() == self.exit_point:
-            self.stop()
-            self.stop_event = THREAD_EVENT_EXIT_EVENT
-
-        return (e_time - s_time)
+    def get_id(self):
+        return self.thread_id
 
     @abstractmethod
-    def store(self):
+    def save(self):
         pass
 
     @abstractmethod
@@ -159,9 +153,10 @@ class QlLinuxThread(QlThread):
         pass
 
     def suspend(self):
-        self.store()
+        self.save()
 
-    def store_regs(self):
+    # TODO: Rename
+    def save_regs(self):
         self.context = self.ql.arch.context_save()
         self.start_address = self.ql.arch.get_pc()
 
@@ -169,10 +164,11 @@ class QlLinuxThread(QlThread):
         self.ql.arch.context_restore(self.context)
 
     def set_start_address(self, addr):
+        # We can't modify UcContext directly.
         old_context = self.ql.arch.context_save()
         self.restore_regs()
         self.ql.reg.arch_pc = addr
-        self.store_regs()
+        self.save_regs()
         self.ql.arch.context_restore(old_context)
 
     def set_context(self, con):
@@ -192,71 +188,41 @@ class QlLinuxThread(QlThread):
 
         # Source: Linux Man Page
 
-        if self.clear_child_tid_address != None:
+        if self.clear_child_tid_address is not None:
+            self.ql.dprint(0, f"[Thread {self.get_id()}] Perform CLONE_CHILD_CLEARTID at {hex(self.clear_child_tid_address)}")
             self.ql.mem.write(self.clear_child_tid_address, self.ql.pack32(0))
-        self.ql.os.futexm.futex_wake(self.clear_child_tid_address, 1)
+            wakes = self.ql.os.futexm.get_futex_wake_list(self.ql, self.clear_child_tid_address, 1)
+            self.clear_child_tid_address = None
+            # When the thread is to stop, we don't have chance for next sched_cb, so
+            # we notify the thread directly.
+            for t, e in wakes:
+                self.ql.dprint(0, f"[Thread {self.get_id()}] Notify [Thread {t.get_id()}].")
+                e.set()
 
     def stop(self):
         self._on_stop()
         self.status = THREAD_STATUS_TERMINATED
 
-    def blocking(self):
-        self.status = THREAD_STATUS_BLOCKING
-
-    def running(self):
-        self.status = THREAD_STATUS_RUNNING
-
     def is_stop(self):
-        return self.status == THREAD_STATUS_TERMINATED
+        #return self.status == THREAD_STATUS_TERMINATED
+        return self.dead
 
     def is_running(self):
-        return self.status == THREAD_STATUS_RUNNING
+        return not self.dead
 
     def is_blocking(self):
-        return self.status == THREAD_STATUS_BLOCKING
+        #return self.status == THREAD_STATUS_BLOCKING
+        return False
 
     def is_timeout(self):
-        return self.status == THREAD_STATUS_TIMEOUT
+        #return self.status == THREAD_STATUS_TIMEOUT
+        return False
 
     def get_thread_id(self):
         return self.thread_id
 
     def get_return_val(self):
         return self.return_val
-
-    def set_blocking_condition(self, bc_fuc, bc_arg = None):
-        
-        # When a thread encounters a special condition and required blocking
-        # it will call this function to determine if this is a function needs blocking.
-
-        # Why set_blocking_condition is needed?
-        # Functions like sleep, wait, etc will have issue eventually cause issue to ThreadManagement.
-        # This is also a design flaw, this is due to Qiling Framework's multithread is not a real multithread.
-        
-        # When implementing system calls, you need to unpack the system calls that are blocked,
-        # and check whether the conditions are met on each time slice to prevent program blocking.
-        
-        # From: w1tcher
-
-        self.blocking_condition_fuc = bc_fuc
-        self.blocking_condition_arg = bc_arg
-
-    def is_continue_blocking(self):
-        if self.blocking_condition_fuc == None:
-            return True
-
-        if self.blocking_condition_arg == None:
-            return self.blocking_condition_fuc(self.ql, self)
-        else:
-            return self.blocking_condition_fuc(self.ql, self, self.blocking_condition_arg)
-
-    def change_thread_management(self, tm):
-        self.thread_management = tm
-
-    def remaining_time(self):
-        if self.total_time == 0:
-            return 0
-        return self.total_time - self.runing_time
 
     def set_exit_point(self, exit_point):
         self.exit_point = exit_point
@@ -282,8 +248,8 @@ class QlLinuxThread(QlThread):
 
 class QlLinuxX86Thread(QlLinuxThread):
     """docstring for X86Thread"""
-    def __init__(self, ql, thread_management = None, start_address = 0, context = None, total_time = 0, set_child_tid_addr = None):
-        super(QlLinuxX86Thread, self).__init__(ql, thread_management, start_address, context, total_time, set_child_tid_addr)
+    def __init__(self, ql, start_address = 0, context = None, set_child_tid_addr = None):
+        super(QlLinuxX86Thread, self).__init__(ql, start_address, context, set_child_tid_addr)
         self.tls = bytes(b'\x00' * (8 * 3))
 
     def clone_thread_tls(self, tls_addr):
@@ -308,8 +274,8 @@ class QlLinuxX86Thread(QlLinuxThread):
         self.tls = bytes(self.ql.os.gdtm.get_gdt_buf(12, 14 + 1))
         self.ql.os.gdtm.set_gdt_buf(12, 14 + 1, old_tls)
 
-    def store(self):
-        self.store_regs()
+    def save(self):
+        self.save_regs()
         self.tls = bytes(self.ql.os.gdtm.get_gdt_buf(12, 14 + 1))
 
     def restore(self):
@@ -320,15 +286,15 @@ class QlLinuxX86Thread(QlLinuxThread):
 
 class QlLinuxX8664Thread(QlLinuxThread):
     """docstring for X8664Thread"""
-    def __init__(self, ql, thread_management = None, start_address = 0, context = None, total_time = 0, set_child_tid_addr = None):
-        super(QlLinuxX8664Thread, self).__init__(ql, thread_management, start_address, context, total_time, set_child_tid_addr)
+    def __init__(self, ql, start_address = 0, context = None, set_child_tid_addr = None):
+        super(QlLinuxX8664Thread, self).__init__(ql,start_address, context, set_child_tid_addr)
         self.tls = 0
 
     def clone_thread_tls(self, tls_addr):
         self.tls = tls_addr
 
-    def store(self):
-        self.store_regs()
+    def save(self):
+        self.save_regs()
         self.tls = self.ql.reg.msr(FSMSR)
 
     def restore(self):
@@ -337,8 +303,8 @@ class QlLinuxX8664Thread(QlLinuxThread):
 
 class QlLinuxMIPS32Thread(QlLinuxThread):
     """docstring for QlLinuxMIPS32Thread"""
-    def __init__(self, ql, thread_management = None, start_address = 0, context = None, total_time = 0, set_child_tid_addr = None):
-        super(QlLinuxMIPS32Thread, self).__init__(ql, thread_management, start_address, context, total_time, set_child_tid_addr)
+    def __init__(self, ql, start_address = 0, context = None, set_child_tid_addr = None):
+        super(QlLinuxMIPS32Thread, self).__init__(ql, start_address, context, set_child_tid_addr)
         self.tls = 0
 
 
@@ -346,8 +312,8 @@ class QlLinuxMIPS32Thread(QlLinuxThread):
         self.tls = tls_addr
 
 
-    def store(self):
-        self.store_regs()
+    def save(self):
+        self.save_regs()
         self.tls = self.ql.reg.cp0_userlocal 
 
 
@@ -360,8 +326,8 @@ class QlLinuxMIPS32Thread(QlLinuxThread):
 
 class QlLinuxARMThread(QlLinuxThread):
     """docstring for QlLinuxARMThread"""
-    def __init__(self, ql, thread_management = None, start_address = 0, context = None, total_time = 0, set_child_tid_addr = None):
-        super(QlLinuxARMThread, self).__init__(ql, thread_management, start_address, context, total_time, set_child_tid_addr)
+    def __init__(self, ql, start_address = 0, context = None, set_child_tid_addr = None):
+        super(QlLinuxARMThread, self).__init__(ql, start_address, context, set_child_tid_addr)
         self.tls = 0
 
 
@@ -369,8 +335,8 @@ class QlLinuxARMThread(QlLinuxThread):
         self.tls = tls_addr
 
 
-    def store(self):
-        self.store_regs()
+    def save(self):
+        self.save_regs()
         self.tls = self.ql.reg.c13_c0_3
 
 
@@ -381,212 +347,64 @@ class QlLinuxARMThread(QlLinuxThread):
 
 class QlLinuxARM64Thread(QlLinuxThread):
     """docstring for QlLinuxARM64Thread"""
-    def __init__(self, ql, thread_management = None, start_address = 0, context = None, total_time = 0, set_child_tid_addr = None):
-        super(QlLinuxARM64Thread, self).__init__(ql, thread_management, start_address, context, total_time, set_child_tid_addr)
+    def __init__(self, ql, start_address = 0, context = None, set_child_tid_addr = None):
+        super(QlLinuxARM64Thread, self).__init__(ql, start_address, context, set_child_tid_addr)
         self.tls = 0
 
     def clone_thread_tls(self, tls_addr):
         self.tls = tls_addr
 
-    def store(self):
-        self.store_regs()
+    def save(self):
+        self.save_regs()
         self.tls = self.ql.reg.tpidr_el0
 
     def restore(self):
         self.restore_regs()
         self.ql.reg.tpidr_el0 = self.tls
 
-class QlLinuxThreadManagement(QlThreadManagement):
-    def __init__(self, ql, time_slice = 1000, count_slice = 1000, bbl_slice = 300, mode = BBL_MODE, ):
-        super(QlLinuxThreadManagement, self).__init__(ql)
+class QlLinuxThreadManagement:
+    def __init__(self, ql):
         self.ql = ql
-        self.cur_thread = None
-        self.running_thread_list = []
-        self.ending_thread_list = []
-        self.blocking_thread_list = []
-        self.main_thread = None
-        self.mode = mode
-        self.time_slice = time_slice
-        self.count_slice = count_slice
-        self.bbl_slice = bbl_slice
-
-        if mode == TIME_MODE:
-            self.thread_slice = time_slice
-        elif mode == COUNT_MODE:
-            self.thread_slice = count_slice
-        elif mode == BBL_MODE:
-            self.thread_slice = bbl_slice
-            self.bbl_counter = 0
-            self.bbl_count = 0
-            self.setup_bbl_hook()
-        else:
-            raise
-
+        self.threads = set()
         self.runing_time = 0
+        self._main_thread = None
+        self._cur_thread = None
+
+    # cur_thread is only guaranteed to be correct in unicorn callbacks context.
+    @property
+    def cur_thread(self):
+        return self._cur_thread
+
+    @cur_thread.setter
+    def cur_thread(self, ct):
+        self._cur_thread = ct
+
+    @property
+    def main_thread(self):
+        return self._main_thread
+    
+    @main_thread.setter
+    def main_thread(self, mt):
+        self._main_thread = mt
+
+    def stop_thread(self, t):
+        t.stop()
+        if t in self.threads:
+            self.threads.remove(t)
+        # Exit the world.
+        if t == self.main_thread:
+            self.stop()
+    
+    # Stop the world, urge all threads to stop immediately.
+    def stop(self):
+        self.ql.dprint(0, "[Thread Manager] Stop the world.")
+        self.ql.emu_stop()
+        for t in self.threads:
+            t.stop()
+            gevent.kill(t)
 
     def run(self):
-        if len(self.running_thread_list) == 0:
-            self.ql.dprint(D_INFO, '[!] No executable thread!')
-            return
+        # If we get exceptions from gevent here, it means a critical bug related to multithread.
+        # Please fire an issue if you encounter an exception from gevent.
+        gevent.joinall([self.main_thread])
 
-        if self.main_thread not in self.running_thread_list:
-            self.ql.dprint(D_INFO, '[!] No main thread!')
-            return
-
-        while True:
-            running_thread_num = len(self.running_thread_list)
-            blocking_thread_num = len(self.blocking_thread_list)
-            if running_thread_num == 1 and blocking_thread_num == 0:
-                thread_slice = 0
-            else:
-                thread_slice = self.thread_slice
-
-            if running_thread_num != 0:
-                for i in range(running_thread_num):
-                    self.cur_thread = self.running_thread_list[i]
-                    self.ql.dprint(D_INFO, "[+] Currently running pid is: %d; tid is: %d " % (
-                    os.getpid(), self.cur_thread.get_thread_id()))
-                    
-                    if self.mode == TIME_MODE:
-                        self.runing_time += self.cur_thread.run(time_slice = thread_slice, mode = TIME_MODE)
-                    elif self.mode == COUNT_MODE:
-                        self.runing_time += self.cur_thread.run(count_slice = thread_slice, mode = COUNT_MODE)
-                    elif self.mode == BBL_MODE:
-                        self.runing_time += self.cur_thread.run(bbl_slice = thread_slice, mode = BBL_MODE)
-                    else:
-                        raise
-
-                    if self.cur_thread.is_running():
-                        if self.cur_thread.stop_event == THREAD_EVENT_CREATE_THREAD:
-                            new_pc = self.ql.arch.get_pc()
-                            self.cur_thread.stop_return_val.set_start_address(new_pc)
-                            self.add_running_thread(self.cur_thread.stop_return_val)
-                            self.cur_thread.stop_return_val = None
-                    elif self.cur_thread.is_blocking():
-                        pass
-                    else:
-                        if self.cur_thread == self.main_thread:
-                            self.exit_world()
-                            return
-
-                        if self.cur_thread.stop_event == THREAD_EVENT_EXIT_GROUP_EVENT:
-                            self.exit_world()
-                            return
-
-                        elif self.cur_thread.stop_event == THREAD_EVENT_UNEXECPT_EVENT:
-                            self.exit_world()
-                            return
-
-                        self.cur_thread = None
-                        continue
-
-                    self.cur_thread.suspend()
-                    self.cur_thread = None
-            else:
-                if self.mode == TIME_MODE:
-                    self.runing_time += thread_slice
-                    time.sleep(thread_slice / 1000000)
-                elif self.mode == COUNT_MODE:
-                    self.runing_time += (thread_slice * 1)
-                    time.sleep((thread_slice * 1) / 1000000)
-                elif self.mode == BBL_MODE:
-                    self.runing_time += (thread_slice * 3)
-                    time.sleep((thread_slice * 1) / 1000000)
-                else:
-                    raise
-
-            self.clean_running_thread()
-            self.clean_blocking_thread()
-
-    def setup_bbl_hook(self):
-        def bbl_count_cb(ql, addr, size):
-            if self.bbl_count == 0:
-                return
-
-            self.bbl_counter += 1
-
-            if self.bbl_counter > self.bbl_count:
-                ql.emu_stop()
-
-        self.ql.hook_block(bbl_count_cb)
-
-    def set_bbl_count(self, bbl_count):
-        self.bbl_count = bbl_count
-        self.clear_bbl_count()
-
-    def clear_bbl_count(self):
-        self.bbl_counter = 0
-
-    def set_main_thread(self, mt):
-        self.main_thread = mt
-        self.add_running_thread(mt)
-
-    def set_time_slice(self, t):
-        self.time_slice = t
-        if self.mode == TIME_MODE:
-            self.thread_slice = t
-
-    def set_count_slice(self, c):
-        self.count_slice = c
-        if self.mode == COUNT_MODE:
-            self.thread_slice = c
-    
-    def set_bbl_slice(self, b):
-        self.bbl_slice = b
-        if self.mode == BBL_MODE:
-            self.thread_slice = b
-
-    def add_running_thread(self, t):
-        if t not in self.running_thread_list:
-            self.running_thread_list.append(t)
-
-    def add_blocking_thread(self, t):
-        if t not in self.blocking_thread_list:
-            self.blocking_thread_list.append(t)
-
-    def add_ending_thread(self, t):
-        if t not in self.ending_thread_list:
-            self.ending_thread_list.append(t)
-
-    def clean_running_thread(self):
-        tmp_list = self.running_thread_list
-        self.running_thread_list = []
-        for t in tmp_list:
-            if t.is_running():
-                self.add_running_thread(t)
-            elif t.is_blocking():
-                self.add_blocking_thread(t)
-            else:
-                self.add_ending_thread(t)
-
-    def clean_blocking_thread(self):
-        tmp_list = self.blocking_thread_list
-        self.blocking_thread_list = []
-        for t in tmp_list:
-            if t.is_running():
-                self.add_running_thread(t)
-            elif t.is_continue_blocking():
-                self.add_blocking_thread(t)
-            else:
-                self.add_running_thread(t)
-                t.running()
-
-    def exit_world(self):
-        if self.ql.os.child_processes == True:
-            os._exit(0)
-
-        for t in self.running_thread_list:
-            t.store()
-            t.stop()
-            self.add_ending_thread(t)
-        for t in self.blocking_thread_list:
-            t.store()
-            t.stop()
-            self.add_blocking_thread(t)
-        self.running_thread_list = []
-        self.blocking_thread_list = []
-
-    def clean_world(self):
-        self.running_thread_list = []
-        self.blocking_thread_list = []
-        self.ending_thread_list = []

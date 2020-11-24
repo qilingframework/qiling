@@ -271,12 +271,11 @@ class QlOsUtils:
                 self.ql.hook_block(ql_hook_block_disasm)
             self.ql.hook_code(self.disassembler)
 
-    def stop(self, stop_event=THREAD_EVENT_EXIT_GROUP_EVENT):
+    def stop(self):
         if self.ql.multithread:
-            td = self.thread_management.cur_thread
-            td.stop()
-            td.stop_event = stop_event
-        self.ql.emu_stop()
+            td = self.thread_management.stop() 
+        else:
+            self.ql.emu_stop()
 
     def read_guid(self, address):
         result = ""
