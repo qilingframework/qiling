@@ -362,10 +362,11 @@ class QlMemoryManager:
         self.map(address, self.align(size))
         return address
 
-    def protect(self, addr, size, perms):
+    def protect(self, addr, size, perms=UC_PROT_ALL, info=None):
         aligned_address = addr & ~0xFFF # Address needs to align with
         aligned_size = self.align((addr & 0xFFF) + size)
         self.ql.uc.mem_protect(aligned_address, aligned_size, perms)
+        self.add_mapinfo(addr, addr + size, perms, info if info else "[protected]")
 
 
     def map(self, addr, size, perms=UC_PROT_ALL, info=None, ptr=None):
