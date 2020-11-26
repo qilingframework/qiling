@@ -146,17 +146,21 @@ if __name__ == '__main__':
     
     if len(sys.argv) <= 1:
         usage()
+        exit(0)
 
     if (sys.argv[1] == 'run'):
         comm_parser = run_parser
+
     elif (sys.argv[1] == 'shellcode'):
         comm_parser = shellcode_parser
+
     elif (sys.argv[1] == 'version') or (sys.argv[1] == '-v') or (sys.argv[1] == '--version'):
         version()
         exit(0)
+
     else:
         usage()
-        exit(1)
+        exit(0)
 
     comm_parser.add_argument('-o', '--output', required=False, default='default',
                             help='output mode, options are off, debug , disasm, dump')
