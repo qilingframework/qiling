@@ -12,7 +12,7 @@ from binascii import unhexlify
 from .utils import ql_build_module_import_name, ql_get_module_function
 from .utils import ql_is_valid_arch, ql_is_valid_ostype
 from .utils import loadertype_convert_str, ostype_convert_str, arch_convert_str
-from .utils import ql_setup_filter, debugger_convert
+from .utils import debugger_convert
 from .const import QL_OS, QL_OS_ALL, QL_ARCH, QL_ENDIAN, QL_OUTPUT, QL_DEBUGGER
 from .const import D_INFO, D_DRPT
 from .exception import QlErrorArch, QlErrorOsType, QlErrorOutput
@@ -40,37 +40,12 @@ class QlCoreUtils(object):
                 fd = self.os.thread_management.cur_thread.log_file_fd
             else:
                 fd = self.log_file_fd
-
-            # setup filter for logger
-            # FIXME: only works for logging due to we might need runtime disable nprint, it should be a global filter not only syscall
-            if self.filter != None and self.output == QL_OUTPUT.DEFAULT:
-                fd.addFilter(ql_setup_filter(self.filter))
-            
-            console_handlers = []
-
-            for each_handler in fd.handlers:
-                if type(each_handler) == logging.StreamHandler:
-                    console_handlers.append(each_handler)
-
-            if self.console == False:
-                for each_console_handler in console_handlers:
-                    if '_FalseFilter' not in [each.__class__.__name__ for each in each_console_handler.filters]:
-                        each_console_handler.addFilter(ql_setup_filter(False))
-
-            elif self.console == True:
-                for each_console_handler in console_handlers:
-                    for each_filter in [each for each in each_console_handler.filters]:
-                        if '_FalseFilter' in each_filter.__class__.__name__:
-                            each_console_handler.removeFilter(each_filter)
             
             args = map(str, args)
             msg = kw.get("sep", " ").join(args)
 
             if kw.get("end", None) != None:
                 msg += kw["end"]
-
-            elif msg != os.linesep:
-                msg += os.linesep
 
             fd.info(msg)
 

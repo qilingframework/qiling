@@ -3,8 +3,8 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
-import os, time
-from os import sched_get_priority_max
+import os, time, logging
+from pathlib import Path
 
 from unicorn.unicorn import UcError
 import gevent
@@ -13,7 +13,7 @@ from gevent import Greenlet
 from unicorn.mips_const import *
 from unicorn.arm_const import *
 
-from qiling.utils import ql_setup_logging_file, ql_setup_logger, ql_setup_logging_stream
+from qiling.utils import FMT_STR
 from qiling.os.thread import *
 from qiling.arch.x86_const import *
 from qiling.const import *
@@ -48,15 +48,17 @@ class QlLinuxThread(QlThread):
         self._log_file_fd = None
         self._sched_cb = None
 
-        _logger = self.ql.log_file_fd
-
-        if self.ql.log_dir and self.ql.log_file_fd != None:
-            if ql.log_split:
-                _logger = ql_setup_logging_file(ql.output, '%s_%s' % (ql.log_file, self.thread_id), _logger)
-            else:
-                _logger = ql_setup_logging_file(ql.output, self.ql.log_filename, _logger)
-
-        self._log_file_fd = _logger
+        if self.ql.log_split:
+            _logger = logging.getLogger(f"thread{self.id}")
+            _logger.propagate = False
+            if self.ql.log_dir is not None and self.ql.log_dir != "":
+                handler = logging.FileHandler(Path(self.ql.log_dir) / f"{self.ql.targetname + self.ql.append}_{self.id}.qlog")
+                handler.setFormatter(logging.Formatter(FMT_STR))
+                _logger.addHandler(handler)
+            
+            self._log_file_fd = _logger
+        else:
+            self._log_file_fd = logging.getLogger()
 
         # For each thread, the kernel maintains two attributes (addresses)
         # called set_child_tid and clear_child_tid.  These two attributes

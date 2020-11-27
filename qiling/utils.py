@@ -7,12 +7,94 @@
 This module is intended for general purpose functions that can be used
 thoughout the qiling framework
 """
-import importlib, logging, os
+import importlib, logging, os, logging, copy, re
+from logging import LogRecord
+from pathlib import Path
 from .exception import *
 from .const import QL_ARCH, QL_ARCH_ALL, QL_OS, QL_OS_ALL, QL_OUTPUT, QL_DEBUGGER, QL_ARCH_32BIT, QL_ARCH_64BIT, QL_ARCH_16BIT
 from .const import debugger_map, arch_map, os_map, D_INFO
 
 from unicorn import UcError, UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
+
+FMT_STR = "[%(levelname)s] [%(filename)s:%(lineno)d] %(message)s"
+
+# \033 -> ESC
+# ESC [ -> CSI
+# CSI %d;%d;... m -> SGR
+class COLOR_CODE:
+    WHITE = '\033[37m'
+    CRIMSON = '\033[31m'
+    RED = '\033[91m'
+    GREEN = '\033[92m'
+    YELLOW = '\033[93m'
+    BLUE = '\033[94m'
+    MAGENTA = '\033[95m'
+    CYAN = '\033[96m'
+    ENDC = '\033[0m'
+
+LEVEL_COLORS = {
+    'WARNING': COLOR_CODE.YELLOW,
+    'INFO': COLOR_CODE.BLUE,
+    'DEBUG': COLOR_CODE.WHITE,
+    'CRITICAL': COLOR_CODE.CRIMSON,
+    'ERROR': COLOR_CODE.RED
+}
+
+class ColoredFormatter(logging.Formatter):
+    def __init__(self, *args, **kwargs):
+        super(ColoredFormatter, self).__init__(*args, **kwargs)
+    
+    def get_colored_level(self, record: LogRecord):
+        levelname = record.levelname
+        return f"{LEVEL_COLORS[levelname]}{levelname}{COLOR_CODE.ENDC}"
+
+    def format(self, record: LogRecord):
+        _record = copy.copy(record)
+        _record.levelname = self.get_colored_level(_record)
+        return super(ColoredFormatter, self).format(_record)
+
+class MultithreadColoredFormatter(ColoredFormatter):
+    def __init__(self, ql, *args, **kwargs):
+        super(MultithreadColoredFormatter, self).__init__(*args, **kwargs)
+        self._ql = ql
+
+    def format(self, record: LogRecord):
+        try:
+            cur_thread = self._ql.os.thread_management.cur_thread
+        except AttributeError:
+            return super(MultithreadColoredFormatter, self).format(record)
+        _record = copy.copy(record)
+        levelname = self.get_colored_level(_record)
+        _record.levelname = f"{levelname}] [{COLOR_CODE.GREEN}Thread {cur_thread.id}{COLOR_CODE.ENDC}"
+        msg = super(ColoredFormatter, self).format(_record)
+        return msg
+
+class RegexFilter(logging.Filter):
+    def __init__(self, filters):
+        super(RegexFilter, self).__init__()
+        self._filters = [ re.compile(ft) for ft in  filters ]
+    
+    def filter(self, record: LogRecord):
+        msg = record.getMessage()
+        for ft in self._filters:
+            if re.match(ft, msg):
+                return True
+        return False
+
+class MultithreadSplitHandler(logging.Handler):
+    def __init__(self, ql):
+        super(MultithreadSplitHandler, self).__init__()
+        self._ql = ql
+    
+    def emit(self, record: LogRecord):
+        msg = self.format(record)
+        try:
+            cur_thread = self._ql.os.thread_management.cur_thread
+        except AttributeError:
+            self._ql._msg_before_main_thread.append((record.levelno, msg))
+            return
+        cur_thread.log_file_fd.log(record.levelno, msg)
+
 
 def catch_KeyboardInterrupt(ql):
     def decorator(func):
@@ -98,7 +180,7 @@ def output_convert(output):
     if output in adapter:
         return adapter[output]
     # invalid
-    return None, None
+    return QL_OUTPUT.DEFAULT
 
 def debugger_convert(debugger):
     adapter = {}
@@ -154,80 +236,69 @@ def ql_get_module_function(module_name, function_name = None):
 
     return module_function
 
-def ql_setup_logger(logger_name=None):
-    if logger_name is None: # increasing logger name counter to prevent conflict 
-        loggers = logging.root.manager.loggerDict
-        _counter = len(loggers)
-        logger_name = 'qiling_%s' % _counter
-
-    logger = logging.getLogger(logger_name)
-    logger.propagate = False
-    logger.setLevel(logging.DEBUG)
-    return logger
-
-def ql_setup_logging_env(ql, logger=None):
-    if not os.path.exists(ql.log_dir):
-        os.makedirs(ql.log_dir, 0o755)
-
-    ql.log_filename = ql.targetname + ql.append          
-    ql.log_file = os.path.join(ql.log_dir, ql.log_filename) 
-
-    _logger = ql_setup_logging_stream(ql)
-
-    if ql.log_split == False:
-        _logger = ql_setup_logging_file(ql.output, ql.log_file, _logger)
-
-    return _logger
-
-
-def ql_setup_logging_stream(ql, logger=None):
-
-    ch = logging.StreamHandler()
-    ch.setLevel(logging.DEBUG)
-
-    ch.terminator = ""
-
-    if logger is None:
-        logger = ql_setup_logger()
-
-    logger.addHandler(ch)
-    return logger
-
-def ql_setup_logging_file(ql_mode, log_file_path, logger=None):
-
-    # setup FileHandler for logging to disk file
-    fh = logging.FileHandler('%s.qlog' % log_file_path)
-    fh.setLevel(logging.DEBUG)
+def ql_resolve_logger_level(output, verbose):
+    level = logging.INFO
+    if output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP, QL_OUTPUT.DISASM):
+        level = logging.DEBUG
     
-    # use empty character for stirng terminateor by default
-    fh.terminator = ""
+    if verbose == 0:
+        level = logging.WARNING
+    elif verbose >= 4:
+        level = logging.DEBUG
+    elif verbose >= 1:
+        level = logging.INFO
+    
+    logging.getLogger().setLevel(level)
 
-    if logger is None:
-        logger = ql_setup_logger()
 
-    logger.addHandler(fh)
-    return logger
+# TODO: qltool compatibility
+def ql_setup_logger(ql, log_dir, log_filename, log_split, console, filter, multithread):
+    # Covered use cases:
+    #    - Normal console output.
+    #    - Write to a single file.
+    #    - Write to splitted log files.
 
-def ql_setup_filter(func_names=None):
-    class _filter(logging.Filter):
-        def __init__(self, func_names):
-            super().__init__()
-            # accept list or string func_names so you can use it in qltool and programming
-            self.filter_list = func_names.strip().split(",") if isinstance(func_names, str) else func_names
+    # Clear all handlers and filters.
+    lger = logging.getLogger()
+    lger.handlers = []
+    lger.filters = []
 
-        def filter(self, record):
-            return any((record.getMessage().startswith(each) for each in self.filter_list))
+    # Do we have console output?
+    if console:
+        handler = logging.StreamHandler()
+        if multithread:
+            formatter = MultithreadColoredFormatter(ql, FMT_STR)
+        else:
+            formatter = ColoredFormatter(FMT_STR)
+        handler.setFormatter(formatter)
+        lger.addHandler(handler)
+    
+    # If log_dir isn't specified, return.
+    if log_dir is None or log_dir == "":
+        return
 
-    class _FalseFilter(logging.Filter):
-        def __init__(self):
-            super().__init__()
-        def filter(self, record):
-            return False
-
-    if func_names == False:
-        return _FalseFilter()
+    os.makedirs(log_dir, 0o755, exist_ok=True)
+    
+    # If we don't have to split logs, that's the most simple case.
+    if not log_split:
+        handler = logging.FileHandler(Path(log_dir) / log_filename)
+        handler.setFormatter(logging.Formatter(FMT_STR))
+        lger.addHandler(handler)
     else:
-        return _filter(func_names)
+        if multithread:
+            # A placeholder for messages before the first(main) thread is created.
+            ql._msg_before_main_thread = []
+            handler = MultithreadSplitHandler(ql)
+            handler.setFormatter(logging.Formatter(FMT_STR))
+            lger.addHandler(handler)
+        # For spliting logs with child process, we do that during fork.
+
+    # Remeber to add filters.
+    if filter is not None and type(filter) == list and len(filter) != 0:
+        lger.addFilter(RegexFilter(filter))
+    
+    lger.setLevel(logging.INFO)
+
 
 # verify if emulator returns properly
 def verify_ret(ql, err):

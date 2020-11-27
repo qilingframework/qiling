@@ -4,12 +4,13 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
 import ctypes, logging, ntpath, os, pickle, platform
+from typing import List
 
 from .const import QL_ARCH_ENDIAN, QL_ENDIAN, QL_OS_POSIX, QL_OS_ALL, QL_OUTPUT, QL_OS
 from .exception import QlErrorFileNotFound, QlErrorArch, QlErrorOsType, QlErrorOutput
 from .utils import arch_convert, ostype_convert, output_convert
 from .utils import ql_is_valid_arch, ql_get_arch_bits, verify_ret
-from .utils import ql_setup_logging_env, ql_setup_logging_stream
+from .utils import ql_setup_logger, ql_resolve_logger_level
 from .core_struct import QlCoreStructs
 from .core_hooks import QlCoreHooks
 from .core_utils import QlCoreUtils
@@ -33,10 +34,15 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
             log_split=None,
             append=None,
             libcache = False,
+            multithread = False,
             stdin=0,
             stdout=0,
             stderr=0,
     ):
+        """ Create a Qiling instance.
+
+            For each argument or property, please refer to its docstring. e.g. Qiling.multithread.__doc__
+        """
         super(Qiling, self).__init__()
 
         ##################################
@@ -50,13 +56,14 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         self.archtype = archtype
         self.bigendian = bigendian
         self.output = output
-        self.verbose = verbose
+        self._verbose = verbose
         self.profile = profile
-        self.console = console
-        self.log_dir = log_dir
-        self.log_split = log_split
-        self.append = append
+        self._console = console
+        self._log_dir = log_dir
+        self._log_split = log_split
+        self._append = append
         self.libcache = libcache
+        self._multithread = multithread
         self.stdin = stdin
         self.stdout = stdout
         self.stderr = stderr
@@ -72,10 +79,8 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         self.internal_exception = None
         self.platform = platform.system()
         self.debugger = None
-        # due to the instablity of multithreading, added a swtich for multithreading
-        self.multithread = False
         self.root = False
-        self.filter = None
+        self._filter = None
 
         """
         Qiling Framework Core Engine
@@ -108,20 +113,24 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         # setup    #
         ############           
         self.profile = self.profile_setup()
-        if self.append == None:
-            self.append = self.profile["MISC"]["append"]
-        if self.log_dir == None:
-            self.log_dir = self.profile["LOG"]["dir"]
-        if self.log_split == None:            
-            self.log_split =  self.profile.getboolean('LOG', 'split')
+        if self._append == None:
+            self._append = self.profile["MISC"]["append"]
+        if self._log_dir == None:
+            self._log_dir = self.profile["LOG"]["dir"]
+        if self._log_split == None:            
+            self._log_split =  self.profile.getboolean('LOG', 'split')
 
-         # Log's configuration
-        if self.log_dir != "" and type(self.log_dir) == str:
-            _logger = ql_setup_logging_env(self)
-            self.log_file_fd = _logger
-        elif self.console == True:
-            _logger = ql_setup_logging_stream(self)
-            self.log_file_fd = _logger
+        # Log's configuration
+        
+        # We only use the root logger now.
+        ql_setup_logger(self, 
+                        self.log_dir, 
+                        self.targetname + self.append + ".qlog", 
+                        self.log_split, self.console, 
+                        self.filter, 
+                        self.multithread)
+        # For compatibility.
+        self.log_file_fd = logging.getLogger()
 
         # qiling output method conversion
         if self.output and type(self.output) == str:
@@ -133,6 +142,8 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         # check verbose, only can check after ouput being defined
         if type(self.verbose) != int or self.verbose > 99 and (self.verbose > 0 and self.output not in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP)):
             raise QlErrorOutput("[!] verbose required input as int and less than 99")
+        
+        ql_resolve_logger_level(self.output, self.verbose)
         
         ####################################
         # Set pointersize (32bit or 64bit) #
@@ -199,18 +210,90 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         else:
             self.patch_lib.append((addr, code, file_name.decode()))
     
+    ##################
+    # Qiling Options #
+    ##################
 
-    # ql.output var getter
+    # If an option doesn't have a setter, it means that it can only set during Qiling.__init__
+    # TODO: Rename to suffix?
+    @property
+    def append(self) -> str:
+        """ Suffix appended to the filename.
+            Used when writing to file (e.g. logging).
+        """
+        return self._append
+
+    @property
+    def log_dir(self) -> str:
+        """ Specify the logging directory.
+            Use with ql.log_split.
+        """
+        return self._log_dir
+    
+    @property
+    def log_split(self) -> bool:
+        """ Specify whether spliting logs within multiprocess/multithread context.
+            Use with ql.log_dir.
+        """
+        return self._log_split
+
+    @property
+    def console(self) -> bool:
+        """ Specify whether enabling console output. 
+        """
+        return self._console
+    
+    @property
+    def filter(self) -> List[str]:
+        """ Filter logs with regex.
+            
+            Value: List[str]
+            Example: ql.filter = [r'^open']
+        """
+        return self._filter
+
+    @filter.setter
+    def filter(self, ft):
+        self._filter = ft
+
+    @property
+    def multithread(self):
+        """ Specify whether multithread has been enabled.
+        """
+        return self._multithread
+
     @property
     def output(self):
+        """ Specify the qiling output.
+
+            Possible values:
+              - "default": equals to output = None, do nothing.
+              - "off": an alias to "default".
+              - "debug": set the log level to logging.DEBUG.
+              - "disasm": diasm each executed instruction.
+              - "dump": the most verbose output, dump registers and diasm the function blocks.
+        """
         return self._output
 
-
-    # ql.output - output var setter eg. QL_OUTPUT.DEFAULT and etc
     @output.setter
     def output(self, output):
         self._output = output_convert(output)
     
+    @property
+    def verbose(self):
+        """ Set the verbose level. This option is reserved for compatibility.
+            Note "verbose" should be used with ql.output = "debug"/"dump".
+
+            Possible values:
+              - 0  : logging.WARNING, almost no Qiling logs.
+              - >=1: logging.INFO, the default logging level.
+              - >=4: logging.DEBUG.
+        """
+        return self._verbose
+    
+    @verbose.setter
+    def verbose(self, v):
+        self._verbose = v
 
     # ql.platform - platform var = host os getter eg. LINUX and etc
     @property
