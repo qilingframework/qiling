@@ -113,6 +113,23 @@ class QlLinuxThread(QlThread):
         gevent.sleep(0)
 
     def _run(self):
+        # Some random notes for myself:
+        # Implement details:
+        #    The thread execution is divided in to two contexts:
+        #        - Unicorn context.
+        #        - Non-Unicorn context.
+        #    Within both contexts, our program is single thread.
+        #
+        #    The only fail safe: **Never give up control in Unicorn context.**
+        #    
+        #    In Unicorn context, in other words, in Unicorn callbacks, we do:
+        #        - Implement non-blocking syscalls directly.
+        #        - Prepare sched_cb for non-unicorn context.
+        #
+        #    In Non-Unicorn context.
+        #    In this context, we do:
+        #        - Call gevent functions to switch threads.
+        #        - Forward blocking syscalls to gevent.
         while self.status != THREAD_STATUS_TERMINATED:
             # Restore the context of the currently executing thread and set tls
             self.restore()
