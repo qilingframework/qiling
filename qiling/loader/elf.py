@@ -438,7 +438,7 @@ class QlLoaderELF(QlLoader, ELFParse):
             for nsym, symbol in enumerate(section.iter_symbols()):
                 if symbol.name == 'init_module':
                     addr = symbol.entry.st_value + elffile.get_section(symbol['st_shndx'])['sh_offset']
-                    ql.nprint("init_module = 0x%x" % addr)
+                    ql.nprint("[+] init_module = 0x%x" % addr)
                     return addr
 
         # not found. FIXME: report error on invalid module??
@@ -568,15 +568,33 @@ class QlLoaderELF(QlLoader, ELFParse):
                     val = rev_reloc_symbols[symbol_name] + val - loc
                     ql.mem.write(loc, ql.pack32(val & 0xFFFFFFFF))
 
-                elif describe_reloc_type(rel['r_info_type'], elffile) == 'R_386_32':
+                elif describe_reloc_type(rel['r_info_type'], elffile) in ('R_386_32', 'R_MIPS_32'):
                     val = ql.unpack(ql.mem.read(loc, 4))
                     val = rev_reloc_symbols[symbol_name] + val
                     ql.mem.write(loc, ql.pack32(val & 0xFFFFFFFF))
+
+                elif describe_reloc_type(rel['r_info_type'], elffile) == 'R_MIPS_HI16':
+                    # actual relocation is done in R_MIPS_LO16
+                    prev_mips_hi16_loc = loc
+
+                elif describe_reloc_type(rel['r_info_type'], elffile) == 'R_MIPS_LO16':
+                    val = ql.unpack16(ql.mem.read(prev_mips_hi16_loc + 2, 2)) << 16 | ql.unpack16(ql.mem.read(loc + 2, 2))
+                    val = rev_reloc_symbols[symbol_name] + val
+                    # *(word)(mips_lo16_loc + 2) is treated as signed
+                    if (val & 0xFFFF) >= 0x8000:
+                        val += (1 << 16)
+
+                    ql.mem.write(prev_mips_hi16_loc + 2, ql.pack16(val >> 16))
+                    ql.mem.write(loc + 2, ql.pack16(val & 0xFFFF))
+
+                else:
+                    raise QlErrorNotImplemented("[!] Relocation type %s not implemented" % describe_reloc_type(rel['r_info_type'], elffile))
 
         return rev_reloc_symbols
 
     def load_driver(self, ql, stack_addr, loadbase=0):
         elfhead = super().parse_header()
+        elfdata_mapping = self.get_elfdata_mapping()
 
         # Determine the range of memory space opened up
         mem_start = -1
@@ -594,21 +612,16 @@ class QlLoaderELF(QlLoader, ELFParse):
 
         # FIXME
         mem_start = 0x1000
-        mem_end = mem_start + int(len(self.elfdata) / 0x1000 + 1) * 0x1000
+        mem_end = mem_start + int(len(elfdata_mapping) / 0x1000 + 1) * 0x1000
 
         # map some memory to intercept external functions of Linux kernel
-        ql.mem.map(API_HOOK_MEM, 0x1000)
-
-        # print("load addr = %x, size = %x" %(loadbase + mem_start, mem_end - mem_start))
-        ql.mem.map(loadbase + mem_start, mem_end - mem_start)
+        ql.mem.map(API_HOOK_MEM, 0x1000, info="[api_mem]")
 
         ql.nprint("[+] loadbase: %x, mem_start: %x, mem_end: %x" % (loadbase, mem_start, mem_end))
-
-        ql.mem.write(loadbase + mem_start, self.elfdata)
-        # dump_mem("Dumping some bytes:", self.elfdata[0x64 : 0x84])
+        ql.mem.map(loadbase + mem_start, mem_end - mem_start, info=ql.path)
+        ql.mem.write(loadbase + mem_start, elfdata_mapping)
 
         entry_point = self.lkm_get_init(ql) + loadbase + mem_start
-
         ql.brk_address = mem_end + loadbase
 
         # Set MMAP addr
@@ -635,7 +648,7 @@ class QlLoaderELF(QlLoader, ELFParse):
         # remember address of syscall table, so external tools can access to it
         ql.os.syscall_addr = SYSCALL_MEM
         # setup syscall table
-        ql.mem.map(SYSCALL_MEM, 0x1000)
+        ql.mem.map(SYSCALL_MEM, 0x1000, info="[syscall_mem]")
         # zero out syscall table memory
         ql.mem.write(SYSCALL_MEM, b'\x00' * 0x1000)
 
@@ -661,3 +674,24 @@ class QlLoaderELF(QlLoader, ELFParse):
         ql.import_symbols[self.ql.os.hook_addr] = hook_sys_read
         ql.import_symbols[self.ql.os.hook_addr + 1 * ql.pointersize] = hook_sys_write
         ql.import_symbols[self.ql.os.hook_addr + 2 * ql.pointersize] = hook_sys_open
+
+    def get_elfdata_mapping(self):
+        elfdata_mapping = bytearray()
+        elfdata_mapping.extend(self.getelfdata(0, self.elfhead['e_ehsize']))    #elf header
+
+        for section in self.parse_sections():
+            if section.header['sh_flags'] & 2:      # alloc flag
+                sh_offset = section.header['sh_offset']
+                sh_size = section.header['sh_size']
+
+                # align section addr
+                elfdata_len = len(elfdata_mapping)
+                if elfdata_len < sh_offset:
+                    elfdata_mapping.extend(b'\x00' * (sh_offset - elfdata_len))
+
+                if section.header['sh_type'] == 'SHT_NOBITS':
+                    elfdata_mapping.extend(b'\x00' * sh_size)
+                else:
+                    elfdata_mapping.extend(self.getelfdata(sh_offset, sh_size))
+
+        return bytes(elfdata_mapping)
