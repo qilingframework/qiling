@@ -96,7 +96,7 @@ class QlOsLinux(QlOsPosix):
                     thread_management = QlLinuxThreadManagement(self.ql)
                     self.ql.os.thread_management = thread_management
                     main_thread = self.thread_class.spawn(self.ql)
-                    main_thread.save_regs()
+                    main_thread.save()
                     main_thread.set_start_address(self.ql.loader.entry_point)
                     thread_management.main_thread = main_thread
                     thread_management.cur_thread = main_thread

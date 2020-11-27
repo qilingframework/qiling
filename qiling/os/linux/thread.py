@@ -5,6 +5,8 @@
 
 import os, time
 from os import sched_get_priority_max
+
+from unicorn.unicorn import UcError
 import gevent
 from gevent import Greenlet
 
@@ -122,8 +124,13 @@ class QlLinuxThread(QlThread):
             self.ql.dprint(0, f"[Thread {self.get_id()}] scheduled.")
             self.status = THREAD_STATUS_RUNNING
             self.ql.os.thread_management.cur_thread = self
-            self.ql.emu_start(self.start_address, self.exit_point, timeout = 1000)
-
+            try:
+                # Known issue for timeout: https://github.com/unicorn-engine/unicorn/issues/1355
+                self.ql.emu_start(self.start_address, self.exit_point, timeout=200)
+            except UcError:
+                print(self.ql._hook)
+                self.ql.os.emu_error()
+                raise
             if self.ql.arch.get_pc() == self.exit_point:
                 self.stop()
                 break
@@ -400,7 +407,6 @@ class QlLinuxThreadManagement:
         self.ql.dprint(0, "[Thread Manager] Stop the world.")
         self.ql.emu_stop()
         for t in self.threads:
-            t.stop()
             gevent.kill(t)
 
     def run(self):
