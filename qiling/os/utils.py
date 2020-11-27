@@ -153,7 +153,7 @@ class QlOsUtils:
     
     def transform_to_link_path(self, path):
         if self.ql.multithread:
-            cur_path = self.ql.os.thread_management.cur_thread.get_current_path()
+            cur_path = self.ql.os.thread_management.cur_thread.current_path
         else:
             cur_path = self.ql.os.current_path
 
@@ -170,7 +170,7 @@ class QlOsUtils:
         from types import FunctionType
 
         if self.ql.multithread:
-            cur_path = self.ql.os.thread_management.cur_thread.get_current_path()
+            cur_path = self.ql.os.thread_management.cur_thread.current_path
         else:
             cur_path = self.ql.os.current_path
 
@@ -191,7 +191,7 @@ class QlOsUtils:
     # The `relative path` here refers to the path which is relative to the rootfs.
     def transform_to_relative_path(self, path):
         if self.ql.multithread:
-            cur_path = self.ql.os.thread_management.cur_thread.get_current_path()
+            cur_path = self.ql.os.thread_management.cur_thread.current_path
         else:
             cur_path = self.ql.os.current_path
 

@@ -17,7 +17,7 @@ from qiling.exception import *
 from qiling.os.stat import *
 
 def ql_syscall_exit(ql, exit_code, *args, **kw):
-    ql.os.exit_code = exit_code
+    
 
     ql.nprint("exit(%u) = %u" % (exit_code, exit_code))
 
@@ -29,10 +29,12 @@ def ql_syscall_exit(ql, exit_code, *args, **kw):
             ql.dprint(0, f"[Thread {cur_thread.get_id()}] Terminated.")
             cur_thread.status = THREAD_STATUS_TERMINATED
             cur_thread.stop()
+            cur_thread.exit_code = exit_code
         td = ql.os.thread_management.cur_thread
         ql.emu_stop()
         td.sched_cb = _sched_cb_exit
     else:
+        ql.os.exit_code = exit_code
         ql.os.stop()
 
 
@@ -520,7 +522,7 @@ def ql_syscall_set_tid_address(ql, set_tid_address_tidptr, *args, **kw):
         regreturn = os.getpid()
     else:
         ql.os.thread_management.cur_thread.set_clear_child_tid_addr(set_tid_address_tidptr)
-        regreturn = ql.os.thread_management.cur_thread.get_thread_id()
+        regreturn = ql.os.thread_management.cur_thread.id
     ql.nprint("set_tid_address(%x) = %d" % (set_tid_address_tidptr, regreturn))
     ql.os.definesyscall_return(regreturn)
 

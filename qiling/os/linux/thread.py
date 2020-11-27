@@ -22,30 +22,30 @@ from qiling.os.const import *
 
 from abc import ABC, abstractmethod
 
-TIME_MODE = 0
-COUNT_MODE = 1
-BBL_MODE = 2
 
+LINUX_THREAD_ID = 2000
+
+def new_thread_id():
+    global LINUX_THREAD_ID
+    old = LINUX_THREAD_ID
+    LINUX_THREAD_ID += 1
+    return old
 
 class QlLinuxThread(QlThread):
 # static member for generate unique thread id.
-    LINUX_THREAD_ID = 2000
+    
 
     def __init__(self, ql, start_address = 0, context = None, set_child_tid_addr = None):
         super(QlLinuxThread, self).__init__(ql)
-        self.thread_id = QlLinuxThread.LINUX_THREAD_ID
-        QlLinuxThread.LINUX_THREAD_ID += 1
-        self.runing_time = 0
-        self.context = context
-        self.ql = ql
-        self.exit_point = self.ql.os.exit_point
-        self.start_address = start_address
-        self.status = THREAD_STATUS_RUNNING
-        self.stop_event = THREAD_EVENT_INIT_VAL
-        self.stop_return_val = None
-        self.return_val = 0
-        self.current_path = ql.os.current_path
-        self.log_file_fd = None
+        self._thread_id = new_thread_id()
+        self._saved_context = context
+        self._ql = ql
+        self._exit_point = self.ql.os.exit_point
+        self._start_address = start_address
+        self._status = THREAD_STATUS_RUNNING
+        self._return_val = 0
+        self._current_path = ql.os.current_path
+        self._log_file_fd = None
         self._sched_cb = None
 
         _logger = self.ql.log_file_fd
@@ -56,7 +56,7 @@ class QlLinuxThread(QlThread):
             else:
                 _logger = ql_setup_logging_file(ql.output, self.ql.log_filename, _logger)
 
-        self.log_file_fd = _logger
+        self._log_file_fd = _logger
 
         # For each thread, the kernel maintains two attributes (addresses)
         # called set_child_tid and clear_child_tid.  These two attributes
@@ -91,14 +91,120 @@ class QlLinuxThread(QlThread):
 
         # Source: Linux Man Page
 
-        self.set_child_tid_address = set_child_tid_addr
-        self.clear_child_tid_address = None
+        self._set_child_tid_address = set_child_tid_addr
+        self._clear_child_tid_address = None
 
-        self.robust_list_head_ptr = None
-        self.robust_list_head_len = None
+        self._robust_list_head_ptr = None
+        self._robust_list_head_len = None
 
-        if self.set_child_tid_address != None:
-            self.ql.mem.write(self.set_child_tid_address, ql.pack32(self.thread_id))
+        if self._set_child_tid_address != None:
+            self.ql.mem.write(self._set_child_tid_address, ql.pack32(self.id))
+
+    @property
+    def ql(self):
+        return self._ql
+    
+    @ql.setter
+    def ql(self, q):
+        self._ql = q
+
+    @property
+    def saved_context(self):
+        return self._saved_context
+
+    @saved_context.setter
+    def saved_context(self, ctx):
+        self._saved_context = ctx
+
+    @property
+    def exit_point(self):
+        return self._exit_point
+    
+    @exit_point.setter
+    def exit_point(self, ep):
+        self._exit_point = ep
+    
+    @property
+    def start_address(self):
+        return self._start_address
+    
+    @start_address.setter
+    def start_address(self, sa):
+        self._start_address = sa
+
+    @property
+    def status(self):
+        return self._status
+    
+    @status.setter
+    def status(self, s):
+        self._status = s
+
+    @property
+    def return_val(self):
+        return self._return_val
+
+    @return_val.setter
+    def return_val(self, rv):
+        self._return_val = rv
+
+    @property
+    def current_path(self):
+        return self._current_path
+
+    @current_path.setter
+    def current_path(self, cp):
+        self._current_path = cp
+
+    @property
+    def log_file_fd(self):
+        return self._log_file_fd
+
+    @log_file_fd.setter
+    def log_file_fd(self, lfd):
+        self._log_file_fd = lfd
+
+    @property
+    def id(self):
+        return self._thread_id
+
+    def __hash__(self):
+        return self.id
+    
+    def __str__(self):
+        return f"[Thread {self.id}]"
+
+    @property
+    def set_child_tid_address(self):
+        return self._set_child_tid_address
+    
+    @set_child_tid_address.setter
+    def set_child_tid_address(self, addr):
+        self._set_child_tid_address = addr
+    
+    @property
+    def clear_child_tid_address(self):
+        return self._clear_child_tid_address
+
+    @clear_child_tid_address.setter
+    def clear_child_tid_address(self, addr):
+        self._clear_child_tid_address = addr
+    
+    @property
+    def robust_list_head_ptr(self):
+        return self._robust_list_head_ptr
+    
+    @robust_list_head_ptr.setter
+    def robust_list_head_ptr(self, p):
+        self._robust_list_head_ptr = p
+    
+    @property
+    def robust_list_head_len(self):
+        return self._robust_list_head_len
+    
+    @robust_list_head_len.setter
+    def robust_list_head_len(self, l):
+        self._robust_list_head_len = l
 
     @property
     def sched_cb(self):
@@ -161,8 +267,9 @@ class QlLinuxThread(QlThread):
             self.ql.dprint(0, f"[Thread {self.get_id()}] calls sched_cb: {self.sched_cb}")
             self.sched_cb(self)
 
+    # Depreciated.
     def get_id(self):
-        return self.thread_id
+        return self.id
 
     @abstractmethod
     def save(self):
@@ -180,23 +287,19 @@ class QlLinuxThread(QlThread):
         self.save()
 
     # TODO: Rename
-    def save_regs(self):
-        self.context = self.ql.arch.context_save()
-        self.start_address = self.ql.arch.get_pc()
+    def save_context(self):
+        self.saved_context = self.ql.arch.context_save()
 
-    def restore_regs(self):
-        self.ql.arch.context_restore(self.context)
+    def restore_context(self):
+        self.ql.arch.context_restore(self.saved_context)
 
     def set_start_address(self, addr):
         # We can't modify UcContext directly.
         old_context = self.ql.arch.context_save()
-        self.restore_regs()
+        self.restore_context()
         self.ql.reg.arch_pc = addr
-        self.save_regs()
+        self.save_context()
         self.ql.arch.context_restore(old_context)
-
-    def set_context(self, con):
-        self.context = con
 
     def set_clear_child_tid_addr(self, addr):
         self.clear_child_tid_address = addr
@@ -223,6 +326,7 @@ class QlLinuxThread(QlThread):
                 self.ql.dprint(0, f"[Thread {self.get_id()}] Notify [Thread {t.get_id()}].")
                 e.set()
 
+    # This function should called outside unicorn callback.
     def stop(self):
         self._on_stop()
         self.status = THREAD_STATUS_TERMINATED
@@ -235,25 +339,7 @@ class QlLinuxThread(QlThread):
         return not self.dead
 
     def is_blocking(self):
-        #return self.status == THREAD_STATUS_BLOCKING
-        return False
-
-    def is_timeout(self):
-        #return self.status == THREAD_STATUS_TIMEOUT
-        return False
-
-    def get_thread_id(self):
-        return self.thread_id
-
-    def get_return_val(self):
-        return self.return_val
-
-    def set_exit_point(self, exit_point):
-        self.exit_point = exit_point
-
-    def new_thread_id(self):
-        self.thread_id = QlLinuxThread.LINUX_THREAD_ID
-        QlLinuxThread.LINUX_THREAD_ID += 1
+        return self.status == THREAD_STATUS_BLOCKING
 
     def update_global_thread_id(self):
         QlLinuxThread.LINUX_THREAD_ID = os.getpid()
@@ -261,13 +347,7 @@ class QlLinuxThread(QlThread):
     def set_thread_log_file(self, log_dir):
         if self.ql.log_split and log_dir != None:
             _logger = self.ql.log_file_fd
-            self.log_file_fd = ql_setup_logging_file(self.ql.output, log_dir, _logger)
-
-    def get_current_path(self):
-        return self.current_path
-
-    def set_current_path(self, path):
-        self.current_path = path
+            self._log_file_fd = ql_setup_logging_file(self.ql.output, log_dir, _logger)
 
 
 class QlLinuxX86Thread(QlLinuxThread):
@@ -299,11 +379,11 @@ class QlLinuxX86Thread(QlLinuxThread):
         self.ql.os.gdtm.set_gdt_buf(12, 14 + 1, old_tls)
 
     def save(self):
-        self.save_regs()
+        self.save_context()
         self.tls = bytes(self.ql.os.gdtm.get_gdt_buf(12, 14 + 1))
 
     def restore(self):
-        self.restore_regs()
+        self.restore_context()
         self.ql.os.gdtm.set_gdt_buf(12, 14 + 1, self.tls)
         self.ql.reg.gs = self.ql.reg.gs
         self.ql.reg.fs = self.ql.reg.fs
@@ -318,11 +398,11 @@ class QlLinuxX8664Thread(QlLinuxThread):
         self.tls = tls_addr
 
     def save(self):
-        self.save_regs()
+        self.save_context()
         self.tls = self.ql.reg.msr(FSMSR)
 
     def restore(self):
-        self.restore_regs()
+        self.restore_context()
         self.ql.reg.msr(FSMSR, self.tls)
 
 class QlLinuxMIPS32Thread(QlLinuxThread):
@@ -337,12 +417,12 @@ class QlLinuxMIPS32Thread(QlLinuxThread):
 
 
     def save(self):
-        self.save_regs()
+        self.save_context()
         self.tls = self.ql.reg.cp0_userlocal 
 
 
     def restore(self):
-        self.restore_regs()
+        self.restore_context()
         CONFIG3_ULR = (1 << 13)
         self.ql.reg.cp0_config3 = CONFIG3_ULR
         self.ql.reg.cp0_userlocal = self.tls
@@ -360,12 +440,12 @@ class QlLinuxARMThread(QlLinuxThread):
 
 
     def save(self):
-        self.save_regs()
+        self.save_context()
         self.tls = self.ql.reg.c13_c0_3
 
 
     def restore(self):
-        self.restore_regs()
+        self.restore_context()
         self.ql.reg.c13_c0_3 = self.tls
 
 
@@ -379,11 +459,11 @@ class QlLinuxARM64Thread(QlLinuxThread):
         self.tls = tls_addr
 
     def save(self):
-        self.save_regs()
+        self.save_context()
         self.tls = self.ql.reg.tpidr_el0
 
     def restore(self):
-        self.restore_regs()
+        self.restore_context()
         self.ql.reg.tpidr_el0 = self.tls
 
 class QlLinuxThreadManagement:

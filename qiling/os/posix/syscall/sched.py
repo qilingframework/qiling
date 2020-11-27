@@ -97,11 +97,11 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
         set_child_tid_addr = clone_child_tidptr
 
     th = ql.os.thread_class.spawn(ql, set_child_tid_addr = set_child_tid_addr)
-    th.set_current_path(f_th.get_current_path())
+    th.current_path = f_th.current_path
     ql.dprint(0, f"[thread {th.get_id()}] created.")
 
     if clone_flags & CLONE_PARENT_SETTID == CLONE_PARENT_SETTID:
-        ql.mem.write(clone_parent_tidptr, ql.pack32(th.get_thread_id()))
+        ql.mem.write(clone_parent_tidptr, ql.pack32(th.id))
 
     # Whether to set a new tls
     if clone_flags & CLONE_SETTLS == CLONE_SETTLS:
@@ -118,18 +118,18 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
     regreturn = 0
     ql.os.definesyscall_return(regreturn)
     ql.arch.set_sp(clone_child_stack)
-    th.save_regs()
+    th.save_context()
     if th is None or f_th is None:
         raise Exception()
     ql.os.thread_management.cur_thread = th
     ql.dprint(D_INFO, "[+] Currently running pid is: %d; tid is: %d " % (
-    os.getpid(), ql.os.thread_management.cur_thread.get_thread_id()))
+    os.getpid(), ql.os.thread_management.cur_thread.id))
     ql.nprint("clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d" % (
     clone_child_stack, clone_flags, clone_newtls, clone_parent_tidptr, clone_child_tidptr, regreturn))
 
     # Restore the stack and return value of the parent process
     ql.arch.set_sp(f_sp)
-    regreturn = th.get_thread_id()
+    regreturn = th.id
     ql.os.definesyscall_return(regreturn)
 
     # Break the parent process and enter the add new thread event
@@ -139,6 +139,6 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
 
     ql.os.thread_management.cur_thread = f_th
     ql.dprint(D_INFO, "[+] Currently running pid is: %d; tid is: %d " % (
-    os.getpid(), ql.os.thread_management.cur_thread.get_thread_id()))
+    os.getpid(), ql.os.thread_management.cur_thread.id))
     ql.nprint("clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d" % (
     clone_child_stack, clone_flags, clone_newtls, clone_parent_tidptr, clone_child_tidptr, regreturn))
