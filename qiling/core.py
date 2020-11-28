@@ -6,7 +6,7 @@
 from configparser import ConfigParser
 import ctypes, logging, ntpath, os, pickle, platform
 from qiling.os.windows.wdk_const import FILE_DEVICE_NAMED_PIPE
-from typing import List
+from typing import Dict, List
 
 from .const import QL_ARCH_ENDIAN, QL_ENDIAN, QL_OS_POSIX, QL_OS_ALL, QL_OUTPUT, QL_OS
 from .exception import QlErrorFileNotFound, QlErrorArch, QlErrorOsType, QlErrorOutput
@@ -331,6 +331,23 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
             Example: Qiling(argv=['/bin/ls', '-a'])
         """
         return self._argv
+
+    @property
+    def rootfs(self) -> str:
+        """ The program rootfs. For some common rootfs, see examples/rootfs/ for details.
+
+            Type: str
+        """
+        return self._rootfs
+
+    @property
+    def env(self) -> Dict[str, str]:
+        """ The program environment variables.
+
+            Type: Dict[str, str]
+            Example: Qiling(env={"LC_ALL" : "en_US.UTF-8"})
+        """
+        return self._env
 
 
     # ql.platform - platform var = host os getter eg. LINUX and etc
