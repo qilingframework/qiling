@@ -68,7 +68,6 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         self._log_dir = log_dir
         self._log_split = log_split
         self._append = append
-        self.libcache = libcache
         self._multithread = multithread
         self._stdin = stdin
         self._stdout = stdout
@@ -79,6 +78,7 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         ##################################
         self._output = output
         self._verbose = verbose
+        self._libcache = libcache
         self.patch_bin = []
         self.patch_lib = []
         self.patched_lib = []
@@ -438,7 +438,19 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
     @stderr.setter
     def stderr(self, s):
         self._stderr = s
- 
+    
+    @property
+    def libcache(self) -> bool:
+        """ Whether cache dll files. Only take effect in Windows emulation.
+
+            Type: bool
+        """
+        return self._libcache
+
+    @libcache.setter
+    def libcache(self, lc):
+        self._libcache = lc
+
     @property
     def output(self) -> int:
         """ Specify the qiling output. See Qiling.verbose.__doc__ for details.
