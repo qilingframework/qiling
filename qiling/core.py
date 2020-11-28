@@ -274,19 +274,6 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
             Type: bool
         """
         return self._console
-    
-    @property
-    def filter(self) -> List[str]:
-        """ Filter logs with regex.
-            
-            Type: List[str]
-            Example: ql.filter = [r'^open']
-        """
-        return self._filter
-
-    @filter.setter
-    def filter(self, ft):
-        self._filter = ft
 
     @property
     def multithread(self) -> bool:
@@ -313,10 +300,6 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
               - "dump": the most verbose output, dump registers and diasm the function blocks.
         """
         return self._output
-
-    @output.setter
-    def output(self, output):
-        self._output = output
     
     @property
     def verbose(self):
@@ -445,6 +428,19 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
             Type: bytes
         """
         return self._shellcoder
+
+    @property
+    def filter(self) -> List[str]:
+        """ Filter logs with regex.
+            
+            Type: List[str]
+            Example: ql.filter = [r'^open']
+        """
+        return self._filter
+
+    @filter.setter
+    def filter(self, ft):
+        self._filter = ft
 
     # ql.platform - platform var = host os getter eg. LINUX and etc
     @property
