@@ -275,39 +275,6 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         return self._multithread
 
     @property
-    def output(self) -> int:
-        """ Specify the qiling output.
-
-            Note: Please pass None or one of the strings below to Qiling.__init__.
-
-            Type: int
-            Values:
-              - "default": equals to output = None, do nothing.
-              - "off": an alias to "default".
-              - "debug": set the log level to logging.DEBUG.
-              - "disasm": diasm each executed instruction.
-              - "dump": the most verbose output, dump registers and diasm the function blocks.
-        """
-        return self._output
-    
-    @property
-    def verbose(self):
-        """ Set the verbose level. This option is reserved for compatibility.
-            Note "verbose" should be used with ql.output = "debug"/"dump".
-
-            Type: int
-            Values:
-              - 0  : logging.WARNING, almost no additional logs except the program output.
-              - >=1: logging.INFO, the default logging level.
-              - >=4: logging.DEBUG.
-        """
-        return self._verbose
-    
-    @verbose.setter
-    def verbose(self, v):
-        self._verbose = v
-
-    @property
     def profile(self) -> ConfigParser:
         """ Program profile. See qiling/profiles/*.ql for details.
 
@@ -433,6 +400,50 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
             Type: str
         """
         return self._targetname
+
+    @property
+    def output(self) -> int:
+        """ Specify the qiling output. See Qiling.verbose.__doc__ for details.
+
+            Note: Please pass None or one of the strings below to Qiling.__init__.
+
+            Type: int
+            Values:
+              - "default": equals to "output=None", do nothing.
+              - "off": an alias to "default".
+              - "debug": set the log level to logging.DEBUG.
+              - "disasm": diasm each executed instruction.
+              - "dump": the most verbose output, dump registers and diasm the function blocks.
+        """
+        return self._output
+    
+    @output.setter
+    def output(self, op):
+        if type(op) is str:
+            self._output = output_convert(op)
+        else:
+            self._output = op
+        ql_resolve_logger_level(self._output, self._verbose)
+
+    @property
+    def verbose(self):
+        """ Set the verbose level.
+            
+            If you set "ql.output" to "default" or "off", you can set logging level dynamically by
+            changing "ql.verbose".
+
+            Type: int
+            Values:
+              - 0  : logging.WARNING, almost no additional logs except the program output.
+              - >=1: logging.INFO, the default logging level.
+              - >=4: logging.DEBUG.
+        """
+        return self._verbose
+    
+    @verbose.setter
+    def verbose(self, v):
+        self._verbose = v
+        ql_resolve_logger_level(self._output, self._verbose)
 
     @property
     def filter(self) -> List[str]:
