@@ -107,14 +107,14 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
             if not os.path.exists(self._rootfs):
                 raise QlErrorFileNotFound("[!] Target rootfs not found")
         
-        self.path = (str(self._argv[0]))
-        self.targetname = ntpath.basename(self._argv[0])
+        self._path = (str(self._argv[0]))
+        self._targetname = ntpath.basename(self._argv[0])
 
         ##########
         # Loader #
         ##########
         if self._shellcoder is None:
-            guessed_archtype, guessed_ostype, guessed_archendian = ql_guess_emu_env(self.path)
+            guessed_archtype, guessed_ostype, guessed_archendian = ql_guess_emu_env(self._path)
             if self._ostype is None:
                 self._ostype = guessed_ostype
             if self._archtype is None:
@@ -122,13 +122,13 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
             if self.archendian is None:
                 self._archendian = guessed_archendian
 
-            if not ql_is_valid_ostype(self.ostype):
+            if not ql_is_valid_ostype(self._ostype):
                 raise QlErrorOsType("[!] Invalid OSType")
 
-            if not ql_is_valid_arch(self.archtype):
-                raise QlErrorArch("[!] Invalid Arch %s" % self.archtype)
+            if not ql_is_valid_arch(self._archtype):
+                raise QlErrorArch("[!] Invalid Arch %s" % self._archtype)
 
-        self.loader = loader_setup(self.ostype, self)
+        self.loader = loader_setup(self._ostype, self)
 
         ############
         # setup    #
@@ -148,26 +148,15 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
 
         # We only use the root logger now.
         ql_setup_logger(self, 
-                        self.log_dir, 
-                        self.targetname + self.append + ".qlog", 
-                        self.log_split, self.console, 
-                        self.filter, 
-                        self.multithread)
+                        self._log_dir, 
+                        self._targetname + self._append + ".qlog", 
+                        self._log_split, self._console, 
+                        self._filter, 
+                        self._multithread)
         # For compatibility.
         self.log_file_fd = logging.getLogger()
-
-        # qiling output method conversion
-        if self.output and type(self.output) == str:
-            # setter / getter for output
-            self.output = self.output.lower()
-            if self.output not in QL_OUTPUT:
-                raise QlErrorOutput("[!] OUTPUT required: either 'default', 'disasm', 'debug', 'dump'")
-            
-        # check verbose, only can check after ouput being defined
-        if type(self.verbose) != int or self.verbose > 99 and (self.verbose > 0 and self.output not in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP)):
-            raise QlErrorOutput("[!] verbose required input as int and less than 99")
         
-        ql_resolve_logger_level(self.output, self.verbose)
+        ql_resolve_logger_level(self._output, self._verbose)
         
         ####################################
         # Set pointersize (32bit or 64bit) #
@@ -428,6 +417,22 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
             Type: bytes
         """
         return self._shellcoder
+
+    @property
+    def path(self) -> str:
+        """ The file path of the executable.
+
+            Type: str
+        """
+        return self._path
+    
+    @property
+    def targetname(self) -> str:
+        """ The target name of the executable. e.g. "c.exe" in "a\b\c.exe"
+
+            Type: str
+        """
+        return self._targetname
 
     @property
     def filter(self) -> List[str]:

@@ -413,14 +413,14 @@ def ql_resolve_logger_level(output, verbose):
     level = logging.INFO
     if output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP, QL_OUTPUT.DISASM):
         level = logging.DEBUG
-    
-    if verbose == 0:
-        level = logging.WARNING
-    elif verbose >= 4:
-        level = logging.DEBUG
-    elif verbose >= 1:
-        level = logging.INFO
-    
+    else:
+        if verbose == 0:
+            level = logging.WARNING
+        elif verbose >= 4:
+            level = logging.DEBUG
+        elif verbose >= 1:
+            level = logging.INFO
+        
     logging.getLogger().setLevel(level)
 
 
