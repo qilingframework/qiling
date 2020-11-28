@@ -5,6 +5,8 @@
 
 from configparser import ConfigParser
 import ctypes, logging, ntpath, os, pickle, platform
+import io
+from sys import stdin, stdout
 from qiling.os.windows.wdk_const import FILE_DEVICE_NAMED_PIPE
 from typing import Dict, List
 
@@ -68,9 +70,9 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         self._append = append
         self.libcache = libcache
         self._multithread = multithread
-        self.stdin = stdin
-        self.stdout = stdout
-        self.stderr = stderr
+        self._stdin = stdin
+        self._stdout = stdout
+        self._stderr = stderr
         
         ##################################
         # Definition after ql=Qiling()   #
@@ -401,6 +403,42 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         """
         return self._targetname
 
+    @property
+    def stdin(self) -> io.IOBase:
+        """ Stdin of the program. Can be any object which implements (even part of) io.IOBase.
+
+            Type: io.Base
+        """
+        return self._stdin
+    
+    @stdin.setter
+    def stdin(self, s):
+        self._stdin = s
+    
+    @property
+    def stdout(self) -> io.IOBase:
+        """ Stdout of the program. Can be any object which implements (even part of) io.IOBase.
+
+            Type: io.Base
+        """
+        return self._stdout
+
+    @stdout.setter
+    def stdout(self, s):
+        self._stdout = s
+    
+    @property
+    def stderr(self) -> io.IOBase:
+        """ Stdout of the program. Can be any object which implements (even part of) io.IOBase.
+
+            Type: io.Base
+        """
+        return self._stderr
+    
+    @stderr.setter
+    def stderr(self, s):
+        self._stderr = s
+ 
     @property
     def output(self) -> int:
         """ Specify the qiling output. See Qiling.verbose.__doc__ for details.
