@@ -275,6 +275,8 @@ def ql_setup_logger(ql, log_dir, log_filename, log_split, console, filter, multi
     
     # If log_dir isn't specified, return.
     if log_dir is None or log_dir == "":
+        if log_split:
+            raise QlErrorOutput("log_split should be used with log_dir")
         return
 
     os.makedirs(log_dir, 0o755, exist_ok=True)
