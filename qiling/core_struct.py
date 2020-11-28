@@ -16,8 +16,6 @@ from .exception import QlErrorStructConversion
 class QlCoreStructs(object):
     def __init__(self):
         super().__init__()
-        self.archendian = None
-        self.archbit = 0
 
     def pack64(self, x):
         if self.archendian == QL_ENDIAN.EB:

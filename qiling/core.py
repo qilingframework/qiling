@@ -11,8 +11,8 @@ from typing import Dict, List
 from .const import QL_ARCH_ENDIAN, QL_ENDIAN, QL_OS_POSIX, QL_OS_ALL, QL_OUTPUT, QL_OS
 from .exception import QlErrorFileNotFound, QlErrorArch, QlErrorOsType, QlErrorOutput
 from .utils import arch_convert, ostype_convert, output_convert
-from .utils import ql_is_valid_arch, ql_get_arch_bits, verify_ret
-from .utils import ql_setup_logger, ql_resolve_logger_level
+from .utils import ql_is_valid_ostype, ql_is_valid_arch, ql_get_arch_bits, verify_ret
+from .utils import ql_setup_logger, ql_resolve_logger_level, ql_guess_emu_env, loader_setup, component_setup
 from .core_struct import QlCoreStructs
 from .core_hooks import QlCoreHooks
 from .core_utils import QlCoreUtils
@@ -44,6 +44,8 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         """ Create a Qiling instance.
 
             For each argument or property, please refer to its docstring. e.g. Qiling.multithread.__doc__
+
+            The only exception is "bigendian" parameter, see Qiling.archendian.__doc__ for details.
         """
         super(Qiling, self).__init__()
 
@@ -53,11 +55,13 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         self._argv = argv
         self._rootfs = rootfs
         self._env = env if env else {}
-        self.shellcoder = shellcoder
+        self._shellcoder = shellcoder
         self._ostype = ostype
         self._archtype = archtype
-        self.bigendian = bigendian
-        self.output = output
+        self._archendian = None
+        self._archbit = None
+        self._pointersize = None
+        self._output = output
         self._verbose = verbose
         self._profile = profile
         self._console = console
@@ -88,15 +92,16 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         Qiling Framework Core Engine
         """
         # shellcoder settings
-        if self.shellcoder:
+        if self._shellcoder:
             if (self._ostype and type(self._ostype) == str) and (self._archtype and type(self._archtype) == str):
                 self._ostype = ostype_convert(self._ostype.lower())
                 self._archtype = arch_convert(self._archtype.lower())
                 self._argv = ["qilingshellcoder"]
                 if self._rootfs is None:
                     self._rootfs = "."
+
         # file check
-        if self.shellcoder is None:
+        if self._shellcoder is None:
             if not os.path.exists(str(self._argv[0])):
                 raise QlErrorFileNotFound("[!] Target binary not found")
             if not os.path.exists(self._rootfs):
@@ -107,8 +112,23 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
 
         ##########
         # Loader #
-        ##########        
-        self.loader = self.loader_setup()
+        ##########
+        if self._shellcoder is None:
+            guessed_archtype, guessed_ostype, guessed_archendian = ql_guess_emu_env(self.path)
+            if self._ostype is None:
+                self._ostype = guessed_ostype
+            if self._archtype is None:
+                self._archtype = guessed_archtype
+            if self.archendian is None:
+                self._archendian = guessed_archendian
+
+            if not ql_is_valid_ostype(self.ostype):
+                raise QlErrorOsType("[!] Invalid OSType")
+
+            if not ql_is_valid_arch(self.archtype):
+                raise QlErrorArch("[!] Invalid Arch %s" % self.archtype)
+
+        self.loader = loader_setup(self.ostype, self)
 
         ############
         # setup    #
@@ -123,6 +143,9 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
 
         # Log's configuration
         
+        # Setup output mode.
+        self._output = output_convert(self._output)
+
         # We only use the root logger now.
         ql_setup_logger(self, 
                         self.log_dir, 
@@ -149,20 +172,20 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         ####################################
         # Set pointersize (32bit or 64bit) #
         ####################################
-        self.archbit = ql_get_arch_bits(self._archtype)
-        self.pointersize = (self.archbit // 8)  
+        self._archbit = ql_get_arch_bits(self._archtype)
+        self._pointersize = (self.archbit // 8)  
         
         # Endian for shellcode needs to set manually
-        if self.shellcoder:
-            self.archendian = QL_ENDIAN.EL
-            if self.bigendian == True and self._archtype in (QL_ARCH_ENDIAN):
-                self.archendian = QL_ENDIAN.EB
+        if self._shellcoder:
+            self._archendian = QL_ENDIAN.EL
+            if bigendian == True and self._archtype in (QL_ARCH_ENDIAN):
+                self._archendian = QL_ENDIAN.EB
 
         #############
         # Component #
         #############
-        self.mem = self.component_setup("os", "memory")
-        self.reg = self.component_setup("arch", "register")
+        self.mem = component_setup("os", "memory", self)
+        self.reg = component_setup("arch", "register", self)
 
         #####################################
         # Architecture and OS               #
@@ -293,7 +316,7 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
 
     @output.setter
     def output(self, output):
-        self._output = output_convert(output)
+        self._output = output
     
     @property
     def verbose(self):
@@ -385,6 +408,43 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
               - "a8086" : 8086
         """
         return self._archtype
+
+    @property
+    def archendian(self) -> int:
+        """ The architecure endian.
+
+            Note: Please pass "bigendian=True" or "bingendian=False" to set this property.
+                  This option only takes effect for shellcode.
+
+            Type: int
+        """
+        return self._archendian
+
+    @property
+    def archbit(self) -> int:
+        """ The bits of the current architecutre.
+
+            Type: int
+        """
+        return self._archbit
+
+    @property
+    def pointersize(self) -> int:
+        """ The pointer size of current architecture.
+
+            Type: int
+        """
+        return self._pointersize
+
+    @property
+    def shellcoder(self) -> bytes:
+        """ The shellcode to execute.
+
+            Note: It can't be used with "argv" parameter.
+
+            Type: bytes
+        """
+        return self._shellcoder
 
     # ql.platform - platform var = host os getter eg. LINUX and etc
     @property

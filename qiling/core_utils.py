@@ -16,7 +16,6 @@ from .utils import debugger_convert
 from .const import QL_OS, QL_OS_ALL, QL_ARCH, QL_ENDIAN, QL_OUTPUT, QL_DEBUGGER
 from .const import D_INFO, D_DRPT
 from .exception import QlErrorArch, QlErrorOsType, QlErrorOutput
-from .loader.utils import ql_checkostype
 
 
 class QlCoreUtils(object):
@@ -160,41 +159,6 @@ class QlCoreUtils(object):
         else:
             module_name = ql_build_module_import_name("os", self.ostype, self.archtype)
             return ql_get_module_function(module_name, function_name)
-
-
-    def loader_setup(self, function_name = None):
-        if not self.shellcoder:
-            archtype, ostype, archendian = ql_checkostype(self.path)
-            if self.archtype is None:
-                self._archtype = archtype
-            if self.ostype is None:
-                self._ostype = ostype
-            if self.archendian is None:
-                self.archendian = archendian
-
-        if not ql_is_valid_ostype(self.ostype):
-            raise QlErrorOsType("[!] Invalid OSType")
-
-        if not ql_is_valid_arch(self.archtype):
-            raise QlErrorArch("[!] Invalid Arch %s" % self.archtype)
-
-        if function_name == None:
-            loadertype_str = loadertype_convert_str(self.ostype)
-            function_name = "QlLoader" + loadertype_str
-            module_name = ql_build_module_import_name("loader", loadertype_str.lower())
-            return ql_get_module_function(module_name, function_name)(self)
-
-
-    def component_setup(self, component_type, function_name):
-        if not ql_is_valid_ostype(self.ostype):
-            raise QlErrorOsType("[!] Invalid OSType")
-
-        if not ql_is_valid_arch(self.archtype):
-            raise QlErrorArch("[!] Invalid Arch %s" % self.archtype)
-
-        module_name = "qiling." + component_type + "." + function_name
-        function_name = "Ql" + function_name.capitalize() + "Manager"
-        return ql_get_module_function(module_name, function_name)(self)
 
 
     def profile_setup(self):
