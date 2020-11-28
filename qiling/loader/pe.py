@@ -272,7 +272,7 @@ class Process():
                 self.import_address_table[dll_name][entry.name] = self.pe_image_address + entry.address
                 self.import_address_table[dll_name][entry.ordinal] = self.pe_image_address + entry.address
         except:
-            self.ql.nprint('Failed to load exports for %s:\n%s' % (self.ql.filename, traceback.format_exc()))
+            self.ql.nprint('Failed to load exports for %s:\n%s' % (self.ql.argv, traceback.format_exc()))
 
     def init_driver_object(self):
         # PDRIVER_OBJECT DriverObject

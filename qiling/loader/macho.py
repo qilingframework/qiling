@@ -76,12 +76,12 @@ class QlLoaderMACHO(QlLoader):
         self.ql             = ql
 
         #FIXME: Demigod needs a better way to handle kext file
-        if os.path.isdir(self.ql.filename[0]):
-            basename = os.path.basename(self.ql.filename[0])
+        if os.path.isdir(self.ql.argv[0]):
+            basename = os.path.basename(self.ql.argv[0])
             self.kext_name = os.path.splitext(basename)[0]
-            filename = self.ql.filename
-            self.ql.filename = [self.ql.filename[0] + "/Contents/MacOS/" + self.kext_name]
-            self.ql.path = self.ql.filename[0]
+            filename = self.ql.argv
+            self.ql._argv = [self.ql.argv[0] + "/Contents/MacOS/" + self.kext_name]
+            self.ql.path = self.ql.argv[0]
             self.plist = plistlib.load(open(filename[0] + "/Contents/Info.plist", "rb"))
             if "IOKitPersonalities" in self.plist:
                 self.IOKit = True

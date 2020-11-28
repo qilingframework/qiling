@@ -46,7 +46,7 @@ class QlGdb(QlDebugger, object):
         super(QlGdb, self).__init__(ql)
         self.ql             = ql
         self.last_pkt       = None
-        self.exe_abspath    = (os.path.abspath(self.ql.filename[0]))
+        self.exe_abspath    = (os.path.abspath(self.ql.argv[0]))
         self.rootfs_abspath = (os.path.abspath(self.ql.rootfs)) 
         self.gdb            = QlGdbUtils()
 

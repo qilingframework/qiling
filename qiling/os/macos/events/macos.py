@@ -89,7 +89,7 @@ class QlMacOSEvManager:
         self.dst_port = socket.htons(1338)
         self.dst_mac = b"\xba\xbe\xfe\xed\xfa\xce"
 
-        self.current_proc = self.ql.filename[0]
+        self.current_proc = self.ql.argv[0]
         self.cred = None
         self.label = None
         self.vnode = None

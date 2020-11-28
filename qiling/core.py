@@ -5,6 +5,7 @@
 
 from configparser import ConfigParser
 import ctypes, logging, ntpath, os, pickle, platform
+from qiling.os.windows.wdk_const import FILE_DEVICE_NAMED_PIPE
 from typing import List
 
 from .const import QL_ARCH_ENDIAN, QL_ENDIAN, QL_OS_POSIX, QL_OS_ALL, QL_OUTPUT, QL_OS
@@ -20,7 +21,7 @@ from .__version__ import __version__
 class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):    
     def __init__(
             self,
-            filename=None,
+            argv=None,
             rootfs=None,
             env=None,
             shellcoder=None,
@@ -49,9 +50,9 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         ##################################
         # Definition during ql=Qiling()  #
         ##################################
-        self.filename = filename
-        self.rootfs = rootfs
-        self.env = env if env else {}
+        self._argv = argv
+        self._rootfs = rootfs
+        self._env = env if env else {}
         self.shellcoder = shellcoder
         self.ostype = ostype
         self.archtype = archtype
@@ -91,19 +92,18 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
             if (self.ostype and type(self.ostype) == str) and (self.archtype and type(self.archtype) == str):
                 self.ostype = ostype_convert(self.ostype.lower())
                 self.archtype = arch_convert(self.archtype.lower())
-                self.filename = ["qilingshellcoder"]
-                if self.rootfs is None:
-                    self.rootfs = "."
+                self._argv = ["qilingshellcoder"]
+                if self._rootfs is None:
+                    self._rootfs = "."
         # file check
         if self.shellcoder is None:
-            if not os.path.exists(str(self.filename[0])):
+            if not os.path.exists(str(self._argv[0])):
                 raise QlErrorFileNotFound("[!] Target binary not found")
-            if not os.path.exists(self.rootfs):
+            if not os.path.exists(self._rootfs):
                 raise QlErrorFileNotFound("[!] Target rootfs not found")
         
-        self.path = (str(self.filename[0]))
-        self.argv = self.filename
-        self.targetname = ntpath.basename(self.filename[0])
+        self.path = (str(self._argv[0]))
+        self.targetname = ntpath.basename(self._argv[0])
 
         ##########
         # Loader #
@@ -322,6 +322,16 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
             Value: str
         """
         return self._profile
+    
+    @property
+    def argv(self) -> List[str]:
+        """ The program argv.
+
+            Type: List[str]
+            Example: Qiling(argv=['/bin/ls', '-a'])
+        """
+        return self._argv
+
 
     # ql.platform - platform var = host os getter eg. LINUX and etc
     @property
