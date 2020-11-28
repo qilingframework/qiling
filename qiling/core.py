@@ -61,8 +61,6 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         self._archendian = None
         self._archbit = None
         self._pointersize = None
-        self._output = output
-        self._verbose = verbose
         self._profile = profile
         self._console = console
         self._log_dir = log_dir
@@ -77,6 +75,8 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         ##################################
         # Definition after ql=Qiling()   #
         ##################################
+        self._output = output
+        self._verbose = verbose
         self.patch_bin = []
         self.patch_lib = []
         self.patched_lib = []
