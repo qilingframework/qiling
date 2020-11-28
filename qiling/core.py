@@ -54,8 +54,8 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         self._rootfs = rootfs
         self._env = env if env else {}
         self.shellcoder = shellcoder
-        self.ostype = ostype
-        self.archtype = archtype
+        self._ostype = ostype
+        self._archtype = archtype
         self.bigendian = bigendian
         self.output = output
         self._verbose = verbose
@@ -89,9 +89,9 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         """
         # shellcoder settings
         if self.shellcoder:
-            if (self.ostype and type(self.ostype) == str) and (self.archtype and type(self.archtype) == str):
-                self.ostype = ostype_convert(self.ostype.lower())
-                self.archtype = arch_convert(self.archtype.lower())
+            if (self._ostype and type(self._ostype) == str) and (self._archtype and type(self._archtype) == str):
+                self._ostype = ostype_convert(self._ostype.lower())
+                self._archtype = arch_convert(self._archtype.lower())
                 self._argv = ["qilingshellcoder"]
                 if self._rootfs is None:
                     self._rootfs = "."
@@ -149,13 +149,13 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         ####################################
         # Set pointersize (32bit or 64bit) #
         ####################################
-        self.archbit = ql_get_arch_bits(self.archtype)
+        self.archbit = ql_get_arch_bits(self._archtype)
         self.pointersize = (self.archbit // 8)  
         
         # Endian for shellcode needs to set manually
         if self.shellcoder:
             self.archendian = QL_ENDIAN.EL
-            if self.bigendian == True and self.archtype in (QL_ARCH_ENDIAN):
+            if self.bigendian == True and self._archtype in (QL_ARCH_ENDIAN):
                 self.archendian = QL_ENDIAN.EB
 
         #############
@@ -349,6 +349,42 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         """
         return self._env
 
+    @property
+    def ostype(self) -> int:
+        """ The emulated os type.
+
+            Note: Please pass None or one of the strings below to Qiling.__init__.
+                  If you use shellcode, you must specify ostype and archtype manually.
+
+            Type: int.
+            Values:
+              - "macos" : macOS.
+              - "darwin" : an alias to "macos".
+              - "freebsd" : FreeBSD
+              - "windows" : Windows
+              - "uefi" : UEFI
+              - "dos" : DOS
+        """
+        return self._ostype
+
+    @property
+    def archtype(self) -> int:
+        """ The emulated architecture type.
+
+            Note: Please pass None or one of the strings below to Qiling.__init__.
+                  If you use shellcode, you must specify ostype and archtype manually.
+            
+            Type: int
+            Values:
+              - "x86" : x86_32
+              - "x8664" : x86_64
+              - "mips" : MIPS
+              - "arm" : ARM
+              - "arm_thumb" : ARM with thumb mode.
+              - "arm64" : ARM64
+              - "a8086" : 8086
+        """
+        return self._archtype
 
     # ql.platform - platform var = host os getter eg. LINUX and etc
     @property

@@ -22,10 +22,6 @@ from .loader.utils import ql_checkostype
 class QlCoreUtils(object):
     def __init__(self):
         super().__init__()
-        self.archtype = None
-        self.ostype = None
-        self.path = None
-        self.archendian = None
 
     # normal print out
     def nprint(self, *args, **kw):
@@ -170,9 +166,9 @@ class QlCoreUtils(object):
         if not self.shellcoder:
             archtype, ostype, archendian = ql_checkostype(self.path)
             if self.archtype is None:
-                self.archtype = archtype
+                self._archtype = archtype
             if self.ostype is None:
-                self.ostype = ostype
+                self._ostype = ostype
             if self.archendian is None:
                 self.archendian = archendian
 
