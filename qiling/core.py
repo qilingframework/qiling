@@ -57,7 +57,7 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         self.bigendian = bigendian
         self.output = output
         self._verbose = verbose
-        self.profile = profile
+        self._profile = profile
         self._console = console
         self._log_dir = log_dir
         self._log_split = log_split
@@ -112,13 +112,13 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         ############
         # setup    #
         ############           
-        self.profile = self.profile_setup()
+        self._profile = self.profile_setup()
         if self._append == None:
-            self._append = self.profile["MISC"]["append"]
+            self._append = self._profile["MISC"]["append"]
         if self._log_dir == None:
-            self._log_dir = self.profile["LOG"]["dir"]
+            self._log_dir = self._profile["LOG"]["dir"]
         if self._log_split == None:            
-            self._log_split =  self.profile.getboolean('LOG', 'split')
+            self._log_split =  self._profile.getboolean('LOG', 'split')
 
         # Log's configuration
         
@@ -265,7 +265,7 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         self._filter = ft
 
     @property
-    def multithread(self):
+    def multithread(self) -> bool:
         """ Specify whether multithread has been enabled.
 
             Value: bool
@@ -273,7 +273,7 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         return self._multithread
 
     @property
-    def output(self):
+    def output(self) -> int:
         """ Specify the qiling output.
 
             Possible values:
@@ -304,6 +304,14 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
     @verbose.setter
     def verbose(self, v):
         self._verbose = v
+
+    @property
+    def profile(self) -> str:
+        """ Program profile. See qiling/profiles for details.
+
+            Values: str
+        """
+        return self._profile
 
     # ql.platform - platform var = host os getter eg. LINUX and etc
     @property
