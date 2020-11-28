@@ -3,6 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
+from configparser import ConfigParser
 import ctypes, logging, ntpath, os, pickle, platform
 from typing import List
 
@@ -214,14 +215,14 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
     # Qiling Options #
     ##################
 
-    # If an option doesn't have a setter, it means that it can only set during Qiling.__init__
+    # If an option doesn't have a setter, it means that it can be only set during Qiling.__init__
     # TODO: Rename to suffix?
     @property
     def append(self) -> str:
         """ Suffix appended to the filename.
             Used when writing to file (e.g. logging).
 
-            Value: str
+            Type: str
         """
         return self._append
 
@@ -230,7 +231,7 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         """ Specify the logging directory.
             Use with ql.log_split.
 
-            Value: str
+            Type: str
         """
         return self._log_dir
     
@@ -239,7 +240,7 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         """ Specify whether spliting logs within multiprocess/multithread context.
             Use with ql.log_dir.
 
-            Value: bool
+            Type: bool
         """
         return self._log_split
 
@@ -247,7 +248,7 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
     def console(self) -> bool:
         """ Specify whether enabling console output. 
 
-            Value: bool
+            Type: bool
         """
         return self._console
     
@@ -255,7 +256,7 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
     def filter(self) -> List[str]:
         """ Filter logs with regex.
             
-            Value: List[str]
+            Type: List[str]
             Example: ql.filter = [r'^open']
         """
         return self._filter
@@ -268,7 +269,9 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
     def multithread(self) -> bool:
         """ Specify whether multithread has been enabled.
 
-            Value: bool
+            WARNING: This property shouldn't be set after Qiling.__init__.
+
+            Type: bool
         """
         return self._multithread
 
@@ -276,7 +279,10 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
     def output(self) -> int:
         """ Specify the qiling output.
 
-            Possible values:
+            Note: Please pass None or one of the strings below to Qiling.__init__.
+
+            Type: int
+            Values:
               - "default": equals to output = None, do nothing.
               - "off": an alias to "default".
               - "debug": set the log level to logging.DEBUG.
@@ -294,7 +300,8 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         """ Set the verbose level. This option is reserved for compatibility.
             Note "verbose" should be used with ql.output = "debug"/"dump".
 
-            Possible values:
+            Type: int
+            Values:
               - 0  : logging.WARNING, almost no additional logs except the program output.
               - >=1: logging.INFO, the default logging level.
               - >=4: logging.DEBUG.
@@ -306,10 +313,13 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         self._verbose = v
 
     @property
-    def profile(self) -> str:
-        """ Program profile. See qiling/profiles for details.
+    def profile(self) -> ConfigParser:
+        """ Program profile. See qiling/profiles/*.ql for details.
 
-            Values: str
+            Note: Please pass None or the path string to Qiling.__init__.
+
+            Type: ConfigParser
+            Value: str
         """
         return self._profile
 
