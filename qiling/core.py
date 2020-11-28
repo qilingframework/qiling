@@ -220,6 +220,8 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
     def append(self) -> str:
         """ Suffix appended to the filename.
             Used when writing to file (e.g. logging).
+
+            Value: str
         """
         return self._append
 
@@ -227,6 +229,8 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
     def log_dir(self) -> str:
         """ Specify the logging directory.
             Use with ql.log_split.
+
+            Value: str
         """
         return self._log_dir
     
@@ -234,12 +238,16 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
     def log_split(self) -> bool:
         """ Specify whether spliting logs within multiprocess/multithread context.
             Use with ql.log_dir.
+
+            Value: bool
         """
         return self._log_split
 
     @property
     def console(self) -> bool:
         """ Specify whether enabling console output. 
+
+            Value: bool
         """
         return self._console
     
@@ -259,6 +267,8 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
     @property
     def multithread(self):
         """ Specify whether multithread has been enabled.
+
+            Value: bool
         """
         return self._multithread
 
@@ -285,7 +295,7 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
             Note "verbose" should be used with ql.output = "debug"/"dump".
 
             Possible values:
-              - 0  : logging.WARNING, almost no Qiling logs.
+              - 0  : logging.WARNING, almost no additional logs except the program output.
               - >=1: logging.INFO, the default logging level.
               - >=4: logging.DEBUG.
         """
