@@ -436,6 +436,23 @@ class QlOsDos(QlOs):
         if ah == 0x0:
             self.ql.reg.ah = 0
             self.clear_cf()
+        elif ah == 0x2:
+            cnt = self.ql.reg.al
+            idx = self.ql.reg.dl
+            cylinder = ((self.ql.reg.cx & 0xFF00) >> 8) | ((self.ql.reg.cx & 0xC0) << 2)
+            sector = self.ql.reg.cx & 63
+            head = self.ql.reg.dh
+            if not self.ql.os.fs_mapper.has_mapping(idx):
+                self.ql.nprint(f"[!] Warning: No such disk: {hex(idx)}")
+                self.ql.reg.ah = INT13DiskError.BadCommand.value
+                self.set_cf()
+                return
+            disk = self.ql.os.fs_mapper.open(idx, None)
+            content = disk.read_chs(cylinder, head, sector, cnt)
+            self.ql.mem.write(self.calculate_address(self.ql.reg.es, self.ql.reg.bx), content)
+            self.clear_cf()
+            self.ql.reg.ah = 0
+            self.ql.reg.al = sector
         elif ah == 0x8:
             # https://stanislavs.org/helppc/int_13-8.html
             idx = self.ql.reg.dl
@@ -465,6 +482,14 @@ class QlOsDos(QlOs):
             self.ql.reg.ah = 0
             self.clear_cf()
             pass
+        elif ah == 0x41:
+            idx = self.ql.reg.dl
+            self.ql.reg.ah = 0
+            # 1 -> Device Access using the packet structure.
+            # 2 -> Drive locking and ejecting.
+            # 4 -> Enhanced Disk Drive Support.
+            self.ql.reg.bx = 0xaa55
+            self.ql.reg.cx = 7
         elif ah == 0x42:
             idx = self.ql.reg.dl
             dapbs = self.ql.mem.read(self.calculate_address(ds, si), 0x10)
@@ -501,10 +526,21 @@ class QlOsDos(QlOs):
     
     def int15(self):
         ah = self.ql.reg.ah
+        ax = self.ql.reg.ax
         if ah == 0:
             pass
         elif ah == 1:
             pass
+        elif ax == 0x5301:
+            # http://www.oldlinux.org/Linux.old/docs/interrupts/int-html/int-15.htm
+            self.clear_cf()
+        elif ax == 0x530e:
+            self.ql.reg.ax = 0x0102
+            self.clear_cf()
+        elif ax == 0x5307:
+            if self.ql.reg.bx == 1 and self.ql.reg.cx == 3:
+                self.ql.nprint("[+] Emulation Stop")
+                self.ql.uc.emu_stop()
         elif ah == 0x86:
             dx = self.ql.reg.dx
             cx = self.ql.reg.cx
