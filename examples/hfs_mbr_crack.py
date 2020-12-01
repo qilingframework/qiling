@@ -57,7 +57,7 @@ def print_flags(results):
 def main():
     flag = ""
     results = []
-    ql = Qiling(["rootfs/8086/dos/dos.img"], rootfs="rootfs/8086", console=False, log_dir=".", output="off")
+    ql = Qiling(["rootfs/8086/dos/hfs.img"], rootfs="rootfs/8086", console=False, log_dir=".", output="off")
     h = ql.hook_code(stop, begin=0x7e3b, end=0x7e3b)
     ql.run()
     ql.hook_del(h)
