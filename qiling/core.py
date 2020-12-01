@@ -18,18 +18,14 @@ if TYPE_CHECKING:
     from .os.memory import QlMemoryManager
     from .loader.loader import QlLoader
 
-from .const import QL_ARCH_ENDIAN, QL_ENDIAN, QL_OS_POSIX, QL_OS_ALL, QL_OUTPUT, QL_OS
+from .const import D_DRPT, QL_ARCH_ENDIAN, QL_ENDIAN, QL_OS_POSIX, QL_OS_ALL, QL_OUTPUT, QL_OS
 from .exception import QlErrorFileNotFound, QlErrorArch, QlErrorOsType, QlErrorOutput
-from .utils import arch_convert, ostype_convert, output_convert
-from .utils import ql_is_valid_ostype, ql_is_valid_arch, ql_get_arch_bits, verify_ret
-from .utils import ql_setup_logger, ql_resolve_logger_level, ql_guess_emu_env, loader_setup, component_setup, debugger_setup
-from .utils import loader_setup, component_setup, debugger_setup, arch_setup, os_setup, profile_setup
+from .utils import *
 from .core_struct import QlCoreStructs
 from .core_hooks import QlCoreHooks
-from .core_utils import QlCoreUtils
 from .__version__ import __version__
 
-class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):    
+class Qiling(QlCoreStructs, QlCoreHooks):    
     def __init__(
             self,
             argv=None,
@@ -200,38 +196,6 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         # Setup Outpt
         self.os.setup_output()
 
-
-
-    # Emulate the binary from begin until @end, with timeout in @timeout and
-    # number of emulated instructions in @count
-    def run(self, begin=None, end=None, timeout=0, count=0):
-        # replace the original entry point, exit point, timeout and count
-        self.entry_point = begin
-        self.exit_point = end
-        self.timeout = timeout
-        self.count = count
-
-        # init debugger
-        if self._debugger != False and self._debugger != None:
-            self._debugger = debugger_setup(self._debugger, self)
-
-        # patch binary
-        self.__enable_bin_patch()
-
-        # emulate the binary
-        self.os.run()
-
-        # run debugger
-        if self._debugger != False and self._debugger != None:
-            self._debugger.run()
-
-
-    # patch code to memory address
-    def patch(self, addr, code, file_name=b''):
-        if file_name == b'':
-            self.patch_bin.append((addr, code))
-        else:
-            self.patch_lib.append((addr, code, file_name.decode()))
     
     #####################
     # Qiling Components #
@@ -691,6 +655,89 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
                 self.mem.write(self.mem.get_lib_base(filename) + addr, code)
             except:
                 raise RuntimeError("Fail to patch %s at address 0x%x" % (filename, addr))
+    
+    ###############
+    # Qiling APIS #
+    ###############
+
+    # Emulate the binary from begin until @end, with timeout in @timeout and
+    # number of emulated instructions in @count
+    def run(self, begin=None, end=None, timeout=0, count=0):
+        # replace the original entry point, exit point, timeout and count
+        self.entry_point = begin
+        self.exit_point = end
+        self.timeout = timeout
+        self.count = count
+
+        # init debugger
+        if self._debugger != False and self._debugger != None:
+            self._debugger = debugger_setup(self._debugger, self)
+
+        # patch binary
+        self.__enable_bin_patch()
+
+        # emulate the binary
+        self.os.run()
+
+        # run debugger
+        if self._debugger != False and self._debugger != None:
+            self._debugger.run()
+
+
+    # patch code to memory address
+    def patch(self, addr, code, file_name=b''):
+        if file_name == b'':
+            self.patch_bin.append((addr, code))
+        else:
+            self.patch_lib.append((addr, code, file_name.decode()))
+
+    # Depreciated. Please use logging directly.
+    # Will be removed in later release.
+    def nprint(self, *args, **kw):
+        if type(self.console) is bool:
+            pass
+        else:
+            raise QlErrorOutput("[!] console must be True or False")     
+        
+        # FIXME: this is due to console must be able to update during runtime
+        if self.log_file_fd is not None:
+            if self.multithread == True and self.os.thread_management is not None and self.os.thread_management.cur_thread is not None:
+                fd = self.os.thread_management.cur_thread.log_file_fd
+            else:
+                fd = self.log_file_fd
+            
+            args = map(str, args)
+            msg = kw.get("sep", " ").join(args)
+
+            if kw.get("end", None) != None:
+                msg += kw["end"]
+
+            fd.info(msg)
+
+    # Depreciated. Please use logging directly.
+    # Will be removed in later release.
+    def dprint(self, level, *args, **kw):
+        try:
+            self.verbose = int(self.verbose)
+        except:
+            raise QlErrorOutput("[!] Verbose muse be int")    
+        
+        if type(self.verbose) != int or self.verbose > 99 or (self.verbose > 1 and self.output not in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP)):
+            raise QlErrorOutput("[!] Verbose > 1 must use with QL_OUTPUT.DEBUG or else ql.verbose must be 0")
+
+        if self.output == QL_OUTPUT.DUMP:
+            self.verbose = 99
+
+        if int(self.verbose) >= level and self.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
+            if int(self.verbose) >= D_DRPT:
+                try:
+                    current_pc = self.reg.arch_pc
+                except:
+                    current_pc = 0    
+
+                args = (("0x%x:" % current_pc), *args)        
+                
+            self.nprint(*args, **kw)
 
 
     # save all qiling instance states
@@ -748,11 +795,54 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         if "loader" in saved_states:
             self.loader.restore(saved_states["loader"])
 
+    # Map "ql_path" to any objects which implements QlFsMappedObject.
+    def add_fs_mapper(self, ql_path, real_dest):
+        self.os.fs_mapper.add_fs_mapping(ql_path, real_dest)
+
+    # push to stack bottom, and update stack register
+    def stack_push(self, data):
+        self.arch.stack_push(data)
+
+    # pop from stack bottom, and update stack register
+    def stack_pop(self):
+        return self.arch.stack_pop()
+
+    # read from stack, at a given offset from stack bottom
+    # NOTE: unlike stack_pop(), this does not change stack register
+    def stack_read(self, offset):
+        return self.arch.stack_read(offset)
+
+    # write to stack, at a given offset from stack bottom
+    # NOTE: unlike stack_push(), this does not change stack register
+    def stack_write(self, offset, data):
+        self.arch.stack_write(offset, data)
+
+    # Assembler/Diassembler API
+    @property
+    def assembler(self):
+        return self.create_assembler()
+
+    @property
+    def disassember(self):
+        return self.create_disassembler()
+    
+    def create_disassembler(self):
+        if self.archtype in (QL_ARCH.ARM, QL_ARCH.ARM64, QL_ARCH.ARM_THUMB):
+            reg_cpsr = self.reg.cpsr
+        else:
+            reg_cpsr = None
+        return ql_create_disassembler(self.archtype, self.archendian, reg_cpsr)
+    
+    def create_assembler(self):
+        if self.archtype in (QL_ARCH.ARM, QL_ARCH.ARM64, QL_ARCH.ARM_THUMB):
+            reg_cpsr = self.reg.cpsr
+        else:
+            reg_cpsr = None
+        return ql_create_assembler(self.archtype, self.archendian, reg_cpsr)
 
     # stop emulation
     def emu_stop(self):
         self.uc.emu_stop()
-
 
     # start emulation
     def emu_start(self, begin, end, timeout=0, count=0):
