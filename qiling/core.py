@@ -237,6 +237,7 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
             Used when writing to file (e.g. logging).
 
             Type: str
+            Example: Qiling(append="dbg")
         """
         return self._append
 
@@ -246,6 +247,7 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
             Use with ql.log_split.
 
             Type: str
+            Example: Qiling(log_dir=".")
         """
         return self._log_dir
     
@@ -255,6 +257,7 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
             Use with ql.log_dir.
 
             Type: bool
+            Example: Qiling(log_split=True)
         """
         return self._log_split
 
@@ -263,6 +266,7 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         """ Specify whether enabling console output. 
 
             Type: bool
+            Example: Qiling(console=True)
         """
         return self._console
 
@@ -273,6 +277,7 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
             WARNING: This property shouldn't be set after Qiling.__init__.
 
             Type: bool
+            Example: Qiling(multithread=True)
         """
         return self._multithread
 
@@ -284,6 +289,7 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
 
             Type: ConfigParser
             Value: str
+            Example: Qiling(profile="profiles/dos.ql")
         """
         return self._profile
     
@@ -301,6 +307,7 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         """ The program rootfs. For some common rootfs, see examples/rootfs/ for details.
 
             Type: str
+            Example: Qiling(argv=['/bin/ls', '-a'], rootfs='examples/rootfs/x8664_linux/')
         """
         return self._rootfs
 
@@ -328,6 +335,7 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
               - "windows" : Windows
               - "uefi" : UEFI
               - "dos" : DOS
+            Example: Qiling(shellcoder=b"\x90", ostype="macos", archtype="x8664", bigendian=False)
         """
         return self._ostype
 
@@ -347,6 +355,7 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
               - "arm_thumb" : ARM with thumb mode.
               - "arm64" : ARM64
               - "a8086" : 8086
+            Example: Qiling(shellcoder=b"\x90", ostype="macos", archtype="x8664", bigendian=False)
         """
         return self._archtype
 
@@ -358,6 +367,7 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
                   This option only takes effect for shellcode.
 
             Type: int
+            Example: Qiling(shellcoder=b"\x90", ostype="macos", archtype="x8664", bigendian=False)
         """
         return self._archendian
 
@@ -384,6 +394,7 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
             Note: It can't be used with "argv" parameter.
 
             Type: bytes
+            Example: Qiling(shellcoder=b"\x90", ostype="macos", archtype="x8664", bigendian=False)
         """
         return self._shellcoder
 
@@ -408,6 +419,8 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         """ Stdin of the program. Can be any object which implements (even part of) io.IOBase.
 
             Type: io.Base
+            Example: ql = Qiling(stdin=sys.stdin)
+                     ql.stdin = sys.stdin
         """
         return self._stdin
     
@@ -420,6 +433,8 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         """ Stdout of the program. Can be any object which implements (even part of) io.IOBase.
 
             Type: io.Base
+            Example: ql = Qiling(stdout=sys.stdout)
+                     ql.stdout = sys.stdout
         """
         return self._stdout
 
@@ -432,6 +447,8 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         """ Stdout of the program. Can be any object which implements (even part of) io.IOBase.
 
             Type: io.Base
+            Example: ql = Qiling(stderr=sys.stderr)
+                     ql.stderr = sys.stderr
         """
         return self._stderr
     
@@ -444,6 +461,8 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         """ Whether cache dll files. Only take effect in Windows emulation.
 
             Type: bool
+            Example: ql = Qiling(libcache=False)
+                     ql.libcache = True
         """
         return self._libcache
 
@@ -464,6 +483,8 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
               - "debug": set the log level to logging.DEBUG.
               - "disasm": diasm each executed instruction.
               - "dump": the most verbose output, dump registers and diasm the function blocks.
+            Example: ql = Qiling(output="off")
+                     ql.output = "off"
         """
         return self._output
     
@@ -487,6 +508,8 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
               - 0  : logging.WARNING, almost no additional logs except the program output.
               - >=1: logging.INFO, the default logging level.
               - >=4: logging.DEBUG.
+            Example: ql = Qiling(verbose=5)
+                     ql.verbose = 0
         """
         return self._verbose
     
