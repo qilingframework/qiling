@@ -69,20 +69,20 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         self._log_split = log_split
         self._append = append
         self._multithread = multithread
-        self._stdin = stdin
-        self._stdout = stdout
-        self._stderr = stderr
+        self._log_file_fd = None
         
         ##################################
         # Definition after ql=Qiling()   #
         ##################################
+        self._stdin = stdin
+        self._stdout = stdout
+        self._stderr = stderr
         self._output = output
         self._verbose = verbose
         self._libcache = libcache
         self.patch_bin = []
         self.patch_lib = []
         self.patched_lib = []
-        self.log_file_fd = None
         self.debug_stop = False
         self.internal_exception = None
         self.platform = platform.system()
@@ -156,7 +156,7 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
                         self._filter, 
                         self._multithread)
         # For compatibility.
-        self.log_file_fd = logging.getLogger()
+        self._log_file_fd = logging.getLogger()
         
         ql_resolve_logger_level(self._output, self._verbose)
         
@@ -413,6 +413,14 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
             Type: str
         """
         return self._targetname
+
+    @property
+    def log_file_fd(self) -> logging.Logger:
+        """ Only reserved for compatibility, never use it directly.
+
+            Type: logging.Logger
+        """
+        return self._log_file_fd
 
     @property
     def stdin(self) -> io.IOBase:
