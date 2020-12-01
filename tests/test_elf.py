@@ -27,8 +27,7 @@ class ELFTest(unittest.TestCase):
             except:
                 pass
 
-        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_multithreading"], "../examples/rootfs/x86_linux")
-        ql.multithread = True
+        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_multithreading"], "../examples/rootfs/x86_linux", multithread=True)
         ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
         ql.run()
         
@@ -48,8 +47,7 @@ class ELFTest(unittest.TestCase):
             except:
                 pass
         
-        ql = Qiling(["../examples/rootfs/arm64_linux/bin/arm64_multithreading"], "../examples/rootfs/arm64_linux")
-        ql.multithread = True
+        ql = Qiling(["../examples/rootfs/arm64_linux/bin/arm64_multithreading"], "../examples/rootfs/arm64_linux", multithread=True)
         ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
         ql.run()
         
@@ -68,10 +66,8 @@ class ELFTest(unittest.TestCase):
             except:
                 pass
 
-        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_multithreading"], "../examples/rootfs/x8664_linux", profile= "profiles/append_test.ql")
-        ql.log_split = True
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_multithreading"], "../examples/rootfs/x8664_linux", multithread=True, profile= "profiles/append_test.ql", log_split=True)
         ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
-        ql.multithread = True   
         ql.run()
 
         self.assertEqual("thread 2 ret val is : 2\n", ql.buf_out)
@@ -89,9 +85,8 @@ class ELFTest(unittest.TestCase):
             except:
                 pass
 
-        ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_multithreading"], "../examples/rootfs/mips32el_linux")
+        ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_multithreading"], "../examples/rootfs/mips32el_linux", multithread=True)
         print("MIPS32EL")
-        ql.multithread = True
         ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
         ql.run()
         del ql
@@ -107,9 +102,8 @@ class ELFTest(unittest.TestCase):
             except:
                 pass
         
-        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_multithreading"], "../examples/rootfs/arm_linux")
+        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_multithreading"], "../examples/rootfs/arm_linux", multithread=True)
         ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
-        ql.multithread = True   
         ql.run()
 
         self.assertEqual("thread 2 ret val is : 2\n", ql.buf_out)
@@ -224,8 +218,7 @@ class ELFTest(unittest.TestCase):
                     ql.buf_out = buf
             except:
                 pass        
-        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_tcp_test","20001"], "../examples/rootfs/x86_linux")
-        ql.multithread = True
+        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_tcp_test","20001"], "../examples/rootfs/x86_linux", multithread=True)
         ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
         ql.run()
         
@@ -243,8 +236,7 @@ class ELFTest(unittest.TestCase):
                     ql.buf_out = buf
             except:
                 pass
-        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_tcp_test","20002"], "../examples/rootfs/x8664_linux")
-        ql.multithread = True
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_tcp_test","20002"], "../examples/rootfs/x8664_linux", multithread=True)
         ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
         ql.run()
         
@@ -262,8 +254,7 @@ class ELFTest(unittest.TestCase):
                     ql.buf_out = buf
             except:
                 pass           
-        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_tcp_test","20003"], "../examples/rootfs/arm_linux")
-        ql.multithread = True
+        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_tcp_test","20003"], "../examples/rootfs/arm_linux", multithread=True)
         ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
         ql.run()
         
@@ -281,8 +272,7 @@ class ELFTest(unittest.TestCase):
                     ql.buf_out = buf
             except:
                 pass
-        ql = Qiling(["../examples/rootfs/arm64_linux/bin/arm64_tcp_test","20004"], "../examples/rootfs/arm64_linux")
-        ql.multithread = True
+        ql = Qiling(["../examples/rootfs/arm64_linux/bin/arm64_tcp_test","20004"], "../examples/rootfs/arm64_linux", multithread=True)
         ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
         ql.run()
         
@@ -292,8 +282,7 @@ class ELFTest(unittest.TestCase):
 
 
     def test_tcp_elf_linux_mips32el(self):
-        ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_tcp_test","20005"], "../examples/rootfs/mips32el_linux")
-        ql.multithread = True
+        ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_tcp_test","20005"], "../examples/rootfs/mips32el_linux", multithread=True)
         ql.run()
         del ql
 
@@ -308,8 +297,7 @@ class ELFTest(unittest.TestCase):
             except:
                 pass
 
-        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_udp_test","20007"], "../examples/rootfs/x86_linux")
-        ql.multithread = True
+        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_udp_test","20007"], "../examples/rootfs/x86_linux", multithread=True)
         ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
         ql.run()
 
@@ -328,8 +316,7 @@ class ELFTest(unittest.TestCase):
             except:
                 pass
 
-        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_udp_test","20008"], "../examples/rootfs/x8664_linux")
-        ql.multithread = True
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_udp_test","20008"], "../examples/rootfs/x8664_linux", multithread=True)
         ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
         ql.run()
 
@@ -347,8 +334,7 @@ class ELFTest(unittest.TestCase):
             except:
                 pass
 
-        ql = Qiling(["../examples/rootfs/arm64_linux/bin/arm64_udp_test","20009"], "../examples/rootfs/arm64_linux")
-        ql.multithread = True
+        ql = Qiling(["../examples/rootfs/arm64_linux/bin/arm64_udp_test","20009"], "../examples/rootfs/arm64_linux", multithread=True)
         ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
         ql.run()
 
@@ -503,8 +489,7 @@ class ELFTest(unittest.TestCase):
             all_mem = ql.mem.save()
             ql.mem.restore(all_mem)
             
-        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello"], "../examples/rootfs/arm_linux", output = "debug", profile='profiles/append_test.ql')
-        ql.log_split=True
+        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello"], "../examples/rootfs/arm_linux", output = "debug", profile='profiles/append_test.ql', log_split=True)
         ql.set_api('puts', my_puts)
         ql.run()
         del ql

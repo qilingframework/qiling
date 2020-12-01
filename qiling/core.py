@@ -604,7 +604,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         """
         return self._debug_stop
 
-    @property
+    @debug_stop.setter
     def debug_stop(self, ds):
         self._debug_stop = ds
 
