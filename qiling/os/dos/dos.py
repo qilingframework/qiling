@@ -790,5 +790,5 @@ class QlOsDos(QlOs):
                 self.emu_error()
                 raise
 
-            if self.ql.internal_exception != None:
-                raise self.ql.internal_exception 
+            if self.ql._internal_exception != None:
+                raise self.ql._internal_exception 

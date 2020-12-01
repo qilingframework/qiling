@@ -90,7 +90,7 @@ class QlOsPosix(QlOs):
 
     def load_syscall(self, intno=None):
         # import syscall mapping function
-        map_syscall = self.ql.os_setup(function_name="map_syscall")
+        map_syscall = ql_syscall_mapping_function(self.ql.ostype)
         self.syscall_name = map_syscall(self.ql, self.syscall)
 
         if self.dict_posix_onEnter_syscall.get(self.syscall_name) != None:

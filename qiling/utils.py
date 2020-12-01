@@ -7,7 +7,7 @@
 This module is intended for general purpose functions that can be used
 thoughout the qiling framework
 """
-import importlib, logging, os, logging, copy, re, pefile, magic
+import importlib, logging, os, logging, copy, re, pefile, magic, configparser
 from logging import LogRecord
 from pathlib import Path
 from .exception import *
@@ -104,7 +104,7 @@ def catch_KeyboardInterrupt(ql):
             except BaseException as e:
                 from .os.const import THREAD_EVENT_UNEXECPT_EVENT
                 ql.os.stop()
-                ql.internal_exception = e
+                ql._internal_exception = e
         return wrapper
     return decorator
 
@@ -199,30 +199,8 @@ def debugger_convert_str(debugger_id):
     # invalid
     return None, None
 
-def ql_build_module_import_name(module, ostype, arch = None):
-    ret_str = "qiling." + module
-
-    ostype_str = ostype
-    arch_str = arch
-
-    if type(ostype) is QL_OS:
-        ostype_str = ostype_convert_str(ostype)
-    
-    if ostype_str and "loader" not in ret_str:
-        ret_str += "." + ostype_str
-
-    if arch:
-        # This is because X86_64 is bundled into X86 in arch
-        if module == "arch" and arch == QL_ARCH.X8664:  
-            arch_str = "x86"
-        elif type(arch) is QL_ARCH:
-            arch_str = arch_convert_str(arch)
-    else:
-        arch_str = ostype_str
-        
-    ret_str += "." + arch_str
-    return ret_str
-
+# Call `function_name` in `module_name`.
+# e.g. map_syscall in qiling.os.linux.map_syscall
 def ql_get_module_function(module_name, function_name = None):
     try:
         imp_module = importlib.import_module(module_name)
@@ -399,15 +377,11 @@ def ql_guess_emu_env(path):
 def loader_setup(ostype, ql):
     loadertype_str = loadertype_convert_str(ostype)
     function_name = "QlLoader" + loadertype_str
-    module_name = ql_build_module_import_name("loader", loadertype_str.lower())
-    return ql_get_module_function(module_name, function_name)(ql)
+    return ql_get_module_function(f"qiling.loader.{loadertype_str.lower()}", function_name)(ql)
 
-
-def component_setup(component_type, function_name, ql):
-    module_name = "qiling." + component_type + "." + function_name
-    function_name = "Ql" + function_name.capitalize() + "Manager"
-    return ql_get_module_function(module_name, function_name)(ql)
-
+def component_setup(component_type, component_name, ql):
+    function_name = "Ql" + component_name.capitalize() + "Manager"
+    return ql_get_module_function(f"qiling.{component_type}.{component_name}", function_name)(ql)
 
 def debugger_setup(debugger, ql):
     # default remote server
@@ -426,9 +400,58 @@ def debugger_setup(debugger, ql):
         if debugger_convert(remotedebugsrv) not in (QL_DEBUGGER):
             raise QlErrorOutput("[!] Error: Debugger not supported")
         
-    debugsession = ql_get_module_function("qiling.debugger." + remotedebugsrv + "." + remotedebugsrv, "Ql" + str.capitalize(remotedebugsrv))
+    debugsession = ql_get_module_function(f"qiling.debugger.{remotedebugsrv}.{remotedebugsrv}", f"Ql{str.capitalize(remotedebugsrv)}")
 
     return debugsession(ql, *debug_opts)
+
+def arch_setup(archtype, ql):
+    if not ql_is_valid_arch(archtype):
+        raise QlErrorArch("[!] Invalid Arch")
+    
+    if archtype == QL_ARCH.ARM_THUMB:
+        archtype =  QL_ARCH.ARM
+
+    archmanager = arch_convert_str(archtype).upper()
+    archmanager = ("QlArch" + archmanager)
+
+    if archtype == QL_ARCH.X8664:
+        arch_str = "x86"
+    else:
+        arch_str = arch_convert_str(archtype)
+
+    return ql_get_module_function(f"qiling.arch.{arch_str.lower()}", archmanager)(ql)
+
+# This function is extracted from os_setup so I put it here.
+def ql_syscall_mapping_function(ostype):
+    ostype_str = ostype_convert_str(ostype)
+    return ql_get_module_function(f"qiling.os.{ostype_str.lower()}.map_syscall", "map_syscall")
+
+def os_setup(archtype, ostype, ql):
+    if not ql_is_valid_ostype(ostype):
+        raise QlErrorOsType("[!] Invalid OSType")
+
+    if not ql_is_valid_arch(archtype):
+        raise QlErrorArch("[!] Invalid Arch %s" % archtype)
+
+    ostype_str = ostype_convert_str(ostype)
+    ostype_str = ostype_str.capitalize()
+    function_name = "QlOs" + ostype_str
+    return ql_get_module_function(f"qiling.os.{ostype_str.lower()}.{ostype_str.lower()}", function_name)(ql)
+
+
+def profile_setup(ostype, profile, ql):
+    logging.debug("Customized profile: %s" % profile)
+
+    os_profile = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", ostype_convert_str(ostype) + ".ql")
+
+    if profile:
+        profiles = [os_profile, profile]
+    else:
+        profiles = [os_profile]
+
+    config = configparser.ConfigParser()
+    config.read(profiles)
+    return config
 
 def ql_resolve_logger_level(output, verbose):
     level = logging.INFO

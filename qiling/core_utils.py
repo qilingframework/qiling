@@ -9,7 +9,7 @@ from keystone import *
 from capstone import *
 from binascii import unhexlify
 
-from .utils import ql_build_module_import_name, ql_get_module_function
+from .utils import ql_get_module_function
 from .utils import ql_is_valid_arch, ql_is_valid_ostype
 from .utils import loadertype_convert_str, ostype_convert_str, arch_convert_str
 from .utils import debugger_convert
@@ -95,65 +95,6 @@ class QlCoreUtils(object):
     def stack_write(self, offset, data):
         self.arch.stack_write(offset, data)
 
-
-    def arch_setup(self):
-        if not ql_is_valid_arch(self.archtype):
-            raise QlErrorArch("[!] Invalid Arch")
-        
-        if self.archtype == QL_ARCH.ARM_THUMB:
-            archtype =  QL_ARCH.ARM
-        else:
-            archtype = self.archtype
-
-        archmanager = arch_convert_str(archtype).upper()
-        archmanager = ("QlArch" + archmanager)
-
-        module_name = ql_build_module_import_name("arch", None, archtype)
-        return ql_get_module_function(module_name, archmanager)(self)
-
-
-    def os_setup(self, function_name = None):
-        if not ql_is_valid_ostype(self.ostype):
-            raise QlErrorOsType("[!] Invalid OSType")
-
-        if not ql_is_valid_arch(self.archtype):
-            raise QlErrorArch("[!] Invalid Arch %s" % self.archtype)
-
-        if function_name == None:
-            ostype_str = ostype_convert_str(self.ostype)
-            ostype_str = ostype_str.capitalize()
-            function_name = "QlOs" + ostype_str
-            module_name = ql_build_module_import_name("os", self.ostype)
-            return ql_get_module_function(module_name, function_name)(self)
-
-        elif function_name == "map_syscall":
-            ostype_str = ostype_convert_str(self.ostype)
-            arch_str = arch_convert_str(self.archtype)
-
-            syscall_table = "map_syscall"
-
-            module_name = ql_build_module_import_name("os", ostype_str, syscall_table)
-            return ql_get_module_function(module_name, function_name)
-        
-        else:
-            module_name = ql_build_module_import_name("os", self.ostype, self.archtype)
-            return ql_get_module_function(module_name, function_name)
-
-
-    def profile_setup(self):
-        if self.profile:
-            self.dprint(D_INFO, "[+] Customized profile: %s" % self.profile)
-
-        os_profile = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", ostype_convert_str(self.ostype) + ".ql")
-
-        if self.profile:
-            profiles = [os_profile, self.profile]
-        else:
-            profiles = [os_profile]
-
-        config = configparser.ConfigParser()
-        config.read(profiles)
-        return config
     
     # Assembler/Disassembler API
 

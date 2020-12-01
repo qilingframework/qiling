@@ -55,7 +55,7 @@ class QlOsUefi(QlOs):
             self.emu_error()
             raise
 
-        if self.ql.internal_exception is not None:
-            raise self.ql.internal_exception
+        if self.ql._internal_exception is not None:
+            raise self.ql._internal_exception
 
 

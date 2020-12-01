@@ -6,17 +6,24 @@
 from configparser import ConfigParser
 import ctypes, logging, ntpath, os, pickle, platform
 import io
-from qiling import debugger
 from sys import stdin, stdout
 from qiling.os.windows.wdk_const import FILE_DEVICE_NAMED_PIPE
+# See https://stackoverflow.com/questions/39740632/python-type-hinting-without-cyclic-imports
 from typing import Dict, List, Union
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from .arch.register import QlRegisterManager
+    from .arch.arch import QlArch
+    from .os.os import QlOs
+    from .os.memory import QlMemoryManager
+    from .loader.loader import QlLoader
 
 from .const import QL_ARCH_ENDIAN, QL_ENDIAN, QL_OS_POSIX, QL_OS_ALL, QL_OUTPUT, QL_OS
 from .exception import QlErrorFileNotFound, QlErrorArch, QlErrorOsType, QlErrorOutput
 from .utils import arch_convert, ostype_convert, output_convert
 from .utils import ql_is_valid_ostype, ql_is_valid_arch, ql_get_arch_bits, verify_ret
 from .utils import ql_setup_logger, ql_resolve_logger_level, ql_guess_emu_env, loader_setup, component_setup, debugger_setup
-from .utils import loader_setup, component_setup, debugger_setup
+from .utils import loader_setup, component_setup, debugger_setup, arch_setup, os_setup, profile_setup
 from .core_struct import QlCoreStructs
 from .core_hooks import QlCoreHooks
 from .core_utils import QlCoreUtils
@@ -72,7 +79,7 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         self._append = append
         self._multithread = multithread
         self._log_file_fd = None
-        self._platform = ostype_convert(platform.system())
+        self._platform = ostype_convert(platform.system().lower())
         self._internal_exception = None
         
         ##################################
@@ -131,12 +138,12 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
             if not ql_is_valid_arch(self._archtype):
                 raise QlErrorArch("[!] Invalid Arch %s" % self._archtype)
 
-        self.loader = loader_setup(self._ostype, self)
+        self._loader = loader_setup(self._ostype, self)
 
         ############
         # setup    #
         ############           
-        self._profile = self.profile_setup()
+        self._profile = profile_setup(self.ostype, self.profile, self)
         if self._append == None:
             self._append = self._profile["MISC"]["append"]
         if self._log_dir == None:
@@ -176,16 +183,16 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         #############
         # Component #
         #############
-        self.mem = component_setup("os", "memory", self)
-        self.reg = component_setup("arch", "register", self)
+        self._mem = component_setup("os", "memory", self)
+        self._reg = component_setup("arch", "register", self)
 
         #####################################
         # Architecture and OS               #
         #####################################
         # Load architecture's and os module #
         #####################################
-        self.arch = self.arch_setup()
-        self.os = self.os_setup()
+        self._arch = arch_setup(self.archtype, self)
+        self._os = os_setup(self.archtype, self.ostype, self)
 
         # Run the loader
         self.loader.run()
@@ -205,8 +212,8 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         self.count = count
 
         # init debugger
-        if self.debugger != False and self.debugger != None:
-            self.debugger = debugger_setup(self.debugger, self)
+        if self._debugger != False and self._debugger != None:
+            self._debugger = debugger_setup(self._debugger, self)
 
         # patch binary
         self.__enable_bin_patch()
@@ -215,8 +222,8 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         self.os.run()
 
         # run debugger
-        if self.debugger != False and self.debugger != None:
-            self.debugger.run()
+        if self._debugger != False and self._debugger != None:
+            self._debugger.run()
 
 
     # patch code to memory address
@@ -226,6 +233,50 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         else:
             self.patch_lib.append((addr, code, file_name.decode()))
     
+    #####################
+    # Qiling Components #
+    #####################
+
+    @property
+    def mem(self) -> "QlMemoryManager":
+        """ Qiling memory manager.
+
+            Example: ql.mem.read(0xdeadbeaf, 4)
+        """
+        return self._mem
+    
+    @property
+    def reg(self) -> "QlRegisterManager":
+        """ Qiling register manager.
+
+            Example: ql.reg.eax = 1
+        """
+        return self._reg
+    
+    @property
+    def arch(self) -> "QlArch":
+        """ Qiling architecture layer.
+
+            Also see qiling/arch/<arch>.py
+        """
+        return self._arch
+
+    @property
+    def loader(self) -> "QlLoader":
+        """ Qiling loader layer.
+
+            Also see qiling/loader/<filetype>.py
+        """
+        return self._loader
+
+    @property
+    def os(self) -> "QlOs":
+        """ Qiling os layer.
+
+            Also see qiling/os/<os>/<os>/py
+        """
+        return self._os
+
     ##################
     # Qiling Options #
     ##################
@@ -586,7 +637,7 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
     def debugger(self) -> Union[str, bool]:
         """ Enable debugger.
 
-            Type: str or bool
+            Type: debugger instance
             Values:
               - "gdb": enable gdb.
               - True : an alias to "gdb".
