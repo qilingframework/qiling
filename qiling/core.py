@@ -73,6 +73,7 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         self._multithread = multithread
         self._log_file_fd = None
         self._platform = ostype_convert(platform.system())
+        self._internal_exception = None
         
         ##################################
         # Definition after ql=Qiling()   #
@@ -87,7 +88,6 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         self.patch_lib = []
         self.patched_lib = []
         self._debug_stop = False
-        self.internal_exception = None
         self._debugger = None
         self._root = False
         self._filter = None
@@ -441,6 +441,14 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
             self._platform = value
 
     @property
+    def internal_exception(self) -> Exception:
+        """ Internal exception catched during Unicorn callback. Not intended for regular users.
+
+            Type: Exception
+        """
+        return self._internal_exception
+
+    @property
     def stdin(self) -> io.IOBase:
         """ Stdin of the program. Can be any object which implements (even part of) io.IOBase.
 
@@ -684,5 +692,5 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
     def emu_start(self, begin, end, timeout=0, count=0):
         self.uc.emu_start(begin, end, timeout, count)
         
-        if self.internal_exception != None:
-            raise self.internal_exception
+        if self._internal_exception != None:
+            raise self._internal_exception
