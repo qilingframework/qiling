@@ -409,7 +409,7 @@ def component_setup(component_type, function_name, ql):
     return ql_get_module_function(module_name, function_name)(ql)
 
 
-def debugger_setup(self, debugger, ql):
+def debugger_setup(debugger, ql):
     # default remote server
     remotedebugsrv = "gdb"
     debug_opts = [None, None]

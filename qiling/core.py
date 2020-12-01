@@ -6,6 +6,7 @@
 from configparser import ConfigParser
 import ctypes, logging, ntpath, os, pickle, platform
 import io
+from qiling import debugger
 from sys import stdin, stdout
 from qiling.os.windows.wdk_const import FILE_DEVICE_NAMED_PIPE
 from typing import Dict, List, Union
@@ -205,7 +206,7 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
 
         # init debugger
         if self.debugger != False and self.debugger != None:
-            self.debugger = self.debugger_setup()
+            self.debugger = debugger_setup(self.debugger, self)
 
         # patch binary
         self.__enable_bin_patch()
