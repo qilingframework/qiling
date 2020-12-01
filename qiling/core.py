@@ -84,9 +84,8 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         self._output = output
         self._verbose = verbose
         self._libcache = libcache
-        self.patch_bin = []
-        self.patch_lib = []
-        self.patched_lib = []
+        self._patch_bin = []
+        self._patch_lib = []
         self._debug_stop = False
         self._debugger = None
         self._root = False
@@ -552,6 +551,22 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         self._verbose = v
         ql_resolve_logger_level(self._output, self._verbose)
     
+    @property
+    def patch_bin(self) -> list:
+        """ Return the patches for binary.
+
+            Type: list
+        """
+        return self._patch_bin
+    
+    @property
+    def patch_lib(self) -> list:
+        """ Return the patches for library.
+
+            Type: list
+        """
+        return self._patch_lib
+
     @property
     def debug_stop(self) -> bool:
         """ Stop if some syscalls is not implemented.
