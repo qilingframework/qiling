@@ -7,7 +7,6 @@ from configparser import ConfigParser
 import ctypes, logging, ntpath, os, pickle, platform
 import io
 from sys import stdin, stdout
-from qiling.os.windows.wdk_const import FILE_DEVICE_NAMED_PIPE
 # See https://stackoverflow.com/questions/39740632/python-type-hinting-without-cyclic-imports
 from typing import Dict, List, Union
 from typing import TYPE_CHECKING
