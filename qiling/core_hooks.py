@@ -72,11 +72,10 @@ class HookRet:
     def remove(self):
         self._ql.hook_del(self._t, self._h)
 
-
-class QlCoreHooks(object):
-    def __init__(self):
-        super().__init__()
-        self.uc = None
+# Don't assume self is Qiling.
+class QlCoreHooks:
+    def __init__(self, uc):
+        self._h_uc = uc
         self._hook = {}
         self._hook_fuc = {}
         self._insn_hook = {}
@@ -220,13 +219,13 @@ class QlCoreHooks(object):
     def _ql_hook_internal(self, hook_type, callback, user_data=None, *args):
         _callback = (catch_KeyboardInterrupt(self))(callback)
         # pack user_data & callback for wrapper _callback
-        return self.uc.hook_add(hook_type, _callback, (self, user_data), 1, 0, *args)
+        return self._h_uc.hook_add(hook_type, _callback, (self, user_data), 1, 0, *args)
 
 
     def _ql_hook_addr_internal(self, callback, user_data, address):
         _callback = (catch_KeyboardInterrupt(self))(callback)
         # pack user_data & callback for wrapper _callback
-        return self.uc.hook_add(UC_HOOK_CODE, _callback, (self, user_data), address, address)
+        return self._h_uc.hook_add(UC_HOOK_CODE, _callback, (self, user_data), address, address)
 
 
     def _ql_hook(self, hook_type, h, *args):
@@ -366,62 +365,6 @@ class QlCoreHooks(object):
 
     def hook_insn(self, callback, arg1, user_data=None, begin=1, end=0):
         return self.ql_hook(UC_HOOK_INSN, callback, user_data, begin, end, arg1)
-    
-
-    # replace linux or windows syscall/api with custom api/syscall
-    # if replace function name is needed, first syscall must be available
-    # - ql.set_syscall(0x04, my_syscall_write)
-    # - ql.set_syscall("write", my_syscall_write)
-    def set_syscall(self, target_syscall, intercept_function, intercept = None):
-        if intercept == QL_INTERCEPT.ENTER:
-                if isinstance(target_syscall, int):
-                    self.os.dict_posix_onEnter_syscall_by_num[target_syscall] = intercept_function
-                else:
-                    syscall_name = "ql_syscall_" + str(target_syscall)
-                    self.os.dict_posix_onEnter_syscall[syscall_name] = intercept_function
-
-        elif intercept == QL_INTERCEPT.EXIT:
-            if self.ostype in (QL_OS_POSIX):
-                if isinstance(target_syscall, int):
-                    self.os.dict_posix_onExit_syscall_by_num[target_syscall] = intercept_function
-                else:
-                    syscall_name = "ql_syscall_" + str(target_syscall)
-                    self.os.dict_posix_onExit_syscall[syscall_name] = intercept_function                    
-
-        else:
-            if self.ostype in (QL_OS_POSIX):
-                if isinstance(target_syscall, int):
-                    self.os.dict_posix_syscall_by_num[target_syscall] = intercept_function
-                else:
-                    syscall_name = "ql_syscall_" + str(target_syscall)
-                    self.os.dict_posix_syscall[syscall_name] = intercept_function
-            
-            elif self.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
-                self.set_api(target_syscall, intercept_function)
-        
-
-    # replace default API with customed function
-    def set_api(self, api_name, intercept_function, intercept = None):
-        if self.ostype == QL_OS.UEFI:
-            api_name = "hook_" + str(api_name)
-
-        if intercept == QL_INTERCEPT.ENTER:
-            if self.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
-                self.os.user_defined_api_onenter[api_name] = intercept_function
-            else:
-                self.os.add_function_hook(api_name, intercept_function, intercept) 
-
-        elif intercept == QL_INTERCEPT.EXIT:
-            if self.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
-                self.os.user_defined_api_onexit[api_name] = intercept_function  
-            else:
-                self.os.add_function_hook(api_name, intercept_function, intercept)           
-
-        else:
-            if self.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
-                self.os.user_defined_api[api_name] = intercept_function
-            else:
-                self.os.add_function_hook(api_name, intercept_function)  
 
 
     def hook_del(self, *args):
@@ -457,7 +400,7 @@ class QlCoreHooks(object):
                     del self._addr_hook[h.addr][self._addr_hook[h.addr].index(h)]
 
                     if len(self._addr_hook[h.addr]) == 0:
-                        self.uc.hook_del(self._addr_hook_fuc[h.addr])
+                        self._h_uc.hook_del(self._addr_hook_fuc[h.addr])
                         del self._addr_hook_fuc[h.addr]
             
             return
@@ -470,7 +413,7 @@ class QlCoreHooks(object):
                             del self._hook[t][self._hook[t].index(h)]
 
                             if len(self._hook[t]) == 0:
-                                self.uc.hook_del(self._hook_fuc[t])
+                                self._h_uc.hook_del(self._hook_fuc[t])
                                 del self._hook_fuc[t]
                 
                 if t in (UC_HOOK_INSN, ):
@@ -479,19 +422,19 @@ class QlCoreHooks(object):
                             del self._insn_hook[t][self._insn_hook[t].index(h)]
 
                             if len(self._insn_hook[t]) == 0:
-                                self.uc.hook_del(self._insn_hook_fuc[t])
+                                self._h_uc.hook_del(self._insn_hook_fuc[t])
                                 del self._insn_hook_fuc[t]
                     
 
     def clear_hooks(self):
         for i in self._hook_fuc.keys():
-            self.uc.hook_del(self._hook_fuc[i])
+            self._h_uc.hook_del(self._hook_fuc[i])
         
         for i in self._insn_hook_fuc.keys():
-            self.uc.hook_del(self._insn_hook_fuc[i])
+            self._h_uc.hook_del(self._insn_hook_fuc[i])
 
         for i in self._addr_hook_fuc.keys():
-            self.uc.hook_del(self._addr_hook_fuc[i])
+            self._h_uc.hook_del(self._addr_hook_fuc[i])
 
         self.clear_ql_hooks()
     

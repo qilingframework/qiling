@@ -18,14 +18,15 @@ if TYPE_CHECKING:
     from .os.memory import QlMemoryManager
     from .loader.loader import QlLoader
 
-from .const import D_DRPT, QL_ARCH_ENDIAN, QL_ENDIAN, QL_OS_POSIX, QL_OS_ALL, QL_OUTPUT, QL_OS
+from .const import D_DRPT, QL_ARCH_ENDIAN, QL_ENDIAN, QL_INTERCEPT, QL_OS_POSIX, QL_OS_ALL, QL_OUTPUT, QL_OS
 from .exception import QlErrorFileNotFound, QlErrorArch, QlErrorOsType, QlErrorOutput
 from .utils import *
 from .core_struct import QlCoreStructs
 from .core_hooks import QlCoreHooks
 from .__version__ import __version__
 
-class Qiling(QlCoreStructs, QlCoreHooks):    
+# Mixin Pattern
+class Qiling(QlCoreHooks, QlCoreStructs):    
     def __init__(
             self,
             argv=None,
@@ -54,7 +55,6 @@ class Qiling(QlCoreStructs, QlCoreHooks):
 
             The only exception is "bigendian" parameter, see Qiling.archendian.__doc__ for details.
         """
-        super(Qiling, self).__init__()
 
         ##################################
         # Definition during ql=Qiling()  #
@@ -77,6 +77,7 @@ class Qiling(QlCoreStructs, QlCoreHooks):
         self._log_file_fd = None
         self._platform = ostype_convert(platform.system().lower())
         self._internal_exception = None
+        self._uc = None
         
         ##################################
         # Definition after ql=Qiling()   #
@@ -97,7 +98,9 @@ class Qiling(QlCoreStructs, QlCoreHooks):
         """
         Qiling Framework Core Engine
         """
-        # shellcoder settings
+        ##############
+        # Shellcode? #
+        ##############
         if self._shellcoder:
             if (self._ostype and type(self._ostype) == str) and (self._archtype and type(self._archtype) == str):
                 self._ostype = ostype_convert(self._ostype.lower())
@@ -136,9 +139,9 @@ class Qiling(QlCoreStructs, QlCoreHooks):
 
         self._loader = loader_setup(self._ostype, self)
 
-        ############
-        # setup    #
-        ############           
+        #####################
+        # Profile & Logging #
+        #####################
         self._profile = profile_setup(self.ostype, self.profile, self)
         if self._append == None:
             self._append = self._profile["MISC"]["append"]
@@ -164,9 +167,9 @@ class Qiling(QlCoreStructs, QlCoreHooks):
         
         ql_resolve_logger_level(self._output, self._verbose)
         
-        ####################################
-        # Set pointersize (32bit or 64bit) #
-        ####################################
+        ########################
+        # Archbit & Endianness #
+        ########################
         self._archbit = ql_get_arch_bits(self._archtype)
         self._pointersize = (self.archbit // 8)  
         
@@ -175,19 +178,21 @@ class Qiling(QlCoreStructs, QlCoreHooks):
             self._archendian = QL_ENDIAN.EL
             if bigendian == True and self._archtype in (QL_ARCH_ENDIAN):
                 self._archendian = QL_ENDIAN.EB
+        
+        # Once we finish setting up archendian and arcbit, we can init QlCoreStructs.
+        QlCoreStructs.__init__(self, self._archendian, self._archbit)
 
-        #############
-        # Component #
-        #############
+        ##############
+        # Components #
+        ##############
         self._mem = component_setup("os", "memory", self)
         self._reg = component_setup("arch", "register", self)
-
-        #####################################
-        # Architecture and OS               #
-        #####################################
-        # Load architecture's and os module #
-        #####################################
         self._arch = arch_setup(self.archtype, self)
+        
+        # Once we finish setting up arch layer, we can init QlCoreHooks.
+        self.uc = self.arch.init_uc
+        QlCoreHooks.__init__(self, self.uc)
+
         self._os = os_setup(self.archtype, self.ostype, self)
 
         # Run the loader
@@ -240,6 +245,13 @@ class Qiling(QlCoreStructs, QlCoreHooks):
             Also see qiling/os/<os>/<os>/py
         """
         return self._os
+
+    @property
+    def struct(self) -> "QlCoreStructs":
+        """ Qiling struct helper class.
+
+        """
+        return self._struct
 
     ##################
     # Qiling Options #
@@ -643,6 +655,17 @@ class Qiling(QlCoreStructs, QlCoreHooks):
     def filter(self, ft):
         self._filter = ft
 
+    @property
+    def uc(self):
+        """ Raw uc instance.
+
+            Type: Uc
+        """
+        return self._uc
+
+    @uc.setter
+    def uc(self, u):
+        self._uc = u
 
     def __enable_bin_patch(self):
         for addr, code in self.patch_bin:
@@ -795,13 +818,68 @@ class Qiling(QlCoreStructs, QlCoreHooks):
         if "loader" in saved_states:
             self.loader.restore(saved_states["loader"])
 
+    # replace linux or windows syscall/api with custom api/syscall
+    # if replace function name is needed, first syscall must be available
+    # - ql.set_syscall(0x04, my_syscall_write)
+    # - ql.set_syscall("write", my_syscall_write)
+    def set_syscall(self, target_syscall, intercept_function, intercept = None):
+        if intercept == QL_INTERCEPT.ENTER:
+            if isinstance(target_syscall, int):
+                self.os.dict_posix_onEnter_syscall_by_num[target_syscall] = intercept_function
+            else:
+                syscall_name = "ql_syscall_" + str(target_syscall)
+                self.os.dict_posix_onEnter_syscall[syscall_name] = intercept_function
+
+        elif intercept == QL_INTERCEPT.EXIT:
+            if self.ostype in (QL_OS_POSIX):
+                if isinstance(target_syscall, int):
+                    self.os.dict_posix_onExit_syscall_by_num[target_syscall] = intercept_function
+                else:
+                    syscall_name = "ql_syscall_" + str(target_syscall)
+                    self.os.dict_posix_onExit_syscall[syscall_name] = intercept_function                    
+
+        else:
+            if self.ostype in (QL_OS_POSIX):
+                if isinstance(target_syscall, int):
+                    self.os.dict_posix_syscall_by_num[target_syscall] = intercept_function
+                else:
+                    syscall_name = "ql_syscall_" + str(target_syscall)
+                    self.os.dict_posix_syscall[syscall_name] = intercept_function
+            
+            elif self.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
+                self.set_api(target_syscall, intercept_function)
+        
+
+    # replace default API with customed function
+    def set_api(self, api_name, intercept_function, intercept = None):
+        if self.ostype == QL_OS.UEFI:
+            api_name = "hook_" + str(api_name)
+
+        if intercept == QL_INTERCEPT.ENTER:
+            if self.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
+                self.os.user_defined_api_onenter[api_name] = intercept_function
+            else:
+                self.os.add_function_hook(api_name, intercept_function, intercept) 
+
+        elif intercept == QL_INTERCEPT.EXIT:
+            if self.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
+                self.os.user_defined_api_onexit[api_name] = intercept_function  
+            else:
+                self.os.add_function_hook(api_name, intercept_function, intercept)           
+
+        else:
+            if self.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
+                self.os.user_defined_api[api_name] = intercept_function
+            else:
+                self.os.add_function_hook(api_name, intercept_function)  
+
     # Map "ql_path" to any objects which implements QlFsMappedObject.
     def add_fs_mapper(self, ql_path, real_dest):
         self.os.fs_mapper.add_fs_mapping(ql_path, real_dest)
 
     # push to stack bottom, and update stack register
     def stack_push(self, data):
-        self.arch.stack_push(data)
+        return self.arch.stack_push(data)
 
     # pop from stack bottom, and update stack register
     def stack_pop(self):
@@ -815,7 +893,7 @@ class Qiling(QlCoreStructs, QlCoreHooks):
     # write to stack, at a given offset from stack bottom
     # NOTE: unlike stack_push(), this does not change stack register
     def stack_write(self, offset, data):
-        self.arch.stack_write(offset, data)
+        return self.arch.stack_write(offset, data)
 
     # Assembler/Diassembler API
     @property

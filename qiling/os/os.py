@@ -18,7 +18,6 @@ class QlOs(QlOsUtils):
     def __init__(self, ql):
         super(QlOs, self).__init__(ql)
         self.ql = ql
-        self.ql.uc = self.ql.arch.init_uc
         self.fs_mapper = QlFsMapper(ql)
         self.child_processes = False
         self.thread_management = None
