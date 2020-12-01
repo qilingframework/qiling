@@ -87,7 +87,7 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         self.internal_exception = None
         self._platform = ostype_convert(platform.system())
         self.debugger = None
-        self.root = False
+        self._root = False
         self._filter = None
 
         """
@@ -525,6 +525,19 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
     def verbose(self, v):
         self._verbose = v
         ql_resolve_logger_level(self._output, self._verbose)
+    
+    @property
+    def root(self) -> bool:
+        """ Whether run current program as root?
+
+            Type: bool
+            Examples: ql.root = True
+        """
+        return self._root
+
+    @root.setter
+    def root(self, root):
+        self._root = root
 
     @property
     def filter(self) -> List[str]:
