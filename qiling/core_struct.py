@@ -13,6 +13,7 @@ import struct
 from .const import QL_ENDIAN
 from .exception import QlErrorStructConversion
 
+# Don't assume self is Qiling.
 class QlCoreStructs:
     def __init__(self, endian, bit):
         self._endian = endian
