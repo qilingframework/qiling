@@ -153,7 +153,7 @@ def ostype_convert(ostype):
     if ostype in adapter:
         return adapter[ostype]
     # invalid
-    return None, None
+    return None
 
 def arch_convert_str(arch):
     adapter = {}
@@ -167,7 +167,7 @@ def arch_convert(arch):
     if arch in adapter:
         return adapter[arch]
     # invalid
-    return None, None
+    return None
 
 def output_convert(output):
     adapter = {
