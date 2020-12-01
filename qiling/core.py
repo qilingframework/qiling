@@ -85,7 +85,7 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         self.patched_lib = []
         self.debug_stop = False
         self.internal_exception = None
-        self.platform = platform.system()
+        self._platform = ostype_convert(platform.system())
         self.debugger = None
         self.root = False
         self._filter = None
