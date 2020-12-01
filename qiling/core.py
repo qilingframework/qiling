@@ -6,7 +6,6 @@
 from configparser import ConfigParser
 import ctypes, logging, ntpath, os, pickle, platform
 import io
-from qiling import debugger
 from sys import stdin, stdout
 from qiling.os.windows.wdk_const import FILE_DEVICE_NAMED_PIPE
 from typing import Dict, List, Union
