@@ -409,6 +409,27 @@ def component_setup(component_type, function_name, ql):
     return ql_get_module_function(module_name, function_name)(ql)
 
 
+def debugger_setup(self, debugger, ql):
+    # default remote server
+    remotedebugsrv = "gdb"
+    debug_opts = [None, None]
+
+    if debugger != True and type(debugger) == str:      
+        debug_opts = debugger.split(":")
+
+        if len(debug_opts) == 2 and debug_opts[0] != "qdb":
+            pass
+        else:  
+            remotedebugsrv, *debug_opts = debug_opts
+            
+        
+        if debugger_convert(remotedebugsrv) not in (QL_DEBUGGER):
+            raise QlErrorOutput("[!] Error: Debugger not supported")
+        
+    debugsession = ql_get_module_function("qiling.debugger." + remotedebugsrv + "." + remotedebugsrv, "Ql" + str.capitalize(remotedebugsrv))
+
+    return debugsession(ql, *debug_opts)
+
 def ql_resolve_logger_level(output, verbose):
     level = logging.INFO
     if output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP, QL_OUTPUT.DISASM):

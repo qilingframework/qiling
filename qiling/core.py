@@ -8,13 +8,14 @@ import ctypes, logging, ntpath, os, pickle, platform
 import io
 from sys import stdin, stdout
 from qiling.os.windows.wdk_const import FILE_DEVICE_NAMED_PIPE
-from typing import Dict, List
+from typing import Dict, List, Union
 
 from .const import QL_ARCH_ENDIAN, QL_ENDIAN, QL_OS_POSIX, QL_OS_ALL, QL_OUTPUT, QL_OS
 from .exception import QlErrorFileNotFound, QlErrorArch, QlErrorOsType, QlErrorOutput
 from .utils import arch_convert, ostype_convert, output_convert
 from .utils import ql_is_valid_ostype, ql_is_valid_arch, ql_get_arch_bits, verify_ret
-from .utils import ql_setup_logger, ql_resolve_logger_level, ql_guess_emu_env, loader_setup, component_setup
+from .utils import ql_setup_logger, ql_resolve_logger_level, ql_guess_emu_env, loader_setup, component_setup, debugger_setup
+from .utils import loader_setup, component_setup, debugger_setup
 from .core_struct import QlCoreStructs
 from .core_hooks import QlCoreHooks
 from .core_utils import QlCoreUtils
@@ -86,7 +87,7 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         self.patched_lib = []
         self.debug_stop = False
         self.internal_exception = None
-        self.debugger = None
+        self._debugger = None
         self._root = False
         self._filter = None
 
@@ -542,6 +543,22 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         self._verbose = v
         ql_resolve_logger_level(self._output, self._verbose)
     
+    @property
+    def debugger(self) -> Union[str, bool]:
+        """ Enable debugger.
+
+            Type: str or bool
+            Values:
+              - "gdb": enable gdb.
+              - True : an alias to "gdb".
+              - "gdb:0.0.0.0:1234" : gdb which listens on 0.0.0.0:1234
+              - "qdb": enable qdb.
+              - "qdb:rr": enable qdb with reverse debugging support.
+            Example: ql.debugger = True
+                     ql.debugger = "qdb"
+        """
+        return self._debugger
+
     @property
     def root(self) -> bool:
         """ Whether run current program as root?
