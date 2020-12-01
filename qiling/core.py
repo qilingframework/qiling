@@ -539,16 +539,21 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
     def filter(self, ft):
         self._filter = ft
 
-    # ql.platform - platform var = host os getter eg. LINUX and etc
     @property
     def platform(self):
+        """ Specify current platform where Qiling runs on.
+
+            Type: int
+            Values: All possible values from platform.system()
+        """
         return self._platform
 
-
-    # ql.platform - platform var = host os setter eg. LINUX and etc
     @platform.setter
     def platform(self, value):
-        self._platform = ostype_convert(value.lower())
+        if type(value) is str:
+            self._platform = ostype_convert(value.lower())
+        else:
+            self._platform = value
 
 
     def __enable_bin_patch(self):
