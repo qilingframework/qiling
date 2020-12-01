@@ -70,6 +70,7 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         self._append = append
         self._multithread = multithread
         self._log_file_fd = None
+        self._platform = ostype_convert(platform.system())
         
         ##################################
         # Definition after ql=Qiling()   #
@@ -85,7 +86,6 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         self.patched_lib = []
         self.debug_stop = False
         self.internal_exception = None
-        self._platform = ostype_convert(platform.system())
         self.debugger = None
         self._root = False
         self._filter = None
@@ -423,6 +423,22 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         return self._log_file_fd
 
     @property
+    def platform(self):
+        """ Specify current platform where Qiling runs on.
+
+            Type: int
+            Values: All possible values from platform.system()
+        """
+        return self._platform
+
+    @platform.setter
+    def platform(self, value):
+        if type(value) is str:
+            self._platform = ostype_convert(value.lower())
+        else:
+            self._platform = value
+
+    @property
     def stdin(self) -> io.IOBase:
         """ Stdin of the program. Can be any object which implements (even part of) io.IOBase.
 
@@ -551,22 +567,6 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
     @filter.setter
     def filter(self, ft):
         self._filter = ft
-
-    @property
-    def platform(self):
-        """ Specify current platform where Qiling runs on.
-
-            Type: int
-            Values: All possible values from platform.system()
-        """
-        return self._platform
-
-    @platform.setter
-    def platform(self, value):
-        if type(value) is str:
-            self._platform = ostype_convert(value.lower())
-        else:
-            self._platform = value
 
 
     def __enable_bin_patch(self):
