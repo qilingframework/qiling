@@ -86,7 +86,7 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         self.patch_bin = []
         self.patch_lib = []
         self.patched_lib = []
-        self.debug_stop = False
+        self._debug_stop = False
         self.internal_exception = None
         self._debugger = None
         self._root = False
@@ -544,6 +544,21 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         self._verbose = v
         ql_resolve_logger_level(self._output, self._verbose)
     
+    @property
+    def debug_stop(self) -> bool:
+        """ Stop if some syscalls is not implemented.
+
+            Note: This option is broken on some archs.
+
+            Type: bool
+            Example: ql.debug_stop = True
+        """
+        return self._debug_stop
+
+    @property
+    def debug_stop(self, ds):
+        self._debug_stop = ds
+
     @property
     def debugger(self) -> Union[str, bool]:
         """ Enable debugger.
