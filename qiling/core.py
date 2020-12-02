@@ -245,13 +245,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         """
         return self._os
 
-    @property
-    def struct(self) -> "QlCoreStructs":
-        """ Qiling struct helper class.
-
-        """
-        return self._struct
-
     ##################
     # Qiling Options #
     ##################
