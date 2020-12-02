@@ -814,6 +814,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
     # if replace function name is needed, first syscall must be available
     # - ql.set_syscall(0x04, my_syscall_write)
     # - ql.set_syscall("write", my_syscall_write)
+    # TODO: Add correspoinding API in ql.os!
     def set_syscall(self, target_syscall, intercept_function, intercept = None):
         if intercept == QL_INTERCEPT.ENTER:
             if isinstance(target_syscall, int):
