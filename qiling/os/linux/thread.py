@@ -346,11 +346,6 @@ class QlLinuxThread(QlThread):
     def update_global_thread_id(self):
         QlLinuxThread.LINUX_THREAD_ID = os.getpid()
 
-    def set_thread_log_file(self, log_dir):
-        if self.ql.log_split and log_dir != None:
-            _logger = self.ql.log_file_fd
-            self._log_file_fd = ql_setup_logging_file(self.ql.output, log_dir, _logger)
-
 
 class QlLinuxX86Thread(QlLinuxThread):
     """docstring for X86Thread"""
