@@ -113,8 +113,9 @@ class QlSanitizedMemoryHeap():
         # Install the UAF canary hook.
         self.ql.mem.write(addr, self.canary_byte * (chunk.size - 8))
         uaf_canary = (addr, addr + chunk.size - 8 - 1, CaneryType.uaf)
-        self.ql.hook_mem_valid(self.uaf_handler, begin=uaf_canary[0], end=uaf_canary[1])
-        self.canaries.append(uaf_canary)
+        if uaf_canary[0] <= uaf_canary[1]:
+            self.ql.hook_mem_valid(self.uaf_handler, begin=uaf_canary[0], end=uaf_canary[1])
+            self.canaries.append(uaf_canary)
 
         # Make sure the chunk won't be re-used by the underlying heap.
         self.heap.chunks.remove(chunk)
