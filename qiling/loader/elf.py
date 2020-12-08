@@ -463,7 +463,8 @@ class QlLoaderELF(QlLoader, ELFParse):
         rev_reloc_symbols = {}
 
         # dump_mem("XX Original code at 15a1 = ", ql.mem.read(0x15a1, 8))
-        for section in elffile.iter_sections():
+        _sections = list(elffile.iter_sections())
+        for section in _sections:
             # only care about reloc section
             if not isinstance(section, RelocationSection):
                 continue
@@ -472,9 +473,15 @@ class QlLoaderELF(QlLoader, ELFParse):
             if section.name == ".rela.gnu.linkonce.this_module":
                 continue
 
+            dest_sec_idx = section.header.get('sh_info', None)
+            if dest_sec_idx is not None and dest_sec_idx < len(_sections):
+                dest_sec = _sections[dest_sec_idx]
+                if dest_sec.header['sh_flags'] & 2 == 0:
+                    # The target section is not loaded into memory, so just continue
+                    continue
+
             # The symbol table section pointed to in sh_link
             symtable = elffile.get_section(section['sh_link'])
-
             for rel in section.iter_relocations():
                 if rel['r_info_sym'] == 0:
                     continue
