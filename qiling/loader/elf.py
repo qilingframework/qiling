@@ -442,6 +442,7 @@ class QlLoaderELF(QlLoader, ELFParse):
                     return addr
 
         # not found. FIXME: report error on invalid module??
+        ql.dprint(D_INFO, "[!] invalid module? symbol init_module not found")
         return -1
 
     def lkm_dynlinker(self, ql, mem_start):
@@ -636,7 +637,6 @@ class QlLoaderELF(QlLoader, ELFParse):
         new_stack = self.alignment(new_stack)
 
         # self.ql.os.elf_entry = self.elf_entry = loadbase + elfhead['e_entry']
-
         self.ql.os.entry_point = self.entry_point = entry_point
         self.elf_entry = self.ql.os.elf_entry = self.ql.os.entry_point
 
