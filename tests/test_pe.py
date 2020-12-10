@@ -188,7 +188,7 @@ class PETest(unittest.TestCase):
             return
         def stop(ql):
             logging.info("killerswtichfound")
-            logging.disable()
+            logging.disable(level=logging.CRITICAL)
             logging.info("No Print")
             ql.emu_stop()
 
