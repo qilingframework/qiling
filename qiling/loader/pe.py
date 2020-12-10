@@ -562,11 +562,7 @@ class QlLoaderPE(QlLoader, Process):
             self.ql.os.entry_point = self.entry_point
             self.ql.os.pid = 101
 
-            # for ASM file input, will mem.write in qltools
-            try:
-                self.ql.mem.write(self.entry_point, self.ql.shellcoder)
-            except:
-                pass
+            self.ql.mem.write(self.entry_point, self.ql.shellcoder)
             
             self.init_thread_information_block()
             # load dlls

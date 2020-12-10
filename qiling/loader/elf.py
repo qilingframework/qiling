@@ -104,11 +104,7 @@ class QlLoaderELF(QlLoader, ELFParse):
             self.ql.mem.map(self.ql.os.entry_point, self.ql.os.shellcoder_ram_size, info="[shellcode_stack]")
             self.ql.os.entry_point = (self.ql.os.entry_point + 0x200000 - 0x1000)
 
-            # for ASM file input, will mem.write in qltools
-            try:
-                self.ql.mem.write(self.ql.os.entry_point, self.ql.shellcoder)
-            except:
-                pass
+            self.ql.mem.write(self.ql.os.entry_point, self.ql.shellcoder)
 
             self.ql.reg.arch_sp = self.ql.os.entry_point
             return

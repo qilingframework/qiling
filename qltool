@@ -73,7 +73,9 @@ def run_shellcode(options):
 
     elif options.asm == True:
         print ("[+] Load ASM from FILE")
-        shellcoder = "asmfile"
+        assembly = read_file(options.filename)
+        assembler = ql.create_assembler()
+        shellcoder, _ = assembler.asm(assembly)
 
     else:
         print ("[+] Load BIN from FILE")
@@ -254,11 +256,6 @@ if __name__ == '__main__':
     # ql shellcode setup
     elif (options.subparser_name == 'shellcode'):
         ql = run_shellcode(options)
-        if options.asm == True:
-            assembly = read_file(options.filename)
-            assembler = ql.create_assembler()
-            ql.shellcoder, _ = assembler.asm(assembly)
-            ql.mem.write(ql.os.entry_point, bytes(ql.shellcoder))
     
     else:
         print("ERROR: Unknown command")
