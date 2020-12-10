@@ -52,9 +52,9 @@ def _QueryInformationProcess(ql, address, params):
         pbi.write(addr)
         value = addr.to_bytes(ql.pointersize, "little")
     else:
-        ql.dprint(D_INFO, str(flag))
+        logging.debug(str(flag))
         raise QlErrorNotImplemented("[!] API not implemented")
-    ql.dprint(D_RPRT, "[=] The target is checking the debugger via QueryInformationProcess ")
+    logging.debug("[=] The target is checking the debugger via QueryInformationProcess ")
     ql.mem.write(dst, value)
     if pt_res != 0:
         ql.mem.write(pt_res, 0x8.to_bytes(1, byteorder="little"))
@@ -131,7 +131,7 @@ def _QuerySystemInformation(ql, address, params):
                 ql.mem.write(pt_res, sbi.size.to_bytes(1, byteorder="little"))
             return STATUS_INFO_LENGTH_MISMATCH
     else:
-        ql.dprint(D_INFO, str(siClass))
+        logging.debug(str(siClass))
         raise QlErrorNotImplemented("[!] API not implemented")
 
 
@@ -196,8 +196,8 @@ def hook_ZwQueryObject(ql, address, params):
     size_dest = params["ReturnLength"]
     string = "DebugObject".encode("utf-16le")
     string_addr = ql.os.heap.alloc(len(string))
-    ql.dprint(0, str(string_addr))
-    ql.dprint(0, str(string))
+    logging.debug(str(string_addr))
+    logging.debug(str(string))
     ql.mem.write(string_addr, string)
     us = qiling.os.windows.structs.UnicodeString(ql, length=len(string), maxLength=len(string),
                                                  buffer=string_addr)
@@ -248,9 +248,9 @@ def _SetInformationProcess(ql, address, params):
     elif flag == ProcessDebugObjectHandle:
         return STATUS_PORT_NOT_SET
     elif flag == ProcessBreakOnTermination:
-            ql.dprint(D_RPRT, "[=] The target may be attempting modify a the 'critical' flag of the process")  
+            logging.debug("[=] The target may be attempting modify a the 'critical' flag of the process")  
     elif flag  == ProcessExecuteFlags:
-        ql.dprint(D_RPRT, "[=] The target may be attempting to modify DEP for the process")
+        logging.debug("[=] The target may be attempting to modify DEP for the process")
         if dst != 0:
             ql.mem.write(dst, 0x0.to_bytes(1, byteorder="little"))
 
@@ -262,12 +262,12 @@ def _SetInformationProcess(ql, address, params):
             uniqueId=ql.os.profile.getint("KERNEL", "pid"),
             parentPid=ql.os.profile.geting("KERNEL", "parent_pid")
         )
-        ql.dprint(D_RPRT, "[=] The target may be attempting to modify the PEB debug flag")
+        logging.debug("[=] The target may be attempting to modify the PEB debug flag")
         addr = ql.os.heap.alloc(pbi.size)
         pbi.write(addr)
         value = addr.to_bytes(ql.pointersize, "little")
     else:
-        ql.dprint(D_INFO, str(flag))
+        logging.debug(str(flag))
         raise QlErrorNotImplemented("[!] API not implemented")
 
     return STATUS_SUCCESS

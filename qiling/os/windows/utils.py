@@ -21,7 +21,7 @@ from .structs import UNICODE_STRING32, UNICODE_STRING64
 
 
 def ql_x86_windows_hook_mem_error(ql, access, addr, size, value):
-    ql.dprint(D_INFO, "[+] ERROR: unmapped memory access at 0x%x" % addr)
+    logging.debug("[+] ERROR: unmapped memory access at 0x%x" % addr)
     return False
 
 
@@ -61,7 +61,7 @@ def print_function(ql, passthru, address, function_name, params, ret):
         log = log.partition(" ")[-1]
         logging.info(log)
     else:
-        ql.dprint(D_INFO, log)
+        logging.debug(log)
 
 
 def read_wstring(ql, address):
@@ -114,9 +114,9 @@ def env_dict_to_array(env_dict):
 
 def debug_print_stack(ql, num, message=None):
     if message:
-        ql.dprint(D_INFO, "========== %s ==========" % message)
+        logging.debug("========== %s ==========" % message)
         sp = ql.reg.arch_sp
-        ql.dprint(D_INFO, hex(sp + ql.pointersize * num) + ": " + hex(ql.stack_read(num * ql.pointersize)))
+        logging.debug(hex(sp + ql.pointersize * num) + ": " + hex(ql.stack_read(num * ql.pointersize)))
 
 
 def is_file_library(string):

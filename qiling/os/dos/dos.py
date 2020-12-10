@@ -402,7 +402,7 @@ class QlOsDos(QlOs):
                     orig_bg |= 0b1000
                 self.ql.reg.ah = ((orig_bg << 4) & orig_fg)
         elif ah == 0xE:
-            self.ql.dprint(0, f"Echo: {hex(al)} -> {curses.ascii.unctrl(al)}")
+            logging.debug(f"Echo: {hex(al)} -> {curses.ascii.unctrl(al)}")
             y, x = self.stdscr.getmaxyx()
             cy, cx = self.stdscr.getyx()
             fg = self.ql.reg.bl
@@ -539,7 +539,7 @@ class QlOsDos(QlOs):
         if ah == 0x0:
             curses.nonl()
             key = self._parse_key(self.stdscr.getch())
-            self.ql.dprint(0, f"Get key: {hex(key)}")
+            logging.debug(f"Get key: {hex(key)}")
             if curses.ascii.isascii(key):
                 self.ql.reg.al = key
             else:
@@ -555,7 +555,7 @@ class QlOsDos(QlOs):
                 self.set_flag(0x40)
                 self.ql.reg.ax = 0
             else:
-                self.ql.dprint(0, f"Has key: {hex(key)} ({curses.ascii.unctrl(key)})")
+                logging.debug(f"Has key: {hex(key)} ({curses.ascii.unctrl(key)})")
                 self.ql.reg.al = key
                 self.ql.reg.ah = self._get_scan_code(key)
                 self.clear_flag(0x40)
@@ -742,7 +742,7 @@ class QlOsDos(QlOs):
     def hook_syscall(self):
         def cb(ql, intno, user_data=None):
             ah = self.ql.reg.ah
-            self.ql.dprint(0, f"INT {intno:x} with ah={hex(ah)}")
+            logging.debug(f"INT {intno:x} with ah={hex(ah)}")
             interrupt_tuple = (intno, ah)
             before = self.before_interrupt.get(interrupt_tuple, None)
             after = self.after_interrupt.get(interrupt_tuple, None)

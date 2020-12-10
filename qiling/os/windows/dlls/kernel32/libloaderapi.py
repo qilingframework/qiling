@@ -29,7 +29,7 @@ def _GetModuleHandle(ql, address, params):
         if lpModuleName in ql.loader.dlls:
             ret = ql.loader.dlls[lpModuleName]
         else:
-            ql.dprint(D_INFO, "[!] Library %s not imported" % lpModuleName)
+            logging.debug("[!] Library %s not imported" % lpModuleName)
             ret = 0
     return ret
 
@@ -87,7 +87,7 @@ def hook_GetModuleFileNameA(ql, address, params):
             ret = filename_len
         ql.mem.write(lpFilename, filename + b"\x00")
     else:
-        ql.dprint(D_INFO, "hModule %x" % hModule)
+        logging.debug("hModule %x" % hModule)
         raise QlErrorNotImplemented("[!] API not implemented")
     return ret
 

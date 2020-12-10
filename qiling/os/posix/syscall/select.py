@@ -61,7 +61,7 @@ def ql_syscall__newselect(ql, _newselect_nfds, _newselect_readfds, _newselect_wr
         if _newselect_readfds != 0:
             tmp_buf = b'\x00' * (_newselect_nfds // 8 + 1)
             for i in ans[0]:
-                ql.dprint(D_INFO, "debug : " + str(tmp_r_map[i]))
+                logging.debug("debug : " + str(tmp_r_map[i]))
                 tmp_buf = set_fd_set(tmp_buf, tmp_r_map[i])
             ql.mem.write(_newselect_readfds, tmp_buf)
 

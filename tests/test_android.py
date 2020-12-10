@@ -28,8 +28,8 @@ def syscall_getrandom(ql, buf, buflen, flags, *args, **kw):
               (buf, buflen, flags, regreturn))
 
     if data:
-        ql.dprint(D_CTNT, "[+] getrandom() CONTENT:")
-        ql.dprint(D_CTNT, str(data))
+        logging.debug("[+] getrandom() CONTENT:")
+        logging.debug(str(data))
     ql.os.definesyscall_return(regreturn)
 
 
@@ -49,8 +49,8 @@ def syscall_fstatfs(ql, fd, buf, *args, **kw):
     logging.info("fstatfs(0x%x, 0x%x) = %d" % (fd, buf, regreturn))
 
     if data:
-        ql.dprint(0, "[+] fstatfs() CONTENT:")
-        ql.dprint(0, str(data))
+        logging.debug("[+] fstatfs() CONTENT:")
+        logging.debug(str(data))
     ql.os.definesyscall_return(regreturn)
 
 

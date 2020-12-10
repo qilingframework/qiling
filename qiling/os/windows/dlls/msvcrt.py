@@ -155,7 +155,7 @@ def hook___p___argv(ql, address, params):
 # int* __p___argc(void)
 @winsdkapi(cc=CDECL)
 def hook___p___argc(ql, address, params):
-    ql.dprint(D_INFO, "_p___argc")
+    logging.debug("_p___argc")
     ret = ql.os.heap.alloc(ql.pointersize)
     ql.mem.write(ret, ql.pack(len(ql.argv)))
     return ret

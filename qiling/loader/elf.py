@@ -192,7 +192,7 @@ class QlLoaderELF(QlLoader, ELFParse):
         if elfhead['e_type'] == 'ET_EXEC':
             load_address = 0
         elif elfhead['e_type'] != 'ET_DYN':
-            self.ql.dprint(D_INFO, "[+] Some error in head e_type: %i!", elfhead['e_type'])
+            logging.debug("[+] Some error in head e_type: %i!", elfhead['e_type'])
             return -1
 
         # We need to sort the memory segments first, sometimes they are unordered
@@ -254,9 +254,9 @@ class QlLoaderELF(QlLoader, ELFParse):
                 self.ql.mem.map(_mem_s, _mem_e - _mem_s, perms=_perms, info=self.path)
                 if _mem_e > _highestmapped_e:
                     _highestmapped_e = _mem_e
-                self.ql.dprint(D_INFO, "[+] load 0x%x - 0x%x" % (_mem_s, _mem_e))
+                logging.debug("[+] load 0x%x - 0x%x" % (_mem_s, _mem_e))
             except Exception as e:
-                self.ql.dprint(D_INFO, "[!] load 0x%x - 0x%x => %s" % (_mem_s, _mem_e, str(e)))
+                logging.debug("[!] load 0x%x - 0x%x => %s" % (_mem_s, _mem_e, str(e)))
                 continue
 
         # Now we write the segment data to the memory
@@ -267,18 +267,18 @@ class QlLoaderELF(QlLoader, ELFParse):
                     data = super().getelfdata(entry['p_offset'], entry['p_filesz'])
                     self.ql.mem.write(_mem_s, data)
                 except Exception as e:
-                    self.ql.dprint(D_INFO, "[!] segment data 0x%x - Length 0x%x => %s" % (_mem_s, len(data), str(e)))
+                    logging.debug("[!] segment data 0x%x - Length 0x%x => %s" % (_mem_s, len(data), str(e)))
                     continue
 
         loaded_mem_end = load_address + mem_end
         if loaded_mem_end > _mem_e:
             self.ql.mem.map(_mem_e, loaded_mem_end - _mem_e, info=self.path)
-            self.ql.dprint(D_INFO, "[+] load 0x%x - 0x%x" % (
+            logging.debug("[+] load 0x%x - 0x%x" % (
             _mem_e, loaded_mem_end))  # make sure we map all PT_LOAD tagged area
 
         entry_point = elfhead['e_entry'] + load_address
         self.ql.os.elf_mem_start = mem_start
-        self.ql.dprint(D_INFO, "[+] mem_start: 0x%x mem_end: 0x%x" % (mem_start, mem_end))
+        logging.debug("[+] mem_start: 0x%x mem_end: 0x%x" % (mem_start, mem_end))
 
         self.brk_address = mem_end + load_address + 0x2000
 
@@ -289,7 +289,7 @@ class QlLoaderELF(QlLoader, ELFParse):
 
             interp = ELFParse(self.ql.rootfs + interp_path, self.ql)
             interphead = interp.parse_header()
-            self.ql.dprint(D_INFO, "[+] interp is : %s" % (self.ql.rootfs + interp_path))
+            logging.debug("[+] interp is : %s" % (self.ql.rootfs + interp_path))
 
             interp_mem_size = -1
             for i in interp.parse_segments():
@@ -299,14 +299,14 @@ class QlLoaderELF(QlLoader, ELFParse):
                         interp_mem_size = i['p_vaddr'] + i['p_memsz']
 
             interp_mem_size = (interp_mem_size // 0x1000 + 1) * 0x1000
-            self.ql.dprint(D_INFO, "[+] interp_mem_size is : 0x%x" % int(interp_mem_size))
+            logging.debug("[+] interp_mem_size is : 0x%x" % int(interp_mem_size))
 
             if self.ql.archbit == 64:
                 self.interp_address = int(self.ql.os.profile.get("OS64", "interp_address"), 16)
             elif self.ql.archbit == 32:
                 self.interp_address = int(self.ql.os.profile.get("OS32", "interp_address"), 16)
 
-            self.ql.dprint(D_INFO, "[+] interp_address is : 0x%x" % (self.interp_address))
+            logging.debug("[+] interp_address is : 0x%x" % (self.interp_address))
             self.ql.mem.map(self.interp_address, int(interp_mem_size),
                             info=os.path.abspath(self.ql.rootfs + interp_path))
 
@@ -323,7 +323,7 @@ class QlLoaderELF(QlLoader, ELFParse):
         else:
             self.mmap_address = int(self.ql.os.profile.get("OS32", "mmap_address"), 16)
 
-        self.ql.dprint(D_INFO, "[+] mmap_address is : 0x%x" % (self.mmap_address))
+        logging.debug("[+] mmap_address is : 0x%x" % (self.mmap_address))
 
         # Set elf table
         elf_table = b''
@@ -617,7 +617,7 @@ class QlLoaderELF(QlLoader, ELFParse):
         else:
             self.mmap_address = int(self.ql.os.profile.get("OS32", "mmap_address"), 16)
 
-        self.ql.dprint(D_INFO, "[+] mmap_address is : 0x%x" % (self.mmap_address))
+        logging.debug("[+] mmap_address is : 0x%x" % (self.mmap_address))
 
         new_stack = stack_addr
         new_stack = self.alignment(new_stack)

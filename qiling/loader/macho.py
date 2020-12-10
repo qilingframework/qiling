@@ -205,7 +205,7 @@ class QlLoaderMACHO(QlLoader):
                     seg = segment
                     break
             current_value, = struct.unpack("<Q", self.ql.mem.read(loadbase + relocation.address, 8))
-            self.ql.dprint(D_INFO, "[+] Patching relocation (0x%x): from 0x%x, update to segment %s at 0x%x" % (loadbase + relocation.address, current_value, seg.name, loadbase + seg.vm_address))
+            logging.debug("[+] Patching relocation (0x%x): from 0x%x, update to segment %s at 0x%x" % (loadbase + relocation.address, current_value, seg.name, loadbase + seg.vm_address))
             self.ql.mem.write(loadbase + relocation.address, struct.pack("<Q", current_value + loadbase ))
 
         # Resolve dynamic symbols
@@ -268,10 +268,10 @@ class QlLoaderMACHO(QlLoader):
                 continue
 
             if symname in self.kernel_local_symbols_detail:
-                # self.ql.dprint(D_INFO, "[+] Patching relocation (0x%x): %s at 0x%x" % (loadbase + relocation.address, symname, self.kernel_local_symbols_detail[symname]["n_value"]))
+                # logging.debug("[+] Patching relocation (0x%x): %s at 0x%x" % (loadbase + relocation.address, symname, self.kernel_local_symbols_detail[symname]["n_value"]))
                 self.ql.mem.write(loadbase + relocation.address, struct.pack("<Q", self.kernel_local_symbols_detail[symname]["n_value"]))
             elif symname in self.kernel_extrn_symbols_detail:
-                # self.ql.dprint(D_INFO, "[+] Patching relocation (0x%x): %s at 0x%x" % (loadbase + relocation.address, symname, self.kernel_extrn_symbols_detail[symname]["n_value"]))
+                # logging.debug("[+] Patching relocation (0x%x): %s at 0x%x" % (loadbase + relocation.address, symname, self.kernel_extrn_symbols_detail[symname]["n_value"]))
                 self.ql.mem.write(loadbase + relocation.address, struct.pack("<Q", self.kernel_extrn_symbols_detail[symname]["n_value"]))
             else:
                 logging.info("[!] Symbol %s not found!" % symname)
@@ -446,7 +446,7 @@ class QlLoaderMACHO(QlLoader):
             return -1
 
         if seg_name[:10] == "__PAGEZERO":
-            self.ql.dprint(D_INFO, "[+] Now loading {}, VM[{}:{}] for pagezero actually it only got a page size".format(seg_name, hex(vaddr_start), hex(vaddr_end)))
+            logging.debug("[+] Now loading {}, VM[{}:{}] for pagezero actually it only got a page size".format(seg_name, hex(vaddr_start), hex(vaddr_end)))
             self.ql.mem.map(vaddr_start, PAGE_SIZE, info="[__PAGEZERO]")
             self.ql.mem.write(vaddr_start, b'\x00' * PAGE_SIZE)
             if self.vm_end_addr < vaddr_end:
@@ -457,7 +457,7 @@ class QlLoaderMACHO(QlLoader):
                 seg_size = vaddr_end - vaddr_start
                 seg_data = seg_data.ljust(seg_size, b'\0')
 
-            self.ql.dprint(D_INFO, "[+] Now loading {}, VM[{}:{}]".format(seg_name, hex(vaddr_start), hex(vaddr_end)))
+            logging.debug("[+] Now loading {}, VM[{}:{}]".format(seg_name, hex(vaddr_start), hex(vaddr_end)))
             self.ql.mem.map(vaddr_start, seg_size,  info="[loadSegment64]")
             self.ql.mem.write(vaddr_start, seg_data)
             if self.vm_end_addr < vaddr_end:
@@ -470,7 +470,7 @@ class QlLoaderMACHO(QlLoader):
             self.binary_entry = cmd.entry
  
         self.proc_entry = cmd.entry
-        self.ql.dprint(D_INFO, "[+] Binary Thread Entry: {}".format(hex(cmd.entry)))
+        logging.debug("[+] Binary Thread Entry: {}".format(hex(cmd.entry)))
 
 
     def loadUuid(self):
@@ -516,17 +516,17 @@ class QlLoaderMACHO(QlLoader):
 
         for item in self.argvs[::-1]:
             argvs_ptr.append(ptr)  # need pack and tostring
-            self.ql.dprint(D_INFO, '[+] add argvs ptr {}'.format(hex(ptr)))
+            logging.debug([+] add argvs ptr {}'.format(hex(ptr)))
             ptr += len(item) + 1
         
         for item in self.envs[::-1]:
             envs_ptr.append(ptr)
-            self.ql.dprint(D_INFO, '[+] add envs ptr {}'.format(hex(ptr)))
+            logging.debug([+] add envs ptr {}'.format(hex(ptr)))
             ptr += len(item) + 1
 
         for item in self.apples[::-1]:
             apple_ptr.append(ptr)
-            self.ql.dprint(D_INFO, '[+] add apple ptr {}'.format(hex(ptr)))
+            logging.debug([+] add apple ptr {}'.format(hex(ptr)))
             ptr += len(item) + 1
 
         ptr = self.stack_sp
@@ -550,12 +550,12 @@ class QlLoaderMACHO(QlLoader):
         for item in argvs_ptr:
             ptr -= 4
             self.push_stack_addr(item)
-            self.ql.dprint(D_INFO, "[+] SP 0x%x, content 0x%x" % (self.stack_sp, item))
+            logging.debug("[+] SP 0x%x, content 0x%x" % (self.stack_sp, item))
         argvs_ptr_ptr = ptr 
 
         self.push_stack_addr(self.argc)
         ptr -= 4
-        self.ql.dprint(D_INFO, "[+] SP 0x%x, content 0x%x" % (self.stack_sp, self.argc))
+        logging.debug("[+] SP 0x%x, content 0x%x" % (self.stack_sp, self.argc))
        
         if self.using_dyld:
             ptr -= 4
@@ -576,7 +576,7 @@ class QlLoaderMACHO(QlLoader):
         
         self.stack_sp -= length
         self.ql.mem.write(self.stack_sp, data)
-        self.ql.dprint(D_INFO, "[+] SP {} write data len {}".format(hex(self.stack_sp), length))
+        logging.debug("[+] SP {} write data len {}".format(hex(self.stack_sp), length))
         
         return self.stack_sp
     

@@ -198,20 +198,20 @@ class QlOsUtils:
         return str(Path(cur_path) / path)
 
     def post_report(self):
-        self.ql.dprint(D_RPRT, "[+] Syscalls called")
+        logging.debug("[+] Syscalls called")
         for key, values in self.ql.os.syscalls.items():
-            self.ql.dprint(D_RPRT, "[-] %s:" % key)
+            logging.debug("[-] %s:" % key)
             for value in values:
-                self.ql.dprint(D_RPRT, "[-] %s " % str(dumps(value)))
-        self.ql.dprint(D_RPRT, "[+] Registries accessed")
+                logging.debug("[-] %s " % str(dumps(value)))
+        logging.debug("[+] Registries accessed")
         for key, values in self.ql.os.registry_manager.accessed.items():
-            self.ql.dprint(D_RPRT, "[-] %s:" % key)
+            logging.debug("[-] %s:" % key)
             for value in values:
-                self.ql.dprint(D_RPRT, "[-] %s " % str(dumps(value)))
-        self.ql.dprint(D_RPRT, "[+] Strings")
+                logging.debug("[-] %s " % str(dumps(value)))
+        logging.debug("[+] Strings")
         for key, values in self.ql.os.appeared_strings.items():
             val = " ".join([str(word) for word in values])
-            self.ql.dprint(D_RPRT, "[-] %s: %s" % (key, val))
+            logging.debug("[-] %s: %s" % (key, val))
 
 
     def exec_arbitrary(self, start, end):
@@ -221,7 +221,7 @@ class QlOsUtils:
         ret = self.ql.stack_read(0)
 
         def restore(ql):
-            ql.dprint(D_INFO, f"[+] Executed code from 0x{start:x} to 0x{end:x}")
+            logging.debug(f"[+] Executed code from 0x{start:x} to 0x{end:x}")
             # now we can restore the register to be where we were supposed to
             old_hook_addr = ql.reg.arch_pc
             ql.reg.arch_sp = old_sp + (ql.archbit // 8)
@@ -257,7 +257,7 @@ class QlOsUtils:
                 if isinstance(reg, str):
                     REG_NAME = reg
                     REG_VAL = self.ql.reg.read(reg)
-                    self.ql.dprint(D_INFO, "[-] %s\t:\t 0x%x" % (REG_NAME, REG_VAL))
+                    logging.debug("[-] %s\t:\t 0x%x" % (REG_NAME, REG_VAL))
 
     def setup_output(self):
         if self.output_ready:
@@ -341,7 +341,7 @@ class QlOsUtils:
             log = log.partition(" ")[-1]
             logging.info(log)
         else:
-            self.ql.dprint(D_INFO, log)
+            logging.debug(log)
 
     def printf(self, address, fmt, params_addr, name, wstring=False):
         count = fmt.count("%")

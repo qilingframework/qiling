@@ -170,12 +170,12 @@ class QlMemoryManager:
             info = value[3]
             mem_read = bytes(value[4])
 
-            self.ql.dprint(4,"restore key: %i 0x%x 0x%x %s" % (key, start, end, info))
+            logging.debug("restore key: %i 0x%x 0x%x %s" % (key, start, end, info))
             if self.is_mapped(start, end-start) == False:
-                self.ql.dprint(4,"mapping 0x%x 0x%x mapsize 0x%x" % (start, end, end-start))
+                logging.debug("mapping 0x%x 0x%x mapsize 0x%x" % (start, end, end-start))
                 self.map(start, end-start, perms=perm, info=info)
 
-            self.ql.dprint(4,"writing 0x%x size 0x%x write_size 0x%x " % (start, end-start, len(mem_read)))
+            logging.debug("writing 0x%x size 0x%x write_size 0x%x " % (start, end-start, len(mem_read)))
             self.write(start, mem_read)
 
     def read(self, addr: int, size: int) -> bytearray:
@@ -476,7 +476,7 @@ class QlMemoryHeap:
             self.chunks.append(chunk)
 
         chunk.inuse = True
-        #self.ql.dprint(D_INFO,"heap.alloc addresss: " + hex(chunk.address))
+        #logging.debug("heap.alloc addresss: " + hex(chunk.address))
         return chunk.address
 
     def size(self, addr):

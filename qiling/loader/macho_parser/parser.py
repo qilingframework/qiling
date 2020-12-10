@@ -53,17 +53,17 @@ class MachoParser:
         self.magic = self.getMagic(self.binary_file)
         
         if self.magic in MAGIC_64:
-            self.ql.dprint(D_INFO, "[+] Got a 64bit Header ")
+            logging.debug("[+] Got a 64bit Header ")
             self.header = BinaryHeader(self.binary_file)
 
         #elif self.magic in MAGIC_X86:
         #    # x86
-        #    self.ql.dprint(D_INFO,"[+] Got a x86 Header") 
+        #    logging.debug("[+] Got a x86 Header") 
         #    self.header = BinaryHeader(self.binary_file)
 
         elif self.magic in MAGIC_FAT:
             # fat 
-            self.ql.dprint(D_INFO, "[+] Got a fat header")
+            logging.debug("[+] Got a fat header")
             fat = FatHeader(self.binary_file)
             file_info = fat.getBinary(self.archtype)
             self.binary_file = self.binary_file[file_info.offset : file_info.offset + file_info.size]
@@ -79,7 +79,7 @@ class MachoParser:
         return True
 
     def parseLoadCommand(self):
-        self.ql.dprint(D_INFO, "[+] Parse LoadCommand")
+        logging.debug("[+] Parse LoadCommand")
         if not self.header.lc_num or not self.header.lc_size or not self.header.header_size:
             return False
 

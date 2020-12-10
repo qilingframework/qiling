@@ -21,6 +21,6 @@ def ql_syscall_getrandom(ql, buf, buflen, flags,*args, **kw):
               (buf, buflen, flags, regreturn))
 
     if data:
-        ql.dprint(D_CTNT, "[+] getrandom() CONTENT:")
-        ql.dprint(D_CTNT, str(data))
+        logging.debug("[+] getrandom() CONTENT:")
+        logging.debug(str(data))
     ql.os.definesyscall_return(regreturn)

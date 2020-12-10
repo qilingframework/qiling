@@ -636,7 +636,7 @@ def ql_create_assembler(archtype, archendian, reg_cpsr=None):
 
 # verify if emulator returns properly
 def verify_ret(ql, err):
-    ql.dprint(D_INFO, "Got exception %u: init SP = %x, current SP = %x, PC = %x" %(err.errno, ql.os.init_sp, ql.reg.arch_sp, ql.reg.arch_pc))
+    logging.debug("Got exception %u: init SP = %x, current SP = %x, PC = %x" %(err.errno, ql.os.init_sp, ql.reg.arch_sp, ql.reg.arch_pc))
     # print("Got exception %u: init SP = %x, current SP = %x, PC = %x" %(err.errno, ql.os.init_sp, self.reg.arch_sp, self.reg.arch_pc))
 
     ql.os.RUN = False

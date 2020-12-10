@@ -3,6 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
+import logging
 from qiling.os.windows.const import *
 from qiling.os.windows.fncc import *
 from qiling.os.const import *
@@ -51,5 +52,5 @@ def hook_RtlGetVersion(ql, address, params):
         ql.os.profile.getint("SYSTEM",
                              "minorVersion").to_bytes(4, byteorder="little"))
 
-    ql.dprint(D_RPRT, "[=] The sample is checking the windows Version!")
+    logging.debug("[=] The sample is checking the windows Version!")
     return STATUS_SUCCESS

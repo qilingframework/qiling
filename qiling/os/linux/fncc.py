@@ -181,7 +181,7 @@ def print_function(ql, passthru, address, function_name, params, ret):
         log = log.partition(" ")[-1]
         logging.info(log)
     else:
-        ql.dprint(D_INFO, log)
+        logging.debug(log)
 
 
 def __x86_cc(ql, param_num, params, func, args, kwargs):

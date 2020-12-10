@@ -60,16 +60,16 @@ class QlOsMacos(QlOsPosix):
             self.savedrip=0xffffff8000a163bd
             self.ql.run(begin=self.ql.loader.kext_alloc)
             self.kext_object = self.ql.reg.rax
-            self.ql.dprint(D_INFO, "[+] Created kext object at 0x%x" % self.kext_object)
+            logging.debug("[+] Created kext object at 0x%x" % self.kext_object)
 
             self.ql.reg.rdi = self.kext_object
             self.ql.reg.rsi = 0 # NULL option
             self.savedrip=0xffffff8000a16020
             self.ql.run(begin=self.ql.loader.kext_init)
             if self.ql.reg.rax == 0:
-                self.ql.dprint(D_INFO, "[!] Failed to initialize kext object")
+                logging.debug("[!] Failed to initialize kext object")
                 return
-            self.ql.dprint(D_INFO, "[+] Initialized kext object")
+            logging.debug("[+] Initialized kext object")
 
             self.ql.reg.rdi = self.kext_object
             # FIXME Determine provider for kext
@@ -77,9 +77,9 @@ class QlOsMacos(QlOsPosix):
             self.savedrip=0xffffff8000a16102
             self.ql.run(begin=self.ql.loader.kext_attach)
             if self.ql.reg.rax == 0:
-                self.ql.dprint(D_INFO, "[!] Failed to attach kext object")
+                logging.debug("[!] Failed to attach kext object")
                 return
-            self.ql.dprint(D_INFO, "[+] Attached kext object 1st time")
+            logging.debug("[+] Attached kext object 1st time")
 
             self.ql.reg.rdi = self.kext_object
             self.ql.reg.rdi = 0
@@ -90,14 +90,14 @@ class QlOsMacos(QlOsPosix):
             self.savedrip=0xffffff8000a16184
             self.ql.run(begin=self.ql.loader.kext_probe)
             self.heap.free(tmp)
-            self.ql.dprint(D_INFO, "[+] Probed kext object")
+            logging.debug("[+] Probed kext object")
 
             self.ql.reg.rdi = self.kext_object
             # FIXME Determine provider for kext
             self.ql.reg.rsi = 0 # ?
             self.savedrip=0xffffff8000a16198
             self.ql.run(begin=self.ql.loader.kext_detach)
-            self.ql.dprint(D_INFO, "[+] Detached kext object")
+            logging.debug("[+] Detached kext object")
 
             self.ql.reg.rdi = self.kext_object
             # FIXME Determine provider for kext
@@ -105,9 +105,9 @@ class QlOsMacos(QlOsPosix):
             self.savedrip=0xffffff8000a168a3
             self.ql.run(begin=self.ql.loader.kext_attach)
             if self.ql.reg.rax == 0:
-                self.ql.dprint(D_INFO, "[!] Failed to attach kext object")
+                logging.debug("[!] Failed to attach kext object")
                 return
-            self.ql.dprint(D_INFO, "[+] Attached kext object 2nd time")
+            logging.debug("[+] Attached kext object 2nd time")
 
             self.ql.reg.rdi = self.kext_object
             # FIXME Determine provider for kext
@@ -117,7 +117,7 @@ class QlOsMacos(QlOsPosix):
         else:
             from qiling.os.macos.structs import kmod_info_t, POINTER64
             kmod_info_addr = self.heap.alloc(ctypes.sizeof(kmod_info_t))
-            self.ql.dprint(D_INFO, "[+] Created fake kmod_info at 0x%x" % kmod_info_addr)
+            logging.debug("[+] Created fake kmod_info at 0x%x" % kmod_info_addr)
             kmod_info = kmod_info_t(self.ql, kmod_info_addr)
 
             # OSKext.cpp:562
@@ -135,7 +135,7 @@ class QlOsMacos(QlOsPosix):
             kmod_info.stop = POINTER64(self.ql.loader.kext_stop)
 
             kmod_info.updateToMem()
-            self.ql.dprint(D_INFO, "[+] Initialized kmod_info")
+            logging.debug("[+] Initialized kmod_info")
 
             self.ql.reg.rdi = kmod_info_addr
             self.ql.reg.rsi = 0

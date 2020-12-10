@@ -246,7 +246,7 @@ class QlLinuxThread(QlThread):
             self.start_address = self.ql.arch.get_pc()
             self.sched_cb = QlLinuxThread._default_sched_cb
             
-            self.ql.dprint(0, f"[Thread {self.get_id()}] scheduled.")
+            logging.debug(f"[Thread {self.get_id()}] scheduled.")
             self.status = THREAD_STATUS_RUNNING
             self.ql.os.thread_management.cur_thread = self
             try:
@@ -266,7 +266,7 @@ class QlLinuxThread(QlThread):
             #      1. Never give up control during a UC callback.
             #      2. emu_stop only sends a signal to unicorn which won't stop it immediately.
             #      3. According to 1, never call gevent functions in UC callbacks.
-            self.ql.dprint(0, f"[Thread {self.get_id()}] calls sched_cb: {self.sched_cb}")
+            logging.debug(f"[Thread {self.get_id()}] calls sched_cb: {self.sched_cb}")
             self.sched_cb(self)
 
     # Depreciated.
@@ -318,14 +318,14 @@ class QlLinuxThread(QlThread):
         # Source: Linux Man Page
 
         if self.clear_child_tid_address is not None:
-            self.ql.dprint(0, f"[Thread {self.get_id()}] Perform CLONE_CHILD_CLEARTID at {hex(self.clear_child_tid_address)}")
+            logging.debug(f"[Thread {self.get_id()}] Perform CLONE_CHILD_CLEARTID at {hex(self.clear_child_tid_address)}")
             self.ql.mem.write(self.clear_child_tid_address, self.ql.pack32(0))
             wakes = self.ql.os.futexm.get_futex_wake_list(self.ql, self.clear_child_tid_address, 1)
             self.clear_child_tid_address = None
             # When the thread is to stop, we don't have chance for next sched_cb, so
             # we notify the thread directly.
             for t, e in wakes:
-                self.ql.dprint(0, f"[Thread {self.get_id()}] Notify [Thread {t.get_id()}].")
+                logging.debug(f"[Thread {self.get_id()}] Notify [Thread {t.get_id()}].")
                 e.set()
 
     # This function should called outside unicorn callback.
@@ -498,7 +498,7 @@ class QlLinuxThreadManagement:
     
     # Stop the world, urge all threads to stop immediately.
     def stop(self):
-        self.ql.dprint(0, "[Thread Manager] Stop the world.")
+        logging.debug("[Thread Manager] Stop the world.")
         self.ql.emu_stop()
         for t in self.threads:
             gevent.kill(t)

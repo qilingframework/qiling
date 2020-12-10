@@ -26,7 +26,7 @@ def ql_syscall_exit(ql, exit_code, *args, **kw):
 
     if ql.multithread:
         def _sched_cb_exit(cur_thread):
-            ql.dprint(0, f"[Thread {cur_thread.get_id()}] Terminated.")
+            logging.debug(f"[Thread {cur_thread.get_id()}] Terminated.")
             cur_thread.status = THREAD_STATUS_TERMINATED
             cur_thread.stop()
             cur_thread.exit_code = exit_code
@@ -150,15 +150,15 @@ def ql_syscall_faccessat(ql, faccessat_dfd, faccessat_filename, faccessat_mode, 
     logging.info("facccessat (%d, 0x%x, 0x%x) = %d" %(faccessat_dfd, faccessat_filename, faccessat_mode, regreturn))
 
     if regreturn == -1:
-        ql.dprint(D_INFO, "[!] File Not Found or Skipped: %s" % access_path)
+        logging.debug("[!] File Not Found or Skipped: %s" % access_path)
     else:
-        ql.dprint(D_INFO, "[+] File Found: %s" % access_path)
+        logging.debug("[+] File Found: %s" % access_path)
 
 
 def ql_syscall_lseek(ql, lseek_fd, lseek_ofset, lseek_origin, *args, **kw):
     lseek_ofset = ql.unpacks(ql.pack(lseek_ofset))
     regreturn = 0
-    ql.dprint(D_INFO, "lseek(%d, 0x%x, 0x%x) = %d" % (lseek_fd, lseek_ofset, lseek_origin, regreturn))
+    logging.debug("lseek(%d, 0x%x, 0x%x) = %d" % (lseek_fd, lseek_ofset, lseek_origin, regreturn))
     try:
         regreturn = ql.os.fd[lseek_fd].lseek(lseek_ofset, lseek_origin)
     except OSError:
@@ -204,7 +204,7 @@ def ql_syscall_brk(ql, brk_input, *args, **kw):
     regreturn = ql.loader.brk_address
 
     ql.os.definesyscall_return(regreturn)
-    ql.dprint(D_INFO, "[+] brk return(0x%x)" % regreturn)
+    logging.debug("[+] brk return(0x%x)" % regreturn)
 
 
 def ql_syscall_access(ql, access_path, access_mode, *args, **kw):
@@ -222,9 +222,9 @@ def ql_syscall_access(ql, access_path, access_mode, *args, **kw):
 
     logging.info("access(%s, 0x%x) = %d " % (relative_path, access_mode, regreturn))
     if regreturn == 0:
-        ql.dprint(D_INFO, "[+] File found: %s" % relative_path)
+        logging.debug("[+] File found: %s" % relative_path)
     else:
-        ql.dprint(D_INFO, "[!] No such file or directory")
+        logging.debug("[!] No such file or directory")
 
 
 def ql_syscall_close(ql, close_fd, *args, **kw):
@@ -269,8 +269,8 @@ def ql_syscall_read(ql, read_fd, read_buf, read_len, *args, **kw):
     logging.info("read(%d, 0x%x, 0x%x) = %d" % (read_fd, read_buf, read_len, regreturn))
 
     if data:
-        ql.dprint(D_CTNT, "[+] read() CONTENT:")
-        ql.dprint(D_CTNT, "%s" % data)
+        logging.debug("[+] read() CONTENT:")
+        logging.debug("%s" % data)
     ql.os.definesyscall_return(regreturn)
 
 
@@ -281,8 +281,8 @@ def ql_syscall_write(ql, write_fd, write_buf, write_count, *args, **kw):
     try:
         buf = ql.mem.read(write_buf, write_count)
         if buf:
-            ql.dprint(D_CTNT, "[+] write() CONTENT:")
-            ql.dprint(D_CTNT, "%s" % buf)
+            logging.debug("[+] write() CONTENT:")
+            logging.debug("%s" % buf)
 
         if hasattr(ql.os.fd[write_fd], "write"):
             logging.info("write(%d,%x,%i) = %d" % (write_fd, write_buf, write_count, regreturn))
@@ -401,7 +401,7 @@ def ql_syscall_vfork(ql, *args, **kw):
 
     if pid == 0:
         ql.os.child_processes = True
-        ql.dprint (0, "[+] vfork(): is this a child process: %r" % (ql.os.child_processes))
+        logging.debug("[+] vfork(): is this a child process: %r" % (ql.os.child_processes))
         regreturn = 0
         if ql.os.thread_management != None:
             ql.os.thread_management.cur_thread.set_thread_log_file(ql.log_dir)
@@ -619,7 +619,7 @@ def ql_syscall_unlink(ql, unlink_pathname, *args, **kw):
             os.unlink(real_path)
             regreturn = 0
         except FileNotFoundError:
-            ql.dprint(D_INFO, '[!] No such file or directory')
+            logging.debug('[!] No such file or directory')
             regreturn = -1
         except:
             regreturn = -1
@@ -639,7 +639,7 @@ def ql_syscall_unlinkat(ql, dirfd, pathname, flag, *args, **kw):
         os.unlink(real_path)
         regreturn = 0
     except FileNotFoundError:
-        ql.dprint(D_INFO, "[!] No such file or directory")
+        logging.debug("[!] No such file or directory")
         regreturn = -1
     except:
         regreturn = -1
@@ -693,6 +693,6 @@ def ql_syscall_getdents(ql, fd, dirp, count, *args, **kw):
         regreturn = 0
 
     logging.info("getdents(%d, 0x%x, 0x%x) = %d" % (fd, dirp, count, regreturn))
-    ql.dprint(D_INFO, "[+] getdents(%d, /* %d entries */, 0x%x) = %d" % (fd, _ent_count, count, regreturn))
+    logging.debug("[+] getdents(%d, /* %d entries */, 0x%x) = %d" % (fd, _ent_count, count, regreturn))
     ql.os.definesyscall_return(regreturn)
 

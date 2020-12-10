@@ -675,7 +675,7 @@ class QlGdb(QlDebugger, object):
                         else:
                             self.lib_abspath = self.ql.os.transform_to_real_path(self.lib_path)
 
-                        self.ql.dprint(D_INFO, "gdb> target file: %s" % (self.lib_abspath))
+                        logging.debug("gdb> target file: %s" % (self.lib_abspath))
 
                         if os.path.exists(self.lib_abspath):
                             self.send("F5")
@@ -731,7 +731,7 @@ class QlGdb(QlDebugger, object):
                     self.send('OK')
 
                 elif subcmd.startswith('Cont'):
-                    self.ql.dprint(D_INFO, "gdb> Cont command received: %s" % subcmd)
+                    logging.debug("gdb> Cont command received: %s" % subcmd)
                     if subcmd == 'Cont?':
                         self.send('vCont;c;C;t;s;S;r')
                     elif subcmd.startswith ("Cont;"):
@@ -819,7 +819,7 @@ class QlGdb(QlDebugger, object):
                 self.send('')
                 logging.info("gdb> Command not supported: %s\n" %(cmd))
                 continue
-            self.ql.dprint(D_INFO, "gdb> received: %s%s" % (cmd, subcmd))
+            logging.debug("gdb> received: %s%s" % (cmd, subcmd))
             commands[cmd](subcmd)
 
         self.close()
@@ -866,7 +866,7 @@ class QlGdb(QlDebugger, object):
             self.clientsocket.send(b'$%s#%.2x' % (msg, checksum(msg)))
             self.netout.flush()
 
-        self.ql.dprint(D_INFO, "gdb> send: $%s#%.2x" % (msg, checksum(msg)))
+        logging.debug("gdb> send: $%s#%.2x" % (msg, checksum(msg)))
 
     def send_raw(self, r):
         self.netout.write(r)

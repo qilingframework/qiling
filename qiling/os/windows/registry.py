@@ -7,6 +7,7 @@
 import os
 import json
 import sys
+import logging
 from Registry import Registry
 from qiling.os.windows.const import *
 from qiling.exception import *
@@ -39,7 +40,7 @@ class RegistryManager:
             self.hive = hive
         else:
             self.hive = os.path.join(ql.rootfs, "Windows", "registry")
-            ql.dprint(D_INFO, "[+] Windows Registry PATH: %s" % self.hive)
+            logging.debug("[+] Windows Registry PATH: %s" % self.hive)
             if not os.path.exists(self.hive) and not self.ql.shellcoder:
                 raise QlErrorFileNotFound(f"Error: Registry files not found in '{self.hive}'!")
 

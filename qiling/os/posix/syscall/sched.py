@@ -98,7 +98,7 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
 
     th = ql.os.thread_class.spawn(ql, set_child_tid_addr = set_child_tid_addr)
     th.current_path = f_th.current_path
-    ql.dprint(0, f"[thread {th.get_id()}] created.")
+    logging.debug(f"[thread {th.get_id()}] created.")
 
     if clone_flags & CLONE_PARENT_SETTID == CLONE_PARENT_SETTID:
         ql.mem.write(clone_parent_tidptr, ql.pack32(th.id))
@@ -122,7 +122,7 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
     if th is None or f_th is None:
         raise Exception()
     ql.os.thread_management.cur_thread = th
-    ql.dprint(D_INFO, "[+] Currently running pid is: %d; tid is: %d " % (
+    logging.debug("[+] Currently running pid is: %d; tid is: %d " % (
     os.getpid(), ql.os.thread_management.cur_thread.id))
     logging.info("clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d" % (
     clone_child_stack, clone_flags, clone_newtls, clone_parent_tidptr, clone_child_tidptr, regreturn))
@@ -138,7 +138,7 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
     f_th.stop_return_val = th
 
     ql.os.thread_management.cur_thread = f_th
-    ql.dprint(D_INFO, "[+] Currently running pid is: %d; tid is: %d " % (
+    logging.debug("[+] Currently running pid is: %d; tid is: %d " % (
     os.getpid(), ql.os.thread_management.cur_thread.id))
     logging.info("clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d" % (
     clone_child_stack, clone_flags, clone_newtls, clone_parent_tidptr, clone_child_tidptr, regreturn))

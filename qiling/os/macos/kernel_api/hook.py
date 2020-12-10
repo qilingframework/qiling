@@ -30,7 +30,7 @@ def hook_kernel_api(ql, address, size):
             except UcError:
                 raise
             except Exception:
-                ql.dprint(D_INFO, "[!] %s Exception Found" % api_name)
+                logging.debug("[!] %s Exception Found" % api_name)
                 raise QlErrorSyscallError("[!] MacOS kernel API Implementation Error")
         else:
             logging.info("[!] %s is not implemented\n" % api_name)

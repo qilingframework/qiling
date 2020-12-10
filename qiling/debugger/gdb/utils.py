@@ -3,6 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
+import logging
 from unicorn import *
 from qiling.const import *
 
@@ -63,8 +64,8 @@ class QlGdbUtils(object):
             self.has_soft_bp = hit_soft_bp
             
             if self.current_address + size == self.exit_point:
-                self.ql.dprint(D_INFO, "gdb> emulation entrypoint at 0x%x" % (self.entry_point))
-                self.ql.dprint(D_INFO, "gdb> emulation exitpoint at 0x%x" % (self.exit_point))
+                logging.debug("gdb> emulation entrypoint at 0x%x" % (self.entry_point))
+                logging.debug("gdb> emulation exitpoint at 0x%x" % (self.exit_point))
         
         except KeyboardInterrupt as ex:
             logging.info("gdb> Paused at 0x%x, instruction size = %u" % (address, size))
