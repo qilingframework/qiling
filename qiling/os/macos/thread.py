@@ -23,6 +23,5 @@ class QlMachoThread(QlThread):
 class QlMachoThreadManagement:
 
     def __init__(self, ql):
-        super(QlMachoThreadManagement, self).__init__(ql)
         self.ql = ql
         self.cur_thread = None
