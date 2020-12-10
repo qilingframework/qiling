@@ -18,7 +18,7 @@ from unicorn import UcError, UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
 from keystone import *
 from capstone import *
 
-FMT_STR = "[%(levelname)s] [%(filename)s:%(lineno)d] %(message)s"
+FMT_STR = "[%(levelname)s]\t%(message)s"
 
 # \033 -> ESC
 # ESC [ -> CSI
@@ -37,7 +37,7 @@ class COLOR_CODE:
 LEVEL_COLORS = {
     'WARNING': COLOR_CODE.YELLOW,
     'INFO': COLOR_CODE.BLUE,
-    'DEBUG': COLOR_CODE.WHITE,
+    'DEBUG': COLOR_CODE.MAGENTA,
     'CRITICAL': COLOR_CODE.CRIMSON,
     'ERROR': COLOR_CODE.RED
 }
@@ -67,7 +67,7 @@ class MultithreadColoredFormatter(ColoredFormatter):
             return super(MultithreadColoredFormatter, self).format(record)
         _record = copy.copy(record)
         levelname = self.get_colored_level(_record)
-        _record.levelname = f"{levelname}] [{COLOR_CODE.GREEN}Thread {cur_thread.id}{COLOR_CODE.ENDC}"
+        _record.levelname = f"{levelname}]\t[{COLOR_CODE.GREEN}Thread {cur_thread.id}{COLOR_CODE.ENDC}"
         msg = super(ColoredFormatter, self).format(_record)
         return msg
 
@@ -636,7 +636,7 @@ def ql_create_assembler(archtype, archendian, reg_cpsr=None):
 
 # verify if emulator returns properly
 def verify_ret(ql, err):
-    logging.debug("Got exception %u: init SP = %x, current SP = %x, PC = %x" %(err.errno, ql.os.init_sp, ql.reg.arch_sp, ql.reg.arch_pc))
+    ql.dprint(D_INFO, "Got exception %u: init SP = %x, current SP = %x, PC = %x" %(err.errno, ql.os.init_sp, ql.reg.arch_sp, ql.reg.arch_pc))
     # print("Got exception %u: init SP = %x, current SP = %x, PC = %x" %(err.errno, ql.os.init_sp, self.reg.arch_sp, self.reg.arch_pc))
 
     ql.os.RUN = False
