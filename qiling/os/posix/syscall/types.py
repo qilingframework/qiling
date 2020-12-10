@@ -3,6 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
+import logging
 from qiling.const import *
 from qiling.os.linux.thread import *
 from qiling.const import *
@@ -20,5 +21,5 @@ def ql_syscall_gettid(ql, *args, **kw):
       # In single-threaded process, the thread ID is equal to the process ID
       # per Posix documentation.
       regreturn = ql.os.pid
-    ql.nprint("gettid() = %d" % regreturn)
+    logging.info("gettid() = %d" % regreturn)
     ql.os.definesyscall_return(regreturn)

@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
-import traceback
+import traceback, logging
 
 from unicorn import *
 from unicorn.x86_const import *
@@ -162,7 +162,7 @@ class QlOsMacos(QlOsPosix):
         return self.load_syscall()
 
     def hook_sigtrap(self, intno= None, int = None):
-        self.ql.nprint("[!] Trap Found")
+        logging.info("[!] Trap Found")
         self.emu_error()
         exit(1)
 

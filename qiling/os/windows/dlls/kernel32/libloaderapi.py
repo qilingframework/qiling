@@ -4,7 +4,7 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
 import os
-
+import logging
 from qiling.exception import *
 from qiling.os.windows.const import *
 
@@ -140,7 +140,7 @@ def hook_GetProcAddress(ql, address, params):
     try:
         dll_name = [key for key, value in ql.loader.dlls.items() if value == params['hModule']][0]
     except IndexError as ie:
-        ql.nprint('[!] Failed to import function "%s" with handle 0x%X' % (lpProcName, params['hModule']))
+        logging.info('[!] Failed to import function "%s" with handle 0x%X' % (lpProcName, params['hModule']))
         return 0
 
     # Handle case where module is self

@@ -6,6 +6,7 @@
 import unittest
 import os
 import sys
+import logging
 sys.path.append("..")
 
 from qiling import *
@@ -23,7 +24,7 @@ def syscall_getrandom(ql, buf, buflen, flags, *args, **kw):
     except:
         regreturn = -1
 
-    ql.nprint("getrandom(0x%x, 0x%x, 0x%x) = %d" %
+    logging.info("getrandom(0x%x, 0x%x, 0x%x) = %d" %
               (buf, buflen, flags, regreturn))
 
     if data:
@@ -45,7 +46,7 @@ def syscall_fstatfs(ql, fd, buf, *args, **kw):
     except:
         regreturn = -1
 
-    ql.nprint("fstatfs(0x%x, 0x%x) = %d" % (fd, buf, regreturn))
+    logging.info("fstatfs(0x%x, 0x%x) = %d" % (fd, buf, regreturn))
 
     if data:
         ql.dprint(0, "[+] fstatfs() CONTENT:")

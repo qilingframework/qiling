@@ -3,6 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
+import logging
 from qiling.const import *
 from qiling.os.const import *
 from .const import *
@@ -126,7 +127,7 @@ def hook_GetNextHighMonotonicCount(ql, address, params):
     "a3": POINTER, #POINTER_T(None)
 })
 def hook_ResetSystem(ql, address, params):
-    ql.nprint(f'hook_ResetSystem')
+    logging.info(f'hook_ResetSystem')
     ql.emu_stop()
     return EFI_SUCCESS
 

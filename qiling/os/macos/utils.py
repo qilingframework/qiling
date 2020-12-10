@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-import ctypes, os, struct
+import ctypes, os, struct, logging
 
 from unicorn.x86_const import *
 from unicorn.arm_const import *
@@ -17,7 +17,7 @@ def IOConnectCallMethod(ql, selector,
                         output_array, output_cnt, output_struct, output_struct_size):
 
     if ql.os.IOKit is not True:
-        ql.nprint("[!] Must have a IOKit driver")
+        logging.info("[!] Must have a IOKit driver")
         return output_array, output_struct
 
     args_addr = ql.os.heap.alloc(ctypes.sizeof(IOExternalMethodArguments))
@@ -235,6 +235,6 @@ def print_function(ql, passthru, address, function_name, params, ret):
 
     if ql.output != QL_OUTPUT.DEBUG:
         log = log.partition(" ")[-1]
-        ql.nprint(log)
+        logging.info(log)
     else:
         ql.dprint(D_INFO, log)

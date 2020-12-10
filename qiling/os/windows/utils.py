@@ -6,6 +6,7 @@
 import os
 import uuid
 import ntpath
+import logging
 from sys import getsizeof
 
 from qiling.const import *
@@ -58,7 +59,7 @@ def print_function(ql, passthru, address, function_name, params, ret):
 
     if ql.output != QL_OUTPUT.DEBUG:
         log = log.partition(" ")[-1]
-        ql.nprint(log)
+        logging.info(log)
     else:
         ql.dprint(D_INFO, log)
 
@@ -180,7 +181,7 @@ def printf(ql,
     else:
         output = '%s(format = %s) = 0x%x' % (name, repr(fmt), len(fmt))
         stdout = fmt
-    ql.nprint(output)
+    logging.info(output)
     ql.os.stdout.write(bytes(stdout, 'utf-8'))
     return len(stdout), stdout
 

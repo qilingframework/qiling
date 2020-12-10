@@ -4,7 +4,7 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
 from qiling.os.linux.kernel_api import *
-
+import logging
 
 # hook Linux kernel API
 def hook_kernel_api(ql, address, size):
@@ -32,7 +32,7 @@ def hook_kernel_api(ql, address, size):
                 ql.dprint(D_INFO, "[!] %s Exception Found" % api_name)
                 raise QlErrorSyscallError("[!] Linux kernel API Implementation Error")
         else:
-            ql.nprint("[!] %s is not implemented\n" % api_name)
+            logging.info("[!] %s is not implemented\n" % api_name)
             if ql.debug_stop:
                 raise QlErrorSyscallNotFound("[!] Linux kernel API Implementation Not Found")
 

@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-import os, random, sys, unittest
+import os, random, sys, unittest, logging
 import string as st
 from binascii import unhexlify
 
@@ -17,7 +17,6 @@ from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
 from qiling.os.mapper import QlFsMappedObject
 from qiling.os.windows.dlls.kernel32.fileapi import _CreateFile
-from qiling.loader.utils import ql_pe_check_archtype
 
 
 class PETest(unittest.TestCase):
@@ -188,9 +187,9 @@ class PETest(unittest.TestCase):
         if 'QL_FAST_TEST' in os.environ:
             return
         def stop(ql):
-            ql.nprint("killerswtichfound")
+            logging.info("killerswtichfound")
             ql.console = False
-            ql.nprint("No Print")
+            logging.info("No Print")
             ql.emu_stop()
 
         ql = Qiling(["../examples/rootfs/x86_windows/bin/wannacry.bin"], "../examples/rootfs/x86_windows")
@@ -522,7 +521,7 @@ class PETest(unittest.TestCase):
         ql.os.set_function_args([0])
         ql.hook_address(hook_stop_address, 0x4055FA)
         ql.run(0x4053B2)
-        ql.nprint("[+] test kill thread")
+        logging.info("[+] test kill thread")
         if ql.amsint32_driver:
             ql.amsint32_driver.os.io_Write(struct.pack("<I", 0xdeadbeef))
             ql.amsint32_driver.hook_address(hook_stop_address, 0x10423)

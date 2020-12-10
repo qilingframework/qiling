@@ -3,6 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
+import logging
 from qiling.os.windows.const import *
 from qiling.os.windows.fncc import *
 from qiling.os.const import *
@@ -102,7 +103,7 @@ def hook_DbgPrintEx(ql, address, _):
     format_string = ql.os.get_function_param(3)
 
     if len(format_string) < 3:
-        ql.nprint('0x%0.2x: printf(format = 0x0) = 0x%x\n' % (address, ret))
+        logging.info('0x%0.2x: printf(format = 0x0) = 0x%x\n' % (address, ret))
         return ret
 
     format_string = read_cstring(ql, format_string[2])
@@ -1098,7 +1099,7 @@ def hook_PsLookupProcessByProcessId(ql, address, params):
     else:
         addr = ql.os.heap.alloc(ctypes.sizeof(EPROCESS32))
     ql.mem.write(Process, ql.pack(addr))
-    ql.nprint("PID = 0x%x, addrof(EPROCESS) == 0x%x" % (ProcessId, addr))
+    logging.info("PID = 0x%x, addrof(EPROCESS) == 0x%x" % (ProcessId, addr))
     return STATUS_SUCCESS
 
 # NTSYSAPI NTSTATUS ZwOpenKey(
@@ -1275,7 +1276,7 @@ def hook_ObOpenObjectByPointer(ql, address, params):
     new_handle = Handle(name="p=%x" % Object)
     ql.os.handle_manager.append(new_handle)
     ql.mem.write(point_to_new_handle, ql.pack(new_handle.id))
-    ql.nprint("New handle of 0x%x is 0x%x" % (Object, new_handle.id))
+    logging.info("New handle of 0x%x is 0x%x" % (Object, new_handle.id))
     return STATUS_SUCCESS
 
 @winsdkapi(cc=CDECL, dllname=dllname)

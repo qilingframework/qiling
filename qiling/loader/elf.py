@@ -4,7 +4,7 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 import sys
 import os
-import string
+import string, logging
 from heapq import heappush, heappop
 
 from elftools.elf.elffile import ELFFile
@@ -147,11 +147,11 @@ class QlLoaderELF(QlLoader, ELFParse):
             bs = s.encode("utf-8") + b"\x00"
             s_addr = s_addr - len(bs)
             # if isinstance(i, bytes):
-            #   self.ql.nprint(type(b'\x00'))
-            #   self.ql.nprint(type(i))
-            #   self.ql.nprint(i)
-            #   self.ql.nprint(type(i.encode()))
-            #   self.ql.nprint(type(addr))
+            #   logging.info(type(b'\x00'))
+            #   logging.info(type(i))
+            #   logging.info(i)
+            #   logging.info(type(i.encode()))
+            #   logging.info(type(addr))
             #   self.ql.mem.write(s_addr, i + b'\x00')
             # else:
             self.ql.mem.write(s_addr, bs)
@@ -395,7 +395,7 @@ class QlLoaderELF(QlLoader, ELFParse):
 
         # for i in range(120):
         #     buf = self.ql.mem.read(new_stack + i * 0x8, 8)
-        #     self.ql.nprint("0x%08x : 0x%08x " % (new_stack + i * 0x4, self.ql.unpack64(buf)) + ' '.join(['%02x' % i for i in buf]) + '  ' + ''.join([chr(i) if i in string.printable[ : -5].encode('ascii') else '.' for i in buf]))
+        #     logging.info("0x%08x : 0x%08x " % (new_stack + i * 0x4, self.ql.unpack64(buf)) + ' '.join(['%02x' % i for i in buf]) + '  ' + ''.join([chr(i) if i in string.printable[ : -5].encode('ascii') else '.' for i in buf]))
 
         self.ql.os.entry_point = self.entry_point = entry_point
         self.ql.os.elf_entry = self.elf_entry = load_address + elfhead['e_entry']
@@ -438,7 +438,7 @@ class QlLoaderELF(QlLoader, ELFParse):
             for nsym, symbol in enumerate(section.iter_symbols()):
                 if symbol.name == 'init_module':
                     addr = symbol.entry.st_value + elffile.get_section(symbol['st_shndx'])['sh_offset']
-                    ql.nprint("init_module = 0x%x" % addr)
+                    logging.info("init_module = 0x%x" % addr)
                     return addr
 
         # not found. FIXME: report error on invalid module??
@@ -508,7 +508,7 @@ class QlLoaderELF(QlLoader, ELFParse):
                                         self.ql.os.hook_addr / self.ql.pointersize) + 1) * self.ql.pointersize
                                     # print("hook_addr = %x" %self.ql.os.hook_addr)
                             ql.import_symbols[self.ql.os.hook_addr] = symbol_name
-                            # ql.nprint(":: Demigod is hooking %s(), at slot %x" %(symbol_name, self.ql.os.hook_addr))
+                            # logging.info(":: Demigod is hooking %s(), at slot %x" %(symbol_name, self.ql.os.hook_addr))
 
                             if symbol_name == "page_offset_base":
                                 # FIXME: this is for rootkit to scan for syscall table from page_offset_base
@@ -525,12 +525,12 @@ class QlLoaderELF(QlLoader, ELFParse):
                             all_symbols.append(symbol_name)
                             _section = elffile.get_section(_symbol['st_shndx'])
                             rev_reloc_symbols[symbol_name] = _section['sh_offset'] + _symbol['st_value'] + mem_start
-                            # ql.nprint(":: Add reverse lookup for %s to %x (%x, %x)" %(symbol_name, rev_reloc_symbols[symbol_name], _section['sh_offset'], _symbol['st_value']))
-                            # ql.nprint(":: Add reverse lookup for %s to %x" %(symbol_name, rev_reloc_symbols[symbol_name]))
+                            # logging.info(":: Add reverse lookup for %s to %x (%x, %x)" %(symbol_name, rev_reloc_symbols[symbol_name], _section['sh_offset'], _symbol['st_value']))
+                            # logging.info(":: Add reverse lookup for %s to %x" %(symbol_name, rev_reloc_symbols[symbol_name]))
                     else:
                         sym_offset = rev_reloc_symbols[symbol_name] - mem_start
 
-                # ql.nprint("Relocating symbol %s -> 0x%x" %(symbol_name, rev_reloc_symbols[symbol_name]))
+                # logging.info("Relocating symbol %s -> 0x%x" %(symbol_name, rev_reloc_symbols[symbol_name]))
 
                 loc = elffile.get_section(section['sh_info'])['sh_offset'] + rel['r_offset']
                 loc += mem_start
@@ -540,11 +540,11 @@ class QlLoaderELF(QlLoader, ELFParse):
                     if rel['r_addend']:
                         val = sym_offset + rel['r_addend']
                         val += mem_start
-                        # ql.nprint('R_X86_64_32S %s: [0x%x] = 0x%x' %(symbol_name, loc, val & 0xFFFFFFFF))
+                        # logging.info('R_X86_64_32S %s: [0x%x] = 0x%x' %(symbol_name, loc, val & 0xFFFFFFFF))
                         ql.mem.write(loc, ql.pack32(val & 0xFFFFFFFF))
                     else:
                         # print("sym_offset = %x, rel = %x" %(sym_offset, rel['r_addend']))
-                        # ql.nprint('R_X86_64_32S %s: [0x%x] = 0x%x' %(symbol_name, loc, rev_reloc_symbols[symbol_name] & 0xFFFFFFFF))
+                        # logging.info('R_X86_64_32S %s: [0x%x] = 0x%x' %(symbol_name, loc, rev_reloc_symbols[symbol_name] & 0xFFFFFFFF))
                         ql.mem.write(loc, ql.pack32(rev_reloc_symbols[symbol_name] & 0xFFFFFFFF))
 
                 elif describe_reloc_type(rel['r_info_type'], elffile) == 'R_X86_64_64':
@@ -552,7 +552,7 @@ class QlLoaderELF(QlLoader, ELFParse):
                     val = sym_offset + rel['r_addend']
                     val += 0x2000000  # init_module position: FIXME
                     # finally patch this reloc
-                    # ql.nprint('R_X86_64_64 %s: [0x%x] = 0x%x' %(symbol_name, loc, val))
+                    # logging.info('R_X86_64_64 %s: [0x%x] = 0x%x' %(symbol_name, loc, val))
                     ql.mem.write(loc, ql.pack64(val))
 
                 elif describe_reloc_type(rel['r_info_type'], elffile) == 'R_X86_64_PC32':
@@ -560,7 +560,7 @@ class QlLoaderELF(QlLoader, ELFParse):
                     val = rel['r_addend'] - loc
                     val += rev_reloc_symbols[symbol_name]
                     # finally patch this reloc
-                    # ql.nprint('R_X86_64_PC32 %s: [0x%x] = 0x%x' %(symbol_name, loc, val & 0xFFFFFFFF))
+                    # logging.info('R_X86_64_PC32 %s: [0x%x] = 0x%x' %(symbol_name, loc, val & 0xFFFFFFFF))
                     ql.mem.write(loc, ql.pack32(val & 0xFFFFFFFF))
 
                 elif describe_reloc_type(rel['r_info_type'], elffile) == 'R_386_PC32':
@@ -602,7 +602,7 @@ class QlLoaderELF(QlLoader, ELFParse):
         # print("load addr = %x, size = %x" %(loadbase + mem_start, mem_end - mem_start))
         ql.mem.map(loadbase + mem_start, mem_end - mem_start)
 
-        ql.nprint("[+] loadbase: %x, mem_start: %x, mem_end: %x" % (loadbase, mem_start, mem_end))
+        logging.info("[+] loadbase: %x, mem_start: %x, mem_end: %x" % (loadbase, mem_start, mem_end))
 
         ql.mem.write(loadbase + mem_start, self.elfdata)
         # dump_mem("Dumping some bytes:", self.elfdata[0x64 : 0x84])

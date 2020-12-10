@@ -7,7 +7,7 @@
 This module is intended for general purpose functions that are only used in qiling.os
 """
 
-import ctypes, inspect, os, struct, uuid
+import ctypes, inspect, os, struct, uuid, logging
 
 from json import dumps
 from pathlib import Path, PurePosixPath, PureWindowsPath, PosixPath, WindowsPath
@@ -159,7 +159,7 @@ class QlOsUtils:
 
         # Sanity check.
         if cur_path[0] != '/':
-            self.ql.nprint(f"[!] Warning: cur_path doesn't start with a /")
+            logging.info(f"[!] Warning: cur_path doesn't start with a /")
         
         rootfs = self.ql.rootfs
         real_path  = self.convert_path(rootfs, cur_path, path)
@@ -176,7 +176,7 @@ class QlOsUtils:
 
         # Sanity check.
         if cur_path[0] != '/':
-            self.ql.nprint(f"[!] Warning: cur_path must start with /")
+            logging.info(f"[!] Warning: cur_path must start with /")
 
         rootfs = self.ql.rootfs
         real_path = self.convert_path(rootfs, cur_path, path)
@@ -242,15 +242,15 @@ class QlOsUtils:
         insn = md.disasm(tmp, address)
         opsize = int(size)
 
-        self.ql.nprint( ("[+] 0x%x" % (address)).ljust( (self.ql.archbit // 8) + 15), end="")
+        logging.info( ("[+] 0x%x" % (address)).ljust( (self.ql.archbit // 8) + 15), end="")
 
         temp_str = ""
         for i in tmp:
             temp_str += ("%02x " % i)
-        self.ql.nprint(temp_str.ljust(30), end="")
+        logging.info(temp_str.ljust(30), end="")
 
         for i in insn:
-            self.ql.nprint("%s %s" % (i.mnemonic, i.op_str))
+            logging.info("%s %s" % (i.mnemonic, i.op_str))
 
         if self.ql.output == QL_OUTPUT.DUMP:
             for reg in self.ql.reg.register_mapping:
@@ -264,7 +264,7 @@ class QlOsUtils:
             return
         self.output_ready = True
         def ql_hook_block_disasm(ql, address, size):
-            self.ql.nprint("\n[+] Tracing basic block at 0x%x" % (address))
+            logging.info("\n[+] Tracing basic block at 0x%x" % (address))
 
         if self.ql.output in (QL_OUTPUT.DISASM, QL_OUTPUT.DUMP):
             if self.ql.output == QL_OUTPUT.DUMP:
@@ -339,7 +339,7 @@ class QlOsUtils:
 
         if self.ql.output != QL_OUTPUT.DEBUG:
             log = log.partition(" ")[-1]
-            self.ql.nprint(log)
+            logging.info(log)
         else:
             self.ql.dprint(D_INFO, log)
 
@@ -376,7 +376,7 @@ class QlOsUtils:
         else:
             output = '%s(format = %s) = 0x%x' % (name, repr(fmt), len(fmt))
             stdout = fmt
-        self.ql.nprint(output)
+        logging.info(output)
         self.ql.os.stdout.write(bytes(stdout, 'utf-8'))
         return len(stdout), stdout
 
@@ -577,7 +577,7 @@ class QlOsUtils:
                 #print("32 irpstack offset = 0x%x" %IRP32.irpstack.offset)
                 #print("irp at %x, irpstack at %x" %(irp_addr, irpstack_addr))
 
-            self.ql.nprint("IRP is at 0x%x, IO_STACK_LOCATION is at 0x%x" %(irp_addr, irpstack_addr))
+            logging.info("IRP is at 0x%x, IO_STACK_LOCATION is at 0x%x" %(irp_addr, irpstack_addr))
 
             irpstack.Parameters.DeviceIoControl.IoControlCode = ioctl_code(devicetype, function, ctl_method, access)
             irpstack.Parameters.DeviceIoControl.OutputBufferLength = output_buffer_size
@@ -616,7 +616,7 @@ class QlOsUtils:
             self.ql.mem.write(irp_addr, bytes(irp))
 
             # set function args
-            self.ql.nprint("Executing IOCTL with DeviceObject = 0x%x, IRP = 0x%x" %(self.ql.loader.driver_object.DeviceObject, irp_addr))
+            logging.info("Executing IOCTL with DeviceObject = 0x%x, IRP = 0x%x" %(self.ql.loader.driver_object.DeviceObject, irp_addr))
             self.set_function_args((self.ql.loader.driver_object.DeviceObject, irp_addr))
 
             try:

@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
-import types
+import types, logging
 from multiprocessing import Process
 
 from qiling.const import *
@@ -83,11 +83,11 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
             if clone_child_stack != 0:
                 ql.arch.set_sp(clone_child_stack)
             regreturn = 0
-            ql.nprint("clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d" % (clone_child_stack, clone_flags, clone_newtls, clone_parent_tidptr, clone_child_tidptr, regreturn))
+            logging.info("clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d" % (clone_child_stack, clone_flags, clone_newtls, clone_parent_tidptr, clone_child_tidptr, regreturn))
             ql.os.definesyscall_return(regreturn)
         else:
             regreturn = pid
-            ql.nprint("clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d" % (clone_child_stack, clone_flags, clone_newtls, clone_parent_tidptr, clone_child_tidptr, regreturn))
+            logging.info("clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d" % (clone_child_stack, clone_flags, clone_newtls, clone_parent_tidptr, clone_child_tidptr, regreturn))
             ql.os.definesyscall_return(regreturn)            
         
         ql.emu_stop()
@@ -124,7 +124,7 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
     ql.os.thread_management.cur_thread = th
     ql.dprint(D_INFO, "[+] Currently running pid is: %d; tid is: %d " % (
     os.getpid(), ql.os.thread_management.cur_thread.id))
-    ql.nprint("clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d" % (
+    logging.info("clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d" % (
     clone_child_stack, clone_flags, clone_newtls, clone_parent_tidptr, clone_child_tidptr, regreturn))
 
     # Restore the stack and return value of the parent process
@@ -140,5 +140,5 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
     ql.os.thread_management.cur_thread = f_th
     ql.dprint(D_INFO, "[+] Currently running pid is: %d; tid is: %d " % (
     os.getpid(), ql.os.thread_management.cur_thread.id))
-    ql.nprint("clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d" % (
+    logging.info("clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d" % (
     clone_child_stack, clone_flags, clone_newtls, clone_parent_tidptr, clone_child_tidptr, regreturn))

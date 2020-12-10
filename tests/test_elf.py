@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-import sys, unittest, subprocess, string, random, os
+import sys, unittest, subprocess, string, random, os, logging
 
 from unicorn import UcError, UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
 
@@ -922,7 +922,7 @@ class ELFTest(unittest.TestCase):
             regreturn = 0
             buf = None
             mapaddr = ql.mem.map_anywhere(0x100000)
-            ql.nprint("0x%x" %  mapaddr)
+            logging.info("0x%x" %  mapaddr)
             
             reg = ql.reg.read("r0")
             print("reg : 0x%x" % reg)
@@ -931,12 +931,12 @@ class ELFTest(unittest.TestCase):
             
             try:
                 buf = ql.mem.read(write_buf, write_count)
-                ql.nprint("\n+++++++++\nmy write(%d,%x,%i) = %d\n+++++++++" % (write_fd, write_buf, write_count, regreturn))
+                logging.info("\n+++++++++\nmy write(%d,%x,%i) = %d\n+++++++++" % (write_fd, write_buf, write_count, regreturn))
                 ql.os.fd[write_fd].write(buf)
                 regreturn = write_count
             except:
                 regreturn = -1
-                ql.nprint("\n+++++++++\nmy write(%d,%x,%i) = %d\n+++++++++" % (write_fd, write_buf, write_count, regreturn))
+                logging.info("\n+++++++++\nmy write(%d,%x,%i) = %d\n+++++++++" % (write_fd, write_buf, write_count, regreturn))
                 if ql.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
                     raise
             ql.os.definesyscall_return(regreturn)
@@ -1050,7 +1050,7 @@ class ELFTest(unittest.TestCase):
                 self.id = fake_id
                 fake_id += 1
                 ids.append(self.id)
-                ql.nprint(f"Creating Fake_urandom with id {self.id}")
+                logging.info(f"Creating Fake_urandom with id {self.id}")
 
             def read(self, size):
                 return b'\x01'

@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
-import sys, curses, math, struct, string, time
+import sys, curses, math, struct, string, time, logging
 sys.path.append("..")
 from qiling import *
 from qiling.const import *
@@ -172,7 +172,7 @@ def read_until_zero(ql: Qiling, addr):
     return buf
 
 def set_required_datetime(ql: Qiling):
-    ql.nprint("Setting Feburary 06, 1990")
+    logging.info("Setting Feburary 06, 1990")
     ql.reg.ch = BIN2BCD(19)
     ql.reg.cl = BIN2BCD(1990%100)
     ql.reg.dh = BIN2BCD(2)

@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
-
+import logging
 from qiling.const import *
 from qiling.os.linux.thread import *
 from qiling.const import *
@@ -102,5 +102,5 @@ def ql_syscall_ioctl(ql, ioctl_fd, ioctl_cmd, ioctl_arg, *args, **kw):
         except :
             regreturn = -1
 
-    ql.nprint("ioctl(0x%x, 0x%x, 0x%x) = %d" % (ioctl_fd, ioctl_cmd, ioctl_arg, regreturn))
+    logging.info("ioctl(0x%x, 0x%x, 0x%x) = %d" % (ioctl_fd, ioctl_cmd, ioctl_arg, regreturn))
     ql.os.definesyscall_return(regreturn)

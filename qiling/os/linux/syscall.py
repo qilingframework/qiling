@@ -18,14 +18,14 @@ from unicorn.x86_const import *
 from unicorn.mips_const import *
 from qiling.arch.x86_const import *
 from qiling.const import *
-
+import logging
 
 def ql_syscall_set_thread_area(ql, u_info_addr, *args, **kw):
     if ql.archtype == QL_ARCH.X86:
         GDT_ENTRY_TLS_MIN = 12
         GDT_ENTRY_TLS_MAX = 14
 
-        ql.nprint("set_thread_area(u_info_addr= 0x%x)" % u_info_addr)
+        logging.info("set_thread_area(u_info_addr= 0x%x)" % u_info_addr)
 
         u_info = ql.mem.read(u_info_addr, 4 * 4)
         index = ql.unpack32s(u_info[0 : 4])
@@ -51,7 +51,7 @@ def ql_syscall_set_thread_area(ql, u_info_addr, *args, **kw):
         ql.reg.cp0_userlocal = u_info_addr
         ql.reg.v0 = 0
         ql.reg.a3 = 0
-        ql.nprint ("set_thread_area(0x%x)" % u_info_addr)        
+        logging.info ("set_thread_area(0x%x)" % u_info_addr)        
 
 
 def ql_syscall_set_tls(ql, address, *args, **kw):
@@ -59,4 +59,4 @@ def ql_syscall_set_tls(ql, address, *args, **kw):
         ql.reg.c13_c0_3 = address
         ql.mem.write(ql.arch.arm_get_tls_addr + 12, ql.pack32(address))
         ql.reg.r0 = address
-        ql.nprint("settls(0x%x)" % address)
+        logging.info("settls(0x%x)" % address)

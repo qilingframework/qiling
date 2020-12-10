@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-import struct
+import struct, logging
 from qiling.os.windows.const import *
 from qiling.os.windows.fncc import *
 from qiling.os.const import *
@@ -299,7 +299,7 @@ def hook_LdrGetProcedureAddress(ql, address, params):
     try:
         dll_name = [key for key, value in ql.loader.dlls.items() if value == params['ModuleHandle']][0]
     except IndexError as ie:
-        ql.nprint('[!] Failed to import function "%s" with handle 0x%X' % (lpProcName, params['ModuleHandle']))
+        logging.info('[!] Failed to import function "%s" with handle 0x%X' % (lpProcName, params['ModuleHandle']))
         return 0
 
     if identifier in ql.loader.import_address_table[dll_name]:
