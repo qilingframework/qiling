@@ -433,13 +433,13 @@ class QlLoaderPE(QlLoader, Process):
                 self.ql.reg.ebp = sp
 
                 if self.pe.is_dll():
-                    logging.debug([+] Setting up DllMain args')
+                    logging.debug('[+] Setting up DllMain args')
                     load_addr_bytes = self.pe_image_address.to_bytes(length=4, byteorder='little')
 
-                    logging.debug([+] Writing 0x%08X (IMAGE_BASE) to [ESP+4](0x%08X)' % (self.pe_image_address, sp + 0x4))
+                    logging.debug('[+] Writing 0x%08X (IMAGE_BASE) to [ESP+4](0x%08X)' % (self.pe_image_address, sp + 0x4))
                     self.ql.mem.write(sp + 0x4, load_addr_bytes)
 
-                    logging.debug([+] Writing 0x01 (DLL_PROCESS_ATTACH) to [ESP+8](0x%08X)' % (sp + 0x8))
+                    logging.debug('[+] Writing 0x01 (DLL_PROCESS_ATTACH) to [ESP+8](0x%08X)' % (sp + 0x8))
                     self.ql.mem.write(sp + 0x8, int(1).to_bytes(length=4, byteorder='little'))
 
             elif self.ql.archtype == QL_ARCH.X8664:
@@ -447,12 +447,12 @@ class QlLoaderPE(QlLoader, Process):
                 self.ql.reg.rbp = sp
 
                 if self.pe.is_dll():
-                    logging.debug([+] Setting up DllMain args')
+                    logging.debug('[+] Setting up DllMain args')
 
-                    logging.debug([+] Setting RCX (arg1) to %16X (IMAGE_BASE)' % (self.pe_image_address))
+                    logging.debug('[+] Setting RCX (arg1) to %16X (IMAGE_BASE)' % (self.pe_image_address))
                     self.ql.reg.rcx = self.pe_image_address
 
-                    logging.debug([+] Setting RDX (arg2) to 1 (DLL_PROCESS_ATTACH)')
+                    logging.debug('[+] Setting RDX (arg2) to 1 (DLL_PROCESS_ATTACH)')
                     self.ql.reg.rdx = 1
             else:
                 raise QlErrorArch("[!] Unknown ql.arch")
@@ -472,19 +472,19 @@ class QlLoaderPE(QlLoader, Process):
                 # setup CR4, some drivers may check this at initialized time
                 self.ql.uc.reg_write(UC_X86_REG_CR4, 0x6f8)
 
-                logging.debug([+] Setting up DriverEntry args')
+                logging.debug('[+] Setting up DriverEntry args')
                 self.ql.stop_execution_pattern = 0xDEADC0DE
 
                 if self.ql.archtype == QL_ARCH.X86:  # Win32
                     self.ql.mem.write(sp, self.ql.stop_execution_pattern.to_bytes(length=4, byteorder='little'))
 
-                    logging.debug([+] Writing 0x%08X (PDRIVER_OBJECT) to [ESP+4](0x%08X)' % (self.ql.driver_object_address, sp+0x4))
-                    logging.debug([+] Writing 0x%08X (RegistryPath) to [ESP+8](0x%08X)' % (self.ql.regitry_path_address, sp+0x8))
+                    logging.debug('[+] Writing 0x%08X (PDRIVER_OBJECT) to [ESP+4](0x%08X)' % (self.ql.driver_object_address, sp+0x4))
+                    logging.debug('[+] Writing 0x%08X (RegistryPath) to [ESP+8](0x%08X)' % (self.ql.regitry_path_address, sp+0x8))
                 elif self.ql.archtype == QL_ARCH.X8664:  # Win64
                     self.ql.mem.write(sp, self.ql.stop_execution_pattern.to_bytes(length=8, byteorder='little'))
 
-                    logging.debug([+] Setting RCX (arg1) to %16X (PDRIVER_OBJECT)' % (self.ql.driver_object_address))
-                    logging.debug([+] Setting RDX (arg2) to %16X (PUNICODE_STRING)' % (self.ql.regitry_path_address))
+                    logging.debug('[+] Setting RCX (arg1) to %16X (PDRIVER_OBJECT)' % (self.ql.driver_object_address))
+                    logging.debug('[+] Setting RDX (arg2) to %16X (PUNICODE_STRING)' % (self.ql.regitry_path_address))
 
                 # setup args for DriverEntry()
                 self.ql.os.set_function_args((self.ql.driver_object_address, self.ql.regitry_path_address))

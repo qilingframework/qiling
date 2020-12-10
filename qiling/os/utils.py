@@ -242,12 +242,12 @@ class QlOsUtils:
         insn = md.disasm(tmp, address)
         opsize = int(size)
 
-        logging.info( ("[+] 0x%x" % (address)).ljust( (self.ql.archbit // 8) + 15), end="")
+        logging.info( ("[+] 0x%x" % (address)).ljust( (self.ql.archbit // 8) + 15))
 
         temp_str = ""
         for i in tmp:
             temp_str += ("%02x " % i)
-        logging.info(temp_str.ljust(30), end="")
+        logging.info(temp_str.ljust(30))
 
         for i in insn:
             logging.info("%s %s" % (i.mnemonic, i.op_str))

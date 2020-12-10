@@ -516,17 +516,17 @@ class QlLoaderMACHO(QlLoader):
 
         for item in self.argvs[::-1]:
             argvs_ptr.append(ptr)  # need pack and tostring
-            logging.debug([+] add argvs ptr {}'.format(hex(ptr)))
+            logging.debug('[+] add argvs ptr {}'.format(hex(ptr)))
             ptr += len(item) + 1
         
         for item in self.envs[::-1]:
             envs_ptr.append(ptr)
-            logging.debug([+] add envs ptr {}'.format(hex(ptr)))
+            logging.debug('[+] add envs ptr {}'.format(hex(ptr)))
             ptr += len(item) + 1
 
         for item in self.apples[::-1]:
             apple_ptr.append(ptr)
-            logging.debug([+] add apple ptr {}'.format(hex(ptr)))
+            logging.debug('[+] add apple ptr {}'.format(hex(ptr)))
             ptr += len(item) + 1
 
         ptr = self.stack_sp

@@ -101,7 +101,7 @@ class QlOs(QlOsUtils):
                 logging.info("[-] %s\t:\t 0x%x" % (REG_NAME, REG_VAL))
 
         logging.info("\n")
-        logging.info("[+] PC = 0x%x" % (self.ql.reg.arch_pc), end="")
+        logging.info("[+] PC = 0x%x" % (self.ql.reg.arch_pc))
         containing_image = self.find_containing_image(self.ql.reg.arch_pc)
         if containing_image:
             offset = self.ql.reg.arch_pc - containing_image.base
