@@ -513,6 +513,8 @@ def ql_setup_logger(ql, log_dir, log_filename, log_split, console, filter, multi
             formatter = ColoredFormatter(FMT_STR)
         handler.setFormatter(formatter)
         lger.addHandler(handler)
+    else:
+        logging.disable()
     
     # If log_dir isn't specified, return.
     if log_dir is None or log_dir == "":
