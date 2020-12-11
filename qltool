@@ -82,6 +82,7 @@ def run_shellcode(options):
         # TODO: Thumb support.
         assembler = ql_create_assembler(archtype, archendian, 0)
         shellcoder, _ = assembler.asm(assembly)
+        shellcoder = bytes(shellcoder)
 
     else:
         print ("[+] Load BIN from FILE")
