@@ -8,7 +8,8 @@ import argparse, os, string, sys, ast, unicorn
 from binascii import unhexlify
 
 from qiling import *
-from qiling.const import QL_ARCH
+from qiling.utils import ql_create_assembler, arch_convert
+from qiling.const import QL_ARCH, QL_ENDIAN
 from qiling.__version__ import __version__ as ql_version
 from qiling.extensions.coverage import utils as cov_utils
 from qiling.extensions.report import generate_report
@@ -74,7 +75,12 @@ def run_shellcode(options):
     elif options.asm == True:
         print ("[+] Load ASM from FILE")
         assembly = read_file(options.filename)
-        assembler = ql.create_assembler()
+        archtype = arch_convert(options.arch)
+        archendian = QL_ENDIAN.EL
+        if options.bigendian:
+            archendian = QL_ENDIAN.EB
+        # TODO: Thumb support.
+        assembler = ql_create_assembler(archtype, archendian, 0)
         shellcoder, _ = assembler.asm(assembly)
 
     else:
