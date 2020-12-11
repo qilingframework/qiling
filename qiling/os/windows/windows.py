@@ -115,7 +115,7 @@ class QlOsWindows(QlOs):
                     self.emu_error()
                     raise QlErrorSyscallError("[!] Windows API Implementation Error")
             else:
-                logging.info("[!] %s is not implemented" % winapi_name)
+                logging.warning("[!] %s is not implemented" % winapi_name)
                 if self.ql.debug_stop:
                     raise QlErrorSyscallNotFound("[!] Windows API Implementation Not Found")
 

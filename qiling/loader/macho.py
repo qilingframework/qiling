@@ -80,7 +80,7 @@ class QlLoaderMACHO(QlLoader):
             self.kext_name = os.path.splitext(basename)[0]
             filename = self.ql.argv
             self.ql._argv = [self.ql.argv[0] + "/Contents/MacOS/" + self.kext_name]
-            self.ql.path = self.ql.argv[0]
+            self.ql._path = self.ql.argv[0]
             self.plist = plistlib.load(open(filename[0] + "/Contents/Info.plist", "rb"))
             if "IOKitPersonalities" in self.plist:
                 self.IOKit = True
@@ -168,7 +168,7 @@ class QlLoaderMACHO(QlLoader):
         self.kext_size = self.vm_end_addr - loadbase
 
         kernel_path = os.path.join(self.ql.rootfs, "System/Library/Kernels/kernel.development")
-        logging.info("[+] Parsing kernel:", kernel_path)
+        logging.info("[+] Parsing kernel:")
         self.kernel = MachoParser(self.ql, kernel_path)
 
         # Create memory for external static symbol jmp code

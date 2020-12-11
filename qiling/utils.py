@@ -18,7 +18,7 @@ from unicorn import UcError, UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
 from keystone import *
 from capstone import *
 
-FMT_STR = "[%(levelname)s]\t%(message)s"
+FMT_STR = "[%(levelname)s] [%(filename)s:%(lineno)d]\t%(message)s"
 
 # \033 -> ESC
 # ESC [ -> CSI
@@ -42,13 +42,21 @@ LEVEL_COLORS = {
     'ERROR': COLOR_CODE.RED
 }
 
+LEVEL_NAME = {
+    'WARNING': f"{COLOR_CODE.YELLOW}!{COLOR_CODE.ENDC}",
+    'INFO': f"{COLOR_CODE.BLUE}={COLOR_CODE.ENDC}",
+    'DEBUG': f"{COLOR_CODE.MAGENTA}+{COLOR_CODE.ENDC}",
+    'CRITICAL': f"{COLOR_CODE.CRIMSON}!{COLOR_CODE.ENDC}",
+    'ERROR': f"{COLOR_CODE.RED}x{COLOR_CODE.ENDC}"
+}
+
 class ColoredFormatter(logging.Formatter):
     def __init__(self, *args, **kwargs):
         super(ColoredFormatter, self).__init__(*args, **kwargs)
     
     def get_colored_level(self, record: LogRecord):
         levelname = record.levelname
-        return f"{LEVEL_COLORS[levelname]}{levelname}{COLOR_CODE.ENDC}"
+        return LEVEL_NAME[levelname]
 
     def format(self, record: LogRecord):
         _record = copy.copy(record)
