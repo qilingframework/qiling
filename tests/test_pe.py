@@ -30,8 +30,7 @@ class PETest(unittest.TestCase):
 
     def test_pe_win_x86_hello(self):
         ql = Qiling(["../examples/rootfs/x86_windows/bin/x86_hello.exe"], "../examples/rootfs/x86_windows",
-                    output="default", profile="profiles/append_test.ql")
-        ql.log_split = True
+                    output="default", profile="profiles/append_test.ql", log_split=True)
         ql.run()
         del ql
 
