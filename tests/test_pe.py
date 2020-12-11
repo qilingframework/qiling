@@ -457,7 +457,7 @@ class PETest(unittest.TestCase):
                     r, nNumberOfBytesToWrite = ql.amsint32_driver.os.io_Write(buffer)
                     ql.mem.write(lpNumberOfBytesWritten, ql.pack32(nNumberOfBytesToWrite))
                 except Exception as e:
-                    print("Exception = %s" % str(e))
+                    logging.exception("")
                     r = 1
                 if r:
                     return 1
@@ -495,7 +495,7 @@ class PETest(unittest.TestCase):
                 else:
                     return 1
             except Exception as e:
-                print (e)
+                logging.exception("")
 
 
         def hook_stop_address(ql):

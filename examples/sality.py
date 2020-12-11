@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-import struct, sys
+import struct, sys, logging
 
 sys.path.append("..")
 from qiling import *
@@ -105,6 +105,7 @@ def sality_WriteFile(ql, address, params):
             r, nNumberOfBytesToWrite = ql.amsint32_driver.os.io_Write(buffer)
             ql.mem.write(lpNumberOfBytesWritten, ql.pack32(nNumberOfBytesToWrite))
         except Exception as e:
+            logging.exception("")
             print("Exception = %s" % str(e))
             r = 1
         if r:
@@ -143,6 +144,7 @@ def sality_StartServiceA(ql, address, params):
         else:
             return 1
     except Exception as e:
+        logging.exception("")
         print (e)
 
 

@@ -26,9 +26,7 @@ def hook_memcpy(ql, address, params):
         data = bytes(ql.mem.read(params['src'], params['count']))
         ql.mem.write(params['dest'], data)
     except Exception as e:
-        import traceback
-        ql.print(traceback.format_exc())
-        ql.print(e)
+        logging.exception("")
     return params['dest']
 
 

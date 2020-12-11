@@ -176,6 +176,7 @@ class QlOsPosix(QlOs):
             except KeyboardInterrupt:
                 raise
             except Exception as e:
+                logging.exception("")
                 logging.info("[!] Syscall ERROR: %s DEBUG: %s" % (self.syscall_name, e))
                 raise e
         else:
