@@ -113,7 +113,7 @@ def ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen,  *args, **kw):
     else:
         data = ql.mem.read(bind_addr, bind_addrlen)
 
-    sin_family = struct.unpack("<h", data[:2])[0] or ql.os.fd[bind_fd].family
+    sin_family = ql.unpack16(data[:2]) or ql.os.fd[bind_fd].family
     port, host = struct.unpack(">HI", data[2:8])
     host = ql_bin_to_ip(host)
 
@@ -136,7 +136,7 @@ def ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen,  *args, **kw):
         ql.os.fd[bind_fd].bind(('::1', port))
         host = "::1"
 
-    elif ql.bindtolocalhost == False:
+    elif ql.os.bindtolocalhost == False:
         ql.os.fd[bind_fd].bind((host, port))
 
     else:
@@ -148,7 +148,7 @@ def ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen,  *args, **kw):
     if sin_family == 1:
         ql.nprint("bind(%d, %s, %d) = %d" % (bind_fd, path, bind_addrlen, regreturn))
     else:
-        ql.nprint("bind(%d,%s:%d,%d) = %d" % (bind_fd, host, port, bind_addrlen,regreturn))
+        ql.nprint("bind(%d, %s:%d, %d) = %d" % (bind_fd, host, port, bind_addrlen,regreturn))
         ql.dprint (D_INFO, "[+] syscall bind host: %s and port: %i sin_family: %i" % (ql_bin_to_ip(host), port, sin_family))
 
     ql.os.definesyscall_return(regreturn)
