@@ -9,7 +9,7 @@ Before submiting your PR, please finish the checklist below.
 
 - [ ] This PR only contains minor fixes.
 - [ ] This PR contains major feature update.
-- [ ] This PR introduce a new function/api for Qiling Framework.
+- [ ] This PR introduces a new function/api for Qiling Framework.
 
 ### Coding convention?
 
