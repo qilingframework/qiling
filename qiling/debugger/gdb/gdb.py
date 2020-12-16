@@ -403,36 +403,37 @@ class QlGdb(QlDebugger, object):
             def handle_P(subcmd):
                 reg_index, reg_data = subcmd.split('=')
                 reg_index = int(reg_index, 16)
+                reg_name = self.tables[self.ql.archtype][reg_index]
                 
                 if self.ql.archtype== QL_ARCH.A8086:
                     reg_data = int(reg_data, 16)
                     reg_data = int.from_bytes(struct.pack('<I', reg_data), byteorder='big')
-                    self.ql.reg.write(self.tables[QL_ARCH.A8086][reg_index], reg_data)
+                    self.ql.reg.write(reg_name, reg_data)
 
                 elif self.ql.archtype== QL_ARCH.X86:
                     reg_data = int(reg_data, 16)
                     reg_data = int.from_bytes(struct.pack('<I', reg_data), byteorder='big')
-                    self.ql.reg.write(self.tables[QL_ARCH.X86][reg_index], reg_data)
+                    self.ql.reg.write(reg_name, reg_data)
                 
                 elif self.ql.archtype== QL_ARCH.X8664:
                     if reg_index <= 17:
                         reg_data = int(reg_data, 16)
                         reg_data = int.from_bytes(struct.pack('<Q', reg_data), byteorder='big')
-                        self.ql.reg.write(self.tables[QL_ARCH.X8664][reg_index], reg_data)
+                        self.ql.reg.write(reg_name, reg_data)
                     else:
                         reg_data = int(reg_data[:8], 16)
                         reg_data = int.from_bytes(struct.pack('<I', reg_data), byteorder='big')
-                        self.ql.reg.write(self.tables[QL_ARCH.X8664][reg_index], reg_data)
+                        self.ql.reg.write(reg_name, reg_data)
                 
                 elif self.ql.archtype== QL_ARCH.ARM:
                     reg_data = int(reg_data, 16)
                     reg_data = int.from_bytes(struct.pack('<I', reg_data), byteorder='big')
-                    self.ql.reg.write(self.tables[QL_ARCH.ARM][reg_index], reg_data)
+                    self.ql.reg.write(reg_name, reg_data)
 
                 elif self.ql.archtype== QL_ARCH.ARM64:
                     reg_data = int(reg_data, 16)
                     reg_data = int.from_bytes(struct.pack('<Q', reg_data), byteorder='big')
-                    self.ql.reg.write(self.tables[QL_ARCH.ARM64][reg_index], reg_data)
+                    self.ql.reg.write(reg_name, reg_data)
 
                 elif self.ql.archtype== QL_ARCH.MIPS:
                     reg_data = int(reg_data, 16)
@@ -440,7 +441,10 @@ class QlGdb(QlDebugger, object):
                         reg_data = int.from_bytes(struct.pack('<I', reg_data), byteorder='little')
                     else:
                         reg_data = int.from_bytes(struct.pack('<I', reg_data), byteorder='big')
-                    self.ql.reg.write(self.tables[QL_ARCH.MIPS][reg_index], reg_data)
+                    self.ql.reg.write(reg_name, reg_data)
+
+                if reg_name == self.ql.reg.arch_pc_name:
+                    self.gdb.current_address = reg_data
 
                 logging.info("gdb> Write to register %s with %x\n" % (self.tables[self.ql.archtype][reg_index], reg_data))
                 self.send('OK')
@@ -462,6 +466,9 @@ class QlGdb(QlDebugger, object):
                 elif subcmd.startswith('PassSignals'):
                     self.send('OK')
 
+                elif subcmd.startswith('qemu'):
+                    self.send('')
+
             def handle_D(subcmd):
                 self.send('OK')
 
@@ -479,9 +486,9 @@ class QlGdb(QlDebugger, object):
                     xfercmd_file    = os.path.join(xfercmd_abspath,"xml",xml_folder, xfercmd_file)                        
 
                     if os.path.exists(xfercmd_file) and self.ql.ostype is not QL_OS.WINDOWS:
-                        f = open(xfercmd_file, 'r')
-                        file_contents = f.read()
-                        self.send("l%s" % file_contents)
+                        with open(xfercmd_file, 'r') as f:
+                            file_contents = f.read()
+                            self.send("l%s" % file_contents)
                     else:
                         logging.info("gdb> Platform is not supported by xml or xml file not found: %s\n" % (xfercmd_file))
                         self.send("l")
@@ -522,7 +529,7 @@ class QlGdb(QlDebugger, object):
                             AT_HWCAP2           = "0000000000000000"
                             ID_AT_EXECFN        = "1f00000000000000"
                             AT_EXECFN           = "0000000000000000" # File name of executable
-                            ID_AT_PLATFORM      = "f000000000000000"
+                            ID_AT_PLATFORM      = "0f00000000000000"
                             ID_AT_NULL          = "0000000000000000"
                             AT_NULL             = "0000000000000000"
 
@@ -550,7 +557,7 @@ class QlGdb(QlDebugger, object):
                             AT_HWCAP2       = "00000000"
                             ID_AT_EXECFN    = "1f000000"
                             AT_EXECFN       = "00000000"  # File name of executable
-                            ID_AT_PLATFORM  = "f0000000"
+                            ID_AT_PLATFORM  = "0f000000"
                             ID_AT_NULL      = "00000000"
                             AT_NULL         = "00000000"
 
@@ -758,6 +765,10 @@ class QlGdb(QlDebugger, object):
                 self.send('S%.2x' % GDB_SIGNAL_TRAP)
 
 
+            def handle_X(subcmd):
+                self.send('')
+
+
             def handle_Z(subcmd):
                 data = subcmd
                 ztype = data[data.find('Z') + 1:data.find(',')]
@@ -807,6 +818,7 @@ class QlGdb(QlDebugger, object):
                 'Q': handle_Q,
                 's': handle_s,
                 'v': handle_v,
+                'X': handle_X,
                 'Z': handle_Z,
                 'z': handle_z
             }
