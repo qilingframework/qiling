@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-import sys, unittest, subprocess, string, random, os
+import sys, unittest, subprocess, string, random, os, logging
 
 from unicorn import UcError, UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
 
@@ -16,105 +16,6 @@ from qiling.os.mapper import QlFsMappedObject
 from qiling.os.stat import Fstat
 
 class ELFTest(unittest.TestCase):
-
-    def test_multithread_elf_linux_x86(self):
-        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
-            try:
-                buf = ql.mem.read(write_buf, write_count)
-                buf = buf.decode()
-                if buf.startswith("thread 2 ret") == True:
-                    ql.buf_out = buf
-            except:
-                pass
-
-        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_multithreading"], "../examples/rootfs/x86_linux")
-        ql.multithread = True
-        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
-        ql.run()
-        
-        self.assertEqual("thread 2 ret val is : 2\n", ql.buf_out)
-        
-        del ql
-
-    
-    def test_multithread_elf_linux_arm64(self):
-        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
-            buf = ""
-            try:
-                buf = ql.mem.read(write_buf, write_count)
-                buf = buf.decode()
-                if buf.startswith("thread 2 ret") == True:
-                    ql.buf_out = buf
-            except:
-                pass
-        
-        ql = Qiling(["../examples/rootfs/arm64_linux/bin/arm64_multithreading"], "../examples/rootfs/arm64_linux")
-        ql.multithread = True
-        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
-        ql.run()
-        
-        self.assertEqual("thread 2 ret val is : 2\n", ql.buf_out)
-        
-        del ql
-
-
-    def test_multithread_elf_linux_x8664(self):
-        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
-            try:
-                buf = ql.mem.read(write_buf, write_count)
-                buf = buf.decode()
-                if buf.startswith("thread 2 ret") == True:
-                    ql.buf_out = buf
-            except:
-                pass
-
-        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_multithreading"], "../examples/rootfs/x8664_linux", profile= "profiles/append_test.ql")
-        ql.log_split = True
-        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
-        ql.multithread = True   
-        ql.run()
-
-        self.assertEqual("thread 2 ret val is : 2\n", ql.buf_out)
-
-        del ql
-
-
-    def test_multithread_elf_linux_mips32el(self):
-        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
-            try:
-                buf = ql.mem.read(write_buf, write_count)
-                buf = buf.decode()
-                if buf.startswith("thread 2 ret") == True:
-                    ql.buf_out = buf
-            except:
-                pass
-
-        ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_multithreading"], "../examples/rootfs/mips32el_linux")
-        print("MIPS32EL")
-        ql.multithread = True
-        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
-        ql.run()
-        del ql
-
-
-    def test_multithread_elf_linux_arm(self):
-        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
-            try:
-                buf = ql.mem.read(write_buf, write_count)
-                buf = buf.decode()
-                if buf.startswith("thread 2 ret") == True:
-                    ql.buf_out = buf
-            except:
-                pass
-        
-        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_multithreading"], "../examples/rootfs/arm_linux")
-        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
-        ql.multithread = True   
-        ql.run()
-
-        self.assertEqual("thread 2 ret val is : 2\n", ql.buf_out)
-        
-        del ql
 
 
     def test_libpatch_elf_linux_x8664(self):
@@ -214,147 +115,6 @@ class ELFTest(unittest.TestCase):
         del self.test_enter_str
         del ql         
 
-
-    def test_tcp_elf_linux_x86(self):
-        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
-            try:
-                buf = ql.mem.read(write_buf, write_count)
-                buf = buf.decode()
-                if buf.startswith("server send()"):
-                    ql.buf_out = buf
-            except:
-                pass        
-        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_tcp_test","20001"], "../examples/rootfs/x86_linux")
-        ql.multithread = True
-        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
-        ql.run()
-        
-        self.assertEqual("server send() 14 return 14.\n", ql.buf_out)
-
-        del ql
-
-
-    def test_tcp_elf_linux_x8664(self):
-        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
-            try:
-                buf = ql.mem.read(write_buf, write_count)
-                buf = buf.decode()
-                if buf.startswith("server send()"):
-                    ql.buf_out = buf
-            except:
-                pass
-        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_tcp_test","20002"], "../examples/rootfs/x8664_linux")
-        ql.multithread = True
-        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
-        ql.run()
-        
-        self.assertEqual("server send() 14 return 14.\n", ql.buf_out)
-        
-        del ql
-
-
-    def test_tcp_elf_linux_arm(self):
-        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
-            try:
-                buf = ql.mem.read(write_buf, write_count)
-                buf = buf.decode()
-                if buf.startswith("server write()"):
-                    ql.buf_out = buf
-            except:
-                pass           
-        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_tcp_test","20003"], "../examples/rootfs/arm_linux")
-        ql.multithread = True
-        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
-        ql.run()
-        
-        self.assertEqual("server write() 14 return 14.\n", ql.buf_out)
-        
-        del ql
-
-
-    def test_tcp_elf_linux_arm64(self):
-        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
-            try:
-                buf = ql.mem.read(write_buf, write_count)
-                buf = buf.decode()
-                if buf.startswith("server send()"):
-                    ql.buf_out = buf
-            except:
-                pass
-        ql = Qiling(["../examples/rootfs/arm64_linux/bin/arm64_tcp_test","20004"], "../examples/rootfs/arm64_linux")
-        ql.multithread = True
-        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
-        ql.run()
-        
-        self.assertEqual("server send() 14 return 14.\n", ql.buf_out)
-        
-        del ql
-
-
-    def test_tcp_elf_linux_mips32el(self):
-        ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_tcp_test","20005"], "../examples/rootfs/mips32el_linux")
-        ql.multithread = True
-        ql.run()
-        del ql
-
-
-    def test_udp_elf_linux_x86(self):
-        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
-            try:
-                buf = ql.mem.read(write_buf, write_count)
-                buf = buf.decode()
-                if buf.startswith("server sendto()"):
-                    ql.buf_out = buf
-            except:
-                pass
-
-        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_udp_test","20007"], "../examples/rootfs/x86_linux")
-        ql.multithread = True
-        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
-        ql.run()
-
-        self.assertEqual("server sendto() 14 return 14.\n", ql.buf_out)
-
-        del ql
-
-
-    def test_udp_elf_linux_x8664(self):
-        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
-            try:
-                buf = ql.mem.read(write_buf, write_count)
-                buf = buf.decode()
-                if buf.startswith("server sendto()"):
-                    ql.buf_out = buf
-            except:
-                pass
-
-        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_udp_test","20008"], "../examples/rootfs/x8664_linux")
-        ql.multithread = True
-        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
-        ql.run()
-
-        self.assertEqual("server sendto() 14 return 14.\n", ql.buf_out)
-
-        del ql
-
-    def test_udp_elf_linux_arm64(self):
-        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
-            try:
-                buf = ql.mem.read(write_buf, write_count)
-                buf = buf.decode()
-                if buf.startswith("server sendto()"):
-                    ql.buf_out = buf
-            except:
-                pass
-
-        ql = Qiling(["../examples/rootfs/arm64_linux/bin/arm64_udp_test","20009"], "../examples/rootfs/arm64_linux")
-        ql.multithread = True
-        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
-        ql.run()
-
-        self.assertEqual("server sendto() 14 return 14.\n", ql.buf_out)
-
-        del ql
 
     def test_elf_linux_x8664_static(self):
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_hello_static"], "../examples/rootfs/x8664_linux", output="debug")
@@ -503,8 +263,7 @@ class ELFTest(unittest.TestCase):
             all_mem = ql.mem.save()
             ql.mem.restore(all_mem)
             
-        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello"], "../examples/rootfs/arm_linux", output = "debug", profile='profiles/append_test.ql')
-        ql.log_split=True
+        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello"], "../examples/rootfs/arm_linux", output = "debug", profile='profiles/append_test.ql', log_split=True)
         ql.set_api('puts', my_puts)
         ql.run()
         del ql
@@ -937,7 +696,7 @@ class ELFTest(unittest.TestCase):
             regreturn = 0
             buf = None
             mapaddr = ql.mem.map_anywhere(0x100000)
-            ql.nprint("0x%x" %  mapaddr)
+            logging.info("0x%x" %  mapaddr)
             
             reg = ql.reg.read("r0")
             print("reg : 0x%x" % reg)
@@ -946,12 +705,12 @@ class ELFTest(unittest.TestCase):
             
             try:
                 buf = ql.mem.read(write_buf, write_count)
-                ql.nprint("\n+++++++++\nmy write(%d,%x,%i) = %d\n+++++++++" % (write_fd, write_buf, write_count, regreturn))
+                logging.info("\n+++++++++\nmy write(%d,%x,%i) = %d\n+++++++++" % (write_fd, write_buf, write_count, regreturn))
                 ql.os.fd[write_fd].write(buf)
                 regreturn = write_count
             except:
                 regreturn = -1
-                ql.nprint("\n+++++++++\nmy write(%d,%x,%i) = %d\n+++++++++" % (write_fd, write_buf, write_count, regreturn))
+                logging.info("\n+++++++++\nmy write(%d,%x,%i) = %d\n+++++++++" % (write_fd, write_buf, write_count, regreturn))
                 if ql.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
                     raise
             ql.os.definesyscall_return(regreturn)
@@ -1042,19 +801,6 @@ class ELFTest(unittest.TestCase):
         print("\n\n Linux Simple Crackme Brute Force, This Will Take Some Time ...")
         solve()
 
-
-    def test_elf_linux_execve_x8664(self):
-        ql = Qiling(["../examples/rootfs/x8664_linux/bin/posix_syscall_execve"],  "../examples/rootfs/x8664_linux", output="debug")
-        ql.run()
-        for key, value in ql.loader.env.items():
-            QL_TEST=value
-
-        self.assertEqual("TEST_QUERY", QL_TEST)
-        self.assertEqual("child", ql.loader.argv[0])
-
-        del QL_TEST
-        del ql
-
     def test_x86_fake_urandom_multiple_times(self):
         fake_id = 0
         ids = []
@@ -1065,7 +811,7 @@ class ELFTest(unittest.TestCase):
                 self.id = fake_id
                 fake_id += 1
                 ids.append(self.id)
-                ql.nprint(f"Creating Fake_urandom with id {self.id}")
+                logging.info(f"Creating Fake_urandom with id {self.id}")
 
             def read(self, size):
                 return b'\x01'

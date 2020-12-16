@@ -8,7 +8,7 @@
 
 from unicorn import *
 
-import struct, os, re, socket
+import struct, os, re, socket, logging
 from binascii import unhexlify
 
 from .utils import QlGdbUtils
@@ -46,7 +46,7 @@ class QlGdb(QlDebugger, object):
         super(QlGdb, self).__init__(ql)
         self.ql             = ql
         self.last_pkt       = None
-        self.exe_abspath    = (os.path.abspath(self.ql.filename[0]))
+        self.exe_abspath    = (os.path.abspath(self.ql.argv[0]))
         self.rootfs_abspath = (os.path.abspath(self.ql.rootfs)) 
         self.gdb            = QlGdbUtils()
 
@@ -65,7 +65,7 @@ class QlGdb(QlDebugger, object):
             load_address = ql.loader.load_address
             exit_point = load_address + os.path.getsize(ql.path)
 
-        self.ql.nprint("gdb> Listening on %s:%u" % (ip, port)) 
+        logging.info("gdb> Listening on %s:%u" % (ip, port)) 
         self.gdb.initialize(self.ql, exit_point=exit_point, mappings=[(hex(load_address))])
         
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -442,7 +442,7 @@ class QlGdb(QlDebugger, object):
                         reg_data = int.from_bytes(struct.pack('<I', reg_data), byteorder='big')
                     self.ql.reg.write(self.tables[QL_ARCH.MIPS][reg_index], reg_data)
 
-                self.ql.nprint("gdb> Write to register %s with %x\n" % (self.tables[self.ql.archtype][reg_index], reg_data))
+                logging.info("gdb> Write to register %s with %x\n" % (self.tables[self.ql.archtype][reg_index], reg_data))
                 self.send('OK')
 
 
@@ -483,7 +483,7 @@ class QlGdb(QlDebugger, object):
                         file_contents = f.read()
                         self.send("l%s" % file_contents)
                     else:
-                        self.ql.nprint("gdb> Platform is not supported by xml or xml file not found: %s\n" % (xfercmd_file))
+                        logging.info("gdb> Platform is not supported by xml or xml file not found: %s\n" % (xfercmd_file))
                         self.send("l")
 
 
@@ -675,7 +675,7 @@ class QlGdb(QlDebugger, object):
                         else:
                             self.lib_abspath = self.ql.os.transform_to_real_path(self.lib_path)
 
-                        self.ql.dprint(D_INFO, "gdb> target file: %s" % (self.lib_abspath))
+                        logging.debug("gdb> target file: %s" % (self.lib_abspath))
 
                         if os.path.exists(self.lib_abspath):
                             self.send("F5")
@@ -731,7 +731,7 @@ class QlGdb(QlDebugger, object):
                     self.send('OK')
 
                 elif subcmd.startswith('Cont'):
-                    self.ql.dprint(D_INFO, "gdb> Cont command received: %s" % subcmd)
+                    logging.debug("gdb> Cont command received: %s" % subcmd)
                     if subcmd == 'Cont?':
                         self.send('vCont;c;C;t;s;S;r')
                     elif subcmd.startswith ("Cont;"):
@@ -817,9 +817,9 @@ class QlGdb(QlDebugger, object):
 
             if cmd not in commands:
                 self.send('')
-                self.ql.nprint("gdb> Command not supported: %s\n" %(cmd))
+                logging.info("gdb> Command not supported: %s\n" %(cmd))
                 continue
-            self.ql.dprint(D_INFO, "gdb> received: %s%s" % (cmd, subcmd))
+            logging.debug("gdb> received: %s%s" % (cmd, subcmd))
             commands[cmd](subcmd)
 
         self.close()
@@ -866,7 +866,7 @@ class QlGdb(QlDebugger, object):
             self.clientsocket.send(b'$%s#%.2x' % (msg, checksum(msg)))
             self.netout.flush()
 
-        self.ql.dprint(D_INFO, "gdb> send: $%s#%.2x" % (msg, checksum(msg)))
+        logging.debug("gdb> send: $%s#%.2x" % (msg, checksum(msg)))
 
     def send_raw(self, r):
         self.netout.write(r)

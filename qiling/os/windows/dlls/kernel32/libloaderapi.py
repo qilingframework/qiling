@@ -4,7 +4,7 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
 import os
-
+import logging
 from qiling.exception import *
 from qiling.os.windows.const import *
 
@@ -29,7 +29,7 @@ def _GetModuleHandle(ql, address, params):
         if lpModuleName in ql.loader.dlls:
             ret = ql.loader.dlls[lpModuleName]
         else:
-            ql.dprint(D_INFO, "[!] Library %s not imported" % lpModuleName)
+            logging.debug("[!] Library %s not imported" % lpModuleName)
             ret = 0
     return ret
 
@@ -87,7 +87,7 @@ def hook_GetModuleFileNameA(ql, address, params):
             ret = filename_len
         ql.mem.write(lpFilename, filename + b"\x00")
     else:
-        ql.dprint(D_INFO, "hModule %x" % hModule)
+        logging.debug("hModule %x" % hModule)
         raise QlErrorNotImplemented("[!] API not implemented")
     return ret
 
@@ -140,7 +140,7 @@ def hook_GetProcAddress(ql, address, params):
     try:
         dll_name = [key for key, value in ql.loader.dlls.items() if value == params['hModule']][0]
     except IndexError as ie:
-        ql.nprint('[!] Failed to import function "%s" with handle 0x%X' % (lpProcName, params['hModule']))
+        logging.info('[!] Failed to import function "%s" with handle 0x%X' % (lpProcName, params['hModule']))
         return 0
 
     # Handle case where module is self

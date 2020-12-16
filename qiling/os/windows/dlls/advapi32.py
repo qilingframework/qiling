@@ -2,7 +2,7 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
-import struct
+import struct, logging
 from qiling.os.windows.fncc import *
 from qiling.os.const import *
 from qiling.os.windows.utils import *
@@ -16,10 +16,10 @@ def _RegOpenKey(ql, address, params):
     hKey = params["hKey"]
     s_lpSubKey = params["lpSubKey"]
     phkResult = params["phkResult"]
-    ql.dprint(D_INFO, "[+] Key %s %s" % (hKey, s_lpSubKey))
+    logging.debug("[+] Key %s %s" % (hKey, s_lpSubKey))
 
     if hKey not in REG_KEYS:
-        ql.dprint(D_INFO, "[!] Key %s %s not present" % (hKey, s_lpSubKey))
+        logging.debug("[!] Key %s %s not present" % (hKey, s_lpSubKey))
         return ERROR_FILE_NOT_FOUND
     else:
         s_hKey = REG_KEYS[hKey]
@@ -28,11 +28,11 @@ def _RegOpenKey(ql, address, params):
     # Keys in the profile are saved as KEY\PARAM = VALUE, so i just want to check that the key is the same
     keys_profile = [key.rsplit("\\", 1)[0] for key in ql.os.profile["REGISTRY"].keys()]
     if key.lower() in keys_profile:
-        ql.dprint(D_INFO, "[+] Using profile for key of  %s" % key)
+        logging.debug("[+] Using profile for key of  %s" % key)
         ql.os.registry_manager.access(key)
     else:
         if not ql.os.registry_manager.exists(key):
-            ql.dprint(D_INFO, "[!] Value key %s not present" % key)
+            logging.debug("[!] Value key %s not present" % key)
             return ERROR_FILE_NOT_FOUND
 
     # new handle
@@ -61,7 +61,7 @@ def RegQueryValue(ql, address, params):
     try:
         # Keys in the profile are saved as KEY\PARAM = VALUE, so i just want to check that the key is the same
         value = ql.os.profile["REGISTRY"][s_hKey + "\\" + s_lpValueName]
-        ql.dprint(D_INFO, "[+] Using profile for value of key %s" % (s_hKey + "\\" + s_lpValueName,))
+        logging.debug("[+] Using profile for value of key %s" % (s_hKey + "\\" + s_lpValueName,))
         # TODO i have no fucking idea on how to set a None value, fucking configparser
         if value == "None":
             return ERROR_FILE_NOT_FOUND
@@ -75,7 +75,7 @@ def RegQueryValue(ql, address, params):
 
     # error key
     if reg_type is None or value is None:
-        ql.dprint(D_INFO, "[!] Key value not found")
+        logging.debug("[!] Key value not found")
         return ERROR_FILE_NOT_FOUND
     else:
         # set lpData
@@ -407,7 +407,7 @@ def hook_GetTokenInformation(ql, address, params):
     information_value = token.get(information)
     ql.mem.write(return_point, len(information_value).to_bytes(4, byteorder="little"))
     return_size = int.from_bytes(ql.mem.read(return_point, 4), byteorder="little")
-    ql.dprint(D_RPRT, "[=] The target is checking for its permissions")
+    logging.debug("[=] The target is checking for its permissions")
     if return_size > max_size:
         ql.os.last_error = ERROR_INSUFFICIENT_BUFFER
         return 0

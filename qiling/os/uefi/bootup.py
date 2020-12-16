@@ -3,6 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
+import logging
 from uuid import UUID
 from binascii import crc32
 from qiling.const import *
@@ -302,7 +303,7 @@ def hook_StartImage(ql, address, params):
     "a3": POINTER, #POINTER_T(ctypes.c_uint16)
 })
 def hook_Exit(ql, address, params):
-    ql.nprint(f'hook_Exit')
+    logging.info(f'hook_Exit')
     ql.uc.emu_stop()
     return EFI_SUCCESS
 
@@ -317,7 +318,7 @@ def hook_UnloadImage(ql, address, params):
     "a1": ULONGLONG,
 })
 def hook_ExitBootServices(ql, address, params):
-    ql.nprint(f'hook_ExitBootServices')
+    logging.info(f'hook_ExitBootServices')
     ql.uc.emu_stop()
     return EFI_SUCCESS
 
@@ -433,7 +434,7 @@ def hook_InstallMultipleProtocolInterfaces(ql, address, params):
     handle = read_int64(ql, params["Handle"])
     if handle == 0:
         handle = ql.os.heap.alloc(1)
-    ql.nprint(f'hook_InstallMultipleProtocolInterfaces {handle:x}')
+    logging.info(f'hook_InstallMultipleProtocolInterfaces {handle:x}')
     dic = {}
     if handle in ql.loader.handle_dict:
         dic = ql.loader.handle_dict[handle]
@@ -443,7 +444,7 @@ def hook_InstallMultipleProtocolInterfaces(ql, address, params):
         GUID_ptr = ql.os.get_param_by_index(index)
         protocol_ptr = ql.os.get_param_by_index(index+1)
         GUID = str(ql.os.read_guid(GUID_ptr))
-        ql.nprint(f'\t {GUID}, {protocol_ptr:x}')
+        logging.info(f'\t {GUID}, {protocol_ptr:x}')
         dic[GUID] = protocol_ptr
         index +=2
     ql.loader.handle_dict[handle] = dic
@@ -456,7 +457,7 @@ def hook_InstallMultipleProtocolInterfaces(ql, address, params):
 })
 def hook_UninstallMultipleProtocolInterfaces(ql, address, params):
     handle = params["Handle"]
-    ql.nprint(f'hook_UninstallMultipleProtocolInterfaces {handle:x}')
+    logging.info(f'hook_UninstallMultipleProtocolInterfaces {handle:x}')
     if handle not in ql.loader.handle_dict:
         return EFI_NOT_FOUND
     index = 1
@@ -464,7 +465,7 @@ def hook_UninstallMultipleProtocolInterfaces(ql, address, params):
         GUID_ptr = ql.os.get_param_by_index(index)
         protocol_ptr = ql.os.get_param_by_index(index+1)
         GUID = str(ql.os.read_guid(GUID_ptr))
-        ql.nprint(f'\t {GUID}, {protocol_ptr:x}')
+        logging.info(f'\t {GUID}, {protocol_ptr:x}')
         dic = ql.loader.handle_dict[handle]
         if GUID not in dic:
             return EFI_INVALID_PARAMETER

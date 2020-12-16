@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-import struct
+import struct, logging
 from qiling.os.windows.const import *
 from qiling.os.windows.fncc import *
 from qiling.os.const import *
@@ -26,9 +26,7 @@ def hook_memcpy(ql, address, params):
         data = bytes(ql.mem.read(params['src'], params['count']))
         ql.mem.write(params['dest'], data)
     except Exception as e:
-        import traceback
-        ql.print(traceback.format_exc())
-        ql.print(e)
+        logging.exception("")
     return params['dest']
 
 
@@ -52,9 +50,9 @@ def _QueryInformationProcess(ql, address, params):
         pbi.write(addr)
         value = addr.to_bytes(ql.pointersize, "little")
     else:
-        ql.dprint(D_INFO, str(flag))
+        logging.debug(str(flag))
         raise QlErrorNotImplemented("[!] API not implemented")
-    ql.dprint(D_RPRT, "[=] The target is checking the debugger via QueryInformationProcess ")
+    logging.debug("[=] The target is checking the debugger via QueryInformationProcess ")
     ql.mem.write(dst, value)
     if pt_res != 0:
         ql.mem.write(pt_res, 0x8.to_bytes(1, byteorder="little"))
@@ -131,7 +129,7 @@ def _QuerySystemInformation(ql, address, params):
                 ql.mem.write(pt_res, sbi.size.to_bytes(1, byteorder="little"))
             return STATUS_INFO_LENGTH_MISMATCH
     else:
-        ql.dprint(D_INFO, str(siClass))
+        logging.debug(str(siClass))
         raise QlErrorNotImplemented("[!] API not implemented")
 
 
@@ -196,8 +194,8 @@ def hook_ZwQueryObject(ql, address, params):
     size_dest = params["ReturnLength"]
     string = "DebugObject".encode("utf-16le")
     string_addr = ql.os.heap.alloc(len(string))
-    ql.dprint(0, str(string_addr))
-    ql.dprint(0, str(string))
+    logging.debug(str(string_addr))
+    logging.debug(str(string))
     ql.mem.write(string_addr, string)
     us = qiling.os.windows.structs.UnicodeString(ql, length=len(string), maxLength=len(string),
                                                  buffer=string_addr)
@@ -248,9 +246,9 @@ def _SetInformationProcess(ql, address, params):
     elif flag == ProcessDebugObjectHandle:
         return STATUS_PORT_NOT_SET
     elif flag == ProcessBreakOnTermination:
-            ql.dprint(D_RPRT, "[=] The target may be attempting modify a the 'critical' flag of the process")  
+            logging.debug("[=] The target may be attempting modify a the 'critical' flag of the process")  
     elif flag  == ProcessExecuteFlags:
-        ql.dprint(D_RPRT, "[=] The target may be attempting to modify DEP for the process")
+        logging.debug("[=] The target may be attempting to modify DEP for the process")
         if dst != 0:
             ql.mem.write(dst, 0x0.to_bytes(1, byteorder="little"))
 
@@ -262,12 +260,12 @@ def _SetInformationProcess(ql, address, params):
             uniqueId=ql.os.profile.getint("KERNEL", "pid"),
             parentPid=ql.os.profile.geting("KERNEL", "parent_pid")
         )
-        ql.dprint(D_RPRT, "[=] The target may be attempting to modify the PEB debug flag")
+        logging.debug("[=] The target may be attempting to modify the PEB debug flag")
         addr = ql.os.heap.alloc(pbi.size)
         pbi.write(addr)
         value = addr.to_bytes(ql.pointersize, "little")
     else:
-        ql.dprint(D_INFO, str(flag))
+        logging.debug(str(flag))
         raise QlErrorNotImplemented("[!] API not implemented")
 
     return STATUS_SUCCESS
@@ -299,7 +297,7 @@ def hook_LdrGetProcedureAddress(ql, address, params):
     try:
         dll_name = [key for key, value in ql.loader.dlls.items() if value == params['ModuleHandle']][0]
     except IndexError as ie:
-        ql.nprint('[!] Failed to import function "%s" with handle 0x%X' % (lpProcName, params['ModuleHandle']))
+        logging.info('[!] Failed to import function "%s" with handle 0x%X' % (lpProcName, params['ModuleHandle']))
         return 0
 
     if identifier in ql.loader.import_address_table[dll_name]:

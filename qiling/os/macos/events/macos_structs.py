@@ -1,5 +1,6 @@
 import enum
 import ctypes
+import logging
 from qiling.os.macos.structs import POINTER64
 
 base_event_normal = 0
@@ -1001,14 +1002,14 @@ class sflt_filter_t(ctypes.Structure):
         return newObj
 
     def dump(self):
-        self.ql.nprint("[*] Dumping object: %s" % (self.sf_name))
+        logging.info("[*] Dumping object: %s" % (self.sf_name))
         for field in self._fields_:
             if isinstance(getattr(self, field[0]), POINTER64):
-                self.ql.nprint("%s: 0x%x" % (field[0], getattr(self, field[0]).value))
+                logging.info("%s: 0x%x" % (field[0], getattr(self, field[0]).value))
             elif isinstance(getattr(self, field[0]), int):
-                self.ql.nprint("%s: %d" % (field[0], getattr(self, field[0])))
+                logging.info("%s: %d" % (field[0], getattr(self, field[0])))
             elif isinstance(getattr(self, field[0]), bytes):
-                self.ql.nprint("%s: %s" % (field[0], getattr(self, field[0]).decode()))
+                logging.info("%s: %s" % (field[0], getattr(self, field[0]).decode()))
 
 # struct sockaddr_in {
 # 	__uint8_t	sin_len;
@@ -1118,11 +1119,11 @@ class mac_policy_conf_t(ctypes.Structure):
     def dump(self):
         for field in self._fields_:
             if isinstance(getattr(self, field[0]), POINTER64):
-                self.ql.nprint("%s: 0x%x" % (field[0], getattr(self, field[0]).value))
+                logging.info("%s: 0x%x" % (field[0], getattr(self, field[0]).value))
             elif isinstance(getattr(self, field[0]), int):
-                self.ql.nprint("%s: %d" % (field[0], getattr(self, field[0])))
+                logging.info("%s: %d" % (field[0], getattr(self, field[0])))
             elif isinstance(getattr(self, field[0]), bytes):
-                self.ql.nprint("%s: %s" % (field[0], getattr(self, field[0]).decode()))
+                logging.info("%s: %s" % (field[0], getattr(self, field[0]).decode()))
 
 # struct ucred {
 # 	TAILQ_ENTRY(ucred)	cr_link; /* never modify this without KAUTH_CRED_HASH_LOCK */
