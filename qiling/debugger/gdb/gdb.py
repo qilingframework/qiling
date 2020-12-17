@@ -673,65 +673,42 @@ class QlGdb(QlDebugger, object):
                     self.send("")
 
                 elif subcmd.startswith('File:open'):
-                    self.lib_path = subcmd.split(':')[-1].split(',')[0]
-                    self.lib_path = unhexlify(self.lib_path).decode(encoding='UTF-8')
-                    
-                    if self.lib_path != "just probing":
-                        if self.lib_path.startswith(self.rootfs_abspath):
-                            self.lib_abspath = self.lib_path
-                        else:
-                            self.lib_abspath = self.ql.os.transform_to_real_path(self.lib_path)
-
-                        logging.debug("gdb> target file: %s" % (self.lib_abspath))
-
-                        if os.path.exists(self.lib_abspath):
-                            self.send("F5")
-                        else:
-                            self.send("F0")   
+                    (file_path, flags, mode) = subcmd.split(':')[-1].split(',')
+                    file_path = unhexlify(file_path).decode(encoding='UTF-8')
+                    flags = int(flags, base=16)
+                    mode = int(mode, base=16)
+                    if file_path.startswith(self.rootfs_abspath):
+                        file_abspath = file_path
                     else:
-                        self.send("F0")
+                        file_abspath = self.ql.os.transform_to_real_path(file_path)
+                    
+                    logging.debug("gdb> target file: %s" % (file_abspath))
+                    if os.path.exists(file_abspath) and not (file_path).startswith("/proc"):
+                        fd = os.open(file_abspath, flags, mode)
+                        self.send("F%x" % fd)
+                    else:
+                        self.send("F-1")
 
                 elif subcmd.startswith('File:pread:'):
+                    (fd, count, offset) = subcmd.split(':')[-1].split(',')
 
-                    offset = subcmd.split(',')[-1]
-                    count = subcmd.split(',')[-2]
-                    offset = ((int(offset, base=16)))
-                    count = ((int(count, base=16)))
+                    fd = int(fd, base=16)
+                    offset = int(offset, base=16)
+                    count = int(count, base=16)
 
-                    if os.path.exists(self.lib_abspath) and not (self.lib_path).startswith("/proc"):
+                    data = os.pread(fd, count, offset)
+                    size = len(data)
+                    data = self.bin_to_escstr(data)
 
-                        with open(self.lib_abspath, "rb") as f:
-                            preadheader = f.read()
-
-                        if offset != 0:
-                            shift_count = offset + count
-                            read_offset = preadheader[offset:shift_count]
-                        else:
-                            read_offset = preadheader[offset:count]
-
-                        preadheader_len = len(preadheader)
-
-                        read_offset = self.bin_to_escstr(read_offset)
-
-                        if count == 1 and (preadheader_len >= offset):
-                            if read_offset:
-                                self.send(b'F1;' + (read_offset))
-                            else:
-                                self.send('F1;\x00')
-
-                        elif count > 1:
-                            self.send(("F%x;" % len(read_offset)).encode() + (read_offset))
-
-                        else:
-                            self.send("F0;")
-                    
-                    elif re.match("\/proc\/.*\/maps", self.lib_abspath):
-                        self.send("F0;")    
-                    
+                    if data:
+                        self.send(("F%x;" % size).encode() + (data))
                     else:
                         self.send("F0;")
 
                 elif subcmd.startswith('File:close'):
+                    fd = subcmd.split(':')[-1]
+                    fd = int(fd, base=16)
+                    os.close(fd)
                     self.send("F0")
 
                 elif subcmd.startswith('Kill'):
