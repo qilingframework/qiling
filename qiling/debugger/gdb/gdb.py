@@ -58,6 +58,9 @@ class QlGdb(QlDebugger, object):
         else:
             port = int(port)
 
+        self.ip = ip
+        self.port = port
+
         if ql.shellcoder:
             load_address = ql.os.entry_point
             exit_point = load_address + len(ql.shellcoder)
@@ -65,18 +68,8 @@ class QlGdb(QlDebugger, object):
             load_address = ql.loader.load_address
             exit_point = load_address + os.path.getsize(ql.path)
 
-        logging.info("gdb> Listening on %s:%u" % (ip, port)) 
         self.gdb.initialize(self.ql, exit_point=exit_point, mappings=[(hex(load_address))])
         
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.bind((ip, port))
-        sock.listen(1)
-        clientsocket, addr = sock.accept()
-
-        self.clientsocket   = clientsocket
-        self.netin          = clientsocket.makefile('r')
-        self.netout         = clientsocket.makefile('w')
-       
         if self.ql.ostype in (QL_OS.LINUX, QL_OS.FREEBSD) and not self.ql.shellcoder:
             self.entry_point = self.ql.os.elf_entry
         else:
@@ -139,12 +132,28 @@ class QlGdb(QlDebugger, object):
 
         return unhexlify(rawbin_escape)
 
+    def setup_server(self):
+        logging.info("gdb> Listening on %s:%u" % (self.ip, self.port))
+
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        sock.bind((self.ip, self.port))
+        sock.listen(1)
+        clientsocket, addr = sock.accept()
+
+        self.sock           = sock
+        self.clientsocket   = clientsocket
+        self.netin          = clientsocket.makefile('r')
+        self.netout         = clientsocket.makefile('w')
+
     def close(self):
         self.netin.close()
         self.netout.close()
         self.clientsocket.close()
+        self.sock.close()
 
     def run(self):
+        self.setup_server()
 
         while self.receive() == 'Good':
             pkt = self.last_pkt
