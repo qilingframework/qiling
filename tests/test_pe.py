@@ -554,5 +554,96 @@ class PETest(unittest.TestCase):
             ql.amsint32_driver.run(0x102D0)
 
 
+    def test_pe_win_x86_driver(self):
+        # Compiled sample from https://github.com/microsoft/Windows-driver-samples/tree/master/general/ioctl/wdm/sys
+        ql = Qiling(["../examples/rootfs/x86_windows/bin/sioctl.sys"], "../examples/rootfs/x86_windows", libcache=True, stop_on_stackpointer=True)
+
+        driver_object = ql.loader.driver_object
+
+        # Verify that these start zeroed out
+        majorfunctions = driver_object.MajorFunction
+        self.assertEqual(majorfunctions[IRP_MJ_CREATE], 0)
+        self.assertEqual(majorfunctions[IRP_MJ_CLOSE], 0)
+        self.assertEqual(majorfunctions[IRP_MJ_DEVICE_CONTROL], 0)
+        # And a DriverUnload
+        self.assertEqual(driver_object.DriverUnload, 0)
+
+        # Run the simulation
+        ql.run()
+
+        # Check that we have some MajorFunctions
+        majorfunctions = driver_object.MajorFunction
+        self.assertNotEqual(majorfunctions[IRP_MJ_CREATE], 0)
+        self.assertNotEqual(majorfunctions[IRP_MJ_CLOSE], 0)
+        self.assertNotEqual(majorfunctions[IRP_MJ_DEVICE_CONTROL], 0)
+        # And a DriverUnload
+        self.assertNotEqual(driver_object.DriverUnload, 0)
+
+        ql.os.clear_syscalls()
+
+        IOCTL_SIOCTL_METHOD_OUT_DIRECT = (40000, 0x901, METHOD_OUT_DIRECT, FILE_ANY_ACCESS)
+        output_buffer_size = 0x1000
+        in_buffer = b'Test input\0'
+        Status, Information_value, output_data = ql.os.ioctl((IOCTL_SIOCTL_METHOD_OUT_DIRECT, output_buffer_size, in_buffer))
+
+        expected_result = b'This String is from Device Driver !!!\x00'
+        self.assertEqual(Status, 0)
+        self.assertEqual(Information_value, len(expected_result))
+        self.assertEqual(output_data, expected_result)
+
+        # TODO:
+        # - Call majorfunctions:
+        #   - IRP_MJ_CREATE
+        #   - IRP_MJ_CLOSE
+        # - Call DriverUnload
+
+        del ql
+
+    def test_pe_win_x8664_driver(self):
+        # Compiled sample from https://github.com/microsoft/Windows-driver-samples/tree/master/general/ioctl/wdm/sys
+        ql = Qiling(["../examples/rootfs/x8664_windows/bin/sioctl.sys"], "../examples/rootfs/x8664_windows", libcache=True, stop_on_stackpointer=True)
+
+        driver_object = ql.loader.driver_object
+
+        # Verify that these start zeroed out
+        majorfunctions = driver_object.MajorFunction
+        self.assertEqual(majorfunctions[IRP_MJ_CREATE], 0)
+        self.assertEqual(majorfunctions[IRP_MJ_CLOSE], 0)
+        self.assertEqual(majorfunctions[IRP_MJ_DEVICE_CONTROL], 0)
+        # And a DriverUnload
+        self.assertEqual(driver_object.DriverUnload, 0)
+
+        # Run the simulation
+        ql.run()
+
+        # Check that we have some MajorFunctions
+        majorfunctions = driver_object.MajorFunction
+        self.assertNotEqual(majorfunctions[IRP_MJ_CREATE], 0)
+        self.assertNotEqual(majorfunctions[IRP_MJ_CLOSE], 0)
+        self.assertNotEqual(majorfunctions[IRP_MJ_DEVICE_CONTROL], 0)
+        # And a DriverUnload
+        self.assertNotEqual(driver_object.DriverUnload, 0)
+
+        ql.os.clear_syscalls()
+
+        IOCTL_SIOCTL_METHOD_OUT_DIRECT = (40000, 0x901, METHOD_OUT_DIRECT, FILE_ANY_ACCESS)
+        output_buffer_size = 0x1000
+        in_buffer = b'Test input\0'
+        Status, Information_value, output_data = ql.os.ioctl((IOCTL_SIOCTL_METHOD_OUT_DIRECT, output_buffer_size, in_buffer))
+
+        expected_result = b'This String is from Device Driver !!!\x00'
+        self.assertEqual(Status, 0)
+        self.assertEqual(Information_value, len(expected_result))
+        self.assertEqual(output_data, expected_result)
+
+        # TODO:
+        # - Call majorfunctions:
+        #   - IRP_MJ_CREATE
+        #   - IRP_MJ_CLOSE
+        # - Call DriverUnload
+
+        del ql
+
+
 if __name__ == "__main__":
     unittest.main()
