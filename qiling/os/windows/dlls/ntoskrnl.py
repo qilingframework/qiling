@@ -179,7 +179,7 @@ def ntoskrnl_IoCreateDevice(ql, address, params):
     device_object.CurrentIrp.value = 0
     device_object.Timer.value = 0
     device_object.Flags = 0x00000080  # DO_DEVICE_INITIALIZING
-    if params['Exclusive']:
+    if 'Exclusive' in params and params['Exclusive']:
         device_object.Flags |= 0x00000008  # DO_EXCLUSIVE
     device_object.Characteristics = params['DeviceCharacteristics']
     ql.mem.write(addr, bytes(device_object)[:])
