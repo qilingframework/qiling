@@ -119,6 +119,8 @@ class QlOsLinux(QlOsPosix):
                             raise QlErrorExecutionStop('Dynamic library .init() failed!')
                         self.ql.enable_lib_patch()
                         self.run_function_after_load()
+                        self.ql.loader.skip_exit_check = False
+                        self.ql.write_exit_trap()
 
                         main_thread.set_start_address(self.ql.loader.elf_entry)
                         main_thread.exit_point = self.exit_point
@@ -137,6 +139,8 @@ class QlOsLinux(QlOsPosix):
                         self.ql.emu_start(self.ql.loader.entry_point, self.ql.loader.elf_entry, self.ql.timeout)
                         self.ql.enable_lib_patch()
                         self.run_function_after_load()
+                        self.ql.loader.skip_exit_check = False
+                        self.ql.write_exit_trap()
 
                     self.ql.emu_start(self.ql.loader.elf_entry, self.exit_point, self.ql.timeout, self.ql.count)
 

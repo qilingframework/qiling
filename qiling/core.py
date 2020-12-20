@@ -702,10 +702,11 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         # Stop on a negative stack pointer
         if self.stop_options.stackpointer:
             def _check_sp(ql, address, size):
-                sp = ql._initial_sp - ql.reg.arch_sp
-                if sp < 0:
-                    logging.info('Process returned from entrypoint (stackpointer)!')
-                    ql.emu_stop()
+                if not ql.loader.skip_exit_check:
+                    sp = ql._initial_sp - ql.reg.arch_sp
+                    if sp < 0:
+                        logging.info('Process returned from entrypoint (stackpointer)!')
+                        ql.emu_stop()
 
             self.hook_code(_check_sp)
 
@@ -717,11 +718,14 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
             self.hook_address(_exit_trap, self._exit_trap_addr)
 
-    def _write_exit_trap(self):
+    def write_exit_trap(self):
         self._initial_sp = self.reg.arch_sp
         if self.stop_options.any:
-            logging.info(f'Setting up exit trap at 0x{hex(self._exit_trap_addr)}')
-            self.stack_write(0, self._exit_trap_addr)
+            if not self.loader.skip_exit_check:
+                logging.debug(f'Setting up exit trap at 0x{hex(self._exit_trap_addr)}')
+                self.stack_write(0, self._exit_trap_addr)
+            elif self.stop_options.exit_trap:
+                logging.debug(f'Loader {self.loader} requested to skip exit_trap!')
 
 
     ###############
@@ -736,7 +740,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self.exit_point = end
         self.timeout = timeout
         self.count = count
-        self._write_exit_trap()
+        self.write_exit_trap()
 
         # init debugger
         if self._debugger != False and self._debugger != None:

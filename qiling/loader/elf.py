@@ -402,6 +402,9 @@ class QlLoaderELF(QlLoader, ELFParse):
                                                 load_address, load_address + mem_end)
         self.init_sp = self.ql.reg.arch_sp
 
+        # If there is a loader, we ignore exit
+        self.skip_exit_check = self.elf_entry != self.entry_point
+
         # map vsyscall section for some specific needs
         if self.ql.archtype == QL_ARCH.X8664 and self.ql.ostype == QL_OS.LINUX:
             _vsyscall_addr = int(self.ql.os.profile.get("OS64", "vsyscall_address"), 16)
