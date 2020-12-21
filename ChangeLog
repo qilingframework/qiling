@@ -12,7 +12,7 @@ BREAK CHANGE
 [Version 1.2.1]: December [SOMETHING], 2020
 
 - Demigod: Fixed lkm mapping and added support for MIPS32EL
-- Demigod: Added support for x86 32bit
+- Demigod: Added support for Linux x86 32bit
 
 
 ------------------------------------
