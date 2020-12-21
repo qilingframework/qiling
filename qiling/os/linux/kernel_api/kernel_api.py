@@ -79,13 +79,6 @@ def hook_mutex_unlock(ql, address, params):
 @linux_kernel_api(params={
     "Ptr": POINTER
 })
-def hook_memcmp(ql, address, params):
-    pass
-
-
-@linux_kernel_api(params={
-    "Ptr": POINTER
-})
 def hook_kmalloc_caches(ql, address, params):
     pass
 
@@ -281,7 +274,10 @@ def hook_strncmp(ql, address, params):
     "needle": STRING
 })
 def hook_strstr(ql, address, params):
-    return 0
+    _haystack = params["haystack"]
+    _needle = params["needle"]
+    index = _haystack.find(_needle)
+    return 0 if index == -1 else index
 
 
 @linux_kernel_api(params={
@@ -299,7 +295,10 @@ def hook_strlen(ql, address, params):
     "size": SIZE_T
 })
 def hook_memcmp(ql, address, params):
-    return 0
+    s1 = params['s1']
+    s2 = params['s2']
+    size = params['size']
+    return ql.mem.read(s1, size) ==  ql.mem.read(s2, size)
 
 
 @linux_kernel_api(params={
@@ -465,3 +464,15 @@ def hook_commit_creds(ql, address, params):
 })
 def hook_abort_creds(ql, address, params):
     return 0
+
+@linux_kernel_api(params={
+    "dest": POINTER,
+    "src": POINTER,
+    "size": SIZE_T
+})
+def hook_memcpy(ql, address, params):
+    dest = params["dest"]
+    src = params["src"]
+    size = params["size"]
+    ql.mem.write(dest, bytes(ql.mem.read(src, size)))
+    return dest

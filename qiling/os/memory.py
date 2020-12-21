@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-import os, re
+import os, re, logging
 
 from qiling.const import *
 from qiling.exception import *
@@ -130,13 +130,13 @@ class QlMemoryManager:
                     perms_sym.append("-")
             return "".join(perms_sym)
 
-        self.ql.nprint("[+] Start      End        Perm.  Path")
+        logging.info("[+] Start      End        Perm.  Path")
         for  start, end, perm, info in self.map_info:
             _perm = _perms_mapping(perm)
             image = self.ql.os.find_containing_image(start)
             if image:
                 info += f" ({image.path})"
-            self.ql.nprint("[+] %08x - %08x - %s    %s" % (start, end, _perm, info))
+            logging.info("[+] %08x - %08x - %s    %s" % (start, end, _perm, info))
 
 
     def get_lib_base(self, filename):
@@ -170,12 +170,12 @@ class QlMemoryManager:
             info = value[3]
             mem_read = bytes(value[4])
 
-            self.ql.dprint(4,"restore key: %i 0x%x 0x%x %s" % (key, start, end, info))
+            logging.debug("restore key: %i 0x%x 0x%x %s" % (key, start, end, info))
             if self.is_mapped(start, end-start) == False:
-                self.ql.dprint(4,"mapping 0x%x 0x%x mapsize 0x%x" % (start, end, end-start))
+                logging.debug("mapping 0x%x 0x%x mapsize 0x%x" % (start, end, end-start))
                 self.map(start, end-start, perms=perm, info=info)
 
-            self.ql.dprint(4,"writing 0x%x size 0x%x write_size 0x%x " % (start, end-start, len(mem_read)))
+            logging.debug("writing 0x%x size 0x%x write_size 0x%x " % (start, end-start, len(mem_read)))
             self.write(start, mem_read)
 
     def read(self, addr: int, size: int) -> bytearray:
@@ -396,7 +396,7 @@ class QlMemoryManager:
 
     def get_mapped(self):
         for idx, val in enumerate(self.ql.uc.mem_regions()):
-            self.ql.nprint(idx, list(map(hex, val)))
+            logging.info(idx, list(map(hex, val)))
 
 # A Simple Heap Implementation
 class Chunk():
@@ -477,7 +477,7 @@ class QlMemoryHeap:
             self.chunks.append(chunk)
 
         chunk.inuse = True
-        #self.ql.dprint(D_INFO,"heap.alloc addresss: " + hex(chunk.address))
+        #logging.debug("heap.alloc addresss: " + hex(chunk.address))
         return chunk.address
 
     def size(self, addr):

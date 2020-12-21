@@ -7,7 +7,7 @@ from qiling.os.windows.const import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.thread import *
 from qiling.exception import *
-import configparser
+import configparser, logging
 from qiling.os.windows.structs import *
 
 dllname = 'kernel32_dll'
@@ -353,12 +353,12 @@ def hook_VerifyVersionInfoW(ql, address, params):
 
             # Just a print for analysts, will remove it from here in the future
             if key == VER_MAJORVERSION:
-                ql.dprint(D_RPRT, "[=] The Target is checking the windows Version!")
+                logging.debug("[=] The Target is checking the windows Version!")
                 version_asked = SYSTEMS_VERSION.get(concat, None)
                 if version_asked is None:
                     raise QlErrorNotImplemented("[!] API not implemented for version %s" % concat)
                 else:
-                    ql.dprint(D_RPRT, "[=] The target asks for version %s %s" % (operator, version_asked))
+                    logging.debug("[=] The target asks for version %s %s" % (operator, version_asked))
             # We can finally compare
             qiling_os = str(ql.os.profile.get("SYSTEM", "majorVersion")) + str(
                 ql.os.profile.get("SYSTEM", "minorVersion")) + str(

@@ -9,6 +9,7 @@ import magic
 import sys
 import traceback
 import math
+import logging
 
 class QlLoaderDOS(QlLoader):
     def __init__(self, ql):
@@ -20,7 +21,7 @@ class QlLoaderDOS(QlLoader):
     def excepthook(self, tp, value, tb):
         if self.ql.os.stdscr is not None:
             tbmsg = "".join(traceback.format_exception(tp, value, tb))
-            self.ql.nprint(f"{tbmsg}")
+            logging.info(f"{tbmsg}")
         self.old_excepthook(tp, value, tb)
 
     def _round_to_4k(self, addr):
@@ -66,7 +67,7 @@ class QlLoaderDOS(QlLoader):
             if not self.ql.os.fs_mapper.has_mapping(0x80):
                 self.ql.os.fs_mapper.add_fs_mapping(0x80, QlDisk(path, 0x80))
             # Map all available address.
-            self.ql.mem.map(0x0, 0x100000)
+            self.ql.mem.map(0x0, 0x1000000)
             self.ql.mem.write(self.start_address, bs)
             self.cs = 0
             self.ql.reg.ds = self.cs

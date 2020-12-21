@@ -1,6 +1,7 @@
 import ctypes
 import socket
 import struct
+import logging
 from functools import wraps
 
 from qiling.os.macos.structs import *
@@ -28,14 +29,14 @@ class QlMacOSEv:
             self.params = params[:]
 
     def dump(self):
-        self.ql.nprint("[*] Dumping object: %s with type %d" % (self.name, self.type.value))
+        logging.info("[*] Dumping object: %s with type %d" % (self.name, self.type.value))
         for field in self.event._fields_:
             if isinstance(getattr(self.event, field[0]), POINTER64):
-                self.ql.nprint("%s: 0x%x" % (field[0], getattr(self.event, field[0]).value))
+                logging.info("%s: 0x%x" % (field[0], getattr(self.event, field[0]).value))
             elif isinstance(getattr(self.event, field[0]), int):
-                self.ql.nprint("%s: %d" % (field[0], getattr(self.event, field[0])))
+                logging.info("%s: %d" % (field[0], getattr(self.event, field[0])))
             elif isinstance(getattr(self.event, field[0]), bytes):
-                self.ql.nprint("%s: %s" % (field[0], getattr(self.event, field[0]).decode()))
+                logging.info("%s: %s" % (field[0], getattr(self.event, field[0]).decode()))
 
 def init_ev_ctx(f):
     @wraps(f)
@@ -89,7 +90,7 @@ class QlMacOSEvManager:
         self.dst_port = socket.htons(1338)
         self.dst_mac = b"\xba\xbe\xfe\xed\xfa\xce"
 
-        self.current_proc = self.ql.filename[0]
+        self.current_proc = self.ql.argv[0]
         self.cred = None
         self.label = None
         self.vnode = None
@@ -108,7 +109,7 @@ class QlMacOSEvManager:
     def add_process(self, pid, name):
         for p in self.my_procs:
             if p.p_pid == pid:
-                self.ql.nprint("[!] Duplicated process")
+                logging.info("[!] Duplicated process")
                 return
 
         cur_proc_addr = self.ql.os.heap.alloc(ctypes.sizeof(proc_t))
@@ -202,7 +203,7 @@ class QlMacOSEvManager:
     def emit(self, ev_name, ev_type, params):
         found = self.get_event_by_name_and_type(ev_name, ev_type)
         if found is None:
-            self.ql.nprint("[!] No callbacks found for (%s, %s)" % (ev_name, ev_type))
+            logging.info("[!] No callbacks found for (%s, %s)" % (ev_name, ev_type))
             return
 
         found.set_params(params)

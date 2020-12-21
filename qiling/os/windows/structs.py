@@ -2,7 +2,7 @@
 #
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
-import struct
+import struct, logging
 from unicorn.x86_const import *
 from qiling.const import *
 from enum import IntEnum
@@ -1634,20 +1634,20 @@ class WindowsStruct:
         raise NotImplementedError
 
     def generic_write(self, addr: int, attributes: list):
-        self.ql.dprint(D_RPRT, "[+] Writing Windows object " + self.__class__.__name__)
+        logging.debug("[+] Writing Windows object " + self.__class__.__name__)
         already_written = 0
         for elem in attributes:
             (val, size, endianness, typ) = elem
             if typ == int:
                 value = val.to_bytes(size, endianness)
-                self.ql.dprint(D_RPRT, "[+] Writing to %d with value %s" % (addr + already_written, value))
+                logging.debug("[+] Writing to %d with value %s" % (addr + already_written, value))
                 self.ql.mem.write(addr + already_written, value)
             elif typ == bytes:
                 if isinstance(val, bytearray):
                     value = bytes(val)
                 else:
                     value = val
-                self.ql.dprint(D_RPRT, "[+] Writing at addr %d value %s" % (addr + already_written, value))
+                logging.debug("[+] Writing at addr %d value %s" % (addr + already_written, value))
 
                 self.ql.mem.write(addr + already_written, value)
             elif issubclass(typ, WindowsStruct):
@@ -1659,12 +1659,12 @@ class WindowsStruct:
         self.addr = addr
 
     def generic_read(self, addr: int, attributes: list):
-        self.ql.dprint(D_RPRT, "[+] Reading Windows object " + self.__class__.__name__)
+        logging.debug("[+] Reading Windows object " + self.__class__.__name__)
         already_read = 0
         for elem in attributes:
             (val, size, endianness, type) = elem
             value = self.ql.mem.read(addr + already_read, size)
-            self.ql.dprint(D_RPRT, "[+] Reading from %d value %s" % (addr + already_read, value))
+            logging.debug("[+] Reading from %d value %s" % (addr + already_read, value))
             if type == int:
                 elem[0] = int.from_bytes(value, endianness)
             elif type == bytes:

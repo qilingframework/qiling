@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
-import os, sys, types
+import os, sys, types, logging
 
 from .utils import QlOsUtils
 from .const import *
@@ -18,7 +18,6 @@ class QlOs(QlOsUtils):
     def __init__(self, ql):
         super(QlOs, self).__init__(ql)
         self.ql = ql
-        self.ql.uc = self.ql.arch.init_uc
         self.fs_mapper = QlFsMapper(ql)
         self.child_processes = False
         self.thread_management = None
@@ -93,32 +92,32 @@ class QlOs(QlOsUtils):
                 return image
 
     def emu_error(self):
-        self.ql.nprint("\n")
+        logging.info("\n")
 
         for reg in self.ql.reg.register_mapping:
             if isinstance(reg, str):
                 REG_NAME = reg
                 REG_VAL = self.ql.reg.read(reg)
-                self.ql.nprint("[-] %s\t:\t 0x%x" % (REG_NAME, REG_VAL))
+                logging.info("[-] %s\t:\t 0x%x" % (REG_NAME, REG_VAL))
 
-        self.ql.nprint("\n")
-        self.ql.nprint("[+] PC = 0x%x" % (self.ql.reg.arch_pc), end="")
+        logging.info("\n")
+        logging.info("[+] PC = 0x%x" % (self.ql.reg.arch_pc))
         containing_image = self.find_containing_image(self.ql.reg.arch_pc)
         if containing_image:
             offset = self.ql.reg.arch_pc - containing_image.base
-            self.ql.nprint(" (%s+0x%x)" % (containing_image.path, offset))
+            logging.info(" (%s+0x%x)" % (containing_image.path, offset))
         else:
-            self.ql.nprint("\n")
+            logging.info("\n")
         self.ql.mem.show_mapinfo()
 
         try:
             buf = self.ql.mem.read(self.ql.reg.arch_pc, 8)
-            self.ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
+            logging.info("[+] %r" % ([hex(_) for _ in buf]))
 
-            self.ql.nprint("\n")
+            logging.info("\n")
             self.disassembler(self.ql, self.ql.reg.arch_pc, 64)
         except:
-            self.ql.nprint("[!] Error: PC(0x%x) Unreachable" % self.ql.reg.arch_pc)
+            logging.info("[!] Error: PC(0x%x) Unreachable" % self.ql.reg.arch_pc)
 
 
     def _x86_set_args(self, args):

@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-import types, os, struct, time
+import types, os, struct, time, logging
 
 from unicorn import *
 from qiling.const import QL_INTERCEPT
@@ -308,7 +308,7 @@ class QlOsDos(QlOs):
             elif al == 0x11 or al == 0x12:
                 curses.resizeterm(480, 640)
             else:
-                self.ql.nprint("Exception: int 10h syscall Not Found, al: %s" % hex(al))
+                logging.info("Exception: int 10h syscall Not Found, al: %s" % hex(al))
                 raise NotImplementedError()
             # Quoted from https://linux.die.net/man/3/resizeterm
             #
@@ -317,13 +317,13 @@ class QlOsDos(QlOs):
             # read on the next call to getch.
             ch = self._get_ch_non_blocking()
             if ch == curses.KEY_RESIZE:
-                self.ql.nprint(f"[!] You term has been resized!")
+                logging.info(f"[!] You term has been resized!")
             elif ch != -1:
                 curses.ungetch(ch)
             self.stdscr.scrollok(True)
                 
             if not curses.has_colors():
-                self.ql.nprint(f"[!] Warning: your terminal doesn't support colors, content might not be displayed correctly.")
+                logging.info(f"[!] Warning: your terminal doesn't support colors, content might not be displayed correctly.")
             
             # https://en.wikipedia.org/wiki/BIOS_color_attributes
             # blink support?
@@ -364,8 +364,8 @@ class QlOsDos(QlOs):
             cy, cx = self.stdscr.getyx()
             attr = self._get_attr(fg, bg)
             if ch != 0 or cl != 0 or dh != y - 1 or dl != x - 1:
-                self.ql.nprint(f"[!] Warning: Partial scroll is unsupported. Will scroll the whole page.")
-                self.ql.nprint(f"[!] Resolution: {y}x{x} but asked to scroll [({ch},{cl}),({dh}, {dl})]")
+                logging.info(f"[!] Warning: Partial scroll is unsupported. Will scroll the whole page.")
+                logging.info(f"[!] Resolution: {y}x{x} but asked to scroll [({ch},{cl}),({dh}, {dl})]")
             if al != 0:
                 self.stdscr.scroll(al)
                 ny = 0
@@ -402,7 +402,7 @@ class QlOsDos(QlOs):
                     orig_bg |= 0b1000
                 self.ql.reg.ah = ((orig_bg << 4) & orig_fg)
         elif ah == 0xE:
-            self.ql.dprint(0, f"Echo: {hex(al)} -> {curses.ascii.unctrl(al)}")
+            logging.debug(f"Echo: {hex(al)} -> {curses.ascii.unctrl(al)}")
             y, x = self.stdscr.getmaxyx()
             cy, cx = self.stdscr.getyx()
             fg = self.ql.reg.bl
@@ -413,7 +413,7 @@ class QlOsDos(QlOs):
             attr = self.stdscr.inch(cy, cx) & curses.A_COLOR
             if al == 0xa:
                 # \n will erase current line with echochar, so we have to handle it carefully.
-                self.ql.nprint(f"Resolution: {x}x{y}, Cursor position: {cx},{cy}, Going to get a new line.")
+                logging.info(f"Resolution: {x}x{y}, Cursor position: {cx},{cy}, Going to get a new line.")
                 if y-1 == cy:
                     # scroll doesn't affect our cursor
                     self.stdscr.scroll(1)
@@ -423,7 +423,7 @@ class QlOsDos(QlOs):
             else:
                 self.stdscr.echochar(al, attr)
         else:
-            self.ql.nprint("Exception: int 10h syscall Not Found, ah: %s" % hex(ah))
+            logging.info("Exception: int 10h syscall Not Found, ah: %s" % hex(ah))
             raise NotImplementedError()
         if self.stdscr is not None:
             self.stdscr.refresh()
@@ -436,11 +436,28 @@ class QlOsDos(QlOs):
         if ah == 0x0:
             self.ql.reg.ah = 0
             self.clear_cf()
+        elif ah == 0x2:
+            cnt = self.ql.reg.al
+            idx = self.ql.reg.dl
+            cylinder = ((self.ql.reg.cx & 0xFF00) >> 8) | ((self.ql.reg.cx & 0xC0) << 2)
+            sector = self.ql.reg.cx & 63
+            head = self.ql.reg.dh
+            if not self.ql.os.fs_mapper.has_mapping(idx):
+                self.logging.info(f"[!] Warning: No such disk: {hex(idx)}")
+                self.ql.reg.ah = INT13DiskError.BadCommand.value
+                self.set_cf()
+                return
+            disk = self.ql.os.fs_mapper.open(idx, None)
+            content = disk.read_chs(cylinder, head, sector, cnt)
+            self.ql.mem.write(self.calculate_address(self.ql.reg.es, self.ql.reg.bx), content)
+            self.clear_cf()
+            self.ql.reg.ah = 0
+            self.ql.reg.al = sector
         elif ah == 0x8:
             # https://stanislavs.org/helppc/int_13-8.html
             idx = self.ql.reg.dl
             if not self.ql.os.fs_mapper.has_mapping(idx):
-                self.ql.nprint(f"[!] Warning: No such disk: {hex(idx)}")
+                logging.info(f"[!] Warning: No such disk: {hex(idx)}")
                 self.ql.reg.ah = INT13DiskError.BadCommand.value
                 self.set_cf()
                 return
@@ -465,13 +482,21 @@ class QlOsDos(QlOs):
             self.ql.reg.ah = 0
             self.clear_cf()
             pass
+        elif ah == 0x41:
+            idx = self.ql.reg.dl
+            self.ql.reg.ah = 0
+            # 1 -> Device Access using the packet structure.
+            # 2 -> Drive locking and ejecting.
+            # 4 -> Enhanced Disk Drive Support.
+            self.ql.reg.bx = 0xaa55
+            self.ql.reg.cx = 7
         elif ah == 0x42:
             idx = self.ql.reg.dl
             dapbs = self.ql.mem.read(self.calculate_address(ds, si), 0x10)
             _, _, cnt, offset, segment, lba = self._parse_dap(dapbs)
-            self.ql.nprint(f"Reading {cnt} sectors from disk {hex(idx)} with LBA {lba}")
+            logging.info(f"Reading {cnt} sectors from disk {hex(idx)} with LBA {lba}")
             if not self.ql.os.fs_mapper.has_mapping(idx):
-                self.ql.nprint(f"[!] Warning: No such disk: {hex(idx)}")
+                logging.info(f"[!] Warning: No such disk: {hex(idx)}")
                 self.ql.reg.ah = INT13DiskError.BadCommand.value
                 self.set_cf()
                 return
@@ -484,9 +509,9 @@ class QlOsDos(QlOs):
             idx = self.ql.reg.dl
             dapbs = self.ql.mem.read(self.calculate_address(ds, si), 0x10)
             _, _, cnt, offset, segment, lba = self._parse_dap(dapbs)
-            self.ql.nprint(f"Write {cnt} sectors to disk {hex(idx)} with LBA {lba}")
+            logging.info(f"Write {cnt} sectors to disk {hex(idx)} with LBA {lba}")
             if not self.ql.os.fs_mapper.has_mapping(idx):
-                self.ql.nprint(f"[!] Warning: No such disk: {hex(idx)}")
+                logging.info(f"[!] Warning: No such disk: {hex(idx)}")
                 self.ql.reg.ah = INT13DiskError.BadCommand.value
                 self.set_cf()
                 return
@@ -496,20 +521,31 @@ class QlOsDos(QlOs):
             self.clear_cf()
             self.ql.reg.ah = 0
         else:
-            self.ql.nprint("Exception: int 13h syscall Not Found, ah: %s" % hex(ah))
+            logging.info("Exception: int 13h syscall Not Found, ah: %s" % hex(ah))
             raise NotImplementedError()
     
     def int15(self):
         ah = self.ql.reg.ah
+        ax = self.ql.reg.ax
         if ah == 0:
             pass
         elif ah == 1:
             pass
+        elif ax == 0x5301:
+            # http://www.oldlinux.org/Linux.old/docs/interrupts/int-html/int-15.htm
+            self.clear_cf()
+        elif ax == 0x530e:
+            self.ql.reg.ax = 0x0102
+            self.clear_cf()
+        elif ax == 0x5307:
+            if self.ql.reg.bx == 1 and self.ql.reg.cx == 3:
+                self.logging.info("[+] Emulation Stop")
+                self.ql.uc.emu_stop()
         elif ah == 0x86:
             dx = self.ql.reg.dx
             cx = self.ql.reg.cx
             full_secs = ((cx << 16) + dx) / 1000000
-            self.ql.nprint(f"Goint to sleep {full_secs} seconds")
+            logging.info(f"Goint to sleep {full_secs} seconds")
             time.sleep(full_secs)
 
             # Note: Since we are in a single thread environment, we assume
@@ -531,7 +567,7 @@ class QlOsDos(QlOs):
         if ch in SCANCODES:
             return SCANCODES[ch]
         else:
-            self.ql.nprint(f"[!] Warning: scan code for {hex(ch)} doesn't exist!")
+            logging.info(f"[!] Warning: scan code for {hex(ch)} doesn't exist!")
             return 0
 
     def int16(self):
@@ -539,7 +575,7 @@ class QlOsDos(QlOs):
         if ah == 0x0:
             curses.nonl()
             key = self._parse_key(self.stdscr.getch())
-            self.ql.dprint(0, f"Get key: {hex(key)}")
+            logging.debug(f"Get key: {hex(key)}")
             if curses.ascii.isascii(key):
                 self.ql.reg.al = key
             else:
@@ -555,7 +591,7 @@ class QlOsDos(QlOs):
                 self.set_flag(0x40)
                 self.ql.reg.ax = 0
             else:
-                self.ql.dprint(0, f"Has key: {hex(key)} ({curses.ascii.unctrl(key)})")
+                logging.debug(f"Has key: {hex(key)} ({curses.ascii.unctrl(key)})")
                 self.ql.reg.al = key
                 self.ql.reg.ah = self._get_scan_code(key)
                 self.clear_flag(0x40)
@@ -628,7 +664,7 @@ class QlOsDos(QlOs):
             pass
 
         else:
-            self.ql.nprint("Exception: int 20h syscall Not Found, ah: %s" % hex(ah))
+            logging.info("Exception: int 20h syscall Not Found, ah: %s" % hex(ah))
             raise NotImplementedError()            
 
     def int21(self):
@@ -636,17 +672,17 @@ class QlOsDos(QlOs):
         
         # exit
         if ah == 0x4C:
-            self.ql.nprint("[+] Emulation Stop")
+            logging.info("[+] Emulation Stop")
             self.ql.uc.emu_stop()
         # character output
         elif ah == 0x2 or ah == 0x6:
             ch = chr(self.ql.reg.dl)
             self.ql.reg.al = self.ql.reg.dl
-            self.ql.nprint(ch)
+            logging.info(ch)
         # write to screen
         elif ah == 0x9:
             s = self.read_dos_string_from_ds_dx()
-            self.ql.nprint(s)
+            logging.info(s)
         elif ah == 0xC:
             # Clear input buffer
             pass
@@ -736,13 +772,13 @@ class QlOsDos(QlOs):
             self.ql.reg.cx = 0xFFFF
             self.clear_cf()         
         else:
-            self.ql.nprint("Exception: int 21h syscall Not Found, ah: %s" % hex(ah))
+            logging.info("Exception: int 21h syscall Not Found, ah: %s" % hex(ah))
             raise NotImplementedError()
 
     def hook_syscall(self):
         def cb(ql, intno, user_data=None):
             ah = self.ql.reg.ah
-            self.ql.dprint(0, f"INT {intno:x} with ah={hex(ah)}")
+            logging.debug(f"INT {intno:x} with ah={hex(ah)}")
             interrupt_tuple = (intno, ah)
             before = self.before_interrupt.get(interrupt_tuple, None)
             after = self.after_interrupt.get(interrupt_tuple, None)
@@ -790,5 +826,5 @@ class QlOsDos(QlOs):
                 self.emu_error()
                 raise
 
-            if self.ql.internal_exception != None:
-                raise self.ql.internal_exception 
+            if self.ql._internal_exception != None:
+                raise self.ql._internal_exception 

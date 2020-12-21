@@ -3,6 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
+import logging
 from qiling.os.windows.fncc import *
 from qiling.exception import *
 
@@ -79,7 +80,7 @@ def hook_ExpandEnvironmentStringsW(ql, address, params):
     substring = string[start + 1:end]
     result = ql.os.profile["PATH"].get(substring, None)
     if result is None:
-        ql.dprint(D_INFO, substring)
+        logging.debug(substring)
         raise QlErrorNotImplemented("[!] API not implemented")
     result = (string[:start] + result + string[end + 1:] + "\x00").encode("utf-16le")
     dst = params["lpDst"]

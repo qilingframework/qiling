@@ -31,6 +31,7 @@ THREAD_EVENT_EXIT_GROUP_EVENT = 6
 THREAD_STATUS_RUNNING = 0
 THREAD_STATUS_BLOCKING = 1
 THREAD_STATUS_TERMINATED = 2
+THREAD_STATUS_STOPPED = 4
 THREAD_STATUS_TIMEOUT = 3
 
 reptypedict = {
@@ -39,9 +40,11 @@ reptypedict = {
             "DWORDLONG": "ULONGLONG",
             "DWORD_PTR": "POINTER",
             "GROUP": "INT",
+            "HBITMAP": "HANDLE",
             "HDC": "POINTER",
             "HEAP_INFORMATION_CLASS": "UINT",
             "HGLOBAL": "POINTER",
+            "HIMAGELIST": "HANDLE",
             "HHOOK": "POINTER",
             "HINSTANCE": "HANDLE",
             "HINTERNET": "POINTER",
@@ -84,6 +87,7 @@ reptypedict = {
             "LPSTARTUPINFOA": "POINTER",
             "LPSTARTUPINFOW": "POINTER",
             "LPSTR": "POINTER",
+            "LPSTREAM": "POINTER",
             "LPSYSTEMTIME": "POINTER",
             "LPSYSTEM_INFO": "POINTER",
             "LPTHREAD_START_ROUTINE": "POINTER",

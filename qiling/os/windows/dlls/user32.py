@@ -4,6 +4,7 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
 import struct
+import logging
 from qiling.os.windows.fncc import *
 from qiling.os.const import *
 from qiling.os.windows.utils import *
@@ -140,7 +141,7 @@ def hook_GetClipboardData(ql, address, params):
         ql.mem.write(addr, data)
         return addr
     else:
-        ql.dprint(D_INFO, 'Failed to get clipboard data')
+        logging.debug('Failed to get clipboard data')
         return 0
 
 
@@ -167,10 +168,10 @@ def hook_MapVirtualKeyW(ql, address, params):
         if code is not None:
             return code
         else:
-            ql.dprint(D_INFO, "Code value %x" % code_value)
+            logging.debug("Code value %x" % code_value)
             raise QlErrorNotImplemented("[!] API not implemented")
     else:
-        ql.dprint(D_INFO, "Map value %x" % map_value)
+        logging.debug("Map value %x" % map_value)
         raise QlErrorNotImplemented("[!] API not implemented")
 
 
@@ -180,7 +181,7 @@ def hook_MapVirtualKeyW(ql, address, params):
 @winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'int': 'UINT'})
 def hook_GetKeyState(ql, address, params):
     let = chr(params["nVirtKey"])
-    ql.dprint(0, let)
+    logging.debug(let)
     UP = 2
     DOWN = 0
     return UP
@@ -241,7 +242,7 @@ def hook_GetSystemMetrics(ql, address, params):
     elif info == SM_CYHSCROLL:
         return 300
     else:
-        ql.dprint(D_INFO, "Info value %x" % info)
+        logging.debug("Info value %x" % info)
         raise QlErrorNotImplemented("[!] API not implemented")
 
 
@@ -656,7 +657,7 @@ def hook_MessageBoxW(ql, address, params):
     if type_box == MB_YESNO or type_box == MB_YESNOCANCEL:
         return IDYES
     else:
-        ql.dprint(D_INFO, type_box)
+        logging.debug(type_box)
         raise QlErrorNotImplemented("[!] API not implemented")
 
 
