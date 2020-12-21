@@ -108,12 +108,12 @@ def ql_syscall_shutdown(ql, shutdown_fd, shutdown_how, *args, **kw):
 def ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen,  *args, **kw):
     regreturn = 0
 
-    if ql.archtype== QL_ARCH.X8664:
+    if ql.archtype == QL_ARCH.X8664:
         data = ql.mem.read(bind_addr, 8)
     else:
         data = ql.mem.read(bind_addr, bind_addrlen)
 
-    sin_family = struct.unpack("<h", data[:2])[0] or ql.os.fd[bind_fd].family
+    sin_family = ql.unpack16(data[:2]) or ql.os.fd[bind_fd].family
     port, host = struct.unpack(">HI", data[2:8])
     host = ql_bin_to_ip(host)
 
@@ -136,7 +136,7 @@ def ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen,  *args, **kw):
         ql.os.fd[bind_fd].bind(('::1', port))
         host = "::1"
 
-    elif ql.bindtolocalhost == False:
+    elif ql.os.bindtolocalhost == False:
         ql.os.fd[bind_fd].bind((host, port))
 
     else:
