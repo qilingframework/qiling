@@ -3,6 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
+import logging
 from qiling.os.macos.kernel_api import *
 from unicorn import *
 
@@ -29,10 +30,11 @@ def hook_kernel_api(ql, address, size):
             except UcError:
                 raise
             except Exception:
-                ql.dprint(D_INFO, "[!] %s Exception Found" % api_name)
+                logging.exception("")
+                logging.debug("[!] %s Exception Found" % api_name)
                 raise QlErrorSyscallError("[!] MacOS kernel API Implementation Error")
         else:
-            ql.nprint("[!] %s is not implemented\n" % api_name)
+            logging.info("[!] %s is not implemented\n" % api_name)
             if ql.debug_stop:
                 raise QlErrorSyscallNotFound("[!] MacOS kernel API Implementation Not Found")
 

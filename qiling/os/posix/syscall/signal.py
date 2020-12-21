@@ -3,6 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
+import logging
 from qiling.const import *
 from qiling.os.linux.thread import *
 from qiling.const import *
@@ -28,7 +29,7 @@ def ql_syscall_rt_sigaction(ql, rt_sigaction_signum, rt_sigaction_act, rt_sigact
         ql.os.sigaction_act[rt_sigaction_signum] = data
 
     regreturn = 0
-    ql.nprint("rt_sigaction(0x%x, 0x%x, = 0x%x) = %d" % (rt_sigaction_signum, rt_sigaction_act, rt_sigaction_oldact, regreturn))
+    logging.info("rt_sigaction(0x%x, 0x%x, = 0x%x) = %d" % (rt_sigaction_signum, rt_sigaction_act, rt_sigaction_oldact, regreturn))
     ql.os.definesyscall_return(regreturn)
 
 
@@ -40,11 +41,11 @@ def ql_syscall_rt_sigprocmask(ql, rt_sigprocmask_how, rt_sigprocmask_nset, rt_si
         pass
 
     regreturn = 0
-    ql.nprint("rt_sigprocmask(0x%x, 0x%x, 0x%x, 0x%x) = %d" % (rt_sigprocmask_how, rt_sigprocmask_nset, rt_sigprocmask_oset, rt_sigprocmask_sigsetsize, regreturn))
+    logging.info("rt_sigprocmask(0x%x, 0x%x, 0x%x, 0x%x) = %d" % (rt_sigprocmask_how, rt_sigprocmask_nset, rt_sigprocmask_oset, rt_sigprocmask_sigsetsize, regreturn))
     ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_signal(ql, sig, __sighandler_t, *args, **kw):
     regreturn = 0
-    ql.nprint("signal(%d, 0x%x) = %d" % (sig, __sighandler_t,regreturn))
+    logging.info("signal(%d, 0x%x) = %d" % (sig, __sighandler_t,regreturn))
     ql.os.definesyscall_return(regreturn)

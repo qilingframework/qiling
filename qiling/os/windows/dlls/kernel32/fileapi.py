@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
-import struct, time, os
+import struct, time, os, logging
 from shutil import copyfile
 from datetime import datetime
 
@@ -143,7 +143,7 @@ def hook_ReadFile(ql, address, params):
             # TODO maybe insert a good random generation input
             s = (b"A" * (nNumberOfBytesToRead - 1)) + b"\x00"
         else:
-            ql.dprint(D_INFO, "Insert input")
+            logging.debug("Insert input")
             s = ql.os.stdin.read(nNumberOfBytesToRead)
         slen = len(s)
         read_len = slen

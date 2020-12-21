@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-import sys
+import sys, logging
 sys.path.append("..")
 
 from qiling import *
@@ -16,7 +16,7 @@ from qiling.os.windows.const import *
 @winsdkapi(cc=CDECL, replace_params={"str": STRING}) 
 def my_puts(ql, address, params):
     ret = 0
-    ql.nprint("\n+++++++++\nmy random Windows API\n+++++++++\n")
+    logging.info("\n+++++++++\nmy random Windows API\n+++++++++\n")
     string = params["str"]
     ret = len(string)
     return ret

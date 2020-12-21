@@ -39,7 +39,7 @@ class QLGuiPerfApp():
             self.scrollData.insert(INSERT, output_stream.getvalue())
             self.highlight_pattern("qiling_highlight", "qiling")
         except Exception as e:
-            print(e)
+            logging.exception("")
             msgbox.showerror("Error...", "Unable to load selected file")
 
     def highlight_pattern(self, tag, keyword):

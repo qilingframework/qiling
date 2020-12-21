@@ -904,9 +904,9 @@ class QlEmuQiling:
             qlstderr = QlEmuMisc.QLStdIO('stderr', sys.__stderr__.fileno())
             
         if sys.platform != 'win32':
-            self.ql = Qiling(filename=[self.path], rootfs=self.rootfs, output="debug", stdin=qlstdin, stdout=qlstdout, stderr=qlstderr, *args, **kwargs)
+            self.ql = Qiling(argv=[self.path], rootfs=self.rootfs, output="debug", stdin=qlstdin, stdout=qlstdout, stderr=qlstderr, *args, **kwargs)
         else:
-            self.ql = Qiling(filename=[self.path], rootfs=self.rootfs, output="debug", *args, **kwargs)
+            self.ql = Qiling(argv=[self.path], rootfs=self.rootfs, output="debug", *args, **kwargs)
         
         self.exit_addr = self.ql.os.exit_point
         if self.ql.ostype == QL_OS.LINUX:

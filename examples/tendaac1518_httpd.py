@@ -13,7 +13,7 @@
 # notes: we are using rootfs in this example, so rootfs = squashfs-root
 # 
 
-import os, socket, sys, threading
+import os, socket, sys, threading, logging
 sys.path.append("..")
 from qiling import *
 
@@ -54,7 +54,7 @@ def nvram_listener():
 
 def myvfork(ql):
     regreturn = 0
-    ql.nprint("vfork() = %d" % regreturn)
+    logging.info("vfork() = %d" % regreturn)
     ql.os.definesyscall_return(regreturn)
 
 

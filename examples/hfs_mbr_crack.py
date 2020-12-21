@@ -1,6 +1,6 @@
 from qiling.const import QL_INTERCEPT
 from qiling import Qiling
-import curses
+import curses, logging
 
 def input_index(ql: Qiling):
     return ql.unpack16(ql.mem.read(0x81ba, 2))
@@ -37,7 +37,7 @@ def find_next(ql: Qiling):
             ctx_succ = ql.save()
         ql.restore(ctx)
     if ctx_succ is None:
-        ql.nprint("Can't find any suitbale result.")
+        logging.info("Can't find any suitbale result.")
         return None
     ql.restore(ctx_succ)
     return results
@@ -65,11 +65,11 @@ def main():
     for i in range(9):
         r = find_next(ql)
         if r is None:
-            ql.nprint("Fail to crack.")
+            logging.info("Fail to crack.")
             return
         else:
             r = list(map(lambda x: chr(x), r))
-            ql.nprint(f"Get {r}")
+            logging.info(f"Get {r}")
             results.append(r)
     print_flags(results)
 

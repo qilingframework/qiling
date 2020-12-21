@@ -5,6 +5,7 @@
 
 import ctypes
 import struct
+import logging
 from qiling.const import *
 from .const import *
 
@@ -16,7 +17,7 @@ def convert_struct_to_bytes(st):
 def check_and_notify_protocols(ql):
     if len(ql.loader.notify_list) > 0:
         event_id, notify_func, notify_context = ql.loader.notify_list.pop(0)
-        ql.nprint(f'Notify event:{event_id} calling:{notify_func:x} context:{notify_context:x}')
+        logging.info(f'Notify event:{event_id} calling:{notify_func:x} context:{notify_context:x}')
         ql.stack_push(ql.loader.end_of_execution_ptr)
         ql.reg.rcx = notify_context
         ql.reg.arch_pc = notify_func

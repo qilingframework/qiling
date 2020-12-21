@@ -9,6 +9,7 @@ import magic
 import sys
 import traceback
 import math
+import logging
 
 class QlLoaderDOS(QlLoader):
     def __init__(self, ql):
@@ -20,7 +21,7 @@ class QlLoaderDOS(QlLoader):
     def excepthook(self, tp, value, tb):
         if self.ql.os.stdscr is not None:
             tbmsg = "".join(traceback.format_exception(tp, value, tb))
-            self.ql.nprint(f"{tbmsg}")
+            logging.info(f"{tbmsg}")
         self.old_excepthook(tp, value, tb)
 
     def _round_to_4k(self, addr):

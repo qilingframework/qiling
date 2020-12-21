@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
-import types
+import types, logging
 from multiprocessing import Process
 
 from qiling.const import *
@@ -83,11 +83,11 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
             if clone_child_stack != 0:
                 ql.arch.set_sp(clone_child_stack)
             regreturn = 0
-            ql.nprint("clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d" % (clone_child_stack, clone_flags, clone_newtls, clone_parent_tidptr, clone_child_tidptr, regreturn))
+            logging.info("clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d" % (clone_child_stack, clone_flags, clone_newtls, clone_parent_tidptr, clone_child_tidptr, regreturn))
             ql.os.definesyscall_return(regreturn)
         else:
             regreturn = pid
-            ql.nprint("clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d" % (clone_child_stack, clone_flags, clone_newtls, clone_parent_tidptr, clone_child_tidptr, regreturn))
+            logging.info("clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d" % (clone_child_stack, clone_flags, clone_newtls, clone_parent_tidptr, clone_child_tidptr, regreturn))
             ql.os.definesyscall_return(regreturn)            
         
         ql.emu_stop()
@@ -96,11 +96,12 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
     if clone_flags & CLONE_CHILD_SETTID == CLONE_CHILD_SETTID:
         set_child_tid_addr = clone_child_tidptr
 
-    th = ql.os.thread_class(ql, ql.os.thread_management, total_time = f_th.remaining_time(), set_child_tid_addr = set_child_tid_addr)
-    th.set_current_path(f_th.get_current_path())
+    th = ql.os.thread_class.spawn(ql, set_child_tid_addr = set_child_tid_addr)
+    th.current_path = f_th.current_path
+    logging.debug(f"[thread {th.get_id()}] created.")
 
     if clone_flags & CLONE_PARENT_SETTID == CLONE_PARENT_SETTID:
-        ql.mem.write(clone_parent_tidptr, ql.pack32(th.get_thread_id()))
+        ql.mem.write(clone_parent_tidptr, ql.pack32(th.id))
 
     # Whether to set a new tls
     if clone_flags & CLONE_SETTLS == CLONE_SETTLS:
@@ -117,17 +118,18 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
     regreturn = 0
     ql.os.definesyscall_return(regreturn)
     ql.arch.set_sp(clone_child_stack)
-    th.store_regs()
-
+    th.save_context()
+    if th is None or f_th is None:
+        raise Exception()
     ql.os.thread_management.cur_thread = th
-    ql.dprint(D_INFO, "[+] Currently running pid is: %d; tid is: %d " % (
-    os.getpid(), ql.os.thread_management.cur_thread.get_thread_id()))
-    ql.nprint("clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d" % (
+    logging.debug("[+] Currently running pid is: %d; tid is: %d " % (
+    os.getpid(), ql.os.thread_management.cur_thread.id))
+    logging.info("clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d" % (
     clone_child_stack, clone_flags, clone_newtls, clone_parent_tidptr, clone_child_tidptr, regreturn))
 
     # Restore the stack and return value of the parent process
     ql.arch.set_sp(f_sp)
-    regreturn = th.get_thread_id()
+    regreturn = th.id
     ql.os.definesyscall_return(regreturn)
 
     # Break the parent process and enter the add new thread event
@@ -136,7 +138,7 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
     f_th.stop_return_val = th
 
     ql.os.thread_management.cur_thread = f_th
-    ql.dprint(D_INFO, "[+] Currently running pid is: %d; tid is: %d " % (
-    os.getpid(), ql.os.thread_management.cur_thread.get_thread_id()))
-    ql.nprint("clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d" % (
+    logging.debug("[+] Currently running pid is: %d; tid is: %d " % (
+    os.getpid(), ql.os.thread_management.cur_thread.id))
+    logging.info("clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d" % (
     clone_child_stack, clone_flags, clone_newtls, clone_parent_tidptr, clone_child_tidptr, regreturn))
