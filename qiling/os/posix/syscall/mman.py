@@ -52,12 +52,12 @@ def ql_syscall_madvise(ql, *args, **kw):
 def ql_syscall_mprotect(ql, mprotect_start, mprotect_len, mprotect_prot, *args, **kw):
     regreturn = 0
     if mprotect_start & 0xFFF or mprotect_prot & ~(UC_PROT_ALL):
-        regreturn = -1
+        regreturn = -22
     elif mprotect_len:
         try:
             ql.mem.protect(mprotect_start, mprotect_len, mprotect_prot)
         except:
-            regreturn = -1
+            regreturn = -12
 
     logging.info("mprotect(0x%x, 0x%x, 0x%x) = %d" % (mprotect_start, mprotect_len, mprotect_prot, regreturn))
     logging.debug("[+] mprotect(0x%x, 0x%x, %s) = %d" % (
