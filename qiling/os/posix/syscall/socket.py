@@ -136,7 +136,7 @@ def ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen,  *args, **kw):
         ql.os.fd[bind_fd].bind(('::1', port))
         host = "::1"
 
-    elif ql.bindtolocalhost == False:
+    elif ql.os.bindtolocalhost == False:
         ql.os.fd[bind_fd].bind((host, port))
 
     else:
