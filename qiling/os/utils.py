@@ -242,22 +242,23 @@ class QlOsUtils:
         insn = md.disasm(tmp, address)
         opsize = int(size)
 
-        logging.info( ("[+] 0x%x" % (address)).ljust( (self.ql.archbit // 8) + 15))
+        log_data = ("0x%x" % (address)).ljust( (self.ql.archbit // 8) + 15)
 
         temp_str = ""
         for i in tmp:
             temp_str += ("%02x " % i)
-        logging.info(temp_str.ljust(30))
+        log_data += temp_str.ljust(30)
 
         for i in insn:
-            logging.info("%s %s" % (i.mnemonic, i.op_str))
+            log_data += "%s %s" % (i.mnemonic, i.op_str)
+        logging.info(log_data)
 
         if self.ql.output == QL_OUTPUT.DUMP:
             for reg in self.ql.reg.register_mapping:
                 if isinstance(reg, str):
                     REG_NAME = reg
                     REG_VAL = self.ql.reg.read(reg)
-                    logging.debug("[-] %s\t:\t 0x%x" % (REG_NAME, REG_VAL))
+                    logging.debug("%s\t:\t 0x%x" % (REG_NAME, REG_VAL))
 
     def setup_output(self):
         if self.output_ready:

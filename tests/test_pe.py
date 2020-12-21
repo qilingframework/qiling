@@ -365,6 +365,8 @@ class PETest(unittest.TestCase):
 
 
     def test_pe_win_x86_sality(self):
+        if 'QL_FAST_TEST' in os.environ:
+            return
         def init_unseen_symbols(ql, address, name, ordinal, dll_name):
             ql.loader.import_symbols[address] = {"name": name, "ordinal": ordinal, "dll": dll_name.split('.')[0] }
             ql.loader.import_address_table[dll_name][name] = address
