@@ -1,5 +1,6 @@
 import enum
 import ctypes
+import logging
 from .macos_structs import label_t, ucred_t, POINTER64, fileglob_t, vnode_t
 #from .macos import *
 from functools import wraps
@@ -51,7 +52,7 @@ class QlMacOSPolicy():
     @init_ctx
     def mpo_file_check_mmap(self, prot, flags, file_pos):
         if self.manager.vnode is None or self.manager.cred is None:
-            self.ql.nprint("[!] Invalid vnode or credential")
+            logging.info("[!] Invalid vnode or credential")
             return
         fg_addr = self.ql.os.heap.alloc(ctypes.sizeof(fileglob_t))
         fg = fileglob_t(self.ql, fg_addr)

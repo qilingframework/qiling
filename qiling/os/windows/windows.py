@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
-import types
+import types, logging
 
 from unicorn import *
 
@@ -111,11 +111,12 @@ class QlOsWindows(QlOs):
                     winapi_func(self.ql, address, {})
                         
                 except Exception:
-                    self.ql.nprint("[!] %s Exception Found" % winapi_name)
+                    logging.exception("")
+                    logging.info("[!] %s Exception Found" % winapi_name)
                     self.emu_error()
                     raise QlErrorSyscallError("[!] Windows API Implementation Error")
             else:
-                self.ql.nprint("[!] %s is not implemented" % winapi_name)
+                logging.warning("[!] %s is not implemented" % winapi_name)
                 if self.ql.debug_stop:
                     raise QlErrorSyscallNotFound("[!] Windows API Implementation Not Found")
 

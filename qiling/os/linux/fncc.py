@@ -2,7 +2,7 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
-import struct
+import struct, logging
 from unicorn.x86_const import *
 from unicorn.mips_const import *
 from qiling.os.utils import *
@@ -194,9 +194,9 @@ def print_function(ql, passthru, address, function_name, params, ret):
     log = log.replace("\n", "\\n")
     if ql.output != QL_OUTPUT.DEBUG:
         log = log.partition(" ")[-1]
-        ql.nprint(log)
+        logging.info(log)
     else:
-        ql.dprint(D_INFO, log)
+        logging.debug(log)
 
 
 def __x86_cc(ql, param_num, params, func, args, kwargs):

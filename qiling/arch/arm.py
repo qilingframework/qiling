@@ -3,6 +3,8 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
+import logging
+
 from unicorn import *
 from unicorn.arm_const import *
 
@@ -77,7 +79,7 @@ class QlArchARM(QlArch):
             #self.ql.reg.fpexc = 0x00000040
         else:
             self.ql.reg.fpexc = 0x40000000
-        self.ql.dprint(D_INFO, "[+] Enable ARM VFP")
+        logging.debug("[+] Enable ARM VFP")
 
 
     def check_thumb(self):
@@ -91,5 +93,5 @@ class QlArchARM(QlArch):
         mode = UC_MODE_ARM
         if (reg_cpsr & reg_cpsr_v) != 0:
             mode = UC_MODE_THUMB
-            self.ql.dprint(D_INFO, "[+] Enable ARM THUMB")
+            logging.debug("[+] Enable ARM THUMB")
         return mode
