@@ -928,8 +928,15 @@ class ELFTest(unittest.TestCase):
         except UcError as e:
             print(e)
             sys.exit(-1)
-        del ql         
-    
+        del ql
+
+    def test_demigod_hello_mips32(self):
+        ql = Qiling(["../examples/rootfs/mips32_linux/kernel/hello.ko"],  "../examples/rootfs/mips32_linux", output="debug")
+        begin = ql.loader.load_address + 0x1060
+        end = ql.loader.load_address + 0x1084
+        ql.run(begin=begin, end=end)
+        del ql
+
     def test_x8664_absolute_path(self):
         class MyPipe():
             def __init__(self):

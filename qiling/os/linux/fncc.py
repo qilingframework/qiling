@@ -4,6 +4,7 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 import struct, logging
 from unicorn.x86_const import *
+from unicorn.mips_const import *
 from qiling.os.utils import *
 
 
@@ -35,6 +36,8 @@ def _get_param_by_index(ql, index):
         return _x86_get_params_by_index(ql, index)
     elif ql.archtype == QL_ARCH.X8664:
         return _x8664_get_params_by_index(ql, index)
+    elif ql.archtype == QL_ARCH.MIPS:
+        return _mips32_get_params_by_index(ql, index)
 
 
 # TODO: x86 calling convention of Linux kernel?
@@ -86,6 +89,14 @@ def _x8664_get_args(ql, number):
         return arg_list
 
 
+def _mips32_get_params_by_index(ql, index):
+    reg_list = [UC_MIPS_REG_4, UC_MIPS_REG_5, UC_MIPS_REG_6, UC_MIPS_REG_7]
+    if index < 4:
+        return ql.uc.reg_read(reg_list[index])
+
+    return ql.stack.read(index * 4)
+
+
 def set_function_params(ql, in_params, out_params):
     index = 0
     for each in in_params:
@@ -120,6 +131,8 @@ def set_return_value(ql, ret):
         ql.uc.reg_write(UC_X86_REG_EAX, ret)
     elif ql.archtype == QL_ARCH.X8664:
         ql.uc.reg_write(UC_X86_REG_RAX, ret)
+    elif ql.archtype == QL_ARCH.MIPS:
+        ql.uc.reg_write(UC_MIPS_REG_2, ret)
 
 
 def get_return_value(ql):
@@ -127,6 +140,8 @@ def get_return_value(ql):
         return ql.uc.reg_read(UC_X86_REG_EAX)
     elif ql.archtype == QL_ARCH.X8664:
         return ql.uc.reg_read(UC_X86_REG_RAX)
+    elif ql.archtype == QL_ARCH.MIPS:
+        return ql.uc.reg_read(UC_MIPS_REG_2)
 
 
 def print_function(ql, passthru, address, function_name, params, ret):
@@ -228,6 +243,12 @@ def x8664_fastcall(ql, param_num, params, func, args, kwargs):
     return result
 
 
+def mips_call(ql, param_num, params, func, args, kwargs):
+    result, param_num  = __x86_cc(ql, param_num, params, func, args, kwargs)
+    ql.reg.arch_pc = ql.reg.ra
+    return result
+
+
 def linux_kernel_api(param_num=None, params=None):
     """
     @cc: windows api calling convention, only x86 needs this, x64 is always fastcall
@@ -244,6 +265,8 @@ def linux_kernel_api(param_num=None, params=None):
                 #    return x86_cdecl(ql, param_num, params, func, args, kwargs)
             elif ql.archtype == QL_ARCH.X8664:
                 return x8664_fastcall(ql, param_num, params, func, args, kwargs)
+            elif ql.archtype == QL_ARCH.MIPS:
+                return mips_call(ql, param_num, params, func, args, kwargs)
             else:
                 raise QlErrorArch("[!] Unknown ql.archtype")
         return wrapper

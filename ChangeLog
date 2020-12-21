@@ -10,7 +10,8 @@ BREAK CHANGE
 
 ------------------------------------
 [Version 1.2.1]: December [SOMETHING], 2020
-- 
+
+- Degimod: fix lkm mapping and add support for mips32 lkm
 
 ------------------------------------
 [Version 1.2]: November 16th, 2020
