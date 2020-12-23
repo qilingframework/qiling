@@ -20,7 +20,7 @@ class QlOsUefi(QlOs):
 		self.user_defined_api_onexit = {}
 		self.PE_RUN = True
 		self.heap = None # Will be initialized by the loader.
-	
+
 	def save(self):
 		saved_state = super(QlOsUefi, self).save()
 		saved_state['entry_point'] = self.entry_point
@@ -39,35 +39,7 @@ class QlOsUefi(QlOs):
 		ql.os.running_module = module
 		return False
 
-	def disassembler(self, address):
-		dump_bytes = 64     # amount of bytes to read and hexdump
-		dump_insns = 8      # amount of asm instructions to show, based on bytes read
-
-		data = self.ql.mem.read(address, dump_bytes)
-
-		# emit a small hexdump
-		logging.error('Hexdump:')
-		for i in range(0, len(data), 8):
-			hexdump = ' '.join(f'{ch:02x}' for ch in data[i: i + 8])
-			logging.error(f'  {address + i:08x} : {hexdump}')
-		logging.error(f'')
-
-		md = self.ql.create_disassembler()
-
-		# emit disassembly
-		logging.error('Disassembly:')
-		for insn in tuple(md.disasm(data, address))[:dump_insns]:
-			opcodes = ''.join(f'{ch:02x}' for ch in insn.bytes[:10])
-
-			if len(insn.bytes) > 10:
-				opcodes += '.'
-
-			logging.error(f'  {insn.address:08x}    {opcodes:<20s}  {insn.mnemonic:<8s} {insn.op_str:s}')
-		logging.error(f'')
-
-	def emu_error(self):
-		logging.error(f'')
-
+	def emit_context(self):
 		# TODO: add xmm, ymm, zmm registers
 		rgroups = (
 			('rax', 'eax', 'ax', 'ah', 'al'),
@@ -94,34 +66,67 @@ class QlOsUefi(QlOs):
 			('', '', 'es'),
 			('', '', 'fs'),
 			('', '', 'gs'),
-			('', '', 'ss'),
+			('', '', 'ss')
 		)
 
 		sizes = (64, 32, 16, 8, 8)
 
-		# emit cpu context
+		logging.error(f'CPU Context:')
+
 		for grp in rgroups:
-			for reg, bits in zip(grp, sizes):
-				logging.error(f'{reg:4s} = {self.ql.reg.read(reg):0{bits // 4}x}, ' if reg else '', end='')
-			logging.error(f'')
-		logging.error(f'')
-
-		logging.error(f'PC = {self.ql.reg.arch_pc:#010x}', end='')
-
-		containing_image = self.find_containing_image(self.ql.reg.arch_pc)
-		if containing_image:
-			offset = self.ql.reg.arch_pc - containing_image.base
-			logging.error(f' ({containing_image.path} + {offset:#x})', end='')
+			logging.error(', '.join((f'{reg:4s} = {self.ql.reg.read(reg):0{bits // 4}x}') for reg, bits in zip(grp, sizes) if reg))
 
 		logging.error(f'')
 
-		self.ql.mem.show_mapinfo()
+	def emit_hexdump(self, address : int, data : str, num_cols=16):
+		logging.error('Hexdump:')
+
+		# align hexdump to numbers of columns
+		pre_padding = [None] * (address % num_cols)
+		post_padding = [None] * (num_cols - len(pre_padding))
+		chars = pre_padding + list(data) + post_padding
+		address = address & ~(num_cols - 1)
+
+		for i in range(0, len(chars), num_cols):
+			hexdump = ' '.join(f'  ' if ch is None else f'{ch:02x}' for ch in chars[i: i + num_cols])
+			logging.error(f'{address + i:08x} : {hexdump}')
+
 		logging.error(f'')
+
+	def emit_disasm(self, address : int, data : str, num_insns=8):
+		md = self.ql.create_disassembler()
+
+		logging.error('Disassembly:')
+
+		for insn in tuple(md.disasm(data, address))[:num_insns]:
+			opcodes = ''.join(f'{ch:02x}' for ch in insn.bytes[:10])
+
+			if len(insn.bytes) > 10:
+				opcodes += '.'
+
+			logging.error(f'{insn.address:08x}    {opcodes:<20s}  {insn.mnemonic:<10s} {insn.op_str:s}')
+
+		logging.error(f'')
+
+	def emu_error(self):
+		dump_len = 64
 
 		try:
-			self.disassembler(self.ql.reg.arch_pc, 64)
-		except:
-			logging.error(f'Error: PC({self.ql.reg.arch_pc:#x}) is unreachable')
+			pc = self.ql.reg.arch_pc
+			data = self.ql.mem.read(pc, dump_len)
+
+			self.emit_context()
+			self.emit_hexdump(pc, data)
+			self.emit_disasm(pc, data)
+
+			containing_image = self.find_containing_image(pc)
+			img_info = f' ({containing_image.path} + {pc - containing_image.base:#x})' if containing_image else ''
+			logging.error(f'PC = {pc:#010x}{img_info}')
+
+			logging.error(f'Memory map:')
+			self.ql.mem.show_mapinfo()
+		except UcError:
+			logging.error(f'Error: PC({pc:#x}) is unreachable')
 
 	def run(self):
 		self.notify_before_module_execution(self.ql, self.running_module)
