@@ -102,7 +102,7 @@ class Test_UEFI(unittest.TestCase):
             ql.run()
 
             self.assertEqual(0, self.set_api)
-            self.assertEqual(21475885153, self.set_api_onenter)
+            self.assertEqual(2014052449, self.set_api_onenter)  # magic value was 21475885153 (?)
             self.assertEqual(0, self.set_api_onexit)
             
             del ql
