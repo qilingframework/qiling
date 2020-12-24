@@ -6,6 +6,7 @@
 import os
 import json
 import struct
+import logging
 from functools import wraps
 
 from qiling.os.const import *
@@ -53,7 +54,7 @@ def winsdkapi(cc, param_num=None, dllname=None, replace_params_type=None, replac
                     f = open(winsdk_path, 'r')
                     funclist = json.load(f)
                 else:
-                    ql.nprint('[!]', winsdk_path, 'not found')
+                    logging.info('[!]', winsdk_path, 'not found')
                 if funcname not in funclist:
                     params = replace_params
                 else:

@@ -5,7 +5,7 @@
 
 import os
 import time
-
+import logging
 from qiling.os.windows.fncc import *
 from qiling.os.const import *
 from qiling.os.windows.const import *
@@ -155,7 +155,7 @@ def hook___p___argv(ql, address, params):
 # int* __p___argc(void)
 @winsdkapi(cc=CDECL)
 def hook___p___argc(ql, address, params):
-    ql.dprint(D_INFO, "_p___argc")
+    logging.debug("_p___argc")
     ret = ql.os.heap.alloc(ql.pointersize)
     ql.mem.write(ret, ql.pack(len(ql.argv)))
     return ret
@@ -181,7 +181,7 @@ def hook_sprintf(ql, address, _):
     str_ptr, format_ptr = ql.os.get_function_param(2)
 
     if not format_ptr:
-        ql.nprint('printf(format = 0x0) = 0x%x' % ret)
+        logging.info('printf(format = 0x0) = 0x%x' % ret)
         return ret
 
     sp = ql.reg.esp if ql.archtype == QL_ARCH.X86 else ql.reg.rsp
@@ -189,7 +189,7 @@ def hook_sprintf(ql, address, _):
 
     format_string = ql.os.read_cstring(format_ptr)
     str_size, str_data = ql.os.printf(address, format_string, p_args, "sprintf")
-    ql.nprint()
+    logging.info()
 
     count = format_string.count('%')
     if ql.archtype == QL_ARCH.X8664:
@@ -209,7 +209,7 @@ def hook_printf(ql, address, _):
     format_string = ql.os.get_function_param(1)
 
     if format_string == 0:
-        ql.nprint('printf(format = 0x0) = 0x%x' % ret)
+        logging.info('printf(format = 0x0) = 0x%x' % ret)
         return ret
 
     format_string = ql.os.read_cstring(format_string)

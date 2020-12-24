@@ -6,6 +6,7 @@
 import ctypes
 import os
 import struct
+import logging
 from time import time
 
 from qiling.os.macos.fncc import *
@@ -950,7 +951,7 @@ def hook__sock_getsockname(ql, address, params):
     "cmd": STRING,
 })
 def hook__KUNCExecute(ql, address, params):
-    # ql.dprint(D_INFO, "[+] Starting userspace process: %s" % params["cmd"])
+    # logging.debug("[+] Starting userspace process: %s" % params["cmd"])
     return 0
 
 ######################## Custom events / callbacks ########################
@@ -994,7 +995,7 @@ def hook__sysctl_register_oid(ql, address, params):
 
     true_name = oid_parent.lstrip(b"_") + b"." + oid_name.encode() + b"\x00"
     if oidp.oid_handler.value != 0:
-        ql.dprint(D_INFO, "[+] New sysctl callback has been registered: %s" % true_name)
+        logging.debug("[+] New sysctl callback has been registered: %s" % true_name)
 
         ql.os.ev_manager.register(oidp.oid_handler.value, true_name, MacOSEventType.EV_SYSCTL, ev_obj=oidp, idx=0)
     return
@@ -1016,7 +1017,7 @@ def hook__sysctl_unregister_oid(ql, address, params):
             break
 
     true_name = oid_parent.lstrip(b"_") + b"." + oid_name.encode() + b"\x00"
-    ql.dprint(D_INFO, "[+] A sysctl event has been deregistered: %s" % true_name)
+    logging.debug("[+] A sysctl event has been deregistered: %s" % true_name)
     ql.os.ev_manager.deregister(true_name)
 
 @macos_kernel_api(params={
@@ -1037,7 +1038,7 @@ def hook__sysctl_root(ql, address, params):
             obj = event.event
             ql.os.ev_manager.emit(ev_name, ev_type, [obj.oid_arg1.value, obj.oid_arg2, params["req"]])
         else:
-            ql.dprint(D_INFO, "[!] Event not found (%s, %s)" % (ev_name, ev_type.name))
+            logging.debug("[!] Event not found (%s, %s)" % (ev_name, ev_type.name))
     return 0
 
 @macos_kernel_api(params={
@@ -1075,7 +1076,7 @@ def hook__ctl_register(ql, address, params):
         ql.os.ev_manager.register(userctl.ctl_bind.value, ctl_name, MacOSEventType.EV_CTL_BIND_FUNC, ev_obj=userctl, idx=0)
 
 
-    ql.dprint(D_INFO, "[+] New ctl callbacks has been registered: %s (%d/%d/%d/%d/%d/%d/%d/%d)" % (
+    logging.debug("[+] New ctl callbacks has been registered: %s (%d/%d/%d/%d/%d/%d/%d/%d)" % (
         ctl_name, 
         (flag & (1 << 0)) != 0,
         (flag & (1 << 1)) != 0,
@@ -1096,7 +1097,7 @@ def hook__ctl_deregister(ql, address, params):
     userctl = kern_ctl_reg_t(ql, params["userctl"])
     userctl = userctl.loadFromMem()
     ctl_name = ql.mem.string(params["userctl"]).encode()
-    ql.dprint(D_INFO, "[+] A ctl event has been deregistered: %s" % ctl_name)
+    logging.debug("[+] A ctl event has been deregistered: %s" % ctl_name)
     ql.os.ev_manager.deregister(ctl_name)
 
 @macos_kernel_api(params={
@@ -1170,7 +1171,7 @@ def hook__sflt_register(ql, address, params):
         flag |= 1 << 14
         ql.os.ev_manager.register(sf.sf_ioctl.value, true_name, MacOSEventType.EV_SFLT_IOCTL, protocol=params["protocol"])
 
-    ql.dprint(D_INFO, "[+] New sflt callbacks has been registered: %s (%d/%d/%d/%d/%d/%d/%d/%d/%d/%d/%d/%d/%d/%d/%d)" % (
+    logging.debug("[+] New sflt callbacks has been registered: %s (%d/%d/%d/%d/%d/%d/%d/%d/%d/%d/%d/%d/%d/%d/%d)" % (
         true_name,
         (flag & (1 << 0)) != 0,
         (flag & (1 << 1)) != 0,
@@ -1202,7 +1203,7 @@ def hook__sflt_unregister(ql, address, params):
         break
 
     ql.os.ev_manager.deregister(b"", keyword=handle)
-    ql.dprint(D_INFO, "[+] A sflt event has been deregistered: %s" % (handle))
+    logging.debug("[+] A sflt event has been deregistered: %s" % (handle))
     return 0
 
 @macos_kernel_api(params={
@@ -1221,7 +1222,7 @@ def hook__mac_policy_register(ql, address, params):
         func, = struct.unpack("<Q", ql.mem.read(mac_ops_addr + i * 8, 8))
         if func != 0:
             ql.os.ev_manager.register(func, true_name, MACPolicy_EventType[MACPolicy_EventType(i + base_event_MAC).name])
-            ql.dprint(D_INFO, "[+] New mac policy callback has been registered: Name: %s --- Type: %s --- Addr: 0x%x " % 
+            logging.debug("[+] New mac policy callback has been registered: Name: %s --- Type: %s --- Addr: 0x%x " % 
                 (true_name, MACPolicy_EventType(i + base_event_MAC).name, func))
             
     # Update mac_policy_list
@@ -1281,7 +1282,7 @@ def hook__mac_policy_unregister(ql, address, params):
     else:
         ql.mac_policy_list.entries = POINTER64(0)
 
-    ql.dprint(D_INFO, "[+] A MAC event has been deregistered: 0x%x" % handle)
+    logging.debug("[+] A MAC event has been deregistered: 0x%x" % handle)
     return 0;
 
 @macos_kernel_api(params={
@@ -1292,7 +1293,7 @@ def hook__mac_policy_unregister(ql, address, params):
 def hook__kauth_listen_scope(ql, address, params):
     ev_name = ql.mem.string(params["_identifier"]).replace("com.", "").replace("apple.", "").upper().replace(".", "_")
     ql.os.ev_manager.register(params["_callback"], ev_name.encode(), MacOSEventType["EV_" + ev_name])
-    ql.dprint(D_INFO, "[+] New kauth callback has been registered: %s" % ev_name)
+    logging.debug("[+] New kauth callback has been registered: %s" % ev_name)
     return params["_identifier"]
 
 @macos_kernel_api(params={
@@ -1319,7 +1320,7 @@ def hook__ipf_addv4(ql, address, params):
         flag |= (1 << 2)
         ql.os.ev_manager.register(ip_filter_ipv4.ipf_detach.value, name, MacOSEventType.EV_IPF_DETACH)
 
-    ql.dprint(D_INFO, "[+] New ipf callbacks has been registered: %s (%d/%d/%d)" % (
+    logging.debug("[+] New ipf callbacks has been registered: %s (%d/%d/%d)" % (
         name,
         (flag & (1 << 0)) != 0,
         (flag & (1 << 1)) != 0,

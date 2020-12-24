@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
-import ctypes, types, struct, ast
+import ctypes, types, struct, ast, logging
 from contextlib import contextmanager
 
 from unicorn import *
@@ -121,16 +121,16 @@ class QlLoaderPE_UEFI(QlLoader):
                 pe.parse_data_directories()
                 data = bytearray(pe.get_memory_mapped_image())
                 ql.mem.write(IMAGE_BASE, bytes(data))
-                ql.nprint("[+] Loading %s to 0x%x" % (path, IMAGE_BASE))
+                logging.info("[+] Loading %s to 0x%x" % (path, IMAGE_BASE))
                 entry_point = IMAGE_BASE + pe.OPTIONAL_HEADER.AddressOfEntryPoint
                 if self.entry_point == 0:
                     # Setting entry point to the first loaded module entry point, so the debugger can break.
                     self.entry_point = entry_point
-                ql.nprint("[+] PE entry point at 0x%x" % entry_point)
+                logging.info("[+] PE entry point at 0x%x" % entry_point)
                 self.install_loaded_image_protocol(IMAGE_BASE, IMAGE_SIZE, entry_point)
                 self.images.append(self.coverage_image(IMAGE_BASE, IMAGE_BASE + pe.NT_HEADERS.OPTIONAL_HEADER.SizeOfImage, path))
                 if execute_now:
-                    self.ql.nprint(f'[+] Running from 0x{entry_point:x} of {path}')
+                    logging.info(f'[+] Running from 0x{entry_point:x} of {path}')
                     assembler = self.ql.create_assembler()
                     code = f"""
                         mov rcx, {IMAGE_BASE}
@@ -163,7 +163,7 @@ class QlLoaderPE_UEFI(QlLoader):
                 self.ql.stack_push(self.end_of_execution_ptr)
                 self.ql.reg.rcx = handle
                 self.ql.reg.rip = unload_ptr
-                self.ql.nprint(f'[+] Unloading module 0x{handle:x}, calling 0x{unload_ptr:x}')
+                logging.info(f'[+] Unloading module 0x{handle:x}, calling 0x{unload_ptr:x}')
                 self.loaded_image_protocol_modules.remove(handle)
                 return True
         return False
@@ -174,7 +174,7 @@ class QlLoaderPE_UEFI(QlLoader):
         self.ql.reg.rdx = self.system_table_ptr
         self.ql.reg.rip = entry_point
         self.ql.os.entry_point = entry_point
-        self.ql.nprint(f'[+] Running from 0x{entry_point:x} of {path}')
+        logging.info(f'[+] Running from 0x{entry_point:x} of {path}')
 
     def execute_next_module(self):
         if self.ql.os.notify_before_module_execution(self.ql, self.modules[0][0]):
@@ -211,7 +211,7 @@ class QlLoaderPE_UEFI(QlLoader):
             self.stack_size = int(self.ql.os.profile.get("OS32", "stack_size"), 16)     
 
         # set stack pointer
-        self.ql.nprint("[+] Initiate stack address at 0x%x" % self.stack_address)
+        logging.info("[+] Initiate stack address at 0x%x" % self.stack_address)
         self.ql.mem.map(self.stack_address, self.stack_size)
 
         # Stack should not init at the very bottom. Will cause errors with Dlls
@@ -325,7 +325,7 @@ class QlLoaderPE_UEFI(QlLoader):
             if not self.map_and_load(dependency):
                 raise QlErrorFileType("Can't map dependency")
 
-        self.ql.nprint("[+] Done with loading %s" % self.ql.path)
+        logging.info("[+] Done with loading %s" % self.ql.path)
 
         #return address
         self.end_of_execution_ptr = system_table_heap_ptr

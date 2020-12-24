@@ -1,8 +1,19 @@
 This file details the changelog of Qiling Framework.
 
 ------------------------------------
+BREAK CHANGE
+- ql.multithread can be only set during Qiling.__init__ now.
+- ql.nprint and ql.dpring is depreciated. Please use logging directly instead.
+- ql.filename is renamed to ql.argv.
+- ql.output and ql.verbose now has slightly different meanings and can be adjusted runtime. See their docstring for details.
+- ql.filter now accepts a regular expression.
+
+------------------------------------
 [Version 1.2.1]: December [SOMETHING], 2020
-- 
+
+- Demigod: Fixed lkm mapping and added support for MIPS32EL
+- Demigod: Added support for Linux x86 32bit
+
 
 ------------------------------------
 [Version 1.2]: November 16th, 2020

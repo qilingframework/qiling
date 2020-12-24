@@ -8,7 +8,8 @@ import argparse, os, string, sys, ast, unicorn
 from binascii import unhexlify
 
 from qiling import *
-from qiling.const import QL_ARCH
+from qiling.utils import ql_create_assembler, arch_convert
+from qiling.const import QL_ARCH, QL_ENDIAN
 from qiling.__version__ import __version__ as ql_version
 from qiling.extensions.coverage import utils as cov_utils
 from qiling.extensions.report import generate_report
@@ -73,7 +74,15 @@ def run_shellcode(options):
 
     elif options.asm == True:
         print ("[+] Load ASM from FILE")
-        shellcoder = "asmfile"
+        assembly = read_file(options.filename)
+        archtype = arch_convert(options.arch)
+        archendian = QL_ENDIAN.EL
+        if options.bigendian:
+            archendian = QL_ENDIAN.EB
+        # TODO: Thumb support.
+        assembler = ql_create_assembler(archtype, archendian, 0)
+        shellcoder, _ = assembler.asm(assembly)
+        shellcoder = bytes(shellcoder)
 
     else:
         print ("[+] Load BIN from FILE")
@@ -235,11 +244,11 @@ if __name__ == '__main__':
     if (options.subparser_name == 'run'):
         # with argv
         if options.filename is not None and options.run_args == []:
-            ql = Qiling(filename=[options.filename] + options.args, rootfs=options.rootfs, profile=options.profile, output=options.output, console=options.console, log_dir=options.log_dir, env=env)
+            ql = Qiling(argv=[options.filename] + options.args, rootfs=options.rootfs, profile=options.profile, output=options.output, console=options.console, log_dir=options.log_dir, env=env)
 
         # Without argv
         elif options.filename is None and options.args == [] and options.run_args != []:
-            ql = Qiling(filename=options.run_args, rootfs=options.rootfs, profile=options.profile, output=options.output, console=options.console, log_dir=options.log_dir, env=env)
+            ql = Qiling(argv=options.run_args, rootfs=options.rootfs, profile=options.profile, output=options.output, console=options.console, log_dir=options.log_dir, env=env)
         
         else:
             print("ERROR: Command error!")
@@ -254,11 +263,6 @@ if __name__ == '__main__':
     # ql shellcode setup
     elif (options.subparser_name == 'shellcode'):
         ql = run_shellcode(options)
-        if options.asm == True:
-            assembly = read_file(options.filename)
-            assembler = ql.create_assembler()
-            ql.shellcoder, _ = assembler.asm(assembly)
-            ql.mem.write(ql.os.entry_point, bytes(ql.shellcoder))
     
     else:
         print("ERROR: Unknown command")

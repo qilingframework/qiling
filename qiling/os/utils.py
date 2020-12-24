@@ -7,7 +7,7 @@
 This module is intended for general purpose functions that are only used in qiling.os
 """
 
-import ctypes, inspect, os, struct, uuid
+import ctypes, inspect, os, struct, uuid, logging
 
 from json import dumps
 from pathlib import Path, PurePosixPath, PureWindowsPath, PosixPath, WindowsPath
@@ -153,13 +153,13 @@ class QlOsUtils:
     
     def transform_to_link_path(self, path):
         if self.ql.multithread:
-            cur_path = self.ql.os.thread_management.cur_thread.get_current_path()
+            cur_path = self.ql.os.thread_management.cur_thread.current_path
         else:
             cur_path = self.ql.os.current_path
 
         # Sanity check.
         if cur_path[0] != '/':
-            self.ql.nprint(f"[!] Warning: cur_path doesn't start with a /")
+            logging.info(f"[!] Warning: cur_path doesn't start with a /")
         
         rootfs = self.ql.rootfs
         real_path  = self.convert_path(rootfs, cur_path, path)
@@ -170,13 +170,13 @@ class QlOsUtils:
         from types import FunctionType
 
         if self.ql.multithread:
-            cur_path = self.ql.os.thread_management.cur_thread.get_current_path()
+            cur_path = self.ql.os.thread_management.cur_thread.current_path
         else:
             cur_path = self.ql.os.current_path
 
         # Sanity check.
         if cur_path[0] != '/':
-            self.ql.nprint(f"[!] Warning: cur_path must start with /")
+            logging.info(f"[!] Warning: cur_path must start with /")
 
         rootfs = self.ql.rootfs
         real_path = self.convert_path(rootfs, cur_path, path)
@@ -191,27 +191,27 @@ class QlOsUtils:
     # The `relative path` here refers to the path which is relative to the rootfs.
     def transform_to_relative_path(self, path):
         if self.ql.multithread:
-            cur_path = self.ql.os.thread_management.cur_thread.get_current_path()
+            cur_path = self.ql.os.thread_management.cur_thread.current_path
         else:
             cur_path = self.ql.os.current_path
 
         return str(Path(cur_path) / path)
 
     def post_report(self):
-        self.ql.dprint(D_RPRT, "[+] Syscalls called")
+        logging.debug("[+] Syscalls called")
         for key, values in self.ql.os.syscalls.items():
-            self.ql.dprint(D_RPRT, "[-] %s:" % key)
+            logging.debug("[-] %s:" % key)
             for value in values:
-                self.ql.dprint(D_RPRT, "[-] %s " % str(dumps(value)))
-        self.ql.dprint(D_RPRT, "[+] Registries accessed")
+                logging.debug("[-] %s " % str(dumps(value)))
+        logging.debug("[+] Registries accessed")
         for key, values in self.ql.os.registry_manager.accessed.items():
-            self.ql.dprint(D_RPRT, "[-] %s:" % key)
+            logging.debug("[-] %s:" % key)
             for value in values:
-                self.ql.dprint(D_RPRT, "[-] %s " % str(dumps(value)))
-        self.ql.dprint(D_RPRT, "[+] Strings")
+                logging.debug("[-] %s " % str(dumps(value)))
+        logging.debug("[+] Strings")
         for key, values in self.ql.os.appeared_strings.items():
             val = " ".join([str(word) for word in values])
-            self.ql.dprint(D_RPRT, "[-] %s: %s" % (key, val))
+            logging.debug("[-] %s: %s" % (key, val))
 
 
     def exec_arbitrary(self, start, end):
@@ -221,7 +221,7 @@ class QlOsUtils:
         ret = self.ql.stack_read(0)
 
         def restore(ql):
-            ql.dprint(D_INFO, f"[+] Executed code from 0x{start:x} to 0x{end:x}")
+            logging.debug(f"[+] Executed code from 0x{start:x} to 0x{end:x}")
             # now we can restore the register to be where we were supposed to
             old_hook_addr = ql.reg.arch_pc
             ql.reg.arch_sp = old_sp + (ql.archbit // 8)
@@ -242,41 +242,41 @@ class QlOsUtils:
         insn = md.disasm(tmp, address)
         opsize = int(size)
 
-        self.ql.nprint( ("[+] 0x%x" % (address)).ljust( (self.ql.archbit // 8) + 15), end="")
+        log_data = ("0x%x" % (address)).ljust( (self.ql.archbit // 8) + 15)
 
         temp_str = ""
         for i in tmp:
             temp_str += ("%02x " % i)
-        self.ql.nprint(temp_str.ljust(30), end="")
+        log_data += temp_str.ljust(30)
 
         for i in insn:
-            self.ql.nprint("%s %s" % (i.mnemonic, i.op_str))
+            log_data += "%s %s" % (i.mnemonic, i.op_str)
+        logging.info(log_data)
 
         if self.ql.output == QL_OUTPUT.DUMP:
             for reg in self.ql.reg.register_mapping:
                 if isinstance(reg, str):
                     REG_NAME = reg
                     REG_VAL = self.ql.reg.read(reg)
-                    self.ql.dprint(D_INFO, "[-] %s\t:\t 0x%x" % (REG_NAME, REG_VAL))
+                    logging.debug("%s\t:\t 0x%x" % (REG_NAME, REG_VAL))
 
     def setup_output(self):
         if self.output_ready:
             return
         self.output_ready = True
         def ql_hook_block_disasm(ql, address, size):
-            self.ql.nprint("\n[+] Tracing basic block at 0x%x" % (address))
+            logging.info("\n[+] Tracing basic block at 0x%x" % (address))
 
         if self.ql.output in (QL_OUTPUT.DISASM, QL_OUTPUT.DUMP):
             if self.ql.output == QL_OUTPUT.DUMP:
                 self.ql.hook_block(ql_hook_block_disasm)
             self.ql.hook_code(self.disassembler)
 
-    def stop(self, stop_event=THREAD_EVENT_EXIT_GROUP_EVENT):
+    def stop(self):
         if self.ql.multithread:
-            td = self.thread_management.cur_thread
-            td.stop()
-            td.stop_event = stop_event
-        self.ql.emu_stop()
+            td = self.thread_management.stop() 
+        else:
+            self.ql.emu_stop()
 
     def read_guid(self, address):
         result = ""
@@ -340,9 +340,9 @@ class QlOsUtils:
 
         if self.ql.output != QL_OUTPUT.DEBUG:
             log = log.partition(" ")[-1]
-            self.ql.nprint(log)
+            logging.info(log)
         else:
-            self.ql.dprint(D_INFO, log)
+            logging.debug(log)
 
     def printf(self, address, fmt, params_addr, name, wstring=False):
         count = fmt.count("%")
@@ -377,7 +377,7 @@ class QlOsUtils:
         else:
             output = '%s(format = %s) = 0x%x' % (name, repr(fmt), len(fmt))
             stdout = fmt
-        self.ql.nprint(output)
+        logging.info(output)
         self.ql.os.stdout.write(bytes(stdout, 'utf-8'))
         return len(stdout), stdout
 
@@ -578,7 +578,7 @@ class QlOsUtils:
                 #print("32 irpstack offset = 0x%x" %IRP32.irpstack.offset)
                 #print("irp at %x, irpstack at %x" %(irp_addr, irpstack_addr))
 
-            self.ql.nprint("IRP is at 0x%x, IO_STACK_LOCATION is at 0x%x" %(irp_addr, irpstack_addr))
+            logging.info("IRP is at 0x%x, IO_STACK_LOCATION is at 0x%x" %(irp_addr, irpstack_addr))
 
             irpstack.Parameters.DeviceIoControl.IoControlCode = ioctl_code(devicetype, function, ctl_method, access)
             irpstack.Parameters.DeviceIoControl.OutputBufferLength = output_buffer_size
@@ -617,7 +617,7 @@ class QlOsUtils:
             self.ql.mem.write(irp_addr, bytes(irp))
 
             # set function args
-            self.ql.nprint("Executing IOCTL with DeviceObject = 0x%x, IRP = 0x%x" %(self.ql.loader.driver_object.DeviceObject, irp_addr))
+            logging.info("Executing IOCTL with DeviceObject = 0x%x, IRP = 0x%x" %(self.ql.loader.driver_object.DeviceObject, irp_addr))
             self.set_function_args((self.ql.loader.driver_object.DeviceObject, irp_addr))
 
             try:

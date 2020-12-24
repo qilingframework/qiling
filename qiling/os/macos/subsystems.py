@@ -10,6 +10,7 @@
 # TODO: finish the servers
 # find Release source code in https://github.com/doadam/xnu-4570.1.46/master/BUILD/obj/RELEASE_X86_64/osfmk/RELEASE/mach/mach_host_server.c
 
+import logging
 from struct import pack, unpack
 from qiling.const import *
 
@@ -30,7 +31,7 @@ class MachHostServer():
         # parse request
         out_msg = MachMsg(self.ql)
         if len(in_content) < 16:
-            self.ql.dprint(D_INFO, "Error in Host info SubSystem -hostinfo()")
+            logging.debug("Error in Host info SubSystem -hostinfo()")
             raise
         ndr = unpack("<Q", in_content[:8])[0]
         flavor = unpack("<L", in_content[8:12])[0]
@@ -85,7 +86,7 @@ class MachHostServer():
             out_msg.content += pack("<L", 0x0)              # minimum_priority = MINPRI_USER;
             out_msg.content += pack("<L", 0x4f)             # maximum_priority = MAXPRI_RESERVED
         else:
-            self.ql.dprint(D_INFO, "Host flavor not support")
+            logging.debug("Host flavor not support")
             raise
         return out_msg
 

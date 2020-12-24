@@ -3,6 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
+import logging
 from .utils import *
 
 def hook_EndOfExecution(ql):
@@ -14,7 +15,7 @@ def hook_EndOfExecution(ql):
     if len(ql.loader.modules) < 1:
         if ql.loader.unload_modules():
             return
-        ql.nprint(f'[+] No more modules to run')
+        logging.info(f'[+] No more modules to run')
         ql.emu_stop()
     else:
         ql.loader.execute_next_module()
