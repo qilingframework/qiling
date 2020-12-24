@@ -49,7 +49,7 @@ class STRUCT(ctypes.LittleEndianStructure):
 
 	# Structures are packed by default; when needed, padding should be added
 	# manually through placeholder fields
-	_packed_ = 1
+	_pack_ = 1
 
 	def __init__(self):
 		pass
@@ -58,10 +58,7 @@ class STRUCT(ctypes.LittleEndianStructure):
 		"""Store self contents to a specified memory address.
 		"""
 
-		size = self.sizeof()
-		buffer = ctypes.create_string_buffer(size)
-		ctypes.memmove(buffer, ctypes.addressof(self), size)
-		data = buffer.raw
+		data = bytes(self)
 
 		ql.mem.write(address, data)
 
@@ -72,14 +69,9 @@ class STRUCT(ctypes.LittleEndianStructure):
 		"""Construct an instance from saved contents.
 		"""
 
-		size = cls.sizeof()
-		data = bytes(ql.mem.read(address, size))
-		instance = cls()
+		data = bytes(ql.mem.read(address, cls.sizeof()))
 
-		# TODO: use ctypes.cast instead?
-		ctypes.memmove(ctypes.addressof(instance), data, size)
-
-		return instance
+		return cls.from_buffer_copy(data)
 
 	@classmethod
 	def sizeof(cls):
