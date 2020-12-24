@@ -6,7 +6,8 @@
 *.cache
 .*.swp
 *.raw
-
+venv/
+venv2/
 # cache and misc
 qiling.egg-info/
 __pycache__/
