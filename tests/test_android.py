@@ -30,7 +30,7 @@ def syscall_getrandom(ql, buf, buflen, flags, *args, **kw):
     if data:
         logging.debug("[+] getrandom() CONTENT:")
         logging.debug(str(data))
-    ql.os.definesyscall_return(regreturn)
+    return regreturn
 
 
 """
@@ -51,7 +51,7 @@ def syscall_fstatfs(ql, fd, buf, *args, **kw):
     if data:
         logging.debug("[+] fstatfs() CONTENT:")
         logging.debug(str(data))
-    ql.os.definesyscall_return(regreturn)
+    return regreturn
 
 
 class TestAndroid(unittest.TestCase):

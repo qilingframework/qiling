@@ -17,7 +17,7 @@ def ql_syscall_chmod(ql, filename, mode, null1, null2, null3, null4):
     regreturn = 0
     filename = ql.mem.string(filename)
     logging.info("chmod(%s,%d) = %d" % (filename, mode, regreturn))
-    ql.os.definesyscall_return(regreturn)
+    return regreturn
 
 
 def ql_syscall_fstatat64(ql, fstatat64_fd, fstatat64_fname, fstatat64_buf, fstatat64_flag, *args, **kw):
@@ -73,7 +73,7 @@ def ql_syscall_fstatat64(ql, fstatat64_fd, fstatat64_fname, fstatat64_buf, fstat
     else:
         logging.debug("[!] Directory Not Found: %s" % relative_path)
 
-    ql.os.definesyscall_return(regreturn)
+    return regreturn
 
 
 def ql_syscall_fstat64(ql, fstat64_fd, fstat64_add, *args, **kw):
@@ -209,7 +209,7 @@ def ql_syscall_fstat64(ql, fstat64_fd, fstat64_add, *args, **kw):
         logging.debug("[+] fstat64 write completed")
     else:
         logging.debug("[!] fstat64 read/write fail")
-    ql.os.definesyscall_return(regreturn)
+    return regreturn
 
 
 def ql_syscall_fstat(ql, fstat_fd, fstat_add, *args, **kw):
@@ -324,7 +324,7 @@ def ql_syscall_fstat(ql, fstat_fd, fstat_add, *args, **kw):
         logging.debug("[+] fstat write completed")
     else:
         logging.debug("[!] fstat read/write fail")
-    ql.os.definesyscall_return(regreturn)
+    return regreturn
 
 
 # int stat64(const char *pathname, struct stat64 *buf);
@@ -397,7 +397,7 @@ def ql_syscall_stat64(ql, stat64_pathname, stat64_buf_ptr, *args, **kw):
         logging.debug("[+] stat64 write completed")
     else:
         logging.debug("[!] stat64 read/write fail")
-    ql.os.definesyscall_return(regreturn)
+    return regreturn
 
 
 # int stat(const char *path, struct stat *buf);
@@ -458,7 +458,7 @@ def ql_syscall_stat(ql, stat_path, stat_buf_ptr, *args, **kw):
         logging.debug("[+] stat() write completed")
     else:
         logging.debug("[!] stat() read/write fail")
-    ql.os.definesyscall_return(regreturn)
+    return regreturn
 
 
 def ql_syscall_lstat(ql, lstat_path, lstat_buf_ptr, *args, **kw):
@@ -518,7 +518,7 @@ def ql_syscall_lstat(ql, lstat_path, lstat_buf_ptr, *args, **kw):
         logging.debug("[+] lstat() write completed")
     else:
         logging.debug("[!] lstat() read/write fail")
-    ql.os.definesyscall_return(regreturn)
+    return regreturn
 
 def ql_syscall_mknodat(ql, dirfd, pathname, mode, dev, *args, **kw):
     # fix me. dirfd(relative path) not implement.
@@ -530,7 +530,7 @@ def ql_syscall_mknodat(ql, dirfd, pathname, mode, dev, *args, **kw):
         regreturn = 0
     except:
         regreturn = -1
-    ql.os.definesyscall_return(regreturn)
+    return regreturn
 
 
 def ql_syscall_mkdir(ql, pathname, mode, *args, **kw):
@@ -543,11 +543,11 @@ def ql_syscall_mkdir(ql, pathname, mode, *args, **kw):
         regreturn = 0
     except:
         regreturn = -1
-    ql.os.definesyscall_return(regreturn)
+    return regreturn
 
 
 def ql_syscall_umask(ql, mode, *args, **kw):
     oldmask = os.umask(mode)
     logging.info("umask(0%o) return oldmask 0%o" % (mode, oldmask))
     regreturn = oldmask
-    ql.os.definesyscall_return(regreturn)
+    return regreturn

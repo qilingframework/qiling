@@ -40,13 +40,13 @@ def ql_syscall_munmap(ql, munmap_addr , munmap_len, *args, **kw):
     regreturn = 0
 
     logging.info("munmap(0x%x, 0x%x) = %d" % (munmap_addr , munmap_len, regreturn))
-    ql.os.definesyscall_return(regreturn)
+    return regreturn
 
 
 def ql_syscall_madvise(ql, *args, **kw):
     regreturn = 0
     logging.info("madvise() = %d" %  regreturn)
-    ql.os.definesyscall_return(regreturn)
+    return regreturn
 
 
 def ql_syscall_mprotect(ql, mprotect_start, mprotect_len, mprotect_prot, *args, **kw):
@@ -55,7 +55,7 @@ def ql_syscall_mprotect(ql, mprotect_start, mprotect_len, mprotect_prot, *args, 
     logging.debug("[+] mprotect(0x%x, 0x%x, %s) = %d" % (
     mprotect_start, mprotect_len, mmap_prot_mapping(mprotect_prot), regreturn))
 
-    ql.os.definesyscall_return(regreturn)
+    return regreturn
 
 def ql_syscall_old_mmap(ql, struct_mmap_args, *args, **kw):
     # according to the linux kernel this is only for the ia32 compatibility
@@ -129,7 +129,7 @@ def ql_syscall_old_mmap(ql, struct_mmap_args, *args, **kw):
     regreturn = mmap_base
     logging.debug("[+] mmap_base is 0x%x" % regreturn)
 
-    ql.os.definesyscall_return(regreturn)
+    return regreturn
 
 
 def ql_syscall_mmap(ql, mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, mmap_pgoffset):
@@ -202,7 +202,7 @@ def ql_syscall_mmap(ql, mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, 
     regreturn = mmap_base
     logging.debug("[+] mmap_base is 0x%x" % regreturn)
 
-    ql.os.definesyscall_return(regreturn)
+    return regreturn
 
 
 def ql_syscall_mmap2(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset):
@@ -266,4 +266,4 @@ def ql_syscall_mmap2(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap
     regreturn = mmap_base
     logging.debug("[+] mmap2_base is 0x%x" % regreturn)
 
-    ql.os.definesyscall_return(regreturn)
+    return regreturn

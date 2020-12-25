@@ -36,4 +36,4 @@ def ql_syscall_sysinfo(ql, sysinfo_info, *args, **kw):
     regreturn = 0
     logging.info("sysinfo(0x%x) = %d" % (sysinfo_info, regreturn))
     #ql.mem.write(sysinfo_info, data)
-    ql.os.definesyscall_return(regreturn)
+    return regreturn

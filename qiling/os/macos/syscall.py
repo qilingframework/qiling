@@ -63,17 +63,17 @@ def ql_syscall_fgetattrlist(ql, fd, alist, attributeBuffer, bufferSize, options,
 
     if len(attr) > bufferSize:
         logging.debug("Length error")
-        ql.os.definesyscall_return(1)
+        return 1
     else:
 
         ql.mem.write(attributeBuffer, attr)
         #set_eflags_cf(ql, 0x0)
-        ql.os.definesyscall_return(KERN_SUCCESS)
+        return KERN_SUCCESS
 
 
 def ql_syscall_poll(ql, target, address, size, *args, **kw):
-    ql.os.definesyscall_return(KERN_SUCCESS)
     logging.info("pool()")
+    return KERN_SUCCESS
 
 
 ################
@@ -90,12 +90,12 @@ def ql_syscall_kernelrpc_mach_vm_allocate_trap(ql, port, addr, size, flags, *arg
     ql.os.macho_task.min_offset = mmap_end
     logging.debug("[+] vm alloc form 0x%x to 0x%0x" % (mmap_address, mmap_end))
     ql.mem.write(addr, struct.pack("<Q", mmap_address))
-    ql.os.definesyscall_return(0)
+    return 0
 
 # 0xc
 def ql_syscall_kernelrpc_mach_vm_deallocate_trap(ql, target, address, size, *args, **kw):
-    ql.os.definesyscall_return(KERN_SUCCESS)
     logging.debug("[+] [mach] mach vm deallocate trap")
+    return KERN_SUCCESS
 
 # 0xf
 def ql_syscall_kernelrpc_mach_vm_map_trap(ql, target, address, size, mask, flags, cur_protection):
@@ -114,7 +114,7 @@ def ql_syscall_kernelrpc_mach_vm_map_trap(ql, target, address, size, mask, flags
     ql.os.macho_vmmap_end = vmmap_end
     ql.mem.map(vmmap_address, vmmap_end - vmmap_address)
     ql.mem.write(address, struct.pack("<Q", vmmap_address))
-    ql.os.definesyscall_return(KERN_SUCCESS)
+    return KERN_SUCCESS
 
 # 0x12
 def ql_syscall_kernelrpc_mach_port_deallocate_trap(ql, *args, **kw):
@@ -136,26 +136,26 @@ def ql_syscall_kernelrpc_mach_port_construct_trap(ql, target, options, context, 
 
 # 0x1a
 def ql_syscall_mach_reply_port(ql, *args, **kw):
-    ql.os.definesyscall_return(ql.os.macho_mach_port.name)
     logging.debug("[+] [mach] mach reply port , ret: %s" % (ql.os.macho_mach_port.name))
+    return ql.os.macho_mach_port.name
 
 # 0x1b
 def ql_syscall_thread_self_trap(ql, *args, **kw):
     port_manager = ql.os.macho_port_manager
     thread_port = port_manager.get_thread_port(ql.os.macho_thread)
     logging.debug("[+] [mach] thread_self_trap: ret: %s" % (thread_port))
-    ql.os.definesyscall_return(thread_port)
+    return thread_port
 
 # 0x1c
 def ql_syscall_task_self_trap(ql, *args, **kw):
-    ql.os.definesyscall_return(ql.os.macho_task.id)
     logging.debug("[+] [mach] task self trap, ret: %d" % (ql.os.macho_task.id))
+    return ql.os.macho_task.id
 
 # 0x1d
 def ql_syscall_host_self_trap(ql, *args, **kw):
     port_manager = ql.os.macho_port_manager
-    ql.os.definesyscall_return(port_manager.host_port.name)
-    logging.debug("[+] [mach] host_self_trap, ret: %s" % (666))
+    logging.debug("[+] [mach] host_self_trap, ret: %s" % (ql.os.macho_port_manager.host_port.name))
+    return port_manager.host_port.name
 
 # 0x1f
 def ql_syscall_mach_msg_trap(ql, args, opt, ssize, rsize, rname, timeout):
@@ -165,7 +165,7 @@ def ql_syscall_mach_msg_trap(ql, args, opt, ssize, rsize, rname, timeout):
     mach_msg.read_msg_from_mem(args, ssize)
     logging.debug("[+] Recv-> Header: %s, Content: %s" % (mach_msg.header, mach_msg.content))
     ql.os.macho_port_manager.deal_with_msg(mach_msg, args)
-    ql.os.definesyscall_return(0)
+    return 0
 
 
 #################
@@ -178,9 +178,9 @@ def ql_syscall_access_macos(ql, path, flags, *args, **kw):
     logging.info("access(%s, 0x%x)" % (path_str, flags))
     logging.debug("[+] access(path: %s, flags: 0x%x)" % (path_str, flags))
     if not ql.os.macho_fs.isexists(path_str):
-        ql.os.definesyscall_return(ENOENT)
+        return ENOENT
     else:
-        ql.os.definesyscall_return(KERN_SUCCESS)
+        return KERN_SUCCESS
 
 # 0x30 
 def ql_syscall_sigprocmask(ql, how, mask, omask, *args, **kw):
@@ -204,7 +204,7 @@ def ql_syscall_fcntl64_macos(ql, fcntl_fd, fcntl_cmd, fcntl_arg, *args, **kw):
         regreturn = 0
 
     logging.info("fcntl64(fd: %d, cmd: %d, arg: 0x%x) = %d" % (fcntl_fd, fcntl_cmd, fcntl_arg, regreturn))
-    ql.os.definesyscall_return(regreturn)
+    return regreturn
 
 # 0x99
 def ql_syscall_pread(ql, fd, buf, nbyte, offset, *args, **kw):
@@ -216,7 +216,7 @@ def ql_syscall_pread(ql, fd, buf, nbyte, offset, *args, **kw):
         data = ql.os.fd[fd].read(nbyte)
         ql.mem.write(buf, data)
     set_eflags_cf(ql, 0x0)
-    ql.os.definesyscall_return(nbyte)
+    return nbyte
 
 # 0xa9
 def ql_syscall_csops(ql, pid, ops, useraddr, usersize, *args, **kw):
@@ -225,7 +225,7 @@ def ql_syscall_csops(ql, pid, ops, useraddr, usersize, *args, **kw):
     logging.info("csops(pid: %d, ops: 0x%x, useraddr: 0x%x, usersize: 0x%x) flag: 0x%x" % (
         pid, ops, useraddr, usersize, ((CS_ENFORCEMENT | CS_GET_TASK_ALLOW))
     ))
-    ql.os.definesyscall_return(KERN_SUCCESS)
+    return KERN_SUCCESS
 
 # 0xdc
 def ql_syscall_getattrlist(ql, path, alist, attributeBuffer, bufferSize, options, *args, **kw):
@@ -264,11 +264,11 @@ def ql_syscall_getattrlist(ql, path, alist, attributeBuffer, bufferSize, options
 
     if len(attr) > bufferSize:
         logging.debug("Length error")
-        ql.os.definesyscall_return(1)
+        return 1
     else:
         ql.mem.write(attributeBuffer, attr)
         set_eflags_cf(ql, 0x0)
-        ql.os.definesyscall_return(KERN_SUCCESS)
+        return KERN_SUCCESS
 
 # 0xc2
 # struct rlimit {
@@ -282,7 +282,7 @@ def ql_syscall_getrlimit(ql, which, rlp, *args, **kw):
     RLIM_NLIMITS = 9
     which = which & _RLIMIT_POSIX_FLAG
     if which >= RLIM_NLIMITS:
-        ql.os.definesyscall_return(EINVAL)
+        return EINVAL
     else :
         ql.mem.write(rlp, b'\x00\x13\x00\x00\x00\x00\x00\x00')  # rlim_cur
         ql.mem.write(rlp, b'\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x7F')  # rlim_max
@@ -343,14 +343,14 @@ def ql_syscall_mmap2_macos(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags
     regreturn = mmap_base
     logging.debug("[+] mmap_base is 0x%x" % regreturn)
 
-    ql.os.definesyscall_return(regreturn)
+    return regreturn
 
 # 0xca
 def ql_syscall_sysctl(ql, name, namelen, old, oldlenp, new_arg, newlen):
     logging.info("sysctl(name: 0x%x, namelen: 0x%x, old: 0x%x, oldlenp: 0x%x, new: 0x%x, newlen: 0x%x)" % (
         name, namelen, old, oldlenp, new_arg, newlen
     ))
-    ql.os.definesyscall_return(KERN_SUCCESS)
+    return KERN_SUCCESS
 
 # 0x112
 def ql_syscall_sysctlbyname(ql, name, namelen, old, oldlenp, new_arg, newlen):
@@ -360,14 +360,14 @@ def ql_syscall_sysctlbyname(ql, name, namelen, old, oldlenp, new_arg, newlen):
     logging.debug("[+] sysctlbyname(name: 0x%x, namelen: 0x%x, old: 0x%x, oldlenp: 0x%x, new: 0x%x, newlen: 0x%x)" % (
         name, namelen, old, oldlenp, new_arg, newlen
     ))
-    ql.os.definesyscall_return(KERN_SUCCESS)
+    return KERN_SUCCESS
 
 # 0x126
 # check shared region if avalible , return not ready every time
 def ql_syscall_shared_region_check_np(ql, p, uap, retvalp, *args, **kw):
     logging.info("shared_region_check_np(0x%x, 0x%x, 0x%x) =  0x%x" % (p, uap, retvalp, EINVAL))
     logging.debug("[+] shared_region_check_np(p: 0x%x, uap: 0x%x, retvalp: 0x%x) = 0x%x" % (p, uap, retvalp, EINVAL))
-    ql.os.definesyscall_return(EINVAL)
+    return EINVAL
 
 # 0x150
 def ql_syscall_proc_info(ql, callnum, pid, flavor, arg, buff, buffer_size):
@@ -436,7 +436,7 @@ def ql_syscall_stat64_macos(ql, stat64_pathname, stat64_buf_ptr, *args, **kw):
         logging.debug("[+] stat64 write completed")
     else:
         logging.debug("[!] stat64 read/write fail")
-    ql.os.definesyscall_return(regreturn)
+    return regreturn
 
 # 0x153
 def ql_syscall_fstat64_macos(ql, fstat64_fd, fstat64_add, *args, **kw):
@@ -501,18 +501,18 @@ def ql_syscall_fstat64_macos(ql, fstat64_fd, fstat64_add, *args, **kw):
         logging.debug("[+] fstat64 write completed")
     else:
         logging.debug("[!] fstat64 read/write fail")
-    ql.os.definesyscall_return(regreturn)
+    return regreturn
 
 # 0x16e
 def ql_syscall_bsdthread_register(ql, threadstart, wqthread, flags, stack_addr_hint, targetconc_ptr, dispatchqueue_offset):
     set_eflags_cf(ql, 0x0)
-    ql.os.definesyscall_return(0x00000000400000df)
+    return 0x00000000400000df
 
 # 0x174
 def ql_syscall_thread_selfid(ql, *args, **kw):
     thread_id = ql.os.macho_thread.id
     logging.info("thread_selfid() = %d" % (thread_id))
-    ql.os.definesyscall_return(thread_id)
+    return thread_id
 
 # 0x18e
 def ql_syscall_open_nocancel(ql, filename, flags, mode, *args, **kw):
@@ -544,7 +544,7 @@ def ql_syscall_open_nocancel(ql, filename, flags, mode, *args, **kw):
         logging.debug("[+] File Found: %s" % relative_path)
     else:
         logging.debug("[!] File Not Found %s" % relative_path)
-    ql.os.definesyscall_return(regreturn)
+    return regreturn
 
 # 0x1b6
 def ql_syscall_shared_region_map_and_slide_np(ql, fd, count, mappings_addr, slide, slide_start, slide_size):
@@ -563,19 +563,19 @@ def ql_syscall_shared_region_map_and_slide_np(ql, fd, count, mappings_addr, slid
         ql.mem.write(mapping.sfm_address, content)
         mappings_addr += mapping.size
         mapping_list.append(mapping)
-    ql.os.definesyscall_return(slide_size)
+    return slide_size
 
 # 0x1e3
 def ql_syscall_csrctl(ql, op, useraddr, usersize, *args, **kw):
     logging.info("csrctl(0x%x, 0x%x, 0x%x)" % (op, useraddr, usersize))
     logging.debug("csrctl(op: 0x%x, useraddr :0x%x, usersize: 0x%x)" % (op, useraddr, usersize))
-    ql.os.definesyscall_return(1)
+    return 1
 
 # 0x1f4
 def ql_syscall_getentropy(ql, buffer, size, *args, **kw):
     logging.info("getentropy(0x%x, 0x%x)" % (buffer, size))
     logging.debug("[+] getentropy(buffer: 0x%x, size: 0x%x)" % (buffer, size))
-    ql.os.definesyscall_return(KERN_SUCCESS)
+    return KERN_SUCCESS
 
 # 0x208
 def ql_syscall_terminate_with_payload(ql, pid, reason_namespace, reason_code, payload, payload_size, reason_string):
@@ -585,9 +585,9 @@ def ql_syscall_terminate_with_payload(ql, pid, reason_namespace, reason_code, pa
     logging.debug("[+] terminate_with_payload(pid: %d, reason_namespace: 0x%x, reason_code: 0x%x, payload: 0x%x \
             payload_size: 0x%x, reason_string: 0x%x)" % (pid, reason_namespace, reason_code,
             payload, payload_size, reason_string))
-    ql.os.definesyscall_return(KERN_SUCCESS)
     ql.emu_stop()
     raise QlErrorSyscallError("[!] Exit with Error")
+    return KERN_SUCCESS
 
 # 0x209
 def ql_syscall_abort_with_payload(ql, reason_namespace, reason_code, payload, payload_size, reason_string, reason_flags):
@@ -596,7 +596,7 @@ def ql_syscall_abort_with_payload(ql, reason_namespace, reason_code, payload, pa
 
     logging.debug("[+] abort_with_payload(reason_namespace: 0x%x, reason_code: 0x%x, payload: 0x%x, payload_size: 0x%x, reason_string: 0x%x,\
             reason_flags: 0x%x)" % (reason_namespace, reason_code, payload, payload_size, reason_string, reason_flags))
-    ql.os.definesyscall_return(KERN_SUCCESS)
+    return KERN_SUCCESS
 
 
 ################
@@ -608,5 +608,4 @@ def ql_syscall_abort_with_payload(ql, reason_namespace, reason_code, payload, pa
 def ql_syscall_thread_fast_set_cthread_self64(ql, u_info_addr, *args, **kw):
     logging.debug("[+] [mdep] thread fast set cthread self64(tsd_base:0x%x)" % (u_info_addr))
     ql.reg.msr(GSMSR, u_info_addr)
-    ql.os.definesyscall_return(KERN_SUCCESS)
-    return 
+    return KERN_SUCCESS

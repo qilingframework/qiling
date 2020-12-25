@@ -22,4 +22,4 @@ def ql_syscall_gettid(ql, *args, **kw):
       # per Posix documentation.
       regreturn = ql.os.pid
     logging.info("gettid() = %d" % regreturn)
-    ql.os.definesyscall_return(regreturn)
+    return regreturn
