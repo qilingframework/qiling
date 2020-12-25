@@ -124,6 +124,7 @@ class QlOsUtils:
         self.ql = ql
         self.path = None
         self.output_ready = False
+        self.md = None
 
     def lsbmsb_convert(self, sc, size=4):
         split_bytes = []
@@ -231,15 +232,23 @@ class QlOsUtils:
         # we want to rewrite the return address to the function
         self.ql.stack_write(0, start)
 
+    def get_offset_and_name(self, addr):
+        for begin, end, access, name in self.ql.mem.map_info:
+            if begin <= addr and end > addr:
+                return addr-begin, name
+        return addr, '-'
+
     def disassembler(self, ql, address, size):
         tmp = self.ql.mem.read(address, size)
 
-        md = self.ql.create_disassembler()
+        if not self.md:
+            self.md = self.ql.create_disassembler()
 
-        insn = md.disasm(tmp, address)
+        insn = self.md.disasm(tmp, address)
         opsize = int(size)
 
-        log_data = ("0x%x" % (address)).ljust( (self.ql.archbit // 8) + 15)
+        offset, name = self.get_offset_and_name(address)
+        log_data = '0x%0*x {%-20s + 0x%06x}   ' % (self.ql.archbit // 4, address, name, offset)
 
         temp_str = ""
         for i in tmp:
