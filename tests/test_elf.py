@@ -1012,5 +1012,26 @@ class ELFTest(unittest.TestCase):
 
         del ql
 
+    def test_elf_linux_x86_return_from_main_stackpointer(self):
+        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_return_main"],  "../examples/rootfs/x86_linux", stop_on_stackpointer=True)
+        ql.run()
+        del ql
+
+    def test_elf_linux_x86_return_from_main_exit_trap(self):
+        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_return_main"],  "../examples/rootfs/x86_linux", stop_on_exit_trap=True)
+        ql.run()
+        del ql
+
+    def test_elf_linux_x8664_return_from_main_stackpointer(self):
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_return_main"],  "../examples/rootfs/x8664_linux", stop_on_stackpointer=True)
+        ql.run()
+        del ql
+
+    def test_elf_linux_x8664_return_from_main_exit_trap(self):
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_return_main"],  "../examples/rootfs/x8664_linux", stop_on_exit_trap=True)
+        ql.run()
+        del ql
+
+
 if __name__ == "__main__":
     unittest.main()

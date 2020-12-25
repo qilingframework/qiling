@@ -182,6 +182,30 @@ class PETest(unittest.TestCase):
         del ql
 
 
+    def test_pe_win_x86_return_from_main_stackpointer(self):
+        ql = Qiling(["../examples/rootfs/x86_windows/bin/return_main.exe"], "../examples/rootfs/x86_windows", libcache=True, stop_on_stackpointer=True)
+        ql.run()
+        del ql
+
+
+    def test_pe_win_x86_return_from_main_exit_trap(self):
+        ql = Qiling(["../examples/rootfs/x86_windows/bin/return_main.exe"], "../examples/rootfs/x86_windows", libcache=True, stop_on_exit_trap=True)
+        ql.run()
+        del ql
+
+
+    def test_pe_win_x8664_return_from_main_stackpointer(self):
+        ql = Qiling(["../examples/rootfs/x8664_windows/bin/x8664_return_main.exe"], "../examples/rootfs/x8664_windows", libcache=True, stop_on_stackpointer=True)
+        ql.run()
+        del ql
+
+
+    def test_pe_win_x8664_return_from_main_exit_trap(self):
+        ql = Qiling(["../examples/rootfs/x8664_windows/bin/x8664_return_main.exe"], "../examples/rootfs/x8664_windows", libcache=True, stop_on_exit_trap=True)
+        ql.run()
+        del ql
+
+
     def test_pe_win_x86_wannacry(self):
         if 'QL_FAST_TEST' in os.environ:
             return
