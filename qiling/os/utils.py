@@ -122,10 +122,7 @@ class PathUtils:
 class QlOsUtils:
     def __init__(self, ql):
         self.ql = ql
-        self.archtype = None
-        self.ostype = None
         self.path = None
-        self.archendian = None
         self.output_ready = False
 
     def lsbmsb_convert(self, sc, size=4):
@@ -397,7 +394,7 @@ class QlOsUtils:
 
         alloc_addr = []
         def build_mdl(buffer_size, data=None):
-            if self.archtype == QL_ARCH.X8664:
+            if self.ql.archtype == QL_ARCH.X8664:
                 mdl = MDL64()
             else:
                 mdl = MDL32()
@@ -448,7 +445,7 @@ class QlOsUtils:
         elif device_object.Flags & DO_DIRECT_IO:
             # DIRECT_IO
             mdl = build_mdl(len(in_buffer))
-            if self.archtype == QL_ARCH.X8664:
+            if self.ql.archtype == QL_ARCH.X8664:
                 mdl_addr = self.heap.alloc(ctypes.sizeof(MDL64))
             else:
                 mdl_addr = self.heap.alloc(ctypes.sizeof(MDL32))
@@ -478,7 +475,7 @@ class QlOsUtils:
             verify_ret(self.ql, err)
             
         # read current IRP state
-        if self.archtype == QL_ARCH.X8664:
+        if self.ql.archtype == QL_ARCH.X8664:
             irp_buffer = self.ql.mem.read(irp_addr, ctypes.sizeof(IRP64))
             irp = IRP64.from_buffer(irp_buffer)
         else:
@@ -508,7 +505,7 @@ class QlOsUtils:
 
         alloc_addr = []
         def build_mdl(buffer_size, data=None):
-            if self.archtype == QL_ARCH.X8664:
+            if self.ql.archtype == QL_ARCH.X8664:
                 mdl = MDL64()
             else:
                 mdl = MDL32()
@@ -584,7 +581,7 @@ class QlOsUtils:
             irpstack.Parameters.DeviceIoControl.OutputBufferLength = output_buffer_size
             irpstack.Parameters.DeviceIoControl.InputBufferLength = input_buffer_size
             irpstack.Parameters.DeviceIoControl.Type3InputBuffer.value = input_buffer_addr # used by IOCTL_METHOD_NEITHER
-            self.mem.write(irpstack_addr, bytes(irpstack))
+            self.ql.mem.write(irpstack_addr, bytes(irpstack))
 
             if ctl_method == METHOD_NEITHER:
                 irp.UserBuffer.value = output_buffer_addr  # used by IOCTL_METHOD_NEITHER
@@ -603,7 +600,7 @@ class QlOsUtils:
                 # Create MDL structure for output data
                 # used by both IOCTL_METHOD_IN_DIRECT and IOCTL_METHOD_OUT_DIRECT
                 mdl = build_mdl(output_buffer_size)
-                if self.archtype == QL_ARCH.X8664:
+                if self.ql.archtype == QL_ARCH.X8664:
                     mdl_addr = self.heap.alloc(ctypes.sizeof(MDL64))
                 else:
                     mdl_addr = self.heap.alloc(ctypes.sizeof(MDL32))
@@ -622,12 +619,12 @@ class QlOsUtils:
 
             try:
                 # now emulate IOCTL's DeviceControl
-                self.run(self.loader.driver_object.MajorFunction[IRP_MJ_DEVICE_CONTROL])
+                self.ql.run(self.ql.loader.driver_object.MajorFunction[IRP_MJ_DEVICE_CONTROL])
             except UcError as err:
                 verify_ret(self.ql, err)
 
             # read current IRP state
-            if self.archtype == QL_ARCH.X8664:
+            if self.ql.archtype == QL_ARCH.X8664:
                 irp_buffer = self.ql.mem.read(irp_addr, ctypes.sizeof(IRP64))
                 irp = IRP64.from_buffer(irp_buffer)
             else:
