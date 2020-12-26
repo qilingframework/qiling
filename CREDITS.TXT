@@ -49,6 +49,7 @@ iamyeh
 alfink
 bambu
 bkerler (viperbjk)
+learn-more
 
 Alpha testers (in no particular order, named by github id)
 ==========================================================
