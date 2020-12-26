@@ -1,8 +1,7 @@
 import logging
 
-from .utils import *
-from .ProcessorBind import *
-from .UefiSpec import *
+from .utils import CoreInstallConfigurationTable
+from .UefiSpec import EFI_SYSTEM_TABLE, EFI_BOOT_SERVICES, EFI_RUNTIME_SERVICES
 from . import bs, rt, ds
 
 # static mem layout:

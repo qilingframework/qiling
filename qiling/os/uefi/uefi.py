@@ -4,9 +4,7 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
 import logging
-from unicorn import *
-from unicorn.x86_const import *
-from qiling.const import *
+from unicorn import UcError
 from qiling.os.os import QlOs
 
 class QlOsUefi(QlOs):

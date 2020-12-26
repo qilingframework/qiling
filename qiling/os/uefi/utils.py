@@ -7,10 +7,8 @@ import ctypes
 import struct
 import logging
 
-from qiling.const import *
 from .const import *
-from .ProcessorBind import *
-from .UefiSpec import EFI_CONFIGURATION_TABLE
+from .UefiSpec import EFI_LOCATE_SEARCH_TYPE, EFI_CONFIGURATION_TABLE
 
 def check_and_notify_protocols(ql):
 	if len(ql.loader.notify_list) > 0:

@@ -2,6 +2,7 @@ from qiling.const import *
 from qiling.os.const import *
 from .fncc import *
 from .utils import init_struct
+from .const import *
 from .ProcessorBind import *
 from .UefiBaseType import *
 from .UefiMultiPhase import *

@@ -6,18 +6,13 @@
 import struct, logging
 from contextlib import contextmanager
 
-from unicorn import *
-from unicorn.x86_const import *
-
-from qiling.arch.x86_const import *
-from qiling.os.utils import *
-from qiling.const import *
+from qiling.const import QL_ARCH
 from qiling.os.memory import QlMemoryHeap
+from qiling.os.utils import QlErrorArch, QlErrorFileType
 
-from qiling.os.uefi.utils import *
 from qiling.os.uefi import st, smst
 from qiling.os.uefi.ProcessorBind import CPU_STACK_ALIGNMENT
-from qiling.os.uefi.shutdown import *
+from qiling.os.uefi.shutdown import hook_EndOfExecution
 from qiling.os.uefi.protocols import EfiLoadedImageProtocol
 from qiling.os.uefi.protocols import EfiSmmBase2Protocol
 from qiling.os.uefi.protocols import EfiSmmAccess2Protocol
@@ -26,8 +21,6 @@ from qiling.os.uefi.protocols import AmiDebugServiceProtocol
 from qiling.os.uefi.protocols import AmiSmmDebugServiceProtocol
 from qiling.os.uefi.protocols import PcdProtocol
 from qiling.os.uefi.protocols import UsraProtocol
-
-from qiling.os.windows.fncc import *
 
 from pefile import PE
 from .loader import QlLoader
@@ -245,7 +238,7 @@ class QlLoaderPE_UEFI(QlLoader):
         smst.initialize(self.ql, gSmst)
 
         self.gST = gST
-        self.ql.loader.gSmst = gSmst
+        self.gSmst = gSmst
 
         # TODO: statically allocating 256 KiB for protocols.
         # however, this amount of memory is rather arbitrary
