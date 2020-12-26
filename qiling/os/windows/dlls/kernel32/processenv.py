@@ -37,6 +37,25 @@ def hook_GetCommandLineW(ql, address, params):
     return addr
 
 
+
+
+# LPWSTR * CommandLineToArgvW(
+#    LPCWSTR lpCmdLine,
+#    int     *pNumArgs
+# );
+
+# Note: Didn't test it. Need second thoughts.
+@winsdkapi(cc=STDCALL, dllname=dllname)
+def hook_CommandLineToArgvW(ql, address, params):
+        cmdline = ql.loader.cmdline + params["lpCmdLine"]
+        cmdline = ql.loader.cmdline.decode('ascii').encode('utf-16le')
+        numArgs = ql.os.heap.alloc(len(cmdline))
+        ptrs = ql.mem.write(numArgs, cmdline)
+        return ptrs
+
+
+
+
 # LPWCH GetEnvironmentStrings(
 # );
 @winsdkapi(cc=STDCALL, dllname=dllname)
