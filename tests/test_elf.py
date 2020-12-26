@@ -32,8 +32,6 @@ class ELFTest(unittest.TestCase):
 
 
     def test_elf_partial_linux_x8664(self):
-        ss = None
-
         def dump(ql, *args, **kw):
             ql.save(reg=False, cpu_context=True, snapshot="/tmp/snapshot.bin")
             ql.emu_stop()

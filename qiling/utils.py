@@ -7,7 +7,7 @@
 This module is intended for general purpose functions that can be used
 thoughout the qiling framework
 """
-import importlib, logging, os, logging, copy, re, pefile, magic, configparser
+import importlib, logging, os, logging, copy, re, pefile, configparser
 from logging import LogRecord
 from pathlib import Path
 from .exception import *
@@ -333,8 +333,11 @@ def ql_macho_parse_emu_env(path):
     return arch, ostype, archendian
 
 def ql_pe_parse_emu_env(path):
+    try:
+        pe = pefile.PE(path, fast_load=True)
+    except:
+        return None, None, None
 
-    pe = pefile.PE(path, fast_load=True)
     ostype = None
     arch = None
     archendian = None
@@ -364,43 +367,30 @@ def ql_pe_parse_emu_env(path):
     return arch, ostype, archendian
 
 def ql_guess_emu_env(path):
-    if os.path.isdir(path) and (str(path)).endswith(".kext"):
-        return QL_ARCH.X8664, QL_OS.MACOS, QL_ENDIAN.EL
-
     arch = None
     ostype = None
     archendian = None
 
-    ftype = magic.from_file(path)
+    if os.path.isdir(path) and (str(path)).endswith(".kext"):
+        return QL_ARCH.X8664, QL_OS.MACOS, QL_ENDIAN.EL
 
-    if "ELF" in ftype:
-        arch, ostype, archendian = ql_elf_parse_emu_env(path)
-    elif "Mach-O" in ftype:
+    if os.path.isfile(path) and (str(path)).endswith(".DOS_COM"):
+        return QL_ARCH.A8086, QL_OS.DOS, QL_ENDIAN.EL
+
+    if os.path.isfile(path) and (str(path)).endswith(".DOS_MBR"):
+        return QL_ARCH.A8086, QL_OS.DOS, QL_ENDIAN.EL
+
+    if os.path.isfile(path) and (str(path)).endswith(".DOS_EXE"):
+        return QL_ARCH.A8086, QL_OS.DOS, QL_ENDIAN.EL
+
+    arch, ostype, archendian = ql_elf_parse_emu_env(path)
+
+    if arch == None or ostype == None or archendian == None:
         arch, ostype, archendian = ql_macho_parse_emu_env(path)
-    elif "PE32" in ftype:
-        arch, ostype, archendian = ql_pe_parse_emu_env(path)
-    elif ("COM" in ftype and "DOS" in ftype) or "COM" in path:
-        arch = QL_ARCH.A8086
-        ostype = QL_OS.DOS
-        archendian = QL_ENDIAN.EL
-    elif "MBR" in ftype and "DOS" in ftype: # Yes, we put MBR into dos.py.
-        arch = QL_ARCH.A8086
-        ostype = QL_OS.DOS
-        archendian = QL_ENDIAN.EL
-    elif "MS-DOS" in ftype:
-        # Here we have to distinguish between real 16bit DOS executables and EFI excutables.
-        # I could confirm from specs that all UEFI executables should be PE/PE32+.
-        # But 16bit DOS executables don't have a valid NT header.
-        # I'm not sure why libmagic(file) classify EFI executables as "MS-DOS executable"
-        try:
-            pefile.PE(path)
-        except pefile.PEFormatError:
-            arch = QL_ARCH.A8086
-            ostype = QL_OS.DOS
-            archendian = QL_ENDIAN.EL
-        else:
-            arch, ostype, archendian = ql_pe_parse_emu_env(path)
 
+    if arch == None or ostype == None or archendian == None:
+        arch, ostype, archendian = ql_pe_parse_emu_env(path)
+  
     if ostype not in (QL_OS_ALL):
         raise QlErrorOsType("[!] File does not belong to either 'linux', 'windows', 'freebsd', 'macos', 'ios', 'dos'")
 

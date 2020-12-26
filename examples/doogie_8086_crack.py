@@ -129,11 +129,11 @@ def show_once(ql: Qiling, key):
 # In this stage, we show every key.
 def third_stage(keys):
     # To setup terminal again, we have to restart the whole program.
-    ql = Qiling(["rootfs/8086/doogie/doogie.bin"], 
+    ql = Qiling(["rootfs/8086/doogie/doogie.DOS_MBR"], 
                  "rootfs/8086",
                  console=False,
                  log_dir=".")
-    ql.add_fs_mapper(0x80, QlDisk("rootfs/8086/doogie/doogie.bin", 0x80))
+    ql.add_fs_mapper(0x80, QlDisk("rootfs/8086/doogie/doogie.DOS_MBR", 0x80))
     ql.set_api((0x1a, 4), set_required_datetime, QL_INTERCEPT.EXIT)
     hk = ql.hook_code(stop, begin=0x8018, end=0x8018)
     ql.run()
@@ -183,11 +183,11 @@ def stop(ql, addr, data):
 
 # In this stage, we get the encrypted data which xored with the specific date.
 def first_stage():
-    ql = Qiling(["rootfs/8086/doogie/doogie.bin"], 
+    ql = Qiling(["rootfs/8086/doogie/doogie.DOS_MBR"], 
                  "rootfs/8086",
                  console=False,
                  log_dir=".")
-    ql.add_fs_mapper(0x80, QlDisk("rootfs/8086/doogie/doogie.bin", 0x80))
+    ql.add_fs_mapper(0x80, QlDisk("rootfs/8086/doogie/doogie.DOS_MBR", 0x80))
     # Doogie suggests that the datetime should be 1990-02-06.
     ql.set_api((0x1a, 4), set_required_datetime, QL_INTERCEPT.EXIT)
     # A workaround to stop the program.
