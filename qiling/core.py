@@ -44,6 +44,8 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             append=None,
             libcache = False,
             multithread = False,
+            stop_on_stackpointer = False,
+            stop_on_exit_trap = False,
             stdin=0,
             stdout=0,
             stderr=0,
@@ -77,6 +79,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._platform = ostype_convert(platform.system().lower())
         self._internal_exception = None
         self._uc = None
+        self._stop_options = QlStopOptions(stackpointer=stop_on_stackpointer, exit_trap=stop_on_exit_trap)
         
         ##################################
         # Definition after ql=Qiling()   #
@@ -199,6 +202,9 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         
         # Setup Outpt
         self.os.setup_output()
+
+        # Add extra guard options when configured to do so
+        self._init_stop_guard()
 
     
     #####################
@@ -659,6 +665,18 @@ class Qiling(QlCoreHooks, QlCoreStructs):
     def uc(self, u):
         self._uc = u
 
+    @property
+    def stop_options(self) -> "QlStopOptions":
+        """ The stop options configured:
+            - stackpointer: Stop execution on a negative stackpointer
+            - exit_trap: Stop execution when the ip enters a guarded region
+            - any: Is any of the options enabled?
+
+        Returns:
+            QlStopOptions: What stop options are configured
+        """
+        return self._stop_options
+
     def __enable_bin_patch(self):
         for addr, code in self.patch_bin:
             self.mem.write(self.loader.load_address + addr, code)
@@ -670,7 +688,46 @@ class Qiling(QlCoreHooks, QlCoreStructs):
                 self.mem.write(self.mem.get_lib_base(filename) + addr, code)
             except:
                 raise RuntimeError("Fail to patch %s at address 0x%x" % (filename, addr))
-    
+
+    def _init_stop_guard(self):
+        if not self.stop_options.any:
+            return
+
+        # Allocate a guard page, we need this in both cases
+        # On a negative stack pointer, we still need a return address (otherwise we end up at 0)
+        # Make sure it is not close to the heap (PE), otherwise the heap cannot grow
+        self._exit_trap_addr = self.mem.find_free_space(0x1000, min_addr=0x9000000, alignment=0x10)
+        self.mem.map(self._exit_trap_addr, 0x1000, info='[Stop guard]')
+
+        # Stop on a negative stack pointer
+        if self.stop_options.stackpointer:
+            def _check_sp(ql, address, size):
+                if not ql.loader.skip_exit_check:
+                    sp = ql._initial_sp - ql.reg.arch_sp
+                    if sp < 0:
+                        logging.info('Process returned from entrypoint (stackpointer)!')
+                        ql.emu_stop()
+
+            self.hook_code(_check_sp)
+
+        # Stop when running to exit trap address
+        if self.stop_options.exit_trap:
+            def _exit_trap(ql):
+                logging.info('Process returned from entrypoint (exit_trap)!')
+                ql.emu_stop()
+
+            self.hook_address(_exit_trap, self._exit_trap_addr)
+
+    def write_exit_trap(self):
+        self._initial_sp = self.reg.arch_sp
+        if self.stop_options.any:
+            if not self.loader.skip_exit_check:
+                logging.debug(f'Setting up exit trap at 0x{hex(self._exit_trap_addr)}')
+                self.stack_write(0, self._exit_trap_addr)
+            elif self.stop_options.exit_trap:
+                logging.debug(f'Loader {self.loader} requested to skip exit_trap!')
+
+
     ###############
     # Qiling APIS #
     ###############
@@ -683,6 +740,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self.exit_point = end
         self.timeout = timeout
         self.count = count
+        self.write_exit_trap()
 
         # init debugger
         if self._debugger != False and self._debugger != None:

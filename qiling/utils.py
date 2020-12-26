@@ -128,6 +128,26 @@ class QlFileDes:
     def restore(self, fds):
         self.__fds = fds
 
+
+class QlStopOptions(object):
+    def __init__(self, stackpointer=False, exit_trap=False):
+        super().__init__()
+        self._stackpointer = stackpointer
+        self._exit_trap = exit_trap
+
+    @property
+    def stackpointer(self) -> bool:
+        return self._stackpointer
+
+    @property
+    def exit_trap(self) -> bool:
+        return self._exit_trap
+
+    @property
+    def any(self) -> bool:
+        return self.stackpointer or self.exit_trap
+
+
 def catch_KeyboardInterrupt(ql):
     def decorator(func):
         def wrapper(*args, **kw):
