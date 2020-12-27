@@ -321,34 +321,39 @@ class QlOsUtils:
         self.string_appearance(result)
         return result
 
-
     def print_function(self, address, function_name, params, ret, passthru=False):
-        function_name = function_name.replace('hook_', '')
+        if function_name.startswith('hook_'):
+            function_name = function_name[5:]
+
         if function_name in ("__stdio_common_vfprintf", "__stdio_common_vfwprintf", "printf", "wsprintfW", "sprintf"):
             return
-        log = '0x%0.2x: %s(' % (address, function_name)
-        for each in params:
-            value = params[each]
+
+        def _parse_param(param):
+            name, value = param
+
             if isinstance(value, str) or type(value) == bytearray:
-                log += '%s = "%s", ' % (each, value)
+                return f'{name:s} = "{value:s}"'
             elif isinstance(value, tuple):
                 # we just need the string, not the address in the log
-                log += '%s = "%s", ' % (each, value[1])
-            else:
-                log += '%s = 0x%x, ' % (each, value)
-        log = log.strip(", ")
-        log += ')'
-        if ret is not None:
-            log += ' = 0x%x' % ret
+                return f'{name:s} = "{value[1]:s}"'
 
-        if passthru:
-            log += '(PASSTHRU)'
+            # default to hexadecimal representation
+            return f'{name:s} = {value:#x}'
 
-        if self.ql.output != QL_OUTPUT.DEBUG:
+        # arguments list
+        fargs = (_parse_param(param) for param in params.items())
+
+        # optional suffixes: return value and passthrough
+        fret = f' = {ret:#x}' if ret is not None else ''
+        fpass = f' (PASSTHRU)' if passthru else ''
+
+        log = f'{address:02x}: {function_name:s}({", ".join(fargs)}){fret}{fpass}'
+
+        if self.ql.output == QL_OUTPUT.DEBUG:
+            logging.debug(log)
+        else:
             log = log.partition(" ")[-1]
             logging.info(log)
-        else:
-            logging.debug(log)
 
     def printf(self, address, fmt, params_addr, name, wstring=False):
         count = fmt.count("%")
