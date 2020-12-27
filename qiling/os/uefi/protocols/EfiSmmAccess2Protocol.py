@@ -4,7 +4,6 @@ from ..fncc import *
 from ..ProcessorBind import *
 from ..UefiBaseType import *
 from ..utils import write_int64
-from .common import install_protocol
 
 # @see: MdePkg\Include\Pi\PiMultiPhase.h
 class EFI_MMRAM_DESCRIPTOR(STRUCT):
@@ -60,7 +59,6 @@ def hook_GetCapabilities(ql, address, params):
 
 	return EFI_SUCCESS
 
-def install(ql, base, handles):
 	descriptor = {
 		"guid" : "c2702b74-800c-4131-8746-8fb5b89ce4ac",
 		"struct" : EFI_MM_ACCESS_PROTOCOL,
@@ -71,7 +69,3 @@ def install(ql, base, handles):
 			("GetCapabilities",	hook_GetCapabilities)
 		)
 	}
-
-	return install_protocol(ql, base, descriptor, handles)
-
-__all__ = ['install']

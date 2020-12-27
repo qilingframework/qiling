@@ -2,7 +2,6 @@ from ..ProcessorBind import *
 from ..UefiBaseType import *
 from ..UefiSpec import EFI_SYSTEM_TABLE, EFI_DEVICE_PATH_PROTOCOL, EFI_IMAGE_UNLOAD
 from ..UefiMultiPhase import EFI_MEMORY_TYPE
-from .common import install_protocol
 
 class EFI_LOADED_IMAGE_PROTOCOL(STRUCT):
 	_fields_ = [
@@ -23,7 +22,7 @@ class EFI_LOADED_IMAGE_PROTOCOL(STRUCT):
 		('Unload',			EFI_IMAGE_UNLOAD)
 	]
 
-def install(ql, base, fields, handles):
+def make_descriptor(fields):
 	descriptor = {
 		"guid" : "5b1b31a1-9562-11d2-8e3f-00a0c969723b",
 		"struct" : EFI_LOADED_IMAGE_PROTOCOL,
@@ -43,9 +42,9 @@ def install(ql, base, fields, handles):
 		)
 	}
 
-	return install_protocol(ql, base, descriptor, handles)
+	return descriptor
 
 __all__ = [
 	'EFI_LOADED_IMAGE_PROTOCOL',
-	'install'
+	'make_descriptor'
 ]

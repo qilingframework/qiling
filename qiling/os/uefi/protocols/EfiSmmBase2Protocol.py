@@ -5,7 +5,6 @@ from ..utils import *
 from ..ProcessorBind import *
 from ..UefiBaseType import *
 from ..smst import *
-from .common import install_protocol
 
 # @see: MdePkg\Include\Protocol\SmmBase2.h
 class EFI_SMM_BASE2_PROTOCOL(STRUCT):
@@ -40,7 +39,6 @@ def hook_GetSmstLocation(ql, address, params):
 
 	return EFI_SUCCESS
 
-def install(ql, base, handles):
 	descriptor = {
 		"guid" : "f4ccbfb7-f6e0-47fd-9dd4-10a8f150c191",
 		"struct" : EFI_SMM_BASE2_PROTOCOL,
@@ -49,7 +47,3 @@ def install(ql, base, handles):
 			("GetSmstLocation",	hook_GetSmstLocation)
 		)
 	}
-
-	return install_protocol(ql, base, descriptor, handles)
-
-__all__ = ['install']

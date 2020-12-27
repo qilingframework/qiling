@@ -2,7 +2,6 @@ from qiling.os.const import *
 from ..fncc import *
 from ..ProcessorBind import *
 from ..UefiBaseType import *
-from .common import install_protocol
 
 PCD_PROTOCOL_CALLBACK = FUNCPTR(VOID, PTR(EFI_GUID), UINTN, PTR(VOID), UINTN)
 
@@ -291,45 +290,40 @@ def hook_GetNextToken(ql, address, params):
 def hook_GetNextTokenSpace(ql, address, params):
 	pass
 
-def install(ql, base, handles):
-	descriptor = {
-		"guid" : "11b34006-d85b-4d0a-a290-d5a571310ef7",
-		"struct" : PCD_PROTOCOL,
-		"fields" : (
-			('SetSku',				hook_SetSku),
-			('Get8',				hook_Get8),
-			('Get16',				hook_Get16),
-			('Get32',				hook_Get32),
-			('Get64',				hook_Get64),
-			('GetPtr',				hook_GetPtr),
-			('GetBool',				hook_GetBool),
-			('GetSize',				hook_GetSize),
-			('Get8Ex',				hook_Get8Ex),
-			('Get16Ex',				hook_Get16Ex),
-			('Get32Ex',				hook_Get32Ex),
-			('Get64Ex',				hook_Get64Ex),
-			('GetPtrEx',			hook_GetPtrEx),
-			('GetBoolEx',			hook_GetBoolEx),
-			('GetSizeEx',			hook_GetSizeEx),
-			('Set8',				hook_Set8),
-			('Set16',				hook_Set16),
-			('Set32',				hook_Set32),
-			('Set64',				hook_Set64),
-			('SetPtr',				hook_SetPtr),
-			('SetBool',				hook_SetBool),
-			('Set8Ex',				hook_Set8Ex),
-			('Set16Ex',				hook_Set16Ex),
-			('Set32Ex',				hook_Set32Ex),
-			('Set64Ex',				hook_Set64Ex),
-			('SetPtrEx',			hook_SetPtrEx),
-			('SetBoolEx',			hook_SetBoolEx),
-			('CallbackOnSet',		hook_CallbackOnSet),
-			('CancelCallback',		hook_CancelCallback),
-			('GetNextToken',		hook_GetNextToken),
-			('GetNextTokenSpace',	hook_GetNextTokenSpace)
-		)
-	}
-
-	return install_protocol(ql, base, descriptor, handles)
-
-__all__ = ['install']
+descriptor = {
+	"guid" : "11b34006-d85b-4d0a-a290-d5a571310ef7",
+	"struct" : PCD_PROTOCOL,
+	"fields" : (
+		('SetSku',				hook_SetSku),
+		('Get8',				hook_Get8),
+		('Get16',				hook_Get16),
+		('Get32',				hook_Get32),
+		('Get64',				hook_Get64),
+		('GetPtr',				hook_GetPtr),
+		('GetBool',				hook_GetBool),
+		('GetSize',				hook_GetSize),
+		('Get8Ex',				hook_Get8Ex),
+		('Get16Ex',				hook_Get16Ex),
+		('Get32Ex',				hook_Get32Ex),
+		('Get64Ex',				hook_Get64Ex),
+		('GetPtrEx',			hook_GetPtrEx),
+		('GetBoolEx',			hook_GetBoolEx),
+		('GetSizeEx',			hook_GetSizeEx),
+		('Set8',				hook_Set8),
+		('Set16',				hook_Set16),
+		('Set32',				hook_Set32),
+		('Set64',				hook_Set64),
+		('SetPtr',				hook_SetPtr),
+		('SetBool',				hook_SetBool),
+		('Set8Ex',				hook_Set8Ex),
+		('Set16Ex',				hook_Set16Ex),
+		('Set32Ex',				hook_Set32Ex),
+		('Set64Ex',				hook_Set64Ex),
+		('SetPtrEx',			hook_SetPtrEx),
+		('SetBoolEx',			hook_SetBoolEx),
+		('CallbackOnSet',		hook_CallbackOnSet),
+		('CancelCallback',		hook_CancelCallback),
+		('GetNextToken',		hook_GetNextToken),
+		('GetNextTokenSpace',	hook_GetNextTokenSpace)
+	)
+}

@@ -1,7 +1,6 @@
 from qiling.os.const import *
 from ..fncc import *
 from ..ProcessorBind import *
-from .common import install_protocol
 
 # Based on AMI codebase found on https://github.com/marktsai0316/RAIDOOBMODULE
 # @see: AmiModulePkg/Include/Protocol/AmiDebugService.h
@@ -27,16 +26,11 @@ def hook_Debug(ql, address, params):
 def hook_DebugAssert(ql, address, params):
 	pass
 
-def install(ql, base, handles):
-	descriptor = {
-		"guid" : "441ffa18-8714-421e-8c95-587080796fee",
-		"struct" : AMI_DEBUG_SERVICE_PROTOCOL,
-		"fields" : (
-			("Debug",       hook_Debug),
-			("DebugAssert", hook_DebugAssert)
-		)
-	}
-
-	return install_protocol(ql, base, descriptor, handles)
-
-__all__ = ['install']
+descriptor = {
+	"guid" : "441ffa18-8714-421e-8c95-587080796fee",
+	"struct" : AMI_DEBUG_SERVICE_PROTOCOL,
+	"fields" : (
+		("Debug",       hook_Debug),
+		("DebugAssert", hook_DebugAssert)
+	)
+}

@@ -36,20 +36,16 @@ def hook_RestoreTPL(ql, address, params):
 	"Memory"	: POINTER		# PTR(EFI_PHYSICAL_ADDRESS)
 })
 def hook_AllocatePages(ql, address, params):
-	AllocateAnyPages	= 0
-	AllocateMaxAddress	= 1
-	AllocateAddress		= 2
-
 	alloc_size = params["Pages"] * PAGE_SIZE
 
-	if params['type'] == AllocateAddress:
+	if params['type'] == EFI_ALLOCATE_TYPE.AllocateAddress:
 		address = read_int64(ql, params["Memory"])
 
 		# TODO: check the range [address, address + alloc_size] is available first
 		ql.mem.map(address, alloc_size)
 	else:
 		# TODO: allocate memory according to 'MemoryType'
-		address = ql.os.heap.alloc(alloc_size)
+		address = ql.loader.dxe_context.heap.alloc(alloc_size)
 
 		if address == 0:
 			return EFI_OUT_OF_RESOURCES
@@ -87,7 +83,7 @@ def hook_GetMemoryMap(ql, address, params):
 })
 def hook_AllocatePool(ql, address, params):
 	# TODO: allocate memory acording to "PoolType"
-	address = ql.os.heap.alloc(params["Size"])
+	address = ql.loader.dxe_context.heap.alloc(params["Size"])
 	write_int64(ql, params["Buffer"], address)
 
 	return EFI_SUCCESS if address else EFI_OUT_OF_RESOURCES
@@ -97,7 +93,7 @@ def hook_AllocatePool(ql, address, params):
 })
 def hook_FreePool(ql, address, params):
 	address = params["Buffer"]
-	ret = ql.os.heap.free(address)
+	ret = ql.loader.dxe_context.heap.free(address)
 
 	return EFI_SUCCESS if ret else EFI_INVALID_PARAMETER
 
@@ -170,17 +166,15 @@ def hook_CheckEvent(ql, address, params):
 	"Interface"		: POINTER,		# PTR(VOID)
 })
 def hook_InstallProtocolInterface(ql, address, params):
-	dic = {}
 	handle = read_int64(ql, params["Handle"])
 
 	if handle == 0:
-		handle = ql.os.heap.alloc(1)
+		handle = ql.loader.dxe_context.heap.alloc(1)
 
-	if handle in ql.loader.handle_dict:
-		dic = ql.loader.handle_dict[handle]
+	dic = ql.loader.dxe_context.protocols.get(handle, {})
 
 	dic[params["Protocol"]] = params["Interface"]
-	ql.loader.handle_dict[handle] = dic
+	ql.loader.dxe_context.protocols[handle] = dic
 	check_and_notify_protocols(ql)
 	write_int64(ql, params["Handle"], handle)
 
@@ -195,10 +189,10 @@ def hook_InstallProtocolInterface(ql, address, params):
 def hook_ReinstallProtocolInterface(ql, address, params):
 	handle = params["Handle"]
 
-	if handle not in ql.loader.handle_dict:
+	if handle not in ql.loader.dxe_context.protocols:
 		return EFI_NOT_FOUND
 
-	dic = ql.loader.handle_dict[handle]
+	dic = ql.loader.dxe_context.protocols[handle]
 	protocol = params["Protocol"]
 
 	if protocol not in dic:
@@ -216,10 +210,10 @@ def hook_ReinstallProtocolInterface(ql, address, params):
 def hook_UninstallProtocolInterface(ql, address, params):
 	handle = params["Handle"]
 
-	if handle not in ql.loader.handle_dict:
+	if handle not in ql.loader.dxe_context.protocols:
 		return EFI_NOT_FOUND
 
-	dic = ql.loader.handle_dict[handle]
+	dic = ql.loader.dxe_context.protocols[handle]
 	protocol = params["Protocol"]
 
 	if protocol not in dic:
@@ -239,11 +233,10 @@ def hook_HandleProtocol(ql, address, params):
 	protocol = params["Protocol"]
 	interface = params['Interface']
 
-	if handle in ql.loader.handle_dict:
-		if protocol in ql.loader.handle_dict[handle]:
-			write_int64(ql, interface, ql.loader.handle_dict[handle][protocol])
+	hdict = ql.loader.dxe_context.protocols
 
-			return EFI_SUCCESS
+	if handle in hdict and protocol in hdict[handle]:
+		write_int64(ql, interface, hdict[handle][protocol])
 
 	return EFI_NOT_FOUND
 
@@ -272,7 +265,7 @@ def hook_RegisterProtocolNotify(ql, address, params):
 	"Buffer"	: POINTER	# PTR(EFI_HANDLE)
 })
 def hook_LocateHandle(ql, address, params):
-	buffer_size, handles = LocateHandles(ql, address, params)
+	buffer_size, handles = LocateHandles(ql.loader.dxe_context, params)
 
 	if len(handles) == 0:
 		return EFI_NOT_FOUND
@@ -407,7 +400,7 @@ def hook_DisconnectController(ql, address, params):
 	"Attributes"		: UINT		# UINT32
 })
 def hook_OpenProtocol(ql, address, params):
-	return LocateProtocol(ql, address, params)
+	return LocateProtocol(ql.loader.dxe_context, params)
 
 @dxeapi(params = {
 	"Handle"			: POINTER,	# EFI_HANDLE
@@ -443,13 +436,13 @@ def hook_ProtocolsPerHandle(ql, address, params):
 	"Buffer"	: POINTER	# PTR(PTR(EFI_HANDLE))
 })
 def hook_LocateHandleBuffer(ql, address, params):
-	buffer_size, handles = LocateHandles(ql, address, params)
+	buffer_size, handles = LocateHandles(ql.loader.dxe_context, params)
 	write_int64(ql, params["NoHandles"], len(handles))
 
 	if len(handles) == 0:
 		return EFI_NOT_FOUND
 
-	address = ql.os.heap.alloc(buffer_size)
+	address = ql.loader.dxe_context.heap.alloc(buffer_size)
 	write_int64(ql, params["Buffer"], address)
 
 	if address == 0:
@@ -467,7 +460,7 @@ def hook_LocateHandleBuffer(ql, address, params):
 	"Interface"		: POINTER	# PTR(PTR(VOID))
 })
 def hook_LocateProtocol(ql, address, params):
-	return LocateProtocol(ql, address, params)
+	return LocateProtocol(ql.loader.dxe_context, params)
 
 @dxeapi(params = {
 	"Handle" : POINTER # PTR(EFI_HANDLE)
@@ -477,9 +470,9 @@ def hook_InstallMultipleProtocolInterfaces(ql, address, params):
 	handle = read_int64(ql, params["Handle"])
 
 	if handle == 0:
-		handle = ql.os.heap.alloc(1)
+		handle = ql.loader.dxe_context.heap.alloc(1)
 
-	dic = ql.loader.handle_dict.get(handle, {})
+	dic = ql.loader.dxe_context.protocols.get(handle, {})
 
 	# process elipsiss arguments
 	index = 1
@@ -491,7 +484,7 @@ def hook_InstallMultipleProtocolInterfaces(ql, address, params):
 		dic[GUID] = protocol_ptr
 		index +=2
 
-	ql.loader.handle_dict[handle] = dic
+	ql.loader.dxe_context.protocols[handle] = dic
 	check_and_notify_protocols(ql)
 	write_int64(ql, params["Handle"], handle)
 
@@ -504,8 +497,10 @@ def hook_InstallMultipleProtocolInterfaces(ql, address, params):
 def hook_UninstallMultipleProtocolInterfaces(ql, address, params):
 	handle = params["Handle"]
 
-	if handle not in ql.loader.handle_dict:
+	if handle not in ql.loader.dxe_context.protocols:
 		return EFI_NOT_FOUND
+
+	dic = ql.loader.dxe_context.protocols[handle]
 
 	# process elipsiss arguments
 	index = 1
@@ -514,7 +509,6 @@ def hook_UninstallMultipleProtocolInterfaces(ql, address, params):
 		protocol_ptr = ql.os.get_param_by_index(index+1)
 		GUID = str(ql.os.read_guid(GUID_ptr))
 		logging.info(f' | {GUID}, {protocol_ptr:x}')
-		dic = ql.loader.handle_dict[handle]
 
 		if GUID not in dic:
 			return EFI_INVALID_PARAMETER

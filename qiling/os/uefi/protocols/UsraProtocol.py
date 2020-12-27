@@ -1,7 +1,6 @@
 from qiling.os.const import *
 from ..fncc import *
 from ..ProcessorBind import *
-from .common import install_protocol
 
 # @see: CpRcPkg\Include\UsraAccessType.h
 class USRA_ADDRESS(UNION):
@@ -53,18 +52,13 @@ def hook_SmmRegModify(ql, address, params):
 def hook_SmmGetRegAddr(ql, address, params):
 	pass
 
-def install(ql, base, handles):
-	descriptor = {
-		"guid" : "fd480a76-b134-4ef7-adfe-b0e054639807",
-		"struct" : USRA_PROTOCOL,
-		"fields" : (
-			('SmmRegRead',		hook_SmmRegRead),
-			('SmmRegWrite',		hook_SmmRegWrite),
-			('SmmRegModify',	hook_SmmRegModify),
-			('SmmGetRegAddr',	hook_SmmGetRegAddr)
-		)
-	}
-
-	return install_protocol(ql, base, descriptor, handles)
-
-__all__ = ['install']
+descriptor = {
+	"guid" : "fd480a76-b134-4ef7-adfe-b0e054639807",
+	"struct" : USRA_PROTOCOL,
+	"fields" : (
+		('SmmRegRead',		hook_SmmRegRead),
+		('SmmRegWrite',		hook_SmmRegWrite),
+		('SmmRegModify',	hook_SmmRegModify),
+		('SmmGetRegAddr',	hook_SmmGetRegAddr)
+	)
+}

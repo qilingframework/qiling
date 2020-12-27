@@ -10,7 +10,7 @@ from qiling.const import QL_ARCH
 from qiling.os.memory import QlMemoryHeap
 from qiling.os.utils import QlErrorArch, QlErrorFileType
 
-from qiling.os.uefi import st, smst
+from qiling.os.uefi import context, st, smst
 from qiling.os.uefi.ProcessorBind import CPU_STACK_ALIGNMENT
 from qiling.os.uefi.shutdown import hook_EndOfExecution
 from qiling.os.uefi.protocols import EfiLoadedImageProtocol
@@ -31,7 +31,6 @@ class QlLoaderPE_UEFI(QlLoader):
         self.ql = ql
         self.modules = []
         self.events = {}
-        self.handle_dict = {}
         self.notify_list = []
         self.next_image_base = 0x10000
 
@@ -45,7 +44,7 @@ class QlLoaderPE_UEFI(QlLoader):
         saved_state['modules'] = modules
 
         saved_state['events'] = self.events
-        saved_state['handle_dict'] = self.handle_dict
+        #saved_state['handle_dict'] = self.handle_dict
         saved_state['notify_list'] = self.notify_list
         saved_state['next_image_base'] = self.next_image_base
         saved_state['loaded_image_protocol_modules'] = self.loaded_image_protocol_modules
@@ -61,7 +60,7 @@ class QlLoaderPE_UEFI(QlLoader):
         for mod in saved_state['modules']:
             self.modules.append(mod+(PE(mod[0], fast_load=True),))
         self.events = saved_state['events']
-        self.handle_dict = saved_state['handle_dict']
+        #self.handle_dict = saved_state['handle_dict']
         self.notify_list = saved_state['notify_list']
         self.next_image_base = saved_state['next_image_base']
         self.loaded_image_protocol_modules = saved_state['loaded_image_protocol_modules']
@@ -86,9 +85,8 @@ class QlLoaderPE_UEFI(QlLoader):
             'image_size' : image_size
         }
 
-        self.handle_dict[image_base] = {}
-
-        EfiLoadedImageProtocol.install(self.ql, None, fields, self.handle_dict[image_base])
+        description = EfiLoadedImageProtocol.make_descriptor(fields)
+        self.dxe_context.install_protocol(description, image_base)
 
         self.loaded_image_protocol_modules.append(image_base)
 
@@ -143,7 +141,7 @@ class QlLoaderPE_UEFI(QlLoader):
 
     def unload_modules(self):
         for handle in self.loaded_image_protocol_modules:
-            struct_addr = self.handle_dict[handle][self.loaded_image_protocol_guid]
+            struct_addr = self.dxe_context.protocols[handle][self.loaded_image_protocol_guid]
             loaded_image_protocol = EfiLoadedImageProtocol.EFI_LOADED_IMAGE_PROTOCOL.loadFrom(self.ql, struct_addr)
 
             unload_ptr = struct.unpack("Q", loaded_image_protocol.Unload)[0]
@@ -197,27 +195,71 @@ class QlLoaderPE_UEFI(QlLoader):
             QL_ARCH.X8664 : "OS64"
         }[self.ql.archtype]
 
+        # -------- init BS / RT / DXE data structures and protocols --------
+
         os_profile = self.ql.os.profile[arch_key]
+        self.dxe_context = context.UefiContext(self.ql)
 
         # initialize and locate heap
-        self.heap_base_address = int(os_profile["heap_address"], 0)
-        self.heap_base_size = int(os_profile["heap_size"], 0)
-        self.ql.os.heap = QlMemoryHeap(self.ql, self.heap_base_address, self.heap_base_address + self.heap_base_size)
-        logging.info(f"[+] Located heap at {self.heap_base_address:#010x}")
-
-        self.entry_point = 0
-        self.load_address = 0
+        heap_base = int(os_profile["heap_address"], 0)
+        heap_size = int(os_profile["heap_size"], 0)
+        self.dxe_context.init_heap(heap_base, heap_size)
+        self.heap_base_address = heap_base
+        logging.info(f"[+] Located heap at {heap_base:#010x}")
 
         # initialize and locate stack
-        self.stack_address = int(os_profile["stack_address"], 0)
-        self.stack_size = int(os_profile["stack_size"], 0)
-        self.ql.mem.map(self.stack_address, self.stack_size)
-        sp = self.stack_address + self.stack_size - CPU_STACK_ALIGNMENT
+        stack_base = int(os_profile["stack_address"], 0)
+        stack_size = int(os_profile["stack_size"], 0)
+        self.dxe_context.init_stack(stack_base, stack_size)
+        sp = stack_base + stack_size - CPU_STACK_ALIGNMENT
         logging.info(f"[+] Located stack at {sp:#010x}")
 
-        # set stack and frame pointers
-        self.ql.reg.rsp = sp
-        self.ql.reg.rbp = sp
+        # TODO: statically allocating 256 KiB for ST, RT, BS, DS and Configuration Tables.
+        # however, this amount of memory is rather arbitrary
+        gST = self.dxe_context.heap.alloc(256 * 1024)
+        st.initialize(self.ql, gST)
+
+        protocols = (
+            EfiSmmAccess2Protocol,
+            EfiSmmBase2Protocol,
+            AmiDebugServiceProtocol,
+            UsraProtocol,
+            PcdProtocol
+        )
+
+        for proto in protocols:
+            self.dxe_context.install_protocol(proto.descriptor, 1)
+
+        # workaround
+        self.ql.os.heap = self.dxe_context.heap
+
+        # -------- init SMM data structures and protocols --------
+
+        smm_profile = self.ql.os.profile['SMRAM']
+        self.smm_context = context.SmmContext(self.ql)
+
+        # initialize and locate SMM heap
+        heap_base = int(smm_profile["heap_address"], 0)
+        heap_size = int(smm_profile["heap_size"], 0)
+        self.smm_context.init_heap(heap_base, heap_size)
+        logging.info(f"[+] Located SMM heap at {heap_base:#010x}")
+
+        # TODO: statically allocating 256 KiB for SMM ST.
+        # however, this amount of memory is rather arbitrary
+        gSmst = self.smm_context.heap.alloc(256 * 1024)
+        smst.initialize(self.ql, gSmst)
+
+        self.gST = gST
+        self.gSmst = gSmst
+        self.in_smm = False
+
+        protocols = (
+            EfiSmmSwDispatch2Protocol,
+            AmiSmmDebugServiceProtocol
+        )
+
+        for proto in protocols:
+            self.smm_context.install_protocol(proto.descriptor, 1)
 
         # map mmio ranges
         # TODO: move to somehwere more appropriate (+ hook accesses?)
@@ -227,40 +269,12 @@ class QlLoaderPE_UEFI(QlLoader):
             int(mmio_map['sbreg_size'], 0)
         )
 
-        # TODO: statically allocating 256 KiB for ST, RT, BS, DS and Configuration Tables.
-        # however, this amount of memory is rather arbitrary
-        gST = self.ql.os.heap.alloc(256 * 1024)
-        st.initialize(self.ql, gST)
+        # set stack and frame pointers
+        self.ql.reg.rsp = sp
+        self.ql.reg.rbp = sp
 
-        # TODO: statically allocating 256 KiB for SMM ST.
-        # however, this amount of memory is rather arbitrary
-        gSmst = self.ql.os.heap.alloc(256 * 1024)
-        smst.initialize(self.ql, gSmst)
-
-        self.gST = gST
-        self.gSmst = gSmst
-
-        # TODO: statically allocating 256 KiB for protocols.
-        # however, this amount of memory is rather arbitrary
-        proto_base = self.ql.os.heap.alloc(256 * 1024)
-
-        protocols = (
-            EfiSmmBase2Protocol,
-            EfiSmmAccess2Protocol,
-            EfiSmmSwDispatch2Protocol,
-            AmiDebugServiceProtocol,
-            AmiSmmDebugServiceProtocol,
-            UsraProtocol,
-            PcdProtocol
-        )
-
-        # TODO: separate DXE protocols from SMM ones
-        self.handle_dict[1] = {}
-        next_ptr = proto_base
-
-        for proto in protocols:
-            next_ptr = proto.install(self.ql, next_ptr, self.handle_dict[1])
-
+        self.entry_point = 0
+        self.load_address = 0
         self.next_image_base = int(os_profile["image_address"], 0)
 
         for dependency in self.ql.argv:

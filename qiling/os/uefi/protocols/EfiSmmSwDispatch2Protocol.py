@@ -1,8 +1,8 @@
 from qiling.os.const import *
+from ..const import *
 from ..fncc import *
 from ..ProcessorBind import *
 from ..UefiBaseType import *
-from .common import install_protocol
 
 # @file: MdePkg\Include\Protocol\SmmSwDispatch2.h
 class EFI_SMM_SW_REGISTER_CONTEXT(STRUCT):
@@ -30,7 +30,7 @@ class EFI_SMM_SW_DISPATCH2_PROTOCOL(STRUCT):
 })
 def hook_Register(ql, address, params):
 	# Let's save the dispatch params, so they can be triggered if needed. 
-	ql.os.smm_dispatch.append(params)
+	ql.loader.smm_context.swsmi_handlers.append(params)
 	return EFI_SUCCESS
 
 @dxeapi(params = {
@@ -40,16 +40,11 @@ def hook_Register(ql, address, params):
 def hook_UnRegister(ql, address, params):
 	return EFI_SUCCESS
 
-def install(ql, base, handles):
-    descriptor = {
-        "guid" : "18a3c6dc-5eea-48c8-a1c1-b53389f98999",
-        "struct" : EFI_SMM_SW_DISPATCH2_PROTOCOL,
-        "fields" : (
-            ("Register",	hook_Register),
-            ("UnRegister",	hook_UnRegister)
-        )
-    }
-
-    return install_protocol(ql, base, descriptor, handles)
-
-__all__ = ['install']
+descriptor = {
+	"guid" : "18a3c6dc-5eea-48c8-a1c1-b53389f98999",
+	"struct" : EFI_SMM_SW_DISPATCH2_PROTOCOL,
+	"fields" : (
+		("Register",	hook_Register),
+		("UnRegister",	hook_UnRegister)
+	)
+}

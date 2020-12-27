@@ -83,43 +83,40 @@ def init_struct(ql, base : int, descriptor : dict):
 
 	return isntance
 
-def LocateHandles(ql, address, params):
-	AllHandles          = 0
-	ByRegisterNotify    = 1
-	ByProtocol          = 2
-
+def LocateHandles(context, params):
 	handles = []
 	pointer_size = 8
 
-	if params["SearchType"] == AllHandles:
-		handles = ql.loader.handle_dict.keys()
-	elif params["SearchType"] == ByProtocol:
-		for handle, guid_dic in ql.loader.handle_dict.items():
+	if params["SearchType"] == EFI_LOCATE_SEARCH_TYPE.AllHandles:
+		handles = context.protocols.keys()
+	elif params["SearchType"] == EFI_LOCATE_SEARCH_TYPE.ByProtocol:
+		for handle, guid_dic in context.protocols.items():
 			if params["Protocol"] in guid_dic:
 				handles.append(handle)
 
 	return len(handles) * pointer_size, handles
 
-def LocateProtocol(ql, address, params):
+def LocateProtocol(context, params):
 	protocol = params['Protocol']
 
-	for handle, guid_dic in ql.loader.handle_dict.items():
+	for handle, guid_dic in context.protocols.items():
 		if "Handle" in params and params["Handle"] != handle:
 			continue
 
 		if protocol in guid_dic:
 			# write protocol address to out variable Interface
-			write_int64(ql, params['Interface'], guid_dic[protocol])
+			write_int64(context.ql, params['Interface'], guid_dic[protocol])
 			return EFI_SUCCESS
 
-	logging.info(f'protocol {protocol} not found')
+	logging.warning(f'protocol with guid {protocol} not found')
 
 	return EFI_NOT_FOUND
 
 def to_byte_values(val, nbytes):
-	for i in range(nbytes):
+	while nbytes > 0:
 		yield val & 0xff
 		val >>= 8
+		nbytes -= 1
 
 # see: MdeModulePkg/Core/Dxe/Misc/InstallConfigurationTable.c
 def CoreInstallConfigurationTable(ql, guid, table):

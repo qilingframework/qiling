@@ -104,20 +104,16 @@ def hook_SmmInstallConfigurationTable(ql, address, params):
 	"Memory"	: POINTER		# PTR(EFI_PHYSICAL_ADDRESS)
 })
 def hook_SmmAllocatePages(ql, address, params):
-	AllocateAnyPages	= 0
-	AllocateMaxAddress	= 1
-	AllocateAddress		= 2
-
 	alloc_size = params["Pages"] * PAGE_SIZE
 
-	if params['type'] == AllocateAddress:
+	if params['type'] == EFI_ALLOCATE_TYPE.AllocateAddress:
 		address = read_int64(ql, params["Memory"])
 
 		# TODO: check the range [address, address + alloc_size] is available first
 		ql.mem.map(address, alloc_size)
 	else:
 		# TODO: allocate memory according to 'MemoryType'
-		address = ql.os.heap.alloc(alloc_size)
+		address = ql.loader.smm_context.heap.alloc(alloc_size)
 
 		if address == 0:
 			return EFI_OUT_OF_RESOURCES
@@ -145,7 +141,7 @@ def hook_SmmFreePages(ql, address, params):
 })
 def hook_SmmAllocatePool(ql, address, params):
 	# TODO: allocate memory acording to "PoolType"
-	address = ql.os.heap.alloc(params["Size"])
+	address = ql.loader.smm_context.heap.alloc(params["Size"])
 	write_int64(ql, params["Buffer"], address)
 
 	return EFI_SUCCESS if address else EFI_OUT_OF_RESOURCES
@@ -155,7 +151,7 @@ def hook_SmmAllocatePool(ql, address, params):
 })
 def hook_SmmFreePool(ql, address, params):
 	address = params["Buffer"]
-	ret = ql.os.heap.free(address)
+	ret = ql.loader.smm_context.heap.free(address)
 
 	return EFI_SUCCESS if ret else EFI_INVALID_PARAMETER
 
@@ -174,17 +170,15 @@ def hook_SmmStartupThisAp(ql, address, params):
 	"Interface"		: POINTER,		# PTR(VOID)
 })
 def hook_SmmInstallProtocolInterface(ql, address, params):
-	dic = {}
 	handle = read_int64(ql, params["Handle"])
 
 	if handle == 0:
-		handle = ql.os.heap.alloc(1)
+		handle = ql.loader.smm_context.heap.alloc(1)
 
-	if handle in ql.loader.handle_dict:
-		dic = ql.loader.handle_dict[handle]
+	dic = ql.loader.smm_context.protocols.get(handle, {})
 
 	dic[params["Protocol"]] = params["Interface"]
-	ql.loader.handle_dict[handle] = dic
+	ql.loader.smm_context.protocols[handle] = dic
 	check_and_notify_protocols(ql)
 	write_int64(ql, params["Handle"], handle)
 
@@ -198,10 +192,10 @@ def hook_SmmInstallProtocolInterface(ql, address, params):
 def hook_SmmUninstallProtocolInterface(ql, address, params):
 	handle = params["Handle"]
 
-	if handle not in ql.loader.handle_dict:
+	if handle not in ql.loader.smm_context.protocols:
 		return EFI_NOT_FOUND
 
-	dic = ql.loader.handle_dict[handle]
+	dic = ql.loader.smm_context.protocols[handle]
 	protocol = params["Protocol"]
 
 	if protocol not in dic:
@@ -221,9 +215,10 @@ def hook_SmmHandleProtocol(ql, address, params):
 	protocol = params["Protocol"]
 	interface = params['Interface']
 
-	if handle in ql.loader.handle_dict:
-		if protocol in ql.loader.handle_dict[handle]:
-			write_int64(ql, interface, ql.loader.handle_dict[handle][protocol])
+	hdict = ql.loader.smm_context.protocols
+
+	if handle in hdict and protocol in hdict[handle]:
+		write_int64(ql, interface, hdict[handle][protocol])
 
 			return EFI_SUCCESS
 
@@ -254,7 +249,7 @@ def hook_SmmRegisterProtocolNotify(ql, address, params):
 	"Buffer"	: POINTER	# PTR(EFI_HANDLE)
 })
 def hook_SmmLocateHandle(ql, address, params):
-	buffer_size, handles = LocateHandles(ql, address, params)
+	buffer_size, handles = LocateHandles(ql.loader.smm_context, params)
 
 	if len(handles) == 0:
 		return EFI_NOT_FOUND
@@ -280,7 +275,7 @@ def hook_SmmLocateHandle(ql, address, params):
 	"Interface"		: POINTER	# PTR(PTR(VOID))
 })
 def hook_SmmLocateProtocol(ql, address, params):
-	return LocateProtocol(ql, address, params)
+	return LocateProtocol(ql.loader.smm_context, params)
 
 @dxeapi(params = {
 	"HandlerType"	: GUID,
