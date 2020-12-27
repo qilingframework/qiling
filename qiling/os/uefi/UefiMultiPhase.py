@@ -34,6 +34,7 @@ class EFI_MEMORY_TYPE(ENUM):
 		'EfiMemoryMappedIO',
 		'EfiMemoryMappedIOPortSpace',
 		'EfiPalCode',
+		'EfiPersistentMemory',
 		'EfiMaxMemoryType'
 	]
 

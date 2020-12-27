@@ -8,27 +8,10 @@ from .UefiBaseType import *
 from .UefiMultiPhase import *
 from .UefiSpec import *
 
-# @see: MdePkg\Include\Pi\PiSmmCis.h
+# TODO: find a better solution than hardcoding this
+pointer_size = 8
 
-class EFI_MEMORY_TYPE(ENUM):
-	_members_ = [
-		'EfiReservedMemoryType',
-		'EfiLoaderCode',
-		'EfiLoaderData',
-		'EfiBootServicesCode',
-		'EfiBootServicesData',
-		'EfiRuntimeServicesCode',
-		'EfiRuntimeServicesData',
-		'EfiConventionalMemory',
-		'EfiUnusableMemory',
-		'EfiACPIReclaimMemory',
-		'EfiACPIMemoryNVS',
-		'EfiMemoryMappedIO',
-		'EfiMemoryMappedIOPortSpace',
-		'EfiPalCode',
-		'EfiPersistentMemory',
-		'EfiMaxMemoryType'
-	]
+# @see: MdePkg\Include\Pi\PiSmmCis.h
 
 class EFI_MM_IO_WIDTH(ENUM):
 	_members_ = [
@@ -220,7 +203,7 @@ def hook_SmmHandleProtocol(ql, address, params):
 	if handle in hdict and protocol in hdict[handle]:
 		write_int64(ql, interface, hdict[handle][protocol])
 
-			return EFI_SUCCESS
+		return EFI_SUCCESS
 
 	return EFI_NOT_FOUND
 
