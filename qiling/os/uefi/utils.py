@@ -23,6 +23,20 @@ def check_and_notify_protocols(ql):
 
 	return False
 
+def ptr_read8(ql, addr : int) -> int:
+	"""Read BYTE data from a pointer
+	"""
+
+	val = ql.mem.read(addr, 1)
+
+	return struct.unpack('<B', val)[0]
+
+def ptr_write8(ql, addr : int, val : int):
+	"""Write BYTE data to a pointer
+	"""
+
+	ql.mem.write(addr, struct.pack('<B', val))
+
 def ptr_read32(ql, addr : int) -> int:
 	"""Read DWORD data from a pointer
 	"""
@@ -52,6 +66,8 @@ def ptr_write64(ql, addr : int, val : int):
 	ql.mem.write(addr, struct.pack('<Q', val))
 
 # backward comptability
+read_int8   = ptr_read8
+write_int8  = ptr_write8
 read_int32  = ptr_read32
 write_int32 = ptr_write32
 read_int64  = ptr_read64

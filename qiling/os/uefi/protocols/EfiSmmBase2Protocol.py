@@ -1,3 +1,4 @@
+import logging
 from qiling.const import *
 from qiling.os.const import *
 from ..fncc import *
@@ -20,8 +21,9 @@ class EFI_SMM_BASE2_PROTOCOL(STRUCT):
 	"InSmram"	: POINTER
 })
 def hook_InSmm(ql, address, params):
-	# TODO: write_int8 :: pass a boolean value that indicates whether the module is in SMM or not
-	write_int64(ql, params["InSmram"], 0)
+	logging.info(f'InSmram = {ql.loader.in_smm}')
+
+	write_int8(ql, params["InSmram"], int(ql.loader.in_smm))
 
 	return EFI_SUCCESS
 
@@ -39,11 +41,11 @@ def hook_GetSmstLocation(ql, address, params):
 
 	return EFI_SUCCESS
 
-	descriptor = {
-		"guid" : "f4ccbfb7-f6e0-47fd-9dd4-10a8f150c191",
-		"struct" : EFI_SMM_BASE2_PROTOCOL,
-		"fields" : (
-			("InSmm",			hook_InSmm),
-			("GetSmstLocation",	hook_GetSmstLocation)
-		)
-	}
+descriptor = {
+	"guid" : "f4ccbfb7-f6e0-47fd-9dd4-10a8f150c191",
+	"struct" : EFI_SMM_BASE2_PROTOCOL,
+	"fields" : (
+		("InSmm",			hook_InSmm),
+		("GetSmstLocation",	hook_GetSmstLocation)
+	)
+}
