@@ -93,10 +93,11 @@ class ELFTest(unittest.TestCase):
 
 
     def test_elf_hijackapi_linux_x8664(self):
+
         def my_puts_enter(ql):
             addr = ql.os.function_arg[0]
             self.test_enter_str = ql.mem.string(addr)
-
+        
         def my_puts_exit(ql):
             self.test_exit_rdi = ql.reg.rdi
 
@@ -106,7 +107,9 @@ class ELFTest(unittest.TestCase):
 
         ql.run()
 
-        self.assertEqual(0x1, self.test_exit_rdi)
+        if ql.platform == QL_OS.LINUX:
+            self.assertEqual(0x1, self.test_exit_rdi)
+            
         self.assertEqual("CCCC", self.test_enter_str)
         
         del self.test_exit_rdi
