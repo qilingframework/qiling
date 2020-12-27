@@ -5,7 +5,6 @@ stack_address	= 0x77800000
 stack_size		= 0x00800000
 image_address 	= 0x77000000
 # entry_point	= 0x77400000
-# dll_address	= 0x7ffff000
 
 [OS32]
 heap_address	= 0x78000000
@@ -14,7 +13,13 @@ stack_address	= 0x77800000
 stack_size		= 0x00800000
 image_address 	= 0x77000000
 # entry_point	= 0x77400000
-# dll_address	= 0x7ffff000
+
+[SMRAM]
+heap_address	= 0x7A000000
+heap_size		= 0x02000000
+# stack_address	= 0x77800000
+# stack_size	= 0x00800000
+# image_address = 0x77000000
 
 [HOB_LIST]
 # EFI_GLOBAL_VARIABLE
