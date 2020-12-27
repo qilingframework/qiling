@@ -92,10 +92,24 @@ class EnumMeta(type(ctypes.c_int)):
 		return self._members_.index(key)
 
 class ENUM(ctypes.c_int, metaclass=EnumMeta):
-	"""An abstract class for C enums.
+	"""An abstract class for continuous C enums.
 	"""
 
+	# a list or tuple of names (strings)
+	# names will be enumerate by their corresponding index in the list
 	_members_ = []
+
+class EnumUCMeta(type(ctypes.c_int)):
+	def __getattr__(self, key):
+		return self._members_[key]
+
+class ENUM_UC(ctypes.c_int, metaclass=EnumUCMeta):
+	"""An abstract class for uncontinuous C enums.
+	"""
+
+	# a dictionary of (names : str, value : int) tuples
+	# names will be enumerate by their paired value
+	_members_ = {}
 
 __all__ = [
 	'VOID',
@@ -118,6 +132,7 @@ __all__ = [
 	'STRUCT',
 	'UNION',
 	'ENUM',
+	'ENUM_UC',
 
 	'CPU_STACK_ALIGNMENT',
 	'PAGE_SIZE'

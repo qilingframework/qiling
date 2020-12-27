@@ -14,11 +14,13 @@ from qiling.os.uefi import context, st, smst
 from qiling.os.uefi.ProcessorBind import CPU_STACK_ALIGNMENT
 from qiling.os.uefi.shutdown import hook_EndOfExecution
 from qiling.os.uefi.protocols import EfiLoadedImageProtocol
-from qiling.os.uefi.protocols import EfiSmmBase2Protocol
 from qiling.os.uefi.protocols import EfiSmmAccess2Protocol
+from qiling.os.uefi.protocols import EfiSmmBase2Protocol
+from qiling.os.uefi.protocols import EfiSmmCpuProtocol
 from qiling.os.uefi.protocols import EfiSmmSwDispatch2Protocol
 from qiling.os.uefi.protocols import AmiDebugServiceProtocol
 from qiling.os.uefi.protocols import AmiSmmDebugServiceProtocol
+from qiling.os.uefi.protocols import AmiSmmBufferValidation
 from qiling.os.uefi.protocols import PcdProtocol
 from qiling.os.uefi.protocols import UsraProtocol
 
@@ -254,8 +256,10 @@ class QlLoaderPE_UEFI(QlLoader):
         self.in_smm = False
 
         protocols = (
+            EfiSmmCpuProtocol,
             EfiSmmSwDispatch2Protocol,
-            AmiSmmDebugServiceProtocol
+            AmiSmmDebugServiceProtocol,
+            AmiSmmBufferValidation
         )
 
         for proto in protocols:
