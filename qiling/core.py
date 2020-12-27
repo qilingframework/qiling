@@ -868,8 +868,10 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         if "loader" in saved_states:
             self.loader.restore(saved_states["loader"])
 
-    # replace linux or windows syscall/api with custom api/syscall
-    # if replace function name is needed, first syscall must be available
+    # Either hook or replace syscall/api with custom api/syscall
+    #  - if intercept is None, replace syscall with custom function
+    #  - if intercept is ENTER/EXIT, hook syscall at enter/exit with custom function
+    # If replace function name is needed, first syscall must be available
     # - ql.set_syscall(0x04, my_syscall_write)
     # - ql.set_syscall("write", my_syscall_write)
     # TODO: Add correspoinding API in ql.os!
@@ -901,7 +903,9 @@ class Qiling(QlCoreHooks, QlCoreStructs):
                 self.set_api(target_syscall, intercept_function)
         
 
-    # replace default API with customed function
+    # Either replace or hook API
+    #  - if intercept is None, replace API with custom function
+    #  - if intercept is ENTER/EXIT, hook API at enter/exit with custom function
     def set_api(self, api_name, intercept_function, intercept = None):
         if self.ostype == QL_OS.UEFI:
             api_name = "hook_" + str(api_name)
