@@ -18,11 +18,7 @@ from qiling.os.uefi.protocols import EfiSmmAccess2Protocol
 from qiling.os.uefi.protocols import EfiSmmBase2Protocol
 from qiling.os.uefi.protocols import EfiSmmCpuProtocol
 from qiling.os.uefi.protocols import EfiSmmSwDispatch2Protocol
-from qiling.os.uefi.protocols import AmiDebugServiceProtocol
-from qiling.os.uefi.protocols import AmiSmmDebugServiceProtocol
-from qiling.os.uefi.protocols import AmiSmmBufferValidation
 from qiling.os.uefi.protocols import PcdProtocol
-from qiling.os.uefi.protocols import UsraProtocol
 
 from pefile import PE
 from .loader import QlLoader
@@ -224,8 +220,6 @@ class QlLoaderPE_UEFI(QlLoader):
         protocols = (
             EfiSmmAccess2Protocol,
             EfiSmmBase2Protocol,
-            AmiDebugServiceProtocol,
-            UsraProtocol,
             PcdProtocol
         )
 
@@ -257,9 +251,7 @@ class QlLoaderPE_UEFI(QlLoader):
 
         protocols = (
             EfiSmmCpuProtocol,
-            EfiSmmSwDispatch2Protocol,
-            AmiSmmDebugServiceProtocol,
-            AmiSmmBufferValidation
+            EfiSmmSwDispatch2Protocol
         )
 
         for proto in protocols:
