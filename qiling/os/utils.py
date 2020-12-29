@@ -123,8 +123,9 @@ class QlOsUtils:
     def __init__(self, ql):
         self.ql = ql
         self.path = None
-        self.output_ready = False
         self.md = None
+        self._disasm_hook = None
+        self._block_hook = None
 
     def lsbmsb_convert(self, sc, size=4):
         split_bytes = []
@@ -267,16 +268,20 @@ class QlOsUtils:
                     logging.debug("%s\t:\t 0x%x" % (REG_NAME, REG_VAL))
 
     def setup_output(self):
-        if self.output_ready:
-            return
-        self.output_ready = True
         def ql_hook_block_disasm(ql, address, size):
             logging.info("\n[+] Tracing basic block at 0x%x" % (address))
 
+        if self._disasm_hook:
+            self._disasm_hook.remove()
+            self._disasm_hook = None
+        if self._block_hook:
+            self._block_hook.remove()
+            self._block_hook = None
+
         if self.ql.output in (QL_OUTPUT.DISASM, QL_OUTPUT.DUMP):
             if self.ql.output == QL_OUTPUT.DUMP:
-                self.ql.hook_block(ql_hook_block_disasm)
-            self.ql.hook_code(self.disassembler)
+                self._block_hook = self.ql.hook_block(ql_hook_block_disasm)
+            self._disasm_hook = self.ql.hook_code(self.disassembler)
 
     def stop(self):
         if self.ql.multithread:
