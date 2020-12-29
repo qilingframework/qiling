@@ -256,8 +256,8 @@ def debugger_convert_str(debugger_id):
 def ql_get_module_function(module_name, function_name = None):
     try:
         imp_module = importlib.import_module(module_name)
-    except:
-        raise QlErrorModuleNotFound("[!] Unable to import module %s" % module_name)
+    except Exception as ex:
+        raise QlErrorModuleNotFound("[!] Unable to import module %s (%s)" % (module_name, ex))
 
     try:
         module_function = getattr(imp_module, function_name)
