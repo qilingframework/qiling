@@ -1797,7 +1797,7 @@ class Sid(WindowsStruct):
         # FIXME
         if not isinstance(other, Sid):
             return False
-        return self.subs == other.subs
+        return self.subs == other.subs and self.identifier[0] == other.identifier[0]
 
 
 class Mutex:
