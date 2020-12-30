@@ -5,7 +5,6 @@
 
 from .loader import QlLoader
 from qiling.os.disk import QlDisk
-import magic
 import sys
 import traceback
 import math
@@ -35,10 +34,9 @@ class QlLoaderDOS(QlLoader):
 
     def run(self):
         path = self.ql.path
-        ftype = magic.from_file(path)
 
         self.ticks_per_second = float(self.ql.profile.get("KERNEL", "ticks_per_second"))
-        if ("COM" in ftype and "DOS" in ftype) or "COM" in path:
+        if (str(path)).endswith(".DOS_COM") or (str(path)).endswith(".DOS_EXE"):
             # pure com
             self.cs = int(self.ql.profile.get("COM", "start_cs"), 16)
             self.ip = int(self.ql.profile.get("COM", "start_ip"), 16)
@@ -59,7 +57,7 @@ class QlLoaderDOS(QlLoader):
             self.ql.mem.write(self.start_address, bs)
             self.load_address = self.base_address
             self.ql.os.entry_point = self.start_address
-        elif "MBR" in ftype:
+        elif (str(path)).endswith(".DOS_MBR"):
             # MBR
             self.start_address = 0x7C00
             with open(path, "rb+") as f:
@@ -79,7 +77,7 @@ class QlLoaderDOS(QlLoader):
             self.ip = self.start_address
             self.load_address = self.start_address
             self.ql.os.entry_point = self.start_address
-        elif "MS-DOS" in ftype:
+        else:
             raise NotImplementedError()
             
         sys.excepthook = self.excepthook
