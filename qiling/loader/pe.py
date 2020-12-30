@@ -94,7 +94,7 @@ class Process():
                              self.import_symbols,
                              self.import_address_table),
                             open(fcache, "wb"))
-                logging.info("[+] Cached %s" % path)
+                logging.info("Cached %s" % path)
 
         dll_base = self.dll_last_address
         dll_len = self.ql.mem.align(len(bytes(data)), 0x1000)
@@ -110,7 +110,7 @@ class Process():
         # add DLL to coverage images
         self.images.append(self.coverage_image(dll_base, dll_base+dll_len, path))
 
-        logging.info("[+] Done with loading %s" % path)
+        logging.info("Done with loading %s" % path)
 
         return dll_base
 
@@ -143,7 +143,7 @@ class Process():
             self.structure_last_addr += 0x30
             teb_addr = self.structure_last_addr
 
-        logging.info("[+] TEB addr is 0x%x" %teb_addr)
+        logging.info("TEB addr is 0x%x" %teb_addr)
 
         teb_size = len(TEB(self.ql).bytes())
         teb_data = TEB(
@@ -168,7 +168,7 @@ class Process():
     def init_peb(self):
         peb_addr = self.structure_last_addr
 
-        logging.info("[+] PEB addr is 0x%x" % peb_addr)
+        logging.info("PEB addr is 0x%x" % peb_addr)
 
         # we must set an heap, will try to retrieve this value. Is ok to be all \x00
         process_heap = self.ql.os.heap.alloc(0x100)

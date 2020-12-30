@@ -43,7 +43,7 @@ def third_stage(key):
         curses.ungetch(ord("\n"))
         curses.ungetch(ord("\r"))
 
-    ql = Qiling(["rootfs/8086/petya/mbr.bin"], 
+    ql = Qiling(["rootfs/8086/petya/petya.DOS_MBR"], 
                  "rootfs/8086",
                  console=False, 
                  output="debug", 
@@ -87,7 +87,7 @@ def second_stage(ql: Qiling):
 
 # In this stage, we have to wait for petya being load to the right place.
 def first_stage():
-    ql = Qiling(["rootfs/8086/petya/mbr.bin"], 
+    ql = Qiling(["rootfs/8086/petya/petya.DOS_MBR"], 
                  "rootfs/8086",
                  console=False, 
                  output="debug", 

@@ -32,8 +32,6 @@ class ELFTest(unittest.TestCase):
 
 
     def test_elf_partial_linux_x8664(self):
-        ss = None
-
         def dump(ql, *args, **kw):
             ql.save(reg=False, cpu_context=True, snapshot="/tmp/snapshot.bin")
             ql.emu_stop()
@@ -95,10 +93,11 @@ class ELFTest(unittest.TestCase):
 
 
     def test_elf_hijackapi_linux_x8664(self):
+
         def my_puts_enter(ql):
             addr = ql.os.function_arg[0]
             self.test_enter_str = ql.mem.string(addr)
-
+        
         def my_puts_exit(ql):
             self.test_exit_rdi = ql.reg.rdi
 
