@@ -1,0 +1,79 @@
+name: Run tests
+on: [push, pull_request]
+env:
+  CI: true
+jobs:
+  tests:
+    runs-on: ${{ matrix.os }}
+    name: Python ${{ matrix.python-version }} on ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2019, macos-10.15, ubuntu-18.04, ubuntu-20.04]
+        python-version: [3.6.8, 3.7.6]
+        exclude:
+          - os: windows-2019
+            python-version: 3.7.6
+          - os: macos-10.15
+            python-version: 3.7.6
+          - os: ubuntu-20.04
+            python-version: 3.7.6
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: win setup MSVC
+      if: contains(matrix.os, 'windows')
+      uses: microsoft/setup-msbuild@v1
+
+    - name: win run tests
+      if: contains(matrix.os, 'windows')
+      shell: bash
+      run: |
+         powershell Start-Process -PassThru -Wait PowerShell -ArgumentList "'-Command Set-MpPreference -DisableArchiveScanning \$true'"
+         powershell Start-Process -PassThru -Wait PowerShell -ArgumentList "'-Command Set-MpPreference -DisableBehaviorMonitoring \$true'"
+         powershell Start-Process -PassThru -Wait PowerShell -ArgumentList "'-Command Set-MpPreference -DisableRealtimeMonitoring \$true'"
+         powershell Add-MpPreference -ExclusionPath $GITHUB_WORKSPACE
+         pip3 install setuptools wheel
+         pip3 install .
+         cmd.exe //C 'examples\scripts\dllscollector.bat'
+         cd $GITHUB_WORKSPACE/examples/rootfs/x86_windows/bin
+         unzip -Pinfected wannacry.bin.zip
+         unzip -Pinfected UselessDisk.bin.zip
+         unzip -Pinfected GandCrab502.bin.zip
+         unzip -Pinfected al-khaser.bin.zip
+         unzip -Pinfected sality.dll.zip
+         cd $GITHUB_WORKSPACE/tests
+         cmd.exe //C '.\test_pe.bat'
+    - name: mac run tests
+      if: contains(matrix.os, 'macos')
+      continue-on-error: true
+      shell: bash
+      run: |
+         pip3 install setuptools wheel
+         pip3 install .
+         ./examples/scripts/dylibcollector.sh
+         cd $GITHUB_WORKSPACE/examples/rootfs/x8664_macos/kext
+         unzip -Pinfected SuperRootkit.kext.zip
+         cd $GITHUB_WORKSPACE/tests
+         ./test_macho.sh
+    - name: linux run tests
+      if: contains(matrix.os, 'ubuntu')
+      shell: 'script -q -e -c "bash {0}"'
+      run: |
+        if [ ${{ matrix.os }} == 'ubuntu-18.04' ] && [ ${{ matrix.python-version }} == '3.7.6' ]; then
+              pip3 install setuptools wheel flake8
+              flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+              pip3 install .
+              cd tests && ./test_elf.sh
+        elif [ ${{ matrix.os }} == 'ubuntu-20.04' ]; then
+              docker run -it --rm -v ${GITHUB_WORKSPACE}:/qiling qilingframework/qiling:dev bash -c "pip3 install . && cd tests && ./test_elf.sh"
+        else
+              pip3 install setuptools wheel
+              pip3 install .
+              cd tests && ./test_elf.sh
+        fi
