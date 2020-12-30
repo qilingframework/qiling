@@ -469,7 +469,8 @@ def ql_syscall_fstat64_macos(ql, fstat64_fd, fstat64_add, *args, **kw):
             fstat64_buf += ql.pack32(fstat64_info.st_dev)                   # dev_t	 	st_dev
             fstat64_buf += ql.pack32(fstat64_info.st_mode)                  # mode_t	 	st_mode
             fstat64_buf += ql.pack32(fstat64_info.st_nlink)                 # nlink_t		st_nlink
-            fstat64_buf += ql.pack32(fstat64_info.st_ino)                   # ino_t	  	st_ino
+            #fstat64_buf += ql.pack32(fstat64_info.st_ino)                  # ino_t	  	st_ino
+            fstat64_buf += ql.pack32(0x0)                                   # TODO: test ino_t	  	st_ino with 0x0
             fstat64_buf += ql.pack32(fstat64_info.st_uid)                   # uid_t		st_uid
             fstat64_buf += ql.pack32(fstat64_info.st_gid)                   # gid_t		st_gid
             fstat64_buf += ql.pack32(0x8800)                                # dev_t		st_rdev
