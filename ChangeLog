@@ -7,7 +7,6 @@ BREAK CHANGE
 - ql.filename is renamed to ql.argv.
 - ql.output and ql.verbose now has slightly different meanings and can be adjusted runtime. See their docstring for details.
 - ql.filter now accepts a regular expression.
-- syscall hooks now no longer uses ql.os.definesyscall_return, can now set errno with return value
 
 ------------------------------------
 [Version 1.2.1]: December [SOMETHING], 2020
