@@ -14,7 +14,8 @@ BREAK CHANGE
 - Added support for custom envs variables inside IDA plugin
 - Demigod: Fixed lkm mapping and added support for MIPS32EL
 - Demigod: Added support for Linux x86 32bit
-- Added support for binaries that return from their entrypoint (PE / ELF). Configure Qiling with 'stop_on_stackpointer' or 'stop_on_exit_trap'.
+- Added support for binaries that return from their entrypoint (PE / ELF).
+- Configure Qiling with 'stop_on_stackpointer' or 'stop_on_exit_trap'.
 - Add basic Windows driver tests / example
 
 
