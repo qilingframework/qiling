@@ -74,11 +74,8 @@ class QlGdb(QlDebugger, object):
             self.entry_point = self.ql.os.elf_entry
         else:
             self.entry_point = self.ql.os.entry_point
-
            
         self.gdb.bp_insert(self.entry_point)
-
-        
 
         #Setup register tables, order of tables is important
         self.tables = {
