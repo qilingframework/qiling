@@ -515,6 +515,35 @@ def ql_syscall_thread_selfid(ql, *args, **kw):
     logging.info("thread_selfid() = %d" % (thread_id))
     ql.os.definesyscall_return(thread_id)
 
+
+# 0x18d
+def ql_syscall_write_nocancel(ql, write_fd, write_buf, write_count, *args, **kw):
+    regreturn = 0
+    buf = None
+
+    try:
+        buf = ql.mem.read(write_buf, write_count)
+        if buf:
+            logging.debug("[+] write() CONTENT:")
+            logging.debug("%s" % buf)
+
+        if hasattr(ql.os.fd[write_fd], "write"):
+            logging.info("write(%d,%x,%i) = %d" % (write_fd, write_buf, write_count, regreturn))
+            ql.os.fd[write_fd].write(buf)
+        else:
+            logging.info("[!] write(%d,%x,%i) failed due to write_fd" % (write_fd, write_buf, write_count, regreturn))
+        regreturn = write_count
+
+    except:
+        regreturn = -1
+        logging.info("write(%d,%x,%i) = %d" % (write_fd, write_buf, write_count, regreturn))
+        if ql.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
+            raise
+    #if buf:
+    #    logging.info(buf.decode(errors='ignore'))
+    ql.os.definesyscall_return(regreturn)
+
+
 # 0x18e
 def ql_syscall_open_nocancel(ql, filename, flags, mode, *args, **kw):
     path = ql.mem.string(filename)
@@ -598,6 +627,7 @@ def ql_syscall_abort_with_payload(ql, reason_namespace, reason_code, payload, pa
     logging.debug("[+] abort_with_payload(reason_namespace: 0x%x, reason_code: 0x%x, payload: 0x%x, payload_size: 0x%x, reason_string: 0x%x,\
             reason_flags: 0x%x)" % (reason_namespace, reason_code, payload, payload_size, reason_string, reason_flags))
     ql.os.definesyscall_return(KERN_SUCCESS)
+
 
 
 ################
