@@ -414,6 +414,12 @@ class DRIVER_OBJECT64(ctypes.Structure):
         # update back to memory.
         self.ql.mem.write(self.base, bytes(obj))
 
+    @property
+    def DriverUnload(self):
+        data = self.ql.mem.read(self.base, ctypes.sizeof(self))
+        obj = type(self).from_buffer(data)
+        return obj._DriverUnload.value
+
 
 class DRIVER_OBJECT32(ctypes.Structure):
     _pack_ = 4
@@ -460,6 +466,13 @@ class DRIVER_OBJECT32(ctypes.Structure):
         obj._DeviceObject.value = value
         # update back to memory.
         self.ql.mem.write(self.base, bytes(obj))
+
+    @property
+    def DriverUnload(self):
+        data = self.ql.mem.read(self.base, ctypes.sizeof(self))
+        obj = type(self).from_buffer(data)
+        return obj._DriverUnload.value
+
 
 
 class KSYSTEM_TIME(ctypes.Structure):

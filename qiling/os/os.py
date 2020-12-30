@@ -284,6 +284,12 @@ class QlOs(QlOsUtils):
         return result, param_num
 
 
+    def clear_syscalls(self):
+        self.syscalls = {}
+        self.syscalls_counter = 0
+        self.appeared_strings = {}
+
+
     def _call_api(self, name, params, result, address, return_address):
         params_with_values = {}
         if name.startswith("hook_"):
@@ -299,7 +305,7 @@ class QlOs(QlOsUtils):
             "position": self.syscalls_counter
         })
 
-        self.ql.os.syscalls_counter += 1
+        self.syscalls_counter += 1
 
 
     def x86_stdcall(self, param_num, params, func, args, kwargs, passthru=False):
