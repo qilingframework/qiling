@@ -327,38 +327,32 @@ class QlOsUtils:
         return result
 
     def print_function(self, address, function_name, params, ret, passthru=False):
-        if function_name.startswith('hook_'):
-            function_name = function_name[5:]
-
+        function_name = function_name.replace('hook_', '')
         if function_name in ("__stdio_common_vfprintf", "__stdio_common_vfwprintf", "printf", "wsprintfW", "sprintf"):
             return
-
-        def _parse_param(param):
-            name, value = param
-
+        log = '0x%0.2x: %s(' % (address, function_name)
+        for each in params:
+            value = params[each]
             if isinstance(value, str) or type(value) == bytearray:
-                return f'{name:s} = "{value:s}"'
+                log += '%s = "%s", ' % (each, value)
             elif isinstance(value, tuple):
                 # we just need the string, not the address in the log
-                return f'{name:s} = "{value[1]:s}"'
+                log += '%s = "%s", ' % (each, value[1])
+            else:
+                log += '%s = 0x%x, ' % (each, value)
+        log = log.strip(", ")
+        log += ')'
+        if ret is not None:
+            log += ' = 0x%x' % ret
 
-            # default to hexadecimal representation
-            return f'{name:s} = {value:#x}'
+        if passthru:
+            log += '(PASSTHRU)'
 
-        # arguments list
-        fargs = (_parse_param(param) for param in params.items())
-
-        # optional suffixes: return value and passthrough
-        fret = f' = {ret:#x}' if ret is not None else ''
-        fpass = f' (PASSTHRU)' if passthru else ''
-
-        log = f'{address:02x}: {function_name:s}({", ".join(fargs)}){fret}{fpass}'
-
-        if self.ql.output == QL_OUTPUT.DEBUG:
-            logging.debug(log)
-        else:
+        if self.ql.output != QL_OUTPUT.DEBUG:
             log = log.partition(" ")[-1]
             logging.info(log)
+        else:
+            logging.debug(log)
 
     def printf(self, address, fmt, params_addr, name, wstring=False):
         count = fmt.count("%")
