@@ -1,0 +1,35 @@
+language: shell
+matrix:
+  fast_finish: true
+  include:
+    - name: "Python 3.7 on OSX"
+      os: osx
+      osx_image: xcode10.1
+      language: shell
+      cache:
+        directories:
+          - $HOME/Library/Caches/pip
+#          - $HOME/dist/
+      before_install:
+        - pip3 install --upgrade pip
+      install:
+#        - pip3 install wheel 'capstone>=4.0.1' 'pefile>=2019.4.18' 'python-registry>=1.3.1' 'unicorn>=1.0.2rc4'
+#        - |
+#          if [ ! -f $HOME/dist/keystone*.whl ]; then
+#               git clone https://github.com/keystone-engine/keystone && \
+#               cd keystone/bindings/python && \
+#               sudo python3 setup.py install bdist_wheel && \
+#               cp dist/*.whl $HOME/dist/;
+#          else
+#              sudo pip3 install $HOME/dist/*.whl;
+#          fi
+        - cd $TRAVIS_BUILD_DIR 
+        - pip3 install . # Workaround since building from keystone sources doesn't work on Macos. Not sure why and I guess it's due to Travis. :/
+      before_script:
+        - ./examples/scripts/dylibcollector.sh
+        - cd $TRAVIS_BUILD_DIR/examples/rootfs/x8664_macos/kext
+        - unzip -Pinfected SuperRootkit.kext.zip
+        - cd $TRAVIS_BUILD_DIR/tests        
+      script:
+        - ./test_macho.sh
+        
