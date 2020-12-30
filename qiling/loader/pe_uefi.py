@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
-import struct, logging
+import logging
 from contextlib import contextmanager
 
 from qiling.const import QL_ARCH
@@ -142,7 +142,7 @@ class QlLoaderPE_UEFI(QlLoader):
             struct_addr = self.dxe_context.protocols[handle][self.loaded_image_protocol_guid]
             loaded_image_protocol = EfiLoadedImageProtocol.EFI_LOADED_IMAGE_PROTOCOL.loadFrom(self.ql, struct_addr)
 
-            unload_ptr = struct.unpack("Q", loaded_image_protocol.Unload)[0]
+            unload_ptr = self.ql.unpack64(loaded_image_protocol.Unload)
 
             if unload_ptr != 0:
                 self.ql.stack_push(self.end_of_execution_ptr)

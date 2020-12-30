@@ -5,12 +5,10 @@
 
 import os, pickle, sys,unittest
 sys.path.append("..")
-from qiling import *
+from qiling import Qiling
 from qiling.extensions.sanitizers.heap import QlSanitizedMemoryHeap
-from qiling.const import *
-from qiling.exception import *
-from qiling.os.uefi.const import *
-from qiling.os.const import *
+from qiling.const import QL_INTERCEPT
+from qiling.os.uefi.const import EFI_SUCCESS, EFI_INVALID_PARAMETER
 
 class Test_UEFI(unittest.TestCase):
     def test_x8664_uefi_santizier(self):
@@ -25,30 +23,29 @@ class Test_UEFI(unittest.TestCase):
             ql.os.heap.bad_free_handler = lambda *args: my_abort("Double free or bad free detected")
             ql.os.heap.uaf_handler = lambda *args: my_abort("Use-after-free detected")
 
+            # make sure future allocated buffers are not too close to UEFI data
+            ql.os.heap.alloc(0x1000)
+
         def sanitized_emulate(path, rootfs, fault_type, output="debug", enable_trace=False):
             ql = Qiling([path], rootfs, output=output)
             ql.env['FaultType'] = fault_type
             enable_sanitized_heap(ql)
             ql.run()
+
             if not ql.os.heap.validate():
                 my_abort("Canary corruption detected")
 
-        def usage():
-            print("""
-        Usage: ./uefi_santizied_heap.py <fault-type>
-        Valid fault types:
-        0 - POOL_OVERFLOW_MEMCPY
-        1 - POOL_UNDERFLOW_MEMCPY
-        2 - POOL_OVERFLOW_USER,
-        3 - POOL_UNDERFLOW_USER
-        4 - POOL_OOB_READ_AHEAD
-        5 - POOL_OOB_READ_BEHIND
-        6 - POOL_DOUBLE_FREE
-        7 - POOL_INVALID_FREE
-        """)
-            sys.exit(0)
+        # Valid fault types:
+        # 0 - POOL_OVERFLOW_MEMCPY
+        # 1 - POOL_UNDERFLOW_MEMCPY
+        # 2 - POOL_OVERFLOW_USER,
+        # 3 - POOL_UNDERFLOW_USER
+        # 4 - POOL_OOB_READ_AHEAD
+        # 5 - POOL_OOB_READ_BEHIND
+        # 6 - POOL_DOUBLE_FREE
+        # 7 - POOL_INVALID_FREE
+        fault_type = bytes([1])
 
-        fault_type = bytes([int(1)])
         rootfs = "../examples/rootfs/x8664_efi"
         path = "../examples/rootfs/x8664_efi/bin/EfiPoolFault.efi"
         sanitized_emulate(path, rootfs, fault_type, output='debug', enable_trace=True)
@@ -91,6 +88,21 @@ class Test_UEFI(unittest.TestCase):
             print("\n")
             self.set_api_onexit = params["Registration"]
 
+        def find_next_available(heap):
+            """Find next available address on heap.
+            """
+
+            chunks = sorted(ql.os.heap.chunks, key=lambda c: c.address)
+
+            for chunk in chunks:
+                na = chunk.address
+
+                if not chunk.inuse and chunk.size > 8:
+                    break
+
+                na += chunk.size
+
+            return na
 
         if __name__ == "__main__":
             with open("../examples/rootfs/x8664_efi/rom2_nvar.pickel", 'rb') as f:
@@ -99,10 +111,14 @@ class Test_UEFI(unittest.TestCase):
             ql.set_api("RegisterProtocolNotify", force_notify_RegisterProtocolNotify)
             ql.set_api("CopyMem", my_onenter, QL_INTERCEPT.ENTER)
             ql.set_api("LocateProtocol", my_onexit, QL_INTERCEPT.EXIT)
+
+            # Source buffer for CopyMem
+            ptr = find_next_available(ql.os.heap)
+
             ql.run()
 
             self.assertEqual(0, self.set_api)
-            self.assertEqual(2014052449, self.set_api_onenter)  # magic value was 21475885153 (?)
+            self.assertEqual(ptr + 1, self.set_api_onenter)
             self.assertEqual(0, self.set_api_onexit)
             
             del ql
