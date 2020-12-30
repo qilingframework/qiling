@@ -107,9 +107,7 @@ class ELFTest(unittest.TestCase):
 
         ql.run()
 
-        if ql.platform == QL_OS.LINUX:
-            self.assertEqual(0x1, self.test_exit_rdi)
-            
+        self.assertEqual(0x1, self.test_exit_rdi)
         self.assertEqual("CCCC", self.test_enter_str)
         
         del self.test_exit_rdi
