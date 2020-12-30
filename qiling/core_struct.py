@@ -18,6 +18,8 @@ class QlCoreStructs:
 	def __init__(self, endian, bit):
 		modifier = '>' if endian == QL_ENDIAN.EB else ''
 
+		self._fmt8   = f'{modifier}B'
+		self._fmt8s  = f'{modifier}b'
 		self._fmt16  = f'{modifier}H'
 		self._fmt16s = f'{modifier}h'
 		self._fmt32  = f'{modifier}I'
@@ -76,3 +78,15 @@ class QlCoreStructs:
 
 	def unpack16s(self, x):
 		return struct.unpack(self._fmt16s, x)[0]
+
+	def pack8(self, x):
+		return struct.pack(self._fmt8, x)
+
+	def pack8s(self, x):
+		return struct.pack(self._fmt8s, x)
+
+	def unpack8(self, x):
+		return struct.unpack(self._fmt8, x)[0]
+
+	def unpack8s(self, x):
+		return struct.unpack(self._fmt8s, x)[0]
