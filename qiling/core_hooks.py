@@ -12,7 +12,7 @@ import logging
 
 from unicorn import *
 from .utils import catch_KeyboardInterrupt
-from .const import *
+from .const import QL_HOOK_BLOCK
 from .exception import QlErrorCoreHook
 
 class Hook:
@@ -22,12 +22,9 @@ class Hook:
         self.begin = begin
         self.end = end
 
+    def bound_check(self, pc, size=1):
+        return (self.end < self.begin) or (self.begin <= pc <= self.end) or (self.begin <= (pc + size - 1) <= self.end)
 
-    def bound_check(self, pc):
-        if self.end < self.begin or (self.begin <= pc and self.end >= pc):
-            return True
-        return False
-    
 
     def check(self, *args):
         return True
@@ -174,7 +171,7 @@ class QlCoreHooks:
         handled = False
         if hook_type in self._hook.keys():
             for h in self._hook[hook_type]:
-                if h.bound_check(addr):
+                if h.bound_check(addr, size):
                     handled = True
                     ret = h.call(ql, access, addr, size, value)
                     if isinstance(ret, int) == True and ret & QL_HOOK_BLOCK  != 0:
