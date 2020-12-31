@@ -93,21 +93,19 @@ class QlLoaderELF(QlLoader, ELFParse):
         self.ql = ql
 
     def run(self):
+        if self.ql.shellcoder:
+            self.ql.mem.map(self.ql.os.entry_point, self.ql.os.shellcoder_ram_size, info="[shellcode_stack]")
+            self.ql.os.entry_point = (self.ql.os.entry_point + 0x200000 - 0x1000)
+            self.ql.mem.write(self.ql.os.entry_point, self.ql.shellcoder)
+            self.ql.reg.arch_sp = self.ql.os.entry_point
+            return
+
         if self.ql.archbit == 32:
             stack_address = int(self.ql.os.profile.get("OS32", "stack_address"), 16)
             stack_size = int(self.ql.os.profile.get("OS32", "stack_size"), 16)
         elif self.ql.archbit == 64:
             stack_address = int(self.ql.os.profile.get("OS64", "stack_address"), 16)
             stack_size = int(self.ql.os.profile.get("OS64", "stack_size"), 16)
-
-        if self.ql.shellcoder:
-            self.ql.mem.map(self.ql.os.entry_point, self.ql.os.shellcoder_ram_size, info="[shellcode_stack]")
-            self.ql.os.entry_point = (self.ql.os.entry_point + 0x200000 - 0x1000)
-
-            self.ql.mem.write(self.ql.os.entry_point, self.ql.shellcoder)
-
-            self.ql.reg.arch_sp = self.ql.os.entry_point
-            return
 
         self.path = self.ql.path
         ELFParse.__init__(self, self.path, self.ql)
