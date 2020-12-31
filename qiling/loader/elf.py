@@ -140,16 +140,8 @@ class QlLoaderELF(QlLoader, ELFParse):
         l_addr = []
         s_addr = addr
         for s in strs:
-            bs = s.encode("utf-8") + b"\x00"
+            bs = s.encode("utf-8") + b"\x00" if not isinstance(s, bytes) else s
             s_addr = s_addr - len(bs)
-            # if isinstance(i, bytes):
-            #   logging.info(type(b'\x00'))
-            #   logging.info(type(i))
-            #   logging.info(i)
-            #   logging.info(type(i.encode()))
-            #   logging.info(type(addr))
-            #   self.ql.mem.write(s_addr, i + b'\x00')
-            # else:
             self.ql.mem.write(s_addr, bs)
             l_addr.append(s_addr)
         return l_addr, s_addr
