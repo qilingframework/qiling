@@ -12,7 +12,7 @@ from .utils import parse_int, handle_bnj, is_thumb, diff_snapshot_save, diff_sna
 
 
 class QlQdb(cmd.Cmd, QlDebugger):
-    def __init__(self, ql, rr=False):
+    def __init__(self, ql, init_hook=None, rr=False):
 
         self._ql = ql
         self.prompt = "(Qdb) "
@@ -24,9 +24,12 @@ class QlQdb(cmd.Cmd, QlDebugger):
         super().__init__()
 
         # setup a breakpoint at entry point
-        self._ql.hook_address(self._attach, self._ql.loader.entry_point)
+        init_hook = self._ql.loader.entry_point if not init_hook else int(init_hook, 16)
 
-    def _attach(self, ql, *args, **kwargs):
+        self._ql.hook_address(self.attach, init_hook)
+
+    @classmethod
+    def attach(cls, ql, *args, **kwargs):
         print(color.RED, "[+] Qdb attached", color.END, sep="")
         print(color.RED, "[!] All hooks of qiling instance will be disabled in Qdb", color.END, sep="")
 
@@ -34,10 +37,12 @@ class QlQdb(cmd.Cmd, QlDebugger):
         for i in ql._addr_hook_fuc.keys():
             ql.uc.hook_del(ql._addr_hook_fuc[i])
 
-        self.interactive()
+        return cls(ql, *args, **kwargs).interactive()
 
     def interactive(self, *args):
+        self.do_context()
         self.cmdloop()
+        return True
 
     def emptyline(self, *args):
         """
