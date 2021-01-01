@@ -97,6 +97,16 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._root = False
         self._filter = None
 
+        ###############################
+        # Properties configured later #
+        ###############################
+        self.entry_point = None
+        self.exit_point = None
+        self.timeout = None
+        self.count = None
+        self._initial_sp = None
+
+
         """
         Qiling Framework Core Engine
         """
@@ -206,14 +216,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         # Add extra guard options when configured to do so
         self._init_stop_guard()
 
-        ###############################
-        # Properties configured later #
-        ###############################
-        self.entry_point = None
-        self.exit_point = None
-        self.timeout = None
-        self.count = None
-        self._initial_sp = None
     
     #####################
     # Qiling Components #

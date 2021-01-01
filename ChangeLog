@@ -17,6 +17,7 @@ BREAK CHANGE
 - Added support for binaries that return from their entrypoint (PE / ELF).
 - Configure Qiling with 'stop_on_stackpointer' or 'stop_on_exit_trap'.
 - Add basic Windows driver tests / example
+- UEFI refactor
 
 
 ------------------------------------

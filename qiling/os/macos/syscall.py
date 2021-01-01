@@ -541,7 +541,7 @@ def ql_syscall_write_nocancel(ql, write_fd, write_buf, write_count, *args, **kw)
             raise
     #if buf:
     #    logging.info(buf.decode(errors='ignore'))
-    ql.os.definesyscall_return(regreturn)
+    return 0
 
 
 # 0x18e

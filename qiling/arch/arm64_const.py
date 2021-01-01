@@ -44,7 +44,7 @@ reg_map = {
             "tpidr_el0": UC_ARM64_REG_TPIDR_EL0,
 }
 
-reg_map_part = {
+reg_map_w = {
             "w0" : UC_ARM64_REG_W0,
             "w1" : UC_ARM64_REG_W1,
             "w2" : UC_ARM64_REG_W2,
