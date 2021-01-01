@@ -49,6 +49,8 @@ iamyeh
 alfink
 bambu
 bkerler (viperbjk)
+Mark Jansen (learn-more)
+cq674350529
 
 Alpha testers (in no particular order, named by github id)
 ==========================================================

@@ -3,6 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
+import logging
 from qiling.const import *
 from qiling.os.linux.thread import *
 from qiling.const import *
@@ -40,20 +41,20 @@ def ql_syscall_open(ql, filename, flags, mode, *args, **kw):
         except QlSyscallError as e:
             regreturn = - e.errno
 
-    ql.nprint("open(%s, 0x%x, 0o%o) = %d" % (relative_path, flags, mode, regreturn))
-    ql.dprint(D_INFO, "[+] open(%s, %s, 0o%o) = %d" % (relative_path, open_flags_mapping(flags, ql.archtype), mode, regreturn))
+    logging.info("open(%s, 0x%x, 0o%o) = %d" % (relative_path, flags, mode, regreturn))
+    logging.debug("[+] open(%s, %s, 0o%o) = %d" % (relative_path, open_flags_mapping(flags, ql.archtype), mode, regreturn))
 
     if regreturn >= 0 and regreturn != 2:
-        ql.dprint(D_INFO, "[+] File Found: %s" % real_path)
+        logging.debug("[+] File Found: %s" % real_path)
     else:
-        ql.dprint(D_INFO, "[!] File Not Found %s" % real_path)
-    ql.os.definesyscall_return(regreturn)
+        logging.debug("[!] File Not Found %s" % real_path)
+    return regreturn
 
 
 def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *args, **kw):
     openat_fd = ql.unpacks(ql.pack(openat_fd))
     openat_path = ql.mem.string(openat_path)
-    
+
     real_path = ql.os.transform_to_real_path(openat_path)
     relative_path = ql.os.transform_to_relative_path(openat_path)
 
@@ -80,15 +81,15 @@ def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *ar
         except QlSyscallError:
             regreturn = -1
 
-    ql.nprint("openat(%d, %s, 0x%x, 0o%o) = %d" % (openat_fd, relative_path, openat_flags, openat_mode, regreturn))
-    ql.dprint(D_INFO, "[+] openat(%d, %s, %s, 0o%o) = %d" % (
+    logging.info("openat(%d, %s, 0x%x, 0o%o) = %d" % (openat_fd, relative_path, openat_flags, openat_mode, regreturn))
+    logging.debug("[+] openat(%d, %s, %s, 0o%o) = %d" % (
     openat_fd, relative_path, open_flags_mapping(openat_flags, ql.archtype), openat_mode, regreturn))
 
     if regreturn >= 0 and regreturn != 2:
-        ql.dprint(D_INFO, "[+] File Found: %s" % real_path)
+        logging.debug("[+] File Found: %s" % real_path)
     else:
-        ql.dprint(D_INFO, "[!] File Not Found %s" % real_path)
-    ql.os.definesyscall_return(regreturn)
+        logging.debug("[!] File Not Found %s" % real_path)
+    return regreturn
 
 
 def ql_syscall_fcntl(ql, fcntl_fd, fcntl_cmd, *args, **kw):
@@ -103,8 +104,8 @@ def ql_syscall_fcntl(ql, fcntl_fd, fcntl_cmd, *args, **kw):
     elif fcntl_cmd == F_SETFL:
         regreturn = 0
 
-    ql.nprint("fcntl(%d, %d) = %d" % (fcntl_fd, fcntl_cmd, regreturn))
-    ql.os.definesyscall_return(regreturn)
+    logging.info("fcntl(%d, %d) = %d" % (fcntl_fd, fcntl_cmd, regreturn))
+    return regreturn
 
 
 def ql_syscall_fcntl64(ql, fcntl_fd, fcntl_cmd, fcntl_arg, *args, **kw):
@@ -126,12 +127,12 @@ def ql_syscall_fcntl64(ql, fcntl_fd, fcntl_cmd, fcntl_arg, *args, **kw):
     else:
         regreturn = 0
 
-    ql.nprint("fcntl64(%d, %d, %d) = %d" % (fcntl_fd, fcntl_cmd, fcntl_arg, regreturn))
-    ql.os.definesyscall_return(regreturn)
+    logging.info("fcntl64(%d, %d, %d) = %d" % (fcntl_fd, fcntl_cmd, fcntl_arg, regreturn))
+    return regreturn
 
 
 def ql_syscall_flock(ql, flock_fd, flock_operation, *args, **kw):
     # Should always return 0, we don't need a actual file lock
     regreturn = 0
-    ql.nprint("flock(%d) = %d" % (flock_operation, regreturn))
-    ql.os.definesyscall_return(regreturn)
+    logging.info("flock(%d) = %d" % (flock_operation, regreturn))
+    return regreturn

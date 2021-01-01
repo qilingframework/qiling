@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
-import struct
+import struct, logging
 
 from qiling.const import *
 from qiling.os.linux.thread import *
@@ -34,6 +34,6 @@ def ql_syscall_sysinfo(ql, sysinfo_info, *args, **kw):
     )
 
     regreturn = 0
-    ql.nprint("sysinfo(0x%x) = %d" % (sysinfo_info, regreturn))
+    logging.info("sysinfo(0x%x) = %d" % (sysinfo_info, regreturn))
     #ql.mem.write(sysinfo_info, data)
-    ql.os.definesyscall_return(regreturn)
+    return regreturn

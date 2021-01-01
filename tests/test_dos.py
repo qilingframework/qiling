@@ -19,7 +19,7 @@ from unicorn.x86_const import *
 class DOSTest(unittest.TestCase):
 
     def test_dos_8086_hello(self):
-        ql = Qiling(["../examples/rootfs/8086/dos/HI.COM"], "../examples/rootfs/8086/dos")
+        ql = Qiling(["../examples/rootfs/8086/dos/HI.DOS_COM"], "../examples/rootfs/8086/dos")
         ql.run()
         del ql
 

@@ -3,6 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
+import logging
 from qiling.const import *
 from qiling.arch.x86 import *
 
@@ -95,26 +96,37 @@ class QlOsLinux(QlOsPosix):
                     # start multithreading
                     thread_management = QlLinuxThreadManagement(self.ql)
                     self.ql.os.thread_management = thread_management
-                    main_thread = self.thread_class(self.ql, thread_management, total_time = self.ql.timeout)
-                    main_thread.store_regs()
+                    main_thread = self.thread_class.spawn(self.ql)
+                    thread_management.main_thread = main_thread
+                    thread_management.cur_thread = main_thread
+                    # Main thread has been created and we have to clear all buffered logging if any.
+                    # This only happens with ql.split_log = True.
+                    try:
+                        msg_before_main_thread = self.ql._msg_before_main_thread
+                        for lvl, msg in msg_before_main_thread:
+                            main_thread.log_file_fd.log(lvl, msg)
+                    except AttributeError:
+                        pass
+                    main_thread.save()
                     main_thread.set_start_address(self.ql.loader.entry_point)
-                    thread_management.set_main_thread(main_thread)
+                    
 
                     # enable lib patch
                     if self.ql.loader.elf_entry != self.ql.loader.entry_point:
-                        main_thread.set_exit_point(self.ql.loader.elf_entry)
+                        main_thread.exit_point = self.ql.loader.elf_entry
                         thread_management.run()
                         if main_thread.ql.arch.get_pc() != self.ql.loader.elf_entry:
                             raise QlErrorExecutionStop('Dynamic library .init() failed!')
                         self.ql.enable_lib_patch()
                         self.run_function_after_load()
+                        self.ql.loader.skip_exit_check = False
+                        self.ql.write_exit_trap()
 
                         main_thread.set_start_address(self.ql.loader.elf_entry)
-                        main_thread.set_exit_point(self.exit_point)
-                        main_thread.running()
+                        main_thread.exit_point = self.exit_point
 
-                        thread_management.clean_world()
-                        thread_management.set_main_thread(main_thread)
+                        #thread_management.clean_world()
+                        #thread_management.set_main_thread(main_thread)
     
                     thread_management.run()
 
@@ -127,6 +139,8 @@ class QlOsLinux(QlOsPosix):
                         self.ql.emu_start(self.ql.loader.entry_point, self.ql.loader.elf_entry, self.ql.timeout)
                         self.ql.enable_lib_patch()
                         self.run_function_after_load()
+                        self.ql.loader.skip_exit_check = False
+                        self.ql.write_exit_trap()
 
                     self.ql.emu_start(self.ql.loader.elf_entry, self.exit_point, self.ql.timeout, self.ql.count)
 

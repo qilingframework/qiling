@@ -14,6 +14,7 @@ class QlLoader():
         self.argv   = self.ql.argv
         self.images = []
         self.coverage_image = namedtuple('Image', 'base end path')
+        self.skip_exit_check = False
     
     def save(self):
         saved_state = {}

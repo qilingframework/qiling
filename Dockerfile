@@ -19,7 +19,6 @@ COPY --from=builder /qiling /qiling
 WORKDIR /qiling
 
 RUN apt-get update \
-  && apt-get install -y libmagic-dev \ 
   && rm -rf /var/lib/apt/lists/* \
   && pip3 install wheels/*.whl \
   && rm -rf wheels

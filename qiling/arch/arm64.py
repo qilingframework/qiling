@@ -15,7 +15,7 @@ class QlArchARM64(QlArch):
         super(QlArchARM64, self).__init__(ql)
 
         register_mappings = [
-            reg_map
+            reg_map, reg_map_w
         ]
 
         for reg_maper in register_mappings:

@@ -6,6 +6,7 @@
 import os
 import uuid
 import ntpath
+import logging
 from sys import getsizeof
 
 from qiling.const import *
@@ -20,7 +21,7 @@ from .structs import UNICODE_STRING32, UNICODE_STRING64
 
 
 def ql_x86_windows_hook_mem_error(ql, access, addr, size, value):
-    ql.dprint(D_INFO, "[+] ERROR: unmapped memory access at 0x%x" % addr)
+    logging.debug("[+] ERROR: unmapped memory access at 0x%x" % addr)
     return False
 
 
@@ -58,9 +59,9 @@ def print_function(ql, passthru, address, function_name, params, ret):
 
     if ql.output != QL_OUTPUT.DEBUG:
         log = log.partition(" ")[-1]
-        ql.nprint(log)
+        logging.info(log)
     else:
-        ql.dprint(D_INFO, log)
+        logging.debug(log)
 
 
 def read_wstring(ql, address):
@@ -113,9 +114,9 @@ def env_dict_to_array(env_dict):
 
 def debug_print_stack(ql, num, message=None):
     if message:
-        ql.dprint(D_INFO, "========== %s ==========" % message)
+        logging.debug("========== %s ==========" % message)
         sp = ql.reg.arch_sp
-        ql.dprint(D_INFO, hex(sp + ql.pointersize * num) + ": " + hex(ql.stack_read(num * ql.pointersize)))
+        logging.debug(hex(sp + ql.pointersize * num) + ": " + hex(ql.stack_read(num * ql.pointersize)))
 
 
 def is_file_library(string):
@@ -180,7 +181,7 @@ def printf(ql,
     else:
         output = '%s(format = %s) = 0x%x' % (name, repr(fmt), len(fmt))
         stdout = fmt
-    ql.nprint(output)
+    logging.info(output)
     ql.os.stdout.write(bytes(stdout, 'utf-8'))
     return len(stdout), stdout
 

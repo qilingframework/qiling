@@ -5,10 +5,10 @@
 
 from .loader import QlLoader
 from qiling.os.disk import QlDisk
-import magic
 import sys
 import traceback
 import math
+import logging
 
 class QlLoaderDOS(QlLoader):
     def __init__(self, ql):
@@ -20,7 +20,7 @@ class QlLoaderDOS(QlLoader):
     def excepthook(self, tp, value, tb):
         if self.ql.os.stdscr is not None:
             tbmsg = "".join(traceback.format_exception(tp, value, tb))
-            self.ql.nprint(f"{tbmsg}")
+            logging.info(f"{tbmsg}")
         self.old_excepthook(tp, value, tb)
 
     def _round_to_4k(self, addr):
@@ -34,10 +34,9 @@ class QlLoaderDOS(QlLoader):
 
     def run(self):
         path = self.ql.path
-        ftype = magic.from_file(path)
 
         self.ticks_per_second = float(self.ql.profile.get("KERNEL", "ticks_per_second"))
-        if ("COM" in ftype and "DOS" in ftype) or "COM" in path:
+        if (str(path)).endswith(".DOS_COM") or (str(path)).endswith(".DOS_EXE"):
             # pure com
             self.cs = int(self.ql.profile.get("COM", "start_cs"), 16)
             self.ip = int(self.ql.profile.get("COM", "start_ip"), 16)
@@ -58,7 +57,7 @@ class QlLoaderDOS(QlLoader):
             self.ql.mem.write(self.start_address, bs)
             self.load_address = self.base_address
             self.ql.os.entry_point = self.start_address
-        elif "MBR" in ftype:
+        elif (str(path)).endswith(".DOS_MBR"):
             # MBR
             self.start_address = 0x7C00
             with open(path, "rb+") as f:
@@ -66,7 +65,7 @@ class QlLoaderDOS(QlLoader):
             if not self.ql.os.fs_mapper.has_mapping(0x80):
                 self.ql.os.fs_mapper.add_fs_mapping(0x80, QlDisk(path, 0x80))
             # Map all available address.
-            self.ql.mem.map(0x0, 0x100000)
+            self.ql.mem.map(0x0, 0x1000000)
             self.ql.mem.write(self.start_address, bs)
             self.cs = 0
             self.ql.reg.ds = self.cs
@@ -78,7 +77,7 @@ class QlLoaderDOS(QlLoader):
             self.ip = self.start_address
             self.load_address = self.start_address
             self.ql.os.entry_point = self.start_address
-        elif "MS-DOS" in ftype:
+        else:
             raise NotImplementedError()
             
         sys.excepthook = self.excepthook

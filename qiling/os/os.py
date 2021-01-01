@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
-import os, sys, types
+import os, sys, types, logging
 
 from .utils import QlOsUtils
 from .const import *
@@ -18,7 +18,6 @@ class QlOs(QlOsUtils):
     def __init__(self, ql):
         super(QlOs, self).__init__(ql)
         self.ql = ql
-        self.ql.uc = self.ql.arch.init_uc
         self.fs_mapper = QlFsMapper(ql)
         self.child_processes = False
         self.thread_management = None
@@ -93,32 +92,32 @@ class QlOs(QlOsUtils):
                 return image
 
     def emu_error(self):
-        self.ql.nprint("\n")
+        logging.error("\n")
 
         for reg in self.ql.reg.register_mapping:
             if isinstance(reg, str):
                 REG_NAME = reg
                 REG_VAL = self.ql.reg.read(reg)
-                self.ql.nprint("[-] %s\t:\t 0x%x" % (REG_NAME, REG_VAL))
+                logging.error("%s\t:\t 0x%x" % (REG_NAME, REG_VAL))
 
-        self.ql.nprint("\n")
-        self.ql.nprint("[+] PC = 0x%x" % (self.ql.reg.arch_pc), end="")
+        logging.error("\n")
+        logging.error("PC = 0x%x" % (self.ql.reg.arch_pc))
         containing_image = self.find_containing_image(self.ql.reg.arch_pc)
         if containing_image:
             offset = self.ql.reg.arch_pc - containing_image.base
-            self.ql.nprint(" (%s+0x%x)" % (containing_image.path, offset))
+            logging.error(" (%s+0x%x)" % (containing_image.path, offset))
         else:
-            self.ql.nprint("\n")
+            logging.info("\n")
         self.ql.mem.show_mapinfo()
 
         try:
             buf = self.ql.mem.read(self.ql.reg.arch_pc, 8)
-            self.ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
+            logging.error("%r" % ([hex(_) for _ in buf]))
 
-            self.ql.nprint("\n")
+            logging.info("\n")
             self.disassembler(self.ql, self.ql.reg.arch_pc, 64)
         except:
-            self.ql.nprint("[!] Error: PC(0x%x) Unreachable" % self.ql.reg.arch_pc)
+            logging.error("Error: PC(0x%x) Unreachable" % self.ql.reg.arch_pc)
 
 
     def _x86_set_args(self, args):
@@ -285,6 +284,12 @@ class QlOs(QlOsUtils):
         return result, param_num
 
 
+    def clear_syscalls(self):
+        self.syscalls = {}
+        self.syscalls_counter = 0
+        self.appeared_strings = {}
+
+
     def _call_api(self, name, params, result, address, return_address):
         params_with_values = {}
         if name.startswith("hook_"):
@@ -300,12 +305,12 @@ class QlOs(QlOsUtils):
             "position": self.syscalls_counter
         })
 
-        self.ql.os.syscalls_counter += 1
+        self.syscalls_counter += 1
 
 
     def x86_stdcall(self, param_num, params, func, args, kwargs, passthru=False):
         # if we check ret_addr before the call, we can't modify the ret_addr from inside the hook
-        result, param_num = self.__x86_cc(param_num, params, func, args, kwargs)
+        result, param_num = self.__x86_cc(param_num, params, func, args, kwargs, passthru)
 
         # get ret addr
         ret_addr = self.ql.stack_read(0)
@@ -313,10 +318,10 @@ class QlOs(QlOsUtils):
         # append syscall to list
         self._call_api(func.__name__, params, result, self.ql.reg.arch_pc, ret_addr)
 
-        # update stack pointer
-        self.ql.reg.arch_sp = self.ql.reg.arch_sp + ((param_num + 1) * 4)
-
         if not passthru and self.PE_RUN:
+            # update stack pointer
+            self.ql.reg.arch_sp = self.ql.reg.arch_sp + ((param_num + 1) * 4)
+
             self.ql.reg.arch_pc = ret_addr
 
         return result

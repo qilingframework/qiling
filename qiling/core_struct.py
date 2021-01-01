@@ -13,116 +13,80 @@ import struct
 from .const import QL_ENDIAN
 from .exception import QlErrorStructConversion
 
-class QlCoreStructs(object):
-    def __init__(self):
-        super().__init__()
-        self.archendian = None
-        self.archbit = 0
+# Don't assume self is Qiling.
+class QlCoreStructs:
+	def __init__(self, endian, bit):
+		modifier = '>' if endian == QL_ENDIAN.EB else ''
 
-    def pack64(self, x):
-        if self.archendian == QL_ENDIAN.EB:
-            return struct.pack('>Q', x)
-        else:
-            return struct.pack('Q', x)
+		self._fmt8   = f'{modifier}B'
+		self._fmt8s  = f'{modifier}b'
+		self._fmt16  = f'{modifier}H'
+		self._fmt16s = f'{modifier}h'
+		self._fmt32  = f'{modifier}I'
+		self._fmt32s = f'{modifier}i'
+		self._fmt64  = f'{modifier}Q'
+		self._fmt64s = f'{modifier}q'
 
-    def pack64s(self, x):
-        if self.archendian == QL_ENDIAN.EB:
-            return struct.pack('>q', x)
-        else:
-            return struct.pack('q', x)
+		handlers = {
+			64 : (self.pack64, self.pack64s, self.unpack64, self.unpack64s),
+			32 : (self.pack32, self.pack32s, self.unpack32, self.unpack32s),
+			16 : (self.pack16, self.pack16s, self.unpack16, self.unpack16s)
+		}
 
-    def unpack64(self, x):
-        if self.archendian == QL_ENDIAN.EB:
-            return struct.unpack('>Q', x)[0]
-        else:
-            return struct.unpack('Q', x)[0]
+		if bit not in handlers:
+			raise QlErrorStructConversion("[!] Unsupported Qiling struct conversion")
 
-    def unpack64s(self, x):
-        if self.archendian == QL_ENDIAN.EB:
-            return struct.unpack('>q', x)[0]
-        else:
-            return struct.unpack('q', x)[0]
+		p, ps, up, ups = handlers[bit]
 
-    def pack32(self, x):
-        if self.archendian == QL_ENDIAN.EB:
-            return struct.pack('>I', x)
-        else:
-            return struct.pack('I', x)
+		self.pack    = p
+		self.packs   = ps
+		self.unpack  = up
+		self.unpacks = ups
 
-    def pack32s(self, x):
-        if self.archendian == QL_ENDIAN.EB:
-            return struct.pack('>i', x)
-        else:
-            return struct.pack('i', x)
+	def pack64(self, x):
+		return struct.pack(self._fmt64, x)
 
-    def unpack32(self, x):
-        if self.archendian == QL_ENDIAN.EB:
-            return struct.unpack('>I', x)[0]
-        else:
-            return struct.unpack('I', x)[0]
+	def pack64s(self, x):
+		return struct.pack(self._fmt64s, x)
 
-    def unpack32s(self, x):
-        if self.archendian == QL_ENDIAN.EB:
-            return struct.unpack('>i', x)[0]
-        else:
-            return struct.unpack('i', x)[0]
+	def unpack64(self, x):
+		return struct.unpack(self._fmt64, x)[0]
 
-    def pack16(self, x):
-        if self.archendian == QL_ENDIAN.EB:
-            return struct.pack('>H', x)
-        else:
-            return struct.pack('H', x)
+	def unpack64s(self, x):
+		return struct.unpack(self._fmt64s, x)[0]
 
-    def pack16s(self, x):
-        if self.archendian == QL_ENDIAN.EB:
-            return struct.pack('>h', x)
-        else:
-            return struct.pack('h', x)
+	def pack32(self, x):
+		return struct.pack(self._fmt32, x)
 
-    def unpack16(self, x):
-        if self.archendian == QL_ENDIAN.EB:
-            return struct.unpack('>H', x)[0]
-        else:
-            return struct.unpack('H', x)[0]
+	def pack32s(self, x):
+		return struct.pack(self._fmt32s, x)
 
-    def unpack16s(self, x):
-        if self.archendian == QL_ENDIAN.EB:
-            return struct.unpack('>h', x)[0]
-        else:
-            return struct.unpack('h', x)[0]
+	def unpack32(self, x):
+		return struct.unpack(self._fmt32, x)[0]
 
-    def pack(self, data):
-        if self.archbit == 64:
-            return self.pack64(data)
-        elif self.archbit == 32:
-            return self.pack32(data)
-        elif self.archbit == 16:
-            return self.pack16(data)
-        raise QlErrorStructConversion("[!] Qiling pack conversion failed!")
+	def unpack32s(self, x):
+		return struct.unpack(self._fmt32s, x)[0]
 
-    def packs(self, data):
-        if self.archbit == 64:
-            return self.pack64s(data)
-        elif self.archbit == 32:
-            return self.pack32s(data)
-        elif self.archbit == 16:
-            return self.pack16s(data)
-        raise QlErrorStructConversion("[!] Qiling packs conversion failed!")
+	def pack16(self, x):
+		return struct.pack(self._fmt16, x)
 
-    def unpack(self, data):
-        if self.archbit == 64:
-            return self.unpack64(data)
-        elif self.archbit == 32:
-            return self.unpack32(data)
-        elif self.archbit == 16:
-            return self.unpack16(data)
-        raise QlErrorStructConversion("[!] Qiling unpack conversion failed!")
+	def pack16s(self, x):
+		return struct.pack(self._fmt16s, x)
 
-    def unpacks(self, data):
-        if self.archbit == 64:
-            return self.unpack64s(data)
-        elif self.archbit == 32:
-            return self.unpack32s(data)
-        elif self.archbit == 16:
-            return self.unpack16s(data)
-        raise QlErrorStructConversion("[!] Qiling unpacks conversion failed!")
+	def unpack16(self, x):
+		return struct.unpack(self._fmt16, x)[0]
+
+	def unpack16s(self, x):
+		return struct.unpack(self._fmt16s, x)[0]
+
+	def pack8(self, x):
+		return struct.pack(self._fmt8, x)
+
+	def pack8s(self, x):
+		return struct.pack(self._fmt8s, x)
+
+	def unpack8(self, x):
+		return struct.unpack(self._fmt8, x)[0]
+
+	def unpack8s(self, x):
+		return struct.unpack(self._fmt8s, x)[0]

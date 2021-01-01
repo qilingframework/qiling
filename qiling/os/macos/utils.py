@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-import ctypes, os, struct
+import ctypes, os, struct, logging
 
 from unicorn.x86_const import *
 from unicorn.arm_const import *
@@ -17,43 +17,43 @@ def IOConnectCallMethod(ql, selector,
                         output_array, output_cnt, output_struct, output_struct_size):
 
     if ql.os.IOKit is not True:
-        ql.nprint("[!] Must have a IOKit driver")
+        logging.info("[!] Must have a IOKit driver")
         return output_array, output_struct
 
     args_addr = ql.os.heap.alloc(ctypes.sizeof(IOExternalMethodArguments))
-    ql.dprint(D_INFO, "[+] Created IOExternalMethodArguments object at 0x%x" % args_addr)
+    logging.debug("[+] Created IOExternalMethodArguments object at 0x%x" % args_addr)
     args_obj = IOExternalMethodArguments(ql, args_addr)
 
     if input_array is not None and input_cnt != 0:
         input_array_addr = ql.os.heap.alloc(input_cnt)
         ql.mem.write(input_array_addr, b''.join(struct.pack("<Q", x) for x in input_array))
-        ql.dprint(D_INFO, "[+] Created input array at 0x%x" % input_array_addr)
+        logging.debug("[+] Created input array at 0x%x" % input_array_addr)
     else:
         input_array_addr = 0
 
     if input_struct is not None and input_struct_size != 0:
         input_struct_addr = ql.os.heap.alloc(input_struct_size)
         ql.mem.write(input_struct_addr, bytes(input_struct))
-        ql.dprint(D_INFO, "[+] Created input struct at 0x%x" % input_struct_addr)
+        logging.debug("[+] Created input struct at 0x%x" % input_struct_addr)
     else:
         input_struct_addr = 0
 
     if output_array is not None and output_cnt != 0:
         output_array_addr = ql.os.heap.alloc(output_cnt)
         ql.mem.write(output_array_addr, b''.join(struct.pack("<Q", x) for x in output_array))
-        ql.dprint(D_INFO, "[+] Created output array at 0x%x" % output_array_addr)
+        logging.debug("[+] Created output array at 0x%x" % output_array_addr)
     else:
         output_array_addr = 0
 
     if output_struct is not None and output_struct_size != 0:
         output_struct_addr = ql.os.heap.alloc(output_struct_size)
         ql.mem.write(output_struct_addr, bytes(output_struct))
-        ql.dprint(D_INFO, "[+] Created output struct at 0x%x" % output_struct_size)
+        logging.debug("[+] Created output struct at 0x%x" % output_struct_size)
     else:
         output_struct_addr = 0
 
     dispatch_addr = ql.os.heap.alloc(ctypes.sizeof(IOExternalMethodDispatch))
-    ql.dprint(D_INFO, "[+] Created IOExternalMethodDispatch object at 0x%x" % dispatch_addr)
+    logging.debug("[+] Created IOExternalMethodDispatch object at 0x%x" % dispatch_addr)
     dispatch_obj = IOExternalMethodDispatch(ql, dispatch_addr)
 
     args_obj.___reservedA = 0
@@ -79,11 +79,11 @@ def IOConnectCallMethod(ql, selector,
     args_obj._structureOutputSize = output_struct_size
 
     args_obj.updateToMem()
-    ql.dprint(D_INFO, "[+] Initialized IOExternalMethodArguments object")
+    logging.debug("[+] Initialized IOExternalMethodArguments object")
     ql.os.savedrip=0xffffff8000a106ba
     ql.run(begin=ql.loader.user_alloc)
     ql.os.user_object = ql.reg.rax
-    ql.dprint(D_INFO, "[+] Created user object at 0x%x" % ql.os.user_object)
+    logging.debug("[+] Created user object at 0x%x" % ql.os.user_object)
 
     ql.reg.rdi = ql.os.user_object
     ql.reg.rsi = 0x1337 # owningTask
@@ -93,7 +93,7 @@ def IOConnectCallMethod(ql, selector,
     ql.stack_push(0)
     ql.os.savedrip=0xffffff8000a10728
     ql.run(begin=ql.loader.user_initWithTask)
-    ql.dprint(D_INFO, "[+] Initialized user object")
+    logging.debug("[+] Initialized user object")
 
     # TODO: Add some extra methods with correct order
 
@@ -108,7 +108,7 @@ def IOConnectCallMethod(ql, selector,
 
     args_obj.loadFromMem()
     output_array = args_obj.scalarOutput
-    ql.dprint(D_INFO, "[+] Finish IOConnectCallMethod")
+    logging.debug("[+] Finish IOConnectCallMethod")
     return args_obj.scalarOutput, type(output_struct).from_buffer(args_obj.structureOutput)
 
 
@@ -235,6 +235,6 @@ def print_function(ql, passthru, address, function_name, params, ret):
 
     if ql.output != QL_OUTPUT.DEBUG:
         log = log.partition(" ")[-1]
-        ql.nprint(log)
+        logging.info(log)
     else:
-        ql.dprint(D_INFO, log)
+        logging.debug(log)

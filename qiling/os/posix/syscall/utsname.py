@@ -3,6 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
+import logging
 from qiling.const import *
 from qiling.os.linux.thread import *
 from qiling.const import *
@@ -21,7 +22,5 @@ def ql_syscall_uname(ql, address, *args, **kw):
     buf += b''.ljust(65, b'\x00')
     ql.mem.write(address, buf)
     regreturn = 0
-    ql.nprint("uname(0x%x) = %d" % (address, regreturn))
-    ql.os.definesyscall_return(regreturn)
-
-
+    logging.info("uname(0x%x) = %d" % (address, regreturn))
+    return regreturn

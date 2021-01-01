@@ -18,16 +18,12 @@ requirements = [
     "pefile>=2019.4.18",
     "python-registry>=1.3.1",
     "keystone-engine>=0.9.2",
-    "pyelftools>=0.26"
+    "pyelftools>=0.26",
+    "gevent>=20.9.0"
 ]
 
 with open("README.md", "r", encoding="utf-8") as ld:
     long_description = ld.read()
-
-if sys.platform in ('linux', 'cygwin'):
-    requirements += ["python-magic>=0.4.16"]
-else:
-    requirements += ["python-magic-bin>=0.4.14"]
 
 if "win32" in sys.platform:
     requirements += ["windows-curses>=2.1.0"]

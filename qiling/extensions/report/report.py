@@ -4,7 +4,7 @@ import json
 
 class Report:
     def __init__(self, ql):
-        self.filename = ql.filename
+        self.filename = ql.argv
         self.rootfs = ql.rootfs
         self.arch = list(arch_map.keys())[list(arch_map.values()).index(ql.archtype)]
         self.os = list(os_map.keys())[list(os_map.values()).index(ql.ostype)]

@@ -4,13 +4,14 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
 # For syscall_num
+import logging
+
 from unicorn.arm64_const import *
 from unicorn.arm_const import *
 from unicorn.mips_const import *
 from unicorn.x86_const import *
 
 from qiling.const import *
-from qiling.core_utils import QlFileDes
 from qiling.os.os import QlOs
 from qiling.utils import *
 from qiling.exception import *
@@ -90,7 +91,7 @@ class QlOsPosix(QlOs):
 
     def load_syscall(self, intno=None):
         # import syscall mapping function
-        map_syscall = self.ql.os_setup(function_name="map_syscall")
+        map_syscall = ql_syscall_mapping_function(self.ql.ostype)
         self.syscall_name = map_syscall(self.ql, self.syscall)
 
         if self.dict_posix_onEnter_syscall.get(self.syscall_name) != None:
@@ -161,24 +162,27 @@ class QlOsPosix(QlOs):
             self.syscalls_counter += 1
 
             try:                
-                if self.syscall_onEnter == None:
+                if self.syscall_onEnter is None:
                     ret = 0
                 else:
                     ret = self.syscall_onEnter(self.ql, self.get_func_arg()[0], self.get_func_arg()[1], self.get_func_arg()[2], self.get_func_arg()[3], self.get_func_arg()[4], self.get_func_arg()[5])
 
                 if isinstance(ret, int) == False or ret & QL_CALL_BLOCK == 0:
-                    self.syscall_map(self.ql, self.get_func_arg()[0], self.get_func_arg()[1], self.get_func_arg()[2], self.get_func_arg()[3], self.get_func_arg()[4], self.get_func_arg()[5])
-                
-                if self.syscall_onExit != None:
+                    ret = self.syscall_map(self.ql, self.get_func_arg()[0], self.get_func_arg()[1], self.get_func_arg()[2], self.get_func_arg()[3], self.get_func_arg()[4], self.get_func_arg()[5])
+                    if ret is not None and isinstance(ret, int):
+                        self.set_syscall_return(ret)
+
+                if self.syscall_onExit is not None:
                     self.syscall_onExit(self.ql, self.get_func_arg()[0], self.get_func_arg()[1], self.get_func_arg()[2], self.get_func_arg()[3], self.get_func_arg()[4], self.get_func_arg()[5])
 
             except KeyboardInterrupt:
                 raise
             except Exception as e:
-                self.ql.nprint("[!] Syscall ERROR: %s DEBUG: %s" % (self.syscall_name, e))
+                logging.exception("")
+                logging.info("[!] Syscall ERROR: %s DEBUG: %s" % (self.syscall_name, e))
                 raise e
         else:
-            self.ql.nprint(
+            logging.warning(
                 "[!] 0x%x: syscall %s number = 0x%x(%d) not implemented" % (self.ql.reg.arch_pc, syscall_name_str, self.syscall, self.syscall))
             if self.ql.debug_stop:
                 raise QlErrorSyscallNotFound("[!] Syscall Not Found")
@@ -201,7 +205,7 @@ class QlOsPosix(QlOs):
 
         return self.ql.reg.read(syscall_num)
 
-    def definesyscall_return(self, regreturn):
+    def set_syscall_return(self, regreturn):
         # each name has a list of calls, we want the last one and we want to update the return value
         self.syscalls[self.syscall_name][-1]["result"] = regreturn
         if self.ql.archtype == QL_ARCH.ARM:  # ARM

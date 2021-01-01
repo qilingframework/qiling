@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-import sys, unittest, subprocess, string, random, os
+import sys, unittest, subprocess, string, random, os, logging
 
 from unicorn import UcError, UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
 
@@ -16,105 +16,6 @@ from qiling.os.mapper import QlFsMappedObject
 from qiling.os.stat import Fstat
 
 class ELFTest(unittest.TestCase):
-
-    def test_multithread_elf_linux_x86(self):
-        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
-            try:
-                buf = ql.mem.read(write_buf, write_count)
-                buf = buf.decode()
-                if buf.startswith("thread 2 ret") == True:
-                    ql.buf_out = buf
-            except:
-                pass
-
-        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_multithreading"], "../examples/rootfs/x86_linux")
-        ql.multithread = True
-        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
-        ql.run()
-        
-        self.assertEqual("thread 2 ret val is : 2\n", ql.buf_out)
-        
-        del ql
-
-    
-    def test_multithread_elf_linux_arm64(self):
-        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
-            buf = ""
-            try:
-                buf = ql.mem.read(write_buf, write_count)
-                buf = buf.decode()
-                if buf.startswith("thread 2 ret") == True:
-                    ql.buf_out = buf
-            except:
-                pass
-        
-        ql = Qiling(["../examples/rootfs/arm64_linux/bin/arm64_multithreading"], "../examples/rootfs/arm64_linux")
-        ql.multithread = True
-        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
-        ql.run()
-        
-        self.assertEqual("thread 2 ret val is : 2\n", ql.buf_out)
-        
-        del ql
-
-
-    def test_multithread_elf_linux_x8664(self):
-        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
-            try:
-                buf = ql.mem.read(write_buf, write_count)
-                buf = buf.decode()
-                if buf.startswith("thread 2 ret") == True:
-                    ql.buf_out = buf
-            except:
-                pass
-
-        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_multithreading"], "../examples/rootfs/x8664_linux", profile= "profiles/append_test.ql")
-        ql.log_split = True
-        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
-        ql.multithread = True   
-        ql.run()
-
-        self.assertEqual("thread 2 ret val is : 2\n", ql.buf_out)
-
-        del ql
-
-
-    def test_multithread_elf_linux_mips32el(self):
-        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
-            try:
-                buf = ql.mem.read(write_buf, write_count)
-                buf = buf.decode()
-                if buf.startswith("thread 2 ret") == True:
-                    ql.buf_out = buf
-            except:
-                pass
-
-        ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_multithreading"], "../examples/rootfs/mips32el_linux")
-        print("MIPS32EL")
-        ql.multithread = True
-        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
-        ql.run()
-        del ql
-
-
-    def test_multithread_elf_linux_arm(self):
-        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
-            try:
-                buf = ql.mem.read(write_buf, write_count)
-                buf = buf.decode()
-                if buf.startswith("thread 2 ret") == True:
-                    ql.buf_out = buf
-            except:
-                pass
-        
-        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_multithreading"], "../examples/rootfs/arm_linux")
-        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
-        ql.multithread = True   
-        ql.run()
-
-        self.assertEqual("thread 2 ret val is : 2\n", ql.buf_out)
-        
-        del ql
 
 
     def test_libpatch_elf_linux_x8664(self):
@@ -131,8 +32,6 @@ class ELFTest(unittest.TestCase):
 
 
     def test_elf_partial_linux_x8664(self):
-        ss = None
-
         def dump(ql, *args, **kw):
             ql.save(reg=False, cpu_context=True, snapshot="/tmp/snapshot.bin")
             ql.emu_stop()
@@ -194,10 +93,11 @@ class ELFTest(unittest.TestCase):
 
 
     def test_elf_hijackapi_linux_x8664(self):
+
         def my_puts_enter(ql):
             addr = ql.os.function_arg[0]
             self.test_enter_str = ql.mem.string(addr)
-
+        
         def my_puts_exit(ql):
             self.test_exit_rdi = ql.reg.rdi
 
@@ -207,154 +107,13 @@ class ELFTest(unittest.TestCase):
 
         ql.run()
 
-        self.assertEqual(0x1, self.test_exit_rdi)
+        self.assertEqual(0x1 or 140736282240864, self.test_exit_rdi)
         self.assertEqual("CCCC", self.test_enter_str)
         
         del self.test_exit_rdi
         del self.test_enter_str
         del ql         
 
-
-    def test_tcp_elf_linux_x86(self):
-        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
-            try:
-                buf = ql.mem.read(write_buf, write_count)
-                buf = buf.decode()
-                if buf.startswith("server send()"):
-                    ql.buf_out = buf
-            except:
-                pass        
-        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_tcp_test","20001"], "../examples/rootfs/x86_linux")
-        ql.multithread = True
-        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
-        ql.run()
-        
-        self.assertEqual("server send() 14 return 14.\n", ql.buf_out)
-
-        del ql
-
-
-    def test_tcp_elf_linux_x8664(self):
-        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
-            try:
-                buf = ql.mem.read(write_buf, write_count)
-                buf = buf.decode()
-                if buf.startswith("server send()"):
-                    ql.buf_out = buf
-            except:
-                pass
-        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_tcp_test","20002"], "../examples/rootfs/x8664_linux")
-        ql.multithread = True
-        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
-        ql.run()
-        
-        self.assertEqual("server send() 14 return 14.\n", ql.buf_out)
-        
-        del ql
-
-
-    def test_tcp_elf_linux_arm(self):
-        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
-            try:
-                buf = ql.mem.read(write_buf, write_count)
-                buf = buf.decode()
-                if buf.startswith("server write()"):
-                    ql.buf_out = buf
-            except:
-                pass           
-        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_tcp_test","20003"], "../examples/rootfs/arm_linux")
-        ql.multithread = True
-        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
-        ql.run()
-        
-        self.assertEqual("server write() 14 return 14.\n", ql.buf_out)
-        
-        del ql
-
-
-    def test_tcp_elf_linux_arm64(self):
-        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
-            try:
-                buf = ql.mem.read(write_buf, write_count)
-                buf = buf.decode()
-                if buf.startswith("server send()"):
-                    ql.buf_out = buf
-            except:
-                pass
-        ql = Qiling(["../examples/rootfs/arm64_linux/bin/arm64_tcp_test","20004"], "../examples/rootfs/arm64_linux")
-        ql.multithread = True
-        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
-        ql.run()
-        
-        self.assertEqual("server send() 14 return 14.\n", ql.buf_out)
-        
-        del ql
-
-
-    def test_tcp_elf_linux_mips32el(self):
-        ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_tcp_test","20005"], "../examples/rootfs/mips32el_linux")
-        ql.multithread = True
-        ql.run()
-        del ql
-
-
-    def test_udp_elf_linux_x86(self):
-        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
-            try:
-                buf = ql.mem.read(write_buf, write_count)
-                buf = buf.decode()
-                if buf.startswith("server sendto()"):
-                    ql.buf_out = buf
-            except:
-                pass
-
-        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_udp_test","20007"], "../examples/rootfs/x86_linux")
-        ql.multithread = True
-        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
-        ql.run()
-
-        self.assertEqual("server sendto() 14 return 14.\n", ql.buf_out)
-
-        del ql
-
-
-    def test_udp_elf_linux_x8664(self):
-        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
-            try:
-                buf = ql.mem.read(write_buf, write_count)
-                buf = buf.decode()
-                if buf.startswith("server sendto()"):
-                    ql.buf_out = buf
-            except:
-                pass
-
-        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_udp_test","20008"], "../examples/rootfs/x8664_linux")
-        ql.multithread = True
-        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
-        ql.run()
-
-        self.assertEqual("server sendto() 14 return 14.\n", ql.buf_out)
-
-        del ql
-
-    def test_udp_elf_linux_arm64(self):
-        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
-            try:
-                buf = ql.mem.read(write_buf, write_count)
-                buf = buf.decode()
-                if buf.startswith("server sendto()"):
-                    ql.buf_out = buf
-            except:
-                pass
-
-        ql = Qiling(["../examples/rootfs/arm64_linux/bin/arm64_udp_test","20009"], "../examples/rootfs/arm64_linux")
-        ql.multithread = True
-        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
-        ql.run()
-
-        self.assertEqual("server sendto() 14 return 14.\n", ql.buf_out)
-
-        del ql
 
     def test_elf_linux_x8664_static(self):
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_hello_static"], "../examples/rootfs/x8664_linux", output="debug")
@@ -383,16 +142,16 @@ class ELFTest(unittest.TestCase):
                 print("test => read(%d, %s, %d)" % (read_fd, pathname, read_count))
                 target = True
 
-            syscall.ql_syscall_read(ql, read_fd, read_buf, read_count, *args)
+            regreturn = syscall.ql_syscall_read(ql, read_fd, read_buf, read_count, *args)
 
             if target:
                 real_path = ql.os.fd[read_fd].name
                 with open(real_path) as fd:
                     assert fd.read() == ql.mem.read(read_buf, read_count).decode()
-                if ql.platform == QL_OS.WINDOWS:
-                    return
-                else:    
+                if ql.platform != QL_OS.WINDOWS:
                     os.remove(real_path)
+
+            return regreturn
 
         def test_syscall_write(ql, write_fd, write_buf, write_count, *args):
             target = False
@@ -402,16 +161,16 @@ class ELFTest(unittest.TestCase):
                 print("test => write(%d, %s, %d)" % (write_fd, pathname, write_count))
                 target = True
 
-            syscall.ql_syscall_write(ql, write_fd, write_buf, write_count, *args)
+            regreturn = syscall.ql_syscall_write(ql, write_fd, write_buf, write_count, *args)
 
             if target:
                 real_path = ql.os.fd[write_fd].name
                 with open(real_path) as fd:
                     assert fd.read() == 'Hello testing\x00'
-                if ql.platform == QL_OS.WINDOWS:
-                    return
-                else:    
+                if ql.platform != QL_OS.WINDOWS:
                     os.remove(real_path)
+
+            return regreturn
 
         def test_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *args):
             target = False
@@ -421,15 +180,15 @@ class ELFTest(unittest.TestCase):
                 print("test => openat(%d, %s, 0x%x, 0%o)" % (openat_fd, pathname, openat_flags, openat_mode))
                 target = True
 
-            syscall.ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *args)
+            regreturn = syscall.ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *args)
 
             if target:
                 real_path = ql.os.transform_to_real_path(pathname)
                 assert os.path.isfile(real_path) == True
-                if ql.platform == QL_OS.WINDOWS:
-                    return
-                else:    
+                if ql.platform != QL_OS.WINDOWS:
                     os.remove(real_path)
+
+            return regreturn
 
         def test_syscall_unlink(ql, unlink_pathname, *args):
             target = False
@@ -439,11 +198,13 @@ class ELFTest(unittest.TestCase):
                 print("test => unlink(%s)" % (pathname))
                 target = True
 
-            syscall.ql_syscall_unlink(ql, unlink_pathname, *args)
+            regreturn = syscall.ql_syscall_unlink(ql, unlink_pathname, *args)
 
             if target:
                 real_path = ql.os.transform_to_real_path(pathname)
                 assert os.path.isfile(real_path) == False
+
+            return regreturn
 
         def test_syscall_truncate(ql, trunc_pathname, trunc_length, *args):
             target = False
@@ -453,15 +214,15 @@ class ELFTest(unittest.TestCase):
                 print("test => truncate(%s, 0x%x)" % (pathname, trunc_length))
                 target = True
 
-            syscall.ql_syscall_truncate(ql, trunc_pathname, trunc_length, *args)
+            regreturn = syscall.ql_syscall_truncate(ql, trunc_pathname, trunc_length, *args)
 
             if target:
                 real_path = ql.os.transform_to_real_path(pathname)
                 assert os.stat(real_path).st_size == 0
-                if ql.platform == QL_OS.WINDOWS:
-                    return
-                else:    
+                if ql.platform != QL_OS.WINDOWS:
                     os.remove(real_path)
+
+            return regreturn
 
         def test_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args):
             target = False
@@ -475,15 +236,15 @@ class ELFTest(unittest.TestCase):
                 print("test => ftruncate(%d, 0x%x)" % (ftrunc_fd, ftrunc_length))
                 target = True
 
-            syscall.ql_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args)
+            regreturn = syscall.ql_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args)
 
             if target:
                 real_path = ql.os.transform_to_real_path(pathname)
                 assert os.stat(real_path).st_size == 0x10
-                if ql.platform == QL_OS.WINDOWS:
-                    return
-                else:    
+                if ql.platform != QL_OS.WINDOWS:
                     os.remove(real_path)
+
+            return regreturn
 
         ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_posix_syscall"], "../examples/rootfs/x86_linux", output="debug")
         ql.set_syscall(0x3, test_syscall_read)
@@ -503,8 +264,7 @@ class ELFTest(unittest.TestCase):
             all_mem = ql.mem.save()
             ql.mem.restore(all_mem)
             
-        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello"], "../examples/rootfs/arm_linux", output = "debug", profile='profiles/append_test.ql')
-        ql.log_split=True
+        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello"], "../examples/rootfs/arm_linux", output = "debug", profile='profiles/append_test.ql', log_split=True)
         ql.set_api('puts', my_puts)
         ql.run()
         del ql
@@ -670,25 +430,25 @@ class ELFTest(unittest.TestCase):
         def test_syscall_read(ql, read_fd, read_buf, read_count, *args):
             target = False
             pathname = ql.os.fd[read_fd].name.split('/')[-1]
-            
+
             reg = ql.reg.read("x0")
             print("reg : 0x%x" % reg)
             ql.reg.x0 = reg  
-        
+
             if pathname == "test_syscall_read.txt":
                 print("test => read(%d, %s, %d)" % (read_fd, pathname, read_count))
                 target = True
 
-            syscall.ql_syscall_read(ql, read_fd, read_buf, read_count, *args)
+            regreturn = syscall.ql_syscall_read(ql, read_fd, read_buf, read_count, *args)
 
             if target:
                 real_path = ql.os.fd[read_fd].name
                 with open(real_path) as fd:
                     assert fd.read() == ql.mem.read(read_buf, read_count).decode()
-                if ql.platform == QL_OS.WINDOWS:
-                    return
-                else:    
+                if ql.platform != QL_OS.WINDOWS:
                     os.remove(real_path)
+
+            return regreturn
 
 
         def test_syscall_write(ql, write_fd, write_buf, write_count, *args):
@@ -699,16 +459,16 @@ class ELFTest(unittest.TestCase):
                 print("test => write(%d, %s, %d)" % (write_fd, pathname, write_count))
                 target = True
 
-            syscall.ql_syscall_write(ql, write_fd, write_buf, write_count, *args)
+            regreturn = syscall.ql_syscall_write(ql, write_fd, write_buf, write_count, *args)
 
             if target:
                 real_path = ql.os.fd[write_fd].name
                 with open(real_path) as fd:
                     assert fd.read() == 'Hello testing\x00'
-                if ql.platform == QL_OS.WINDOWS:
-                    return
-                else:    
+                if ql.platform != QL_OS.WINDOWS:
                     os.remove(real_path)
+
+            return regreturn
 
 
         def test_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *args):
@@ -719,15 +479,15 @@ class ELFTest(unittest.TestCase):
                 print("test => openat(%d, %s, 0x%x, 0%o)" % (openat_fd, pathname, openat_flags, openat_mode))
                 target = True
 
-            syscall.ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *args)
+            regreturn = syscall.ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *args)
 
             if target:
                 real_path = ql.os.transform_to_real_path(pathname)
                 assert os.path.isfile(real_path) == True
-                if ql.platform == QL_OS.WINDOWS:
-                    return
-                else:    
+                if ql.platform != QL_OS.WINDOWS:
                     os.remove(real_path)
+
+            return regreturn
 
 
         def test_syscall_unlink(ql, unlink_pathname, *args):
@@ -738,11 +498,13 @@ class ELFTest(unittest.TestCase):
                 print("test => unlink(%s)" % (pathname))
                 target = True
 
-            syscall.ql_syscall_unlink(ql, unlink_pathname, *args)
+            regreturn = syscall.ql_syscall_unlink(ql, unlink_pathname, *args)
 
             if target:
                 real_path = ql.os.transform_to_real_path(pathname)
                 assert os.path.isfile(real_path) == False
+
+            return regreturn
 
 
         def test_syscall_truncate(ql, trunc_pathname, trunc_length, *args):
@@ -753,15 +515,15 @@ class ELFTest(unittest.TestCase):
                 print("test => truncate(%s, 0x%x)" % (pathname, trunc_length))
                 target = True
 
-            syscall.ql_syscall_truncate(ql, trunc_pathname, trunc_length, *args)
+            regreturn = syscall.ql_syscall_truncate(ql, trunc_pathname, trunc_length, *args)
 
             if target:
                 real_path = ql.os.transform_to_real_path(pathname)
                 assert os.stat(real_path).st_size == 0
-                if ql.platform == QL_OS.WINDOWS:
-                    return
-                else:    
+                if ql.platform != QL_OS.WINDOWS:
                     os.remove(real_path)
+
+            return regreturn
 
 
         def test_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args):
@@ -772,15 +534,15 @@ class ELFTest(unittest.TestCase):
                 print("test => ftruncate(%d, 0x%x)" % (ftrunc_fd, ftrunc_length))
                 target = True
 
-            syscall.ql_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args)
+            regreturn = syscall.ql_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args)
 
             if target:
                 real_path = ql.os.transform_to_real_path(pathname)
                 assert os.stat(real_path).st_size == 0x10
-                if ql.platform == QL_OS.WINDOWS:
-                    return
-                else:    
+                if ql.platform != QL_OS.WINDOWS:
                     os.remove(real_path)
+
+            return regreturn
 
         ql = Qiling(["../examples/rootfs/arm64_linux/bin/arm64_posix_syscall"], "../examples/rootfs/arm64_linux", output="debug")
         ql.set_syscall(0x3f, test_syscall_read)
@@ -824,17 +586,18 @@ class ELFTest(unittest.TestCase):
                 print("test => read(%d, %s, %d)" % (read_fd, pathname, read_count))
                 target = True
 
-            syscall.ql_syscall_read(ql, read_fd, read_buf, read_count, *args)
+            regreturn = syscall.ql_syscall_read(ql, read_fd, read_buf, read_count, *args)
 
             if target:
                 real_path = ql.os.fd[read_fd].name
                 with open(real_path) as fd:
                     assert fd.read() == ql.mem.read(read_buf, read_count).decode()
-                if ql.platform == QL_OS.WINDOWS:
-                    return
-                else:    
+                if ql.platform != QL_OS.WINDOWS:
                     os.remove(real_path)
- 
+
+            return regreturn
+
+
         def test_syscall_write(ql, write_fd, write_buf, write_count, *args):
             target = False
             pathname = ql.os.fd[write_fd].name.split('/')[-1]
@@ -843,16 +606,16 @@ class ELFTest(unittest.TestCase):
                 print("test => write(%d, %s, %d)" % (write_fd, pathname, write_count))
                 target = True
 
-            syscall.ql_syscall_write(ql, write_fd, write_buf, write_count, *args)
+            regreturn = syscall.ql_syscall_write(ql, write_fd, write_buf, write_count, *args)
 
             if target:
                 real_path = ql.os.fd[write_fd].name
                 with open(real_path) as fd:
                     assert fd.read() == 'Hello testing\x00'
-                if ql.platform == QL_OS.WINDOWS:
-                    return
-                else:    
+                if ql.platform != QL_OS.WINDOWS:
                     os.remove(real_path)
+
+            return regreturn
 
         def test_syscall_open(ql, open_pathname, open_flags, open_mode, *args):
             target = False
@@ -862,15 +625,15 @@ class ELFTest(unittest.TestCase):
                 print("test => open(%s, 0x%x, 0%o)" % (pathname, open_flags, open_mode))
                 target = True
 
-            syscall.ql_syscall_open(ql, open_pathname, open_flags, open_mode, *args)
+            regreturn = syscall.ql_syscall_open(ql, open_pathname, open_flags, open_mode, *args)
 
             if target:
                 real_path = ql.os.transform_to_real_path(pathname)
                 assert os.path.isfile(real_path) == True
-                if ql.platform == QL_OS.WINDOWS:
-                    return
-                else:    
+                if ql.platform != QL_OS.WINDOWS:
                     os.remove(real_path)
+
+            return regreturn
 
         def test_syscall_unlink(ql, unlink_pathname, *args):
             target = False
@@ -880,11 +643,13 @@ class ELFTest(unittest.TestCase):
                 print("test => unlink(%s)" % (pathname))
                 target = True
 
-            syscall.ql_syscall_unlink(ql, unlink_pathname, *args)
+            regreturn = syscall.ql_syscall_unlink(ql, unlink_pathname, *args)
 
             if target:
                 real_path = ql.os.transform_to_real_path(pathname)
                 assert os.path.isfile(real_path) == False
+
+            return regreturn
 
         def test_syscall_truncate(ql, trunc_pathname, trunc_length, *args):
             target = False
@@ -894,15 +659,15 @@ class ELFTest(unittest.TestCase):
                 print("test => truncate(%s, 0x%x)" % (pathname, trunc_length))
                 target = True
 
-            syscall.ql_syscall_truncate(ql, trunc_pathname, trunc_length, *args)
+            regreturn = syscall.ql_syscall_truncate(ql, trunc_pathname, trunc_length, *args)
 
             if target:
                 real_path = ql.os.transform_to_real_path(pathname)
                 assert os.stat(real_path).st_size == 0
-                if ql.platform == QL_OS.WINDOWS:
-                    return
-                else:    
+                if ql.platform != QL_OS.WINDOWS:
                     os.remove(real_path)
+
+            return regreturn
 
         def test_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args):
             target = False
@@ -912,15 +677,15 @@ class ELFTest(unittest.TestCase):
                 print("test => ftruncate(%d, 0x%x)" % (ftrunc_fd, ftrunc_length))
                 target = True
 
-            syscall.ql_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args)
+            regreturn = syscall.ql_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args)
 
             if target:
                 real_path = ql.os.transform_to_real_path(pathname)
                 assert os.stat(real_path).st_size == 0x10
-                if ql.platform == QL_OS.WINDOWS:
-                    return
-                else:    
+                if ql.platform != QL_OS.WINDOWS:
                     os.remove(real_path)
+
+            return regreturn
 
         ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_posix_syscall"], "../examples/rootfs/mips32el_linux", output="debug")
         ql.set_syscall(4003, test_syscall_read)
@@ -937,7 +702,7 @@ class ELFTest(unittest.TestCase):
             regreturn = 0
             buf = None
             mapaddr = ql.mem.map_anywhere(0x100000)
-            ql.nprint("0x%x" %  mapaddr)
+            logging.info("0x%x" %  mapaddr)
             
             reg = ql.reg.read("r0")
             print("reg : 0x%x" % reg)
@@ -946,16 +711,16 @@ class ELFTest(unittest.TestCase):
             
             try:
                 buf = ql.mem.read(write_buf, write_count)
-                ql.nprint("\n+++++++++\nmy write(%d,%x,%i) = %d\n+++++++++" % (write_fd, write_buf, write_count, regreturn))
+                logging.info("\n+++++++++\nmy write(%d,%x,%i) = %d\n+++++++++" % (write_fd, write_buf, write_count, regreturn))
                 ql.os.fd[write_fd].write(buf)
                 regreturn = write_count
             except:
                 regreturn = -1
-                ql.nprint("\n+++++++++\nmy write(%d,%x,%i) = %d\n+++++++++" % (write_fd, write_buf, write_count, regreturn))
+                logging.info("\n+++++++++\nmy write(%d,%x,%i) = %d\n+++++++++" % (write_fd, write_buf, write_count, regreturn))
                 if ql.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
                     raise
-            ql.os.definesyscall_return(regreturn)
             self.set_syscall = reg
+            return regreturn
 
         ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello"], "../examples/rootfs/arm_linux")
         ql.set_syscall(0x04, my_syscall_write)
@@ -1042,19 +807,6 @@ class ELFTest(unittest.TestCase):
         print("\n\n Linux Simple Crackme Brute Force, This Will Take Some Time ...")
         solve()
 
-
-    def test_elf_linux_execve_x8664(self):
-        ql = Qiling(["../examples/rootfs/x8664_linux/bin/posix_syscall_execve"],  "../examples/rootfs/x8664_linux", output="debug")
-        ql.run()
-        for key, value in ql.loader.env.items():
-            QL_TEST=value
-
-        self.assertEqual("TEST_QUERY", QL_TEST)
-        self.assertEqual("child", ql.loader.argv[0])
-
-        del QL_TEST
-        del ql
-
     def test_x86_fake_urandom_multiple_times(self):
         fake_id = 0
         ids = []
@@ -1065,7 +817,7 @@ class ELFTest(unittest.TestCase):
                 self.id = fake_id
                 fake_id += 1
                 ids.append(self.id)
-                ql.nprint(f"Creating Fake_urandom with id {self.id}")
+                logging.info(f"Creating Fake_urandom with id {self.id}")
 
             def read(self, size):
                 return b'\x01'
@@ -1182,8 +934,15 @@ class ELFTest(unittest.TestCase):
         except UcError as e:
             print(e)
             sys.exit(-1)
-        del ql         
-    
+        del ql
+
+    def test_demigod_hello_mips32(self):
+        ql = Qiling(["../examples/rootfs/mips32_linux/kernel/hello.ko"],  "../examples/rootfs/mips32_linux", output="debug")
+        begin = ql.loader.load_address + 0x1060
+        end = ql.loader.load_address + 0x1084
+        ql.run(begin=begin, end=end)
+        del ql
+
     def test_x8664_absolute_path(self):
         class MyPipe():
             def __init__(self):
@@ -1258,6 +1017,27 @@ class ELFTest(unittest.TestCase):
         self.assertEqual(pipe.buf, b'/\n/lib\n/bin\n/\n')
 
         del ql
+
+    def test_elf_linux_x86_return_from_main_stackpointer(self):
+        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_return_main"],  "../examples/rootfs/x86_linux", stop_on_stackpointer=True)
+        ql.run()
+        del ql
+
+    def test_elf_linux_x86_return_from_main_exit_trap(self):
+        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_return_main"],  "../examples/rootfs/x86_linux", stop_on_exit_trap=True)
+        ql.run()
+        del ql
+
+    def test_elf_linux_x8664_return_from_main_stackpointer(self):
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_return_main"],  "../examples/rootfs/x8664_linux", stop_on_stackpointer=True)
+        ql.run()
+        del ql
+
+    def test_elf_linux_x8664_return_from_main_exit_trap(self):
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_return_main"],  "../examples/rootfs/x8664_linux", stop_on_exit_trap=True)
+        ql.run()
+        del ql
+
 
 if __name__ == "__main__":
     unittest.main()

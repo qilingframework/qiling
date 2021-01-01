@@ -2,7 +2,7 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
-import struct
+import struct, logging
 from qiling.os.windows.fncc import *
 from qiling.os.const import *
 from qiling.os.windows.utils import *
@@ -16,10 +16,10 @@ def _RegOpenKey(ql, address, params):
     hKey = params["hKey"]
     s_lpSubKey = params["lpSubKey"]
     phkResult = params["phkResult"]
-    ql.dprint(D_INFO, "[+] Key %s %s" % (hKey, s_lpSubKey))
+    logging.debug("[+] Key %s %s" % (hKey, s_lpSubKey))
 
     if hKey not in REG_KEYS:
-        ql.dprint(D_INFO, "[!] Key %s %s not present" % (hKey, s_lpSubKey))
+        logging.debug("[!] Key %s %s not present" % (hKey, s_lpSubKey))
         return ERROR_FILE_NOT_FOUND
     else:
         s_hKey = REG_KEYS[hKey]
@@ -28,11 +28,11 @@ def _RegOpenKey(ql, address, params):
     # Keys in the profile are saved as KEY\PARAM = VALUE, so i just want to check that the key is the same
     keys_profile = [key.rsplit("\\", 1)[0] for key in ql.os.profile["REGISTRY"].keys()]
     if key.lower() in keys_profile:
-        ql.dprint(D_INFO, "[+] Using profile for key of  %s" % key)
+        logging.debug("[+] Using profile for key of  %s" % key)
         ql.os.registry_manager.access(key)
     else:
         if not ql.os.registry_manager.exists(key):
-            ql.dprint(D_INFO, "[!] Value key %s not present" % key)
+            logging.debug("[!] Value key %s not present" % key)
             return ERROR_FILE_NOT_FOUND
 
     # new handle
@@ -61,7 +61,7 @@ def RegQueryValue(ql, address, params):
     try:
         # Keys in the profile are saved as KEY\PARAM = VALUE, so i just want to check that the key is the same
         value = ql.os.profile["REGISTRY"][s_hKey + "\\" + s_lpValueName]
-        ql.dprint(D_INFO, "[+] Using profile for value of key %s" % (s_hKey + "\\" + s_lpValueName,))
+        logging.debug("[+] Using profile for value of key %s" % (s_hKey + "\\" + s_lpValueName,))
         # TODO i have no fucking idea on how to set a None value, fucking configparser
         if value == "None":
             return ERROR_FILE_NOT_FOUND
@@ -75,7 +75,7 @@ def RegQueryValue(ql, address, params):
 
     # error key
     if reg_type is None or value is None:
-        ql.dprint(D_INFO, "[!] Key value not found")
+        logging.debug("[!] Key value not found")
         return ERROR_FILE_NOT_FOUND
     else:
         # set lpData
@@ -407,7 +407,7 @@ def hook_GetTokenInformation(ql, address, params):
     information_value = token.get(information)
     ql.mem.write(return_point, len(information_value).to_bytes(4, byteorder="little"))
     return_size = int.from_bytes(ql.mem.read(return_point, 4), byteorder="little")
-    ql.dprint(D_RPRT, "[=] The target is checking for its permissions")
+    logging.debug("[=] The target is checking for its permissions")
     if return_size > max_size:
         ql.os.last_error = ERROR_INSUFFICIENT_BUFFER
         return 0
@@ -573,6 +573,73 @@ def hook_AllocateAndInitializeSid(ql, address, params):
     ql.os.handle_manager.append(handle)
     dest = params["pSid"]
     ql.mem.write(dest, ql.pack(sid_addr))
+    return 1
+
+
+# Some default Sids:
+__adminsid = None # Administrators (S-1-5-32-544)
+__userssid = None # All Users (S-1-5-32-545)
+__guestssid = None # All Users (S-1-5-32-546)
+__poweruserssid = None # Power Users (S-1-5-32-547)
+
+
+def get_adminsid(ql):
+    global __adminsid
+    if __adminsid == None:
+        # nSubAuthority0 = SECURITY_BUILTIN_DOMAIN_RID[0x20], nSubAuthority1 = DOMAIN_ALIAS_RID_ADMINS[0x220]
+        subs = b"\x20\x00\x00\x00\x20\x02\x00\x00"
+        __adminsid = Sid(ql, revision=1, identifier=5, subs=subs, subs_count=2)
+    return __adminsid
+
+def get_userssid(ql):
+    global __userssid
+    if __userssid == None:
+        # nSubAuthority0 = SECURITY_BUILTIN_DOMAIN_RID[0x20], nSubAuthority1 = DOMAIN_ALIAS_RID_USERS[0x221]
+        subs = b"\x20\x00\x00\x00\x21\x02\x00\x00"
+        __userssid = Sid(ql, revision=1, identifier=5, subs=subs, subs_count=2)
+    return __userssid
+
+def get_guestssid(ql):
+    global __guestssid
+    if __guestssid == None:
+        # nSubAuthority0 = SECURITY_BUILTIN_DOMAIN_RID[0x20], nSubAuthority1 = DOMAIN_ALIAS_RID_GUESTS[0x222]
+        subs = b"\x20\x00\x00\x00\x22\x02\x00\x00"
+        __guestssid = Sid(ql, revision=1, identifier=5, subs=subs, subs_count=2)
+    return __guestssid
+
+def get_poweruserssid(ql):
+    global __poweruserssid
+    if __poweruserssid == None:
+        # nSubAuthority0 = SECURITY_BUILTIN_DOMAIN_RID[0x20], nSubAuthority1 = DOMAIN_ALIAS_RID_POWER_USERS[0x223]
+        subs = b"\x20\x00\x00\x00\x23\x02\x00\x00"
+        __poweruserssid = Sid(ql, revision=1, identifier=5, subs=subs, subs_count=2)
+    return __poweruserssid
+
+
+# BOOL WINAPI CheckTokenMembership(IN HANDLE TokenHandle,
+#   IN PSID SidToCheck,
+#   OUT PBOOL IsMember
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname)
+def hook_CheckTokenMembership(ql, address, params):
+    token_handle = params["TokenHandle"]
+    sid = ql.os.handle_manager.get(params["SidToCheck"]).obj
+    # If TokenHandle is NULL, CheckTokenMembership uses the impersonation token of the calling thread.
+    IsMember = 0
+    if token_handle == 0:
+        # For now, treat power users as admins
+        if get_adminsid(ql) == sid or get_poweruserssid(ql) == sid:
+            IsMember = 1 if ql.os.profile["SYSTEM"]["permission"] == "root" else 0
+        elif get_userssid(ql) == sid:
+            # FIXME: is this true for all tokens? probably not...
+            IsMember = 1
+        elif get_guestssid(ql) == sid:
+            IsMember = 0
+        else:
+            assert False, 'unimplemented'
+    else:
+        assert False, 'unimplemented'
+    ql.mem.write(params['IsMember'], ql.pack(IsMember))
     return 1
 
 
