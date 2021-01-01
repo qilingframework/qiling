@@ -972,14 +972,14 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         return self.create_disassembler()
     
     def create_disassembler(self):
-        if self.archtype in (QL_ARCH.ARM, QL_ARCH.ARM64, QL_ARCH.ARM_THUMB):
+        if self.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB):
             reg_cpsr = self.reg.cpsr
         else:
             reg_cpsr = None
         return ql_create_disassembler(self.archtype, self.archendian, reg_cpsr)
     
     def create_assembler(self):
-        if self.archtype in (QL_ARCH.ARM, QL_ARCH.ARM64, QL_ARCH.ARM_THUMB):
+        if self.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB):
             reg_cpsr = self.reg.cpsr
         else:
             reg_cpsr = None
