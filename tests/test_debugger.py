@@ -36,7 +36,7 @@ class DebuggerTest(unittest.TestCase):
 
         # some random command test just to make sure we covered most of the command
         def gdb_test_client():
-            time.sleep(DELAY)
+            time.sleep(DELAY * 2)
             gdb_client = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
             netout     = gdb_client.makefile('w')
             gdb_client.connect(('127.0.0.1',9999))
@@ -89,7 +89,7 @@ class DebuggerTest(unittest.TestCase):
         ql.debugger = "gdb:127.0.0.1:9998"
 
         def gdb_test_client():
-            time.sleep(DELAY)
+            time.sleep(DELAY * 2)
             gdb_client = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
             netout     = gdb_client.makefile('w')
             gdb_client.connect(('127.0.0.1',9998))

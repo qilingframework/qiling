@@ -104,6 +104,9 @@ reg_map_64 = {
     "r14": UC_X86_REG_R14,
     "r15": UC_X86_REG_R15,
     "rip": UC_X86_REG_RIP,
+}
+
+reg_map_part = {
     "r8b":  UC_X86_REG_R8B,
     "r9b":  UC_X86_REG_R9B,
     "r10b": UC_X86_REG_R10B,

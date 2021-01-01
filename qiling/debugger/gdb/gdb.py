@@ -58,6 +58,9 @@ class QlGdb(QlDebugger, object):
         else:
             port = int(port)
 
+        self.ip = ip
+        self.port = port
+
         if ql.shellcoder:
             load_address = ql.os.entry_point
             exit_point = load_address + len(ql.shellcoder)
@@ -65,27 +68,14 @@ class QlGdb(QlDebugger, object):
             load_address = ql.loader.load_address
             exit_point = load_address + os.path.getsize(ql.path)
 
-        logging.info("gdb> Listening on %s:%u" % (ip, port)) 
         self.gdb.initialize(self.ql, exit_point=exit_point, mappings=[(hex(load_address))])
         
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.bind((ip, port))
-        sock.listen(1)
-        clientsocket, addr = sock.accept()
-
-        self.clientsocket   = clientsocket
-        self.netin          = clientsocket.makefile('r')
-        self.netout         = clientsocket.makefile('w')
-       
         if self.ql.ostype in (QL_OS.LINUX, QL_OS.FREEBSD) and not self.ql.shellcoder:
             self.entry_point = self.ql.os.elf_entry
         else:
             self.entry_point = self.ql.os.entry_point
-
            
         self.gdb.bp_insert(self.entry_point)
-
-        
 
         #Setup register tables, order of tables is important
         self.tables = {
@@ -139,12 +129,28 @@ class QlGdb(QlDebugger, object):
 
         return unhexlify(rawbin_escape)
 
+    def setup_server(self):
+        logging.info("gdb> Listening on %s:%u" % (self.ip, self.port))
+
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        sock.bind((self.ip, self.port))
+        sock.listen(1)
+        clientsocket, addr = sock.accept()
+
+        self.sock           = sock
+        self.clientsocket   = clientsocket
+        self.netin          = clientsocket.makefile('r')
+        self.netout         = clientsocket.makefile('w')
+
     def close(self):
         self.netin.close()
         self.netout.close()
         self.clientsocket.close()
+        self.sock.close()
 
     def run(self):
+        self.setup_server()
 
         while self.receive() == 'Good':
             pkt = self.last_pkt
@@ -403,36 +409,37 @@ class QlGdb(QlDebugger, object):
             def handle_P(subcmd):
                 reg_index, reg_data = subcmd.split('=')
                 reg_index = int(reg_index, 16)
+                reg_name = self.tables[self.ql.archtype][reg_index]
                 
                 if self.ql.archtype== QL_ARCH.A8086:
                     reg_data = int(reg_data, 16)
                     reg_data = int.from_bytes(struct.pack('<I', reg_data), byteorder='big')
-                    self.ql.reg.write(self.tables[QL_ARCH.A8086][reg_index], reg_data)
+                    self.ql.reg.write(reg_name, reg_data)
 
                 elif self.ql.archtype== QL_ARCH.X86:
                     reg_data = int(reg_data, 16)
                     reg_data = int.from_bytes(struct.pack('<I', reg_data), byteorder='big')
-                    self.ql.reg.write(self.tables[QL_ARCH.X86][reg_index], reg_data)
+                    self.ql.reg.write(reg_name, reg_data)
                 
                 elif self.ql.archtype== QL_ARCH.X8664:
                     if reg_index <= 17:
                         reg_data = int(reg_data, 16)
                         reg_data = int.from_bytes(struct.pack('<Q', reg_data), byteorder='big')
-                        self.ql.reg.write(self.tables[QL_ARCH.X8664][reg_index], reg_data)
+                        self.ql.reg.write(reg_name, reg_data)
                     else:
                         reg_data = int(reg_data[:8], 16)
                         reg_data = int.from_bytes(struct.pack('<I', reg_data), byteorder='big')
-                        self.ql.reg.write(self.tables[QL_ARCH.X8664][reg_index], reg_data)
+                        self.ql.reg.write(reg_name, reg_data)
                 
                 elif self.ql.archtype== QL_ARCH.ARM:
                     reg_data = int(reg_data, 16)
                     reg_data = int.from_bytes(struct.pack('<I', reg_data), byteorder='big')
-                    self.ql.reg.write(self.tables[QL_ARCH.ARM][reg_index], reg_data)
+                    self.ql.reg.write(reg_name, reg_data)
 
                 elif self.ql.archtype== QL_ARCH.ARM64:
                     reg_data = int(reg_data, 16)
                     reg_data = int.from_bytes(struct.pack('<Q', reg_data), byteorder='big')
-                    self.ql.reg.write(self.tables[QL_ARCH.ARM64][reg_index], reg_data)
+                    self.ql.reg.write(reg_name, reg_data)
 
                 elif self.ql.archtype== QL_ARCH.MIPS:
                     reg_data = int(reg_data, 16)
@@ -440,7 +447,10 @@ class QlGdb(QlDebugger, object):
                         reg_data = int.from_bytes(struct.pack('<I', reg_data), byteorder='little')
                     else:
                         reg_data = int.from_bytes(struct.pack('<I', reg_data), byteorder='big')
-                    self.ql.reg.write(self.tables[QL_ARCH.MIPS][reg_index], reg_data)
+                    self.ql.reg.write(reg_name, reg_data)
+
+                if reg_name == self.ql.reg.arch_pc_name:
+                    self.gdb.current_address = reg_data
 
                 logging.info("gdb> Write to register %s with %x\n" % (self.tables[self.ql.archtype][reg_index], reg_data))
                 self.send('OK')
@@ -462,6 +472,9 @@ class QlGdb(QlDebugger, object):
                 elif subcmd.startswith('PassSignals'):
                     self.send('OK')
 
+                elif subcmd.startswith('qemu'):
+                    self.send('')
+
             def handle_D(subcmd):
                 self.send('OK')
 
@@ -479,9 +492,9 @@ class QlGdb(QlDebugger, object):
                     xfercmd_file    = os.path.join(xfercmd_abspath,"xml",xml_folder, xfercmd_file)                        
 
                     if os.path.exists(xfercmd_file) and self.ql.ostype is not QL_OS.WINDOWS:
-                        f = open(xfercmd_file, 'r')
-                        file_contents = f.read()
-                        self.send("l%s" % file_contents)
+                        with open(xfercmd_file, 'r') as f:
+                            file_contents = f.read()
+                            self.send("l%s" % file_contents)
                     else:
                         logging.info("gdb> Platform is not supported by xml or xml file not found: %s\n" % (xfercmd_file))
                         self.send("l")
@@ -522,7 +535,7 @@ class QlGdb(QlDebugger, object):
                             AT_HWCAP2           = "0000000000000000"
                             ID_AT_EXECFN        = "1f00000000000000"
                             AT_EXECFN           = "0000000000000000" # File name of executable
-                            ID_AT_PLATFORM      = "f000000000000000"
+                            ID_AT_PLATFORM      = "0f00000000000000"
                             ID_AT_NULL          = "0000000000000000"
                             AT_NULL             = "0000000000000000"
 
@@ -550,7 +563,7 @@ class QlGdb(QlDebugger, object):
                             AT_HWCAP2       = "00000000"
                             ID_AT_EXECFN    = "1f000000"
                             AT_EXECFN       = "00000000"  # File name of executable
-                            ID_AT_PLATFORM  = "f0000000"
+                            ID_AT_PLATFORM  = "0f000000"
                             ID_AT_NULL      = "00000000"
                             AT_NULL         = "00000000"
 
@@ -666,65 +679,42 @@ class QlGdb(QlDebugger, object):
                     self.send("")
 
                 elif subcmd.startswith('File:open'):
-                    self.lib_path = subcmd.split(':')[-1].split(',')[0]
-                    self.lib_path = unhexlify(self.lib_path).decode(encoding='UTF-8')
-                    
-                    if self.lib_path != "just probing":
-                        if self.lib_path.startswith(self.rootfs_abspath):
-                            self.lib_abspath = self.lib_path
-                        else:
-                            self.lib_abspath = self.ql.os.transform_to_real_path(self.lib_path)
-
-                        logging.debug("gdb> target file: %s" % (self.lib_abspath))
-
-                        if os.path.exists(self.lib_abspath):
-                            self.send("F5")
-                        else:
-                            self.send("F0")   
+                    (file_path, flags, mode) = subcmd.split(':')[-1].split(',')
+                    file_path = unhexlify(file_path).decode(encoding='UTF-8')
+                    flags = int(flags, base=16)
+                    mode = int(mode, base=16)
+                    if file_path.startswith(self.rootfs_abspath):
+                        file_abspath = file_path
                     else:
-                        self.send("F0")
+                        file_abspath = self.ql.os.transform_to_real_path(file_path)
+                    
+                    logging.debug("gdb> target file: %s" % (file_abspath))
+                    if os.path.exists(file_abspath) and not (file_path).startswith("/proc"):
+                        fd = os.open(file_abspath, flags, mode)
+                        self.send("F%x" % fd)
+                    else:
+                        self.send("F-1")
 
                 elif subcmd.startswith('File:pread:'):
+                    (fd, count, offset) = subcmd.split(':')[-1].split(',')
 
-                    offset = subcmd.split(',')[-1]
-                    count = subcmd.split(',')[-2]
-                    offset = ((int(offset, base=16)))
-                    count = ((int(count, base=16)))
+                    fd = int(fd, base=16)
+                    offset = int(offset, base=16)
+                    count = int(count, base=16)
 
-                    if os.path.exists(self.lib_abspath) and not (self.lib_path).startswith("/proc"):
+                    data = os.pread(fd, count, offset)
+                    size = len(data)
+                    data = self.bin_to_escstr(data)
 
-                        with open(self.lib_abspath, "rb") as f:
-                            preadheader = f.read()
-
-                        if offset != 0:
-                            shift_count = offset + count
-                            read_offset = preadheader[offset:shift_count]
-                        else:
-                            read_offset = preadheader[offset:count]
-
-                        preadheader_len = len(preadheader)
-
-                        read_offset = self.bin_to_escstr(read_offset)
-
-                        if count == 1 and (preadheader_len >= offset):
-                            if read_offset:
-                                self.send(b'F1;' + (read_offset))
-                            else:
-                                self.send('F1;\x00')
-
-                        elif count > 1:
-                            self.send(("F%x;" % len(read_offset)).encode() + (read_offset))
-
-                        else:
-                            self.send("F0;")
-                    
-                    elif re.match("\/proc\/.*\/maps", self.lib_abspath):
-                        self.send("F0;")    
-                    
+                    if data:
+                        self.send(("F%x;" % size).encode() + (data))
                     else:
                         self.send("F0;")
 
                 elif subcmd.startswith('File:close'):
+                    fd = subcmd.split(':')[-1]
+                    fd = int(fd, base=16)
+                    os.close(fd)
                     self.send("F0")
 
                 elif subcmd.startswith('Kill'):
@@ -756,6 +746,10 @@ class QlGdb(QlDebugger, object):
                     self.gdb.soft_bp = True
                     self.gdb.resume_emu()
                 self.send('S%.2x' % GDB_SIGNAL_TRAP)
+
+
+            def handle_X(subcmd):
+                self.send('')
 
 
             def handle_Z(subcmd):
@@ -807,6 +801,7 @@ class QlGdb(QlDebugger, object):
                 'Q': handle_Q,
                 's': handle_s,
                 'v': handle_v,
+                'X': handle_X,
                 'Z': handle_Z,
                 'z': handle_z
             }

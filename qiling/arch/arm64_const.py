@@ -37,6 +37,14 @@ reg_map = {
             "x28": UC_ARM64_REG_X28, 
             "x29": UC_ARM64_REG_X29,
             "x30": UC_ARM64_REG_X30, 
+            "sp": UC_ARM64_REG_SP,
+            "pc": UC_ARM64_REG_PC,
+            "lr": UC_ARM64_REG_LR,
+            "cpacr_el1": UC_ARM64_REG_CPACR_EL1,
+            "tpidr_el0": UC_ARM64_REG_TPIDR_EL0,
+}
+
+reg_map_part = {
             "w0" : UC_ARM64_REG_W0,
             "w1" : UC_ARM64_REG_W1,
             "w2" : UC_ARM64_REG_W2,
@@ -68,9 +76,4 @@ reg_map = {
             "w28" : UC_ARM64_REG_W28,
             "w29" : UC_ARM64_REG_W29,
             "w30" : UC_ARM64_REG_W30,
-            "sp": UC_ARM64_REG_SP, 
-            "pc": UC_ARM64_REG_PC,
-            "lr": UC_ARM64_REG_LR,
-            "cpacr_el1": UC_ARM64_REG_CPACR_EL1,
-            "tpidr_el0": UC_ARM64_REG_TPIDR_EL0,
 }

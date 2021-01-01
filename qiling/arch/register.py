@@ -107,6 +107,9 @@ class QlRegisterManager():
     def arch_pc(self, value):
         return self.ql.uc.reg_write(self.uc_pc, value)
 
+    @property
+    def arch_pc_name(self):
+        return self.ql.reg.reverse_mapping[self.uc_pc]
 
     @property
     def arch_sp(self):
