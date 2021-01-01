@@ -67,8 +67,9 @@ class Process():
 
         if self.libcache and os.path.exists(fcache) and \
             os.stat(fcache).st_mtime > os.stat(path).st_mtime: # pickle file cannot be outdated
-            (data, cmdlines, self.import_symbols, self.import_address_table) = \
-                pickle.load(open(fcache, "rb"))
+            with open(fcache, "rb") as fcache_file:
+                (data, cmdlines, self.import_symbols, self.import_address_table) = \
+                    pickle.load(fcache_file)
             for entry in cmdlines:
                 self.set_cmdline(entry['name'], entry['address'], data)
         else:

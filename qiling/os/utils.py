@@ -256,7 +256,11 @@ class QlOsUtils:
             temp_str += ("%02x " % i)
         log_data += temp_str.ljust(30)
 
+        first = True
         for i in insn:
+            if not first:
+                log_data += '\n> '
+            first = False
             log_data += "%s %s" % (i.mnemonic, i.op_str)
         logging.info(log_data)
 
