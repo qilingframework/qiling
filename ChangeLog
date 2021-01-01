@@ -13,7 +13,7 @@ BREAK CHANGE
 
 
 ------------------------------------
-[Version 1.2.1]: January 1, 2021
+[Version 1.2.1]: January 1st, 2021
 
 - Added support for custom envs variables inside IDA plugin
 - Demigod: Fixed lkm mapping and added support for MIPS32EL
