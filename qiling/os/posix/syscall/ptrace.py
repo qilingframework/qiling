@@ -15,4 +15,4 @@ from qiling.exception import *
 def ql_syscall_ptrace(ql, request, pid, addr, data, *args, **kw):
     regreturn = 0
     logging.info("ptrace(0x%x, 0x%x, 0x%x, 0x%x) = %d" % (request, pid, addr, data, regreturn))
-    ql.os.definesyscall_return(regreturn)
+    return regreturn

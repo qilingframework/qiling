@@ -23,6 +23,4 @@ def ql_syscall_uname(ql, address, *args, **kw):
     ql.mem.write(address, buf)
     regreturn = 0
     logging.info("uname(0x%x) = %d" % (address, regreturn))
-    ql.os.definesyscall_return(regreturn)
-
-
+    return regreturn

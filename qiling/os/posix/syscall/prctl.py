@@ -17,10 +17,10 @@ def ql_syscall_arch_prctl(ql, ARCHX, ARCH_SET_FS, *args, **kw):
     ql.reg.msr(FSMSR, ARCH_SET_FS)
     regreturn = 0
     logging.info("arch_prctl(0x%x) = %d" % (ARCH_SET_FS, regreturn))
-    ql.os.definesyscall_return(regreturn)
+    return regreturn
 
 
 def ql_syscall_prctl(ql, *args, **kw):
     regreturn = 0
     logging.info("prctl() = %d" % (regreturn))
-    ql.os.definesyscall_return(regreturn)
+    return regreturn

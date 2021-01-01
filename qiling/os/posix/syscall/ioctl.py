@@ -103,4 +103,4 @@ def ql_syscall_ioctl(ql, ioctl_fd, ioctl_cmd, ioctl_arg, *args, **kw):
             regreturn = -1
 
     logging.info("ioctl(0x%x, 0x%x, 0x%x) = %d" % (ioctl_fd, ioctl_cmd, ioctl_arg, regreturn))
-    ql.os.definesyscall_return(regreturn)
+    return regreturn

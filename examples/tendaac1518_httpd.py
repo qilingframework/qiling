@@ -55,7 +55,7 @@ def nvram_listener():
 def myvfork(ql):
     regreturn = 0
     logging.info("vfork() = %d" % regreturn)
-    ql.os.definesyscall_return(regreturn)
+    return regreturn
 
 
 def my_sandbox(path, rootfs):

@@ -142,16 +142,16 @@ class ELFTest(unittest.TestCase):
                 print("test => read(%d, %s, %d)" % (read_fd, pathname, read_count))
                 target = True
 
-            syscall.ql_syscall_read(ql, read_fd, read_buf, read_count, *args)
+            regreturn = syscall.ql_syscall_read(ql, read_fd, read_buf, read_count, *args)
 
             if target:
                 real_path = ql.os.fd[read_fd].name
                 with open(real_path) as fd:
                     assert fd.read() == ql.mem.read(read_buf, read_count).decode()
-                if ql.platform == QL_OS.WINDOWS:
-                    return
-                else:    
+                if ql.platform != QL_OS.WINDOWS:
                     os.remove(real_path)
+
+            return regreturn
 
         def test_syscall_write(ql, write_fd, write_buf, write_count, *args):
             target = False
@@ -161,16 +161,16 @@ class ELFTest(unittest.TestCase):
                 print("test => write(%d, %s, %d)" % (write_fd, pathname, write_count))
                 target = True
 
-            syscall.ql_syscall_write(ql, write_fd, write_buf, write_count, *args)
+            regreturn = syscall.ql_syscall_write(ql, write_fd, write_buf, write_count, *args)
 
             if target:
                 real_path = ql.os.fd[write_fd].name
                 with open(real_path) as fd:
                     assert fd.read() == 'Hello testing\x00'
-                if ql.platform == QL_OS.WINDOWS:
-                    return
-                else:    
+                if ql.platform != QL_OS.WINDOWS:
                     os.remove(real_path)
+
+            return regreturn
 
         def test_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *args):
             target = False
@@ -180,15 +180,15 @@ class ELFTest(unittest.TestCase):
                 print("test => openat(%d, %s, 0x%x, 0%o)" % (openat_fd, pathname, openat_flags, openat_mode))
                 target = True
 
-            syscall.ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *args)
+            regreturn = syscall.ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *args)
 
             if target:
                 real_path = ql.os.transform_to_real_path(pathname)
                 assert os.path.isfile(real_path) == True
-                if ql.platform == QL_OS.WINDOWS:
-                    return
-                else:    
+                if ql.platform != QL_OS.WINDOWS:
                     os.remove(real_path)
+
+            return regreturn
 
         def test_syscall_unlink(ql, unlink_pathname, *args):
             target = False
@@ -198,11 +198,13 @@ class ELFTest(unittest.TestCase):
                 print("test => unlink(%s)" % (pathname))
                 target = True
 
-            syscall.ql_syscall_unlink(ql, unlink_pathname, *args)
+            regreturn = syscall.ql_syscall_unlink(ql, unlink_pathname, *args)
 
             if target:
                 real_path = ql.os.transform_to_real_path(pathname)
                 assert os.path.isfile(real_path) == False
+
+            return regreturn
 
         def test_syscall_truncate(ql, trunc_pathname, trunc_length, *args):
             target = False
@@ -212,15 +214,15 @@ class ELFTest(unittest.TestCase):
                 print("test => truncate(%s, 0x%x)" % (pathname, trunc_length))
                 target = True
 
-            syscall.ql_syscall_truncate(ql, trunc_pathname, trunc_length, *args)
+            regreturn = syscall.ql_syscall_truncate(ql, trunc_pathname, trunc_length, *args)
 
             if target:
                 real_path = ql.os.transform_to_real_path(pathname)
                 assert os.stat(real_path).st_size == 0
-                if ql.platform == QL_OS.WINDOWS:
-                    return
-                else:    
+                if ql.platform != QL_OS.WINDOWS:
                     os.remove(real_path)
+
+            return regreturn
 
         def test_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args):
             target = False
@@ -234,15 +236,15 @@ class ELFTest(unittest.TestCase):
                 print("test => ftruncate(%d, 0x%x)" % (ftrunc_fd, ftrunc_length))
                 target = True
 
-            syscall.ql_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args)
+            regreturn = syscall.ql_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args)
 
             if target:
                 real_path = ql.os.transform_to_real_path(pathname)
                 assert os.stat(real_path).st_size == 0x10
-                if ql.platform == QL_OS.WINDOWS:
-                    return
-                else:    
+                if ql.platform != QL_OS.WINDOWS:
                     os.remove(real_path)
+
+            return regreturn
 
         ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_posix_syscall"], "../examples/rootfs/x86_linux", output="debug")
         ql.set_syscall(0x3, test_syscall_read)
@@ -428,25 +430,25 @@ class ELFTest(unittest.TestCase):
         def test_syscall_read(ql, read_fd, read_buf, read_count, *args):
             target = False
             pathname = ql.os.fd[read_fd].name.split('/')[-1]
-            
+
             reg = ql.reg.read("x0")
             print("reg : 0x%x" % reg)
             ql.reg.x0 = reg  
-        
+
             if pathname == "test_syscall_read.txt":
                 print("test => read(%d, %s, %d)" % (read_fd, pathname, read_count))
                 target = True
 
-            syscall.ql_syscall_read(ql, read_fd, read_buf, read_count, *args)
+            regreturn = syscall.ql_syscall_read(ql, read_fd, read_buf, read_count, *args)
 
             if target:
                 real_path = ql.os.fd[read_fd].name
                 with open(real_path) as fd:
                     assert fd.read() == ql.mem.read(read_buf, read_count).decode()
-                if ql.platform == QL_OS.WINDOWS:
-                    return
-                else:    
+                if ql.platform != QL_OS.WINDOWS:
                     os.remove(real_path)
+
+            return regreturn
 
 
         def test_syscall_write(ql, write_fd, write_buf, write_count, *args):
@@ -457,16 +459,16 @@ class ELFTest(unittest.TestCase):
                 print("test => write(%d, %s, %d)" % (write_fd, pathname, write_count))
                 target = True
 
-            syscall.ql_syscall_write(ql, write_fd, write_buf, write_count, *args)
+            regreturn = syscall.ql_syscall_write(ql, write_fd, write_buf, write_count, *args)
 
             if target:
                 real_path = ql.os.fd[write_fd].name
                 with open(real_path) as fd:
                     assert fd.read() == 'Hello testing\x00'
-                if ql.platform == QL_OS.WINDOWS:
-                    return
-                else:    
+                if ql.platform != QL_OS.WINDOWS:
                     os.remove(real_path)
+
+            return regreturn
 
 
         def test_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *args):
@@ -477,15 +479,15 @@ class ELFTest(unittest.TestCase):
                 print("test => openat(%d, %s, 0x%x, 0%o)" % (openat_fd, pathname, openat_flags, openat_mode))
                 target = True
 
-            syscall.ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *args)
+            regreturn = syscall.ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *args)
 
             if target:
                 real_path = ql.os.transform_to_real_path(pathname)
                 assert os.path.isfile(real_path) == True
-                if ql.platform == QL_OS.WINDOWS:
-                    return
-                else:    
+                if ql.platform != QL_OS.WINDOWS:
                     os.remove(real_path)
+
+            return regreturn
 
 
         def test_syscall_unlink(ql, unlink_pathname, *args):
@@ -496,11 +498,13 @@ class ELFTest(unittest.TestCase):
                 print("test => unlink(%s)" % (pathname))
                 target = True
 
-            syscall.ql_syscall_unlink(ql, unlink_pathname, *args)
+            regreturn = syscall.ql_syscall_unlink(ql, unlink_pathname, *args)
 
             if target:
                 real_path = ql.os.transform_to_real_path(pathname)
                 assert os.path.isfile(real_path) == False
+
+            return regreturn
 
 
         def test_syscall_truncate(ql, trunc_pathname, trunc_length, *args):
@@ -511,15 +515,15 @@ class ELFTest(unittest.TestCase):
                 print("test => truncate(%s, 0x%x)" % (pathname, trunc_length))
                 target = True
 
-            syscall.ql_syscall_truncate(ql, trunc_pathname, trunc_length, *args)
+            regreturn = syscall.ql_syscall_truncate(ql, trunc_pathname, trunc_length, *args)
 
             if target:
                 real_path = ql.os.transform_to_real_path(pathname)
                 assert os.stat(real_path).st_size == 0
-                if ql.platform == QL_OS.WINDOWS:
-                    return
-                else:    
+                if ql.platform != QL_OS.WINDOWS:
                     os.remove(real_path)
+
+            return regreturn
 
 
         def test_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args):
@@ -530,15 +534,15 @@ class ELFTest(unittest.TestCase):
                 print("test => ftruncate(%d, 0x%x)" % (ftrunc_fd, ftrunc_length))
                 target = True
 
-            syscall.ql_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args)
+            regreturn = syscall.ql_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args)
 
             if target:
                 real_path = ql.os.transform_to_real_path(pathname)
                 assert os.stat(real_path).st_size == 0x10
-                if ql.platform == QL_OS.WINDOWS:
-                    return
-                else:    
+                if ql.platform != QL_OS.WINDOWS:
                     os.remove(real_path)
+
+            return regreturn
 
         ql = Qiling(["../examples/rootfs/arm64_linux/bin/arm64_posix_syscall"], "../examples/rootfs/arm64_linux", output="debug")
         ql.set_syscall(0x3f, test_syscall_read)
@@ -582,17 +586,18 @@ class ELFTest(unittest.TestCase):
                 print("test => read(%d, %s, %d)" % (read_fd, pathname, read_count))
                 target = True
 
-            syscall.ql_syscall_read(ql, read_fd, read_buf, read_count, *args)
+            regreturn = syscall.ql_syscall_read(ql, read_fd, read_buf, read_count, *args)
 
             if target:
                 real_path = ql.os.fd[read_fd].name
                 with open(real_path) as fd:
                     assert fd.read() == ql.mem.read(read_buf, read_count).decode()
-                if ql.platform == QL_OS.WINDOWS:
-                    return
-                else:    
+                if ql.platform != QL_OS.WINDOWS:
                     os.remove(real_path)
- 
+
+            return regreturn
+
+
         def test_syscall_write(ql, write_fd, write_buf, write_count, *args):
             target = False
             pathname = ql.os.fd[write_fd].name.split('/')[-1]
@@ -601,16 +606,16 @@ class ELFTest(unittest.TestCase):
                 print("test => write(%d, %s, %d)" % (write_fd, pathname, write_count))
                 target = True
 
-            syscall.ql_syscall_write(ql, write_fd, write_buf, write_count, *args)
+            regreturn = syscall.ql_syscall_write(ql, write_fd, write_buf, write_count, *args)
 
             if target:
                 real_path = ql.os.fd[write_fd].name
                 with open(real_path) as fd:
                     assert fd.read() == 'Hello testing\x00'
-                if ql.platform == QL_OS.WINDOWS:
-                    return
-                else:    
+                if ql.platform != QL_OS.WINDOWS:
                     os.remove(real_path)
+
+            return regreturn
 
         def test_syscall_open(ql, open_pathname, open_flags, open_mode, *args):
             target = False
@@ -620,15 +625,15 @@ class ELFTest(unittest.TestCase):
                 print("test => open(%s, 0x%x, 0%o)" % (pathname, open_flags, open_mode))
                 target = True
 
-            syscall.ql_syscall_open(ql, open_pathname, open_flags, open_mode, *args)
+            regreturn = syscall.ql_syscall_open(ql, open_pathname, open_flags, open_mode, *args)
 
             if target:
                 real_path = ql.os.transform_to_real_path(pathname)
                 assert os.path.isfile(real_path) == True
-                if ql.platform == QL_OS.WINDOWS:
-                    return
-                else:    
+                if ql.platform != QL_OS.WINDOWS:
                     os.remove(real_path)
+
+            return regreturn
 
         def test_syscall_unlink(ql, unlink_pathname, *args):
             target = False
@@ -638,11 +643,13 @@ class ELFTest(unittest.TestCase):
                 print("test => unlink(%s)" % (pathname))
                 target = True
 
-            syscall.ql_syscall_unlink(ql, unlink_pathname, *args)
+            regreturn = syscall.ql_syscall_unlink(ql, unlink_pathname, *args)
 
             if target:
                 real_path = ql.os.transform_to_real_path(pathname)
                 assert os.path.isfile(real_path) == False
+
+            return regreturn
 
         def test_syscall_truncate(ql, trunc_pathname, trunc_length, *args):
             target = False
@@ -652,15 +659,15 @@ class ELFTest(unittest.TestCase):
                 print("test => truncate(%s, 0x%x)" % (pathname, trunc_length))
                 target = True
 
-            syscall.ql_syscall_truncate(ql, trunc_pathname, trunc_length, *args)
+            regreturn = syscall.ql_syscall_truncate(ql, trunc_pathname, trunc_length, *args)
 
             if target:
                 real_path = ql.os.transform_to_real_path(pathname)
                 assert os.stat(real_path).st_size == 0
-                if ql.platform == QL_OS.WINDOWS:
-                    return
-                else:    
+                if ql.platform != QL_OS.WINDOWS:
                     os.remove(real_path)
+
+            return regreturn
 
         def test_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args):
             target = False
@@ -670,15 +677,15 @@ class ELFTest(unittest.TestCase):
                 print("test => ftruncate(%d, 0x%x)" % (ftrunc_fd, ftrunc_length))
                 target = True
 
-            syscall.ql_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args)
+            regreturn = syscall.ql_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args)
 
             if target:
                 real_path = ql.os.transform_to_real_path(pathname)
                 assert os.stat(real_path).st_size == 0x10
-                if ql.platform == QL_OS.WINDOWS:
-                    return
-                else:    
+                if ql.platform != QL_OS.WINDOWS:
                     os.remove(real_path)
+
+            return regreturn
 
         ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_posix_syscall"], "../examples/rootfs/mips32el_linux", output="debug")
         ql.set_syscall(4003, test_syscall_read)
@@ -712,8 +719,8 @@ class ELFTest(unittest.TestCase):
                 logging.info("\n+++++++++\nmy write(%d,%x,%i) = %d\n+++++++++" % (write_fd, write_buf, write_count, regreturn))
                 if ql.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
                     raise
-            ql.os.definesyscall_return(regreturn)
             self.set_syscall = reg
+            return regreturn
 
         ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello"], "../examples/rootfs/arm_linux")
         ql.set_syscall(0x04, my_syscall_write)
