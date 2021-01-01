@@ -11,6 +11,8 @@
 # LONGDOUBLE_SIZE is: 16
 #
 
+raise RuntimeError('Do not use this module; for reference only')
+
 import ctypes
 
 c_int128 = ctypes.c_ubyte*16
