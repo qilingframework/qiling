@@ -71,7 +71,6 @@ class QlLoaderPE_UEFI(QlLoader):
 
     def install_loaded_image_protocol(self, image_base, image_size):
         fields = {
-            'revision'   : int(self.ql.os.profile["LOADED_IMAGE_PROTOCOL"]["revision"], 0),
             'gST'        : self.gST,
             'image_base' : image_base,
             'image_size' : image_size

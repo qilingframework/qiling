@@ -32,7 +32,6 @@ Table = 0x00000000ffffffff
 
 [LOADED_IMAGE_PROTOCOL]
 guid = 5b1b31a1-9562-11d2-8e3f-00a0c969723b
-revision = 0x1000
 
 [MMIO]
 sbreg_base = 0xFD000000

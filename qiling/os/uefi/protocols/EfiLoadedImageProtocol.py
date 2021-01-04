@@ -32,7 +32,7 @@ def make_descriptor(fields):
 		"guid" : "5b1b31a1-9562-11d2-8e3f-00a0c969723b",
 		"struct" : EFI_LOADED_IMAGE_PROTOCOL,
 		"fields" : (
-			('Revision',		fields['revision']),
+			('Revision',		0x1000),
 			('ParentHandle',	0),
 			('SystemTable',		fields['gST']),
 			('DeviceHandle',	fields['image_base']),
