@@ -4,9 +4,11 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
 import logging
-from contextlib import contextmanager
+from typing import Sequence
+from pefile import PE
 
 from qiling.const import QL_ARCH
+from qiling.loader.loader import QlLoader
 from qiling.os.memory import QlMemoryHeap
 from qiling.os.utils import QlErrorArch, QlErrorFileType
 
@@ -19,9 +21,6 @@ from qiling.os.uefi.protocols import EfiSmmBase2Protocol
 from qiling.os.uefi.protocols import EfiSmmCpuProtocol
 from qiling.os.uefi.protocols import EfiSmmSwDispatch2Protocol
 from qiling.os.uefi.protocols import PcdProtocol
-
-from pefile import PE
-from .loader import QlLoader
 
 class QlLoaderPE_UEFI(QlLoader):
     def __init__(self, ql):
@@ -60,15 +59,6 @@ class QlLoaderPE_UEFI(QlLoader):
         self.efi_configuration_table = saved_state['efi_configuration_table']
         self.ql.os.heap.restore(saved_state['heap'])
 
-    @contextmanager
-    def map_memory(self, addr, size):
-        self.ql.mem.map(addr, size)
-
-        try:
-            yield
-        finally:
-            self.ql.mem.unmap(addr, size)
-
     def install_loaded_image_protocol(self, image_base, image_size):
         fields = {
             'gST'        : self.gST,
@@ -76,8 +66,8 @@ class QlLoaderPE_UEFI(QlLoader):
             'image_size' : image_size
         }
 
-        description = EfiLoadedImageProtocol.make_descriptor(fields)
-        self.dxe_context.install_protocol(description, image_base)
+        descriptor = EfiLoadedImageProtocol.make_descriptor(fields)
+        self.dxe_context.install_protocol(descriptor, image_base)
 
         self.loaded_image_protocol_modules.append(image_base)
 
@@ -161,7 +151,7 @@ class QlLoaderPE_UEFI(QlLoader):
         logging.info(f'Running from {entry_point:#010x} of {path}')
 
     def execute_next_module(self):
-        if self.ql.os.notify_before_module_execution(self.ql, self.modules[0][0]):
+        if not self.modules or self.ql.os.notify_before_module_execution(self.ql, self.modules[0][0]):
             return
 
         path, image_base, entry_point = self.modules.pop(0)
@@ -179,6 +169,7 @@ class QlLoaderPE_UEFI(QlLoader):
         self.loaded_image_protocol_guid = self.ql.os.profile["LOADED_IMAGE_PROTOCOL"]["guid"]
         self.loaded_image_protocol_modules = []
         self.tpl = 4 # TPL_APPLICATION
+
         self.user_defined_api = self.ql.os.user_defined_api
         self.user_defined_api_onenter = self.ql.os.user_defined_api_onenter
         self.user_defined_api_onexit = self.ql.os.user_defined_api_onexit
@@ -274,9 +265,10 @@ class QlLoaderPE_UEFI(QlLoader):
 
         logging.info(f"[+] Done with loading {self.ql.path}")
 
-        # hack: reuse first byte of ST to set a trap
+        # set up an end-of-execution hook to regain control when module is done
+        # executing (i.e. when the entry point function returns). that should be
+        # set on a non-executable address, so SystemTable's address was picked
         self.end_of_execution_ptr = gST
-        self.ql.mem.write(self.end_of_execution_ptr, b'\xcc')
         self.ql.hook_address(hook_EndOfExecution, self.end_of_execution_ptr)
 
         self.execute_next_module()
