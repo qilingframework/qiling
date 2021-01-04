@@ -105,31 +105,26 @@ class QlLoaderPE_UEFI(QlLoader):
                 if self.entry_point == 0:
                     # Setting entry point to the first loaded module entry point, so the debugger can break.
                     self.entry_point = entry_point
-                logging.info("[+] PE entry point at 0x%x" % entry_point)
-                self.install_loaded_image_protocol(IMAGE_BASE, IMAGE_SIZE)
-                self.images.append(self.coverage_image(IMAGE_BASE, IMAGE_BASE + pe.NT_HEADERS.OPTIONAL_HEADER.SizeOfImage, path))
-                if execute_now:
-                    logging.info(f'[+] Running from 0x{entry_point:x} of {path}')
-                    assembler = self.ql.create_assembler()
-                    code = f"""
-                        mov rcx, {IMAGE_BASE}
-                        mov rdx, {self.gST}
-                        mov rax, {entry_point}
-                        call rax
+    def call_function(self, addr: int, args: Sequence[int], eoe: int):
+        """Call a function after properly setting up its arguments and return address.
+
+        Args:
+            addr : function address
+            args : a sequence of arguments to pass to the function; may be empty
+            eoe  : end-of-execution trap address; must be already hooked
                     """
-                    runcode, _ = assembler.asm(code)
-                    ptr = ql.os.heap.alloc(len(runcode))
-                    ql.mem.write(ptr, bytes(runcode))
-                    ql.os.exec_arbitrary(ptr, ptr+len(runcode))
 
-                else:
-                    self.modules.append((path, IMAGE_BASE, entry_point))
-                return True
-            else:
-                IMAGE_BASE += 0x10000
-                pe.relocate_image(IMAGE_BASE)
-        return False
+        # arguments gpr (ms x64 cc)
+        regs = ('rcx', 'rdx', 'r8', 'r9')
+        assert len(args) <= len(regs), f'currently supporting up to {len(regs)} arguments'
 
+        # set up the arguments
+        for reg, arg in zip(regs, args):
+            self.ql.reg.write(reg, arg)
+
+        # mimic call instruction
+        self.ql.stack_push(eoe)
+        self.ql.reg.rip = addr
     def unload_modules(self):
         for handle in self.loaded_image_protocol_modules:
             struct_addr = self.dxe_context.protocols[handle][self.loaded_image_protocol_guid]
@@ -138,22 +133,29 @@ class QlLoaderPE_UEFI(QlLoader):
             unload_ptr = self.ql.unpack64(loaded_image_protocol.Unload)
 
             if unload_ptr != 0:
-                self.ql.stack_push(self.end_of_execution_ptr)
-                self.ql.reg.rcx = handle
-                self.ql.reg.rip = unload_ptr
-
+                self.call_function(unload_ptr, [handle], self.end_of_execution_ptr)
                 self.loaded_image_protocol_modules.remove(handle)
+
                 logging.info(f'Unloading module {handle:#x}, calling {unload_ptr:#x}')
 
                 return True
 
         return False
 
-    def execute_module(self, path, image_base, entry_point, EOE_ptr):
-        self.ql.stack_push(EOE_ptr)
-        self.ql.reg.rcx = image_base
-        self.ql.reg.rdx = self.gST
-        self.ql.reg.rip = entry_point
+    def execute_module(self, path: str, image_base: int, entry_point: int, eoe_trap: int):
+        """Start the execution of a UEFI module.
+
+        Args:
+            image_base  : module base address
+            entry_point : module entry point address
+            eoe_trap    : end-of-execution trap address
+        """
+
+        # use familiar UEFI names
+        ImageHandle = image_base
+        SystemTable = self.gST
+
+        self.call_function(entry_point, [ImageHandle, SystemTable], eoe_trap)
         self.ql.os.entry_point = entry_point
 
         logging.info(f'Running from {entry_point:#010x} of {path}')
