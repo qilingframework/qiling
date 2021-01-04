@@ -35,12 +35,7 @@ class QlLoaderPE_UEFI(QlLoader):
     def save(self):
         saved_state = super(QlLoaderPE_UEFI, self).save()
 
-        # We can't serialize self.modules since it contain pefile objects. let's remove it now and generate it again when loading.
-        modules = []
-        for mod in self.modules:
-            modules.append(mod[:3])
-        saved_state['modules'] = modules
-
+        saved_state['modules'] = self.modules
         saved_state['events'] = self.events
         #saved_state['handle_dict'] = self.handle_dict
         saved_state['notify_list'] = self.notify_list
@@ -54,9 +49,8 @@ class QlLoaderPE_UEFI(QlLoader):
 
     def restore(self, saved_state):
         super(QlLoaderPE_UEFI, self).restore(saved_state)
-        self.modules = []
-        for mod in saved_state['modules']:
-            self.modules.append(mod+(PE(mod[0], fast_load=True),))
+
+        self.modules = saved_state['modules']
         self.events = saved_state['events']
         #self.handle_dict = saved_state['handle_dict']
         self.notify_list = saved_state['notify_list']
@@ -130,7 +124,7 @@ class QlLoaderPE_UEFI(QlLoader):
                     ql.os.exec_arbitrary(ptr, ptr+len(runcode))
 
                 else:
-                    self.modules.append((path, IMAGE_BASE, entry_point, pe))
+                    self.modules.append((path, IMAGE_BASE, entry_point))
                 return True
             else:
                 IMAGE_BASE += 0x10000
@@ -169,7 +163,7 @@ class QlLoaderPE_UEFI(QlLoader):
         if self.ql.os.notify_before_module_execution(self.ql, self.modules[0][0]):
             return
 
-        path, image_base, entry_point, _ = self.modules.pop(0)
+        path, image_base, entry_point = self.modules.pop(0)
         self.execute_module(path, image_base, entry_point, self.end_of_execution_ptr)
 
     def run(self):
