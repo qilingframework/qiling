@@ -135,16 +135,16 @@ def CoreInstallConfigurationTable(ql, guid: str, table: int) -> int:
 		return EFI_INVALID_PARAMETER
 
 	guid = guid.lower()
-	confs = ql.loader.efi_configuration_table
+	confs = ql.loader.efi_conf_table_array
 
 	# find configuration table entry by guid. if found, idx would be set to the entry index
 	# in the array. if not, idx would be set to one past end of array
 	if guid not in confs:
 		confs.append(guid)
-		#TODO: NumberOfTableEntries++
+		#TODO: gST.NumberOfTableEntries = len(confs)
 
 	idx = confs.index(guid)
-	ptr = ql.loader.efi_configuration_table_ptr + (idx * EFI_CONFIGURATION_TABLE.sizeof())
+	ptr = ql.loader.efi_conf_table_array_ptr + (idx * EFI_CONFIGURATION_TABLE.sizeof())
 
 	guid_bytes = UUID(hex=guid).bytes_le
 

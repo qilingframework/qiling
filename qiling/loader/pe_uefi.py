@@ -41,7 +41,10 @@ class QlLoaderPE_UEFI(QlLoader):
         saved_state['next_image_base'] = self.next_image_base
         saved_state['loaded_image_protocol_modules'] = self.loaded_image_protocol_modules
         saved_state['tpl'] = self.tpl
-        saved_state['efi_configuration_table'] = self.efi_configuration_table
+        saved_state['efi_conf_table_array'] = self.efi_conf_table_array
+        saved_state['efi_conf_table_array_ptr'] = self.efi_conf_table_array_ptr
+        saved_state['efi_conf_table_data_ptr'] = self.efi_conf_table_data_ptr
+        saved_state['efi_conf_table_data_next_ptr'] = self.efi_conf_table_data_next_ptr
         # since this class initialize the heap (that is hosted by the OS object), we will store it here.
         saved_state['heap'] = self.ql.os.heap.save()
         return saved_state
@@ -56,7 +59,10 @@ class QlLoaderPE_UEFI(QlLoader):
         self.next_image_base = saved_state['next_image_base']
         self.loaded_image_protocol_modules = saved_state['loaded_image_protocol_modules']
         self.tpl = saved_state['tpl']
-        self.efi_configuration_table = saved_state['efi_configuration_table']
+        self.efi_conf_table_array = saved_state['efi_conf_table_array']
+        self.efi_conf_table_array_ptr = saved_state['efi_conf_table_array_ptr']
+        self.efi_conf_table_data_ptr = saved_state['efi_conf_table_data_ptr']
+        self.efi_conf_table_data_next_ptr = saved_state['efi_conf_table_data_next_ptr']
         self.ql.os.heap.restore(saved_state['heap'])
 
     def install_loaded_image_protocol(self, image_base, image_size):
