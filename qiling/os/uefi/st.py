@@ -5,9 +5,9 @@
 
 import logging
 
-from .utils import CoreInstallConfigurationTable
-from .UefiSpec import EFI_SYSTEM_TABLE, EFI_BOOT_SERVICES, EFI_RUNTIME_SERVICES
-from . import bs, rt, ds
+from qiling.os.uefi import bs, rt, ds
+from qiling.os.uefi.utils import CoreInstallConfigurationTable
+from qiling.os.uefi.UefiSpec import EFI_SYSTEM_TABLE, EFI_BOOT_SERVICES, EFI_RUNTIME_SERVICES
 
 # static mem layout:
 #
@@ -33,23 +33,21 @@ from . import bs, rt, ds
 #		+-----------------------------+
 #	(4)	+-- EFI_CONFIGURATION_TABLE --+		of HOB_LIST
 #		| VendorGuid                  |
-#		| VendorTable          -> (5) |
+#		| VendorTable          -> (?) |
 #		+-----------------------------+
 #		+-- EFI_CONFIGURATION_TABLE --+		of DXE_SERVICE_TABLE
 #		| VendorGuid                  |
 #		| VendorTable          -> (3) |
 #		+-----------------------------+
 #
-#		... sizeof(EFI_CONFIGURATION_TABLE) x 98 skipped
+#	(?)	Address is read from profile
 #
-#	(5)	+-----------------------------+
-#		| vendortable                 |
-#		+-----------------------------+
+#		... the remainder of the 256 KiB chunk may be used for EFI_CONFIGURATION_TABLE entries
 
-def install_configuration_table(ql, key, table):
+def install_configuration_table(ql, key: str, table: int):
 	cfgtable = ql.os.profile[key]
 	guid = cfgtable['Guid']
-	
+
 	if table is None:
 		table = int(cfgtable['Table'], 0)
 
