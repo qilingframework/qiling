@@ -95,13 +95,13 @@ class QlLoaderPE_UEFI(QlLoader):
                 if self.entry_point == 0:
                     # Setting entry point to the first loaded module entry point, so the debugger can break.
                     self.entry_point = entry_point
-    def call_function(self, addr: int, args: Sequence[int], eoe: int):
+    def call_function(self, addr: int, args: Sequence[int], ret: int):
         """Call a function after properly setting up its arguments and return address.
 
         Args:
             addr : function address
             args : a sequence of arguments to pass to the function; may be empty
-            eoe  : end-of-execution trap address; must be already hooked
+            ret  : return address; may be None
                     """
 
         # arguments gpr (ms x64 cc)
@@ -112,9 +112,12 @@ class QlLoaderPE_UEFI(QlLoader):
         for reg, arg in zip(regs, args):
             self.ql.reg.write(reg, arg)
 
-        # mimic call instruction
-        self.ql.stack_push(eoe)
+        # if provided, set return address
+        if ret is not None:
+            self.ql.stack_push(ret)
+
         self.ql.reg.rip = addr
+
     def unload_modules(self):
         for handle in self.loaded_image_protocol_modules:
             struct_addr = self.dxe_context.protocols[handle][self.loaded_image_protocol_guid]
@@ -138,7 +141,7 @@ class QlLoaderPE_UEFI(QlLoader):
         Args:
             image_base  : module base address
             entry_point : module entry point address
-            eoe_trap    : end-of-execution trap address
+            eoe_trap    : end-of-execution trap address; may be None
         """
 
         # use familiar UEFI names
