@@ -8,9 +8,9 @@ from typing import Sequence
 from pefile import PE
 
 from qiling.const import QL_ARCH
+from qiling.exception import QlErrorArch, QlMemoryMappedError
 from qiling.loader.loader import QlLoader
 from qiling.os.memory import QlMemoryHeap
-from qiling.os.utils import QlErrorArch, QlErrorFileType
 
 from qiling.os.uefi import context, st, smst
 from qiling.os.uefi.ProcessorBind import CPU_STACK_ALIGNMENT
@@ -29,7 +29,7 @@ class QlLoaderPE_UEFI(QlLoader):
         self.modules = []
         self.events = {}
         self.notify_list = []
-        self.next_image_base = 0x10000
+        self.next_image_base = 0
 
     def save(self):
         saved_state = super(QlLoaderPE_UEFI, self).save()
@@ -71,30 +71,68 @@ class QlLoaderPE_UEFI(QlLoader):
 
         self.loaded_image_protocol_modules.append(image_base)
 
-    def map_and_load(self, path, execute_now=False):
+    def map_and_load(self, path: str, exec_now: bool=False):
+        """Map and load a module into memory.
+
+        The specified module would be mapped and loaded into the address set
+        in the `next_image_base` member. It is the caller's responsibility to
+        make sure that the memory is available.
+
+        On success, `next_image_base` will be updated accordingly.
+
+        Args:
+            path     : path of the module binary to load
+            exec_now : execute module right away; will be enququed if not
+
+        Raises:
+            QlMemoryMappedError : when `next_image_base` is not available
+        """
+
         ql = self.ql
         pe = PE(path, fast_load=True)
 
-        # Make sure no module will occupy the NULL page
-        if self.next_image_base > pe.OPTIONAL_HEADER.ImageBase:
-            IMAGE_BASE = self.next_image_base
-            pe.relocate_image(IMAGE_BASE)
-        else:
-            IMAGE_BASE = pe.OPTIONAL_HEADER.ImageBase
-        IMAGE_SIZE = ql.mem.align(pe.OPTIONAL_HEADER.SizeOfImage, 0x1000)
+        # use image base only if it does not point to NULL
+        image_base = pe.OPTIONAL_HEADER.ImageBase or self.next_image_base
+        image_size = ql.mem.align(pe.OPTIONAL_HEADER.SizeOfImage, 0x1000)
 
-        while IMAGE_BASE + IMAGE_SIZE < self.heap_base_address:
-            if not ql.mem.is_mapped(IMAGE_BASE, 1):
-                self.next_image_base = IMAGE_BASE + 0x10000
-                ql.mem.map(IMAGE_BASE, IMAGE_SIZE)
-                pe.parse_data_directories()
-                data = bytearray(pe.get_memory_mapped_image())
-                ql.mem.write(IMAGE_BASE, bytes(data))
-                logging.info("[+] Loading %s to 0x%x" % (path, IMAGE_BASE))
-                entry_point = IMAGE_BASE + pe.OPTIONAL_HEADER.AddressOfEntryPoint
-                if self.entry_point == 0:
-                    # Setting entry point to the first loaded module entry point, so the debugger can break.
-                    self.entry_point = entry_point
+        assert (image_base % 0x1000) == 0, 'image base is expected to be page-aligned'
+
+        if image_base != pe.OPTIONAL_HEADER.ImageBase:
+            pe.relocate_image(image_base)
+
+        pe.parse_data_directories()
+        data = bytes(pe.get_memory_mapped_image())
+
+        ql.mem.map(image_base, image_size, info="[module]")
+        ql.mem.write(image_base, data)
+        logging.info(f'[+] Module {path} loaded to {image_base:#x}')
+
+        entry_point = image_base + pe.OPTIONAL_HEADER.AddressOfEntryPoint
+        logging.info(f'[+] Module entry point at {entry_point:#x}')
+
+        # the 'entry_point' member is used by the debugger. if not set, set it
+        # to the first loaded module entry point so the debugger can break
+        if self.entry_point == 0:
+            self.entry_point = entry_point
+
+        self.install_loaded_image_protocol(image_base, image_size)
+
+        # this would be used later be os.find_containing_image
+        self.images.append(self.coverage_image(image_base, image_size, path))
+
+        # update next memory slot to allow sequencial loading. its availability
+        # is unknown though
+        self.next_image_base = image_base + image_size
+
+        module_info = (path, image_base, entry_point)
+
+        # execute the module right away or enqueue it
+        if exec_now:
+            # call entry point while retaining the current return address
+            self.execute_module(*module_info, eoe_trap=None)
+        else:
+            self.modules.append(module_info)
+
     def call_function(self, addr: int, args: Sequence[int], ret: int):
         """Call a function after properly setting up its arguments and return address.
 
@@ -102,7 +140,7 @@ class QlLoaderPE_UEFI(QlLoader):
             addr : function address
             args : a sequence of arguments to pass to the function; may be empty
             ret  : return address; may be None
-                    """
+        """
 
         # arguments gpr (ms x64 cc)
         regs = ('rcx', 'rdx', 'r8', 'r9')
@@ -262,9 +300,11 @@ class QlLoaderPE_UEFI(QlLoader):
         self.load_address = 0
         self.next_image_base = int(os_profile["image_address"], 0)
 
-        for dependency in self.ql.argv:
-            if not self.map_and_load(dependency):
-                raise QlErrorFileType("Can't map dependency")
+        try:
+            for dependency in self.ql.argv:
+                self.map_and_load(dependency)
+        except QlMemoryMappedError:
+            logging.critical("Couldn't map dependency")
 
         logging.info(f"[+] Done with loading {self.ql.path}")
 
