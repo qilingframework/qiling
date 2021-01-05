@@ -3,12 +3,13 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-import ctypes
 import struct
 import logging
+from uuid import UUID
 
-from .const import *
-from .UefiSpec import EFI_LOCATE_SEARCH_TYPE, EFI_CONFIGURATION_TABLE
+from qiling.os.uefi.const import *
+from qiling.os.uefi.UefiSpec import EFI_LOCATE_SEARCH_TYPE, EFI_CONFIGURATION_TABLE
+from qiling.os.uefi.UefiBaseType import EFI_GUID
 
 def check_and_notify_protocols(ql):
 	if len(ql.loader.notify_list) > 0:
@@ -128,17 +129,12 @@ def LocateProtocol(context, params):
 
 	return EFI_NOT_FOUND
 
-def to_byte_values(val, nbytes):
-	while nbytes > 0:
-		yield val & 0xff
-		val >>= 8
-		nbytes -= 1
-
 # see: MdeModulePkg/Core/Dxe/Misc/InstallConfigurationTable.c
-def CoreInstallConfigurationTable(ql, guid, table):
+def CoreInstallConfigurationTable(ql, guid: str, table: int) -> int:
 	if not guid:
 		return EFI_INVALID_PARAMETER
 
+	guid = guid.lower()
 	confs = ql.loader.efi_configuration_table
 
 	# find configuration table entry by guid. if found, idx would be set to the entry index
@@ -150,25 +146,11 @@ def CoreInstallConfigurationTable(ql, guid, table):
 	idx = confs.index(guid)
 	ptr = ql.loader.efi_configuration_table_ptr + (idx * EFI_CONFIGURATION_TABLE.sizeof())
 
+	guid_bytes = UUID(hex=guid).bytes_le
+
 	instance = EFI_CONFIGURATION_TABLE()
-	vendguid = instance.VendorGuid
-
-	# parse guid string
-	elems = [int(e, 16) for e in guid.split('-')]
-	elems[3] = (elems[3] << 48) | elems[4]
-
-	# populate vendor guid struct
-	vendguid.Data1 = elems[0]
-	vendguid.Data2 = elems[1]
-	vendguid.Data3 = elems[2]
-
-	for i, el in enumerate(to_byte_values(elems[3], 8)):
-		vendguid.Data4[i] = el
-
+	instance.VendorGuid = EFI_GUID.from_buffer_copy(guid_bytes)
 	instance.VendorTable = table
 	instance.saveTo(ql, ptr)
-
-	# keep track of guid
-	confs.append(guid)
 
 	return EFI_SUCCESS

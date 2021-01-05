@@ -3,16 +3,14 @@ heap_address	= 0x78000000
 heap_size		= 0x02000000
 stack_address	= 0x77800000
 stack_size		= 0x00800000
-image_address 	= 0x77000000
-# entry_point	= 0x77400000
+image_address 	= 0x00100000
 
 [OS32]
 heap_address	= 0x78000000
 heap_size		= 0x02000000
 stack_address	= 0x77800000
 stack_size		= 0x00800000
-image_address 	= 0x77000000
-# entry_point	= 0x77400000
+image_address 	= 0x00100000
 
 [SMRAM]
 heap_address	= 0x7A000000
@@ -43,7 +41,6 @@ sbreg_size = 0x01000000
 dir =
 # split log file, use with multithread
 split = False
-
 
 [MISC]
 # append string into different logs
