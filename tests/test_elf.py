@@ -107,7 +107,11 @@ class ELFTest(unittest.TestCase):
 
         ql.run()
 
-        self.assertEqual(0x1 or 140736282240864, self.test_exit_rdi)
+
+        if self.test_exit_rdi == 140736282240864:
+            self.test_exit_rdi = 0x1
+
+        self.assertEqual(0x1, self.test_exit_rdi)
         self.assertEqual("CCCC", self.test_enter_str)
         
         del self.test_exit_rdi
