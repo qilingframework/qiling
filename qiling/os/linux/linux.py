@@ -4,9 +4,9 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
 import logging
+
 from qiling.const import *
 from qiling.arch.x86 import *
-
 from qiling.os.posix.posix import QlOsPosix
 from .const import *
 from .utils import *
@@ -70,16 +70,29 @@ class QlOsLinux(QlOsPosix):
     def hook_syscall(self, int= None, intno= None):
         return self.load_syscall(intno)
 
+
     def add_function_hook(self, fn, cb, userdata = None):
         self.function_hook_tmp.append((fn, cb, userdata))
-    
+
+
     def register_function_after_load(self, function):
         if function not in self.function_after_load_list:
             self.function_after_load_list.append(function)
 
+
     def run_function_after_load(self):
         for f in self.function_after_load_list:
             f()
+
+
+    def set_api(self, api_name, intercept_function, intercept = None):
+        if intercept == QL_INTERCEPT.ENTER:
+            self.add_function_hook(api_name, intercept_function, intercept)
+        elif intercept == QL_INTERCEPT.EXIT:    
+            self.add_function_hook(api_name, intercept_function, intercept)
+        else:
+            self.add_function_hook(api_name, intercept_function)
+
 
     def run(self):
         for function, callback, userdata in self.ql.os.function_hook_tmp:

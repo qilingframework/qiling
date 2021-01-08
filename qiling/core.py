@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from .os.memory import QlMemoryManager
     from .loader.loader import QlLoader
 
-from .const import D_DRPT, QL_ARCH_ENDIAN, QL_ENDIAN, QL_INTERCEPT, QL_OS_POSIX, QL_OS_ALL, QL_OUTPUT, QL_OS
+from .const import QL_ARCH_ENDIAN, QL_ENDIAN, QL_INTERCEPT, QL_OS_POSIX, QL_OS_ALL, QL_OUTPUT, QL_OS
 from .exception import QlErrorFileNotFound, QlErrorArch, QlErrorOsType, QlErrorOutput
 from .utils import *
 from .core_struct import QlCoreStructs
@@ -919,6 +919,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
     #  - if intercept is None, replace API with custom function
     #  - if intercept is ENTER/EXIT, hook API at enter/exit with custom function
     def set_api(self, api_name, intercept_function, intercept = None):
+        # self.os.set_api(api_name, intercept_function, intercept = None)
         if self.ostype == QL_OS.UEFI:
             api_name = "hook_" + str(api_name)
 

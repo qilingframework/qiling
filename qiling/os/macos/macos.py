@@ -36,6 +36,7 @@ class QlOsMacos(QlOsPosix):
         self.pid = self.profile.getint("KERNEL","pid")
         self.load()
 
+
     # load MacOS driver
     def load_kext(self):
         from qiling.os.macos.events.macos_structs import mac_policy_list_t
@@ -142,6 +143,7 @@ class QlOsMacos(QlOsPosix):
             self.savedrip=0xffffff80009c2c16
             self.ql.run(begin=self.ql.loader.kext_start)
 
+
     def load(self):
         if self.ql.shellcoder:
             return
@@ -161,10 +163,21 @@ class QlOsMacos(QlOsPosix):
     def hook_syscall(self, intno= None, int = None):
         return self.load_syscall()
 
+
+    def set_api(self, api_name, intercept_function, intercept = None):
+        if intercept == QL_INTERCEPT.ENTER:
+            self.add_function_hook(api_name, intercept_function, intercept)
+        elif intercept == QL_INTERCEPT.EXIT:    
+            self.add_function_hook(api_name, intercept_function, intercept)
+        else:
+            self.add_function_hook(api_name, intercept_function)
+
+
     def hook_sigtrap(self, intno= None, int = None):
         logging.info("[!] Trap Found")
         self.emu_error()
         exit(1)
+
 
     def run(self):
         #save initial stack pointer, so we can see if stack is balanced when

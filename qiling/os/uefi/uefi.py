@@ -4,8 +4,11 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
 import logging
+
 from unicorn import UcError
+
 from qiling.os.os import QlOs
+from qiling.const import *
 
 class QlOsUefi(QlOs):
 	def __init__(self, ql):
@@ -19,23 +22,28 @@ class QlOsUefi(QlOs):
 		self.PE_RUN = True
 		self.heap = None # Will be initialized by the loader.
 
+
 	def save(self):
 		saved_state = super(QlOsUefi, self).save()
 		saved_state['entry_point'] = self.entry_point
 		return saved_state
 
+
 	def restore(self, saved_state):
 		super(QlOsUefi, self).restore(saved_state)
 		self.entry_point = saved_state['entry_point']
+
 
 	@staticmethod
 	def notify_after_module_execution(ql, number_of_modules_left):
 		return False
 
+
 	@staticmethod
 	def notify_before_module_execution(ql, module):
 		ql.os.running_module = module
 		return False
+
 
 	def emit_context(self):
 		# TODO: add xmm, ymm, zmm registers
@@ -76,6 +84,7 @@ class QlOsUefi(QlOs):
 
 		logging.error(f'')
 
+
 	def emit_hexdump(self, address : int, data : str, num_cols=16):
 		logging.error('Hexdump:')
 
@@ -91,6 +100,7 @@ class QlOsUefi(QlOs):
 
 		logging.error(f'')
 
+
 	def emit_disasm(self, address : int, data : str, num_insns=8):
 		md = self.ql.create_disassembler()
 
@@ -105,6 +115,7 @@ class QlOsUefi(QlOs):
 			logging.error(f'{insn.address:08x}    {opcodes:<20s}  {insn.mnemonic:<10s} {insn.op_str:s}')
 
 		logging.error(f'')
+
 
 	def emu_error(self):
 		dump_len = 64
@@ -125,6 +136,20 @@ class QlOsUefi(QlOs):
 			self.ql.mem.show_mapinfo()
 		except UcError:
 			logging.error(f'Error: PC({pc:#x}) is unreachable')
+
+
+	def set_api(self, api_name, intercept_function, intercept = None):
+		api_name = "hook_" + str(api_name)
+		print(api_name)
+		if intercept == QL_INTERCEPT.ENTER:
+			self.user_defined_api_onenter[api_name] = intercept_function
+		
+		elif intercept == QL_INTERCEPT.EXIT:
+			self.user_defined_api_onexit[api_name] = intercept_function  
+		
+		else:
+			self.user_defined_api[api_name] = intercept_function
+            
 
 	def run(self):
 		self.notify_before_module_execution(self.ql, self.running_module)
