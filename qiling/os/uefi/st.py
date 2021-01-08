@@ -4,20 +4,21 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
 import logging
+import binascii
 
-from .utils import CoreInstallConfigurationTable
-from .UefiSpec import EFI_SYSTEM_TABLE, EFI_BOOT_SERVICES, EFI_RUNTIME_SERVICES
-from . import bs, rt, ds
+from qiling.os.uefi import bs, rt, ds
+from qiling.os.uefi.utils import CoreInstallConfigurationTable
+from qiling.os.uefi.UefiSpec import EFI_SYSTEM_TABLE, EFI_BOOT_SERVICES, EFI_RUNTIME_SERVICES, EFI_CONFIGURATION_TABLE
 
 # static mem layout:
 #
 #		+-- EFI_SYSTEM_TABLE ---------+
 #		|                             |
 #		| ...                         |
-#		| RuntimeServices      -> (1) |
-#		| BootServices         -> (2) |
+#		| RuntimeServices*     -> (1) |
+#		| BootServices*        -> (2) |
 #		| NumberOfTableEntries        |
-#		| ConfigurationTable   -> (4) |
+#		| ConfigurationTable*  -> (4) |
 #		+-----------------------------+
 #	(1)	+-- EFI_RUNTIME_SERVICES -----+
 #		|                             |
@@ -33,25 +34,42 @@ from . import bs, rt, ds
 #		+-----------------------------+
 #	(4)	+-- EFI_CONFIGURATION_TABLE --+		of HOB_LIST
 #		| VendorGuid                  |
-#		| VendorTable          -> (5) |
+#		| VendorTable*         -> (5) |
 #		+-----------------------------+
 #		+-- EFI_CONFIGURATION_TABLE --+		of DXE_SERVICE_TABLE
 #		| VendorGuid                  |
-#		| VendorTable          -> (3) |
+#		| VendorTable*         -> (3) |
 #		+-----------------------------+
 #
-#		... sizeof(EFI_CONFIGURATION_TABLE) x 98 skipped
+#		... sizeof EFI_CONFIGURATION_TABLE x 98
 #
-#	(5)	+-----------------------------+
-#		| vendortable                 |
+#	(5)	+-- VOID* --------------------+
+#		| ...                         |
 #		+-----------------------------+
+#
+#		... the remainder of the 256 KiB chunk may be used for more conf table data
 
-def install_configuration_table(ql, key, table):
+def install_configuration_table(ql, key: str, table: int):
+	"""Create a new Configuration Table entry and add it to the list.
+
+	Args:
+		ql    : Qiling instance
+		key   : profile section name that holds the entry data
+		table : address of configuration table data; if None, data will be read
+		        from profile section into memory
+	"""
+
 	cfgtable = ql.os.profile[key]
 	guid = cfgtable['Guid']
-	
+
+	# if pointer to table data was not specified, load table data
+	# from profile and have table pointing to it
 	if table is None:
-		table = int(cfgtable['Table'], 0)
+		data = binascii.unhexlify(cfgtable['TableData'])
+		table = ql.loader.efi_conf_table_data_next_ptr
+
+		ql.mem.write(table, data)
+		ql.loader.efi_conf_table_data_next_ptr += len(data)
 
 	CoreInstallConfigurationTable(ql, guid, table)
 
@@ -76,8 +94,15 @@ def initialize(ql, gST : int):
 	confs = []
 
 	# these are needed for utils.CoreInstallConfigurationTable
-	ql.loader.efi_configuration_table = confs
-	ql.loader.efi_configuration_table_ptr = cfg
+	ql.loader.efi_conf_table_array = confs
+	ql.loader.efi_conf_table_array_ptr = cfg
+
+	# configuration table data space; its location is calculated by leaving
+	# enough space for 100 configuration table entries. only a few entries are
+	# expected, so 100 should definitely suffice
+	conf_data = cfg + EFI_CONFIGURATION_TABLE.sizeof() * 100
+	ql.loader.efi_conf_table_data_ptr = conf_data
+	ql.loader.efi_conf_table_data_next_ptr = conf_data
 
 	install_configuration_table(ql, "HOB_LIST", None)
 	install_configuration_table(ql, "DXE_SERVICE_TABLE", gDS)

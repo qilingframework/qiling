@@ -7,6 +7,7 @@ from qiling.os.const import *
 from ..fncc import *
 from ..ProcessorBind import *
 from ..UefiBaseType import *
+from ..const import *
 
 # @see: MdePkg/Include/Protocol/MmCpu.h
 class EFI_SMM_SAVE_STATE_REGISTER(ENUM_UC):

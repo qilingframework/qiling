@@ -36,4 +36,10 @@ class SmmContext(UefiContext):
 	def __init__(self, ql):
 		super(SmmContext, self).__init__(ql)
 
+		# assume tseg is inaccessible to non-smm
+		self.tseg_open = False
+
+		# assume tseg is locked
+		self.tseg_locked = True
+
 		self.swsmi_handlers = []
