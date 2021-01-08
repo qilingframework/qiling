@@ -8,7 +8,8 @@ import argparse, os, string, sys, ast, unicorn
 from binascii import unhexlify
 
 from qiling import *
-from qiling.utils import ql_create_assembler, arch_convert
+from qiling.arch.utils import ql_create_assembler
+from qiling.utils import arch_convert
 from qiling.const import QL_ARCH, QL_ENDIAN
 from qiling.__version__ import __version__ as ql_version
 from qiling.extensions.coverage import utils as cov_utils

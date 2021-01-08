@@ -138,19 +138,6 @@ class QlOsUefi(QlOs):
 			logging.error(f'Error: PC({pc:#x}) is unreachable')
 
 
-	def set_api(self, api_name, intercept_function, intercept = None):
-		api_name = "hook_" + str(api_name)
-		print(api_name)
-		if intercept == QL_INTERCEPT.ENTER:
-			self.user_defined_api_onenter[api_name] = intercept_function
-		
-		elif intercept == QL_INTERCEPT.EXIT:
-			self.user_defined_api_onexit[api_name] = intercept_function  
-		
-		else:
-			self.user_defined_api[api_name] = intercept_function
-            
-
 	def run(self):
 		self.notify_before_module_execution(self.ql, self.running_module)
 

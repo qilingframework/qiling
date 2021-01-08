@@ -79,11 +79,63 @@ class QlOs(QlOsUtils):
         self.appeared_strings = {}
         self.setup_output()
 
+
     def save(self):
         return {}
 
+
     def restore(self, saved_state):
         pass
+
+    def set_syscall(self, target_syscall, intercept_function, intercept):
+        if intercept == QL_INTERCEPT.ENTER:
+            if isinstance(target_syscall, int):
+                self.dict_posix_onEnter_syscall_by_num[target_syscall] = intercept_function
+            else:
+                syscall_name = "ql_syscall_" + str(target_syscall)
+                self.dict_posix_onEnter_syscall[syscall_name] = intercept_function
+
+        elif intercept == QL_INTERCEPT.EXIT:
+            if self.ql.ostype in (QL_OS_POSIX):
+                if isinstance(target_syscall, int):
+                    self.dict_posix_onExit_syscall_by_num[target_syscall] = intercept_function
+                else:
+                    syscall_name = "ql_syscall_" + str(target_syscall)
+                    self.dict_posix_onExit_syscall[syscall_name] = intercept_function                    
+
+        else:
+            if self.ql.ostype in (QL_OS_POSIX):
+                if isinstance(target_syscall, int):
+                    self.dict_posix_syscall_by_num[target_syscall] = intercept_function
+                else:
+                    syscall_name = "ql_syscall_" + str(target_syscall)
+                    self.dict_posix_syscall[syscall_name] = intercept_function
+            
+            elif self.ql.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
+                self.set_api(target_syscall, intercept_function)
+
+
+    def set_api(self, api_name, intercept_function, intercept):
+        if self.ql.ostype == QL_OS.UEFI:
+            api_name = "hook_" + str(api_name)
+
+        if intercept == QL_INTERCEPT.ENTER:
+            if self.ql.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
+                self.user_defined_api_onenter[api_name] = intercept_function
+            else:
+                self.add_function_hook(api_name, intercept_function, intercept) 
+
+        elif intercept == QL_INTERCEPT.EXIT:
+            if self.ql.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
+                self.user_defined_api_onexit[api_name] = intercept_function  
+            else:
+                self.add_function_hook(api_name, intercept_function, intercept)           
+
+        else:
+            if self.ql.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
+                self.user_defined_api[api_name] = intercept_function
+            else:
+                self.add_function_hook(api_name, intercept_function)  
 
 
     def find_containing_image(self, pc):

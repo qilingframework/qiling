@@ -6,6 +6,9 @@
 from abc import ABC, abstractmethod
 import struct
 
+from .utils import *
+from qiling.const import QL_ARCH, QL_ARCH_ALL, QL_ENDIAN, QL_OS, QL_OS_ALL, QL_OUTPUT, QL_DEBUGGER
+
 class QlArch(ABC):
     def __init__(self, ql):
         self.ql = ql
@@ -68,3 +71,19 @@ class QlArch(ABC):
     # Unicorn's CPU state restore method
     def context_restore(self, saved_context):
         self.ql.uc.context_restore(saved_context)
+
+
+    def create_disassembler(self):
+        if self.ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB):
+            reg_cpsr = self.ql.reg.cpsr
+        else:
+            reg_cpsr = None
+        return ql_create_disassembler(self.ql.archtype, self.ql.archendian, reg_cpsr)
+    
+
+    def create_assembler(self):
+        if self.ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB):
+            reg_cpsr = self.ql.reg.cpsr
+        else:
+            reg_cpsr = None
+        return ql_create_assembler(self.ql.archtype, self.ql.archendian, reg_cpsr)        

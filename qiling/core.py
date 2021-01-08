@@ -880,6 +880,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         if "loader" in saved_states:
             self.loader.restore(saved_states["loader"])
 
+
     # Either hook or replace syscall/api with custom api/syscall
     #  - if intercept is None, replace syscall with custom function
     #  - if intercept is ENTER/EXIT, hook syscall at enter/exit with custom function
@@ -888,107 +889,65 @@ class Qiling(QlCoreHooks, QlCoreStructs):
     # - ql.set_syscall("write", my_syscall_write)
     # TODO: Add correspoinding API in ql.os!
     def set_syscall(self, target_syscall, intercept_function, intercept = None):
-        if intercept == QL_INTERCEPT.ENTER:
-            if isinstance(target_syscall, int):
-                self.os.dict_posix_onEnter_syscall_by_num[target_syscall] = intercept_function
-            else:
-                syscall_name = "ql_syscall_" + str(target_syscall)
-                self.os.dict_posix_onEnter_syscall[syscall_name] = intercept_function
-
-        elif intercept == QL_INTERCEPT.EXIT:
-            if self.ostype in (QL_OS_POSIX):
-                if isinstance(target_syscall, int):
-                    self.os.dict_posix_onExit_syscall_by_num[target_syscall] = intercept_function
-                else:
-                    syscall_name = "ql_syscall_" + str(target_syscall)
-                    self.os.dict_posix_onExit_syscall[syscall_name] = intercept_function                    
-
-        else:
-            if self.ostype in (QL_OS_POSIX):
-                if isinstance(target_syscall, int):
-                    self.os.dict_posix_syscall_by_num[target_syscall] = intercept_function
-                else:
-                    syscall_name = "ql_syscall_" + str(target_syscall)
-                    self.os.dict_posix_syscall[syscall_name] = intercept_function
-            
-            elif self.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
-                self.set_api(target_syscall, intercept_function)
+        self.os.set_syscall(target_syscall, intercept_function, intercept)
         
 
     # Either replace or hook API
     #  - if intercept is None, replace API with custom function
     #  - if intercept is ENTER/EXIT, hook API at enter/exit with custom function
     def set_api(self, api_name, intercept_function, intercept = None):
-        # self.os.set_api(api_name, intercept_function, intercept = None)
-        if self.ostype == QL_OS.UEFI:
-            api_name = "hook_" + str(api_name)
-
-        if intercept == QL_INTERCEPT.ENTER:
-            if self.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
-                self.os.user_defined_api_onenter[api_name] = intercept_function
-            else:
-                self.os.add_function_hook(api_name, intercept_function, intercept) 
-
-        elif intercept == QL_INTERCEPT.EXIT:
-            if self.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
-                self.os.user_defined_api_onexit[api_name] = intercept_function  
-            else:
-                self.os.add_function_hook(api_name, intercept_function, intercept)           
-
-        else:
-            if self.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
-                self.os.user_defined_api[api_name] = intercept_function
-            else:
-                self.os.add_function_hook(api_name, intercept_function)  
+        self.os.set_api(api_name, intercept_function, intercept)
+ 
 
     # Map "ql_path" to any objects which implements QlFsMappedObject.
     def add_fs_mapper(self, ql_path, real_dest):
         self.os.fs_mapper.add_fs_mapping(ql_path, real_dest)
 
+
     # push to stack bottom, and update stack register
     def stack_push(self, data):
         return self.arch.stack_push(data)
 
+
     # pop from stack bottom, and update stack register
     def stack_pop(self):
         return self.arch.stack_pop()
+
 
     # read from stack, at a given offset from stack bottom
     # NOTE: unlike stack_pop(), this does not change stack register
     def stack_read(self, offset):
         return self.arch.stack_read(offset)
 
+
     # write to stack, at a given offset from stack bottom
     # NOTE: unlike stack_push(), this does not change stack register
     def stack_write(self, offset, data):
         return self.arch.stack_write(offset, data)
+
 
     # Assembler/Diassembler API
     @property
     def assembler(self):
         return self.create_assembler()
 
+
     @property
     def disassember(self):
         return self.create_disassembler()
-    
+
+
     def create_disassembler(self):
-        if self.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB):
-            reg_cpsr = self.reg.cpsr
-        else:
-            reg_cpsr = None
-        return ql_create_disassembler(self.archtype, self.archendian, reg_cpsr)
-    
+        return self.arch.create_disassembler()
+
+
     def create_assembler(self):
-        if self.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB):
-            reg_cpsr = self.reg.cpsr
-        else:
-            reg_cpsr = None
-        return ql_create_assembler(self.archtype, self.archendian, reg_cpsr)
+        return self.arch.create_assembler()
 
     # stop emulation
     def emu_stop(self):
         self.uc.emu_stop()
+
 
     # start emulation
     def emu_start(self, begin, end, timeout=0, count=0):

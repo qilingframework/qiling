@@ -123,17 +123,6 @@ class QlOsWindows(QlOs):
                     raise QlErrorSyscallNotFound("[!] Windows API Implementation Not Found")
 
 
-    def set_api(self, api_name, intercept_function, intercept = None):
-        if intercept == QL_INTERCEPT.ENTER:
-            self.user_defined_api_onenter[api_name] = intercept_function
-            
-        elif intercept == QL_INTERCEPT.EXIT:
-            self.user_defined_api_onexit[api_name] = intercept_function  
-            
-        else:
-            self.user_defined_api[api_name] = intercept_function
-
-
     def run(self):
         if self.ql.exit_point is not None:
             self.exit_point = self.ql.exit_point

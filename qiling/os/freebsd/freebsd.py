@@ -27,15 +27,6 @@ class QlOsFreebsd(QlOsPosix):
         return self.load_syscall()
 
 
-    def set_api(self, api_name, intercept_function, intercept = None):
-        if intercept == QL_INTERCEPT.ENTER:
-            self.add_function_hook(api_name, intercept_function, intercept)
-        elif intercept == QL_INTERCEPT.EXIT:    
-            self.add_function_hook(api_name, intercept_function, intercept)
-        else:
-            self.add_function_hook(api_name, intercept_function)
-
-
     def run(self):
         if self.ql.exit_point is not None:
             self.exit_point = self.ql.exit_point

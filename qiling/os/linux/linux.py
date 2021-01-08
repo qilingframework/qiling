@@ -85,15 +85,6 @@ class QlOsLinux(QlOsPosix):
             f()
 
 
-    def set_api(self, api_name, intercept_function, intercept = None):
-        if intercept == QL_INTERCEPT.ENTER:
-            self.add_function_hook(api_name, intercept_function, intercept)
-        elif intercept == QL_INTERCEPT.EXIT:    
-            self.add_function_hook(api_name, intercept_function, intercept)
-        else:
-            self.add_function_hook(api_name, intercept_function)
-
-
     def run(self):
         for function, callback, userdata in self.ql.os.function_hook_tmp:
             self.ql.os.function_hook.add_function_hook(function, callback, userdata)

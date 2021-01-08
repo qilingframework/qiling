@@ -164,15 +164,6 @@ class QlOsMacos(QlOsPosix):
         return self.load_syscall()
 
 
-    def set_api(self, api_name, intercept_function, intercept = None):
-        if intercept == QL_INTERCEPT.ENTER:
-            self.add_function_hook(api_name, intercept_function, intercept)
-        elif intercept == QL_INTERCEPT.EXIT:    
-            self.add_function_hook(api_name, intercept_function, intercept)
-        else:
-            self.add_function_hook(api_name, intercept_function)
-
-
     def hook_sigtrap(self, intno= None, int = None):
         logging.info("[!] Trap Found")
         self.emu_error()
