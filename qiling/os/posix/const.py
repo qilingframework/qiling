@@ -246,3 +246,5 @@ arm_open_flags = {
     'O_NOFOLLOW' : 0x20000,
     'O_SYNC'     : 0x101000,
 }
+
+ECHILD = -10
