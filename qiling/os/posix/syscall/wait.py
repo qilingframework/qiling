@@ -25,5 +25,5 @@ def ql_syscall_wait4(ql, wait4_pid, wait4_wstatus, wait4_options, wait4_rusage, 
     except ChildProcessError:
         regreturn = -ECHILD
     logging.info("wait4(%d, %d) = %d"% (wait4_pid, wait4_options, regreturn))
-    ql.os.definesyscall_return(regreturn)
+    return regreturn
 
