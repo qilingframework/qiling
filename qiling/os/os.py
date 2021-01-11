@@ -4,7 +4,7 @@
 #
 
 import sys, logging
-import logging, os, sys, types
+from typing import Callable, Sequence, Mapping, MutableMapping, Any
 
 from .const import *
 from .filestruct import ql_file
@@ -34,7 +34,7 @@ class QlOs(QlOsUtils):
             self.stdin  = sys.stdin.buffer  if hasattr(sys.stdin,  "buffer") else sys.stdin
             self.stdout = sys.stdout.buffer if hasattr(sys.stdout, "buffer") else sys.stdout
             self.stderr = sys.stderr.buffer if hasattr(sys.stderr, "buffer") else sys.stderr
-            else:
+        else:
             self.stdin  = ql_file('stdin',  sys.stdin.fileno())
             self.stdout = ql_file('stdout', sys.stdout.fileno())
             self.stderr = ql_file('stderr', sys.stderr.fileno())
@@ -67,6 +67,38 @@ class QlOs(QlOsUtils):
         self.appeared_strings = {}
         self.setup_output()
 
+        # choose a calling convention according to arch and os
+        if self.ql.archtype in (QL_ARCH.X86, QL_ARCH.A8086):
+            cc = 'cdecl'
+        elif self.ql.archtype == QL_ARCH.X8664:
+            cc = {
+                QL_OS.LINUX:   'amd64',
+                QL_OS.WINDOWS: 'ms',
+                QL_OS.UEFI:    'ms'
+            }.get(self.ql.ostype, '')
+        else:
+            # do not pick a cc; let class overrides define the necessary handlers
+            cc = ''
+
+        # registers used to pass arguments; a None stands for a stack argument
+        self.__cc_args = {
+            'amd64': (UC_X86_REG_RDI, UC_X86_REG_RSI, UC_X86_REG_RDX, UC_X86_REG_R10, UC_X86_REG_R8, UC_X86_REG_R9) + (None, ) * 10,
+            'cdecl': (None, ) * 16,
+            'ms':    (UC_X86_REG_RCX, UC_X86_REG_RDX, UC_X86_REG_R8, UC_X86_REG_R9) + (None, ) * 12
+        }.get(cc, [])
+
+        # shadow stack size in terms of stack items
+        self.__shadow = 4 if cc == 'ms' else 0
+
+        # arch native address size in bytes
+        self.__asize = self.ql.archbit // 8
+
+        # register used to pass the return value to the caller
+        self.__cc_reg_ret = {
+            QL_ARCH.A8086: UC_X86_REG_AX,
+            QL_ARCH.X86:   UC_X86_REG_EAX,
+            QL_ARCH.X8664: UC_X86_REG_RAX
+        }.get(self.ql.archtype, UC_X86_REG_INVALID)
 
     def save(self):
         return {}
@@ -97,7 +129,7 @@ class QlOs(QlOsUtils):
                 else:
                     syscall_name = "ql_syscall_" + str(target_syscall)
                     self.dict_posix_syscall[syscall_name] = intercept_function
-            
+
             elif self.ql.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
                 self.set_api(target_syscall, intercept_function)
 
@@ -156,139 +188,103 @@ class QlOs(QlOsUtils):
         except:
             logging.error("Error: PC(0x%x) Unreachable" % self.ql.reg.arch_pc)
 
+    def set_function_args(self, args: Sequence[int]) -> None:
+        """Set function call arguments.
+        """
 
-    def _x86_set_args(self, args):
-        for i in range(len(args)):
-            # skip ret_addr
-            self.ql.stack_write((i + 1) * 4, args[i])
+        for i, (reg, arg) in enumerate(zip(self.__cc_args, args)):
+            # should arg be written to a reg or the stack?
+            if reg is None:
+                # get matching stack item
+                si = i - self.__cc_args.index(None)
 
+                # skip return address and shadow space
+                self.ql.stack_write((1 + self.__shadow + si) * self.__asize, arg)
+            else:
+                self.ql.uc.reg_write(reg, arg)
 
-    def _x8664_set_args(self, args):
-        reg_list=None
-        if self.ql.ostype == QL_OS.LINUX:
-            reg_list = [UC_X86_REG_RDI, UC_X86_REG_RSI, UC_X86_REG_RDX, UC_X86_REG_R10, UC_X86_REG_R8, UC_X86_REG_R9]
-        elif self.ql.ostype == QL_OS.WINDOWS:
-            reg_list = [UC_X86_REG_RCX, UC_X86_REG_RDX, UC_X86_REG_R8, UC_X86_REG_R9]
-        if reg_list!=None:
-            for i in range(len(args)):
-                self.ql.uc.reg_write(reg_list[i], args[i])
+    def get_param_by_index(self, index: int) -> int:
+        """Get an argument value by its index.
+        """
 
+        max_args = len(self.__cc_args)
+        assert index < max_args, f'currently supporting up to {max_args} args'
 
-    def set_function_args(self, args):
-        if self.ql.archtype == QL_ARCH.X86:   # 32bit
-            self._x86_set_args(args)
-        else:   # 64bit
-            self._x8664_set_args(args)
+        reg = self.__cc_args[index]
 
+        # should arg be read from a reg or the stack?
+        if reg is None:
+            # get matching stack item
+            si = index - self.__cc_args.index(None)
 
-    def _x86_get_params_by_index(self, index):
-        # index starts from 0
-        # skip ret_addr
-        return self.ql.stack_read((index + 1) * 4)
-
-
-    def _x8664_get_params_by_index(self, index):
-        reg_list = ["rcx", "rdx", "r8", "r9"]
-        if index < 4:
-            return self.ql.reg.read(reg_list[index])
-
-        index -= 4
-        # skip ret_addr
-        return self.ql.stack_read((index + 5) * 8)
-
-
-    def get_param_by_index(self, index):
-        if self.ql.archtype == QL_ARCH.X86:
-            return self._x86_get_params_by_index(index)
-        elif self.ql.archtype == QL_ARCH.X8664:
-            return self._x8664_get_params_by_index(index)
-
-
-    def _x86_get_args(self, number):
-        arg_list = []
-        for i in range(number):
-            # skip ret_addr
-            arg_list.append(self.ql.stack_read((i + 1) * 4))
-        if number == 1:
-            return arg_list[0]
+            # skip return address and shadow space
+            return self.ql.stack_read((1 + self.__shadow + si) * self.__asize)
         else:
-            return arg_list
+            return self.ql.uc.reg_read(reg)
 
+    def get_function_param(self, nargs: int) -> list:
+        """Get values of `nargs` first arguments.
+        """
 
-    def _x8664_get_args(self, number):
-        reg_list = ["rcx", "rdx", "r8", "r9"]
-        arg_list = []
-        reg_num = number
-        if reg_num > 4:
-            reg_num = 4
-        number -= reg_num
-        for i in reg_list[:reg_num]:
-            arg_list.append(self.ql.reg.read(i))
-        for i in range(number):
-            # skip ret_addr and 32 byte home space
-            arg_list.append(self.ql.stack_read((i + 5) * 8))
-        if reg_num == 1:
-            return arg_list[0]
-        else:
-            return arg_list
+        params = [self.get_param_by_index(i) for i in range(nargs)]
 
+        return params[0] if nargs == 1 else params
 
-    def set_function_params(self, in_params, out_params):
-        index = 0
-        for each in in_params:
-            if in_params[each] == DWORD or in_params[each] == POINTER:
-                out_params[each] = self.get_param_by_index(index)
-            elif in_params[each] == ULONGLONG:
-                if self.ql.archtype == QL_ARCH.X86:
-                    low = self.get_param_by_index(index)
-                    index += 1
-                    high = self.get_param_by_index(index)
-                    out_params[each] = high << 32 + low
-                else:
-                    out_params[each] = self.get_param_by_index(index)
-            elif in_params[each] == STRING:
-                ptr = self.get_param_by_index(index)
-                if ptr == 0:
-                    out_params[each] = 0
-                else:
-                    content = self.read_cstring(ptr)
-                    out_params[each] = content
-            elif in_params[each] == WSTRING:
-                ptr = self.get_param_by_index(index)
-                if ptr == 0:
-                    out_params[each] = 0
-                else:
-                    content = self.read_wstring(ptr)
-                    out_params[each] = content
-            elif in_params[each] == GUID:
-                ptr = self.get_param_by_index(index)
-                if ptr == 0:
-                    out_params[each] = 0
-                else:
-                    out_params[each] = str(self.read_guid(ptr))
-            index += 1
-        return index
+    def set_function_params(self, in_params: Mapping[str, int], out_params: MutableMapping[str, Any]) -> int:
+        """Retrieve parameters values according to their assigned type.
 
+        Args:
+            in_params : a mapping of parameter names to their types
+            out_params: a mapping of parameter names to their values
+        Returns: number of consumed arguments; this is only relevant for the cdecl
+        calling convention, where all the arguments are stored on the stack. in that
+        case, the value reflects the number of items consumed from the stack
+        """
 
-    def get_function_param(self, number):
-        if self.ql.archtype == QL_ARCH.X86:
-            return self._x86_get_args(number)
-        elif self.ql.archtype == QL_ARCH.X8664:
-            return self._x8664_get_args(number)
+        def __nullptr_or_deref(idx: int, deref: Callable[[int], Any]):
+            ptr = self.get_param_by_index(idx)
 
+            return deref(ptr) if ptr else 0
 
-    def set_return_value(self, ret):
-        if self.ql.archtype == QL_ARCH.X86:
-            self.ql.reg.eax = ret
-        elif self.ql.archtype == QL_ARCH.X8664:
-            self.ql.reg.rax = ret
+        def __handle_POINTER(idx: int):
+            return self.get_param_by_index(idx), 1
 
+        def __handle_ULONGLONG_32(idx: int):
+            lo = self.get_param_by_index(idx)
+            hi = self.get_param_by_index(idx + 1)
 
-    def get_return_value(self):
-        if self.ql.archtype == QL_ARCH.X86:
-            return self.ql.reg.eax
-        elif self.ql.archtype == QL_ARCH.X8664:
-            return self.ql.reg.rax
+            return (hi << 32) | lo, 2
+
+        def __handle_STRING(idx: int):
+            return __nullptr_or_deref(idx, self.read_cstring), 1
+
+        def __handle_WSTRING(idx: int):
+            return __nullptr_or_deref(idx, self.read_wstring), 1
+
+        def __handle_GUID(idx: int):
+            return __nullptr_or_deref(idx, lambda p: str(self.read_guid(p))), 1
+
+        param_handlers = {
+            DWORD    : __handle_POINTER,
+            ULONGLONG: __handle_POINTER if self.ql.archbit == 64 else __handle_ULONGLONG_32,
+            POINTER  : __handle_POINTER,
+            STRING   : __handle_STRING,
+            WSTRING  : __handle_WSTRING,
+            GUID     : __handle_GUID
+        }
+
+        i = 0
+        for pname, ptype in in_params.items():
+            out_params[pname], consumed = param_handlers[ptype](i)
+            i += consumed
+
+        return i
+
+    def set_return_value(self, ret: int):
+        self.ql.uc.reg_write(self.__cc_reg_ret, ret)
+
+    def get_return_value(self) -> int:
+        return self.ql.uc.reg_read(self.__cc_reg_ret)
 
     #
     # stdcall cdecl fastcall cc
