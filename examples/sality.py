@@ -29,7 +29,7 @@ def init_unseen_symbols(ql, address, name, ordinal, dll_name):
 #   LPDWORD                 lpThreadId
 # );
 @winsdkapi(cc=STDCALL, dllname='kernel32_dll')
-def sality_CreateThread(ql, address, params):
+def hook_CreateThread(ql, address, params):
     # set thread handle
     return 1
 
@@ -51,7 +51,7 @@ def sality_CreateThread(ql, address, params):
     "dwFlagsAndAttributes": DWORD,
     "hTemplateFile": HANDLE
 })
-def sality_CreateFileA(ql, address, params):
+def hook_CreateFileA(ql, address, params):
     lpFileName = params["lpFileName"]
     if lpFileName.startswith("\\\\.\\"):
         if ql.amsint32_driver:
@@ -94,7 +94,7 @@ def _WriteFile(ql, address, params):
     "lpNumberOfBytesWritten": POINTER,
     "lpOverlapped": POINTER
 })
-def sality_WriteFile(ql, address, params):
+def hook_WriteFile(ql, address, params):
     hFile = params["hFile"]
     lpBuffer = params["lpBuffer"]
     nNumberOfBytesToWrite = params["nNumberOfBytesToWrite"]
@@ -121,8 +121,7 @@ def sality_WriteFile(ql, address, params):
 #   DWORD     dwNumServiceArgs,
 #   LPCSTR    *lpServiceArgVectors
 # );
-@winsdkapi(cc=STDCALL, dllname='kernel32_dll')
-def sality_StartServiceA(ql, address, params):
+def hook_StartServiceA(ql, address, params):
     try:
         hService = params["hService"]
         service_handle = ql.os.handle_manager.get(hService)
@@ -160,10 +159,10 @@ if __name__ == "__main__":
     # for this module 
     ql.amsint32_driver = None
     # emulate some Windows API
-    ql.set_api("CreateThread", sality_CreateThread)
-    ql.set_api("CreateFileA", sality_CreateFileA)
-    ql.set_api("WriteFile", sality_WriteFile)
-    ql.set_api("StartServiceA", sality_StartServiceA)
+    ql.set_api("CreateThread", hook_CreateThread)
+    ql.set_api("CreateFileA", hook_CreateFileA)
+    ql.set_api("WriteFile", hook_WriteFile)
+    ql.set_api("StartServiceA", hook_StartServiceA)
     #init sality
     ql.hook_address(hook_stop_address, 0x40EFFB)
     ql.run()
