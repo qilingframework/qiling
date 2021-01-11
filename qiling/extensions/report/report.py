@@ -1,5 +1,11 @@
-from qiling.const import *
+#!/usr/bin/env python3
+# 
+# Cross Platform and Multi Architecture Advanced Binary Emulation Framework
+#
+
 import json
+
+from qiling.const import *
 
 
 class Report:

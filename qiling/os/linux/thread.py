@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
 #
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org)
+#
 
-import os, time, logging
+import gevent, os, time, logging
+
+from abc import ABC, abstractmethod
 from pathlib import Path
-
-from unicorn.unicorn import UcError
-import gevent
 from gevent import Greenlet
-
+from unicorn.unicorn import UcError
 from unicorn.mips_const import *
 from unicorn.arm_const import *
 
@@ -19,11 +18,8 @@ from qiling.arch.x86_const import *
 from qiling.const import *
 from qiling.os.const import *
 
-
-from abc import ABC, abstractmethod
-
-
 LINUX_THREAD_ID = 2000
+
 
 def new_thread_id():
     global LINUX_THREAD_ID

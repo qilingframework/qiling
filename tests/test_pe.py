@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
 
 import os, random, sys, unittest, logging
 import string as st
@@ -9,7 +9,7 @@ from binascii import unhexlify
 
 from unicorn.x86_const import *
 
-sys.path.insert(0, "..")
+sys.path.append("..")
 from qiling import *
 from qiling.const import *
 from qiling.exception import *

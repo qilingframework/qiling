@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
 
-import ctypes
-import os
-import struct
-import logging
+import ctypes, logging, os, struct
+
 from time import time
 
 from qiling.os.macos.fncc import *

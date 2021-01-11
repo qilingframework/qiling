@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
+
+import inspect, logging
 
 from .filestruct import ql_file
 from .utils import QlOsUtils
-import inspect, logging
+
 
 # All mapped objects should inherit this class.
 # Note this object is compatible with ql_file.

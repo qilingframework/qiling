@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 #
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org)
-import struct, logging
+#
+
+import ctypes, logging, struct
+
+from enum import IntEnum
+
 from unicorn.x86_const import *
 from qiling.const import *
-from enum import IntEnum
 from qiling.os.windows.handle import *
 from qiling.exception import *
-
-
-import ctypes
 from .wdk_const import *
 
 

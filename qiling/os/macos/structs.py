@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
+
+import ctypes, struct
 
 from enum import IntEnum
-import ctypes
-import struct
+
 
 class POINTER64(ctypes.Structure):
     _fields_ = [("value", ctypes.c_uint64)]

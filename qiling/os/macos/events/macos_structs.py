@@ -1,6 +1,10 @@
-import enum
-import ctypes
-import logging
+#!/usr/bin/env python3
+# 
+# Cross Platform and Multi Architecture Advanced Binary Emulation Framework
+#
+
+import ctypes, enum, logging
+
 from qiling.os.macos.structs import POINTER64
 
 base_event_normal = 0

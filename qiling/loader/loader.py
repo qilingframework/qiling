@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
+
 import pefile
+
+from collections import namedtuple
+
 from qiling.const import QL_OS, QL_OS_ALL, QL_ARCH, QL_ENDIAN, QL_OUTPUT
 from qiling.exception import QlErrorArch, QlErrorOsType, QlErrorOutput
-from collections import namedtuple
+
 
 class QlLoader():
     def __init__(self, ql):

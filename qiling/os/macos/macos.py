@@ -1,22 +1,19 @@
 #!/usr/bin/env python3
 #
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org)
+#
 
-import traceback, logging
+import logging, traceback
 
 from unicorn import *
 from unicorn.x86_const import *
 from unicorn.arm64_const import *
 
 from qiling.arch.x86 import *
-
 from qiling.const import *
 from qiling.os.const import *
 from qiling.os.posix.posix import QlOsPosix
-
 from .const import *
-
 from qiling.os.macos import macos
 from qiling.os.macos.structs import *
 from qiling.os.macos.events.macos_structs import *

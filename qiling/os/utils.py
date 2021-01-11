@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
 
 """
 This module is intended for general purpose functions that are only used in qiling.os
@@ -16,7 +16,6 @@ from unicorn.arm_const import *
 from unicorn.x86_const import *
 from unicorn.arm64_const import *
 from unicorn.mips_const import *
-
 from capstone import *
 from capstone.arm_const import *
 from capstone.x86_const import *
@@ -27,7 +26,6 @@ from keystone import *
 from qiling.const import *
 from qiling.exception import *
 from .const import *
-
 from qiling.os.windows.wdk_const import *
 from qiling.os.windows.structs import *
 from qiling.utils import verify_ret

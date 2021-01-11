@@ -1,5 +1,4 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework Plugin For IDA
-# Built on top of Unicorn emulator (www.unicorn-engine.org)
 # Learn how to use? Please visit https://docs.qiling.io/en/latest/ida/
 
 UseAsScript = True
@@ -13,21 +12,6 @@ import re
 from enum import Enum
 from elftools.elf.elffile import ELFFile
 from json import load
-
-# Qiling
-from qiling import *
-from qiling.const import *
-from qiling.arch.x86_const import reg_map_32 as x86_reg_map_32
-from qiling.arch.x86_const import reg_map_64 as x86_reg_map_64
-from qiling.arch.x86_const import reg_map_misc as x86_reg_map_misc
-from qiling.arch.x86_const import reg_map_st as x86_reg_map_st
-from qiling.arch.arm_const import reg_map as arm_reg_map
-from qiling.arch.arm64_const import reg_map as arm64_reg_map
-from qiling.arch.mips_const import reg_map as mips_reg_map
-from qiling.utils import ql_get_arch_bits
-from qiling import __version__ as QLVERSION
-from qiling.os.filestruct import ql_file
-from keystone import *
 
 # IDA Python SDK
 from idaapi import *
@@ -55,6 +39,22 @@ import ida_range
 # PyQt
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import (QPushButton, QHBoxLayout)
+
+# Qiling
+from qiling import *
+from qiling.const import *
+from qiling.arch.x86_const import reg_map_32 as x86_reg_map_32
+from qiling.arch.x86_const import reg_map_64 as x86_reg_map_64
+from qiling.arch.x86_const import reg_map_misc as x86_reg_map_misc
+from qiling.arch.x86_const import reg_map_st as x86_reg_map_st
+from qiling.arch.arm_const import reg_map as arm_reg_map
+from qiling.arch.arm64_const import reg_map as arm64_reg_map
+from qiling.arch.mips_const import reg_map as mips_reg_map
+from qiling.utils import ql_get_arch_bits
+from qiling import __version__ as QLVERSION
+from qiling.os.filestruct import ql_file
+from keystone import *
+
 
 QilingHomePage = 'https://www.qiling.io'
 QilingStableVersionURL = 'https://raw.githubusercontent.com/qilingframework/qiling/master/qiling/__version__.py'

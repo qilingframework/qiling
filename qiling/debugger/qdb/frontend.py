@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
+#
+# Cross Platform and Multi Architecture Advanced Binary Emulation Framework
+#
 
 import math, copy, os
 from contextlib import contextmanager
 
 from qiling.const import QL_ARCH
-
 from .utils import dump_regs, get_arm_flags
-
-
 
 # class for colorful prints
 class color:
