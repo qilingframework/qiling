@@ -246,8 +246,11 @@ class QlOs(QlOsUtils):
 
             return deref(ptr) if ptr else 0
 
-        def __handle_POINTER(idx: int):
+        def __handle_default(idx: int):
             return self.get_param_by_index(idx), 1
+
+        def __handle_POINTER(idx: int):
+            return __handle_default(idx)
 
         def __handle_ULONGLONG_32(idx: int):
             lo = self.get_param_by_index(idx)
@@ -265,7 +268,6 @@ class QlOs(QlOsUtils):
             return __nullptr_or_deref(idx, lambda p: str(self.read_guid(p))), 1
 
         param_handlers = {
-            DWORD    : __handle_POINTER,
             ULONGLONG: __handle_POINTER if self.ql.archbit == 64 else __handle_ULONGLONG_32,
             POINTER  : __handle_POINTER,
             STRING   : __handle_STRING,
@@ -275,7 +277,8 @@ class QlOs(QlOsUtils):
 
         i = 0
         for pname, ptype in in_params.items():
-            out_params[pname], consumed = param_handlers[ptype](i)
+            handler = param_handlers.get(ptype, __handle_default)
+            out_params[pname], consumed = handler(i)
             i += consumed
 
         return i
