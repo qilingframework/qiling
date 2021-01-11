@@ -22,14 +22,14 @@ heap_size		= 0x02000000
 [HOB_LIST]
 # EFI_GLOBAL_VARIABLE
 Guid = 7739f24c-93d7-11d4-9a3a-0090273fc14d
-# the HOB list must end with an etry type of FFFF
+# the HOB list must end with an entry whose HobType is FFFF
 TableData = FFFF000000000000
 
 [DXE_SERVICE_TABLE]
 Guid = 05ad34ba-6f02-4214-952e-4da0398e2bb9
 
 [LOADED_IMAGE_PROTOCOL]
-guid = 5b1b31a1-9562-11d2-8e3f-00a0c969723b
+Guid = 5b1b31a1-9562-11d2-8e3f-00a0c969723b
 
 [MMIO]
 sbreg_base = 0xFD000000

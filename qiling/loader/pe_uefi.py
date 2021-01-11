@@ -169,10 +169,10 @@ class QlLoaderPE_UEFI(QlLoader):
             unload_ptr = self.ql.unpack64(loaded_image_protocol.Unload)
 
             if unload_ptr != 0:
+                self.ql.log.info(f'Unloading module {handle:#x}, calling {unload_ptr:#x}')
+
                 self.call_function(unload_ptr, [handle], self.end_of_execution_ptr)
                 self.loaded_image_protocol_modules.remove(handle)
-
-                self.ql.log.info(f'Unloading module {handle:#x}, calling {unload_ptr:#x}')
 
                 return True
 
@@ -204,7 +204,7 @@ class QlLoaderPE_UEFI(QlLoader):
         self.execute_module(path, image_base, entry_point, self.end_of_execution_ptr)
 
     def run(self):
-        # intel architecture uefi implementaion only
+        # intel architecture uefi implementation only
         if self.ql.archtype not in (QL_ARCH.X86, QL_ARCH.X8664):
             raise QlErrorArch("Unsupported architecture")
 
@@ -212,7 +212,7 @@ class QlLoaderPE_UEFI(QlLoader):
         if self.ql.archtype != QL_ARCH.X8664:
             raise QlErrorArch("Only 64 bit arch is supported at the moment")
 
-        self.loaded_image_protocol_guid = self.ql.os.profile["LOADED_IMAGE_PROTOCOL"]["guid"]
+        self.loaded_image_protocol_guid = self.ql.os.profile["LOADED_IMAGE_PROTOCOL"]["Guid"]
         self.loaded_image_protocol_modules = []
         self.tpl = 4 # TPL_APPLICATION
 
