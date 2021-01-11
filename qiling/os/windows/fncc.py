@@ -52,7 +52,7 @@ def winsdkapi(cc, param_num=None, dllname=None, replace_params_type=None, replac
                     f = open(winsdk_path, 'r')
                     funclist = json.load(f)
                 else:
-                    logging.info('[!]', winsdk_path, 'not found')
+                    logging.info('[!] %s not found', winsdk_path)
                 if funcname not in funclist:
                     params = replace_params
                 else:
