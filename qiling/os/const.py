@@ -122,6 +122,7 @@ reptypedict = {
             "REFCLSID": "POINTER",
             "REFIID": "POINTER",
             "REGSAM": "POINTER",
+            "SC_HANDLE": "HANDLE",
             "SHELLEXECUTEINFOA": "POINTER",
             "SHELLEXECUTEINFOW": "POINTER",
             "SHFILEINFOW": "POINTER",
