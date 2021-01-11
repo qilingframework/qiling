@@ -252,7 +252,6 @@ class QlLoaderPE_UEFI(QlLoader):
         protocols = (
             EfiSmmAccess2Protocol,
             EfiSmmBase2Protocol,
-            PcdProtocol
         )
 
         for proto in protocols:
