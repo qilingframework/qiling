@@ -3,14 +3,16 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import struct, sys, logging
+import sys, logging
+
+from unicorn import UcError
 
 sys.path.append("..")
-from qiling import *
-from qiling.os.windows.fncc import *
+from qiling import Qiling
+from qiling.os.const import STDCALL, POINTER, DWORD, STRING, HANDLE
+from qiling.os.windows.fncc import winsdkapi
+from qiling.os.windows.utils import canonical_path, string_appearance
 from qiling.os.windows.dlls.kernel32.fileapi import _CreateFile
-from qiling.os.windows.utils import canonical_path
-from qiling.loader.utils import ql_pe_check_archtype
 
 
 def init_unseen_symbols(ql, address, name, ordinal, dll_name):
@@ -68,7 +70,8 @@ def _WriteFile(ql, address, params):
     lpBuffer = params["lpBuffer"]
     nNumberOfBytesToWrite = params["nNumberOfBytesToWrite"]
     lpNumberOfBytesWritten = params["lpNumberOfBytesWritten"]
-    lpOverlapped = params["lpOverlapped"]
+    #lpOverlapped = params["lpOverlapped"]
+
     if hFile == 0xfffffff5:
         s = ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
         ql.os.stdout.write(s)
@@ -173,7 +176,7 @@ if __name__ == "__main__":
     ql.run(0x4053B2)
     logging.info("[+] test kill thread")
     if ql.amsint32_driver:
-        ql.amsint32_driver.os.io_Write(struct.pack("<I", 0xdeadbeef))
+        ql.amsint32_driver.os.io_Write(ql.pack32(0xdeadbeef))
         ql.amsint32_driver.hook_address(hook_stop_address, 0x10423)
         ql.amsint32_driver.set_function_args([0])
         ql.amsint32_driver.run(0x102D0)
