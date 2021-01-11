@@ -121,6 +121,7 @@ def hook_WriteFile(ql, address, params):
 #   DWORD     dwNumServiceArgs,
 #   LPCSTR    *lpServiceArgVectors
 # );
+@winsdkapi(cc=STDCALL, dllname='advapi32_dll')
 def hook_StartServiceA(ql, address, params):
     try:
         hService = params["hService"]
