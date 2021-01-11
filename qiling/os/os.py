@@ -3,15 +3,16 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+import sys, logging
 import logging, os, sys, types
 
-from .utils import QlOsUtils
 from .const import *
 from .filestruct import ql_file
 from .mapper import QlFsMapper
+from .utils import QlOsUtils
 
-from qiling.const import *
-
+from qiling.const import QL_ARCH, QL_OS, QL_INTERCEPT, QL_OS_POSIX
+from qiling.exception import QlErrorArch
 from unicorn.x86_const import *
 
 class QlOs(QlOsUtils):
