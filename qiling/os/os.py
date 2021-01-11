@@ -28,22 +28,14 @@ class QlOs(QlOsUtils):
         self.services = {}
         self.elf_mem_start = 0x0
 
-        if "fileno" not in dir(sys.stdin) or "fileno" not in dir(sys.stdout) or "fileno" not in dir(sys.stderr):
+        if not hasattr(sys.stdin, "fileno") or not hasattr(sys.stdout, "fileno") or not hasattr(sys.stderr, "fileno"):
             # IDAPython has some hack on standard io streams and thus they don't have corresponding fds.
-            if "buffer" in dir(sys.stdin):
-                self.stdin = sys.stdin.buffer
+
+            self.stdin  = sys.stdin.buffer  if hasattr(sys.stdin,  "buffer") else sys.stdin
+            self.stdout = sys.stdout.buffer if hasattr(sys.stdout, "buffer") else sys.stdout
+            self.stderr = sys.stderr.buffer if hasattr(sys.stderr, "buffer") else sys.stderr
             else:
-                self.stdin = sys.stdin
-            if "buffer" in dir(sys.stdout):
-                self.stdout = sys.stdout.buffer
-            else:
-                self.stdout = sys.stdout
-            if "buffer" in dir(sys.stderr):
-                self.stderr = sys.stderr.buffer
-            else:
-                self.stderr = sys.stderr
-        else:
-            self.stdin = ql_file('stdin', sys.stdin.fileno())
+            self.stdin  = ql_file('stdin',  sys.stdin.fileno())
             self.stdout = ql_file('stdout', sys.stdout.fileno())
             self.stderr = ql_file('stderr', sys.stderr.fileno())
 
@@ -56,17 +48,12 @@ class QlOs(QlOsUtils):
         if self.ql.stderr != 0:
             self.stderr = self.ql.stderr
 
-        if self.ql.archbit == 32:
-            EMU_END = 0x8fffffff
-        elif self.ql.archbit == 64:
-            EMU_END = 0xffffffffffffffff
-        
-        elif self.ql.archbit == 16:
-            # 20bit address lane
-            EMU_END = 0xfffff   
-        
         # defult exit point
-        self.exit_point = EMU_END
+        self.exit_point = {
+            16: 0xfffff,            # 20bit address lane
+            32: 0x8fffffff,
+            64: 0xffffffffffffffff
+        }.get(self.ql.archbit, None)
 
         if self.ql.shellcoder:
             self.shellcoder_ram_size = int(self.profile.get("SHELLCODER", "ram_size"), 16)
@@ -83,7 +70,6 @@ class QlOs(QlOsUtils):
 
     def save(self):
         return {}
-
 
     def restore(self, saved_state):
         pass
@@ -115,7 +101,6 @@ class QlOs(QlOsUtils):
             elif self.ql.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
                 self.set_api(target_syscall, intercept_function)
 
-
     def set_api(self, api_name, intercept_function, intercept):
         if self.ql.ostype == QL_OS.UEFI:
             api_name = "hook_" + str(api_name)
@@ -137,7 +122,6 @@ class QlOs(QlOsUtils):
                 self.user_defined_api[api_name] = intercept_function
             else:
                 self.add_function_hook(api_name, intercept_function)  
-
 
     def find_containing_image(self, pc):
         for image in self.ql.loader.images:
@@ -311,45 +295,48 @@ class QlOs(QlOsUtils):
     #
 
     def __x86_cc(self, param_num, params, func, args, kwargs, passthru=False):
-        # read params
+        # read params values
         if params is not None:
             param_num = self.set_function_params(params, args[2])
 
-        if isinstance(self.winapi_func_onenter, types.FunctionType):
+        # if set, fire up the on-enter hook
+        if callable(self.winapi_func_onenter):
             address, params = self.winapi_func_onenter(*args, **kwargs)
+
+            # override original args set
             args = (self.ql, address, params)
-            onEnter = True
-        else:
-            onEnter = False
 
         # call function
         result = func(*args, **kwargs)
 
-        if isinstance(self.winapi_func_onexit, types.FunctionType):
+        # if set, fire up the on-exit hook
+        if callable(self.winapi_func_onexit):
             self.winapi_func_onexit(*args, **kwargs)
 
         # set return value
         if result is not None:
             self.set_return_value(result)
+
         # print
         self.print_function(args[1], func.__name__, args[2], result, passthru)
 
         return result, param_num
-
 
     def clear_syscalls(self):
         self.syscalls = {}
         self.syscalls_counter = 0
         self.appeared_strings = {}
 
-
     def _call_api(self, name, params, result, address, return_address):
         params_with_values = {}
+
         if name.startswith("hook_"):
-            name = name.split("hook_", 1)[1]
+            name = name[5:]
+
             # printfs are shit
             if params is not None:
                 self.set_function_params(params, params_with_values)
+
         self.syscalls.setdefault(name, []).append({
             "params": params_with_values,
             "result": result,
@@ -359,7 +346,6 @@ class QlOs(QlOsUtils):
         })
 
         self.syscalls_counter += 1
-
 
     def x86_stdcall(self, param_num, params, func, args, kwargs, passthru=False):
         # if we check ret_addr before the call, we can't modify the ret_addr from inside the hook
@@ -379,10 +365,10 @@ class QlOs(QlOsUtils):
 
         return result
 
-
     def x86_cdecl(self, param_num, params, func, args, kwargs, passthru=False):
-        result, param_num = self.__x86_cc(param_num, params, func, args, kwargs)
+        result, _ = self.__x86_cc(param_num, params, func, args, kwargs)
         old_pc = self.ql.reg.arch_pc
+
         # append syscall to list
         self._call_api(func.__name__, params, result, old_pc, self.ql.stack_read(0))
 
@@ -391,11 +377,10 @@ class QlOs(QlOsUtils):
 
         return result
 
-
     def x8664_fastcall(self, param_num, params, func, args, kwargs, passthru=False):
-        result, param_num = self.__x86_cc(param_num, params, func, args, kwargs)
-
+        result, _ = self.__x86_cc(param_num, params, func, args, kwargs)
         old_pc = self.ql.reg.arch_pc
+
         # append syscall to list
         self._call_api(func.__name__, params, result, old_pc, self.ql.stack_read(0))
 
