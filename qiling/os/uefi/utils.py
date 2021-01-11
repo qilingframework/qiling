@@ -7,8 +7,7 @@ import struct
 
 from uuid import UUID
 
-from qiling.os.uefi.const import *
-from qiling.os.uefi.UefiSpec import EFI_LOCATE_SEARCH_TYPE, EFI_CONFIGURATION_TABLE
+from qiling.os.uefi.UefiSpec import EFI_CONFIGURATION_TABLE
 from qiling.os.uefi.UefiBaseType import EFI_GUID
 
 def check_and_notify_protocols(ql):
@@ -99,36 +98,6 @@ def init_struct(ql, base : int, descriptor : dict):
 	ql.log.info(f'')
 
 	return isntance
-
-def LocateHandles(context, params):
-	handles = []
-	pointer_size = 8
-
-	if params["SearchType"] == EFI_LOCATE_SEARCH_TYPE.AllHandles:
-		handles = context.protocols.keys()
-	elif params["SearchType"] == EFI_LOCATE_SEARCH_TYPE.ByProtocol:
-		for handle, guid_dic in context.protocols.items():
-			if params["Protocol"] in guid_dic:
-				handles.append(handle)
-
-	return len(handles) * pointer_size, handles
-
-def LocateProtocol(context, params):
-	protocol = params['Protocol']
-
-	for handle, guid_dic in context.protocols.items():
-		if "Handle" in params and params["Handle"] != handle:
-			continue
-
-		if protocol in guid_dic:
-			# write protocol address to out variable Interface
-			write_int64(context.ql, params['Interface'], guid_dic[protocol])
-			return EFI_SUCCESS
-
-	# (@wtdcode): please use ql.log.warning instead.
-	#ql.log.warning(f'protocol with guid {protocol} not found')
-
-	return EFI_NOT_FOUND
 
 # see: MdeModulePkg/Core/Dxe/Misc/InstallConfigurationTable.c
 def CoreInstallConfigurationTable(ql, guid: str, table: int) -> int:
