@@ -2,7 +2,7 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
 
 # https://opensource.apple.com/source/cctools/cctools-795/include/mach-o/loader.h
 

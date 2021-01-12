@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 #
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org)
+#
 
 import logging
-from qiling.os.macos.kernel_api import *
+
 from unicorn import *
+
+from qiling.os.macos.kernel_api import *
+
 
 # hook MacOS kernel API
 def hook_kernel_api(ql, address, size):

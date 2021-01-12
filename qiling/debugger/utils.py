@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 #
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org)
-from qiling import *
+#
 
 from elftools.common.exceptions import ELFError
 from elftools.common.py3compat import (
@@ -29,6 +28,8 @@ from elftools.elf.descriptions import (
     )
 from elftools.elf.constants import E_FLAGS
 from elftools.elf.constants import E_FLAGS_MASKS
+
+from qiling import Qiling
 
 
 class QlReadELF(object):

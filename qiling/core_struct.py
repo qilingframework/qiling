@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
 
 ##############################################
 # These are part of the core.py Qiling class #
@@ -10,6 +10,7 @@
 ##############################################
 
 import struct
+
 from .const import QL_ENDIAN
 from .exception import QlErrorStructConversion
 

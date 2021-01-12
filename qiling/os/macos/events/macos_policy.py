@@ -1,9 +1,14 @@
-import enum
-import ctypes
-import logging
-from .macos_structs import label_t, ucred_t, POINTER64, fileglob_t, vnode_t
-#from .macos import *
+#!/usr/bin/env python3
+# 
+# Cross Platform and Multi Architecture Advanced Binary Emulation Framework
+#
+
+import ctypes, enum, logging
+
 from functools import wraps
+
+from .macos_structs import label_t, ucred_t, POINTER64, fileglob_t, vnode_t
+
 
 def init_ctx(f):
     @wraps(f)

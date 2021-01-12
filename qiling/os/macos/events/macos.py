@@ -1,15 +1,19 @@
-import ctypes
-import socket
-import struct
-import logging
+
+#!/usr/bin/env python3
+# 
+# Cross Platform and Multi Architecture Advanced Binary Emulation Framework
+#
+
+import ctypes, logging, socket, struct
+ 
 from functools import wraps
+from unicorn.x86_const import *
+from unicorn import UcError, UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
 
 from qiling.os.macos.structs import *
 from qiling.os.macos.utils import gen_stub_code
 from .macos_structs import *
 
-from unicorn.x86_const import *
-from unicorn import UcError, UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
 
 class QlMacOSEv:
     def __init__(self, ql, ev_type, ev_name, ev_obj, ev_obj_idx=-1, protocol=None):

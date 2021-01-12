@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 #
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org)
+#
 
 import struct, logging
+
 from qiling.const import *
 
-PT_DYNAMIC = 2
-
+PT_DYNAMIC      = 2
 DT_NULL 		= 0
 DT_NEEDED 		= 1
 DT_PLTRELSZ 	= 2

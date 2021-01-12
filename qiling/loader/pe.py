@@ -1,18 +1,12 @@
 #!/usr/bin/env python3
 #
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org)
+#
 
-import sys
-import os
-import string
-import pefile
-import pickle
-import traceback
-import secrets
-import logging
+import logging, os, pefile, pickle, secrets, string, sys, traceback
 
 from unicorn.x86_const import *
+
 from qiling.os.windows.utils import *
 from qiling.os.windows.structs import *
 from qiling.exception import *

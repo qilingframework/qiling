@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
 
-import os
-import json
-import struct
-import logging
+import json, logging, os, struct
+
 from functools import wraps
 
 from qiling.os.const import *
@@ -54,7 +52,7 @@ def winsdkapi(cc, param_num=None, dllname=None, replace_params_type=None, replac
                     f = open(winsdk_path, 'r')
                     funclist = json.load(f)
                 else:
-                    logging.info('[!]', winsdk_path, 'not found')
+                    logging.info('[!] %s not found', winsdk_path)
                 if funcname not in funclist:
                     params = replace_params
                 else:

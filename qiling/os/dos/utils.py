@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
 
 def BIN2BCD(val: int):
     return val % 10 + (((val//10) % 10) << 4) + (((val//100) % 10) << 8) + (((val//1000) % 10) << 12)

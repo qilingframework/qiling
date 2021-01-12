@@ -1,24 +1,16 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org)
-#  
-# import struct
-# import sys
-# import os
-# import string
-# import resource
-# import socket
-# import time
-# import io
-# import select
+#
+
+import logging
 
 from unicorn.arm_const import *
 from unicorn.x86_const import *
 from unicorn.mips_const import *
+
 from qiling.arch.x86_const import *
 from qiling.const import *
-import logging
 
 def ql_syscall_set_thread_area(ql, u_info_addr, *args, **kw):
     if ql.archtype == QL_ARCH.X86:

@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
 # A Simple Windows Clipboard Simulation
 
 import logging
+
 from unicorn import *
 from unicorn.x86_const import *
 

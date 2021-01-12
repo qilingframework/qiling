@@ -1,17 +1,14 @@
 #!/usr/bin/env python3
 #
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org)
+#
 
-import os
-import uuid
-import ntpath
-import logging
+import logging, ntpath, os, uuid
+
 from sys import getsizeof
 
 from qiling.const import *
 from qiling.os.const import *
-
 from .registry import RegistryManager
 from .clipboard import Clipboard
 from .fiber import FiberManager

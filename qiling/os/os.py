@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 #
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org)
+#
 
-import os, sys, types, logging
+import logging, os, sys, types
 
 from .utils import QlOsUtils
 from .const import *

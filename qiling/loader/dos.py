@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
+
+import logging, math, sys, traceback
 
 from .loader import QlLoader
 from qiling.os.disk import QlDisk
-import sys
-import traceback
-import math
-import logging
+
 
 class QlLoaderDOS(QlLoader):
     def __init__(self, ql):

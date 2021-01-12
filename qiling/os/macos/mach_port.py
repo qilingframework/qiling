@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
 
-# reference to 《Mac OS X and IOS Internals: To the Apple's Core》
+# reference to <Mac OS X and IOS Internals: To the Apple's Core>
 import logging
+
 from struct import pack, unpack
+
 from qiling.const import *
 
 # define in kernel osfmk/mach/message.h

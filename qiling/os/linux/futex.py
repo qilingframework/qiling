@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 #
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org)
+#
+
+import gevent, logging
 
 from logging import getLevelName
 from gevent.event import Event
 from queue import Queue
-import gevent
-import logging
 
 class QlLinuxFutexManagement:
     
