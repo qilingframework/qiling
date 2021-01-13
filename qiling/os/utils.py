@@ -338,9 +338,11 @@ class QlOsUtils:
         def _parse_param(param):
             name, value = param
 
-            if isinstance(value, str) or type(value) == bytearray:
+            if type(value) is str:
                 return f'{name:s} = "{value}"'
-            elif isinstance(value, tuple):
+            elif type(value) is bytearray:
+                return f'{name:s} = "{value.decode("utf-8")}"'
+            elif type(value) is tuple:
                 # we just need the string, not the address in the log
                 return f'{name:s} = "{value[1]}"'
 
