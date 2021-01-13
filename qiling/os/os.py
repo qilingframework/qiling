@@ -350,16 +350,14 @@ class QlOs(QlOsUtils):
         # if we check ret_addr before the call, we can't modify the ret_addr from inside the hook
         result, param_num = self.__x86_cc(param_num, params, func, args, kwargs, passthru)
 
-        # get ret addr
         ret_addr = self.ql.stack_read(0)
 
         # append syscall to list
         self._call_api(func.__name__, params, result, self.ql.reg.arch_pc, ret_addr)
 
         if not passthru and self.PE_RUN:
-            # update stack pointer
-            self.ql.reg.arch_sp = self.ql.reg.arch_sp + ((param_num + 1) * 4)
-
+            # callee is responsible for cleaning up the stack; unwind the stack
+            self.ql.reg.arch_sp = self.ql.reg.arch_sp + ((param_num + 1) * self.__asize)
             self.ql.reg.arch_pc = ret_addr
 
         return result
