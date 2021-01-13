@@ -31,6 +31,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         self._ql.hook_address(self.attach, init_hook)
 
+
     @classmethod
     def attach(cls, ql, *args, **kwargs):
         print(color.RED, "[+] Qdb attached", color.END, sep="")
@@ -42,10 +43,12 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         return cls(ql, *args, **kwargs).interactive()
 
+
     def interactive(self, *args):
         self.do_context()
         self.cmdloop()
         return True
+
 
     def emptyline(self, *args):
         """
@@ -55,6 +58,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         if _lastcmd:
             return _lastcmd()
 
+
     def del_breakpoint(self, address):
         """
         handle internal breakpoint removing operation
@@ -62,6 +66,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         _bp = self.breakpoints.pop(address, None)
         if _bp:
             _bp["hook"].remove()
+
 
     def set_breakpoint(self, address, _is_temp=False):
         """
@@ -74,6 +79,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         if _is_temp == False:
             print("Breakpoint at 0x%08x" % address)
+
 
     def _breakpoint_handler(self, ql, _is_temp=False):
         """
@@ -93,12 +99,14 @@ class QlQdb(cmd.Cmd, QlDebugger):
         self.do_context()
         self._ql.emu_stop()
 
+
     def do_context(self, *args):
         """
         show context information for current location
         """
         context_reg(self._ql, self._saved_states)
         context_asm(self._ql, self._ql.reg.arch_pc, 4)
+
 
     def do_run(self, *args):
         """
@@ -108,6 +116,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         entry = self._ql.loader.entry_point
 
         self.run(entry)
+
 
     def run(self, address=None):
         """
@@ -123,6 +132,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         self._ql.emu_start(address, 0)
 
+
     def do_backward(self, *args):
 
         if getattr(self, "_states_list", None) is None or self._states_list[-1] is None:
@@ -132,6 +142,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
             current_state_dicts = self._ql.save(cpu_context=True, mem=True, reg=False, fd=False)
             self._ql.restore(diff_snapshot_restore(current_state_dicts, self._states_list.pop()))
             self.do_context()
+
 
     def do_step(self, *args):
         """
@@ -164,6 +175,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
             self.run(_cur_addr)
 
+
     def do_start(self, *args):
         """
         pause at entry point by setting a temporary breakpoint on it
@@ -177,6 +189,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         self.set_breakpoint(entry, _is_temp=True)
         self.do_run()
 
+
     def do_breakpoint(self, address):
         """
         set breakpoint on specific address
@@ -184,6 +197,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         if address:
             baddr = parse_int(address)
             self.set_breakpoint(baddr)
+
 
     def do_continue(self, *args):
         """
@@ -194,6 +208,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
             print("continued from 0x%08x" % _cur_addr)
 
             self.run(_cur_addr)
+
 
     def do_examine(self, args):
         """
@@ -217,12 +232,6 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         examine_mem(self._ql, _xaddr, _count)
 
-    def do_context(self, *args):
-        """
-        show context information for current location
-        """
-        context_reg(self._ql, self._saved_states)
-        context_asm(self._ql, self._ql.reg.arch_pc, 4)
 
     def do_show(self, *args):
         """
@@ -232,11 +241,13 @@ class QlQdb(cmd.Cmd, QlDebugger):
         print("Qdb:", [(hex(idx), val) for idx, val in self.breakpoints.items()])
         print("internal:", [(hex(idx), val) for idx, val in self._ql._addr_hook.items()])
 
+
     def do_disassemble(self, address):
         """
         disassemble instructions from address specified
         """
         context_asm(self._ql, parse_int(address), 4)
+
 
     def do_shell(self, *command):
         """
@@ -246,6 +257,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
             print(eval(*command))
         except:
             print("something went wrong")
+
 
     def do_quit(self, *args):
         """
