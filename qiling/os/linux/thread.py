@@ -246,7 +246,6 @@ class QlLinuxThread(QlThread):
                 # Known issue for timeout: https://github.com/unicorn-engine/unicorn/issues/1355
                 self.ql.emu_start(self.start_address, self.exit_point, count=3000)
             except UcError:
-                print(self.ql._hook)
                 self.ql.os.emu_error()
                 raise
             if self.ql.arch.get_pc() == self.exit_point:
