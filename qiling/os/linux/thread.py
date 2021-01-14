@@ -28,9 +28,6 @@ def new_thread_id():
     return old
 
 class QlLinuxThread(QlThread):
-# static member for generate unique thread id.
-    
-
     def __init__(self, ql, start_address = 0, context = None, set_child_tid_addr = None):
         super(QlLinuxThread, self).__init__(ql)
         self._thread_id = new_thread_id()
