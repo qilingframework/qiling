@@ -187,7 +187,7 @@ class QlMemoryManager:
             self.ql.uc.mem_write(addr, data)
         except:
             self.show_mapinfo()
-            logging.debug("addresss write length: " + len(data))
+            logging.debug("addresss write length: " + str(len(data)))
             logging.error("addresss write error: " + hex(addr))
             raise
 
