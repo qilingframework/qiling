@@ -31,14 +31,6 @@ GDB_SIGNAL_STOP = 17
 GDB_SIGNAL_TRAP = 5
 GDB_SIGNAL_BUS  = 10
 
-def checksum(data):
-    checksum = 0
-    for c in data:
-        if type(c) == str:
-            checksum += (ord(c))
-        else:
-            checksum += c
-    return checksum & 0xff
 
 class QlGdb(QlDebugger, object):
     """docstring for Debugsession"""
@@ -852,16 +844,24 @@ class QlGdb(QlDebugger, object):
             self.close()
             raise
 
+    def checksum(self, data):
+        checksum = 0
+        for c in data:
+            if type(c) == str:
+                checksum += (ord(c))
+            else:
+                checksum += c
+        return checksum & 0xff
 
     def send(self, msg):
         """Send a packet to the GDB client"""
         if type(msg) == str:
-            self.send_raw('$%s#%.2x' % (msg, checksum(msg)))
+            self.send_raw('$%s#%.2x' % (msg, self.checksum(msg)))
         else:
-            self.clientsocket.send(b'$%s#%.2x' % (msg, checksum(msg)))
+            self.clientsocket.send(b'$%s#%.2x' % (msg, self.checksum(msg)))
             self.netout.flush()
 
-        logging.debug("gdb> send: $%s#%.2x" % (msg, checksum(msg)))
+        logging.debug("gdb> send: $%s#%.2x" % (msg, self.checksum(msg)))
 
     def send_raw(self, r):
         self.netout.write(r)
