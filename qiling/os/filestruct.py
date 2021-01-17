@@ -4,15 +4,13 @@
 #
 
 import os
-
-from qiling.exception import *
-from qiling.os.stat import *
-
 try:
     import fcntl
 except ImportError:
     pass
 
+from qiling.exception import *
+from qiling.os.stat import *
 
 class ql_file:
     def __init__(self, path, fd):
