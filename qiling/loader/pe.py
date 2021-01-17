@@ -114,7 +114,8 @@ class Process():
         if self.ql.archtype == QL_ARCH.X86:
             addr = self.ql.os.heap.alloc(len(self.cmdline))
             packed_addr = self.ql.pack32(addr)
-        else:
+
+        elif self.ql.archtype == QL_ARCH.X8664:
             addr = self.ql.os.heap.alloc(2 * len(self.cmdline))
             packed_addr = self.ql.pack64(addr)
 
