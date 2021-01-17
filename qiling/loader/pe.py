@@ -69,6 +69,11 @@ class Process():
         else:
             dll = pefile.PE(path, fast_load=True)
             dll.parse_data_directories()
+            warnings = dll.get_warnings()
+            if warnings:
+                logging.warn(f'Warnings while loading {path}:')
+                for warning in warnings:
+                    logging.warn(f' - {warning}')
             data = bytearray(dll.get_memory_mapped_image())
             cmdlines = []
 
