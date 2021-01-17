@@ -362,7 +362,7 @@ class QlOsUtils:
             log = log.partition(" ")[-1]
             logging.info(log)
 
-    def printf(self, address, fmt, params_addr, name, wstring=False):
+    def vprintf(self, address, fmt, params_addr, name, wstring=False):
         count = fmt.count("%")
         params = []
         if count > 0:
@@ -371,7 +371,10 @@ class QlOsUtils:
                 params.append(
                     self.ql.unpack(param)
                 )
+        return self.printf(address, fmt, params, name, wstring)
 
+    def printf(self, address, fmt, params, name, wstring=False):
+        if len(params) > 0:
             formats = fmt.split("%")[1:]
             index = 0
             for f in formats:
