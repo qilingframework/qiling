@@ -110,24 +110,24 @@ class Process():
         return dll_base
 
 
+    def _alloc_cmdline(self, wide):
+        addr = self.ql.os.heap.alloc(len(self.cmdline) * (2 if wide else 1))
+        packed_addr = self.ql.pack(addr)
+        return addr, packed_addr
+
     def set_cmdline(self, name, address, memory):
-        if self.ql.archtype == QL_ARCH.X86:
-            addr = self.ql.os.heap.alloc(len(self.cmdline))
-            packed_addr = self.ql.pack32(addr)
-
-        elif self.ql.archtype == QL_ARCH.X8664:
-            addr = self.ql.os.heap.alloc(2 * len(self.cmdline))
-            packed_addr = self.ql.pack64(addr)
-
         cmdline_entry = None
         if name == b"_acmdln":
+            addr, packed_addr = self._alloc_cmdline(wide=False)
             cmdline_entry = {"name": name, "address": address}
             memory[address:address + self.ql.pointersize] = packed_addr
             self.ql.mem.write(addr, self.cmdline)
         elif name == b"_wcmdln":
+            addr, packed_addr = self._alloc_cmdline(wide=True)
             cmdline_entry = {"name": name, "address": address}
             memory[address:address + self.ql.pointersize] = packed_addr
-            self.ql.mem.write(addr, str(self.cmdline).encode("utf-16le"))
+            encoded = self.cmdline.decode('ascii').encode('UTF-16LE')
+            self.ql.mem.write(addr, encoded)
 
         return cmdline_entry
 
@@ -390,7 +390,15 @@ class QlLoaderPE(QlLoader, Process):
         self.ql.os.heap = QlMemoryHeap(self.ql, self.ql.os.heap_base_address, self.ql.os.heap_base_address + self.ql.os.heap_base_size)
         self.ql.os.setupComponents()
         self.ql.os.entry_point = self.entry_point
-        self.cmdline = bytes(((str(self.ql.os.userprofile)) + "Desktop\\" + (self.ql.targetname) + "\x00"), "utf-8")
+        cmdline = (str(self.ql.os.userprofile)) + "Desktop\\" + self.ql.targetname
+        self.filepath = bytes(cmdline + "\x00", "utf-8")
+        for arg in self.argv[1:]:
+            if ' ' in arg:
+                cmdline += f' "{arg}"'
+            else:
+                cmdline += f' {arg}'
+        cmdline += "\x00"
+        self.cmdline = bytes(cmdline, "utf-8")
 
         self.load()
 
@@ -545,7 +553,6 @@ class QlLoaderPE(QlLoader, Process):
                         self.ql.mem.write(imp.address, address)
 
             logging.debug("[+] Done with loading %s" % self.path)
-            self.filepath = self.cmdline
             self.ql.os.entry_point = self.entry_point
             self.ql.os.pid = 101
 

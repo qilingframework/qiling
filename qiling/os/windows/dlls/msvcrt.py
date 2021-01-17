@@ -49,11 +49,18 @@ def hook___p__commode(ql, address, params):
     return addr
 
 
-# int * __p__acmdln(
+# char ** __p__acmdln(
 #    );
 @winsdkapi(cc=CDECL)
 def hook___p__acmdln(ql, address, params):
     addr = ql.loader.import_address_table['msvcrt.dll'][b'_acmdln']
+    return addr
+
+# wchar_t ** __p__wcmdln(
+#    );
+@winsdkapi(cc=CDECL)
+def hook___p__wcmdln(ql, address, params):
+    addr = ql.loader.import_address_table['msvcrt.dll'][b'_wcmdln']
     return addr
 
 
