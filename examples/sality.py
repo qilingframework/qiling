@@ -3,14 +3,16 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import struct, sys, logging
+import sys, logging
+
+from unicorn import UcError
 
 sys.path.append("..")
-from qiling import *
-from qiling.os.windows.fncc import *
+from qiling import Qiling
+from qiling.os.const import STDCALL, POINTER, DWORD, STRING, HANDLE
+from qiling.os.windows.fncc import winsdkapi
+from qiling.os.windows.utils import canonical_path, string_appearance
 from qiling.os.windows.dlls.kernel32.fileapi import _CreateFile
-from qiling.os.windows.utils import canonical_path
-from qiling.loader.utils import ql_pe_check_archtype
 
 
 def init_unseen_symbols(ql, address, name, ordinal, dll_name):
@@ -29,7 +31,7 @@ def init_unseen_symbols(ql, address, name, ordinal, dll_name):
 #   LPDWORD                 lpThreadId
 # );
 @winsdkapi(cc=STDCALL, dllname='kernel32_dll')
-def sality_CreateThread(ql, address, params):
+def hook_CreateThread(ql, address, params):
     # set thread handle
     return 1
 
@@ -51,7 +53,7 @@ def sality_CreateThread(ql, address, params):
     "dwFlagsAndAttributes": DWORD,
     "hTemplateFile": HANDLE
 })
-def sality_CreateFileA(ql, address, params):
+def hook_CreateFileA(ql, address, params):
     lpFileName = params["lpFileName"]
     if lpFileName.startswith("\\\\.\\"):
         if ql.amsint32_driver:
@@ -68,7 +70,8 @@ def _WriteFile(ql, address, params):
     lpBuffer = params["lpBuffer"]
     nNumberOfBytesToWrite = params["nNumberOfBytesToWrite"]
     lpNumberOfBytesWritten = params["lpNumberOfBytesWritten"]
-    lpOverlapped = params["lpOverlapped"]
+    #lpOverlapped = params["lpOverlapped"]
+
     if hFile == 0xfffffff5:
         s = ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
         ql.os.stdout.write(s)
@@ -94,7 +97,7 @@ def _WriteFile(ql, address, params):
     "lpNumberOfBytesWritten": POINTER,
     "lpOverlapped": POINTER
 })
-def sality_WriteFile(ql, address, params):
+def hook_WriteFile(ql, address, params):
     hFile = params["hFile"]
     lpBuffer = params["lpBuffer"]
     nNumberOfBytesToWrite = params["nNumberOfBytesToWrite"]
@@ -121,8 +124,8 @@ def sality_WriteFile(ql, address, params):
 #   DWORD     dwNumServiceArgs,
 #   LPCSTR    *lpServiceArgVectors
 # );
-@winsdkapi(cc=STDCALL, dllname='kernel32_dll')
-def sality_StartServiceA(ql, address, params):
+@winsdkapi(cc=STDCALL, dllname='advapi32_dll')
+def hook_StartServiceA(ql, address, params):
     try:
         hService = params["hService"]
         service_handle = ql.os.handle_manager.get(hService)
@@ -160,10 +163,10 @@ if __name__ == "__main__":
     # for this module 
     ql.amsint32_driver = None
     # emulate some Windows API
-    ql.set_api("CreateThread", sality_CreateThread)
-    ql.set_api("CreateFileA", sality_CreateFileA)
-    ql.set_api("WriteFile", sality_WriteFile)
-    ql.set_api("StartServiceA", sality_StartServiceA)
+    ql.set_api("CreateThread", hook_CreateThread)
+    ql.set_api("CreateFileA", hook_CreateFileA)
+    ql.set_api("WriteFile", hook_WriteFile)
+    ql.set_api("StartServiceA", hook_StartServiceA)
     #init sality
     ql.hook_address(hook_stop_address, 0x40EFFB)
     ql.run()
@@ -173,7 +176,7 @@ if __name__ == "__main__":
     ql.run(0x4053B2)
     logging.info("[+] test kill thread")
     if ql.amsint32_driver:
-        ql.amsint32_driver.os.io_Write(struct.pack("<I", 0xdeadbeef))
+        ql.amsint32_driver.os.io_Write(ql.pack32(0xdeadbeef))
         ql.amsint32_driver.hook_address(hook_stop_address, 0x10423)
         ql.amsint32_driver.set_function_args([0])
         ql.amsint32_driver.run(0x102D0)
