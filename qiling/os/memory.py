@@ -186,8 +186,9 @@ class QlMemoryManager:
         try:
             self.ql.uc.mem_write(addr, data)
         except:
-            logging.debug("addresss write: " + hex(addr))
             self.show_mapinfo()
+            logging.error("addresss write error: " + hex(addr))
+            raise
 
     def search(self, needle: bytes, begin= None, end= None):
         """
