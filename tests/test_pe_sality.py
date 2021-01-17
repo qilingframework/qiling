@@ -159,8 +159,7 @@ class PETest(unittest.TestCase):
 
 
         ql = Qiling(["../examples/rootfs/x86_windows/bin/sality.dll"], "../examples/rootfs/x86_windows", output="debug")
-        ql.libcache = True
-
+        ql.libcache = False
         # for this module 
         ql.amsint32_driver = None
         # emulate some Windows API
