@@ -100,31 +100,27 @@ def hook_NtClose(ql, address, params):
 @winsdkapi(cc=CDECL, dllname=dllname, param_num=3)
 def hook_DbgPrintEx(ql, address, _):
     ret = 0
-    format_string = ql.os.get_function_param(3)
-
-    if len(format_string) < 3:
-        logging.info('0x%0.2x: printf(format = 0x0) = 0x%x\n' % (address, ret))
-        return ret
-
-    format_string = read_cstring(ql, format_string[2])
+    format_string_addr = ql.os.get_function_param(1)
+    format_string = ql.os.read_cstring(format_string_addr)
 
     if format_string.count('%') == 0:
         param_addr = ql.reg.sp + ql.pointersize * 2
     else:
         param_addr = ql.reg.sp + ql.pointersize * 3
 
-    ret, _ = printf(ql, address, format_string, param_addr, "DbgPrintEx")
-
+    count = format_string.count('%')
+    args = ql.os.get_function_param(2 + count)[2:]
+    
+    ret, _ = ql.os.printf(address, format_string, args, "DbgPrintEx")
     ql.os.set_return_value(ret)
 
-    count = format_string.count('%')
     # x8664 fastcall does not known the real number of parameters
     # so we need to manually pop the stack
     if ql.archtype == QL_ARCH.X8664:
         # if number of params > 4
         if count + 1 > 4:
-            rsp = ql.uc.reg_read(UC_X86_REG_RSP)
-            ql.register(UC_X86_REG_RSP, rsp + (count - 4 + 1) * 8)
+            rsp = ql.reg.rsp
+            ql.reg.rsp = (rsp + (count - 4 + 1) * 8)
 
     return None
 
@@ -136,25 +132,26 @@ def hook_DbgPrintEx(ql, address, _):
 def hook_DbgPrint(ql, address, _):
     ret = 0
     format_string_addr = ql.os.get_function_param(1)
-    format_string = read_cstring(ql, format_string_addr)
+    format_string = ql.os.read_cstring(format_string_addr)
 
     if format_string.count('%') == 0:
         param_addr = ql.reg.sp + ql.pointersize * 2
     else:
         param_addr = ql.reg.sp + ql.pointersize * 3
 
-    ret, _ = printf(ql, address, format_string, param_addr, "DbgPrint")
-
-    ql.os.set_return_value(ql)
-
     count = format_string.count('%')
+    args = ql.os.get_function_param(2 + count)[2:]
+
+    ret, _ = ql.os.printf(address, format_string, args, "DbgPrint")
+    ql.os.set_return_value(ret)
+    
     # x8664 fastcall does not known the real number of parameters
     # so we need to manually pop the stack
     if ql.archtype == QL_ARCH.X8664:
         # if number of params > 4
         if count + 1 > 4:
-            rsp = ql.uc.reg_read(UC_X86_REG_RSP)
-            ql.register(UC_X86_REG_RSP, rsp + (count - 4 + 1) * 8)
+            rsp = ql.reg.rsp
+            ql.reg.rsp = (rsp + (count - 4 + 1) * 8)
 
     return None
 
@@ -795,10 +792,10 @@ def _NtQuerySystemInformation(ql, address, params):
                 module = RTL_PROCESS_MODULE_INFORMATION64()
             else:
                 module = RTL_PROCESS_MODULE_INFORMATION32()
-
+ 
             module.Section = 0
             module.MappedBase = 0
-            module.ImageBase = ql.loader.dlls["ntoskrnl.exe"]
+            module.ImageBase = ql.loader.dlls.get("ntoskrnl.exe")
             module.ImageSize = 0xab000
             module.Flags = 0x8804000
             module.LoadOrderIndex = 0  # order of this module

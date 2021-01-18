@@ -71,9 +71,9 @@ class Process():
             dll.parse_data_directories()
             warnings = dll.get_warnings()
             if warnings:
-                logging.warn(f'Warnings while loading {path}:')
+                logging.warning(f'Warnings while loading {path}:')
                 for warning in warnings:
-                    logging.warn(f' - {warning}')
+                    logging.warning(f' - {warning}')
             data = bytearray(dll.get_memory_mapped_image())
             cmdlines = []
 
@@ -348,6 +348,7 @@ class QlLoaderPE(QlLoader, Process):
         self.ql         = ql
         self.libcache   = self.ql.libcache
         self.path       = self.ql.path
+        self.is_driver  = False
 
     def run(self):
         self.init_dlls = [b"ntdll.dll", b"kernel32.dll", b"user32.dll"]
@@ -357,8 +358,8 @@ class QlLoaderPE(QlLoader, Process):
 
         if not self.ql.shellcoder:
             self.pe = pefile.PE(self.path, fast_load=True)
-            self.is_driver = (self.pe.OPTIONAL_HEADER.Subsystem == 1)
-            if self.is_driver:
+            if self.pe.OPTIONAL_HEADER.Subsystem == 1:
+                self.is_driver = True
                 self.init_dlls = [b"ntoskrnl.exe"]
                 self.sys_dlls = [b"ntoskrnl.exe"]
             

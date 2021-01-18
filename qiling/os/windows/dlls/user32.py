@@ -5,6 +5,7 @@
 
 import struct
 import logging
+
 from qiling.os.windows.fncc import *
 from qiling.os.const import *
 from qiling.os.windows.utils import *
@@ -630,11 +631,12 @@ def hook_wvsprintfA(ql, address, params):
 # );
 @winsdkapi(cc=CDECL, dllname=dllname, param_num=3)
 def hook_wsprintfA(ql, address, params):
-    dst, p_format, p_args = ql.os.get_function_param(3)
-    format_string = read_cstring(ql, p_format)
-    size, string = printf(ql, address, format_string, p_args, "wsprintfA")
-
+    dst, p_format = ql.os.get_function_param(2)
+    format_string = ql.os.read_wstring(p_format)
     count = format_string.count('%')
+    args = ql.os.get_function_param(2 + count)[2:]
+    size, string = ql.os.printf(address, format_string, args, "wsprintfA", wstring=True)
+
     if ql.archtype== QL_ARCH.X8664:
         # We must pop the stack correctly
         raise QlErrorNotImplemented("[!] API not implemented")

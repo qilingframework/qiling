@@ -12,7 +12,7 @@ from qiling.os.windows.utils import *
 from qiling.const import *
 from qiling.exception import *
 from qiling.os.windows.structs import *
-        
+     
 
 def replacetype(type, specialtype=None):
     if specialtype is None:
@@ -25,6 +25,7 @@ def replacetype(type, specialtype=None):
             return specialtype[type]
     else:
         return type
+
 
 # x86/x8664 PE should share Windows APIs
 def winsdkapi(cc, param_num=None, dllname=None, replace_params_type=None, replace_params={}, passthru=False):
