@@ -18,6 +18,16 @@ from qiling.os.windows.utils import *
 from qiling.os.mapper import QlFsMappedObject
 from qiling.os.windows.dlls.kernel32.fileapi import _CreateFile
 
+class TestOut:
+    def __init__(self):
+        self.output = {}
+
+    def write(self, string):
+        key, value = string.split(b': ', 1)
+        assert key not in self.output
+        self.output[key] = value
+        return len(string)
+
 
 class PETest(unittest.TestCase):
 
@@ -431,6 +441,32 @@ class PETest(unittest.TestCase):
         #   - IRP_MJ_CLOSE
         # - Call DriverUnload
 
+        del ql
+
+    def test_pe_win_x86_cmdln(self):
+        ql = Qiling(
+        ["../examples/rootfs/x86_windows/bin/cmdln32.exe", 'arg1', 'arg2 with spaces'],
+        "../examples/rootfs/x86_windows")
+        ql.stdout = TestOut()
+        ql.run()
+        expected_string = b'<C:\\Users\\Qiling\\Desktop\\cmdln32.exe arg1 "arg2 with spaces">\n'
+        expected_keys = [b'_acmdln', b'_wcmdln', b'__p__acmdln', b'__p__wcmdln', b'GetCommandLineA', b'GetCommandLineW']
+        for key in expected_keys:
+            self.assertTrue(key in ql.stdout.output)
+            self.assertEqual(expected_string, ql.stdout.output[key])
+        del ql
+
+    def test_pe_win_x8664_cmdln(self):
+        ql = Qiling(
+        ["../examples/rootfs/x8664_windows/bin/cmdln64.exe", 'arg1', 'arg2 with spaces'],
+        "../examples/rootfs/x8664_windows")
+        ql.stdout = TestOut()
+        ql.run()
+        expected_string = b'<C:\\Users\\Qiling\\Desktop\\cmdln64.exe arg1 "arg2 with spaces">\n'
+        expected_keys = [b'_acmdln', b'_wcmdln', b'GetCommandLineA', b'GetCommandLineW']
+        for key in expected_keys:
+            self.assertTrue(key in ql.stdout.output)
+            self.assertEqual(expected_string, ql.stdout.output[key])
         del ql
 
 

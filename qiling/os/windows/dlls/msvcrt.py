@@ -49,11 +49,18 @@ def hook___p__commode(ql, address, params):
     return addr
 
 
-# int * __p__acmdln(
+# char ** __p__acmdln(
 #    );
 @winsdkapi(cc=CDECL)
 def hook___p__acmdln(ql, address, params):
     addr = ql.loader.import_address_table['msvcrt.dll'][b'_acmdln']
+    return addr
+
+# wchar_t ** __p__wcmdln(
+#    );
+@winsdkapi(cc=CDECL)
+def hook___p__wcmdln(ql, address, params):
+    addr = ql.loader.import_address_table['msvcrt.dll'][b'_wcmdln']
     return addr
 
 
@@ -188,7 +195,7 @@ def hook_sprintf(ql, address, _):
     p_args = sp + ql.pointersize * 3
 
     format_string = ql.os.read_cstring(format_ptr)
-    str_size, str_data = ql.os.printf(address, format_string, p_args, "sprintf")
+    str_size, str_data = ql.os.vprintf(address, format_string, p_args, "sprintf")
     logging.info()
 
     count = format_string.count('%')
@@ -214,12 +221,12 @@ def hook_printf(ql, address, _):
 
     format_string = ql.os.read_cstring(format_string)
 
-    param_addr = ql.reg.arch_sp + ql.pointersize * 2
-    ret, _ = ql.os.printf(address, format_string, param_addr, "printf")
+    count = format_string.count("%")
+    params = ql.os.get_function_param(count + 1)[1:] if count > 0 else []
+    ret, _ = ql.os.printf(address, format_string, params, "printf")
 
     ql.os.set_return_value(ret)
 
-    count = format_string.count('%')
     # x8664 fastcall donnot known the real number of parameters
     # so you need to manually pop the stack
     if ql.archtype == QL_ARCH.X8664:
@@ -229,6 +236,32 @@ def hook_printf(ql, address, _):
 
     return None
 
+# int wprintf(const wchar_t *format, ...)
+@winsdkapi(cc=CDECL, param_num=1)
+def hook_wprintf(ql, address, _):
+    ret = 0
+    format_string = ql.os.get_function_param(1)
+
+    if format_string == 0:
+        logging.info('wprintf(format = 0x0) = 0x%x' % ret)
+        return ret
+
+    format_string = ql.os.read_wstring(format_string)
+
+    count = format_string.count("%")
+    params = ql.os.get_function_param(count + 1)[1:] if count > 0 else []
+    ret, _ = ql.os.printf(address, format_string, params, "wprintf", wstring=True)
+
+    ql.os.set_return_value(ret)
+
+    # x8664 fastcall donnot known the real number of parameters
+    # so you need to manually pop the stack
+    if ql.archtype == QL_ARCH.X8664:
+        # if number of params > 4
+        if count + 1 > 4:
+            ql.reg.rsp = ql.reg.rsp + ((count - 4 + 1) * 8)
+
+    return None
 
 # MSVCRT_FILE * CDECL MSVCRT___acrt_iob_func(unsigned idx)
 @winsdkapi(cc=CDECL, replace_params={"idx": UINT})
@@ -245,7 +278,7 @@ def hook___stdio_common_vfprintf(ql, address, _):
     else:
         _, _, _, p_format, _, p_args = ql.os.get_function_param(6)
     fmt = ql.os.read_cstring(p_format)
-    ql.os.printf(address, fmt, p_args, '__stdio_common_vfprintf')
+    ql.os.vprintf(address, fmt, p_args, '__stdio_common_vfprintf')
     return ret
 
 
@@ -255,7 +288,7 @@ def hook___stdio_common_vfwprintf(ql, address, _):
     _, _, _, p_format, _, p_args = ql.os.get_function_param(6)
     fmt = ql.os.read_wstring(p_format)
 
-    ql.os.printf(address, fmt, p_args, '__stdio_common_vfwprintf', wstring=True)
+    ql.os.vprintf(address, fmt, p_args, '__stdio_common_vfwprintf', wstring=True)
     return ret
 
 
@@ -265,7 +298,7 @@ def hook___stdio_common_vswprintf_s(ql, address, _):
     _, size, p_format, p_args = ql.os.get_function_param(4)
 
     fmt = ql.os.read_wstring(p_format)
-    ql.os.printf(address, fmt, p_args, '__stdio_common_vswprintf_s', wstring=True)
+    ql.os.vprintf(address, fmt, p_args, '__stdio_common_vswprintf_s', wstring=True)
 
     return ret
 
