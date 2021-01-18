@@ -4,15 +4,10 @@
 #
 
 import os
+import fcntl
 
 from qiling.exception import *
 from qiling.os.stat import *
-
-try:
-    import fcntl
-except ImportError:
-    pass
-
 
 class ql_file:
     def __init__(self, path, fd):
@@ -51,16 +46,10 @@ class ql_file:
         return Fstat(self.__fd)
     
     def fcntl(self, fcntl_cmd, fcntl_arg):
-        try:
-            return fcntl.fcntl(self.__fd, fcntl_cmd, fcntl_arg)
-        except Exception:
-            pass
+        return fcntl.fcntl(self.__fd, fcntl_cmd, fcntl_arg)
 
     def ioctl(self, ioctl_cmd, ioctl_arg):
-        try:
-            return fcntl.ioctl(self.__fd, ioctl_cmd, ioctl_arg)
-        except Exception:
-            pass
+        return fcntl.ioctl(self.__fd, ioctl_cmd, ioctl_arg)
 
     def tell(self):
         return self.lseek(0, os.SEEK_CUR)

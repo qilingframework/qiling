@@ -3,14 +3,10 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 import os
+import socket
+import fcntl
 
 from qiling.exception import *
-
-try:
-    import fcntl
-except ImportError:
-    pass
-import socket
 
 class ql_socket:
     def __init__(self, socket):
@@ -53,16 +49,10 @@ class ql_socket:
         return os.close(self.__fd)
     
     def fcntl(self, fcntl_cmd, fcntl_arg):
-        try:
-            return fcntl.fcntl(self.__fd, fcntl_cmd, fcntl_arg)
-        except Exception:
-            pass
+        return fcntl.fcntl(self.__fd, fcntl_cmd, fcntl_arg)
 
     def ioctl(self, ioctl_cmd, ioctl_arg):
-        try:
-            return fcntl.ioctl(self.__fd, ioctl_cmd, ioctl_arg)
-        except Exception:
-            pass    
+        return fcntl.ioctl(self.__fd, ioctl_cmd, ioctl_arg)
     
     def dup(self):
         new_s = self.__socket.dup()
@@ -148,16 +138,10 @@ class ql_pipe:
         return os.close(self.__fd)
     
     def fcntl(self, fcntl_cmd, fcntl_arg):
-        try:
-            return fcntl.fcntl(self.__fd, fcntl_cmd, fcntl_arg)
-        except Exception:
-            pass
+        return fcntl.fcntl(self.__fd, fcntl_cmd, fcntl_arg)
 
     def ioctl(self, ioctl_cmd, ioctl_arg):
-        try:
-            return fcntl.ioctl(self.__fd, ioctl_cmd, ioctl_arg)
-        except Exception:
-            pass    
+        return fcntl.ioctl(self.__fd, ioctl_cmd, ioctl_arg)
     
     def dup(self):
         new_fd = os.dup(self.__fd)
