@@ -449,12 +449,6 @@ class QlMemoryHeap:
         self.mem_alloc = saved_state['mem_alloc']
 
     def alloc(self, size):
-        
-        if self.ql.archbit == 32:
-            size = self.ql.mem.align(size, 4)
-        elif self.ql.archbit == 64:
-            size = self.ql.mem.align(size, 8)
-
         # Find the heap chunks that best matches size 
         self.chunks.sort(key=Chunk.compare)
         for chunk in self.chunks:

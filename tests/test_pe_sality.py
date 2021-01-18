@@ -3,19 +3,16 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import os, random, sys, unittest, logging
+import os, sys, unittest
 
-import string as st
-from binascii import unhexlify
-from unicorn.x86_const import *
+from shutil import copyfile
+from unicorn import UcError
 
 sys.path.append("..")
-from qiling import *
-from qiling.const import *
-from qiling.exception import *
-from qiling.os.windows.fncc import *
-from qiling.os.windows.utils import *
-from qiling.os.mapper import QlFsMappedObject
+from qiling import Qiling
+from qiling.os.const import STDCALL, POINTER, DWORD, STRING, HANDLE
+from qiling.os.windows.fncc import winsdkapi
+from qiling.os.windows.utils import canonical_path, string_appearance
 from qiling.os.windows.dlls.kernel32.fileapi import _CreateFile
 
 
@@ -39,7 +36,7 @@ class PETest(unittest.TestCase):
         #   LPDWORD                 lpThreadId
         # );
         @winsdkapi(cc=STDCALL, dllname='kernel32_dll')
-        def sality_CreateThread(ql, address, params):
+        def hook_CreateThread(ql, address, params):
             # set thread handle
             return 1
 
@@ -61,7 +58,7 @@ class PETest(unittest.TestCase):
             "dwFlagsAndAttributes": DWORD,
             "hTemplateFile": HANDLE
         })
-        def sality_CreateFileA(ql, address, params):
+        def hook_CreateFileA(ql, address, params):
             lpFileName = params["lpFileName"]
             if lpFileName.startswith("\\\\.\\"):
                 if ql.amsint32_driver:
@@ -78,7 +75,8 @@ class PETest(unittest.TestCase):
             lpBuffer = params["lpBuffer"]
             nNumberOfBytesToWrite = params["nNumberOfBytesToWrite"]
             lpNumberOfBytesWritten = params["lpNumberOfBytesWritten"]
-            lpOverlapped = params["lpOverlapped"]
+            #lpOverlapped = params["lpOverlapped"]
+
             if hFile == 0xfffffff5:
                 s = ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
                 ql.os.stdout.write(s)
@@ -104,18 +102,19 @@ class PETest(unittest.TestCase):
             "lpNumberOfBytesWritten": POINTER,
             "lpOverlapped": POINTER
         })
-        def sality_WriteFile(ql, address, params):
+        def hook_WriteFile(ql, address, params):
             hFile = params["hFile"]
             lpBuffer = params["lpBuffer"]
             nNumberOfBytesToWrite = params["nNumberOfBytesToWrite"]
             lpNumberOfBytesWritten = params["lpNumberOfBytesWritten"]
+
             if hFile == 0x13371337:
                 buffer = ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
                 try:
                     r, nNumberOfBytesToWrite = ql.amsint32_driver.os.io_Write(buffer)
                     ql.mem.write(lpNumberOfBytesWritten, ql.pack32(nNumberOfBytesToWrite))
-                except Exception as e:
-                    logging.exception("")
+                except Exception:
+                    print("Error")
                     r = 1
                 if r:
                     return 1
@@ -130,60 +129,83 @@ class PETest(unittest.TestCase):
         #   DWORD     dwNumServiceArgs,
         #   LPCSTR    *lpServiceArgVectors
         # );
-        @winsdkapi(cc=STDCALL, dllname='kernel32_dll')
-        def sality_StartServiceA(ql, address, params):
-            try:
-                hService = params["hService"]
-                service_handle = ql.os.handle_manager.get(hService)
-                if service_handle.name == "amsint32":
-                    if service_handle.name in ql.os.services:
-                        service_path = ql.os.services[service_handle.name]
-                        service_path = canonical_path(ql, service_path)
-                        ql.amsint32_driver = Qiling([service_path], ql.rootfs, output="debug")
-                        init_unseen_symbols(ql.amsint32_driver, ql.amsint32_driver.loader.dlls["ntoskrnl.exe"]+0xb7695, b"NtTerminateProcess", 0, "ntoskrnl.exe")
-                        #ql.amsint32_driver.debugger= ":9999"
-                        try:
-                            ql.amsint32_driver.load()
-                            return 1
-                        except UcError as e:
-                            print("Load driver error: ", e)
-                            return 0
-                    else:
+        @winsdkapi(cc=STDCALL, dllname='advapi32_dll')
+        def hook_StartServiceA(ql, address, params):
+            # TODO: Still Fixing
+            return
+            hService = params["hService"]
+            service_handle = ql.os.handle_manager.get(hService)
+            if service_handle.name == "amsint32":
+                if service_handle.name in ql.os.services:
+                    service_path = "C:\\Windows\\System32\\drivers\\amsint32_driver.sys"
+                    service_path = canonical_path(ql, service_path)
+                    ql.amsint32_driver = Qiling([service_path], ql.rootfs, output="disasm")
+                    init_unseen_symbols(ql.amsint32_driver, ql.amsint32_driver.loader.dlls["ntoskrnl.exe"]+0xb7695, b"NtTerminateProcess", 0, "ntoskrnl.exe")
+                    print("load amsint32_driver")
+
+                    try:
+                        ql.amsint32_driver.run()
+                        return 1
+                    except UcError as e:
+                        print("Load driver error: ", e)
                         return 0
                 else:
-                    return 1
-            except Exception as e:
-                logging.exception("")
+                    return 0
+            else:
+                return 1
+
+        # BOOL CopyFileA(
+        #   LPCSTR lpExistingFileName,
+        #   LPCSTR lpNewFileName,
+        #   BOOL   bFailIfExists
+        # );
+        @winsdkapi(cc=STDCALL, dllname='kernel32_dll', replace_params={
+            "lpExistingFileName": STRING,
+            "lpNewFileName": STRING,
+            "bFailIfExists": DWORD
+        })
+        def hook_CopyFileA(ql, address, params):
+            lpExistingFileName = canonical_path(ql, params["lpExistingFileName"])
+            lpNewFileName = canonical_path(ql, params["lpNewFileName"])
+            bFailIfExists = params["bFailIfExists"]
+
+            if bFailIfExists and os.path.exists(lpNewFileName):
+                return 0
+
+            if os.path.isdir(lpNewFileName):
+                lpNewFileName = os.path.join(lpNewFileName, "ntoskrnl.exe")
+            
+            copyfile(lpExistingFileName, lpNewFileName)
+            return 1
 
 
         def hook_stop_address(ql):
             print(" >>>> Stop address: 0x%08x" % ql.reg.arch_pc)
             ql.emu_stop()
 
-
         ql = Qiling(["../examples/rootfs/x86_windows/bin/sality.dll"], "../examples/rootfs/x86_windows", output="debug")
-        ql.libcache = True
-        
+        ql.libcache = False
         # for this module 
         ql.amsint32_driver = None
         # emulate some Windows API
-        ql.set_api("CreateThread", sality_CreateThread)
-        ql.set_api("CreateFileA", sality_CreateFileA)
-        ql.set_api("WriteFile", sality_WriteFile)
-        ql.set_api("StartServiceA", sality_StartServiceA)
+        ql.set_api("CreateThread", hook_CreateThread)
+        ql.set_api("CreateFileA", hook_CreateFileA)
+        ql.set_api("WriteFile", hook_WriteFile)
+        ql.set_api("StartServiceA", hook_StartServiceA)
+        ql.set_api("CopyFileA", hook_CopyFileA)
         #init sality
         ql.hook_address(hook_stop_address, 0x40EFFB)
         ql.run()
         # run driver thread
         ql.os.set_function_args([0])
         ql.hook_address(hook_stop_address, 0x4055FA)
-        ql.run(0x4053B2)
-        logging.info("[+] test kill thread")
+        ql.run(begin=0x4053B2)
+        print("[+] test kill thread")
         if ql.amsint32_driver:
-            ql.amsint32_driver.os.io_Write(struct.pack("<I", 0xdeadbeef))
+            ql.amsint32_driver.os.io_Write(ql.pack32(0xdeadbeef))
             ql.amsint32_driver.hook_address(hook_stop_address, 0x10423)
-            ql.amsint32_driver.set_function_args([0])
-            ql.amsint32_driver.run(0x102D0)
+            ql.amsint32_driver.os.set_function_args([0])
+            ql.amsint32_driver.run(begin=0x102D0)
 
 
 if __name__ == "__main__":

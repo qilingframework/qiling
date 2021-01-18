@@ -133,58 +133,11 @@ def string_appearance(ql, string):
         val.add(ql.os.syscalls_counter)
         ql.os.appeared_strings[string] = val
 
-
-def printf(ql,
-           address,
-           fmt,
-           params_addr,
-           name,
-           wstring=False,
-           double_pointer=False):
-    count = fmt.count("%")
-    params = []
-    if count > 0:
-        for i in range(count):
-            # We don't need to mem_read here, otherwise we have a problem with strings, since read_wstring/read_cstring
-            #  already take a pointer, and we will have pointer -> pointer -> STRING instead of pointer -> STRING
-            params.append(params_addr + i * ql.pointersize, )
-
-        formats = fmt.split("%")[1:]
-        index = 0
-        for f in formats:
-            if f.startswith("s"):
-                if wstring:
-                    if double_pointer:
-                        params[index] = ql.unpack32(
-                            ql.mem.read(params[index], ql.pointersize))
-                    params[index] = read_wstring(ql, params[index])
-                else:
-                    params[index] = read_cstring(ql, params[index])
-            else:
-                # if is not a string, then they are already values!
-                pass
-            index += 1
-
-        output = '%s(format = %s' % (name, repr(fmt))
-        for each in params:
-            if type(each) == str:
-                output += ', "%s"' % each
-            else:
-                output += ', 0x%0.2x' % each
-        output += ')'
-        fmt = fmt.replace("%llx", "%x")
-        stdout = fmt % tuple(params)
-        output += " = 0x%x" % len(stdout)
-    else:
-        output = '%s(format = %s) = 0x%x' % (name, repr(fmt), len(fmt))
-        stdout = fmt
-    logging.info(output)
-    ql.os.stdout.write(bytes(stdout, 'utf-8'))
-    return len(stdout), stdout
-
 def canonical_path(ql, file_path):
+    file_path = str(file_path.split("\\C:")[0])
     file_path = file_path.replace("C:", ql.rootfs)
     file_path = file_path.replace("\\", os.sep)
+    
     if ql.archbit == 32:
         real_path = os.path.join(ql.rootfs, "Windows", "System32")
         if not os.path.exists(real_path):
@@ -193,13 +146,18 @@ def canonical_path(ql, file_path):
         real_path = os.path.join(ql.rootfs, "Windows", "System32")
 
     system_path = os.path.join(ql.rootfs, "Windows", "System32")
+    
     if system_path in file_path:
         file_path = file_path.replace(system_path, real_path)
+    
     return file_path
+
 
 def path_leaf(path):
     head, tail = ntpath.split(path)
     return tail or ntpath.basename(head)
+
+
 def find_size_function(ql, func_addr):
     # We have to retrieve the return address position
     code = ql.mem.read(func_addr, 0x100)

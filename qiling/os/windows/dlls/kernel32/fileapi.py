@@ -563,9 +563,10 @@ def hook_CopyFileA(ql, address, params):
     lpExistingFileName = canonical_path(ql, params["lpExistingFileName"])
     lpNewFileName = canonical_path(ql, params["lpNewFileName"])
     bFailIfExists = params["bFailIfExists"]
-    
+
     if bFailIfExists and os.path.exists(lpNewFileName):
         return 0
+
     copyfile(lpExistingFileName, lpNewFileName)
     return 1
 
