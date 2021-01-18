@@ -11,6 +11,10 @@ BREAK CHANGE
 ------------------------------------
 [Version 1.3]: January [SOMETHING], 2021
 
+- Fix _acmdln and _wcmdln handling
+- more UEFI refactor
+- refactor common OS space
+
 
 ------------------------------------
 [Version 1.2.1]: January 1st, 2021
