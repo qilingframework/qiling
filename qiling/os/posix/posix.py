@@ -170,6 +170,8 @@ class QlOsPosix(QlOs):
                 if isinstance(ret, int) == False or ret & QL_CALL_BLOCK == 0:
                     ret = self.syscall_map(self.ql, self.get_func_arg()[0], self.get_func_arg()[1], self.get_func_arg()[2], self.get_func_arg()[3], self.get_func_arg()[4], self.get_func_arg()[5])
                     if ret is not None and isinstance(ret, int):
+                        # each name has a list of calls, we want the last one and we want to update the return value
+                        self.syscalls[self.syscall_name][-1]["result"] = ret
                         self.set_syscall_return(ret)
 
                 if self.syscall_onExit is not None:
@@ -206,8 +208,6 @@ class QlOsPosix(QlOs):
         return self.ql.reg.read(syscall_num)
 
     def set_syscall_return(self, regreturn):
-        # each name has a list of calls, we want the last one and we want to update the return value
-        self.syscalls[self.syscall_name][-1]["result"] = regreturn
         if self.ql.archtype == QL_ARCH.ARM:  # ARM
             self.ql.reg.r0 = regreturn
 

@@ -100,38 +100,6 @@ class QlOsLinux(QlOsPosix):
                     # start multithreading
                     thread_management = QlLinuxThreadManagement(self.ql)
                     self.ql.os.thread_management = thread_management
-                    main_thread = self.thread_class.spawn(self.ql)
-                    thread_management.main_thread = main_thread
-                    thread_management.cur_thread = main_thread
-                    # Main thread has been created and we have to clear all buffered logging if any.
-                    # This only happens with ql.split_log = True.
-                    try:
-                        msg_before_main_thread = self.ql._msg_before_main_thread
-                        for lvl, msg in msg_before_main_thread:
-                            main_thread.log_file_fd.log(lvl, msg)
-                    except AttributeError:
-                        pass
-                    main_thread.save()
-                    main_thread.set_start_address(self.ql.loader.entry_point)
-                    
-
-                    # enable lib patch
-                    if self.ql.loader.elf_entry != self.ql.loader.entry_point:
-                        main_thread.exit_point = self.ql.loader.elf_entry
-                        thread_management.run()
-                        if main_thread.ql.arch.get_pc() != self.ql.loader.elf_entry:
-                            raise QlErrorExecutionStop('Dynamic library .init() failed!')
-                        self.ql.enable_lib_patch()
-                        self.run_function_after_load()
-                        self.ql.loader.skip_exit_check = False
-                        self.ql.write_exit_trap()
-
-                        main_thread.set_start_address(self.ql.loader.elf_entry)
-                        main_thread.exit_point = self.exit_point
-
-                        #thread_management.clean_world()
-                        #thread_management.set_main_thread(main_thread)
-    
                     thread_management.run()
 
                 else:
@@ -150,8 +118,8 @@ class QlOsLinux(QlOsPosix):
 
         except UcError:
             # TODO: this is bad We need a better approach for this
-            if self.ql.output != QL_OUTPUT.DEBUG:
-                return
+            #if self.ql.output != QL_OUTPUT.DEBUG:
+            #    return
             
             self.emu_error()
             raise

@@ -106,6 +106,11 @@ reg_map_64 = {
     "rip": UC_X86_REG_RIP,
 }
 
+reg_map_seg_base = {
+    "fsbase" : UC_X86_REG_FS_BASE,
+    "gsbase" : UC_X86_REG_GS_BASE
+}
+
 reg_map_r = {
     "r8b":  UC_X86_REG_R8B,
     "r9b":  UC_X86_REG_R9B,

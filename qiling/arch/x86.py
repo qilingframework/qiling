@@ -71,7 +71,7 @@ class QlArchX8664(QlArch):
 
         x64_register_mappings = [
             reg_map_8, reg_map_16, reg_map_32, reg_map_64,
-            reg_map_cr, reg_map_st, reg_map_misc, reg_map_r
+            reg_map_cr, reg_map_st, reg_map_misc, reg_map_r, reg_map_seg_base
         ]
 
         for reg_maper in x64_register_mappings:

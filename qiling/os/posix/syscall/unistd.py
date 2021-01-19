@@ -25,7 +25,6 @@ def ql_syscall_exit(ql, exit_code, *args, **kw):
     if ql.multithread:
         def _sched_cb_exit(cur_thread):
             logging.debug(f"[Thread {cur_thread.get_id()}] Terminated.")
-            cur_thread.status = THREAD_STATUS_TERMINATED
             cur_thread.stop()
             cur_thread.exit_code = exit_code
         td = ql.os.thread_management.cur_thread

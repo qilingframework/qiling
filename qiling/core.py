@@ -933,7 +933,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
 
     @property
-    def disassember(self):
+    def disassembler(self):
         return self.create_disassembler()
 
 

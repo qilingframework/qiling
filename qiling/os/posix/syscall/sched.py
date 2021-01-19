@@ -94,13 +94,14 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
     if clone_flags & CLONE_CHILD_SETTID == CLONE_CHILD_SETTID:
         set_child_tid_addr = clone_child_tidptr
 
-    th = ql.os.thread_class.spawn(ql, set_child_tid_addr = set_child_tid_addr)
+    th = ql.os.thread_class.spawn(ql, ql.reg.arch_pc + 2, ql.os.exit_point, set_child_tid_addr = set_child_tid_addr)
     th.current_path = f_th.current_path
-    logging.debug(f"[thread {th.get_id()}] created.")
+    logging.debug(f"{str(th)} created.")
 
     if clone_flags & CLONE_PARENT_SETTID == CLONE_PARENT_SETTID:
         ql.mem.write(clone_parent_tidptr, ql.pack32(th.id))
 
+    ctx = ql.save(reg=True, mem=False)
     # Whether to set a new tls
     if clone_flags & CLONE_SETTLS == CLONE_SETTLS:
         th.clone_thread_tls(clone_newtls)
@@ -111,21 +112,22 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
     # Set the stack and return value of the new thread
     # (the return value of the child thread is 0, and the return value of the parent thread is the tid of the child thread)
     # and save the current context.
-    f_sp = ql.arch.get_sp()
-
     regreturn = 0
-    ql.arch.set_sp(clone_child_stack)
-    th.save_context()
+    ql.reg.arch_sp = clone_child_stack
+
+    # We have to find next pc manually.
+    ql.reg.arch_pc += list(ql.disassembler.disasm_lite(bytes(ql.mem.read(ql.reg.arch_pc, 4)), ql.reg.arch_pc))[0][1]
+    ql.os.set_syscall_return(0)
+    th.save()
     if th is None or f_th is None:
         raise Exception()
-    ql.os.thread_management.cur_thread = th
     logging.debug("[+] Currently running pid is: %d; tid is: %d " % (
     os.getpid(), ql.os.thread_management.cur_thread.id))
     logging.info("clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d" % (
     clone_child_stack, clone_flags, clone_newtls, clone_parent_tidptr, clone_child_tidptr, regreturn))
 
     # Restore the stack and return value of the parent process
-    ql.arch.set_sp(f_sp)
+    ql.restore(ctx)
     regreturn = th.id
 
     # Break the parent process and enter the add new thread event
@@ -133,7 +135,6 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
     f_th.stop_event = THREAD_EVENT_CREATE_THREAD
     f_th.stop_return_val = th
 
-    ql.os.thread_management.cur_thread = f_th
     logging.debug("[+] Currently running pid is: %d; tid is: %d " % (
     os.getpid(), ql.os.thread_management.cur_thread.id))
     logging.info("clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d" % (
