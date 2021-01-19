@@ -305,9 +305,13 @@ def hook___stdio_common_vswprintf_s(ql, address, _):
 # int lstrlenA(
 #   LPCSTR lpString
 # );
-@winsdkapi(cc=CDECL, replace_params={'lpString': POINTER})
+@winsdkapi(cc=STDCALL, replace_params={'lpString': POINTER})
 def hook_lstrlenA(ql, address, params):
     addr = params["lpString"]
+
+    if addr == 0:
+        return 0
+
     string = b""
     val = ql.mem.read(addr, 1)
     while bytes(val) != b"\x00":
@@ -324,6 +328,10 @@ def hook_lstrlenA(ql, address, params):
 @winsdkapi(cc=CDECL, replace_params={'lpString': POINTER})
 def hook_lstrlenW(ql, address, params):
     addr = params["lpString"]
+
+    if addr == 0:
+        return 0
+
     string = b""
     val = ql.mem.read(addr, 2)
     while bytes(val) != b"\x00\x00":

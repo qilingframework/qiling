@@ -50,8 +50,8 @@ def winsdkapi(cc, param_num=None, dllname=None, replace_params_type=None, replac
                 winsdk_path = os.path.join(windows_abspath[:-11], 'extensions', 'windows_sdk', 'defs', dllname + '.json')
 
                 if os.path.exists(winsdk_path):
-                    f = open(winsdk_path, 'r')
-                    funclist = json.load(f)
+                    with open(winsdk_path, 'r') as f:
+                        funclist = json.load(f)
                 else:
                     logging.info('[!] %s not found', winsdk_path)
                 if funcname not in funclist:
