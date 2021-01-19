@@ -18,6 +18,11 @@ from qiling.os.windows.dlls.kernel32.fileapi import _CreateFile
 
 class PETest(unittest.TestCase):
 
+    def hook_third_stop_address(self, ql):
+        print(" >>>> Third Stop address: 0x%08x" % ql.reg.arch_pc)
+        self.third_stop = True
+        ql.emu_stop()
+
     def test_pe_win_x86_sality(self):
 
         def init_unseen_symbols(ql, address, name, ordinal, dll_name):
@@ -133,7 +138,6 @@ class PETest(unittest.TestCase):
         @winsdkapi(cc=STDCALL, dllname='advapi32_dll')
         def hook_StartServiceA(ql, address, params):
             # TODO: Still Fixing
-            return
             hService = params["hService"]
             service_handle = ql.os.handle_manager.get(hService)
             if service_handle.name == "amsint32":
@@ -155,12 +159,25 @@ class PETest(unittest.TestCase):
             else:
                 return 1
 
-        def hook_stop_address(ql):
-            print(" >>>> Stop address: 0x%08x" % ql.reg.arch_pc)
+
+
+        def hook_first_stop_address(ql):
+            print(" >>>> First Stop address: 0x%08x" % ql.reg.arch_pc)
+            ql.first_stop = True    
             ql.emu_stop()
+
+
+        def hook_second_stop_address(ql):
+            print(" >>>> Second Stop address: 0x%08x" % ql.reg.arch_pc)
+            ql.second_stop = True
+            ql.emu_stop()
+
 
         ql = Qiling(["../examples/rootfs/x86_windows/bin/sality.dll"], "../examples/rootfs/x86_windows", output="debug")
         ql.libcache = False
+        ql.first_stop = False
+        ql.second_stop = False
+        self.third_stop = False
         # for this module 
         ql.amsint32_driver = None
         # emulate some Windows API
@@ -169,18 +186,27 @@ class PETest(unittest.TestCase):
         ql.set_api("WriteFile", hook_WriteFile)
         ql.set_api("StartServiceA", hook_StartServiceA)
         #init sality
-        ql.hook_address(hook_stop_address, 0x40EFFB)
+        ql.hook_address(hook_first_stop_address, 0x40EFFB)
         ql.run()
         # run driver thread
         ql.os.set_function_args([0])
-        ql.hook_address(hook_stop_address, 0x4055FA)
+        ql.hook_address(hook_second_stop_address, 0x4055FA)
         ql.run(begin=0x4053B2)
         print("[+] test kill thread")
         if ql.amsint32_driver:
             ql.amsint32_driver.os.io_Write(ql.pack32(0xdeadbeef))
-            ql.amsint32_driver.hook_address(hook_stop_address, 0x10423)
+            
+            # TODO: Should stop at 0x10423, but for now just stop at 0x0001066a
+            stop_addr = 0x1066a
+            ql.amsint32_driver.hook_address(self.hook_third_stop_address, stop_addr)
+            
             ql.amsint32_driver.os.set_function_args([0])
             ql.amsint32_driver.run(begin=0x102D0)
+
+        self.assertEqual(True, ql.first_stop)    
+        self.assertEqual(True, ql.second_stop)
+        self.assertEqual(True, self.third_stop)
+        
 
 
 if __name__ == "__main__":

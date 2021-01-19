@@ -795,7 +795,8 @@ def _NtQuerySystemInformation(ql, address, params):
  
             module.Section = 0
             module.MappedBase = 0
-            module.ImageBase = ql.loader.dlls.get("ntoskrnl.exe")
+            if ql.loader.is_driver == True:
+                module.ImageBase = ql.loader.dlls.get("ntoskrnl.exe")
             module.ImageSize = 0xab000
             module.Flags = 0x8804000
             module.LoadOrderIndex = 0  # order of this module
@@ -1214,6 +1215,19 @@ def hook_ObReferenceObjectByHandle(ql, address, params):
             "Wait": ULONG
     })
 def hook_KeSetEvent(ql, address, params):
+    return 0
+
+# LONG KeResetEvent(
+#   PRKEVENT  Event,
+#   KPRIORITY Increment,
+#   BOOLEAN   Wait
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={
+            "Event": POINTER,
+            "Increment": ULONG,
+            "Wait": ULONG
+    })
+def hook_KeResetEvent(ql, address, params):
     return 0
 
 # void KeClearEvent(

@@ -278,10 +278,10 @@ class Process():
         driver_object_addr = self.structure_last_addr
         logging.info("[+] Driver object addr is 0x%x" %driver_object_addr)
 
-        if self.ql.archbit == 64:
-            self.driver_object = DRIVER_OBJECT64(self.ql, driver_object_addr)
-        else:
+        if self.ql.archtype == QL_ARCH.X86:
             self.driver_object = DRIVER_OBJECT32(self.ql, driver_object_addr)
+        elif self.ql.archtype == QL_ARCH.X8664:
+            self.driver_object = DRIVER_OBJECT64(self.ql, driver_object_addr)
 
         driver_object_size = ctypes.sizeof(self.driver_object)
         self.ql.mem.write(driver_object_addr, bytes(self.driver_object))
@@ -293,10 +293,12 @@ class Process():
         # PUNICODE_STRING RegistryPath
         regitry_path_addr = self.structure_last_addr
         logging.info("[+] Registry path addr is 0x%x" %regitry_path_addr)
-        if self.ql.archbit == 64:
-            regitry_path_data = UNICODE_STRING64(0, 0, regitry_path_addr)
-        else:
+
+        if self.ql.archtype == QL_ARCH.X86:
             regitry_path_data = UNICODE_STRING32(0, 0, regitry_path_addr)
+        elif self.ql.archtype == QL_ARCH.X8664:
+            regitry_path_data = UNICODE_STRING64(0, 0, regitry_path_addr)
+
         regitry_path_size = ctypes.sizeof(regitry_path_data)
         self.ql.mem.write(regitry_path_addr, bytes(regitry_path_data))
         self.structure_last_addr += regitry_path_size
@@ -307,10 +309,11 @@ class Process():
         addr = self.structure_last_addr
         logging.info("[+] EPROCESS is is 0x%x" %addr)
 
-        if self.ql.archbit == 64:
-            self.eprocess_object = EPROCESS64(self.ql, addr)
-        else:
+
+        if self.ql.archtype == QL_ARCH.X86:
             self.eprocess_object = EPROCESS32(self.ql, addr)
+        elif self.ql.archtype == QL_ARCH.X8664:
+            self.eprocess_object = EPROCESS64(self.ql, addr)            
 
         size = ctypes.sizeof(self.eprocess_object)
         self.ql.mem.write(addr, bytes(self.driver_object))
@@ -325,9 +328,9 @@ class Process():
 		struct information:
 		https://doxygen.reactos.org/d8/dae/modules_2rostests_2winetests_2ntdll_2time_8c_source.html
         '''
-        if self.ql.archbit == 32:
+        if self.ql.archtype == QL_ARCH.X86:
             KI_USER_SHARED_DATA = 0xFFDF0000
-        elif self.ql.archbit == 64:
+        elif self.ql.archtype == QL_ARCH.X8664:
             KI_USER_SHARED_DATA = 0xFFFFF78000000000
 
         logging.info("[+] KI_USER_SHARED_DATA is 0x%x" %KI_USER_SHARED_DATA)
@@ -355,10 +358,10 @@ class QlLoaderPE(QlLoader, Process):
 
         if not self.ql.shellcoder:
             self.pe = pefile.PE(self.path, fast_load=True)
-            if self.pe.OPTIONAL_HEADER.Subsystem == 1:
-                self.is_driver = True
-                self.init_dlls = [b"ntoskrnl.exe"]
-                self.sys_dlls = [b"ntoskrnl.exe"]
+            self.is_driver = self.pe.is_driver()
+            if self.is_driver == True:
+                self.init_dlls.append(b"ntoskrnl.exe")
+                self.sys_dlls.append(b"ntoskrnl.exe")
             
         if self.ql.archtype == QL_ARCH.X86:
             self.stack_address = int(self.ql.os.profile.get("OS32", "stack_address"), 16)
