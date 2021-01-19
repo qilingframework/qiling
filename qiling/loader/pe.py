@@ -15,6 +15,35 @@ from qiling.arch.x86_const import *
 from .loader import QlLoader
 from qiling.os.memory import QlMemoryHeap
 
+
+class QlPeCacheEntry:
+    def __init__(self, data, cmdlines, import_symbols, import_table):
+        self.data = data
+        self.cmdlines = cmdlines
+        self.import_symbols = import_symbols
+        self.import_table = import_table
+
+# A default simple cache implementation
+class QlPeCache:
+    def create_filename(self, path, address):
+        return path + ".%x.cache2" % address
+
+    def restore(self, path, address):
+        fcache = self.create_filename(path, address)
+        # pickle file cannot be outdated
+        if os.path.exists(fcache) and os.stat(fcache).st_mtime > os.stat(path).st_mtime:
+            with open(fcache, "rb") as fcache_file:
+                return QlPeCacheEntry(*pickle.load(fcache_file))
+        return None
+
+    def save(self, path, address, entry):
+        fcache = self.create_filename(path, address)
+        data = (entry.data, entry.cmdlines, entry.import_symbols, entry.import_table)
+        # cache this dll file
+        with open(fcache, "wb") as fcache_file:
+            pickle.dump(data, fcache_file)
+
+
 class Process():
     def __init__(self, ql):
         self.ql = ql
@@ -47,22 +76,18 @@ class Process():
 
         logging.info("[+] Loading %s to 0x%x" % (path, self.dll_last_address))
 
-        # cache depends on address base
-        fcache = path + ".%x.cache" % self.dll_last_address
+        if self.libcache:
+            cached = self.libcache.restore(path, self.dll_last_address)
+        else:
+            cached = None
 
-        # Add dll to IAT
-        try:
-            self.import_address_table[dll_name] = {}
-        except:
-            pass
-
-        if self.libcache and os.path.exists(fcache) and \
-            os.stat(fcache).st_mtime > os.stat(path).st_mtime: # pickle file cannot be outdated
-            with open(fcache, "rb") as fcache_file:
-                (data, cmdlines, self.import_symbols, self.import_address_table) = \
-                    pickle.load(fcache_file)
-            for entry in cmdlines:
+        if cached:
+            data = cached.data
+            import_symbols = cached.import_symbols
+            import_table = cached.import_table
+            for entry in cached.cmdlines:
                 self.set_cmdline(entry['name'], entry['address'], data)
+            logging.info("Loaded %s from cache" % path)
         else:
             dll = pefile.PE(path, fast_load=True)
             dll.parse_data_directories()
@@ -74,24 +99,35 @@ class Process():
             data = bytearray(dll.get_memory_mapped_image())
             cmdlines = []
 
+            import_symbols = {}
+            import_table = {}
             for entry in dll.DIRECTORY_ENTRY_EXPORT.symbols:
-                self.import_symbols[self.dll_last_address + entry.address] = {"name": entry.name,
+                import_symbols[self.dll_last_address + entry.address] = {"name": entry.name,
                                                                               "ordinal": entry.ordinal,
                                                                               "dll": dll_name.split('.')[0]
                                                                               }
-                self.import_address_table[dll_name][entry.name] = self.dll_last_address + entry.address
-                self.import_address_table[dll_name][entry.ordinal] = self.dll_last_address + entry.address
+                if entry.name:
+                    import_table[entry.name] = self.dll_last_address + entry.address
+                import_table[entry.ordinal] = self.dll_last_address + entry.address
                 cmdline_entry = self.set_cmdline(entry.name, entry.address, data)
                 if cmdline_entry:
                     cmdlines.append(cmdline_entry)
 
             if self.libcache:
-                # cache this dll file
-                pickle.dump((data, cmdlines,
-                             self.import_symbols,
-                             self.import_address_table),
-                            open(fcache, "wb"))
+                cached = QlPeCacheEntry(data, cmdlines, import_symbols, import_table)
+                self.libcache.save(path, self.dll_last_address, cached)
                 logging.info("Cached %s" % path)
+
+        # Add dll to IAT
+        try:
+            self.import_address_table[dll_name] = import_table
+        except Exception as ex:
+            logging.exception(f'Unable to add {dll_name} to IAT')
+
+        try:
+            self.import_symbols.update(import_symbols)
+        except Exception as ex:
+            logging.exception(f'Unable to add {dll_name} import symbols')
 
         dll_base = self.dll_last_address
         dll_len = self.ql.mem.align(len(bytes(data)), 0x1000)
@@ -346,7 +382,10 @@ class QlLoaderPE(QlLoader, Process):
     def __init__(self, ql):
         super(QlLoaderPE, self).__init__(ql)
         self.ql         = ql
-        self.libcache   = self.ql.libcache
+        if type(self.ql.libcache) == bool:
+            self.libcache = QlPeCache() if self.ql.libcache else None
+        else:
+            self.libcache = self.ql.libcache
         self.path       = self.ql.path
         self.is_driver  = False
 

@@ -4,6 +4,7 @@
 .idea
 *.pyc
 *.cache
+*.cache2
 .*.swp
 *.raw
 

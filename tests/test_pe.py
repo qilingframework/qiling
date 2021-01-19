@@ -5,7 +5,6 @@
 
 import os, random, sys, unittest, logging
 import string as st
-from binascii import unhexlify
 
 from unicorn.x86_const import *
 
@@ -13,6 +12,7 @@ sys.path.append("..")
 from qiling import *
 from qiling.const import *
 from qiling.exception import *
+from qiling.loader.pe import QlPeCache
 from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
 from qiling.os.mapper import QlFsMappedObject
@@ -467,6 +467,53 @@ class PETest(unittest.TestCase):
         for key in expected_keys:
             self.assertTrue(key in ql.stdout.output)
             self.assertEqual(expected_string, ql.stdout.output[key])
+        del ql
+
+    class RefreshCache(QlPeCache):
+        def restore(self, path, address):
+            # If the cache entry exists, delete it
+            fcache = self.create_filename(path, address)
+            if os.path.exists(fcache):
+                os.remove(fcache)
+            return super().restore(path, address)
+
+    class TestCache(QlPeCache):
+        def __init__(self, testcase):
+            self.testcase = testcase
+            super().__init__()
+
+        def restore(self, path, address):
+            entry = super().restore(path, address)
+            self.testcase.assertTrue(entry is not None)  # Check that it loaded a cache entry
+            if path.endswith('msvcrt.dll'):
+                self.testcase.assertEqual(len(entry.cmdlines), 2)
+            else:
+                self.testcase.assertEqual(len(entry.cmdlines), 0)
+            self.testcase.assertIsInstance(entry.data, bytearray)
+            return entry
+
+        def save(self, path, address, entry):
+            self.testcase.assertFalse(true)  # This should not be called!
+
+
+    def test_pe_win_x8664_libcache(self):
+        # First force the cache to be recreated
+        ql = Qiling(["../examples/rootfs/x8664_windows/bin/cmdln64.exe",
+                    'arg1', 'arg2 with spaces'],
+                    "../examples/rootfs/x8664_windows",
+                    libcache=PETest.RefreshCache(),
+                    output="default")
+        ql.run()
+        del ql
+
+        # Now run with a special cache that validates that the 'real' cache will load,
+        # and that the file is not written again
+        ql = Qiling(["../examples/rootfs/x8664_windows/bin/cmdln64.exe",
+                    'arg1', 'arg2 with spaces'],
+                    "../examples/rootfs/x8664_windows",
+                    libcache=PETest.TestCache(self),
+                    output="default")
+        ql.run()
         del ql
 
 
