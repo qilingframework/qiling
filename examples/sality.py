@@ -11,7 +11,7 @@ sys.path.append("..")
 from qiling import Qiling
 from qiling.os.const import STDCALL, POINTER, DWORD, STRING, HANDLE
 from qiling.os.windows.fncc import winsdkapi
-from qiling.os.windows.utils import canonical_path, string_appearance
+from qiling.os.windows.utils import string_appearance
 from qiling.os.windows.dlls.kernel32.fileapi import _CreateFile
 
 
@@ -132,7 +132,7 @@ def hook_StartServiceA(ql, address, params):
         if service_handle.name == "amsint32":
             if service_handle.name in ql.os.services:
                 service_path = ql.os.services[service_handle.name]
-                service_path = canonical_path(ql, service_path)
+                service_path = ql.os.transform_to_real_path(service_path)
                 ql.amsint32_driver = Qiling([service_path], ql.rootfs, output="debug")
                 init_unseen_symbols(ql.amsint32_driver, ql.amsint32_driver.loader.dlls["ntoskrnl.exe"]+0xb7695, b"NtTerminateProcess", 0, "ntoskrnl.exe")
                 #ql.amsint32_driver.debugger= ":9999"

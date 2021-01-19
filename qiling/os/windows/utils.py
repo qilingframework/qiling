@@ -133,25 +133,6 @@ def string_appearance(ql, string):
         val.add(ql.os.syscalls_counter)
         ql.os.appeared_strings[string] = val
 
-def canonical_path(ql, file_path):
-    file_path = str(file_path.split("\\C:")[0])
-    file_path = file_path.replace("C:", ql.rootfs)
-    file_path = file_path.replace("\\", os.sep)
-    
-    if ql.archbit == 32:
-        real_path = os.path.join(ql.rootfs, "Windows", "System32")
-        if not os.path.exists(real_path):
-            real_path = os.path.join(ql.rootfs, "Windows", "SysWOW64")
-    else:
-        real_path = os.path.join(ql.rootfs, "Windows", "System32")
-
-    system_path = os.path.join(ql.rootfs, "Windows", "System32")
-    
-    if system_path in file_path:
-        file_path = file_path.replace(system_path, real_path)
-    
-    return file_path
-
 
 def path_leaf(path):
     head, tail = ntpath.split(path)

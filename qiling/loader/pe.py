@@ -25,13 +25,10 @@ class Process():
     def load_dll(self, dll_name, driver=False):
         dll_name = dll_name.decode()
 
-        if self.ql.archtype == QL_ARCH.X86:
-            self.ql.dlls = os.path.join("Windows", "SysWOW64")
-        elif self.ql.archtype == QL_ARCH.X8664:
-            self.ql.dlls = os.path.join("Windows", "System32")
+        self.ql.dlls = os.path.join("Windows", "System32")
 
         if 'C:\\' in dll_name.upper():
-            path = canonical_path(self.ql, dll_name)
+            path = self.ql.os.transform_to_real_path(dll_name)
             dll_name = path_leaf(dll_name)
         else:
             dll_name = dll_name.lower()

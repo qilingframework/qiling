@@ -4,6 +4,7 @@
 #
 
 import struct, time, os, logging
+
 from shutil import copyfile
 from datetime import datetime
 
@@ -15,7 +16,6 @@ from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
 from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
-from qiling.os.windows.utils import canonical_path
 from qiling.exception import *
 from qiling.os.windows.structs import *
 
@@ -202,7 +202,6 @@ def hook_WriteFile(ql, address, params):
 
 def _CreateFile(ql, address, params, name):
     ret = INVALID_HANDLE_VALUE
-
     s_lpFileName = params["lpFileName"]
     dwDesiredAccess = params["dwDesiredAccess"]
     dwShareMode = params["dwShareMode"]
@@ -218,16 +217,15 @@ def _CreateFile(ql, address, params, name):
     else:
         mode += "r"
 
-    # create thread handle
     try:
         f = ql.os.fs_mapper.open(s_lpFileName, mode)
     except FileNotFoundError:
         ql.os.last_error = ERROR_FILE_NOT_FOUND
         return INVALID_HANDLE_VALUE
+
     new_handle = Handle(obj=f)
     ql.os.handle_manager.append(new_handle)
     ret = new_handle.id
-
     return ret
 
 
@@ -560,8 +558,8 @@ def hook_UnmapViewOfFile(ql, address, params):
     "bFailIfExists": DWORD
 })
 def hook_CopyFileA(ql, address, params):
-    lpExistingFileName = canonical_path(ql, params["lpExistingFileName"])
-    lpNewFileName = canonical_path(ql, params["lpNewFileName"])
+    lpExistingFileName = ql.os.transform_to_real_path(params["lpExistingFileName"])
+    lpNewFileName = ql.os.transform_to_real_path(params["lpNewFileName"])
     bFailIfExists = params["bFailIfExists"]
 
     if bFailIfExists and os.path.exists(lpNewFileName):

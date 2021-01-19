@@ -12,7 +12,7 @@ sys.path.append("..")
 from qiling import Qiling
 from qiling.os.const import STDCALL, POINTER, DWORD, STRING, HANDLE
 from qiling.os.windows.fncc import winsdkapi
-from qiling.os.windows.utils import canonical_path, string_appearance
+from qiling.os.windows.utils import string_appearance
 from qiling.os.windows.dlls.kernel32.fileapi import _CreateFile
 
 
@@ -67,6 +67,7 @@ class PETest(unittest.TestCase):
                     return (-1)
             else:
                 ret = _CreateFile(ql, address, params, "CreateFileA")
+
             return ret
 
         def _WriteFile(ql, address, params):
@@ -137,8 +138,8 @@ class PETest(unittest.TestCase):
             service_handle = ql.os.handle_manager.get(hService)
             if service_handle.name == "amsint32":
                 if service_handle.name in ql.os.services:
-                    service_path = "C:\\Windows\\System32\\drivers\\amsint32_driver.sys"
-                    service_path = canonical_path(ql, service_path)
+                    service_path = ql.os.services[service_handle.name]
+                    service_path = ql.os.transform_to_real_path(service_path)
                     ql.amsint32_driver = Qiling([service_path], ql.rootfs, output="disasm")
                     init_unseen_symbols(ql.amsint32_driver, ql.amsint32_driver.loader.dlls["ntoskrnl.exe"]+0xb7695, b"NtTerminateProcess", 0, "ntoskrnl.exe")
                     print("load amsint32_driver")
@@ -154,31 +155,6 @@ class PETest(unittest.TestCase):
             else:
                 return 1
 
-        # BOOL CopyFileA(
-        #   LPCSTR lpExistingFileName,
-        #   LPCSTR lpNewFileName,
-        #   BOOL   bFailIfExists
-        # );
-        @winsdkapi(cc=STDCALL, dllname='kernel32_dll', replace_params={
-            "lpExistingFileName": STRING,
-            "lpNewFileName": STRING,
-            "bFailIfExists": DWORD
-        })
-        def hook_CopyFileA(ql, address, params):
-            lpExistingFileName = canonical_path(ql, params["lpExistingFileName"])
-            lpNewFileName = canonical_path(ql, params["lpNewFileName"])
-            bFailIfExists = params["bFailIfExists"]
-
-            if bFailIfExists and os.path.exists(lpNewFileName):
-                return 0
-
-            if os.path.isdir(lpNewFileName):
-                lpNewFileName = os.path.join(lpNewFileName, "ntoskrnl.exe")
-            
-            copyfile(lpExistingFileName, lpNewFileName)
-            return 1
-
-
         def hook_stop_address(ql):
             print(" >>>> Stop address: 0x%08x" % ql.reg.arch_pc)
             ql.emu_stop()
@@ -192,7 +168,6 @@ class PETest(unittest.TestCase):
         ql.set_api("CreateFileA", hook_CreateFileA)
         ql.set_api("WriteFile", hook_WriteFile)
         ql.set_api("StartServiceA", hook_StartServiceA)
-        ql.set_api("CopyFileA", hook_CopyFileA)
         #init sality
         ql.hook_address(hook_stop_address, 0x40EFFB)
         ql.run()

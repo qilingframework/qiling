@@ -631,11 +631,11 @@ def hook_wvsprintfA(ql, address, params):
 # );
 @winsdkapi(cc=CDECL, dllname=dllname, param_num=3)
 def hook_wsprintfA(ql, address, params):
-    dst, p_format = ql.os.get_function_param(2)
-    format_string = ql.os.read_wstring(p_format)
+    dst, p_format, p_args = ql.os.get_function_param(3)
+    format_string = ql.os.read_cstring(p_format)
     count = format_string.count('%')
     args = ql.os.get_function_param(2 + count)[2:]
-    size, string = ql.os.printf(address, format_string, args, "wsprintfA", wstring=True)
+    size, string = ql.os.printf(address, format_string, args, "wsprintfA")
 
     if ql.archtype== QL_ARCH.X8664:
         # We must pop the stack correctly
