@@ -23,6 +23,7 @@ class PETest(unittest.TestCase):
         self.third_stop = True
         ql.emu_stop()
 
+
     def test_pe_win_x86_sality(self):
 
         def init_unseen_symbols(ql, address, name, ordinal, dll_name):
@@ -160,7 +161,6 @@ class PETest(unittest.TestCase):
                 return 1
 
 
-
         def hook_first_stop_address(ql):
             print(" >>>> First Stop address: 0x%08x" % ql.reg.arch_pc)
             ql.first_stop = True    
@@ -197,7 +197,7 @@ class PETest(unittest.TestCase):
             ql.amsint32_driver.os.io_Write(ql.pack32(0xdeadbeef))
             
             # TODO: Should stop at 0x10423, but for now just stop at 0x0001066a
-            stop_addr = 0x1066a
+            stop_addr = 0x0001066a
             ql.amsint32_driver.hook_address(self.hook_third_stop_address, stop_addr)
             
             ql.amsint32_driver.os.set_function_args([0])
@@ -206,8 +206,7 @@ class PETest(unittest.TestCase):
         self.assertEqual(True, ql.first_stop)    
         self.assertEqual(True, ql.second_stop)
         self.assertEqual(True, self.third_stop)
+
         
-
-
 if __name__ == "__main__":
     unittest.main()
