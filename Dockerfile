@@ -6,7 +6,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update \
   && apt-get -y upgrade \
-  && apt-get install -y --no-install-recommends cmake build-essential gcc git unzip
+  && apt-get install -y --no-install-recommends cmake build-essential gcc git
 
 COPY . /qiling
 
@@ -20,6 +20,7 @@ COPY --from=builder /qiling /qiling
 WORKDIR /qiling
 
 RUN apt-get update \
+  && apt-get install -y --no-install-recommends unzip \
   && rm -rf /var/lib/apt/lists/* \
   && pip3 install wheels/*.whl \
   && rm -rf wheels
