@@ -6,7 +6,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update \
   && apt-get -y upgrade \
-  && apt-get install -y --no-install-recommends cmake build-essential gcc git
+  && apt-get install -y --no-install-recommends cmake build-essential gcc git unzip
 
 COPY . /qiling
 
