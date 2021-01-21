@@ -242,6 +242,8 @@ class QlOsUtils:
 
         if not self.md:
             self.md = self.ql.create_disassembler()
+        elif self.ql.archtype == QL_ARCH.ARM: # Update disassembler for arm considering thumb swtich.
+            self.md = self.ql.create_disassembler()
 
         insn = self.md.disasm(tmp, address)
         opsize = int(size)

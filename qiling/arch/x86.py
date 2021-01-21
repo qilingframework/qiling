@@ -3,6 +3,8 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+import logging
+
 from unicorn import *
 from unicorn.x86_const import *
 
@@ -148,6 +150,7 @@ class GDTManager:
         gdt_entry = self._create_gdt_entry(SEGMENT_ADDR, SEGMENT_SIZE, SPORT, QL_X86_F_PROT_32)
         self.ql.mem.write(self.gdt_addr + (index << 3), gdt_entry)
         # self.gdt_used[index] = True
+        logging.debug(f"Write to {hex(self.gdt_addr + (index << 3))} for new entry {gdt_entry}")
 
 
     def get_gdt_buf(self, start, end):

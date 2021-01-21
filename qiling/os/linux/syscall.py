@@ -30,6 +30,7 @@ def ql_syscall_set_thread_area(ql, u_info_addr, *args, **kw):
             index = ql.os.gdtm.get_free_idx(12)
 
         if index == -1 or index < 12 or index > 14:
+            logging.warning(f"Wrong index {index} from address {hex(u_info_addr)}")
             return -1
         else:
             ql.os.gdtm.register_gdt_segment(index, base, limit, QL_X86_A_PRESENT | QL_X86_A_DATA | QL_X86_A_DATA_WRITABLE | QL_X86_A_PRIV_3 | QL_X86_A_DIR_CON_BIT, QL_X86_S_GDT | QL_X86_S_PRIV_3)
@@ -42,7 +43,9 @@ def ql_syscall_set_thread_area(ql, u_info_addr, *args, **kw):
         ql.reg.cp0_userlocal = u_info_addr
         ql.reg.v0 = 0
         ql.reg.a3 = 0
-        logging.info ("set_thread_area(0x%x)" % u_info_addr)        
+        logging.info ("set_thread_area(0x%x)" % u_info_addr)
+    
+    return 0
 
 
 def ql_syscall_set_tls(ql, address, *args, **kw):

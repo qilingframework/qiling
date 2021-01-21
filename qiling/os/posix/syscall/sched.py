@@ -75,7 +75,7 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
             f_th.set_thread_log_file(ql.log_dir)
 
             if clone_flags & CLONE_SETTLS == CLONE_SETTLS:
-                f_th.clone_thread_tls(clone_newtls)
+                f_th.set_thread_tls(clone_newtls)
 
             if clone_flags & CLONE_CHILD_CLEARTID == CLONE_CHILD_CLEARTID:
                 f_th.set_clear_child_tid_addr(clone_child_tidptr)
@@ -104,7 +104,8 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
     ctx = ql.save(reg=True, mem=False)
     # Whether to set a new tls
     if clone_flags & CLONE_SETTLS == CLONE_SETTLS:
-        th.clone_thread_tls(clone_newtls)
+        logging.debug(f"new_tls={hex(clone_newtls)}")
+        th.set_thread_tls(clone_newtls)
 
     if clone_flags & CLONE_CHILD_CLEARTID == CLONE_CHILD_CLEARTID:
         th.set_clear_child_tid_addr(clone_child_tidptr)
@@ -115,8 +116,10 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
     regreturn = 0
     ql.reg.arch_sp = clone_child_stack
 
-    # We have to find next pc manually.
-    ql.reg.arch_pc += list(ql.disassembler.disasm_lite(bytes(ql.mem.read(ql.reg.arch_pc, 4)), ql.reg.arch_pc))[0][1]
+    # We have to find next pc manually for some archs since the pc is current instruction (like `syscall`).
+    if ql.archtype in (QL_ARCH.X8664, ):
+        ql.reg.arch_pc += list(ql.disassembler.disasm_lite(bytes(ql.mem.read(ql.reg.arch_pc, 4)), ql.reg.arch_pc))[0][1]
+        logging.debug(f"Fix pc for child thread to {hex(ql.reg.arch_pc)}")
     ql.os.set_syscall_return(0)
     th.save()
     if th is None or f_th is None:

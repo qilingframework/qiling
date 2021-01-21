@@ -77,7 +77,7 @@ class MultithreadColoredFormatter(ColoredFormatter):
             return super(MultithreadColoredFormatter, self).format(record)
         _record = copy.copy(record)
         levelname = self.get_colored_level(_record)
-        _record.levelname = f"{levelname}]\t[{COLOR_CODE.GREEN}Thread {cur_thread.id}{COLOR_CODE.ENDC}"
+        _record.levelname = f"{levelname}] [{COLOR_CODE.GREEN}Thread {cur_thread.id}{COLOR_CODE.ENDC}"
         msg = super(ColoredFormatter, self).format(_record)
         return msg
 
