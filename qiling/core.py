@@ -154,7 +154,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         #####################
         # Profile & Logging #
         #####################
-        self._profile = profile_setup(self.ostype, self.profile, self)
+        self._profile, debugmsg = profile_setup(self.ostype, self.profile, self)
         if self._append == None:
             self._append = self._profile["MISC"]["append"]
         if self._log_dir == None:
@@ -178,7 +178,10 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._log_file_fd = logging.getLogger()
         
         ql_resolve_logger_level(self._output, self._verbose)
-        
+
+        # Now that the logger is configured, we can log profile debug msg:
+        logging.debug(debugmsg)
+
         ########################
         # Archbit & Endianness #
         ########################
