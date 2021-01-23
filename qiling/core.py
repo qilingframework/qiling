@@ -490,8 +490,8 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         """ Stdin of the program. Can be any object which implements (even part of) io.IOBase.
 
             Type: io.Base
-            Example: ql = Qiling(stdin=sys.stdin)
-                     ql.stdin = sys.stdin
+            Example: - ql = Qiling(stdin=sys.stdin)
+                     - ql.stdin = sys.stdin
         """
         return self._stdin
     
@@ -504,8 +504,8 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         """ Stdout of the program. Can be any object which implements (even part of) io.IOBase.
 
             Type: io.Base
-            Example: ql = Qiling(stdout=sys.stdout)
-                     ql.stdout = sys.stdout
+            Example: - ql = Qiling(stdout=sys.stdout)
+                     - ql.stdout = sys.stdout
         """
         return self._stdout
 
@@ -518,8 +518,8 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         """ Stdout of the program. Can be any object which implements (even part of) io.IOBase.
 
             Type: io.Base
-            Example: ql = Qiling(stderr=sys.stderr)
-                     ql.stderr = sys.stderr
+            Example: - ql = Qiling(stderr=sys.stderr)
+                     - ql.stderr = sys.stderr
         """
         return self._stderr
     
@@ -532,8 +532,8 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         """ Whether cache dll files. Only take effect in Windows emulation.
 
             Type: bool
-            Example: ql = Qiling(libcache=False)
-                     ql.libcache = True
+            Example: - ql = Qiling(libcache=False)
+                     - ql.libcache = True
         """
         return self._libcache
 
@@ -554,8 +554,8 @@ class Qiling(QlCoreHooks, QlCoreStructs):
               - "debug": set the log level to logging.DEBUG.
               - "disasm": diasm each executed instruction.
               - "dump": the most verbose output, dump registers and diasm the function blocks.
-            Example: ql = Qiling(output="off")
-                     ql.output = "off"
+            Example: - ql = Qiling(output="off")
+                     - ql.output = "off"
         """
         return self._output
     
@@ -580,8 +580,8 @@ class Qiling(QlCoreHooks, QlCoreStructs):
               - 0  : logging.WARNING, almost no additional logs except the program output.
               - >=1: logging.INFO, the default logging level.
               - >=4: logging.DEBUG.
-            Example: ql = Qiling(verbose=5)
-                     ql.verbose = 0
+            Example: - ql = Qiling(verbose=5)
+                     - ql.verbose = 0
         """
         return self._verbose
     
