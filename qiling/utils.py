@@ -355,6 +355,7 @@ def ql_macho_parse_emu_env(path):
 
     return arch, ostype, archendian
 
+
 def ql_pe_parse_emu_env(path):
     try:
         pe = pefile.PE(path, fast_load=True)
@@ -389,6 +390,7 @@ def ql_pe_parse_emu_env(path):
 
     return arch, ostype, archendian
 
+
 def ql_guess_emu_env(path):
     arch = None
     ostype = None
@@ -419,14 +421,17 @@ def ql_guess_emu_env(path):
 
     return arch, ostype, archendian
 
+
 def loader_setup(ostype, ql):
     loadertype_str = loadertype_convert_str(ostype)
     function_name = "QlLoader" + loadertype_str
     return ql_get_module_function(f"qiling.loader.{loadertype_str.lower()}", function_name)(ql)
 
+
 def component_setup(component_type, component_name, ql):
     function_name = "Ql" + component_name.capitalize() + "Manager"
     return ql_get_module_function(f"qiling.{component_type}.{component_name}", function_name)(ql)
+
 
 def debugger_setup(debugger, ql):
     # default remote server
@@ -466,10 +471,12 @@ def arch_setup(archtype, ql):
 
     return ql_get_module_function(f"qiling.arch.{arch_str.lower()}", archmanager)(ql)
 
+
 # This function is extracted from os_setup so I put it here.
 def ql_syscall_mapping_function(ostype):
     ostype_str = ostype_convert_str(ostype)
     return ql_get_module_function(f"qiling.os.{ostype_str.lower()}.map_syscall", "map_syscall")
+
 
 def os_setup(archtype, ostype, ql):
     if not ql_is_valid_ostype(ostype):
@@ -522,6 +529,8 @@ def ql_setup_logger(ql, log_dir, log_filename, log_split, console, filter, multi
 
     # Clear all handlers and filters.
     lger = logging.getLogger()
+    lger.handlers = []
+    lger.filters = []    
 
     # Do we have console output?
     if console:
@@ -530,6 +539,7 @@ def ql_setup_logger(ql, log_dir, log_filename, log_split, console, filter, multi
             formatter = MultithreadColoredFormatter(ql, FMT_STR)
         else:
             formatter = ColoredFormatter(FMT_STR)
+        
         handler.setFormatter(formatter)
         lger.addHandler(handler)
     else:
