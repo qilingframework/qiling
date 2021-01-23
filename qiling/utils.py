@@ -485,7 +485,7 @@ def os_setup(archtype, ostype, ql):
 
 
 def profile_setup(ostype, profile, ql):
-    logging.debug("Customized profile: %s" % profile)
+    debugmsg = "Customized profile: %s" % profile
 
     os_profile = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", ostype_convert_str(ostype) + ".ql")
 
@@ -496,7 +496,7 @@ def profile_setup(ostype, profile, ql):
 
     config = configparser.ConfigParser()
     config.read(profiles)
-    return config
+    return config, debugmsg
 
 def ql_resolve_logger_level(output, verbose):
     level = logging.INFO
@@ -522,8 +522,6 @@ def ql_setup_logger(ql, log_dir, log_filename, log_split, console, filter, multi
 
     # Clear all handlers and filters.
     lger = logging.getLogger()
-    lger.handlers = []
-    lger.filters = []
 
     # Do we have console output?
     if console:
