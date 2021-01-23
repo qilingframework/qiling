@@ -30,138 +30,138 @@ class ELFTest(unittest.TestCase):
         del QL_TEST
         del ql
 
-    def test_tcp_elf_linux_x86(self):
-        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
-            try:
-                buf = ql.mem.read(write_buf, write_count)
-                buf = buf.decode()
-                if buf.startswith("server send()"):
-                    ql.buf_out = buf
-            except:
-                pass        
-        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_tcp_test","20001"], "../examples/rootfs/x86_linux", multithread=True)
-        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
-        ql.run()
+    # def test_tcp_elf_linux_x86(self):
+    #     def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
+    #         try:
+    #             buf = ql.mem.read(write_buf, write_count)
+    #             buf = buf.decode()
+    #             if buf.startswith("server send()"):
+    #                 ql.buf_out = buf
+    #         except:
+    #             pass        
+    #     ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_tcp_test","20001"], "../examples/rootfs/x86_linux", multithread=True)
+    #     ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
+    #     ql.run()
         
-        self.assertEqual("server send() 14 return 14.\n", ql.buf_out)
+    #     self.assertEqual("server send() 14 return 14.\n", ql.buf_out)
 
-        del ql
+    #     del ql
 
 
-    def test_tcp_elf_linux_x8664(self):
-        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
-            try:
-                buf = ql.mem.read(write_buf, write_count)
-                buf = buf.decode()
-                if buf.startswith("server send()"):
-                    ql.buf_out = buf
-            except:
-                pass
-        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_tcp_test","20002"], "../examples/rootfs/x8664_linux", multithread=True)
-        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
-        ql.run()
+    # def test_tcp_elf_linux_x8664(self):
+    #     def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
+    #         try:
+    #             buf = ql.mem.read(write_buf, write_count)
+    #             buf = buf.decode()
+    #             if buf.startswith("server send()"):
+    #                 ql.buf_out = buf
+    #         except:
+    #             pass
+    #     ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_tcp_test","20002"], "../examples/rootfs/x8664_linux", multithread=True)
+    #     ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
+    #     ql.run()
         
-        self.assertEqual("server send() 14 return 14.\n", ql.buf_out)
+    #     self.assertEqual("server send() 14 return 14.\n", ql.buf_out)
         
-        del ql
+    #     del ql
 
 
-    def test_tcp_elf_linux_arm(self):
-        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
-            try:
-                buf = ql.mem.read(write_buf, write_count)
-                buf = buf.decode()
-                if buf.startswith("server write()"):
-                    ql.buf_out = buf
-            except:
-                pass           
-        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_tcp_test","20003"], "../examples/rootfs/arm_linux", multithread=True)
-        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
-        ql.run()
+    # def test_tcp_elf_linux_arm(self):
+    #     def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
+    #         try:
+    #             buf = ql.mem.read(write_buf, write_count)
+    #             buf = buf.decode()
+    #             if buf.startswith("server write()"):
+    #                 ql.buf_out = buf
+    #         except:
+    #             pass           
+    #     ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_tcp_test","20003"], "../examples/rootfs/arm_linux", multithread=True)
+    #     ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
+    #     ql.run()
         
-        self.assertEqual("server write() 14 return 14.\n", ql.buf_out)
+    #     self.assertEqual("server write() 14 return 14.\n", ql.buf_out)
         
-        del ql
+    #     del ql
 
 
-    def test_tcp_elf_linux_arm64(self):
-        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
-            try:
-                buf = ql.mem.read(write_buf, write_count)
-                buf = buf.decode()
-                if buf.startswith("server send()"):
-                    ql.buf_out = buf
-            except:
-                pass
-        ql = Qiling(["../examples/rootfs/arm64_linux/bin/arm64_tcp_test","20004"], "../examples/rootfs/arm64_linux", multithread=True)
-        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
-        ql.run()
+    # def test_tcp_elf_linux_arm64(self):
+    #     def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
+    #         try:
+    #             buf = ql.mem.read(write_buf, write_count)
+    #             buf = buf.decode()
+    #             if buf.startswith("server send()"):
+    #                 ql.buf_out = buf
+    #         except:
+    #             pass
+    #     ql = Qiling(["../examples/rootfs/arm64_linux/bin/arm64_tcp_test","20004"], "../examples/rootfs/arm64_linux", multithread=True)
+    #     ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
+    #     ql.run()
         
-        self.assertEqual("server send() 14 return 14.\n", ql.buf_out)
+    #     self.assertEqual("server send() 14 return 14.\n", ql.buf_out)
         
-        del ql
+    #     del ql
 
 
-    def test_tcp_elf_linux_mips32el(self):
-        ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_tcp_test","20005"], "../examples/rootfs/mips32el_linux", multithread=True)
-        ql.run()
-        del ql
+    # def test_tcp_elf_linux_mips32el(self):
+    #     ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_tcp_test","20005"], "../examples/rootfs/mips32el_linux", multithread=True)
+    #     ql.run()
+    #     del ql
 
 
-    def test_udp_elf_linux_x86(self):
-        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
-            try:
-                buf = ql.mem.read(write_buf, write_count)
-                buf = buf.decode()
-                if buf.startswith("server sendto()"):
-                    ql.buf_out = buf
-            except:
-                pass
+    # def test_udp_elf_linux_x86(self):
+    #     def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
+    #         try:
+    #             buf = ql.mem.read(write_buf, write_count)
+    #             buf = buf.decode()
+    #             if buf.startswith("server sendto()"):
+    #                 ql.buf_out = buf
+    #         except:
+    #             pass
 
-        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_udp_test","20007"], "../examples/rootfs/x86_linux", multithread=True)
-        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
-        ql.run()
+    #     ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_udp_test","20007"], "../examples/rootfs/x86_linux", multithread=True)
+    #     ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
+    #     ql.run()
 
-        self.assertEqual("server sendto() 14 return 14.\n", ql.buf_out)
+    #     self.assertEqual("server sendto() 14 return 14.\n", ql.buf_out)
 
-        del ql
+    #     del ql
 
 
-    def test_udp_elf_linux_x8664(self):
-        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
-            try:
-                buf = ql.mem.read(write_buf, write_count)
-                buf = buf.decode()
-                if buf.startswith("server sendto()"):
-                    ql.buf_out = buf
-            except:
-                pass
+    # def test_udp_elf_linux_x8664(self):
+    #     def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
+    #         try:
+    #             buf = ql.mem.read(write_buf, write_count)
+    #             buf = buf.decode()
+    #             if buf.startswith("server sendto()"):
+    #                 ql.buf_out = buf
+    #         except:
+    #             pass
 
-        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_udp_test","20008"], "../examples/rootfs/x8664_linux", multithread=True)
-        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
-        ql.run()
+    #     ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_udp_test","20008"], "../examples/rootfs/x8664_linux", multithread=True)
+    #     ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
+    #     ql.run()
 
-        self.assertEqual("server sendto() 14 return 14.\n", ql.buf_out)
+    #     self.assertEqual("server sendto() 14 return 14.\n", ql.buf_out)
 
-        del ql
+    #     del ql
 
-    def test_udp_elf_linux_arm64(self):
-        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
-            try:
-                buf = ql.mem.read(write_buf, write_count)
-                buf = buf.decode()
-                if buf.startswith("server sendto()"):
-                    ql.buf_out = buf
-            except:
-                pass
+    # def test_udp_elf_linux_arm64(self):
+    #     def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
+    #         try:
+    #             buf = ql.mem.read(write_buf, write_count)
+    #             buf = buf.decode()
+    #             if buf.startswith("server sendto()"):
+    #                 ql.buf_out = buf
+    #         except:
+    #             pass
 
-        ql = Qiling(["../examples/rootfs/arm64_linux/bin/arm64_udp_test","20009"], "../examples/rootfs/arm64_linux", multithread=True)
-        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
-        ql.run()
+    #     ql = Qiling(["../examples/rootfs/arm64_linux/bin/arm64_udp_test","20009"], "../examples/rootfs/arm64_linux", multithread=True)
+    #     ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
+    #     ql.run()
 
-        self.assertEqual("server sendto() 14 return 14.\n", ql.buf_out)
+    #     self.assertEqual("server sendto() 14 return 14.\n", ql.buf_out)
 
-        del ql
+    #     del ql
 
     def test_multithread_elf_linux_x86(self):
         def check_write(ql, write_fd, write_buf, write_count, *args, **kw):

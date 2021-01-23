@@ -5,7 +5,7 @@
 #
 
 python3 ./test_posix.py && 
-#python3 test_elf_multithread.py &&
+python3 test_elf_multithread.py &&
 python3 test_elf_ko.py &&
 python3 test_android.py && 
 python3 ./test_debugger.py && 

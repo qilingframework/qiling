@@ -459,19 +459,20 @@ def ql_syscall_execve(ql, execve_pathname, execve_argv, execve_envp, *args, **kw
     
     logging.info("execve(%s, [%s], [%s])"% (pathname, ', '.join(argv), ', '.join([key + '=' + value for key, value in env.items()])))
 
-    if ql.shellcoder:
-        return
-
     ql.loader.argv      = argv
     ql.loader.env       = env
     ql._path             = real_path
+    
     ql.mem.map_info     = []
     ql.clear_ql_hooks()
     
-    ql._uc               = ql.arch.init_uc
-    ql.os.load()
-    ql.loader.run()
-    ql.run()
+    #if ql.shellcoder:
+        #return     
+    
+    # ql._uc               = ql.arch.init_uc
+    # ql.os.load()
+    # ql.loader.run()
+    # ql.run()
 
 
 def ql_syscall_dup(ql, dup_oldfd, *args, **kw):
