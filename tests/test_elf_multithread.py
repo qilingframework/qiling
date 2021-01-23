@@ -15,7 +15,6 @@ from qiling.os.posix import syscall
 from qiling.os.mapper import QlFsMappedObject
 from qiling.os.stat import Fstat
 
-# Note: This test is disabled temporarily until multithread is done.
 class ELFTest(unittest.TestCase):
 
     def test_elf_linux_execve_x8664(self):
@@ -29,6 +28,102 @@ class ELFTest(unittest.TestCase):
 
         del QL_TEST
         del ql
+
+
+    def test_multithread_elf_linux_x86(self):
+        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
+            nonlocal buf_out
+            try:
+                buf = ql.mem.read(write_buf, write_count)
+                buf = buf.decode()
+                buf_out = buf
+            except:
+                pass
+        buf_out = None
+        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_multithreading"], "../examples/rootfs/x86_linux", multithread=True, output="debug")
+        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
+        ql.run()
+        
+        self.assertTrue("thread 2 ret val is" in buf_out)
+        
+        del ql
+
+    
+    def test_multithread_elf_linux_arm64(self):
+        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
+            nonlocal buf_out
+            try:
+                buf = ql.mem.read(write_buf, write_count)
+                buf = buf.decode()
+                buf_out = buf
+            except:
+                pass
+        buf_out = None
+        ql = Qiling(["../examples/rootfs/arm64_linux/bin/arm64_multithreading"], "../examples/rootfs/arm64_linux", multithread=True, output="debug")
+        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
+        ql.run()
+        
+        self.assertTrue("thread 2 ret val is" in buf_out)
+        
+        del ql
+
+
+    def test_multithread_elf_linux_x8664(self):
+        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
+            nonlocal buf_out
+            try:
+                buf = ql.mem.read(write_buf, write_count)
+                buf = buf.decode()
+                buf_out = buf
+            except:
+                pass
+        buf_out = None
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_multithreading"], "../examples/rootfs/x8664_linux", multithread=True, profile= "profiles/append_test.ql", log_split=True)
+        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
+        ql.run()
+
+        self.assertTrue("thread 2 ret val is" in buf_out)
+
+        del ql
+
+
+    def test_multithread_elf_linux_mips32el(self):
+        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
+            nonlocal buf_out
+            try:
+                buf = ql.mem.read(write_buf, write_count)
+                buf = buf.decode()
+                buf_out = buf
+            except:
+                pass
+        buf_out = None
+        ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_multithreading"], "../examples/rootfs/mips32el_linux", multithread=True, output="debug")
+        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
+        ql.run()
+
+        self.assertTrue("thread 2 ret val is" in buf_out)
+
+        del ql
+
+
+    def test_multithread_elf_linux_arm(self):
+        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
+            nonlocal buf_out
+            try:
+                buf = ql.mem.read(write_buf, write_count)
+                buf = buf.decode()
+                buf_out = buf
+            except:
+                pass
+        buf_out = None
+        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_multithreading"], "../examples/rootfs/arm_linux", multithread=True, output="debug")
+        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
+        ql.run()
+
+        self.assertTrue("thread 2 ret val is" in buf_out)
+        
+        del ql
+
 
     # def test_tcp_elf_linux_x86(self):
     #     def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
@@ -163,99 +258,7 @@ class ELFTest(unittest.TestCase):
 
     #     del ql
 
-    def test_multithread_elf_linux_x86(self):
-        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
-            nonlocal buf_out
-            try:
-                buf = ql.mem.read(write_buf, write_count)
-                buf = buf.decode()
-                buf_out = buf
-            except:
-                pass
-        buf_out = None
-        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_multithreading"], "../examples/rootfs/x86_linux", multithread=True, output="debug")
-        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
-        ql.run()
-        
-        self.assertTrue("thread 2 ret val is" in buf_out)
-        
-        del ql
-
-    
-    def test_multithread_elf_linux_arm64(self):
-        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
-            nonlocal buf_out
-            try:
-                buf = ql.mem.read(write_buf, write_count)
-                buf = buf.decode()
-                buf_out = buf
-            except:
-                pass
-        buf_out = None
-        ql = Qiling(["../examples/rootfs/arm64_linux/bin/arm64_multithreading"], "../examples/rootfs/arm64_linux", multithread=True, output="debug")
-        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
-        ql.run()
-        
-        self.assertTrue("thread 2 ret val is" in buf_out)
-        
-        del ql
-
-
-    def test_multithread_elf_linux_x8664(self):
-        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
-            nonlocal buf_out
-            try:
-                buf = ql.mem.read(write_buf, write_count)
-                buf = buf.decode()
-                buf_out = buf
-            except:
-                pass
-        buf_out = None
-        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_multithreading"], "../examples/rootfs/x8664_linux", multithread=True, profile= "profiles/append_test.ql", log_split=True)
-        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
-        ql.run()
-
-        self.assertTrue("thread 2 ret val is" in buf_out)
-
-        del ql
-
-
-    def test_multithread_elf_linux_mips32el(self):
-        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
-            nonlocal buf_out
-            try:
-                buf = ql.mem.read(write_buf, write_count)
-                buf = buf.decode()
-                buf_out = buf
-            except:
-                pass
-        buf_out = None
-        ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_multithreading"], "../examples/rootfs/mips32el_linux", multithread=True, output="debug")
-        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
-        ql.run()
-
-        self.assertTrue("thread 2 ret val is" in buf_out)
-
-        del ql
-
-
-    def test_multithread_elf_linux_arm(self):
-        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
-            nonlocal buf_out
-            try:
-                buf = ql.mem.read(write_buf, write_count)
-                buf = buf.decode()
-                buf_out = buf
-            except:
-                pass
-        buf_out = None
-        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_multithreading"], "../examples/rootfs/arm_linux", multithread=True, output="debug")
-        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
-        ql.run()
-
-        self.assertTrue("thread 2 ret val is" in buf_out)
-        
-        del ql
-
 if __name__ == "__main__":
     unittest.main()
+
+
