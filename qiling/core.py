@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from .os.memory import QlMemoryManager
     from .loader.loader import QlLoader
 
-from .const import QL_ARCH_ENDIAN, QL_ENDIAN, QL_INTERCEPT, QL_OS_POSIX, QL_OS_ALL, QL_OUTPUT, QL_OS
+from .const import QL_ARCH_ENDIAN, QL_ENDIAN, QL_INTERCEPT, QL_OS_POSIX, QL_OS_ALL, QL_OUTPUT, QL_OS, D_DRPT
 from .exception import QlErrorFileNotFound, QlErrorArch, QlErrorOsType, QlErrorOutput
 from .utils import *
 from .core_struct import QlCoreStructs
@@ -800,7 +800,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             if kw.get("end", None) != None:
                 msg += kw["end"]
 
-            fd.info(msg)
+        logging.info(msg)
 
     # Depreciated. Please use logging directly.
     # Will be removed in later release.
@@ -813,19 +813,13 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         if type(self.verbose) != int or self.verbose > 99 or (self.verbose > 1 and self.output not in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP)):
             raise QlErrorOutput("[!] Verbose > 1 must use with QL_OUTPUT.DEBUG or else ql.verbose must be 0")
 
-        if self.output == QL_OUTPUT.DUMP:
-            self.verbose = 99
+        try:
+            current_pc = self.reg.arch_pc
+        except:
+            current_pc = 0    
 
-        if int(self.verbose) >= level and self.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
-            if int(self.verbose) >= D_DRPT:
-                try:
-                    current_pc = self.reg.arch_pc
-                except:
-                    current_pc = 0    
-
-                args = (("0x%x:" % current_pc), *args)        
-                
-            self.nprint(*args, **kw)
+        args = (("0x%x:" % current_pc), *args)        
+        self.nprint(*args, **kw)
 
 
     # save all qiling instance states

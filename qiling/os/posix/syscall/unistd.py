@@ -458,7 +458,7 @@ def ql_syscall_execve(ql, execve_pathname, execve_argv, execve_envp, *args, **kw
     ql.emu_stop()
     
     logging.info("execve(%s, [%s], [%s])"% (pathname, ', '.join(argv), ', '.join([key + '=' + value for key, value in env.items()])))
-
+    
     ql.loader.argv      = argv
     ql.loader.env       = env
     ql._path             = real_path
@@ -466,8 +466,8 @@ def ql_syscall_execve(ql, execve_pathname, execve_argv, execve_envp, *args, **kw
     ql.mem.map_info     = []
     ql.clear_ql_hooks()
     
-    #if ql.shellcoder:
-        #return     
+    if ql.shellcoder:
+        return     
     
     # ql._uc               = ql.arch.init_uc
     # ql.os.load()
