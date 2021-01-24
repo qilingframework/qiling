@@ -17,11 +17,10 @@ from capstone import *
 
 from .exception import *
 from .const import QL_ARCH, QL_ARCH_ALL, QL_ENDIAN, QL_OS, QL_OS_ALL, QL_OUTPUT, QL_DEBUGGER, QL_ARCH_32BIT, QL_ARCH_64BIT, QL_ARCH_16BIT
-from .const import debugger_map, arch_map, os_map, D_INFO
-
+from .const import debugger_map, arch_map, os_map
 
 FMT_STR = "[%(levelname)s] [%(filename)s:%(lineno)d]\t%(message)s"
-
+    
 # \033 -> ESC
 # ESC [ -> CSI
 # CSI %d;%d;... m -> SGR
@@ -526,7 +525,7 @@ def ql_setup_logger(ql, log_dir, log_filename, log_split, console, filter, multi
     #    - Normal console output.
     #    - Write to a single file.
     #    - Write to splitted log files.
-
+    
     # Clear all handlers and filters.
     lger = logging.getLogger()
     lger.handlers = []

@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from .os.memory import QlMemoryManager
     from .loader.loader import QlLoader
 
-from .const import QL_ARCH_ENDIAN, QL_ENDIAN, QL_INTERCEPT, QL_OS_POSIX, QL_OS_ALL, QL_OUTPUT, QL_OS, D_DRPT
+from .const import QL_ARCH_ENDIAN, QL_ENDIAN, QL_INTERCEPT, QL_OS_POSIX, QL_OS_ALL, QL_OUTPUT, QL_OS
 from .exception import QlErrorFileNotFound, QlErrorArch, QlErrorOsType, QlErrorOutput
 from .utils import *
 from .core_struct import QlCoreStructs
@@ -778,48 +778,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             self.patch_bin.append((addr, code))
         else:
             self.patch_lib.append((addr, code, file_name.decode()))
-
-    # Depreciated. Please use logging directly.
-    # Will be removed in later release.
-    def nprint(self, *args, **kw):
-        if type(self.console) is bool:
-            pass
-        else:
-            raise QlErrorOutput("[!] console must be True or False")     
-        
-        # FIXME: this is due to console must be able to update during runtime
-        if self.log_file_fd is not None:
-            if self.multithread == True and self.os.thread_management is not None and self.os.thread_management.cur_thread is not None:
-                fd = self.os.thread_management.cur_thread.log_file_fd
-            else:
-                fd = self.log_file_fd
-            
-            args = map(str, args)
-            msg = kw.get("sep", " ").join(args)
-
-            if kw.get("end", None) != None:
-                msg += kw["end"]
-
-        logging.info(msg)
-
-    # Depreciated. Please use logging directly.
-    # Will be removed in later release.
-    def dprint(self, level, *args, **kw):
-        try:
-            self.verbose = int(self.verbose)
-        except:
-            raise QlErrorOutput("[!] Verbose muse be int")    
-        
-        if type(self.verbose) != int or self.verbose > 99 or (self.verbose > 1 and self.output not in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP)):
-            raise QlErrorOutput("[!] Verbose > 1 must use with QL_OUTPUT.DEBUG or else ql.verbose must be 0")
-
-        try:
-            current_pc = self.reg.arch_pc
-        except:
-            current_pc = 0    
-
-        args = (("0x%x:" % current_pc), *args)        
-        self.nprint(*args, **kw)
 
 
     # save all qiling instance states
