@@ -124,6 +124,8 @@ class QlArchX8664(QlArch):
 class GDTManager:
     # Added GDT management module.
     def __init__(self, ql, GDT_ADDR = QL_X86_GDT_ADDR, GDT_LIMIT =  QL_X86_GDT_LIMIT, GDT_ENTRY_ENTRIES = 16):
+        ql.log.debug(f"Map GDT at {hex(GDT_ADDR)} with GDT_LIMIT={GDT_LIMIT}")
+
         if ql.mem.is_mapped(GDT_ADDR, GDT_LIMIT) == False:
             ql.mem.map(GDT_ADDR, GDT_LIMIT, info="[GDT]")
 
