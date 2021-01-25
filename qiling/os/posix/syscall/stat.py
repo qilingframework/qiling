@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import logging
+
 from qiling.const import *
 from qiling.os.linux.thread import *
 from qiling.const import *
@@ -16,7 +16,7 @@ from qiling.os.stat import *
 def ql_syscall_chmod(ql, filename, mode, null1, null2, null3, null4):
     regreturn = 0
     filename = ql.mem.string(filename)
-    logging.info("chmod(%s,%d) = %d" % (filename, mode, regreturn))
+    ql.log.info("chmod(%s,%d) = %d" % (filename, mode, regreturn))
     return regreturn
 
 
@@ -66,12 +66,12 @@ def ql_syscall_fstatat64(ql, fstatat64_fd, fstatat64_fname, fstatat64_buf, fstat
         ql.mem.write(fstatat64_buf,fstat64_buf)
         regreturn = 0
 
-    logging.info("fstatat64(0x%x, %s) = %d" % (fstatat64_fd, relative_path, regreturn))
+    ql.log.info("fstatat64(0x%x, %s) = %d" % (fstatat64_fd, relative_path, regreturn))
 
     if regreturn == 0:
-        logging.debug("[+] Directory Found: %s" % relative_path)
+        ql.log.debug("[+] Directory Found: %s" % relative_path)
     else:
-        logging.debug("[!] Directory Not Found: %s" % relative_path)
+        ql.log.debug("[!] Directory Not Found: %s" % relative_path)
 
     return regreturn
 
@@ -204,11 +204,11 @@ def ql_syscall_fstat64(ql, fstat64_fd, fstat64_add, *args, **kw):
     else:
         regreturn = -1
 
-    logging.info("fstat64(%d, 0x%x) = %d" % (fstat64_fd, fstat64_add, regreturn))
+    ql.log.info("fstat64(%d, 0x%x) = %d" % (fstat64_fd, fstat64_add, regreturn))
     if regreturn == 0:
-        logging.debug("[+] fstat64 write completed")
+        ql.log.debug("[+] fstat64 write completed")
     else:
-        logging.debug("[!] fstat64 read/write fail")
+        ql.log.debug("[!] fstat64 read/write fail")
     return regreturn
 
 
@@ -319,11 +319,11 @@ def ql_syscall_fstat(ql, fstat_fd, fstat_add, *args, **kw):
     else:
         regreturn = -1
 
-    logging.info("fstat(%d, 0x%x) = %d" % (fstat_fd, fstat_add, regreturn))
+    ql.log.info("fstat(%d, 0x%x) = %d" % (fstat_fd, fstat_add, regreturn))
     if regreturn == 0:
-        logging.debug("[+] fstat write completed")
+        ql.log.debug("[+] fstat write completed")
     else:
-        logging.debug("[!] fstat read/write fail")
+        ql.log.debug("[!] fstat read/write fail")
     return regreturn
 
 
@@ -392,11 +392,11 @@ def ql_syscall_stat64(ql, stat64_pathname, stat64_buf_ptr, *args, **kw):
         ql.mem.write(stat64_buf_ptr, stat64_buf)
         regreturn = 0
 
-    logging.info("stat64(%s, 0x%x) = %d" % (relative_path, stat64_buf_ptr, regreturn))
+    ql.log.info("stat64(%s, 0x%x) = %d" % (relative_path, stat64_buf_ptr, regreturn))
     if regreturn == 0:
-        logging.debug("[+] stat64 write completed")
+        ql.log.debug("[+] stat64 write completed")
     else:
-        logging.debug("[!] stat64 read/write fail")
+        ql.log.debug("[!] stat64 read/write fail")
     return regreturn
 
 
@@ -453,11 +453,11 @@ def ql_syscall_stat(ql, stat_path, stat_buf_ptr, *args, **kw):
         regreturn = 0
         ql.mem.write(stat_buf_ptr, stat_buf)
 
-    logging.info("stat(%s, 0x%x) = %d" % (relative_path, stat_buf_ptr, regreturn))
+    ql.log.info("stat(%s, 0x%x) = %d" % (relative_path, stat_buf_ptr, regreturn))
     if regreturn == 0:
-        logging.debug("[+] stat() write completed")
+        ql.log.debug("[+] stat() write completed")
     else:
-        logging.debug("[!] stat() read/write fail")
+        ql.log.debug("[!] stat() read/write fail")
     return regreturn
 
 
@@ -513,18 +513,18 @@ def ql_syscall_lstat(ql, lstat_path, lstat_buf_ptr, *args, **kw):
         regreturn = 0
         ql.mem.write(lstat_buf_ptr, lstat_buf)
 
-    logging.info("lstat(%s, 0x%x) = %d" % (relative_path, lstat_buf_ptr, regreturn))
+    ql.log.info("lstat(%s, 0x%x) = %d" % (relative_path, lstat_buf_ptr, regreturn))
     if regreturn == 0:
-        logging.debug("[+] lstat() write completed")
+        ql.log.debug("[+] lstat() write completed")
     else:
-        logging.debug("[!] lstat() read/write fail")
+        ql.log.debug("[!] lstat() read/write fail")
     return regreturn
 
 def ql_syscall_mknodat(ql, dirfd, pathname, mode, dev, *args, **kw):
     # fix me. dirfd(relative path) not implement.
     file_path = ql.mem.string(pathname)
     real_path = ql.os.transform_to_real_path(file_path)
-    logging.info("mknodat(%d, %s, 0%o, %d)" % (dirfd, real_path, mode, dev))
+    ql.log.info("mknodat(%d, %s, 0%o, %d)" % (dirfd, real_path, mode, dev))
     try:
         os.mknod(real_path, mode, dev)
         regreturn = 0
@@ -536,7 +536,7 @@ def ql_syscall_mknodat(ql, dirfd, pathname, mode, dev, *args, **kw):
 def ql_syscall_mkdir(ql, pathname, mode, *args, **kw):
     file_path = ql.mem.string(pathname)
     real_path = ql.os.transform_to_real_path(file_path)
-    logging.info("mkdir(%s, 0%o)" % (real_path, mode))
+    ql.log.info("mkdir(%s, 0%o)" % (real_path, mode))
     try:
         if not os.path.exists(real_path):
             os.mkdir(real_path, mode)
@@ -548,6 +548,6 @@ def ql_syscall_mkdir(ql, pathname, mode, *args, **kw):
 
 def ql_syscall_umask(ql, mode, *args, **kw):
     oldmask = os.umask(mode)
-    logging.info("umask(0%o) return oldmask 0%o" % (mode, oldmask))
+    ql.log.info("umask(0%o) return oldmask 0%o" % (mode, oldmask))
     regreturn = oldmask
     return regreturn

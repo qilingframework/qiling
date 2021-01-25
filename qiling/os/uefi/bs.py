@@ -481,7 +481,7 @@ def hook_InstallMultipleProtocolInterfaces(ql, address, params):
 		GUID_ptr = ql.os.get_param_by_index(index)
 		protocol_ptr = ql.os.get_param_by_index(index+1)
 		GUID = str(ql.os.read_guid(GUID_ptr))
-		logging.info(f' | {GUID} {protocol_ptr:x}')
+		ql.log.info(f' | {GUID} {protocol_ptr:x}')
 		dic[GUID] = protocol_ptr
 		index +=2
 
@@ -509,7 +509,7 @@ def hook_UninstallMultipleProtocolInterfaces(ql, address, params):
 		GUID_ptr = ql.os.get_param_by_index(index)
 		protocol_ptr = ql.os.get_param_by_index(index+1)
 		GUID = str(ql.os.read_guid(GUID_ptr))
-		logging.info(f' | {GUID}, {protocol_ptr:x}')
+		ql.log.info(f' | {GUID}, {protocol_ptr:x}')
 
 		if GUID not in dic:
 			return EFI_INVALID_PARAMETER

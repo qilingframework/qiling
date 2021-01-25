@@ -3,8 +3,8 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import logging
 import binascii
+
 
 from qiling.os.uefi import bs, rt, ds
 from qiling.os.uefi.utils import CoreInstallConfigurationTable
@@ -79,12 +79,12 @@ def initialize(ql, gST : int):
 	gDS = gRT + EFI_RUNTIME_SERVICES.sizeof()	# dxe services
 	cfg = gDS + ds.EFI_DXE_SERVICES.sizeof()	# configuration tables array
 
-	logging.info(f'Global tables:')
-	logging.info(f' | gST   {gST:#010x}')
-	logging.info(f' | gBS   {gBS:#010x}')
-	logging.info(f' | gRT   {gRT:#010x}')
-	logging.info(f' | gDS   {gDS:#010x}')
-	logging.info(f'')
+	ql.log.info(f'Global tables:')
+	ql.log.info(f' | gST   {gST:#010x}')
+	ql.log.info(f' | gBS   {gBS:#010x}')
+	ql.log.info(f' | gRT   {gRT:#010x}')
+	ql.log.info(f' | gDS   {gDS:#010x}')
+	ql.log.info(f'')
 
 	bs.initialize(ql, gBS)
 	rt.initialize(ql, gRT)

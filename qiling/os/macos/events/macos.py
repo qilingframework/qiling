@@ -4,7 +4,8 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import ctypes, logging, socket, struct
+import ctypes, socket, struct
+ 
  
 from functools import wraps
 from unicorn.x86_const import *
@@ -33,14 +34,14 @@ class QlMacOSEv:
             self.params = params[:]
 
     def dump(self):
-        logging.info("[*] Dumping object: %s with type %d" % (self.name, self.type.value))
+        self.ql.log.info("[*] Dumping object: %s with type %d" % (self.name, self.type.value))
         for field in self.event._fields_:
             if isinstance(getattr(self.event, field[0]), POINTER64):
-                logging.info("%s: 0x%x" % (field[0], getattr(self.event, field[0]).value))
+                self.ql.log.info("%s: 0x%x" % (field[0], getattr(self.event, field[0]).value))
             elif isinstance(getattr(self.event, field[0]), int):
-                logging.info("%s: %d" % (field[0], getattr(self.event, field[0])))
+                self.ql.log.info("%s: %d" % (field[0], getattr(self.event, field[0])))
             elif isinstance(getattr(self.event, field[0]), bytes):
-                logging.info("%s: %s" % (field[0], getattr(self.event, field[0]).decode()))
+                self.ql.log.info("%s: %s" % (field[0], getattr(self.event, field[0]).decode()))
 
 def init_ev_ctx(f):
     @wraps(f)
@@ -113,7 +114,7 @@ class QlMacOSEvManager:
     def add_process(self, pid, name):
         for p in self.my_procs:
             if p.p_pid == pid:
-                logging.info("[!] Duplicated process")
+                self.ql.log.info("[!] Duplicated process")
                 return
 
         cur_proc_addr = self.ql.os.heap.alloc(ctypes.sizeof(proc_t))
@@ -207,7 +208,7 @@ class QlMacOSEvManager:
     def emit(self, ev_name, ev_type, params):
         found = self.get_event_by_name_and_type(ev_name, ev_type)
         if found is None:
-            logging.info("[!] No callbacks found for (%s, %s)" % (ev_name, ev_type))
+            self.ql.log.info("[!] No callbacks found for (%s, %s)" % (ev_name, ev_type))
             return
 
         found.set_params(params)

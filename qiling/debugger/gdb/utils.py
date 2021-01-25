@@ -3,9 +3,9 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import logging
 from unicorn import *
 from qiling.const import *
+
 
 class QlGdbUtils(object):
     def __init__(self):
@@ -56,7 +56,7 @@ class QlGdbUtils(object):
                     self.breakpoint_count += 1
                     self.ql.os.stop()
                     self.last_bp = address
-                    logging.info("gdb> Breakpoint found, stop at address: 0x%x" % address)
+                    ql.log.info("gdb> Breakpoint found, stop at address: 0x%x" % address)
                           
             elif address == self.last_bp:
                 self.last_bp = 0x0
@@ -64,11 +64,11 @@ class QlGdbUtils(object):
             self.has_soft_bp = hit_soft_bp
             
             if self.current_address + size == self.exit_point:
-                logging.debug("gdb> emulation entrypoint at 0x%x" % (self.entry_point))
-                logging.debug("gdb> emulation exitpoint at 0x%x" % (self.exit_point))
+                ql.log.debug("gdb> emulation entrypoint at 0x%x" % (self.entry_point))
+                ql.log.debug("gdb> emulation exitpoint at 0x%x" % (self.exit_point))
         
         except KeyboardInterrupt as ex:
-            logging.info("gdb> Paused at 0x%x, instruction size = %u" % (address, size))
+            ql.log.info("gdb> Paused at 0x%x, instruction size = %u" % (address, size))
             self.ql.os.stop()
         except:
             raise    
@@ -77,12 +77,12 @@ class QlGdbUtils(object):
     def bp_insert(self, addr):
         if addr not in self.bp_list:
             self.bp_list.append(addr)
-            logging.info('gdb> Breakpoint added at: 0x%x' % addr)
+            self.ql.log.info('gdb> Breakpoint added at: 0x%x' % addr)
 
 
     def bp_remove(self, addr, type = None, len = None):
         self.bp_list.remove(addr)
-        logging.info('gdb> Breakpoint removed at: 0x%x' % addr)
+        self.ql.log.info('gdb> Breakpoint removed at: 0x%x' % addr)
 
 
     def resume_emu(self, address=None, skip_bp=0):
@@ -99,6 +99,6 @@ class QlGdbUtils(object):
 
         self.skip_bp_count = skip_bp
         if self.exit_point is not None:
-            logging.info('gdb> Resume at: 0x%x' % self.current_address)
+            self.ql.log.info('gdb> Resume at: 0x%x' % self.current_address)
             self.ql.emu_start(self.current_address, self.exit_point)
             

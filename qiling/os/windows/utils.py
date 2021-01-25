@@ -3,11 +3,12 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import logging, ntpath, os, uuid
+import ntpath, os, uuid
 
 from sys import getsizeof
 
 from qiling.const import *
+
 from qiling.os.const import *
 from .registry import RegistryManager
 from .clipboard import Clipboard
@@ -18,7 +19,7 @@ from .structs import UNICODE_STRING32, UNICODE_STRING64
 
 
 def ql_x86_windows_hook_mem_error(ql, access, addr, size, value):
-    logging.debug("[+] ERROR: unmapped memory access at 0x%x" % addr)
+    ql.log.debug("[+] ERROR: unmapped memory access at 0x%x" % addr)
     return False
 
 
@@ -56,9 +57,9 @@ def print_function(ql, passthru, address, function_name, params, ret):
 
     if ql.output != QL_OUTPUT.DEBUG:
         log = log.partition(" ")[-1]
-        logging.info(log)
+        ql.log.info(log)
     else:
-        logging.debug(log)
+        ql.log.debug(log)
 
 
 def read_wstring(ql, address):
@@ -111,9 +112,9 @@ def env_dict_to_array(env_dict):
 
 def debug_print_stack(ql, num, message=None):
     if message:
-        logging.debug("========== %s ==========" % message)
+        ql.log.debug("========== %s ==========" % message)
         sp = ql.reg.arch_sp
-        logging.debug(hex(sp + ql.pointersize * num) + ": " + hex(ql.stack_read(num * ql.pointersize)))
+        ql.log.debug(hex(sp + ql.pointersize * num) + ": " + hex(ql.stack_read(num * ql.pointersize)))
 
 
 def is_file_library(string):

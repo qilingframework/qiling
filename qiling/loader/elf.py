@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import logging, os, string, sys
+import os, string, sys
 
 from heapq import heappush, heappop
 
@@ -13,6 +13,7 @@ from elftools.elf.sections import SymbolTableSection
 from elftools.elf.descriptions import describe_reloc_type
 
 from qiling.const import *
+
 from qiling.exception import *
 from .loader import QlLoader
 from qiling.os.linux.function_hook import FunctionHook
@@ -178,7 +179,7 @@ class QlLoaderELF(QlLoader, ELFParse):
         if elfhead['e_type'] == 'ET_EXEC':
             load_address = 0
         elif elfhead['e_type'] != 'ET_DYN':
-            logging.debug("[+] Some error in head e_type: %i!", elfhead['e_type'])
+            self.ql.log.debug("[+] Some error in head e_type: %i!", elfhead['e_type'])
             return -1
 
         # We need to sort the memory segments first, sometimes they are unordered
@@ -240,9 +241,9 @@ class QlLoaderELF(QlLoader, ELFParse):
                 self.ql.mem.map(_mem_s, _mem_e - _mem_s, perms=_perms, info=self.path)
                 if _mem_e > _highestmapped_e:
                     _highestmapped_e = _mem_e
-                logging.debug("[+] load 0x%x - 0x%x" % (_mem_s, _mem_e))
+                self.ql.log.debug("[+] load 0x%x - 0x%x" % (_mem_s, _mem_e))
             except Exception as e:
-                logging.debug("[!] load 0x%x - 0x%x => %s" % (_mem_s, _mem_e, str(e)))
+                self.ql.log.debug("[!] load 0x%x - 0x%x => %s" % (_mem_s, _mem_e, str(e)))
                 continue
 
         # Now we write the segment data to the memory
@@ -253,18 +254,18 @@ class QlLoaderELF(QlLoader, ELFParse):
                     data = super().getelfdata(entry['p_offset'], entry['p_filesz'])
                     self.ql.mem.write(_mem_s, data)
                 except Exception as e:
-                    logging.debug("[!] segment data 0x%x - Length 0x%x => %s" % (_mem_s, len(data), str(e)))
+                    self.ql.log.debug("[!] segment data 0x%x - Length 0x%x => %s" % (_mem_s, len(data), str(e)))
                     continue
 
         loaded_mem_end = load_address + mem_end
         if loaded_mem_end > _mem_e:
             self.ql.mem.map(_mem_e, loaded_mem_end - _mem_e, info=self.path)
-            logging.debug("[+] load 0x%x - 0x%x" % (
+            self.ql.log.debug("[+] load 0x%x - 0x%x" % (
             _mem_e, loaded_mem_end))  # make sure we map all PT_LOAD tagged area
 
         entry_point = elfhead['e_entry'] + load_address
         self.ql.os.elf_mem_start = mem_start
-        logging.debug("[+] mem_start: 0x%x mem_end: 0x%x" % (mem_start, mem_end))
+        self.ql.log.debug("[+] mem_start: 0x%x mem_end: 0x%x" % (mem_start, mem_end))
 
         self.brk_address = mem_end + load_address + 0x2000
 
@@ -275,7 +276,7 @@ class QlLoaderELF(QlLoader, ELFParse):
 
             interp = ELFParse(self.ql.rootfs + interp_path, self.ql)
             interphead = interp.parse_header()
-            logging.debug("[+] interp is : %s" % (self.ql.rootfs + interp_path))
+            self.ql.log.debug("[+] interp is : %s" % (self.ql.rootfs + interp_path))
 
             interp_mem_size = -1
             for i in interp.parse_segments():
@@ -285,14 +286,14 @@ class QlLoaderELF(QlLoader, ELFParse):
                         interp_mem_size = i['p_vaddr'] + i['p_memsz']
 
             interp_mem_size = (interp_mem_size // 0x1000 + 1) * 0x1000
-            logging.debug("[+] interp_mem_size is : 0x%x" % int(interp_mem_size))
+            self.ql.log.debug("[+] interp_mem_size is : 0x%x" % int(interp_mem_size))
 
             if self.ql.archbit == 64:
                 self.interp_address = int(self.ql.os.profile.get("OS64", "interp_address"), 16)
             elif self.ql.archbit == 32:
                 self.interp_address = int(self.ql.os.profile.get("OS32", "interp_address"), 16)
 
-            logging.debug("[+] interp_address is : 0x%x" % (self.interp_address))
+            self.ql.log.debug("[+] interp_address is : 0x%x" % (self.interp_address))
             self.ql.mem.map(self.interp_address, int(interp_mem_size),
                             info=os.path.abspath(self.ql.rootfs + interp_path))
 
@@ -309,7 +310,7 @@ class QlLoaderELF(QlLoader, ELFParse):
         else:
             self.mmap_address = int(self.ql.os.profile.get("OS32", "mmap_address"), 16)
 
-        logging.debug("[+] mmap_address is : 0x%x" % (self.mmap_address))
+        self.ql.log.debug("[+] mmap_address is : 0x%x" % (self.mmap_address))
 
         # Set elf table
         elf_table = b''
@@ -381,7 +382,7 @@ class QlLoaderELF(QlLoader, ELFParse):
 
         # for i in range(120):
         #     buf = self.ql.mem.read(new_stack + i * 0x8, 8)
-        #     logging.info("0x%08x : 0x%08x " % (new_stack + i * 0x4, self.ql.unpack64(buf)) + ' '.join(['%02x' % i for i in buf]) + '  ' + ''.join([chr(i) if i in string.printable[ : -5].encode('ascii') else '.' for i in buf]))
+        #     self.ql.log.info("0x%08x : 0x%08x " % (new_stack + i * 0x4, self.ql.unpack64(buf)) + ' '.join(['%02x' % i for i in buf]) + '  ' + ''.join([chr(i) if i in string.printable[ : -5].encode('ascii') else '.' for i in buf]))
 
         self.ql.os.entry_point = self.entry_point = entry_point
         self.ql.os.elf_entry = self.elf_entry = load_address + elfhead['e_entry']
@@ -427,11 +428,11 @@ class QlLoaderELF(QlLoader, ELFParse):
             for nsym, symbol in enumerate(section.iter_symbols()):
                 if symbol.name == 'init_module':
                     addr = symbol.entry.st_value + elffile.get_section(symbol['st_shndx'])['sh_offset']
-                    logging.info("[+] init_module = 0x%x" % addr)
+                    ql.log.info("[+] init_module = 0x%x" % addr)
                     return addr
 
         # not found. FIXME: report error on invalid module??
-        logging.warning("[!] invalid module? symbol init_module not found")
+        ql.log.warning("[!] invalid module? symbol init_module not found")
         return -1
 
     def lkm_dynlinker(self, ql, mem_start):
@@ -505,7 +506,7 @@ class QlLoaderELF(QlLoader, ELFParse):
                                         self.ql.os.hook_addr / self.ql.pointersize) + 1) * self.ql.pointersize
                                     # print("hook_addr = %x" %self.ql.os.hook_addr)
                             ql.import_symbols[self.ql.os.hook_addr] = symbol_name
-                            # logging.info(":: Demigod is hooking %s(), at slot %x" %(symbol_name, self.ql.os.hook_addr))
+                            # ql.log.info(":: Demigod is hooking %s(), at slot %x" %(symbol_name, self.ql.os.hook_addr))
 
                             if symbol_name == "page_offset_base":
                                 # FIXME: this is for rootkit to scan for syscall table from page_offset_base
@@ -522,12 +523,12 @@ class QlLoaderELF(QlLoader, ELFParse):
                             all_symbols.append(symbol_name)
                             _section = elffile.get_section(_symbol['st_shndx'])
                             rev_reloc_symbols[symbol_name] = _section['sh_offset'] + _symbol['st_value'] + mem_start
-                            # logging.info(":: Add reverse lookup for %s to %x (%x, %x)" %(symbol_name, rev_reloc_symbols[symbol_name], _section['sh_offset'], _symbol['st_value']))
-                            # logging.info(":: Add reverse lookup for %s to %x" %(symbol_name, rev_reloc_symbols[symbol_name]))
+                            # ql.log.info(":: Add reverse lookup for %s to %x (%x, %x)" %(symbol_name, rev_reloc_symbols[symbol_name], _section['sh_offset'], _symbol['st_value']))
+                            # ql.log.info(":: Add reverse lookup for %s to %x" %(symbol_name, rev_reloc_symbols[symbol_name]))
                     else:
                         sym_offset = rev_reloc_symbols[symbol_name] - mem_start
 
-                # logging.info("Relocating symbol %s -> 0x%x" %(symbol_name, rev_reloc_symbols[symbol_name]))
+                # ql.log.info("Relocating symbol %s -> 0x%x" %(symbol_name, rev_reloc_symbols[symbol_name]))
 
                 loc = elffile.get_section(section['sh_info'])['sh_offset'] + rel['r_offset']
                 loc += mem_start
@@ -537,11 +538,11 @@ class QlLoaderELF(QlLoader, ELFParse):
                     if rel['r_addend']:
                         val = sym_offset + rel['r_addend']
                         val += mem_start
-                        # logging.info('R_X86_64_32S %s: [0x%x] = 0x%x' %(symbol_name, loc, val & 0xFFFFFFFF))
+                        # ql.log.info('R_X86_64_32S %s: [0x%x] = 0x%x' %(symbol_name, loc, val & 0xFFFFFFFF))
                         ql.mem.write(loc, ql.pack32(val & 0xFFFFFFFF))
                     else:
                         # print("sym_offset = %x, rel = %x" %(sym_offset, rel['r_addend']))
-                        # logging.info('R_X86_64_32S %s: [0x%x] = 0x%x' %(symbol_name, loc, rev_reloc_symbols[symbol_name] & 0xFFFFFFFF))
+                        # ql.log.info('R_X86_64_32S %s: [0x%x] = 0x%x' %(symbol_name, loc, rev_reloc_symbols[symbol_name] & 0xFFFFFFFF))
                         ql.mem.write(loc, ql.pack32(rev_reloc_symbols[symbol_name] & 0xFFFFFFFF))
 
                 elif describe_reloc_type(rel['r_info_type'], elffile) == 'R_X86_64_64':
@@ -549,7 +550,7 @@ class QlLoaderELF(QlLoader, ELFParse):
                     val = sym_offset + rel['r_addend']
                     val += 0x2000000  # init_module position: FIXME
                     # finally patch this reloc
-                    # logging.info('R_X86_64_64 %s: [0x%x] = 0x%x' %(symbol_name, loc, val))
+                    # ql.log.info('R_X86_64_64 %s: [0x%x] = 0x%x' %(symbol_name, loc, val))
                     ql.mem.write(loc, ql.pack64(val))
 
                 elif describe_reloc_type(rel['r_info_type'], elffile) == 'R_X86_64_PC32':
@@ -557,7 +558,7 @@ class QlLoaderELF(QlLoader, ELFParse):
                     val = rel['r_addend'] - loc
                     val += rev_reloc_symbols[symbol_name]
                     # finally patch this reloc
-                    # logging.info('R_X86_64_PC32 %s: [0x%x] = 0x%x' %(symbol_name, loc, val & 0xFFFFFFFF))
+                    # ql.log.info('R_X86_64_PC32 %s: [0x%x] = 0x%x' %(symbol_name, loc, val & 0xFFFFFFFF))
                     ql.mem.write(loc, ql.pack32(val & 0xFFFFFFFF))
 
                 elif describe_reloc_type(rel['r_info_type'], elffile) == 'R_386_PC32':
@@ -614,7 +615,7 @@ class QlLoaderELF(QlLoader, ELFParse):
         # map some memory to intercept external functions of Linux kernel
         ql.mem.map(API_HOOK_MEM, 0x1000, info="[api_mem]")
 
-        logging.info("[+] loadbase: %x, mem_start: %x, mem_end: %x" % (loadbase, mem_start, mem_end))
+        ql.log.info("[+] loadbase: %x, mem_start: %x, mem_end: %x" % (loadbase, mem_start, mem_end))
         ql.mem.map(loadbase + mem_start, mem_end - mem_start, info=ql.path)
         ql.mem.write(loadbase + mem_start, elfdata_mapping)
 
@@ -627,7 +628,7 @@ class QlLoaderELF(QlLoader, ELFParse):
         else:
             self.mmap_address = int(self.ql.os.profile.get("OS32", "mmap_address"), 16)
 
-        logging.debug("[+] mmap_address is : 0x%x" % (self.mmap_address))
+        ql.log.debug("[+] mmap_address is : 0x%x" % (self.mmap_address))
 
         new_stack = stack_addr
         new_stack = self.alignment(new_stack)
@@ -655,7 +656,7 @@ class QlLoaderELF(QlLoader, ELFParse):
                 tmp_sc = sc.replace("sys_", "NR_")
                 if tmp_sc in globals():
                     syscall_id = globals()[tmp_sc]
-                    logging.debug("Writing syscall %s to [0x%x]" % (sc, SYSCALL_MEM + ql.pointersize * syscall_id))
+                    ql.log.debug("Writing syscall %s to [0x%x]" % (sc, SYSCALL_MEM + ql.pointersize * syscall_id))
                     ql.mem.write(SYSCALL_MEM + ql.pointersize * syscall_id, ql.pack(rev_reloc_symbols[sc]))
 
         # write syscall addresses into syscall table

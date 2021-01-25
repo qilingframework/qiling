@@ -3,9 +3,10 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import logging, os, pefile, pickle, secrets, string, sys, traceback
+import os, pefile, pickle, secrets, string, sys, traceback
 
 from unicorn.x86_const import *
+
 
 from qiling.os.windows.utils import *
 from qiling.os.windows.structs import *
@@ -74,7 +75,7 @@ class Process():
         else:
             self.dlls[dll_name] = self.dll_last_address
 
-        logging.info("[+] Loading %s to 0x%x" % (path, self.dll_last_address))
+        self.ql.log.info("[+] Loading %s to 0x%x" % (path, self.dll_last_address))
 
         if self.libcache:
             cached = self.libcache.restore(path, self.dll_last_address)
@@ -87,15 +88,15 @@ class Process():
             import_table = cached.import_table
             for entry in cached.cmdlines:
                 self.set_cmdline(entry['name'], entry['address'], data)
-            logging.info("Loaded %s from cache" % path)
+            self.ql.log.info("Loaded %s from cache" % path)
         else:
             dll = pefile.PE(path, fast_load=True)
             dll.parse_data_directories()
             warnings = dll.get_warnings()
             if warnings:
-                logging.warning(f'Warnings while loading {path}:')
+                self.ql.log.warning(f'Warnings while loading {path}:')
                 for warning in warnings:
-                    logging.warning(f' - {warning}')
+                    self.ql.log.warning(f' - {warning}')
             data = bytearray(dll.get_memory_mapped_image())
             cmdlines = []
 
@@ -116,18 +117,18 @@ class Process():
             if self.libcache:
                 cached = QlPeCacheEntry(data, cmdlines, import_symbols, import_table)
                 self.libcache.save(path, self.dll_last_address, cached)
-                logging.info("Cached %s" % path)
+                self.ql.log.info("Cached %s" % path)
 
         # Add dll to IAT
         try:
             self.import_address_table[dll_name] = import_table
         except Exception as ex:
-            logging.exception(f'Unable to add {dll_name} to IAT')
+            self.ql.log.exception(f'Unable to add {dll_name} to IAT')
 
         try:
             self.import_symbols.update(import_symbols)
         except Exception as ex:
-            logging.exception(f'Unable to add {dll_name} import symbols')
+            self.ql.log.exception(f'Unable to add {dll_name} import symbols')
 
         dll_base = self.dll_last_address
         dll_len = self.ql.mem.align(len(bytes(data)), 0x1000)
@@ -143,7 +144,7 @@ class Process():
         # add DLL to coverage images
         self.images.append(self.coverage_image(dll_base, dll_base+dll_len, path))
 
-        logging.info("Done with loading %s" % path)
+        self.ql.log.info("Done with loading %s" % path)
 
         return dll_base
 
@@ -177,7 +178,7 @@ class Process():
             self.structure_last_addr += 0x30
             teb_addr = self.structure_last_addr
 
-        logging.info("TEB addr is 0x%x" %teb_addr)
+        self.ql.log.info("TEB addr is 0x%x" %teb_addr)
 
         teb_size = len(TEB(self.ql).bytes())
         teb_data = TEB(
@@ -202,7 +203,7 @@ class Process():
     def init_peb(self):
         peb_addr = self.structure_last_addr
 
-        logging.info("PEB addr is 0x%x" % peb_addr)
+        self.ql.log.info("PEB addr is 0x%x" % peb_addr)
 
         # we must set an heap, will try to retrieve this value. Is ok to be all \x00
         process_heap = self.ql.os.heap.alloc(0x100)
@@ -307,12 +308,12 @@ class Process():
                 self.import_address_table[dll_name][entry.name] = self.pe_image_address + entry.address
                 self.import_address_table[dll_name][entry.ordinal] = self.pe_image_address + entry.address
         except:
-            logging.info('Failed to load exports for %s:\n%s' % (self.ql.argv, traceback.format_exc()))
+            self.ql.log.info('Failed to load exports for %s:\n%s' % (self.ql.argv, traceback.format_exc()))
 
     def init_driver_object(self):
         # PDRIVER_OBJECT DriverObject
         driver_object_addr = self.structure_last_addr
-        logging.info("[+] Driver object addr is 0x%x" %driver_object_addr)
+        self.ql.log.info("[+] Driver object addr is 0x%x" %driver_object_addr)
 
         if self.ql.archtype == QL_ARCH.X86:
             self.driver_object = DRIVER_OBJECT32(self.ql, driver_object_addr)
@@ -328,7 +329,7 @@ class Process():
     def init_registry_path(self):
         # PUNICODE_STRING RegistryPath
         regitry_path_addr = self.structure_last_addr
-        logging.info("[+] Registry path addr is 0x%x" %regitry_path_addr)
+        self.ql.log.info("[+] Registry path addr is 0x%x" %regitry_path_addr)
 
         if self.ql.archtype == QL_ARCH.X86:
             regitry_path_data = UNICODE_STRING32(0, 0, regitry_path_addr)
@@ -343,7 +344,7 @@ class Process():
 
     def init_eprocess(self):
         addr = self.structure_last_addr
-        logging.info("[+] EPROCESS is is 0x%x" %addr)
+        self.ql.log.info("[+] EPROCESS is is 0x%x" %addr)
 
 
         if self.ql.archtype == QL_ARCH.X86:
@@ -369,7 +370,7 @@ class Process():
         elif self.ql.archtype == QL_ARCH.X8664:
             KI_USER_SHARED_DATA = 0xFFFFF78000000000
 
-        logging.info("[+] KI_USER_SHARED_DATA is 0x%x" %KI_USER_SHARED_DATA)
+        self.ql.log.info("[+] KI_USER_SHARED_DATA is 0x%x" %KI_USER_SHARED_DATA)
 
         shared_user_data = KUSER_SHARED_DATA()
 
@@ -455,7 +456,7 @@ class QlLoaderPE(QlLoader, Process):
 
     def load(self):
         # set stack pointer
-        logging.info("[+] Initiate stack address at 0x%x " % self.stack_address)
+        self.ql.log.info("[+] Initiate stack address at 0x%x " % self.stack_address)
         self.ql.mem.map(self.stack_address, self.stack_size, info="[stack]")
 
         if self.path and not self.ql.shellcoder:
@@ -470,8 +471,8 @@ class QlLoaderPE(QlLoader, Process):
 
             self.entry_point = self.pe_entry_point = self.pe_image_address + self.pe.OPTIONAL_HEADER.AddressOfEntryPoint
             self.sizeOfStackReserve = self.pe.OPTIONAL_HEADER.SizeOfStackReserve
-            logging.info("[+] Loading %s to 0x%x" % (self.path, self.pe_image_address))
-            logging.info("[+] PE entry point at 0x%x" % self.entry_point)
+            self.ql.log.info("[+] Loading %s to 0x%x" % (self.path, self.pe_image_address))
+            self.ql.log.info("[+] PE entry point at 0x%x" % self.entry_point)
             self.images.append(self.coverage_image(self.pe_image_address, self.pe_image_address + self.pe.NT_HEADERS.OPTIONAL_HEADER.SizeOfImage, self.path))
 
             # Stack should not init at the very bottom. Will cause errors with Dlls
@@ -482,13 +483,13 @@ class QlLoaderPE(QlLoader, Process):
                 self.ql.reg.ebp = sp
 
                 if self.pe.is_dll():
-                    logging.debug('[+] Setting up DllMain args')
+                    self.ql.log.debug('[+] Setting up DllMain args')
                     load_addr_bytes = self.pe_image_address.to_bytes(length=4, byteorder='little')
 
-                    logging.debug('[+] Writing 0x%08X (IMAGE_BASE) to [ESP+4](0x%08X)' % (self.pe_image_address, sp + 0x4))
+                    self.ql.log.debug('[+] Writing 0x%08X (IMAGE_BASE) to [ESP+4](0x%08X)' % (self.pe_image_address, sp + 0x4))
                     self.ql.mem.write(sp + 0x4, load_addr_bytes)
 
-                    logging.debug('[+] Writing 0x01 (DLL_PROCESS_ATTACH) to [ESP+8](0x%08X)' % (sp + 0x8))
+                    self.ql.log.debug('[+] Writing 0x01 (DLL_PROCESS_ATTACH) to [ESP+8](0x%08X)' % (sp + 0x8))
                     self.ql.mem.write(sp + 0x8, int(1).to_bytes(length=4, byteorder='little'))
 
             elif self.ql.archtype == QL_ARCH.X8664:
@@ -496,12 +497,12 @@ class QlLoaderPE(QlLoader, Process):
                 self.ql.reg.rbp = sp
 
                 if self.pe.is_dll():
-                    logging.debug('[+] Setting up DllMain args')
+                    self.ql.log.debug('[+] Setting up DllMain args')
 
-                    logging.debug('[+] Setting RCX (arg1) to %16X (IMAGE_BASE)' % (self.pe_image_address))
+                    self.ql.log.debug('[+] Setting RCX (arg1) to %16X (IMAGE_BASE)' % (self.pe_image_address))
                     self.ql.reg.rcx = self.pe_image_address
 
-                    logging.debug('[+] Setting RDX (arg2) to 1 (DLL_PROCESS_ATTACH)')
+                    self.ql.log.debug('[+] Setting RDX (arg2) to 1 (DLL_PROCESS_ATTACH)')
                     self.ql.reg.rdx = 1
             else:
                 raise QlErrorArch("[!] Unknown ql.arch")
@@ -521,7 +522,7 @@ class QlLoaderPE(QlLoader, Process):
                 # setup CR4, some drivers may check this at initialized time
                 self.ql.uc.reg_write(UC_X86_REG_CR4, 0x6f8)
 
-                logging.debug('[+] Setting up DriverEntry args')
+                self.ql.log.debug('[+] Setting up DriverEntry args')
                 self.ql.stop_execution_pattern = 0xDEADC0DE
 
                 if self.ql.archtype == QL_ARCH.X86:  # Win32
@@ -530,16 +531,16 @@ class QlLoaderPE(QlLoader, Process):
                         # so if the user did not configure stop options, write a sentinel return value
                         self.ql.mem.write(sp, self.ql.stop_execution_pattern.to_bytes(length=4, byteorder='little'))
 
-                    logging.debug('[+] Writing 0x%08X (PDRIVER_OBJECT) to [ESP+4](0x%08X)' % (self.ql.driver_object_address, sp+0x4))
-                    logging.debug('[+] Writing 0x%08X (RegistryPath) to [ESP+8](0x%08X)' % (self.ql.regitry_path_address, sp+0x8))
+                    self.ql.log.debug('[+] Writing 0x%08X (PDRIVER_OBJECT) to [ESP+4](0x%08X)' % (self.ql.driver_object_address, sp+0x4))
+                    self.ql.log.debug('[+] Writing 0x%08X (RegistryPath) to [ESP+8](0x%08X)' % (self.ql.regitry_path_address, sp+0x8))
                 elif self.ql.archtype == QL_ARCH.X8664:  # Win64
                     if not self.ql.stop_options.any:
                         # We know that a driver will return,
                         # so if the user did not configure stop options, write a sentinel return value
                         self.ql.mem.write(sp, self.ql.stop_execution_pattern.to_bytes(length=8, byteorder='little'))
 
-                    logging.debug('[+] Setting RCX (arg1) to %16X (PDRIVER_OBJECT)' % (self.ql.driver_object_address))
-                    logging.debug('[+] Setting RDX (arg2) to %16X (PUNICODE_STRING)' % (self.ql.regitry_path_address))
+                    self.ql.log.debug('[+] Setting RCX (arg1) to %16X (PDRIVER_OBJECT)' % (self.ql.driver_object_address))
+                    self.ql.log.debug('[+] Setting RDX (arg2) to %16X (PUNICODE_STRING)' % (self.ql.regitry_path_address))
 
                 # setup args for DriverEntry()
                 self.ql.os.set_function_args((self.ql.driver_object_address, self.ql.regitry_path_address))
@@ -581,13 +582,13 @@ class QlLoaderPE(QlLoader, Process):
                     super().load_dll(entry.dll, self.is_driver)
                     for imp in entry.imports:
                         # fix IAT
-                        # logging.info(imp.name)
-                        # logging.info(self.import_address_table[imp.name])
+                        # ql.log.info(imp.name)
+                        # ql.log.info(self.import_address_table[imp.name])
                         if imp.name:
                             try:
                                 addr = self.import_address_table[dll_name][imp.name]
                             except KeyError:
-                                logging.debug("[!] Error in loading function %s" % imp.name.decode())
+                                self.ql.log.debug("[!] Error in loading function %s" % imp.name.decode())
                         else:
                             addr = self.import_address_table[dll_name][imp.ordinal]
 
@@ -597,7 +598,7 @@ class QlLoaderPE(QlLoader, Process):
                             address = self.ql.pack64(addr)
                         self.ql.mem.write(imp.address, address)
 
-            logging.debug("[+] Done with loading %s" % self.path)
+            self.ql.log.debug("[+] Done with loading %s" % self.path)
             self.ql.os.entry_point = self.entry_point
             self.ql.os.pid = 101
 

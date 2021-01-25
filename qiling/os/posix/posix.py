@@ -3,8 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-# For syscall_num
-import logging
+
 
 from unicorn.arm64_const import *
 from unicorn.arm_const import *
@@ -180,11 +179,11 @@ class QlOsPosix(QlOs):
             except KeyboardInterrupt:
                 raise
             except Exception as e:
-                logging.exception("")
-                logging.info("[!] Syscall ERROR: %s DEBUG: %s" % (self.syscall_name, e))
+                self.ql.log.exception("")
+                self.ql.log.info("[!] Syscall ERROR: %s DEBUG: %s" % (self.syscall_name, e))
                 raise e
         else:
-            logging.warning(
+            self.ql.log.warning(
                 "[!] 0x%x: syscall %s number = 0x%x(%d) not implemented" % (self.ql.reg.arch_pc, syscall_name_str, self.syscall, self.syscall))
             if self.ql.debug_stop:
                 raise QlErrorSyscallNotFound("[!] Syscall Not Found")

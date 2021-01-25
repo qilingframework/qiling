@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import logging
+ 
 from typing import Sequence
 from pefile import PE
 
@@ -111,10 +111,10 @@ class QlLoaderPE_UEFI(QlLoader):
 
         ql.mem.map(image_base, image_size, info="[module]")
         ql.mem.write(image_base, data)
-        logging.info(f'[+] Module {path} loaded to {image_base:#x}')
+        ql.log.info(f'[+] Module {path} loaded to {image_base:#x}')
 
         entry_point = image_base + pe.OPTIONAL_HEADER.AddressOfEntryPoint
-        logging.info(f'[+] Module entry point at {entry_point:#x}')
+        ql.log.info(f'[+] Module entry point at {entry_point:#x}')
 
         # the 'entry_point' member is used by the debugger. if not set, set it
         # to the first loaded module entry point so the debugger can break
@@ -173,7 +173,7 @@ class QlLoaderPE_UEFI(QlLoader):
                 self.call_function(unload_ptr, [handle], self.end_of_execution_ptr)
                 self.loaded_image_protocol_modules.remove(handle)
 
-                logging.info(f'Unloading module {handle:#x}, calling {unload_ptr:#x}')
+                ql.log.info(f'Unloading module {handle:#x}, calling {unload_ptr:#x}')
 
                 return True
 
@@ -195,7 +195,7 @@ class QlLoaderPE_UEFI(QlLoader):
         self.call_function(entry_point, [ImageHandle, SystemTable], eoe_trap)
         self.ql.os.entry_point = entry_point
 
-        logging.info(f'Running from {entry_point:#010x} of {path}')
+        ql.log.info(f'Running from {entry_point:#010x} of {path}')
 
     def execute_next_module(self):
         if not self.modules or self.ql.os.notify_before_module_execution(self.ql, self.modules[0][0]):
@@ -236,14 +236,14 @@ class QlLoaderPE_UEFI(QlLoader):
         heap_size = int(os_profile["heap_size"], 0)
         self.dxe_context.init_heap(heap_base, heap_size)
         self.heap_base_address = heap_base
-        logging.info(f"[+] Located heap at {heap_base:#010x}")
+        ql.log.info(f"[+] Located heap at {heap_base:#010x}")
 
         # initialize and locate stack
         stack_base = int(os_profile["stack_address"], 0)
         stack_size = int(os_profile["stack_size"], 0)
         self.dxe_context.init_stack(stack_base, stack_size)
         sp = stack_base + stack_size - CPU_STACK_ALIGNMENT
-        logging.info(f"[+] Located stack at {sp:#010x}")
+        ql.log.info(f"[+] Located stack at {sp:#010x}")
 
         # TODO: statically allocating 256 KiB for ST, RT, BS, DS and Configuration Tables.
         # however, this amount of memory is rather arbitrary
@@ -271,7 +271,7 @@ class QlLoaderPE_UEFI(QlLoader):
         heap_base = int(smm_profile["heap_address"], 0)
         heap_size = int(smm_profile["heap_size"], 0)
         self.smm_context.init_heap(heap_base, heap_size)
-        logging.info(f"[+] Located SMM heap at {heap_base:#010x}")
+        ql.log.info(f"[+] Located SMM heap at {heap_base:#010x}")
 
         # TODO: statically allocating 256 KiB for SMM ST.
         # however, this amount of memory is rather arbitrary
@@ -310,9 +310,9 @@ class QlLoaderPE_UEFI(QlLoader):
             for dependency in self.ql.argv:
                 self.map_and_load(dependency)
         except QlMemoryMappedError:
-            logging.critical("Couldn't map dependency")
+            ql.log.critical("Couldn't map dependency")
 
-        logging.info(f"[+] Done with loading {self.ql.path}")
+        ql.log.info(f"[+] Done with loading {self.ql.path}")
 
         # set up an end-of-execution hook to regain control when module is done
         # executing (i.e. when the entry point function returns). that should be

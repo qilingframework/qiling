@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import logging
+
 from qiling.const import *
 from qiling.os.linux.thread import *
 from qiling.const import *
@@ -36,7 +36,7 @@ def ql_syscall_socketcall(ql, socketcall_call, socketcall_args, *args, **kw):
     SOCKETCALL_SYS_RECVMMSG = 19
     SOCKETCALL_SYS_SENDMMSG = 20
 
-    logging.info("socketcall(%d, %x)" % (socketcall_call, socketcall_args))
+    ql.log.info("socketcall(%d, %x)" % (socketcall_call, socketcall_args))
 
     if socketcall_call == SOCKETCALL_SYS_SOCKET:
         socketcall_domain = ql.unpack(ql.mem.read(socketcall_args, ql.pointersize))
@@ -103,6 +103,6 @@ def ql_syscall_socketcall(ql, socketcall_call, socketcall_args, *args, **kw):
         return ql_syscall_setsockopt(ql)
 
     else:
-        logging.debug("[!] error call %d" % socketcall_call)
+        ql.log.debug("[!] error call %d" % socketcall_call)
         ql.os.stop(stop_event=THREAD_EVENT_UNEXECPT_EVENT)
         raise

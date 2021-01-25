@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import sys, unittest, subprocess, string, random, os, logging
+import sys, unittest, subprocess, string, random, os
 
 from unicorn import UcError, UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
 
@@ -78,7 +78,7 @@ class ELFTest(unittest.TestCase):
             except:
                 pass
         buf_out = None
-        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_multithreading"], "../examples/rootfs/x8664_linux", multithread=True, profile= "profiles/append_test.ql", log_split=True)
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_multithreading"], "../examples/rootfs/x8664_linux", multithread=True, profile= "profiles/append_test.ql")
         ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
         ql.run()
 

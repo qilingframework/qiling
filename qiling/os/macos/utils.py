@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import ctypes, os, struct, logging
+import ctypes, os, struct
 
 from unicorn.x86_const import *
 from unicorn.arm_const import *
@@ -17,43 +17,43 @@ def IOConnectCallMethod(ql, selector,
                         output_array, output_cnt, output_struct, output_struct_size):
 
     if ql.os.IOKit is not True:
-        logging.info("[!] Must have a IOKit driver")
+        ql.log.info("[!] Must have a IOKit driver")
         return output_array, output_struct
 
     args_addr = ql.os.heap.alloc(ctypes.sizeof(IOExternalMethodArguments))
-    logging.debug("[+] Created IOExternalMethodArguments object at 0x%x" % args_addr)
+    ql.log.debug("[+] Created IOExternalMethodArguments object at 0x%x" % args_addr)
     args_obj = IOExternalMethodArguments(ql, args_addr)
 
     if input_array is not None and input_cnt != 0:
         input_array_addr = ql.os.heap.alloc(input_cnt)
         ql.mem.write(input_array_addr, b''.join(struct.pack("<Q", x) for x in input_array))
-        logging.debug("[+] Created input array at 0x%x" % input_array_addr)
+        ql.log.debug("[+] Created input array at 0x%x" % input_array_addr)
     else:
         input_array_addr = 0
 
     if input_struct is not None and input_struct_size != 0:
         input_struct_addr = ql.os.heap.alloc(input_struct_size)
         ql.mem.write(input_struct_addr, bytes(input_struct))
-        logging.debug("[+] Created input struct at 0x%x" % input_struct_addr)
+        ql.log.debug("[+] Created input struct at 0x%x" % input_struct_addr)
     else:
         input_struct_addr = 0
 
     if output_array is not None and output_cnt != 0:
         output_array_addr = ql.os.heap.alloc(output_cnt)
         ql.mem.write(output_array_addr, b''.join(struct.pack("<Q", x) for x in output_array))
-        logging.debug("[+] Created output array at 0x%x" % output_array_addr)
+        ql.log.debug("[+] Created output array at 0x%x" % output_array_addr)
     else:
         output_array_addr = 0
 
     if output_struct is not None and output_struct_size != 0:
         output_struct_addr = ql.os.heap.alloc(output_struct_size)
         ql.mem.write(output_struct_addr, bytes(output_struct))
-        logging.debug("[+] Created output struct at 0x%x" % output_struct_size)
+        ql.log.debug("[+] Created output struct at 0x%x" % output_struct_size)
     else:
         output_struct_addr = 0
 
     dispatch_addr = ql.os.heap.alloc(ctypes.sizeof(IOExternalMethodDispatch))
-    logging.debug("[+] Created IOExternalMethodDispatch object at 0x%x" % dispatch_addr)
+    ql.log.debug("[+] Created IOExternalMethodDispatch object at 0x%x" % dispatch_addr)
     dispatch_obj = IOExternalMethodDispatch(ql, dispatch_addr)
 
     args_obj.___reservedA = 0
@@ -79,11 +79,11 @@ def IOConnectCallMethod(ql, selector,
     args_obj._structureOutputSize = output_struct_size
 
     args_obj.updateToMem()
-    logging.debug("[+] Initialized IOExternalMethodArguments object")
+    ql.log.debug("[+] Initialized IOExternalMethodArguments object")
     ql.os.savedrip=0xffffff8000a106ba
     ql.run(begin=ql.loader.user_alloc)
     ql.os.user_object = ql.reg.rax
-    logging.debug("[+] Created user object at 0x%x" % ql.os.user_object)
+    ql.log.debug("[+] Created user object at 0x%x" % ql.os.user_object)
 
     ql.reg.rdi = ql.os.user_object
     ql.reg.rsi = 0x1337 # owningTask
@@ -93,7 +93,7 @@ def IOConnectCallMethod(ql, selector,
     ql.stack_push(0)
     ql.os.savedrip=0xffffff8000a10728
     ql.run(begin=ql.loader.user_initWithTask)
-    logging.debug("[+] Initialized user object")
+    ql.log.debug("[+] Initialized user object")
 
     # TODO: Add some extra methods with correct order
 
@@ -108,7 +108,7 @@ def IOConnectCallMethod(ql, selector,
 
     args_obj.loadFromMem()
     output_array = args_obj.scalarOutput
-    logging.debug("[+] Finish IOConnectCallMethod")
+    ql.log.debug("[+] Finish IOConnectCallMethod")
     return args_obj.scalarOutput, type(output_struct).from_buffer(args_obj.structureOutput)
 
 
@@ -235,6 +235,6 @@ def print_function(ql, passthru, address, function_name, params, ret):
 
     if ql.output != QL_OUTPUT.DEBUG:
         log = log.partition(" ")[-1]
-        logging.info(log)
+        ql.log.info(log)
     else:
-        logging.debug(log)
+        ql.log.debug(log)

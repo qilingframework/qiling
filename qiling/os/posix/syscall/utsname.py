@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import logging
+
 from qiling.const import *
 from qiling.os.linux.thread import *
 from qiling.const import *
@@ -22,5 +22,5 @@ def ql_syscall_uname(ql, address, *args, **kw):
     buf += b''.ljust(65, b'\x00')
     ql.mem.write(address, buf)
     regreturn = 0
-    logging.info("uname(0x%x) = %d" % (address, regreturn))
+    ql.log.info("uname(0x%x) = %d" % (address, regreturn))
     return regreturn

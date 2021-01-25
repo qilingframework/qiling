@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import logging, os, sys, unittest
+import os, sys, unittest
 sys.path.append("..")
 
 from qiling import *
@@ -21,12 +21,12 @@ def syscall_getrandom(ql, buf, buflen, flags, *args, **kw):
     except:
         regreturn = -1
 
-    logging.info("getrandom(0x%x, 0x%x, 0x%x) = %d" %
+    ql.log.info("getrandom(0x%x, 0x%x, 0x%x) = %d" %
               (buf, buflen, flags, regreturn))
 
     if data:
-        logging.debug("[+] getrandom() CONTENT:")
-        logging.debug(str(data))
+        ql.log.debug("[+] getrandom() CONTENT:")
+        ql.log.debug(str(data))
     return regreturn
 
 
@@ -43,11 +43,11 @@ def syscall_fstatfs(ql, fd, buf, *args, **kw):
     except:
         regreturn = -1
 
-    logging.info("fstatfs(0x%x, 0x%x) = %d" % (fd, buf, regreturn))
+    ql.log.info("fstatfs(0x%x, 0x%x) = %d" % (fd, buf, regreturn))
 
     if data:
-        logging.debug("[+] fstatfs() CONTENT:")
-        logging.debug(str(data))
+        ql.log.debug("[+] fstatfs() CONTENT:")
+        ql.log.debug(str(data))
     return regreturn
 
 

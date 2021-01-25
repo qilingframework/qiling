@@ -8,7 +8,6 @@
 # handling hooks                             #
 ##############################################
 
-import logging
 
 from unicorn import *
 from .utils import catch_KeyboardInterrupt
@@ -55,7 +54,7 @@ class HookIntr(Hook):
     
 
     def check(self, ql, intno):
-        logging.debug("[+] Received Interupt: %i Hooked Interupt: %i" % (intno, self.intno))
+        ql.log.debug("[+] Received Interupt: %i Hooked Interupt: %i" % (intno, self.intno))
         if intno < 0 or self.intno == intno:
             return True
         return False

@@ -40,7 +40,7 @@ class PETest(unittest.TestCase):
 
     def test_pe_win_x86_hello(self):
         ql = Qiling(["../examples/rootfs/x86_windows/bin/x86_hello.exe"], "../examples/rootfs/x86_windows",
-                    output="default", profile="profiles/append_test.ql", log_split=True)
+                    output="default", profile="profiles/append_test.ql")
         ql.run()
         del ql
 
@@ -220,9 +220,9 @@ class PETest(unittest.TestCase):
         if 'QL_FAST_TEST' in os.environ:
             return
         def stop(ql):
-            logging.info("killerswtichfound")
-            logging.disable(level=logging.CRITICAL)
-            logging.info("No Print")
+            ql.log.info("killerswtichfound")
+            log.setLevel(logging.CRITICAL)
+            ql.log.info("No Print")
             ql.emu_stop()
 
         ql = Qiling(["../examples/rootfs/x86_windows/bin/wannacry.bin"], "../examples/rootfs/x86_windows")

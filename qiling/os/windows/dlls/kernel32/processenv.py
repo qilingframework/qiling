@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import logging
+
 from qiling.os.windows.fncc import *
 from qiling.exception import *
 
@@ -80,7 +80,7 @@ def hook_ExpandEnvironmentStringsW(ql, address, params):
     substring = string[start + 1:end]
     result = ql.os.profile["PATH"].get(substring, None)
     if result is None:
-        logging.debug(substring)
+        ql.log.debug(substring)
         raise QlErrorNotImplemented("[!] API not implemented")
     result = (string[:start] + result + string[end + 1:] + "\x00").encode("utf-16le")
     dst = params["lpDst"]

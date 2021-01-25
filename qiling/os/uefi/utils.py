@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import logging, struct
+import struct
 
 from uuid import UUID
 
@@ -14,7 +14,7 @@ from qiling.os.uefi.UefiBaseType import EFI_GUID
 def check_and_notify_protocols(ql):
 	if len(ql.loader.notify_list) > 0:
 		event_id, notify_func, notify_context = ql.loader.notify_list.pop(0)
-		logging.info(f'Notify event:{event_id} calling:{notify_func:x} context:{notify_context:x}')
+		ql.log.info(f'Notify event:{event_id} calling:{notify_func:x} context:{notify_context:x}')
 
 		ql.stack_push(ql.loader.end_of_execution_ptr)
 		ql.reg.rcx = notify_context
@@ -79,7 +79,7 @@ def init_struct(ql, base : int, descriptor : dict):
 	struct_fields = descriptor.get('fields', [])
 
 	isntance = struct_class()
-	logging.info(f'Initializing {struct_class.__name__}')
+	ql.log.info(f'Initializing {struct_class.__name__}')
 
 	for name, value in struct_fields:
 		if value is not None:
@@ -90,13 +90,13 @@ def init_struct(ql, base : int, descriptor : dict):
 				isntance.__setattr__(name, p)
 				ql.hook_address(value, p)
 
-				logging.info(f' | {name:36s} {p:#010x}')
+				ql.log.info(f' | {name:36s} {p:#010x}')
 
 			# a value: set it
 			else:
 				isntance.__setattr__(name, value)
 
-	logging.info(f'')
+	ql.log.info(f'')
 
 	return isntance
 
@@ -125,7 +125,8 @@ def LocateProtocol(context, params):
 			write_int64(context.ql, params['Interface'], guid_dic[protocol])
 			return EFI_SUCCESS
 
-	logging.warning(f'protocol with guid {protocol} not found')
+	# (@wtdcode): please use ql.log.warning instead.
+	#ql.log.warning(f'protocol with guid {protocol} not found')
 
 	return EFI_NOT_FOUND
 

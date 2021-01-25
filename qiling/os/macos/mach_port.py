@@ -4,7 +4,6 @@
 #
 
 # reference to <Mac OS X and IOS Internals: To the Apple's Core>
-import logging
 
 from struct import pack, unpack
 
@@ -84,7 +83,7 @@ class MachMsg():
         return header
 
     def read_msg_content(self, addr, size):
-        logging.debug("0x{:X}, {}".format(addr, size))
+        self.ql.log.debug("0x{:X}, {}".format(addr, size))
         return self.ql.mem.read(addr, size)
 
 
@@ -127,10 +126,10 @@ class MachPortManager():
             out_msg = self.ql.os.macho_task_server.get_special_port(msg.header, msg.content)
             out_msg.write_msg_to_mem(addr)
         else:
-            logging.info("Error Mach Msgid {} can not handled".format(msg.header.msgh_id))
+            self.ql.log.info("Error Mach Msgid {} can not handled".format(msg.header.msgh_id))
             raise Exception("Mach Msgid Not Found")
 
-        logging.debug("Reply-> Header: {}, Content: {}".format(out_msg.header, out_msg.content))
+        self.ql.log.debug("Reply-> Header: {}, Content: {}".format(out_msg.header, out_msg.content))
 
     def get_thread_port(self, MachoThread):
         return MachoThread.port.name

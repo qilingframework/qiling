@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import struct, logging
+import struct
 
 from unicorn.x86_const import *
 from unicorn.mips_const import *
@@ -196,9 +196,9 @@ def print_function(ql, passthru, address, function_name, params, ret):
     log = log.replace("\n", "\\n")
     if ql.output != QL_OUTPUT.DEBUG:
         log = log.partition(" ")[-1]
-        logging.info(log)
+        ql.log.info(log)
     else:
-        logging.debug(log)
+        ql.log.debug(log)
 
 
 def __x86_cc(ql, param_num, params, func, args, kwargs):

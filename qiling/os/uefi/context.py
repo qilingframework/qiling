@@ -1,4 +1,4 @@
-import logging
+
 from qiling.os.memory import QlMemoryHeap
 from qiling.os.uefi.utils import init_struct
 
@@ -21,7 +21,7 @@ class UefiContext:
 			self.protocols[handle] = {}
 
 		if guid in self.protocols[handle]:
-			logging.warning(f'a protocol with guid {guid} is already installed')
+			self.ql.log.warning(f'a protocol with guid {guid} is already installed')
 
 		if address is None:
 			struct_class = proto_desc['struct']

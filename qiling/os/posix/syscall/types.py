@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import logging
+
 from qiling.const import *
 from qiling.os.linux.thread import *
 from qiling.const import *
@@ -21,5 +21,5 @@ def ql_syscall_gettid(ql, *args, **kw):
       # In single-threaded process, the thread ID is equal to the process ID
       # per Posix documentation.
       regreturn = ql.os.pid
-    logging.info("gettid() = %d" % regreturn)
+    ql.log.info("gettid() = %d" % regreturn)
     return regreturn

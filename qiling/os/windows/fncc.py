@@ -3,9 +3,10 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import json, logging, os, struct
+import json, os, struct
 
 from functools import wraps
+
 
 from qiling.os.const import *
 from qiling.os.windows.utils import *
@@ -53,7 +54,7 @@ def winsdkapi(cc, param_num=None, dllname=None, replace_params_type=None, replac
                     with open(winsdk_path, 'r') as f:
                         funclist = json.load(f)
                 else:
-                    logging.info('[!] %s not found', winsdk_path)
+                    ql.log.info('[!] %s not found', winsdk_path)
                 if funcname not in funclist:
                     params = replace_params
                 else:

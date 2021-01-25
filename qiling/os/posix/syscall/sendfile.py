@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import logging
+
 from qiling.const import *
 from qiling.os.linux.thread import *
 from qiling.const import *
@@ -20,5 +20,5 @@ def ql_syscall_sendfile64(ql, sendfile64_out_fd, sendfile64_in_fd, sendfile64_of
     else:
         regreturn = -1
 
-    logging.info("sendfile64(%d, %d, %x, %d) = %d" % (sendfile64_out_fd, sendfile64_in_fd, sendfile64_offest, sendfile64_count, regreturn))
+    ql.log.info("sendfile64(%d, %d, %x, %d) = %d" % (sendfile64_out_fd, sendfile64_in_fd, sendfile64_offest, sendfile64_count, regreturn))
     return regreturn

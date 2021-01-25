@@ -3,7 +3,8 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import struct, logging
+import struct
+
 
 from qiling.const import *
 from qiling.os.linux.thread import *
@@ -34,6 +35,6 @@ def ql_syscall_sysinfo(ql, sysinfo_info, *args, **kw):
     )
 
     regreturn = 0
-    logging.info("sysinfo(0x%x) = %d" % (sysinfo_info, regreturn))
+    ql.log.info("sysinfo(0x%x) = %d" % (sysinfo_info, regreturn))
     #ql.mem.write(sysinfo_info, data)
     return regreturn

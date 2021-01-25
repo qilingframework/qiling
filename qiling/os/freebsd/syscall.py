@@ -3,12 +3,11 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import logging
 
 from qiling.arch.x86_const import *
 
 def ql_syscall_clock_gettime(ql, clock_gettime_clock_id, clock_gettime_timespec, *args, **kw):
-    logging.info("clock_gettime()")
+    ql.log.info("clock_gettime()")
     return 0
 
 
@@ -28,5 +27,5 @@ def ql_syscall_sysarch(ql, op, parms, *args, **kw):
 
     #op_buf = ql.pack32(op)
     #ql.mem.write(parms, op_buf)
-    logging.info("sysarch(0x%x,0x%x) = %i" % (op, parms, regreturn))
+    ql.log.info("sysarch(0x%x,0x%x) = %i" % (op, parms, regreturn))
     return regreturn

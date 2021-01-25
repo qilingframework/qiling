@@ -3,7 +3,6 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import logging
 
 from .utils import check_and_notify_protocols
 
@@ -20,7 +19,7 @@ def hook_EndOfExecution(ql):
         if ql.loader.unload_modules():
             return
 
-        logging.info(f'[+] No more modules to run')
+        ql.log.info(f'[+] No more modules to run')
         ql.emu_stop()
     else:
         ql.loader.execute_next_module()

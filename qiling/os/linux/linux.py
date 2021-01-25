@@ -3,7 +3,6 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import logging
 
 from qiling.const import *
 from qiling.arch.x86 import *

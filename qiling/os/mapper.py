@@ -3,7 +3,8 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import inspect, logging
+import inspect
+
 
 from .filestruct import ql_file
 from .utils import QlOsUtils
@@ -96,7 +97,7 @@ class QlFsMapper:
 
     def open_ql_file(self, path, openflags, openmode):
         if self.has_mapping(path):
-            logging.info(f"mapping {path}")
+            self.ql.log.info(f"mapping {path}")
             return self._open_mapping_ql_file(path, openflags, openmode)
         else:
             real_path = self.ql.os.transform_to_real_path(path)
@@ -104,7 +105,7 @@ class QlFsMapper:
 
     def open(self, path, openmode):
         if self.has_mapping(path):
-            logging.info(f"mapping {path}")
+            self.ql.log.info(f"mapping {path}")
             return self._open_mapping(path, openmode)
         else:
             real_path = self.ql.os.transform_to_real_path(path)

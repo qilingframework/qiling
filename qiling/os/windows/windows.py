@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import types, logging
+import types
 
 from unicorn import *
 
@@ -11,6 +11,7 @@ from qiling.arch.x86_const import *
 from qiling.arch.x86 import *
 from qiling.const import *
 from qiling.os.os import QlOs
+
 from .dlls import *
 from .const import *
 from .utils import *
@@ -112,12 +113,12 @@ class QlOsWindows(QlOs):
                     winapi_func(self.ql, address, {})
                         
                 except Exception:
-                    logging.exception("")
-                    logging.info("[!] %s Exception Found" % winapi_name)
+                    self.ql.log.exception("")
+                    self.ql.log.info("[!] %s Exception Found" % winapi_name)
                     self.emu_error()
                     raise QlErrorSyscallError("[!] Windows API Implementation Error")
             else:
-                logging.warning("[!] %s is not implemented" % winapi_name)
+                self.ql.log.warning("[!] %s is not implemented" % winapi_name)
                 if self.ql.debug_stop:
                     raise QlErrorSyscallNotFound("[!] Windows API Implementation Not Found")
 

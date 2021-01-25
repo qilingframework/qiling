@@ -7,7 +7,7 @@
 This module is intended for general purpose functions that are only used in qiling.os
 """
 
-import ctypes, inspect, os, struct, uuid, logging
+import ctypes, inspect, os, struct, uuid
 
 from json import dumps
 from pathlib import Path, PurePosixPath, PureWindowsPath, PosixPath, WindowsPath
@@ -22,6 +22,7 @@ from capstone.x86_const import *
 from capstone.arm64_const import *
 from capstone.mips_const import *
 from keystone import *
+
 
 from qiling.const import *
 from qiling.exception import *
@@ -156,7 +157,7 @@ class QlOsUtils:
 
         # Sanity check.
         if cur_path[0] != '/':
-            logging.info(f"[!] Warning: cur_path doesn't start with a /")
+            self.ql.log.info(f"[!] Warning: cur_path doesn't start with a /")
         
         rootfs = self.ql.rootfs
         real_path  = self.convert_path(rootfs, cur_path, path)
@@ -173,7 +174,7 @@ class QlOsUtils:
 
         # Sanity check.
         if cur_path[0] != '/':
-            logging.info(f"[!] Warning: cur_path must start with /")
+            self.ql.log.info(f"[!] Warning: cur_path must start with /")
 
         rootfs = self.ql.rootfs
         real_path = self.convert_path(rootfs, cur_path, path)
@@ -195,20 +196,20 @@ class QlOsUtils:
         return str(Path(cur_path) / path)
 
     def post_report(self):
-        logging.debug("[+] Syscalls called")
+        self.ql.log.debug("[+] Syscalls called")
         for key, values in self.ql.os.syscalls.items():
-            logging.debug("[-] %s:" % key)
+            self.ql.log.debug("[-] %s:" % key)
             for value in values:
-                logging.debug("[-] %s " % str(dumps(value)))
-        logging.debug("[+] Registries accessed")
+                self.ql.log.debug("[-] %s " % str(dumps(value)))
+        self.ql.log.debug("[+] Registries accessed")
         for key, values in self.ql.os.registry_manager.accessed.items():
-            logging.debug("[-] %s:" % key)
+            self.ql.log.debug("[-] %s:" % key)
             for value in values:
-                logging.debug("[-] %s " % str(dumps(value)))
-        logging.debug("[+] Strings")
+                self.ql.log.debug("[-] %s " % str(dumps(value)))
+        self.ql.log.debug("[+] Strings")
         for key, values in self.ql.os.appeared_strings.items():
             val = " ".join([str(word) for word in values])
-            logging.debug("[-] %s: %s" % (key, val))
+            self.ql.log.debug("[-] %s: %s" % (key, val))
 
 
     def exec_arbitrary(self, start, end):
@@ -218,7 +219,7 @@ class QlOsUtils:
         ret = self.ql.stack_read(0)
 
         def restore(ql):
-            logging.debug(f"[+] Executed code from 0x{start:x} to 0x{end:x}")
+            self.ql.log.debug(f"[+] Executed code from 0x{start:x} to 0x{end:x}")
             # now we can restore the register to be where we were supposed to
             old_hook_addr = ql.reg.arch_pc
             ql.reg.arch_sp = old_sp + (ql.archbit // 8)
@@ -262,18 +263,18 @@ class QlOsUtils:
                 log_data += '\n> '
             first = False
             log_data += "%s %s" % (i.mnemonic, i.op_str)
-        logging.info(log_data)
+        self.ql.log.info(log_data)
 
         if self.ql.output == QL_OUTPUT.DUMP:
             for reg in self.ql.reg.register_mapping:
                 if isinstance(reg, str):
                     REG_NAME = reg
                     REG_VAL = self.ql.reg.read(reg)
-                    logging.debug("%s\t:\t 0x%x" % (REG_NAME, REG_VAL))
+                    self.ql.log.debug("%s\t:\t 0x%x" % (REG_NAME, REG_VAL))
 
     def setup_output(self):
         def ql_hook_block_disasm(ql, address, size):
-            logging.info("\n[+] Tracing basic block at 0x%x" % (address))
+            self.ql.log.info("\n[+] Tracing basic block at 0x%x" % (address))
 
         if self._disasm_hook:
             self._disasm_hook.remove()
@@ -361,10 +362,10 @@ class QlOsUtils:
         log = f'{address:02x}: {function_name:s}({", ".join(fargs)}){fret}{fpass}'
 
         if self.ql.output == QL_OUTPUT.DEBUG:
-            logging.debug(log)
+            self.ql.log.debug(log)
         else:
             log = log.partition(" ")[-1]
-            logging.info(log)
+            self.ql.log.info(log)
 
     def vprintf(self, address, fmt, params_addr, name, wstring=False):
         count = fmt.count("%")
@@ -402,7 +403,7 @@ class QlOsUtils:
         else:
             output = '%s(format = %s) = 0x%x' % (name, repr(fmt), len(fmt))
             stdout = fmt
-        logging.info(output)
+        self.ql.log.info(output)
         self.ql.os.stdout.write(bytes(stdout, 'utf-8'))
         return len(stdout), stdout
 
@@ -603,7 +604,7 @@ class QlOsUtils:
                 #print("32 irpstack offset = 0x%x" %IRP32.irpstack.offset)
                 #print("irp at %x, irpstack at %x" %(irp_addr, irpstack_addr))
 
-            logging.info("IRP is at 0x%x, IO_STACK_LOCATION is at 0x%x" %(irp_addr, irpstack_addr))
+            self.ql.log.info("IRP is at 0x%x, IO_STACK_LOCATION is at 0x%x" %(irp_addr, irpstack_addr))
 
             irpstack.Parameters.DeviceIoControl.IoControlCode = ioctl_code(devicetype, function, ctl_method, access)
             irpstack.Parameters.DeviceIoControl.OutputBufferLength = output_buffer_size
@@ -642,7 +643,7 @@ class QlOsUtils:
             self.ql.mem.write(irp_addr, bytes(irp))
 
             # set function args
-            logging.info("Executing IOCTL with DeviceObject = 0x%x, IRP = 0x%x" %(self.ql.loader.driver_object.DeviceObject, irp_addr))
+            self.ql.log.info("Executing IOCTL with DeviceObject = 0x%x, IRP = 0x%x" %(self.ql.loader.driver_object.DeviceObject, irp_addr))
             self.set_function_args((self.ql.loader.driver_object.DeviceObject, irp_addr))
 
             try:

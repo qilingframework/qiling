@@ -4,7 +4,8 @@
 #
 
 import struct
-import logging
+
+
 from qiling.os.windows.const import *
 from qiling.os.windows.fncc import *
 from qiling.os.const import *
@@ -56,10 +57,10 @@ def hook_connect(ql, address, params):
             [str(octet) for octet in ql.mem.read(params["name"] + 4, 4)]
         )
     else:
-        logging.debug("[!] sockaddr sin_family unhandled variant")
+        ql.log.debug("[!] sockaddr sin_family unhandled variant")
         return 0
 
-    logging.debug(f"0x{params['name']:08x}: sockaddr_in{6 if sin_family == 0x17 else ''}",
+    ql.log.debug(f"0x{params['name']:08x}: sockaddr_in{6 if sin_family == 0x17 else ''}",
               f"{{sin_family=0x{sin_family:02x}, sin_port={sin_port}, sin_addr={sin_addr}}}",
               sep="",
               )

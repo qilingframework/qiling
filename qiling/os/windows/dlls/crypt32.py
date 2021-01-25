@@ -4,7 +4,7 @@
 #
 import struct
 import base64
-import logging
+
 from qiling.os.windows.fncc import *
 from qiling.os.const import *
 from qiling.os.windows.utils import *
@@ -42,8 +42,8 @@ def hook_CryptStringToBinaryA(ql, address, params):
             string_src += "=" * add_pad
         output = base64.b64decode(string_src).decode("utf-16le") + "\x00"
     else:
-        logging.debug("Flag")
-        logging.debug(flag_src)
+        ql.log.debug("Flag")
+        ql.log.debug(flag_src)
         raise QlErrorNotImplemented("[!] API not implemented")
 
     if string_dst == 0:

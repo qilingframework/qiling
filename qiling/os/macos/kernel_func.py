@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import os, logging
+import os
 
 from struct import *
 
@@ -45,7 +45,7 @@ class SharedFileMappingNp:
         self.sfm_max_prot = unpack("<L", self.ql.mem.read(addr + 24, 4))[0]
         self.sfm_init_prot = unpack("<L", self.ql.mem.read(addr + 28, 4))[0]
 
-        logging.debug("[ShareFileMapping]: addr: 0x{:X}, size: 0x{:X}, fileOffset:0x{:X}, maxProt: {}, initProt: {}".format(
+        self.ql.log.debug("[ShareFileMapping]: addr: 0x{:X}, size: 0x{:X}, fileOffset:0x{:X}, maxProt: {}, initProt: {}".format(
             self.sfm_address, self.sfm_size, self.sfm_file_offset, self.sfm_max_prot, self.sfm_init_prot
             ))
 
@@ -86,26 +86,26 @@ class FileSystem():
             filename = path.split("/")[-1]
             filename_len = len(filename) + 1        # add \0
             attr += pack("<L", filename_len)
-            logging.debug("FileName :{}, len:{}".format(filename, filename_len))
+            self.ql.log.debug("FileName :{}, len:{}".format(filename, filename_len))
 
         if cmn_flags & ATTR_CMN_DEVID != 0:
             attr += pack("<L", file_stat.st_dev)
-            logging.debug("DevID: {}".format(file_stat.st_dev))
+            self.ql.log.debug("DevID: {}".format(file_stat.st_dev))
 
         if cmn_flags & ATTR_CMN_OBJTYPE != 0:
             if os.path.isdir(path):
                 attr += pack("<L", VDIR)
-                logging.debug("ObjType: DIR")
+                self.ql.log.debug("ObjType: DIR")
             elif os.path.islink(path):
                 attr += pack("<L", VLINK)
-                logging.debug("ObjType: LINK")
+                self.ql.log.debug("ObjType: LINK")
             else:
                 attr += pack("<L", VREG)
-                logging.debug("ObjType: REG")
+                self.ql.log.debug("ObjType: REG")
             
         if cmn_flags & ATTR_CMN_OBJID != 0:
             attr += pack("<Q", file_stat.st_ino)
-            logging.debug("VnodeID :{}".format(file_stat.st_ino))
+            self.ql.log.debug("VnodeID :{}".format(file_stat.st_ino))
 
         # at last, add name 
         if cmn_flags & ATTR_CMN_NAME != 0:
@@ -114,7 +114,7 @@ class FileSystem():
             attr += filename.encode("utf8")
             attr += b'\x00'
         
-        logging.debug("Attr : {}".format(attr))
+        self.ql.log.debug("Attr : {}".format(attr))
     
         return attr
 

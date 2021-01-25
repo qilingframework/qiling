@@ -3,7 +3,6 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import logging
 
 from unicorn import UcError
 
@@ -77,16 +76,16 @@ class QlOsUefi(QlOs):
 
 		sizes = (64, 32, 16, 8, 8)
 
-		logging.error(f'CPU Context:')
+		self.ql.log.error(f'CPU Context:')
 
 		for grp in rgroups:
-			logging.error(', '.join((f'{reg:4s} = {self.ql.reg.read(reg):0{bits // 4}x}') for reg, bits in zip(grp, sizes) if reg))
+			self.ql.log.error(', '.join((f'{reg:4s} = {self.ql.reg.read(reg):0{bits // 4}x}') for reg, bits in zip(grp, sizes) if reg))
 
-		logging.error(f'')
+		self.ql.log.error(f'')
 
 
 	def emit_hexdump(self, address : int, data : str, num_cols=16):
-		logging.error('Hexdump:')
+		self.ql.log.error('Hexdump:')
 
 		# align hexdump to numbers of columns
 		pre_padding = [None] * (address % num_cols)
@@ -96,15 +95,15 @@ class QlOsUefi(QlOs):
 
 		for i in range(0, len(chars), num_cols):
 			hexdump = ' '.join(f'  ' if ch is None else f'{ch:02x}' for ch in chars[i: i + num_cols])
-			logging.error(f'{address + i:08x} : {hexdump}')
+			self.ql.log.error(f'{address + i:08x} : {hexdump}')
 
-		logging.error(f'')
+		self.ql.log.error(f'')
 
 
 	def emit_disasm(self, address : int, data : str, num_insns=8):
 		md = self.ql.create_disassembler()
 
-		logging.error('Disassembly:')
+		self.ql.log.error('Disassembly:')
 
 		for insn in tuple(md.disasm(data, address))[:num_insns]:
 			opcodes = ''.join(f'{ch:02x}' for ch in insn.bytes[:10])
@@ -112,9 +111,9 @@ class QlOsUefi(QlOs):
 			if len(insn.bytes) > 10:
 				opcodes += '.'
 
-			logging.error(f'{insn.address:08x}    {opcodes:<20s}  {insn.mnemonic:<10s} {insn.op_str:s}')
+			self.ql.log.error(f'{insn.address:08x}    {opcodes:<20s}  {insn.mnemonic:<10s} {insn.op_str:s}')
 
-		logging.error(f'')
+		self.ql.log.error(f'')
 
 
 	def emu_error(self):
@@ -130,12 +129,12 @@ class QlOsUefi(QlOs):
 
 			containing_image = self.find_containing_image(pc)
 			img_info = f' ({containing_image.path} + {pc - containing_image.base:#x})' if containing_image else ''
-			logging.error(f'PC = {pc:#010x}{img_info}')
+			self.ql.log.error(f'PC = {pc:#010x}{img_info}')
 
-			logging.error(f'Memory map:')
+			self.ql.log.error(f'Memory map:')
 			self.ql.mem.show_mapinfo()
 		except UcError:
-			logging.error(f'Error: PC({pc:#x}) is unreachable')
+			self.ql.log.error(f'Error: PC({pc:#x}) is unreachable')
 
 
 	def run(self):
@@ -150,7 +149,7 @@ class QlOsUefi(QlOs):
 		try:
 			self.ql.emu_start(self.ql.loader.entry_point, self.exit_point, self.ql.timeout, self.ql.count)
 		except KeyboardInterrupt as ex:
-			logging.critical(f'Execution interrupted by user')
+			self.ql.log.critical(f'Execution interrupted by user')
 
 			if self.ql._internal_exception is ex:
 				self.ql._internal_exception = None

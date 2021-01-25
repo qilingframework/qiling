@@ -4,7 +4,7 @@
 #
 
 import struct
-import logging
+
 
 from qiling.os.windows.fncc import *
 from qiling.os.const import *
@@ -142,7 +142,7 @@ def hook_GetClipboardData(ql, address, params):
         ql.mem.write(addr, data)
         return addr
     else:
-        logging.debug('Failed to get clipboard data')
+        ql.log.debug('Failed to get clipboard data')
         return 0
 
 
@@ -169,10 +169,10 @@ def hook_MapVirtualKeyW(ql, address, params):
         if code is not None:
             return code
         else:
-            logging.debug("Code value %x" % code_value)
+            ql.log.debug("Code value %x" % code_value)
             raise QlErrorNotImplemented("[!] API not implemented")
     else:
-        logging.debug("Map value %x" % map_value)
+        ql.log.debug("Map value %x" % map_value)
         raise QlErrorNotImplemented("[!] API not implemented")
 
 
@@ -182,7 +182,7 @@ def hook_MapVirtualKeyW(ql, address, params):
 @winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'int': 'UINT'})
 def hook_GetKeyState(ql, address, params):
     let = chr(params["nVirtKey"])
-    logging.debug(let)
+    ql.log.debug(let)
     UP = 2
     DOWN = 0
     return UP
@@ -243,7 +243,7 @@ def hook_GetSystemMetrics(ql, address, params):
     elif info == SM_CYHSCROLL:
         return 300
     else:
-        logging.debug("Info value %x" % info)
+        ql.log.debug("Info value %x" % info)
         raise QlErrorNotImplemented("[!] API not implemented")
 
 
@@ -659,7 +659,7 @@ def hook_MessageBoxW(ql, address, params):
     if type_box == MB_YESNO or type_box == MB_YESNOCANCEL:
         return IDYES
     else:
-        logging.debug(type_box)
+        ql.log.debug(type_box)
         raise QlErrorNotImplemented("[!] API not implemented")
 
 

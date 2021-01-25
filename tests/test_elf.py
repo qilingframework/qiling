@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import sys, unittest, subprocess, string, random, os, logging
+import sys, unittest, subprocess, string, random, os
 
 from unicorn import UcError, UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
 
@@ -268,7 +268,7 @@ class ELFTest(unittest.TestCase):
             all_mem = ql.mem.save()
             ql.mem.restore(all_mem)
             
-        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello"], "../examples/rootfs/arm_linux", output = "debug", profile='profiles/append_test.ql', log_split=True)
+        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello"], "../examples/rootfs/arm_linux", output = "debug", profile='profiles/append_test.ql')
         ql.set_api('puts', my_puts)
         ql.run()
         del ql
@@ -706,7 +706,7 @@ class ELFTest(unittest.TestCase):
             regreturn = 0
             buf = None
             mapaddr = ql.mem.map_anywhere(0x100000)
-            logging.info("0x%x" %  mapaddr)
+            ql.log.info("0x%x" %  mapaddr)
             
             reg = ql.reg.read("r0")
             print("reg : 0x%x" % reg)
@@ -715,12 +715,12 @@ class ELFTest(unittest.TestCase):
             
             try:
                 buf = ql.mem.read(write_buf, write_count)
-                logging.info("\n+++++++++\nmy write(%d,%x,%i) = %d\n+++++++++" % (write_fd, write_buf, write_count, regreturn))
+                ql.log.info("\n+++++++++\nmy write(%d,%x,%i) = %d\n+++++++++" % (write_fd, write_buf, write_count, regreturn))
                 ql.os.fd[write_fd].write(buf)
                 regreturn = write_count
             except:
                 regreturn = -1
-                logging.info("\n+++++++++\nmy write(%d,%x,%i) = %d\n+++++++++" % (write_fd, write_buf, write_count, regreturn))
+                ql.log.info("\n+++++++++\nmy write(%d,%x,%i) = %d\n+++++++++" % (write_fd, write_buf, write_count, regreturn))
                 if ql.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
                     raise
             self.set_syscall = reg
@@ -821,7 +821,7 @@ class ELFTest(unittest.TestCase):
                 self.id = fake_id
                 fake_id += 1
                 ids.append(self.id)
-                logging.info(f"Creating Fake_urandom with id {self.id}")
+                ql.log.info(f"Creating Fake_urandom with id {self.id}")
 
             def read(self, size):
                 return b'\x01'

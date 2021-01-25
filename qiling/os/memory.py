@@ -3,10 +3,11 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import logging, os, re
+import os, re
 
 from qiling.const import *
 from qiling.exception import *
+
 
 from unicorn import (
     UC_PROT_ALL,
@@ -130,13 +131,13 @@ class QlMemoryManager:
                     perms_sym.append("-")
             return "".join(perms_sym)
 
-        logging.info("[+] Start      End        Perm.  Path")
+        ql.log.info("[+] Start      End        Perm.  Path")
         for  start, end, perm, info in self.map_info:
             _perm = _perms_mapping(perm)
             image = self.ql.os.find_containing_image(start)
             if image:
                 info += f" ({image.path})"
-            logging.info("[+] %08x - %08x - %s    %s" % (start, end, _perm, info))
+            ql.log.info("[+] %08x - %08x - %s    %s" % (start, end, _perm, info))
 
 
     def get_lib_base(self, filename):
@@ -170,12 +171,12 @@ class QlMemoryManager:
             info = value[3]
             mem_read = bytes(value[4])
 
-            logging.debug("restore key: %i 0x%x 0x%x %s" % (key, start, end, info))
+            self.ql.log.debug("restore key: %i 0x%x 0x%x %s" % (key, start, end, info))
             if self.is_mapped(start, end-start) == False:
-                logging.debug("mapping 0x%x 0x%x mapsize 0x%x" % (start, end, end-start))
+                self.ql.log.debug("mapping 0x%x 0x%x mapsize 0x%x" % (start, end, end-start))
                 self.map(start, end-start, perms=perm, info=info)
 
-            logging.debug("writing 0x%x size 0x%x write_size 0x%x " % (start, end-start, len(mem_read)))
+            self.ql.log.debug("writing 0x%x size 0x%x write_size 0x%x " % (start, end-start, len(mem_read)))
             self.write(start, mem_read)
 
     def read(self, addr: int, size: int) -> bytearray:
@@ -187,8 +188,8 @@ class QlMemoryManager:
             self.ql.uc.mem_write(addr, data)
         except:
             self.show_mapinfo()
-            logging.debug("addresss write length: " + str(len(data)))
-            logging.error("addresss write error: " + hex(addr))
+            self.ql.log.debug("addresss write length: " + str(len(data)))
+            self.ql.log.error("addresss write error: " + hex(addr))
             raise
 
     def search(self, needle: bytes, begin= None, end= None):
@@ -400,7 +401,7 @@ class QlMemoryManager:
 
     def get_mapped(self):
         for idx, val in enumerate(self.ql.uc.mem_regions()):
-            logging.info(idx, list(map(hex, val)))
+            self.ql.log.info(idx, list(map(hex, val)))
 
 # A Simple Heap Implementation
 class Chunk():
@@ -475,7 +476,7 @@ class QlMemoryHeap:
             self.chunks.append(chunk)
 
         chunk.inuse = True
-        #logging.debug("heap.alloc addresss: " + hex(chunk.address))
+        #ql.log.debug("heap.alloc addresss: " + hex(chunk.address))
         return chunk.address
 
     def size(self, addr):

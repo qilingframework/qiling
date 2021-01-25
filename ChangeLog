@@ -7,6 +7,7 @@ BREAK CHANGE
 - ql.filename is renamed to ql.argv.
 - ql.output and ql.verbose now has slightly different meanings and can be adjusted runtime. See their docstring for details.
 - ql.filter now accepts a regular expression.
+- Remove ql.log_dir, ql.log_split, ql.append but add ql.log_file instead.
 
 ------------------------------------
 [Version 1.3]: January [SOMETHING], 2021

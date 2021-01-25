@@ -4,7 +4,7 @@
 #
 
 from qiling.os.linux.kernel_api import *
-import logging
+
 
 # hook Linux kernel API
 def hook_kernel_api(ql, address, size):
@@ -29,11 +29,11 @@ def hook_kernel_api(ql, address, size):
             try:
                 api_func(ql, address, {})
             except Exception:
-                logging.exception("")
-                logging.debug("[!] %s Exception Found" % api_name)
+                ql.log.exception("")
+                ql.log.debug("[!] %s Exception Found" % api_name)
                 raise QlErrorSyscallError("[!] Linux kernel API Implementation Error")
         else:
-            logging.warning("[!] %s is not implemented\n" % api_name)
+            ql.log.warning("[!] %s is not implemented\n" % api_name)
             if ql.debug_stop:
                 raise QlErrorSyscallNotFound("[!] Linux kernel API Implementation Not Found")
 

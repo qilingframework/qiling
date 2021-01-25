@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import logging
+
 from qiling.os.windows.const import *
 from qiling.os.windows.fncc import *
 from qiling.os.const import *
@@ -37,7 +37,7 @@ def hook_RtlGetVersion(ql, address, params):
     os.major[0] = ql.os.profile.getint("SYSTEM", "majorVersion")
     os.minor[0] = ql.os.profile.getint("SYSTEM", "minorVersion")
     os.write(pointer)
-    logging.debug("[=] The target is checking the windows Version!")
+    ql.log.debug("[=] The target is checking the windows Version!")
     return STATUS_SUCCESS
 
 
@@ -59,7 +59,7 @@ def hook_ZwSetInformationThread(ql, address, params):
         if size >= 100:
             return STATUS_INFO_LENGTH_MISMATCH
         if information == ThreadHideFromDebugger:
-            logging.debug("[=] The target is checking debugger via SetInformationThread")
+            ql.log.debug("[=] The target is checking debugger via SetInformationThread")
             if dst != 0:
                 ql.mem.write(dst, 0x0.to_bytes(1, byteorder="little"))
         else:
@@ -1097,7 +1097,7 @@ def hook_PsLookupProcessByProcessId(ql, address, params):
     else:
         addr = ql.os.heap.alloc(ctypes.sizeof(EPROCESS32))
     ql.mem.write(Process, ql.pack(addr))
-    logging.info("PID = 0x%x, addrof(EPROCESS) == 0x%x" % (ProcessId, addr))
+    ql.log.info("PID = 0x%x, addrof(EPROCESS) == 0x%x" % (ProcessId, addr))
     return STATUS_SUCCESS
 
 # NTSYSAPI NTSTATUS ZwOpenKey(
@@ -1287,7 +1287,7 @@ def hook_ObOpenObjectByPointer(ql, address, params):
     new_handle = Handle(name="p=%x" % Object)
     ql.os.handle_manager.append(new_handle)
     ql.mem.write(point_to_new_handle, ql.pack(new_handle.id))
-    logging.info("New handle of 0x%x is 0x%x" % (Object, new_handle.id))
+    ql.log.info("New handle of 0x%x is 0x%x" % (Object, new_handle.id))
     return STATUS_SUCCESS
 
 @winsdkapi(cc=CDECL, dllname=dllname)

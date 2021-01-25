@@ -7,7 +7,7 @@
 This module is intended for general purpose functions that can be used
 thoughout the qiling framework
 """
-import importlib, logging, os, logging, copy, re, pefile, configparser
+import importlib, os, copy, re, pefile, configparser, logging
 from logging import LogRecord
 from pathlib import Path
 
@@ -19,8 +19,8 @@ from .exception import *
 from .const import QL_ARCH, QL_ARCH_ALL, QL_ENDIAN, QL_OS, QL_OS_ALL, QL_OUTPUT, QL_DEBUGGER, QL_ARCH_32BIT, QL_ARCH_64BIT, QL_ARCH_16BIT
 from .const import debugger_map, arch_map, os_map
 
-FMT_STR = "[%(levelname)s] [%(filename)s:%(lineno)d]\t%(message)s"
-    
+FMT_STR = "%(levelname)s\t%(message)s"
+
 # \033 -> ESC
 # ESC [ -> CSI
 # CSI %d;%d;... m -> SGR
@@ -42,43 +42,55 @@ LEVEL_COLORS = {
     'CRITICAL': COLOR_CODE.CRIMSON,
     'ERROR': COLOR_CODE.RED
 }
-
-LEVEL_NAME = {
-    'WARNING': f"{COLOR_CODE.YELLOW}!{COLOR_CODE.ENDC}",
-    'INFO': f"{COLOR_CODE.BLUE}={COLOR_CODE.ENDC}",
-    'DEBUG': f"{COLOR_CODE.MAGENTA}+{COLOR_CODE.ENDC}",
-    'CRITICAL': f"{COLOR_CODE.CRIMSON}!{COLOR_CODE.ENDC}",
-    'ERROR': f"{COLOR_CODE.RED}x{COLOR_CODE.ENDC}"
-}
-
-class ColoredFormatter(logging.Formatter):
-    def __init__(self, *args, **kwargs):
-        super(ColoredFormatter, self).__init__(*args, **kwargs)
-    
-    def get_colored_level(self, record: LogRecord):
-        levelname = record.levelname
-        return LEVEL_NAME[levelname]
-
-    def format(self, record: LogRecord):
-        _record = copy.copy(record)
-        _record.levelname = self.get_colored_level(_record)
-        return super(ColoredFormatter, self).format(_record)
-
-class MultithreadColoredFormatter(ColoredFormatter):
+class QilingColoredFormatter(logging.Formatter):
     def __init__(self, ql, *args, **kwargs):
-        super(MultithreadColoredFormatter, self).__init__(*args, **kwargs)
+        super(QilingColoredFormatter, self).__init__(*args, **kwargs)
         self._ql = ql
 
+    def get_colored_level(self, record: LogRecord):
+        LEVEL_NAME = {
+            'WARNING': f"{COLOR_CODE.YELLOW}[!]{COLOR_CODE.ENDC}",
+            'INFO': f"{COLOR_CODE.BLUE}[=]{COLOR_CODE.ENDC}",
+            'DEBUG': f"{COLOR_CODE.MAGENTA}[+]{COLOR_CODE.ENDC}",
+            'CRITICAL': f"{COLOR_CODE.CRIMSON}[x]{COLOR_CODE.ENDC}",
+            'ERROR': f"{COLOR_CODE.RED}[x]{COLOR_CODE.ENDC}"
+        }
+        return LEVEL_NAME[record.levelname]
+
     def format(self, record: LogRecord):
+        record.levelname = self.get_colored_level(record)
         try:
             cur_thread = self._ql.os.thread_management.cur_thread
+            if cur_thread is not None:
+                record.levelname = f"{record.levelname} {COLOR_CODE.GREEN}{str(cur_thread)}{COLOR_CODE.ENDC}"
         except AttributeError:
-            return super(MultithreadColoredFormatter, self).format(record)
-        _record = copy.copy(record)
-        levelname = self.get_colored_level(_record)
-        _record.levelname = f"{levelname}] [{COLOR_CODE.GREEN}Thread {cur_thread.id}{COLOR_CODE.ENDC}"
-        msg = super(ColoredFormatter, self).format(_record)
-        return msg
+            pass
+        return super(QilingColoredFormatter, self).format(record)
+
+class QilingPlainFormatter(logging.Formatter):
+    def __init__(self, ql, *args, **kwargs):
+        super(QilingPlainFormatter, self).__init__(*args, **kwargs)
+        self._ql = ql
+    
+    def get_level(self, record: LogRecord):
+        LEVEL_NAME = {
+            'WARNING': "[!]",
+            'INFO': "[=]",
+            'DEBUG': "[+]",
+            'CRITICAL': "[x]",
+            'ERROR': "[x]"
+        }
+        return LEVEL_NAME[record.levelname]
+
+    def format(self, record: LogRecord):
+        record.levelname = self.get_level(record)
+        try:
+            cur_thread = self._ql.os.thread_management.cur_thread
+            if cur_thread is not None:
+                record.levelname = f"{record.levelname} {str(cur_thread)}"
+        except AttributeError:
+            pass
+        return super(QilingPlainFormatter, self).format(record)
 
 class RegexFilter(logging.Filter):
     def __init__(self, filters):
@@ -91,21 +103,6 @@ class RegexFilter(logging.Filter):
             if re.match(ft, msg):
                 return True
         return False
-
-class MultithreadSplitHandler(logging.Handler):
-    def __init__(self, ql):
-        super(MultithreadSplitHandler, self).__init__()
-        self._ql = ql
-    
-    def emit(self, record: LogRecord):
-        msg = self.format(record)
-        try:
-            cur_thread = self._ql.os.thread_management.cur_thread
-        except AttributeError:
-            self._ql._msg_before_main_thread.append((record.levelno, msg))
-            return
-        cur_thread.log_file_fd.log(record.levelno, msg)
-
 
 class QlFileDes:
     def __init__(self, init):
@@ -515,67 +512,51 @@ def ql_resolve_logger_level(output, verbose):
             level = logging.DEBUG
         elif verbose >= 1:
             level = logging.INFO
-        
-    logging.getLogger().setLevel(level)
+    
+    return level
 
+QL_INSTANCE_ID = 114514
 
 # TODO: qltool compatibility
-def ql_setup_logger(ql, log_dir, log_filename, log_split, console, filter, multithread):
-    # Covered use cases:
-    #    - Normal console output.
-    #    - Write to a single file.
-    #    - Write to splitted log files.
-    
+def ql_setup_logger(ql, log_file, console, filter, multithread):
+    global QL_INSTANCE_ID
+
+    # We should leave the root logger untouched.
+    log = logging.getLogger(f"qiling{QL_INSTANCE_ID}")
+    QL_INSTANCE_ID += 1
+
     # Clear all handlers and filters.
-    lger = logging.getLogger()
-    lger.handlers = []
-    lger.filters = []    
+    log.handlers = []
+    log.filters = []    
 
     # Do we have console output?
     if console:
         handler = logging.StreamHandler()
-        if multithread:
-            formatter = MultithreadColoredFormatter(ql, FMT_STR)
-        else:
-            formatter = ColoredFormatter(FMT_STR)
-        
+        formatter = QilingColoredFormatter(ql, FMT_STR)
         handler.setFormatter(formatter)
-        lger.addHandler(handler)
+        log.addHandler(handler)
     else:
-        logging.disable(level=logging.CRITICAL)
-    
-    # If log_dir isn't specified, return.
-    if log_dir is None or log_dir == "":
-        if log_split:
-            raise QlErrorOutput("log_split should be used with log_dir")
-        return
+        log.setLevel(logging.CRITICAL)
 
-    os.makedirs(log_dir, 0o755, exist_ok=True)
-    
-    # If we don't have to split logs, that's the most simple case.
-    if not log_split:
-        handler = logging.FileHandler(Path(log_dir) / log_filename)
-        handler.setFormatter(logging.Formatter(FMT_STR))
-        lger.addHandler(handler)
-    else:
-        if multithread:
-            # A placeholder for messages before the first(main) thread is created.
-            ql._msg_before_main_thread = []
-            handler = MultithreadSplitHandler(ql)
-            handler.setFormatter(logging.Formatter(FMT_STR))
-            lger.addHandler(handler)
-        # For spliting logs with child process, we do that during fork.
+    # Do we have to write log to a file?
+    if log_file is not None:
+        handler = logging.FileHandler(log_file)
+        formatter = QilingPlainFormatter(ql, FMT_STR)
+        handler.setFormatter(formatter)
+        log.addHandler(handler)
 
     # Remeber to add filters.
     if filter is not None and type(filter) == list and len(filter) != 0:
-        lger.addFilter(RegexFilter(filter))
+        log.addFilter(RegexFilter(filter))
     
-    lger.setLevel(logging.INFO)
+    log.setLevel(logging.INFO)
+
+    return log
 
 
 # verify if emulator returns properly
 def verify_ret(ql, err):
-    logging.debug("Got exception %u: init SP = %x, current SP = %x, PC = %x" %(err.errno, ql.os.init_sp, ql.reg.arch_sp, ql.reg.arch_pc))
+    ql.log.debug("Got exception %u: init SP = %x, current SP = %x, PC = %x" %(err.errno, ql.os.init_sp, ql.reg.arch_sp, ql.reg.arch_pc))
     # print("Got exception %u: init SP = %x, current SP = %x, PC = %x" %(err.errno, ql.os.init_sp, self.reg.arch_sp, self.reg.arch_pc))
 
     ql.os.RUN = False

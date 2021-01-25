@@ -3,7 +3,8 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import logging
+
+
 from .const import *
 from qiling.const import *
 
@@ -21,5 +22,5 @@ def ql_arm_init_get_tls(ql):
     #    sc = ql.os.lsbmsb_convert(ql, sc)
 
     ql.mem.write(ql.arch.arm_get_tls_addr, sc)
-    logging.debug("[+] Set init_kernel_get_tls")    
+    ql.log.debug("[+] Set init_kernel_get_tls")    
          

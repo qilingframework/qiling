@@ -3,7 +3,9 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import struct, logging
+import struct
+
+
 from qiling.os.windows.const import *
 from qiling.os.windows.fncc import *
 from qiling.os.const import *
@@ -26,7 +28,7 @@ def hook_memcpy(ql, address, params):
         data = bytes(ql.mem.read(params['src'], params['count']))
         ql.mem.write(params['dest'], data)
     except Exception as e:
-        logging.exception("")
+        ql.log.exception("")
     return params['dest']
 
 
@@ -50,9 +52,9 @@ def _QueryInformationProcess(ql, address, params):
         pbi.write(addr)
         value = addr.to_bytes(ql.pointersize, "little")
     else:
-        logging.debug(str(flag))
+        ql.log.debug(str(flag))
         raise QlErrorNotImplemented("[!] API not implemented")
-    logging.debug("[=] The target is checking the debugger via QueryInformationProcess ")
+    ql.log.debug("[=] The target is checking the debugger via QueryInformationProcess ")
     ql.mem.write(dst, value)
     if pt_res != 0:
         ql.mem.write(pt_res, 0x8.to_bytes(1, byteorder="little"))
@@ -129,7 +131,7 @@ def _QuerySystemInformation(ql, address, params):
                 ql.mem.write(pt_res, sbi.size.to_bytes(1, byteorder="little"))
             return STATUS_INFO_LENGTH_MISMATCH
     else:
-        logging.debug(str(siClass))
+        ql.log.debug(str(siClass))
         raise QlErrorNotImplemented("[!] API not implemented")
 
 
@@ -194,8 +196,8 @@ def hook_ZwQueryObject(ql, address, params):
     size_dest = params["ReturnLength"]
     string = "DebugObject".encode("utf-16le")
     string_addr = ql.os.heap.alloc(len(string))
-    logging.debug(str(string_addr))
-    logging.debug(str(string))
+    ql.log.debug(str(string_addr))
+    ql.log.debug(str(string))
     ql.mem.write(string_addr, string)
     us = qiling.os.windows.structs.UnicodeString(ql, length=len(string), maxLength=len(string),
                                                  buffer=string_addr)
@@ -246,9 +248,9 @@ def _SetInformationProcess(ql, address, params):
     elif flag == ProcessDebugObjectHandle:
         return STATUS_PORT_NOT_SET
     elif flag == ProcessBreakOnTermination:
-            logging.debug("[=] The target may be attempting modify a the 'critical' flag of the process")  
+            ql.log.debug("[=] The target may be attempting modify a the 'critical' flag of the process")  
     elif flag  == ProcessExecuteFlags:
-        logging.debug("[=] The target may be attempting to modify DEP for the process")
+        ql.log.debug("[=] The target may be attempting to modify DEP for the process")
         if dst != 0:
             ql.mem.write(dst, 0x0.to_bytes(1, byteorder="little"))
 
@@ -260,12 +262,12 @@ def _SetInformationProcess(ql, address, params):
             uniqueId=ql.os.profile.getint("KERNEL", "pid"),
             parentPid=ql.os.profile.geting("KERNEL", "parent_pid")
         )
-        logging.debug("[=] The target may be attempting to modify the PEB debug flag")
+        ql.log.debug("[=] The target may be attempting to modify the PEB debug flag")
         addr = ql.os.heap.alloc(pbi.size)
         pbi.write(addr)
         value = addr.to_bytes(ql.pointersize, "little")
     else:
-        logging.debug(str(flag))
+        ql.log.debug(str(flag))
         raise QlErrorNotImplemented("[!] API not implemented")
 
     return STATUS_SUCCESS
@@ -297,7 +299,7 @@ def hook_LdrGetProcedureAddress(ql, address, params):
     try:
         dll_name = [key for key, value in ql.loader.dlls.items() if value == params['ModuleHandle']][0]
     except IndexError as ie:
-        logging.info('[!] Failed to import function "%s" with handle 0x%X' % (lpProcName, params['ModuleHandle']))
+        ql.log.info('[!] Failed to import function "%s" with handle 0x%X' % (lpProcName, params['ModuleHandle']))
         return 0
 
     if identifier in ql.loader.import_address_table[dll_name]:

@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import sys, logging
+import sys
 
 from unicorn import UcError
 
@@ -108,7 +108,7 @@ def hook_WriteFile(ql, address, params):
             r, nNumberOfBytesToWrite = ql.amsint32_driver.os.io_Write(buffer)
             ql.mem.write(lpNumberOfBytesWritten, ql.pack32(nNumberOfBytesToWrite))
         except Exception as e:
-            logging.exception("")
+            ql.log.exception("")
             print("Exception = %s" % str(e))
             r = 1
         if r:
@@ -147,7 +147,7 @@ def hook_StartServiceA(ql, address, params):
         else:
             return 1
     except Exception as e:
-        logging.exception("")
+        ql.log.exception("")
         print (e)
 
 
@@ -174,7 +174,7 @@ if __name__ == "__main__":
     ql.os.set_function_args([0])
     ql.hook_address(hook_stop_address, 0x4055FA)
     ql.run(0x4053B2)
-    logging.info("[+] test kill thread")
+    ql.log.info("[+] test kill thread")
     if ql.amsint32_driver:
         ql.amsint32_driver.os.io_Write(ql.pack32(0xdeadbeef))
         ql.amsint32_driver.hook_address(hook_stop_address, 0x10423)

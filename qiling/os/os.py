@@ -3,8 +3,9 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import sys, logging
+import sys
 from typing import Callable, Sequence, Mapping, MutableMapping, Any
+
 
 from .const import *
 from .filestruct import ql_file
@@ -161,32 +162,32 @@ class QlOs(QlOsUtils):
                 return image
 
     def emu_error(self):
-        logging.error("\n")
+        self.ql.log.error("\n")
 
         for reg in self.ql.reg.register_mapping:
             if isinstance(reg, str):
                 REG_NAME = reg
                 REG_VAL = self.ql.reg.read(reg)
-                logging.error("%s\t:\t 0x%x" % (REG_NAME, REG_VAL))
+                self.ql.log.error("%s\t:\t 0x%x" % (REG_NAME, REG_VAL))
 
-        logging.error("\n")
-        logging.error("PC = 0x%x" % (self.ql.reg.arch_pc))
+        self.ql.log.error("\n")
+        self.ql.log.error("PC = 0x%x" % (self.ql.reg.arch_pc))
         containing_image = self.find_containing_image(self.ql.reg.arch_pc)
         if containing_image:
             offset = self.ql.reg.arch_pc - containing_image.base
-            logging.error(" (%s+0x%x)" % (containing_image.path, offset))
+            self.ql.log.error(" (%s+0x%x)" % (containing_image.path, offset))
         else:
-            logging.info("\n")
+            self.ql.log.info("\n")
         self.ql.mem.show_mapinfo()
 
         try:
             buf = self.ql.mem.read(self.ql.reg.arch_pc, 8)
-            logging.error("%r" % ([hex(_) for _ in buf]))
+            self.ql.log.error("%r" % ([hex(_) for _ in buf]))
 
-            logging.info("\n")
+            self.ql.log.info("\n")
             self.disassembler(self.ql, self.ql.reg.arch_pc, 64)
         except:
-            logging.error("Error: PC(0x%x) Unreachable" % self.ql.reg.arch_pc)
+            self.ql.log.error("Error: PC(0x%x) Unreachable" % self.ql.reg.arch_pc)
 
     def set_function_args(self, args: Sequence[int]) -> None:
         """Set function call arguments.

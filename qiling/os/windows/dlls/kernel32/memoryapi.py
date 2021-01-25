@@ -5,7 +5,7 @@
 
 import struct
 import time
-import logging
+
 from qiling.os.windows.const import *
 from qiling.os.const import *
 from qiling.os.windows.fncc import *
@@ -81,7 +81,7 @@ def hook_VirtualQuery(ql, address, params):
     if not base and not size:
         # Page not found
         # printable = sorted(['0x%x-0x%x' % (chunk.address, chunk.address+chunk.size) for chunk in ql.os.heap.chunks])
-        # logging.debug('Could not find memory chunk containing address 0x%x in %s' % (params['lpAddress'],
+        # ql.log.debug('Could not find memory chunk containing address 0x%x in %s' % (params['lpAddress'],
         # printable))
         ql.os.last_error = ERROR_INVALID_PARAMETER
         return 0

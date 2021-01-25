@@ -3,7 +3,8 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import struct, ipaddress, logging
+import struct, ipaddress
+
 
 from qiling.const import *
 from qiling.os.linux.thread import *
@@ -42,11 +43,11 @@ def ql_syscall_socket(ql, socket_domain, socket_type, socket_protocol, *args, **
     except:
         regreturn = -1
 
-    logging.info("socket(%d, %d, %d) = %d" % (socket_domain, socket_type, socket_protocol, regreturn))
+    ql.log.info("socket(%d, %d, %d) = %d" % (socket_domain, socket_type, socket_protocol, regreturn))
 
     socket_type = socket_type_mapping(socket_type, ql.archtype)
     socket_domain = socket_domain_mapping(socket_domain, ql.archtype)
-    logging.debug("[+] socket(%s, %s, %s) = %d" % (socket_domain, socket_type, socket_protocol, regreturn))
+    ql.log.debug("[+] socket(%s, %s, %s) = %d" % (socket_domain, socket_type, socket_protocol, regreturn))
 
     return regreturn
 
@@ -80,17 +81,17 @@ def ql_syscall_connect(ql, connect_sockfd, connect_addr, connect_addrlen, *args,
         regreturn = -1
 
     if s.family == AF_UNIX:
-        logging.info("connect(%s) = %d" % (sun_path, regreturn))
+        ql.log.info("connect(%s) = %d" % (sun_path, regreturn))
     elif s.family == AF_INET:
-        logging.info("connect(%s, %d) = %d" % (ip, port, regreturn))
+        ql.log.info("connect(%s, %d) = %d" % (ip, port, regreturn))
     else:
-        logging.info("connect() = %d" % (regreturn))
+        ql.log.info("connect() = %d" % (regreturn))
     return regreturn
 
 
 def ql_syscall_setsockopt(ql, *args, **kw):
     regreturn = 0
-    logging.info("setsockopt() = %d" % (regreturn))
+    ql.log.info("setsockopt() = %d" % (regreturn))
     return regreturn
 
 
@@ -101,7 +102,7 @@ def ql_syscall_shutdown(ql, shutdown_fd, shutdown_how, *args, **kw):
             regreturn = 0
         except:
             regreturn = -1
-    logging.info("shutdown(%d, %d) = %d" % (shutdown_fd, shutdown_how, regreturn))            
+    ql.log.info("shutdown(%d, %d) = %d" % (shutdown_fd, shutdown_how, regreturn))            
     return regreturn
 
 
@@ -123,7 +124,7 @@ def ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen,  *args, **kw):
     if sin_family == 1:
         path = data[2 : ].split(b'\x00')[0]
         path = ql.os.transform_to_real_path(path.decode())
-        logging.info(path)
+        ql.log.info(path)
         ql.os.fd[bind_fd].bind(path)
 
     # need a proper fix, for now ipv4 comes first
@@ -146,10 +147,10 @@ def ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen,  *args, **kw):
         regreturn = 0
 
     if sin_family == 1:
-        logging.info("bind(%d, %s, %d) = %d" % (bind_fd, path, bind_addrlen, regreturn))
+        ql.log.info("bind(%d, %s, %d) = %d" % (bind_fd, path, bind_addrlen, regreturn))
     else:
-        logging.info("bind(%d,%s:%d,%d) = %d" % (bind_fd, host, port, bind_addrlen,regreturn))
-        logging.debug("[+] syscall bind host: %s and port: %i sin_family: %i" % (ql_bin_to_ip(host), port, sin_family))
+        ql.log.info("bind(%d,%s:%d,%d) = %d" % (bind_fd, host, port, bind_addrlen,regreturn))
+        ql.log.debug("[+] syscall bind host: %s and port: %i sin_family: %i" % (ql_bin_to_ip(host), port, sin_family))
 
     return regreturn
 
@@ -168,7 +169,7 @@ def ql_syscall_getsockname(ql, sockfd, addr, addrlenptr, *args, **kw):
     else:
         regreturn = -1
 
-    logging.info("getsockname(%d, 0x%x, 0x%x) = %d" % (sockfd, addr, addrlenptr, regreturn))
+    ql.log.info("getsockname(%d, 0x%x, 0x%x) = %d" % (sockfd, addr, addrlenptr, regreturn))
     return regreturn  
 
 
@@ -186,7 +187,7 @@ def ql_syscall_getpeername(ql, sockfd, addr, addrlenptr, *args, **kw):
     else:
         regreturn = -1
 
-    logging.info("getpeername(%d, 0x%x, 0x%x) = %d" % (sockfd, addr, addrlenptr, regreturn))
+    ql.log.info("getpeername(%d, 0x%x, 0x%x) = %d" % (sockfd, addr, addrlenptr, regreturn))
     return regreturn  
 
 
@@ -202,7 +203,7 @@ def ql_syscall_listen(ql, listen_sockfd, listen_backlog, *args, **kw):
     else:
         regreturn = -1
 
-    logging.info("listen(%d, %d) = %d" % (listen_sockfd, listen_backlog, regreturn))
+    ql.log.info("listen(%d, %d) = %d" % (listen_sockfd, listen_backlog, regreturn))
     return regreturn
 
 
@@ -243,7 +244,7 @@ def ql_syscall_accept(ql, accept_sockfd, accept_addr, accept_addrlen, *args, **k
             raise
         regreturn = -1
 
-    logging.info("accept(%d, %x, %x) = %d" %(accept_sockfd, accept_addr, accept_addrlen, regreturn))
+    ql.log.info("accept(%d, %x, %x) = %d" %(accept_sockfd, accept_addr, accept_addrlen, regreturn))
     return regreturn
 
 
@@ -251,14 +252,14 @@ def ql_syscall_recv(ql, recv_sockfd, recv_buf, recv_len, recv_flags, *args, **kw
     if recv_sockfd < 256 and ql.os.fd[recv_sockfd] != 0:
         tmp_buf = ql.os.fd[recv_sockfd].recv(recv_len, recv_flags)
         if tmp_buf:
-            logging.debug("[+] recv() CONTENT:")
-            logging.debug("%s" % tmp_buf)
+            ql.log.debug("[+] recv() CONTENT:")
+            ql.log.debug("%s" % tmp_buf)
         ql.mem.write(recv_buf, tmp_buf)
         regreturn = len(tmp_buf)
     else:
         regreturn = -1
 
-    logging.info("recv(%d, %x, %d, %x) = %d" % (recv_sockfd, recv_buf, recv_len, recv_flags, regreturn))
+    ql.log.info("recv(%d, %x, %d, %x) = %d" % (recv_sockfd, recv_buf, recv_len, recv_flags, regreturn))
     return regreturn
 
 
@@ -266,23 +267,23 @@ def ql_syscall_send(ql, send_sockfd, send_buf, send_len, send_flags, *args, **kw
     regreturn = 0
     if send_sockfd < 256 and ql.os.fd[send_sockfd] != 0:
         try:
-            logging.debug("[+] debug send() start")
+            ql.log.debug("[+] debug send() start")
             tmp_buf = ql.mem.read(send_buf, send_len)  
-            logging.debug("[+] fd is " + str(send_sockfd))
-            logging.debug("[+] send() CONTENT:")
-            logging.debug("%s" % str(tmp_buf))
-            logging.debug("[+] send() flag is " + str(send_flags))
-            logging.debug("[+] send() len is " + str(send_len))
+            ql.log.debug("[+] fd is " + str(send_sockfd))
+            ql.log.debug("[+] send() CONTENT:")
+            ql.log.debug("%s" % str(tmp_buf))
+            ql.log.debug("[+] send() flag is " + str(send_flags))
+            ql.log.debug("[+] send() len is " + str(send_len))
             regreturn = ql.os.fd[send_sockfd].send(bytes(tmp_buf), send_flags)
-            logging.debug("[+] debug send end")
+            ql.log.debug("[+] debug send end")
         except:
-            logging.info(sys.exc_info()[0])
+            ql.log.info(sys.exc_info()[0])
             if ql.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
                 raise
     else:
         regreturn = -1
 
-    logging.info("send(%d, %x, %d, %x) = %d" % (send_sockfd, send_buf, send_len, send_flags, regreturn))
+    ql.log.info("send(%d, %x, %d, %x) = %d" % (send_sockfd, send_buf, send_len, send_flags, regreturn))
     return regreturn
 
 
@@ -295,16 +296,16 @@ def ql_syscall_recvfrom(ql, recvfrom_sockfd, recvfrom_buf, recvfrom_len, recvfro
         if recvfrom_sockfd < 256 and ql.os.fd[recvfrom_sockfd] != 0:
             tmp_buf, tmp_addr = ql.os.fd[recvfrom_sockfd].recvfrom(recvfrom_len, recvfrom_flags)
             if tmp_buf:
-                logging.debug("[+] recvfrom() CONTENT:")
-                logging.debug("%s" % tmp_buf)
+                ql.log.debug("[+] recvfrom() CONTENT:")
+                ql.log.debug("%s" % tmp_buf)
 
             sin_family = int(ql.os.fd[recvfrom_sockfd].family)
             data = struct.pack("<h", sin_family)
             if sin_family == 1:
-                logging.debug("[+] recvfrom() path is " + tmp_addr)
+                ql.log.debug("[+] recvfrom() path is " + tmp_addr)
                 data += tmp_addr.encode()
             else:
-                logging.debug("[+] recvfrom() addr is %s:%d" % (tmp_addr[0], tmp_addr[1]))
+                ql.log.debug("[+] recvfrom() addr is %s:%d" % (tmp_addr[0], tmp_addr[1]))
                 data += struct.pack(">H", tmp_addr[1])
                 data += ipaddress.ip_address(tmp_addr[0]).packed
                 addrlen = ql.unpack(ql.mem.read(recvfrom_addrlen, ql.pointersize))
@@ -316,7 +317,7 @@ def ql_syscall_recvfrom(ql, recvfrom_sockfd, recvfrom_buf, recvfrom_len, recvfro
         else:
             regreturn = -1
 
-        logging.info("recvfrom(%d, %#x, %d, %#x, %#x, %#x) = %d" % (recvfrom_sockfd, recvfrom_buf, recvfrom_len, recvfrom_flags, recvfrom_addr, recvfrom_addrlen, regreturn))
+        ql.log.info("recvfrom(%d, %#x, %d, %#x, %#x, %#x) = %d" % (recvfrom_sockfd, recvfrom_buf, recvfrom_len, recvfrom_flags, recvfrom_addr, recvfrom_addrlen, regreturn))
         return regreturn
 
 
@@ -329,7 +330,7 @@ def ql_syscall_sendto(ql, sendto_sockfd, sendto_buf, sendto_len, sendto_flags, s
         regreturn = 0
         if sendto_sockfd < 256 and ql.os.fd[sendto_sockfd] != 0:
             try:
-                logging.debug("[+] debug sendto() start")
+                ql.log.debug("[+] debug sendto() start")
                 tmp_buf = ql.mem.read(sendto_buf, sendto_len)
 
                 if ql.archtype== QL_ARCH.X8664:
@@ -345,24 +346,24 @@ def ql_syscall_sendto(ql, sendto_sockfd, sendto_buf, sendto_len, sendto_flags, s
                     path = data[2 : ].split(b'\x00')[0]
                     path = ql.os.transform_to_real_path(path.decode())
 
-                logging.debug("[+] fd is " + str(sendto_sockfd))
-                logging.debug("[+] sendto() CONTENT:")
-                logging.debug("%s" % tmp_buf)
-                logging.debug("[+] sendto() flag is " + str(sendto_flags))
-                logging.debug("[+] sendto() len is " + str(sendto_len))
+                ql.log.debug("[+] fd is " + str(sendto_sockfd))
+                ql.log.debug("[+] sendto() CONTENT:")
+                ql.log.debug("%s" % tmp_buf)
+                ql.log.debug("[+] sendto() flag is " + str(sendto_flags))
+                ql.log.debug("[+] sendto() len is " + str(sendto_len))
                 if sin_family == 1:
-                    logging.debug("[+] sendto() path is " + str(path))
+                    ql.log.debug("[+] sendto() path is " + str(path))
                     regreturn = ql.os.fd[sendto_sockfd].sendto(bytes(tmp_buf), sendto_flags, path)
                 else:
-                    logging.debug("[+] sendto() addr is %s:%d" % (host, port))
+                    ql.log.debug("[+] sendto() addr is %s:%d" % (host, port))
                     regreturn = ql.os.fd[sendto_sockfd].sendto(bytes(tmp_buf), sendto_flags, (host, port))
-                logging.debug("[+] debug sendto end")
+                ql.log.debug("[+] debug sendto end")
             except:
-                logging.info(sys.exc_info()[0])
+                ql.log.info(sys.exc_info()[0])
                 if ql.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
                     raise
         else:
             regreturn = -1
 
-        logging.info("sendto(%d, %#x, %d, %#x, %#x, %#x) = %d" % (sendto_sockfd, sendto_buf, sendto_len, sendto_flags, sendto_addr, sendto_addrlen, regreturn))
+        ql.log.info("sendto(%d, %#x, %d, %#x, %#x, %#x) = %d" % (sendto_sockfd, sendto_buf, sendto_len, sendto_flags, sendto_addr, sendto_addrlen, regreturn))
         return regreturn

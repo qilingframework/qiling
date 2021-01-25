@@ -3,10 +3,11 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import struct, time, os, logging
+import struct, time, os
 
 from shutil import copyfile
 from datetime import datetime
+
 
 from qiling.exception import *
 from qiling.os.windows.const import *
@@ -143,7 +144,7 @@ def hook_ReadFile(ql, address, params):
             # TODO maybe insert a good random generation input
             s = (b"A" * (nNumberOfBytesToRead - 1)) + b"\x00"
         else:
-            logging.debug("Insert input")
+            ql.log.debug("Insert input")
             s = ql.os.stdin.read(nNumberOfBytesToRead)
         slen = len(s)
         read_len = slen

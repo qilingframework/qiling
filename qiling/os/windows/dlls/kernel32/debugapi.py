@@ -5,7 +5,8 @@
 
 import struct
 import time
-import logging
+
+
 from qiling.os.windows.const import *
 from qiling.os.const import *
 from qiling.os.windows.fncc import *
@@ -40,7 +41,7 @@ def hook_CheckRemoteDebuggerPresent(ql, address, params):
 @winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_OutputDebugStringW(ql, address, params):
     string = params["lpOutputString"]
-    logging.info('OutputDebugStringW: "%s"' % (string.encode()))
+    ql.log.info('OutputDebugStringW: "%s"' % (string.encode()))
     return 0
 
 
@@ -49,5 +50,5 @@ def hook_OutputDebugStringW(ql, address, params):
 # );
 @winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_OutputDebugStringA(ql, address, params):
-    logging.info('OutputDebugStringA: "%s"' % (params['lpOutputString']))
+    ql.log.info('OutputDebugStringA: "%s"' % (params['lpOutputString']))
     return 0

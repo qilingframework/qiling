@@ -4,7 +4,7 @@
 #
 
 from configparser import ConfigParser
-import ctypes, logging, ntpath, os, pickle, platform
+import ctypes, ntpath, os, pickle, platform
 import io
 from sys import stdin, stdout
 # See https://stackoverflow.com/questions/39740632/python-type-hinting-without-cyclic-imports
@@ -39,9 +39,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             verbose=1,
             profile=None,
             console=True,
-            log_dir=None,
-            log_split=None,
-            append=None,
+            log_file=None,
             libcache = False,
             multithread = False,
             stop_on_stackpointer = False,
@@ -71,9 +69,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._pointersize = None
         self._profile = profile
         self._console = console
-        self._log_dir = log_dir
-        self._log_split = log_split
-        self._append = append
+        self._log_file = log_file
         self._multithread = multithread
         self._log_file_fd = None
         self._platform = ostype_convert(platform.system().lower())
@@ -155,12 +151,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         # Profile & Logging #
         #####################
         self._profile, debugmsg = profile_setup(self.ostype, self.profile, self)
-        if self._append == None:
-            self._append = self._profile["MISC"]["append"]
-        if self._log_dir == None:
-            self._log_dir = self._profile["LOG"]["dir"]
-        if self._log_split == None:            
-            self._log_split =  self._profile.getboolean('LOG', 'split')
 
         # Log's configuration
         
@@ -168,19 +158,16 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._output = output_convert(self._output)
 
         # We only use the root logger now.
-        ql_setup_logger(self, 
-                        self._log_dir, 
-                        self._targetname + self._append + ".qlog", 
-                        self._log_split, self._console, 
-                        self._filter, 
-                        self._multithread)
-        # For compatibility.
-        self._log_file_fd = logging.getLogger()
-        
-        ql_resolve_logger_level(self._output, self._verbose)
+        self._log_file_fd = ql_setup_logger(self,
+                                            self._log_file,
+                                            self._console, 
+                                            self._filter, 
+                                            self._multithread)
+
+        self.log.setLevel(ql_resolve_logger_level(self._output, self._verbose))
 
         # Now that the logger is configured, we can log profile debug msg:
-        logging.debug(debugmsg)
+        self.log.debug(debugmsg)
 
         ########################
         # Archbit & Endianness #
@@ -264,42 +251,20 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         """
         return self._os
 
+    @property
+    def log(self) -> logging.Logger:
+        """ Returns the logger this Qiling instance uses.
+
+            Type: logging.Logger
+            Example: ql.ql.log.info("This goes to terminal")
+        """
+        return self._log_file_fd
+
     ##################
     # Qiling Options #
     ##################
 
     # If an option doesn't have a setter, it means that it can be only set during Qiling.__init__
-    # TODO: Rename to suffix?
-    @property
-    def append(self) -> str:
-        """ Suffix appended to the filename.
-            Used when writing to file (e.g. logging).
-
-            Type: str
-            Example: Qiling(append="dbg")
-        """
-        return self._append
-
-    @property
-    def log_dir(self) -> str:
-        """ Specify the logging directory.
-            Use with ql.log_split.
-
-            Type: str
-            Example: Qiling(log_dir=".")
-        """
-        return self._log_dir
-    
-    @property
-    def log_split(self) -> bool:
-        """ Specify whether spliting logs within multiprocess/multithread context.
-            Use with ql.log_dir.
-
-            Type: bool
-            Example: Qiling(log_split=True)
-        """
-        return self._log_split
-
     @property
     def console(self) -> bool:
         """ Specify whether enabling console output. 
@@ -308,6 +273,15 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             Example: Qiling(console=True)
         """
         return self._console
+
+    @property
+    def log_file(self) -> str:
+        """ Log to a file.
+
+            Type: str
+            Example: Qiling(log_file="./ql.log")
+        """
+        return self._log_file
 
     @property
     def multithread(self) -> bool:
@@ -565,7 +539,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             self._output = output_convert(op)
         else:
             self._output = op
-        ql_resolve_logger_level(self._output, self._verbose)
+        self.log.setLevel(ql_resolve_logger_level(self._output, self._verbose))
         self.os.setup_output()
 
     @property
@@ -588,7 +562,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
     @verbose.setter
     def verbose(self, v):
         self._verbose = v
-        ql_resolve_logger_level(self._output, self._verbose)
+        self.log.setLevel(ql_resolve_logger_level(self._output, self._verbose))
         self.os.setup_output()
     
     @property
@@ -720,7 +694,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
                 if not ql.loader.skip_exit_check:
                     sp = ql._initial_sp - ql.reg.arch_sp
                     if sp < 0:
-                        logging.info('Process returned from entrypoint (stackpointer)!')
+                        self.log.info('Process returned from entrypoint (stackpointer)!')
                         ql.emu_stop()
 
             self.hook_code(_check_sp)
@@ -728,7 +702,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         # Stop when running to exit trap address
         if self.stop_options.exit_trap:
             def _exit_trap(ql):
-                logging.info('Process returned from entrypoint (exit_trap)!')
+                self.log.info('Process returned from entrypoint (exit_trap)!')
                 ql.emu_stop()
 
             self.hook_address(_exit_trap, self._exit_trap_addr)
@@ -737,10 +711,10 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._initial_sp = self.reg.arch_sp
         if self.stop_options.any:
             if not self.loader.skip_exit_check:
-                logging.debug(f'Setting up exit trap at 0x{hex(self._exit_trap_addr)}')
+                self.log.debug(f'Setting up exit trap at 0x{hex(self._exit_trap_addr)}')
                 self.stack_write(0, self._exit_trap_addr)
             elif self.stop_options.exit_trap:
-                logging.debug(f'Loader {self.loader} requested to skip exit_trap!')
+                self.log.debug(f'Loader {self.loader} requested to skip exit_trap!')
 
 
     ###############

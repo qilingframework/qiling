@@ -3,9 +3,9 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import gevent, logging
+import gevent
 
-from logging import getLevelName
+
 from gevent.event import Event
 from queue import Queue
 
@@ -22,11 +22,11 @@ class QlLinuxFutexManagement:
     
     def futex_wait(self, ql, uaddr, t, val, bitset=FUTEX_BITSET_MATCH_ANY):
         def _sched_wait_event(cur_thread):
-            logging.debug(f"[Thread {cur_thread.get_id()}] Wait for notifications.")
+            ql.log.debug(f"Wait for notifications.")
             event.wait()
         uaddr_value = ql.unpack32(ql.mem.read(uaddr, 4))
         if uaddr_value != val:
-            logging.debug(f"uaddr: {hex(uaddr_value)} != {hex(val)}")
+            ql.log.debug(f"uaddr: {hex(uaddr_value)} != {hex(val)}")
             return -1
         ql.emu_stop()
         if uaddr not in self.wait_list.keys():
@@ -39,7 +39,7 @@ class QlLinuxFutexManagement:
     def get_futex_wake_list(self, ql, addr, number, bitset=FUTEX_BITSET_MATCH_ANY):
         wakes = []
         if addr not in self.wait_list or number == 0:
-            logging.debug(f"No thread at {hex(addr)}")
+            ql.log.debug(f"No thread at {hex(addr)}")
             return wakes
         thread_queue = self.wait_list[addr]
         if thread_queue.qsize() < number:
@@ -55,7 +55,7 @@ class QlLinuxFutexManagement:
     def futex_wake(self, ql, uaddr, t, number, bitset=FUTEX_BITSET_MATCH_ANY):
         def _sched_set_event(cur_thread):
             for t, e in wakes:
-                logging.debug(f"[Thread {cur_thread.get_id()}] Notify [Thread {t.get_id()}].")
+                ql.log.debug(f"Notify [Thread {t.get_id()}.")
                 e.set()
             # Give up control.
             gevent.sleep(0)

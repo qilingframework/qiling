@@ -3,7 +3,8 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import struct, time, os, logging
+import struct, time, os
+
 
 from qiling.os.windows.const import *
 from qiling.os.const import *
@@ -42,7 +43,7 @@ def hook_SHGetFileInfoW(ql, address, params):
     if flags == SHGFI_LARGEICON:
         return 1
     else:
-        logging.debug(flags)
+        ql.log.debug(flags)
         raise QlErrorNotImplemented("[!] API not implemented")
 
 
@@ -53,13 +54,13 @@ def _ShellExecute(ql, obj: ShellExecuteInfoA):
     file = ql.os.read_wstring(obj.file[0]) if obj.file[0] != 0 else ""
     directory = ql.os.read_wstring(obj.dir[0]) if obj.dir[0] != 0 else ""
 
-    logging.debug("[=] Target executed a shell command!")
-    logging.debug("[-] Operation: %s " % operation)
-    logging.debug("[-] Parameters: %s " % params)
-    logging.debug("[-] File: %s " % file)
-    logging.debug("[-] Directory: %s " % directory)
+    ql.log.debug("[=] Target executed a shell command!")
+    ql.log.debug("[-] Operation: %s " % operation)
+    ql.log.debug("[-] Parameters: %s " % params)
+    ql.log.debug("[-] File: %s " % file)
+    ql.log.debug("[-] Directory: %s " % directory)
     if obj.show[0] == SW_HIDE:
-        logging.debug("[=] With an hidden window")
+        ql.log.debug("[=] With an hidden window")
     process = QlWindowsThread(ql, status=0, isFake=True)
     handle = Handle(obj=process)
     ql.os.handle_manager.append(handle)
@@ -115,17 +116,17 @@ def hook_SHGetSpecialFolderPathW(ql, address, params):
         path = str(ql.os.userprofile + "AppData\\")
         # We always create the directory
         appdata_dir = path.split("C:\\")[1].replace("\\", "/")
-        logging.debug("[+] dir path: %s" % path)
+        ql.log.debug("[+] dir path: %s" % path)
         path_emulated = os.path.join(ql.rootfs, appdata_dir)
-        logging.debug("[!] emulated path: %s" % path_emulated)
+        ql.log.debug("[!] emulated path: %s" % path_emulated)
         ql.mem.write(dst, (path + "\x00").encode("utf-16le"))
         # FIXME: Somehow winodws path is wrong
         if not os.path.exists(path_emulated):
             try:
                 os.makedirs(path_emulated, 0o755)
-                logging.debug("[!] os.makedirs completed")
+                ql.log.debug("[!] os.makedirs completed")
             except OSError:
-                logging.debug("[!] os.makedirs fail")
+                ql.log.debug("[!] os.makedirs fail")
     else:
         raise QlErrorNotImplemented("[!] API not implemented")
     return 1

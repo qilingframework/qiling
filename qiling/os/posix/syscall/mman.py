@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import logging
+
 from unicorn import (
     UC_PROT_ALL,
     UC_PROT_EXEC,
@@ -39,20 +39,20 @@ def ql_syscall_munmap(ql, munmap_addr , munmap_len, *args, **kw):
     ql.mem.unmap(munmap_addr, munmap_len)
     regreturn = 0
 
-    logging.info("munmap(0x%x, 0x%x) = %d" % (munmap_addr , munmap_len, regreturn))
+    ql.log.info("munmap(0x%x, 0x%x) = %d" % (munmap_addr , munmap_len, regreturn))
     return regreturn
 
 
 def ql_syscall_madvise(ql, *args, **kw):
     regreturn = 0
-    logging.info("madvise() = %d" %  regreturn)
+    ql.log.info("madvise() = %d" %  regreturn)
     return regreturn
 
 
 def ql_syscall_mprotect(ql, mprotect_start, mprotect_len, mprotect_prot, *args, **kw):
     regreturn = 0
-    logging.info("mprotect(0x%x, 0x%x, 0x%x) = %d" % (mprotect_start, mprotect_len, mprotect_prot, regreturn))
-    logging.debug("[+] mprotect(0x%x, 0x%x, %s) = %d" % (
+    ql.log.info("mprotect(0x%x, 0x%x, 0x%x) = %d" % (mprotect_start, mprotect_len, mprotect_prot, regreturn))
+    ql.log.debug("[+] mprotect(0x%x, 0x%x, %s) = %d" % (
     mprotect_start, mprotect_len, mmap_prot_mapping(mprotect_prot), regreturn))
 
     return regreturn
@@ -66,9 +66,9 @@ def ql_syscall_old_mmap(ql, struct_mmap_args, *args, **kw):
         _struct.append(int.from_bytes(data, 'little'))
 
     mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, mmap_offset = _struct
-    logging.debug("[+] log old_mmap - old_mmap(0x%x, 0x%x, 0x%x, 0x%x, %d, %d)" % (
+    ql.log.debug("[+] log old_mmap - old_mmap(0x%x, 0x%x, 0x%x, 0x%x, %d, %d)" % (
     mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, mmap_offset))
-    logging.debug("[+] log old_mmap - old_mmap(0x%x, 0x%x, %s, %s, %d, %d)" % (
+    ql.log.debug("[+] log old_mmap - old_mmap(0x%x, 0x%x, %s, %s, %d, %d)" % (
     mmap_addr, mmap_length, mmap_prot_mapping(mmap_prot), mmap_flag_mapping(mmap_flags), mmap_fd, mmap_offset))
 
     # FIXME
@@ -97,13 +97,13 @@ def ql_syscall_old_mmap(ql, struct_mmap_args, *args, **kw):
     elif ql.mem.is_mapped(mmap_addr, mmap_length):
         need_mmap = False
 
-    logging.debug("[+] log old_mmap - return addr : " + hex(mmap_base))
-    logging.debug("[+] log old_mmap - addr range  : " + hex(mmap_base) + ' - ' + hex(
+    ql.log.debug("[+] log old_mmap - return addr : " + hex(mmap_base))
+    ql.log.debug("[+] log old_mmap - addr range  : " + hex(mmap_base) + ' - ' + hex(
         mmap_base + ((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000))
 
     # initialized mapping
     if need_mmap:
-        logging.debug("[+] log old_mmap - mapping needed")
+        ql.log.debug("[+] log old_mmap - mapping needed")
         try:
             ql.mem.map(mmap_base, ((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000, info="[syscall_old_mmap]")
         except:
@@ -119,23 +119,23 @@ def ql_syscall_old_mmap(ql, struct_mmap_args, *args, **kw):
         ql.os.fd[mmap_fd]._is_map_shared = True
         ql.os.fd[mmap_fd]._mapped_offset = mmap_offset
 
-        logging.debug("[+] log mem wirte : " + hex(len(data)))
-        logging.debug("[+] log mem mmap  : " + mem_info)
+        ql.log.debug("[+] log mem wirte : " + hex(len(data)))
+        ql.log.debug("[+] log mem mmap  : " + mem_info)
         ql.mem.add_mapinfo(mmap_base,  mmap_base + (((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000), mem_p = UC_PROT_ALL, mem_info = "[old_mmap] " + mem_info)
         ql.mem.write(mmap_base, data)
         
 
-    logging.info("old_mmap(0x%x, 0x%x, 0x%x, 0x%x, %d, %d) = 0x%x" % (mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, mmap_offset, mmap_base))
+    ql.log.info("old_mmap(0x%x, 0x%x, 0x%x, 0x%x, %d, %d) = 0x%x" % (mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, mmap_offset, mmap_base))
     regreturn = mmap_base
-    logging.debug("[+] mmap_base is 0x%x" % regreturn)
+    ql.log.debug("[+] mmap_base is 0x%x" % regreturn)
 
     return regreturn
 
 
 def ql_syscall_mmap(ql, mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, mmap_pgoffset):
-    logging.debug("[+] log mmap - mmap(0x%x, 0x%x, 0x%x, 0x%x, %d, %d)" % (
+    ql.log.debug("[+] log mmap - mmap(0x%x, 0x%x, 0x%x, 0x%x, %d, %d)" % (
     mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, mmap_pgoffset))
-    logging.debug("[+] log mmap - mmap(0x%x, 0x%x, %s, %s, %d, %d)" % (
+    ql.log.debug("[+] log mmap - mmap(0x%x, 0x%x, %s, %s, %d, %d)" % (
     mmap_addr, mmap_length, mmap_prot_mapping(mmap_prot), mmap_flag_mapping(mmap_flags), mmap_fd, mmap_pgoffset))
 
     # FIXME
@@ -164,19 +164,19 @@ def ql_syscall_mmap(ql, mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, 
     elif ql.mem.is_mapped(mmap_addr, mmap_length):
         need_mmap = False
 
-    logging.debug("[+] log mmap - return addr : " + hex(mmap_base))
-    logging.debug("[+] log mmap - addr range  : " + hex(mmap_base) + ' - ' + hex(
+    ql.log.debug("[+] log mmap - return addr : " + hex(mmap_base))
+    ql.log.debug("[+] log mmap - addr range  : " + hex(mmap_base) + ' - ' + hex(
         mmap_base + ((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000))
 
     # initialized mapping
     if need_mmap:
-        logging.debug("[+] log mmap - mapping needed")
+        ql.log.debug("[+] log mmap - mapping needed")
         try:
             ql.mem.map(mmap_base, ((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000, info="[syscall_mmap]")
         except:
             raise QlMemoryMappedError("[!] mapping needed but fail")
  
-    logging.debug("[+] mmap_base 0x%x  length 0x%x" %(mmap_base, (((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000)))
+    ql.log.debug("[+] mmap_base 0x%x  length 0x%x" %(mmap_base, (((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000)))
     
     # FIXME: MIPS32 Big Endian
     try:
@@ -191,16 +191,16 @@ def ql_syscall_mmap(ql, mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, 
         ql.os.fd[mmap_fd]._is_map_shared = True
         ql.os.fd[mmap_fd]._mapped_offset = mmap_pgoffset
 
-        logging.debug("[+] log mem wirte : " + hex(len(data)))
-        logging.debug("[+] log mem mmap  : " + mem_info)
+        ql.log.debug("[+] log mem wirte : " + hex(len(data)))
+        ql.log.debug("[+] log mem mmap  : " + mem_info)
         ql.mem.add_mapinfo(mmap_base, mmap_base + (((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000), mem_p = UC_PROT_ALL, mem_info = "[mmap] " + mem_info)
         ql.mem.write(mmap_base, data)
         
 
-    logging.info("mmap(0x%x, 0x%x, 0x%x, 0x%x, %d, %d) = 0x%x" % (mmap_addr, mmap_length, mmap_prot, mmap_flags,
+    ql.log.info("mmap(0x%x, 0x%x, 0x%x, 0x%x, %d, %d) = 0x%x" % (mmap_addr, mmap_length, mmap_prot, mmap_flags,
                                                                mmap_fd, mmap_pgoffset, mmap_base))
     regreturn = mmap_base
-    logging.debug("[+] mmap_base is 0x%x" % regreturn)
+    ql.log.debug("[+] mmap_base is 0x%x" % regreturn)
 
     return regreturn
 
@@ -231,16 +231,16 @@ def ql_syscall_mmap2(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap
     elif mmap2_addr !=0 and ql.mem.is_mapped(mmap2_addr, mmap2_length):
         need_mmap = False
 
-    logging.debug("[+] log mmap2 - mmap2(0x%x, 0x%x, 0x%x, 0x%x, %d, %d)" % (
+    ql.log.debug("[+] log mmap2 - mmap2(0x%x, 0x%x, 0x%x, 0x%x, %d, %d)" % (
     mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset))
-    logging.debug("[+] log mmap2 - mmap2(0x%x, 0x%x, %s, %s, %d, %d)" % (
+    ql.log.debug("[+] log mmap2 - mmap2(0x%x, 0x%x, %s, %s, %d, %d)" % (
     mmap2_addr, mmap2_length, mmap_prot_mapping(mmap2_prot), mmap_flag_mapping(mmap2_flags), mmap2_fd, mmap2_pgoffset))
-    logging.debug("[+] log mmap2 - return addr : " + hex(mmap_base))
-    logging.debug("[+] log mmap2 - addr range  : " + hex(mmap_base) + ' - ' + hex(
+    ql.log.debug("[+] log mmap2 - return addr : " + hex(mmap_base))
+    ql.log.debug("[+] log mmap2 - addr range  : " + hex(mmap_base) + ' - ' + hex(
         mmap_base + ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000))
 
     if need_mmap:
-        logging.debug("[+] log mmap2 - mapping needed")
+        ql.log.debug("[+] log mmap2 - mapping needed")
         try:
             ql.mem.map(mmap_base, ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000, info="[syscall_mmap2]")
         except:
@@ -256,14 +256,14 @@ def ql_syscall_mmap2(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap
         ql.os.fd[mmap2_fd]._is_map_shared = True
         ql.os.fd[mmap2_fd]._mapped_offset = mmap2_pgoffset
 
-        logging.debug("[+] log mem write : " + hex(len(data)))
-        logging.debug("[+] log mem mmap2  : " + mem_info)
+        ql.log.debug("[+] log mem write : " + hex(len(data)))
+        ql.log.debug("[+] log mem mmap2  : " + mem_info)
         ql.mem.add_mapinfo(mmap_base,  mmap_base + (((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000), mem_p = UC_PROT_ALL, mem_info = "[mmap2] " + mem_info)
         ql.mem.write(mmap_base, data)
 
-    logging.info("mmap2(0x%x, 0x%x, 0x%x, 0x%x, %d, %d) = 0x%x" % (mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset, mmap_base))
+    ql.log.info("mmap2(0x%x, 0x%x, 0x%x, 0x%x, %d, %d) = 0x%x" % (mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset, mmap_base))
 
     regreturn = mmap_base
-    logging.debug("[+] mmap2_base is 0x%x" % regreturn)
+    ql.log.debug("[+] mmap2_base is 0x%x" % regreturn)
 
     return regreturn
