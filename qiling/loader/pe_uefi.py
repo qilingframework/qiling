@@ -173,7 +173,7 @@ class QlLoaderPE_UEFI(QlLoader):
                 self.call_function(unload_ptr, [handle], self.end_of_execution_ptr)
                 self.loaded_image_protocol_modules.remove(handle)
 
-                ql.log.info(f'Unloading module {handle:#x}, calling {unload_ptr:#x}')
+                self.ql.log.info(f'Unloading module {handle:#x}, calling {unload_ptr:#x}')
 
                 return True
 
@@ -195,7 +195,7 @@ class QlLoaderPE_UEFI(QlLoader):
         self.call_function(entry_point, [ImageHandle, SystemTable], eoe_trap)
         self.ql.os.entry_point = entry_point
 
-        ql.log.info(f'Running from {entry_point:#010x} of {path}')
+        self.ql.log.info(f'Running from {entry_point:#010x} of {path}')
 
     def execute_next_module(self):
         if not self.modules or self.ql.os.notify_before_module_execution(self.ql, self.modules[0][0]):
@@ -236,14 +236,14 @@ class QlLoaderPE_UEFI(QlLoader):
         heap_size = int(os_profile["heap_size"], 0)
         self.dxe_context.init_heap(heap_base, heap_size)
         self.heap_base_address = heap_base
-        ql.log.info(f"[+] Located heap at {heap_base:#010x}")
+        self.ql.log.info(f"[+] Located heap at {heap_base:#010x}")
 
         # initialize and locate stack
         stack_base = int(os_profile["stack_address"], 0)
         stack_size = int(os_profile["stack_size"], 0)
         self.dxe_context.init_stack(stack_base, stack_size)
         sp = stack_base + stack_size - CPU_STACK_ALIGNMENT
-        ql.log.info(f"[+] Located stack at {sp:#010x}")
+        self.ql.log.info(f"[+] Located stack at {sp:#010x}")
 
         # TODO: statically allocating 256 KiB for ST, RT, BS, DS and Configuration Tables.
         # however, this amount of memory is rather arbitrary
@@ -271,7 +271,7 @@ class QlLoaderPE_UEFI(QlLoader):
         heap_base = int(smm_profile["heap_address"], 0)
         heap_size = int(smm_profile["heap_size"], 0)
         self.smm_context.init_heap(heap_base, heap_size)
-        ql.log.info(f"[+] Located SMM heap at {heap_base:#010x}")
+        self.ql.log.info(f"[+] Located SMM heap at {heap_base:#010x}")
 
         # TODO: statically allocating 256 KiB for SMM ST.
         # however, this amount of memory is rather arbitrary
@@ -310,9 +310,9 @@ class QlLoaderPE_UEFI(QlLoader):
             for dependency in self.ql.argv:
                 self.map_and_load(dependency)
         except QlMemoryMappedError:
-            ql.log.critical("Couldn't map dependency")
+            self.ql.log.critical("Couldn't map dependency")
 
-        ql.log.info(f"[+] Done with loading {self.ql.path}")
+        self.ql.log.info(f"[+] Done with loading {self.ql.path}")
 
         # set up an end-of-execution hook to regain control when module is done
         # executing (i.e. when the entry point function returns). that should be
