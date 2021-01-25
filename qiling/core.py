@@ -428,14 +428,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         return self._targetname
 
     @property
-    def log_file_fd(self) -> logging.Logger:
-        """ Only reserved for compatibility, never use it directly.
-
-            Type: logging.Logger
-        """
-        return self._log_file_fd
-
-    @property
     def platform(self):
         """ Specify current platform where Qiling runs on.
 
