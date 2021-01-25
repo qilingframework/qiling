@@ -95,8 +95,11 @@ class QilingPlainFormatter(logging.Formatter):
 class RegexFilter(logging.Filter):
     def __init__(self, filters):
         super(RegexFilter, self).__init__()
-        self._filters = [ re.compile(ft) for ft in  filters ]
+        self.update_filters(filters)
     
+    def update_filters(self, filters):
+        self._filters = [ re.compile(ft) for ft in  filters ]
+
     def filter(self, record: LogRecord):
         msg = record.getMessage()
         for ft in self._filters:
@@ -518,7 +521,7 @@ def ql_resolve_logger_level(output, verbose):
 QL_INSTANCE_ID = 114514
 
 # TODO: qltool compatibility
-def ql_setup_logger(ql, log_file, console, filter, multithread):
+def ql_setup_logger(ql, log_file, console, filters, multithread):
     global QL_INSTANCE_ID
 
     # We should leave the root logger untouched.
@@ -545,13 +548,17 @@ def ql_setup_logger(ql, log_file, console, filter, multithread):
         handler.setFormatter(formatter)
         log.addHandler(handler)
 
-    # Remeber to add filters.
-    if filter is not None and type(filter) == list and len(filter) != 0:
-        log.addFilter(RegexFilter(filter))
+    # Remeber to add filters if necessary.
+    # If there aren't any filters, we do add the filters until users specify any.
+    log_filter = None
+
+    if filters is not None and type(filters) == list and len(filters) != 0:
+        log_filter = RegexFilter(filters)
+        log.addFilter(log_filter)
     
     log.setLevel(logging.INFO)
 
-    return log
+    return log, log_filter
 
 
 # verify if emulator returns properly

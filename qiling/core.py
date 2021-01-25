@@ -42,6 +42,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             log_file=None,
             libcache = False,
             multithread = False,
+            filters = None,
             stop_on_stackpointer = False,
             stop_on_exit_trap = False,
             stdin=0,
@@ -72,6 +73,8 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._log_file = log_file
         self._multithread = multithread
         self._log_file_fd = None
+        self._log_filter = None
+        self._filters = filters
         self._platform = ostype_convert(platform.system().lower())
         self._internal_exception = None
         self._uc = None
@@ -91,7 +94,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._debug_stop = False
         self._debugger = None
         self._root = False
-        self._filter = None
 
         ###############################
         # Properties configured later #
@@ -158,11 +160,11 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._output = output_convert(self._output)
 
         # We only use the root logger now.
-        self._log_file_fd = ql_setup_logger(self,
-                                            self._log_file,
-                                            self._console, 
-                                            self._filter, 
-                                            self._multithread)
+        self._log_file_fd, self._log_filter = ql_setup_logger(self,
+                                                              self._log_file,
+                                                              self._console, 
+                                                              self._filters, 
+                                                              self._multithread)
 
         self.log.setLevel(ql_resolve_logger_level(self._output, self._verbose))
 
@@ -622,17 +624,23 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._root = root
 
     @property
-    def filter(self) -> List[str]:
+    def filters(self) -> List[str]:
         """ Filter logs with regex.
             
             Type: List[str]
-            Example: ql.filter = [r'^open']
+            Example: - Qiling(filters=[r'^exit'])
+                     - ql.filters = [r'^open']
         """
-        return self._filter
+        return self._filters
 
-    @filter.setter
-    def filter(self, ft):
-        self._filter = ft
+    @filters.setter
+    def filters(self, ft):
+        self._filters = ft
+        if self._log_filter is None:
+            self._log_filter = RegexFilter(ft)
+            self.log.addFilter(self._log_filter)
+        else:
+            self._log_filter.update_filters(ft)
 
     @property
     def uc(self):
