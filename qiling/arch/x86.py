@@ -146,7 +146,7 @@ class GDTManager:
                 self.ql.mem.map(SEGMENT_ADDR, SEGMENT_ADDR, info="[FS/GS]")
 
         if index < 0 or index >= self.gdt_number:
-            raise QlGDTError("[!] Ql GDT register index error!")
+            raise QlGDTError("Ql GDT register index error!")
         # create GDT entry, then write GDT entry into GDT table
         gdt_entry = self._create_gdt_entry(SEGMENT_ADDR, SEGMENT_SIZE, SPORT, QL_X86_F_PROT_32)
         self.ql.mem.write(self.gdt_addr + (index << 3), gdt_entry)

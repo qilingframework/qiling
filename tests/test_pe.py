@@ -113,7 +113,7 @@ class PETest(unittest.TestCase):
                     new_name += random.choice(st.ascii_lowercase + st.ascii_uppercase)
                 ql.os.profile[key][subkey] = new_name
             else:
-                raise QlErrorNotImplemented("[!] API not implemented")
+                raise QlErrorNotImplemented("API not implemented")
 
         ql = Qiling(["../examples/rootfs/x86_windows/bin/GandCrab502.bin"], "../examples/rootfs/x86_windows",
                     output="debug", profile="profiles/windows_gandcrab_admin.ql")

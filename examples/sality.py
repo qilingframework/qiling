@@ -174,7 +174,7 @@ if __name__ == "__main__":
     ql.os.set_function_args([0])
     ql.hook_address(hook_stop_address, 0x4055FA)
     ql.run(0x4053B2)
-    ql.log.info("[+] test kill thread")
+    ql.log.info("test kill thread")
     if ql.amsint32_driver:
         ql.amsint32_driver.os.io_Write(ql.pack32(0xdeadbeef))
         ql.amsint32_driver.hook_address(hook_stop_address, 0x10423)

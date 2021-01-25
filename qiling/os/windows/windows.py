@@ -114,13 +114,13 @@ class QlOsWindows(QlOs):
                         
                 except Exception:
                     self.ql.log.exception("")
-                    self.ql.log.info("[!] %s Exception Found" % winapi_name)
+                    self.ql.log.info("%s Exception Found" % winapi_name)
                     self.emu_error()
-                    raise QlErrorSyscallError("[!] Windows API Implementation Error")
+                    raise QlErrorSyscallError("Windows API Implementation Error")
             else:
-                self.ql.log.warning("[!] %s is not implemented" % winapi_name)
+                self.ql.log.warning("%s is not implemented" % winapi_name)
                 if self.ql.debug_stop:
-                    raise QlErrorSyscallNotFound("[!] Windows API Implementation Not Found")
+                    raise QlErrorSyscallNotFound("Windows API Implementation Not Found")
 
 
     def run(self):

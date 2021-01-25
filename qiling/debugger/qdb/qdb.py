@@ -34,8 +34,8 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
     @classmethod
     def attach(cls, ql, *args, **kwargs):
-        print(color.RED, "[+] Qdb attached", color.END, sep="")
-        print(color.RED, "[!] All hooks of qiling instance will be disabled in Qdb", color.END, sep="")
+        print(color.RED, "Qdb attached", color.END, sep="")
+        print(color.RED, "All hooks of qiling instance will be disabled in Qdb", color.END, sep="")
 
         # clear all hooks
         for i in ql._addr_hook_fuc.keys():

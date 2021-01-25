@@ -28,7 +28,7 @@ def hook_CreateToolhelp32Snapshot(ql, address, params):
     if flag == TH32CS_SNAPPROCESS:
         ql.log.debug("[=] The target is checking every process!")
     else:
-        raise QlErrorNotImplemented("[!] API not implemented")
+        raise QlErrorNotImplemented("API not implemented")
     return 0xD10C
 
 

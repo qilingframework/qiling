@@ -168,7 +168,7 @@ class QlLoaderMACHO(QlLoader):
         self.kext_size = self.vm_end_addr - loadbase
 
         kernel_path = os.path.join(self.ql.rootfs, "System/Library/Kernels/kernel.development")
-        self.ql.log.info("[+] Parsing kernel:")
+        self.ql.log.info("Parsing kernel:")
         self.kernel = MachoParser(self.ql, kernel_path)
 
         # Create memory for external static symbol jmp code
@@ -176,7 +176,7 @@ class QlLoaderMACHO(QlLoader):
         self.static_size = PAGE_SIZE
         self.ql.mem.map(self.static_addr, self.static_size, info="[STATIC]")
         self.vm_end_addr += PAGE_SIZE
-        self.ql.log.info("[+] Memory for external static symbol is created at 0x%x with size 0x%x" % (self.static_addr, self.static_size))
+        self.ql.log.info("Memory for external static symbol is created at 0x%x with size 0x%x" % (self.static_addr, self.static_size))
         self.static_symbols = {}
 
         # Load kernel
@@ -190,7 +190,7 @@ class QlLoaderMACHO(QlLoader):
                     self.kernel_base = cmd.vm_address
                 self.loadSegment64(cmd, False)
 
-        self.ql.log.info("[+] Kernel loaded at 0x%x" % self.kernel_base)
+        self.ql.log.info("Kernel loaded at 0x%x" % self.kernel_base)
 
         # Resolve local relocation
         for relocation in self.macho_file.dysymbol_table.locreloc:
@@ -200,7 +200,7 @@ class QlLoaderMACHO(QlLoader):
                     seg = segment
                     break
             current_value, = struct.unpack("<Q", self.ql.mem.read(loadbase + relocation.address, 8))
-            self.ql.log.debug("[+] Patching relocation (0x%x): from 0x%x, update to segment %s at 0x%x" % (loadbase + relocation.address, current_value, seg.name, loadbase + seg.vm_address))
+            self.ql.log.debug("Patching relocation (0x%x): from 0x%x, update to segment %s at 0x%x" % (loadbase + relocation.address, current_value, seg.name, loadbase + seg.vm_address))
             self.ql.mem.write(loadbase + relocation.address, struct.pack("<Q", current_value + loadbase ))
 
         # Resolve dynamic symbols
@@ -242,7 +242,7 @@ class QlLoaderMACHO(QlLoader):
                     elif symname in self.kernel_extrn_symbols_detail:
                         real_addr = self.kernel_extrn_symbols_detail[symname]["n_value"]
                     else:
-                        self.ql.log.info("[!] Static symbol %s not found" % symname)
+                        self.ql.log.info("Static symbol %s not found" % symname)
                         continue
                     self.ql.import_symbols[real_addr] = symname
                     lo_addr = real_addr & 0xffffffff
@@ -257,19 +257,19 @@ class QlLoaderMACHO(QlLoader):
                 else:
                     self.ql.mem.write(loadbase + relocation.address, struct.pack("<I", self.static_symbols[symname] - (loadbase + relocation.address + 4)))
 
-#                 ql.log.info("[+] Patching relocation (0x%x): %s at 0x%x" % (loadbase + relocation.address, symname, self.static_symbols[symname]))
+#                 ql.log.info("Patching relocation (0x%x): %s at 0x%x" % (loadbase + relocation.address, symname, self.static_symbols[symname]))
                 continue
             if relocation.extern == 0 or relocation.length != 3:
                 continue
 
             if symname in self.kernel_local_symbols_detail:
-                # ql.log.debug("[+] Patching relocation (0x%x): %s at 0x%x" % (loadbase + relocation.address, symname, self.kernel_local_symbols_detail[symname]["n_value"]))
+                # ql.log.debug("Patching relocation (0x%x): %s at 0x%x" % (loadbase + relocation.address, symname, self.kernel_local_symbols_detail[symname]["n_value"]))
                 self.ql.mem.write(loadbase + relocation.address, struct.pack("<Q", self.kernel_local_symbols_detail[symname]["n_value"]))
             elif symname in self.kernel_extrn_symbols_detail:
-                # ql.log.debug("[+] Patching relocation (0x%x): %s at 0x%x" % (loadbase + relocation.address, symname, self.kernel_extrn_symbols_detail[symname]["n_value"]))
+                # ql.log.debug("Patching relocation (0x%x): %s at 0x%x" % (loadbase + relocation.address, symname, self.kernel_extrn_symbols_detail[symname]["n_value"]))
                 self.ql.mem.write(loadbase + relocation.address, struct.pack("<Q", self.kernel_extrn_symbols_detail[symname]["n_value"]))
             else:
-                self.ql.log.info("[!] Symbol %s not found!" % symname)
+                self.ql.log.info("Symbol %s not found!" % symname)
 
         # Update resolved symbols in table
         self.loadbase = loadbase
@@ -287,7 +287,7 @@ class QlLoaderMACHO(QlLoader):
             for symbol in self.macho_file.symbol_table.symbols:
                 if symbol.n_type == 0xf and "__const".ljust(16, "\x00") == self.macho_file.sections[symbol.n_sect].name:
                     symname = self.macho_file.string_table[symbol.n_strx]
-                    self.ql.log.info("[+] Found vtable of %s at 0x%x" % (symname, loadbase + symbol.n_value))
+                    self.ql.log.info("Found vtable of %s at 0x%x" % (symname, loadbase + symbol.n_value))
                     self.vtables[symname] = loadbase + symbol.n_value
      
             kext = self.plist["IOKitPersonalities"][self.kext_name]["IOClass"]
@@ -336,19 +336,19 @@ class QlLoaderMACHO(QlLoader):
             if b"__realmain" in self.kext_local_symbols:
                 realmain = loadbase + self.kext_local_symbols[b"__realmain"]["n_value"]
                 current_value, = struct.unpack("<Q", self.ql.mem.read(realmain, 8))
-                self.ql.log.info("[+] Found entry point: 0x%x" % (current_value))
+                self.ql.log.info("Found entry point: 0x%x" % (current_value))
                 self.kext_start = current_value
             else:
-                self.ql.log.info("[!] Entry point not found")
+                self.ql.log.info("Entry point not found")
                 self.kext_start = None
 
             if b"__antimain" in self.kext_local_symbols:
                 antimain = loadbase + self.kext_local_symbols[b"__antimain"]["n_value"]
                 current_value, = struct.unpack("<Q", self.ql.mem.read(antimain, 8))
-                self.ql.log.info("[+] Found exit point: 0x%x" % (current_value))
+                self.ql.log.info("Found exit point: 0x%x" % (current_value))
                 self.kext_stop = current_value
             else:
-                self.ql.log.info("[!] Exit point not found")
+                self.ql.log.info("Exit point not found")
                 self.kext_stop = None
 
             self.slide = loadbase 
@@ -398,7 +398,7 @@ class QlLoaderMACHO(QlLoader):
                         self.using_dyld = True
                         if not isdyld:
                             if not self.dyld_path:
-                                raise QlErrorMACHOFormat("[!] Error No Dyld path")
+                                raise QlErrorMACHOFormat("Error No Dyld path")
                             self.dyld_path =  os.path.join(self.ql.rootfs + self.dyld_path)
                             self.dyld_file = MachoParser(self.ql, self.dyld_path)
                             self.loading_file = self.dyld_file
@@ -410,12 +410,12 @@ class QlLoaderMACHO(QlLoader):
             self.mmap_address = mmap_address
             self.stack_sp = self.loadStack()
             if self.using_dyld:
-                self.ql.log.info("[+] ProcEntry: {}".format(hex(self.proc_entry)))
+                self.ql.log.info("ProcEntry: {}".format(hex(self.proc_entry)))
                 self.entry_point = self.proc_entry + self.dyld_slide
-                self.ql.log.info("[+] Dyld entry point: {}".format(hex(self.entry_point)))
+                self.ql.log.info("Dyld entry point: {}".format(hex(self.entry_point)))
             else:
                 self.entry_point = self.proc_entry + self.slide
-            self.ql.log.info("[+] Binary Entry Point: 0x{:X}".format(self.binary_entry))
+            self.ql.log.info("Binary Entry Point: 0x{:X}".format(self.binary_entry))
             self.macho_entry = self.binary_entry + self.slide
             self.load_address = self.macho_entry
 
@@ -441,7 +441,7 @@ class QlLoaderMACHO(QlLoader):
             return -1
 
         if seg_name[:10] == "__PAGEZERO":
-            self.ql.log.debug("[+] Now loading {}, VM[{}:{}] for pagezero actually it only got a page size".format(seg_name, hex(vaddr_start), hex(vaddr_end)))
+            self.ql.log.debug("Now loading {}, VM[{}:{}] for pagezero actually it only got a page size".format(seg_name, hex(vaddr_start), hex(vaddr_end)))
             self.ql.mem.map(vaddr_start, PAGE_SIZE, info="[__PAGEZERO]")
             self.ql.mem.write(vaddr_start, b'\x00' * PAGE_SIZE)
             if self.vm_end_addr < vaddr_end:
@@ -452,7 +452,7 @@ class QlLoaderMACHO(QlLoader):
                 seg_size = vaddr_end - vaddr_start
                 seg_data = seg_data.ljust(seg_size, b'\0')
 
-            self.ql.log.debug("[+] Now loading {}, VM[{}:{}]".format(seg_name, hex(vaddr_start), hex(vaddr_end)))
+            self.ql.log.debug("Now loading {}, VM[{}:{}]".format(seg_name, hex(vaddr_start), hex(vaddr_end)))
             self.ql.mem.map(vaddr_start, seg_size,  info="[loadSegment64]")
             self.ql.mem.write(vaddr_start, seg_data)
             if self.vm_end_addr < vaddr_end:
@@ -465,7 +465,7 @@ class QlLoaderMACHO(QlLoader):
             self.binary_entry = cmd.entry
  
         self.proc_entry = cmd.entry
-        self.ql.log.debug("[+] Binary Thread Entry: {}".format(hex(cmd.entry)))
+        self.ql.log.debug("Binary Thread Entry: {}".format(hex(cmd.entry)))
 
 
     def loadUuid(self):
@@ -511,17 +511,17 @@ class QlLoaderMACHO(QlLoader):
 
         for item in self.argvs[::-1]:
             argvs_ptr.append(ptr)  # need pack and tostring
-            self.ql.log.debug('[+] add argvs ptr {}'.format(hex(ptr)))
+            self.ql.log.debug('add argvs ptr {}'.format(hex(ptr)))
             ptr += len(item) + 1
         
         for item in self.envs[::-1]:
             envs_ptr.append(ptr)
-            self.ql.log.debug('[+] add envs ptr {}'.format(hex(ptr)))
+            self.ql.log.debug('add envs ptr {}'.format(hex(ptr)))
             ptr += len(item) + 1
 
         for item in self.apples[::-1]:
             apple_ptr.append(ptr)
-            self.ql.log.debug('[+] add apple ptr {}'.format(hex(ptr)))
+            self.ql.log.debug('add apple ptr {}'.format(hex(ptr)))
             ptr += len(item) + 1
 
         ptr = self.stack_sp
@@ -545,16 +545,16 @@ class QlLoaderMACHO(QlLoader):
         for item in argvs_ptr:
             ptr -= 4
             self.push_stack_addr(item)
-            self.ql.log.debug("[+] SP 0x%x, content 0x%x" % (self.stack_sp, item))
+            self.ql.log.debug("SP 0x%x, content 0x%x" % (self.stack_sp, item))
         argvs_ptr_ptr = ptr 
 
         self.push_stack_addr(self.argc)
         ptr -= 4
-        self.ql.log.debug("[+] SP 0x%x, content 0x%x" % (self.stack_sp, self.argc))
+        self.ql.log.debug("SP 0x%x, content 0x%x" % (self.stack_sp, self.argc))
        
         if self.using_dyld:
             ptr -= 4
-            #ql.log.info("[+] Binary Dynamic Entry Point: {:X}".format(self.binary_entry))
+            #ql.log.info("Binary Dynamic Entry Point: {:X}".format(self.binary_entry))
             self.push_stack_addr(self.macho_file.header_address)
             # self.push_stack_addr(self.binary_entry)
 
@@ -571,7 +571,7 @@ class QlLoaderMACHO(QlLoader):
         
         self.stack_sp -= length
         self.ql.mem.write(self.stack_sp, data)
-        self.ql.log.debug("[+] SP {} write data len {}".format(hex(self.stack_sp), length))
+        self.ql.log.debug("SP {} write data len {}".format(hex(self.stack_sp), length))
         
         return self.stack_sp
     
@@ -584,7 +584,7 @@ class QlLoaderMACHO(QlLoader):
             content = struct.pack('<Q', data)
 
         if len(content) != align:
-            self.ql.log.info('[!] stack align error')
+            self.ql.log.info('stack align error')
             return 
         
         self.stack_sp -= align

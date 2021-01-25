@@ -147,9 +147,9 @@ def ql_syscall_faccessat(ql, faccessat_dfd, faccessat_filename, faccessat_mode, 
     ql.log.info("facccessat (%d, 0x%x, 0x%x) = %d" %(faccessat_dfd, faccessat_filename, faccessat_mode, regreturn))
 
     if regreturn == -1:
-        ql.log.debug("[!] File Not Found or Skipped: %s" % access_path)
+        ql.log.debug("File Not Found or Skipped: %s" % access_path)
     else:
-        ql.log.debug("[+] File Found: %s" % access_path)
+        ql.log.debug("File Found: %s" % access_path)
     return regreturn
 
 
@@ -201,7 +201,7 @@ def ql_syscall_brk(ql, brk_input, *args, **kw):
 
     regreturn = ql.loader.brk_address
 
-    ql.log.debug("[+] brk return(0x%x)" % regreturn)
+    ql.log.debug("brk return(0x%x)" % regreturn)
     return regreturn
 
 
@@ -218,9 +218,9 @@ def ql_syscall_access(ql, access_path, access_mode, *args, **kw):
 
     ql.log.info("access(%s, 0x%x) = %d " % (relative_path, access_mode, regreturn))
     if regreturn == 0:
-        ql.log.debug("[+] File found: %s" % relative_path)
+        ql.log.debug("File found: %s" % relative_path)
     else:
-        ql.log.debug("[!] No such file or directory")
+        ql.log.debug("No such file or directory")
 
     return regreturn
 
@@ -267,7 +267,7 @@ def ql_syscall_read(ql, read_fd, read_buf, read_len, *args, **kw):
     ql.log.info("read(%d, 0x%x, 0x%x) = %d" % (read_fd, read_buf, read_len, regreturn))
 
     if data:
-        ql.log.debug("[+] read() CONTENT:")
+        ql.log.debug("read() CONTENT:")
         ql.log.debug("%s" % data)
     return regreturn
 
@@ -279,14 +279,14 @@ def ql_syscall_write(ql, write_fd, write_buf, write_count, *args, **kw):
     try:
         buf = ql.mem.read(write_buf, write_count)
         if buf:
-            ql.log.debug("[+] write() CONTENT:")
+            ql.log.debug("write() CONTENT:")
             ql.log.debug("%s" % buf)
 
         if hasattr(ql.os.fd[write_fd], "write"):
             ql.log.info("write(%d,%x,%i) = %d" % (write_fd, write_buf, write_count, regreturn))
             ql.os.fd[write_fd].write(buf)
         else:
-            ql.log.info("[!] write(%d,%x,%i) failed due to write_fd" % (write_fd, write_buf, write_count, regreturn))
+            ql.log.info("write(%d,%x,%i) failed due to write_fd" % (write_fd, write_buf, write_count, regreturn))
         regreturn = write_count
 
     except:
@@ -399,7 +399,7 @@ def ql_syscall_vfork(ql, *args, **kw):
 
     if pid == 0:
         ql.os.child_processes = True
-        ql.log.debug("[+] vfork(): is this a child process: %r" % (ql.os.child_processes))
+        ql.log.debug("vfork(): is this a child process: %r" % (ql.os.child_processes))
         regreturn = 0
     else:
         regreturn = pid
@@ -609,7 +609,7 @@ def ql_syscall_unlink(ql, unlink_pathname, *args, **kw):
             os.unlink(real_path)
             regreturn = 0
         except FileNotFoundError:
-            ql.log.debug('[!] No such file or directory')
+            ql.log.debug('No such file or directory')
             regreturn = -1
         except:
             regreturn = -1
@@ -629,7 +629,7 @@ def ql_syscall_unlinkat(ql, dirfd, pathname, flag, *args, **kw):
         os.unlink(real_path)
         return 0
     except FileNotFoundError:
-        ql.log.debug("[!] No such file or directory")
+        ql.log.debug("No such file or directory")
         return -1
     except:
         return -1
@@ -682,6 +682,6 @@ def ql_syscall_getdents(ql, fd, dirp, count, *args, **kw):
         regreturn = 0
 
     ql.log.info("getdents(%d, 0x%x, 0x%x) = %d" % (fd, dirp, count, regreturn))
-    ql.log.debug("[+] getdents(%d, /* %d entries */, 0x%x) = %d" % (fd, _ent_count, count, regreturn))
+    ql.log.debug("getdents(%d, /* %d entries */, 0x%x) = %d" % (fd, _ent_count, count, regreturn))
     return regreturn
 

@@ -27,7 +27,7 @@ class MachoParser:
         for seg in self.segments:
             # find page zero
             if seg.vm_address == 0 and seg.file_size == 0:
-                ql.log.info("[+] PageZero Size: {:X}".format(seg.vm_size))
+                ql.log.info("PageZero Size: {:X}".format(seg.vm_size))
                 self.page_zero_size = seg.vm_size
                 self.header_address = seg.vm_size
 
@@ -54,17 +54,17 @@ class MachoParser:
         self.magic = self.getMagic(self.binary_file)
         
         if self.magic in MAGIC_64:
-            self.ql.log.debug("[+] Got a 64bit Header ")
+            self.ql.log.debug("Got a 64bit Header ")
             self.header = BinaryHeader(self.binary_file)
 
         #elif self.magic in MAGIC_X86:
         #    # x86
-        #    ql.log.debug("[+] Got a x86 Header") 
+        #    ql.log.debug("Got a x86 Header") 
         #    self.header = BinaryHeader(self.binary_file)
 
         elif self.magic in MAGIC_FAT:
             # fat 
-            self.ql.log.debug("[+] Got a fat header")
+            self.ql.log.debug("Got a fat header")
             fat = FatHeader(self.binary_file)
             file_info = fat.getBinary(self.archtype)
             self.binary_file = self.binary_file[file_info.offset : file_info.offset + file_info.size]
@@ -80,7 +80,7 @@ class MachoParser:
         return True
 
     def parseLoadCommand(self):
-        self.ql.log.debug("[+] Parse LoadCommand")
+        self.ql.log.debug("Parse LoadCommand")
         if not self.header.lc_num or not self.header.lc_size or not self.header.header_size:
             return False
 

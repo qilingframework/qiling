@@ -448,7 +448,7 @@ def hook__ismbblead(ql, address, params):
     if loc[0x1004] == "utf-8":
         return 0
     else:
-        raise QlErrorNotImplemented("[!] API not implemented")
+        raise QlErrorNotImplemented("API not implemented")
 
 
 # errno_t _wfopen_s(

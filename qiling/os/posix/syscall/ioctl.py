@@ -81,7 +81,7 @@ def ql_syscall_ioctl(ql, ioctl_fd, ioctl_cmd, ioctl_arg, *args, **kw):
     if isinstance(ql.os.fd[ioctl_fd], ql_socket) and (ioctl_cmd == SIOCGIFADDR or ioctl_cmd == SIOCGIFNETMASK):
         try:
             tmp_arg = ql.mem.read(ioctl_arg, 64)
-            ql.log.debug("[+] query network card : %s" % tmp_arg)
+            ql.log.debug("query network card : %s" % tmp_arg)
             data = ql.os.fd[ioctl_fd].ioctl(ioctl_cmd, bytes(tmp_arg))
             ql.mem.write(ioctl_arg, data)
             regreturn = 0

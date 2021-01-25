@@ -170,10 +170,10 @@ def hook_MapVirtualKeyW(ql, address, params):
             return code
         else:
             ql.log.debug("Code value %x" % code_value)
-            raise QlErrorNotImplemented("[!] API not implemented")
+            raise QlErrorNotImplemented("API not implemented")
     else:
         ql.log.debug("Map value %x" % map_value)
-        raise QlErrorNotImplemented("[!] API not implemented")
+        raise QlErrorNotImplemented("API not implemented")
 
 
 # SHORT GetKeyState(
@@ -244,7 +244,7 @@ def hook_GetSystemMetrics(ql, address, params):
         return 300
     else:
         ql.log.debug("Info value %x" % info)
-        raise QlErrorNotImplemented("[!] API not implemented")
+        raise QlErrorNotImplemented("API not implemented")
 
 
 # HDC GetDC(
@@ -548,7 +548,7 @@ def hook_wsprintfW(ql, address, params):
 
     if ql.archtype == QL_ARCH.X8664:
         # We must pop the stack correctly
-        raise QlErrorNotImplemented("[!] API not implemented")
+        raise QlErrorNotImplemented("API not implemented")
 
     ql.mem.write(dst, (string + "\x00").encode("utf-16le"))
     return size
@@ -569,7 +569,7 @@ def hook_sprintf(ql, address, params):
 
     if ql.archtype == QL_ARCH.X8664:
         # We must pop the stack correctly
-        raise QlErrorNotImplemented("[!] API not implemented")
+        raise QlErrorNotImplemented("API not implemented")
 
     ql.mem.write(dst, (string + "\x00").encode("utf-16le"))
     return size
@@ -639,7 +639,7 @@ def hook_wsprintfA(ql, address, params):
 
     if ql.archtype== QL_ARCH.X8664:
         # We must pop the stack correctly
-        raise QlErrorNotImplemented("[!] API not implemented")
+        raise QlErrorNotImplemented("API not implemented")
 
     ql.mem.write(dst, (string + "\x00").encode("utf-8"))
     return size
@@ -660,7 +660,7 @@ def hook_MessageBoxW(ql, address, params):
         return IDYES
     else:
         ql.log.debug(type_box)
-        raise QlErrorNotImplemented("[!] API not implemented")
+        raise QlErrorNotImplemented("API not implemented")
 
 
 # int MessageBoxA(
@@ -708,7 +708,7 @@ def hook_GetWindowThreadProcessId(ql, address, params):
     if target == ql.os.profile.getint("KERNEL", "pid") or target == ql.os.profile.getint("KERNEL", "shell_pid"):
         pid = ql.os.profile.getint("KERNEL", "parent_pid")
     else:
-        raise QlErrorNotImplemented("[!] API not implemented")
+        raise QlErrorNotImplemented("API not implemented")
     dst = params["lpdwProcessId"]
     if dst != 0:
         ql.mem.write(dst, pid.to_bytes(4, "little"))

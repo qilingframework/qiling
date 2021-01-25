@@ -34,7 +34,7 @@ def hook_CryptStringToBinaryA(ql, address, params):
 
     size_dst = int.from_bytes(ql.mem.read(size_dst_pointer, 4), byteorder="little")
     if size_dst != 0 and size_dst < size_src:
-        raise QlErrorNotImplemented("[!] API not implemented")
+        raise QlErrorNotImplemented("API not implemented")
     if flag_src == CRYPT_STRING_BASE64:
         # Had a padding error, hope this always works
         add_pad = 4 - (len(string_src) % 4)
@@ -44,7 +44,7 @@ def hook_CryptStringToBinaryA(ql, address, params):
     else:
         ql.log.debug("Flag")
         ql.log.debug(flag_src)
-        raise QlErrorNotImplemented("[!] API not implemented")
+        raise QlErrorNotImplemented("API not implemented")
 
     if string_dst == 0:
         # Only wants the length

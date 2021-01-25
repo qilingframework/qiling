@@ -56,7 +56,7 @@ def ql_create_disassembler(archtype, archendian, reg_cpsr=None):
             md = Cs(CS_ARCH_MIPS, CS_MODE_MIPS32 + CS_MODE_LITTLE_ENDIAN)
 
     else:
-        raise QlErrorArch("[!] Unknown arch defined in utils.py (debug output mode)")
+        raise QlErrorArch("Unknown arch defined in utils.py (debug output mode)")
 
     return md
 
@@ -101,6 +101,6 @@ def ql_create_assembler(archtype, archendian, reg_cpsr=None):
             ks = Ks(KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_LITTLE_ENDIAN)
 
     else:
-        raise QlErrorArch("[!] Unknown arch defined in utils.py (debug output mode)")
+        raise QlErrorArch("Unknown arch defined in utils.py (debug output mode)")
 
     return ks

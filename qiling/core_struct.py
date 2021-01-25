@@ -35,7 +35,7 @@ class QlCoreStructs:
 		}
 
 		if bit not in handlers:
-			raise QlErrorStructConversion("[!] Unsupported Qiling struct conversion")
+			raise QlErrorStructConversion("Unsupported Qiling struct conversion")
 
 		p, ps, up, ups = handlers[bit]
 

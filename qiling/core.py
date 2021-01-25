@@ -122,9 +122,9 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         # file check
         if self._shellcoder is None:
             if not os.path.exists(str(self._argv[0])):
-                raise QlErrorFileNotFound("[!] Target binary not found")
+                raise QlErrorFileNotFound("Target binary not found")
             if not os.path.exists(self._rootfs):
-                raise QlErrorFileNotFound("[!] Target rootfs not found")
+                raise QlErrorFileNotFound("Target rootfs not found")
         
         self._path = (str(self._argv[0]))
         self._targetname = ntpath.basename(self._argv[0])
@@ -142,10 +142,10 @@ class Qiling(QlCoreHooks, QlCoreStructs):
                 self._archendian = guessed_archendian
 
             if not ql_is_valid_ostype(self._ostype):
-                raise QlErrorOsType("[!] Invalid OSType")
+                raise QlErrorOsType("Invalid OSType")
 
             if not ql_is_valid_arch(self._archtype):
-                raise QlErrorArch("[!] Invalid Arch %s" % self._archtype)
+                raise QlErrorArch("Invalid Arch %s" % self._archtype)
 
         self._loader = loader_setup(self._ostype, self)
 

@@ -111,10 +111,10 @@ class QlLoaderPE_UEFI(QlLoader):
 
         ql.mem.map(image_base, image_size, info="[module]")
         ql.mem.write(image_base, data)
-        ql.log.info(f'[+] Module {path} loaded to {image_base:#x}')
+        ql.log.info(f'Module {path} loaded to {image_base:#x}')
 
         entry_point = image_base + pe.OPTIONAL_HEADER.AddressOfEntryPoint
-        ql.log.info(f'[+] Module entry point at {entry_point:#x}')
+        ql.log.info(f'Module entry point at {entry_point:#x}')
 
         # the 'entry_point' member is used by the debugger. if not set, set it
         # to the first loaded module entry point so the debugger can break
@@ -207,11 +207,11 @@ class QlLoaderPE_UEFI(QlLoader):
     def run(self):
         # intel architecture uefi implementaion only
         if self.ql.archtype not in (QL_ARCH.X86, QL_ARCH.X8664):
-            raise QlErrorArch("[!] Unsupported architecture")
+            raise QlErrorArch("Unsupported architecture")
 
         # x86-64 arch only
         if self.ql.archtype != QL_ARCH.X8664:
-            raise QlErrorArch("[!] Only 64 bit arch is supported at the moment")
+            raise QlErrorArch("Only 64 bit arch is supported at the moment")
 
         self.loaded_image_protocol_guid = self.ql.os.profile["LOADED_IMAGE_PROTOCOL"]["guid"]
         self.loaded_image_protocol_modules = []
@@ -236,14 +236,14 @@ class QlLoaderPE_UEFI(QlLoader):
         heap_size = int(os_profile["heap_size"], 0)
         self.dxe_context.init_heap(heap_base, heap_size)
         self.heap_base_address = heap_base
-        self.ql.log.info(f"[+] Located heap at {heap_base:#010x}")
+        self.ql.log.info(f"Located heap at {heap_base:#010x}")
 
         # initialize and locate stack
         stack_base = int(os_profile["stack_address"], 0)
         stack_size = int(os_profile["stack_size"], 0)
         self.dxe_context.init_stack(stack_base, stack_size)
         sp = stack_base + stack_size - CPU_STACK_ALIGNMENT
-        self.ql.log.info(f"[+] Located stack at {sp:#010x}")
+        self.ql.log.info(f"Located stack at {sp:#010x}")
 
         # TODO: statically allocating 256 KiB for ST, RT, BS, DS and Configuration Tables.
         # however, this amount of memory is rather arbitrary
@@ -271,7 +271,7 @@ class QlLoaderPE_UEFI(QlLoader):
         heap_base = int(smm_profile["heap_address"], 0)
         heap_size = int(smm_profile["heap_size"], 0)
         self.smm_context.init_heap(heap_base, heap_size)
-        self.ql.log.info(f"[+] Located SMM heap at {heap_base:#010x}")
+        self.ql.log.info(f"Located SMM heap at {heap_base:#010x}")
 
         # TODO: statically allocating 256 KiB for SMM ST.
         # however, this amount of memory is rather arbitrary
@@ -312,7 +312,7 @@ class QlLoaderPE_UEFI(QlLoader):
         except QlMemoryMappedError:
             self.ql.log.critical("Couldn't map dependency")
 
-        self.ql.log.info(f"[+] Done with loading {self.ql.path}")
+        self.ql.log.info(f"Done with loading {self.ql.path}")
 
         # set up an end-of-execution hook to regain control when module is done
         # executing (i.e. when the entry point function returns). that should be

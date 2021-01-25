@@ -29,7 +29,7 @@ def _GetModuleHandle(ql, address, params):
         if lpModuleName in ql.loader.dlls:
             ret = ql.loader.dlls[lpModuleName]
         else:
-            ql.log.debug("[!] Library %s not imported" % lpModuleName)
+            ql.log.debug("Library %s not imported" % lpModuleName)
             ret = 0
     return ret
 
@@ -88,7 +88,7 @@ def hook_GetModuleFileNameA(ql, address, params):
         ql.mem.write(lpFilename, filename + b"\x00")
     else:
         ql.log.debug("hModule %x" % hModule)
-        raise QlErrorNotImplemented("[!] API not implemented")
+        raise QlErrorNotImplemented("API not implemented")
     return ret
 
 
@@ -115,7 +115,7 @@ def hook_GetModuleFileNameW(ql, address, params):
             ret = filename_len
         ql.mem.write(lpFilename, filename + b"\x00")
     else:
-        raise QlErrorNotImplemented("[!] API not implemented")
+        raise QlErrorNotImplemented("API not implemented")
     return ret
 
 
@@ -140,7 +140,7 @@ def hook_GetProcAddress(ql, address, params):
     try:
         dll_name = [key for key, value in ql.loader.dlls.items() if value == params['hModule']][0]
     except IndexError as ie:
-        ql.log.info('[!] Failed to import function "%s" with handle 0x%X' % (lpProcName, params['hModule']))
+        ql.log.info('Failed to import function "%s" with handle 0x%X' % (lpProcName, params['hModule']))
         return 0
 
     # Handle case where module is self
@@ -257,4 +257,4 @@ def hook_SetDefaultDllDirectories(ql, address, params):
     if value == LOAD_LIBRARY_SEARCH_USER_DIRS:
         # TODO we have to probably set an handler for this, since it can be a not default value.
         #  And we have to change the default path of load
-        raise QlErrorNotImplemented("[!] API not implemented")
+        raise QlErrorNotImplemented("API not implemented")

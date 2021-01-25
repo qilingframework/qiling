@@ -168,7 +168,7 @@ def ql_get_arch_bits(arch):
         return 32
     if arch in QL_ARCH_64BIT:
         return 64
-    raise QlErrorArch("[!] Invalid Arch")
+    raise QlErrorArch("Invalid Arch")
 
 def ql_is_valid_ostype(ostype):
     if ostype not in QL_OS_ALL:
@@ -259,12 +259,12 @@ def ql_get_module_function(module_name, function_name = None):
     try:
         imp_module = importlib.import_module(module_name)
     except Exception as ex:
-        raise QlErrorModuleNotFound("[!] Unable to import module %s (%s)" % (module_name, ex))
+        raise QlErrorModuleNotFound("Unable to import module %s (%s)" % (module_name, ex))
 
     try:
         module_function = getattr(imp_module, function_name)
     except:
-        raise QlErrorModuleFunctionNotFound("[!] Unable to import %s from %s" % (function_name, imp_module))
+        raise QlErrorModuleFunctionNotFound("Unable to import %s from %s" % (function_name, imp_module))
 
     return module_function
 
@@ -416,7 +416,7 @@ def ql_guess_emu_env(path):
         arch, ostype, archendian = ql_pe_parse_emu_env(path)
   
     if ostype not in (QL_OS_ALL):
-        raise QlErrorOsType("[!] File does not belong to either 'linux', 'windows', 'freebsd', 'macos', 'ios', 'dos'")
+        raise QlErrorOsType("File does not belong to either 'linux', 'windows', 'freebsd', 'macos', 'ios', 'dos'")
 
     return arch, ostype, archendian
 
@@ -447,7 +447,7 @@ def debugger_setup(debugger, ql):
             
         
         if debugger_convert(remotedebugsrv) not in (QL_DEBUGGER):
-            raise QlErrorOutput("[!] Error: Debugger not supported")
+            raise QlErrorOutput("Error: Debugger not supported")
         
     debugsession = ql_get_module_function(f"qiling.debugger.{remotedebugsrv}.{remotedebugsrv}", f"Ql{str.capitalize(remotedebugsrv)}")
 
@@ -455,7 +455,7 @@ def debugger_setup(debugger, ql):
 
 def arch_setup(archtype, ql):
     if not ql_is_valid_arch(archtype):
-        raise QlErrorArch("[!] Invalid Arch")
+        raise QlErrorArch("Invalid Arch")
     
     if archtype == QL_ARCH.ARM_THUMB:
         archtype =  QL_ARCH.ARM
@@ -479,10 +479,10 @@ def ql_syscall_mapping_function(ostype):
 
 def os_setup(archtype, ostype, ql):
     if not ql_is_valid_ostype(ostype):
-        raise QlErrorOsType("[!] Invalid OSType")
+        raise QlErrorOsType("Invalid OSType")
 
     if not ql_is_valid_arch(archtype):
-        raise QlErrorArch("[!] Invalid Arch %s" % archtype)
+        raise QlErrorArch("Invalid Arch %s" % archtype)
 
     ostype_str = ostype_convert_str(ostype)
     ostype_str = ostype_str.capitalize()
@@ -580,14 +580,14 @@ def verify_ret(ql, err):
         
         if ql.archtype == QL_ARCH.X8664: # Win64
             if ql.os.init_sp == ql.reg.arch_sp or ql.os.init_sp + 8 == ql.reg.arch_sp or ql.os.init_sp + 0x10 == ql.reg.arch_sp:  # FIXME
-                # [+] 0x11626	 c3	  	ret
+                # 0x11626	 c3	  	ret
                 # print("OK, stack balanced!")
                 pass
             else:
                 raise
         else:   # Win32
             if ql.os.init_sp + 12 == ql.reg.arch_sp:   # 12 = 8 + 4
-                # [+] 0x114dd	 c2 08 00	  	ret 	8
+                # 0x114dd	 c2 08 00	  	ret 	8
                 pass
             else:
                 raise

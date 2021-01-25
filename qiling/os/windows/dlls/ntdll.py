@@ -53,7 +53,7 @@ def _QueryInformationProcess(ql, address, params):
         value = addr.to_bytes(ql.pointersize, "little")
     else:
         ql.log.debug(str(flag))
-        raise QlErrorNotImplemented("[!] API not implemented")
+        raise QlErrorNotImplemented("API not implemented")
     ql.log.debug("[=] The target is checking the debugger via QueryInformationProcess ")
     ql.mem.write(dst, value)
     if pt_res != 0:
@@ -132,7 +132,7 @@ def _QuerySystemInformation(ql, address, params):
             return STATUS_INFO_LENGTH_MISMATCH
     else:
         ql.log.debug(str(siClass))
-        raise QlErrorNotImplemented("[!] API not implemented")
+        raise QlErrorNotImplemented("API not implemented")
 
 
     return STATUS_SUCCESS
@@ -211,7 +211,7 @@ def hook_ZwQueryObject(ql, address, params):
         # res = qiling.os.windows.structs.ObjectAllTypesInformation(ql, 2, oti)
         return 1
     else:
-        raise QlErrorNotImplemented("[!] API not implemented")
+        raise QlErrorNotImplemented("API not implemented")
     if dest != 0 and params["Handle"] != 0:
         res.write(dest)
     if size_dest != 0:
@@ -268,7 +268,7 @@ def _SetInformationProcess(ql, address, params):
         value = addr.to_bytes(ql.pointersize, "little")
     else:
         ql.log.debug(str(flag))
-        raise QlErrorNotImplemented("[!] API not implemented")
+        raise QlErrorNotImplemented("API not implemented")
 
     return STATUS_SUCCESS
 
@@ -299,7 +299,7 @@ def hook_LdrGetProcedureAddress(ql, address, params):
     try:
         dll_name = [key for key, value in ql.loader.dlls.items() if value == params['ModuleHandle']][0]
     except IndexError as ie:
-        ql.log.info('[!] Failed to import function "%s" with handle 0x%X' % (lpProcName, params['ModuleHandle']))
+        ql.log.info('Failed to import function "%s" with handle 0x%X' % (lpProcName, params['ModuleHandle']))
         return 0
 
     if identifier in ql.loader.import_address_table[dll_name]:

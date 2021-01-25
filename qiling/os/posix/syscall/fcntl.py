@@ -42,12 +42,12 @@ def ql_syscall_open(ql, filename, flags, mode, *args, **kw):
             regreturn = - e.errno
 
     ql.log.info("open(%s, 0x%x, 0o%o) = %d" % (relative_path, flags, mode, regreturn))
-    ql.log.debug("[+] open(%s, %s, 0o%o) = %d" % (relative_path, open_flags_mapping(flags, ql.archtype), mode, regreturn))
+    ql.log.debug("open(%s, %s, 0o%o) = %d" % (relative_path, open_flags_mapping(flags, ql.archtype), mode, regreturn))
 
     if regreturn >= 0 and regreturn != 2:
-        ql.log.debug("[+] File Found: %s" % real_path)
+        ql.log.debug("File Found: %s" % real_path)
     else:
-        ql.log.debug("[!] File Not Found %s" % real_path)
+        ql.log.debug("File Not Found %s" % real_path)
     return regreturn
 
 
@@ -82,13 +82,13 @@ def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *ar
             regreturn = -1
 
     ql.log.info("openat(%d, %s, 0x%x, 0o%o) = %d" % (openat_fd, relative_path, openat_flags, openat_mode, regreturn))
-    ql.log.debug("[+] openat(%d, %s, %s, 0o%o) = %d" % (
+    ql.log.debug("openat(%d, %s, %s, 0o%o) = %d" % (
     openat_fd, relative_path, open_flags_mapping(openat_flags, ql.archtype), openat_mode, regreturn))
 
     if regreturn >= 0 and regreturn != 2:
-        ql.log.debug("[+] File Found: %s" % real_path)
+        ql.log.debug("File Found: %s" % real_path)
     else:
-        ql.log.debug("[!] File Not Found %s" % real_path)
+        ql.log.debug("File Not Found %s" % real_path)
     return regreturn
 
 

@@ -19,7 +19,7 @@ def hook_EndOfExecution(ql):
         if ql.loader.unload_modules():
             return
 
-        ql.log.info(f'[+] No more modules to run')
+        ql.log.info(f'No more modules to run')
         ql.emu_stop()
     else:
         ql.loader.execute_next_module()

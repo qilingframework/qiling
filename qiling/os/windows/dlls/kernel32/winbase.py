@@ -301,7 +301,7 @@ def compare(p1, operator, p2):
     elif operator == "<=":
         return p1 <= p2
     else:
-        raise QlErrorNotImplemented("[!] API not implemented")
+        raise QlErrorNotImplemented("API not implemented")
 
 
 # typedef struct _OSVERSIONINFOEXA {
@@ -344,7 +344,7 @@ def hook_VerifyVersionInfoW(ql, address, params):
         elif value == VER_LESS_EQUAL:
             operator = "<="
         else:
-            raise QlErrorNotImplemented("[!] API not implemented with operator %d" % value)
+            raise QlErrorNotImplemented("API not implemented with operator %d" % value)
         # Versions should be compared together
         if key == VER_MAJORVERSION or key == VER_MINORVERSION or key == VER_PRODUCT_TYPE:
             major_version_asked = os_asked.major[0]
@@ -357,7 +357,7 @@ def hook_VerifyVersionInfoW(ql, address, params):
                 ql.log.debug("[=] The Target is checking the windows Version!")
                 version_asked = SYSTEMS_VERSION.get(concat, None)
                 if version_asked is None:
-                    raise QlErrorNotImplemented("[!] API not implemented for version %s" % concat)
+                    raise QlErrorNotImplemented("API not implemented for version %s" % concat)
                 else:
                     ql.log.debug("[=] The target asks for version %s %s" % (operator, version_asked))
             # We can finally compare
@@ -368,7 +368,7 @@ def hook_VerifyVersionInfoW(ql, address, params):
         elif key == VER_SERVICEPACKMAJOR:
             res = compare(ql.os.profile.getint("SYSTEM", "VER_SERVICEPACKMAJOR"), operator, os_asked.service_major[0])
         else:
-            raise QlErrorNotImplemented("[!] API not implemented for key %s" % key)
+            raise QlErrorNotImplemented("API not implemented for key %s" % key)
         # The result is a AND between every value, so if we find a False we just exit from the loop
         if not res:
             ql.os.last_error = ERROR_OLD_WIN_VERSION

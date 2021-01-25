@@ -23,7 +23,7 @@ def ql_syscall_set_thread_area(ql, u_info_addr, *args, **kw):
         base = ql.unpack32(u_info[4 : 8])
         limit = ql.unpack32(u_info[8 : 12])
 
-        ql.log.debug("[+] set_thread_area base : 0x%x limit is : 0x%x" % (base, limit))
+        ql.log.debug("set_thread_area base : 0x%x limit is : 0x%x" % (base, limit))
 
         if index == -1:
             index = ql.os.gdtm.get_free_idx(12)

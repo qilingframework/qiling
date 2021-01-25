@@ -54,7 +54,7 @@ class HookIntr(Hook):
     
 
     def check(self, ql, intno):
-        ql.log.debug("[+] Received Interupt: %i Hooked Interupt: %i" % (intno, self.intno))
+        ql.log.debug("Received Interupt: %i Hooked Interupt: %i" % (intno, self.intno))
         if intno < 0 or self.intno == intno:
             return True
         return False

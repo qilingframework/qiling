@@ -270,7 +270,7 @@ def linux_kernel_api(param_num=None, params=None):
             elif ql.archtype == QL_ARCH.MIPS:
                 return mips_call(ql, param_num, params, func, args, kwargs)
             else:
-                raise QlErrorArch("[!] Unknown ql.archtype")
+                raise QlErrorArch("Unknown ql.archtype")
         return wrapper
     return decorator
 

@@ -33,11 +33,11 @@ def hook_kernel_api(ql, address, size):
                 raise
             except Exception:
                 ql.log.exception("")
-                ql.log.debug("[!] %s Exception Found" % api_name)
-                raise QlErrorSyscallError("[!] MacOS kernel API Implementation Error")
+                ql.log.debug("%s Exception Found" % api_name)
+                raise QlErrorSyscallError("MacOS kernel API Implementation Error")
         else:
-            ql.log.info("[!] %s is not implemented\n" % api_name)
+            ql.log.info("%s is not implemented\n" % api_name)
             if ql.debug_stop:
-                raise QlErrorSyscallNotFound("[!] MacOS kernel API Implementation Not Found")
+                raise QlErrorSyscallNotFound("MacOS kernel API Implementation Not Found")
 
 

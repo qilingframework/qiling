@@ -25,7 +25,7 @@ def syscall_getrandom(ql, buf, buflen, flags, *args, **kw):
               (buf, buflen, flags, regreturn))
 
     if data:
-        ql.log.debug("[+] getrandom() CONTENT:")
+        ql.log.debug("getrandom() CONTENT:")
         ql.log.debug(str(data))
     return regreturn
 
@@ -46,7 +46,7 @@ def syscall_fstatfs(ql, fd, buf, *args, **kw):
     ql.log.info("fstatfs(0x%x, 0x%x) = %d" % (fd, buf, regreturn))
 
     if data:
-        ql.log.debug("[+] fstatfs() CONTENT:")
+        ql.log.debug("fstatfs() CONTENT:")
         ql.log.debug(str(data))
     return regreturn
 

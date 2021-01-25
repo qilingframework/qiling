@@ -180,13 +180,13 @@ class QlOsPosix(QlOs):
                 raise
             except Exception as e:
                 self.ql.log.exception("")
-                self.ql.log.info("[!] Syscall ERROR: %s DEBUG: %s" % (self.syscall_name, e))
+                self.ql.log.info("Syscall ERROR: %s DEBUG: %s" % (self.syscall_name, e))
                 raise e
         else:
             self.ql.log.warning(
-                "[!] 0x%x: syscall %s number = 0x%x(%d) not implemented" % (self.ql.reg.arch_pc, syscall_name_str, self.syscall, self.syscall))
+                "0x%x: syscall %s number = 0x%x(%d) not implemented" % (self.ql.reg.arch_pc, syscall_name_str, self.syscall, self.syscall))
             if self.ql.debug_stop:
-                raise QlErrorSyscallNotFound("[!] Syscall Not Found")
+                raise QlErrorSyscallNotFound("Syscall Not Found")
 
     # get syscall
     def get_syscall(self):

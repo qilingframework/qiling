@@ -157,7 +157,7 @@ class QlOsUtils:
 
         # Sanity check.
         if cur_path[0] != '/':
-            self.ql.log.info(f"[!] Warning: cur_path doesn't start with a /")
+            self.ql.log.info(f"Warning: cur_path doesn't start with a /")
         
         rootfs = self.ql.rootfs
         real_path  = self.convert_path(rootfs, cur_path, path)
@@ -174,7 +174,7 @@ class QlOsUtils:
 
         # Sanity check.
         if cur_path[0] != '/':
-            self.ql.log.info(f"[!] Warning: cur_path must start with /")
+            self.ql.log.info(f"Warning: cur_path must start with /")
 
         rootfs = self.ql.rootfs
         real_path = self.convert_path(rootfs, cur_path, path)
@@ -196,17 +196,17 @@ class QlOsUtils:
         return str(Path(cur_path) / path)
 
     def post_report(self):
-        self.ql.log.debug("[+] Syscalls called")
+        self.ql.log.debug("Syscalls called")
         for key, values in self.ql.os.syscalls.items():
             self.ql.log.debug("[-] %s:" % key)
             for value in values:
                 self.ql.log.debug("[-] %s " % str(dumps(value)))
-        self.ql.log.debug("[+] Registries accessed")
+        self.ql.log.debug("Registries accessed")
         for key, values in self.ql.os.registry_manager.accessed.items():
             self.ql.log.debug("[-] %s:" % key)
             for value in values:
                 self.ql.log.debug("[-] %s " % str(dumps(value)))
-        self.ql.log.debug("[+] Strings")
+        self.ql.log.debug("Strings")
         for key, values in self.ql.os.appeared_strings.items():
             val = " ".join([str(word) for word in values])
             self.ql.log.debug("[-] %s: %s" % (key, val))
@@ -219,7 +219,7 @@ class QlOsUtils:
         ret = self.ql.stack_read(0)
 
         def restore(ql):
-            self.ql.log.debug(f"[+] Executed code from 0x{start:x} to 0x{end:x}")
+            self.ql.log.debug(f"Executed code from 0x{start:x} to 0x{end:x}")
             # now we can restore the register to be where we were supposed to
             old_hook_addr = ql.reg.arch_pc
             ql.reg.arch_sp = old_sp + (ql.archbit // 8)
@@ -274,7 +274,7 @@ class QlOsUtils:
 
     def setup_output(self):
         def ql_hook_block_disasm(ql, address, size):
-            self.ql.log.info("\n[+] Tracing basic block at 0x%x" % (address))
+            self.ql.log.info("\nTracing basic block at 0x%x" % (address))
 
         if self._disasm_hook:
             self._disasm_hook.remove()

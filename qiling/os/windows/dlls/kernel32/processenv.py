@@ -81,7 +81,7 @@ def hook_ExpandEnvironmentStringsW(ql, address, params):
     result = ql.os.profile["PATH"].get(substring, None)
     if result is None:
         ql.log.debug(substring)
-        raise QlErrorNotImplemented("[!] API not implemented")
+        raise QlErrorNotImplemented("API not implemented")
     result = (string[:start] + result + string[end + 1:] + "\x00").encode("utf-16le")
     dst = params["lpDst"]
     max_size = params["nSize"]

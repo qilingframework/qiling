@@ -54,7 +54,7 @@ def winsdkapi(cc, param_num=None, dllname=None, replace_params_type=None, replac
                     with open(winsdk_path, 'r') as f:
                         funclist = json.load(f)
                 else:
-                    ql.log.info('[!] %s not found', winsdk_path)
+                    ql.log.info('%s not found', winsdk_path)
                 if funcname not in funclist:
                     params = replace_params
                 else:
@@ -94,7 +94,7 @@ def winsdkapi(cc, param_num=None, dllname=None, replace_params_type=None, replac
             elif ql.archtype == QL_ARCH.X8664:
                 return ql.os.x8664_fastcall(param_num, params, func, args, kwargs, passthru)
             else:
-                raise QlErrorArch("[!] Unknown self.ql.arch")
+                raise QlErrorArch("Unknown self.ql.arch")
         return wrapper
 
     return decorator

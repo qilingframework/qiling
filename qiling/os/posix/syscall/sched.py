@@ -124,7 +124,7 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
     th.save()
     if th is None or f_th is None:
         raise Exception()
-    ql.log.debug("[+] Currently running pid is: %d; tid is: %d " % (
+    ql.log.debug("Currently running pid is: %d; tid is: %d " % (
     os.getpid(), ql.os.thread_management.cur_thread.id))
     ql.log.info("clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d" % (
     clone_child_stack, clone_flags, clone_newtls, clone_parent_tidptr, clone_child_tidptr, regreturn))
@@ -138,7 +138,7 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
     f_th.stop_event = THREAD_EVENT_CREATE_THREAD
     f_th.stop_return_val = th
 
-    ql.log.debug("[+] Currently running pid is: %d; tid is: %d " % (
+    ql.log.debug("Currently running pid is: %d; tid is: %d " % (
     os.getpid(), ql.os.thread_management.cur_thread.id))
     ql.log.info("clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d" % (
     clone_child_stack, clone_flags, clone_newtls, clone_parent_tidptr, clone_child_tidptr, regreturn))

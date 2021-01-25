@@ -114,7 +114,7 @@ class QlMacOSEvManager:
     def add_process(self, pid, name):
         for p in self.my_procs:
             if p.p_pid == pid:
-                self.ql.log.info("[!] Duplicated process")
+                self.ql.log.info("Duplicated process")
                 return
 
         cur_proc_addr = self.ql.os.heap.alloc(ctypes.sizeof(proc_t))
@@ -208,7 +208,7 @@ class QlMacOSEvManager:
     def emit(self, ev_name, ev_type, params):
         found = self.get_event_by_name_and_type(ev_name, ev_type)
         if found is None:
-            self.ql.log.info("[!] No callbacks found for (%s, %s)" % (ev_name, ev_type))
+            self.ql.log.info("No callbacks found for (%s, %s)" % (ev_name, ev_type))
             return
 
         found.set_params(params)

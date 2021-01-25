@@ -44,7 +44,7 @@ def hook_SHGetFileInfoW(ql, address, params):
         return 1
     else:
         ql.log.debug(flags)
-        raise QlErrorNotImplemented("[!] API not implemented")
+        raise QlErrorNotImplemented("API not implemented")
 
 
 def _ShellExecute(ql, obj: ShellExecuteInfoA):
@@ -116,17 +116,17 @@ def hook_SHGetSpecialFolderPathW(ql, address, params):
         path = str(ql.os.userprofile + "AppData\\")
         # We always create the directory
         appdata_dir = path.split("C:\\")[1].replace("\\", "/")
-        ql.log.debug("[+] dir path: %s" % path)
+        ql.log.debug("dir path: %s" % path)
         path_emulated = os.path.join(ql.rootfs, appdata_dir)
-        ql.log.debug("[!] emulated path: %s" % path_emulated)
+        ql.log.debug("emulated path: %s" % path_emulated)
         ql.mem.write(dst, (path + "\x00").encode("utf-16le"))
         # FIXME: Somehow winodws path is wrong
         if not os.path.exists(path_emulated):
             try:
                 os.makedirs(path_emulated, 0o755)
-                ql.log.debug("[!] os.makedirs completed")
+                ql.log.debug("os.makedirs completed")
             except OSError:
-                ql.log.debug("[!] os.makedirs fail")
+                ql.log.debug("os.makedirs fail")
     else:
-        raise QlErrorNotImplemented("[!] API not implemented")
+        raise QlErrorNotImplemented("API not implemented")
     return 1

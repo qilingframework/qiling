@@ -17,10 +17,10 @@ def _RegOpenKey(ql, address, params):
     hKey = params["hKey"]
     s_lpSubKey = params["lpSubKey"]
     phkResult = params["phkResult"]
-    ql.log.debug("[+] Key %s %s" % (hKey, s_lpSubKey))
+    ql.log.debug("Key %s %s" % (hKey, s_lpSubKey))
 
     if hKey not in REG_KEYS:
-        ql.log.debug("[!] Key %s %s not present" % (hKey, s_lpSubKey))
+        ql.log.debug("Key %s %s not present" % (hKey, s_lpSubKey))
         return ERROR_FILE_NOT_FOUND
     else:
         s_hKey = REG_KEYS[hKey]
@@ -29,11 +29,11 @@ def _RegOpenKey(ql, address, params):
     # Keys in the profile are saved as KEY\PARAM = VALUE, so i just want to check that the key is the same
     keys_profile = [key.rsplit("\\", 1)[0] for key in ql.os.profile["REGISTRY"].keys()]
     if key.lower() in keys_profile:
-        ql.log.debug("[+] Using profile for key of  %s" % key)
+        ql.log.debug("Using profile for key of  %s" % key)
         ql.os.registry_manager.access(key)
     else:
         if not ql.os.registry_manager.exists(key):
-            ql.log.debug("[!] Value key %s not present" % key)
+            ql.log.debug("Value key %s not present" % key)
             return ERROR_FILE_NOT_FOUND
 
     # new handle
@@ -62,7 +62,7 @@ def RegQueryValue(ql, address, params):
     try:
         # Keys in the profile are saved as KEY\PARAM = VALUE, so i just want to check that the key is the same
         value = ql.os.profile["REGISTRY"][s_hKey + "\\" + s_lpValueName]
-        ql.log.debug("[+] Using profile for value of key %s" % (s_hKey + "\\" + s_lpValueName,))
+        ql.log.debug("Using profile for value of key %s" % (s_hKey + "\\" + s_lpValueName,))
         # TODO i have no fucking idea on how to set a None value, fucking configparser
         if value == "None":
             return ERROR_FILE_NOT_FOUND
@@ -76,7 +76,7 @@ def RegQueryValue(ql, address, params):
 
     # error key
     if reg_type is None or value is None:
-        ql.log.debug("[!] Key value not found")
+        ql.log.debug("Key value not found")
         return ERROR_FILE_NOT_FOUND
     else:
         # set lpData
@@ -416,7 +416,7 @@ def hook_GetTokenInformation(ql, address, params):
         ql.mem.write(dst, information_value)
         return 1
     else:
-        raise QlErrorNotImplemented("[!] API not implemented")
+        raise QlErrorNotImplemented("API not implemented")
 
 
 # PUCHAR GetSidSubAuthorityCount(

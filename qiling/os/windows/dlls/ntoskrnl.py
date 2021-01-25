@@ -63,7 +63,7 @@ def hook_ZwSetInformationThread(ql, address, params):
             if dst != 0:
                 ql.mem.write(dst, 0x0.to_bytes(1, byteorder="little"))
         else:
-            raise QlErrorNotImplemented("[!] API not implemented %d " %
+            raise QlErrorNotImplemented("API not implemented %d " %
                                         information)
 
     else:

@@ -19,7 +19,7 @@ from .structs import UNICODE_STRING32, UNICODE_STRING64
 
 
 def ql_x86_windows_hook_mem_error(ql, access, addr, size, value):
-    ql.log.debug("[+] ERROR: unmapped memory access at 0x%x" % addr)
+    ql.log.debug("ERROR: unmapped memory access at 0x%x" % addr)
     return False
 
 

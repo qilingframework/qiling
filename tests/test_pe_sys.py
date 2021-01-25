@@ -193,7 +193,7 @@ class PETest(unittest.TestCase):
         ql.os.set_function_args([0])
         ql.hook_address(hook_second_stop_address, 0x4055FA)
         ql.run(begin=0x4053B2)
-        print("[+] test kill thread")
+        print("test kill thread")
         if ql.amsint32_driver:
             ql.amsint32_driver.os.io_Write(ql.pack32(0xdeadbeef))
             

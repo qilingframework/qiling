@@ -318,13 +318,13 @@ class QlOsDos(QlOs):
             # read on the next call to getch.
             ch = self._get_ch_non_blocking()
             if ch == curses.KEY_RESIZE:
-                self.ql.log.info(f"[!] You term has been resized!")
+                self.ql.log.info(f"You term has been resized!")
             elif ch != -1:
                 curses.ungetch(ch)
             self.stdscr.scrollok(True)
                 
             if not curses.has_colors():
-                self.ql.log.info(f"[!] Warning: your terminal doesn't support colors, content might not be displayed correctly.")
+                self.ql.log.info(f"Warning: your terminal doesn't support colors, content might not be displayed correctly.")
             
             # https://en.wikipedia.org/wiki/BIOS_color_attributes
             # blink support?
@@ -365,8 +365,8 @@ class QlOsDos(QlOs):
             cy, cx = self.stdscr.getyx()
             attr = self._get_attr(fg, bg)
             if ch != 0 or cl != 0 or dh != y - 1 or dl != x - 1:
-                self.ql.log.info(f"[!] Warning: Partial scroll is unsupported. Will scroll the whole page.")
-                self.ql.log.info(f"[!] Resolution: {y}x{x} but asked to scroll [({ch},{cl}),({dh}, {dl})]")
+                self.ql.log.info(f"Warning: Partial scroll is unsupported. Will scroll the whole page.")
+                self.ql.log.info(f"Resolution: {y}x{x} but asked to scroll [({ch},{cl}),({dh}, {dl})]")
             if al != 0:
                 self.stdscr.scroll(al)
                 ny = 0
@@ -444,7 +444,7 @@ class QlOsDos(QlOs):
             sector = self.ql.reg.cx & 63
             head = self.ql.reg.dh
             if not self.ql.os.fs_mapper.has_mapping(idx):
-                self.ql.log.info(f"[!] Warning: No such disk: {hex(idx)}")
+                self.ql.log.info(f"Warning: No such disk: {hex(idx)}")
                 self.ql.reg.ah = INT13DiskError.BadCommand.value
                 self.set_cf()
                 return
@@ -458,7 +458,7 @@ class QlOsDos(QlOs):
             # https://stanislavs.org/helppc/int_13-8.html
             idx = self.ql.reg.dl
             if not self.ql.os.fs_mapper.has_mapping(idx):
-                self.ql.log.info(f"[!] Warning: No such disk: {hex(idx)}")
+                self.ql.log.info(f"Warning: No such disk: {hex(idx)}")
                 self.ql.reg.ah = INT13DiskError.BadCommand.value
                 self.set_cf()
                 return
@@ -497,7 +497,7 @@ class QlOsDos(QlOs):
             _, _, cnt, offset, segment, lba = self._parse_dap(dapbs)
             self.ql.log.info(f"Reading {cnt} sectors from disk {hex(idx)} with LBA {lba}")
             if not self.ql.os.fs_mapper.has_mapping(idx):
-                self.ql.log.info(f"[!] Warning: No such disk: {hex(idx)}")
+                self.ql.log.info(f"Warning: No such disk: {hex(idx)}")
                 self.ql.reg.ah = INT13DiskError.BadCommand.value
                 self.set_cf()
                 return
@@ -512,7 +512,7 @@ class QlOsDos(QlOs):
             _, _, cnt, offset, segment, lba = self._parse_dap(dapbs)
             self.ql.log.info(f"Write {cnt} sectors to disk {hex(idx)} with LBA {lba}")
             if not self.ql.os.fs_mapper.has_mapping(idx):
-                self.ql.log.info(f"[!] Warning: No such disk: {hex(idx)}")
+                self.ql.log.info(f"Warning: No such disk: {hex(idx)}")
                 self.ql.reg.ah = INT13DiskError.BadCommand.value
                 self.set_cf()
                 return
@@ -540,7 +540,7 @@ class QlOsDos(QlOs):
             self.clear_cf()
         elif ax == 0x5307:
             if self.ql.reg.bx == 1 and self.ql.reg.cx == 3:
-                self.ql.log.info("[+] Emulation Stop")
+                self.ql.log.info("Emulation Stop")
                 self.ql.uc.emu_stop()
         elif ah == 0x86:
             dx = self.ql.reg.dx
@@ -568,7 +568,7 @@ class QlOsDos(QlOs):
         if ch in SCANCODES:
             return SCANCODES[ch]
         else:
-            self.ql.log.info(f"[!] Warning: scan code for {hex(ch)} doesn't exist!")
+            self.ql.log.info(f"Warning: scan code for {hex(ch)} doesn't exist!")
             return 0
 
     def int16(self):
@@ -673,7 +673,7 @@ class QlOsDos(QlOs):
         
         # exit
         if ah == 0x4C:
-            self.ql.log.info("[+] Emulation Stop")
+            self.ql.log.info("Emulation Stop")
             self.ql.uc.emu_stop()
         # character output
         elif ah == 0x2 or ah == 0x6:

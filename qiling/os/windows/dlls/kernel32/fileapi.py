@@ -33,7 +33,7 @@ def hook_GetFileType(ql, address, params):
     else:
         obj = ql.os.handle_manager.get(hFile)
         if obj is None:
-            raise QlErrorNotImplemented("[!] API not implemented")
+            raise QlErrorNotImplemented("API not implemented")
         else:
             # technically is not always a type_char but.. almost
             ret = FILE_TYPE_CHAR
@@ -365,7 +365,7 @@ def hook_GetVolumeInformationW(ql, address, params):
             system_type = (ql.os.profile["VOLUME"]["type"] + "\x00").encode("utf-16le")
             ql.mem.write(pt_system_type, system_type)
     else:
-        raise QlErrorNotImplemented("[!] API not implemented")
+        raise QlErrorNotImplemented("API not implemented")
     return 1
 
 
@@ -380,7 +380,7 @@ def hook_GetDriveTypeW(ql, address, params):
             return DRIVE_FIXED
         # TODO add configuration for drives
     else:
-        raise QlErrorNotImplemented("[!] API not implemented")
+        raise QlErrorNotImplemented("API not implemented")
     return DRIVE_NO_ROOT_DIR
 
 
@@ -408,7 +408,7 @@ def hook_GetDiskFreeSpaceW(ql, address, params):
         ql.mem.write(pt_free_clust, free_clust)
         ql.mem.write(pt_total_clust, total_clust)
     else:
-        raise QlErrorNotImplemented("[!] API not implemented")
+        raise QlErrorNotImplemented("API not implemented")
     return 0
 
 

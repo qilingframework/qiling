@@ -131,13 +131,13 @@ class QlMemoryManager:
                     perms_sym.append("-")
             return "".join(perms_sym)
 
-        ql.log.info("[+] Start      End        Perm.  Path")
+        ql.log.info("Start      End        Perm.  Path")
         for  start, end, perm, info in self.map_info:
             _perm = _perms_mapping(perm)
             image = self.ql.os.find_containing_image(start)
             if image:
                 info += f" ({image.path})"
-            ql.log.info("[+] %08x - %08x - %s    %s" % (start, end, _perm, info))
+            ql.log.info("%08x - %08x - %s    %s" % (start, end, _perm, info))
 
 
     def get_lib_base(self, filename):
@@ -324,7 +324,7 @@ class QlMemoryManager:
             # address is free
             if addr + size < max_gap_addr and self.is_mapped(addr, size) == False:
                 return addr
-        raise QlOutOfMemory("[!] Out Of Memory")
+        raise QlOutOfMemory("Out Of Memory")
 
 
     def map_anywhere(
@@ -395,7 +395,7 @@ class QlMemoryManager:
                 self.ql.uc.mem_map(addr, size, perms)
                 self.add_mapinfo(addr, addr + size, perms, info if info else "[mapped]")
             else:
-                raise QlMemoryMappedError("[!] Memory Mapped")    
+                raise QlMemoryMappedError("Memory Mapped")    
         else:
             self.ql.uc.mem_map_ptr(addr, size, perms, ptr)
 

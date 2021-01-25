@@ -78,7 +78,7 @@ class QlArchARM(QlArch):
             #self.ql.reg.fpexc = 0x00000040
         else:
             self.ql.reg.fpexc = 0x40000000
-        self.ql.log.debug("[+] Enable ARM VFP")
+        self.ql.log.debug("Enable ARM VFP")
 
 
     def check_thumb(self):
@@ -92,5 +92,5 @@ class QlArchARM(QlArch):
         mode = UC_MODE_ARM
         if (reg_cpsr & reg_cpsr_v) != 0:
             mode = UC_MODE_THUMB
-            self.ql.log.debug("[+] Enable ARM THUMB")
+            self.ql.log.debug("Enable ARM THUMB")
         return mode
