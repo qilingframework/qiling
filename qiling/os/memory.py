@@ -131,13 +131,13 @@ class QlMemoryManager:
                     perms_sym.append("-")
             return "".join(perms_sym)
 
-        ql.log.info("[+] Start      End        Perm.  Path")
+        self.ql.log.info("[+] Start      End        Perm.  Path")
         for  start, end, perm, info in self.map_info:
             _perm = _perms_mapping(perm)
             image = self.ql.os.find_containing_image(start)
             if image:
                 info += f" ({image.path})"
-            ql.log.info("[+] %08x - %08x - %s    %s" % (start, end, _perm, info))
+            self.ql.log.info("[+] %08x - %08x - %s    %s" % (start, end, _perm, info))
 
 
     def get_lib_base(self, filename):
