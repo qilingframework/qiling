@@ -52,5 +52,5 @@ def hook_RtlGetVersion(ql, address, params):
         ql.os.profile.getint("SYSTEM",
                              "minorVersion").to_bytes(4, byteorder="little"))
 
-    ql.log.debug("[=] The sample is checking the windows Version!")
+    ql.log.debug("The sample is checking the windows Version!")
     return STATUS_SUCCESS

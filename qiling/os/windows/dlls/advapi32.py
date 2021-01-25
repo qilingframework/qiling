@@ -408,7 +408,7 @@ def hook_GetTokenInformation(ql, address, params):
     information_value = token.get(information)
     ql.mem.write(return_point, len(information_value).to_bytes(4, byteorder="little"))
     return_size = int.from_bytes(ql.mem.read(return_point, 4), byteorder="little")
-    ql.log.debug("[=] The target is checking for its permissions")
+    ql.log.debug("The target is checking for its permissions")
     if return_size > max_size:
         ql.os.last_error = ERROR_INSUFFICIENT_BUFFER
         return 0

@@ -54,7 +54,7 @@ def _QueryInformationProcess(ql, address, params):
     else:
         ql.log.debug(str(flag))
         raise QlErrorNotImplemented("API not implemented")
-    ql.log.debug("[=] The target is checking the debugger via QueryInformationProcess ")
+    ql.log.debug("The target is checking the debugger via QueryInformationProcess ")
     ql.mem.write(dst, value)
     if pt_res != 0:
         ql.mem.write(pt_res, 0x8.to_bytes(1, byteorder="little"))
@@ -248,9 +248,9 @@ def _SetInformationProcess(ql, address, params):
     elif flag == ProcessDebugObjectHandle:
         return STATUS_PORT_NOT_SET
     elif flag == ProcessBreakOnTermination:
-            ql.log.debug("[=] The target may be attempting modify a the 'critical' flag of the process")  
+            ql.log.debug("The target may be attempting modify a the 'critical' flag of the process")  
     elif flag  == ProcessExecuteFlags:
-        ql.log.debug("[=] The target may be attempting to modify DEP for the process")
+        ql.log.debug("The target may be attempting to modify DEP for the process")
         if dst != 0:
             ql.mem.write(dst, 0x0.to_bytes(1, byteorder="little"))
 
@@ -262,7 +262,7 @@ def _SetInformationProcess(ql, address, params):
             uniqueId=ql.os.profile.getint("KERNEL", "pid"),
             parentPid=ql.os.profile.geting("KERNEL", "parent_pid")
         )
-        ql.log.debug("[=] The target may be attempting to modify the PEB debug flag")
+        ql.log.debug("The target may be attempting to modify the PEB debug flag")
         addr = ql.os.heap.alloc(pbi.size)
         pbi.write(addr)
         value = addr.to_bytes(ql.pointersize, "little")

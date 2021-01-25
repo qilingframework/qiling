@@ -248,9 +248,9 @@ class PETest(unittest.TestCase):
         def results(ql):
 
             if ql.reg.ebx == 1:
-                print("[=] BAD")
+                print("BAD")
             else:
-                print("[=] GOOD ")
+                print("GOOD ")
             ql.reg.eip = 0x402ee4
 
         #ql.hook_address(results, 0x00402e66)

@@ -37,7 +37,7 @@ def hook_RtlGetVersion(ql, address, params):
     os.major[0] = ql.os.profile.getint("SYSTEM", "majorVersion")
     os.minor[0] = ql.os.profile.getint("SYSTEM", "minorVersion")
     os.write(pointer)
-    ql.log.debug("[=] The target is checking the windows Version!")
+    ql.log.debug("The target is checking the windows Version!")
     return STATUS_SUCCESS
 
 
@@ -59,7 +59,7 @@ def hook_ZwSetInformationThread(ql, address, params):
         if size >= 100:
             return STATUS_INFO_LENGTH_MISMATCH
         if information == ThreadHideFromDebugger:
-            ql.log.debug("[=] The target is checking debugger via SetInformationThread")
+            ql.log.debug("The target is checking debugger via SetInformationThread")
             if dst != 0:
                 ql.mem.write(dst, 0x0.to_bytes(1, byteorder="little"))
         else:

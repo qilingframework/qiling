@@ -354,12 +354,12 @@ def hook_VerifyVersionInfoW(ql, address, params):
 
             # Just a print for analysts, will remove it from here in the future
             if key == VER_MAJORVERSION:
-                ql.log.debug("[=] The Target is checking the windows Version!")
+                ql.log.debug("The Target is checking the windows Version!")
                 version_asked = SYSTEMS_VERSION.get(concat, None)
                 if version_asked is None:
                     raise QlErrorNotImplemented("API not implemented for version %s" % concat)
                 else:
-                    ql.log.debug("[=] The target asks for version %s %s" % (operator, version_asked))
+                    ql.log.debug("The target asks for version %s %s" % (operator, version_asked))
             # We can finally compare
             qiling_os = str(ql.os.profile.get("SYSTEM", "majorVersion")) + str(
                 ql.os.profile.get("SYSTEM", "minorVersion")) + str(
