@@ -8,11 +8,10 @@ from qiling import *
 
 
 def run_sandbox(path, rootfs, output):
-    ql = Qiling(path, rootfs, output = output)
-    ql.multithread = False
-    ql.debugger = "qdb:rr" # switch on record and replay with rr
-    # ql.debugger = "qdb:" # enable qdb without options
-    # ql.debugger = "qdb:0x1030c" # enable qdb and setup breakpoin at 0x1030c
+    ql = Qiling(path, rootfs, output = output, multithread=True)
+    # ql.debugger = "qdb::rr" # switch on record and replay with rr
+    # ql.debugger = "qdb" # enable qdb without options
+    ql.debugger = "qdb:0x1030c" # enable qdb and setup breakpoin at 0x1030c
     ql.run()
 
 
