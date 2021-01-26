@@ -7,41 +7,52 @@ import math, copy, os
 from contextlib import contextmanager
 
 from qiling.const import QL_ARCH
-from .utils import dump_regs, get_arm_flags
-
-# class for colorful prints
-class color:
-   CYAN      = '\033[96m'
-   PURPLE    = '\033[95m'
-   BLUE      = '\033[94m'
-   YELLOW    = '\033[93m'
-   GREEN     = '\033[92m'
-   RED       = '\033[91m'
-   DARKGRAY  = '\033[90m'
-   WHITE     = '\033[48m'
-   DARKCYAN  = '\033[36m'
-   BLACK     = '\033[35m'
-   UNDERLINE = '\033[4m'
-   BOLD      = '\033[1m'
-   END       = '\033[0m'
+from .utils import dump_regs, get_arm_flags, disasm
+from .const import color
 
 
 # read data from memory of qiling instance
-def examine_mem(ql, xaddr, count):
+def examine_mem(ql, addr, fmt):
 
-    lines = 1 if count <= 4 else math.ceil(count / 4)
+    def unpack(bs, sz):
+        return {
+                1: lambda x: x[0],
+                2: ql.unpack16,
+                4: ql.unpack32,
+                8: ql.unpack64,
+                }.get(sz)(bs)
 
-    mem_read = [ql.mem.read(xaddr+(offset*4), 4) for offset in range(count)]
+    ft, sz, ct = fmt
 
-    for line in range(lines):
-        offset = line * 0x10
-        print("0x%08x:\t" % (xaddr+offset), end="")
+    if ft == "i":
 
-        idx = line * 4
-        for each in mem_read[idx:idx+4]:
-            print("0x%08x\t" % (ql.unpack(each)), end="")
+        for offset in range(addr, addr+ct*4, 4):
+            line = disasm(ql, offset)
+            if line:
+                print("0x{:x}: {}\t{}".format(line.address, line.mnemonic, line.op_str))
 
         print()
+
+    else:
+        lines = 1 if ct <= 4 else math.ceil(ct / 4)
+
+        mem_read = [ql.mem.read(addr+(offset*sz), sz) for offset in range(ct)]
+
+        for line in range(lines):
+            offset = line * 0x10
+            print("0x{:x}:\t".format(addr+offset), end="")
+
+            idx = line * sz
+            for each in mem_read[idx:idx+4]:
+                data = unpack(each, sz)
+                prefix = "0x" if ft in ("x", "a") else ""
+                pad = '0' + str(sz*2) if ft in ('x', 'a', 't') else ''
+                ft = ft.lower() if ft in ("x", "o", "b", "d") else ft.lower().replace("t", "b").replace("a", "x")
+
+                print("{}{{:{}{}}}\t".format(prefix, pad, ft).format(data), end="")
+
+            print()
+
 
 # get terminal window height and width
 def get_terminal_size():

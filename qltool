@@ -259,7 +259,8 @@ if __name__ == '__main__':
         if options.qdb == True:
             from qiling.debugger.qdb import QlQdb as Qdb
 
-            Qdb(ql, rr=options.rr)
+            Qdb(ql, rr=options.rr).interactive()
+            exit()
 
     # ql shellcode setup
     elif (options.subparser_name == 'shellcode'):
