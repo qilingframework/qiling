@@ -245,11 +245,13 @@ if __name__ == '__main__':
     if (options.subparser_name == 'run'):
         # with argv
         if options.filename is not None and options.run_args == []:
-            ql = Qiling(argv=[options.filename] + options.args, rootfs=options.rootfs, profile=options.profile, output=options.output, console=options.console, env=env, log_file=options.log_file)
+            ql = Qiling(argv=[options.filename] + options.args, rootfs=options.rootfs, profile=options.profile,
+                        output=options.output, console=options.console, log_file=options.log_file, multithread=options.multithread, env=env)
 
         # Without argv
         elif options.filename is None and options.args == [] and options.run_args != []:
-            ql = Qiling(argv=options.run_args, rootfs=options.rootfs, profile=options.profile, output=options.output, console=options.console, env=env, og_file=options.log_file)
+            ql = Qiling(argv=options.run_args, rootfs=options.rootfs, profile=options.profile,
+                        output=options.output, console=options.console, log_file=options.log_file, multithread=options.multithread, env=env)
         
         else:
             print("ERROR: Command error!")
@@ -279,9 +281,6 @@ if __name__ == '__main__':
         
     if options.root:
         ql.root = True
-
-    if options.multithread:
-        ql.multithread = True
 
     if options.verbose:
         ql.verbose = options.verbose
