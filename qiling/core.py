@@ -48,6 +48,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             stdin=0,
             stdout=0,
             stderr=0,
+            on_logger_created=None
     ):
         """ Create a Qiling instance.
 
@@ -167,6 +168,9 @@ class Qiling(QlCoreHooks, QlCoreStructs):
                                                               self._multithread)
 
         self.log.setLevel(ql_resolve_logger_level(self._output, self._verbose))
+
+        if on_logger_created:
+            on_logger_created(self, self.log)
 
         # Now that the logger is configured, we can log profile debug msg:
         self.log.debug(debugmsg)
