@@ -499,7 +499,7 @@ def hook_CopyMem(ql, address, params):
 })
 def hook_SetMem(ql, address, params):
 	ptr = params["Buffer"]
-	value = struct.pack('B',params["Value"] & 0xff)
+	value = ql.pack8(params["Value"] & 0xff)
 
 	# TODO: do this the Pythonic way
 	for i in range(params["Size"]):
