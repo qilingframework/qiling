@@ -167,11 +167,13 @@ class QlOsPosix(QlOs):
                     ret = self.syscall_onEnter(self.ql, self.get_func_arg()[0], self.get_func_arg()[1], self.get_func_arg()[2], self.get_func_arg()[3], self.get_func_arg()[4], self.get_func_arg()[5])
 
                 if isinstance(ret, int) == False or ret & QL_CALL_BLOCK == 0:
+                    self.ql.log.info("0x%x: %s(0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x)" % (self.ql.reg.arch_pc, self.syscall_map.__name__[11:], self.get_func_arg()[0], self.get_func_arg()[1], self.get_func_arg()[2], self.get_func_arg()[3], self.get_func_arg()[4], self.get_func_arg()[5]))
                     ret = self.syscall_map(self.ql, self.get_func_arg()[0], self.get_func_arg()[1], self.get_func_arg()[2], self.get_func_arg()[3], self.get_func_arg()[4], self.get_func_arg()[5])
                     if ret is not None and isinstance(ret, int):
                         # each name has a list of calls, we want the last one and we want to update the return value
                         self.syscalls[self.syscall_name][-1]["result"] = ret
-                        self.set_syscall_return(ret)
+                        ret = self.set_syscall_return(ret)
+                        self.ql.log.debug("%s() = %i" % (self.syscall_map.__name__[11:], ret))
 
                 if self.syscall_onExit is not None:
                     self.syscall_onExit(self.ql, self.get_func_arg()[0], self.get_func_arg()[1], self.get_func_arg()[2], self.get_func_arg()[3], self.get_func_arg()[4], self.get_func_arg()[5])
@@ -228,7 +230,7 @@ class QlOsPosix(QlOs):
 
             self.ql.reg.v0 = regreturn
             self.ql.reg.a3 = a3return
-
+        return regreturn
 
     # get syscall
     def get_func_arg(self):
