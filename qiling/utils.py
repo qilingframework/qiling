@@ -535,7 +535,9 @@ def ql_setup_logger(ql, log_file, console, filters, multithread, log_override):
         # We should leave the root logger untouched.
         log = logging.getLogger(f"qiling{QL_INSTANCE_ID}")
         QL_INSTANCE_ID += 1
-
+        
+        # Disable propagation to avoid duplicate output.
+        log.propagate = False
         # Clear all handlers and filters.
         log.handlers = []
         log.filters = []    
