@@ -44,7 +44,6 @@ jhumble
 Mark Jansen (learn-more)
 cq674350529
 elicn
-bkerler (viperbjk)
 
 
 Contributors (in no particular order)
@@ -59,6 +58,7 @@ danielhenrymantilla
 iamyeh
 alfink
 bambu
+bkerler (viperbjk)
 
 
 Alpha testers (in no particular order, named by github id)
