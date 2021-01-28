@@ -4,12 +4,13 @@
 #
 
 from uuid import UUID
+from typing import Optional
 
 from qiling.os.uefi.const import EFI_SUCCESS, EFI_INVALID_PARAMETER
 from qiling.os.uefi.UefiSpec import EFI_CONFIGURATION_TABLE
 from qiling.os.uefi.UefiBaseType import EFI_GUID
 
-def check_and_notify_protocols(ql):
+def check_and_notify_protocols(ql) -> bool:
 	if ql.loader.notify_list:
 		event_id, notify_func, notify_context = ql.loader.notify_list.pop(0)
 		ql.log.info(f'Notify event:{event_id} calling:{notify_func:x} context:{notify_context:x}')
@@ -20,37 +21,37 @@ def check_and_notify_protocols(ql):
 
 	return False
 
-def ptr_read8(ql, addr : int) -> int:
+def ptr_read8(ql, addr: int) -> int:
 	"""Read BYTE data from a pointer
 	"""
 
 	return ql.unpack8(ql.mem.read(addr, 1))
 
-def ptr_write8(ql, addr : int, val : int):
+def ptr_write8(ql, addr: int, val: int) -> None:
 	"""Write BYTE data to a pointer
 	"""
 
 	ql.mem.write(addr, ql.pack8(val))
 
-def ptr_read32(ql, addr : int) -> int:
+def ptr_read32(ql, addr: int) -> int:
 	"""Read DWORD data from a pointer
 	"""
 
 	return ql.unpack32(ql.mem.read(addr, 4))
 
-def ptr_write32(ql, addr : int, val : int):
+def ptr_write32(ql, addr: int, val: int) -> None:
 	"""Write DWORD data to a pointer
 	"""
 
 	ql.mem.write(addr, ql.pack32(val))
 
-def ptr_read64(ql, addr : int) -> int:
+def ptr_read64(ql, addr: int) -> int:
 	"""Read QWORD data from a pointer
 	"""
 
 	return ql.unpack64(ql.mem.read(addr, 8))
 
-def ptr_write64(ql, addr : int, val : int):
+def ptr_write64(ql, addr: int, val: int) -> None:
 	"""Write QWORD data to a pointer
 	"""
 
@@ -64,7 +65,7 @@ write_int32 = ptr_write32
 read_int64  = ptr_read64
 write_int64 = ptr_write64
 
-def init_struct(ql, base : int, descriptor : dict):
+def init_struct(ql, base: int, descriptor: dict):
 	struct_class = descriptor['struct']
 	struct_fields = descriptor.get('fields', [])
 
@@ -77,14 +78,14 @@ def init_struct(ql, base : int, descriptor : dict):
 			if callable(value):
 				p = base + struct_class.offsetof(name)
 
-				isntance.__setattr__(name, p)
+				setattr(isntance, name, p)
 				ql.hook_address(value, p)
 
 				ql.log.info(f' | {name:36s} {p:#010x}')
 
 			# a value: set it
 			else:
-				isntance.__setattr__(name, value)
+				setattr(isntance, name, value)
 
 	ql.log.info(f'')
 
