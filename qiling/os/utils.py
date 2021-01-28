@@ -359,7 +359,7 @@ class QlOsUtils:
         fret = f' = {ret:#x}' if ret is not None else ''
         fpass = f' (PASSTHRU)' if passthru else ''
 
-        log = f'{address:02x}: {function_name:s}({", ".join(fargs)}){fret}{fpass}'
+        log = f'0x{address:02x}: {function_name:s}({", ".join(fargs)}){fret}{fpass}'
 
         if self.ql.output == QL_OUTPUT.DEBUG:
             self.ql.log.debug(log)
