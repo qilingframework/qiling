@@ -525,32 +525,36 @@ def ql_resolve_logger_level(output, verbose):
 QL_INSTANCE_ID = 114514
 
 # TODO: qltool compatibility
-def ql_setup_logger(ql, log_file, console, filters, multithread):
+def ql_setup_logger(ql, log_file, console, filters, multithread, log_override):
     global QL_INSTANCE_ID
 
-    # We should leave the root logger untouched.
-    log = logging.getLogger(f"qiling{QL_INSTANCE_ID}")
-    QL_INSTANCE_ID += 1
-
-    # Clear all handlers and filters.
-    log.handlers = []
-    log.filters = []    
-
-    # Do we have console output?
-    if console:
-        handler = logging.StreamHandler()
-        formatter = QilingColoredFormatter(ql, FMT_STR)
-        handler.setFormatter(formatter)
-        log.addHandler(handler)
+    # If there is an override for our logger, then use it.
+    if log_override is not None:
+        log = log_override
     else:
-        log.setLevel(logging.CRITICAL)
+        # We should leave the root logger untouched.
+        log = logging.getLogger(f"qiling{QL_INSTANCE_ID}")
+        QL_INSTANCE_ID += 1
 
-    # Do we have to write log to a file?
-    if log_file is not None:
-        handler = logging.FileHandler(log_file)
-        formatter = QilingPlainFormatter(ql, FMT_STR)
-        handler.setFormatter(formatter)
-        log.addHandler(handler)
+        # Clear all handlers and filters.
+        log.handlers = []
+        log.filters = []    
+
+        # Do we have console output?
+        if console:
+            handler = logging.StreamHandler()
+            formatter = QilingColoredFormatter(ql, FMT_STR)
+            handler.setFormatter(formatter)
+            log.addHandler(handler)
+        else:
+            log.setLevel(logging.CRITICAL)
+
+        # Do we have to write log to a file?
+        if log_file is not None:
+            handler = logging.FileHandler(log_file)
+            formatter = QilingPlainFormatter(ql, FMT_STR)
+            handler.setFormatter(formatter)
+            log.addHandler(handler)
 
     # Remeber to add filters if necessary.
     # If there aren't any filters, we do add the filters until users specify any.
