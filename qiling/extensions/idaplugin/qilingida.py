@@ -7,7 +7,6 @@ import sys
 import collections
 import time
 import struct
-import logging
 import re
 from enum import Enum
 from elftools.elf.elffile import ELFFile
@@ -952,7 +951,7 @@ class QlEmuQiling:
         savepath = savedlg.path_name.value
 
         self.ql.save(reg=True, mem=True,fd=True, cpu_context=True, snapshot=savepath)
-        logging.info('Save to ' + savepath)
+        self.ql.log.info('Save to ' + savepath)
         return True
 
     def load(self):
@@ -965,7 +964,7 @@ class QlEmuQiling:
         loadname = loaddlg.file_name.value
 
         self.ql.restore(snapshot=loadname)
-        logging.info('Restore from ' + loadname)
+        self.ql.log.info('Restore from ' + loadname)
         return True
 
     def remove_ql(self):
@@ -1018,11 +1017,11 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
 
     def init(self):
         # init data
-        logging.info('---------------------------------------------------------------------------------------')
-        logging.info('Qiling Emulator Plugin For IDA, by Qiling Team. Version {0}, 2020'.format(QLVERSION))
-        logging.info('Based on Qiling v{0}'.format(QLVERSION))
-        logging.info('Find more information about Qiling at https://qiling.io')
-        logging.info('---------------------------------------------------------------------------------------')
+        self.ql.log.info('---------------------------------------------------------------------------------------')
+        self.ql.log.info('Qiling Emulator Plugin For IDA, by Qiling Team. Version {0}, 2020'.format(QLVERSION))
+        self.ql.log.info('Based on Qiling v{0}'.format(QLVERSION))
+        self.ql.log.info('Find more information about Qiling at https://qiling.io')
+        self.ql.log.info('---------------------------------------------------------------------------------------')
         self.qlemu = QlEmuQiling()
         self.ql_hook_ui_actions()
         return PLUGIN_KEEP
@@ -1067,13 +1066,13 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         if self.qlinit :
             self.ql_get_user_script(is_reload=True, is_start=True)
         else:
-            logging.error('Qiling should be setup firstly.')
+            self.ql.log.error('Qiling should be setup firstly.')
 
     def ql_reload_user_script(self):
         if self.qlinit:
             self.ql_get_user_script(is_reload=True)
         else:
-            logging.error('Qiling should be setup firstly.')
+            self.ql.log.error('Qiling should be setup firstly.')
 
     def ql_continue(self):
         if self.qlinit:
@@ -1100,7 +1099,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                     self.qlemu.ql.hook_del(hook)
             self.ql_update_views(self.qlemu.ql.reg.arch_pc, self.qlemu.ql)
         else:
-            logging.error('Qiling should be setup firstly.')
+            self.ql.log.error('Qiling should be setup firstly.')
 
     def _color_path(self, color):
         def _cb(ql, addr, size):
@@ -1128,7 +1127,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             self.qlemu.status = self.qlemu.ql.save()
             self.ql_update_views(self.qlemu.ql.reg.arch_pc, self.qlemu.ql)
         else:
-            logging.error('Qiling should be setup firstly.')
+            self.ql.log.error('Qiling should be setup firstly.')
 
     def ql_set_pc(self):
         if self.qlinit:
@@ -1138,7 +1137,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             self.qlemu.status = self.qlemu.ql.save()
             self.ql_update_views(self.qlemu.ql.reg.arch_pc, self.qlemu.ql)
         else:
-            logging.error('Qiling should be setup firstly.')
+            self.ql.log.error('Qiling should be setup firstly.')
 
     def ql_run_to_here(self):
         if self.qlinit:
@@ -1163,7 +1162,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             self.qlemu.status = self.qlemu.ql.save()
             self.ql_update_views(self.qlemu.ql.reg.arch_pc, self.qlemu.ql)
         else:
-            logging.error('Qiling should be setup firstly.')
+            self.ql.log.error('Qiling should be setup firstly.')
 
     def ql_step(self):
         if self.qlinit:
@@ -1179,21 +1178,21 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                     self.qlemu.ql.hook_del(hook)
             self.ql_update_views(self.qlemu.ql.reg.arch_pc, self.qlemu.ql)
         else:
-            logging.error('Qiling should be setup firstly.')
+            self.ql.log.error('Qiling should be setup firstly.')
 
     def ql_save(self):
         if self.qlinit:
             if self.qlemu.save() != True:
-                logging.error('Fail to save the snapshot.')
+                self.ql.log.error('Fail to save the snapshot.')
         else:
-            logging.error('Qiling should be setup firstly.')
+            self.ql.log.error('Qiling should be setup firstly.')
 
     def ql_load(self):
         if self.qlinit:
             if self.qlemu.load() != True:
-                logging.error('Fail to load the snapshot.')
+                self.ql.log.error('Fail to load the snapshot.')
         else:
-            logging.error('Qiling should be setup firstly.')
+            self.ql.log.error('Qiling should be setup firstly.')
 
     def ql_chang_reg(self):
         if self.qlinit:
@@ -1201,7 +1200,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             self.ql_update_views(self.qlemu.ql.reg.arch_pc, self.qlemu.ql)
             self.qlemu.status = self.qlemu.ql.save()
         else:
-            logging.error('Qiling should be setup firstly.')
+            self.ql.log.error('Qiling should be setup firstly.')
 
     def ql_reset(self):
         if self.qlinit:
@@ -1209,7 +1208,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             self.qlemu = QlEmuQiling()
             self.ql_start()
         else:
-            logging.error('Qiling should be setup firstly.')
+            self.ql.log.error('Qiling should be setup firstly.')
 
     def ql_close(self):
         if self.qlinit:
@@ -1220,9 +1219,9 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             del self.qlemu
             self.qlemu = None
             self.qlinit = False
-            logging.info('Qiling is deleted.')
+            self.ql.log.info('Qiling is deleted.')
         else:
-            logging.error('Qiling is not started.')
+            self.ql.log.error('Qiling is not started.')
 
     def ql_show_reg_view(self):
         if self.qlinit:
@@ -1234,7 +1233,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 self.qlemuregview.Show()
                 self.qlemuregview.Refresh()
         else:
-            logging.error('Qiling should be setup firstly.')
+            self.ql.log.error('Qiling should be setup firstly.')
 
     def ql_show_stack_view(self):
         if self.qlinit:
@@ -1245,7 +1244,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 self.qlemustackview.Show()
                 self.qlemustackview.Refresh()
         else:
-            logging.error('Qiling should be setup firstly.')
+            self.ql.log.error('Qiling should be setup firstly.')
 
     def ql_show_mem_view(self, addr=get_screen_ea(), size=0x10):
         if self.qlinit:
@@ -1279,7 +1278,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 self.qlemumemview[mem_addr].Show()
                 self.qlemumemview[mem_addr].Refresh()
         else:
-            logging.error('Qiling should be setup firstly.')
+            self.ql.log.error('Qiling should be setup firstly.')
 
     def ql_unload_plugin(self):
         heads = Heads(get_segm_start(get_screen_ea()), get_segm_end(get_screen_ea()))
@@ -1288,7 +1287,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         self.ql_close()
         self.ql_detach_main_menu_actions()
         self.ql_unregister_menu_actions()
-        logging.info('Unload plugin successfully!')
+        self.ql.log.info('Unload plugin successfully!')
 
     def ql_menu_null(self):
         pass
@@ -2039,11 +2038,11 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         self.userobj = get_user_scripts_obj(self.customscriptpath, 'QILING_IDA', is_reload)
         if self.userobj is not None:
             if is_reload and not is_start:
-                logging.info('Custom user script is reloaded.')
+                ql.log.info('Custom user script is reloaded.')
             else:
-                logging.info('Custom user script is loaded successfully.')
+                ql.log.info('Custom user script is loaded successfully.')
         else:
-            logging.info('Custom user script not found.')
+            ql.log.info('Custom user script not found.')
 
     ### Dialog
 

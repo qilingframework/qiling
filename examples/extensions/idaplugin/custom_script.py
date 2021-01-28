@@ -1,5 +1,4 @@
 from qiling import *
-import logging
 
 class QILING_IDA():
     def __init__(self):
@@ -10,14 +9,14 @@ class QILING_IDA():
         for idx in range(0, len(registers), 3):
             regs = registers[idx:idx+3]
             s = "\t".join(map(lambda v: f"{v:4}: {ql.reg.__getattribute__(v):016x}", regs))
-            logging.info(s)
+            ql.log.info(s)
 
     def custom_prepare(self, ql:Qiling):
-        logging.info('Context before starting emulation:')
+        ql.log.info('Context before starting emulation:')
         self._show_context(ql)
 
     def custom_continue(self, ql:Qiling):
-        logging.info('custom_continue hook.')
+        ql.log.info('custom_continue hook.')
         self._show_context(ql)
         hook = []
         return hook
@@ -27,12 +26,12 @@ class QILING_IDA():
             logging.info(f"Executing: {hex(addr)}")
             self._show_context(ql)
 
-        logging.info('custom_step hook')
+        ql.log.info('custom_step hook')
         hook = []
         hook.append(ql.hook_code(step_hook))
         return hook
     
     def custom_execute_selection(self, ql:Qiling):
-        logging.info('custom execute selection hook')
+        ql.log.info('custom execute selection hook')
         hook = []
         return hook
