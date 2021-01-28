@@ -55,10 +55,10 @@ def _ShellExecute(ql, obj: ShellExecuteInfoA):
     directory = ql.os.read_wstring(obj.dir[0]) if obj.dir[0] != 0 else ""
 
     ql.log.debug("Target executed a shell command!")
-    ql.log.debug("[-] Operation: %s " % operation)
-    ql.log.debug("[-] Parameters: %s " % params)
-    ql.log.debug("[-] File: %s " % file)
-    ql.log.debug("[-] Directory: %s " % directory)
+    ql.log.debug("Operation: %s " % operation)
+    ql.log.debug("Parameters: %s " % params)
+    ql.log.debug("File: %s " % file)
+    ql.log.debug("Directory: %s " % directory)
     if obj.show[0] == SW_HIDE:
         ql.log.debug("With an hidden window")
     process = QlWindowsThread(ql, status=0, isFake=True)

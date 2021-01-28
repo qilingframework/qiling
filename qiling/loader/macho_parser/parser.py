@@ -70,11 +70,11 @@ class MachoParser:
             self.binary_file = self.binary_file[file_info.offset : file_info.offset + file_info.size]
             self.header = BinaryHeader(self.binary_file)
         else:
-            self.ql.log.info("[-] unknow header!")
+            self.ql.log.info("unknow header!")
             return False
         
         if not self.header:
-            self.ql.log.info("[-] parse header error")
+            self.ql.log.info("parse header error")
             return False 
 
         return True
@@ -95,14 +95,14 @@ class MachoParser:
             if self.header.lc_size >= 8:
                 lc = LoadCommand(self.lc_raw[offset:])
             else:
-                self.ql.log.info("[-] cmd size overflow")
+                self.ql.log.info("cmd size overflow")
                 return False 
 
             if self.header.lc_size >= offset + lc.cmd_size:
                 complete_cmd = lc.get_complete()
                 pass
             else:
-                self.ql.log.info("[-] cmd size overflow")
+                self.ql.log.info("cmd size overflow")
                 return False
             
             self.commands.append(complete_cmd)
