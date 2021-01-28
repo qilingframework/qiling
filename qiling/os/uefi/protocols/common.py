@@ -1,4 +1,7 @@
-import logging
+#!/usr/bin/env python3
+# 
+# Cross Platform and Multi Architecture Advanced Binary Emulation Framework
+#
 
 from qiling.os.uefi.const import EFI_SUCCESS, EFI_NOT_FOUND, EFI_UNSUPPORTED, EFI_BUFFER_TOO_SMALL
 from qiling.os.uefi.utils import read_int64, write_int64, check_and_notify_protocols
@@ -119,6 +122,6 @@ def LocateProtocol(context, params):
 			write_int64(context.ql, params['Interface'], guid_dic[protocol])
 			return EFI_SUCCESS
 
-	logging.warning(f'protocol with guid {protocol} not found')
+	context.ql.log.warning(f'protocol with guid {protocol} not found')
 
 	return EFI_NOT_FOUND
