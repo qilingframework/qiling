@@ -3,68 +3,59 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import struct
-
 from uuid import UUID
+from typing import Optional
 
-from qiling.os.uefi.const import *
-from qiling.os.uefi.UefiSpec import EFI_LOCATE_SEARCH_TYPE, EFI_CONFIGURATION_TABLE
+from qiling.os.uefi.const import EFI_SUCCESS, EFI_INVALID_PARAMETER
+from qiling.os.uefi.UefiSpec import EFI_CONFIGURATION_TABLE
 from qiling.os.uefi.UefiBaseType import EFI_GUID
 
-def check_and_notify_protocols(ql):
-	if len(ql.loader.notify_list) > 0:
+def check_and_notify_protocols(ql) -> bool:
+	if ql.loader.notify_list:
 		event_id, notify_func, notify_context = ql.loader.notify_list.pop(0)
 		ql.log.info(f'Notify event:{event_id} calling:{notify_func:x} context:{notify_context:x}')
 
-		ql.stack_push(ql.loader.end_of_execution_ptr)
-		ql.reg.rcx = notify_context
-		ql.reg.arch_pc = notify_func
+		ql.loader.call_function(notify_func, [notify_context], ql.loader.end_of_execution_ptr)
 
 		return True
 
 	return False
 
-def ptr_read8(ql, addr : int) -> int:
+def ptr_read8(ql, addr: int) -> int:
 	"""Read BYTE data from a pointer
 	"""
 
-	val = ql.mem.read(addr, 1)
+	return ql.unpack8(ql.mem.read(addr, 1))
 
-	return struct.unpack('<B', val)[0]
-
-def ptr_write8(ql, addr : int, val : int):
+def ptr_write8(ql, addr: int, val: int) -> None:
 	"""Write BYTE data to a pointer
 	"""
 
-	ql.mem.write(addr, struct.pack('<B', val))
+	ql.mem.write(addr, ql.pack8(val))
 
-def ptr_read32(ql, addr : int) -> int:
+def ptr_read32(ql, addr: int) -> int:
 	"""Read DWORD data from a pointer
 	"""
 
-	val = ql.mem.read(addr, 4)
+	return ql.unpack32(ql.mem.read(addr, 4))
 
-	return struct.unpack('<I', val)[0]
-
-def ptr_write32(ql, addr : int, val : int):
+def ptr_write32(ql, addr: int, val: int) -> None:
 	"""Write DWORD data to a pointer
 	"""
 
-	ql.mem.write(addr, struct.pack('<I', val))
+	ql.mem.write(addr, ql.pack32(val))
 
-def ptr_read64(ql, addr : int) -> int:
+def ptr_read64(ql, addr: int) -> int:
 	"""Read QWORD data from a pointer
 	"""
 
-	val = ql.mem.read(addr, 8)
+	return ql.unpack64(ql.mem.read(addr, 8))
 
-	return struct.unpack('<Q', val)[0]
-
-def ptr_write64(ql, addr : int, val : int):
+def ptr_write64(ql, addr: int, val: int) -> None:
 	"""Write QWORD data to a pointer
 	"""
 
-	ql.mem.write(addr, struct.pack('<Q', val))
+	ql.mem.write(addr, ql.pack64(val))
 
 # backward comptability
 read_int8   = ptr_read8
@@ -74,7 +65,7 @@ write_int32 = ptr_write32
 read_int64  = ptr_read64
 write_int64 = ptr_write64
 
-def init_struct(ql, base : int, descriptor : dict):
+def init_struct(ql, base: int, descriptor: dict):
 	struct_class = descriptor['struct']
 	struct_fields = descriptor.get('fields', [])
 
@@ -87,48 +78,26 @@ def init_struct(ql, base : int, descriptor : dict):
 			if callable(value):
 				p = base + struct_class.offsetof(name)
 
-				isntance.__setattr__(name, p)
+				setattr(isntance, name, p)
 				ql.hook_address(value, p)
 
 				ql.log.info(f' | {name:36s} {p:#010x}')
 
 			# a value: set it
 			else:
-				isntance.__setattr__(name, value)
+				setattr(isntance, name, value)
 
 	ql.log.info(f'')
 
 	return isntance
 
-def LocateHandles(context, params):
-	handles = []
-	pointer_size = 8
+def str_to_guid(guid: str) -> EFI_GUID:
+	"""Construct an EFI_GUID structure out of a plain GUID string.
+	"""
 
-	if params["SearchType"] == EFI_LOCATE_SEARCH_TYPE.AllHandles:
-		handles = context.protocols.keys()
-	elif params["SearchType"] == EFI_LOCATE_SEARCH_TYPE.ByProtocol:
-		for handle, guid_dic in context.protocols.items():
-			if params["Protocol"] in guid_dic:
-				handles.append(handle)
+	buff = UUID(hex=guid).bytes_le
 
-	return len(handles) * pointer_size, handles
-
-def LocateProtocol(context, params):
-	protocol = params['Protocol']
-
-	for handle, guid_dic in context.protocols.items():
-		if "Handle" in params and params["Handle"] != handle:
-			continue
-
-		if protocol in guid_dic:
-			# write protocol address to out variable Interface
-			write_int64(context.ql, params['Interface'], guid_dic[protocol])
-			return EFI_SUCCESS
-
-	# (@wtdcode): please use ql.log.warning instead.
-	#ql.log.warning(f'protocol with guid {protocol} not found')
-
-	return EFI_NOT_FOUND
+	return EFI_GUID.from_buffer_copy(buff)
 
 # see: MdeModulePkg/Core/Dxe/Misc/InstallConfigurationTable.c
 def CoreInstallConfigurationTable(ql, guid: str, table: int) -> int:
@@ -147,11 +116,25 @@ def CoreInstallConfigurationTable(ql, guid: str, table: int) -> int:
 	idx = confs.index(guid)
 	ptr = ql.loader.efi_conf_table_array_ptr + (idx * EFI_CONFIGURATION_TABLE.sizeof())
 
-	guid_bytes = UUID(hex=guid).bytes_le
-
 	instance = EFI_CONFIGURATION_TABLE()
-	instance.VendorGuid = EFI_GUID.from_buffer_copy(guid_bytes)
+	instance.VendorGuid = str_to_guid(guid)
 	instance.VendorTable = table
 	instance.saveTo(ql, ptr)
 
 	return EFI_SUCCESS
+
+def GetEfiConfigurationTable(ql, guid: str) -> Optional[int]:
+	"""Find a configuration table by its GUID.
+	"""
+
+	guid = guid.lower()
+	confs = ql.loader.efi_conf_table_array
+
+	if guid in confs:
+		idx = confs.index(guid)
+		ptr = ql.loader.efi_conf_table_array_ptr + (idx * EFI_CONFIGURATION_TABLE.sizeof())
+
+		return ptr
+
+	# not found
+	return None

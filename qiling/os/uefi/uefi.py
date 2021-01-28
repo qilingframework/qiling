@@ -7,7 +7,6 @@
 from unicorn import UcError
 
 from qiling.os.os import QlOs
-from qiling.const import *
 
 class QlOsUefi(QlOs):
 	def __init__(self, ql):
@@ -84,7 +83,7 @@ class QlOsUefi(QlOs):
 		self.ql.log.error(f'')
 
 
-	def emit_hexdump(self, address : int, data : str, num_cols=16):
+	def emit_hexdump(self, address: int, data: bytearray, num_cols: int = 16):
 		self.ql.log.error('Hexdump:')
 
 		# align hexdump to numbers of columns
@@ -100,7 +99,7 @@ class QlOsUefi(QlOs):
 		self.ql.log.error(f'')
 
 
-	def emit_disasm(self, address : int, data : str, num_insns=8):
+	def emit_disasm(self, address: int, data: bytearray, num_insns: int = 8):
 		md = self.ql.create_disassembler()
 
 		self.ql.log.error('Disassembly:')
@@ -111,7 +110,7 @@ class QlOsUefi(QlOs):
 			if len(insn.bytes) > 10:
 				opcodes += '.'
 
-			self.ql.log.error(f'{insn.address:08x}    {opcodes:<20s}  {insn.mnemonic:<10s} {insn.op_str:s}')
+			self.ql.log.error(f'{insn.address:08x} :  {opcodes:<20s}  {insn.mnemonic:<10s} {insn.op_str:s}')
 
 		self.ql.log.error(f'')
 

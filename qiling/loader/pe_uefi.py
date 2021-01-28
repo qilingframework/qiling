@@ -3,7 +3,6 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
- 
 from typing import Sequence
 from pefile import PE
 
@@ -22,6 +21,7 @@ from qiling.os.uefi.protocols import EfiSmmCpuProtocol
 from qiling.os.uefi.protocols import EfiSmmSwDispatch2Protocol
 from qiling.os.uefi.protocols import PcdProtocol
 
+
 class QlLoaderPE_UEFI(QlLoader):
     def __init__(self, ql):
         super(QlLoaderPE_UEFI, self).__init__(ql)
@@ -31,38 +31,37 @@ class QlLoaderPE_UEFI(QlLoader):
         self.notify_list = []
         self.next_image_base = 0
 
-    def save(self):
+    # list of members names to save and restore
+    __save_members = (
+        'modules',
+        'events',
+        'notify_list',
+        'next_image_base',
+        'loaded_image_protocol_modules',
+        'tpl',
+        'efi_conf_table_array',
+        'efi_conf_table_array_ptr',
+        'efi_conf_table_data_ptr',
+        'efi_conf_table_data_next_ptr'
+    )
+
+    def save(self) -> dict:
         saved_state = super(QlLoaderPE_UEFI, self).save()
 
-        saved_state['modules'] = self.modules
-        saved_state['events'] = self.events
-        #saved_state['handle_dict'] = self.handle_dict
-        saved_state['notify_list'] = self.notify_list
-        saved_state['next_image_base'] = self.next_image_base
-        saved_state['loaded_image_protocol_modules'] = self.loaded_image_protocol_modules
-        saved_state['tpl'] = self.tpl
-        saved_state['efi_conf_table_array'] = self.efi_conf_table_array
-        saved_state['efi_conf_table_array_ptr'] = self.efi_conf_table_array_ptr
-        saved_state['efi_conf_table_data_ptr'] = self.efi_conf_table_data_ptr
-        saved_state['efi_conf_table_data_next_ptr'] = self.efi_conf_table_data_next_ptr
+        for member in QlLoaderPE_UEFI.__save_members:
+            saved_state[member] = getattr(self, member)
+
         # since this class initialize the heap (that is hosted by the OS object), we will store it here.
         saved_state['heap'] = self.ql.os.heap.save()
+
         return saved_state
 
-    def restore(self, saved_state):
+    def restore(self, saved_state: dict):
         super(QlLoaderPE_UEFI, self).restore(saved_state)
 
-        self.modules = saved_state['modules']
-        self.events = saved_state['events']
-        #self.handle_dict = saved_state['handle_dict']
-        self.notify_list = saved_state['notify_list']
-        self.next_image_base = saved_state['next_image_base']
-        self.loaded_image_protocol_modules = saved_state['loaded_image_protocol_modules']
-        self.tpl = saved_state['tpl']
-        self.efi_conf_table_array = saved_state['efi_conf_table_array']
-        self.efi_conf_table_array_ptr = saved_state['efi_conf_table_array_ptr']
-        self.efi_conf_table_data_ptr = saved_state['efi_conf_table_data_ptr']
-        self.efi_conf_table_data_next_ptr = saved_state['efi_conf_table_data_next_ptr']
+        for member in QlLoaderPE_UEFI.__save_members:
+            setattr(self, member, saved_state[member])
+
         self.ql.os.heap.restore(saved_state['heap'])
 
     def install_loaded_image_protocol(self, image_base, image_size):
@@ -170,10 +169,10 @@ class QlLoaderPE_UEFI(QlLoader):
             unload_ptr = self.ql.unpack64(loaded_image_protocol.Unload)
 
             if unload_ptr != 0:
+                self.ql.log.info(f'Unloading module {handle:#x}, calling {unload_ptr:#x}')
+
                 self.call_function(unload_ptr, [handle], self.end_of_execution_ptr)
                 self.loaded_image_protocol_modules.remove(handle)
-
-                self.ql.log.info(f'Unloading module {handle:#x}, calling {unload_ptr:#x}')
 
                 return True
 
@@ -205,7 +204,7 @@ class QlLoaderPE_UEFI(QlLoader):
         self.execute_module(path, image_base, entry_point, self.end_of_execution_ptr)
 
     def run(self):
-        # intel architecture uefi implementaion only
+        # intel architecture uefi implementation only
         if self.ql.archtype not in (QL_ARCH.X86, QL_ARCH.X8664):
             raise QlErrorArch("Unsupported architecture")
 
@@ -213,7 +212,7 @@ class QlLoaderPE_UEFI(QlLoader):
         if self.ql.archtype != QL_ARCH.X8664:
             raise QlErrorArch("Only 64 bit arch is supported at the moment")
 
-        self.loaded_image_protocol_guid = self.ql.os.profile["LOADED_IMAGE_PROTOCOL"]["guid"]
+        self.loaded_image_protocol_guid = self.ql.os.profile["LOADED_IMAGE_PROTOCOL"]["Guid"]
         self.loaded_image_protocol_modules = []
         self.tpl = 4 # TPL_APPLICATION
 
@@ -253,7 +252,6 @@ class QlLoaderPE_UEFI(QlLoader):
         protocols = (
             EfiSmmAccess2Protocol,
             EfiSmmBase2Protocol,
-            PcdProtocol
         )
 
         for proto in protocols:

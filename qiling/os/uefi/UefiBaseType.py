@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from .ProcessorBind import *
+from qiling.os.uefi.ProcessorBind import *
 
 class EFI_GUID(STRUCT):
 	_fields_ = [
