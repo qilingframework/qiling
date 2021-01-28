@@ -18,9 +18,6 @@ def ql_syscall_getrandom(ql, buf, buflen, flags,*args, **kw):
     except:
         regreturn = -1
 
-    ql.log.info("getrandom(0x%x, 0x%x, 0x%x) = %d" %
-              (buf, buflen, flags, regreturn))
-
     if data:
         ql.log.debug("getrandom() CONTENT:")
         ql.log.debug(str(data))

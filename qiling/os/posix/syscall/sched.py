@@ -83,10 +83,10 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
             if clone_child_stack != 0:
                 ql.arch.set_sp(clone_child_stack)
             regreturn = 0
-            ql.log.info("clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d" % (clone_child_stack, clone_flags, clone_newtls, clone_parent_tidptr, clone_child_tidptr, regreturn))
         else:
             regreturn = pid
-            ql.log.info("clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d" % (clone_child_stack, clone_flags, clone_newtls, clone_parent_tidptr, clone_child_tidptr, regreturn))
+        
+        ql.log.debug("clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d" % (clone_child_stack, clone_flags, clone_newtls, clone_parent_tidptr, clone_child_tidptr, regreturn))
 
         ql.emu_stop()
         return regreturn
@@ -126,7 +126,7 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
         raise Exception()
     ql.log.debug("Currently running pid is: %d; tid is: %d " % (
     os.getpid(), ql.os.thread_management.cur_thread.id))
-    ql.log.info("clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d" % (
+    ql.log.debug("clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d" % (
     clone_child_stack, clone_flags, clone_newtls, clone_parent_tidptr, clone_child_tidptr, regreturn))
 
     # Restore the stack and return value of the parent process
@@ -140,7 +140,7 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
 
     ql.log.debug("Currently running pid is: %d; tid is: %d " % (
     os.getpid(), ql.os.thread_management.cur_thread.id))
-    ql.log.info("clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d" % (
+    ql.log.debug("clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d" % (
     clone_child_stack, clone_flags, clone_newtls, clone_parent_tidptr, clone_child_tidptr, regreturn))
 
     return regreturn
