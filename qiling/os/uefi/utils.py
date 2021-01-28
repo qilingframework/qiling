@@ -3,8 +3,6 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import struct
-
 from uuid import UUID
 
 from qiling.os.uefi.const import EFI_SUCCESS, EFI_INVALID_PARAMETER
@@ -26,43 +24,37 @@ def ptr_read8(ql, addr : int) -> int:
 	"""Read BYTE data from a pointer
 	"""
 
-	val = ql.mem.read(addr, 1)
-
-	return struct.unpack('<B', val)[0]
+	return ql.unpack8(ql.mem.read(addr, 1))
 
 def ptr_write8(ql, addr : int, val : int):
 	"""Write BYTE data to a pointer
 	"""
 
-	ql.mem.write(addr, struct.pack('<B', val))
+	ql.mem.write(addr, ql.pack8(val))
 
 def ptr_read32(ql, addr : int) -> int:
 	"""Read DWORD data from a pointer
 	"""
 
-	val = ql.mem.read(addr, 4)
-
-	return struct.unpack('<I', val)[0]
+	return ql.unpack32(ql.mem.read(addr, 4))
 
 def ptr_write32(ql, addr : int, val : int):
 	"""Write DWORD data to a pointer
 	"""
 
-	ql.mem.write(addr, struct.pack('<I', val))
+	ql.mem.write(addr, ql.pack32(val))
 
 def ptr_read64(ql, addr : int) -> int:
 	"""Read QWORD data from a pointer
 	"""
 
-	val = ql.mem.read(addr, 8)
-
-	return struct.unpack('<Q', val)[0]
+	return ql.unpack64(ql.mem.read(addr, 8))
 
 def ptr_write64(ql, addr : int, val : int):
 	"""Write QWORD data to a pointer
 	"""
 
-	ql.mem.write(addr, struct.pack('<Q', val))
+	ql.mem.write(addr, ql.pack64(val))
 
 # backward comptability
 read_int8   = ptr_read8
