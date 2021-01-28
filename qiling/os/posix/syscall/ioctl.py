@@ -102,5 +102,5 @@ def ql_syscall_ioctl(ql, ioctl_fd, ioctl_cmd, ioctl_arg, *args, **kw):
         except :
             regreturn = -1
 
-    ql.log.info("ioctl(0x%x, 0x%x, 0x%x) = %d" % (ioctl_fd, ioctl_cmd, ioctl_arg, regreturn))
+    ql.log.debug("ioctl(0x%x, 0x%x, 0x%x) = %d" % (ioctl_fd, ioctl_cmd, ioctl_arg, regreturn))
     return regreturn
