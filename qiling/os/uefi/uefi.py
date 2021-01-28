@@ -7,7 +7,6 @@
 from unicorn import UcError
 
 from qiling.os.os import QlOs
-from qiling.const import *
 
 class QlOsUefi(QlOs):
 	def __init__(self, ql):
