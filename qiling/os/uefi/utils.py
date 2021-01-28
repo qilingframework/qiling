@@ -123,3 +123,19 @@ def CoreInstallConfigurationTable(ql, guid: str, table: int) -> int:
 	instance.saveTo(ql, ptr)
 
 	return EFI_SUCCESS
+
+def GetEfiConfigurationTable(ql, guid: str) -> Optional[int]:
+	"""Find a configuration table by its GUID.
+	"""
+
+	guid = guid.lower()
+	confs = ql.loader.efi_conf_table_array
+
+	if guid in confs:
+		idx = confs.index(guid)
+		ptr = ql.loader.efi_conf_table_array_ptr + (idx * EFI_CONFIGURATION_TABLE.sizeof())
+
+		return ptr
+
+	# not found
+	return None
