@@ -3,7 +3,6 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
- 
 from typing import Sequence
 from pefile import PE
 
@@ -21,6 +20,7 @@ from qiling.os.uefi.protocols import EfiSmmBase2Protocol
 from qiling.os.uefi.protocols import EfiSmmCpuProtocol
 from qiling.os.uefi.protocols import EfiSmmSwDispatch2Protocol
 from qiling.os.uefi.protocols import PcdProtocol
+
 
 class QlLoaderPE_UEFI(QlLoader):
     def __init__(self, ql):
