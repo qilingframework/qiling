@@ -40,6 +40,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             profile=None,
             console=True,
             log_file=None,
+            log_override=None,
             libcache = False,
             multithread = False,
             filters = None,
@@ -74,6 +75,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._multithread = multithread
         self._log_file_fd = None
         self._log_filter = None
+        self._log_override = log_override
         self._filters = filters
         self._platform = ostype_convert(platform.system().lower())
         self._internal_exception = None
@@ -159,12 +161,12 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         # Setup output mode.
         self._output = output_convert(self._output)
 
-        # We only use the root logger now.
         self._log_file_fd, self._log_filter = ql_setup_logger(self,
                                                               self._log_file,
                                                               self._console, 
                                                               self._filters, 
-                                                              self._multithread)
+                                                              self._multithread,
+                                                              self._log_override)
 
         self.log.setLevel(ql_resolve_logger_level(self._output, self._verbose))
 
@@ -257,8 +259,10 @@ class Qiling(QlCoreHooks, QlCoreStructs):
     def log(self) -> logging.Logger:
         """ Returns the logger this Qiling instance uses.
 
+            You can override this log by passing `log_override=your_log` to Qiling.__init__
+
             Type: logging.Logger
-            Example: ql.ql.log.info("This goes to terminal")
+            Example: ql.log.info("This goes to terminal")
         """
         return self._log_file_fd
 
