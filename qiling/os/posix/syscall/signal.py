@@ -29,7 +29,6 @@ def ql_syscall_rt_sigaction(ql, rt_sigaction_signum, rt_sigaction_act, rt_sigact
         ql.os.sigaction_act[rt_sigaction_signum] = data
 
     regreturn = 0
-    ql.log.info("rt_sigaction(0x%x, 0x%x, = 0x%x) = %d" % (rt_sigaction_signum, rt_sigaction_act, rt_sigaction_oldact, regreturn))
     return regreturn
 
 
@@ -41,11 +40,9 @@ def ql_syscall_rt_sigprocmask(ql, rt_sigprocmask_how, rt_sigprocmask_nset, rt_si
         pass
 
     regreturn = 0
-    ql.log.info("rt_sigprocmask(0x%x, 0x%x, 0x%x, 0x%x) = %d" % (rt_sigprocmask_how, rt_sigprocmask_nset, rt_sigprocmask_oset, rt_sigprocmask_sigsetsize, regreturn))
     return regreturn
 
 
 def ql_syscall_signal(ql, sig, __sighandler_t, *args, **kw):
     regreturn = 0
-    ql.log.info("signal(%d, 0x%x) = %d" % (sig, __sighandler_t,regreturn))
     return regreturn

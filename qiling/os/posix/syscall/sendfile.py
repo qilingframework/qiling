@@ -19,6 +19,4 @@ def ql_syscall_sendfile64(ql, sendfile64_out_fd, sendfile64_in_fd, sendfile64_of
         regreturn = ql.os.fd[sendfile64_out_fd].write(buf)
     else:
         regreturn = -1
-
-    ql.log.info("sendfile64(%d, %d, %x, %d) = %d" % (sendfile64_out_fd, sendfile64_in_fd, sendfile64_offest, sendfile64_count, regreturn))
     return regreturn

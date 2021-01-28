@@ -198,18 +198,18 @@ class QlOsUtils:
     def post_report(self):
         self.ql.log.debug("Syscalls called")
         for key, values in self.ql.os.syscalls.items():
-            self.ql.log.debug("[-] %s:" % key)
+            self.ql.log.debug("%s:" % key)
             for value in values:
-                self.ql.log.debug("[-] %s " % str(dumps(value)))
+                self.ql.log.debug("%s " % str(dumps(value)))
         self.ql.log.debug("Registries accessed")
         for key, values in self.ql.os.registry_manager.accessed.items():
-            self.ql.log.debug("[-] %s:" % key)
+            self.ql.log.debug("%s:" % key)
             for value in values:
-                self.ql.log.debug("[-] %s " % str(dumps(value)))
+                self.ql.log.debug("%s " % str(dumps(value)))
         self.ql.log.debug("Strings")
         for key, values in self.ql.os.appeared_strings.items():
             val = " ".join([str(word) for word in values])
-            self.ql.log.debug("[-] %s: %s" % (key, val))
+            self.ql.log.debug("%s: %s" % (key, val))
 
 
     def exec_arbitrary(self, start, end):
@@ -359,7 +359,7 @@ class QlOsUtils:
         fret = f' = {ret:#x}' if ret is not None else ''
         fpass = f' (PASSTHRU)' if passthru else ''
 
-        log = f'{address:02x}: {function_name:s}({", ".join(fargs)}){fret}{fpass}'
+        log = f'0x{address:02x}: {function_name:s}({", ".join(fargs)}){fret}{fpass}'
 
         if self.ql.output == QL_OUTPUT.DEBUG:
             self.ql.log.debug(log)

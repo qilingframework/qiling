@@ -21,5 +21,4 @@ def ql_syscall_gettid(ql, *args, **kw):
       # In single-threaded process, the thread ID is equal to the process ID
       # per Posix documentation.
       regreturn = ql.os.pid
-    ql.log.info("gettid() = %d" % regreturn)
     return regreturn

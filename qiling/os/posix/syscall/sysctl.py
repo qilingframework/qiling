@@ -15,5 +15,4 @@ from qiling.exception import *
 def ql_syscall__sysctl(ql, sysctl_name, sysctl_namelen, sysctl_bytes_oldlenp, sysctl_size_oldlenp, sysctl_bytes_newlen, sysctl_size_newlen):
     # sysctl (name=0x7fffffffe3d8, namelen=2, oldp=0x7fffffffe3d4, oldlenp=0x7fffffffe3e0, newp=0x0, newlen=<optimized out>)
     regreturn = 0
-    ql.log.info("_sysctl(0x%x) = %i" % (sysctl_name, regreturn))
     return regreturn

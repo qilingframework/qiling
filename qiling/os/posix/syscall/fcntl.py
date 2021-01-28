@@ -41,7 +41,6 @@ def ql_syscall_open(ql, filename, flags, mode, *args, **kw):
         except QlSyscallError as e:
             regreturn = - e.errno
 
-    ql.log.info("open(%s, 0x%x, 0o%o) = %d" % (relative_path, flags, mode, regreturn))
     ql.log.debug("open(%s, %s, 0o%o) = %d" % (relative_path, open_flags_mapping(flags, ql.archtype), mode, regreturn))
 
     if regreturn >= 0 and regreturn != 2:
@@ -81,7 +80,6 @@ def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *ar
         except QlSyscallError:
             regreturn = -1
 
-    ql.log.info("openat(%d, %s, 0x%x, 0o%o) = %d" % (openat_fd, relative_path, openat_flags, openat_mode, regreturn))
     ql.log.debug("openat(%d, %s, %s, 0o%o) = %d" % (
     openat_fd, relative_path, open_flags_mapping(openat_flags, ql.archtype), openat_mode, regreturn))
 
@@ -104,7 +102,6 @@ def ql_syscall_fcntl(ql, fcntl_fd, fcntl_cmd, *args, **kw):
     elif fcntl_cmd == F_SETFL:
         regreturn = 0
 
-    ql.log.info("fcntl(%d, %d) = %d" % (fcntl_fd, fcntl_cmd, regreturn))
     return regreturn
 
 
@@ -128,12 +125,10 @@ def ql_syscall_fcntl64(ql, fcntl_fd, fcntl_cmd, fcntl_arg, *args, **kw):
     else:
         regreturn = 0
 
-    ql.log.info("fcntl64(%d, %d, %d) = %d" % (fcntl_fd, fcntl_cmd, fcntl_arg, regreturn))
     return regreturn
 
 
 def ql_syscall_flock(ql, flock_fd, flock_operation, *args, **kw):
     # Should always return 0, we don't need a actual file lock
     regreturn = 0
-    ql.log.info("flock(%d) = %d" % (flock_operation, regreturn))
     return regreturn

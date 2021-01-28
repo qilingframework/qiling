@@ -16,7 +16,6 @@ def ql_syscall_writev(ql, writev_fd, writev_vec, writev_vien, *args, **kw):
     regreturn = 0
     size_t_len = ql.archbit // 8
     iov = ql.mem.read(writev_vec, writev_vien * size_t_len * 2)
-    ql.log.info("writev(0x%x, 0x%x, 0x%x)" % (writev_fd, writev_vec, writev_vien))
     ql.log.debug("writev() CONTENT:")
     for i in range(writev_vien):
         addr = ql.unpack(iov[i * size_t_len * 2 : i * size_t_len * 2 + size_t_len])

@@ -36,8 +36,6 @@ def ql_syscall_socketcall(ql, socketcall_call, socketcall_args, *args, **kw):
     SOCKETCALL_SYS_RECVMMSG = 19
     SOCKETCALL_SYS_SENDMMSG = 20
 
-    ql.log.info("socketcall(%d, %x)" % (socketcall_call, socketcall_args))
-
     if socketcall_call == SOCKETCALL_SYS_SOCKET:
         socketcall_domain = ql.unpack(ql.mem.read(socketcall_args, ql.pointersize))
         socketcall_type = ql.unpack(ql.mem.read(socketcall_args + ql.pointersize, ql.pointersize))

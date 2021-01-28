@@ -18,14 +18,12 @@ from qiling.exception import *
 from qiling.os.stat import *
 
 def ql_syscall_exit(ql, exit_code, *args, **kw):
-    ql.log.info("exit(%u) = %u" % (exit_code, exit_code))
-
     if ql.os.child_processes == True:
         os._exit(0)
 
     if ql.multithread:
         def _sched_cb_exit(cur_thread):
-            ql.log.debug(f"[Thread {cur_thread.get_id()}] Terminated.")
+            ql.log.debug(f"[Thread {cur_thread.get_id()}] Terminated")
             cur_thread.stop()
             cur_thread.exit_code = exit_code
         td = ql.os.thread_management.cur_thread
@@ -39,8 +37,6 @@ def ql_syscall_exit(ql, exit_code, *args, **kw):
 def ql_syscall_exit_group(ql, exit_code, *args, **kw):
     ql.os.exit_code = exit_code
 
-    ql.log.info("exit_group(%u)" % ql.os.exit_code)
-
     if ql.os.child_processes == True:
         os._exit(0)
 
@@ -49,55 +45,47 @@ def ql_syscall_exit_group(ql, exit_code, *args, **kw):
 
 def ql_syscall_alarm(ql, alarm_seconds, *args, **kw):
     regreturn = 0
-    ql.log.info("alarm(%d) = %d" % (alarm_seconds, regreturn))
     return regreturn
 
 
 def ql_syscall_issetugid(ql, *args, **kw):
     UGID = ql.os.uid
-    ql.log.info("issetugid(%i)" % UGID)
     regreturn = UGID
     return regreturn
 
 
 def ql_syscall_getuid(ql, *args, **kw):
     UID = ql.os.uid
-    ql.log.info("getuid(%i)" % UID)
     regreturn = UID
     return regreturn
 
 
 def ql_syscall_getuid32(ql, *args, **kw):
     UID = ql.os.uid
-    ql.log.info("getuid32(%i)" % UID)
     regreturn = UID
     return regreturn
 
 
 def ql_syscall_getgid32(ql, *args, **kw):
     GID = ql.os.gid
-    ql.log.info("getgid32(%i)" % GID)
     regreturn = GID
     return regreturn
 
 
 def ql_syscall_geteuid(ql, *args, **kw):
     EUID = ql.os.uid
-    ql.log.info("geteuid(%i)" % EUID)
     regreturn = EUID
     return regreturn
 
 
 def ql_syscall_getegid(ql, *args, **kw):
     EGID = ql.os.gid
-    ql.log.info("getegid(%i)" % EGID)
     regreturn = EGID
     return regreturn
 
 
 def ql_syscall_getgid(ql, *args, **kw):
     GID = ql.os.gid
-    ql.log.info("getgid(%i)" % GID)
     regreturn = GID
     return regreturn
 
@@ -105,27 +93,23 @@ def ql_syscall_getgid(ql, *args, **kw):
 def ql_syscall_setgroups(ql, gidsetsize, grouplist, *args, **kw):
     GID = ql.os.gid
     regreturn = GID
-    ql.log.info("setgroups(0x%x, 0x%x) = %d" % (gidsetsize, grouplist, regreturn))
     return regreturn
 
 
 def ql_syscall_setgid(ql, *args, **kw):
     GID = ql.os.gid
-    ql.log.info("setgid(%i)" % GID)
     regreturn = GID
     return regreturn
 
 
 def ql_syscall_setgid32(ql, *args, **kw):
     GID = ql.os.gid
-    ql.log.info("setgid32(%i)" % GID)
     regreturn = GID
     return regreturn    
 
 
 def ql_syscall_setuid(ql, *args, **kw):
     UID = ql.os.uid
-    ql.log.info("setuid(%i)" % UID)
     regreturn = UID
     return regreturn
 
@@ -144,8 +128,6 @@ def ql_syscall_faccessat(ql, faccessat_dfd, faccessat_filename, faccessat_mode, 
     else:
         regreturn = -1
 
-    ql.log.info("facccessat (%d, 0x%x, 0x%x) = %d" %(faccessat_dfd, faccessat_filename, faccessat_mode, regreturn))
-
     if regreturn == -1:
         ql.log.debug("File Not Found or Skipped: %s" % access_path)
     else:
@@ -161,7 +143,6 @@ def ql_syscall_lseek(ql, lseek_fd, lseek_ofset, lseek_origin, *args, **kw):
         regreturn = ql.os.fd[lseek_fd].lseek(lseek_ofset, lseek_origin)
     except OSError:
         regreturn = -1
-    ql.log.info("lseek(%d, 0x%x, 0x%x) = %d" % (lseek_fd, lseek_ofset, lseek_origin, regreturn))
     return regreturn
 
 
@@ -169,7 +150,6 @@ def ql_syscall__llseek(ql, fd, offset_high, offset_low, result, whence, *args, *
     offset = offset_high << 32 | offset_low
     origin = whence
     regreturn = 0
-    ql.log.info("_llseek(%d, 0x%x, 0x%x, 0x%x) = %d" % (fd, offset_high, offset_low, origin, regreturn))
     try:
         ret = ql.os.fd[fd].lseek(offset, origin)
     except OSError:
@@ -178,15 +158,13 @@ def ql_syscall__llseek(ql, fd, offset_high, offset_low, result, whence, *args, *
     if regreturn == 0:
         ql.mem.write(result, ql.pack64(ret))
 
-    ql.log.info("_llseek(%d, 0x%x, 0x%x, 0x%x) = %d" % (fd, offset_high, offset_low, origin, regreturn))
+    ql.log.debug("_llseek(%d, 0x%x, 0x%x, 0x%x) = %d" % (fd, offset_high, offset_low, origin, regreturn))
     return regreturn
 
 
 def ql_syscall_brk(ql, brk_input, *args, **kw):
     # current brk_address will be modified if brk_input is not NULL(zero)
     # otherwise, just return current brk_address
-
-    ql.log.info("brk(0x%x)" % brk_input)
 
     if brk_input != 0:
         new_brk_addr = ((brk_input + 0xfff) // 0x1000) * 0x1000
@@ -216,7 +194,7 @@ def ql_syscall_access(ql, access_path, access_mode, *args, **kw):
     else:
         regreturn = 0
 
-    ql.log.info("access(%s, 0x%x) = %d " % (relative_path, access_mode, regreturn))
+    ql.log.debug("access(%s, 0x%x) = %d " % (relative_path, access_mode, regreturn))
     if regreturn == 0:
         ql.log.debug("File found: %s" % relative_path)
     else:
@@ -231,7 +209,6 @@ def ql_syscall_close(ql, close_fd, *args, **kw):
         ql.os.fd[close_fd].close()
         ql.os.fd[close_fd] = 0
         regreturn = 0
-    ql.log.info("close(%d) = %d" % (close_fd, regreturn))
     return regreturn
 
 
@@ -249,7 +226,6 @@ def ql_syscall_pread64(ql, read_fd, read_buf, read_len, read_offt, *args, **kw):
             regreturn = -1
     else:
         regreturn = -1
-    ql.log.info("pread(%d, 0x%x, 0x%x, 0x%x) = 0x%x" % (read_fd, read_buf, read_len, read_offt, regreturn))
     return regreturn
 
 
@@ -264,7 +240,6 @@ def ql_syscall_read(ql, read_fd, read_buf, read_len, *args, **kw):
             regreturn = -1
     else:
         regreturn = -1
-    ql.log.info("read(%d, 0x%x, 0x%x) = %d" % (read_fd, read_buf, read_len, regreturn))
 
     if data:
         ql.log.debug("read() CONTENT:")
@@ -283,15 +258,14 @@ def ql_syscall_write(ql, write_fd, write_buf, write_count, *args, **kw):
             ql.log.debug("%s" % buf)
 
         if hasattr(ql.os.fd[write_fd], "write"):
-            ql.log.info("write(%d,%x,%i) = %d" % (write_fd, write_buf, write_count, regreturn))
+            
             ql.os.fd[write_fd].write(buf)
         else:
-            ql.log.info("write(%d,%x,%i) failed due to write_fd" % (write_fd, write_buf, write_count, regreturn))
+            ql.log.warning("write(%d,%x,%i) failed due to write_fd" % (write_fd, write_buf, write_count, regreturn))
         regreturn = write_count
 
     except:
         regreturn = -1
-        ql.log.info("write(%d,%x,%i) = %d" % (write_fd, write_buf, write_count, regreturn))
         if ql.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
             raise
     #if buf:
@@ -317,7 +291,7 @@ def ql_syscall_readlink(ql, path_name, path_buff, path_buffsize, *args, **kw):
     else:
         regreturn = 0x0
 
-    ql.log.info("readlink(%s, 0x%x, 0x%x) = %d" % (relative_path, path_buff, path_buffsize, regreturn))
+    ql.log.debug("readlink(%s, 0x%x, 0x%x) = %d" % (relative_path, path_buff, path_buffsize, regreturn))
     return regreturn
 
 
@@ -330,7 +304,7 @@ def ql_syscall_getcwd(ql, path_buff, path_buffsize, *args, **kw):
     pathname = (ql.mem.read(path_buff, 0x100).split(b'\x00'))[0]
     pathname = str(pathname, 'utf-8', errors="ignore")
 
-    ql.log.info("getcwd(%s, 0x%x) = %d" % (pathname, path_buffsize, regreturn))
+    ql.log.debug("getcwd(%s, 0x%x) = %d" % (pathname, path_buffsize, regreturn))
     return regreturn
 
 
@@ -346,10 +320,10 @@ def ql_syscall_chdir(ql, path_name, *args, **kw):
             pass
         else:
             ql.os.current_path = relative_path
-        ql.log.info("chdir(%s) = %d"% (relative_path, regreturn))
+        ql.log.debug("chdir(%s) = %d"% (relative_path, regreturn))
     else:
         regreturn = -1
-        ql.log.info("chdir(%s) = %d : Not Found" % (relative_path, regreturn))
+        ql.log.warning("chdir(%s) = %d : Not Found" % (relative_path, regreturn))
     return regreturn
 
 
@@ -370,20 +344,16 @@ def ql_syscall_readlinkat(ql, readlinkat_dfd, readlinkat_path, readlinkat_buf, r
         regreturn = (len(localpath)-1)
     else:
         regreturn = 0x0
-
-    ql.log.info("readlinkat(0x%x, 0x%x, 0x%x, 0x%x) = %d" % (readlinkat_dfd, readlinkat_path, readlinkat_buf, readlinkat_bufsiz, regreturn))
     return regreturn
 
 
 def ql_syscall_getpid(ql, *args, **kw):
     regreturn= 0x512
-    ql.log.info("getpid() = %d" % (regreturn))
     return regreturn
 
 
 def ql_syscall_getppid(ql, *args, **kw):
     regreturn= 0x1024
-    ql.log.info("getpid() = %d" % (regreturn))
     return regreturn
 
 
@@ -406,14 +376,11 @@ def ql_syscall_vfork(ql, *args, **kw):
 
     if ql.os.thread_management != None:
         ql.emu_stop()
-
-    ql.log.info("vfork() = %d" % regreturn)
     return regreturn
 
 
 def ql_syscall_setsid(ql, *args, **kw):
     regreturn = os.getpid()
-    ql.log.info("setsid() = %d" % regreturn)
     return regreturn
 
 
@@ -449,7 +416,7 @@ def ql_syscall_execve(ql, execve_pathname, execve_argv, execve_envp, *args, **kw
 
     ql.emu_stop()
     
-    ql.log.info("execve(%s, [%s], [%s])"% (pathname, ', '.join(argv), ', '.join([key + '=' + value for key, value in env.items()])))
+    ql.log.debug("execve(%s, [%s], [%s])"% (pathname, ', '.join(argv), ', '.join([key + '=' + value for key, value in env.items()])))
     
     ql.loader.argv      = argv
     ql.loader.env       = env
@@ -478,7 +445,6 @@ def ql_syscall_dup(ql, dup_oldfd, *args, **kw):
                     regreturn = idx
                     break
 
-    ql.log.info("dup(%d) = %d" % (dup_oldfd, regreturn))
     return regreturn
 
 
@@ -491,7 +457,6 @@ def ql_syscall_dup2(ql, dup2_oldfd, dup2_newfd, *args, **kw):
             regreturn = -1
     else:
         regreturn = -1
-    ql.log.info("dup2(%d, %d) = %d" % (dup2_oldfd, dup2_newfd, regreturn))
     return regreturn
 
 
@@ -504,7 +469,6 @@ def ql_syscall_dup3(ql, dup3_oldfd, dup3_newfd, dup3_flags, null2, null3, null4)
             regreturn = -1
     else:
         regreturn = -1
-    ql.log.info("dup3(%d, %d, %d) = %d" % (dup3_oldfd, dup3_newfd, dup3_flags, regreturn))
     return regreturn
 
 def ql_syscall_set_tid_address(ql, set_tid_address_tidptr, *args, **kw):
@@ -513,7 +477,6 @@ def ql_syscall_set_tid_address(ql, set_tid_address_tidptr, *args, **kw):
     else:
         ql.os.thread_management.cur_thread.set_clear_child_tid_addr(set_tid_address_tidptr)
         regreturn = ql.os.thread_management.cur_thread.id
-    ql.log.info("set_tid_address(%x) = %d" % (set_tid_address_tidptr, regreturn))
     return regreturn
 
 
@@ -545,13 +508,12 @@ def ql_syscall_pipe(ql, pipe_pipefd, *args, **kw):
                 ql.mem.write(pipe_pipefd, ql.pack32(idx1) + ql.pack32(idx2))
                 regreturn = 0
 
-    ql.log.info("pipe(%x, [%d, %d]) = %d" % (pipe_pipefd, idx1, idx2, regreturn))
+    ql.log.debug("pipe(%x, [%d, %d]) = %d" % (pipe_pipefd, idx1, idx2, regreturn))
     return regreturn
 
 
 def ql_syscall_nice(ql, nice_inc, *args, **kw):
     regreturn = 0
-    ql.log.info("nice(%d) = %d" % (nice_inc, regreturn))
     return regreturn
 
 
@@ -573,7 +535,7 @@ def ql_syscall_truncate(ql, path, length, *args, **kw):
     except:
         regreturn = -1
 
-    ql.log.info('truncate(%s, 0x%x) = %d' % (path, length, regreturn))
+    ql.log.debug('truncate(%s, 0x%x) = %d' % (path, length, regreturn))
     return regreturn
 
 
@@ -594,7 +556,7 @@ def ql_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args, **kw):
     except:
         regreturn = -1
 
-    ql.log.info('ftruncate(%d, 0x%x) = %d' % (ftrunc_fd, ftrunc_length, regreturn))
+    ql.log.debug("ftruncate(%d, 0x%x) = %d" % (ftrunc_fd, ftrunc_length, regreturn))
     return regreturn
 
 
@@ -616,7 +578,7 @@ def ql_syscall_unlink(ql, unlink_pathname, *args, **kw):
     else:
         regreturn = -1
 
-    ql.log.info('unlink(%s) = %d' % (pathname, regreturn))
+    ql.log.debug("unlink(%s) = %d" % (pathname, regreturn))
     return regreturn
 
 
@@ -624,7 +586,7 @@ def ql_syscall_unlinkat(ql, dirfd, pathname, flag, *args, **kw):
     #FIXME dirfd(relative path) not implement.
     file_path = ql.mem.string(pathname)
     real_path = ql.os.transform_to_real_path(file_path)
-    ql.log.info("unlinkat(%d, %s, 0%o)" % (dirfd, real_path, flag))
+    ql.log.debug("unlinkat(%d, %s, 0%o)" % (dirfd, real_path, flag))
     try:
         os.unlink(real_path)
         return 0
@@ -681,7 +643,6 @@ def ql_syscall_getdents(ql, fd, dirp, count, *args, **kw):
         _ent_count = 0
         regreturn = 0
 
-    ql.log.info("getdents(%d, 0x%x, 0x%x) = %d" % (fd, dirp, count, regreturn))
     ql.log.debug("getdents(%d, /* %d entries */, 0x%x) = %d" % (fd, _ent_count, count, regreturn))
     return regreturn
 

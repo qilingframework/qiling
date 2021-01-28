@@ -27,5 +27,5 @@ def ql_syscall_sysarch(ql, op, parms, *args, **kw):
 
     #op_buf = ql.pack32(op)
     #ql.mem.write(parms, op_buf)
-    ql.log.info("sysarch(0x%x,0x%x) = %i" % (op, parms, regreturn))
+
     return regreturn
