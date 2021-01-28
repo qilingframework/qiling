@@ -283,7 +283,7 @@ def ql_syscall_getrlimit(ql, which, rlp, *args, **kw):
     which = which & _RLIMIT_POSIX_FLAG
     if which >= RLIM_NLIMITS:
         return EINVAL
-    else :
+    else:
         ql.mem.write(rlp, b'\x00\x13\x00\x00\x00\x00\x00\x00')  # rlim_cur
         ql.mem.write(rlp, b'\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x7F')  # rlim_max
         pass
@@ -489,7 +489,7 @@ def ql_syscall_fstat64_macos(ql, fstat64_fd, fstat64_add, *args, **kw):
             fstat64_buf += ql.pack32(0x0)                                   # __uint32_t	st_gen
             fstat64_buf += ql.pack32(0x0)                                   # __int32_t	st_lspare
             fstat64_buf += ql.pack32(0x0)                                   # __int64_t	st_qspare[2]
-        else :
+        else:
             raise QlErrorArch("Arch not support in syscall fstat64")
 
         ql.mem.write(fstat64_add, fstat64_buf)
