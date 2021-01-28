@@ -26,17 +26,21 @@ class QlMemoryManager:
     def __init__(self, ql):
         self.ql = ql
         self.map_info = []
-        
-        if self.ql.archbit == 64:
-            max_addr = 0xFFFFFFFFFFFFFFFF
-        elif self.ql.archbit == 32:
-            max_addr = 0xFFFFFFFF
-        elif self.ql.archbit == 16:
-            # 20bit address line
-            max_addr = 0xFFFFF
 
+        bit_stuff = {
+            64 : (0xFFFFFFFFFFFFFFFF,),
+            32 : (0xFFFFFFFF,),
+            16 : (0xFFFFF,)             # 20bit address line
+        }
+
+        if ql.archbit not in bit_stuff:
+            raise QlErrorStructConversion("Unsupported Qiling archtecture for memory manager")
+
+        max_addr, = bit_stuff[ql.archbit]
+
+        #self.read_ptr = read_ptr
         self.max_addr = max_addr
-        self.max_mem_addr = max_addr            
+        self.max_mem_addr = max_addr
 
 
     def string(self, addr, value=None ,encoding='utf-8'): 
@@ -182,6 +186,18 @@ class QlMemoryManager:
     def read(self, addr: int, size: int) -> bytearray:
         return self.ql.uc.mem_read(addr, size)
 
+    def read_ptr(self, addr: int, size: int=None):
+        if not size:
+            size = self.ql.archbit // 8
+
+        if size == 2:
+            return self.ql.unpack16(self.read(addr, 2))
+        elif size == 4:
+            return self.ql.unpack32(self.read(addr, 4))
+        elif size == 8:
+            return self.ql.unpack64(self.read(addr, 8))
+        else:
+            raise QlErrorStructConversion(f"Unsupported pointer size: {size}")
 
     def write(self, addr: int, data: bytes) -> None:
         try:
