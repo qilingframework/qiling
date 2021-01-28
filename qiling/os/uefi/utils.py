@@ -98,6 +98,14 @@ def init_struct(ql, base : int, descriptor : dict):
 
 	return isntance
 
+def str_to_guid(guid: str) -> EFI_GUID:
+	"""Construct an EFI_GUID structure out of a plain GUID string.
+	"""
+
+	buff = UUID(hex=guid).bytes_le
+
+	return EFI_GUID.from_buffer_copy(buff)
+
 # see: MdeModulePkg/Core/Dxe/Misc/InstallConfigurationTable.c
 def CoreInstallConfigurationTable(ql, guid: str, table: int) -> int:
 	if not guid:
@@ -115,10 +123,8 @@ def CoreInstallConfigurationTable(ql, guid: str, table: int) -> int:
 	idx = confs.index(guid)
 	ptr = ql.loader.efi_conf_table_array_ptr + (idx * EFI_CONFIGURATION_TABLE.sizeof())
 
-	guid_bytes = UUID(hex=guid).bytes_le
-
 	instance = EFI_CONFIGURATION_TABLE()
-	instance.VendorGuid = EFI_GUID.from_buffer_copy(guid_bytes)
+	instance.VendorGuid = str_to_guid(guid)
 	instance.VendorTable = table
 	instance.saveTo(ql, ptr)
 
