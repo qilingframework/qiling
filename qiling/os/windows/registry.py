@@ -40,7 +40,7 @@ class RegistryManager:
         else:
             self.hive = os.path.join(ql.rootfs, "Windows", "registry")
             ql.log.debug("Windows Registry PATH: %s" % self.hive)
-            if not os.path.exists(self.hive) and not self.ql.shellcoder:
+            if not os.path.exists(self.hive) and not self.ql.code:
                 raise QlErrorFileNotFound(f"Error: Registry files not found in '{self.hive}'!")
 
         if not os.path.exists(self.regdiff):
@@ -76,10 +76,10 @@ class RegistryManager:
             # hkey current user
             self.hkcu = Registry.Registry(os.path.join(self.hive, 'NTUSER.DAT'))
         except FileNotFoundError:
-            if not ql.shellcoder:
+            if not ql.code:
                 QlErrorFileNotFound("WARNING: Registry files not found!")
         except Exception:
-            if not ql.shellcoder:
+            if not ql.code:
                 QlErrorFileNotFound("WARNING: Registry files format error")
         self.accessed = {}
 

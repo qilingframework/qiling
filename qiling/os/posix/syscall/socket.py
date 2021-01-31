@@ -139,7 +139,7 @@ def ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen,  *args, **kw):
     else:
         regreturn = -1
 
-    if ql.shellcoder:
+    if ql.code:
         regreturn = 0
 
     if sin_family == 1:
@@ -226,7 +226,7 @@ def ql_syscall_accept(ql, accept_sockfd, accept_addr, accept_addrlen, *args, **k
             ql.os.fd[idx] = conn
             regreturn = idx
 
-        if ql.shellcoder == None and accept_addr !=0 and accept_addrlen != 0:
+        if ql.code == None and accept_addr !=0 and accept_addrlen != 0:
             tmp_buf = ql.pack16(conn.family)
             tmp_buf += ql.pack16(address[1])
             tmp_buf += inet_addr(address[0])

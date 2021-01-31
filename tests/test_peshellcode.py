@@ -21,14 +21,14 @@ X8664_WIN = unhexlify(
 
 class PEShellcodeTest(unittest.TestCase):
     def test_windowssc_x86(self):
-        ql = Qiling(shellcoder=X86_WIN, archtype="x86", ostype="windows", rootfs="../examples/rootfs/x86_windows",
+        ql = Qiling(code=X86_WIN, archtype="x86", ostype="windows", rootfs="../examples/rootfs/x86_windows",
                     output="default")
         ql.run()
         del ql
 
 
     def test_windowssc_x64(self):
-        ql = Qiling(shellcoder=X8664_WIN, archtype="x8664", ostype="windows", rootfs="../examples/rootfs/x8664_windows",
+        ql = Qiling(code=X8664_WIN, archtype="x8664", ostype="windows", rootfs="../examples/rootfs/x8664_windows",
                     output="debug")
         ql.run()
         del ql

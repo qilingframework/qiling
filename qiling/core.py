@@ -31,6 +31,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             argv=None,
             rootfs=None,
             env=None,
+            code=None,
             shellcoder=None,
             ostype=None,
             archtype=None,
@@ -63,6 +64,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._argv = argv
         self._rootfs = rootfs
         self._env = env if env else {}
+        self._code = code
         self._shellcoder = shellcoder
         self._ostype = ostype
         self._archtype = archtype
@@ -113,16 +115,24 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         ##############
         # Shellcode? #
         ##############
+
+        # for Legacy
         if self._shellcoder:
-            if (self._ostype and type(self._ostype) == str) and (self._archtype and type(self._archtype) == str):
-                self._ostype = ostype_convert(self._ostype.lower())
+            self._code = self._shellcoder
+
+        if self._code or (self._archtype and type(self._archtype) == str):
+            if (self._archtype and type(self._archtype) == str):
                 self._archtype = arch_convert(self._archtype.lower())
-                self._argv = ["qilingshellcoder"]
-                if self._rootfs is None:
-                    self._rootfs = "."
+            
+            if (self._ostype and type(self._ostype) == str):     
+                self._ostype = ostype_convert(self._ostype.lower())
+            
+            self._argv = ["qilingcode"]
+            if self._rootfs is None:
+                self._rootfs = "."                
 
         # file check
-        if self._shellcoder is None:
+        if self._code is None:
             if not os.path.exists(str(self._argv[0])):
                 raise QlErrorFileNotFound("Target binary not found")
             if not os.path.exists(self._rootfs):
@@ -134,7 +144,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         ##########
         # Loader #
         ##########
-        if self._shellcoder is None:
+        if self._code is None:
             guessed_archtype, guessed_ostype, guessed_archendian = ql_guess_emu_env(self._path)
             if self._ostype is None:
                 self._ostype = guessed_ostype
@@ -180,7 +190,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._pointersize = (self.archbit // 8)  
         
         # Endian for shellcode needs to set manually
-        if self._shellcoder:
+        if self._code:
             self._archendian = QL_ENDIAN.EL
             if bigendian == True and self._archtype in (QL_ARCH_ENDIAN):
                 self._archendian = QL_ENDIAN.EB
@@ -354,7 +364,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
               - "windows" : Windows
               - "uefi" : UEFI
               - "dos" : DOS
-            Example: Qiling(shellcoder=b"\x90", ostype="macos", archtype="x8664", bigendian=False)
+            Example: Qiling(code=b"\x90", ostype="macos", archtype="x8664", bigendian=False)
         """
         return self._ostype
 
@@ -374,7 +384,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
               - "arm_thumb" : ARM with thumb mode.
               - "arm64" : ARM64
               - "a8086" : 8086
-            Example: Qiling(shellcoder=b"\x90", ostype="macos", archtype="x8664", bigendian=False)
+            Example: Qiling(code=b"\x90", ostype="macos", archtype="x8664", bigendian=False)
         """
         return self._archtype
 
@@ -386,7 +396,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
                   This option only takes effect for shellcode.
 
             Type: int
-            Example: Qiling(shellcoder=b"\x90", ostype="macos", archtype="x8664", bigendian=False)
+            Example: Qiling(code=b"\x90", ostype="macos", archtype="x8664", bigendian=False)
         """
         return self._archendian
 
@@ -407,15 +417,15 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         return self._pointersize
 
     @property
-    def shellcoder(self) -> bytes:
+    def code(self) -> bytes:
         """ The shellcode to execute.
 
             Note: It can't be used with "argv" parameter.
 
             Type: bytes
-            Example: Qiling(shellcoder=b"\x90", ostype="macos", archtype="x8664", bigendian=False)
+            Example: Qiling(code=b"\x90", ostype="macos", archtype="x8664", bigendian=False)
         """
-        return self._shellcoder
+        return self._code
 
     @property
     def path(self) -> str:

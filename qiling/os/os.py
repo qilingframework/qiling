@@ -56,11 +56,11 @@ class QlOs(QlOsUtils):
             64: 0xffffffffffffffff
         }.get(self.ql.archbit, None)
 
-        if self.ql.shellcoder:
-            self.shellcoder_ram_size = int(self.profile.get("SHELLCODER", "ram_size"), 16)
+        if self.ql.code:
+            self.code_ram_size = int(self.profile.get("CODE", "ram_size"), 16)
             # this shellcode entrypoint does not work for windows
             # windows shellcode entry point will comes from pe loader
-            self.entry_point = int(self.profile.get("SHELLCODER", "entry_point"), 16)
+            self.entry_point = int(self.profile.get("CODE", "entry_point"), 16)
 
         # We can save every syscall called
         self.syscalls = {}

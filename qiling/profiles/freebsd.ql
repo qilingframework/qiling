@@ -1,4 +1,4 @@
-[SHELLCODER]
+[CODE]
 ram_size = 0xa00000
 entry_point = 0x1000000
 

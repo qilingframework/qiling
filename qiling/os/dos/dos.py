@@ -818,7 +818,7 @@ class QlOsDos(QlOs):
             self.ql.loader.elf_entry = self.ql.entry_point
         else:
             self.ql.entry_point = self.ql.loader.start_address
-        if not self.ql.shellcoder:
+        if not self.ql.code:
             self.start_time = datetime.now()
             self.ticks_per_second = self.ql.loader.ticks_per_second
             try:

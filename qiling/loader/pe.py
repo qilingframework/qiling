@@ -291,7 +291,7 @@ class Process():
         self.ldr_list.append(ldr_table_entry)
 
     def init_exports(self):
-        if self.ql.shellcoder:
+        if self.ql.code:
             return
         if self.pe.OPTIONAL_HEADER.DATA_DIRECTORY[pefile.DIRECTORY_ENTRY['IMAGE_DIRECTORY_ENTRY_EXPORT']].VirtualAddress != 0:
             # Do a full load if IMAGE_DIRECTORY_ENTRY_EXPORT is present so we can load the exports
@@ -396,7 +396,7 @@ class QlLoaderPE(QlLoader, Process):
         self.pe_entry_point = 0
         self.sizeOfStackReserve = 0        
 
-        if not self.ql.shellcoder:
+        if not self.ql.code:
             self.pe = pefile.PE(self.path, fast_load=True)
             self.is_driver = self.pe.is_driver()
             if self.is_driver == True:
@@ -459,7 +459,7 @@ class QlLoaderPE(QlLoader, Process):
         self.ql.log.info("Initiate stack address at 0x%x " % self.stack_address)
         self.ql.mem.map(self.stack_address, self.stack_size, info="[stack]")
 
-        if self.path and not self.ql.shellcoder:
+        if self.path and not self.ql.code:
             # for simplicity, no image base relocation
             self.pe_image_address = self.pe.OPTIONAL_HEADER.ImageBase
             self.pe_image_address_size = self.ql.mem.align(self.pe.OPTIONAL_HEADER.SizeOfImage, 0x1000)
@@ -602,7 +602,7 @@ class QlLoaderPE(QlLoader, Process):
             self.ql.os.entry_point = self.entry_point
             self.ql.os.pid = 101
 
-        elif self.ql.shellcoder:
+        elif self.ql.code:
             self.filepath = b""
             if self.ql.archtype == QL_ARCH.X86:
                 self.ql.reg.esp = self.stack_address + 0x3000
@@ -612,12 +612,12 @@ class QlLoaderPE(QlLoader, Process):
                 self.ql.reg.rbp = self.ql.reg.rsp
 
             # load shellcode in
-            self.ql.mem.map(self.entry_point, self.ql.os.shellcoder_ram_size, info="[shellcode_base]")
+            self.ql.mem.map(self.entry_point, self.ql.os.code_ram_size, info="[shellcode_base]")
             # rewrite entrypoint for windows shellcode
             self.ql.os.entry_point = self.entry_point
             self.ql.os.pid = 101
 
-            self.ql.mem.write(self.entry_point, self.ql.shellcoder)
+            self.ql.mem.write(self.entry_point, self.ql.code)
             
             self.init_thread_information_block()
             # load dlls

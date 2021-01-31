@@ -53,16 +53,16 @@ class QlGdb(QlDebugger, object):
         self.ip = ip
         self.port = port
 
-        if ql.shellcoder:
+        if ql.code:
             load_address = ql.os.entry_point
-            exit_point = load_address + len(ql.shellcoder)
+            exit_point = load_address + len(ql.code)
         else:
             load_address = ql.loader.load_address
             exit_point = load_address + os.path.getsize(ql.path)
 
         self.gdb.initialize(self.ql, exit_point=exit_point, mappings=[(hex(load_address))])
         
-        if self.ql.ostype in (QL_OS.LINUX, QL_OS.FREEBSD) and not self.ql.shellcoder:
+        if self.ql.ostype in (QL_OS.LINUX, QL_OS.FREEBSD) and not self.ql.code:
             self.entry_point = self.ql.os.elf_entry
         else:
             self.entry_point = self.ql.os.entry_point
@@ -500,7 +500,7 @@ class QlGdb(QlDebugger, object):
                         self.send("l" + file_contents)
 
                 elif subcmd.startswith('Xfer:auxv:read::'):
-                    if self.ql.shellcoder:
+                    if self.ql.code:
                         return
                     if self.ql.ostype in (QL_OS.LINUX, QL_OS.FREEBSD) :
                         if self.ql.archbit == 64:

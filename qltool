@@ -60,15 +60,15 @@ def run_shellcode(options):
     elif options.hex == True:
         if options.input is not None:
             print ("Load HEX from ARGV")
-            shellcoder = str(options.input).strip("\\\\x").split("x")
-            shellcoder = "".join(shellcoder).strip()
-            shellcoder =  bytes.fromhex(shellcoder)
+            code = str(options.input).strip("\\\\x").split("x")
+            code = "".join(code).strip()
+            code =  bytes.fromhex(code)
         elif options.filename is not None:
             print ("Load HEX from FILE")
-            shellcoder = str(read_file(options.filename)).strip('b\'').strip('\\n')
-            shellcoder = shellcoder.strip('x').split("\\\\x")
-            shellcoder = "".join(shellcoder).strip()
-            shellcoder = bytes.fromhex(shellcoder)
+            code = str(read_file(options.filename)).strip('b\'').strip('\\n')
+            code = code.strip('x').split("\\\\x")
+            code = "".join(code).strip()
+            code = bytes.fromhex(code)
         else:
             print("ERROR: File not found")
             exit(1)
@@ -82,17 +82,17 @@ def run_shellcode(options):
             archendian = QL_ENDIAN.EB
         # TODO: Thumb support.
         assembler = ql_create_assembler(archtype, archendian, 0)
-        shellcoder, _ = assembler.asm(assembly)
-        shellcoder = bytes(shellcoder)
+        code, _ = assembler.asm(assembly)
+        code = bytes(code)
 
     else:
         print ("Load BIN from FILE")
         if options.filename is None:
             print("ERROR: File not found")
             exit(1)
-        shellcoder = read_file(options.filename)
+        code = read_file(options.filename)
 
-    return Qiling(shellcoder = shellcoder, archtype = options.arch, bigendian = options.bigendian, ostype = options.os, rootfs = options.rootfs, output = options.output, profile = options.profile)
+    return Qiling(code = code, archtype = options.arch, bigendian = options.bigendian, ostype = options.os, rootfs = options.rootfs, output = options.output, profile = options.profile)
 
 def version():
     print("qltool for Qiling %s, using Unicorn %s" %(ql_version, unicorn.__version__))

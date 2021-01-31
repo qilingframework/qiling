@@ -35,8 +35,8 @@ class QlOsFreebsd(QlOsPosix):
             self.ql.loader.elf_entry = self.ql.entry_point            
         
         try:
-            if self.ql.shellcoder:
-                self.ql.emu_start(self.entry_point, (self.entry_point + len(self.ql.shellcoder)), self.ql.timeout, self.ql.count)
+            if self.ql.code:
+                self.ql.emu_start(self.entry_point, (self.entry_point + len(self.ql.code)), self.ql.timeout, self.ql.count)
             else:
                 if self.ql.loader.elf_entry != self.ql.loader.entry_point:
                     self.ql.emu_start(self.ql.loader.entry_point, self.ql.loader.elf_entry, self.ql.timeout)

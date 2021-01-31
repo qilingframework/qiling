@@ -92,8 +92,8 @@ class QlOsLinux(QlOsPosix):
             self.exit_point = self.ql.exit_point
 
         try:
-            if self.ql.shellcoder:
-                self.ql.emu_start(self.entry_point, (self.entry_point + len(self.ql.shellcoder)), self.ql.timeout, self.ql.count)
+            if self.ql.code:
+                self.ql.emu_start(self.entry_point, (self.entry_point + len(self.ql.code)), self.ql.timeout, self.ql.count)
             else:
                 if self.ql.multithread == True:
                     # start multithreading

@@ -425,7 +425,7 @@ def ql_syscall_execve(ql, execve_pathname, execve_argv, execve_envp, *args, **kw
     ql.mem.map_info     = []
     ql.clear_ql_hooks()
     
-    if ql.shellcoder:
+    if ql.code:
         return     
     
     # ql._uc               = ql.arch.init_uc
