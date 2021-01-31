@@ -112,8 +112,8 @@ class QlOsWindows(QlOs):
                 try:
                     winapi_func(self.ql, address, {})
                         
-                except Exception:
-                    self.ql.log.exception("")
+                except Exception as ex:
+                    self.ql.log.exception(ex)
                     self.ql.log.info("%s Exception Found" % winapi_name)
                     self.emu_error()
                     raise QlErrorSyscallError("Windows API Implementation Error")
