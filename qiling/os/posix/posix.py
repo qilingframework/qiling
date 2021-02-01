@@ -24,6 +24,12 @@ from qiling.os.linux.function_hook import ARMFunctionArg, MIPS32FunctionArg, ARM
 
 
 def getNameFromErrorCode(ret):
+    """
+    Return the hex representation of a return value and if possible
+    add the corresponding error name to it.
+    :param ret: Return value of a syscall.
+    :return: The string representation of the error.
+    """
     if -ret in errors:
         return hex(ret) + "|" + errors[-ret]
     else:
