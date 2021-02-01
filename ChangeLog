@@ -9,6 +9,7 @@ BREAK CHANGE
 - ql.filter now accepts a regular expression.
 - Remove ql.log_dir, ql.log_split, ql.append but add ql.log_file instead.
 
+
 ------------------------------------
 [Version 1.3]: January [SOMETHING], 2021
 
@@ -19,6 +20,7 @@ BREAK CHANGE
 - Clean up more test case
 - First stage multithread rewrite done
 - change shellcode to code, ready for future expansion
+- Add support for SMM_RUNTIME_SERVICES_TABLE
 
 
 ------------------------------------
