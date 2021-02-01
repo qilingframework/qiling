@@ -123,7 +123,7 @@ class QlLoaderPE_UEFI(QlLoader):
         self.install_loaded_image_protocol(image_base, image_size)
 
         # this would be used later be os.find_containing_image
-        self.images.append(self.coverage_image(image_base, image_size, path))
+        self.images.append(self.coverage_image(image_base, image_base + image_size, path))
 
         # update next memory slot to allow sequencial loading. its availability
         # is unknown though

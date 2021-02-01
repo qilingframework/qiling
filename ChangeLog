@@ -21,6 +21,7 @@ BREAK CHANGE
 - First stage multithread rewrite done
 - change shellcode to code, ready for future expansion
 - Add support for SMM_RUNTIME_SERVICES_TABLE
+- Fix regression in code coverage collection.
 
 
 ------------------------------------
