@@ -23,6 +23,13 @@ from qiling.os.freebsd.syscall import *
 from qiling.os.linux.function_hook import ARMFunctionArg, MIPS32FunctionArg, ARM64FunctionArg, X86FunctionArg, X64FunctionArg
 
 
+def getNameFromErrorCode(ret):
+    if abs(ret) in errors:
+        return hex(ret) + "|" + errors[abs(ret)]
+    else:
+        return hex(ret)
+
+
 class QlOsPosix(QlOs):
     def __init__(self, ql):
         super(QlOsPosix, self).__init__(ql)
@@ -173,7 +180,7 @@ class QlOsPosix(QlOs):
                         # each name has a list of calls, we want the last one and we want to update the return value
                         self.syscalls[self.syscall_name][-1]["result"] = ret
                         ret = self.set_syscall_return(ret)
-                        self.ql.log.debug("%s() = %s" % (self.syscall_map.__name__[11:], hex(ret)))
+                        self.ql.log.debug("%s() = %s" % (self.syscall_map.__name__[11:], getNameFromErrorCode(ret)))
 
                 if self.syscall_onExit is not None:
                     self.syscall_onExit(self.ql, self.get_func_arg()[0], self.get_func_arg()[1], self.get_func_arg()[2], self.get_func_arg()[3], self.get_func_arg()[4], self.get_func_arg()[5])
