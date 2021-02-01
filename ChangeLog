@@ -18,6 +18,7 @@ BREAK CHANGE
 - Bring sality test to work again
 - Clean up more test case
 - First stage multithread rewrite done
+- change shellcode to code, ready for future expansion
 
 
 ------------------------------------
