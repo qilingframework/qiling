@@ -24,8 +24,8 @@ from qiling.os.linux.function_hook import ARMFunctionArg, MIPS32FunctionArg, ARM
 
 
 def getNameFromErrorCode(ret):
-    if abs(ret) in errors:
-        return hex(ret) + "|" + errors[abs(ret)]
+    if -ret in errors:
+        return hex(ret) + "|" + errors[-ret]
     else:
         return hex(ret)
 
