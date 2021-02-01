@@ -123,6 +123,30 @@ def CoreInstallConfigurationTable(ql, guid: str, table: int) -> int:
 
 	return EFI_SUCCESS
 
+# see: MdeModulePkg/Core/PiSmmCore/InstallConfigurationTable.c
+def SmmInstallConfigurationTable(ql, guid: str, table: int) -> int:
+	if not guid:
+		return EFI_INVALID_PARAMETER
+
+	guid = guid.lower()
+	confs = ql.loader.smm_conf_table_array
+
+	# find configuration table entry by guid. if found, idx would be set to the entry index
+	# in the array. if not, idx would be set to one past end of array
+	if guid not in confs:
+		confs.append(guid)
+		#TODO: gST.NumberOfTableEntries = len(confs)
+
+	idx = confs.index(guid)
+	ptr = ql.loader.smm_conf_table_array_ptr + (idx * EFI_CONFIGURATION_TABLE.sizeof())
+
+	instance = EFI_CONFIGURATION_TABLE()
+	instance.VendorGuid = str_to_guid(guid)
+	instance.VendorTable = table
+	instance.saveTo(ql, ptr)
+
+	return EFI_SUCCESS
+
 def GetEfiConfigurationTable(ql, guid: str) -> Optional[int]:
 	"""Find a configuration table by its GUID.
 	"""
