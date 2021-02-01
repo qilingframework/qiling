@@ -20,7 +20,7 @@ class Qltool_Test(unittest.TestCase):
             raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))   
 
     def test_qltool_shellcode(self):
-        create = [sys.executable, '../qltool', 'shellcode', '--os','linux','--arch', 'x86','--asm', '-f', '../examples/shellcodes/lin32_execve.asm']
+        create = [sys.executable, '../qltool', 'code', '--os','linux','--arch', 'x86','--asm', '-f', '../examples/shellcodes/lin32_execve.asm']
         try:
             subprocess.check_output(create,stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as e:    
