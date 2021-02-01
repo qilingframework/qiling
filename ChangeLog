@@ -23,6 +23,7 @@ BREAK CHANGE
 - Add support for SMM_RUNTIME_SERVICES_TABLE
 - Fix regression in code coverage collection.
 
+
 ------------------------------------
 [Version 1.2.1]: January 1st, 2021
 
