@@ -196,7 +196,9 @@ class QlQdb(cmd.Cmd, QlDebugger):
         if self._ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB) and entry & 1:
             entry -= 1
 
-        self.set_breakpoint(entry, _is_temp=True)
+        if entry not in self.breakpoints.keys():
+            self.set_breakpoint(entry, _is_temp=True)
+
         self.do_run()
 
 
