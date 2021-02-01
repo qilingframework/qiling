@@ -31,7 +31,7 @@ def getNameFromErrorCode(ret):
     :return: The string representation of the error.
     """
     if -ret in errors:
-        return hex(ret) + "|" + errors[-ret]
+        return hex(ret) + ":" + errors[-ret]
     else:
         return hex(ret)
 
