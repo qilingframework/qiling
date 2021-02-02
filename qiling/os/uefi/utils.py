@@ -111,7 +111,6 @@ def CoreInstallConfigurationTable(ql, guid: str, table: int) -> int:
 	# in the array. if not, idx would be set to one past end of array
 	if guid not in confs:
 		confs.append(guid)
-		#TODO: gST.NumberOfTableEntries = len(confs)
 
 	idx = confs.index(guid)
 	ptr = ql.loader.efi_conf_table_array_ptr + (idx * EFI_CONFIGURATION_TABLE.sizeof())
@@ -135,7 +134,6 @@ def SmmInstallConfigurationTable(ql, guid: str, table: int) -> int:
 	# in the array. if not, idx would be set to one past end of array
 	if guid not in confs:
 		confs.append(guid)
-		#TODO: gST.NumberOfTableEntries = len(confs)
 
 	idx = confs.index(guid)
 	ptr = ql.loader.smm_conf_table_array_ptr + (idx * EFI_CONFIGURATION_TABLE.sizeof())

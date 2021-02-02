@@ -8,7 +8,7 @@ import binascii
 from qiling.const import *
 from qiling.os.const import *
 
-from qiling.os.uefi.const import EFI_SUCCESS, EFI_NOT_FOUND, EFI_OUT_OF_RESOURCES
+from qiling.os.uefi.const import EFI_ERROR, EFI_SUCCESS, EFI_NOT_FOUND, EFI_OUT_OF_RESOURCES
 from qiling.os.uefi.utils import *
 from qiling.os.uefi.fncc import *
 from qiling.os.uefi.ProcessorBind import *
@@ -85,7 +85,14 @@ def hook_SmmInstallConfigurationTable(ql, address, params):
 	guid = params["Guid"]
 	table = params["Table"]
 
-	return SmmInstallConfigurationTable(ql, guid, table)
+	status = SmmInstallConfigurationTable(ql, guid, table)
+	if not EFI_ERROR(status):
+		# We can't increment the counter directly in SmmInstallConfigurationTable since it might
+		# be called even before ql.loader.gSMST gets initialized.
+		gSMST = EFI_SMM_SYSTEM_TABLE2.loadFrom(ql, ql.loader.gSMST)
+		gSMST.NumberOfTableEntries += 1
+		gSMST.saveTo(ql, ql.loader.gSMST)
+	return status
 
 @dxeapi(params = {
 	"type"		: INT,			# EFI_ALLOCATE_TYPE
