@@ -85,7 +85,7 @@ def hook_SmmInstallConfigurationTable(ql, address, params):
 	guid = params["Guid"]
 	table = params["Table"]
 
-	return CoreInstallConfigurationTable(ql, guid, table)
+	return SmmInstallConfigurationTable(ql, guid, table)
 
 @dxeapi(params = {
 	"type"		: INT,			# EFI_ALLOCATE_TYPE
