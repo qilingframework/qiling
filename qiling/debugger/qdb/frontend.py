@@ -42,8 +42,8 @@ def examine_mem(ql, addr, fmt):
             offset = line * sz * 4
             print("0x{:x}:\t".format(addr+offset), end="")
 
-            idx = line * sz
-            for each in mem_read[idx:idx+(sz*4)]:
+            idx = line * 4
+            for each in mem_read[idx:idx+4]:
                 data = unpack(each, sz)
                 prefix = "0x" if ft in ("x", "a") else ""
                 pad = '0' + str(sz*2) if ft in ('x', 'a', 't') else ''
