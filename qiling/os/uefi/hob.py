@@ -29,7 +29,7 @@ def GetHobList(ql) -> int:
 	"""
 
 	conftable_guid = ql.os.profile['HOB_LIST']['Guid']
-	conftable_ptr = GetEfiConfigurationTable(ql, conftable_guid)
+	conftable_ptr = GetEfiConfigurationTable(ql.loader.dxe_context, conftable_guid)
 	conftable = EFI_CONFIGURATION_TABLE.loadFrom(ql, conftable_ptr)
 
 	return ql.unpack64(conftable.VendorTable)

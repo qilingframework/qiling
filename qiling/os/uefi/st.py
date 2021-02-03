@@ -3,11 +3,8 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import binascii
-
-
 from qiling.os.uefi import bs, rt, ds
-from qiling.os.uefi.utils import CoreInstallConfigurationTable
+from qiling.os.uefi.utils import install_configuration_table
 from qiling.os.uefi.UefiSpec import EFI_SYSTEM_TABLE, EFI_BOOT_SERVICES, EFI_RUNTIME_SERVICES, EFI_CONFIGURATION_TABLE
 
 # static mem layout:
@@ -49,31 +46,9 @@ from qiling.os.uefi.UefiSpec import EFI_SYSTEM_TABLE, EFI_BOOT_SERVICES, EFI_RUN
 #
 #		... the remainder of the 256 KiB chunk may be used for more conf table data
 
-def install_configuration_table(ql, key: str, table: int):
-	"""Create a new Configuration Table entry and add it to the list.
-
-	Args:
-		ql    : Qiling instance
-		key   : profile section name that holds the entry data
-		table : address of configuration table data; if None, data will be read
-		        from profile section into memory
-	"""
-
-	cfgtable = ql.os.profile[key]
-	guid = cfgtable['Guid']
-
-	# if pointer to table data was not specified, load table data
-	# from profile and have table pointing to it
-	if table is None:
-		data = binascii.unhexlify(cfgtable['TableData'])
-		table = ql.loader.efi_conf_table_data_next_ptr
-
-		ql.mem.write(table, data)
-		ql.loader.efi_conf_table_data_next_ptr += len(data)
-
-	CoreInstallConfigurationTable(ql, guid, table)
-
 def initialize(ql, gST : int):
+	ql.loader.gST = gST
+
 	gBS = gST + EFI_SYSTEM_TABLE.sizeof()		# boot services
 	gRT = gBS + EFI_BOOT_SERVICES.sizeof()		# runtime services
 	gDS = gRT + EFI_RUNTIME_SERVICES.sizeof()	# dxe services
@@ -90,30 +65,32 @@ def initialize(ql, gST : int):
 	rt.initialize(ql, gRT)
 	ds.initialize(ql, gDS)
 
+	instance = EFI_SYSTEM_TABLE()
+	instance.RuntimeServices = gRT
+	instance.BootServices = gBS
+	instance.NumberOfTableEntries = 0
+	instance.ConfigurationTable = cfg
+
+	instance.saveTo(ql, gST)
+
 	# configuration tables bookkeeping
 	confs = []
 
 	# these are needed for utils.CoreInstallConfigurationTable
-	ql.loader.efi_conf_table_array = confs
-	ql.loader.efi_conf_table_array_ptr = cfg
+	ql.loader.dxe_context.conf_table_array = confs
+	ql.loader.dxe_context.conf_table_array_ptr = cfg
 
 	# configuration table data space; its location is calculated by leaving
 	# enough space for 100 configuration table entries. only a few entries are
 	# expected, so 100 should definitely suffice
 	conf_data = cfg + EFI_CONFIGURATION_TABLE.sizeof() * 100
-	ql.loader.efi_conf_table_data_ptr = conf_data
-	ql.loader.efi_conf_table_data_next_ptr = conf_data
+	ql.loader.dxe_context.conf_table_data_ptr = conf_data
+	ql.loader.dxe_context.conf_table_data_next_ptr = conf_data
 
-	install_configuration_table(ql, "HOB_LIST", None)
-	install_configuration_table(ql, "DXE_SERVICE_TABLE", gDS)
+	install_configuration_table(ql.loader.dxe_context, "HOB_LIST", None)
+	install_configuration_table(ql.loader.dxe_context, "DXE_SERVICE_TABLE", gDS)
 
-	instance = EFI_SYSTEM_TABLE()
-	instance.RuntimeServices = gRT
-	instance.BootServices = gBS
-	instance.NumberOfTableEntries = len(confs)	# HOB_LIST and DXE_SERVICES
-	instance.ConfigurationTable = cfg
 
-	instance.saveTo(ql, gST)
 
 __all__ = [
 	'initialize'

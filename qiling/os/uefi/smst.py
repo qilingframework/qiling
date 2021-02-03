@@ -8,7 +8,7 @@ import binascii
 from qiling.const import *
 from qiling.os.const import *
 
-from qiling.os.uefi.const import EFI_ERROR, EFI_SUCCESS, EFI_NOT_FOUND, EFI_OUT_OF_RESOURCES
+from qiling.os.uefi.const import EFI_SUCCESS, EFI_NOT_FOUND, EFI_OUT_OF_RESOURCES
 from qiling.os.uefi.utils import *
 from qiling.os.uefi.fncc import *
 from qiling.os.uefi.ProcessorBind import *
@@ -82,17 +82,7 @@ class EFI_SMM_SYSTEM_TABLE2(STRUCT):
 	"Table"	: POINTER	# PTR(VOID)
 })
 def hook_SmmInstallConfigurationTable(ql, address, params):
-	guid = params["Guid"]
-	table = params["Table"]
-
-	status = SmmInstallConfigurationTable(ql, guid, table)
-	if not EFI_ERROR(status):
-		# We can't increment the counter directly in SmmInstallConfigurationTable since it might
-		# be called even before ql.loader.gSMST gets initialized.
-		gSMST = EFI_SMM_SYSTEM_TABLE2.loadFrom(ql, ql.loader.gSMST)
-		gSMST.NumberOfTableEntries += 1
-		gSMST.saveTo(ql, ql.loader.gSMST)
-	return status
+	return common.InstallConfigurationTable(ql.loader.smm_context, params)
 
 @dxeapi(params = {
 	"type"		: INT,			# EFI_ALLOCATE_TYPE
@@ -243,52 +233,14 @@ def hook_SmiHandlerRegister(ql, address, params):
 def hook_SmiHandlerUnRegister(ql, address, params):
 	return EFI_SUCCESS
 
-def install_configuration_table(ql, key: str, table: int):
-	"""Create a new Configuration Table entry and add it to the list.
-
-	Args:
-		ql    : Qiling instance
-		key   : profile section name that holds the entry data
-		table : address of configuration table data; if None, data will be read
-		        from profile section into memory
-	"""
-
-	cfgtable = ql.os.profile[key]
-	guid = cfgtable['Guid']
-
-	# if pointer to table data was not specified, load table data
-	# from profile and have table pointing to it
-	if table is None:
-		data = binascii.unhexlify(cfgtable['TableData'])
-		table = ql.loader.smm_conf_table_data_next_ptr
-
-		ql.mem.write(table, data)
-		ql.loader.smm_conf_table_data_next_ptr += len(data)
-
-	SmmInstallConfigurationTable(ql, guid, table)
-
 def initialize(ql, gSmst : int):
+	ql.loader.gSmst = gSmst
+
 	gSmmRT = gSmst + EFI_SMM_SYSTEM_TABLE2.sizeof()	# smm runtime services
 	cfg = gSmmRT + EFI_RUNTIME_SERVICES.sizeof()	# configuration tables array
 
 	rt.initialize(ql, gSmmRT)
 
-	# configuration tables bookkeeping
-	confs = []
-
-	# these are needed for utils.SmmInstallConfigurationTable
-	ql.loader.smm_conf_table_array = confs
-	ql.loader.smm_conf_table_array_ptr = cfg
-
-	# configuration table data space; its location is calculated by leaving
-	# enough space for 100 configuration table entries. only a few entries are
-	# expected, so 100 should definitely suffice
-	conf_data = cfg + EFI_CONFIGURATION_TABLE.sizeof() * 100
-	ql.loader.smm_conf_table_data_ptr = conf_data
-	ql.loader.smm_conf_table_data_next_ptr = conf_data
-
-	install_configuration_table(ql, "SMM_RUNTIME_SERVICES_TABLE", gSmmRT)
-	
 	descriptor = {
 		'struct' : EFI_SMM_SYSTEM_TABLE2,
 		'fields' : (
@@ -307,7 +259,7 @@ def initialize(ql, gSmst : int):
 			('NumberOfCpus',					None),
 			('CpuSaveStateSize',				None),
 			('CpuSaveState',					None),
-			('NumberOfTableEntries',			len(confs)),
+			('NumberOfTableEntries',			0),
 			('SmmConfigurationTable',			cfg),
 			('SmmInstallProtocolInterface',		hook_SmmInstallProtocolInterface),
 			('SmmUninstallProtocolInterface',	hook_SmmUninstallProtocolInterface),
@@ -323,6 +275,24 @@ def initialize(ql, gSmst : int):
 
 	instance = init_struct(ql, gSmst, descriptor)
 	instance.saveTo(ql, gSmst)
+
+	# configuration tables bookkeeping
+	confs = []
+
+	# these are needed for utils.SmmInstallConfigurationTable
+	ql.loader.smm_context.conf_table_array = confs
+	ql.loader.smm_context.conf_table_array_ptr = cfg
+
+	# configuration table data space; its location is calculated by leaving
+	# enough space for 100 configuration table entries. only a few entries are
+	# expected, so 100 should definitely suffice
+	conf_data = cfg + EFI_CONFIGURATION_TABLE.sizeof() * 100
+	ql.loader.smm_context.conf_table_data_ptr = conf_data
+	ql.loader.smm_context.conf_table_data_next_ptr = conf_data
+
+	install_configuration_table(ql.loader.smm_context, "SMM_RUNTIME_SERVICES_TABLE", gSmmRT)
+	
+
 
 __all__ = [
 	'EFI_SMM_SYSTEM_TABLE2',

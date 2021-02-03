@@ -248,17 +248,7 @@ def hook_LocateDevicePath(ql, address, params):
 	"Table"	: POINTER	# PTR(VOID)
 })
 def hook_InstallConfigurationTable(ql, address, params):
-	guid = params["Guid"]
-	table = params["Table"]
-
-	status = CoreInstallConfigurationTable(ql, guid, table)
-	if not EFI_ERROR(status):
-		# We can't increment the counter directly in CoreInstallConfigurationTable since it might
-		# be called even before ql.loader.gST gets initialized.
-		gST = EFI_SYSTEM_TABLE.loadFrom(ql, ql.loader.gST)
-		gST.NumberOfTableEntries += 1
-		gST.saveTo(ql, ql.loader.gST)
-	return status
+	return common.InstallConfigurationTable(ql.loader.dxe_context, params)
 
 @dxeapi(params = {
 	"BootPolicy"		: BOOL,			# BOOLEAN

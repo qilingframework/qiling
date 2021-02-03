@@ -228,7 +228,7 @@ class QlLoaderPE_UEFI(QlLoader):
         # -------- init BS / RT / DXE data structures and protocols --------
 
         os_profile = self.ql.os.profile[arch_key]
-        self.dxe_context = context.UefiContext(self.ql)
+        self.dxe_context = context.DxeContext(self.ql)
 
         # initialize and locate heap
         heap_base = int(os_profile["heap_address"], 0)
@@ -276,8 +276,6 @@ class QlLoaderPE_UEFI(QlLoader):
         gSmst = self.smm_context.heap.alloc(256 * 1024)
         smst.initialize(self.ql, gSmst)
 
-        self.gST = gST
-        self.gSmst = gSmst
         self.in_smm = False
 
         protocols = (
