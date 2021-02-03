@@ -248,10 +248,7 @@ def hook_LocateDevicePath(ql, address, params):
 	"Table"	: POINTER	# PTR(VOID)
 })
 def hook_InstallConfigurationTable(ql, address, params):
-	guid = params["Guid"]
-	table = params["Table"]
-
-	return CoreInstallConfigurationTable(ql, guid, table)
+	return common.InstallConfigurationTable(ql.loader.dxe_context, params)
 
 @dxeapi(params = {
 	"BootPolicy"		: BOOL,			# BOOLEAN

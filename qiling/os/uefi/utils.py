@@ -3,11 +3,13 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+import binascii
+
 from uuid import UUID
 from typing import Optional
 
 from qiling.os.uefi.const import EFI_SUCCESS, EFI_INVALID_PARAMETER
-from qiling.os.uefi.UefiSpec import EFI_CONFIGURATION_TABLE
+from qiling.os.uefi.UefiSpec import EFI_CONFIGURATION_TABLE, EFI_SYSTEM_TABLE
 from qiling.os.uefi.UefiBaseType import EFI_GUID
 
 def check_and_notify_protocols(ql) -> bool:
@@ -99,64 +101,40 @@ def str_to_guid(guid: str) -> EFI_GUID:
 
 	return EFI_GUID.from_buffer_copy(buff)
 
-# see: MdeModulePkg/Core/Dxe/Misc/InstallConfigurationTable.c
-def CoreInstallConfigurationTable(ql, guid: str, table: int) -> int:
-	if not guid:
-		return EFI_INVALID_PARAMETER
+def install_configuration_table(context, key: str, table: int):
+	"""Create a new Configuration Table entry and add it to the list.
 
-	guid = guid.lower()
-	confs = ql.loader.efi_conf_table_array
+	Args:
+		ql    : Qiling instance
+		key   : profile section name that holds the entry data
+		table : address of configuration table data; if None, data will be read
+		        from profile section into memory
+	"""
 
-	# find configuration table entry by guid. if found, idx would be set to the entry index
-	# in the array. if not, idx would be set to one past end of array
-	if guid not in confs:
-		confs.append(guid)
-		#TODO: gST.NumberOfTableEntries = len(confs)
+	cfgtable = context.ql.os.profile[key]
+	guid = cfgtable['Guid']
 
-	idx = confs.index(guid)
-	ptr = ql.loader.efi_conf_table_array_ptr + (idx * EFI_CONFIGURATION_TABLE.sizeof())
+	# if pointer to table data was not specified, load table data
+	# from profile and have table pointing to it
+	if table is None:
+		data = binascii.unhexlify(cfgtable['TableData'])
+		table = context.conf_table_data_next_ptr
 
-	instance = EFI_CONFIGURATION_TABLE()
-	instance.VendorGuid = str_to_guid(guid)
-	instance.VendorTable = table
-	instance.saveTo(ql, ptr)
+		context.ql.mem.write(table, data)
+		context.conf_table_data_next_ptr += len(data)
 
-	return EFI_SUCCESS
+	context.install_configuration_table(guid, table)
 
-# see: MdeModulePkg/Core/PiSmmCore/InstallConfigurationTable.c
-def SmmInstallConfigurationTable(ql, guid: str, table: int) -> int:
-	if not guid:
-		return EFI_INVALID_PARAMETER
-
-	guid = guid.lower()
-	confs = ql.loader.smm_conf_table_array
-
-	# find configuration table entry by guid. if found, idx would be set to the entry index
-	# in the array. if not, idx would be set to one past end of array
-	if guid not in confs:
-		confs.append(guid)
-		#TODO: gST.NumberOfTableEntries = len(confs)
-
-	idx = confs.index(guid)
-	ptr = ql.loader.smm_conf_table_array_ptr + (idx * EFI_CONFIGURATION_TABLE.sizeof())
-
-	instance = EFI_CONFIGURATION_TABLE()
-	instance.VendorGuid = str_to_guid(guid)
-	instance.VendorTable = table
-	instance.saveTo(ql, ptr)
-
-	return EFI_SUCCESS
-
-def GetEfiConfigurationTable(ql, guid: str) -> Optional[int]:
+def GetEfiConfigurationTable(context, guid: str) -> Optional[int]:
 	"""Find a configuration table by its GUID.
 	"""
 
 	guid = guid.lower()
-	confs = ql.loader.efi_conf_table_array
+	confs = context.conf_table_array
 
 	if guid in confs:
 		idx = confs.index(guid)
-		ptr = ql.loader.efi_conf_table_array_ptr + (idx * EFI_CONFIGURATION_TABLE.sizeof())
+		ptr = context.conf_table_array_ptr + (idx * EFI_CONFIGURATION_TABLE.sizeof())
 
 		return ptr
 
