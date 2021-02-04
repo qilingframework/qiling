@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-
+from inspect import signature
 
 from unicorn.arm64_const import *
 from unicorn.arm_const import *
@@ -180,7 +180,18 @@ class QlOsPosix(QlOs):
                     ret = self.syscall_onEnter(self.ql, self.get_func_arg()[0], self.get_func_arg()[1], self.get_func_arg()[2], self.get_func_arg()[3], self.get_func_arg()[4], self.get_func_arg()[5])
 
                 if isinstance(ret, int) == False or ret & QL_CALL_BLOCK == 0:
-                    self.ql.log.info("0x%x: %s(0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x)" % (self.ql.reg.arch_pc, self.syscall_map.__name__[11:], self.get_func_arg()[0], self.get_func_arg()[1], self.get_func_arg()[2], self.get_func_arg()[3], self.get_func_arg()[4], self.get_func_arg()[5]))
+                    args = []
+                    for n, argname in enumerate(signature(self.syscall_map).parameters.values()):
+                        argname = str(argname)
+                        if not n or argname.startswith("*"):
+                            # first arg for syscalls is ql
+                            continue
+                        else:
+                            # cut the first part of the arg if it is of form fstatat64_fd
+                            argname = argname if "_" not in argname else "".join(argname.split("_")[1:])
+                            args.append(f"{argname}={hex(self.get_func_arg()[n-1])}")
+                    args = ", ".join(args)
+                    self.ql.log.info("0x%x: %s(%s)" % (self.ql.reg.arch_pc, self.syscall_map.__name__[11:], args))
                     ret = self.syscall_map(self.ql, self.get_func_arg()[0], self.get_func_arg()[1], self.get_func_arg()[2], self.get_func_arg()[3], self.get_func_arg()[4], self.get_func_arg()[5])
                     if ret is not None and isinstance(ret, int):
                         # each name has a list of calls, we want the last one and we want to update the return value
