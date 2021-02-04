@@ -3,16 +3,19 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import json, os, struct
+import json, os, struct 
 
+from typing import Callable, Sequence, Mapping, MutableMapping, Any
 from functools import wraps
-
 
 from qiling.os.const import *
 from qiling.os.windows.utils import *
 from qiling.const import *
 from qiling.exception import *
 from qiling.os.windows.structs import *
+from qiling.os.os import QlOs
+
+from .utils import *
      
 
 def replacetype(type, specialtype=None):

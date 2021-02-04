@@ -7,10 +7,12 @@
 from unicorn import UcError
 
 from qiling.os.os import QlOs
+from qiling.os.fncc import QlOsFncc
 
-class QlOsUefi(QlOs):
+class QlOsUefi(QlOs, QlOsFncc):
 	def __init__(self, ql):
-		super(QlOsUefi, self).__init__(ql)
+		QlOs.__init__(self, ql)
+		QlOsFncc.__init__(self, ql)
 		self.ql = ql
 		self.entry_point = 0
 		self.running_module = None

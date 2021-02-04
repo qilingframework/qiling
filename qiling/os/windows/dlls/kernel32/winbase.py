@@ -586,7 +586,7 @@ def hook_CharLowerBuffA(ql, address, params):
 def hook_CharLowerA(ql, address, params):
     lpsz = params["lpsz"]
     if (lpsz >> 16) > 0:
-        value = read_cstring(ql, lpsz)
+        value = ql.os.read_cstring(lpsz)
         value = value.lower()
         value = value.encode("utf-8")
         ql.mem.write(lpsz, value)

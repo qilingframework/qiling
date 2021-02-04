@@ -11,14 +11,17 @@ from qiling.arch.x86_const import *
 from qiling.arch.x86 import *
 from qiling.const import *
 from qiling.os.os import QlOs
+from qiling.os.fncc import QlOsFncc
 
 from .dlls import *
 from .const import *
 from .utils import *
 
-class QlOsWindows(QlOs):
+
+class QlOsWindows(QlOs, QlOsFncc):
     def __init__(self, ql):
         QlOs.__init__(self, ql)
+        QlOsFncc.__init__(self, ql)
         self.ql = ql
         self.PE_RUN = True
         self.last_error = 0
