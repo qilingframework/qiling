@@ -29,6 +29,10 @@ class QlOsFncc:
                 QL_OS.WINDOWS: 'ms',
                 QL_OS.UEFI:    'ms'
             }.get(self.ql.ostype, '')
+        elif self.ql.archtype == QL_ARCH.MIPS:
+            cc = {
+                QL_OS.LINUX:   'mips'
+            }.get(self.ql.ostype, '')                        
         else:
             # do not pick a cc; let class overrides define the necessary handlers
             cc = ''
@@ -37,14 +41,16 @@ class QlOsFncc:
         self.__cc_reg_ret = {
             QL_ARCH.A8086: UC_X86_REG_AX,
             QL_ARCH.X86:   UC_X86_REG_EAX,
-            QL_ARCH.X8664: UC_X86_REG_RAX
+            QL_ARCH.X8664: UC_X86_REG_RAX,
+            QL_ARCH.MIPS: UC_MIPS_REG_RA
         }.get(self.ql.archtype, UC_X86_REG_INVALID)
 
         # registers used to pass arguments; a None stands for a stack argument
         self._cc_args = {
             'amd64': (UC_X86_REG_RDI, UC_X86_REG_RSI, UC_X86_REG_RDX, UC_X86_REG_R10, UC_X86_REG_R8, UC_X86_REG_R9) + (None, ) * 10,
             'cdecl': (None, ) * 16,
-            'ms':    (UC_X86_REG_RCX, UC_X86_REG_RDX, UC_X86_REG_R8, UC_X86_REG_R9) + (None, ) * 12
+            'ms':    (UC_X86_REG_RCX, UC_X86_REG_RDX, UC_X86_REG_R8, UC_X86_REG_R9) + (None, ) * 12,
+            'mips':  (UC_MIPS_REG_4, UC_MIPS_REG_5, UC_MIPS_REG_6, UC_MIPS_REG_7) + (None, ) * 31
         }.get(cc, [])
 
         # shadow stack size in terms of stack items
@@ -56,7 +62,6 @@ class QlOsFncc:
     def get_param_by_index(self, index: int) -> int:
         """Get an argument value by its index.
         """
-
         max_args = len(self._cc_args)
         assert index < max_args, f'currently supporting up to {max_args} args'
 
@@ -71,6 +76,7 @@ class QlOsFncc:
             return self.ql.stack_read((1 + self._shadow + si) * self._asize)
         else:
             return self.ql.uc.reg_read(reg)
+
 
     def get_function_param(self, nargs: int) -> list:
         """Get values of `nargs` first arguments.
@@ -142,25 +148,27 @@ class QlOsFncc:
     #
     # stdcall cdecl fastcall cc
     #
-
     def __x86_cc(self, param_num, params, func, args, kwargs, passthru=False):
         # read params values
         if params is not None:
             param_num = self.set_function_params(params, args[2])
 
-        # if set, fire up the on-enter hook
-        if callable(self.winapi_func_onenter):
-            address, params = self.winapi_func_onenter(*args, **kwargs)
 
-            # override original args set
-            args = (self.ql, address, params)
+        if self.ql.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
+            # if set, fire up the on-enter hook
+            if callable(self.winapi_func_onenter):
+                address, params = self.winapi_func_onenter(*args, **kwargs)
+
+                # override original args set
+                args = (self.ql, address, params)
 
         # call function
         result = func(*args, **kwargs)
 
-        # if set, fire up the on-exit hook
-        if callable(self.winapi_func_onexit):
-            self.winapi_func_onexit(*args, **kwargs)
+        if self.ql.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
+            # if set, fire up the on-exit hook
+            if callable(self.winapi_func_onexit):
+                self.winapi_func_onexit(*args, **kwargs)
 
         # set return value
         if result is not None:
@@ -178,9 +186,12 @@ class QlOsFncc:
         ret_addr = self.ql.stack_read(0)
 
         # append syscall to list
-        self._call_api(func.__name__, params, result, self.ql.reg.arch_pc, ret_addr)
-
-        if not passthru and self.PE_RUN:
+        if self.ql.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
+            self._call_api(func.__name__, params, result, self.ql.reg.arch_pc, ret_addr)
+            if not self.PE_RUN:
+                return result
+        
+        if not passthru:
             # callee is responsible for cleaning up the stack; unwind the stack
             self.ql.reg.arch_sp = self.ql.reg.arch_sp + ((param_num + 1) * self._asize)
             self.ql.reg.arch_pc = ret_addr
@@ -192,22 +203,32 @@ class QlOsFncc:
         old_pc = self.ql.reg.arch_pc
 
         # append syscall to list
-        self._call_api(func.__name__, params, result, old_pc, self.ql.stack_read(0))
+        if self.ql.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
+            self._call_api(func.__name__, params, result, old_pc, self.ql.stack_read(0))
+            if not self.PE_RUN:
+                return result
 
-        if not passthru and self.PE_RUN:
+        if not passthru:
             self.ql.reg.arch_pc = self.ql.stack_pop()
 
         return result
 
     def x8664_fastcall(self, param_num, params, func, args, kwargs, passthru=False):
-        result, _ = self.__x86_cc(param_num, params, func, args, kwargs)
+        result, param_num = self.__x86_cc(param_num, params, func, args, kwargs)
         old_pc = self.ql.reg.arch_pc
 
         # append syscall to list
-        self._call_api(func.__name__, params, result, old_pc, self.ql.stack_read(0))
+        if self.ql.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
+            self._call_api(func.__name__, params, result, old_pc, self.ql.stack_read(0))
+            if not self.PE_RUN:
+                return result
 
-        if not passthru and self.PE_RUN:
+        if not passthru:
             self.ql.reg.arch_pc = self.ql.stack_pop()
-
+        
         return result
 
+    def mips_call(self, param_num, params, func, args, kwargs):
+        result, param_num  = self.__x86_cc(param_num, params, func, args, kwargs)
+        self.ql.reg.arch_pc = self.ql.reg.ra
+        return result

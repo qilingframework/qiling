@@ -215,36 +215,6 @@ def __x86_cc(ql, param_num, params, func, args, kwargs):
     return result, param_num
 
 
-def x86_stdcall(ql, param_num, params, func, args, kwargs):
-    # get ret addr
-    ret_addr = ql.stack_read(0)
-
-    result, param_num = __x86_cc(ql, param_num, params, func, args, kwargs)
-
-    # update stack pointer
-    ql.reg.arch_sp += (param_num + 1) * 4
-
-    ql.reg.arch_pc = ret_addr
-
-    return result
-
-
-def x86_cdecl(ql, param_num, params, func, args, kwargs):
-    result, param_num = __x86_cc(ql, param_num, params, func, args, kwargs)
-
-    ql.reg.arch_pc = ql.stack_pop()
-
-    return result
-
-
-def x8664_fastcall(ql, param_num, params, func, args, kwargs):
-    result, param_num = __x86_cc(ql, param_num, params, func, args, kwargs)
-
-    ql.reg.arch_pc = ql.stack_pop()
-
-    return result
-
-
 def mips_call(ql, param_num, params, func, args, kwargs):
     result, param_num  = __x86_cc(ql, param_num, params, func, args, kwargs)
     ql.reg.arch_pc = ql.reg.ra
@@ -262,12 +232,14 @@ def linux_kernel_api(param_num=None, params=None):
             ql = args[0]
             if ql.archtype == QL_ARCH.X86:
                 # if cc == STDCALL:
-                return x86_stdcall(ql, param_num, params, func, args, kwargs)
+                return ql.os.x86_stdcall(param_num, params, func, args, kwargs)
                 #elif cc == CDECL:
-                #    return x86_cdecl(ql, param_num, params, func, args, kwargs)
+                #    return ql.os.x86_cdecl(param_num, params, func, args, kwargs)
             elif ql.archtype == QL_ARCH.X8664:
-                return x8664_fastcall(ql, param_num, params, func, args, kwargs)
+                return ql.os.x8664_fastcall(param_num, params, func, args, kwargs)
             elif ql.archtype == QL_ARCH.MIPS:
+                # TODO: FIxing
+                #return ql.os.mips_call(param_num, params, func, args, kwargs)
                 return mips_call(ql, param_num, params, func, args, kwargs)
             else:
                 raise QlErrorArch("Unknown ql.archtype")
