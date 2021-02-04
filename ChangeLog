@@ -11,7 +11,12 @@ BREAK CHANGE
 
 
 ------------------------------------
-[Version 1.3]: January [SOMETHING], 2021
+[Version 1.4]: March [SOMETHING], 2021
+- 
+
+
+------------------------------------
+[Version 1.3]: February 5, 2021
 
 - Fix _acmdln and _wcmdln handling
 - More UEFI refactor
@@ -23,6 +28,9 @@ BREAK CHANGE
 - Add support for SMM_RUNTIME_SERVICES_TABLE
 - Fix regression in code coverage collection
 - Add generic ql.mem.read_ptr helper function
+- merge uefi, windows, linux and macos print_function
+- merge uefi, windows, linux and macos fncc
+- make macos uses more Qiling API
 
 
 ------------------------------------

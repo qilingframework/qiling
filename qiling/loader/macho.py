@@ -21,7 +21,7 @@ from qiling.os.macos.task import MachoTask
 from qiling.os.macos.kernel_func import FileSystem, map_commpage
 from qiling.os.macos.mach_port import MachPort, MachPortManager
 from qiling.os.macos.subsystems import MachHostServer, MachTaskServer
-from qiling.os.macos.utils import env_dict_to_array, ql_real_to_vm_abspath, page_align_end
+from qiling.os.macos.utils import env_dict_to_array, page_align_end
 from qiling.os.macos.thread import QlMachoThreadManagement, QlMachoThread
 
 
@@ -116,7 +116,7 @@ class QlLoaderMACHO(QlLoader):
         self.ql.os.macho_task_server = MachTaskServer(self.ql)
         
         self.envs = env_dict_to_array(self.env)
-        self.apples = ql_real_to_vm_abspath(self.ql, self.ql.path)
+        self.apples = self.ql.os.transform_to_relative_path(self.ql.path)
         self.ql.os.heap = QlMemoryHeap(self.ql, self.heap_address, self.heap_address + self.heap_size)
 
         # FIXME: Not working due to overlarge mapping, need to fix it

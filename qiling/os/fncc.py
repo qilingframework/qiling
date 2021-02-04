@@ -26,6 +26,7 @@ class QlOsFncc:
         elif self.ql.archtype == QL_ARCH.X8664:
             cc = {
                 QL_OS.LINUX:   'amd64',
+                QL_OS.MACOS:   'macosx64',
                 QL_OS.WINDOWS: 'ms',
                 QL_OS.UEFI:    'ms'
             }.get(self.ql.ostype, '')
@@ -48,6 +49,7 @@ class QlOsFncc:
         # registers used to pass arguments; a None stands for a stack argument
         self._cc_args = {
             'amd64': (UC_X86_REG_RDI, UC_X86_REG_RSI, UC_X86_REG_RDX, UC_X86_REG_R10, UC_X86_REG_R8, UC_X86_REG_R9) + (None, ) * 10,
+            'macosx64': (UC_X86_REG_RDI, UC_X86_REG_RSI, UC_X86_REG_RDX, UC_X86_REG_RCX, UC_X86_REG_R8, UC_X86_REG_R9) + (None, ) * 10,
             'cdecl': (None, ) * 16,
             'ms':    (UC_X86_REG_RCX, UC_X86_REG_RDX, UC_X86_REG_R8, UC_X86_REG_R9) + (None, ) * 12,
             'mips_o32':  (UC_MIPS_REG_4, UC_MIPS_REG_5, UC_MIPS_REG_6, UC_MIPS_REG_7) + (None, ) * 31

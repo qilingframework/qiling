@@ -159,12 +159,26 @@ class QlOsUtils:
         return result
 
     def print_function(self, address, function_name, params, ret, passthru=False):
+        PRINTK_LEVEL = {
+            0: 'KERN_EMERGE',
+            1: 'KERN_ALERT',
+            1: 'KERN_CRIT',
+            2: 'KERN_INFO',
+            3: 'KERN_ERR',
+            4: 'KERN_WARNING',
+            5: 'KERN_NOTICE',
+            6: 'KERN_INFO',
+            7: 'KERN_DEBUG',
+            8: '',
+            9: 'KERN_CONT',
+        }
+        
         if function_name.startswith('hook_'):
             function_name = function_name[5:]
 
         if function_name in ("__stdio_common_vfprintf", "__stdio_common_vfwprintf", "printf", "wsprintfW", "sprintf"):
             return
-
+        
         def _parse_param(param):
             name, value = param
 
@@ -186,7 +200,34 @@ class QlOsUtils:
         fret = f' = {ret:#x}' if ret is not None else ''
         fpass = f' (PASSTHRU)' if passthru else ''
 
-        log = f'0x{address:02x}: {function_name:s}({", ".join(fargs)}){fret}{fpass}'
+        #TODO: Old code from demigod, ready to cleanup
+        if self.ql.ostype in QL_OS_POSIX and self.ql.loader.is_driver == True:
+            log = '0x%0.2x: %s(' % (address, function_name)
+            for each in params:
+                value = params[each]
+                if type(value) == str or type(value) == bytearray:
+                    if function_name == 'printk':
+                        info = value[:2]
+                        try:
+                            level = PRINTK_LEVEL[int(info[1])]
+                            value = value[2:]
+                            log += '%s = %s "%s", ' %(each, level, value)
+                        except:
+                            log += '%s = "%s", ' %(each, value)
+                    else:
+                        log += '%s = "%s", ' %(each, value)
+                elif type(value) == tuple:
+                    log += '%s = 0x%x, ' % (each, value[0])
+                else:
+                    log += '%s = 0x%x, ' % (each, value)
+            log = log.strip(", ")
+            log += ')'
+            if ret is not None:
+                # do not print result for printk()
+                if function_name != 'printk':
+                    log += ' = 0x%x' % ret
+        else:    
+            log = f'0x{address:02x}: {function_name:s}({", ".join(fargs)}){fret}{fpass}'
 
         if self.ql.output == QL_OUTPUT.DEBUG:
             self.ql.log.debug(log)
