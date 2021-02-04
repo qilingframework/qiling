@@ -238,9 +238,7 @@ def linux_kernel_api(param_num=None, params=None):
             elif ql.archtype == QL_ARCH.X8664:
                 return ql.os.x8664_fastcall(param_num, params, func, args, kwargs)
             elif ql.archtype == QL_ARCH.MIPS:
-                # TODO: FIxing
-                #return ql.os.mips_call(param_num, params, func, args, kwargs)
-                return mips_call(ql, param_num, params, func, args, kwargs)
+                return ql.os.mips_o32_call(param_num, params, func, args, kwargs)
             else:
                 raise QlErrorArch("Unknown ql.archtype")
         return wrapper

@@ -31,7 +31,7 @@ class QlOsFncc:
             }.get(self.ql.ostype, '')
         elif self.ql.archtype == QL_ARCH.MIPS:
             cc = {
-                QL_OS.LINUX:   'mips'
+                QL_OS.LINUX:   'mips_o32'
             }.get(self.ql.ostype, '')                        
         else:
             # do not pick a cc; let class overrides define the necessary handlers
@@ -42,7 +42,7 @@ class QlOsFncc:
             QL_ARCH.A8086: UC_X86_REG_AX,
             QL_ARCH.X86:   UC_X86_REG_EAX,
             QL_ARCH.X8664: UC_X86_REG_RAX,
-            QL_ARCH.MIPS: UC_MIPS_REG_RA
+            QL_ARCH.MIPS: UC_MIPS_REG_2
         }.get(self.ql.archtype, UC_X86_REG_INVALID)
 
         # registers used to pass arguments; a None stands for a stack argument
@@ -50,7 +50,7 @@ class QlOsFncc:
             'amd64': (UC_X86_REG_RDI, UC_X86_REG_RSI, UC_X86_REG_RDX, UC_X86_REG_R10, UC_X86_REG_R8, UC_X86_REG_R9) + (None, ) * 10,
             'cdecl': (None, ) * 16,
             'ms':    (UC_X86_REG_RCX, UC_X86_REG_RDX, UC_X86_REG_R8, UC_X86_REG_R9) + (None, ) * 12,
-            'mips':  (UC_MIPS_REG_4, UC_MIPS_REG_5, UC_MIPS_REG_6, UC_MIPS_REG_7) + (None, ) * 31
+            'mips_o32':  (UC_MIPS_REG_4, UC_MIPS_REG_5, UC_MIPS_REG_6, UC_MIPS_REG_7) + (None, ) * 31
         }.get(cc, [])
 
         # shadow stack size in terms of stack items
@@ -69,6 +69,9 @@ class QlOsFncc:
 
         # should arg be read from a reg or the stack?
         if reg is None:
+            if self.ql.archtype == QL_ARCH.MIPS:
+                return self.ql.stack.read(index * self._asize)
+
             # get matching stack item
             si = index - self._cc_args.index(None)
 
@@ -228,7 +231,8 @@ class QlOsFncc:
         
         return result
 
-    def mips_call(self, param_num, params, func, args, kwargs):
+    def mips_o32_call(self, param_num, params, func, args, kwargs):
         result, param_num  = self.__x86_cc(param_num, params, func, args, kwargs)
         self.ql.reg.arch_pc = self.ql.reg.ra
+
         return result
