@@ -153,7 +153,7 @@ class QlOsFncc:
     #
     # stdcall cdecl fastcall cc
     #
-    def __x86_cc(self, param_num, params, func, args, kwargs, passthru=False):
+    def __cc(self, param_num, params, func, args, kwargs, passthru=False):
         # read params values
         if params is not None:
             param_num = self.set_function_params(params, args[2])
@@ -186,7 +186,7 @@ class QlOsFncc:
 
     def x86_stdcall(self, param_num, params, func, args, kwargs, passthru=False):
         # if we check ret_addr before the call, we can't modify the ret_addr from inside the hook
-        result, param_num = self.__x86_cc(param_num, params, func, args, kwargs, passthru)
+        result, param_num = self.__cc(param_num, params, func, args, kwargs, passthru)
 
         ret_addr = self.ql.stack_read(0)
 
@@ -204,7 +204,7 @@ class QlOsFncc:
         return result
 
     def x86_cdecl(self, param_num, params, func, args, kwargs, passthru=False):
-        result, _ = self.__x86_cc(param_num, params, func, args, kwargs)
+        result, _ = self.__cc(param_num, params, func, args, kwargs)
         old_pc = self.ql.reg.arch_pc
 
         # append syscall to list
@@ -219,7 +219,7 @@ class QlOsFncc:
         return result
 
     def x8664_fastcall(self, param_num, params, func, args, kwargs, passthru=False):
-        result, param_num = self.__x86_cc(param_num, params, func, args, kwargs)
+        result, param_num = self.__cc(param_num, params, func, args, kwargs)
         old_pc = self.ql.reg.arch_pc
 
         # append syscall to list
@@ -234,7 +234,7 @@ class QlOsFncc:
         return result
 
     def mips_o32_call(self, param_num, params, func, args, kwargs):
-        result, param_num  = self.__x86_cc(param_num, params, func, args, kwargs)
+        result, param_num  = self.__cc(param_num, params, func, args, kwargs)
         self.ql.reg.arch_pc = self.ql.reg.ra
 
         return result
