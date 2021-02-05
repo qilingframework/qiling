@@ -201,7 +201,7 @@ class QlOsUtils:
         fpass = f' (PASSTHRU)' if passthru else ''
 
         #TODO: Old code from demigod, ready to cleanup
-        if self.ql.ostype in QL_OS_POSIX and self.ql.loader.is_driver == True:
+        if self.ql.ostype in QL_OS_POSIX and self.ql.loader.is_driver:
             log = '0x%0.2x: %s(' % (address, function_name)
             for each in params:
                 value = params[each]

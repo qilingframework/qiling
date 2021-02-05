@@ -128,16 +128,12 @@ class QlOsPosix(QlOs):
             self.syscall_name = self.syscall_map.__name__
         else:
             self.syscall_name = map_syscall(self.ql, self.syscall)
-
-            import qiling.os.posix.syscall
-            import qiling.os.linux.syscall
-            import qiling.os.macos.syscall
-            import qiling.os.freebsd.syscall
-
-            if self.syscall_name not in dir(qiling.os.posix.syscall) \
-            and self.syscall_name not in dir(qiling.os.linux.syscall) \
-            and self.syscall_name not in dir(qiling.os.macos.syscall) \
-            and self.syscall_name not in dir(qiling.os.freebsd.syscall):
+            _ostype_str = ostype_convert_str(self.ql.ostype)
+            _posix_syscall = ql_get_module_function(f"qiling.os.posix", "syscall")
+            _os_syscall = ql_get_module_function(f"qiling.os.{_ostype_str.lower()}", "syscall")
+            
+            if self.syscall_name not in dir(_posix_syscall) \
+            and self.syscall_name not in dir(_os_syscall):
 
                 syscall_name_str = self.syscall_name
                 self.syscall_map = None
