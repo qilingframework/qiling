@@ -40,4 +40,3 @@ def linux_kernel_api(param_num=None, params=None):
                 raise QlErrorArch("Unknown ql.archtype")
         return wrapper
     return decorator
-

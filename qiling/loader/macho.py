@@ -154,7 +154,7 @@ class QlLoaderMACHO(QlLoader):
         self.ql.os.macho_task.min_offset = page_align_end(self.vm_end_addr, PAGE_SIZE)
 
     def loadDriver(self, stack_addr, loadbase = -1, argv = [], env = {}):
-        self.ql.import_symbols = {}
+        self.import_symbols = {}
         PAGE_SIZE = 0x1000
         if loadbase < 0:
             loadbase = 0xffffff7000000000
@@ -210,7 +210,7 @@ class QlLoaderMACHO(QlLoader):
 
         for key in self.kernel_local_symbols_detail:
             value = self.kernel_local_symbols_detail[key]
-            self.ql.import_symbols[value["n_value"]] = key
+            self.import_symbols[value["n_value"]] = key
 
         kernel_extrn_symbols_index = self.kernel.dysymbol_table.defext_index
         kernel_extrn_symbols_num = self.kernel.dysymbol_table.defext_num
@@ -218,7 +218,7 @@ class QlLoaderMACHO(QlLoader):
 
         for key in self.kernel_extrn_symbols_detail:
             value = self.kernel_extrn_symbols_detail[key]
-            self.ql.import_symbols[value["n_value"]] = key
+            self.import_symbols[value["n_value"]] = key
 
         offset = 0
         """
@@ -244,7 +244,7 @@ class QlLoaderMACHO(QlLoader):
                     else:
                         self.ql.log.info("Static symbol %s not found" % symname)
                         continue
-                    self.ql.import_symbols[real_addr] = symname
+                    self.import_symbols[real_addr] = symname
                     lo_addr = real_addr & 0xffffffff
                     hi_addr = (real_addr & 0xffffffff00000000) // 0x100000000
                     jmpcode = b"\x48\x83\xec\x08\xc7\x04\x24" + struct.pack("<I", lo_addr) + b"\xc7\x44\x24\x04" + struct.pack("<I", hi_addr) + b"\xc3"

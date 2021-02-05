@@ -64,10 +64,12 @@ class QlOsLinux(QlOsPosix):
             ql_x86_register_cs(self)
             ql_x86_register_ds_ss_es(self)
             self.ql.hook_insn(self.hook_syscall, UC_X86_INS_SYSCALL)
+            # Keep test for _cc
+            #self.ql.hook_insn(hook_posix_api, UC_X86_INS_SYSCALL)
             self.thread_class = QlLinuxX8664Thread
        
     def hook_syscall(self, int= None, intno= None):
-        return self.load_syscall(intno)
+        return self.load_syscall()
 
 
     def add_function_hook(self, fn, cb, userdata = None):

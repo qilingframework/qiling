@@ -3,15 +3,18 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+import types
+
 from qiling.os.linux.kernel_api import *
+from qiling.exception import *
 
 
 # hook Linux kernel API
 def hook_kernel_api(ql, address, size):
     # call kernel api
     # print("check hook_kernel_api: %x" %(address))
-    if address in ql.import_symbols:
-        api_name = ql.import_symbols[address]
+    if address in ql.loader.import_symbols:
+        api_name = ql.loader.import_symbols[address]
         # print("OK, found hook for %s" %api_name)
         api_func = None
 

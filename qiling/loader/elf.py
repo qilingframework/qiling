@@ -448,7 +448,7 @@ class QlLoaderELF(QlLoader, ELFParse):
         all_symbols = []
         self.ql.os.hook_addr = API_HOOK_MEM
         # map address to symbol name
-        ql.import_symbols = {}
+        self.import_symbols = {}
         # reverse dictionary to map symbol name -> address
         rev_reloc_symbols = {}
 
@@ -505,7 +505,7 @@ class QlLoaderELF(QlLoader, ELFParse):
                                     self.ql.os.hook_addr = (int(
                                         self.ql.os.hook_addr / self.ql.pointersize) + 1) * self.ql.pointersize
                                     # print("hook_addr = %x" %self.ql.os.hook_addr)
-                            ql.import_symbols[self.ql.os.hook_addr] = symbol_name
+                            self.import_symbols[self.ql.os.hook_addr] = symbol_name
                             # ql.log.info(":: Demigod is hooking %s(), at slot %x" %(symbol_name, self.ql.os.hook_addr))
 
                             if symbol_name == "page_offset_base":
@@ -668,9 +668,9 @@ class QlLoaderELF(QlLoader, ELFParse):
         ql.mem.write(SYSCALL_MEM + 2 * ql.pointersize, ql.pack(self.ql.os.hook_addr + 2 * ql.pointersize))
 
         # setup hooks for read/write/open syscalls
-        ql.import_symbols[self.ql.os.hook_addr] = hook_sys_read
-        ql.import_symbols[self.ql.os.hook_addr + 1 * ql.pointersize] = hook_sys_write
-        ql.import_symbols[self.ql.os.hook_addr + 2 * ql.pointersize] = hook_sys_open
+        self.import_symbols[self.ql.os.hook_addr] = hook_sys_read
+        self.import_symbols[self.ql.os.hook_addr + 1 * ql.pointersize] = hook_sys_write
+        self.import_symbols[self.ql.os.hook_addr + 2 * ql.pointersize] = hook_sys_open
 
     def get_elfdata_mapping(self):
         elfdata_mapping = bytearray()

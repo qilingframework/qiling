@@ -3,17 +3,17 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-
-from unicorn import *
+import types
 
 from qiling.os.macos.kernel_api import *
+from qiling.exception import *
 
 
 # hook MacOS kernel API
 def hook_kernel_api(ql, address, size):
     # call kernel api
-    if address in ql.import_symbols:
-        api_name = ql.import_symbols[address].decode()
+    if address in ql.loader.import_symbols:
+        api_name = ql.loader.import_symbols[address].decode()
         # print("OK, found hook for %s at 0x%x" % (api_name, address))
         api_func = None
 
