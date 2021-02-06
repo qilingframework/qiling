@@ -230,6 +230,22 @@ def create_stat64_struct(ql, info):
     return fstat64_buf
 
 
+def statFamily(ql, path, ptr, name, stat_func, struct_func):
+    file = (ql.mem.string(path))
+    real_path = ql.os.transform_to_real_path(file)
+    regreturn = 0
+    try:
+        info = stat_func(real_path)
+    except OSError as e:
+        ql.log.debug(f'{name}("{file}", {hex(ptr)}) read/write fail')
+        return -e.errno
+    else:
+        buf = struct_func(ql, info)
+        ql.mem.write(ptr, buf)
+        ql.log.debug(f'{name}("{file}", {hex(ptr)}) write completed')
+        return regreturn
+
+
 def ql_syscall_chmod(ql, filename, mode, null1, null2, null3, null4):
     regreturn = 0
     filename = ql.mem.string(filename)
@@ -329,87 +345,22 @@ def ql_syscall_fstat(ql, fstat_fd, fstat_add, *args, **kw):
     return regreturn
 
 
-# int stat64(const char *pathname, struct stat64 *buf);
-def ql_syscall_stat64(ql, stat64_pathname, stat64_buf_ptr, *args, **kw):
-    stat64_file = (ql.mem.string(stat64_pathname))
-    real_path = ql.os.transform_to_real_path(stat64_file)
-    if os.path.exists(real_path) == False:
-        regreturn = -1
-    else:
-        stat64_info = Stat(real_path)
-        stat64_buf = create_stat64_struct(ql, stat64_info)
-        ql.mem.write(stat64_buf_ptr, stat64_buf)
-        regreturn = 0
-
-    if regreturn == 0:
-        ql.log.debug("stat64 write completed")
-    else:
-        ql.log.debug("stat64 read/write fail")
-    return regreturn
-
-
 # int stat(const char *path, struct stat *buf);
 def ql_syscall_stat(ql, stat_path, stat_buf_ptr, *args, **kw):
-    stat_file = (ql.mem.string(stat_path))
+    return statFamily(ql, stat_path, stat_buf_ptr, "stat", Stat, create_stat_struct)
 
-    real_path = ql.os.transform_to_real_path(stat_file)
-    relative_path = ql.os.transform_to_relative_path(stat_file)
 
-    if os.path.exists(real_path) == False:
-        regreturn = -1
-    else:
-        stat_info = Stat(real_path)
-        stat_buf = create_stat_struct(ql, stat_info)
-        regreturn = 0
-        ql.mem.write(stat_buf_ptr, stat_buf)
-
-    if regreturn == 0:
-        ql.log.debug("stat() write completed")
-    else:
-        ql.log.debug("stat() read/write fail")
-    return regreturn
+# int stat64(const char *pathname, struct stat64 *buf);
+def ql_syscall_stat64(ql, stat64_pathname, stat64_buf_ptr, *args, **kw):
+    return statFamily(ql, stat64_pathname, stat64_buf_ptr, "stat64", Stat, create_stat64_struct)
 
 
 def ql_syscall_lstat(ql, lstat_path, lstat_buf_ptr, *args, **kw):
-    lstat_file = (ql.mem.string(lstat_path))
-
-    real_path = ql.os.transform_to_real_path(lstat_file)
-    relative_path = ql.os.transform_to_relative_path(lstat_file)
-
-    if os.path.exists(real_path) == False:
-        regreturn = -1
-    else:
-        lstat_info = Lstat(real_path)
-        lstat_buf = create_stat_struct(ql, lstat_info)
-        regreturn = 0
-        ql.mem.write(lstat_buf_ptr, lstat_buf)
-
-    if regreturn == 0:
-        ql.log.debug("lstat() write completed")
-    else:
-        ql.log.debug("lstat() read/write fail")
-    return regreturn
+    return statFamily(ql, lstat_path, lstat_buf_ptr, "lstat", Lstat, create_stat_struct)
 
 
 def ql_syscall_lstat64(ql, lstat64_path, lstat64_buf_ptr, *args, **kw):
-    lstat_file = (ql.mem.string(lstat64_path))
-
-    real_path = ql.os.transform_to_real_path(lstat_file)
-    relative_path = ql.os.transform_to_relative_path(lstat_file)
-
-    if os.path.exists(real_path) == False:
-        regreturn = -1
-    else:
-        lstat_info = Lstat(real_path)
-        lstat64_buf = create_stat64_struct(ql, lstat_info)
-        regreturn = 0
-        ql.mem.write(lstat64_buf_ptr, lstat64_buf)
-
-    if regreturn == 0:
-        ql.log.debug("lstat64() write completed")
-    else:
-        ql.log.debug("lstat64() read/write fail")
-    return regreturn
+    return statFamily(ql, lstat64_path, lstat64_buf_ptr, "lstat64", Lstat, create_stat64_struct)
 
 
 def ql_syscall_mknodat(ql, dirfd, pathname, mode, dev, *args, **kw):
