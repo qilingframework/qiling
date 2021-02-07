@@ -132,14 +132,7 @@ def hook_SignalEvent(ql, address, params):
 	event_id = params["Event"]
 
 	if event_id in ql.loader.events:
-		event = ql.loader.events[event_id]
-
-		if not event["Set"]:
-			event["Set"] = True
-			notify_func = event["NotifyFunction"]
-			notify_context = event["NotifyContext"]
-			ql.loader.notify_list.append((event_id, notify_func, notify_context))
-
+		signal_event(ql, event_id)
 		return EFI_SUCCESS
 	else:
 		return EFI_INVALID_PARAMETER
