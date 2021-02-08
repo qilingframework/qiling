@@ -24,13 +24,13 @@ BREAK CHANGE
 - Bring sality test to work again
 - Clean up more test case
 - First stage multithread rewrite done
-- change shellcode to code, ready for future expansion
-- Add support for SMM_RUNTIME_SERVICES_TABLE
-- Fix regression in code coverage collection
-- Add generic ql.mem.read_ptr helper function
-- merge uefi, windows, linux and macos print_function
-- merge uefi, windows, linux and macos fncc
-- make macos uses more Qiling API
+- Updated Qiling(shellcode=) to Qiling(code=), still keeping Qiling(shellcode=) for legacy purpose
+- Added support for SMM_RUNTIME_SERVICES_TABLE
+- Fixed regression in code coverage collection
+- Added generic ql.mem.read_ptr helper function
+- merged UEFI, windows, linux and macos print_function
+- merged UEFI, windows, linux and macos fncc
+- make MacOS uses more Qiling API
 
 
 ------------------------------------
