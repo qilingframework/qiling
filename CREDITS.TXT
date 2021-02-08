@@ -27,13 +27,6 @@ WU chenxu (kabeor) <kabeor@qiling.io>
 KONG ziqiao (lazymio) <mio@lazym.io>
 
 
-Demigod team (https://groundx.io/demigod)
-=========================================
-NGUYEN Anh Quynh
-NGUYEN Hong Quang
-DO Minh Tuan
-
-
 Key Contributors (in no particular order)
 =========================================
 0ssigeno
@@ -45,6 +38,13 @@ Mark Jansen (learn-more)
 cq674350529
 elicn
 bkerler (viperbjk)
+
+
+Demigod team (https://groundx.io/demigod)
+=========================================
+NGUYEN Anh Quynh
+NGUYEN Hong Quang
+DO Minh Tuan
 
 
 Contributors (in no particular order)
