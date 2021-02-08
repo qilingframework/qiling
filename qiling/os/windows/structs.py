@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
 #
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org)
-import struct, logging
-from unicorn.x86_const import *
-from qiling.const import *
+#
+
+import ctypes, struct
+
 from enum import IntEnum
+
+from unicorn.x86_const import *
+
+
+from qiling.const import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
-
-
-import ctypes
 from .wdk_const import *
 
 
@@ -291,14 +293,14 @@ class LDR_DATA_TABLE_ENTRY:
         s += self.ql.pack16(self.FullDllName['Length'])  # 0x24
         s += self.ql.pack16(self.FullDllName['MaximumLength'])  # 0x26
 
-        if self.ql.arch == QL_X8664:
+        if self.ql.arch == QL_ARCH.X8664:
             s += self.ql.pack32(0)
 
         s += self.ql.pack(self.FullDllName['BufferPtr'])  # 0x28
         s += self.ql.pack16(self.BaseDllName['Length'])
         s += self.ql.pack16(self.BaseDllName['MaximumLength'])
 
-        if self.ql.arch == QL_X8664:
+        if self.ql.arch == QL_ARCH.X8664:
             s += self.ql.pack32(0)
 
         s += self.ql.pack(self.BaseDllName['BufferPtr'])
@@ -1015,27 +1017,30 @@ class MDL32(ctypes.Structure):
                 ('ByteCount', ctypes.c_uint32), ('ByteOffset',
                                                  ctypes.c_uint32))
 
+#TODO: Repeated and might not be needed
 
-class DISPATCHER_HEADER64(ctypes.Structure):
-    _fields_ = (
-        ('Type', ctypes.c_uint8),
-        ('TimerControlFlags', ctypes.c_uint8),
-        ('ThreadControlFlags', ctypes.c_uint8),
-        ('TimerMiscFlags', ctypes.c_uint8),
-        ('SignalState', ctypes.c_int32),
-        ('WaitListHead', LIST_ENTRY64),
-    )
+# class DISPATCHER_HEADER64(ctypes.Structure):
+#     _fields_ = (
+#         ('Lock', ctypes.c_int32),
+#         ('Type', ctypes.c_uint8),
+#         ('TimerControlFlags', ctypes.c_uint8),
+#         ('ThreadControlFlags', ctypes.c_uint8),
+#         ('TimerMiscFlags', ctypes.c_uint8),
+#         ('SignalState', ctypes.c_int32),
+#         ('WaitListHead', LIST_ENTRY64),
+#     )
 
 
-class DISPATCHER_HEADER32(ctypes.Structure):
-    _fields_ = (
-        ('Type', ctypes.c_uint8),
-        ('TimerControlFlags', ctypes.c_uint8),
-        ('ThreadControlFlags', ctypes.c_uint8),
-        ('TimerMiscFlags', ctypes.c_uint8),
-        ('SignalState', ctypes.c_int32),
-        ('WaitListHead', LIST_ENTRY32),
-    )
+# class DISPATCHER_HEADER32(ctypes.Structure):
+#     _fields_ = (
+#         ('Lock', ctypes.c_int32),
+#         ('SignalState', ctypes.c_int32),
+#         ('WaitListHead', LIST_ENTRY32),
+#         ('Type', ctypes.c_uint8),
+#         ('TimerControlFlags', ctypes.c_uint8),
+#         ('ThreadControlFlags', ctypes.c_uint8),
+#         ('TimerMiscFlags', ctypes.c_uint8),
+#     )
 
 
 class KAPC_STATE64(ctypes.Structure):
@@ -1647,37 +1652,37 @@ class WindowsStruct:
         raise NotImplementedError
 
     def generic_write(self, addr: int, attributes: list):
-        logging.debug("[+] Writing Windows object " + self.__class__.__name__)
+        self.ql.log.debug("Writing Windows object " + self.__class__.__name__)
         already_written = 0
         for elem in attributes:
             (val, size, endianness, typ) = elem
             if typ == int:
                 value = val.to_bytes(size, endianness)
-                logging.debug("[+] Writing to %d with value %s" % (addr + already_written, value))
+                self.ql.log.debug("Writing to %d with value %s" % (addr + already_written, value))
                 self.ql.mem.write(addr + already_written, value)
             elif typ == bytes:
                 if isinstance(val, bytearray):
                     value = bytes(val)
                 else:
                     value = val
-                logging.debug("[+] Writing at addr %d value %s" % (addr + already_written, value))
+                self.ql.log.debug("Writing at addr %d value %s" % (addr + already_written, value))
 
                 self.ql.mem.write(addr + already_written, value)
             elif issubclass(typ, WindowsStruct):
                 val.write(addr)
             else:
-                raise QlErrorNotImplemented("[!] API not implemented")
+                raise QlErrorNotImplemented("API not implemented")
 
             already_written += size
         self.addr = addr
 
     def generic_read(self, addr: int, attributes: list):
-        logging.debug("[+] Reading Windows object " + self.__class__.__name__)
+        self.ql.log.debug("Reading Windows object " + self.__class__.__name__)
         already_read = 0
         for elem in attributes:
             (val, size, endianness, type) = elem
             value = self.ql.mem.read(addr + already_read, size)
-            logging.debug("[+] Reading from %d value %s" % (addr + already_read, value))
+            self.ql.log.debug("Reading from %d value %s" % (addr + already_read, value))
             if type == int:
                 elem[0] = int.from_bytes(value, endianness)
             elif type == bytes:
@@ -1687,7 +1692,7 @@ class WindowsStruct:
                 obj.read(addr)
                 elem[0] = obj
             else:
-                raise QlErrorNotImplemented("[!] API not implemented")
+                raise QlErrorNotImplemented("API not implemented")
             already_read += size
         self.addr = addr
 
@@ -1765,7 +1770,7 @@ class Token:
     def get(self, value):
         res = self.struct[value]
         if res is None:
-            raise QlErrorNotImplemented("[!] API not implemented")
+            raise QlErrorNotImplemented("API not implemented")
         else:
             return res
 

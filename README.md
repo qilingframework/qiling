@@ -233,6 +233,10 @@ Contact us at email info@qiling.io, or via Twitter [@qiling_io](https://twitter.
 - assafcarlsbad
 - ucgJhe
 - jhumble
+- Mark Jansen (learn-more)
+- cq674350529
+- elicn
+- bkerler (viperbjk)
 
 ---
 

@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
 
-# For syscall_num
-import logging
+from inspect import signature
 
 from unicorn.arm64_const import *
 from unicorn.arm_const import *
@@ -22,6 +21,19 @@ from qiling.os.macos.syscall import *
 from qiling.os.freebsd.syscall import *
 
 from qiling.os.linux.function_hook import ARMFunctionArg, MIPS32FunctionArg, ARM64FunctionArg, X86FunctionArg, X64FunctionArg
+
+
+def getNameFromErrorCode(ret):
+    """
+    Return the hex representation of a return value and if possible
+    add the corresponding error name to it.
+    :param ret: Return value of a syscall.
+    :return: The string representation of the error.
+    """
+    if -ret in errors:
+        return hex(ret) + "(" + errors[-ret] + ")"
+    else:
+        return hex(ret)
 
 
 class QlOsPosix(QlOs):
@@ -116,16 +128,12 @@ class QlOsPosix(QlOs):
             self.syscall_name = self.syscall_map.__name__
         else:
             self.syscall_name = map_syscall(self.ql, self.syscall)
-
-            import qiling.os.posix.syscall
-            import qiling.os.linux.syscall
-            import qiling.os.macos.syscall
-            import qiling.os.freebsd.syscall
-
-            if self.syscall_name not in dir(qiling.os.posix.syscall) \
-            and self.syscall_name not in dir(qiling.os.linux.syscall) \
-            and self.syscall_name not in dir(qiling.os.macos.syscall) \
-            and self.syscall_name not in dir(qiling.os.freebsd.syscall):
+            _ostype_str = ostype_convert_str(self.ql.ostype)
+            _posix_syscall = ql_get_module_function(f"qiling.os.posix", "syscall")
+            _os_syscall = ql_get_module_function(f"qiling.os.{_ostype_str.lower()}", "syscall")
+            
+            if self.syscall_name not in dir(_posix_syscall) \
+            and self.syscall_name not in dir(_os_syscall):
 
                 syscall_name_str = self.syscall_name
                 self.syscall_map = None
@@ -168,9 +176,24 @@ class QlOsPosix(QlOs):
                     ret = self.syscall_onEnter(self.ql, self.get_func_arg()[0], self.get_func_arg()[1], self.get_func_arg()[2], self.get_func_arg()[3], self.get_func_arg()[4], self.get_func_arg()[5])
 
                 if isinstance(ret, int) == False or ret & QL_CALL_BLOCK == 0:
+                    args = []
+                    for n, argname in enumerate(signature(self.syscall_map).parameters.values()):
+                        argname = str(argname)
+                        if not n or argname.startswith("*"):
+                            # first arg for syscalls is ql
+                            continue
+                        else:
+                            # cut the first part of the arg if it is of form fstatat64_fd
+                            argname = argname if "_" not in argname else "".join(argname.split("_")[1:])
+                            args.append(f"{argname}={hex(self.get_func_arg()[n-1])}")
+                    args = ", ".join(args)
+                    self.ql.log.info("0x%x: %s(%s)" % (self.ql.reg.arch_pc, self.syscall_map.__name__[11:], args))
                     ret = self.syscall_map(self.ql, self.get_func_arg()[0], self.get_func_arg()[1], self.get_func_arg()[2], self.get_func_arg()[3], self.get_func_arg()[4], self.get_func_arg()[5])
                     if ret is not None and isinstance(ret, int):
-                        self.set_syscall_return(ret)
+                        # each name has a list of calls, we want the last one and we want to update the return value
+                        self.syscalls[self.syscall_name][-1]["result"] = ret
+                        ret = self.set_syscall_return(ret)
+                        self.ql.log.debug("%s() = %s" % (self.syscall_map.__name__[11:], getNameFromErrorCode(ret)))
 
                 if self.syscall_onExit is not None:
                     self.syscall_onExit(self.ql, self.get_func_arg()[0], self.get_func_arg()[1], self.get_func_arg()[2], self.get_func_arg()[3], self.get_func_arg()[4], self.get_func_arg()[5])
@@ -178,14 +201,14 @@ class QlOsPosix(QlOs):
             except KeyboardInterrupt:
                 raise
             except Exception as e:
-                logging.exception("")
-                logging.info("[!] Syscall ERROR: %s DEBUG: %s" % (self.syscall_name, e))
+                self.ql.log.exception("")
+                self.ql.log.info("Syscall ERROR: %s DEBUG: %s" % (self.syscall_name, e))
                 raise e
         else:
-            logging.warning(
-                "[!] 0x%x: syscall %s number = 0x%x(%d) not implemented" % (self.ql.reg.arch_pc, syscall_name_str, self.syscall, self.syscall))
+            self.ql.log.warning(
+                "0x%x: syscall %s number = 0x%x(%d) not implemented" % (self.ql.reg.arch_pc, syscall_name_str, self.syscall, self.syscall))
             if self.ql.debug_stop:
-                raise QlErrorSyscallNotFound("[!] Syscall Not Found")
+                raise QlErrorSyscallNotFound("Syscall Not Found")
 
     # get syscall
     def get_syscall(self):
@@ -206,8 +229,6 @@ class QlOsPosix(QlOs):
         return self.ql.reg.read(syscall_num)
 
     def set_syscall_return(self, regreturn):
-        # each name has a list of calls, we want the last one and we want to update the return value
-        self.syscalls[self.syscall_name][-1]["result"] = regreturn
         if self.ql.archtype == QL_ARCH.ARM:  # ARM
             self.ql.reg.r0 = regreturn
 
@@ -229,7 +250,7 @@ class QlOsPosix(QlOs):
 
             self.ql.reg.v0 = regreturn
             self.ql.reg.a3 = a3return
-
+        return regreturn
 
     # get syscall
     def get_func_arg(self):

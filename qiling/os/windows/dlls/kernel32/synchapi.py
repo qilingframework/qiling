@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org)
+#
 
 import struct
 import time
@@ -163,14 +163,14 @@ def hook_OpenMutexW(ql, address, params):
             if mutex.isFree():
                 mutex.lock()
             else:
-                raise QlErrorNotImplemented("[!] API not implemented")
+                raise QlErrorNotImplemented("API not implemented")
     else:
         if handle is None:
             # If a named mutex does not exist, the function fails and GetLastError returns ERROR_FILE_NOT_FOUND.
             ql.os.last_error = ERROR_FILE_NOT_FOUND
             return 0
         else:
-            raise QlErrorNotImplemented("[!] API not implemented")
+            raise QlErrorNotImplemented("API not implemented")
 
 
 # HANDLE OpenMutexA(

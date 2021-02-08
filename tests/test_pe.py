@@ -1,22 +1,32 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
 
 import os, random, sys, unittest, logging
 import string as st
-from binascii import unhexlify
 
 from unicorn.x86_const import *
 
-sys.path.insert(0, "..")
+sys.path.append("..")
 from qiling import *
 from qiling.const import *
 from qiling.exception import *
+from qiling.loader.pe import QlPeCache
 from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
 from qiling.os.mapper import QlFsMappedObject
 from qiling.os.windows.dlls.kernel32.fileapi import _CreateFile
+
+class TestOut:
+    def __init__(self):
+        self.output = {}
+
+    def write(self, string):
+        key, value = string.split(b': ', 1)
+        assert key not in self.output
+        self.output[key] = value
+        return len(string)
 
 
 class PETest(unittest.TestCase):
@@ -30,7 +40,7 @@ class PETest(unittest.TestCase):
 
     def test_pe_win_x86_hello(self):
         ql = Qiling(["../examples/rootfs/x86_windows/bin/x86_hello.exe"], "../examples/rootfs/x86_windows",
-                    output="default", profile="profiles/append_test.ql", log_split=True)
+                    output="default", profile="profiles/append_test.ql")
         ql.run()
         del ql
 
@@ -103,7 +113,7 @@ class PETest(unittest.TestCase):
                     new_name += random.choice(st.ascii_lowercase + st.ascii_uppercase)
                 ql.os.profile[key][subkey] = new_name
             else:
-                raise QlErrorNotImplemented("[!] API not implemented")
+                raise QlErrorNotImplemented("API not implemented")
 
         ql = Qiling(["../examples/rootfs/x86_windows/bin/GandCrab502.bin"], "../examples/rootfs/x86_windows",
                     output="debug", profile="profiles/windows_gandcrab_admin.ql")
@@ -210,9 +220,9 @@ class PETest(unittest.TestCase):
         if 'QL_FAST_TEST' in os.environ:
             return
         def stop(ql):
-            logging.info("killerswtichfound")
-            logging.disable(level=logging.CRITICAL)
-            logging.info("No Print")
+            ql.log.info("killerswtichfound")
+            ql.log.setLevel(logging.CRITICAL)
+            ql.log.info("No Print")
             ql.emu_stop()
 
         ql = Qiling(["../examples/rootfs/x86_windows/bin/wannacry.bin"], "../examples/rootfs/x86_windows")
@@ -220,12 +230,14 @@ class PETest(unittest.TestCase):
         ql.run()
         del ql
 
+
     def test_pe_win_x86_NtQueryInformationSystem(self):
         ql = Qiling(
         ["../examples/rootfs/x86_windows/bin/NtQuerySystemInformation.exe"],
         "../examples/rootfs/x86_windows")
         ql.run()
         del ql
+
 
     def test_pe_win_al_khaser(self):
         if 'QL_FAST_TEST' in os.environ:
@@ -236,9 +248,9 @@ class PETest(unittest.TestCase):
         def results(ql):
 
             if ql.reg.ebx == 1:
-                print("[=] BAD")
+                print("BAD")
             else:
-                print("[=] GOOD ")
+                print("GOOD ")
             ql.reg.eip = 0x402ee4
 
         #ql.hook_address(results, 0x00402e66)
@@ -299,6 +311,7 @@ class PETest(unittest.TestCase):
 
         my_sandbox(["../examples/rootfs/x8664_windows/bin/x8664_hello.exe"], "../examples/rootfs/x8664_windows")
 
+
     def test_pe_win_x86_argv(self):
         def check_print(ql, address, params):
             if ql.pointersize == 8:
@@ -337,6 +350,7 @@ class PETest(unittest.TestCase):
         
         del self.target_txt
         del ql
+
 
     def test_pe_win_x86_crackme(self):
         class StringBuffer:
@@ -388,49 +402,78 @@ class PETest(unittest.TestCase):
         our_sandbox(["../examples/rootfs/x86_windows/bin/Easy_CrackMe.exe"], "../examples/rootfs/x86_windows")
         
 
-    def test_pe_win_x8664_driver(self):
-        # Compiled sample from https://github.com/microsoft/Windows-driver-samples/tree/master/general/ioctl/wdm/sys
-        ql = Qiling(["../examples/rootfs/x8664_windows/bin/sioctl.sys"], "../examples/rootfs/x8664_windows", libcache=True, stop_on_stackpointer=True)
-
-        driver_object = ql.loader.driver_object
-
-        # Verify that these start zeroed out
-        majorfunctions = driver_object.MajorFunction
-        self.assertEqual(majorfunctions[IRP_MJ_CREATE], 0)
-        self.assertEqual(majorfunctions[IRP_MJ_CLOSE], 0)
-        self.assertEqual(majorfunctions[IRP_MJ_DEVICE_CONTROL], 0)
-        # And a DriverUnload
-        self.assertEqual(driver_object.DriverUnload, 0)
-
-        # Run the simulation
+    def test_pe_win_x86_cmdln(self):
+        ql = Qiling(
+        ["../examples/rootfs/x86_windows/bin/cmdln32.exe", 'arg1', 'arg2 with spaces'],
+        "../examples/rootfs/x86_windows")
+        ql.stdout = TestOut()
         ql.run()
+        expected_string = b'<C:\\Users\\Qiling\\Desktop\\cmdln32.exe arg1 "arg2 with spaces">\n'
+        expected_keys = [b'_acmdln', b'_wcmdln', b'__p__acmdln', b'__p__wcmdln', b'GetCommandLineA', b'GetCommandLineW']
+        for key in expected_keys:
+            self.assertTrue(key in ql.stdout.output)
+            self.assertEqual(expected_string, ql.stdout.output[key])
+        del ql
 
-        # Check that we have some MajorFunctions
-        majorfunctions = driver_object.MajorFunction
-        self.assertNotEqual(majorfunctions[IRP_MJ_CREATE], 0)
-        self.assertNotEqual(majorfunctions[IRP_MJ_CLOSE], 0)
-        self.assertNotEqual(majorfunctions[IRP_MJ_DEVICE_CONTROL], 0)
-        # And a DriverUnload
-        self.assertNotEqual(driver_object.DriverUnload, 0)
 
-        ql.os.clear_syscalls()
+    def test_pe_win_x8664_cmdln(self):
+        ql = Qiling(
+        ["../examples/rootfs/x8664_windows/bin/cmdln64.exe", 'arg1', 'arg2 with spaces'],
+        "../examples/rootfs/x8664_windows")
+        ql.stdout = TestOut()
+        ql.run()
+        expected_string = b'<C:\\Users\\Qiling\\Desktop\\cmdln64.exe arg1 "arg2 with spaces">\n'
+        expected_keys = [b'_acmdln', b'_wcmdln', b'GetCommandLineA', b'GetCommandLineW']
+        for key in expected_keys:
+            self.assertTrue(key in ql.stdout.output)
+            self.assertEqual(expected_string, ql.stdout.output[key])
+        del ql
 
-        IOCTL_SIOCTL_METHOD_OUT_DIRECT = (40000, 0x901, METHOD_OUT_DIRECT, FILE_ANY_ACCESS)
-        output_buffer_size = 0x1000
-        in_buffer = b'Test input\0'
-        Status, Information_value, output_data = ql.os.ioctl((IOCTL_SIOCTL_METHOD_OUT_DIRECT, output_buffer_size, in_buffer))
+    class RefreshCache(QlPeCache):
+        def restore(self, path, address):
+            # If the cache entry exists, delete it
+            fcache = self.create_filename(path, address)
+            if os.path.exists(fcache):
+                os.remove(fcache)
+            return super().restore(path, address)
 
-        expected_result = b'This String is from Device Driver !!!\x00'
-        self.assertEqual(Status, 0)
-        self.assertEqual(Information_value, len(expected_result))
-        self.assertEqual(output_data, expected_result)
+    class TestCache(QlPeCache):
+        def __init__(self, testcase):
+            self.testcase = testcase
+            super().__init__()
 
-        # TODO:
-        # - Call majorfunctions:
-        #   - IRP_MJ_CREATE
-        #   - IRP_MJ_CLOSE
-        # - Call DriverUnload
+        def restore(self, path, address):
+            entry = super().restore(path, address)
+            self.testcase.assertTrue(entry is not None)  # Check that it loaded a cache entry
+            if path.endswith('msvcrt.dll'):
+                self.testcase.assertEqual(len(entry.cmdlines), 2)
+            else:
+                self.testcase.assertEqual(len(entry.cmdlines), 0)
+            self.testcase.assertIsInstance(entry.data, bytearray)
+            return entry
 
+        def save(self, path, address, entry):
+            self.testcase.assertFalse(true)  # This should not be called!
+
+
+    def test_pe_win_x8664_libcache(self):
+        # First force the cache to be recreated
+        ql = Qiling(["../examples/rootfs/x8664_windows/bin/cmdln64.exe",
+                    'arg1', 'arg2 with spaces'],
+                    "../examples/rootfs/x8664_windows",
+                    libcache=PETest.RefreshCache(),
+                    output="default")
+        ql.run()
+        del ql
+
+        # Now run with a special cache that validates that the 'real' cache will load,
+        # and that the file is not written again
+        ql = Qiling(["../examples/rootfs/x8664_windows/bin/cmdln64.exe",
+                    'arg1', 'arg2 with spaces'],
+                    "../examples/rootfs/x8664_windows",
+                    libcache=PETest.TestCache(self),
+                    output="default")
+        ql.run()
         del ql
 
 

@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
+
+import math, sys, traceback
 
 from .loader import QlLoader
+
 from qiling.os.disk import QlDisk
-import sys
-import traceback
-import math
-import logging
+
 
 class QlLoaderDOS(QlLoader):
     def __init__(self, ql):
@@ -20,7 +20,7 @@ class QlLoaderDOS(QlLoader):
     def excepthook(self, tp, value, tb):
         if self.ql.os.stdscr is not None:
             tbmsg = "".join(traceback.format_exception(tp, value, tb))
-            logging.info(f"{tbmsg}")
+            self.ql.log.info(f"{tbmsg}")
         self.old_excepthook(tp, value, tb)
 
     def _round_to_4k(self, addr):

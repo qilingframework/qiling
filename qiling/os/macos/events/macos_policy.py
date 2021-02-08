@@ -1,9 +1,14 @@
-import enum
-import ctypes
-import logging
-from .macos_structs import label_t, ucred_t, POINTER64, fileglob_t, vnode_t
-#from .macos import *
+#!/usr/bin/env python3
+# 
+# Cross Platform and Multi Architecture Advanced Binary Emulation Framework
+#
+
+import ctypes, enum
+
 from functools import wraps
+
+from .macos_structs import label_t, ucred_t, POINTER64, fileglob_t, vnode_t
+
 
 def init_ctx(f):
     @wraps(f)
@@ -52,7 +57,7 @@ class QlMacOSPolicy():
     @init_ctx
     def mpo_file_check_mmap(self, prot, flags, file_pos):
         if self.manager.vnode is None or self.manager.cred is None:
-            logging.info("[!] Invalid vnode or credential")
+            ql.log.info("Invalid vnode or credential")
             return
         fg_addr = self.ql.os.heap.alloc(ctypes.sizeof(fileglob_t))
         fg = fileglob_t(self.ql, fg_addr)

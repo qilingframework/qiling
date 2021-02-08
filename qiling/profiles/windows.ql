@@ -16,7 +16,7 @@ image_address  = 0x400000
 dll_address  = 0x10000000
 entry_point = 0x40000  
 
-[SHELLCODER]
+[CODE]
 # ram_size 0xa00000 is 10MB
 ram_size = 0xa00000
 entry_point = 0x1000000

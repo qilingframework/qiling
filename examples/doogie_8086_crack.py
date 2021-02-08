@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org)
+#
 
-import sys, curses, math, struct, string, time, logging
+import sys, curses, math, struct, string, time
 sys.path.append("..")
 from qiling import *
 from qiling.const import *
@@ -131,8 +131,7 @@ def third_stage(keys):
     # To setup terminal again, we have to restart the whole program.
     ql = Qiling(["rootfs/8086/doogie/doogie.DOS_MBR"], 
                  "rootfs/8086",
-                 console=False,
-                 log_dir=".")
+                 console=False)
     ql.add_fs_mapper(0x80, QlDisk("rootfs/8086/doogie/doogie.DOS_MBR", 0x80))
     ql.set_api((0x1a, 4), set_required_datetime, QL_INTERCEPT.EXIT)
     hk = ql.hook_code(stop, begin=0x8018, end=0x8018)
@@ -172,7 +171,7 @@ def read_until_zero(ql: Qiling, addr):
     return buf
 
 def set_required_datetime(ql: Qiling):
-    logging.info("Setting Feburary 06, 1990")
+    ql.log.info("Setting Feburary 06, 1990")
     ql.reg.ch = BIN2BCD(19)
     ql.reg.cl = BIN2BCD(1990%100)
     ql.reg.dh = BIN2BCD(2)
@@ -185,8 +184,7 @@ def stop(ql, addr, data):
 def first_stage():
     ql = Qiling(["rootfs/8086/doogie/doogie.DOS_MBR"], 
                  "rootfs/8086",
-                 console=False,
-                 log_dir=".")
+                 console=False)
     ql.add_fs_mapper(0x80, QlDisk("rootfs/8086/doogie/doogie.DOS_MBR", 0x80))
     # Doogie suggests that the datetime should be 1990-02-06.
     ql.set_api((0x1a, 4), set_required_datetime, QL_INTERCEPT.EXIT)

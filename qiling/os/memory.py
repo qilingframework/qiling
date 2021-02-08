@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
 
-import os, re, logging
+import os, re
 
 from qiling.const import *
 from qiling.exception import *
+
 
 from unicorn import (
     UC_PROT_ALL,
@@ -25,17 +26,21 @@ class QlMemoryManager:
     def __init__(self, ql):
         self.ql = ql
         self.map_info = []
-        
-        if self.ql.archbit == 64:
-            max_addr = 0xFFFFFFFFFFFFFFFF
-        elif self.ql.archbit == 32:
-            max_addr = 0xFFFFFFFF
-        elif self.ql.archbit == 16:
-            # 20bit address line
-            max_addr = 0xFFFFF
 
+        bit_stuff = {
+            64 : (0xFFFFFFFFFFFFFFFF,),
+            32 : (0xFFFFFFFF,),
+            16 : (0xFFFFF,)             # 20bit address line
+        }
+
+        if ql.archbit not in bit_stuff:
+            raise QlErrorStructConversion("Unsupported Qiling archtecture for memory manager")
+
+        max_addr, = bit_stuff[ql.archbit]
+
+        #self.read_ptr = read_ptr
         self.max_addr = max_addr
-        self.max_mem_addr = max_addr            
+        self.max_mem_addr = max_addr
 
 
     def string(self, addr, value=None ,encoding='utf-8'): 
@@ -130,13 +135,13 @@ class QlMemoryManager:
                     perms_sym.append("-")
             return "".join(perms_sym)
 
-        logging.info("[+] Start      End        Perm.  Path")
+        self.ql.log.info("[+] Start      End        Perm.  Path")
         for  start, end, perm, info in self.map_info:
             _perm = _perms_mapping(perm)
             image = self.ql.os.find_containing_image(start)
             if image:
                 info += f" ({image.path})"
-            logging.info("[+] %08x - %08x - %s    %s" % (start, end, _perm, info))
+            self.ql.log.info("[+] %08x - %08x - %s    %s" % (start, end, _perm, info))
 
 
     def get_lib_base(self, filename):
@@ -170,21 +175,38 @@ class QlMemoryManager:
             info = value[3]
             mem_read = bytes(value[4])
 
-            logging.debug("restore key: %i 0x%x 0x%x %s" % (key, start, end, info))
+            self.ql.log.debug("restore key: %i 0x%x 0x%x %s" % (key, start, end, info))
             if self.is_mapped(start, end-start) == False:
-                logging.debug("mapping 0x%x 0x%x mapsize 0x%x" % (start, end, end-start))
+                self.ql.log.debug("mapping 0x%x 0x%x mapsize 0x%x" % (start, end, end-start))
                 self.map(start, end-start, perms=perm, info=info)
 
-            logging.debug("writing 0x%x size 0x%x write_size 0x%x " % (start, end-start, len(mem_read)))
+            self.ql.log.debug("writing 0x%x size 0x%x write_size 0x%x " % (start, end-start, len(mem_read)))
             self.write(start, mem_read)
 
     def read(self, addr: int, size: int) -> bytearray:
         return self.ql.uc.mem_read(addr, size)
 
+    def read_ptr(self, addr: int, size: int=None):
+        if not size:
+            size = self.ql.archbit // 8
+
+        if size == 2:
+            return self.ql.unpack16(self.read(addr, 2))
+        elif size == 4:
+            return self.ql.unpack32(self.read(addr, 4))
+        elif size == 8:
+            return self.ql.unpack64(self.read(addr, 8))
+        else:
+            raise QlErrorStructConversion(f"Unsupported pointer size: {size}")
 
     def write(self, addr: int, data: bytes) -> None:
-        return self.ql.uc.mem_write(addr, data)
-
+        try:
+            self.ql.uc.mem_write(addr, data)
+        except:
+            self.show_mapinfo()
+            self.ql.log.debug("addresss write length: " + str(len(data)))
+            self.ql.log.error("addresss write error: " + hex(addr))
+            raise
 
     def search(self, needle: bytes, begin= None, end= None):
         """
@@ -318,7 +340,7 @@ class QlMemoryManager:
             # address is free
             if addr + size < max_gap_addr and self.is_mapped(addr, size) == False:
                 return addr
-        raise QlOutOfMemory("[!] Out Of Memory")
+        raise QlOutOfMemory("Out Of Memory")
 
 
     def map_anywhere(
@@ -389,13 +411,13 @@ class QlMemoryManager:
                 self.ql.uc.mem_map(addr, size, perms)
                 self.add_mapinfo(addr, addr + size, perms, info if info else "[mapped]")
             else:
-                raise QlMemoryMappedError("[!] Memory Mapped")    
+                raise QlMemoryMappedError("Memory Mapped")    
         else:
             self.ql.uc.mem_map_ptr(addr, size, perms, ptr)
 
     def get_mapped(self):
         for idx, val in enumerate(self.ql.uc.mem_regions()):
-            logging.info(idx, list(map(hex, val)))
+            self.ql.log.info(idx, list(map(hex, val)))
 
 # A Simple Heap Implementation
 class Chunk():
@@ -444,12 +466,6 @@ class QlMemoryHeap:
         self.mem_alloc = saved_state['mem_alloc']
 
     def alloc(self, size):
-        
-        if self.ql.archbit == 32:
-            size = self.ql.mem.align(size, 4)
-        elif self.ql.archbit == 64:
-            size = self.ql.mem.align(size, 8)
-
         # Find the heap chunks that best matches size 
         self.chunks.sort(key=Chunk.compare)
         for chunk in self.chunks:
@@ -476,7 +492,7 @@ class QlMemoryHeap:
             self.chunks.append(chunk)
 
         chunk.inuse = True
-        #logging.debug("heap.alloc addresss: " + hex(chunk.address))
+        #ql.log.debug("heap.alloc addresss: " + hex(chunk.address))
         return chunk.address
 
     def size(self, addr):

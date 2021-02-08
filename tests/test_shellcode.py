@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
 
-import sys,unittest
+import sys, unittest
 from binascii import unhexlify
+
 sys.path.append("..")
 from qiling import *
 from qiling.exception import *
@@ -23,65 +24,65 @@ X8664_macos = unhexlify('4831f65648bf2f2f62696e2f7368574889e74831d24831c0b00248c
 class TestShellcode(unittest.TestCase):
     def test_linux_x86(self):
         print("Linux X86 32bit Shellcode")
-        ql = Qiling(shellcoder = X86_LIN, archtype = "x86", ostype = "linux", output = "off")
+        ql = Qiling(code = X86_LIN, archtype = "x86", ostype = "linux", output = "off")
         ql.run()
 
     def test_linux_x64(self):
         print("Linux X86 64bit Shellcode")
-        ql = Qiling(shellcoder = X8664_LIN, archtype = "x8664", ostype = "linux", output = "off")
+        ql = Qiling(code = X8664_LIN, archtype = "x8664", ostype = "linux", output = "off")
         ql.run()
 
     def test_linux_mips32(self):
         print("Linux MIPS 32bit EL Shellcode")
-        ql = Qiling(shellcoder = MIPS32EL_LIN, archtype = "mips", ostype = "linux", output = "off")
+        ql = Qiling(code = MIPS32EL_LIN, archtype = "mips", ostype = "linux", output = "off")
         ql.run()
 
     #This shellcode needs to be changed to something non-blocking
     def test_linux_arm(self):
        print("Linux ARM 32bit Shellcode")
-       ql = Qiling(shellcoder = ARM_LIN, archtype = "arm", ostype = "linux", output = "off")
+       ql = Qiling(code = ARM_LIN, archtype = "arm", ostype = "linux", output = "off")
        ql.run()
 
     
     def test_linux_arm64(self):
         print("Linux ARM 64bit Shellcode")
-        ql = Qiling(shellcoder = ARM64_LIN, archtype = "arm64", ostype = "linux", output = "off")
+        ql = Qiling(code = ARM64_LIN, archtype = "arm64", ostype = "linux", output = "off")
         ql.run()
 
     # #This shellcode needs to be changed to something simpler not requiring rootfs
     # def test_windows_x86(self):
     #     print("Windows X86 32bit Shellcode")
-    #     ql = Qiling(shellcoder = X86_WIN, archtype = "x86", ostype = "windows", rootfs="../examples/rootfs/x86_reactos", output="off")
+    #     ql = Qiling(code = X86_WIN, archtype = "x86", ostype = "windows", rootfs="../examples/rootfs/x86_reactos", output="off")
     #     ql.run()
 
     # #This shellcode needs to be changed to something simpler not requiring rootfs
     # def test_windows_x64(self):
     #    print("\nWindows X8664 64bit Shellcode")
-    #    ql = Qiling(shellcoder = X8664_WIN, archtype = "x8664", ostype = "windows", rootfs="../examples/rootfs/x86_reactos", output="off")
+    #    ql = Qiling(code = X8664_WIN, archtype = "x8664", ostype = "windows", rootfs="../examples/rootfs/x86_reactos", output="off")
     #    ql.run()
 
     #This shellcode needs to be changed to something simpler, listen is blocking
     #def test_freebsd_x64(self):
     #    print("FreeBSD X86 64bit Shellcode")
-    #    ql = Qiling(shellcoder = X8664_FBSD, archtype = "x8664", ostype = "freebsd", output = "off")
+    #    ql = Qiling(code = X8664_FBSD, archtype = "x8664", ostype = "freebsd", output = "off")
     #    ql.run()
 
     # def test_macos_x64(self):
     #     print("macos X86 64bit Shellcode")
-    #     ql = Qiling(shellcoder = X8664_macos, archtype = "x8664", ostype = "macos", output = "off")
+    #     ql = Qiling(code = X8664_macos, archtype = "x8664", ostype = "macos", output = "off")
     #     ql.run()
 
     # def test_invalid_os(self):
     #     print("Testing Unknown OS")
-    #     self.assertRaises(QlErrorOsType,  Qiling, shellcoder = test, archtype = "arm64", ostype = "qilingos", output = "default" )
+    #     self.assertRaises(QlErrorOsType,  Qiling, code = test, archtype = "arm64", ostype = "qilingos", output = "default" )
 
     # def test_invalid_arch(self):
     #     print("Testing Unknown Arch")
-    #     self.assertRaises(QlErrorArch,  Qiling, shellcoder = test, archtype = "qilingarch", ostype = "linux", output = "default" )
+    #     self.assertRaises(QlErrorArch,  Qiling, code = test, archtype = "qilingarch", ostype = "linux", output = "default" )
 
     # def test_invalid_output(self):
     #     print("Testing Invalid output")
-    #     self.assertRaises(QlErrorOutput,  Qiling, shellcoder = test, archtype = "arm64", ostype = "linux", output = "blafooxyz" )
+    #     self.assertRaises(QlErrorOutput,  Qiling, code = test, archtype = "arm64", ostype = "linux", output = "blafooxyz" )
         
 
 if __name__ == "__main__":

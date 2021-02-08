@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 #
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org)
+#
 
-import select, logging
+import select
+
 from qiling.const import *
 from qiling.os.linux.thread import *
 from qiling.const import *
@@ -61,7 +62,7 @@ def ql_syscall__newselect(ql, _newselect_nfds, _newselect_readfds, _newselect_wr
         if _newselect_readfds != 0:
             tmp_buf = b'\x00' * (_newselect_nfds // 8 + 1)
             for i in ans[0]:
-                logging.debug("debug : " + str(tmp_r_map[i]))
+                ql.log.debug("debug : " + str(tmp_r_map[i]))
                 tmp_buf = set_fd_set(tmp_buf, tmp_r_map[i])
             ql.mem.write(_newselect_readfds, tmp_buf)
 
@@ -81,5 +82,4 @@ def ql_syscall__newselect(ql, _newselect_nfds, _newselect_readfds, _newselect_wr
     except:
         if ql.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
             raise
-    logging.info("_newselect(%d, %x, %x, %x, %x) = %d" % (_newselect_nfds, _newselect_readfds, _newselect_writefds, _newselect_exceptfds, _newselect_timeout, regreturn))
     return regreturn

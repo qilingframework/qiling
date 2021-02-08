@@ -1,15 +1,11 @@
 #!/usr/bin/env python3
 #
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org)
+#
 
-import unittest
-import os
-import sys
-import time
-sys.path.append("..")
+import os, sys, time, unittest
 from struct import pack
-import sys
+
 sys.path.append("..")
 from qiling import *
 from unicorn import *

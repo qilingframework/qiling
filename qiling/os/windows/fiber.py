@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
 # A Simple Windows Clipboard Simulation
 
-import logging
+
 from unicorn import *
 from unicorn.x86_const import *
 
@@ -36,7 +36,7 @@ class FiberManager:
         else:
             fiber = self.fibers[idx]
             if fiber.cb:
-                logging.debug("Skipping emulation of callback function 0x%X for fiber 0x%X" % (fiber.cb, fiber.idx))
+                self.ql.log.debug("Skipping emulation of callback function 0x%X for fiber 0x%X" % (fiber.cb, fiber.idx))
                 """
                 ret_addr = self.ql.reg.read(UC_X86_REG_RIP + 6 ) #FIXME, use capstone to get addr of next instr?
 
@@ -51,7 +51,7 @@ class FiberManager:
                 else:
                     self.ql.stack_push(ret_addr)
                 self.ql.stack_push(ret_addr)
-                logging.debug("Jumping to callback @ 0x%X" % fiber.cb)
+                self.ql.log.debug("Jumping to callback @ 0x%X" % fiber.cb)
                 self.ql.reg.write(UC_X86_REG_RIP, fiber.cb)
                 # All of this gets overwritten by the rest of the code in fncc.py
                 # Not sure how to actually make unicorn emulate the callback function due to that

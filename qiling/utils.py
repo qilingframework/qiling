@@ -1,24 +1,25 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
 
 """
 This module is intended for general purpose functions that can be used
 thoughout the qiling framework
 """
-import importlib, logging, os, logging, copy, re, pefile, configparser
+import importlib, os, copy, re, pefile, configparser, logging
 from logging import LogRecord
 from pathlib import Path
-from .exception import *
-from .const import QL_ARCH, QL_ARCH_ALL, QL_ENDIAN, QL_OS, QL_OS_ALL, QL_OUTPUT, QL_DEBUGGER, QL_ARCH_32BIT, QL_ARCH_64BIT, QL_ARCH_16BIT
-from .const import debugger_map, arch_map, os_map, D_INFO
 
 from unicorn import UcError, UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
 from keystone import *
 from capstone import *
 
-FMT_STR = "[%(levelname)s] [%(filename)s:%(lineno)d]\t%(message)s"
+from .exception import *
+from .const import QL_ARCH, QL_ARCH_ALL, QL_ENDIAN, QL_OS, QL_OS_ALL, QL_OUTPUT, QL_DEBUGGER, QL_ARCH_32BIT, QL_ARCH_64BIT, QL_ARCH_16BIT
+from .const import debugger_map, arch_map, os_map
+
+FMT_STR = "%(levelname)s\t%(message)s"
 
 # \033 -> ESC
 # ESC [ -> CSI
@@ -41,70 +42,70 @@ LEVEL_COLORS = {
     'CRITICAL': COLOR_CODE.CRIMSON,
     'ERROR': COLOR_CODE.RED
 }
-
-LEVEL_NAME = {
-    'WARNING': f"{COLOR_CODE.YELLOW}!{COLOR_CODE.ENDC}",
-    'INFO': f"{COLOR_CODE.BLUE}={COLOR_CODE.ENDC}",
-    'DEBUG': f"{COLOR_CODE.MAGENTA}+{COLOR_CODE.ENDC}",
-    'CRITICAL': f"{COLOR_CODE.CRIMSON}!{COLOR_CODE.ENDC}",
-    'ERROR': f"{COLOR_CODE.RED}x{COLOR_CODE.ENDC}"
-}
-
-class ColoredFormatter(logging.Formatter):
-    def __init__(self, *args, **kwargs):
-        super(ColoredFormatter, self).__init__(*args, **kwargs)
-    
-    def get_colored_level(self, record: LogRecord):
-        levelname = record.levelname
-        return LEVEL_NAME[levelname]
-
-    def format(self, record: LogRecord):
-        _record = copy.copy(record)
-        _record.levelname = self.get_colored_level(_record)
-        return super(ColoredFormatter, self).format(_record)
-
-class MultithreadColoredFormatter(ColoredFormatter):
+class QilingColoredFormatter(logging.Formatter):
     def __init__(self, ql, *args, **kwargs):
-        super(MultithreadColoredFormatter, self).__init__(*args, **kwargs)
+        super(QilingColoredFormatter, self).__init__(*args, **kwargs)
         self._ql = ql
 
+    def get_colored_level(self, record: LogRecord):
+        LEVEL_NAME = {
+            'WARNING': f"{COLOR_CODE.YELLOW}[!]{COLOR_CODE.ENDC}",
+            'INFO': f"{COLOR_CODE.BLUE}[=]{COLOR_CODE.ENDC}",
+            'DEBUG': f"{COLOR_CODE.MAGENTA}[+]{COLOR_CODE.ENDC}",
+            'CRITICAL': f"{COLOR_CODE.CRIMSON}[x]{COLOR_CODE.ENDC}",
+            'ERROR': f"{COLOR_CODE.RED}[x]{COLOR_CODE.ENDC}"
+        }
+        return LEVEL_NAME[record.levelname]
+
     def format(self, record: LogRecord):
+        record.levelname = self.get_colored_level(record)
         try:
             cur_thread = self._ql.os.thread_management.cur_thread
+            if cur_thread is not None:
+                record.levelname = f"{record.levelname} {COLOR_CODE.GREEN}{str(cur_thread)}{COLOR_CODE.ENDC}"
         except AttributeError:
-            return super(MultithreadColoredFormatter, self).format(record)
-        _record = copy.copy(record)
-        levelname = self.get_colored_level(_record)
-        _record.levelname = f"{levelname}]\t[{COLOR_CODE.GREEN}Thread {cur_thread.id}{COLOR_CODE.ENDC}"
-        msg = super(ColoredFormatter, self).format(_record)
-        return msg
+            pass
+        return super(QilingColoredFormatter, self).format(record)
+
+class QilingPlainFormatter(logging.Formatter):
+    def __init__(self, ql, *args, **kwargs):
+        super(QilingPlainFormatter, self).__init__(*args, **kwargs)
+        self._ql = ql
+    
+    def get_level(self, record: LogRecord):
+        LEVEL_NAME = {
+            'WARNING': "[!]",
+            'INFO': "[=]",
+            'DEBUG': "[+]",
+            'CRITICAL': "[x]",
+            'ERROR': "[x]"
+        }
+        return LEVEL_NAME[record.levelname]
+
+    def format(self, record: LogRecord):
+        record.levelname = self.get_level(record)
+        try:
+            cur_thread = self._ql.os.thread_management.cur_thread
+            if cur_thread is not None:
+                record.levelname = f"{record.levelname} {str(cur_thread)}"
+        except AttributeError:
+            pass
+        return super(QilingPlainFormatter, self).format(record)
 
 class RegexFilter(logging.Filter):
     def __init__(self, filters):
         super(RegexFilter, self).__init__()
-        self._filters = [ re.compile(ft) for ft in  filters ]
+        self.update_filters(filters)
     
+    def update_filters(self, filters):
+        self._filters = [ re.compile(ft) for ft in  filters ]
+
     def filter(self, record: LogRecord):
         msg = record.getMessage()
         for ft in self._filters:
             if re.match(ft, msg):
                 return True
         return False
-
-class MultithreadSplitHandler(logging.Handler):
-    def __init__(self, ql):
-        super(MultithreadSplitHandler, self).__init__()
-        self._ql = ql
-    
-    def emit(self, record: LogRecord):
-        msg = self.format(record)
-        try:
-            cur_thread = self._ql.os.thread_management.cur_thread
-        except AttributeError:
-            self._ql._msg_before_main_thread.append((record.levelno, msg))
-            return
-        cur_thread.log_file_fd.log(record.levelno, msg)
-
 
 class QlFileDes:
     def __init__(self, init):
@@ -167,7 +168,7 @@ def ql_get_arch_bits(arch):
         return 32
     if arch in QL_ARCH_64BIT:
         return 64
-    raise QlErrorArch("[!] Invalid Arch")
+    raise QlErrorArch("Invalid Arch")
 
 def ql_is_valid_ostype(ostype):
     if ostype not in QL_OS_ALL:
@@ -258,12 +259,12 @@ def ql_get_module_function(module_name, function_name = None):
     try:
         imp_module = importlib.import_module(module_name)
     except Exception as ex:
-        raise QlErrorModuleNotFound("[!] Unable to import module %s (%s)" % (module_name, ex))
+        raise QlErrorModuleNotFound("Unable to import module %s (%s)" % (module_name, ex))
 
     try:
         module_function = getattr(imp_module, function_name)
     except:
-        raise QlErrorModuleFunctionNotFound("[!] Unable to import %s from %s" % (function_name, imp_module))
+        raise QlErrorModuleFunctionNotFound("Unable to import %s from %s" % (function_name, imp_module))
 
     return module_function
 
@@ -353,6 +354,7 @@ def ql_macho_parse_emu_env(path):
 
     return arch, ostype, archendian
 
+
 def ql_pe_parse_emu_env(path):
     try:
         pe = pefile.PE(path, fast_load=True)
@@ -387,6 +389,7 @@ def ql_pe_parse_emu_env(path):
 
     return arch, ostype, archendian
 
+
 def ql_guess_emu_env(path):
     arch = None
     ostype = None
@@ -413,18 +416,21 @@ def ql_guess_emu_env(path):
         arch, ostype, archendian = ql_pe_parse_emu_env(path)
   
     if ostype not in (QL_OS_ALL):
-        raise QlErrorOsType("[!] File does not belong to either 'linux', 'windows', 'freebsd', 'macos', 'ios', 'dos'")
+        raise QlErrorOsType("File does not belong to either 'linux', 'windows', 'freebsd', 'macos', 'ios', 'dos'")
 
     return arch, ostype, archendian
+
 
 def loader_setup(ostype, ql):
     loadertype_str = loadertype_convert_str(ostype)
     function_name = "QlLoader" + loadertype_str
     return ql_get_module_function(f"qiling.loader.{loadertype_str.lower()}", function_name)(ql)
 
+
 def component_setup(component_type, component_name, ql):
     function_name = "Ql" + component_name.capitalize() + "Manager"
     return ql_get_module_function(f"qiling.{component_type}.{component_name}", function_name)(ql)
+
 
 def debugger_setup(debugger, ql):
     # default remote server
@@ -441,7 +447,7 @@ def debugger_setup(debugger, ql):
             
         
         if debugger_convert(remotedebugsrv) not in (QL_DEBUGGER):
-            raise QlErrorOutput("[!] Error: Debugger not supported")
+            raise QlErrorOutput("Error: Debugger not supported")
         
     debugsession = ql_get_module_function(f"qiling.debugger.{remotedebugsrv}.{remotedebugsrv}", f"Ql{str.capitalize(remotedebugsrv)}")
 
@@ -449,7 +455,7 @@ def debugger_setup(debugger, ql):
 
 def arch_setup(archtype, ql):
     if not ql_is_valid_arch(archtype):
-        raise QlErrorArch("[!] Invalid Arch")
+        raise QlErrorArch("Invalid Arch")
     
     if archtype == QL_ARCH.ARM_THUMB:
         archtype =  QL_ARCH.ARM
@@ -464,17 +470,19 @@ def arch_setup(archtype, ql):
 
     return ql_get_module_function(f"qiling.arch.{arch_str.lower()}", archmanager)(ql)
 
+
 # This function is extracted from os_setup so I put it here.
 def ql_syscall_mapping_function(ostype):
     ostype_str = ostype_convert_str(ostype)
     return ql_get_module_function(f"qiling.os.{ostype_str.lower()}.map_syscall", "map_syscall")
 
+
 def os_setup(archtype, ostype, ql):
     if not ql_is_valid_ostype(ostype):
-        raise QlErrorOsType("[!] Invalid OSType")
+        raise QlErrorOsType("Invalid OSType")
 
     if not ql_is_valid_arch(archtype):
-        raise QlErrorArch("[!] Invalid Arch %s" % archtype)
+        raise QlErrorArch("Invalid Arch %s" % archtype)
 
     ostype_str = ostype_convert_str(ostype)
     ostype_str = ostype_str.capitalize()
@@ -483,7 +491,11 @@ def os_setup(archtype, ostype, ql):
 
 
 def profile_setup(ostype, profile, ql):
-    logging.debug("Customized profile: %s" % profile)
+    _profile = "Default"
+    if profile != None:
+        _profile = profile
+        
+    debugmsg = "Profile: %s" % _profile
 
     os_profile = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", ostype_convert_str(ostype) + ".ql")
 
@@ -494,7 +506,7 @@ def profile_setup(ostype, profile, ql):
 
     config = configparser.ConfigParser()
     config.read(profiles)
-    return config
+    return config, debugmsg
 
 def ql_resolve_logger_level(output, verbose):
     level = logging.INFO
@@ -507,155 +519,61 @@ def ql_resolve_logger_level(output, verbose):
             level = logging.DEBUG
         elif verbose >= 1:
             level = logging.INFO
-        
-    logging.getLogger().setLevel(level)
+    
+    return level
 
+QL_INSTANCE_ID = 114514
 
 # TODO: qltool compatibility
-def ql_setup_logger(ql, log_dir, log_filename, log_split, console, filter, multithread):
-    # Covered use cases:
-    #    - Normal console output.
-    #    - Write to a single file.
-    #    - Write to splitted log files.
+def ql_setup_logger(ql, log_file, console, filters, multithread, log_override):
+    global QL_INSTANCE_ID
 
-    # Clear all handlers and filters.
-    lger = logging.getLogger()
-    lger.handlers = []
-    lger.filters = []
-
-    # Do we have console output?
-    if console:
-        handler = logging.StreamHandler()
-        if multithread:
-            formatter = MultithreadColoredFormatter(ql, FMT_STR)
-        else:
-            formatter = ColoredFormatter(FMT_STR)
-        handler.setFormatter(formatter)
-        lger.addHandler(handler)
+    # If there is an override for our logger, then use it.
+    if log_override is not None:
+        log = log_override
     else:
-        logging.disable(level=logging.CRITICAL)
+        # We should leave the root logger untouched.
+        log = logging.getLogger(f"qiling{QL_INSTANCE_ID}")
+        QL_INSTANCE_ID += 1
+        
+        # Disable propagation to avoid duplicate output.
+        log.propagate = False
+        # Clear all handlers and filters.
+        log.handlers = []
+        log.filters = []    
+
+        # Do we have console output?
+        if console:
+            handler = logging.StreamHandler()
+            formatter = QilingColoredFormatter(ql, FMT_STR)
+            handler.setFormatter(formatter)
+            log.addHandler(handler)
+        else:
+            log.setLevel(logging.CRITICAL)
+
+        # Do we have to write log to a file?
+        if log_file is not None:
+            handler = logging.FileHandler(log_file)
+            formatter = QilingPlainFormatter(ql, FMT_STR)
+            handler.setFormatter(formatter)
+            log.addHandler(handler)
+
+    # Remeber to add filters if necessary.
+    # If there aren't any filters, we do add the filters until users specify any.
+    log_filter = None
+
+    if filters is not None and type(filters) == list and len(filters) != 0:
+        log_filter = RegexFilter(filters)
+        log.addFilter(log_filter)
     
-    # If log_dir isn't specified, return.
-    if log_dir is None or log_dir == "":
-        if log_split:
-            raise QlErrorOutput("log_split should be used with log_dir")
-        return
+    log.setLevel(logging.INFO)
 
-    os.makedirs(log_dir, 0o755, exist_ok=True)
-    
-    # If we don't have to split logs, that's the most simple case.
-    if not log_split:
-        handler = logging.FileHandler(Path(log_dir) / log_filename)
-        handler.setFormatter(logging.Formatter(FMT_STR))
-        lger.addHandler(handler)
-    else:
-        if multithread:
-            # A placeholder for messages before the first(main) thread is created.
-            ql._msg_before_main_thread = []
-            handler = MultithreadSplitHandler(ql)
-            handler.setFormatter(logging.Formatter(FMT_STR))
-            lger.addHandler(handler)
-        # For spliting logs with child process, we do that during fork.
+    return log, log_filter
 
-    # Remeber to add filters.
-    if filter is not None and type(filter) == list and len(filter) != 0:
-        lger.addFilter(RegexFilter(filter))
-    
-    lger.setLevel(logging.INFO)
-
-def ql_create_disassembler(archtype, archendian, reg_cpsr=None):
-    if archtype == QL_ARCH.ARM:  # QL_ARM
-        mode = CS_MODE_ARM
-        if archendian == QL_ENDIAN.EB:
-            # TODO: Test for big endian.
-            reg_cpsr_v = 0b100000
-            # reg_cpsr_v = 0b000000
-        else:
-            reg_cpsr_v = 0b100000
-
-        if reg_cpsr & reg_cpsr_v != 0:
-            mode = CS_MODE_THUMB
-
-        if archendian == QL_ENDIAN.EB:
-            md = Cs(CS_ARCH_ARM, mode)
-            # md = Cs(CS_ARCH_ARM, mode + CS_MODE_BIG_ENDIAN)
-        else:
-            md = Cs(CS_ARCH_ARM, mode)
-
-    elif archtype == QL_ARCH.ARM_THUMB:
-        md = Cs(CS_ARCH_ARM, CS_MODE_THUMB)
-
-    elif archtype == QL_ARCH.X86:  # QL_X86
-        md = Cs(CS_ARCH_X86, CS_MODE_32)
-
-    elif archtype == QL_ARCH.X8664:  # QL_X86_64
-        md = Cs(CS_ARCH_X86, CS_MODE_64)
-
-    elif archtype == QL_ARCH.ARM64:  # QL_ARM64
-        md = Cs(CS_ARCH_ARM64, CS_MODE_ARM)
-
-    elif archtype == QL_ARCH.A8086:  # QL_A8086
-        md = Cs(CS_ARCH_X86, CS_MODE_16)
-
-    elif archtype == QL_ARCH.MIPS:  # QL_MIPS32
-        if archendian == QL_ENDIAN.EB:
-            md = Cs(CS_ARCH_MIPS, CS_MODE_MIPS32 + CS_MODE_BIG_ENDIAN)
-        else:
-            md = Cs(CS_ARCH_MIPS, CS_MODE_MIPS32 + CS_MODE_LITTLE_ENDIAN)
-
-    else:
-        raise QlErrorArch("[!] Unknown arch defined in utils.py (debug output mode)")
-
-    return md
-
-def ql_create_assembler(archtype, archendian, reg_cpsr=None):
-    if archtype == QL_ARCH.ARM:  # QL_ARM
-        mode = KS_MODE_ARM
-        if archendian == QL_ENDIAN.EB:
-            # TODO: Test for big endian.
-            reg_cpsr_v = 0b100000
-            # reg_cpsr_v = 0b000000
-        else:
-            reg_cpsr_v = 0b100000
-
-        if reg_cpsr & reg_cpsr_v != 0:
-            mode = KS_MODE_THUMB
-
-        if archendian == QL_ENDIAN.EB:
-            ks = Ks(KS_ARCH_ARM, mode)
-            # md = Cs(CS_ARCH_ARM, mode + CS_MODE_BIG_ENDIAN)
-        else:
-            ks = Ks(KS_ARCH_ARM, mode)
-
-    elif archtype == QL_ARCH.ARM_THUMB:
-        ks = Ks(KS_ARCH_ARM, KS_MODE_THUMB)
-
-    elif archtype == QL_ARCH.X86:  # QL_X86
-        ks = Ks(KS_ARCH_X86, KS_MODE_32)
-
-    elif archtype == QL_ARCH.X8664:  # QL_X86_64
-        ks = Ks(KS_ARCH_X86, KS_MODE_64)
-
-    elif archtype == QL_ARCH.ARM64:  # QL_ARM64
-        ks = Ks(KS_ARCH_ARM64, KS_MODE_LITTLE_ENDIAN)
-
-    elif archtype == QL_ARCH.A8086:  # QL_A8086
-        ks = Ks(KS_ARCH_X86, KS_MODE_16)
-
-    elif archtype == QL_ARCH.MIPS:  # QL_MIPS32
-        if archendian == QL_ENDIAN.EB:
-            ks = Ks(KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_BIG_ENDIAN)
-        else:
-            ks = Ks(KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_LITTLE_ENDIAN)
-
-    else:
-        raise QlErrorArch("[!] Unknown arch defined in utils.py (debug output mode)")
-
-    return ks
 
 # verify if emulator returns properly
 def verify_ret(ql, err):
-    logging.debug("Got exception %u: init SP = %x, current SP = %x, PC = %x" %(err.errno, ql.os.init_sp, ql.reg.arch_sp, ql.reg.arch_pc))
+    ql.log.debug("Got exception %u: init SP = %x, current SP = %x, PC = %x" %(err.errno, ql.os.init_sp, ql.reg.arch_sp, ql.reg.arch_pc))
     # print("Got exception %u: init SP = %x, current SP = %x, PC = %x" %(err.errno, ql.os.init_sp, self.reg.arch_sp, self.reg.arch_pc))
 
     ql.os.RUN = False
@@ -672,14 +590,14 @@ def verify_ret(ql, err):
         
         if ql.archtype == QL_ARCH.X8664: # Win64
             if ql.os.init_sp == ql.reg.arch_sp or ql.os.init_sp + 8 == ql.reg.arch_sp or ql.os.init_sp + 0x10 == ql.reg.arch_sp:  # FIXME
-                # [+] 0x11626	 c3	  	ret
+                # 0x11626	 c3	  	ret
                 # print("OK, stack balanced!")
                 pass
             else:
                 raise
         else:   # Win32
             if ql.os.init_sp + 12 == ql.reg.arch_sp:   # 12 = 8 + 4
-                # [+] 0x114dd	 c2 08 00	  	ret 	8
+                # 0x114dd	 c2 08 00	  	ret 	8
                 pass
             else:
                 raise

@@ -1,20 +1,22 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
+
+import binascii
 
 from qiling.const import *
 from qiling.os.const import *
 
-from .utils import *
-from .fncc import *
-from .ProcessorBind import *
-from .UefiBaseType import *
-from .UefiMultiPhase import *
-from .UefiSpec import *
-
-# TODO: find a better solution than hardcoding this
-pointer_size = 8
+from qiling.os.uefi.const import EFI_SUCCESS, EFI_NOT_FOUND, EFI_OUT_OF_RESOURCES
+from qiling.os.uefi.utils import *
+from qiling.os.uefi.fncc import *
+from qiling.os.uefi.ProcessorBind import *
+from qiling.os.uefi.UefiBaseType import *
+from qiling.os.uefi.UefiMultiPhase import *
+from qiling.os.uefi.UefiSpec import *
+from qiling.os.uefi.protocols import common
+from qiling.os.uefi import rt
 
 # @see: MdePkg\Include\Pi\PiSmmCis.h
 
@@ -80,10 +82,7 @@ class EFI_SMM_SYSTEM_TABLE2(STRUCT):
 	"Table"	: POINTER	# PTR(VOID)
 })
 def hook_SmmInstallConfigurationTable(ql, address, params):
-	guid = params["Guid"]
-	table = params["Table"]
-
-	return CoreInstallConfigurationTable(ql, guid, table)
+	return common.InstallConfigurationTable(ql.loader.smm_context, params)
 
 @dxeapi(params = {
 	"type"		: INT,			# EFI_ALLOCATE_TYPE
@@ -158,19 +157,7 @@ def hook_SmmStartupThisAp(ql, address, params):
 	"Interface"		: POINTER,		# PTR(VOID)
 })
 def hook_SmmInstallProtocolInterface(ql, address, params):
-	handle = read_int64(ql, params["Handle"])
-
-	if handle == 0:
-		handle = ql.loader.smm_context.heap.alloc(1)
-
-	dic = ql.loader.smm_context.protocols.get(handle, {})
-
-	dic[params["Protocol"]] = params["Interface"]
-	ql.loader.smm_context.protocols[handle] = dic
-	check_and_notify_protocols(ql)
-	write_int64(ql, params["Handle"], handle)
-
-	return EFI_SUCCESS
+	return common.InstallProtocolInterface(ql.loader.smm_context, params)
 
 @dxeapi(params = {
 	"Handle"	: POINTER,	# EFI_HANDLE
@@ -178,20 +165,7 @@ def hook_SmmInstallProtocolInterface(ql, address, params):
 	"Interface"	: POINTER	# PTR(VOID)
 })
 def hook_SmmUninstallProtocolInterface(ql, address, params):
-	handle = params["Handle"]
-
-	if handle not in ql.loader.smm_context.protocols:
-		return EFI_NOT_FOUND
-
-	dic = ql.loader.smm_context.protocols[handle]
-	protocol = params["Protocol"]
-
-	if protocol not in dic:
-		return EFI_NOT_FOUND
-
-	del dic[protocol]
-
-	return EFI_SUCCESS
+	return common.UninstallProtocolInterface(ql.loader.smm_context, params)
 
 @dxeapi(params = {
 	"Handle"	: POINTER,	# EFI_HANDLE
@@ -199,18 +173,7 @@ def hook_SmmUninstallProtocolInterface(ql, address, params):
 	"Interface"	: POINTER	# PTR(PTR(VOID))
 })
 def hook_SmmHandleProtocol(ql, address, params):
-	handle = params["Handle"]
-	protocol = params["Protocol"]
-	interface = params['Interface']
-
-	hdict = ql.loader.smm_context.protocols
-
-	if handle in hdict and protocol in hdict[handle]:
-		write_int64(ql, interface, hdict[handle][protocol])
-
-		return EFI_SUCCESS
-
-	return EFI_NOT_FOUND
+	return common.HandleProtocol(ql.loader.smm_context, params)
 
 @dxeapi(params = {
 	"Protocol"		: GUID,		# PTR(EFI_GUID)
@@ -237,25 +200,7 @@ def hook_SmmRegisterProtocolNotify(ql, address, params):
 	"Buffer"	: POINTER	# PTR(EFI_HANDLE)
 })
 def hook_SmmLocateHandle(ql, address, params):
-	buffer_size, handles = LocateHandles(ql.loader.smm_context, params)
-
-	if len(handles) == 0:
-		return EFI_NOT_FOUND
-
-	ret = EFI_BUFFER_TOO_SMALL
-
-	if read_int64(ql, params["BufferSize"]) >= buffer_size:
-		ptr = params["Buffer"]
-
-		for handle in handles:
-			write_int64(ql, ptr, handle)
-			ptr += pointer_size
-
-		ret = EFI_SUCCESS
-
-	write_int64(ql, params["BufferSize"], buffer_size)
-
-	return ret
+	return common.LocateHandle(ql.loader.smm_context, params)
 
 @dxeapi(params = {
 	"Protocol"		: GUID,		# PTR(EFI_GUID)
@@ -263,7 +208,7 @@ def hook_SmmLocateHandle(ql, address, params):
 	"Interface"		: POINTER	# PTR(PTR(VOID))
 })
 def hook_SmmLocateProtocol(ql, address, params):
-	return LocateProtocol(ql.loader.smm_context, params)
+	return common.LocateProtocol(ql.loader.smm_context, params)
 
 @dxeapi(params = {
 	"HandlerType"	: GUID,
@@ -289,6 +234,13 @@ def hook_SmiHandlerUnRegister(ql, address, params):
 	return EFI_SUCCESS
 
 def initialize(ql, gSmst : int):
+	ql.loader.gSmst = gSmst
+
+	gSmmRT = gSmst + EFI_SMM_SYSTEM_TABLE2.sizeof()	# smm runtime services
+	cfg = gSmmRT + EFI_RUNTIME_SERVICES.sizeof()	# configuration tables array
+
+	rt.initialize(ql, gSmmRT)
+
 	descriptor = {
 		'struct' : EFI_SMM_SYSTEM_TABLE2,
 		'fields' : (
@@ -307,8 +259,8 @@ def initialize(ql, gSmst : int):
 			('NumberOfCpus',					None),
 			('CpuSaveStateSize',				None),
 			('CpuSaveState',					None),
-			('NumberOfTableEntries',			None),
-			('SmmConfigurationTable',			0),		# TODO: set this to gST conf table array?
+			('NumberOfTableEntries',			0),
+			('SmmConfigurationTable',			cfg),
 			('SmmInstallProtocolInterface',		hook_SmmInstallProtocolInterface),
 			('SmmUninstallProtocolInterface',	hook_SmmUninstallProtocolInterface),
 			('SmmHandleProtocol',				hook_SmmHandleProtocol),
@@ -323,6 +275,24 @@ def initialize(ql, gSmst : int):
 
 	instance = init_struct(ql, gSmst, descriptor)
 	instance.saveTo(ql, gSmst)
+
+	# configuration tables bookkeeping
+	confs = []
+
+	# these are needed for utils.SmmInstallConfigurationTable
+	ql.loader.smm_context.conf_table_array = confs
+	ql.loader.smm_context.conf_table_array_ptr = cfg
+
+	# configuration table data space; its location is calculated by leaving
+	# enough space for 100 configuration table entries. only a few entries are
+	# expected, so 100 should definitely suffice
+	conf_data = cfg + EFI_CONFIGURATION_TABLE.sizeof() * 100
+	ql.loader.smm_context.conf_table_data_ptr = conf_data
+	ql.loader.smm_context.conf_table_data_next_ptr = conf_data
+
+	install_configuration_table(ql.loader.smm_context, "SMM_RUNTIME_SERVICES_TABLE", gSmmRT)
+	
+
 
 __all__ = [
 	'EFI_SMM_SYSTEM_TABLE2',

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
 
-import logging
+
 from .utils import check_and_notify_protocols
 
 def hook_EndOfExecution(ql):
@@ -15,12 +15,11 @@ def hook_EndOfExecution(ql):
     if check_and_notify_protocols(ql):
         return
 
-    if len(ql.loader.modules) < 1:
+    if ql.loader.modules:
+        ql.loader.execute_next_module()
+    else:
         if ql.loader.unload_modules():
             return
 
-        logging.info(f'[+] No more modules to run')
+        ql.log.info(f'No more modules to run')
         ql.emu_stop()
-    else:
-        ql.loader.execute_next_module()
-

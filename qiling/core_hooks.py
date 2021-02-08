@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
 
 ##############################################
 # These are part of the core.py Qiling class #
 # handling hooks                             #
 ##############################################
 
-import logging
 
 from unicorn import *
 from .utils import catch_KeyboardInterrupt
@@ -55,7 +54,7 @@ class HookIntr(Hook):
     
 
     def check(self, ql, intno):
-        logging.debug("[+] Received Interupt: %i Hooked Interupt: %i" % (intno, self.intno))
+        ql.log.debug("Received Interupt: %i Hooked Interupt: %i" % (intno, self.intno))
         if intno < 0 or self.intno == intno:
             return True
         return False

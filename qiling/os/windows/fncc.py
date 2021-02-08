@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
 
-import os
-import json
-import struct
-import logging
+import json, os, struct 
+
+from typing import Callable, Sequence, Mapping, MutableMapping, Any
 from functools import wraps
 
 from qiling.os.const import *
@@ -14,7 +13,10 @@ from qiling.os.windows.utils import *
 from qiling.const import *
 from qiling.exception import *
 from qiling.os.windows.structs import *
-        
+from qiling.os.os import QlOs
+
+from .utils import *
+     
 
 def replacetype(type, specialtype=None):
     if specialtype is None:
@@ -27,6 +29,7 @@ def replacetype(type, specialtype=None):
             return specialtype[type]
     else:
         return type
+
 
 # x86/x8664 PE should share Windows APIs
 def winsdkapi(cc, param_num=None, dllname=None, replace_params_type=None, replace_params={}, passthru=False):
@@ -51,10 +54,10 @@ def winsdkapi(cc, param_num=None, dllname=None, replace_params_type=None, replac
                 winsdk_path = os.path.join(windows_abspath[:-11], 'extensions', 'windows_sdk', 'defs', dllname + '.json')
 
                 if os.path.exists(winsdk_path):
-                    f = open(winsdk_path, 'r')
-                    funclist = json.load(f)
+                    with open(winsdk_path, 'r') as f:
+                        funclist = json.load(f)
                 else:
-                    logging.info('[!]', winsdk_path, 'not found')
+                    ql.log.info('%s not found', winsdk_path)
                 if funcname not in funclist:
                     params = replace_params
                 else:
@@ -94,7 +97,7 @@ def winsdkapi(cc, param_num=None, dllname=None, replace_params_type=None, replac
             elif ql.archtype == QL_ARCH.X8664:
                 return ql.os.x8664_fastcall(param_num, params, func, args, kwargs, passthru)
             else:
-                raise QlErrorArch("[!] Unknown self.ql.arch")
+                raise QlErrorArch("Unknown self.ql.arch")
         return wrapper
 
     return decorator

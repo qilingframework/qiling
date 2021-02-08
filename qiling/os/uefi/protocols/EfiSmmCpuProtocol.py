@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
 
 from qiling.os.const import *
 from ..fncc import *
 from ..ProcessorBind import *
 from ..UefiBaseType import *
+from ..const import *
 
 # @see: MdePkg/Include/Protocol/MmCpu.h
 class EFI_SMM_SAVE_STATE_REGISTER(ENUM_UC):

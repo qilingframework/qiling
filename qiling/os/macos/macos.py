@@ -1,22 +1,20 @@
 #!/usr/bin/env python3
 #
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org)
+#
 
-import traceback, logging
+import traceback
 
 from unicorn import *
 from unicorn.x86_const import *
 from unicorn.arm64_const import *
 
-from qiling.arch.x86 import *
 
+from qiling.arch.x86 import *
 from qiling.const import *
 from qiling.os.const import *
 from qiling.os.posix.posix import QlOsPosix
-
 from .const import *
-
 from qiling.os.macos import macos
 from qiling.os.macos.structs import *
 from qiling.os.macos.events.macos_structs import *
@@ -35,6 +33,7 @@ class QlOsMacos(QlOsPosix):
         self.hook_ret = {}
         self.pid = self.profile.getint("KERNEL","pid")
         self.load()
+
 
     # load MacOS driver
     def load_kext(self):
@@ -60,16 +59,16 @@ class QlOsMacos(QlOsPosix):
             self.savedrip=0xffffff8000a163bd
             self.ql.run(begin=self.ql.loader.kext_alloc)
             self.kext_object = self.ql.reg.rax
-            logging.debug("[+] Created kext object at 0x%x" % self.kext_object)
+            self.ql.log.debug("Created kext object at 0x%x" % self.kext_object)
 
             self.ql.reg.rdi = self.kext_object
             self.ql.reg.rsi = 0 # NULL option
             self.savedrip=0xffffff8000a16020
             self.ql.run(begin=self.ql.loader.kext_init)
             if self.ql.reg.rax == 0:
-                logging.debug("[!] Failed to initialize kext object")
+                self.ql.log.debug("Failed to initialize kext object")
                 return
-            logging.debug("[+] Initialized kext object")
+            self.ql.log.debug("Initialized kext object")
 
             self.ql.reg.rdi = self.kext_object
             # FIXME Determine provider for kext
@@ -77,9 +76,9 @@ class QlOsMacos(QlOsPosix):
             self.savedrip=0xffffff8000a16102
             self.ql.run(begin=self.ql.loader.kext_attach)
             if self.ql.reg.rax == 0:
-                logging.debug("[!] Failed to attach kext object")
+                self.ql.log.debug("Failed to attach kext object")
                 return
-            logging.debug("[+] Attached kext object 1st time")
+            self.ql.log.debug("Attached kext object 1st time")
 
             self.ql.reg.rdi = self.kext_object
             self.ql.reg.rdi = 0
@@ -90,14 +89,14 @@ class QlOsMacos(QlOsPosix):
             self.savedrip=0xffffff8000a16184
             self.ql.run(begin=self.ql.loader.kext_probe)
             self.heap.free(tmp)
-            logging.debug("[+] Probed kext object")
+            self.ql.log.debug("Probed kext object")
 
             self.ql.reg.rdi = self.kext_object
             # FIXME Determine provider for kext
             self.ql.reg.rsi = 0 # ?
             self.savedrip=0xffffff8000a16198
             self.ql.run(begin=self.ql.loader.kext_detach)
-            logging.debug("[+] Detached kext object")
+            self.ql.log.debug("Detached kext object")
 
             self.ql.reg.rdi = self.kext_object
             # FIXME Determine provider for kext
@@ -105,9 +104,9 @@ class QlOsMacos(QlOsPosix):
             self.savedrip=0xffffff8000a168a3
             self.ql.run(begin=self.ql.loader.kext_attach)
             if self.ql.reg.rax == 0:
-                logging.debug("[!] Failed to attach kext object")
+                self.ql.log.debug("Failed to attach kext object")
                 return
-            logging.debug("[+] Attached kext object 2nd time")
+            self.ql.log.debug("Attached kext object 2nd time")
 
             self.ql.reg.rdi = self.kext_object
             # FIXME Determine provider for kext
@@ -117,7 +116,7 @@ class QlOsMacos(QlOsPosix):
         else:
             from qiling.os.macos.structs import kmod_info_t, POINTER64
             kmod_info_addr = self.heap.alloc(ctypes.sizeof(kmod_info_t))
-            logging.debug("[+] Created fake kmod_info at 0x%x" % kmod_info_addr)
+            self.ql.log.debug("Created fake kmod_info at 0x%x" % kmod_info_addr)
             kmod_info = kmod_info_t(self.ql, kmod_info_addr)
 
             # OSKext.cpp:562
@@ -135,15 +134,16 @@ class QlOsMacos(QlOsPosix):
             kmod_info.stop = POINTER64(self.ql.loader.kext_stop)
 
             kmod_info.updateToMem()
-            logging.debug("[+] Initialized kmod_info")
+            self.ql.log.debug("Initialized kmod_info")
 
             self.ql.reg.rdi = kmod_info_addr
             self.ql.reg.rsi = 0
             self.savedrip=0xffffff80009c2c16
             self.ql.run(begin=self.ql.loader.kext_start)
 
+
     def load(self):
-        if self.ql.shellcoder:
+        if self.ql.code:
             return
 
         if self.ql.archtype== QL_ARCH.ARM64:
@@ -161,10 +161,12 @@ class QlOsMacos(QlOsPosix):
     def hook_syscall(self, intno= None, int = None):
         return self.load_syscall()
 
+
     def hook_sigtrap(self, intno= None, int = None):
-        logging.info("[!] Trap Found")
+        self.ql.log.info("Trap Found")
         self.emu_error()
         exit(1)
+
 
     def run(self):
         #save initial stack pointer, so we can see if stack is balanced when
@@ -197,8 +199,8 @@ class QlOsMacos(QlOsPosix):
                 self.ql.loader.entry_point = self.ql.entry_point    
 
         try:
-            if self.ql.shellcoder:
-                self.ql.emu_start(self.entry_point, (self.entry_point + len(self.ql.shellcoder)), self.ql.timeout, self.ql.count)
+            if self.ql.code:
+                self.ql.emu_start(self.entry_point, (self.entry_point + len(self.ql.code)), self.ql.timeout, self.ql.count)
             
             else:
                 self.ql.emu_start(self.ql.loader.entry_point, self.exit_point, self.ql.timeout, self.ql.count)

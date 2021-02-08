@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 #
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org)
+#
 
-import struct, time, os, logging
+import struct, time, os
+
 from shutil import copyfile
 from datetime import datetime
+
 
 from qiling.exception import *
 from qiling.os.windows.const import *
@@ -15,7 +17,6 @@ from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
 from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
-from qiling.os.windows.utils import canonical_path
 from qiling.exception import *
 from qiling.os.windows.structs import *
 
@@ -32,7 +33,7 @@ def hook_GetFileType(ql, address, params):
     else:
         obj = ql.os.handle_manager.get(hFile)
         if obj is None:
-            raise QlErrorNotImplemented("[!] API not implemented")
+            raise QlErrorNotImplemented("API not implemented")
         else:
             # technically is not always a type_char but.. almost
             ret = FILE_TYPE_CHAR
@@ -143,7 +144,7 @@ def hook_ReadFile(ql, address, params):
             # TODO maybe insert a good random generation input
             s = (b"A" * (nNumberOfBytesToRead - 1)) + b"\x00"
         else:
-            logging.debug("Insert input")
+            ql.log.debug("Insert input")
             s = ql.os.stdin.read(nNumberOfBytesToRead)
         slen = len(s)
         read_len = slen
@@ -202,7 +203,6 @@ def hook_WriteFile(ql, address, params):
 
 def _CreateFile(ql, address, params, name):
     ret = INVALID_HANDLE_VALUE
-
     s_lpFileName = params["lpFileName"]
     dwDesiredAccess = params["dwDesiredAccess"]
     dwShareMode = params["dwShareMode"]
@@ -218,16 +218,15 @@ def _CreateFile(ql, address, params, name):
     else:
         mode += "r"
 
-    # create thread handle
     try:
         f = ql.os.fs_mapper.open(s_lpFileName, mode)
     except FileNotFoundError:
         ql.os.last_error = ERROR_FILE_NOT_FOUND
         return INVALID_HANDLE_VALUE
+
     new_handle = Handle(obj=f)
     ql.os.handle_manager.append(new_handle)
     ret = new_handle.id
-
     return ret
 
 
@@ -366,7 +365,7 @@ def hook_GetVolumeInformationW(ql, address, params):
             system_type = (ql.os.profile["VOLUME"]["type"] + "\x00").encode("utf-16le")
             ql.mem.write(pt_system_type, system_type)
     else:
-        raise QlErrorNotImplemented("[!] API not implemented")
+        raise QlErrorNotImplemented("API not implemented")
     return 1
 
 
@@ -381,7 +380,7 @@ def hook_GetDriveTypeW(ql, address, params):
             return DRIVE_FIXED
         # TODO add configuration for drives
     else:
-        raise QlErrorNotImplemented("[!] API not implemented")
+        raise QlErrorNotImplemented("API not implemented")
     return DRIVE_NO_ROOT_DIR
 
 
@@ -409,7 +408,7 @@ def hook_GetDiskFreeSpaceW(ql, address, params):
         ql.mem.write(pt_free_clust, free_clust)
         ql.mem.write(pt_total_clust, total_clust)
     else:
-        raise QlErrorNotImplemented("[!] API not implemented")
+        raise QlErrorNotImplemented("API not implemented")
     return 0
 
 
@@ -560,12 +559,13 @@ def hook_UnmapViewOfFile(ql, address, params):
     "bFailIfExists": DWORD
 })
 def hook_CopyFileA(ql, address, params):
-    lpExistingFileName = canonical_path(ql, params["lpExistingFileName"])
-    lpNewFileName = canonical_path(ql, params["lpNewFileName"])
+    lpExistingFileName = ql.os.transform_to_real_path(params["lpExistingFileName"])
+    lpNewFileName = ql.os.transform_to_real_path(params["lpNewFileName"])
     bFailIfExists = params["bFailIfExists"]
-    
+
     if bFailIfExists and os.path.exists(lpNewFileName):
         return 0
+
     copyfile(lpExistingFileName, lpNewFileName)
     return 1
 

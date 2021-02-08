@@ -12,7 +12,7 @@ heap_address = 0x500000000
 heap_size = 0x5000000
 
 
-[SHELLCODER]
+[CODE]
 # ram_size 0xa00000 is 10MB
 ram_size = 0xa00000
 entry_point = 0x1000000

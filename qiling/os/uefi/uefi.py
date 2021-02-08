@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
 
-import logging
+
 from unicorn import UcError
-from qiling.os.os import QlOs
 
-class QlOsUefi(QlOs):
+from qiling.os.os import QlOs
+from qiling.os.fncc import QlOsFncc
+
+class QlOsUefi(QlOs, QlOsFncc):
 	def __init__(self, ql):
-		super(QlOsUefi, self).__init__(ql)
+		QlOs.__init__(self, ql)
+		QlOsFncc.__init__(self, ql)
 		self.ql = ql
 		self.entry_point = 0
 		self.running_module = None
@@ -19,23 +22,28 @@ class QlOsUefi(QlOs):
 		self.PE_RUN = True
 		self.heap = None # Will be initialized by the loader.
 
+
 	def save(self):
 		saved_state = super(QlOsUefi, self).save()
 		saved_state['entry_point'] = self.entry_point
 		return saved_state
 
+
 	def restore(self, saved_state):
 		super(QlOsUefi, self).restore(saved_state)
 		self.entry_point = saved_state['entry_point']
+
 
 	@staticmethod
 	def notify_after_module_execution(ql, number_of_modules_left):
 		return False
 
+
 	@staticmethod
 	def notify_before_module_execution(ql, module):
 		ql.os.running_module = module
 		return False
+
 
 	def emit_context(self):
 		# TODO: add xmm, ymm, zmm registers
@@ -69,15 +77,16 @@ class QlOsUefi(QlOs):
 
 		sizes = (64, 32, 16, 8, 8)
 
-		logging.error(f'CPU Context:')
+		self.ql.log.error(f'CPU Context:')
 
 		for grp in rgroups:
-			logging.error(', '.join((f'{reg:4s} = {self.ql.reg.read(reg):0{bits // 4}x}') for reg, bits in zip(grp, sizes) if reg))
+			self.ql.log.error(', '.join((f'{reg:4s} = {self.ql.reg.read(reg):0{bits // 4}x}') for reg, bits in zip(grp, sizes) if reg))
 
-		logging.error(f'')
+		self.ql.log.error(f'')
 
-	def emit_hexdump(self, address : int, data : str, num_cols=16):
-		logging.error('Hexdump:')
+
+	def emit_hexdump(self, address: int, data: bytearray, num_cols: int = 16):
+		self.ql.log.error('Hexdump:')
 
 		# align hexdump to numbers of columns
 		pre_padding = [None] * (address % num_cols)
@@ -87,14 +96,15 @@ class QlOsUefi(QlOs):
 
 		for i in range(0, len(chars), num_cols):
 			hexdump = ' '.join(f'  ' if ch is None else f'{ch:02x}' for ch in chars[i: i + num_cols])
-			logging.error(f'{address + i:08x} : {hexdump}')
+			self.ql.log.error(f'{address + i:08x} : {hexdump}')
 
-		logging.error(f'')
+		self.ql.log.error(f'')
 
-	def emit_disasm(self, address : int, data : str, num_insns=8):
+
+	def emit_disasm(self, address: int, data: bytearray, num_insns: int = 8):
 		md = self.ql.create_disassembler()
 
-		logging.error('Disassembly:')
+		self.ql.log.error('Disassembly:')
 
 		for insn in tuple(md.disasm(data, address))[:num_insns]:
 			opcodes = ''.join(f'{ch:02x}' for ch in insn.bytes[:10])
@@ -102,9 +112,10 @@ class QlOsUefi(QlOs):
 			if len(insn.bytes) > 10:
 				opcodes += '.'
 
-			logging.error(f'{insn.address:08x}    {opcodes:<20s}  {insn.mnemonic:<10s} {insn.op_str:s}')
+			self.ql.log.error(f'{insn.address:08x} :  {opcodes:<20s}  {insn.mnemonic:<10s} {insn.op_str:s}')
 
-		logging.error(f'')
+		self.ql.log.error(f'')
+
 
 	def emu_error(self):
 		dump_len = 64
@@ -119,12 +130,13 @@ class QlOsUefi(QlOs):
 
 			containing_image = self.find_containing_image(pc)
 			img_info = f' ({containing_image.path} + {pc - containing_image.base:#x})' if containing_image else ''
-			logging.error(f'PC = {pc:#010x}{img_info}')
+			self.ql.log.error(f'PC = {pc:#010x}{img_info}')
 
-			logging.error(f'Memory map:')
+			self.ql.log.error(f'Memory map:')
 			self.ql.mem.show_mapinfo()
 		except UcError:
-			logging.error(f'Error: PC({pc:#x}) is unreachable')
+			self.ql.log.error(f'Error: PC({pc:#x}) is unreachable')
+
 
 	def run(self):
 		self.notify_before_module_execution(self.ql, self.running_module)
@@ -138,7 +150,7 @@ class QlOsUefi(QlOs):
 		try:
 			self.ql.emu_start(self.ql.loader.entry_point, self.exit_point, self.ql.timeout, self.ql.count)
 		except KeyboardInterrupt as ex:
-			logging.critical(f'Execution interrupted by user')
+			self.ql.log.critical(f'Execution interrupted by user')
 
 			if self.ql._internal_exception is ex:
 				self.ql._internal_exception = None

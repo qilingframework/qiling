@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+#
+# Cross Platform and Multi Architecture Advanced Binary Emulation Framework
+#
+
 PROCESSOR_FEATURE_MAX = 64
 MAX_WOW64_SHARED_ENTRIES = 16
 

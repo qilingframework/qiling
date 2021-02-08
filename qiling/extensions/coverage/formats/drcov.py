@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
 
 from ctypes import Structure
 from ctypes import c_uint32, c_uint16
+
 from .base import QlBaseCoverage
+
 
 # Adapted from https://www.ayrx.me/drcov-file-format
 class bb_entry(Structure):

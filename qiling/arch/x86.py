@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
+
 from unicorn import *
 from unicorn.x86_const import *
 
@@ -11,6 +12,7 @@ from .arch import QlArch
 from .x86_const import *
 from qiling.const import *
 from qiling.exception import *
+
 
 class QlArchX86(QlArch):
     def __init__(self, ql):
@@ -70,7 +72,7 @@ class QlArchX8664(QlArch):
 
         x64_register_mappings = [
             reg_map_8, reg_map_16, reg_map_32, reg_map_64,
-            reg_map_cr, reg_map_st, reg_map_misc, reg_map_r
+            reg_map_cr, reg_map_st, reg_map_misc, reg_map_r, reg_map_seg_base
         ]
 
         for reg_maper in x64_register_mappings:
@@ -122,6 +124,8 @@ class QlArchX8664(QlArch):
 class GDTManager:
     # Added GDT management module.
     def __init__(self, ql, GDT_ADDR = QL_X86_GDT_ADDR, GDT_LIMIT =  QL_X86_GDT_LIMIT, GDT_ENTRY_ENTRIES = 16):
+        ql.log.debug(f"Map GDT at {hex(GDT_ADDR)} with GDT_LIMIT={GDT_LIMIT}")
+
         if ql.mem.is_mapped(GDT_ADDR, GDT_LIMIT) == False:
             ql.mem.map(GDT_ADDR, GDT_LIMIT, info="[GDT]")
 
@@ -142,11 +146,12 @@ class GDTManager:
                 self.ql.mem.map(SEGMENT_ADDR, SEGMENT_ADDR, info="[FS/GS]")
 
         if index < 0 or index >= self.gdt_number:
-            raise QlGDTError("[!] Ql GDT register index error!")
+            raise QlGDTError("Ql GDT register index error!")
         # create GDT entry, then write GDT entry into GDT table
         gdt_entry = self._create_gdt_entry(SEGMENT_ADDR, SEGMENT_SIZE, SPORT, QL_X86_F_PROT_32)
         self.ql.mem.write(self.gdt_addr + (index << 3), gdt_entry)
         # self.gdt_used[index] = True
+        self.ql.log.debug(f"Write to {hex(self.gdt_addr + (index << 3))} for new entry {gdt_entry}")
 
 
     def get_gdt_buf(self, start, end):

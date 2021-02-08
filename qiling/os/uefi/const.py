@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
 
 EFI_MAX_BIT = (1 << 63)
 EFI_SUCCESS = 0
@@ -41,3 +41,6 @@ EFI_WARN_UNKNOWN_GLYPH		= EFI_MAX_BIT | 1
 EFI_WARN_DELETE_FAILURE		= EFI_MAX_BIT | 2
 EFI_WARN_WRITE_FAILURE		= EFI_MAX_BIT | 3
 EFI_WARN_BUFFER_TOO_SMALL	= EFI_MAX_BIT | 4
+
+# @see: MdePkg\Include\Base.h
+EFI_ERROR = lambda status: (status & EFI_MAX_BIT) != 0

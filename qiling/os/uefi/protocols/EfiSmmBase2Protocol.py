@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
 
-import logging
+
 from qiling.const import *
 from qiling.os.const import *
 from ..fncc import *
@@ -26,7 +26,7 @@ class EFI_SMM_BASE2_PROTOCOL(STRUCT):
 	"InSmram"	: POINTER
 })
 def hook_InSmm(ql, address, params):
-	logging.info(f'InSmram = {ql.loader.in_smm}')
+	ql.log.info(f'InSmram = {ql.loader.in_smm}')
 
 	write_int8(ql, params["InSmram"], int(ql.loader.in_smm))
 

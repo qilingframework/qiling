@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
+
+from struct import unpack
 
 from .utils import *
 from .const import *
-from struct import unpack
 
 class Header:
 

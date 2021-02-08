@@ -1,4 +1,10 @@
+#!/usr/bin/env python3
+# 
+# Cross Platform and Multi Architecture Advanced Binary Emulation Framework
+#
+
 import ctypes
+from typing import Any, Dict
 
 bits = 64
 psize = bits // 8
@@ -8,7 +14,7 @@ dummy_ptr_type = {
 	64 : ctypes.c_uint64
 }[bits]
 
-_pointer_type_cache = {}
+_pointer_type_cache: Dict[str, type] = {}
 
 def PTR(ptype):
 	pname = 'c_void' if ptype is None else ptype.__name__
@@ -54,7 +60,7 @@ class STRUCT(ctypes.LittleEndianStructure):
 	def __init__(self):
 		pass
 
-	def saveTo(self, ql, address : int):
+	def saveTo(self, ql, address: int) -> None:
 		"""Store self contents to a specified memory address.
 		"""
 
@@ -62,11 +68,9 @@ class STRUCT(ctypes.LittleEndianStructure):
 
 		ql.mem.write(address, data)
 
-		return address + len(data)
-
 	@classmethod
-	def loadFrom(cls, ql, address : int):
-		"""Construct an instance from saved contents.
+	def loadFrom(cls, ql, address: int) -> Any:
+		"""Construct an instance of the structure from saved contents.
 		"""
 
 		data = bytes(ql.mem.read(address, cls.sizeof()))
@@ -74,14 +78,14 @@ class STRUCT(ctypes.LittleEndianStructure):
 		return cls.from_buffer_copy(data)
 
 	@classmethod
-	def sizeof(cls):
+	def sizeof(cls) -> int:
 		"""Get the C structure size in bytes.
 		"""
 
 		return ctypes.sizeof(cls)
 
 	@classmethod
-	def offsetof(cls, fname):
+	def offsetof(cls, fname: str) -> int:
 		"""Get the offset of a field in the C structure.
 		"""
 

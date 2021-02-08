@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
 
 
 # 1. Download AC15 Firmware from https://down.tenda.com.cn/uploadfile/AC15/US_AC15V1.0BR_V15.03.05.19_multi_TD01.zip
@@ -13,7 +13,7 @@
 # notes: we are using rootfs in this example, so rootfs = squashfs-root
 # 
 
-import os, socket, sys, threading, logging
+import os, socket, sys, threading
 sys.path.append("..")
 from qiling import *
 
@@ -54,7 +54,7 @@ def nvram_listener():
 
 def myvfork(ql):
     regreturn = 0
-    logging.info("vfork() = %d" % regreturn)
+    ql.log.info("vfork() = %d" % regreturn)
     return regreturn
 
 

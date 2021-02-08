@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
+
+from contextlib import contextmanager
 
 from .formats import *
-from contextlib import contextmanager
+
 
 # Returns subclasses recursively.
 def get_all_subclasses(cls):

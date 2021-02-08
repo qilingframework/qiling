@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org)
+#
 
 import sys
 sys.path.append("..")
@@ -46,8 +46,7 @@ def third_stage(key):
     ql = Qiling(["rootfs/8086/petya/petya.DOS_MBR"], 
                  "rootfs/8086",
                  console=False, 
-                 output="debug", 
-                 log_dir=".")
+                 output="debug")
     ql.add_fs_mapper(0x80, QlDisk("rootfs/8086/petya/out_1M.raw", 0x80))
     ql.hook_code(pass_red, begin=0x886d, end=0x886d)
     ql.hook_code(input_key, begin=0x85f0, end=0x85f0)
@@ -90,8 +89,7 @@ def first_stage():
     ql = Qiling(["rootfs/8086/petya/petya.DOS_MBR"], 
                  "rootfs/8086",
                  console=False, 
-                 output="debug", 
-                 log_dir=".")
+                 output="debug")
     ql.add_fs_mapper(0x80, QlDisk("rootfs/8086/petya/out_1M.raw", 0x80))
     # Workaround for `until` in uc_emu_start not working with dynamic loaded code.
     ql.hook_code(stop, begin=petya_2nd_stage_start, end=petya_2nd_stage_start)

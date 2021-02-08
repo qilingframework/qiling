@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 #
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org)
+#
 
 import os
-import logging
+
 from qiling.exception import *
 from qiling.os.windows.const import *
 
@@ -29,7 +29,7 @@ def _GetModuleHandle(ql, address, params):
         if lpModuleName in ql.loader.dlls:
             ret = ql.loader.dlls[lpModuleName]
         else:
-            logging.debug("[!] Library %s not imported" % lpModuleName)
+            ql.log.debug("Library %s not imported" % lpModuleName)
             ret = 0
     return ret
 
@@ -77,7 +77,7 @@ def hook_GetModuleFileNameA(ql, address, params):
 
     # GetModuleHandle can return pe_image_address as handle, and GetModuleFileName will try to retrieve it.
     # Pretty much 0 and pe_image_address value should do the same operations
-    if not ql.shellcoder and (hModule == 0 or hModule == ql.loader.pe_image_address):
+    if not ql.code and (hModule == 0 or hModule == ql.loader.pe_image_address):
         filename = ql.loader.filepath
         filename_len = len(filename)
         if filename_len > nSize - 1:
@@ -87,8 +87,8 @@ def hook_GetModuleFileNameA(ql, address, params):
             ret = filename_len
         ql.mem.write(lpFilename, filename + b"\x00")
     else:
-        logging.debug("hModule %x" % hModule)
-        raise QlErrorNotImplemented("[!] API not implemented")
+        ql.log.debug("hModule %x" % hModule)
+        raise QlErrorNotImplemented("API not implemented")
     return ret
 
 
@@ -105,7 +105,7 @@ def hook_GetModuleFileNameW(ql, address, params):
     nSize = params["nSize"]
     # GetModuleHandle can return pe_image_address as handle, and GetModuleFileName will try to retrieve it.
     # Pretty much 0 and pe_image_address value should do the same operations
-    if not ql.shellcoder and (hModule == 0 or hModule == ql.loader.pe_image_address):
+    if not ql.code and (hModule == 0 or hModule == ql.loader.pe_image_address):
         filename = ql.loader.filepath.decode('ascii').encode('utf-16le')
         filename_len = len(filename)
         if filename_len > nSize - 1:
@@ -115,7 +115,7 @@ def hook_GetModuleFileNameW(ql, address, params):
             ret = filename_len
         ql.mem.write(lpFilename, filename + b"\x00")
     else:
-        raise QlErrorNotImplemented("[!] API not implemented")
+        raise QlErrorNotImplemented("API not implemented")
     return ret
 
 
@@ -140,7 +140,7 @@ def hook_GetProcAddress(ql, address, params):
     try:
         dll_name = [key for key, value in ql.loader.dlls.items() if value == params['hModule']][0]
     except IndexError as ie:
-        logging.info('[!] Failed to import function "%s" with handle 0x%X' % (lpProcName, params['hModule']))
+        ql.log.info('Failed to import function "%s" with handle 0x%X' % (lpProcName, params['hModule']))
         return 0
 
     # Handle case where module is self
@@ -161,7 +161,7 @@ def hook_GetProcAddress(ql, address, params):
 @winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_LoadLibraryA(ql, address, params):
     lpLibFileName = params["lpLibFileName"]
-    if not ql.shellcoder and lpLibFileName == ql.loader.filepath.decode():
+    if not ql.code and lpLibFileName == ql.loader.filepath.decode():
         # Loading self
         return ql.loader.pe_image_address
     dll_base = ql.loader.load_dll(lpLibFileName.encode())
@@ -257,4 +257,4 @@ def hook_SetDefaultDllDirectories(ql, address, params):
     if value == LOAD_LIBRARY_SEARCH_USER_DIRS:
         # TODO we have to probably set an handler for this, since it can be a not default value.
         #  And we have to change the default path of load
-        raise QlErrorNotImplemented("[!] API not implemented")
+        raise QlErrorNotImplemented("API not implemented")

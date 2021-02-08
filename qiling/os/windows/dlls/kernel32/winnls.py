@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org)
+#
 
 import struct
 import time
@@ -62,7 +62,7 @@ def hook_GetLocaleInfoA(ql, address, params):
 
     local_dict = LOCALE.get(locale_value, None)
     if local_dict is None:
-        # raise QlErrorNotImplemented("[!] API not implemented")
+        # raise QlErrorNotImplemented("API not implemented")
         ql.os.last_error = ERROR_INVALID_PARAMETER
         return 0
 

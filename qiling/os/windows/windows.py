@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 #
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org)
+#
 
-import types, logging
+import types
 
 from unicorn import *
 
@@ -11,14 +11,17 @@ from qiling.arch.x86_const import *
 from qiling.arch.x86 import *
 from qiling.const import *
 from qiling.os.os import QlOs
+from qiling.os.fncc import QlOsFncc
 
 from .dlls import *
 from .const import *
 from .utils import *
 
-class QlOsWindows(QlOs):
+
+class QlOsWindows(QlOs, QlOsFncc):
     def __init__(self, ql):
         QlOs.__init__(self, ql)
+        QlOsFncc.__init__(self, ql)
         self.ql = ql
         self.PE_RUN = True
         self.last_error = 0
@@ -56,6 +59,7 @@ class QlOsWindows(QlOs):
         elif self.ql.archtype == QL_ARCH.X8664:
             ql_x8664_set_gs(self.ql)
 
+
     def setupComponents(self):
         # handle manager
         self.handle_manager = HandleManager()
@@ -72,6 +76,7 @@ class QlOsWindows(QlOs):
         # more handle manager
         new_handle = Handle(obj=main_thread)
         self.handle_manager.append(new_handle)
+
 
     # hook WinAPI in PE EMU
     def hook_winapi(self, int, address, size):
@@ -110,15 +115,16 @@ class QlOsWindows(QlOs):
                 try:
                     winapi_func(self.ql, address, {})
                         
-                except Exception:
-                    logging.exception("")
-                    logging.info("[!] %s Exception Found" % winapi_name)
+                except Exception as ex:
+                    self.ql.log.exception(ex)
+                    self.ql.log.info("%s Exception Found" % winapi_name)
                     self.emu_error()
-                    raise QlErrorSyscallError("[!] Windows API Implementation Error")
+                    raise QlErrorSyscallError("Windows API Implementation Error")
             else:
-                logging.warning("[!] %s is not implemented" % winapi_name)
+                self.ql.log.warning("%s is not implemented" % winapi_name)
                 if self.ql.debug_stop:
-                    raise QlErrorSyscallNotFound("[!] Windows API Implementation Not Found")
+                    raise QlErrorSyscallNotFound("Windows API Implementation Not Found")
+
 
     def run(self):
         if self.ql.exit_point is not None:
@@ -137,8 +143,8 @@ class QlOsWindows(QlOs):
             self.stderr = self.ql.stderr
         
         try:
-            if self.ql.shellcoder:
-                self.ql.emu_start(self.ql.loader.entry_point, (self.ql.loader.entry_point + len(self.ql.shellcoder)), self.ql.timeout, self.ql.count)
+            if self.ql.code:
+                self.ql.emu_start(self.ql.loader.entry_point, (self.ql.loader.entry_point + len(self.ql.code)), self.ql.timeout, self.ql.count)
             else:
                 self.ql.emu_start(self.ql.loader.entry_point, self.exit_point, self.ql.timeout, self.ql.count)
         except UcError:

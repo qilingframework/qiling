@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
 #
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org)
+#
 
-import logging
+import types
+
 from qiling.os.macos.kernel_api import *
-from unicorn import *
+from qiling.exception import *
+
 
 # hook MacOS kernel API
 def hook_kernel_api(ql, address, size):
     # call kernel api
-    if address in ql.import_symbols:
-        api_name = ql.import_symbols[address].decode()
+    if address in ql.loader.import_symbols:
+        api_name = ql.loader.import_symbols[address].decode()
         # print("OK, found hook for %s at 0x%x" % (api_name, address))
         api_func = None
 
@@ -30,12 +32,12 @@ def hook_kernel_api(ql, address, size):
             except UcError:
                 raise
             except Exception:
-                logging.exception("")
-                logging.debug("[!] %s Exception Found" % api_name)
-                raise QlErrorSyscallError("[!] MacOS kernel API Implementation Error")
+                ql.log.exception("")
+                ql.log.debug("%s Exception Found" % api_name)
+                raise QlErrorSyscallError("MacOS kernel API Implementation Error")
         else:
-            logging.info("[!] %s is not implemented\n" % api_name)
+            ql.log.info("%s is not implemented\n" % api_name)
             if ql.debug_stop:
-                raise QlErrorSyscallNotFound("[!] MacOS kernel API Implementation Not Found")
+                raise QlErrorSyscallNotFound("MacOS kernel API Implementation Not Found")
 
 

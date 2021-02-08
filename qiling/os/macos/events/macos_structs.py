@@ -1,7 +1,12 @@
-import enum
-import ctypes
-import logging
+#!/usr/bin/env python3
+# 
+# Cross Platform and Multi Architecture Advanced Binary Emulation Framework
+#
+
+import ctypes, enum
+
 from qiling.os.macos.structs import POINTER64
+
 
 base_event_normal = 0
 class AutoNumberNormalEvent(enum.Enum):
@@ -1002,14 +1007,14 @@ class sflt_filter_t(ctypes.Structure):
         return newObj
 
     def dump(self):
-        logging.info("[*] Dumping object: %s" % (self.sf_name))
+        self.ql.log.info("[*] Dumping object: %s" % (self.sf_name))
         for field in self._fields_:
             if isinstance(getattr(self, field[0]), POINTER64):
-                logging.info("%s: 0x%x" % (field[0], getattr(self, field[0]).value))
+                self.ql.log.info("%s: 0x%x" % (field[0], getattr(self, field[0]).value))
             elif isinstance(getattr(self, field[0]), int):
-                logging.info("%s: %d" % (field[0], getattr(self, field[0])))
+                self.ql.log.info("%s: %d" % (field[0], getattr(self, field[0])))
             elif isinstance(getattr(self, field[0]), bytes):
-                logging.info("%s: %s" % (field[0], getattr(self, field[0]).decode()))
+                self.ql.log.info("%s: %s" % (field[0], getattr(self, field[0]).decode()))
 
 # struct sockaddr_in {
 # 	__uint8_t	sin_len;
@@ -1119,11 +1124,11 @@ class mac_policy_conf_t(ctypes.Structure):
     def dump(self):
         for field in self._fields_:
             if isinstance(getattr(self, field[0]), POINTER64):
-                logging.info("%s: 0x%x" % (field[0], getattr(self, field[0]).value))
+                self.ql.log.info("%s: 0x%x" % (field[0], getattr(self, field[0]).value))
             elif isinstance(getattr(self, field[0]), int):
-                logging.info("%s: %d" % (field[0], getattr(self, field[0])))
+                self.ql.log.info("%s: %d" % (field[0], getattr(self, field[0])))
             elif isinstance(getattr(self, field[0]), bytes):
-                logging.info("%s: %s" % (field[0], getattr(self, field[0]).decode()))
+                self.ql.log.info("%s: %s" % (field[0], getattr(self, field[0]).decode()))
 
 # struct ucred {
 # 	TAILQ_ENTRY(ucred)	cr_link; /* never modify this without KAUTH_CRED_HASH_LOCK */

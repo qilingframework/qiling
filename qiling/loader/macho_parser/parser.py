@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
+
 
 from .header import *
 from .loadcommand import *
@@ -10,7 +11,7 @@ from .const import *
 from .utils import *
 from struct import unpack
 from qiling.const import *
-import logging
+
 
 class MachoParser:
     
@@ -26,7 +27,7 @@ class MachoParser:
         for seg in self.segments:
             # find page zero
             if seg.vm_address == 0 and seg.file_size == 0:
-                logging.info("[+] PageZero Size: {:X}".format(seg.vm_size))
+                ql.log.info("PageZero Size: {:X}".format(seg.vm_size))
                 self.page_zero_size = seg.vm_size
                 self.header_address = seg.vm_size
 
@@ -53,33 +54,33 @@ class MachoParser:
         self.magic = self.getMagic(self.binary_file)
         
         if self.magic in MAGIC_64:
-            logging.debug("[+] Got a 64bit Header ")
+            self.ql.log.debug("Got a 64bit Header ")
             self.header = BinaryHeader(self.binary_file)
 
         #elif self.magic in MAGIC_X86:
         #    # x86
-        #    logging.debug("[+] Got a x86 Header") 
+        #    ql.log.debug("Got a x86 Header") 
         #    self.header = BinaryHeader(self.binary_file)
 
         elif self.magic in MAGIC_FAT:
             # fat 
-            logging.debug("[+] Got a fat header")
+            self.ql.log.debug("Got a fat header")
             fat = FatHeader(self.binary_file)
             file_info = fat.getBinary(self.archtype)
             self.binary_file = self.binary_file[file_info.offset : file_info.offset + file_info.size]
             self.header = BinaryHeader(self.binary_file)
         else:
-            logging.info("[-] unknow header!")
+            self.ql.log.info("unknow header!")
             return False
         
         if not self.header:
-            logging.info("[-] parse header error")
+            self.ql.log.info("parse header error")
             return False 
 
         return True
 
     def parseLoadCommand(self):
-        logging.debug("[+] Parse LoadCommand")
+        self.ql.log.debug("Parse LoadCommand")
         if not self.header.lc_num or not self.header.lc_size or not self.header.header_size:
             return False
 
@@ -94,14 +95,14 @@ class MachoParser:
             if self.header.lc_size >= 8:
                 lc = LoadCommand(self.lc_raw[offset:])
             else:
-                logging.info("[-] cmd size overflow")
+                self.ql.log.info("cmd size overflow")
                 return False 
 
             if self.header.lc_size >= offset + lc.cmd_size:
                 complete_cmd = lc.get_complete()
                 pass
             else:
-                logging.info("[-] cmd size overflow")
+                self.ql.log.info("cmd size overflow")
                 return False
             
             self.commands.append(complete_cmd)

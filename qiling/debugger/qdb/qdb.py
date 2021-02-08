@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+#
+# Cross Platform and Multi Architecture Advanced Binary Emulation Framework
+#
 
 import cmd
 from functools import partial
@@ -7,8 +10,9 @@ from qiling import *
 from qiling.const import *
 from qiling.debugger import QlDebugger
 
-from .frontend import context_printer, context_reg, context_asm, examine_mem, color
+from .frontend import context_printer, context_reg, context_asm, examine_mem
 from .utils import parse_int, handle_bnj, is_thumb, diff_snapshot_save, diff_snapshot_restore, CODE_END
+from .const import *
 
 
 class QlQdb(cmd.Cmd, QlDebugger):
@@ -23,26 +27,35 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         super().__init__()
 
-        # setup a breakpoint at entry point
-        init_hook = self._ql.loader.entry_point if not init_hook else int(init_hook, 16)
+        # setup a breakpoint at entry point or user specified address
+        init_hook = self._ql.loader.entry_point if not init_hook else parse_int(init_hook)
+        self.set_breakpoint(init_hook, _is_temp=True, _inter=True)
 
-        self._ql.hook_address(self.attach, init_hook)
 
-    @classmethod
-    def attach(cls, ql, *args, **kwargs):
-        print(color.RED, "[+] Qdb attached", color.END, sep="")
-        print(color.RED, "[!] All hooks of qiling instance will be disabled in Qdb", color.END, sep="")
+    def parseline(self, line):
+        """Parse the line into a command name and a string containing
+        the arguments.  Returns a tuple containing (command, args, line).
+        'command' and 'args' may be None if the line couldn't be parsed.
+        """
+        line = line.strip()
+        if not line:
+            return None, None, line
+        elif line[0] == '?':
+            line = 'help ' + line[1:]
+        elif line.startswith('!'):
+            if hasattr(self, 'do_shell'):
+                line = 'shell ' + line[1:]
+            else:
+                return None, None, line
+        i, n = 0, len(line)
+        while i < n and line[i] in self.identchars: i = i+1
+        cmd, arg = line[:i], line[i:].strip()
+        return cmd, arg, line
 
-        # clear all hooks
-        for i in ql._addr_hook_fuc.keys():
-            ql.uc.hook_del(ql._addr_hook_fuc[i])
-
-        return cls(ql, *args, **kwargs).interactive()
 
     def interactive(self, *args):
-        self.do_context()
-        self.cmdloop()
-        return True
+        return self.cmdloop()
+
 
     def emptyline(self, *args):
         """
@@ -52,6 +65,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         if _lastcmd:
             return _lastcmd()
 
+
     def del_breakpoint(self, address):
         """
         handle internal breakpoint removing operation
@@ -60,11 +74,12 @@ class QlQdb(cmd.Cmd, QlDebugger):
         if _bp:
             _bp["hook"].remove()
 
-    def set_breakpoint(self, address, _is_temp=False):
+
+    def set_breakpoint(self, address, _is_temp=False, _inter=False):
         """
         handle internal breakpoint adding operation
         """
-        _bp_func = partial(self._breakpoint_handler, _is_temp=_is_temp)
+        _bp_func = partial(self._breakpoint_handler, _is_temp=_is_temp, _inter=_inter)
 
         _hook = self._ql.hook_address(_bp_func, address)
         self.breakpoints.update({address: {"hook": _hook, "hitted": False, "temp": _is_temp}})
@@ -72,7 +87,8 @@ class QlQdb(cmd.Cmd, QlDebugger):
         if _is_temp == False:
             print("Breakpoint at 0x%08x" % address)
 
-    def _breakpoint_handler(self, ql, _is_temp=False):
+
+    def _breakpoint_handler(self, ql, _is_temp, _inter):
         """
         handle all breakpoints
         """
@@ -90,12 +106,17 @@ class QlQdb(cmd.Cmd, QlDebugger):
         self.do_context()
         self._ql.emu_stop()
 
+        if _inter:
+            self.interactive()
+
+
     def do_context(self, *args):
         """
         show context information for current location
         """
         context_reg(self._ql, self._saved_states)
         context_asm(self._ql, self._ql.reg.arch_pc, 4)
+
 
     def do_run(self, *args):
         """
@@ -105,6 +126,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         entry = self._ql.loader.entry_point
 
         self.run(entry)
+
 
     def run(self, address=None):
         """
@@ -120,6 +142,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         self._ql.emu_start(address, 0)
 
+
     def do_backward(self, *args):
 
         if getattr(self, "_states_list", None) is None or self._states_list[-1] is None:
@@ -129,6 +152,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
             current_state_dicts = self._ql.save(cpu_context=True, mem=True, reg=False, fd=False)
             self._ql.restore(diff_snapshot_restore(current_state_dicts, self._states_list.pop()))
             self.do_context()
+
 
     def do_step(self, *args):
         """
@@ -161,6 +185,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
             self.run(_cur_addr)
 
+
     def do_start(self, *args):
         """
         pause at entry point by setting a temporary breakpoint on it
@@ -171,8 +196,11 @@ class QlQdb(cmd.Cmd, QlDebugger):
         if self._ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB) and entry & 1:
             entry -= 1
 
-        self.set_breakpoint(entry, _is_temp=True)
+        if entry not in self.breakpoints.keys():
+            self.set_breakpoint(entry, _is_temp=True)
+
         self.do_run()
+
 
     def do_breakpoint(self, address):
         """
@@ -181,6 +209,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         if address:
             baddr = parse_int(address)
             self.set_breakpoint(baddr)
+
 
     def do_continue(self, *args):
         """
@@ -192,34 +221,54 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
             self.run(_cur_addr)
 
-    def do_examine(self, args):
+
+    def do_examine(self, line):
         """
-        read data from memory of qiling instance
+        Examine memory: x/FMT ADDRESS.
+        format letter: o(octal), x(hex), d(decimal), u(unsigned decimal), t(binary), f(float), a(address), i(instruction), c(char), s(string) and z(hex, zero padded on the left)
+        size letter: b(byte), h(halfword), w(word), g(giant, 8 bytes)
+        e.g. x/4wx 0x41414141 , print 4 word size begin from address 0x41414141 in hex
         """
 
-        _args = args.split()
+        _args = line.split()
+        DEFAULT_FMT = ('x', 4, 1)
 
-        if len(_args) == 1:
-            _xaddr = parse_int(_args[0])
-            _count = 1
+        if line.startswith("/"): # followed by format letter and size letter
 
-        elif len(_args) == 2:
-            _xaddr, _count = _args
-            _xaddr = parse_int(_xaddr)
-            _count = parse_int(_count)
+            def get_fmt(text):
+                def extract_count(t):
+                    return "".join([s for s in t if s.isdigit()])
+
+                f, s, c = DEFAULT_FMT
+                if extract_count(text):
+                    c = int(extract_count(text))
+
+                for char in text.strip(str(c)):
+                    if char in SIZE_LETTER.keys():
+                        s = SIZE_LETTER.get(char)
+
+                    elif char in FORMAT_LETTER:
+                        f = char
+
+                return (f, s, c)
+
+            fmt, addr = line.strip("/").split()
+            addr = parse_int(addr)
+            fmt = get_fmt(fmt)
+
+        elif len(_args) == 1: # only address
+            addr = parse_int(_args[0])
+            fmt = DEFAULT_FMT
 
         else:
-            print("wrong format\nUsage: x ADDRESS [SIZE]")
+            self.do_help("examine")
             return
 
-        examine_mem(self._ql, _xaddr, _count)
+        try:
+            examine_mem(self._ql, addr, fmt)
+        except:
+            print("something went wrong")
 
-    def do_context(self, *args):
-        """
-        show context information for current location
-        """
-        context_reg(self._ql, self._saved_states)
-        context_asm(self._ql, self._ql.reg.arch_pc, 4)
 
     def do_show(self, *args):
         """
@@ -229,11 +278,13 @@ class QlQdb(cmd.Cmd, QlDebugger):
         print("Qdb:", [(hex(idx), val) for idx, val in self.breakpoints.items()])
         print("internal:", [(hex(idx), val) for idx, val in self._ql._addr_hook.items()])
 
+
     def do_disassemble(self, address):
         """
         disassemble instructions from address specified
         """
         context_asm(self._ql, parse_int(address), 4)
+
 
     def do_shell(self, *command):
         """
@@ -243,6 +294,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
             print(eval(*command))
         except:
             print("something went wrong")
+
 
     def do_quit(self, *args):
         """

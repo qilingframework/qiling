@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 #
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org)
+#
 import struct
 import base64
-import logging
+
 from qiling.os.windows.fncc import *
 from qiling.os.const import *
 from qiling.os.windows.utils import *
@@ -34,7 +34,7 @@ def hook_CryptStringToBinaryA(ql, address, params):
 
     size_dst = int.from_bytes(ql.mem.read(size_dst_pointer, 4), byteorder="little")
     if size_dst != 0 and size_dst < size_src:
-        raise QlErrorNotImplemented("[!] API not implemented")
+        raise QlErrorNotImplemented("API not implemented")
     if flag_src == CRYPT_STRING_BASE64:
         # Had a padding error, hope this always works
         add_pad = 4 - (len(string_src) % 4)
@@ -42,9 +42,9 @@ def hook_CryptStringToBinaryA(ql, address, params):
             string_src += "=" * add_pad
         output = base64.b64decode(string_src).decode("utf-16le") + "\x00"
     else:
-        logging.debug("Flag")
-        logging.debug(flag_src)
-        raise QlErrorNotImplemented("[!] API not implemented")
+        ql.log.debug("Flag")
+        ql.log.debug(flag_src)
+        raise QlErrorNotImplemented("API not implemented")
 
     if string_dst == 0:
         # Only wants the length

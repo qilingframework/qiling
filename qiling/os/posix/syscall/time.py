@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 #
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org)
+#
 
-import logging
+
 from qiling.const import *
 from qiling.os.linux.thread import *
 from qiling.const import *
@@ -14,7 +14,6 @@ from qiling.exception import *
 
 def ql_syscall_time(ql, *args, **kw):
     regreturn = int(time.time())
-    logging.info("time() = %d" % regreturn)
     return regreturn
 
 
@@ -35,7 +34,6 @@ def ql_syscall_nanosleep(ql, nanosleep_req, nanosleep_rem, *args, **kw):
         th = ql.os.thread_management.cur_thread
 
     regreturn = 0
-    logging.info("nanosleep(0x%x, 0x%x) = %d" % (nanosleep_req, nanosleep_rem, regreturn))
     return regreturn
 
 
@@ -44,7 +42,6 @@ def ql_syscall_setitimer(ql, setitimer_which, setitimer_new_value, setitimer_old
     # When any timer expires, a signal is sent to the process, and the timer (potentially) restarts.
     # But I haven’t figured out how to send a signal yet.
     regreturn = 0
-    logging.info("setitimer(%d, %x, %x) = %d" % (setitimer_which, setitimer_new_value, setitimer_old_value, regreturn))
     return regreturn
 
 
@@ -58,7 +55,6 @@ def ql_syscall_times(ql, times_tbuf, *args, **kw):
         tmp_buf += ql.pack32(int(tmp_times.children_system * 1000))
         ql.mem.write(times_tbuf, tmp_buf)
     regreturn = int(tmp_times.elapsed * 100)
-    logging.info('times(%x) = %d' % (times_tbuf, regreturn))
     return regreturn
 
 
@@ -72,5 +68,4 @@ def ql_syscall_gettimeofday(ql, gettimeofday_tv, gettimeofday_tz, *args, **kw):
     if gettimeofday_tz != 0:
         ql.mem.write(gettimeofday_tz, b'\x00' * 8)
     regreturn = 0
-    logging.info("gettimeofday(%x, %x) = %d" % (gettimeofday_tv, gettimeofday_tz, regreturn))
     return regreturn

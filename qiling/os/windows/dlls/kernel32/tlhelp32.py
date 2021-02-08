@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 #
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org)
+#
 
 import struct
 import time
-import logging
 from qiling.os.windows.const import *
 from qiling.os.const import *
 from qiling.os.windows.fncc import *
@@ -27,9 +26,9 @@ def hook_CreateToolhelp32Snapshot(ql, address, params):
     # TODO thinking about implementing an handler, gonna see if is really necessary
     flag = params["dwFlags"]
     if flag == TH32CS_SNAPPROCESS:
-        logging.debug("[=] The target is checking every process!")
+        ql.log.debug("The target is checking every process!")
     else:
-        raise QlErrorNotImplemented("[!] API not implemented")
+        raise QlErrorNotImplemented("API not implemented")
     return 0xD10C
 
 

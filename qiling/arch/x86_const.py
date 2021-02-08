@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
 
 from unicorn.x86_const import *
 
@@ -104,6 +104,11 @@ reg_map_64 = {
     "r14": UC_X86_REG_R14,
     "r15": UC_X86_REG_R15,
     "rip": UC_X86_REG_RIP,
+}
+
+reg_map_seg_base = {
+    "fsbase" : UC_X86_REG_FS_BASE,
+    "gsbase" : UC_X86_REG_GS_BASE
 }
 
 reg_map_r = {

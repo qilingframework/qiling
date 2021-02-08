@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
 
 """
 This module is intended for general purpose functions that are only used in qiling.os
 """
 
-import ctypes, inspect, os, struct, uuid, logging
+import ctypes, inspect, os, struct, uuid
 
 from json import dumps
 from pathlib import Path, PurePosixPath, PureWindowsPath, PosixPath, WindowsPath
@@ -16,7 +16,6 @@ from unicorn.arm_const import *
 from unicorn.x86_const import *
 from unicorn.arm64_const import *
 from unicorn.mips_const import *
-
 from capstone import *
 from capstone.arm_const import *
 from capstone.x86_const import *
@@ -24,10 +23,10 @@ from capstone.arm64_const import *
 from capstone.mips_const import *
 from keystone import *
 
+
 from qiling.const import *
 from qiling.exception import *
 from .const import *
-
 from qiling.os.windows.wdk_const import *
 from qiling.os.windows.structs import *
 from qiling.utils import verify_ret
@@ -127,177 +126,6 @@ class QlOsUtils:
         self._disasm_hook = None
         self._block_hook = None
 
-    def lsbmsb_convert(self, sc, size=4):
-        split_bytes = []
-        n = size
-        for index in range(0, len(sc), n):
-            split_bytes.append((sc[index: index + n])[::-1])
-
-        ebsc = b""
-        for i in split_bytes:
-            ebsc += i
-
-        return ebsc
-
-    def convert_path(self, rootfs, cwd, path):
-        if  (self.ql.ostype == self.ql.platform ) \
-            or (self.ql.ostype in [QL_OS.LINUX, QL_OS.MACOS] and self.ql.platform in [QL_OS.LINUX, QL_OS.MACOS]):
-            return PathUtils.convert_for_native_os(rootfs, cwd, path)
-        elif self.ql.ostype in [QL_OS.LINUX, QL_OS.MACOS] and self.ql.platform == QL_OS.WINDOWS:
-            return PathUtils.convert_posix_to_win32(rootfs, cwd, path)
-        elif self.ql.ostype == QL_OS.WINDOWS and self.ql.platform in [QL_OS.LINUX, QL_OS.MACOS]:
-            return PathUtils.convert_win32_to_posix(rootfs, cwd, path)
-        else:
-            return None
-    
-    def transform_to_link_path(self, path):
-        if self.ql.multithread:
-            cur_path = self.ql.os.thread_management.cur_thread.current_path
-        else:
-            cur_path = self.ql.os.current_path
-
-        # Sanity check.
-        if cur_path[0] != '/':
-            logging.info(f"[!] Warning: cur_path doesn't start with a /")
-        
-        rootfs = self.ql.rootfs
-        real_path  = self.convert_path(rootfs, cur_path, path)
-
-        return str(real_path.absolute())
-
-    def transform_to_real_path(self, path):
-        from types import FunctionType
-
-        if self.ql.multithread:
-            cur_path = self.ql.os.thread_management.cur_thread.current_path
-        else:
-            cur_path = self.ql.os.current_path
-
-        # Sanity check.
-        if cur_path[0] != '/':
-            logging.info(f"[!] Warning: cur_path must start with /")
-
-        rootfs = self.ql.rootfs
-        real_path = self.convert_path(rootfs, cur_path, path)
-        
-        if os.path.islink(real_path):
-            link_path = Path(os.readlink(real_path))
-            if not link_path.is_absolute():
-                real_path = Path(os.path.join(os.path.dirname(real_path), link_path))
-            
-        return str(real_path.absolute())
-
-    # The `relative path` here refers to the path which is relative to the rootfs.
-    def transform_to_relative_path(self, path):
-        if self.ql.multithread:
-            cur_path = self.ql.os.thread_management.cur_thread.current_path
-        else:
-            cur_path = self.ql.os.current_path
-
-        return str(Path(cur_path) / path)
-
-    def post_report(self):
-        logging.debug("[+] Syscalls called")
-        for key, values in self.ql.os.syscalls.items():
-            logging.debug("[-] %s:" % key)
-            for value in values:
-                logging.debug("[-] %s " % str(dumps(value)))
-        logging.debug("[+] Registries accessed")
-        for key, values in self.ql.os.registry_manager.accessed.items():
-            logging.debug("[-] %s:" % key)
-            for value in values:
-                logging.debug("[-] %s " % str(dumps(value)))
-        logging.debug("[+] Strings")
-        for key, values in self.ql.os.appeared_strings.items():
-            val = " ".join([str(word) for word in values])
-            logging.debug("[-] %s: %s" % (key, val))
-
-
-    def exec_arbitrary(self, start, end):
-        old_sp = self.ql.reg.arch_sp
-
-        # we read where this hook is supposed to return
-        ret = self.ql.stack_read(0)
-
-        def restore(ql):
-            logging.debug(f"[+] Executed code from 0x{start:x} to 0x{end:x}")
-            # now we can restore the register to be where we were supposed to
-            old_hook_addr = ql.reg.arch_pc
-            ql.reg.arch_sp = old_sp + (ql.archbit // 8)
-            ql.reg.arch_pc = ret
-            # we want to execute the code once, not more
-            ql.hook_address(lambda q: None, old_hook_addr)
-
-        # we have to set an address to restore the registers
-        self.ql.hook_address(restore, end, )
-        # we want to rewrite the return address to the function
-        self.ql.stack_write(0, start)
-
-    def get_offset_and_name(self, addr):
-        for begin, end, access, name in self.ql.mem.map_info:
-            if begin <= addr and end > addr:
-                return addr-begin, name
-        return addr, '-'
-
-    def disassembler(self, ql, address, size):
-        tmp = self.ql.mem.read(address, size)
-
-        if not self.md:
-            self.md = self.ql.create_disassembler()
-
-        insn = self.md.disasm(tmp, address)
-        opsize = int(size)
-
-        offset, name = self.get_offset_and_name(address)
-        log_data = '0x%0*x {%-20s + 0x%06x}   ' % (self.ql.archbit // 4, address, name, offset)
-
-        temp_str = ""
-        for i in tmp:
-            temp_str += ("%02x " % i)
-        log_data += temp_str.ljust(30)
-
-        first = True
-        for i in insn:
-            if not first:
-                log_data += '\n> '
-            first = False
-            log_data += "%s %s" % (i.mnemonic, i.op_str)
-        logging.info(log_data)
-
-        if self.ql.output == QL_OUTPUT.DUMP:
-            for reg in self.ql.reg.register_mapping:
-                if isinstance(reg, str):
-                    REG_NAME = reg
-                    REG_VAL = self.ql.reg.read(reg)
-                    logging.debug("%s\t:\t 0x%x" % (REG_NAME, REG_VAL))
-
-    def setup_output(self):
-        def ql_hook_block_disasm(ql, address, size):
-            logging.info("\n[+] Tracing basic block at 0x%x" % (address))
-
-        if self._disasm_hook:
-            self._disasm_hook.remove()
-            self._disasm_hook = None
-        if self._block_hook:
-            self._block_hook.remove()
-            self._block_hook = None
-
-        if self.ql.output in (QL_OUTPUT.DISASM, QL_OUTPUT.DUMP):
-            if self.ql.output == QL_OUTPUT.DUMP:
-                self._block_hook = self.ql.hook_block(ql_hook_block_disasm)
-            self._disasm_hook = self.ql.hook_code(self.disassembler)
-
-    def stop(self):
-        if self.ql.multithread:
-            td = self.thread_management.stop() 
-        else:
-            self.ql.emu_stop()
-
-    def read_guid(self, address):
-        result = ""
-        raw_guid = self.ql.mem.read(address, 16)
-        return uuid.UUID(bytes_le=bytes(raw_guid))
-
 
     def string_appearance(self, string):
         strings = string.split(" ")
@@ -331,18 +159,34 @@ class QlOsUtils:
         return result
 
     def print_function(self, address, function_name, params, ret, passthru=False):
+        PRINTK_LEVEL = {
+            0: 'KERN_EMERGE',
+            1: 'KERN_ALERT',
+            1: 'KERN_CRIT',
+            2: 'KERN_INFO',
+            3: 'KERN_ERR',
+            4: 'KERN_WARNING',
+            5: 'KERN_NOTICE',
+            6: 'KERN_INFO',
+            7: 'KERN_DEBUG',
+            8: '',
+            9: 'KERN_CONT',
+        }
+        
         if function_name.startswith('hook_'):
             function_name = function_name[5:]
 
         if function_name in ("__stdio_common_vfprintf", "__stdio_common_vfwprintf", "printf", "wsprintfW", "sprintf"):
             return
-
+        
         def _parse_param(param):
             name, value = param
 
-            if isinstance(value, str) or type(value) == bytearray:
+            if type(value) is str:
                 return f'{name:s} = "{value}"'
-            elif isinstance(value, tuple):
+            elif type(value) is bytearray:
+                return f'{name:s} = "{value.decode("utf-8")}"'
+            elif type(value) is tuple:
                 # we just need the string, not the address in the log
                 return f'{name:s} = "{value[1]}"'
 
@@ -356,15 +200,42 @@ class QlOsUtils:
         fret = f' = {ret:#x}' if ret is not None else ''
         fpass = f' (PASSTHRU)' if passthru else ''
 
-        log = f'{address:02x}: {function_name:s}({", ".join(fargs)}){fret}{fpass}'
+        #TODO: Old code from demigod, ready to cleanup
+        if self.ql.ostype in QL_OS_POSIX and self.ql.loader.is_driver:
+            log = '0x%0.2x: %s(' % (address, function_name)
+            for each in params:
+                value = params[each]
+                if type(value) == str or type(value) == bytearray:
+                    if function_name == 'printk':
+                        info = value[:2]
+                        try:
+                            level = PRINTK_LEVEL[int(info[1])]
+                            value = value[2:]
+                            log += '%s = %s "%s", ' %(each, level, value)
+                        except:
+                            log += '%s = "%s", ' %(each, value)
+                    else:
+                        log += '%s = "%s", ' %(each, value)
+                elif type(value) == tuple:
+                    log += '%s = 0x%x, ' % (each, value[0])
+                else:
+                    log += '%s = 0x%x, ' % (each, value)
+            log = log.strip(", ")
+            log += ')'
+            if ret is not None:
+                # do not print result for printk()
+                if function_name != 'printk':
+                    log += ' = 0x%x' % ret
+        else:    
+            log = f'0x{address:02x}: {function_name:s}({", ".join(fargs)}){fret}{fpass}'
 
         if self.ql.output == QL_OUTPUT.DEBUG:
-            logging.debug(log)
+            self.ql.log.debug(log)
         else:
             log = log.partition(" ")[-1]
-            logging.info(log)
+            self.ql.log.info(log)
 
-    def printf(self, address, fmt, params_addr, name, wstring=False):
+    def vprintf(self, address, fmt, params_addr, name, wstring=False):
         count = fmt.count("%")
         params = []
         if count > 0:
@@ -373,7 +244,10 @@ class QlOsUtils:
                 params.append(
                     self.ql.unpack(param)
                 )
+        return self.printf(address, fmt, params, name, wstring)
 
+    def printf(self, address, fmt, params, name, wstring=False):
+        if len(params) > 0:
             formats = fmt.split("%")[1:]
             index = 0
             for f in formats:
@@ -397,9 +271,182 @@ class QlOsUtils:
         else:
             output = '%s(format = %s) = 0x%x' % (name, repr(fmt), len(fmt))
             stdout = fmt
-        logging.info(output)
+        self.ql.log.info(output)
         self.ql.os.stdout.write(bytes(stdout, 'utf-8'))
         return len(stdout), stdout
+
+    def lsbmsb_convert(self, sc, size=4):
+        split_bytes = []
+        n = size
+        for index in range(0, len(sc), n):
+            split_bytes.append((sc[index: index + n])[::-1])
+
+        ebsc = b""
+        for i in split_bytes:
+            ebsc += i
+
+        return ebsc
+
+    def convert_path(self, rootfs, cwd, path):
+        if  (self.ql.ostype == self.ql.platform ) \
+            or (self.ql.ostype in [QL_OS.LINUX, QL_OS.MACOS] and self.ql.platform in [QL_OS.LINUX, QL_OS.MACOS]):
+            return PathUtils.convert_for_native_os(rootfs, cwd, path)
+        elif self.ql.ostype in [QL_OS.LINUX, QL_OS.MACOS] and self.ql.platform == QL_OS.WINDOWS:
+            return PathUtils.convert_posix_to_win32(rootfs, cwd, path)
+        elif self.ql.ostype == QL_OS.WINDOWS and self.ql.platform in [QL_OS.LINUX, QL_OS.MACOS]:
+            return PathUtils.convert_win32_to_posix(rootfs, cwd, path)
+        else:
+            return None
+    
+    def transform_to_link_path(self, path):
+        if self.ql.multithread:
+            cur_path = self.ql.os.thread_management.cur_thread.current_path
+        else:
+            cur_path = self.ql.os.current_path
+
+        # Sanity check.
+        if cur_path[0] != '/':
+            self.ql.log.info(f"Warning: cur_path doesn't start with a /")
+        
+        rootfs = self.ql.rootfs
+        real_path  = self.convert_path(rootfs, cur_path, path)
+
+        return str(real_path.absolute())
+
+    def transform_to_real_path(self, path):
+        from types import FunctionType
+
+        if self.ql.multithread:
+            cur_path = self.ql.os.thread_management.cur_thread.current_path
+        else:
+            cur_path = self.ql.os.current_path
+
+        # Sanity check.
+        if cur_path[0] != '/':
+            self.ql.log.info(f"Warning: cur_path must start with /")
+
+        rootfs = self.ql.rootfs
+        real_path = self.convert_path(rootfs, cur_path, path)
+        
+        if os.path.islink(real_path):
+            link_path = Path(os.readlink(real_path))
+            if not link_path.is_absolute():
+                real_path = Path(os.path.join(os.path.dirname(real_path), link_path))
+            
+        return str(real_path.absolute())
+
+    # The `relative path` here refers to the path which is relative to the rootfs.
+    def transform_to_relative_path(self, path):
+        if self.ql.multithread:
+            cur_path = self.ql.os.thread_management.cur_thread.current_path
+        else:
+            cur_path = self.ql.os.current_path
+
+        return str(Path(cur_path) / path)
+
+    def post_report(self):
+        self.ql.log.debug("Syscalls called")
+        for key, values in self.ql.os.syscalls.items():
+            self.ql.log.debug("%s:" % key)
+            for value in values:
+                self.ql.log.debug("%s " % str(dumps(value)))
+        self.ql.log.debug("Registries accessed")
+        for key, values in self.ql.os.registry_manager.accessed.items():
+            self.ql.log.debug("%s:" % key)
+            for value in values:
+                self.ql.log.debug("%s " % str(dumps(value)))
+        self.ql.log.debug("Strings")
+        for key, values in self.ql.os.appeared_strings.items():
+            val = " ".join([str(word) for word in values])
+            self.ql.log.debug("%s: %s" % (key, val))
+
+
+    def exec_arbitrary(self, start, end):
+        old_sp = self.ql.reg.arch_sp
+
+        # we read where this hook is supposed to return
+        ret = self.ql.stack_read(0)
+
+        def restore(ql):
+            self.ql.log.debug(f"Executed code from 0x{start:x} to 0x{end:x}")
+            # now we can restore the register to be where we were supposed to
+            old_hook_addr = ql.reg.arch_pc
+            ql.reg.arch_sp = old_sp + (ql.archbit // 8)
+            ql.reg.arch_pc = ret
+            # we want to execute the code once, not more
+            ql.hook_address(lambda q: None, old_hook_addr)
+
+        # we have to set an address to restore the registers
+        self.ql.hook_address(restore, end, )
+        # we want to rewrite the return address to the function
+        self.ql.stack_write(0, start)
+
+    def get_offset_and_name(self, addr):
+        for begin, end, access, name in self.ql.mem.map_info:
+            if begin <= addr and end > addr:
+                return addr-begin, name
+        return addr, '-'
+
+    def disassembler(self, ql, address, size):
+        tmp = self.ql.mem.read(address, size)
+
+        if not self.md:
+            self.md = self.ql.create_disassembler()
+        elif self.ql.archtype == QL_ARCH.ARM: # Update disassembler for arm considering thumb swtich.
+            self.md = self.ql.create_disassembler()
+
+        insn = self.md.disasm(tmp, address)
+        opsize = int(size)
+
+        offset, name = self.get_offset_and_name(address)
+        log_data = '0x%0*x {%-20s + 0x%06x}   ' % (self.ql.archbit // 4, address, name, offset)
+
+        temp_str = ""
+        for i in tmp:
+            temp_str += ("%02x " % i)
+        log_data += temp_str.ljust(30)
+
+        first = True
+        for i in insn:
+            if not first:
+                log_data += '\n> '
+            first = False
+            log_data += "%s %s" % (i.mnemonic, i.op_str)
+        self.ql.log.info(log_data)
+
+        if self.ql.output == QL_OUTPUT.DUMP:
+            for reg in self.ql.reg.register_mapping:
+                if isinstance(reg, str):
+                    REG_NAME = reg
+                    REG_VAL = self.ql.reg.read(reg)
+                    self.ql.log.debug("%s\t:\t 0x%x" % (REG_NAME, REG_VAL))
+
+    def setup_output(self):
+        def ql_hook_block_disasm(ql, address, size):
+            self.ql.log.info("\nTracing basic block at 0x%x" % (address))
+
+        if self._disasm_hook:
+            self._disasm_hook.remove()
+            self._disasm_hook = None
+        if self._block_hook:
+            self._block_hook.remove()
+            self._block_hook = None
+
+        if self.ql.output in (QL_OUTPUT.DISASM, QL_OUTPUT.DUMP):
+            if self.ql.output == QL_OUTPUT.DUMP:
+                self._block_hook = self.ql.hook_block(ql_hook_block_disasm)
+            self._disasm_hook = self.ql.hook_code(self.disassembler)
+
+    def stop(self):
+        if self.ql.multithread:
+            td = self.thread_management.stop() 
+        else:
+            self.ql.emu_stop()
+
+    def read_guid(self, address):
+        result = ""
+        raw_guid = self.ql.mem.read(address, 16)
+        return uuid.UUID(bytes_le=bytes(raw_guid))
 
     def io_Write(self, in_buffer):
         if self.ql.ostype == QL_OS.WINDOWS:
@@ -598,7 +645,7 @@ class QlOsUtils:
                 #print("32 irpstack offset = 0x%x" %IRP32.irpstack.offset)
                 #print("irp at %x, irpstack at %x" %(irp_addr, irpstack_addr))
 
-            logging.info("IRP is at 0x%x, IO_STACK_LOCATION is at 0x%x" %(irp_addr, irpstack_addr))
+            self.ql.log.info("IRP is at 0x%x, IO_STACK_LOCATION is at 0x%x" %(irp_addr, irpstack_addr))
 
             irpstack.Parameters.DeviceIoControl.IoControlCode = ioctl_code(devicetype, function, ctl_method, access)
             irpstack.Parameters.DeviceIoControl.OutputBufferLength = output_buffer_size
@@ -637,7 +684,7 @@ class QlOsUtils:
             self.ql.mem.write(irp_addr, bytes(irp))
 
             # set function args
-            logging.info("Executing IOCTL with DeviceObject = 0x%x, IRP = 0x%x" %(self.ql.loader.driver_object.DeviceObject, irp_addr))
+            self.ql.log.info("Executing IOCTL with DeviceObject = 0x%x, IRP = 0x%x" %(self.ql.loader.driver_object.DeviceObject, irp_addr))
             self.set_function_args((self.ql.loader.driver_object.DeviceObject, irp_addr))
 
             try:

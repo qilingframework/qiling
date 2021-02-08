@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 #
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org)
+#
 
-import os, logging
+import os
+
 
 from qiling.const import *
 
@@ -17,10 +18,7 @@ def ql_syscall_getrandom(ql, buf, buflen, flags,*args, **kw):
     except:
         regreturn = -1
 
-    logging.info("getrandom(0x%x, 0x%x, 0x%x) = %d" %
-              (buf, buflen, flags, regreturn))
-
     if data:
-        logging.debug("[+] getrandom() CONTENT:")
-        logging.debug(str(data))
+        ql.log.debug("getrandom() CONTENT:")
+        ql.log.debug(str(data))
     return regreturn

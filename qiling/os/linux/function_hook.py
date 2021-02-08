@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 #
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org)
+#
 
-import struct, logging
+import struct
+
+
 from qiling.const import *
 
-PT_DYNAMIC = 2
-
+PT_DYNAMIC      = 2
 DT_NULL 		= 0
 DT_NEEDED 		= 1
 DT_PLTRELSZ 	= 2
@@ -996,12 +997,12 @@ class FunctionHook:
         for r in rel:
             if (r.r_type == self.JMP_SLOT or r.r_type == self.GLOB_DAT) and r.r_sym != 0:
                 rel_name = self.strtab[self.symtab[r.r_sym].st_name]
-                logging.debug('[+] rel name ' + str(rel_name))
+                self.ql.log.debug('rel name ' + str(rel_name))
     
     def show_dynsym_name(self, s, e):
         for symidx in range(s, e):
             rel_name = self.strtab[self.symtab[symidx].st_name]
-            logging.debug('[+] dynsym name ' + str(rel_name))
+            self.ql.log.debug('dynsym name ' + str(rel_name))
 
     def _hook_int(self, ql, intno):
         idx = (self.ql.reg.arch_pc - self.hook_mem) // 0x10

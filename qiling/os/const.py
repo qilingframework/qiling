@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
 
 STDCALL = 1
 CDECL = 2
@@ -33,6 +33,7 @@ THREAD_STATUS_BLOCKING = 1
 THREAD_STATUS_TERMINATED = 2
 THREAD_STATUS_STOPPED = 4
 THREAD_STATUS_TIMEOUT = 3
+THREAD_STATUS_SUSPEND = 5
 
 reptypedict = {
             "BSTR": "POINTER",
@@ -122,6 +123,7 @@ reptypedict = {
             "REFCLSID": "POINTER",
             "REFIID": "POINTER",
             "REGSAM": "POINTER",
+            "SC_HANDLE": "HANDLE",
             "SHELLEXECUTEINFOA": "POINTER",
             "SHELLEXECUTEINFOW": "POINTER",
             "SHFILEINFOW": "POINTER",

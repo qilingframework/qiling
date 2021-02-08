@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
 
 from enum import IntEnum
 
@@ -47,13 +47,6 @@ class QL_INTERCEPT(IntEnum):
     CALL = 1
     ENTER = 2
     EXIT = 3
-
-
-D_INFO = 1 # General debug information
-D_PROT = 2 # Protocol level debug, print out open file flag
-D_CTNT = 3 # Print out content. File content or content of a tcp stream
-D_RPRT = 4 # Reporting output, main summarizing purposes
-D_DRPT = 5 # Detailed Report, with address
 
 QL_DEBUGGER_ALL = [QL_DEBUGGER.IDAPRO, QL_DEBUGGER.GDB, QL_DEBUGGER.QDB]
 QL_ARCH_ALL     = [QL_ARCH.X86, QL_ARCH.X8664, QL_ARCH.ARM, QL_ARCH.ARM_THUMB, QL_ARCH.ARM64, QL_ARCH.MIPS, QL_ARCH.A8086]

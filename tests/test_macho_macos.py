@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
 
 
 import os, sys, unittest
@@ -63,7 +63,7 @@ class MACHOTest(unittest.TestCase):
         try:
             ql.os.load_kext()
         except UcError as e:
-            print("[!] Load driver error: %s" % e)
+            print("Load driver error: %s" % e)
             sys.exit(-1)      
 
         ql.os.ev_manager.add_process(1337, "agent")

@@ -7,9 +7,30 @@ BREAK CHANGE
 - ql.filename is renamed to ql.argv.
 - ql.output and ql.verbose now has slightly different meanings and can be adjusted runtime. See their docstring for details.
 - ql.filter now accepts a regular expression.
+- Remove ql.log_dir, ql.log_split, ql.append but add ql.log_file instead.
+
 
 ------------------------------------
-[Version 1.3]: January [SOMETHING], 2021
+[Version 1.2.3]: March [SOMETHING], 2021
+- 
+
+
+------------------------------------
+[Version 1.2.2]: February 8, 2021
+
+- Fix _acmdln and _wcmdln handling
+- More UEFI refactor
+- Refactor common OS space
+- Bring sality test to work again
+- Clean up more test case
+- First stage multithread rewrite done
+- Updated Qiling(shellcode=) to Qiling(code=), still keeping Qiling(shellcode=) for legacy purpose
+- Added support for SMM_RUNTIME_SERVICES_TABLE
+- Fixed regression in code coverage collection
+- Added generic ql.mem.read_ptr helper function
+- merged UEFI, windows, linux and macos print_function
+- merged UEFI, windows, linux and macos fncc
+- make MacOS uses more Qiling API
 
 
 ------------------------------------

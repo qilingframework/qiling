@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
 
 import struct
-import logging
+
+
 from qiling.os.windows.fncc import *
 from qiling.os.const import *
 from qiling.os.windows.utils import *
@@ -141,7 +142,7 @@ def hook_GetClipboardData(ql, address, params):
         ql.mem.write(addr, data)
         return addr
     else:
-        logging.debug('Failed to get clipboard data')
+        ql.log.debug('Failed to get clipboard data')
         return 0
 
 
@@ -168,11 +169,11 @@ def hook_MapVirtualKeyW(ql, address, params):
         if code is not None:
             return code
         else:
-            logging.debug("Code value %x" % code_value)
-            raise QlErrorNotImplemented("[!] API not implemented")
+            ql.log.debug("Code value %x" % code_value)
+            raise QlErrorNotImplemented("API not implemented")
     else:
-        logging.debug("Map value %x" % map_value)
-        raise QlErrorNotImplemented("[!] API not implemented")
+        ql.log.debug("Map value %x" % map_value)
+        raise QlErrorNotImplemented("API not implemented")
 
 
 # SHORT GetKeyState(
@@ -181,7 +182,7 @@ def hook_MapVirtualKeyW(ql, address, params):
 @winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'int': 'UINT'})
 def hook_GetKeyState(ql, address, params):
     let = chr(params["nVirtKey"])
-    logging.debug(let)
+    ql.log.debug(let)
     UP = 2
     DOWN = 0
     return UP
@@ -242,8 +243,8 @@ def hook_GetSystemMetrics(ql, address, params):
     elif info == SM_CYHSCROLL:
         return 300
     else:
-        logging.debug("Info value %x" % info)
-        raise QlErrorNotImplemented("[!] API not implemented")
+        ql.log.debug("Info value %x" % info)
+        raise QlErrorNotImplemented("API not implemented")
 
 
 # HDC GetDC(
@@ -540,15 +541,14 @@ def hook_CharPrevA(ql, address, params):
 def hook_wsprintfW(ql, address, params):
     dst, p_format = ql.os.get_function_param(2)
 
-    sp = ql.reg.esp if ql.archtype == QL_ARCH.X86 else ql.reg.rsp
-    p_args = sp + ql.pointersize * 3
     format_string = ql.os.read_wstring(p_format)
-    size, string = ql.os.printf(address, format_string, p_args, "wsprintfW", wstring=True)
-
     count = format_string.count('%')
+    args = ql.os.get_function_param(2 + count)[2:]
+    size, string = ql.os.printf(address, format_string, args, "wsprintfW", wstring=True)
+
     if ql.archtype == QL_ARCH.X8664:
         # We must pop the stack correctly
-        raise QlErrorNotImplemented("[!] API not implemented")
+        raise QlErrorNotImplemented("API not implemented")
 
     ql.mem.write(dst, (string + "\x00").encode("utf-16le"))
     return size
@@ -561,14 +561,15 @@ def hook_wsprintfW(ql, address, params):
 # );
 @winsdkapi(cc=CDECL, dllname=dllname, param_num=3)
 def hook_sprintf(ql, address, params):
-    dst, p_format, p_args = ql.os.get_function_param(3)
+    dst, p_format = ql.os.get_function_param(2)
     format_string = ql.os.read_wstring(p_format)
-    size, string = ql.os.printf(address, format_string, p_args, "sprintf", wstring=True)
-
     count = format_string.count('%')
+    args = ql.os.get_function_param(2 + count)[2:]
+    size, string = ql.os.printf(address, format_string, args, "sprintf", wstring=True)
+
     if ql.archtype == QL_ARCH.X8664:
         # We must pop the stack correctly
-        raise QlErrorNotImplemented("[!] API not implemented")
+        raise QlErrorNotImplemented("API not implemented")
 
     ql.mem.write(dst, (string + "\x00").encode("utf-16le"))
     return size
@@ -631,13 +632,14 @@ def hook_wvsprintfA(ql, address, params):
 @winsdkapi(cc=CDECL, dllname=dllname, param_num=3)
 def hook_wsprintfA(ql, address, params):
     dst, p_format, p_args = ql.os.get_function_param(3)
-    format_string = read_cstring(ql, p_format)
-    size, string = printf(ql, address, format_string, p_args, "wsprintfA")
-
+    format_string = ql.os.read_cstring(p_format)
     count = format_string.count('%')
+    args = ql.os.get_function_param(2 + count)[2:]
+    size, string = ql.os.printf(address, format_string, args, "wsprintfA")
+
     if ql.archtype== QL_ARCH.X8664:
         # We must pop the stack correctly
-        raise QlErrorNotImplemented("[!] API not implemented")
+        raise QlErrorNotImplemented("API not implemented")
 
     ql.mem.write(dst, (string + "\x00").encode("utf-8"))
     return size
@@ -657,8 +659,8 @@ def hook_MessageBoxW(ql, address, params):
     if type_box == MB_YESNO or type_box == MB_YESNOCANCEL:
         return IDYES
     else:
-        logging.debug(type_box)
-        raise QlErrorNotImplemented("[!] API not implemented")
+        ql.log.debug(type_box)
+        raise QlErrorNotImplemented("API not implemented")
 
 
 # int MessageBoxA(
@@ -706,7 +708,7 @@ def hook_GetWindowThreadProcessId(ql, address, params):
     if target == ql.os.profile.getint("KERNEL", "pid") or target == ql.os.profile.getint("KERNEL", "shell_pid"):
         pid = ql.os.profile.getint("KERNEL", "parent_pid")
     else:
-        raise QlErrorNotImplemented("[!] API not implemented")
+        raise QlErrorNotImplemented("API not implemented")
     dst = params["lpdwProcessId"]
     if dst != 0:
         ql.mem.write(dst, pid.to_bytes(4, "little"))

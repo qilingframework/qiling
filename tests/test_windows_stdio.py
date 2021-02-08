@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
-from unicorn import *
-
-from unicorn.x86_const import *
+#
 
 import sys
+
+from unicorn import *
+from unicorn.x86_const import *
+
 sys.path.append("..")
 from qiling import *
+
 
 class StringBuffer:
     def __init__(self):
