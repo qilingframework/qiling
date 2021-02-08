@@ -12,6 +12,15 @@ from qiling.os.uefi.const import EFI_SUCCESS, EFI_INVALID_PARAMETER
 from qiling.os.uefi.UefiSpec import EFI_CONFIGURATION_TABLE, EFI_SYSTEM_TABLE
 from qiling.os.uefi.UefiBaseType import EFI_GUID
 
+def signal_event(ql, event_id: int) -> None:
+	event = ql.loader.events[event_id]
+
+	if not event["Set"]:
+		event["Set"] = True
+		notify_func = event["NotifyFunction"]
+		notify_context = event["NotifyContext"]
+		ql.loader.notify_list.append((event_id, notify_func, notify_context))
+
 def check_and_notify_protocols(ql) -> bool:
 	if ql.loader.notify_list:
 		event_id, notify_func, notify_context = ql.loader.notify_list.pop(0)
