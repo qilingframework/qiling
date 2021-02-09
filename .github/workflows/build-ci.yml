@@ -54,7 +54,7 @@ jobs:
           pip3 install .
           cmd.exe //C 'examples\scripts\dllscollector.bat'
           cd $GITHUB_WORKSPACE/examples/rootfs/x86_windows/bin
-          unzip -Pinfected wannacry.bin.zip
+#          unzip -Pinfected wannacry.bin.zip
           unzip -Pinfected UselessDisk.bin.zip
           unzip -Pinfected GandCrab502.bin.zip
           unzip -Pinfected al-khaser.bin.zip

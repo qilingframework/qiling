@@ -217,7 +217,7 @@ class PETest(unittest.TestCase):
 
 
     def test_pe_win_x86_wannacry(self):
-        if 'QL_FAST_TEST' in os.environ:
+        if 'QL_FAST_TEST' in os.environ or sys.platform == "win32":
             return
         def stop(ql):
             ql.log.info("killerswtichfound")
