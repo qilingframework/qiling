@@ -13,13 +13,17 @@ jobs:
         python-version: [3.6.8, 3.7.6, 3.8.5]
         exclude:
           - os: ubuntu-20.04
-            python-version: 3.7.6
-          - os: windows-2019
-            python-version: 3.8.5
-          - os: macos-10.15
-            python-version: 3.8.5
+            python-version: 3.7.6       
           - os: ubuntu-20.04
             python-version: 3.8.5
+          - os: windows-2019
+            python-version: 3.6.8
+          - os: windows-2019
+            python-version: 3.7.6                 
+          # - os: macos-10.15
+          #   python-version: 3.6.8
+          # - os: macos-10.15
+          #   python-version: 3.6.8                        
         include:
           - os: ubuntu-20.04
             python-version: 3.6.8

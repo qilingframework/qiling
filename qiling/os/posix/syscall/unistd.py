@@ -15,7 +15,7 @@ from qiling.os.posix.filestruct import *
 from qiling.os.filestruct import *
 from qiling.os.posix.const_mapping import *
 from qiling.exception import *
-from qiling.os.stat import *
+from qiling.os.posix.stat import *
 
 def ql_syscall_exit(ql, exit_code, *args, **kw):
     if ql.os.child_processes == True:

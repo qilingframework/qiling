@@ -10,6 +10,7 @@ class Stat(object):
         super().__init__()
         self.path = path
         stat_buf = os.stat(self.path)
+
         for name in dir(stat_buf):
             if name.startswith('st_'):
                 setattr(self, name, getattr(stat_buf, name))
@@ -19,6 +20,7 @@ class Fstat(object):
         super().__init__()
         self.fd = fd
         fstat_buf = os.fstat(self.fd)
+
         for name in dir(fstat_buf):
             if name.startswith('st_'):
                 setattr(self, name, getattr(fstat_buf, name))
@@ -29,6 +31,7 @@ class Lstat(object):
         super().__init__()
         self.path = path
         lstat_buf = os.lstat(self.path)
+
         for name in dir(lstat_buf):
             if name.startswith('st_'):
                 setattr(self, name, getattr(lstat_buf, name))
