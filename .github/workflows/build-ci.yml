@@ -23,12 +23,12 @@ jobs:
           # - os: macos-10.15
           #   python-version: 3.6.8
           # - os: macos-10.15
-          #   python-version: 3.7.6                        
+          #   python-version: 3.6.8                        
         include:
           - os: ubuntu-20.04
             python-version: 3.6.8
             container: Docker
-5
+
     steps:
     - uses: actions/checkout@v2
 
