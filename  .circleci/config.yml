@@ -1,4 +1,5 @@
 version: 2.1
+
 jobs:
   build:
     macos:
@@ -9,5 +10,5 @@ jobs:
           name: Setup
           command: |
           pip3 install --upgrade pip
-          cd qiling
+          cd $CIRCLE_PROJECT_REPONAME
           pip3 install .
