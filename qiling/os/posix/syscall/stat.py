@@ -253,50 +253,18 @@ def ql_syscall_chmod(ql, filename, mode, null1, null2, null3, null4):
     return regreturn
 
 
-def ql_syscall_fstatat64(ql, fstatat64_fd, fstatat64_fname, fstatat64_buf, fstatat64_flag, *args, **kw):
-    fstatat64_fname = ql.mem.string(fstatat64_fname)
+def ql_syscall_fstatat64(ql, fstatat64_dirfd, fstatat64_path, fstatat64_buf_ptr, fstatat64_flag, *args, **kw):
+    # FIXME: dirfd(relative path) not implement.
+    fstatat64_path = ql.mem.string(fstatat64_path)
 
-    real_path = ql.os.transform_to_real_path(fstatat64_fname)
-    relative_path = ql.os.transform_to_relative_path(fstatat64_fname)
+    real_path = ql.os.transform_to_real_path(fstatat64_path)
+    relative_path = ql.os.transform_to_relative_path(fstatat64_path)
 
     regreturn = -1
     if os.path.exists(real_path) == True:
-        fstat64_info = Stat(real_path)
-
-        # struct stat is : 80 addr is : 0x4000811bc8
-        # buf.st_dev offest 0 8 0
-        # buf.st_ino offest 8 8 0
-        # buf.st_mode offest 10 4 0
-        # buf.st_nlink offest 14 4 0
-        # buf.st_uid offest 18 4 0
-        # buf.st_gid offest 1c 4 0
-        # buf.st_rdev offest 20 8 0
-        # buf.st_size offest 30 8 274886889936
-        # buf.st_blksize offest 38 4 8461328
-        # buf.st_blocks offest 40 8 274877909532
-        # buf.st_atime offest 48 8 274886368336
-        # buf.st_mtime offest 58 8 274877909472
-        # buf.st_ctime offest 68 8 274886368336
-        # buf.__glibc_reserved offest 78 8
-        fstat64_buf = ql.pack64(fstat64_info.st_dev)
-        fstat64_buf += ql.pack64(fstat64_info.st_ino)
-        fstat64_buf += ql.pack32(fstat64_info.st_mode)
-        fstat64_buf += ql.pack32(fstat64_info.st_nlink)
-        fstat64_buf += ql.pack32(1000)
-        fstat64_buf += ql.pack32(1000)
-        fstat64_buf += ql.pack64(fstat64_info.st_rdev)
-        fstat64_buf += ql.pack64(0)
-        fstat64_buf += ql.pack64(fstat64_info.st_size)
-        fstat64_buf += ql.pack32(fstat64_info.st_blksize)
-        fstat64_buf += ql.pack32(0)
-        fstat64_buf += ql.pack64(fstat64_info.st_blocks)
-        fstat64_buf += ql.pack64(int(fstat64_info.st_atime))
-        fstat64_buf += ql.pack64(0)
-        fstat64_buf += ql.pack64(int(fstat64_info.st_mtime))
-        fstat64_buf += ql.pack64(0)
-        fstat64_buf += ql.pack64(int(fstat64_info.st_ctime))
-        fstat64_buf += ql.pack64(0)
-        ql.mem.write(fstatat64_buf, fstat64_buf)
+        fstatat64_info = Stat(real_path)
+        fstatat64_buf = create_stat64_struct(ql, fstatat64_info)
+        ql.mem.write(fstatat64_buf_ptr, fstatat64_buf)
         regreturn = 0
 
     if regreturn == 0:
@@ -306,9 +274,28 @@ def ql_syscall_fstatat64(ql, fstatat64_fd, fstatat64_fname, fstatat64_buf, fstat
 
     return regreturn
 
+def ql_syscall_newfstatat(ql, newfstatat_dirfd, newfstatat_path, newfstatat_buf_ptr, newfstatat_flag, *args, **kw):
+    # FIXME: dirfd(relative path) not implement.
+    newfstatat_path = ql.mem.string(newfstatat_path)
 
-def ql_syscall_fstat64(ql, fstat64_fd, fstat64_add, *args, **kw):
+    real_path = ql.os.transform_to_real_path(newfstatat_path)
+    relative_path = ql.os.transform_to_relative_path(newfstatat_path)
 
+    regreturn = -1
+    if os.path.exists(real_path) == True:
+        newfstatat_info = Stat(real_path)
+        newfstatat_buf = create_stat_struct(ql, newfstatat_info)
+        ql.mem.write(newfstatat_buf_ptr, newfstatat_buf)
+        regreturn = 0
+
+    if regreturn == 0:
+        ql.log.debug("Directory Found: %s" % relative_path)
+    else:
+        ql.log.debug("Directory Not Found: %s" % relative_path)
+
+    return regreturn
+
+def ql_syscall_fstat64(ql, fstat64_fd, fstat64_buf_ptr, *args, **kw):
     if ql.os.fd[fstat64_fd].fstat() == -1:
         regreturn = 0
 
@@ -316,7 +303,7 @@ def ql_syscall_fstat64(ql, fstat64_fd, fstat64_add, *args, **kw):
         user_fileno = fstat64_fd
         fstat64_info = ql.os.fd[user_fileno].fstat()
         fstat64_buf = create_stat64_struct(ql, fstat64_info)
-        ql.mem.write(fstat64_add, fstat64_buf)
+        ql.mem.write(fstat64_buf_ptr, fstat64_buf)
         regreturn = 0
     else:
         regreturn = -1
@@ -328,12 +315,12 @@ def ql_syscall_fstat64(ql, fstat64_fd, fstat64_add, *args, **kw):
     return regreturn
 
 
-def ql_syscall_fstat(ql, fstat_fd, fstat_add, *args, **kw):
+def ql_syscall_fstat(ql, fstat_fd, fstat_buf_ptr, *args, **kw):
     if fstat_fd < 256 and ql.os.fd[fstat_fd] != 0 and hasattr(ql.os.fd[fstat_fd], "fstat"):
         user_fileno = fstat_fd
         fstat_info = ql.os.fd[user_fileno].fstat()
         fstat_buf = create_stat_struct(ql, fstat_info)
-        ql.mem.write(fstat_add, fstat_buf)
+        ql.mem.write(fstat_buf_ptr, fstat_buf)
         regreturn = 0
     else:
         regreturn = -1
@@ -350,9 +337,9 @@ def ql_syscall_stat(ql, stat_path, stat_buf_ptr, *args, **kw):
     return statFamily(ql, stat_path, stat_buf_ptr, "stat", Stat, create_stat_struct)
 
 
-# int stat64(const char *pathname, struct stat64 *buf);
-def ql_syscall_stat64(ql, stat64_pathname, stat64_buf_ptr, *args, **kw):
-    return statFamily(ql, stat64_pathname, stat64_buf_ptr, "stat64", Stat, create_stat64_struct)
+# int stat64(const char *path, struct stat64 *buf);
+def ql_syscall_stat64(ql, stat64_path, stat64_buf_ptr, *args, **kw):
+    return statFamily(ql, stat64_path, stat64_buf_ptr, "stat64", Stat, create_stat64_struct)
 
 
 def ql_syscall_lstat(ql, lstat_path, lstat_buf_ptr, *args, **kw):
@@ -364,7 +351,7 @@ def ql_syscall_lstat64(ql, lstat64_path, lstat64_buf_ptr, *args, **kw):
 
 
 def ql_syscall_mknodat(ql, dirfd, pathname, mode, dev, *args, **kw):
-    # fix me. dirfd(relative path) not implement.
+    # FIXME: dirfd(relative path) not implement.
     file_path = ql.mem.string(pathname)
     real_path = ql.os.transform_to_real_path(file_path)
     ql.log.debug("mknodat(%d, %s, 0%o, %d)" % (dirfd, real_path, mode, dev))
