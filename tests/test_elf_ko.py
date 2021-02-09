@@ -13,7 +13,7 @@ from qiling.const import *
 from qiling.exception import *
 from qiling.os.posix import syscall
 from qiling.os.mapper import QlFsMappedObject
-from qiling.os.stat import Fstat
+from qiling.os.posix.stat import Fstat
 
 class ELF_KO_Test(unittest.TestCase):
 

@@ -11,7 +11,7 @@ from qiling.os.posix.filestruct import *
 from qiling.os.filestruct import *
 from qiling.os.posix.const_mapping import *
 from qiling.exception import *
-from qiling.os.stat import *
+from qiling.os.posix.stat import *
 
 
 def create_stat_struct(ql, info):
@@ -206,7 +206,38 @@ def create_stat64_struct(ql, info):
         fstat64_buf += ql.pack64(int(info.st_mtime))
         fstat64_buf += ql.pack64(int(info.st_ctime))
         fstat64_buf += ql.pack64(info.st_ino)
-
+    elif ql.ostype == QL_OS.MACOS:
+        fstat64_buf = ql.pack32(info.st_dev)              # st_dev            32byte
+        fstat64_buf += ql.pack32(info.st_mode)            # st_mode           16(32)byte
+        fstat64_buf += ql.pack32(info.st_nlink)           # st_nlink          16(32)byte
+        fstat64_buf += ql.pack64(info.st_ino)             # st_ino            64 byte
+        fstat64_buf += ql.pack32(0x0)                            # st_uid            32 byte
+        fstat64_buf += ql.pack32(0x0)                            # st_gid            32 byte
+        fstat64_buf += ql.pack32(0x0)                            # st_rdev           32 byte
+        fstat64_buf += ql.pack64(int(info.st_atime))      # st_atime          64 byte
+        fstat64_buf += ql.pack64(0x0)                            # st_atimensec      64 byte
+        fstat64_buf += ql.pack64(int(info.st_mtime))      # st_mtime          64 byte
+        fstat64_buf += ql.pack64(0x0)                            # st_mtimensec      64 byte
+        fstat64_buf += ql.pack64(int(info.st_ctime))      # st_ctime          64 byte
+        fstat64_buf += ql.pack64(0x0)                            # st_ctimensec      64 byte
+        if ql.platform == QL_OS.MACOS:
+            fstat64_buf += ql.pack64(int(info.st_birthtime))  # st_birthtime      64 byte
+        else:
+            fstat64_buf += ql.pack64(int(info.st_ctime))  # st_birthtime      64 byte
+        fstat64_buf += ql.pack64(0x0)                            # st_birthtimensec  64 byte
+        fstat64_buf += ql.pack64(info.st_size)            # st_size           64 byte
+        fstat64_buf += ql.pack64(info.st_blocks)          # st_blocks         64 byte
+        fstat64_buf += ql.pack32(info.st_blksize)         # st_blksize        32 byte
+        if ql.platform == QL_OS.MACOS:
+            fstat64_buf += ql.pack32(info.st_flags)       # st_flags          32 byte
+        else:    
+            fstat64_buf += ql.pack32(0x0)          
+        if ql.platform == QL_OS.MACOS:
+            fstat64_buf += ql.pack32(info.st_gen)         # st_gen            32 byte
+        else:    
+            fstat64_buf += ql.pack32(0x0)
+        fstat64_buf += ql.pack32(0x0)                            # st_lspare         32 byte
+        fstat64_buf += ql.pack64(0x0)                            # st_qspare         64 byte
     else:
         # pack fstatinfo
         if ql.platform == QL_OS.MACOS:

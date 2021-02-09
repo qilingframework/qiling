@@ -6,7 +6,7 @@
 import os
 
 from qiling.exception import *
-from qiling.os.stat import *
+from qiling.os.posix.stat import *
 
 try:
     import fcntl
