@@ -43,7 +43,7 @@ def InstallProtocolInterface(context, params):
 			# The event was previously registered by 'RegisterProtocolNotify'.
 			signal_event(context.ql, event_id)	
 
-	check_and_notify_protocols(context.ql)
+	check_and_notify_protocols(context.ql, True)
 	write_int64(context.ql, params["Handle"], handle)
 
 	return EFI_SUCCESS

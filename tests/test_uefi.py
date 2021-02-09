@@ -9,6 +9,7 @@ sys.path.append("..")
 from qiling import Qiling
 from qiling.extensions.sanitizers.heap import QlSanitizedMemoryHeap
 from qiling.const import QL_INTERCEPT
+from qiling.os.uefi.utils import check_and_notify_protocols
 from qiling.os.uefi.const import EFI_SUCCESS, EFI_INVALID_PARAMETER
 
 class Test_UEFI(unittest.TestCase):
@@ -66,6 +67,7 @@ class Test_UEFI(unittest.TestCase):
                 event = ql.loader.events[event_id]
                 event["Set"] = True
                 ql.loader.notify_list.append((event_id, event['NotifyFunction'], event['NotifyContext']))
+                check_and_notify_protocols(ql, True)
                 ######
                 return EFI_SUCCESS
             return EFI_INVALID_PARAMETER

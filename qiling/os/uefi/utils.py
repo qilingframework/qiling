@@ -21,15 +21,17 @@ def signal_event(ql, event_id: int) -> None:
 		notify_context = event["NotifyContext"]
 		ql.loader.notify_list.append((event_id, notify_func, notify_context))
 
-def check_and_notify_protocols(ql) -> bool:
+def check_and_notify_protocols(ql, from_hook=False) -> bool:
 	if ql.loader.notify_list:
 		event_id, notify_func, notify_context = ql.loader.notify_list.pop(0)
 		ql.log.info(f'Notify event:{event_id} calling:{notify_func:x} context:{notify_context:x}')
-
-		ql.loader.call_function(notify_func, [notify_context], ql.loader.end_of_execution_ptr)
-
+		if from_hook:
+			# When running from a hook the caller pops the return address from the stack.
+			# We need to push the address to the stack as opposed to setting it to the instruction pointer.
+			ql.loader.call_function(0, [notify_context], notify_func)
+		else:
+			ql.loader.call_function(notify_func, [notify_context], ql.loader.end_of_execution_ptr)
 		return True
-
 	return False
 
 def ptr_read8(ql, addr: int) -> int:

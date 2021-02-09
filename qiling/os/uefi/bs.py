@@ -427,7 +427,7 @@ def hook_InstallMultipleProtocolInterfaces(ql, address, params):
 		index += 2
 
 	ql.loader.dxe_context.protocols[handle] = dic
-	check_and_notify_protocols(ql)
+	check_and_notify_protocols(ql, True)
 	write_int64(ql, params["Handle"], handle)
 
 	return EFI_SUCCESS
