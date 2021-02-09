@@ -9,7 +9,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-2019, ubuntu-18.04, ubuntu-20.04]
+        os: [windows-2019, macos-10.15, ubuntu-18.04, ubuntu-20.04]
         python-version: [3.6.8, 3.7.6, 3.8.5]
         exclude:
           - os: ubuntu-20.04
@@ -20,10 +20,10 @@ jobs:
             python-version: 3.6.8
           - os: windows-2019
             python-version: 3.7.6                 
-          # - os: macos-10.15
-          #   python-version: 3.6.8
-          # - os: macos-10.15
-          #   python-version: 3.6.8                        
+          - os: macos-10.15
+            python-version: 3.6.8
+          - os: macos-10.15
+            python-version: 3.7.6                       
         include:
           - os: ubuntu-20.04
             python-version: 3.6.8
@@ -38,9 +38,19 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
 
-    - name: win setup MSVC
+    - name: Win setup MSVC
       if: contains(matrix.os, 'windows')
       uses: microsoft/setup-msbuild@v1
+
+
+    - name: Win configure Pagefile
+      if: contains(matrix.os, 'windows')
+      uses: al-cheb/configure-pagefile-action@v1.2
+      with:
+          minimum-size: 16GB
+          maximum-size: 16GB
+          disk-root: "C:"
+
 
     - name: win run tests
       if: contains(matrix.os, 'windows')
@@ -49,7 +59,7 @@ jobs:
           powershell Start-Process -PassThru -Wait PowerShell -ArgumentList "'-Command Set-MpPreference -DisableArchiveScanning \$true'"
           powershell Start-Process -PassThru -Wait PowerShell -ArgumentList "'-Command Set-MpPreference -DisableBehaviorMonitoring \$true'"
           powershell Start-Process -PassThru -Wait PowerShell -ArgumentList "'-Command Set-MpPreference -DisableRealtimeMonitoring \$true'"
-          powershell Add-MpPreference -ExclusionPath $GITHUB_WORKSPACE
+          powershell Start-Process -PassThru -Wait PowerShell -ArgumentList "'-Command  Add-MpPreference -ExclusionPath $GITHUB_WORKSPACE'"
           pip3 install setuptools wheel
           pip3 install .
           cmd.exe //C 'examples\scripts\dllscollector.bat'
@@ -63,18 +73,18 @@ jobs:
           cmd.exe //C '.\test_pe.bat'
 
 
-    # - name: mac run tests
-    #   if: contains(matrix.os, 'macos')
-    #   continue-on-error: true
-    #   shell: bash
-    #   run: |
-    #       pip3 install setuptools wheel
-    #       pip3 install .
-    #       ./examples/scripts/dylibcollector.sh
-    #       cd $GITHUB_WORKSPACE/examples/rootfs/x8664_macos/kext
-    #       unzip -Pinfected SuperRootkit.kext.zip
-    #       cd $GITHUB_WORKSPACE/tests
-    #       ./test_macho.sh
+    - name: mac run tests
+      if: contains(matrix.os, 'macos')
+      # continue-on-error: true
+      shell: bash
+      run: |
+          pip3 install setuptools wheel
+          pip3 install .
+          ./examples/scripts/dylibcollector.sh
+          cd $GITHUB_WORKSPACE/examples/rootfs/x8664_macos/kext
+          unzip -Pinfected SuperRootkit.kext.zip
+          cd $GITHUB_WORKSPACE/tests
+          ./test_macho.sh
 
 
     - name: linux run tests
