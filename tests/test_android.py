@@ -62,7 +62,7 @@ class TestAndroid(unittest.TestCase):
         self.assertTrue(os.path.isfile(os.path.join(rootfs, "proc", "self", "exe")), rootfs +
                         "/proc/self/exe not found, Android linker will bail. Need a file at that location (empty is fine)")
 
-        ql = Qiling([test_binary], rootfs, output="debug")
+        ql = Qiling([test_binary], rootfs, output="debug", multithread=True)
 
         # slide in the syscalls we need for android on arm64
         # FUTURE FIX: implement fstatfs
@@ -76,6 +76,4 @@ class TestAndroid(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    #TODO: Qiling2.0 multithread rework.
-    pass
-    #unittest.main()
+    unittest.main()
