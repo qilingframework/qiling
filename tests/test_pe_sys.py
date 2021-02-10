@@ -142,6 +142,7 @@ class PETest(unittest.TestCase):
             # TODO: Still Fixing
             hService = params["hService"]
             service_handle = ql.os.handle_manager.get(hService)
+            ql.test_set_api = True
             if service_handle.name == "amsint32":
                 if service_handle.name in ql.os.services:
                     service_path = ql.os.services[service_handle.name]
@@ -207,6 +208,7 @@ class PETest(unittest.TestCase):
         self.assertEqual(True, ql.first_stop)    
         self.assertEqual(True, ql.second_stop)
         self.assertEqual(True, self.third_stop)
+        self.assertEqual(True, ql.test_set_api)
 
 
     def test_pe_win_x8664_driver(self):

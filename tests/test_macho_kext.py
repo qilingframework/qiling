@@ -15,10 +15,6 @@ from qiling.os.macos.events.macos_structs import *
 from qiling.os.macos.structs import *
 
 class MACHOTest(unittest.TestCase):
-    def test_macho_macos_x8664(self):
-        ql = Qiling(["../examples/rootfs/x8664_macos/bin/x8664_hello"], "../examples/rootfs/x8664_macos", output = "debug")
-        ql.run()
-
     def test_macho_macos_superrootkit(self):
         # https://developer.apple.com/download/more
         # to download kernel.developmment
