@@ -9,7 +9,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-2019, macos-10.15, ubuntu-18.04, ubuntu-20.04]
+        #os: [windows-2019, macos-10.15, ubuntu-18.04, ubuntu-20.04]
+        os: [windows-2019, ubuntu-18.04, ubuntu-20.04]
         python-version: [3.6.8, 3.7.6, 3.8.5]
         exclude:
           - os: ubuntu-20.04
@@ -20,10 +21,10 @@ jobs:
             python-version: 3.6.8
           - os: windows-2019
             python-version: 3.7.6                 
-          - os: macos-10.15
-            python-version: 3.6.8
-          - os: macos-10.15
-            python-version: 3.7.6                       
+          # - os: macos-10.15
+          #   python-version: 3.6.8
+          # - os: macos-10.15
+          #   python-version: 3.7.6                       
         include:
           - os: ubuntu-20.04
             python-version: 3.6.8
@@ -73,20 +74,6 @@ jobs:
           cmd.exe //C '.\test_pe.bat'
 
 
-    - name: mac run tests
-      if: contains(matrix.os, 'macos')
-      continue-on-error: true
-      shell: bash
-      run: |
-          pip3 install setuptools wheel
-          pip3 install .
-          ./examples/scripts/dylibcollector.sh
-          cd $GITHUB_WORKSPACE/examples/rootfs/x8664_macos/kext
-          unzip -Pinfected SuperRootkit.kext.zip
-          cd $GITHUB_WORKSPACE/tests
-          ./test_macho.sh
-
-
     - name: linux run tests
       if: contains(matrix.os, 'ubuntu')
       shell: 'script -q -e -c "bash {0}"'
@@ -105,3 +92,16 @@ jobs:
               cd examples/rootfs/x86_linux/kernel && unzip -P infected m0hamed_rootkit.ko.zip
               cd ../../../../tests && ./test_elf.sh
         fi
+
+
+    # - name: mac run tests
+    #   if: contains(matrix.os, 'macos')
+    #   shell: bash
+    #   run: |
+    #       pip3 install setuptools wheel
+    #       pip3 install .
+    #       ./examples/scripts/dylibcollector.sh
+    #       cd $GITHUB_WORKSPACE/examples/rootfs/x8664_macos/kext
+    #       unzip -Pinfected SuperRootkit.kext.zip
+    #       cd $GITHUB_WORKSPACE/tests
+    #       ./test_macho.sh        
