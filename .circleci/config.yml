@@ -1,75 +1,92 @@
 version: 2.1
 
+orbs:
+  win: circleci/windows@2.2.0
+
 jobs:
-  test-linux:
-    machine:
-      image: 'ubuntu-2004:202010-01'
+  linux:
+    docker:
+      - image: circleci/python:3.9-buster
     steps:
       - checkout
       - run:
-          name: Install qiling framework
-          working_directory: qiling
+          name: "Install qiling framework"
           command: |
-            pip3 install setuptools wheel
-            pip3 install .
+            python -m virtualenv env
+            . env/bin/activate
+            pip install .
             cd examples/rootfs/x86_linux/kernel
             unzip -P infected m0hamed_rootkit.ko.zip
       - run:
-          name: Run test
-          working_directory: qiling
+          name: "Run linux test"
           command: |
+            . env/bin/activate
             cd tests
             ./test_elf.sh
 
-  test-windows:
+  windows:
     machine:
       image: windows-server-2019-vs2019:stable
-      shell: powershell.exe
     resource_class: windows.medium
     steps:
       - checkout
       - run:
-          name: Install qiling framework
-          working_directory: qiling
+          name: "Disable defender and setup python"
           command: |
             powershell Start-Process -PassThru -Wait PowerShell -ArgumentList "'-Command Set-MpPreference -DisableArchiveScanning \$true'"
             powershell Start-Process -PassThru -Wait PowerShell -ArgumentList "'-Command Set-MpPreference -DisableBehaviorMonitoring \$true'"
             powershell Start-Process -PassThru -Wait PowerShell -ArgumentList "'-Command Set-MpPreference -DisableRealtimeMonitoring \$true'"
-            powershell Start-Process -PassThru -Wait PowerShell -ArgumentList "'-Command  Add-MpPreference -ExclusionPath $GITHUB_WORKSPACE'"
-            pip3 install setuptools wheel
-            pip3 install .
-            cmd.exe //C 'examples\scripts\dllscollector.bat'
-            cd examples/rootfs/x86_windows/bin
+            nuget install python -Version 3.6.8 -ExcludeVersion -OutputDirectory .
+            ./python/tools/python.exe -m pip install virtualenv
+            ./python/tools/python.exe -m virtualenv env
+      - run:
+          name: "Install qiling framework"
+          shell: powershell
+          command: |
+            env\Scripts\activate.ps1
+            pip install setuptools wheel
+            pip install .
+            .\examples\scripts\dllscollector.bat
+            cd examples\rootfs\x86_windows\bin
             unzip -Pinfected wannacry.bin.zip
             unzip -Pinfected UselessDisk.bin.zip
             unzip -Pinfected GandCrab502.bin.zip
             unzip -Pinfected al-khaser.bin.zip
             unzip -Pinfected sality.dll.zip
       - run:
-          name: Run test
-          working_directory: qiling
+          name: "Run win test"
+          shell: powershell
           command: |
+            env\Scripts\activate.ps1
             cd tests
-            cmd.exe //C '.\test_pe.bat'
+            .\test_pe.bat
 
-  test-macos:
+  macos:
     macos:
-      xcode: 11.5.0
+      xcode: 9.4.1
+    environment:
+      HOMEBREW_NO_AUTO_UPDATE: 1
+      MACOSX_DEPLOYMENT_TARGET: 10.13
     steps:
       - checkout
       - run:
-          name: Install qiling framework
-          working_directory: qiling
+          name: "Install qiling framework"
           command: |
-            pip3 install --upgrade pip
-            pip3 install .
+            brew install pyenv
+            eval "$(pyenv init -)"
+            pyenv local 3.8.6
+            python -m pip install virtualenv
+            python -m virtualenv env
+            . env/bin/activate
+            pip install --upgrade pip
+            pip install .
             ./examples/scripts/dylibcollector.sh
             cd examples/rootfs/x8664_macos/kext
             unzip -Pinfected SuperRootkit.kext.zip
       - run:
-          name: Run test
-          working_directory: qiling
+          name: "Run macos test"
           command: |
+            . env/bin/activate
             cd tests
             ./test_macho.sh
 
@@ -78,6 +95,6 @@ workflows:
   version: 2
   run-tests:
     jobs:
-      - test-linux
-      - test-windows
-      - test-macos
+      - linux
+      - windows
+      - macos
