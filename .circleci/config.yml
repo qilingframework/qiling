@@ -1,0 +1,83 @@
+version: 2.1
+
+jobs:
+  test-linux:
+    machine:
+      image: 'ubuntu-2004:202010-01'
+    steps:
+      - checkout
+      - run:
+          name: Install qiling framework
+          working_directory: qiling
+          command: |
+            pip3 install setuptools wheel
+            pip3 install .
+            cd examples/rootfs/x86_linux/kernel
+            unzip -P infected m0hamed_rootkit.ko.zip
+      - run:
+          name: Run test
+          working_directory: qiling
+          command: |
+            cd tests
+            ./test_elf.sh
+
+  test-windows:
+    machine:
+      image: windows-server-2019-vs2019:stable
+      shell: powershell.exe
+    resource_class: windows.medium
+    steps:
+      - checkout
+      - run:
+          name: Install qiling framework
+          working_directory: qiling
+          command: |
+            powershell Start-Process -PassThru -Wait PowerShell -ArgumentList "'-Command Set-MpPreference -DisableArchiveScanning \$true'"
+            powershell Start-Process -PassThru -Wait PowerShell -ArgumentList "'-Command Set-MpPreference -DisableBehaviorMonitoring \$true'"
+            powershell Start-Process -PassThru -Wait PowerShell -ArgumentList "'-Command Set-MpPreference -DisableRealtimeMonitoring \$true'"
+            powershell Start-Process -PassThru -Wait PowerShell -ArgumentList "'-Command  Add-MpPreference -ExclusionPath $GITHUB_WORKSPACE'"
+            pip3 install setuptools wheel
+            pip3 install .
+            cmd.exe //C 'examples\scripts\dllscollector.bat'
+            cd examples/rootfs/x86_windows/bin
+            unzip -Pinfected wannacry.bin.zip
+            unzip -Pinfected UselessDisk.bin.zip
+            unzip -Pinfected GandCrab502.bin.zip
+            unzip -Pinfected al-khaser.bin.zip
+            unzip -Pinfected sality.dll.zip
+      - run:
+          name: Run test
+          working_directory: qiling
+          command: |
+            cd tests
+            cmd.exe //C '.\test_pe.bat'
+
+  test-macos:
+    macos:
+      xcode: 11.5.0
+    steps:
+      - checkout
+      - run:
+          name: Install qiling framework
+          working_directory: qiling
+          command: |
+            pip3 install --upgrade pip
+            pip3 install .
+            ./examples/scripts/dylibcollector.sh
+            cd examples/rootfs/x8664_macos/kext
+            unzip -Pinfected SuperRootkit.kext.zip
+      - run:
+          name: Run test
+          working_directory: qiling
+          command: |
+            cd tests
+            ./test_macho.sh
+
+
+workflows:
+  version: 2
+  run-tests:
+    jobs:
+      - test-linux
+      - test-windows
+      - test-macos
