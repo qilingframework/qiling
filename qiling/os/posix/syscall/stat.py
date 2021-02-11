@@ -407,6 +407,23 @@ def ql_syscall_mkdir(ql, pathname, mode, *args, **kw):
     return regreturn
 
 
+def ql_syscall_fstatfs(ql, fd, buf, *args, **kw):
+    data = b"0" * (12*8)  # for now, just return 0s
+    regreturn = None
+    try:
+        ql.mem.write(buf, data)
+        regreturn = 0
+    except:
+        regreturn = -1
+
+    ql.log.info("fstatfs(0x%x, 0x%x) = %d" % (fd, buf, regreturn))
+
+    if data:
+        ql.log.debug("fstatfs() CONTENT:")
+        ql.log.debug(str(data))
+    return regreturn
+
+
 def ql_syscall_umask(ql, mode, *args, **kw):
     oldmask = os.umask(mode)
     ql.log.debug("umask(0%o) return oldmask 0%o" % (mode, oldmask))

@@ -4,31 +4,9 @@
 #
 
 import os, sys, unittest
+
 sys.path.append("..")
-
 from qiling import *
-from qiling.const import *
-from qiling.os.posix.syscall.unistd import ql_syscall_pread64
-
-# syscalls that need to be implemented for android
-def syscall_getrandom(ql, buf, buflen, flags, *args, **kw):
-    data = None
-    regreturn = None
-    try:
-        data = os.urandom(buflen)
-        ql.uc.mem_write(buf, data)
-        regreturn = len(data)
-    except:
-        regreturn = -1
-
-    ql.log.info("getrandom(0x%x, 0x%x, 0x%x) = %d" %
-              (buf, buflen, flags, regreturn))
-
-    if data:
-        ql.log.debug("getrandom() CONTENT:")
-        ql.log.debug(str(data))
-    return regreturn
-
 
 """
 Android linker calls fstatfs to determine if the file is on tmpfs as part of checking if libraries are allowed
@@ -63,15 +41,6 @@ class TestAndroid(unittest.TestCase):
                         "/proc/self/exe not found, Android linker will bail. Need a file at that location (empty is fine)")
 
         ql = Qiling([test_binary], rootfs, output="debug", multithread=True)
-
-        # slide in the syscalls we need for android on arm64
-        # FUTURE FIX: implement fstatfs
-        ql.set_syscall(0x2C, syscall_fstatfs)
-        # FUTURE FIX: pread64 implemented in qiling, just not hooked up for arm64
-        ql.set_syscall(0x43, ql_syscall_pread64)
-        # FUTURE FIX: implement getrandom
-        ql.set_syscall(0x116, syscall_getrandom)
-
         ql.run()
 
 

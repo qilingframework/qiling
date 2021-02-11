@@ -12,7 +12,7 @@ BREAK CHANGE
 
 ------------------------------------
 [Version 1.2.3]: March [SOMETHING], 2021
-- 
+- Improved PR #689, Android syscall and test fix
 
 
 ------------------------------------
