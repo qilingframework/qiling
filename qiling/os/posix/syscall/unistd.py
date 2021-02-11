@@ -35,12 +35,20 @@ def ql_syscall_exit(ql, exit_code, *args, **kw):
 
 
 def ql_syscall_exit_group(ql, exit_code, *args, **kw):
-    ql.os.exit_code = exit_code
-
     if ql.os.child_processes == True:
         os._exit(0)
 
-    ql.os.stop()
+    if ql.multithread:
+        def _sched_cb_exit(cur_thread):
+            ql.log.debug(f"[Thread {cur_thread.get_id()}] Terminated")
+            cur_thread.stop()
+            cur_thread.exit_code = exit_code
+        td = ql.os.thread_management.cur_thread
+        ql.emu_stop()
+        td.sched_cb = _sched_cb_exit
+    else:
+        ql.os.exit_code = exit_code
+        ql.os.stop()
 
 
 def ql_syscall_alarm(ql, alarm_seconds, *args, **kw):
