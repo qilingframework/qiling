@@ -113,9 +113,8 @@ def hook_SmmAllocatePages(ql, address, params):
 })
 def hook_SmmFreePages(ql, address, params):
 	address = params["Memory"]
-	alloc_size = params["Pages"] * PAGE_SIZE
 
-	ret = ql.mem.free(address, alloc_size)
+	ret = ql.loader.smm_context.heap.free(address)
 
 	return EFI_SUCCESS if ret else EFI_INVALID_PARAMETER
 

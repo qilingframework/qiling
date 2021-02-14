@@ -62,9 +62,8 @@ def hook_AllocatePages(ql, address, params):
 })
 def hook_FreePages(ql, address, params):
 	address = params["Memory"]
-	alloc_size = params["Pages"] * PAGE_SIZE
 
-	ret = ql.mem.free(address, alloc_size)
+	ret = ql.loader.dxe_context.heap.free(address)
 
 	return EFI_SUCCESS if ret else EFI_INVALID_PARAMETER
 
