@@ -138,13 +138,13 @@ The below Youtube video shows how the above example works.
 
 - Qiling Framework hot-patch and emulates ARM router's /usr/bin/httpd on a X86_64Bit Ubuntu
 
-[![qiling Tutorial: Emulating and Fuzz ARM router firmware](https://github.com/qilingframework/theme.qiling.io/blob/master/source/img/fuzzer.jpg?raw=true)](https://www.youtube.com/watch?v=e3_T3KLh2NU" Demo #3 Emulating and Fuzz ARM router firmware")
+[![qiling Tutorial: Emulating and Fuzz ARM router firmware](https://github.com/qilingframework/theme.qiling.io/blob/master/source/img/fuzzer.jpg?raw=true)](https://www.youtube.com/watch?v=e3_T3KLh2NU " Demo #3 Emulating and Fuzz ARM router firmware")
 
 #### Qiling's IDAPro Plugin: Instrument and Decrypt Mirai's Secret
 
 - This video demonstrate how Qiling's IDAPro plugin able to make IDApro run with Qiling instrumentation engine
 
-[![](http://img.youtube.com/vi/ZWMWTq2WTXk/0.jpg)](http://www.youtube.com/watch?v=ZWMWTq2WTXk "iling's IDAPro Plugin: Instrument and Decrypt Mirai's Secret")
+[![](http://img.youtube.com/vi/ZWMWTq2WTXk/0.jpg)](http://www.youtube.com/watch?v=ZWMWTq2WTXk "Qiling's IDAPro Plugin: Instrument and Decrypt Mirai's Secret")
 
 #### GDBserver with IDAPro demo
 
@@ -157,7 +157,7 @@ The below Youtube video shows how the above example works.
 
 - Qiling Framework emulates MBR
 
-[![qiling DEMO: Emulating MBR](https://github.com/qilingframework/theme.qiling.io/blob/master/source/img/mbr.png?raw=true)](https://github.com/qilingframework/theme.qiling.io/blob/master/source/img/mbr.png?raw=true" Demo #4 Emulating UEFI")
+[![qiling DEMO: Emulating MBR](https://github.com/qilingframework/theme.qiling.io/blob/master/source/img/mbr.png?raw=true)](https://github.com/qilingframework/theme.qiling.io/blob/master/source/img/mbr.png?raw=true "Demo #4 Emulating UEFI")
 
 
 
