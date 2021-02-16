@@ -62,8 +62,9 @@ def hook_ConvertPointer(ql, address, params):
 	"Data": POINTER
 })
 def hook_GetVariable(ql, address, params):
-	if params['VariableName'] in ql.env:
-		var = ql.env[params['VariableName']]
+	name = params['VariableName']
+	if name in ql.env:
+		var = ql.env[name]
 		read_len = read_int64(ql, params['DataSize'])
 		if params['Attributes'] != 0:
 			write_int64(ql, params['Attributes'], 0)
@@ -73,6 +74,7 @@ def hook_GetVariable(ql, address, params):
 		if params['Data'] != 0:
 			ql.mem.write(params['Data'], var)
 		return EFI_SUCCESS
+	ql.log.warning(f'variable with name {name} not found')
 	return EFI_NOT_FOUND
 
 @dxeapi(params={
