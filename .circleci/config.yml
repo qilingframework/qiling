@@ -63,32 +63,41 @@ jobs:
 
   macos:
     macos:
-      xcode: 9.4.1
+      xcode: 10.1
     environment:
       HOMEBREW_NO_AUTO_UPDATE: 1
-      MACOSX_DEPLOYMENT_TARGET: 10.13
+      MACOSX_DEPLOYMENT_TARGET: 10.13.6
     steps:
       - checkout
       - run:
+          name: "Install wget"
+          command: |
+            brew install wget cmake
+
+      - restore_cache:
+          keys:
+            - python-{{ .Environment.CIRCLE_JOB }}-3.7.0-macos-10.13.6
+
+      - run: 
           name: "Install qiling framework"
           command: |
-            brew install pyenv
-            eval "$(pyenv init -)"
-            pyenv local 3.8.6
-            python -m pip install virtualenv
-            python -m virtualenv env
-            . env/bin/activate
-            pip install --upgrade pip
-            pip install .
+            pip3 install --upgrade pip
+            pip3 install wheel setuptools
+            pip3 install .
             ./examples/scripts/dylibcollector.sh
             cd examples/rootfs/x8664_macos/kext
             unzip -Pinfected SuperRootkit.kext.zip
+
+      - save_cache:
+          paths:
+            - ~/Library/Caches/pip
+          key: python-{{ .Environment.CIRCLE_JOB }}-3.7.0-macos-10.13.6
+
       - run:
           name: "Run macos test"
           command: |
-            . env/bin/activate
-            cd tests
-            ./test_macho.sh
+             cd tests
+             ./test_macho.sh
 
 
 workflows:
