@@ -87,7 +87,7 @@ class ELFParse():
     def parse_segments(self):
         return self.elffile.iter_segments()
 
-    def translate_segment_perm_to_uc_prot(self, seg_perm):
+    def translate_segment_perm_to_uc_prot(self, perm):
         """
         Unicorn define the following memory protection constants :
 
@@ -107,11 +107,11 @@ class ELFParse():
 
         prot = 0
 
-        if seg_perm & 0x1:
+        if perm & 0x1:
             prot |= 4
-        if (seg_perm >> 1) & 0x1:
+        if (perm >> 1) & 0x1:
             prot |= 2
-        if (seg_perm >> 2) & 0x1:
+        if (perm >> 2) & 0x1:
             prot |= 1
 
         return prot
