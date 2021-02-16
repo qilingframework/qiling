@@ -210,7 +210,7 @@ class HookFunc:
 
         # SPARC
         elif  self.ql.archtype== QL_ARCH.SPARC:
-            return self.ql.unpack(self.ql.mem.read(self.ql.reg.rsp, self.ql.pointersize))
+            return self.ql.unpack(self.ql.mem.read(self.ql.reg.esp, self.ql.pointersize))
 
         else:
             raise
@@ -238,7 +238,7 @@ class HookFunc:
 
         # SPARC
         elif  self.ql.archtype== QL_ARCH.SPARC:
-            self.ql.reg.rsp = self.ql.reg.rsp + self.ql.pointersize
+            self.ql.reg.esp = self.ql.reg.esp + self.ql.pointersize
 
         else:
             raise
@@ -266,7 +266,7 @@ class HookFunc:
 
         # SPARC
         elif  self.ql.archtype== QL_ARCH.SPARC:
-            self.ql.mem.write(self.ql.reg.rsp, self.ql.pack(addr))
+            self.ql.mem.write(self.ql.reg.esp, self.ql.pack(addr))
             
         else:
             raise
