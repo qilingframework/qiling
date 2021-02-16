@@ -3,8 +3,11 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from functools import wraps
+
 def dxeapi(param_num=None, params=None):
     def decorator(func):
+        @wraps(func)
         def wrapper(*args, **kwargs):
             ql = args[0]
             arg = (ql, ql.reg.arch_pc, {})

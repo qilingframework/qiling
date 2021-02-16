@@ -23,3 +23,4 @@ def hook_EndOfExecution(ql):
 
         ql.log.info(f'No more modules to run')
         ql.emu_stop()
+        ql.os.PE_RUN = False
