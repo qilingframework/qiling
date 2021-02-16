@@ -41,6 +41,7 @@ class PEShellcodeTest(unittest.TestCase):
         ql = Qiling(shellcoder=POINTER_TEST, archtype="x86", ostype="windows", rootfs="../examples/rootfs/x86_windows")
 
         addr = ql.loader.entry_point
+        self.assertEqual(0x11, ql.mem.read_ptr(addr, 1))
         self.assertEqual(0x2211, ql.mem.read_ptr(addr, 2))
         self.assertEqual(0x44332211, ql.mem.read_ptr(addr, 4))
         self.assertEqual(0x44332211, ql.mem.read_ptr(addr))
@@ -51,6 +52,7 @@ class PEShellcodeTest(unittest.TestCase):
         ql = Qiling(shellcoder=POINTER_TEST, archtype="x8664", ostype="windows", rootfs="../examples/rootfs/x86_windows")
 
         addr = ql.loader.entry_point
+        self.assertEqual(0x11, ql.mem.read_ptr(addr, 1))
         self.assertEqual(0x2211, ql.mem.read_ptr(addr, 2))
         self.assertEqual(0x44332211, ql.mem.read_ptr(addr, 4))
         self.assertEqual(0x8877665544332211, ql.mem.read_ptr(addr, 8))
