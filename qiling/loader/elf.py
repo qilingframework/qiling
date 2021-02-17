@@ -99,7 +99,7 @@ class ELFParse():
         '    UC_PROT_ALL = 7
         'End Enum
 
-        Elf segment permissions are the following . 
+        Elf segment permissions are the following
             * bit 0 : X
             * bit 1 : W
             * bit 2 : R
