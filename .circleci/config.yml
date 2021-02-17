@@ -1,66 +1,6 @@
 version: 2.1
 
-#orbs:
-#  win: circleci/windows@2.2.0
-
 jobs:
-#  linux:
-#    docker:
-#      - image: circleci/python:3.9-buster
-#    steps:
-#      - checkout
-#      - run:
-#          name: "Install qiling framework"
-#          command: |
-#            python -m virtualenv env
-#            . env/bin/activate
-#            pip install .
-#            cd examples/rootfs/x86_linux/kernel
-#            unzip -P infected m0hamed_rootkit.ko.zip
-#      - run:
-#          name: "Run linux test"
-#          command: |
-#            . env/bin/activate
-#            cd tests
-#            ./test_elf.sh
-
-#  windows:
-#    machine:
-#      image: windows-server-2019-vs2019:stable
-#    resource_class: windows.medium
-#    steps:
-#      - checkout
-#      - run:
-#          name: "Disable defender and setup python"
-#          command: |
-#            powershell Start-Process -PassThru -Wait PowerShell -ArgumentList "'-Command Set-MpPreference -DisableArchiveScanning \$true'"
-#            powershell Start-Process -PassThru -Wait PowerShell -ArgumentList "'-Command Set-MpPreference -DisableBehaviorMonitoring \$true'"
-#            powershell Start-Process -PassThru -Wait PowerShell -ArgumentList "'-Command Set-MpPreference -DisableRealtimeMonitoring \$true'"
-#            nuget install python -Version 3.6.8 -ExcludeVersion -OutputDirectory .
-#            ./python/tools/python.exe -m pip install virtualenv
-#            ./python/tools/python.exe -m virtualenv env
-#      - run:
-#          name: "Install qiling framework"
-#          shell: powershell
-#          command: |
-#            env\Scripts\activate.ps1
-#            pip install setuptools wheel
-#            pip install .
-#            .\examples\scripts\dllscollector.bat
-#            cd examples\rootfs\x86_windows\bin
-#            unzip -Pinfected wannacry.bin.zip
-#            unzip -Pinfected UselessDisk.bin.zip
-#            unzip -Pinfected GandCrab502.bin.zip
-#            unzip -Pinfected al-khaser.bin.zip
-#            unzip -Pinfected sality.dll.zip
-#      - run:
-#          name: "Run win test"
-#          shell: powershell
-#          command: |
-#            env\Scripts\activate.ps1
-#            cd tests
-#            .\test_pe.bat
-
   macos:
     macos:
       xcode: 10.1
