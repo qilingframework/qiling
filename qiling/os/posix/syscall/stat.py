@@ -423,20 +423,6 @@ def ql_syscall_fstatfs(ql, fd, buf, *args, **kw):
         ql.log.debug(str(data))
     return regreturn
 
-# NOTE: Wild guess, quick copy and paste
-def ql_syscall_statfs(ql, statfs_path, statfs_buf_ptr, *args, **kw):
-    file = (ql.mem.string(statfs_path))
-    regreturn = None
-    try:
-        ql.mem.write(statfs_buf_ptr, file)
-        regreturn = 0
-    except:
-        regreturn = -1
-
-    ql.log.info("statfs(path=%s, ptr=0x%x) = %d" % (statfs_path, statfs_buf_ptr, regreturn))
-
-    return regreturn
-
 
 def ql_syscall_umask(ql, mode, *args, **kw):
     oldmask = os.umask(mode)

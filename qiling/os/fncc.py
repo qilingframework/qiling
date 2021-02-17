@@ -159,21 +159,20 @@ class QlOsFncc:
             param_num = self.set_function_params(params, args[2])
 
 
-        if self.ql.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
-            # if set, fire up the on-enter hook
-            if callable(self.winapi_func_onenter):
-                address, params = self.winapi_func_onenter(*args, **kwargs)
+        #if self.ql.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
+        # if set, fire up the on-enter hook
+        if callable(self.api_func_onenter):
+            address, params = self.api_func_onenter(*args, **kwargs)
 
-                # override original args set
-                args = (self.ql, address, params)
-
+            # override original args set
+            args = (self.ql, address, params)
         # call function
         result = func(*args, **kwargs)
 
-        if self.ql.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
-            # if set, fire up the on-exit hook
-            if callable(self.winapi_func_onexit):
-                self.winapi_func_onexit(*args, **kwargs)
+        #if self.ql.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
+        # if set, fire up the on-exit hook
+        if callable(self.api_func_onexit):
+            self.api_func_onexit(*args, **kwargs)
 
         # set return value
         if result is not None:

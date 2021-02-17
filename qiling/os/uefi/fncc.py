@@ -12,10 +12,9 @@ def dxeapi(param_num=None, params=None):
             ql = args[0]
             arg = (ql, ql.reg.arch_pc, {})
 
-            f = ql.loader.user_defined_api.get(func.__name__, func)
-
-            ql.os.winapi_func_onenter = ql.loader.user_defined_api_onenter.get(func.__name__, None)
-            ql.os.winapi_func_onexit = ql.loader.user_defined_api_onexit.get(func.__name__, None)
+            f = ql.os.user_defined_api.get(func.__name__, func)
+            ql.os.api_func_onenter = ql.os.user_defined_api_onenter.get(func.__name__, None)
+            ql.os.api_func_onexit = ql.os.user_defined_api_onexit.get(func.__name__, None)
 
             return ql.os.x8664_fastcall(param_num, params, f, arg, kwargs)
 

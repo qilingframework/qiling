@@ -10,9 +10,11 @@ from unicorn import *
 
 sys.path.append("..")
 from qiling import *
+from qiling.const import QL_INTERCEPT
 from qiling.exception import *
 from qiling.os.macos.events.macos_structs import *
 from qiling.os.macos.structs import *
+from qiling.os.macos.fncc import *
 
 class MACHOTest(unittest.TestCase):
     def test_macho_macos_superrootkit(self):
@@ -53,7 +55,36 @@ class MACHOTest(unittest.TestCase):
         def hook_stop(ql):
             ql.emu_stop()
 
+        def my_onenter(ql, address, params):
+            print("\n")
+            print("=" * 40)
+            print(" Enter into my_onenter mode")
+            print("params: %s" % params)
+            print("=" * 40)
+            print("\n")
+            self.set_api_onenter = True
+            return address, params
+
+        def my_onexit(ql, address, params):
+            print("\n")
+            print("=" * 40)
+            print(" Enter into my_exit mode")
+            print("params: %s" % params)
+            print("=" * 40)
+            print("\n")
+            self.set_api_onexit = True           
+
+        @macos_kernel_api(passthru=True, params={
+            "s": STRING,
+        })
+        def my__strlen(ql, address, params):
+            self.set_api_strlen = True 
+            return
+
         ql = Qiling(["../examples/rootfs/x8664_macos/kext/SuperRootkit.kext"], "../examples/rootfs/x8664_macos", output = "disasm")
+        ql.set_api("_ipf_addv4", my_onenter, QL_INTERCEPT.ENTER)
+        ql.set_api("_strncmp", my_onexit, QL_INTERCEPT.EXIT)
+        ql.set_api("_strlen", my__strlen) 
         ql.hook_address(hook_stop, 0xffffff8000854800)
 
         try:
@@ -65,6 +96,10 @@ class MACHOTest(unittest.TestCase):
         ql.os.ev_manager.add_process(1337, "agent")
         ls(ql, ".")      
 
+        self.assertEqual(True, self.set_api_onenter)
+        self.assertEqual(True, self.set_api_onenter)
+        self.assertEqual(True, self.set_api_strlen)
+        del ql
 if __name__ == "__main__":
     unittest.main()
 

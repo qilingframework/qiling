@@ -101,15 +101,15 @@ class QlOsWindows(QlOs, QlOsFncc):
             
             if winapi_name in self.user_defined_api_onenter:
                 if isinstance(self.user_defined_api_onenter[winapi_name], types.FunctionType):
-                    self.winapi_func_onenter = self.user_defined_api_onenter[winapi_name]
+                    self.api_func_onenter = self.user_defined_api_onenter[winapi_name]
             else:
-                self.winapi_func_onenter = None
+                self.api_func_onenter = None
 
             if winapi_name in self.user_defined_api_onexit:
                 if isinstance(self.user_defined_api_onexit[winapi_name], types.FunctionType):
-                    self.winapi_func_onexit = self.user_defined_api_onexit[winapi_name]
+                    self.api_func_onexit = self.user_defined_api_onexit[winapi_name]
             else:
-                self.winapi_func_onexit = None
+                self.api_func_onexit = None
 
             if winapi_func:
                 try:

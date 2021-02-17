@@ -21,6 +21,8 @@ class QlOsLinux(QlOsPosix):
         self.function_hook_tmp = []
         self.fh = None
         self.user_defined_api = {}
+        self.user_defined_api_onenter = {}
+        self.user_defined_api_onexit = {}        
         self.function_after_load_list = []
         self.pid = self.profile.getint("KERNEL","pid")
         self.load()

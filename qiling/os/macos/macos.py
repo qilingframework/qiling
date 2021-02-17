@@ -27,6 +27,8 @@ class QlOsMacos(QlOsPosix):
         self.ql = ql
         self.ql.counter = 0
         self.user_defined_api = {}
+        self.user_defined_api_onenter = {}
+        self.user_defined_api_onexit = {}        
         self.ev_manager = QlMacOSEvManager(self.ql)
         self.policy_manager = QlMacOSPolicy(self.ql, self.ev_manager)
         self.RUN = True

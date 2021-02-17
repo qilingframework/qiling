@@ -25,8 +25,20 @@ def hook_kernel_api(ql, address, size):
             try:
                 api_func = globals()['hook_' + api_name]
             except KeyError:
-                # print("ERROR on globals", globals())
+                ql.log.exception("ERROR on globals", globals())
                 api_func = None
+
+        if api_name in ql.os.user_defined_api_onenter:
+            if isinstance(ql.os.user_defined_api_onenter[api_name], types.FunctionType):
+                ql.os.api_func_onenter = ql.os.user_defined_api_onenter[api_name]
+        else:
+            ql.os.api_func_onenter = None
+
+        if api_name in ql.os.user_defined_api_onexit:
+            if isinstance(ql.os.user_defined_api_onexit[api_name], types.FunctionType):
+                ql.os.api_func_onexit = ql.os.user_defined_api_onexit[api_name]
+        else:
+            ql.os.api_func_onexit = None
 
         if api_func:
             try:

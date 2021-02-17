@@ -110,19 +110,19 @@ class QlOs(QlOsUtils, QlOsFncc):
             api_name = "hook_" + str(api_name)
 
         if intercept == QL_INTERCEPT.ENTER:
-            if self.ql.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
+            if (self.ql.ostype in (QL_OS.WINDOWS, QL_OS.UEFI)) or (self.ql.ostype in (QL_OS_POSIX) and self.ql.loader.is_driver):
                 self.user_defined_api_onenter[api_name] = intercept_function
             else:
                 self.add_function_hook(api_name, intercept_function, intercept) 
 
         elif intercept == QL_INTERCEPT.EXIT:
-            if self.ql.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
+            if (self.ql.ostype in (QL_OS.WINDOWS, QL_OS.UEFI)) or (self.ql.ostype in (QL_OS_POSIX) and self.ql.loader.is_driver):
                 self.user_defined_api_onexit[api_name] = intercept_function  
             else:
                 self.add_function_hook(api_name, intercept_function, intercept)           
 
         else:
-            if self.ql.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
+            if (self.ql.ostype in (QL_OS.WINDOWS, QL_OS.UEFI)) or (self.ql.ostype in (QL_OS_POSIX) and self.ql.loader.is_driver):
                 self.user_defined_api[api_name] = intercept_function
             else:
                 self.add_function_hook(api_name, intercept_function)  
