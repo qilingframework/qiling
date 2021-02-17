@@ -654,3 +654,6 @@ def ql_syscall_getdents(ql, fd, dirp, count, *args, **kw):
     ql.log.debug("getdents(%d, /* %d entries */, 0x%x) = %d" % (fd, _ent_count, count, regreturn))
     return regreturn
 
+    
+def ql_syscall_getdents64(ql, fd, dirp, count, *args, **kw):
+    return ql_syscall_getdents(ql, fd, dirp, count, *args, **kw)
