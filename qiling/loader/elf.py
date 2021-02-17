@@ -87,6 +87,34 @@ class ELFParse():
     def parse_segments(self):
         return self.elffile.iter_segments()
 
+    def translate_segment_perm_to_uc_prot(self, perm):
+        """
+        Unicorn define the following memory protection constants :
+
+        'Public Enum uc_prot
+        '    UC_PROT_NONE = 0
+        '    UC_PROT_READ = 1
+        '    UC_PROT_WRITE = 2
+        '    UC_PROT_EXEC = 4
+        '    UC_PROT_ALL = 7
+        'End Enum
+
+        Elf segment permissions are the following
+            * bit 0 : X
+            * bit 1 : W
+            * bit 2 : R
+        """
+
+        prot = 0
+
+        if perm & 0x1:
+            prot |= 4
+        if (perm >> 1) & 0x1:
+            prot |= 2
+        if (perm >> 2) & 0x1:
+            prot |= 1
+
+        return prot
 
 class QlLoaderELF(QlLoader, ELFParse):
     def __init__(self, ql):
@@ -216,7 +244,7 @@ class QlLoaderELF(QlLoader, ELFParse):
                 _mem_start = ((load_address + entry["p_vaddr"]) // pagesize) * pagesize
                 _mem_len = entry['p_memsz']
                 _mem_end = self.pcalc(load_address + entry["p_vaddr"] + _mem_len, pagesize)
-                _perms = int(bin(entry["p_flags"])[:1:-1], 2)  # reverse bits for perms mapping
+                _perms = self.translate_segment_perm_to_uc_prot(entry["p_flags"])
                 if _last_end < _mem_start:
                     _load_segments[_mem_start] = _mem_end, _perms
                     _last_start = _mem_start
