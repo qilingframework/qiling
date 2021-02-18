@@ -71,8 +71,8 @@ class QlOsUefi(QlOs):
 
 	def call(self, func, params, *args, passthru=False):
 		pc = self.ql.reg.arch_pc
-		onenter = self.ql.loader.user_defined_api_onenter.get(func.__name__, None)
-		onexit = self.ql.loader.user_defined_api_onexit.get(func.__name__, None)
+		onenter = self.user_defined_api_onenter.get(func.__name__, None)
+		onexit = self.user_defined_api_onexit.get(func.__name__, None)
 
 		# call hooked function
 		params, retval, retaddr = self.fcall.call(func, params, onenter, onexit, *args)
