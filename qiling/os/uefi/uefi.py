@@ -3,16 +3,18 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-
+from typing import Any, Callable
 from unicorn import UcError
 
+from qiling import Qiling
+from qiling.os.const import ULONGLONG, POINTER, STRING, WSTRING, GUID
 from qiling.os.os import QlOs
-from qiling.os.fncc import QlOsFncc
+from qiling.refactored.cc import QlCC, QlFunctionCall, intel
 
-class QlOsUefi(QlOs, QlOsFncc):
-	def __init__(self, ql):
-		QlOs.__init__(self, ql)
-		QlOsFncc.__init__(self, ql)
+class QlOsUefi(QlOs):
+	def __init__(self, ql: Qiling):
+		super().__init__(ql)
+
 		self.ql = ql
 		self.entry_point = 0
 		self.running_module = None
@@ -22,6 +24,72 @@ class QlOsUefi(QlOs, QlOsFncc):
 		self.PE_RUN = True
 		self.heap = None # Will be initialized by the loader.
 
+		cc: QlCC = {
+			32: intel.cdecl,
+			64: intel.ms64
+		}[ql.archbit](ql)
+
+		# TODO: work around a bad design; utilities need to be contained, not mixed-in
+		os = self
+
+		def __nullptr_or_deref(idx: int, deref: Callable[[int], Any]):
+			ptr = cc.getRawParam(idx)
+
+			return deref(ptr) if ptr else 0
+
+		def __handle_default(idx: int):
+			return cc.getRawParam(idx), 1
+
+		def __handle_POINTER(idx: int):
+			return __handle_default(idx)
+
+		def __handle_ULONGLONG_32(idx: int):
+			lo = cc.getRawParam(idx)
+			hi = cc.getRawParam(idx + 1)
+
+			return (hi << 32) | lo, 2
+
+		def __handle_STRING(idx: int):
+			return __nullptr_or_deref(idx, os.read_cstring), 1
+
+		def __handle_WSTRING(idx: int):
+			return __nullptr_or_deref(idx, os.read_wstring), 1
+
+		def __handle_GUID(idx: int):
+			return __nullptr_or_deref(idx, lambda p: str(os.read_guid(p))), 1
+
+		resolvers = {
+			None     : __handle_default,
+			ULONGLONG: __handle_POINTER if self.ql.archbit == 64 else __handle_ULONGLONG_32,
+			POINTER  : __handle_POINTER,
+			STRING   : __handle_STRING,
+			WSTRING  : __handle_WSTRING,
+			GUID     : __handle_GUID
+		}
+
+		self.fcall = QlFunctionCall(ql, cc, resolvers)
+
+	def call(self, func, params, *args, passthru=False):
+		pc = self.ql.reg.arch_pc
+		onenter = self.ql.loader.user_defined_api_onenter.get(func.__name__, None)
+		onexit = self.ql.loader.user_defined_api_onexit.get(func.__name__, None)
+
+		# call hooked function
+		params, retval, retaddr = self.fcall.call(func, params, onenter, onexit, *args)
+
+		# print
+		self.print_function(pc, func.__name__, params, retval, passthru)
+
+		# append syscall to list
+		self._call_api(func.__name__, params, retval, pc, retaddr)
+
+		if not self.PE_RUN:
+			return retval
+
+		if not passthru:
+			self.ql.reg.arch_pc = retaddr
+
+		return retval
 
 	def save(self):
 		saved_state = super(QlOsUefi, self).save()

@@ -5,7 +5,6 @@
 
 import sys
 
-from typing import Callable, Sequence, Mapping, MutableMapping, Any
 from unicorn.x86_const import *
 
 from .const import *
@@ -14,16 +13,14 @@ from .mapper import QlFsMapper
 from .utils import QlOsUtils
 
 from qiling.const import QL_ARCH, QL_OS, QL_INTERCEPT, QL_OS_POSIX
-from qiling.exception import QlErrorArch
-from qiling.os.fncc import QlOsFncc
 
-
-class QlOs(QlOsUtils, QlOsFncc):
+class QlOs(QlOsUtils):
     def __init__(self, ql):
         #super(QlOs, self).__init__(ql)
         QlOsUtils.__init__(self, ql)
-        QlOsFncc.__init__(self, ql)
+
         self.ql = ql
+        self.fcall = None
         self.fs_mapper = QlFsMapper(ql)
         self.child_processes = False
         self.thread_management = None
@@ -160,22 +157,6 @@ class QlOs(QlOsUtils, QlOsFncc):
         except:
             self.ql.log.error("Error: PC(0x%x) Unreachable" % self.ql.reg.arch_pc)
 
-    def set_function_args(self, args: Sequence[int]) -> None:
-        """Set function call arguments.
-        """
-
-        for i, (reg, arg) in enumerate(zip(self._cc_args, args)):
-            # should arg be written to a reg or the stack?
-            if reg is None:
-                # get matching stack item
-                si = i - self._cc_args.index(None)
-
-                # skip return address and shadow space
-                self.ql.stack_write((1 + self._shadow + si) * self._asize, arg)
-            else:
-                self.ql.uc.reg_write(reg, arg)
-
-    
     def clear_syscalls(self):
         self.syscalls = {}
         self.syscalls_counter = 0
@@ -183,17 +164,11 @@ class QlOs(QlOsUtils, QlOsFncc):
 
 
     def _call_api(self, name, params, result, address, return_address):
-        params_with_values = {}
-
         if name.startswith("hook_"):
             name = name[5:]
 
-            # printfs are shit
-            if params is not None:
-                self.set_function_params(params, params_with_values)
-
         self.syscalls.setdefault(name, []).append({
-            "params": params_with_values,
+            "params": params,
             "result": result,
             "address": address,
             "return_address": return_address,

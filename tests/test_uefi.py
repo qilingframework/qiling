@@ -82,7 +82,7 @@ class Test_UEFI(unittest.TestCase):
             self.set_api_onenter = params["Source"]
             return address, params
 
-        def my_onexit(ql, address, params):
+        def my_onexit(ql, address, params, retval):
             print("\n")
             print("=" * 40)
             print(" Enter into my_exit mode")
