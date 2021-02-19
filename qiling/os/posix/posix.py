@@ -5,15 +5,16 @@
 
 from inspect import signature
 
-from unicorn.arm64_const import *
-from unicorn.arm_const import *
-from unicorn.mips_const import *
-from unicorn.x86_const import *
+from unicorn.arm64_const import UC_ARM64_REG_X8, UC_ARM64_REG_X16
+from unicorn.arm_const import UC_ARM_REG_R7
+from unicorn.mips_const import UC_MIPS_REG_V0
+from unicorn.x86_const import UC_X86_REG_EAX, UC_X86_REG_RAX
 
-from qiling.const import *
+from qiling.const import QL_ARCH, QL_OS, QL_INTERCEPT, QL_CALL_BLOCK, QL_OS_POSIX
+from qiling.exception import QlErrorSyscallNotFound
 from qiling.os.os import QlOs
-from qiling.utils import *
-from qiling.exception import *
+from qiling.os.posix.const import errors
+from qiling.utils import QlFileDes, ostype_convert_str, ql_get_module_function, ql_syscall_mapping_function
 
 from qiling.os.posix.syscall import *
 from qiling.os.linux.syscall import *

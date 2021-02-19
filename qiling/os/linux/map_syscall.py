@@ -8,6 +8,7 @@
 
 from qiling.const import *
 
+from qiling.const import QL_ARCH
 def map_syscall(ql, syscall_num):
     for k,v in syscall_table.items():
         

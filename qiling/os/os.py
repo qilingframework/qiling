@@ -5,14 +5,12 @@
 
 import sys
 
-from unicorn.x86_const import *
-
 from .const import *
 from .filestruct import ql_file
 from .mapper import QlFsMapper
 from .utils import QlOsUtils
 
-from qiling.const import QL_ARCH, QL_OS, QL_INTERCEPT, QL_OS_POSIX
+from qiling.const import QL_OS, QL_INTERCEPT, QL_OS_POSIX
 
 class QlOs(QlOsUtils):
     def __init__(self, ql):
