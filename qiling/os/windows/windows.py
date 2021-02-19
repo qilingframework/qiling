@@ -26,9 +26,6 @@ class QlOsWindows(QlOs, QlOsFncc):
         self.PE_RUN = True
         self.last_error = 0
         # variables used inside hooks
-        self.user_defined_api = {}
-        self.user_defined_api_onenter = {}
-        self.user_defined_api_onexit = {}
         self.hooks_variables = {}
         self.syscall_count = {}
         self.argv = self.ql.argv

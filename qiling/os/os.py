@@ -28,6 +28,10 @@ class QlOs(QlOsUtils):
         self.services = {}
         self.elf_mem_start = 0x0
 
+        self.user_defined_api = {}
+        self.user_defined_api_onenter = {}
+        self.user_defined_api_onexit = {}
+
         if not hasattr(sys.stdin, "fileno") or not hasattr(sys.stdout, "fileno") or not hasattr(sys.stderr, "fileno"):
             # IDAPython has some hack on standard io streams and thus they don't have corresponding fds.
 

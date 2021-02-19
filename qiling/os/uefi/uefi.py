@@ -18,9 +18,6 @@ class QlOsUefi(QlOs):
 		self.ql = ql
 		self.entry_point = 0
 		self.running_module = None
-		self.user_defined_api = {}
-		self.user_defined_api_onenter = {}
-		self.user_defined_api_onexit = {}
 		self.PE_RUN = True
 		self.heap = None # Will be initialized by the loader.
 
