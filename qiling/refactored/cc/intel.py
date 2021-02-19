@@ -102,6 +102,13 @@ class ms64(QlIntelBaseCC):
 	_argregs = (UC_X86_REG_RCX, UC_X86_REG_RDX, UC_X86_REG_R8, UC_X86_REG_R9) + (None, ) * 12
 	_shadow = 4
 
+class macosx64(QlIntelBaseCC):
+	"""Default calling convention for Mac OS (x86-64).
+	First 6 arguments are passed in regs, the rest are passed on the stack.
+	"""
+
+	_argregs = (UC_X86_REG_RDI, UC_X86_REG_RSI, UC_X86_REG_RDX, UC_X86_REG_RCX, UC_X86_REG_R8, UC_X86_REG_R9) + (None, ) * 10
+
 class cdecl(QlIntelBaseCC):
 	"""Calling convention used by all operating systems (x86).
 	All arguments are passed on the stack.
