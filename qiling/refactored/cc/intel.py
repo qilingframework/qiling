@@ -22,17 +22,15 @@ class QlIntelBaseCC(QlCC):
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 
-		bits = self.ql.archbit
-
 		# native address size in bytes
-		self._asize = bits // 8
+		self._asize = self.ql.pointersize
 
 		# return value register
 		self._retreg = {
 			16: UC_X86_REG_AX,
 			32: UC_X86_REG_EAX,
 			64: UC_X86_REG_RAX
-		}[bits]
+		}[self.ql.archbit]
 
 	def __access_param(self, index: int, stack_access: Callable, reg_access: Callable) -> Tuple[Callable, int]:
 		"""[private] Generic accessor to function call parameters by their index.
