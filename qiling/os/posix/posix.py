@@ -54,12 +54,12 @@ class QlOsPosix(QlOs):
         self.ipv6 = self.profile.getboolean("NETWORK","ipv6")
         self.bindtolocalhost = self.profile.getboolean("NETWORK","bindtolocalhost")
         self.fd = QlFileDes([0] * 256)
-        self.dict_posix_syscall = dict()
-        self.dict_posix_onEnter_syscall = dict()
-        self.dict_posix_onExit_syscall = dict()
-        self.dict_posix_syscall_by_num = dict()
-        self.dict_posix_onEnter_syscall_by_num = dict()
-        self.dict_posix_onExit_syscall_by_num = dict()
+
+        self.posix_syscall_hooks = {
+            QL_INTERCEPT.CALL : {},
+            QL_INTERCEPT.ENTER: {},
+            QL_INTERCEPT.EXIT : {}
+        }
 
         self.syscall_map = None
         self.syscall_name = None
@@ -76,6 +76,20 @@ class QlOsPosix(QlOs):
     @property
     def syscall(self):
         return self.get_syscall()
+
+    def set_syscall(self, target: Union[int, str], handler: Callable, intercept: QL_INTERCEPT):
+        if type(target) is str:
+            target = f'{SYSCALL_PREF}{target}'
+
+        # BUG: workaround missing arg
+        if intercept is None:
+            intercept = QL_INTERCEPT.CALL
+
+        self.posix_syscall_hooks[intercept][target] = handler
+
+        # if intercept == QL_INTERCEPT.CALL:
+        #     if self.ql.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
+        #         self.set_api(target_syscall, intercept_function)
 
     # ql.func_arg - get syscall for all posix series
     @property
