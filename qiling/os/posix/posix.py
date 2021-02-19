@@ -23,6 +23,7 @@ from qiling.os.freebsd.syscall import *
 
 from qiling.os.linux.function_hook import ARMFunctionArg, MIPS32FunctionArg, ARM64FunctionArg, X86FunctionArg, X64FunctionArg
 
+SYSCALL_PREF: str = f'ql_syscall_'
 
 def getNameFromErrorCode(ret):
     """
