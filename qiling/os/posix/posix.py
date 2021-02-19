@@ -105,6 +105,64 @@ class QlOsPosix(QlOs):
             QL_ARCH.X86  : __set_syscall_ret_x86,
             QL_ARCH.X8664: __set_syscall_ret_x8664
         }[self.ql.archtype]
+
+        def __syscall_args_arm64():
+            return (
+                self.ql.reg.x0,
+                self.ql.reg.x1,
+                self.ql.reg.x2,
+                self.ql.reg.x3,
+                self.ql.reg.x4,
+                self.ql.reg.x5
+            )
+
+        def __syscall_args_arm():
+            return (
+                self.ql.reg.r0,
+                self.ql.reg.r1,
+                self.ql.reg.r2,
+                self.ql.reg.r3,
+                self.ql.reg.r4,
+                self.ql.reg.r5
+            )
+
+        def __syscall_args_mips():
+            return (
+                self.ql.reg.a0,
+                self.ql.reg.a1,
+                self.ql.reg.a2,
+                self.ql.reg.a3,
+                self.ql.reg.sp + 0x10,
+                self.ql.reg.sp + 0x14
+            )
+
+        def __syscall_args_x86():
+            return (
+                self.ql.reg.ebx,
+                self.ql.reg.ecx,
+                self.ql.reg.edx,
+                self.ql.reg.esi,
+                self.ql.reg.edi,
+                self.ql.reg.ebp
+            )
+
+        def __syscall_args_x8664():
+            return (
+                self.ql.reg.rdi,
+                self.ql.reg.rsi,
+                self.ql.reg.rdx,
+                self.ql.reg.r10,
+                self.ql.reg.r8,
+                self.ql.reg.r9
+            )
+
+        self.__syscall_args: Callable = {
+            QL_ARCH.ARM64: __syscall_args_arm64,
+            QL_ARCH.ARM  : __syscall_args_arm,
+            QL_ARCH.MIPS : __syscall_args_mips,
+            QL_ARCH.X86  : __syscall_args_x86,
+            QL_ARCH.X8664: __syscall_args_x8664
+        }[self.ql.archtype]
         if self.ql.ostype in QL_OS_POSIX:
             self.fd[0] = self.stdin
             self.fd[1] = self.stdout
@@ -273,44 +331,5 @@ class QlOsPosix(QlOs):
     def set_syscall_return(self, retval: int) -> int:
         return self.__set_syscall_retval(retval) or retval
 
-    # get syscall
-    def get_func_arg(self):
-        if self.ql.archtype == QL_ARCH.ARM64:
-            param0 = self.ql.reg.x0
-            param1 = self.ql.reg.x1
-            param2 = self.ql.reg.x2
-            param3 = self.ql.reg.x3
-            param4 = self.ql.reg.x4
-            param5 = self.ql.reg.x5
-        elif self.ql.archtype == QL_ARCH.ARM:
-            param0 = self.ql.reg.r0
-            param1 = self.ql.reg.r1
-            param2 = self.ql.reg.r2
-            param3 = self.ql.reg.r3
-            param4 = self.ql.reg.r4
-            param5 = self.ql.reg.r5
-        elif self.ql.archtype == QL_ARCH.MIPS:
-            param0 = self.ql.reg.a0
-            param1 = self.ql.reg.a1
-            param2 = self.ql.reg.a2
-            param3 = self.ql.reg.a3
-            param4 = self.ql.reg.sp
-            param4 = param4 + 0x10
-            param5 = self.ql.reg.sp
-            param5 = param5 + 0x14
-        elif self.ql.archtype == QL_ARCH.X86:
-            param0 = self.ql.reg.ebx
-            param1 = self.ql.reg.ecx
-            param2 = self.ql.reg.edx
-            param3 = self.ql.reg.esi
-            param4 = self.ql.reg.edi
-            param5 = self.ql.reg.ebp
-        elif self.ql.archtype == QL_ARCH.X8664:
-            param0 = self.ql.reg.rdi
-            param1 = self.ql.reg.rsi
-            param2 = self.ql.reg.rdx
-            param3 = self.ql.reg.r10
-            param4 = self.ql.reg.r8
-            param5 = self.ql.reg.r9
-
-        return [param0, param1, param2, param3, param4, param5]
+    def get_syscall_args(self):
+        return self.__syscall_args()
