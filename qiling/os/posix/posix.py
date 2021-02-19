@@ -61,9 +61,17 @@ class QlOsPosix(QlOs):
             QL_INTERCEPT.EXIT : {}
         }
 
-        self.syscall_map = None
-        self.syscall_name = None
+        self.__syscall_id_reg = {
+            QL_ARCH.ARM64: UC_ARM64_REG_X8,
+            QL_ARCH.ARM  : UC_ARM_REG_R7,
+            QL_ARCH.MIPS : UC_MIPS_REG_V0,
+            QL_ARCH.X86  : UC_X86_REG_EAX,
+            QL_ARCH.X8664: UC_X86_REG_RAX
+        }[self.ql.archtype]
 
+        # handle a special case
+        if (self.ql.archtype == QL_ARCH.ARM64) and (self.ql.ostype == QL_OS.MACOS):
+            self.__syscall_id_reg = UC_ARM64_REG_X16
         if self.ql.ostype in QL_OS_POSIX:
             self.fd[0] = self.stdin
             self.fd[1] = self.stdout
@@ -226,24 +234,8 @@ class QlOsPosix(QlOs):
             if self.ql.debug_stop:
                 raise QlErrorSyscallNotFound("Syscall Not Found")
 
-    # get syscall
-    def get_syscall(self):
-        if self.ql.archtype == QL_ARCH.ARM64:
-            if self.ql.ostype == QL_OS.MACOS:
-                syscall_num = UC_ARM64_REG_X16
-            else:
-                syscall_num = UC_ARM64_REG_X8
-        elif self.ql.archtype == QL_ARCH.ARM:
-            syscall_num = UC_ARM_REG_R7
-        elif self.ql.archtype == QL_ARCH.MIPS:
-            syscall_num = UC_MIPS_REG_V0
-        elif self.ql.archtype == QL_ARCH.X86:
-            syscall_num = UC_X86_REG_EAX
-        elif self.ql.archtype == QL_ARCH.X8664:
-            syscall_num = UC_X86_REG_RAX
-
-        return self.ql.reg.read(syscall_num)
-
+    def get_syscall(self) -> int:
+        return self.ql.reg.read(self.__syscall_id_reg)
     def set_syscall_return(self, regreturn):
         if self.ql.archtype == QL_ARCH.ARM:  # ARM
             self.ql.reg.r0 = regreturn
