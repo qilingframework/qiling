@@ -4,6 +4,7 @@
 #
 
 from inspect import signature
+from typing import Union, Callable
 
 from unicorn.arm64_const import UC_ARM64_REG_X8, UC_ARM64_REG_X16
 from unicorn.arm_const import UC_ARM_REG_R7
@@ -72,6 +73,38 @@ class QlOsPosix(QlOs):
         # handle a special case
         if (self.ql.archtype == QL_ARCH.ARM64) and (self.ql.ostype == QL_OS.MACOS):
             self.__syscall_id_reg = UC_ARM64_REG_X16
+
+        def __set_syscall_ret_arm(retval: int):
+            self.ql.reg.r0 = retval
+
+        def __set_syscall_ret_arm64(retval: int):
+            self.ql.reg.x0 = retval
+
+        def __set_syscall_ret_x86(retval: int):
+            self.ql.reg.eax = retval
+
+        def __set_syscall_ret_x8664(retval: int):
+            self.ql.reg.rax = retval
+
+        def __set_syscall_ret_mips(retval: int):
+            if -1134 < retval < 0:
+                a3return = 1
+                retval = -retval
+            else:
+                a3return = 0
+
+            self.ql.reg.v0 = retval
+            self.ql.reg.a3 = a3return
+
+            return retval
+
+        self.__set_syscall_retval: Callable = {
+            QL_ARCH.ARM64: __set_syscall_ret_arm64,
+            QL_ARCH.ARM  : __set_syscall_ret_arm,
+            QL_ARCH.MIPS : __set_syscall_ret_mips,
+            QL_ARCH.X86  : __set_syscall_ret_x86,
+            QL_ARCH.X8664: __set_syscall_ret_x8664
+        }[self.ql.archtype]
         if self.ql.ostype in QL_OS_POSIX:
             self.fd[0] = self.stdin
             self.fd[1] = self.stdout
@@ -236,29 +269,9 @@ class QlOsPosix(QlOs):
 
     def get_syscall(self) -> int:
         return self.ql.reg.read(self.__syscall_id_reg)
-    def set_syscall_return(self, regreturn):
-        if self.ql.archtype == QL_ARCH.ARM:  # ARM
-            self.ql.reg.r0 = regreturn
 
-        elif self.ql.archtype == QL_ARCH.ARM64:  # ARM64
-            self.ql.reg.x0 = regreturn
-
-        elif self.ql.archtype == QL_ARCH.X86:  # X86
-            self.ql.reg.eax = regreturn
-
-        elif self.ql.archtype == QL_ARCH.X8664:  # X8664
-            self.ql.reg.rax = regreturn
-
-        elif self.ql.archtype == QL_ARCH.MIPS:  # MIPSE32EL
-            if regreturn < 0 and regreturn > -1134:
-                a3return = 1
-                regreturn = - regreturn
-            else:
-                a3return = 0
-
-            self.ql.reg.v0 = regreturn
-            self.ql.reg.a3 = a3return
-        return regreturn
+    def set_syscall_return(self, retval: int) -> int:
+        return self.__set_syscall_retval(retval) or retval
 
     # get syscall
     def get_func_arg(self):
