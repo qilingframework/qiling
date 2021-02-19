@@ -4,13 +4,17 @@
 #
 
 
-from qiling import Qiling
-from qiling.os.posix.posix import QlOsPosix
-from .const import *
-from .utils import *
-from .futex import *
-from .thread import *
+from unicorn import UcError
 
+from qiling import Qiling
+from qiling.const import QL_ARCH
+from qiling.arch.x86_const import UC_X86_INS_SYSCALL
+from qiling.arch.x86 import GDTManager, ql_x8664_set_gs, ql_x86_register_cs, ql_x86_register_ds_ss_es
+from qiling.os.posix.posix import QlOsPosix
+
+from .utils import ql_arm_init_get_tls
+from .futex import QlLinuxFutexManagement
+from .thread import QlLinuxThreadManagement, QlLinuxARMThread, QlLinuxMIPS32Thread, QlLinuxARM64Thread, QlLinuxX86Thread, QlLinuxX8664Thread
 class QlOsLinux(QlOsPosix):
     def __init__(self, ql: Qiling):
         super(QlOsLinux, self).__init__(ql)
