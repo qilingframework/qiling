@@ -11,6 +11,7 @@ from unicorn.arm_const import UC_ARM_REG_R7
 from unicorn.mips_const import UC_MIPS_REG_V0
 from unicorn.x86_const import UC_X86_REG_EAX, UC_X86_REG_RAX
 
+from qiling import Qiling
 from qiling.const import QL_ARCH, QL_OS, QL_INTERCEPT, QL_CALL_BLOCK, QL_OS_POSIX
 from qiling.exception import QlErrorSyscallNotFound
 from qiling.os.os import QlOs
@@ -26,35 +27,23 @@ from qiling.os.linux.function_hook import FunctionArgv, ARMFunctionArg, MIPS32Fu
 
 SYSCALL_PREF: str = f'ql_syscall_'
 
-def getNameFromErrorCode(ret):
-    """
-    Return the hex representation of a return value and if possible
-    add the corresponding error name to it.
-    :param ret: Return value of a syscall.
-    :return: The string representation of the error.
-    """
-    if -ret in errors:
-        return hex(ret) + "(" + errors[-ret] + ")"
-    else:
-        return hex(ret)
-
-
 class QlOsPosix(QlOs):
-    def __init__(self, ql):
+
+    def __init__(self, ql: Qiling):
         super(QlOsPosix, self).__init__(ql)
+
         self.ql = ql
-        self.sigaction_act = []
-        
-        if self.ql.root == True:
+        self.sigaction_act = [0] * 256
+
+        if self.ql.root:
             self.uid = 0
             self.gid = 0
-        else:    
+        else:
             self.uid = self.profile.getint("KERNEL","uid")
             self.gid = self.profile.getint("KERNEL","gid")
 
         self.ipv6 = self.profile.getboolean("NETWORK","ipv6")
         self.bindtolocalhost = self.profile.getboolean("NETWORK","bindtolocalhost")
-        self.fd = QlFileDes([0] * 256)
 
         self.posix_syscall_hooks = {
             QL_INTERCEPT.CALL : {},
@@ -171,13 +160,13 @@ class QlOsPosix(QlOs):
             QL_ARCH.X86  : X86FunctionArg,
             QL_ARCH.X8664: X64FunctionArg
         }[self.ql.archtype](self.ql)
+
+        self.fd = QlFileDes([0] * 256)
+
         if self.ql.ostype in QL_OS_POSIX:
             self.fd[0] = self.stdin
             self.fd[1] = self.stdout
             self.fd[2] = self.stderr
-
-        for _ in range(256):
-            self.sigaction_act.append(0)
 
     # ql.syscall - get syscall for all posix series
     @property
@@ -203,6 +192,19 @@ class QlOsPosix(QlOs):
     @property
     def function_arg(self) -> FunctionArgv:
         return self.__fcall_args
+
+    @staticmethod
+    def getNameFromErrorCode(ret: int) -> str:
+        """Return the hex representation of a return value and if possible
+        add the corresponding error name to it.
+
+        Args:
+            param ret: Return value of a syscall.
+
+        Returns: The string representation of the error.
+        """
+
+        return f'{ret:#x}{f" ({errors[-ret]})" if -ret in errors else f""}'
 
 
     def load_syscall(self):
