@@ -51,10 +51,7 @@ class FunctionArgv:
     def __init__(self, ql):
         self.ql = ql
 
-class ARMFunctionArg:
-    def __init__(self, ql):
-        self.ql = ql
-    
+class ARMFunctionArg(FunctionArgv):
     def _get_stack_value(self, idx):
         tmp = self.ql.mem.read(self.ql.reg.sp + idx * self.ql.pointersize, self.ql.pointersize)
         return self.ql.unpack(tmp)
@@ -76,10 +73,7 @@ class ARMFunctionArg:
         else:
             self._set_stack_value(idx - 4, value)
 
-class MIPS32FunctionArg:
-    def __init__(self, ql):
-        self.ql = ql
-
+class MIPS32FunctionArg(FunctionArgv):
     def _get_stack_value(self, idx):
         tmp = self.ql.mem.read(self.ql.reg.sp + idx * self.ql.pointersize, self.ql.pointersize)
         return self.ql.unpack(tmp)
@@ -101,10 +95,7 @@ class MIPS32FunctionArg:
         else:
             self._set_stack_value(idx, value)
 
-class ARM64FunctionArg:
-    def __init__(self, ql):
-        self.ql = ql
-
+class ARM64FunctionArg(FunctionArgv):
     def _get_stack_value(self, idx):
         tmp = self.ql.mem.read(self.ql.reg.sp + idx * self.ql.pointersize, self.ql.pointersize)
         return self.ql.unpack(tmp)
@@ -126,10 +117,7 @@ class ARM64FunctionArg:
         else:
             self._set_stack_value(idx - 8 + 1, value)
 
-class X86FunctionArg:
-    def __init__(self, ql):
-        self.ql = ql
-
+class X86FunctionArg(FunctionArgv):
     def _get_stack_value(self, idx):
         tmp = self.ql.mem.read(self.ql.reg.esp + idx * self.ql.pointersize, self.ql.pointersize)
         return self.ql.unpack(tmp)
@@ -143,10 +131,7 @@ class X86FunctionArg:
     def __setitem__(self, idx, value):
         self._set_stack_value(idx + 1, value)
 
-class X64FunctionArg:
-    def __init__(self, ql):
-        self.ql = ql
-
+class X64FunctionArg(FunctionArgv):
     def _get_stack_value(self, idx):
         tmp = self.ql.mem.read(self.ql.reg.rsp + idx * self.ql.pointersize, self.ql.pointersize)
         return self.ql.unpack(tmp)
