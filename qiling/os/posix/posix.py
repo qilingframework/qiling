@@ -22,7 +22,7 @@ from qiling.os.linux.syscall import *
 from qiling.os.macos.syscall import *
 from qiling.os.freebsd.syscall import *
 
-from qiling.os.linux.function_hook import ARMFunctionArg, MIPS32FunctionArg, ARM64FunctionArg, X86FunctionArg, X64FunctionArg
+from qiling.os.linux.function_hook import FunctionArgv, ARMFunctionArg, MIPS32FunctionArg, ARM64FunctionArg, X86FunctionArg, X64FunctionArg
 
 SYSCALL_PREF: str = f'ql_syscall_'
 
@@ -163,6 +163,14 @@ class QlOsPosix(QlOs):
             QL_ARCH.X86  : __syscall_args_x86,
             QL_ARCH.X8664: __syscall_args_x8664
         }[self.ql.archtype]
+
+        self.__fcall_args: FunctionArgv = {
+            QL_ARCH.ARM64: ARM64FunctionArg,
+            QL_ARCH.ARM  : ARMFunctionArg,
+            QL_ARCH.MIPS : MIPS32FunctionArg,
+            QL_ARCH.X86  : X86FunctionArg,
+            QL_ARCH.X8664: X64FunctionArg
+        }[self.ql.archtype](self.ql)
         if self.ql.ostype in QL_OS_POSIX:
             self.fd[0] = self.stdin
             self.fd[1] = self.stdout
@@ -190,31 +198,12 @@ class QlOsPosix(QlOs):
         #     if self.ql.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
         #         self.set_api(target_syscall, intercept_function)
 
+    # TODO: replace by fcall.cc
     # ql.func_arg - get syscall for all posix series
     @property
-    def function_arg(self):
-        if self.ql.ostype in (QL_OS_POSIX):
-            # ARM
-            if self.ql.archtype== QL_ARCH.ARM:
-                return ARMFunctionArg(self.ql)
+    def function_arg(self) -> FunctionArgv:
+        return self.__fcall_args
 
-            # MIPS32
-            elif self.ql.archtype== QL_ARCH.MIPS:
-                return MIPS32FunctionArg(self.ql)
-
-            # ARM64
-            elif self.ql.archtype== QL_ARCH.ARM64:
-                return ARM64FunctionArg(self.ql)
-
-            # X86
-            elif  self.ql.archtype== QL_ARCH.X86:
-                return X86FunctionArg(self.ql)
-
-            # X8664
-            elif  self.ql.archtype== QL_ARCH.X8664:
-                return X64FunctionArg(self.ql)
-            else:
-                raise
 
     def load_syscall(self, intno=None):
         # import syscall mapping function
