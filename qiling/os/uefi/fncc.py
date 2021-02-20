@@ -6,9 +6,7 @@
 def dxeapi(param_num=None, params={}):
     def decorator(func):
         def wrapper(ql, *args, **kwargs):
-            f = ql.os.user_defined_api.get(func.__name__, func)
-
-            return ql.os.call(f, params)
+            return ql.os.call(func, params)
 
         return wrapper
 

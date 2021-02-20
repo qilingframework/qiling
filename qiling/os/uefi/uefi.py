@@ -69,6 +69,8 @@ class QlOsUefi(QlOs):
 
 	def call(self, func, params, *args, passthru=False):
 		pc = self.ql.reg.arch_pc
+
+		func = self.user_defined_api[QL_INTERCEPT.CALL].get(func.__name__) or func
 		onenter = self.user_defined_api[QL_INTERCEPT.ENTER].get(func.__name__)
 		onexit = self.user_defined_api[QL_INTERCEPT.EXIT].get(func.__name__)
 
