@@ -30,7 +30,6 @@ class QlOsMacos(QlOsPosix):
         self.policy_manager = QlMacOSPolicy(self.ql, self.ev_manager)
         self.RUN = True
         self.hook_ret = {}
-        self.pid = self.profile.getint("KERNEL","pid")
         self.load()
 
 

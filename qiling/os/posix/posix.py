@@ -42,8 +42,9 @@ class QlOsPosix(QlOs):
             self.uid = self.profile.getint("KERNEL","uid")
             self.gid = self.profile.getint("KERNEL","gid")
 
-        self.ipv6 = self.profile.getboolean("NETWORK","ipv6")
-        self.bindtolocalhost = self.profile.getboolean("NETWORK","bindtolocalhost")
+        self.pid = self.profile.getint("KERNEL", "pid")
+        self.ipv6 = self.profile.getboolean("NETWORK", "ipv6")
+        self.bindtolocalhost = self.profile.getboolean("NETWORK", "bindtolocalhost")
 
         self.posix_syscall_hooks = {
             QL_INTERCEPT.CALL : {},

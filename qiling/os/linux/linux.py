@@ -24,7 +24,6 @@ class QlOsLinux(QlOsPosix):
         self.function_hook_tmp = []
         self.fh = None
         self.function_after_load_list = []
-        self.pid = self.profile.getint("KERNEL","pid")
         self.load()
 
         if self.ql.archtype == QL_ARCH.X8664:

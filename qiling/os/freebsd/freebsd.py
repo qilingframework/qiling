@@ -12,7 +12,6 @@ from .const import *
 class QlOsFreebsd(QlOsPosix):
     def __init__(self, ql):
         super(QlOsFreebsd, self).__init__(ql)
-        self.pid = self.profile.getint("KERNEL","pid")
         self.load()
 
 
