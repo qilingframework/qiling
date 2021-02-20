@@ -332,6 +332,20 @@ class QlOsUtils:
             link_path = Path(os.readlink(real_path))
             if not link_path.is_absolute():
                 real_path = Path(os.path.join(os.path.dirname(real_path), link_path))
+
+            # resolve multilevel symbolic link
+            if not os.path.exists(real_path):
+                path_dirs = link_path.parts
+                if link_path.is_absolute():
+                    path_dirs = path_dirs[1:]
+
+                for i in range(0, len(path_dirs)-1):
+                    path_prefix = os.path.sep.join(path_dirs[:i+1])
+                    real_path_prefix = self.transform_to_real_path(path_prefix)
+                    path_remain = os.path.sep.join(path_dirs[i+1:])
+                    real_path = Path(os.path.join(real_path_prefix, path_remain))
+                    if os.path.exists(real_path):
+                        break
             
         return str(real_path.absolute())
 
