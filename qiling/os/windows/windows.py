@@ -3,20 +3,14 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import types
+from unicorn import UcError
 
-from unicorn import *
-
-from qiling.arch.x86_const import *
-from qiling.arch.x86 import *
-from qiling.const import *
+from qiling.arch.x86 import GDTManager, ql_x86_register_cs, ql_x86_register_ds_ss_es, ql_x86_register_fs, ql_x86_register_gs, ql_x8664_set_gs
+from qiling.exception import QlErrorSyscallError, QlErrorSyscallNotFound
 from qiling.os.os import QlOs
 from qiling.os.fncc import QlOsFncc
 
 from .dlls import *
-from .const import *
-from .utils import *
-
 
 class QlOsWindows(QlOs, QlOsFncc):
     def __init__(self, ql):
@@ -43,7 +37,7 @@ class QlOsWindows(QlOs, QlOsFncc):
         self.setupGDT()
         # hook win api
         self.ql.hook_code(self.hook_winapi)
-    
+
 
     def setupGDT(self):
         # setup gdt
@@ -114,19 +108,19 @@ class QlOsWindows(QlOs, QlOsFncc):
     def run(self):
         if self.ql.exit_point is not None:
             self.exit_point = self.ql.exit_point
-        
+
         if  self.ql.entry_point is not None:
             self.ql.loader.entry_point = self.ql.entry_point
 
         if self.ql.stdin != 0:
             self.stdin = self.ql.stdin
-        
+
         if self.ql.stdout != 0:
             self.stdout = self.ql.stdout
-        
+
         if self.ql.stderr != 0:
             self.stderr = self.ql.stderr
-        
+
         try:
             if self.ql.code:
                 self.ql.emu_start(self.ql.loader.entry_point, (self.ql.loader.entry_point + len(self.ql.code)), self.ql.timeout, self.ql.count)
@@ -138,4 +132,3 @@ class QlOsWindows(QlOs, QlOsFncc):
 
         self.registry_manager.save()
         self.post_report()
-
