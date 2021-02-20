@@ -4,8 +4,8 @@
 #
 
 import sys
+from typing import Callable
 
-from .const import *
 from .filestruct import ql_file
 from .mapper import QlFsMapper
 from .utils import QlOsUtils
@@ -28,9 +28,11 @@ class QlOs(QlOsUtils):
         self.services = {}
         self.elf_mem_start = 0x0
 
-        self.user_defined_api = {}
-        self.user_defined_api_onenter = {}
-        self.user_defined_api_onexit = {}
+        self.user_defined_api = {
+            QL_INTERCEPT.CALL : {},
+            QL_INTERCEPT.ENTER: {},
+            QL_INTERCEPT.EXIT : {}
+        }
 
         if not hasattr(sys.stdin, "fileno") or not hasattr(sys.stdout, "fileno") or not hasattr(sys.stderr, "fileno"):
             # IDAPython has some hack on standard io streams and thus they don't have corresponding fds.
@@ -77,27 +79,19 @@ class QlOs(QlOsUtils):
     def restore(self, saved_state):
         pass
 
-    def set_api(self, api_name, intercept_function, intercept):
+    # TODO: separate this method into os-specific functionalities, instead of 'if-else'
+    def set_api(self, api_name: str, intercept_function: Callable, intercept: QL_INTERCEPT):
         if self.ql.ostype == QL_OS.UEFI:
-            api_name = "hook_" + str(api_name)
+            api_name = f'hook_{api_name}'
 
-        if intercept == QL_INTERCEPT.ENTER:
-            if (self.ql.ostype in (QL_OS.WINDOWS, QL_OS.UEFI)) or (self.ql.ostype in (QL_OS_POSIX) and self.ql.loader.is_driver):
-                self.user_defined_api_onenter[api_name] = intercept_function
-            else:
-                self.add_function_hook(api_name, intercept_function, intercept) 
+        # BUG: workaround missing arg
+        if intercept is None:
+            intercept = QL_INTERCEPT.CALL
 
-        elif intercept == QL_INTERCEPT.EXIT:
-            if (self.ql.ostype in (QL_OS.WINDOWS, QL_OS.UEFI)) or (self.ql.ostype in (QL_OS_POSIX) and self.ql.loader.is_driver):
-                self.user_defined_api_onexit[api_name] = intercept_function  
-            else:
-                self.add_function_hook(api_name, intercept_function, intercept)           
-
+        if (self.ql.ostype in (QL_OS.WINDOWS, QL_OS.UEFI)) or (self.ql.ostype in (QL_OS_POSIX) and self.ql.loader.is_driver):
+            self.user_defined_api[intercept][api_name] = intercept_function
         else:
-            if (self.ql.ostype in (QL_OS.WINDOWS, QL_OS.UEFI)) or (self.ql.ostype in (QL_OS_POSIX) and self.ql.loader.is_driver):
-                self.user_defined_api[api_name] = intercept_function
-            else:
-                self.add_function_hook(api_name, intercept_function)  
+            self.add_function_hook(api_name, intercept_function, intercept)
 
     def find_containing_image(self, pc):
         for image in self.ql.loader.images:

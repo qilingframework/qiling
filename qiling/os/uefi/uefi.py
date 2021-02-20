@@ -7,6 +7,7 @@ from typing import Any, Callable
 from unicorn import UcError
 
 from qiling import Qiling
+from qiling.const import QL_INTERCEPT
 from qiling.os.const import ULONGLONG, POINTER, STRING, WSTRING, GUID
 from qiling.os.os import QlOs
 from qiling.refactored.cc import QlCC, QlFunctionCall, intel
@@ -68,8 +69,8 @@ class QlOsUefi(QlOs):
 
 	def call(self, func, params, *args, passthru=False):
 		pc = self.ql.reg.arch_pc
-		onenter = self.user_defined_api_onenter.get(func.__name__, None)
-		onexit = self.user_defined_api_onexit.get(func.__name__, None)
+		onenter = self.user_defined_api[QL_INTERCEPT.ENTER].get(func.__name__)
+		onexit = self.user_defined_api[QL_INTERCEPT.EXIT].get(func.__name__)
 
 		# call hooked function
 		params, retval, retaddr = self.fcall.call(func, params, onenter, onexit, *args)
