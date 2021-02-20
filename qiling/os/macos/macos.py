@@ -3,26 +3,21 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import traceback
+from ctypes import sizeof
+from unicorn import UcError
 
-from unicorn import *
-from unicorn.x86_const import *
-from unicorn.arm64_const import *
-
-
-from qiling.arch.x86 import *
-from qiling.const import *
-from qiling.os.const import *
+from qiling import Qiling
+from qiling.arch.x86 import GDTManager, ql_x86_register_cs, ql_x86_register_ds_ss_es
+from qiling.arch.x86_const import UC_X86_INS_SYSCALL
+from qiling.const import QL_ARCH, QL_OUTPUT
 from qiling.os.posix.posix import QlOsPosix
-from .const import *
-from qiling.os.macos import macos
-from qiling.os.macos.structs import *
-from qiling.os.macos.events.macos_structs import *
-from qiling.os.macos.events.macos import *
-from qiling.os.macos.events.macos_policy import *
+from qiling.os.macos.events.macos import QlMacOSEvManager
+from qiling.os.macos.events.macos_policy import QlMacOSPolicy
+from qiling.os.macos.events.macos_structs import mac_policy_list_t
+from qiling.os.macos.structs import kmod_info_t, POINTER64
 
 class QlOsMacos(QlOsPosix):
-    def __init__(self, ql):
+    def __init__(self, ql: Qiling):
         super(QlOsMacos, self).__init__(ql)
         self.ql = ql
         self.ql.counter = 0
@@ -35,15 +30,13 @@ class QlOsMacos(QlOsPosix):
 
     # load MacOS driver
     def load_kext(self):
-        from qiling.os.macos.events.macos_structs import mac_policy_list_t
-        from qiling.os.macos.structs import list_head
         self.heap.clear()
 
         # Setup mac_policy_list
         kern_mac_policy_list = self.ql.loader.kernel_extrn_symbols_detail[b"_mac_policy_list"]["n_value"]
-        mac_policy_list_addr = self.heap.alloc(ctypes.sizeof(mac_policy_list_t))
+        mac_policy_list_addr = self.heap.alloc(sizeof(mac_policy_list_t))
         self.mac_policy_list = mac_policy_list_t(self, mac_policy_list_addr)
-        self.ql.mem.write(kern_mac_policy_list, struct.pack("<Q", mac_policy_list_addr))
+        self.ql.mem.write(kern_mac_policy_list, self.ql.pack64(mac_policy_list_addr))
 
         # Add initial process to allproc in kernel
         allproc = self.ql.loader.kernel_extrn_symbols_detail[b"_allproc"]["n_value"]
@@ -112,8 +105,7 @@ class QlOsMacos(QlOsPosix):
             self.savedrip=0xffffff8000a168ed
             self.ql.run(begin=self.ql.loader.kext_start)
         else:
-            from qiling.os.macos.structs import kmod_info_t, POINTER64
-            kmod_info_addr = self.heap.alloc(ctypes.sizeof(kmod_info_t))
+            kmod_info_addr = self.heap.alloc(sizeof(kmod_info_t))
             self.ql.log.debug("Created fake kmod_info at 0x%x" % kmod_info_addr)
             kmod_info = kmod_info_t(self.ql, kmod_info_addr)
 
