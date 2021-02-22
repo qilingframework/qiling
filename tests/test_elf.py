@@ -931,6 +931,11 @@ class ELFTest(unittest.TestCase):
         ql.run()
         del ql
 
+    def test_arm_directory_symlink(self):
+        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello"], "../examples/rootfs/arm_linux", output = "debug")
+        real_path = ql.os.transform_to_real_path("/lib/libtest.so")
+        self.assertTrue(real_path.endswith("/examples/rootfs/arm_linux/tmp/media/nand/bitdefender/libtest.so"))
+        del ql
 
     def test_x8664_absolute_path(self):
         class MyPipe():
