@@ -261,8 +261,8 @@ def create_stat64_struct(ql, info):
         stat64_buf += ql.pack64(info.st_size)
         stat64_buf += ql.pack64(info.st_blocks)
         stat64_buf += ql.pack32(info.st_blksize)
-        stat64_buf += ql.pack32(0xffffffff) # st_flags
-        stat64_buf += ql.pack32(0xdeadbeef) # st_gen
+        # stat64_buf += ql.pack32(0xffffffff) # st_flags
+        # stat64_buf += ql.pack32(0xdeadbeef) # st_gen
 
         # Reserved
         # ---------
