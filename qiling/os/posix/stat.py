@@ -11,9 +11,17 @@ class Stat(object):
         self.path = path
         stat_buf = os.stat(self.path)
 
+        print(f"[🥓] (posix) in the Stat class")
+        print(f"[🥓] (posix) self.path: {self.path}")
+        print(f"[🥓] (posix) stat_buf: {stat_buf}")
+
         for name in dir(stat_buf):
             if name.startswith('st_'):
                 setattr(self, name, getattr(stat_buf, name))
+
+        print(f"[🥓] (posix) set all attributes on Stat object")
+        print(f"[🥓] (posix) Stat object dir(self): {dir(self)}")
+
 
 class Fstat(object):
     def __init__(self, fd):
