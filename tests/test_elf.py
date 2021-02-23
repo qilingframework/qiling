@@ -137,7 +137,7 @@ class ELFTest(unittest.TestCase):
 
 
     def test_elf_linux_x86(self):
-        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_hello"], "../examples/rootfs/x86_linux", output="debug")     
+        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_hello"], "../examples/rootfs/x86_linux", output="debug", log_file="test.qlog")     
         ql.run()
         del ql
 
