@@ -220,8 +220,6 @@ def create_stat64_struct(ql, info):
               }
         """
 
-        ql.log.debug("[🥓] (syscall) inside the create_stat64_struct func")
-
         if ql.platform == QL_OS.MACOS:
             stat64_buf = ql.pack32s(info.st_dev)
         else:
@@ -350,18 +348,13 @@ def statFamily(ql, path, ptr, name, stat_func, struct_func):
     real_path = ql.os.transform_to_real_path(file)
     regreturn = 0
     try:
-        ql.log.debug(f'[🥓] (syscall) real_path: {real_path}')
         info = stat_func(real_path)
     except OSError as e:
-        ql.log.debug(f'{name}("{file}", {hex(ptr)}) read/write fail')
         return -e.errno
     else:
         buf = struct_func(ql, info)
         ql.mem.write(ptr, buf)
-        ql.log.debug(f'[🥓] (syscall) ptr: {hex(ptr)}')
-        ql.log.debug(f'[🥓] (syscall) buf: {buf}')
         ql.log.debug(f'{name}("{file}", {hex(ptr)}) write completed')
-        ql.log.debug(f'[🥓] (syscall) ¯\_(ツ)_/¯')
         return regreturn
 
 
@@ -458,7 +451,6 @@ def ql_syscall_stat(ql, stat_path, stat_buf_ptr, *args, **kw):
 
 # int stat64(const char *path, struct stat64 *buf);
 def ql_syscall_stat64(ql, stat64_path, stat64_buf_ptr, *args, **kw):
-    ql.log.debug(f"[🥓] (syscall) inside ql_syscall_stat64")
     return statFamily(ql, stat64_path, stat64_buf_ptr, "stat64", Stat, create_stat64_struct)
 
 
