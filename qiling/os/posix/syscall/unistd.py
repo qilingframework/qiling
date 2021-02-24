@@ -52,74 +52,51 @@ def ql_syscall_exit_group(ql, exit_code, *args, **kw):
 
 
 def ql_syscall_alarm(ql, alarm_seconds, *args, **kw):
-    regreturn = 0
-    return regreturn
+    return 0
 
 
 def ql_syscall_issetugid(ql, *args, **kw):
-    UGID = ql.os.uid
-    regreturn = UGID
-    return regreturn
+    return 0
 
 
 def ql_syscall_getuid(ql, *args, **kw):
-    UID = ql.os.uid
-    regreturn = UID
-    return regreturn
+    return 0
 
 
 def ql_syscall_getuid32(ql, *args, **kw):
-    UID = ql.os.uid
-    regreturn = UID
-    return regreturn
+    return 0
 
 
 def ql_syscall_getgid32(ql, *args, **kw):
-    GID = ql.os.gid
-    regreturn = GID
-    return regreturn
+    return 0
 
 
 def ql_syscall_geteuid(ql, *args, **kw):
-    EUID = ql.os.uid
-    regreturn = EUID
-    return regreturn
+    return 0
 
 
 def ql_syscall_getegid(ql, *args, **kw):
-    EGID = ql.os.gid
-    regreturn = EGID
-    return regreturn
+    return 0
 
 
 def ql_syscall_getgid(ql, *args, **kw):
-    GID = ql.os.gid
-    regreturn = GID
-    return regreturn
+    return 0
 
 
 def ql_syscall_setgroups(ql, gidsetsize, grouplist, *args, **kw):
-    GID = ql.os.gid
-    regreturn = GID
-    return regreturn
+    return 0
 
 
 def ql_syscall_setgid(ql, *args, **kw):
-    GID = ql.os.gid
-    regreturn = GID
-    return regreturn
+    return 0
 
 
 def ql_syscall_setgid32(ql, *args, **kw):
-    GID = ql.os.gid
-    regreturn = GID
-    return regreturn    
+    return 0   
 
 
 def ql_syscall_setuid(ql, *args, **kw):
-    UID = ql.os.uid
-    regreturn = UID
-    return regreturn
+    return 0
 
 
 def ql_syscall_faccessat(ql, faccessat_dfd, faccessat_filename, faccessat_mode, *args, **kw):
