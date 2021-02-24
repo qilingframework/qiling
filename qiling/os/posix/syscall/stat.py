@@ -270,7 +270,7 @@ def create_stat64_struct(ql, info):
 
 def statFamily(ql, path, ptr, name, stat_func, struct_func):
     file = (ql.mem.string(path))
-    real_path = ql.os.transform_to_real_path(file)
+    real_path = ql.os.utils.transform_to_real_path(file)
     regreturn = 0
     try:
         info = stat_func(real_path)
@@ -295,8 +295,8 @@ def ql_syscall_fstatat64(ql, fstatat64_dirfd, fstatat64_path, fstatat64_buf_ptr,
     # FIXME: dirfd(relative path) not implement.
     fstatat64_path = ql.mem.string(fstatat64_path)
 
-    real_path = ql.os.transform_to_real_path(fstatat64_path)
-    relative_path = ql.os.transform_to_relative_path(fstatat64_path)
+    real_path = ql.os.utils.transform_to_real_path(fstatat64_path)
+    relative_path = ql.os.utils.transform_to_relative_path(fstatat64_path)
 
     regreturn = -1
     if os.path.exists(real_path) == True:
@@ -316,8 +316,8 @@ def ql_syscall_newfstatat(ql, newfstatat_dirfd, newfstatat_path, newfstatat_buf_
     # FIXME: dirfd(relative path) not implement.
     newfstatat_path = ql.mem.string(newfstatat_path)
 
-    real_path = ql.os.transform_to_real_path(newfstatat_path)
-    relative_path = ql.os.transform_to_relative_path(newfstatat_path)
+    real_path = ql.os.utils.transform_to_real_path(newfstatat_path)
+    relative_path = ql.os.utils.transform_to_relative_path(newfstatat_path)
 
     regreturn = -1
     if os.path.exists(real_path) == True:
@@ -391,7 +391,7 @@ def ql_syscall_lstat64(ql, lstat64_path, lstat64_buf_ptr, *args, **kw):
 def ql_syscall_mknodat(ql, dirfd, pathname, mode, dev, *args, **kw):
     # FIXME: dirfd(relative path) not implement.
     file_path = ql.mem.string(pathname)
-    real_path = ql.os.transform_to_real_path(file_path)
+    real_path = ql.os.utils.transform_to_real_path(file_path)
     ql.log.debug("mknodat(%d, %s, 0%o, %d)" % (dirfd, real_path, mode, dev))
     try:
         os.mknod(real_path, mode, dev)
@@ -403,7 +403,7 @@ def ql_syscall_mknodat(ql, dirfd, pathname, mode, dev, *args, **kw):
 
 def ql_syscall_mkdir(ql, pathname, mode, *args, **kw):
     file_path = ql.mem.string(pathname)
-    real_path = ql.os.transform_to_real_path(file_path)
+    real_path = ql.os.utils.transform_to_real_path(file_path)
     ql.log.debug("mkdir(%s, 0%o)" % (real_path, mode))
     try:
         if not os.path.exists(real_path):

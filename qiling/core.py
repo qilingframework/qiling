@@ -214,7 +214,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self.loader.run()
 
         # Setup Outpt
-        self.os.setup_output()
+        self.os.utils.setup_output()
 
         # Add extra guard options when configured to do so
         self._init_stop_guard()

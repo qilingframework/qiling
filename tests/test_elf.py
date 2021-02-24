@@ -198,7 +198,7 @@ class ELFTest(unittest.TestCase):
             regreturn = syscall.ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *args)
 
             if target:
-                real_path = ql.os.transform_to_real_path(pathname)
+                real_path = ql.os.utils.transform_to_real_path(pathname)
                 assert os.path.isfile(real_path) == True
                 if ql.platform != QL_OS.WINDOWS:
                     os.remove(real_path)
@@ -216,7 +216,7 @@ class ELFTest(unittest.TestCase):
             regreturn = syscall.ql_syscall_unlink(ql, unlink_pathname, *args)
 
             if target:
-                real_path = ql.os.transform_to_real_path(pathname)
+                real_path = ql.os.utils.transform_to_real_path(pathname)
                 assert os.path.isfile(real_path) == False
 
             return regreturn
@@ -232,7 +232,7 @@ class ELFTest(unittest.TestCase):
             regreturn = syscall.ql_syscall_truncate(ql, trunc_pathname, trunc_length, *args)
 
             if target:
-                real_path = ql.os.transform_to_real_path(pathname)
+                real_path = ql.os.utils.transform_to_real_path(pathname)
                 assert os.stat(real_path).st_size == 0
                 if ql.platform != QL_OS.WINDOWS:
                     os.remove(real_path)
@@ -254,7 +254,7 @@ class ELFTest(unittest.TestCase):
             regreturn = syscall.ql_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args)
 
             if target:
-                real_path = ql.os.transform_to_real_path(pathname)
+                real_path = ql.os.utils.transform_to_real_path(pathname)
                 assert os.stat(real_path).st_size == 0x10
                 if ql.platform != QL_OS.WINDOWS:
                     os.remove(real_path)
@@ -338,7 +338,7 @@ class ELFTest(unittest.TestCase):
             # syscall.ql_syscall_open(ql, open_pathname, open_flags, open_mode, *args)
 
             # if target:
-                # real_path = ql.os.transform_to_real_path(pathname)
+                # real_path = ql.os.utils.transform_to_real_path(pathname)
                 # assert os.path.isfile(real_path) == True
                 # os.remove(real_path)
 
@@ -353,7 +353,7 @@ class ELFTest(unittest.TestCase):
             # syscall.ql_syscall_unlink(ql, unlink_pathname, *args)
 
             # if target:
-                # real_path = ql.os.transform_to_real_path(pathname)
+                # real_path = ql.os.utils.transform_to_real_path(pathname)
                 # assert os.path.isfile(real_path) == False
 
         # def test_syscall_truncate(ql, trunc_pathname, trunc_length, *args):
@@ -367,7 +367,7 @@ class ELFTest(unittest.TestCase):
             # syscall.ql_syscall_truncate(ql, trunc_pathname, trunc_length, *args)
 
             # if target:
-                # real_path = ql.os.transform_to_real_path(pathname)
+                # real_path = ql.os.utils.transform_to_real_path(pathname)
                 # assert os.stat(real_path).st_size == 0
                 # os.remove(real_path)
 
@@ -382,7 +382,7 @@ class ELFTest(unittest.TestCase):
             # syscall.ql_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args)
 
             # if target:
-                # real_path = ql.os.transform_to_real_path(pathname)
+                # real_path = ql.os.utils.transform_to_real_path(pathname)
                 # assert os.stat(real_path).st_size == 0x10
                 # os.remove(real_path)
 
@@ -497,7 +497,7 @@ class ELFTest(unittest.TestCase):
             regreturn = syscall.ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *args)
 
             if target:
-                real_path = ql.os.transform_to_real_path(pathname)
+                real_path = ql.os.utils.transform_to_real_path(pathname)
                 assert os.path.isfile(real_path) == True
                 if ql.platform != QL_OS.WINDOWS:
                     os.remove(real_path)
@@ -516,7 +516,7 @@ class ELFTest(unittest.TestCase):
             regreturn = syscall.ql_syscall_unlink(ql, unlink_pathname, *args)
 
             if target:
-                real_path = ql.os.transform_to_real_path(pathname)
+                real_path = ql.os.utils.transform_to_real_path(pathname)
                 assert os.path.isfile(real_path) == False
 
             return regreturn
@@ -533,7 +533,7 @@ class ELFTest(unittest.TestCase):
             regreturn = syscall.ql_syscall_truncate(ql, trunc_pathname, trunc_length, *args)
 
             if target:
-                real_path = ql.os.transform_to_real_path(pathname)
+                real_path = ql.os.utils.transform_to_real_path(pathname)
                 assert os.stat(real_path).st_size == 0
                 if ql.platform != QL_OS.WINDOWS:
                     os.remove(real_path)
@@ -552,7 +552,7 @@ class ELFTest(unittest.TestCase):
             regreturn = syscall.ql_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args)
 
             if target:
-                real_path = ql.os.transform_to_real_path(pathname)
+                real_path = ql.os.utils.transform_to_real_path(pathname)
                 assert os.stat(real_path).st_size == 0x10
                 if ql.platform != QL_OS.WINDOWS:
                     os.remove(real_path)
@@ -643,7 +643,7 @@ class ELFTest(unittest.TestCase):
             regreturn = syscall.ql_syscall_open(ql, open_pathname, open_flags, open_mode, *args)
 
             if target:
-                real_path = ql.os.transform_to_real_path(pathname)
+                real_path = ql.os.utils.transform_to_real_path(pathname)
                 assert os.path.isfile(real_path) == True
                 if ql.platform != QL_OS.WINDOWS:
                     os.remove(real_path)
@@ -661,7 +661,7 @@ class ELFTest(unittest.TestCase):
             regreturn = syscall.ql_syscall_unlink(ql, unlink_pathname, *args)
 
             if target:
-                real_path = ql.os.transform_to_real_path(pathname)
+                real_path = ql.os.utils.transform_to_real_path(pathname)
                 assert os.path.isfile(real_path) == False
 
             return regreturn
@@ -677,7 +677,7 @@ class ELFTest(unittest.TestCase):
             regreturn = syscall.ql_syscall_truncate(ql, trunc_pathname, trunc_length, *args)
 
             if target:
-                real_path = ql.os.transform_to_real_path(pathname)
+                real_path = ql.os.utils.transform_to_real_path(pathname)
                 assert os.stat(real_path).st_size == 0
                 if ql.platform != QL_OS.WINDOWS:
                     os.remove(real_path)
@@ -695,7 +695,7 @@ class ELFTest(unittest.TestCase):
             regreturn = syscall.ql_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args)
 
             if target:
-                real_path = ql.os.transform_to_real_path(pathname)
+                real_path = ql.os.utils.transform_to_real_path(pathname)
                 assert os.stat(real_path).st_size == 0x10
                 if ql.platform != QL_OS.WINDOWS:
                     os.remove(real_path)
