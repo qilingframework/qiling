@@ -82,14 +82,57 @@ class QlIntelBaseCC(QlCC):
 		# no cleanup; just pop out the return address
 		return self.ql.arch.stack_pop()
 
-class amd64(QlIntelBaseCC):
+class QlIntel64(QlIntelBaseCC):
+	"""Calling convention base class for Intel-based 64-bit systems.
+	"""
+
+	@staticmethod
+	def getNumSlots(argbits: int) -> int:
+		return max(argbits, 64) // 64
+
+	def getRawParam8(self, slot: int) -> int:
+		return self.getRawParam(slot) & 0xff
+
+	def getRawParam16(self, slot: int) -> int:
+		return self.getRawParam(slot) & 0xffff
+
+	def getRawParam32(self, slot: int) -> int:
+		return self.getRawParam(slot) & 0xffffffff
+
+	def getRawParam64(self, slot: int) -> int:
+		return self.getRawParam(slot)
+
+class QlIntel32(QlIntelBaseCC):
+	"""Calling convention base class for Intel-based 32-bit systems.
+	"""
+
+	@staticmethod
+	def getNumSlots(argbits: int) -> int:
+		return max(argbits, 32) // 32
+
+	def getRawParam8(self, slot: int) -> int:
+		return self.getRawParam(slot) & 0xff
+
+	def getRawParam16(self, slot: int) -> int:
+		return self.getRawParam(slot) & 0xffff
+
+	def getRawParam32(self, slot: int) -> int:
+		return self.getRawParam(slot) 
+
+	def getRawParam64(self, slot: int) -> int:
+		lo = self.getRawParam(slot)
+		hi = self.getRawParam(slot + 1)
+
+		return (hi << 32) | lo
+
+class amd64(QlIntel64):
 	"""Default calling convention for POSIX (x86-64).
 	First 6 arguments are passed in regs, the rest are passed on the stack.
 	"""
 
 	_argregs = (UC_X86_REG_RDI, UC_X86_REG_RSI, UC_X86_REG_RDX, UC_X86_REG_R10, UC_X86_REG_R8, UC_X86_REG_R9) + (None, ) * 10
 
-class ms64(QlIntelBaseCC):
+class ms64(QlIntel64):
 	"""Default calling convention for Windows and UEFI (x86-64).
 	First 4 arguments are passed in regs, the rest are passed on the stack.
 
@@ -100,14 +143,14 @@ class ms64(QlIntelBaseCC):
 	_argregs = (UC_X86_REG_RCX, UC_X86_REG_RDX, UC_X86_REG_R8, UC_X86_REG_R9) + (None, ) * 12
 	_shadow = 4
 
-class macosx64(QlIntelBaseCC):
+class macosx64(QlIntel64):
 	"""Default calling convention for Mac OS (x86-64).
 	First 6 arguments are passed in regs, the rest are passed on the stack.
 	"""
 
 	_argregs = (UC_X86_REG_RDI, UC_X86_REG_RSI, UC_X86_REG_RDX, UC_X86_REG_RCX, UC_X86_REG_R8, UC_X86_REG_R9) + (None, ) * 10
 
-class cdecl(QlIntelBaseCC):
+class cdecl(QlIntel32):
 	"""Calling convention used by all operating systems (x86).
 	All arguments are passed on the stack.
 
@@ -116,7 +159,7 @@ class cdecl(QlIntelBaseCC):
 
 	_argregs = (None, ) * 16
 
-class stdcall(QlIntelBaseCC):
+class stdcall(QlIntel32):
 	"""Calling convention used by all operating systems (x86).
 	All arguments are passed on the stack.
 
