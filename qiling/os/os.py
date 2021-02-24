@@ -7,20 +7,19 @@ import sys
 from typing import Any, Callable, Mapping, Tuple
 
 from qiling import Qiling
+from qiling.const import QL_OS, QL_INTERCEPT, QL_OS_POSIX
 from qiling.os.const import STRING, WSTRING, GUID
+
 from .filestruct import ql_file
 from .mapper import QlFsMapper
 from .utils import QlOsUtils
 
-from qiling.const import QL_OS, QL_INTERCEPT, QL_OS_POSIX
+class QlOs:
     Resolver = Callable[[int], Tuple[Any, int]]
 
-class QlOs(QlOsUtils):
     def __init__(self, ql: Qiling, resolvers: Mapping[Any, Resolver] = {}):
-        #super(QlOs, self).__init__(ql)
-        QlOsUtils.__init__(self, ql)
-
         self.ql = ql
+        self.utils = QlOsUtils(ql)
         self.fcall = None
         self.fs_mapper = QlFsMapper(ql)
         self.child_processes = False
@@ -80,6 +79,7 @@ class QlOs(QlOsUtils):
         # let the user override default resolvers or add custom ones
         self.resolvers.update(resolvers)
 
+        self.utils.setup_output()
         # We can save every syscall called
         self.syscalls = {}
         self.syscalls_counter = 0
