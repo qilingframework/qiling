@@ -1,7 +1,7 @@
 from abc import ABC
 
 from qiling.os.memory import QlMemoryHeap
-from qiling.os.uefi.utils import init_struct, str_to_guid
+from qiling.os.uefi.utils import init_struct, str_to_guid, execute_protocol_notifications, signal_event
 from qiling.os.uefi.UefiSpec import EFI_CONFIGURATION_TABLE, EFI_SYSTEM_TABLE
 from qiling.os.uefi.smst import EFI_SMM_SYSTEM_TABLE2
 
@@ -40,6 +40,21 @@ class UefiContext(ABC):
 		instance.saveTo(self.ql, address)
 
 		self.protocols[handle][guid] = address
+		self.notify_protocol(handle, guid, address)
+
+	def notify_protocol(self, handle, protocol, interface):
+		for (event_id, event_dic) in self.ql.loader.events.items():
+			if event_dic['Guid'] == protocol:
+				if event_dic['CallbackArgs'] == None:
+					# To support smm notification, we use None for CallbackArgs on SmmRegisterProtocolNotify 
+					# and updare it here.
+					guid = str_to_guid(protocol)
+					guid_ptr = self.heap.alloc(guid.sizeof())
+					guid.saveTo(self.ql, guid_ptr)
+					event_dic['CallbackArgs'] = [guid_ptr, interface, handle]
+				# The event was previously registered by 'RegisterProtocolNotify'.
+				signal_event(self.ql, event_id)
+		execute_protocol_notifications(self.ql, True)
 
 	def install_configuration_table(self, guid, table):
 		guid = guid.lower()

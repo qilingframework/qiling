@@ -9,7 +9,7 @@ sys.path.append("..")
 from qiling import *
 from qiling.const import *
 from qiling.os.uefi.const import *
-from qiling.os.uefi.utils import check_and_notify_protocols
+from qiling.os.uefi.utils import execute_protocol_notifications
 
 def force_notify_RegisterProtocolNotify(ql, address, params):
     event_id = params['Event']
@@ -18,8 +18,8 @@ def force_notify_RegisterProtocolNotify(ql, address, params):
         # let's force notify
         event = ql.loader.events[event_id]
         event["Set"] = True
-        ql.loader.notify_list.append((event_id, event['NotifyFunction'], event['NotifyContext']))
-        check_and_notify_protocols(ql, True)
+        ql.loader.notify_list.append((event_id, event['NotifyFunction'], event['CallbackArgs']))
+        execute_protocol_notifications(ql, True)
         ######
         return EFI_SUCCESS
     return EFI_INVALID_PARAMETER

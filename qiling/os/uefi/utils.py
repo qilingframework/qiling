@@ -18,21 +18,34 @@ def signal_event(ql, event_id: int) -> None:
 	if not event["Set"]:
 		event["Set"] = True
 		notify_func = event["NotifyFunction"]
-		notify_context = event["NotifyContext"]
-		ql.loader.notify_list.append((event_id, notify_func, notify_context))
+		CallbackArgs = event["CallbackArgs"]
+		ql.loader.notify_list.append((event_id, notify_func, CallbackArgs))
 
-def check_and_notify_protocols(ql, from_hook=False) -> bool:
-	if ql.loader.notify_list:
-		event_id, notify_func, notify_context = ql.loader.notify_list.pop(0)
-		ql.log.info(f'Notify event:{event_id} calling:{notify_func:x} context:{notify_context:x}')
-		if from_hook:
-			# When running from a hook the caller pops the return address from the stack.
-			# We need to push the address to the stack as opposed to setting it to the instruction pointer.
-			ql.loader.call_function(0, [notify_context], notify_func)
+def execute_protocol_notifications(ql, from_hook=False) -> bool:
+	if not ql.loader.notify_list:
+		return False
+	
+	next_hook = ql.loader.smm_context.heap.alloc(1)
+	ptr_write8(ql, next_hook, 0x90)
+	def exec_next(ql):
+		if ql.loader.notify_list:
+			event_id, notify_func, callback_args = ql.loader.notify_list.pop(0)
+			ql.log.info(f'Notify event:{event_id} calling: 0x{notify_func:x} callback_args:{list(map(hex, callback_args))}')
+			ql.loader.call_function(notify_func, callback_args, next_hook)
 		else:
-			ql.loader.call_function(notify_func, [notify_context], ql.loader.end_of_execution_ptr)
-		return True
-	return False
+			ql.loader.smm_context.heap.free(next_hook)
+			ql.hook_address(lambda q: None, next_hook)
+			ql.reg.rax = EFI_SUCCESS
+			ql.reg.arch_pc = ql.stack_pop()
+	ql.hook_address(exec_next, next_hook, )
+	# To avoid having two versions of the code the first notify function will also be called from the exec_next hook.
+	if from_hook:
+		ql.stack_push(next_hook)
+	else:
+		ql.stack_push(ql.loader.end_of_execution_ptr)
+		ql.reg.arch_pc = next_hook
+	
+	return True
 
 def ptr_read8(ql, addr: int) -> int:
 	"""Read BYTE data from a pointer

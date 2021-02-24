@@ -4,7 +4,7 @@
 #
 
 
-from .utils import check_and_notify_protocols
+from .utils import execute_protocol_notifications
 
 def hook_EndOfExecution(ql):
     if ql.os.notify_after_module_execution(ql, len(ql.loader.modules)):
@@ -12,7 +12,7 @@ def hook_EndOfExecution(ql):
 
     ql.loader.restore_runtime_services()
 
-    if check_and_notify_protocols(ql):
+    if execute_protocol_notifications(ql):
         return
 
     if ql.loader.modules:

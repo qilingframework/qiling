@@ -181,16 +181,16 @@ def hook_SmmHandleProtocol(ql, address, params):
 	"Registration"	: POINTER	# PTR(PTR(VOID))
 })
 def hook_SmmRegisterProtocolNotify(ql, address, params):
-	#event = params['Event']
-	#proto = params["Protocol"]
-	#
-	#if event in ql.loader.events:
-	#	ql.loader.events[event]['Guid'] = proto
-	#	check_and_notify_protocols(ql)
-	#
-	#	return EFI_SUCCESS
-
-	return EFI_INVALID_PARAMETER
+	event_id = len(ql.loader.events)
+	event_dic = {
+		"NotifyFunction": params["Function"],
+		"CallbackArgs"	: None,
+		"Guid"			: params["Protocol"],
+		"Set"			: False
+	}
+	ql.loader.events[event_id] = event_dic
+	ptr_write64(ql, params["Registration"], event_id)
+	return EFI_SUCCESS
 
 @dxeapi(params = {
 	"SearchType": INT,		# EFI_LOCATE_SEARCH_TYPE
