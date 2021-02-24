@@ -3,12 +3,10 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from typing import Any, Callable
 from unicorn import UcError
 
 from qiling import Qiling
 from qiling.const import QL_INTERCEPT
-from qiling.os.const import ULONGLONG, POINTER, STRING, WSTRING, GUID
 from qiling.os.os import QlOs
 from qiling.refactored.cc import QlCC, intel
 from qiling.refactored.os.fcall import QlFunctionCall
@@ -17,7 +15,6 @@ class QlOsUefi(QlOs):
 	def __init__(self, ql: Qiling):
 		super().__init__(ql)
 
-		self.ql = ql
 		self.entry_point = 0
 		self.running_module = None
 		self.PE_RUN = True
@@ -28,45 +25,7 @@ class QlOsUefi(QlOs):
 			64: intel.ms64
 		}[ql.archbit](ql)
 
-		# TODO: work around a bad design; utilities need to be contained, not mixed-in
-		os = self
-
-		def __nullptr_or_deref(idx: int, deref: Callable[[int], Any]):
-			ptr = cc.getRawParam(idx)
-
-			return deref(ptr) if ptr else 0
-
-		def __handle_default(idx: int):
-			return cc.getRawParam(idx), 1
-
-		def __handle_POINTER(idx: int):
-			return __handle_default(idx)
-
-		def __handle_ULONGLONG_32(idx: int):
-			lo = cc.getRawParam(idx)
-			hi = cc.getRawParam(idx + 1)
-
-			return (hi << 32) | lo, 2
-
-		def __handle_STRING(idx: int):
-			return __nullptr_or_deref(idx, os.read_cstring), 1
-
-		def __handle_WSTRING(idx: int):
-			return __nullptr_or_deref(idx, os.read_wstring), 1
-
-		def __handle_GUID(idx: int):
-			return __nullptr_or_deref(idx, lambda p: str(os.read_guid(p))), 1
-
-		resolvers = {
-			None     : __handle_default,
-			ULONGLONG: __handle_POINTER if self.ql.archbit == 64 else __handle_ULONGLONG_32,
-			POINTER  : __handle_POINTER,
-			STRING   : __handle_STRING,
-			WSTRING  : __handle_WSTRING,
-			GUID     : __handle_GUID
-		}
-
-		self.fcall = QlFunctionCall(ql, cc, resolvers)
+		self.fcall = QlFunctionCall(ql, cc)
 
 	def call(self, func, params, *args, passthru=False):
 		pc = self.ql.reg.arch_pc
@@ -75,11 +34,14 @@ class QlOsUefi(QlOs):
 		onenter = self.user_defined_api[QL_INTERCEPT.ENTER].get(func.__name__)
 		onexit = self.user_defined_api[QL_INTERCEPT.EXIT].get(func.__name__)
 
+		# resolve params values according to their assigned types
+		params = self.resolve_fcall_params(params)
+
 		# call hooked function
 		params, retval, retaddr = self.fcall.call(func, params, onenter, onexit, *args)
 
 		# print
-		self.print_function(pc, func.__name__, params, retval, passthru)
+		self.utils.print_function(pc, func.__name__, params, retval, passthru)
 
 		# append syscall to list
 		self._call_api(func.__name__, params, retval, pc, retaddr)

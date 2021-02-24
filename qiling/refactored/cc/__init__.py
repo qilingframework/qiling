@@ -2,11 +2,7 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 
-from typing import Any, Callable, Optional, Mapping, Tuple
-
 from qiling import Qiling
-
-Resolver = Callable[[int], Tuple[Any, int]]
 
 class QlCC:
 	"""Calling convention base class.

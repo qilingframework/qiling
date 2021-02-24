@@ -4,16 +4,19 @@
 #
 
 import sys
-from typing import Callable
+from typing import Any, Callable, Mapping, Tuple
 
+from qiling import Qiling
+from qiling.os.const import STRING, WSTRING, GUID
 from .filestruct import ql_file
 from .mapper import QlFsMapper
 from .utils import QlOsUtils
 
 from qiling.const import QL_OS, QL_INTERCEPT, QL_OS_POSIX
+    Resolver = Callable[[int], Tuple[Any, int]]
 
 class QlOs(QlOsUtils):
-    def __init__(self, ql):
+    def __init__(self, ql: Qiling, resolvers: Mapping[Any, Resolver] = {}):
         #super(QlOs, self).__init__(ql)
         QlOsUtils.__init__(self, ql)
 
@@ -67,6 +70,16 @@ class QlOs(QlOsUtils):
             # windows shellcode entry point will comes from pe loader
             self.entry_point = int(self.profile.get("CODE", "entry_point"), 16)
 
+        # default fcall paramters resolving methods
+        self.resolvers = {
+            STRING : lambda ptr: ptr and self.utils.read_cstring(ptr),
+            WSTRING: lambda ptr: ptr and self.utils.read_wstring(ptr),
+            GUID   : lambda ptr: ptr and str(self.utils.read_guid(ptr))
+        }
+
+        # let the user override default resolvers or add custom ones
+        self.resolvers.update(resolvers)
+
         # We can save every syscall called
         self.syscalls = {}
         self.syscalls_counter = 0
@@ -78,6 +91,33 @@ class QlOs(QlOsUtils):
 
     def restore(self, saved_state):
         pass
+
+    def resolve_fcall_params(self, params: Mapping[str, Any]) -> Mapping[str, Any]:
+        """Transform function call raw parameters values into meaningful ones, according to
+        their assigned type.
+
+        Args:
+            params: a mapping of parameter names to their types
+
+        Returns: a mapping of parameter names to their resolved values
+        """
+
+        # TODO: could use func.__annotations__ to resolve parameters and return type.
+        #       that would require redefining all hook functions with python annotations, but
+        #       also simplify hooks code (e.g. no need to do:  x = params["x"] )
+
+        names = params.keys()
+        types = params.values()
+        values = self.fcall.readParams(types)
+        resolved = {}
+
+        for name, typ, val in zip(names, types, values):
+            if typ in self.resolvers:
+                val = self.resolvers[typ](val)
+
+            resolved[name] = val
+
+        return resolved
 
     # TODO: separate this method into os-specific functionalities, instead of 'if-else'
     def set_api(self, api_name: str, intercept_function: Callable, intercept: QL_INTERCEPT):
