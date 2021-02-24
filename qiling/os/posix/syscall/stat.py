@@ -207,7 +207,7 @@ def create_stat64_struct(ql, info):
         fstat64_buf += ql.pack64(int(info.st_ctime))
         fstat64_buf += ql.pack64(info.st_ino)
     elif ql.ostype == QL_OS.MACOS:
-        fstat64_buf = ql.pack32(info.st_dev)              # st_dev            32byte
+        fstat64_buf = ql.pack32(0x0)              # st_dev            32byte
         fstat64_buf += ql.pack32(info.st_mode)            # st_mode           16(32)byte
         fstat64_buf += ql.pack32(info.st_nlink)           # st_nlink          16(32)byte
         fstat64_buf += ql.pack64(info.st_ino)             # st_ino            64 byte
