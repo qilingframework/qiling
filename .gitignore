@@ -16,6 +16,7 @@ build
 dist
 
 # test and logs
+tests/mac_test_elf.sh
 jexamples/
 logs/
 log/
