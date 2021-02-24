@@ -164,109 +164,33 @@ def create_stat64_struct(ql, info):
         # buf.st_mtime offest 48 4 1586616689
         # buf.st_ctime offest 50 4 1586616689
 
-        # ---------------------------
-        #   Previous implementation
-        # ---------------------------
-        #
-        # if ql.platform == QL_OS.MACOS:
-        #   stat64_buf = ql.pack32s(info.st_dev)
-        # else:
-        #   stat64_buf = ql.pack32(info.st_dev)
-        # stat64_buf += b'\x00' * 12 
-        # stat64_buf += ql.pack64(info.st_ino)
-        # stat64_buf += ql.pack32(info.st_mode)
-        # stat64_buf += ql.pack32(info.st_nlink)
-        # stat64_buf += ql.pack32(ql.os.uid)
-        # stat64_buf += ql.pack32(ql.os.gid)
-        # stat64_buf += ql.pack32(info.st_rdev)
-        # stat64_buf += b'\x00' * 12
-        # stat64_buf += ql.pack64(info.st_size)
-        # stat64_buf += ql.pack64(int(info.st_atime))
-        # stat64_buf += ql.pack64(0)
-        # stat64_buf += ql.pack64(int(info.st_mtime))
-        # stat64_buf += ql.pack64(0)
-        # stat64_buf += ql.pack64(int(info.st_ctime))
-        # stat64_buf += ql.pack64(0)
-        # stat64_buf += ql.pack32(info.st_blksize)
-        # stat64_buf += ql.pack32(0)
-        # stat64_buf += ql.pack64(info.st_blocks)
         # 
-
-        """
-             struct stat64 {
-                 dev_t           st_dev;           /* ID of device containing file */
-                 mode_t          st_mode;          /* Mode of file (see below) */
-                 nlink_t         st_nlink;         /* Number of hard links */
-                 ino64_t         st_ino;           /* File serial number */
-                 uid_t           st_uid;           /* User ID of the file */
-                 gid_t           st_gid;           /* Group ID of the file */
-                 dev_t           st_rdev;          /* Device ID */
-                 struct timespec st_atimespec;     /* time of last access */
-                 struct timespec st_mtimespec;     /* time of last data modification */
-                 struct timespec st_ctimespec;     /* time of last status change */
-                 struct timespec st_birthtimespec; /* time of file creation(birth) */
-                 off_t           st_size;          /* file size, in bytes */
-                 blkcnt_t        st_blocks;        /* blocks allocated for file */
-                 blksize_t       st_blksize;       /* optimal blocksize for I/O */
-                 uint32_t        st_flags;         /* user defined flags for file */
-                 uint32_t        st_gen;           /* file generation number */
-                 int32_t         st_lspare;        /* RESERVED: DO NOT USE! */
-                 int64_t         st_qspare[2];     /* RESERVED: DO NOT USE! */
-              }  
-
-              struct timespec {
-                 time_t          tv_sec;           /* seconds */
-                 long            tv_nsec;          /* nanoseconds */
-              }
-        """
+        # Implementation based on:
+        #   https://elixir.bootlin.com/linux/v2.6.32.71/source/arch/mips/include/asm/stat.h#L92 
+        #
 
         if ql.platform == QL_OS.MACOS:
-            stat64_buf = ql.pack32s(info.st_dev)
+          stat64_buf = ql.pack32s(info.st_dev)
         else:
-            stat64_buf = ql.pack32(info.st_dev)
-
+          stat64_buf = ql.pack32(info.st_dev)
+        stat64_buf += b'\x00' * 12 
+        stat64_buf += ql.pack64(info.st_ino)
         stat64_buf += ql.pack32(info.st_mode)
         stat64_buf += ql.pack32(info.st_nlink)
-        stat64_buf += ql.pack64(info.st_ino)
         stat64_buf += ql.pack32(ql.os.uid)
         stat64_buf += ql.pack32(ql.os.gid)
-
-        if ql.platform == QL_OS.MACOS:
-            stat64_buf += ql.pack32s(info.st_rdev)
-        else:
-            stat64_buf += ql.pack32(info.st_rdev)
-
-        # struct timespec st_atimespec {
-        stat64_buf += ql.pack64(int(info.st_atime))
-        stat64_buf += ql.pack32(0)
-        # }
-
-        # struct timespec st_mtimespec {
-        stat64_buf += ql.pack64(int(info.st_mtime))
-        stat64_buf += ql.pack32(0)
-        # }
-
-        # struct timespec st_ctimespec {
-        stat64_buf += ql.pack64(int(info.st_ctime))
-        stat64_buf += ql.pack32(0)
-        # }
-
-        # struct timespec st_birthtimespec {
-        stat64_buf += ql.pack64(int(info.st_atime) - 3600) # last access - 1 hr
-        stat64_buf += ql.pack32(0)
-        # }
-
+        stat64_buf += ql.pack32(info.st_rdev)
+        stat64_buf += b'\x00' * 12
         stat64_buf += ql.pack64(info.st_size)
-        stat64_buf += ql.pack64(info.st_blocks)
+        stat64_buf += ql.pack32(int(info.st_atime))
+        stat64_buf += ql.pack32(0)
+        stat64_buf += ql.pack32(int(info.st_mtime))
+        stat64_buf += ql.pack32(0)
+        stat64_buf += ql.pack32(int(info.st_ctime))
+        stat64_buf += ql.pack32(0)
         stat64_buf += ql.pack32(info.st_blksize)
-        # stat64_buf += ql.pack32(0xffffffff) # st_flags
-        # stat64_buf += ql.pack32(0xdeadbeef) # st_gen
-
-        # Reserved
-        # ---------
-        # stat64_buf += ql.pack32s(0) # st_lspare
-        # stat64_buf += ql.pack64s(0) # st_qspare[2]
-        #
+        stat64_buf += ql.pack32(0)
+        stat64_buf += ql.pack64(info.st_blocks)
     elif ql.archtype == QL_ARCH.ARM:
         # pack statinfo
         if ql.platform == QL_OS.MACOS:
