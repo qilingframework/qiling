@@ -243,7 +243,7 @@ class QlOsPosix(QlOs):
         if syscall_hook:
             args = self.get_syscall_args()
 
-            self.syscalls.setdefault(syscall_name, []).append({
+            self.utils.syscalls.setdefault(syscall_name, []).append({
                 "params": {
                     "param0": args[0],
                     "param1": args[1],
@@ -255,10 +255,10 @@ class QlOsPosix(QlOs):
                 "result": None,
                 "address": self.ql.reg.arch_pc,
                 "return_address": None,
-                "position": self.syscalls_counter
+                "position": self.utils.syscalls_counter
             })
 
-            self.syscalls_counter += 1
+            self.utils.syscalls_counter += 1
 
             try:
                 ret = 0
@@ -293,7 +293,7 @@ class QlOsPosix(QlOs):
 
                     if ret is not None and type(ret) is int:
                         # each name has a list of calls, we want the last one and we want to update the return value
-                        self.syscalls[syscall_name][-1]["result"] = ret
+                        self.utils.syscalls[syscall_name][-1]["result"] = ret
                         ret = self.set_syscall_return(ret)
                         self.ql.log.debug(f'{syscall_basename}() = {QlOsPosix.getNameFromErrorCode(ret)}')
 

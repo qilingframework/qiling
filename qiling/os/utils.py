@@ -126,6 +126,16 @@ class QlOsUtils:
         self._disasm_hook = None
         self._block_hook = None
 
+        # We can save every syscall called
+        self.syscalls = {}
+        self.syscalls_counter = 0
+        self.appeared_strings = {}
+
+    def clear_syscalls(self):
+        self.syscalls = {}
+        self.syscalls_counter = 0
+        self.appeared_strings = {}
+
 
     def string_appearance(self, string):
         strings = string.split(" ")

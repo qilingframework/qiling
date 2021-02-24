@@ -80,11 +80,6 @@ class QlOs:
         self.resolvers.update(resolvers)
 
         self.utils.setup_output()
-        # We can save every syscall called
-        self.syscalls = {}
-        self.syscalls_counter = 0
-        self.appeared_strings = {}
-        self.setup_output()
 
     def save(self):
         return {}
@@ -166,22 +161,16 @@ class QlOs:
         except:
             self.ql.log.error("Error: PC(0x%x) Unreachable" % self.ql.reg.arch_pc)
 
-    def clear_syscalls(self):
-        self.syscalls = {}
-        self.syscalls_counter = 0
-        self.appeared_strings = {}
-
-
     def _call_api(self, name, params, result, address, return_address):
         if name.startswith("hook_"):
             name = name[5:]
 
-        self.syscalls.setdefault(name, []).append({
+        self.utils.syscalls.setdefault(name, []).append({
             "params": params,
             "result": result,
             "address": address,
             "return_address": return_address,
-            "position": self.syscalls_counter
+            "position": self.utils.syscalls_counter
         })
 
-        self.syscalls_counter += 1
+        self.utils.syscalls_counter += 1
