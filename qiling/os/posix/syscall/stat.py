@@ -274,6 +274,7 @@ def statFamily(ql, path, ptr, name, stat_func, struct_func):
     try:
         info = stat_func(real_path)
     except OSError as e:
+        ql.log.debug(f'{name}("{file}", {hex(ptr)}) read/write fail')
         return -e.errno
     else:
         buf = struct_func(ql, info)
