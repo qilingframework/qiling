@@ -445,12 +445,6 @@ class QlOsUtils:
                 self._block_hook = self.ql.hook_block(ql_hook_block_disasm)
             self._disasm_hook = self.ql.hook_code(self.disassembler)
 
-    def stop(self):
-        if self.ql.multithread:
-            td = self.thread_management.stop() 
-        else:
-            self.ql.emu_stop()
-
     def read_guid(self, address):
         result = ""
         raw_guid = self.ql.mem.read(address, 16)
