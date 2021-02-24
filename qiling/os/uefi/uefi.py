@@ -10,7 +10,8 @@ from qiling import Qiling
 from qiling.const import QL_INTERCEPT
 from qiling.os.const import ULONGLONG, POINTER, STRING, WSTRING, GUID
 from qiling.os.os import QlOs
-from qiling.refactored.cc import QlCC, QlFunctionCall, intel
+from qiling.refactored.cc import QlCC, intel
+from qiling.refactored.os.fcall import QlFunctionCall
 
 class QlOsUefi(QlOs):
 	def __init__(self, ql: Qiling):
