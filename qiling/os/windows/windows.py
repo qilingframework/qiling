@@ -105,6 +105,23 @@ class QlOsWindows(QlOs, QlOsFncc):
                     raise QlErrorSyscallNotFound("Windows API Implementation Not Found")
 
 
+    def post_report(self):
+        self.ql.log.debug("Syscalls called")
+        for key, values in self.ql.os.syscalls.items():
+            self.ql.log.debug("%s:" % key)
+            for value in values:
+                self.ql.log.debug("%s " % str(dumps(value)))
+        self.ql.log.debug("Registries accessed")
+        for key, values in self.ql.os.registry_manager.accessed.items():
+            self.ql.log.debug("%s:" % key)
+            for value in values:
+                self.ql.log.debug("%s " % str(dumps(value)))
+        self.ql.log.debug("Strings")
+        for key, values in self.ql.os.appeared_strings.items():
+            val = " ".join([str(word) for word in values])
+            self.ql.log.debug("%s: %s" % (key, val))
+
+
     def run(self):
         if self.ql.exit_point is not None:
             self.exit_point = self.ql.exit_point
