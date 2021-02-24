@@ -7,26 +7,12 @@
 This module is intended for general purpose functions that are only used in qiling.os
 """
 
-import ctypes, inspect, os, struct, uuid
+import ctypes, os, uuid
 
-from json import dumps
 from pathlib import Path, PurePosixPath, PureWindowsPath, PosixPath, WindowsPath
-from unicorn import *
-from unicorn.arm_const import *
-from unicorn.x86_const import *
-from unicorn.arm64_const import *
-from unicorn.mips_const import *
-from capstone import *
-from capstone.arm_const import *
-from capstone.x86_const import *
-from capstone.arm64_const import *
-from capstone.mips_const import *
-from keystone import *
+from unicorn import UcError
 
-
-from qiling.const import *
-from qiling.exception import *
-from .const import *
+from qiling import Qiling
 from qiling.os.windows.wdk_const import *
 from qiling.os.windows.structs import *
 from qiling.utils import verify_ret
@@ -119,7 +105,7 @@ class PathUtils:
         return normalized_path
 
 class QlOsUtils:
-    def __init__(self, ql):
+    def __init__(self, ql: Qiling):
         self.ql = ql
         self.path = None
         self.md = None
