@@ -14,8 +14,8 @@ from qiling.exception import *
 from qiling.os.posix import syscall
 from qiling.os.mapper import QlFsMappedObject
 from qiling.os.posix.stat import Fstat
-
-from qiling.os.linux.fncc import *
+from qiling.os.const import *
+from qiling.os.linux.fncc import linux_kernel_api
 
 class ELF_KO_Test(unittest.TestCase):
 

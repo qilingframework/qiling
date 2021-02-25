@@ -3,7 +3,8 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from qiling.os.linux.fncc import *
+from qiling.os.const import *
+from qiling.os.linux.fncc import linux_kernel_api
 
 
 @linux_kernel_api(params={
