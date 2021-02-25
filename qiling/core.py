@@ -547,7 +547,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         else:
             self._output = op
         self.log.setLevel(ql_resolve_logger_level(self._output, self._verbose))
-        self.os.setup_output()
+        self.os.utils.setup_output()
 
     @property
     def verbose(self):
@@ -570,7 +570,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
     def verbose(self, v):
         self._verbose = v
         self.log.setLevel(ql_resolve_logger_level(self._output, self._verbose))
-        self.os.setup_output()
+        self.os.utils.setup_output()
 
     @property
     def patch_bin(self) -> list:
