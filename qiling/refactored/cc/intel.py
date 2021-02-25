@@ -2,81 +2,28 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 
-from typing import Callable, Tuple
 from unicorn.x86_const import (
 	UC_X86_REG_AX,	UC_X86_REG_EAX,	UC_X86_REG_RAX, UC_X86_REG_RCX,
 	UC_X86_REG_RDI,	UC_X86_REG_RDX,	UC_X86_REG_RSI,	UC_X86_REG_R8,
 	UC_X86_REG_R9,	UC_X86_REG_R10
 )
 
-from . import QlCC
+from qiling import Qiling
+from . import QlCommonBaseCC
 
-class QlIntelBaseCC(QlCC):
+class QlIntelBaseCC(QlCommonBaseCC):
 	"""Calling convention base class for Intel-based systems.
 	Supports arguments passing over registers and stack.
 	"""
 
-	_argregs = ()
-	_shadow = 0
-
-	def __init__(self, *args, **kwargs):
-		super().__init__(*args, **kwargs)
-
-		# native address size in bytes
-		self._asize = self.ql.pointersize
-
-		# return value register
-		self._retreg = {
+	def __init__(self, ql: Qiling):
+		retreg = {
 			16: UC_X86_REG_AX,
 			32: UC_X86_REG_EAX,
 			64: UC_X86_REG_RAX
-		}[self.ql.archbit]
+		}[ql.archbit]
 
-	def __access_param(self, index: int, stack_access: Callable, reg_access: Callable) -> Tuple[Callable, int]:
-		"""[private] Generic accessor to function call parameters by their index.
-
-		This method will determine whether the parameter should be accessed on the stack or in
-		a register, and return the appropriate accessor along with the location to access (either a
-		register id or stack address)
-
-		Args:
-			index: parameter index to access
-			stack_access: stack accessor method (either read or write)
-			reg_access: regs accessor method (either read or write)
-
-		Returns: a tuple of the accessor method to use and the location to access
-		"""
-
-		if index >= len(self._argregs):
-			raise IndexError(f'tried to access arg {index}, but only {len(self._argregs) - 1} args are supported')
-
-		reg = self._argregs[index]
-
-		# should arg be read from a reg or the stack?
-		if reg is None:
-			# get matching stack item
-			si = index - self._argregs.index(None)
-
-			# skip return address and shadow space
-			return stack_access, (1 + self._shadow + si) * self._asize
-		else:
-			return reg_access, reg
-
-	def getRawParam(self, index: int) -> int:
-		read, loc = self.__access_param(index, self.ql.stack_read, self.ql.reg.read)
-
-		return read(loc)
-
-	def setRawParam(self, index: int, value: int) -> None:
-		write, loc = self.__access_param(index, self.ql.stack_write, self.ql.reg.write)
-
-		write(loc, value)
-
-	def getReturnValue(self) -> int:
-		return self.ql.reg.read(self._retreg)
-
-	def setReturnValue(self, value: int) -> None:
-		self.ql.reg.write(self._retreg, value)
+		super().__init__(ql, retreg)
 
 	def unwind(self) -> int:
 		# no cleanup; just pop out the return address
@@ -90,15 +37,6 @@ class QlIntel64(QlIntelBaseCC):
 	def getNumSlots(argbits: int) -> int:
 		return max(argbits, 64) // 64
 
-	def getRawParam8(self, slot: int) -> int:
-		return self.getRawParam(slot) & 0xff
-
-	def getRawParam16(self, slot: int) -> int:
-		return self.getRawParam(slot) & 0xffff
-
-	def getRawParam32(self, slot: int) -> int:
-		return self.getRawParam(slot) & 0xffffffff
-
 	def getRawParam64(self, slot: int) -> int:
 		return self.getRawParam(slot)
 
@@ -109,15 +47,6 @@ class QlIntel32(QlIntelBaseCC):
 	@staticmethod
 	def getNumSlots(argbits: int) -> int:
 		return max(argbits, 32) // 32
-
-	def getRawParam8(self, slot: int) -> int:
-		return self.getRawParam(slot) & 0xff
-
-	def getRawParam16(self, slot: int) -> int:
-		return self.getRawParam(slot) & 0xffff
-
-	def getRawParam32(self, slot: int) -> int:
-		return self.getRawParam(slot) 
 
 	def getRawParam64(self, slot: int) -> int:
 		lo = self.getRawParam(slot)
