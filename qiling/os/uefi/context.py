@@ -23,7 +23,7 @@ class UefiContext(ABC):
 	def init_stack(self, base, size):
 		self.ql.mem.map(base, size)
 
-	def install_protocol(self, proto_desc, handle, address=None):
+	def install_protocol(self, proto_desc, handle, address=None, from_hook=False):
 		guid = proto_desc['guid']
 
 		if handle not in self.protocols:
@@ -40,9 +40,9 @@ class UefiContext(ABC):
 		instance.saveTo(self.ql, address)
 
 		self.protocols[handle][guid] = address
-		self.notify_protocol(handle, guid, address)
+		return self.notify_protocol(handle, guid, address, from_hook)
 
-	def notify_protocol(self, handle, protocol, interface):
+	def notify_protocol(self, handle, protocol, interface, from_hook):
 		for (event_id, event_dic) in self.ql.loader.events.items():
 			if event_dic['Guid'] == protocol:
 				if event_dic['CallbackArgs'] == None:
@@ -54,7 +54,7 @@ class UefiContext(ABC):
 					event_dic['CallbackArgs'] = [guid_ptr, interface, handle]
 				# The event was previously registered by 'RegisterProtocolNotify'.
 				signal_event(self.ql, event_id)
-		execute_protocol_notifications(self.ql, True)
+		return execute_protocol_notifications(self.ql, from_hook)
 
 	def install_configuration_table(self, guid, table):
 		guid = guid.lower()

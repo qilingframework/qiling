@@ -39,7 +39,7 @@ def InstallProtocolInterface(context, params):
 	context.protocols[handle] = dic
 
 	write_int64(context.ql, params["Handle"], handle)
-	context.notify_protocol(params['Handle'], params['Protocol'], params['Interface'])
+	context.notify_protocol(params['Handle'], params['Protocol'], params['Interface'], True)
 
 	return EFI_SUCCESS
 

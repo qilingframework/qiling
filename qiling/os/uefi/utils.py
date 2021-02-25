@@ -26,7 +26,6 @@ def execute_protocol_notifications(ql, from_hook=False) -> bool:
 		return False
 	
 	next_hook = ql.loader.smm_context.heap.alloc(1)
-	ptr_write8(ql, next_hook, 0x90)
 	def exec_next(ql):
 		if ql.loader.notify_list:
 			event_id, notify_func, callback_args = ql.loader.notify_list.pop(0)

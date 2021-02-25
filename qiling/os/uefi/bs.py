@@ -424,7 +424,7 @@ def hook_InstallMultipleProtocolInterfaces(ql, address, params):
 		ql.log.info(f' | {GUID} {protocol_ptr:#x}')
 		index += 2
 		ql.loader.dxe_context.protocols[handle][GUID] = protocol_ptr
-		ql.loader.dxe_context.notify_protocol(handle, GUID, protocol_ptr)
+		ql.loader.dxe_context.notify_protocol(handle, GUID, protocol_ptr, True)
 
 	write_int64(ql, params["Handle"], handle)
 
