@@ -60,14 +60,12 @@ class QlGdb(QlDebugger, object):
             load_address = ql.loader.load_address
             exit_point = load_address + os.path.getsize(ql.path)
 
-        self.gdb.initialize(self.ql, exit_point=exit_point, mappings=[(hex(load_address))])
-        
         if self.ql.ostype in (QL_OS.LINUX, QL_OS.FREEBSD) and not self.ql.code:
             self.entry_point = self.ql.os.elf_entry
         else:
             self.entry_point = self.ql.os.entry_point
-           
-        self.gdb.bp_insert(self.entry_point)
+
+        self.gdb.initialize(self.ql, self.entry_point, exit_point=exit_point, mappings=[(hex(load_address))])
 
         #Setup register tables, order of tables is important
         self.tables = {

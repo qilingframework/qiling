@@ -226,6 +226,7 @@ def create_stat64_struct(ql, info):
         stat64_buf += ql.pack64(0x0)                            # st_mtimensec      64 byte
         stat64_buf += ql.pack64(int(info.st_ctime))      # st_ctime          64 byte
         stat64_buf += ql.pack64(0x0)                            # st_ctimensec      64 byte
+
         if ql.platform == QL_OS.MACOS:
             stat64_buf += ql.pack64(int(info.st_birthtime))  # st_birthtime      64 byte
         else:

@@ -21,15 +21,21 @@ class QlGdbUtils(object):
         self.mapping = []
         self.breakpoint_count = 0x0
         self.skip_bp_count = 0x0
+        self._tmp_hook = None
 
 
-    def initialize(self, ql, exit_point=None, mappings=None):
+    def initialize(self, ql, hook_address, exit_point=None, mappings=None):
         self.ql = ql
         self.current_address = self.entry_point = self.ql.os.entry_point
         self.exit_point = exit_point
         self.mapping = mappings
-        self.ql.hook_code(self.dbg_hook)
+        self._tmp_hook = self.ql.hook_address(self.entry_point_hook, hook_address)
 
+    def entry_point_hook(self, ql, *args, **kwargs):
+        self.ql.hook_del(self._tmp_hook)
+        self.ql.hook_code(self.dbg_hook)
+        self.ql.os.stop()
+        self.ql.log.info("gdb> Stop at entry point: %#x" % self.ql.reg.arch_pc)
 
     def dbg_hook(self, ql, address, size):
         """
