@@ -3,8 +3,6 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from typing import Callable, Any
-
 from unicorn import UcError
 
 from qiling import Qiling
@@ -18,18 +16,21 @@ from .utils import ql_arm_init_get_tls
 from .futex import QlLinuxFutexManagement
 from .thread import QlLinuxThreadManagement, QlLinuxARMThread, QlLinuxMIPS32Thread, QlLinuxARM64Thread, QlLinuxX86Thread, QlLinuxX8664Thread
 
-from qiling.refactored.cc import QlCC, intel
+from qiling.refactored.cc import QlCC, intel, arm
 from qiling.refactored.os.fcall import QlFunctionCall
 
 class QlOsLinux(QlOsPosix):
     def __init__(self, ql: Qiling):
         super(QlOsLinux, self).__init__(ql)
+
         self.ql = ql
 
         cc: QlCC = {
             QL_ARCH.X86: intel.cdecl,
             QL_ARCH.X8664: intel.ms64,
-          # QL_ARCH.MIPS: mips.o32
+            QL_ARCH.ARM: arm.aarch32,
+            QL_ARCH.ARM64: arm.aarch64
+            # QL_ARCH.MIPS:
         }[ql.archtype](ql)
 
         self.fcall = QlFunctionCall(ql, cc)
@@ -138,4 +139,3 @@ class QlOsLinux(QlOsPosix):
 
             self.emu_error()
             raise
-
