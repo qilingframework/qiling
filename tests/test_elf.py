@@ -933,7 +933,7 @@ class ELFTest(unittest.TestCase):
 
     def test_arm_directory_symlink(self):
         ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello"], "../examples/rootfs/arm_linux", output = "debug")
-        real_path = ql.os.transform_to_real_path("/lib/libsymlink_test.so")
+        real_path = ql.os.utils.transform_to_real_path("/lib/libsymlink_test.so")
         self.assertTrue(real_path.endswith("/examples/rootfs/arm_linux/tmp/media/nand/symlink_test/libsymlink_test.so"))
         del ql
 

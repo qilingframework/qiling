@@ -4,17 +4,17 @@
 #
 
 
-import os, sys, unittest
+import sys, unittest
 from pathlib import Path
-from unicorn import *
+
+from unicorn import UcError
 
 sys.path.append("..")
-from qiling import *
+from qiling import Qiling
 from qiling.const import QL_INTERCEPT
-from qiling.exception import *
-from qiling.os.macos.events.macos_structs import *
+from qiling.os.const import STRING
 from qiling.os.macos.structs import *
-from qiling.os.macos.fncc import *
+from qiling.os.macos.fncc import macos_kernel_api
 
 class MACHOTest(unittest.TestCase):
     def test_macho_macos_superrootkit(self):
