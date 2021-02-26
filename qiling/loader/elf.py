@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import os, string, sys
+import os
 
 from heapq import heappush, heappop
 
@@ -19,6 +19,7 @@ from .loader import QlLoader
 from qiling.os.linux.function_hook import FunctionHook
 from qiling.os.linux.syscall_nums import *
 from qiling.os.linux.kernel_api.hook import *
+from qiling.os.linux.kernel_api.kernel_api import hook_sys_open, hook_sys_read, hook_sys_write
 
 AT_NULL = 0
 AT_IGNORE = 1
