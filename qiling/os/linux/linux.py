@@ -27,7 +27,7 @@ class QlOsLinux(QlOsPosix):
 
         cc: QlCC = {
             QL_ARCH.X86: intel.cdecl,
-            QL_ARCH.X8664: intel.ms64,
+            QL_ARCH.X8664: intel.amd64,
             QL_ARCH.ARM: arm.aarch32,
             QL_ARCH.ARM64: arm.aarch64
             # QL_ARCH.MIPS:
