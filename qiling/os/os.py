@@ -114,6 +114,28 @@ class QlOs:
 
         return resolved
 
+    def call(self, pc, func, params, onenter, onexit, *args, passthru=False):
+        # resolve params values according to their assigned types
+        params = self.resolve_fcall_params(params)
+
+        # call hooked function
+        params, retval, retaddr = self.fcall.call(func, params, onenter, onexit, *args)
+
+        # print
+        self.utils.print_function(pc, func.__name__, params, retval, passthru)
+
+        # append syscall to list
+        self._call_api(func.__name__, params, retval, pc, retaddr)
+
+        # TODO: PE_RUN is a Windows and UEFI property; move somewhere else?
+        if hasattr(self, 'PE_RUN') and not self.PE_RUN:
+            return retval
+
+        if not passthru:
+            self.ql.reg.arch_pc = retaddr
+
+        return retval
+
     # TODO: separate this method into os-specific functionalities, instead of 'if-else'
     def set_api(self, api_name: str, intercept_function: Callable, intercept: QL_INTERCEPT):
         if self.ql.ostype == QL_OS.UEFI:

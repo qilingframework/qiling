@@ -27,33 +27,6 @@ class QlOsUefi(QlOs):
 
 		self.fcall = QlFunctionCall(ql, cc)
 
-	def call(self, func, params, *args, passthru=False):
-		pc = self.ql.reg.arch_pc
-
-		func = self.user_defined_api[QL_INTERCEPT.CALL].get(func.__name__) or func
-		onenter = self.user_defined_api[QL_INTERCEPT.ENTER].get(func.__name__)
-		onexit = self.user_defined_api[QL_INTERCEPT.EXIT].get(func.__name__)
-
-		# resolve params values according to their assigned types
-		params = self.resolve_fcall_params(params)
-
-		# call hooked function
-		params, retval, retaddr = self.fcall.call(func, params, onenter, onexit, *args)
-
-		# print
-		self.utils.print_function(pc, func.__name__, params, retval, passthru)
-
-		# append syscall to list
-		self._call_api(func.__name__, params, retval, pc, retaddr)
-
-		if not self.PE_RUN:
-			return retval
-
-		if not passthru:
-			self.ql.reg.arch_pc = retaddr
-
-		return retval
-
 	def save(self):
 		saved_state = super(QlOsUefi, self).save()
 		saved_state['entry_point'] = self.entry_point
