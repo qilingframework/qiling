@@ -30,6 +30,7 @@ def hook_kernel_api(ql: Qiling, address: int, size):
                 ql.log.debug("%s Exception Found" % api_name)
                 raise QlErrorSyscallError("MacOS kernel API Implementation Error")
         else:
-            ql.log.warning("%s is not implemented\n" % api_name)
+            ql.log.warning("{api_name} is not implemented\n")
+
             if ql.debug_stop:
-                raise QlErrorSyscallNotFound("MacOS kernel API Implementation Not Found")
+                raise QlErrorSyscallNotFound("MacOS kernel API implementation not found")
