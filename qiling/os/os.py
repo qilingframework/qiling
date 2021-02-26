@@ -4,7 +4,7 @@
 #
 
 import sys
-from typing import Any, Callable, Mapping, Tuple
+from typing import Any, Optional, Callable, Mapping, Tuple
 
 from qiling import Qiling
 from qiling.const import QL_OS, QL_INTERCEPT, QL_OS_POSIX
@@ -114,7 +114,7 @@ class QlOs:
 
         return resolved
 
-    def call(self, pc, func, params, onenter, onexit, *args, passthru=False):
+    def call(self, pc: int, func: Callable, params: Mapping[str, Any], onenter: Optional[Callable], onexit: Optional[Callable], *args, passthru: bool = False):
         # resolve params values according to their assigned types
         params = self.resolve_fcall_params(params)
 
