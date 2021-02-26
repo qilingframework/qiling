@@ -8,7 +8,7 @@ from qiling.const import QL_INTERCEPT
 from qiling.exception import QlErrorSyscallError, QlErrorSyscallNotFound
 
 # import all kernel api hooks to global namespace
-from qiling.os.linux.kernel_api import *
+import qiling.os.linux.kernel_api as api
 
 # hook Linux kernel API
 def hook_kernel_api(ql: Qiling, address: int, size):
@@ -20,14 +20,11 @@ def hook_kernel_api(ql: Qiling, address: int, size):
         api_func = ql.os.user_defined_api[QL_INTERCEPT.CALL].get(api_name)
 
         if not api_func:
-            api_func = globals().get(f'hook_{api_name}')
-
-        ql.os.api_func_onenter = ql.os.user_defined_api[QL_INTERCEPT.ENTER].get(api_name)
-        ql.os.api_func_onexit = ql.os.user_defined_api[QL_INTERCEPT.EXIT].get(api_name)
+            api_func = getattr(api, f'hook_{api_name}')
 
         if api_func:
             try:
-                api_func(ql, address, {})
+                api_func(ql, address, api_name)
             except Exception:
                 ql.log.exception("")
                 ql.log.debug("%s Exception Found" % api_name)
