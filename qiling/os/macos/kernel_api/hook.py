@@ -7,6 +7,9 @@ from qiling import Qiling
 from qiling.const import QL_INTERCEPT
 from qiling.exception import QlErrorSyscallError, QlErrorSyscallNotFound
 
+# import all kernel api hooks to global namespace
+from qiling.os.macos.kernel_api import *
+
 # hook MacOS kernel API
 def hook_kernel_api(ql: Qiling, address: int, size):
     # call kernel api
