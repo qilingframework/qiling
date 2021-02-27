@@ -16,7 +16,7 @@ from .utils import ql_arm_init_get_tls
 from .futex import QlLinuxFutexManagement
 from .thread import QlLinuxThreadManagement, QlLinuxARMThread, QlLinuxMIPS32Thread, QlLinuxARM64Thread, QlLinuxX86Thread, QlLinuxX8664Thread
 
-from qiling.refactored.cc import QlCC, intel, arm
+from qiling.refactored.cc import QlCC, intel, arm, mips
 from qiling.refactored.os.fcall import QlFunctionCall
 
 class QlOsLinux(QlOsPosix):
@@ -29,8 +29,8 @@ class QlOsLinux(QlOsPosix):
             QL_ARCH.X86: intel.cdecl,
             QL_ARCH.X8664: intel.amd64,
             QL_ARCH.ARM: arm.aarch32,
-            QL_ARCH.ARM64: arm.aarch64
-            # QL_ARCH.MIPS:
+            QL_ARCH.ARM64: arm.aarch64,
+            QL_ARCH.MIPS: mips.mipso32
         }[ql.archtype](ql)
 
         self.fcall = QlFunctionCall(ql, cc)
