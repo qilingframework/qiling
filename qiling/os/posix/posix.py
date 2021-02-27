@@ -12,7 +12,7 @@ from unicorn.mips_const import UC_MIPS_REG_V0
 from unicorn.x86_const import UC_X86_REG_EAX, UC_X86_REG_RAX
 
 from qiling import Qiling
-from qiling.const import QL_ARCH, QL_OS, QL_INTERCEPT, QL_CALL_BLOCK, QL_OS_POSIX
+from qiling.const import QL_ARCH, QL_OS, QL_INTERCEPT, QL_CALL_BLOCK
 from qiling.exception import QlErrorSyscallNotFound
 from qiling.os.os import QlOs
 from qiling.os.posix.const import errors
@@ -153,11 +153,9 @@ class QlOsPosix(QlOs):
         }[self.ql.archtype]
 
         self.fd = QlFileDes([0] * 256)
-
-        if self.ql.ostype in QL_OS_POSIX:
-            self.fd[0] = self.stdin
-            self.fd[1] = self.stdout
-            self.fd[2] = self.stderr
+        self.fd[0] = self.stdin
+        self.fd[1] = self.stdout
+        self.fd[2] = self.stderr
 
     # ql.syscall - get syscall for all posix series
     @property

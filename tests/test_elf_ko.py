@@ -64,7 +64,7 @@ class ELF_KO_Test(unittest.TestCase):
         del ql
 
     def test_demigod_hello_mips32(self):
-        def my_onexit(ql, address, params):
+        def my_onexit(ql, address, params, retval):
             print("\n")
             print("=" * 40)
             print(" Enter into my_exit mode")

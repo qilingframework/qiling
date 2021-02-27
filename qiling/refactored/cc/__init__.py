@@ -134,7 +134,7 @@ class QlCC:
 
 class QlCommonBaseCC(QlCC):
 	"""Calling convention base class that implements parameters access through both
-	registers and the stak. The extending class is resopnsible to implement the rest
+	registers and the stack. The extending class is resopnsible to implement the rest
 	of the QlCC interface.
 	"""
 
