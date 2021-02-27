@@ -23,8 +23,6 @@ from qiling.os.linux.syscall import *
 from qiling.os.macos.syscall import *
 from qiling.os.freebsd.syscall import *
 
-from qiling.os.linux.function_hook import FunctionArgv, ARMFunctionArg, MIPS32FunctionArg, ARM64FunctionArg, X86FunctionArg, X64FunctionArg
-
 SYSCALL_PREF: str = f'ql_syscall_'
 
 class QlOsPosix(QlOs):
@@ -154,14 +152,6 @@ class QlOsPosix(QlOs):
             QL_ARCH.X8664: __syscall_args_x8664
         }[self.ql.archtype]
 
-        self.__fcall_args: FunctionArgv = {
-            QL_ARCH.ARM64: ARM64FunctionArg,
-            QL_ARCH.ARM  : ARMFunctionArg,
-            QL_ARCH.MIPS : MIPS32FunctionArg,
-            QL_ARCH.X86  : X86FunctionArg,
-            QL_ARCH.X8664: X64FunctionArg
-        }[self.ql.archtype](self.ql)
-
         self.fd = QlFileDes([0] * 256)
 
         if self.ql.ostype in QL_OS_POSIX:
@@ -187,12 +177,6 @@ class QlOsPosix(QlOs):
         # if intercept == QL_INTERCEPT.CALL:
         #     if self.ql.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
         #         self.set_api(target_syscall, intercept_function)
-
-    # TODO: replace by fcall.cc
-    # ql.func_arg - get syscall for all posix series
-    @property
-    def function_arg(self) -> FunctionArgv:
-        return self.__fcall_args
 
     @staticmethod
     def getNameFromErrorCode(ret: int) -> str:
