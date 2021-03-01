@@ -120,13 +120,13 @@ class QlOsFncc:
             return (hi << 32) | lo, 2
 
         def __handle_STRING(idx: int):
-            return __nullptr_or_deref(idx, self.read_cstring), 1
+            return __nullptr_or_deref(idx, self.utils.read_cstring), 1
 
         def __handle_WSTRING(idx: int):
-            return __nullptr_or_deref(idx, self.read_wstring), 1
+            return __nullptr_or_deref(idx, self.utils.read_wstring), 1
 
         def __handle_GUID(idx: int):
-            return __nullptr_or_deref(idx, lambda p: str(self.read_guid(p))), 1
+            return __nullptr_or_deref(idx, lambda p: str(self.utils.read_guid(p))), 1
 
         param_handlers = {
             ULONGLONG: __handle_POINTER if self.ql.archbit == 64 else __handle_ULONGLONG_32,
@@ -179,7 +179,7 @@ class QlOsFncc:
             self.set_return_value(result)
 
         # print
-        self.print_function(args[1], func.__name__, args[2], result, passthru)
+        self.utils.print_function(args[1], func.__name__, args[2], result, passthru)
 
         return result, param_num
 
