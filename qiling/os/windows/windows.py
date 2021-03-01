@@ -10,6 +10,10 @@ from qiling.exception import QlErrorSyscallError, QlErrorSyscallNotFound
 from qiling.os.os import QlOs
 from qiling.os.fncc import QlOsFncc
 
+from .clipboard import Clipboard
+from .fiber import FiberManager
+from .registry import RegistryManager
+
 from .dlls import *
 
 class QlOsWindows(QlOs, QlOsFncc):
@@ -93,7 +97,7 @@ class QlOsWindows(QlOs, QlOsFncc):
 
             if winapi_func:
                 try:
-                    winapi_func(self.ql, address, {})
+                    winapi_func(self.ql, address)
                 except Exception as ex:
                     self.ql.log.exception(ex)
                     self.ql.log.info("%s Exception Found" % winapi_name)
