@@ -191,7 +191,7 @@ class QlOsFncc:
 
         # append syscall to list
         if self.ql.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
-            self._call_api(func.__name__, params, result, self.ql.reg.arch_pc, ret_addr)
+            self.utils._call_api(self.ql.reg.arch_pc, func.__name__, params, result, ret_addr)
             if not self.PE_RUN:
                 return result
         
@@ -208,7 +208,7 @@ class QlOsFncc:
 
         # append syscall to list
         if self.ql.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
-            self._call_api(func.__name__, params, result, old_pc, self.ql.stack_read(0))
+            self.utils._call_api(old_pc, func.__name__, params, result, self.ql.stack_read(0))
             if not self.PE_RUN:
                 return result
 
@@ -223,7 +223,7 @@ class QlOsFncc:
 
         # append syscall to list
         if self.ql.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
-            self._call_api(func.__name__, params, result, old_pc, self.ql.stack_read(0))
+            self.utils._call_api(old_pc, func.__name__, params, result, self.ql.stack_read(0))
             if not self.PE_RUN:
                 return result
 
