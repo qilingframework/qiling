@@ -7,26 +7,12 @@
 This module is intended for general purpose functions that are only used in qiling.os
 """
 
-import ctypes, inspect, os, struct, uuid
+import ctypes, os, uuid
 
-from json import dumps
 from pathlib import Path, PurePosixPath, PureWindowsPath, PosixPath, WindowsPath
-from unicorn import *
-from unicorn.arm_const import *
-from unicorn.x86_const import *
-from unicorn.arm64_const import *
-from unicorn.mips_const import *
-from capstone import *
-from capstone.arm_const import *
-from capstone.x86_const import *
-from capstone.arm64_const import *
-from capstone.mips_const import *
-from keystone import *
+from unicorn import UcError
 
-
-from qiling.const import *
-from qiling.exception import *
-from .const import *
+from qiling import Qiling
 from qiling.os.windows.wdk_const import *
 from qiling.os.windows.structs import *
 from qiling.utils import verify_ret
@@ -119,12 +105,22 @@ class PathUtils:
         return normalized_path
 
 class QlOsUtils:
-    def __init__(self, ql):
+    def __init__(self, ql: Qiling):
         self.ql = ql
         self.path = None
         self.md = None
         self._disasm_hook = None
         self._block_hook = None
+
+        # We can save every syscall called
+        self.syscalls = {}
+        self.syscalls_counter = 0
+        self.appeared_strings = {}
+
+    def clear_syscalls(self):
+        self.syscalls = {}
+        self.syscalls_counter = 0
+        self.appeared_strings = {}
 
 
     def string_appearance(self, string):
@@ -358,22 +354,6 @@ class QlOsUtils:
 
         return str(Path(cur_path) / path)
 
-    def post_report(self):
-        self.ql.log.debug("Syscalls called")
-        for key, values in self.ql.os.syscalls.items():
-            self.ql.log.debug("%s:" % key)
-            for value in values:
-                self.ql.log.debug("%s " % str(dumps(value)))
-        self.ql.log.debug("Registries accessed")
-        for key, values in self.ql.os.registry_manager.accessed.items():
-            self.ql.log.debug("%s:" % key)
-            for value in values:
-                self.ql.log.debug("%s " % str(dumps(value)))
-        self.ql.log.debug("Strings")
-        for key, values in self.ql.os.appeared_strings.items():
-            val = " ".join([str(word) for word in values])
-            self.ql.log.debug("%s: %s" % (key, val))
-
 
     def exec_arbitrary(self, start, end):
         old_sp = self.ql.reg.arch_sp
@@ -450,12 +430,6 @@ class QlOsUtils:
             if self.ql.output == QL_OUTPUT.DUMP:
                 self._block_hook = self.ql.hook_block(ql_hook_block_disasm)
             self._disasm_hook = self.ql.hook_code(self.disassembler)
-
-    def stop(self):
-        if self.ql.multithread:
-            td = self.thread_management.stop() 
-        else:
-            self.ql.emu_stop()
 
     def read_guid(self, address):
         result = ""

@@ -3,25 +3,29 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-
 from unicorn import UcError
 
+from qiling import Qiling
+from qiling.const import QL_INTERCEPT
 from qiling.os.os import QlOs
-from qiling.os.fncc import QlOsFncc
+from qiling.refactored.cc import QlCC, intel
+from qiling.refactored.os.fcall import QlFunctionCall
 
-class QlOsUefi(QlOs, QlOsFncc):
-	def __init__(self, ql):
-		QlOs.__init__(self, ql)
-		QlOsFncc.__init__(self, ql)
-		self.ql = ql
+class QlOsUefi(QlOs):
+	def __init__(self, ql: Qiling):
+		super().__init__(ql)
+
 		self.entry_point = 0
 		self.running_module = None
-		self.user_defined_api = {}
-		self.user_defined_api_onenter = {}
-		self.user_defined_api_onexit = {}
 		self.PE_RUN = True
 		self.heap = None # Will be initialized by the loader.
 
+		cc: QlCC = {
+			32: intel.cdecl,
+			64: intel.ms64
+		}[ql.archbit](ql)
+
+		self.fcall = QlFunctionCall(ql, cc)
 
 	def save(self):
 		saved_state = super(QlOsUefi, self).save()

@@ -3,14 +3,13 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import sys, unittest, subprocess, string, random, os
-
-from unicorn import UcError, UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
+import sys, unittest, string, random, os
 
 sys.path.append("..")
-from qiling import *
-from qiling.const import *
+from qiling import Qiling
+from qiling.const import QL_OS, QL_OUTPUT, QL_INTERCEPT
 from qiling.exception import *
+from qiling.os.const import STRING
 from qiling.os.posix import syscall
 from qiling.os.mapper import QlFsMappedObject
 from qiling.os.posix.stat import Fstat
@@ -61,11 +60,12 @@ class ELFTest(unittest.TestCase):
 
         del ql
 
+    PARAMS_PUTS = {'s': STRING}
 
     def test_elf_linux_x8664(self):
-        def my_puts(ql):
-            addr = ql.os.function_arg[0]
-            print("puts(%s)" % ql.mem.string(addr))
+        def my_puts(ql: Qiling):
+            params = ql.os.resolve_fcall_params(ELFTest.PARAMS_PUTS)
+            print(f'puts("{params["s"]}")')
             reg = ql.reg.read("rax")
             print("reg : 0x%x" % reg)
             ql.reg.rax = reg
@@ -105,10 +105,10 @@ class ELFTest(unittest.TestCase):
 
     def test_elf_hijackapi_linux_x8664(self):
 
-        def my_puts_enter(ql):
-            addr = ql.os.function_arg[0]
-            self.test_enter_str = ql.mem.string(addr)
-        
+        def my_puts_enter(ql: Qiling):
+            params = ql.os.resolve_fcall_params(ELFTest.PARAMS_PUTS)
+            self.test_enter_str = params["s"]
+
         def my_puts_exit(ql):
             self.test_exit_rdi = ql.reg.rdi
 
@@ -198,7 +198,7 @@ class ELFTest(unittest.TestCase):
             regreturn = syscall.ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *args)
 
             if target:
-                real_path = ql.os.transform_to_real_path(pathname)
+                real_path = ql.os.utils.transform_to_real_path(pathname)
                 assert os.path.isfile(real_path) == True
                 if ql.platform != QL_OS.WINDOWS:
                     os.remove(real_path)
@@ -216,7 +216,7 @@ class ELFTest(unittest.TestCase):
             regreturn = syscall.ql_syscall_unlink(ql, unlink_pathname, *args)
 
             if target:
-                real_path = ql.os.transform_to_real_path(pathname)
+                real_path = ql.os.utils.transform_to_real_path(pathname)
                 assert os.path.isfile(real_path) == False
 
             return regreturn
@@ -232,7 +232,7 @@ class ELFTest(unittest.TestCase):
             regreturn = syscall.ql_syscall_truncate(ql, trunc_pathname, trunc_length, *args)
 
             if target:
-                real_path = ql.os.transform_to_real_path(pathname)
+                real_path = ql.os.utils.transform_to_real_path(pathname)
                 assert os.stat(real_path).st_size == 0
                 if ql.platform != QL_OS.WINDOWS:
                     os.remove(real_path)
@@ -254,7 +254,7 @@ class ELFTest(unittest.TestCase):
             regreturn = syscall.ql_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args)
 
             if target:
-                real_path = ql.os.transform_to_real_path(pathname)
+                real_path = ql.os.utils.transform_to_real_path(pathname)
                 assert os.stat(real_path).st_size == 0x10
                 if ql.platform != QL_OS.WINDOWS:
                     os.remove(real_path)
@@ -274,11 +274,12 @@ class ELFTest(unittest.TestCase):
 
     def test_elf_linux_arm(self):     
         def my_puts(ql):
-            addr = ql.os.function_arg[0]
-            print("puts(%s)" % ql.mem.string(addr))
+            params = ql.os.resolve_fcall_params(ELFTest.PARAMS_PUTS)
+            print(f'puts("{params["s"]}")')
+
             all_mem = ql.mem.save()
             ql.mem.restore(all_mem)
-            
+
         ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello"], "../examples/rootfs/arm_linux", output = "debug", profile='profiles/append_test.ql')
         ql.set_api('puts', my_puts)
         ql.run()
@@ -338,7 +339,7 @@ class ELFTest(unittest.TestCase):
             # syscall.ql_syscall_open(ql, open_pathname, open_flags, open_mode, *args)
 
             # if target:
-                # real_path = ql.os.transform_to_real_path(pathname)
+                # real_path = ql.os.utils.transform_to_real_path(pathname)
                 # assert os.path.isfile(real_path) == True
                 # os.remove(real_path)
 
@@ -353,7 +354,7 @@ class ELFTest(unittest.TestCase):
             # syscall.ql_syscall_unlink(ql, unlink_pathname, *args)
 
             # if target:
-                # real_path = ql.os.transform_to_real_path(pathname)
+                # real_path = ql.os.utils.transform_to_real_path(pathname)
                 # assert os.path.isfile(real_path) == False
 
         # def test_syscall_truncate(ql, trunc_pathname, trunc_length, *args):
@@ -367,7 +368,7 @@ class ELFTest(unittest.TestCase):
             # syscall.ql_syscall_truncate(ql, trunc_pathname, trunc_length, *args)
 
             # if target:
-                # real_path = ql.os.transform_to_real_path(pathname)
+                # real_path = ql.os.utils.transform_to_real_path(pathname)
                 # assert os.stat(real_path).st_size == 0
                 # os.remove(real_path)
 
@@ -382,7 +383,7 @@ class ELFTest(unittest.TestCase):
             # syscall.ql_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args)
 
             # if target:
-                # real_path = ql.os.transform_to_real_path(pathname)
+                # real_path = ql.os.utils.transform_to_real_path(pathname)
                 # assert os.stat(real_path).st_size == 0x10
                 # os.remove(real_path)
 
@@ -426,10 +427,13 @@ class ELFTest(unittest.TestCase):
 
 
     def test_elf_onEnter_mips32el(self):
-        def my_puts_onenter(ql):
-            addr = ql.os.function_arg[0]
-            print("puts(%s)" % ql.mem.string(addr))
-            self.my_puts_onenter_addr = addr
+        def my_puts_onenter(ql: Qiling):
+            params = ql.os.resolve_fcall_params(ELFTest.PARAMS_PUTS)
+            print(f'puts("{params["s"]}")')
+
+            params = ql.os.fcall.readParams(ELFTest.PARAMS_PUTS.values())
+            self.my_puts_onenter_addr = params[0]
+
             return 2
 
         ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_double_hello"], "../examples/rootfs/mips32el_linux")
@@ -497,7 +501,7 @@ class ELFTest(unittest.TestCase):
             regreturn = syscall.ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *args)
 
             if target:
-                real_path = ql.os.transform_to_real_path(pathname)
+                real_path = ql.os.utils.transform_to_real_path(pathname)
                 assert os.path.isfile(real_path) == True
                 if ql.platform != QL_OS.WINDOWS:
                     os.remove(real_path)
@@ -516,7 +520,7 @@ class ELFTest(unittest.TestCase):
             regreturn = syscall.ql_syscall_unlink(ql, unlink_pathname, *args)
 
             if target:
-                real_path = ql.os.transform_to_real_path(pathname)
+                real_path = ql.os.utils.transform_to_real_path(pathname)
                 assert os.path.isfile(real_path) == False
 
             return regreturn
@@ -533,7 +537,7 @@ class ELFTest(unittest.TestCase):
             regreturn = syscall.ql_syscall_truncate(ql, trunc_pathname, trunc_length, *args)
 
             if target:
-                real_path = ql.os.transform_to_real_path(pathname)
+                real_path = ql.os.utils.transform_to_real_path(pathname)
                 assert os.stat(real_path).st_size == 0
                 if ql.platform != QL_OS.WINDOWS:
                     os.remove(real_path)
@@ -552,7 +556,7 @@ class ELFTest(unittest.TestCase):
             regreturn = syscall.ql_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args)
 
             if target:
-                real_path = ql.os.transform_to_real_path(pathname)
+                real_path = ql.os.utils.transform_to_real_path(pathname)
                 assert os.stat(real_path).st_size == 0x10
                 if ql.platform != QL_OS.WINDOWS:
                     os.remove(real_path)
@@ -643,7 +647,7 @@ class ELFTest(unittest.TestCase):
             regreturn = syscall.ql_syscall_open(ql, open_pathname, open_flags, open_mode, *args)
 
             if target:
-                real_path = ql.os.transform_to_real_path(pathname)
+                real_path = ql.os.utils.transform_to_real_path(pathname)
                 assert os.path.isfile(real_path) == True
                 if ql.platform != QL_OS.WINDOWS:
                     os.remove(real_path)
@@ -661,7 +665,7 @@ class ELFTest(unittest.TestCase):
             regreturn = syscall.ql_syscall_unlink(ql, unlink_pathname, *args)
 
             if target:
-                real_path = ql.os.transform_to_real_path(pathname)
+                real_path = ql.os.utils.transform_to_real_path(pathname)
                 assert os.path.isfile(real_path) == False
 
             return regreturn
@@ -677,7 +681,7 @@ class ELFTest(unittest.TestCase):
             regreturn = syscall.ql_syscall_truncate(ql, trunc_pathname, trunc_length, *args)
 
             if target:
-                real_path = ql.os.transform_to_real_path(pathname)
+                real_path = ql.os.utils.transform_to_real_path(pathname)
                 assert os.stat(real_path).st_size == 0
                 if ql.platform != QL_OS.WINDOWS:
                     os.remove(real_path)
@@ -695,7 +699,7 @@ class ELFTest(unittest.TestCase):
             regreturn = syscall.ql_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args)
 
             if target:
-                real_path = ql.os.transform_to_real_path(pathname)
+                real_path = ql.os.utils.transform_to_real_path(pathname)
                 assert os.stat(real_path).st_size == 0x10
                 if ql.platform != QL_OS.WINDOWS:
                     os.remove(real_path)
@@ -933,7 +937,7 @@ class ELFTest(unittest.TestCase):
 
     def test_arm_directory_symlink(self):
         ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello"], "../examples/rootfs/arm_linux", output = "debug")
-        real_path = ql.os.transform_to_real_path("/lib/libsymlink_test.so")
+        real_path = ql.os.utils.transform_to_real_path("/lib/libsymlink_test.so")
         self.assertTrue(real_path.endswith("/examples/rootfs/arm_linux/tmp/media/nand/symlink_test/libsymlink_test.so"))
         del ql
 

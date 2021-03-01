@@ -116,7 +116,7 @@ class QlLoaderMACHO(QlLoader):
         self.ql.os.macho_task_server = MachTaskServer(self.ql)
         
         self.envs = env_dict_to_array(self.env)
-        self.apples = self.ql.os.transform_to_relative_path(self.ql.path)
+        self.apples = self.ql.os.utils.transform_to_relative_path(self.ql.path)
         self.ql.os.heap = QlMemoryHeap(self.ql, self.heap_address, self.heap_address + self.heap_size)
 
         # FIXME: Not working due to overlarge mapping, need to fix it

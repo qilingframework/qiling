@@ -56,7 +56,7 @@ def hook_FindFirstFileA(ql, address, params):
     
     target_dir = os.path.join(ql.rootfs, filename.replace("\\", os.sep))
     print('TARGET_DIR = %s' % target_dir)    
-    real_path = ql.os.transform_to_real_path(filename)
+    real_path = ql.os.utils.transform_to_real_path(filename)
     # Verify the directory is in ql.rootfs to ensure no path traversal has taken place
     if not os.path.exists(real_path):
         ql.os.last_error = ERROR_FILE_NOT_FOUND
@@ -421,7 +421,7 @@ def hook_CreateDirectoryA(ql, address, params):
     path_name = params["lpPathName"]
     target_dir = os.path.join(ql.rootfs, path_name.replace("\\", os.sep))
     print('TARGET_DIR = %s' % target_dir)
-    real_path = ql.os.transform_to_real_path(path_name)
+    real_path = ql.os.utils.transform_to_real_path(path_name)
     # Verify the directory is in ql.rootfs to ensure no path traversal has taken place
     if not os.path.exists(real_path):
         os.mkdir(real_path)
@@ -559,8 +559,8 @@ def hook_UnmapViewOfFile(ql, address, params):
     "bFailIfExists": DWORD
 })
 def hook_CopyFileA(ql, address, params):
-    lpExistingFileName = ql.os.transform_to_real_path(params["lpExistingFileName"])
-    lpNewFileName = ql.os.transform_to_real_path(params["lpNewFileName"])
+    lpExistingFileName = ql.os.utils.transform_to_real_path(params["lpExistingFileName"])
+    lpNewFileName = ql.os.utils.transform_to_real_path(params["lpNewFileName"])
     bFailIfExists = params["bFailIfExists"]
 
     if bFailIfExists and os.path.exists(lpNewFileName):

@@ -63,7 +63,7 @@ def ql_syscall_connect(ql, connect_sockfd, connect_addr, connect_addrlen, *args,
         if s.family == family:
             if s.family == AF_UNIX:
                 sun_path = sock_addr[2 : ].split(b"\x00")[0]
-                sun_path = ql.os.transform_to_real_path(sun_path.decode())
+                sun_path = ql.os.utils.transform_to_real_path(sun_path.decode())
                 s.connect(sun_path)
                 regreturn = 0
             elif s.family == AF_INET:
@@ -119,7 +119,7 @@ def ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen,  *args, **kw):
 
     if sin_family == 1:
         path = data[2 : ].split(b'\x00')[0]
-        path = ql.os.transform_to_real_path(path.decode())
+        path = ql.os.utils.transform_to_real_path(path.decode())
         ql.log.info(path)
         ql.os.fd[bind_fd].bind(path)
 
@@ -332,7 +332,7 @@ def ql_syscall_sendto(ql, sendto_sockfd, sendto_buf, sendto_len, sendto_flags, s
 
                 if sin_family == 1:
                     path = data[2 : ].split(b'\x00')[0]
-                    path = ql.os.transform_to_real_path(path.decode())
+                    path = ql.os.utils.transform_to_real_path(path.decode())
 
                 ql.log.debug("fd is " + str(sendto_sockfd))
                 ql.log.debug("sendto() CONTENT:")

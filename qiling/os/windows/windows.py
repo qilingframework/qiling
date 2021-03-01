@@ -3,20 +3,14 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import types
+from unicorn import UcError
 
-from unicorn import *
-
-from qiling.arch.x86_const import *
-from qiling.arch.x86 import *
-from qiling.const import *
+from qiling.arch.x86 import GDTManager, ql_x86_register_cs, ql_x86_register_ds_ss_es, ql_x86_register_fs, ql_x86_register_gs, ql_x8664_set_gs
+from qiling.exception import QlErrorSyscallError, QlErrorSyscallNotFound
 from qiling.os.os import QlOs
 from qiling.os.fncc import QlOsFncc
 
 from .dlls import *
-from .const import *
-from .utils import *
-
 
 class QlOsWindows(QlOs, QlOsFncc):
     def __init__(self, ql):
@@ -26,9 +20,6 @@ class QlOsWindows(QlOs, QlOsFncc):
         self.PE_RUN = True
         self.last_error = 0
         # variables used inside hooks
-        self.user_defined_api = {}
-        self.user_defined_api_onenter = {}
-        self.user_defined_api_onexit = {}
         self.hooks_variables = {}
         self.syscall_count = {}
         self.argv = self.ql.argv
@@ -46,7 +37,7 @@ class QlOsWindows(QlOs, QlOsFncc):
         self.setupGDT()
         # hook win api
         self.ql.hook_code(self.hook_winapi)
-    
+
 
     def setupGDT(self):
         # setup gdt
@@ -79,42 +70,30 @@ class QlOsWindows(QlOs, QlOsFncc):
 
 
     # hook WinAPI in PE EMU
-    def hook_winapi(self, int, address, size):
+    def hook_winapi(self, ql, address: int, size: int):
         if address in self.ql.loader.import_symbols:
-            winapi_name = self.ql.loader.import_symbols[address]['name']
+            entry = self.ql.loader.import_symbols[address]
+            winapi_name = entry['name']
+
             if winapi_name is None:
-                winapi_name = Mapper[self.ql.loader.import_symbols[address]['dll']][self.ql.loader.import_symbols[address]['ordinal']]
+                winapi_name = Mapper[entry['dll']][entry['ordinal']]
             else:
                 winapi_name = winapi_name.decode()
-            winapi_func = None
 
-            if winapi_name in self.user_defined_api:
-                if isinstance(self.user_defined_api[winapi_name], types.FunctionType):
-                    winapi_func = self.user_defined_api[winapi_name]
-            else:
-                try:
-                    counter = self.syscall_count.get(winapi_name, 0) + 1
-                    self.syscall_count[winapi_name] = counter
-                    winapi_func = globals()['hook_' + winapi_name]
-                except KeyError:
-                    winapi_func = None
-            
-            if winapi_name in self.user_defined_api_onenter:
-                if isinstance(self.user_defined_api_onenter[winapi_name], types.FunctionType):
-                    self.api_func_onenter = self.user_defined_api_onenter[winapi_name]
-            else:
-                self.api_func_onenter = None
+            winapi_func = self.user_defined_api[QL_INTERCEPT.CALL].get(winapi_name)
 
-            if winapi_name in self.user_defined_api_onexit:
-                if isinstance(self.user_defined_api_onexit[winapi_name], types.FunctionType):
-                    self.api_func_onexit = self.user_defined_api_onexit[winapi_name]
-            else:
-                self.api_func_onexit = None
+            if not winapi_func:
+                winapi_func = globals().get(f'hook_{winapi_name}')
+
+                self.syscall_count.setdefault(winapi_name, 0)
+                self.syscall_count[winapi_name] += 1
+
+            self.api_func_onenter = self.user_defined_api[QL_INTERCEPT.ENTER].get(winapi_name)
+            self.api_func_onexit = self.user_defined_api[QL_INTERCEPT.EXIT].get(winapi_name)
 
             if winapi_func:
                 try:
                     winapi_func(self.ql, address, {})
-                        
                 except Exception as ex:
                     self.ql.log.exception(ex)
                     self.ql.log.info("%s Exception Found" % winapi_name)
@@ -126,22 +105,39 @@ class QlOsWindows(QlOs, QlOsFncc):
                     raise QlErrorSyscallNotFound("Windows API Implementation Not Found")
 
 
+    def post_report(self):
+        self.ql.log.debug("Syscalls called")
+        for key, values in self.ql.os.syscalls.items():
+            self.ql.log.debug("%s:" % key)
+            for value in values:
+                self.ql.log.debug("%s " % str(dumps(value)))
+        self.ql.log.debug("Registries accessed")
+        for key, values in self.ql.os.registry_manager.accessed.items():
+            self.ql.log.debug("%s:" % key)
+            for value in values:
+                self.ql.log.debug("%s " % str(dumps(value)))
+        self.ql.log.debug("Strings")
+        for key, values in self.ql.os.appeared_strings.items():
+            val = " ".join([str(word) for word in values])
+            self.ql.log.debug("%s: %s" % (key, val))
+
+
     def run(self):
         if self.ql.exit_point is not None:
             self.exit_point = self.ql.exit_point
-        
+
         if  self.ql.entry_point is not None:
             self.ql.loader.entry_point = self.ql.entry_point
 
         if self.ql.stdin != 0:
             self.stdin = self.ql.stdin
-        
+
         if self.ql.stdout != 0:
             self.stdout = self.ql.stdout
-        
+
         if self.ql.stderr != 0:
             self.stderr = self.ql.stderr
-        
+
         try:
             if self.ql.code:
                 self.ql.emu_start(self.ql.loader.entry_point, (self.ql.loader.entry_point + len(self.ql.code)), self.ql.timeout, self.ql.count)
@@ -153,4 +149,3 @@ class QlOsWindows(QlOs, QlOsFncc):
 
         self.registry_manager.save()
         self.post_report()
-

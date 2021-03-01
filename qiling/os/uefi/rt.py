@@ -84,7 +84,7 @@ def hook_GetVariable(ql, address, params):
 })
 def hook_GetNextVariableName(ql, address, params):
 	name_size = read_int64(ql, params["VariableNameSize"])
-	last_name = ql.os.read_wstring(params["VariableName"])
+	last_name = ql.os.utils.read_wstring(params["VariableName"])
 	vars = ql.env['Names'] # This is a list of variable names in correct order.
 	if last_name in vars and vars.index(last_name) < len(vars) - 1:
 		new_name = vars[vars.index(last_name)+1]

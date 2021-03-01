@@ -102,8 +102,8 @@ def ql_syscall_setuid(ql, *args, **kw):
 def ql_syscall_faccessat(ql, faccessat_dfd, faccessat_filename, faccessat_mode, *args, **kw):
 
     access_path = ql.mem.string(faccessat_filename)
-    real_path = ql.os.transform_to_real_path(access_path)
-    relative_path = ql.os.transform_to_relative_path(access_path)
+    real_path = ql.os.utils.transform_to_real_path(access_path)
+    relative_path = ql.os.utils.transform_to_relative_path(access_path)
 
     regreturn = -1
     if os.path.exists(real_path) == False:
@@ -171,8 +171,8 @@ def ql_syscall_brk(ql, brk_input, *args, **kw):
 def ql_syscall_access(ql, access_path, access_mode, *args, **kw):
     path = (ql.mem.string(access_path))
 
-    real_path = ql.os.transform_to_real_path(path)
-    relative_path = ql.os.transform_to_relative_path(path)
+    real_path = ql.os.utils.transform_to_real_path(path)
+    relative_path = ql.os.utils.transform_to_relative_path(path)
 
     if os.path.exists(real_path) == False:
         regreturn = -1
@@ -262,8 +262,8 @@ def ql_syscall_readlink(ql, path_name, path_buff, path_buffsize, *args, **kw):
     pathname = (ql.mem.read(path_name, 0x100).split(b'\x00'))[0]
     pathname = str(pathname, 'utf-8', errors="ignore")
 
-    real_path = ql.os.transform_to_link_path(pathname)
-    relative_path = ql.os.transform_to_relative_path(pathname)
+    real_path = ql.os.utils.transform_to_link_path(pathname)
+    relative_path = ql.os.utils.transform_to_relative_path(pathname)
 
     if os.path.exists(real_path) == False:
         regreturn = -1
@@ -281,7 +281,7 @@ def ql_syscall_readlink(ql, path_name, path_buff, path_buffsize, *args, **kw):
 
 
 def ql_syscall_getcwd(ql, path_buff, path_buffsize, *args, **kw):
-    localpath = ql.os.transform_to_relative_path('./')
+    localpath = ql.os.utils.transform_to_relative_path('./')
     localpath = bytes(localpath, 'utf-8') + b'\x00'
     ql.mem.write(path_buff, localpath)
     regreturn = (len(localpath))
@@ -297,8 +297,8 @@ def ql_syscall_chdir(ql, path_name, *args, **kw):
     regreturn = 0
     pathname = ql.mem.string(path_name)
 
-    real_path = ql.os.transform_to_real_path(pathname)
-    relative_path = ql.os.transform_to_relative_path(pathname)
+    real_path = ql.os.utils.transform_to_real_path(pathname)
+    relative_path = ql.os.utils.transform_to_relative_path(pathname)
 
     if os.path.exists(real_path) and os.path.isdir(real_path):
         if ql.os.thread_management != None:
@@ -316,8 +316,8 @@ def ql_syscall_readlinkat(ql, readlinkat_dfd, readlinkat_path, readlinkat_buf, r
     pathname = (ql.mem.read(readlinkat_path, 0x100).split(b'\x00'))[0]
     pathname = str(pathname, 'utf-8', errors="ignore")
 
-    real_path = ql.os.transform_to_link_path(pathname)
-    relative_path = ql.os.transform_to_relative_path(pathname)
+    real_path = ql.os.utils.transform_to_link_path(pathname)
+    relative_path = ql.os.utils.transform_to_relative_path(pathname)
 
     if os.path.exists(real_path) == False:
         regreturn = -1
@@ -371,8 +371,8 @@ def ql_syscall_setsid(ql, *args, **kw):
 
 def ql_syscall_execve(ql, execve_pathname, execve_argv, execve_envp, *args, **kw):
     pathname = ql.mem.string(execve_pathname)
-    real_path = ql.os.transform_to_real_path(pathname)
-    relative_path = ql.os.transform_to_relative_path(pathname)
+    real_path = ql.os.utils.transform_to_real_path(pathname)
+    relative_path = ql.os.utils.transform_to_relative_path(pathname)
 
     word_size = 8 if (ql.archtype== QL_ARCH.ARM64) or (ql.archtype== QL_ARCH.X8664) else 4
     unpack = ql.unpack64 if (ql.archtype== QL_ARCH.ARM64) or (ql.archtype== QL_ARCH.X8664) else ql.unpack32
@@ -504,7 +504,7 @@ def ql_syscall_nice(ql, nice_inc, *args, **kw):
 
 def ql_syscall_truncate(ql, path, length, *args, **kw):
     path = ql.mem.string(path)
-    real_path = ql.os.transform_to_real_path(path)
+    real_path = ql.os.utils.transform_to_real_path(path)
     st_size = Stat(real_path).st_size
 
     try:
@@ -547,7 +547,7 @@ def ql_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args, **kw):
 
 def ql_syscall_unlink(ql, unlink_pathname, *args, **kw):
     pathname = ql.mem.string(unlink_pathname)
-    real_path = ql.os.transform_to_real_path(pathname)
+    real_path = ql.os.utils.transform_to_real_path(pathname)
     opened_fds = [getattr(ql.os.fd[i], 'name', None) for i in range(256) if ql.os.fd[i] != 0]
     path = pathlib.Path(real_path)
 
@@ -570,7 +570,7 @@ def ql_syscall_unlink(ql, unlink_pathname, *args, **kw):
 def ql_syscall_unlinkat(ql, dirfd, pathname, flag, *args, **kw):
     #FIXME dirfd(relative path) not implement.
     file_path = ql.mem.string(pathname)
-    real_path = ql.os.transform_to_real_path(file_path)
+    real_path = ql.os.utils.transform_to_real_path(file_path)
     ql.log.debug("unlinkat(%d, %s, 0%o)" % (dirfd, real_path, flag))
     try:
         os.unlink(real_path)
