@@ -73,6 +73,11 @@ class QlFunctionCall:
 
 		return values
 
+	# TODO: turn writeParams into a generic method like readParams
+	def writeParams(self, values: Sequence[int]) -> None:
+		for si, val in enumerate(values):
+			self.cc.setRawParam(si, val)
+
 	def call(self, func: CallHook, params: Mapping[str, Any], hook_onenter: Optional[OnEnterHook], hook_onexit: Optional[OnExitHook], *args) -> Tuple[Mapping, int, int]:
 		"""Call a hooked function.
 

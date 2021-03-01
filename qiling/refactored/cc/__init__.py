@@ -96,18 +96,18 @@ class QlCC:
 
 		raise NotImplementedError
 
-	# def setRawParam(self, slot: int, value: int) -> None:
-	# 	"""Replace the value in the specified argument slot.
-	# 
-	# 	Note that argument slots and argument indexes are not the same. Though they often correlate
-	# 	to each other, some implementations might use more than one slot to represent a sigle argument.
-	# 
-	# 	Args:
-	# 		slot: argument slot to read
-	# 		value: new raw value to write
-	# 	"""
-	# 
-	# 	raise NotImplementedError
+	def setRawParam(self, slot: int, value: int) -> None:
+		"""Replace the value in the specified argument slot.
+
+		Note that argument slots and argument indexes are not the same. Though they often correlate
+		to each other, some implementations might use more than one slot to represent a sigle argument.
+
+		Args:
+			slot: argument slot to read
+			value: new raw value to write
+		"""
+
+		raise NotImplementedError
 
 	def getReturnValue(self) -> int:
 		"""Get function return value.
