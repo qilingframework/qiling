@@ -137,21 +137,21 @@ class QlOsWindows(QlOs):
 
 
     def post_report(self):
-        self.ql.log.debug("Syscalls called")
+        self.ql.log.debug("Syscalls called:")
         for key, values in self.utils.syscalls.items():
             self.ql.log.debug(f'{key}:')
 
             for value in values:
-                self.ql.log.debug(f'{json.dumps(value):s}')
+                self.ql.log.debug(f'  {json.dumps(value):s}')
 
-        self.ql.log.debug("Registries accessed")
+        self.ql.log.debug("Registries accessed:")
         for key, values in self.registry_manager.accessed.items():
             self.ql.log.debug(f'{key}:')
 
             for value in values:
-                self.ql.log.debug(f'{json.dumps(value):s}')
+                self.ql.log.debug(f'  {json.dumps(value):s}')
 
-        self.ql.log.debug("Strings")
+        self.ql.log.debug("Strings:")
         for key, values in self.utils.appeared_strings.items():
             self.ql.log.debug(f'{key}: {" ".join(str(word) for word in values)}')
 
