@@ -1,7 +1,7 @@
 from abc import ABC
 
 from qiling.os.memory import QlMemoryHeap
-from qiling.os.uefi.utils import init_struct, str_to_guid, execute_protocol_notifications, signal_event
+from qiling.os.uefi.utils import init_struct, update_struct, str_to_guid, execute_protocol_notifications, signal_event
 from qiling.os.uefi.UefiSpec import EFI_CONFIGURATION_TABLE, EFI_SYSTEM_TABLE
 from qiling.os.uefi.smst import EFI_SMM_SYSTEM_TABLE2
 
@@ -77,9 +77,8 @@ class DxeContext(UefiContext):
 	def install_configuration_table(self, guid, table):
 		super().install_configuration_table(guid, table)
 		# Update number of configuration table entries in the ST.
-		gST = EFI_SYSTEM_TABLE.loadFrom(self.ql, self.ql.loader.gST)
-		gST.NumberOfTableEntries = len(self.conf_table_array)
-		gST.saveTo(self.ql, self.ql.loader.gST)
+		with update_struct(EFI_SYSTEM_TABLE, self.ql, self.ql.loader.gST) as gST:
+			gST.NumberOfTableEntries = len(self.conf_table_array)
 
 class SmmContext(UefiContext):
 	def __init__(self, ql):
@@ -96,6 +95,5 @@ class SmmContext(UefiContext):
 	def install_configuration_table(self, guid, table):
 		super().install_configuration_table(guid, table)
 		# Update number of configuration table entries in the SMST.
-		gSmst = EFI_SMM_SYSTEM_TABLE2.loadFrom(self.ql, self.ql.loader.gSmst)
-		gSmst.NumberOfTableEntries = len(self.conf_table_array)
-		gSmst.saveTo(self.ql, self.ql.loader.gSmst)
+		with update_struct(EFI_SMM_SYSTEM_TABLE2, self.ql, self.ql.loader.gSmst) as gSmst:
+			gSmst.NumberOfTableEntries = len(self.conf_table_array)

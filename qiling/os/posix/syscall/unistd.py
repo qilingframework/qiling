@@ -16,6 +16,7 @@ from qiling.os.filestruct import *
 from qiling.os.posix.const_mapping import *
 from qiling.exception import *
 from qiling.os.posix.stat import *
+from qiling.core_hooks import QlCoreHooks
 
 def ql_syscall_exit(ql, exit_code, *args, **kw):
     if ql.os.child_processes == True:
@@ -52,74 +53,51 @@ def ql_syscall_exit_group(ql, exit_code, *args, **kw):
 
 
 def ql_syscall_alarm(ql, alarm_seconds, *args, **kw):
-    regreturn = 0
-    return regreturn
+    return 0
 
 
 def ql_syscall_issetugid(ql, *args, **kw):
-    UGID = ql.os.uid
-    regreturn = UGID
-    return regreturn
+    return 0
 
 
 def ql_syscall_getuid(ql, *args, **kw):
-    UID = ql.os.uid
-    regreturn = UID
-    return regreturn
+    return 0
 
 
 def ql_syscall_getuid32(ql, *args, **kw):
-    UID = ql.os.uid
-    regreturn = UID
-    return regreturn
+    return 0
 
 
 def ql_syscall_getgid32(ql, *args, **kw):
-    GID = ql.os.gid
-    regreturn = GID
-    return regreturn
+    return 0
 
 
 def ql_syscall_geteuid(ql, *args, **kw):
-    EUID = ql.os.uid
-    regreturn = EUID
-    return regreturn
+    return 0
 
 
 def ql_syscall_getegid(ql, *args, **kw):
-    EGID = ql.os.gid
-    regreturn = EGID
-    return regreturn
+    return 0
 
 
 def ql_syscall_getgid(ql, *args, **kw):
-    GID = ql.os.gid
-    regreturn = GID
-    return regreturn
+    return 0
 
 
 def ql_syscall_setgroups(ql, gidsetsize, grouplist, *args, **kw):
-    GID = ql.os.gid
-    regreturn = GID
-    return regreturn
+    return 0
 
 
 def ql_syscall_setgid(ql, *args, **kw):
-    GID = ql.os.gid
-    regreturn = GID
-    return regreturn
+    return 0
 
 
 def ql_syscall_setgid32(ql, *args, **kw):
-    GID = ql.os.gid
-    regreturn = GID
-    return regreturn    
+    return 0   
 
 
 def ql_syscall_setuid(ql, *args, **kw):
-    UID = ql.os.uid
-    regreturn = UID
-    return regreturn
+    return 0
 
 
 def ql_syscall_faccessat(ql, faccessat_dfd, faccessat_filename, faccessat_mode, *args, **kw):
@@ -423,23 +401,24 @@ def ql_syscall_execve(ql, execve_pathname, execve_argv, execve_envp, *args, **kw
             execve_envp += word_size
 
     ql.emu_stop()
-    
+
     ql.log.debug("execve(%s, [%s], [%s])"% (pathname, ', '.join(argv), ', '.join([key + '=' + value for key, value in env.items()])))
-    
+
     ql.loader.argv      = argv
     ql.loader.env       = env
     ql._path             = real_path
-    
+
     ql.mem.map_info     = []
     ql.clear_ql_hooks()
-    
+
     if ql.code:
         return     
-    
-    # ql._uc               = ql.arch.init_uc
-    # ql.os.load()
-    # ql.loader.run()
-    # ql.run()
+
+    ql._uc               = ql.arch.init_uc
+    QlCoreHooks.__init__(ql, ql._uc)
+    ql.os.load()
+    ql.loader.run()
+    ql.run()
 
 
 def ql_syscall_dup(ql, dup_oldfd, *args, **kw):

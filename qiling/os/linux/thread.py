@@ -23,17 +23,11 @@ from qiling.exception import *
 LINUX_THREAD_ID = 2000
 
 
-def new_thread_id():
-    global LINUX_THREAD_ID
-    old = LINUX_THREAD_ID
-    LINUX_THREAD_ID += 1
-    return old
-
 class QlLinuxThread(QlThread):
     def __init__(self, ql, start_address, exit_point, context = None, set_child_tid_addr = None, thread_id = None):
         super(QlLinuxThread, self).__init__(ql)
         if not thread_id:
-            self._thread_id = new_thread_id()
+            self.new_thread_id()
         else:
             self._thread_id = thread_id
         self._saved_context = context
@@ -360,9 +354,14 @@ class QlLinuxThread(QlThread):
     def is_blocking(self):
         return self.status == THREAD_STATUS_BLOCKING
 
-    def update_global_thread_id(self):
-        QlLinuxThread.LINUX_THREAD_ID = os.getpid()
+    def new_thread_id(self):
+        global LINUX_THREAD_ID
+        self._thread_id = LINUX_THREAD_ID
+        LINUX_THREAD_ID += 1
 
+    def update_global_thread_id(self):
+        global LINUX_THREAD_ID
+        LINUX_THREAD_ID = os.getpid()
 
 class QlLinuxX86Thread(QlLinuxThread):
     """docstring for X86Thread"""

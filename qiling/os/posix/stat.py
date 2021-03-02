@@ -15,6 +15,7 @@ class Stat(object):
             if name.startswith('st_'):
                 setattr(self, name, getattr(stat_buf, name))
 
+
 class Fstat(object):
     def __init__(self, fd):
         super().__init__()

@@ -174,7 +174,7 @@ if __name__ == '__main__':
 
     comm_parser.add_argument('-o', '--output', required=False, default='default',
                             help='output mode, options are off, debug , disasm, dump')
-    comm_parser.add_argument('-v', '--verbose', required=False, default=1, dest='verbose',
+    comm_parser.add_argument('-v', '--verbose', required=False, default=1, dest='verbose', type=int,
                             help='verbose mode, must be int and use with --debug or --dump')
     comm_parser.add_argument('--env', required=False, default='', metavar="FILE", dest="env", help="Pickle file containing an environment dictionary")                            
     comm_parser.add_argument('-g', '--gdb', required=False, help='enable gdb server')
@@ -273,17 +273,17 @@ if __name__ == '__main__':
         usage()
 
     # ql execute additional options
-    if options.gdb:
+    if options.gdb is not None:
         ql.debugger = options.gdb
 
     if options.debug_stop and (options.dump or options.debug):
         ql.debug_stop = True
         
-    if options.root:
+    if options.root is not None:
         ql.root = True
 
-    if options.verbose:
-        ql.verbose = options.verbose
+    if options.verbose is not None:
+        ql.verbose = int(options.verbose)
     else:
         ql.verbose = 1
 

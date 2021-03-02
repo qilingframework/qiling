@@ -58,6 +58,8 @@ class QilingColoredFormatter(logging.Formatter):
         return LEVEL_NAME[record.levelname]
 
     def format(self, record: LogRecord):
+        # In case we have multiple formatters, we have to keep a copy of the record.
+        record = copy.deepcopy(record)
         record.levelname = self.get_colored_level(record)
         try:
             cur_thread = self._ql.os.thread_management.cur_thread

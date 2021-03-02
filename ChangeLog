@@ -12,7 +12,12 @@ BREAK CHANGE
 
 ------------------------------------
 [Version 1.2.3]: March [SOMETHING], 2021
+
 - Improved PR #689, Android syscall and test fix
+- GDB speed optimization
+- Fixed return value for uid/gid related syscall
+- Resolved multilevel symbolic links
+- Demigod set.api implementation
 
 
 ------------------------------------

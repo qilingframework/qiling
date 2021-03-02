@@ -341,7 +341,7 @@ class QlLoaderMACHO(QlLoader):
             else:
                 self.ql.log.info("Entry point not found")
                 self.kext_start = None
-
+            
             if b"__antimain" in self.kext_local_symbols:
                 antimain = loadbase + self.kext_local_symbols[b"__antimain"]["n_value"]
                 current_value, = struct.unpack("<Q", self.ql.mem.read(antimain, 8))

@@ -137,7 +137,7 @@ class ELFTest(unittest.TestCase):
 
 
     def test_elf_linux_x86(self):
-        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_hello"], "../examples/rootfs/x86_linux", output="debug")     
+        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_hello"], "../examples/rootfs/x86_linux", output="debug", log_file="test.qlog")     
         ql.run()
         del ql
 
@@ -931,6 +931,11 @@ class ELFTest(unittest.TestCase):
         ql.run()
         del ql
 
+    def test_arm_directory_symlink(self):
+        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello"], "../examples/rootfs/arm_linux", output = "debug")
+        real_path = ql.os.transform_to_real_path("/lib/libsymlink_test.so")
+        self.assertTrue(real_path.endswith("/examples/rootfs/arm_linux/tmp/media/nand/symlink_test/libsymlink_test.so"))
+        del ql
 
     def test_x8664_absolute_path(self):
         class MyPipe():

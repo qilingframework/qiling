@@ -261,7 +261,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
     def os(self) -> "QlOs":
         """ Qiling os layer.
 
-            Also see qiling/os/<os>/<os>/py
+            Also see qiling/os/<os>/<os>.py
         """
         return self._os
 
