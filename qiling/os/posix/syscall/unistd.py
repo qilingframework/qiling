@@ -16,6 +16,7 @@ from qiling.os.filestruct import *
 from qiling.os.posix.const_mapping import *
 from qiling.exception import *
 from qiling.os.posix.stat import *
+from qiling.core_hooks import QlCoreHooks
 
 def ql_syscall_exit(ql, exit_code, *args, **kw):
     if ql.os.child_processes == True:
@@ -400,23 +401,24 @@ def ql_syscall_execve(ql, execve_pathname, execve_argv, execve_envp, *args, **kw
             execve_envp += word_size
 
     ql.emu_stop()
-    
+
     ql.log.debug("execve(%s, [%s], [%s])"% (pathname, ', '.join(argv), ', '.join([key + '=' + value for key, value in env.items()])))
-    
+
     ql.loader.argv      = argv
     ql.loader.env       = env
     ql._path             = real_path
-    
+
     ql.mem.map_info     = []
     ql.clear_ql_hooks()
-    
+
     if ql.code:
         return     
-    
-    # ql._uc               = ql.arch.init_uc
-    # ql.os.load()
-    # ql.loader.run()
-    # ql.run()
+
+    ql._uc               = ql.arch.init_uc
+    QlCoreHooks.__init__(ql, ql._uc)
+    ql.os.load()
+    ql.loader.run()
+    ql.run()
 
 
 def ql_syscall_dup(ql, dup_oldfd, *args, **kw):
