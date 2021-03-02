@@ -7,6 +7,7 @@ import os
 
 from typing import Callable, Sequence, Mapping, MutableMapping, Any
 from functools import wraps
+from unicorn.mips_const import *
 
 from qiling.os.const import *
 from qiling.os.windows.utils import *
