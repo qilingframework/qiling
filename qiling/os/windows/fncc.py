@@ -4,18 +4,13 @@
 #
 
 import json, os
-from qiling.exception import QlErrorBase 
 
-from typing import Union, Optional, Mapping, MutableMapping, Any
-from functools import wraps
+from typing import Union, Optional, Mapping, MutableMapping
 
 from qiling import Qiling
+from qiling.const import QL_INTERCEPT
 from qiling.extensions.windows_sdk import winsdk_path
 import qiling.os.const as const
-
-# temp:
-from qiling.const import QL_ARCH
-from qiling.os.const import STDCALL, CDECL
 
 def replacetype(ptype: str, specialtype: Mapping) -> Optional[int]:
     if ptype in specialtype:
@@ -86,7 +81,7 @@ def __load_winsdk_defs(dllname: str) -> Mapping:
     return __sdk_cache[dllname]
 
 # x86/x8664 PE should share Windows APIs
-def winsdkapi(cc: int, param_num: int = None, dllname: str = None, replace_params_type={}, replace_params={}, passthru: bool = False):
+def winsdkapi(cc: int, param_num: int = None, dllname: str = None, replace_params_type: Mapping[str, str] = {}, replace_params = {}, passthru: bool = False):
     """
     @cc: windows api calling convention, only x86 needs this, x64 is always fastcall
     @param_num: the number of function params, used by variadic functions, e.g printf
@@ -96,20 +91,18 @@ def winsdkapi(cc: int, param_num: int = None, dllname: str = None, replace_param
                 replace the original type of time to int
     """
     def decorator(func):
-        @wraps(func)
-        def wrapper(ql: Qiling, pc: int):
+        def wrapper(ql: Qiling, pc: int, api_name: str):
             params = {}
 
+            # ---------- params types substitution (to be removed eventually) ----------
             if dllname is not None:
-                #FIXME: this implies that function name is assumed to be prefixed with "hook_"
-                funcname = func.__name__[5:]
                 funcdefs = __load_winsdk_defs(dllname)
 
                 if not funcdefs:
                     ql.log.info(f'defs for {dllname} not found')
 
-                if funcname in funcdefs:
-                    paramlist = funcdefs[funcname]
+                if api_name in funcdefs:
+                    paramlist = funcdefs[api_name]
 
                     if len(replace_params) == len(paramlist):
                         params = replace_params
@@ -120,7 +113,7 @@ def winsdkapi(cc: int, param_num: int = None, dllname: str = None, replace_param
                                 params[pname] = replacetype(ptype, replace_params_type)
 
                                 if params[pname] is None:
-                                    ql.log.exception(f'no replacement found for type "{ptype}"')
+                                    ql.log.exception(f'no replacement found for type "{ptype}" ({api_name}, {dllname})')
 
                     else:
                         for pname, ptype in paramlist.items():
@@ -140,22 +133,19 @@ def winsdkapi(cc: int, param_num: int = None, dllname: str = None, replace_param
                                 params[pname] = replacetype(ptype, replace_params_type)
 
                                 if params[pname] is None:
-                                    ql.log.exception(f'no replacement found for type "{ptype}" (api: {funcname}, dll: {dllname})')
+                                    ql.log.exception(f'no replacement found for type "{ptype}" ({api_name}, {dllname})')
                 else:
                     params = replace_params
             else:
                 params = replace_params
+            # --------------------------------------------------------------------------
 
-            args = [ql, pc, {}]
-            kwargs = {}
+            ql.os.fcall = ql.os.fcall_selector(cc)
 
-            if ql.archtype == QL_ARCH.X86:
-                if cc == STDCALL:
-                    return ql.os.x86_stdcall(param_num, params, func, args, kwargs, passthru)
-                elif cc == CDECL:
-                    return ql.os.x86_cdecl(param_num, params, func, args, kwargs, passthru)
-            elif ql.archtype == QL_ARCH.X8664:
-                return ql.os.x8664_fastcall(param_num, params, func, args, kwargs, passthru)
+            onenter = ql.os.user_defined_api[QL_INTERCEPT.ENTER].get(api_name)
+            onexit = ql.os.user_defined_api[QL_INTERCEPT.EXIT].get(api_name)
+
+            return ql.os.call(pc, func, params, onenter, onexit, passthru=passthru)
 
         return wrapper
 
