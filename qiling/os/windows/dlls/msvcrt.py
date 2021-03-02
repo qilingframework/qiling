@@ -3,7 +3,6 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import os
 import time
 
 from qiling import Qiling
@@ -186,85 +185,60 @@ def hook__get_initial_narrow_environment(ql: Qiling, address: int, params):
     return ret
 
 # int sprintf ( char * str, const char * format, ... );
-@winsdkapi(cc=CDECL, dllname=dllname, param_num=3)
+@winsdkapi(cc=CDECL, dllname=dllname, replace_params={'buff': POINTER, 'format': STRING, 'arglist': POINTER})
 def hook_sprintf(ql: Qiling, address: int, params):
-    ret = 0
-    str_ptr, format_ptr = ql.os.get_function_param(2)
+    api_name = 'sprintf'
+    format = params['format']
 
-    if not format_ptr:
-        ql.log.info('printf(format = 0x0) = 0x%x' % ret)
-        return ret
+    if format == 0:
+        ql.log.info(f'{api_name}("(null)") = 0')
+        return 0
 
-    sp = ql.reg.esp if ql.archtype == QL_ARCH.X86 else ql.reg.rsp
-    p_args = sp + ql.pointersize * 3
+    buff = params['buff']
+    arglist = params['arglist']
 
-    format_string = ql.os.utils.read_cstring(format_ptr)
-    str_size, str_data = ql.os.utils.vprintf(address, format_string, p_args, "sprintf")
+    str_size, str_data = ql.os.utils.vprintf(address, format, arglist, api_name, wstring=False)
 
-    count = format_string.count('%')
-    if ql.archtype == QL_ARCH.X8664:
-        if count + 1 > 4:
-            ql.reg.rsp = ql.reg.rsp + ((count - 4 + 1) * 8)
+    ql.mem.write(buff, str_data.encode('utf-8') + b'\x00')
 
-    ql.mem.write(str_ptr, str_data.encode('utf-8') + b'\x00')
-    ret = str_size
-    
-    return ret
+    return str_size
 
 
 # int printf(const char *format, ...)
-@winsdkapi(cc=CDECL, param_num=1)
-def hook_printf(ql, address, _):
-    ret = 0
-    format_string = ql.os.get_function_param(1)
+@winsdkapi(cc=CDECL, param_num=1, replace_params={'format': STRING})
+def hook_printf(ql: Qiling, address: int, params):
+    api_name = 'printf'
+    format = params['format']
 
-    if format_string == 0:
-        ql.log.info('printf(format = 0x0) = 0x%x' % ret)
-        return ret
+    if format == 0:
+        ql.log.info(f'{api_name}("(null)") = 0')
+        return 0
 
-    format_string = ql.os.utils.read_cstring(format_string)
+    nargs = format.count("%")
+    ptypes = (POINTER, ) + (PARAM_INTN, ) * nargs
 
-    count = format_string.count("%")
-    params = ql.os.get_function_param(count + 1)[1:] if count > 0 else []
-    ret, _ = ql.os.utils.printf(address, format_string, params, "printf")
+    params = ql.os.fcall.readParams(ptypes)[1:]
+    ret, _ = ql.os.utils.printf(address, format, params, api_name, wstring=False)
 
-    ql.os.set_return_value(ret)
-
-    # x8664 fastcall donnot known the real number of parameters
-    # so you need to manually pop the stack
-    if ql.archtype == QL_ARCH.X8664:
-        # if number of params > 4
-        if count + 1 > 4:
-            ql.reg.rsp = ql.reg.rsp + ((count - 4 + 1) * 8)
-
-    return None
+    return ret
 
 # int wprintf(const wchar_t *format, ...)
-@winsdkapi(cc=CDECL, param_num=1)
-def hook_wprintf(ql, address, _):
-    ret = 0
-    format_string = ql.os.get_function_param(1)
+@winsdkapi(cc=CDECL, param_num=1, replace_params={'format': WSTRING})
+def hook_wprintf(ql: Qiling, address: int, params):
+    api_name = 'wprintf'
+    format = params['format']
 
-    if format_string == 0:
-        ql.log.info('wprintf(format = 0x0) = 0x%x' % ret)
-        return ret
+    if format == 0:
+        ql.log.info(f'{api_name}("(null)") = 0')
+        return 0
 
-    format_string = ql.os.utils.read_wstring(format_string)
+    nargs = format.count("%")
+    ptypes = (POINTER, ) + (PARAM_INTN, ) * nargs
 
-    count = format_string.count("%")
-    params = ql.os.get_function_param(count + 1)[1:] if count > 0 else []
-    ret, _ = ql.os.utils.printf(address, format_string, params, "wprintf", wstring=True)
+    params = ql.os.fcall.readParams(ptypes)[1:]
+    ret, _ = ql.os.utils.printf(address, format, params, api_name, wstring=True)
 
-    ql.os.set_return_value(ret)
-
-    # x8664 fastcall donnot known the real number of parameters
-    # so you need to manually pop the stack
-    if ql.archtype == QL_ARCH.X8664:
-        # if number of params > 4
-        if count + 1 > 4:
-            ql.reg.rsp = ql.reg.rsp + ((count - 4 + 1) * 8)
-
-    return None
+    return ret
 
 # MSVCRT_FILE * CDECL MSVCRT___acrt_iob_func(unsigned idx)
 @winsdkapi(cc=CDECL, replace_params={"idx": UINT})
@@ -272,77 +246,58 @@ def hook___acrt_iob_func(ql: Qiling, address: int, params):
     ret = 0
     return ret
 
+# __stdio_common_vfprintf(_OptionsStorage, FILE* _Stream, char const* _Format, _locale_t _Locale, va_list _ArgList)
+@winsdkapi(cc=CDECL, replace_params={'optstorage': PARAM_INT64, 'stream': POINTER, 'format': STRING, 'locale': DWORD, 'arglist': POINTER})
+def hook___stdio_common_vfprintf(ql: Qiling, address: int, params):
+    format = params['format']
+    arglist = params['arglist']
 
-@winsdkapi(cc=CDECL, param_num=2)
-def hook___stdio_common_vfprintf(ql, address, _):
-    ret = 0
-    if ql.pointersize == 8:
-        _, _, p_format, _, p_args = ql.os.get_function_param(5)
-    else:
-        _, _, _, p_format, _, p_args = ql.os.get_function_param(6)
-    fmt = ql.os.utils.read_cstring(p_format)
-    ql.os.utils.vprintf(address, fmt, p_args, '__stdio_common_vfprintf')
+    ret, _ = ql.os.utils.vprintf(address, format, arglist, '__stdio_common_vfprintf', wstring=False)
+
     return ret
 
 
-@winsdkapi(cc=CDECL, param_num=4)
-def hook___stdio_common_vfwprintf(ql, address, _):
-    ret = 0
-    _, _, _, p_format, _, p_args = ql.os.get_function_param(6)
-    fmt = ql.os.utils.read_wstring(p_format)
+@winsdkapi(cc=CDECL, replace_params={'optstorage': PARAM_INT64, 'stream': POINTER, 'format': WSTRING, 'locale': DWORD, 'arglist': POINTER})
+def hook___stdio_common_vfwprintf(ql: Qiling, address: int, params):
+    format = params['format']
+    arglist = params['arglist']
 
-    ql.os.utils.vprintf(address, fmt, p_args, '__stdio_common_vfwprintf', wstring=True)
+    ret, _ = ql.os.utils.vprintf(address, format, arglist, '__stdio_common_vfwprintf', wstring=True)
+
     return ret
 
-
-@winsdkapi(cc=CDECL, param_num=4)
+# int __cdecl __stdio_common_vswprintf_s(unsigned __int64,wchar_t*,size_t,const wchar_t*,_locale_t,__ms_va_list)
+@winsdkapi(cc=CDECL, replace_params={'optstorage': PARAM_INT64, 'buff': POINTER, 'size': SIZE_T, 'format': WSTRING, 'locale': DWORD, 'arglist': POINTER})
 def hook___stdio_common_vswprintf_s(ql: Qiling, address: int, params):
-    ret = 0
-    _, size, p_format, p_args = ql.os.get_function_param(4)
+    format = params['format']
+    arglist = params['arglist']
 
-    fmt = ql.os.utils.read_wstring(p_format)
-    ql.os.utils.vprintf(address, fmt, p_args, '__stdio_common_vswprintf_s', wstring=True)
+    str_size, str_data = ql.os.utils.vprintf(address, format, arglist, '__stdio_common_vswprintf_s', wstring=True)
 
-    return ret
+    buff = params['buff']
+
+    ql.mem.write(buff, str_data.encode('utf-8') + b'\x00')
+
+    return str_size
 
 # int lstrlenA(
 #   LPCSTR lpString
 # );
-@winsdkapi(cc=STDCALL, replace_params={'lpString': POINTER})
-def hook_lstrlenA(ql, address, params):
-    addr = params["lpString"]
+@winsdkapi(cc=STDCALL, replace_params={'lpString': STRING})
+def hook_lstrlenA(ql: Qiling, address: int, params):
+    s = params["lpString"]
 
-    if addr == 0:
-        return 0
-
-    string = b""
-    val = ql.mem.read(addr, 1)
-    while bytes(val) != b"\x00":
-        addr += 1
-        string += bytes(val)
-        val = ql.mem.read(addr, 1)
-    params["lpString"] = bytearray(string)
-    return len(string)
+    return 0 if not s else len(s)
 
 
 # int lstrlenW(
 #   LPCWSTR lpString
 # );
-@winsdkapi(cc=CDECL, replace_params={'lpString': POINTER})
-def hook_lstrlenW(ql, address, params):
-    addr = params["lpString"]
+@winsdkapi(cc=CDECL, replace_params={'lpString': WSTRING})
+def hook_lstrlenW(ql: Qiling, address: int, params):
+    s = params["lpString"]
 
-    if addr == 0:
-        return 0
-
-    string = b""
-    val = ql.mem.read(addr, 2)
-    while bytes(val) != b"\x00\x00":
-        addr += 2
-        string += bytes(val)
-        val = ql.mem.read(addr, 2)
-    params["lpString"] = bytearray(string)
-    return len(string)
+    return 0 if not s else len(s)
 
 
 @winsdkapi(cc=CDECL)
@@ -355,10 +310,10 @@ def hook___lconv_init(ql: Qiling, address: int, params):
 #    const char *str
 # );
 @winsdkapi(cc=CDECL, replace_params={"str": STRING})
-def hook_strlen(ql, address, params):
-    _str = params["str"]
-    strlen = len(_str)
-    return strlen
+def hook_strlen(ql: Qiling, address: int, params):
+    s = params["str"]
+
+    return 0 if not s else len(s)
 
 
 # int strncmp(
