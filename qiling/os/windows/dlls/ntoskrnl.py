@@ -111,7 +111,7 @@ def hook_DbgPrintEx(ql, address, _):
     count = format_string.count('%')
     args = ql.os.get_function_param(2 + count)[2:]
     
-    ret, _ = ql.os.utils.printf(address, format_string, args, "DbgPrintEx")
+    ret, _ = ql.os.utils.printf(format_string, args, "DbgPrintEx")
     ql.os.set_return_value(ret)
 
     # x8664 fastcall does not known the real number of parameters
@@ -142,7 +142,7 @@ def hook_DbgPrint(ql, address, _):
     count = format_string.count('%')
     args = ql.os.get_function_param(2 + count)[2:]
 
-    ret, _ = ql.os.utils.printf(address, format_string, args, "DbgPrint")
+    ret, _ = ql.os.utils.printf(format_string, args, "DbgPrint")
     ql.os.set_return_value(ret)
     
     # x8664 fastcall does not known the real number of parameters

@@ -218,7 +218,7 @@ def hook_printf(ql: Qiling, address: int, params):
     ptypes = (POINTER, ) + (PARAM_INTN, ) * nargs
 
     params = ql.os.fcall.readParams(ptypes)[1:]
-    ret, _ = ql.os.utils.printf(address, format, params, api_name, wstring=False)
+    ret, _ = ql.os.utils.printf(format, params, api_name, wstring=False)
 
     return ret
 
@@ -236,7 +236,7 @@ def hook_wprintf(ql: Qiling, address: int, params):
     ptypes = (POINTER, ) + (PARAM_INTN, ) * nargs
 
     params = ql.os.fcall.readParams(ptypes)[1:]
-    ret, _ = ql.os.utils.printf(address, format, params, api_name, wstring=True)
+    ret, _ = ql.os.utils.printf(format, params, api_name, wstring=True)
 
     return ret
 
