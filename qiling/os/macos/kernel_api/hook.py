@@ -11,7 +11,7 @@ from qiling.exception import QlErrorSyscallError, QlErrorSyscallNotFound
 import qiling.os.macos.kernel_api as api
 
 # hook MacOS kernel API
-def hook_kernel_api(ql: Qiling, address: int, size):
+def hook_kernel_api(ql: Qiling, address: int, size: int):
     # call kernel api
     if address in ql.loader.import_symbols:
         api_name = ql.loader.import_symbols[address]
@@ -28,9 +28,10 @@ def hook_kernel_api(ql: Qiling, address: int, size):
             except Exception:
                 ql.log.exception("")
                 ql.log.debug("%s Exception Found" % api_name)
+
                 raise QlErrorSyscallError("MacOS kernel API Implementation Error")
         else:
-            ql.log.warning("{api_name} is not implemented\n")
+            ql.log.warning(f'api {api_name} is not implemented')
 
             if ql.debug_stop:
                 raise QlErrorSyscallNotFound("MacOS kernel API implementation not found")
