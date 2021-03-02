@@ -167,9 +167,9 @@ class QlOsUtils:
                 params.append(
                     self.ql.unpack(param)
                 )
-        return self.printf(address, fmt, params, name, wstring)
+        return self.printf(fmt, params, name, wstring)
 
-    def printf(self, address, fmt, params, name, wstring=False):
+    def printf(self, fmt, params, name, wstring=False):
         if len(params) > 0:
             formats = fmt.split("%")[1:]
             index = 0

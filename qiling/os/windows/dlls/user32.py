@@ -544,7 +544,7 @@ def hook_wsprintfW(ql, address, params):
     format_string = ql.os.utils.read_wstring(p_format)
     count = format_string.count('%')
     args = ql.os.get_function_param(2 + count)[2:]
-    size, string = ql.os.utils.printf(format_string, args, "wsprintfW", wstring=True)
+    size, string = ql.os.utils.printf(address, format_string, args, "wsprintfW", wstring=True)
 
     if ql.archtype == QL_ARCH.X8664:
         # We must pop the stack correctly
@@ -565,7 +565,7 @@ def hook_sprintf(ql, address, params):
     format_string = ql.os.utils.read_wstring(p_format)
     count = format_string.count('%')
     args = ql.os.get_function_param(2 + count)[2:]
-    size, string = ql.os.utils.printf(format_string, args, "sprintf", wstring=True)
+    size, string = ql.os.utils.printf(address, format_string, args, "sprintf", wstring=True)
 
     if ql.archtype == QL_ARCH.X8664:
         # We must pop the stack correctly
@@ -635,7 +635,7 @@ def hook_wsprintfA(ql, address, params):
     format_string = ql.os.utils.read_cstring(p_format)
     count = format_string.count('%')
     args = ql.os.get_function_param(2 + count)[2:]
-    size, string = ql.os.utils.printf(format_string, args, "wsprintfA")
+    size, string = ql.os.utils.printf(address, format_string, args, "wsprintfA")
 
     if ql.archtype== QL_ARCH.X8664:
         # We must pop the stack correctly
