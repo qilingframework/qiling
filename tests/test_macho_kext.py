@@ -65,7 +65,7 @@ class MACHOTest(unittest.TestCase):
             self.set_api_onenter = True
             return address, params
 
-        def my_onexit(ql, address, params):
+        def my_onexit(ql, address, params, retval):
             print("\n")
             print("=" * 40)
             print(" Enter into my_exit mode")

@@ -285,7 +285,7 @@ class PETest(unittest.TestCase):
             self.set_api_onenter = self.set_api = len( params["str"])
             return  address, params
 
-        def my_onexit(ql, address, params):
+        def my_onexit(ql, address, params, retval):
             print("\n+++++++++\nmy OnExit")
             print("params: ", params)
             print("+++++++++\n")
