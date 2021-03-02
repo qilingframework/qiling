@@ -36,16 +36,17 @@ class QlOs:
             QL_INTERCEPT.EXIT : {}
         }
 
-        if not hasattr(sys.stdin, "fileno") or not hasattr(sys.stdout, "fileno") or not hasattr(sys.stderr, "fileno"):
-            # IDAPython has some hack on standard io streams and thus they don't have corresponding fds.
-
-            self.stdin  = sys.stdin.buffer  if hasattr(sys.stdin,  "buffer") else sys.stdin
-            self.stdout = sys.stdout.buffer if hasattr(sys.stdout, "buffer") else sys.stdout
-            self.stderr = sys.stderr.buffer if hasattr(sys.stderr, "buffer") else sys.stderr
-        else:
+        # IDAPython has some hack on standard io streams and thus they don't have corresponding fds.
+        try:
+            import ida_idaapi
+        except ImportError:
             self.stdin  = ql_file('stdin',  sys.stdin.fileno())
             self.stdout = ql_file('stdout', sys.stdout.fileno())
             self.stderr = ql_file('stderr', sys.stderr.fileno())
+        else:
+            self.stdin  = sys.stdin.buffer  if hasattr(sys.stdin,  "buffer") else sys.stdin
+            self.stdout = sys.stdout.buffer if hasattr(sys.stdout, "buffer") else sys.stdout
+            self.stderr = sys.stderr.buffer if hasattr(sys.stderr, "buffer") else sys.stderr
 
         if self.ql.stdin != 0:
             self.stdin = self.ql.stdin
