@@ -3,6 +3,8 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+raise DeprecationWarning('do not use this module')
+
 from typing import Callable, Sequence, Mapping, MutableMapping, Any
 
 from qiling.os.const import *
