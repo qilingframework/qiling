@@ -6,7 +6,6 @@
 import time
 
 from qiling import Qiling
-from qiling.const import QL_ARCH
 from qiling.exception import QlErrorNotImplemented
 from qiling.os.const import *
 from qiling.os.windows.fncc import winsdkapi
@@ -107,11 +106,11 @@ def hook___p__environ(ql: Qiling, address: int, params):
 # );
 @winsdkapi(cc=CDECL, replace_params={"str": STRING})
 def hook_puts(ql: Qiling, address: int, params):
-    ret = 0
-    string = params["str"]
-    ql.os.stdout.write(bytes(string + "\n", "utf-8"))
-    ret = len(string) + 1
-    return ret
+    string = params["str"] + '\n'
+
+    ql.os.stdout.write(bytes(string, "utf-8"))
+
+    return len(string)
 
 
 # void _cexit( void );
@@ -197,7 +196,7 @@ def hook_sprintf(ql: Qiling, address: int, params):
     buff = params['buff']
     arglist = params['arglist']
 
-    str_size, str_data = ql.os.utils.vprintf(address, format, arglist, api_name, wstring=False)
+    str_size, str_data = ql.os.utils.vprintf(format, arglist, api_name, wstring=False)
 
     ql.mem.write(buff, str_data.encode('utf-8') + b'\x00')
 
@@ -218,7 +217,7 @@ def hook_printf(ql: Qiling, address: int, params):
     ptypes = (POINTER, ) + (PARAM_INTN, ) * nargs
 
     params = ql.os.fcall.readParams(ptypes)[1:]
-    ret, _ = ql.os.utils.printf(address, format, params, api_name, wstring=False)
+    ret, _ = ql.os.utils.printf(format, params, api_name, wstring=False)
 
     return ret
 
@@ -236,7 +235,7 @@ def hook_wprintf(ql: Qiling, address: int, params):
     ptypes = (POINTER, ) + (PARAM_INTN, ) * nargs
 
     params = ql.os.fcall.readParams(ptypes)[1:]
-    ret, _ = ql.os.utils.printf(address, format, params, api_name, wstring=True)
+    ret, _ = ql.os.utils.printf(format, params, api_name, wstring=True)
 
     return ret
 
@@ -252,7 +251,7 @@ def hook___stdio_common_vfprintf(ql: Qiling, address: int, params):
     format = params['format']
     arglist = params['arglist']
 
-    ret, _ = ql.os.utils.vprintf(address, format, arglist, '__stdio_common_vfprintf', wstring=False)
+    ret, _ = ql.os.utils.vprintf(format, arglist, '__stdio_common_vfprintf', wstring=False)
 
     return ret
 
@@ -262,7 +261,7 @@ def hook___stdio_common_vfwprintf(ql: Qiling, address: int, params):
     format = params['format']
     arglist = params['arglist']
 
-    ret, _ = ql.os.utils.vprintf(address, format, arglist, '__stdio_common_vfwprintf', wstring=True)
+    ret, _ = ql.os.utils.vprintf(format, arglist, '__stdio_common_vfwprintf', wstring=True)
 
     return ret
 
@@ -272,11 +271,9 @@ def hook___stdio_common_vswprintf_s(ql: Qiling, address: int, params):
     format = params['format']
     arglist = params['arglist']
 
-    str_size, str_data = ql.os.utils.vprintf(address, format, arglist, '__stdio_common_vswprintf_s', wstring=True)
+    str_size, str_data = ql.os.utils.vprintf(format, arglist, '__stdio_common_vswprintf_s', wstring=True)
 
-    buff = params['buff']
-
-    ql.mem.write(buff, str_data.encode('utf-8') + b'\x00')
+    ql.mem.write(params['buff'], str_data.encode('utf-8') + b'\x00')
 
     return str_size
 
