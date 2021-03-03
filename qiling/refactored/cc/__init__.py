@@ -124,8 +124,11 @@ class QlCC:
 
 		raise NotImplementedError
 
-	def unwind(self) -> int:
+	def unwind(self, nslots: int) -> int:
 		"""Unwind frame and return from function call.
+
+		Args:
+			nslots: number of arg slots used
 
 		Returns: return address
 		"""

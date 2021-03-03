@@ -20,7 +20,7 @@ class aarch64(QlCommonBaseCC):
 	def getNumSlots(self, argbits: int) -> int:
 		return 1
 
-	def unwind(self) -> int:
+	def unwind(self, nslots: int) -> int:
 		# TODO: cleanup?
 		return self.ql.arch.stack_pop()
 
@@ -33,6 +33,6 @@ class aarch32(QlCommonBaseCC):
 	def getNumSlots(self, argbits: int) -> int:
 		return 1
 
-	def unwind(self) -> int:
+	def unwind(self, nslots: int) -> int:
 		# TODO: cleanup?
 		return self.ql.arch.stack_pop()

@@ -18,6 +18,6 @@ class mipso32(QlCommonBaseCC):
 	def getNumSlots(argbits: int):
 		return 1
 
-	def unwind(self) -> int:
+	def unwind(self, nslots: int) -> int:
 		# TODO: stack frame unwiding?
 		return self.ql.reg.ra

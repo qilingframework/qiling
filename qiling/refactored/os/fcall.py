@@ -117,7 +117,11 @@ class QlFunctionCall:
 
 		# TODO: resolve return value
 
+		# FIXME: though usually one slot is used for each fcall parameter, this is not
+		# always true (for example, a 64 bits parameter in a 32 bits system). this should
+		# reflect the true number of slots used by this set of parameters
+		#
 		# unwind stack frame
-		retaddr = self.cc.unwind()
+		retaddr = self.cc.unwind(len(params))
 
 		return params, retval, retaddr
