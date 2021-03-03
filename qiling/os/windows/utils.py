@@ -3,20 +3,9 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import ntpath, os, uuid
+import ntpath, uuid
 
-from sys import getsizeof
-
-from qiling.const import *
-
-from qiling.os.const import *
-from .registry import RegistryManager
-from .clipboard import Clipboard
-from .fiber import FiberManager
-from .handle import HandleManager, Handle
-from .thread import QlWindowsThreadManagement, QlWindowsThread
-from .structs import UNICODE_STRING32, UNICODE_STRING64
-
+from qiling import Qiling
 
 def ql_x86_windows_hook_mem_error(ql, access, addr, size, value):
     ql.log.debug("ERROR: unmapped memory access at 0x%x" % addr)

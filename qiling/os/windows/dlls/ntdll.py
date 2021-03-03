@@ -326,7 +326,7 @@ def hook_RtlAllocateHeap(ql, address, params):
 @winsdkapi(cc=STDCALL, dllname=dllname, replace_params={"dest": POINTER, "src": WSTRING})
 def hook_wcsstr(ql, address, params):
     dest = params["dest"]
-    value = ql.os.read_wstring(dest)
+    value = ql.os.utils.read_wstring(dest)
     params["dest"] = value
     src = params["src"]
     if src in value:

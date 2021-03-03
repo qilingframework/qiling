@@ -471,7 +471,7 @@ def hook_DefWindowProcA(ql, address, params):
 def hook_CharNextW(ql, address, params):
     # Return next char if is different from \x00
     point = params["lpsz"][0]
-    string = ql.os.read_wstring(point)
+    string = ql.os.utils.read_wstring(point)
     params["lpsz"] = string
     if len(string) == 0:
         return point
@@ -486,7 +486,7 @@ def hook_CharNextW(ql, address, params):
 def hook_CharNextA(ql, address, params):
     # Return next char if is different from \x00
     point = params["lpsz"][0]
-    string = ql.os.read_cstring(point)
+    string = ql.os.utils.read_cstring(point)
     params["lpsz"] = string
     if len(string) == 0:
         return point
@@ -502,9 +502,9 @@ def hook_CharNextA(ql, address, params):
 def hook_CharPrevW(ql, address, params):
     # Return next char if is different from \x00
     current = params["lpszCurrent"]
-    strcur = ql.os.read_wstring(current)
+    strcur = ql.os.utils.read_wstring(current)
     start = params["lpszStart"]
-    strstart = ql.os.read_wstring(start)
+    strstart = ql.os.utils.read_wstring(start)
     params["lpszStart"] = strstart
     params["lpszCurrent"] = strcur
 
@@ -521,9 +521,9 @@ def hook_CharPrevW(ql, address, params):
 def hook_CharPrevA(ql, address, params):
     # Return next char if is different from \x00
     current = params["lpszCurrent"]
-    strcur = ql.os.read_cstring(current)
+    strcur = ql.os.utils.read_cstring(current)
     start = params["lpszStart"]
-    strstart = ql.os.read_cstring(start)
+    strstart = ql.os.utils.read_cstring(start)
     params["lpszStart"] = strstart
     params["lpszCurrent"] = strcur
 
@@ -541,10 +541,10 @@ def hook_CharPrevA(ql, address, params):
 def hook_wsprintfW(ql, address, params):
     dst, p_format = ql.os.get_function_param(2)
 
-    format_string = ql.os.read_wstring(p_format)
+    format_string = ql.os.utils.read_wstring(p_format)
     count = format_string.count('%')
     args = ql.os.get_function_param(2 + count)[2:]
-    size, string = ql.os.printf(address, format_string, args, "wsprintfW", wstring=True)
+    size, string = ql.os.utils.printf(address, format_string, args, "wsprintfW", wstring=True)
 
     if ql.archtype == QL_ARCH.X8664:
         # We must pop the stack correctly
@@ -562,10 +562,10 @@ def hook_wsprintfW(ql, address, params):
 @winsdkapi(cc=CDECL, dllname=dllname, param_num=3)
 def hook_sprintf(ql, address, params):
     dst, p_format = ql.os.get_function_param(2)
-    format_string = ql.os.read_wstring(p_format)
+    format_string = ql.os.utils.read_wstring(p_format)
     count = format_string.count('%')
     args = ql.os.get_function_param(2 + count)[2:]
-    size, string = ql.os.printf(address, format_string, args, "sprintf", wstring=True)
+    size, string = ql.os.utils.printf(address, format_string, args, "sprintf", wstring=True)
 
     if ql.archtype == QL_ARCH.X8664:
         # We must pop the stack correctly
@@ -632,10 +632,10 @@ def hook_wvsprintfA(ql, address, params):
 @winsdkapi(cc=CDECL, dllname=dllname, param_num=3)
 def hook_wsprintfA(ql, address, params):
     dst, p_format, p_args = ql.os.get_function_param(3)
-    format_string = ql.os.read_cstring(p_format)
+    format_string = ql.os.utils.read_cstring(p_format)
     count = format_string.count('%')
     args = ql.os.get_function_param(2 + count)[2:]
-    size, string = ql.os.printf(address, format_string, args, "wsprintfA")
+    size, string = ql.os.utils.printf(address, format_string, args, "wsprintfA")
 
     if ql.archtype== QL_ARCH.X8664:
         # We must pop the stack correctly

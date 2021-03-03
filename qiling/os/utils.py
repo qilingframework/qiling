@@ -7,6 +7,7 @@
 This module is intended for general purpose functions that are only used in qiling.os
 """
 
+from typing import Any, Mapping
 import ctypes, os, uuid
 
 from pathlib import Path, PurePosixPath, PureWindowsPath, PosixPath, WindowsPath
@@ -122,6 +123,19 @@ class QlOsUtils:
         self.syscalls_counter = 0
         self.appeared_strings = {}
 
+    def _call_api(self, address: int, name: str, params: Mapping, retval: Any, retaddr: int):
+        if name.startswith("hook_"):
+            name = name[5:]
+
+        self.syscalls.setdefault(name, []).append({
+            "params": params,
+            "retval": retval,
+            "address": address,
+            "retaddr": retaddr,
+            "position": self.syscalls_counter
+        })
+
+        self.syscalls_counter += 1
 
     def string_appearance(self, string):
         strings = string.split(" ")

@@ -6,17 +6,15 @@
 import os, random, sys, unittest, logging
 import string as st
 
-from unicorn.x86_const import *
-
 sys.path.append("..")
-from qiling import *
+from qiling import Qiling
 from qiling.const import *
 from qiling.exception import *
 from qiling.loader.pe import QlPeCache
+from qiling.os.const import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
 from qiling.os.mapper import QlFsMappedObject
-from qiling.os.windows.dlls.kernel32.fileapi import _CreateFile
 
 class TestOut:
     def __init__(self):
@@ -124,7 +122,7 @@ class PETest(unittest.TestCase):
         randomize_config_value(ql, "USER", "username")
         randomize_config_value(ql, "SYSTEM", "computername")
         randomize_config_value(ql, "VOLUME", "serial_number")
-        num_syscalls_admin = ql.os.syscalls_counter
+        num_syscalls_admin = ql.os.utils.syscalls_counter
         ql.run()
         del ql
 
@@ -133,13 +131,13 @@ class PETest(unittest.TestCase):
                     output="debug", profile="profiles/windows_gandcrab_user.ql")
 
         ql.run()
-        num_syscalls_user = ql.os.syscalls_counter
+        num_syscalls_user = ql.os.utils.syscalls_counter
 
         del ql
 
         ql = Qiling(["../examples/rootfs/x86_windows/bin/GandCrab502.bin"], "../examples/rootfs/x86_windows",
                     output="debug", profile="profiles/windows_gandcrab_russian_keyboard.ql")
-        num_syscalls_russ = ql.os.syscalls_counter
+        num_syscalls_russ = ql.os.utils.syscalls_counter
 
         ql.run()
         del ql
@@ -453,7 +451,7 @@ class PETest(unittest.TestCase):
             return entry
 
         def save(self, path, address, entry):
-            self.testcase.assertFalse(true)  # This should not be called!
+            self.testcase.assertFalse(True)  # This should not be called!
 
 
     def test_pe_win_x8664_libcache(self):

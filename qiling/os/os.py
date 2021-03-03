@@ -126,7 +126,7 @@ class QlOs:
         self.utils.print_function(pc, func.__name__, params, retval, passthru)
 
         # append syscall to list
-        self._call_api(func.__name__, params, retval, pc, retaddr)
+        self.utils._call_api(pc, func.__name__, params, retval, retaddr)
 
         # TODO: PE_RUN is a Windows and UEFI property; move somewhere else?
         if hasattr(self, 'PE_RUN') and not self.PE_RUN:
@@ -189,17 +189,3 @@ class QlOs:
             self.disassembler(self.ql, self.ql.reg.arch_pc, 64)
         except:
             self.ql.log.error("Error: PC(0x%x) Unreachable" % self.ql.reg.arch_pc)
-
-    def _call_api(self, name, params, result, address, return_address):
-        if name.startswith("hook_"):
-            name = name[5:]
-
-        self.utils.syscalls.setdefault(name, []).append({
-            "params": params,
-            "result": result,
-            "address": address,
-            "return_address": return_address,
-            "position": self.utils.syscalls_counter
-        })
-
-        self.utils.syscalls_counter += 1

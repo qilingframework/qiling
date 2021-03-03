@@ -194,8 +194,8 @@ def hook_sprintf(ql, address, _):
     sp = ql.reg.esp if ql.archtype == QL_ARCH.X86 else ql.reg.rsp
     p_args = sp + ql.pointersize * 3
 
-    format_string = ql.os.read_cstring(format_ptr)
-    str_size, str_data = ql.os.vprintf(address, format_string, p_args, "sprintf")
+    format_string = ql.os.utils.read_cstring(format_ptr)
+    str_size, str_data = ql.os.utils.vprintf(address, format_string, p_args, "sprintf")
     ql.log.info()
 
     count = format_string.count('%')
@@ -219,11 +219,11 @@ def hook_printf(ql, address, _):
         ql.log.info('printf(format = 0x0) = 0x%x' % ret)
         return ret
 
-    format_string = ql.os.read_cstring(format_string)
+    format_string = ql.os.utils.read_cstring(format_string)
 
     count = format_string.count("%")
     params = ql.os.get_function_param(count + 1)[1:] if count > 0 else []
-    ret, _ = ql.os.printf(address, format_string, params, "printf")
+    ret, _ = ql.os.utils.printf(address, format_string, params, "printf")
 
     ql.os.set_return_value(ret)
 
@@ -246,11 +246,11 @@ def hook_wprintf(ql, address, _):
         ql.log.info('wprintf(format = 0x0) = 0x%x' % ret)
         return ret
 
-    format_string = ql.os.read_wstring(format_string)
+    format_string = ql.os.utils.read_wstring(format_string)
 
     count = format_string.count("%")
     params = ql.os.get_function_param(count + 1)[1:] if count > 0 else []
-    ret, _ = ql.os.printf(address, format_string, params, "wprintf", wstring=True)
+    ret, _ = ql.os.utils.printf(address, format_string, params, "wprintf", wstring=True)
 
     ql.os.set_return_value(ret)
 
@@ -277,8 +277,8 @@ def hook___stdio_common_vfprintf(ql, address, _):
         _, _, p_format, _, p_args = ql.os.get_function_param(5)
     else:
         _, _, _, p_format, _, p_args = ql.os.get_function_param(6)
-    fmt = ql.os.read_cstring(p_format)
-    ql.os.vprintf(address, fmt, p_args, '__stdio_common_vfprintf')
+    fmt = ql.os.utils.read_cstring(p_format)
+    ql.os.utils.vprintf(address, fmt, p_args, '__stdio_common_vfprintf')
     return ret
 
 
@@ -286,9 +286,9 @@ def hook___stdio_common_vfprintf(ql, address, _):
 def hook___stdio_common_vfwprintf(ql, address, _):
     ret = 0
     _, _, _, p_format, _, p_args = ql.os.get_function_param(6)
-    fmt = ql.os.read_wstring(p_format)
+    fmt = ql.os.utils.read_wstring(p_format)
 
-    ql.os.vprintf(address, fmt, p_args, '__stdio_common_vfwprintf', wstring=True)
+    ql.os.utils.vprintf(address, fmt, p_args, '__stdio_common_vfwprintf', wstring=True)
     return ret
 
 
@@ -297,8 +297,8 @@ def hook___stdio_common_vswprintf_s(ql, address, _):
     ret = 0
     _, size, p_format, p_args = ql.os.get_function_param(4)
 
-    fmt = ql.os.read_wstring(p_format)
-    ql.os.vprintf(address, fmt, p_args, '__stdio_common_vswprintf_s', wstring=True)
+    fmt = ql.os.utils.read_wstring(p_format)
+    ql.os.utils.vprintf(address, fmt, p_args, '__stdio_common_vswprintf_s', wstring=True)
 
     return ret
 
