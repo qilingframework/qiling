@@ -48,7 +48,7 @@ class QlOsWindows(QlOs):
 
             return __selector[atype]
 
-        self.fcall_selector = __make_fcall_selector(ql.archtype)
+        self.fcall_select = __make_fcall_selector(ql.archtype)
         self.fcall = None
 
         self.PE_RUN = True

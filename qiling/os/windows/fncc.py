@@ -140,7 +140,7 @@ def winsdkapi(cc: int, param_num: int = None, dllname: str = None, replace_param
                 params = replace_params
             # --------------------------------------------------------------------------
 
-            ql.os.fcall = ql.os.fcall_selector(cc)
+            ql.os.fcall = ql.os.fcall_select(cc)
 
             onenter = ql.os.user_defined_api[QL_INTERCEPT.ENTER].get(api_name)
             onexit = ql.os.user_defined_api[QL_INTERCEPT.EXIT].get(api_name)

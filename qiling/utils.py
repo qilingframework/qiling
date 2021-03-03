@@ -25,36 +25,38 @@ FMT_STR = "%(levelname)s\t%(message)s"
 # ESC [ -> CSI
 # CSI %d;%d;... m -> SGR
 class COLOR_CODE:
-    WHITE = '\033[37m'
+    WHITE   = '\033[37m'
     CRIMSON = '\033[31m'
-    RED = '\033[91m'
-    GREEN = '\033[92m'
-    YELLOW = '\033[93m'
-    BLUE = '\033[94m'
+    RED     = '\033[91m'
+    GREEN   = '\033[92m'
+    YELLOW  = '\033[93m'
+    BLUE    = '\033[94m'
     MAGENTA = '\033[95m'
-    CYAN = '\033[96m'
-    ENDC = '\033[0m'
+    CYAN    = '\033[96m'
+    ENDC    = '\033[0m'
 
 LEVEL_COLORS = {
-    'WARNING': COLOR_CODE.YELLOW,
-    'INFO': COLOR_CODE.BLUE,
-    'DEBUG': COLOR_CODE.MAGENTA,
-    'CRITICAL': COLOR_CODE.CRIMSON,
-    'ERROR': COLOR_CODE.RED
+    'WARNING'  : COLOR_CODE.YELLOW,
+    'INFO'     : COLOR_CODE.BLUE,
+    'DEBUG'    : COLOR_CODE.MAGENTA,
+    'CRITICAL' : COLOR_CODE.CRIMSON,
+    'ERROR'    : COLOR_CODE.RED
 }
+
 class QilingColoredFormatter(logging.Formatter):
     def __init__(self, ql, *args, **kwargs):
         super(QilingColoredFormatter, self).__init__(*args, **kwargs)
         self._ql = ql
 
-    def get_colored_level(self, record: LogRecord):
+    def get_colored_level(self, record: LogRecord) -> str:
         LEVEL_NAME = {
-            'WARNING': f"{COLOR_CODE.YELLOW}[!]{COLOR_CODE.ENDC}",
-            'INFO': f"{COLOR_CODE.BLUE}[=]{COLOR_CODE.ENDC}",
-            'DEBUG': f"{COLOR_CODE.MAGENTA}[+]{COLOR_CODE.ENDC}",
-            'CRITICAL': f"{COLOR_CODE.CRIMSON}[x]{COLOR_CODE.ENDC}",
-            'ERROR': f"{COLOR_CODE.RED}[x]{COLOR_CODE.ENDC}"
+            'WARNING'  : f"{COLOR_CODE.YELLOW}[!]{COLOR_CODE.ENDC}",
+            'INFO'     : f"{COLOR_CODE.BLUE}[=]{COLOR_CODE.ENDC}",
+            'DEBUG'    : f"{COLOR_CODE.MAGENTA}[+]{COLOR_CODE.ENDC}",
+            'CRITICAL' : f"{COLOR_CODE.CRIMSON}[x]{COLOR_CODE.ENDC}",
+            'ERROR'    : f"{COLOR_CODE.RED}[x]{COLOR_CODE.ENDC}"
         }
+
         return LEVEL_NAME[record.levelname]
 
     def format(self, record: LogRecord):
@@ -73,15 +75,16 @@ class QilingPlainFormatter(logging.Formatter):
     def __init__(self, ql, *args, **kwargs):
         super(QilingPlainFormatter, self).__init__(*args, **kwargs)
         self._ql = ql
-    
-    def get_level(self, record: LogRecord):
+
+    def get_level(self, record: LogRecord) -> str:
         LEVEL_NAME = {
-            'WARNING': "[!]",
-            'INFO': "[=]",
-            'DEBUG': "[+]",
-            'CRITICAL': "[x]",
-            'ERROR': "[x]"
+            'WARNING'  : "[!]",
+            'INFO'     : "[=]",
+            'DEBUG'    : "[+]",
+            'CRITICAL' : "[x]",
+            'ERROR'    : "[x]"
         }
+
         return LEVEL_NAME[record.levelname]
 
     def format(self, record: LogRecord):
@@ -160,16 +163,21 @@ def catch_KeyboardInterrupt(ql):
                 from .os.const import THREAD_EVENT_UNEXECPT_EVENT
                 ql.os.stop()
                 ql._internal_exception = e
+
         return wrapper
+
     return decorator
 
 def ql_get_arch_bits(arch):
     if arch in QL_ARCH_16BIT:
         return 16
+
     if arch in QL_ARCH_32BIT:
         return 32
+
     if arch in QL_ARCH_64BIT:
         return 64
+
     raise QlErrorArch("Invalid Arch")
 
 def ql_is_valid_ostype(ostype):
@@ -184,12 +192,12 @@ def ql_is_valid_arch(arch):
 
 def loadertype_convert_str(ostype):
     adapter = {
-        QL_OS.LINUX: "ELF",
-        QL_OS.MACOS: "MACHO",
-        QL_OS.FREEBSD: "ELF",
-        QL_OS.WINDOWS: "PE",
-        QL_OS.UEFI: "PE_UEFI",
-        QL_OS.DOS: "DOS",
+        QL_OS.LINUX   : "ELF",
+        QL_OS.FREEBSD : "ELF",
+        QL_OS.MACOS   : "MACHO",
+        QL_OS.WINDOWS : "PE",
+        QL_OS.UEFI    : "PE_UEFI",
+        QL_OS.DOS     : "DOS"
     }
     return adapter.get(ostype)
 
