@@ -3,6 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from functools import wraps
 import json, os
 
 from typing import Union, Optional, Mapping, MutableMapping
@@ -91,6 +92,7 @@ def winsdkapi(cc: int, param_num: int = None, dllname: str = None, replace_param
                 replace the original type of time to int
     """
     def decorator(func):
+        @wraps(func)
         def wrapper(ql: Qiling, pc: int, api_name: str):
             params = {}
 
