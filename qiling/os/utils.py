@@ -57,29 +57,36 @@ class QlOsUtils:
             val.add(self.syscalls_counter)
             self.appeared_strings[string] = val
 
-
-    def read_wstring(self, address):
+    @staticmethod
+    def read_string(ql: Qiling, address: int, terminator: str) -> str:
         result = ""
-        char = self.ql.mem.read(address, 2)
-        while char.decode(errors="ignore") != "\x00\x00":
-            address += 2
+        charlen = len(terminator)
+
+        char = ql.mem.read(address, charlen)
+
+        while char.decode(errors="ignore") != terminator:
+            address += charlen
             result += char.decode(errors="ignore")
-            char = self.ql.mem.read(address, 2)
+            char = ql.mem.read(address, charlen)
+
+        return result
+
+    def read_wstring(self, address: int) -> str:
+        s = QlOsUtils.read_string(self.ql, address, '\x00\x00')
+
         # We need to remove \x00 inside the string. Compares do not work otherwise
-        result = result.replace("\x00", "")
-        self.string_appearance(result)
-        return result
+        s = s.replace("\x00", "")
+        self.string_appearance(s)
+
+        return s
 
 
-    def read_cstring(self, address):
-        result = ""
-        char = self.ql.mem.read(address, 1)
-        while char.decode(errors="ignore") != "\x00":
-            address += 1
-            result += char.decode(errors="ignore")
-            char = self.ql.mem.read(address, 1)
-        self.string_appearance(result)
-        return result
+    def read_cstring(self, address: int) -> str:
+        s = QlOsUtils.read_string(self.ql, address, '\x00')
+
+        self.string_appearance(s)
+
+        return s
 
     def print_function(self, address, function_name, params, ret, passthru=False):
         PRINTK_LEVEL = {
