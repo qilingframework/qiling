@@ -8,12 +8,13 @@ from qiling import Qiling
 from qiling.os.const import PARAM_INT8, PARAM_INT16, PARAM_INT32, PARAM_INT64, PARAM_INTN
 from qiling.refactored.cc import QlCC
 
+Reader = Callable[[int], Tuple[int, int]]
 CallHook = Callable[[Qiling, int, Mapping], int]
 OnEnterHook = Callable[[Qiling, int, Mapping], Tuple[int, Mapping]]
 OnExitHook = Callable[[Qiling, int, Mapping, int], int]
 
 class QlFunctionCall:
-	def __init__(self, ql: Qiling, cc: QlCC, readers: Mapping[int, Callable] = {}) -> None:
+	def __init__(self, ql: Qiling, cc: QlCC, readers: Mapping[int, Reader] = {}) -> None:
 		"""Initialize function call handler.
 
 		Args:
@@ -33,14 +34,14 @@ class QlFunctionCall:
 			 0: cc.getRawParam
 		}
 
-		def __make_reader(nbits: int):
+		def __make_reader(nbits: int) -> Reader:
 			rd = __readers[nbits]
 			ns = cc.getNumSlots(nbits)
 
 			return lambda si: (rd(si), ns)
 
 		# default parameter reading accessors
-		self.readers: MutableMapping[int, Callable] = {
+		self.readers: MutableMapping[int, Reader] = {
 			PARAM_INT8 : __make_reader(8),
 			PARAM_INT16: __make_reader(16),
 			PARAM_INT32: __make_reader(32),
