@@ -17,7 +17,7 @@ class QL_ARCH(IntEnum):
     ARM_THUMB = 104
     ARM64 = 105
     MIPS = 106
-    A8086 = 7
+    A8086 = 107
 
 
 class QL_OS(IntEnum):
