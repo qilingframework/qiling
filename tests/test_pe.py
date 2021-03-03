@@ -311,31 +311,31 @@ class PETest(unittest.TestCase):
 
 
     def test_pe_win_x86_argv(self):
-        def check_print(ql, address, params):
-            if ql.pointersize == 8:
-                _, _, p_format, _, p_args = ql.os.get_function_param(5)
-            else:
-                _, _, _, p_format, _, p_args = ql.os.get_function_param(6)
-            fmt = ql.mem.string(p_format)
-            count = fmt.count("%")
-            params = []
-            params_addr = p_args
+        def check_print(ql: Qiling, address: int, params):
+            ql.os.fcall_select(CDECL)
 
-            if count > 0:
-                for i in range(count):
-                        param = ql.mem.read(params_addr + i * ql.pointersize, ql.pointersize)
-                        params.append(
-                        ql.unpack(param)
-                        )        
+            params = ql.os.resolve_fcall_params({
+                'optstorage': PARAM_INT64,
+                'stream'    : POINTER,
+                'format'    : STRING,
+                'locale'    : DWORD,
+                'arglist'   : POINTER
+            })
+
+            format = params['format']
+            arglist = params['arglist']
+
+            count = format.count("%")
+            fargs = [ql.unpack(ql.mem.read(arglist + i * ql.pointersize, ql.pointersize)) for i in range(count)]
 
             self.target_txt = ""
 
             try:
-                self.target_txt = ql.mem.string(params[1])       
+                self.target_txt = ql.mem.string(fargs[1])
             except:
                 pass
-            
-            return  address, params
+
+            return address, params
 
         ql = Qiling(["../examples/rootfs/x86_windows/bin/argv.exe"], "../examples/rootfs/x86_windows")
         ql.set_api('__stdio_common_vfprintf', check_print, QL_INTERCEPT.ENTER)

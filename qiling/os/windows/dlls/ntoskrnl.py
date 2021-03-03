@@ -97,63 +97,44 @@ def hook_NtClose(ql, address, params):
 #   PCSTR Format,
 #   ...
 # );
-@winsdkapi(cc=CDECL, dllname=dllname, param_num=3)
-def hook_DbgPrintEx(ql, address, _):
-    ret = 0
-    format_string_addr = ql.os.get_function_param(1)
-    format_string = ql.os.utils.read_cstring(format_string_addr)
+@winsdkapi(cc=CDECL, dllname=dllname, replace_params={'ComponentId': ULONG, 'Level': ULONG, 'Format': STRING})
+def hook_DbgPrintEx(ql: Qiling, address: int, params):
+    api_name = 'DbgPrintEx'
+    Format = params['Format']
 
-    if format_string.count('%') == 0:
-        param_addr = ql.reg.sp + ql.pointersize * 2
-    else:
-        param_addr = ql.reg.sp + ql.pointersize * 3
+    if Format == 0:
+        ql.log.info(f'{api_name}("(null)") = 0')
+        return 0
 
-    count = format_string.count('%')
-    args = ql.os.get_function_param(2 + count)[2:]
-    
-    ret, _ = ql.os.utils.printf(address, format_string, args, "DbgPrintEx")
-    ql.os.set_return_value(ret)
+    nargs = Format.count("%")
+    ptypes = (ULONG, ULONG, POINTER) + (PARAM_INTN, ) * nargs
 
-    # x8664 fastcall does not known the real number of parameters
-    # so we need to manually pop the stack
-    if ql.archtype == QL_ARCH.X8664:
-        # if number of params > 4
-        if count + 1 > 4:
-            rsp = ql.reg.rsp
-            ql.reg.rsp = (rsp + (count - 4 + 1) * 8)
+    params = ql.os.fcall.readParams(ptypes)[3:]
+    ret, _ = ql.os.utils.printf(Format, params, api_name, wstring=False)
 
-    return None
+    return ret
 
 # ULONG DbgPrint(
 #   PCSTR Format,
 #   ...   
 # );
-@winsdkapi(cc=CDECL, dllname=dllname, param_num=1)
-def hook_DbgPrint(ql, address, _):
-    ret = 0
-    format_string_addr = ql.os.get_function_param(1)
-    format_string = ql.os.utils.read_cstring(format_string_addr)
+@winsdkapi(cc=CDECL, dllname=dllname, replace_params={'Format': STRING})
+def hook_DbgPrint(ql: Qiling, address: int, params):
+    api_name = 'DbgPrint'
+    Format = params['Format']
 
-    if format_string.count('%') == 0:
-        param_addr = ql.reg.sp + ql.pointersize * 2
-    else:
-        param_addr = ql.reg.sp + ql.pointersize * 3
+    if Format == 0:
+        ql.log.info(f'{api_name}("(null)") = 0')
+        return 0
 
-    count = format_string.count('%')
-    args = ql.os.get_function_param(2 + count)[2:]
+    nargs = Format.count("%")
+    ptypes = (POINTER, ) + (PARAM_INTN, ) * nargs
 
-    ret, _ = ql.os.utils.printf(address, format_string, args, "DbgPrint")
-    ql.os.set_return_value(ret)
-    
-    # x8664 fastcall does not known the real number of parameters
-    # so we need to manually pop the stack
-    if ql.archtype == QL_ARCH.X8664:
-        # if number of params > 4
-        if count + 1 > 4:
-            rsp = ql.reg.rsp
-            ql.reg.rsp = (rsp + (count - 4 + 1) * 8)
+    params = ql.os.fcall.readParams(ptypes)[1:]
+    ret, _ = ql.os.utils.printf(Format, params, api_name, wstring=False)
 
-    return None
+    return ret
+
 
 
 def ntoskrnl_IoCreateDevice(ql, address, params):

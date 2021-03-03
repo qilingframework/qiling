@@ -537,42 +537,46 @@ def hook_CharPrevA(ql, address, params):
 #   LPCWSTR ,
 #   ...
 # );
-@winsdkapi(cc=CDECL, dllname=dllname, param_num=3)
-def hook_wsprintfW(ql, address, params):
-    dst, p_format = ql.os.get_function_param(2)
+@winsdkapi(cc=CDECL, dllname=dllname, replace_params={'Buffer': POINTER, 'Format': WSTRING})
+def hook_wsprintfW(ql: Qiling, address: int, params):
+    api_name = 'wsprintfW'
+    Format = params['Format']
 
-    format_string = ql.os.utils.read_wstring(p_format)
-    count = format_string.count('%')
-    args = ql.os.get_function_param(2 + count)[2:]
-    size, string = ql.os.utils.printf(address, format_string, args, "wsprintfW", wstring=True)
+    if Format == 0:
+        ql.log.info(f'{api_name}("(null)") = 0')
+        return 0
 
-    if ql.archtype == QL_ARCH.X8664:
-        # We must pop the stack correctly
-        raise QlErrorNotImplemented("API not implemented")
+    nargs = Format.count("%")
+    ptypes = (POINTER, POINTER) + (PARAM_INTN, ) * nargs
 
-    ql.mem.write(dst, (string + "\x00").encode("utf-16le"))
-    return size
+    params = ql.os.fcall.readParams(ptypes)[2:]
+    ret, out = ql.os.utils.printf(Format, params, api_name, wstring=True)
 
+    ql.mem.write(params['Buffer'], (out + "\x00").encode("utf-16le"))
 
-# int WINAPIV sprintf(
-#   LPWSTR  ,
-#   LPCWSTR ,
-#   ...
-# );
-@winsdkapi(cc=CDECL, dllname=dllname, param_num=3)
-def hook_sprintf(ql, address, params):
-    dst, p_format = ql.os.get_function_param(2)
-    format_string = ql.os.utils.read_wstring(p_format)
-    count = format_string.count('%')
-    args = ql.os.get_function_param(2 + count)[2:]
-    size, string = ql.os.utils.printf(address, format_string, args, "sprintf", wstring=True)
+    return ret
 
-    if ql.archtype == QL_ARCH.X8664:
-        # We must pop the stack correctly
-        raise QlErrorNotImplemented("API not implemented")
-
-    ql.mem.write(dst, (string + "\x00").encode("utf-16le"))
-    return size
+# FIXME: this one belongs to 'msvcrt', doesn't it?
+#
+# # int WINAPIV sprintf(
+# #   LPWSTR  ,
+# #   LPCWSTR ,
+# #   ...
+# # );
+# @winsdkapi(cc=CDECL, dllname=dllname, param_num=3)
+# def hook_sprintf(ql, address, params):
+#     dst, p_format = ql.os.get_function_param(2)
+#     format_string = ql.os.utils.read_wstring(p_format)
+#     count = format_string.count('%')
+#     args = ql.os.get_function_param(2 + count)[2:]
+#     size, string = ql.os.utils.printf(address, format_string, args, "sprintf", wstring=True)
+# 
+#     if ql.archtype == QL_ARCH.X8664:
+#         # We must pop the stack correctly
+#         raise QlErrorNotImplemented("API not implemented")
+# 
+#     ql.mem.write(dst, (string + "\x00").encode("utf-16le"))
+#     return size
 
 
 # HWND GetForegroundWindow();
@@ -629,20 +633,24 @@ def hook_wvsprintfA(ql, address, params):
 #    char *buffer,
 #    const char *format,
 # );
-@winsdkapi(cc=CDECL, dllname=dllname, param_num=3)
-def hook_wsprintfA(ql, address, params):
-    dst, p_format, p_args = ql.os.get_function_param(3)
-    format_string = ql.os.utils.read_cstring(p_format)
-    count = format_string.count('%')
-    args = ql.os.get_function_param(2 + count)[2:]
-    size, string = ql.os.utils.printf(address, format_string, args, "wsprintfA")
+@winsdkapi(cc=CDECL, dllname=dllname, replace_params={'Buffer': POINTER, 'Format': STRING})
+def hook_wsprintfA(ql: Qiling, address: int, params):
+    api_name = 'wsprintfA'
+    Format = params['Format']
 
-    if ql.archtype== QL_ARCH.X8664:
-        # We must pop the stack correctly
-        raise QlErrorNotImplemented("API not implemented")
+    if Format == 0:
+        ql.log.info(f'{api_name}("(null)") = 0')
+        return 0
 
-    ql.mem.write(dst, (string + "\x00").encode("utf-8"))
-    return size
+    nargs = Format.count("%")
+    ptypes = (POINTER, POINTER) + (PARAM_INTN, ) * nargs
+
+    params = ql.os.fcall.readParams(ptypes)[2:]
+    ret, out = ql.os.utils.printf(Format, params, api_name, wstring=True)
+
+    ql.mem.write(params['Buffer'], (out + "\x00").encode("utf-8"))
+
+    return ret
 
 # int MessageBoxW(
 #   HWND    hWnd,
