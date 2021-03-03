@@ -165,44 +165,28 @@ class QlOsUtils:
             log = log.partition(" ")[-1]
             self.ql.log.info(log)
 
-    def vprintf(self, address, fmt, params_addr, name, wstring=False):
-        count = fmt.count("%")
-        params = []
-        if count > 0:
-            for i in range(count):
-                param = self.ql.mem.read(params_addr + i * self.ql.pointersize, self.ql.pointersize)
-                params.append(
-                    self.ql.unpack(param)
-                )
-        return self.printf(fmt, params, name, wstring)
+    def vprintf(self, format: str, params_addr: int, fname: str, wstring: bool = False):
+        count = format.count("%")
+        params = [self.ql.unpack(self.ql.mem.read(params_addr + i * self.ql.pointersize, self.ql.pointersize)) for i in range(count)]
 
-    def printf(self, fmt, params, name, wstring=False):
-        if len(params) > 0:
-            formats = fmt.split("%")[1:]
-            index = 0
-            for f in formats:
-                if f.startswith("s"):
-                    if wstring:
-                        params[index] = self.read_wstring(params[index])
-                    else:
-                        params[index] = self.read_cstring(params[index])
-                index += 1
+        return self.printf(format, params, fname, wstring)
 
-            output = '%s(format = %s' % (name, repr(fmt))
-            for each in params:
-                if type(each) == str:
-                    output += ', "%s"' % each
-                else:
-                    output += ', 0x%0.2x' % each
-            output += ')'
-            fmt = fmt.replace("%llx", "%x")
-            stdout = fmt % tuple(params)
-            output += " = 0x%x" % len(stdout)
-        else:
-            output = '%s(format = %s) = 0x%x' % (name, repr(fmt), len(fmt))
-            stdout = fmt
+    def printf(self, format: str, params, fname: str, wstring: bool = False):
+        fmtstr = format.split("%")[1:]
+        read_string = self.read_wstring if wstring else self.read_cstring
+
+        for i, f in enumerate(fmtstr):
+            if f.startswith("s"):
+                params[i] = read_string(params[i])
+
+        stdout = format.replace("%llx", "%x") % tuple(params)
+
+        oargs = ''.join(f', {repr(p) if type(p) is str else f"{p:#x}"}' for p in params)
+        output = f'{fname}(format = {repr(format)}{oargs}) = {len(stdout)}'
+
         self.ql.log.info(output)
         self.ql.os.stdout.write(bytes(stdout, 'utf-8'))
+
         return len(stdout), stdout
 
     def lsbmsb_convert(self, sc, size=4):
