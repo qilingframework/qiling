@@ -91,6 +91,12 @@ class STRUCT(ctypes.LittleEndianStructure):
 
 		return getattr(cls, fname).offset
 
+	@classmethod
+	def memberat(cls, offset: int) -> str:
+		for fname, _ in cls._fields_:
+			if cls.offsetof(fname) == offset:
+				return fname
+
 class EnumMeta(type(ctypes.c_int)):
 	def __getattr__(self, key):
 		return self._members_.index(key)
