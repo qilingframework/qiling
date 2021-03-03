@@ -142,12 +142,12 @@ class QlLoaderELF(QlLoader, ELFParse):
         self.mmap_address = 0
         self.ql.mem.map(stack_address, stack_size, info="[stack]")
 
-        if self.ql.ostype == QL_OS.FREEBSD:
-            init_rbp = stack_address + 0x40
-            init_rdi = stack_address
-            self.ql.reg.rbp = init_rbp
-            self.ql.reg.rdi = init_rdi
-            self.ql.reg.r14 = init_rdi
+        # if self.ql.ostype == QL_OS.FREEBSD:
+        #     init_rbp = stack_address + 0x40
+        #     init_rdi = stack_address
+        #     self.ql.reg.rbp = init_rbp
+        #     self.ql.reg.rdi = init_rdi
+        #     self.ql.reg.r14 = init_rdi
 
         if not self.is_driver:
             self.load_with_ld(stack_address + stack_size, argv=self.argv, env=self.env)
@@ -161,6 +161,11 @@ class QlLoaderELF(QlLoader, ELFParse):
 
         self.ql.reg.arch_sp = self.stack_address
         self.ql.os.stack_address = self.stack_address
+        
+        # No idea why.
+        if self.ql.ostype == QL_OS.FREEBSD:
+            self.ql.reg.rdi = self.stack_address
+            self.ql.reg.r14 = self.stack_address
 
     # Copy strings to stack.
     def copy_str(self, addr, strs):

@@ -289,11 +289,11 @@ class QlOsUtils:
 
     def convert_path(self, rootfs, cwd, path):
         if  (self.ql.ostype == self.ql.platform ) \
-            or (self.ql.ostype in [QL_OS.LINUX, QL_OS.MACOS] and self.ql.platform in [QL_OS.LINUX, QL_OS.MACOS]):
+            or (self.ql.ostype in [QL_OS.LINUX, QL_OS.MACOS, QL_OS.FREEBSD] and self.ql.platform in [QL_OS.LINUX, QL_OS.MACOS, QL_OS.FREEBSD]):
             return PathUtils.convert_for_native_os(rootfs, cwd, path)
-        elif self.ql.ostype in [QL_OS.LINUX, QL_OS.MACOS] and self.ql.platform == QL_OS.WINDOWS:
+        elif self.ql.ostype in [QL_OS.LINUX, QL_OS.MACOS, QL_OS.FREEBSD] and self.ql.platform == QL_OS.WINDOWS:
             return PathUtils.convert_posix_to_win32(rootfs, cwd, path)
-        elif self.ql.ostype == QL_OS.WINDOWS and self.ql.platform in [QL_OS.LINUX, QL_OS.MACOS]:
+        elif self.ql.ostype == QL_OS.WINDOWS and self.ql.platform in [QL_OS.LINUX, QL_OS.MACOS, QL_OS.FREEBSD]:
             return PathUtils.convert_win32_to_posix(rootfs, cwd, path)
         else:
             return None

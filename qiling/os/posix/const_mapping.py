@@ -132,8 +132,9 @@ def ql_open_flag_mapping(ql, flags):
     if ql.archtype != QL_ARCH.MIPS:
         if ql.platform == None or ql.platform == ql.ostype:
             return flags
-    
-        if ql.ostype == QL_OS.LINUX:
+
+        # TODO: FreeBSD mapping
+        if ql.ostype == QL_OS.LINUX or ql.ostype == QL_OS.FREEBSD:
             f = linux_open_flags
         elif ql.ostype == QL_OS.MACOS:
             f = mac_open_flags
@@ -144,7 +145,7 @@ def ql_open_flag_mapping(ql, flags):
             t = windows_open_flags
         elif ql.platform == QL_OS.MACOS:
             t = mac_open_flags
-        elif ql.platform == QL_OS.LINUX:
+        elif ql.platform == QL_OS.LINUX or ql.ostype == QL_OS.FREEBSD:
             t = linux_open_flags
     
     elif ql.archtype == QL_ARCH.MIPS and ql.platform == QL_OS.LINUX:
