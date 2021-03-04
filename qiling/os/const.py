@@ -160,6 +160,7 @@ reptypedict = {
 
     # work around the need of "eval"
     "POINTER"   : POINTER,
+    "BYTE"      : BYTE,
     "DWORD"     : DWORD,
     "HANDLE"    : HANDLE,
     "SIZE_T"    : SIZE_T,
