@@ -118,24 +118,28 @@ def winsdkapi(cc: int, param_num: int = None, dllname: str = None, replace_param
                                     ql.log.exception(f'no replacement found for type "{ptype}" ({api_name}, {dllname})')
 
                     else:
-                        for pname, ptype in paramlist.items():
-                            # function prototype has no arguments
-                            if pname == 'VOID' or replace_params.get(pname) == '':
-                                params = {}
-                                break
+                        # function prototype has no arguments
+                        if len(paramlist) == 1 and paramlist.get('VOID') == 'void':
+                            params = {}
+                        else:
+                            for pname, ptype in paramlist.items():
+                                # # function prototype has no arguments
+                                # if pname == 'VOID' or replace_params.get(pname) == '':
+                                #     params = {}
+                                #     break
 
-                            # substitue this parameter type, if its name was found in the replacements mapping
-                            elif pname in replace_params:
-                                params[pname] = replace_params[pname]
+                                # substitue this parameter type, if its name was found in the replacements mapping
+                                if pname in replace_params:
+                                    params[pname] = replace_params[pname]
 
-                            else:
-                                if type(ptype) is dict:
-                                    ptype = ptype['name']
+                                else:
+                                    if type(ptype) is dict:
+                                        ptype = ptype['name']
 
-                                params[pname] = replacetype(ptype, replace_params_type)
+                                    params[pname] = replacetype(ptype, replace_params_type)
 
-                                if params[pname] is None:
-                                    ql.log.exception(f'no replacement found for type "{ptype}" ({api_name}, {dllname})')
+                                    if params[pname] is None:
+                                        ql.log.exception(f'no replacement found for type "{ptype}" ({api_name}, {dllname})')
                 else:
                     params = replace_params
             else:
