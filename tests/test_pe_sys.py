@@ -137,7 +137,6 @@ class PETest(unittest.TestCase):
         # );
         @winsdkapi(cc=STDCALL, dllname='advapi32_dll')
         def hook_StartServiceA(ql, address, params):
-            # TODO: Still Fixing
             hService = params["hService"]
             service_handle = ql.os.handle_manager.get(hService)
             ql.test_set_api = True
@@ -242,12 +241,12 @@ class PETest(unittest.TestCase):
         # And a DriverUnload
         self.assertNotEqual(driver_object.DriverUnload, 0)
 
-        ql.os.clear_syscalls()
+        ql.os.utils.clear_syscalls()
 
         IOCTL_SIOCTL_METHOD_OUT_DIRECT = (40000, 0x901, METHOD_OUT_DIRECT, FILE_ANY_ACCESS)
         output_buffer_size = 0x1000
         in_buffer = b'Test input\0'
-        Status, Information_value, output_data = ql.os.ioctl((IOCTL_SIOCTL_METHOD_OUT_DIRECT, output_buffer_size, in_buffer))
+        Status, Information_value, output_data = ql.os.utils.ioctl((IOCTL_SIOCTL_METHOD_OUT_DIRECT, output_buffer_size, in_buffer))
 
         expected_result = b'This String is from Device Driver !!!\x00'
         self.assertEqual(Status, 0)
