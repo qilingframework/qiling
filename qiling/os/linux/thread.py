@@ -8,7 +8,7 @@ import gevent, os, time
 from typing import Callable
 from abc import ABC, abstractmethod
 from pathlib import Path
-from copy import deepcopy
+
 from gevent import Greenlet
 from unicorn.unicorn import UcError
 from unicorn.mips_const import *
@@ -20,6 +20,7 @@ from qiling.arch.x86_const import *
 from qiling.const import *
 from qiling.os.const import *
 from qiling.exception import *
+from qiling.os.path import QlPathManager
 
 LINUX_THREAD_ID = 2000
 
@@ -146,7 +147,7 @@ class QlLinuxThread(QlThread):
 
     @path.setter
     def path(self, p):
-        self._path = deepcopy(p)
+        self._path = QlPathManager(self._ql, p.cwd)
 
     @property
     def log_file_fd(self):

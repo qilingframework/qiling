@@ -5,7 +5,6 @@
 
 import types
 from multiprocessing import Process
-from copy import deepcopy
 
 from qiling.const import *
 from qiling.os.linux.thread import *
