@@ -22,8 +22,15 @@ def path_leaf(path):
     head, tail = ntpath.split(path)
     return tail or ntpath.basename(head)
 
-
-def find_size_function(ql, func_addr):
+# FIXME: determining a function size by locating 'ret' opcodes in its code is a very unreliable way, to say
+# the least. not only that 'ret' instructions may appear more than once in a single function, they not are
+# necessarily located at the last function basic block: think of a typical nested loop spaghetty.
+#
+# also, there is no telling whether a 0xC3 value found in function code is actually a 'ret' instruction, or
+# just part of a magic value (e.g. "mov eax, 0xffffffc3").
+#
+# finally, if this method happens to find the correct function size, by any chance, that would be a pure luck.
+def find_size_function(ql: Qiling, func_addr: int):
     # We have to retrieve the return address position
     code = ql.mem.read(func_addr, 0x100)
     return_procedures = [b"\xc3", b"\xc2", b"\xcb", b"\xca"]
