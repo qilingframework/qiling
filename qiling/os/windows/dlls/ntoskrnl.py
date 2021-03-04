@@ -240,14 +240,6 @@ def hook_IoDeleteDevice(ql, address, params):
     return None
 
 
-# NTSTATUS IoDeleteSymbolicLink(
-#   PUNICODE_STRING SymbolicLinkName
-# );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={"SymbolicLinkName": PUNICODE_STRING})
-def hook_IoDeleteSymbolicLink(ql, address, params):
-    return 0
-
-
 # NTSTATUS IoCreateSymbolicLink(
 #   PUNICODE_STRING SymbolicLinkName,
 #   PUNICODE_STRING DeviceName
