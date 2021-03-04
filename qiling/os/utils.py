@@ -20,6 +20,9 @@ from qiling.os.windows.structs import *
 from qiling.utils import verify_ret
 
 class QlOsUtils:
+    # a list of api names that print their own invocation parameters on their own
+    __skip_list = ('__stdio_common_vfprintf', '__stdio_common_vfwprintf', 'printf', 'wprintf','wsprintfW', 'wsprintfA', 'sprintf', 'printk')
+
     def __init__(self, ql: Qiling):
         self.ql = ql
         self.path = None
@@ -111,9 +114,9 @@ class QlOsUtils:
         if function_name.startswith('hook_'):
             function_name = function_name[5:]
 
-        if function_name in ("__stdio_common_vfprintf", "__stdio_common_vfwprintf", "printf", "wprintf","wsprintfW", "sprintf"):
+        if function_name in QlOsUtils.__skip_list:
             return
-        
+
         def _parse_param(param):
             name, value = param
 
