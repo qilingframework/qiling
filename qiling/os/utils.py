@@ -106,7 +106,7 @@ class QlOsUtils:
         if function_name.startswith('hook_'):
             function_name = function_name[5:]
 
-        if function_name in ("__stdio_common_vfprintf", "__stdio_common_vfwprintf", "printf", "wsprintfW", "sprintf"):
+        if function_name in ("__stdio_common_vfprintf", "__stdio_common_vfwprintf", "printf", "wprintf","wsprintfW", "sprintf"):
             return
         
         def _parse_param(param):
