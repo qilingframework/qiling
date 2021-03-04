@@ -136,33 +136,37 @@ def hook_DbgPrint(ql: Qiling, address: int, params):
     return ret
 
 
+def ntoskrnl_IoCreateDevice(ql: Qiling, address: int, params):
+    objcls = {
+        QL_ARCH.X86   : DEVICE_OBJECT32,
+        QL_ARCH.X8664 : DEVICE_OBJECT64
+    }[ql.archtype]
 
-def ntoskrnl_IoCreateDevice(ql, address, params):
-    if ql.archtype == QL_ARCH.X86:
-        addr = ql.os.heap.alloc(ctypes.sizeof(DEVICE_OBJECT32))
-        device_object = DEVICE_OBJECT32()
-    elif ql.archtype == QL_ARCH.X8664:
-        addr = ql.os.heap.alloc(ctypes.sizeof(DEVICE_OBJECT64))
-        device_object = DEVICE_OBJECT64()
+    addr = ql.os.heap.alloc(ctypes.sizeof(objcls))
+    device_object = objcls()
 
-    device_object.Type = 3
-    device_object.DeviceExtension = ql.os.heap.alloc(
-        params['DeviceExtensionSize'])
-    device_object.Size = ctypes.sizeof(
-        device_object) + params['DeviceExtensionSize']
+    DeviceExtensionSize = params['DeviceExtensionSize']
+    DeviceCharacteristics = params['DeviceCharacteristics']
+    DriverObject = params['DriverObject']
+
+    device_object.Type = 3 # FILE_DEVICE_CD_ROM_FILE_SYSTEM ?
+    device_object.DeviceExtension = ql.os.heap.alloc(DeviceExtensionSize)
+    device_object.Size = ctypes.sizeof(device_object) + DeviceExtensionSize
     device_object.ReferenceCount = 1
-    device_object.DriverObject.value = params['DriverObject']
+    device_object.DriverObject.value = DriverObject
     device_object.NextDevice.value = 0
     device_object.AttachedDevice.value = 0
     device_object.CurrentIrp.value = 0
     device_object.Timer.value = 0
-    device_object.Flags = 0x00000080  # DO_DEVICE_INITIALIZING
-    if 'Exclusive' in params and params['Exclusive']:
-        device_object.Flags |= 0x00000008  # DO_EXCLUSIVE
-    device_object.Characteristics = params['DeviceCharacteristics']
+    device_object.Flags = DO_DEVICE_INITIALIZING
+
+    if params.get('Exclusive'):
+        device_object.Flags |= DO_EXCLUSIVE
+
+    device_object.Characteristics = DeviceCharacteristics
+
     ql.mem.write(addr, bytes(device_object)[:])
-    ql.mem.write(params["DeviceObject"],
-                 addr.to_bytes(length=ql.pointersize, byteorder='little'))
+    ql.mem.write(DriverObject, addr.to_bytes(length=ql.pointersize, byteorder='little'))
 
     # update DriverObject.DeviceObject
     ql.loader.driver_object.DeviceObject = addr

@@ -7,10 +7,10 @@
 This module is intended for general purpose functions that are only used in qiling.os
 """
 
-from typing import Any, Mapping
-import ctypes, os, uuid
+from typing import Any, Mapping, Tuple
+from uuid import UUID
+import ctypes
 
-from pathlib import Path, PurePosixPath, PureWindowsPath, PosixPath, WindowsPath
 from unicorn import UcError
 
 from qiling import Qiling
@@ -80,13 +80,17 @@ class QlOsUtils:
 
         return s
 
-
     def read_cstring(self, address: int) -> str:
         s = QlOsUtils.read_string(self.ql, address, '\x00')
 
         self.string_appearance(s)
 
         return s
+
+    def read_guid(self, address: int) -> UUID:
+        raw_guid = self.ql.mem.read(address, 16)
+
+        return UUID(bytes_le=bytes(raw_guid))
 
     def print_function(self, address, function_name, params, ret, passthru=False):
         PRINTK_LEVEL = {
@@ -221,10 +225,11 @@ class QlOsUtils:
         # we want to rewrite the return address to the function
         self.ql.stack_write(0, start)
 
-    def get_offset_and_name(self, addr):
+    def get_offset_and_name(self, addr: int) -> Tuple[int, str]:
         for begin, end, access, name in self.ql.mem.map_info:
-            if begin <= addr and end > addr:
-                return addr-begin, name
+            if begin <= addr < end:
+                return addr - begin, name
+
         return addr, '-'
 
     def disassembler(self, ql, address, size):
@@ -276,11 +281,6 @@ class QlOsUtils:
             if self.ql.output == QL_OUTPUT.DUMP:
                 self._block_hook = self.ql.hook_block(ql_hook_block_disasm)
             self._disasm_hook = self.ql.hook_code(self.disassembler)
-
-    def read_guid(self, address):
-        result = ""
-        raw_guid = self.ql.mem.read(address, 16)
-        return uuid.UUID(bytes_le=bytes(raw_guid))
 
     def io_Write(self, in_buffer):
         if self.ql.ostype == QL_OS.WINDOWS:
