@@ -9,9 +9,9 @@ from unicorn import UcError
 
 sys.path.append("..")
 from qiling import Qiling
-from qiling.os.const import STDCALL, POINTER, DWORD, STRING, HANDLE
+from qiling.os.const import POINTER, DWORD, STRING, HANDLE
 from qiling.os.windows.wdk_const import *
-from qiling.os.windows.fncc import winsdkapi
+from qiling.os.windows.fncc import winsdkapi, STDCALL
 from qiling.os.windows.dlls.kernel32.fileapi import _CreateFile
 
 

@@ -14,7 +14,7 @@ import ctypes
 from unicorn import UcError
 
 from qiling import Qiling
-from qiling.os.const import STDCALL
+from qiling.os.windows.fncc import STDCALL
 from qiling.os.windows.wdk_const import *
 from qiling.os.windows.structs import *
 from qiling.utils import verify_ret

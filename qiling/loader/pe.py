@@ -5,7 +5,7 @@
 
 import os, pefile, pickle, secrets, traceback
 
-from qiling.os.const import CDECL
+from qiling.os.windows.fncc import CDECL
 from qiling.os.windows.utils import *
 from qiling.os.windows.structs import *
 from qiling.exception import *

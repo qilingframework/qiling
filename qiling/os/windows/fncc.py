@@ -13,12 +13,19 @@ from qiling.const import QL_INTERCEPT
 from qiling.extensions.windows_sdk import winsdk_path
 import qiling.os.const as const
 
+from .api import reptypedict
+
+# calling conventions
+STDCALL = 1
+CDECL   = 2
+MS64    = 3
+
 def replacetype(ptype: str, specialtype: Mapping) -> Optional[int]:
     if ptype in specialtype:
          ptype = specialtype[ptype]
 
-    if ptype in const.reptypedict:
-        return const.reptypedict[ptype]
+    if ptype in reptypedict:
+        return reptypedict[ptype]
 
     return None
 
@@ -62,10 +69,10 @@ def __load_winsdk_defs(dllname: str) -> Mapping:
                     ptype = p['type']
 
                     if type(ptype) is str:
-                        #ptype = getattr(const, ptype, None) or const.reptypedict[ptype]
+                        #ptype = getattr(const, ptype, None) or reptypedict[ptype]
 
                         # <workaround>
-                        _ptype = getattr(const, ptype, None) or const.reptypedict.get(ptype)
+                        _ptype = getattr(const, ptype, None) or reptypedict.get(ptype)
 
                         if _ptype is None:
                             __log_udnefined_type(ptype)

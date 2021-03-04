@@ -12,13 +12,13 @@ from qiling import Qiling
 from qiling.arch.x86 import GDTManager, ql_x86_register_cs, ql_x86_register_ds_ss_es, ql_x86_register_fs, ql_x86_register_gs, ql_x8664_set_gs
 from qiling.const import QL_ARCH, QL_INTERCEPT
 from qiling.exception import QlErrorSyscallError, QlErrorSyscallNotFound
-from qiling.os.const import STDCALL, CDECL, MS64
 from qiling.os.os import QlOs
 
-from qiling.refactored.cc import QlCC, intel
+from qiling.refactored.cc import intel
 from qiling.refactored.os.fcall import QlFunctionCall
 
 from .const import Mapper
+from .fncc import STDCALL, CDECL, MS64
 from .handle import Handle, HandleManager
 from .thread import QlWindowsThread, QlWindowsThreadManagement
 from .clipboard import Clipboard

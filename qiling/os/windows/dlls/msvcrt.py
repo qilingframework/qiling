@@ -8,7 +8,7 @@ import time
 from qiling import Qiling
 from qiling.exception import QlErrorNotImplemented
 from qiling.os.const import *
-from qiling.os.windows.fncc import winsdkapi
+from qiling.os.windows.fncc import *
 from qiling.os.windows.const import LOCALE
 from qiling.os.windows.handle import Handle
 
