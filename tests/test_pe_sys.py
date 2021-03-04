@@ -189,18 +189,26 @@ class PETest(unittest.TestCase):
         ql.hook_address(hook_first_stop_address, 0x40EFFB)
         ql.run()
         # run driver thread
-        ql.os.set_function_args([0])
+
+        # execution is about to resume from 0x4053B2, which essentially jumps to ExitThread (kernel32.dll).
+        # Set ExitThread exit code to 0
+        ql.os.fcall = ql.os.fcall_select(STDCALL)
+        ql.os.fcall.writeParams([0])
+
         ql.hook_address(hook_second_stop_address, 0x4055FA)
         ql.run(begin=0x4053B2)
         print("test kill thread")
         if ql.amsint32_driver:
-            ql.amsint32_driver.os.io_Write(ql.pack32(0xdeadbeef))
+            ql.amsint32_driver.os.utils.io_Write(ql.pack32(0xdeadbeef))
             
             # TODO: Should stop at 0x10423, but for now just stop at 0x0001066a
             stop_addr = 0x0001066a
             ql.amsint32_driver.hook_address(self.hook_third_stop_address, stop_addr)
-            
-            ql.amsint32_driver.os.set_function_args([0])
+
+            # TODO: not sure whether this one is really STDCALL
+            ql.amsint32_driver.os.fcall = ql.amsint32_driver.os.fcall_select(STDCALL)
+            ql.amsint32_driver.os.fcall.writeParams([0])
+
             ql.amsint32_driver.run(begin=0x102D0)
 
         self.assertEqual(True, ql.first_stop)    

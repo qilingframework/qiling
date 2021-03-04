@@ -35,6 +35,15 @@ class QlOsWindows(QlOs):
         self.ql = ql
 
         def __make_fcall_selector(atype: QL_ARCH) -> Callable[[int], QlFunctionCall]:
+            """ [internal] Generate a fcall selection function based on the required calling
+            convention. This is unique to 32-bits Windows, which may need to call both CDECL
+            and STDCALL functions. The 64-bits version, on the other hand, always use MS64.
+
+            To maintain the same behavior across Windows versions, the fcall selection function
+            for 64-bit is designed to ignore the calling convention identifier and always return
+            a MS64 fcall instance.
+            """
+
             __fcall_objs = {
                 STDCALL: QlFunctionCall(ql, intel.stdcall(ql)),
                 CDECL  : QlFunctionCall(ql, intel.cdecl(ql)),

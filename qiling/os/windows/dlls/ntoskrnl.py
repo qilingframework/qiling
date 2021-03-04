@@ -898,7 +898,7 @@ def hook_PsGetCurrentProcessId(ql, address, params):
             "DriverName": PUNICODE_STRING,
             "InitializationFunction": POINTER,
         })
-def hook_IoCreateDriver(ql, address, params):
+def hook_IoCreateDriver(ql: Qiling, address: int, params):
     init_func = params["InitializationFunction"]
 
     ret_addr = ql.stack_read(0)
@@ -908,7 +908,8 @@ def hook_IoCreateDriver(ql, address, params):
     sp = ql.reg.sp
     init_sp = ql.os.init_sp
 
-    ql.os.set_function_args((ql.driver_object_address, ql.regitry_path_address))
+    ql.os.fcall = ql.os.fcall_select(STDCALL)
+    ql.os.fcall.writeParams((ql.driver_object_address, ql.regitry_path_address))
     ql.until_addr = ret_addr
 
     # now lest emualate InitializationFunction

@@ -14,6 +14,7 @@ import ctypes
 from unicorn import UcError
 
 from qiling import Qiling
+from qiling.os.const import STDCALL
 from qiling.os.windows.wdk_const import *
 from qiling.os.windows.structs import *
 from qiling.utils import verify_ret
@@ -370,7 +371,9 @@ class QlOsUtils:
         self.ql.mem.write(irp_addr, bytes(irp))
 
         # set function args
-        self.set_function_args((self.ql.loader.driver_object.DeviceObject, irp_addr))
+        # TODO: make sure this is indeed STDCALL
+        self.ql.os.fcall = self.ql.os.fcall_select(STDCALL)
+        self.ql.os.fcall.writeParams((self.ql.loader.driver_object.DeviceObject, irp_addr))
 
         try:
             # now emulate 
@@ -519,7 +522,9 @@ class QlOsUtils:
 
             # set function args
             self.ql.log.info("Executing IOCTL with DeviceObject = 0x%x, IRP = 0x%x" %(self.ql.loader.driver_object.DeviceObject, irp_addr))
-            self.set_function_args((self.ql.loader.driver_object.DeviceObject, irp_addr))
+            # TODO: make sure this is indeed STDCALL
+            self.ql.os.fcall = self.ql.os.fcall_select(STDCALL)
+            self.ql.os.fcall.writeParams((self.ql.loader.driver_object.DeviceObject, irp_addr))
 
             try:
                 # now emulate IOCTL's DeviceControl

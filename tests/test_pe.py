@@ -312,7 +312,7 @@ class PETest(unittest.TestCase):
 
     def test_pe_win_x86_argv(self):
         def check_print(ql: Qiling, address: int, params):
-            ql.os.fcall_select(CDECL)
+            ql.os.fcall = ql.os.fcall_select(CDECL)
 
             params = ql.os.resolve_fcall_params({
                 'optstorage': PARAM_INT64,
