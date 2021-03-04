@@ -16,6 +16,7 @@ from .filestruct import ql_file
 from .mapper import QlFsMapper
 from .utils import QlOsUtils
 from .path import QlPathManager
+
 class QlOs:
     Resolver = Callable[[int], Tuple[Any, int]]
 

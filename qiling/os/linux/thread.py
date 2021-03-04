@@ -3,23 +3,16 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import gevent, os, time
+import gevent, os
 
 from typing import Callable
-from abc import ABC, abstractmethod
-from pathlib import Path
+from abc import abstractmethod
 
-from gevent import Greenlet
 from unicorn.unicorn import UcError
-from unicorn.mips_const import *
-from unicorn.arm_const import *
 
-from qiling.utils import FMT_STR
 from qiling.os.thread import *
 from qiling.arch.x86_const import *
-from qiling.const import *
-from qiling.os.const import *
-from qiling.exception import *
+from qiling.exception import QlErrorExecutionStop
 from qiling.os.path import QlPathManager
 
 LINUX_THREAD_ID = 2000
