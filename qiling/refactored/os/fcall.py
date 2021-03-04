@@ -79,7 +79,7 @@ class QlFunctionCall:
 		for si, val in enumerate(values):
 			self.cc.setRawParam(si, val)
 
-	def call(self, func: CallHook, params: Mapping[str, Any], hook_onenter: Optional[OnEnterHook], hook_onexit: Optional[OnExitHook], *args) -> Tuple[Mapping, int, int]:
+	def call(self, func: CallHook, params: Mapping[str, Any], hook_onenter: Optional[OnEnterHook], hook_onexit: Optional[OnExitHook], passthru: bool, *args) -> Tuple[Mapping, int, int]:
 		"""Call a hooked function.
 
 		Args:
@@ -87,6 +87,7 @@ class QlFunctionCall:
 			params: a mapping of parameter names to their values 
 			hook_onenter: a hook to call before entering function hook
 			hook_onexit: a hook to call after returning from function hook
+			passthru: whether to skip stack frame unwinding
 			...: additional arguments to pass to hooks and func
 
 		Returns: resolved params mapping, return value, return address
@@ -123,6 +124,6 @@ class QlFunctionCall:
 		# reflect the true number of slots used by this set of parameters
 		#
 		# unwind stack frame
-		retaddr = self.cc.unwind(len(params))
+		retaddr = -1 if passthru else self.cc.unwind(len(params))
 
 		return params, retval, retaddr

@@ -122,7 +122,7 @@ class QlOs:
         params = self.resolve_fcall_params(params)
 
         # call hooked function
-        params, retval, retaddr = self.fcall.call(func, params, onenter, onexit, *args)
+        params, retval, retaddr = self.fcall.call(func, params, onenter, onexit, passthru, *args)
 
         # print
         self.utils.print_function(pc, func.__name__, params, retval, passthru)
