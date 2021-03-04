@@ -3,10 +3,12 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from typing import Any, Mapping
+
 from qiling import Qiling
 from qiling.const import QL_INTERCEPT
 
-def linux_kernel_api(param_num=None, params={}, passthru=False):
+def linux_kernel_api(params: Mapping[str, Any] = {}, passthru: bool = False):
     def decorator(func):
         def wrapper(ql: Qiling, pc: int, api_name: str):
             onenter = ql.os.user_defined_api[QL_INTERCEPT.ENTER].get(api_name)
