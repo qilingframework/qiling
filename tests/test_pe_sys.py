@@ -3,9 +3,8 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import os, sys, unittest
+import sys, unittest
 
-from shutil import copyfile
 from unicorn import UcError
 
 sys.path.append("..")
@@ -13,7 +12,6 @@ from qiling import Qiling
 from qiling.os.const import STDCALL, POINTER, DWORD, STRING, HANDLE
 from qiling.os.windows.wdk_const import *
 from qiling.os.windows.fncc import winsdkapi
-from qiling.os.windows.utils import string_appearance
 from qiling.os.windows.dlls.kernel32.fileapi import _CreateFile
 
 
@@ -88,7 +86,7 @@ class PETest(unittest.TestCase):
             if hFile == 0xfffffff5:
                 s = ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
                 ql.os.stdout.write(s)
-                string_appearance(ql, s.decode())
+                ql.os.utils.string_appearance(s.decode())
                 ql.mem.write(lpNumberOfBytesWritten, ql.pack(nNumberOfBytesToWrite))
             else:
                 f = ql.os.handle_manager.get(hFile)

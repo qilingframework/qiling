@@ -18,14 +18,6 @@ def is_file_library(string: str) -> bool:
     return extension in ("dll", "exe", "sys", "drv")
 
 
-def string_appearance(ql, string):
-    strings = string.split(" ")
-    for string in strings:
-        val = ql.os.appeared_strings.get(string, set())
-        val.add(ql.os.syscalls_counter)
-        ql.os.appeared_strings[string] = val
-
-
 def path_leaf(path):
     head, tail = ntpath.split(path)
     return tail or ntpath.basename(head)
