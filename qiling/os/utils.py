@@ -146,7 +146,8 @@ class QlOsUtils:
             if f.startswith("s"):
                 params[i] = read_string(params[i])
 
-        stdout = format.replace("%llx", "%x") % tuple(params)
+        stdout = format.replace(r'%llx', r'%x')
+        stdout = stdout.replace(r'%p', r'%#x') % tuple(params)
 
         oargs = ''.join(f', {repr(p) if type(p) is str else f"{p:#x}"}' for p in params)
         output = f'{fname}(format = {repr(format)}{oargs}) = {len(stdout)}'
