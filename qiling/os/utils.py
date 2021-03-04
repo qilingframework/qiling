@@ -247,6 +247,8 @@ class QlOsUtils:
             self._disasm_hook = self.ql.hook_code(self.disassembler)
 
     def io_Write(self, in_buffer):
+        heap = self.ql.os.heap
+
         if self.ql.ostype == QL_OS.WINDOWS:
 
             if self.ql.loader.driver_object.MajorFunction[IRP_MJ_WRITE] == 0:
@@ -267,7 +269,7 @@ class QlOsUtils:
             else:
                 mdl = MDL32()
 
-            mapped_address = self.heap.alloc(buffer_size)
+            mapped_address = heap.alloc(buffer_size)
             alloc_addr.append(mapped_address)
             mdl.MappedSystemVa.value = mapped_address
             mdl.StartVa.value = mapped_address
@@ -280,9 +282,9 @@ class QlOsUtils:
             return mdl
         # allocate memory regions for IRP and IO_STACK_LOCATION
         if self.ql.archtype == QL_ARCH.X8664:
-            irp_addr = self.heap.alloc(ctypes.sizeof(IRP64))
+            irp_addr = heap.alloc(ctypes.sizeof(IRP64))
             alloc_addr.append(irp_addr)
-            irpstack_addr = self.heap.alloc(ctypes.sizeof(IO_STACK_LOCATION64))
+            irpstack_addr = heap.alloc(ctypes.sizeof(IO_STACK_LOCATION64))
             alloc_addr.append(irpstack_addr)
             # setup irp stack parameters
             irpstack = IO_STACK_LOCATION64()
@@ -290,9 +292,9 @@ class QlOsUtils:
             irp = IRP64()
             irp.irpstack = ctypes.cast(irpstack_addr, ctypes.POINTER(IO_STACK_LOCATION64))
         else:
-            irp_addr = self.heap.alloc(ctypes.sizeof(IRP32))
+            irp_addr = heap.alloc(ctypes.sizeof(IRP32))
             alloc_addr.append(irp_addr)
-            irpstack_addr = self.heap.alloc(ctypes.sizeof(IO_STACK_LOCATION32))
+            irpstack_addr = heap.alloc(ctypes.sizeof(IO_STACK_LOCATION32))
             alloc_addr.append(irpstack_addr)
             # setup irp stack parameters
             irpstack = IO_STACK_LOCATION32()
@@ -306,7 +308,7 @@ class QlOsUtils:
 
         if device_object.Flags & DO_BUFFERED_IO:
             # BUFFERED_IO
-            system_buffer_addr = self.heap.alloc(len(in_buffer))
+            system_buffer_addr = heap.alloc(len(in_buffer))
             alloc_addr.append(system_buffer_addr)
             self.ql.mem.write(system_buffer_addr, bytes(in_buffer))
             irp.AssociatedIrp.SystemBuffer.value = system_buffer_addr
@@ -314,9 +316,9 @@ class QlOsUtils:
             # DIRECT_IO
             mdl = build_mdl(len(in_buffer))
             if self.ql.archtype == QL_ARCH.X8664:
-                mdl_addr = self.heap.alloc(ctypes.sizeof(MDL64))
+                mdl_addr = heap.alloc(ctypes.sizeof(MDL64))
             else:
-                mdl_addr = self.heap.alloc(ctypes.sizeof(MDL32))
+                mdl_addr = heap.alloc(ctypes.sizeof(MDL32))
 
             alloc_addr.append(mdl_addr)
 
@@ -325,7 +327,7 @@ class QlOsUtils:
         else:
             # NEITHER_IO
             input_buffer_size = len(in_buffer)
-            input_buffer_addr = self.heap.alloc(input_buffer_size)
+            input_buffer_addr = heap.alloc(input_buffer_size)
             alloc_addr.append(input_buffer_addr)
             self.ql.mem.write(input_buffer_addr, bytes(in_buffer))
             irp.UserBuffer.value = input_buffer_addr
@@ -356,7 +358,7 @@ class QlOsUtils:
         # now free all alloc memory
         for addr in alloc_addr:
             # print("freeing heap memory at 0x%x" %addr) # FIXME: the output is not deterministic??
-            self.heap.free(addr)
+            heap.free(addr)
         return True, io_status.Information.value
 
     # Emulate DeviceIoControl() of Windows
@@ -370,6 +372,8 @@ class QlOsUtils:
     #      LPDWORD      lpBytesReturned,
     #      LPOVERLAPPED lpOverlapped);
     def ioctl(self, params):
+        heap = self.ql.os.heap
+
         def ioctl_code(DeviceType, Function, Method, Access):
             return (DeviceType << 16) | (Access << 14) | (Function << 2) | Method
 
@@ -380,7 +384,7 @@ class QlOsUtils:
             else:
                 mdl = MDL32()
 
-            mapped_address = self.heap.alloc(buffer_size)
+            mapped_address = heap.alloc(buffer_size)
             alloc_addr.append(mapped_address)
             mdl.MappedSystemVa.value = mapped_address
             mdl.StartVa.value = mapped_address
@@ -405,19 +409,19 @@ class QlOsUtils:
             devicetype, function, ctl_method, access = _ioctl_code
 
             input_buffer_size = len(in_buffer)
-            input_buffer_addr = self.heap.alloc(input_buffer_size)
+            input_buffer_addr = heap.alloc(input_buffer_size)
             alloc_addr.append(input_buffer_addr)
             self.ql.mem.write(input_buffer_addr, bytes(in_buffer))
 
             # create new memory region to store out data
-            output_buffer_addr = self.heap.alloc(output_buffer_size)
+            output_buffer_addr = heap.alloc(output_buffer_size)
             alloc_addr.append(output_buffer_addr)
 
             # allocate memory regions for IRP and IO_STACK_LOCATION
             if self.ql.archtype == QL_ARCH.X8664:
-                irp_addr = self.heap.alloc(ctypes.sizeof(IRP64))
+                irp_addr = heap.alloc(ctypes.sizeof(IRP64))
                 alloc_addr.append(irp_addr)
-                irpstack_addr = self.heap.alloc(ctypes.sizeof(IO_STACK_LOCATION64))
+                irpstack_addr = heap.alloc(ctypes.sizeof(IO_STACK_LOCATION64))
                 alloc_addr.append(irpstack_addr)
                 # setup irp stack parameters
                 irpstack = IO_STACK_LOCATION64()
@@ -425,9 +429,9 @@ class QlOsUtils:
                 irp = IRP64()
                 irp.irpstack = ctypes.cast(irpstack_addr, ctypes.POINTER(IO_STACK_LOCATION64))
             else:
-                irp_addr = self.heap.alloc(ctypes.sizeof(IRP32))
+                irp_addr = heap.alloc(ctypes.sizeof(IRP32))
                 alloc_addr.append(irp_addr)
-                irpstack_addr = self.heap.alloc(ctypes.sizeof(IO_STACK_LOCATION32))
+                irpstack_addr = heap.alloc(ctypes.sizeof(IO_STACK_LOCATION32))
                 alloc_addr.append(irpstack_addr)
                 # setup irp stack parameters
                 irpstack = IO_STACK_LOCATION32()
@@ -459,7 +463,7 @@ class QlOsUtils:
             # allocate memory for AssociatedIrp.SystemBuffer
             # used by IOCTL_METHOD_IN_DIRECT, IOCTL_METHOD_OUT_DIRECT and IOCTL_METHOD_BUFFERED
             system_buffer_size = max(input_buffer_size, output_buffer_size)
-            system_buffer_addr = self.heap.alloc(system_buffer_size)
+            system_buffer_addr = heap.alloc(system_buffer_size)
             alloc_addr.append(system_buffer_addr)
 
             # init data from input buffer
@@ -471,9 +475,9 @@ class QlOsUtils:
                 # used by both IOCTL_METHOD_IN_DIRECT and IOCTL_METHOD_OUT_DIRECT
                 mdl = build_mdl(output_buffer_size)
                 if self.ql.archtype == QL_ARCH.X8664:
-                    mdl_addr = self.heap.alloc(ctypes.sizeof(MDL64))
+                    mdl_addr = heap.alloc(ctypes.sizeof(MDL64))
                 else:
-                    mdl_addr = self.heap.alloc(ctypes.sizeof(MDL32))
+                    mdl_addr = heap.alloc(ctypes.sizeof(MDL32))
 
                 alloc_addr.append(mdl_addr)
 
@@ -518,7 +522,7 @@ class QlOsUtils:
             # now free all alloc memory
             for addr in alloc_addr:
                 # print("freeing heap memory at 0x%x" %addr) # FIXME: the output is not deterministic??
-                self.heap.free(addr)
+                heap.free(addr)
             #print("\n")
 
             return io_status.Status.Status, io_status.Information.value, output_data
