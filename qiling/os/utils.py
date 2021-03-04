@@ -7,7 +7,7 @@
 This module is intended for general purpose functions that are only used in qiling.os
 """
 
-from typing import Any, Mapping, Tuple
+from typing import Any, Mapping, Optional, Tuple
 from uuid import UUID
 import ctypes
 
