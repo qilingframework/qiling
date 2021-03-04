@@ -14,8 +14,8 @@ from qiling.exception import *
 
 def ql_syscall_open(ql, filename, flags, mode, *args, **kw):
     path = ql.mem.string(filename)
-    real_path = ql.os.utils.transform_to_real_path(path)
-    relative_path = ql.os.utils.transform_to_relative_path(path)
+    real_path = ql.os.path.transform_to_real_path(path)
+    relative_path = ql.os.path.transform_to_relative_path(path)
 
     flags = flags & 0xffffffff
     mode = mode & 0xffffffff
@@ -54,8 +54,8 @@ def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *ar
     openat_fd = ql.unpacks(ql.pack(openat_fd))
     openat_path = ql.mem.string(openat_path)
 
-    real_path = ql.os.utils.transform_to_real_path(openat_path)
-    relative_path = ql.os.utils.transform_to_relative_path(openat_path)
+    real_path = ql.os.path.transform_to_real_path(openat_path)
+    relative_path = ql.os.path.transform_to_relative_path(openat_path)
 
     openat_flags = openat_flags & 0xffffffff
     openat_mode = openat_mode & 0xffffffff

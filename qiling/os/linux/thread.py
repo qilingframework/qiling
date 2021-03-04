@@ -8,6 +8,7 @@ import gevent, os, time
 from typing import Callable
 from abc import ABC, abstractmethod
 from pathlib import Path
+from copy import deepcopy
 from gevent import Greenlet
 from unicorn.unicorn import UcError
 from unicorn.mips_const import *
@@ -42,7 +43,7 @@ class QlLinuxThread(QlThread):
         self._start_address = start_address
         self._status = THREAD_STATUS_RUNNING
         self._return_val = 0
-        self._current_path = ql.os.current_path
+        self.path = self.ql.os.path
         self._log_file_fd = None
         self._sched_cb = None
 
@@ -140,12 +141,12 @@ class QlLinuxThread(QlThread):
         self._return_val = rv
 
     @property
-    def current_path(self):
-        return self._current_path
+    def path(self):
+        return self._path
 
-    @current_path.setter
-    def current_path(self, cp):
-        self._current_path = cp
+    @path.setter
+    def path(self, p):
+        self._path = deepcopy(p)
 
     @property
     def log_file_fd(self):
@@ -299,7 +300,7 @@ class QlLinuxThread(QlThread):
         # Caveat:
         #     Don't use thread id to identify the thread object.
         new_thread = self.ql.os.thread_class.spawn(self._ql, self._start_address, self._exit_point, self._saved_context, set_child_tid_addr = None, thread_id = self._thread_id)
-        new_thread._current_path = self._current_path
+        new_thread._path = self._path
         new_thread._return_val = self._return_val
         new_thread._robust_list_head_len = self._robust_list_head_len
         new_thread._robust_list_head_ptr = self._robust_list_head_ptr

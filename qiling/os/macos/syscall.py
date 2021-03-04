@@ -409,7 +409,7 @@ def ql_syscall_write_nocancel(ql, write_fd, write_buf, write_count, *args, **kw)
 # 0x18e
 def ql_syscall_open_nocancel(ql, filename, flags, mode, *args, **kw):
     path = ql.mem.string(filename)
-    relative_path = ql.os.utils.transform_to_relative_path(path)
+    relative_path = ql.os.path.transform_to_relative_path(path)
 
     flags = flags & 0xffffffff
     mode = mode & 0xffffffff

@@ -13,7 +13,7 @@ from qiling.os.const import STRING, WSTRING, GUID
 from .filestruct import ql_file
 from .mapper import QlFsMapper
 from .utils import QlOsUtils
-
+from .path import QlPathManager
 class QlOs:
     Resolver = Callable[[int], Tuple[Any, int]]
 
@@ -25,7 +25,7 @@ class QlOs:
         self.child_processes = False
         self.thread_management = None
         self.profile = self.ql.profile
-        self.current_path = self.profile.get("MISC", "current_path")
+        self.path = QlPathManager(ql, self.ql.profile.get("MISC", "current_path"))
         self.exit_code = 0
         self.services = {}
         self.elf_mem_start = 0x0
