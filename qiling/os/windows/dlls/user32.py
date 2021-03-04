@@ -541,6 +541,7 @@ def hook_CharPrevA(ql, address, params):
 def hook_wsprintfW(ql: Qiling, address: int, params):
     api_name = 'wsprintfW'
     Format = params['Format']
+    Buffer = params['Buffer']
 
     if Format == 0:
         ql.log.info(f'{api_name}("(null)") = 0')
@@ -552,7 +553,7 @@ def hook_wsprintfW(ql: Qiling, address: int, params):
     params = ql.os.fcall.readParams(ptypes)[2:]
     ret, out = ql.os.utils.printf(Format, params, api_name, wstring=True)
 
-    ql.mem.write(params['Buffer'], (out + "\x00").encode("utf-16le"))
+    ql.mem.write(Buffer, (out + "\x00").encode("utf-16le"))
 
     return ret
 
@@ -637,6 +638,7 @@ def hook_wvsprintfA(ql, address, params):
 def hook_wsprintfA(ql: Qiling, address: int, params):
     api_name = 'wsprintfA'
     Format = params['Format']
+    Buffer = params['Buffer']
 
     if Format == 0:
         ql.log.info(f'{api_name}("(null)") = 0')
@@ -648,7 +650,7 @@ def hook_wsprintfA(ql: Qiling, address: int, params):
     params = ql.os.fcall.readParams(ptypes)[2:]
     ret, out = ql.os.utils.printf(Format, params, api_name, wstring=True)
 
-    ql.mem.write(params['Buffer'], (out + "\x00").encode("utf-8"))
+    ql.mem.write(Buffer, (out + "\x00").encode("utf-8"))
 
     return ret
 
