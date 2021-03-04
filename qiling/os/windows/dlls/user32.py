@@ -544,8 +544,7 @@ def hook_wsprintfW(ql: Qiling, address: int, params):
     Buffer = params['Buffer']
 
     if Format == 0:
-        ql.log.info(f'{api_name}("(null)") = 0')
-        return 0
+        Format = "(null)"
 
     nargs = Format.count("%")
     ptypes = (POINTER, POINTER) + (PARAM_INTN, ) * nargs
@@ -641,8 +640,7 @@ def hook_wsprintfA(ql: Qiling, address: int, params):
     Buffer = params['Buffer']
 
     if Format == 0:
-        ql.log.info(f'{api_name}("(null)") = 0')
-        return 0
+        Format = "(null)"
 
     nargs = Format.count("%")
     ptypes = (POINTER, POINTER) + (PARAM_INTN, ) * nargs

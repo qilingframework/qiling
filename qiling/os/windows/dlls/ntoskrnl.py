@@ -103,8 +103,7 @@ def hook_DbgPrintEx(ql: Qiling, address: int, params):
     Format = params['Format']
 
     if Format == 0:
-        ql.log.info(f'{api_name}("(null)") = 0')
-        return 0
+        Format = "(null)"
 
     nargs = Format.count("%")
     ptypes = (ULONG, ULONG, POINTER) + (PARAM_INTN, ) * nargs
@@ -124,8 +123,7 @@ def hook_DbgPrint(ql: Qiling, address: int, params):
     Format = params['Format']
 
     if Format == 0:
-        ql.log.info(f'{api_name}("(null)") = 0')
-        return 0
+        Format = "(null)"
 
     nargs = Format.count("%")
     ptypes = (POINTER, ) + (PARAM_INTN, ) * nargs

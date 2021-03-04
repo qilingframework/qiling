@@ -190,8 +190,7 @@ def hook_sprintf(ql: Qiling, address: int, params):
     format = params['format']
 
     if format == 0:
-        ql.log.info(f'{api_name}("(null)") = 0')
-        return 0
+        format = "(null)"
 
     buff = params['buff']
     arglist = params['arglist']
@@ -210,8 +209,7 @@ def hook_printf(ql: Qiling, address: int, params):
     format = params['format']
 
     if format == 0:
-        ql.log.info(f'{api_name}("(null)") = 0')
-        return 0
+        format = "(null)"
 
     nargs = format.count("%")
     ptypes = (POINTER, ) + (PARAM_INTN, ) * nargs
@@ -228,8 +226,7 @@ def hook_wprintf(ql: Qiling, address: int, params):
     format = params['format']
 
     if format == 0:
-        ql.log.info(f'{api_name}("(null)") = 0')
-        return 0
+        format = "(null)"
 
     nargs = format.count("%")
     ptypes = (POINTER, ) + (PARAM_INTN, ) * nargs
