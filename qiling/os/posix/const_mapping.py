@@ -35,7 +35,9 @@ def ql_open_flag_mapping(ql, flags):
     def flag_mapping(flags, mapping_name, mapping_from, mapping_to):
         ret = 0
         for n in mapping_name:
-            if  (flags & mapping_from[n]) == mapping_from[n]:
+            if mapping_from[n] is None or mapping_to[n] is None:
+                continue
+            if (flags & mapping_from[n]) == mapping_from[n]:
                 ret = ret | mapping_to[n]
         return ret
 
@@ -58,39 +60,39 @@ def ql_open_flag_mapping(ql, flags):
     ]
 
     mac_open_flags = {
-        "O_RDONLY": 0x0000,
-        "O_WRONLY": 0x0001,
-        "O_RDWR": 0x0002,
-        "O_NONBLOCK": 0x0004,
-        "O_APPEND": 0x0008,
-        "O_ASYNC": 0x0040,
-        "O_SYNC": 0x0080,
-        "O_NOFOLLOW": 0x0100,
-        "O_CREAT": 0x0200,
-        "O_TRUNC": 0x0400,
-        "O_EXCL": 0x0800,
+        "O_RDONLY": 0x0,
+        "O_WRONLY": 0x1,
+        "O_RDWR": 0x2,
+        "O_NONBLOCK": 0x4,
+        "O_APPEND": 0x8,
+        "O_ASYNC": 0x40,
+        "O_SYNC": 0x80,
+        "O_NOFOLLOW": 0x100,
+        "O_CREAT": 0x200,
+        "O_TRUNC": 0x400,
+        "O_EXCL": 0x800,
         "O_NOCTTY": 0x20000,
         "O_DIRECTORY": 0x100000,
-        "O_BINARY": 0,
-        'O_LARGEFILE': 0
+        "O_BINARY": None,
+        'O_LARGEFILE': None
     }
 
     linux_x86_open_flags = {
-        'O_RDONLY': 0,
-        'O_WRONLY': 1,
-        'O_RDWR': 2,
-        'O_NONBLOCK': 2048,
-        'O_APPEND': 1024,
-        'O_ASYNC': 8192,
-        'O_SYNC': 1052672,
-        'O_NOFOLLOW': 131072,
-        'O_CREAT': 64,
-        'O_TRUNC': 512,
-        'O_EXCL': 128,
-        'O_NOCTTY': 256,
-        'O_DIRECTORY': 65536,
-        'O_BINARY': 0,
-        'O_LARGEFILE': 0
+        'O_RDONLY': 0x0,
+        'O_WRONLY': 0x1,
+        'O_RDWR': 0x2,
+        'O_NONBLOCK': 0x800,
+        'O_APPEND': 0x400,
+        'O_ASYNC': 0x2000,
+        'O_SYNC': 0x101000,
+        'O_NOFOLLOW': 0x20000,
+        'O_CREAT': 0x40,
+        'O_TRUNC': 0x200,
+        'O_EXCL': 0x80,
+        'O_NOCTTY': 0x100,
+        'O_DIRECTORY': 0x10000,
+        'O_BINARY': None,
+        'O_LARGEFILE': 0x0
     }
 
     linux_arm_open_flags = {
@@ -107,7 +109,7 @@ def ql_open_flag_mapping(ql, flags):
         'O_EXCL': 0x80,
         'O_NOCTTY': 0x100,
         'O_DIRECTORY': 0x4000,
-        'O_BINARY': 0,
+        'O_BINARY': None,
         'O_LARGEFILE': 0x20000
     }
 
@@ -125,7 +127,7 @@ def ql_open_flag_mapping(ql, flags):
         'O_EXCL': 0x400,
         'O_NOCTTY': 0x800,
         'O_DIRECTORY': 0x10000,
-        'O_BINARY' : 0,
+        'O_BINARY' : None,
         'O_LARGEFILE': 0x2000
     }
 
@@ -143,26 +145,26 @@ def ql_open_flag_mapping(ql, flags):
         'O_EXCL': 0x800,
         'O_NOCTTY': 0x8000,
         'O_DIRECTORY': 0x20000,
-        'O_BINARY' : 0,
-        'O_LARGEFILE': 0
+        'O_BINARY' : None,
+        'O_LARGEFILE': None
     }
 
     windows_open_flags = {
-        'O_RDONLY': 0,
-        'O_WRONLY': 1,
-        'O_RDWR': 2,
-        'O_NONBLOCK': 2, # Windows doesn't have a corresponding one, assume RW
-        'O_APPEND': 8,
-        'O_ASYNC': 2, # Windows doesn't have a corresponding one, assume RW
-        'O_SYNC': 2, # Windows doesn't have a corresponding one, assume RW
-        'O_NOFOLLOW': 2, # Windows doesn't have a corresponding one, assume RW
-        'O_CREAT': 256,
-        'O_TRUNC': 512,
-        'O_EXCL': 1024,
-        'O_NOCTTY': 2,
-        'O_DIRECTORY': 2, # Windows doesn't have a corresponding one, assume RW
-        'O_BINARY': 32768,
-        'O_LARGEFILE': 2, # Windows doesn't have a corresponding one, assume RW
+        'O_RDONLY': 0x0,
+        'O_WRONLY': 0x1,
+        'O_RDWR': 0x2,
+        'O_NONBLOCK': None,
+        'O_APPEND': 0x8,
+        'O_ASYNC': None,
+        'O_SYNC': None,
+        'O_NOFOLLOW': None,
+        'O_CREAT': 0x100,
+        'O_TRUNC': 0x200,
+        'O_EXCL': 0x400,
+        'O_NOCTTY': None,
+        'O_DIRECTORY': None,
+        'O_BINARY': 0x8000,
+        'O_LARGEFILE': None
     }
 
     f = {}
