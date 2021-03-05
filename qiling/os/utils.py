@@ -7,7 +7,7 @@
 This module is intended for general purpose functions that are only used in qiling.os
 """
 
-from typing import Any, Mapping, Optional, Tuple
+from typing import Any, MutableMapping, Union, Mapping, Optional, Sequence, MutableSequence, Tuple
 from uuid import UUID
 import ctypes
 
@@ -20,8 +20,6 @@ from qiling.os.windows.structs import *
 from qiling.utils import verify_ret
 
 class QlOsUtils:
-    # a list of api names that print their own invocation parameters on their own
-    __skip_list = ('__stdio_common_vfprintf', '__stdio_common_vfwprintf', 'printf', 'wprintf','wsprintfW', 'wsprintfA', 'sprintf', 'printk')
 
     ELLIPSIS_PREF = r'__qlva_'
 
@@ -102,22 +100,25 @@ class QlOsUtils:
         if function_name.startswith('hook_'):
             function_name = function_name[5:]
 
-        if function_name in QlOsUtils.__skip_list:
-            return
+        def __dqstr(s: str) -> str:
+            return f'"{repr(s)[1:-1]}"'
 
         def _parse_param(param):
             name, value = param
 
-            if type(value) is str:
-                return f'{name:s} = "{value}"'
-            elif type(value) is bytearray:
-                return f'{name:s} = "{value.decode("utf-8")}"'
-            elif type(value) is tuple:
-                # we just need the string, not the address in the log
-                return f'{name:s} = "{value[1]}"'
+            nrep = '' if name.startswith(QlOsUtils.ELLIPSIS_PREF) else f'{name:s} = ' 
 
-            # default to hexadecimal representation
-            return f'{name:s} = {value:#x}'
+            if type(value) is str:
+                vrep = f'{__dqstr(value)}'
+            elif type(value) is bytearray:
+                vrep = f'{__dqstr(value.decode("utf-8"))}'
+            elif type(value) is tuple:
+                vrep = f'{__dqstr(value[1])}'
+            else:
+                # default to hexadecimal representation
+                vrep = f'{value:#x}'
+
+            return f'{nrep}{vrep}'
 
         # arguments list
         fargs = (_parse_param(param) for param in params.items())
