@@ -539,22 +539,21 @@ def hook_CharPrevA(ql, address, params):
 # );
 @winsdkapi(cc=CDECL, dllname=dllname, replace_params={'Buffer': POINTER, 'Format': WSTRING})
 def hook_wsprintfW(ql: Qiling, address: int, params):
-    api_name = 'wsprintfW'
-    Format = params['Format']
     Buffer = params['Buffer']
+    Format = params['Format']
 
     if Format == 0:
         Format = "(null)"
 
     nargs = Format.count("%")
     ptypes = (POINTER, POINTER) + (PARAM_INTN, ) * nargs
+    args = ql.os.fcall.readParams(ptypes)[2:]
 
-    params = ql.os.fcall.readParams(ptypes)[2:]
-    ret, out = ql.os.utils.printf(Format, params, api_name, wstring=True)
+    count = ql.os.utils.sprintf(Buffer, Format, args, wstring=True)
+    ql.os.utils.update_ellipsis(params, args)
 
-    ql.mem.write(Buffer, (out + "\x00").encode("utf-16le"))
+    return count
 
-    return ret
 
 # FIXME: this one belongs to 'msvcrt', doesn't it?
 #
@@ -635,22 +634,20 @@ def hook_wvsprintfA(ql, address, params):
 # );
 @winsdkapi(cc=CDECL, dllname=dllname, replace_params={'Buffer': POINTER, 'Format': STRING})
 def hook_wsprintfA(ql: Qiling, address: int, params):
-    api_name = 'wsprintfA'
-    Format = params['Format']
     Buffer = params['Buffer']
+    Format = params['Format']
 
     if Format == 0:
         Format = "(null)"
 
     nargs = Format.count("%")
     ptypes = (POINTER, POINTER) + (PARAM_INTN, ) * nargs
+    args = ql.os.fcall.readParams(ptypes)[2:]
 
-    params = ql.os.fcall.readParams(ptypes)[2:]
-    ret, out = ql.os.utils.printf(Format, params, api_name, wstring=True)
+    count = ql.os.utils.sprintf(Buffer, Format, args, wstring=False)
+    ql.os.utils.update_ellipsis(params, args)
 
-    ql.mem.write(Buffer, (out + "\x00").encode("utf-8"))
-
-    return ret
+    return count
 
 # int MessageBoxW(
 #   HWND    hWnd,

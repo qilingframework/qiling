@@ -99,7 +99,6 @@ def hook_NtClose(ql, address, params):
 # );
 @winsdkapi(cc=CDECL, dllname=dllname, replace_params={'ComponentId': ULONG, 'Level': ULONG, 'Format': STRING})
 def hook_DbgPrintEx(ql: Qiling, address: int, params):
-    api_name = 'DbgPrintEx'
     Format = params['Format']
 
     if Format == 0:
@@ -107,11 +106,12 @@ def hook_DbgPrintEx(ql: Qiling, address: int, params):
 
     nargs = Format.count("%")
     ptypes = (ULONG, ULONG, POINTER) + (PARAM_INTN, ) * nargs
+    args = ql.os.fcall.readParams(ptypes)[3:]
 
-    params = ql.os.fcall.readParams(ptypes)[3:]
-    ret, _ = ql.os.utils.printf(Format, params, api_name, wstring=False)
+    count = ql.os.utils.printf(Format, args, wstring=False)
+    ql.os.utils.update_ellipsis(params, args)
 
-    return ret
+    return count
 
 # ULONG DbgPrint(
 #   PCSTR Format,
@@ -119,7 +119,6 @@ def hook_DbgPrintEx(ql: Qiling, address: int, params):
 # );
 @winsdkapi(cc=CDECL, dllname=dllname, replace_params={'Format': STRING})
 def hook_DbgPrint(ql: Qiling, address: int, params):
-    api_name = 'DbgPrint'
     Format = params['Format']
 
     if Format == 0:
@@ -127,12 +126,12 @@ def hook_DbgPrint(ql: Qiling, address: int, params):
 
     nargs = Format.count("%")
     ptypes = (POINTER, ) + (PARAM_INTN, ) * nargs
+    args = ql.os.fcall.readParams(ptypes)[1:]
 
-    params = ql.os.fcall.readParams(ptypes)[1:]
-    ret, _ = ql.os.utils.printf(Format, params, api_name, wstring=False)
+    count = ql.os.utils.printf(Format, args, wstring=False)
+    ql.os.utils.update_ellipsis(params, args)
 
-    return ret
-
+    return count
 
 def ntoskrnl_IoCreateDevice(ql: Qiling, address: int, params):
     objcls = {

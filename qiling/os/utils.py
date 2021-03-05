@@ -23,6 +23,8 @@ class QlOsUtils:
     # a list of api names that print their own invocation parameters on their own
     __skip_list = ('__stdio_common_vfprintf', '__stdio_common_vfwprintf', 'printf', 'wprintf','wsprintfW', 'wsprintfA', 'sprintf', 'printk')
 
+    ELLIPSIS_PREF = r'__qlva_'
+
     def __init__(self, ql: Qiling):
         self.ql = ql
         self.path = None
@@ -132,30 +134,42 @@ class QlOsUtils:
             log = log.partition(" ")[-1]
             self.ql.log.info(log)
 
-    def vprintf(self, format: str, params_addr: int, fname: str, wstring: bool = False):
-        count = format.count("%")
-        params = [self.ql.unpack(self.ql.mem.read(params_addr + i * self.ql.pointersize, self.ql.pointersize)) for i in range(count)]
-
-        return self.printf(format, params, fname, wstring)
-
-    def printf(self, format: str, params, fname: str, wstring: bool = False):
+    def __common_printf(self, format: str, args: MutableSequence, wstring: bool):
         fmtstr = format.split("%")[1:]
         read_string = self.read_wstring if wstring else self.read_cstring
 
         for i, f in enumerate(fmtstr):
             if f.startswith("s"):
-                params[i] = read_string(params[i])
+                args[i] = read_string(args[i])
 
-        stdout = format.replace(r'%llx', r'%x')
-        stdout = stdout.replace(r'%p', r'%#x') % tuple(params)
+        out = format.replace(r'%llx', r'%x')
+        out = out.replace(r'%p', r'%#x')
 
-        oargs = ''.join(f', {repr(p) if type(p) is str else f"{p:#x}"}' for p in params)
-        output = f'{fname}(format = {repr(format)}{oargs}) = {len(stdout)}'
+        return out % tuple(args)
 
-        self.ql.log.info(output)
-        self.ql.os.stdout.write(bytes(stdout, 'utf-8'))
+    def va_list(self, format: str, ptr: int) -> MutableSequence[int]:
+        count = format.count("%")
 
-        return len(stdout), stdout
+        return [self.ql.unpack(self.ql.mem.read(ptr + i * self.ql.pointersize, self.ql.pointersize)) for i in range(count)]
+
+    def sprintf(self, buff: int, format: str, args: MutableSequence, wstring: bool = False) -> int:
+        out = self.__common_printf(format, args, wstring)
+        enc = 'utf-16le' if wstring else 'utf-8'
+
+        self.ql.mem.write(buff, (out + '\x00').encode(enc))
+
+        return len(out)
+
+    def printf(self, format: str, args: MutableSequence, wstring: bool = False) -> int:
+        out = self.__common_printf(format, args, wstring)
+        enc = 'utf-8'
+
+        self.ql.os.stdout.write(out.encode(enc))
+
+        return len(out)
+
+    def update_ellipsis(self, params: MutableMapping, args: Sequence) -> None:
+        params.update((f'{QlOsUtils.ELLIPSIS_PREF}{i}', a) for i, a in enumerate(args))
 
     def lsbmsb_convert(self, sc, size=4):
         split_bytes = []
