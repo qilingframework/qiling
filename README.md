@@ -244,4 +244,4 @@ Contact us at email info@qiling.io, or via Twitter [@qiling_io](https://twitter.
 ---
 
 #### This is an awesome project! Can I donate?
-Yes, details please refer to https://www.qiling.io/donation/
+Yes, details please refer to [Cardano Stake Pool](https://www.qiling.io/stake/) or [SWAG](https://www.qiling.io/swag/)
