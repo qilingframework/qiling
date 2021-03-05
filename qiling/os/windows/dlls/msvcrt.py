@@ -274,25 +274,6 @@ def hook___stdio_common_vswprintf_s(ql: Qiling, address: int, params):
 
     return str_size
 
-# int lstrlenA(
-#   LPCSTR lpString
-# );
-@winsdkapi(cc=STDCALL, replace_params={'lpString': STRING})
-def hook_lstrlenA(ql: Qiling, address: int, params):
-    s = params["lpString"]
-
-    return 0 if not s else len(s)
-
-
-# int lstrlenW(
-#   LPCWSTR lpString
-# );
-@winsdkapi(cc=CDECL, replace_params={'lpString': WSTRING})
-def hook_lstrlenW(ql: Qiling, address: int, params):
-    s = params["lpString"]
-
-    return 0 if not s else len(s)
-
 
 @winsdkapi(cc=CDECL)
 def hook___lconv_init(ql: Qiling, address: int, params):

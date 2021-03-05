@@ -224,6 +224,26 @@ def hook_lstrcatW(ql, address, params):
     return pointer
 
 
+# int lstrlenA(
+#   LPCSTR lpString
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname)
+def hook_lstrlenA(ql: Qiling, address: int, params):
+    s = params["lpString"]
+
+    return 0 if not s else len(s)
+
+
+# int lstrlenW(
+#   LPCWSTR lpString
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname)
+def hook_lstrlenW(ql: Qiling, address: int, params):
+    s = params["lpString"]
+
+    return 0 if not s else len(s)
+
+
 # int lstrcmpiW(
 #   LPCWSTR lpString1,
 #   LPCWSTR lpString2
