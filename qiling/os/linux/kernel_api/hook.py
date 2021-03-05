@@ -20,7 +20,7 @@ def hook_kernel_api(ql: Qiling, address: int, size):
         api_func = ql.os.user_defined_api[QL_INTERCEPT.CALL].get(api_name)
 
         if not api_func:
-            api_func = getattr(api, f'hook_{api_name}')
+            api_func = getattr(api, f'hook_{api_name}', None)
 
         if api_func:
             try:

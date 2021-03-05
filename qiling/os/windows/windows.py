@@ -125,7 +125,7 @@ class QlOsWindows(QlOs):
             api_func = self.user_defined_api[QL_INTERCEPT.CALL].get(api_name)
 
             if not api_func:
-                api_func = getattr(api, f'hook_{api_name}')
+                api_func = getattr(api, f'hook_{api_name}', None)
 
                 self.syscall_count.setdefault(api_name, 0)
                 self.syscall_count[api_name] += 1
