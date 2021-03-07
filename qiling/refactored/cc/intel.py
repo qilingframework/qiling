@@ -37,9 +37,6 @@ class QlIntel64(QlIntelBaseCC):
 	def getNumSlots(argbits: int) -> int:
 		return max(argbits, 64) // 64
 
-	def getRawParam64(self, slot: int) -> int:
-		return self.getRawParam(slot)
-
 class QlIntel32(QlIntelBaseCC):
 	"""Calling convention base class for Intel-based 32-bit systems.
 	"""
@@ -48,11 +45,18 @@ class QlIntel32(QlIntelBaseCC):
 	def getNumSlots(argbits: int) -> int:
 		return max(argbits, 32) // 32
 
-	def getRawParam64(self, slot: int) -> int:
-		lo = self.getRawParam(slot)
-		hi = self.getRawParam(slot + 1)
+	def getRawParam(self, slot: int, nbits: int = None) -> int:
+		__super_getparam = super().getRawParam
 
-		return (hi << 32) | lo
+		if nbits == 64:
+			lo = __super_getparam(slot)
+			hi = __super_getparam(slot + 1)
+
+			val = (hi << 32) | lo
+		else:
+			val = __super_getparam(slot, nbits)
+
+		return val
 
 class amd64(QlIntel64):
 	"""Default calling convention for POSIX (x86-64).

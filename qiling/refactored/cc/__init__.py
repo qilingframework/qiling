@@ -26,85 +26,31 @@ class QlCC:
 
 		raise NotImplementedError
 
-	def getRawParam8(self, slot: int) -> int:
-		"""Read a 8 bits value from the specified argument slot.
-
-		Note that argument slots and argument indexes are not the same. Though they often correlate
-		to each other, some implementations might use more than one slot to represent a sigle argument.
-
-		Args:
-			slot: argument slot to read
-
-		Returns: 8 bits raw value
-		"""
-
-		raise NotImplementedError
-
-	def getRawParam16(self, slot: int) -> int:
-		"""Read a 16 bits value from the specified argument slot.
-
-		Note that argument slots and argument indexes are not the same. Though they often correlate
-		to each other, some implementations might use more than one slot to represent a sigle argument.
-
-		Args:
-			slot: argument slot to read
-
-		Returns: 16 bits raw value
-		"""
-
-		raise NotImplementedError
-
-	def getRawParam32(self, slot: int) -> int:
-		"""Read a 32 bits value from the specified argument slot.
-
-		Note that argument slots and argument indexes are not the same. Though they often correlate
-		to each other, some implementations might use more than one slot to represent a sigle argument.
-
-		Args:
-			slot: argument slot to read
-
-		Returns: 32 bits raw value
-		"""
-
-		raise NotImplementedError
-
-	def getRawParam64(self, slot: int) -> int:
-		"""Read a 64 bits value from the specified argument slot.
-
-		Note that argument slots and argument indexes are not the same. Though they often correlate
-		to each other, some implementations might use more than one slot to represent a sigle argument.
-
-		Args:
-			slot: argument slot to read
-
-		Returns: 64 bits raw value
-		"""
-
-		raise NotImplementedError
-
-	def getRawParam(self, slot: int) -> int:
+	def getRawParam(self, slot: int, argbits: int = None) -> int:
 		"""Read a value of native size from the specified argument slot.
 
 		Note that argument slots and argument indexes are not the same. Though they often correlate
 		to each other, some implementations might use more than one slot to represent a sigle argument.
 
 		Args:
-			slot: argument slot to read
+			slot: argument slot to access
+			argbits: argument size in bits (default: arch native size)
 
 		Returns: raw value
 		"""
 
 		raise NotImplementedError
 
-	def setRawParam(self, slot: int, value: int) -> None:
+	def setRawParam(self, slot: int, value: int, argbits: int = None) -> None:
 		"""Replace the value in the specified argument slot.
 
 		Note that argument slots and argument indexes are not the same. Though they often correlate
 		to each other, some implementations might use more than one slot to represent a sigle argument.
 
 		Args:
-			slot: argument slot to read
+			slot: argument slot to access
 			value: new raw value to write
+			argbits: argument size in bits (default: arch native size)
 		"""
 
 		raise NotImplementedError
@@ -183,24 +129,19 @@ class QlCommonBaseCC(QlCC):
 		else:
 			return reg_access, reg
 
-	def getRawParam8(self, slot: int) -> int:
-		return self.getRawParam(slot) & 0xff
-
-	def getRawParam16(self, slot: int) -> int:
-		return self.getRawParam(slot) & 0xffff
-
-	def getRawParam32(self, slot: int) -> int:
-		return self.getRawParam(slot) & 0xffffffff
-
-	def getRawParam(self, index: int) -> int:
+	def getRawParam(self, index: int, argbits: int = None) -> int:
 		read, loc = self.__access_param(index, self.ql.stack_read, self.ql.reg.read)
 
-		return read(loc)
+		mask = (0 if argbits is None else (1 << argbits)) - 1
 
-	def setRawParam(self, index: int, value: int) -> None:
+		return read(loc) & mask
+
+	def setRawParam(self, index: int, value: int, argbits: int = None) -> None:
 		write, loc = self.__access_param(index, self.ql.stack_write, self.ql.reg.write)
 
-		write(loc, value)
+		mask = (0 if argbits is None else (1 << argbits)) - 1
+
+		write(loc, value & mask)
 
 	def getReturnValue(self) -> int:
 		return self.ql.reg.read(self._retreg)
