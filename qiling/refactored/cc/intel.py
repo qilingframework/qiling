@@ -25,7 +25,7 @@ class QlIntelBaseCC(QlCommonBaseCC):
 
 		super().__init__(ql, retreg)
 
-	def unwind(self) -> int:
+	def unwind(self, nslots: int) -> int:
 		# no cleanup; just pop out the return address
 		return self.ql.arch.stack_pop()
 
@@ -95,11 +95,11 @@ class stdcall(QlIntel32):
 	The callee is resopnsible to unwind the stack.
 	"""
 
-	# TODO: the stack frame size to uwind is fcall-specific. should think how
-	# it would be determined
-	def unwind(self) -> int:
-		retaddr = super().unwind()
+	_argregs = (None, ) * 16
 
-		self.ql.reg.arch_sp += (param_num * self._asize)
+	def unwind(self, nslots: int) -> int:
+		retaddr = super().unwind(nslots)
+
+		self.ql.reg.arch_sp += (nslots * self._asize)
 
 		return retaddr

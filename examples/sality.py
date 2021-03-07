@@ -11,7 +11,6 @@ sys.path.append("..")
 from qiling import Qiling
 from qiling.os.const import STDCALL, POINTER, DWORD, STRING, HANDLE
 from qiling.os.windows.fncc import winsdkapi
-from qiling.os.windows.utils import string_appearance
 from qiling.os.windows.dlls.kernel32.fileapi import _CreateFile
 
 
@@ -75,7 +74,7 @@ def _WriteFile(ql, address, params):
     if hFile == 0xfffffff5:
         s = ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
         ql.os.stdout.write(s)
-        string_appearance(ql, s.decode())
+        ql.os.utils.string_appearance(s.decode())
         ql.mem.write(lpNumberOfBytesWritten, ql.pack(nNumberOfBytesToWrite))
     else:
         f = ql.os.handle_manager.get(hFile)
@@ -171,12 +170,21 @@ if __name__ == "__main__":
     ql.hook_address(hook_stop_address, 0x40EFFB)
     ql.run()
     # run driver thread
-    ql.os.set_function_args([0])
+
+    # execution is about to resume from 0x4053B2, which essentially jumps to ExitThread (kernel32.dll).
+    # Set ExitThread exit code to 0
+    ql.os.fcall = ql.os.fcall_select(STDCALL)
+    ql.os.fcall.writeParams([0])
+
     ql.hook_address(hook_stop_address, 0x4055FA)
     ql.run(0x4053B2)
     ql.log.info("test kill thread")
     if ql.amsint32_driver:
         ql.amsint32_driver.os.io_Write(ql.pack32(0xdeadbeef))
         ql.amsint32_driver.hook_address(hook_stop_address, 0x10423)
-        ql.amsint32_driver.set_function_args([0])
+
+        # TODO: not sure whether this one is really STDCALL
+        ql.amsint32_driver.os.fcall = ql.amsint32_driver.os.fcall_select(STDCALL)
+        ql.amsint32_driver.os.fcall.writeParams([0])
+
         ql.amsint32_driver.run(0x102D0)

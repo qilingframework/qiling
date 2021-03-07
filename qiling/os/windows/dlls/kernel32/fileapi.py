@@ -185,7 +185,7 @@ def hook_WriteFile(ql, address, params):
     if hFile == STD_OUTPUT_HANDLE:
         s = ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
         ql.os.stdout.write(s)
-        ql.os.string_appearance(s.decode())
+        ql.os.utils.string_appearance(s.decode())
         ql.mem.write(lpNumberOfBytesWritten, ql.pack(nNumberOfBytesToWrite))
     else:
         f = ql.os.handle_manager.get(hFile)

@@ -30,7 +30,7 @@ def hook_kernel_api(ql: Qiling, address: int, size):
                 ql.log.debug("%s Exception Found" % api_name)
                 raise QlErrorSyscallError("Linux kernel API Implementation Error")
         else:
-            ql.log.warning("{api_name} is not implemented\n")
+            ql.log.warning(f'api {api_name} is not implemented')
 
             if ql.debug_stop:
                 raise QlErrorSyscallNotFound("Linux kernel API implementation not found")

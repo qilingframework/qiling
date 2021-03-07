@@ -10,6 +10,8 @@ from qiling import Qiling
 from qiling.const import QL_OS, QL_INTERCEPT, QL_OS_POSIX
 from qiling.os.const import STRING, WSTRING, GUID
 
+from qiling.refactored.os.fcall import QlFunctionCall
+
 from .filestruct import ql_file
 from .mapper import QlFsMapper
 from .utils import QlOsUtils
@@ -20,7 +22,7 @@ class QlOs:
     def __init__(self, ql: Qiling, resolvers: Mapping[Any, Resolver] = {}):
         self.ql = ql
         self.utils = QlOsUtils(ql)
-        self.fcall = None
+        self.fcall: Optional[QlFunctionCall] = None
         self.fs_mapper = QlFsMapper(ql)
         self.child_processes = False
         self.thread_management = None
@@ -120,7 +122,7 @@ class QlOs:
         params = self.resolve_fcall_params(params)
 
         # call hooked function
-        params, retval, retaddr = self.fcall.call(func, params, onenter, onexit, *args)
+        params, retval, retaddr = self.fcall.call(func, params, onenter, onexit, passthru, *args)
 
         # print
         self.utils.print_function(pc, func.__name__, params, retval, passthru)

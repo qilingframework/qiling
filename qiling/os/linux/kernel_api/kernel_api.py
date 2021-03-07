@@ -3,15 +3,41 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from qiling import Qiling
 from qiling.os.const import *
 from qiling.os.linux.fncc import linux_kernel_api
 
 
 @linux_kernel_api(params={
-    "format": STRING,
+    "format": STRING
 })
-def hook_printk(ql, address, params):
-    return 0
+def hook_printk(ql: Qiling, address: int, params):
+    PRINTK_LEVEL = (
+        'KERN_EMERGE',
+        'KERN_ALERT',
+        'KERN_CRIT',
+        'KERN_ERR',
+        'KERN_WARNING',
+        'KERN_NOTICE',
+        'KERN_INFO',
+        'KERN_DEBUG',
+        'KERN_DEFAULT',
+        'KERN_CONT'
+    )
+
+    format = params['format']
+
+    if format == 0:
+        return 0
+
+    level = PRINTK_LEVEL[int(format[1])]
+    nargs = format.count("%")
+    ptypes = (POINTER, ) + (PARAM_INTN, ) * nargs
+
+    params = ql.os.fcall.readParams(ptypes)[1:]
+    ret, _ = ql.os.utils.printf(f'{level} {format[2:]}', params, 'printk', wstring=False)
+
+    return ret
 
 
 @linux_kernel_api(params={

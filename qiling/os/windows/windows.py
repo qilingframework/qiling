@@ -3,24 +3,63 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+import json
+from typing import Callable
+
 from unicorn import UcError
 
+from qiling import Qiling
 from qiling.arch.x86 import GDTManager, ql_x86_register_cs, ql_x86_register_ds_ss_es, ql_x86_register_fs, ql_x86_register_gs, ql_x8664_set_gs
+from qiling.const import QL_ARCH, QL_INTERCEPT
 from qiling.exception import QlErrorSyscallError, QlErrorSyscallNotFound
+from qiling.os.const import STDCALL, CDECL, MS64
 from qiling.os.os import QlOs
-from qiling.os.fncc import QlOsFncc
 
+from qiling.refactored.cc import QlCC, intel
+from qiling.refactored.os.fcall import QlFunctionCall
+
+from .const import Mapper
+from .handle import Handle, HandleManager
+from .thread import QlWindowsThread, QlWindowsThreadManagement
 from .clipboard import Clipboard
 from .fiber import FiberManager
 from .registry import RegistryManager
+from .utils import ql_x86_windows_hook_mem_error
 
-from .dlls import *
+import qiling.os.windows.dlls as api
 
-class QlOsWindows(QlOs, QlOsFncc):
-    def __init__(self, ql):
-        QlOs.__init__(self, ql)
-        QlOsFncc.__init__(self, ql)
+class QlOsWindows(QlOs):
+    def __init__(self, ql: Qiling):
+        super(QlOsWindows, self).__init__(ql)
+
         self.ql = ql
+
+        def __make_fcall_selector(atype: QL_ARCH) -> Callable[[int], QlFunctionCall]:
+            """ [internal] Generate a fcall selection function based on the required calling
+            convention. This is unique to 32-bits Windows, which may need to call both CDECL
+            and STDCALL functions. The 64-bits version, on the other hand, always use MS64.
+
+            To maintain the same behavior across Windows versions, the fcall selection function
+            for 64-bit is designed to ignore the calling convention identifier and always return
+            a MS64 fcall instance.
+            """
+
+            __fcall_objs = {
+                STDCALL: QlFunctionCall(ql, intel.stdcall(ql)),
+                CDECL  : QlFunctionCall(ql, intel.cdecl(ql)),
+                MS64   : QlFunctionCall(ql, intel.ms64(ql))
+            }
+
+            __selector = {
+                QL_ARCH.X86  : lambda cc: __fcall_objs[cc],
+                QL_ARCH.X8664: lambda cc: __fcall_objs[MS64]
+            }
+
+            return __selector[atype]
+
+        self.fcall_select = __make_fcall_selector(ql.archtype)
+        self.fcall = None
+
         self.PE_RUN = True
         self.last_error = 0
         # variables used inside hooks
@@ -72,59 +111,56 @@ class QlOsWindows(QlOs, QlOsFncc):
         new_handle = Handle(obj=main_thread)
         self.handle_manager.append(new_handle)
 
-
     # hook WinAPI in PE EMU
-    def hook_winapi(self, ql, address: int, size: int):
-        if address in self.ql.loader.import_symbols:
-            entry = self.ql.loader.import_symbols[address]
-            winapi_name = entry['name']
+    def hook_winapi(self, ql: Qiling, address: int, size: int):
+        if address in ql.loader.import_symbols:
+            entry = ql.loader.import_symbols[address]
+            api_name = entry['name']
 
-            if winapi_name is None:
-                winapi_name = Mapper[entry['dll']][entry['ordinal']]
+            if api_name is None:
+                api_name = Mapper[entry['dll']][entry['ordinal']]
             else:
-                winapi_name = winapi_name.decode()
+                api_name = api_name.decode()
 
-            winapi_func = self.user_defined_api[QL_INTERCEPT.CALL].get(winapi_name)
+            api_func = self.user_defined_api[QL_INTERCEPT.CALL].get(api_name)
 
-            if not winapi_func:
-                winapi_func = globals().get(f'hook_{winapi_name}')
+            if not api_func:
+                api_func = getattr(api, f'hook_{api_name}')
 
-                self.syscall_count.setdefault(winapi_name, 0)
-                self.syscall_count[winapi_name] += 1
+                self.syscall_count.setdefault(api_name, 0)
+                self.syscall_count[api_name] += 1
 
-            self.api_func_onenter = self.user_defined_api[QL_INTERCEPT.ENTER].get(winapi_name)
-            self.api_func_onexit = self.user_defined_api[QL_INTERCEPT.EXIT].get(winapi_name)
-
-            if winapi_func:
+            if api_func:
                 try:
-                    winapi_func(self.ql, address)
+                    api_func(ql, address, api_name)
                 except Exception as ex:
-                    self.ql.log.exception(ex)
-                    self.ql.log.info("%s Exception Found" % winapi_name)
-                    self.emu_error()
+                    ql.log.exception(ex)
+                    ql.log.debug("%s Exception Found" % api_name)
+
                     raise QlErrorSyscallError("Windows API Implementation Error")
             else:
-                self.ql.log.warning("%s is not implemented" % winapi_name)
-                if self.ql.debug_stop:
-                    raise QlErrorSyscallNotFound("Windows API Implementation Not Found")
+                ql.log.warning(f'api {api_name} is not implemented')
+
+                if ql.debug_stop:
+                    raise QlErrorSyscallNotFound("Windows API implementation not found")
 
 
     def post_report(self):
-        self.ql.log.debug("Syscalls called")
+        self.ql.log.debug("Syscalls called:")
         for key, values in self.utils.syscalls.items():
             self.ql.log.debug(f'{key}:')
 
             for value in values:
-                self.ql.log.debug(f'{json.dumps(value):s}')
+                self.ql.log.debug(f'  {json.dumps(value):s}')
 
-        self.ql.log.debug("Registries accessed")
+        self.ql.log.debug("Registries accessed:")
         for key, values in self.registry_manager.accessed.items():
             self.ql.log.debug(f'{key}:')
 
             for value in values:
-                self.ql.log.debug(f'{json.dumps(value):s}')
+                self.ql.log.debug(f'  {json.dumps(value):s}')
 
-        self.ql.log.debug("Strings")
+        self.ql.log.debug("Strings:")
         for key, values in self.utils.appeared_strings.items():
             self.ql.log.debug(f'{key}: {" ".join(str(word) for word in values)}')
 

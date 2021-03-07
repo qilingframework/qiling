@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-#
 
+# calling conventions
 STDCALL = 1
-CDECL = 2
+CDECL   = 2
+MS64    = 3
 
 PARAM_INT8  = 1
 PARAM_INT16 = 2
@@ -159,6 +160,7 @@ reptypedict = {
 
     # work around the need of "eval"
     "POINTER"   : POINTER,
+    "BYTE"      : BYTE,
     "DWORD"     : DWORD,
     "HANDLE"    : HANDLE,
     "SIZE_T"    : SIZE_T,

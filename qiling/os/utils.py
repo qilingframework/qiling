@@ -7,18 +7,22 @@
 This module is intended for general purpose functions that are only used in qiling.os
 """
 
-from typing import Any, Mapping
-import ctypes, os, uuid
+from typing import Any, Mapping, Optional, Tuple
+from uuid import UUID
+import ctypes
 
-from pathlib import Path, PurePosixPath, PureWindowsPath, PosixPath, WindowsPath
 from unicorn import UcError
 
 from qiling import Qiling
+from qiling.os.const import STDCALL
 from qiling.os.windows.wdk_const import *
 from qiling.os.windows.structs import *
 from qiling.utils import verify_ret
 
 class QlOsUtils:
+    # a list of api names that print their own invocation parameters on their own
+    __skip_list = ('__stdio_common_vfprintf', '__stdio_common_vfwprintf', 'printf', 'wprintf','wsprintfW', 'wsprintfA', 'sprintf', 'printk')
+
     def __init__(self, ql: Qiling):
         self.ql = ql
         self.path = None
@@ -57,51 +61,48 @@ class QlOsUtils:
             val.add(self.syscalls_counter)
             self.appeared_strings[string] = val
 
-
-    def read_wstring(self, address):
+    @staticmethod
+    def read_string(ql: Qiling, address: int, terminator: str) -> str:
         result = ""
-        char = self.ql.mem.read(address, 2)
-        while char.decode(errors="ignore") != "\x00\x00":
-            address += 2
+        charlen = len(terminator)
+
+        char = ql.mem.read(address, charlen)
+
+        while char.decode(errors="ignore") != terminator:
+            address += charlen
             result += char.decode(errors="ignore")
-            char = self.ql.mem.read(address, 2)
+            char = ql.mem.read(address, charlen)
+
+        return result
+
+    def read_wstring(self, address: int) -> str:
+        s = QlOsUtils.read_string(self.ql, address, '\x00\x00')
+
         # We need to remove \x00 inside the string. Compares do not work otherwise
-        result = result.replace("\x00", "")
-        self.string_appearance(result)
-        return result
+        s = s.replace("\x00", "")
+        self.string_appearance(s)
 
+        return s
 
-    def read_cstring(self, address):
-        result = ""
-        char = self.ql.mem.read(address, 1)
-        while char.decode(errors="ignore") != "\x00":
-            address += 1
-            result += char.decode(errors="ignore")
-            char = self.ql.mem.read(address, 1)
-        self.string_appearance(result)
-        return result
+    def read_cstring(self, address: int) -> str:
+        s = QlOsUtils.read_string(self.ql, address, '\x00')
 
-    def print_function(self, address, function_name, params, ret, passthru=False):
-        PRINTK_LEVEL = {
-            0: 'KERN_EMERGE',
-            1: 'KERN_ALERT',
-            1: 'KERN_CRIT',
-            2: 'KERN_INFO',
-            3: 'KERN_ERR',
-            4: 'KERN_WARNING',
-            5: 'KERN_NOTICE',
-            6: 'KERN_INFO',
-            7: 'KERN_DEBUG',
-            8: '',
-            9: 'KERN_CONT',
-        }
-        
+        self.string_appearance(s)
+
+        return s
+
+    def read_guid(self, address: int) -> UUID:
+        raw_guid = self.ql.mem.read(address, 16)
+
+        return UUID(bytes_le=bytes(raw_guid))
+
+    def print_function(self, address: int, function_name: str, params: Mapping[str, Any], ret: Optional[int], passthru: bool = False):
         if function_name.startswith('hook_'):
             function_name = function_name[5:]
 
-        if function_name in ("__stdio_common_vfprintf", "__stdio_common_vfwprintf", "printf", "wsprintfW", "sprintf"):
+        if function_name in QlOsUtils.__skip_list:
             return
-        
+
         def _parse_param(param):
             name, value = param
 
@@ -123,34 +124,7 @@ class QlOsUtils:
         fret = f' = {ret:#x}' if ret is not None else ''
         fpass = f' (PASSTHRU)' if passthru else ''
 
-        #TODO: Old code from demigod, ready to cleanup
-        if self.ql.ostype in QL_OS_POSIX and self.ql.loader.is_driver:
-            log = '0x%0.2x: %s(' % (address, function_name)
-            for each in params:
-                value = params[each]
-                if type(value) == str or type(value) == bytearray:
-                    if function_name == 'printk':
-                        info = value[:2]
-                        try:
-                            level = PRINTK_LEVEL[int(info[1])]
-                            value = value[2:]
-                            log += '%s = %s "%s", ' %(each, level, value)
-                        except:
-                            log += '%s = "%s", ' %(each, value)
-                    else:
-                        log += '%s = "%s", ' %(each, value)
-                elif type(value) == tuple:
-                    log += '%s = 0x%x, ' % (each, value[0])
-                else:
-                    log += '%s = 0x%x, ' % (each, value)
-            log = log.strip(", ")
-            log += ')'
-            if ret is not None:
-                # do not print result for printk()
-                if function_name != 'printk':
-                    log += ' = 0x%x' % ret
-        else:    
-            log = f'0x{address:02x}: {function_name:s}({", ".join(fargs)}){fret}{fpass}'
+        log = f'0x{address:02x}: {function_name:s}({", ".join(fargs)}){fret}{fpass}'
 
         if self.ql.output == QL_OUTPUT.DEBUG:
             self.ql.log.debug(log)
@@ -158,44 +132,29 @@ class QlOsUtils:
             log = log.partition(" ")[-1]
             self.ql.log.info(log)
 
-    def vprintf(self, address, fmt, params_addr, name, wstring=False):
-        count = fmt.count("%")
-        params = []
-        if count > 0:
-            for i in range(count):
-                param = self.ql.mem.read(params_addr + i * self.ql.pointersize, self.ql.pointersize)
-                params.append(
-                    self.ql.unpack(param)
-                )
-        return self.printf(address, fmt, params, name, wstring)
+    def vprintf(self, format: str, params_addr: int, fname: str, wstring: bool = False):
+        count = format.count("%")
+        params = [self.ql.unpack(self.ql.mem.read(params_addr + i * self.ql.pointersize, self.ql.pointersize)) for i in range(count)]
 
-    def printf(self, address, fmt, params, name, wstring=False):
-        if len(params) > 0:
-            formats = fmt.split("%")[1:]
-            index = 0
-            for f in formats:
-                if f.startswith("s"):
-                    if wstring:
-                        params[index] = self.read_wstring(params[index])
-                    else:
-                        params[index] = self.read_cstring(params[index])
-                index += 1
+        return self.printf(format, params, fname, wstring)
 
-            output = '%s(format = %s' % (name, repr(fmt))
-            for each in params:
-                if type(each) == str:
-                    output += ', "%s"' % each
-                else:
-                    output += ', 0x%0.2x' % each
-            output += ')'
-            fmt = fmt.replace("%llx", "%x")
-            stdout = fmt % tuple(params)
-            output += " = 0x%x" % len(stdout)
-        else:
-            output = '%s(format = %s) = 0x%x' % (name, repr(fmt), len(fmt))
-            stdout = fmt
+    def printf(self, format: str, params, fname: str, wstring: bool = False):
+        fmtstr = format.split("%")[1:]
+        read_string = self.read_wstring if wstring else self.read_cstring
+
+        for i, f in enumerate(fmtstr):
+            if f.startswith("s"):
+                params[i] = read_string(params[i])
+
+        stdout = format.replace(r'%llx', r'%x')
+        stdout = stdout.replace(r'%p', r'%#x') % tuple(params)
+
+        oargs = ''.join(f', {repr(p) if type(p) is str else f"{p:#x}"}' for p in params)
+        output = f'{fname}(format = {repr(format)}{oargs}) = {len(stdout)}'
+
         self.ql.log.info(output)
         self.ql.os.stdout.write(bytes(stdout, 'utf-8'))
+
         return len(stdout), stdout
 
     def lsbmsb_convert(self, sc, size=4):
@@ -230,10 +189,11 @@ class QlOsUtils:
         # we want to rewrite the return address to the function
         self.ql.stack_write(0, start)
 
-    def get_offset_and_name(self, addr):
+    def get_offset_and_name(self, addr: int) -> Tuple[int, str]:
         for begin, end, access, name in self.ql.mem.map_info:
-            if begin <= addr and end > addr:
-                return addr-begin, name
+            if begin <= addr < end:
+                return addr - begin, name
+
         return addr, '-'
 
     def disassembler(self, ql, address, size):
@@ -286,12 +246,9 @@ class QlOsUtils:
                 self._block_hook = self.ql.hook_block(ql_hook_block_disasm)
             self._disasm_hook = self.ql.hook_code(self.disassembler)
 
-    def read_guid(self, address):
-        result = ""
-        raw_guid = self.ql.mem.read(address, 16)
-        return uuid.UUID(bytes_le=bytes(raw_guid))
-
     def io_Write(self, in_buffer):
+        heap = self.ql.os.heap
+
         if self.ql.ostype == QL_OS.WINDOWS:
 
             if self.ql.loader.driver_object.MajorFunction[IRP_MJ_WRITE] == 0:
@@ -312,7 +269,7 @@ class QlOsUtils:
             else:
                 mdl = MDL32()
 
-            mapped_address = self.heap.alloc(buffer_size)
+            mapped_address = heap.alloc(buffer_size)
             alloc_addr.append(mapped_address)
             mdl.MappedSystemVa.value = mapped_address
             mdl.StartVa.value = mapped_address
@@ -325,9 +282,9 @@ class QlOsUtils:
             return mdl
         # allocate memory regions for IRP and IO_STACK_LOCATION
         if self.ql.archtype == QL_ARCH.X8664:
-            irp_addr = self.heap.alloc(ctypes.sizeof(IRP64))
+            irp_addr = heap.alloc(ctypes.sizeof(IRP64))
             alloc_addr.append(irp_addr)
-            irpstack_addr = self.heap.alloc(ctypes.sizeof(IO_STACK_LOCATION64))
+            irpstack_addr = heap.alloc(ctypes.sizeof(IO_STACK_LOCATION64))
             alloc_addr.append(irpstack_addr)
             # setup irp stack parameters
             irpstack = IO_STACK_LOCATION64()
@@ -335,9 +292,9 @@ class QlOsUtils:
             irp = IRP64()
             irp.irpstack = ctypes.cast(irpstack_addr, ctypes.POINTER(IO_STACK_LOCATION64))
         else:
-            irp_addr = self.heap.alloc(ctypes.sizeof(IRP32))
+            irp_addr = heap.alloc(ctypes.sizeof(IRP32))
             alloc_addr.append(irp_addr)
-            irpstack_addr = self.heap.alloc(ctypes.sizeof(IO_STACK_LOCATION32))
+            irpstack_addr = heap.alloc(ctypes.sizeof(IO_STACK_LOCATION32))
             alloc_addr.append(irpstack_addr)
             # setup irp stack parameters
             irpstack = IO_STACK_LOCATION32()
@@ -351,7 +308,7 @@ class QlOsUtils:
 
         if device_object.Flags & DO_BUFFERED_IO:
             # BUFFERED_IO
-            system_buffer_addr = self.heap.alloc(len(in_buffer))
+            system_buffer_addr = heap.alloc(len(in_buffer))
             alloc_addr.append(system_buffer_addr)
             self.ql.mem.write(system_buffer_addr, bytes(in_buffer))
             irp.AssociatedIrp.SystemBuffer.value = system_buffer_addr
@@ -359,9 +316,9 @@ class QlOsUtils:
             # DIRECT_IO
             mdl = build_mdl(len(in_buffer))
             if self.ql.archtype == QL_ARCH.X8664:
-                mdl_addr = self.heap.alloc(ctypes.sizeof(MDL64))
+                mdl_addr = heap.alloc(ctypes.sizeof(MDL64))
             else:
-                mdl_addr = self.heap.alloc(ctypes.sizeof(MDL32))
+                mdl_addr = heap.alloc(ctypes.sizeof(MDL32))
 
             alloc_addr.append(mdl_addr)
 
@@ -370,7 +327,7 @@ class QlOsUtils:
         else:
             # NEITHER_IO
             input_buffer_size = len(in_buffer)
-            input_buffer_addr = self.heap.alloc(input_buffer_size)
+            input_buffer_addr = heap.alloc(input_buffer_size)
             alloc_addr.append(input_buffer_addr)
             self.ql.mem.write(input_buffer_addr, bytes(in_buffer))
             irp.UserBuffer.value = input_buffer_addr
@@ -379,7 +336,9 @@ class QlOsUtils:
         self.ql.mem.write(irp_addr, bytes(irp))
 
         # set function args
-        self.set_function_args((self.ql.loader.driver_object.DeviceObject, irp_addr))
+        # TODO: make sure this is indeed STDCALL
+        self.ql.os.fcall = self.ql.os.fcall_select(STDCALL)
+        self.ql.os.fcall.writeParams((self.ql.loader.driver_object.DeviceObject, irp_addr))
 
         try:
             # now emulate 
@@ -399,7 +358,7 @@ class QlOsUtils:
         # now free all alloc memory
         for addr in alloc_addr:
             # print("freeing heap memory at 0x%x" %addr) # FIXME: the output is not deterministic??
-            self.heap.free(addr)
+            heap.free(addr)
         return True, io_status.Information.value
 
     # Emulate DeviceIoControl() of Windows
@@ -413,6 +372,8 @@ class QlOsUtils:
     #      LPDWORD      lpBytesReturned,
     #      LPOVERLAPPED lpOverlapped);
     def ioctl(self, params):
+        heap = self.ql.os.heap
+
         def ioctl_code(DeviceType, Function, Method, Access):
             return (DeviceType << 16) | (Access << 14) | (Function << 2) | Method
 
@@ -423,7 +384,7 @@ class QlOsUtils:
             else:
                 mdl = MDL32()
 
-            mapped_address = self.heap.alloc(buffer_size)
+            mapped_address = heap.alloc(buffer_size)
             alloc_addr.append(mapped_address)
             mdl.MappedSystemVa.value = mapped_address
             mdl.StartVa.value = mapped_address
@@ -448,19 +409,19 @@ class QlOsUtils:
             devicetype, function, ctl_method, access = _ioctl_code
 
             input_buffer_size = len(in_buffer)
-            input_buffer_addr = self.heap.alloc(input_buffer_size)
+            input_buffer_addr = heap.alloc(input_buffer_size)
             alloc_addr.append(input_buffer_addr)
             self.ql.mem.write(input_buffer_addr, bytes(in_buffer))
 
             # create new memory region to store out data
-            output_buffer_addr = self.heap.alloc(output_buffer_size)
+            output_buffer_addr = heap.alloc(output_buffer_size)
             alloc_addr.append(output_buffer_addr)
 
             # allocate memory regions for IRP and IO_STACK_LOCATION
             if self.ql.archtype == QL_ARCH.X8664:
-                irp_addr = self.heap.alloc(ctypes.sizeof(IRP64))
+                irp_addr = heap.alloc(ctypes.sizeof(IRP64))
                 alloc_addr.append(irp_addr)
-                irpstack_addr = self.heap.alloc(ctypes.sizeof(IO_STACK_LOCATION64))
+                irpstack_addr = heap.alloc(ctypes.sizeof(IO_STACK_LOCATION64))
                 alloc_addr.append(irpstack_addr)
                 # setup irp stack parameters
                 irpstack = IO_STACK_LOCATION64()
@@ -468,9 +429,9 @@ class QlOsUtils:
                 irp = IRP64()
                 irp.irpstack = ctypes.cast(irpstack_addr, ctypes.POINTER(IO_STACK_LOCATION64))
             else:
-                irp_addr = self.heap.alloc(ctypes.sizeof(IRP32))
+                irp_addr = heap.alloc(ctypes.sizeof(IRP32))
                 alloc_addr.append(irp_addr)
-                irpstack_addr = self.heap.alloc(ctypes.sizeof(IO_STACK_LOCATION32))
+                irpstack_addr = heap.alloc(ctypes.sizeof(IO_STACK_LOCATION32))
                 alloc_addr.append(irpstack_addr)
                 # setup irp stack parameters
                 irpstack = IO_STACK_LOCATION32()
@@ -502,7 +463,7 @@ class QlOsUtils:
             # allocate memory for AssociatedIrp.SystemBuffer
             # used by IOCTL_METHOD_IN_DIRECT, IOCTL_METHOD_OUT_DIRECT and IOCTL_METHOD_BUFFERED
             system_buffer_size = max(input_buffer_size, output_buffer_size)
-            system_buffer_addr = self.heap.alloc(system_buffer_size)
+            system_buffer_addr = heap.alloc(system_buffer_size)
             alloc_addr.append(system_buffer_addr)
 
             # init data from input buffer
@@ -514,9 +475,9 @@ class QlOsUtils:
                 # used by both IOCTL_METHOD_IN_DIRECT and IOCTL_METHOD_OUT_DIRECT
                 mdl = build_mdl(output_buffer_size)
                 if self.ql.archtype == QL_ARCH.X8664:
-                    mdl_addr = self.heap.alloc(ctypes.sizeof(MDL64))
+                    mdl_addr = heap.alloc(ctypes.sizeof(MDL64))
                 else:
-                    mdl_addr = self.heap.alloc(ctypes.sizeof(MDL32))
+                    mdl_addr = heap.alloc(ctypes.sizeof(MDL32))
 
                 alloc_addr.append(mdl_addr)
 
@@ -528,7 +489,9 @@ class QlOsUtils:
 
             # set function args
             self.ql.log.info("Executing IOCTL with DeviceObject = 0x%x, IRP = 0x%x" %(self.ql.loader.driver_object.DeviceObject, irp_addr))
-            self.set_function_args((self.ql.loader.driver_object.DeviceObject, irp_addr))
+            # TODO: make sure this is indeed STDCALL
+            self.ql.os.fcall = self.ql.os.fcall_select(STDCALL)
+            self.ql.os.fcall.writeParams((self.ql.loader.driver_object.DeviceObject, irp_addr))
 
             try:
                 # now emulate IOCTL's DeviceControl
@@ -559,7 +522,7 @@ class QlOsUtils:
             # now free all alloc memory
             for addr in alloc_addr:
                 # print("freeing heap memory at 0x%x" %addr) # FIXME: the output is not deterministic??
-                self.heap.free(addr)
+                heap.free(addr)
             #print("\n")
 
             return io_status.Status.Status, io_status.Information.value, output_data
