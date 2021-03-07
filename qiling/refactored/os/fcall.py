@@ -2,7 +2,7 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 
-from typing import Any, Callable, MutableMapping, Optional, Mapping, Tuple, Sequence
+from typing import Any, Callable, Iterable, MutableMapping, Optional, Mapping, Tuple, Sequence
 
 from qiling import Qiling
 from qiling.os.const import PARAM_INT8, PARAM_INT16, PARAM_INT32, PARAM_INT64, PARAM_INTN
@@ -36,7 +36,7 @@ class QlFunctionCall:
 
 			return (reader, writer, nslots)
 
-		# default parameter reading accessors
+		# default parameter accessors: readers, writers and slots count
 		self.accessors: MutableMapping[int, Accessor] = {
 			PARAM_INT8 : __make_accessor(8),
 			PARAM_INT16: __make_accessor(16),
@@ -90,16 +90,21 @@ class QlFunctionCall:
 			write(si, val)
 			si += nslots
 
-	def call(self, func: CallHook, params: Mapping[str, Any], hook_onenter: Optional[OnEnterHook], hook_onexit: Optional[OnExitHook], passthru: bool, *args) -> Tuple[Mapping, int, int]:
-		"""Call a hooked function.
+	def __count_slots(self, ptypes: Iterable[Any]) -> int:
+		default = self.accessors[PARAM_INTN]
+
+		return sum(self.accessors.get(typ, default)[2] for typ in ptypes)
+
+	def call(self, func: CallHook, proto: Mapping[str, Any], params: Mapping[str, Any], hook_onenter: Optional[OnEnterHook], hook_onexit: Optional[OnExitHook], passthru: bool) -> Tuple[Mapping, int, int]:
+		"""Execute a hooked function.
 
 		Args:
 			func: function hook
+			proto: function's parameters types list
 			params: a mapping of parameter names to their values 
 			hook_onenter: a hook to call before entering function hook
 			hook_onexit: a hook to call after returning from function hook
 			passthru: whether to skip stack frame unwinding
-			...: additional arguments to pass to hooks and func
 
 		Returns: resolved params mapping, return value, return address
 		"""
@@ -109,17 +114,17 @@ class QlFunctionCall:
 
 		# if set, fire up the on-enter hook and let it override original args set
 		if hook_onenter:
-			overrides = hook_onenter(ql, pc, params, *args)
+			overrides = hook_onenter(ql, pc, params)
 
 			if overrides is not None:
 				pc, params = overrides
 
 		# call function
-		retval = func(ql, pc, params, *args)
+		retval = func(ql, pc, params)
 
 		# if set, fire up the on-exit hook and let it override the return value
 		if hook_onexit:
-			override = hook_onexit(ql, pc, params, retval, *args)
+			override = hook_onexit(ql, pc, params, retval)
 
 			if override is not None:
 				retval = override
@@ -130,11 +135,18 @@ class QlFunctionCall:
 
 		# TODO: resolve return value
 
-		# FIXME: though usually one slot is used for each fcall parameter, this is not
-		# always true (for example, a 64 bits parameter in a 32 bits system). this should
-		# reflect the true number of slots used by this set of parameters
-		#
-		# unwind stack frame
-		retaddr = -1 if passthru else self.cc.unwind(len(params))
+		# unwind stack frame; note that function prototype sometimes does not
+		# reflect the actual number of arguments passed to the function, like
+		# in variadic functions (e.g. printf-like functions). in such case the
+		# function frame would not be unwinded entirely and cause the program
+		# to fail or produce funny results.
+		# 
+		# nevertheless this type of functions never unwind their own frame,
+		# exactly for the reason they are not aware of the actual number of
+		# arguments they got. since the caller is responsible for unwinding
+		# we should be good.
+
+		nslots = self.__count_slots(proto.values())
+		retaddr = -1 if passthru else self.cc.unwind(nslots)
 
 		return params, retval, retaddr
