@@ -3,10 +3,12 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from typing import Any, Mapping
+
 from qiling import Qiling
 from qiling.const import QL_INTERCEPT
 
-def dxeapi(param_num=None, params={}):
+def dxeapi(params: Mapping[str, Any] = {}):
     def decorator(func):
         def wrapper(ql: Qiling):
             pc = ql.reg.arch_pc
