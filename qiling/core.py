@@ -42,6 +42,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             console=True,
             log_file=None,
             log_override=None,
+            log_plain=False,
             libcache = False,
             multithread = False,
             filters = None,
@@ -78,6 +79,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._log_file_fd = None
         self._log_filter = None
         self._log_override = log_override
+        self._log_plain = log_plain
         self._filters = filters
         self._platform = ostype_convert(platform.system().lower())
         self._internal_exception = None
@@ -176,7 +178,8 @@ class Qiling(QlCoreHooks, QlCoreStructs):
                                                               self._console, 
                                                               self._filters, 
                                                               self._multithread,
-                                                              self._log_override)
+                                                              self._log_override,
+                                                              self._log_plain)
 
         self.log.setLevel(ql_resolve_logger_level(self._output, self._verbose))
 

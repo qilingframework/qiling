@@ -189,6 +189,7 @@ if __name__ == '__main__':
     comm_parser.add_argument('-e', '--filter', metavar="FUNCTION NAME", required=False, dest="filter", default=None, 
                             help="Only work with strace mode, you can choose what to be printout, for multiple function calls should be separated by comma")
     comm_parser.add_argument('--log-file', dest="log_file", help="Write log to a file")
+    comm_parser.add_argument('--log-plain', action="store_true", dest="log_plain", help="Don't use color in log output.")
     comm_parser.add_argument('--trace', action='store_true', default=False, dest='trace', help='Run in strace mode')
     comm_parser.add_argument('--root', action='store_true', default=False, dest='root', help='Enable sudo required mode')
     comm_parser.add_argument('--debug_stop', action='store_true', default=False, dest='debug_stop', 
@@ -246,12 +247,12 @@ if __name__ == '__main__':
         # with argv
         if options.filename is not None and options.run_args == []:
             ql = Qiling(argv=[options.filename] + options.args, rootfs=options.rootfs, profile=options.profile,
-                        output=options.output, console=options.console, log_file=options.log_file, multithread=options.multithread, env=env)
+                        output=options.output, console=options.console, log_file=options.log_file, log_plain=options.log_plain, multithread=options.multithread, env=env)
 
         # Without argv
         elif options.filename is None and options.args == [] and options.run_args != []:
             ql = Qiling(argv=options.run_args, rootfs=options.rootfs, profile=options.profile,
-                        output=options.output, console=options.console, log_file=options.log_file, multithread=options.multithread, env=env)
+                        output=options.output, console=options.console, log_file=options.log_file, log_plain=options.log_plain, multithread=options.multithread, env=env)
         
         else:
             print("ERROR: Command error!")

@@ -527,7 +527,7 @@ def ql_resolve_logger_level(output, verbose):
 QL_INSTANCE_ID = 114514
 
 # TODO: qltool compatibility
-def ql_setup_logger(ql, log_file, console, filters, multithread, log_override):
+def ql_setup_logger(ql, log_file, console, filters, multithread, log_override, log_plain):
     global QL_INSTANCE_ID
 
     # If there is an override for our logger, then use it.
@@ -547,7 +547,10 @@ def ql_setup_logger(ql, log_file, console, filters, multithread, log_override):
         # Do we have console output?
         if console:
             handler = logging.StreamHandler()
-            formatter = QilingColoredFormatter(ql, FMT_STR)
+            if not log_plain:
+                formatter = QilingColoredFormatter(ql, FMT_STR)
+            else:
+                formatter = QilingPlainFormatter(ql, FMT_STR)
             handler.setFormatter(formatter)
             log.addHandler(handler)
         else:
