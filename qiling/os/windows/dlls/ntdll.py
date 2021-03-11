@@ -331,7 +331,7 @@ def hook_wcsstr(ql, address, params):
     src = params["src"]
     if src in value:
         pos = value.index(src)
-        return dest + post
+        return dest + pos
     return 0
 
 
