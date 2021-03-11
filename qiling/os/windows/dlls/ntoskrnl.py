@@ -899,7 +899,7 @@ def hook_IoCreateDriver(ql: Qiling, address: int, params):
     init_sp = ql.os.init_sp
 
     ql.os.fcall = ql.os.fcall_select(STDCALL)
-    ql.os.fcall.writeParams((ql.driver_object_address, ql.regitry_path_address), (POINTER, POINTER))
+    ql.os.fcall.writeParams(((POINTER, ql.driver_object_address), (POINTER, ql.regitry_path_address)))
     ql.until_addr = ret_addr
 
     # now lest emualate InitializationFunction

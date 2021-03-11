@@ -543,7 +543,7 @@ class QlLoaderPE(QlLoader, Process):
 
                 # setup args for DriverEntry()
                 self.ql.os.fcall = self.ql.os.fcall_select(CDECL)
-                self.ql.os.fcall.writeParams((self.ql.driver_object_address, self.ql.regitry_path_address), (POINTER, POINTER))
+                self.ql.os.fcall.writeParams(((POINTER, self.ql.driver_object_address), (POINTER, self.ql.regitry_path_address)))
 
             # mmap PE file into memory
             self.ql.mem.map(self.pe_image_address, self.align(self.pe_image_address_size, 0x1000), info="[PE]")

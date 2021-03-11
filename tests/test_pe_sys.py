@@ -192,7 +192,7 @@ class PETest(unittest.TestCase):
         # execution is about to resume from 0x4053B2, which essentially jumps to ExitThread (kernel32.dll).
         # Set ExitThread exit code to 0
         ql.os.fcall = ql.os.fcall_select(STDCALL)
-        ql.os.fcall.writeParams([0], [DWORD])
+        ql.os.fcall.writeParams(((DWORD, 0),))
 
         ql.hook_address(hook_second_stop_address, 0x4055FA)
         ql.run(begin=0x4053B2)
@@ -206,7 +206,7 @@ class PETest(unittest.TestCase):
 
             # TODO: not sure whether this one is really STDCALL
             ql.amsint32_driver.os.fcall = ql.amsint32_driver.os.fcall_select(STDCALL)
-            ql.amsint32_driver.os.fcall.writeParams([0], [DWORD])
+            ql.amsint32_driver.os.fcall.writeParams(((DWORD, 0),))
 
             ql.amsint32_driver.run(begin=0x102D0)
 

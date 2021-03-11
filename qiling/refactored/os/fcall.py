@@ -72,19 +72,18 @@ class QlFunctionCall:
 
 		return values
 
-	def writeParams(self, ptypes: Sequence[Any], pvalues: Sequence[int]) -> None:
+	def writeParams(self, params: Sequence[Tuple[Any, int]]) -> None:
 		"""Walk the function parameters list and set their values.
 
 		Args:
-			ptypes: a sequence of parameters types to write
-			pvalues: a macthing sequence of values to write
+			params: a sequence of 2-tuples containing parameters types and values
 		"""
 
 		default = self.accessors[PARAM_INTN]
 
 		si = 0
 
-		for typ, val in zip(ptypes, pvalues):
+		for typ, val in params:
 			_, write, nslots = self.accessors.get(typ, default)
 
 			write(si, val)

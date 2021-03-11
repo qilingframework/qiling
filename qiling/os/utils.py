@@ -354,7 +354,7 @@ class QlOsUtils:
         # set function args
         # TODO: make sure this is indeed STDCALL
         self.ql.os.fcall = self.ql.os.fcall_select(STDCALL)
-        self.ql.os.fcall.writeParams((self.ql.loader.driver_object.DeviceObject, irp_addr), (POINTER, POINTER))
+        self.ql.os.fcall.writeParams(((POINTER, self.ql.loader.driver_object.DeviceObject), (POINTER, irp_addr)))
 
         try:
             # now emulate 
@@ -507,7 +507,7 @@ class QlOsUtils:
             self.ql.log.info("Executing IOCTL with DeviceObject = 0x%x, IRP = 0x%x" %(self.ql.loader.driver_object.DeviceObject, irp_addr))
             # TODO: make sure this is indeed STDCALL
             self.ql.os.fcall = self.ql.os.fcall_select(STDCALL)
-            self.ql.os.fcall.writeParams((self.ql.loader.driver_object.DeviceObject, irp_addr), (POINTER, POINTER))
+            self.ql.os.fcall.writeParams(((POINTER, self.ql.loader.driver_object.DeviceObject), (POINTER, irp_addr)))
 
             try:
                 # now emulate IOCTL's DeviceControl
