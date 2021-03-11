@@ -3,18 +3,17 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import types, os, struct, time
+import os, struct, time
+import curses
+import curses.ascii
+from enum import Enum
+from datetime import datetime
 
-from unicorn import *
+from unicorn import UcError
 
 from qiling.const import QL_INTERCEPT
 from qiling.os.os import QlOs
-from qiling.os.utils import PathUtils
-from qiling.exception import QlErrorSyscallError
-from enum import Enum
-from datetime import datetime
-import curses
-import curses.ascii
+from qiling.os.path import QlPathManager
 
 # Modified from https://programtalk.com/vs2/python/8562/pyvbox/virtualbox/library_ext/keyboard.py/
 SCANCODES = {
@@ -201,7 +200,7 @@ class QlOsDos(QlOs):
     def __del__(self):
         # resume terminal
         if self.stdscr is not None:
-            self.stdscr.keypad(0)
+            self.stdscr.keypad(False)
             curses.echo()
             curses.nocbreak()
             curses.endwin()
@@ -712,14 +711,14 @@ class QlOsDos(QlOs):
         elif ah == 0x3C:
             # fileattr ignored
             fname = self.read_dos_string_from_ds_dx()
-            f = open(PathUtils.convert_for_native_os(self.ql.rootfs, self.ql.cur_path, fname), "wb")
+            f = open(QlPathManager.convert_for_native_os(self.ql.rootfs, self.ql.cur_path, fname), "wb")
             self.dos_handles[self.handle_next] = f
             self.ql.reg.ax = self.handle_next
             self.handle_next += 1
             self.clear_cf()
         elif ah == 0x3d:
             fname = self.read_dos_string_from_ds_dx()
-            f = open(PathUtils.convert_for_native_os(self.ql.rootfs, self.ql.cur_path, fname), "rb")
+            f = open(QlPathManager.convert_for_native_os(self.ql.rootfs, self.ql.cur_path, fname), "rb")
             self.dos_handles[self.handle_next] = f
             self.ql.reg.ax = self.handle_next
             self.handle_next += 1
@@ -762,7 +761,7 @@ class QlOsDos(QlOs):
                 self.ql.reg.ax = len(rd)
         elif ah == 0x41:
             fname = self.read_dos_string_from_ds_dx()
-            real_path = PathUtils.convert_for_native_os(self.ql.rootfs, self.ql.cur_path, fname)
+            real_path = QlPathManager.convert_for_native_os(self.ql.rootfs, self.ql.cur_path, fname)
             try:
                 os.remove(real_path)
                 self.clear_cf()
