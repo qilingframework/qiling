@@ -142,9 +142,10 @@ def ntoskrnl_IoCreateDevice(ql: Qiling, address: int, params):
     addr = ql.os.heap.alloc(ctypes.sizeof(objcls))
     device_object = objcls()
 
+    DriverObject = params['DriverObject']
     DeviceExtensionSize = params['DeviceExtensionSize']
     DeviceCharacteristics = params['DeviceCharacteristics']
-    DriverObject = params['DriverObject']
+    DeviceObject = params['DeviceObject']
 
     device_object.Type = 3 # FILE_DEVICE_CD_ROM_FILE_SYSTEM ?
     device_object.DeviceExtension = ql.os.heap.alloc(DeviceExtensionSize)
@@ -163,12 +164,12 @@ def ntoskrnl_IoCreateDevice(ql: Qiling, address: int, params):
     device_object.Characteristics = DeviceCharacteristics
 
     ql.mem.write(addr, bytes(device_object)[:])
-    ql.mem.write(DriverObject, addr.to_bytes(length=ql.pointersize, byteorder='little'))
+    ql.mem.write(DeviceObject, addr.to_bytes(length=ql.pointersize, byteorder='little'))
 
     # update DriverObject.DeviceObject
     ql.loader.driver_object.DeviceObject = addr
 
-    return 0
+    return STATUS_SUCCESS
 
 
 # NTSTATUS IoCreateDevice(
