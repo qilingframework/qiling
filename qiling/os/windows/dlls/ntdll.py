@@ -96,32 +96,26 @@ def _QuerySystemInformation(ql, address, params):
     dst = params["SystemInformation"]
     if (siClass == SystemBasicInformation):
         bufferLength = params["SystemInformationLength"]
-        if (ql.archtype == QL_ARCH.X8664):
-            sbi = qiling.os.windows.structs.SystemBasicInforation(ql,
-                                                              Reserved=0,
-                                                              TimerResolution = 156250 ,
-                                                              PageSize=ql.os.heap.page_size,
-                                                              NumberOfPhysicalPages = 0x003FC38A,
-                                                              LowestPhysicalPageNumber=1,
-                                                              HighestPhysicalPageNumber=0x0046DFFF,
-                                                              AllocationGranularity=1,
-                                                              MinimumUserModeAddress=0x10000,
-                                                              MaximumUserModeAddress=0x7FFFFFFEFFFF,
-                                                              ActiveProcessorsAffinityMask = 0x3F,
-                                                              NumberOfProcessors = 0x6)
-        elif ql.archtype == QL_ARCH.X86:
-            sbi = qiling.os.windows.structs.SystemBasicInforation(ql,
-                                                                  Reserved=0,
-                                                                  TimerResolution=156250,
-                                                                  PageSize=ql.os.heap.page_size,
-                                                                  NumberOfPhysicalPages=0x003FC38A,
-                                                                  LowestPhysicalPageNumber=1,
-                                                                  HighestPhysicalPageNumber=0x0046DFFF,
-                                                                  AllocationGranularity=1,
-                                                                  MinimumUserModeAddress=0x10000,
-                                                                  MaximumUserModeAddress=0x7FFEFFFF,
-                                                                  ActiveProcessorsAffinityMask=0x3F,
-                                                                  NumberOfProcessors=0x6)
+
+        max_uaddr = {
+            QL_ARCH.X86  : 0x7FFEFFFF,
+            QL_ARCH.X8664: 0x7FFFFFFEFFFF
+        }[ql.archtype]
+
+        sbi = qiling.os.windows.structs.SystemBasicInforation(
+            ql,
+            Reserved=0,
+            TimerResolution=156250,
+            PageSize=ql.os.heap.page_size,
+            NumberOfPhysicalPages=0x003FC38A,
+            LowestPhysicalPageNumber=1,
+            HighestPhysicalPageNumber=0x0046DFFF,
+            AllocationGranularity=1,
+            MinimumUserModeAddress=0x10000,
+            MaximumUserModeAddress=max_uaddr,
+            ActiveProcessorsAffinityMask=0x3F,
+            NumberOfProcessors=0x6)
+
         if (bufferLength==sbi.size):
             sbi.write(dst)
             if pt_res != 0:
@@ -331,7 +325,7 @@ def hook_wcsstr(ql, address, params):
     src = params["src"]
     if src in value:
         pos = value.index(src)
-        return dest + post
+        return dest + pos
     return 0
 
 

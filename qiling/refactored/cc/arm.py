@@ -17,7 +17,8 @@ class aarch64(QlCommonBaseCC):
 	def __init__(self, ql: Qiling) -> None:
 		super().__init__(ql, UC_ARM64_REG_X0)
 
-	def getNumSlots(self, argbits: int) -> int:
+	@staticmethod
+	def getNumSlots(argbits: int) -> int:
 		return 1
 
 	def unwind(self, nslots: int) -> int:
@@ -30,7 +31,8 @@ class aarch32(QlCommonBaseCC):
 	def __init__(self, ql: Qiling) -> None:
 		super().__init__(ql, UC_ARM_REG_R0)
 
-	def getNumSlots(self, argbits: int) -> int:
+	@staticmethod
+	def getNumSlots(argbits: int) -> int:
 		return 1
 
 	def unwind(self, nslots: int) -> int:

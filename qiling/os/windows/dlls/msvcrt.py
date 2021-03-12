@@ -8,7 +8,7 @@ import time
 from qiling import Qiling
 from qiling.exception import QlErrorNotImplemented
 from qiling.os.const import *
-from qiling.os.windows.fncc import winsdkapi
+from qiling.os.windows.fncc import *
 from qiling.os.windows.const import LOCALE
 from qiling.os.windows.handle import Handle
 
@@ -186,26 +186,23 @@ def hook__get_initial_narrow_environment(ql: Qiling, address: int, params):
 # int sprintf ( char * str, const char * format, ... );
 @winsdkapi(cc=CDECL, dllname=dllname, replace_params={'buff': POINTER, 'format': STRING, 'arglist': POINTER})
 def hook_sprintf(ql: Qiling, address: int, params):
-    api_name = 'sprintf'
+    buff = params['buff']
     format = params['format']
+    arglist = params['arglist']
 
     if format == 0:
         format = "(null)"
 
-    buff = params['buff']
-    arglist = params['arglist']
+    args = ql.os.utils.va_list(format, arglist)
+    count = ql.os.utils.sprintf(buff, format, args, wstring=False)
+    ql.os.utils.update_ellipsis(params, args)
 
-    str_size, str_data = ql.os.utils.vprintf(format, arglist, api_name, wstring=False)
-
-    ql.mem.write(buff, str_data.encode('utf-8') + b'\x00')
-
-    return str_size
+    return count
 
 
 # int printf(const char *format, ...)
 @winsdkapi(cc=CDECL, param_num=1, replace_params={'format': STRING})
 def hook_printf(ql: Qiling, address: int, params):
-    api_name = 'printf'
     format = params['format']
 
     if format == 0:
@@ -213,16 +210,16 @@ def hook_printf(ql: Qiling, address: int, params):
 
     nargs = format.count("%")
     ptypes = (POINTER, ) + (PARAM_INTN, ) * nargs
+    args = ql.os.fcall.readParams(ptypes)[1:]
 
-    params = ql.os.fcall.readParams(ptypes)[1:]
-    ret, _ = ql.os.utils.printf(format, params, api_name, wstring=False)
+    count = ql.os.utils.printf(format, args, wstring=False)
+    ql.os.utils.update_ellipsis(params, args)
 
-    return ret
+    return count
 
 # int wprintf(const wchar_t *format, ...)
 @winsdkapi(cc=CDECL, param_num=1, replace_params={'format': WSTRING})
 def hook_wprintf(ql: Qiling, address: int, params):
-    api_name = 'wprintf'
     format = params['format']
 
     if format == 0:
@@ -230,11 +227,12 @@ def hook_wprintf(ql: Qiling, address: int, params):
 
     nargs = format.count("%")
     ptypes = (POINTER, ) + (PARAM_INTN, ) * nargs
+    args = ql.os.fcall.readParams(ptypes)[1:]
 
-    params = ql.os.fcall.readParams(ptypes)[1:]
-    ret, _ = ql.os.utils.printf(format, params, api_name, wstring=True)
+    count = ql.os.utils.printf(format, args, wstring=True)
+    ql.os.utils.update_ellipsis(params, args)
 
-    return ret
+    return count
 
 # MSVCRT_FILE * CDECL MSVCRT___acrt_iob_func(unsigned idx)
 @winsdkapi(cc=CDECL, replace_params={"idx": UINT})
@@ -248,9 +246,11 @@ def hook___stdio_common_vfprintf(ql: Qiling, address: int, params):
     format = params['format']
     arglist = params['arglist']
 
-    ret, _ = ql.os.utils.vprintf(format, arglist, '__stdio_common_vfprintf', wstring=False)
+    args = ql.os.utils.va_list(format, arglist)
+    count = ql.os.utils.printf(format, args, wstring=False)
+    ql.os.utils.update_ellipsis(params, args)
 
-    return ret
+    return count
 
 
 @winsdkapi(cc=CDECL, replace_params={'optstorage': PARAM_INT64, 'stream': POINTER, 'format': WSTRING, 'locale': DWORD, 'arglist': POINTER})
@@ -258,41 +258,24 @@ def hook___stdio_common_vfwprintf(ql: Qiling, address: int, params):
     format = params['format']
     arglist = params['arglist']
 
-    ret, _ = ql.os.utils.vprintf(format, arglist, '__stdio_common_vfwprintf', wstring=True)
+    args = ql.os.utils.va_list(format, arglist)
+    count = ql.os.utils.printf(format, args, wstring=True)
+    ql.os.utils.update_ellipsis(params, args)
 
-    return ret
+    return count
 
 # int __cdecl __stdio_common_vswprintf_s(unsigned __int64,wchar_t*,size_t,const wchar_t*,_locale_t,__ms_va_list)
 @winsdkapi(cc=CDECL, replace_params={'optstorage': PARAM_INT64, 'buff': POINTER, 'size': SIZE_T, 'format': WSTRING, 'locale': DWORD, 'arglist': POINTER})
 def hook___stdio_common_vswprintf_s(ql: Qiling, address: int, params):
+    buff = params['buff']
     format = params['format']
     arglist = params['arglist']
 
-    str_size, str_data = ql.os.utils.vprintf(format, arglist, '__stdio_common_vswprintf_s', wstring=True)
+    args = ql.os.utils.va_list(format, arglist)
+    count = ql.os.utils.sprintf(buff, format, args, wstring=True)
+    ql.os.utils.update_ellipsis(params, args)
 
-    ql.mem.write(params['buff'], str_data.encode('utf-8') + b'\x00')
-
-    return str_size
-
-# int lstrlenA(
-#   LPCSTR lpString
-# );
-@winsdkapi(cc=STDCALL, replace_params={'lpString': STRING})
-def hook_lstrlenA(ql: Qiling, address: int, params):
-    s = params["lpString"]
-
-    return 0 if not s else len(s)
-
-
-# int lstrlenW(
-#   LPCWSTR lpString
-# );
-@winsdkapi(cc=CDECL, replace_params={'lpString': WSTRING})
-def hook_lstrlenW(ql: Qiling, address: int, params):
-    s = params["lpString"]
-
-    return 0 if not s else len(s)
-
+    return count
 
 @winsdkapi(cc=CDECL)
 def hook___lconv_init(ql: Qiling, address: int, params):

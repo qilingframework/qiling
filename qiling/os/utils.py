@@ -7,21 +7,22 @@
 This module is intended for general purpose functions that are only used in qiling.os
 """
 
-from typing import Any, Mapping, Optional, Tuple
+from qiling.os.const import POINTER
+from typing import Any, MutableMapping, Union, Mapping, Optional, Sequence, MutableSequence, Tuple
 from uuid import UUID
 import ctypes
 
 from unicorn import UcError
 
 from qiling import Qiling
-from qiling.os.const import STDCALL
+from qiling.os.windows.fncc import STDCALL
 from qiling.os.windows.wdk_const import *
 from qiling.os.windows.structs import *
 from qiling.utils import verify_ret
 
 class QlOsUtils:
-    # a list of api names that print their own invocation parameters on their own
-    __skip_list = ('__stdio_common_vfprintf', '__stdio_common_vfwprintf', 'printf', 'wprintf','wsprintfW', 'wsprintfA', 'sprintf', 'printk')
+
+    ELLIPSIS_PREF = r'__qlva_'
 
     def __init__(self, ql: Qiling):
         self.ql = ql
@@ -100,22 +101,25 @@ class QlOsUtils:
         if function_name.startswith('hook_'):
             function_name = function_name[5:]
 
-        if function_name in QlOsUtils.__skip_list:
-            return
+        def __dqstr(s: str) -> str:
+            return f'"{repr(s)[1:-1]}"'
 
         def _parse_param(param):
             name, value = param
 
-            if type(value) is str:
-                return f'{name:s} = "{value}"'
-            elif type(value) is bytearray:
-                return f'{name:s} = "{value.decode("utf-8")}"'
-            elif type(value) is tuple:
-                # we just need the string, not the address in the log
-                return f'{name:s} = "{value[1]}"'
+            nrep = '' if name.startswith(QlOsUtils.ELLIPSIS_PREF) else f'{name:s} = ' 
 
-            # default to hexadecimal representation
-            return f'{name:s} = {value:#x}'
+            if type(value) is str:
+                vrep = f'{__dqstr(value)}'
+            elif type(value) is bytearray:
+                vrep = f'{__dqstr(value.decode("utf-8"))}'
+            elif type(value) is tuple:
+                vrep = f'{__dqstr(value[1])}'
+            else:
+                # default to hexadecimal representation
+                vrep = f'{value:#x}'
+
+            return f'{nrep}{vrep}'
 
         # arguments list
         fargs = (_parse_param(param) for param in params.items())
@@ -132,30 +136,42 @@ class QlOsUtils:
             log = log.partition(" ")[-1]
             self.ql.log.info(log)
 
-    def vprintf(self, format: str, params_addr: int, fname: str, wstring: bool = False):
-        count = format.count("%")
-        params = [self.ql.unpack(self.ql.mem.read(params_addr + i * self.ql.pointersize, self.ql.pointersize)) for i in range(count)]
-
-        return self.printf(format, params, fname, wstring)
-
-    def printf(self, format: str, params, fname: str, wstring: bool = False):
+    def __common_printf(self, format: str, args: MutableSequence, wstring: bool):
         fmtstr = format.split("%")[1:]
         read_string = self.read_wstring if wstring else self.read_cstring
 
         for i, f in enumerate(fmtstr):
             if f.startswith("s"):
-                params[i] = read_string(params[i])
+                args[i] = read_string(args[i])
 
-        stdout = format.replace(r'%llx', r'%x')
-        stdout = stdout.replace(r'%p', r'%#x') % tuple(params)
+        out = format.replace(r'%llx', r'%x')
+        out = out.replace(r'%p', r'%#x')
 
-        oargs = ''.join(f', {repr(p) if type(p) is str else f"{p:#x}"}' for p in params)
-        output = f'{fname}(format = {repr(format)}{oargs}) = {len(stdout)}'
+        return out % tuple(args)
 
-        self.ql.log.info(output)
-        self.ql.os.stdout.write(bytes(stdout, 'utf-8'))
+    def va_list(self, format: str, ptr: int) -> MutableSequence[int]:
+        count = format.count("%")
 
-        return len(stdout), stdout
+        return [self.ql.unpack(self.ql.mem.read(ptr + i * self.ql.pointersize, self.ql.pointersize)) for i in range(count)]
+
+    def sprintf(self, buff: int, format: str, args: MutableSequence, wstring: bool = False) -> int:
+        out = self.__common_printf(format, args, wstring)
+        enc = 'utf-16le' if wstring else 'utf-8'
+
+        self.ql.mem.write(buff, (out + '\x00').encode(enc))
+
+        return len(out)
+
+    def printf(self, format: str, args: MutableSequence, wstring: bool = False) -> int:
+        out = self.__common_printf(format, args, wstring)
+        enc = 'utf-8'
+
+        self.ql.os.stdout.write(out.encode(enc))
+
+        return len(out)
+
+    def update_ellipsis(self, params: MutableMapping, args: Sequence) -> None:
+        params.update((f'{QlOsUtils.ELLIPSIS_PREF}{i}', a) for i, a in enumerate(args))
 
     def lsbmsb_convert(self, sc, size=4):
         split_bytes = []
@@ -338,7 +354,7 @@ class QlOsUtils:
         # set function args
         # TODO: make sure this is indeed STDCALL
         self.ql.os.fcall = self.ql.os.fcall_select(STDCALL)
-        self.ql.os.fcall.writeParams((self.ql.loader.driver_object.DeviceObject, irp_addr))
+        self.ql.os.fcall.writeParams(((POINTER, self.ql.loader.driver_object.DeviceObject), (POINTER, irp_addr)))
 
         try:
             # now emulate 
@@ -491,7 +507,7 @@ class QlOsUtils:
             self.ql.log.info("Executing IOCTL with DeviceObject = 0x%x, IRP = 0x%x" %(self.ql.loader.driver_object.DeviceObject, irp_addr))
             # TODO: make sure this is indeed STDCALL
             self.ql.os.fcall = self.ql.os.fcall_select(STDCALL)
-            self.ql.os.fcall.writeParams((self.ql.loader.driver_object.DeviceObject, irp_addr))
+            self.ql.os.fcall.writeParams(((POINTER, self.ql.loader.driver_object.DeviceObject), (POINTER, irp_addr)))
 
             try:
                 # now emulate IOCTL's DeviceControl

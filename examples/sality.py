@@ -9,8 +9,8 @@ from unicorn import UcError
 
 sys.path.append("..")
 from qiling import Qiling
-from qiling.os.const import STDCALL, POINTER, DWORD, STRING, HANDLE
-from qiling.os.windows.fncc import winsdkapi
+from qiling.os.const import POINTER, DWORD, STRING, HANDLE
+from qiling.os.windows.fncc import winsdkapi, STDCALL
 from qiling.os.windows.dlls.kernel32.fileapi import _CreateFile
 
 
@@ -174,7 +174,7 @@ if __name__ == "__main__":
     # execution is about to resume from 0x4053B2, which essentially jumps to ExitThread (kernel32.dll).
     # Set ExitThread exit code to 0
     ql.os.fcall = ql.os.fcall_select(STDCALL)
-    ql.os.fcall.writeParams([0])
+    ql.os.fcall.writeParams(((DWORD, 0),))
 
     ql.hook_address(hook_stop_address, 0x4055FA)
     ql.run(0x4053B2)
@@ -185,6 +185,6 @@ if __name__ == "__main__":
 
         # TODO: not sure whether this one is really STDCALL
         ql.amsint32_driver.os.fcall = ql.amsint32_driver.os.fcall_select(STDCALL)
-        ql.amsint32_driver.os.fcall.writeParams([0])
+        ql.amsint32_driver.os.fcall.writeParams(((DWORD, 0),))
 
         ql.amsint32_driver.run(0x102D0)

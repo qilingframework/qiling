@@ -2,55 +2,51 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 
-from typing import Any, Callable, MutableMapping, Optional, Mapping, Tuple, Sequence
+from typing import Any, Callable, Iterable, MutableMapping, Optional, Mapping, Tuple, Sequence
 
 from qiling import Qiling
 from qiling.os.const import PARAM_INT8, PARAM_INT16, PARAM_INT32, PARAM_INT64, PARAM_INTN
 from qiling.refactored.cc import QlCC
 
-Reader = Callable[[int], Tuple[int, int]]
+Reader = Callable[[int], int]
+Writer = Callable[[int, int], None]
+Accessor = Tuple[Reader, Writer, int]
+
 CallHook = Callable[[Qiling, int, Mapping], int]
 OnEnterHook = Callable[[Qiling, int, Mapping], Tuple[int, Mapping]]
 OnExitHook = Callable[[Qiling, int, Mapping, int], int]
 
 class QlFunctionCall:
-	def __init__(self, ql: Qiling, cc: QlCC, readers: Mapping[int, Reader] = {}) -> None:
+	def __init__(self, ql: Qiling, cc: QlCC, accessors: Mapping[int, Accessor] = {}) -> None:
 		"""Initialize function call handler.
 
 		Args:
 			ql: qiling instance
 			cc: calling convention instance to handle the call
-			readers: a mapping of parameter types to methods that access their values (optional)
+			accessors: a mapping of parameter types to methods that read and write their values (optional)
 		"""
 
 		self.ql = ql
 		self.cc = cc
 
-		__readers = {
-			 8: cc.getRawParam8,
-			16: cc.getRawParam16,
-			32: cc.getRawParam32,
-			64: cc.getRawParam64,
-			 0: cc.getRawParam
+		def __make_accessor(nbits: int) -> Accessor:
+			reader = lambda si: cc.getRawParam(si, nbits or None)
+			writer = lambda si, val: cc.setRawParam(si, val, nbits or None)
+			nslots = cc.getNumSlots(nbits)
+
+			return (reader, writer, nslots)
+
+		# default parameter accessors: readers, writers and slots count
+		self.accessors: MutableMapping[int, Accessor] = {
+			PARAM_INT8 : __make_accessor(8),
+			PARAM_INT16: __make_accessor(16),
+			PARAM_INT32: __make_accessor(32),
+			PARAM_INT64: __make_accessor(64),
+			PARAM_INTN : __make_accessor(0)
 		}
 
-		def __make_reader(nbits: int) -> Reader:
-			rd = __readers[nbits]
-			ns = cc.getNumSlots(nbits)
-
-			return lambda si: (rd(si), ns)
-
-		# default parameter reading accessors
-		self.readers: MutableMapping[int, Reader] = {
-			PARAM_INT8 : __make_reader(8),
-			PARAM_INT16: __make_reader(16),
-			PARAM_INT32: __make_reader(32),
-			PARAM_INT64: __make_reader(64),
-			PARAM_INTN : __make_reader(0)
-		}
-
-		# let the user override default readers or add custom ones
-		self.readers.update(readers)
+		# let the user override default accessors or add custom ones
+		self.accessors.update(accessors)
 
 	def readParams(self, ptypes: Sequence[Any]) -> Sequence[int]:
 		"""Walk the function parameters list and get their values.
@@ -61,34 +57,53 @@ class QlFunctionCall:
 		Returns: parameters raw values
 		"""
 
-		default = self.readers[PARAM_INTN]
+		default = self.accessors[PARAM_INTN]
 
 		si = 0
 		values = []
 
 		for typ in ptypes:
-			value, consumed = self.readers.get(typ, default)(si)
-			si += consumed
+			read, _, nslots = self.accessors.get(typ, default)
 
-			values.append(value)
+			val = read(si)
+			si += nslots
+
+			values.append(val)
 
 		return values
 
-	# TODO: turn writeParams into a generic method like readParams
-	def writeParams(self, values: Sequence[int]) -> None:
-		for si, val in enumerate(values):
-			self.cc.setRawParam(si, val)
+	def writeParams(self, params: Sequence[Tuple[Any, int]]) -> None:
+		"""Walk the function parameters list and set their values.
 
-	def call(self, func: CallHook, params: Mapping[str, Any], hook_onenter: Optional[OnEnterHook], hook_onexit: Optional[OnExitHook], passthru: bool, *args) -> Tuple[Mapping, int, int]:
-		"""Call a hooked function.
+		Args:
+			params: a sequence of 2-tuples containing parameters types and values
+		"""
+
+		default = self.accessors[PARAM_INTN]
+
+		si = 0
+
+		for typ, val in params:
+			_, write, nslots = self.accessors.get(typ, default)
+
+			write(si, val)
+			si += nslots
+
+	def __count_slots(self, ptypes: Iterable[Any]) -> int:
+		default = self.accessors[PARAM_INTN]
+
+		return sum(self.accessors.get(typ, default)[2] for typ in ptypes)
+
+	def call(self, func: CallHook, proto: Mapping[str, Any], params: Mapping[str, Any], hook_onenter: Optional[OnEnterHook], hook_onexit: Optional[OnExitHook], passthru: bool) -> Tuple[Mapping, int, int]:
+		"""Execute a hooked function.
 
 		Args:
 			func: function hook
+			proto: function's parameters types list
 			params: a mapping of parameter names to their values 
 			hook_onenter: a hook to call before entering function hook
 			hook_onexit: a hook to call after returning from function hook
 			passthru: whether to skip stack frame unwinding
-			...: additional arguments to pass to hooks and func
 
 		Returns: resolved params mapping, return value, return address
 		"""
@@ -98,17 +113,17 @@ class QlFunctionCall:
 
 		# if set, fire up the on-enter hook and let it override original args set
 		if hook_onenter:
-			overrides = hook_onenter(ql, pc, params, *args)
+			overrides = hook_onenter(ql, pc, params)
 
 			if overrides is not None:
 				pc, params = overrides
 
 		# call function
-		retval = func(ql, pc, params, *args)
+		retval = func(ql, pc, params)
 
 		# if set, fire up the on-exit hook and let it override the return value
 		if hook_onexit:
-			override = hook_onexit(ql, pc, params, retval, *args)
+			override = hook_onexit(ql, pc, params, retval)
 
 			if override is not None:
 				retval = override
@@ -119,11 +134,18 @@ class QlFunctionCall:
 
 		# TODO: resolve return value
 
-		# FIXME: though usually one slot is used for each fcall parameter, this is not
-		# always true (for example, a 64 bits parameter in a 32 bits system). this should
-		# reflect the true number of slots used by this set of parameters
-		#
-		# unwind stack frame
-		retaddr = -1 if passthru else self.cc.unwind(len(params))
+		# unwind stack frame; note that function prototype sometimes does not
+		# reflect the actual number of arguments passed to the function, like
+		# in variadic functions (e.g. printf-like functions). in such case the
+		# function frame would not be unwinded entirely and cause the program
+		# to fail or produce funny results.
+		# 
+		# nevertheless this type of functions never unwind their own frame,
+		# exactly for the reason they are not aware of the actual number of
+		# arguments they got. since the caller is responsible for unwinding
+		# we should be good.
+
+		nslots = self.__count_slots(proto.values())
+		retaddr = -1 if passthru else self.cc.unwind(nslots)
 
 		return params, retval, retaddr

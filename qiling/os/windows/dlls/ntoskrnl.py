@@ -99,7 +99,6 @@ def hook_NtClose(ql, address, params):
 # );
 @winsdkapi(cc=CDECL, dllname=dllname, replace_params={'ComponentId': ULONG, 'Level': ULONG, 'Format': STRING})
 def hook_DbgPrintEx(ql: Qiling, address: int, params):
-    api_name = 'DbgPrintEx'
     Format = params['Format']
 
     if Format == 0:
@@ -107,11 +106,12 @@ def hook_DbgPrintEx(ql: Qiling, address: int, params):
 
     nargs = Format.count("%")
     ptypes = (ULONG, ULONG, POINTER) + (PARAM_INTN, ) * nargs
+    args = ql.os.fcall.readParams(ptypes)[3:]
 
-    params = ql.os.fcall.readParams(ptypes)[3:]
-    ret, _ = ql.os.utils.printf(Format, params, api_name, wstring=False)
+    count = ql.os.utils.printf(Format, args, wstring=False)
+    ql.os.utils.update_ellipsis(params, args)
 
-    return ret
+    return count
 
 # ULONG DbgPrint(
 #   PCSTR Format,
@@ -119,7 +119,6 @@ def hook_DbgPrintEx(ql: Qiling, address: int, params):
 # );
 @winsdkapi(cc=CDECL, dllname=dllname, replace_params={'Format': STRING})
 def hook_DbgPrint(ql: Qiling, address: int, params):
-    api_name = 'DbgPrint'
     Format = params['Format']
 
     if Format == 0:
@@ -127,12 +126,12 @@ def hook_DbgPrint(ql: Qiling, address: int, params):
 
     nargs = Format.count("%")
     ptypes = (POINTER, ) + (PARAM_INTN, ) * nargs
+    args = ql.os.fcall.readParams(ptypes)[1:]
 
-    params = ql.os.fcall.readParams(ptypes)[1:]
-    ret, _ = ql.os.utils.printf(Format, params, api_name, wstring=False)
+    count = ql.os.utils.printf(Format, args, wstring=False)
+    ql.os.utils.update_ellipsis(params, args)
 
-    return ret
-
+    return count
 
 def ntoskrnl_IoCreateDevice(ql: Qiling, address: int, params):
     objcls = {
@@ -143,9 +142,10 @@ def ntoskrnl_IoCreateDevice(ql: Qiling, address: int, params):
     addr = ql.os.heap.alloc(ctypes.sizeof(objcls))
     device_object = objcls()
 
+    DriverObject = params['DriverObject']
     DeviceExtensionSize = params['DeviceExtensionSize']
     DeviceCharacteristics = params['DeviceCharacteristics']
-    DriverObject = params['DriverObject']
+    DeviceObject = params['DeviceObject']
 
     device_object.Type = 3 # FILE_DEVICE_CD_ROM_FILE_SYSTEM ?
     device_object.DeviceExtension = ql.os.heap.alloc(DeviceExtensionSize)
@@ -164,12 +164,12 @@ def ntoskrnl_IoCreateDevice(ql: Qiling, address: int, params):
     device_object.Characteristics = DeviceCharacteristics
 
     ql.mem.write(addr, bytes(device_object)[:])
-    ql.mem.write(DriverObject, addr.to_bytes(length=ql.pointersize, byteorder='little'))
+    ql.mem.write(DeviceObject, addr.to_bytes(length=ql.pointersize, byteorder='little'))
 
     # update DriverObject.DeviceObject
     ql.loader.driver_object.DeviceObject = addr
 
-    return 0
+    return STATUS_SUCCESS
 
 
 # NTSTATUS IoCreateDevice(
@@ -238,14 +238,6 @@ def hook_IoDeleteDevice(ql, address, params):
     addr = params['DeviceObject']
     ql.os.heap.free(addr)
     return None
-
-
-# NTSTATUS IoDeleteSymbolicLink(
-#   PUNICODE_STRING SymbolicLinkName
-# );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={"SymbolicLinkName": PUNICODE_STRING})
-def hook_IoDeleteSymbolicLink(ql, address, params):
-    return 0
 
 
 # NTSTATUS IoCreateSymbolicLink(
@@ -907,7 +899,7 @@ def hook_IoCreateDriver(ql: Qiling, address: int, params):
     init_sp = ql.os.init_sp
 
     ql.os.fcall = ql.os.fcall_select(STDCALL)
-    ql.os.fcall.writeParams((ql.driver_object_address, ql.regitry_path_address))
+    ql.os.fcall.writeParams(((POINTER, ql.driver_object_address), (POINTER, ql.regitry_path_address)))
     ql.until_addr = ret_addr
 
     # now lest emualate InitializationFunction

@@ -33,11 +33,12 @@ def hook_printk(ql: Qiling, address: int, params):
     level = PRINTK_LEVEL[int(format[1])]
     nargs = format.count("%")
     ptypes = (POINTER, ) + (PARAM_INTN, ) * nargs
+    args = ql.os.fcall.readParams(ptypes)[1:]
 
-    params = ql.os.fcall.readParams(ptypes)[1:]
-    ret, _ = ql.os.utils.printf(f'{level} {format[2:]}', params, 'printk', wstring=False)
+    count = ql.os.utils.printf(f'{level} {format[2:]}', args, wstring=False)
+    ql.os.utils.update_ellipsis(params, args)
 
-    return ret
+    return count
 
 
 @linux_kernel_api(params={

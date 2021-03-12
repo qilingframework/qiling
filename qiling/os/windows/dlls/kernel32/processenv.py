@@ -4,7 +4,7 @@
 #
 
 from qiling.os.const import *
-from qiling.os.windows.fncc import winsdkapi
+from qiling.os.windows.fncc import *
 from qiling.exception import QlErrorNotImplemented
 
 dllname = 'kernel32_dll'

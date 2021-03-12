@@ -154,7 +154,7 @@ class RegistryManager:
                 "value_name": value_name,
                 "value": value,
                 "type": type,
-                "position": self.ql.os.syscalls_counter
+                "position": self.ql.os.utils.syscalls_counter
             })
             # we don't have to increase the counter since we are technically inside a hook
 

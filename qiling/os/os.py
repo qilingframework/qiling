@@ -16,6 +16,7 @@ from .filestruct import ql_file
 from .mapper import QlFsMapper
 from .utils import QlOsUtils
 from .path import QlPathManager
+
 class QlOs:
     Resolver = Callable[[int], Tuple[Any, int]]
 
@@ -117,18 +118,18 @@ class QlOs:
 
         return resolved
 
-    def call(self, pc: int, func: Callable, params: Mapping[str, Any], onenter: Optional[Callable], onexit: Optional[Callable], *args, passthru: bool = False):
-        # resolve params values according to their assigned types
-        params = self.resolve_fcall_params(params)
+    def call(self, pc: int, func: Callable, proto: Mapping[str, Any], onenter: Optional[Callable], onexit: Optional[Callable], passthru: bool = False):
+        # resolve arguments values according to their types
+        args = self.resolve_fcall_params(proto)
 
         # call hooked function
-        params, retval, retaddr = self.fcall.call(func, params, onenter, onexit, passthru, *args)
+        args, retval, retaddr = self.fcall.call(func, proto, args, onenter, onexit, passthru)
 
         # print
-        self.utils.print_function(pc, func.__name__, params, retval, passthru)
+        self.utils.print_function(pc, func.__name__, args, retval, passthru)
 
         # append syscall to list
-        self.utils._call_api(pc, func.__name__, params, retval, retaddr)
+        self.utils._call_api(pc, func.__name__, args, retval, retaddr)
 
         # TODO: PE_RUN is a Windows and UEFI property; move somewhere else?
         if hasattr(self, 'PE_RUN') and not self.PE_RUN:

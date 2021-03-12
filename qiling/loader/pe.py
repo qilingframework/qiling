@@ -5,7 +5,8 @@
 
 import os, pefile, pickle, secrets, traceback
 
-from qiling.os.const import CDECL
+from qiling.os.const import POINTER
+from qiling.os.windows.fncc import CDECL
 from qiling.os.windows.utils import *
 from qiling.os.windows.structs import *
 from qiling.exception import *
@@ -542,7 +543,7 @@ class QlLoaderPE(QlLoader, Process):
 
                 # setup args for DriverEntry()
                 self.ql.os.fcall = self.ql.os.fcall_select(CDECL)
-                self.ql.os.fcall.writeParams((self.ql.driver_object_address, self.ql.regitry_path_address))
+                self.ql.os.fcall.writeParams(((POINTER, self.ql.driver_object_address), (POINTER, self.ql.regitry_path_address)))
 
             # mmap PE file into memory
             self.ql.mem.map(self.pe_image_address, self.align(self.pe_image_address_size, 0x1000), info="[PE]")

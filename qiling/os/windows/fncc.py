@@ -13,12 +13,19 @@ from qiling.const import QL_INTERCEPT
 from qiling.extensions.windows_sdk import winsdk_path
 import qiling.os.const as const
 
+from .api import reptypedict
+
+# calling conventions
+STDCALL = 1
+CDECL   = 2
+MS64    = 3
+
 def replacetype(ptype: str, specialtype: Mapping) -> Optional[int]:
     if ptype in specialtype:
          ptype = specialtype[ptype]
 
-    if ptype in const.reptypedict:
-        return const.reptypedict[ptype]
+    if ptype in reptypedict:
+        return reptypedict[ptype]
 
     return None
 
@@ -36,12 +43,14 @@ def __log_udnefined_type(ptype: str):
 def __print_undefined_types():
     items = sorted(__undefined_types.items(), key = lambda p: p[1], reverse=True)
 
-    maxlen = max(len(name) for name, _ in items)
-    maxlenc = len(str(max(count for _, count in items)))
+    maxlen_n = max(len(name) for name, _ in items)
+    maxlen_c = len(str(max(count for _, count in items)))
 
-    print(f'undefined types:')
+    print(f'undefined winsdk param types:')
     for name, count in items:
-        print(f' - {name:<{maxlen}s} : {count:{maxlenc}d}')
+        print(f' - {name:<{maxlen_n}s} : {count:{maxlen_c}d}')
+
+    __undefined_types.clear()
 
 # </workaround>
 
@@ -62,10 +71,10 @@ def __load_winsdk_defs(dllname: str) -> Mapping:
                     ptype = p['type']
 
                     if type(ptype) is str:
-                        #ptype = getattr(const, ptype, None) or const.reptypedict[ptype]
+                        #ptype = getattr(const, ptype, None) or reptypedict[ptype]
 
                         # <workaround>
-                        _ptype = getattr(const, ptype, None) or const.reptypedict.get(ptype)
+                        _ptype = getattr(const, ptype, None) or reptypedict.get(ptype)
 
                         if _ptype is None:
                             __log_udnefined_type(ptype)
@@ -106,7 +115,8 @@ def winsdkapi(cc: int, param_num: int = None, dllname: str = None, replace_param
                 if api_name in funcdefs:
                     paramlist = funcdefs[api_name]
 
-                    if len(replace_params) == len(paramlist):
+                    # params list needs to be replaced entirely
+                    if len(paramlist) == len(replace_params):
                         params = replace_params
 
                         # substitue string type names (if any) with their actual type value
@@ -117,29 +127,25 @@ def winsdkapi(cc: int, param_num: int = None, dllname: str = None, replace_param
                                 if params[pname] is None:
                                     ql.log.exception(f'no replacement found for type "{ptype}" ({api_name}, {dllname})')
 
+                    # params list indicates that function prototype has no arguments
+                    elif len(paramlist) == 1 and paramlist.get('VOID') == 'void':
+                        params = {}
+
+                    # only some of the parameters on params list need to be replaced
                     else:
-                        # function prototype has no arguments
-                        if len(paramlist) == 1 and paramlist.get('VOID') == 'void':
-                            params = {}
-                        else:
-                            for pname, ptype in paramlist.items():
-                                # # function prototype has no arguments
-                                # if pname == 'VOID' or replace_params.get(pname) == '':
-                                #     params = {}
-                                #     break
+                        for pname, ptype in paramlist.items():
+                            # substitue this parameter type, if its name was found in the replacements mapping
+                            if pname in replace_params:
+                                params[pname] = replace_params[pname]
 
-                                # substitue this parameter type, if its name was found in the replacements mapping
-                                if pname in replace_params:
-                                    params[pname] = replace_params[pname]
+                            else:
+                                if type(ptype) is dict:
+                                    ptype = ptype['name']
 
-                                else:
-                                    if type(ptype) is dict:
-                                        ptype = ptype['name']
+                                params[pname] = replacetype(ptype, replace_params_type)
 
-                                    params[pname] = replacetype(ptype, replace_params_type)
-
-                                    if params[pname] is None:
-                                        ql.log.exception(f'no replacement found for type "{ptype}" ({api_name}, {dllname})')
+                                if params[pname] is None:
+                                    ql.log.exception(f'no replacement found for type "{ptype}" ({api_name}, {dllname})')
                 else:
                     params = replace_params
             else:
