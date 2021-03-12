@@ -127,12 +127,20 @@ class QlCoreHooks:
         ql, hook_type = args[-1]
 
         if hook_type in self._insn_hook.keys():
+            retval = None
+
             for h in self._insn_hook[hook_type]:
                 if h.bound_check(ql.reg.arch_pc):
                     ret = h.call(ql, *args[ : -1])
-                    if isinstance(ret, int) == True and ret & QL_HOOK_BLOCK  != 0:
+
+                    if type(ret) is tuple:
+                        ret, retval = ret
+
+                    if type(ret) is int and ret & QL_HOOK_BLOCK:
                         break
 
+            # use the last return value received
+            return retval
 
     def _callback_type4(self, uc, addr, size, pack_data):
         ql, user_data, callback = pack_data
