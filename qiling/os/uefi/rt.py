@@ -83,22 +83,39 @@ def hook_GetVariable(ql, address, params):
 	"VendorGuid"		: GUID		# IN OUT PTR(EFI_GUID)
 })
 def hook_GetNextVariableName(ql, address, params):
-	name_size = read_int64(ql, params["VariableNameSize"])
-	last_name = ql.os.utils.read_wstring(params["VariableName"])
-	vars = ql.env['Names'] # This is a list of variable names in correct order.
-	if last_name in vars and vars.index(last_name) < len(vars) - 1:
-		new_name = vars[vars.index(last_name)+1]
-		if (len(new_name)+1)*2 > name_size:
-			return EFI_BUFFER_TOO_SMALL
-		vn_ptr = params["VariableName"]
-		for char in new_name:
-			ql.mem.write(vn_ptr, char)
-			vn_ptr += 1
-			ql.mem.write(vn_ptr, '\x00')
-			vn_ptr += 1
-		ql.mem.write(vn_ptr, '\x00\x00')
+	var_name_size = params["VariableNameSize"]
+	var_name = params["VariableName"]
 
-	return EFI_INVALID_PARAMETER
+	if (var_name_size == 0) or (var_name == 0):
+		return EFI_INVALID_PARAMETER
+
+	name_size = read_int64(ql, var_name_size)
+	last_name = ql.os.read_wstring(var_name)
+
+	vars = ql.env['Names'] # This is a list of variable names in correct order.
+
+	if last_name not in vars:
+		return EFI_NOT_FOUND
+
+	idx = vars.index(last_name)
+
+	# make sure it is not the last one (i.e. we have a next one to pull)
+	if idx == len(vars) - 1:
+		return EFI_NOT_FOUND
+
+	# get next var name, and add null terminator
+	new_name = vars[idx + 1] + '\x00'
+
+	# turn it into a wide string
+	new_name = ''.join(f'{c}\x00' for c in new_name)
+
+	if len(new_name) > name_size:
+		write_int64(ql, var_name_size, len(new_name))
+		return EFI_BUFFER_TOO_SMALL
+
+	ql.mem.write(var_name, new_name.encode('ascii'))
+
+	return EFI_SUCCESS
 
 @dxeapi(params={
 	"VariableName"	: WSTRING,	# PTR(CHAR16)
