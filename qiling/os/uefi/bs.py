@@ -84,8 +84,11 @@ def hook_GetMemoryMap(ql, address, params):
 })
 def hook_AllocatePool(ql, address, params):
 	# TODO: allocate memory acording to "PoolType"
-	address = ql.loader.dxe_context.heap.alloc(params["Size"])
-	write_int64(ql, params["Buffer"], address)
+	Size = params["Size"]
+	Buffer = params["Buffer"]
+
+	address = ql.loader.dxe_context.heap.alloc(Size)
+	write_int64(ql, Buffer, address)
 
 	return EFI_SUCCESS if address else EFI_OUT_OF_RESOURCES
 
@@ -93,8 +96,9 @@ def hook_AllocatePool(ql, address, params):
 	"Buffer": POINTER # PTR(VOID)
 })
 def hook_FreePool(ql, address, params):
-	address = params["Buffer"]
-	ret = ql.loader.dxe_context.heap.free(address)
+	Buffer = params["Buffer"]
+
+	ret = ql.loader.dxe_context.heap.free(Buffer)
 
 	return EFI_SUCCESS if ret else EFI_INVALID_PARAMETER
 

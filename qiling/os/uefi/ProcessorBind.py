@@ -4,7 +4,7 @@
 #
 
 import ctypes
-from typing import Any, Dict
+from typing import Any, Dict, Sequence
 
 bits = 64
 psize = bits // 8
@@ -107,7 +107,7 @@ class ENUM(ctypes.c_int, metaclass=EnumMeta):
 
 	# a list or tuple of names (strings)
 	# names will be enumerate by their corresponding index in the list
-	_members_ = []
+	_members_: Sequence[str] = []
 
 class EnumUCMeta(type(ctypes.c_int)):
 	def __getattr__(self, key):
@@ -119,7 +119,7 @@ class ENUM_UC(ctypes.c_int, metaclass=EnumUCMeta):
 
 	# a dictionary of (names : str, value : int) tuples
 	# names will be enumerate by their paired value
-	_members_ = {}
+	_members_: Dict[str, int] = {}
 
 __all__ = [
 	'VOID',
