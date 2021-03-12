@@ -477,8 +477,11 @@ def hook_CalculateCrc32(ql, address, params):
 	"Length"		: SIZE_T	# UINTN
 })
 def hook_CopyMem(ql, address, params):
-	data = bytes(ql.mem.read(params['Source'], params['Length']))
-	ql.mem.write(params['Destination'], data)
+	dst = params["Destination"]
+	src = params["Source"]
+	length = params["Length"]
+
+	ql.mem.write(dst, bytes(ql.mem.read(src, length)))
 
 @dxeapi(params = {
 	"Buffer": POINTER,	# PTR(VOID)
@@ -486,12 +489,11 @@ def hook_CopyMem(ql, address, params):
 	"Value"	: BYTE		# UINT8
 })
 def hook_SetMem(ql, address, params):
-	ptr = params["Buffer"]
-	value = ql.pack8(params["Value"] & 0xff)
+	buffer = params["Buffer"]
+	value = params["Value"] & 0xff
+	size = params["Size"]
 
-	# TODO: do this the Pythonic way
-	for i in range(params["Size"]):
-		ql.mem.write(ptr + i, value)
+	ql.mem.write(buffer, bytes(value) * size)
 
 @dxeapi(params = {
 	"Type"			: UINT,		# UINT32
