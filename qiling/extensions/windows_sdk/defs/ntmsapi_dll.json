@@ -1,0 +1,1238 @@
+{
+    "OpenNtmsSessionW": [
+        {
+            "name": "lpServer",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpApplication",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwOptions",
+            "type": "DWORD"
+        }
+    ],
+    "OpenNtmsSessionA": [
+        {
+            "name": "lpServer",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpApplication",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwOptions",
+            "type": "DWORD"
+        }
+    ],
+    "CloseNtmsSession": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        }
+    ],
+    "MountNtmsMedia": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpMediaId",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "lpDriveId",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "dwCount",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwOptions",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwPriority",
+            "type": "int"
+        },
+        {
+            "name": "dwTimeout",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpMountInformation",
+            "type": "LPNTMS_MOUNT_INFORMATION"
+        }
+    ],
+    "DismountNtmsMedia": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpMediaId",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "dwCount",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwOptions",
+            "type": "DWORD"
+        }
+    ],
+    "AllocateNtmsMedia": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpMediaPool",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "lpPartition",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "lpMediaId",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "dwOptions",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwTimeout",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpAllocateInformation",
+            "type": "LPNTMS_ALLOCATION_INFORMATION"
+        }
+    ],
+    "DeallocateNtmsMedia": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpMediaId",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "dwOptions",
+            "type": "DWORD"
+        }
+    ],
+    "SwapNtmsMedia": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpMediaId1",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "lpMediaId2",
+            "type": "LPNTMS_GUID"
+        }
+    ],
+    "AddNtmsMediaType": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpMediaTypeId",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "lpLibId",
+            "type": "LPNTMS_GUID"
+        }
+    ],
+    "DeleteNtmsMediaType": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpMediaTypeId",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "lpLibId",
+            "type": "LPNTMS_GUID"
+        }
+    ],
+    "ChangeNtmsMediaType": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpMediaId",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "lpPoolId",
+            "type": "LPNTMS_GUID"
+        }
+    ],
+    "DecommissionNtmsMedia": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpMediaId",
+            "type": "LPNTMS_GUID"
+        }
+    ],
+    "SetNtmsMediaComplete": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpMediaId",
+            "type": "LPNTMS_GUID"
+        }
+    ],
+    "DeleteNtmsMedia": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpMediaId",
+            "type": "LPNTMS_GUID"
+        }
+    ],
+    "CreateNtmsMediaPoolA": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpPoolName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpMediaType",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "dwAction",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpSecurityAttributes",
+            "type": "LPSECURITY_ATTRIBUTES"
+        },
+        {
+            "name": "lpPoolId",
+            "type": "LPNTMS_GUID"
+        }
+    ],
+    "CreateNtmsMediaPoolW": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpPoolName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpMediaType",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "dwAction",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpSecurityAttributes",
+            "type": "LPSECURITY_ATTRIBUTES"
+        },
+        {
+            "name": "lpPoolId",
+            "type": "LPNTMS_GUID"
+        }
+    ],
+    "GetNtmsMediaPoolNameA": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpPoolId",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "lpNameBuf",
+            "type": "LPSTR"
+        },
+        {
+            "name": "lpdwBufSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "GetNtmsMediaPoolNameW": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpPoolId",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "lpNameBuf",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpdwBufSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "MoveToNtmsMediaPool": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpMediaId",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "lpPoolId",
+            "type": "LPNTMS_GUID"
+        }
+    ],
+    "DeleteNtmsMediaPool": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpPoolId",
+            "type": "LPNTMS_GUID"
+        }
+    ],
+    "DeleteNtmsLibrary": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpLibraryId",
+            "type": "LPNTMS_GUID"
+        }
+    ],
+    "DeleteNtmsDrive": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpDriveId",
+            "type": "LPNTMS_GUID"
+        }
+    ],
+    "GetNtmsObjectInformationA": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpObjectId",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "lpInfo",
+            "type": "LPNTMS_OBJECTINFORMATIONA"
+        }
+    ],
+    "GetNtmsObjectInformationW": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpObjectId",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "lpInfo",
+            "type": "LPNTMS_OBJECTINFORMATIONW"
+        }
+    ],
+    "SetNtmsObjectInformationA": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpObjectId",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "lpInfo",
+            "type": "LPNTMS_OBJECTINFORMATIONA"
+        }
+    ],
+    "SetNtmsObjectInformationW": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpObjectId",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "lpInfo",
+            "type": "LPNTMS_OBJECTINFORMATIONW"
+        }
+    ],
+    "CreateNtmsMediaA": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpMedia",
+            "type": "LPNTMS_OBJECTINFORMATIONA"
+        },
+        {
+            "name": "lpList",
+            "type": "LPNTMS_OBJECTINFORMATIONA"
+        },
+        {
+            "name": "dwOptions",
+            "type": "DWORD"
+        }
+    ],
+    "CreateNtmsMediaW": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpMedia",
+            "type": "LPNTMS_OBJECTINFORMATIONW"
+        },
+        {
+            "name": "lpList",
+            "type": "LPNTMS_OBJECTINFORMATIONW"
+        },
+        {
+            "name": "dwOptions",
+            "type": "DWORD"
+        }
+    ],
+    "EnumerateNtmsObject": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpContainerId",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "lpList",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "lpdwListSize",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "dwType",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwOptions",
+            "type": "DWORD"
+        }
+    ],
+    "DisableNtmsObject": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwType",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpObjectId",
+            "type": "LPNTMS_GUID"
+        }
+    ],
+    "EnableNtmsObject": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwType",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpObjectId",
+            "type": "LPNTMS_GUID"
+        }
+    ],
+    "EjectNtmsMedia": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpMediaId",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "lpEjectOperation",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "dwAction",
+            "type": "DWORD"
+        }
+    ],
+    "InjectNtmsMedia": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpLibraryId",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "lpInjectOperation",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "dwAction",
+            "type": "DWORD"
+        }
+    ],
+    "AccessNtmsLibraryDoor": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpLibraryId",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "dwAction",
+            "type": "DWORD"
+        }
+    ],
+    "CleanNtmsDrive": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpDriveId",
+            "type": "LPNTMS_GUID"
+        }
+    ],
+    "DismountNtmsDrive": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpDriveId",
+            "type": "LPNTMS_GUID"
+        }
+    ],
+    "InventoryNtmsLibrary": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpLibraryId",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "dwAction",
+            "type": "DWORD"
+        }
+    ],
+    "IdentifyNtmsSlot": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpSlotId",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "dwOption",
+            "type": "DWORD"
+        }
+    ],
+    "UpdateNtmsOmidInfo": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpMediaId",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "labelType",
+            "type": "DWORD"
+        },
+        {
+            "name": "numberOfBytes",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPVOID"
+        }
+    ],
+    "CancelNtmsLibraryRequest": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpRequestId",
+            "type": "LPNTMS_GUID"
+        }
+    ],
+    "GetNtmsRequestOrder": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpRequestId",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "lpdwOrderNumber",
+            "type": "LPDWORD"
+        }
+    ],
+    "SetNtmsRequestOrder": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpRequestId",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "dwOrderNumber",
+            "type": "DWORD"
+        }
+    ],
+    "DeleteNtmsRequests": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpRequestId",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "dwType",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwCount",
+            "type": "DWORD"
+        }
+    ],
+    "ReserveNtmsCleanerSlot": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpLibrary",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "lpSlot",
+            "type": "LPNTMS_GUID"
+        }
+    ],
+    "ReleaseNtmsCleanerSlot": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpLibrary",
+            "type": "LPNTMS_GUID"
+        }
+    ],
+    "InjectNtmsCleaner": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpLibrary",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "lpInjectOperation",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "dwNumberOfCleansLeft",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwAction",
+            "type": "DWORD"
+        }
+    ],
+    "EjectNtmsCleaner": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpLibrary",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "lpEjectOperation",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "dwAction",
+            "type": "DWORD"
+        }
+    ],
+    "BeginNtmsDeviceChangeDetection": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpDetectHandle",
+            "type": "LPHANDLE"
+        }
+    ],
+    "SetNtmsDeviceChangeDetection": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "DetectHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpRequestId",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "dwType",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwCount",
+            "type": "DWORD"
+        }
+    ],
+    "EndNtmsDeviceChangeDetection": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "DetectHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "GetNtmsObjectSecurity": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpObjectId",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "dwType",
+            "type": "DWORD"
+        },
+        {
+            "name": "RequestedInformation",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "lpSecurityDescriptor",
+            "type": "PSECURITY_DESCRIPTOR"
+        },
+        {
+            "name": "nLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpnLengthNeeded",
+            "type": "LPDWORD"
+        }
+    ],
+    "SetNtmsObjectSecurity": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpObjectId",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "dwType",
+            "type": "DWORD"
+        },
+        {
+            "name": "SecurityInformation",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "lpSecurityDescriptor",
+            "type": "PSECURITY_DESCRIPTOR"
+        }
+    ],
+    "GetNtmsObjectAttributeA": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpObjectId",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "dwType",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpAttributeName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpAttributeData",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpAttributeSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "GetNtmsObjectAttributeW": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpObjectId",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "dwType",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpAttributeName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpAttributeData",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpAttributeSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "SetNtmsObjectAttributeA": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpObjectId",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "dwType",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpAttributeName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpAttributeData",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwAttributeSize",
+            "type": "DWORD"
+        }
+    ],
+    "SetNtmsObjectAttributeW": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpObjectId",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "dwType",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpAttributeName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpAttributeData",
+            "type": "LPVOID"
+        },
+        {
+            "name": "AttributeSize",
+            "type": "DWORD"
+        }
+    ],
+    "GetNtmsUIOptionsA": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpObjectId",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "dwType",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpszDestination",
+            "type": "LPSTR"
+        },
+        {
+            "name": "lpdwBufSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "GetNtmsUIOptionsW": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpObjectId",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "dwType",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpszDestination",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpdwBufSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "SetNtmsUIOptionsA": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpObjectId",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "dwType",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwOperation",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpszDestination",
+            "type": "LPCSTR"
+        }
+    ],
+    "SetNtmsUIOptionsW": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpObjectId",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "dwType",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwOperation",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpszDestination",
+            "type": "LPCWSTR"
+        }
+    ],
+    "SubmitNtmsOperatorRequestW": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwRequest",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpMessage",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpArg1Id",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "lpArg2Id",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "lpRequestId",
+            "type": "LPNTMS_GUID"
+        }
+    ],
+    "SubmitNtmsOperatorRequestA": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwRequest",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpMessage",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpArg1Id",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "lpArg2Id",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "lpRequestId",
+            "type": "LPNTMS_GUID"
+        }
+    ],
+    "WaitForNtmsOperatorRequest": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpRequestId",
+            "type": "LPNTMS_GUID"
+        },
+        {
+            "name": "dwTimeout",
+            "type": "DWORD"
+        }
+    ],
+    "CancelNtmsOperatorRequest": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpRequestId",
+            "type": "LPNTMS_GUID"
+        }
+    ],
+    "SatisfyNtmsOperatorRequest": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpRequestId",
+            "type": "LPNTMS_GUID"
+        }
+    ],
+    "ImportNtmsDatabase": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        }
+    ],
+    "ExportNtmsDatabase": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        }
+    ],
+    "OpenNtmsNotification": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwType",
+            "type": "DWORD"
+        }
+    ],
+    "WaitForNtmsNotification": [
+        {
+            "name": "hNotification",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpNotificationInformation",
+            "type": "LPNTMS_NOTIFICATIONINFORMATION"
+        },
+        {
+            "name": "dwTimeout",
+            "type": "DWORD"
+        }
+    ],
+    "CloseNtmsNotification": [
+        {
+            "name": "hNotification",
+            "type": "HANDLE"
+        }
+    ],
+    "EjectDiskFromSADriveW": [
+        {
+            "name": "lpComputerName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpAppName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpDeviceName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "lpTitle",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpMessage",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwOptions",
+            "type": "DWORD"
+        }
+    ],
+    "EjectDiskFromSADriveA": [
+        {
+            "name": "lpComputerName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpAppName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpDeviceName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "lpTitle",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpMessage",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwOptions",
+            "type": "DWORD"
+        }
+    ],
+    "GetVolumesFromDriveW": [
+        {
+            "name": "pszDriveName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "VolumeNameBufferPtr",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "DriveLetterBufferPtr",
+            "type": "LPWSTR"
+        }
+    ],
+    "GetVolumesFromDriveA": [
+        {
+            "name": "pszDriveName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "VolumeNameBufferPtr",
+            "type": "LPSTR"
+        },
+        {
+            "name": "DriveLetterBufferPtr",
+            "type": "LPSTR"
+        }
+    ]
+}

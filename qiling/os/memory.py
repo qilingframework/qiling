@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
 
 import os, re
 
 from qiling.const import *
 from qiling.exception import *
+
 
 from unicorn import (
     UC_PROT_ALL,
@@ -25,14 +26,21 @@ class QlMemoryManager:
     def __init__(self, ql):
         self.ql = ql
         self.map_info = []
-        
-        if self.ql.archbit == 64:
-            max_addr = 0xFFFFFFFFFFFFFFFF
-        elif self.ql.archbit == 32:
-            max_addr = 0xFFFFFFFF
 
+        bit_stuff = {
+            64 : (0xFFFFFFFFFFFFFFFF,),
+            32 : (0xFFFFFFFF,),
+            16 : (0xFFFFF,)             # 20bit address line
+        }
+
+        if ql.archbit not in bit_stuff:
+            raise QlErrorStructConversion("Unsupported Qiling archtecture for memory manager")
+
+        max_addr, = bit_stuff[ql.archbit]
+
+        #self.read_ptr = read_ptr
         self.max_addr = max_addr
-        self.max_mem_addr = max_addr            
+        self.max_mem_addr = max_addr
 
 
     def string(self, addr, value=None ,encoding='utf-8'): 
@@ -127,10 +135,13 @@ class QlMemoryManager:
                     perms_sym.append("-")
             return "".join(perms_sym)
 
-        self.ql.nprint("[+] Start      End        Perm.  Path")
+        self.ql.log.info("[+] Start      End        Perm.  Path")
         for  start, end, perm, info in self.map_info:
             _perm = _perms_mapping(perm)
-            self.ql.nprint("[+] %08x - %08x - %s    %s" % (start, end, _perm, info))
+            image = self.ql.os.find_containing_image(start)
+            if image:
+                info += f" ({image.path})"
+            self.ql.log.info("[+] %08x - %08x - %s    %s" % (start, end, _perm, info))
 
 
     def get_lib_base(self, filename):
@@ -140,7 +151,7 @@ class QlMemoryManager:
         return -1
 
 
-    def _align(self, addr, alignment=0x1000):
+    def align(self, addr, alignment=0x1000):
         # rounds up to nearest alignment
         mask = ((1 << self.ql.archbit) - 1) & -alignment
         return (addr + (alignment - 1)) & mask
@@ -163,39 +174,66 @@ class QlMemoryManager:
             perm = value[2]
             info = value[3]
             mem_read = bytes(value[4])
-            
-            if self.is_mapped(start, start-end) == False:
+
+            self.ql.log.debug("restore key: %i 0x%x 0x%x %s" % (key, start, end, info))
+            if self.is_mapped(start, end-start) == False:
+                self.ql.log.debug("mapping 0x%x 0x%x mapsize 0x%x" % (start, end, end-start))
                 self.map(start, end-start, perms=perm, info=info)
 
+            self.ql.log.debug("writing 0x%x size 0x%x write_size 0x%x " % (start, end-start, len(mem_read)))
             self.write(start, mem_read)
- 
 
     def read(self, addr: int, size: int) -> bytearray:
         return self.ql.uc.mem_read(addr, size)
 
+    def read_ptr(self, addr: int, size: int=None):
+        if not size:
+            size = self.ql.archbit // 8
+
+        if size == 1:
+            return self.ql.unpack8(self.read(addr, 1))
+        elif size == 2:
+            return self.ql.unpack16(self.read(addr, 2))
+        elif size == 4:
+            return self.ql.unpack32(self.read(addr, 4))
+        elif size == 8:
+            return self.ql.unpack64(self.read(addr, 8))
+        else:
+            raise QlErrorStructConversion(f"Unsupported pointer size: {size}")
 
     def write(self, addr: int, data: bytes) -> None:
-        return self.ql.uc.mem_write(addr, data)
-
+        try:
+            self.ql.uc.mem_write(addr, data)
+        except:
+            self.show_mapinfo()
+            self.ql.log.debug("addresss write length: " + str(len(data)))
+            self.ql.log.error("addresss write error: " + hex(addr))
+            raise
 
     def search(self, needle: bytes, begin= None, end= None):
         """
         Search for a sequence of bytes in memory. Returns all sequences
         that match
         """
-        addrs = []
-        for region in list(self.ql.uc.mem_regions()):
-            if (begin and end) and end > begin:
-                haystack = self.read(begin, end)
-            else:  
-                haystack = self.read(region[0], region[1] - region[0])
-            
-            addrs += [
-                x.start(0) + region[0]
-                for x in re.finditer(needle, haystack)
-            ]
-        return addrs
 
+        addrs = []
+        if (begin and end) and end > begin:
+            haystack = self.read(begin, end - begin)
+            addrs = [x.start(0) + begin for x in re.finditer(needle, haystack)]
+
+        if not begin:
+            begin = self.map_info[0][0] # search from the first mapped region 
+        if not end:
+            end = self.map_info[-1][1] # search till the last mapped region
+
+        mapped_range = [(_begin, _end) for _begin, _end, _ in self.ql.uc.mem_regions()
+                if _begin in range(begin, end) or _end in range(begin, end)]
+        
+        for _begin, _end in mapped_range:
+            haystack = self.read(_begin, _end - _begin)
+            addrs += [x.start(0) + _begin for x in re.finditer(needle, haystack)]
+
+        return addrs
 
     def unmap(self, addr, size) -> None:
         '''
@@ -239,6 +277,7 @@ class QlMemoryManager:
         Returns true if it has already been allocated.
         If unassigned, returns False.
         '''   
+
         for region in list(self.ql.uc.mem_regions()):
             if address >= region[0] and (address + size -1) <= region[1]:
                 return True
@@ -281,7 +320,7 @@ class QlMemoryManager:
             mapped += [[address_start, (address_end - address_start)]]
         
         for i in range(0, len(mapped)):
-            addr = self._align(
+            addr = self.align(
                 mapped[i][0] + mapped[i][1], alignment=alignment
             )
             # Enable allocating memory in the middle of a gap when the
@@ -303,7 +342,7 @@ class QlMemoryManager:
             # address is free
             if addr + size < max_gap_addr and self.is_mapped(addr, size) == False:
                 return addr
-        raise QlOutOfMemory("[!] Out Of Memory")
+        raise QlOutOfMemory("Out Of Memory")
 
 
     def map_anywhere(
@@ -344,12 +383,12 @@ class QlMemoryManager:
         we need a better mem_map as defined in the issue
         """
         #self.map(address, util.align(size), name, kind)
-        self.map(address, self._align(size))
+        self.map(address, self.align(size))
         return address
 
     def protect(self, addr, size, perms):
         aligned_address = addr & 0xFFFFF000  # Address needs to align with
-        aligned_size = self._align((addr & 0xFFF) + size)
+        aligned_size = self.align((addr & 0xFFF) + size)
         self.ql.uc.mem_protect(aligned_address, aligned_size, perms)
 
 
@@ -371,16 +410,16 @@ class QlMemoryManager:
         '''
         if ptr == None:
             if self.is_mapped(addr, size) == False:
-               self.ql.uc.mem_map(addr, size, perms)
-               self.add_mapinfo(addr, addr + size, perms, info if info else "[mapped]")
+                self.ql.uc.mem_map(addr, size, perms)
+                self.add_mapinfo(addr, addr + size, perms, info if info else "[mapped]")
             else:
-                raise QlMemoryMappedError("[!] Memory Mapped")    
+                raise QlMemoryMappedError("Memory Mapped")    
         else:
             self.ql.uc.mem_map_ptr(addr, size, perms, ptr)
 
     def get_mapped(self):
         for idx, val in enumerate(self.ql.uc.mem_regions()):
-            self.ql.nprint(idx, list(map(hex, val)))
+            self.ql.log.info(idx, list(map(hex, val)))
 
 # A Simple Heap Implementation
 class Chunk():
@@ -405,17 +444,30 @@ class QlMemoryHeap:
         self.current_alloc = 0
         # curent use memory size
         self.current_use = 0
+        # save all memory regions allocated
+        self.mem_alloc = []
+    
+    def save(self):
+        saved_state = {}
+        saved_state['chunks'] = self.chunks
+        saved_state['start_address'] = self.start_address
+        saved_state['end_address'] = self.end_address
+        saved_state['page_size'] = self.page_size
+        saved_state['current_alloc'] = self.current_alloc
+        saved_state['current_use'] = self.current_use
+        saved_state['mem_alloc'] = self.mem_alloc
+        return saved_state
 
-    def _align(self, size, unit):
-        return (size // unit + (1 if size % unit else 0)) * unit     
+    def restore(self, saved_state):
+        self.chunks = saved_state['chunks']
+        self.start_address = saved_state['start_address']
+        self.end_address = saved_state['end_address']
+        self.page_size = saved_state['page_size']
+        self.current_alloc = saved_state['current_alloc']
+        self.current_use = saved_state['current_use']
+        self.mem_alloc = saved_state['mem_alloc']
 
     def alloc(self, size):
-        
-        if self.ql.archbit == 32:
-            size = self._align(size, 4)
-        elif self.ql.archbit == 64:
-            size = self._align(size, 8)
-
         # Find the heap chunks that best matches size 
         self.chunks.sort(key=Chunk.compare)
         for chunk in self.chunks:
@@ -426,12 +478,13 @@ class QlMemoryHeap:
         chunk = None
         # If we need mem_map new memory
         if self.current_use + size > self.current_alloc:
-            real_size = self._align(size, self.page_size)
+            real_size = self.ql.mem.align(size, self.page_size)
             # If the heap is not enough
             if self.start_address + self.current_use + real_size > self.end_address:
                 return 0
             self.ql.mem.map(self.start_address + self.current_alloc, real_size, info="[heap]")
             chunk = Chunk(self.start_address + self.current_use, size)
+            self.mem_alloc.append((self.start_address + self.current_alloc, real_size))
             self.current_alloc += real_size
             self.current_use += size
             self.chunks.append(chunk)
@@ -441,7 +494,7 @@ class QlMemoryHeap:
             self.chunks.append(chunk)
 
         chunk.inuse = True
-        #self.ql.dprint(D_INFO,"heap.alloc addresss: " + hex(chunk.address))
+        #ql.log.debug("heap.alloc addresss: " + hex(chunk.address))
         return chunk.address
 
     def size(self, addr):
@@ -456,3 +509,22 @@ class QlMemoryHeap:
                 chunk.inuse = False
                 return True
         return False
+
+    # clear all memory regions alloc
+    def clear(self):
+        for chunk in self.chunks:
+            chunk.inuse = False
+
+        for addr, size in self.mem_alloc:
+            self.ql.mem.unmap(addr, size)
+
+        self.mem_alloc.clear()
+
+        self.current_alloc = 0
+        self.current_use = 0
+
+    def _find(self, addr):
+        for chunk in self.chunks:
+            if addr == chunk.address:
+                return chunk
+        return None

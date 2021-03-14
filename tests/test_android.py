@@ -1,36 +1,12 @@
 #!/usr/bin/env python3
 #
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org)
+#
 
-import unittest
-import os
-import sys
+import os, sys, unittest
+
 sys.path.append("..")
-
 from qiling import *
-from qiling.const import *
-from qiling.os.posix.syscall.unistd import ql_syscall_pread64
-
-# syscalls that need to be implemented for android
-def syscall_getrandom(ql, buf, buflen, flags, *args, **kw):
-    data = None
-    regreturn = None
-    try:
-        data = os.urandom(buflen)
-        ql.uc.mem_write(buf, data)
-        regreturn = len(data)
-    except:
-        regreturn = -1
-
-    ql.nprint("getrandom(0x%x, 0x%x, 0x%x) = %d" %
-              (buf, buflen, flags, regreturn))
-
-    if data:
-        ql.dprint(D_CTNT, "[+] getrandom() CONTENT:")
-        ql.dprint(D_CTNT, str(data))
-    ql.os.definesyscall_return(regreturn)
-
 
 """
 Android linker calls fstatfs to determine if the file is on tmpfs as part of checking if libraries are allowed
@@ -45,12 +21,12 @@ def syscall_fstatfs(ql, fd, buf, *args, **kw):
     except:
         regreturn = -1
 
-    ql.nprint("fstatfs(0x%x, 0x%x) = %d" % (fd, buf, regreturn))
+    ql.log.info("fstatfs(0x%x, 0x%x) = %d" % (fd, buf, regreturn))
 
     if data:
-        ql.dprint(0, "[+] fstatfs() CONTENT:")
-        ql.dprint(0, str(data))
-    ql.os.definesyscall_return(regreturn)
+        ql.log.debug("fstatfs() CONTENT:")
+        ql.log.debug(str(data))
+    return regreturn
 
 
 class TestAndroid(unittest.TestCase):
@@ -64,16 +40,7 @@ class TestAndroid(unittest.TestCase):
         self.assertTrue(os.path.isfile(os.path.join(rootfs, "proc", "self", "exe")), rootfs +
                         "/proc/self/exe not found, Android linker will bail. Need a file at that location (empty is fine)")
 
-        ql = Qiling([test_binary], rootfs, output="debug")
-
-        # slide in the syscalls we need for android on arm64
-        # FUTURE FIX: implement fstatfs
-        ql.set_syscall(0x2C, syscall_fstatfs)
-        # FUTURE FIX: pread64 implemented in qiling, just not hooked up for arm64
-        ql.set_syscall(0x43, ql_syscall_pread64)
-        # FUTURE FIX: implement getrandom
-        ql.set_syscall(0x116, syscall_getrandom)
-
+        ql = Qiling([test_binary], rootfs, output="debug", multithread=True)
         ql.run()
 
 

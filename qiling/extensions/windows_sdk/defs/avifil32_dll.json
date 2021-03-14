@@ -1,0 +1,878 @@
+{
+    "AVIFileInit": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "AVIFileExit": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "AVIFileAddRef": [
+        {
+            "name": "pfile",
+            "type": "PAVIFILE"
+        }
+    ],
+    "AVIFileRelease": [
+        {
+            "name": "pfile",
+            "type": "PAVIFILE"
+        }
+    ],
+    "AVIFileOpenA": [
+        {
+            "name": "ppfile",
+            "type": "PAVIFILE"
+        },
+        {
+            "name": "szFile",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "uMode",
+            "type": "UINT"
+        },
+        {
+            "name": "lpHandler",
+            "type": "LPCLSID"
+        }
+    ],
+    "AVIFileOpenW": [
+        {
+            "name": "ppfile",
+            "type": "PAVIFILE"
+        },
+        {
+            "name": "szFile",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "uMode",
+            "type": "UINT"
+        },
+        {
+            "name": "lpHandler",
+            "type": "LPCLSID"
+        }
+    ],
+    "AVIFileInfoW": [
+        {
+            "name": "pfile",
+            "type": "PAVIFILE"
+        },
+        {
+            "name": "pfi",
+            "type": "LPAVIFILEINFOW"
+        },
+        {
+            "name": "lSize",
+            "type": "LONG"
+        }
+    ],
+    "AVIFileInfoA": [
+        {
+            "name": "pfile",
+            "type": "PAVIFILE"
+        },
+        {
+            "name": "pfi",
+            "type": "LPAVIFILEINFOA"
+        },
+        {
+            "name": "lSize",
+            "type": "LONG"
+        }
+    ],
+    "AVIFileGetStream": [
+        {
+            "name": "pfile",
+            "type": "PAVIFILE"
+        },
+        {
+            "name": "ppavi",
+            "type": "PAVISTREAM"
+        },
+        {
+            "name": "fccType",
+            "type": "DWORD"
+        },
+        {
+            "name": "lParam",
+            "type": "LONG"
+        }
+    ],
+    "AVIFileCreateStreamW": [
+        {
+            "name": "pfile",
+            "type": "PAVIFILE"
+        },
+        {
+            "name": "ppavi",
+            "type": "PAVISTREAM"
+        },
+        {
+            "name": "psi",
+            "type": "AVISTREAMINFOW"
+        }
+    ],
+    "AVIFileCreateStreamA": [
+        {
+            "name": "pfile",
+            "type": "PAVIFILE"
+        },
+        {
+            "name": "ppavi",
+            "type": "PAVISTREAM"
+        },
+        {
+            "name": "psi",
+            "type": "AVISTREAMINFOA"
+        }
+    ],
+    "AVIFileWriteData": [
+        {
+            "name": "pfile",
+            "type": "PAVIFILE"
+        },
+        {
+            "name": "ckid",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpData",
+            "type": "LPVOID"
+        },
+        {
+            "name": "cbData",
+            "type": "LONG"
+        }
+    ],
+    "AVIFileReadData": [
+        {
+            "name": "pfile",
+            "type": "PAVIFILE"
+        },
+        {
+            "name": "ckid",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpData",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpcbData",
+            "type": "LONG"
+        }
+    ],
+    "AVIFileEndRecord": [
+        {
+            "name": "pfile",
+            "type": "PAVIFILE"
+        }
+    ],
+    "AVIStreamAddRef": [
+        {
+            "name": "pavi",
+            "type": "PAVISTREAM"
+        }
+    ],
+    "AVIStreamRelease": [
+        {
+            "name": "pavi",
+            "type": "PAVISTREAM"
+        }
+    ],
+    "AVIStreamInfoW": [
+        {
+            "name": "pavi",
+            "type": "PAVISTREAM"
+        },
+        {
+            "name": "psi",
+            "type": "LPAVISTREAMINFOW"
+        },
+        {
+            "name": "lSize",
+            "type": "LONG"
+        }
+    ],
+    "AVIStreamInfoA": [
+        {
+            "name": "pavi",
+            "type": "PAVISTREAM"
+        },
+        {
+            "name": "psi",
+            "type": "LPAVISTREAMINFOA"
+        },
+        {
+            "name": "lSize",
+            "type": "LONG"
+        }
+    ],
+    "AVIStreamFindSample": [
+        {
+            "name": "pavi",
+            "type": "PAVISTREAM"
+        },
+        {
+            "name": "lPos",
+            "type": "LONG"
+        },
+        {
+            "name": "lFlags",
+            "type": "LONG"
+        }
+    ],
+    "AVIStreamReadFormat": [
+        {
+            "name": "pavi",
+            "type": "PAVISTREAM"
+        },
+        {
+            "name": "lPos",
+            "type": "LONG"
+        },
+        {
+            "name": "lpFormat",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpcbFormat",
+            "type": "LONG"
+        }
+    ],
+    "AVIStreamSetFormat": [
+        {
+            "name": "pavi",
+            "type": "PAVISTREAM"
+        },
+        {
+            "name": "lPos",
+            "type": "LONG"
+        },
+        {
+            "name": "lpFormat",
+            "type": "LPVOID"
+        },
+        {
+            "name": "cbFormat",
+            "type": "LONG"
+        }
+    ],
+    "AVIStreamReadData": [
+        {
+            "name": "pavi",
+            "type": "PAVISTREAM"
+        },
+        {
+            "name": "fcc",
+            "type": "DWORD"
+        },
+        {
+            "name": "lp",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpcb",
+            "type": "LONG"
+        }
+    ],
+    "AVIStreamWriteData": [
+        {
+            "name": "pavi",
+            "type": "PAVISTREAM"
+        },
+        {
+            "name": "fcc",
+            "type": "DWORD"
+        },
+        {
+            "name": "lp",
+            "type": "LPVOID"
+        },
+        {
+            "name": "cb",
+            "type": "LONG"
+        }
+    ],
+    "AVIStreamRead": [
+        {
+            "name": "pavi",
+            "type": "PAVISTREAM"
+        },
+        {
+            "name": "lStart",
+            "type": "LONG"
+        },
+        {
+            "name": "lSamples",
+            "type": "LONG"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "cbBuffer",
+            "type": "LONG"
+        },
+        {
+            "name": "plBytes",
+            "type": "LONG"
+        },
+        {
+            "name": "plSamples",
+            "type": "LONG"
+        }
+    ],
+    "AVIStreamWrite": [
+        {
+            "name": "pavi",
+            "type": "PAVISTREAM"
+        },
+        {
+            "name": "lStart",
+            "type": "LONG"
+        },
+        {
+            "name": "lSamples",
+            "type": "LONG"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "cbBuffer",
+            "type": "LONG"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "plSampWritten",
+            "type": "LONG"
+        },
+        {
+            "name": "plBytesWritten",
+            "type": "LONG"
+        }
+    ],
+    "AVIStreamStart": [
+        {
+            "name": "pavi",
+            "type": "PAVISTREAM"
+        }
+    ],
+    "AVIStreamLength": [
+        {
+            "name": "pavi",
+            "type": "PAVISTREAM"
+        }
+    ],
+    "AVIStreamTimeToSample": [
+        {
+            "name": "pavi",
+            "type": "PAVISTREAM"
+        },
+        {
+            "name": "lTime",
+            "type": "LONG"
+        }
+    ],
+    "AVIStreamSampleToTime": [
+        {
+            "name": "pavi",
+            "type": "PAVISTREAM"
+        },
+        {
+            "name": "lSample",
+            "type": "LONG"
+        }
+    ],
+    "AVIStreamBeginStreaming": [
+        {
+            "name": "pavi",
+            "type": "PAVISTREAM"
+        },
+        {
+            "name": "lStart",
+            "type": "LONG"
+        },
+        {
+            "name": "lEnd",
+            "type": "LONG"
+        },
+        {
+            "name": "lRate",
+            "type": "LONG"
+        }
+    ],
+    "AVIStreamEndStreaming": [
+        {
+            "name": "pavi",
+            "type": "PAVISTREAM"
+        }
+    ],
+    "AVIStreamGetFrameOpen": [
+        {
+            "name": "pavi",
+            "type": "PAVISTREAM"
+        },
+        {
+            "name": "lpbiWanted",
+            "type": "LPBITMAPINFOHEADER"
+        }
+    ],
+    "AVIStreamGetFrame": [
+        {
+            "name": "pg",
+            "type": "PGETFRAME"
+        },
+        {
+            "name": "lPos",
+            "type": "LONG"
+        }
+    ],
+    "AVIStreamGetFrameClose": [
+        {
+            "name": "pg",
+            "type": "PGETFRAME"
+        }
+    ],
+    "AVIStreamOpenFromFileA": [
+        {
+            "name": "ppavi",
+            "type": "PAVISTREAM"
+        },
+        {
+            "name": "szFile",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "fccType",
+            "type": "DWORD"
+        },
+        {
+            "name": "lParam",
+            "type": "LONG"
+        },
+        {
+            "name": "mode",
+            "type": "UINT"
+        },
+        {
+            "name": "pclsidHandler",
+            "type": "CLSID"
+        }
+    ],
+    "AVIStreamOpenFromFileW": [
+        {
+            "name": "ppavi",
+            "type": "PAVISTREAM"
+        },
+        {
+            "name": "szFile",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "fccType",
+            "type": "DWORD"
+        },
+        {
+            "name": "lParam",
+            "type": "LONG"
+        },
+        {
+            "name": "mode",
+            "type": "UINT"
+        },
+        {
+            "name": "pclsidHandler",
+            "type": "CLSID"
+        }
+    ],
+    "AVIStreamCreate": [
+        {
+            "name": "ppavi",
+            "type": "PAVISTREAM"
+        },
+        {
+            "name": "lParam1",
+            "type": "LONG"
+        },
+        {
+            "name": "lParam2",
+            "type": "LONG"
+        },
+        {
+            "name": "pclsidHandler",
+            "type": "CLSID"
+        }
+    ],
+    "AVIMakeCompressedStream": [
+        {
+            "name": "ppsCompressed",
+            "type": "PAVISTREAM"
+        },
+        {
+            "name": "ppsSource",
+            "type": "PAVISTREAM"
+        },
+        {
+            "name": "lpOptions",
+            "type": "AVICOMPRESSOPTIONS"
+        },
+        {
+            "name": "pclsidHandler",
+            "type": "CLSID"
+        }
+    ],
+    "AVISaveA": [
+        {
+            "name": "szFile",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pclsidHandler",
+            "type": "CLSID"
+        },
+        {
+            "name": "lpfnCallback",
+            "type": "AVISAVECALLBACK"
+        },
+        {
+            "name": "nStreams",
+            "type": "int"
+        },
+        {
+            "name": "pfile",
+            "type": "PAVISTREAM"
+        },
+        {
+            "name": "lpOptions",
+            "type": "LPAVICOMPRESSOPTIONS"
+        }
+    ],
+    "AVISaveVA": [
+        {
+            "name": "szFile",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pclsidHandler",
+            "type": "CLSID"
+        },
+        {
+            "name": "lpfnCallback",
+            "type": "AVISAVECALLBACK"
+        },
+        {
+            "name": "nStreams",
+            "type": "int"
+        },
+        {
+            "name": "ppavi",
+            "type": "PAVISTREAM"
+        },
+        {
+            "name": "plpOptions",
+            "type": "LPAVICOMPRESSOPTIONS"
+        }
+    ],
+    "AVISaveW": [
+        {
+            "name": "szFile",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pclsidHandler",
+            "type": "CLSID"
+        },
+        {
+            "name": "lpfnCallback",
+            "type": "AVISAVECALLBACK"
+        },
+        {
+            "name": "nStreams",
+            "type": "int"
+        },
+        {
+            "name": "pfile",
+            "type": "PAVISTREAM"
+        },
+        {
+            "name": "lpOptions",
+            "type": "LPAVICOMPRESSOPTIONS"
+        }
+    ],
+    "AVISaveVW": [
+        {
+            "name": "szFile",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pclsidHandler",
+            "type": "CLSID"
+        },
+        {
+            "name": "lpfnCallback",
+            "type": "AVISAVECALLBACK"
+        },
+        {
+            "name": "nStreams",
+            "type": "int"
+        },
+        {
+            "name": "ppavi",
+            "type": "PAVISTREAM"
+        },
+        {
+            "name": "plpOptions",
+            "type": "LPAVICOMPRESSOPTIONS"
+        }
+    ],
+    "AVISaveOptions": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "uiFlags",
+            "type": "UINT"
+        },
+        {
+            "name": "nStreams",
+            "type": "int"
+        },
+        {
+            "name": "ppavi",
+            "type": "PAVISTREAM"
+        },
+        {
+            "name": "plpOptions",
+            "type": "LPAVICOMPRESSOPTIONS"
+        }
+    ],
+    "AVISaveOptionsFree": [
+        {
+            "name": "nStreams",
+            "type": "int"
+        },
+        {
+            "name": "plpOptions",
+            "type": "LPAVICOMPRESSOPTIONS"
+        }
+    ],
+    "AVIBuildFilterW": [
+        {
+            "name": "lpszFilter",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cbFilter",
+            "type": "LONG"
+        },
+        {
+            "name": "fSaving",
+            "type": "BOOL"
+        }
+    ],
+    "AVIBuildFilterA": [
+        {
+            "name": "lpszFilter",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cbFilter",
+            "type": "LONG"
+        },
+        {
+            "name": "fSaving",
+            "type": "BOOL"
+        }
+    ],
+    "AVIMakeFileFromStreams": [
+        {
+            "name": "ppfile",
+            "type": "PAVIFILE"
+        },
+        {
+            "name": "nStreams",
+            "type": "int"
+        },
+        {
+            "name": "papStreams",
+            "type": "PAVISTREAM"
+        }
+    ],
+    "AVIMakeStreamFromClipboard": [
+        {
+            "name": "cfFormat",
+            "type": "UINT"
+        },
+        {
+            "name": "hGlobal",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ppstream",
+            "type": "PAVISTREAM"
+        }
+    ],
+    "AVIPutFileOnClipboard": [
+        {
+            "name": "pf",
+            "type": "PAVIFILE"
+        }
+    ],
+    "AVIGetFromClipboard": [
+        {
+            "name": "lppf",
+            "type": "PAVIFILE"
+        }
+    ],
+    "AVIClearClipboard": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "CreateEditableStream": [
+        {
+            "name": "ppsEditable",
+            "type": "PAVISTREAM"
+        },
+        {
+            "name": "psSource",
+            "type": "PAVISTREAM"
+        }
+    ],
+    "EditStreamCut": [
+        {
+            "name": "pavi",
+            "type": "PAVISTREAM"
+        },
+        {
+            "name": "plStart",
+            "type": "LONG"
+        },
+        {
+            "name": "plLength",
+            "type": "LONG"
+        },
+        {
+            "name": "ppResult",
+            "type": "PAVISTREAM"
+        }
+    ],
+    "EditStreamCopy": [
+        {
+            "name": "pavi",
+            "type": "PAVISTREAM"
+        },
+        {
+            "name": "plStart",
+            "type": "LONG"
+        },
+        {
+            "name": "plLength",
+            "type": "LONG"
+        },
+        {
+            "name": "ppResult",
+            "type": "PAVISTREAM"
+        }
+    ],
+    "EditStreamPaste": [
+        {
+            "name": "pavi",
+            "type": "PAVISTREAM"
+        },
+        {
+            "name": "plPos",
+            "type": "LONG"
+        },
+        {
+            "name": "plLength",
+            "type": "LONG"
+        },
+        {
+            "name": "pstream",
+            "type": "PAVISTREAM"
+        },
+        {
+            "name": "lStart",
+            "type": "LONG"
+        },
+        {
+            "name": "lEnd",
+            "type": "LONG"
+        }
+    ],
+    "EditStreamClone": [
+        {
+            "name": "pavi",
+            "type": "PAVISTREAM"
+        },
+        {
+            "name": "ppResult",
+            "type": "PAVISTREAM"
+        }
+    ],
+    "EditStreamSetNameA": [
+        {
+            "name": "pavi",
+            "type": "PAVISTREAM"
+        },
+        {
+            "name": "lpszName",
+            "type": "LPCSTR"
+        }
+    ],
+    "EditStreamSetNameW": [
+        {
+            "name": "pavi",
+            "type": "PAVISTREAM"
+        },
+        {
+            "name": "lpszName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "EditStreamSetInfoW": [
+        {
+            "name": "pavi",
+            "type": "PAVISTREAM"
+        },
+        {
+            "name": "lpInfo",
+            "type": "LPAVISTREAMINFOW"
+        },
+        {
+            "name": "cbInfo",
+            "type": "LONG"
+        }
+    ],
+    "EditStreamSetInfoA": [
+        {
+            "name": "pavi",
+            "type": "PAVISTREAM"
+        },
+        {
+            "name": "lpInfo",
+            "type": "LPAVISTREAMINFOA"
+        },
+        {
+            "name": "cbInfo",
+            "type": "LONG"
+        }
+    ]
+}

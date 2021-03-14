@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org)
+#
 from Registry import Registry
 
 # ERRORS CODE
@@ -10,20 +10,25 @@ ERROR_SUCCESS = 0x0
 ERROR_INVALID_FUNCTION = 0x1
 ERROR_FILE_NOT_FOUND = 0x2
 ERROR_PATH_NOT_FOUND = 0x3
-ERROR_INVALID_PARAMETER = 0x57
-ERROR_OLD_WIN_VERSION = 0X47E
-ERROR_INSUFFICIENT_BUFFER = 0x7A
-ERROR_MORE_DATA = 0xEA
+ERROR_ACCESS_DENIED = 0x5
 ERROR_INVALID_HANDLE = 0x6
+ERROR_INVALID_PARAMETER = 0x57
+ERROR_INSUFFICIENT_BUFFER = 0x7A
+ERROR_ALREADY_EXISTS = 0xB7
+ERROR_MORE_DATA = 0xEA
+ERROR_NOT_OWNER = 0x120
+ERROR_OLD_WIN_VERSION = 0X47E
 # ...
 
 # https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-erref/596a1078-e883-4972-9bbc-49e60bebca55
 STATUS_SUCCESS = 0
+STATUS_UNSUCCESSFUL = 0xC0000001
 # ...
 STATUS_INFO_LENGTH_MISMATCH = 0xC0000004
 STATUS_INVALID_PARAMETER = 0xC000000D
 STATUS_INVALID_HANDLE = 0xC0000008
 STATUS_PORT_NOT_SET = 0xC0000353
+STATUS_NO_YIELD_PERFORMED = 0x40000024
 # ...
 
 INVALID_HANDLE_VALUE = -1
@@ -134,7 +139,7 @@ HEAP_CLASS_6 = 0x00006000
 HEAP_CLASS_7 = 0x00007000
 HEAP_CLASS_8 = 0x00008000
 HEAP_CLASS_MASK = 0x0000F000
-HEAP_FLAG_PAGE_ALLOCS = 0x01000000
+HEAP_FLAG_ALLOCS = 0x01000000
 HEAP_PROTECTION_ENABLED = 0x02000000
 HEAP_BREAK_WHEN_OUT_OF_VM = 0x04000000
 HEAP_NO_ALIGNMENT = 0x08000000
@@ -376,6 +381,18 @@ LOCALE = {
     0x409: LOCALE_EN_US,
     "default": LOCALE_EN_US
 }
+# SYSTEM_INFORMATION_CLASS
+# Defined in Winternl.h
+# Used by NTQuerySystemInformation and ZwQuerySystemInformation
+SystemBasicInformation = 0
+SystemPerformanceInformation = 2
+SystemTimeOfDayInformation = 3
+SystemProcessInformation = 5
+SystemProcessorPerformanceInformation = 8
+SystemInterruptInformation = 23
+SystemExceptionInformation = 33
+SystemRegistryQuotaInformation = 37
+SystemLookasideInformation = 45
 # Code Page Identifiers
 # https://docs.microsoft.com/en-us/windows/win32/intl/code-page-identifiers
 OEM_US = 437
@@ -459,6 +476,26 @@ CRYPT_STRING_BINARY = 2
 CRYPT_STRING_BASE64REQUESTHEADER = 3
 # ...
 
+# File Attribtues Constantsc
+# https://docs.microsoft.com/en-us/windows/win32/fileio/file-attribute-constants
+FILE_ATTRIBUTE_ARCHIVE = 0x0020
+FILE_ATTRIBUTE_COMPRESSED = 0x0800
+FILE_ATTRIBUTE_DEVICE = 0x0040
+FILE_ATTRIBUTE_DIRECTORY = 0x0010
+FILE_ATTRIBUTE_ENCRYPTED = 0x4000
+FILE_ATTRIBUTE_HIDDEN = 0x0002
+FILE_ATTRIBUTE_INTEGRITY_STREAM = 0x8000
+FILE_ATTRIBUTE_NORMAL = 0x0080
+FILE_ATTRIBUTE_NOT_CONTENT_INDEXED = 0x2000
+FILE_ATTRIBUTE_NO_SCRUB_DATA = 0x20000
+FILE_ATTRIBUTE_OFFLINE = 0x1000
+FILE_ATTRIBUTE_READONLY = 0x0001
+FILE_ATTRIBUTE_RECALL_ON_DATA_ACCESS = 0x400000
+FILE_ATTRIBUTE_RECALL_ON_OPEN = 0x40000
+FILE_ATTRIBUTE_REPARSE_POINT = 0x400
+FILE_ATTRIBUTE_SPARSE_FILE = 0x0004
+FILE_ATTRIBUTE_TEMPORARY = 0x0100
+FILE_ATTRIBUTE_VIRTUAL = 0x10000
 
 # ShellApi Constants
 # https://docs.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-shgetfileinfow
@@ -573,6 +610,7 @@ PF_XSAVE_ENABLED = 0x17
 # https://docs.microsoft.com/en-us/windows/win32/procthread/zwqueryinformationprocess
 ProcessBasicInformation = 0
 ProcessDebugPort = 7
+ProcessExecuteFlags = 0x22
 ProcessWow64Information = 26
 ProcessImageFileName = 27
 ProcessBreakOnTermination = 29
@@ -621,3 +659,29 @@ LOAD_LIBRARY_SEARCH_USER_DIRS = 0x00000400
 CSTR_LESS_THAN = 1
 CSTR_EQUAL = 2
 CSTR_GREATER_THAN = 3
+
+# https://docs.microsoft.com/it-it/windows/win32/memory/memory-protection-constants
+PAGE_EXECUTE = 0x10
+PAGE_EXECUTE_READ = 0x20
+PAGE_EXECUTE_READWRITE = 0x40
+PAGE_EXECUTE_WRITECOPY = 0x80
+PAGE_NOACCESS = 0x1
+PAGE_READONLY = 0x2
+PAGE_READWRITE = 0x4
+PAGE_WRITECOPY = 0x8
+PAGE_TARGETS_INVALID = 0x40000000
+PAGE_TARGETS_NO_UPDATE = 0x40000000
+PAGE_GUARD = 0x100
+PAGE_NOCACHE = 0x200
+PAGE_WRITECOMBINE = 0x400
+
+
+# https://docs.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntqueryobject
+# https://gist.github.com/soxfmr/16c495d6e4ad99e9e46f5bfd558d152f
+ObjectTypeInformation = 0x2
+ObjectBasicInformation = 0x1
+ObjectAllTypesInformation = 0x3
+
+# https://docs.microsoft.com/en-us/windows/win32/api/handleapi/nf-handleapi-sethandleinformation
+HANDLE_FLAG_INHERIT = 0x1
+HANDLE_FLAG_PROTECT_FROM_CLOSE = 0x2

@@ -1,0 +1,28 @@
+{
+    "InitializeXamlDiagnosticsEx": [
+        {
+            "name": "endPointName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pid",
+            "type": "DWORD"
+        },
+        {
+            "name": "wszDllXamlDiagnostics",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "wszTAPDllName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "tapClsid",
+            "type": "CLSID"
+        },
+        {
+            "name": "wszInitializationData",
+            "type": "LPCWSTR"
+        }
+    ]
+}

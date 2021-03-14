@@ -1,0 +1,54 @@
+{
+    "RasSecurityDialogComplete": [
+        {
+            "name": "pSecMsg",
+            "type": "SECURITY_MESSAGE"
+        }
+    ],
+    "RasSecurityDialogSend": [
+        {
+            "name": "hPort",
+            "type": "HPORT"
+        },
+        {
+            "name": "pBuffer",
+            "type": "PBYTE"
+        },
+        {
+            "name": "BufferLength",
+            "type": "WORD"
+        }
+    ],
+    "RasSecurityDialogReceive": [
+        {
+            "name": "hPort",
+            "type": "HPORT"
+        },
+        {
+            "name": "pBuffer",
+            "type": "PBYTE"
+        },
+        {
+            "name": "pBufferLength",
+            "type": "PWORD"
+        },
+        {
+            "name": "Timeout",
+            "type": "DWORD"
+        },
+        {
+            "name": "hEvent",
+            "type": "HANDLE"
+        }
+    ],
+    "RasSecurityDialogGetInfo": [
+        {
+            "name": "hPort",
+            "type": "HPORT"
+        },
+        {
+            "name": "pBuffer",
+            "type": "RAS_SECURITY_INFO"
+        }
+    ]
+}

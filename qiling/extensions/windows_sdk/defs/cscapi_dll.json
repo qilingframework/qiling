@@ -1,0 +1,36 @@
+{
+    "OfflineFilesEnable": [
+        {
+            "name": "bEnable",
+            "type": "BOOL"
+        },
+        {
+            "name": "pbRebootRequired",
+            "type": "BOOL"
+        }
+    ],
+    "OfflineFilesQueryStatus": [
+        {
+            "name": "pbActive",
+            "type": "BOOL"
+        },
+        {
+            "name": "pbEnabled",
+            "type": "BOOL"
+        }
+    ],
+    "OfflineFilesQueryStatusEx": [
+        {
+            "name": "pbActive",
+            "type": "BOOL"
+        },
+        {
+            "name": "pbEnabled",
+            "type": "BOOL"
+        },
+        {
+            "name": "pbAvailable",
+            "type": "BOOL"
+        }
+    ]
+}

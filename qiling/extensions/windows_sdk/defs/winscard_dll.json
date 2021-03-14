@@ -1,0 +1,1076 @@
+{
+    "SCardEstablishContext": [
+        {
+            "name": "dwScope",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvReserved1",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "pvReserved2",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "phContext",
+            "type": "LPSCARDCONTEXT"
+        }
+    ],
+    "SCardReleaseContext": [
+        {
+            "name": "hContext",
+            "type": "SCARDCONTEXT"
+        }
+    ],
+    "SCardIsValidContext": [
+        {
+            "name": "hContext",
+            "type": "SCARDCONTEXT"
+        }
+    ],
+    "SCardListReaderGroupsA": [
+        {
+            "name": "hContext",
+            "type": "SCARDCONTEXT"
+        },
+        {
+            "name": "mszGroups",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchGroups",
+            "type": "LPDWORD"
+        }
+    ],
+    "SCardListReaderGroupsW": [
+        {
+            "name": "hContext",
+            "type": "SCARDCONTEXT"
+        },
+        {
+            "name": "mszGroups",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchGroups",
+            "type": "LPDWORD"
+        }
+    ],
+    "SCardListReadersA": [
+        {
+            "name": "hContext",
+            "type": "SCARDCONTEXT"
+        },
+        {
+            "name": "mszGroups",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "mszReaders",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchReaders",
+            "type": "LPDWORD"
+        }
+    ],
+    "SCardListReadersW": [
+        {
+            "name": "hContext",
+            "type": "SCARDCONTEXT"
+        },
+        {
+            "name": "mszGroups",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "mszReaders",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchReaders",
+            "type": "LPDWORD"
+        }
+    ],
+    "SCardListCardsA": [
+        {
+            "name": "hContext",
+            "type": "SCARDCONTEXT"
+        },
+        {
+            "name": "pbAtr",
+            "type": "LPCBYTE"
+        },
+        {
+            "name": "rgquidInterfaces",
+            "type": "LPCGUID"
+        },
+        {
+            "name": "cguidInterfaceCount",
+            "type": "DWORD"
+        },
+        {
+            "name": "mszCards",
+            "type": "CHAR"
+        },
+        {
+            "name": "pcchCards",
+            "type": "LPDWORD"
+        }
+    ],
+    "SCardListCardsW": [
+        {
+            "name": "hContext",
+            "type": "SCARDCONTEXT"
+        },
+        {
+            "name": "pbAtr",
+            "type": "LPCBYTE"
+        },
+        {
+            "name": "rgquidInterfaces",
+            "type": "LPCGUID"
+        },
+        {
+            "name": "cguidInterfaceCount",
+            "type": "DWORD"
+        },
+        {
+            "name": "mszCards",
+            "type": "WCHAR"
+        },
+        {
+            "name": "pcchCards",
+            "type": "LPDWORD"
+        }
+    ],
+    "SCardListInterfacesA": [
+        {
+            "name": "hContext",
+            "type": "SCARDCONTEXT"
+        },
+        {
+            "name": "szCard",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pguidInterfaces",
+            "type": "LPGUID"
+        },
+        {
+            "name": "pcguidInterfaces",
+            "type": "LPDWORD"
+        }
+    ],
+    "SCardListInterfacesW": [
+        {
+            "name": "hContext",
+            "type": "SCARDCONTEXT"
+        },
+        {
+            "name": "szCard",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pguidInterfaces",
+            "type": "LPGUID"
+        },
+        {
+            "name": "pcguidInterfaces",
+            "type": "LPDWORD"
+        }
+    ],
+    "SCardGetProviderIdA": [
+        {
+            "name": "hContext",
+            "type": "SCARDCONTEXT"
+        },
+        {
+            "name": "szCard",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pguidProviderId",
+            "type": "LPGUID"
+        }
+    ],
+    "SCardGetProviderIdW": [
+        {
+            "name": "hContext",
+            "type": "SCARDCONTEXT"
+        },
+        {
+            "name": "szCard",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pguidProviderId",
+            "type": "LPGUID"
+        }
+    ],
+    "SCardGetCardTypeProviderNameA": [
+        {
+            "name": "hContext",
+            "type": "SCARDCONTEXT"
+        },
+        {
+            "name": "szCardName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwProviderId",
+            "type": "DWORD"
+        },
+        {
+            "name": "szProvider",
+            "type": "CHAR"
+        },
+        {
+            "name": "pcchProvider",
+            "type": "LPDWORD"
+        }
+    ],
+    "SCardGetCardTypeProviderNameW": [
+        {
+            "name": "hContext",
+            "type": "SCARDCONTEXT"
+        },
+        {
+            "name": "szCardName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwProviderId",
+            "type": "DWORD"
+        },
+        {
+            "name": "szProvider",
+            "type": "WCHAR"
+        },
+        {
+            "name": "pcchProvider",
+            "type": "LPDWORD"
+        }
+    ],
+    "SCardIntroduceReaderGroupA": [
+        {
+            "name": "hContext",
+            "type": "SCARDCONTEXT"
+        },
+        {
+            "name": "szGroupName",
+            "type": "LPCSTR"
+        }
+    ],
+    "SCardIntroduceReaderGroupW": [
+        {
+            "name": "hContext",
+            "type": "SCARDCONTEXT"
+        },
+        {
+            "name": "szGroupName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "SCardForgetReaderGroupA": [
+        {
+            "name": "hContext",
+            "type": "SCARDCONTEXT"
+        },
+        {
+            "name": "szGroupName",
+            "type": "LPCSTR"
+        }
+    ],
+    "SCardForgetReaderGroupW": [
+        {
+            "name": "hContext",
+            "type": "SCARDCONTEXT"
+        },
+        {
+            "name": "szGroupName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "SCardIntroduceReaderA": [
+        {
+            "name": "hContext",
+            "type": "SCARDCONTEXT"
+        },
+        {
+            "name": "szReaderName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szDeviceName",
+            "type": "LPCSTR"
+        }
+    ],
+    "SCardIntroduceReaderW": [
+        {
+            "name": "hContext",
+            "type": "SCARDCONTEXT"
+        },
+        {
+            "name": "szReaderName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szDeviceName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "SCardForgetReaderA": [
+        {
+            "name": "hContext",
+            "type": "SCARDCONTEXT"
+        },
+        {
+            "name": "szReaderName",
+            "type": "LPCSTR"
+        }
+    ],
+    "SCardForgetReaderW": [
+        {
+            "name": "hContext",
+            "type": "SCARDCONTEXT"
+        },
+        {
+            "name": "szReaderName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "SCardAddReaderToGroupA": [
+        {
+            "name": "hContext",
+            "type": "SCARDCONTEXT"
+        },
+        {
+            "name": "szReaderName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szGroupName",
+            "type": "LPCSTR"
+        }
+    ],
+    "SCardAddReaderToGroupW": [
+        {
+            "name": "hContext",
+            "type": "SCARDCONTEXT"
+        },
+        {
+            "name": "szReaderName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szGroupName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "SCardRemoveReaderFromGroupA": [
+        {
+            "name": "hContext",
+            "type": "SCARDCONTEXT"
+        },
+        {
+            "name": "szReaderName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szGroupName",
+            "type": "LPCSTR"
+        }
+    ],
+    "SCardRemoveReaderFromGroupW": [
+        {
+            "name": "hContext",
+            "type": "SCARDCONTEXT"
+        },
+        {
+            "name": "szReaderName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szGroupName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "SCardIntroduceCardTypeA": [
+        {
+            "name": "hContext",
+            "type": "SCARDCONTEXT"
+        },
+        {
+            "name": "szCardName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pguidPrimaryProvider",
+            "type": "LPCGUID"
+        },
+        {
+            "name": "rgguidInterfaces",
+            "type": "LPCGUID"
+        },
+        {
+            "name": "dwInterfaceCount",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbAtr",
+            "type": "LPCBYTE"
+        },
+        {
+            "name": "pbAtrMask",
+            "type": "LPCBYTE"
+        },
+        {
+            "name": "cbAtrLen",
+            "type": "DWORD"
+        }
+    ],
+    "SCardIntroduceCardTypeW": [
+        {
+            "name": "hContext",
+            "type": "SCARDCONTEXT"
+        },
+        {
+            "name": "szCardName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pguidPrimaryProvider",
+            "type": "LPCGUID"
+        },
+        {
+            "name": "rgguidInterfaces",
+            "type": "LPCGUID"
+        },
+        {
+            "name": "dwInterfaceCount",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbAtr",
+            "type": "LPCBYTE"
+        },
+        {
+            "name": "pbAtrMask",
+            "type": "LPCBYTE"
+        },
+        {
+            "name": "cbAtrLen",
+            "type": "DWORD"
+        }
+    ],
+    "SCardSetCardTypeProviderNameA": [
+        {
+            "name": "hContext",
+            "type": "SCARDCONTEXT"
+        },
+        {
+            "name": "szCardName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwProviderId",
+            "type": "DWORD"
+        },
+        {
+            "name": "szProvider",
+            "type": "LPCSTR"
+        }
+    ],
+    "SCardSetCardTypeProviderNameW": [
+        {
+            "name": "hContext",
+            "type": "SCARDCONTEXT"
+        },
+        {
+            "name": "szCardName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwProviderId",
+            "type": "DWORD"
+        },
+        {
+            "name": "szProvider",
+            "type": "LPCWSTR"
+        }
+    ],
+    "SCardForgetCardTypeA": [
+        {
+            "name": "hContext",
+            "type": "SCARDCONTEXT"
+        },
+        {
+            "name": "szCardName",
+            "type": "LPCSTR"
+        }
+    ],
+    "SCardForgetCardTypeW": [
+        {
+            "name": "hContext",
+            "type": "SCARDCONTEXT"
+        },
+        {
+            "name": "szCardName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "SCardFreeMemory": [
+        {
+            "name": "hContext",
+            "type": "SCARDCONTEXT"
+        },
+        {
+            "name": "pvMem",
+            "type": "LPCVOID"
+        }
+    ],
+    "SCardAccessStartedEvent": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "SCardReleaseStartedEvent": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "SCardLocateCardsA": [
+        {
+            "name": "hContext",
+            "type": "SCARDCONTEXT"
+        },
+        {
+            "name": "mszCards",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "rgReaderStates",
+            "type": "LPSCARD_READERSTATEA"
+        },
+        {
+            "name": "cReaders",
+            "type": "DWORD"
+        }
+    ],
+    "SCardLocateCardsW": [
+        {
+            "name": "hContext",
+            "type": "SCARDCONTEXT"
+        },
+        {
+            "name": "mszCards",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "rgReaderStates",
+            "type": "LPSCARD_READERSTATEW"
+        },
+        {
+            "name": "cReaders",
+            "type": "DWORD"
+        }
+    ],
+    "SCardLocateCardsByATRA": [
+        {
+            "name": "hContext",
+            "type": "SCARDCONTEXT"
+        },
+        {
+            "name": "rgAtrMasks",
+            "type": "LPSCARD_ATRMASK"
+        },
+        {
+            "name": "cAtrs",
+            "type": "DWORD"
+        },
+        {
+            "name": "rgReaderStates",
+            "type": "LPSCARD_READERSTATEA"
+        },
+        {
+            "name": "cReaders",
+            "type": "DWORD"
+        }
+    ],
+    "SCardLocateCardsByATRW": [
+        {
+            "name": "hContext",
+            "type": "SCARDCONTEXT"
+        },
+        {
+            "name": "rgAtrMasks",
+            "type": "LPSCARD_ATRMASK"
+        },
+        {
+            "name": "cAtrs",
+            "type": "DWORD"
+        },
+        {
+            "name": "rgReaderStates",
+            "type": "LPSCARD_READERSTATEW"
+        },
+        {
+            "name": "cReaders",
+            "type": "DWORD"
+        }
+    ],
+    "SCardGetStatusChangeA": [
+        {
+            "name": "hContext",
+            "type": "SCARDCONTEXT"
+        },
+        {
+            "name": "dwTimeout",
+            "type": "DWORD"
+        },
+        {
+            "name": "rgReaderStates",
+            "type": "LPSCARD_READERSTATEA"
+        },
+        {
+            "name": "cReaders",
+            "type": "DWORD"
+        }
+    ],
+    "SCardGetStatusChangeW": [
+        {
+            "name": "hContext",
+            "type": "SCARDCONTEXT"
+        },
+        {
+            "name": "dwTimeout",
+            "type": "DWORD"
+        },
+        {
+            "name": "rgReaderStates",
+            "type": "LPSCARD_READERSTATEW"
+        },
+        {
+            "name": "cReaders",
+            "type": "DWORD"
+        }
+    ],
+    "SCardCancel": [
+        {
+            "name": "hContext",
+            "type": "SCARDCONTEXT"
+        }
+    ],
+    "SCardConnectA": [
+        {
+            "name": "hContext",
+            "type": "SCARDCONTEXT"
+        },
+        {
+            "name": "szReader",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwShareMode",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwPreferredProtocols",
+            "type": "DWORD"
+        },
+        {
+            "name": "phCard",
+            "type": "LPSCARDHANDLE"
+        },
+        {
+            "name": "pdwActiveProtocol",
+            "type": "LPDWORD"
+        }
+    ],
+    "SCardConnectW": [
+        {
+            "name": "hContext",
+            "type": "SCARDCONTEXT"
+        },
+        {
+            "name": "szReader",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwShareMode",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwPreferredProtocols",
+            "type": "DWORD"
+        },
+        {
+            "name": "phCard",
+            "type": "LPSCARDHANDLE"
+        },
+        {
+            "name": "pdwActiveProtocol",
+            "type": "LPDWORD"
+        }
+    ],
+    "SCardReconnect": [
+        {
+            "name": "hCard",
+            "type": "SCARDHANDLE"
+        },
+        {
+            "name": "dwShareMode",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwPreferredProtocols",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwInitialization",
+            "type": "DWORD"
+        },
+        {
+            "name": "pdwActiveProtocol",
+            "type": "LPDWORD"
+        }
+    ],
+    "SCardDisconnect": [
+        {
+            "name": "hCard",
+            "type": "SCARDHANDLE"
+        },
+        {
+            "name": "dwDisposition",
+            "type": "DWORD"
+        }
+    ],
+    "SCardBeginTransaction": [
+        {
+            "name": "hCard",
+            "type": "SCARDHANDLE"
+        }
+    ],
+    "SCardEndTransaction": [
+        {
+            "name": "hCard",
+            "type": "SCARDHANDLE"
+        },
+        {
+            "name": "dwDisposition",
+            "type": "DWORD"
+        }
+    ],
+    "SCardStatusA": [
+        {
+            "name": "hCard",
+            "type": "SCARDHANDLE"
+        },
+        {
+            "name": "mszReaderNames",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchReaderLen",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pdwState",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pdwProtocol",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pbAtr",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "pcbAtrLen",
+            "type": "LPDWORD"
+        }
+    ],
+    "SCardStatusW": [
+        {
+            "name": "hCard",
+            "type": "SCARDHANDLE"
+        },
+        {
+            "name": "mszReaderNames",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchReaderLen",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pdwState",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pdwProtocol",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pbAtr",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "pcbAtrLen",
+            "type": "LPDWORD"
+        }
+    ],
+    "SCardTransmit": [
+        {
+            "name": "hCard",
+            "type": "SCARDHANDLE"
+        },
+        {
+            "name": "pioSendPci",
+            "type": "LPCSCARD_IO_REQUEST"
+        },
+        {
+            "name": "pbSendBuffer",
+            "type": "LPCBYTE"
+        },
+        {
+            "name": "cbSendLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "pioRecvPci",
+            "type": "LPSCARD_IO_REQUEST"
+        },
+        {
+            "name": "pbRecvBuffer",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "pcbRecvLength",
+            "type": "LPDWORD"
+        }
+    ],
+    "SCardGetTransmitCount": [
+        {
+            "name": "hCard",
+            "type": "SCARDHANDLE"
+        },
+        {
+            "name": "pcTransmitCount",
+            "type": "LPDWORD"
+        }
+    ],
+    "SCardControl": [
+        {
+            "name": "hCard",
+            "type": "SCARDHANDLE"
+        },
+        {
+            "name": "dwControlCode",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpInBuffer",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "cbInBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpOutBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "cbOutBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBytesReturned",
+            "type": "LPDWORD"
+        }
+    ],
+    "SCardGetAttrib": [
+        {
+            "name": "hCard",
+            "type": "SCARDHANDLE"
+        },
+        {
+            "name": "dwAttrId",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbAttr",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "pcbAttrLen",
+            "type": "LPDWORD"
+        }
+    ],
+    "SCardSetAttrib": [
+        {
+            "name": "hCard",
+            "type": "SCARDHANDLE"
+        },
+        {
+            "name": "dwAttrId",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbAttr",
+            "type": "LPCBYTE"
+        },
+        {
+            "name": "cbAttrLen",
+            "type": "DWORD"
+        }
+    ],
+    "SCardReadCacheA": [
+        {
+            "name": "hContext",
+            "type": "SCARDCONTEXT"
+        },
+        {
+            "name": "CardIdentifier",
+            "type": "UUID"
+        },
+        {
+            "name": "FreshnessCounter",
+            "type": "DWORD"
+        },
+        {
+            "name": "LookupName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "Data",
+            "type": "PBYTE"
+        },
+        {
+            "name": "DataLen",
+            "type": "DWORD"
+        }
+    ],
+    "SCardReadCacheW": [
+        {
+            "name": "hContext",
+            "type": "SCARDCONTEXT"
+        },
+        {
+            "name": "CardIdentifier",
+            "type": "UUID"
+        },
+        {
+            "name": "FreshnessCounter",
+            "type": "DWORD"
+        },
+        {
+            "name": "LookupName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "Data",
+            "type": "PBYTE"
+        },
+        {
+            "name": "DataLen",
+            "type": "DWORD"
+        }
+    ],
+    "SCardWriteCacheA": [
+        {
+            "name": "hContext",
+            "type": "SCARDCONTEXT"
+        },
+        {
+            "name": "CardIdentifier",
+            "type": "UUID"
+        },
+        {
+            "name": "FreshnessCounter",
+            "type": "DWORD"
+        },
+        {
+            "name": "LookupName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "Data",
+            "type": "PBYTE"
+        },
+        {
+            "name": "DataLen",
+            "type": "DWORD"
+        }
+    ],
+    "SCardWriteCacheW": [
+        {
+            "name": "hContext",
+            "type": "SCARDCONTEXT"
+        },
+        {
+            "name": "CardIdentifier",
+            "type": "UUID"
+        },
+        {
+            "name": "FreshnessCounter",
+            "type": "DWORD"
+        },
+        {
+            "name": "LookupName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "Data",
+            "type": "PBYTE"
+        },
+        {
+            "name": "DataLen",
+            "type": "DWORD"
+        }
+    ],
+    "SCardGetDeviceTypeIdA": [
+        {
+            "name": "hContext",
+            "type": "SCARDCONTEXT"
+        },
+        {
+            "name": "szReaderName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pdwDeviceTypeId",
+            "type": "LPDWORD"
+        }
+    ],
+    "SCardGetDeviceTypeIdW": [
+        {
+            "name": "hContext",
+            "type": "SCARDCONTEXT"
+        },
+        {
+            "name": "szReaderName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pdwDeviceTypeId",
+            "type": "LPDWORD"
+        }
+    ],
+    "SCardAudit": [
+        {
+            "name": "hContext",
+            "type": "SCARDCONTEXT"
+        },
+        {
+            "name": "dwEvent",
+            "type": "DWORD"
+        }
+    ]
+}

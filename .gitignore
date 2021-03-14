@@ -4,7 +4,9 @@
 .idea
 *.pyc
 *.cache
+*.cache2
 .*.swp
+*.raw
 
 # cache and misc
 qiling.egg-info/
@@ -13,16 +15,13 @@ __pycache__/
 build
 dist
 
-# examples 
-examples/**/registry/
-examples/**/dlls/
-examples/**/Windows/
-
 # test and logs
+tests/mac_test_elf.sh
 jexamples/
 logs/
 log/
 test_qlog/
+log_test/
 qlog/
 qlogs/
 test_syscall_*.txt
@@ -35,11 +34,5 @@ test.file
 *.o
 core
 *.perf
-
-# dont keep raw malware
-wannacry.bin
-UselessDisk.bin
-GandCrab.bin
-GandCrab502.bin
-al-khaser.bin
-
+examples/rootfs/x86_windows/Windows/registry
+examples/rootfs/x8664_windows/Windows/registry

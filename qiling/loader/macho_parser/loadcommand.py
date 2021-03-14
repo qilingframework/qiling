@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
+
+from struct import unpack
 
 from .const import *
 from .utils import *
-from struct import unpack
 
 # TODO: We need support more LC command to load more kinds of binary
 

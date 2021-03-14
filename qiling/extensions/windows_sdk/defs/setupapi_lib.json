@@ -1,0 +1,26 @@
+{
+    "SetupGetThreadLogToken": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "SetupWriteTextLog": [
+        {
+            "name": "LogToken",
+            "type": "SP_LOG_TOKEN"
+        },
+        {
+            "name": "Category",
+            "type": "DWORD"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "MessageStr",
+            "type": "PCSTR"
+        }
+    ]
+}

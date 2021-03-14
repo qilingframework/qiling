@@ -1,0 +1,28 @@
+{
+    "MFPCreateMediaPlayer": [
+        {
+            "name": "pwszURL",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "fStartPlayback",
+            "type": "BOOL"
+        },
+        {
+            "name": "creationOptions",
+            "type": "MFP_CREATION_OPTIONS"
+        },
+        {
+            "name": "pCallback",
+            "type": "IMFPMediaPlayerCallback"
+        },
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "ppMediaPlayer",
+            "type": "IMFPMediaPlayer"
+        }
+    ]
+}

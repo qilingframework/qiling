@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
+
 
 from .header import *
 from .loadcommand import *
@@ -10,6 +11,7 @@ from .const import *
 from .utils import *
 from struct import unpack
 from qiling.const import *
+
 
 class MachoParser:
     
@@ -25,7 +27,7 @@ class MachoParser:
         for seg in self.segments:
             # find page zero
             if seg.vm_address == 0 and seg.file_size == 0:
-                self.ql.nprint("[+] PageZero Size: {:X}".format(seg.vm_size))
+                ql.log.info("PageZero Size: {:X}".format(seg.vm_size))
                 self.page_zero_size = seg.vm_size
                 self.header_address = seg.vm_size
 
@@ -35,7 +37,6 @@ class MachoParser:
             return f.read()
 
     def parseFile(self):
-
         if not self.binary_file:
             return 
         
@@ -50,38 +51,36 @@ class MachoParser:
         
 
     def parseHeader(self):
-
         self.magic = self.getMagic(self.binary_file)
         
         if self.magic in MAGIC_64:
-            self.ql.dprint(D_INFO, "[+] Got a 64bit Header ")
+            self.ql.log.debug("Got a 64bit Header ")
             self.header = BinaryHeader(self.binary_file)
 
         #elif self.magic in MAGIC_X86:
         #    # x86
-        #    self.ql.dprint(D_INFO,"[+] Got a x86 Header") 
+        #    ql.log.debug("Got a x86 Header") 
         #    self.header = BinaryHeader(self.binary_file)
 
         elif self.magic in MAGIC_FAT:
             # fat 
-            self.ql.dprint(D_INFO, "[+] Got a fat header")
+            self.ql.log.debug("Got a fat header")
             fat = FatHeader(self.binary_file)
             file_info = fat.getBinary(self.archtype)
             self.binary_file = self.binary_file[file_info.offset : file_info.offset + file_info.size]
             self.header = BinaryHeader(self.binary_file)
         else:
-            self.ql.nprint("[-] unknow header!")
+            self.ql.log.info("unknow header!")
             return False
         
         if not self.header:
-            self.ql.nprint("[-] parse header error")
+            self.ql.log.info("parse header error")
             return False 
 
         return True
 
     def parseLoadCommand(self):
-
-        self.ql.dprint(D_INFO, "[+] Parse LoadCommand")
+        self.ql.log.debug("Parse LoadCommand")
         if not self.header.lc_num or not self.header.lc_size or not self.header.header_size:
             return False
 
@@ -96,14 +95,14 @@ class MachoParser:
             if self.header.lc_size >= 8:
                 lc = LoadCommand(self.lc_raw[offset:])
             else:
-                self.ql.nprint("[-] cmd size overflow")
+                self.ql.log.info("cmd size overflow")
                 return False 
 
             if self.header.lc_size >= offset + lc.cmd_size:
                 complete_cmd = lc.get_complete()
                 pass
             else:
-                self.ql.nprint("[-] cmd size overflow")
+                self.ql.log.info("cmd size overflow")
                 return False
             
             self.commands.append(complete_cmd)
@@ -115,11 +114,19 @@ class MachoParser:
 
     def parseData(self):
         self.segments = []      
+        self.sections = [None]
         for command in self.commands:
             if command.cmd_id == LC_SEGMENT_64:
-                self.segments.append(Segment(command, self.binary_file))
+                tmp = Segment(command, self.binary_file)
+                tmp.sections_index += range(len(self.sections), len(self.sections) + len(tmp.sections))
+                self.segments.append(tmp)
+                for section in tmp.sections:
+                    self.sections.append(section)
             elif command.cmd_id == LC_SEGMENT:
-                self.segments.append(Segment(command, self.binary_file))
+                tmp = Segment(command, self.binary_file)
+                self.segments.append(tmp)
+                for section in tmp.sections:
+                    self.sections.append(section)
             elif command.cmd_id == LC_FUNCTION_STARTS:
                 self.function_starts = FunctionStarts(command, self.binary_file)
             elif command.cmd_id == LC_SYMTAB:

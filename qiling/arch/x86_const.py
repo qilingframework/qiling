@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
 
 from unicorn.x86_const import *
 
@@ -34,7 +34,7 @@ QL_X86_S_PRIV_2 = 0x2
 QL_X86_S_PRIV_1 = 0x1
 QL_X86_S_PRIV_0 = 0x0
 
-QL_X86_GDT_ADDR = 0x3000
+QL_X86_GDT_ADDR = 0x30000
 QL_X86_GDT_LIMIT = 0x1000
 QL_X86_GDT_ENTRY_SIZE = 0x8
 
@@ -43,8 +43,9 @@ FSMSR = 0xC0000100
 GSMSR = 0xC0000101
 
 # WINDOWS SETUP VALUE
-GS_SEGMENT_ADDR = 0x6000
-GS_SEGMENT_SIZE = 0x6000
+# Linux also needs these
+GS_SEGMENT_ADDR = 0x6000000
+GS_SEGMENT_SIZE = (20 << 20)    # 20 MB
 
 FS_SEGMENT_ADDR = 0x6000
 FS_SEGMENT_SIZE = 0x6000
@@ -103,6 +104,38 @@ reg_map_64 = {
     "r14": UC_X86_REG_R14,
     "r15": UC_X86_REG_R15,
     "rip": UC_X86_REG_RIP,
+}
+
+reg_map_seg_base = {
+    "fsbase" : UC_X86_REG_FS_BASE,
+    "gsbase" : UC_X86_REG_GS_BASE
+}
+
+reg_map_r = {
+    "r8b":  UC_X86_REG_R8B,
+    "r9b":  UC_X86_REG_R9B,
+    "r10b": UC_X86_REG_R10B,
+    "r11b": UC_X86_REG_R11B,
+    "r12b": UC_X86_REG_R12B,
+    "r13b": UC_X86_REG_R13B,
+    "r14b": UC_X86_REG_R14B,
+    "r15b": UC_X86_REG_R15B,
+    "r8w":  UC_X86_REG_R8W,
+    "r9w":  UC_X86_REG_R9W,
+    "r10w": UC_X86_REG_R10W,
+    "r11w": UC_X86_REG_R11W,
+    "r12w": UC_X86_REG_R12W,
+    "r13w": UC_X86_REG_R13W,
+    "r14w": UC_X86_REG_R14W,
+    "r15w": UC_X86_REG_R15W,
+    "r8d":  UC_X86_REG_R8D,
+    "r9d":  UC_X86_REG_R9D,
+    "r10d": UC_X86_REG_R10D,
+    "r11d": UC_X86_REG_R11D,
+    "r12d": UC_X86_REG_R12D,
+    "r13d": UC_X86_REG_R13D,
+    "r14d": UC_X86_REG_R14D,
+    "r15d": UC_X86_REG_R15D,    
 }
 
 reg_map_cr = {

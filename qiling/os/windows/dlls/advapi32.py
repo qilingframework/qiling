@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
 import struct
+
 from qiling.os.windows.fncc import *
 from qiling.os.const import *
 from qiling.os.windows.utils import *
@@ -10,14 +11,16 @@ from qiling.os.windows.handle import *
 from qiling.os.windows.const import *
 from qiling.os.windows.structs import *
 
+dllname = 'advapi32_dll'
 
 def _RegOpenKey(ql, address, params):
     hKey = params["hKey"]
     s_lpSubKey = params["lpSubKey"]
     phkResult = params["phkResult"]
+    ql.log.debug("Key %s %s" % (hKey, s_lpSubKey))
 
     if hKey not in REG_KEYS:
-        ql.dprint(D_INFO, "[!] Key %s %s not present" % (hKey, s_lpSubKey))
+        ql.log.debug("Key %s %s not present" % (hKey, s_lpSubKey))
         return ERROR_FILE_NOT_FOUND
     else:
         s_hKey = REG_KEYS[hKey]
@@ -26,11 +29,11 @@ def _RegOpenKey(ql, address, params):
     # Keys in the profile are saved as KEY\PARAM = VALUE, so i just want to check that the key is the same
     keys_profile = [key.rsplit("\\", 1)[0] for key in ql.os.profile["REGISTRY"].keys()]
     if key.lower() in keys_profile:
-        ql.dprint(D_INFO, "[+] Using profile for key of  %s" % key)
+        ql.log.debug("Using profile for key of  %s" % key)
         ql.os.registry_manager.access(key)
     else:
         if not ql.os.registry_manager.exists(key):
-            ql.dprint(D_INFO, "[!] Value key %s not present" % key)
+            ql.log.debug("Value key %s not present" % key)
             return ERROR_FILE_NOT_FOUND
 
     # new handle
@@ -50,15 +53,16 @@ def RegQueryValue(ql, address, params):
     lpData = params["lpData"]
     lpcbData = params["lpcbData"]
     s_hKey = ql.os.handle_manager.get(hKey).obj
+    params["hKey"] = s_hKey
     # read reg_type
     if lpType != 0:
-        reg_type = ql.unpack(ql.mem.read(lpType, 4))
+        reg_type = ql.unpack32(ql.mem.read(lpType, 4))
     else:
         reg_type = Registry.RegNone
     try:
         # Keys in the profile are saved as KEY\PARAM = VALUE, so i just want to check that the key is the same
         value = ql.os.profile["REGISTRY"][s_hKey + "\\" + s_lpValueName]
-        ql.dprint(D_INFO, "[+] Using profile for value of key %s" % (s_hKey + "\\" + s_lpValueName,))
+        ql.log.debug("Using profile for value of key %s" % (s_hKey + "\\" + s_lpValueName,))
         # TODO i have no fucking idea on how to set a None value, fucking configparser
         if value == "None":
             return ERROR_FILE_NOT_FOUND
@@ -72,7 +76,7 @@ def RegQueryValue(ql, address, params):
 
     # error key
     if reg_type is None or value is None:
-        ql.dprint(D_INFO, "[!] Key value not found")
+        ql.log.debug("Key value not found")
         return ERROR_FILE_NOT_FOUND
     else:
         # set lpData
@@ -93,13 +97,7 @@ def RegQueryValue(ql, address, params):
 #   REGSAM samDesired,
 #   PHKEY  phkResult
 # );
-@winapi(cc=STDCALL, params={
-    "hKey": HANDLE,
-    "lpSubKey": STRING,
-    "ulOptions": DWORD,
-    "samDesired": POINTER,
-    "phkResult": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_RegOpenKeyExA(ql, address, params):
     return _RegOpenKey(ql, address, params)
 
@@ -111,13 +109,7 @@ def hook_RegOpenKeyExA(ql, address, params):
 #   REGSAM  samDesired,
 #   PHKEY   phkResult
 # );
-@winapi(cc=STDCALL, params={
-    "hKey": HANDLE,
-    "lpSubKey": WSTRING,
-    "ulOptions": DWORD,
-    "samDesired": POINTER,
-    "phkResult": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_RegOpenKeyExW(ql, address, params):
     return _RegOpenKey(ql, address, params)
 
@@ -127,25 +119,17 @@ def hook_RegOpenKeyExW(ql, address, params):
 #   LPCWSTR lpSubKey,
 #   PHKEY   phkResult
 # );
-@winapi(cc=STDCALL, params={
-    "hKey": HANDLE,
-    "lpSubKey": WSTRING,
-    "phkResult": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_RegOpenKeyW(ql, address, params):
     return _RegOpenKey(ql, address, params)
 
 
 # LSTATUS RegOpenKeyA(
 #   HKEY    hKey,
-#   LPCWSTR lpSubKey,
+#   LPCSTR lpSubKey,
 #   PHKEY   phkResult
 # );
-@winapi(cc=STDCALL, params={
-    "hKey": HANDLE,
-    "lpSubKey": STRING,
-    "phkResult": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_RegOpenKeyA(ql, address, params):
     return _RegOpenKey(ql, address, params)
 
@@ -158,14 +142,7 @@ def hook_RegOpenKeyA(ql, address, params):
 #   LPBYTE  lpData,
 #   LPDWORD lpcbData
 # );
-@winapi(cc=STDCALL, params={
-    "hKey": HANDLE,
-    "lpValueName": STRING,
-    "lpReserved": POINTER,
-    "lpType": POINTER,
-    "lpData": POINTER,
-    "lpcbData": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_RegQueryValueExA(ql, address, params):
     return RegQueryValue(ql, address, params)
 
@@ -178,14 +155,7 @@ def hook_RegQueryValueExA(ql, address, params):
 #   LPBYTE  lpData,
 #   LPDWORD lpcbData
 # );
-@winapi(cc=STDCALL, params={
-    "hKey": HANDLE,
-    "lpValueName": WSTRING,
-    "lpReserved": POINTER,
-    "lpType": POINTER,
-    "lpData": POINTER,
-    "lpcbData": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_RegQueryValueExW(ql, address, params):
     return RegQueryValue(ql, address, params)
 
@@ -193,9 +163,7 @@ def hook_RegQueryValueExW(ql, address, params):
 # LSTATUS RegCloseKey(
 #   HKEY hKey
 # );
-@winapi(cc=STDCALL, params={
-    "hKey": HANDLE
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_RegCloseKey(ql, address, params):
     ret = ERROR_SUCCESS
     hKey = params["hKey"]
@@ -208,11 +176,7 @@ def hook_RegCloseKey(ql, address, params):
 #   LPCSTR lpSubKey,
 #   PHKEY  phkResult
 # );
-@winapi(cc=STDCALL, params={
-    "hKey": HANDLE,
-    "lpSubKey": STRING,
-    "phkResult": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_RegCreateKeyA(ql, address, params):
     return hook_RegCreateKeyW.__wrapped__(ql, address, params)
 
@@ -222,12 +186,48 @@ def hook_RegCreateKeyA(ql, address, params):
 #   LPCWSTR lpSubKey,
 #   PHKEY  phkResult
 # );
-@winapi(cc=STDCALL, params={
-    "hKey": HANDLE,
-    "lpSubKey": WSTRING,
-    "phkResult": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_RegCreateKeyW(ql, address, params):
+    ret = ERROR_SUCCESS
+
+    hKey = params["hKey"]
+    s_lpSubKey = params["lpSubKey"]
+    phkResult = params["phkResult"]
+
+    if not (hKey in REG_KEYS):
+        return 2
+    else:
+        s_hKey = REG_KEYS[hKey]
+        params["hKey"] = s_hKey
+        if not ql.os.registry_manager.exists(s_hKey + "\\" + s_lpSubKey):
+            ret = ERROR_SUCCESS
+            ql.os.registry_manager.create(s_hKey + "\\" + s_lpSubKey)
+
+    # new handle
+    if ret == ERROR_SUCCESS:
+        new_handle = Handle(obj=s_hKey + "\\" + s_lpSubKey)
+        ql.os.handle_manager.append(new_handle)
+        if phkResult != 0:
+            ql.mem.write(phkResult, ql.pack(new_handle.id))
+    else:
+        new_handle = 0
+
+    return ret
+
+
+# LSTATUS RegCreateKeyExW(
+#   HKEY                        hKey,
+#   LPCWSTR                     lpSubKey,
+#   DWORD                       Reserved,
+#   LPWSTR                      lpClass,
+#   DWORD                       dwOptions,
+#   REGSAM                      samDesired,
+#   const LPSECURITY_ATTRIBUTES lpSecurityAttributes,
+#   PHKEY                       phkResult,
+#   LPDWORD                     lpdwDisposition
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'DWORD': 'POINTER'})
+def hook_RegCreateKeyExW(ql, address, params):
     ret = ERROR_SUCCESS
 
     hKey = params["hKey"]
@@ -262,13 +262,7 @@ def hook_RegCreateKeyW(ql, address, params):
 #   LPCSTR lpData,
 #   DWORD  cbData
 # );
-@winapi(cc=STDCALL, params={
-    "hKey": HANDLE,
-    "lpSubKey": STRING,
-    "dwType": DWORD,
-    "lpData": STRING,
-    "cbData": DWORD
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_RegSetValueA(ql, address, params):
     ret = ERROR_SUCCESS
 
@@ -286,6 +280,32 @@ def hook_RegSetValueA(ql, address, params):
 
     return ret
 
+# LSTATUS RegSetValueExA(
+#   HKEY       hKey,
+#   LPCSTR     lpValueName,
+#   DWORD      Reserved,
+#   DWORD      dwType,
+#   const BYTE *lpData,
+#   DWORD      cbData
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname)
+def hook_RegSetValueExA(ql, address, params):
+    ret = ERROR_SUCCESS
+
+    hKey = params["hKey"]
+    s_lpValueName = params["lpValueName"]
+    dwType = params["dwType"]
+    s_lpData = params["lpData"]
+    cbData = params["cbData"]
+
+    s_hKey = ql.os.handle_manager.get(hKey).obj
+    params["hKey"] = s_hKey
+
+    ql.os.registry_manager.write(s_hKey, s_lpValueName, dwType, s_lpData)
+
+    return ret
+
+
 
 # LSTATUS RegSetValueExW(
 #   HKEY       hKey,
@@ -295,14 +315,7 @@ def hook_RegSetValueA(ql, address, params):
 #   const BYTE *lpData,
 #   DWORD      cbData
 # );
-@winapi(cc=STDCALL, params={
-    "hKey": HANDLE,
-    "lpValueName": WSTRING,
-    "Reserved": DWORD,
-    "dwType": DWORD,
-    "lpData": WSTRING,
-    "cbData": DWORD
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_RegSetValueExW(ql, address, params):
     ret = ERROR_SUCCESS
 
@@ -325,10 +338,7 @@ def hook_RegSetValueExW(ql, address, params):
 #   HKEY   hKey,
 #   LPCSTR lpSubKey
 # );
-@winapi(cc=STDCALL, params={
-    "hKey": HANDLE,
-    "lpSubKey": STRING,
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_RegDeleteKeyA(ql, address, params):
     return hook_RegDeleteKeyW.__wrapped__(ql, address, params)
 
@@ -337,10 +347,7 @@ def hook_RegDeleteKeyA(ql, address, params):
 #   HKEY   hKey,
 #   LPCWSTR lpSubKey
 # );
-@winapi(cc=STDCALL, params={
-    "hKey": HANDLE,
-    "lpSubKey": WSTRING,
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_RegDeleteKeyW(ql, address, params):
     ret = ERROR_SUCCESS
 
@@ -359,10 +366,7 @@ def hook_RegDeleteKeyW(ql, address, params):
 #   HKEY    hKey,
 #   LPCSTR lpValueName
 # );
-@winapi(cc=STDCALL, params={
-    "hKey": HANDLE,
-    "lpValueName": STRING
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_RegDeleteValueA(ql, address, params):
     return hook_RegDeleteValueW.__wrapped__(ql, address, params)
 
@@ -371,10 +375,7 @@ def hook_RegDeleteValueA(ql, address, params):
 #   HKEY    hKey,
 #   LPCWSTR lpValueName
 # );
-@winapi(cc=STDCALL, params={
-    "hKey": HANDLE,
-    "lpValueName": WSTRING
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_RegDeleteValueW(ql, address, params):
     ret = ERROR_SUCCESS
 
@@ -396,13 +397,7 @@ def hook_RegDeleteValueW(ql, address, params):
 #   DWORD                   TokenInformationLength,
 #   PDWORD                  ReturnLength
 # );
-@winapi(cc=STDCALL, params={
-    "TokenHandle": HANDLE,
-    "TokenInformationClass": DWORD,
-    "TokenInformation": POINTER,
-    "TokenInformationLength": DWORD,
-    "ReturnLength": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetTokenInformation(ql, address, params):
     id_token = params["TokenHandle"]
     information = params["TokenInformationClass"]
@@ -413,7 +408,7 @@ def hook_GetTokenInformation(ql, address, params):
     information_value = token.get(information)
     ql.mem.write(return_point, len(information_value).to_bytes(4, byteorder="little"))
     return_size = int.from_bytes(ql.mem.read(return_point, 4), byteorder="little")
-    ql.dprint(D_RPRT, "[=] The target is checking for its permissions")
+    ql.log.debug("The target is checking for its permissions")
     if return_size > max_size:
         ql.os.last_error = ERROR_INSUFFICIENT_BUFFER
         return 0
@@ -421,15 +416,13 @@ def hook_GetTokenInformation(ql, address, params):
         ql.mem.write(dst, information_value)
         return 1
     else:
-        raise QlErrorNotImplemented("[!] API not implemented")
+        raise QlErrorNotImplemented("API not implemented")
 
 
 # PUCHAR GetSidSubAuthorityCount(
 #   PSID pSid
 # );
-@winapi(cc=STDCALL, params={
-    "pSid": HANDLE
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetSidSubAuthorityCount(ql, address, params):
     sid = ql.os.handle_manager.get(params["pSid"]).obj
     addr_authority_count = sid.addr + 1  # +1 because the first byte is revision
@@ -440,16 +433,119 @@ def hook_GetSidSubAuthorityCount(ql, address, params):
 #   PSID  pSid,
 #   DWORD nSubAuthority
 # );
-@winapi(cc=STDCALL, params={
-    "pSid": HANDLE,
-    "nSubAuthority": INT
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'DWORD': 'INT'})
 def hook_GetSidSubAuthority(ql, address, params):
     num = params["nSubAuthority"]
     sid = ql.os.handle_manager.get(params["pSid"]).obj
     addr_authority = sid.addr + 8 + (ql.pointersize * num)
     return addr_authority
 
+# LSTATUS RegEnumValueA(
+#   HKEY    hKey,
+#   DWORD   dwIndex,
+#   LPSTR   lpValueName,
+#   LPDWORD lpcchValueName,
+#   LPDWORD lpReserved,
+#   LPDWORD lpType,
+#   LPBYTE  lpData,
+#   LPDWORD lpcbData
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname)
+def hook_RegEnumValueA(ql, address, params):
+    return 259 # ERROR_NO_MORE_ITEMS
+
+# SC_HANDLE OpenSCManagerA(
+#   LPCSTR lpMachineName,
+#   LPCSTR lpDatabaseName,
+#   DWORD  dwDesiredAccess
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname)
+def hook_OpenSCManagerA(ql, address, params):
+    lpMachineName = params["lpMachineName"]
+    lpDatabaseName = params["lpDatabaseName"]
+    sc_handle_name = "sc_%s_%s" % (lpMachineName, lpDatabaseName)
+    new_handle = ql.os.handle_manager.search(sc_handle_name)
+    if new_handle is None:
+        new_handle = Handle(name=sc_handle_name)
+        ql.os.handle_manager.append(new_handle)
+    return new_handle.id
+
+# SC_HANDLE CreateServiceA(
+#   SC_HANDLE hSCManager,
+#   LPCSTR    lpServiceName,
+#   LPCSTR    lpDisplayName,
+#   DWORD     dwDesiredAccess,
+#   DWORD     dwServiceType,
+#   DWORD     dwStartType,
+#   DWORD     dwErrorControl,
+#   LPCSTR    lpBinaryPathName,
+#   LPCSTR    lpLoadOrderGroup,
+#   LPDWORD   lpdwTagId,
+#   LPCSTR    lpDependencies,
+#   LPCSTR    lpServiceStartName,
+#   LPCSTR    lpPassword
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={
+    "hSCManager":HANDLE,
+    "lpServiceName": STRING,
+    "lpDisplayName": STRING,
+    "dwDesiredAccess": DWORD,
+    "dwServiceType": DWORD,
+    "dwStartType": DWORD,
+    "dwErrorControl": DWORD,
+    "lpBinaryPathName": STRING,
+    "lpLoadOrderGroup": STRING,
+    "lpdwTagId": POINTER,
+    "lpDependencies": STRING,
+    "lpServiceStartName": STRING,
+    "lpPassword": STRING
+    })
+def hook_CreateServiceA(ql, address, params):
+    hSCManager = params["hSCManager"]
+    lpServiceName = params["lpServiceName"]
+    lpBinaryPathName = params["lpBinaryPathName"]
+    ql.os.services[lpServiceName] = lpBinaryPathName
+    new_handle = Handle(obj=hSCManager, name=lpServiceName)
+    ql.os.handle_manager.append(new_handle)
+    return new_handle.id
+
+# SC_HANDLE OpenServiceA(
+#   SC_HANDLE hSCManager,
+#   LPCSTR    lpServiceName,
+#   DWORD     dwDesiredAccess
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname,replace_params={
+    "hSCManager":HANDLE,
+    "lpServiceName": STRING,
+    "dwDesiredAccess": DWORD    
+})
+def hook_OpenServiceA(ql, address, params):
+    hSCManager = params["hSCManager"]
+    lpServiceName = params["lpServiceName"]
+    if lpServiceName in ql.os.services:
+        new_handle = Handle(obj=hSCManager, name=lpServiceName)
+        ql.os.handle_manager.append(new_handle)
+        return new_handle.id
+    else:
+        return 0
+
+# BOOL CloseServiceHandle(
+#   SC_HANDLE hSCObject
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={"hSCObject":HANDLE})
+def hook_CloseServiceHandle(ql, address, params):
+    hSCObject = params["hSCObject"]
+    ql.os.handle_manager.delete(hSCObject)
+    return 1
+
+# BOOL StartServiceA(
+#   SC_HANDLE hService,
+#   DWORD     dwNumServiceArgs,
+#   LPCSTR    *lpServiceArgVectors
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname)
+def hook_StartServiceA(ql, address, params):
+    return 1
 
 # BOOL AllocateAndInitializeSid(
 #   PSID_IDENTIFIER_AUTHORITY pIdentifierAuthority,
@@ -464,20 +560,7 @@ def hook_GetSidSubAuthority(ql, address, params):
 #   DWORD                     nSubAuthority7,
 #   PSID                      *pSid
 # );
-@winapi(cc=STDCALL, params={
-    "pIdentifierAuthority": POINTER,
-    "nSubAuthorityCount": BYTE,
-    "nSubAuthority0": DWORD,
-    "nSubAuthority1": DWORD,
-    "nSubAuthority2": DWORD,
-    "nSubAuthority3": DWORD,
-    "nSubAuthority4": DWORD,
-    "nSubAuthority5": DWORD,
-    "nSubAuthority6": DWORD,
-    "nSubAuthority7": DWORD,
-    "pSid": POINTER
-
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_AllocateAndInitializeSid(ql, address, params):
     count = params["nSubAuthorityCount"]
     subs = b""
@@ -494,13 +577,77 @@ def hook_AllocateAndInitializeSid(ql, address, params):
     return 1
 
 
+# Some default Sids:
+__adminsid = None # Administrators (S-1-5-32-544)
+__userssid = None # All Users (S-1-5-32-545)
+__guestssid = None # All Users (S-1-5-32-546)
+__poweruserssid = None # Power Users (S-1-5-32-547)
+
+
+def get_adminsid(ql):
+    global __adminsid
+    if __adminsid == None:
+        # nSubAuthority0 = SECURITY_BUILTIN_DOMAIN_RID[0x20], nSubAuthority1 = DOMAIN_ALIAS_RID_ADMINS[0x220]
+        subs = b"\x20\x00\x00\x00\x20\x02\x00\x00"
+        __adminsid = Sid(ql, revision=1, identifier=5, subs=subs, subs_count=2)
+    return __adminsid
+
+def get_userssid(ql):
+    global __userssid
+    if __userssid == None:
+        # nSubAuthority0 = SECURITY_BUILTIN_DOMAIN_RID[0x20], nSubAuthority1 = DOMAIN_ALIAS_RID_USERS[0x221]
+        subs = b"\x20\x00\x00\x00\x21\x02\x00\x00"
+        __userssid = Sid(ql, revision=1, identifier=5, subs=subs, subs_count=2)
+    return __userssid
+
+def get_guestssid(ql):
+    global __guestssid
+    if __guestssid == None:
+        # nSubAuthority0 = SECURITY_BUILTIN_DOMAIN_RID[0x20], nSubAuthority1 = DOMAIN_ALIAS_RID_GUESTS[0x222]
+        subs = b"\x20\x00\x00\x00\x22\x02\x00\x00"
+        __guestssid = Sid(ql, revision=1, identifier=5, subs=subs, subs_count=2)
+    return __guestssid
+
+def get_poweruserssid(ql):
+    global __poweruserssid
+    if __poweruserssid == None:
+        # nSubAuthority0 = SECURITY_BUILTIN_DOMAIN_RID[0x20], nSubAuthority1 = DOMAIN_ALIAS_RID_POWER_USERS[0x223]
+        subs = b"\x20\x00\x00\x00\x23\x02\x00\x00"
+        __poweruserssid = Sid(ql, revision=1, identifier=5, subs=subs, subs_count=2)
+    return __poweruserssid
+
+
+# BOOL WINAPI CheckTokenMembership(IN HANDLE TokenHandle,
+#   IN PSID SidToCheck,
+#   OUT PBOOL IsMember
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname)
+def hook_CheckTokenMembership(ql, address, params):
+    token_handle = params["TokenHandle"]
+    sid = ql.os.handle_manager.get(params["SidToCheck"]).obj
+    # If TokenHandle is NULL, CheckTokenMembership uses the impersonation token of the calling thread.
+    IsMember = 0
+    if token_handle == 0:
+        # For now, treat power users as admins
+        if get_adminsid(ql) == sid or get_poweruserssid(ql) == sid:
+            IsMember = 1 if ql.os.profile["SYSTEM"]["permission"] == "root" else 0
+        elif get_userssid(ql) == sid:
+            # FIXME: is this true for all tokens? probably not...
+            IsMember = 1
+        elif get_guestssid(ql) == sid:
+            IsMember = 0
+        else:
+            assert False, 'unimplemented'
+    else:
+        assert False, 'unimplemented'
+    ql.mem.write(params['IsMember'], ql.pack(IsMember))
+    return 1
+
+
 # PVOID FreeSid(
 #   PSID pSid
 # );
-@winapi(cc=STDCALL, params={
-    "pSid": HANDLE
-
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_FreeSid(ql, address, params):
     ql.os.heap.free(params["pSid"])
     return 0
@@ -510,11 +657,7 @@ def hook_FreeSid(ql, address, params):
 #   PSID pSid1,
 #   PSID pSid2
 # );
-@winapi(cc=STDCALL, params={
-    "pSid1": HANDLE,
-    "pSid2": HANDLE,
-
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_EqualSid(ql, address, params):
     # TODO once i have understood better how SID are wrote in memory. Fucking documentation
     # technically this one should be my SID that i created at the start. I said should, because when testing, it has a

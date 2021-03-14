@@ -1,0 +1,1688 @@
+{
+    "CreatePropertySheetPageA": [
+        {
+            "name": "constPropSheetPagePointer",
+            "type": "LPCPROPSHEETPAGEA"
+        }
+    ],
+    "CreatePropertySheetPageW": [
+        {
+            "name": "constPropSheetPagePointer",
+            "type": "LPCPROPSHEETPAGEW"
+        }
+    ],
+    "DestroyPropertySheetPage": [
+        {
+            "name": "VOID",
+            "type": "HPROPSHEETPAGE"
+        }
+    ],
+    "PropertySheetA": [
+        {
+            "name": "VOID",
+            "type": "LPCPROPSHEETHEADERA"
+        }
+    ],
+    "PropertySheetW": [
+        {
+            "name": "VOID",
+            "type": "LPCPROPSHEETHEADERW"
+        }
+    ],
+    "InitCommonControls": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "InitCommonControlsEx": [
+        {
+            "name": "picce",
+            "type": "INITCOMMONCONTROLSEX"
+        }
+    ],
+    "ImageList_Create": [
+        {
+            "name": "cx",
+            "type": "int"
+        },
+        {
+            "name": "cy",
+            "type": "int"
+        },
+        {
+            "name": "flags",
+            "type": "UINT"
+        },
+        {
+            "name": "cInitial",
+            "type": "int"
+        },
+        {
+            "name": "cGrow",
+            "type": "int"
+        }
+    ],
+    "ImageList_Destroy": [
+        {
+            "name": "himl",
+            "type": "HIMAGELIST"
+        }
+    ],
+    "ImageList_GetImageCount": [
+        {
+            "name": "himl",
+            "type": "HIMAGELIST"
+        }
+    ],
+    "ImageList_SetImageCount": [
+        {
+            "name": "himl",
+            "type": "HIMAGELIST"
+        },
+        {
+            "name": "uNewCount",
+            "type": "UINT"
+        }
+    ],
+    "ImageList_Add": [
+        {
+            "name": "himl",
+            "type": "HIMAGELIST"
+        },
+        {
+            "name": "hbmImage",
+            "type": "HBITMAP"
+        },
+        {
+            "name": "hbmMask",
+            "type": "HBITMAP"
+        }
+    ],
+    "ImageList_ReplaceIcon": [
+        {
+            "name": "himl",
+            "type": "HIMAGELIST"
+        },
+        {
+            "name": "i",
+            "type": "int"
+        },
+        {
+            "name": "hicon",
+            "type": "HICON"
+        }
+    ],
+    "ImageList_SetBkColor": [
+        {
+            "name": "himl",
+            "type": "HIMAGELIST"
+        },
+        {
+            "name": "clrBk",
+            "type": "COLORREF"
+        }
+    ],
+    "ImageList_GetBkColor": [
+        {
+            "name": "himl",
+            "type": "HIMAGELIST"
+        }
+    ],
+    "ImageList_SetOverlayImage": [
+        {
+            "name": "himl",
+            "type": "HIMAGELIST"
+        },
+        {
+            "name": "iImage",
+            "type": "int"
+        },
+        {
+            "name": "iOverlay",
+            "type": "int"
+        }
+    ],
+    "ImageList_Draw": [
+        {
+            "name": "himl",
+            "type": "HIMAGELIST"
+        },
+        {
+            "name": "i",
+            "type": "int"
+        },
+        {
+            "name": "hdcDst",
+            "type": "HDC"
+        },
+        {
+            "name": "x",
+            "type": "int"
+        },
+        {
+            "name": "y",
+            "type": "int"
+        },
+        {
+            "name": "fStyle",
+            "type": "UINT"
+        }
+    ],
+    "ImageList_Replace": [
+        {
+            "name": "himl",
+            "type": "HIMAGELIST"
+        },
+        {
+            "name": "i",
+            "type": "int"
+        },
+        {
+            "name": "hbmImage",
+            "type": "HBITMAP"
+        },
+        {
+            "name": "hbmMask",
+            "type": "HBITMAP"
+        }
+    ],
+    "ImageList_AddMasked": [
+        {
+            "name": "himl",
+            "type": "HIMAGELIST"
+        },
+        {
+            "name": "hbmImage",
+            "type": "HBITMAP"
+        },
+        {
+            "name": "crMask",
+            "type": "COLORREF"
+        }
+    ],
+    "ImageList_DrawEx": [
+        {
+            "name": "himl",
+            "type": "HIMAGELIST"
+        },
+        {
+            "name": "i",
+            "type": "int"
+        },
+        {
+            "name": "hdcDst",
+            "type": "HDC"
+        },
+        {
+            "name": "x",
+            "type": "int"
+        },
+        {
+            "name": "y",
+            "type": "int"
+        },
+        {
+            "name": "dx",
+            "type": "int"
+        },
+        {
+            "name": "dy",
+            "type": "int"
+        },
+        {
+            "name": "rgbBk",
+            "type": "COLORREF"
+        },
+        {
+            "name": "rgbFg",
+            "type": "COLORREF"
+        },
+        {
+            "name": "fStyle",
+            "type": "UINT"
+        }
+    ],
+    "ImageList_DrawIndirect": [
+        {
+            "name": "pimldp",
+            "type": "IMAGELISTDRAWPARAMS"
+        }
+    ],
+    "ImageList_Remove": [
+        {
+            "name": "himl",
+            "type": "HIMAGELIST"
+        },
+        {
+            "name": "i",
+            "type": "int"
+        }
+    ],
+    "ImageList_GetIcon": [
+        {
+            "name": "himl",
+            "type": "HIMAGELIST"
+        },
+        {
+            "name": "i",
+            "type": "int"
+        },
+        {
+            "name": "flags",
+            "type": "UINT"
+        }
+    ],
+    "ImageList_LoadImageA": [
+        {
+            "name": "hi",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "lpbmp",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "cx",
+            "type": "int"
+        },
+        {
+            "name": "cGrow",
+            "type": "int"
+        },
+        {
+            "name": "crMask",
+            "type": "COLORREF"
+        },
+        {
+            "name": "uType",
+            "type": "UINT"
+        },
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        }
+    ],
+    "ImageList_LoadImageW": [
+        {
+            "name": "hi",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "lpbmp",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "cx",
+            "type": "int"
+        },
+        {
+            "name": "cGrow",
+            "type": "int"
+        },
+        {
+            "name": "crMask",
+            "type": "COLORREF"
+        },
+        {
+            "name": "uType",
+            "type": "UINT"
+        },
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        }
+    ],
+    "ImageList_Copy": [
+        {
+            "name": "himlDst",
+            "type": "HIMAGELIST"
+        },
+        {
+            "name": "iDst",
+            "type": "int"
+        },
+        {
+            "name": "himlSrc",
+            "type": "HIMAGELIST"
+        },
+        {
+            "name": "iSrc",
+            "type": "int"
+        },
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        }
+    ],
+    "ImageList_BeginDrag": [
+        {
+            "name": "himlTrack",
+            "type": "HIMAGELIST"
+        },
+        {
+            "name": "iTrack",
+            "type": "int"
+        },
+        {
+            "name": "dxHotspot",
+            "type": "int"
+        },
+        {
+            "name": "dyHotspot",
+            "type": "int"
+        }
+    ],
+    "ImageList_EndDrag": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "ImageList_DragEnter": [
+        {
+            "name": "hwndLock",
+            "type": "HWND"
+        },
+        {
+            "name": "x",
+            "type": "int"
+        },
+        {
+            "name": "y",
+            "type": "int"
+        }
+    ],
+    "ImageList_DragLeave": [
+        {
+            "name": "hwndLock",
+            "type": "HWND"
+        }
+    ],
+    "ImageList_DragMove": [
+        {
+            "name": "x",
+            "type": "int"
+        },
+        {
+            "name": "y",
+            "type": "int"
+        }
+    ],
+    "ImageList_SetDragCursorImage": [
+        {
+            "name": "himlDrag",
+            "type": "HIMAGELIST"
+        },
+        {
+            "name": "iDrag",
+            "type": "int"
+        },
+        {
+            "name": "dxHotspot",
+            "type": "int"
+        },
+        {
+            "name": "dyHotspot",
+            "type": "int"
+        }
+    ],
+    "ImageList_DragShowNolock": [
+        {
+            "name": "fShow",
+            "type": "BOOL"
+        }
+    ],
+    "ImageList_GetDragImage": [
+        {
+            "name": "ppt",
+            "type": "POINT"
+        },
+        {
+            "name": "pptHotspot",
+            "type": "POINT"
+        }
+    ],
+    "ImageList_Read": [
+        {
+            "name": "pstm",
+            "type": {
+                "name": "IStream",
+                "data_type": "Struct",
+                "elements": []
+            }
+        }
+    ],
+    "ImageList_Write": [
+        {
+            "name": "himl",
+            "type": "HIMAGELIST"
+        },
+        {
+            "name": "pstm",
+            "type": {
+                "name": "IStream",
+                "data_type": "Struct",
+                "elements": []
+            }
+        }
+    ],
+    "ImageList_ReadEx": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pstm",
+            "type": {
+                "name": "IStream",
+                "data_type": "Struct",
+                "elements": []
+            }
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "PVOID"
+        }
+    ],
+    "ImageList_WriteEx": [
+        {
+            "name": "himl",
+            "type": "HIMAGELIST"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pstm",
+            "type": {
+                "name": "IStream",
+                "data_type": "Struct",
+                "elements": []
+            }
+        }
+    ],
+    "ImageList_GetIconSize": [
+        {
+            "name": "himl",
+            "type": "HIMAGELIST"
+        },
+        {
+            "name": "cx",
+            "type": "int"
+        },
+        {
+            "name": "cy",
+            "type": "int"
+        }
+    ],
+    "ImageList_SetIconSize": [
+        {
+            "name": "himl",
+            "type": "HIMAGELIST"
+        },
+        {
+            "name": "cx",
+            "type": "int"
+        },
+        {
+            "name": "cy",
+            "type": "int"
+        }
+    ],
+    "ImageList_GetImageInfo": [
+        {
+            "name": "himl",
+            "type": "HIMAGELIST"
+        },
+        {
+            "name": "i",
+            "type": "int"
+        },
+        {
+            "name": "pImageInfo",
+            "type": "IMAGEINFO"
+        }
+    ],
+    "ImageList_Merge": [
+        {
+            "name": "himl1",
+            "type": "HIMAGELIST"
+        },
+        {
+            "name": "i1",
+            "type": "int"
+        },
+        {
+            "name": "himl2",
+            "type": "HIMAGELIST"
+        },
+        {
+            "name": "i2",
+            "type": "int"
+        },
+        {
+            "name": "dx",
+            "type": "int"
+        },
+        {
+            "name": "dy",
+            "type": "int"
+        }
+    ],
+    "ImageList_Duplicate": [
+        {
+            "name": "himl",
+            "type": "HIMAGELIST"
+        }
+    ],
+    "HIMAGELIST_QueryInterface": [
+        {
+            "name": "himl",
+            "type": "HIMAGELIST"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "CreateToolbarEx": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "ws",
+            "type": "DWORD"
+        },
+        {
+            "name": "wID",
+            "type": "UINT"
+        },
+        {
+            "name": "nBitmaps",
+            "type": "int"
+        },
+        {
+            "name": "hBMInst",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "wBMID",
+            "type": "UINT_PTR"
+        },
+        {
+            "name": "lpButtons",
+            "type": "LPCTBBUTTON"
+        },
+        {
+            "name": "iNumButtons",
+            "type": "int"
+        },
+        {
+            "name": "dxButton",
+            "type": "int"
+        },
+        {
+            "name": "dyButton",
+            "type": "int"
+        },
+        {
+            "name": "dxBitmap",
+            "type": "int"
+        },
+        {
+            "name": "dyBitmap",
+            "type": "int"
+        },
+        {
+            "name": "uStructSize",
+            "type": "UINT"
+        }
+    ],
+    "CreateMappedBitmap": [
+        {
+            "name": "hInstance",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "idBitmap",
+            "type": "INT_PTR"
+        },
+        {
+            "name": "wFlags",
+            "type": "UINT"
+        },
+        {
+            "name": "lpColorMap",
+            "type": "LPCOLORMAP"
+        },
+        {
+            "name": "iNumMaps",
+            "type": "int"
+        }
+    ],
+    "DrawStatusTextA": [
+        {
+            "name": "hDC",
+            "type": "HDC"
+        },
+        {
+            "name": "lprc",
+            "type": "LPCRECT"
+        },
+        {
+            "name": "pszText",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        }
+    ],
+    "DrawStatusTextW": [
+        {
+            "name": "hDC",
+            "type": "HDC"
+        },
+        {
+            "name": "lprc",
+            "type": "LPCRECT"
+        },
+        {
+            "name": "pszText",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        }
+    ],
+    "CreateStatusWindowA": [
+        {
+            "name": "style",
+            "type": "LONG"
+        },
+        {
+            "name": "lpszText",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "wID",
+            "type": "UINT"
+        }
+    ],
+    "CreateStatusWindowW": [
+        {
+            "name": "style",
+            "type": "LONG"
+        },
+        {
+            "name": "lpszText",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "wID",
+            "type": "UINT"
+        }
+    ],
+    "MenuHelp": [
+        {
+            "name": "uMsg",
+            "type": "UINT"
+        },
+        {
+            "name": "wParam",
+            "type": "WPARAM"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        },
+        {
+            "name": "hMainMenu",
+            "type": "HMENU"
+        },
+        {
+            "name": "hInst",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "hwndStatus",
+            "type": "HWND"
+        },
+        {
+            "name": "lpwIDs",
+            "type": "UINT"
+        }
+    ],
+    "ShowHideMenuCtl": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "uFlags",
+            "type": "UINT_PTR"
+        },
+        {
+            "name": "lpInfo",
+            "type": "LPINT"
+        }
+    ],
+    "GetEffectiveClientRect": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "lprc",
+            "type": "LPRECT"
+        },
+        {
+            "name": "lpInfo",
+            "type": "INT"
+        }
+    ],
+    "MakeDragList": [
+        {
+            "name": "hLB",
+            "type": "HWND"
+        }
+    ],
+    "DrawInsert": [
+        {
+            "name": "handParent",
+            "type": "HWND"
+        },
+        {
+            "name": "hLB",
+            "type": "HWND"
+        },
+        {
+            "name": "nItem",
+            "type": "int"
+        }
+    ],
+    "LBItemFromPt": [
+        {
+            "name": "hLB",
+            "type": "HWND"
+        },
+        {
+            "name": "pt",
+            "type": "POINT"
+        },
+        {
+            "name": "bAutoScroll",
+            "type": "BOOL"
+        }
+    ],
+    "CreateUpDownControl": [
+        {
+            "name": "dwStyle",
+            "type": "DWORD"
+        },
+        {
+            "name": "x",
+            "type": "int"
+        },
+        {
+            "name": "y",
+            "type": "int"
+        },
+        {
+            "name": "cx",
+            "type": "int"
+        },
+        {
+            "name": "cy",
+            "type": "int"
+        },
+        {
+            "name": "hParent",
+            "type": "HWND"
+        },
+        {
+            "name": "nID",
+            "type": "int"
+        },
+        {
+            "name": "hInst",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "hBuddy",
+            "type": "HWND"
+        },
+        {
+            "name": "nUpper",
+            "type": "int"
+        },
+        {
+            "name": "nLower",
+            "type": "int"
+        },
+        {
+            "name": "nPos",
+            "type": "int"
+        }
+    ],
+    "TaskDialogIndirect": [
+        {
+            "name": "pTaskConfig",
+            "type": "TASKDIALOGCONFIG"
+        },
+        {
+            "name": "pnButton",
+            "type": "int"
+        },
+        {
+            "name": "pnRadioButton",
+            "type": "int"
+        },
+        {
+            "name": "pfVerificationFlagChecked",
+            "type": "BOOL"
+        }
+    ],
+    "TaskDialog": [
+        {
+            "name": "hwndOwner",
+            "type": "HWND"
+        },
+        {
+            "name": "hInstance",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "pszWindowTitle",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pszMainInstruction",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pszContent",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "dwCommonButtons",
+            "type": "TASKDIALOG_COMMON_BUTTON_FLAGS"
+        },
+        {
+            "name": "pszIcon",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pnButton",
+            "type": "int"
+        }
+    ],
+    "InitMUILanguage": [
+        {
+            "name": "uiLang",
+            "type": "LANGID"
+        }
+    ],
+    "GetMUILanguage": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "_TrackMouseEvent": [
+        {
+            "name": "lpEventTrack",
+            "type": "LPTRACKMOUSEEVENT"
+        }
+    ],
+    "FlatSB_EnableScrollBar": [
+        {
+            "name": "VOID",
+            "type": "HWND"
+        },
+        {
+            "name": "VOID",
+            "type": "int"
+        },
+        {
+            "name": "VOID",
+            "type": "UINT"
+        }
+    ],
+    "FlatSB_ShowScrollBar": [
+        {
+            "name": "VOID",
+            "type": "HWND"
+        },
+        {
+            "name": "code",
+            "type": "int"
+        },
+        {
+            "name": "VOID",
+            "type": "BOOL"
+        }
+    ],
+    "FlatSB_GetScrollRange": [
+        {
+            "name": "VOID",
+            "type": "HWND"
+        },
+        {
+            "name": "code",
+            "type": "int"
+        },
+        {
+            "name": "VOID",
+            "type": "LPINT"
+        },
+        {
+            "name": "VOID",
+            "type": "LPINT"
+        }
+    ],
+    "FlatSB_GetScrollInfo": [
+        {
+            "name": "VOID",
+            "type": "HWND"
+        },
+        {
+            "name": "code",
+            "type": "int"
+        },
+        {
+            "name": "VOID",
+            "type": "LPSCROLLINFO"
+        }
+    ],
+    "FlatSB_GetScrollPos": [
+        {
+            "name": "VOID",
+            "type": "HWND"
+        },
+        {
+            "name": "code",
+            "type": "int"
+        }
+    ],
+    "FlatSB_GetScrollProp": [
+        {
+            "name": "VOID",
+            "type": "HWND"
+        },
+        {
+            "name": "propIndex",
+            "type": "int"
+        },
+        {
+            "name": "VOID",
+            "type": "LPINT"
+        }
+    ],
+    "FlatSB_GetScrollPropPtr": [
+        {
+            "name": "VOID",
+            "type": "HWND"
+        },
+        {
+            "name": "propIndex",
+            "type": "int"
+        },
+        {
+            "name": "VOID",
+            "type": "PINT_PTR"
+        }
+    ],
+    "FlatSB_SetScrollPos": [
+        {
+            "name": "VOID",
+            "type": "HWND"
+        },
+        {
+            "name": "code",
+            "type": "int"
+        },
+        {
+            "name": "pos",
+            "type": "int"
+        },
+        {
+            "name": "fRedraw",
+            "type": "BOOL"
+        }
+    ],
+    "FlatSB_SetScrollInfo": [
+        {
+            "name": "VOID",
+            "type": "HWND"
+        },
+        {
+            "name": "code",
+            "type": "int"
+        },
+        {
+            "name": "psi",
+            "type": "LPSCROLLINFO"
+        },
+        {
+            "name": "fRedraw",
+            "type": "BOOL"
+        }
+    ],
+    "FlatSB_SetScrollRange": [
+        {
+            "name": "VOID",
+            "type": "HWND"
+        },
+        {
+            "name": "code",
+            "type": "int"
+        },
+        {
+            "name": "min",
+            "type": "int"
+        },
+        {
+            "name": "max",
+            "type": "int"
+        },
+        {
+            "name": "fRedraw",
+            "type": "BOOL"
+        }
+    ],
+    "FlatSB_SetScrollProp": [
+        {
+            "name": "VOID",
+            "type": "HWND"
+        },
+        {
+            "name": "index",
+            "type": "UINT"
+        },
+        {
+            "name": "newValue",
+            "type": "INT_PTR"
+        },
+        {
+            "name": "VOID",
+            "type": "BOOL"
+        }
+    ],
+    "InitializeFlatSB": [
+        {
+            "name": "VOID",
+            "type": "HWND"
+        }
+    ],
+    "UninitializeFlatSB": [
+        {
+            "name": "VOID",
+            "type": "HWND"
+        }
+    ],
+    "SetWindowSubclass": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pfnSubclass",
+            "type": "SUBCLASSPROC"
+        },
+        {
+            "name": "uIdSubclass",
+            "type": "UINT_PTR"
+        },
+        {
+            "name": "dwRefData",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "GetWindowSubclass": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pfnSubclass",
+            "type": "SUBCLASSPROC"
+        },
+        {
+            "name": "uIdSubclass",
+            "type": "UINT_PTR"
+        },
+        {
+            "name": "pdwRefData",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "RemoveWindowSubclass": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pfnSubclass",
+            "type": "SUBCLASSPROC"
+        },
+        {
+            "name": "uIdSubclass",
+            "type": "UINT_PTR"
+        }
+    ],
+    "DefSubclassProc": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "uMsg",
+            "type": "UINT"
+        },
+        {
+            "name": "wParam",
+            "type": "WPARAM"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "LoadIconMetric": [
+        {
+            "name": "hinst",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "pszName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "lims",
+            "type": "int"
+        },
+        {
+            "name": "phico",
+            "type": "HICON"
+        }
+    ],
+    "LoadIconWithScaleDown": [
+        {
+            "name": "hinst",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "pszName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "cx",
+            "type": "int"
+        },
+        {
+            "name": "cy",
+            "type": "int"
+        },
+        {
+            "name": "phico",
+            "type": "HICON"
+        }
+    ],
+    "DrawShadowText": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "pszText",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "cch",
+            "type": "UINT"
+        },
+        {
+            "name": "prc",
+            "type": "RECT"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "crText",
+            "type": "COLORREF"
+        },
+        {
+            "name": "crShadow",
+            "type": "COLORREF"
+        },
+        {
+            "name": "ixOffset",
+            "type": "int"
+        },
+        {
+            "name": "iyOffset",
+            "type": "int"
+        }
+    ],
+    "DSA_Create": [
+        {
+            "name": "cbItem",
+            "type": "int"
+        },
+        {
+            "name": "cItemGrow",
+            "type": "int"
+        }
+    ],
+    "DSA_Destroy": [
+        {
+            "name": "hdsa",
+            "type": "HDSA"
+        }
+    ],
+    "DSA_DestroyCallback": [
+        {
+            "name": "hdsa",
+            "type": "HDSA"
+        },
+        {
+            "name": "pfnCB",
+            "type": "PFNDAENUMCALLBACK"
+        },
+        {
+            "name": "pData",
+            "type": "void"
+        }
+    ],
+    "DSA_DeleteItem": [
+        {
+            "name": "hdsa",
+            "type": "HDSA"
+        },
+        {
+            "name": "i",
+            "type": "int"
+        }
+    ],
+    "DSA_DeleteAllItems": [
+        {
+            "name": "hdsa",
+            "type": "HDSA"
+        }
+    ],
+    "DSA_EnumCallback": [
+        {
+            "name": "hdsa",
+            "type": "HDSA"
+        },
+        {
+            "name": "pfnCB",
+            "type": "PFNDAENUMCALLBACK"
+        },
+        {
+            "name": "pData",
+            "type": "void"
+        }
+    ],
+    "DSA_InsertItem": [
+        {
+            "name": "hdsa",
+            "type": "HDSA"
+        },
+        {
+            "name": "i",
+            "type": "int"
+        },
+        {
+            "name": "pitem",
+            "type": "void"
+        }
+    ],
+    "DSA_GetItemPtr": [
+        {
+            "name": "hdsa",
+            "type": "HDSA"
+        },
+        {
+            "name": "i",
+            "type": "int"
+        }
+    ],
+    "DSA_GetItem": [
+        {
+            "name": "hdsa",
+            "type": "HDSA"
+        },
+        {
+            "name": "i",
+            "type": "int"
+        },
+        {
+            "name": "pitem",
+            "type": "void"
+        }
+    ],
+    "DSA_SetItem": [
+        {
+            "name": "hdsa",
+            "type": "HDSA"
+        },
+        {
+            "name": "i",
+            "type": "int"
+        },
+        {
+            "name": "pitem",
+            "type": "void"
+        }
+    ],
+    "DSA_Clone": [
+        {
+            "name": "hdsa",
+            "type": "HDSA"
+        }
+    ],
+    "DSA_GetSize": [
+        {
+            "name": "hdsa",
+            "type": "HDSA"
+        }
+    ],
+    "DSA_Sort": [
+        {
+            "name": "pdsa",
+            "type": "HDSA"
+        },
+        {
+            "name": "pfnCompare",
+            "type": "PFNDACOMPARE"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "DPA_Create": [
+        {
+            "name": "cItemGrow",
+            "type": "int"
+        }
+    ],
+    "DPA_CreateEx": [
+        {
+            "name": "cpGrow",
+            "type": "int"
+        },
+        {
+            "name": "hheap",
+            "type": "HANDLE"
+        }
+    ],
+    "DPA_Clone": [
+        {
+            "name": "hdpa",
+            "type": "HDPA"
+        },
+        {
+            "name": "hdpaNew",
+            "type": "HDPA"
+        }
+    ],
+    "DPA_Destroy": [
+        {
+            "name": "hdpa",
+            "type": "HDPA"
+        }
+    ],
+    "DPA_DestroyCallback": [
+        {
+            "name": "hdpa",
+            "type": "HDPA"
+        },
+        {
+            "name": "pfnCB",
+            "type": "PFNDAENUMCALLBACK"
+        },
+        {
+            "name": "pData",
+            "type": "void"
+        }
+    ],
+    "DPA_DeletePtr": [
+        {
+            "name": "hdpa",
+            "type": "HDPA"
+        },
+        {
+            "name": "i",
+            "type": "int"
+        }
+    ],
+    "DPA_DeleteAllPtrs": [
+        {
+            "name": "hdpa",
+            "type": "HDPA"
+        }
+    ],
+    "DPA_EnumCallback": [
+        {
+            "name": "hdpa",
+            "type": "HDPA"
+        },
+        {
+            "name": "pfnCB",
+            "type": "PFNDAENUMCALLBACK"
+        },
+        {
+            "name": "pData",
+            "type": "void"
+        }
+    ],
+    "DPA_Grow": [
+        {
+            "name": "pdpa",
+            "type": "HDPA"
+        },
+        {
+            "name": "cp",
+            "type": "int"
+        }
+    ],
+    "DPA_InsertPtr": [
+        {
+            "name": "hdpa",
+            "type": "HDPA"
+        },
+        {
+            "name": "i",
+            "type": "int"
+        },
+        {
+            "name": "p",
+            "type": "void"
+        }
+    ],
+    "DPA_SetPtr": [
+        {
+            "name": "hdpa",
+            "type": "HDPA"
+        },
+        {
+            "name": "i",
+            "type": "int"
+        },
+        {
+            "name": "p",
+            "type": "void"
+        }
+    ],
+    "DPA_GetPtr": [
+        {
+            "name": "hdpa",
+            "type": "HDPA"
+        },
+        {
+            "name": "i",
+            "type": "INT_PTR"
+        }
+    ],
+    "DPA_GetPtrIndex": [
+        {
+            "name": "hdpa",
+            "type": "HDPA"
+        },
+        {
+            "name": "p",
+            "type": "void"
+        }
+    ],
+    "DPA_GetSize": [
+        {
+            "name": "hdpa",
+            "type": "HDPA"
+        }
+    ],
+    "DPA_Sort": [
+        {
+            "name": "hdpa",
+            "type": "HDPA"
+        },
+        {
+            "name": "pfnCompare",
+            "type": "PFNDACOMPARE"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "DPA_LoadStream": [
+        {
+            "name": "phdpa",
+            "type": "HDPA"
+        },
+        {
+            "name": "pfn",
+            "type": "PFNDPASTREAM"
+        },
+        {
+            "name": "pstream",
+            "type": {
+                "name": "IStream",
+                "data_type": "Struct",
+                "elements": []
+            }
+        },
+        {
+            "name": "pvInstData",
+            "type": "void"
+        }
+    ],
+    "DPA_SaveStream": [
+        {
+            "name": "hdpa",
+            "type": "HDPA"
+        },
+        {
+            "name": "pfn",
+            "type": "PFNDPASTREAM"
+        },
+        {
+            "name": "pstream",
+            "type": {
+                "name": "IStream",
+                "data_type": "Struct",
+                "elements": []
+            }
+        },
+        {
+            "name": "pvInstData",
+            "type": "void"
+        }
+    ],
+    "DPA_Merge": [
+        {
+            "name": "hdpaDest",
+            "type": "HDPA"
+        },
+        {
+            "name": "hdpaSrc",
+            "type": "HDPA"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pfnCompare",
+            "type": "PFNDACOMPARE"
+        },
+        {
+            "name": "pfnMerge",
+            "type": "PFNDPAMERGE"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "DPA_Search": [
+        {
+            "name": "hdpa",
+            "type": "HDPA"
+        },
+        {
+            "name": "pFind",
+            "type": "void"
+        },
+        {
+            "name": "iStart",
+            "type": "int"
+        },
+        {
+            "name": "pfnCompare",
+            "type": "PFNDACOMPARE"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        },
+        {
+            "name": "options",
+            "type": "UINT"
+        }
+    ],
+    "Str_SetPtrW": [
+        {
+            "name": "ppsz",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "psz",
+            "type": "LPCWSTR"
+        }
+    ]
+}

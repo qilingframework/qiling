@@ -1,0 +1,3226 @@
+{
+    "DhcpAddFilterV4": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "AddFilterInfo",
+            "type": "DHCP_FILTER_ADD_INFO"
+        },
+        {
+            "name": "ForceFlag",
+            "type": "BOOL"
+        }
+    ],
+    "DhcpDeleteFilterV4": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "DeleteFilterInfo",
+            "type": "DHCP_ADDR_PATTERN"
+        }
+    ],
+    "DhcpSetFilterV4": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "GlobalFilterInfo",
+            "type": "DHCP_FILTER_GLOBAL_INFO"
+        }
+    ],
+    "DhcpGetFilterV4": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "GlobalFilterInfo",
+            "type": "DHCP_FILTER_GLOBAL_INFO"
+        }
+    ],
+    "DhcpEnumFilterV4": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "ResumeHandle",
+            "type": "LPDHCP_ADDR_PATTERN"
+        },
+        {
+            "name": "PreferredMaximum",
+            "type": "DWORD"
+        },
+        {
+            "name": "ListType",
+            "type": "DHCP_FILTER_LIST_TYPE"
+        },
+        {
+            "name": "EnumFilterInfo",
+            "type": "LPDHCP_FILTER_ENUM_INFO"
+        },
+        {
+            "name": "ElementsRead",
+            "type": "DWORD"
+        },
+        {
+            "name": "ElementsTotal",
+            "type": "DWORD"
+        }
+    ],
+    "DhcpCreateSubnet": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "SubnetAddress",
+            "type": "DHCP_IP_ADDRESS"
+        },
+        {
+            "name": "SubnetInfo",
+            "type": "DHCP_SUBNET_INFO"
+        }
+    ],
+    "DhcpSetSubnetInfo": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "SubnetAddress",
+            "type": "DHCP_IP_ADDRESS"
+        },
+        {
+            "name": "SubnetInfo",
+            "type": "DHCP_SUBNET_INFO"
+        }
+    ],
+    "DhcpGetSubnetInfo": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "SubnetAddress",
+            "type": "DHCP_IP_ADDRESS"
+        },
+        {
+            "name": "SubnetInfo",
+            "type": "LPDHCP_SUBNET_INFO"
+        }
+    ],
+    "DhcpEnumSubnets": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "ResumeHandle",
+            "type": "DHCP_RESUME_HANDLE"
+        },
+        {
+            "name": "PreferredMaximum",
+            "type": "DWORD"
+        },
+        {
+            "name": "EnumInfo",
+            "type": "LPDHCP_IP_ARRAY"
+        },
+        {
+            "name": "ElementsRead",
+            "type": "DWORD"
+        },
+        {
+            "name": "ElementsTotal",
+            "type": "DWORD"
+        }
+    ],
+    "DhcpAddSubnetElement": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "SubnetAddress",
+            "type": "DHCP_IP_ADDRESS"
+        },
+        {
+            "name": "AddElementInfo",
+            "type": "DHCP_SUBNET_ELEMENT_DATA"
+        }
+    ],
+    "DhcpEnumSubnetElements": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "SubnetAddress",
+            "type": "DHCP_IP_ADDRESS"
+        },
+        {
+            "name": "EnumElementType",
+            "type": "DHCP_SUBNET_ELEMENT_TYPE"
+        },
+        {
+            "name": "ResumeHandle",
+            "type": "DHCP_RESUME_HANDLE"
+        },
+        {
+            "name": "PreferredMaximum",
+            "type": "DWORD"
+        },
+        {
+            "name": "EnumElementInfo",
+            "type": "LPDHCP_SUBNET_ELEMENT_INFO_ARRAY"
+        },
+        {
+            "name": "ElementsRead",
+            "type": "DWORD"
+        },
+        {
+            "name": "ElementsTotal",
+            "type": "DWORD"
+        }
+    ],
+    "DhcpRemoveSubnetElement": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "SubnetAddress",
+            "type": "DHCP_IP_ADDRESS"
+        },
+        {
+            "name": "RemoveElementInfo",
+            "type": "DHCP_SUBNET_ELEMENT_DATA"
+        },
+        {
+            "name": "ForceFlag",
+            "type": "DHCP_FORCE_FLAG"
+        }
+    ],
+    "DhcpDeleteSubnet": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "SubnetAddress",
+            "type": "DHCP_IP_ADDRESS"
+        },
+        {
+            "name": "ForceFlag",
+            "type": "DHCP_FORCE_FLAG"
+        }
+    ],
+    "DhcpCreateOption": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "OptionID",
+            "type": "DHCP_OPTION_ID"
+        },
+        {
+            "name": "OptionInfo",
+            "type": "DHCP_OPTION"
+        }
+    ],
+    "DhcpSetOptionInfo": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "OptionID",
+            "type": "DHCP_OPTION_ID"
+        },
+        {
+            "name": "OptionInfo",
+            "type": "DHCP_OPTION"
+        }
+    ],
+    "DhcpGetOptionInfo": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "OptionID",
+            "type": "DHCP_OPTION_ID"
+        },
+        {
+            "name": "OptionInfo",
+            "type": "LPDHCP_OPTION"
+        }
+    ],
+    "DhcpEnumOptions": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "ResumeHandle",
+            "type": "DHCP_RESUME_HANDLE"
+        },
+        {
+            "name": "PreferredMaximum",
+            "type": "DWORD"
+        },
+        {
+            "name": "Options",
+            "type": "LPDHCP_OPTION_ARRAY"
+        },
+        {
+            "name": "OptionsRead",
+            "type": "DWORD"
+        },
+        {
+            "name": "OptionsTotal",
+            "type": "DWORD"
+        }
+    ],
+    "DhcpRemoveOption": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "OptionID",
+            "type": "DHCP_OPTION_ID"
+        }
+    ],
+    "DhcpSetOptionValue": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "OptionID",
+            "type": "DHCP_OPTION_ID"
+        },
+        {
+            "name": "ScopeInfo",
+            "type": "DHCP_OPTION_SCOPE_INFO"
+        },
+        {
+            "name": "OptionValue",
+            "type": "DHCP_OPTION_DATA"
+        }
+    ],
+    "DhcpSetOptionValues": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "ScopeInfo",
+            "type": "DHCP_OPTION_SCOPE_INFO"
+        },
+        {
+            "name": "OptionValues",
+            "type": "DHCP_OPTION_VALUE_ARRAY"
+        }
+    ],
+    "DhcpGetOptionValue": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "OptionID",
+            "type": "DHCP_OPTION_ID"
+        },
+        {
+            "name": "ScopeInfo",
+            "type": "DHCP_OPTION_SCOPE_INFO"
+        },
+        {
+            "name": "OptionValue",
+            "type": "LPDHCP_OPTION_VALUE"
+        }
+    ],
+    "DhcpEnumOptionValues": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "ScopeInfo",
+            "type": "DHCP_OPTION_SCOPE_INFO"
+        },
+        {
+            "name": "ResumeHandle",
+            "type": "DHCP_RESUME_HANDLE"
+        },
+        {
+            "name": "PreferredMaximum",
+            "type": "DWORD"
+        },
+        {
+            "name": "OptionValues",
+            "type": "LPDHCP_OPTION_VALUE_ARRAY"
+        },
+        {
+            "name": "OptionsRead",
+            "type": "DWORD"
+        },
+        {
+            "name": "OptionsTotal",
+            "type": "DWORD"
+        }
+    ],
+    "DhcpRemoveOptionValue": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "OptionID",
+            "type": "DHCP_OPTION_ID"
+        },
+        {
+            "name": "ScopeInfo",
+            "type": "DHCP_OPTION_SCOPE_INFO"
+        }
+    ],
+    "DhcpCreateClientInfoVQ": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "ClientInfo",
+            "type": "DHCP_CLIENT_INFO_VQ"
+        }
+    ],
+    "DhcpSetClientInfoVQ": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "ClientInfo",
+            "type": "DHCP_CLIENT_INFO_VQ"
+        }
+    ],
+    "DhcpGetClientInfoVQ": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "SearchInfo",
+            "type": "DHCP_SEARCH_INFO"
+        },
+        {
+            "name": "ClientInfo",
+            "type": "LPDHCP_CLIENT_INFO_VQ"
+        }
+    ],
+    "DhcpEnumSubnetClientsVQ": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "SubnetAddress",
+            "type": "DHCP_IP_ADDRESS"
+        },
+        {
+            "name": "ResumeHandle",
+            "type": "DHCP_RESUME_HANDLE"
+        },
+        {
+            "name": "PreferredMaximum",
+            "type": "DWORD"
+        },
+        {
+            "name": "ClientInfo",
+            "type": "LPDHCP_CLIENT_INFO_ARRAY_VQ"
+        },
+        {
+            "name": "ClientsRead",
+            "type": "DWORD"
+        },
+        {
+            "name": "ClientsTotal",
+            "type": "DWORD"
+        }
+    ],
+    "DhcpEnumSubnetClientsFilterStatusInfo": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "SubnetAddress",
+            "type": "DHCP_IP_ADDRESS"
+        },
+        {
+            "name": "ResumeHandle",
+            "type": "DHCP_RESUME_HANDLE"
+        },
+        {
+            "name": "PreferredMaximum",
+            "type": "DWORD"
+        },
+        {
+            "name": "ClientInfo",
+            "type": "LPDHCP_CLIENT_FILTER_STATUS_INFO_ARRAY"
+        },
+        {
+            "name": "ClientsRead",
+            "type": "DWORD"
+        },
+        {
+            "name": "ClientsTotal",
+            "type": "DWORD"
+        }
+    ],
+    "DhcpCreateClientInfo": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "ClientInfo",
+            "type": "DHCP_CLIENT_INFO"
+        }
+    ],
+    "DhcpSetClientInfo": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "ClientInfo",
+            "type": "DHCP_CLIENT_INFO"
+        }
+    ],
+    "DhcpGetClientInfo": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "SearchInfo",
+            "type": "DHCP_SEARCH_INFO"
+        },
+        {
+            "name": "ClientInfo",
+            "type": "LPDHCP_CLIENT_INFO"
+        }
+    ],
+    "DhcpDeleteClientInfo": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "ClientInfo",
+            "type": "DHCP_SEARCH_INFO"
+        }
+    ],
+    "DhcpEnumSubnetClients": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "SubnetAddress",
+            "type": "DHCP_IP_ADDRESS"
+        },
+        {
+            "name": "ResumeHandle",
+            "type": "DHCP_RESUME_HANDLE"
+        },
+        {
+            "name": "PreferredMaximum",
+            "type": "DWORD"
+        },
+        {
+            "name": "ClientInfo",
+            "type": "LPDHCP_CLIENT_INFO_ARRAY"
+        },
+        {
+            "name": "ClientsRead",
+            "type": "DWORD"
+        },
+        {
+            "name": "ClientsTotal",
+            "type": "DWORD"
+        }
+    ],
+    "DhcpGetClientOptions": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "ClientIpAddress",
+            "type": "DHCP_IP_ADDRESS"
+        },
+        {
+            "name": "ClientSubnetMask",
+            "type": "DHCP_IP_MASK"
+        },
+        {
+            "name": "ClientOptions",
+            "type": "LPDHCP_OPTION_LIST"
+        }
+    ],
+    "DhcpServerSetConfig": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "FieldsToSet",
+            "type": "DWORD"
+        },
+        {
+            "name": "ConfigInfo",
+            "type": "LPDHCP_SERVER_CONFIG_INFO"
+        }
+    ],
+    "DhcpServerGetConfig": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "ConfigInfo",
+            "type": "LPDHCP_SERVER_CONFIG_INFO"
+        }
+    ],
+    "DhcpScanDatabase": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "SubnetAddress",
+            "type": "DHCP_IP_ADDRESS"
+        },
+        {
+            "name": "FixFlag",
+            "type": "DWORD"
+        },
+        {
+            "name": "ScanList",
+            "type": "LPDHCP_SCAN_LIST"
+        }
+    ],
+    "DhcpRpcFreeMemory": [
+        {
+            "name": "BufferPointer",
+            "type": "PVOID"
+        }
+    ],
+    "DhcpGetVersion": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "MajorVersion",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "MinorVersion",
+            "type": "LPDWORD"
+        }
+    ],
+    "DhcpAddSubnetElementV4": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "SubnetAddress",
+            "type": "DHCP_IP_ADDRESS"
+        },
+        {
+            "name": "AddElementInfo",
+            "type": "DHCP_SUBNET_ELEMENT_DATA_V4"
+        }
+    ],
+    "DhcpEnumSubnetElementsV4": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "SubnetAddress",
+            "type": "DHCP_IP_ADDRESS"
+        },
+        {
+            "name": "EnumElementType",
+            "type": "DHCP_SUBNET_ELEMENT_TYPE"
+        },
+        {
+            "name": "ResumeHandle",
+            "type": "DHCP_RESUME_HANDLE"
+        },
+        {
+            "name": "PreferredMaximum",
+            "type": "DWORD"
+        },
+        {
+            "name": "EnumElementInfo",
+            "type": "LPDHCP_SUBNET_ELEMENT_INFO_ARRAY_V4"
+        },
+        {
+            "name": "ElementsRead",
+            "type": "DWORD"
+        },
+        {
+            "name": "ElementsTotal",
+            "type": "DWORD"
+        }
+    ],
+    "DhcpRemoveSubnetElementV4": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "SubnetAddress",
+            "type": "DHCP_IP_ADDRESS"
+        },
+        {
+            "name": "RemoveElementInfo",
+            "type": "DHCP_SUBNET_ELEMENT_DATA_V4"
+        },
+        {
+            "name": "ForceFlag",
+            "type": "DHCP_FORCE_FLAG"
+        }
+    ],
+    "DhcpCreateClientInfoV4": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "ClientInfo",
+            "type": "DHCP_CLIENT_INFO_V4"
+        }
+    ],
+    "DhcpSetClientInfoV4": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "ClientInfo",
+            "type": "DHCP_CLIENT_INFO_V4"
+        }
+    ],
+    "DhcpGetClientInfoV4": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "SearchInfo",
+            "type": "DHCP_SEARCH_INFO"
+        },
+        {
+            "name": "ClientInfo",
+            "type": "LPDHCP_CLIENT_INFO_V4"
+        }
+    ],
+    "DhcpEnumSubnetClientsV4": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "SubnetAddress",
+            "type": "DHCP_IP_ADDRESS"
+        },
+        {
+            "name": "ResumeHandle",
+            "type": "DHCP_RESUME_HANDLE"
+        },
+        {
+            "name": "PreferredMaximum",
+            "type": "DWORD"
+        },
+        {
+            "name": "ClientInfo",
+            "type": "LPDHCP_CLIENT_INFO_ARRAY_V4"
+        },
+        {
+            "name": "ClientsRead",
+            "type": "DWORD"
+        },
+        {
+            "name": "ClientsTotal",
+            "type": "DWORD"
+        }
+    ],
+    "DhcpServerSetConfigV4": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "FieldsToSet",
+            "type": "DWORD"
+        },
+        {
+            "name": "ConfigInfo",
+            "type": "LPDHCP_SERVER_CONFIG_INFO_V4"
+        }
+    ],
+    "DhcpServerGetConfigV4": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "ConfigInfo",
+            "type": "LPDHCP_SERVER_CONFIG_INFO_V4"
+        }
+    ],
+    "DhcpSetSuperScopeV4": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "SubnetAddress",
+            "type": "DHCP_IP_ADDRESS"
+        },
+        {
+            "name": "SuperScopeName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "ChangeExisting",
+            "type": "BOOL"
+        }
+    ],
+    "DhcpDeleteSuperScopeV4": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "SuperScopeName",
+            "type": "LPWSTR"
+        }
+    ],
+    "DhcpGetSuperScopeInfoV4": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "SuperScopeTable",
+            "type": "LPDHCP_SUPER_SCOPE_TABLE"
+        }
+    ],
+    "DhcpEnumSubnetClientsV5": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "SubnetAddress",
+            "type": "DHCP_IP_ADDRESS"
+        },
+        {
+            "name": "ResumeHandle",
+            "type": "DHCP_RESUME_HANDLE"
+        },
+        {
+            "name": "PreferredMaximum",
+            "type": "DWORD"
+        },
+        {
+            "name": "ClientInfo",
+            "type": "LPDHCP_CLIENT_INFO_ARRAY_V5"
+        },
+        {
+            "name": "ClientsRead",
+            "type": "DWORD"
+        },
+        {
+            "name": "ClientsTotal",
+            "type": "DWORD"
+        }
+    ],
+    "DhcpCreateOptionV5": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "OptionId",
+            "type": "DHCP_OPTION_ID"
+        },
+        {
+            "name": "ClassName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "VendorName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "OptionInfo",
+            "type": "LPDHCP_OPTION"
+        }
+    ],
+    "DhcpSetOptionInfoV5": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "OptionID",
+            "type": "DHCP_OPTION_ID"
+        },
+        {
+            "name": "ClassName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "VendorName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "OptionInfo",
+            "type": "LPDHCP_OPTION"
+        }
+    ],
+    "DhcpGetOptionInfoV5": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "OptionID",
+            "type": "DHCP_OPTION_ID"
+        },
+        {
+            "name": "ClassName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "VendorName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "OptionInfo",
+            "type": "LPDHCP_OPTION"
+        }
+    ],
+    "DhcpEnumOptionsV5": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "ClassName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "VendorName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "ResumeHandle",
+            "type": "DHCP_RESUME_HANDLE"
+        },
+        {
+            "name": "PreferredMaximum",
+            "type": "DWORD"
+        },
+        {
+            "name": "Options",
+            "type": "LPDHCP_OPTION_ARRAY"
+        },
+        {
+            "name": "OptionsRead",
+            "type": "DWORD"
+        },
+        {
+            "name": "OptionsTotal",
+            "type": "DWORD"
+        }
+    ],
+    "DhcpRemoveOptionV5": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "OptionID",
+            "type": "DHCP_OPTION_ID"
+        },
+        {
+            "name": "ClassName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "VendorName",
+            "type": "LPWSTR"
+        }
+    ],
+    "DhcpSetOptionValueV5": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "OptionId",
+            "type": "DHCP_OPTION_ID"
+        },
+        {
+            "name": "ClassName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "VendorName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "ScopeInfo",
+            "type": "LPDHCP_OPTION_SCOPE_INFO"
+        },
+        {
+            "name": "OptionValue",
+            "type": "LPDHCP_OPTION_DATA"
+        }
+    ],
+    "DhcpSetOptionValuesV5": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "ClassName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "VendorName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "ScopeInfo",
+            "type": "LPDHCP_OPTION_SCOPE_INFO"
+        },
+        {
+            "name": "OptionValues",
+            "type": "LPDHCP_OPTION_VALUE_ARRAY"
+        }
+    ],
+    "DhcpGetOptionValueV5": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "OptionID",
+            "type": "DHCP_OPTION_ID"
+        },
+        {
+            "name": "ClassName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "VendorName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "ScopeInfo",
+            "type": "LPDHCP_OPTION_SCOPE_INFO"
+        },
+        {
+            "name": "OptionValue",
+            "type": "LPDHCP_OPTION_VALUE"
+        }
+    ],
+    "DhcpGetOptionValueV6": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "OptionID",
+            "type": "DHCP_OPTION_ID"
+        },
+        {
+            "name": "ClassName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "VendorName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "ScopeInfo",
+            "type": "LPDHCP_OPTION_SCOPE_INFO6"
+        },
+        {
+            "name": "OptionValue",
+            "type": "LPDHCP_OPTION_VALUE"
+        }
+    ],
+    "DhcpEnumOptionValuesV5": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "ClassName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "VendorName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "ScopeInfo",
+            "type": "LPDHCP_OPTION_SCOPE_INFO"
+        },
+        {
+            "name": "ResumeHandle",
+            "type": "DHCP_RESUME_HANDLE"
+        },
+        {
+            "name": "PreferredMaximum",
+            "type": "DWORD"
+        },
+        {
+            "name": "OptionValues",
+            "type": "LPDHCP_OPTION_VALUE_ARRAY"
+        },
+        {
+            "name": "OptionsRead",
+            "type": "DWORD"
+        },
+        {
+            "name": "OptionsTotal",
+            "type": "DWORD"
+        }
+    ],
+    "DhcpRemoveOptionValueV5": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "OptionID",
+            "type": "DHCP_OPTION_ID"
+        },
+        {
+            "name": "ClassName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "VendorName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "ScopeInfo",
+            "type": "LPDHCP_OPTION_SCOPE_INFO"
+        }
+    ],
+    "DhcpCreateClass": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "ReservedMustBeZero",
+            "type": "DWORD"
+        },
+        {
+            "name": "ClassInfo",
+            "type": "LPDHCP_CLASS_INFO"
+        }
+    ],
+    "DhcpModifyClass": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "ReservedMustBeZero",
+            "type": "DWORD"
+        },
+        {
+            "name": "ClassInfo",
+            "type": "LPDHCP_CLASS_INFO"
+        }
+    ],
+    "DhcpDeleteClass": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "ReservedMustBeZero",
+            "type": "DWORD"
+        },
+        {
+            "name": "ClassName",
+            "type": "LPWSTR"
+        }
+    ],
+    "DhcpGetClassInfo": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "ReservedMustBeZero",
+            "type": "DWORD"
+        },
+        {
+            "name": "PartialClassInfo",
+            "type": "LPDHCP_CLASS_INFO"
+        },
+        {
+            "name": "FilledClassInfo",
+            "type": "LPDHCP_CLASS_INFO"
+        }
+    ],
+    "DhcpEnumClasses": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "ReservedMustBeZero",
+            "type": "DWORD"
+        },
+        {
+            "name": "ResumeHandle",
+            "type": "DHCP_RESUME_HANDLE"
+        },
+        {
+            "name": "PreferredMaximum",
+            "type": "DWORD"
+        },
+        {
+            "name": "ClassInfoArray",
+            "type": "LPDHCP_CLASS_INFO_ARRAY"
+        },
+        {
+            "name": "nRead",
+            "type": "DWORD"
+        },
+        {
+            "name": "nTotal",
+            "type": "DWORD"
+        }
+    ],
+    "DhcpGetAllOptions": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "OptionStruct",
+            "type": "LPDHCP_ALL_OPTIONS"
+        }
+    ],
+    "DhcpGetAllOptionsV6": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "OptionStruct",
+            "type": "LPDHCP_ALL_OPTIONS"
+        }
+    ],
+    "DhcpGetAllOptionValues": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "ScopeInfo",
+            "type": "LPDHCP_OPTION_SCOPE_INFO"
+        },
+        {
+            "name": "Values",
+            "type": "LPDHCP_ALL_OPTION_VALUES"
+        }
+    ],
+    "DhcpGetAllOptionValuesV6": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "ScopeInfo",
+            "type": "LPDHCP_OPTION_SCOPE_INFO6"
+        },
+        {
+            "name": "Values",
+            "type": "LPDHCP_ALL_OPTION_VALUES"
+        }
+    ],
+    "DhcpEnumServers": [
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "IdInfo",
+            "type": "LPVOID"
+        },
+        {
+            "name": "Servers",
+            "type": "LPDHCP_SERVER_INFO_ARRAY"
+        },
+        {
+            "name": "CallbackFn",
+            "type": "LPVOID"
+        },
+        {
+            "name": "CallbackData",
+            "type": "LPVOID"
+        }
+    ],
+    "DhcpAddServer": [
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "IdInfo",
+            "type": "LPVOID"
+        },
+        {
+            "name": "NewServer",
+            "type": "LPDHCP_SERVER_INFO"
+        },
+        {
+            "name": "CallbackFn",
+            "type": "LPVOID"
+        },
+        {
+            "name": "CallbackData",
+            "type": "LPVOID"
+        }
+    ],
+    "DhcpDeleteServer": [
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "IdInfo",
+            "type": "LPVOID"
+        },
+        {
+            "name": "NewServer",
+            "type": "LPDHCP_SERVER_INFO"
+        },
+        {
+            "name": "CallbackFn",
+            "type": "LPVOID"
+        },
+        {
+            "name": "CallbackData",
+            "type": "LPVOID"
+        }
+    ],
+    "DhcpGetServerBindingInfo": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "Flags",
+            "type": "ULONG"
+        },
+        {
+            "name": "BindElementsInfo",
+            "type": "LPDHCP_BIND_ELEMENT_ARRAY"
+        }
+    ],
+    "DhcpSetServerBindingInfo": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "Flags",
+            "type": "ULONG"
+        },
+        {
+            "name": "BindElementInfo",
+            "type": "LPDHCP_BIND_ELEMENT_ARRAY"
+        }
+    ],
+    "DhcpAddSubnetElementV5": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "SubnetAddress",
+            "type": "DHCP_IP_ADDRESS"
+        },
+        {
+            "name": "AddElementInfo",
+            "type": "DHCP_SUBNET_ELEMENT_DATA_V5"
+        }
+    ],
+    "DhcpEnumSubnetElementsV5": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "SubnetAddress",
+            "type": "DHCP_IP_ADDRESS"
+        },
+        {
+            "name": "EnumElementType",
+            "type": "DHCP_SUBNET_ELEMENT_TYPE"
+        },
+        {
+            "name": "ResumeHandle",
+            "type": "DHCP_RESUME_HANDLE"
+        },
+        {
+            "name": "PreferredMaximum",
+            "type": "DWORD"
+        },
+        {
+            "name": "EnumElementInfo",
+            "type": "LPDHCP_SUBNET_ELEMENT_INFO_ARRAY_V5"
+        },
+        {
+            "name": "ElementsRead",
+            "type": "DWORD"
+        },
+        {
+            "name": "ElementsTotal",
+            "type": "DWORD"
+        }
+    ],
+    "DhcpRemoveSubnetElementV5": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "SubnetAddress",
+            "type": "DHCP_IP_ADDRESS"
+        },
+        {
+            "name": "RemoveElementInfo",
+            "type": "DHCP_SUBNET_ELEMENT_DATA_V5"
+        },
+        {
+            "name": "ForceFlag",
+            "type": "DHCP_FORCE_FLAG"
+        }
+    ],
+    "DhcpV4EnumSubnetReservations": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "SubnetAddress",
+            "type": "DHCP_IP_ADDRESS"
+        },
+        {
+            "name": "ResumeHandle",
+            "type": "DHCP_RESUME_HANDLE"
+        },
+        {
+            "name": "PreferredMaximum",
+            "type": "DWORD"
+        },
+        {
+            "name": "EnumElementInfo",
+            "type": "LPDHCP_RESERVATION_INFO_ARRAY"
+        },
+        {
+            "name": "ElementsRead",
+            "type": "DWORD"
+        },
+        {
+            "name": "ElementsTotal",
+            "type": "DWORD"
+        }
+    ],
+    "DhcpCreateOptionV6": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "OptionId",
+            "type": "DHCP_OPTION_ID"
+        },
+        {
+            "name": "ClassName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "VendorName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "OptionInfo",
+            "type": "LPDHCP_OPTION"
+        }
+    ],
+    "DhcpRemoveOptionV6": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "OptionID",
+            "type": "DHCP_OPTION_ID"
+        },
+        {
+            "name": "ClassName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "VendorName",
+            "type": "LPWSTR"
+        }
+    ],
+    "DhcpEnumOptionsV6": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "ClassName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "VendorName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "ResumeHandle",
+            "type": "DHCP_RESUME_HANDLE"
+        },
+        {
+            "name": "PreferredMaximum",
+            "type": "DWORD"
+        },
+        {
+            "name": "Options",
+            "type": "LPDHCP_OPTION_ARRAY"
+        },
+        {
+            "name": "OptionsRead",
+            "type": "DWORD"
+        },
+        {
+            "name": "OptionsTotal",
+            "type": "DWORD"
+        }
+    ],
+    "DhcpRemoveOptionValueV6": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "OptionID",
+            "type": "DHCP_OPTION_ID"
+        },
+        {
+            "name": "ClassName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "VendorName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "ScopeInfo",
+            "type": "LPDHCP_OPTION_SCOPE_INFO6"
+        }
+    ],
+    "DhcpGetOptionInfoV6": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "OptionID",
+            "type": "DHCP_OPTION_ID"
+        },
+        {
+            "name": "ClassName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "VendorName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "OptionInfo",
+            "type": "LPDHCP_OPTION"
+        }
+    ],
+    "DhcpSetOptionInfoV6": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "OptionID",
+            "type": "DHCP_OPTION_ID"
+        },
+        {
+            "name": "ClassName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "VendorName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "OptionInfo",
+            "type": "LPDHCP_OPTION"
+        }
+    ],
+    "DhcpSetOptionValueV6": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "OptionId",
+            "type": "DHCP_OPTION_ID"
+        },
+        {
+            "name": "ClassName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "VendorName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "ScopeInfo",
+            "type": "LPDHCP_OPTION_SCOPE_INFO6"
+        },
+        {
+            "name": "OptionValue",
+            "type": "LPDHCP_OPTION_DATA"
+        }
+    ],
+    "DhcpGetSubnetInfoVQ": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "SubnetAddress",
+            "type": "DHCP_IP_ADDRESS"
+        },
+        {
+            "name": "SubnetInfo",
+            "type": "LPDHCP_SUBNET_INFO_VQ"
+        }
+    ],
+    "DhcpCreateSubnetVQ": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "SubnetAddress",
+            "type": "DHCP_IP_ADDRESS"
+        },
+        {
+            "name": "SubnetInfo",
+            "type": "DHCP_SUBNET_INFO_VQ"
+        }
+    ],
+    "DhcpSetSubnetInfoVQ": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "SubnetAddress",
+            "type": "DHCP_IP_ADDRESS"
+        },
+        {
+            "name": "SubnetInfo",
+            "type": "DHCP_SUBNET_INFO_VQ"
+        }
+    ],
+    "DhcpEnumOptionValuesV6": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "ClassName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "VendorName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "ScopeInfo",
+            "type": "LPDHCP_OPTION_SCOPE_INFO6"
+        },
+        {
+            "name": "ResumeHandle",
+            "type": "DHCP_RESUME_HANDLE"
+        },
+        {
+            "name": "PreferredMaximum",
+            "type": "DWORD"
+        },
+        {
+            "name": "OptionValues",
+            "type": "LPDHCP_OPTION_VALUE_ARRAY"
+        },
+        {
+            "name": "OptionsRead",
+            "type": "DWORD"
+        },
+        {
+            "name": "OptionsTotal",
+            "type": "DWORD"
+        }
+    ],
+    "DhcpDsInit": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "DhcpDsCleanup": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "DhcpSetThreadOptions": [
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "Reserved",
+            "type": "LPVOID"
+        }
+    ],
+    "DhcpGetThreadOptions": [
+        {
+            "name": "pFlags",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "Reserved",
+            "type": "LPVOID"
+        }
+    ],
+    "DhcpServerQueryAttribute": [
+        {
+            "name": "ServerIpAddr",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "dwReserved",
+            "type": "ULONG"
+        },
+        {
+            "name": "DhcpAttribId",
+            "type": "DHCP_ATTRIB_ID"
+        },
+        {
+            "name": "pDhcpAttrib",
+            "type": "LPDHCP_ATTRIB"
+        }
+    ],
+    "DhcpServerQueryAttributes": [
+        {
+            "name": "ServerIpAddr",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "dwReserved",
+            "type": "ULONG"
+        },
+        {
+            "name": "dwAttribCount",
+            "type": "ULONG"
+        },
+        {
+            "name": "pDhcpAttribs",
+            "type": "DHCP_ATTRIB_ID"
+        },
+        {
+            "name": "pDhcpAttribArr",
+            "type": "LPDHCP_ATTRIB_ARRAY"
+        }
+    ],
+    "DhcpServerRedoAuthorization": [
+        {
+            "name": "ServerIpAddr",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "dwReserved",
+            "type": "ULONG"
+        }
+    ],
+    "DhcpAuditLogSetParams": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "AuditLogDir",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "DiskCheckInterval",
+            "type": "DWORD"
+        },
+        {
+            "name": "MaxLogFilesSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "MinSpaceOnDisk",
+            "type": "DWORD"
+        }
+    ],
+    "DhcpAuditLogGetParams": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "AuditLogDir",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "DiskCheckInterval",
+            "type": "DWORD"
+        },
+        {
+            "name": "MaxLogFilesSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "MinSpaceOnDisk",
+            "type": "DWORD"
+        }
+    ],
+    "DhcpServerQueryDnsRegCredentials": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "UnameSize",
+            "type": "ULONG"
+        },
+        {
+            "name": "Uname",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "DomainSize",
+            "type": "ULONG"
+        },
+        {
+            "name": "Domain",
+            "type": "LPWSTR"
+        }
+    ],
+    "DhcpServerSetDnsRegCredentialsV5": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "Uname",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "Domain",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "Passwd",
+            "type": "LPWSTR"
+        }
+    ],
+    "DhcpServerBackupDatabase": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "Path",
+            "type": "LPWSTR"
+        }
+    ],
+    "DhcpServerRestoreDatabase": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "Path",
+            "type": "LPWSTR"
+        }
+    ],
+    "DhcpServerSetConfigVQ": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "FieldsToSet",
+            "type": "DWORD"
+        },
+        {
+            "name": "ConfigInfo",
+            "type": "LPDHCP_SERVER_CONFIG_INFO_VQ"
+        }
+    ],
+    "DhcpServerGetConfigVQ": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "ConfigInfo",
+            "type": "LPDHCP_SERVER_CONFIG_INFO_VQ"
+        }
+    ],
+    "DhcpGetServerSpecificStrings": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "ServerSpecificStrings",
+            "type": "LPDHCP_SERVER_SPECIFIC_STRINGS"
+        }
+    ],
+    "DhcpCreateSubnetV6": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "SubnetAddress",
+            "type": "DHCP_IPV6_ADDRESS"
+        },
+        {
+            "name": "SubnetInfo",
+            "type": "LPDHCP_SUBNET_INFO_V6"
+        }
+    ],
+    "DhcpDeleteSubnetV6": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "SubnetAddress",
+            "type": "DHCP_IPV6_ADDRESS"
+        },
+        {
+            "name": "ForceFlag",
+            "type": "DHCP_FORCE_FLAG"
+        }
+    ],
+    "DhcpEnumSubnetsV6": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "ResumeHandle",
+            "type": "DHCP_RESUME_HANDLE"
+        },
+        {
+            "name": "PreferredMaximum",
+            "type": "DWORD"
+        },
+        {
+            "name": "EnumInfo",
+            "type": "LPDHCPV6_IP_ARRAY"
+        },
+        {
+            "name": "ElementsRead",
+            "type": "DWORD"
+        },
+        {
+            "name": "ElementsTotal",
+            "type": "DWORD"
+        }
+    ],
+    "DhcpAddSubnetElementV6": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "SubnetAddress",
+            "type": "DHCP_IPV6_ADDRESS"
+        },
+        {
+            "name": "AddElementInfo",
+            "type": "LPDHCP_SUBNET_ELEMENT_DATA_V6"
+        }
+    ],
+    "DhcpRemoveSubnetElementV6": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "SubnetAddress",
+            "type": "DHCP_IPV6_ADDRESS"
+        },
+        {
+            "name": "RemoveElementInfo",
+            "type": "LPDHCP_SUBNET_ELEMENT_DATA_V6"
+        },
+        {
+            "name": "ForceFlag",
+            "type": "DHCP_FORCE_FLAG"
+        }
+    ],
+    "DhcpEnumSubnetElementsV6": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "SubnetAddress",
+            "type": "DHCP_IPV6_ADDRESS"
+        },
+        {
+            "name": "EnumElementType",
+            "type": "DHCP_SUBNET_ELEMENT_TYPE_V6"
+        },
+        {
+            "name": "ResumeHandle",
+            "type": "DHCP_RESUME_HANDLE"
+        },
+        {
+            "name": "PreferredMaximum",
+            "type": "DWORD"
+        },
+        {
+            "name": "EnumElementInfo",
+            "type": "LPDHCP_SUBNET_ELEMENT_INFO_ARRAY_V6"
+        },
+        {
+            "name": "ElementsRead",
+            "type": "DWORD"
+        },
+        {
+            "name": "ElementsTotal",
+            "type": "DWORD"
+        }
+    ],
+    "DhcpGetSubnetInfoV6": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "SubnetAddress",
+            "type": "DHCP_IPV6_ADDRESS"
+        },
+        {
+            "name": "SubnetInfo",
+            "type": "LPDHCP_SUBNET_INFO_V6"
+        }
+    ],
+    "DhcpEnumSubnetClientsV6": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "SubnetAddress",
+            "type": "DHCP_IPV6_ADDRESS"
+        },
+        {
+            "name": "ResumeHandle",
+            "type": "DHCP_RESUME_IPV6_HANDLE"
+        },
+        {
+            "name": "PreferredMaximum",
+            "type": "DWORD"
+        },
+        {
+            "name": "ClientInfo",
+            "type": "LPDHCP_CLIENT_INFO_ARRAY_V6"
+        },
+        {
+            "name": "ClientsRead",
+            "type": "DWORD"
+        },
+        {
+            "name": "ClientsTotal",
+            "type": "DWORD"
+        }
+    ],
+    "DhcpServerGetConfigV6": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "ScopeInfo",
+            "type": "LPDHCP_OPTION_SCOPE_INFO6"
+        },
+        {
+            "name": "ConfigInfo",
+            "type": "LPDHCP_SERVER_CONFIG_INFO_V6"
+        }
+    ],
+    "DhcpServerSetConfigV6": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "ScopeInfo",
+            "type": "LPDHCP_OPTION_SCOPE_INFO6"
+        },
+        {
+            "name": "FieldsToSet",
+            "type": "DWORD"
+        },
+        {
+            "name": "ConfigInfo",
+            "type": "LPDHCP_SERVER_CONFIG_INFO_V6"
+        }
+    ],
+    "DhcpSetSubnetInfoV6": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "SubnetAddress",
+            "type": "DHCP_IPV6_ADDRESS"
+        },
+        {
+            "name": "SubnetInfo",
+            "type": "LPDHCP_SUBNET_INFO_V6"
+        }
+    ],
+    "DhcpGetMibInfoV6": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "MibInfo",
+            "type": "LPDHCP_MIB_INFO_V6"
+        }
+    ],
+    "DhcpGetServerBindingInfoV6": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "Flags",
+            "type": "ULONG"
+        },
+        {
+            "name": "BindElementsInfo",
+            "type": "LPDHCPV6_BIND_ELEMENT_ARRAY"
+        }
+    ],
+    "DhcpSetServerBindingInfoV6": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "Flags",
+            "type": "ULONG"
+        },
+        {
+            "name": "BindElementInfo",
+            "type": "LPDHCPV6_BIND_ELEMENT_ARRAY"
+        }
+    ],
+    "DhcpSetClientInfoV6": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "ClientInfo",
+            "type": "DHCP_CLIENT_INFO_V6"
+        }
+    ],
+    "DhcpGetClientInfoV6": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "SearchInfo",
+            "type": "DHCP_SEARCH_INFO_V6"
+        },
+        {
+            "name": "ClientInfo",
+            "type": "LPDHCP_CLIENT_INFO_V6"
+        }
+    ],
+    "DhcpDeleteClientInfoV6": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "ClientInfo",
+            "type": "DHCP_SEARCH_INFO_V6"
+        }
+    ],
+    "DhcpCreateClassV6": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "ReservedMustBeZero",
+            "type": "DWORD"
+        },
+        {
+            "name": "ClassInfo",
+            "type": "LPDHCP_CLASS_INFO_V6"
+        }
+    ],
+    "DhcpModifyClassV6": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "ReservedMustBeZero",
+            "type": "DWORD"
+        },
+        {
+            "name": "ClassInfo",
+            "type": "LPDHCP_CLASS_INFO_V6"
+        }
+    ],
+    "DhcpDeleteClassV6": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "ReservedMustBeZero",
+            "type": "DWORD"
+        },
+        {
+            "name": "ClassName",
+            "type": "LPWSTR"
+        }
+    ],
+    "DhcpEnumClassesV6": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "ReservedMustBeZero",
+            "type": "DWORD"
+        },
+        {
+            "name": "ResumeHandle",
+            "type": "DHCP_RESUME_HANDLE"
+        },
+        {
+            "name": "PreferredMaximum",
+            "type": "DWORD"
+        },
+        {
+            "name": "ClassInfoArray",
+            "type": "LPDHCP_CLASS_INFO_ARRAY_V6"
+        },
+        {
+            "name": "nRead",
+            "type": "DWORD"
+        },
+        {
+            "name": "nTotal",
+            "type": "DWORD"
+        }
+    ],
+    "DhcpSetSubnetDelayOffer": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "SubnetAddress",
+            "type": "DHCP_IP_ADDRESS"
+        },
+        {
+            "name": "TimeDelayInMilliseconds",
+            "type": "USHORT"
+        }
+    ],
+    "DhcpGetSubnetDelayOffer": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "SubnetAddress",
+            "type": "DHCP_IP_ADDRESS"
+        },
+        {
+            "name": "TimeDelayInMilliseconds",
+            "type": "USHORT"
+        }
+    ],
+    "DhcpGetMibInfoV5": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "MibInfo",
+            "type": "LPDHCP_MIB_INFO_V5"
+        }
+    ],
+    "DhcpV4GetOptionValue": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "OptionID",
+            "type": "DHCP_OPTION_ID"
+        },
+        {
+            "name": "PolicyName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "VendorName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "ScopeInfo",
+            "type": "LPDHCP_OPTION_SCOPE_INFO"
+        },
+        {
+            "name": "OptionValue",
+            "type": "LPDHCP_OPTION_VALUE"
+        }
+    ],
+    "DhcpV4SetOptionValue": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "OptionId",
+            "type": "DHCP_OPTION_ID"
+        },
+        {
+            "name": "PolicyName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "VendorName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "ScopeInfo",
+            "type": "LPDHCP_OPTION_SCOPE_INFO"
+        },
+        {
+            "name": "OptionValue",
+            "type": "LPDHCP_OPTION_DATA"
+        }
+    ],
+    "DhcpV4SetOptionValues": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "PolicyName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "VendorName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "ScopeInfo",
+            "type": "LPDHCP_OPTION_SCOPE_INFO"
+        },
+        {
+            "name": "OptionValues",
+            "type": "LPDHCP_OPTION_VALUE_ARRAY"
+        }
+    ],
+    "DhcpV4RemoveOptionValue": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "OptionID",
+            "type": "DHCP_OPTION_ID"
+        },
+        {
+            "name": "PolicyName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "VendorName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "ScopeInfo",
+            "type": "LPDHCP_OPTION_SCOPE_INFO"
+        }
+    ],
+    "DhcpV4GetAllOptionValues": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "ScopeInfo",
+            "type": "LPDHCP_OPTION_SCOPE_INFO"
+        },
+        {
+            "name": "Values",
+            "type": "LPDHCP_ALL_OPTION_VALUES_PB"
+        }
+    ],
+    "DhcpV4FailoverCreateRelationship": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pRelationship",
+            "type": "LPDHCP_FAILOVER_RELATIONSHIP"
+        }
+    ],
+    "DhcpV4FailoverSetRelationship": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pRelationship",
+            "type": "LPDHCP_FAILOVER_RELATIONSHIP"
+        }
+    ],
+    "DhcpV4FailoverDeleteRelationship": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pRelationshipName",
+            "type": "LPWSTR"
+        }
+    ],
+    "DhcpV4FailoverGetRelationship": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pRelationshipName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pRelationship",
+            "type": "LPDHCP_FAILOVER_RELATIONSHIP"
+        }
+    ],
+    "DhcpV4FailoverEnumRelationship": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "ResumeHandle",
+            "type": "DHCP_RESUME_HANDLE"
+        },
+        {
+            "name": "PreferredMaximum",
+            "type": "DWORD"
+        },
+        {
+            "name": "pRelationship",
+            "type": "LPDHCP_FAILOVER_RELATIONSHIP_ARRAY"
+        },
+        {
+            "name": "RelationshipRead",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "RelationshipTotal",
+            "type": "LPDWORD"
+        }
+    ],
+    "DhcpV4FailoverAddScopeToRelationship": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pRelationship",
+            "type": "LPDHCP_FAILOVER_RELATIONSHIP"
+        }
+    ],
+    "DhcpV4FailoverDeleteScopeFromRelationship": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pRelationship",
+            "type": "LPDHCP_FAILOVER_RELATIONSHIP"
+        }
+    ],
+    "DhcpV4FailoverGetScopeRelationship": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "ScopeId",
+            "type": "DHCP_IP_ADDRESS"
+        },
+        {
+            "name": "pRelationship",
+            "type": "LPDHCP_FAILOVER_RELATIONSHIP"
+        }
+    ],
+    "DhcpV4FailoverGetScopeStatistics": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "ScopeId",
+            "type": "DHCP_IP_ADDRESS"
+        },
+        {
+            "name": "pStats",
+            "type": "LPDHCP_FAILOVER_STATISTICS"
+        }
+    ],
+    "DhcpV4FailoverGetClientInfo": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "SearchInfo",
+            "type": "DHCP_SEARCH_INFO"
+        },
+        {
+            "name": "ClientInfo",
+            "type": "LPDHCPV4_FAILOVER_CLIENT_INFO"
+        }
+    ],
+    "DhcpV4FailoverGetSystemTime": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pTime",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pMaxAllowedDeltaTime",
+            "type": "LPDWORD"
+        }
+    ],
+    "DhcpV4FailoverGetAddressStatus": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "SubnetAddress",
+            "type": "DHCP_IP_ADDRESS"
+        },
+        {
+            "name": "pStatus",
+            "type": "LPDWORD"
+        }
+    ],
+    "DhcpV4FailoverTriggerAddrAllocation": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pFailRelName",
+            "type": "LPWSTR"
+        }
+    ],
+    "DhcpHlprCreateV4Policy": [
+        {
+            "name": "PolicyName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "fGlobalPolicy",
+            "type": "BOOL"
+        },
+        {
+            "name": "Subnet",
+            "type": "DHCP_IP_ADDRESS"
+        },
+        {
+            "name": "ProcessingOrder",
+            "type": "DWORD"
+        },
+        {
+            "name": "RootOperator",
+            "type": "DHCP_POL_LOGIC_OPER"
+        },
+        {
+            "name": "Description",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "Enabled",
+            "type": "BOOL"
+        },
+        {
+            "name": "Policy",
+            "type": "LPDHCP_POLICY"
+        }
+    ],
+    "DhcpHlprAddV4PolicyExpr": [
+        {
+            "name": "Policy",
+            "type": "LPDHCP_POLICY"
+        },
+        {
+            "name": "ParentExpr",
+            "type": "DWORD"
+        },
+        {
+            "name": "Operator",
+            "type": "DHCP_POL_LOGIC_OPER"
+        },
+        {
+            "name": "ExprIndex",
+            "type": "DWORD"
+        }
+    ],
+    "DhcpHlprAddV4PolicyCondition": [
+        {
+            "name": "Policy",
+            "type": "LPDHCP_POLICY"
+        },
+        {
+            "name": "ParentExpr",
+            "type": "DWORD"
+        },
+        {
+            "name": "Type",
+            "type": "DHCP_POL_ATTR_TYPE"
+        },
+        {
+            "name": "OptionID",
+            "type": "DWORD"
+        },
+        {
+            "name": "SubOptionID",
+            "type": "DWORD"
+        },
+        {
+            "name": "VendorName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "Operator",
+            "type": "DHCP_POL_COMPARATOR"
+        },
+        {
+            "name": "Value",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "ValueLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "ConditionIndex",
+            "type": "DWORD"
+        }
+    ],
+    "DhcpHlprAddV4PolicyRange": [
+        {
+            "name": "Policy",
+            "type": "LPDHCP_POLICY"
+        },
+        {
+            "name": "Range",
+            "type": "LPDHCP_IP_RANGE"
+        }
+    ],
+    "DhcpHlprResetV4PolicyExpr": [
+        {
+            "name": "Policy",
+            "type": "LPDHCP_POLICY"
+        }
+    ],
+    "DhcpHlprModifyV4PolicyExpr": [
+        {
+            "name": "Policy",
+            "type": "LPDHCP_POLICY"
+        },
+        {
+            "name": "Operator",
+            "type": "DHCP_POL_LOGIC_OPER"
+        }
+    ],
+    "DhcpHlprFreeV4Policy": [
+        {
+            "name": "Policy",
+            "type": "LPDHCP_POLICY"
+        }
+    ],
+    "DhcpHlprIsV4PolicySingleUC": [
+        {
+            "name": "Policy",
+            "type": "LPDHCP_POLICY"
+        }
+    ],
+    "DhcpV4QueryPolicyEnforcement": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "fGlobalPolicy",
+            "type": "BOOL"
+        },
+        {
+            "name": "SubnetAddress",
+            "type": "DHCP_IP_ADDRESS"
+        },
+        {
+            "name": "Enabled",
+            "type": "BOOL"
+        }
+    ],
+    "DhcpV4SetPolicyEnforcement": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "fGlobalPolicy",
+            "type": "BOOL"
+        },
+        {
+            "name": "SubnetAddress",
+            "type": "DHCP_IP_ADDRESS"
+        },
+        {
+            "name": "Enable",
+            "type": "BOOL"
+        }
+    ],
+    "DhcpHlprIsV4PolicyWellFormed": [
+        {
+            "name": "pPolicy",
+            "type": "LPDHCP_POLICY"
+        }
+    ],
+    "DhcpHlprIsV4PolicyValid": [
+        {
+            "name": "pPolicy",
+            "type": "LPDHCP_POLICY"
+        }
+    ],
+    "DhcpV4CreatePolicy": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pPolicy",
+            "type": "LPDHCP_POLICY"
+        }
+    ],
+    "DhcpV4GetPolicy": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "fGlobalPolicy",
+            "type": "BOOL"
+        },
+        {
+            "name": "SubnetAddress",
+            "type": "DHCP_IP_ADDRESS"
+        },
+        {
+            "name": "PolicyName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "Policy",
+            "type": "LPDHCP_POLICY"
+        }
+    ],
+    "DhcpV4SetPolicy": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "FieldsModified",
+            "type": "DWORD"
+        },
+        {
+            "name": "fGlobalPolicy",
+            "type": "BOOL"
+        },
+        {
+            "name": "SubnetAddress",
+            "type": "DHCP_IP_ADDRESS"
+        },
+        {
+            "name": "PolicyName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "Policy",
+            "type": "LPDHCP_POLICY"
+        }
+    ],
+    "DhcpV4DeletePolicy": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "fGlobalPolicy",
+            "type": "BOOL"
+        },
+        {
+            "name": "SubnetAddress",
+            "type": "DHCP_IP_ADDRESS"
+        },
+        {
+            "name": "PolicyName",
+            "type": "LPWSTR"
+        }
+    ],
+    "DhcpV4EnumPolicies": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "ResumeHandle",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "PreferredMaximum",
+            "type": "DWORD"
+        },
+        {
+            "name": "fGlobalPolicy",
+            "type": "BOOL"
+        },
+        {
+            "name": "SubnetAddress",
+            "type": "DHCP_IP_ADDRESS"
+        },
+        {
+            "name": "EnumInfo",
+            "type": "LPDHCP_POLICY_ARRAY"
+        },
+        {
+            "name": "ElementsRead",
+            "type": "DWORD"
+        },
+        {
+            "name": "ElementsTotal",
+            "type": "DWORD"
+        }
+    ],
+    "DhcpV4AddPolicyRange": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "SubnetAddress",
+            "type": "DHCP_IP_ADDRESS"
+        },
+        {
+            "name": "PolicyName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "Range",
+            "type": "LPDHCP_IP_RANGE"
+        }
+    ],
+    "DhcpV4RemovePolicyRange": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "SubnetAddress",
+            "type": "DHCP_IP_ADDRESS"
+        },
+        {
+            "name": "PolicyName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "Range",
+            "type": "LPDHCP_IP_RANGE"
+        }
+    ],
+    "DhcpV6SetStatelessStoreParams": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "fServerLevel",
+            "type": "BOOL"
+        },
+        {
+            "name": "SubnetAddress",
+            "type": "DHCP_IPV6_ADDRESS"
+        },
+        {
+            "name": "FieldModified",
+            "type": "DWORD"
+        },
+        {
+            "name": "Params",
+            "type": "LPDHCPV6_STATELESS_PARAMS"
+        }
+    ],
+    "DhcpV6GetStatelessStoreParams": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "fServerLevel",
+            "type": "BOOL"
+        },
+        {
+            "name": "SubnetAddress",
+            "type": "DHCP_IPV6_ADDRESS"
+        },
+        {
+            "name": "Params",
+            "type": "LPDHCPV6_STATELESS_PARAMS"
+        }
+    ],
+    "DhcpV6GetStatelessStatistics": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "StatelessStats",
+            "type": "LPDHCPV6_STATELESS_STATS"
+        }
+    ],
+    "DhcpV4CreateClientInfo": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "ClientInfo",
+            "type": "LPDHCP_CLIENT_INFO_PB"
+        }
+    ],
+    "DhcpV4EnumSubnetClients": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "SubnetAddress",
+            "type": "DHCP_IP_ADDRESS"
+        },
+        {
+            "name": "ResumeHandle",
+            "type": "DHCP_RESUME_HANDLE"
+        },
+        {
+            "name": "PreferredMaximum",
+            "type": "DWORD"
+        },
+        {
+            "name": "ClientInfo",
+            "type": "LPDHCP_CLIENT_INFO_PB_ARRAY"
+        },
+        {
+            "name": "ClientsRead",
+            "type": "DWORD"
+        },
+        {
+            "name": "ClientsTotal",
+            "type": "DWORD"
+        }
+    ],
+    "DhcpV4GetClientInfo": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "SearchInfo",
+            "type": "DHCP_SEARCH_INFO"
+        },
+        {
+            "name": "ClientInfo",
+            "type": "LPDHCP_CLIENT_INFO_PB"
+        }
+    ],
+    "DhcpV6CreateClientInfo": [
+        {
+            "name": "ServerIpAddress",
+            "type": "WCHAR"
+        },
+        {
+            "name": "ClientInfo",
+            "type": "LPDHCP_CLIENT_INFO_V6"
+        }
+    ],
+    "DhcpV4GetFreeIPAddress": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "ScopeId",
+            "type": "DHCP_IP_ADDRESS"
+        },
+        {
+            "name": "StartIP",
+            "type": "DHCP_IP_ADDRESS"
+        },
+        {
+            "name": "EndIP",
+            "type": "DHCP_IP_ADDRESS"
+        },
+        {
+            "name": "NumFreeAddrReq",
+            "type": "DWORD"
+        },
+        {
+            "name": "IPAddrList",
+            "type": "LPDHCP_IP_ARRAY"
+        }
+    ],
+    "DhcpV6GetFreeIPAddress": [
+        {
+            "name": "ServerIpAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "ScopeId",
+            "type": "DHCP_IPV6_ADDRESS"
+        },
+        {
+            "name": "StartIP",
+            "type": "DHCP_IPV6_ADDRESS"
+        },
+        {
+            "name": "EndIP",
+            "type": "DHCP_IPV6_ADDRESS"
+        },
+        {
+            "name": "NumFreeAddrReq",
+            "type": "DWORD"
+        },
+        {
+            "name": "IPAddrList",
+            "type": "LPDHCPV6_IP_ARRAY"
+        }
+    ]
+}

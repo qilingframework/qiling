@@ -1,0 +1,34 @@
+{
+    "UalStart": [
+        {
+            "name": "Data",
+            "type": "PUAL_DATA_BLOB"
+        }
+    ],
+    "UalStop": [
+        {
+            "name": "Data",
+            "type": "PUAL_DATA_BLOB"
+        }
+    ],
+    "UalInstrument": [
+        {
+            "name": "Data",
+            "type": "PUAL_DATA_BLOB"
+        }
+    ],
+    "UalRegisterProduct": [
+        {
+            "name": "wszProductName",
+            "type": "WCHAR"
+        },
+        {
+            "name": "wszRoleName",
+            "type": "WCHAR"
+        },
+        {
+            "name": "wszGuid",
+            "type": "WCHAR"
+        }
+    ]
+}

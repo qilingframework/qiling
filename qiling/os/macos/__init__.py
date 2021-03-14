@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org)
+#
 
 # virtual addr :  0x00000000000 -  0x7FFFFFFFFFF
     # 64 bit case no aslr:

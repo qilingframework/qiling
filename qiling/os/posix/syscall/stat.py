@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 #
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org)
+#
+
 
 from qiling.const import *
 from qiling.os.linux.thread import *
@@ -10,24 +11,75 @@ from qiling.os.posix.filestruct import *
 from qiling.os.filestruct import *
 from qiling.os.posix.const_mapping import *
 from qiling.exception import *
-
-def ql_syscall_chmod(ql, filename, mode, null1, null2, null3, null4):
-    regreturn = 0
-    filename = ql.mem.string(filename)
-    ql.nprint("chmod(%s,%d) = %d" % (filename, mode, regreturn))
-    ql.os.definesyscall_return(regreturn)
+from qiling.os.posix.stat import *
 
 
-def ql_syscall_fstatat64(ql, fstatat64_fd, fstatat64_fname, fstatat64_buf, fstatat64_flag, *args, **kw):
-    fstatat64_fname = ql.mem.string(fstatat64_fname)
-
-    real_path = ql.os.transform_to_real_path(fstatat64_fname)
-    relative_path = ql.os.transform_to_relative_path(fstatat64_fname)
-
-    regreturn = -1
-    if os.path.exists(real_path) == True:
-        fstat64_info = os.stat(real_path)
-
+def create_stat_struct(ql, info):
+    if ql.archtype == QL_ARCH.MIPS:
+        # pack statinfo
+        stat_buf = ql.pack32(info.st_dev)
+        stat_buf += ql.pack32(0) * 3
+        stat_buf += ql.pack32(info.st_ino)
+        stat_buf += ql.pack32(info.st_mode)
+        stat_buf += ql.pack32(info.st_nlink)
+        stat_buf += ql.pack32(info.st_uid)
+        stat_buf += ql.pack32(info.st_gid)
+        stat_buf += ql.pack32(info.st_rdev)
+        stat_buf += ql.pack32(0) * 2
+        stat_buf += ql.pack32(info.st_size)
+        stat_buf += ql.pack32(0)
+        stat_buf += ql.pack32(int(info.st_atime))
+        stat_buf += ql.pack32(0)
+        stat_buf += ql.pack32(int(info.st_mtime))
+        stat_buf += ql.pack32(0)
+        stat_buf += ql.pack32(int(info.st_ctime))
+        stat_buf += ql.pack32(0)
+        stat_buf += ql.pack32(info.st_blksize)
+        stat_buf += ql.pack32(info.st_blocks)
+        stat_buf = stat_buf.ljust(0x90, b'\x00')
+    elif ql.archtype == QL_ARCH.X8664:
+        if ql.ostype == QL_OS.MACOS:
+            stat_buf = ql.pack64s(info.st_dev)
+        else:
+            stat_buf = ql.pack64(info.st_dev)
+        stat_buf += ql.pack(info.st_ino)
+        stat_buf += ql.pack64(info.st_nlink)
+        if ql.ostype == QL_OS.FREEBSD:
+            stat_buf += ql.pack16(info.st_mode)
+            stat_buf += ql.pack16(0) # Padding
+        else:
+            stat_buf += ql.pack32(info.st_mode)
+        stat_buf += ql.pack32(info.st_uid)
+        stat_buf += ql.pack32(info.st_gid)
+        stat_buf += ql.pack32(0)
+        stat_buf += ql.pack64(info.st_rdev)
+        if ql.ostype == QL_OS.FREEBSD:
+            stat_buf += ql.pack64(int(info.st_atime))
+            stat_buf += ql.pack64(0)
+            stat_buf += ql.pack64(int(info.st_mtime))
+            stat_buf += ql.pack64(0)
+            stat_buf += ql.pack64(int(info.st_ctime))
+            stat_buf += ql.pack64(0)
+            stat_buf += ql.pack64(int(info.st_birthtime))
+            stat_buf += ql.pack64(0)
+            stat_buf += ql.pack64s(info.st_size)
+            stat_buf += ql.pack64(info.st_blocks)
+            stat_buf += ql.pack32s(info.st_blksize)
+            stat_buf += ql.pack32(info.st_flags)
+            stat_buf += ql.pack64(info.st_gen)
+            for _ in range(10):
+                stat_buf += ql.pack64(0)
+        else:
+            stat_buf += ql.pack64(info.st_size)
+            stat_buf += ql.pack64(info.st_blksize)
+            stat_buf += ql.pack64(info.st_blocks)
+            stat_buf += ql.pack64(int(info.st_atime))
+            stat_buf += ql.pack64(0)
+            stat_buf += ql.pack64(int(info.st_mtime))
+            stat_buf += ql.pack64(0)
+            stat_buf += ql.pack64(int(info.st_ctime))
+            stat_buf += ql.pack64(0)
+    elif ql.archtype == QL_ARCH.ARM64:
         # struct stat is : 80 addr is : 0x4000811bc8
         # buf.st_dev offest 0 8 0
         # buf.st_ino offest 8 8 0
@@ -43,439 +95,365 @@ def ql_syscall_fstatat64(ql, fstatat64_fd, fstatat64_fname, fstatat64_buf, fstat
         # buf.st_mtime offest 58 8 274877909472
         # buf.st_ctime offest 68 8 274886368336
         # buf.__glibc_reserved offest 78 8
-        fstat64_buf = ql.pack64(fstat64_info.st_dev)
-        fstat64_buf += ql.pack64(fstat64_info.st_ino)
-        fstat64_buf += ql.pack32(fstat64_info.st_mode)
-        fstat64_buf += ql.pack32(fstat64_info.st_nlink)
-        fstat64_buf += ql.pack32(1000)
-        fstat64_buf += ql.pack32(1000)
-        fstat64_buf += ql.pack64(fstat64_info.st_rdev)
-        fstat64_buf += ql.pack64(0)
-        fstat64_buf += ql.pack64(fstat64_info.st_size)
-        fstat64_buf += ql.pack32(fstat64_info.st_blksize)
-        fstat64_buf += ql.pack32(0)
-        fstat64_buf += ql.pack64(fstat64_info.st_blocks)
-        fstat64_buf += ql.pack64(int(fstat64_info.st_atime))
-        fstat64_buf += ql.pack64(0)
-        fstat64_buf += ql.pack64(int(fstat64_info.st_mtime))
-        fstat64_buf += ql.pack64(0)
-        fstat64_buf += ql.pack64(int(fstat64_info.st_ctime))
-        fstat64_buf += ql.pack64(0)
-        ql.mem.write(fstatat64_buf,fstat64_buf)
+        if ql.ostype == QL_OS.MACOS:
+            stat_buf = ql.pack64s(info.st_dev)
+        else:
+            stat_buf = ql.pack64(info.st_dev)
+        stat_buf += ql.pack64(info.st_ino)
+        stat_buf += ql.pack32(info.st_mode)
+        stat_buf += ql.pack32(info.st_nlink)
+        stat_buf += ql.pack32(ql.os.uid)
+        stat_buf += ql.pack32(ql.os.gid)
+        stat_buf += ql.pack64(info.st_rdev)
+        stat_buf += ql.pack64(0)
+        stat_buf += ql.pack64(info.st_size)
+        stat_buf += ql.pack32(info.st_blksize)
+        stat_buf += ql.pack32(0)
+        stat_buf += ql.pack64(info.st_blocks)
+        stat_buf += ql.pack64(int(info.st_atime))
+        stat_buf += ql.pack64(0)
+        stat_buf += ql.pack64(int(info.st_mtime))
+        stat_buf += ql.pack64(0)
+        stat_buf += ql.pack64(int(info.st_ctime))
+        stat_buf += ql.pack64(0)
+    else:
+        # pack statinfo
+        stat_buf = ql.pack32(info.st_dev)
+        stat_buf += ql.pack(info.st_ino)
+        stat_buf += ql.pack32(info.st_mode)
+        stat_buf += ql.pack32(info.st_nlink)
+        stat_buf += ql.pack32(info.st_uid)
+        stat_buf += ql.pack32(info.st_gid)
+        stat_buf += ql.pack32(info.st_rdev)
+        stat_buf += ql.pack32(info.st_size)
+        stat_buf += ql.pack32(info.st_blksize)
+        stat_buf += ql.pack32(info.st_blocks)
+        stat_buf += ql.pack32(int(info.st_atime))
+        stat_buf += ql.pack32(int(info.st_mtime))
+        stat_buf += ql.pack32(int(info.st_ctime))
+    return stat_buf
+
+
+def create_stat64_struct(ql, info):
+    if ql.archtype == QL_ARCH.ARM64:
+        # struct stat is : 80 addr is : 0x4000811bc8
+        # buf.st_dev offest 0 8 0
+        # buf.st_ino offest 8 8 0
+        # buf.st_mode offest 10 4 0
+        # buf.st_nlink offest 14 4 0
+        # buf.st_uid offest 18 4 0
+        # buf.st_gid offest 1c 4 0
+        # buf.st_rdev offest 20 8 0
+        # buf.st_size offest 30 8 274886889936
+        # buf.st_blksize offest 38 4 8461328
+        # buf.st_blocks offest 40 8 274877909532
+        # buf.st_atime offest 48 8 274886368336
+        # buf.st_mtime offest 58 8 274877909472
+        # buf.st_ctime offest 68 8 274886368336
+        # buf.__glibc_reserved offest 78 8
+        stat64_buf = ql.pack64(info.st_dev)  # 8
+        stat64_buf += ql.pack64(info.st_ino)  # 16
+        stat64_buf += ql.pack32(info.st_mode)  # 20
+        stat64_buf += ql.pack32(info.st_nlink)  # 24
+        stat64_buf += ql.pack32(ql.os.uid)  # 28
+        stat64_buf += ql.pack32(ql.os.gid)  # 32
+        stat64_buf += ql.pack64(info.st_rdev)  # 40
+        stat64_buf += ql.pack64(0)  # 48
+        stat64_buf += ql.pack64(info.st_size)  # 56
+        stat64_buf += ql.pack32(info.st_blksize)  # 60
+        stat64_buf += ql.pack32(0)  # 64
+        stat64_buf += ql.pack64(info.st_blocks)  # 72
+        stat64_buf += ql.pack64(int(info.st_atime))  # 80
+        stat64_buf += ql.pack64(0)  # 88
+        stat64_buf += ql.pack64(int(info.st_mtime))  # 96
+        stat64_buf += ql.pack64(0)  # 104
+        stat64_buf += ql.pack64(int(info.st_ctime))  # 114
+        stat64_buf += ql.pack64(0)  # 120
+    elif ql.archtype == QL_ARCH.MIPS:
+        # struct stat is : a0 addr is : 0x7fffedc0
+        # buf.st_dev offest 0 4 2049
+        # buf.st_ino offest 10 8 2400362
+        # buf.st_mode offest 18 4 16893
+        # buf.st_nlink offest 1c 4 5
+        # buf.st_uid offest 20 4 1000
+        # buf.st_gid offest 24 4 1000
+        # buf.st_rdev offest 28 4 0
+        # buf.st_size offest 38 8 0
+        # buf.st_blksize offest 58 4 4096
+        # buf.st_blocks offest 60 8 136
+        # buf.st_atime offest 40 4 1586616689
+        # buf.st_mtime offest 48 4 1586616689
+        # buf.st_ctime offest 50 4 1586616689
+
+        # 
+        # Implementation based on:
+        #   https://elixir.bootlin.com/linux/v2.6.32.71/source/arch/mips/include/asm/stat.h#L92 
+        #
+
+        if ql.ostype == QL_OS.MACOS:
+          stat64_buf = ql.pack32s(info.st_dev)
+        else:
+          stat64_buf = ql.pack32(info.st_dev)
+        stat64_buf += b'\x00' * 12 
+        stat64_buf += ql.pack64(info.st_ino)
+        stat64_buf += ql.pack32(info.st_mode)
+        stat64_buf += ql.pack32(info.st_nlink)
+        stat64_buf += ql.pack32(ql.os.uid)
+        stat64_buf += ql.pack32(ql.os.gid)
+        stat64_buf += ql.pack32(info.st_rdev)
+        stat64_buf += b'\x00' * 12
+        stat64_buf += ql.pack64(info.st_size)
+        stat64_buf += ql.pack32(int(info.st_atime))
+        stat64_buf += ql.pack32(0)
+        stat64_buf += ql.pack32(int(info.st_mtime))
+        stat64_buf += ql.pack32(0)
+        stat64_buf += ql.pack32(int(info.st_ctime))
+        stat64_buf += ql.pack32(0)
+        stat64_buf += ql.pack32(info.st_blksize)
+        stat64_buf += ql.pack32(0)
+        stat64_buf += ql.pack64(info.st_blocks)
+    elif ql.archtype == QL_ARCH.ARM:
+        # pack statinfo
+        if ql.ostype == QL_OS.MACOS:
+            stat64_buf = ql.pack64s(info.st_dev)
+        else:
+            stat64_buf = ql.pack64(info.st_dev)
+        stat64_buf += ql.pack32(0)
+        stat64_buf += ql.pack32(info.st_ino)
+        stat64_buf += ql.pack32(info.st_mode)
+        stat64_buf += ql.pack32(info.st_nlink)
+        stat64_buf += ql.pack32(info.st_uid)
+        stat64_buf += ql.pack32(info.st_gid)
+        stat64_buf += ql.pack64(info.st_rdev)  # ?? stat_info.st_rdev
+        stat64_buf += ql.pack64(0)
+        stat64_buf += ql.pack64(info.st_size)
+        stat64_buf += ql.pack64(info.st_blksize)  # ?? stat_info.st_blksize
+        stat64_buf += ql.pack64(info.st_blocks)  # ?? stat_info.st_blocks
+        stat64_buf += ql.pack64(int(info.st_atime))
+        stat64_buf += ql.pack64(int(info.st_mtime))
+        stat64_buf += ql.pack64(int(info.st_ctime))
+        stat64_buf += ql.pack64(info.st_ino)
+    elif ql.ostype == QL_OS.MACOS:
+        stat64_buf = ql.pack32(0) # st_dev            32byte
+        stat64_buf += ql.pack32(info.st_mode)            # st_mode           16(32)byte
+        stat64_buf += ql.pack32(info.st_nlink)           # st_nlink          16(32)byte
+        stat64_buf += ql.pack64(info.st_ino)             # st_ino            64 byte
+        stat64_buf += ql.pack32(0x0)                            # st_uid            32 byte
+        stat64_buf += ql.pack32(0x0)                            # st_gid            32 byte
+        stat64_buf += ql.pack32(0x0)                            # st_rdev           32 byte
+        stat64_buf += ql.pack64(int(info.st_atime))      # st_atime          64 byte
+        stat64_buf += ql.pack64(0x0)                            # st_atimensec      64 byte
+        stat64_buf += ql.pack64(int(info.st_mtime))      # st_mtime          64 byte
+        stat64_buf += ql.pack64(0x0)                            # st_mtimensec      64 byte
+        stat64_buf += ql.pack64(int(info.st_ctime))      # st_ctime          64 byte
+        stat64_buf += ql.pack64(0x0)                            # st_ctimensec      64 byte
+
+        if ql.ostype == QL_OS.MACOS:
+            stat64_buf += ql.pack64(int(info.st_birthtime))  # st_birthtime      64 byte
+        else:
+            stat64_buf += ql.pack64(int(info.st_ctime))  # st_birthtime      64 byte
+        stat64_buf += ql.pack64(0x0)                            # st_birthtimensec  64 byte
+        stat64_buf += ql.pack64(info.st_size)            # st_size           64 byte
+        stat64_buf += ql.pack64(info.st_blocks)          # st_blocks         64 byte
+        stat64_buf += ql.pack32(info.st_blksize)         # st_blksize        32 byte
+        if ql.ostype == QL_OS.MACOS:
+            stat64_buf += ql.pack32(info.st_flags)       # st_flags          32 byte
+        else:    
+            stat64_buf += ql.pack32(0x0)          
+        if ql.ostype == QL_OS.MACOS:
+            stat64_buf += ql.pack32(info.st_gen)         # st_gen            32 byte
+        else:    
+            stat64_buf += ql.pack32(0x0)
+        stat64_buf += ql.pack32(0x0)                            # st_lspare         32 byte
+        stat64_buf += ql.pack64(0x0)                            # st_qspare         64 byte
+    else:
+        # pack statinfo
+        if ql.ostype == QL_OS.MACOS:
+            stat64_buf = ql.pack64s(info.st_dev)
+        else:
+            stat64_buf = ql.pack64(info.st_dev)
+        stat64_buf += ql.pack64(0x0000000300c30000)
+        stat64_buf += ql.pack32(info.st_mode)
+        stat64_buf += ql.pack32(info.st_nlink)
+        stat64_buf += ql.pack32(info.st_uid)
+        stat64_buf += ql.pack32(info.st_gid)
+        stat64_buf += ql.pack64(0x0000000000008800)  # ?? stat_info.st_rdev
+        stat64_buf += ql.pack32(0xffffd257)
+        stat64_buf += ql.pack64(info.st_size)
+        stat64_buf += ql.pack32(0x00000400)  # ?? stat_info.st_blksize
+        stat64_buf += ql.pack64(0x0000000000000000)
+        stat64_buf += ql.pack64(int(info.st_atime))
+        stat64_buf += ql.pack64(int(info.st_mtime))
+        stat64_buf += ql.pack64(int(info.st_ctime))
+        stat64_buf += ql.pack64(info.st_ino)
+    return stat64_buf
+
+
+def statFamily(ql, path, ptr, name, stat_func, struct_func):
+    file = (ql.mem.string(path))
+    real_path = ql.os.transform_to_real_path(file)
+    regreturn = 0
+    try:
+        info = stat_func(real_path)
+    except OSError as e:
+        ql.log.debug(f'{name}("{file}", {hex(ptr)}) read/write fail')
+        return -e.errno
+    else:
+        buf = struct_func(ql, info)
+        ql.mem.write(ptr, buf)
+        ql.log.debug(f'{name}("{file}", {hex(ptr)}) write completed')
+        return regreturn
+
+
+def ql_syscall_chmod(ql, filename, mode, null1, null2, null3, null4):
+    regreturn = 0
+    filename = ql.mem.string(filename)
+    ql.log.debug("chmod(%s,%d) = %d" % (filename, mode, regreturn))
+    return regreturn
+
+
+def ql_syscall_fstatat64(ql, fstatat64_dirfd, fstatat64_path, fstatat64_buf_ptr, fstatat64_flag, *args, **kw):
+    # FIXME: dirfd(relative path) not implement.
+    fstatat64_path = ql.mem.string(fstatat64_path)
+
+    real_path = ql.os.transform_to_real_path(fstatat64_path)
+    relative_path = ql.os.transform_to_relative_path(fstatat64_path)
+
+    regreturn = -1
+    if os.path.exists(real_path) == True:
+        fstatat64_info = Stat(real_path)
+        fstatat64_buf = create_stat64_struct(ql, fstatat64_info)
+        ql.mem.write(fstatat64_buf_ptr, fstatat64_buf)
         regreturn = 0
 
-    ql.nprint("fstatat64(0x%x, %s) = %d" % (fstatat64_fd, relative_path, regreturn))
+    if regreturn == 0:
+        ql.log.debug("Directory Found: %s" % relative_path)
+    else:
+        ql.log.debug("Directory Not Found: %s" % relative_path)
+
+    return regreturn
+
+def ql_syscall_newfstatat(ql, newfstatat_dirfd, newfstatat_path, newfstatat_buf_ptr, newfstatat_flag, *args, **kw):
+    # FIXME: dirfd(relative path) not implement.
+    newfstatat_path = ql.mem.string(newfstatat_path)
+
+    real_path = ql.os.transform_to_real_path(newfstatat_path)
+    relative_path = ql.os.transform_to_relative_path(newfstatat_path)
+
+    regreturn = -1
+    if os.path.exists(real_path) == True:
+        newfstatat_info = Stat(real_path)
+        newfstatat_buf = create_stat_struct(ql, newfstatat_info)
+        ql.mem.write(newfstatat_buf_ptr, newfstatat_buf)
+        regreturn = 0
 
     if regreturn == 0:
-        ql.dprint(D_INFO, "[+] Directory Found: %s" % relative_path)
+        ql.log.debug("Directory Found: %s" % relative_path)
     else:
-        ql.dprint(D_INFO, "[!] Directory Not Found: %s" % relative_path)
+        ql.log.debug("Directory Not Found: %s" % relative_path)
 
-    ql.os.definesyscall_return(regreturn)
+    return regreturn
 
+def ql_syscall_fstat64(ql, fstat64_fd, fstat64_buf_ptr, *args, **kw):
+    if ql.os.fd[fstat64_fd].fstat() == -1:
+        regreturn = 0
 
-def ql_syscall_fstat64(ql, fstat64_fd, fstat64_add, *args, **kw):
-    if fstat64_fd < 256 and ql.os.file_des[fstat64_fd] != 0:
+    elif fstat64_fd < 256 and ql.os.fd[fstat64_fd] != 0:
         user_fileno = fstat64_fd
-        fstat64_info = ql.os.file_des[user_fileno].fstat()
-
-        if ql.archtype== QL_ARCH.ARM64:
-            # struct stat is : 80 addr is : 0x4000811bc8
-            # buf.st_dev offest 0 8 0
-            # buf.st_ino offest 8 8 0
-            # buf.st_mode offest 10 4 0
-            # buf.st_nlink offest 14 4 0
-            # buf.st_uid offest 18 4 0
-            # buf.st_gid offest 1c 4 0
-            # buf.st_rdev offest 20 8 0
-            # buf.st_size offest 30 8 274886889936
-            # buf.st_blksize offest 38 4 8461328
-            # buf.st_blocks offest 40 8 274877909532
-            # buf.st_atime offest 48 8 274886368336
-            # buf.st_mtime offest 58 8 274877909472
-            # buf.st_ctime offest 68 8 274886368336
-            # buf.__glibc_reserved offest 78 8
-            fstat64_buf = ql.pack64(fstat64_info.st_dev)
-            fstat64_buf += ql.pack64(fstat64_info.st_ino)
-            fstat64_buf += ql.pack32(fstat64_info.st_mode)
-            fstat64_buf += ql.pack32(fstat64_info.st_nlink)
-            fstat64_buf += ql.pack32(ql.os.uid)
-            fstat64_buf += ql.pack32(ql.os.gid)
-            fstat64_buf += ql.pack64(fstat64_info.st_rdev)
-            fstat64_buf += ql.pack64(0)
-            fstat64_buf += ql.pack64(fstat64_info.st_size)
-            fstat64_buf += ql.pack32(fstat64_info.st_blksize)
-            fstat64_buf += ql.pack32(0)
-            fstat64_buf += ql.pack64(fstat64_info.st_blocks)
-            fstat64_buf += ql.pack64(int(fstat64_info.st_atime))
-            fstat64_buf += ql.pack64(0)
-            fstat64_buf += ql.pack64(int(fstat64_info.st_mtime))
-            fstat64_buf += ql.pack64(0)
-            fstat64_buf += ql.pack64(int(fstat64_info.st_ctime))
-            fstat64_buf += ql.pack64(0)
-        elif ql.archtype == QL_ARCH.MIPS:
-            # struct stat is : a0 addr is : 0x7fffedc0
-            # buf.st_dev offest 0 4 2049
-            # buf.st_ino offest 10 8 2400362
-            # buf.st_mode offest 18 4 16893
-            # buf.st_nlink offest 1c 4 5
-            # buf.st_uid offest 20 4 1000
-            # buf.st_gid offest 24 4 1000
-            # buf.st_rdev offest 28 4 0
-            # buf.st_size offest 38 8 0
-            # buf.st_blksize offest 58 4 4096
-            # buf.st_blocks offest 60 8 136
-            # buf.st_atime offest 40 4 1586616689
-            # buf.st_mtime offest 48 4 1586616689
-            # buf.st_ctime offest 50 4 1586616689
-            fstat64_buf = ql.pack32(fstat64_info.st_dev)
-            fstat64_buf += b'\x00' * 12
-            fstat64_buf += ql.pack64(fstat64_info.st_ino)
-            fstat64_buf += ql.pack32(fstat64_info.st_mode)
-            fstat64_buf += ql.pack32(fstat64_info.st_nlink)
-            fstat64_buf += ql.pack32(ql.os.uid)
-            fstat64_buf += ql.pack32(ql.os.gid)
-            fstat64_buf += ql.pack32(fstat64_info.st_rdev)
-            fstat64_buf += b'\x00' * 12
-            fstat64_buf += ql.pack64(fstat64_info.st_size)
-            fstat64_buf += ql.pack64(int(fstat64_info.st_atime))
-            fstat64_buf += ql.pack64(0)
-            fstat64_buf += ql.pack64(int(fstat64_info.st_mtime))
-            fstat64_buf += ql.pack64(0)
-            fstat64_buf += ql.pack64(int(fstat64_info.st_ctime))
-            fstat64_buf += ql.pack64(0)
-            fstat64_buf += ql.pack32(fstat64_info.st_blksize)
-            fstat64_buf += ql.pack32(0)
-            fstat64_buf += ql.pack64(fstat64_info.st_blocks)
-
-        else:
-
-            # pack fstatinfo
-            fstat64_buf = ql.pack64(fstat64_info.st_dev)
-            fstat64_buf += ql.pack64(0x0000000300c30000)
-            fstat64_buf += ql.pack32(fstat64_info.st_mode)
-            fstat64_buf += ql.pack32(fstat64_info.st_nlink)
-            fstat64_buf += ql.pack32(fstat64_info.st_uid)
-            fstat64_buf += ql.pack32(fstat64_info.st_gid)
-            fstat64_buf += ql.pack64(0x0000000000008800) #?? fstat_info.st_rdev
-            fstat64_buf += ql.pack32(0xffffd257)
-            fstat64_buf += ql.pack64(fstat64_info.st_size)
-            fstat64_buf += ql.pack32(0x00000400) #?? fstat_info.st_blksize
-            fstat64_buf += ql.pack64(0x0000000000000000) #?? fstat_info.st_blocks
-            fstat64_buf += ql.pack64(int(fstat64_info.st_atime))
-            fstat64_buf += ql.pack64(int(fstat64_info.st_mtime))
-            fstat64_buf += ql.pack64(int(fstat64_info.st_ctime))
-            fstat64_buf += ql.pack64(fstat64_info.st_ino)
-
-        ql.mem.write(fstat64_add, fstat64_buf)
+        fstat64_info = ql.os.fd[user_fileno].fstat()
+        fstat64_buf = create_stat64_struct(ql, fstat64_info)
+        ql.mem.write(fstat64_buf_ptr, fstat64_buf)
         regreturn = 0
     else:
         regreturn = -1
 
-    ql.nprint("fstat64(%d, 0x%x) = %d" % (fstat64_fd, fstat64_add, regreturn))
     if regreturn == 0:
-        ql.dprint(D_INFO, "[+] fstat64 write completed")
+        ql.log.debug("fstat64 write completed")
     else:
-        ql.dprint(D_INFO, "[!] fstat64 read/write fail")
-    ql.os.definesyscall_return(regreturn)
+        ql.log.debug("fstat64 read/write fail")
+    return regreturn
 
 
-def ql_syscall_fstat(ql, fstat_fd, fstat_add, *args, **kw):
-
-    if fstat_fd < 256 and ql.os.file_des[fstat_fd] != 0:
+def ql_syscall_fstat(ql, fstat_fd, fstat_buf_ptr, *args, **kw):
+    if fstat_fd < 256 and ql.os.fd[fstat_fd] != 0 and hasattr(ql.os.fd[fstat_fd], "fstat"):
         user_fileno = fstat_fd
-        fstat_info = ql.os.file_des[user_fileno].fstat()
-
-        if ql.archtype== QL_ARCH.MIPS:
-            # pack fstatinfo
-            fstat_buf = ql.pack32(fstat_info.st_dev)
-            fstat_buf += ql.pack32(0) * 3
-            fstat_buf += ql.pack32(fstat_info.st_ino)
-            fstat_buf += ql.pack32(fstat_info.st_mode)
-            fstat_buf += ql.pack32(fstat_info.st_nlink)
-            fstat_buf += ql.pack32(fstat_info.st_uid)
-            fstat_buf += ql.pack32(fstat_info.st_gid)
-            fstat_buf += ql.pack32(fstat_info.st_rdev)
-            fstat_buf += ql.pack32(0) * 2
-            fstat_buf += ql.pack32(fstat_info.st_size)
-            fstat_buf += ql.pack32(0)
-            fstat_buf += ql.pack32(int(fstat_info.st_atime))
-            fstat_buf += ql.pack32(0)
-            fstat_buf += ql.pack32(int(fstat_info.st_mtime))
-            fstat_buf += ql.pack32(0)
-            fstat_buf += ql.pack32(int(fstat_info.st_ctime))
-            fstat_buf += ql.pack32(0)
-            fstat_buf += ql.pack32(fstat_info.st_blksize)
-            fstat_buf += ql.pack32(fstat_info.st_blocks)
-            fstat_buf = fstat_buf.ljust(0x90, b'\x00')
-        elif ql.archtype== QL_ARCH.X8664:
-            fstat_buf = ql.pack64(fstat_info.st_dev)
-            fstat_buf += ql.pack(fstat_info.st_ino)
-            fstat_buf += ql.pack64(fstat_info.st_nlink)
-            fstat_buf += ql.pack32(fstat_info.st_mode)
-            fstat_buf += ql.pack32(fstat_info.st_uid)
-            fstat_buf += ql.pack32(fstat_info.st_gid)
-            fstat_buf += ql.pack32(0)
-            fstat_buf += ql.pack64(fstat_info.st_rdev)
-            fstat_buf += ql.pack64(fstat_info.st_size)
-            fstat_buf += ql.pack64(fstat_info.st_blksize)
-            fstat_buf += ql.pack64(fstat_info.st_blocks)
-            fstat_buf += ql.pack64(int(fstat_info.st_atime))
-            fstat_buf += ql.pack64(0)
-            fstat_buf += ql.pack64(int(fstat_info.st_mtime))
-            fstat_buf += ql.pack64(0)
-            fstat_buf += ql.pack64(int(fstat_info.st_ctime))
-            fstat_buf += ql.pack64(0)
-        else:
-            # pack fstatinfo
-            fstat_buf = ql.pack32(fstat_info.st_dev)
-            fstat_buf += ql.pack(fstat_info.st_ino)
-            fstat_buf += ql.pack32(fstat_info.st_mode)
-            fstat_buf += ql.pack32(fstat_info.st_nlink)
-            fstat_buf += ql.pack32(fstat_info.st_uid)
-            fstat_buf += ql.pack32(fstat_info.st_gid)
-            fstat_buf += ql.pack32(fstat_info.st_rdev)
-            fstat_buf += ql.pack32(fstat_info.st_size)
-            fstat_buf += ql.pack32(fstat_info.st_blksize)
-            fstat_buf += ql.pack32(fstat_info.st_blocks)
-            fstat_buf += ql.pack32(int(fstat_info.st_atime))
-            fstat_buf += ql.pack32(int(fstat_info.st_mtime))
-            fstat_buf += ql.pack32(int(fstat_info.st_ctime))
-
-        ql.mem.write(fstat_add, fstat_buf)
+        fstat_info = ql.os.fd[user_fileno].fstat()
+        fstat_buf = create_stat_struct(ql, fstat_info)
+        ql.mem.write(fstat_buf_ptr, fstat_buf)
         regreturn = 0
     else:
         regreturn = -1
 
-    ql.nprint("fstat(%d, 0x%x) = %d" % (fstat_fd, fstat_add, regreturn))
     if regreturn == 0:
-        ql.dprint(D_INFO, "[+] fstat write completed")
+        ql.log.debug("fstat write completed")
     else:
-        ql.dprint(D_INFO, "[!] fstat read/write fail")
-    ql.os.definesyscall_return(regreturn)
-
-
-# int stat64(const char *pathname, struct stat64 *buf);
-def ql_syscall_stat64(ql, stat64_pathname, stat64_buf_ptr, *args, **kw):
-    stat64_file = (ql.mem.string(stat64_pathname))
-
-    real_path = ql.os.transform_to_real_path(stat64_file)
-    relative_path = ql.os.transform_to_relative_path(stat64_file)
-    if os.path.exists(real_path) == False:
-        regreturn = -1
-    else:
-        stat64_info = os.stat(real_path)
-
-        if ql.archtype== QL_ARCH.MIPS:
-            # packfstatinfo
-            # name offset size
-            # struct stat is : a0
-            # buf.st_dev offest 0 4
-            # buf.st_ino offest 10 8
-            # buf.st_mode offest 18 4
-            # buf.st_nlink offest 1c 4
-            # buf.st_uid offest 20 4
-            # buf.st_gid offest 24 4
-            # buf.st_rdev offest 28 4
-            # buf.st_size offest 38 8
-            # buf.st_blksize offest 58 4
-            # buf.st_blocks offest 60 8
-            # buf.st_atime offest 40 4
-            # buf.st_mtime offest 48 4
-            # buf.st_ctime offest 50 4
-            stat64_buf = ql.pack32(stat64_info.st_dev)
-            stat64_buf += ql.pack32(0) * 3
-            stat64_buf += ql.pack64(stat64_info.st_ino)
-            stat64_buf += ql.pack32(stat64_info.st_mode)
-            stat64_buf += ql.pack32(stat64_info.st_nlink)
-            stat64_buf += ql.pack32(1000)
-            stat64_buf += ql.pack32(1000)
-            stat64_buf += ql.pack32(stat64_info.st_rdev)
-            stat64_buf += ql.pack32(0) * 3
-            stat64_buf += ql.pack64(stat64_info.st_size)
-            stat64_buf += ql.pack64(int(stat64_info.st_atime))
-            stat64_buf += ql.pack64(int(stat64_info.st_mtime))
-            stat64_buf += ql.pack64(int(stat64_info.st_ctime))
-            stat64_buf += ql.pack32(stat64_info.st_blksize)
-            stat64_buf += ql.pack32(0)
-            stat64_buf += ql.pack64(stat64_info.st_blocks)
-        else:
-            # packfstatinfo
-            stat64_buf = ql.pack64(stat64_info.st_dev)
-            stat64_buf += ql.pack64(0x0000000300c30000)
-            stat64_buf += ql.pack32(stat64_info.st_mode)
-            stat64_buf += ql.pack32(stat64_info.st_nlink)
-            stat64_buf += ql.pack32(stat64_info.st_uid)
-            stat64_buf += ql.pack32(stat64_info.st_gid)
-            stat64_buf += ql.pack64(0x0000000000008800) #?? fstat_info.st_rdev
-            stat64_buf += ql.pack32(0xffffd257)
-            stat64_buf += ql.pack64(stat64_info.st_size)
-            stat64_buf += ql.pack32(0x00000400) #?? fstat_info.st_blksize
-            stat64_buf += ql.pack64(0x0000000000000000) #?? fstat_info.st_blocks
-            stat64_buf += ql.pack64(int(stat64_info.st_atime))
-            stat64_buf += ql.pack64(int(stat64_info.st_mtime))
-            stat64_buf += ql.pack64(int(stat64_info.st_ctime))
-            stat64_buf += ql.pack64(stat64_info.st_ino)
-
-        ql.mem.write(stat64_buf_ptr, stat64_buf)
-        regreturn = 0
-
-    ql.nprint("stat64(%s, 0x%x) = %d" % (relative_path, stat64_buf_ptr, regreturn))
-    if regreturn == 0:
-        ql.dprint(D_INFO, "[+] stat64 write completed")
-    else:
-        ql.dprint(D_INFO, "[!] stat64 read/write fail")
-    ql.os.definesyscall_return(regreturn)
+        ql.log.debug("fstat read/write fail")
+    return regreturn
 
 
 # int stat(const char *path, struct stat *buf);
 def ql_syscall_stat(ql, stat_path, stat_buf_ptr, *args, **kw):
-    stat_file = (ql.mem.string(stat_path))
+    return statFamily(ql, stat_path, stat_buf_ptr, "stat", Stat, create_stat_struct)
 
-    real_path = ql.os.transform_to_real_path(stat_file)
-    relative_path = ql.os.transform_to_relative_path(stat_file)
 
-    if os.path.exists(real_path) == False:
-        regreturn = -1
-    else:
-        stat_info = os.stat(real_path)
-
-        if ql.archtype== QL_ARCH.MIPS:
-            # pack fstatinfo
-            stat_buf = ql.pack32(stat_info.st_dev)
-            stat_buf += ql.pack32(0) * 3
-            stat_buf += ql.pack32(stat_info.st_ino)
-            stat_buf += ql.pack32(stat_info.st_mode)
-            stat_buf += ql.pack32(stat_info.st_nlink)
-            stat_buf += ql.pack32(stat_info.st_uid)
-            stat_buf += ql.pack32(stat_info.st_gid)
-            stat_buf += ql.pack32(stat_info.st_rdev)
-            stat_buf += ql.pack32(0) * 2
-            stat_buf += ql.pack32(stat_info.st_size)
-            stat_buf += ql.pack32(0)
-            stat_buf += ql.pack32(int(stat_info.st_atime))
-            stat_buf += ql.pack32(0)
-            stat_buf += ql.pack32(int(stat_info.st_mtime))
-            stat_buf += ql.pack32(0)
-            stat_buf += ql.pack32(int(stat_info.st_ctime))
-            stat_buf += ql.pack32(0)
-            stat_buf += ql.pack32(stat_info.st_blksize)
-            stat_buf += ql.pack32(stat_info.st_blocks)
-            stat_buf = stat_buf.ljust(0x90, b'\x00')
-        else:
-            # pack statinfo
-            stat_buf = ql.pack32(stat_info.st_mode)
-            stat_buf += ql.pack32(stat_info.st_ino)
-            stat_buf += ql.pack32(stat_info.st_dev)
-            stat_buf += ql.pack32(stat_info.st_rdev)
-            stat_buf += ql.pack32(stat_info.st_nlink)
-            stat_buf += ql.pack32(stat_info.st_size)
-            stat_buf += ql.pack32(stat_info.st_size)
-            stat_buf += ql.pack32(stat_info.st_size)
-            stat_buf += ql.pack32(int(stat_info.st_atime))
-            stat_buf += ql.pack32(int(stat_info.st_mtime))
-            stat_buf += ql.pack32(int(stat_info.st_ctime))
-            stat_buf += ql.pack32(stat_info.st_blksize)
-            stat_buf += ql.pack32(stat_info.st_blocks)
-
-        regreturn = 0
-        ql.mem.write(stat_buf_ptr, stat_buf)
-
-    ql.nprint("stat(%s, 0x%x) = %d" % (relative_path, stat_buf_ptr, regreturn))
-    if regreturn == 0:
-        ql.dprint(D_INFO, "[+] stat() write completed")
-    else:
-        ql.dprint(D_INFO, "[!] stat() read/write fail")
-    ql.os.definesyscall_return(regreturn)
+# int stat64(const char *path, struct stat64 *buf);
+def ql_syscall_stat64(ql, stat64_path, stat64_buf_ptr, *args, **kw):
+    return statFamily(ql, stat64_path, stat64_buf_ptr, "stat64", Stat, create_stat64_struct)
 
 
 def ql_syscall_lstat(ql, lstat_path, lstat_buf_ptr, *args, **kw):
-    lstat_file = (ql.mem.string(lstat_path))
+    return statFamily(ql, lstat_path, lstat_buf_ptr, "lstat", Lstat, create_stat_struct)
 
-    real_path = ql.os.transform_to_real_path(lstat_file)
-    relative_path = ql.os.transform_to_relative_path(lstat_file)
 
-    if os.path.exists(real_path) == False:
-        regreturn = -1
-    else:
-        lstat_info = os.lstat(real_path)
+def ql_syscall_lstat64(ql, lstat64_path, lstat64_buf_ptr, *args, **kw):
+    return statFamily(ql, lstat64_path, lstat64_buf_ptr, "lstat64", Lstat, create_stat64_struct)
 
-        if ql.archtype== QL_ARCH.MIPS:
-            # pack fstatinfo
-            lstat_buf = ql.pack32(lstat_info.st_dev)
-            lstat_buf += ql.pack32(0) * 3
-            lstat_buf += ql.pack32(lstat_info.st_ino)
-            lstat_buf += ql.pack32(lstat_info.st_mode)
-            lstat_buf += ql.pack32(lstat_info.st_nlink)
-            lstat_buf += ql.pack32(lstat_info.st_uid)
-            lstat_buf += ql.pack32(lstat_info.st_gid)
-            lstat_buf += ql.pack32(lstat_info.st_rdev)
-            lstat_buf += ql.pack32(0) * 2
-            lstat_buf += ql.pack32(lstat_info.st_size)
-            lstat_buf += ql.pack32(0)
-            lstat_buf += ql.pack32(int(lstat_info.st_atime))
-            lstat_buf += ql.pack32(0)
-            lstat_buf += ql.pack32(int(lstat_info.st_mtime))
-            lstat_buf += ql.pack32(0)
-            lstat_buf += ql.pack32(int(lstat_info.st_ctime))
-            lstat_buf += ql.pack32(0)
-            lstat_buf += ql.pack32(lstat_info.st_blksize)
-            lstat_buf += ql.pack32(lstat_info.st_blocks)
-            lstat_buf = lstat_buf.ljust(0x90, b'\x00')
-        else:
-            # pack statinfo
-            lstat_buf = ql.pack32(lstat_info.st_mode)
-            lstat_buf += ql.pack32(lstat_info.st_ino)
-            lstat_buf += ql.pack32(lstat_info.st_dev)
-            lstat_buf += ql.pack32(lstat_info.st_rdev)
-            lstat_buf += ql.pack32(lstat_info.st_nlink)
-            lstat_buf += ql.pack32(lstat_info.st_size)
-            lstat_buf += ql.pack32(lstat_info.st_size)
-            lstat_buf += ql.pack32(lstat_info.st_size)
-            lstat_buf += ql.pack32(int(lstat_info.st_atime))
-            lstat_buf += ql.pack32(int(lstat_info.st_mtime))
-            lstat_buf += ql.pack32(int(lstat_info.st_ctime))
-            lstat_buf += ql.pack32(lstat_info.st_blksize)
-            lstat_buf += ql.pack32(lstat_info.st_blocks)
-
-        regreturn = 0
-        ql.mem.write(lstat_buf_ptr, lstat_buf)
-
-    ql.nprint("lstat(%s, 0x%x) = %d" % (relative_path, lstat_buf_ptr, regreturn))
-    if regreturn == 0:
-        ql.dprint(D_INFO, "[+] lstat() write completed")
-    else:
-        ql.dprint(D_INFO, "[!] lstat() read/write fail")
-    ql.os.definesyscall_return(regreturn)
 
 def ql_syscall_mknodat(ql, dirfd, pathname, mode, dev, *args, **kw):
-    # fix me. dirfd(relative path) not implement.
+    # FIXME: dirfd(relative path) not implement.
     file_path = ql.mem.string(pathname)
     real_path = ql.os.transform_to_real_path(file_path)
-    ql.nprint("mknodat(%d, %s, 0%o, %d)" % (dirfd, real_path, mode, dev))
+    ql.log.debug("mknodat(%d, %s, 0%o, %d)" % (dirfd, real_path, mode, dev))
     try:
         os.mknod(real_path, mode, dev)
         regreturn = 0
     except:
         regreturn = -1
-    ql.os.definesyscall_return(regreturn)
+    return regreturn
 
 
 def ql_syscall_mkdir(ql, pathname, mode, *args, **kw):
     file_path = ql.mem.string(pathname)
     real_path = ql.os.transform_to_real_path(file_path)
-    ql.nprint("mkdir(%s, 0%o)" % (real_path, mode))
+    ql.log.debug("mkdir(%s, 0%o)" % (real_path, mode))
     try:
         if not os.path.exists(real_path):
             os.mkdir(real_path, mode)
         regreturn = 0
     except:
         regreturn = -1
-    ql.os.definesyscall_return(regreturn)
+    return regreturn
+
+
+def ql_syscall_fstatfs(ql, fd, buf, *args, **kw):
+    data = b"0" * (12*8)  # for now, just return 0s
+    regreturn = None
+    try:
+        ql.mem.write(buf, data)
+        regreturn = 0
+    except:
+        regreturn = -1
+
+    ql.log.info("fstatfs(0x%x, 0x%x) = %d" % (fd, buf, regreturn))
+
+    if data:
+        ql.log.debug("fstatfs() CONTENT:")
+        ql.log.debug(str(data))
+    return regreturn
 
 
 def ql_syscall_umask(ql, mode, *args, **kw):
     oldmask = os.umask(mode)
-    ql.nprint("umask(0%o) return oldmask 0%o" % (mode, oldmask))
+    ql.log.debug("umask(0%o) return oldmask 0%o" % (mode, oldmask))
     regreturn = oldmask
-    ql.os.definesyscall_return(regreturn)
+    return regreturn

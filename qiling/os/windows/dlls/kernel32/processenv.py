@@ -1,19 +1,18 @@
 #!/usr/bin/env python3
 #
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org)
+#
+
 
 from qiling.os.windows.fncc import *
 from qiling.exception import *
 
+dllname = 'kernel32_dll'
+
 # HANDLE WINAPI GetStdHandle(
 #   _In_ DWORD nStdHandle
 # );
-
-
-@winapi(cc=STDCALL, params={
-    "nStdHandle": DWORD
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={"nStdHandle": DWORD})
 def hook_GetStdHandle(ql, address, params):
     nStdHandle = params["nStdHandle"]
     return nStdHandle
@@ -21,7 +20,7 @@ def hook_GetStdHandle(ql, address, params):
 
 # LPSTR GetCommandLineA(
 # );
-@winapi(cc=STDCALL, params={})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetCommandLineA(ql, address, params):
     cmdline = ql.loader.cmdline + b"\x00"
     addr = ql.os.heap.alloc(len(cmdline))
@@ -31,7 +30,7 @@ def hook_GetCommandLineA(ql, address, params):
 
 # LPSTR GetCommandLineW(
 # );
-@winapi(cc=STDCALL, params={})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetCommandLineW(ql, address, params):
     cmdline = ql.loader.cmdline.decode('ascii').encode('utf-16le')
     addr = ql.os.heap.alloc(len(cmdline))
@@ -40,8 +39,8 @@ def hook_GetCommandLineW(ql, address, params):
 
 
 # LPWCH GetEnvironmentStrings(
-# );s
-@winapi(cc=STDCALL, params={})
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetEnvironmentStrings(ql, address, params):
     cmdline = b"\x00"
     addr = ql.os.heap.alloc(len(cmdline))
@@ -51,7 +50,7 @@ def hook_GetEnvironmentStrings(ql, address, params):
 
 # LPWCH GetEnvironmentStringsW(
 # );
-@winapi(cc=STDCALL, params={})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetEnvironmentStringsW(ql, address, params):
     cmdline = b"\x00\x00"
     addr = ql.os.heap.alloc(len(cmdline))
@@ -62,9 +61,7 @@ def hook_GetEnvironmentStringsW(ql, address, params):
 # BOOL FreeEnvironmentStringsW(
 #   LPWCH penv
 # );
-@winapi(cc=STDCALL, params={
-    "penv": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_FreeEnvironmentStringsW(ql, address, params):
     ret = 1
     return ret
@@ -75,11 +72,7 @@ def hook_FreeEnvironmentStringsW(ql, address, params):
 #   LPWSTR  lpDst,
 #   DWORD   nSize
 # );
-@winapi(cc=STDCALL, params={
-    "lpSrc": WSTRING,
-    "lpDst": POINTER,
-    "nSize": DWORD,
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_ExpandEnvironmentStringsW(ql, address, params):
     string: str = params["lpSrc"]
     start = string.find("%")
@@ -87,8 +80,8 @@ def hook_ExpandEnvironmentStringsW(ql, address, params):
     substring = string[start + 1:end]
     result = ql.os.profile["PATH"].get(substring, None)
     if result is None:
-        ql.dprint(D_INFO, substring)
-        raise QlErrorNotImplemented("[!] API not implemented")
+        ql.log.debug(substring)
+        raise QlErrorNotImplemented("API not implemented")
     result = (string[:start] + result + string[end + 1:] + "\x00").encode("utf-16le")
     dst = params["lpDst"]
     max_size = params["nSize"]
@@ -102,11 +95,17 @@ def hook_ExpandEnvironmentStringsW(ql, address, params):
 #   LPSTR  lpBuffer,
 #   DWORD  nSize
 # );
-@winapi(cc=STDCALL, params={
-    "lpName": STRING,
-    "lpBuffer": POINTER,
-    "nSize": DWORD
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetEnvironmentVariableA(ql, address, params):
+    ret = 0
+    return ret
+
+# DWORD GetEnvironmentVariableW(
+#   LPCWSTR lpName,
+#   LPWSTR  lpBuffer,
+#   DWORD  nSize
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname)
+def hook_GetEnvironmentVariableW(ql, address, params):
     ret = 0
     return ret

@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
 
 import sys
 sys.path.append("..")
 from qiling import *
 
 def my_sandbox(path, rootfs):
-    ql = Qiling(path, rootfs, output = "debug")
-    ql.multithread = True
+    ql = Qiling(path, rootfs, multithread= True,output = "debug")
     ql.run()
 
 

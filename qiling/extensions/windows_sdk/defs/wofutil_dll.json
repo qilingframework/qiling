@@ -1,0 +1,176 @@
+{
+    "WofShouldCompressBinaries": [
+        {
+            "name": "Volume",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Algorithm",
+            "type": "PULONG"
+        }
+    ],
+    "WofGetDriverVersion": [
+        {
+            "name": "FileOrVolumeHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Provider",
+            "type": "ULONG"
+        },
+        {
+            "name": "WofVersion",
+            "type": "PULONG"
+        }
+    ],
+    "WofSetFileDataLocation": [
+        {
+            "name": "FileHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Provider",
+            "type": "ULONG"
+        },
+        {
+            "name": "ExternalFileInfo",
+            "type": "PVOID"
+        },
+        {
+            "name": "Length",
+            "type": "ULONG"
+        }
+    ],
+    "WofIsExternalFile": [
+        {
+            "name": "FilePath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "IsExternalFile",
+            "type": "PBOOL"
+        },
+        {
+            "name": "Provider",
+            "type": "PULONG"
+        },
+        {
+            "name": "ExternalFileInfo",
+            "type": "PVOID"
+        },
+        {
+            "name": "BufferLength",
+            "type": "PULONG"
+        }
+    ],
+    "WofEnumEntries": [
+        {
+            "name": "VolumeName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Provider",
+            "type": "ULONG"
+        },
+        {
+            "name": "EnumProc",
+            "type": "WofEnumEntryProc"
+        },
+        {
+            "name": "UserData",
+            "type": "PVOID"
+        }
+    ],
+    "WofWimAddEntry": [
+        {
+            "name": "VolumeName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "WimPath",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "WimType",
+            "type": "DWORD"
+        },
+        {
+            "name": "WimIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "DataSourceId",
+            "type": "PLARGE_INTEGER"
+        }
+    ],
+    "WofWimEnumFiles": [
+        {
+            "name": "VolumeName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "DataSourceId",
+            "type": "LARGE_INTEGER"
+        },
+        {
+            "name": "EnumProc",
+            "type": "WofEnumFilesProc"
+        },
+        {
+            "name": "UserData",
+            "type": "PVOID"
+        }
+    ],
+    "WofWimSuspendEntry": [
+        {
+            "name": "VolumeName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "DataSourceId",
+            "type": "LARGE_INTEGER"
+        }
+    ],
+    "WofWimRemoveEntry": [
+        {
+            "name": "VolumeName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "DataSourceId",
+            "type": "LARGE_INTEGER"
+        }
+    ],
+    "WofWimUpdateEntry": [
+        {
+            "name": "VolumeName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "DataSourceId",
+            "type": "LARGE_INTEGER"
+        },
+        {
+            "name": "NewWimPath",
+            "type": "PCWSTR"
+        }
+    ],
+    "WofFileEnumFiles": [
+        {
+            "name": "VolumeName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Algorithm",
+            "type": "ULONG"
+        },
+        {
+            "name": "EnumProc",
+            "type": "WofEnumFilesProc"
+        },
+        {
+            "name": "UserData",
+            "type": "PVOID"
+        }
+    ]
+}

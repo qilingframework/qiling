@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
 
 # -*- coding: utf-8 -*-
 #
@@ -10,6 +10,8 @@
 # POINTER_SIZE is: 8
 # LONGDOUBLE_SIZE is: 16
 #
+
+raise RuntimeError('Do not use this module; for reference only')
 
 import ctypes
 

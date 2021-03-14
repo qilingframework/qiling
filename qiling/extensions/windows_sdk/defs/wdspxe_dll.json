@@ -1,0 +1,550 @@
+{
+    "PxeProviderRegister": [
+        {
+            "name": "pszProviderName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszModulePath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Index",
+            "type": "PXE_REG_INDEX"
+        },
+        {
+            "name": "bIsCritical",
+            "type": "BOOL"
+        },
+        {
+            "name": "phProviderKey",
+            "type": "PHKEY"
+        }
+    ],
+    "PxeProviderUnRegister": [
+        {
+            "name": "pszProviderName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "PxeProviderQueryIndex": [
+        {
+            "name": "pszProviderName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "puIndex",
+            "type": "PULONG"
+        }
+    ],
+    "PxeProviderEnumFirst": [
+        {
+            "name": "phEnum",
+            "type": "HANDLE"
+        }
+    ],
+    "PxeProviderEnumNext": [
+        {
+            "name": "hEnum",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ppProvider",
+            "type": "PPXE_PROVIDER"
+        }
+    ],
+    "PxeProviderEnumClose": [
+        {
+            "name": "hEnum",
+            "type": "HANDLE"
+        }
+    ],
+    "PxeProviderFreeInfo": [
+        {
+            "name": "pProvider",
+            "type": "PPXE_PROVIDER"
+        }
+    ],
+    "PxeRegisterCallback": [
+        {
+            "name": "hProvider",
+            "type": "HANDLE"
+        },
+        {
+            "name": "CallbackType",
+            "type": "PXE_CALLBACK_TYPE"
+        },
+        {
+            "name": "pCallbackFunction",
+            "type": "PVOID"
+        },
+        {
+            "name": "pContext",
+            "type": "PVOID"
+        }
+    ],
+    "PxeSendReply": [
+        {
+            "name": "hClientRequest",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pPacket",
+            "type": "PVOID"
+        },
+        {
+            "name": "uPacketLen",
+            "type": "ULONG"
+        },
+        {
+            "name": "pAddress",
+            "type": "PXE_ADDRESS"
+        }
+    ],
+    "PxeAsyncRecvDone": [
+        {
+            "name": "hClientRequest",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Action",
+            "type": "PXE_BOOT_ACTION"
+        }
+    ],
+    "PxeTrace": [
+        {
+            "name": "hProvider",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Severity",
+            "type": "PXE_SEVERITY"
+        },
+        {
+            "name": "pszFormat",
+            "type": "LPCWSTR"
+        }
+    ],
+    "PxePacketAllocate": [
+        {
+            "name": "hProvider",
+            "type": "HANDLE"
+        },
+        {
+            "name": "hClientRequest",
+            "type": "HANDLE"
+        },
+        {
+            "name": "uSize",
+            "type": "ULONG"
+        }
+    ],
+    "PxePacketFree": [
+        {
+            "name": "hProvider",
+            "type": "HANDLE"
+        },
+        {
+            "name": "hClientRequest",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pPacket",
+            "type": "PVOID"
+        }
+    ],
+    "PxeProviderSetAttribute": [
+        {
+            "name": "hProvider",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Attribute",
+            "type": "PXE_PROVIDER_ATTRIBUTE"
+        },
+        {
+            "name": "pParameterBuffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "uParamLen",
+            "type": "ULONG"
+        }
+    ],
+    "PxeDhcpInitialize": [
+        {
+            "name": "pRecvPacket",
+            "type": "PVOID"
+        },
+        {
+            "name": "uRecvPacketLen",
+            "type": "ULONG"
+        },
+        {
+            "name": "pReplyPacket",
+            "type": "PVOID"
+        },
+        {
+            "name": "uMaxReplyPacketLen",
+            "type": "ULONG"
+        },
+        {
+            "name": "puReplyPacketLen",
+            "type": "PULONG"
+        }
+    ],
+    "PxeDhcpv6Initialize": [
+        {
+            "name": "pRequest",
+            "type": "PVOID"
+        },
+        {
+            "name": "cbRequest",
+            "type": "ULONG"
+        },
+        {
+            "name": "pReply",
+            "type": "PVOID"
+        },
+        {
+            "name": "cbReply",
+            "type": "ULONG"
+        },
+        {
+            "name": "pcbReplyUsed",
+            "type": "PULONG"
+        }
+    ],
+    "PxeDhcpAppendOption": [
+        {
+            "name": "pReplyPacket",
+            "type": "PVOID"
+        },
+        {
+            "name": "uMaxReplyPacketLen",
+            "type": "ULONG"
+        },
+        {
+            "name": "puReplyPacketLen",
+            "type": "PULONG"
+        },
+        {
+            "name": "bOption",
+            "type": "BYTE"
+        },
+        {
+            "name": "bOptionLen",
+            "type": "BYTE"
+        },
+        {
+            "name": "pValue",
+            "type": "PVOID"
+        }
+    ],
+    "PxeDhcpv6AppendOption": [
+        {
+            "name": "pReply",
+            "type": "PVOID"
+        },
+        {
+            "name": "cbReply",
+            "type": "ULONG"
+        },
+        {
+            "name": "pcbReplyUsed",
+            "type": "PULONG"
+        },
+        {
+            "name": "wOptionType",
+            "type": "WORD"
+        },
+        {
+            "name": "cbOption",
+            "type": "WORD"
+        },
+        {
+            "name": "pOption",
+            "type": "PVOID"
+        }
+    ],
+    "PxeDhcpAppendOptionRaw": [
+        {
+            "name": "pReplyPacket",
+            "type": "PVOID"
+        },
+        {
+            "name": "uMaxReplyPacketLen",
+            "type": "ULONG"
+        },
+        {
+            "name": "puReplyPacketLen",
+            "type": "PULONG"
+        },
+        {
+            "name": "uBufferLen",
+            "type": "USHORT"
+        },
+        {
+            "name": "pBuffer",
+            "type": "PVOID"
+        }
+    ],
+    "PxeDhcpv6AppendOptionRaw": [
+        {
+            "name": "pReply",
+            "type": "PVOID"
+        },
+        {
+            "name": "cbReply",
+            "type": "ULONG"
+        },
+        {
+            "name": "pcbReplyUsed",
+            "type": "PULONG"
+        },
+        {
+            "name": "cbBuffer",
+            "type": "USHORT"
+        },
+        {
+            "name": "pBuffer",
+            "type": "PVOID"
+        }
+    ],
+    "PxeDhcpIsValid": [
+        {
+            "name": "pPacket",
+            "type": "PVOID"
+        },
+        {
+            "name": "uPacketLen",
+            "type": "ULONG"
+        },
+        {
+            "name": "bRequestPacket",
+            "type": "BOOL"
+        },
+        {
+            "name": "pbPxeOptionPresent",
+            "type": "PBOOL"
+        }
+    ],
+    "PxeDhcpv6IsValid": [
+        {
+            "name": "pPacket",
+            "type": "PVOID"
+        },
+        {
+            "name": "uPacketLen",
+            "type": "ULONG"
+        },
+        {
+            "name": "bRequestPacket",
+            "type": "BOOL"
+        },
+        {
+            "name": "pbPxeOptionPresent",
+            "type": "PBOOL"
+        }
+    ],
+    "PxeDhcpGetOptionValue": [
+        {
+            "name": "pPacket",
+            "type": "PVOID"
+        },
+        {
+            "name": "uPacketLen",
+            "type": "ULONG"
+        },
+        {
+            "name": "uInstance",
+            "type": "ULONG"
+        },
+        {
+            "name": "bOption",
+            "type": "BYTE"
+        },
+        {
+            "name": "pbOptionLen",
+            "type": "PBYTE"
+        },
+        {
+            "name": "ppOptionValue",
+            "type": "PVOID"
+        }
+    ],
+    "PxeDhcpv6GetOptionValue": [
+        {
+            "name": "pPacket",
+            "type": "PVOID"
+        },
+        {
+            "name": "uPacketLen",
+            "type": "ULONG"
+        },
+        {
+            "name": "uInstance",
+            "type": "ULONG"
+        },
+        {
+            "name": "wOption",
+            "type": "WORD"
+        },
+        {
+            "name": "pwOptionLen",
+            "type": "PWORD"
+        },
+        {
+            "name": "ppOptionValue",
+            "type": "PVOID"
+        }
+    ],
+    "PxeDhcpGetVendorOptionValue": [
+        {
+            "name": "pPacket",
+            "type": "PVOID"
+        },
+        {
+            "name": "uPacketLen",
+            "type": "ULONG"
+        },
+        {
+            "name": "bOption",
+            "type": "BYTE"
+        },
+        {
+            "name": "uInstance",
+            "type": "ULONG"
+        },
+        {
+            "name": "pbOptionLen",
+            "type": "PBYTE"
+        },
+        {
+            "name": "ppOptionValue",
+            "type": "PVOID"
+        }
+    ],
+    "PxeDhcpv6GetVendorOptionValue": [
+        {
+            "name": "pPacket",
+            "type": "PVOID"
+        },
+        {
+            "name": "uPacketLen",
+            "type": "ULONG"
+        },
+        {
+            "name": "dwEnterpriseNumber",
+            "type": "DWORD"
+        },
+        {
+            "name": "wOption",
+            "type": "WORD"
+        },
+        {
+            "name": "uInstance",
+            "type": "ULONG"
+        },
+        {
+            "name": "pwOptionLen",
+            "type": "PWORD"
+        },
+        {
+            "name": "ppOptionValue",
+            "type": "PVOID"
+        }
+    ],
+    "PxeDhcpv6ParseRelayForw": [
+        {
+            "name": "pRelayForwPacket",
+            "type": "PVOID"
+        },
+        {
+            "name": "uRelayForwPacketLen",
+            "type": "ULONG"
+        },
+        {
+            "name": "pRelayMessages",
+            "type": "PPXE_DHCPV6_NESTED_RELAY_MESSAGE"
+        },
+        {
+            "name": "nRelayMessages",
+            "type": "ULONG"
+        },
+        {
+            "name": "pnRelayMessages",
+            "type": "PULONG"
+        },
+        {
+            "name": "ppInnerPacket",
+            "type": "PBYTE"
+        },
+        {
+            "name": "pcbInnerPacket",
+            "type": "PULONG"
+        }
+    ],
+    "PxeDhcpv6CreateRelayRepl": [
+        {
+            "name": "pRelayMessages",
+            "type": "PPXE_DHCPV6_NESTED_RELAY_MESSAGE"
+        },
+        {
+            "name": "nRelayMessages",
+            "type": "ULONG"
+        },
+        {
+            "name": "pInnerPacket",
+            "type": "PBYTE"
+        },
+        {
+            "name": "cbInnerPacket",
+            "type": "ULONG"
+        },
+        {
+            "name": "pReplyBuffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "cbReplyBuffer",
+            "type": "ULONG"
+        },
+        {
+            "name": "pcbReplyBuffer",
+            "type": "PULONG"
+        }
+    ],
+    "PxeGetServerInfo": [
+        {
+            "name": "uInfoType",
+            "type": "PXE_GSI_TYPE"
+        },
+        {
+            "name": "pBuffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "uBufferLen",
+            "type": "ULONG"
+        }
+    ],
+    "PxeGetServerInfoEx": [
+        {
+            "name": "uInfoType",
+            "type": "PXE_GSI_TYPE"
+        },
+        {
+            "name": "pBuffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "uBufferLen",
+            "type": "ULONG"
+        },
+        {
+            "name": "puBufferUsed",
+            "type": "PULONG"
+        }
+    ]
+}

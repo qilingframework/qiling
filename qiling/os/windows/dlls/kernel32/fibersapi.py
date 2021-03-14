@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org)
+#
 
 import struct
 import time
@@ -14,12 +14,12 @@ from qiling.os.windows.handle import *
 from qiling.exception import *
 
 
+dllname = 'kernel32_dll'
+
 # DWORD FlsFree(
 #  DWORD dwFlsIndex
 # );
-@winapi(cc=STDCALL, params={
-    "dwFlsIndex": UINT
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'DWORD': 'UINT'})
 def hook_FlsFree(ql, address, params):
     return ql.os.fiber_manager.free(params['dwFlsIndex'])
 
@@ -27,29 +27,24 @@ def hook_FlsFree(ql, address, params):
 # LPVOID FlsGetValue(
 #  DWORD dwFlsIndex
 # );
-@winapi(cc=STDCALL, params={
-    "dwFlsIndex": UINT})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'DWORD': 'UINT'})
 def hook_FlsGetValue(ql, address, params):
     return ql.os.fiber_manager.get(params['dwFlsIndex'])
 
 
 # LPVOID FlsSetValue(
 #  DWORD dwFlsIndex
+#  PVOID lpFlsData
 # );
-@winapi(cc=STDCALL, params={
-    "dwFlsIndex": UINT,
-    "lpFlsValue": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'DWORD': 'UINT'})
 def hook_FlsSetValue(ql, address, params):
-    return ql.os.fiber_manager.set(params['dwFlsIndex'], params['lpFlsValue'])
+    return ql.os.fiber_manager.set(params['dwFlsIndex'], params['lpFlsData'])
 
 
 # DWORD FlsAlloc(
 #  PFLS_CALLBACK_FUNCTION lpCallback
 # );
-@winapi(cc=STDCALL, params={
-    "lpCallback": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_FlsAlloc(ql, address, params):
     # global cb = params['lpCallback']
     cb = params['lpCallback']

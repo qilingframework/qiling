@@ -1,0 +1,26 @@
+{
+    "MFCreateDXSurfaceBuffer": [
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "punkSurface",
+            "type": "IUnknown"
+        },
+        {
+            "name": "fBottomUpWhenLinear",
+            "type": "BOOL"
+        },
+        {
+            "name": "ppBuffer",
+            "type": "IMFMediaBuffer"
+        }
+    ],
+    "MFIsFormatYUV": [
+        {
+            "name": "Format",
+            "type": "DWORD"
+        }
+    ]
+}

@@ -1,0 +1,622 @@
+{
+    "SnmpGetTranslateMode": [
+        {
+            "name": "nTranslateMode",
+            "type": "smiLPUINT32"
+        }
+    ],
+    "SnmpSetTranslateMode": [
+        {
+            "name": "nTranslateMode",
+            "type": "smiUINT32"
+        }
+    ],
+    "SnmpGetRetransmitMode": [
+        {
+            "name": "nRetransmitMode",
+            "type": "smiLPUINT32"
+        }
+    ],
+    "SnmpSetRetransmitMode": [
+        {
+            "name": "nRetransmitMode",
+            "type": "smiUINT32"
+        }
+    ],
+    "SnmpGetTimeout": [
+        {
+            "name": "hEntity",
+            "type": "HSNMP_ENTITY"
+        },
+        {
+            "name": "nPolicyTimeout",
+            "type": "smiLPTIMETICKS"
+        },
+        {
+            "name": "nActualTimeout",
+            "type": "smiLPTIMETICKS"
+        }
+    ],
+    "SnmpSetTimeout": [
+        {
+            "name": "hEntity",
+            "type": "HSNMP_ENTITY"
+        },
+        {
+            "name": "nPolicyTimeout",
+            "type": "smiTIMETICKS"
+        }
+    ],
+    "SnmpGetRetry": [
+        {
+            "name": "hEntity",
+            "type": "HSNMP_ENTITY"
+        },
+        {
+            "name": "nPolicyRetry",
+            "type": "smiLPUINT32"
+        },
+        {
+            "name": "nActualRetry",
+            "type": "smiLPUINT32"
+        }
+    ],
+    "SnmpSetRetry": [
+        {
+            "name": "hEntity",
+            "type": "HSNMP_ENTITY"
+        },
+        {
+            "name": "nPolicyRetry",
+            "type": "smiUINT32"
+        }
+    ],
+    "SnmpGetVendorInfo": [
+        {
+            "name": "vendorInfo",
+            "type": "smiLPVENDORINFO"
+        }
+    ],
+    "SnmpStartup": [
+        {
+            "name": "nMajorVersion",
+            "type": "smiLPUINT32"
+        },
+        {
+            "name": "nMinorVersion",
+            "type": "smiLPUINT32"
+        },
+        {
+            "name": "nLevel",
+            "type": "smiLPUINT32"
+        },
+        {
+            "name": "nTranslateMode",
+            "type": "smiLPUINT32"
+        },
+        {
+            "name": "nRetransmitMode",
+            "type": "smiLPUINT32"
+        }
+    ],
+    "SnmpCleanup": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "SnmpOpen": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "wMsg",
+            "type": "UINT"
+        }
+    ],
+    "SnmpClose": [
+        {
+            "name": "session",
+            "type": "HSNMP_SESSION"
+        }
+    ],
+    "SnmpSendMsg": [
+        {
+            "name": "session",
+            "type": "HSNMP_SESSION"
+        },
+        {
+            "name": "srcEntity",
+            "type": "HSNMP_ENTITY"
+        },
+        {
+            "name": "dstEntity",
+            "type": "HSNMP_ENTITY"
+        },
+        {
+            "name": "context",
+            "type": "HSNMP_CONTEXT"
+        },
+        {
+            "name": "PDU",
+            "type": "HSNMP_PDU"
+        }
+    ],
+    "SnmpRecvMsg": [
+        {
+            "name": "session",
+            "type": "HSNMP_SESSION"
+        },
+        {
+            "name": "srcEntity",
+            "type": "LPHSNMP_ENTITY"
+        },
+        {
+            "name": "dstEntity",
+            "type": "LPHSNMP_ENTITY"
+        },
+        {
+            "name": "context",
+            "type": "LPHSNMP_CONTEXT"
+        },
+        {
+            "name": "PDU",
+            "type": "LPHSNMP_PDU"
+        }
+    ],
+    "SnmpRegister": [
+        {
+            "name": "session",
+            "type": "HSNMP_SESSION"
+        },
+        {
+            "name": "srcEntity",
+            "type": "HSNMP_ENTITY"
+        },
+        {
+            "name": "dstEntity",
+            "type": "HSNMP_ENTITY"
+        },
+        {
+            "name": "context",
+            "type": "HSNMP_CONTEXT"
+        },
+        {
+            "name": "notification",
+            "type": "smiLPCOID"
+        },
+        {
+            "name": "state",
+            "type": "smiUINT32"
+        }
+    ],
+    "SnmpCreateSession": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "wMsg",
+            "type": "UINT"
+        },
+        {
+            "name": "fCallBack",
+            "type": "SNMPAPI_CALLBACK"
+        },
+        {
+            "name": "lpClientData",
+            "type": "LPVOID"
+        }
+    ],
+    "SnmpListen": [
+        {
+            "name": "hEntity",
+            "type": "HSNMP_ENTITY"
+        },
+        {
+            "name": "lStatus",
+            "type": "SNMPAPI_STATUS"
+        }
+    ],
+    "SnmpCancelMsg": [
+        {
+            "name": "session",
+            "type": "HSNMP_SESSION"
+        },
+        {
+            "name": "reqId",
+            "type": "smiINT32"
+        }
+    ],
+    "SnmpStartupEx": [
+        {
+            "name": "nMajorVersion",
+            "type": "smiLPUINT32"
+        },
+        {
+            "name": "nMinorVersion",
+            "type": "smiLPUINT32"
+        },
+        {
+            "name": "nLevel",
+            "type": "smiLPUINT32"
+        },
+        {
+            "name": "nTranslateMode",
+            "type": "smiLPUINT32"
+        },
+        {
+            "name": "nRetransmitMode",
+            "type": "smiLPUINT32"
+        }
+    ],
+    "SnmpCleanupEx": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "SnmpStrToEntity": [
+        {
+            "name": "session",
+            "type": "HSNMP_SESSION"
+        },
+        {
+            "name": "string",
+            "type": "LPCSTR"
+        }
+    ],
+    "SnmpEntityToStr": [
+        {
+            "name": "entity",
+            "type": "HSNMP_ENTITY"
+        },
+        {
+            "name": "size",
+            "type": "smiUINT32"
+        },
+        {
+            "name": "string",
+            "type": "LPSTR"
+        }
+    ],
+    "SnmpFreeEntity": [
+        {
+            "name": "entity",
+            "type": "HSNMP_ENTITY"
+        }
+    ],
+    "SnmpStrToContext": [
+        {
+            "name": "session",
+            "type": "HSNMP_SESSION"
+        },
+        {
+            "name": "string",
+            "type": "smiLPCOCTETS"
+        }
+    ],
+    "SnmpContextToStr": [
+        {
+            "name": "context",
+            "type": "HSNMP_CONTEXT"
+        },
+        {
+            "name": "string",
+            "type": "smiLPOCTETS"
+        }
+    ],
+    "SnmpFreeContext": [
+        {
+            "name": "context",
+            "type": "HSNMP_CONTEXT"
+        }
+    ],
+    "SnmpSetPort": [
+        {
+            "name": "hEntity",
+            "type": "HSNMP_ENTITY"
+        },
+        {
+            "name": "nPort",
+            "type": "UINT"
+        }
+    ],
+    "SnmpCreatePdu": [
+        {
+            "name": "session",
+            "type": "HSNMP_SESSION"
+        },
+        {
+            "name": "PDU_type",
+            "type": "smiINT"
+        },
+        {
+            "name": "request_id",
+            "type": "smiINT32"
+        },
+        {
+            "name": "error_status",
+            "type": "smiINT"
+        },
+        {
+            "name": "error_index",
+            "type": "smiINT"
+        },
+        {
+            "name": "varbindlist",
+            "type": "HSNMP_VBL"
+        }
+    ],
+    "SnmpGetPduData": [
+        {
+            "name": "PDU",
+            "type": "HSNMP_PDU"
+        },
+        {
+            "name": "PDU_type",
+            "type": "smiLPINT"
+        },
+        {
+            "name": "request_id",
+            "type": "smiLPINT32"
+        },
+        {
+            "name": "error_status",
+            "type": "smiLPINT"
+        },
+        {
+            "name": "error_index",
+            "type": "smiLPINT"
+        },
+        {
+            "name": "varbindlist",
+            "type": "LPHSNMP_VBL"
+        }
+    ],
+    "SnmpSetPduData": [
+        {
+            "name": "PDU",
+            "type": "HSNMP_PDU"
+        },
+        {
+            "name": "PDU_type",
+            "type": "smiINT"
+        },
+        {
+            "name": "request_id",
+            "type": "smiINT32"
+        },
+        {
+            "name": "non_repeaters",
+            "type": "smiINT"
+        },
+        {
+            "name": "max_repetitions",
+            "type": "smiINT"
+        },
+        {
+            "name": "varbindlist",
+            "type": "HSNMP_VBL"
+        }
+    ],
+    "SnmpDuplicatePdu": [
+        {
+            "name": "session",
+            "type": "HSNMP_SESSION"
+        },
+        {
+            "name": "PDU",
+            "type": "HSNMP_PDU"
+        }
+    ],
+    "SnmpFreePdu": [
+        {
+            "name": "PDU",
+            "type": "HSNMP_PDU"
+        }
+    ],
+    "SnmpCreateVbl": [
+        {
+            "name": "session",
+            "type": "HSNMP_SESSION"
+        },
+        {
+            "name": "name",
+            "type": "smiLPCOID"
+        },
+        {
+            "name": "value",
+            "type": "smiLPCVALUE"
+        }
+    ],
+    "SnmpDuplicateVbl": [
+        {
+            "name": "session",
+            "type": "HSNMP_SESSION"
+        },
+        {
+            "name": "vbl",
+            "type": "HSNMP_VBL"
+        }
+    ],
+    "SnmpFreeVbl": [
+        {
+            "name": "vbl",
+            "type": "HSNMP_VBL"
+        }
+    ],
+    "SnmpCountVbl": [
+        {
+            "name": "vbl",
+            "type": "HSNMP_VBL"
+        }
+    ],
+    "SnmpGetVb": [
+        {
+            "name": "vbl",
+            "type": "HSNMP_VBL"
+        },
+        {
+            "name": "index",
+            "type": "smiUINT32"
+        },
+        {
+            "name": "name",
+            "type": "smiLPOID"
+        },
+        {
+            "name": "value",
+            "type": "smiLPVALUE"
+        }
+    ],
+    "SnmpSetVb": [
+        {
+            "name": "vbl",
+            "type": "HSNMP_VBL"
+        },
+        {
+            "name": "index",
+            "type": "smiUINT32"
+        },
+        {
+            "name": "name",
+            "type": "smiLPCOID"
+        },
+        {
+            "name": "value",
+            "type": "smiLPCVALUE"
+        }
+    ],
+    "SnmpDeleteVb": [
+        {
+            "name": "vbl",
+            "type": "HSNMP_VBL"
+        },
+        {
+            "name": "index",
+            "type": "smiUINT32"
+        }
+    ],
+    "SnmpGetLastError": [
+        {
+            "name": "session",
+            "type": "HSNMP_SESSION"
+        }
+    ],
+    "SnmpStrToOid": [
+        {
+            "name": "string",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dstOID",
+            "type": "smiLPOID"
+        }
+    ],
+    "SnmpOidToStr": [
+        {
+            "name": "srcOID",
+            "type": "smiLPCOID"
+        },
+        {
+            "name": "size",
+            "type": "smiUINT32"
+        },
+        {
+            "name": "string",
+            "type": "LPSTR"
+        }
+    ],
+    "SnmpOidCopy": [
+        {
+            "name": "srcOID",
+            "type": "smiLPCOID"
+        },
+        {
+            "name": "dstOID",
+            "type": "smiLPOID"
+        }
+    ],
+    "SnmpOidCompare": [
+        {
+            "name": "xOID",
+            "type": "smiLPCOID"
+        },
+        {
+            "name": "yOID",
+            "type": "smiLPCOID"
+        },
+        {
+            "name": "maxlen",
+            "type": "smiUINT32"
+        },
+        {
+            "name": "result",
+            "type": "smiLPINT"
+        }
+    ],
+    "SnmpEncodeMsg": [
+        {
+            "name": "session",
+            "type": "HSNMP_SESSION"
+        },
+        {
+            "name": "srcEntity",
+            "type": "HSNMP_ENTITY"
+        },
+        {
+            "name": "dstEntity",
+            "type": "HSNMP_ENTITY"
+        },
+        {
+            "name": "context",
+            "type": "HSNMP_CONTEXT"
+        },
+        {
+            "name": "pdu",
+            "type": "HSNMP_PDU"
+        },
+        {
+            "name": "msgBufDesc",
+            "type": "smiLPOCTETS"
+        }
+    ],
+    "SnmpDecodeMsg": [
+        {
+            "name": "session",
+            "type": "HSNMP_SESSION"
+        },
+        {
+            "name": "srcEntity",
+            "type": "LPHSNMP_ENTITY"
+        },
+        {
+            "name": "dstEntity",
+            "type": "LPHSNMP_ENTITY"
+        },
+        {
+            "name": "context",
+            "type": "LPHSNMP_CONTEXT"
+        },
+        {
+            "name": "pdu",
+            "type": "LPHSNMP_PDU"
+        },
+        {
+            "name": "msgBufDesc",
+            "type": "smiLPCOCTETS"
+        }
+    ],
+    "SnmpFreeDescriptor": [
+        {
+            "name": "syntax",
+            "type": "smiUINT32"
+        },
+        {
+            "name": "descriptor",
+            "type": "smiLPOPAQUE"
+        }
+    ]
+}

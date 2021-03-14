@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
 
 import sys, subprocess, threading, unittest, socket, time
 from binascii import unhexlify
+
 sys.path.append("..")
 from qiling import *
 from qiling.exception import *
@@ -36,7 +37,7 @@ class DebuggerTest(unittest.TestCase):
 
         # some random command test just to make sure we covered most of the command
         def gdb_test_client():
-            time.sleep(DELAY)
+            time.sleep(DELAY * 2)
             gdb_client = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
             netout     = gdb_client.makefile('w')
             gdb_client.connect(('127.0.0.1',9999))
@@ -85,11 +86,11 @@ class DebuggerTest(unittest.TestCase):
 
     def test_gdbdebug_shellcode_server(self):
         X8664_LIN = unhexlify('31c048bbd19d9691d08c97ff48f7db53545f995257545eb03b0f05')
-        ql = Qiling(shellcoder = X8664_LIN, archtype = "x8664", ostype = "linux")
+        ql = Qiling(code = X8664_LIN, archtype = "x8664", ostype = "linux")
         ql.debugger = "gdb:127.0.0.1:9998"
 
         def gdb_test_client():
-            time.sleep(DELAY)
+            time.sleep(DELAY * 2)
             gdb_client = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
             netout     = gdb_client.makefile('w')
             gdb_client.connect(('127.0.0.1',9998))

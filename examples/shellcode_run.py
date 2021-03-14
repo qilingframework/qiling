@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
 from binascii import unhexlify
 import sys
 
@@ -19,37 +19,37 @@ X8664_FBSD = unhexlify('6a61586a025f6a015e990f054897baff02aaaa80f2ff524889e69904
 X8664_macos = unhexlify('4831f65648bf2f2f62696e2f7368574889e74831d24831c0b00248c1c828b03b0f05')
 if __name__ == "__main__":
     print("\nLinux ARM 64bit Shellcode")
-    ql = Qiling(shellcoder = ARM64_LIN, archtype = "arm64", ostype = "linux", output = "debug")
+    ql = Qiling(code = ARM64_LIN, archtype = "arm64", ostype = "linux", output = "debug")
     ql.run()
 
     print("\nLinux ARM 32bit Shellcode")
-    ql = Qiling(shellcoder = ARM_LIN, archtype = "arm", ostype = "linux", output = "debug")
+    ql = Qiling(code = ARM_LIN, archtype = "arm", ostype = "linux", output = "debug")
     ql.run()
 
     print("\nLinux X86 32bit Shellcode")
-    ql = Qiling(shellcoder = X86_LIN, archtype = "x86", ostype = "linux", output = "debug")
+    ql = Qiling(code = X86_LIN, archtype = "x86", ostype = "linux", output = "debug")
     ql.run()
 
     print("\nLinux MIPS 32bit EL Shellcode")
-    ql = Qiling(shellcoder = MIPS32EL_LIN, archtype = "mips32", ostype = "linux", output = "debug")
+    ql = Qiling(code = MIPS32EL_LIN, archtype = "mips", ostype = "linux", output = "debug")
     ql.run()
 
     print("\nLinux X86 64bit Shellcode")
-    ql = Qiling(shellcoder = X8664_LIN, archtype = "x8664", ostype = "linux", output = "debug")
+    ql = Qiling(code = X8664_LIN, archtype = "x8664", ostype = "linux", output = "debug")
     ql.run()
 
     print("\nWindows X86 32bit Shellcode")
-    ql = Qiling(shellcoder = X86_WIN, archtype = "x86", ostype = "windows", rootfs="rootfs/x86_windows")
+    ql = Qiling(code = X86_WIN, archtype = "x86", ostype = "windows", rootfs="rootfs/x86_windows")
     ql.run()
 
     print("\nWindows X8664 64bit Shellcode")
-    ql = Qiling(shellcoder = X8664_WIN, archtype = "x8664", ostype = "windows", rootfs="rootfs/x8664_windows")
+    ql = Qiling(code = X8664_WIN, archtype = "x8664", ostype = "windows", rootfs="rootfs/x8664_windows")
     ql.run()
 
     print("\nFreeBSD X86 64bit Shellcode")
-    ql = Qiling(shellcoder = X8664_FBSD, archtype = "x8664", ostype = "freebsd", output = "debug")
+    ql = Qiling(code = X8664_FBSD, archtype = "x8664", ostype = "freebsd", output = "debug")
     ql.run()
 
     print("\nmacos X86 64bit Shellcode")
-    ql = Qiling(shellcoder = X8664_macos, archtype = "x8664", ostype = "macos", output = "debug")
+    ql = Qiling(code = X8664_macos, archtype = "x8664", ostype = "macos", output = "debug")
     ql.run()

@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 #
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org)
+#
+
 
 from qiling.const import *
 from qiling.os.linux.thread import *
@@ -16,8 +17,7 @@ def ql_syscall_set_robust_list(ql, set_robust_list_head_ptr, set_robust_list_hea
         ql.os.thread_management.cur_thread.robust_list_head_ptr = set_robust_list_head_ptr
         ql.os.thread_management.cur_thread.robust_list_head_len = set_robust_list_head_len
     regreturn = 0
-    ql.nprint("set_robust_list(%x, %x) = %d"%(set_robust_list_head_ptr, set_robust_list_head_len, regreturn))
-    ql.os.definesyscall_return(regreturn)
+    return regreturn
 
 
 def ql_syscall_futex(ql, futex_uaddr, futex_op, futex_val, futex_timeout, futex_uaddr2, futex_val3):
@@ -43,22 +43,32 @@ def ql_syscall_futex(ql, futex_uaddr, futex_op, futex_val, futex_timeout, futex_
         #         return False
         #     else:
         #         return True
-        if ql.unpack32(ql.mem.read(futex_uaddr, 4)) == futex_val:
-            ql.emu_stop()
-            regreturn = 0
-            ql.os.futexm.futex_wait(futex_uaddr, ql.os.thread_management.cur_thread)
-        else:
-            regreturn = -1
-        ql.nprint("futex(%x, %d, %d, %x) = %d" % (futex_uaddr, futex_op, futex_val, futex_timeout, regreturn))
+        regreturn = ql.os.futexm.futex_wait(ql, futex_uaddr,
+                                            ql.os.thread_management.cur_thread,
+                                            futex_val)
+        ql.log.debug("futex(%x, %d, %d, %x) = %d" % (futex_uaddr, futex_op, futex_val, futex_timeout, regreturn))
+    elif futex_op & (FUTEX_PRIVATE_FLAG - 1) == FUTEX_WAIT_BITSET:
+        regreturn = ql.os.futexm.futex_wait(ql, futex_uaddr,
+                                            ql.os.thread_management.cur_thread,
+                                            futex_val,
+                                            futex_val3)
+        ql.log.debug("futex(%x, %d, %d, %x, %x, %x) = %d" % (futex_uaddr,
+                                                          futex_op, futex_val,
+                                                          futex_timeout,
+                                                          futex_uaddr2,
+                                                          futex_val3,
+                                                          regreturn))
     elif futex_op & (FUTEX_PRIVATE_FLAG - 1) == FUTEX_WAKE:
-        regreturn = 0
-        ql.os.futexm.futex_wake(futex_uaddr, futex_val)
-        ql.nprint("futex(%x, %d, %d) = %d" % (futex_uaddr, futex_op, futex_val, regreturn))
+        regreturn = ql.os.futexm.futex_wake(ql, futex_uaddr,ql.os.thread_management.cur_thread, futex_val)
+        ql.log.debug("futex(%x, %d, %d) = %d" % (futex_uaddr, futex_op, futex_val, regreturn))
+    elif futex_op & (FUTEX_PRIVATE_FLAG - 1) == FUTEX_WAKE_BITSET:
+        regreturn = ql.os.futexm.futex_wake(ql, futex_uaddr,ql.os.thread_management.cur_thread, futex_val, futex_val3)
+        ql.log.debug("futex(%x, %d, %d) = %d" % (futex_uaddr, futex_op, futex_val, regreturn))
     else:
-        ql.nprint("futex(%x, %d, %d) = ?" % (futex_uaddr, futex_op, futex_val))
+        ql.log.debug("futex(%x, %d, %d) = ?" % (futex_uaddr, futex_op, futex_val))
         ql.emu_stop()
-        ql.os.thread_management.cur_thread.stop()
-        ql.os.thread_management.cur_thread.stop_event = THREAD_EVENT_EXIT_GROUP_EVENT
+        #ql.os.thread_management.cur_thread.stop()
+        #ql.os.thread_management.cur_thread.stop_event = THREAD_EVENT_EXIT_GROUP_EVENT
         regreturn = 0
 
-    ql.os.definesyscall_return(regreturn)
+    return regreturn

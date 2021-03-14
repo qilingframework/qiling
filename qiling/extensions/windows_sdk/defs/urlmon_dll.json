@@ -1,0 +1,34 @@
+{
+    "CreateAsyncBindCtx": [
+        {
+            "name": "reserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "pBSCb",
+            "type": "IBindStatusCallback"
+        },
+        {
+            "name": "pEFetc",
+            "type": "IEnumFORMATETC"
+        },
+        {
+            "name": "ppBC",
+            "type": "IBindCtx"
+        }
+    ],
+    "CreateFormatEnumerator": [
+        {
+            "name": "cfmtetc",
+            "type": "UINT"
+        },
+        {
+            "name": "rgfmtetc",
+            "type": "FORMATETC"
+        },
+        {
+            "name": "ppenumfmtetc",
+            "type": "IEnumFORMATETC"
+        }
+    ]
+}

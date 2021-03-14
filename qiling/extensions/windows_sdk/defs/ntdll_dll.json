@@ -1,0 +1,792 @@
+{
+    "RtlIpv4AddressToStringA": [
+        {
+            "name": "Addr",
+            "type": {
+                "name": "in_addr",
+                "data_type": "Struct",
+                "elements": []
+            }
+        },
+        {
+            "name": "S",
+            "type": "PSTR"
+        }
+    ],
+    "RtlIpv6AddressToStringA": [
+        {
+            "name": "Addr",
+            "type": {
+                "name": "in6_addr",
+                "data_type": "Struct",
+                "elements": []
+            }
+        },
+        {
+            "name": "S",
+            "type": "PSTR"
+        }
+    ],
+    "RtlEthernetAddressToStringA": [
+        {
+            "name": "Addr",
+            "type": "DL_EUI48"
+        },
+        {
+            "name": "S",
+            "type": "PSTR"
+        }
+    ],
+    "RtlIpv4AddressToStringW": [
+        {
+            "name": "Addr",
+            "type": {
+                "name": "in_addr",
+                "data_type": "Struct",
+                "elements": []
+            }
+        },
+        {
+            "name": "S",
+            "type": "PWSTR"
+        }
+    ],
+    "RtlIpv6AddressToStringW": [
+        {
+            "name": "Addr",
+            "type": {
+                "name": "in6_addr",
+                "data_type": "Struct",
+                "elements": []
+            }
+        },
+        {
+            "name": "S",
+            "type": "PWSTR"
+        }
+    ],
+    "RtlEthernetAddressToStringW": [
+        {
+            "name": "Addr",
+            "type": "DL_EUI48"
+        },
+        {
+            "name": "S",
+            "type": "PWSTR"
+        }
+    ],
+    "RtlIpv4AddressToStringExW": [
+        {
+            "name": "Address",
+            "type": {
+                "name": "in_addr",
+                "data_type": "Struct",
+                "elements": []
+            }
+        },
+        {
+            "name": "Port",
+            "type": "USHORT"
+        },
+        {
+            "name": "AddressString",
+            "type": "PWSTR"
+        },
+        {
+            "name": "AddressStringLength",
+            "type": "PULONG"
+        }
+    ],
+    "RtlIpv6AddressToStringExW": [
+        {
+            "name": "Address",
+            "type": {
+                "name": "in6_addr",
+                "data_type": "Struct",
+                "elements": []
+            }
+        },
+        {
+            "name": "ScopeId",
+            "type": "ULONG"
+        },
+        {
+            "name": "Port",
+            "type": "USHORT"
+        },
+        {
+            "name": "AddressString",
+            "type": "PWSTR"
+        },
+        {
+            "name": "AddressStringLength",
+            "type": "PULONG"
+        }
+    ],
+    "RtlIpv4StringToAddressA": [
+        {
+            "name": "S",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Strict",
+            "type": "BOOLEAN"
+        },
+        {
+            "name": "Terminator",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Addr",
+            "type": {
+                "name": "in_addr",
+                "data_type": "Struct",
+                "elements": []
+            }
+        }
+    ],
+    "RtlIpv6StringToAddressA": [
+        {
+            "name": "S",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Terminator",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Addr",
+            "type": {
+                "name": "in6_addr",
+                "data_type": "Struct",
+                "elements": []
+            }
+        }
+    ],
+    "RtlEthernetStringToAddressA": [
+        {
+            "name": "S",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Terminator",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Addr",
+            "type": "DL_EUI48"
+        }
+    ],
+    "RtlIpv4StringToAddressW": [
+        {
+            "name": "S",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Strict",
+            "type": "BOOLEAN"
+        },
+        {
+            "name": "Terminator",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Addr",
+            "type": {
+                "name": "in_addr",
+                "data_type": "Struct",
+                "elements": []
+            }
+        }
+    ],
+    "RtlIpv6StringToAddressW": [
+        {
+            "name": "S",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Terminator",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Addr",
+            "type": {
+                "name": "in6_addr",
+                "data_type": "Struct",
+                "elements": []
+            }
+        }
+    ],
+    "RtlEthernetStringToAddressW": [
+        {
+            "name": "S",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Terminator",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Addr",
+            "type": "DL_EUI48"
+        }
+    ],
+    "RtlIpv4StringToAddressExW": [
+        {
+            "name": "AddressString",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Strict",
+            "type": "BOOLEAN"
+        },
+        {
+            "name": "Address",
+            "type": {
+                "name": "in_addr",
+                "data_type": "Struct",
+                "elements": []
+            }
+        },
+        {
+            "name": "Port",
+            "type": "PUSHORT"
+        }
+    ],
+    "RtlIpv6StringToAddressExW": [
+        {
+            "name": "AddressString",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Address",
+            "type": {
+                "name": "in6_addr",
+                "data_type": "Struct",
+                "elements": []
+            }
+        },
+        {
+            "name": "ScopeId",
+            "type": "PULONG"
+        },
+        {
+            "name": "Port",
+            "type": "PUSHORT"
+        }
+    ],
+    "IsProcessCritical": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Critical",
+            "type": "PBOOL"
+        }
+    ],
+    "NtClose": [
+        {
+            "name": "Handle",
+            "type": "HANDLE"
+        }
+    ],
+    "NtCreateFile": [
+        {
+            "name": "FileHandle",
+            "type": "PHANDLE"
+        },
+        {
+            "name": "DesiredAccess",
+            "type": "ACCESS_MASK"
+        },
+        {
+            "name": "ObjectAttributes",
+            "type": "POBJECT_ATTRIBUTES"
+        },
+        {
+            "name": "IoStatusBlock",
+            "type": "PIO_STATUS_BLOCK"
+        },
+        {
+            "name": "AllocationSize",
+            "type": "PLARGE_INTEGER"
+        },
+        {
+            "name": "FileAttributes",
+            "type": "ULONG"
+        },
+        {
+            "name": "ShareAccess",
+            "type": "ULONG"
+        },
+        {
+            "name": "CreateDisposition",
+            "type": "ULONG"
+        },
+        {
+            "name": "CreateOptions",
+            "type": "ULONG"
+        },
+        {
+            "name": "EaBuffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "EaLength",
+            "type": "ULONG"
+        }
+    ],
+    "NtOpenFile": [
+        {
+            "name": "FileHandle",
+            "type": "PHANDLE"
+        },
+        {
+            "name": "DesiredAccess",
+            "type": "ACCESS_MASK"
+        },
+        {
+            "name": "ObjectAttributes",
+            "type": "POBJECT_ATTRIBUTES"
+        },
+        {
+            "name": "IoStatusBlock",
+            "type": "PIO_STATUS_BLOCK"
+        },
+        {
+            "name": "ShareAccess",
+            "type": "ULONG"
+        },
+        {
+            "name": "OpenOptions",
+            "type": "ULONG"
+        }
+    ],
+    "NtRenameKey": [
+        {
+            "name": "KeyHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "NewName",
+            "type": "PUNICODE_STRING"
+        }
+    ],
+    "NtNotifyChangeMultipleKeys": [
+        {
+            "name": "MasterKeyHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Count",
+            "type": "ULONG"
+        },
+        {
+            "name": "SubordinateObjects",
+            "type": "OBJECT_ATTRIBUTES"
+        },
+        {
+            "name": "Event",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ApcRoutine",
+            "type": "PIO_APC_ROUTINE"
+        },
+        {
+            "name": "ApcContext",
+            "type": "PVOID"
+        },
+        {
+            "name": "IoStatusBlock",
+            "type": "PIO_STATUS_BLOCK"
+        },
+        {
+            "name": "CompletionFilter",
+            "type": "ULONG"
+        },
+        {
+            "name": "WatchTree",
+            "type": "BOOLEAN"
+        },
+        {
+            "name": "Buffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "BufferSize",
+            "type": "ULONG"
+        },
+        {
+            "name": "Asynchronous",
+            "type": "BOOLEAN"
+        }
+    ],
+    "NtQueryMultipleValueKey": [
+        {
+            "name": "KeyHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ValueEntries",
+            "type": "PKEY_VALUE_ENTRY"
+        },
+        {
+            "name": "EntryCount",
+            "type": "ULONG"
+        },
+        {
+            "name": "ValueBuffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "BufferLength",
+            "type": "PULONG"
+        },
+        {
+            "name": "RequiredBufferLength",
+            "type": "PULONG"
+        }
+    ],
+    "NtSetInformationKey": [
+        {
+            "name": "KeyHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "KeySetInformationClass",
+            "type": "KEY_SET_INFORMATION_CLASS"
+        },
+        {
+            "name": "KeySetInformation",
+            "type": "PVOID"
+        },
+        {
+            "name": "KeySetInformationLength",
+            "type": "ULONG"
+        }
+    ],
+    "NtDeviceIoControlFile": [
+        {
+            "name": "FileHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Event",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ApcRoutine",
+            "type": "PIO_APC_ROUTINE"
+        },
+        {
+            "name": "ApcContext",
+            "type": "PVOID"
+        },
+        {
+            "name": "IoStatusBlock",
+            "type": "PIO_STATUS_BLOCK"
+        },
+        {
+            "name": "IoControlCode",
+            "type": "ULONG"
+        },
+        {
+            "name": "InputBuffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "InputBufferLength",
+            "type": "ULONG"
+        },
+        {
+            "name": "OutputBuffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "OutputBufferLength",
+            "type": "ULONG"
+        }
+    ],
+    "RtlIsNameLegalDOS8Dot3": [
+        {
+            "name": "Name",
+            "type": "PUNICODE_STRING"
+        },
+        {
+            "name": "OemName",
+            "type": "POEM_STRING"
+        },
+        {
+            "name": "NameContainsSpaces",
+            "type": "PBOOLEAN"
+        }
+    ],
+    "RtlNtStatusToDosError": [
+        {
+            "name": "Status",
+            "type": "NTSTATUS"
+        }
+    ],
+    "NtQueryInformationProcess": [
+        {
+            "name": "ProcessHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ProcessInformationClass",
+            "type": "PROCESSINFOCLASS"
+        },
+        {
+            "name": "ProcessInformation",
+            "type": "PVOID"
+        },
+        {
+            "name": "ProcessInformationLength",
+            "type": "ULONG"
+        },
+        {
+            "name": "ReturnLength",
+            "type": "PULONG"
+        }
+    ],
+    "NtQueryInformationThread": [
+        {
+            "name": "ThreadHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ThreadInformationClass",
+            "type": "THREADINFOCLASS"
+        },
+        {
+            "name": "ThreadInformation",
+            "type": "PVOID"
+        },
+        {
+            "name": "ThreadInformationLength",
+            "type": "ULONG"
+        },
+        {
+            "name": "ReturnLength",
+            "type": "PULONG"
+        }
+    ],    
+    "NtQueryObject": [
+        {
+            "name": "Handle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ObjectInformationClass",
+            "type": "OBJECT_INFORMATION_CLASS"
+        },
+        {
+            "name": "ObjectInformation",
+            "type": "PVOID"
+        },
+        {
+            "name": "ObjectInformationLength",
+            "type": "ULONG"
+        },
+        {
+            "name": "ReturnLength",
+            "type": "PULONG"
+        }
+    ],
+    "ZwQueryObject": [
+        {
+            "name": "Handle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ObjectInformationClass",
+            "type": "OBJECT_INFORMATION_CLASS"
+        },
+        {
+            "name": "ObjectInformation",
+            "type": "PVOID"
+        },
+        {
+            "name": "ObjectInformationLength",
+            "type": "ULONG"
+        },
+        {
+            "name": "ReturnLength",
+            "type": "PULONG"
+        }
+    ],
+    "NtQuerySystemInformation": [
+        {
+            "name": "SystemInformationClass",
+            "type": "SYSTEM_INFORMATION_CLASS"
+        },
+        {
+            "name": "SystemInformation",
+            "type": "PVOID"
+        },
+        {
+            "name": "SystemInformationLength",
+            "type": "ULONG"
+        },
+        {
+            "name": "ReturnLength",
+            "type": "PULONG"
+        }
+    ],
+    "NtQuerySystemTime": [
+        {
+            "name": "SystemTime",
+            "type": "PLARGE_INTEGER"
+        }
+    ],
+    "RtlLocalTimeToSystemTime": [
+        {
+            "name": "LocalTime",
+            "type": "PLARGE_INTEGER"
+        },
+        {
+            "name": "SystemTime",
+            "type": "PLARGE_INTEGER"
+        }
+    ],
+    "RtlTimeToSecondsSince1970": [
+        {
+            "name": "Time",
+            "type": "PLARGE_INTEGER"
+        },
+        {
+            "name": "ElapsedSeconds",
+            "type": "PULONG"
+        }
+    ],
+    "RtlFreeAnsiString": [
+        {
+            "name": "AnsiString",
+            "type": "PANSI_STRING"
+        }
+    ],
+    "RtlFreeUnicodeString": [
+        {
+            "name": "UnicodeString",
+            "type": "PUNICODE_STRING"
+        }
+    ],
+    "RtlFreeOemString": [
+        {
+            "name": "OemString",
+            "type": "POEM_STRING"
+        }
+    ],
+    "RtlInitString": [
+        {
+            "name": "DestinationString",
+            "type": "PSTRING"
+        },
+        {
+            "name": "SourceString",
+            "type": "PCSZ"
+        }
+    ],
+    "RtlInitUnicodeString": [
+        {
+            "name": "DestinationString",
+            "type": "PUNICODE_STRING"
+        },
+        {
+            "name": "SourceString",
+            "type": "PCWSTR"
+        }
+    ],
+    "RtlAnsiStringToUnicodeString": [
+        {
+            "name": "DestinationString",
+            "type": "PUNICODE_STRING"
+        },
+        {
+            "name": "SourceString",
+            "type": "PCANSI_STRING"
+        },
+        {
+            "name": "AllocateDestinationString",
+            "type": "BOOLEAN"
+        }
+    ],
+    "RtlUnicodeStringToAnsiString": [
+        {
+            "name": "DestinationString",
+            "type": "PANSI_STRING"
+        },
+        {
+            "name": "SourceString",
+            "type": "PCUNICODE_STRING"
+        },
+        {
+            "name": "AllocateDestinationString",
+            "type": "BOOLEAN"
+        }
+    ],
+    "RtlUnicodeStringToOemString": [
+        {
+            "name": "DestinationString",
+            "type": "POEM_STRING"
+        },
+        {
+            "name": "SourceString",
+            "type": "PCUNICODE_STRING"
+        },
+        {
+            "name": "AllocateDestinationString",
+            "type": "BOOLEAN"
+        }
+    ],
+    "RtlUnicodeToMultiByteSize": [
+        {
+            "name": "BytesInMultiByteString",
+            "type": "PULONG"
+        },
+        {
+            "name": "UnicodeString",
+            "type": "PWCH"
+        },
+        {
+            "name": "BytesInUnicodeString",
+            "type": "ULONG"
+        }
+    ],
+    "RtlCharToInteger": [
+        {
+            "name": "String",
+            "type": "PCSZ"
+        },
+        {
+            "name": "Base",
+            "type": "ULONG"
+        },
+        {
+            "name": "Value",
+            "type": "PULONG"
+        }
+    ],
+    "RtlConvertSidToUnicodeString": [
+        {
+            "name": "UnicodeString",
+            "type": "PUNICODE_STRING"
+        },
+        {
+            "name": "Sid",
+            "type": "PSID"
+        },
+        {
+            "name": "AllocateDestinationString",
+            "type": "BOOLEAN"
+        }
+    ],
+    "RtlUniform": [
+        {
+            "name": "Seed",
+            "type": "PULONG"
+        }
+    ]
+}

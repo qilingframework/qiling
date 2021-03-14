@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org)
+#
 
 import struct
 import time
@@ -14,12 +14,12 @@ from qiling.os.windows.handle import *
 from qiling.exception import *
 
 
+dllname = 'kernel32_dll'
+
 # void InitializeSListHead(
 #   PSLIST_HEADER ListHead
 # );
-@winapi(cc=STDCALL, params={
-    "ListHead": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_InitializeSListHead(ql, address, params):
     addr = params["ListHead"]
     handle = Handle(obj=[], id=addr)

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
 import os
 
 from qiling.exception import *
@@ -16,6 +16,22 @@ class ql_socket:
     def __init__(self, socket):
         self.__fd = socket.fileno()
         self.__socket = socket
+
+    def __getstate__(self, *args, **kwargs):
+
+        _state = self.__dict__.copy()
+
+        _state["_ql_socket__socket"] = {
+                "family": self.__dict__["_ql_socket__socket"].family,
+                "type": self.__dict__["_ql_socket__socket"].type,
+                "proto": self.__dict__["_ql_socket__socket"].proto,
+                "laddr": self.__dict__["_ql_socket__socket"].getsockname(),
+                }
+
+        return _state
+
+    def __setstate__(self, state):
+        self.__dict__ = state
     
     @classmethod
     def open(self, socket_domain, socket_type, socket_protocol, opts=None):
@@ -36,6 +52,12 @@ class ql_socket:
     def close(self):
         return os.close(self.__fd)
     
+    def fcntl(self, fcntl_cmd, fcntl_arg):
+        try:
+            return fcntl.fcntl(self.__fd, fcntl_cmd, fcntl_arg)
+        except Exception:
+            pass
+
     def ioctl(self, ioctl_cmd, ioctl_arg):
         try:
             return fcntl.ioctl(self.__fd, ioctl_cmd, ioctl_arg)
@@ -58,10 +80,20 @@ class ql_socket:
     
     def listen(self, listen_num):
         return self.__socket.listen(listen_num)
+
+    def getsockname(self):
+        return self.__socket.getsockname()
+        
+    def getpeername(self):
+        return self.__socket.getpeername()
     
     def accept(self):
-        con, addr = self.__socket.accept()
-        new_ql_socket = ql_socket(con)
+        try:
+            con, addr = self.__socket.accept()
+            new_ql_socket = ql_socket(con)
+        except BlockingIOError:
+            # For support non-blocking sockets
+            return None, None
         return new_ql_socket, addr
     
     def recv(self, recv_len, recv_flags):
@@ -70,9 +102,20 @@ class ql_socket:
     def send(self, send_buf, send_flags):
         return self.__socket.send(send_buf, send_flags)
 
+    def recvfrom(self, recvfrom_len, recvfrom_flags):
+        return self.__socket.recvfrom(recvfrom_len, recvfrom_flags)
+
+    def sendto(self, sendto_buf, sendto_flags, sendto_addr):
+        return self.__socket.sendto(sendto_buf, sendto_flags, sendto_addr)
+
     @property
     def family(self):
         return self.__socket.family
+
+    @property
+    def socktype(self):
+        return self.__socket.type
+
     @property
     def socket(self):
         return self.__socket
@@ -104,6 +147,12 @@ class ql_pipe:
     def close(self):
         return os.close(self.__fd)
     
+    def fcntl(self, fcntl_cmd, fcntl_arg):
+        try:
+            return fcntl.fcntl(self.__fd, fcntl_cmd, fcntl_arg)
+        except Exception:
+            pass
+
     def ioctl(self, ioctl_cmd, ioctl_arg):
         try:
             return fcntl.ioctl(self.__fd, ioctl_cmd, ioctl_arg)
@@ -114,3 +163,5 @@ class ql_pipe:
         new_fd = os.dup(self.__fd)
         new_ql_pipe = ql_pipe(new_fd)
         return new_ql_pipe
+
+

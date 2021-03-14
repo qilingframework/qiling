@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org)
+#
 
 import os
 
@@ -12,7 +12,11 @@ from qiling.os.const import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
 from qiling.os.windows.thread import *
+from qiling.os.windows.handle import *
+from qiling.exception import *
 
+
+dllname = 'kernel32_dll'
 
 def _GetModuleHandle(ql, address, params):
     lpModuleName = params["lpModuleName"]
@@ -25,24 +29,15 @@ def _GetModuleHandle(ql, address, params):
         if lpModuleName in ql.loader.dlls:
             ret = ql.loader.dlls[lpModuleName]
         else:
-            ql.dprint(D_INFO, "[!] Library %s not imported" % lpModuleName)
-            # Let's try to import it if the sample think is default dll and was imported at the start
-            # Probably we can optimize here since load_dll already do a lot of checks, but not a real problem
-            path = os.path.join(ql.rootfs, ql.dlls, lpModuleName)
-            if is_file_library(lpModuleName) and os.path.exists(path):
-                ret = ql.loader.load_dll(lpModuleName.encode())
-            else:
-                ql.dprint(D_INFO, "[!] Library %s not found" % lpModuleName)
-                ret = 0
+            ql.log.debug("Library %s not imported" % lpModuleName)
+            ret = 0
     return ret
 
 
 # HMODULE GetModuleHandleA(
 #   LPCSTR lpModuleName
 # );
-@winapi(cc=STDCALL, params={
-    "lpModuleName": STRING
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetModuleHandleA(ql, address, params):
     return _GetModuleHandle(ql, address, params)
 
@@ -50,9 +45,7 @@ def hook_GetModuleHandleA(ql, address, params):
 # HMODULE GetModuleHandleW(
 #   LPCWSTR lpModuleName
 # );
-@winapi(cc=STDCALL, params={
-    "lpModuleName": WSTRING
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetModuleHandleW(ql, address, params):
     return _GetModuleHandle(ql, address, params)
 
@@ -62,11 +55,7 @@ def hook_GetModuleHandleW(ql, address, params):
 #   LPCWSTR lpModuleName,
 #   HMODULE *phModule
 # );
-@winapi(cc=STDCALL, params={
-    "dwFlags": DWORD,
-    "lpModuleName": WSTRING,
-    "phModule": HANDLE
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetModuleHandleExW(ql, address, params):
     res = _GetModuleHandle(ql, address, params)
     dst = params["phModule"]
@@ -79,11 +68,7 @@ def hook_GetModuleHandleExW(ql, address, params):
 #   LPSTR   lpFilename,
 #   DWORD   nSize
 # );
-@winapi(cc=STDCALL, params={
-    "hModule": HANDLE,
-    "lpFilename": POINTER,
-    "nSize": DWORD
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetModuleFileNameA(ql, address, params):
     ret = 0
     hModule = params["hModule"]
@@ -92,7 +77,7 @@ def hook_GetModuleFileNameA(ql, address, params):
 
     # GetModuleHandle can return pe_image_address as handle, and GetModuleFileName will try to retrieve it.
     # Pretty much 0 and pe_image_address value should do the same operations
-    if hModule == 0 or hModule == ql.loader.pe_image_address:
+    if not ql.code and (hModule == 0 or hModule == ql.loader.pe_image_address):
         filename = ql.loader.filepath
         filename_len = len(filename)
         if filename_len > nSize - 1:
@@ -102,8 +87,8 @@ def hook_GetModuleFileNameA(ql, address, params):
             ret = filename_len
         ql.mem.write(lpFilename, filename + b"\x00")
     else:
-        ql.dprint(D_INFO, "hModule %x" % hModule)
-        raise QlErrorNotImplemented("[!] API not implemented")
+        ql.log.debug("hModule %x" % hModule)
+        raise QlErrorNotImplemented("API not implemented")
     return ret
 
 
@@ -112,11 +97,7 @@ def hook_GetModuleFileNameA(ql, address, params):
 #   LPSTR   lpFilename,
 #   DWORD   nSize
 # );
-@winapi(cc=STDCALL, params={
-    "hModule": HANDLE,
-    "lpFilename": POINTER,
-    "nSize": DWORD
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetModuleFileNameW(ql, address, params):
     ret = 0
     hModule = params["hModule"]
@@ -124,7 +105,7 @@ def hook_GetModuleFileNameW(ql, address, params):
     nSize = params["nSize"]
     # GetModuleHandle can return pe_image_address as handle, and GetModuleFileName will try to retrieve it.
     # Pretty much 0 and pe_image_address value should do the same operations
-    if hModule == 0 or hModule == ql.loader.pe_image_address:
+    if not ql.code and (hModule == 0 or hModule == ql.loader.pe_image_address):
         filename = ql.loader.filepath.decode('ascii').encode('utf-16le')
         filename_len = len(filename)
         if filename_len > nSize - 1:
@@ -134,7 +115,7 @@ def hook_GetModuleFileNameW(ql, address, params):
             ret = filename_len
         ql.mem.write(lpFilename, filename + b"\x00")
     else:
-        raise QlErrorNotImplemented("[!] API not implemented")
+        raise QlErrorNotImplemented("API not implemented")
     return ret
 
 
@@ -142,10 +123,7 @@ def hook_GetModuleFileNameW(ql, address, params):
 #   HMODULE hModule,
 #   LPCSTR  lpProcName
 # );
-@winapi(cc=STDCALL, params={
-    "hModule": POINTER,
-    "lpProcName": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'LPCSTR': 'POINTER'})
 def hook_GetProcAddress(ql, address, params):
     if params["lpProcName"] > MAXUSHORT:
         # Look up by name
@@ -162,7 +140,7 @@ def hook_GetProcAddress(ql, address, params):
     try:
         dll_name = [key for key, value in ql.loader.dlls.items() if value == params['hModule']][0]
     except IndexError as ie:
-        ql.nprint('[!] Failed to import function "%s" with handle 0x%X' % (lpProcName, params['hModule']))
+        ql.log.info('Failed to import function "%s" with handle 0x%X' % (lpProcName, params['hModule']))
         return 0
 
     # Handle case where module is self
@@ -180,12 +158,10 @@ def hook_GetProcAddress(ql, address, params):
 # HMODULE LoadLibraryA(
 #   LPCSTR lpLibFileName
 # );
-@winapi(cc=STDCALL, params={
-    "lpLibFileName": STRING
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_LoadLibraryA(ql, address, params):
     lpLibFileName = params["lpLibFileName"]
-    if lpLibFileName == ql.loader.filepath.decode():
+    if not ql.code and lpLibFileName == ql.loader.filepath.decode():
         # Loading self
         return ql.loader.pe_image_address
     dll_base = ql.loader.load_dll(lpLibFileName.encode())
@@ -197,11 +173,7 @@ def hook_LoadLibraryA(ql, address, params):
 #   HANDLE hFile,
 #   DWORD  dwFlags
 # );
-@winapi(cc=STDCALL, params={
-    "lpLibFileName": STRING,
-    "hFile": POINTER,
-    "dwFlags": DWORD
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'HANDLE': 'POINTER'})
 def hook_LoadLibraryExA(ql, address, params):
     lpLibFileName = params["lpLibFileName"]
     dll_base = ql.loader.load_dll(lpLibFileName.encode())
@@ -211,9 +183,7 @@ def hook_LoadLibraryExA(ql, address, params):
 # HMODULE LoadLibraryW(
 #   LPCWSTR lpLibFileName
 # );
-@winapi(cc=STDCALL, params={
-    "lpLibFileName": WSTRING
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_LoadLibraryW(ql, address, params):
     lpLibFileName = params["lpLibFileName"].encode()
     dll_base = ql.loader.load_dll(lpLibFileName)
@@ -225,11 +195,7 @@ def hook_LoadLibraryW(ql, address, params):
 #   HANDLE hFile,
 #   DWORD  dwFlags
 # );
-@winapi(cc=STDCALL, params={
-    "lpLibFileName": WSTRING,
-    "hFile": POINTER,
-    "dwFlags": DWORD
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'HANDLE': 'POINTER'})
 def hook_LoadLibraryExW(ql, address, params):
     lpLibFileName = params["lpLibFileName"].encode()
     dll_base = ql.loader.load_dll(lpLibFileName)
@@ -240,10 +206,7 @@ def hook_LoadLibraryExW(ql, address, params):
 #   HMODULE hModule,
 #   HRSRC   hResInfo
 # );
-@winapi(cc=STDCALL, params={
-    "hModule": POINTER,
-    "hResInfo": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'HMODULE': 'POINTER'})
 def hook_SizeofResource(ql, address, params):
     # Return size of resource
     # TODO set a valid value. More tests have to be made to find it.
@@ -254,10 +217,7 @@ def hook_SizeofResource(ql, address, params):
 #   HMODULE hModule,
 #   HRSRC   hResInfo
 # );
-@winapi(cc=STDCALL, params={
-    "hModule": POINTER,
-    "hResInfo": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'HMODULE': 'POINTER'})
 def hook_LoadResource(ql, address, params):
     pointer = params["hResInfo"]
     return pointer
@@ -266,9 +226,7 @@ def hook_LoadResource(ql, address, params):
 # LPVOID LockResource(
 #   HGLOBAL hResData
 # );
-@winapi(cc=STDCALL, params={
-    "hResData": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'HMODULE': 'POINTER'})
 def hook_LockResource(ql, address, params):
     pointer = params["hResData"]
     return pointer
@@ -277,9 +235,7 @@ def hook_LockResource(ql, address, params):
 # BOOL DisableThreadLibraryCalls(
 #  HMODULE hLibModule
 # );
-@winapi(cc=STDCALL, params={
-    "hLibModule": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'HMODULE': 'POINTER'})
 def hook_DisableThreadLibraryCalls(ql, address, params):
     return 1
 
@@ -287,9 +243,7 @@ def hook_DisableThreadLibraryCalls(ql, address, params):
 # BOOL FreeLibrary(
 #   HMODULE hLibModule
 # );
-@winapi(cc=STDCALL, params={
-    "hLibModule": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'HMODULE': 'POINTER'})
 def hook_FreeLibrary(ql, address, params):
     return 1
 
@@ -297,12 +251,10 @@ def hook_FreeLibrary(ql, address, params):
 # BOOL SetDefaultDllDirectories(
 #   DWORD DirectoryFlags
 # );
-@winapi(cc=STDCALL, params={
-    "DirectoryFlags": DWORD
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_SetDefaultDllDirectories(ql, address, params):
     value = params["DirectoryFlags"]
     if value == LOAD_LIBRARY_SEARCH_USER_DIRS:
         # TODO we have to probably set an handler for this, since it can be a not default value.
         #  And we have to change the default path of load
-        raise QlErrorNotImplemented("[!] API not implemented")
+        raise QlErrorNotImplemented("API not implemented")

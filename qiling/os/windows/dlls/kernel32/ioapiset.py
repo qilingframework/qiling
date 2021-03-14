@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org)
+#
 
 import struct
 import time
@@ -14,6 +14,8 @@ from qiling.os.windows.handle import *
 from qiling.exception import *
 
 
+dllname = 'kernel32_dll'
+
 # BOOL DeviceIoControl(
 #   HANDLE       hDevice,
 #   DWORD        dwIoControlCode,
@@ -24,16 +26,7 @@ from qiling.exception import *
 #   LPDWORD      lpBytesReturned,
 #   LPOVERLAPPED lpOverlapped
 # );
-@winapi(cc=STDCALL, params={
-    "hDevice": HANDLE,
-    "dwIoControlCode": DWORD,
-    "lpInBuffer": POINTER,
-    "nInBufferSize": DWORD,
-    "lpOutBuffer": POINTER,
-    "nOutBufferSize": DWORD,
-    "lpBytesReturned": POINTER,
-    "lpOverlapped": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_DeviceIoControl(ql, address, params):
     operation = params["dwIoControlCode"]
     data = params["lpInBuffer"]

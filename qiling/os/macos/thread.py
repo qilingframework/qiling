@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org)
+#
 
 import os
+
 from qiling.os.thread import *
 from qiling.os.macos.mach_port import *
 
@@ -20,9 +21,8 @@ class QlMachoThread(QlThread):
         pass
 
 
-class QlMachoThreadManagement(QlThreadManagement):
+class QlMachoThreadManagement:
 
     def __init__(self, ql):
-        super(QlMachoThreadManagement, self).__init__(ql)
         self.ql = ql
         self.cur_thread = None

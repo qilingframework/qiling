@@ -1,0 +1,598 @@
+{
+    "WinHttpSetStatusCallback": [
+        {
+            "name": "hInternet",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpfnInternetCallback",
+            "type": "WINHTTP_STATUS_CALLBACK"
+        },
+        {
+            "name": "dwNotificationFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "WinHttpTimeFromSystemTime": [
+        {
+            "name": "pst",
+            "type": "SYSTEMTIME"
+        },
+        {
+            "name": "pwszTime",
+            "type": "LPWSTR"
+        }
+    ],
+    "WinHttpTimeToSystemTime": [
+        {
+            "name": "pwszTime",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pst",
+            "type": "SYSTEMTIME"
+        }
+    ],
+    "WinHttpCrackUrl": [
+        {
+            "name": "pwszUrl",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwUrlLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpUrlComponents",
+            "type": "LPURL_COMPONENTS"
+        }
+    ],
+    "WinHttpCreateUrl": [
+        {
+            "name": "lpUrlComponents",
+            "type": "LPURL_COMPONENTS"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pwszUrl",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pdwUrlLength",
+            "type": "LPDWORD"
+        }
+    ],
+    "WinHttpCheckPlatform": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "WinHttpGetDefaultProxyConfiguration": [
+        {
+            "name": "pProxyInfo",
+            "type": "WINHTTP_PROXY_INFO"
+        }
+    ],
+    "WinHttpSetDefaultProxyConfiguration": [
+        {
+            "name": "pProxyInfo",
+            "type": "WINHTTP_PROXY_INFO"
+        }
+    ],
+    "WinHttpOpen": [
+        {
+            "name": "pszAgentW",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwAccessType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszProxyW",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszProxyBypassW",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "WinHttpCloseHandle": [
+        {
+            "name": "hInternet",
+            "type": "HINTERNET"
+        }
+    ],
+    "WinHttpConnect": [
+        {
+            "name": "hSession",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "pswzServerName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "nServerPort",
+            "type": "INTERNET_PORT"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        }
+    ],
+    "WinHttpReadData": [
+        {
+            "name": "hRequest",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwNumberOfBytesToRead",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpdwNumberOfBytesRead",
+            "type": "LPDWORD"
+        }
+    ],
+    "WinHttpWriteData": [
+        {
+            "name": "hRequest",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "dwNumberOfBytesToWrite",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpdwNumberOfBytesWritten",
+            "type": "LPDWORD"
+        }
+    ],
+    "WinHttpQueryDataAvailable": [
+        {
+            "name": "hRequest",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpdwNumberOfBytesAvailable",
+            "type": "LPDWORD"
+        }
+    ],
+    "WinHttpQueryOption": [
+        {
+            "name": "hInternet",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "dwOption",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpdwBufferLength",
+            "type": "LPDWORD"
+        }
+    ],
+    "WinHttpSetOption": [
+        {
+            "name": "hInternet",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "dwOption",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwBufferLength",
+            "type": "DWORD"
+        }
+    ],
+    "WinHttpSetTimeouts": [
+        {
+            "name": "hInternet",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "nResolveTimeout",
+            "type": "int"
+        },
+        {
+            "name": "nConnectTimeout",
+            "type": "int"
+        },
+        {
+            "name": "nSendTimeout",
+            "type": "int"
+        },
+        {
+            "name": "nReceiveTimeout",
+            "type": "int"
+        }
+    ],
+    "WinHttpOpenRequest": [
+        {
+            "name": "hConnect",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "pwszVerb",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pwszObjectName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pwszVersion",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pwszReferrer",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "ppwszAcceptTypes",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "WinHttpAddRequestHeaders": [
+        {
+            "name": "hRequest",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpszHeaders",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwHeadersLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwModifiers",
+            "type": "DWORD"
+        }
+    ],
+    "WinHttpSendRequest": [
+        {
+            "name": "hRequest",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpszHeaders",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwHeadersLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpOptional",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwOptionalLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwTotalLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwContext",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "WinHttpSetCredentials": [
+        {
+            "name": "hRequest",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "AuthTargets",
+            "type": "DWORD"
+        },
+        {
+            "name": "AuthScheme",
+            "type": "DWORD"
+        },
+        {
+            "name": "pwszUserName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pwszPassword",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pAuthParams",
+            "type": "LPVOID"
+        }
+    ],
+    "WinHttpQueryAuthSchemes": [
+        {
+            "name": "hRequest",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpdwSupportedSchemes",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpdwFirstScheme",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pdwAuthTarget",
+            "type": "LPDWORD"
+        }
+    ],
+    "WinHttpReceiveResponse": [
+        {
+            "name": "hRequest",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpReserved",
+            "type": "LPVOID"
+        }
+    ],
+    "WinHttpQueryHeaders": [
+        {
+            "name": "hRequest",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "dwInfoLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "pwszName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpdwBufferLength",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpdwIndex",
+            "type": "LPDWORD"
+        }
+    ],
+    "WinHttpDetectAutoProxyConfigUrl": [
+        {
+            "name": "dwAutoDetectFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppwstrAutoConfigUrl",
+            "type": "LPWSTR"
+        }
+    ],
+    "WinHttpGetProxyForUrl": [
+        {
+            "name": "hSession",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpcwszUrl",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pAutoProxyOptions",
+            "type": "WINHTTP_AUTOPROXY_OPTIONS"
+        },
+        {
+            "name": "pProxyInfo",
+            "type": "WINHTTP_PROXY_INFO"
+        }
+    ],
+    "WinHttpCreateProxyResolver": [
+        {
+            "name": "hSession",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "phResolver",
+            "type": "HINTERNET"
+        }
+    ],
+    "WinHttpGetProxyForUrlEx": [
+        {
+            "name": "hResolver",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "pcwszUrl",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pAutoProxyOptions",
+            "type": "WINHTTP_AUTOPROXY_OPTIONS"
+        },
+        {
+            "name": "pContext",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "WinHttpGetProxyResult": [
+        {
+            "name": "hResolver",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "pProxyResult",
+            "type": "WINHTTP_PROXY_RESULT"
+        }
+    ],
+    "WinHttpFreeProxyResult": [
+        {
+            "name": "pProxyResult",
+            "type": "WINHTTP_PROXY_RESULT"
+        }
+    ],
+    "WinHttpResetAutoProxy": [
+        {
+            "name": "hSession",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "WinHttpGetIEProxyConfigForCurrentUser": [
+        {
+            "name": "pProxyConfig",
+            "type": "WINHTTP_CURRENT_USER_IE_PROXY_CONFIG"
+        }
+    ],
+    "WinHttpWebSocketCompleteUpgrade": [
+        {
+            "name": "hRequest",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "pContext",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "WinHttpWebSocketSend": [
+        {
+            "name": "hWebSocket",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "eBufferType",
+            "type": "WINHTTP_WEB_SOCKET_BUFFER_TYPE"
+        },
+        {
+            "name": "pvBuffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "dwBufferLength",
+            "type": "DWORD"
+        }
+    ],
+    "WinHttpWebSocketReceive": [
+        {
+            "name": "hWebSocket",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "pvBuffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "dwBufferLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "pdwBytesRead",
+            "type": "DWORD"
+        },
+        {
+            "name": "peBufferType",
+            "type": "WINHTTP_WEB_SOCKET_BUFFER_TYPE"
+        }
+    ],
+    "WinHttpWebSocketShutdown": [
+        {
+            "name": "hWebSocket",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "usStatus",
+            "type": "USHORT"
+        },
+        {
+            "name": "pvReason",
+            "type": "PVOID"
+        },
+        {
+            "name": "dwReasonLength",
+            "type": "DWORD"
+        }
+    ],
+    "WinHttpWebSocketClose": [
+        {
+            "name": "hWebSocket",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "usStatus",
+            "type": "USHORT"
+        },
+        {
+            "name": "pvReason",
+            "type": "PVOID"
+        },
+        {
+            "name": "dwReasonLength",
+            "type": "DWORD"
+        }
+    ],
+    "WinHttpWebSocketQueryCloseStatus": [
+        {
+            "name": "hWebSocket",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "pusStatus",
+            "type": "USHORT"
+        },
+        {
+            "name": "pvReason",
+            "type": "PVOID"
+        },
+        {
+            "name": "dwReasonLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "pdwReasonLengthConsumed",
+            "type": "DWORD"
+        }
+    ]
+}

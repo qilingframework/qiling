@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
 
 from .const import *
 from qiling.const import *
@@ -37,7 +37,7 @@ def ql_open_flag_mapping(ql, flags):
     def flag_mapping(flags, mapping_name, mapping_from, mapping_to):
         ret = 0
         for n in mapping_name:
-            if mapping_from[n] & flags == mapping_from[n]:
+            if  (flags & mapping_from[n]) == mapping_from[n]:
                 ret = ret | mapping_to[n]
         return ret
 
@@ -55,6 +55,7 @@ def ql_open_flag_mapping(ql, flags):
         "O_EXCL",
         "O_NOCTTY",
         "O_DIRECTORY",
+        "O_BINARY"
     ]
 
     mac_open_flags = {
@@ -70,7 +71,8 @@ def ql_open_flag_mapping(ql, flags):
         "O_TRUNC": 0x0400,
         "O_EXCL": 0x0800,
         "O_NOCTTY": 0x20000,
-        "O_DIRECTORY": 0x100000
+        "O_DIRECTORY": 0x100000,
+        "O_BINARY": 0
     }
 
     linux_open_flags = {
@@ -86,7 +88,8 @@ def ql_open_flag_mapping(ql, flags):
         'O_TRUNC': 512,
         'O_EXCL': 128,
         'O_NOCTTY': 256,
-        'O_DIRECTORY': 65536
+        'O_DIRECTORY': 65536,
+        'O_BINARY': 0
     }
 
     mips_open_flags = {
@@ -103,24 +106,57 @@ def ql_open_flag_mapping(ql, flags):
         'O_EXCL': 0x400,
         'O_NOCTTY': 0x800,
         'O_DIRECTORY': 0x100000,
+        'O_BINARY' : 0
     }
 
-    if ql.archtype!= QL_ARCH.MIPS:
+    windows_open_flags = {
+        'O_RDONLY': 0,
+        'O_WRONLY': 1,
+        'O_RDWR': 2,
+        'O_NONBLOCK': 2, # Windows doesn't have a corresponding one, assume RW
+        'O_APPEND': 8,
+        'O_ASYNC': 2, # Windows doesn't have a corresponding one, assume RW
+        'O_SYNC': 2, # Windows doesn't have a corresponding one, assume RW
+        'O_NOFOLLOW': 2, # Windows doesn't have a corresponding one, assume RW
+        'O_CREAT': 256,
+        'O_TRUNC': 512,
+        'O_EXCL': 1024,
+        'O_NOCTTY': 2,
+        'O_DIRECTORY': 2, # Windows doesn't have a corresponding one, assume RW
+        'O_BINARY': 32768
+    }
+
+    f = {}
+    t = {}
+
+    if ql.archtype != QL_ARCH.MIPS:
         if ql.platform == None or ql.platform == ql.ostype:
             return flags
 
-        if ql.platform == QL_OS.MACOS and ql.ostype == QL_OS.LINUX:
+        # TODO: FreeBSD mapping
+        if ql.ostype == QL_OS.LINUX or ql.ostype == QL_OS.FREEBSD:
             f = linux_open_flags
-            t = mac_open_flags
-
-        elif ql.platform == QL_OS.LINUX and ql.ostype == QL_OS.MACOS:
+        elif ql.ostype == QL_OS.MACOS:
             f = mac_open_flags
+        elif ql.ostype == QL_OS.WINDOWS:
+            f = windows_open_flags
+        
+        if ql.platform == QL_OS.WINDOWS:
+            t = windows_open_flags
+        elif ql.platform == QL_OS.MACOS:
+            t = mac_open_flags
+        elif ql.platform == QL_OS.LINUX or ql.ostype == QL_OS.FREEBSD:
             t = linux_open_flags
-
-    elif ql.archtype== QL_ARCH.MIPS and ql.platform == QL_OS.LINUX:
+    
+    elif ql.archtype == QL_ARCH.MIPS and ql.platform == QL_OS.LINUX:
         f = mips_open_flags
         t = linux_open_flags
-
+    elif ql.archtype == QL_ARCH.MIPS and ql.platform == QL_OS.MACOS:
+        f = mips_open_flags
+        t = mac_open_flags
+    elif ql.archtype == QL_ARCH.MIPS and ql.platform == QL_OS.WINDOWS:
+        f = mips_open_flags
+        t = windows_open_flags        
 
     return flag_mapping(flags, open_flags_name, f, t)
 
@@ -135,8 +171,7 @@ def open_flags_mapping(flags, arch):
             QL_ARCH.ARM: arm_open_flags,
             QL_ARCH.ARM64: arm64_open_flags,
             QL_ARCH.MIPS: mips_open_flags,
-            #FIXME: QL_OS.MACOS is QL_OS
-            #QL_OS.MACOS: mac_open_flags,
+            QL_OS.MACOS: mac_open_flags,
             }.get(arch)
 
     ret = ["O_RDONLY"]
@@ -157,7 +192,7 @@ def mmap_flag_mapping(flags):
 
 
 def mmap_prot_mapping(prots):
-    
+
     if prots == 0x0:
         return 'PROT_NONE'
 
@@ -178,8 +213,7 @@ def socket_type_mapping(t, arch):
             QL_ARCH.ARM_THUMB: arm_socket_types,
             QL_ARCH.ARM64: arm_socket_types,
             QL_ARCH.MIPS: mips_socket_types,
-            #FIXME: QL_OS.MACOS is QL_OS
-            #QL_OS.MACOS: linux_socket_types,
+            QL_OS.MACOS: linux_socket_types,
             }.get(arch)
 
     return _constant_mapping(t, socket_type_map)
@@ -193,8 +227,7 @@ def socket_domain_mapping(p, arch):
             QL_ARCH.ARM_THUMB: arm_socket_domain,
             QL_ARCH.ARM64: arm_socket_domain,
             QL_ARCH.MIPS: mips_socket_domain,
-            #FIXME: QL_OS.MACOS is QL_OS
-            #QL_OS.MACOS: "macos_socket_domain",
+            QL_OS.MACOS: "macos_socket_domain",
             }.get(arch)
-    
+
     return _constant_mapping(p, socket_domain_map, single_mapping=True)

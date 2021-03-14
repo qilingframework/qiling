@@ -1,7 +1,12 @@
-import sys
-import os
-import io
+#!/usr/bin/env python3
+# 
+# Cross Platform and Multi Architecture Advanced Binary Emulation Framework
+#
+
+import io, os, sys
+
 import pstats
+
 from tkinter import *
 from tkinter import filedialog
 from tkinter import messagebox as msgbox
@@ -39,7 +44,6 @@ class QLGuiPerfApp():
             self.scrollData.insert(INSERT, output_stream.getvalue())
             self.highlight_pattern("qiling_highlight", "qiling")
         except Exception as e:
-            print(e)
             msgbox.showerror("Error...", "Unable to load selected file")
 
     def highlight_pattern(self, tag, keyword):

@@ -1,0 +1,14 @@
+{
+    "SetProcessReference": [
+        {
+            "name": "punk",
+            "type": "IUnknown"
+        }
+    ],
+    "GetProcessReference": [
+        {
+            "name": "punk",
+            "type": "IUnknown"
+        }
+    ]
+}

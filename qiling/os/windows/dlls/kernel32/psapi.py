@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org)
+#
 
 import struct
 import time
@@ -14,18 +14,15 @@ from qiling.os.windows.handle import *
 from qiling.exception import *
 
 
+dllname = 'kernel32_dll'
+
 # BOOL GetModuleInformation(
 #   HANDLE       hProcess,
 #   HMODULE      hModule,
 #   LPMODULEINFO lpmodinfo,
 #   DWORD        cb
 # );
-@winapi(cc=STDCALL, params={
-    "hProcess": HANDLE,
-    "hModule": HANDLE,
-    "lpmodinfo": POINTER,
-    "cb": DWORD
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_K32GetModuleInformation(self, address, params):
     # TODO
     return 0

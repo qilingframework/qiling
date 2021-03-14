@@ -1,0 +1,18 @@
+{
+    "CheckConnectionWizard": [
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "VOID",
+            "type": "LPDWORD"
+        }
+    ],
+    "SetShellNext": [
+        {
+            "name": "szShellNext",
+            "type": "PSTR"
+        }
+    ]
+}

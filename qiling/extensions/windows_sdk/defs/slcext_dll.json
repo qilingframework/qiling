@@ -1,0 +1,24 @@
+{
+    "SLAcquireGenuineTicket": [
+        {
+            "name": "ppTicketBlob",
+            "type": "void"
+        },
+        {
+            "name": "pcbTicketBlob",
+            "type": "UINT"
+        },
+        {
+            "name": "pwszTemplateId",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pwszServerUrl",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pwszClientToken",
+            "type": "PCWSTR"
+        }
+    ]
+}

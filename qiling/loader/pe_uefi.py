@@ -1,28 +1,26 @@
 #!/usr/bin/env python3
 #
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org)
+#
 
-import ctypes, types, struct, ast
-from contextlib import contextmanager
+from typing import Sequence
+from pefile import PE
 
-from unicorn import *
-from unicorn.x86_const import *
-
-from qiling.arch.x86_const import *
-from qiling.os.utils import *
-from qiling.const import *
+from qiling.const import QL_ARCH
+from qiling.exception import QlErrorArch, QlMemoryMappedError
+from qiling.loader.loader import QlLoader
 from qiling.os.memory import QlMemoryHeap
-from qiling.os.uefi.utils import *
-from qiling.os.uefi.type64 import *
-from qiling.os.uefi.fncc import *
-from qiling.os.uefi.bootup import *
-from qiling.os.uefi.runtime import *
 
-from qiling.os.windows.fncc import *
+from qiling.os.uefi import context, st, smst
+from qiling.os.uefi.ProcessorBind import CPU_STACK_ALIGNMENT
+from qiling.os.uefi.shutdown import hook_EndOfExecution
+from qiling.os.uefi.protocols import EfiLoadedImageProtocol
+from qiling.os.uefi.protocols import EfiSmmAccess2Protocol
+from qiling.os.uefi.protocols import EfiSmmBase2Protocol
+from qiling.os.uefi.protocols import EfiSmmCpuProtocol
+from qiling.os.uefi.protocols import EfiSmmSwDispatch2Protocol
+from qiling.os.uefi.protocols import PcdProtocol
 
-import pefile
-from .loader import QlLoader
 
 class QlLoaderPE_UEFI(QlLoader):
     def __init__(self, ql):
@@ -30,192 +28,291 @@ class QlLoaderPE_UEFI(QlLoader):
         self.ql = ql
         self.modules = []
         self.events = {}
-        self.handle_dict = {}
         self.notify_list = []
+        self.next_image_base = 0
 
-    @contextmanager
-    def map_memory(self, addr, size):
-        self.ql.mem.map(addr, size)
-        try:
-            yield
-        finally:
-            self.ql.mem.unmap(addr, size)
+    # list of members names to save and restore
+    __save_members = (
+        'modules',
+        'events',
+        'notify_list',
+        'next_image_base',
+        'loaded_image_protocol_modules',
+        'tpl',
+        'efi_conf_table_array',
+        'efi_conf_table_array_ptr',
+        'efi_conf_table_data_ptr',
+        'efi_conf_table_data_next_ptr'
+    )
 
+    def save(self) -> dict:
+        saved_state = super(QlLoaderPE_UEFI, self).save()
 
-    def install_loaded_image_protocol(self, image_base, image_size, entry_point):
-        loaded_image_protocol = EFI_LOADED_IMAGE_PROTOCOL()
-        loaded_image_protocol.Revision = int(self.ql.os.profile["LOADED_IMAGE_PROTOCOL"]["revision"], 16)
-        loaded_image_protocol.ParentHandle = 0
-        loaded_image_protocol.SystemTable = self.system_table_ptr
-        loaded_image_protocol.DeviceHandle = image_base
-        loaded_image_protocol.FilePath = 0 # This is a handle to a complex path object, skip it for now.
-        loaded_image_protocol.LoadOptionsSize = 0
-        loaded_image_protocol.LoadOptions = 0
-        loaded_image_protocol.ImageBase = image_base
-        loaded_image_protocol.ImageSize = image_size
-        loaded_image_protocol.ImageCodeType = EfiLoaderCode
-        loaded_image_protocol.ImageDataType = EfiLoaderData
-        loaded_image_protocol.Unload = 0
+        for member in QlLoaderPE_UEFI.__save_members:
+            saved_state[member] = getattr(self, member)
 
-        loaded_image_protocol_ptr = self.heap.alloc(ctypes.sizeof(EFI_LOADED_IMAGE_PROTOCOL))
-        self.ql.mem.write(loaded_image_protocol_ptr, convert_struct_to_bytes(loaded_image_protocol))
-        self.handle_dict[image_base] = {self.loaded_image_protocol_guid: loaded_image_protocol_ptr}
+        # since this class initialize the heap (that is hosted by the OS object), we will store it here.
+        saved_state['heap'] = self.ql.os.heap.save()
+
+        return saved_state
+
+    def restore(self, saved_state: dict):
+        super(QlLoaderPE_UEFI, self).restore(saved_state)
+
+        for member in QlLoaderPE_UEFI.__save_members:
+            setattr(self, member, saved_state[member])
+
+        self.ql.os.heap.restore(saved_state['heap'])
+
+    def install_loaded_image_protocol(self, image_base, image_size):
+        fields = {
+            'gST'        : self.gST,
+            'image_base' : image_base,
+            'image_size' : image_size
+        }
+
+        descriptor = EfiLoadedImageProtocol.make_descriptor(fields)
+        self.dxe_context.install_protocol(descriptor, image_base)
+
         self.loaded_image_protocol_modules.append(image_base)
 
+    def map_and_load(self, path: str, exec_now: bool=False):
+        """Map and load a module into memory.
 
-    def map_and_load(self, path):
-        pe = pefile.PE(path, fast_load=True)
-        
-        IMAGE_BASE = pe.OPTIONAL_HEADER.ImageBase
-        IMAGE_SIZE = self.heap._align(pe.OPTIONAL_HEADER.SizeOfImage, 0x1000)
+        The specified module would be mapped and loaded into the address set
+        in the `next_image_base` member. It is the caller's responsibility to
+        make sure that the memory is available.
 
-        while IMAGE_BASE + IMAGE_SIZE < self.heap_base_address:
-            if not self.ql.mem.is_mapped(IMAGE_BASE, 1):
-                self.ql.mem.map(IMAGE_BASE, IMAGE_SIZE)
-                pe.parse_data_directories()
-                data = bytearray(pe.get_memory_mapped_image())
-                self.ql.mem.write(IMAGE_BASE, bytes(data))
-                self.ql.nprint("[+] Loading %s to 0x%x" % (path, IMAGE_BASE))
-                entry_point = IMAGE_BASE + pe.OPTIONAL_HEADER.AddressOfEntryPoint
-                if self.entry_point == 0:
-                    # Setting entry point to the first loaded module entry point, so the debugger can break.
-                    self.entry_point = entry_point
-                self.ql.nprint("[+] PE entry point at 0x%x" % entry_point)
-                self.install_loaded_image_protocol(IMAGE_BASE, IMAGE_SIZE, entry_point)
-                self.modules.append((path, IMAGE_BASE, entry_point, pe))
-                return True
-            else:
-                IMAGE_BASE += 0x10000
-                pe.relocate_image(IMAGE_BASE)
-        return False
+        On success, `next_image_base` will be updated accordingly.
+
+        Args:
+            path     : path of the module binary to load
+            exec_now : execute module right away; will be enququed if not
+
+        Raises:
+            QlMemoryMappedError : when `next_image_base` is not available
+        """
+
+        ql = self.ql
+        pe = PE(path, fast_load=True)
+
+        # use image base only if it does not point to NULL
+        image_base = pe.OPTIONAL_HEADER.ImageBase or self.next_image_base
+        image_size = ql.mem.align(pe.OPTIONAL_HEADER.SizeOfImage, 0x1000)
+
+        assert (image_base % 0x1000) == 0, 'image base is expected to be page-aligned'
+
+        if image_base != pe.OPTIONAL_HEADER.ImageBase:
+            pe.relocate_image(image_base)
+
+        pe.parse_data_directories()
+        data = bytes(pe.get_memory_mapped_image())
+
+        ql.mem.map(image_base, image_size, info="[module]")
+        ql.mem.write(image_base, data)
+        ql.log.info(f'Module {path} loaded to {image_base:#x}')
+
+        entry_point = image_base + pe.OPTIONAL_HEADER.AddressOfEntryPoint
+        ql.log.info(f'Module entry point at {entry_point:#x}')
+
+        # the 'entry_point' member is used by the debugger. if not set, set it
+        # to the first loaded module entry point so the debugger can break
+        if self.entry_point == 0:
+            self.entry_point = entry_point
+
+        self.install_loaded_image_protocol(image_base, image_size)
+
+        # this would be used later be os.find_containing_image
+        self.images.append(self.coverage_image(image_base, image_base + image_size, path))
+
+        # update next memory slot to allow sequencial loading. its availability
+        # is unknown though
+        self.next_image_base = image_base + image_size
+
+        module_info = (path, image_base, entry_point)
+
+        # execute the module right away or enqueue it
+        if exec_now:
+            # call entry point while retaining the current return address
+            self.execute_module(*module_info, eoe_trap=None)
+        else:
+            self.modules.append(module_info)
+
+    def call_function(self, addr: int, args: Sequence[int], ret: int):
+        """Call a function after properly setting up its arguments and return address.
+
+        Args:
+            addr : function address
+            args : a sequence of arguments to pass to the function; may be empty
+            ret  : return address; may be None
+        """
+
+        # arguments gpr (ms x64 cc)
+        regs = ('rcx', 'rdx', 'r8', 'r9')
+        assert len(args) <= len(regs), f'currently supporting up to {len(regs)} arguments'
+
+        # set up the arguments
+        for reg, arg in zip(regs, args):
+            self.ql.reg.write(reg, arg)
+
+        # if provided, set return address
+        if ret is not None:
+            self.ql.stack_push(ret)
+
+        self.ql.reg.rip = addr
 
     def unload_modules(self):
         for handle in self.loaded_image_protocol_modules:
-            dic = self.handle_dict[handle]
-            buf = bytes(self.ql.mem.read(dic[self.loaded_image_protocol_guid], ctypes.sizeof(EFI_LOADED_IMAGE_PROTOCOL)))
-            buffer = ctypes.create_string_buffer(buf)
-            loaded_image_protocol = EFI_LOADED_IMAGE_PROTOCOL()
-            ctypes.memmove(ctypes.addressof(loaded_image_protocol), buffer, ctypes.sizeof(loaded_image_protocol))
-            unload_ptr = struct.unpack("Q", loaded_image_protocol.Unload)[0]
+            struct_addr = self.dxe_context.protocols[handle][self.loaded_image_protocol_guid]
+            loaded_image_protocol = EfiLoadedImageProtocol.EFI_LOADED_IMAGE_PROTOCOL.loadFrom(self.ql, struct_addr)
+
+            unload_ptr = self.ql.unpack64(loaded_image_protocol.Unload)
+
             if unload_ptr != 0:
-                self.ql.stack_push(self.end_of_execution_ptr)
-                self.ql.reg.rcx = handle
-                self.ql.reg.rip = unload_ptr
-                self.ql.nprint(f'[+] Unloading module 0x{handle:x}, calling 0x{unload_ptr:x}')
+                self.ql.log.info(f'Unloading module {handle:#x}, calling {unload_ptr:#x}')
+
+                self.call_function(unload_ptr, [handle], self.end_of_execution_ptr)
                 self.loaded_image_protocol_modules.remove(handle)
+
                 return True
+
         return False
 
-    def execute_next_module(self):
-        path, image_base, entry_point, pe = self.modules.pop(0)
-        self.ql.stack_push(self.end_of_execution_ptr)
-        self.ql.reg.rcx = image_base
-        self.ql.reg.rdx = self.system_table_ptr
-        self.ql.reg.rip = entry_point
-        self.ql.os.entry_point = entry_point
-        self.ql.nprint(f'[+] Running from 0x{self.entry_point:x} of {path}')
+    def execute_module(self, path: str, image_base: int, entry_point: int, eoe_trap: int):
+        """Start the execution of a UEFI module.
 
+        Args:
+            image_base  : module base address
+            entry_point : module entry point address
+            eoe_trap    : end-of-execution trap address; may be None
+        """
+
+        # use familiar UEFI names
+        ImageHandle = image_base
+        SystemTable = self.gST
+
+        self.call_function(entry_point, [ImageHandle, SystemTable], eoe_trap)
+        self.ql.os.entry_point = entry_point
+
+        self.ql.log.info(f'Running from {entry_point:#010x} of {path}')
+
+    def execute_next_module(self):
+        if not self.modules or self.ql.os.notify_before_module_execution(self.ql, self.modules[0][0]):
+            return
+
+        path, image_base, entry_point = self.modules.pop(0)
+        self.execute_module(path, image_base, entry_point, self.end_of_execution_ptr)
 
     def run(self):
-        self.loaded_image_protocol_guid = self.ql.os.profile["LOADED_IMAGE_PROTOCOL"]["guid"]
+        # intel architecture uefi implementation only
+        if self.ql.archtype not in (QL_ARCH.X86, QL_ARCH.X8664):
+            raise QlErrorArch("Unsupported architecture")
+
+        # x86-64 arch only
+        if self.ql.archtype != QL_ARCH.X8664:
+            raise QlErrorArch("Only 64 bit arch is supported at the moment")
+
+        self.loaded_image_protocol_guid = self.ql.os.profile["LOADED_IMAGE_PROTOCOL"]["Guid"]
         self.loaded_image_protocol_modules = []
         self.tpl = 4 # TPL_APPLICATION
-        self.user_defined_api = self.ql.os.user_defined_api
-        if self.ql.archtype == QL_ARCH.X8664:
-            self.heap_base_address = int(self.ql.os.profile.get("OS64", "heap_address"), 16)
-            self.heap_base_size = int(self.ql.os.profile.get("OS64", "heap_size"), 16)       
-        elif self.ql.archtype == QL_ARCH.X86:
-            self.heap_base_address = int(self.ql.os.profile.get("OS32", "heap_address"), 16)
-            self.heap_base_size = int(self.ql.os.profile.get("OS32", "heap_size"), 16)
-        self.heap = QlMemoryHeap(self.ql, self.heap_base_address, self.heap_base_address + self.heap_base_size)
+
+        arch_key = {
+            QL_ARCH.X86   : "OS32",
+            QL_ARCH.X8664 : "OS64"
+        }[self.ql.archtype]
+
+        # -------- init BS / RT / DXE data structures and protocols --------
+
+        os_profile = self.ql.os.profile[arch_key]
+        self.dxe_context = context.DxeContext(self.ql)
+
+        # initialize and locate heap
+        heap_base = int(os_profile["heap_address"], 0)
+        heap_size = int(os_profile["heap_size"], 0)
+        self.dxe_context.init_heap(heap_base, heap_size)
+        self.heap_base_address = heap_base
+        self.ql.log.info(f"Located heap at {heap_base:#010x}")
+
+        # initialize and locate stack
+        stack_base = int(os_profile["stack_address"], 0)
+        stack_size = int(os_profile["stack_size"], 0)
+        self.dxe_context.init_stack(stack_base, stack_size)
+        sp = stack_base + stack_size - CPU_STACK_ALIGNMENT
+        self.ql.log.info(f"Located stack at {sp:#010x}")
+
+        # TODO: statically allocating 256 KiB for ST, RT, BS, DS and Configuration Tables.
+        # however, this amount of memory is rather arbitrary
+        gST = self.dxe_context.heap.alloc(256 * 1024)
+        st.initialize(self.ql, gST)
+
+        protocols = (
+            EfiSmmAccess2Protocol,
+            EfiSmmBase2Protocol,
+        )
+
+        for proto in protocols:
+            self.dxe_context.install_protocol(proto.descriptor, 1)
+
+        # workaround
+        self.ql.os.heap = self.dxe_context.heap
+
+        # -------- init SMM data structures and protocols --------
+
+        smm_profile = self.ql.os.profile['SMRAM']
+        self.smm_context = context.SmmContext(self.ql)
+
+        # initialize and locate SMM heap
+        heap_base = int(smm_profile["heap_address"], 0)
+        heap_size = int(smm_profile["heap_size"], 0)
+        self.smm_context.init_heap(heap_base, heap_size)
+        self.ql.log.info(f"Located SMM heap at {heap_base:#010x}")
+
+        # TODO: statically allocating 256 KiB for SMM ST.
+        # however, this amount of memory is rather arbitrary
+        gSmst = self.smm_context.heap.alloc(256 * 1024)
+        smst.initialize(self.ql, gSmst)
+
+        self.in_smm = False
+
+        protocols = (
+            EfiSmmCpuProtocol,
+            EfiSmmSwDispatch2Protocol
+        )
+
+        for proto in protocols:
+            self.smm_context.install_protocol(proto.descriptor, 1)
+
+        # map mmio ranges
+        # TODO: move to somehwere more appropriate (+ hook accesses?)
+        mmio_map = self.ql.os.profile["MMIO"]
+        self.ql.mem.map(
+            int(mmio_map['sbreg_base'], 0),
+            int(mmio_map['sbreg_size'], 0)
+        )
+
+        # set stack and frame pointers
+        self.ql.reg.rsp = sp
+        self.ql.reg.rbp = sp
+
         self.entry_point = 0
-        self.load_address = 0  
+        self.load_address = 0
+        self.next_image_base = int(os_profile["image_address"], 0)
 
-        if self.ql.archtype == QL_ARCH.X8664:
-            self.stack_address = int(self.ql.os.profile.get("OS64", "stack_address"), 16)
-            self.stack_size = int(self.ql.os.profile.get("OS64", "stack_size"), 16)
-            
-        elif self.ql.archtype == QL_ARCH.X86:        
-            self.stack_address = int(self.ql.os.profile.get("OS32", "stack_address"), 16)
-            self.stack_size = int(self.ql.os.profile.get("OS32", "stack_size"), 16)     
+        try:
+            for dependency in self.ql.argv:
+                self.map_and_load(dependency)
+        except QlMemoryMappedError:
+            self.ql.log.critical("Couldn't map dependency")
 
-        # set stack pointer
-        self.ql.nprint("[+] Initiate stack address at 0x%x" % self.stack_address)
-        self.ql.mem.map(self.stack_address, self.stack_size)
+        self.ql.log.info(f"Done with loading {self.ql.path}")
 
-        # Stack should not init at the very bottom. Will cause errors with Dlls
-        sp = self.stack_address + self.stack_size - 0x1000
-
-        if self.ql.archtype== QL_ARCH.X86:
-            raise QlErrorArch("[!] Only 64 bit arch supported for now.")
-
-        elif self.ql.archtype== QL_ARCH.X8664:
-            self.ql.reg.rsp = sp
-            self.ql.reg.rbp = sp
-
-        else:
-            raise QlErrorArch("[!] Unknown ql.arch")
-
-        # set SystemTable to image base for now
-        pointer_size = ctypes.sizeof(ctypes.c_void_p)
-        system_table_heap_size = 1024 * 1024
-        system_table_heap = self.heap.alloc(system_table_heap_size)
-        self.ql.mem.write(system_table_heap, b'\x90'*system_table_heap_size)
-        self.system_table_ptr = system_table_heap
-        system_table = EFI_SYSTEM_TABLE()
-        system_table_heap_ptr = system_table_heap + ctypes.sizeof(EFI_SYSTEM_TABLE)
-        
-        runtime_services_ptr = system_table_heap_ptr
-        system_table.RuntimeServices = runtime_services_ptr
-        system_table_heap_ptr += ctypes.sizeof(EFI_RUNTIME_SERVICES)
-        system_table_heap_ptr, runtime_services = hook_EFI_RUNTIME_SERVICES(self.ql, system_table_heap_ptr)
-
-        boot_services_ptr = system_table_heap_ptr
-        system_table.BootServices = boot_services_ptr
-        system_table_heap_ptr += ctypes.sizeof(EFI_BOOT_SERVICES)
-        system_table_heap_ptr, boot_services = hook_EFI_BOOT_SERVICES(self.ql, system_table_heap_ptr)
-
-        self.efi_configuration_table_ptr = system_table_heap_ptr
-        system_table.ConfigurationTable = self.efi_configuration_table_ptr
-        system_table.NumberOfTableEntries = 1
-        system_table_heap_ptr += ctypes.sizeof(EFI_CONFIGURATION_TABLE) * 100 # We don't expect more then a few entries.
-        efi_configuration_table = EFI_CONFIGURATION_TABLE()
-
-        #   0x7739f24c, 0x93d7, 0x11d4, {0x9a, 0x3a, 0x0, 0x90, 0x27, 0x3f, 0xc1, 0x4d } \
-        efi_configuration_table.VendorGuid.Data1 = int(self.ql.os.profile.get("GUID", "data1"), 16)
-        efi_configuration_table.VendorGuid.Data2 = int(self.ql.os.profile.get("GUID", "data2"), 16)
-        efi_configuration_table.VendorGuid.Data3 = int(self.ql.os.profile.get("GUID", "data3"), 16)
-        
-        data4 = ast.literal_eval(self.ql.os.profile.get("GUID", "data4"))
-        datalist = 0
-        for data4_list in data4:
-            efi_configuration_table.VendorGuid.Data4[datalist] = data4_list
-            datalist += 1  
-        
-        efi_configuration_table.VendorTable = self.ql.os.profile.getint("GUID", "vendortable")
-        self.efi_configuration_table = [self.ql.os.profile["GUID"]["configuration_table"]]
-        self.ql.mem.write(runtime_services_ptr, convert_struct_to_bytes(runtime_services))
-        self.ql.mem.write(boot_services_ptr, convert_struct_to_bytes(boot_services))
-        self.ql.mem.write(self.efi_configuration_table_ptr, convert_struct_to_bytes(efi_configuration_table))
-        self.ql.mem.write(self.system_table_ptr, convert_struct_to_bytes(system_table))
-
-        # Make sure no module will occupy the NULL page
-        with self.map_memory(0, 0x1000):
-            if len(self.ql.argv) > 1:
-                for dependency in self.ql.argv[1:]:
-                    if not self.map_and_load(dependency):
-                        raise QlErrorFileType("Can't map dependency")
-
-            # Load main module
-            self.map_and_load(self.ql.path)
-            self.ql.nprint("[+] Done with loading %s" % self.ql.path)
-
-        #return address
-        self.end_of_execution_ptr = system_table_heap_ptr
-        self.ql.mem.write(self.end_of_execution_ptr, b'\xcc')
-        system_table_heap_ptr += pointer_size
+        # set up an end-of-execution hook to regain control when module is done
+        # executing (i.e. when the entry point function returns). that should be
+        # set on a non-executable address, so SystemTable's address was picked
+        self.end_of_execution_ptr = gST
         self.ql.hook_address(hook_EndOfExecution, self.end_of_execution_ptr)
-        self.notify_ptr = system_table_heap_ptr
-        system_table_heap_ptr += pointer_size
 
         self.execute_next_module()
+
+    def restore_runtime_services(self):
+        pass # not sure why do we need to restore RT

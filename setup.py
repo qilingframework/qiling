@@ -2,16 +2,31 @@
 #
 # Python setup for Qiling framework
 
-
+import sys, os
 from setuptools import setup, find_packages
 
-VERSION = '1.1-alpha1'
+here = os.path.abspath(os.path.dirname(__file__))
+gb = {}
+with open(os.path.join(here, "qiling", "__version__.py"), "r+") as f:
+    exec(f.read(), gb)
 
-with open('requirements.txt') as f:
-    required = f.read().splitlines()
+VERSION = gb['__version__']
 
-with open("README.md", "r") as ld:
+requirements = [
+    "capstone>=4.0.1",
+    "unicorn>=1.0.2",
+    "pefile>=2019.4.18",
+    "python-registry>=1.3.1",
+    "keystone-engine>=0.9.2",
+    "pyelftools>=0.26",
+    "gevent>=20.9.0"
+]
+
+with open("README.md", "r", encoding="utf-8") as ld:
     long_description = ld.read()
+
+if "win32" in sys.platform:
+    requirements += ["windows-curses>=2.1.0"]
 
 setup(
     name='qiling',
@@ -30,7 +45,6 @@ setup(
     classifiers=[
         # How mature is this project? Common values are
         #   3 - Alpha
-        #   4 - Beta
         #   5 - Production/Stable
         'Development Status :: 3 - Alpha',
 
@@ -46,9 +60,10 @@ setup(
         'Programming Language :: Python :: 3',
     ],
 
-    keywords='qiling binary emulator framework malware analysis uefi IoT',
+    keywords='qiling binary emulator framework malware analysis UEFI IoT',
 
     packages=find_packages(),
+    scripts=['qltool'],
     include_package_data=True,
-    install_requires=required,
+    install_requires=requirements,
 )

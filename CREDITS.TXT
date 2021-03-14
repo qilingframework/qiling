@@ -1,12 +1,20 @@
 This file credits all the contributors of the Qiling Framework project.
 
+
 Project Leader
 ==============
 LAU kaijern (xwings) <kj@qiling.io>
 
+
 Advisor
 =======
 NGUYEN Anh Quynh <aquynh@gmail.com>
+
+
+Travis, Website and Documentations
+==================================
+FOO Kevin (chfl4gs) <chfl4gs@qiling.io>
+
 
 Core Developers
 ===============
@@ -15,6 +23,44 @@ SUN bowen (w1tcher) <w1tcher.bupt@gmail.com>
 CHEN huitao (null) <null@qiling.io>
 YU tong (sp1ke) <spikeinhouse@gmail.com>
 Earl MARCUS (klks84) klks84@gmail.com
+WU chenxu (kabeor) <kabeor@qiling.io>
+KONG ziqiao (lazymio) <mio@lazym.io>
+
+
+Key Contributors (in no particular order)
+=========================================
+0ssigeno
+liba2k
+assafcarlsbad
+ucgJhe
+jhumble
+Mark Jansen (learn-more)
+cq674350529
+elicn
+bkerler (viperbjk)
+
+
+Demigod team (https://groundx.io/demigod)
+=========================================
+NGUYEN Anh Quynh
+NGUYEN Hong Quang
+DO Minh Tuan
+
+
+Contributors (in no particular order)
+=====================================
+WanderingGlitch
+Nguyen Hong Quang (quangnh89)
+re-fox
+t14g0p
+Hcamael
+hugsy
+danielhenrymantilla
+iamyeh
+alfink
+bambu
+
+
 
 Alpha testers (in no particular order, named by github id)
 ==========================================================
@@ -32,22 +78,3 @@ knownsec
 hwiosec
 iamyeh
 
-Contributors (in no particular order)
-=====================================
-klks
-FOO Kevin (chfl4gs)
-jhumble
-WanderingGlitch
-Nguyen Hong Quang (quangnh89)
-ucgJhe
-re-fox
-t14g0p
-Hcamael
-hugsy
-danielhenrymantilla
-iamyeh
-alfink
-bambu
-kabeor
-0ssigeno
-liba2k

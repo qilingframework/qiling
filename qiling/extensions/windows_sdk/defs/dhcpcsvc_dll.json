@@ -1,0 +1,116 @@
+{
+    "DhcpCApiInitialize": [
+        {
+            "name": "Version",
+            "type": "LPDWORD"
+        }
+    ],
+    "DhcpCApiCleanup": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "DhcpRequestParams": [
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "Reserved",
+            "type": "LPVOID"
+        },
+        {
+            "name": "AdapterName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "ClassId",
+            "type": "LPDHCPCAPI_CLASSID"
+        },
+        {
+            "name": "SendParams",
+            "type": "DHCPCAPI_PARAMS_ARRAY"
+        },
+        {
+            "name": "RecdParams",
+            "type": "DHCPCAPI_PARAMS_ARRAY"
+        },
+        {
+            "name": "Buffer",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "pSize",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "RequestIdStr",
+            "type": "LPWSTR"
+        }
+    ],
+    "DhcpUndoRequestParams": [
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "Reserved",
+            "type": "LPVOID"
+        },
+        {
+            "name": "AdapterName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "RequestIdStr",
+            "type": "LPWSTR"
+        }
+    ],
+    "DhcpRegisterParamChange": [
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "Reserved",
+            "type": "LPVOID"
+        },
+        {
+            "name": "AdapterName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "ClassId",
+            "type": "LPDHCPCAPI_CLASSID"
+        },
+        {
+            "name": "Params",
+            "type": "DHCPCAPI_PARAMS_ARRAY"
+        },
+        {
+            "name": "Handle",
+            "type": "LPVOID"
+        }
+    ],
+    "DhcpDeRegisterParamChange": [
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "Reserved",
+            "type": "LPVOID"
+        },
+        {
+            "name": "Event",
+            "type": "LPVOID"
+        }
+    ],
+    "DhcpRemoveDNSRegistrations": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ]
+}

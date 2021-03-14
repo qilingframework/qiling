@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
 # A Simple Windows Handle Simulation
 
 
@@ -9,7 +9,7 @@ class Handle:
     ID = 0xa0000000
 
     def __init__(self, id=None, obj=None,
-                 name=None):
+                 name=None, permissions=None):
         if id is None:
             self.id = Handle.ID
             Handle.ID += 1
@@ -17,7 +17,8 @@ class Handle:
             self.id = id
         self.obj = obj
         self.name = name
-
+        self.permissions = permissions
+ 
     # rewrite "="
     def __eq__(self, other):
         return self.id == other.id
@@ -60,5 +61,11 @@ class HandleManager:
     def search(self, name):
         for handle in self.handles.values():
             if handle.name == name:
+                return handle
+        return None
+
+    def search_by_obj(self, obj):
+        for handle in self.handles.values():
+            if handle.obj == obj:
                 return handle
         return None

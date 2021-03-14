@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
+
+
 
 from .const import *
 from qiling.const import *
@@ -20,5 +22,5 @@ def ql_arm_init_get_tls(ql):
     #    sc = ql.os.lsbmsb_convert(ql, sc)
 
     ql.mem.write(ql.arch.arm_get_tls_addr, sc)
-    ql.dprint(D_INFO, "[+] Set init_kernel_get_tls")    
+    ql.log.debug("Set init_kernel_get_tls")    
          

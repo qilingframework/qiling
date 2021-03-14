@@ -1,20 +1,23 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
 
 from abc import ABCMeta, abstractmethod
+from gevent import Greenlet
 from qiling.const import *
 from .const import *
 
-class QlThread:
+class QlThread(Greenlet):
     __metaclass__=ABCMeta
 
     def __init__(self, ql):
+        super(QlThread, self).__init__()
         self.ql = ql
-        self.thread_management = None
         self.log_file_fd = None
-        self.stop_event = None
+
+    def __str__(self):
+        return f"QlThread {self.get_id()}"
 
 # the common functions which are used in qiling core.
 # these functions must be implemented in child class.
@@ -33,10 +36,3 @@ class QlThread:
     def stop(self):
         pass
 
-
-class QlThreadManagement:
-    def __init__(self, ql):
-        self.ql = ql
-        self.cur_thread = None
-# threads list or dict?
-        self.threads = None

@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 #
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org)
+#
 
 import select
+
 from qiling.const import *
 from qiling.os.linux.thread import *
 from qiling.const import *
@@ -27,8 +28,8 @@ def ql_syscall__newselect(ql, _newselect_nfds, _newselect_readfds, _newselect_wr
             if idx % 32 == 0:
                 tmp = ql.unpack32(ql.mem.read(struct_addr + idx, 4))
             if tmp & 0x1 != 0:
-                fd_list.append(ql.os.file_des[idx].socket)
-                fd_map[ql.os.file_des[idx].socket] = idx
+                fd_list.append(ql.os.fd[idx].fileno())
+                fd_map[ql.os.fd[idx].fileno()] = idx
             tmp = tmp >> 1
             idx += 1
         return fd_list, fd_map
@@ -41,15 +42,27 @@ def ql_syscall__newselect(ql, _newselect_nfds, _newselect_readfds, _newselect_wr
     tmp_w_fd, tmp_w_map = parse_fd_set(ql, _newselect_nfds, _newselect_writefds)
     tmp_e_fd, tmp_e_map = parse_fd_set(ql, _newselect_nfds, _newselect_exceptfds)
 
-    timeout = ql.unpack32(ql.mem.read(_newselect_timeout, 4))
+    n = ql.archbit // 8 # 4 for 32-bit , 8 for 64-bit
+
+    if _newselect_timeout != 0:
+        if ql.archtype == QL_ARCH.MIPS:
+            timeout_ptr = ql.unpack(ql.mem.read(_newselect_timeout, n))
+        else:
+            timeout_ptr = _newselect_timeout
+        sec = ql.unpack(ql.mem.read(timeout_ptr, n))
+        usec = ql.unpack(ql.mem.read(timeout_ptr + n, n))
+        timeout_total = sec + float(usec)/1000000
+    else:
+        timeout_total = None
+
     try:
-        ans = select.select(tmp_r_fd, tmp_w_fd, tmp_e_fd, timeout)
+        ans = select.select(tmp_r_fd, tmp_w_fd, tmp_e_fd, timeout_total)
         regreturn = len(ans[0]) + len(ans[1]) + len(ans[2])
 
         if _newselect_readfds != 0:
             tmp_buf = b'\x00' * (_newselect_nfds // 8 + 1)
             for i in ans[0]:
-                ql.dprint(D_INFO, "debug : " + str(tmp_r_map[i]))
+                ql.log.debug("debug : " + str(tmp_r_map[i]))
                 tmp_buf = set_fd_set(tmp_buf, tmp_r_map[i])
             ql.mem.write(_newselect_readfds, tmp_buf)
 
@@ -69,5 +82,4 @@ def ql_syscall__newselect(ql, _newselect_nfds, _newselect_readfds, _newselect_wr
     except:
         if ql.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
             raise
-    ql.nprint("_newselect(%d, %x, %x, %x, %x) = %d" % (_newselect_nfds, _newselect_readfds, _newselect_writefds, _newselect_exceptfds, _newselect_timeout, regreturn))
-    ql.os.definesyscall_return(regreturn)
+    return regreturn

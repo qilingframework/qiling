@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
+
+import sys, unittest
 
 from binascii import unhexlify
 
-import sys, unittest
-sys.path.insert(0, "..")
-
+sys.path.append("..")
 from qiling import *
 from qiling.exception import *
 
@@ -19,18 +19,44 @@ X8664_WIN = unhexlify(
     'fc4881e4f0ffffffe8d0000000415141505251564831d265488b52603e488b52183e488b52203e488b72503e480fb74a4a4d31c94831c0ac3c617c022c2041c1c90d4101c1e2ed5241513e488b52203e8b423c4801d03e8b80880000004885c0746f4801d0503e8b48183e448b40204901d0e35c48ffc93e418b34884801d64d31c94831c0ac41c1c90d4101c138e075f13e4c034c24084539d175d6583e448b40244901d0663e418b0c483e448b401c4901d03e418b04884801d0415841585e595a41584159415a4883ec204152ffe05841595a3e488b12e949ffffff5d49c7c1000000003e488d95fe0000003e4c8d850f0100004831c941ba45835607ffd54831c941baf0b5a256ffd548656c6c6f2c2066726f6d204d534621004d657373616765426f7800'
 )
 
+POINTER_TEST = unhexlify(
+    '1122334455667788'
+)
+
 class PEShellcodeTest(unittest.TestCase):
     def test_windowssc_x86(self):
-        ql = Qiling(shellcoder=X86_WIN, archtype="x86", ostype="windows", rootfs="../examples/rootfs/x86_windows",
+        ql = Qiling(code=X86_WIN, archtype="x86", ostype="windows", rootfs="../examples/rootfs/x86_windows",
                     output="default")
         ql.run()
         del ql
 
 
     def test_windowssc_x64(self):
-        ql = Qiling(shellcoder=X8664_WIN, archtype="x8664", ostype="windows", rootfs="../examples/rootfs/x8664_windows",
+        ql = Qiling(code=X8664_WIN, archtype="x8664", ostype="windows", rootfs="../examples/rootfs/x8664_windows",
                     output="debug")
         ql.run()
+        del ql
+
+    def test_read_ptr32(self):
+        ql = Qiling(shellcoder=POINTER_TEST, archtype="x86", ostype="windows", rootfs="../examples/rootfs/x86_windows")
+
+        addr = ql.loader.entry_point
+        self.assertEqual(0x11, ql.mem.read_ptr(addr, 1))
+        self.assertEqual(0x2211, ql.mem.read_ptr(addr, 2))
+        self.assertEqual(0x44332211, ql.mem.read_ptr(addr, 4))
+        self.assertEqual(0x44332211, ql.mem.read_ptr(addr))
+        self.assertEqual(0x8877665544332211, ql.mem.read_ptr(addr, 8))
+        del ql
+
+    def test_read_ptr64(self):
+        ql = Qiling(shellcoder=POINTER_TEST, archtype="x8664", ostype="windows", rootfs="../examples/rootfs/x86_windows")
+
+        addr = ql.loader.entry_point
+        self.assertEqual(0x11, ql.mem.read_ptr(addr, 1))
+        self.assertEqual(0x2211, ql.mem.read_ptr(addr, 2))
+        self.assertEqual(0x44332211, ql.mem.read_ptr(addr, 4))
+        self.assertEqual(0x8877665544332211, ql.mem.read_ptr(addr, 8))
+        self.assertEqual(0x8877665544332211, ql.mem.read_ptr(addr))
         del ql
 
 

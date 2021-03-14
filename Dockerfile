@@ -1,30 +1,29 @@
-FROM python:3.6-alpine
+FROM python:3.6-slim AS builder
 
-MAINTAINER "Kevin Foo <chbsd64@gmail.com>"
+LABEL maintainer="Kevin Foo <chfl4gs@qiling.io>"
 
-ENV PIP_NO_CACHE_DIR=1
+ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apk add --no-cache \
-    gcc \
-    make \
-    cmake \
-    libtool \
-    automake \
-    autoconf \
-    g++ \
-    linux-headers \
-    git \
-    libstdc++ \
-    bash \
-    vim 
+RUN apt-get update \
+  && apt-get -y upgrade \
+  && apt-get install -y --no-install-recommends cmake build-essential gcc git
 
-RUN git clone https://github.com/qilingframework/qiling.git \
-    && cd qiling \
-    && pip3 install -r requirements.txt \
-    && python3 setup.py install \ 
-    && rm -rf /tmp/*
+COPY . /qiling
+
+RUN cd /qiling \
+  && pip wheel . -w wheels
+
+FROM python:3.6-slim AS base
+
+COPY --from=builder /qiling /qiling
 
 WORKDIR /qiling
+
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends unzip \
+  && rm -rf /var/lib/apt/lists/* \
+  && pip3 install wheels/*.whl \
+  && rm -rf wheels
 
 ENV HOME /qiling
 

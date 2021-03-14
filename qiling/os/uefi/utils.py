@@ -1,63 +1,174 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
 
-import ctypes
-import struct
-from qiling.const import *
-from .const import *
+import binascii
 
-def convert_struct_to_bytes(st):
-    buffer = ctypes.create_string_buffer(ctypes.sizeof(st))
-    ctypes.memmove(buffer, ctypes.addressof(st), ctypes.sizeof(st))
-    return buffer.raw
+from uuid import UUID
+from typing import Optional
+from contextlib import contextmanager
 
-def check_and_notify_protocols(ql):
-    if len(ql.loader.notify_list) > 0:
-        event_id, notify_func, notify_context = ql.loader.notify_list.pop(0)
-        ql.nprint(f'Notify event:{event_id} calling:{notify_func:x} context:{notify_context:x}')
-        ql.stack_push(ql.loader.end_of_execution_ptr)
-        ql.reg.rcx = notify_context
-        ql.reg.arch_pc = notify_func
-        return True
-    return False
+from qiling.os.uefi.const import EFI_SUCCESS, EFI_INVALID_PARAMETER
+from qiling.os.uefi.UefiSpec import EFI_CONFIGURATION_TABLE, EFI_SYSTEM_TABLE
+from qiling.os.uefi.UefiBaseType import EFI_GUID
 
-def write_int32(ql, address, num):
-    if ql.archendian == QL_ENDIAN.EL:
-        ql.mem.write(address, struct.pack('<I',(num)))
-    else:
-        ql.mem.write(address, struct.pack('>I',(num)))
+def signal_event(ql, event_id: int) -> None:
+	event = ql.loader.events[event_id]
 
-def write_int64(ql, address, num):
-    if ql.archendian == QL_ENDIAN.EL:
-        ql.mem.write(address, struct.pack('<Q',(num)))
-    else:
-        ql.mem.write(address, struct.pack('>Q',(num)))
+	if not event["Set"]:
+		event["Set"] = True
+		notify_func = event["NotifyFunction"]
+		CallbackArgs = event["CallbackArgs"]
+		ql.loader.notify_list.append((event_id, notify_func, CallbackArgs))
 
-def read_int64(ql, address):
-    if ql.archendian == QL_ENDIAN.EL:
-        return struct.unpack('<Q', ql.mem.read(address, 8))[0]
-    else:
-        return struct.unpack('>Q',ql.mem.read(address, 8))[0]
+def execute_protocol_notifications(ql, from_hook=False) -> bool:
+	if not ql.loader.notify_list:
+		return False
+	
+	next_hook = ql.loader.smm_context.heap.alloc(1)
+	def exec_next(ql):
+		if ql.loader.notify_list:
+			event_id, notify_func, callback_args = ql.loader.notify_list.pop(0)
+			ql.log.info(f'Notify event:{event_id} calling: 0x{notify_func:x} callback_args:{list(map(hex, callback_args))}')
+			ql.loader.call_function(notify_func, callback_args, next_hook)
+		else:
+			ql.loader.smm_context.heap.free(next_hook)
+			ql.hook_address(lambda q: None, next_hook)
+			ql.reg.rax = EFI_SUCCESS
+			ql.reg.arch_pc = ql.stack_pop()
+	ql.hook_address(exec_next, next_hook, )
+	# To avoid having two versions of the code the first notify function will also be called from the exec_next hook.
+	if from_hook:
+		ql.stack_push(next_hook)
+	else:
+		ql.stack_push(ql.loader.end_of_execution_ptr)
+		ql.reg.arch_pc = next_hook
+	
+	return True
 
-def LocateHandles(ql, address, params):
-    handles = []
-    if params["SearchKey"] == SEARCHTYPE_AllHandles:
-        handles = ql.loader.handle_dict.keys()
-    elif params["SearchKey"] == SEARCHTYPE_ByProtoco:
-        for handle, guid_dic in ql.loader.handle_dict.items():
-            if params["Protocol"] in guid_dic:
-                handles.append(handle)
-                    
-    return len(handles) * pointer_size, handles
-    
-def LocateProtocol(ql, address, params):
-    protocol = params['Protocol']
-    for handle, guid_dic in ql.loader.handle_dict.items():
-        if "Handle" in params and params["Handle"] != handle:
-            continue
-        if protocol in guid_dic:
-            write_int64(ql, params['Interface'], guid_dic[protocol])
-            return EFI_SUCCESS
-    return EFI_NOT_FOUND
+def ptr_read8(ql, addr: int) -> int:
+	"""Read BYTE data from a pointer
+	"""
+
+	return ql.unpack8(ql.mem.read(addr, 1))
+
+def ptr_write8(ql, addr: int, val: int) -> None:
+	"""Write BYTE data to a pointer
+	"""
+
+	ql.mem.write(addr, ql.pack8(val))
+
+def ptr_read32(ql, addr: int) -> int:
+	"""Read DWORD data from a pointer
+	"""
+
+	return ql.unpack32(ql.mem.read(addr, 4))
+
+def ptr_write32(ql, addr: int, val: int) -> None:
+	"""Write DWORD data to a pointer
+	"""
+
+	ql.mem.write(addr, ql.pack32(val))
+
+def ptr_read64(ql, addr: int) -> int:
+	"""Read QWORD data from a pointer
+	"""
+
+	return ql.unpack64(ql.mem.read(addr, 8))
+
+def ptr_write64(ql, addr: int, val: int) -> None:
+	"""Write QWORD data to a pointer
+	"""
+
+	ql.mem.write(addr, ql.pack64(val))
+
+# backward comptability
+read_int8   = ptr_read8
+write_int8  = ptr_write8
+read_int32  = ptr_read32
+write_int32 = ptr_write32
+read_int64  = ptr_read64
+write_int64 = ptr_write64
+
+def init_struct(ql, base: int, descriptor: dict):
+	struct_class = descriptor['struct']
+	struct_fields = descriptor.get('fields', [])
+
+	isntance = struct_class()
+	ql.log.info(f'Initializing {struct_class.__name__}')
+
+	for name, value in struct_fields:
+		if value is not None:
+			# a method: hook this field
+			if callable(value):
+				p = base + struct_class.offsetof(name)
+
+				setattr(isntance, name, p)
+				ql.hook_address(value, p)
+
+				ql.log.info(f' | {name:36s} {p:#010x}')
+
+			# a value: set it
+			else:
+				setattr(isntance, name, value)
+
+	ql.log.info(f'')
+
+	return isntance
+
+@contextmanager
+def update_struct(cls, ql, address: int):
+	struct = cls.loadFrom(ql, address)
+	try:
+		yield struct
+	finally:
+		struct.saveTo(ql, address)
+
+def str_to_guid(guid: str) -> EFI_GUID:
+	"""Construct an EFI_GUID structure out of a plain GUID string.
+	"""
+
+	buff = UUID(hex=guid).bytes_le
+
+	return EFI_GUID.from_buffer_copy(buff)
+
+def install_configuration_table(context, key: str, table: int):
+	"""Create a new Configuration Table entry and add it to the list.
+
+	Args:
+		ql    : Qiling instance
+		key   : profile section name that holds the entry data
+		table : address of configuration table data; if None, data will be read
+		        from profile section into memory
+	"""
+
+	cfgtable = context.ql.os.profile[key]
+	guid = cfgtable['Guid']
+
+	# if pointer to table data was not specified, load table data
+	# from profile and have table pointing to it
+	if table is None:
+		data = binascii.unhexlify(cfgtable['TableData'])
+		table = context.conf_table_data_next_ptr
+
+		context.ql.mem.write(table, data)
+		context.conf_table_data_next_ptr += len(data)
+
+	context.install_configuration_table(guid, table)
+
+def GetEfiConfigurationTable(context, guid: str) -> Optional[int]:
+	"""Find a configuration table by its GUID.
+	"""
+
+	guid = guid.lower()
+	confs = context.conf_table_array
+
+	if guid in confs:
+		idx = confs.index(guid)
+		ptr = context.conf_table_array_ptr + (idx * EFI_CONFIGURATION_TABLE.sizeof())
+
+		return ptr
+
+	# not found
+	return None

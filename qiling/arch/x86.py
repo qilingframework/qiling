@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
+
 from unicorn import *
 from unicorn.x86_const import *
 
@@ -11,6 +12,7 @@ from .arch import QlArch
 from .x86_const import *
 from qiling.const import *
 from qiling.exception import *
+
 
 class QlArchX86(QlArch):
     def __init__(self, ql):
@@ -23,6 +25,8 @@ class QlArchX86(QlArch):
 
         for reg_maper in x86_register_mappings:
             self.ql.reg.expand_mapping(reg_maper)
+
+        self.ql.reg.create_reverse_mapping()
 
         self.ql.reg.register_sp(reg_map_32["esp"])
         self.ql.reg.register_pc(reg_map_32["eip"])
@@ -51,7 +55,7 @@ class QlArchX86(QlArch):
     # get register big, mostly use for x86    
     def get_reg_bit(self, register):
         if type(register) == str:
-            register = self.get_reg_name(register)
+            register = self.ql.reg.get_uc_reg(register)
         if register in ({v for k, v in reg_map_32.items()}):
             return 32 
 
@@ -62,109 +66,19 @@ class QlArchX86(QlArch):
         return uc
 
 
-    # set PC
-    def set_pc(self, value):
-        self.ql.reg.eip = value
-
-
-    # get PC
-    def get_pc(self):
-        return self.ql.reg.eip
-
-
-    # set stack pointer
-    def set_sp(self, value):
-        self.ql.reg.esp = value
-
-
-    # get stack pointer
-    def get_sp(self):
-        return self.ql.reg.esp
-
-
-    # get stack pointer register
-    def get_name_sp(self):
-        return reg_map_32["esp"]
-
-
-    # get pc register pointer
-    def get_name_pc(self):
-        return reg_map_32["eip"]
-
-
-    def get_reg_table(self): 
-        registers_table = []
-        adapter = {}
-        adapter.update(reg_map_32)
-        adapter.update(reg_map_misc)
-        adapter.update(reg_map_st)
-        #adapter.update(reg_map_cr)
-        #adapter.update(reg_map_dr)        
-        registers = {k:v for k, v in adapter.items()}
-
-        for reg in registers:
-            registers_table += [reg]
-     
-        return registers_table
-
-
-    # set register name
-    def set_reg_name_str(self):
-        pass  
-
-
-    def get_reg_name_str(self, uc_reg): 
-        adapter = {}
-        adapter.update(reg_map_32)
-        adapter.update(reg_map_misc)
-        adapter.update(reg_map_st)
-        #adapter.update(reg_map_cr)
-        #adapter.update(reg_map_dr)        
-        adapter = {v: k for k, v in adapter.items()}
-
-        if uc_reg in adapter:
-            return adapter[uc_reg]
-        # invalid
-        return None 
-
-
-    def get_register(self, register):
-        if type(register) == str:
-            register = self.get_reg_name(register)  
-        return self.ql.uc.reg_read(register)
-
-
-    def set_register(self, register, value):
-        if type(register) == str:
-            register = self.get_reg_name(register)
-        self.ql.uc.reg_write(register, value)
-
-
-    def get_reg_name(self, uc_reg_name):
-        adapter = {}
-        adapter.update(reg_map_32)
-        adapter.update(reg_map_misc)
-        adapter.update(reg_map_st)
-        #adapter.update(reg_map_cr)
-        #adapter.update(reg_map_dr)        
-
-        if uc_reg_name in adapter:
-            return adapter[uc_reg_name]
-        # invalid
-        return None
-
-
 class QlArchX8664(QlArch):
     def __init__(self, ql):
         super(QlArchX8664, self).__init__(ql)
 
         x64_register_mappings = [
             reg_map_8, reg_map_16, reg_map_32, reg_map_64,
-            reg_map_cr, reg_map_st, reg_map_misc
+            reg_map_cr, reg_map_st, reg_map_misc, reg_map_r, reg_map_seg_base
         ]
 
         for reg_maper in x64_register_mappings:
             self.ql.reg.expand_mapping(reg_maper)
+
+        self.ql.reg.create_reverse_mapping()
 
         self.ql.reg.register_sp(reg_map_64["rsp"])
         self.ql.reg.register_pc(reg_map_64["rip"])
@@ -196,120 +110,22 @@ class QlArchX8664(QlArch):
         return uc
 
 
-    # set PC
-    def set_pc(self, value):
-        self.ql.reg.rip = value
-
-
-    # get PC
-    def get_pc(self):
-        return self.ql.reg.rip
-
-
-    # set stack pointer
-    def set_sp(self, value):
-        self.ql.reg.rsp = value
-
-
-    # get stack pointer
-    def get_sp(self):
-        return self.ql.reg.rsp
-
-
-    # get stack pointer register
-    def get_name_sp(self):
-        return reg_map_64["rsp"]
-
-
-    # get pc register pointer
-    def get_name_pc(self):
-        return reg_map_64["rip"]
-
-
     # get register big, mostly use for x86  
     def get_reg_bit(self, register):
         if type(register) == str:
-            register = self.get_reg_name(register)
+            register = self.ql.reg.get_uc_reg(register)
+
         if register in ({v for k, v in reg_map_64.items()}):
             return 64
         else:
-            return 32    
-
-
-    def get_reg_table(self):
-        registers_table = []
-        adapter = {}
-        adapter.update(reg_map_64)
-        adapter.update(reg_map_misc)
-        adapter.update(reg_map_st)
-        #adapter.update(reg_map_cr)
-        #adapter.update(reg_map_dr)
-        #adapter.update(reg_map_fp)
-        #adapter.update(reg_map_xmm)
-        #adapter.update(reg_map_ymm)
-        #adapter.update(reg_map_zmm)        
-        registers = {k:v for k, v in adapter.items()}
-        for reg in registers:
-            registers_table += [reg]
-        return registers_table
-
-
-    # set register name
-    def set_reg_name_str(self):
-        pass  
-
-
-    def get_reg_name_str(self, uc_reg): 
-        adapter = {}
-        adapter.update(reg_map_64)
-        adapter.update(reg_map_misc)
-        adapter.update(reg_map_st)
-        #adapter.update(reg_map_cr)
-        #adapter.update(reg_map_dr)
-        #adapter.update(reg_map_fp)
-        #adapter.update(reg_map_xmm)
-        #adapter.update(reg_map_ymm)
-        #adapter.update(reg_map_zmm)
-        adapter = {v: k for k, v in adapter.items()}
-
-        if uc_reg in adapter:
-            return adapter[uc_reg]
-        # invalid
-        return None 
-
-
-    def get_register(self, register):
-        if type(register) == str:
-            register = self.get_reg_name(register)  
-        return self.ql.uc.reg_read(register)
-
-
-    def set_register(self, register, value):
-        if type(register) == str:
-            register = self.get_reg_name(register)  
-        return self.ql.uc.reg_write(register, value)
-
-
-    def get_reg_name(self, uc_reg_name):
-        adapter = {}
-        adapter.update(reg_map_64)
-        adapter.update(reg_map_misc)
-        adapter.update(reg_map_st)
-        #adapter.update(reg_map_cr)
-        #adapter.update(reg_map_dr)
-        #adapter.update(reg_map_fp)
-        #adapter.update(reg_map_xmm)
-        #adapter.update(reg_map_ymm)
-        #adapter.update(reg_map_zmm)
-        if uc_reg_name in adapter:
-            return adapter[uc_reg_name]
-        # invalid
-        return None                       
+            return 32
 
 
 class GDTManager:
     # Added GDT management module.
     def __init__(self, ql, GDT_ADDR = QL_X86_GDT_ADDR, GDT_LIMIT =  QL_X86_GDT_LIMIT, GDT_ENTRY_ENTRIES = 16):
+        ql.log.debug(f"Map GDT at {hex(GDT_ADDR)} with GDT_LIMIT={GDT_LIMIT}")
+
         if ql.mem.is_mapped(GDT_ADDR, GDT_LIMIT) == False:
             ql.mem.map(GDT_ADDR, GDT_LIMIT, info="[GDT]")
 
@@ -330,11 +146,12 @@ class GDTManager:
                 self.ql.mem.map(SEGMENT_ADDR, SEGMENT_ADDR, info="[FS/GS]")
 
         if index < 0 or index >= self.gdt_number:
-            raise QlGDTError("[!] Ql GDT register index error!")
+            raise QlGDTError("Ql GDT register index error!")
         # create GDT entry, then write GDT entry into GDT table
         gdt_entry = self._create_gdt_entry(SEGMENT_ADDR, SEGMENT_SIZE, SPORT, QL_X86_F_PROT_32)
         self.ql.mem.write(self.gdt_addr + (index << 3), gdt_entry)
         # self.gdt_used[index] = True
+        self.ql.log.debug(f"Write to {hex(self.gdt_addr + (index << 3))} for new entry {gdt_entry}")
 
 
     def get_gdt_buf(self, start, end):

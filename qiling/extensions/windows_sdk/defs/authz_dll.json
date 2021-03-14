@@ -1,0 +1,590 @@
+{
+    "AuthzAccessCheck": [
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "hAuthzClientContext",
+            "type": "AUTHZ_CLIENT_CONTEXT_HANDLE"
+        },
+        {
+            "name": "pRequest",
+            "type": "PAUTHZ_ACCESS_REQUEST"
+        },
+        {
+            "name": "hAuditEvent",
+            "type": "AUTHZ_AUDIT_EVENT_HANDLE"
+        },
+        {
+            "name": "pSecurityDescriptor",
+            "type": "PSECURITY_DESCRIPTOR"
+        },
+        {
+            "name": "OptionalSecurityDescriptorArray",
+            "type": "PSECURITY_DESCRIPTOR"
+        },
+        {
+            "name": "OptionalSecurityDescriptorCount",
+            "type": "DWORD"
+        },
+        {
+            "name": "pReply",
+            "type": "PAUTHZ_ACCESS_REPLY"
+        },
+        {
+            "name": "phAccessCheckResults",
+            "type": "PAUTHZ_ACCESS_CHECK_RESULTS_HANDLE"
+        }
+    ],
+    "AuthzCachedAccessCheck": [
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "hAccessCheckResults",
+            "type": "AUTHZ_ACCESS_CHECK_RESULTS_HANDLE"
+        },
+        {
+            "name": "pRequest",
+            "type": "PAUTHZ_ACCESS_REQUEST"
+        },
+        {
+            "name": "hAuditEvent",
+            "type": "AUTHZ_AUDIT_EVENT_HANDLE"
+        },
+        {
+            "name": "pReply",
+            "type": "PAUTHZ_ACCESS_REPLY"
+        }
+    ],
+    "AuthzOpenObjectAudit": [
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "hAuthzClientContext",
+            "type": "AUTHZ_CLIENT_CONTEXT_HANDLE"
+        },
+        {
+            "name": "pRequest",
+            "type": "PAUTHZ_ACCESS_REQUEST"
+        },
+        {
+            "name": "hAuditEvent",
+            "type": "AUTHZ_AUDIT_EVENT_HANDLE"
+        },
+        {
+            "name": "pSecurityDescriptor",
+            "type": "PSECURITY_DESCRIPTOR"
+        },
+        {
+            "name": "OptionalSecurityDescriptorArray",
+            "type": "PSECURITY_DESCRIPTOR"
+        },
+        {
+            "name": "OptionalSecurityDescriptorCount",
+            "type": "DWORD"
+        },
+        {
+            "name": "pReply",
+            "type": "PAUTHZ_ACCESS_REPLY"
+        }
+    ],
+    "AuthzFreeHandle": [
+        {
+            "name": "hAccessCheckResults",
+            "type": "AUTHZ_ACCESS_CHECK_RESULTS_HANDLE"
+        }
+    ],
+    "AuthzInitializeResourceManager": [
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pfnDynamicAccessCheck",
+            "type": "PFN_AUTHZ_DYNAMIC_ACCESS_CHECK"
+        },
+        {
+            "name": "pfnComputeDynamicGroups",
+            "type": "PFN_AUTHZ_COMPUTE_DYNAMIC_GROUPS"
+        },
+        {
+            "name": "pfnFreeDynamicGroups",
+            "type": "PFN_AUTHZ_FREE_DYNAMIC_GROUPS"
+        },
+        {
+            "name": "szResourceManagerName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "phAuthzResourceManager",
+            "type": "PAUTHZ_RESOURCE_MANAGER_HANDLE"
+        }
+    ],
+    "AuthzInitializeResourceManagerEx": [
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pAuthzInitInfo",
+            "type": "PAUTHZ_INIT_INFO"
+        },
+        {
+            "name": "phAuthzResourceManager",
+            "type": "PAUTHZ_RESOURCE_MANAGER_HANDLE"
+        }
+    ],
+    "AuthzInitializeRemoteResourceManager": [
+        {
+            "name": "pRpcInitInfo",
+            "type": "PAUTHZ_RPC_INIT_INFO_CLIENT"
+        },
+        {
+            "name": "phAuthzResourceManager",
+            "type": "PAUTHZ_RESOURCE_MANAGER_HANDLE"
+        }
+    ],
+    "AuthzFreeResourceManager": [
+        {
+            "name": "hAuthzResourceManager",
+            "type": "AUTHZ_RESOURCE_MANAGER_HANDLE"
+        }
+    ],
+    "AuthzInitializeContextFromToken": [
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "TokenHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "hAuthzResourceManager",
+            "type": "AUTHZ_RESOURCE_MANAGER_HANDLE"
+        },
+        {
+            "name": "pExpirationTime",
+            "type": "PLARGE_INTEGER"
+        },
+        {
+            "name": "Identifier",
+            "type": "LUID"
+        },
+        {
+            "name": "DynamicGroupArgs",
+            "type": "PVOID"
+        },
+        {
+            "name": "phAuthzClientContext",
+            "type": "PAUTHZ_CLIENT_CONTEXT_HANDLE"
+        }
+    ],
+    "AuthzInitializeContextFromSid": [
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "UserSid",
+            "type": "PSID"
+        },
+        {
+            "name": "hAuthzResourceManager",
+            "type": "AUTHZ_RESOURCE_MANAGER_HANDLE"
+        },
+        {
+            "name": "pExpirationTime",
+            "type": "PLARGE_INTEGER"
+        },
+        {
+            "name": "Identifier",
+            "type": "LUID"
+        },
+        {
+            "name": "DynamicGroupArgs",
+            "type": "PVOID"
+        },
+        {
+            "name": "phAuthzClientContext",
+            "type": "PAUTHZ_CLIENT_CONTEXT_HANDLE"
+        }
+    ],
+    "AuthzInitializeContextFromAuthzContext": [
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "hAuthzClientContext",
+            "type": "AUTHZ_CLIENT_CONTEXT_HANDLE"
+        },
+        {
+            "name": "pExpirationTime",
+            "type": "PLARGE_INTEGER"
+        },
+        {
+            "name": "Identifier",
+            "type": "LUID"
+        },
+        {
+            "name": "DynamicGroupArgs",
+            "type": "PVOID"
+        },
+        {
+            "name": "phNewAuthzClientContext",
+            "type": "PAUTHZ_CLIENT_CONTEXT_HANDLE"
+        }
+    ],
+    "AuthzInitializeCompoundContext": [
+        {
+            "name": "UserContext",
+            "type": "AUTHZ_CLIENT_CONTEXT_HANDLE"
+        },
+        {
+            "name": "DeviceContext",
+            "type": "AUTHZ_CLIENT_CONTEXT_HANDLE"
+        },
+        {
+            "name": "phCompoundContext",
+            "type": "PAUTHZ_CLIENT_CONTEXT_HANDLE"
+        }
+    ],
+    "AuthzAddSidsToContext": [
+        {
+            "name": "hAuthzClientContext",
+            "type": "AUTHZ_CLIENT_CONTEXT_HANDLE"
+        },
+        {
+            "name": "Sids",
+            "type": "PSID_AND_ATTRIBUTES"
+        },
+        {
+            "name": "SidCount",
+            "type": "DWORD"
+        },
+        {
+            "name": "RestrictedSids",
+            "type": "PSID_AND_ATTRIBUTES"
+        },
+        {
+            "name": "RestrictedSidCount",
+            "type": "DWORD"
+        },
+        {
+            "name": "phNewAuthzClientContext",
+            "type": "PAUTHZ_CLIENT_CONTEXT_HANDLE"
+        }
+    ],
+    "AuthzModifySecurityAttributes": [
+        {
+            "name": "hAuthzClientContext",
+            "type": "AUTHZ_CLIENT_CONTEXT_HANDLE"
+        },
+        {
+            "name": "pOperations",
+            "type": "PAUTHZ_SECURITY_ATTRIBUTE_OPERATION"
+        },
+        {
+            "name": "pAttributes",
+            "type": "PAUTHZ_SECURITY_ATTRIBUTES_INFORMATION"
+        }
+    ],
+    "AuthzModifyClaims": [
+        {
+            "name": "hAuthzClientContext",
+            "type": "AUTHZ_CLIENT_CONTEXT_HANDLE"
+        },
+        {
+            "name": "ClaimClass",
+            "type": "AUTHZ_CONTEXT_INFORMATION_CLASS"
+        },
+        {
+            "name": "pClaimOperations",
+            "type": "PAUTHZ_SECURITY_ATTRIBUTE_OPERATION"
+        },
+        {
+            "name": "pClaims",
+            "type": "PAUTHZ_SECURITY_ATTRIBUTES_INFORMATION"
+        }
+    ],
+    "AuthzModifySids": [
+        {
+            "name": "hAuthzClientContext",
+            "type": "AUTHZ_CLIENT_CONTEXT_HANDLE"
+        },
+        {
+            "name": "SidClass",
+            "type": "AUTHZ_CONTEXT_INFORMATION_CLASS"
+        },
+        {
+            "name": "pSidOperations",
+            "type": "PAUTHZ_SID_OPERATION"
+        },
+        {
+            "name": "pSids",
+            "type": "PTOKEN_GROUPS"
+        }
+    ],
+    "AuthzSetAppContainerInformation": [
+        {
+            "name": "hAuthzClientContext",
+            "type": "AUTHZ_CLIENT_CONTEXT_HANDLE"
+        },
+        {
+            "name": "pAppContainerSid",
+            "type": "PSID"
+        },
+        {
+            "name": "CapabilityCount",
+            "type": "DWORD"
+        },
+        {
+            "name": "pCapabilitySids",
+            "type": "PSID_AND_ATTRIBUTES"
+        }
+    ],
+    "AuthzGetInformationFromContext": [
+        {
+            "name": "hAuthzClientContext",
+            "type": "AUTHZ_CLIENT_CONTEXT_HANDLE"
+        },
+        {
+            "name": "InfoClass",
+            "type": "AUTHZ_CONTEXT_INFORMATION_CLASS"
+        },
+        {
+            "name": "BufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "pSizeRequired",
+            "type": "PDWORD"
+        },
+        {
+            "name": "Buffer",
+            "type": "PVOID"
+        }
+    ],
+    "AuthzFreeContext": [
+        {
+            "name": "hAuthzClientContext",
+            "type": "AUTHZ_CLIENT_CONTEXT_HANDLE"
+        }
+    ],
+    "AuthzInitializeObjectAccessAuditEvent": [
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "hAuditEventType",
+            "type": "AUTHZ_AUDIT_EVENT_TYPE_HANDLE"
+        },
+        {
+            "name": "szOperationType",
+            "type": "PWSTR"
+        },
+        {
+            "name": "szObjectType",
+            "type": "PWSTR"
+        },
+        {
+            "name": "szObjectName",
+            "type": "PWSTR"
+        },
+        {
+            "name": "szAdditionalInfo",
+            "type": "PWSTR"
+        },
+        {
+            "name": "phAuditEvent",
+            "type": "PAUTHZ_AUDIT_EVENT_HANDLE"
+        },
+        {
+            "name": "dwAdditionalParameterCount",
+            "type": "DWORD"
+        }
+    ],
+    "AuthzInitializeObjectAccessAuditEvent2": [
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "hAuditEventType",
+            "type": "AUTHZ_AUDIT_EVENT_TYPE_HANDLE"
+        },
+        {
+            "name": "szOperationType",
+            "type": "PWSTR"
+        },
+        {
+            "name": "szObjectType",
+            "type": "PWSTR"
+        },
+        {
+            "name": "szObjectName",
+            "type": "PWSTR"
+        },
+        {
+            "name": "szAdditionalInfo",
+            "type": "PWSTR"
+        },
+        {
+            "name": "szAdditionalInfo2",
+            "type": "PWSTR"
+        },
+        {
+            "name": "phAuditEvent",
+            "type": "PAUTHZ_AUDIT_EVENT_HANDLE"
+        },
+        {
+            "name": "dwAdditionalParameterCount",
+            "type": "DWORD"
+        }
+    ],
+    "AuthzFreeAuditEvent": [
+        {
+            "name": "hAuditEvent",
+            "type": "AUTHZ_AUDIT_EVENT_HANDLE"
+        }
+    ],
+    "AuthzInstallSecurityEventSource": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pRegistration",
+            "type": "PAUTHZ_SOURCE_SCHEMA_REGISTRATION"
+        }
+    ],
+    "AuthzUninstallSecurityEventSource": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "szEventSourceName",
+            "type": "PCWSTR"
+        }
+    ],
+    "AuthzEnumerateSecurityEventSources": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "Buffer",
+            "type": "PAUTHZ_SOURCE_SCHEMA_REGISTRATION"
+        },
+        {
+            "name": "pdwCount",
+            "type": "PDWORD"
+        },
+        {
+            "name": "pdwLength",
+            "type": "PDWORD"
+        }
+    ],
+    "AuthzRegisterSecurityEventSource": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "szEventSourceName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "phEventProvider",
+            "type": "PAUTHZ_SECURITY_EVENT_PROVIDER_HANDLE"
+        }
+    ],
+    "AuthzUnregisterSecurityEventSource": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "phEventProvider",
+            "type": "PAUTHZ_SECURITY_EVENT_PROVIDER_HANDLE"
+        }
+    ],
+    "AuthzReportSecurityEvent": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "hEventProvider",
+            "type": "AUTHZ_SECURITY_EVENT_PROVIDER_HANDLE"
+        },
+        {
+            "name": "dwAuditId",
+            "type": "DWORD"
+        },
+        {
+            "name": "pUserSid",
+            "type": "PSID"
+        },
+        {
+            "name": "dwCount",
+            "type": "DWORD"
+        }
+    ],
+    "AuthzReportSecurityEventFromParams": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "hEventProvider",
+            "type": "AUTHZ_SECURITY_EVENT_PROVIDER_HANDLE"
+        },
+        {
+            "name": "dwAuditId",
+            "type": "DWORD"
+        },
+        {
+            "name": "pUserSid",
+            "type": "PSID"
+        },
+        {
+            "name": "pParams",
+            "type": "PAUDIT_PARAMS"
+        }
+    ],
+    "AuthzRegisterCapChangeNotification": [
+        {
+            "name": "phCapChangeSubscription",
+            "type": "PAUTHZ_CAP_CHANGE_SUBSCRIPTION_HANDLE"
+        },
+        {
+            "name": "pfnCapChangeCallback",
+            "type": "LPTHREAD_START_ROUTINE"
+        },
+        {
+            "name": "pCallbackContext",
+            "type": "PVOID"
+        }
+    ],
+    "AuthzUnregisterCapChangeNotification": [
+        {
+            "name": "hCapChangeSubscription",
+            "type": "AUTHZ_CAP_CHANGE_SUBSCRIPTION_HANDLE"
+        }
+    ],
+    "AuthzFreeCentralAccessPolicyCache": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ]
+}

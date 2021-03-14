@@ -1,6 +1,142 @@
 This file details the changelog of Qiling Framework.
 
--------------------------------
+------------------------------------
+BREAK CHANGE
+- ql.multithread can be only set during Qiling.__init__ now.
+- ql.nprint and ql.dpring is depreciated. Please use logging directly instead.
+- ql.filename is renamed to ql.argv.
+- ql.output and ql.verbose now has slightly different meanings and can be adjusted runtime. See their docstring for details.
+- ql.filter now accepts a regular expression.
+- Remove ql.log_dir, ql.log_split, ql.append but add ql.log_file instead.
+
+
+------------------------------------
+[Version 1.2.3]: March [SOMETHING], 2021
+
+- Improved PR #689, Android syscall and test fix
+- GDB speed optimization
+- Fixed return value for uid/gid related syscall
+- Resolved multilevel symbolic links
+- Demigod set.api implementation
+
+
+------------------------------------
+[Version 1.2.2]: February 8, 2021
+
+- Fix _acmdln and _wcmdln handling
+- More UEFI refactor
+- Refactor common OS space
+- Bring sality test to work again
+- Clean up more test case
+- First stage multithread rewrite done
+- Updated Qiling(shellcode=) to Qiling(code=), still keeping Qiling(shellcode=) for legacy purpose
+- Added support for SMM_RUNTIME_SERVICES_TABLE
+- Fixed regression in code coverage collection
+- Added generic ql.mem.read_ptr helper function
+- merged UEFI, windows, linux and macos print_function
+- merged UEFI, windows, linux and macos fncc
+- make MacOS uses more Qiling API
+
+
+------------------------------------
+[Version 1.2.1]: January 1st, 2021
+
+- Added support for custom envs variables inside IDA plugin
+- Demigod: Fixed lkm mapping and added support for MIPS32EL
+- Demigod: Added support for Linux x86 32bit
+- Added support for binaries that return from their entrypoint (PE / ELF).
+- Configure Qiling with 'stop_on_stackpointer' or 'stop_on_exit_trap'.
+- Add basic Windows driver tests / example
+- UEFI refactor
+
+
+------------------------------------
+[Version 1.2]: November 16th, 2020
+
+- Demigod finally arrived, more information about [Demigod](https://groundx.io/demigod/)
+- Linux: Implement futex bitset && Check library initialization
+- Linux: vfork and fork syscall mappings
+- execve() ql.argv and ql.env fix
+- De-flattern with IDA plugin now supports ARM && ARM64 with experimental IDA mircocode API.
+- Snapshot mechanism allows saving and restoring of OS and Loader information.
+- Welcome Lazymio and Kabeor to the team
+- Improve register handling (uppercase/lowercase) and add LR register support to arm64
+- Fix ELF Memory mapping issues
+- Fixed directory traversal bug
+
+
+------------------------------------
+[Version 1.1.3]: September 30th, 2020
+
+- Added Doogie example and implement more interrupts
+- Added ollvm de-flattern support for IDA plugin
+- Fixed the popup menu doesn't show when the IDA plugin is put into plugins directory
+- Added Json report extension
+- Fix register mapping
+- ql_syscall_writeev: Use ql.dprint instead of checking debug level
+- Added support for fcntl64 F_SETFL and non-blocking sockets 
+- drcov_exact: coverage collection at instruction granularity 
+- Added UDP support
+
+
+------------------------------------
+[Version 1.1.2]: September 6th, 2020
+
+- Qiling Debugger now comes with reverse debugging
+- Added qltool into pypi packages
+- Added more Windows API
+- Add mapper support for standalone disks.
+- More BIOS/DOS interrupts support shipped with fully emulated Petya as a mbr analysis example.
+
+
+------------------------------------
+[Version 1.1.1]: August 23th, 2020
+
+- Fixed Windows "import resource" issue
+- Added ql.save and ql.restore aka Qiling's Snapshot
+- Added ql.os.fd.save() and ql.os.fd.restore() to save file descriptor
+- Added IDA Plugin
+- Test, patch and make sure arm_thumb can work on its own
+- Added Qiling Debugger - Currently only works with MIPS
+- Added experimental 8086 and DOS support.
+- Fixed path transformation on Windows when running Linux.
+- IDA Plugin able to instrument code now
+- Refactor ql.fs_mapper (now ql.os.fs_mapper).
+
+
+------------------------------------
+[Version 1.1]: July 24th, 2020
+
+- More refactors and bug fixes
+- Adding DLL images for PE coverage tracing
+- Added hook_mem_invalid
+- More UEFI API
+
+
+------------------------------------
+[Version 1.1-rc1]: July 17th, 2020
+
+- More refactors and bug fixes
+- More detailed debug output
+- Fix MIPS_EB overflow issue
+- Introduce heap sanitizer
+
+
+------------------------------------
+[Version 1.1-alpha2]: June 26th, 2020
+
+- More refactors and bug fixes
+- Added Key Developers section in CREDITS.TXT
+- Golang compiled binary support
+- custom ql.fs_mapper
+- fixed x86 and arm multithread
+- moved all posix syscall mapping to complete syscall table
+- Supports more Linux syscalls
+- Supports more Windows APIs
+- OnEnter, OnExit for syscall, windows API and Linux LIB C functions
+
+
+------------------------------------
 [Version 1.1-alpha1]: May 26th, 2020
 
 - More refactor and bug fix
@@ -30,3 +166,16 @@ This file details the changelog of Qiling Framework.
 - Support more Linux syscalls
 - Support more Windows APIs
 - Support MacOS dyld
+
+
+---------------------------------------
+[Version 1.0 beta]: November 14th, 2019
+
+- First public released
+
+
+--------------------------------------------
+[Version 1.0 close alpha]: October 9th, 2019
+
+- Closed alpha test
+
