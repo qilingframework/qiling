@@ -28,7 +28,7 @@ class MACHOTest(unittest.TestCase):
             attrBufSize = 32768
             attrBuffer_addr = ql.os.heap.alloc(attrBufSize)
             retval_addr = ql.os.heap.alloc(8)
-            
+
             alist = attrlist_t(ql, alist_addr)
             alist.bitmapcount = 5
             alist.reserved = 0
@@ -51,7 +51,7 @@ class MACHOTest(unittest.TestCase):
             ls = ql.os.ev_manager.proc_find(1234)
             ql.os.ev_manager.map_fd[getattr_arg.dirfd] = Path(path)
             ql.os.ev_manager.syscall(461, [ls.base, getattr_arg.base, retval_addr])
-        
+
         def hook_stop(ql):
             ql.emu_stop()
 
@@ -72,7 +72,7 @@ class MACHOTest(unittest.TestCase):
             print("params: %s" % params)
             print("=" * 40)
             print("\n")
-            self.set_api_onexit = True           
+            self.set_api_onexit = True
 
         @macos_kernel_api(passthru=True, params={
             "s": STRING,
@@ -91,13 +91,13 @@ class MACHOTest(unittest.TestCase):
             ql.os.load_kext()
         except UcError as e:
             print("Load driver error: %s" % e)
-            sys.exit(-1)      
+            sys.exit(-1)
 
         ql.os.ev_manager.add_process(1337, "agent")
-        ls(ql, ".")      
+        ls(ql, ".")
 
         self.assertEqual(True, self.set_api_onenter)
-        self.assertEqual(True, self.set_api_onenter)
+        self.assertEqual(True, self.set_api_onexit)
         self.assertEqual(True, self.set_api_strlen)
         del ql
 if __name__ == "__main__":
