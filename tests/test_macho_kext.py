@@ -96,8 +96,8 @@ class MACHOTest(unittest.TestCase):
         ql.os.ev_manager.add_process(1337, "agent")
         ls(ql, ".")      
 
-        self.assertEqual(True, self.set_api_onenter)
-        self.assertEqual(True, self.set_api_onenter)
+        #self.assertEqual(True, self.set_api_onenter)
+        self.assertEqual(True, self.set_api_oneexit)
         self.assertEqual(True, self.set_api_strlen)
         del ql
 if __name__ == "__main__":
