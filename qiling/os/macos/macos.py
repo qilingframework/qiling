@@ -16,10 +16,16 @@ from qiling.os.macos.events.macos_policy import QlMacOSPolicy
 from qiling.os.macos.events.macos_structs import mac_policy_list_t
 from qiling.os.macos.structs import kmod_info_t, POINTER64
 
+from qiling.refactored.cc import intel
+from qiling.refactored.os.fcall import QlFunctionCall
+
 class QlOsMacos(QlOsPosix):
     def __init__(self, ql: Qiling):
         super(QlOsMacos, self).__init__(ql)
+
         self.ql = ql
+        self.fcall = QlFunctionCall(ql, intel.macosx64(ql))
+
         self.ql.counter = 0
         self.ev_manager = QlMacOSEvManager(self.ql)
         self.policy_manager = QlMacOSPolicy(self.ql, self.ev_manager)

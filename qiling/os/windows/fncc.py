@@ -91,15 +91,15 @@ def __load_winsdk_defs(dllname: str) -> Mapping:
     return __sdk_cache[dllname]
 
 # x86/x8664 PE should share Windows APIs
-def winsdkapi(cc: int, param_num: int = None, dllname: str = None, replace_params_type: Mapping[str, str] = {}, replace_params = {}, passthru: bool = False):
+def winsdkapi(cc: int, dllname: str = None, replace_params_type: Mapping[str, str] = {}, replace_params = {}, passthru: bool = False):
     """
-    @cc: windows api calling convention, only x86 needs this, x64 is always fastcall
-    @param_num: the number of function params, used by variadic functions, e.g printf
-    @dllname: the name of function
-    @replace_params_type: customize replace type, e.g specialtype={'int':'UINT'} means repalce 'int' to 'UINT'
-    @replace_params: customize replace param_name's type, e.g specialtypeEx={'time':'int'} means
-                replace the original type of time to int
+    cc: windows api calling convention, this is ignored on x64 which uses ms64
+    dllname: dll name
+    replace_params_type: customize replace type, e.g specialtype={'int':'UINT'} means repalce 'int' to 'UINT'
+    replace_params: customize replace param_name's type, e.g specialtypeEx={'time':'int'} means replace the
+                original type of time to int
     """
+
     def decorator(func):
         @wraps(func)
         def wrapper(ql: Qiling, pc: int, api_name: str):

@@ -201,7 +201,7 @@ def hook_sprintf(ql: Qiling, address: int, params):
 
 
 # int printf(const char *format, ...)
-@winsdkapi(cc=CDECL, param_num=1, replace_params={'format': STRING})
+@winsdkapi(cc=CDECL, replace_params={'format': STRING})
 def hook_printf(ql: Qiling, address: int, params):
     format = params['format']
 
@@ -218,7 +218,7 @@ def hook_printf(ql: Qiling, address: int, params):
     return count
 
 # int wprintf(const wchar_t *format, ...)
-@winsdkapi(cc=CDECL, param_num=1, replace_params={'format': WSTRING})
+@winsdkapi(cc=CDECL, replace_params={'format': WSTRING})
 def hook_wprintf(ql: Qiling, address: int, params):
     format = params['format']
 
