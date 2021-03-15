@@ -18,7 +18,7 @@ from .utils import QlOsUtils
 from .path import QlPathManager
 
 class QlOs:
-    Resolver = Callable[[int], Tuple[Any, int]]
+    Resolver = Callable[[int], Any]
 
     def __init__(self, ql: Qiling, resolvers: Mapping[Any, Resolver] = {}):
         self.ql = ql
@@ -189,6 +189,6 @@ class QlOs:
             self.ql.log.error("%r" % ([hex(_) for _ in buf]))
 
             self.ql.log.info("\n")
-            self.disassembler(self.ql, self.ql.reg.arch_pc, 64)
+            self.utils.disassembler(self.ql, self.ql.reg.arch_pc, 64)
         except:
             self.ql.log.error("Error: PC(0x%x) Unreachable" % self.ql.reg.arch_pc)

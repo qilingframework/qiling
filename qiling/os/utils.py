@@ -7,14 +7,15 @@
 This module is intended for general purpose functions that are only used in qiling.os
 """
 
-from qiling.os.const import POINTER
-from typing import Any, MutableMapping, Union, Mapping, Optional, Sequence, MutableSequence, Tuple
+from typing import Any, MutableMapping, Mapping, Optional, Sequence, MutableSequence, Tuple
+from os.path import basename
 from uuid import UUID
 import ctypes
 
 from unicorn import UcError
 
 from qiling import Qiling
+from qiling.os.const import POINTER
 from qiling.os.windows.fncc import STDCALL
 from qiling.os.windows.wdk_const import *
 from qiling.os.windows.structs import *
@@ -26,7 +27,7 @@ class QlOsUtils:
 
     def __init__(self, ql: Qiling):
         self.ql = ql
-        self.path = None
+
         self.md = None
         self._disasm_hook = None
         self._block_hook = None

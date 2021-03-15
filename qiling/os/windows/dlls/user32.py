@@ -3,9 +3,6 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import struct
-
-
 from qiling.os.windows.fncc import *
 from qiling.os.const import *
 from qiling.os.windows.utils import *
@@ -555,29 +552,6 @@ def hook_wsprintfW(ql: Qiling, address: int, params):
     return count
 
 
-# FIXME: this one belongs to 'msvcrt', doesn't it?
-#
-# # int WINAPIV sprintf(
-# #   LPWSTR  ,
-# #   LPCWSTR ,
-# #   ...
-# # );
-# @winsdkapi(cc=CDECL, dllname=dllname, param_num=3)
-# def hook_sprintf(ql, address, params):
-#     dst, p_format = ql.os.get_function_param(2)
-#     format_string = ql.os.utils.read_wstring(p_format)
-#     count = format_string.count('%')
-#     args = ql.os.get_function_param(2 + count)[2:]
-#     size, string = ql.os.utils.printf(address, format_string, args, "sprintf", wstring=True)
-# 
-#     if ql.archtype == QL_ARCH.X8664:
-#         # We must pop the stack correctly
-#         raise QlErrorNotImplemented("API not implemented")
-# 
-#     ql.mem.write(dst, (string + "\x00").encode("utf-16le"))
-#     return size
-
-
 # HWND GetForegroundWindow();
 @winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetForegroundWindow(ql, address, params):
@@ -619,7 +593,7 @@ def hook_GetKeyboardType(ql, address, params):
 # LPCTSTR lpFormat, 
 # va_list ArgList
 # );
-@winsdkapi(cc=CDECL, dllname=dllname, replace_params_type={            
+@winsdkapi(cc=CDECL, dllname=dllname, replace_params={
             "lpOutput": POINTER,
             "lpFormat": POINTER,
             "ArgList": POINTER,
