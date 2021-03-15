@@ -97,7 +97,7 @@ class MACHOTest(unittest.TestCase):
         ls(ql, ".")
 
         self.assertEqual(True, self.set_api_onenter)
-        self.assertEqual(True, self.set_api_oneexit)
+        self.assertEqual(True, self.set_api_onexit)
         self.assertEqual(True, self.set_api_strlen)
         del ql
 if __name__ == "__main__":
