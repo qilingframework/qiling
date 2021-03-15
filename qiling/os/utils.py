@@ -173,18 +173,6 @@ class QlOsUtils:
     def update_ellipsis(self, params: MutableMapping, args: Sequence) -> None:
         params.update((f'{QlOsUtils.ELLIPSIS_PREF}{i}', a) for i, a in enumerate(args))
 
-    def lsbmsb_convert(self, sc, size=4):
-        split_bytes = []
-        n = size
-        for index in range(0, len(sc), n):
-            split_bytes.append((sc[index: index + n])[::-1])
-
-        ebsc = b""
-        for i in split_bytes:
-            ebsc += i
-
-        return ebsc
-
     def exec_arbitrary(self, start, end):
         old_sp = self.ql.reg.arch_sp
 
