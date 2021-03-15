@@ -6,288 +6,654 @@
 
 from qiling.const import *
 from qiling.os.linux.thread import *
+from qiling.os.posix.stat import *
 from qiling.const import *
-from qiling.os.posix.filestruct import *
-from qiling.os.filestruct import *
 from qiling.os.posix.const_mapping import *
 from qiling.exception import *
-from qiling.os.posix.stat import *
+import struct
+import os
+import ctypes
+
+# Caveat: Never use types like ctypes.c_long whose size differs across platforms.
+
+# /sys/sys/stat.h
+# struct stat {
+# 	dev_t     st_dev;		/* inode's device */                        uint64_t
+# 	ino_t	  st_ino;		/* inode's number */                        uint64_t
+# 	nlink_t	  st_nlink;		/* number of hard links */                  uint64_t
+# 	mode_t	  st_mode;		/* inode protection mode */                 uint16_t
+# 	__int16_t st_padding0;                                              int16_t
+# 	uid_t	  st_uid;		/* user ID of the file's owner */           uint32_t
+# 	gid_t	  st_gid;		/* group ID of the file's group */          uint32_t
+# 	__int32_t st_padding1;                                              int32_t
+# 	dev_t     st_rdev;		/* device type */                           uint64_t
+# #ifdef	__STAT_TIME_T_EXT
+# 	__int32_t st_atim_ext;
+# #endif
+# 	struct	timespec st_atim;	/* time of last access */               uint64_t * 2      
+# #ifdef	__STAT_TIME_T_EXT
+# 	__int32_t st_mtim_ext;
+# #endif
+# 	struct	timespec st_mtim;	/* time of last data modification */    uint64_t * 2
+# #ifdef	__STAT_TIME_T_EXT
+# 	__int32_t st_ctim_ext;
+# #endif
+# 	struct	timespec st_ctim;	/* time of last file status change */   uint64_t * 2
+# #ifdef	__STAT_TIME_T_EXT
+# 	__int32_t st_btim_ext;
+# #endif
+# 	struct	timespec st_birthtim;	/* time of file creation */         uint64_t * 2
+# 	off_t	  st_size;		/* file size, in bytes */                   int64_t
+# 	blkcnt_t st_blocks;		/* blocks allocated for file */             int64_t
+# 	blksize_t st_blksize;		/* optimal blocksize for I/O */         int32_t
+# 	fflags_t  st_flags;		/* user defined flags for file */           uint32_t
+# 	__uint64_t st_gen;		/* file generation number */                uint64_t
+# 	__uint64_t st_spare[10];                                            uint64_t * 10
+# };
+#
+# struct timespec {
+# 	time_t	tv_sec;		/* seconds */                                   uint64_t
+# 	long	tv_nsec;	/* and nanoseconds */                           uint64_t (LP64 data model)
+# };
+#
+#
+# Assume no EXT.
+class FreeBSDX86Stat(ctypes.Structure):
+    _fields_ = [
+        ("st_dev", ctypes.c_uint64),
+        ("st_ino", ctypes.c_uint64),
+        ("st_nlink", ctypes.c_uint64),
+        ("st_mode", ctypes.c_uint16),
+        ("st_padding0", ctypes.c_int16),
+        ("st_uid", ctypes.c_uint32),
+        ("st_gid", ctypes.c_uint32),
+        ("st_padding1", ctypes.c_int32),
+        ("st_rdev", ctypes.c_uint64),
+        ("st_atime", ctypes.c_uint64),
+        ("st_atime_ns", ctypes.c_uint64),
+        ("st_mtime", ctypes.c_uint64),
+        ("st_mtime_ns", ctypes.c_uint64),
+        ("st_ctime", ctypes.c_uint64),
+        ("st_ctime_ns", ctypes.c_uint64),
+        ("st_birthtime", ctypes.c_uint64),
+        ("st_birthtime_ns", ctypes.c_uint64),
+        ("st_size", ctypes.c_int64),
+        ("st_blocks", ctypes.c_int64),
+        ("st_blksize", ctypes.c_int32),
+        ("st_flags", ctypes.c_uint32),
+        ("st_gen", ctypes.c_uint64),
+        ("st_spare", ctypes.c_uint64 * 10)
+    ]
+
+    _pack_ = 4
+
+class FreeBSDX8664Stat(ctypes.Structure):
+    _fields_ = [
+        ("st_dev", ctypes.c_uint64),
+        ("st_ino", ctypes.c_uint64),
+        ("st_nlink", ctypes.c_uint64),
+        ("st_mode", ctypes.c_uint16),
+        ("st_padding0", ctypes.c_int16),
+        ("st_uid", ctypes.c_uint32),
+        ("st_gid", ctypes.c_uint32),
+        ("st_padding1", ctypes.c_int32),
+        ("st_rdev", ctypes.c_uint64),
+        ("st_atime", ctypes.c_uint64),
+        ("st_atime_ns", ctypes.c_uint64),
+        ("st_mtime", ctypes.c_uint64),
+        ("st_mtime_ns", ctypes.c_uint64),
+        ("st_ctime", ctypes.c_uint64),
+        ("st_ctime_ns", ctypes.c_uint64),
+        ("st_birthtime", ctypes.c_uint64),
+        ("st_birthtime_ns", ctypes.c_uint64),
+        ("st_size", ctypes.c_int64),
+        ("st_blocks", ctypes.c_int64),
+        ("st_blksize", ctypes.c_int32),
+        ("st_flags", ctypes.c_uint32),
+        ("st_gen", ctypes.c_uint64),
+        ("st_spare", ctypes.c_uint64 * 10)
+    ]
+
+    _pack_ = 8
+
+# Does FreeBSD really have stat64?
+FreeBSDX86Stat64 = FreeBSDX86Stat
+FreeBSDX8664Stat64 = FreeBSDX8664Stat
+
+# https://opensource.apple.com/source/xnu/xnu-7195.81.3/bsd/sys/stat.h.auto.html
+#
+# m1 sizeof(long) = sizeof(intptr) = 8
+#
+# #define __DARWIN_STRUCT_STAT64_TIMES \
+# struct timespec st_atimespec;           /* time of last access */ \
+# struct timespec st_mtimespec;           /* time of last data modification */ \
+# struct timespec st_ctimespec;           /* time of last status change */ \
+# struct timespec st_birthtimespec;       /* time of file creation(birth) */
+#
+# #define __DARWIN_STRUCT_STAT64 { \
+# 	dev_t		st_dev;                 /* [XSI] ID of device containing file */ \      int32_t
+# 	mode_t		st_mode;                /* [XSI] Mode of file (see below) */ \          uint16_t
+# 	nlink_t		st_nlink;               /* [XSI] Number of hard links */ \              uint16_t      
+# 	__darwin_ino64_t st_ino;                /* [XSI] File serial number */ \            uint64_t
+# 	uid_t		st_uid;                 /* [XSI] User ID of the file */ \               uint32_t
+# 	gid_t		st_gid;                 /* [XSI] Group ID of the file */ \              uint32_t
+# 	dev_t		st_rdev;                /* [XSI] Device ID */ \                         int32_t
+# 	__DARWIN_STRUCT_STAT64_TIMES \                                                      uint64_t (long) * 8
+# 	off_t		st_size;                /* [XSI] file size, in bytes */ \               int64_t
+# 	blkcnt_t	st_blocks;              /* [XSI] blocks allocated for file */ \         int64_t
+# 	blksize_t	st_blksize;             /* [XSI] optimal blocksize for I/O */ \         int32_t
+# 	__uint32_t	st_flags;               /* user defined flags for file */ \             uint32_t
+# 	__uint32_t	st_gen;                 /* file generation number */ \                  uint32_t
+# 	__int32_t	st_lspare;              /* RESERVED: DO NOT USE! */ \                   int32_t
+# 	__int64_t	st_qspare[2];           /* RESERVED: DO NOT USE! */ \                   int64_t * 2
+# }
+# /*
+#  * [XSI] This structure is used as the second parameter to the fstat(),
+#  * lstat(), and stat() functions.
+#  */
+# #if __DARWIN_64_BIT_INO_T
+
+class MacOSStat(ctypes.Structure):
+    _fields_ = [
+        ("st_dev", ctypes.c_int32),
+        ("st_mode", ctypes.c_uint16),
+        ("st_nlink", ctypes.c_uint16),
+        ("st_ino", ctypes.c_uint64),
+        ("st_uid", ctypes.c_uint32),
+        ("st_gid", ctypes.c_uint32),
+        ("st_rdev", ctypes.c_int32),
+        ("st_atime", ctypes.c_uint64),
+        ("st_atime_ns", ctypes.c_uint64),
+        ("st_mtime", ctypes.c_uint64),
+        ("st_mtime_ns", ctypes.c_uint64),
+        ("st_ctime", ctypes.c_uint64),
+        ("st_ctime_ns", ctypes.c_uint64),
+        ("st_birthtime", ctypes.c_uint64),
+        ("st_birthtime_ns", ctypes.c_uint64),
+        ("st_size", ctypes.c_int64),
+        ("st_blocks", ctypes.c_int64),
+        ("st_blksize", ctypes.c_int32),
+        ("st_flags", ctypes.c_uint32),
+        ("st_gen", ctypes.c_uint32),
+        ("st_lspare", ctypes.c_int32),
+        ("st_qspare", ctypes.c_int64 * 2)
+    ]
+
+    # No 32bit macos.
+    _pack_ = 8
+
+# They are the same in source code.
+MacOSStat64 = MacOSStat
+
+# https://elixir.bootlin.com/linux/latest/source/arch/mips/include/uapi/asm/stat.h#L19
+#
+# #if (_MIPS_SIM == _MIPS_SIM_ABI32) || (_MIPS_SIM == _MIPS_SIM_NABI32)
+# struct stat {
+# 	unsigned	st_dev;                                                             uint32_t
+# 	long		st_pad1[3];		/* Reserved for network id */                       int32_t
+# 	ino_t		st_ino;                                                             uint32_t (unsinged long)
+# 	mode_t		st_mode;                                                            uint32_t (unsinged int)
+# 	__u32		st_nlink;                                                           uint32_t
+# 	uid_t		st_uid;                                                             uint32_t (unsigned int)
+# 	gid_t		st_gid;                                                             uint32_t (unsigned int)
+# 	unsigned	st_rdev;                                                            uint32_t
+# 	long		st_pad2[2];                                                         uint32_t * 2
+# 	long		st_size;                                                            uint32_t
+# 	long		st_pad3;                                                            uint32_t
+# 	/*
+# 	 * Actually this should be timestruc_t st_atime, st_mtime and st_ctime
+# 	 * but we don't have it under Linux.
+# 	 */
+# 	long		st_atime;                                                           uint32_t
+# 	long		st_atime_nsec;                                                      uint32_t
+# 	long		st_mtime;                                                           uint32_t
+# 	long		st_mtime_nsec;                                                      uint32_t
+# 	long		st_ctime;                                                           uint32_t
+# 	long		st_ctime_nsec;                                                      uint32_t
+# 	long		st_blksize;                                                         uint32_t
+# 	long		st_blocks;                                                          uint32_t
+# 	long		st_pad4[14];                                                        uint32_t * 4
+# };
+#
+# struct stat64 {
+# 	unsigned long	st_dev;                                                         uint32_t
+# 	unsigned long	st_pad0[3];	/* Reserved for st_dev expansion  */                uint32_t * 3
+# 	unsigned long long	st_ino;                                                     uint64_t
+# 	mode_t		st_mode;                                                            uint32_t
+# 	__u32		st_nlink;                                                           uint32_t
+# 	uid_t		st_uid;                                                             uint32_t
+# 	gid_t		st_gid;                                                             uint32_t
+# 	unsigned long	st_rdev;                                                        uint32_t
+# 	unsigned long	st_pad1[3];	/* Reserved for st_rdev expansion  */               uint32_t * 3
+# 	long long	st_size;                                                            uint64_t
+# 	/*
+# 	 * Actually this should be timestruc_t st_atime, st_mtime and st_ctime
+# 	 * but we don't have it under Linux.
+# 	 */
+# 	long		st_atime;                                                           int32_t
+# 	unsigned long	st_atime_nsec;	/* Reserved for st_atime expansion  */          uint32_t
+# 	long		st_mtime;                                                           int32_t
+# 	unsigned long	st_mtime_nsec;	/* Reserved for st_mtime expansion  */          uint32_t
+# 	long		st_ctime;                                                           int32_t
+# 	unsigned long	st_ctime_nsec;	/* Reserved for st_ctime expansion  */          uint32_t
+# 	unsigned long	st_blksize;                                                     uint32_t
+# 	unsigned long	st_pad2;                                                        uint32_t
+# 	long long	st_blocks;                                                          int64_t
+# };
+# #endif /* _MIPS_SIM == _MIPS_SIM_ABI32 */
+# #if _MIPS_SIM == _MIPS_SIM_ABI64
+# /* The memory layout is the same as of struct stat64 of the 32-bit kernel.  */
+# struct stat {
+# 	unsigned int		st_dev;                                                     uint32_t
+# 	unsigned int		st_pad0[3]; /* Reserved for st_dev expansion */             uint32_t * 3
+# 	unsigned long		st_ino;                                                     uint64_t
+# 	mode_t			st_mode;                                                        uint32_t
+# 	__u32			st_nlink;                                                       uint32_t
+# 	uid_t			st_uid;                                                         uint32_t
+# 	gid_t			st_gid;                                                         uint32_t
+# 	unsigned int		st_rdev;                                                    uint32_t
+# 	unsigned int		st_pad1[3]; /* Reserved for st_rdev expansion */            uint32_t * 3
+# 	long			st_size;                                                        uint64_t
+# 	/*
+# 	 * Actually this should be timestruc_t st_atime, st_mtime and st_ctime
+# 	 * but we don't have it under Linux.
+# 	 */
+# 	unsigned int		st_atime;                                                   uint32_t
+# 	unsigned int		st_atime_nsec;                                              uint32_t
+# 	unsigned int		st_mtime;                                                   uint32_t
+# 	unsigned int		st_mtime_nsec;                                              uint32_t
+# 	unsigned int		st_ctime;                                                   uint32_t
+# 	unsigned int		st_ctime_nsec;                                              uint32_t
+# 	unsigned int		st_blksize;                                                 uint32_t
+# 	unsigned int		st_pad2;                                                    uint32_t
+# 	unsigned long		st_blocks;                                                  uint64_t
+# };
+
+class LinuxMips32Stat(ctypes.Structure):
+    _fields_ = [
+        ("st_dev", ctypes.c_uint32),
+        ("st_pad1", ctypes.c_int32 * 3),
+        ("st_ino", ctypes.c_uint32),
+        ("st_mode", ctypes.c_uint32),
+        ("st_nlink", ctypes.c_uint32),
+        ("st_uid", ctypes.c_uint32),
+        ("st_gid", ctypes.c_uint32),
+        ("st_rdev", ctypes.c_uint32),
+        ("st_pad2", ctypes.c_uint32 * 2),
+        ("st_size", ctypes.c_uint32),
+        ("st_pad3", ctypes.c_uint32),
+        ("st_atime", ctypes.c_uint32),
+        ("st_atime_ns", ctypes.c_uint32),
+        ("st_mtime", ctypes.c_uint32),
+        ("st_mtime_ns", ctypes.c_uint32),
+        ("st_ctime", ctypes.c_uint32),
+        ("st_ctime_ns", ctypes.c_uint32),
+        ("st_blksize", ctypes.c_uint32),
+        ("st_blocks", ctypes.c_uint32),
+        ("st_pad4", ctypes.c_uint32 * 14)
+    ]
+
+    _pack_ = 4
+
+class LinuxMips64Stat(ctypes.Structure):
+    _fields_ = [
+        ("st_dev", ctypes.c_uint32),
+        ("st_pad0", ctypes.c_uint32 * 3),
+        ("st_ino", ctypes.c_uint64),
+        ("st_mode", ctypes.c_uint32),
+        ("st_nlink", ctypes.c_uint32),
+        ("st_uid", ctypes.c_uint32),
+        ("st_gid", ctypes.c_uint32),
+        ("st_rdev", ctypes.c_uint32),
+        ("st_pad1", ctypes.c_uint32 * 3),
+        ("st_size", ctypes.c_uint64),
+        ("st_atime", ctypes.c_uint32),
+        ("st_atime_ns", ctypes.c_uint32),
+        ("st_mtime", ctypes.c_uint32),
+        ("st_mtime_ns", ctypes.c_uint32),
+        ("st_ctime", ctypes.c_uint32),
+        ("st_ctime_ns", ctypes.c_uint32),
+        ("st_blksize", ctypes.c_uint32),
+        ("st_pad2", ctypes.c_uint32),
+        ("st_blocks", ctypes.c_uint64)
+    ]
+
+    _pack_ = 8
+
+class LinuxMips32Stat64(ctypes.Structure):
+    _fields_ = [
+        ("st_dev", ctypes.c_uint32),
+        ("st_pad0", ctypes.c_uint32 * 3),
+        ("st_ino", ctypes.c_uint64),
+        ("st_mode", ctypes.c_uint32),
+        ("st_nlink", ctypes.c_uint32),
+        ("st_uid", ctypes.c_uint32),
+        ("st_gid", ctypes.c_uint32),
+        ("st_rdev", ctypes.c_uint32),
+        ("st_pad1", ctypes.c_uint32 * 3),
+        ("st_size", ctypes.c_uint64),
+        ("st_atime", ctypes.c_int32),
+        ("st_atime_ns", ctypes.c_uint32),
+        ("st_mtime", ctypes.c_int32),
+        ("st_mtime_ns", ctypes.c_uint32),
+        ("st_ctime", ctypes.c_int32),
+        ("st_ctime_ns", ctypes.c_uint32),
+        ("st_blksize", ctypes.c_uint32),
+        ("st_pad2", ctypes.c_uint32),
+        ("st_blocks", ctypes.c_int64)
+    ]
+
+    _pack_ = 4
+
+# https://elixir.bootlin.com/linux/latest/source/arch/x86/include/uapi/asm/stat.h#L10
+#
+# #ifdef __i386__
+# struct stat {
+# 	unsigned long  st_dev;                                                      uint32_t
+# 	unsigned long  st_ino;                                                      uint32_t
+# 	unsigned short st_mode;                                                     uint16_t
+# 	unsigned short st_nlink;                                                    uint16_t
+# 	unsigned short st_uid;                                                      uint16_t
+# 	unsigned short st_gid;                                                      uint16_t
+# 	unsigned long  st_rdev;                                                     uint32_t
+# 	unsigned long  st_size;                                                     uint32_t
+# 	unsigned long  st_blksize;                                                  uint32_t
+# 	unsigned long  st_blocks;                                                   uint32_t
+# 	unsigned long  st_atime;                                                    uint32_t
+# 	unsigned long  st_atime_nsec;                                               uint32_t
+# 	unsigned long  st_mtime;                                                    uint32_t
+# 	unsigned long  st_mtime_nsec;                                               uint32_t
+# 	unsigned long  st_ctime;                                                    uint32_t
+# 	unsigned long  st_ctime_nsec;                                               uint32_t
+# 	unsigned long  __unused4;                                                   uint32_t
+# 	unsigned long  __unused5;                                                   uint32_t
+# };
+# struct stat64 {
+# 	unsigned long long	st_dev;                                                 uint64_t
+# 	unsigned char	__pad0[4];                                                  uint8_t * 4
+# 	unsigned long	__st_ino;                                                   uint32_t
+# 	unsigned int	st_mode;                                                    uint32_t
+# 	unsigned int	st_nlink;                                                   uint32_t
+# 	unsigned long	st_uid;                                                     uint32_t
+# 	unsigned long	st_gid;                                                     uint32_t
+# 	unsigned long long	st_rdev;                                                uint64_t
+# 	unsigned char	__pad3[4];                                                  uint8_t * 4
+# 	long long	st_size;                                                        int64_t
+# 	unsigned long	st_blksize;                                                 uint32_t
+# 	/* Number 512-byte blocks allocated. */
+# 	unsigned long long	st_blocks;                                              uint64_t
+# 	unsigned long	st_atime;                                                   uint32_t
+# 	unsigned long	st_atime_nsec;                                              uint32_t
+# 	unsigned long	st_mtime;                                                   uint32_t
+# 	unsigned int	st_mtime_nsec;                                              uint32_t
+# 	unsigned long	st_ctime;                                                   uint32_t
+# 	unsigned long	st_ctime_nsec;                                              uint32_t
+# 	unsigned long long	st_ino;                                                 uint64_t
+# };
+# #else /* __i386__ */
+# struct stat {
+# 	__kernel_ulong_t	st_dev;                                                 uint64_t
+# 	__kernel_ulong_t	st_ino;                                                 uint64_t
+# 	__kernel_ulong_t	st_nlink;                                               uint64_t
+# 	unsigned int		st_mode;                                                uint32_t
+# 	unsigned int		st_uid;                                                 uint32_t
+# 	unsigned int		st_gid;                                                 uint32_t
+# 	unsigned int		__pad0;                                                 uint32_t
+# 	__kernel_ulong_t	st_rdev;                                                uint64_t
+# 	__kernel_long_t		st_size;                                                int64_t
+# 	__kernel_long_t		st_blksize;                                             int64_t
+# 	__kernel_long_t		st_blocks;	/* Number 512-byte blocks allocated. */     int64_t
+# 	__kernel_ulong_t	st_atime;                                               uint64_t
+# 	__kernel_ulong_t	st_atime_nsec;                                          uint64_t
+# 	__kernel_ulong_t	st_mtime;                                               uint64_t
+# 	__kernel_ulong_t	st_mtime_nsec;                                          uint64_t
+# 	__kernel_ulong_t	st_ctime;                                               uint64_t
+# 	__kernel_ulong_t	st_ctime_nsec;                                          uint64_t
+# 	__kernel_long_t		__unused[3];                                            int64_t
+# };
+# #endif
+
+class LinuxX86Stat(ctypes.Structure):
+    _fields_ = [
+        ("st_dev", ctypes.c_uint32),
+        ("st_ino", ctypes.c_uint32),
+        ("st_mode", ctypes.c_uint16),
+        ("st_nlink", ctypes.c_uint16),
+        ("st_uid", ctypes.c_uint16),
+        ("st_gid", ctypes.c_uint16),
+        ("st_rdev", ctypes.c_uint32),
+        ("st_size", ctypes.c_uint32),
+        ("st_blksize", ctypes.c_uint32),
+        ("st_blocks", ctypes.c_uint32),
+        ("st_atime", ctypes.c_uint32),
+        ("st_atime_ns", ctypes.c_uint32),
+        ("st_mtime", ctypes.c_uint32),
+        ("st_mtime_ns", ctypes.c_uint32),
+        ("st_ctime", ctypes.c_uint32),
+        ("st_ctime_ns", ctypes.c_uint32),
+        ("__unused4", ctypes.c_uint32),
+        ("__unused5", ctypes.c_uint32)
+    ]
+
+    _pack_ = 4
+
+class LinuxX8664Stat(ctypes.Structure):
+    _fields_ = [
+        ("st_dev", ctypes.c_uint64),
+        ("st_ino", ctypes.c_uint64),
+        ("st_nlink", ctypes.c_uint64),
+        ("st_mode", ctypes.c_uint32),
+        ("st_uid", ctypes.c_uint32),
+        ("st_gid", ctypes.c_uint32),
+        ("__pad0", ctypes.c_uint32),
+        ("st_rdev", ctypes.c_uint64),
+        ("st_size", ctypes.c_int64),
+        ("st_blksize", ctypes.c_int64),
+        ("st_blocks", ctypes.c_int64),
+        ("st_atime", ctypes.c_uint64),
+        ("st_atime_ns", ctypes.c_uint64),
+        ("st_mtime", ctypes.c_uint64),
+        ("st_mtime_ns", ctypes.c_uint64),
+        ("st_ctime", ctypes.c_uint64),
+        ("st_ctime_ns", ctypes.c_uint64),
+        ("__unused", ctypes.c_int64 * 3),
+    ]
+
+    _pack_ = 8
+
+class LinuxX86Stat64(ctypes.Structure):
+    _fields_ = [
+        ("st_dev", ctypes.c_uint64),
+        ("__pad0", ctypes.c_uint8 * 4),
+        ("__st_ino", ctypes.c_uint32),
+        ("st_mode", ctypes.c_uint32),
+        ("st_nlink", ctypes.c_uint32),
+        ("st_uid", ctypes.c_uint32),
+        ("st_gid", ctypes.c_uint32),
+        ("st_rdev", ctypes.c_uint64),
+        ("__pad3", ctypes.c_uint8 * 4),
+        ("st_size", ctypes.c_int64),
+        ("st_blksize", ctypes.c_uint32),
+        ("st_blocks", ctypes.c_uint64),
+        ("st_atime", ctypes.c_uint32),
+        ("st_atime_ns", ctypes.c_uint32),
+        ("st_mtime", ctypes.c_uint32),
+        ("st_mtime_ns", ctypes.c_uint32),
+        ("st_ctime", ctypes.c_uint32),
+        ("st_ctime_ns", ctypes.c_uint32),
+        ("st_ino", ctypes.c_uint64)
+    ]
+
+    _pack_ = 4
+
+# https://elixir.bootlin.com/linux/latest/source/arch/arm/include/uapi/asm/stat.h#L21
+#
+# struct stat {
+# #if defined(__ARMEB__)
+# 	unsigned short st_dev;                                                          uint16_t
+# 	unsigned short __pad1;                                                          uint16_t
+# #else
+# 	unsigned long  st_dev;                                                          uint32_t
+# #endif
+# 	unsigned long  st_ino;                                                          uint32_t
+# 	unsigned short st_mode;                                                         uint16_t
+# 	unsigned short st_nlink;                                                        uint16_t
+# 	unsigned short st_uid;                                                          uint16_t
+# 	unsigned short st_gid;                                                          uint16_t
+# #if defined(__ARMEB__)
+# 	unsigned short st_rdev;                                                         uint16_t
+# 	unsigned short __pad2;                                                          uint16_t
+# #else
+# 	unsigned long  st_rdev;                                                         uint32_t
+# #endif
+# 	unsigned long  st_size;                                                         uint32_t
+# 	unsigned long  st_blksize;                                                      uint32_t
+# 	unsigned long  st_blocks;                                                       uint32_t
+# 	unsigned long  st_atime;                                                        uint32_t
+# 	unsigned long  st_atime_nsec;                                                   uint32_t
+# 	unsigned long  st_mtime;                                                        uint32_t
+# 	unsigned long  st_mtime_nsec;                                                   uint32_t
+# 	unsigned long  st_ctime;                                                        uint32_t
+# 	unsigned long  st_ctime_nsec;                                                   uint32_t
+# 	unsigned long  __unused4;                                                       uint32_t
+# 	unsigned long  __unused5;                                                       uint32_t
+# };
+
+# struct stat64 {
+# 	unsigned long long	st_dev;                                                     uint64_t
+# 	unsigned char   __pad0[4];                                                      uint8_t * 4
+# #define STAT64_HAS_BROKEN_ST_INO	1
+# 	unsigned long	__st_ino;                                                       uint32_t
+# 	unsigned int	st_mode;                                                        uint32_t
+# 	unsigned int	st_nlink;                                                       uint32_t
+# 	unsigned long	st_uid;                                                         uint32_t
+# 	unsigned long	st_gid;                                                         uint32_t
+# 	unsigned long long	st_rdev;                                                    uint64_t
+# 	unsigned char   __pad3[4];                                                      uint8_t * 4
+# 	long long	st_size;                                                            int64_t
+# 	unsigned long	st_blksize;                                                     uint32_t
+# 	unsigned long long st_blocks;	/* Number 512-byte blocks allocated. */         uint64_t
+# 	unsigned long	st_atime;                                                       uint32_t
+# 	unsigned long	st_atime_nsec;                                                  uint32_t
+# 	unsigned long	st_mtime;                                                       uint32_t
+# 	unsigned long	st_mtime_nsec;                                                  uint32_t
+# 	unsigned long	st_ctime;                                                       uint32_t
+# 	unsigned long	st_ctime_nsec;                                                  uint32_t
+# 	unsigned long long	st_ino;                                                     uint64_t
+# };
 
 
-def create_stat_struct(ql, info):
-    if ql.archtype == QL_ARCH.MIPS:
-        # pack statinfo
-        stat_buf = ql.pack32(info.st_dev)
-        stat_buf += ql.pack32(0) * 3
-        stat_buf += ql.pack32(info.st_ino)
-        stat_buf += ql.pack32(info.st_mode)
-        stat_buf += ql.pack32(info.st_nlink)
-        stat_buf += ql.pack32(info.st_uid)
-        stat_buf += ql.pack32(info.st_gid)
-        stat_buf += ql.pack32(info.st_rdev)
-        stat_buf += ql.pack32(0) * 2
-        stat_buf += ql.pack32(info.st_size)
-        stat_buf += ql.pack32(0)
-        stat_buf += ql.pack32(int(info.st_atime))
-        stat_buf += ql.pack32(0)
-        stat_buf += ql.pack32(int(info.st_mtime))
-        stat_buf += ql.pack32(0)
-        stat_buf += ql.pack32(int(info.st_ctime))
-        stat_buf += ql.pack32(0)
-        stat_buf += ql.pack32(info.st_blksize)
-        stat_buf += ql.pack32(info.st_blocks)
-        stat_buf = stat_buf.ljust(0x90, b'\x00')
-    elif ql.archtype == QL_ARCH.X8664:
-        if ql.ostype == QL_OS.MACOS:
-            stat_buf = ql.pack64s(info.st_dev)
-        else:
-            stat_buf = ql.pack64(info.st_dev)
-        stat_buf += ql.pack(info.st_ino)
-        stat_buf += ql.pack64(info.st_nlink)
-        if ql.ostype == QL_OS.FREEBSD:
-            stat_buf += ql.pack16(info.st_mode)
-            stat_buf += ql.pack16(0) # Padding
-        else:
-            stat_buf += ql.pack32(info.st_mode)
-        stat_buf += ql.pack32(info.st_uid)
-        stat_buf += ql.pack32(info.st_gid)
-        stat_buf += ql.pack32(0)
-        stat_buf += ql.pack64(info.st_rdev)
-        if ql.ostype == QL_OS.FREEBSD:
-            stat_buf += ql.pack64(int(info.st_atime))
-            stat_buf += ql.pack64(0)
-            stat_buf += ql.pack64(int(info.st_mtime))
-            stat_buf += ql.pack64(0)
-            stat_buf += ql.pack64(int(info.st_ctime))
-            stat_buf += ql.pack64(0)
-            stat_buf += ql.pack64(int(info.st_birthtime))
-            stat_buf += ql.pack64(0)
-            stat_buf += ql.pack64s(info.st_size)
-            stat_buf += ql.pack64(info.st_blocks)
-            stat_buf += ql.pack32s(info.st_blksize)
-            stat_buf += ql.pack32(info.st_flags)
-            stat_buf += ql.pack64(info.st_gen)
-            for _ in range(10):
-                stat_buf += ql.pack64(0)
-        else:
-            stat_buf += ql.pack64(info.st_size)
-            stat_buf += ql.pack64(info.st_blksize)
-            stat_buf += ql.pack64(info.st_blocks)
-            stat_buf += ql.pack64(int(info.st_atime))
-            stat_buf += ql.pack64(0)
-            stat_buf += ql.pack64(int(info.st_mtime))
-            stat_buf += ql.pack64(0)
-            stat_buf += ql.pack64(int(info.st_ctime))
-            stat_buf += ql.pack64(0)
-    elif ql.archtype == QL_ARCH.ARM64:
-        # struct stat is : 80 addr is : 0x4000811bc8
-        # buf.st_dev offest 0 8 0
-        # buf.st_ino offest 8 8 0
-        # buf.st_mode offest 10 4 0
-        # buf.st_nlink offest 14 4 0
-        # buf.st_uid offest 18 4 0
-        # buf.st_gid offest 1c 4 0
-        # buf.st_rdev offest 20 8 0
-        # buf.st_size offest 30 8 274886889936
-        # buf.st_blksize offest 38 4 8461328
-        # buf.st_blocks offest 40 8 274877909532
-        # buf.st_atime offest 48 8 274886368336
-        # buf.st_mtime offest 58 8 274877909472
-        # buf.st_ctime offest 68 8 274886368336
-        # buf.__glibc_reserved offest 78 8
-        if ql.ostype == QL_OS.MACOS:
-            stat_buf = ql.pack64s(info.st_dev)
-        else:
-            stat_buf = ql.pack64(info.st_dev)
-        stat_buf += ql.pack64(info.st_ino)
-        stat_buf += ql.pack32(info.st_mode)
-        stat_buf += ql.pack32(info.st_nlink)
-        stat_buf += ql.pack32(ql.os.uid)
-        stat_buf += ql.pack32(ql.os.gid)
-        stat_buf += ql.pack64(info.st_rdev)
-        stat_buf += ql.pack64(0)
-        stat_buf += ql.pack64(info.st_size)
-        stat_buf += ql.pack32(info.st_blksize)
-        stat_buf += ql.pack32(0)
-        stat_buf += ql.pack64(info.st_blocks)
-        stat_buf += ql.pack64(int(info.st_atime))
-        stat_buf += ql.pack64(0)
-        stat_buf += ql.pack64(int(info.st_mtime))
-        stat_buf += ql.pack64(0)
-        stat_buf += ql.pack64(int(info.st_ctime))
-        stat_buf += ql.pack64(0)
-    else:
-        # pack statinfo
-        stat_buf = ql.pack32(info.st_dev)
-        stat_buf += ql.pack(info.st_ino)
-        stat_buf += ql.pack32(info.st_mode)
-        stat_buf += ql.pack32(info.st_nlink)
-        stat_buf += ql.pack32(info.st_uid)
-        stat_buf += ql.pack32(info.st_gid)
-        stat_buf += ql.pack32(info.st_rdev)
-        stat_buf += ql.pack32(info.st_size)
-        stat_buf += ql.pack32(info.st_blksize)
-        stat_buf += ql.pack32(info.st_blocks)
-        stat_buf += ql.pack32(int(info.st_atime))
-        stat_buf += ql.pack32(int(info.st_mtime))
-        stat_buf += ql.pack32(int(info.st_ctime))
-    return stat_buf
+class LinuxARMStat(ctypes.Structure):
+    _fields_ = [
+        ("st_dev", ctypes.c_uint32),
+        ("st_ino", ctypes.c_uint32),
+        ("st_mode", ctypes.c_uint16),
+        ("st_nlink", ctypes.c_uint16),
+        ("st_uid", ctypes.c_uint16),
+        ("st_gid", ctypes.c_uint16),
+        ("st_rdev", ctypes.c_uint32),
+        ("st_size", ctypes.c_uint32),
+        ("st_blksize", ctypes.c_uint32),
+        ("st_blocks", ctypes.c_uint32),
+        ("st_atime", ctypes.c_uint32),
+        ("st_atime_ns", ctypes.c_uint32),
+        ("st_mtime", ctypes.c_uint32),
+        ("st_mtime_ns", ctypes.c_uint32),
+        ("st_ctime", ctypes.c_uint32),
+        ("st_ctime_ns", ctypes.c_uint32),
+        ("__unused4", ctypes.c_uint32),
+        ("__unused6", ctypes.c_uint32)
+    ]
 
+    _pack_ = 4
 
-def create_stat64_struct(ql, info):
-    if ql.archtype == QL_ARCH.ARM64:
-        # struct stat is : 80 addr is : 0x4000811bc8
-        # buf.st_dev offest 0 8 0
-        # buf.st_ino offest 8 8 0
-        # buf.st_mode offest 10 4 0
-        # buf.st_nlink offest 14 4 0
-        # buf.st_uid offest 18 4 0
-        # buf.st_gid offest 1c 4 0
-        # buf.st_rdev offest 20 8 0
-        # buf.st_size offest 30 8 274886889936
-        # buf.st_blksize offest 38 4 8461328
-        # buf.st_blocks offest 40 8 274877909532
-        # buf.st_atime offest 48 8 274886368336
-        # buf.st_mtime offest 58 8 274877909472
-        # buf.st_ctime offest 68 8 274886368336
-        # buf.__glibc_reserved offest 78 8
-        stat64_buf = ql.pack64(info.st_dev)  # 8
-        stat64_buf += ql.pack64(info.st_ino)  # 16
-        stat64_buf += ql.pack32(info.st_mode)  # 20
-        stat64_buf += ql.pack32(info.st_nlink)  # 24
-        stat64_buf += ql.pack32(ql.os.uid)  # 28
-        stat64_buf += ql.pack32(ql.os.gid)  # 32
-        stat64_buf += ql.pack64(info.st_rdev)  # 40
-        stat64_buf += ql.pack64(0)  # 48
-        stat64_buf += ql.pack64(info.st_size)  # 56
-        stat64_buf += ql.pack32(info.st_blksize)  # 60
-        stat64_buf += ql.pack32(0)  # 64
-        stat64_buf += ql.pack64(info.st_blocks)  # 72
-        stat64_buf += ql.pack64(int(info.st_atime))  # 80
-        stat64_buf += ql.pack64(0)  # 88
-        stat64_buf += ql.pack64(int(info.st_mtime))  # 96
-        stat64_buf += ql.pack64(0)  # 104
-        stat64_buf += ql.pack64(int(info.st_ctime))  # 114
-        stat64_buf += ql.pack64(0)  # 120
-    elif ql.archtype == QL_ARCH.MIPS:
-        # struct stat is : a0 addr is : 0x7fffedc0
-        # buf.st_dev offest 0 4 2049
-        # buf.st_ino offest 10 8 2400362
-        # buf.st_mode offest 18 4 16893
-        # buf.st_nlink offest 1c 4 5
-        # buf.st_uid offest 20 4 1000
-        # buf.st_gid offest 24 4 1000
-        # buf.st_rdev offest 28 4 0
-        # buf.st_size offest 38 8 0
-        # buf.st_blksize offest 58 4 4096
-        # buf.st_blocks offest 60 8 136
-        # buf.st_atime offest 40 4 1586616689
-        # buf.st_mtime offest 48 4 1586616689
-        # buf.st_ctime offest 50 4 1586616689
+class LinuxARMEBStat(ctypes.BigEndianStructure):
+    _fields_ = [
+        ("st_dev", ctypes.c_uint16),
+        ("__pad1", ctypes.c_uint16),
+        ("st_mode", ctypes.c_uint16),
+        ("st_nlink", ctypes.c_uint16),
+        ("st_uid", ctypes.c_uint16),
+        ("st_gid", ctypes.c_uint16),
+        ("st_rdev", ctypes.c_uint16),
+        ("__pad1", ctypes.c_uint16),
+        ("st_size", ctypes.c_uint32),
+        ("st_blksize", ctypes.c_uint32),
+        ("st_blocks", ctypes.c_uint32),
+        ("st_atime", ctypes.c_uint32),
+        ("st_atime_ns", ctypes.c_uint32),
+        ("st_mtime", ctypes.c_uint32),
+        ("st_mtime_ns", ctypes.c_uint32),
+        ("st_ctime", ctypes.c_uint32),
+        ("st_ctime_ns", ctypes.c_uint32),
+        ("__unused4", ctypes.c_uint32),
+        ("__unused6", ctypes.c_uint32)
+    ]
 
-        # 
-        # Implementation based on:
-        #   https://elixir.bootlin.com/linux/v2.6.32.71/source/arch/mips/include/asm/stat.h#L92 
-        #
+    _pack_ = 4
 
-        if ql.ostype == QL_OS.MACOS:
-          stat64_buf = ql.pack32s(info.st_dev)
-        else:
-          stat64_buf = ql.pack32(info.st_dev)
-        stat64_buf += b'\x00' * 12 
-        stat64_buf += ql.pack64(info.st_ino)
-        stat64_buf += ql.pack32(info.st_mode)
-        stat64_buf += ql.pack32(info.st_nlink)
-        stat64_buf += ql.pack32(ql.os.uid)
-        stat64_buf += ql.pack32(ql.os.gid)
-        stat64_buf += ql.pack32(info.st_rdev)
-        stat64_buf += b'\x00' * 12
-        stat64_buf += ql.pack64(info.st_size)
-        stat64_buf += ql.pack32(int(info.st_atime))
-        stat64_buf += ql.pack32(0)
-        stat64_buf += ql.pack32(int(info.st_mtime))
-        stat64_buf += ql.pack32(0)
-        stat64_buf += ql.pack32(int(info.st_ctime))
-        stat64_buf += ql.pack32(0)
-        stat64_buf += ql.pack32(info.st_blksize)
-        stat64_buf += ql.pack32(0)
-        stat64_buf += ql.pack64(info.st_blocks)
-    elif ql.archtype == QL_ARCH.ARM:
-        # pack statinfo
-        if ql.ostype == QL_OS.MACOS:
-            stat64_buf = ql.pack64s(info.st_dev)
-        else:
-            stat64_buf = ql.pack64(info.st_dev)
-        stat64_buf += ql.pack32(0)
-        stat64_buf += ql.pack32(info.st_ino)
-        stat64_buf += ql.pack32(info.st_mode)
-        stat64_buf += ql.pack32(info.st_nlink)
-        stat64_buf += ql.pack32(info.st_uid)
-        stat64_buf += ql.pack32(info.st_gid)
-        stat64_buf += ql.pack64(info.st_rdev)  # ?? stat_info.st_rdev
-        stat64_buf += ql.pack64(0)
-        stat64_buf += ql.pack64(info.st_size)
-        stat64_buf += ql.pack64(info.st_blksize)  # ?? stat_info.st_blksize
-        stat64_buf += ql.pack64(info.st_blocks)  # ?? stat_info.st_blocks
-        stat64_buf += ql.pack64(int(info.st_atime))
-        stat64_buf += ql.pack64(int(info.st_mtime))
-        stat64_buf += ql.pack64(int(info.st_ctime))
-        stat64_buf += ql.pack64(info.st_ino)
+LinuxARMStat64 = LinuxX86Stat64
+
+def get_stat64_struct(ql):
+    if ql.archbit == 64:
+        ql.log.warining(f"Trying to stat64 on a 64bit system with {ql.ostype} and {ql.archtype}!")
+    if ql.ostype == QL_OS.LINUX:
+        if ql.archtype == QL_ARCH.X86:
+            return LinuxX86Stat64()
+        elif ql.archtype == QL_ARCH.MIPS:
+            return LinuxMips32Stat64()
+        elif ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM64, QL_ARCH.ARM_THUMB):
+            return LinuxARMStat64()
     elif ql.ostype == QL_OS.MACOS:
-        stat64_buf = ql.pack32(0) # st_dev            32byte
-        stat64_buf += ql.pack32(info.st_mode)            # st_mode           16(32)byte
-        stat64_buf += ql.pack32(info.st_nlink)           # st_nlink          16(32)byte
-        stat64_buf += ql.pack64(info.st_ino)             # st_ino            64 byte
-        stat64_buf += ql.pack32(0x0)                            # st_uid            32 byte
-        stat64_buf += ql.pack32(0x0)                            # st_gid            32 byte
-        stat64_buf += ql.pack32(0x0)                            # st_rdev           32 byte
-        stat64_buf += ql.pack64(int(info.st_atime))      # st_atime          64 byte
-        stat64_buf += ql.pack64(0x0)                            # st_atimensec      64 byte
-        stat64_buf += ql.pack64(int(info.st_mtime))      # st_mtime          64 byte
-        stat64_buf += ql.pack64(0x0)                            # st_mtimensec      64 byte
-        stat64_buf += ql.pack64(int(info.st_ctime))      # st_ctime          64 byte
-        stat64_buf += ql.pack64(0x0)                            # st_ctimensec      64 byte
+        return MacOSStat64()
+    ql.log.warining(f"Unrecognized arch && os with {ql.archtype} and {ql.ostype} for stat64! Fallback to Linux x86.")
+    return LinuxX86Stat64()
 
-        if ql.ostype == QL_OS.MACOS:
-            stat64_buf += ql.pack64(int(info.st_birthtime))  # st_birthtime      64 byte
+def get_stat_struct(ql):
+    if ql.ostype == QL_OS.FREEBSD:
+        if ql.archtype == QL_ARCH.X8664 or ql.archbit == 64:
+            return FreeBSDX86Stat()
         else:
-            stat64_buf += ql.pack64(int(info.st_ctime))  # st_birthtime      64 byte
-        stat64_buf += ql.pack64(0x0)                            # st_birthtimensec  64 byte
-        stat64_buf += ql.pack64(info.st_size)            # st_size           64 byte
-        stat64_buf += ql.pack64(info.st_blocks)          # st_blocks         64 byte
-        stat64_buf += ql.pack32(info.st_blksize)         # st_blksize        32 byte
-        if ql.ostype == QL_OS.MACOS:
-            stat64_buf += ql.pack32(info.st_flags)       # st_flags          32 byte
-        else:    
-            stat64_buf += ql.pack32(0x0)          
-        if ql.ostype == QL_OS.MACOS:
-            stat64_buf += ql.pack32(info.st_gen)         # st_gen            32 byte
-        else:    
-            stat64_buf += ql.pack32(0x0)
-        stat64_buf += ql.pack32(0x0)                            # st_lspare         32 byte
-        stat64_buf += ql.pack64(0x0)                            # st_qspare         64 byte
-    else:
-        # pack statinfo
-        if ql.ostype == QL_OS.MACOS:
-            stat64_buf = ql.pack64s(info.st_dev)
-        else:
-            stat64_buf = ql.pack64(info.st_dev)
-        stat64_buf += ql.pack64(0x0000000300c30000)
-        stat64_buf += ql.pack32(info.st_mode)
-        stat64_buf += ql.pack32(info.st_nlink)
-        stat64_buf += ql.pack32(info.st_uid)
-        stat64_buf += ql.pack32(info.st_gid)
-        stat64_buf += ql.pack64(0x0000000000008800)  # ?? stat_info.st_rdev
-        stat64_buf += ql.pack32(0xffffd257)
-        stat64_buf += ql.pack64(info.st_size)
-        stat64_buf += ql.pack32(0x00000400)  # ?? stat_info.st_blksize
-        stat64_buf += ql.pack64(0x0000000000000000)
-        stat64_buf += ql.pack64(int(info.st_atime))
-        stat64_buf += ql.pack64(int(info.st_mtime))
-        stat64_buf += ql.pack64(int(info.st_ctime))
-        stat64_buf += ql.pack64(info.st_ino)
-    return stat64_buf
+            return FreeBSDX8664Stat()
+    elif ql.ostype == QL_OS.MACOS:
+        return MacOSStat()
+    elif ql.ostype == QL_OS.LINUX:
+        if ql.archtype == QL_ARCH.X8664:
+            return LinuxX8664Stat()
+        elif ql.archtype == QL_ARCH.X86:
+            return LinuxX86Stat()
+        elif ql.archtype == QL_ARCH.MIPS:
+            if ql.archbit == 64:
+                return LinuxMips64Stat()
+            else:
+                return LinuxMips32Stat()
+        elif ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM64, QL_ARCH.ARM_THUMB):
+            if ql.archendian == QL_ENDIAN.EL:
+                return LinuxARMStat()
+            else:
+                return LinuxARMEBStat()
+    ql.log.warining(f"Unrecognized arch && os with {ql.archtype} and {ql.ostype} for stat! Fallback to Linux x86.")
+    return LinuxX86Stat()
 
+def pack_stat_struct(ql, info):
+    stat = get_stat_struct(ql)
+    for field, _ in stat._fields_:
+        val = stat.__getattribute__(field)
+        if isinstance(val, ctypes.Array):
+            stat.__setattr__(field, (0,) * len(val))
+        else:
+            stat.__setattr__(field, int(info[field]))
+    return bytes(stat)
+
+def pack_stat64_struct(ql, info):
+    stat64 = get_stat64_struct(ql)
+    for field, _ in stat64._fields_:
+        val = stat64.__getattribute__(field)
+        if isinstance(val, ctypes.Array):
+            stat64.__setattr__(field, (0,) * len(val))
+        else:
+            stat64.__setattr__(field, int(info[field]))
+    return bytes(stat64)
 
 def statFamily(ql, path, ptr, name, stat_func, struct_func):
     file = (ql.mem.string(path))
@@ -304,13 +670,11 @@ def statFamily(ql, path, ptr, name, stat_func, struct_func):
         ql.log.debug(f'{name}("{file}", {hex(ptr)}) write completed')
         return regreturn
 
-
 def ql_syscall_chmod(ql, filename, mode, null1, null2, null3, null4):
     regreturn = 0
     filename = ql.mem.string(filename)
     ql.log.debug("chmod(%s,%d) = %d" % (filename, mode, regreturn))
     return regreturn
-
 
 def ql_syscall_fstatat64(ql, fstatat64_dirfd, fstatat64_path, fstatat64_buf_ptr, fstatat64_flag, *args, **kw):
     # FIXME: dirfd(relative path) not implement.
@@ -322,7 +686,7 @@ def ql_syscall_fstatat64(ql, fstatat64_dirfd, fstatat64_path, fstatat64_buf_ptr,
     regreturn = -1
     if os.path.exists(real_path) == True:
         fstatat64_info = Stat(real_path)
-        fstatat64_buf = create_stat64_struct(ql, fstatat64_info)
+        fstatat64_buf = pack_stat64_struct(ql, fstatat64_info)
         ql.mem.write(fstatat64_buf_ptr, fstatat64_buf)
         regreturn = 0
 
@@ -343,7 +707,7 @@ def ql_syscall_newfstatat(ql, newfstatat_dirfd, newfstatat_path, newfstatat_buf_
     regreturn = -1
     if os.path.exists(real_path) == True:
         newfstatat_info = Stat(real_path)
-        newfstatat_buf = create_stat_struct(ql, newfstatat_info)
+        newfstatat_buf = pack_stat_struct(ql, newfstatat_info)
         ql.mem.write(newfstatat_buf_ptr, newfstatat_buf)
         regreturn = 0
 
@@ -361,7 +725,7 @@ def ql_syscall_fstat64(ql, fstat64_fd, fstat64_buf_ptr, *args, **kw):
     elif fstat64_fd < 256 and ql.os.fd[fstat64_fd] != 0:
         user_fileno = fstat64_fd
         fstat64_info = ql.os.fd[user_fileno].fstat()
-        fstat64_buf = create_stat64_struct(ql, fstat64_info)
+        fstat64_buf = pack_stat64_struct(ql, fstat64_info)
         ql.mem.write(fstat64_buf_ptr, fstat64_buf)
         regreturn = 0
     else:
@@ -378,7 +742,7 @@ def ql_syscall_fstat(ql, fstat_fd, fstat_buf_ptr, *args, **kw):
     if fstat_fd < 256 and ql.os.fd[fstat_fd] != 0 and hasattr(ql.os.fd[fstat_fd], "fstat"):
         user_fileno = fstat_fd
         fstat_info = ql.os.fd[user_fileno].fstat()
-        fstat_buf = create_stat_struct(ql, fstat_info)
+        fstat_buf = pack_stat_struct(ql, fstat_info)
         ql.mem.write(fstat_buf_ptr, fstat_buf)
         regreturn = 0
     else:
@@ -393,20 +757,20 @@ def ql_syscall_fstat(ql, fstat_fd, fstat_buf_ptr, *args, **kw):
 
 # int stat(const char *path, struct stat *buf);
 def ql_syscall_stat(ql, stat_path, stat_buf_ptr, *args, **kw):
-    return statFamily(ql, stat_path, stat_buf_ptr, "stat", Stat, create_stat_struct)
+    return statFamily(ql, stat_path, stat_buf_ptr, "stat", Stat, pack_stat_struct)
 
 
 # int stat64(const char *path, struct stat64 *buf);
 def ql_syscall_stat64(ql, stat64_path, stat64_buf_ptr, *args, **kw):
-    return statFamily(ql, stat64_path, stat64_buf_ptr, "stat64", Stat, create_stat64_struct)
+    return statFamily(ql, stat64_path, stat64_buf_ptr, "stat64", Stat, pack_stat64_struct)
 
 
 def ql_syscall_lstat(ql, lstat_path, lstat_buf_ptr, *args, **kw):
-    return statFamily(ql, lstat_path, lstat_buf_ptr, "lstat", Lstat, create_stat_struct)
+    return statFamily(ql, lstat_path, lstat_buf_ptr, "lstat", Lstat, pack_stat64_struct)
 
 
 def ql_syscall_lstat64(ql, lstat64_path, lstat64_buf_ptr, *args, **kw):
-    return statFamily(ql, lstat64_path, lstat64_buf_ptr, "lstat64", Lstat, create_stat64_struct)
+    return statFamily(ql, lstat64_path, lstat64_buf_ptr, "lstat64", Lstat, pack_stat64_struct)
 
 
 def ql_syscall_mknodat(ql, dirfd, pathname, mode, dev, *args, **kw):
