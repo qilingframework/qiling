@@ -5,6 +5,7 @@
 
 import struct
 import time
+from calendar import timegm
 from datetime import datetime
 from qiling.os.windows.const import *
 from qiling.os.const import *
@@ -14,6 +15,9 @@ from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
 from qiling.os.windows.structs import *
+
+EPOCH_AS_FILETIME = 116444736000000000  # January 1, 1970 as MS file time
+HUNDREDS_OF_NANOSECONDS = 10000000
 
 dllname = 'kernel32_dll'
 
@@ -75,8 +79,11 @@ def hook_GetLocalTime(ql, address, params):
 # );
 @winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetSystemTimeAsFileTime(ql, address, params):
-    # TODO
-    pass
+    st = datetime.utcnow()
+    ft = EPOCH_AS_FILETIME + (timegm(st.timetuple()) * HUNDREDS_OF_NANOSECONDS)
+    ft_bytes = ft.to_bytes(8, byteorder="little")
+    pointer = params["lpSystemTimeAsFileTime"]
+    ql.mem.write(pointer, ft_bytes)
 
 
 # DWORD GetTickCount(
