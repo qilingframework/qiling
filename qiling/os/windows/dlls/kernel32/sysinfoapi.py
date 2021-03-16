@@ -128,7 +128,7 @@ def hook_GetNativeSystemInfo(ql, address, params):
 # void GetSystemTime(
 #   LPSYSTEMTIME lpSystemTime);
 @winsdkapi(cc=STDCALL, dllname=dllname)
-def hook_GetSystemTIme(ql, address, params):
+def hook_GetSystemTime(ql, address, params):
     dt = datetime.now().microsecond.to_bytes(8, byteorder="little")
     pointer = params["lpSystemTime"]
     ql.mem.write(pointer, dt)
