@@ -567,6 +567,30 @@ class LinuxARMStat(ctypes.Structure):
 
     _pack_ = 4
 
+class LinuxARM64Stat(ctypes.Structure):
+    _fields_ = [
+        ("st_dev", ctypes.c_uint64),
+        ("st_ino", ctypes.c_uint64),
+        ("st_mode", ctypes.c_uint16),
+        ("st_nlink", ctypes.c_uint16),
+        ("st_uid", ctypes.c_uint16),
+        ("st_gid", ctypes.c_uint16),
+        ("st_rdev", ctypes.c_uint64),
+        ("st_size", ctypes.c_uint64),
+        ("st_blksize", ctypes.c_uint64),
+        ("st_blocks", ctypes.c_uint64),
+        ("st_atime", ctypes.c_uint64),
+        ("st_atime_ns", ctypes.c_uint64),
+        ("st_mtime", ctypes.c_uint64),
+        ("st_mtime_ns", ctypes.c_uint64),
+        ("st_ctime", ctypes.c_uint64),
+        ("st_ctime_ns", ctypes.c_uint64),
+        ("__unused4", ctypes.c_uint64),
+        ("__unused6", ctypes.c_uint64)
+    ]
+
+    _pack_ = 8
+
 class LinuxARMEBStat(ctypes.BigEndianStructure):
     _fields_ = [
         ("st_dev", ctypes.c_uint16),
@@ -592,7 +616,33 @@ class LinuxARMEBStat(ctypes.BigEndianStructure):
 
     _pack_ = 4
 
+class LinuxARM64EBStat(ctypes.Structure):
+    _fields_ = [
+        ("st_dev", ctypes.c_uint16),
+        ("__pad1", ctypes.c_uint16),
+        ("st_mode", ctypes.c_uint16),
+        ("st_nlink", ctypes.c_uint16),
+        ("st_uid", ctypes.c_uint16),
+        ("st_gid", ctypes.c_uint16),
+        ("st_rdev", ctypes.c_uint16),
+        ("__pad1", ctypes.c_uint16),
+        ("st_size", ctypes.c_uint64),
+        ("st_blksize", ctypes.c_uint64),
+        ("st_blocks", ctypes.c_uint64),
+        ("st_atime", ctypes.c_uint64),
+        ("st_atime_ns", ctypes.c_uint64),
+        ("st_mtime", ctypes.c_uint64),
+        ("st_mtime_ns", ctypes.c_uint64),
+        ("st_ctime", ctypes.c_uint64),
+        ("st_ctime_ns", ctypes.c_uint64),
+        ("__unused4", ctypes.c_uint64),
+        ("__unused6", ctypes.c_uint64)
+    ]
+
+    _pack_ = 8
+
 LinuxARMStat64 = LinuxX86Stat64
+LinuxARMEBStat64 = LinuxX86Stat64
 
 def get_stat64_struct(ql):
     if ql.archbit == 64:
@@ -602,7 +652,7 @@ def get_stat64_struct(ql):
             return LinuxX86Stat64()
         elif ql.archtype == QL_ARCH.MIPS:
             return LinuxMips32Stat64()
-        elif ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM64, QL_ARCH.ARM_THUMB):
+        elif ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB):
             return LinuxARMStat64()
     elif ql.ostype == QL_OS.MACOS:
         return MacOSStat64()
@@ -627,11 +677,16 @@ def get_stat_struct(ql):
                 return LinuxMips64Stat()
             else:
                 return LinuxMips32Stat()
-        elif ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM64, QL_ARCH.ARM_THUMB):
+        elif ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB):
             if ql.archendian == QL_ENDIAN.EL:
                 return LinuxARMStat()
             else:
                 return LinuxARMEBStat()
+        elif ql.archtype == QL_ARCH.ARM64:
+            if ql.archendian == QL_ENDIAN.EL:
+                return LinuxARM64Stat()
+            else:
+                return LinuxARM64EBStat()
     ql.log.warining(f"Unrecognized arch && os with {ql.archtype} and {ql.ostype} for stat! Fallback to Linux x86.")
     return LinuxX86Stat()
 
