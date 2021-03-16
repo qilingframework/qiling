@@ -5,7 +5,8 @@
 
 import sys
 sys.path.append("..")
-from qiling import *
+
+from qiling import Qiling
 
 if __name__ == "__main__":
     ql = Qiling(["rootfs/8086/dos/HI.DOS_COM"], "rootfs/8086/dos", output="disasm")
