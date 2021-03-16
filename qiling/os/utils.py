@@ -98,14 +98,14 @@ class QlOsUtils:
 
         return UUID(bytes_le=bytes(raw_guid))
 
-    def print_function(self, address: int, function_name: str, params: Mapping[str, Any], ret: Optional[int], passthru: bool = False):
-        if function_name.startswith('hook_'):
-            function_name = function_name[5:]
+    def print_function(self, address: int, fname: str, params: Mapping[str, Any], ret: Optional[int], passthru: bool = False):
+        if fname.startswith('hook_'):
+            fname = fname[5:]
 
         def __dqstr(s: str) -> str:
             return f'"{repr(s)[1:-1]}"'
 
-        def _parse_param(param):
+        def _parse_param(param: Tuple[str, Any]):
             name, value = param
 
             nrep = '' if name.startswith(QlOsUtils.ELLIPSIS_PREF) else f'{name:s} = ' 
@@ -123,18 +123,18 @@ class QlOsUtils:
             return f'{nrep}{vrep}'
 
         # arguments list
-        fargs = (_parse_param(param) for param in params.items())
+        fargs = ', '.join(_parse_param(param) for param in params.items())
 
-        # optional suffixes: return value and passthrough
+        # optional prefixes and suffixes
         fret = f' = {ret:#x}' if ret is not None else ''
         fpass = f' (PASSTHRU)' if passthru else ''
+        faddr = f'{address:#0{self.ql.archbit // 4 + 2}x}: ' if self.ql.output == QL_OUTPUT.DEBUG else ''
 
-        log = f'0x{address:02x}: {function_name:s}({", ".join(fargs)}){fret}{fpass}'
+        log = f'{faddr}{fname}({fargs}){fret}{fpass}'
 
         if self.ql.output == QL_OUTPUT.DEBUG:
             self.ql.log.debug(log)
         else:
-            log = log.partition(" ")[-1]
             self.ql.log.info(log)
 
     def __common_printf(self, format: str, args: MutableSequence, wstring: bool):
