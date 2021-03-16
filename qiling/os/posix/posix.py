@@ -269,7 +269,15 @@ class QlOsPosix(QlOs):
 
                         args.append(f'{name} = {value:#x}')
 
-                    self.ql.log.info(f'{self.ql.reg.arch_pc:#x}: {syscall_basename}({", ".join(args)})')
+                    faddr = f'{self.ql.reg.arch_pc:#0{self.ql.archbit // 4 + 2}x}: ' if self.ql.output == QL_OUTPUT.DEBUG else ''
+                    fargs = ', '.join(args)
+
+                    log = f'{faddr}{syscall_basename}({fargs})'
+
+                    if self.ql.output == QL_OUTPUT.DEBUG:
+                        self.ql.log.debug(log)
+                    else:
+                        self.ql.log.info(log)
 
                     ret = syscall_hook(self.ql, *arg_values)
 
