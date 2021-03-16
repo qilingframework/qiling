@@ -40,7 +40,8 @@ def ql_syscall_socket(ql, socket_domain, socket_type, socket_protocol, *args, **
                 ql.os.fd[idx] = ql_socket.open(socket_domain, socket_type, socket_protocol)
 
             regreturn = (idx)
-    except:
+    except Exception:
+        ql.log.exception("")
         regreturn = -1
 
     socket_type = socket_type_mapping(socket_type, ql.archtype)
