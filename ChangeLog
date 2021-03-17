@@ -18,6 +18,7 @@ BREAK CHANGE
 - Fixed return value for uid/gid related syscall
 - Resolved multilevel symbolic links
 - Demigod set.api implementation
+- Added support for arguments inside IDA plugin
 
 
 ------------------------------------
