@@ -55,8 +55,97 @@ def ql_syscall_mprotect(ql, mprotect_start, mprotect_len, mprotect_prot, *args, 
     regreturn = 0
     ql.log.debug("mprotect(0x%x, 0x%x, %s) = %d" % (
     mprotect_start, mprotect_len, mmap_prot_mapping(mprotect_prot), regreturn))
+    try:
+        ql.mem.protect(mprotect_start, mprotect_len, mprotect_prot)
+    except Exception as e:
+        ql.log.debug(e)
+        raise QlMemoryMappedError("Error: change protection at: %x - %x" % (mprotect_start, mprotect_start + mprotect_len - 1))
 
     return regreturn
+
+def syscall_mmap_impl(ql, mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, mmap_pgoffset, ver):
+    MAP_ANONYMOUS = 32
+    MAP_SHARED = 1                                                                      
+    MAP_FIXED = 0x10
+    api_name = None
+
+    if ver == 1:
+        api_name = "mmap"
+    elif ver == 2:
+        api_name = "mmap2"
+    elif ver == 0:
+        api_name = "old_mmap"
+    else:
+        raise QlMemoryMappedError("Error: unknown mmap syscall!")
+
+    ql.log.debug("%s(0x%x, 0x%x, %s (0x%x), %s (0x%x), %d, 0x%x)" % (
+    api_name, mmap_addr, mmap_length, mmap_prot_mapping(mmap_prot), mmap_prot, 
+    mmap_flag_mapping(mmap_flags), mmap_flags, mmap_fd, mmap_pgoffset))
+
+    # FIXME                                                                              
+    # this is ugly patch, we might need to get value from elf parse,
+    # is32bit or is64bit value not by arch         
+    if (ql.archtype == QL_ARCH.ARM64) or (ql.archtype == QL_ARCH.X8664):
+        mmap_fd = ql.unpack64(ql.pack64(mmap_fd))                  
+    elif (ql.archtype == QL_ARCH.MIPS):
+        mmap_fd = ql.unpack32s(ql.mem.read(mmap_fd, 4))
+        mmap_pgoffset = ql.unpack32(ql.mem.read(mmap_pgoffset, 4))
+        MAP_ANONYMOUS = 2048
+        if ver == 2:
+            mmap_pgoffset = mmap_pgoffset * 4096
+    else:
+        mmap_fd = ql.unpack32s(ql.pack32(mmap_fd))
+        if ver == 2:
+            mmap_pgoffset = mmap_pgoffset * 4096
+
+    mmap_base = mmap_addr                                                                         
+    need_mmap = True     
+    eff_mmap_size = ((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000                      
+
+    # initial ql.loader.mmap_address                                                       
+    if mmap_addr != 0 and ql.mem.is_mapped(mmap_addr, mmap_length):
+        if (mmap_flags & MAP_FIXED) > 0:                                                              
+            ql.log.debug("%s - MAP_FIXED, mapping not needed" % api_name)
+            try:
+                ql.mem.protect(mmap_addr, eff_mmap_size, mmap_prot)
+            except Exception as e:
+                ql.log.debug(e)
+                raise QlMemoryMappedError("Error: change protection at: 0x%x - 0x%x" % (mmap_addr, mmap_addr + eff_mmap_size - 1))
+            need_mmap = False
+
+    # initialized mapping
+    if need_mmap:
+        mmap_base = ql.loader.mmap_address
+        ql.loader.mmap_address = mmap_base + eff_mmap_size
+        ql.log.debug("%s - mapping needed for 0x%x" % (api_name, mmap_addr))
+        try:
+            ql.mem.map(mmap_base, eff_mmap_size, info=("[syscall_%s]" % api_name))
+        except:
+            raise QlMemoryMappedError("Error: mapping needed but failed")
+
+    ql.log.debug("%s - addr range  0x%x - 0x%x: " % (api_name, mmap_base, mmap_base + eff_mmap_size - 1))
+
+    # FIXME: MIPS32 Big Endian
+    try:                                  
+        ql.mem.write(mmap_base, b'\x00' * eff_mmap_size)                                     
+    except:                                                            
+        raise QlMemoryMappedError("Error: trying to zero memory")
+
+    if ((mmap_flags & MAP_ANONYMOUS) == 0) and mmap_fd < 256 and ql.os.fd[mmap_fd] != 0:
+        ql.os.fd[mmap_fd].lseek(mmap_pgoffset)                                   
+        data = ql.os.fd[mmap_fd].read(mmap_length)              
+        mem_info = str(ql.os.fd[mmap_fd].name)                                                                         
+        ql.os.fd[mmap_fd]._is_map_shared = mmap_flags & MAP_SHARED
+        ql.os.fd[mmap_fd]._mapped_offset = mmap_pgoffset                 
+                                                                      
+        ql.log.debug("mem write : " + hex(len(data)))
+        ql.log.debug("mem mmap  : " + mem_info)
+        ql.mem.add_mapinfo(mmap_base, mmap_base + eff_mmap_size, mem_p = UC_PROT_ALL, mem_info = ("[%s] " % api_name) + mem_info)
+        ql.mem.write(mmap_base, data)
+    
+    ql.log.debug("%s(0x%x, 0x%x, 0x%x, 0x%x, %d, 0x%x) = 0x%x" % (api_name, mmap_addr, mmap_length, mmap_prot, mmap_flags,
+                                                               mmap_fd, mmap_pgoffset, mmap_base))
+    return mmap_base
 
 def ql_syscall_old_mmap(ql, struct_mmap_args, *args, **kw):
     # according to the linux kernel this is only for the ia32 compatibility
@@ -67,207 +156,12 @@ def ql_syscall_old_mmap(ql, struct_mmap_args, *args, **kw):
         _struct.append(int.from_bytes(data, 'little'))
 
     mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, mmap_offset = _struct
-    ql.log.debug("log old_mmap - old_mmap(0x%x, 0x%x, 0x%x, 0x%x, %d, %d)" % (
-    mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, mmap_offset))
-    ql.log.debug("log old_mmap - old_mmap(0x%x, 0x%x, %s, %s, %d, %d)" % (
-    mmap_addr, mmap_length, mmap_prot_mapping(mmap_prot), mmap_flag_mapping(mmap_flags), mmap_fd, mmap_offset))
 
-    # FIXME
-    # this is ugly patch, we might need to get value from elf parse,
-    # is32bit or is64bit value not by arch
-    MAP_ANONYMOUS = 32
-    MAP_SHARED = 1
-
-    if (ql.archtype== QL_ARCH.ARM64) or (ql.archtype== QL_ARCH.X8664):
-        mmap_fd = ql.unpack64(ql.pack64(mmap_fd))
-
-    elif (ql.archtype== QL_ARCH.MIPS):
-        mmap_fd = ql.unpack32s(ql.mem.read(mmap_fd, 4))
-        mmap_offset = ql.unpack32(ql.mem.read(mmap_offset, 4))
-        MAP_ANONYMOUS=2048
-
-    else:
-        mmap_fd = ql.unpack32s(ql.pack32(mmap_fd))
-
-    # initial ql.loader.mmap_address
-    mmap_base = mmap_addr
-    need_mmap = True
-
-    if mmap_addr == 0:
-        mmap_base = ql.loader.mmap_address
-        ql.loader.mmap_address = mmap_base + ((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000
-    elif ql.mem.is_mapped(mmap_addr, mmap_length):
-        need_mmap = False
-
-    ql.log.debug("old_mmap - return addr : " + hex(mmap_base))
-    ql.log.debug("old_mmap - addr range  : " + hex(mmap_base) + ' - ' + hex(
-        mmap_base + ((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000))
-
-    # initialized mapping
-    if need_mmap:
-        ql.log.debug("old_mmap - mapping needed")
-        try:
-            ql.mem.map(mmap_base, ((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000, info="[syscall_old_mmap]")
-        except:
-            ql.mem.show_mapinfo()
-            raise
-
-    ql.mem.write(mmap_base, b'\x00' * (((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000))
-
-    if ((mmap_flags & MAP_ANONYMOUS) == 0) and mmap_fd < 256 and ql.os.fd[mmap_fd] != 0:
-        ql.os.fd[mmap_fd].lseek(mmap_offset)
-        data = ql.os.fd[mmap_fd].read(mmap_length)
-        mem_info = str(ql.os.fd[mmap_fd].name)
-        ql.os.fd[mmap_fd]._is_map_shared = mmap_flags & MAP_SHARED
-        ql.os.fd[mmap_fd]._mapped_offset = mmap_offset
-
-        ql.log.debug("mem wirte : " + hex(len(data)))
-        ql.log.debug("mem mmap  : " + mem_info)
-        ql.mem.add_mapinfo(mmap_base,  mmap_base + (((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000), mem_p = UC_PROT_ALL, mem_info = "[old_mmap] " + mem_info)
-        ql.mem.write(mmap_base, data)
-        
-
-    ql.log.debug("old_mmap(0x%x, 0x%x, 0x%x, 0x%x, %d, %d) = 0x%x" % (mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, mmap_offset, mmap_base))
-    regreturn = mmap_base
-    ql.log.debug("mmap_base is 0x%x" % regreturn)
-
-    return regreturn
-
+    return syscall_mmap_impl(ql, mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, mmap_offset, 0)
 
 def ql_syscall_mmap(ql, mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, mmap_pgoffset):
-    ql.log.debug("mmap - mmap(0x%x, 0x%x, 0x%x, 0x%x, %d, %d)" % (
-    mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, mmap_pgoffset))
-    ql.log.debug("mmap - mmap(0x%x, 0x%x, %s, %s, %d, %d)" % (
-    mmap_addr, mmap_length, mmap_prot_mapping(mmap_prot), mmap_flag_mapping(mmap_flags), mmap_fd, mmap_pgoffset))
-
-    # FIXME
-    # this is ugly patch, we might need to get value from elf parse,
-    # is32bit or is64bit value not by arch
-    MAP_ANONYMOUS = 32
-    MAP_SHARED = 1
-
-    if (ql.archtype== QL_ARCH.ARM64) or (ql.archtype== QL_ARCH.X8664):
-        mmap_fd = ql.unpack64(ql.pack64(mmap_fd))
-
-    elif (ql.archtype== QL_ARCH.MIPS):
-        mmap_fd = ql.unpack32s(ql.mem.read(mmap_fd, 4))
-        mmap_pgoffset = ql.unpack32(ql.mem.read(mmap_pgoffset, 4))
-        MAP_ANONYMOUS=2048
-
-    else:
-        mmap_fd = ql.unpack32s(ql.pack32(mmap_fd))
-
-    mmap_base = mmap_addr
-    need_mmap = True
-
-    # initial ql.loader.mmap_address
-    if mmap_addr == 0:
-        mmap_base = ql.loader.mmap_address
-        ql.loader.mmap_address = mmap_base + ((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000
-    elif ql.mem.is_mapped(mmap_addr, mmap_length):
-        need_mmap = False
-
-    ql.log.debug("mmap - return addr : " + hex(mmap_base))
-    ql.log.debug("mmap - addr range  : " + hex(mmap_base) + ' - ' + hex(
-        mmap_base + ((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000))
-
-    # initialized mapping
-    if need_mmap:
-        ql.log.debug("mmap - mapping needed")
-        try:
-            ql.mem.map(mmap_base, ((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000, info="[syscall_mmap]")
-        except:
-            raise QlMemoryMappedError("mapping needed but fail")
- 
-    ql.log.debug("mmap_base 0x%x  length 0x%x" %(mmap_base, (((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000)))
-    
-    # FIXME: MIPS32 Big Endian
-    try:
-        ql.mem.write(mmap_base, b'\x00' * (((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000))
-    except:
-        pass  
-    
-    if ((mmap_flags & MAP_ANONYMOUS) == 0) and mmap_fd < 256 and ql.os.fd[mmap_fd] != 0:
-        ql.os.fd[mmap_fd].lseek(mmap_pgoffset)
-        data = ql.os.fd[mmap_fd].read(mmap_length)
-        mem_info = str(ql.os.fd[mmap_fd].name)
-        ql.os.fd[mmap_fd]._is_map_shared = mmap_flags & MAP_SHARED
-        ql.os.fd[mmap_fd]._mapped_offset = mmap_pgoffset
-
-        ql.log.debug("mem wirte : " + hex(len(data)))
-        ql.log.debug("mem mmap  : " + mem_info)
-        ql.mem.add_mapinfo(mmap_base, mmap_base + (((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000), mem_p = UC_PROT_ALL, mem_info = "[mmap] " + mem_info)
-        ql.mem.write(mmap_base, data)
-        
-
-    ql.log.debug("mmap(0x%x, 0x%x, 0x%x, 0x%x, %d, %d) = 0x%x" % (mmap_addr, mmap_length, mmap_prot, mmap_flags,
-                                                               mmap_fd, mmap_pgoffset, mmap_base))
-    regreturn = mmap_base
-    ql.log.debug("mmap_base is 0x%x" % regreturn)
-
-    return regreturn
-
+    return syscall_mmap_impl(ql, mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, mmap_pgoffset, 1)
 
 def ql_syscall_mmap2(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset):
-    # this is ugly patch, we might need to get value from elf parse,
-    # is32bit or is64bit value not by arch
+    return syscall_mmap_impl(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset, 2)
 
-    MAP_ANONYMOUS = 32
-    MAP_SHARED = 1
-
-    if (ql.archtype== QL_ARCH.ARM64) or (ql.archtype== QL_ARCH.X8664):
-        mmap2_fd = ql.unpack64(ql.pack64(mmap2_fd))
-
-    elif (ql.archtype== QL_ARCH.MIPS):
-        mmap2_fd = ql.unpack32s(ql.mem.read(mmap2_fd, 4))
-        mmap2_pgoffset = ql.unpack32(ql.mem.read(mmap2_pgoffset, 4)) * 4096
-        MAP_ANONYMOUS=2048
-    else:
-        mmap2_fd = ql.unpack32s(ql.pack32(mmap2_fd))
-        mmap2_pgoffset = mmap2_pgoffset * 4096
-
-    mmap_base = mmap2_addr
-    need_mmap = True
-
-    if mmap2_addr == 0:
-        mmap_base = ql.loader.mmap_address
-        ql.loader.mmap_address = mmap_base + ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000
-    elif mmap2_addr !=0 and ql.mem.is_mapped(mmap2_addr, mmap2_length):
-        need_mmap = False
-
-    ql.log.debug("mmap2 - mmap2(0x%x, 0x%x, 0x%x, 0x%x, %d, %d)" % (
-    mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset))
-    ql.log.debug("mmap2 - mmap2(0x%x, 0x%x, %s, %s, %d, %d)" % (
-    mmap2_addr, mmap2_length, mmap_prot_mapping(mmap2_prot), mmap_flag_mapping(mmap2_flags), mmap2_fd, mmap2_pgoffset))
-    ql.log.debug("mmap2 - return addr : " + hex(mmap_base))
-    ql.log.debug("mmap2 - addr range  : " + hex(mmap_base) + ' - ' + hex(
-        mmap_base + ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000))
-
-    if need_mmap:
-        ql.log.debug("mmap2 - mapping needed")
-        try:
-            ql.mem.map(mmap_base, ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000, info="[syscall_mmap2]")
-        except:
-            ql.mem.show_mapinfo()
-            raise
-
-    ql.mem.write(mmap_base, b'\x00' * (((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000))
-
-    if ((mmap2_flags & MAP_ANONYMOUS) == 0) and mmap2_fd < 256 and ql.os.fd[mmap2_fd] != 0:
-        ql.os.fd[mmap2_fd].lseek(mmap2_pgoffset)
-        data = ql.os.fd[mmap2_fd].read(mmap2_length)
-        mem_info = str(ql.os.fd[mmap2_fd].name)
-        ql.os.fd[mmap2_fd]._is_map_shared = mmap2_flags & MAP_SHARED
-        ql.os.fd[mmap2_fd]._mapped_offset = mmap2_pgoffset
-
-        ql.log.debug("mem write : " + hex(len(data)))
-        ql.log.debug("mem mmap2  : " + mem_info)
-        ql.mem.add_mapinfo(mmap_base,  mmap_base + (((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000), mem_p = UC_PROT_ALL, mem_info = "[mmap2] " + mem_info)
-        ql.mem.write(mmap_base, data)
-
-    ql.log.debug("mmap2(0x%x, 0x%x, 0x%x, 0x%x, %d, %d) = 0x%x" % (mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset, mmap_base))
-
-    regreturn = mmap_base
-    ql.log.debug("mmap2_base is 0x%x" % regreturn)
-
-    return regreturn
