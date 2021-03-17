@@ -645,8 +645,32 @@ class LinuxARMEBStat(ctypes.BigEndianStructure):
 
 LinuxARM64EBStat = LinuxARM64Stat
 
-LinuxARMStat64 = LinuxX86Stat64
-LinuxARMEBStat64 = LinuxX86Stat64
+class LinuxARMStat64(ctypes.Structure):
+    _fields_ = [
+        ("st_dev", ctypes.c_uint64),
+        ("__pad0", ctypes.c_uint8 * 4),
+        ("__st_ino", ctypes.c_uint32),
+        ("st_mode", ctypes.c_uint32),
+        ("st_nlink", ctypes.c_uint32),
+        ("st_uid", ctypes.c_uint32),
+        ("st_gid", ctypes.c_uint32),
+        ("st_rdev", ctypes.c_uint64),
+        ("__pad3", ctypes.c_uint8 * 8),
+        ("st_size", ctypes.c_int64),
+        ("st_blksize", ctypes.c_uint64),
+        ("st_blocks", ctypes.c_uint64),
+        ("st_atime", ctypes.c_uint32),
+        ("st_atime_ns", ctypes.c_uint32),
+        ("st_mtime", ctypes.c_uint32),
+        ("st_mtime_ns", ctypes.c_uint32),
+        ("st_ctime", ctypes.c_uint32),
+        ("st_ctime_ns", ctypes.c_uint32),
+        ("st_ino", ctypes.c_uint64)
+    ]
+
+    _pack_ = 4
+
+LinuxARMEBStat64 = LinuxARMStat64
 
 def get_stat64_struct(ql):
     if ql.archbit == 64:
@@ -777,15 +801,13 @@ def ql_syscall_newfstatat(ql, newfstatat_dirfd, newfstatat_path, newfstatat_buf_
 
     return regreturn
 
-def ql_syscall_fstat64(ql, fstat64_fd, fstat64_buf_ptr, *args, **kw):
-    if ql.os.fd[fstat64_fd].fstat() == -1:
-        regreturn = 0
 
-    elif fstat64_fd < 256 and ql.os.fd[fstat64_fd] != 0:
-        user_fileno = fstat64_fd
-        fstat64_info = ql.os.fd[user_fileno].fstat()
-        fstat64_buf = pack_stat64_struct(ql, fstat64_info)
-        ql.mem.write(fstat64_buf_ptr, fstat64_buf)
+def ql_syscall_fstat64(ql, fstat64_fd, fstat64_buf_ptr, *args, **kw):
+    if fstat64_fd < 256 and ql.os.fd[fstat64_fd] != 0 and hasattr(ql.os.fd[fstat64_fd], "fstat"):
+        fstat64_info = ql.os.fd[fstat64_fd].fstat()
+        if fstat64_info != -1:
+            fstat64_buf = pack_stat64_struct(ql, fstat64_info)
+            ql.mem.write(fstat64_buf_ptr, fstat64_buf)
         regreturn = 0
     else:
         regreturn = -1
@@ -799,10 +821,10 @@ def ql_syscall_fstat64(ql, fstat64_fd, fstat64_buf_ptr, *args, **kw):
 
 def ql_syscall_fstat(ql, fstat_fd, fstat_buf_ptr, *args, **kw):
     if fstat_fd < 256 and ql.os.fd[fstat_fd] != 0 and hasattr(ql.os.fd[fstat_fd], "fstat"):
-        user_fileno = fstat_fd
-        fstat_info = ql.os.fd[user_fileno].fstat()
-        fstat_buf = pack_stat_struct(ql, fstat_info)
-        ql.mem.write(fstat_buf_ptr, fstat_buf)
+        fstat_info = ql.os.fd[fstat_fd].fstat()
+        if fstat_info != -1:
+            fstat_buf = pack_stat_struct(ql, fstat_info)
+            ql.mem.write(fstat_buf_ptr, fstat_buf)
         regreturn = 0
     else:
         regreturn = -1
