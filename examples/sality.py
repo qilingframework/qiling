@@ -3,20 +3,25 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import sys
-
 from unicorn import UcError
 
+import sys
 sys.path.append("..")
+
 from qiling import Qiling
 from qiling.os.const import POINTER, DWORD, STRING, HANDLE
 from qiling.os.windows.fncc import winsdkapi, STDCALL
 from qiling.os.windows.dlls.kernel32.fileapi import _CreateFile
 
+def init_unseen_symbols(ql: Qiling, address: int, name: str, ordinal: int, dll_name: str):
+    ql.loader.import_symbols[address] = {
+        "name": name,
+        "ordinal": ordinal,
+        "dll": dll_name.partition('.')[0]
+    }
 
-def init_unseen_symbols(ql, address, name, ordinal, dll_name):
-    ql.loader.import_symbols[address] = {"name": name, "ordinal": ordinal, "dll": dll_name.split('.')[0] }
     ql.loader.import_address_table[dll_name][name] = address
+
     if ordinal != 0:
         ql.loader.import_address_table[dll_name][ordinal] = address
 
@@ -30,7 +35,7 @@ def init_unseen_symbols(ql, address, name, ordinal, dll_name):
 #   LPDWORD                 lpThreadId
 # );
 @winsdkapi(cc=STDCALL, dllname='kernel32_dll')
-def hook_CreateThread(ql, address, params):
+def hook_CreateThread(ql: Qiling, address: int, params):
     # set thread handle
     return 1
 
@@ -52,7 +57,7 @@ def hook_CreateThread(ql, address, params):
     "dwFlagsAndAttributes": DWORD,
     "hTemplateFile": HANDLE
 })
-def hook_CreateFileA(ql, address, params):
+def hook_CreateFileA(ql: Qiling, address: int, params):
     lpFileName = params["lpFileName"]
     if lpFileName.startswith("\\\\.\\"):
         if ql.amsint32_driver:
@@ -63,7 +68,7 @@ def hook_CreateFileA(ql, address, params):
         ret = _CreateFile(ql, address, params, "CreateFileA")
     return ret
 
-def _WriteFile(ql, address, params):
+def _WriteFile(ql: Qiling, address: int, params):
     ret = 1
     hFile = params["hFile"]
     lpBuffer = params["lpBuffer"]
@@ -96,7 +101,7 @@ def _WriteFile(ql, address, params):
     "lpNumberOfBytesWritten": POINTER,
     "lpOverlapped": POINTER
 })
-def hook_WriteFile(ql, address, params):
+def hook_WriteFile(ql: Qiling, address: int, params):
     hFile = params["hFile"]
     lpBuffer = params["lpBuffer"]
     nNumberOfBytesToWrite = params["nNumberOfBytesToWrite"]
@@ -124,7 +129,7 @@ def hook_WriteFile(ql, address, params):
 #   LPCSTR    *lpServiceArgVectors
 # );
 @winsdkapi(cc=STDCALL, dllname='advapi32_dll')
-def hook_StartServiceA(ql, address, params):
+def hook_StartServiceA(ql: Qiling, address: int, params):
     try:
         hService = params["hService"]
         service_handle = ql.os.handle_manager.get(hService)
@@ -156,11 +161,11 @@ def hook_stop_address(ql):
 
 
 if __name__ == "__main__":
-    ql = Qiling(["../examples/rootfs/x86_windows/bin/sality.dll"], "../examples/rootfs/x86_windows", output="debug")
-    ql.libcache = True
+    ql = Qiling(["../examples/rootfs/x86_windows/bin/sality.dll"], "../examples/rootfs/x86_windows", output="debug", libcache=True)
 
     # for this module 
     ql.amsint32_driver = None
+
     # emulate some Windows API
     ql.set_api("CreateThread", hook_CreateThread)
     ql.set_api("CreateFileA", hook_CreateFileA)
