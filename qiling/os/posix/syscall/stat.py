@@ -650,7 +650,7 @@ LinuxARMEBStat64 = LinuxX86Stat64
 
 def get_stat64_struct(ql):
     if ql.archbit == 64:
-        ql.log.warining(f"Trying to stat64 on a 64bit system with {ql.ostype} and {ql.archtype}!")
+        ql.log.warning(f"Trying to stat64 on a 64bit system with {ql.ostype} and {ql.archtype}!")
     if ql.ostype == QL_OS.LINUX:
         if ql.archtype == QL_ARCH.X86:
             return LinuxX86Stat64()
