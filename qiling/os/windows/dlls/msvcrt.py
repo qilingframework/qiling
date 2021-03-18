@@ -108,7 +108,7 @@ def hook___p__environ(ql: Qiling, address: int, params):
 def hook_puts(ql: Qiling, address: int, params):
     string = params["str"] + '\n'
 
-    ql.os.stdout.write(bytes(string, "utf-8"))
+    ql.os.stdout.write(string.encode("utf-8"))
 
     return len(string)
 

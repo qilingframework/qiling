@@ -174,17 +174,17 @@ class QlOsUtils:
     def update_ellipsis(self, params: MutableMapping, args: Sequence) -> None:
         params.update((f'{QlOsUtils.ELLIPSIS_PREF}{i}', a) for i, a in enumerate(args))
 
-    def exec_arbitrary(self, start, end):
+    def exec_arbitrary(self, start: int, end: int):
         old_sp = self.ql.reg.arch_sp
 
         # we read where this hook is supposed to return
         ret = self.ql.stack_read(0)
 
-        def restore(ql):
-            self.ql.log.debug(f"Executed code from 0x{start:x} to 0x{end:x}")
+        def restore(ql: Qiling):
+            self.ql.log.debug(f"Executed code from {start:#x} to {end:#x}")
             # now we can restore the register to be where we were supposed to
             old_hook_addr = ql.reg.arch_pc
-            ql.reg.arch_sp = old_sp + (ql.archbit // 8)
+            ql.reg.arch_sp = old_sp + ql.pointersize
             ql.reg.arch_pc = ret
             # we want to execute the code once, not more
             ql.hook_address(lambda q: None, old_hook_addr)
@@ -195,9 +195,9 @@ class QlOsUtils:
         self.ql.stack_write(0, start)
 
     def get_offset_and_name(self, addr: int) -> Tuple[int, str]:
-        for begin, end, access, name in self.ql.mem.map_info:
+        for begin, end, _, name in self.ql.mem.map_info:
             if begin <= addr < end:
-                return addr - begin, name
+                return addr - begin, basename(name)
 
         return addr, '-'
 
