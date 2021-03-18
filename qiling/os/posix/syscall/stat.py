@@ -660,7 +660,7 @@ def get_stat64_struct(ql):
             return LinuxARMStat64()
     elif ql.ostype == QL_OS.MACOS:
         return MacOSStat64()
-    ql.log.warining(f"Unrecognized arch && os with {ql.archtype} and {ql.ostype} for stat64! Fallback to Linux x86.")
+    ql.log.warning(f"Unrecognized arch && os with {ql.archtype} and {ql.ostype} for stat64! Fallback to Linux x86.")
     return LinuxX86Stat64()
 
 def get_stat_struct(ql):
@@ -691,7 +691,7 @@ def get_stat_struct(ql):
                 return LinuxARM64Stat()
             else:
                 return LinuxARM64EBStat()
-    ql.log.warining(f"Unrecognized arch && os with {ql.archtype} and {ql.ostype} for stat! Fallback to Linux x86.")
+    ql.log.warning(f"Unrecognized arch && os with {ql.archtype} and {ql.ostype} for stat! Fallback to Linux x86.")
     return LinuxX86Stat()
 
 def pack_stat_struct(ql, info):
