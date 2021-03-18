@@ -4,13 +4,12 @@
 #
 
 import sys
-from typing import Any, Optional, Callable, Mapping, Tuple
+from typing import Any, Optional, Callable, Mapping
 
 from qiling import Qiling
 from qiling.const import QL_OS, QL_INTERCEPT, QL_OS_POSIX
 from qiling.os.const import STRING, WSTRING, GUID
-
-from qiling.refactored.os.fcall import QlFunctionCall
+from qiling.os.fcall import QlFunctionCall
 
 from .filestruct import ql_file
 from .mapper import QlFsMapper

@@ -9,15 +9,14 @@ from unicorn import UcError
 from qiling import Qiling
 from qiling.arch.x86 import GDTManager, ql_x86_register_cs, ql_x86_register_ds_ss_es
 from qiling.arch.x86_const import UC_X86_INS_SYSCALL
+from qiling.cc import intel
 from qiling.const import QL_ARCH, QL_OUTPUT
+from qiling.os.fcall import QlFunctionCall
 from qiling.os.posix.posix import QlOsPosix
 from qiling.os.macos.events.macos import QlMacOSEvManager
 from qiling.os.macos.events.macos_policy import QlMacOSPolicy
 from qiling.os.macos.events.macos_structs import mac_policy_list_t
 from qiling.os.macos.structs import kmod_info_t, POINTER64
-
-from qiling.refactored.cc import intel
-from qiling.refactored.os.fcall import QlFunctionCall
 
 class QlOsMacos(QlOsPosix):
     def __init__(self, ql: Qiling):
