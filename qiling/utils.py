@@ -97,13 +97,13 @@ class QilingPlainFormatter(logging.Formatter):
 class RegexFilter(logging.Filter):
     def __init__(self, filters):
         super(RegexFilter, self).__init__()
-        self.update_filters(filters)
+        self.update_filters(filters.split(","))
     
     def update_filters(self, filters):
         self._filters = [ re.compile(ft) for ft in  filters ]
 
     def filter(self, record: LogRecord):
-        msg = record.getMessage()
+        msg = record.getMessage().partition(" ")[-1]
         for ft in self._filters:
             if re.match(ft, msg):
                 return True

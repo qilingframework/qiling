@@ -123,7 +123,7 @@ def usage():
     print("\n\nwith binary file and various output format:")
     print("\t ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux --output=disasm")
     print("\t ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux --strace -e ^open")
-    print("\t ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux --strace -e ^open")
+    print("\t ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux --strace -e ^open,^brk")
     
     print("\n\nWith UEFI file:")
     print("\t ./qltool run -f examples/rootfs/x8664_efi/bin/TcgPlatformSetupPolicy --rootfs examples/rootfs/x8664_efi --env examples/rootfs/x8664_efi/rom2_nvar.pickel")
@@ -289,7 +289,7 @@ if __name__ == '__main__':
         ql.verbose = 1
 
     if options.filter:
-        ql.filter = options.filter
+        ql.filters = options.filter
 
 
     timeout = 0
