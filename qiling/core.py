@@ -641,14 +641,14 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._root = root
 
     @property
-    def filter(self) -> List[str]:
+    def filter(self) -> str:
         """ Filter logs with regex.
             
-            Type: List[str]
+            Type: str
             Example: - Qiling(filter=r'^exit')
                      - ql.filter = r'^open'
         """
-        return self._filters
+        return self._filter
 
     @filter.setter
     def filter(self, ft):
@@ -657,7 +657,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             self._log_filter = RegexFilter(ft)
             self.log.addFilter(self._log_filter)
         else:
-            self._log_filter.update_filters(ft)
+            self._log_filter.update_filter(ft)
 
     @property
     def uc(self):

@@ -97,9 +97,9 @@ class QilingPlainFormatter(logging.Formatter):
 class RegexFilter(logging.Filter):
     def __init__(self, regexp):
         super(RegexFilter, self).__init__()
-        self.update_filters(regexp)
+        self.update_filter(regexp)
     
-    def update_filters(self, regexp):
+    def update_filter(self, regexp):
         self._filter = re.compile(regexp)
 
     def filter(self, record: LogRecord):
@@ -565,7 +565,7 @@ def ql_setup_logger(ql, log_file, console, filters, multithread, log_override, l
     # If there aren't any filters, we do add the filters until users specify any.
     log_filter = None
 
-    if filters is not None and type(filters) == list and len(filters) != 0:
+    if filters is not None and len(filters) != 0:
         log_filter = RegexFilter(filters)
         log.addFilter(log_filter)
     

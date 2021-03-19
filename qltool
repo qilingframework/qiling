@@ -104,7 +104,7 @@ def usage():
     print("\n\nWith code:")
     print("\t ./qltool code --os linux --arch arm --hex -f examples/codes/linarm32_tcp_reverse_shell.hex")
     print("\t ./qltool code --os linux --arch x86 --asm -f examples/codes/lin32_execve.asm")
-    print("\t ./qltool code --os linux --arch arm --hex -f examples/codes/linarm32_tcp_reverse_shell.hex --strace")
+    print("\t ./qltool code --os linux --arch arm --hex -f examples/codes/linarm32_tcp_reverse_shell.hex")
 
     print("\n\nWith binary file:")
     print("\t ./qltool run -f examples/rootfs/x8664_linux/bin/x8664_hello --rootfs  examples/rootfs/x8664_linux/")
@@ -122,8 +122,8 @@ def usage():
 
     print("\n\nwith binary file and various output format:")
     print("\t ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux --output=disasm")
-    print("\t ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux --strace -e ^open")
-    print("\t ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux --strace -e ^open,^brk")
+    print("\t ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux -e ^open")
+    print("\t ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux -e ^(open|brk)")
     
     print("\n\nWith UEFI file:")
     print("\t ./qltool run -f examples/rootfs/x8664_efi/bin/TcgPlatformSetupPolicy --rootfs examples/rootfs/x8664_efi --env examples/rootfs/x8664_efi/rom2_nvar.pickel")
@@ -181,16 +181,15 @@ if __name__ == '__main__':
     comm_parser.add_argument('--qdb', action='store_true', required=False, help='attach Qdb at entry point, it\'s MIPS, ARM(THUMB) supported only for now')
     comm_parser.add_argument('--rr', action='store_true', required=False, help='switch on record and replay feature in qdb, only works with --qdb')
     comm_parser.add_argument('--profile', required=False, dest='profile', help="Define customized profile")
-    comm_parser.add_argument('--strace', action='store_true', default=False, dest='strace', help='Run in strace mode')
     comm_parser.add_argument('--dump', action='store_true', default=False, dest='dump', help='Enable Debug + Diassembler mode')
     comm_parser.add_argument('--debug', action='store_true', default=False, dest='debug', help='Enable Debug mode')
     comm_parser.add_argument('--disasm', action='store_true', default=False, dest='disasm', help='Run in disassemble mode')
     comm_parser.add_argument('--console', required=False, default=True, dest='console', help='display in console')
     comm_parser.add_argument('-e', '--filter', metavar="FUNCTION NAME", required=False, dest="filter", default=None, 
-                            help="Only work with strace mode, you can choose what to be printout, for multiple function calls should be separated by comma")
+                            help="Apply regexp for filtering log output.")
     comm_parser.add_argument('--log-file', dest="log_file", help="Write log to a file")
     comm_parser.add_argument('--log-plain', action="store_true", dest="log_plain", help="Don't use color in log output.")
-    comm_parser.add_argument('--trace', action='store_true', default=False, dest='trace', help='Run in strace mode')
+    comm_parser.add_argument('--trace', action='store_true', default=False, dest='trace', help='Run in trace mode')
     comm_parser.add_argument('--root', action='store_true', default=False, dest='root', help='Enable sudo required mode')
     comm_parser.add_argument('--debug_stop', action='store_true', default=False, dest='debug_stop', 
                             help='Stop running while encounter any error (only use it with debug mode)')
@@ -203,9 +202,7 @@ if __name__ == '__main__':
     options = parser.parse_args()
 
     # var check
-    if options.strace:
-        options.output = "default"
-    elif options.trace:
+    if options.trace:
         options.output = "disasm"
     elif options.dump:
         options.output = "dump"
@@ -289,7 +286,7 @@ if __name__ == '__main__':
         ql.verbose = 1
 
     if options.filter:
-        ql.filters = options.filter
+        ql.filter = options.filter
 
 
     timeout = 0
