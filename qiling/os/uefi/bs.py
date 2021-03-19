@@ -411,8 +411,7 @@ def hook_InstallMultipleProtocolInterfaces(ql, address, params):
 	if handle == 0:
 		handle = ql.loader.dxe_context.heap.alloc(pointer_size)
 
-	if handle not in ql.loader.dxe_context.protocols:
-		ql.loader.dxe_context.protocols[handle] = {}
+	dic = ql.loader.dxe_context.protocols.get(handle, {})
 
 	# process elipsiss arguments
 	index = 1
@@ -425,9 +424,9 @@ def hook_InstallMultipleProtocolInterfaces(ql, address, params):
 
 		ql.log.info(f' | {GUID} {protocol_ptr:#x}')
 		index += 2
-		ql.loader.dxe_context.protocols[handle][GUID] = protocol_ptr
-		ql.loader.dxe_context.notify_protocol(handle, GUID, protocol_ptr, True)
 
+	ql.loader.dxe_context.protocols[handle] = dic
+	check_and_notify_protocols(ql, True)
 	write_int64(ql, params["Handle"], handle)
 
 	return EFI_SUCCESS

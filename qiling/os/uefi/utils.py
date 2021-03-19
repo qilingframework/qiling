@@ -10,6 +10,7 @@ from typing import Optional
 from contextlib import contextmanager
 
 from qiling import Qiling
+from qiling.os.uefi.const import EFI_SUCCESS, EFI_INVALID_PARAMETER
 from qiling.os.uefi.UefiSpec import EFI_CONFIGURATION_TABLE
 from qiling.os.uefi.UefiBaseType import EFI_GUID
 
