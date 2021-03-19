@@ -3,17 +3,20 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import os, struct, time
+import struct, time
 import curses
 import curses.ascii
-from enum import Enum
+from enum import IntEnum
 from datetime import datetime
 
 from unicorn import UcError
 
+from qiling import Qiling
 from qiling.const import QL_INTERCEPT
 from qiling.os.os import QlOs
-from qiling.os.path import QlPathManager
+
+from . import interrupts
+from . import utils
 
 # Modified from https://programtalk.com/vs2/python/8562/pyvbox/virtualbox/library_ext/keyboard.py/
 SCANCODES = {
@@ -146,14 +149,7 @@ COLORS_MAPPING = {
 
 REVERSE_COLORS_MAPPING = {v : k for k, v in COLORS_MAPPING.items()}
 
-
-def BIN2BCD(val: int):
-    return val % 10 + (((val//10)%10) << 4) + (((val//100)%10)<<8) + (((val//1000)%10)<<12)
-
-def BCD2BIN(val: int):
-    return (val&0xF) + ((val>>4)&0xF) * 10 + ((val>>8)&0xF) * 100 + ((val>>12)&0xF) * 1000
-
-class INT13DiskError(Enum):
+class INT13DiskError(IntEnum):
     NoError = 0
     BadCommand = 1
     AddressNotFound = 2
@@ -181,21 +177,31 @@ class INT13DiskError(Enum):
     FixedDiskStatusError = 224
     SenseOperationFailed = 255
 
+# @see: https://en.wikipedia.org/wiki/FLAGS_register
+class Flags(IntEnum):
+    CF = (1 << 0)    # carry
+    PF = (1 << 2)    # parity
+    AF = (1 << 4)    # alignment
+    ZF = (1 << 6)    # zero
+    SF = (1 << 7)    # sign
+    TF = (1 << 8)    # trap
+    IF = (1 << 9)    # interrupt
+    DF = (1 << 10)   # direction
+    OF = (1 << 11)   # overflow
+    IOPL = (3 << 12) # io privilege
+
 class QlOsDos(QlOs):
-    def __init__(self, ql):
+    def __init__(self, ql: Qiling):
         super(QlOsDos, self).__init__(ql)
+
         self.ql = ql
         self.hook_syscall()
         self.handle_next = 0
-        self.dos_handles = {}
+        self.handles = {}
         self.color_pairs = {}
         self.revese_color_pairs = {}
         self.stdscr = None
-        self.dos_ver = int(self.ql.profile.get("KERNEL", "version"), 16)
-
-        # Interrupts hooks
-        self.before_interrupt = {}
-        self.after_interrupt = {}
+        self.dos_ver = int(self.ql.profile.get("KERNEL", "version"), 0)
 
     def __del__(self):
         # resume terminal
@@ -205,55 +211,23 @@ class QlOsDos(QlOs):
             curses.nocbreak()
             curses.endwin()
 
-    def add_function_hook(self, interrupt_tuple, intercept_function, intercept=None):
-        if intercept == QL_INTERCEPT.EXIT:
-            self.after_interrupt[interrupt_tuple] = intercept_function
-        else:
-            self.before_interrupt[interrupt_tuple] = intercept_function
+    def set_flag_value(self, fl: Flags, val: int) -> None:
+        self.ql.reg.ef = self.ql.reg.ef & (~fl) | (fl * val)
 
-    # https://en.wikipedia.org/wiki/FLAGS_register
-    # 0  CF 0x0001
-    # 2  PF 0x0004
-    # 4  AF 0x0010
-    # 6  ZF 0x0040
-    # 7  SF 0x0080
-    # 8  TF 0x0100
-    # 9  IF 0x0200
-    # 10 DF 0x0400
-    # 11 OF 0x0800
-    # 12-13 IOPL 0x3000
-    # 14 NT 0x4000
-    def set_flag(self, fl):
-        self.ql.reg.ef = self.ql.reg.ef | fl
-    
-    def clear_flag(self, fl):
-        self.ql.reg.ef = self.ql.reg.ef & (~fl)
-    
     def test_flags(self, fl):
         return self.ql.reg.ef & fl == fl
 
     def set_cf(self):
-        self.set_flag(0x1)
+        self.set_flag_value(Flags.CF, 0b1)
 
     def clear_cf(self):
-        self.clear_flag(0x1)
+        self.set_flag_value(Flags.CF, 0b0)
 
-    def calculate_address(self, sg, reg):
-        return sg*16 + reg
+    def set_zf(self):
+        self.set_flag_value(Flags.ZF, 0b1)
 
-    def read_dos_string(self, addr):
-        str_address = addr
-        s = ""
-        while True:
-            ch = chr(self.ql.mem.read(str_address, 1)[0])
-            if ch == '$':
-                break
-            s += ch
-            str_address += 1
-        return s
-
-    def read_dos_string_from_ds_dx(self):
-        return self.read_dos_string(self.calculate_address(self.ql.reg.ds, self.ql.reg.dx))
+    def clear_zf(self):
+        self.set_flag_value(Flags.ZF, 0b0)
 
     def _parse_dap(self, dapbs):
         return struct.unpack("<BBHHHQ", dapbs)
@@ -284,7 +258,7 @@ class QlOsDos(QlOs):
             self.stdscr = curses.initscr()
             curses.noecho()
             curses.cbreak()
-            self.stdscr.keypad(1)
+            self.stdscr.keypad(True)
             try:
                 curses.start_color()
             except:
@@ -321,10 +295,10 @@ class QlOsDos(QlOs):
             elif ch != -1:
                 curses.ungetch(ch)
             self.stdscr.scrollok(True)
-                
+
             if not curses.has_colors():
                 self.ql.log.info(f"Warning: your terminal doesn't support colors, content might not be displayed correctly.")
-            
+
             # https://en.wikipedia.org/wiki/BIOS_color_attributes
             # blink support?
             if curses.has_colors():
@@ -449,7 +423,7 @@ class QlOsDos(QlOs):
                 return
             disk = self.ql.os.fs_mapper.open(idx, None)
             content = disk.read_chs(cylinder, head, sector, cnt)
-            self.ql.mem.write(self.calculate_address(self.ql.reg.es, self.ql.reg.bx), content)
+            self.ql.mem.write(utils.linaddr(self.ql.reg.es, self.ql.reg.bx), content)
             self.clear_cf()
             self.ql.reg.ah = 0
             self.ql.reg.al = sector
@@ -492,7 +466,7 @@ class QlOsDos(QlOs):
             self.ql.reg.cx = 7
         elif ah == 0x42:
             idx = self.ql.reg.dl
-            dapbs = self.ql.mem.read(self.calculate_address(ds, si), 0x10)
+            dapbs = self.ql.mem.read(utils.linaddr(ds, si), 0x10)
             _, _, cnt, offset, segment, lba = self._parse_dap(dapbs)
             self.ql.log.info(f"Reading {cnt} sectors from disk {hex(idx)} with LBA {lba}")
             if not self.ql.os.fs_mapper.has_mapping(idx):
@@ -502,12 +476,12 @@ class QlOsDos(QlOs):
                 return
             disk = self.ql.os.fs_mapper.open(idx, None)
             content = disk.read_sectors(lba, cnt)
-            self.ql.mem.write(self.calculate_address(segment, offset), content)
+            self.ql.mem.write(utils.linaddr(segment, offset), content)
             self.clear_cf()
             self.ql.reg.ah = 0
         elif ah == 0x43:
             idx = self.ql.reg.dl
-            dapbs = self.ql.mem.read(self.calculate_address(ds, si), 0x10)
+            dapbs = self.ql.mem.read(utils.linaddr(ds, si), 0x10)
             _, _, cnt, offset, segment, lba = self._parse_dap(dapbs)
             self.ql.log.info(f"Write {cnt} sectors to disk {hex(idx)} with LBA {lba}")
             if not self.ql.os.fs_mapper.has_mapping(idx):
@@ -516,14 +490,14 @@ class QlOsDos(QlOs):
                 self.set_cf()
                 return
             disk = self.ql.os.fs_mapper.open(idx, None)
-            buffer = self.ql.mem.read(self.calculate_address(segment, offset), cnt * disk.sector_size)
+            buffer = self.ql.mem.read(utils.linaddr(segment, offset), cnt * disk.sector_size)
             disk.write_sectors(lba, cnt, buffer)
             self.clear_cf()
             self.ql.reg.ah = 0
         else:
             self.ql.log.info("Exception: int 13h syscall Not Found, ah: %s" % hex(ah))
             raise NotImplementedError()
-    
+
     def int15(self):
         ah = self.ql.reg.ah
         ax = self.ql.reg.ax
@@ -588,13 +562,13 @@ class QlOsDos(QlOs):
             self.stdscr.timeout(0)
             key = self._parse_key(self.stdscr.getch())
             if key == -1:
-                self.set_flag(0x40)
+                self.set_zf()
                 self.ql.reg.ax = 0
             else:
                 self.ql.log.debug(f"Has key: {hex(key)} ({curses.ascii.unctrl(key)})")
                 self.ql.reg.al = key
                 self.ql.reg.ah = self._get_scan_code(key)
-                self.clear_flag(0x40)
+                self.clear_zf()
                 # Buffer shouldn't be removed in this interrupt.
                 curses.ungetch(key)
             self.stdscr.timeout(-1)
@@ -615,7 +589,6 @@ class QlOsDos(QlOs):
         self.ql.reg.cs = 0
         self.ql.reg.ip = 0x7C00
 
-
     def int1a(self):
         ah = self.ql.reg.ah
         if ah in [0, 1]:
@@ -627,18 +600,18 @@ class QlOsDos(QlOs):
                 self.ql.reg.al = 0
         elif ah in [2 ,3]:
             now = datetime.now()
-            self.ql.reg.ch = BIN2BCD(now.hour)
-            self.ql.reg.cl = BIN2BCD(now.minute)
-            self.ql.reg.dh = BIN2BCD(now.second)
+            self.ql.reg.ch = utils.BIN2BCD(now.hour)
+            self.ql.reg.cl = utils.BIN2BCD(now.minute)
+            self.ql.reg.dh = utils.BIN2BCD(now.second)
             self.ql.reg.dl = 0
             self.clear_cf()
         elif ah in [4, 5]:
             now = datetime.now()
             # See https://sites.google.com/site/liangweiqiang/Home/e5006/e5006classnote/jumptiming/int1ahclockservice
-            self.ql.reg.ch = BIN2BCD((now.year - 1)//100)
-            self.ql.reg.cl = BIN2BCD(now.year%100)
-            self.ql.reg.dh = BIN2BCD(now.month)
-            self.ql.reg.dl = BIN2BCD(now.day)
+            self.ql.reg.ch = utils.BIN2BCD((now.year - 1)//100)
+            self.ql.reg.cl = utils.BIN2BCD(now.year%100)
+            self.ql.reg.dh = utils.BIN2BCD(now.month)
+            self.ql.reg.dl = utils.BIN2BCD(now.day)
             self.clear_cf()
         elif ah in [6, 7, 9]:
             # alarm support
@@ -654,9 +627,6 @@ class QlOsDos(QlOs):
             pass
         else:
             raise NotImplementedError()
-            
-        
-
 
     def int20(self):
         ah = self.ql.reg.ah
@@ -667,146 +637,41 @@ class QlOsDos(QlOs):
             self.ql.log.info("Exception: int 20h syscall Not Found, ah: %s" % hex(ah))
             raise NotImplementedError()            
 
-    def int21(self):
-        ah = self.ql.reg.ah
-        
-        # exit
-        if ah == 0x4C:
-            self.ql.log.info("Emulation Stop")
-            self.ql.uc.emu_stop()
-        # character output
-        elif ah == 0x2 or ah == 0x6:
-            ch = chr(self.ql.reg.dl)
-            self.ql.reg.al = self.ql.reg.dl
-            self.ql.log.info(ch)
-        # write to screen
-        elif ah == 0x9:
-            s = self.read_dos_string_from_ds_dx()
-            self.ql.log.info(s)
-        elif ah == 0xC:
-            # Clear input buffer
-            pass
-        # create a new file (or truncate existing file)
-
-        elif ah == 0x25:
-            # Set interrupt vector
-            pass
-
-        elif ah == 0x26:
-            # Create PSP
-            pass
-
-        elif ah == 0x30:
-            # Get DOS version, return DOS version 7.0
-            self.ql.reg.ax = self.dos_ver            
-
-        elif ah == 0x33:
-            # Get or set Ctrl-Break
-            pass
-
-        elif ah == 0x35:
-            # Get interrupt vector
-            pass
-
-        elif ah == 0x3C:
-            # fileattr ignored
-            fname = self.read_dos_string_from_ds_dx()
-            f = open(QlPathManager.convert_for_native_os(self.ql.rootfs, self.ql.cur_path, fname), "wb")
-            self.dos_handles[self.handle_next] = f
-            self.ql.reg.ax = self.handle_next
-            self.handle_next += 1
-            self.clear_cf()
-        elif ah == 0x3d:
-            fname = self.read_dos_string_from_ds_dx()
-            f = open(QlPathManager.convert_for_native_os(self.ql.rootfs, self.ql.cur_path, fname), "rb")
-            self.dos_handles[self.handle_next] = f
-            self.ql.reg.ax = self.handle_next
-            self.handle_next += 1
-            self.clear_cf()
-        elif ah == 0x3e:
-            hd = self.ql.reg.bx
-            if hd not in self.dos_handles:
-                self.ql.reg.ax = 0x6
-                self.set_cf()
-            else:
-                f = self.dos_handles[hd]
-                f.close()
-                del self.dos_handles[hd]
-                self.clear_cf()
-        elif ah == 0x3f:
-            hd = self.ql.reg.bx
-            if hd not in self.dos_handles:
-                self.ql.reg.ax = 0x6
-                self.set_cf()
-            else:
-                f = self.dos_handles[hd]
-                buffer = self.calculate_address(self.ql.reg.ds, self.ql.reg.dx)
-                sz = self.ql.reg.cx
-                rd = f.read(sz)
-                self.ql.mem.write(buffer, rd)
-                self.clear_cf()
-                self.ql.reg.ax = len(rd)
-        elif ah == 0x40:
-            hd = self.ql.reg.bx
-            if hd not in self.dos_handles:
-                self.ql.reg.ax = 0x6
-                self.set_cf()
-            else:
-                f = self.dos_handles[hd]
-                buffer = self.calculate_address(self.ql.reg.ds, self.ql.reg.dx)
-                sz = self.ql.reg.cx
-                rd = self.ql.mem.read(buffer, sz)
-                f.write(bytes(rd))
-                self.clear_cf()
-                self.ql.reg.ax = len(rd)
-        elif ah == 0x41:
-            fname = self.read_dos_string_from_ds_dx()
-            real_path = QlPathManager.convert_for_native_os(self.ql.rootfs, self.ql.cur_path, fname)
-            try:
-                os.remove(real_path)
-                self.clear_cf()
-            except OSError:
-                self.ql.reg.ax = 0x5
-                self.set_cf()
-        elif ah == 0x43:
-            self.ql.reg.cx = 0xFFFF
-            self.clear_cf()         
-        else:
-            self.ql.log.info("Exception: int 21h syscall Not Found, ah: %s" % hex(ah))
-            raise NotImplementedError()
-
     def hook_syscall(self):
-        def cb(ql, intno, user_data=None):
-            ah = self.ql.reg.ah
-            self.ql.log.debug(f"INT {intno:x} with ah={hex(ah)}")
-            interrupt_tuple = (intno, ah)
-            before = self.before_interrupt.get(interrupt_tuple, None)
-            after = self.after_interrupt.get(interrupt_tuple, None)
 
-            if before is not None:
-                before(self.ql)
-            # http://spike.scu.edu.au/~barry/interrupts.html
-            # http://www2.ift.ulaval.ca/~marchand/ift17583/dosints.pdf
-            if intno == 0x21:
-                self.int21()
-            elif intno == 0x10:
-                self.int10()
-            elif intno == 0x15:
-                self.int15()
-            elif intno == 0x16:
-                self.int16()
-            elif intno == 0x13:
-                self.int13()
-            elif intno == 0x1a:
-                self.int1a()
-            elif intno == 0x19:
-                self.int19()
-            elif intno == 0x20:
-                self.int20()                
-            else:
-                raise NotImplementedError()
-            if after is not None:
-                after(self.ql)
+        # http://spike.scu.edu.au/~barry/interrupts.html
+        # http://www2.ift.ulaval.ca/~marchand/ift17583/dosints.pdf
+        default_api = {
+            0x10: self.int10,
+            0x13: self.int13,
+            0x15: self.int15,
+            0x16: self.int16,
+            0x19: self.int19,
+            0x1a: self.int1a,
+            0x20: self.int20,
+            0x21: lambda: interrupts.int21.handler(self.ql)
+        }
+
+        def cb(ql: Qiling, intno: int):
+            ah = ql.reg.ah
+            intinfo = (intno, ah)
+
+            func = self.user_defined_api[QL_INTERCEPT.CALL].get(intinfo) or default_api.get(intno)
+            onenter = self.user_defined_api[QL_INTERCEPT.ENTER].get(intinfo)
+            onexit  = self.user_defined_api[QL_INTERCEPT.EXIT].get(intinfo)
+
+            if onenter is not None:
+                onenter(ql)
+
+            if func is None:
+                raise NotImplementedError(f'DOS interrupt {intno:02x}h is not implemented')
+
+            ql.log.debug(f'Handling interrupt {intno:02x}h (leaf {ah:#04x})')
+            func()
+
+            if onexit is not None:
+                onexit(ql)
+
         self.ql.hook_intr(cb)
 
     def run(self):
@@ -817,9 +682,11 @@ class QlOsDos(QlOs):
             self.ql.loader.elf_entry = self.ql.entry_point
         else:
             self.ql.entry_point = self.ql.loader.start_address
+
         if not self.ql.code:
             self.start_time = datetime.now()
             self.ticks_per_second = self.ql.loader.ticks_per_second
+
             try:
                 self.ql.emu_start(self.ql.entry_point, self.exit_point, self.ql.timeout, self.ql.count)
             except UcError:
