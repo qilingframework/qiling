@@ -40,7 +40,7 @@ def __leaf_86(ql: Qiling):
 
 	# Note: Since we are in a single thread environment, we assume
 	# that no one will wait at the same time.
-	ql.reg.cf = 0
+	ql.os.clear_cf()
 	ql.reg.ah = 0x80
 
 def handler(ql: Qiling):
