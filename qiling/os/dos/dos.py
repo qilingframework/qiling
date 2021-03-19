@@ -13,7 +13,7 @@ from qiling import Qiling
 from qiling.const import QL_INTERCEPT
 from qiling.os.os import QlOs
 
-from . import interrupts
+from .interrupts import handlers
 
 # @see: https://en.wikipedia.org/wiki/FLAGS_register
 class Flags(IntEnum):
@@ -75,24 +75,11 @@ class QlOsDos(QlOs):
 
     def hook_syscall(self):
 
-        # http://spike.scu.edu.au/~barry/interrupts.html
-        # http://www2.ift.ulaval.ca/~marchand/ift17583/dosints.pdf
-        default_api = {
-            0x10: lambda: interrupts.int10.handler(self.ql),
-            0x13: lambda: interrupts.int13.handler(self.ql),
-            0x15: lambda: interrupts.int15.handler(self.ql),
-            0x16: lambda: interrupts.int16.handler(self.ql),
-            0x19: lambda: interrupts.int19.handler(self.ql),
-            0x1a: lambda: interrupts.int1a.handler(self.ql),
-            0x20: lambda: interrupts.int20.handler(self.ql),
-            0x21: lambda: interrupts.int21.handler(self.ql)
-        }
-
         def cb(ql: Qiling, intno: int):
             ah = ql.reg.ah
             intinfo = (intno, ah)
 
-            func = self.user_defined_api[QL_INTERCEPT.CALL].get(intinfo) or default_api.get(intno)
+            func = self.user_defined_api[QL_INTERCEPT.CALL].get(intinfo) or handlers.get(intno)
             onenter = self.user_defined_api[QL_INTERCEPT.ENTER].get(intinfo)
             onexit  = self.user_defined_api[QL_INTERCEPT.EXIT].get(intinfo)
 
@@ -103,7 +90,7 @@ class QlOsDos(QlOs):
                 raise NotImplementedError(f'DOS interrupt {intno:02x}h is not implemented')
 
             ql.log.debug(f'Handling interrupt {intno:02x}h (leaf {ah:#04x})')
-            func()
+            func(ql)
 
             if onexit is not None:
                 onexit(ql)
