@@ -628,15 +628,6 @@ class QlOsDos(QlOs):
         else:
             raise NotImplementedError()
 
-    def int20(self):
-        ah = self.ql.reg.ah
-        if ah == 0x13:
-            pass
-
-        else:
-            self.ql.log.info("Exception: int 20h syscall Not Found, ah: %s" % hex(ah))
-            raise NotImplementedError()            
-
     def hook_syscall(self):
 
         # http://spike.scu.edu.au/~barry/interrupts.html
@@ -648,7 +639,7 @@ class QlOsDos(QlOs):
             0x16: self.int16,
             0x19: self.int19,
             0x1a: self.int1a,
-            0x20: self.int20,
+            0x20: lambda: interrupts.int20.handler(self.ql),
             0x21: lambda: interrupts.int21.handler(self.ql)
         }
 
