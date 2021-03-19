@@ -97,7 +97,8 @@ class QilingPlainFormatter(logging.Formatter):
 class RegexFilter(logging.Filter):
     def __init__(self, filters):
         super(RegexFilter, self).__init__()
-        self.update_filters(filters.split(","))
+        filters = filters if type(filters) == list else filters.split(",")
+        self.update_filters(filters)
     
     def update_filters(self, filters):
         self._filters = [ re.compile(ft) for ft in  filters ]
