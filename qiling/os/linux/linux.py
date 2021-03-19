@@ -6,18 +6,17 @@
 from unicorn import UcError
 
 from qiling import Qiling
-from qiling.const import QL_ARCH
 from qiling.arch.x86_const import UC_X86_INS_SYSCALL
 from qiling.arch.x86 import GDTManager, ql_x8664_set_gs, ql_x86_register_cs, ql_x86_register_ds_ss_es
+from qiling.cc import QlCC, intel, arm, mips
+from qiling.const import QL_ARCH
+from qiling.os.fcall import QlFunctionCall
 from qiling.os.const import *
 from qiling.os.posix.posix import QlOsPosix
 
-from .utils import ql_arm_init_get_tls
-from .futex import QlLinuxFutexManagement
-from .thread import QlLinuxThreadManagement, QlLinuxARMThread, QlLinuxMIPS32Thread, QlLinuxARM64Thread, QlLinuxX86Thread, QlLinuxX8664Thread
-
-from qiling.refactored.cc import QlCC, intel, arm, mips
-from qiling.refactored.os.fcall import QlFunctionCall
+from . import utils
+from . import futex
+from . import thread
 
 class QlOsLinux(QlOsPosix):
     def __init__(self, ql: Qiling):
@@ -46,25 +45,25 @@ class QlOsLinux(QlOsPosix):
             ql_x8664_set_gs(self.ql)
 
     def load(self):
-        self.futexm = QlLinuxFutexManagement()
+        self.futexm = futex.QlLinuxFutexManagement()
 
         # ARM
         if self.ql.archtype == QL_ARCH.ARM:
             self.ql.arch.enable_vfp()
             self.ql.hook_intno(self.hook_syscall, 2)
-            self.thread_class = QlLinuxARMThread
-            ql_arm_init_get_tls(self.ql)
+            self.thread_class = thread.QlLinuxARMThread
+            utils.ql_arm_init_get_tls(self.ql)
 
         # MIPS32
         elif self.ql.archtype == QL_ARCH.MIPS:
             self.ql.hook_intno(self.hook_syscall, 17)
-            self.thread_class = QlLinuxMIPS32Thread
+            self.thread_class = thread.QlLinuxMIPS32Thread
 
         # ARM64
         elif self.ql.archtype == QL_ARCH.ARM64:
             self.ql.arch.enable_vfp()
             self.ql.hook_intno(self.hook_syscall, 2)
-            self.thread_class = QlLinuxARM64Thread
+            self.thread_class = thread.QlLinuxARM64Thread
 
         # X86
         elif self.ql.archtype == QL_ARCH.X86:
@@ -72,7 +71,7 @@ class QlOsLinux(QlOsPosix):
             ql_x86_register_cs(self)
             ql_x86_register_ds_ss_es(self)
             self.ql.hook_intno(self.hook_syscall, 0x80)
-            self.thread_class = QlLinuxX86Thread
+            self.thread_class = thread.QlLinuxX86Thread
 
         # X8664
         elif self.ql.archtype == QL_ARCH.X8664:
@@ -82,7 +81,7 @@ class QlOsLinux(QlOsPosix):
             self.ql.hook_insn(self.hook_syscall, UC_X86_INS_SYSCALL)
             # Keep test for _cc
             #self.ql.hook_insn(hook_posix_api, UC_X86_INS_SYSCALL)
-            self.thread_class = QlLinuxX8664Thread
+            self.thread_class = thread.QlLinuxX8664Thread
 
     def hook_syscall(self, int= None, intno= None):
         return self.load_syscall()
@@ -115,7 +114,7 @@ class QlOsLinux(QlOsPosix):
             else:
                 if self.ql.multithread == True:
                     # start multithreading
-                    thread_management = QlLinuxThreadManagement(self.ql)
+                    thread_management = thread.QlLinuxThreadManagement(self.ql)
                     self.ql.os.thread_management = thread_management
                     thread_management.run()
 

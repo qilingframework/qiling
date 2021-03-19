@@ -2,15 +2,12 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
+
 import sys
 sys.path.append("..")
-from qiling import *
+
+from qiling import Qiling
 
 if __name__ == "__main__":
-    ql = Qiling(
-        ["rootfs/x8664_windows/bin/x8664_hello.exe"],
-        "rootfs/x8664_windows",
-        output="default",
-        libcache = True
-    )
+    ql = Qiling(["rootfs/x8664_windows/bin/x8664_hello.exe"], "rootfs/x8664_windows", output="default", libcache=True)
     ql.run()

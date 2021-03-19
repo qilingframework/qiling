@@ -86,7 +86,9 @@ def __load_winsdk_defs(dllname: str) -> Mapping:
 
         __sdk_cache[dllname] = defs
 
-        __print_undefined_types()
+        # uncomment to enable printing of all missing types and how many
+        # times they were referenced
+        #__print_undefined_types()
 
     return __sdk_cache[dllname]
 

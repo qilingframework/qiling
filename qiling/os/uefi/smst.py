@@ -3,12 +3,10 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import binascii
-
 from qiling.const import *
 from qiling.os.const import *
 
-from qiling.os.uefi.const import EFI_SUCCESS, EFI_NOT_FOUND, EFI_OUT_OF_RESOURCES
+from qiling.os.uefi.const import EFI_SUCCESS, EFI_NOT_FOUND, EFI_OUT_OF_RESOURCES, EFI_INVALID_PARAMETER
 from qiling.os.uefi.utils import *
 from qiling.os.uefi.fncc import *
 from qiling.os.uefi.ProcessorBind import *
@@ -291,8 +289,6 @@ def initialize(ql, gSmst : int):
 	ql.loader.smm_context.conf_table_data_next_ptr = conf_data
 
 	install_configuration_table(ql.loader.smm_context, "SMM_RUNTIME_SERVICES_TABLE", gSmmRT)
-	
-
 
 __all__ = [
 	'EFI_SMM_SYSTEM_TABLE2',

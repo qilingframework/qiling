@@ -10,21 +10,20 @@ from unicorn import UcError
 
 from qiling import Qiling
 from qiling.arch.x86 import GDTManager, ql_x86_register_cs, ql_x86_register_ds_ss_es, ql_x86_register_fs, ql_x86_register_gs, ql_x8664_set_gs
+from qiling.cc import intel
 from qiling.const import QL_ARCH, QL_INTERCEPT
 from qiling.exception import QlErrorSyscallError, QlErrorSyscallNotFound
+from qiling.os.fcall import QlFunctionCall
 from qiling.os.os import QlOs
 
-from qiling.refactored.cc import intel
-from qiling.refactored.os.fcall import QlFunctionCall
-
-from .const import Mapper
-from .fncc import STDCALL, CDECL, MS64
-from .handle import Handle, HandleManager
-from .thread import QlWindowsThread, QlWindowsThreadManagement
-from .clipboard import Clipboard
-from .fiber import FiberManager
-from .registry import RegistryManager
-from .utils import ql_x86_windows_hook_mem_error
+from . import const
+from . import fncc
+from . import handle
+from . import thread
+from . import clipboard
+from . import fiber
+from . import registry
+from . import utils
 
 import qiling.os.windows.dlls as api
 
@@ -45,14 +44,14 @@ class QlOsWindows(QlOs):
             """
 
             __fcall_objs = {
-                STDCALL: QlFunctionCall(ql, intel.stdcall(ql)),
-                CDECL  : QlFunctionCall(ql, intel.cdecl(ql)),
-                MS64   : QlFunctionCall(ql, intel.ms64(ql))
+                fncc.STDCALL: QlFunctionCall(ql, intel.stdcall(ql)),
+                fncc.CDECL  : QlFunctionCall(ql, intel.cdecl(ql)),
+                fncc.MS64   : QlFunctionCall(ql, intel.ms64(ql))
             }
 
             __selector = {
                 QL_ARCH.X86  : lambda cc: __fcall_objs[cc],
-                QL_ARCH.X8664: lambda cc: __fcall_objs[MS64]
+                QL_ARCH.X8664: lambda cc: __fcall_objs[fncc.MS64]
             }
 
             return __selector[atype]
@@ -68,7 +67,7 @@ class QlOsWindows(QlOs):
         self.argv = self.ql.argv
         self.env = self.ql.env
         self.pid = self.profile.getint("KERNEL","pid")
-        self.ql.hook_mem_unmapped(ql_x86_windows_hook_mem_error)
+        self.ql.hook_mem_unmapped(utils.ql_x86_windows_hook_mem_error)
         self.automatize_input = self.profile.getboolean("MISC","automatize_input")
         self.username = self.profile["USER"]["username"]
         self.windir = self.profile["PATH"]["systemdrive"] + self.profile["PATH"]["windir"]
@@ -96,19 +95,19 @@ class QlOsWindows(QlOs):
 
     def setupComponents(self):
         # handle manager
-        self.handle_manager = HandleManager()
+        self.handle_manager = handle.HandleManager()
         # registry manger
-        self.registry_manager = RegistryManager(self.ql)
+        self.registry_manager = registry.RegistryManager(self.ql)
         # clipboard
-        self.clipboard = Clipboard(self.ql.os)
+        self.clipboard = clipboard.Clipboard(self.ql.os)
         # fibers
-        self.fiber_manager = FiberManager(self.ql)
+        self.fiber_manager = fiber.FiberManager(self.ql)
         # thread manager
-        main_thread = QlWindowsThread(self.ql)
-        self.thread_manager = QlWindowsThreadManagement(self.ql, main_thread)
+        main_thread = thread.QlWindowsThread(self.ql)
+        self.thread_manager = thread.QlWindowsThreadManagement(self.ql, main_thread)
 
         # more handle manager
-        new_handle = Handle(obj=main_thread)
+        new_handle = handle.Handle(obj=main_thread)
         self.handle_manager.append(new_handle)
 
     # hook WinAPI in PE EMU
@@ -118,7 +117,7 @@ class QlOsWindows(QlOs):
             api_name = entry['name']
 
             if api_name is None:
-                api_name = Mapper[entry['dll']][entry['ordinal']]
+                api_name = const.Mapper[entry['dll']][entry['ordinal']]
             else:
                 api_name = api_name.decode()
 

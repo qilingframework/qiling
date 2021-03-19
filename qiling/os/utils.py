@@ -7,14 +7,15 @@
 This module is intended for general purpose functions that are only used in qiling.os
 """
 
-from qiling.os.const import POINTER
-from typing import Any, MutableMapping, Union, Mapping, Optional, Sequence, MutableSequence, Tuple
+from typing import Any, MutableMapping, Mapping, Optional, Sequence, MutableSequence, Tuple
+from os.path import basename
 from uuid import UUID
 import ctypes
 
 from unicorn import UcError
 
 from qiling import Qiling
+from qiling.os.const import POINTER
 from qiling.os.windows.fncc import STDCALL
 from qiling.os.windows.wdk_const import *
 from qiling.os.windows.structs import *
@@ -26,7 +27,7 @@ class QlOsUtils:
 
     def __init__(self, ql: Qiling):
         self.ql = ql
-        self.path = None
+
         self.md = None
         self._disasm_hook = None
         self._block_hook = None
@@ -97,14 +98,14 @@ class QlOsUtils:
 
         return UUID(bytes_le=bytes(raw_guid))
 
-    def print_function(self, address: int, function_name: str, params: Mapping[str, Any], ret: Optional[int], passthru: bool = False):
-        if function_name.startswith('hook_'):
-            function_name = function_name[5:]
+    def print_function(self, address: int, fname: str, params: Mapping[str, Any], ret: Optional[int], passthru: bool = False):
+        if fname.startswith('hook_'):
+            fname = fname[5:]
 
         def __dqstr(s: str) -> str:
             return f'"{repr(s)[1:-1]}"'
 
-        def _parse_param(param):
+        def _parse_param(param: Tuple[str, Any]):
             name, value = param
 
             nrep = '' if name.startswith(QlOsUtils.ELLIPSIS_PREF) else f'{name:s} = ' 
@@ -122,18 +123,18 @@ class QlOsUtils:
             return f'{nrep}{vrep}'
 
         # arguments list
-        fargs = (_parse_param(param) for param in params.items())
+        fargs = ', '.join(_parse_param(param) for param in params.items())
 
-        # optional suffixes: return value and passthrough
+        # optional prefixes and suffixes
         fret = f' = {ret:#x}' if ret is not None else ''
         fpass = f' (PASSTHRU)' if passthru else ''
+        faddr = f'{address:#0{self.ql.archbit // 4 + 2}x}: ' if self.ql.output == QL_OUTPUT.DEBUG else ''
 
-        log = f'0x{address:02x}: {function_name:s}({", ".join(fargs)}){fret}{fpass}'
+        log = f'{faddr}{fname}({fargs}){fret}{fpass}'
 
         if self.ql.output == QL_OUTPUT.DEBUG:
             self.ql.log.debug(log)
         else:
-            log = log.partition(" ")[-1]
             self.ql.log.info(log)
 
     def __common_printf(self, format: str, args: MutableSequence, wstring: bool):
@@ -173,29 +174,17 @@ class QlOsUtils:
     def update_ellipsis(self, params: MutableMapping, args: Sequence) -> None:
         params.update((f'{QlOsUtils.ELLIPSIS_PREF}{i}', a) for i, a in enumerate(args))
 
-    def lsbmsb_convert(self, sc, size=4):
-        split_bytes = []
-        n = size
-        for index in range(0, len(sc), n):
-            split_bytes.append((sc[index: index + n])[::-1])
-
-        ebsc = b""
-        for i in split_bytes:
-            ebsc += i
-
-        return ebsc
-
-    def exec_arbitrary(self, start, end):
+    def exec_arbitrary(self, start: int, end: int):
         old_sp = self.ql.reg.arch_sp
 
         # we read where this hook is supposed to return
         ret = self.ql.stack_read(0)
 
-        def restore(ql):
-            self.ql.log.debug(f"Executed code from 0x{start:x} to 0x{end:x}")
+        def restore(ql: Qiling):
+            self.ql.log.debug(f"Executed code from {start:#x} to {end:#x}")
             # now we can restore the register to be where we were supposed to
             old_hook_addr = ql.reg.arch_pc
-            ql.reg.arch_sp = old_sp + (ql.archbit // 8)
+            ql.reg.arch_sp = old_sp + ql.pointersize
             ql.reg.arch_pc = ret
             # we want to execute the code once, not more
             ql.hook_address(lambda q: None, old_hook_addr)
@@ -206,9 +195,9 @@ class QlOsUtils:
         self.ql.stack_write(0, start)
 
     def get_offset_and_name(self, addr: int) -> Tuple[int, str]:
-        for begin, end, access, name in self.ql.mem.map_info:
+        for begin, end, _, name in self.ql.mem.map_info:
             if begin <= addr < end:
-                return addr - begin, name
+                return addr - begin, basename(name)
 
         return addr, '-'
 

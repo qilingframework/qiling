@@ -57,13 +57,13 @@ def my_bind(ql: Qiling):
     return 0  # from syscall.ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen)
 
 def my_netgear(path, rootfs):
-    ql = Qiling(path, rootfs, output="debug", profile="netgear_6220.ql")
-
+    ql = Qiling(path, rootfs, output="debug", profile="netgear_6220.ql", multithread=False)
     ql.root = False
-    ql.multithread = False
+
     ql.add_fs_mapper('/proc', '/proc')
     ql.set_syscall(4004, my_syscall_write)
     ql.set_api('bind', my_bind, QL_INTERCEPT.ENTER)  # intercepting the bind call on enter
+
     ql.run()
 
 if __name__ == "__main__":

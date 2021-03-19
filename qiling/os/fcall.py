@@ -5,8 +5,8 @@
 from typing import Any, Callable, Iterable, MutableMapping, Optional, Mapping, Tuple, Sequence
 
 from qiling import Qiling
+from qiling.cc import QlCC
 from qiling.os.const import PARAM_INT8, PARAM_INT16, PARAM_INT32, PARAM_INT64, PARAM_INTN
-from qiling.refactored.cc import QlCC
 
 Reader = Callable[[int], int]
 Writer = Callable[[int, int], None]

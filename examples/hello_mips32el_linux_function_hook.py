@@ -4,21 +4,21 @@
 #
 
 import sys
-
 sys.path.append("..")
+
 from qiling import Qiling
+from qiling.const import QL_INTERCEPT, QL_CALL_BLOCK
 from qiling.os.const import STRING
-from qiling.const import QL_INTERCEPT
 
 def my_puts_onenter(ql: Qiling):
     params = ql.os.resolve_fcall_params({'s': STRING})
 
     print(f'puts("{params["s"]}")')
-    return 2
+    return QL_CALL_BLOCK
 
 def my_puts_onexit(ql: Qiling):
     print(f'after puts')
-    return 2
+    return QL_CALL_BLOCK
 
 if __name__ == "__main__":
     ql = Qiling(["rootfs/mips32el_linux/bin/mips32el_double_hello"], "rootfs/mips32el_linux", output="debug")

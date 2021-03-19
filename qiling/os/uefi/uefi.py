@@ -6,10 +6,9 @@
 from unicorn import UcError
 
 from qiling import Qiling
-from qiling.const import QL_INTERCEPT
+from qiling.cc import QlCC, intel
 from qiling.os.os import QlOs
-from qiling.refactored.cc import QlCC, intel
-from qiling.refactored.os.fcall import QlFunctionCall
+from qiling.os.fcall import QlFunctionCall
 
 class QlOsUefi(QlOs):
 	def __init__(self, ql: Qiling):
