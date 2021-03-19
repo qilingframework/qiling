@@ -42,7 +42,7 @@ def get_attr(color_pairs: Mapping[int, Mapping[int, int]], char: int) -> int:
 
 	return attr
 
-def get_ch_non_blocking(scr: curses._CursesWindow) -> int:
+def get_ch_non_blocking(scr) -> int:
 	scr.timeout(0)
 	key = scr.getch()
 	scr.timeout(-1)
@@ -145,7 +145,7 @@ def __leaf_05(ql: Qiling):
 	ql.reg.al = 0
 
 def __leaf_06(ql: Qiling):
-	stdscr: curses._CursesWindow = ql.os.stdscr
+	stdscr = ql.os.stdscr
 
 	al = ql.reg.al	# lines to scroll
 	ch = ql.reg.ch	# row of upper-left cornner
@@ -190,7 +190,7 @@ def __leaf_06(ql: Qiling):
 		stdscr.move(cy, cx)
 
 def __leaf_08(ql: Qiling):
-	stdscr: curses._CursesWindow = ql.os.stdscr
+	stdscr = ql.os.stdscr
 
 	if stdscr is None:
 		ql.reg.ax = 0x0720
@@ -216,7 +216,7 @@ def __leaf_0e(ql: Qiling):
 
 	ql.log.debug(f'echo: {al:02x} -> {curses.ascii.unctrl(al)}')
 
-	stdscr: curses._CursesWindow = ql.os.stdscr
+	stdscr = ql.os.stdscr
 	cy, cx = stdscr.getyx()
 
 	# https://stackoverflow.com/questions/27674158/how-to-get-color-information-with-mvinch
