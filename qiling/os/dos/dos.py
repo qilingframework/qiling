@@ -589,45 +589,6 @@ class QlOsDos(QlOs):
         self.ql.reg.cs = 0
         self.ql.reg.ip = 0x7C00
 
-    def int1a(self):
-        ah = self.ql.reg.ah
-        if ah in [0, 1]:
-            now = datetime.now()
-            tick = int((now - self.start_time).total_seconds() * self.ticks_per_second)
-            self.ql.reg.cx= (tick & 0xFFFF0000) >> 16
-            self.ql.reg.dx= tick & 0xFFFF
-            if ah == 0:
-                self.ql.reg.al = 0
-        elif ah in [2 ,3]:
-            now = datetime.now()
-            self.ql.reg.ch = utils.BIN2BCD(now.hour)
-            self.ql.reg.cl = utils.BIN2BCD(now.minute)
-            self.ql.reg.dh = utils.BIN2BCD(now.second)
-            self.ql.reg.dl = 0
-            self.clear_cf()
-        elif ah in [4, 5]:
-            now = datetime.now()
-            # See https://sites.google.com/site/liangweiqiang/Home/e5006/e5006classnote/jumptiming/int1ahclockservice
-            self.ql.reg.ch = utils.BIN2BCD((now.year - 1)//100)
-            self.ql.reg.cl = utils.BIN2BCD(now.year%100)
-            self.ql.reg.dh = utils.BIN2BCD(now.month)
-            self.ql.reg.dl = utils.BIN2BCD(now.day)
-            self.clear_cf()
-        elif ah in [6, 7, 9]:
-            # alarm support
-            # TODO: Implement clock interrupt.
-            self.set_cf()
-        elif ah == 8:
-            # Set RTC
-            pass
-        elif ah == 0xA:
-            now = datetime.now()
-            self.ql.reg.cx = (now - datetime(1980, 1, 1)).days
-        elif ah == 0xB:
-            pass
-        else:
-            raise NotImplementedError()
-
     def hook_syscall(self):
 
         # http://spike.scu.edu.au/~barry/interrupts.html
@@ -638,7 +599,7 @@ class QlOsDos(QlOs):
             0x15: self.int15,
             0x16: self.int16,
             0x19: self.int19,
-            0x1a: self.int1a,
+            0x1a: lambda: interrupts.int1a.handler(self.ql),
             0x20: lambda: interrupts.int20.handler(self.ql),
             0x21: lambda: interrupts.int21.handler(self.ql)
         }
