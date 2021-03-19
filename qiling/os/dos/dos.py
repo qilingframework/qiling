@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import struct, time
+import struct
 import curses
 import curses.ascii
 from enum import IntEnum
@@ -388,37 +388,6 @@ class QlOsDos(QlOs):
             self.ql.log.info("Exception: int 13h syscall Not Found, ah: %s" % hex(ah))
             raise NotImplementedError()
 
-    def int15(self):
-        ah = self.ql.reg.ah
-        ax = self.ql.reg.ax
-        if ah == 0:
-            pass
-        elif ah == 1:
-            pass
-        elif ax == 0x5301:
-            # http://www.oldlinux.org/Linux.old/docs/interrupts/int-html/int-15.htm
-            self.clear_cf()
-        elif ax == 0x530e:
-            self.ql.reg.ax = 0x0102
-            self.clear_cf()
-        elif ax == 0x5307:
-            if self.ql.reg.bx == 1 and self.ql.reg.cx == 3:
-                self.ql.log.info("Emulation Stop")
-                self.ql.uc.emu_stop()
-        elif ah == 0x86:
-            dx = self.ql.reg.dx
-            cx = self.ql.reg.cx
-            full_secs = ((cx << 16) + dx) / 1000000
-            self.ql.log.info(f"Goint to sleep {full_secs} seconds")
-            time.sleep(full_secs)
-
-            # Note: Since we are in a single thread environment, we assume
-            # that no one will wait at the same time.
-            self.ql.reg.cf = 0
-            self.ql.reg.ah = 0x80
-        else:
-            raise NotImplementedError()
-
     def hook_syscall(self):
 
         # http://spike.scu.edu.au/~barry/interrupts.html
@@ -426,7 +395,7 @@ class QlOsDos(QlOs):
         default_api = {
             0x10: self.int10,
             0x13: self.int13,
-            0x15: self.int15,
+            0x15: lambda: interrupts.int15.handler(self.ql),
             0x16: lambda: interrupts.int16.handler(self.ql),
             0x19: lambda: interrupts.int19.handler(self.ql),
             0x1a: lambda: interrupts.int1a.handler(self.ql),
