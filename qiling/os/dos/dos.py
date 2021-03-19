@@ -3,7 +3,6 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import struct
 import curses
 import curses.ascii
 from enum import IntEnum
@@ -16,7 +15,6 @@ from qiling.const import QL_INTERCEPT
 from qiling.os.os import QlOs
 
 from . import interrupts
-from . import utils
 
 COLORS_MAPPING = {
     0: curses.COLOR_BLACK,
@@ -38,34 +36,6 @@ COLORS_MAPPING = {
 }
 
 REVERSE_COLORS_MAPPING = {v : k for k, v in COLORS_MAPPING.items()}
-
-class INT13DiskError(IntEnum):
-    NoError = 0
-    BadCommand = 1
-    AddressNotFound = 2
-    DiskWriteProtectError = 3
-    SectorNotFound = 4
-    FixedDiskResetFailed = 5
-    DiskChangedOrRemoved = 6
-    BadFixedDiskParameterTable = 7
-    DMAOverrun = 8
-    DMAAcessAcrossBoundary = 9
-    BadFixedDiskSectorFlag = 10
-    BadFixedDiskCylinder = 11
-    UnsupportedTrack = 12
-    InvalidNumberofSectors = 13
-    FixedDiskControlledDataAdressDetected = 14
-    FixedDiskDMAArbitrationLevelOutofRange = 15
-    ECCErrorOnRead = 16
-    RecoverableFixedDiskDataError = 17
-    ControllerError = 32
-    SeekFailure = 64
-    Timeout = 128
-    FixedDiskDriveNotReady = 170
-    FixedDiskUndefinedError = 187
-    FixedDiskWriteFault = 204
-    FixedDiskStatusError = 224
-    SenseOperationFailed = 255
 
 # @see: https://en.wikipedia.org/wiki/FLAGS_register
 class Flags(IntEnum):
@@ -118,9 +88,6 @@ class QlOsDos(QlOs):
 
     def clear_zf(self):
         self.set_flag_value(Flags.ZF, 0b0)
-
-    def _parse_dap(self, dapbs):
-        return struct.unpack("<BBHHHQ", dapbs)
 
     def _get_attr(self, fg, bg):
         # For blinking
@@ -292,109 +259,13 @@ class QlOsDos(QlOs):
         if self.stdscr is not None:
             self.stdscr.refresh()
 
-    def int13(self):
-        ah = self.ql.reg.ah
-        ds = self.ql.reg.ds
-        si = self.ql.reg.si
-        # https://en.wikipedia.org/wiki/INT_13H
-        if ah == 0x0:
-            self.ql.reg.ah = 0
-            self.clear_cf()
-        elif ah == 0x2:
-            cnt = self.ql.reg.al
-            idx = self.ql.reg.dl
-            cylinder = ((self.ql.reg.cx & 0xFF00) >> 8) | ((self.ql.reg.cx & 0xC0) << 2)
-            sector = self.ql.reg.cx & 63
-            head = self.ql.reg.dh
-            if not self.ql.os.fs_mapper.has_mapping(idx):
-                self.ql.log.info(f"Warning: No such disk: {hex(idx)}")
-                self.ql.reg.ah = INT13DiskError.BadCommand.value
-                self.set_cf()
-                return
-            disk = self.ql.os.fs_mapper.open(idx, None)
-            content = disk.read_chs(cylinder, head, sector, cnt)
-            self.ql.mem.write(utils.linaddr(self.ql.reg.es, self.ql.reg.bx), content)
-            self.clear_cf()
-            self.ql.reg.ah = 0
-            self.ql.reg.al = sector
-        elif ah == 0x8:
-            # https://stanislavs.org/helppc/int_13-8.html
-            idx = self.ql.reg.dl
-            if not self.ql.os.fs_mapper.has_mapping(idx):
-                self.ql.log.info(f"Warning: No such disk: {hex(idx)}")
-                self.ql.reg.ah = INT13DiskError.BadCommand.value
-                self.set_cf()
-                return
-            disk = self.ql.os.fs_mapper.open(idx, None)
-            self.ql.reg.dl = self.ql.os.fs_mapper.mapping_count()
-            self.ql.reg.dh = disk.n_heads - 1
-            self.ql.reg.bl = 0x4
-            self.ql.reg.di = 0
-            self.ql.reg.ds = 0
-            if disk.n_sectors > 63:
-                n_sectors = 63
-            else:
-                n_sectors = disk.n_sectors
-            if disk.n_cylinders > 1023:
-                n_cylinders = 1023
-            else:
-                n_cylinders = disk.n_cylinders
-            cx = 0 | (n_sectors & 0b111111)
-            cx = cx | ( (n_cylinders & 0b11) << 6)
-            cx = cx | (  ((n_cylinders & 0b1111111100) >> 2) << 8 )
-            self.ql.reg.cx = cx
-            self.ql.reg.ah = 0
-            self.clear_cf()
-            pass
-        elif ah == 0x41:
-            idx = self.ql.reg.dl
-            self.ql.reg.ah = 0
-            # 1 -> Device Access using the packet structure.
-            # 2 -> Drive locking and ejecting.
-            # 4 -> Enhanced Disk Drive Support.
-            self.ql.reg.bx = 0xaa55
-            self.ql.reg.cx = 7
-        elif ah == 0x42:
-            idx = self.ql.reg.dl
-            dapbs = self.ql.mem.read(utils.linaddr(ds, si), 0x10)
-            _, _, cnt, offset, segment, lba = self._parse_dap(dapbs)
-            self.ql.log.info(f"Reading {cnt} sectors from disk {hex(idx)} with LBA {lba}")
-            if not self.ql.os.fs_mapper.has_mapping(idx):
-                self.ql.log.info(f"Warning: No such disk: {hex(idx)}")
-                self.ql.reg.ah = INT13DiskError.BadCommand.value
-                self.set_cf()
-                return
-            disk = self.ql.os.fs_mapper.open(idx, None)
-            content = disk.read_sectors(lba, cnt)
-            self.ql.mem.write(utils.linaddr(segment, offset), content)
-            self.clear_cf()
-            self.ql.reg.ah = 0
-        elif ah == 0x43:
-            idx = self.ql.reg.dl
-            dapbs = self.ql.mem.read(utils.linaddr(ds, si), 0x10)
-            _, _, cnt, offset, segment, lba = self._parse_dap(dapbs)
-            self.ql.log.info(f"Write {cnt} sectors to disk {hex(idx)} with LBA {lba}")
-            if not self.ql.os.fs_mapper.has_mapping(idx):
-                self.ql.log.info(f"Warning: No such disk: {hex(idx)}")
-                self.ql.reg.ah = INT13DiskError.BadCommand.value
-                self.set_cf()
-                return
-            disk = self.ql.os.fs_mapper.open(idx, None)
-            buffer = self.ql.mem.read(utils.linaddr(segment, offset), cnt * disk.sector_size)
-            disk.write_sectors(lba, cnt, buffer)
-            self.clear_cf()
-            self.ql.reg.ah = 0
-        else:
-            self.ql.log.info("Exception: int 13h syscall Not Found, ah: %s" % hex(ah))
-            raise NotImplementedError()
-
     def hook_syscall(self):
 
         # http://spike.scu.edu.au/~barry/interrupts.html
         # http://www2.ift.ulaval.ca/~marchand/ift17583/dosints.pdf
         default_api = {
             0x10: self.int10,
-            0x13: self.int13,
+            0x13: lambda: interrupts.int13.handler(self.ql),
             0x15: lambda: interrupts.int15.handler(self.ql),
             0x16: lambda: interrupts.int16.handler(self.ql),
             0x19: lambda: interrupts.int19.handler(self.ql),

@@ -1,6 +1,7 @@
 
 # TODO: export interrupt handlers mapping instead of indevidual ints
 
+from . import int13
 from . import int15
 from . import int16
 from . import int19
