@@ -45,7 +45,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             log_plain=False,
             libcache = False,
             multithread = False,
-            filters = None,
+            filter = None,
             stop_on_stackpointer = False,
             stop_on_exit_trap = False,
             stdin=0,
@@ -80,7 +80,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._log_filter = None
         self._log_override = log_override
         self._log_plain = log_plain
-        self._filters = filters
+        self._filter = filter
         self._platform = ostype_convert(platform.system().lower())
         self._internal_exception = None
         self._uc = None
@@ -175,8 +175,8 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
         self._log_file_fd, self._log_filter = ql_setup_logger(self,
                                                               self._log_file,
-                                                              self._console, 
-                                                              self._filters, 
+                                                              self._console,
+                                                              self._filter,
                                                               self._multithread,
                                                               self._log_override,
                                                               self._log_plain)
@@ -641,18 +641,18 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._root = root
 
     @property
-    def filters(self) -> List[str]:
+    def filter(self) -> List[str]:
         """ Filter logs with regex.
             
             Type: List[str]
-            Example: - Qiling(filters=[r'^exit'])
-                     - ql.filters = [r'^open']
+            Example: - Qiling(filter=r'^exit')
+                     - ql.filter = r'^open'
         """
         return self._filters
 
-    @filters.setter
-    def filters(self, ft):
-        self._filters = ft
+    @filter.setter
+    def filter(self, ft):
+        self._filter = ft
         if self._log_filter is None:
             self._log_filter = RegexFilter(ft)
             self.log.addFilter(self._log_filter)

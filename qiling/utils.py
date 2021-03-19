@@ -95,20 +95,17 @@ class QilingPlainFormatter(logging.Formatter):
         return super(QilingPlainFormatter, self).format(record)
 
 class RegexFilter(logging.Filter):
-    def __init__(self, filters):
+    def __init__(self, regexp):
         super(RegexFilter, self).__init__()
-        filters = filters if type(filters) == list else filters.split(",")
-        self.update_filters(filters)
+        self.update_filters(regexp)
     
-    def update_filters(self, filters):
-        self._filters = [ re.compile(ft) for ft in  filters ]
+    def update_filters(self, regexp):
+        self._filter = re.compile(regexp)
 
     def filter(self, record: LogRecord):
         msg = record.getMessage().partition(" ")[-1]
-        for ft in self._filters:
-            if re.match(ft, msg):
-                return True
-        return False
+
+        return re.match(self._filter, msg) is not None
 
 class QlFileDes:
     def __init__(self, init):
