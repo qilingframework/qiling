@@ -574,21 +574,6 @@ class QlOsDos(QlOs):
             self.stdscr.timeout(-1)
             curses.nl()
 
-    def int19(self):
-        # Note: Memory is not cleaned.
-        dl = self.ql.reg.dl
-        if self.ql.os.fs_mapper.has_mapping(dl):
-            disk = self.ql.os.fs_mapper.open(dl, None)
-            disk.lseek(0, 0)
-            mbr = disk.read(512)
-        else:
-            path = self.ql.path
-            with open(path, "rb") as f:
-                mbr = f.read()
-        self.ql.mem.write(0x7C00, mbr)
-        self.ql.reg.cs = 0
-        self.ql.reg.ip = 0x7C00
-
     def hook_syscall(self):
 
         # http://spike.scu.edu.au/~barry/interrupts.html
@@ -598,7 +583,7 @@ class QlOsDos(QlOs):
             0x13: self.int13,
             0x15: self.int15,
             0x16: self.int16,
-            0x19: self.int19,
+            0x19: lambda: interrupts.int19.handler(self.ql),
             0x1a: lambda: interrupts.int1a.handler(self.ql),
             0x20: lambda: interrupts.int20.handler(self.ql),
             0x21: lambda: interrupts.int21.handler(self.ql)
