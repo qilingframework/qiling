@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import os, string, sys
+import os
 
 from heapq import heappush, heappop
 
@@ -17,8 +17,9 @@ from qiling.const import *
 from qiling.exception import *
 from .loader import QlLoader
 from qiling.os.linux.function_hook import FunctionHook
-from qiling.os.linux.syscall_nums import *
+from qiling.os.linux.syscall_nums import SYSCALL_NR
 from qiling.os.linux.kernel_api.hook import *
+from qiling.os.linux.kernel_api.kernel_api import hook_sys_open, hook_sys_read, hook_sys_write
 
 AT_NULL = 0
 AT_IGNORE = 1
@@ -686,9 +687,9 @@ class QlLoaderELF(QlLoader, ELFParse):
         # print(rev_reloc_symbols.keys())
         for sc in rev_reloc_symbols.keys():
             if sc != 'sys_call_table' and sc.startswith('sys_'):
-                tmp_sc = sc.replace("sys_", "NR_")
-                if tmp_sc in globals():
-                    syscall_id = globals()[tmp_sc]
+                tmp_sc = sc[4:]
+                if hasattr(SYSCALL_NR, tmp_sc):
+                    syscall_id = getattr(SYSCALL_NR, tmp_sc).value
                     ql.log.debug("Writing syscall %s to [0x%x]" % (sc, SYSCALL_MEM + ql.pointersize * syscall_id))
                     ql.mem.write(SYSCALL_MEM + ql.pointersize * syscall_id, ql.pack(rev_reloc_symbols[sc]))
 

@@ -2,15 +2,12 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
-import os
-
-from unicorn import *
 
 import sys
 sys.path.append("..")
-from qiling import *
 
-
+import os
+from qiling import Qiling
 
 class MyPipe():
     def __init__(self):
@@ -46,45 +43,54 @@ class MyPipe():
     def fstat(self):
         return os.fstat(sys.stdin.fileno())
 
-
-def instruction_count(ql, address, size, user_data):
+def instruction_count(ql: Qiling, address: int, size: int, user_data):
     user_data[0] += 1
 
 def my__llseek(ql, *args, **kw):
     pass
 
-def run_one_round(payload):
+def run_one_round(payload: bytes):
     stdin = MyPipe()
-    ql = Qiling(["rootfs/x86_linux/bin/crackme_linux"], "rootfs/x86_linux", console=True, stdin=stdin,
-                stdout=sys.stdout, stderr=sys.stderr)
+
+    ql = Qiling(["rootfs/x86_linux/bin/crackme_linux"], "rootfs/x86_linux",
+        console=False,      # thwart qiling logger output
+        stdin=stdin,        # take over the input to the program
+        stdout=sys.stdout)  # thwart program output
+
     ins_count = [0]
     ql.hook_code(instruction_count, ins_count)
     ql.set_syscall("_llseek", my__llseek)
-    stdin.write(payload)
+
+    stdin.write(payload + b'\n')
     ql.run()
+
     del stdin
     del ql
+
     return ins_count[0]
 
-
 def solve():
-    idx_list = [1, 4, 2, 0, 3]
+    idx_list = (1, 4, 2, 0, 3)
+    flag = [0] * len(idx_list)
 
-    flag = b'\x00\x00\x00\x00\x00\n'
-
-    old_count = run_one_round(flag)
+    prev_ic = run_one_round(bytes(flag))
     for idx in idx_list:
-        for i in b'0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~ ':
-            flag = flag[: idx] + chr(i).encode() + flag[idx + 1:]
-            tmp = run_one_round(flag)
-            if tmp > old_count:
-                old_count = tmp
+
+        # bruteforce all possible flag characters
+        for ch in '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~ ':
+            flag[idx] = ord(ch)
+
+            print(f'\rguessing char at {idx}: {ch}... ', end='', flush=True)
+            ic = run_one_round(bytes(flag))
+
+            if ic > prev_ic:
+                print(f'ok')
+                prev_ic = ic
                 break
-        # if idx == 2:
-        #     break
+        else:
+            print(f'no match found')
 
-    print(flag)
-
+    print(f'flag: "{"".join(chr(ch) for ch in flag)}"')
 
 if __name__ == "__main__":
     solve()

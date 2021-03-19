@@ -3,101 +3,164 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import json, os, struct 
-
-from typing import Callable, Sequence, Mapping, MutableMapping, Any
 from functools import wraps
+import json, os
 
-from qiling.os.const import *
-from qiling.os.windows.utils import *
-from qiling.const import *
-from qiling.exception import *
-from qiling.os.windows.structs import *
-from qiling.os.os import QlOs
+from typing import Union, Optional, Mapping, MutableMapping
 
-from .utils import *
-     
+from qiling import Qiling
+from qiling.const import QL_INTERCEPT
+from qiling.extensions.windows_sdk import winsdk_path
+import qiling.os.const as const
 
-def replacetype(type, specialtype=None):
-    if specialtype is None:
-        specialtype = {}
+from .api import reptypedict
 
-    if type in reptypedict.keys():
-        if type not in specialtype.keys():
-            return reptypedict[type]
-        else:
-            return specialtype[type]
-    else:
-        return type
+# calling conventions
+STDCALL = 1
+CDECL   = 2
+MS64    = 3
 
+def replacetype(ptype: str, specialtype: Mapping) -> Optional[int]:
+    if ptype in specialtype:
+         ptype = specialtype[ptype]
+
+    if ptype in reptypedict:
+        return reptypedict[ptype]
+
+    return None
+
+__sdk_cache: MutableMapping[str, Mapping] = {}
+
+# <workaround>
+__undefined_types: MutableMapping[str, int] = {}
+
+def __log_udnefined_type(ptype: str):
+    if ptype not in __undefined_types:
+        __undefined_types[ptype] = 0
+
+    __undefined_types[ptype] += 1
+
+def __print_undefined_types():
+    items = sorted(__undefined_types.items(), key = lambda p: p[1], reverse=True)
+
+    maxlen_n = max(len(name) for name, _ in items)
+    maxlen_c = len(str(max(count for _, count in items)))
+
+    print(f'undefined winsdk param types:')
+    for name, count in items:
+        print(f' - {name:<{maxlen_n}s} : {count:{maxlen_c}d}')
+
+    __undefined_types.clear()
+
+# </workaround>
+
+def __load_winsdk_defs(dllname: str) -> Mapping:
+    if dllname not in __sdk_cache:
+        json_file = os.path.join(winsdk_path, 'defs', f'{dllname}.json')
+        defs: Mapping[str, Mapping] = {}
+
+        if os.path.exists(json_file):
+            with open(json_file, 'r') as f:
+                obj = json.load(f)
+
+            for fname, fparams in obj.items():
+                fdef: Mapping[str, Union[int, dict]] = {}
+
+                for p in fparams:
+                    pname = p['name']
+                    ptype = p['type']
+
+                    if type(ptype) is str:
+                        #ptype = getattr(const, ptype, None) or reptypedict[ptype]
+
+                        # <workaround>
+                        _ptype = getattr(const, ptype, None) or reptypedict.get(ptype)
+
+                        if _ptype is None:
+                            __log_udnefined_type(ptype)
+                        # </workaround>
+
+                    fdef[pname] = ptype
+
+                defs[fname] = fdef
+
+        __sdk_cache[dllname] = defs
+
+        # uncomment to enable printing of all missing types and how many
+        # times they were referenced
+        #__print_undefined_types()
+
+    return __sdk_cache[dllname]
 
 # x86/x8664 PE should share Windows APIs
-def winsdkapi(cc, param_num=None, dllname=None, replace_params_type=None, replace_params={}, passthru=False):
+def winsdkapi(cc: int, dllname: str = None, replace_params_type: Mapping[str, str] = {}, replace_params = {}, passthru: bool = False):
     """
-    @cc: windows api calling convention, only x86 needs this, x64 is always fastcall
-    @param_num: the number of function params, used by variadic functions, e.g printf
-    @dllname: the name of function
-    @replace_params_type: customize replace type, e.g specialtype={'int':'UINT'} means repalce 'int' to 'UINT'
-    @replace_params: customize replace param_name's type, e.g specialtypeEx={'time':'int'} means
-                replace the original type of time to int
+    cc: windows api calling convention, this is ignored on x64 which uses ms64
+    dllname: dll name
+    replace_params_type: customize replace type, e.g specialtype={'int':'UINT'} means repalce 'int' to 'UINT'
+    replace_params: customize replace param_name's type, e.g specialtypeEx={'time':'int'} means replace the
+                original type of time to int
     """
+
     def decorator(func):
         @wraps(func)
-        def wrapper(*args, **kwargs):
-            funcname = func.__name__[5:]
+        def wrapper(ql: Qiling, pc: int, api_name: str):
             params = {}
-            funclist = []
-            ql = args[0]
 
+            # ---------- params types substitution (to be removed eventually) ----------
             if dllname is not None:
-                windows_abspath = os.path.dirname(os.path.abspath(__file__))
-                winsdk_path = os.path.join(windows_abspath[:-11], 'extensions', 'windows_sdk', 'defs', dllname + '.json')
+                funcdefs = __load_winsdk_defs(dllname)
 
-                if os.path.exists(winsdk_path):
-                    with open(winsdk_path, 'r') as f:
-                        funclist = json.load(f)
-                else:
-                    ql.log.info('%s not found', winsdk_path)
-                if funcname not in funclist:
-                    params = replace_params
-                else:
-                    paramlist = funclist[funcname]
+                if not funcdefs:
+                    ql.log.info(f'defs for {dllname} not found')
 
-                    if len(replace_params.keys()) == len(paramlist):
+                if api_name in funcdefs:
+                    paramlist = funcdefs[api_name]
+
+                    # params list needs to be replaced entirely
+                    if len(paramlist) == len(replace_params):
                         params = replace_params
-                        for key in params:
-                            if isinstance(params[key], str):
-                                type = replacetype(params[key], replace_params_type)
-                                params[key] = eval(type)
+
+                        # substitue string type names (if any) with their actual type value
+                        for pname, ptype in params.items():
+                            if type(ptype) is str:
+                                params[pname] = replacetype(ptype, replace_params_type)
+
+                                if params[pname] is None:
+                                    ql.log.exception(f'no replacement found for type "{ptype}" ({api_name}, {dllname})')
+
+                    # params list indicates that function prototype has no arguments
+                    elif len(paramlist) == 1 and paramlist.get('VOID') == 'void':
+                        params = {}
+
+                    # only some of the parameters on params list need to be replaced
                     else:
-                        for para in paramlist:
-                            name = list(para.values())[0]
-                            if name == 'VOID' or (name in replace_params.keys() and replace_params[name] == ''):
-                                params = {}
-                                break
-                            elif replace_params is not None and name in replace_params.keys():
-                                type = replace_params[name]
-                                params[name] = type
+                        for pname, ptype in paramlist.items():
+                            # substitue this parameter type, if its name was found in the replacements mapping
+                            if pname in replace_params:
+                                params[pname] = replace_params[pname]
+
                             else:
-                                type = list(para.values())[1]
-                                if isinstance(type, dict):
-                                    type = replacetype(type['name'], replace_params_type)
-                                else:
-                                    type = replacetype(list(para.values())[1], replace_params_type)
-                            if isinstance(type, str):
-                                params[name] = eval(type)
+                                if type(ptype) is dict:
+                                    ptype = ptype['name']
+
+                                params[pname] = replacetype(ptype, replace_params_type)
+
+                                if params[pname] is None:
+                                    ql.log.exception(f'no replacement found for type "{ptype}" ({api_name}, {dllname})')
+                else:
+                    params = replace_params
             else:
                 params = replace_params
+            # --------------------------------------------------------------------------
 
-            if ql.archtype == QL_ARCH.X86:
-                if cc == STDCALL:
-                    return ql.os.x86_stdcall(param_num, params, func, args, kwargs, passthru)
-                elif cc == CDECL:
-                    return ql.os.x86_cdecl(param_num, params, func, args, kwargs, passthru)
-            elif ql.archtype == QL_ARCH.X8664:
-                return ql.os.x8664_fastcall(param_num, params, func, args, kwargs, passthru)
-            else:
-                raise QlErrorArch("Unknown self.ql.arch")
+            ql.os.fcall = ql.os.fcall_select(cc)
+
+            onenter = ql.os.user_defined_api[QL_INTERCEPT.ENTER].get(api_name)
+            onexit = ql.os.user_defined_api[QL_INTERCEPT.EXIT].get(api_name)
+
+            return ql.os.call(pc, func, params, onenter, onexit, passthru=passthru)
+
         return wrapper
 
     return decorator

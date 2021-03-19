@@ -4,26 +4,26 @@
 #
 
 import sys
-
 sys.path.append("..")
-from qiling import *
-from qiling.const import *
 
-def my_puts_onenter(ql):
-    addr = ql.os.function_arg[0]
-    print("puts(%s)" % ql.mem.string(addr))
-    return 2
+from qiling import Qiling
+from qiling.const import QL_INTERCEPT, QL_CALL_BLOCK
+from qiling.os.const import STRING
 
-def my_puts(ql):
-    addr = ql.os.function_arg[0]
-    print("puts(%s)" % ql.mem.string(addr))
+def my_puts_onenter(ql: Qiling):
+    params = ql.os.resolve_fcall_params({'s': STRING})
 
-def my_puts_onexit(ql):
-    print("puts exit")
-    return 2
+    print(f'puts("{params["s"]}")')
+    return QL_CALL_BLOCK
+
+def my_puts_onexit(ql: Qiling):
+    print(f'after puts')
+    return QL_CALL_BLOCK
 
 if __name__ == "__main__":
     ql = Qiling(["rootfs/mips32el_linux/bin/mips32el_double_hello"], "rootfs/mips32el_linux", output="debug")
+
     ql.set_api('puts', my_puts_onenter, QL_INTERCEPT.ENTER)
     ql.set_api('puts', my_puts_onexit, QL_INTERCEPT.EXIT)
+
     ql.run()

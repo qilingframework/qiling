@@ -18,8 +18,7 @@ class Test_UEFI(unittest.TestCase):
             print(f"\n*** {msg} ***\n")
 
         def enable_sanitized_heap(ql, fault_rate=0):
-            ql.os.heap = QlSanitizedMemoryHeap(ql, ql.os.heap)
-            ql.os.heap.pool_fault_rate = fault_rate
+            ql.os.heap = QlSanitizedMemoryHeap(ql, ql.os.heap, fault_rate)
             ql.os.heap.oob_handler = lambda *args: my_abort("Out-of-bounds read detected")
             ql.os.heap.bo_handler = lambda *args: my_abort("Buffer overflow/underflow detected")
             ql.os.heap.bad_free_handler = lambda *args: my_abort("Double free or bad free detected")
@@ -82,7 +81,7 @@ class Test_UEFI(unittest.TestCase):
             self.set_api_onenter = params["Source"]
             return address, params
 
-        def my_onexit(ql, address, params):
+        def my_onexit(ql, address, params, retval):
             print("\n")
             print("=" * 40)
             print(" Enter into my_exit mode")

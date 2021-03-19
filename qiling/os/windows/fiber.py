@@ -1,14 +1,9 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-#
-# A Simple Windows Clipboard Simulation
 
-
-from unicorn import *
-from unicorn.x86_const import *
-
-from qiling.const import *
+from qiling import Qiling
+from qiling.os.windows.const import ERROR_INVALID_PARAMETER
 
 class Fiber:
     def __init__(self, idx, cb=None):
@@ -18,7 +13,7 @@ class Fiber:
 
 
 class FiberManager:
-    def __init__(self, ql):
+    def __init__(self, ql: Qiling):
         self.fibers = {}
         self.idx = 0
         self.ql = ql
@@ -30,13 +25,12 @@ class FiberManager:
         return rtn
 
     def free(self, idx):
-        if idx not in self.fibers:
-            self.last_error = 0x57  # ERROR_INVALID_PARAMETER
-            return 0
-        else:
+        if idx in self.fibers:
             fiber = self.fibers[idx]
+
             if fiber.cb:
-                self.ql.log.debug("Skipping emulation of callback function 0x%X for fiber 0x%X" % (fiber.cb, fiber.idx))
+                self.ql.log.debug(f'Skipping emulation of callback function {fiber.cb:#x} for fiber {fiber.idx:#x}')
+
                 """
                 ret_addr = self.ql.reg.read(UC_X86_REG_RIP + 6 ) #FIXME, use capstone to get addr of next instr?
 
@@ -56,21 +50,25 @@ class FiberManager:
                 # All of this gets overwritten by the rest of the code in fncc.py
                 # Not sure how to actually make unicorn emulate the callback function due to that
                 """
+
             else:
                 del self.fibers[idx]
                 return 1
 
+        self.last_error = ERROR_INVALID_PARAMETER
+        return 0
+
     def set(self, idx, data):
-        if idx not in self.fibers:
-            self.last_error = 0x57  # ERROR_INVALID_PARAMETER
-            return 0
-        else:
+        if idx in self.fibers:
             self.fibers[idx].data = data
             return 1
 
+        self.last_error = ERROR_INVALID_PARAMETER
+        return 0
+
     def get(self, idx):
-        if idx not in self.fibers:
-            self.last_error = 0x57  # ERROR_INVALID_PARAMETER
-            return 0
-        else:
+        if idx in self.fibers:
             return self.fibers[idx].data
+
+        self.last_error = ERROR_INVALID_PARAMETER
+        return 0

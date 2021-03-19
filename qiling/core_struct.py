@@ -16,8 +16,11 @@ from .exception import QlErrorStructConversion
 
 # Don't assume self is Qiling.
 class QlCoreStructs:
-	def __init__(self, endian, bit):
-		modifier = '>' if endian == QL_ENDIAN.EB else ''
+	def __init__(self, endian: QL_ENDIAN, bit: int):
+		modifier = {
+			QL_ENDIAN.EL: '<',
+			QL_ENDIAN.EB: '>'
+		}[endian]
 
 		self._fmt8   = f'{modifier}B'
 		self._fmt8s  = f'{modifier}b'

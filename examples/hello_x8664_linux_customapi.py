@@ -4,12 +4,14 @@
 #
 import sys
 sys.path.append("..")
-from qiling import *
-from qiling.const import *
 
-def my_puts(ql):
-    addr = ql.os.function_arg[0]
-    print("puts(%s)" % ql.mem.string(addr))
+from qiling import Qiling
+from qiling.os.const import STRING
+
+def my_puts(ql: Qiling):
+    params = ql.os.resolve_fcall_params({'s': STRING})
+
+    print(f'puts("{params["s"]}")')
 
 if __name__ == "__main__":
     ql = Qiling(["rootfs/x8664_linux/bin/x8664_hello"], "rootfs/x8664_linux", output="debug")

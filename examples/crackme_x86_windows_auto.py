@@ -3,13 +3,10 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from unicorn.x86_const import *
-
 import sys
 sys.path.append("..")
-from qiling import *
 
-
+from qiling import Qiling
 
 class StringBuffer:
     def __init__(self):
@@ -33,8 +30,7 @@ class StringBuffer:
         self.buffer += string
         return len(string)
 
-
-def force_call_dialog_func(ql):
+def force_call_dialog_func(ql: Qiling):
     # get DialogFunc address
     lpDialogFunc = ql.unpack32(ql.mem.read(ql.reg.esp - 0x8, 4))
     # setup stack for DialogFunc
@@ -46,14 +42,13 @@ def force_call_dialog_func(ql):
     # force EIP to DialogFunc
     ql.reg.eip = lpDialogFunc
 
-
 def our_sandbox(path, rootfs):
-    ql = Qiling(path, rootfs)
-    ql.stdin = StringBuffer()
-    ql.stdin.write(b"Ea5yR3versing\n")
+    stdin = StringBuffer()
+    ql = Qiling(path, rootfs, stdin=stdin)
+
+    stdin.write(b"Ea5yR3versing\n")
     ql.hook_address(force_call_dialog_func, 0x00401016)
     ql.run()
-
 
 if __name__ == "__main__":
     # Flag is : Ea5yR3versing
