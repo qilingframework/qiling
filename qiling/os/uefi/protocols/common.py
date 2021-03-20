@@ -122,10 +122,7 @@ def LocateProtocol(context: UefiContext, params):
 			write_int64(context.ql, params['Interface'], guid_dic[protocol])
 			return EFI_SUCCESS
 
-	try:
-		friendly_name = guids_dict[protocol.upper()]
-	except KeyError:
-		friendly_name = 'UNKNOWN'
+	friendly_name = guids_dict.get(protocol.upper(), 'UNKNOWN')
 
 	context.ql.log.warning(f'protocol with guid {protocol} not found ({friendly_name})')
 
