@@ -1,12 +1,13 @@
 from abc import ABC
 
+from qiling import Qiling
 from qiling.os.memory import QlMemoryHeap
 from qiling.os.uefi.utils import init_struct, update_struct, str_to_guid, execute_protocol_notifications, signal_event
 from qiling.os.uefi.UefiSpec import EFI_CONFIGURATION_TABLE, EFI_SYSTEM_TABLE
 from qiling.os.uefi.smst import EFI_SMM_SYSTEM_TABLE2
 
 class UefiContext(ABC):
-	def __init__(self, ql):
+	def __init__(self, ql: Qiling):
 		self.ql = ql
 		self.heap = None
 		self.protocols = {}
@@ -64,7 +65,7 @@ class UefiContext(ABC):
 		# in the array. if not, idx would be set to one past end of array
 		if guid not in confs:
 			confs.append(guid)
-			
+
 		idx = confs.index(guid)
 		ptr = self.conf_table_array_ptr + (idx * EFI_CONFIGURATION_TABLE.sizeof())
 
