@@ -123,7 +123,8 @@ class QlOsLinux(QlOsPosix):
                         self.ql.loader.elf_entry = self.ql.entry_point
 
                     elif self.ql.loader.elf_entry != self.ql.loader.entry_point:
-                        self.ql.emu_start(self.ql.loader.entry_point, self.ql.loader.elf_entry, self.ql.timeout)
+                        entry_address = self.ql.loader.elf_entry & -2 # For arm thumb
+                        self.ql.emu_start(self.ql.loader.entry_point, entry_address, self.ql.timeout)
                         self.ql.enable_lib_patch()
                         self.run_function_after_load()
                         self.ql.loader.skip_exit_check = False

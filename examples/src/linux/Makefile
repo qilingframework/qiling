@@ -19,7 +19,8 @@ TARGET = arm_hello arm_hello_static \
             x86_hello x86_hello_static \
             x8664_hello x8664_hello_static \
             patch_test.bin \
-            arm_sleep_hello arm64_sleep_hello
+            arm_sleep_hello arm64_sleep_hello \
+            arm_stat
 
 all : $(TARGET)
 
@@ -37,6 +38,9 @@ arm_hello_static: hello.c
 	arm-linux-gnueabihf-gcc -Wall -O2 -s -static $< -o $@
 
 arm_sleep_hello: sleep_hello.c
+	arm-linux-gnueabihf-gcc -Wall -O2 -s $< -o $@
+
+arm_stat: stat.c
 	arm-linux-gnueabihf-gcc -Wall -O2 -s $< -o $@
 
 arm64_hello: hello.c
