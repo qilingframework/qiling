@@ -8,9 +8,6 @@ from qiling.os.uefi.const import EFI_SUCCESS, EFI_NOT_FOUND, EFI_UNSUPPORTED, EF
 from qiling.os.uefi.utils import read_int64, write_int64
 from qiling.os.uefi.UefiSpec import EFI_LOCATE_SEARCH_TYPE
 
-# TODO: get rid of this
-pointer_size = 8
-
 def LocateHandles(context, params):
 	SearchType = params["SearchType"]
 	Protocol = params["Protocol"]
@@ -26,7 +23,7 @@ def LocateHandles(context, params):
 	else:
 		handles = []
 
-	return len(handles) * pointer_size, handles
+	return len(handles) * context.ql.pointersize, handles
 
 def InstallProtocolInterface(context, params):
 	handle = read_int64(context.ql, params["Handle"])
@@ -104,7 +101,7 @@ def LocateHandle(context, params):
 
 		for handle in handles:
 			write_int64(context.ql, ptr, handle)
-			ptr += pointer_size
+			ptr += context.ql.pointersize
 
 		ret = EFI_SUCCESS
 
