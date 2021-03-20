@@ -43,8 +43,9 @@ def ql_profile(run_fn, outfile):
     pr.print_stats()
 
 def profile_all_functions():
-    if not pyos.path.isdir("perf_results"): os.mkdir("perf_results")
-    
+    if not pyos.path.isdir("perf_results"):
+        pyos.mkdir("perf_results")
+
     populate_tests()
 
     for tm_func, rm_outfile in test_mapping:

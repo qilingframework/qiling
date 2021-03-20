@@ -168,7 +168,7 @@ def ql_syscall_mach_msg_trap(ql, args, opt, ssize, rsize, rname, timeout):
 
 # 0x21
 def ql_syscall_access_macos(ql, path, flags, *args, **kw):
-    path_str = ql.os.read_cstring(path)
+    path_str = ql.os.utils.read_cstring(path)
     ql.log.debug("access(path: %s, flags: 0x%x)" % (path_str, flags))
     if not ql.os.macho_fs.isexists(path_str):
         return ENOENT
@@ -233,7 +233,7 @@ def ql_syscall_getattrlist(ql, path, alist, attributeBuffer, bufferSize, options
     attrlist["dirattr"] = unpack("<L", ql.mem.read(alist + 12, 4))[0]
     attrlist["fileattr"] = unpack("<L", ql.mem.read(alist + 16, 4))[0]
     attrlist["forkattr"] = unpack("<L", ql.mem.read(alist + 20, 4))[0]
-    path_str = ql.os.read_cstring(path)
+    path_str = ql.os.utils.read_cstring(path)
 
     ql.log.debug("bitmapcount: 0x%x, reserved: 0x%x, commonattr: 0x%x, volattr: 0x%x, dirattr: 0x%x, fileattr: 0x%x, forkattr: 0x%x\n" % (
         attrlist["bitmapcount"], attrlist["reserved"], attrlist["commonattr"], attrlist["volattr"], attrlist["dirattr"], attrlist["fileattr"], attrlist["forkattr"]
@@ -409,7 +409,7 @@ def ql_syscall_write_nocancel(ql, write_fd, write_buf, write_count, *args, **kw)
 # 0x18e
 def ql_syscall_open_nocancel(ql, filename, flags, mode, *args, **kw):
     path = ql.mem.string(filename)
-    relative_path = ql.os.transform_to_relative_path(path)
+    relative_path = ql.os.path.transform_to_relative_path(path)
 
     flags = flags & 0xffffffff
     mode = mode & 0xffffffff

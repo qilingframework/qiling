@@ -3,25 +3,26 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import gevent, os, time
+import gevent, os
 
 from typing import Callable
-from abc import ABC, abstractmethod
-from pathlib import Path
-from gevent import Greenlet
-from unicorn.unicorn import UcError
-from unicorn.mips_const import *
-from unicorn.arm_const import *
+from abc import abstractmethod
 
-from qiling.utils import FMT_STR
+from unicorn.unicorn import UcError
+
 from qiling.os.thread import *
 from qiling.arch.x86_const import *
-from qiling.const import *
-from qiling.os.const import *
-from qiling.exception import *
+from qiling.exception import QlErrorExecutionStop
+from qiling.os.path import QlPathManager
 
 LINUX_THREAD_ID = 2000
 
+THREAD_STATUS_RUNNING    = 0
+THREAD_STATUS_BLOCKING   = 1
+THREAD_STATUS_TERMINATED = 2
+THREAD_STATUS_TIMEOUT    = 3
+THREAD_STATUS_STOPPED    = 4
+THREAD_STATUS_SUSPEND    = 5
 
 class QlLinuxThread(QlThread):
     def __init__(self, ql, start_address, exit_point, context = None, set_child_tid_addr = None, thread_id = None):
@@ -36,7 +37,7 @@ class QlLinuxThread(QlThread):
         self._start_address = start_address
         self._status = THREAD_STATUS_RUNNING
         self._return_val = 0
-        self._current_path = ql.os.current_path
+        self.path = self.ql.os.path
         self._log_file_fd = None
         self._sched_cb = None
 
@@ -134,12 +135,12 @@ class QlLinuxThread(QlThread):
         self._return_val = rv
 
     @property
-    def current_path(self):
-        return self._current_path
+    def path(self):
+        return self._path
 
-    @current_path.setter
-    def current_path(self, cp):
-        self._current_path = cp
+    @path.setter
+    def path(self, p):
+        self._path = QlPathManager(self._ql, p.cwd)
 
     @property
     def log_file_fd(self):
@@ -293,7 +294,7 @@ class QlLinuxThread(QlThread):
         # Caveat:
         #     Don't use thread id to identify the thread object.
         new_thread = self.ql.os.thread_class.spawn(self._ql, self._start_address, self._exit_point, self._saved_context, set_child_tid_addr = None, thread_id = self._thread_id)
-        new_thread._current_path = self._current_path
+        new_thread._path = self._path
         new_thread._return_val = self._return_val
         new_thread._robust_list_head_len = self._robust_list_head_len
         new_thread._robust_list_head_ptr = self._robust_list_head_ptr

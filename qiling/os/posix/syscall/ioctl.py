@@ -3,14 +3,9 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+import struct
 
-from qiling.const import *
-from qiling.os.linux.thread import *
-from qiling.const import *
-from qiling.os.posix.filestruct import *
-from qiling.os.filestruct import *
-from qiling.os.posix.const_mapping import *
-from qiling.exception import *
+from qiling.os.posix.filestruct import ql_socket
 
 def ql_syscall_ioctl(ql, ioctl_fd, ioctl_cmd, ioctl_arg, *args, **kw):
     TCGETS = 0x5401
@@ -102,5 +97,5 @@ def ql_syscall_ioctl(ql, ioctl_fd, ioctl_cmd, ioctl_arg, *args, **kw):
         except :
             regreturn = -1
 
-    ql.log.debug("ioctl(0x%x, 0x%x, 0x%x) = %d" % (ioctl_fd, ioctl_cmd, ioctl_arg, regreturn))
+    ql.log.debug(f'ioctl({ioctl_fd:#x}, {ioctl_cmd:#x}, {ioctl_arg:#x}) = {regreturn}')
     return regreturn

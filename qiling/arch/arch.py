@@ -4,13 +4,16 @@
 #
 
 from abc import ABC, abstractmethod
-import struct
 
-from .utils import *
-from qiling.const import QL_ARCH, QL_ARCH_ALL, QL_ENDIAN, QL_OS, QL_OS_ALL, QL_OUTPUT, QL_DEBUGGER
+from capstone import Cs
+from keystone import Ks
+
+from . import utils
+from qiling import Qiling
+from qiling.const import QL_ARCH
 
 class QlArch(ABC):
-    def __init__(self, ql):
+    def __init__(self, ql: Qiling):
         self.ql = ql
 
     # ql.init_Uc - initialized unicorn engine
@@ -21,45 +24,45 @@ class QlArch(ABC):
 
     # push value to stack
     @abstractmethod
-    def stack_push(self, value):
+    def stack_push(self, data: int) -> int:
         pass
 
 
     # pop value to stack
     @abstractmethod
-    def stack_pop(self):
+    def stack_pop(self) -> int:
         pass
 
 
     # write stack value
     @abstractmethod
-    def stack_write(self, value, data):
+    def stack_write(self, offset: int, data: int) -> None:
         pass
 
 
     #  read stack value
     @abstractmethod
-    def stack_read(self, value):
+    def stack_read(self, offset: int) -> int:
         pass
  
 
        # set PC
-    def set_pc(self, value):
-        self.ql.reg.arch_pc = value
+    def set_pc(self, address: int):
+        self.ql.reg.arch_pc = address
 
 
     # get PC
-    def get_pc(self):
+    def get_pc(self) -> int:
         return self.ql.reg.arch_pc
 
 
     # set stack pointer
-    def set_sp(self, value):
-        self.ql.reg.arch_sp = value
+    def set_sp(self, address: int):
+        self.ql.reg.arch_sp = address
 
 
     # get stack pointer
-    def get_sp(self):
+    def get_sp(self) -> int:
         return self.ql.reg.arch_sp 
 
 
@@ -73,17 +76,17 @@ class QlArch(ABC):
         self.ql.uc.context_restore(saved_context)
 
 
-    def create_disassembler(self):
+    def create_disassembler(self) -> Cs:
         if self.ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB):
             reg_cpsr = self.ql.reg.cpsr
         else:
             reg_cpsr = None
-        return ql_create_disassembler(self.ql.archtype, self.ql.archendian, reg_cpsr)
-    
+        return utils.ql_create_disassembler(self.ql.archtype, self.ql.archendian, reg_cpsr)
 
-    def create_assembler(self):
+
+    def create_assembler(self) -> Ks:
         if self.ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB):
             reg_cpsr = self.ql.reg.cpsr
         else:
             reg_cpsr = None
-        return ql_create_assembler(self.ql.archtype, self.ql.archendian, reg_cpsr)        
+        return utils.ql_create_assembler(self.ql.archtype, self.ql.archendian, reg_cpsr)

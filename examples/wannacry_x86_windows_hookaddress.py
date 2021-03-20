@@ -2,12 +2,14 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
+
 import sys
 sys.path.append("..")
-from qiling import *
 
-def stopatkillerswtich(ql):
-    print("killerswtch found")
+from qiling import Qiling
+
+def stopatkillerswtich(ql: Qiling):
+    print(f'killerswtch found')
     ql.emu_stop()
 
 if __name__ == "__main__":

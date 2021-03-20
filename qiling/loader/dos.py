@@ -3,15 +3,32 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import math, sys, traceback
+import sys, traceback
 
 from .loader import QlLoader
 
+from qiling import Qiling
 from qiling.os.disk import QlDisk
 
+# @see: http://pinvoke.net/default.aspx/Structures.IMAGE_DOS_HEADER
+class ComParser:
+    '''Most basic COM file parser.
+    '''
+
+    def __init__(self, ql: Qiling, data: bytes) -> None:
+        assert data[0:2] == b'MZ'
+
+        nbytes  = ql.unpack16(data[2:4]) or 0x200    # number of bytes in last block; 0 means it is fully populated
+        nblocks = ql.unpack16(data[4:6])             # number of blocks used
+        self.size = (nblocks - 1) * 0x200 + nbytes
+
+        self.init_ss = ql.unpack16(data[14:16])
+        self.init_sp = ql.unpack16(data[16:18])
+        self.init_ip = ql.unpack16(data[20:22])
+        self.init_cs = ql.unpack16(data[22:24])
 
 class QlLoaderDOS(QlLoader):
-    def __init__(self, ql):
+    def __init__(self, ql: Qiling):
         super(QlLoaderDOS, self).__init__(ql)
         self.ql = ql
         self.old_excepthook = sys.excepthook
@@ -23,61 +40,74 @@ class QlLoaderDOS(QlLoader):
             self.ql.log.info(f"{tbmsg}")
         self.old_excepthook(tp, value, tb)
 
-    def _round_to_4k(self, addr):
-        return round(addr / 4096) * 4096
-
-    def _floor_to_4k(self, addr):
-        return math.floor(addr / 4096) * 4096
-    
-    def _ceil_to_4k(self, addr):
-        return math.ceil(addr / 4096) * 4096
-
     def run(self):
         path = self.ql.path
+        profile = self.ql.profile
 
-        self.ticks_per_second = float(self.ql.profile.get("KERNEL", "ticks_per_second"))
-        if (str(path)).endswith(".DOS_COM") or (str(path)).endswith(".DOS_EXE"):
-            # pure com
-            self.cs = int(self.ql.profile.get("COM", "start_cs"), 16)
-            self.ip = int(self.ql.profile.get("COM", "start_ip"), 16)
-            self.sp = int(self.ql.profile.get("COM", "start_sp"), 16)
-            self.stack_size = int(self.ql.profile.get("COM", "stack_size"), 16)
-            self.ql.reg.cs = self.cs
-            self.ql.reg.ds = self.cs
-            self.ql.reg.es = self.cs
-            self.ql.reg.ss = self.cs
-            self.ql.reg.ip = self.ip
-            self.ql.reg.sp = self.sp
-            self.start_address = self.cs*16 + self.ip
-            self.base_address = int(self.ql.profile.get("COM", "base_address"), 16)
-            self.stack_address = int(self.ql.reg.ss*16 + self.ql.reg.sp)
-            self.ql.mem.map(0, 0x100000, info="[FULL]")
-            with open(path, "rb+") as f:
-                bs = f.read()
-            self.ql.mem.write(self.start_address, bs)
-            self.load_address = self.base_address
-            self.ql.os.entry_point = self.start_address
-        elif (str(path)).endswith(".DOS_MBR"):
-            # MBR
-            self.start_address = 0x7C00
-            with open(path, "rb+") as f:
-                bs = f.read()
+        # bare com file
+        if path.endswith(".DOS_COM"):
+            with open(path, "rb") as f:
+                content = f.read()
+
+            cs = int(profile.get("COM", "start_cs"), 0)
+            ip = int(profile.get("COM", "start_ip"), 0)
+            sp = int(profile.get("COM", "start_sp"), 0)
+            ss = cs
+
+            base_address = (cs << 4) + ip
+
+        # com file with a dos header
+        elif path.endswith(".DOS_EXE"):
+            with open(path, "rb") as f:
+                content = f.read()
+
+            com = ComParser(self.ql, content)
+
+            cs = com.init_cs
+            ip = com.init_ip
+            sp = com.init_sp
+            ss = com.init_ss
+
+            base_address = 0
+            content = content[0x80:]
+
+        elif path.endswith(".DOS_MBR"):
+            with open(path, "rb") as f:
+                content = f.read()
+
+            cs = 0x07C0
+            ip = 0x0000
+            sp = 0xfff0
+            ss = cs
+
+            base_address = (cs << 4) + ip
+
+            # https://en.wikipedia.org/wiki/Master_boot_record#BIOS_to_MBR_interface
             if not self.ql.os.fs_mapper.has_mapping(0x80):
                 self.ql.os.fs_mapper.add_fs_mapping(0x80, QlDisk(path, 0x80))
-            # Map all available address.
-            self.ql.mem.map(0x0, 0x1000000)
-            self.ql.mem.write(self.start_address, bs)
-            self.cs = 0
-            self.ql.reg.ds = self.cs
-            self.ql.reg.es = self.cs
-            self.ql.reg.ss = self.cs
-            # 0x80 -> first drive.
-            # https://en.wikipedia.org/wiki/Master_boot_record#BIOS_to_MBR_interface
+
+            # 0x80 -> first drive
             self.ql.reg.dx = 0x80
-            self.ip = self.start_address
-            self.load_address = self.start_address
-            self.ql.os.entry_point = self.start_address
         else:
             raise NotImplementedError()
-            
+
+        self.ql.reg.cs = cs
+        self.ql.reg.ds = cs
+        self.ql.reg.es = cs
+        self.ql.reg.ss = ss
+        self.ql.reg.ip = ip
+        self.ql.reg.sp = sp
+
+        self.stack_address = (ss << 4) + sp
+        self.start_address = (cs << 4) + ip
+        self.stack_size = int(profile.get("COM", "stack_size"), 0)
+        self.ticks_per_second = profile.getfloat("KERNEL", "ticks_per_second")
+
+        # map the entire system memory
+        self.ql.mem.map(0, 0x100000, info="[FULL]")
+        self.ql.mem.write(base_address, content)
+
+        self.load_address = base_address
+        self.ql.os.entry_point = self.start_address
+
         sys.excepthook = self.excepthook

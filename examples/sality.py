@@ -3,21 +3,25 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import sys
-
 from unicorn import UcError
 
+import sys
 sys.path.append("..")
+
 from qiling import Qiling
-from qiling.os.const import STDCALL, POINTER, DWORD, STRING, HANDLE
-from qiling.os.windows.fncc import winsdkapi
-from qiling.os.windows.utils import string_appearance
+from qiling.os.const import POINTER, DWORD, STRING, HANDLE
+from qiling.os.windows.fncc import winsdkapi, STDCALL
 from qiling.os.windows.dlls.kernel32.fileapi import _CreateFile
 
+def init_unseen_symbols(ql: Qiling, address: int, name: str, ordinal: int, dll_name: str):
+    ql.loader.import_symbols[address] = {
+        "name": name,
+        "ordinal": ordinal,
+        "dll": dll_name.partition('.')[0]
+    }
 
-def init_unseen_symbols(ql, address, name, ordinal, dll_name):
-    ql.loader.import_symbols[address] = {"name": name, "ordinal": ordinal, "dll": dll_name.split('.')[0] }
     ql.loader.import_address_table[dll_name][name] = address
+
     if ordinal != 0:
         ql.loader.import_address_table[dll_name][ordinal] = address
 
@@ -31,7 +35,7 @@ def init_unseen_symbols(ql, address, name, ordinal, dll_name):
 #   LPDWORD                 lpThreadId
 # );
 @winsdkapi(cc=STDCALL, dllname='kernel32_dll')
-def hook_CreateThread(ql, address, params):
+def hook_CreateThread(ql: Qiling, address: int, params):
     # set thread handle
     return 1
 
@@ -53,7 +57,7 @@ def hook_CreateThread(ql, address, params):
     "dwFlagsAndAttributes": DWORD,
     "hTemplateFile": HANDLE
 })
-def hook_CreateFileA(ql, address, params):
+def hook_CreateFileA(ql: Qiling, address: int, params):
     lpFileName = params["lpFileName"]
     if lpFileName.startswith("\\\\.\\"):
         if ql.amsint32_driver:
@@ -64,7 +68,7 @@ def hook_CreateFileA(ql, address, params):
         ret = _CreateFile(ql, address, params, "CreateFileA")
     return ret
 
-def _WriteFile(ql, address, params):
+def _WriteFile(ql: Qiling, address: int, params):
     ret = 1
     hFile = params["hFile"]
     lpBuffer = params["lpBuffer"]
@@ -75,7 +79,7 @@ def _WriteFile(ql, address, params):
     if hFile == 0xfffffff5:
         s = ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
         ql.os.stdout.write(s)
-        string_appearance(ql, s.decode())
+        ql.os.utils.string_appearance(s.decode())
         ql.mem.write(lpNumberOfBytesWritten, ql.pack(nNumberOfBytesToWrite))
     else:
         f = ql.os.handle_manager.get(hFile)
@@ -97,7 +101,7 @@ def _WriteFile(ql, address, params):
     "lpNumberOfBytesWritten": POINTER,
     "lpOverlapped": POINTER
 })
-def hook_WriteFile(ql, address, params):
+def hook_WriteFile(ql: Qiling, address: int, params):
     hFile = params["hFile"]
     lpBuffer = params["lpBuffer"]
     nNumberOfBytesToWrite = params["nNumberOfBytesToWrite"]
@@ -125,14 +129,14 @@ def hook_WriteFile(ql, address, params):
 #   LPCSTR    *lpServiceArgVectors
 # );
 @winsdkapi(cc=STDCALL, dllname='advapi32_dll')
-def hook_StartServiceA(ql, address, params):
+def hook_StartServiceA(ql: Qiling, address: int, params):
     try:
         hService = params["hService"]
         service_handle = ql.os.handle_manager.get(hService)
         if service_handle.name == "amsint32":
             if service_handle.name in ql.os.services:
                 service_path = ql.os.services[service_handle.name]
-                service_path = ql.os.transform_to_real_path(service_path)
+                service_path = ql.os.path.transform_to_real_path(service_path)
                 ql.amsint32_driver = Qiling([service_path], ql.rootfs, output="debug")
                 init_unseen_symbols(ql.amsint32_driver, ql.amsint32_driver.loader.dlls["ntoskrnl.exe"]+0xb7695, b"NtTerminateProcess", 0, "ntoskrnl.exe")
                 #ql.amsint32_driver.debugger= ":9999"
@@ -157,11 +161,11 @@ def hook_stop_address(ql):
 
 
 if __name__ == "__main__":
-    ql = Qiling(["../examples/rootfs/x86_windows/bin/sality.dll"], "../examples/rootfs/x86_windows", output="debug")
-    ql.libcache = True
+    ql = Qiling(["../examples/rootfs/x86_windows/bin/sality.dll"], "../examples/rootfs/x86_windows", output="debug", libcache=True)
 
     # for this module 
     ql.amsint32_driver = None
+
     # emulate some Windows API
     ql.set_api("CreateThread", hook_CreateThread)
     ql.set_api("CreateFileA", hook_CreateFileA)
@@ -171,12 +175,21 @@ if __name__ == "__main__":
     ql.hook_address(hook_stop_address, 0x40EFFB)
     ql.run()
     # run driver thread
-    ql.os.set_function_args([0])
+
+    # execution is about to resume from 0x4053B2, which essentially jumps to ExitThread (kernel32.dll).
+    # Set ExitThread exit code to 0
+    ql.os.fcall = ql.os.fcall_select(STDCALL)
+    ql.os.fcall.writeParams(((DWORD, 0),))
+
     ql.hook_address(hook_stop_address, 0x4055FA)
     ql.run(0x4053B2)
     ql.log.info("test kill thread")
     if ql.amsint32_driver:
         ql.amsint32_driver.os.io_Write(ql.pack32(0xdeadbeef))
         ql.amsint32_driver.hook_address(hook_stop_address, 0x10423)
-        ql.amsint32_driver.set_function_args([0])
+
+        # TODO: not sure whether this one is really STDCALL
+        ql.amsint32_driver.os.fcall = ql.amsint32_driver.os.fcall_select(STDCALL)
+        ql.amsint32_driver.os.fcall.writeParams(((DWORD, 0),))
+
         ql.amsint32_driver.run(0x102D0)

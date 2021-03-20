@@ -5,6 +5,15 @@
 
 from qiling.const import *
 
+# OS Threading Constants
+THREAD_EVENT_INIT_VAL         = 0
+THREAD_EVENT_EXIT_EVENT       = 1
+THREAD_EVENT_UNEXECPT_EVENT   = 2
+THREAD_EVENT_EXECVE_EVENT     = 3
+THREAD_EVENT_CREATE_THREAD    = 4
+THREAD_EVENT_BLOCKING_EVENT   = 5
+THREAD_EVENT_EXIT_GROUP_EVENT = 6
+
 linux_socket_types = {
     'SOCK_STREAM'    : 0x1,
     'SOCK_DGRAM'     : 0x2,

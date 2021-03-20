@@ -3,26 +3,22 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import sys, unittest, subprocess, string, random, os
+import sys, unittest
 
-from unicorn import UcError, UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
+from unicorn import UcError
 
 sys.path.append("..")
-from qiling import *
-from qiling.const import *
-from qiling.exception import *
-from qiling.os.posix import syscall
-from qiling.os.mapper import QlFsMappedObject
-from qiling.os.posix.stat import Fstat
-
-from qiling.os.linux.fncc import *
+from qiling import Qiling
+from qiling.const import QL_INTERCEPT
+from qiling.os.const import STRING
+from qiling.os.linux.fncc import linux_kernel_api
 
 class ELF_KO_Test(unittest.TestCase):
 
     def test_demigod_m0hamed_x86(self):
         @linux_kernel_api(params={
-            "format": STRING,
-        })        
+            "format": STRING
+        })
         def my_printk(ql, address, params):
             print("\n")
             print("=" * 40)
@@ -36,7 +32,7 @@ class ELF_KO_Test(unittest.TestCase):
         try:
             procfile_read_func_begin = ql.loader.load_address + 0x11e0
             procfile_read_func_end = ql.loader.load_address + 0x11fa
-            ql.set_api("printk", my_printk)            
+            ql.set_api("printk", my_printk)
             ql.run(begin=procfile_read_func_begin, end=procfile_read_func_end)
         except UcError as e:
             print(e)
@@ -54,7 +50,7 @@ class ELF_KO_Test(unittest.TestCase):
             print("\n")
             self.set_api_onenter = params["format"]
             return address, params
-        
+
         ql = Qiling(["../examples/rootfs/x8664_linux/kernel/hello.ko"],  "../examples/rootfs/x8664_linux", output="disasm")
         try:
             procfile_read_func_begin = ql.loader.load_address + 0x1064
@@ -68,7 +64,7 @@ class ELF_KO_Test(unittest.TestCase):
         del ql
 
     def test_demigod_hello_mips32(self):
-        def my_onexit(ql, address, params):
+        def my_onexit(ql, address, params, retval):
             print("\n")
             print("=" * 40)
             print(" Enter into my_exit mode")
@@ -85,7 +81,6 @@ class ELF_KO_Test(unittest.TestCase):
 
         self.assertEqual("\x016Hello, World!\n", self.set_api_onexit)
         del ql
-
 
 if __name__ == "__main__":
     unittest.main()

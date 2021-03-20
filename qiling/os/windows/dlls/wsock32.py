@@ -75,7 +75,7 @@ def hook_gethostbyname(ql, address, params):
     ip_str = ql.os.profile.getint("NETWORK", "dns_response_ip")
     ip = bytes([int(octet) for octet in ip_str.split('.')[::-1]])
     name_ptr = params["name"]
-    params["name"] = ql.os.read_cstring(name_ptr)
+    params["name"] = ql.os.utils.read_cstring(name_ptr)
     hostnet = Hostent(ql, name_ptr, 0, 2, 4, ip)
     hostnet_addr = ql.os.heap.alloc(hostnet.size)
     hostnet.write(hostnet_addr)
