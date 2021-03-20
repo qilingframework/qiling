@@ -104,7 +104,7 @@ class RegexFilter(logging.Filter):
         self._filter = re.compile(regexp)
 
     def filter(self, record: LogRecord):
-        msg = record.getMessage().partition(" ")[-1]
+        msg = record.getMessage()
 
         return re.match(self._filter, msg) is not None
 

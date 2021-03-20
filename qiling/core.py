@@ -642,9 +642,9 @@ class Qiling(QlCoreHooks, QlCoreStructs):
     @property
     def filter(self) -> str:
         """ Filter logs with regex.
-            Type: List[str]
-            Example: - Qiling(filters=[r'^exit'])
-                     - ql.filters = [r'^open']
+            Type: str
+            Example: - Qiling(filter=r'^exit')
+                     - ql.filter = r'^open'
         """
         return self._filter
 
