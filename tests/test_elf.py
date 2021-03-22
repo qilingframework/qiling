@@ -1037,7 +1037,7 @@ class ELFTest(unittest.TestCase):
         del ql
 
     def test_arm_stat64(self):
-        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_stat", "/bin/arm_stat"], "../examples/rootfs/arm_linux", output="debug")
+        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_stat64", "/bin/arm_stat64"], "../examples/rootfs/arm_linux", output="debug")
         ql.run()
         del ql
 
