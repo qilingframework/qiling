@@ -75,8 +75,8 @@ class QlLoaderDOS(QlLoader):
             with open(path, "rb") as f:
                 content = f.read()
 
-            cs = 0x07C0
-            ip = 0x0000
+            cs = 0x0000
+            ip = 0x7c00
             sp = 0xfff0
             ss = cs
 
