@@ -39,6 +39,7 @@ AT_EGID = 14
 AT_PLATFORM = 15
 AT_HWCAP = 16
 AT_CLKTCK = 17
+AT_PAGESIZES = 20
 AT_SECURE = 23
 AT_BASE_PLATFORM = 24
 AT_RANDOM = 25
@@ -384,7 +385,11 @@ class QlLoaderELF(QlLoader, ELFParse):
         self.randstraddr = addr[0]
         self.cpustraddr = addr[1]
         if self.ql.archbit == 64:
-            self.elf_hwcap = 0x078bfbfd
+            if self.ql.ostype == QL_OS.FREEBSD:
+                self.elf_hwcap = self.ql.mem.map_anywhere(0x1000)
+                self.ql.mem.write(self.elf_hwcap, self.ql.pack64(0x078bfbfd))
+            else:    
+                self.elf_hwcap = 0x078bfbfd
         elif self.ql.archbit == 32:
             self.elf_hwcap = 0x1fb8d7
             if self.ql.archendian == QL_ENDIAN.EB:
