@@ -148,7 +148,7 @@ class QlOs:
         if intercept is None:
             intercept = QL_INTERCEPT.CALL
 
-        if (self.ql.ostype in (QL_OS.WINDOWS, QL_OS.UEFI)) or (self.ql.ostype in (QL_OS_POSIX) and self.ql.loader.is_driver):
+        if (self.ql.ostype in (QL_OS.WINDOWS, QL_OS.UEFI, QL_OS.DOS)) or (self.ql.ostype in (QL_OS_POSIX) and self.ql.loader.is_driver):
             self.user_defined_api[intercept][api_name] = intercept_function
         else:
             self.add_function_hook(api_name, intercept_function, intercept)

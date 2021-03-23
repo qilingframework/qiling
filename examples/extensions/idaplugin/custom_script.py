@@ -23,7 +23,7 @@ class QILING_IDA():
 
     def custom_step(self, ql:Qiling):
         def step_hook(ql, addr, size):
-            logging.info(f"Executing: {hex(addr)}")
+            ql.log.info(f"Executing: {hex(addr)}")
             self._show_context(ql)
 
         ql.log.info('custom_step hook')

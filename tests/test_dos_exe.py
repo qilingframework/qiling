@@ -10,10 +10,10 @@ from qiling import Qiling
 
 class DOSTest(unittest.TestCase):
 
+    # TODO: missing implemention of INT 3Ch and INT 03h
     def test_dos_8086_hello(self):
         ql = Qiling(["../examples/rootfs/8086/dos/ARKA.DOS_EXE"], "../examples/rootfs/8086/dos")
         ql.run()
-        del ql
 
 if __name__ == "__main__":
     unittest.main()
