@@ -3,6 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+import time
 
 from qiling.const import *
 from qiling.os.linux.thread import *
