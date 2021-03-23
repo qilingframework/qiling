@@ -602,7 +602,7 @@ def ql_syscall_getdents(ql, fd, dirp, count, *args, **kw):
         return bytes([t])
 
     if ql.os.fd[fd].tell() == 0:
-        n = ql.archbit // 8
+        n = ql.pointersize
         total_size = 0
         results = os.scandir(ql.os.fd[fd].name)
         _ent_count = 0
