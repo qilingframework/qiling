@@ -11,7 +11,7 @@ from qiling.const import *
 from qiling.debugger import QlDebugger
 
 from .frontend import context_printer, context_reg, context_asm, examine_mem
-from .utils import parse_int, handle_bnj, is_thumb, diff_snapshot_save, diff_snapshot_restore, CODE_END
+from .utils import parse_int, handle_bnj, is_thumb, CODE_END
 from .const import *
 
 
@@ -109,7 +109,6 @@ class QlQdb(cmd.Cmd, QlDebugger):
         if _inter:
             self.interactive()
 
-
     def do_context(self, *args):
         """
         show context information for current location
@@ -149,8 +148,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
             print("there is no way back !!!")
         else:
             print("step backward ~")
-            current_state_dicts = self._ql.save(cpu_context=True, mem=True, reg=False, fd=False)
-            self._ql.restore(diff_snapshot_restore(current_state_dicts, self._states_list.pop()))
+            self._ql.restore(self._states_list.pop())
             self.do_context()
 
 
@@ -166,8 +164,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
             self._saved_states = dict(filter(lambda d: isinstance(d[0], str), self._ql.reg.save().items()))
 
             if getattr(self, "_states_list", None) is not None:
-                current_state_dicts = self._ql.save(cpu_context=True, mem=True, reg=False, fd=False)
-                self._states_list.append(diff_snapshot_save(current_state_dicts, self._states_list[-1]))
+                self._states_list.append(self._ql.save(cpu_context=True, mem=True, reg=False, fd=False))
 
             _cur_addr = self._ql.reg.arch_pc
 
