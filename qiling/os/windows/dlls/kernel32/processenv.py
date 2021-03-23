@@ -3,9 +3,9 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-
+from qiling.os.const import *
 from qiling.os.windows.fncc import *
-from qiling.exception import *
+from qiling.exception import QlErrorNotImplemented
 
 dllname = 'kernel32_dll'
 

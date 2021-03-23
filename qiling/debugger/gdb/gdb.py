@@ -676,7 +676,7 @@ class QlGdb(QlDebugger, object):
                     if file_path.startswith(self.rootfs_abspath):
                         file_abspath = file_path
                     else:
-                        file_abspath = self.ql.os.transform_to_real_path(file_path)
+                        file_abspath = self.ql.os.path.transform_to_real_path(file_path)
                     
                     self.ql.log.debug("gdb> target file: %s" % (file_abspath))
                     if os.path.exists(file_abspath) and not (file_path).startswith("/proc"):

@@ -3,13 +3,15 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import sys
-sys.path.append("..")
-from qiling import *
-from qiling.os.disk import QlDisk
 from itertools import product
 import struct
 import curses
+import sys
+
+sys.path.append("..")
+
+from qiling import Qiling
+from qiling.os.disk import QlDisk
 
 verfication_start_ip = 0x850B
 petya_2nd_stage_start = 0x8000

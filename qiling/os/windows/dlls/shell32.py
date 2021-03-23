@@ -49,10 +49,10 @@ def hook_SHGetFileInfoW(ql, address, params):
 
 def _ShellExecute(ql, obj: ShellExecuteInfoA):
 
-    operation = ql.os.read_wstring(obj.verb[0]) if obj.verb[0] != 0 else ""
-    params = ql.os.read_wstring(obj.params[0]) if obj.params[0] != 0 else ""
-    file = ql.os.read_wstring(obj.file[0]) if obj.file[0] != 0 else ""
-    directory = ql.os.read_wstring(obj.dir[0]) if obj.dir[0] != 0 else ""
+    operation = ql.os.utils.read_wstring(obj.verb[0]) if obj.verb[0] != 0 else ""
+    params = ql.os.utils.read_wstring(obj.params[0]) if obj.params[0] != 0 else ""
+    file = ql.os.utils.read_wstring(obj.file[0]) if obj.file[0] != 0 else ""
+    directory = ql.os.utils.read_wstring(obj.dir[0]) if obj.dir[0] != 0 else ""
 
     ql.log.debug("Target executed a shell command!")
     ql.log.debug("Operation: %s " % operation)

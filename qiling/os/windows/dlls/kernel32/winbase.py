@@ -201,7 +201,7 @@ def hook_lstrcatA(ql, address, params):
     # Copy String2 into String
     src = params["lpString2"]
     pointer = params["lpString1"]
-    string_base = ql.os.read_cstring(pointer)
+    string_base = ql.os.utils.read_cstring(pointer)
     params["lpString1"] = string_base
     result = string_base + src + "\x00"
     ql.mem.write(pointer, result.encode())
@@ -217,11 +217,31 @@ def hook_lstrcatW(ql, address, params):
     # Copy String2 into String
     src = params["lpString2"]
     pointer = params["lpString1"]
-    string_base = ql.os.read_wstring(pointer)
+    string_base = ql.os.utils.read_wstring(pointer)
     params["lpString1"] = string_base
     result = string_base + src + "\x00"
     ql.mem.write(pointer, result.encode("utf-16le"))
     return pointer
+
+
+# int lstrlenA(
+#   LPCSTR lpString
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname)
+def hook_lstrlenA(ql: Qiling, address: int, params):
+    s = params["lpString"]
+
+    return 0 if not s else len(s)
+
+
+# int lstrlenW(
+#   LPCWSTR lpString
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname)
+def hook_lstrlenW(ql: Qiling, address: int, params):
+    s = params["lpString"]
+
+    return 0 if not s else len(s)
 
 
 # int lstrcmpiW(
@@ -586,7 +606,7 @@ def hook_CharLowerBuffA(ql, address, params):
 def hook_CharLowerA(ql, address, params):
     lpsz = params["lpsz"]
     if (lpsz >> 16) > 0:
-        value = ql.os.read_cstring(lpsz)
+        value = ql.os.utils.read_cstring(lpsz)
         value = value.lower()
         value = value.encode("utf-8")
         ql.mem.write(lpsz, value)

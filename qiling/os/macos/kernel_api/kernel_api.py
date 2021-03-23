@@ -3,12 +3,12 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import ctypes, os, struct
+import ctypes, struct
 
 from time import time
 
-
-from qiling.os.macos.fncc import *
+from qiling.os.const import *
+from qiling.os.macos.fncc import macos_kernel_api
 from qiling.os.macos.structs import *
 from qiling.os.macos.utils import gen_stub_code
 from qiling.os.macos.events.macos_structs import *

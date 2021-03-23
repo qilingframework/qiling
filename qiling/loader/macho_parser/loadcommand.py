@@ -42,6 +42,7 @@ class LoadCommand:
             LC_ENCRYPTION_INFO_64   :   LoadEncryptionInfo64,
             LC_DYLD_EXPORTS_TRIE    :   LoadDyldExportTrie,
             LC_DYLD_CHAINED_FIXUPS  :   LoadDyldChainedFixups,
+            LC_RPATH                :   LoadRPath,
             LC_BUILD_VERSION        :   LoadBuildVersion
         }
 
@@ -512,3 +513,10 @@ class LoadBuildVersion(LoadCommand):
     def get_complete(self):
         pass        
     
+
+class LoadRPath(LoadCommand):
+    def __init__(self, data):
+        super().__init__(data)
+        self.offset = unpack("<L", self.FR.read(4))[0]
+        self.FR.setOffset(self.offset)
+        self.path   = self.FR.readString(4)

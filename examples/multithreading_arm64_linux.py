@@ -5,12 +5,12 @@
 
 import sys
 sys.path.append("..")
-from qiling import *
+
+from qiling import Qiling
 
 def my_sandbox(path, rootfs):
-    ql = Qiling(path, rootfs, output = "debug", multithread=True)
+    ql = Qiling(path, rootfs, output="debug", multithread=True)
     ql.run()
-
 
 if __name__ == "__main__":
     my_sandbox(["rootfs/arm64_linux/bin/arm64_multithreading"], "rootfs/arm64_linux")

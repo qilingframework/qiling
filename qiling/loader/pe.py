@@ -3,11 +3,10 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import os, pefile, pickle, secrets, string, sys, traceback
+import os, pefile, pickle, secrets, traceback
 
-from unicorn.x86_const import *
-
-
+from qiling.os.const import POINTER
+from qiling.os.windows.fncc import CDECL
 from qiling.os.windows.utils import *
 from qiling.os.windows.structs import *
 from qiling.exception import *
@@ -58,7 +57,7 @@ class Process():
         self.ql.dlls = os.path.join("Windows", "System32")
 
         if 'C:\\' in dll_name.upper():
-            path = self.ql.os.transform_to_real_path(dll_name)
+            path = self.ql.os.path.transform_to_real_path(dll_name)
             dll_name = path_leaf(dll_name)
         else:
             dll_name = dll_name.lower()
@@ -543,7 +542,8 @@ class QlLoaderPE(QlLoader, Process):
                     self.ql.log.debug('Setting RDX (arg2) to %16X (PUNICODE_STRING)' % (self.ql.regitry_path_address))
 
                 # setup args for DriverEntry()
-                self.ql.os.set_function_args((self.ql.driver_object_address, self.ql.regitry_path_address))
+                self.ql.os.fcall = self.ql.os.fcall_select(CDECL)
+                self.ql.os.fcall.writeParams(((POINTER, self.ql.driver_object_address), (POINTER, self.ql.regitry_path_address)))
 
             # mmap PE file into memory
             self.ql.mem.map(self.pe_image_address, self.align(self.pe_image_address_size, 0x1000), info="[PE]")

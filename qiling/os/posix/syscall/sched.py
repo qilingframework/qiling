@@ -6,7 +6,6 @@
 import types
 from multiprocessing import Process
 
-
 from qiling.const import *
 from qiling.os.linux.thread import *
 from qiling.const import *
@@ -95,7 +94,7 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
         set_child_tid_addr = clone_child_tidptr
 
     th = ql.os.thread_class.spawn(ql, ql.reg.arch_pc + 2, ql.os.exit_point, set_child_tid_addr = set_child_tid_addr)
-    th.current_path = f_th.current_path
+    th.path = f_th.path
     ql.log.debug(f"{str(th)} created.")
 
     if clone_flags & CLONE_PARENT_SETTID == CLONE_PARENT_SETTID:

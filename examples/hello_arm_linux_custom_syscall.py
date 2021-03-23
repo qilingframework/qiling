@@ -6,10 +6,10 @@
 import sys
 sys.path.append("..")
 
-from qiling import *
+from qiling import Qiling
+from qiling.const import QL_OUTPUT
 
-
-def my_syscall_write(ql, write_fd, write_buf, write_count, *args, **kw):
+def my_syscall_write(ql: Qiling, write_fd, write_buf, write_count, *args, **kw):
     regreturn = 0
 
     try:
