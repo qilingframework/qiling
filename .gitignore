@@ -34,3 +34,5 @@ test.file
 *.o
 core
 *.perf
+
+examples/rootfs
