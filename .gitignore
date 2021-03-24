@@ -18,6 +18,7 @@ dist
 # test and logs
 tests/mac_test_elf.sh
 jexamples/
+examples/rootfs
 logs/
 log/
 test_qlog/
@@ -34,5 +35,3 @@ test.file
 *.o
 core
 *.perf
-
-examples/rootfs
