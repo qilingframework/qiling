@@ -11,7 +11,7 @@ from qiling.const import *
 from qiling.debugger import QlDebugger
 
 from .frontend import context_printer, context_reg, context_asm, examine_mem
-from .utils import parse_int, handle_bnj, is_thumb, diff_snapshot_save, diff_snapshot_restore, CODE_END
+from .utils import parse_int, handle_bnj, is_thumb, CODE_END
 from .const import *
 
 
@@ -28,12 +28,12 @@ class QlQdb(cmd.Cmd, QlDebugger):
         super().__init__()
 
         # setup a breakpoint at entry point or user specified address
-        init_hook = self._ql.loader.entry_point if not init_hook else parse_int(init_hook)
-        self.set_breakpoint(init_hook, _is_temp=True, _inter=True)
+        self.interactive(self._ql.loader.entry_point if not init_hook else parse_int(init_hook))
 
 
     def parseline(self, line):
-        """Parse the line into a command name and a string containing
+        """
+        Parse the line into a command name and a string containing
         the arguments.  Returns a tuple containing (command, args, line).
         'command' and 'args' may be None if the line couldn't be parsed.
         """
@@ -54,6 +54,10 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
 
     def interactive(self, *args):
+
+        if len(args) > 0:
+            self.set_breakpoint(args[0], _is_temp=True)
+
         return self.cmdloop()
 
 
@@ -75,11 +79,11 @@ class QlQdb(cmd.Cmd, QlDebugger):
             _bp["hook"].remove()
 
 
-    def set_breakpoint(self, address, _is_temp=False, _inter=False):
+    def set_breakpoint(self, address, _is_temp=False):
         """
         handle internal breakpoint adding operation
         """
-        _bp_func = partial(self._breakpoint_handler, _is_temp=_is_temp, _inter=_inter)
+        _bp_func = partial(self._breakpoint_handler, _is_temp=_is_temp)
 
         _hook = self._ql.hook_address(_bp_func, address)
         self.breakpoints.update({address: {"hook": _hook, "hitted": False, "temp": _is_temp}})
@@ -88,7 +92,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
             print("Breakpoint at 0x%08x" % address)
 
 
-    def _breakpoint_handler(self, ql, _is_temp, _inter):
+    def _breakpoint_handler(self, ql, _is_temp):
         """
         handle all breakpoints
         """
@@ -106,9 +110,6 @@ class QlQdb(cmd.Cmd, QlDebugger):
         self.do_context()
         self._ql.emu_stop()
 
-        if _inter:
-            self.interactive()
-
 
     def do_context(self, *args):
         """
@@ -125,10 +126,12 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         entry = self._ql.loader.entry_point
 
-        self.run(entry)
+        self._run(entry)
 
+    def run(self, *args):
+        pass
 
-    def run(self, address=None):
+    def _run(self, address=None):
         """
         handle qiling instance launching
         """
@@ -149,8 +152,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
             print("there is no way back !!!")
         else:
             print("step backward ~")
-            current_state_dicts = self._ql.save(cpu_context=True, mem=True, reg=False, fd=False)
-            self._ql.restore(diff_snapshot_restore(current_state_dicts, self._states_list.pop()))
+            self._ql.restore(self._states_list.pop())
             self.do_context()
 
 
@@ -166,8 +168,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
             self._saved_states = dict(filter(lambda d: isinstance(d[0], str), self._ql.reg.save().items()))
 
             if getattr(self, "_states_list", None) is not None:
-                current_state_dicts = self._ql.save(cpu_context=True, mem=True, reg=False, fd=False)
-                self._states_list.append(diff_snapshot_save(current_state_dicts, self._states_list[-1]))
+                self._states_list.append(self._ql.save(cpu_context=True, mem=True, reg=False, fd=False))
 
             _cur_addr = self._ql.reg.arch_pc
 
@@ -183,7 +184,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
             else:
                 self.set_breakpoint(next_stop, _is_temp=True)
 
-            self.run(_cur_addr)
+            self._run(_cur_addr)
 
 
     def do_start(self, *args):
@@ -219,7 +220,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
             _cur_addr = self._ql.reg.arch_pc
             print("continued from 0x%08x" % _cur_addr)
 
-            self.run(_cur_addr)
+            self._run(_cur_addr)
 
 
     def do_examine(self, line):
