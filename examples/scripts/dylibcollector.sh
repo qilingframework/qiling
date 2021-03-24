@@ -9,9 +9,6 @@ if [ -d /usr/lib/closure ]; then
    cp -r /usr/lib/closure examples/rootfs/x8664_macos/usr/lib/;
 fi
 
-cd examples
-git clone https://github.com/qilingframework/rootfs.git
-
 #if [ ! -d examples/rootfs/x8664_macos/System/Library/Kernels ]; then
 #   mkdir -p examples/rootfs/x8664_macos/System/Library/Kernels;
 #fi
