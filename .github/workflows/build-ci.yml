@@ -63,6 +63,8 @@ jobs:
           powershell Start-Process -PassThru -Wait PowerShell -ArgumentList "'-Command  Add-MpPreference -ExclusionPath $GITHUB_WORKSPACE'"
           pip3 install setuptools wheel
           pip3 install .
+          cd $GITHUB_WORKSPACE/
+          git clone https://github.com/qilingframework/rootfs.git
           cmd.exe //C 'examples\scripts\dllscollector.bat'
           cd $GITHUB_WORKSPACE/examples/rootfs/x86_windows/bin
           unzip -Pinfected wannacry.bin.zip
@@ -82,14 +84,18 @@ jobs:
               pip3 install setuptools wheel flake8
               flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
               pip3 install .
-              cd examples/rootfs/x86_linux/kernel && unzip -P infected m0hamed_rootkit.ko.zip
+              cd examples
+              git clone https://github.com/qilingframework/rootfs.git
+              cd rootfs/x86_linux/kernel && unzip -P infected m0hamed_rootkit.ko.zip
               cd ../../../../tests && ./test_elf.sh
         elif [ ${{ matrix.os }} == 'ubuntu-20.04' ]; then
               docker run -it --rm -v ${GITHUB_WORKSPACE}:/qiling qilingframework/qiling:dev bash -c "pip3 install . && cd examples/rootfs/x86_linux/kernel && unzip -P infected m0hamed_rootkit.ko.zip && cd ../../../../tests && ./test_elf.sh"
         else
               pip3 install setuptools wheel
               pip3 install .
-              cd examples/rootfs/x86_linux/kernel && unzip -P infected m0hamed_rootkit.ko.zip
+              cd examples
+              git clone https://github.com/qilingframework/rootfs.git              
+              cd rootfs/x86_linux/kernel && unzip -P infected m0hamed_rootkit.ko.zip
               cd ../../../../tests && ./test_elf.sh
         fi
 
