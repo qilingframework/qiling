@@ -47,7 +47,6 @@ class Qltool_Test(unittest.TestCase):
         create = [sys.executable, '../qltool', 'run', '-f', '../examples/rootfs/arm_linux/bin/arm_hello', '--rootfs', '../examples/rootfs/arm_linux', '-e', '^(open|brk)', '--log-plain']
         try:
             output = subprocess.check_output(create, stderr=subprocess.STDOUT)
-            # output = subprocess.Popen(create, stderr=subprocess.PIPE)
         except subprocess.CalledProcessError as e:
             raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))
 
