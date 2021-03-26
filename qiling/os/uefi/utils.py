@@ -21,14 +21,16 @@ def signal_event(ql: Qiling, event_id: int) -> None:
 	if not event["Set"]:
 		event["Set"] = True
 		notify_func = event["NotifyFunction"]
-		notify_context = event["NotifyContext"]
-		ql.loader.notify_list.append((event_id, notify_func, notify_context))
+		callback_args = event["CallbackArgs"]
+
+		ql.loader.notify_list.append((event_id, notify_func, callback_args))
 
 def execute_protocol_notifications(ql: Qiling, from_hook=False) -> bool:
 	if not ql.loader.notify_list:
 		return False
-	
+
 	next_hook = ql.loader.smm_context.heap.alloc(1)
+
 	def exec_next(ql):
 		if ql.loader.notify_list:
 			event_id, notify_func, callback_args = ql.loader.notify_list.pop(0)
@@ -39,16 +41,17 @@ def execute_protocol_notifications(ql: Qiling, from_hook=False) -> bool:
 			ql.hook_address(lambda q: None, next_hook)
 			ql.reg.rax = EFI_SUCCESS
 			ql.reg.arch_pc = ql.stack_pop()
+
 	ql.hook_address(exec_next, next_hook, )
+
 	# To avoid having two versions of the code the first notify function will also be called from the exec_next hook.
 	if from_hook:
 		ql.stack_push(next_hook)
 	else:
 		ql.stack_push(ql.loader.end_of_execution_ptr)
 		ql.reg.arch_pc = next_hook
-	
-	return True
 
+	return True
 
 def check_and_notify_protocols(ql: Qiling, from_hook: bool = False) -> bool:
 	if ql.loader.notify_list:
