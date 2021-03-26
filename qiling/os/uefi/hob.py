@@ -3,6 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from qiling import Qiling
 from qiling.os.uefi.utils import GetEfiConfigurationTable
 from qiling.os.uefi.UefiBaseType import STRUCT, EFI_GUID, UINT32, UINT16
 from qiling.os.uefi.UefiSpec import EFI_CONFIGURATION_TABLE
@@ -24,7 +25,7 @@ class EFI_HOB_GUID_TYPE(STRUCT):
 		('Name',	EFI_GUID)
 	]
 
-def GetHobList(ql) -> int:
+def GetHobList(ql: Qiling) -> int:
 	"""Get HOB list location in memory (ostensibly set by PEI).
 	"""
 
@@ -34,7 +35,7 @@ def GetHobList(ql) -> int:
 
 	return ql.unpack64(conftable.VendorTable)
 
-def CreateHob(ql, hob) -> int:
+def CreateHob(ql: Qiling, hob) -> int:
 	"""Add a HOB to the end of the HOB list.
 	"""
 

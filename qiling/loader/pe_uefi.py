@@ -3,9 +3,10 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from typing import Sequence
+from typing import Optional, Sequence
 from pefile import PE
 
+from qiling import Qiling
 from qiling.const import QL_ARCH
 from qiling.exception import QlErrorArch, QlMemoryMappedError
 from qiling.loader.loader import QlLoader
@@ -21,8 +22,7 @@ from qiling.os.uefi.protocols import EfiSmmCpuProtocol
 from qiling.os.uefi.protocols import EfiSmmSwDispatch2Protocol
 
 class QlLoaderPE_UEFI(QlLoader):
-    def __init__(self, ql):
-        super(QlLoaderPE_UEFI, self).__init__(ql)
+    def __init__(self, ql: Qiling):
         self.ql = ql
         self.modules = []
         self.events = {}
@@ -136,7 +136,7 @@ class QlLoaderPE_UEFI(QlLoader):
         else:
             self.modules.append(module_info)
 
-    def call_function(self, addr: int, args: Sequence[int], ret: int):
+    def call_function(self, addr: int, args: Sequence[int], ret: Optional[int]):
         """Call a function after properly setting up its arguments and return address.
 
         Args:
@@ -176,7 +176,7 @@ class QlLoaderPE_UEFI(QlLoader):
 
         return False
 
-    def execute_module(self, path: str, image_base: int, entry_point: int, eoe_trap: int):
+    def execute_module(self, path: str, image_base: int, entry_point: int, eoe_trap: Optional[int]):
         """Start the execution of a UEFI module.
 
         Args:

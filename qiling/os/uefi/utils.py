@@ -6,11 +6,12 @@
 import binascii
 
 from uuid import UUID
-from typing import Optional
+from typing import Optional, Mapping
 from contextlib import contextmanager
 
 from qiling import Qiling
-from qiling.os.uefi.const import EFI_SUCCESS, EFI_INVALID_PARAMETER
+from qiling.os.uefi.const import EFI_SUCCESS
+from qiling.os.uefi.ProcessorBind import STRUCT
 from qiling.os.uefi.UefiSpec import EFI_CONFIGURATION_TABLE
 from qiling.os.uefi.UefiBaseType import EFI_GUID
 
@@ -109,7 +110,7 @@ write_int32 = ptr_write32
 read_int64  = ptr_read64
 write_int64 = ptr_write64
 
-def init_struct(ql: Qiling, base: int, descriptor: dict):
+def init_struct(ql: Qiling, base: int, descriptor: Mapping):
 	struct_class = descriptor['struct']
 	struct_fields = descriptor.get('fields', [])
 
@@ -136,8 +137,9 @@ def init_struct(ql: Qiling, base: int, descriptor: dict):
 	return isntance
 
 @contextmanager
-def update_struct(cls, ql, address: int):
+def update_struct(cls: STRUCT, ql: Qiling, address: int):
 	struct = cls.loadFrom(ql, address)
+
 	try:
 		yield struct
 	finally:

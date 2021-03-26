@@ -1,4 +1,5 @@
 from abc import ABC
+from typing import Mapping
 
 from qiling import Qiling
 from qiling.os.memory import QlMemoryHeap
@@ -18,13 +19,13 @@ class UefiContext(ABC):
 		self.conf_table_data_ptr = 0
 		self.conf_table_data_next_ptr = 0
 
-	def init_heap(self, base, size):
+	def init_heap(self, base: int, size: int):
 		self.heap = QlMemoryHeap(self.ql, base, base + size)
 
-	def init_stack(self, base, size):
+	def init_stack(self, base: int, size: int):
 		self.ql.mem.map(base, size)
 
-	def install_protocol(self, proto_desc, handle, address=None, from_hook=False):
+	def install_protocol(self, proto_desc: Mapping, handle, address: int = None, from_hook: bool = False):
 		guid = proto_desc['guid']
 
 		if handle not in self.protocols:
@@ -57,7 +58,7 @@ class UefiContext(ABC):
 				signal_event(self.ql, event_id)
 		return execute_protocol_notifications(self.ql, from_hook)
 
-	def install_configuration_table(self, guid, table):
+	def install_configuration_table(self, guid: str, table: int):
 		guid = guid.lower()
 		confs = self.conf_table_array
 
@@ -75,8 +76,9 @@ class UefiContext(ABC):
 		instance.saveTo(self.ql, ptr)
 
 class DxeContext(UefiContext):
-	def install_configuration_table(self, guid, table):
+	def install_configuration_table(self, guid: str, table: int):
 		super().install_configuration_table(guid, table)
+
 		# Update number of configuration table entries in the ST.
 		with update_struct(EFI_SYSTEM_TABLE, self.ql, self.ql.loader.gST) as gST:
 			gST.NumberOfTableEntries = len(self.conf_table_array)
@@ -93,8 +95,9 @@ class SmmContext(UefiContext):
 
 		self.swsmi_handlers = []
 
-	def install_configuration_table(self, guid, table):
+	def install_configuration_table(self, guid: str, table: int):
 		super().install_configuration_table(guid, table)
+
 		# Update number of configuration table entries in the SMST.
 		with update_struct(EFI_SMM_SYSTEM_TABLE2, self.ql, self.ql.loader.gSmst) as gSmst:
 			gSmst.NumberOfTableEntries = len(self.conf_table_array)
