@@ -19,8 +19,6 @@ from qiling.os.uefi.protocols import EfiSmmAccess2Protocol
 from qiling.os.uefi.protocols import EfiSmmBase2Protocol
 from qiling.os.uefi.protocols import EfiSmmCpuProtocol
 from qiling.os.uefi.protocols import EfiSmmSwDispatch2Protocol
-from qiling.os.uefi.protocols import PcdProtocol
-
 
 class QlLoaderPE_UEFI(QlLoader):
     def __init__(self, ql):
