@@ -9,23 +9,17 @@ Release
 3. Update ChangeLog    
 4. commit and push
 5. Merge dev into master
-6. checkout master
+6. git checkout master
 7. git pull
 6. git tag 1.[x].[x]
 8. git push origin --tags
 9. check for new Pypi package @ https://pypi.org/project/qiling
 10. pip3 install qiling --upgrade
-
-Pre-release/dev
-1. __version__.py
-    - __version__ = "1.[x].[x]" + "-rc[x]"
-2. Make sure development status classifer in setup.py is correct.
-    - 'Development Status :: 3 - Alpha'
-3. Update ChangeLog
-4. commit and push
-5. checkout dev
-6. git pull
-7. git tag 1.[x].[x]-rc[x]
-8. git push origin --tags
-9. check for new pre-release Pypi package @ https://pypi.org/project/qiling/#history
-10. pip3 install qiling --upgrade
+11. git checkout dev
+12. git merge master
+13. Change setup.py to 
+    - 'Development Status :: 3 - Beta'
+14. Update version and add in dev 
+    __version__ = "X.X.X" + "-dev"
+15. Update changelog and add section for next Update
+16. commit and push

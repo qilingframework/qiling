@@ -3,7 +3,10 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from qiling import *
+from sys import path
+path.append('..')
+
+from qiling import Qiling
 from qiling.os.mapper import QlFsMappedObject
 
 class Fake_urandom(QlFsMappedObject):

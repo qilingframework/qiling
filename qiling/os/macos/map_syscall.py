@@ -5,23 +5,24 @@
 
 # cols = ("arm64", "x8664")
 
-from qiling.const import *
+from qiling.const import QL_ARCH
+from qiling.os.posix.posix import SYSCALL_PREF
 
 def map_syscall(ql, syscall_num):
     for k,v in syscall_table.items():
         if ql.archtype == QL_ARCH.X8664:
             if syscall_num >= 0x2000000 and syscall_num <= 0x3000000:
                 syscall_num = syscall_num - 0x2000000
-            
+
             if v[0] == syscall_num:
-                return "ql_syscall_" + k
-        
+                return f'{SYSCALL_PREF}{k}'
+
         elif ql.archtype == QL_ARCH.ARM64:
             if syscall_num >= 0xffffffffffffff00:
                 syscall_num = syscall_num - 0xffffffffffffff00
 
             if v[1] == syscall_num:
-                return "ql_syscall_" + k            
+                return f'{SYSCALL_PREF}{k}'
 
 syscall_table = {
     "kernelrpc_mach_vm_allocate_trap": (0x100000a, -1),
@@ -307,8 +308,8 @@ syscall_table = {
     "semwait_signal": (334, 334),
     "proc_info": (336, 336),
     "sendfile": (337, 337),
-    "stat64_macos": (338, -1),
-    "fstat64_macos": (339, -1),
+    "stat64": (338, -1),
+    "fstat64": (339, -1),
     "lstat64": (340, -1),
     "stat64_extended": (341, 341),
     "lstat64_extended": (342, 342),

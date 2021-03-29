@@ -41,7 +41,12 @@ def ql_syscall_munmap(ql, munmap_addr , munmap_len, *args, **kw):
     return regreturn
 
 
-def ql_syscall_madvise(ql, *args, **kw):
+def ql_syscall_madvise(ql, madvise_addr, madvise_length, madvise_advice, *args, **kw):
+    MADV_DONTNEED = 4
+
+    if madvise_advice == MADV_DONTNEED:
+        ql.mem.write(madvise_addr, b'\x00' * madvise_length)
+
     regreturn = 0
     return regreturn
 
@@ -71,6 +76,7 @@ def ql_syscall_old_mmap(ql, struct_mmap_args, *args, **kw):
     # this is ugly patch, we might need to get value from elf parse,
     # is32bit or is64bit value not by arch
     MAP_ANONYMOUS = 32
+    MAP_SHARED = 1
 
     if (ql.archtype== QL_ARCH.ARM64) or (ql.archtype== QL_ARCH.X8664):
         mmap_fd = ql.unpack64(ql.pack64(mmap_fd))
@@ -112,7 +118,7 @@ def ql_syscall_old_mmap(ql, struct_mmap_args, *args, **kw):
         ql.os.fd[mmap_fd].lseek(mmap_offset)
         data = ql.os.fd[mmap_fd].read(mmap_length)
         mem_info = str(ql.os.fd[mmap_fd].name)
-        ql.os.fd[mmap_fd]._is_map_shared = True
+        ql.os.fd[mmap_fd]._is_map_shared = mmap_flags & MAP_SHARED
         ql.os.fd[mmap_fd]._mapped_offset = mmap_offset
 
         ql.log.debug("mem wirte : " + hex(len(data)))
@@ -138,6 +144,7 @@ def ql_syscall_mmap(ql, mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, 
     # this is ugly patch, we might need to get value from elf parse,
     # is32bit or is64bit value not by arch
     MAP_ANONYMOUS = 32
+    MAP_SHARED = 1
 
     if (ql.archtype== QL_ARCH.ARM64) or (ql.archtype== QL_ARCH.X8664):
         mmap_fd = ql.unpack64(ql.pack64(mmap_fd))
@@ -184,7 +191,7 @@ def ql_syscall_mmap(ql, mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, 
         ql.os.fd[mmap_fd].lseek(mmap_pgoffset)
         data = ql.os.fd[mmap_fd].read(mmap_length)
         mem_info = str(ql.os.fd[mmap_fd].name)
-        ql.os.fd[mmap_fd]._is_map_shared = True
+        ql.os.fd[mmap_fd]._is_map_shared = mmap_flags & MAP_SHARED
         ql.os.fd[mmap_fd]._mapped_offset = mmap_pgoffset
 
         ql.log.debug("mem wirte : " + hex(len(data)))
@@ -205,7 +212,8 @@ def ql_syscall_mmap2(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap
     # this is ugly patch, we might need to get value from elf parse,
     # is32bit or is64bit value not by arch
 
-    MAP_ANONYMOUS=32
+    MAP_ANONYMOUS = 32
+    MAP_SHARED = 1
 
     if (ql.archtype== QL_ARCH.ARM64) or (ql.archtype== QL_ARCH.X8664):
         mmap2_fd = ql.unpack64(ql.pack64(mmap2_fd))
@@ -249,7 +257,7 @@ def ql_syscall_mmap2(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap
         ql.os.fd[mmap2_fd].lseek(mmap2_pgoffset)
         data = ql.os.fd[mmap2_fd].read(mmap2_length)
         mem_info = str(ql.os.fd[mmap2_fd].name)
-        ql.os.fd[mmap2_fd]._is_map_shared = True
+        ql.os.fd[mmap2_fd]._is_map_shared = mmap2_flags & MAP_SHARED
         ql.os.fd[mmap2_fd]._mapped_offset = mmap2_pgoffset
 
         ql.log.debug("mem write : " + hex(len(data)))

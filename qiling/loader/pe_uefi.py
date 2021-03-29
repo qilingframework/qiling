@@ -216,10 +216,6 @@ class QlLoaderPE_UEFI(QlLoader):
         self.loaded_image_protocol_modules = []
         self.tpl = 4 # TPL_APPLICATION
 
-        self.user_defined_api = self.ql.os.user_defined_api
-        self.user_defined_api_onenter = self.ql.os.user_defined_api_onenter
-        self.user_defined_api_onexit = self.ql.os.user_defined_api_onexit
-
         arch_key = {
             QL_ARCH.X86   : "OS32",
             QL_ARCH.X8664 : "OS64"

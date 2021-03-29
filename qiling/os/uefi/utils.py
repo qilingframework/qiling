@@ -7,12 +7,14 @@ import binascii
 
 from uuid import UUID
 from typing import Optional
+from contextlib import contextmanager
 
+from qiling import Qiling
 from qiling.os.uefi.const import EFI_SUCCESS, EFI_INVALID_PARAMETER
-from qiling.os.uefi.UefiSpec import EFI_CONFIGURATION_TABLE, EFI_SYSTEM_TABLE
+from qiling.os.uefi.UefiSpec import EFI_CONFIGURATION_TABLE
 from qiling.os.uefi.UefiBaseType import EFI_GUID
 
-def signal_event(ql, event_id: int) -> None:
+def signal_event(ql: Qiling, event_id: int) -> None:
 	event = ql.loader.events[event_id]
 
 	if not event["Set"]:
@@ -21,48 +23,79 @@ def signal_event(ql, event_id: int) -> None:
 		notify_context = event["NotifyContext"]
 		ql.loader.notify_list.append((event_id, notify_func, notify_context))
 
-def check_and_notify_protocols(ql) -> bool:
+def execute_protocol_notifications(ql: Qiling, from_hook=False) -> bool:
+	if not ql.loader.notify_list:
+		return False
+	
+	next_hook = ql.loader.smm_context.heap.alloc(1)
+	def exec_next(ql):
+		if ql.loader.notify_list:
+			event_id, notify_func, callback_args = ql.loader.notify_list.pop(0)
+			ql.log.info(f'Notify event:{event_id} calling: 0x{notify_func:x} callback_args:{list(map(hex, callback_args))}')
+			ql.loader.call_function(notify_func, callback_args, next_hook)
+		else:
+			ql.loader.smm_context.heap.free(next_hook)
+			ql.hook_address(lambda q: None, next_hook)
+			ql.reg.rax = EFI_SUCCESS
+			ql.reg.arch_pc = ql.stack_pop()
+	ql.hook_address(exec_next, next_hook, )
+	# To avoid having two versions of the code the first notify function will also be called from the exec_next hook.
+	if from_hook:
+		ql.stack_push(next_hook)
+	else:
+		ql.stack_push(ql.loader.end_of_execution_ptr)
+		ql.reg.arch_pc = next_hook
+	
+	return True
+
+
+def check_and_notify_protocols(ql: Qiling, from_hook: bool = False) -> bool:
 	if ql.loader.notify_list:
 		event_id, notify_func, notify_context = ql.loader.notify_list.pop(0)
-		ql.log.info(f'Notify event:{event_id} calling:{notify_func:x} context:{notify_context:x}')
+		ql.log.info(f'Notify event: {event_id}, calling: {notify_func:#x} context: {notify_context:#x}')
 
-		ql.loader.call_function(notify_func, [notify_context], ql.loader.end_of_execution_ptr)
+		if from_hook:
+			# When running from a hook the caller pops the return address from the stack.
+			# We need to push the address to the stack as opposed to setting it to the instruction pointer.
+			ql.loader.call_function(0, [notify_context], notify_func)
+		else:
+			ql.loader.call_function(notify_func, [notify_context], ql.loader.end_of_execution_ptr)
 
 		return True
 
 	return False
 
-def ptr_read8(ql, addr: int) -> int:
+def ptr_read8(ql: Qiling, addr: int) -> int:
 	"""Read BYTE data from a pointer
 	"""
 
 	return ql.unpack8(ql.mem.read(addr, 1))
 
-def ptr_write8(ql, addr: int, val: int) -> None:
+def ptr_write8(ql: Qiling, addr: int, val: int) -> None:
 	"""Write BYTE data to a pointer
 	"""
 
 	ql.mem.write(addr, ql.pack8(val))
 
-def ptr_read32(ql, addr: int) -> int:
+def ptr_read32(ql: Qiling, addr: int) -> int:
 	"""Read DWORD data from a pointer
 	"""
 
 	return ql.unpack32(ql.mem.read(addr, 4))
 
-def ptr_write32(ql, addr: int, val: int) -> None:
+def ptr_write32(ql: Qiling, addr: int, val: int) -> None:
 	"""Write DWORD data to a pointer
 	"""
 
 	ql.mem.write(addr, ql.pack32(val))
 
-def ptr_read64(ql, addr: int) -> int:
+def ptr_read64(ql: Qiling, addr: int) -> int:
 	"""Read QWORD data from a pointer
 	"""
 
 	return ql.unpack64(ql.mem.read(addr, 8))
 
-def ptr_write64(ql, addr: int, val: int) -> None:
+def ptr_write64(ql: Qiling, addr: int, val: int) -> None:
 	"""Write QWORD data to a pointer
 	"""
 
@@ -76,7 +109,7 @@ write_int32 = ptr_write32
 read_int64  = ptr_read64
 write_int64 = ptr_write64
 
-def init_struct(ql, base: int, descriptor: dict):
+def init_struct(ql: Qiling, base: int, descriptor: dict):
 	struct_class = descriptor['struct']
 	struct_fields = descriptor.get('fields', [])
 
@@ -101,6 +134,14 @@ def init_struct(ql, base: int, descriptor: dict):
 	ql.log.info(f'')
 
 	return isntance
+
+@contextmanager
+def update_struct(cls, ql, address: int):
+	struct = cls.loadFrom(ql, address)
+	try:
+		yield struct
+	finally:
+		struct.saveTo(ql, address)
 
 def str_to_guid(guid: str) -> EFI_GUID:
 	"""Construct an EFI_GUID structure out of a plain GUID string.

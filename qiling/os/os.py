@@ -4,45 +4,51 @@
 #
 
 import sys
+from typing import Any, Optional, Callable, Mapping
 
-from typing import Callable, Sequence, Mapping, MutableMapping, Any
-from unicorn.x86_const import *
+from qiling import Qiling
+from qiling.const import QL_OS, QL_INTERCEPT, QL_OS_POSIX
+from qiling.os.const import STRING, WSTRING, GUID
+from qiling.os.fcall import QlFunctionCall
 
-from .const import *
 from .filestruct import ql_file
 from .mapper import QlFsMapper
 from .utils import QlOsUtils
+from .path import QlPathManager
 
-from qiling.const import QL_ARCH, QL_OS, QL_INTERCEPT, QL_OS_POSIX
-from qiling.exception import QlErrorArch
-from qiling.os.fncc import QlOsFncc
+class QlOs:
+    Resolver = Callable[[int], Any]
 
-
-class QlOs(QlOsUtils, QlOsFncc):
-    def __init__(self, ql):
-        #super(QlOs, self).__init__(ql)
-        QlOsUtils.__init__(self, ql)
-        QlOsFncc.__init__(self, ql)
+    def __init__(self, ql: Qiling, resolvers: Mapping[Any, Resolver] = {}):
         self.ql = ql
+        self.utils = QlOsUtils(ql)
+        self.fcall: Optional[QlFunctionCall] = None
         self.fs_mapper = QlFsMapper(ql)
         self.child_processes = False
         self.thread_management = None
         self.profile = self.ql.profile
-        self.current_path = self.profile.get("MISC", "current_path")
+        self.path = QlPathManager(ql, self.ql.profile.get("MISC", "current_path"))
         self.exit_code = 0
         self.services = {}
         self.elf_mem_start = 0x0
 
-        if not hasattr(sys.stdin, "fileno") or not hasattr(sys.stdout, "fileno") or not hasattr(sys.stderr, "fileno"):
-            # IDAPython has some hack on standard io streams and thus they don't have corresponding fds.
+        self.user_defined_api = {
+            QL_INTERCEPT.CALL : {},
+            QL_INTERCEPT.ENTER: {},
+            QL_INTERCEPT.EXIT : {}
+        }
 
-            self.stdin  = sys.stdin.buffer  if hasattr(sys.stdin,  "buffer") else sys.stdin
-            self.stdout = sys.stdout.buffer if hasattr(sys.stdout, "buffer") else sys.stdout
-            self.stderr = sys.stderr.buffer if hasattr(sys.stderr, "buffer") else sys.stderr
-        else:
+        # IDAPython has some hack on standard io streams and thus they don't have corresponding fds.
+        try:
+            import ida_idaapi
+        except ImportError:
             self.stdin  = ql_file('stdin',  sys.stdin.fileno())
             self.stdout = ql_file('stdout', sys.stdout.fileno())
             self.stderr = ql_file('stderr', sys.stderr.fileno())
+        else:
+            self.stdin  = sys.stdin.buffer  if hasattr(sys.stdin,  "buffer") else sys.stdin
+            self.stdout = sys.stdout.buffer if hasattr(sys.stdout, "buffer") else sys.stdout
+            self.stderr = sys.stderr.buffer if hasattr(sys.stderr, "buffer") else sys.stderr
 
         if self.ql.stdin != 0:
             self.stdin = self.ql.stdin
@@ -66,11 +72,17 @@ class QlOs(QlOsUtils, QlOsFncc):
             # windows shellcode entry point will comes from pe loader
             self.entry_point = int(self.profile.get("CODE", "entry_point"), 16)
 
-        # We can save every syscall called
-        self.syscalls = {}
-        self.syscalls_counter = 0
-        self.appeared_strings = {}
-        self.setup_output()
+        # default fcall paramters resolving methods
+        self.resolvers = {
+            STRING : lambda ptr: ptr and self.utils.read_cstring(ptr),
+            WSTRING: lambda ptr: ptr and self.utils.read_wstring(ptr),
+            GUID   : lambda ptr: ptr and str(self.utils.read_guid(ptr))
+        }
+
+        # let the user override default resolvers or add custom ones
+        self.resolvers.update(resolvers)
+
+        self.utils.setup_output()
 
     def save(self):
         return {}
@@ -78,59 +90,79 @@ class QlOs(QlOsUtils, QlOsFncc):
     def restore(self, saved_state):
         pass
 
-    def set_syscall(self, target_syscall, intercept_function, intercept):
-        if intercept == QL_INTERCEPT.ENTER:
-            if isinstance(target_syscall, int):
-                self.dict_posix_onEnter_syscall_by_num[target_syscall] = intercept_function
-            else:
-                syscall_name = "ql_syscall_" + str(target_syscall)
-                self.dict_posix_onEnter_syscall[syscall_name] = intercept_function
+    def resolve_fcall_params(self, params: Mapping[str, Any]) -> Mapping[str, Any]:
+        """Transform function call raw parameters values into meaningful ones, according to
+        their assigned type.
 
-        elif intercept == QL_INTERCEPT.EXIT:
-            if self.ql.ostype in (QL_OS_POSIX):
-                if isinstance(target_syscall, int):
-                    self.dict_posix_onExit_syscall_by_num[target_syscall] = intercept_function
-                else:
-                    syscall_name = "ql_syscall_" + str(target_syscall)
-                    self.dict_posix_onExit_syscall[syscall_name] = intercept_function                    
+        Args:
+            params: a mapping of parameter names to their types
 
-        else:
-            if self.ql.ostype in (QL_OS_POSIX):
-                if isinstance(target_syscall, int):
-                    self.dict_posix_syscall_by_num[target_syscall] = intercept_function
-                else:
-                    syscall_name = "ql_syscall_" + str(target_syscall)
-                    self.dict_posix_syscall[syscall_name] = intercept_function
+        Returns: a mapping of parameter names to their resolved values
+        """
 
-            elif self.ql.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
-                self.set_api(target_syscall, intercept_function)
+        # TODO: could use func.__annotations__ to resolve parameters and return type.
+        #       that would require redefining all hook functions with python annotations, but
+        #       also simplify hooks code (e.g. no need to do:  x = params["x"] )
 
-    def set_api(self, api_name, intercept_function, intercept):
+        names = params.keys()
+        types = params.values()
+        values = self.fcall.readParams(types)
+        resolved = {}
+
+        for name, typ, val in zip(names, types, values):
+            if typ in self.resolvers:
+                val = self.resolvers[typ](val)
+
+            resolved[name] = val
+
+        return resolved
+
+    def call(self, pc: int, func: Callable, proto: Mapping[str, Any], onenter: Optional[Callable], onexit: Optional[Callable], passthru: bool = False):
+        # resolve arguments values according to their types
+        args = self.resolve_fcall_params(proto)
+
+        # call hooked function
+        args, retval, retaddr = self.fcall.call(func, proto, args, onenter, onexit, passthru)
+
+        # print
+        self.utils.print_function(pc, func.__name__, args, retval, passthru)
+
+        # append syscall to list
+        self.utils._call_api(pc, func.__name__, args, retval, retaddr)
+
+        # TODO: PE_RUN is a Windows and UEFI property; move somewhere else?
+        if hasattr(self, 'PE_RUN') and not self.PE_RUN:
+            return retval
+
+        if not passthru:
+            self.ql.reg.arch_pc = retaddr
+
+        return retval
+
+    # TODO: separate this method into os-specific functionalities, instead of 'if-else'
+    def set_api(self, api_name: str, intercept_function: Callable, intercept: QL_INTERCEPT):
         if self.ql.ostype == QL_OS.UEFI:
-            api_name = "hook_" + str(api_name)
+            api_name = f'hook_{api_name}'
 
-        if intercept == QL_INTERCEPT.ENTER:
-            if self.ql.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
-                self.user_defined_api_onenter[api_name] = intercept_function
-            else:
-                self.add_function_hook(api_name, intercept_function, intercept) 
+        # BUG: workaround missing arg
+        if intercept is None:
+            intercept = QL_INTERCEPT.CALL
 
-        elif intercept == QL_INTERCEPT.EXIT:
-            if self.ql.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
-                self.user_defined_api_onexit[api_name] = intercept_function  
-            else:
-                self.add_function_hook(api_name, intercept_function, intercept)           
-
+        if (self.ql.ostype in (QL_OS.WINDOWS, QL_OS.UEFI, QL_OS.DOS)) or (self.ql.ostype in (QL_OS_POSIX) and self.ql.loader.is_driver):
+            self.user_defined_api[intercept][api_name] = intercept_function
         else:
-            if self.ql.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
-                self.user_defined_api[api_name] = intercept_function
-            else:
-                self.add_function_hook(api_name, intercept_function)  
+            self.add_function_hook(api_name, intercept_function, intercept)
 
     def find_containing_image(self, pc):
         for image in self.ql.loader.images:
             if image.base <= pc < image.end:
                 return image
+
+    def stop(self):
+        if self.ql.multithread:
+            self.thread_management.stop() 
+        else:
+            self.ql.emu_stop()
 
     def emu_error(self):
         self.ql.log.error("\n")
@@ -156,48 +188,6 @@ class QlOs(QlOsUtils, QlOsFncc):
             self.ql.log.error("%r" % ([hex(_) for _ in buf]))
 
             self.ql.log.info("\n")
-            self.disassembler(self.ql, self.ql.reg.arch_pc, 64)
+            self.utils.disassembler(self.ql, self.ql.reg.arch_pc, 64)
         except:
             self.ql.log.error("Error: PC(0x%x) Unreachable" % self.ql.reg.arch_pc)
-
-    def set_function_args(self, args: Sequence[int]) -> None:
-        """Set function call arguments.
-        """
-
-        for i, (reg, arg) in enumerate(zip(self._cc_args, args)):
-            # should arg be written to a reg or the stack?
-            if reg is None:
-                # get matching stack item
-                si = i - self._cc_args.index(None)
-
-                # skip return address and shadow space
-                self.ql.stack_write((1 + self._shadow + si) * self._asize, arg)
-            else:
-                self.ql.uc.reg_write(reg, arg)
-
-    
-    def clear_syscalls(self):
-        self.syscalls = {}
-        self.syscalls_counter = 0
-        self.appeared_strings = {}
-
-
-    def _call_api(self, name, params, result, address, return_address):
-        params_with_values = {}
-
-        if name.startswith("hook_"):
-            name = name[5:]
-
-            # printfs are shit
-            if params is not None:
-                self.set_function_params(params, params_with_values)
-
-        self.syscalls.setdefault(name, []).append({
-            "params": params_with_values,
-            "result": result,
-            "address": address,
-            "return_address": return_address,
-            "position": self.syscalls_counter
-        })
-
-        self.syscalls_counter += 1

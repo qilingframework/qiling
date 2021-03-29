@@ -6,25 +6,23 @@
 # Table from: https://github.com/zeropointdynamics/zelos/blob/master/src/zelos/ext/platforms/linux/syscalls/syscalls_table.py
 # cols = ("arm64", "arm", "x8664", "x32", "x86", "mips", "powerpc", "ia64")
 
-from qiling.const import *
+from typing import Callable
+
+from qiling.const import QL_ARCH
+from qiling.os.posix.posix import SYSCALL_PREF
 
 def map_syscall(ql, syscall_num):
-    for k,v in syscall_table.items():
-        
-        if ql.archtype == QL_ARCH.ARM64 and v[0] == syscall_num:
-            return "ql_syscall_" + k
+    predicate: Callable = {
+        QL_ARCH.ARM64: lambda v: v[0] == syscall_num,
+        QL_ARCH.ARM:   lambda v: v[1] == syscall_num,
+        QL_ARCH.X8664: lambda v: v[2] == syscall_num,
+        QL_ARCH.X86:   lambda v: v[4] == syscall_num,
+        QL_ARCH.MIPS:  lambda v: v[5] == syscall_num
+    }[ql.archtype]
 
-        elif ql.archtype == QL_ARCH.ARM and v[1] == syscall_num:
-            return "ql_syscall_" + k
-
-        elif ql.archtype == QL_ARCH.X8664 and v[2] == syscall_num:
-            return "ql_syscall_" + k
-
-        elif ql.archtype == QL_ARCH.X86 and v[4] == syscall_num:
-            return "ql_syscall_" + k            
-
-        elif ql.archtype == QL_ARCH.MIPS and v[5] == syscall_num:
-            return "ql_syscall_" + k              
+    for k, v in syscall_table.items():
+        if predicate(v):
+            return f'{SYSCALL_PREF}{k}'
 
 syscall_table = {
     "_llseek": (-1, 140, -1, -1, 140, 4140, 140, -1),
@@ -251,7 +249,7 @@ syscall_table = {
     "munmap": (215, 91, 11, 1073741835, 91, 4091, 91, 1152),
     "name_to_handle_at": (264, 370, 303, 1073742127, 341, 4339, 345, 1326),
     "nanosleep": (101, 162, 35, 1073741859, 162, 4166, 162, 1168),
-    "fstatat64": (79, -1, 262, 1073742086, -1, -1, -1, 1286),
+    "newfstatat": (79, -1, 262, 1073742086, -1, -1, -1, 1286),
     "nfsservctl": (42, 169, 180, -1, 169, 4189, 168, 1169),
     "ni_syscall": (-1, -1, -1, -1, -1, -1, -1, 1024),
     "nice": (-1, 34, -1, -1, 34, 4034, 34, -1),
@@ -330,26 +328,8 @@ syscall_table = {
     "rt_sigtimedwait_time64": (-1, 421, -1, -1, 421, 4421, 421, -1),
     "rt_tgsigqueueinfo": (240, 363, 297, 1073742360, 335, 4332, 322, 1321),
     "rtas": (-1, -1, -1, -1, -1, -1, 255, -1),
-    "sched_get_priority_max": (
-        125,
-        159,
-        146,
-        1073741970,
-        159,
-        4163,
-        159,
-        1165,
-    ),
-    "sched_get_priority_min": (
-        126,
-        160,
-        147,
-        1073741971,
-        160,
-        4164,
-        160,
-        1166,
-    ),
+    "sched_get_priority_max": (125, 159, 146, 1073741970, 159, 4163, 159, 1165),
+    "sched_get_priority_min": (126, 160, 147, 1073741971, 160, 4164, 160, 1166),
     "sched_getaffinity": (123, 242, 204, 1073742028, 242, 4240, 223, 1232),
     "sched_getattr": (275, 381, 315, 1073742139, 352, 4350, 356, 1337),
     "sched_getparam": (121, 155, 143, 1073741967, 155, 4159, 155, 1160),

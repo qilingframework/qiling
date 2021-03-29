@@ -631,21 +631,21 @@
     ],
     "wsprintfA": [
         {
-            "name": "VOID",
+            "name": "Buffer",
             "type": "LPSTR"
         },
         {
-            "name": "VOID",
+            "name": "Format",
             "type": "LPCSTR"
         }
     ],
     "wsprintfW": [
         {
-            "name": "VOID",
+            "name": "Buffer",
             "type": "LPWSTR"
         },
         {
-            "name": "VOID",
+            "name": "Format",
             "type": "LPCWSTR"
         }
     ],

@@ -13,7 +13,7 @@ def ql_syscall_getrandom(ql, buf, buflen, flags,*args, **kw):
     regreturn = None
     try:
         data = os.urandom(buflen)
-        ql.uc.mem_write(buf, data)
+        ql.mem.write(buf, data)
         regreturn = len(data)
     except:
         regreturn = -1

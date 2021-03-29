@@ -18,7 +18,7 @@ unicornafl.monkeypatch()
 
 sys.path.append("../../../")
 from qiling import *
-
+from qiling.const import QL_VERBOSE
 
 def patcher(ql):
     br0_addr = ql.mem.search("br0".encode() + b'\x00')
@@ -27,7 +27,7 @@ def patcher(ql):
 
 
 def main(input_file, enable_trace=False):
-    ql = Qiling(["rootfs/bin/httpd"], "rootfs", output = "debug", console = True if enable_trace else False)
+    ql = Qiling(["rootfs/bin/httpd"], "rootfs", verbose=QL_VERBOSE.DEBUG, console = True if enable_trace else False)
 
     # save current emulated status
     ql.restore(snapshot="snapshot.bin")

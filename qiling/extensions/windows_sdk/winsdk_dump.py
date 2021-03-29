@@ -76,9 +76,9 @@ def save2json():
         print(dllname)
         if dllname[0].isupper():
             dllname = '_'+dllname
-        fo = open('./windows_sdk/'+dllname.replace('.', '_')+'.json', 'w+')
-        fo.write(result_json)
-        fo.close()
+
+        with open(f'./windows_sdk/{dllname.replace(".", "_")}.json', 'w+') as fo:
+            fo.write(result_json)
 
 
 if __name__ == '__main__':

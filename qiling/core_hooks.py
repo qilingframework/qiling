@@ -343,6 +343,9 @@ class QlCoreHooks:
         return HookRet(self, None, h)
     
 
+    def get_hook_address(self, address):
+        return self._addr_hook.get(address, [])
+
     def hook_intno(self, callback, intno, user_data=None):
         h = HookIntr(callback, intno, user_data)
         self._ql_hook(UC_HOOK_INTR, h)

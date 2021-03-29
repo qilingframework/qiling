@@ -3,25 +3,17 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import os, random, sys, unittest
-import string as st
-from binascii import unhexlify
+import sys, unittest
+sys.path.append('..')
 
-sys.path.insert(0, "..")
-
-from qiling import *
-from qiling.const import *
-from qiling.exception import *
-from qiling.os.windows.fncc import *
-from qiling.os.windows.utils import *
-from unicorn.x86_const import *
+from qiling import Qiling
 
 class DOSTest(unittest.TestCase):
 
+    # TODO: missing implemention of INT 3Ch and INT 03h
     def test_dos_8086_hello(self):
         ql = Qiling(["../examples/rootfs/8086/dos/ARKA.DOS_EXE"], "../examples/rootfs/8086/dos")
         ql.run()
-        del ql
 
 if __name__ == "__main__":
     unittest.main()

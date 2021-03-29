@@ -3,6 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from qiling.os.const import *
 from qiling.os.windows.const import *
 from qiling.os.windows.fncc import *
 

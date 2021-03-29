@@ -3,13 +3,16 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import sys
-sys.path.append("..")
-from qiling import *
-from qiling.os.disk import QlDisk
 from itertools import product
 import struct
 import curses
+import sys
+
+sys.path.append("..")
+
+from qiling import Qiling
+from qiling.const import QL_VERBOSE
+from qiling.os.disk import QlDisk
 
 verfication_start_ip = 0x850B
 petya_2nd_stage_start = 0x8000
@@ -46,7 +49,7 @@ def third_stage(key):
     ql = Qiling(["rootfs/8086/petya/petya.DOS_MBR"], 
                  "rootfs/8086",
                  console=False, 
-                 output="debug")
+                 verbose=QL_VERBOSE.DEBUG)
     ql.add_fs_mapper(0x80, QlDisk("rootfs/8086/petya/out_1M.raw", 0x80))
     ql.hook_code(pass_red, begin=0x886d, end=0x886d)
     ql.hook_code(input_key, begin=0x85f0, end=0x85f0)
@@ -89,7 +92,7 @@ def first_stage():
     ql = Qiling(["rootfs/8086/petya/petya.DOS_MBR"], 
                  "rootfs/8086",
                  console=False, 
-                 output="debug")
+                 verbose=QL_VERBOSE.DEBUG)
     ql.add_fs_mapper(0x80, QlDisk("rootfs/8086/petya/out_1M.raw", 0x80))
     # Workaround for `until` in uc_emu_start not working with dynamic loaded code.
     ql.hook_code(stop, begin=petya_2nd_stage_start, end=petya_2nd_stage_start)

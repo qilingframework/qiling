@@ -3,12 +3,10 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import binascii
-
 from qiling.const import *
 from qiling.os.const import *
 
-from qiling.os.uefi.const import EFI_SUCCESS, EFI_NOT_FOUND, EFI_OUT_OF_RESOURCES
+from qiling.os.uefi.const import EFI_SUCCESS, EFI_NOT_FOUND, EFI_OUT_OF_RESOURCES, EFI_INVALID_PARAMETER
 from qiling.os.uefi.utils import *
 from qiling.os.uefi.fncc import *
 from qiling.os.uefi.ProcessorBind import *
@@ -181,16 +179,16 @@ def hook_SmmHandleProtocol(ql, address, params):
 	"Registration"	: POINTER	# PTR(PTR(VOID))
 })
 def hook_SmmRegisterProtocolNotify(ql, address, params):
-	#event = params['Event']
-	#proto = params["Protocol"]
-	#
-	#if event in ql.loader.events:
-	#	ql.loader.events[event]['Guid'] = proto
-	#	check_and_notify_protocols(ql)
-	#
-	#	return EFI_SUCCESS
-
-	return EFI_INVALID_PARAMETER
+	event_id = len(ql.loader.events)
+	event_dic = {
+		"NotifyFunction": params["Function"],
+		"CallbackArgs"	: None,
+		"Guid"			: params["Protocol"],
+		"Set"			: False
+	}
+	ql.loader.events[event_id] = event_dic
+	ptr_write64(ql, params["Registration"], event_id)
+	return EFI_SUCCESS
 
 @dxeapi(params = {
 	"SearchType": INT,		# EFI_LOCATE_SEARCH_TYPE
@@ -291,8 +289,6 @@ def initialize(ql, gSmst : int):
 	ql.loader.smm_context.conf_table_data_next_ptr = conf_data
 
 	install_configuration_table(ql.loader.smm_context, "SMM_RUNTIME_SERVICES_TABLE", gSmmRT)
-	
-
 
 __all__ = [
 	'EFI_SMM_SYSTEM_TABLE2',

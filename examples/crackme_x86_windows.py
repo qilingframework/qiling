@@ -2,15 +2,12 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
-from unicorn import *
-
-from unicorn.x86_const import *
 
 import sys
 sys.path.append("..")
-from qiling import *
 
-
+from qiling import Qiling
+from qiling.const import QL_VERBOSE
 
 class StringBuffer:
     def __init__(self):
@@ -30,23 +27,25 @@ class StringBuffer:
         self.buffer += string
         return len(string)
 
-
-def instruction_count(ql, address, size, user_data):
+def instruction_count(ql: Qiling, address: int, size: int, user_data):
     user_data[0] += 1
 
-
 def get_count(flag):
-    ql = Qiling(["rootfs/x86_windows/bin/crackme.exe"], "rootfs/x86_windows", output="off")
-    ql.stdin = StringBuffer()
-    ql.stdout = StringBuffer()
-    ql.stdin.write(bytes("".join(flag) + "\n", 'utf-8'))
+    stdin = StringBuffer()
+    stdout = StringBuffer()
+
+    ql = Qiling(["rootfs/x86_windows/bin/crackme.exe"], "rootfs/x86_windows", verbose=QL_VERBOSE.OFF, stdin=stdin, stdout=stdout)
+
+    stdin.write(bytes("".join(flag) + "\n", 'utf-8'))
     count = [0]
+
     ql.hook_code(instruction_count, count)
     ql.run()
-    print(ql.stdout.read_all().decode('utf-8'), end='')
-    print(" ============ count: %d ============ " % count[0])
-    return count[0]
 
+    print(stdout.read_all().decode('utf-8'), end='')
+    print(" ============ count: %d ============ " % count[0])
+
+    return count[0]
 
 def solve():
     # BJWXB_CTF{C5307D46-E70E-4038-B6F9-8C3F698B7C53}

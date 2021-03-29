@@ -10,7 +10,7 @@ from unicorn.x86_const import *
 
 sys.path.append("..")
 from qiling import *
-
+from qiling.const import QL_VERBOSE
 
 class StringBuffer:
     def __init__(self):
@@ -36,7 +36,7 @@ def instruction_count(ql, address, size, user_data):
 
 
 def get_count(flag):
-    ql = Qiling(["../examples/rootfs/x86_windows/bin/crackme.exe"], "../examples/rootfs/x86_windows", output="off", libcache = True)
+    ql = Qiling(["../examples/rootfs/x86_windows/bin/crackme.exe"], "../examples/rootfs/x86_windows", verbose=QL_VERBOSE.OFF, libcache = True)
     ql.stdin = StringBuffer()
     ql.stdout = StringBuffer()
     ql.stdin.write(bytes("".join(flag) + "\n", 'utf-8'))

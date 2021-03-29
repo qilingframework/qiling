@@ -3,18 +3,22 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-def dxeapi(param_num=None, params=None):
+from typing import Any, Mapping
+
+from qiling import Qiling
+from qiling.const import QL_INTERCEPT
+
+def dxeapi(params: Mapping[str, Any] = {}):
     def decorator(func):
-        def wrapper(*args, **kwargs):
-            ql = args[0]
-            arg = (ql, ql.reg.arch_pc, {})
+        def wrapper(ql: Qiling):
+            pc = ql.reg.arch_pc
+            fname = func.__name__
 
-            f = ql.loader.user_defined_api.get(func.__name__, func)
+            f = ql.os.user_defined_api[QL_INTERCEPT.CALL].get(fname) or func
+            onenter = ql.os.user_defined_api[QL_INTERCEPT.ENTER].get(fname)
+            onexit = ql.os.user_defined_api[QL_INTERCEPT.EXIT].get(fname)
 
-            ql.os.winapi_func_onenter = ql.loader.user_defined_api_onenter.get(func.__name__, None)
-            ql.os.winapi_func_onexit = ql.loader.user_defined_api_onexit.get(func.__name__, None)
-
-            return ql.os.x8664_fastcall(param_num, params, f, arg, kwargs)
+            return ql.os.call(pc, f, params, onenter, onexit)
 
         return wrapper
 

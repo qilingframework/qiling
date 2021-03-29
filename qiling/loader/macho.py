@@ -116,7 +116,7 @@ class QlLoaderMACHO(QlLoader):
         self.ql.os.macho_task_server = MachTaskServer(self.ql)
         
         self.envs = env_dict_to_array(self.env)
-        self.apples = self.ql.os.transform_to_relative_path(self.ql.path)
+        self.apples = self.ql.os.path.transform_to_relative_path(self.ql.path)
         self.ql.os.heap = QlMemoryHeap(self.ql, self.heap_address, self.heap_address + self.heap_size)
 
         # FIXME: Not working due to overlarge mapping, need to fix it
@@ -210,7 +210,7 @@ class QlLoaderMACHO(QlLoader):
 
         for key in self.kernel_local_symbols_detail:
             value = self.kernel_local_symbols_detail[key]
-            self.import_symbols[value["n_value"]] = key
+            self.import_symbols[value["n_value"]] = key.decode('ascii')
 
         kernel_extrn_symbols_index = self.kernel.dysymbol_table.defext_index
         kernel_extrn_symbols_num = self.kernel.dysymbol_table.defext_num
@@ -218,7 +218,7 @@ class QlLoaderMACHO(QlLoader):
 
         for key in self.kernel_extrn_symbols_detail:
             value = self.kernel_extrn_symbols_detail[key]
-            self.import_symbols[value["n_value"]] = key
+            self.import_symbols[value["n_value"]] = key.decode('ascii')
 
         offset = 0
         """
@@ -244,7 +244,7 @@ class QlLoaderMACHO(QlLoader):
                     else:
                         self.ql.log.info("Static symbol %s not found" % symname)
                         continue
-                    self.import_symbols[real_addr] = symname
+                    self.import_symbols[real_addr] = symname.decode('ascii')
                     lo_addr = real_addr & 0xffffffff
                     hi_addr = (real_addr & 0xffffffff00000000) // 0x100000000
                     jmpcode = b"\x48\x83\xec\x08\xc7\x04\x24" + struct.pack("<I", lo_addr) + b"\xc7\x44\x24\x04" + struct.pack("<I", hi_addr) + b"\xc3"
@@ -341,7 +341,7 @@ class QlLoaderMACHO(QlLoader):
             else:
                 self.ql.log.info("Entry point not found")
                 self.kext_start = None
-
+            
             if b"__antimain" in self.kext_local_symbols:
                 antimain = loadbase + self.kext_local_symbols[b"__antimain"]["n_value"]
                 current_value, = struct.unpack("<Q", self.ql.mem.read(antimain, 8))

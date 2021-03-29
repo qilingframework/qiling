@@ -9,14 +9,12 @@ thoughout the qiling framework
 """
 import importlib, os, copy, re, pefile, configparser, logging
 from logging import LogRecord
-from pathlib import Path
+from typing import Optional, Mapping
 
-from unicorn import UcError, UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
-from keystone import *
-from capstone import *
+from unicorn import UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
 
 from .exception import *
-from .const import QL_ARCH, QL_ARCH_ALL, QL_ENDIAN, QL_OS, QL_OS_ALL, QL_OUTPUT, QL_DEBUGGER, QL_ARCH_32BIT, QL_ARCH_64BIT, QL_ARCH_16BIT
+from .const import QL_VERBOSE, QL_ARCH, QL_ARCH_ALL, QL_ENDIAN, QL_OS, QL_OS_ALL, QL_DEBUGGER, QL_ARCH_32BIT, QL_ARCH_64BIT, QL_ARCH_16BIT
 from .const import debugger_map, arch_map, os_map
 
 FMT_STR = "%(levelname)s\t%(message)s"
@@ -25,39 +23,43 @@ FMT_STR = "%(levelname)s\t%(message)s"
 # ESC [ -> CSI
 # CSI %d;%d;... m -> SGR
 class COLOR_CODE:
-    WHITE = '\033[37m'
+    WHITE   = '\033[37m'
     CRIMSON = '\033[31m'
-    RED = '\033[91m'
-    GREEN = '\033[92m'
-    YELLOW = '\033[93m'
-    BLUE = '\033[94m'
+    RED     = '\033[91m'
+    GREEN   = '\033[92m'
+    YELLOW  = '\033[93m'
+    BLUE    = '\033[94m'
     MAGENTA = '\033[95m'
-    CYAN = '\033[96m'
-    ENDC = '\033[0m'
+    CYAN    = '\033[96m'
+    ENDC    = '\033[0m'
 
 LEVEL_COLORS = {
-    'WARNING': COLOR_CODE.YELLOW,
-    'INFO': COLOR_CODE.BLUE,
-    'DEBUG': COLOR_CODE.MAGENTA,
-    'CRITICAL': COLOR_CODE.CRIMSON,
-    'ERROR': COLOR_CODE.RED
+    'WARNING'  : COLOR_CODE.YELLOW,
+    'INFO'     : COLOR_CODE.BLUE,
+    'DEBUG'    : COLOR_CODE.MAGENTA,
+    'CRITICAL' : COLOR_CODE.CRIMSON,
+    'ERROR'    : COLOR_CODE.RED
 }
+
 class QilingColoredFormatter(logging.Formatter):
     def __init__(self, ql, *args, **kwargs):
         super(QilingColoredFormatter, self).__init__(*args, **kwargs)
         self._ql = ql
 
-    def get_colored_level(self, record: LogRecord):
+    def get_colored_level(self, record: LogRecord) -> str:
         LEVEL_NAME = {
-            'WARNING': f"{COLOR_CODE.YELLOW}[!]{COLOR_CODE.ENDC}",
-            'INFO': f"{COLOR_CODE.BLUE}[=]{COLOR_CODE.ENDC}",
-            'DEBUG': f"{COLOR_CODE.MAGENTA}[+]{COLOR_CODE.ENDC}",
-            'CRITICAL': f"{COLOR_CODE.CRIMSON}[x]{COLOR_CODE.ENDC}",
-            'ERROR': f"{COLOR_CODE.RED}[x]{COLOR_CODE.ENDC}"
+            'WARNING'  : f"{COLOR_CODE.YELLOW}[!]{COLOR_CODE.ENDC}",
+            'INFO'     : f"{COLOR_CODE.BLUE}[=]{COLOR_CODE.ENDC}",
+            'DEBUG'    : f"{COLOR_CODE.MAGENTA}[+]{COLOR_CODE.ENDC}",
+            'CRITICAL' : f"{COLOR_CODE.CRIMSON}[x]{COLOR_CODE.ENDC}",
+            'ERROR'    : f"{COLOR_CODE.RED}[x]{COLOR_CODE.ENDC}"
         }
+
         return LEVEL_NAME[record.levelname]
 
     def format(self, record: LogRecord):
+        # In case we have multiple formatters, we have to keep a copy of the record.
+        record = copy.copy(record)
         record.levelname = self.get_colored_level(record)
         try:
             cur_thread = self._ql.os.thread_management.cur_thread
@@ -71,15 +73,16 @@ class QilingPlainFormatter(logging.Formatter):
     def __init__(self, ql, *args, **kwargs):
         super(QilingPlainFormatter, self).__init__(*args, **kwargs)
         self._ql = ql
-    
-    def get_level(self, record: LogRecord):
+
+    def get_level(self, record: LogRecord) -> str:
         LEVEL_NAME = {
-            'WARNING': "[!]",
-            'INFO': "[=]",
-            'DEBUG': "[+]",
-            'CRITICAL': "[x]",
-            'ERROR': "[x]"
+            'WARNING'  : "[!]",
+            'INFO'     : "[=]",
+            'DEBUG'    : "[+]",
+            'CRITICAL' : "[x]",
+            'ERROR'    : "[x]"
         }
+
         return LEVEL_NAME[record.levelname]
 
     def format(self, record: LogRecord):
@@ -93,19 +96,17 @@ class QilingPlainFormatter(logging.Formatter):
         return super(QilingPlainFormatter, self).format(record)
 
 class RegexFilter(logging.Filter):
-    def __init__(self, filters):
+    def __init__(self, regexp):
         super(RegexFilter, self).__init__()
-        self.update_filters(filters)
+        self.update_filter(regexp)
     
-    def update_filters(self, filters):
-        self._filters = [ re.compile(ft) for ft in  filters ]
+    def update_filter(self, regexp):
+        self._filter = re.compile(regexp)
 
     def filter(self, record: LogRecord):
         msg = record.getMessage()
-        for ft in self._filters:
-            if re.match(ft, msg):
-                return True
-        return False
+
+        return re.match(self._filter, msg) is not None
 
 class QlFileDes:
     def __init__(self, init):
@@ -155,116 +156,80 @@ def catch_KeyboardInterrupt(ql):
             try:
                 return func(*args, **kw)
             except BaseException as e:
-                from .os.const import THREAD_EVENT_UNEXECPT_EVENT
                 ql.os.stop()
                 ql._internal_exception = e
+
         return wrapper
+
     return decorator
 
-def ql_get_arch_bits(arch):
+def ql_get_arch_bits(arch: QL_ARCH) -> int:
     if arch in QL_ARCH_16BIT:
         return 16
+
     if arch in QL_ARCH_32BIT:
         return 32
+
     if arch in QL_ARCH_64BIT:
         return 64
+
     raise QlErrorArch("Invalid Arch")
 
-def ql_is_valid_ostype(ostype):
-    if ostype not in QL_OS_ALL:
-        return False
-    return True
+def ql_is_valid_ostype(ostype: QL_OS) -> bool:
+    return ostype in QL_OS_ALL
 
-def ql_is_valid_arch(arch):
-    if arch not in QL_ARCH_ALL:
-        return False
-    return True
+def ql_is_valid_arch(arch: QL_ARCH) -> bool:
+    return arch in QL_ARCH_ALL
 
-def loadertype_convert_str(ostype):
+def loadertype_convert_str(ostype: QL_OS) -> Optional[str]:
     adapter = {
-        QL_OS.LINUX: "ELF",
-        QL_OS.MACOS: "MACHO",
-        QL_OS.FREEBSD: "ELF",
-        QL_OS.WINDOWS: "PE",
-        QL_OS.UEFI: "PE_UEFI",
-        QL_OS.DOS: "DOS",
+        QL_OS.LINUX   : "ELF",
+        QL_OS.FREEBSD : "ELF",
+        QL_OS.MACOS   : "MACHO",
+        QL_OS.WINDOWS : "PE",
+        QL_OS.UEFI    : "PE_UEFI",
+        QL_OS.DOS     : "DOS"
     }
+
     return adapter.get(ostype)
 
-def ostype_convert_str(ostype):
-    adapter = {}
-    adapter.update(os_map)
-    adapter = {v: k for k, v in adapter.items()}
-    return adapter.get(ostype)
+def __reverse_mapping(mapping: Mapping) -> Mapping:
+    return {v: k for k, v in mapping.items()}
 
-def ostype_convert(ostype):
-    # this is for ql.platform
+def ostype_convert_str(ostype: QL_OS) -> Optional[str]:
+    return __reverse_mapping(os_map).get(ostype)
+
+def ostype_convert(ostype: str) -> Optional[QL_OS]:
     if ostype == "darwin":
         ostype = "macos"
-    adapter = {}
-    adapter.update(os_map)
-    if ostype in adapter:
-        return adapter[ostype]
-    # invalid
-    return None
 
-def arch_convert_str(arch):
-    adapter = {}
-    adapter.update(arch_map)
-    adapter = {v: k for k, v in adapter.items()}
-    return adapter.get(arch)
+    return os_map.get(ostype)
 
-def arch_convert(arch):
-    adapter = {}
-    adapter.update(arch_map)
-    if arch in adapter:
-        return adapter[arch]
-    # invalid
-    return None
+def arch_convert_str(arch: QL_ARCH) -> Optional[str]:
+    return __reverse_mapping(arch_map).get(arch)
 
-def output_convert(output):
-    adapter = {
-        None: QL_OUTPUT.DEFAULT,
-        "default": QL_OUTPUT.DEFAULT,
-        "disasm": QL_OUTPUT.DISASM,
-        "debug": QL_OUTPUT.DEBUG,
-        "dump": QL_OUTPUT.DUMP,
-    }
-    if output in adapter:
-        return adapter[output]
-    # invalid
-    return QL_OUTPUT.DEFAULT
+def arch_convert(arch: str) -> Optional[QL_ARCH]:
+    return arch_map.get(arch)
 
-def debugger_convert(debugger):
-    adapter = {}
-    adapter.update(debugger_map)
-    if debugger in adapter:
-        return adapter[debugger]
-    # invalid
-    return None, None
+def debugger_convert(debugger: str) -> Optional[QL_DEBUGGER]:
+    return debugger_map.get(debugger)
 
-def debugger_convert_str(debugger_id):
-    adapter = {}
-    adapter.update(debugger_map)
-    adapter = {v: k for k, v in adapter.items()}
-    if debugger_id in adapter:
-        return adapter[debugger_id]
-    # invalid
-    return None, None
+def debugger_convert_str(debugger_id: QL_DEBUGGER) -> Optional[str]:
+    return __reverse_mapping(debugger_map).get(debugger_id)
 
 # Call `function_name` in `module_name`.
 # e.g. map_syscall in qiling.os.linux.map_syscall
-def ql_get_module_function(module_name, function_name = None):
-    
+def ql_get_module_function(module_name: str, function_name: str):
+
     try:
         imp_module = importlib.import_module(module_name)
-    except Exception as ex:
-        raise QlErrorModuleNotFound("Unable to import module %s (%s)" % (module_name, ex))
+    except ModuleNotFoundError:
+        raise QlErrorModuleNotFound(f'Unable to import module {module_name}')
 
     try:
         module_function = getattr(imp_module, function_name)
-    except:
-        raise QlErrorModuleFunctionNotFound("Unable to import %s from %s" % (function_name, imp_module))
+    except AttributeError:
+        raise QlErrorModuleFunctionNotFound(f'Unable to import {function_name} from {imp_module}')
 
     return module_function
 
@@ -273,14 +238,14 @@ def ql_elf_parse_emu_env(path):
         return elfdata
 
     with open(path, "rb") as f:
-        elfdata = f.read()[:20]
+        elfdata = f.read(20)
 
     ident = getident()
     ostype = None
     arch = None
     archendian = None
 
-    if ident[: 4] == b'\x7fELF':
+    if ident[:4] == b'\x7fELF':
         elfbit = ident[0x4]
         endian = ident[0x5]
         osabi = ident[0x7]
@@ -305,7 +270,7 @@ def ql_elf_parse_emu_env(path):
             arch = QL_ARCH.ARM
         elif e_machine == b"\x00\x28" and endian == 2 and elfbit == 1:
             archendian = QL_ENDIAN.EB
-            arch = QL_ARCH.ARM            
+            arch = QL_ARCH.ARM
         elif e_machine == b"\xB7\x00":
             archendian = QL_ENDIAN.EL
             arch = QL_ARCH.ARM64
@@ -323,7 +288,7 @@ def ql_macho_parse_emu_env(path):
         return machodata
 
     with open(path, "rb") as f:
-        machodata = f.read()[:32]
+        machodata = f.read(32)
 
     ident = getident()
 
@@ -437,18 +402,17 @@ def debugger_setup(debugger, ql):
     remotedebugsrv = "gdb"
     debug_opts = [None, None]
 
-    if debugger != True and type(debugger) == str:      
+    if debugger != True and type(debugger) is str:
         debug_opts = debugger.split(":")
 
         if len(debug_opts) == 2 and debug_opts[0] != "qdb":
             pass
         else:  
             remotedebugsrv, *debug_opts = debug_opts
-            
-        
+
         if debugger_convert(remotedebugsrv) not in (QL_DEBUGGER):
             raise QlErrorOutput("Error: Debugger not supported")
-        
+
     debugsession = ql_get_module_function(f"qiling.debugger.{remotedebugsrv}.{remotedebugsrv}", f"Ql{str.capitalize(remotedebugsrv)}")
 
     return debugsession(ql, *debug_opts)
@@ -508,24 +472,21 @@ def profile_setup(ostype, profile, ql):
     config.read(profiles)
     return config, debugmsg
 
-def ql_resolve_logger_level(output, verbose):
+def ql_resolve_logger_level(verbose):
     level = logging.INFO
-    if output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP, QL_OUTPUT.DISASM):
+    if verbose == QL_VERBOSE.OFF:
+        level = logging.WARNING
+    elif verbose >= QL_VERBOSE.DEBUG:
         level = logging.DEBUG
-    else:
-        if verbose == 0:
-            level = logging.WARNING
-        elif verbose >= 4:
-            level = logging.DEBUG
-        elif verbose >= 1:
-            level = logging.INFO
+    elif verbose >= QL_VERBOSE.DEFAULT:
+        level = logging.INFO
     
     return level
 
 QL_INSTANCE_ID = 114514
 
 # TODO: qltool compatibility
-def ql_setup_logger(ql, log_file, console, filters, multithread, log_override):
+def ql_setup_logger(ql, log_file, console, filters, multithread, log_override, log_plain):
     global QL_INSTANCE_ID
 
     # If there is an override for our logger, then use it.
@@ -545,7 +506,10 @@ def ql_setup_logger(ql, log_file, console, filters, multithread, log_override):
         # Do we have console output?
         if console:
             handler = logging.StreamHandler()
-            formatter = QilingColoredFormatter(ql, FMT_STR)
+            if not log_plain:
+                formatter = QilingColoredFormatter(ql, FMT_STR)
+            else:
+                formatter = QilingPlainFormatter(ql, FMT_STR)
             handler.setFormatter(formatter)
             log.addHandler(handler)
         else:
@@ -562,7 +526,7 @@ def ql_setup_logger(ql, log_file, console, filters, multithread, log_override):
     # If there aren't any filters, we do add the filters until users specify any.
     log_filter = None
 
-    if filters is not None and type(filters) == list and len(filters) != 0:
+    if filters is not None and len(filters) != 0:
         log_filter = RegexFilter(filters)
         log.addFilter(log_filter)
     

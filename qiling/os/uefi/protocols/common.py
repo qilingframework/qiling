@@ -3,8 +3,9 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from qiling.os.uefi import guids_dict
 from qiling.os.uefi.const import EFI_SUCCESS, EFI_NOT_FOUND, EFI_UNSUPPORTED, EFI_BUFFER_TOO_SMALL, EFI_INVALID_PARAMETER
-from qiling.os.uefi.utils import read_int64, write_int64, check_and_notify_protocols, signal_event
+from qiling.os.uefi.utils import read_int64, write_int64
 from qiling.os.uefi.UefiSpec import EFI_LOCATE_SEARCH_TYPE
 
 # TODO: get rid of this
@@ -38,13 +39,8 @@ def InstallProtocolInterface(context, params):
 	dic[params["Protocol"]] = params["Interface"]
 	context.protocols[handle] = dic
 
-	for (event_id, event_dic) in context.ql.loader.events.items():
-		if event_dic['Guid'] == params['Protocol']:
-			# The event was previously registered by 'RegisterProtocolNotify'.
-			signal_event(context.ql, event_id)	
-
-	check_and_notify_protocols(context.ql)
 	write_int64(context.ql, params["Handle"], handle)
+	context.notify_protocol(params['Handle'], params['Protocol'], params['Interface'], True)
 
 	return EFI_SUCCESS
 
@@ -128,7 +124,12 @@ def LocateProtocol(context, params):
 			write_int64(context.ql, params['Interface'], guid_dic[protocol])
 			return EFI_SUCCESS
 
-	context.ql.log.warning(f'protocol with guid {protocol} not found')
+	try:
+		friendly_name = guids_dict[protocol.upper()]
+	except KeyError:
+		friendly_name = 'UNKNOWN'
+
+	context.ql.log.warning(f'protocol with guid {protocol} not found ({friendly_name})')
 
 	return EFI_NOT_FOUND
 

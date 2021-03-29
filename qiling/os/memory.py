@@ -190,7 +190,9 @@ class QlMemoryManager:
         if not size:
             size = self.ql.archbit // 8
 
-        if size == 2:
+        if size == 1:
+            return self.ql.unpack8(self.read(addr, 1))
+        elif size == 2:
             return self.ql.unpack16(self.read(addr, 2))
         elif size == 4:
             return self.ql.unpack32(self.read(addr, 4))

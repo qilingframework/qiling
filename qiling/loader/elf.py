@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import os, string, sys
+import os
 
 from heapq import heappush, heappop
 
@@ -17,8 +17,9 @@ from qiling.const import *
 from qiling.exception import *
 from .loader import QlLoader
 from qiling.os.linux.function_hook import FunctionHook
-from qiling.os.linux.syscall_nums import *
+from qiling.os.linux.syscall_nums import SYSCALL_NR
 from qiling.os.linux.kernel_api.hook import *
+from qiling.os.linux.kernel_api.kernel_api import hook_sys_open, hook_sys_read, hook_sys_write
 
 AT_NULL = 0
 AT_IGNORE = 1
@@ -87,6 +88,34 @@ class ELFParse():
     def parse_segments(self):
         return self.elffile.iter_segments()
 
+    def translate_segment_perm_to_uc_prot(self, perm):
+        """
+        Unicorn define the following memory protection constants :
+
+        'Public Enum uc_prot
+        '    UC_PROT_NONE = 0
+        '    UC_PROT_READ = 1
+        '    UC_PROT_WRITE = 2
+        '    UC_PROT_EXEC = 4
+        '    UC_PROT_ALL = 7
+        'End Enum
+
+        Elf segment permissions are the following
+            * bit 0 : X
+            * bit 1 : W
+            * bit 2 : R
+        """
+
+        prot = 0
+
+        if perm & 0x1:
+            prot |= 4
+        if (perm >> 1) & 0x1:
+            prot |= 2
+        if (perm >> 2) & 0x1:
+            prot |= 1
+
+        return prot
 
 class QlLoaderELF(QlLoader, ELFParse):
     def __init__(self, ql):
@@ -114,12 +143,12 @@ class QlLoaderELF(QlLoader, ELFParse):
         self.mmap_address = 0
         self.ql.mem.map(stack_address, stack_size, info="[stack]")
 
-        if self.ql.ostype == QL_OS.FREEBSD:
-            init_rbp = stack_address + 0x40
-            init_rdi = stack_address
-            self.ql.reg.rbp = init_rbp
-            self.ql.reg.rdi = init_rdi
-            self.ql.reg.r14 = init_rdi
+        # if self.ql.ostype == QL_OS.FREEBSD:
+        #     init_rbp = stack_address + 0x40
+        #     init_rdi = stack_address
+        #     self.ql.reg.rbp = init_rbp
+        #     self.ql.reg.rdi = init_rdi
+        #     self.ql.reg.r14 = init_rdi
 
         if not self.is_driver:
             self.load_with_ld(stack_address + stack_size, argv=self.argv, env=self.env)
@@ -133,6 +162,11 @@ class QlLoaderELF(QlLoader, ELFParse):
 
         self.ql.reg.arch_sp = self.stack_address
         self.ql.os.stack_address = self.stack_address
+        
+        # No idea why.
+        if self.ql.ostype == QL_OS.FREEBSD:
+            self.ql.reg.rdi = self.stack_address
+            self.ql.reg.r14 = self.stack_address
 
     # Copy strings to stack.
     def copy_str(self, addr, strs):
@@ -216,7 +250,7 @@ class QlLoaderELF(QlLoader, ELFParse):
                 _mem_start = ((load_address + entry["p_vaddr"]) // pagesize) * pagesize
                 _mem_len = entry['p_memsz']
                 _mem_end = self.pcalc(load_address + entry["p_vaddr"] + _mem_len, pagesize)
-                _perms = int(bin(entry["p_flags"])[:1:-1], 2)  # reverse bits for perms mapping
+                _perms = self.translate_segment_perm_to_uc_prot(entry["p_flags"])
                 if _last_end < _mem_start:
                     _load_segments[_mem_start] = _mem_end, _perms
                     _last_start = _mem_start
@@ -653,9 +687,9 @@ class QlLoaderELF(QlLoader, ELFParse):
         # print(rev_reloc_symbols.keys())
         for sc in rev_reloc_symbols.keys():
             if sc != 'sys_call_table' and sc.startswith('sys_'):
-                tmp_sc = sc.replace("sys_", "NR_")
-                if tmp_sc in globals():
-                    syscall_id = globals()[tmp_sc]
+                tmp_sc = sc[4:]
+                if hasattr(SYSCALL_NR, tmp_sc):
+                    syscall_id = getattr(SYSCALL_NR, tmp_sc).value
                     ql.log.debug("Writing syscall %s to [0x%x]" % (sc, SYSCALL_MEM + ql.pointersize * syscall_id))
                     ql.mem.write(SYSCALL_MEM + ql.pointersize * syscall_id, ql.pack(rev_reloc_symbols[sc]))
 

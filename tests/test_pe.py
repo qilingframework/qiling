@@ -6,17 +6,15 @@
 import os, random, sys, unittest, logging
 import string as st
 
-from unicorn.x86_const import *
-
 sys.path.append("..")
-from qiling import *
+from qiling import Qiling
 from qiling.const import *
 from qiling.exception import *
 from qiling.loader.pe import QlPeCache
+from qiling.os.const import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
 from qiling.os.mapper import QlFsMappedObject
-from qiling.os.windows.dlls.kernel32.fileapi import _CreateFile
 
 class TestOut:
     def __init__(self):
@@ -33,14 +31,14 @@ class PETest(unittest.TestCase):
 
     def test_pe_win_x8664_hello(self):
         ql = Qiling(["../examples/rootfs/x8664_windows/bin/x8664_hello.exe"], "../examples/rootfs/x8664_windows",
-                    output="default")
+                    verbose=QL_VERBOSE.DEFAULT)
         ql.run()
         del ql
 
 
     def test_pe_win_x86_hello(self):
         ql = Qiling(["../examples/rootfs/x86_windows/bin/x86_hello.exe"], "../examples/rootfs/x86_windows",
-                    output="default", profile="profiles/append_test.ql")
+                    verbose=QL_VERBOSE.DEFAULT, profile="profiles/append_test.ql")
         ql.run()
         del ql
 
@@ -64,7 +62,7 @@ class PETest(unittest.TestCase):
                 return 0
 
         ql = Qiling(["../examples/rootfs/x86_windows/bin/UselessDisk.bin"], "../examples/rootfs/x86_windows",
-                    output="debug")
+                    verbose=QL_VERBOSE.DEBUG)
         ql.add_fs_mapper(r"\\.\PHYSICALDRIVE0", Fake_Drive())
         ql.run()
         del ql
@@ -116,7 +114,7 @@ class PETest(unittest.TestCase):
                 raise QlErrorNotImplemented("API not implemented")
 
         ql = Qiling(["../examples/rootfs/x86_windows/bin/GandCrab502.bin"], "../examples/rootfs/x86_windows",
-                    output="debug", profile="profiles/windows_gandcrab_admin.ql")
+                    verbose=QL_VERBOSE.DEBUG, profile="profiles/windows_gandcrab_admin.ql")
         default_user = ql.os.profile["USER"]["username"]
         default_computer = ql.os.profile["SYSTEM"]["computername"]
 
@@ -124,22 +122,22 @@ class PETest(unittest.TestCase):
         randomize_config_value(ql, "USER", "username")
         randomize_config_value(ql, "SYSTEM", "computername")
         randomize_config_value(ql, "VOLUME", "serial_number")
-        num_syscalls_admin = ql.os.syscalls_counter
+        num_syscalls_admin = ql.os.utils.syscalls_counter
         ql.run()
         del ql
 
         # RUN AS USER
         ql = Qiling(["../examples/rootfs/x86_windows/bin/GandCrab502.bin"], "../examples/rootfs/x86_windows",
-                    output="debug", profile="profiles/windows_gandcrab_user.ql")
+                    verbose=QL_VERBOSE.DEBUG, profile="profiles/windows_gandcrab_user.ql")
 
         ql.run()
-        num_syscalls_user = ql.os.syscalls_counter
+        num_syscalls_user = ql.os.utils.syscalls_counter
 
         del ql
 
         ql = Qiling(["../examples/rootfs/x86_windows/bin/GandCrab502.bin"], "../examples/rootfs/x86_windows",
-                    output="debug", profile="profiles/windows_gandcrab_russian_keyboard.ql")
-        num_syscalls_russ = ql.os.syscalls_counter
+                    verbose=QL_VERBOSE.DEBUG, profile="profiles/windows_gandcrab_russian_keyboard.ql")
+        num_syscalls_russ = ql.os.utils.syscalls_counter
 
         ql.run()
         del ql
@@ -187,7 +185,7 @@ class PETest(unittest.TestCase):
 
 
     def test_pe_win_x8664_fls(self):
-        ql = Qiling(["../examples/rootfs/x8664_windows/bin/Fls.exe"], "../examples/rootfs/x8664_windows", output="default")
+        ql = Qiling(["../examples/rootfs/x8664_windows/bin/Fls.exe"], "../examples/rootfs/x8664_windows", verbose=QL_VERBOSE.DEFAULT)
         ql.run()
         del ql
 
@@ -287,14 +285,14 @@ class PETest(unittest.TestCase):
             self.set_api_onenter = self.set_api = len( params["str"])
             return  address, params
 
-        def my_onexit(ql, address, params):
+        def my_onexit(ql, address, params, retval):
             print("\n+++++++++\nmy OnExit")
             print("params: ", params)
             print("+++++++++\n")
             self.set_api_onexit = self.set_api = len( params["str"])
 
         def my_sandbox(path, rootfs):
-            ql = Qiling(path, rootfs, output="debug")
+            ql = Qiling(path, rootfs, verbose=QL_VERBOSE.DEBUG)
             ql.set_api("puts", my_onenter, QL_INTERCEPT.ENTER)
             ql.set_api("puts", my_puts64)
             ql.set_api("puts", my_onexit, QL_INTERCEPT.EXIT)
@@ -313,31 +311,31 @@ class PETest(unittest.TestCase):
 
 
     def test_pe_win_x86_argv(self):
-        def check_print(ql, address, params):
-            if ql.pointersize == 8:
-                _, _, p_format, _, p_args = ql.os.get_function_param(5)
-            else:
-                _, _, _, p_format, _, p_args = ql.os.get_function_param(6)
-            fmt = ql.mem.string(p_format)
-            count = fmt.count("%")
-            params = []
-            params_addr = p_args
+        def check_print(ql: Qiling, address: int, params):
+            ql.os.fcall = ql.os.fcall_select(CDECL)
 
-            if count > 0:
-                for i in range(count):
-                        param = ql.mem.read(params_addr + i * ql.pointersize, ql.pointersize)
-                        params.append(
-                        ql.unpack(param)
-                        )        
+            params = ql.os.resolve_fcall_params({
+                'optstorage': PARAM_INT64,
+                'stream'    : POINTER,
+                'format'    : STRING,
+                'locale'    : DWORD,
+                'arglist'   : POINTER
+            })
+
+            format = params['format']
+            arglist = params['arglist']
+
+            count = format.count("%")
+            fargs = [ql.unpack(ql.mem.read(arglist + i * ql.pointersize, ql.pointersize)) for i in range(count)]
 
             self.target_txt = ""
 
             try:
-                self.target_txt = ql.mem.string(params[1])       
+                self.target_txt = ql.mem.string(fargs[1])
             except:
                 pass
-            
-            return  address, params
+
+            return address, params
 
         ql = Qiling(["../examples/rootfs/x86_windows/bin/argv.exe"], "../examples/rootfs/x86_windows")
         ql.set_api('__stdio_common_vfprintf', check_print, QL_INTERCEPT.ENTER)
@@ -453,7 +451,7 @@ class PETest(unittest.TestCase):
             return entry
 
         def save(self, path, address, entry):
-            self.testcase.assertFalse(true)  # This should not be called!
+            self.testcase.assertFalse(True)  # This should not be called!
 
 
     def test_pe_win_x8664_libcache(self):
@@ -462,7 +460,7 @@ class PETest(unittest.TestCase):
                     'arg1', 'arg2 with spaces'],
                     "../examples/rootfs/x8664_windows",
                     libcache=PETest.RefreshCache(),
-                    output="default")
+                    verbose=QL_VERBOSE.DEFAULT)
         ql.run()
         del ql
 
@@ -472,7 +470,7 @@ class PETest(unittest.TestCase):
                     'arg1', 'arg2 with spaces'],
                     "../examples/rootfs/x8664_windows",
                     libcache=PETest.TestCache(self),
-                    output="default")
+                    verbose=QL_VERBOSE.DEFAULT)
         ql.run()
         del ql
 

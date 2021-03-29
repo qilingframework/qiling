@@ -15,7 +15,7 @@ unicornafl.monkeypatch()
 
 sys.path.append("../../..")
 from qiling import *
-
+from qiling.const import QL_VERBOSE
 
 def main(input_file, enable_trace=False):
     
@@ -29,7 +29,7 @@ def main(input_file, enable_trace=False):
     }
 
     ql = Qiling(["./rootfs/htdocs/web/hedwig.cgi"], "./rootfs",
-                output="debug", env=env_vars,
+                verbose=QL_VERBOSE.DEBUG, env=env_vars,
                 console = True if enable_trace else False)
     
     def place_input_callback(uc, input, _, data):

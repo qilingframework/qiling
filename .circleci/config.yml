@@ -1,0 +1,51 @@
+version: 2.1
+
+jobs:
+  macos:
+    macos:
+      xcode: 10.1
+    environment:
+      HOMEBREW_NO_AUTO_UPDATE: 1
+      MACOSX_DEPLOYMENT_TARGET: 10.13.6
+    steps:
+      - checkout
+      - run:
+          name: "Install wget"
+          command: |
+            brew install wget cmake
+
+      - restore_cache:
+          keys:
+            - python-{{ .Environment.CIRCLE_JOB }}-3.7.0-macos-10.13.6
+
+      - run: 
+          name: "Install qiling framework"
+          command: |
+            pip3 install --upgrade pip
+            pip3 install wheel setuptools
+            pip3 install .
+            cd examples
+            rm -rf rootfs
+            wget https://github.com/qilingframework/rootfs/archive/refs/heads/master.zip 
+            unzip master.zip && mv rootfs-master rootfs
+            cd .. && ./examples/scripts/dylibcollector.sh
+            cd examples/rootfs/x8664_macos/kext
+            unzip -Pinfected SuperRootkit.kext.zip
+
+      - save_cache:
+          paths:
+            - ~/Library/Caches/pip
+          key: python-{{ .Environment.CIRCLE_JOB }}-3.7.0-macos-10.13.6
+
+      - run:
+          name: "Run macos test"
+          command: |
+             cd tests
+             ./test_macho.sh
+
+
+workflows:
+  version: 2
+  run-tests:
+    jobs:
+      - macos

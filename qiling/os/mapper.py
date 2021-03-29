@@ -100,7 +100,7 @@ class QlFsMapper:
             self.ql.log.info(f"mapping {path}")
             return self._open_mapping_ql_file(path, openflags, openmode)
         else:
-            real_path = self.ql.os.transform_to_real_path(path)
+            real_path = self.ql.os.path.transform_to_real_path(path)
             return ql_file.open(real_path, openflags, openmode)
 
     def open(self, path, openmode):
@@ -108,7 +108,7 @@ class QlFsMapper:
             self.ql.log.info(f"mapping {path}")
             return self._open_mapping(path, openmode)
         else:
-            real_path = self.ql.os.transform_to_real_path(path)
+            real_path = self.ql.os.path.transform_to_real_path(path)
             return open(real_path, openmode)
 
     def _parse_path(self, p):

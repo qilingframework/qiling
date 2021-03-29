@@ -4991,18 +4991,6 @@
             "type": "INT"
         }
     ],
-    "lstrlenA": [
-        {
-            "name": "lpString",
-            "type": "LPCSTR"
-        }
-    ],
-    "lstrlenW": [
-        {
-            "name": "lpString",
-            "type": "LPCWSTR"
-        }
-    ],
     "malloc": [
         {
             "name": "param1",
