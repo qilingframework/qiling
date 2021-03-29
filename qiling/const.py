@@ -29,13 +29,12 @@ class QL_OS(IntEnum):
     DOS = 206
 
 
-class QL_OUTPUT(IntEnum):
-    OFF = 1
-    DEFAULT = 2
-    DISASM = 3
+class QL_VERBOSE(IntEnum):
+    OFF = 0
+    DEFAULT = 1
     DEBUG = 4
-    DUMP = 5
-
+    DISASM = 10
+    DUMP = 20
 
 class QL_DEBUGGER(IntEnum):
     GDB = 1

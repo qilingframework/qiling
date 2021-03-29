@@ -34,7 +34,7 @@ def ql_syscall_socket(ql, socket_domain, socket_type, socket_protocol, *args, **
         if idx == -1:
             regreturn = -1
         else:
-            if ql.output == QL_OUTPUT.DEBUG: # set REUSEADDR options under debug mode
+            if ql.verbose >= QL_VERBOSE.DEBUG: # set REUSEADDR options under debug mode
                 ql.os.fd[idx] = ql_socket.open(socket_domain, socket_type, socket_protocol, (socket.SOL_SOCKET, socket.SO_REUSEADDR, 1))
             else:
                 ql.os.fd[idx] = ql_socket.open(socket_domain, socket_type, socket_protocol)
@@ -194,7 +194,7 @@ def ql_syscall_listen(ql, listen_sockfd, listen_backlog, *args, **kw):
             ql.os.fd[listen_sockfd].listen(listen_backlog)
             regreturn = 0
         except:
-            if ql.output == QL_OUTPUT.DEBUG:
+            if ql.verbose >= QL_VERBOSE.DEBUG:
                 raise
             regreturn = -1
     else:
@@ -235,7 +235,7 @@ def ql_syscall_accept(ql, accept_sockfd, accept_addr, accept_addrlen, *args, **k
             ql.mem.write(accept_addr, tmp_buf)
             ql.mem.write(accept_addrlen, ql.pack32(16))
     except:
-        if ql.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
+        if ql.verbose >= QL_VERBOSE.DEBUG:
             raise
         regreturn = -1
 
@@ -270,7 +270,7 @@ def ql_syscall_send(ql, send_sockfd, send_buf, send_len, send_flags, *args, **kw
             ql.log.debug("debug send end")
         except:
             ql.log.info(sys.exc_info()[0])
-            if ql.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
+            if ql.verbose >= QL_VERBOSE.DEBUG:
                 raise
     else:
         regreturn = -1
@@ -349,7 +349,7 @@ def ql_syscall_sendto(ql, sendto_sockfd, sendto_buf, sendto_len, sendto_flags, s
                 ql.log.debug("debug sendto end")
             except:
                 ql.log.info(sys.exc_info()[0])
-                if ql.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
+                if ql.verbose >= QL_VERBOSE.DEBUG:
                     raise
         else:
             regreturn = -1

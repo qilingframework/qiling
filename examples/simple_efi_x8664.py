@@ -9,7 +9,7 @@ import sys
 sys.path.append("..")
 
 from qiling import Qiling
-from qiling.const import QL_INTERCEPT
+from qiling.const import QL_INTERCEPT, QL_VERBOSE
 from qiling.os.uefi.const import EFI_SUCCESS, EFI_INVALID_PARAMETER
 from qiling.os.uefi.utils import check_and_notify_protocols, signal_event
 
@@ -38,7 +38,7 @@ if __name__ == "__main__":
     with open("rootfs/x8664_efi/rom2_nvar.pickel", 'rb') as f:
         env = pickle.load(f)
 
-    ql = Qiling(["rootfs/x8664_efi/bin/TcgPlatformSetupPolicy"], "rootfs/x8664_efi", env=env, output="debug")
+    ql = Qiling(["rootfs/x8664_efi/bin/TcgPlatformSetupPolicy"], "rootfs/x8664_efi", env=env, verbose=QL_VERBOSE.DEBUG)
 
     ql.set_api("RegisterProtocolNotify", force_notify_RegisterProtocolNotify)
     ql.set_api("CopyMem", my_onenter, QL_INTERCEPT.ENTER)

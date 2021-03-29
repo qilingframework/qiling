@@ -14,7 +14,7 @@ from typing import Optional, Mapping
 from unicorn import UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
 
 from .exception import *
-from .const import QL_ARCH, QL_ARCH_ALL, QL_ENDIAN, QL_OS, QL_OS_ALL, QL_OUTPUT, QL_DEBUGGER, QL_ARCH_32BIT, QL_ARCH_64BIT, QL_ARCH_16BIT
+from .const import QL_VERBOSE, QL_ARCH, QL_ARCH_ALL, QL_ENDIAN, QL_OS, QL_OS_ALL, QL_DEBUGGER, QL_ARCH_32BIT, QL_ARCH_64BIT, QL_ARCH_16BIT
 from .const import debugger_map, arch_map, os_map
 
 FMT_STR = "%(levelname)s\t%(message)s"
@@ -210,17 +210,6 @@ def arch_convert_str(arch: QL_ARCH) -> Optional[str]:
 
 def arch_convert(arch: str) -> Optional[QL_ARCH]:
     return arch_map.get(arch)
-
-def output_convert(output: str) -> QL_OUTPUT:
-    adapter = {
-        "off"     : QL_OUTPUT.OFF,
-        "default" : QL_OUTPUT.DEFAULT,
-        "disasm"  : QL_OUTPUT.DISASM,
-        "debug"   : QL_OUTPUT.DEBUG,
-        "dump"    : QL_OUTPUT.DUMP,
-    }
-
-    return adapter.get(output, QL_OUTPUT.DEFAULT)
 
 def debugger_convert(debugger: str) -> Optional[QL_DEBUGGER]:
     return debugger_map.get(debugger)
@@ -483,17 +472,14 @@ def profile_setup(ostype, profile, ql):
     config.read(profiles)
     return config, debugmsg
 
-def ql_resolve_logger_level(output, verbose):
+def ql_resolve_logger_level(verbose):
     level = logging.INFO
-    if output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP, QL_OUTPUT.DISASM):
+    if verbose == QL_VERBOSE.OFF:
+        level = logging.WARNING
+    elif verbose >= QL_VERBOSE.DEBUG:
         level = logging.DEBUG
-    else:
-        if verbose == 0:
-            level = logging.WARNING
-        elif verbose >= 4:
-            level = logging.DEBUG
-        elif verbose >= 1:
-            level = logging.INFO
+    elif verbose >= QL_VERBOSE.DEFAULT:
+        level = logging.INFO
     
     return level
 

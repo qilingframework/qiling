@@ -15,6 +15,7 @@ import ctypes
 from unicorn import UcError
 
 from qiling import Qiling
+from qiling.const import QL_VERBOSE
 from qiling.os.const import POINTER
 from qiling.os.windows.fncc import STDCALL
 from qiling.os.windows.wdk_const import *
@@ -128,11 +129,11 @@ class QlOsUtils:
         # optional prefixes and suffixes
         fret = f' = {ret:#x}' if ret is not None else ''
         fpass = f' (PASSTHRU)' if passthru else ''
-        faddr = f'{address:#0{self.ql.archbit // 4 + 2}x}: ' if self.ql.output == QL_OUTPUT.DEBUG else ''
+        faddr = f'{address:#0{self.ql.archbit // 4 + 2}x}: ' if self.ql.verbose >= QL_VERBOSE.DEBUG else ''
 
         log = f'{faddr}{fname}({fargs}){fret}{fpass}'
 
-        if self.ql.output == QL_OUTPUT.DEBUG:
+        if self.ql.verbose >= QL_VERBOSE.DEBUG:
             self.ql.log.debug(log)
         else:
             self.ql.log.info(log)
@@ -228,7 +229,7 @@ class QlOsUtils:
             log_data += "%s %s" % (i.mnemonic, i.op_str)
         self.ql.log.info(log_data)
 
-        if self.ql.output == QL_OUTPUT.DUMP:
+        if self.ql.verbose >= QL_VERBOSE.DUMP:
             for reg in self.ql.reg.register_mapping:
                 if isinstance(reg, str):
                     REG_NAME = reg
@@ -246,8 +247,8 @@ class QlOsUtils:
             self._block_hook.remove()
             self._block_hook = None
 
-        if self.ql.output in (QL_OUTPUT.DISASM, QL_OUTPUT.DUMP):
-            if self.ql.output == QL_OUTPUT.DUMP:
+        if self.ql.verbose >= QL_VERBOSE.DISASM:
+            if self.ql.verbose >= QL_VERBOSE.DUMP:
                 self._block_hook = self.ql.hook_block(ql_hook_block_disasm)
             self._disasm_hook = self.ql.hook_code(self.disassembler)
 

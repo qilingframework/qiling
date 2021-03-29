@@ -16,6 +16,7 @@
 import ctypes, os, pickle, socket, sys, threading
 sys.path.append("..")
 from qiling import *
+from qiling.const import QL_VERBOSE
 
 def nvram_listener():
     server_address = 'rootfs/var/cfm_socket'
@@ -64,7 +65,7 @@ def check_pc(ql):
 
 
 def my_sandbox(path, rootfs):
-    ql = Qiling(path, rootfs, output="debug", verbose=5)
+    ql = Qiling(path, rootfs, verbose=QL_VERBOSE.DEBUG)
     ql.add_fs_mapper("/dev/urandom","/dev/urandom")
     ql.hook_address(save_context ,0x10930)
     ql.hook_address(patcher, ql.loader.elf_entry)

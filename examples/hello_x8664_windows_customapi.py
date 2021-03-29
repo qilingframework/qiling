@@ -10,6 +10,7 @@ from qiling import Qiling
 from qiling.const import QL_INTERCEPT
 from qiling.os.windows.fncc import *
 from qiling.os.const import STRING
+from qiling.const import QL_VERBOSE
 
 @winsdkapi(cc=CDECL, replace_params={"str": STRING}) 
 def my_puts(ql: Qiling, address: int, params):
@@ -35,7 +36,7 @@ def my_onexit(ql: Qiling, address: int, params, retval: int):
     print(f'[onexit] atexit : params = {params}')
 
 def my_sandbox(path, rootfs):
-    ql = Qiling(path, rootfs, output = "debug")
+    ql = Qiling(path, rootfs, verbose=QL_VERBOSE.DEBUG)
 
     ql.set_api("_cexit", my_onenter, QL_INTERCEPT.ENTER)
     ql.set_api("puts", my_puts)

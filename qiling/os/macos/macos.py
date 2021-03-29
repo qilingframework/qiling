@@ -10,7 +10,7 @@ from qiling import Qiling
 from qiling.arch.x86 import GDTManager, ql_x86_register_cs, ql_x86_register_ds_ss_es
 from qiling.arch.x86_const import UC_X86_INS_SYSCALL
 from qiling.cc import intel
-from qiling.const import QL_ARCH, QL_OUTPUT
+from qiling.const import QL_ARCH
 from qiling.os.fcall import QlFunctionCall
 from qiling.os.posix.posix import QlOsPosix
 from qiling.os.macos.events.macos import QlMacOSEvManager
@@ -203,7 +203,7 @@ class QlOsMacos(QlOsPosix):
             self.RUN = False
 
             # TODO: This is for kext, we need to fix it later
-            if self.ql.output != QL_OUTPUT.DEBUG:
+            if self.ql.verbose != QL_VERBOSE.DEBUG:
                 return
             
             self.emu_error()

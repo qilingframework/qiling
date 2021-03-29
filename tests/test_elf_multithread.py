@@ -18,7 +18,7 @@ from qiling.os.posix.stat import Fstat
 class ELFTest(unittest.TestCase):
 
     def test_elf_linux_execve_x8664(self):
-        ql = Qiling(["../examples/rootfs/x8664_linux/bin/posix_syscall_execve"],  "../examples/rootfs/x8664_linux", output="debug")
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/posix_syscall_execve"],  "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG)
         ql.run()
         for key, value in ql.loader.env.items():
             QL_TEST=value
@@ -40,7 +40,7 @@ class ELFTest(unittest.TestCase):
             except:
                 pass
         buf_out = None
-        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_multithreading"], "../examples/rootfs/x86_linux", multithread=True, output="debug")
+        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_multithreading"], "../examples/rootfs/x86_linux", multithread=True, verbose=QL_VERBOSE.DEBUG)
         ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
         ql.run()
 
@@ -59,7 +59,7 @@ class ELFTest(unittest.TestCase):
             except:
                 pass
         buf_out = None
-        ql = Qiling(["../examples/rootfs/arm64_linux/bin/arm64_multithreading"], "../examples/rootfs/arm64_linux", multithread=True, output="debug")
+        ql = Qiling(["../examples/rootfs/arm64_linux/bin/arm64_multithreading"], "../examples/rootfs/arm64_linux", multithread=True, verbose=QL_VERBOSE.DEBUG)
         ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
         ql.run()
 
@@ -97,7 +97,7 @@ class ELFTest(unittest.TestCase):
             except:
                 pass
         buf_out = None
-        ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_multithreading"], "../examples/rootfs/mips32el_linux", multithread=True, output="debug")
+        ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_multithreading"], "../examples/rootfs/mips32el_linux", multithread=True, verbose=QL_VERBOSE.DEBUG)
         ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
         ql.run()
 
@@ -116,7 +116,7 @@ class ELFTest(unittest.TestCase):
             except:
                 pass
         buf_out = None
-        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_multithreading"], "../examples/rootfs/arm_linux", multithread=True, output="debug")
+        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_multithreading"], "../examples/rootfs/arm_linux", multithread=True, verbose=QL_VERBOSE.DEBUG)
         ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
         ql.run()
 

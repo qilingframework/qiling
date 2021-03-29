@@ -8,6 +8,7 @@ import sys
 
 sys.path.append("..")
 from qiling import Qiling
+from qiling.const import QL_VERBOSE
 from qiling.extensions.sanitizers.heap import QlSanitizedMemoryHeap
 
 def my_abort(msg):
@@ -22,9 +23,9 @@ def enable_sanitized_heap(ql, fault_rate=0):
     ql.os.heap.bad_free_handler = lambda *args: my_abort("Double free or bad free detected")
     ql.os.heap.uaf_handler      = lambda *args: my_abort("Use-after-free detected")
 
-def sanitized_emulate(path, rootfs, fault_type, output="debug"):
+def sanitized_emulate(path, rootfs, fault_type, verbose=QL_VERBOSE.DEBUG):
     env = {'FaultType': fault_type}
-    ql = Qiling([path], rootfs, env=env, output=output)
+    ql = Qiling([path], rootfs, env=env, verbose=verbose)
 
     enable_sanitized_heap(ql)
     ql.run()
@@ -55,4 +56,4 @@ if __name__ == "__main__":
     rootfs = os.path.join(os.getcwd(), 'rootfs', 'x8664_efi')
     path = os.path.join(rootfs, 'bin', 'EfiPoolFault.efi')
 
-    sanitized_emulate(path, rootfs, fault_type, output='debug')
+    sanitized_emulate(path, rootfs, fault_type, verbose=QL_VERBOSE.DEBUG)

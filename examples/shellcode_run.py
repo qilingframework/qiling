@@ -8,6 +8,7 @@ import sys
 
 sys.path.append("..")
 from qiling import Qiling
+from qiling.const import QL_VERBOSE
 
 X86_LIN      = unhexlify('31c050682f2f7368682f62696e89e3505389e1b00bcd80')
 X8664_LIN    = unhexlify('31c048bbd19d9691d08c97ff48f7db53545f995257545eb03b0f05')
@@ -21,23 +22,23 @@ X8664_MACOS  = unhexlify('4831f65648bf2f2f62696e2f7368574889e74831d24831c0b00248
 
 if __name__ == "__main__":
     print("\nLinux ARM 64bit Shellcode")
-    ql = Qiling(code=ARM64_LIN, archtype="arm64", ostype="linux", output="debug")
+    ql = Qiling(code=ARM64_LIN, archtype="arm64", ostype="linux", verbose=QL_VERBOSE.DEBUG)
     ql.run()
 
     print("\nLinux ARM 32bit Shellcode")
-    ql = Qiling(code=ARM_LIN, archtype="arm", ostype="linux", output="debug")
+    ql = Qiling(code=ARM_LIN, archtype="arm", ostype="linux", verbose=QL_VERBOSE.DEBUG)
     ql.run()
 
     print("\nLinux X86 32bit Shellcode")
-    ql = Qiling(code=X86_LIN, archtype="x86", ostype="linux", output="debug")
+    ql = Qiling(code=X86_LIN, archtype="x86", ostype="linux", verbose=QL_VERBOSE.DEBUG)
     ql.run()
 
     print("\nLinux MIPS 32bit EL Shellcode")
-    ql = Qiling(code=MIPS32EL_LIN, archtype="mips", ostype="linux", output="debug")
+    ql = Qiling(code=MIPS32EL_LIN, archtype="mips", ostype="linux", verbose=QL_VERBOSE.DEBUG)
     ql.run()
 
     print("\nLinux X86 64bit Shellcode")
-    ql = Qiling(code=X8664_LIN, archtype="x8664", ostype="linux", output="debug")
+    ql = Qiling(code=X8664_LIN, archtype="x8664", ostype="linux", verbose=QL_VERBOSE.DEBUG)
     ql.run()
 
     print("\nWindows X86 32bit Shellcode")
@@ -49,9 +50,9 @@ if __name__ == "__main__":
     ql.run()
 
     print("\nFreeBSD X86 64bit Shellcode")
-    ql = Qiling(code=X8664_FBSD, archtype="x8664", ostype="freebsd", output="debug")
+    ql = Qiling(code=X8664_FBSD, archtype="x8664", ostype="freebsd", verbose=QL_VERBOSE.DEBUG)
     ql.run()
 
     print("\nmacos X86 64bit Shellcode")
-    ql = Qiling(code=X8664_MACOS, archtype="x8664", ostype="macos", output="debug")
+    ql = Qiling(code=X8664_MACOS, archtype="x8664", ostype="macos", verbose=QL_VERBOSE.DEBUG)
     ql.run()

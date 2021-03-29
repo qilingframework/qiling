@@ -7,7 +7,7 @@ import sys, unittest, string, random, os
 
 sys.path.append("..")
 from qiling import Qiling
-from qiling.const import QL_OS, QL_OUTPUT, QL_INTERCEPT
+from qiling.const import QL_OS, QL_INTERCEPT, QL_VERBOSE
 from qiling.exception import *
 from qiling.os.const import STRING
 from qiling.os.posix import syscall
@@ -25,7 +25,7 @@ class ELFTest(unittest.TestCase):
 
 
     def test_elf_freebsd_x8664(self):     
-        ql = Qiling(["../examples/rootfs/x8664_freebsd/bin/x8664_hello_asm"], "../examples/rootfs/x8664_freebsd", output = "dump")
+        ql = Qiling(["../examples/rootfs/x8664_freebsd/bin/x8664_hello_asm"], "../examples/rootfs/x8664_freebsd", verbose=QL_VERBOSE.DUMP)
         ql.run()
         del ql
 
@@ -35,12 +35,12 @@ class ELFTest(unittest.TestCase):
             ql.save(reg=False, cpu_context=True, snapshot="/tmp/snapshot.bin")
             ql.emu_stop()
 
-        ql = Qiling(["../examples/rootfs/x8664_linux/bin/sleep_hello"], "../examples/rootfs/x8664_linux", output= "default")
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/sleep_hello"], "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEFAULT)
         X64BASE = int(ql.profile.get("OS64", "load_address"), 16)
         ql.hook_address(dump, X64BASE + 0x1094)
         ql.run()
 
-        ql = Qiling(["../examples/rootfs/x8664_linux/bin/sleep_hello"], "../examples/rootfs/x8664_linux", output= "debug", verbose=4)
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/sleep_hello"], "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG)
         X64BASE = int(ql.profile.get("OS64", "load_address"), 16)
         ql.restore(snapshot="/tmp/snapshot.bin")
         begin_point = X64BASE + 0x109e
@@ -53,7 +53,7 @@ class ELFTest(unittest.TestCase):
         def stop(ql, *args, **kw):
             ql.emu_stop()
 
-        ql = Qiling(["../examples/rootfs/x8664_linux/bin/sleep_hello_with_x_only_segment"], "../examples/rootfs/x8664_linux", output= "debug", verbose=4)
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/sleep_hello_with_x_only_segment"], "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG)
         X64BASE = int(ql.profile.get("OS64", "load_address"), 16)
         ql.hook_address(stop, X64BASE + 0x1094)
         ql.run()
@@ -82,7 +82,7 @@ class ELFTest(unittest.TestCase):
             ql.reg.rax = arg3 + 1
             self.set_api_onexit = True
 
-        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_args","1234test", "12345678", "bin/x8664_hello"],  "../examples/rootfs/x8664_linux", output="debug")
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_args","1234test", "12345678", "bin/x8664_hello"],  "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG)
         ql.set_syscall(1, write_onEnter, QL_INTERCEPT.ENTER)
         ql.set_api('puts', my_puts)
         ql.set_syscall(1, write_onexit, QL_INTERCEPT.EXIT)
@@ -112,7 +112,7 @@ class ELFTest(unittest.TestCase):
         def my_puts_exit(ql):
             self.test_exit_rdi = ql.reg.rdi
 
-        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_puts"],  "../examples/rootfs/x8664_linux", output="debug")
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_puts"],  "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG)
         ql.set_api('puts', my_puts_enter, QL_INTERCEPT.ENTER)
         ql.set_api('puts', my_puts_exit, QL_INTERCEPT.EXIT)
 
@@ -131,19 +131,19 @@ class ELFTest(unittest.TestCase):
 
 
     def test_elf_linux_x8664_static(self):
-        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_hello_static"], "../examples/rootfs/x8664_linux", output="debug")
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_hello_static"], "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG)
         ql.run()
         del ql
 
 
     def test_elf_linux_x86(self):
-        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_hello"], "../examples/rootfs/x86_linux", output="debug", log_file="test.qlog")     
+        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_hello"], "../examples/rootfs/x86_linux", verbose=QL_VERBOSE.DEBUG, log_file="test.qlog")     
         ql.run()
         del ql
 
 
     def test_elf_linux_x86_static(self):
-        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_hello_static"], "../examples/rootfs/x86_linux", output="debug")
+        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_hello_static"], "../examples/rootfs/x86_linux", verbose=QL_VERBOSE.DEBUG)
         ql.run()
         del ql
 
@@ -261,7 +261,7 @@ class ELFTest(unittest.TestCase):
 
             return regreturn
 
-        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_posix_syscall"], "../examples/rootfs/x86_linux", output="debug")
+        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_posix_syscall"], "../examples/rootfs/x86_linux", verbose=QL_VERBOSE.DEBUG)
         ql.set_syscall(0x3, test_syscall_read)
         ql.set_syscall(0x4, test_syscall_write)
         ql.set_syscall(0x127, test_syscall_openat)
@@ -280,14 +280,14 @@ class ELFTest(unittest.TestCase):
             all_mem = ql.mem.save()
             ql.mem.restore(all_mem)
 
-        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello"], "../examples/rootfs/arm_linux", output = "debug", profile='profiles/append_test.ql')
+        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello"], "../examples/rootfs/arm_linux", verbose=QL_VERBOSE.DEBUG, profile='profiles/append_test.ql')
         ql.set_api('puts', my_puts)
         ql.run()
         del ql
 
 
     def test_elf_linux_arm_static(self):     
-        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello_static"], "../examples/rootfs/arm_linux", output = "default")
+        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello_static"], "../examples/rootfs/arm_linux", verbose=QL_VERBOSE.DEFAULT)
         all_mem = ql.mem.save()
         ql.mem.restore(all_mem)
         ql.run()
@@ -387,7 +387,7 @@ class ELFTest(unittest.TestCase):
                 # assert os.stat(real_path).st_size == 0x10
                 # os.remove(real_path)
 
-        # ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_posix_syscall"], "../examples/rootfs/arm_linux", output="debug")
+        # ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_posix_syscall"], "../examples/rootfs/arm_linux", verbose=QL_VERBOSE.DEBUG)
         # ql.set_syscall(0x3, test_syscall_read)
         # ql.set_syscall(0x4, test_syscall_write)
         # ql.set_syscall(0x5, test_syscall_open)
@@ -399,13 +399,13 @@ class ELFTest(unittest.TestCase):
 
 
     def test_elf_linux_arm64(self):
-        ql = Qiling(["../examples/rootfs/arm64_linux/bin/arm64_hello"], "../examples/rootfs/arm64_linux", output = "debug")
+        ql = Qiling(["../examples/rootfs/arm64_linux/bin/arm64_hello"], "../examples/rootfs/arm64_linux", verbose=QL_VERBOSE.DEBUG)
         ql.run()
         del ql
 
 
     def test_elf_linux_arm64_static(self):    
-        ql = Qiling(["../examples/rootfs/arm64_linux/bin/arm64_hello_static"], "../examples/rootfs/arm64_linux", output = "default")
+        ql = Qiling(["../examples/rootfs/arm64_linux/bin/arm64_hello_static"], "../examples/rootfs/arm64_linux", verbose=QL_VERBOSE.DEFAULT)
         ql.run()
         del ql
 
@@ -563,7 +563,7 @@ class ELFTest(unittest.TestCase):
 
             return regreturn
 
-        ql = Qiling(["../examples/rootfs/arm64_linux/bin/arm64_posix_syscall"], "../examples/rootfs/arm64_linux", output="debug")
+        ql = Qiling(["../examples/rootfs/arm64_linux/bin/arm64_posix_syscall"], "../examples/rootfs/arm64_linux", verbose=QL_VERBOSE.DEBUG)
         ql.set_syscall(0x3f, test_syscall_read)
         ql.set_syscall(0x40, test_syscall_write)
         ql.set_syscall(0x38, test_syscall_openat)
@@ -706,7 +706,7 @@ class ELFTest(unittest.TestCase):
 
             return regreturn
 
-        ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_posix_syscall"], "../examples/rootfs/mips32el_linux", output="debug")
+        ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_posix_syscall"], "../examples/rootfs/mips32el_linux", verbose=QL_VERBOSE.DEBUG)
         ql.set_syscall(4003, test_syscall_read)
         ql.set_syscall(4004, test_syscall_write)
         ql.set_syscall(4005, test_syscall_open)
@@ -736,7 +736,7 @@ class ELFTest(unittest.TestCase):
             except:
                 regreturn = -1
                 ql.log.info("\n+++++++++\nmy write(%d,%x,%i) = %d\n+++++++++" % (write_fd, write_buf, write_count, regreturn))
-                if ql.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
+                if ql.verbose >= QL_VERBOSE.DEBUG:
                     raise
             self.set_syscall = reg
             return regreturn
@@ -847,7 +847,7 @@ class ELFTest(unittest.TestCase):
             def close(self):
                 return 0
 
-        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_fetch_urandom_multiple_times"],  "../examples/rootfs/x86_linux", output="debug")
+        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_fetch_urandom_multiple_times"],  "../examples/rootfs/x86_linux", verbose=QL_VERBOSE.DEBUG)
         # Note we pass in a class here.
         ql.add_fs_mapper("/dev/urandom", Fake_urandom)
 
@@ -885,7 +885,7 @@ class ELFTest(unittest.TestCase):
             def close(self):
                 return 0
 
-        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_fetch_urandom"],  "../examples/rootfs/x86_linux", output="debug")
+        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_fetch_urandom"],  "../examples/rootfs/x86_linux", verbose=QL_VERBOSE.DEBUG)
         ql.add_fs_mapper("/dev/urandom", Fake_urandom())
 
         ql.exit_code = 0
@@ -907,7 +907,7 @@ class ELFTest(unittest.TestCase):
 
 
     def test_x8664_map_urandom(self):
-        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_fetch_urandom"],  "../examples/rootfs/x8664_linux", output="debug")
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_fetch_urandom"],  "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG)
         ql.add_fs_mapper("/dev/urandom","/dev/urandom")
         
         ql.exit_code = 0
@@ -931,12 +931,12 @@ class ELFTest(unittest.TestCase):
 
 
     def test_x8664_symlink(self):
-        ql = Qiling(["../examples/rootfs/x8664_linux_symlink/bin/x8664_hello"],  "../examples/rootfs/x8664_linux_symlink", output="debug")
+        ql = Qiling(["../examples/rootfs/x8664_linux_symlink/bin/x8664_hello"],  "../examples/rootfs/x8664_linux_symlink", verbose=QL_VERBOSE.DEBUG)
         ql.run()
         del ql
 
     def test_arm_directory_symlink(self):
-        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello"], "../examples/rootfs/arm_linux", output = "debug")
+        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello"], "../examples/rootfs/arm_linux", verbose=QL_VERBOSE.DEBUG)
         real_path = ql.os.path.transform_to_real_path("/lib/libsymlink_test.so")
         self.assertTrue(real_path.endswith("/examples/rootfs/arm_linux/tmp/media/nand/symlink_test/libsymlink_test.so"))
         del ql
@@ -971,7 +971,7 @@ class ELFTest(unittest.TestCase):
                 pass
         
         pipe = MyPipe()
-        ql = Qiling(["../examples/rootfs/x8664_linux/bin/absolutepath"],  "../examples/rootfs/x8664_linux", output="debug", stdout=pipe)
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/absolutepath"],  "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG, stdout=pipe)
 
         ql.run()
         
@@ -1009,7 +1009,7 @@ class ELFTest(unittest.TestCase):
                 pass
         
         pipe = MyPipe()
-        ql = Qiling(["../examples/rootfs/x8664_linux/bin/testcwd"],  "../examples/rootfs/x8664_linux", output="debug", stdout=pipe)
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/testcwd"],  "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG, stdout=pipe)
 
         ql.run()
         self.assertEqual(pipe.buf, b'/\n/lib\n/bin\n/\n')
@@ -1037,7 +1037,7 @@ class ELFTest(unittest.TestCase):
         del ql
 
     def test_arm_stat64(self):
-        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_stat64", "/bin/arm_stat64"], "../examples/rootfs/arm_linux", output="debug")
+        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_stat64", "/bin/arm_stat64"], "../examples/rootfs/arm_linux", verbose=QL_VERBOSE.DEBUG)
         ql.run()
         del ql
 

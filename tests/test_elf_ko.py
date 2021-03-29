@@ -9,7 +9,7 @@ from unicorn import UcError
 
 sys.path.append("..")
 from qiling import Qiling
-from qiling.const import QL_INTERCEPT
+from qiling.const import QL_INTERCEPT, QL_VERBOSE
 from qiling.os.const import STRING
 from qiling.os.linux.fncc import linux_kernel_api
 
@@ -28,7 +28,7 @@ class ELF_KO_Test(unittest.TestCase):
             self.set_api_myprintk = params["format"]
             return 0
 
-        ql = Qiling(["../examples/rootfs/x86_linux/kernel/m0hamed_rootkit.ko"],  "../examples/rootfs/x86_linux", output="disasm")
+        ql = Qiling(["../examples/rootfs/x86_linux/kernel/m0hamed_rootkit.ko"],  "../examples/rootfs/x86_linux", verbose=QL_VERBOSE.DISASM)
         try:
             procfile_read_func_begin = ql.loader.load_address + 0x11e0
             procfile_read_func_end = ql.loader.load_address + 0x11fa
@@ -51,7 +51,7 @@ class ELF_KO_Test(unittest.TestCase):
             self.set_api_onenter = params["format"]
             return address, params
 
-        ql = Qiling(["../examples/rootfs/x8664_linux/kernel/hello.ko"],  "../examples/rootfs/x8664_linux", output="disasm")
+        ql = Qiling(["../examples/rootfs/x8664_linux/kernel/hello.ko"],  "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DISASM)
         try:
             procfile_read_func_begin = ql.loader.load_address + 0x1064
             procfile_read_func_end = ql.loader.load_address + 0x107e
@@ -73,7 +73,7 @@ class ELF_KO_Test(unittest.TestCase):
             print("\n")
             self.set_api_onexit = params["format"]
 
-        ql = Qiling(["../examples/rootfs/mips32_linux/kernel/hello.ko"],  "../examples/rootfs/mips32_linux", output="debug")
+        ql = Qiling(["../examples/rootfs/mips32_linux/kernel/hello.ko"],  "../examples/rootfs/mips32_linux", verbose=QL_VERBOSE.DEBUG)
         begin = ql.loader.load_address + 0x1060
         end = ql.loader.load_address + 0x1084
         ql.set_api("printk", my_onexit, QL_INTERCEPT.EXIT)

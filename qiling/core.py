@@ -35,7 +35,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             ostype=None,
             archtype=None,
             bigendian=False,
-            output=None,
             verbose=1,
             profile=None,
             console=True,
@@ -91,7 +90,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._stdin = stdin
         self._stdout = stdout
         self._stderr = stderr
-        self._output = output
         self._verbose = verbose
         self._libcache = libcache
         self._patch_bin = []
@@ -169,9 +167,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
         # Log's configuration
 
-        # Setup output mode.
-        self._output = output_convert(self._output)
-
         self._log_file_fd, self._log_filter = ql_setup_logger(self,
                                                               self._log_file,
                                                               self._console,
@@ -180,7 +175,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
                                                               self._log_override,
                                                               self._log_plain)
 
-        self.log.setLevel(ql_resolve_logger_level(self._output, self._verbose))
+        self.log.setLevel(ql_resolve_logger_level(self._verbose))
 
         # Now that the logger is configured, we can log profile debug msg:
         self.log.debug(debugmsg)
@@ -526,44 +521,16 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._libcache = lc
 
     @property
-    def output(self) -> int:
-        """ Specify the qiling output. See Qiling.verbose.__doc__ for details.
-
-            Note: Please pass None or one of the strings below to Qiling.__init__.
-
-            Type: int
-            Values:
-              - "default": equals to "output=None", do nothing.
-              - "off": an alias to "default".
-              - "debug": set the log level to logging.DEBUG.
-              - "disasm": diasm each executed instruction.
-              - "dump": the most verbose output, dump registers and diasm the function blocks.
-            Example: - ql = Qiling(output="off")
-                     - ql.output = "off"
-        """
-        return self._output
-
-    @output.setter
-    def output(self, op):
-        if type(op) is str:
-            self._output = output_convert(op)
-        else:
-            self._output = op
-        self.log.setLevel(ql_resolve_logger_level(self._output, self._verbose))
-        self.os.utils.setup_output()
-
-    @property
     def verbose(self):
         """ Set the verbose level.
-
-            If you set "ql.output" to "default" or "off", you can set logging level dynamically by
-            changing "ql.verbose".
 
             Type: int
             Values:
               - 0  : logging.WARNING, almost no additional logs except the program output.
               - >=1: logging.INFO, the default logging level.
               - >=4: logging.DEBUG.
+              - >=10: Disasm each executed instruction.
+              - >=20: The most verbose output, dump registers and disasm the function blocks.
             Example: - ql = Qiling(verbose=5)
                      - ql.verbose = 0
         """
@@ -572,7 +539,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
     @verbose.setter
     def verbose(self, v):
         self._verbose = v
-        self.log.setLevel(ql_resolve_logger_level(self._output, self._verbose))
+        self.log.setLevel(ql_resolve_logger_level(self._verbose))
         self.os.utils.setup_output()
 
     @property

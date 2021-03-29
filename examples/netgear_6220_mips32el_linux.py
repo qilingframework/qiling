@@ -17,7 +17,7 @@ import sys
 sys.path.append("..")
 
 from qiling import Qiling
-from qiling.const import QL_INTERCEPT
+from qiling.const import QL_INTERCEPT, QL_VERBOSE
 from qiling.os.posix import syscall
 from qiling.os.const import UINT, POINTER
 
@@ -57,7 +57,7 @@ def my_bind(ql: Qiling):
     return 0  # from syscall.ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen)
 
 def my_netgear(path, rootfs):
-    ql = Qiling(path, rootfs, output="debug", profile="netgear_6220.ql", multithread=False)
+    ql = Qiling(path, rootfs, verbose=QL_VERBOSE.DEBUG, profile="netgear_6220.ql", multithread=False)
     ql.root = False
 
     ql.add_fs_mapper('/proc', '/proc')

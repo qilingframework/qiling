@@ -7,9 +7,10 @@ import sys
 sys.path.append("..")
 
 from qiling import Qiling
+from qiling.const import QL_VERBOSE
 
 def my_sandbox(path, rootfs):
-    ql = Qiling(path, rootfs, output="debug")
+    ql = Qiling(path, rootfs, verbose=QL_VERBOSE.DEBUG)
     ql.run()
 
 if __name__ == "__main__":

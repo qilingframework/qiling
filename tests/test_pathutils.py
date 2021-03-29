@@ -7,7 +7,7 @@ import pathlib, sys, unittest
 
 sys.path.append("..")
 from qiling import Qiling
-from qiling.const import QL_OS
+from qiling.const import QL_OS, QL_VERBOSE
 from qiling.os.path import QlPathManager
 
 class TestPathUtils(unittest.TestCase):
@@ -68,7 +68,7 @@ class TestPathUtils(unittest.TestCase):
         self.assertEqual(str(rootfs / "xxxx" / "test"), str(QlPathManager.convert_posix_to_win32(rootfs, "/xxxx/yyyy", "../xxxx/../test")))
 
     def test_convert_for_native_os(self):
-        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_hello_static"], "../examples/rootfs/x8664_linux", output="debug")
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_hello_static"], "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG)
 
         if ql.platform == QL_OS.WINDOWS:
             rootfs = pathlib.Path("../examples/rootfs/x8664_windows").resolve()

@@ -10,6 +10,7 @@ from binascii import unhexlify
 sys.path.append("..")
 from qiling import *
 from qiling.exception import *
+from qiling.const import QL_VERBOSE
 
 DELAY = 1
 
@@ -33,7 +34,7 @@ def send(netout, msg):
 class DebuggerTest(unittest.TestCase):
     
     def test_pe_gdbdebug(self):
-        ql = Qiling(["../examples/rootfs/x86_windows/bin/x86_hello.exe"], "../examples/rootfs/x86_windows/", output ="debug")
+        ql = Qiling(["../examples/rootfs/x86_windows/bin/x86_hello.exe"], "../examples/rootfs/x86_windows/", verbose=QL_VERBOSE.DEBUG)
         ql.debugger = "127.0.0.1:9996"
 
         # some random command test just to make sure we covered most of the command

@@ -7,7 +7,7 @@ import sys, unittest
 sys.path.append('..')
 
 from qiling import Qiling
-from qiling.const import QL_INTERCEPT
+from qiling.const import QL_INTERCEPT, QL_VERBOSE
 
 class Checklist:
     def __init__(self) -> None:
@@ -17,7 +17,7 @@ class Checklist:
 class DOSTest(unittest.TestCase):
 
     def test_dos_8086_hello(self):
-        ql = Qiling(["../examples/rootfs/8086/dos/HI.DOS_COM"], "../examples/rootfs/8086/dos", output='debug')
+        ql = Qiling(["../examples/rootfs/8086/dos/HI.DOS_COM"], "../examples/rootfs/8086/dos", verbose=QL_VERBOSE.DEBUG)
         ck = Checklist()
 
         def onenter(ql: Qiling):
