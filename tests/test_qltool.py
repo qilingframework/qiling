@@ -43,6 +43,16 @@ class Qltool_Test(unittest.TestCase):
         except subprocess.CalledProcessError as e:
             raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))
 
+    def test_qltool_filter(self):
+        create = [sys.executable, '../qltool', 'run', '-f', '../examples/rootfs/arm_linux/bin/arm_hello', '--rootfs', '../examples/rootfs/arm_linux', '-e', '^(open|brk)', '--log-plain']
+        try:
+            output = subprocess.check_output(create, stderr=subprocess.STDOUT)
+        except subprocess.CalledProcessError as e:
+            raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))
+
+        lines = [ line.strip('[=]\t') for line in output.decode().split("\n")]
+        self.assertTrue(all(filter(lambda x: x.startswith("open") or x.startswith("brk"), lines)))
+
 
 if __name__ == "__main__":
     unittest.main()
