@@ -79,7 +79,7 @@ def syscall_mmap_impl(ql, addr, mlen, prot, flags, fd, pgoffset, ver):
     else:
         raise QlMemoryMappedError("Error: unknown mmap syscall!")
 
-    ql.log.debug("%s(0x%x, 0x%x, %s (0x%x), %s (0x%x), %d, 0x%x)" % (
+    ql.log.debug("%s(0x%x, 0x%x, %s (0x%x), %s (0x%x), %x, 0x%x)" % (
                  api_name, addr, mlen, mmap_prot_mapping(prot), prot, mmap_flag_mapping(flags), flags, fd, pgoffset))
 
     # FIXME
@@ -149,7 +149,7 @@ def syscall_mmap_impl(ql, addr, mlen, prot, flags, fd, pgoffset, ver):
             ql.log.debug(e)
             raise QlMemoryMappedError("Error: trying to write memory: ")
 
-    ql.log.debug("%s(0x%x, 0x%x, 0x%x, 0x%x, %d, 0x%x) = 0x%x" %
+    ql.log.debug("%s(0x%x, 0x%x, 0x%x, 0x%x, %x, 0x%x) = 0x%x" %
                  (api_name, addr, mlen, prot, flags, fd, pgoffset, mmap_base))
     return mmap_base
 
