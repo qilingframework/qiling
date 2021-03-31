@@ -71,7 +71,7 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
             ql.os.child_processes = True
 
             f_th.update_global_thread_id()
-            new_thread_id()
+            f_th.new_thread_id()
 
             if clone_flags & CLONE_SETTLS == CLONE_SETTLS:
                 f_th.set_thread_tls(clone_newtls)
