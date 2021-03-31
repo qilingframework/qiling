@@ -6,7 +6,6 @@
 import types
 from multiprocessing import Process
 
-
 from qiling.const import *
 from qiling.os.linux.thread import *
 from qiling.const import *
