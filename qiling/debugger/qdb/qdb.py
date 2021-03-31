@@ -89,7 +89,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         self.breakpoints.update({address: {"hook": _hook, "hitted": False, "temp": _is_temp}})
 
         if _is_temp == False:
-            print("Breakpoint at 0x%08x" % address)
+            print(f"Breakpoint at 0x{address:08x}")
 
 
     def _breakpoint_handler(self, ql, _is_temp):
@@ -104,7 +104,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
             if self.breakpoints.get(_cur_addr)["hitted"]:
                 return
 
-            print("hit breakpoint at 0x%08x" % _cur_addr)
+            print(f"hit breakpoint at 0x{_cur_addr:08x}")
             self.breakpoints.get(_cur_addr)["hitted"] = True
 
         self.do_context()
@@ -218,7 +218,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         """
         if self._ql is not None:
             _cur_addr = self._ql.reg.arch_pc
-            print("continued from 0x%08x" % _cur_addr)
+            print(f"continued from 0x{_cur_addr:08x}")
 
             self._run(_cur_addr)
 
