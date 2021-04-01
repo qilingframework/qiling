@@ -129,6 +129,9 @@ class QlQdb(cmd.Cmd, QlDebugger):
         self._run(entry)
 
     def run(self, *args):
+        """
+        do nothing since it's already running when breakpoint hitted
+        """
         pass
 
     def _run(self, address=None):
@@ -207,20 +210,22 @@ class QlQdb(cmd.Cmd, QlDebugger):
         """
         set breakpoint on specific address
         """
-        if address:
-            baddr = parse_int(address)
-            self.set_breakpoint(baddr)
+        baddr = parse_int(address) if address else self._ql.reg.arch_pc
+
+        self.set_breakpoint(baddr)
 
 
     def do_continue(self, *args):
         """
         continue execution till next breakpoint or the end
         """
-        if self._ql is not None:
+        if self._ql is not None and self._ql.reg.arch_pc != 0x0:
             _cur_addr = self._ql.reg.arch_pc
             print(f"continued from 0x{_cur_addr:08x}")
 
             self._run(_cur_addr)
+        else:
+            print(f"not able to continue from 0x{self._ql.reg.arch_pc:08x}")
 
 
     def do_examine(self, line):
@@ -251,7 +256,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
                     elif char in FORMAT_LETTER:
                         f = char
 
-                return (f, s, c)
+                return (f, s, c) # format, size, count
 
             fmt, addr = line.strip("/").split()
             addr = parse_int(addr)
@@ -268,12 +273,12 @@ class QlQdb(cmd.Cmd, QlDebugger):
         try:
             examine_mem(self._ql, addr, fmt)
         except:
-            print("something went wrong")
+            print("something went wrong ...")
 
 
     def do_show(self, *args):
         """
-        show some runtime informations
+        show some runtime information
         """
         self._ql.mem.show_mapinfo()
         print("Qdb:", [(hex(idx), val) for idx, val in self.breakpoints.items()])
@@ -289,12 +294,12 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
     def do_shell(self, *command):
         """
-        run python code,also a space between exclamation mark and command was necessary
+        run python code
         """
         try:
             print(eval(*command))
         except:
-            print("something went wrong")
+            print("something went wrong ...")
 
 
     def do_quit(self, *args):
@@ -307,9 +312,9 @@ class QlQdb(cmd.Cmd, QlDebugger):
     do_s = do_step
     do_q = do_quit
     do_x = do_examine
+    do_p = do_backward
     do_c = do_continue
     do_b = do_breakpoint
-    do_p = do_backward
     do_dis = do_disassemble
     
 
