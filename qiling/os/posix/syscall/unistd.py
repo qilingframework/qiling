@@ -244,10 +244,10 @@ def ql_syscall_write(ql, write_fd, write_buf, write_count, *args, **kw):
             ql.log.debug("%s" % buf)
 
         if hasattr(ql.os.fd[write_fd], "write"):
-            
             ql.os.fd[write_fd].write(buf)
         else:
             ql.log.warning("write(%d,%x,%i) failed due to write_fd" % (write_fd, write_buf, write_count, regreturn))
+
         regreturn = write_count
 
     except:
