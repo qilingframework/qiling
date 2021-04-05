@@ -38,12 +38,12 @@ class QlOsUefi(QlOs):
 
 
 	@staticmethod
-	def notify_after_module_execution(ql, number_of_modules_left):
+	def notify_after_module_execution(ql: Qiling, nmodules: int):
 		return False
 
 
 	@staticmethod
-	def notify_before_module_execution(ql, module):
+	def notify_before_module_execution(ql: Qiling, module):
 		ql.os.running_module = module
 		return False
 

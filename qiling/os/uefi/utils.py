@@ -31,7 +31,7 @@ def execute_protocol_notifications(ql: Qiling, from_hook=False) -> bool:
 
 	next_hook = ql.loader.smm_context.heap.alloc(1)
 
-	def exec_next(ql):
+	def exec_next(ql: Qiling):
 		if ql.loader.notify_list:
 			event_id, notify_func, callback_args = ql.loader.notify_list.pop(0)
 			ql.log.info(f'Notify event:{event_id} calling: 0x{notify_func:x} callback_args:{list(map(hex, callback_args))}')

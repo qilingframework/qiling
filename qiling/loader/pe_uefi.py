@@ -10,7 +10,6 @@ from qiling import Qiling
 from qiling.const import QL_ARCH
 from qiling.exception import QlErrorArch, QlMemoryMappedError
 from qiling.loader.loader import QlLoader
-from qiling.os.memory import QlMemoryHeap
 
 from qiling.os.uefi import context, st, smst
 from qiling.os.uefi.ProcessorBind import CPU_STACK_ALIGNMENT
@@ -23,6 +22,8 @@ from qiling.os.uefi.protocols import EfiSmmSwDispatch2Protocol
 
 class QlLoaderPE_UEFI(QlLoader):
     def __init__(self, ql: Qiling):
+        super().__init__(ql)
+
         self.ql = ql
         self.modules = []
         self.events = {}

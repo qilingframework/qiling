@@ -4,7 +4,7 @@
 #
 
 import ctypes
-from typing import Any, Mapping, MutableMapping, Sequence, Optional
+from typing import Mapping, MutableMapping, Sequence, Optional
 
 from qiling import Qiling
 
@@ -18,7 +18,7 @@ dummy_ptr_type = {
 
 _pointer_type_cache: MutableMapping[str, type] = {}
 
-def PTR(ptype: type) -> type:
+def PTR(ptype: Optional[type]) -> type:
 	pname = 'c_void' if ptype is None else ptype.__name__
 
 	if pname not in _pointer_type_cache:
@@ -71,7 +71,7 @@ class STRUCT(ctypes.LittleEndianStructure):
 		ql.mem.write(address, data)
 
 	@classmethod
-	def loadFrom(cls, ql: Qiling, address: int) -> Any:
+	def loadFrom(cls, ql: Qiling, address: int) -> 'STRUCT':
 		"""Construct an instance of the structure from saved contents.
 		"""
 
