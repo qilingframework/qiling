@@ -1,5 +1,5 @@
 from abc import ABC
-from typing import Mapping
+from typing import Mapping, Tuple
 
 from qiling import Qiling
 from qiling.os.memory import QlMemoryHeap
@@ -93,7 +93,8 @@ class SmmContext(UefiContext):
 		# assume tseg is locked
 		self.tseg_locked = True
 
-		self.swsmi_handlers = []
+		# registered sw smi handlers
+		self.swsmi_handlers: Mapping[int, Tuple[int, Mapping]] = {}
 
 	def install_configuration_table(self, guid: str, table: int):
 		super().install_configuration_table(guid, table)
