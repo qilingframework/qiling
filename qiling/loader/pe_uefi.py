@@ -280,14 +280,6 @@ class QlLoaderPE_UEFI(QlLoader):
         for proto in protocols:
             self.smm_context.install_protocol(proto.descriptor, 1)
 
-        # map mmio ranges
-        # TODO: move to somehwere more appropriate (+ hook accesses?)
-        mmio_map = self.ql.os.profile["MMIO"]
-        self.ql.mem.map(
-            int(mmio_map['sbreg_base'], 0),
-            int(mmio_map['sbreg_size'], 0)
-        )
-
         # set stack and frame pointers
         self.ql.reg.rsp = sp
         self.ql.reg.rbp = sp
