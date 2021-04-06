@@ -10,69 +10,17 @@
 
 
 from unicorn import *
+
+from .core_hooks_types import Hook, HookAddr, HookIntr, HookRet
 from .utils import catch_KeyboardInterrupt
 from .const import QL_HOOK_BLOCK
 from .exception import QlErrorCoreHook
+from .engine.engine_hooks import engine_hook_address, engine_hook_del, engine_hook_insn, ql_engine_hooks
 
-class Hook:
-    def __init__(self, callback, user_data=None, begin=1, end=0):
-        self.callback = callback
-        self.user_data = user_data
-        self.begin = begin
-        self.end = end
-
-    def bound_check(self, pc, size=1):
-        return (self.end < self.begin) or (self.begin <= pc <= self.end) or (self.begin <= (pc + size - 1) <= self.end)
-
-
-    def check(self, *args):
-        return True
-    
-
-    def call(self, ql, *args):
-        if self.user_data == None:
-            return self.callback(ql, *args)
-        return self.callback(ql, *args, self.user_data)
-
-
-class HookAddr(Hook):
-    def __init__(self, callback, address, user_data=None):
-        super(HookAddr, self).__init__(callback, user_data, address, address)
-        self.addr = address
-    
-
-    def call(self, ql, *args):
-        if self.user_data == None:
-            return self.callback(ql)
-        return self.callback(ql, self.user_data)
-
-
-class HookIntr(Hook):
-    def __init__(self, callback, intno, user_data=None):
-        super(HookIntr, self).__init__(callback, user_data, 0, -1)
-        self.intno = intno
-    
-
-    def check(self, ql, intno):
-        ql.log.debug("Received Interupt: %i Hooked Interupt: %i" % (intno, self.intno))
-        if intno < 0 or self.intno == intno:
-            return True
-        return False
-
-
-class HookRet:
-    def __init__(self, ql, t, h):
-        self._ql = ql
-        self._t = t
-        self._h = h
-    
-
-    def remove(self):
-        self._ql.hook_del(self._t, self._h)
 
 # Don't assume self is Qiling.
 class QlCoreHooks:
-    def __init__(self, uc):
+    def __init__(self, uc=None):
         self._h_uc = uc
         self._hook = {}
         self._hook_fuc = {}
@@ -295,6 +243,8 @@ class QlCoreHooks:
 
 
     def hook_code(self, callback, user_data=None, begin=1, end=0):
+        if self.custom_engine:
+            return ql_engine_hooks(self, 'ENGINE_HOOK_CODE', callback, user_data, begin, end)
         return self.ql_hook(UC_HOOK_CODE, callback, user_data, begin, end)
 
 
@@ -332,6 +282,9 @@ class QlCoreHooks:
     # a convenient API to set callback for a single address
     def hook_address(self, callback, address, user_data=None):
         h = HookAddr(callback, address, user_data)
+        
+        if self.custom_engine:
+            return engine_hook_address(self, 'ENGINE_HOOK_ADDR', h, address)
 
         if address not in self._addr_hook_fuc.keys():
             self._addr_hook_fuc[address] = self._ql_hook_addr_internal(self._hook_addr_cb, address, address)
@@ -365,6 +318,8 @@ class QlCoreHooks:
 
 
     def hook_insn(self, callback, arg1, user_data=None, begin=1, end=0):
+        if self.custom_engine:
+            return engine_hook_insn(self, 'ENGINE_HOOK_INSN', callback, arg1, user_data, begin, end)
         return self.ql_hook(UC_HOOK_INSN, callback, user_data, begin, end, arg1)
 
 
@@ -377,6 +332,9 @@ class QlCoreHooks:
             return
         else:
             hook_type, h = args
+
+        if self.custom_engine: 
+            return engine_hook_del(hook_type, h)
 
         base_type = [
             UC_HOOK_INTR,

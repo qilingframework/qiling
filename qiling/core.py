@@ -209,22 +209,25 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         if not self._custom_engine:
             self._mem = component_setup("os", "memory", self)
             self._reg = component_setup("arch", "register", self)
+
         self._arch = arch_setup(self.archtype, self)
         
         # Once we finish setting up arch layer, we can init QlCoreHooks.
         self.uc = self.arch.init_uc if not self._custom_engine else None
         QlCoreHooks.__init__(self, self.uc)
-
-        self._os = os_setup(self.archtype, self.ostype, self)
+        
+        if not self._custom_engine:
+            self._os = os_setup(self.archtype, self.ostype, self)
 
         # Run the loader
         self.loader.run()
+        
+        if not self._custom_engine:
+            # Setup Outpt
+            self.os.utils.setup_output()
 
-        # Setup Outpt
-        self.os.utils.setup_output()
-
-        # Add extra guard options when configured to do so
-        self._init_stop_guard()
+            # Add extra guard options when configured to do so
+            self._init_stop_guard()
 
 
     #####################
@@ -287,6 +290,17 @@ class Qiling(QlCoreHooks, QlCoreStructs):
     ##################
 
     # If an option doesn't have a setter, it means that it can be only set during Qiling.__init__
+
+    @property
+    def custom_engine(self) -> bool:
+        """ Specify whether are we on custom engine
+
+            Type: bool
+            Example: Qiling(custom_engine=True)
+        """
+        return self._custom_engine
+
+
     @property
     def console(self) -> bool:
         """ Specify whether enabling console output. 
@@ -714,12 +728,19 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
     # Emulate the binary from begin until @end, with timeout in @timeout and
     # number of emulated instructions in @count
-    def run(self, begin=None, end=None, timeout=0, count=0):
+    def run(self, begin=None, end=None, timeout=0, count=0, code = None):
         # replace the original entry point, exit point, timeout and count
         self.entry_point = begin
         self.exit_point = end
         self.timeout = timeout
         self.count = count
+
+        if self._custom_engine:
+            if code == None:
+                return self.arch.run(self._code)
+            else:
+                return self.arch.run(code) 
+
         self.write_exit_trap()
 
         # init debugger

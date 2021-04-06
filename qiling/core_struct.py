@@ -34,7 +34,8 @@ class QlCoreStructs:
 		handlers = {
 			64 : (self.pack64, self.pack64s, self.unpack64, self.unpack64s),
 			32 : (self.pack32, self.pack32s, self.unpack32, self.unpack32s),
-			16 : (self.pack16, self.pack16s, self.unpack16, self.unpack16s)
+			16 : (self.pack16, self.pack16s, self.unpack16, self.unpack16s),
+			1  : (       None,         None,          None,           None)
 		}
 
 		if bit not in handlers:

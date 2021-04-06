@@ -14,7 +14,7 @@ from typing import Optional, Mapping
 from unicorn import UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
 
 from .exception import *
-from .const import QL_VERBOSE, QL_ARCH, QL_ARCH_ALL, QL_ENDIAN, QL_OS, QL_OS_ALL, QL_DEBUGGER, QL_ARCH_32BIT, QL_ARCH_64BIT, QL_ARCH_16BIT
+from .const import QL_VERBOSE, QL_ARCH, QL_ARCH_ALL, QL_ENDIAN, QL_OS, QL_OS_ALL, QL_DEBUGGER, QL_ARCH_1BIT, QL_ARCH_16BIT, QL_ARCH_32BIT, QL_ARCH_64BIT
 from .const import debugger_map, arch_map, os_map, arch_os_map
 
 FMT_STR = "%(levelname)s\t%(message)s"
@@ -164,6 +164,9 @@ def catch_KeyboardInterrupt(ql):
     return decorator
 
 def ql_get_arch_bits(arch: QL_ARCH) -> int:
+    if arch in QL_ARCH_1BIT:
+        return 1
+
     if arch in QL_ARCH_16BIT:
         return 16
 
@@ -173,7 +176,7 @@ def ql_get_arch_bits(arch: QL_ARCH) -> int:
     if arch in QL_ARCH_64BIT:
         return 64
 
-    raise QlErrorArch("Invalid Arch")
+    raise QlErrorArch("Invalid Arch Bit")
 
 def ql_is_valid_ostype(ostype: QL_OS) -> bool:
     return ostype in QL_OS_ALL
@@ -188,7 +191,8 @@ def loadertype_convert_str(ostype: QL_OS) -> Optional[str]:
         QL_OS.MACOS   : "MACHO",
         QL_OS.WINDOWS : "PE",
         QL_OS.UEFI    : "PE_UEFI",
-        QL_OS.DOS     : "DOS"
+        QL_OS.DOS     : "DOS",
+        QL_OS.EVM     : "EVM"
     }
 
     return adapter.get(ostype)
@@ -435,6 +439,9 @@ def arch_setup(archtype, ql):
     if not ql_is_valid_arch(archtype):
         raise QlErrorArch("Invalid Arch")
     
+    if ql._custom_engine:
+        return ql_get_module_function(f"qiling.arch.engine", 'QlArchEngine')(ql)
+
     if archtype == QL_ARCH.ARM_THUMB:
         archtype =  QL_ARCH.ARM
 
