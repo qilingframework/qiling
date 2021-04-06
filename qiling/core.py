@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from .os.memory import QlMemoryManager
     from .loader.loader import QlLoader
 
-from .const import QL_ARCH_ENDIAN, QL_ENDIAN, QL_OS
+from .const import QL_ARCH_ENDIAN, QL_ENDIAN, QL_OS, QL_CUSTOM_ENGINE
 from .exception import QlErrorFileNotFound, QlErrorArch, QlErrorOsType, QlErrorOutput
 from .utils import *
 from .core_struct import QlCoreStructs
@@ -65,6 +65,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._env = env if env else {}
         self._code = code
         self._shellcoder = shellcoder
+        self._custom_engine = False
         self._ostype = ostype
         self._archtype = archtype
         self._archendian = None
@@ -125,6 +126,13 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
             if (self._ostype and type(self._ostype) == str):
                 self._ostype = ostype_convert(self._ostype.lower())
+
+            if self._archtype in QL_CUSTOM_ENGINE:
+                self._custom_engine = True
+                if self._ostype == None:
+                    self._ostype = arch_os_convert(self._archtype)
+                if self._code == None:
+                    self._code = self._archtype
 
             self._argv = ["qilingcode"]
             if self._rootfs is None:
@@ -198,12 +206,13 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         ##############
         # Components #
         ##############
-        self._mem = component_setup("os", "memory", self)
-        self._reg = component_setup("arch", "register", self)
+        if not self._custom_engine:
+            self._mem = component_setup("os", "memory", self)
+            self._reg = component_setup("arch", "register", self)
         self._arch = arch_setup(self.archtype, self)
         
         # Once we finish setting up arch layer, we can init QlCoreHooks.
-        self.uc = self.arch.init_uc
+        self.uc = self.arch.init_uc if not self._custom_engine else None
         QlCoreHooks.__init__(self, self.uc)
 
         self._os = os_setup(self.archtype, self.ostype, self)

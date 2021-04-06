@@ -15,7 +15,7 @@ from unicorn import UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
 
 from .exception import *
 from .const import QL_VERBOSE, QL_ARCH, QL_ARCH_ALL, QL_ENDIAN, QL_OS, QL_OS_ALL, QL_DEBUGGER, QL_ARCH_32BIT, QL_ARCH_64BIT, QL_ARCH_16BIT
-from .const import debugger_map, arch_map, os_map
+from .const import debugger_map, arch_map, os_map, arch_os_map
 
 FMT_STR = "%(levelname)s\t%(message)s"
 
@@ -210,6 +210,20 @@ def arch_convert_str(arch: QL_ARCH) -> Optional[str]:
 
 def arch_convert(arch: str) -> Optional[QL_ARCH]:
     return arch_map.get(arch)
+
+def arch_os_convert(arch):
+    adapter = {}
+    adapter.update(arch_os_map)
+    if arch in adapter:
+        return adapter[arch]
+    # invalid
+    return None
+
+def os_arch_convert(arch):
+    adapter = {}
+    adapter.update(arch_map)
+    adapter = {v: k for k, v in adapter.items()}
+    return adapter.get(arch)
 
 def debugger_convert(debugger: str) -> Optional[QL_DEBUGGER]:
     return debugger_map.get(debugger)
