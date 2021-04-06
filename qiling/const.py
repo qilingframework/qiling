@@ -19,6 +19,7 @@ class QL_ARCH(IntEnum):
     MIPS = 106
     A8086 = 107
     EVM = 108
+    WASM = 109
 
 class QL_OS(IntEnum):
     LINUX = 201
@@ -28,6 +29,7 @@ class QL_OS(IntEnum):
     UEFI = 205
     DOS = 206
     EVM = 207
+    WASM = 208
 
 class QL_VERBOSE(IntEnum):
     OFF = 0
@@ -57,7 +59,7 @@ QL_ARCH_64BIT  = (QL_ARCH.ARM64, QL_ARCH.X8664)
 QL_ARCH_ALL    = QL_ARCH_16BIT + QL_ARCH_32BIT + QL_ARCH_64BIT
 
 QL_OS_NONPID        = (QL_OS.DOS, QL_OS.UEFI)
-QL_CUSTOM_ENGINE    = (QL_ARCH.EVM)
+QL_CUSTOM_ENGINE    = (QL_ARCH.EVM,)
 QL_OS_POSIX         = (QL_OS.LINUX, QL_OS.FREEBSD, QL_OS.MACOS)
 QL_OS_ALL           = QL_OS_POSIX + QL_OS_NONPID + (QL_OS.WINDOWS,)
 
