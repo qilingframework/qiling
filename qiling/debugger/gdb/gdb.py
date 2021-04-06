@@ -216,8 +216,9 @@ class QlGdb(QlDebugger, object):
                 
                 elif self.ql.archtype == QL_ARCH.ARM:
                     mode = self.ql.arch.check_thumb()
-                    
-                    for reg in self.tables[QL_ARCH.ARM][:16]:
+
+                    # r0-r12,sp,lr,pc,cpsr ,see https://sourceware.org/git/?p=binutils-gdb.git;a=blob;f=gdb/arch/arm.h;h=fa589fd0582c0add627a068e6f4947a909c45e86;hb=HEAD#l127
+                    for reg in self.tables[QL_ARCH.ARM][:16] + [self.tables[QL_ARCH.ARM][25]]:
                         r = self.ql.reg.read(reg)
                         if mode == UC_MODE_THUMB and reg == "pc":
                             r += 1
@@ -362,7 +363,7 @@ class QlGdb(QlDebugger, object):
                             reg_value = self.addr_to_str(reg_value, short = True)
                     
                     elif self.ql.archtype== QL_ARCH.ARM:
-                        if reg_index < 17:
+                        if reg_index < 26:
                             reg_value = self.ql.reg.read(self.tables[QL_ARCH.ARM][reg_index - 1])
                         else:
                             reg_value = 0
