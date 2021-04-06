@@ -221,8 +221,6 @@ class QlGdb(QlDebugger, object):
                         r = self.ql.reg.read(reg)
                         if mode == UC_MODE_THUMB and reg == "pc":
                             r += 1
-                        elif mode != UC_MODE_THUMB and reg == "pc":
-                            r += 4
                         tmp = self.addr_to_str(r)
                         s += tmp
 
