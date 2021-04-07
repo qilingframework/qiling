@@ -15,7 +15,7 @@ from .core_hooks_types import Hook, HookAddr, HookIntr, HookRet
 from .utils import catch_KeyboardInterrupt
 from .const import QL_HOOK_BLOCK
 from .exception import QlErrorCoreHook
-# from .engine.engine_hooks import engine_hook_address, engine_hook_del, engine_hook_insn, ql_engine_hooks
+
 
 # Don't assume self is Qiling.
 class QlCoreHooks:
@@ -44,8 +44,6 @@ class QlCoreHooks:
         self.hook_mem_read_after_fuc = None
         self.hook_insn_invalid_fuc = None
 
-        # if self.custom_engine:
-        #     from .engine.engine_hooks import engine_hook_address, engine_hook_del, engine_hook_insn, ql_engine_hooks
 
     ########################
     # Callback definitions #
