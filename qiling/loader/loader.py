@@ -4,7 +4,7 @@
 #
 from collections import namedtuple
 
-from qiling.const import QL_OS, QL_OS_ALL, QL_ARCH, QL_ENDIAN
+from qiling.const import QL_OS, QL_ARCH, QL_ENDIAN
 from qiling.exception import QlErrorArch, QlErrorOsType, QlErrorOutput
 
 
