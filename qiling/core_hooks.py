@@ -44,7 +44,7 @@ class QlCoreHooks:
         self.hook_mem_read_after_fuc = None
         self.hook_insn_invalid_fuc = None
 
-        if self.engine:
+        if self.custom_engine:
             from .engine.engine_hooks import engine_hook_address, engine_hook_del, engine_hook_insn, ql_engine_hooks
 
     ########################
