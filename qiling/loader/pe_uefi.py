@@ -50,7 +50,7 @@ class QlLoaderPE_UEFI(QlLoader):
         for member in QlLoaderPE_UEFI.__save_members:
             saved_state[member] = getattr(self, member)
 
-        # since this class initialize the heap (that is hosted by the OS object), we will store it here.
+        # since this class initialize the heap (that is hosted by the OS object), we will store it here
         saved_state['heap'] = self.ql.os.heap.save()
 
         return saved_state
