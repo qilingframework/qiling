@@ -1,5 +1,8 @@
 #!/usr/bin/python3
 
+# More info, please refer to https://github.com/qilingframework/qiling/pull/765
+
+
 from collections import UserList
 from typing import Iterable, Iterator, Mapping, Tuple
 
