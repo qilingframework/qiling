@@ -16,7 +16,7 @@ class MACHOTest(unittest.TestCase):
         ql.run()
 
     def test_usercorn_x8664(self):
-        ql = Qiling(["../examples/rootfs/x8664_macos/bin/x8664_hello_usercorn"], "../examples/rootfs/x8664_macos", output = "debug")
+        ql = Qiling(["../examples/rootfs/x8664_macos/bin/x8664_hello_usercorn"], "../examples/rootfs/x8664_macos", verbose=QL_VERBOSE.DEBUG)
         ql.run()
 
 if __name__ == "__main__":
