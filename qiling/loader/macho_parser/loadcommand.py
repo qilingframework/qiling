@@ -43,6 +43,7 @@ class LoadCommand:
             LC_DYLD_EXPORTS_TRIE    :   LoadDyldExportTrie,
             LC_DYLD_CHAINED_FIXUPS  :   LoadDyldChainedFixups,
             LC_RPATH                :   LoadRPath,
+            LC_ID_DYLIB             :   LoadIdDylib,
             LC_BUILD_VERSION        :   LoadBuildVersion
         }
 
@@ -520,3 +521,14 @@ class LoadRPath(LoadCommand):
         self.offset = unpack("<L", self.FR.read(4))[0]
         self.FR.setOffset(self.offset)
         self.path   = self.FR.readString(4)
+
+
+class LoadIdDylib(LoadCommand):
+    def __init__(self, data):
+        super().__init__(data)
+        self.name_offset = unpack("<L", self.FR.read(4))[0]
+        self.timestamp = unpack("<L", self.FR.read(4))[0]
+        self.current_version = unpack("<L", self.FR.read(4))[0]
+        self.compatibility_version = unpack("<L", self.FR.read(4))[0]
+        self.FR.setOffset(self.name_offset)
+        self.name = self.FR.readString(4)
