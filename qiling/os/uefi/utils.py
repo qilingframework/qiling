@@ -9,20 +9,21 @@ from uuid import UUID
 from typing import Optional
 from contextlib import contextmanager
 
+from qiling import Qiling
 from qiling.os.uefi.const import EFI_SUCCESS, EFI_INVALID_PARAMETER
-from qiling.os.uefi.UefiSpec import EFI_CONFIGURATION_TABLE, EFI_SYSTEM_TABLE
+from qiling.os.uefi.UefiSpec import EFI_CONFIGURATION_TABLE
 from qiling.os.uefi.UefiBaseType import EFI_GUID
 
-def signal_event(ql, event_id: int) -> None:
+def signal_event(ql: Qiling, event_id: int) -> None:
 	event = ql.loader.events[event_id]
 
 	if not event["Set"]:
 		event["Set"] = True
 		notify_func = event["NotifyFunction"]
-		CallbackArgs = event["CallbackArgs"]
-		ql.loader.notify_list.append((event_id, notify_func, CallbackArgs))
+		notify_context = event["NotifyContext"]
+		ql.loader.notify_list.append((event_id, notify_func, notify_context))
 
-def execute_protocol_notifications(ql, from_hook=False) -> bool:
+def execute_protocol_notifications(ql: Qiling, from_hook=False) -> bool:
 	if not ql.loader.notify_list:
 		return False
 	
@@ -47,37 +48,54 @@ def execute_protocol_notifications(ql, from_hook=False) -> bool:
 	
 	return True
 
-def ptr_read8(ql, addr: int) -> int:
+
+def check_and_notify_protocols(ql: Qiling, from_hook: bool = False) -> bool:
+	if ql.loader.notify_list:
+		event_id, notify_func, notify_context = ql.loader.notify_list.pop(0)
+		ql.log.info(f'Notify event: {event_id}, calling: {notify_func:#x} context: {notify_context:#x}')
+
+		if from_hook:
+			# When running from a hook the caller pops the return address from the stack.
+			# We need to push the address to the stack as opposed to setting it to the instruction pointer.
+			ql.loader.call_function(0, [notify_context], notify_func)
+		else:
+			ql.loader.call_function(notify_func, [notify_context], ql.loader.end_of_execution_ptr)
+
+		return True
+
+	return False
+
+def ptr_read8(ql: Qiling, addr: int) -> int:
 	"""Read BYTE data from a pointer
 	"""
 
 	return ql.unpack8(ql.mem.read(addr, 1))
 
-def ptr_write8(ql, addr: int, val: int) -> None:
+def ptr_write8(ql: Qiling, addr: int, val: int) -> None:
 	"""Write BYTE data to a pointer
 	"""
 
 	ql.mem.write(addr, ql.pack8(val))
 
-def ptr_read32(ql, addr: int) -> int:
+def ptr_read32(ql: Qiling, addr: int) -> int:
 	"""Read DWORD data from a pointer
 	"""
 
 	return ql.unpack32(ql.mem.read(addr, 4))
 
-def ptr_write32(ql, addr: int, val: int) -> None:
+def ptr_write32(ql: Qiling, addr: int, val: int) -> None:
 	"""Write DWORD data to a pointer
 	"""
 
 	ql.mem.write(addr, ql.pack32(val))
 
-def ptr_read64(ql, addr: int) -> int:
+def ptr_read64(ql: Qiling, addr: int) -> int:
 	"""Read QWORD data from a pointer
 	"""
 
 	return ql.unpack64(ql.mem.read(addr, 8))
 
-def ptr_write64(ql, addr: int, val: int) -> None:
+def ptr_write64(ql: Qiling, addr: int, val: int) -> None:
 	"""Write QWORD data to a pointer
 	"""
 
@@ -91,7 +109,7 @@ write_int32 = ptr_write32
 read_int64  = ptr_read64
 write_int64 = ptr_write64
 
-def init_struct(ql, base: int, descriptor: dict):
+def init_struct(ql: Qiling, base: int, descriptor: dict):
 	struct_class = descriptor['struct']
 	struct_fields = descriptor.get('fields', [])
 

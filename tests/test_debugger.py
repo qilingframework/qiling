@@ -9,6 +9,7 @@ from binascii import unhexlify
 sys.path.append("..")
 from qiling import *
 from qiling.exception import *
+from qiling.const import QL_VERBOSE
 
 DELAY = 1
 
@@ -32,7 +33,7 @@ def send(netout, msg):
 class DebuggerTest(unittest.TestCase):
     
     def test_gdbdebug_file_server(self):
-        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_hello"], "../examples/rootfs/x8664_linux", output ="debug")
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_hello"], "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG)
         ql.debugger = True
 
         # some random command test just to make sure we covered most of the command

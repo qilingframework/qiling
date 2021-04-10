@@ -3,14 +3,15 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from qiling.const import *
+from qiling.const import QL_ARCH
+from qiling.os.posix.posix import SYSCALL_PREF
 
 def map_syscall(ql, syscall_num):
-    for k,v in syscall_table.items():
-        
-        if ql.archtype == QL_ARCH.X8664 and v == syscall_num:
-            return "ql_syscall_" + k
-# From /sys/sys/syscall.h
+    if ql.archtype == QL_ARCH.X8664:
+        for k, v in syscall_table.items():
+            if v == syscall_num:
+                return f'{SYSCALL_PREF}{k}'
+
 syscall_table = {
     "syscall": (0),
     "exit": (1),

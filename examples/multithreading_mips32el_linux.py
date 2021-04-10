@@ -5,12 +5,13 @@
 
 import sys
 sys.path.append("..")
-from qiling import *
+
+from qiling import Qiling
+from qiling.const import QL_VERBOSE
 
 def my_sandbox(path, rootfs):
-    ql = Qiling(path, rootfs, multithread= True,output = "debug")
+    ql = Qiling(path, rootfs, verbose=QL_VERBOSE.DEBUG, multithread=True)
     ql.run()
-
 
 if __name__ == "__main__":
     my_sandbox(["rootfs/mips32el_linux/bin/mips32el_multithreading"], "rootfs/mips32el_linux")

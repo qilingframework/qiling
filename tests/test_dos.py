@@ -3,26 +3,36 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import os, random, sys, unittest
+import sys, unittest
+sys.path.append('..')
 
-import string as st
-from binascii import unhexlify
+from qiling import Qiling
+from qiling.const import QL_INTERCEPT, QL_VERBOSE
 
-sys.path.insert(0, "..")
-
-from qiling import *
-from qiling.const import *
-from qiling.exception import *
-from qiling.os.windows.fncc import *
-from qiling.os.windows.utils import *
-from unicorn.x86_const import *
+class Checklist:
+    def __init__(self) -> None:
+        self.visited_onenter = False
+        self.visited_onexit = False
 
 class DOSTest(unittest.TestCase):
 
     def test_dos_8086_hello(self):
-        ql = Qiling(["../examples/rootfs/8086/dos/HI.DOS_COM"], "../examples/rootfs/8086/dos")
+        ql = Qiling(["../examples/rootfs/8086/dos/HI.DOS_COM"], "../examples/rootfs/8086/dos", verbose=QL_VERBOSE.DEBUG)
+        ck = Checklist()
+
+        def onenter(ql: Qiling):
+            ck.visited_onenter = True
+
+        def onexit(ql: Qiling):
+            ck.visited_onexit = True
+
+        ql.set_api((0x21, 0x09), onexit, QL_INTERCEPT.EXIT)
+        ql.set_api((0x21, 0x4c), onenter, QL_INTERCEPT.ENTER)
+
         ql.run()
-        del ql
+
+        self.assertTrue(ck.visited_onenter)
+        self.assertTrue(ck.visited_onexit)
 
 if __name__ == "__main__":
     unittest.main()

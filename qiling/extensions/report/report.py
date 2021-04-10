@@ -16,7 +16,7 @@ class Report:
         self.os = list(os_map.keys())[list(os_map.values()).index(ql.ostype)]
         self.env = ql.env
         self.strings = set()
-        for string in ql.os.appeared_strings:
+        for string in ql.os.utils.appeared_strings:
             strings = string.split(" ")
             self.strings |= set(strings)
         self.profile = {}

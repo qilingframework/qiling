@@ -1,0 +1,3 @@
+[submodule "examples/rootfs"]
+	path = examples/rootfs
+	url = https://github.com/qilingframework/rootfs.git

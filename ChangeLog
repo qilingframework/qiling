@@ -1,27 +1,27 @@
 This file details the changelog of Qiling Framework.
 
 ------------------------------------
-BREAK CHANGE
-- ql.multithread can be only set during Qiling.__init__ now.
-- ql.nprint and ql.dpring is depreciated. Please use logging directly instead.
-- ql.filename is renamed to ql.argv.
-- ql.output and ql.verbose now has slightly different meanings and can be adjusted runtime. See their docstring for details.
-- ql.filter now accepts a regular expression.
-- Remove ql.log_dir, ql.log_split, ql.append but add ql.log_file instead.
+[Version 1.2.4]: April [SOMETHING], 2021
 
+- Added custom engine extension
+- 
 
 ------------------------------------
-[Version 1.2.3]: March [SOMETHING], 2021
+[Version 1.2.3]: March 30th, 2021
 
 - Improved PR #689, Android syscall and test fix
 - GDB speed optimization
 - Fixed return value for uid/gid related syscall
 - Resolved multilevel symbolic links
 - Demigod set.api implementation
+- Major refactor, see commit 4aa8e59e04d5a8a5520e4e1e2595ecc78a80beba
+- Clean and remove rootfs
+- ql.filter now accepts a regular expression
+- consolidate output into verbose
 
 
 ------------------------------------
-[Version 1.2.2]: February 8, 2021
+[Version 1.2.2]: February 8th, 2021
 
 - Fix _acmdln and _wcmdln handling
 - More UEFI refactor

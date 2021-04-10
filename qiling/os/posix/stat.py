@@ -5,38 +5,33 @@
 
 import os
 
-class Stat(object):
+class StatBase:
+    def __init__(self):
+        self._stat_buf = None
+
+    # Never iterate this object!
+    def __getitem__(self, key):
+        if type(key) is not str:
+            raise TypeError
+        if not key.startswith("__") and key in dir(self._stat_buf):
+            return self._stat_buf.__getattribute__(key)
+        return 0
+    
+    def __getattr__(self, key):
+        return self.__getitem__(key)
+class Stat(StatBase):
     def __init__(self, path):
-        super().__init__()
-        self.path = path
-        stat_buf = os.stat(self.path)
+        super(Stat, self).__init__()
+        self._stat_buf = os.stat(path)
 
-        for name in dir(stat_buf):
-            if name.startswith('st_'):
-                setattr(self, name, getattr(stat_buf, name))
-
-
-class Fstat(object):
+class Fstat(StatBase):
     def __init__(self, fd):
-        super().__init__()
-        self.fd = fd
-        fstat_buf = os.fstat(self.fd)
+        super(Fstat, self).__init__()
+        self._stat_buf = os.fstat(fd)
 
-        for name in dir(fstat_buf):
-            if name.startswith('st_'):
-                setattr(self, name, getattr(fstat_buf, name))
-
-
-class Lstat(object):
+class Lstat(StatBase):
     def __init__(self, path):
-        super().__init__()
-        self.path = path
-        lstat_buf = os.lstat(self.path)
-
-        for name in dir(lstat_buf):
-            if name.startswith('st_'):
-                setattr(self, name, getattr(lstat_buf, name))
-
-
+        super(Lstat, self).__init__()
+        self._stat_buf = os.lstat(path)
 
 

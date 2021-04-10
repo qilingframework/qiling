@@ -7,7 +7,7 @@ from binascii import crc32
 
 from qiling.os.const import *
 from qiling.os.uefi.const import *
-from qiling.os.uefi.fncc import *
+from qiling.os.uefi.fncc import dxeapi
 from qiling.os.uefi.utils import *
 from qiling.os.uefi.ProcessorBind import *
 from qiling.os.uefi.UefiSpec import *
@@ -411,21 +411,22 @@ def hook_InstallMultipleProtocolInterfaces(ql, address, params):
 	if handle == 0:
 		handle = ql.loader.dxe_context.heap.alloc(pointer_size)
 
-	if handle not in ql.loader.dxe_context.protocols:
-		ql.loader.dxe_context.protocols[handle] = {}
+	dic = ql.loader.dxe_context.protocols.get(handle, {})
 
 	# process elipsiss arguments
 	index = 1
-	while ql.os.get_param_by_index(index) != 0:
-		GUID_ptr = ql.os.get_param_by_index(index)
-		protocol_ptr = ql.os.get_param_by_index(index + 1)
+	while ql.os.fcall.cc.getRawParam(index) != 0:
+		GUID_ptr = ql.os.fcall.cc.getRawParam(index)
+		protocol_ptr = ql.os.fcall.cc.getRawParam(index + 1)
 
-		GUID = str(ql.os.read_guid(GUID_ptr))
+		GUID = str(ql.os.utils.read_guid(GUID_ptr))
+		dic[GUID] = protocol_ptr
+
 		ql.log.info(f' | {GUID} {protocol_ptr:#x}')
 		index += 2
-		ql.loader.dxe_context.protocols[handle][GUID] = protocol_ptr
-		ql.loader.dxe_context.notify_protocol(handle, GUID, protocol_ptr, True)
 
+	ql.loader.dxe_context.protocols[handle] = dic
+	check_and_notify_protocols(ql, True)
 	write_int64(ql, params["Handle"], handle)
 
 	return EFI_SUCCESS
@@ -444,11 +445,11 @@ def hook_UninstallMultipleProtocolInterfaces(ql, address, params):
 
 	# process elipsiss arguments
 	index = 1
-	while ql.os.get_param_by_index(index) != 0:
-		GUID_ptr = ql.os.get_param_by_index(index)
-		protocol_ptr = ql.os.get_param_by_index(index + 1)
+	while ql.os.fcall.cc.getRawParam(index) != 0:
+		GUID_ptr = ql.os.fcall.cc.getRawParam(index)
+		protocol_ptr = ql.os.fcall.cc.getRawParam(index + 1)
 
-		GUID = str(ql.os.read_guid(GUID_ptr))
+		GUID = str(ql.os.utils.read_guid(GUID_ptr))
 
 		if GUID not in dic:
 			return EFI_INVALID_PARAMETER

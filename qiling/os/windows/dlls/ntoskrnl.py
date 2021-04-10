@@ -97,96 +97,79 @@ def hook_NtClose(ql, address, params):
 #   PCSTR Format,
 #   ...
 # );
-@winsdkapi(cc=CDECL, dllname=dllname, param_num=3)
-def hook_DbgPrintEx(ql, address, _):
-    ret = 0
-    format_string_addr = ql.os.get_function_param(1)
-    format_string = ql.os.read_cstring(format_string_addr)
+@winsdkapi(cc=CDECL, dllname=dllname, replace_params={'ComponentId': ULONG, 'Level': ULONG, 'Format': STRING})
+def hook_DbgPrintEx(ql: Qiling, address: int, params):
+    Format = params['Format']
 
-    if format_string.count('%') == 0:
-        param_addr = ql.reg.sp + ql.pointersize * 2
-    else:
-        param_addr = ql.reg.sp + ql.pointersize * 3
+    if Format == 0:
+        Format = "(null)"
 
-    count = format_string.count('%')
-    args = ql.os.get_function_param(2 + count)[2:]
-    
-    ret, _ = ql.os.printf(address, format_string, args, "DbgPrintEx")
-    ql.os.set_return_value(ret)
+    nargs = Format.count("%")
+    ptypes = (ULONG, ULONG, POINTER) + (PARAM_INTN, ) * nargs
+    args = ql.os.fcall.readParams(ptypes)[3:]
 
-    # x8664 fastcall does not known the real number of parameters
-    # so we need to manually pop the stack
-    if ql.archtype == QL_ARCH.X8664:
-        # if number of params > 4
-        if count + 1 > 4:
-            rsp = ql.reg.rsp
-            ql.reg.rsp = (rsp + (count - 4 + 1) * 8)
+    count = ql.os.utils.printf(Format, args, wstring=False)
+    ql.os.utils.update_ellipsis(params, args)
 
-    return None
+    return count
 
 # ULONG DbgPrint(
 #   PCSTR Format,
 #   ...   
 # );
-@winsdkapi(cc=CDECL, dllname=dllname, param_num=1)
-def hook_DbgPrint(ql, address, _):
-    ret = 0
-    format_string_addr = ql.os.get_function_param(1)
-    format_string = ql.os.read_cstring(format_string_addr)
+@winsdkapi(cc=CDECL, dllname=dllname, replace_params={'Format': STRING})
+def hook_DbgPrint(ql: Qiling, address: int, params):
+    Format = params['Format']
 
-    if format_string.count('%') == 0:
-        param_addr = ql.reg.sp + ql.pointersize * 2
-    else:
-        param_addr = ql.reg.sp + ql.pointersize * 3
+    if Format == 0:
+        Format = "(null)"
 
-    count = format_string.count('%')
-    args = ql.os.get_function_param(2 + count)[2:]
+    nargs = Format.count("%")
+    ptypes = (POINTER, ) + (PARAM_INTN, ) * nargs
+    args = ql.os.fcall.readParams(ptypes)[1:]
 
-    ret, _ = ql.os.printf(address, format_string, args, "DbgPrint")
-    ql.os.set_return_value(ret)
-    
-    # x8664 fastcall does not known the real number of parameters
-    # so we need to manually pop the stack
-    if ql.archtype == QL_ARCH.X8664:
-        # if number of params > 4
-        if count + 1 > 4:
-            rsp = ql.reg.rsp
-            ql.reg.rsp = (rsp + (count - 4 + 1) * 8)
+    count = ql.os.utils.printf(Format, args, wstring=False)
+    ql.os.utils.update_ellipsis(params, args)
 
-    return None
+    return count
 
+def ntoskrnl_IoCreateDevice(ql: Qiling, address: int, params):
+    objcls = {
+        QL_ARCH.X86   : DEVICE_OBJECT32,
+        QL_ARCH.X8664 : DEVICE_OBJECT64
+    }[ql.archtype]
 
-def ntoskrnl_IoCreateDevice(ql, address, params):
-    if ql.archtype == QL_ARCH.X86:
-        addr = ql.os.heap.alloc(ctypes.sizeof(DEVICE_OBJECT32))
-        device_object = DEVICE_OBJECT32()
-    elif ql.archtype == QL_ARCH.X8664:
-        addr = ql.os.heap.alloc(ctypes.sizeof(DEVICE_OBJECT64))
-        device_object = DEVICE_OBJECT64()
+    addr = ql.os.heap.alloc(ctypes.sizeof(objcls))
+    device_object = objcls()
 
-    device_object.Type = 3
-    device_object.DeviceExtension = ql.os.heap.alloc(
-        params['DeviceExtensionSize'])
-    device_object.Size = ctypes.sizeof(
-        device_object) + params['DeviceExtensionSize']
+    DriverObject = params['DriverObject']
+    DeviceExtensionSize = params['DeviceExtensionSize']
+    DeviceCharacteristics = params['DeviceCharacteristics']
+    DeviceObject = params['DeviceObject']
+
+    device_object.Type = 3 # FILE_DEVICE_CD_ROM_FILE_SYSTEM ?
+    device_object.DeviceExtension = ql.os.heap.alloc(DeviceExtensionSize)
+    device_object.Size = ctypes.sizeof(device_object) + DeviceExtensionSize
     device_object.ReferenceCount = 1
-    device_object.DriverObject.value = params['DriverObject']
+    device_object.DriverObject.value = DriverObject
     device_object.NextDevice.value = 0
     device_object.AttachedDevice.value = 0
     device_object.CurrentIrp.value = 0
     device_object.Timer.value = 0
-    device_object.Flags = 0x00000080  # DO_DEVICE_INITIALIZING
-    if 'Exclusive' in params and params['Exclusive']:
-        device_object.Flags |= 0x00000008  # DO_EXCLUSIVE
-    device_object.Characteristics = params['DeviceCharacteristics']
+    device_object.Flags = DO_DEVICE_INITIALIZING
+
+    if params.get('Exclusive'):
+        device_object.Flags |= DO_EXCLUSIVE
+
+    device_object.Characteristics = DeviceCharacteristics
+
     ql.mem.write(addr, bytes(device_object)[:])
-    ql.mem.write(params["DeviceObject"],
-                 addr.to_bytes(length=ql.pointersize, byteorder='little'))
+    ql.mem.write(DeviceObject, addr.to_bytes(length=ql.pointersize, byteorder='little'))
 
     # update DriverObject.DeviceObject
     ql.loader.driver_object.DeviceObject = addr
 
-    return 0
+    return STATUS_SUCCESS
 
 
 # NTSTATUS IoCreateDevice(
@@ -255,14 +238,6 @@ def hook_IoDeleteDevice(ql, address, params):
     addr = params['DeviceObject']
     ql.os.heap.free(addr)
     return None
-
-
-# NTSTATUS IoDeleteSymbolicLink(
-#   PUNICODE_STRING SymbolicLinkName
-# );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={"SymbolicLinkName": PUNICODE_STRING})
-def hook_IoDeleteSymbolicLink(ql, address, params):
-    return 0
 
 
 # NTSTATUS IoCreateSymbolicLink(
@@ -913,7 +888,7 @@ def hook_PsGetCurrentProcessId(ql, address, params):
             "DriverName": PUNICODE_STRING,
             "InitializationFunction": POINTER,
         })
-def hook_IoCreateDriver(ql, address, params):
+def hook_IoCreateDriver(ql: Qiling, address: int, params):
     init_func = params["InitializationFunction"]
 
     ret_addr = ql.stack_read(0)
@@ -923,7 +898,8 @@ def hook_IoCreateDriver(ql, address, params):
     sp = ql.reg.sp
     init_sp = ql.os.init_sp
 
-    ql.os.set_function_args((ql.driver_object_address, ql.regitry_path_address))
+    ql.os.fcall = ql.os.fcall_select(STDCALL)
+    ql.os.fcall.writeParams(((POINTER, ql.driver_object_address), (POINTER, ql.regitry_path_address)))
     ql.until_addr = ret_addr
 
     # now lest emualate InitializationFunction

@@ -34,5 +34,6 @@ test.file
 *.o
 core
 *.perf
-examples/rootfs/x86_windows/Windows/registry
-examples/rootfs/x8664_windows/Windows/registry
+
+# future
+engine/

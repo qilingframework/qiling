@@ -37,7 +37,7 @@ def hook_SysFreeString(ql, address, params):
     addr = params["strIn"]
     if addr != 0:
         ql.os.heap.free(addr)
-        content = ql.os.read_wstring(addr)
+        content = ql.os.utils.read_wstring(addr)
 
         params["strIn"] = content
     return 0

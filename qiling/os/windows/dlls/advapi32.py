@@ -55,18 +55,18 @@ def RegQueryValue(ql, address, params):
     s_hKey = ql.os.handle_manager.get(hKey).obj
     params["hKey"] = s_hKey
     # read reg_type
-    if lpType != 0:
-        reg_type = ql.unpack32(ql.mem.read(lpType, 4))
-    else:
-        reg_type = Registry.RegNone
+    reg_type = Registry.RegNone if lpType == 0 else ql.unpack32(ql.mem.read(lpType, 4))
+
     try:
         # Keys in the profile are saved as KEY\PARAM = VALUE, so i just want to check that the key is the same
         value = ql.os.profile["REGISTRY"][s_hKey + "\\" + s_lpValueName]
         ql.log.debug("Using profile for value of key %s" % (s_hKey + "\\" + s_lpValueName,))
+
         # TODO i have no fucking idea on how to set a None value, fucking configparser
         if value == "None":
             return ERROR_FILE_NOT_FOUND
-        reg_type = 0x0001
+
+        reg_type = Registry.RegSZ
         # set that the registry has been accessed
         ql.os.registry_manager.access(s_hKey, s_lpValueName, value, reg_type)
 

@@ -7,7 +7,6 @@ import select
 
 from qiling.const import *
 from qiling.os.linux.thread import *
-from qiling.const import *
 from qiling.os.posix.filestruct import *
 from qiling.os.filestruct import *
 from qiling.os.posix.const_mapping import *
@@ -80,6 +79,6 @@ def ql_syscall__newselect(ql, _newselect_nfds, _newselect_readfds, _newselect_wr
     except KeyboardInterrupt:
         raise
     except:
-        if ql.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
+        if ql.verbose >= QL_VERBOSE.DEBUG:
             raise
     return regreturn

@@ -3,23 +3,18 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+import os
 import argparse
-import sys
+import pefile
+
+from binascii import hexlify
 from capstone import *
 
-sys.path.insert(0, "..")
+import sys
+sys.path.append('..')
 
-from unicorn import *
-from unicorn.x86_const import *
-
-from qiling import *
-
-from pprint import pprint as pp
-from binascii import hexlify, unhexlify
-import re
-import pefile
-import os
-
+from qiling import Qiling
+from qiling.const import QL_VERBOSE
 
 class colors:
     if sys.stdout.isatty():
@@ -41,27 +36,32 @@ class colors:
         UNDERLINE = ''
 
 
-def dump_regs(ql, address, size):
-    regs = {'eax': ql.reg.eax,
-            'ebx': ql.reg.ebx,
-            'ecx': ql.reg.ecx,
-            'edx': ql.reg.edx,
-            'edi': ql.reg.edi,
-            'esi': ql.reg.esi,
-            'ebp': ql.reg.ebp,
-            'esp': ql.reg.esp}
+def dump_regs(ql: Qiling):
+    regs = {
+        'eax': ql.reg.eax,
+        'ebx': ql.reg.ebx,
+        'ecx': ql.reg.ecx,
+        'edx': ql.reg.edx,
+        'edi': ql.reg.edi,
+        'esi': ql.reg.esi,
+        'ebp': ql.reg.ebp,
+        'esp': ql.reg.esp
+    }
 
     if not hasattr(dump_regs, 'regs'):
         dump_regs.regs = regs
 
     rtn = ''
+
     # build string in order
-    for reg in ['eax', 'ebx', 'ecx', 'edx', 'edi', 'esi', 'ebp', 'esp']:
+    for reg in ('eax', 'ebx', 'ecx', 'edx', 'edi', 'esi', 'ebp', 'esp'):
         val = '{}: {:08X}    '.format(reg.upper(), regs[reg])
+
         if regs[reg] != dump_regs.regs[reg]:
             rtn += colors.RED + val + colors.ENDC
         else:
             rtn += val
+
     dump_regs.regs = regs
 
     return rtn
@@ -71,7 +71,7 @@ def spaced_hex(data):
     return b' '.join(hexlify(data)[i:i + 2] for i in range(0, len(hexlify(data)), 2)).decode('utf-8')
 
 
-def disasm(count, ql, address, size):
+def disasm(count, ql: Qiling, address: int, size: int):
     buf = ql.mem.read(address, size)
     try:
         for i in md.disasm(buf, address):
@@ -82,16 +82,16 @@ def disasm(count, ql, address, size):
         print(traceback.format_exc())
 
 
-def trace(ql):
+def trace(ql: Qiling):
     count = [0]
     ql.hook_code(trace_cb, count)
 
 
-def trace_cb(ql, address, size, count):
+def trace_cb(ql: Qiling, address: int, size: int, count):
     rtn = '{:100s}'.format(disasm(count, ql, address, size))
     if args.reg:
         try:
-            rtn += dump_regs(ql, address, size)
+            rtn += dump_regs(ql)
         except:
             import traceback
             print(traceback.format_exc())
@@ -99,10 +99,12 @@ def trace_cb(ql, address, size, count):
     count[0] += 1
 
 
-def emulate(path, rootfs, output="debug", enable_trace=False):
-    ql = Qiling([path], rootfs, output=output)
+def emulate(path, rootfs, verbose=QL_VERBOSE.DEBUG, enable_trace=False):
+    ql = Qiling([path], rootfs, verbose=verbose)
+
     if enable_trace:
         trace(ql)
+
     ql.run()
 
 
@@ -135,4 +137,4 @@ if __name__ == "__main__":
             else:
                 args.root = os.path.join(os.getcwd(), 'rootfs', 'x8664_windows')
 
-        emulate(path, args.root, output='debug', enable_trace=args.trace)
+        emulate(path, args.root, verbose=QL_VERBOSE.DEBUG, enable_trace=args.trace)

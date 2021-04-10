@@ -8,6 +8,7 @@ import argparse, os, string, sys, ast, unicorn
 from binascii import unhexlify
 
 from qiling import *
+from qiling.const import QL_VERBOSE
 from qiling.arch.utils import ql_create_assembler
 from qiling.utils import arch_convert
 from qiling.const import QL_ARCH, QL_ENDIAN
@@ -92,7 +93,7 @@ def run_code(options):
             exit(1)
         code = read_file(options.filename)
 
-    return Qiling(code = code, archtype = options.arch, bigendian = options.bigendian, ostype = options.os, rootfs = options.rootfs, output = options.output, profile = options.profile)
+    return Qiling(code = code, archtype = options.arch, bigendian = options.bigendian, ostype = options.os, rootfs = options.rootfs, verbose = options.verbose, profile = options.profile)
 
 def version():
     print("qltool for Qiling %s, using Unicorn %s" %(ql_version, unicorn.__version__))
@@ -104,7 +105,7 @@ def usage():
     print("\n\nWith code:")
     print("\t ./qltool code --os linux --arch arm --hex -f examples/codes/linarm32_tcp_reverse_shell.hex")
     print("\t ./qltool code --os linux --arch x86 --asm -f examples/codes/lin32_execve.asm")
-    print("\t ./qltool code --os linux --arch arm --hex -f examples/codes/linarm32_tcp_reverse_shell.hex --strace")
+    print("\t ./qltool code --os linux --arch arm --hex -f examples/codes/linarm32_tcp_reverse_shell.hex")
 
     print("\n\nWith binary file:")
     print("\t ./qltool run -f examples/rootfs/x8664_linux/bin/x8664_hello --rootfs  examples/rootfs/x8664_linux/")
@@ -121,9 +122,9 @@ def usage():
     print("\t ./qltool run -f examples/rootfs/x8664_linux/bin/x8664_args --rootfs examples/rootfs/x8664_linux --args test1 test2 test3")
 
     print("\n\nwith binary file and various output format:")
-    print("\t ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux --output=disasm")
-    print("\t ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux --strace -e ^open")
-    print("\t ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux --strace -e ^open")
+    print("\t ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux --disasm")
+    print("\t ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux -e ^open")
+    print("\t ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux -e ^(open|brk)")
     
     print("\n\nWith UEFI file:")
     print("\t ./qltool run -f examples/rootfs/x8664_efi/bin/TcgPlatformSetupPolicy --rootfs examples/rootfs/x8664_efi --env examples/rootfs/x8664_efi/rom2_nvar.pickel")
@@ -172,25 +173,22 @@ if __name__ == '__main__':
         usage()
         exit(0)
 
-    comm_parser.add_argument('-o', '--output', required=False, default='default',
-                            help='output mode, options are off, debug , disasm, dump')
-    comm_parser.add_argument('-v', '--verbose', required=False, default=1, dest='verbose', type=int,
+    comm_parser.add_argument('-v', '--verbose', required=False, default=QL_VERBOSE.DEFAULT, dest='verbose', type=int,
                             help='verbose mode, must be int and use with --debug or --dump')
     comm_parser.add_argument('--env', required=False, default='', metavar="FILE", dest="env", help="Pickle file containing an environment dictionary")                            
     comm_parser.add_argument('-g', '--gdb', required=False, help='enable gdb server')
     comm_parser.add_argument('--qdb', action='store_true', required=False, help='attach Qdb at entry point, it\'s MIPS, ARM(THUMB) supported only for now')
     comm_parser.add_argument('--rr', action='store_true', required=False, help='switch on record and replay feature in qdb, only works with --qdb')
     comm_parser.add_argument('--profile', required=False, dest='profile', help="Define customized profile")
-    comm_parser.add_argument('--strace', action='store_true', default=False, dest='strace', help='Run in strace mode')
     comm_parser.add_argument('--dump', action='store_true', default=False, dest='dump', help='Enable Debug + Diassembler mode')
     comm_parser.add_argument('--debug', action='store_true', default=False, dest='debug', help='Enable Debug mode')
     comm_parser.add_argument('--disasm', action='store_true', default=False, dest='disasm', help='Run in disassemble mode')
     comm_parser.add_argument('--console', required=False, default=True, dest='console', help='display in console')
     comm_parser.add_argument('-e', '--filter', metavar="FUNCTION NAME", required=False, dest="filter", default=None, 
-                            help="Only work with strace mode, you can choose what to be printout, for multiple function calls should be separated by comma")
+                            help="Apply regexp for filtering log output.")
     comm_parser.add_argument('--log-file', dest="log_file", help="Write log to a file")
     comm_parser.add_argument('--log-plain', action="store_true", dest="log_plain", help="Don't use color in log output.")
-    comm_parser.add_argument('--trace', action='store_true', default=False, dest='trace', help='Run in strace mode')
+    comm_parser.add_argument('--trace', action='store_true', default=False, dest='trace', help='Run in trace mode')
     comm_parser.add_argument('--root', action='store_true', default=False, dest='root', help='Enable sudo required mode')
     comm_parser.add_argument('--debug_stop', action='store_true', default=False, dest='debug_stop', 
                             help='Stop running while encounter any error (only use it with debug mode)')
@@ -203,18 +201,14 @@ if __name__ == '__main__':
     options = parser.parse_args()
 
     # var check
-    if options.strace:
-        options.output = "default"
-    elif options.trace:
-        options.output = "disasm"
+    if options.trace:
+        options.verbose = QL_VERBOSE.DISASM
     elif options.dump:
-        options.output = "dump"
+        options.verbose = QL_VERBOSE.DUMP
     elif options.debug:
-        options.output = "debug"
+        options.verbose = QL_VERBOSE.DEBUG
     elif options.disasm:
-        options.output = "disasm"
-    else:
-        options.output = "default"              
+        options.verbose = QL_VERBOSE.DISASM             
 
     if options.profile:
         options.profile = str(options.profile)
@@ -234,9 +228,6 @@ if __name__ == '__main__':
     else:
         env = {}
     
-    if type(options.verbose) != int and options.output not in ("debug", "dump"):
-        print("ERROR: verbose mode, must be int and use with --debug or --dump")
-        usage()
 
     if options.debug_stop and not (options.dump or options.debug):
         print("ERROR: debug_stop must use with either dump or debug mode")
@@ -247,12 +238,12 @@ if __name__ == '__main__':
         # with argv
         if options.filename is not None and options.run_args == []:
             ql = Qiling(argv=[options.filename] + options.args, rootfs=options.rootfs, profile=options.profile,
-                        output=options.output, console=options.console, log_file=options.log_file, log_plain=options.log_plain, multithread=options.multithread, env=env)
+                        verbose=options.verbose, console=options.console, log_file=options.log_file, log_plain=options.log_plain, multithread=options.multithread, env=env)
 
         # Without argv
         elif options.filename is None and options.args == [] and options.run_args != []:
             ql = Qiling(argv=options.run_args, rootfs=options.rootfs, profile=options.profile,
-                        output=options.output, console=options.console, log_file=options.log_file, log_plain=options.log_plain, multithread=options.multithread, env=env)
+                        verbose=options.verbose, console=options.console, log_file=options.log_file, log_plain=options.log_plain, multithread=options.multithread, env=env)
         
         else:
             print("ERROR: Command error!")
@@ -262,7 +253,7 @@ if __name__ == '__main__':
         if options.qdb == True:
             from qiling.debugger.qdb import QlQdb as Qdb
 
-            Qdb(ql, rr=options.rr).interactive()
+            Qdb(ql, rr=options.rr)
             exit()
 
     # ql code setup
@@ -286,7 +277,7 @@ if __name__ == '__main__':
     if options.verbose is not None:
         ql.verbose = int(options.verbose)
     else:
-        ql.verbose = 1
+        ql.verbose = QL_VERBOSE.DEFAULT
 
     if options.filter:
         ql.filter = options.filter

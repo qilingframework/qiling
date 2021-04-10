@@ -4,17 +4,17 @@
 #
 
 
-import os, sys, unittest
+import sys, unittest
 from pathlib import Path
-from unicorn import *
+
+from unicorn import UcError
 
 sys.path.append("..")
-from qiling import *
-from qiling.const import QL_INTERCEPT
-from qiling.exception import *
-from qiling.os.macos.events.macos_structs import *
+from qiling import Qiling
+from qiling.const import QL_INTERCEPT, QL_VERBOSE
+from qiling.os.const import STRING
 from qiling.os.macos.structs import *
-from qiling.os.macos.fncc import *
+from qiling.os.macos.fncc import macos_kernel_api
 
 class MACHOTest(unittest.TestCase):
     def test_macho_macos_superrootkit(self):
@@ -28,7 +28,7 @@ class MACHOTest(unittest.TestCase):
             attrBufSize = 32768
             attrBuffer_addr = ql.os.heap.alloc(attrBufSize)
             retval_addr = ql.os.heap.alloc(8)
-            
+
             alist = attrlist_t(ql, alist_addr)
             alist.bitmapcount = 5
             alist.reserved = 0
@@ -51,7 +51,7 @@ class MACHOTest(unittest.TestCase):
             ls = ql.os.ev_manager.proc_find(1234)
             ql.os.ev_manager.map_fd[getattr_arg.dirfd] = Path(path)
             ql.os.ev_manager.syscall(461, [ls.base, getattr_arg.base, retval_addr])
-        
+
         def hook_stop(ql):
             ql.emu_stop()
 
@@ -65,14 +65,14 @@ class MACHOTest(unittest.TestCase):
             self.set_api_onenter = True
             return address, params
 
-        def my_onexit(ql, address, params):
+        def my_onexit(ql, address, params, retval):
             print("\n")
             print("=" * 40)
             print(" Enter into my_exit mode")
             print("params: %s" % params)
             print("=" * 40)
             print("\n")
-            self.set_api_onexit = True           
+            self.set_api_onexit = True
 
         @macos_kernel_api(passthru=True, params={
             "s": STRING,
@@ -81,7 +81,7 @@ class MACHOTest(unittest.TestCase):
             self.set_api_strlen = True 
             return
 
-        ql = Qiling(["../examples/rootfs/x8664_macos/kext/SuperRootkit.kext"], "../examples/rootfs/x8664_macos", output = "disasm")
+        ql = Qiling(["../examples/rootfs/x8664_macos/kext/SuperRootkit.kext"], "../examples/rootfs/x8664_macos", verbose=QL_VERBOSE.DISASM)
         ql.set_api("_ipf_addv4", my_onenter, QL_INTERCEPT.ENTER)
         ql.set_api("_strncmp", my_onexit, QL_INTERCEPT.EXIT)
         ql.set_api("_strlen", my__strlen) 
@@ -91,13 +91,13 @@ class MACHOTest(unittest.TestCase):
             ql.os.load_kext()
         except UcError as e:
             print("Load driver error: %s" % e)
-            sys.exit(-1)      
+            sys.exit(-1)
 
         ql.os.ev_manager.add_process(1337, "agent")
-        ls(ql, ".")      
+        ls(ql, ".")
 
         self.assertEqual(True, self.set_api_onenter)
-        self.assertEqual(True, self.set_api_onenter)
+        self.assertEqual(True, self.set_api_onexit)
         self.assertEqual(True, self.set_api_strlen)
         del ql
 if __name__ == "__main__":

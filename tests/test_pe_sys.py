@@ -3,17 +3,16 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import os, sys, unittest
+import sys, unittest
 
-from shutil import copyfile
 from unicorn import UcError
 
 sys.path.append("..")
 from qiling import Qiling
-from qiling.os.const import STDCALL, POINTER, DWORD, STRING, HANDLE
+from qiling.const import QL_VERBOSE
+from qiling.os.const import POINTER, DWORD, STRING, HANDLE
 from qiling.os.windows.wdk_const import *
-from qiling.os.windows.fncc import winsdkapi
-from qiling.os.windows.utils import string_appearance
+from qiling.os.windows.fncc import winsdkapi, STDCALL
 from qiling.os.windows.dlls.kernel32.fileapi import _CreateFile
 
 
@@ -88,7 +87,7 @@ class PETest(unittest.TestCase):
             if hFile == 0xfffffff5:
                 s = ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
                 ql.os.stdout.write(s)
-                string_appearance(ql, s.decode())
+                ql.os.utils.string_appearance(s.decode())
                 ql.mem.write(lpNumberOfBytesWritten, ql.pack(nNumberOfBytesToWrite))
             else:
                 f = ql.os.handle_manager.get(hFile)
@@ -139,15 +138,14 @@ class PETest(unittest.TestCase):
         # );
         @winsdkapi(cc=STDCALL, dllname='advapi32_dll')
         def hook_StartServiceA(ql, address, params):
-            # TODO: Still Fixing
             hService = params["hService"]
             service_handle = ql.os.handle_manager.get(hService)
             ql.test_set_api = True
             if service_handle.name == "amsint32":
                 if service_handle.name in ql.os.services:
                     service_path = ql.os.services[service_handle.name]
-                    service_path = ql.os.transform_to_real_path(service_path)
-                    ql.amsint32_driver = Qiling([service_path], ql.rootfs, output="disasm")
+                    service_path = ql.os.path.transform_to_real_path(service_path)
+                    ql.amsint32_driver = Qiling([service_path], ql.rootfs, verbose=QL_VERBOSE.DISASM)
                     init_unseen_symbols(ql.amsint32_driver, ql.amsint32_driver.loader.dlls["ntoskrnl.exe"]+0xb7695, b"NtTerminateProcess", 0, "ntoskrnl.exe")
                     print("load amsint32_driver")
 
@@ -175,7 +173,7 @@ class PETest(unittest.TestCase):
             ql.emu_stop()
 
 
-        ql = Qiling(["../examples/rootfs/x86_windows/bin/sality.dll"], "../examples/rootfs/x86_windows", output="debug")
+        ql = Qiling(["../examples/rootfs/x86_windows/bin/sality.dll"], "../examples/rootfs/x86_windows", verbose=QL_VERBOSE.DEBUG)
         ql.libcache = False
         ql.first_stop = False
         ql.second_stop = False
@@ -191,18 +189,26 @@ class PETest(unittest.TestCase):
         ql.hook_address(hook_first_stop_address, 0x40EFFB)
         ql.run()
         # run driver thread
-        ql.os.set_function_args([0])
+
+        # execution is about to resume from 0x4053B2, which essentially jumps to ExitThread (kernel32.dll).
+        # Set ExitThread exit code to 0
+        ql.os.fcall = ql.os.fcall_select(STDCALL)
+        ql.os.fcall.writeParams(((DWORD, 0),))
+
         ql.hook_address(hook_second_stop_address, 0x4055FA)
         ql.run(begin=0x4053B2)
         print("test kill thread")
         if ql.amsint32_driver:
-            ql.amsint32_driver.os.io_Write(ql.pack32(0xdeadbeef))
+            ql.amsint32_driver.os.utils.io_Write(ql.pack32(0xdeadbeef))
             
             # TODO: Should stop at 0x10423, but for now just stop at 0x0001066a
             stop_addr = 0x0001066a
             ql.amsint32_driver.hook_address(self.hook_third_stop_address, stop_addr)
-            
-            ql.amsint32_driver.os.set_function_args([0])
+
+            # TODO: not sure whether this one is really STDCALL
+            ql.amsint32_driver.os.fcall = ql.amsint32_driver.os.fcall_select(STDCALL)
+            ql.amsint32_driver.os.fcall.writeParams(((DWORD, 0),))
+
             ql.amsint32_driver.run(begin=0x102D0)
 
         self.assertEqual(True, ql.first_stop)    
@@ -236,12 +242,12 @@ class PETest(unittest.TestCase):
         # And a DriverUnload
         self.assertNotEqual(driver_object.DriverUnload, 0)
 
-        ql.os.clear_syscalls()
+        ql.os.utils.clear_syscalls()
 
         IOCTL_SIOCTL_METHOD_OUT_DIRECT = (40000, 0x901, METHOD_OUT_DIRECT, FILE_ANY_ACCESS)
         output_buffer_size = 0x1000
         in_buffer = b'Test input\0'
-        Status, Information_value, output_data = ql.os.ioctl((IOCTL_SIOCTL_METHOD_OUT_DIRECT, output_buffer_size, in_buffer))
+        Status, Information_value, output_data = ql.os.utils.ioctl((IOCTL_SIOCTL_METHOD_OUT_DIRECT, output_buffer_size, in_buffer))
 
         expected_result = b'This String is from Device Driver !!!\x00'
         self.assertEqual(Status, 0)
