@@ -6,6 +6,7 @@ import sys
 sys.path.append("..")
 
 from qiling import Qiling
+from qiling.const import QL_VERBOSE
 
 def mem_crash(ql: Qiling, access: int, address: int, size: int, value: int):
     print(f'got crash')
@@ -18,7 +19,7 @@ def mem_crash(ql: Qiling, access: int, address: int, size: int, value: int):
     ql.mem.write(aligned, b'Q' * PAGE_SIZE)
 
 if __name__ == "__main__":
-    ql = Qiling(["rootfs/x8664_linux/bin/mem_invalid_access"], "rootfs/x8664_linux", output="debug")
+    ql = Qiling(["rootfs/x8664_linux/bin/mem_invalid_access"], "rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG)
 
     ql.hook_mem_invalid(mem_crash)
     ql.run()

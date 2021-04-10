@@ -7,6 +7,7 @@ import os, sys, unittest
 
 sys.path.append("..")
 from qiling import *
+from qiling.const import QL_VERBOSE
 
 """
 Android linker calls fstatfs to determine if the file is on tmpfs as part of checking if libraries are allowed
@@ -40,7 +41,7 @@ class TestAndroid(unittest.TestCase):
         self.assertTrue(os.path.isfile(os.path.join(rootfs, "proc", "self", "exe")), rootfs +
                         "/proc/self/exe not found, Android linker will bail. Need a file at that location (empty is fine)")
 
-        ql = Qiling([test_binary], rootfs, output="debug", multithread=True)
+        ql = Qiling([test_binary], rootfs, verbose=QL_VERBOSE.DEBUG, multithread=True)
         ql.run()
 
 

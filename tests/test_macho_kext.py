@@ -11,7 +11,7 @@ from unicorn import UcError
 
 sys.path.append("..")
 from qiling import Qiling
-from qiling.const import QL_INTERCEPT
+from qiling.const import QL_INTERCEPT, QL_VERBOSE
 from qiling.os.const import STRING
 from qiling.os.macos.structs import *
 from qiling.os.macos.fncc import macos_kernel_api
@@ -81,7 +81,7 @@ class MACHOTest(unittest.TestCase):
             self.set_api_strlen = True 
             return
 
-        ql = Qiling(["../examples/rootfs/x8664_macos/kext/SuperRootkit.kext"], "../examples/rootfs/x8664_macos", output = "disasm")
+        ql = Qiling(["../examples/rootfs/x8664_macos/kext/SuperRootkit.kext"], "../examples/rootfs/x8664_macos", verbose=QL_VERBOSE.DISASM)
         ql.set_api("_ipf_addv4", my_onenter, QL_INTERCEPT.ENTER)
         ql.set_api("_strncmp", my_onexit, QL_INTERCEPT.EXIT)
         ql.set_api("_strlen", my__strlen) 

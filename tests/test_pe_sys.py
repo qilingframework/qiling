@@ -9,6 +9,7 @@ from unicorn import UcError
 
 sys.path.append("..")
 from qiling import Qiling
+from qiling.const import QL_VERBOSE
 from qiling.os.const import POINTER, DWORD, STRING, HANDLE
 from qiling.os.windows.wdk_const import *
 from qiling.os.windows.fncc import winsdkapi, STDCALL
@@ -144,7 +145,7 @@ class PETest(unittest.TestCase):
                 if service_handle.name in ql.os.services:
                     service_path = ql.os.services[service_handle.name]
                     service_path = ql.os.path.transform_to_real_path(service_path)
-                    ql.amsint32_driver = Qiling([service_path], ql.rootfs, output="disasm")
+                    ql.amsint32_driver = Qiling([service_path], ql.rootfs, verbose=QL_VERBOSE.DISASM)
                     init_unseen_symbols(ql.amsint32_driver, ql.amsint32_driver.loader.dlls["ntoskrnl.exe"]+0xb7695, b"NtTerminateProcess", 0, "ntoskrnl.exe")
                     print("load amsint32_driver")
 
@@ -172,7 +173,7 @@ class PETest(unittest.TestCase):
             ql.emu_stop()
 
 
-        ql = Qiling(["../examples/rootfs/x86_windows/bin/sality.dll"], "../examples/rootfs/x86_windows", output="debug")
+        ql = Qiling(["../examples/rootfs/x86_windows/bin/sality.dll"], "../examples/rootfs/x86_windows", verbose=QL_VERBOSE.DEBUG)
         ql.libcache = False
         ql.first_stop = False
         ql.second_stop = False

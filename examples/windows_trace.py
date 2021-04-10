@@ -14,6 +14,7 @@ import sys
 sys.path.append('..')
 
 from qiling import Qiling
+from qiling.const import QL_VERBOSE
 
 class colors:
     if sys.stdout.isatty():
@@ -98,8 +99,8 @@ def trace_cb(ql: Qiling, address: int, size: int, count):
     count[0] += 1
 
 
-def emulate(path, rootfs, output="debug", enable_trace=False):
-    ql = Qiling([path], rootfs, output=output)
+def emulate(path, rootfs, verbose=QL_VERBOSE.DEBUG, enable_trace=False):
+    ql = Qiling([path], rootfs, verbose=verbose)
 
     if enable_trace:
         trace(ql)
@@ -136,4 +137,4 @@ if __name__ == "__main__":
             else:
                 args.root = os.path.join(os.getcwd(), 'rootfs', 'x8664_windows')
 
-        emulate(path, args.root, output='debug', enable_trace=args.trace)
+        emulate(path, args.root, verbose=QL_VERBOSE.DEBUG, enable_trace=args.trace)

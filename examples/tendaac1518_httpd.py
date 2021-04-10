@@ -19,6 +19,7 @@ import sys
 sys.path.append("..")
 
 from qiling import Qiling
+from qiling.const import QL_VERBOSE
 
 def patcher(ql: Qiling):
     br0_addr = ql.mem.search("br0".encode() + b'\x00')
@@ -65,7 +66,7 @@ def myvfork(ql: Qiling):
     return regreturn
 
 def my_sandbox(path, rootfs):
-    ql = Qiling(path, rootfs, output = "debug")
+    ql = Qiling(path, rootfs, verbose=QL_VERBOSE.DEBUG)
     #ql.add_fs_mapper("/dev/urandom","/dev/urandom")
     ql.hook_address(patcher, ql.loader.elf_entry)
 

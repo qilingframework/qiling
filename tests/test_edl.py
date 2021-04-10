@@ -8,6 +8,7 @@ from struct import pack
 
 sys.path.append("..")
 from qiling import *
+from qiling.const import QL_VERBOSE
 from unicorn import *
 from unicorn.arm64_const import *
 
@@ -48,7 +49,7 @@ class TestAndroid(unittest.TestCase):
         test_binary = "../examples/rootfs/arm64_edl/bin/arm64_edl"
         rootfs = "../examples/rootfs/arm64_edl"
 
-        ql = Qiling([test_binary], rootfs, output="debug")
+        ql = Qiling([test_binary], rootfs, verbose=QL_VERBOSE.DEBUG)
 
         ql.arch.enable_vfp()
 

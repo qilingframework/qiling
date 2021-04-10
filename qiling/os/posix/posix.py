@@ -12,7 +12,7 @@ from unicorn.mips_const import UC_MIPS_REG_V0
 from unicorn.x86_const import UC_X86_REG_EAX, UC_X86_REG_RAX
 
 from qiling import Qiling
-from qiling.const import QL_ARCH, QL_OS, QL_INTERCEPT, QL_CALL_BLOCK
+from qiling.const import QL_ARCH, QL_OS, QL_INTERCEPT, QL_CALL_BLOCK, QL_VERBOSE
 from qiling.exception import QlErrorSyscallNotFound
 from qiling.os.os import QlOs
 from qiling.os.posix.const import errors
@@ -269,12 +269,12 @@ class QlOsPosix(QlOs):
 
                         args.append(f'{name} = {value:#x}')
 
-                    faddr = f'{self.ql.reg.arch_pc:#0{self.ql.archbit // 4 + 2}x}: ' if self.ql.output == QL_OUTPUT.DEBUG else ''
+                    faddr = f'{self.ql.reg.arch_pc:#0{self.ql.archbit // 4 + 2}x}: ' if self.ql.verbose >= QL_VERBOSE.DEBUG else ''
                     fargs = ', '.join(args)
 
                     log = f'{faddr}{syscall_basename}({fargs})'
 
-                    if self.ql.output == QL_OUTPUT.DEBUG:
+                    if self.ql.verbose >= QL_VERBOSE.DEBUG:
                         self.ql.log.debug(log)
                     else:
                         self.ql.log.info(log)

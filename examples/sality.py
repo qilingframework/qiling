@@ -9,6 +9,7 @@ import sys
 sys.path.append("..")
 
 from qiling import Qiling
+from qiling.const import QL_VERBOSE
 from qiling.os.const import POINTER, DWORD, STRING, HANDLE
 from qiling.os.windows.fncc import winsdkapi, STDCALL
 from qiling.os.windows.dlls.kernel32.fileapi import _CreateFile
@@ -137,7 +138,7 @@ def hook_StartServiceA(ql: Qiling, address: int, params):
             if service_handle.name in ql.os.services:
                 service_path = ql.os.services[service_handle.name]
                 service_path = ql.os.path.transform_to_real_path(service_path)
-                ql.amsint32_driver = Qiling([service_path], ql.rootfs, output="debug")
+                ql.amsint32_driver = Qiling([service_path], ql.rootfs, verbose=QL_VERBOSE.DEBUG)
                 init_unseen_symbols(ql.amsint32_driver, ql.amsint32_driver.loader.dlls["ntoskrnl.exe"]+0xb7695, b"NtTerminateProcess", 0, "ntoskrnl.exe")
                 #ql.amsint32_driver.debugger= ":9999"
                 try:
@@ -161,7 +162,7 @@ def hook_stop_address(ql):
 
 
 if __name__ == "__main__":
-    ql = Qiling(["../examples/rootfs/x86_windows/bin/sality.dll"], "../examples/rootfs/x86_windows", output="debug", libcache=True)
+    ql = Qiling(["../examples/rootfs/x86_windows/bin/sality.dll"], "../examples/rootfs/x86_windows", verbose=QL_VERBOSE.DEBUG, libcache=True)
 
     # for this module 
     ql.amsint32_driver = None

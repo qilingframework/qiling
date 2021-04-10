@@ -7,6 +7,7 @@ import sys
 sys.path.append("..")
 
 from qiling import Qiling
+from qiling.const import QL_VERBOSE
 
 class StringBuffer:
     def __init__(self):
@@ -33,7 +34,7 @@ def get_count(flag):
     stdin = StringBuffer()
     stdout = StringBuffer()
 
-    ql = Qiling(["rootfs/x86_windows/bin/crackme.exe"], "rootfs/x86_windows", output="off", stdin=stdin, stdout=stdout)
+    ql = Qiling(["rootfs/x86_windows/bin/crackme.exe"], "rootfs/x86_windows", verbose=QL_VERBOSE.OFF, stdin=stdin, stdout=stdout)
 
     stdin.write(bytes("".join(flag) + "\n", 'utf-8'))
     count = [0]

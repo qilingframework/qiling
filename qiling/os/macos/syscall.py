@@ -399,7 +399,7 @@ def ql_syscall_write_nocancel(ql, write_fd, write_buf, write_count, *args, **kw)
     except:
         regreturn = -1
 
-        if ql.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
+        if ql.verbose >= QL_VERBOSE.DEBUG:
             raise
     #if buf:
     #    ql.log.info(buf.decode(errors='ignore'))

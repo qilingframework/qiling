@@ -14,8 +14,8 @@ from typing import Optional, Mapping
 from unicorn import UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
 
 from .exception import *
-from .const import QL_ARCH, QL_ARCH_ALL, QL_ENDIAN, QL_OS, QL_OS_ALL, QL_OUTPUT, QL_DEBUGGER, QL_ARCH_32BIT, QL_ARCH_64BIT, QL_ARCH_16BIT
-from .const import debugger_map, arch_map, os_map
+from .const import QL_VERBOSE, QL_ARCH, QL_ENDIAN, QL_OS, QL_DEBUGGER, QL_ARCH_1BIT, QL_ARCH_16BIT, QL_ARCH_32BIT, QL_ARCH_64BIT
+from .const import debugger_map, arch_map, os_map, arch_os_map, loader_map
 
 FMT_STR = "%(levelname)s\t%(message)s"
 
@@ -96,19 +96,17 @@ class QilingPlainFormatter(logging.Formatter):
         return super(QilingPlainFormatter, self).format(record)
 
 class RegexFilter(logging.Filter):
-    def __init__(self, filters):
+    def __init__(self, regexp):
         super(RegexFilter, self).__init__()
-        self.update_filters(filters)
+        self.update_filter(regexp)
     
-    def update_filters(self, filters):
-        self._filters = [ re.compile(ft) for ft in  filters ]
+    def update_filter(self, regexp):
+        self._filter = re.compile(regexp)
 
     def filter(self, record: LogRecord):
         msg = record.getMessage()
-        for ft in self._filters:
-            if re.match(ft, msg):
-                return True
-        return False
+
+        return re.match(self._filter, msg) is not None
 
 class QlFileDes:
     def __init__(self, init):
@@ -166,6 +164,9 @@ def catch_KeyboardInterrupt(ql):
     return decorator
 
 def ql_get_arch_bits(arch: QL_ARCH) -> int:
+    if arch in QL_ARCH_1BIT:
+        return 1
+
     if arch in QL_ARCH_16BIT:
         return 16
 
@@ -175,24 +176,17 @@ def ql_get_arch_bits(arch: QL_ARCH) -> int:
     if arch in QL_ARCH_64BIT:
         return 64
 
-    raise QlErrorArch("Invalid Arch")
+    raise QlErrorArch("Invalid Arch Bit")
 
 def ql_is_valid_ostype(ostype: QL_OS) -> bool:
-    return ostype in QL_OS_ALL
+    return ostype in QL_OS
 
 def ql_is_valid_arch(arch: QL_ARCH) -> bool:
-    return arch in QL_ARCH_ALL
+    return arch in QL_ARCH
 
 def loadertype_convert_str(ostype: QL_OS) -> Optional[str]:
-    adapter = {
-        QL_OS.LINUX   : "ELF",
-        QL_OS.FREEBSD : "ELF",
-        QL_OS.MACOS   : "MACHO",
-        QL_OS.WINDOWS : "PE",
-        QL_OS.UEFI    : "PE_UEFI",
-        QL_OS.DOS     : "DOS"
-    }
-
+    adapter = {}
+    adapter.update(loader_map)
     return adapter.get(ostype)
 
 def __reverse_mapping(mapping: Mapping) -> Mapping:
@@ -213,16 +207,19 @@ def arch_convert_str(arch: QL_ARCH) -> Optional[str]:
 def arch_convert(arch: str) -> Optional[QL_ARCH]:
     return arch_map.get(arch)
 
-def output_convert(output: str) -> QL_OUTPUT:
-    adapter = {
-        "off"     : QL_OUTPUT.OFF,
-        "default" : QL_OUTPUT.DEFAULT,
-        "disasm"  : QL_OUTPUT.DISASM,
-        "debug"   : QL_OUTPUT.DEBUG,
-        "dump"    : QL_OUTPUT.DUMP,
-    }
+def arch_os_convert(arch):
+    adapter = {}
+    adapter.update(arch_os_map)
+    if arch in adapter:
+        return adapter[arch]
+    # invalid
+    return None
 
-    return adapter.get(output, QL_OUTPUT.DEFAULT)
+def os_arch_convert(arch):
+    adapter = {}
+    adapter.update(arch_map)
+    adapter = {v: k for k, v in adapter.items()}
+    return adapter.get(arch)
 
 def debugger_convert(debugger: str) -> Optional[QL_DEBUGGER]:
     return debugger_map.get(debugger)
@@ -393,7 +390,7 @@ def ql_guess_emu_env(path):
     if arch == None or ostype == None or archendian == None:
         arch, ostype, archendian = ql_pe_parse_emu_env(path)
   
-    if ostype not in (QL_OS_ALL):
+    if ostype not in (QL_OS):
         raise QlErrorOsType("File does not belong to either 'linux', 'windows', 'freebsd', 'macos', 'ios', 'dos'")
 
     return arch, ostype, archendian
@@ -434,6 +431,9 @@ def arch_setup(archtype, ql):
     if not ql_is_valid_arch(archtype):
         raise QlErrorArch("Invalid Arch")
     
+    if ql._custom_engine:
+        return ql_get_module_function(f"qiling.arch.engine", 'QlArchEngine')(ql)
+
     if archtype == QL_ARCH.ARM_THUMB:
         archtype =  QL_ARCH.ARM
 
@@ -485,17 +485,14 @@ def profile_setup(ostype, profile, ql):
     config.read(profiles)
     return config, debugmsg
 
-def ql_resolve_logger_level(output, verbose):
+def ql_resolve_logger_level(verbose):
     level = logging.INFO
-    if output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP, QL_OUTPUT.DISASM):
+    if verbose == QL_VERBOSE.OFF:
+        level = logging.WARNING
+    elif verbose >= QL_VERBOSE.DEBUG:
         level = logging.DEBUG
-    else:
-        if verbose == 0:
-            level = logging.WARNING
-        elif verbose >= 4:
-            level = logging.DEBUG
-        elif verbose >= 1:
-            level = logging.INFO
+    elif verbose >= QL_VERBOSE.DEFAULT:
+        level = logging.INFO
     
     return level
 
@@ -542,7 +539,7 @@ def ql_setup_logger(ql, log_file, console, filters, multithread, log_override, l
     # If there aren't any filters, we do add the filters until users specify any.
     log_filter = None
 
-    if filters is not None and type(filters) == list and len(filters) != 0:
+    if filters is not None and len(filters) != 0:
         log_filter = RegexFilter(filters)
         log.addFilter(log_filter)
     

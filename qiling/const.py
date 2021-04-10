@@ -18,7 +18,7 @@ class QL_ARCH(IntEnum):
     ARM64 = 105
     MIPS = 106
     A8086 = 107
-
+    EVM = 108
 
 class QL_OS(IntEnum):
     LINUX = 201
@@ -27,15 +27,14 @@ class QL_OS(IntEnum):
     WINDOWS = 204
     UEFI = 205
     DOS = 206
+    EVM = 207
 
-
-class QL_OUTPUT(IntEnum):
-    OFF = 1
-    DEFAULT = 2
-    DISASM = 3
+class QL_VERBOSE(IntEnum):
+    OFF = 0
+    DEFAULT = 1
     DEBUG = 4
-    DUMP = 5
-
+    DISASM = 10
+    DUMP = 20
 
 class QL_DEBUGGER(IntEnum):
     GDB = 1
@@ -51,14 +50,16 @@ class QL_INTERCEPT(IntEnum):
 QL_DEBUGGER_ALL = (QL_DEBUGGER.IDAPRO, QL_DEBUGGER.GDB, QL_DEBUGGER.QDB)
 
 QL_ARCH_ENDIAN = (QL_ARCH.MIPS, QL_ARCH.ARM)
+QL_ARCH_1BIT   = (QL_ARCH.EVM,)
 QL_ARCH_16BIT  = (QL_ARCH.A8086,)
 QL_ARCH_32BIT  = (QL_ARCH.ARM, QL_ARCH.ARM_THUMB, QL_ARCH.MIPS, QL_ARCH.X86)
 QL_ARCH_64BIT  = (QL_ARCH.ARM64, QL_ARCH.X8664)
-QL_ARCH_ALL    = QL_ARCH_16BIT + QL_ARCH_32BIT + QL_ARCH_64BIT
+#QL_ARCH_ALL    = QL_ARCH_1BIT + QL_ARCH_16BIT + QL_ARCH_32BIT + QL_ARCH_64BIT
 
-QL_OS_NONPID = (QL_OS.DOS, QL_OS.UEFI)
-QL_OS_POSIX  = (QL_OS.LINUX, QL_OS.FREEBSD, QL_OS.MACOS)
-QL_OS_ALL    = QL_OS_POSIX + QL_OS_NONPID + (QL_OS.WINDOWS,)
+QL_OS_NONPID        = (QL_OS.DOS, QL_OS.UEFI)
+QL_CUSTOM_ENGINE    = (QL_ARCH.EVM,)
+QL_OS_POSIX         = (QL_OS.LINUX, QL_OS.FREEBSD, QL_OS.MACOS)
+#QL_OS_ALL           = QL_OS_POSIX + QL_OS_NONPID + (QL_OS.WINDOWS,)
 
 QL_HOOK_BLOCK = 0b0001
 QL_CALL_BLOCK = 0b0010
@@ -76,14 +77,30 @@ arch_map = {
     "arm"       : QL_ARCH.ARM,
     "arm_thumb" : QL_ARCH.ARM_THUMB,
     "arm64"     : QL_ARCH.ARM64,
-    "a8086"     : QL_ARCH.A8086
+    "a8086"     : QL_ARCH.A8086,
+    "evm"       : QL_ARCH.EVM,
 }
 
 os_map = {
-    "linux"   : QL_OS.LINUX,
-    "macos"   : QL_OS.MACOS,
-    "freebsd" : QL_OS.FREEBSD,
-    "windows" : QL_OS.WINDOWS,
-    "uefi"    : QL_OS.UEFI,
-    "dos"     : QL_OS.DOS
+    "linux"     : QL_OS.LINUX,
+    "macos"     : QL_OS.MACOS,
+    "freebsd"   : QL_OS.FREEBSD,
+    "windows"   : QL_OS.WINDOWS,
+    "uefi"      : QL_OS.UEFI,
+    "dos"       : QL_OS.DOS,
+    "evm"       : QL_OS.EVM,
+}
+
+loader_map = {
+    QL_OS.LINUX   : "ELF",
+    QL_OS.FREEBSD : "ELF",
+    QL_OS.MACOS   : "MACHO",
+    QL_OS.WINDOWS : "PE",
+    QL_OS.UEFI    : "PE_UEFI",
+    QL_OS.DOS     : "DOS",
+    QL_OS.EVM     : "EVM"
+}
+
+arch_os_map = {
+    QL_ARCH.EVM: QL_OS.EVM
 }

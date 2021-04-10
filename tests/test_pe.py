@@ -31,14 +31,14 @@ class PETest(unittest.TestCase):
 
     def test_pe_win_x8664_hello(self):
         ql = Qiling(["../examples/rootfs/x8664_windows/bin/x8664_hello.exe"], "../examples/rootfs/x8664_windows",
-                    output="default")
+                    verbose=QL_VERBOSE.DEFAULT)
         ql.run()
         del ql
 
 
     def test_pe_win_x86_hello(self):
         ql = Qiling(["../examples/rootfs/x86_windows/bin/x86_hello.exe"], "../examples/rootfs/x86_windows",
-                    output="default", profile="profiles/append_test.ql")
+                    verbose=QL_VERBOSE.DEFAULT, profile="profiles/append_test.ql")
         ql.run()
         del ql
 
@@ -62,7 +62,7 @@ class PETest(unittest.TestCase):
                 return 0
 
         ql = Qiling(["../examples/rootfs/x86_windows/bin/UselessDisk.bin"], "../examples/rootfs/x86_windows",
-                    output="debug")
+                    verbose=QL_VERBOSE.DEBUG)
         ql.add_fs_mapper(r"\\.\PHYSICALDRIVE0", Fake_Drive())
         ql.run()
         del ql
@@ -114,7 +114,7 @@ class PETest(unittest.TestCase):
                 raise QlErrorNotImplemented("API not implemented")
 
         ql = Qiling(["../examples/rootfs/x86_windows/bin/GandCrab502.bin"], "../examples/rootfs/x86_windows",
-                    output="debug", profile="profiles/windows_gandcrab_admin.ql")
+                    verbose=QL_VERBOSE.DEBUG, profile="profiles/windows_gandcrab_admin.ql")
         default_user = ql.os.profile["USER"]["username"]
         default_computer = ql.os.profile["SYSTEM"]["computername"]
 
@@ -128,7 +128,7 @@ class PETest(unittest.TestCase):
 
         # RUN AS USER
         ql = Qiling(["../examples/rootfs/x86_windows/bin/GandCrab502.bin"], "../examples/rootfs/x86_windows",
-                    output="debug", profile="profiles/windows_gandcrab_user.ql")
+                    verbose=QL_VERBOSE.DEBUG, profile="profiles/windows_gandcrab_user.ql")
 
         ql.run()
         num_syscalls_user = ql.os.utils.syscalls_counter
@@ -136,7 +136,7 @@ class PETest(unittest.TestCase):
         del ql
 
         ql = Qiling(["../examples/rootfs/x86_windows/bin/GandCrab502.bin"], "../examples/rootfs/x86_windows",
-                    output="debug", profile="profiles/windows_gandcrab_russian_keyboard.ql")
+                    verbose=QL_VERBOSE.DEBUG, profile="profiles/windows_gandcrab_russian_keyboard.ql")
         num_syscalls_russ = ql.os.utils.syscalls_counter
 
         ql.run()
@@ -185,7 +185,7 @@ class PETest(unittest.TestCase):
 
 
     def test_pe_win_x8664_fls(self):
-        ql = Qiling(["../examples/rootfs/x8664_windows/bin/Fls.exe"], "../examples/rootfs/x8664_windows", output="default")
+        ql = Qiling(["../examples/rootfs/x8664_windows/bin/Fls.exe"], "../examples/rootfs/x8664_windows", verbose=QL_VERBOSE.DEFAULT)
         ql.run()
         del ql
 
@@ -292,7 +292,7 @@ class PETest(unittest.TestCase):
             self.set_api_onexit = self.set_api = len( params["str"])
 
         def my_sandbox(path, rootfs):
-            ql = Qiling(path, rootfs, output="debug")
+            ql = Qiling(path, rootfs, verbose=QL_VERBOSE.DEBUG)
             ql.set_api("puts", my_onenter, QL_INTERCEPT.ENTER)
             ql.set_api("puts", my_puts64)
             ql.set_api("puts", my_onexit, QL_INTERCEPT.EXIT)
@@ -460,7 +460,7 @@ class PETest(unittest.TestCase):
                     'arg1', 'arg2 with spaces'],
                     "../examples/rootfs/x8664_windows",
                     libcache=PETest.RefreshCache(),
-                    output="default")
+                    verbose=QL_VERBOSE.DEFAULT)
         ql.run()
         del ql
 
@@ -470,7 +470,7 @@ class PETest(unittest.TestCase):
                     'arg1', 'arg2 with spaces'],
                     "../examples/rootfs/x8664_windows",
                     libcache=PETest.TestCache(self),
-                    output="default")
+                    verbose=QL_VERBOSE.DEFAULT)
         ql.run()
         del ql
 

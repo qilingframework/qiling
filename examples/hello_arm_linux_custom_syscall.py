@@ -7,7 +7,7 @@ import sys
 sys.path.append("..")
 
 from qiling import Qiling
-from qiling.const import QL_OUTPUT
+from qiling.const import QL_VERBOSE
 
 def my_syscall_write(ql: Qiling, write_fd, write_buf, write_count, *args, **kw):
     regreturn = 0
@@ -20,14 +20,12 @@ def my_syscall_write(ql: Qiling, write_fd, write_buf, write_count, *args, **kw):
     except:
         regreturn = -1
         ql.log.info("\n+++++++++\nmy write(%d,%x,%i) = %d\n+++++++++" % (write_fd, write_buf, write_count, regreturn))
-        if ql.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
-            raise
 
     return regreturn
 
 
 if __name__ == "__main__":
-    ql = Qiling(["rootfs/arm_linux/bin/arm_hello"], "rootfs/arm_linux", output = "debug")
+    ql = Qiling(["rootfs/arm_linux/bin/arm_hello"], "rootfs/arm_linux", verbose=QL_VERBOSE.DEBUG)
     # Custom syscall handler by syscall name or syscall number.
     # Known issue: If the syscall func is not be implemented in qiling, qiling does
     # not know which func should be replaced.
