@@ -9,6 +9,7 @@ import time
 import struct
 import re
 import logging
+import shlex
 from enum import Enum
 from elftools.elf.elffile import ELFFile
 from json import load
@@ -908,11 +909,11 @@ class QlEmuQiling:
             qlstdin = QlEmuMisc.QLStdIO('stdin', sys.__stdin__.fileno())
             qlstdout = QlEmuMisc.QLStdIO('stdout', sys.__stdout__.fileno())
             qlstderr = QlEmuMisc.QLStdIO('stderr', sys.__stderr__.fileno())
-            
+
         if sys.platform != 'win32':
-            self.ql = Qiling(argv=[self.path], rootfs=self.rootfs, verbose=QL_VERBOSE.DEBUG, env=self.env, stdin=qlstdin, stdout=qlstdout, stderr=qlstderr, log_plain=True, *args, **kwargs)
+            self.ql = Qiling(argv=self.path, rootfs=self.rootfs, verbose=QL_VERBOSE.DEBUG, env=self.env, stdin=qlstdin, stdout=qlstdout, stderr=qlstderr, log_plain=True, *args, **kwargs)
         else:
-            self.ql = Qiling(argv=[self.path], rootfs=self.rootfs, verbose=QL_VERBOSE.DEBUG, env=self.env, log_plain=True, *args, **kwargs)
+            self.ql = Qiling(argv=self.path, rootfs=self.rootfs, verbose=QL_VERBOSE.DEBUG, env=self.env, log_plain=True, *args, **kwargs)
 
         self.exit_addr = self.ql.os.exit_point
         if self.ql.ostype == QL_OS.LINUX:
@@ -2067,9 +2068,9 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         if customscript != '':
             self.customscriptpath = customscript
 
-        para_array = parameter.split(' ')
+        para_array = shlex.split(parameter)
         self.qlemu.path = [get_input_file_path()] + para_array
-        #self.ql.log.info(self.qlemu.path)
+        logging.info(self.qlemu.path)
 
         if env != '':
             try:
