@@ -55,7 +55,8 @@ class QlGdbUtils(object):
                 self.soft_bp = False
                 hit_soft_bp = True
 
-            if (address in self.bp_list and address != self.last_bp) or self.has_soft_bp == True:
+            # Breakpoints are always added without the LSB, even in Thumb, so they should be checked like this as well
+            if ((address & ~1) in self.bp_list and (address & ~1) != self.last_bp) or self.has_soft_bp == True:
                 if self.skip_bp_count > 0:
                     self.skip_bp_count -= 1
                 else:
