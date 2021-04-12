@@ -9,6 +9,7 @@ import time
 import struct
 import re
 import logging
+import shlex
 from enum import Enum
 from elftools.elf.elffile import ELFFile
 from json import load
@@ -673,10 +674,12 @@ BUTTON CANCEL Cancel
 Setup Qiling
 <#Select Rootfs to open#Rootfs path\:        :{path_name}>
 <#Custom script path   #Custom script path\: :{script_name}>
+<#Custom parameter   #Custom parameter\: :{parameters}>
 <#Custom env   #Custom env\: :{env_var}>
 """, {
             'path_name': Form.DirInput(swidth=50),
             'script_name': Form.FileInput(swidth=50, open=True),
+            'parameters': Form.StringInput(swidth=50),
             'env_var': Form.FileInput(swidth=70, open=True),
         })
 
@@ -893,7 +896,7 @@ class QlEmuMisc:
 
 class QlEmuQiling:
     def __init__(self):
-        self.path = get_input_file_path()
+        self.path = None
         self.rootfs = None
         self.ql = None
         self.status = None
@@ -908,9 +911,9 @@ class QlEmuQiling:
             qlstderr = QlEmuMisc.QLStdIO('stderr', sys.__stderr__.fileno())
 
         if sys.platform != 'win32':
-            self.ql = Qiling(argv=[self.path], rootfs=self.rootfs, verbose=QL_VERBOSE.DEBUG, env=self.env, stdin=qlstdin, stdout=qlstdout, stderr=qlstderr, log_plain=True, *args, **kwargs)
+            self.ql = Qiling(argv=self.path, rootfs=self.rootfs, verbose=QL_VERBOSE.DEBUG, env=self.env, stdin=qlstdin, stdout=qlstdout, stderr=qlstderr, log_plain=True, *args, **kwargs)
         else:
-            self.ql = Qiling(argv=[self.path], rootfs=self.rootfs, verbose=QL_VERBOSE.DEBUG, env=self.env, log_plain=True, *args, **kwargs)
+            self.ql = Qiling(argv=self.path, rootfs=self.rootfs, verbose=QL_VERBOSE.DEBUG, env=self.env, log_plain=True, *args, **kwargs)
 
         self.exit_addr = self.ql.os.exit_point
         if self.ql.ostype == QL_OS.LINUX:
@@ -2059,10 +2062,15 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
 
         rootfspath = setupdlg.path_name.value
         customscript = setupdlg.script_name.value
+        parameter = setupdlg.parameters.value
         env = setupdlg.env_var.value
 
         if customscript != '':
             self.customscriptpath = customscript
+
+        para_array = shlex.split(parameter)
+        self.qlemu.path = [get_input_file_path()] + para_array
+        logging.info(self.qlemu.path)
 
         if env != '':
             try:
