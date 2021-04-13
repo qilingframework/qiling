@@ -27,6 +27,7 @@ class QL_OS(IntEnum):
     WINDOWS = 204
     UEFI = 205
     DOS = 206
+    QNX = 207
 
 
 class QL_VERBOSE(IntEnum):
@@ -56,7 +57,7 @@ QL_ARCH_64BIT  = (QL_ARCH.ARM64, QL_ARCH.X8664)
 QL_ARCH_ALL    = QL_ARCH_16BIT + QL_ARCH_32BIT + QL_ARCH_64BIT
 
 QL_OS_NONPID = (QL_OS.DOS, QL_OS.UEFI)
-QL_OS_POSIX  = (QL_OS.LINUX, QL_OS.FREEBSD, QL_OS.MACOS)
+QL_OS_POSIX  = (QL_OS.LINUX, QL_OS.FREEBSD, QL_OS.MACOS, QL_OS.QNX)
 QL_OS_ALL    = QL_OS_POSIX + QL_OS_NONPID + (QL_OS.WINDOWS,)
 
 QL_HOOK_BLOCK = 0b0001
@@ -81,6 +82,7 @@ arch_map = {
 os_map = {
     "linux"   : QL_OS.LINUX,
     "macos"   : QL_OS.MACOS,
+    "qnx"     : QL_OS.QNX,
     "freebsd" : QL_OS.FREEBSD,
     "windows" : QL_OS.WINDOWS,
     "uefi"    : QL_OS.UEFI,

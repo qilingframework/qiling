@@ -22,6 +22,7 @@ from qiling.os.posix.syscall import *
 from qiling.os.linux.syscall import *
 from qiling.os.macos.syscall import *
 from qiling.os.freebsd.syscall import *
+from qiling.os.qnx.syscall import *
 
 SYSCALL_PREF: str = f'ql_syscall_'
 
@@ -61,6 +62,8 @@ class QlOsPosix(QlOs):
         # handle a special case
         if (self.ql.archtype == QL_ARCH.ARM64) and (self.ql.ostype == QL_OS.MACOS):
             self.__syscall_id_reg = UC_ARM64_REG_X16
+        if (self.ql.archtype == QL_ARCH.ARM) and (self.ql.ostype == QL_OS.QNX):
+            self.__syscall_id_reg = UC_ARM_REG_R12
 
         def __set_syscall_ret_arm(retval: int):
             self.ql.reg.r0 = retval
@@ -297,7 +300,7 @@ class QlOsPosix(QlOs):
                 self.ql.log.info(f'Syscall ERROR: {syscall_name} DEBUG: {e}')
                 raise e
         else:
-            self.ql.log.warning(f'{self.ql.reg.arch_pc:#x}: syscall number {syscall:#x} ({syscall:d}) not implemented')
+            self.ql.log.warning(f'{self.ql.reg.arch_pc:#x}: syscall hook "{map_syscall(self.ql, syscall)}" for syscall {syscall:#x} ({syscall:d}) not implemented')
 
             if self.ql.debug_stop:
                 raise QlErrorSyscallNotFound("Syscall Not Found")

@@ -183,6 +183,7 @@ def ql_is_valid_arch(arch: QL_ARCH) -> bool:
 
 def loadertype_convert_str(ostype: QL_OS) -> Optional[str]:
     adapter = {
+        QL_OS.QNX     : "ELF",
         QL_OS.LINUX   : "ELF",
         QL_OS.FREEBSD : "ELF",
         QL_OS.MACOS   : "MACHO",
@@ -238,7 +239,11 @@ def ql_elf_parse_emu_env(path):
         return elfdata
 
     with open(path, "rb") as f:
-        elfdata = f.read(20)
+        size = os.fstat(f.fileno()).st_size
+        if size >= 512:
+            elfdata = f.read(512)
+        else:
+            elfdata = f.read(20)
 
     ident = getident()
     ostype = None
@@ -254,7 +259,10 @@ def ql_elf_parse_emu_env(path):
         if osabi == 0x09:
             ostype = QL_OS.FREEBSD
         elif osabi in (0x0, 0x03) or osabi >= 0x11:
-            ostype = QL_OS.LINUX
+            if b"ldqnx.so" in ident:
+                ostype = QL_OS.QNX
+            else:
+                ostype = QL_OS.LINUX
 
         if e_machine == b"\x03\x00":
             archendian = QL_ENDIAN.EL
@@ -381,7 +389,7 @@ def ql_guess_emu_env(path):
         arch, ostype, archendian = ql_pe_parse_emu_env(path)
   
     if ostype not in (QL_OS_ALL):
-        raise QlErrorOsType("File does not belong to either 'linux', 'windows', 'freebsd', 'macos', 'ios', 'dos'")
+        raise QlErrorOsType("File does not belong to either 'linux', 'windows', 'freebsd', 'macos', 'ios', 'dos', 'qnx'")
 
     return arch, ostype, archendian
 
