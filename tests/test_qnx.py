@@ -12,7 +12,7 @@ from qiling.const import QL_VERBOSE
 
 class QNXTest(unittest.TestCase):
     def test_arm_qnx(self):
-        ql = Qiling(["../examples/rootfs/arm_qnx/bin/hello"], "../examples/rootfs/arm_qnx", verbose=QL_VERBOSE.DEBUG)
+        ql = Qiling(["../examples/rootfs/arm_qnx/bin/hello", "foo", "bar"], "../examples/rootfs/arm_qnx", verbose=QL_VERBOSE.DEBUG)
         ql.run()
 
 if __name__ == "__main__":
