@@ -35,11 +35,14 @@ class MemoryStructure(ctypes.Structure):
 class POINTER32(ctypes.Structure):
     _fields_ = [("value", ctypes.c_uint32)]
 
-#  define SYNC_OWNER_BITS(pid,tid)  ((((pid) << 16) | (tid) + 1) & ~_NTO_SYNC_WAITING)
-#  define SYNC_OWNER(thp)           SYNC_OWNER_BITS((thp)->process->pid, (thp)->tid)
-#  define SYNC_PINDEX(owner)        PINDEX(((owner) & ~_NTO_SYNC_WAITING) >> 16)
-#  define SYNC_TID(owner)           (((owner) & 0xffff) - 1)
+# Source: openqnx services/system/ker/kermacros.h
+# define SYNC_OWNER_BITS(pid,tid)  ((((pid) << 16) | (tid) + 1) & ~_NTO_SYNC_WAITING)
+# define SYNC_OWNER(thp)           SYNC_OWNER_BITS((thp)->process->pid, (thp)->tid)
+# define SYNC_PINDEX(owner)        PINDEX(((owner) & ~_NTO_SYNC_WAITING) >> 16)
+# define SYNC_TID(owner)           (((owner) & 0xffff) - 1)
 
+
+# Source: openqnx lib/c/public/sys/target_nto.h
 # owner
 # -1    Static initalized mutex which is auto created on SyncWait
 # -2    Destroyed mutex
@@ -53,6 +56,7 @@ class _sync(MemoryStructure):
     def __init__(self, ql, base):
         super().__init__(ql, base)
 
+# Source: openqnx lib/c/public/sys/target_nto.h
 class _sync_attr(MemoryStructure):
     _fields_ = (
         ("_protocol", ctypes.c_int32),      # 0  (0x00) int __protocol;
@@ -68,6 +72,7 @@ class _sync_attr(MemoryStructure):
     def __init__(self, ql, base):
         super().__init__(ql, base)
 
+# Source: openqnx lib/c/public/sys/target_nto.h
 # Thread local storage. This data is at the top of each threads stack.
 class _thread_local_storage(MemoryStructure):
     _fields_ = (

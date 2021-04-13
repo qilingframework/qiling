@@ -38,6 +38,7 @@ def ql_syscall_clock_cycles(ql, *args, **kw):
     # For the sake of simplicity we just return current timestamp in nanoseconds
     return time_ns()
 
+# Source: openqnx services/system/ker/ker_sync.c
 def ql_syscall_sync_create(ql, type, syncp, attrp, *args, **kw):
     attr = None
 
@@ -64,10 +65,13 @@ def ql_syscall_sync_create(ql, type, syncp, attrp, *args, **kw):
 
     return EOK
 
+# Source: openqnx services/system/ker/ker_sync.c
 def ql_syscall_sync_mutex_lock(ql, syncp, *args, **kw):    
     sync = _sync(ql, syncp).loadFromMem()
     ql.log.debug(f'ql_syscall_sync_mutex_lock: count={ux32s(sync._count)}, owner={ux32s(sync._owner)}')
 
+    # TODO: implement proper mutexes instead of these stubs
+    # Set mutex owner to current thread to make it look like we've got the mutex
     tls = _thread_local_storage(ql, ql.os.cpupage_tls_addr).loadFromMem()
 
     sync._owner = tls._owner
@@ -75,10 +79,13 @@ def ql_syscall_sync_mutex_lock(ql, syncp, *args, **kw):
 
     return EOK
 
+# Source: openqnx services/system/ker/ker_sync.c
 def ql_syscall_sync_mutex_unlock(ql, syncp, *args, **kw):
     sync = _sync(ql, syncp).loadFromMem()
     ql.log.debug(f'ql_syscall_sync_mutex_unlock: count={ux32s(sync._count)}, owner={ux32s(sync._owner)}')
 
+    # TODO: implement proper mutexes instead of these stubs
+    # Reset mutex owner
     sync._owner = NTO_SYNC_MUTEX_FREE
     sync.updateToMem()
 
