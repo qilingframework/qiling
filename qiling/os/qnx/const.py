@@ -3,9 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-NTO_SYNC_WAITING    = 0x80000000   # Top bit used with mutexes
-NTO_SYNC_OWNER_MASK = 0x7fffffff   # Owner used with mutexes
-
+# Source: openqnx lib/c/public/pthread.h
 
 # Mutexes
 NTO_SYNC_NONRECURSIVE = 0x80000000 
@@ -38,6 +36,6 @@ PTHREAD_ERRORCHECK_MASK    = 4
 PTHREAD_ERRORCHECK_ENABLE  = 0
 PTHREAD_ERRORCHECK_DISABLE = 4
 
-# Errors
+# POSIX error codes
 EOK    = 0
 EINVAL = 22

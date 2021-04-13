@@ -11,8 +11,11 @@ def map_msgtype(ql, msgtype):
             if v == msgtype:
                 return f'ql_qnx_msg_{k}'
 
+# QNX message types extracted from openqnx
 msgtype_table = {
     "mem_map":    (0x040),
+
+    # lib/c/public/sys/iomsg.h
     "io_connect": (0x100),
     "io_read":    (0x101),
     "io_write":   (0x102),

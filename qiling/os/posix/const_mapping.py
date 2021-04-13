@@ -187,7 +187,8 @@ def mmap_flag_mapping(flags):
         'MAP_FIXED'     : 0x00000010,
         'MAP_ANONYMOUS' : 0x00000020,
 
-        # QNX
+        # QNX (openqnx)
+        # lib/c/public/sys/mman.h
         'MAP_NOINIT'    : 0x00004000,
         'MAP_PHYS'      : 0x00010000,
         'MAP_NOX64K'    : 0x00020000,
@@ -204,7 +205,8 @@ def mmap_prot_mapping(prots):
     if prots == 0x0:
         return 'PROT_NONE'
 
-    # QNX
+    # QNX (openqnx)
+    # lib/c/public/sys/mman.h
     if prots >= 0x100:
         mmap_prots = {
             'PROT_READ' : 0x100,
