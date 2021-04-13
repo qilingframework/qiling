@@ -28,6 +28,7 @@ class QL_OS(IntEnum):
     UEFI = 205
     DOS = 206
     EVM = 207
+    QNX = 208
 
 class QL_VERBOSE(IntEnum):
     OFF = 0
@@ -58,8 +59,8 @@ QL_ARCH_64BIT  = (QL_ARCH.ARM64, QL_ARCH.X8664)
 
 QL_OS_NONPID        = (QL_OS.DOS, QL_OS.UEFI)
 QL_CUSTOM_ENGINE    = (QL_ARCH.EVM,)
-QL_OS_POSIX         = (QL_OS.LINUX, QL_OS.FREEBSD, QL_OS.MACOS)
-#QL_OS_ALL           = QL_OS_POSIX + QL_OS_NONPID + (QL_OS.WINDOWS,)
+QL_OS_POSIX         = (QL_OS.LINUX, QL_OS.FREEBSD, QL_OS.MACOS, QL_OS.QNX)
+QL_OS_ALL           = QL_OS_POSIX + QL_OS_NONPID + (QL_OS.WINDOWS,)
 
 QL_HOOK_BLOCK = 0b0001
 QL_CALL_BLOCK = 0b0010
@@ -85,6 +86,7 @@ os_map = {
     "linux"     : QL_OS.LINUX,
     "macos"     : QL_OS.MACOS,
     "freebsd"   : QL_OS.FREEBSD,
+    "qnx"       : QL_OS.QNX,
     "windows"   : QL_OS.WINDOWS,
     "uefi"      : QL_OS.UEFI,
     "dos"       : QL_OS.DOS,
@@ -94,6 +96,7 @@ os_map = {
 loader_map = {
     QL_OS.LINUX   : "ELF",
     QL_OS.FREEBSD : "ELF",
+    QL_OS.QNX     : "QNX",
     QL_OS.MACOS   : "MACHO",
     QL_OS.WINDOWS : "PE",
     QL_OS.UEFI    : "PE_UEFI",

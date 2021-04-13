@@ -153,7 +153,9 @@ def ql_syscall_mmap(ql, mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, 
         mmap_fd = ql.unpack32s(ql.mem.read(mmap_fd, 4))
         mmap_pgoffset = ql.unpack32(ql.mem.read(mmap_pgoffset, 4))
         MAP_ANONYMOUS=2048
-
+    elif (ql.ostype == QL_OS.QNX):
+        MAP_ANONYMOUS=0x00080000
+        mmap_id = ql.unpack32s(ql.pack32s(mmap_fd))
     else:
         mmap_fd = ql.unpack32s(ql.pack32(mmap_fd))
 

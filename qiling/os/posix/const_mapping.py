@@ -223,10 +223,18 @@ def open_flags_mapping(flags, arch):
 def mmap_flag_mapping(flags):
 
     mmap_flags = {
-        'MAP_SHARED'    : 0x01,
-        'MAP_PRIVATE'   : 0x02,
-        'MAP_FIXED'     : 0x10,
-        'MAP_ANONYMOUS' : 0x20,
+        'MAP_SHARED'    : 0x00000001,
+        'MAP_PRIVATE'   : 0x00000002,
+        'MAP_FIXED'     : 0x00000010,
+        'MAP_ANONYMOUS' : 0x00000020,
+
+        # QNX
+        'MAP_NOINIT'    : 0x00004000,
+        'MAP_PHYS'      : 0x00010000,
+        'MAP_NOX64K'    : 0x00020000,
+        'MAP_BELOW16M'  : 0x00040000,
+        'MAP_ANON'      : 0x00080000,
+        'MAP_SYSRAM'    : 0x01000000
     }
 
     return _constant_mapping(flags, mmap_flags)
@@ -237,11 +245,19 @@ def mmap_prot_mapping(prots):
     if prots == 0x0:
         return 'PROT_NONE'
 
-    mmap_prots = {
-        'PROT_READ' : 0x1,
-        'PROT_WRITE': 0x2,
-        'PROT_EXEC' : 0x4,
-    }
+    # QNX
+    if prots >= 0x100:
+        mmap_prots = {
+            'PROT_READ' : 0x100,
+            'PROT_WRITE': 0x200,
+            'PROT_EXEC' : 0x400,
+        }
+    else:
+        mmap_prots = {
+            'PROT_READ' : 0x1,
+            'PROT_WRITE': 0x2,
+            'PROT_EXEC' : 0x4,
+        }
 
     return _constant_mapping(prots, mmap_prots)
 
