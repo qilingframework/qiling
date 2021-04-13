@@ -417,7 +417,6 @@ def ql_syscall_terminate_with_payload(ql, pid, reason_namespace, reason_code, pa
             payload_size: 0x%x, reason_string: 0x%x)" % (pid, reason_namespace, reason_code,
             payload, payload_size, reason_string))
     ql.emu_stop()
-    #raise QlErrorSyscallError("Exit with Error")
     return KERN_SUCCESS
 
 # 0x209
