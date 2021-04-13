@@ -127,3 +127,6 @@ def ql_syscall_thread_destroy(ql, tid, priority, status, *args, **kw):
     if tid == 0xffffffff:
         ql.emu_stop()
         return EOK
+
+def ql_syscall_signal_kill(ql, nd, tid, pid, signo, code, value, *args, **kw):
+    pass
