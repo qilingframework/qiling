@@ -277,10 +277,6 @@ def ql_syscall_getrlimit(ql, which, rlp, *args, **kw):
         pass
     pass
 
-# 0xc5
-# maps to posix mmap2 syscall in os/posix/syscall/mman.py
-#def ql_syscall_mmap2_macos(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset):
-
 # 0xca
 def ql_syscall_sysctl(ql, name, namelen, old, oldlenp, new_arg, newlen):
     ql.log.debug("sysctl(name: 0x%x, namelen: 0x%x, old: 0x%x, oldlenp: 0x%x, new: 0x%x, newlen: 0x%x)" % (
