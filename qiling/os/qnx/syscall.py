@@ -124,9 +124,10 @@ def _msg_sendv(ql, coid, smsg, sparts, rmsg, rparts, *args, **kw):
 
 def ql_syscall_thread_destroy(ql, tid, priority, status, *args, **kw):
     # Requested to terminate all threads in the current process
-    if tid == 0xffffffff:
-        ql.emu_stop()
-        return EOK
+    if tid == 0xffffffff and priority == 0xffffffff:
+        ql.os.exit_code = status
+        ql.os.stop()
+    return EOK
 
 def ql_syscall_signal_kill(ql, nd, tid, pid, signo, code, value, *args, **kw):
     pass
