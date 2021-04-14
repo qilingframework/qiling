@@ -65,6 +65,11 @@ class QlGdb(QlDebugger, object):
         else:
             self.entry_point = self.ql.os.entry_point
 
+        # Only part of the binary file will be debugged.
+        if self.ql.entry_point is not None and self.ql.exit_point is not None:
+            self.entry_point = self.ql.entry_point
+            exit_point = self.ql.exit_point
+
         self.gdb.initialize(self.ql, self.entry_point, exit_point=exit_point, mappings=[(hex(load_address))])
 
         #Setup register tables, order of tables is important
