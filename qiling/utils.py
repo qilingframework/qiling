@@ -7,7 +7,7 @@
 This module is intended for general purpose functions that can be used
 thoughout the qiling framework
 """
-import importlib, os, copy, re, pefile, configparser, logging
+import importlib, os, copy, re, pefile, configparser, logging, sys
 from logging import LogRecord
 from typing import Optional, Mapping
 
@@ -519,7 +519,7 @@ def ql_setup_logger(ql, log_file, console, filters, multithread, log_override, l
         # Do we have console output?
         if console:
             handler = logging.StreamHandler()
-            if not log_plain:
+            if not log_plain and not sys.platform == "win32":
                 formatter = QilingColoredFormatter(ql, FMT_STR)
             else:
                 formatter = QilingPlainFormatter(ql, FMT_STR)
