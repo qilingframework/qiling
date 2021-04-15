@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import stat, itertools, pathlib
+import stat, itertools, pathlib, ctypes
 
 from multiprocessing import Process
 
@@ -583,10 +583,33 @@ def ql_syscall_unlinkat(ql, dirfd, pathname, flag, *args, **kw):
     except:
         return -1
 
+# https://man7.org/linux/man-pages/man2/getdents.2.html
+#    struct linux_dirent {
+#        unsigned long  d_ino;     /* Inode number */
+#        unsigned long  d_off;     /* Offset to next linux_dirent */
+#        unsigned short d_reclen;  /* Length of this linux_dirent */
+#        char           d_name[];  /* Filename (null-terminated) */
+#                          /* length is actually (d_reclen - 2 -
+#                             offsetof(struct linux_dirent, d_name)) */
+#        /*
+#        char           pad;       // Zero padding byte
+#        char           d_type;    // File type (only since Linux
+#                                  // 2.6.4); offset is (d_reclen - 1)
+#        */
+#    }
 
+#    struct linux_dirent64 {
+#        ino64_t        d_ino;    /* 64-bit inode number */
+#        off64_t        d_off;    /* 64-bit offset to next structure */
+#        unsigned short d_reclen; /* Size of this dirent */
+#        unsigned char  d_type;   /* File type */
+#        char           d_name[]; /* Filename (null-terminated) */
+#    };
 def ql_syscall_getdents(ql, fd, dirp, count, *args, **kw):
     # TODO: not sure what is the meaning of d_off, should not be 0x0
     # but works for the example code from linux manual.
+    #
+    # https://stackoverflow.com/questions/16714265/meaning-of-field-d-off-in-last-struct-dirent
     def _type_mapping(ent):
         methods_constants_d = {'is_fifo': 0x1, 'is_char_device': 0x2, 'is_dir': 0x4, 'is_block_device': 0x6,
                                 'is_file': 0x8, 'is_symlink': 0xa, 'is_socket': 0xc}
@@ -601,6 +624,7 @@ def ql_syscall_getdents(ql, fd, dirp, count, *args, **kw):
 
         return bytes([t])
 
+    is_64 = "is_64" in kw
     if ql.os.fd[fd].tell() == 0:
         n = ql.archbit // 8
         total_size = 0
@@ -612,14 +636,24 @@ def ql_syscall_getdents(ql, fd, dirp, count, *args, **kw):
             d_off = 0x0
             d_name = (result.name if isinstance(result, os.DirEntry) else result._str).encode() + b'\x00'
             d_type = _type_mapping(result)
-            d_reclen = len(d_name) + n*2 + 3
+            if not is_64:
+                d_reclen = len(d_name) + n*2 + 3
+            else:
+                d_reclen = len(d_name) + 8*2 + 3
+            if not is_64:
+                ql.mem.write(dirp, ql.pack(d_ino))
+                ql.mem.write(dirp+n, ql.pack(d_off))
+                ql.mem.write(dirp+n*2, ql.pack16(d_reclen))
+                ql.mem.write(dirp+n*2+2, d_name)
+                ql.mem.write(dirp+n*2+2+len(d_name), d_type)
+            else:
+                ql.mem.write(dirp, ql.pack64(d_ino))
+                ql.mem.write(dirp + 8, ql.pack64(d_off))
+                ql.mem.write(dirp + 8*2, ql.pack16(d_reclen))
+                ql.mem.write(dirp + 8*2 + 2, d_type)
+                ql.mem.write(dirp + 8*2 + 3, d_name)
 
-            ql.mem.write(dirp, ql.pack(d_ino))
-            ql.mem.write(dirp+n, ql.pack(d_off))
-            ql.mem.write(dirp+n*2, ql.pack16(d_reclen))
-            ql.mem.write(dirp+n*2+2, d_name)
-            ql.mem.write(dirp+n*2+2+len(d_name), d_type)
-
+            ql.log.debug(f"Write dir entries: {ql.mem.read(dirp, d_reclen)}")
             dirp += d_reclen
             total_size += d_reclen
             _ent_count += 1
@@ -629,10 +663,9 @@ def ql_syscall_getdents(ql, fd, dirp, count, *args, **kw):
     else:
         _ent_count = 0
         regreturn = 0
-
-    ql.log.debug("getdents(%d, /* %d entries */, 0x%x) = %d" % (fd, _ent_count, count, regreturn))
+    ql.log.debug("%s(%d, /* %d entries */, 0x%x) = %d" % ("getdents64" if is_64 else "getdents", fd, _ent_count, count, regreturn))
     return regreturn
 
     
 def ql_syscall_getdents64(ql, fd, dirp, count, *args, **kw):
-    return ql_syscall_getdents(ql, fd, dirp, count, *args, **kw)
+    return ql_syscall_getdents(ql, fd, dirp, count, is_64=True, *args, **kw)
