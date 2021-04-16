@@ -6,11 +6,12 @@
 import binascii
 
 from uuid import UUID
-from typing import Optional
+from typing import Optional, Mapping
 from contextlib import contextmanager
 
 from qiling import Qiling
-from qiling.os.uefi.const import EFI_SUCCESS, EFI_INVALID_PARAMETER
+from qiling.os.uefi.const import EFI_SUCCESS
+from qiling.os.uefi.ProcessorBind import STRUCT
 from qiling.os.uefi.UefiSpec import EFI_CONFIGURATION_TABLE
 from qiling.os.uefi.UefiBaseType import EFI_GUID
 
@@ -20,15 +21,17 @@ def signal_event(ql: Qiling, event_id: int) -> None:
 	if not event["Set"]:
 		event["Set"] = True
 		notify_func = event["NotifyFunction"]
-		notify_context = event["NotifyContext"]
-		ql.loader.notify_list.append((event_id, notify_func, notify_context))
+		callback_args = event["CallbackArgs"]
+
+		ql.loader.notify_list.append((event_id, notify_func, callback_args))
 
 def execute_protocol_notifications(ql: Qiling, from_hook=False) -> bool:
 	if not ql.loader.notify_list:
 		return False
-	
+
 	next_hook = ql.loader.smm_context.heap.alloc(1)
-	def exec_next(ql):
+
+	def exec_next(ql: Qiling):
 		if ql.loader.notify_list:
 			event_id, notify_func, callback_args = ql.loader.notify_list.pop(0)
 			ql.log.info(f'Notify event:{event_id} calling: 0x{notify_func:x} callback_args:{list(map(hex, callback_args))}')
@@ -38,16 +41,17 @@ def execute_protocol_notifications(ql: Qiling, from_hook=False) -> bool:
 			ql.hook_address(lambda q: None, next_hook)
 			ql.reg.rax = EFI_SUCCESS
 			ql.reg.arch_pc = ql.stack_pop()
+
 	ql.hook_address(exec_next, next_hook, )
+
 	# To avoid having two versions of the code the first notify function will also be called from the exec_next hook.
 	if from_hook:
 		ql.stack_push(next_hook)
 	else:
 		ql.stack_push(ql.loader.end_of_execution_ptr)
 		ql.reg.arch_pc = next_hook
-	
-	return True
 
+	return True
 
 def check_and_notify_protocols(ql: Qiling, from_hook: bool = False) -> bool:
 	if ql.loader.notify_list:
@@ -109,7 +113,7 @@ write_int32 = ptr_write32
 read_int64  = ptr_read64
 write_int64 = ptr_write64
 
-def init_struct(ql: Qiling, base: int, descriptor: dict):
+def init_struct(ql: Qiling, base: int, descriptor: Mapping):
 	struct_class = descriptor['struct']
 	struct_fields = descriptor.get('fields', [])
 
@@ -136,8 +140,9 @@ def init_struct(ql: Qiling, base: int, descriptor: dict):
 	return isntance
 
 @contextmanager
-def update_struct(cls, ql, address: int):
+def update_struct(cls: STRUCT, ql: Qiling, address: int):
 	struct = cls.loadFrom(ql, address)
+
 	try:
 		yield struct
 	finally:
