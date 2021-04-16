@@ -12,6 +12,7 @@ from qiling.os.filestruct import *
 from qiling.os.posix.const_mapping import *
 from qiling.exception import *
 
+
 def ql_syscall_open(ql, filename, flags, mode, *args, **kw):
     path = ql.mem.string(filename)
     real_path = ql.os.path.transform_to_real_path(path)
@@ -107,12 +108,27 @@ def ql_syscall_fcntl(ql, fcntl_fd, fcntl_cmd, *args, **kw):
 
 def ql_syscall_fcntl64(ql, fcntl_fd, fcntl_cmd, fcntl_arg, *args, **kw):
 
+    F_DUPFD = 0
     F_GETFD = 1
     F_SETFD = 2
     F_GETFL = 3
     F_SETFL = 4
 
-    if fcntl_cmd == F_GETFL:
+    # https://linux.die.net/man/2/fcntl64
+    if fcntl_cmd == F_DUPFD:
+        if 0 <= fcntl_arg < 256 and 0 <= fcntl_fd < 256:
+            if ql.os.fd[fcntl_fd] != 0:
+                new_fd = ql.os.fd[fcntl_fd].dup()
+                for idx, val in enumerate(ql.os.fd):
+                    if val == 0 and idx >= fcntl_arg:
+                        ql.os.fd[idx] = new_fd
+                        regreturn = idx
+                        break
+            else:
+                regreturn = -1
+        else:
+            regreturn = -1
+    elif fcntl_cmd == F_GETFL:
         regreturn = 2
     elif fcntl_cmd == F_SETFL:
         if isinstance(ql.os.fd[fcntl_fd], ql_socket):
