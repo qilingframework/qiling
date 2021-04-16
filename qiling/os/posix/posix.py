@@ -220,7 +220,6 @@ class QlOsPosix(QlOs):
                 syscall_name = syscall_hook.__name__
             else:
                 syscall_hook = None
-                syscall_name = None
 
         if syscall_hook:
             args = self.get_syscall_args()
@@ -297,7 +296,7 @@ class QlOsPosix(QlOs):
                 self.ql.log.info(f'Syscall ERROR: {syscall_name} DEBUG: {e}')
                 raise e
         else:
-            self.ql.log.warning(f'{self.ql.reg.arch_pc:#x}: syscall number {syscall:#x} ({syscall:d}) not implemented')
+            self.ql.log.warning(f'{self.ql.reg.arch_pc:#x}: syscall {syscall_name} number = {syscall:#x}({syscall:d}) not implemented')
 
             if self.ql.debug_stop:
                 raise QlErrorSyscallNotFound("Syscall Not Found")

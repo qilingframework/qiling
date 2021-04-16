@@ -41,7 +41,7 @@ def ql_syscall__newselect(ql, _newselect_nfds, _newselect_readfds, _newselect_wr
     tmp_w_fd, tmp_w_map = parse_fd_set(ql, _newselect_nfds, _newselect_writefds)
     tmp_e_fd, tmp_e_map = parse_fd_set(ql, _newselect_nfds, _newselect_exceptfds)
 
-    n = ql.archbit // 8 # 4 for 32-bit , 8 for 64-bit
+    n = ql.pointersize
 
     if _newselect_timeout != 0:
         if ql.archtype == QL_ARCH.MIPS:
