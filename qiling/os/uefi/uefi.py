@@ -38,12 +38,12 @@ class QlOsUefi(QlOs):
 
 
 	@staticmethod
-	def notify_after_module_execution(ql, number_of_modules_left):
+	def notify_after_module_execution(ql: Qiling, nmodules: int):
 		return False
 
 
 	@staticmethod
-	def notify_before_module_execution(ql, module):
+	def notify_before_module_execution(ql: Qiling, module):
 		ql.os.running_module = module
 		return False
 
@@ -110,12 +110,9 @@ class QlOsUefi(QlOs):
 		self.ql.log.error('Disassembly:')
 
 		for insn in tuple(md.disasm(data, address))[:num_insns]:
-			opcodes = ''.join(f'{ch:02x}' for ch in insn.bytes[:10])
+			opcodes = ''.join(f'{ch:02x}' for ch in insn.bytes)
 
-			if len(insn.bytes) > 10:
-				opcodes += '.'
-
-			self.ql.log.error(f'{insn.address:08x} :  {opcodes:<20s}  {insn.mnemonic:<10s} {insn.op_str:s}')
+			self.ql.log.error(f'{insn.address:08x} : {opcodes:28s}  {insn.mnemonic:10s} {insn.op_str:s}')
 
 		self.ql.log.error(f'')
 

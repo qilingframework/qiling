@@ -141,7 +141,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         # file check
         if self._code is None:
             if not os.path.exists(str(self._argv[0])):
-                raise QlErrorFileNotFound("Target binary not found")
+                raise QlErrorFileNotFound("Target binary not found: %s" %(self._argv[0]))
             if not os.path.exists(self._rootfs):
                 raise QlErrorFileNotFound("Target rootfs not found")
 

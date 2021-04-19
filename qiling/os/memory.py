@@ -188,7 +188,7 @@ class QlMemoryManager:
 
     def read_ptr(self, addr: int, size: int=None):
         if not size:
-            size = self.ql.archbit // 8
+            size = self.ql.pointersize
 
         if size == 1:
             return self.ql.unpack8(self.read(addr, 1))

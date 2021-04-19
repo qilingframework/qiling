@@ -9,26 +9,6 @@ sys.path.append("..")
 from qiling import *
 from qiling.const import QL_VERBOSE
 
-"""
-Android linker calls fstatfs to determine if the file is on tmpfs as part of checking if libraries are allowed
-https://cs.android.com/android/platform/superproject/+/master:bionic/linker/linker.cpp;l=1215
-"""
-def syscall_fstatfs(ql, fd, buf, *args, **kw):
-    data = b"0" * (12*8)  # for now, just return 0s
-    regreturn = None
-    try:
-        ql.uc.mem_write(buf, data)
-        regreturn = 0
-    except:
-        regreturn = -1
-
-    ql.log.info("fstatfs(0x%x, 0x%x) = %d" % (fd, buf, regreturn))
-
-    if data:
-        ql.log.debug("fstatfs() CONTENT:")
-        ql.log.debug(str(data))
-    return regreturn
-
 
 class TestAndroid(unittest.TestCase):
     def test_android_arm64(self):

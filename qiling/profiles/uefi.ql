@@ -34,10 +34,6 @@ Guid = 395c33fe-287f-413e-a055-8088c0e1d43e
 [LOADED_IMAGE_PROTOCOL]
 Guid = 5b1b31a1-9562-11d2-8e3f-00a0c969723b
 
-[MMIO]
-sbreg_base = 0xFD000000
-sbreg_size = 0x01000000
-
 [LOG]
 # log directory output
 # usage: dir = qlog

@@ -149,7 +149,7 @@ def context_reg(ql, saved_states=None, *args, **kwargs):
 
         for idx in range(8):
             _addr = ql.reg.arch_sp + idx * 4
-            _val = ql.mem.read(_addr, ql.archbit // 8)
+            _val = ql.mem.read(_addr, ql.pointersize)
             print(f"$sp+0x{idx*4:02x}|[0x{_addr:08x}]=> 0x{ql.unpack(_val):08x}", end="")
 
             try: # try to deference wether its a pointer

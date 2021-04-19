@@ -7,15 +7,15 @@
 This module is intended for general purpose functions that can be used
 thoughout the qiling framework
 """
-import importlib, os, copy, re, pefile, configparser, logging
+import importlib, os, copy, re, pefile, configparser, logging, sys
 from logging import LogRecord
 from typing import Optional, Mapping
 
 from unicorn import UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
 
 from .exception import *
-from .const import QL_VERBOSE, QL_ARCH, QL_ARCH_ALL, QL_ENDIAN, QL_OS, QL_OS_ALL, QL_DEBUGGER, QL_ARCH_1BIT, QL_ARCH_16BIT, QL_ARCH_32BIT, QL_ARCH_64BIT
-from .const import debugger_map, arch_map, os_map, arch_os_map
+from .const import QL_VERBOSE, QL_ARCH, QL_ENDIAN, QL_OS, QL_DEBUGGER, QL_ARCH_1BIT, QL_ARCH_16BIT, QL_ARCH_32BIT, QL_ARCH_64BIT
+from .const import debugger_map, arch_map, os_map, arch_os_map, loader_map
 
 FMT_STR = "%(levelname)s\t%(message)s"
 
@@ -179,22 +179,14 @@ def ql_get_arch_bits(arch: QL_ARCH) -> int:
     raise QlErrorArch("Invalid Arch Bit")
 
 def ql_is_valid_ostype(ostype: QL_OS) -> bool:
-    return ostype in QL_OS_ALL
+    return ostype in QL_OS
 
 def ql_is_valid_arch(arch: QL_ARCH) -> bool:
-    return arch in QL_ARCH_ALL
+    return arch in QL_ARCH
 
 def loadertype_convert_str(ostype: QL_OS) -> Optional[str]:
-    adapter = {
-        QL_OS.LINUX   : "ELF",
-        QL_OS.FREEBSD : "ELF",
-        QL_OS.MACOS   : "MACHO",
-        QL_OS.WINDOWS : "PE",
-        QL_OS.UEFI    : "PE_UEFI",
-        QL_OS.DOS     : "DOS",
-        QL_OS.EVM     : "EVM"
-    }
-
+    adapter = {}
+    adapter.update(loader_map)
     return adapter.get(ostype)
 
 def __reverse_mapping(mapping: Mapping) -> Mapping:
@@ -398,7 +390,7 @@ def ql_guess_emu_env(path):
     if arch == None or ostype == None or archendian == None:
         arch, ostype, archendian = ql_pe_parse_emu_env(path)
   
-    if ostype not in (QL_OS_ALL):
+    if ostype not in (QL_OS):
         raise QlErrorOsType("File does not belong to either 'linux', 'windows', 'freebsd', 'macos', 'ios', 'dos'")
 
     return arch, ostype, archendian
@@ -527,7 +519,7 @@ def ql_setup_logger(ql, log_file, console, filters, multithread, log_override, l
         # Do we have console output?
         if console:
             handler = logging.StreamHandler()
-            if not log_plain:
+            if not log_plain and not sys.platform == "win32":
                 formatter = QilingColoredFormatter(ql, FMT_STR)
             else:
                 formatter = QilingPlainFormatter(ql, FMT_STR)

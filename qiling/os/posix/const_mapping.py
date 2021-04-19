@@ -30,14 +30,14 @@ def _constant_mapping(bits, d_map, ret=None, single_mapping=False):
 
     return " | ".join(ret)
 
-#
-#
 
 def ql_open_flag_mapping(ql, flags):
     def flag_mapping(flags, mapping_name, mapping_from, mapping_to):
         ret = 0
         for n in mapping_name:
-            if  (flags & mapping_from[n]) == mapping_from[n]:
+            if mapping_from[n] is None or mapping_to[n] is None:
+                continue
+            if (flags & mapping_from[n]) == mapping_from[n]:
                 ret = ret | mapping_to[n]
         return ret
 
@@ -55,108 +55,149 @@ def ql_open_flag_mapping(ql, flags):
         "O_EXCL",
         "O_NOCTTY",
         "O_DIRECTORY",
-        "O_BINARY"
+        "O_BINARY",
+        "O_LARGEFILE"
     ]
 
     mac_open_flags = {
-        "O_RDONLY": 0x0000,
-        "O_WRONLY": 0x0001,
-        "O_RDWR": 0x0002,
-        "O_NONBLOCK": 0x0004,
-        "O_APPEND": 0x0008,
-        "O_ASYNC": 0x0040,
-        "O_SYNC": 0x0080,
-        "O_NOFOLLOW": 0x0100,
-        "O_CREAT": 0x0200,
-        "O_TRUNC": 0x0400,
-        "O_EXCL": 0x0800,
+        "O_RDONLY": 0x0,
+        "O_WRONLY": 0x1,
+        "O_RDWR": 0x2,
+        "O_NONBLOCK": 0x4,
+        "O_APPEND": 0x8,
+        "O_ASYNC": 0x40,
+        "O_SYNC": 0x80,
+        "O_NOFOLLOW": 0x100,
+        "O_CREAT": 0x200,
+        "O_TRUNC": 0x400,
+        "O_EXCL": 0x800,
         "O_NOCTTY": 0x20000,
         "O_DIRECTORY": 0x100000,
-        "O_BINARY": 0
+        "O_BINARY": None,
+        'O_LARGEFILE': None
     }
 
-    linux_open_flags = {
-        'O_RDONLY': 0,
-        'O_WRONLY': 1,
-        'O_RDWR': 2,
-        'O_NONBLOCK': 2048,
-        'O_APPEND': 1024,
-        'O_ASYNC': 8192,
-        'O_SYNC': 1052672,
-        'O_NOFOLLOW': 131072,
-        'O_CREAT': 64,
-        'O_TRUNC': 512,
-        'O_EXCL': 128,
-        'O_NOCTTY': 256,
-        'O_DIRECTORY': 65536,
-        'O_BINARY': 0
+    linux_x86_open_flags = {
+        'O_RDONLY': 0x0,
+        'O_WRONLY': 0x1,
+        'O_RDWR': 0x2,
+        'O_NONBLOCK': 0x800,
+        'O_APPEND': 0x400,
+        'O_ASYNC': 0x2000,
+        'O_SYNC': 0x101000,
+        'O_NOFOLLOW': 0x20000,
+        'O_CREAT': 0x40,
+        'O_TRUNC': 0x200,
+        'O_EXCL': 0x80,
+        'O_NOCTTY': 0x100,
+        'O_DIRECTORY': 0x10000,
+        'O_BINARY': None,
+        'O_LARGEFILE': 0x0
     }
 
-    mips_open_flags = {
+    linux_arm_open_flags = {
+        'O_RDONLY': 0x0,
+        'O_WRONLY': 0x1,
+        'O_RDWR': 0x2,
+        'O_NONBLOCK': 0x800,
+        'O_APPEND': 0x400,
+        'O_ASYNC': 0x2000,
+        'O_SYNC': 0x101000,
+        'O_NOFOLLOW': 0x8000,
+        'O_CREAT': 0x40,
+        'O_TRUNC': 0x200,
+        'O_EXCL': 0x80,
+        'O_NOCTTY': 0x100,
+        'O_DIRECTORY': 0x4000,
+        'O_BINARY': None,
+        'O_LARGEFILE': 0x20000
+    }
+
+    linux_mips_open_flags = {
         'O_RDONLY': 0x0,
         'O_WRONLY': 0x1,
         'O_RDWR': 0x2,
         'O_NONBLOCK': 0x80,
         'O_APPEND': 0x8,
         'O_ASYNC': 0x1000,
-        'O_SYNC': 0x4000,
+        'O_SYNC': 0x4010,
         'O_NOFOLLOW': 0x20000,
         'O_CREAT': 0x100,
         'O_TRUNC': 0x200,
         'O_EXCL': 0x400,
         'O_NOCTTY': 0x800,
-        'O_DIRECTORY': 0x100000,
-        'O_BINARY' : 0
+        'O_DIRECTORY': 0x10000,
+        'O_BINARY' : None,
+        'O_LARGEFILE': 0x2000
+    }
+
+    freebsd_open_flags = {
+        'O_RDONLY': 0x0,
+        'O_WRONLY': 0x1,
+        'O_RDWR': 0x2,
+        'O_NONBLOCK': 0x4,
+        'O_APPEND': 0x8,
+        'O_ASYNC': 0x40,
+        'O_SYNC': 0x80,
+        'O_NOFOLLOW': 0x100,
+        'O_CREAT': 0x200,
+        'O_TRUNC': 0x400,
+        'O_EXCL': 0x800,
+        'O_NOCTTY': 0x8000,
+        'O_DIRECTORY': 0x20000,
+        'O_BINARY' : None,
+        'O_LARGEFILE': None
     }
 
     windows_open_flags = {
-        'O_RDONLY': 0,
-        'O_WRONLY': 1,
-        'O_RDWR': 2,
-        'O_NONBLOCK': 2, # Windows doesn't have a corresponding one, assume RW
-        'O_APPEND': 8,
-        'O_ASYNC': 2, # Windows doesn't have a corresponding one, assume RW
-        'O_SYNC': 2, # Windows doesn't have a corresponding one, assume RW
-        'O_NOFOLLOW': 2, # Windows doesn't have a corresponding one, assume RW
-        'O_CREAT': 256,
-        'O_TRUNC': 512,
-        'O_EXCL': 1024,
-        'O_NOCTTY': 2,
-        'O_DIRECTORY': 2, # Windows doesn't have a corresponding one, assume RW
-        'O_BINARY': 32768
+        'O_RDONLY': 0x0,
+        'O_WRONLY': 0x1,
+        'O_RDWR': 0x2,
+        'O_NONBLOCK': None,
+        'O_APPEND': 0x8,
+        'O_ASYNC': None,
+        'O_SYNC': None,
+        'O_NOFOLLOW': None,
+        'O_CREAT': 0x100,
+        'O_TRUNC': 0x200,
+        'O_EXCL': 0x400,
+        'O_NOCTTY': None,
+        'O_DIRECTORY': None,
+        'O_BINARY': 0x8000,
+        'O_LARGEFILE': None
     }
 
     f = {}
     t = {}
 
-    if ql.archtype != QL_ARCH.MIPS:
-        if ql.platform == None or ql.platform == ql.ostype:
-            return flags
-
-        # TODO: FreeBSD mapping
-        if ql.ostype == QL_OS.LINUX or ql.ostype == QL_OS.FREEBSD:
-            f = linux_open_flags
-        elif ql.ostype == QL_OS.MACOS:
-            f = mac_open_flags
-        elif ql.ostype == QL_OS.WINDOWS:
-            f = windows_open_flags
-        
-        if ql.platform == QL_OS.WINDOWS:
-            t = windows_open_flags
-        elif ql.platform == QL_OS.MACOS:
-            t = mac_open_flags
-        elif ql.platform == QL_OS.LINUX or ql.ostype == QL_OS.FREEBSD:
-            t = linux_open_flags
+    if ql.platform == None:
+        return flags
     
-    elif ql.archtype == QL_ARCH.MIPS and ql.platform == QL_OS.LINUX:
-        f = mips_open_flags
-        t = linux_open_flags
-    elif ql.archtype == QL_ARCH.MIPS and ql.platform == QL_OS.MACOS:
-        f = mips_open_flags
+    if ql.ostype == QL_OS.LINUX:
+        if ql.archtype in (QL_ARCH.X86, QL_ARCH.X8664):
+            f = linux_x86_open_flags
+        elif ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB, QL_ARCH.ARM64):
+            f = linux_arm_open_flags
+        elif ql.archtype == QL_ARCH.MIPS:
+            f = linux_mips_open_flags
+    elif ql.ostype == QL_OS.MACOS:
+        f = mac_open_flags
+    elif ql.ostype == QL_OS.FREEBSD:
+        f = freebsd_open_flags
+    elif ql.ostype == QL_OS.WINDOWS:
+        f = windows_open_flags
+
+    if ql.platform == QL_OS.LINUX:
+        t = linux_x86_open_flags
+    elif ql.platform == QL_OS.MACOS:
         t = mac_open_flags
-    elif ql.archtype == QL_ARCH.MIPS and ql.platform == QL_OS.WINDOWS:
-        f = mips_open_flags
-        t = windows_open_flags        
+    elif ql.platform == QL_OS.FREEBSD:
+        t = freebsd_open_flags
+    elif ql.platform == QL_OS.WINDOWS:
+        t = windows_open_flags
+
+    if f == t:
+        return flags
 
     return flag_mapping(flags, open_flags_name, f, t)
 

@@ -11,7 +11,7 @@ from unicorn import UcError, UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
 from keystone import *
 from capstone import *
 
-from qiling.const import QL_ARCH, QL_ARCH_ALL, QL_ENDIAN, QL_OS, QL_OS_ALL, QL_DEBUGGER, QL_ARCH_32BIT, QL_ARCH_64BIT, QL_ARCH_16BIT
+from qiling.const import QL_ARCH, QL_ENDIAN, QL_OS, QL_DEBUGGER, QL_ARCH_32BIT, QL_ARCH_64BIT, QL_ARCH_16BIT
 from qiling.exception import *
 
 
