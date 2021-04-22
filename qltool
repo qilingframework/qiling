@@ -43,11 +43,7 @@ def read_file(fname):
     return content
 
 def run_code(options):
-    if type(options.bigendian) is not bool:
-            print("ERROR: -bigendian only takes in boolean, True or False")
-            exit(1)
-
-    elif options.format == 'hex':
+    if options.format == 'hex':
         if options.input is not None:
             print ("Load HEX from ARGV")
             code = str(options.input).strip("\\\\x").split("x")
@@ -67,9 +63,12 @@ def run_code(options):
         print ("Load ASM from FILE")
         assembly = read_file(options.filename)
         archtype = arch_convert(options.arch)
-        archendian = QL_ENDIAN.EL
-        if options.bigendian:
-            archendian = QL_ENDIAN.EB
+
+        archendian = {
+            'little': QL_ENDIAN.EL,
+            'big'   : QL_ENDIAN.EB
+        }[options.endian]
+
         # TODO: Thumb support.
         assembler = ql_create_assembler(archtype, archendian, 0)
         code, _ = assembler.asm(assembly)
@@ -82,7 +81,7 @@ def run_code(options):
             exit(1)
         code = read_file(options.filename)
 
-    return Qiling(code = code, archtype = options.arch, bigendian = options.bigendian, ostype = options.os, rootfs = options.rootfs, verbose = options.verbose, profile = options.profile)
+    return Qiling(code = code, archtype = options.arch, bigendian = (options.endian == 'big'), ostype = options.os, rootfs = options.rootfs, verbose = options.verbose, profile = options.profile)
 
 def version():
     print(f'qltool for Qiling {ql_version}, using Unicorn {unicorn.__version__}')
@@ -139,7 +138,7 @@ if __name__ == '__main__':
     code_parser.add_argument('-f', '--filename', required=False, metavar="FILE", dest="filename", help="filename")
     code_parser.add_argument('-i', '--input', required=False, metavar="INPUT", dest="input", help='input hex value')
     code_parser.add_argument('--arch', required=True, choices=arch_map.keys())
-    code_parser.add_argument('--bigendian', required=False, default=False, help='Type: Bool True or False')
+    code_parser.add_argument('--endian', choices=('little', 'big'), default='little')
     code_parser.add_argument('--os', required=True, choices=os_map.keys())
     code_parser.add_argument('--format', choices=('asm', 'hex', 'bin'), default='bin', help='input file format')
 
