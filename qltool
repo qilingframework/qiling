@@ -42,7 +42,17 @@ def read_file(fname):
 
     return content
 
-def run_code(options):
+def __arg_env(argval: str) -> dict:
+    if argval:
+        if os.path.exists(argval):
+            with open(argval, 'rb') as f:
+                env = pickle.load(f)
+        else:
+            env = ast.literal_eval(argval)
+    else:
+        env = {}
+
+    return env
     if options.format == 'hex':
         if options.input is not None:
             print ("Load HEX from ARGV")
@@ -161,8 +171,7 @@ if __name__ == '__main__':
         usage()
         exit(0)
 
-    comm_parser.add_argument('-v', '--verbose', required=False, choices=verbose_map.keys(), default='default', help='verbosity level')
-    comm_parser.add_argument('--env', required=False, default='', metavar="FILE", dest="env", help="Pickle file containing an environment dictionary")
+    comm_parser.add_argument('--env', required=False, metavar="FILE", type=__arg_env, help="Pickle file containing an environment dictionary")
     comm_parser.add_argument('-g', '--gdb', required=False, help='enable gdb server')
     comm_parser.add_argument('--qdb', action='store_true', required=False, help='attach Qdb at entry point, it\'s MIPS, ARM(THUMB) supported only for now')
     comm_parser.add_argument('--rr', action='store_true', required=False, help='switch on record and replay feature in qdb, only works with --qdb')
@@ -193,17 +202,6 @@ if __name__ == '__main__':
         options.console = False
     else:
         options.console = True
-
-    if options.env != '':
-        if os.path.exists(options.env):
-            import pickle
-            with open(options.env, 'rb') as f:
-                env = pickle.load(f)
-        else:
-            env = ast.literal_eval(options.env)
-    else:
-        env = {}
-
 
     if options.debug_stop and options.verbose not in (QL_VERBOSE.DEBUG, QL_VERBOSE.DUMP):
         print('ERROR: the debug_stop option requires verbose to be set to either "debug" or "dump"')
