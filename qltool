@@ -3,40 +3,24 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import argparse, os, sys, ast, unicorn
+import argparse
+import os
+import sys
+import ast
+import pickle
+import unicorn
 
 from qiling import Qiling
 from qiling.arch.utils import ql_create_assembler
+from qiling.debugger.qdb import QlQdb
 from qiling.utils import arch_convert
 from qiling.const import QL_VERBOSE, QL_ENDIAN, os_map, arch_map, verbose_map
 from qiling.__version__ import __version__ as ql_version
 from qiling.extensions.coverage import utils as cov_utils
-from qiling.extensions.report import generate_report
-
-def parse_args(parser, commands):
-    # Divide argv by commands
-    split_argv = [[]]
-    for c in sys.argv[1:]:
-        if c in commands.choices:
-            split_argv.append([c])
-        else:
-            split_argv[-1].append(c)
-
-    # Initialize namespace
-    args = argparse.Namespace()
-    for c in commands.choices:
-        setattr(args, c, None)
-
-    # Parse each command
-    parser.parse_args(split_argv[0], namespace=args)  # Without command
-    for argv in split_argv[1:]:  # Commands
-        n = argparse.Namespace()
-        setattr(args, argv[0], n)
-        parser.parse_args(argv, namespace=n)
-    return args
+from qiling.extensions import report
 
 # read code from file
-def read_file(fname):
+def read_file(fname: str):
     with open(fname, "rb") as f:
         content = f.read()
 
@@ -203,17 +187,17 @@ if __name__ == '__main__':
     code_parser.add_argument('--rootfs', required=False, help='emulated root filesystem, that is where all libraries reside')
     code_parser.add_argument('--format', choices=('asm', 'hex', 'bin'), default='bin', help='input file format')
 
-    if len(sys.argv) <= 1:
+    if len(sys.argv) < 2:
         usage()
         exit(0)
 
-    if (sys.argv[1] == 'run'):
+    if sys.argv[1] == 'run':
         comm_parser = run_parser
 
-    elif (sys.argv[1] == 'code'):
+    elif sys.argv[1] == 'code':
         comm_parser = code_parser
 
-    elif (sys.argv[1] == 'version') or (sys.argv[1] == '-v') or (sys.argv[1] == '--version'):
+    elif sys.argv[1] in ('version', '-v', '--version'):
         version()
         exit(0)
 
@@ -229,26 +213,17 @@ if __name__ == '__main__':
     comm_parser.add_argument('--rr', action='store_true', required=False, help='switch on record and replay feature in qdb, only works with --qdb')
     comm_parser.add_argument('--profile', required=False, dest='profile', help="Define customized profile")
     comm_parser.add_argument('--console', required=False, default=True, dest='console', help='display in console')
-    comm_parser.add_argument('-e', '--filter', metavar="FUNCTION NAME", required=False, dest="filter", default=None, 
-                            help="Apply regexp for filtering log output.")
+    comm_parser.add_argument('-e', '--filter', metavar="FUNCTION NAME", required=False, dest="filter", default=None, help="Apply regexp for filtering log output.")
     comm_parser.add_argument('--log-file', dest="log_file", help="Write log to a file")
     comm_parser.add_argument('--log-plain', action="store_true", dest="log_plain", help="Don't use color in log output.")
     comm_parser.add_argument('--root', action='store_true', default=False, dest='root', help='Enable sudo required mode')
-    comm_parser.add_argument('--debug_stop', action='store_true', default=False, dest='debug_stop', 
-                            help='Stop running while encounter any error; requires verbose to be set to either "debug" or "dump"')
+    comm_parser.add_argument('--debug_stop', action='store_true', default=False, dest='debug_stop', help='Stop running while encounter any error; requires verbose to be set to either "debug" or "dump"')
     comm_parser.add_argument('-m','--multithread', action='store_true', default=False, dest='multithread', help='Run in multithread mode')
     comm_parser.add_argument('--timeout', required=False, type=int, default=0, help='Emulation timeout')
     comm_parser.add_argument('-c', '--coverage-file', required=False, default=None, dest='coverage_file', help='Code coverage file name')
-    comm_parser.add_argument('--coverage-format', required=False, default='drcov', dest='coverage_format',
-                             choices=cov_utils.factory.formats, help='Code coverage file format')
+    comm_parser.add_argument('--coverage-format', required=False, default='drcov', dest='coverage_format', choices=cov_utils.factory.formats, help='Code coverage file format')
     comm_parser.add_argument('--json', action='store_true', default=False, dest='json', help='Print a json report of the emulation')
     options = parser.parse_args()
-
-    if options.verbose is not None:
-        options.verbose = verbose_map[options.verbose]
-
-    if options.profile:
-        options.profile = str(options.profile)
 
     if options.console == 'False':
         options.console = False
@@ -285,7 +260,6 @@ if __name__ == '__main__':
         ql.run(timeout=options.timeout)
 
     if options.json:
-        print(generate_report(ql, pretty_print=True))
+        print(report.generate_report(ql, pretty_print=True))
 
     exit(ql.os.exit_code)
-
