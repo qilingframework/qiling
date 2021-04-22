@@ -72,6 +72,7 @@ class QlOsWindows(QlOs):
         self.username = self.profile["USER"]["username"]
         self.windir = self.profile["PATH"]["systemdrive"] + self.profile["PATH"]["windir"]
         self.userprofile = self.profile["PATH"]["systemdrive"] + "Users\\" + self.profile["USER"]["username"] + "\\"
+        self.services = {}
         self.load()
 
 
