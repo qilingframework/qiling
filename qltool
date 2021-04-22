@@ -57,6 +57,7 @@ def __arg_env(argval: str) -> dict:
 def __arg_verbose(argval: str) -> QL_VERBOSE:
     return verbose_map[argval]
 
+def handle_code(options):
     if options.format == 'hex':
         if options.input is not None:
             print ("Load HEX from ARGV")
@@ -95,7 +96,39 @@ def __arg_verbose(argval: str) -> QL_VERBOSE:
             exit(1)
         code = read_file(options.filename)
 
-    return Qiling(code = code, archtype = options.arch, bigendian = (options.endian == 'big'), ostype = options.os, rootfs = options.rootfs, verbose = options.verbose, profile = options.profile)
+def handle_run(options):
+    effective_argv = []
+
+    # with argv
+    if options.filename is not None and options.run_args == []:
+        effective_argv = [options.filename] + options.args
+
+    # Without argv
+    elif options.filename is None and options.args == [] and options.run_args != []:
+        effective_argv = options.run_args
+
+    else:
+        print("ERROR: Command error!")
+        usage()
+
+    ql = Qiling(
+        argv=effective_argv,
+        rootfs=options.rootfs,
+        env=options.env,
+        verbose=options.verbose,
+        profile=options.profile,
+        console=options.console,
+        log_file=options.log_file,
+        log_plain=options.log_plain,
+        multithread=options.multithread
+    )
+
+    # attach Qdb at entry point
+    if options.qdb == True:
+        QlQdb(ql, rr=options.rr)
+        exit()
+
+    return ql
 
 def version():
     print(f'qltool for Qiling {ql_version}, using Unicorn {unicorn.__version__}')
@@ -172,6 +205,7 @@ if __name__ == '__main__':
         exit(0)
 
     else:
+        print("ERROR: Unknown command")
         usage()
         exit(0)
 
@@ -214,34 +248,11 @@ if __name__ == '__main__':
 
     # ql file setup
     if (options.subparser_name == 'run'):
-        # with argv
-        if options.filename is not None and options.run_args == []:
-            ql = Qiling(argv=[options.filename] + options.args, rootfs=options.rootfs, profile=options.profile,
-                        verbose=options.verbose, console=options.console, log_file=options.log_file, log_plain=options.log_plain, multithread=options.multithread, env=env)
-
-        # Without argv
-        elif options.filename is None and options.args == [] and options.run_args != []:
-            ql = Qiling(argv=options.run_args, rootfs=options.rootfs, profile=options.profile,
-                        verbose=options.verbose, console=options.console, log_file=options.log_file, log_plain=options.log_plain, multithread=options.multithread, env=env)
-        
-        else:
-            print("ERROR: Command error!")
-            usage()
-
-        # attach Qdb at entry point
-        if options.qdb == True:
-            from qiling.debugger.qdb import QlQdb as Qdb
-
-            Qdb(ql, rr=options.rr)
-            exit()
+        ql = handle_run(options)
 
     # ql code setup
     elif (options.subparser_name == 'code'):
-        ql = run_code(options)
-
-    else:
-        print("ERROR: Unknown command")
-        usage()
+        ql = handle_code(options)
 
     # ql execute additional options
     if options.gdb is not None:
