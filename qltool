@@ -3,15 +3,12 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+import argparse, os, sys, ast, unicorn
 
-import argparse, os, string, sys, ast, unicorn
-from binascii import unhexlify
-
-from qiling import *
-from qiling.const import QL_VERBOSE
+from qiling import Qiling
 from qiling.arch.utils import ql_create_assembler
 from qiling.utils import arch_convert
-from qiling.const import QL_ARCH, QL_ENDIAN
+from qiling.const import QL_VERBOSE, QL_ENDIAN
 from qiling.__version__ import __version__ as ql_version
 from qiling.extensions.coverage import utils as cov_utils
 from qiling.extensions.report import generate_report
@@ -24,7 +21,7 @@ def parse_args(parser, commands):
             split_argv.append([c])
         else:
             split_argv[-1].append(c)
-    
+
     # Initialize namespace
     args = argparse.Namespace()
     for c in commands.choices:
@@ -40,16 +37,16 @@ def parse_args(parser, commands):
 
 # read code from file
 def read_file(fname):
-    with open(fname,"rb") as f:
+    with open(fname, "rb") as f:
         content = f.read()
-        f.close
-        return content
+
+    return content
 
 def run_code(options):
     if not options.os in ("linux", "windows", "freebsd", "macos"):
             print("ERROR: -os required: either linux, windows, freebsd, macos")
             exit(1)
-    
+
     if not options.arch in ("arm", "arm64", "x86", "x8664", "mips"):
             print("ERROR: -arch required: either arm, arm64, x86, x8664, mips")
             exit(1)
@@ -96,7 +93,7 @@ def run_code(options):
     return Qiling(code = code, archtype = options.arch, bigendian = options.bigendian, ostype = options.os, rootfs = options.rootfs, verbose = options.verbose, profile = options.profile)
 
 def version():
-    print("qltool for Qiling %s, using Unicorn %s" %(ql_version, unicorn.__version__))
+    print(f'qltool for Qiling {ql_version}, using Unicorn {unicorn.__version__}')
 
 def usage():
     version()
@@ -136,11 +133,10 @@ def usage():
     """)
 
 if __name__ == '__main__':
-
     # argparse setup
     parser = argparse.ArgumentParser()
     commands = parser.add_subparsers(title='subcommands', description='valid subcommands', help='additional help', dest='subparser_name')
-    
+
     run_parser = commands.add_parser('run', help = 'run')
     run_parser.add_argument('-f', '--filename', required=False, default=None, metavar="FILE", dest="filename", help="filename")
     run_parser.add_argument('--rootfs', required=True, help='emulated rootfs')
@@ -157,7 +153,7 @@ if __name__ == '__main__':
     code_parser.add_argument('--asm', action='store_true', default=False, dest='asm', help='input file format, -asm')
     code_parser.add_argument('--hex', action='store_true', default=False, dest='hex', help='input file format, -hex')
     code_parser.add_argument('--bin', action='store_true', default=True, dest='bin', help='input file format, -bin')
-    
+
     if len(sys.argv) <= 1:
         usage()
         exit(0)
@@ -211,7 +207,7 @@ if __name__ == '__main__':
     elif options.debug:
         options.verbose = QL_VERBOSE.DEBUG
     elif options.disasm:
-        options.verbose = QL_VERBOSE.DISASM             
+        options.verbose = QL_VERBOSE.DISASM
 
     if options.profile:
         options.profile = str(options.profile)
@@ -230,12 +226,12 @@ if __name__ == '__main__':
             env = ast.literal_eval(options.env)
     else:
         env = {}
-    
+
 
     if options.debug_stop and not (options.dump or options.debug):
         print("ERROR: debug_stop must use with either dump or debug mode")
         usage()
-    
+
     # ql file setup
     if (options.subparser_name == 'run'):
         # with argv
@@ -262,7 +258,7 @@ if __name__ == '__main__':
     # ql code setup
     elif (options.subparser_name == 'code'):
         ql = run_code(options)
-    
+
     else:
         print("ERROR: Unknown command")
         usage()
@@ -273,7 +269,7 @@ if __name__ == '__main__':
 
     if options.debug_stop and (options.dump or options.debug):
         ql.debug_stop = True
-        
+
     if options.root is not None:
         ql.root = True
 
@@ -289,7 +285,7 @@ if __name__ == '__main__':
     timeout = 0
     if options.timeout != None:
         timeout = int(options.timeout)
-    
+
     # ql run
     with cov_utils.collect_coverage(ql, options.coverage_format, options.coverage_file):
         ql.run(timeout=timeout)
