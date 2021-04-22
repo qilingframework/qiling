@@ -26,22 +26,23 @@ def read_file(fname: str):
 
     return content
 
-def __arg_env(argval: str) -> dict:
-    if argval:
-        if os.path.exists(argval):
-            with open(argval, 'rb') as f:
-                env = pickle.load(f)
-        else:
-            env = ast.literal_eval(argval)
-    else:
+class __arg_env(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string):
         env = {}
 
-    return env
+        if os.path.exists(values):
+            with open(values, 'rb') as f:
+                env = pickle.load(f)
+        else:
+            env = ast.literal_eval(values)
 
-def __arg_verbose(argval: str) -> QL_VERBOSE:
-    return verbose_map[argval]
+        setattr(namespace, self.dest, env)
 
-def handle_code(options):
+class __arg_verbose(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string):
+        setattr(namespace, self.dest, verbose_map[values])
+
+def handle_code(options: argparse.Namespace):
     if options.format == 'hex':
         if options.input is not None:
             print ("Load HEX from ARGV")
