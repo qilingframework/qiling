@@ -76,10 +76,11 @@ def handle_code(options: argparse.Namespace):
 
     elif options.format == 'bin':
         print ("Load BIN from FILE")
-        if options.filename is None:
+        if options.filename is not None:
+            code = read_file(options.filename)
+        else:
             print("ERROR: File not found")
             exit(1)
-        code = read_file(options.filename)
 
     ql = Qiling(
         rootfs=options.rootfs,
@@ -95,7 +96,7 @@ def handle_code(options: argparse.Namespace):
 
     return ql
 
-def handle_run(options):
+def handle_run(options: argparse.Namespace):
     effective_argv = []
 
     # with argv
@@ -171,67 +172,57 @@ if __name__ == '__main__':
     parser.add_argument('--version', action='version', version=f'qltool for Qiling {ql_version}, using Unicorn {unicorn.__version__}')
 
     commands = parser.add_subparsers(title='sub commands', description='select execution mode', dest='subcommand', required=True)
-    run_parser = commands.add_parser('run', help = 'run')
-    run_parser.add_argument('-f', '--filename', required=False, default=None, metavar="FILE", dest="filename", help="filename")
+
+    # set "run" subcommand options
+    run_parser = commands.add_parser('run', help='run a program')
+    run_parser.add_argument('-f', '--filename', default=None, metavar="FILE", help="filename")
     run_parser.add_argument('--rootfs', required=True, help='emulated rootfs')
-    run_parser.add_argument('--args', required=False, default=[], nargs=argparse.REMAINDER, dest="args", help="args")
+    run_parser.add_argument('--args', default=[], nargs=argparse.REMAINDER, dest="args", help="args")
     run_parser.add_argument('run_args', default=[], nargs=argparse.REMAINDER)
 
-    code_parser = commands.add_parser('code', help = 'code')
-    code_parser.add_argument('-f', '--filename', required=False, metavar="FILE", dest="filename", help="filename")
-    code_parser.add_argument('-i', '--input', required=False, metavar="INPUT", dest="input", help='input hex value')
-    code_parser.add_argument('--arch', required=True, choices=arch_map.keys())
+    # set "code" subcommand options
+    code_parser = commands.add_parser('code', help='execute a shellcode')
+    code_parser.add_argument('-f', '--filename', metavar="FILE", help="filename")
+    code_parser.add_argument('-i', '--input', metavar="INPUT", dest="input", help='input hex value')
+    code_parser.add_argument('--arch', required=True, choices=arch_map)
     code_parser.add_argument('--endian', choices=('little', 'big'), default='little')
-    code_parser.add_argument('--os', required=True, choices=os_map.keys())
-    code_parser.add_argument('--rootfs', required=False, help='emulated root filesystem, that is where all libraries reside')
+    code_parser.add_argument('--os', required=True, choices=os_map)
+    code_parser.add_argument('--rootfs', help='emulated root filesystem, that is where all libraries reside')
     code_parser.add_argument('--format', choices=('asm', 'hex', 'bin'), default='bin', help='input file format')
 
+    # set "examples" subcommand
     expl_parser = commands.add_parser('examples', help='show examples and exit', add_help=False)
 
-    if len(sys.argv) < 2:
-        usage()
-        exit(0)
+    comm_parser = run_parser
 
-    if sys.argv[1] == 'run':
-        comm_parser = run_parser
-
-    elif sys.argv[1] == 'code':
+    if len(sys.argv) > 1 and sys.argv[1] == 'code':
         comm_parser = code_parser
 
-    elif sys.argv[1] in ('version', '-v', '--version'):
-        version()
-        exit(0)
-
-    else:
-        print("ERROR: Unknown command")
-        usage()
-        exit(0)
-
-    comm_parser.add_argument('-v', '--verbose', required=False, choices=verbose_map.keys(), default='default', type=__arg_verbose, help='verbosity level')
-    comm_parser.add_argument('--env', required=False, metavar="FILE", type=__arg_env, help="Pickle file containing an environment dictionary")
-    comm_parser.add_argument('-g', '--gdb', required=False, help='enable gdb server')
-    comm_parser.add_argument('--qdb', action='store_true', required=False, help='attach Qdb at entry point, it\'s MIPS, ARM(THUMB) supported only for now')
-    comm_parser.add_argument('--rr', action='store_true', required=False, help='switch on record and replay feature in qdb, only works with --qdb')
-    comm_parser.add_argument('--profile', required=False, dest='profile', help="Define customized profile")
-    comm_parser.add_argument('--noconsole', required=False, action='store_false', dest='console', help='do not emit output to console')
-    comm_parser.add_argument('-e', '--filter', metavar="FUNCTION NAME", required=False, dest="filter", default=None, help="Apply regexp for filtering log output.")
-    comm_parser.add_argument('--log-file', dest="log_file", help="Write log to a file")
-    comm_parser.add_argument('--log-plain', action="store_true", dest="log_plain", help="Don't use color in log output.")
-    comm_parser.add_argument('--root', action='store_true', default=False, dest='root', help='Enable sudo required mode')
-    comm_parser.add_argument('--debug_stop', action='store_true', default=False, dest='debug_stop', help='Stop running while encounter any error; requires verbose to be set to either "debug" or "dump"')
-    comm_parser.add_argument('-m','--multithread', action='store_true', default=False, dest='multithread', help='Run in multithread mode')
-    comm_parser.add_argument('--timeout', required=False, type=int, default=0, help='Emulation timeout')
-    comm_parser.add_argument('-c', '--coverage-file', required=False, default=None, dest='coverage_file', help='Code coverage file name')
-    comm_parser.add_argument('--coverage-format', required=False, default='drcov', dest='coverage_format', choices=cov_utils.factory.formats, help='Code coverage file format')
-    comm_parser.add_argument('--json', action='store_true', default=False, dest='json', help='Print a json report of the emulation')
+    # set common options
+    comm_parser.add_argument('-v', '--verbose', choices=verbose_map, default=QL_VERBOSE.DEFAULT, action=__arg_verbose, help='set verbosity level')
+    comm_parser.add_argument('--env', metavar="FILE", action=__arg_env, help="pickle file containing an environment dictionary")
+    comm_parser.add_argument('-g', '--gdb', help='enable gdb server')
+    comm_parser.add_argument('--qdb', action='store_true', help='attach Qdb at entry point, it\'s MIPS, ARM(THUMB) supported only for now')
+    comm_parser.add_argument('--rr', action='store_true', help='switch on record and replay feature in qdb, only works with --qdb')
+    comm_parser.add_argument('--profile', help="define a customized profile")
+    comm_parser.add_argument('--no-console', action='store_false', dest='console', help='do not emit output to console')
+    comm_parser.add_argument('-e', '--filter', metavar='REGEXP', default=None, help="apply a filtering regexp on log output")
+    comm_parser.add_argument('--log-file', help="write log to a file")
+    comm_parser.add_argument('--log-plain', action='store_true', help="do not use colors in log output")
+    comm_parser.add_argument('--root', action='store_true', help='enable sudo required mode')
+    comm_parser.add_argument('--debug-stop', action='store_true', help='stop running on error; requires verbose to be set to either "debug" or "dump"')
+    comm_parser.add_argument('-m', '--multithread',action='store_true', help='run in multithread mode')
+    comm_parser.add_argument('--timeout', type=int, default=0, help='set emulation timeout')
+    comm_parser.add_argument('-c', '--coverage-file', default=None, help='code coverage file name')
+    comm_parser.add_argument('--coverage-format', default='drcov', choices=cov_utils.factory.formats, help='code coverage file format')
+    comm_parser.add_argument('--json', action='store_true', help='print a json report of the emulation')
     options = parser.parse_args()
 
     if options.subcommand == 'examples':
         handle_examples(parser)
 
     if options.debug_stop and options.verbose not in (QL_VERBOSE.DEBUG, QL_VERBOSE.DUMP):
-        print('ERROR: the debug_stop option requires verbose to be set to either "debug" or "dump"')
-        usage()
+        parser.error('the debug_stop option requires verbose to be set to either "debug" or "dump"')
 
     # ql file setup
     if options.subcommand == 'run':
@@ -242,13 +233,13 @@ if __name__ == '__main__':
         ql = handle_code(options)
 
     # ql execute additional options
-    if options.gdb is not None:
+    if options.gdb:
         ql.debugger = options.gdb
 
     if options.debug_stop:
         ql.debug_stop = True
 
-    if options.root is not None:
+    if options.root:
         ql.root = True
 
     # ql run
