@@ -91,6 +91,14 @@ os_map = {
     "evm"       : QL_OS.EVM,
 }
 
+verbose_map = {
+    "off"       : QL_VERBOSE.OFF,
+    "default"   : QL_VERBOSE.DEFAULT,
+    "debug"     : QL_VERBOSE.DEBUG,
+    "disasm"    : QL_VERBOSE.DISASM,
+    "dump"      : QL_VERBOSE.DUMP
+}
+
 loader_map = {
     QL_OS.LINUX   : "ELF",
     QL_OS.FREEBSD : "ELF",

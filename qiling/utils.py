@@ -485,7 +485,7 @@ def profile_setup(ostype, profile, ql):
     config.read(profiles)
     return config, debugmsg
 
-def ql_resolve_logger_level(verbose):
+def ql_resolve_logger_level(verbose: QL_VERBOSE):
     level = logging.INFO
     if verbose == QL_VERBOSE.OFF:
         level = logging.WARNING

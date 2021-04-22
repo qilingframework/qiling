@@ -8,7 +8,7 @@ import argparse, os, sys, ast, unicorn
 from qiling import Qiling
 from qiling.arch.utils import ql_create_assembler
 from qiling.utils import arch_convert
-from qiling.const import QL_VERBOSE, QL_ENDIAN, os_map, arch_map
+from qiling.const import QL_VERBOSE, QL_ENDIAN, os_map, arch_map, verbose_map
 from qiling.__version__ import __version__ as ql_version
 from qiling.extensions.coverage import utils as cov_utils
 from qiling.extensions.report import generate_report
@@ -160,25 +160,20 @@ if __name__ == '__main__':
         usage()
         exit(0)
 
-    comm_parser.add_argument('-v', '--verbose', required=False, default=QL_VERBOSE.DEFAULT, dest='verbose', type=int,
-                            help='verbose mode, must be int and use with --debug or --dump')
-    comm_parser.add_argument('--env', required=False, default='', metavar="FILE", dest="env", help="Pickle file containing an environment dictionary")                            
+    comm_parser.add_argument('-v', '--verbose', required=False, choices=verbose_map.keys(), default='default', help='verbosity level')
+    comm_parser.add_argument('--env', required=False, default='', metavar="FILE", dest="env", help="Pickle file containing an environment dictionary")
     comm_parser.add_argument('-g', '--gdb', required=False, help='enable gdb server')
     comm_parser.add_argument('--qdb', action='store_true', required=False, help='attach Qdb at entry point, it\'s MIPS, ARM(THUMB) supported only for now')
     comm_parser.add_argument('--rr', action='store_true', required=False, help='switch on record and replay feature in qdb, only works with --qdb')
     comm_parser.add_argument('--profile', required=False, dest='profile', help="Define customized profile")
-    comm_parser.add_argument('--dump', action='store_true', default=False, dest='dump', help='Enable Debug + Diassembler mode')
-    comm_parser.add_argument('--debug', action='store_true', default=False, dest='debug', help='Enable Debug mode')
-    comm_parser.add_argument('--disasm', action='store_true', default=False, dest='disasm', help='Run in disassemble mode')
     comm_parser.add_argument('--console', required=False, default=True, dest='console', help='display in console')
     comm_parser.add_argument('-e', '--filter', metavar="FUNCTION NAME", required=False, dest="filter", default=None, 
                             help="Apply regexp for filtering log output.")
     comm_parser.add_argument('--log-file', dest="log_file", help="Write log to a file")
     comm_parser.add_argument('--log-plain', action="store_true", dest="log_plain", help="Don't use color in log output.")
-    comm_parser.add_argument('--trace', action='store_true', default=False, dest='trace', help='Run in trace mode')
     comm_parser.add_argument('--root', action='store_true', default=False, dest='root', help='Enable sudo required mode')
     comm_parser.add_argument('--debug_stop', action='store_true', default=False, dest='debug_stop', 
-                            help='Stop running while encounter any error (only use it with debug mode)')
+                            help='Stop running while encounter any error; requires verbose to be set to either "debug" or "dump"')
     comm_parser.add_argument('-m','--multithread', action='store_true', default=False, dest='multithread', help='Run in multithread mode')
     comm_parser.add_argument('--timeout', required=False, help='Emulation timeout')
     comm_parser.add_argument('-c', '--coverage-file', required=False, default=None, dest='coverage_file', help='Code coverage file name')
@@ -187,15 +182,8 @@ if __name__ == '__main__':
     comm_parser.add_argument('--json', action='store_true', default=False, dest='json', help='Print a json report of the emulation')
     options = parser.parse_args()
 
-    # var check
-    if options.trace:
-        options.verbose = QL_VERBOSE.DISASM
-    elif options.dump:
-        options.verbose = QL_VERBOSE.DUMP
-    elif options.debug:
-        options.verbose = QL_VERBOSE.DEBUG
-    elif options.disasm:
-        options.verbose = QL_VERBOSE.DISASM
+    if options.verbose is not None:
+        options.verbose = verbose_map[options.verbose]
 
     if options.profile:
         options.profile = str(options.profile)
@@ -216,8 +204,8 @@ if __name__ == '__main__':
         env = {}
 
 
-    if options.debug_stop and not (options.dump or options.debug):
-        print("ERROR: debug_stop must use with either dump or debug mode")
+    if options.debug_stop and options.verbose not in (QL_VERBOSE.DEBUG, QL_VERBOSE.DUMP):
+        print('ERROR: the debug_stop option requires verbose to be set to either "debug" or "dump"')
         usage()
 
     # ql file setup
@@ -255,16 +243,11 @@ if __name__ == '__main__':
     if options.gdb is not None:
         ql.debugger = options.gdb
 
-    if options.debug_stop and (options.dump or options.debug):
+    if options.debug_stop:
         ql.debug_stop = True
 
     if options.root is not None:
         ql.root = True
-
-    if options.verbose is not None:
-        ql.verbose = int(options.verbose)
-    else:
-        ql.verbose = QL_VERBOSE.DEFAULT
 
     if options.filter:
         ql.filter = options.filter
