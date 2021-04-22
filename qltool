@@ -214,7 +214,7 @@ if __name__ == '__main__':
     comm_parser.add_argument('--qdb', action='store_true', required=False, help='attach Qdb at entry point, it\'s MIPS, ARM(THUMB) supported only for now')
     comm_parser.add_argument('--rr', action='store_true', required=False, help='switch on record and replay feature in qdb, only works with --qdb')
     comm_parser.add_argument('--profile', required=False, dest='profile', help="Define customized profile")
-    comm_parser.add_argument('--console', required=False, default=True, dest='console', help='display in console')
+    comm_parser.add_argument('--noconsole', required=False, action='store_false', dest='console', help='do not emit output to console')
     comm_parser.add_argument('-e', '--filter', metavar="FUNCTION NAME", required=False, dest="filter", default=None, help="Apply regexp for filtering log output.")
     comm_parser.add_argument('--log-file', dest="log_file", help="Write log to a file")
     comm_parser.add_argument('--log-plain', action="store_true", dest="log_plain", help="Don't use color in log output.")
@@ -226,11 +226,6 @@ if __name__ == '__main__':
     comm_parser.add_argument('--coverage-format', required=False, default='drcov', dest='coverage_format', choices=cov_utils.factory.formats, help='Code coverage file format')
     comm_parser.add_argument('--json', action='store_true', default=False, dest='json', help='Print a json report of the emulation')
     options = parser.parse_args()
-
-    if options.console == 'False':
-        options.console = False
-    else:
-        options.console = True
 
     if options.debug_stop and options.verbose not in (QL_VERBOSE.DEBUG, QL_VERBOSE.DUMP):
         print('ERROR: the debug_stop option requires verbose to be set to either "debug" or "dump"')
