@@ -140,6 +140,7 @@ if __name__ == '__main__':
     code_parser.add_argument('--arch', required=True, choices=arch_map.keys())
     code_parser.add_argument('--endian', choices=('little', 'big'), default='little')
     code_parser.add_argument('--os', required=True, choices=os_map.keys())
+    code_parser.add_argument('--rootfs', required=False, help='emulated root filesystem, that is where all libraries reside')
     code_parser.add_argument('--format', choices=('asm', 'hex', 'bin'), default='bin', help='input file format')
 
     if len(sys.argv) <= 1:
