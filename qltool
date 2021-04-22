@@ -8,7 +8,7 @@ import argparse, os, sys, ast, unicorn
 from qiling import Qiling
 from qiling.arch.utils import ql_create_assembler
 from qiling.utils import arch_convert
-from qiling.const import QL_VERBOSE, QL_ENDIAN, os_map
+from qiling.const import QL_VERBOSE, QL_ENDIAN, os_map, arch_map
 from qiling.__version__ import __version__ as ql_version
 from qiling.extensions.coverage import utils as cov_utils
 from qiling.extensions.report import generate_report
@@ -43,10 +43,6 @@ def read_file(fname):
     return content
 
 def run_code(options):
-    if not options.arch in ("arm", "arm64", "x86", "x8664", "mips"):
-            print("ERROR: -arch required: either arm, arm64, x86, x8664, mips")
-            exit(1)
-
     if type(options.bigendian) is not bool:
             print("ERROR: -bigendian only takes in boolean, True or False")
             exit(1)
@@ -142,7 +138,7 @@ if __name__ == '__main__':
     code_parser = commands.add_parser('code', help = 'code')
     code_parser.add_argument('-f', '--filename', required=False, metavar="FILE", dest="filename", help="filename")
     code_parser.add_argument('-i', '--input', required=False, metavar="INPUT", dest="input", help='input hex value')
-    code_parser.add_argument('--arch', required=True, help='option are x86, x8664, arm, arm64, mips')
+    code_parser.add_argument('--arch', required=True, choices=arch_map.keys())
     code_parser.add_argument('--bigendian', required=False, default=False, help='Type: Bool True or False')
     code_parser.add_argument('--os', required=True, choices=os_map.keys())
     code_parser.add_argument('--format', choices=('asm', 'hex', 'bin'), default='bin', help='input file format')
