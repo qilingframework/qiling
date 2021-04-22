@@ -53,6 +53,10 @@ def __arg_env(argval: str) -> dict:
         env = {}
 
     return env
+
+def __arg_verbose(argval: str) -> QL_VERBOSE:
+    return verbose_map[argval]
+
     if options.format == 'hex':
         if options.input is not None:
             print ("Load HEX from ARGV")
@@ -171,6 +175,7 @@ if __name__ == '__main__':
         usage()
         exit(0)
 
+    comm_parser.add_argument('-v', '--verbose', required=False, choices=verbose_map.keys(), default='default', type=__arg_verbose, help='verbosity level')
     comm_parser.add_argument('--env', required=False, metavar="FILE", type=__arg_env, help="Pickle file containing an environment dictionary")
     comm_parser.add_argument('-g', '--gdb', required=False, help='enable gdb server')
     comm_parser.add_argument('--qdb', action='store_true', required=False, help='attach Qdb at entry point, it\'s MIPS, ARM(THUMB) supported only for now')
