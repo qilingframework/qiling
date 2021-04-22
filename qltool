@@ -55,7 +55,7 @@ def run_code(options):
             print("ERROR: -bigendian only takes in boolean, True or False")
             exit(1)
 
-    elif options.hex == True:
+    elif options.format == 'hex':
         if options.input is not None:
             print ("Load HEX from ARGV")
             code = str(options.input).strip("\\\\x").split("x")
@@ -71,7 +71,7 @@ def run_code(options):
             print("ERROR: File not found")
             exit(1)
 
-    elif options.asm == True:
+    elif options.format == 'asm':
         print ("Load ASM from FILE")
         assembly = read_file(options.filename)
         archtype = arch_convert(options.arch)
@@ -83,7 +83,7 @@ def run_code(options):
         code, _ = assembler.asm(assembly)
         code = bytes(code)
 
-    else:
+    elif options.format == 'bin':
         print ("Load BIN from FILE")
         if options.filename is None:
             print("ERROR: File not found")
@@ -150,9 +150,7 @@ if __name__ == '__main__':
     code_parser.add_argument('--bigendian', required=False, default=False, help='Type: Bool True or False')
     code_parser.add_argument('--os', required=True, help='option are windows, linux, freebsd and macos')
     code_parser.add_argument('--rootfs', required=False, help='emulated rootfs, that is where all the so or dll sits')
-    code_parser.add_argument('--asm', action='store_true', default=False, dest='asm', help='input file format, -asm')
-    code_parser.add_argument('--hex', action='store_true', default=False, dest='hex', help='input file format, -hex')
-    code_parser.add_argument('--bin', action='store_true', default=True, dest='bin', help='input file format, -bin')
+    code_parser.add_argument('--format', choices=('asm', 'hex', 'bin'), default='bin', help='input file format')
 
     if len(sys.argv) <= 1:
         usage()
