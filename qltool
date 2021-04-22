@@ -190,7 +190,7 @@ if __name__ == '__main__':
     comm_parser.add_argument('--debug_stop', action='store_true', default=False, dest='debug_stop', 
                             help='Stop running while encounter any error; requires verbose to be set to either "debug" or "dump"')
     comm_parser.add_argument('-m','--multithread', action='store_true', default=False, dest='multithread', help='Run in multithread mode')
-    comm_parser.add_argument('--timeout', required=False, help='Emulation timeout')
+    comm_parser.add_argument('--timeout', required=False, type=int, default=0, help='Emulation timeout')
     comm_parser.add_argument('-c', '--coverage-file', required=False, default=None, dest='coverage_file', help='Code coverage file name')
     comm_parser.add_argument('--coverage-format', required=False, default='drcov', dest='coverage_format',
                              choices=cov_utils.factory.formats, help='Code coverage file format')
@@ -256,14 +256,9 @@ if __name__ == '__main__':
     if options.filter:
         ql.filter = options.filter
 
-
-    timeout = 0
-    if options.timeout != None:
-        timeout = int(options.timeout)
-
     # ql run
     with cov_utils.collect_coverage(ql, options.coverage_format, options.coverage_file):
-        ql.run(timeout=timeout)
+        ql.run(timeout=options.timeout)
 
     if options.json:
         print(generate_report(ql, pretty_print=True))
