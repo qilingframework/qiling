@@ -88,7 +88,8 @@ def handle_code(options):
         archtype=options.arch,
         bigendian=(options.endian == 'big'),
         verbose=options.verbose,
-        profile=options.profile
+        profile=options.profile,
+        filter=options.filter
     )
 
     return ql
@@ -117,7 +118,8 @@ def handle_run(options):
         console=options.console,
         log_file=options.log_file,
         log_plain=options.log_plain,
-        multithread=options.multithread
+        multithread=options.multithread,
+        filter=options.filter
     )
 
     # attach Qdb at entry point
@@ -251,9 +253,6 @@ if __name__ == '__main__':
 
     if options.root is not None:
         ql.root = True
-
-    if options.filter:
-        ql.filter = options.filter
 
     # ql run
     with cov_utils.collect_coverage(ql, options.coverage_format, options.coverage_file):
