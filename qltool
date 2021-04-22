@@ -96,6 +96,19 @@ def handle_code(options):
             exit(1)
         code = read_file(options.filename)
 
+    ql = Qiling(
+        rootfs=options.rootfs,
+        env=options.env,
+        code=code,
+        ostype=options.os,
+        archtype=options.arch,
+        bigendian=(options.endian == 'big'),
+        verbose=options.verbose,
+        profile=options.profile
+    )
+
+    return ql
+
 def handle_run(options):
     effective_argv = []
 
