@@ -129,9 +129,6 @@ def handle_run(options):
 
     return ql
 
-def version():
-    print(f'qltool for Qiling {ql_version}, using Unicorn {unicorn.__version__}')
-
 def handle_examples(parser: argparse.ArgumentParser):
     prog = os.path.basename(__file__)
 
@@ -170,9 +167,8 @@ def handle_examples(parser: argparse.ArgumentParser):
     parser.exit(0, __ql_examples)
 
 if __name__ == '__main__':
-    # argparse setup
     parser = argparse.ArgumentParser()
-    commands = parser.add_subparsers(title='subcommands', description='valid subcommands', help='additional help', dest='subparser_name')
+    parser.add_argument('--version', action='version', version=f'qltool for Qiling {ql_version}, using Unicorn {unicorn.__version__}')
 
     commands = parser.add_subparsers(title='sub commands', description='select execution mode', dest='subcommand', required=True)
     run_parser = commands.add_parser('run', help = 'run')
