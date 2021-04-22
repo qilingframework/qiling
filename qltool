@@ -139,12 +139,11 @@ def usage():
     Usage: {__file__} [run|code] OPTIONS
 
     With code:
-        {__file__} code --os linux --arch arm --hex -f examples/codes/linarm32_tcp_reverse_shell.hex
-        {__file__} code --os linux --arch x86 --asm -f examples/codes/lin32_execve.asm
-        {__file__} code --os linux --arch arm --hex -f examples/codes/linarm32_tcp_reverse_shell.hex --strace
+        {__file__} code --os linux --arch arm --format hex -f examples/codes/linarm32_tcp_reverse_shell.hex
+        {__file__} code --os linux --arch x86 --format asm -f examples/codes/lin32_execve.asm
 
     With binary file:
-        {__file__} run -f examples/rootfs/x8664_linux/bin/x8664_hello --rootfs  examples/rootfs/x8664_linux
+        {__file__} run -f examples/rootfs/x8664_linux/bin/x8664_hello --rootfs examples/rootfs/x8664_linux
         {__file__} run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux
 
     With binary file and Qdb:
@@ -154,19 +153,18 @@ def usage():
     With binary file and gdbserver:
         {__file__} run -f examples/rootfs/x8664_linux/bin/x8664_hello --gdb 127.0.0.1:9999 --rootfs examples/rootfs/x8664_linux
 
-    nWith binary file and additional argv:
+    With binary file and additional argv:
         {__file__} run -f examples/rootfs/x8664_linux/bin/x8664_args --rootfs examples/rootfs/x8664_linux --args test1 test2 test3
 
     With binary file and various output format:
-        {__file__} run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux --output=disasm
-        {__file__} run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux --strace -e ^open
-        {__file__} run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux --strace -e ^open
+        {__file__} run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux --verbose disasm
+        {__file__} run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux --filter ^open
 
     With UEFI file:
         {__file__} run -f examples/rootfs/x8664_efi/bin/TcgPlatformSetupPolicy --rootfs examples/rootfs/x8664_efi --env examples/rootfs/x8664_efi/rom2_nvar.pickel
 
     With binary file and json output:
-        {__file__} run -f examples/rootfs/x86_windows/bin/x86_hello.exe --rootfs  examples/rootfs/x86_windows/ --console False --json
+        {__file__} run -f examples/rootfs/x86_windows/bin/x86_hello.exe --rootfs examples/rootfs/x86_windows --console False --json
     """)
 
 if __name__ == '__main__':
