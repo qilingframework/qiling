@@ -118,11 +118,10 @@ class QlOsUefi(QlOs):
 
 
 	def emu_error(self):
-		dump_len = 64
+		pc = self.ql.reg.arch_pc
 
 		try:
-			pc = self.ql.reg.arch_pc
-			data = self.ql.mem.read(pc, dump_len)
+			data = self.ql.mem.read(pc, size=64)
 
 			self.emit_context()
 			self.emit_hexdump(pc, data)

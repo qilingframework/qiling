@@ -29,8 +29,6 @@ class QlOs:
         self.profile = self.ql.profile
         self.path = QlPathManager(ql, self.ql.profile.get("MISC", "current_path"))
         self.exit_code = 0
-        self.services = {}
-        self.elf_mem_start = 0x0
 
         self.user_defined_api = {
             QL_INTERCEPT.CALL : {},

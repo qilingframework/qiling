@@ -12,6 +12,8 @@ from qiling.os.posix.posix import QlOsPosix
 class QlOsFreebsd(QlOsPosix):
     def __init__(self, ql):
         super(QlOsFreebsd, self).__init__(ql)
+
+        self.elf_mem_start = 0x0
         self.load()
 
 

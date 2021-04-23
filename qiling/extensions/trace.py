@@ -23,6 +23,12 @@ def __get_trace_records(ql: Qiling, address: int, size: int, md: Cs) -> Iterator
 	This method might yield more than one record for a single instruction.
 	"""
 
+	# unicorn denotes unsupported instructions by a magic size value. though these instructions
+	# are not emulated, capstone can still parse them.
+	if size == 0xf1f1f1f1:
+		yield next(__get_trace_records(ql, address, 16, md))
+		return
+
 	# a trace line is generated even for hook addresses that do not contain meaningful opcodes.
 	# in that case, make it look like a nop
 	if address in ql._addr_hook:

@@ -39,6 +39,7 @@ class QlOsLinux(QlOsPosix):
         self.function_hook_tmp = []
         self.fh = None
         self.function_after_load_list = []
+        self.elf_mem_start = 0x0
         self.load()
 
         if self.ql.archtype == QL_ARCH.X8664:
