@@ -179,10 +179,10 @@ def ql_get_arch_bits(arch: QL_ARCH) -> int:
     raise QlErrorArch("Invalid Arch Bit")
 
 def ql_is_valid_ostype(ostype: QL_OS) -> bool:
-    return ostype in QL_OS
+    return ostype in QL_OS.__members__.values()
 
 def ql_is_valid_arch(arch: QL_ARCH) -> bool:
-    return arch in QL_ARCH
+    return arch in QL_ARCH.__members__.values()
 
 def loadertype_convert_str(ostype: QL_OS) -> Optional[str]:
     adapter = {}
