@@ -2,7 +2,7 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
-
+from qiling.os.posix.stat import Fstat
 import sys
 sys.path.append("..")
 
@@ -16,10 +16,10 @@ class MyPipe():
     def write(self, s):
         self.buf += s
 
-    def read(self, size):
-        if size <= len(self.buf):
-            ret = self.buf[: size]
-            self.buf = self.buf[size:]
+    def read(self, l):
+        if l <= len(self.buf):
+            ret = self.buf[ : l]
+            self.buf = self.buf[l : ]
         else:
             ret = self.buf
             self.buf = ''
@@ -27,6 +27,9 @@ class MyPipe():
 
     def fileno(self):
         return 0
+
+    def fstat(self):
+        return Fstat(sys.stdin.fileno())
 
     def show(self):
         pass
@@ -40,57 +43,41 @@ class MyPipe():
     def close(self):
         self.outpipe.close()
 
-    def fstat(self):
-        return os.fstat(sys.stdin.fileno())
 
-def instruction_count(ql: Qiling, address: int, size: int, user_data):
+def instruction_count(ql, address, size, user_data):
     user_data[0] += 1
 
 def my__llseek(ql, *args, **kw):
     pass
 
-def run_one_round(payload: bytes):
+def run_one_round(payload):
     stdin = MyPipe()
-
-    ql = Qiling(["rootfs/x86_linux/bin/crackme_linux"], "rootfs/x86_linux",
-        console=False,      # thwart qiling logger output
-        stdin=stdin,        # take over the input to the program
-        stdout=sys.stdout)  # thwart program output
-
+    ql = Qiling(["../examples/rootfs/x86_linux/bin/crackme_linux"], "../examples/rootfs/x86_linux", console = False, stdin = stdin)
     ins_count = [0]
     ql.hook_code(instruction_count, ins_count)
     ql.set_syscall("_llseek", my__llseek)
-
-    stdin.write(payload + b'\n')
+    stdin.write(payload)
     ql.run()
-
     del stdin
-    del ql
-
     return ins_count[0]
 
+
 def solve():
-    idx_list = (1, 4, 2, 0, 3)
-    flag = [0] * len(idx_list)
+    idx_list = [1, 4, 2, 0, 3]
 
-    prev_ic = run_one_round(bytes(flag))
+    flag = b'\x00\x00\x00\x00\x00\n'
+
+    old_count = run_one_round(flag)
     for idx in idx_list:
-
-        # bruteforce all possible flag characters
-        for ch in '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~ ':
-            flag[idx] = ord(ch)
-
-            print(f'\rguessing char at {idx}: {ch}... ', end='', flush=True)
-            ic = run_one_round(bytes(flag))
-
-            if ic > prev_ic:
-                print(f'ok')
-                prev_ic = ic
+        for i in b'123LNMNUX\\n':#'L1NUX\\n'
+            flag = flag[ : idx] + chr(i).encode() + flag[idx + 1 : ]
+            tmp = run_one_round(flag)
+            if tmp > old_count:
+                old_count = tmp
                 break
-        else:
-            print(f'no match found')
+        # if idx == 2:
+        #     break
 
-    print(f'flag: "{"".join(chr(ch) for ch in flag)}"')
-
+    print(flag)
 if __name__ == "__main__":
     solve()
