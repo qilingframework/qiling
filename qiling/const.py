@@ -3,12 +3,12 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from enum import IntEnum
+from enum import EnumMeta, IntEnum
+from typing import Mapping
 
 class QL_ENDIAN(IntEnum):
     EL = 1
     EB = 2
-
 
 class QL_ARCH(IntEnum):
     X86 = 101
@@ -41,7 +41,6 @@ class QL_DEBUGGER(IntEnum):
     IDAPRO = 2
     QDB = 3
 
-
 class QL_INTERCEPT(IntEnum):
     CALL = 1
     ENTER = 2
@@ -64,32 +63,16 @@ QL_OS_POSIX         = (QL_OS.LINUX, QL_OS.FREEBSD, QL_OS.MACOS)
 QL_HOOK_BLOCK = 0b0001
 QL_CALL_BLOCK = 0b0010
 
-debugger_map = {
-    "gdb" : QL_DEBUGGER.GDB,
-    "ida" : QL_DEBUGGER.IDAPRO,
-    "qdb" : QL_DEBUGGER.QDB
-}
+def __reverse_enum(e: EnumMeta) -> Mapping[str, int]:
+    '''Create a reverse mapping for an enum.
+    '''
 
-arch_map = {
-    "x86"       : QL_ARCH.X86,
-    "x8664"     : QL_ARCH.X8664,
-    "mips"      : QL_ARCH.MIPS,
-    "arm"       : QL_ARCH.ARM,
-    "arm_thumb" : QL_ARCH.ARM_THUMB,
-    "arm64"     : QL_ARCH.ARM64,
-    "a8086"     : QL_ARCH.A8086,
-    "evm"       : QL_ARCH.EVM,
-}
+    return dict((k.lower(), v.value) for k, v in e.__members__.items())
 
-os_map = {
-    "linux"     : QL_OS.LINUX,
-    "macos"     : QL_OS.MACOS,
-    "freebsd"   : QL_OS.FREEBSD,
-    "windows"   : QL_OS.WINDOWS,
-    "uefi"      : QL_OS.UEFI,
-    "dos"       : QL_OS.DOS,
-    "evm"       : QL_OS.EVM,
-}
+debugger_map = __reverse_enum(QL_DEBUGGER)
+arch_map     = __reverse_enum(QL_ARCH)
+os_map       = __reverse_enum(QL_OS)
+verbose_map  = __reverse_enum(QL_VERBOSE)
 
 loader_map = {
     QL_OS.LINUX   : "ELF",

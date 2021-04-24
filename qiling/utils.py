@@ -9,7 +9,8 @@ thoughout the qiling framework
 """
 import importlib, os, copy, re, pefile, configparser, logging, sys
 from logging import LogRecord
-from typing import Optional, Mapping
+from typing import Container, Optional, Mapping
+from enum import EnumMeta
 
 from unicorn import UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
 
@@ -178,11 +179,14 @@ def ql_get_arch_bits(arch: QL_ARCH) -> int:
 
     raise QlErrorArch("Invalid Arch Bit")
 
+def enum_values(e: EnumMeta) -> Container:
+    return e.__members__.values()
+
 def ql_is_valid_ostype(ostype: QL_OS) -> bool:
-    return ostype in QL_OS
+    return ostype in enum_values(QL_OS)
 
 def ql_is_valid_arch(arch: QL_ARCH) -> bool:
-    return arch in QL_ARCH
+    return arch in enum_values(QL_ARCH)
 
 def loadertype_convert_str(ostype: QL_OS) -> Optional[str]:
     adapter = {}
@@ -420,7 +424,7 @@ def debugger_setup(debugger, ql):
         else:  
             remotedebugsrv, *debug_opts = debug_opts
 
-        if debugger_convert(remotedebugsrv) not in (QL_DEBUGGER):
+        if debugger_convert(remotedebugsrv) not in enum_values(QL_DEBUGGER):
             raise QlErrorOutput("Error: Debugger not supported")
 
     debugsession = ql_get_module_function(f"qiling.debugger.{remotedebugsrv}.{remotedebugsrv}", f"Ql{str.capitalize(remotedebugsrv)}")
@@ -485,7 +489,7 @@ def profile_setup(ostype, profile, ql):
     config.read(profiles)
     return config, debugmsg
 
-def ql_resolve_logger_level(verbose):
+def ql_resolve_logger_level(verbose: QL_VERBOSE):
     level = logging.INFO
     if verbose == QL_VERBOSE.OFF:
         level = logging.WARNING
