@@ -3,12 +3,15 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from typing import Any, Callable, Iterable, Mapping, Sequence, Tuple
 from unicorn import UcError
 
 from qiling import Qiling
 from qiling.cc import QlCC, intel
-from qiling.os.os import QlOs
-from qiling.os.fcall import QlFunctionCall
+from qiling.os.const import *
+from qiling.os.os import QlOs, QlOsUtils
+from qiling.os.fcall import QlFunctionCall, TypedArg
+from . import guids_db
 
 class QlOsUefi(QlOs):
 	def __init__(self, ql: Qiling):
@@ -35,6 +38,35 @@ class QlOsUefi(QlOs):
 	def restore(self, saved_state):
 		super(QlOsUefi, self).restore(saved_state)
 		self.entry_point = saved_state['entry_point']
+
+
+	def process_fcall_params(self, targs: Iterable[TypedArg]) -> Sequence[Tuple[str, str]]:
+		'''[override] Post-process function call arguments values to
+		determine how to display them.
+
+		Args:
+			targs: an iterable of typed args (3-tuples: type, name, value)
+
+		Returns: a sequence of arguments (2-tuples: name, string representation of arg value)
+		'''
+
+		def fallback(v):
+			'''Use original processing method for other types.
+			'''
+
+			# the original method accepts a list and returns a list, so here we 
+			# craft a list containing one 3-tuple, and extracting the single element
+			# the result list contains. that element is a 2-tuple, from which we
+			# only need the value
+			return super(QlOsUefi, self).process_fcall_params([(None, '', v)])[0][1]
+
+		ahandlers: Mapping[Any, Callable[[Any], str]] = {
+			STRING		: lambda v: QlOsUtils.stringify(v),
+			WSTRING		: lambda v: f'L{QlOsUtils.stringify(v)}',
+			GUID		: lambda v: guids_db.get(v.upper(), v)
+		}
+
+		return tuple((aname, ahandlers.get(atype, fallback)(avalue)) for atype, aname, avalue in targs)
 
 
 	@staticmethod
