@@ -25,26 +25,37 @@ def signal_event(ql: Qiling, event_id: int) -> None:
 
 		ql.loader.notify_list.append((event_id, notify_func, callback_args))
 
-def execute_protocol_notifications(ql: Qiling, from_hook=False) -> bool:
+def execute_protocol_notifications(ql: Qiling, from_hook: bool = False) -> bool:
 	if not ql.loader.notify_list:
 		return False
 
-	next_hook = ql.loader.smm_context.heap.alloc(1)
+	next_hook = ql.loader.smm_context.heap.alloc(ql.pointersize)
 
-	def exec_next(ql: Qiling):
+	def __notify_next(ql: Qiling):
 		if ql.loader.notify_list:
 			event_id, notify_func, callback_args = ql.loader.notify_list.pop(0)
-			ql.log.info(f'Notify event:{event_id} calling: 0x{notify_func:x} callback_args:{list(map(hex, callback_args))}')
+			ql.log.info(f'Notify event: id = {event_id}, (*{notify_func:#x})({", ".join(f"{a:#x}" for a in callback_args)})')
+
 			ql.loader.call_function(notify_func, callback_args, next_hook)
 		else:
+			ql.log.info(f'Notify event: done')
+
+			# the last item on the list has been notified; tear down this hook
 			ql.loader.smm_context.heap.free(next_hook)
-			ql.hook_address(lambda q: None, next_hook)
+			hret.remove()
+
 			ql.reg.rax = EFI_SUCCESS
+			ql.reg.arch_sp += (4 * ql.pointersize)
 			ql.reg.arch_pc = ql.stack_pop()
 
-	ql.hook_address(exec_next, next_hook, )
+	hret = ql.hook_address(__notify_next, next_hook)
 
-	# To avoid having two versions of the code the first notify function will also be called from the exec_next hook.
+	# functions with more than 4 parameters expect the extra parameters to appear on
+	# the stack. allocate room for another 4 parameters, in case one of the fucntions
+	# will need it
+	ql.reg.arch_sp -= (4 * ql.pointersize)
+
+	# To avoid having two versions of the code the first notify function will also be called from the __notify_next hook.
 	if from_hook:
 		ql.stack_push(next_hook)
 	else:
