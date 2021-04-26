@@ -67,14 +67,14 @@ def execute_protocol_notifications(ql: Qiling, from_hook: bool = False) -> bool:
 def check_and_notify_protocols(ql: Qiling, from_hook: bool = False) -> bool:
 	if ql.loader.notify_list:
 		event_id, notify_func, notify_context = ql.loader.notify_list.pop(0)
-		ql.log.info(f'Notify event: {event_id}, calling: {notify_func:#x} context: {notify_context:#x}')
+		ql.log.info(f'Notify event: id = {event_id}, calling: {notify_func:#x} context: {notify_context}')
 
 		if from_hook:
 			# When running from a hook the caller pops the return address from the stack.
 			# We need to push the address to the stack as opposed to setting it to the instruction pointer.
-			ql.loader.call_function(0, [notify_context], notify_func)
+			ql.loader.call_function(0, notify_context, notify_func)
 		else:
-			ql.loader.call_function(notify_func, [notify_context], ql.loader.end_of_execution_ptr)
+			ql.loader.call_function(notify_func, notify_context, ql.loader.end_of_execution_ptr)
 
 		return True
 
