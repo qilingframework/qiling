@@ -35,8 +35,7 @@ split = False
 # usage: append = test1
 append =
 current_path = /
-syspage_bin = /home/sergey/syspage.bin 
-
+syspage_bin = examples/qnx/syspage.bin
 
 [NETWORK]
 # To use IPv6 or not, to avoid binary double bind. ipv6 and ipv4 bind the same port at the same time
