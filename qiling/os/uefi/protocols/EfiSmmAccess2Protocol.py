@@ -3,6 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from qiling import Qiling
 from qiling.os.const import *
 from qiling.os.uefi.const import *
 from ..fncc import *
@@ -37,7 +38,7 @@ class EFI_SMM_ACCESS2_PROTOCOL(STRUCT):
 @dxeapi(params = {
 	"This" : POINTER
 })
-def hook_Open(ql, address, params):
+def hook_Open(ql: Qiling, address: int, params):
 	ql.loader.smm_context.tseg_open = True
 
 	return EFI_SUCCESS
@@ -45,7 +46,7 @@ def hook_Open(ql, address, params):
 @dxeapi(params = {
 	"This" : POINTER
 })
-def hook_Close(ql, address, params):
+def hook_Close(ql: Qiling, address: int, params):
 	ql.loader.smm_context.tseg_open = False
 
 	return EFI_SUCCESS
@@ -53,7 +54,7 @@ def hook_Close(ql, address, params):
 @dxeapi(params = {
 	"This" : POINTER
 })
-def hook_Lock(ql, address, params):
+def hook_Lock(ql: Qiling, address: int, params):
 	ql.loader.smm_context.tseg_locked = True
 
 	return EFI_SUCCESS
@@ -84,7 +85,7 @@ def _coalesce(seq):
 	"MmramMapSize"  : POINTER,	# IN OUT PTR(UINTN)
 	"MmramMap"      : POINTER	# OUT PTR(EFI_MMRAM_DESCRIPTOR)
 })
-def hook_GetCapabilities(ql, address, params):
+def hook_GetCapabilities(ql: Qiling, address: int, params):
 	heap = ql.loader.smm_context.heap
 
 	# get a copy of smm heap chunks list sorted by starting address
