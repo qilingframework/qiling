@@ -763,9 +763,9 @@ def get_stat64_struct(ql):
 def get_stat_struct(ql):
     if ql.ostype == QL_OS.FREEBSD:
         if ql.archtype == QL_ARCH.X8664 or ql.archbit == 64:
-            return FreeBSDX86Stat()
-        else:
             return FreeBSDX8664Stat()
+        else:
+            return FreeBSDX86Stat()
     elif ql.ostype == QL_OS.MACOS:
         return MacOSStat()
     elif ql.ostype == QL_OS.LINUX:
