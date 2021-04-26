@@ -404,6 +404,7 @@ def ql_syscall_execve(ql, execve_pathname, execve_argv, execve_envp, *args, **kw
 
     ql.log.debug("execve(%s, [%s], [%s])" % (pathname, ', '.join(argv), ', '.join([key + '=' + value for key, value in env.items()])))
 
+    # https://linux.die.net/man/2/execve
     # Check #! interpreter [optional-arg]
     execve_file_head = open(real_path, 'rb').readline().rstrip(b'\n')
     if execve_file_head.startswith(b'#!'):
