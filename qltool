@@ -201,7 +201,7 @@ if __name__ == '__main__':
     # set common options
     comm_parser.add_argument('-v', '--verbose', choices=verbose_map, default=QL_VERBOSE.DEFAULT, action=__arg_verbose, help='set verbosity level')
     comm_parser.add_argument('--env', metavar="FILE", action=__arg_env, help="pickle file containing an environment dictionary")
-    comm_parser.add_argument('-g', '--gdb', action='store_true', help='enable gdb server')
+    comm_parser.add_argument('-g', '--gdb', nargs='?', metavar='SERVER:PORT', const='gdb', help='enable gdb server')
     comm_parser.add_argument('--qdb', action='store_true', help='attach Qdb at entry point, it\'s MIPS, ARM(THUMB) supported only for now')
     comm_parser.add_argument('--rr', action='store_true', help='switch on record and replay feature in qdb, only works with --qdb')
     comm_parser.add_argument('--profile', help="define a customized profile")
@@ -239,7 +239,12 @@ if __name__ == '__main__':
 
     # ql execute additional options
     if options.gdb:
-        ql.debugger = True
+        argval = options.gdb
+
+        if argval != 'gdb':
+            argval = f'gdb:{argval}'
+
+        ql.debugger = argval
 
     if options.debug_stop:
         ql.debug_stop = True
