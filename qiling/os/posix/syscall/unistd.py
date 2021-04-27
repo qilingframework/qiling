@@ -406,27 +406,28 @@ def ql_syscall_execve(ql, execve_pathname, execve_argv, execve_envp, *args, **kw
 
     # https://linux.die.net/man/2/execve
     # Check #! interpreter [optional-arg]
-    execve_file_head = open(real_path, 'rb').readline().rstrip(b'\n')
-    if execve_file_head.startswith(b'#!'):
-        ql.log.debug(f"execve calling script {pathname}.")
-        # Get interpreter
-        interpreter_args = []
-        interpreter_data = execve_file_head[2:].strip(b' ').split(b' ')
-        interpreter_path = interpreter_data[0].decode('utf-8')
-        ql.log.debug(f"interpreter path is {interpreter_path}.")
-        try:
-            real_path = ql.os.path.transform_to_real_path(interpreter_path)
-            interpreter_args.append(interpreter_path)
-            for _, val in enumerate(interpreter_data[1:]):
-                interpreter_args.append(val.decode('utf-8'))
+    if os.path.isfile(real_path):
+        execve_file_head = open(real_path, 'rb').readline().rstrip(b'\n')
+        if execve_file_head.startswith(b'#!'):
+            ql.log.debug(f"execve calling script {pathname}.")
+            # Get interpreter
+            interpreter_args = []
+            interpreter_data = execve_file_head[2:].strip(b' ').split(b' ')
+            interpreter_path = interpreter_data[0].decode('utf-8')
+            ql.log.debug(f"interpreter path is {interpreter_path}.")
+            try:
+                real_path = ql.os.path.transform_to_real_path(interpreter_path)
+                interpreter_args.append(interpreter_path)
+                for _, val in enumerate(interpreter_data[1:]):
+                    interpreter_args.append(val.decode('utf-8'))
 
-            argv[0] = pathname
-            argv = interpreter_args + argv
+                argv[0] = pathname
+                argv = interpreter_args + argv
 
-            ql.log.debug("New execve(%s, [%s], [%s])" % (interpreter_path, ', '.join(argv), ', '.join([key + '=' + value for key, value in env.items()])))
+                ql.log.debug("New execve(%s, [%s], [%s])" % (interpreter_path, ', '.join(argv), ', '.join([key + '=' + value for key, value in env.items()])))
 
-        except Exception as err:
-            ql.log.debug(err)
+            except Exception as err:
+                ql.log.debug(err)
 
     ql.loader.argv      = argv
     ql.loader.env       = env
