@@ -287,6 +287,7 @@ def initialize(ql, gSmst : int):
 	ql.loader.smm_context.conf_table_data_ptr = conf_data
 	ql.loader.smm_context.conf_table_data_next_ptr = conf_data
 
+	install_configuration_table(ql.loader.smm_context, "HOB_LIST", None)
 	install_configuration_table(ql.loader.smm_context, "SMM_RUNTIME_SERVICES_TABLE", gSmmRT)
 
 __all__ = [
