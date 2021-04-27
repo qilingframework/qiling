@@ -4,7 +4,7 @@
 #
 
 import sys
-from typing import Any, Optional, Callable, Mapping
+from typing import Any, Iterable, Optional, Callable, Mapping, Sequence, Tuple
 
 from qiling import Qiling
 from qiling.const import QL_OS, QL_INTERCEPT, QL_OS_POSIX
@@ -115,15 +115,28 @@ class QlOs:
 
         return resolved
 
+    def process_fcall_params(self, targs: Iterable[Tuple[Any, str, Any]]) -> Sequence[Tuple[str, str]]:
+        ahandlers: Mapping[type, Callable[[Any], str]] = {
+            int       : lambda v: f'{v:#x}' if v else f'0',
+            str       : lambda v: QlOsUtils.stringify(v),
+            bytearray : lambda v: QlOsUtils.stringify(v.decode("utf-8")),
+            tuple     : lambda v: QlOsUtils.stringify(v[1])
+        }
+
+        return tuple((aname, ahandlers[type(avalue)](avalue)) for atype, aname, avalue in targs)
+
     def call(self, pc: int, func: Callable, proto: Mapping[str, Any], onenter: Optional[Callable], onexit: Optional[Callable], passthru: bool = False):
         # resolve arguments values according to their types
         args = self.resolve_fcall_params(proto)
 
         # call hooked function
-        args, retval, retaddr = self.fcall.call(func, proto, args, onenter, onexit, passthru)
+        targs, retval, retaddr = self.fcall.call(func, proto, args, onenter, onexit, passthru)
+
+        # post-process arguments values
+        pargs = self.process_fcall_params(targs)
 
         # print
-        self.utils.print_function(pc, func.__name__, args, retval, passthru)
+        self.utils.print_function(pc, func.__name__, pargs, retval, passthru)
 
         # append syscall to list
         self.utils._call_api(pc, func.__name__, args, retval, retaddr)
