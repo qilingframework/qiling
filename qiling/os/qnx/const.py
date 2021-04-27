@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
 # Source: openqnx lib/c/public/pthread.h
 
 # Mutexes
-NTO_SYNC_NONRECURSIVE = 0x80000000 
+NTO_SYNC_NONRECURSIVE = 0x80000000
 NTO_SYNC_NOERRORCHECK = 0x40000000
 NTO_SYNC_PRIOCEILING  = 0x20000000
 NTO_SYNC_PRIONONE     = 0x10000000

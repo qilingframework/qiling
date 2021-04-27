@@ -96,9 +96,9 @@ def main(input_file, enable_trace=False):
             # TODO: Chose a better hook position :)
             if ex != unicornafl.UC_AFL_RET_CALLED_TWICE:
                 raise
-    
+
     LIBC_BASE = int(ql.profile.get("OS32", "interp_address"), 16)
-    
+
     # crash in case we reach SignalKill
     ql.hook_address(callback=lambda x: os.abort(), address=LIBC_BASE + 0x456d4)
 
