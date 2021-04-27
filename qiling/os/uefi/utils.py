@@ -167,6 +167,9 @@ def str_to_guid(guid: str) -> EFI_GUID:
 
 	return EFI_GUID.from_buffer_copy(buff)
 
+def CompareGuid(guid1: EFI_GUID, guid2: EFI_GUID) -> bool:
+	return bytes(guid1) == bytes(guid2)
+
 def install_configuration_table(context, key: str, table: int):
 	"""Create a new Configuration Table entry and add it to the list.
 
