@@ -279,7 +279,10 @@ class QlMemoryManager:
         '''   
 
         for region in list(self.ql.uc.mem_regions()):
-            if address >= region[0] and (address + size -1) <= region[1]:
+            if ((address >= region[0] and address < region[1]) or
+            ((address + size - 1) >= region[0] and (address + size - 1) < region[1]) or
+            (address <= region[0] and (address + size - 1) > region[1])):
+                self.ql.log.info("%x - %x is taken" % (address, address + size - 1))
                 return True
 
         return False
@@ -387,7 +390,7 @@ class QlMemoryManager:
         return address
 
     def protect(self, addr, size, perms):
-        aligned_address = addr & 0xFFFFF000  # Address needs to align with
+        aligned_address = (addr >> 12) << 12
         aligned_size = self.align((addr & 0xFFF) + size)
         self.ql.uc.mem_protect(aligned_address, aligned_size, perms)
 

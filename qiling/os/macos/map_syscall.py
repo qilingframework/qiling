@@ -181,7 +181,7 @@ syscall_table = {
     "getrlimit": (194, 194),
     "setrlimit": (195, 195),
     "getdirentries": (196, 196),
-    "mmap2_macos": (197, 197),
+    "mmap2": (197, 197),
     "lseek": (199, 199),
     "truncate": (200, 200),
     "ftruncate": (201, 201),
