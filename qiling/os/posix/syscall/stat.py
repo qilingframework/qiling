@@ -850,9 +850,10 @@ def ql_syscall_newfstatat(ql, newfstatat_dirfd, newfstatat_path, newfstatat_buf_
     return regreturn
 
 def ql_syscall_fstat64(ql, fstat64_fd, fstat64_buf_ptr, *args, **kw):
-    if ql.os.fd[fstat64_fd].fstat() == -1:
+    if not hasattr(ql.os.fd[fstat64_fd], "fstat"):
+        regreturn = -1
+    elif ql.os.fd[fstat64_fd].fstat() == -1:
         regreturn = 0
-
     elif fstat64_fd < 256 and ql.os.fd[fstat64_fd] != 0:
         user_fileno = fstat64_fd
         fstat64_info = ql.os.fd[user_fileno].fstat()
