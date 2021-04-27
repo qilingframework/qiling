@@ -3,13 +3,9 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from qiling.os.uefi import guids_dict
 from qiling.os.uefi.const import EFI_SUCCESS, EFI_NOT_FOUND, EFI_UNSUPPORTED, EFI_BUFFER_TOO_SMALL, EFI_INVALID_PARAMETER
 from qiling.os.uefi.utils import read_int64, write_int64
 from qiling.os.uefi.UefiSpec import EFI_LOCATE_SEARCH_TYPE
-
-# TODO: get rid of this
-pointer_size = 8
 
 def LocateHandles(context, params):
 	SearchType = params["SearchType"]
@@ -26,7 +22,7 @@ def LocateHandles(context, params):
 	else:
 		handles = []
 
-	return len(handles) * pointer_size, handles
+	return len(handles) * context.ql.pointersize, handles
 
 def InstallProtocolInterface(context, params):
 	handle = read_int64(context.ql, params["Handle"])
@@ -104,7 +100,7 @@ def LocateHandle(context, params):
 
 		for handle in handles:
 			write_int64(context.ql, ptr, handle)
-			ptr += pointer_size
+			ptr += context.ql.pointersize
 
 		ret = EFI_SUCCESS
 
@@ -124,13 +120,6 @@ def LocateProtocol(context, params):
 			write_int64(context.ql, params['Interface'], guid_dic[protocol])
 			return EFI_SUCCESS
 
-	try:
-		friendly_name = guids_dict[protocol.upper()]
-	except KeyError:
-		friendly_name = 'UNKNOWN'
-
-	context.ql.log.warning(f'protocol with guid {protocol} not found ({friendly_name})')
-
 	return EFI_NOT_FOUND
 
 def InstallConfigurationTable(context, params):
@@ -139,7 +128,7 @@ def InstallConfigurationTable(context, params):
 
 	if not guid:
 		return EFI_INVALID_PARAMETER
-	
+
 	context.install_configuration_table(guid, table)
 
 	return EFI_SUCCESS

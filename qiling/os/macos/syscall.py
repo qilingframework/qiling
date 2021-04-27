@@ -245,7 +245,7 @@ def ql_syscall_getattrlist(ql, path, alist, attributeBuffer, bufferSize, options
         commonattr = ql.os.macho_fs.get_common_attr(path_str, attrlist["commonattr"])
         if not commonattr:
             ql.log.debug("Error File Not Exist: %s" % (path_str))
-            raise QlErrorSyscallError("Error File Not Exist")
+            raise QlErrorSyscallError("Error File Not Exist %s" % path_str)
         attr += commonattr
     
     attr_len = len(attr) + 4
@@ -276,62 +276,6 @@ def ql_syscall_getrlimit(ql, which, rlp, *args, **kw):
         ql.mem.write(rlp, b'\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x7F')  # rlim_max
         pass
     pass
-
-# 0xc5
-# this is ugly patch, we might need to get value from elf parse,
-# is32bit or is64bit value not by arch
-def ql_syscall_mmap2_macos(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset):
-    MAP_ANONYMOUS=32
-
-    if (ql.archtype== QL_ARCH.ARM64) or (ql.archtype== QL_ARCH.X8664):
-        mmap2_fd = ql.unpack64(ql.pack64(mmap2_fd))
-
-    elif (ql.archtype== QL_ARCH.MIPS):
-        mmap2_fd = ql.unpack32s(ql.mem.read(mmap2_fd, 4))
-        mmap2_pgoffset = ql.unpack32(ql.mem.read(mmap2_pgoffset, 4)) * 4096
-        MAP_ANONYMOUS=2048
-    else:
-        mmap2_fd = ql.unpack32s(ql.pack32(mmap2_fd))
-        mmap2_pgoffset = mmap2_pgoffset * 4096
-
-    mmap_base = mmap2_addr
-    need_mmap = True
-
-    if mmap2_addr != 0 and mmap2_addr < ql.loader.mmap_address:
-        need_mmap = False
-    if mmap2_addr == 0:
-        mmap_base = ql.loader.mmap_address
-        ql.loader.mmap_address = mmap_base + ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000
-
-    ql.log.debug("mmap - mmap2(0x%x, %d, 0x%x, 0x%x, %d, %d)" % (mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset))
-    ql.log.debug("mmap - return addr : " + hex(mmap_base))
-    ql.log.debug("mmap - addr range  : " + hex(mmap_base) + ' - ' + hex(mmap_base + ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000))
-
-    if need_mmap:
-        ql.log.debug("mmap - mapping needed")
-        try:
-            ql.mem.map(mmap_base, ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000)
-        except:
-            pass
-
-    ql.mem.write(mmap_base, b'\x00' * (((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000))
-    
-    if ((mmap2_flags & MAP_ANONYMOUS) == 0) and mmap2_fd < 256 and ql.os.fd[mmap2_fd] != 0:
-        ql.os.fd[mmap2_fd].lseek(mmap2_pgoffset)
-        data = ql.os.fd[mmap2_fd].read(mmap2_length)
-
-        ql.log.debug("mem wirte : " + hex(len(data)))
-        ql.log.debug("mem mmap  : " + str(ql.os.fd[mmap2_fd].name))
-        ql.mem.write(mmap_base, data)
-        
-        mem_info = ql.os.fd[mmap2_fd].name
-
-    ql.log.debug("mmap2(0x%x, %d, 0x%x, 0x%x, %d, %d) = 0x%x" % (mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset, mmap_base))
-    
-    regreturn = mmap_base
-    ql.log.debug("mmap_base is 0x%x" % regreturn)
-
-    return regreturn
 
 # 0xca
 def ql_syscall_sysctl(ql, name, namelen, old, oldlenp, new_arg, newlen):
@@ -469,7 +413,6 @@ def ql_syscall_terminate_with_payload(ql, pid, reason_namespace, reason_code, pa
             payload_size: 0x%x, reason_string: 0x%x)" % (pid, reason_namespace, reason_code,
             payload, payload_size, reason_string))
     ql.emu_stop()
-    raise QlErrorSyscallError("Exit with Error")
     return KERN_SUCCESS
 
 # 0x209

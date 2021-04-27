@@ -22,7 +22,7 @@ def ql_syscall_nanosleep(ql, nanosleep_req, nanosleep_rem, *args, **kw):
     def _sched_sleep(cur_thread):
         gevent.sleep(tv_sec)
 
-    n = ql.archbit // 8 # 4 for 32-bit , 8 for 64-bit
+    n = ql.pointersize
 
     tv_sec = ql.unpack(ql.mem.read(nanosleep_req, n))
     tv_sec += ql.unpack(ql.mem.read(nanosleep_req + n, n)) / 1000000000

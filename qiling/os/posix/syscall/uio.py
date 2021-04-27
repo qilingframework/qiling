@@ -14,7 +14,7 @@ from qiling.exception import *
 
 def ql_syscall_writev(ql, writev_fd, writev_vec, writev_vien, *args, **kw):
     regreturn = 0
-    size_t_len = ql.archbit // 8
+    size_t_len = ql.pointersize
     iov = ql.mem.read(writev_vec, writev_vien * size_t_len * 2)
     ql.log.debug("writev() CONTENT:")
 

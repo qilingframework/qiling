@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import sys, unittest, string, random, os
+import sys, unittest, string, random, os, io
 
 sys.path.append("..")
 from qiling import Qiling
@@ -1041,6 +1041,51 @@ class ELFTest(unittest.TestCase):
         ql.run()
         del ql
 
+    def test_elf_linux_x8664_getdents(self):
+        output = io.BytesIO()
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_getdents"], "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG, stdout=output)
+        ql.run()
+        output.seek(0)
+        self.assertTrue("bin\n" in output.read().decode("utf-8"))
+        del ql
+
+    def test_elf_linux_x86_getdents64(self):
+        class MyPipe():
+            def __init__(self):
+                self.buf = b''
+
+            def write(self, s):
+                self.buf += s
+
+            def read(self, l):
+                pass
+
+            def fileno(self):
+                return 0
+
+            def fstat(self):
+                return Fstat(sys.stdin.fileno())
+
+            def fstat64(self):
+                return self.fstat()
+
+            def show(self):
+                pass
+
+            def clear(self):
+                pass
+
+            def flush(self):
+                pass
+
+            def close(self):
+                pass
+        
+        pipe = MyPipe()
+        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_getdents64"], "../examples/rootfs/x86_linux", verbose=QL_VERBOSE.DEBUG, stdout=pipe)
+        ql.run()
+        self.assertTrue("bin\n" in pipe.buf.decode("utf-8"))
+        del ql
 
 if __name__ == "__main__":
     unittest.main()

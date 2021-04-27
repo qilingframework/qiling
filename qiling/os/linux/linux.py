@@ -39,6 +39,7 @@ class QlOsLinux(QlOsPosix):
         self.function_hook_tmp = []
         self.fh = None
         self.function_after_load_list = []
+        self.elf_mem_start = 0x0
         self.load()
 
         if self.ql.archtype == QL_ARCH.X8664:
@@ -123,7 +124,10 @@ class QlOsLinux(QlOsPosix):
                         self.ql.loader.elf_entry = self.ql.entry_point
 
                     elif self.ql.loader.elf_entry != self.ql.loader.entry_point:
-                        self.ql.emu_start(self.ql.loader.entry_point, self.ql.loader.elf_entry, self.ql.timeout)
+                        entry_address = self.ql.loader.elf_entry
+                        if self.ql.archtype == QL_ARCH.ARM and entry_address & 1 == 1:
+                            entry_address -= 1
+                        self.ql.emu_start(self.ql.loader.entry_point, entry_address, self.ql.timeout)
                         self.ql.enable_lib_patch()
                         self.run_function_after_load()
                         self.ql.loader.skip_exit_check = False
