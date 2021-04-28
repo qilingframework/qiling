@@ -1,0 +1,7 @@
+This is the source code of all the hello binaries.
+Makefile would build hello for all architectures.
+
+./rootfs/arm_qnx/bin/hello
+
+Note that non-free QNX Software Development Platform
+is required to compile the binary.
