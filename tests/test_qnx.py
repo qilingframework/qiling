@@ -4,8 +4,8 @@
 #
 
 import sys, unittest
-sys.path.append("..")
 
+sys.path.append("..")
 from qiling import *
 from qiling.exception import *
 from qiling.const import QL_VERBOSE
