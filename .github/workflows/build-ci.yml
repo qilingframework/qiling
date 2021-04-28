@@ -23,7 +23,7 @@ jobs:
           #   python-version: 3.7.6                       
         include:
           - os: ubuntu-20.04
-            python-version: 3.6.8
+            python-version: 3.8.5
             container: Docker
 
     steps:
