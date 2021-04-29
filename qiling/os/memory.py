@@ -493,10 +493,6 @@ class QlMemoryManager:
         self.ql.uc.mem_map(addr, size, perms)
         self.add_mapinfo(addr, addr + size, perms, info or '[mapped]')
 
-    def get_mapped(self):
-        for idx, val in enumerate(self.ql.uc.mem_regions()):
-            self.ql.log.info(idx, list(map(hex, val)))
-
 # A Simple Heap Implementation
 class Chunk():
     def __init__(self, address: int, size: int):
