@@ -471,30 +471,27 @@ class QlMemoryManager:
         self.ql.uc.mem_protect(aligned_address, aligned_size, perms)
 
 
-    def map(self, addr, size, perms=UC_PROT_ALL, info=None, ptr=None):
-        '''
-	    The main function of mem_mmap is to implement memory allocation in unicorn, 
-	    which is slightly similar to the function of syscall_mmap. 
+    def map(self, addr: int, size: int, perms: int = UC_PROT_ALL, info: str = None):
+        """Map a new memory range.
 
-	    When the memory can satisfy the given addr and size, 
-	    it needs to be allocated to the corresponding address space.
-	    
-	    Upon successful completion, mem_map() shall return 0; 
+        Args:
+            addr: memory range base address
+            size: memory range size (in bytes)
+            perms: requested permissions mask
+            info: range label string
+            ptr: pointer to use (if any)
 
-    	otherwise, it shall return -1 and set errno to indicate the error.
-         
-        is should call other API to get_available mainly gives a length, 
-        and then the memory manager returns  an address that can apply for that length.
+        Raises:
+            QlMemoryMappedError: in case requested memory range is not fully available
+        """
 
-        '''
-        if ptr == None:
-            if self.is_mapped(addr, size) == False:
-                self.ql.uc.mem_map(addr, size, perms)
-                self.add_mapinfo(addr, addr + size, perms, info if info else "[mapped]")
-            else:
-                raise QlMemoryMappedError("Memory Mapped")    
-        else:
-            self.ql.uc.mem_map_ptr(addr, size, perms, ptr)
+        assert perms & ~UC_PROT_ALL == 0, f'unexpected permissions mask {perms}'
+
+        if not self.is_available(addr, size):
+            raise QlMemoryMappedError('Requested memory is unavailable')
+
+        self.ql.uc.mem_map(addr, size, perms)
+        self.add_mapinfo(addr, addr + size, perms, info or '[mapped]')
 
     def get_mapped(self):
         for idx, val in enumerate(self.ql.uc.mem_regions()):
