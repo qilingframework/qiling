@@ -149,6 +149,32 @@ class QlMemoryManager:
 
         self.map_info = tmp_map_info
 
+    def get_mapinfo(self) -> Sequence[Tuple[int, int, str, str, Optional[str]]]:
+        """Get memory map info.
+
+        Returns: A sequence of 5-tuples representing the memory map entries. Each
+        tuple contains range start, range end, permissions, range label and path of
+        containing image (or None if not contained by any image)
+        """
+
+        def __perms_mapping(ps: int) -> str:
+            perms_d = {
+                UC_PROT_READ  : 'r',
+                UC_PROT_WRITE : 'w',
+                UC_PROT_EXEC  : 'x'
+            }
+
+            return ''.join(val if idx & ps else '-' for idx, val in perms_d.items())
+
+        def __process(lbound: int, ubound: int, perms: int, label: str) -> Tuple[int, int, str, str, Optional[str]]:
+            perms_str = __perms_mapping(perms)
+
+            image = self.ql.os.find_containing_image(lbound)
+            container = image.path if image else None
+
+            return (lbound, ubound, perms_str, label, container)
+
+        return tuple(__process(*entry) for entry in self.map_info)
 
     def show_mapinfo(self):
         """Emit memory map info in a nicely formatted table.
