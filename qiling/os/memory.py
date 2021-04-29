@@ -385,44 +385,47 @@ class QlMemoryManager:
             return True
 
 
-    def find_free_space(self, size, min_addr=0, max_addr = 0, alignment=0x10000):
-        """
-        Finds a region of memory that is free, larger than 'size' arg,
-        and aligned.
-        """
-        mapped = []
-        
-        for address_start, address_end, perm, info in self.ql.mem.map_info:
-            mapped += [[address_start, (address_end - address_start)]]
-        
-        for address_start, address_end, perms in self.ql.uc.mem_regions():
-            mapped += [[address_start, (address_end - address_start)]]
-        
-        for i in range(0, len(mapped)):
-            addr = self.align(
-                mapped[i][0] + mapped[i][1], alignment=alignment
-            )
-            # Enable allocating memory in the middle of a gap when the
-            # min requested address falls in the middle of a gap
-            if addr < min_addr:
-                addr = min_addr
-            # Cap the gap's max address by accounting for the next
-            # section's start address, requested max address, and the
-            # max possible address
+    def find_free_space(self, size: int, minaddr: int = None, maxaddr: int = None, align=0x1000) -> int:
+        """Locate an unallocated memory that is large enough to contain a range in size of
+        `size` and based at `minaddr`.
 
-            max_gap_addr = (
-                self.max_addr
-                if i == len(mapped) - 1
-                else mapped[i + 1][1]
-            )
+        Args:
+            size: desired range size (in bytes)
+            minaddr: lowest base address to consider (or None for minimal address possible)
+            maxaddr: highest end address to allow (or None for maximal address possible)
+            align: base address alignment, must be a power of 2
 
-            max_gap_addr = min(max_gap_addr, self.max_mem_addr)
-            # Ensure the end address is less than the max and the start
-            # address is free
-            if addr + size < max_gap_addr and self.is_mapped(addr, size) == False:
+        Returns: aligned address of found memory location
+
+        Raises: QlOutOfMemory in case no available memory space found with the specified requirements
+        """
+
+        # memory space bounds (exclusive)
+        mem_lbound = 0
+        mem_ubound = self.max_addr + 1
+
+        if minaddr is None:
+            minaddr = mem_lbound
+
+        if maxaddr is None:
+            maxaddr = mem_ubound
+
+        assert minaddr < maxaddr
+
+        # get gap ranges between mapped ones and memory bounds
+        gaps_ubounds = tuple(lbound for lbound, _, _, _ in self.map_info) + (mem_ubound,)
+        gaps_lbounds = (mem_lbound,) + tuple(ubound for _, ubound, _, _ in self.map_info)
+        gaps = zip(gaps_lbounds, gaps_ubounds)
+
+        for lbound, ubound in gaps:
+            addr = self.align(lbound, align)
+            end = addr + size
+
+            # is aligned range within gap and satisfying min / max requirements?
+            if (lbound <= addr < end <= ubound) and (minaddr <= addr < end <= maxaddr):
                 return addr
-        raise QlOutOfMemory("Out Of Memory")
 
+        raise QlOutOfMemory('Out Of Memory')
 
     def map_anywhere(
         self,
