@@ -4,10 +4,14 @@
 #
 
 import os, re
+from typing import Any, List, MutableSequence, Optional, Sequence, Tuple
 
+from qiling import Qiling
 from qiling.const import *
 from qiling.exception import *
 
+# tuple: range start, range end, permissions mask, range label
+MapInfoEntry = Tuple[int, int, int, str]
 
 from unicorn import (
     UC_PROT_ALL,
@@ -23,9 +27,9 @@ class QlMemoryManager:
     https://github.com/zeropointdynamics/zelos/blob/master/src/zelos/memory.py
     """
 
-    def __init__(self, ql):
+    def __init__(self, ql: Qiling):
         self.ql = ql
-        self.map_info = []
+        self.map_info: MutableSequence[MapInfoEntry] = []
 
         bit_stuff = {
             64 : (0xFFFFFFFFFFFFFFFF,),
@@ -59,7 +63,7 @@ class QlMemoryManager:
             self.write(addr, string_bytes)
             return None
 
-    def add_mapinfo(self, mem_s, mem_e, mem_p, mem_info):
+    def add_mapinfo(self, mem_s: int, mem_e: int, mem_p: int, mem_info: str):
         tmp_map_info = []
         insert_flag = 0
         map_info = self.map_info
@@ -97,26 +101,26 @@ class QlMemoryManager:
         self.map_info = tmp_map_info
 
 
-    def del_mapinfo(self, mem_s, mem_e):
+    def del_mapinfo(self, mem_s: int, mem_e: int):
         tmp_map_info = []
 
         for s, e, p, info in self.map_info:
             if e <= mem_s:
-                tmp_map_info.append([s, e, p, info])
+                tmp_map_info.append((s, e, p, info))
                 continue
 
             if s >= mem_e:
-                tmp_map_info.append([s, e, p, info])
+                tmp_map_info.append((s, e, p, info))
                 continue
 
             if s < mem_s:
-                tmp_map_info.append([s, mem_s, p, info])
+                tmp_map_info.append((s, mem_s, p, info))
 
             if s == mem_s:
                 pass
 
             if e > mem_e:
-                tmp_map_info.append([mem_e, e, p, info])
+                tmp_map_info.append((mem_e, e, p, info))
 
             if e == mem_e:
                 pass
@@ -144,14 +148,13 @@ class QlMemoryManager:
             self.ql.log.info("[+] %08x - %08x - %s    %s" % (start, end, _perm, info))
 
 
-    def get_lib_base(self, filename):
+    def get_lib_base(self, filename: str) -> int:
         for s, e, p, info in self.map_info:
             if os.path.split(info)[1] == filename:
                 return s
         return -1
 
-
-    def align(self, addr, alignment=0x1000):
+    def align(self, addr: int, alignment: int = 0x1000) -> int:
         # rounds up to nearest alignment
         mask = ((1 << self.ql.archbit) - 1) & -alignment
         return (addr + (alignment - 1)) & mask
@@ -186,7 +189,7 @@ class QlMemoryManager:
     def read(self, addr: int, size: int) -> bytearray:
         return self.ql.uc.mem_read(addr, size)
 
-    def read_ptr(self, addr: int, size: int=None):
+    def read_ptr(self, addr: int, size: int=None) -> int:
         if not size:
             size = self.ql.pointersize
 
@@ -210,7 +213,7 @@ class QlMemoryManager:
             self.ql.log.error("addresss write error: " + hex(addr))
             raise
 
-    def search(self, needle: bytes, begin= None, end= None):
+    def search(self, needle: bytes, begin: int = None, end: int = None):
         """
         Search for a sequence of bytes in memory. Returns all sequences
         that match
@@ -235,7 +238,7 @@ class QlMemoryManager:
 
         return addrs
 
-    def unmap(self, addr, size) -> None:
+    def unmap(self, addr: int, size: int) -> None:
         '''
         The main function of mem_unmap is to reclaim memory.
         This function will reclaim the memory starting with addr and length of size.
@@ -307,9 +310,7 @@ class QlMemoryManager:
             return True
 
 
-    def find_free_space(
-        self, size, min_addr=0, max_addr = 0, alignment=0x10000
-    ):
+    def find_free_space(self, size, min_addr=0, max_addr = 0, alignment=0x10000):
         """
         Finds a region of memory that is free, larger than 'size' arg,
         and aligned.
@@ -426,7 +427,7 @@ class QlMemoryManager:
 
 # A Simple Heap Implementation
 class Chunk():
-    def __init__(self, address, size):
+    def __init__(self, address: int, size: int):
         self.inuse = True
         self.address = address
         self.size = size
@@ -436,9 +437,9 @@ class Chunk():
         return chunk.size
 
 class QlMemoryHeap:
-    def __init__(self, ql, start_address, end_address):
+    def __init__(self, ql: Qiling, start_address: int, end_address: int):
         self.ql = ql
-        self.chunks = []
+        self.chunks: List[Chunk] = []
         self.start_address = start_address
         self.end_address = end_address
         # unicorn needs 0x1000
@@ -470,7 +471,7 @@ class QlMemoryHeap:
         self.current_use = saved_state['current_use']
         self.mem_alloc = saved_state['mem_alloc']
 
-    def alloc(self, size):
+    def alloc(self, size: int):
         # Find the heap chunks that best matches size 
         self.chunks.sort(key=Chunk.compare)
         for chunk in self.chunks:
@@ -500,13 +501,13 @@ class QlMemoryHeap:
         #ql.log.debug("heap.alloc addresss: " + hex(chunk.address))
         return chunk.address
 
-    def size(self, addr):
+    def size(self, addr: int) -> int:
         for chunk in self.chunks:
             if addr == chunk.address and chunk.inuse:
                 return chunk.size
         return 0
 
-    def free(self, addr):
+    def free(self, addr: int) -> bool:
         for chunk in self.chunks:
             if addr == chunk.address and chunk.inuse:
                 chunk.inuse = False
@@ -526,7 +527,7 @@ class QlMemoryHeap:
         self.current_alloc = 0
         self.current_use = 0
 
-    def _find(self, addr):
+    def _find(self, addr: int, inuse: bool = None) -> Optional[Chunk]:
         for chunk in self.chunks:
             if addr == chunk.address:
                 return chunk
