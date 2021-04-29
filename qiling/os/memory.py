@@ -6,20 +6,14 @@
 import os, re
 from typing import Any, List, MutableSequence, Optional, Sequence, Tuple
 
+from unicorn import UC_PROT_NONE, UC_PROT_READ, UC_PROT_WRITE, UC_PROT_EXEC, UC_PROT_ALL
+
 from qiling import Qiling
 from qiling.const import *
 from qiling.exception import *
 
 # tuple: range start, range end, permissions mask, range label
 MapInfoEntry = Tuple[int, int, int, str]
-
-from unicorn import (
-    UC_PROT_ALL,
-    UC_PROT_EXEC,
-    UC_PROT_NONE,
-    UC_PROT_READ,
-    UC_PROT_WRITE,
-)
 
 class QlMemoryManager:
     """
@@ -79,42 +73,55 @@ class QlMemoryManager:
         self.__write_string(addr, value, encoding)
 
     def add_mapinfo(self, mem_s: int, mem_e: int, mem_p: int, mem_info: str):
-        tmp_map_info = []
+        """Add a new memory range to map.
+
+        Args:
+            mem_s: memory range start
+            mem_e: memory range end
+            mem_p: permissions mask
+            mem_info: map entry label
+        """
+
+        tmp_map_info: MutableSequence[MapInfoEntry] = []
         insert_flag = 0
         map_info = self.map_info
+
         if len(map_info) == 0:
-            tmp_map_info.append([mem_s, mem_e, mem_p, mem_info])
+            tmp_map_info.append((mem_s, mem_e, mem_p, mem_info))
         else:
             for s, e, p, info in map_info:
                 if e <= mem_s:
-                    tmp_map_info.append([s, e, p, info])
+                    tmp_map_info.append((s, e, p, info))
                     continue
+
                 if s >= mem_e:
                     if insert_flag == 0:
                         insert_flag = 1
-                        tmp_map_info.append([mem_s, mem_e, mem_p, mem_info])
-                    tmp_map_info.append([s, e, p, info])
+                        tmp_map_info.append((mem_s, mem_e, mem_p, mem_info))
+
+                    tmp_map_info.append((s, e, p, info))
                     continue
+
                 if s < mem_s:
-                    tmp_map_info.append([s, mem_s, p, info])
+                    tmp_map_info.append((s, mem_s, p, info))
 
                 if s == mem_s:
                     pass
 
                 if insert_flag == 0:
                     insert_flag = 1
-                    tmp_map_info.append([mem_s, mem_e, mem_p, mem_info])
+                    tmp_map_info.append((mem_s, mem_e, mem_p, mem_info))
 
                 if e > mem_e:
-                    tmp_map_info.append([mem_e, e, p, info])
+                    tmp_map_info.append((mem_e, e, p, info))
 
                 if e == mem_e:
                     pass
+
             if insert_flag == 0:
-                tmp_map_info.append([mem_s, mem_e, mem_p, mem_info])
+                tmp_map_info.append((mem_s, mem_e, mem_p, mem_info))
 
         self.map_info = tmp_map_info
-
 
     def del_mapinfo(self, mem_s: int, mem_e: int):
         """Subtract a memory range from map.
@@ -124,7 +131,7 @@ class QlMemoryManager:
             mem_e: memory range end
         """
 
-        tmp_map_info = []
+        tmp_map_info: MutableSequence[MapInfoEntry] = []
 
         for s, e, p, info in self.map_info:
             if e <= mem_s:
@@ -187,11 +194,9 @@ class QlMemoryManager:
         for lbound, ubound, perms, label, container in self.get_mapinfo():
             self.ql.log.info(f'{lbound:08x} - {ubound:08x}   {perms:5s}   {label:12s}   {container or ""}')
 
+    # TODO: relying on the label string is risky; find a more reliable method
     def get_lib_base(self, filename: str) -> int:
-        for s, e, p, info in self.map_info:
-            if os.path.split(info)[1] == filename:
-                return s
-        return -1
+        return next((s for s, _, _, info in self.map_info if os.path.split(info)[1] == filename), -1)
 
     def align(self, addr: int, alignment: int = 0x1000) -> int:
         """Round up to nearest alignment.
@@ -202,17 +207,20 @@ class QlMemoryManager:
         """
 
         # rounds up to nearest alignment
-        mask = ((1 << self.ql.archbit) - 1) & -alignment
+        mask = self.max_mem_addr & -alignment
+
         return (addr + (alignment - 1)) & mask
 
     # save all mapped mem
     def save(self):
         mem_dict = {}
         seq = 1
+
         for start, end, perm, info in self.map_info:
-            mem_read = self.read(start, end-start)          
+            mem_read = self.read(start, end-start)
             mem_dict[seq] = start, end, perm, info, mem_read
             seq += 1
+
         return mem_dict
 
     # restore all dumped memory
@@ -257,16 +265,17 @@ class QlMemoryManager:
         if not size:
             size = self.ql.pointersize
 
-        if size == 1:
-            return self.ql.unpack8(self.read(addr, 1))
-        elif size == 2:
-            return self.ql.unpack16(self.read(addr, 2))
-        elif size == 4:
-            return self.ql.unpack32(self.read(addr, 4))
-        elif size == 8:
-            return self.ql.unpack64(self.read(addr, 8))
-        else:
-            raise QlErrorStructConversion(f"Unsupported pointer size: {size}")
+        __unpack = {
+            1 : self.ql.unpack8,
+            2 : self.ql.unpack16,
+            4 : self.ql.unpack32,
+            8 : self.ql.unpack64
+        }.get(size)
+
+        if __unpack:
+            return __unpack(self.read(addr, size))
+
+        raise QlErrorStructConversion(f"Unsupported pointer size: {size}")
 
     def write(self, addr: int, data: bytes) -> None:
         """Write bytes to a memory.
@@ -280,8 +289,8 @@ class QlMemoryManager:
             self.ql.uc.mem_write(addr, data)
         except:
             self.show_mapinfo()
-            self.ql.log.debug("addresss write length: " + str(len(data)))
-            self.ql.log.error("addresss write error: " + hex(addr))
+            self.ql.log.debug(f'addresss write length: {len(data):d}')
+            self.ql.log.error(f'addresss write error: {addr:#x}')
             raise
 
     def search(self, needle: bytes, begin: int = None, end: int = None):
@@ -320,15 +329,13 @@ class QlMemoryManager:
         self.del_mapinfo(addr, addr + size)
         self.ql.uc.mem_unmap(addr, size)
 
-
     def unmap_all(self):
         """Reclaim the entire memory space.
         """
 
-        for region in list(self.ql.uc.mem_regions()):
-            if region[0] and region[1]:
-                return self.unmap(region[0], ((region[1] - region[0])+0x1))
-
+        for begin, end, _ in self.ql.uc.mem_regions():
+            if begin and end:
+                self.unmap(begin, end - begin + 1)
 
     def is_available(self, addr, size):
         '''
@@ -525,26 +532,28 @@ class QlMemoryHeap:
         self.current_use = 0
         # save all memory regions allocated
         self.mem_alloc = []
-    
-    def save(self):
-        saved_state = {}
-        saved_state['chunks'] = self.chunks
-        saved_state['start_address'] = self.start_address
-        saved_state['end_address'] = self.end_address
-        saved_state['page_size'] = self.page_size
-        saved_state['current_alloc'] = self.current_alloc
-        saved_state['current_use'] = self.current_use
-        saved_state['mem_alloc'] = self.mem_alloc
+
+    def save(self) -> Mapping[str, Any]:
+        saved_state = {
+            'chunks'        : self.chunks,
+            'start_address' : self.start_address,
+            'end_address'   : self.end_address,
+            'page_size'     : self.page_size,
+            'current_alloc' : self.current_alloc,
+            'current_use'   : self.current_use,
+            'mem_alloc'     : self.mem_alloc
+        }
+
         return saved_state
 
-    def restore(self, saved_state):
-        self.chunks = saved_state['chunks']
-        self.start_address = saved_state['start_address']
-        self.end_address = saved_state['end_address']
-        self.page_size = saved_state['page_size']
-        self.current_alloc = saved_state['current_alloc']
-        self.current_use = saved_state['current_use']
-        self.mem_alloc = saved_state['mem_alloc']
+    def restore(self, saved_state: Mapping[str, Any]):
+        self.chunks         = saved_state['chunks']
+        self.start_address  = saved_state['start_address']
+        self.end_address    = saved_state['end_address']
+        self.page_size      = saved_state['page_size']
+        self.current_alloc  = saved_state['current_alloc']
+        self.current_use    = saved_state['current_use']
+        self.mem_alloc      = saved_state['mem_alloc']
 
     def alloc(self, size: int):
         # Find the heap chunks that best matches size 
