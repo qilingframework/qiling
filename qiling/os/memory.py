@@ -427,46 +427,25 @@ class QlMemoryManager:
 
         raise QlOutOfMemory('Out Of Memory')
 
-    def map_anywhere(
-        self,
-        size,
-        #name = "",
-        #kind = "",
-        min_addr = 0,
-        alignment = 0x1000,
-        #prot: int = ProtType.RWX,
-    ) -> int:
-        """
-        Maps a region of memory with requested size, within the
-        addresses specified. The size and start address will respect the
-        alignment.
+    def map_anywhere(self, size: int, minaddr: int = None, maxaddr: int = None, align=0x1000, perms: int = UC_PROT_ALL, info: str = None) -> int:
+        """Map a region anywhere in memory.
 
         Args:
-            size: # of bytes to map. This will be rounded up to match
-                the alignment.
-            name: String used to identify mapped region. Used for
-                debugging.
-            kind: String used to identify the purpose of the mapped
-                region. Used for debugging.
-            min_addr: The lowest address that could be mapped.
-            max_addr: The highest address that could be mapped.
-            alignment: Ensures the size and start address are multiples
-                of this. Must be a multiple of 0x1000. Default 0x1000.
-            prot: RWX permissions of the mapped region. Defaults to
-                granting all permissions.
-        Returns:
-            Start address of mapped region.
+            size: desired range size (in bytes)
+            minaddr: lowest base address to consider (or None for minimal address possible)
+            maxaddr: highest end address to allow (or None for maximal address possible)
+            align: base address alignment, must be a power of 2
+            perms: requested permissions mask
+            info: range label string
+
+        Returns: mapped address
         """
-        max_mem_addr = self.max_mem_addr
-        address = self.find_free_space(
-            size, min_addr=min_addr, max_addr=max_mem_addr, alignment=alignment
-        )
-        """
-        we need a better mem_map as defined in the issue
-        """
-        #self.map(address, util.align(size), name, kind)
-        self.map(address, self.align(size))
-        return address
+
+        addr = self.find_free_space(size, minaddr, maxaddr, align)
+
+        self.map(addr, self.align(size), perms, info)
+
+        return addr
 
     def protect(self, addr, size, perms):
         aligned_address = (addr >> 12) << 12
