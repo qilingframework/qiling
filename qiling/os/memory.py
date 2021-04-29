@@ -211,34 +211,32 @@ class QlMemoryManager:
 
         return (addr + (alignment - 1)) & mask
 
-    # save all mapped mem
-    def save(self):
-        mem_dict = {}
-        seq = 1
+    def save(self) -> Mapping[int, Tuple[int, int, int, str, bytes]]:
+        """Save entire memory content.
+        """
 
-        for start, end, perm, info in self.map_info:
-            mem_read = self.read(start, end-start)
-            mem_dict[seq] = start, end, perm, info, mem_read
-            seq += 1
+        mem_dict = {}
+
+        for i, (lbound, ubound, perm, label) in enumerate(self.map_info, 1):
+            data = self.read(lbound, ubound - lbound)
+            mem_dict[i] = (lbound, ubound, perm, label, bytes(data))
 
         return mem_dict
 
-    # restore all dumped memory
-    def restore(self, mem_dict):
-        for key, value in mem_dict.items():
-            start = value[0]
-            end = value[1]
-            perm = value[2]
-            info = value[3]
-            mem_read = bytes(value[4])
+    def restore(self, mem_dict: Mapping[int, Tuple[int, int, int, str, bytes]]):
+        """Restore saved memory content.
+        """
 
-            self.ql.log.debug("restore key: %i 0x%x 0x%x %s" % (key, start, end, info))
-            if self.is_mapped(start, end-start) == False:
-                self.ql.log.debug("mapping 0x%x 0x%x mapsize 0x%x" % (start, end, end-start))
-                self.map(start, end-start, perms=perm, info=info)
+        for key, (lbound, ubound, perms, label, data) in mem_dict.items():
+            self.ql.log.debug(f'restore key: {key} {lbound:#08x} {ubound:#08x} {label}')
 
-            self.ql.log.debug("writing 0x%x size 0x%x write_size 0x%x " % (start, end-start, len(mem_read)))
-            self.write(start, mem_read)
+            size = ubound - lbound
+            if not self.is_mapped(lbound, size):
+                self.ql.log.debug(f'mapping {lbound:#08x} {ubound:#08x}, mapsize = {size:#x}')
+                self.map(lbound, size, perms, label)
+
+            self.ql.log.debug(f'writing {lbound:#08x}, size = {size:#x}, write_size = {len(data):#x}')
+            self.write(lbound, data)
 
     def read(self, addr: int, size: int) -> bytearray:
         """Read bytes from memory.
