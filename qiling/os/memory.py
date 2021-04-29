@@ -179,24 +179,13 @@ class QlMemoryManager:
     def show_mapinfo(self):
         """Emit memory map info in a nicely formatted table.
         """
-        def _perms_mapping(ps):
-            perms_d = {1: "r", 2: "w", 4: "x"}
-            perms_sym = []
-            for idx, val in perms_d.items():
-                if idx & ps != 0:
-                    perms_sym.append(val)
-                else:
-                    perms_sym.append("-")
-            return "".join(perms_sym)
 
-        self.ql.log.info("[+] Start      End        Perm.  Path")
-        for  start, end, perm, info in self.map_info:
-            _perm = _perms_mapping(perm)
-            image = self.ql.os.find_containing_image(start)
-            if image:
-                info += f" ({image.path})"
-            self.ql.log.info("[+] %08x - %08x - %s    %s" % (start, end, _perm, info))
+        # emit title row
+        self.ql.log.info(f'{"Start":8s}   {"End":8s}   {"Perm":5s}   {"Label":12s}   {"Image"}')
 
+        # emit table rows
+        for lbound, ubound, perms, label, container in self.get_mapinfo():
+            self.ql.log.info(f'{lbound:08x} - {ubound:08x}   {perms:5s}   {label:12s}   {container or ""}')
 
     def get_lib_base(self, filename: str) -> int:
         for s, e, p, info in self.map_info:
