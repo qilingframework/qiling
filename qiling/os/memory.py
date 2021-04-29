@@ -291,30 +291,37 @@ class QlMemoryManager:
             self.ql.log.error(f'addresss write error: {addr:#x}')
             raise
 
-    def search(self, needle: bytes, begin: int = None, end: int = None):
+    def search(self, needle: bytes, begin: int = None, end: int = None) -> Sequence[int]:
+        """Search for a sequence of bytes in memory.
+
+        Args:
+            needle: bytes sequence to look for
+            begin: search starting address (or None to start at lowest avaiable address)
+            end: search ending address (or None to end at highest avaiable address)
+
+        Returns: addresses of all matches
         """
-        Search for a sequence of bytes in memory. Returns all sequences
-        that match
-        """
 
-        addrs = []
-        if (begin and end) and end > begin:
-            haystack = self.read(begin, end - begin)
-            addrs = [x.start(0) + begin for x in re.finditer(needle, haystack)]
+        # if starting point not set, search from the first mapped region 
+        if begin is None:
+            begin = self.map_info[0][0]
 
-        if not begin:
-            begin = self.map_info[0][0] # search from the first mapped region 
-        if not end:
-            end = self.map_info[-1][1] # search till the last mapped region
+        # if ending point not set, search till the last mapped region
+        if end is None:
+            end = self.map_info[-1][1]
 
-        mapped_range = [(_begin, _end) for _begin, _end, _ in self.ql.uc.mem_regions()
-                if _begin in range(begin, end) or _end in range(begin, end)]
-        
-        for _begin, _end in mapped_range:
-            haystack = self.read(_begin, _end - _begin)
-            addrs += [x.start(0) + _begin for x in re.finditer(needle, haystack)]
+        assert begin < end, 'search arguments do not make sense'
 
-        return addrs
+        ranges = [(max(begin, lbound), min(ubound, end)) for lbound, ubound, _, _ in self.map_info if (begin <= lbound < end) or (begin < ubound <= end)]
+        results = []
+
+        for lbound, ubound in ranges:
+            haystack = self.read(lbound, ubound - lbound)
+            local_results = (match.start(0) + lbound for match in re.finditer(needle, haystack))
+
+            results.extend(local_results)
+
+        return results
 
     def unmap(self, addr: int, size: int) -> None:
         """Reclaim a memory range.
