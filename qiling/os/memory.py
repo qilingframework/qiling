@@ -343,38 +343,29 @@ class QlMemoryManager:
                 self.unmap(begin, end - begin + 1)
 
     def is_available(self, addr: int, size: int) -> bool:
-        '''Query whether the memory range starting at `addr` and is of length of `size` bytes
+        """Query whether the memory range starting at `addr` and is of length of `size` bytes
         can be allocated.
 
         Returns: True if it can be allocated, False otherwise
-        '''
+        """
 
         assert size > 0, 'expected a positive size value'
 
         begin = addr
         end = addr + size
 
-        # make sure neither begin nor end are enclosed within a mapped range
-        return not any((lbound <= begin < ubound) or (lbound < end <= ubound) for lbound, ubound, _, _ in self.map_info)
+        # make sure neither begin nor end are enclosed within a mapped range, or entirely enclosing one
+        return not any((lbound <= begin < ubound) or (lbound < end <= ubound) or (begin <= lbound < ubound <= end) for lbound, ubound, _, _ in self.map_info)
 
-    def is_mapped(self, address, size): 
-        '''
-        The main function of is_mmaped is to determine 
-        whether the memory starting with addr and size has been mapped.
-        Returns true if it has already been allocated.
-        If unassigned, returns False.
-        '''   
+    def is_mapped(self, addr: int, size: int) -> bool:
+        """Query whether the memory range starting at `addr` and is of length of `size` bytes
+        is mapped, either partially or entirely.
 
-        for region in list(self.ql.uc.mem_regions()):
-            if ((address >= region[0] and address < region[1]) or
-            ((address + size - 1) >= region[0] and (address + size - 1) < region[1]) or
-            (address <= region[0] and (address + size - 1) > region[1])):
-                self.ql.log.info("%x - %x is taken" % (address, address + size - 1))
-                return True
+        Returns: True if any part of the specified memory range is taken, False otherwise
+        """
 
-        return False
-        
-    
+        return not self.is_available(addr, size)
+
     def is_free(self, address, size):
         '''
         The main function of is_free first must fufull is_mapped condition.
