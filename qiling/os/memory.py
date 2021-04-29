@@ -342,23 +342,20 @@ class QlMemoryManager:
             if begin and end:
                 self.unmap(begin, end - begin + 1)
 
-    def is_available(self, addr, size):
+    def is_available(self, addr: int, size: int) -> bool:
+        '''Query whether the memory range starting at `addr` and is of length of `size` bytes
+        can be allocated.
+
+        Returns: True if it can be allocated, False otherwise
         '''
-        The main function of is_available is to determine 
-        whether the memory starting with addr and having a size of length can be used for allocation.
 
-        If it can be allocated, returns True.
+        assert size > 0, 'expected a positive size value'
 
-        If it cannot be allocated, it returns False.
-        '''
-        try:
-            self.map(addr, addr)
-        except:
-            return False    
-        
-        self.unmap(addr, addr)
-        return True
+        begin = addr
+        end = addr + size
 
+        # make sure neither begin nor end are enclosed within a mapped range
+        return not any((lbound <= begin < ubound) or (lbound < end <= ubound) for lbound, ubound, _, _ in self.map_info)
 
     def is_mapped(self, address, size): 
         '''
