@@ -102,6 +102,13 @@ class QlMemoryManager:
 
 
     def del_mapinfo(self, mem_s: int, mem_e: int):
+        """Subtract a memory range from map.
+
+        Args:
+            mem_s: memory range start
+            mem_e: memory range end
+        """
+
         tmp_map_info = []
 
         for s, e, p, info in self.map_info:
@@ -129,6 +136,8 @@ class QlMemoryManager:
 
 
     def show_mapinfo(self):
+        """Emit memory map info in a nicely formatted table.
+        """
         def _perms_mapping(ps):
             perms_d = {1: "r", 2: "w", 4: "x"}
             perms_sym = []
@@ -155,6 +164,13 @@ class QlMemoryManager:
         return -1
 
     def align(self, addr: int, alignment: int = 0x1000) -> int:
+        """Round up to nearest alignment.
+
+        Args:
+            addr: address to align
+            alignment: alignment granularity, must be a power of 2
+        """
+
         # rounds up to nearest alignment
         mask = ((1 << self.ql.archbit) - 1) & -alignment
         return (addr + (alignment - 1)) & mask
@@ -187,9 +203,27 @@ class QlMemoryManager:
             self.write(start, mem_read)
 
     def read(self, addr: int, size: int) -> bytearray:
+        """Read bytes from memory.
+
+        Args:
+            addr: source address
+            size: amount of bytes to read
+
+        Returns: bytes located at the specified address
+        """
+
         return self.ql.uc.mem_read(addr, size)
 
     def read_ptr(self, addr: int, size: int=None) -> int:
+        """Read an integer value from a memory address.
+
+        Args:
+            addr: memory address to read
+            size: pointer size (in bytes): either 1, 2, 4, 8, or None for arch native size
+
+        Returns: integer value stored at the specified memory address
+        """
+
         if not size:
             size = self.ql.pointersize
 
@@ -205,6 +239,13 @@ class QlMemoryManager:
             raise QlErrorStructConversion(f"Unsupported pointer size: {size}")
 
     def write(self, addr: int, data: bytes) -> None:
+        """Write bytes to a memory.
+
+        Args:
+            addr: destination address
+            data: bytes to write
+        """
+
         try:
             self.ql.uc.mem_write(addr, data)
         except:
@@ -239,17 +280,21 @@ class QlMemoryManager:
         return addrs
 
     def unmap(self, addr: int, size: int) -> None:
-        '''
-        The main function of mem_unmap is to reclaim memory.
-        This function will reclaim the memory starting with addr and length of size.
-        Upon successful completion, munmap() shall return 0; 
-        otherwise, it shall return -1 and set errno to indicate the error.
-        '''
+        """Reclaim a memory range.
+
+        Args:
+            addr: range base address
+            size: range size (in bytes)
+        """
+
         self.del_mapinfo(addr, addr + size)
         self.ql.uc.mem_unmap(addr, size)
 
 
     def unmap_all(self):
+        """Reclaim the entire memory space.
+        """
+
         for region in list(self.ql.uc.mem_regions()):
             if region[0] and region[1]:
                 return self.unmap(region[0], ((region[1] - region[0])+0x1))
@@ -502,12 +547,28 @@ class QlMemoryHeap:
         return chunk.address
 
     def size(self, addr: int) -> int:
+        """Get the size of allocated memory chunk starting at a specific address.
+
+        Args:
+            addr: chunk starting address
+
+        Returns: chunk size (in bytes), or 0 if no chunk starts at that address
+        """
+
         for chunk in self.chunks:
             if addr == chunk.address and chunk.inuse:
                 return chunk.size
         return 0
 
     def free(self, addr: int) -> bool:
+        """Free up memory at a specific address.
+
+        Args:
+            addr: address of memory to free
+
+        Returns: True iff memory was freed successfully, False otherwise
+        """
+
         for chunk in self.chunks:
             if addr == chunk.address and chunk.inuse:
                 chunk.inuse = False
@@ -528,6 +589,16 @@ class QlMemoryHeap:
         self.current_use = 0
 
     def _find(self, addr: int, inuse: bool = None) -> Optional[Chunk]:
+        """Find a chunk starting at a specified address.
+
+        Args:
+            addr: starting address of the requested chunk
+            inuse: whether the chunk should be in-use; None if dont care
+
+        Returns: chunk instance starting at specified address whose in-use status is set
+        as required (if required), None if no such chunk was found
+        """
+
         for chunk in self.chunks:
             if addr == chunk.address:
                 return chunk
