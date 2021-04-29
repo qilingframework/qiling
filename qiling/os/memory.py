@@ -585,10 +585,10 @@ class QlMemoryHeap:
         Returns: chunk size (in bytes), or 0 if no chunk starts at that address
         """
 
-        for chunk in self.chunks:
-            if addr == chunk.address and chunk.inuse:
-                return chunk.size
-        return 0
+        # find used chunk starting at specified address
+        chunk = self._find(addr, inuse=True)
+
+        return chunk.size if chunk else 0
 
     def free(self, addr: int) -> bool:
         """Free up memory at a specific address.
@@ -599,11 +599,15 @@ class QlMemoryHeap:
         Returns: True iff memory was freed successfully, False otherwise
         """
 
-        for chunk in self.chunks:
-            if addr == chunk.address and chunk.inuse:
-                chunk.inuse = False
-                return True
-        return False
+        # find used chunk starting at specified address
+        chunk = self._find(addr, inuse=True)
+
+        if not chunk:
+            return False
+
+        # clear in-use indication
+        chunk.inuse = False
+        return True
 
     # clear all memory regions alloc
     def clear(self):
@@ -629,7 +633,7 @@ class QlMemoryHeap:
         as required (if required), None if no such chunk was found
         """
 
-        for chunk in self.chunks:
-            if addr == chunk.address:
-                return chunk
-        return None
+        # nullify the in-use check in case the caller doesn't care about it
+        dontcare = True if inuse is None else False
+
+        return next((chunk for chunk in self.chunks if addr == chunk.address and (dontcare or chunk.inuse == inuse)), None)
