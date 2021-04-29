@@ -32,15 +32,15 @@ class QlMemoryManager:
         self.map_info: MutableSequence[MapInfoEntry] = []
 
         bit_stuff = {
-            64 : (0xFFFFFFFFFFFFFFFF,),
-            32 : (0xFFFFFFFF,),
-            16 : (0xFFFFF,)             # 20bit address line
+            64 : (1 << 64) - 1,
+            32 : (1 << 32) - 1,
+            16 : (1 << 20) - 1   # 20bit address line
         }
 
         if ql.archbit not in bit_stuff:
             raise QlErrorStructConversion("Unsupported Qiling archtecture for memory manager")
 
-        max_addr, = bit_stuff[ql.archbit]
+        max_addr = bit_stuff[ql.archbit]
 
         #self.read_ptr = read_ptr
         self.max_addr = max_addr
