@@ -46,22 +46,37 @@ class QlMemoryManager:
         self.max_addr = max_addr
         self.max_mem_addr = max_addr
 
+    def __read_string(self, addr: int) -> str:
+        ret = bytearray()
+        c = self.read(addr, 1)
 
-    def string(self, addr, value=None ,encoding='utf-8'): 
-        if value == None:
-            ret = ""
-            c = self.read(addr, 1)[0]
-            read_bytes = 1
+        while c[0]:
+            ret += c
+            addr += 1
+            c = self.read(addr, 1)
 
-            while c != 0x0:
-                ret += chr(c)
-                c = self.read(addr + read_bytes, 1)[0]
-                read_bytes += 1
-            return ret
-        else:
-            string_bytes = bytes(value, encoding) + b'\x00'
-            self.write(addr, string_bytes)
-            return None
+        return ret.decode()
+
+    def __write_string(self, addr: int, s: str, encoding: str):
+        self.write(addr, bytes(s, encoding) + b'\x00')
+
+    # TODO: this is an obsolete utility method that should not be used anymore
+    # and here for backward compatibility. use QlOsUtils.read_cstring instead
+    def string(self, addr: int, value=None, encoding='utf-8') -> Optional[str]:
+        """Read or write string to memory.
+
+        Args:
+            addr: source / destination address
+            value: string to write, or None if reading one from memory
+            encoding: string encoding
+
+        Returns: null-terminated string read from memory, or None if wrote one
+        """
+
+        if value is None:
+            return self.__read_string(addr)
+
+        self.__write_string(addr, value, encoding)
 
     def add_mapinfo(self, mem_s: int, mem_e: int, mem_p: int, mem_info: str):
         tmp_map_info = []
