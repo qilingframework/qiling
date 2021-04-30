@@ -3,6 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from qiling import Qiling
 from qiling.os.uefi import bs, rt, ds
 from qiling.os.uefi.utils import install_configuration_table
 from qiling.os.uefi.UefiSpec import EFI_SYSTEM_TABLE, EFI_BOOT_SERVICES, EFI_RUNTIME_SERVICES, EFI_CONFIGURATION_TABLE
@@ -46,7 +47,7 @@ from qiling.os.uefi.UefiSpec import EFI_SYSTEM_TABLE, EFI_BOOT_SERVICES, EFI_RUN
 #
 #		... the remainder of the 256 KiB chunk may be used for more conf table data
 
-def initialize(ql, gST : int):
+def initialize(ql: Qiling, gST: int):
 	ql.loader.gST = gST
 
 	gBS = gST + EFI_SYSTEM_TABLE.sizeof()		# boot services
@@ -89,8 +90,6 @@ def initialize(ql, gST : int):
 
 	install_configuration_table(ql.loader.dxe_context, "HOB_LIST", None)
 	install_configuration_table(ql.loader.dxe_context, "DXE_SERVICE_TABLE", gDS)
-
-
 
 __all__ = [
 	'initialize'

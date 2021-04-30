@@ -3,6 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from qiling import Qiling
 from qiling.os.const import *
 from .const import *
 from .utils import *
@@ -14,13 +15,13 @@ from .UefiSpec import *
 	"Time"			: POINTER,	# OUT PTR(EFI_TIME)
 	"Capabilities"	: POINTER	# OUT PTR(EFI_TIME_CAPABILITIES)
 })
-def hook_GetTime(ql, address, params):
+def hook_GetTime(ql: Qiling, address: int, params):
 	return EFI_SUCCESS
 
 @dxeapi(params={
 	"Time": POINTER	# IN PTR(EFI_TIME)
 })
-def hook_SetTime(ql, address, params):
+def hook_SetTime(ql: Qiling, address: int, params):
 	return EFI_SUCCESS
 
 @dxeapi(params={
@@ -28,14 +29,14 @@ def hook_SetTime(ql, address, params):
 	"Pending"	: POINTER,	# OUT PTR(BOOLEAN)
 	"Time"		: POINTER	# OUT PTR(EFI_TIME)
 })
-def hook_GetWakeupTime(ql, address, params):
+def hook_GetWakeupTime(ql: Qiling, address: int, params):
 	return EFI_SUCCESS
 
 @dxeapi(params={
 	"Enable": BOOL,		# BOOLEAN
 	"Time"	: POINTER	# PTR(EFI_TIME)
 })
-def hook_SetWakeupTime(ql, address, params):
+def hook_SetWakeupTime(ql: Qiling, address: int, params):
 	return EFI_SUCCESS
 
 @dxeapi(params={
@@ -44,14 +45,14 @@ def hook_SetWakeupTime(ql, address, params):
 	"DescriptorVersion"	: UINT,		# UINT32
 	"VirtualMap"		: POINTER	# PTR(EFI_MEMORY_DESCRIPTOR)
 })
-def hook_SetVirtualAddressMap(ql, address, params):
+def hook_SetVirtualAddressMap(ql: Qiling, address: int, params):
 	return EFI_SUCCESS
 
 @dxeapi(params={
 	"DebugDisposition"	: UINT,		# UINTN
 	"Address"			: POINTER	# OUT PTR(PTR(VOID))
 })
-def hook_ConvertPointer(ql, address, params):
+def hook_ConvertPointer(ql: Qiling, address: int, params):
 	return EFI_SUCCESS
 
 @dxeapi(params={
@@ -61,20 +62,28 @@ def hook_ConvertPointer(ql, address, params):
 	"DataSize"		: POINTER,	# IN OUT PTR(UINTN)
 	"Data"			: POINTER	# OUT PTR(VOID)
 })
-def hook_GetVariable(ql, address, params):
+def hook_GetVariable(ql: Qiling, address: int, params):
 	name = params['VariableName']
+
 	if name in ql.env:
 		var = ql.env[name]
 		read_len = read_int64(ql, params['DataSize'])
+
 		if params['Attributes'] != 0:
 			write_int64(ql, params['Attributes'], 0)
+
 		write_int64(ql, params['DataSize'], len(var))
+
 		if read_len < len(var):
 			return EFI_BUFFER_TOO_SMALL
+
 		if params['Data'] != 0:
 			ql.mem.write(params['Data'], var)
+
 		return EFI_SUCCESS
+
 	ql.log.warning(f'variable with name {name} not found')
+
 	return EFI_NOT_FOUND
 
 @dxeapi(params={
@@ -82,7 +91,7 @@ def hook_GetVariable(ql, address, params):
 	"VariableName"		: POINTER,	# IN OUT PTR(CHAR16)
 	"VendorGuid"		: GUID		# IN OUT PTR(EFI_GUID)
 })
-def hook_GetNextVariableName(ql, address, params):
+def hook_GetNextVariableName(ql: Qiling, address: int, params):
 	var_name_size = params["VariableNameSize"]
 	var_name = params["VariableName"]
 
@@ -124,14 +133,14 @@ def hook_GetNextVariableName(ql, address, params):
 	"DataSize"		: UINT,		# UINTN
 	"Data"			: POINTER	# PTR(VOID)
 })
-def hook_SetVariable(ql, address, params):
+def hook_SetVariable(ql: Qiling, address: int, params):
 	ql.env[params['VariableName']] = bytes(ql.mem.read(params['Data'], params['DataSize']))
 	return EFI_SUCCESS
 
 @dxeapi(params={
 	"HighCount": POINTER	# OUT PTR(UINT32)
 })
-def hook_GetNextHighMonotonicCount(ql, address, params):
+def hook_GetNextHighMonotonicCount(ql: Qiling, address: int, params):
 	ql.os.monotonic_count += 0x0000000100000000
 	hmc = ql.os.monotonic_count
 	hmc = (hmc >> 32) & 0xffffffff
@@ -144,7 +153,7 @@ def hook_GetNextHighMonotonicCount(ql, address, params):
 	"DataSize"		: UINT,		# UINTN
 	"ResetData"		: POINTER	# PTR(VOID)
 })
-def hook_ResetSystem(ql, address, params):
+def hook_ResetSystem(ql: Qiling, address: int, params):
 	ql.emu_stop()
 
 	return EFI_SUCCESS
@@ -154,7 +163,7 @@ def hook_ResetSystem(ql, address, params):
 	"CapsuleCount"		: UINT,		# UINTN
 	"ScatterGatherList"	: ULONGLONG	# EFI_PHYSICAL_ADDRESS
 })
-def hook_UpdateCapsule(ql, address, params):
+def hook_UpdateCapsule(ql: Qiling, address: int, params):
 	return EFI_SUCCESS
 
 @dxeapi(params={
@@ -163,7 +172,7 @@ def hook_UpdateCapsule(ql, address, params):
 	"MaximumCapsuleSize": POINTER,	# OUT PTR(UINT64)
 	"ResetType"			: POINTER	# OUT PTR(EFI_RESET_TYPE)
 })
-def hook_QueryCapsuleCapabilities(ql, address, params):
+def hook_QueryCapsuleCapabilities(ql: Qiling, address: int, params):
 	return EFI_SUCCESS
 
 @dxeapi(params={
@@ -172,7 +181,7 @@ def hook_QueryCapsuleCapabilities(ql, address, params):
 	"RemainingVariableStorageSize"	: POINTER,	# OUT PTR(UINT64)
 	"MaximumVariableSize"			: POINTER	# OUT PTR(UINT64)
 })
-def hook_QueryVariableInfo(ql, address, params):
+def hook_QueryVariableInfo(ql: Qiling, address: int, params):
 	return EFI_SUCCESS
 
 def initialize(ql, gRT : int):
