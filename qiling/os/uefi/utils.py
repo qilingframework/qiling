@@ -7,7 +7,6 @@ import binascii
 
 from uuid import UUID
 from typing import Optional, Mapping
-from contextlib import contextmanager
 
 from qiling import Qiling
 from qiling.os.uefi.const import EFI_SUCCESS
@@ -149,15 +148,6 @@ def init_struct(ql: Qiling, base: int, descriptor: Mapping):
 	ql.log.info(f'')
 
 	return isntance
-
-@contextmanager
-def update_struct(cls: STRUCT, ql: Qiling, address: int):
-	struct = cls.loadFrom(ql, address)
-
-	try:
-		yield struct
-	finally:
-		struct.saveTo(ql, address)
 
 def str_to_guid(guid: str) -> EFI_GUID:
 	"""Construct an EFI_GUID structure out of a plain GUID string.

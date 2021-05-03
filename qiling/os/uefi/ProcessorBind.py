@@ -4,6 +4,7 @@
 #
 
 import ctypes
+from contextlib import contextmanager
 from typing import Mapping, MutableMapping, Sequence, Optional
 
 from qiling import Qiling
@@ -78,6 +79,16 @@ class STRUCT(ctypes.LittleEndianStructure):
 		data = bytes(ql.mem.read(address, cls.sizeof()))
 
 		return cls.from_buffer_copy(data)
+
+	@contextmanager
+	@classmethod
+	def bindTo(cls, ql: Qiling, address: int):
+		instance = cls.loadFrom(ql, address)
+
+		try:
+			yield instance
+		finally:
+			instance.saveTo(ql, address)
 
 	@classmethod
 	def sizeof(cls) -> int:
