@@ -3,9 +3,9 @@ from typing import Mapping, Tuple
 
 from qiling import Qiling
 from qiling.os.memory import QlMemoryHeap
-from qiling.os.uefi.utils import init_struct, update_struct, str_to_guid, execute_protocol_notifications, signal_event
 from qiling.os.uefi.UefiSpec import EFI_CONFIGURATION_TABLE, EFI_SYSTEM_TABLE
 from qiling.os.uefi.smst import EFI_SMM_SYSTEM_TABLE2
+from qiling.os.uefi import utils
 
 class UefiContext(ABC):
 	def __init__(self, ql: Qiling):
@@ -38,7 +38,7 @@ class UefiContext(ABC):
 			struct_class = proto_desc['struct']
 			address = self.heap.alloc(struct_class.sizeof())
 
-		instance = init_struct(self.ql, address, proto_desc)
+		instance = utils.init_struct(self.ql, address, proto_desc)
 		instance.saveTo(self.ql, address)
 
 		self.protocols[handle][guid] = address
@@ -50,13 +50,16 @@ class UefiContext(ABC):
 				if event_dic['CallbackArgs'] == None:
 					# To support smm notification, we use None for CallbackArgs on SmmRegisterProtocolNotify 
 					# and updare it here.
-					guid = str_to_guid(protocol)
+					guid = utils.str_to_guid(protocol)
 					guid_ptr = self.heap.alloc(guid.sizeof())
 					guid.saveTo(self.ql, guid_ptr)
+
 					event_dic['CallbackArgs'] = [guid_ptr, interface, handle]
+
 				# The event was previously registered by 'RegisterProtocolNotify'.
-				signal_event(self.ql, event_id)
-		return execute_protocol_notifications(self.ql, from_hook)
+				utils.signal_event(self.ql, event_id)
+
+		return utils.execute_protocol_notifications(self.ql, from_hook)
 
 	def install_configuration_table(self, guid: str, table: int):
 		guid = guid.lower()
@@ -71,7 +74,7 @@ class UefiContext(ABC):
 		ptr = self.conf_table_array_ptr + (idx * EFI_CONFIGURATION_TABLE.sizeof())
 
 		instance = EFI_CONFIGURATION_TABLE()
-		instance.VendorGuid = str_to_guid(guid)
+		instance.VendorGuid = utils.str_to_guid(guid)
 		instance.VendorTable = table
 		instance.saveTo(self.ql, ptr)
 
