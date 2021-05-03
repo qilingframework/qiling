@@ -198,7 +198,7 @@ def GetEfiConfigurationTable(context, guid: str) -> Optional[int]:
 		entry = EFI_CONFIGURATION_TABLE.loadFrom(context.ql, ptr)
 
 		if CompareGuid(entry.VendorGuid, efi_guid):
-			return ptr
+			return entry.VendorTable
 
 		ptr += EFI_CONFIGURATION_TABLE.sizeof()
 
