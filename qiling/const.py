@@ -4,7 +4,7 @@
 #
 
 from enum import EnumMeta, IntEnum
-from typing import Mapping
+from typing import Mapping, TypeVar
 
 class QL_ENDIAN(IntEnum):
     EL = 1
@@ -64,16 +64,18 @@ QL_OS_ALL           = QL_OS_POSIX + QL_OS_NONPID + (QL_OS.WINDOWS,)
 QL_HOOK_BLOCK = 0b0001
 QL_CALL_BLOCK = 0b0010
 
-def __reverse_enum(e: EnumMeta) -> Mapping[str, int]:
+__QL_CE = TypeVar('__QL_CE', QL_DEBUGGER, QL_ARCH, QL_OS, QL_VERBOSE)
+
+def __reverse_enum(e: EnumMeta) -> Mapping[str, __QL_CE]:
     '''Create a reverse mapping for an enum.
     '''
 
-    return dict((k.lower(), v.value) for k, v in e.__members__.items())
+    return dict((v.name.lower(), v.value) for v in e.__members__.values())
 
-debugger_map = __reverse_enum(QL_DEBUGGER)
-arch_map     = __reverse_enum(QL_ARCH)
-os_map       = __reverse_enum(QL_OS)
-verbose_map  = __reverse_enum(QL_VERBOSE)
+debugger_map: Mapping[str, QL_DEBUGGER] = __reverse_enum(QL_DEBUGGER)
+arch_map    : Mapping[str, QL_ARCH]     = __reverse_enum(QL_ARCH)
+os_map      : Mapping[str, QL_OS]       = __reverse_enum(QL_OS)
+verbose_map : Mapping[str, QL_VERBOSE]  = __reverse_enum(QL_VERBOSE)
 
 loader_map = {
     QL_OS.LINUX   : "ELF",

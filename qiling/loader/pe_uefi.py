@@ -9,7 +9,7 @@ from pefile import PE
 from qiling import Qiling
 from qiling.const import QL_ARCH
 from qiling.exception import QlErrorArch, QlMemoryMappedError
-from qiling.loader.loader import QlLoader
+from qiling.loader.loader import QlLoader, Image
 
 from qiling.os.uefi import context, st, smst
 from qiling.os.uefi.ProcessorBind import CPU_STACK_ALIGNMENT
@@ -122,7 +122,7 @@ class QlLoaderPE_UEFI(QlLoader):
         self.install_loaded_image_protocol(image_base, image_size)
 
         # this would be used later be os.find_containing_image
-        self.images.append(self.coverage_image(image_base, image_base + image_size, path))
+        self.images.append(Image(image_base, image_base + image_size, path))
 
         # update next memory slot to allow sequencial loading. its availability
         # is unknown though
