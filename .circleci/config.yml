@@ -18,7 +18,7 @@ jobs:
 
       - restore_cache:
           keys:
-            - python-{{ .Environment.CIRCLE_JOB }}-3.7-macports-macos-10.13.6
+            - python-{{ .Environment.CIRCLE_JOB }}-3.7-port-macos-10.13.6
 
       - run:
           name: "Install qiling framework"
@@ -38,8 +38,7 @@ jobs:
       - save_cache:
           paths:
             - ~/Library/Caches/pip
-            - /opt/local
-          key: python-{{ .Environment.CIRCLE_JOB }}-3.7-macports-macos-10.13.6
+          key: python-{{ .Environment.CIRCLE_JOB }}-3.7-port-macos-10.13.6
 
       - run:
           name: "Run macos test"
