@@ -80,7 +80,7 @@ class DxeContext(UefiContext):
 		super().install_configuration_table(guid, table)
 
 		# Update number of configuration table entries in the ST.
-		with update_struct(EFI_SYSTEM_TABLE, self.ql, self.ql.loader.gST) as gST:
+		with EFI_SYSTEM_TABLE.bindTo(self.ql, self.ql.loader.gST) as gST:
 			gST.NumberOfTableEntries = len(self.conf_table_array)
 
 class SmmContext(UefiContext):
@@ -100,5 +100,5 @@ class SmmContext(UefiContext):
 		super().install_configuration_table(guid, table)
 
 		# Update number of configuration table entries in the SMST.
-		with update_struct(EFI_SMM_SYSTEM_TABLE2, self.ql, self.ql.loader.gSmst) as gSmst:
+		with EFI_SMM_SYSTEM_TABLE2.bindTo(self.ql, self.ql.loader.gSmst) as gSmst:
 			gSmst.NumberOfTableEntries = len(self.conf_table_array)
