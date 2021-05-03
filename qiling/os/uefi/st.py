@@ -74,13 +74,6 @@ def initialize(ql: Qiling, gST: int):
 
 	instance.saveTo(ql, gST)
 
-	# configuration tables bookkeeping
-	confs = []
-
-	# these are needed for utils.CoreInstallConfigurationTable
-	ql.loader.dxe_context.conf_table_array = confs
-	ql.loader.dxe_context.conf_table_array_ptr = cfg
-
 	# configuration table data space; its location is calculated by leaving
 	# enough space for 100 configuration table entries. only a few entries are
 	# expected, so 100 should definitely suffice

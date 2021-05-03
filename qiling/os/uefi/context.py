@@ -14,8 +14,6 @@ class UefiContext(ABC):
 		self.protocols = {}
 
 		# These members must be initialized before attempting to install a configuration table.
-		self.conf_table_array = []
-		self.conf_table_array_ptr = 0
 		self.conf_table_data_ptr = 0
 		self.conf_table_data_next_ptr = 0
 
@@ -62,29 +60,45 @@ class UefiContext(ABC):
 		return utils.execute_protocol_notifications(self.ql, from_hook)
 
 	def install_configuration_table(self, guid: str, table: int):
-		guid = guid.lower()
-		confs = self.conf_table_array
+		ptr = self.conf_table_array_ptr
+		nitems = self.conf_table_array_nitems
+		efi_guid = utils.str_to_guid(guid)
 
-		# find configuration table entry by guid. if found, idx would be set to the entry index
-		# in the array. if not, idx would be set to one past end of array
-		if guid not in confs:
-			confs.append(guid)
+		idx = 0
 
-		idx = confs.index(guid)
-		ptr = self.conf_table_array_ptr + (idx * EFI_CONFIGURATION_TABLE.sizeof())
+		for _ in range(nitems):
+			entry = EFI_CONFIGURATION_TABLE.loadFrom(self.ql, ptr)
+
+			if utils.CompareGuid(entry.VendorGuid, efi_guid):
+				break
+
+			ptr += EFI_CONFIGURATION_TABLE.sizeof()
+			idx += 1
 
 		instance = EFI_CONFIGURATION_TABLE()
-		instance.VendorGuid = utils.str_to_guid(guid)
+		instance.VendorGuid = efi_guid
 		instance.VendorTable = table
 		instance.saveTo(self.ql, ptr)
 
-class DxeContext(UefiContext):
-	def install_configuration_table(self, guid: str, table: int):
-		super().install_configuration_table(guid, table)
+		self.conf_table_array_nitems = max(idx + 1, nitems)
 
-		# Update number of configuration table entries in the ST.
+class DxeContext(UefiContext):
+	@property
+	def system_table(self):
+		return EFI_SYSTEM_TABLE.loadFrom(self.ql, self.ql.loader.gST)
+
+	@property
+	def conf_table_array_ptr(self) -> int:
+		return self.system_table.ConfigurationTable.value
+
+	@property
+	def conf_table_array_nitems(self) -> int:
+		return self.system_table.NumberOfTableEntries
+
+	@conf_table_array_nitems.setter
+	def conf_table_array_nitems(self, value: int):
 		with EFI_SYSTEM_TABLE.bindTo(self.ql, self.ql.loader.gST) as gST:
-			gST.NumberOfTableEntries = len(self.conf_table_array)
+			gST.NumberOfTableEntries = value
 
 class SmmContext(UefiContext):
 	def __init__(self, ql):
@@ -99,9 +113,19 @@ class SmmContext(UefiContext):
 		# registered sw smi handlers
 		self.swsmi_handlers: Mapping[int, Tuple[int, Mapping]] = {}
 
-	def install_configuration_table(self, guid: str, table: int):
-		super().install_configuration_table(guid, table)
+	@property
+	def system_table(self):
+		return EFI_SMM_SYSTEM_TABLE2.loadFrom(self.ql, self.ql.loader.gSmst)
 
-		# Update number of configuration table entries in the SMST.
+	@property
+	def conf_table_array_ptr(self) -> int:
+		return self.system_table.SmmConfigurationTable.value
+
+	@property
+	def conf_table_array_nitems(self) -> int:
+		return self.system_table.NumberOfTableEntries
+
+	@conf_table_array_nitems.setter
+	def conf_table_array_nitems(self, value: int):
 		with EFI_SMM_SYSTEM_TABLE2.bindTo(self.ql, self.ql.loader.gSmst) as gSmst:
-			gSmst.NumberOfTableEntries = len(self.conf_table_array)
+			gSmst.NumberOfTableEntries = value

@@ -273,13 +273,6 @@ def initialize(ql, gSmst : int):
 	instance = init_struct(ql, gSmst, descriptor)
 	instance.saveTo(ql, gSmst)
 
-	# configuration tables bookkeeping
-	confs = []
-
-	# these are needed for utils.SmmInstallConfigurationTable
-	ql.loader.smm_context.conf_table_array = confs
-	ql.loader.smm_context.conf_table_array_ptr = cfg
-
 	# configuration table data space; its location is calculated by leaving
 	# enough space for 100 configuration table entries. only a few entries are
 	# expected, so 100 should definitely suffice

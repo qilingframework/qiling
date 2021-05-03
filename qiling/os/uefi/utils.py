@@ -188,14 +188,19 @@ def GetEfiConfigurationTable(context, guid: str) -> Optional[int]:
 	"""Find a configuration table by its GUID.
 	"""
 
-	guid = guid.lower()
-	confs = context.conf_table_array
+	ptr = context.conf_table_array_ptr
+	nitems = context.conf_table_array_nitems
+	efi_guid = str_to_guid(guid)
 
-	if guid in confs:
-		idx = confs.index(guid)
-		ptr = context.conf_table_array_ptr + (idx * EFI_CONFIGURATION_TABLE.sizeof())
+	# find configuration table entry by guid. if found, ptr would be set to the matching entry
+	# in the array. if not, ptr would be set to one past end of array
+	for _ in range(nitems):
+		entry = EFI_CONFIGURATION_TABLE.loadFrom(context.ql, ptr)
 
-		return ptr
+		if CompareGuid(entry.VendorGuid, efi_guid):
+			return ptr
+
+		ptr += EFI_CONFIGURATION_TABLE.sizeof()
 
 	# not found
 	return None
