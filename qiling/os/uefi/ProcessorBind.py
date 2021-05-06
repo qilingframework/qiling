@@ -80,8 +80,8 @@ class STRUCT(ctypes.LittleEndianStructure):
 
 		return cls.from_buffer_copy(data)
 
-	@contextmanager
 	@classmethod
+	@contextmanager
 	def bindTo(cls, ql: Qiling, address: int):
 		instance = cls.loadFrom(ql, address)
 
