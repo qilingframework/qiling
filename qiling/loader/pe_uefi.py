@@ -37,11 +37,7 @@ class QlLoaderPE_UEFI(QlLoader):
         'notify_list',
         'next_image_base',
         'loaded_image_protocol_modules',
-        'tpl',
-        'efi_conf_table_array',
-        'efi_conf_table_array_ptr',
-        'efi_conf_table_data_ptr',
-        'efi_conf_table_data_next_ptr'
+        'tpl'
     )
 
     def save(self) -> dict:
@@ -229,7 +225,6 @@ class QlLoaderPE_UEFI(QlLoader):
         heap_base = int(os_profile["heap_address"], 0)
         heap_size = int(os_profile["heap_size"], 0)
         self.dxe_context.init_heap(heap_base, heap_size)
-        self.heap_base_address = heap_base
         self.ql.log.info(f"Located heap at {heap_base:#010x}")
 
         # initialize and locate stack
