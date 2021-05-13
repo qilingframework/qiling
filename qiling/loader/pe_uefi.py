@@ -3,8 +3,8 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from typing import Optional, Sequence
 from pefile import PE
+from typing import Any, Mapping, Optional, Sequence
 
 from qiling import Qiling
 from qiling.const import QL_ARCH
@@ -40,7 +40,7 @@ class QlLoaderPE_UEFI(QlLoader):
         'tpl'
     )
 
-    def save(self) -> dict:
+    def save(self) -> Mapping[str, Any]:
         saved_state = super(QlLoaderPE_UEFI, self).save()
 
         for member in QlLoaderPE_UEFI.__save_members:
@@ -51,7 +51,7 @@ class QlLoaderPE_UEFI(QlLoader):
 
         return saved_state
 
-    def restore(self, saved_state: dict):
+    def restore(self, saved_state: Mapping[str, Any]):
         super(QlLoaderPE_UEFI, self).restore(saved_state)
 
         for member in QlLoaderPE_UEFI.__save_members:
