@@ -136,8 +136,8 @@ def handle_examples(parser: argparse.ArgumentParser):
     __ql_examples = f"""Examples:
 
     With code:
-        {prog} code --os linux --arch arm --format hex -f examples/codes/linarm32_tcp_reverse_shell.hex
-        {prog} code --os linux --arch x86 --format asm -f examples/codes/lin32_execve.asm
+        {prog} code --os linux --arch arm --format hex -f examples/shellcodes/linarm32_tcp_reverse_shell.hex
+        {prog} code --os linux --arch x86 --format asm -f examples/shellcodes/lin32_execve.asm
 
     With binary file:
         {prog} run -f examples/rootfs/x8664_linux/bin/x8664_hello --rootfs examples/rootfs/x8664_linux
