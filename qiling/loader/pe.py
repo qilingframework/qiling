@@ -99,6 +99,9 @@ class Process():
             data = bytearray(dll.get_memory_mapped_image())
             cmdlines = []
 
+            dll_base = self.dll_last_address
+            dll.relocate_image(dll_base)
+
             import_symbols = {}
             import_table = {}
             for entry in dll.DIRECTORY_ENTRY_EXPORT.symbols:
@@ -129,7 +132,6 @@ class Process():
         except Exception as ex:
             self.ql.log.exception(f'Unable to add {dll_name} import symbols')
 
-        dll_base = self.dll_last_address
         dll_len = self.ql.mem.align(len(bytes(data)), 0x1000)
         self.dll_size += dll_len
         self.ql.mem.map(dll_base, dll_len, info=dll_name)
