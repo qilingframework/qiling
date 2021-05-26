@@ -67,9 +67,9 @@ def check_pc(ql):
 def my_sandbox(path, rootfs):
     ql = Qiling(path, rootfs, verbose=QL_VERBOSE.DEBUG)
     ql.add_fs_mapper("/dev/urandom","/dev/urandom")
-    ql.hook_address(save_context ,0x10930)
+    ql.hook_address(save_context, 0x10930)
     ql.hook_address(patcher, ql.loader.elf_entry)
-    ql.hook_address(check_pc,0x7a0cc)
+    ql.hook_address(check_pc, 0x7a0cc)
     ql.run()
 
 if __name__ == "__main__":
