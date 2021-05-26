@@ -4,7 +4,12 @@ This file details the changelog of Qiling Framework.
 [Version 1.2.4]: April [SOMETHING], 2021
 
 - Added custom engine extension
-- 
+- Added more posix syscall
+- Refactor: Posix syscall
+- Refactor: Memory management
+- Refactor: Heap management
+- Cleanup and getting ready for engine module
+
 
 ------------------------------------
 [Version 1.2.3]: March 30th, 2021
