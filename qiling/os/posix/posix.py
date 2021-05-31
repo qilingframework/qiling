@@ -248,7 +248,7 @@ class QlOsPosix(QlOs):
                 if onenter_hook is not None:
                     ret = onenter_hook(self.ql, *self.get_syscall_args())
 
-                if type(ret) is not int or (ret & QL_CALL_BLOCK) == 0:
+                if type(ret) is int and (ret & QL_CALL_BLOCK) == 0:
                     syscall_basename = syscall_hook.__name__[len(SYSCALL_PREF):]
                     args = []
 
