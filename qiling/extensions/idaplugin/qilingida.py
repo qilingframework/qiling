@@ -1497,7 +1497,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 high = IDA.get_operand(ida_addr, 1)
                 reg = IDA.print_operand(ida_addr, 0).lower()
                 val = (high << 16) + low
-                logging.info(f"Force set {reg1} to {hex(val)}")
+                logging.info(f"Force set {reg} to {hex(val)}")
                 ql.reg.__setattr__(reg, val)
                 return True
             elif "csel" in instr: # csel dst, src1, src2, cond
