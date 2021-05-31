@@ -1563,8 +1563,11 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             ql.emu_stop()
 
     def _skip_unmapped_rw(self, ql, type, addr, size, value):
-        map_addr = ql.mem.align(addr)
-        map_size = ql.mem.align(size)
+        alignment = 0x1000
+        # Round down
+        map_addr = addr & (~(alignment - 1))
+        # Round up
+        map_size = ((size + (alignment - 1)) & (~(alignment - 1)))
         if not ql.mem.is_mapped(map_addr, map_size):
             logging.warning(f"Invalid memory R/W, trying to map {hex(map_size)} at {hex(map_addr)}")
             ql.mem.map(map_addr, map_size)
