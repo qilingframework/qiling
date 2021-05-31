@@ -1625,6 +1625,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         self.paths = {bbid: [] for bbid in self.bb_mapping.keys()}
         reals = [self.first_block, *self.real_blocks]
         self.deflatqlemu = QlEmuQiling()
+        self.deflatqlemu.path = self.qlemu.path
         self.deflatqlemu.rootfs = self.qlemu.rootfs
         first_block = self.bb_mapping[self.first_block]
         if IDA.get_ql_arch_string() == "arm32":
@@ -1844,6 +1845,9 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
     def ql_deflat(self):
         if len(self.bb_mapping) == 0:
             self.ql_parse_blocks_for_deobf()
+        if not self.qlinit:
+            logging.info("Qiling should be setup firstly!")
+            return
         self.mba, self.insns, self.mbbs = self._prepare_microcodes(maturity=3)
         logging.debug("Microcode generation done. Going to search path.")
         if not self._search_path():
