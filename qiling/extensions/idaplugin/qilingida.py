@@ -1415,6 +1415,10 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         return True
 
     def _get_jmp_ins(self, ida_addr, insns):
+        # This cloud really happen! See issue #804. TODO: Investigate or re-design insns structure or replace it with ESIL.
+        # So we have to fallback to legacy path.
+        if ida_addr not in insns:
+            return (None, None)
         ins_list = insns[ida_addr]
         result = []
         for bbid, ins in ins_list:
@@ -1663,8 +1667,9 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             }
             ql_bb_start_ea = self.deflatqlemu.ql_addr_from_ida(bb.start_ea) + self.append
             ctx = ql.save()
+            # Skip force execution in the first block.
             # `end=0` is a workaround for ql remembering last exit_point.
-            if braddr is None:
+            if braddr is None or bb.id == self.first_block:
                 ql.run(begin=ql_bb_start_ea, end=0, count=0xFFF)
             else:
                 self.hook_data['force'] = {braddr: True}
