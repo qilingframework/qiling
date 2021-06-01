@@ -410,6 +410,8 @@ def ql_syscall_execve(ql, execve_pathname, execve_argv, execve_envp, *args, **kw
 
     ql.mem.map_info     = []
     ql.clear_ql_hooks()
+    # Clean debugger to prevent port conflicts
+    ql.debugger = None
 
     if ql.code:
         return     
