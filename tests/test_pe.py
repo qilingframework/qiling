@@ -475,5 +475,15 @@ class PETest(unittest.TestCase):
         del ql
 
 
+    def test_pe_win_x8664_relocate_dll_image_and_api_set_dii(self):
+        # First force the cache to be recreated
+        ql = Qiling(["../examples/rootfs/x8664_windows/bin/api_set_dll_demo.exe"],
+                    "../examples/rootfs/x8664_windows",
+                    verbose=QL_VERBOSE.DEFAULT)
+        ql.run()
+        del ql
+
+
+
 if __name__ == "__main__":
     unittest.main()

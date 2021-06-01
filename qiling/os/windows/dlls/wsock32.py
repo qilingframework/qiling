@@ -60,10 +60,13 @@ def hook_connect(ql, address, params):
         ql.log.debug("sockaddr sin_family unhandled variant")
         return 0
 
-    ql.log.debug(f"0x{params['name']:08x}: sockaddr_in{6 if sin_family == 0x17 else ''}",
-              f"{{sin_family=0x{sin_family:02x}, sin_port={sin_port}, sin_addr={sin_addr}}}",
-              sep="",
-              )
+    ql.log.debug("0x{:08x}: sockaddr_in{} sin_family=0x{:02x}, sin_port={}, sin_addr={}".format(
+        params['name'], 
+        ('6' if sin_family == 0x17 else ''),
+        sin_family,
+        sin_port,
+        sin_addr
+    ))
     return 0
 
 

@@ -96,11 +96,13 @@ class Process():
                 self.ql.log.warning(f'Warnings while loading {path}:')
                 for warning in warnings:
                     self.ql.log.warning(f' - {warning}')
+
+            # [Room for Improvement] too much time when kernelbase.dll is loaded. 
+            self.ql.log.debug('relocate {}, {:x}'.format(dll_name, self.dll_last_address))
+            dll.relocate_image(self.dll_last_address)
+            
             data = bytearray(dll.get_memory_mapped_image())
             cmdlines = []
-
-            dll_base = self.dll_last_address
-            dll.relocate_image(dll_base)
 
             import_symbols = {}
             import_table = {}
@@ -132,6 +134,7 @@ class Process():
         except Exception as ex:
             self.ql.log.exception(f'Unable to add {dll_name} import symbols')
 
+        dll_base = self.dll_last_address
         dll_len = self.ql.mem.align(len(bytes(data)), 0x1000)
         self.dll_size += dll_len
         self.ql.mem.map(dll_base, dll_len, info=dll_name)
@@ -378,7 +381,7 @@ class Process():
         shared_user_data_len = self.align(ctypes.sizeof(KUSER_SHARED_DATA), 0x1000)
         self.ql.uc.mem_map(KI_USER_SHARED_DATA, shared_user_data_len)
         self.ql.mem.write(KI_USER_SHARED_DATA, bytes(shared_user_data))
-
+    
 
 class QlLoaderPE(QlLoader, Process):
     def __init__(self, ql):
@@ -577,28 +580,93 @@ class QlLoaderPE(QlLoader, Process):
             sys_dlls = self.sys_dlls
             for each in sys_dlls:
                 super().load_dll(each, self.is_driver)
+            
             # parse directory entry import
-            if self.pe.OPTIONAL_HEADER.DATA_DIRECTORY[pefile.DIRECTORY_ENTRY['IMAGE_DIRECTORY_ENTRY_IMPORT']].VirtualAddress != 0:
-                for entry in self.pe.DIRECTORY_ENTRY_IMPORT:
-                    dll_name = str(entry.dll.lower(), 'utf-8', 'ignore')
-                    super().load_dll(entry.dll, self.is_driver)
-                    for imp in entry.imports:
-                        # fix IAT
-                        # ql.log.info(imp.name)
-                        # ql.log.info(self.import_address_table[imp.name])
-                        if imp.name:
-                            try:
-                                addr = self.import_address_table[dll_name][imp.name]
-                            except KeyError:
-                                self.ql.log.debug("Error in loading function %s" % imp.name.decode())
-                        else:
-                            addr = self.import_address_table[dll_name][imp.ordinal]
+            # load all DLL files linked from the target PE file recursively and make IAT of all dlls.
+            load_pe_dll_list = ['target_pe'] + list(filter(lambda x: '.dll' in x, list(map(lambda x: x[3], self.ql.mem.map_info))))
+            load_failed_dll_list = []
+            
+            while len(load_pe_dll_list) != 0:
+                pe_dll_name = load_pe_dll_list.pop(0)
+                if pe_dll_name == 'target_pe':
+                    pe_dll = self.pe
+                else:
+                    path = os.path.join(self.ql.rootfs, self.ql.dlls, pe_dll_name)
+                    pe_dll = pefile.PE(path)
 
-                        if self.ql.archtype == QL_ARCH.X86:
-                            address = self.ql.pack32(addr)
+                if pe_dll.OPTIONAL_HEADER.DATA_DIRECTORY[pefile.DIRECTORY_ENTRY['IMAGE_DIRECTORY_ENTRY_IMPORT']].VirtualAddress != 0:
+                    for entry in pe_dll.DIRECTORY_ENTRY_IMPORT:
+                        export_dll_name = str(entry.dll.lower(), 'utf-8', 'ignore')
+                        if export_dll_name in load_failed_dll_list:
+                            continue
+                        
+                        # check if the dll is not API Set dll
+                        if (export_dll_name[0:4] != 'api-') and (export_dll_name[0:4] != 'ext-'):
+                            # check if the dll is not already loaded and the dll is not already in load_pe_dll_list
+                            loaded_dll_list = list(map(lambda x: x[3], self.ql.mem.map_info))
+                            if (export_dll_name not in load_pe_dll_list) and (export_dll_name not in loaded_dll_list):
+                                super().load_dll(entry.dll, self.is_driver)
+                                load_pe_dll_list.append(export_dll_name)
                         else:
-                            address = self.ql.pack64(addr)
-                        self.ql.mem.write(imp.address, address)
+                            for imp in entry.imports:
+                                if export_dll_name in load_failed_dll_list:
+                                    continue
+                                export_real_dll_name, import_name = self._get_export_symbol_from_api_dll(export_dll_name, imp.name.decode('utf-8'))
+                                # if _get_export_symbol_from_api_dll can't load API Set dll, dll_name=None, import_name=None
+                                if (export_real_dll_name == None) and (import_name == None):
+                                    load_failed_dll_list.append(export_dll_name)
+                                    continue
+                                loaded_dll_list = list(map(lambda x: x[3], self.ql.mem.map_info))
+                                if (export_real_dll_name not in load_pe_dll_list) and (export_real_dll_name not in loaded_dll_list):
+                                    super().load_dll(export_real_dll_name.encode('utf-8'), self.is_driver)
+                                    load_pe_dll_list.append(export_real_dll_name)
+
+            # set import address of target PE and dll file from the IAT
+            loaded_pe_dll_list = ['target_pe'] + list(filter(lambda x: '.dll' in x, list(map(lambda x: x[3], self.ql.mem.map_info))))
+
+            for pe_dll_name in loaded_pe_dll_list:
+                if pe_dll_name == 'target_pe':
+                    pe_dll = self.pe
+                    lib_image_base = pe_dll.OPTIONAL_HEADER.ImageBase
+                    lib_base = list(filter(lambda x: x[3] == '[PE]', self.ql.mem.map_info))[0][0]
+                else:
+                    path = os.path.join(self.ql.rootfs, self.ql.dlls, pe_dll_name)
+                    pe_dll = pefile.PE(path)
+                    lib_image_base = pe_dll.OPTIONAL_HEADER.ImageBase
+                    lib_base = list(filter(lambda x: x[3] == pe_dll_name, self.ql.mem.map_info))[0][0]
+
+                if pe_dll.OPTIONAL_HEADER.DATA_DIRECTORY[pefile.DIRECTORY_ENTRY['IMAGE_DIRECTORY_ENTRY_IMPORT']].VirtualAddress != 0:
+                    for entry in pe_dll.DIRECTORY_ENTRY_IMPORT:
+                        for imp in entry.imports:
+                            if imp.name == None:
+                                continue
+                            import_name = imp.name.decode('utf-8')
+                            dll_name = str(entry.dll.lower(), 'utf-8', 'ignore')
+                            if dll_name in load_failed_dll_list:
+                                continue
+
+                            if (dll_name[0:4] == 'api-') or (dll_name[0:4] == 'ext-'):
+                                dll_name, import_name = self._get_export_symbol_from_api_dll(dll_name, import_name)
+                            if import_name != None:
+                                try:
+                                    # encode('utf-8') because import name of import_address_table is byte type (not string)
+                                    addr = self.import_address_table[dll_name][import_name.encode('utf-8')]
+                                except KeyError:
+                                    self.ql.log.debug("Error in loading function %s" % import_name)
+                            else:    
+                                if dll_name != None:
+                                    addr = self.import_address_table[dll_name][imp.ordinal]
+                                # if _get_export_symbol_from_api_dll can't load API Set dll, dll_name=None, import_name=None
+                                else:
+                                    load_failed_dll_list.append(dll_name)
+                                    continue
+                                        
+                            if self.ql.archtype == QL_ARCH.X86:
+                                address = self.ql.pack32(addr)
+                            else:
+                                address = self.ql.pack64(addr)
+                                
+                            self.ql.mem.write(imp.address-lib_image_base+lib_base, address)
 
             self.ql.log.debug("Done with loading %s" % self.path)
             self.ql.os.entry_point = self.entry_point
@@ -629,3 +697,49 @@ class QlLoaderPE(QlLoader, Process):
         # move entry_point to ql.os
         self.ql.os.entry_point = self.entry_point
         self.init_sp = self.ql.reg.arch_sp
+
+    def _get_export_symbol_from_api_dll(self, api_dll_name, target_symbol):
+        """
+        API set dll (https://docs.microsoft.com/en-us/windows/win32/apiindex/windows-apisets) loader.
+        The function extract actual export symbol and DLL name from API set dll(likes 'api-ms-xxxx.dll').
+
+        Args:
+            api_dll_name (str): API Set DLL name
+            target_symbol (str): The symbol looking for.
+        Return:
+            dll_name (str): actual DLL name.
+            export_symbol (str): Actual symbol name.
+        """
+
+        def _get_string_from_pe(api_dll, target_symbol):
+            offset = 0
+            string = ''
+            dll_base = api_dll.OPTIONAL_HEADER.ImageBase
+
+            export_symbol_list = list(filter(lambda x: x.name == target_symbol.encode('utf-8'), api_dll.DIRECTORY_ENTRY_EXPORT.symbols))
+            if len(export_symbol_list) == 0:
+                self.ql.log.debug("Error: can't find symbol from API Set dll (symbol: %s, apiset dll: %s" % (api_dll, target_symbol))
+                return ''
+
+            while True:
+                char = api_dll.get_data(export_symbol_list[0].address+offset, 1)
+                if char == b'\x00':
+                    break
+
+                string += char.decode('utf-8')
+                offset += 1
+
+            return string
+        
+        try:
+            api_dll = pefile.PE(os.path.join(self.ql.rootfs, self.ql.dlls, api_dll_name))
+        except:
+            self.ql.log.warning('Failed to load API dll %s' % (api_dll_name))
+            return None, None
+
+        # result of _get_string_from_pe has 2 types, "kernel32.GetPriorityClass" and "advapi32.dll.OpenProcessToken"
+        # therefore, both types need to be supported.
+        dll_name, export_symbol = _get_string_from_pe(api_dll, target_symbol).rsplit('.', 1)
+        if dll_name[-4:] == '.dll':
+            return dll_name, export_symbol
+        return dll_name+'.dll', export_symbol
