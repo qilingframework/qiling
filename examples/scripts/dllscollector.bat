@@ -89,5 +89,6 @@ if exist %WINDIR%\SysWOW64\combase.dll xcopy /f /y %WINDIR%\SysWOW64\combase.dll
 if exist %WINDIR%\SysWOW64\cfgmgr32.dll xcopy /f /y %WINDIR%\SysWOW64\cfgmgr32.dll "examples\rootfs\x86_windows\Windows\System32\"
 if exist %WINDIR%\SysWOW64\normaliz.dll xcopy /f /y %WINDIR%\SysWOW64\normaliz.dll "examples\rootfs\x86_windows\Windows\System32\"
 if exist %WINDIR%\SysWOW64\bcrypt.dll xcopy /f /y %WINDIR%\SysWOW64\bcrypt.dll "examples\rootfs\x86_windows\Windows\System32\"
+if exist %WINDIR%\SysWOW64\bcrypt.dll xcopy /f /y %WINDIR%\SysWOW64\sspicli.dll "examples\rootfs\x86_windows\Windows\System32\"
 
 exit /b

@@ -611,6 +611,8 @@ class QlLoaderPE(QlLoader, Process):
                             for imp in entry.imports:
                                 if export_dll_name in load_failed_dll_list:
                                     continue
+                                if imp.name == None:
+                                    continue
                                 export_real_dll_name, import_name = self._get_export_symbol_from_api_dll(export_dll_name, imp.name.decode('utf-8'))
                                 # if _get_export_symbol_from_api_dll can't load API Set dll, dll_name=None, import_name=None
                                 if (export_real_dll_name == None) and (import_name == None):
