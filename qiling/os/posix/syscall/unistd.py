@@ -99,6 +99,11 @@ def ql_syscall_setgid32(ql, *args, **kw):
 def ql_syscall_setuid(ql, *args, **kw):
     return 0
 
+def ql_syscall_setresuid(ql, *args, **kw):
+    return 0
+
+def ql_syscall_setresgid(ql, *args, **kw):
+    return 0
 
 def ql_syscall_faccessat(ql, faccessat_dfd, faccessat_filename, faccessat_mode, *args, **kw):
 
