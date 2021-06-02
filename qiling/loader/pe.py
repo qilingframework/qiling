@@ -620,8 +620,11 @@ class QlLoaderPE(QlLoader, Process):
                                     continue
                                 loaded_dll_list = list(map(lambda x: x[3], self.ql.mem.map_info))
                                 if (export_real_dll_name not in load_pe_dll_list) and (export_real_dll_name not in loaded_dll_list):
-                                    super().load_dll(export_real_dll_name.encode('utf-8'), self.is_driver)
-                                    load_pe_dll_list.append(export_real_dll_name)
+                                    if os.path.exists(os.path.join(self.ql.rootfs, self.ql.dlls, export_real_dll_name)):
+                                        super().load_dll(export_real_dll_name.encode('utf-8'), self.is_driver)
+                                        load_pe_dll_list.append(export_real_dll_name)
+                                    else:
+                                        self.ql.log.warning('Failed to load dll %s' % (export_real_dll_name))
 
             # set import address of target PE and dll file from the IAT
             loaded_pe_dll_list = ['target_pe'] + list(filter(lambda x: '.dll' in x, list(map(lambda x: x[3], self.ql.mem.map_info))))
