@@ -99,6 +99,11 @@ def ql_syscall_setgid32(ql, *args, **kw):
 def ql_syscall_setuid(ql, *args, **kw):
     return 0
 
+def ql_syscall_setresuid(ql, *args, **kw):
+    return 0
+
+def ql_syscall_setresgid(ql, *args, **kw):
+    return 0
 
 def ql_syscall_faccessat(ql, faccessat_dfd, faccessat_filename, faccessat_mode, *args, **kw):
 
@@ -410,6 +415,8 @@ def ql_syscall_execve(ql, execve_pathname, execve_argv, execve_envp, *args, **kw
 
     ql.mem.map_info     = []
     ql.clear_ql_hooks()
+    # Clean debugger to prevent port conflicts
+    ql.debugger = None
 
     if ql.code:
         return     
