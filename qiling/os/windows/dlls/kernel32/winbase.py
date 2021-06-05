@@ -269,6 +269,31 @@ def hook_lstrcmpiA(ql, address, params):
     return hook_lstrcmpiW.__wrapped__(ql, address, params)
 
 
+# int lstrcmpW(
+#   LPCWSTR lpString1,
+#   LPCWSTR lpString2
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname)
+def hook_lstrcmpW(ql, address, params):
+    str1 = params["lpString1"]
+    str2 = params["lpString2"]
+    if str1 == str2:
+        return 0
+    elif str1 > str2:
+        return 1
+    else:
+        return -1
+
+
+# int lstrcmpA(
+#   LPCSTR lpString1,
+#   LPCSTR lpString2
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname)
+def hook_lstrcmpA(ql, address, params):
+    return hook_lstrcmpW.__wrapped__(ql, address, params)
+
+
 # HRSRC FindResourceA(
 #   HMODULE hModule,
 #   LPCSTR  lpName,
