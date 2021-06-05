@@ -250,7 +250,6 @@ def hook_lstrlenW(ql: Qiling, address: int, params):
 # );
 @winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_lstrcmpiW(ql, address, params):
-    # Copy String2 into String
     str1 = params["lpString1"].lower()
     str2 = params["lpString2"].lower()
     if str1 == str2:
