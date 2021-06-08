@@ -68,9 +68,15 @@ class QlOsUefi(QlOs):
 
 		return tuple((aname, ahandlers.get(atype, fallback)(avalue)) for atype, aname, avalue in targs)
 
+	def notify_after_module_execution(self, nmodules: int) -> bool:
+		"""Callback fired after a module has finished executing successfully.
 
-	@staticmethod
-	def notify_after_module_execution(ql: Qiling, nmodules: int):
+		Args:
+			nmodules: number of remaining modules to execute
+
+		Returns: `True` if subsequent modules execution should be thwarted, `False` otherwise
+		"""
+
 		return False
 
 
