@@ -3,10 +3,11 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from qiling import Qiling
 
 from .utils import execute_protocol_notifications
 
-def hook_EndOfExecution(ql):
+def hook_EndOfExecution(ql: Qiling):
     if ql.os.notify_after_module_execution(len(ql.loader.modules)):
         return
 

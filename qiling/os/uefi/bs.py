@@ -289,6 +289,9 @@ def hook_UnloadImage(ql: Qiling, address: int, params):
 def hook_ExitBootServices(ql: Qiling, address: int, params):
 	ql.emu_stop()
 
+	# TODO: cleanup BS tableas and data, and notify signal list gEfiEventExitBootServicesGuid
+	# @see: MdeModulePkg\Core\Dxe\DxeMain\DxeMain.c, CoreExitBootServices
+
 	return EFI_SUCCESS
 
 @dxeapi(params = {

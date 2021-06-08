@@ -246,7 +246,7 @@ def hook_ProcessFirmwareVolume(ctx, address, params):
 def hook_SetMemorySpaceCapabilities(ctx, address, params):
 	return EFI_UNSUPPORTED
 
-def initialize(ql, gDS):
+def initialize(ql: Qiling, gDS: int):
 	descriptor = {
 		'struct' : EFI_DXE_SERVICES,
 		'fields' : (

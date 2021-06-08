@@ -101,7 +101,7 @@ class EFI_SMM_SAVE_STATE_REGISTER(ENUM_UC):
 	"Width"		: ULONGLONG,# UINTN
 	"Register"	: INT,		# EFI_SMM_SAVE_STATE_REGISTER
 	"CpuIndex"	: ULONGLONG,# UINTN
-	"Buffer"	: POINTER	# PTR(VOID))
+	"Buffer"	: POINTER	# PTR(VOID)
 })
 def hook_SmmReadSaveState(ql: Qiling, address: int, params):
 	return EFI_SUCCESS
@@ -111,7 +111,7 @@ def hook_SmmReadSaveState(ql: Qiling, address: int, params):
 	"Width"		: ULONGLONG,# UINTN
 	"Register"	: INT,		# EFI_SMM_SAVE_STATE_REGISTER
 	"CpuIndex"	: ULONGLONG,# UINTN
-	"Buffer"	: POINTER	# PTR(VOID))
+	"Buffer"	: POINTER	# PTR(VOID)
 })
 def hook_SmmWriteSaveState(ql: Qiling, address: int, params):
 	return EFI_SUCCESS

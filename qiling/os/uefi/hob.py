@@ -7,7 +7,6 @@ from qiling import Qiling
 from qiling.os.uefi.context import UefiContext
 from qiling.os.uefi.utils import GetEfiConfigurationTable, CompareGuid, str_to_guid
 from qiling.os.uefi.UefiBaseType import STRUCT, EFI_GUID, UINT32, UINT16
-from qiling.os.uefi.UefiSpec import EFI_CONFIGURATION_TABLE
 
 EFI_HOB_TYPE_HANDOFF		 = 0x0001
 EFI_HOB_TYPE_GUID_EXTENSION	 = 0x0004
@@ -83,7 +82,7 @@ def GetNextHob(ql: Qiling, hobtype: int, hoblist: int) -> int:
 
 	return hobaddr
 
-def GetNextGuidHob(ql: Qiling, guid: str, hoblist: int):
+def GetNextGuidHob(ql: Qiling, guid: str, hoblist: int) -> int:
 	"""Find next HOB with the specified GUID.
 	"""
 
