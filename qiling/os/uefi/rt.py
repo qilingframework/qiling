@@ -99,7 +99,7 @@ def hook_GetNextVariableName(ql: Qiling, address: int, params):
 		return EFI_INVALID_PARAMETER
 
 	name_size = read_int64(ql, var_name_size)
-	last_name = ql.os.read_wstring(var_name)
+	last_name = ql.os.utils.read_wstring(var_name)
 
 	vars = ql.env['Names'] # This is a list of variable names in correct order.
 
