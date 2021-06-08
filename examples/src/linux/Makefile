@@ -120,7 +120,7 @@ libpatch_test.so: patch_test.so.h patch_test.so.c
 	$(CC) $(CPPFLAGS) -Wall -s -O0 -shared -fpic -o $@ patch_test.so.c
 
 patch_test.bin: patch_test.bin.c libpatch_test.so
-	$(CC) $(CPPFLAGS) $(CFLAGS) -Wno-nonnull -o $@ $^
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $^
 
 $(OBJS):%.o:%.c
 	$(CC) $(CFLAGS) -c $< -o $@
