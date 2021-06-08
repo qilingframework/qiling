@@ -18,6 +18,7 @@ class QlOsUefi(QlOs):
 		super().__init__(ql)
 
 		self.entry_point = 0
+		self.running_module: str
 		self.in_smm: bool
 		self.PE_RUN = True
 		self.heap = None # Will be initialized by the loader.
