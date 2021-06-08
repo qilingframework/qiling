@@ -266,8 +266,6 @@ class QlLoaderPE_UEFI(QlLoader):
         gSmst = self.smm_context.heap.alloc(256 * 1024)
         smst.initialize(self.ql, gSmst)
 
-        self.in_smm = False
-
         protocols = (
             EfiSmmCpuProtocol,
             EfiSmmSwDispatch2Protocol
