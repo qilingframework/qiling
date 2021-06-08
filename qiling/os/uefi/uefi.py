@@ -79,10 +79,17 @@ class QlOsUefi(QlOs):
 
 		return False
 
+	def notify_before_module_execution(self, module: str) -> bool:
+		"""Callback fired before a module is about to start executing.
 
-	@staticmethod
-	def notify_before_module_execution(ql: Qiling, module):
-		ql.os.running_module = module
+		Args:
+			module: path of module to execute
+
+		Returns: `True` if module execution should be thwarted, `False` otherwise
+		"""
+
+		self.running_module = module
+
 		return False
 
 
@@ -176,7 +183,7 @@ class QlOsUefi(QlOs):
 
 
 	def run(self):
-		self.notify_before_module_execution(self.ql, self.running_module)
+		self.notify_before_module_execution(self.running_module)
 
 		if self.ql.entry_point is not None:
 			self.ql.loader.entry_point = self.ql.entry_point

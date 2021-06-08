@@ -192,7 +192,7 @@ class QlLoaderPE_UEFI(QlLoader):
         self.ql.log.info(f'Running from {entry_point:#010x} of {path}')
 
     def execute_next_module(self):
-        if not self.modules or self.ql.os.notify_before_module_execution(self.ql, self.modules[0][0]):
+        if not self.modules or self.ql.os.notify_before_module_execution(self.modules[0][0]):
             return
 
         path, image_base, entry_point = self.modules.pop(0)
