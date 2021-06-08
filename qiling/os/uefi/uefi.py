@@ -175,13 +175,12 @@ class QlOsUefi(QlOs):
 
 			containing_image = self.find_containing_image(pc)
 			img_info = f' ({containing_image.path} + {pc - containing_image.base:#x})' if containing_image else ''
-			self.ql.log.error(f'PC = {pc:#010x}{img_info}')
-
-			self.ql.log.error(f'Memory map:')
-			self.ql.mem.show_mapinfo()
+			self.ql.log.error(f'PC = {pc:#x}{img_info}')
 		except UcError:
-			self.ql.log.error(f'Error: PC({pc:#x}) is unreachable')
+			self.ql.log.error(f'PC = {pc:#x} (unreachable)')
 
+		self.ql.log.error(f'Memory map:')
+		self.ql.mem.show_mapinfo()
 
 	def run(self):
 		self.notify_before_module_execution(self.running_module)
