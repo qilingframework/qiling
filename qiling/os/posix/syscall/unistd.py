@@ -205,6 +205,12 @@ def ql_syscall_close(ql, close_fd, *args, **kw):
 
 def ql_syscall_pread64(ql, read_fd, read_buf, read_len, read_offt, *args, **kw):
     data = None
+
+    # https://chromium.googlesource.com/linux-syscall-support/+/2c73abf02fd8af961e38024882b9ce0df6b4d19b
+    # https://chromiumcodereview.appspot.com/10910222
+    if ql.archtype == QL_ARCH.MIPS:
+        read_offt = ql.unpack64(ql.mem.read(ql.reg.arch_sp + 0x10, size=0x08))
+
     if read_fd < 256 and ql.os.fd[read_fd] != 0:
         try:
             pos = ql.os.fd[read_fd].tell()
