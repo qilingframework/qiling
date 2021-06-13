@@ -98,10 +98,10 @@ def main(input_file: str):
                 os._exit(0)
 
         except UcAfl.UcAflError as ex:
-            # This hook trigers more than once in this example.
+            # This hook triggers more than once in this example.
             # If this is the exception cause, we don't care.
 
-            # TODO: Chose a better hook position :)
+            # TODO: choose a better hook position :)
             if ex.errno != UcAfl.UC_AFL_RET_CALLED_TWICE:
                 raise
 
