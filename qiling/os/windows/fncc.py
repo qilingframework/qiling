@@ -6,7 +6,7 @@
 from functools import wraps
 import json, os
 
-from typing import Union, Optional, Mapping, MutableMapping
+from typing import Any, Union, Optional, Mapping, MutableMapping
 
 from qiling import Qiling
 from qiling.const import QL_INTERCEPT
@@ -154,6 +154,21 @@ def winsdkapi(cc: int, dllname: str = None, replace_params_type: Mapping[str, st
                 params = replace_params
             # --------------------------------------------------------------------------
 
+            ql.os.fcall = ql.os.fcall_select(cc)
+
+            onenter = ql.os.user_defined_api[QL_INTERCEPT.ENTER].get(api_name)
+            onexit = ql.os.user_defined_api[QL_INTERCEPT.EXIT].get(api_name)
+
+            return ql.os.call(pc, func, params, onenter, onexit, passthru=passthru)
+
+        return wrapper
+
+    return decorator
+
+def winsdkapi_new(cc: int, params: Mapping[str, Any] = {}, passthru: bool = False):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(ql: Qiling, pc: int, api_name: str):
             ql.os.fcall = ql.os.fcall_select(cc)
 
             onenter = ql.os.user_defined_api[QL_INTERCEPT.ENTER].get(api_name)
