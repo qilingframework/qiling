@@ -23,6 +23,24 @@ PCUNICODE_STRING = WSTRING
 PUNICODE_STRING = WSTRING
 WCHAR = PARAM_INT16
 
+TOKEN_INFORMATION_CLASS     = DWORD
+HKEY                        = HANDLE
+SC_HANDLE                   = HANDLE
+PSID                        = HANDLE
+REGSAM                      = POINTER
+PHKEY                       = POINTER
+LPDWORD                     = POINTER
+LPBYTE                      = POINTER
+LPWSTR                      = POINTER
+LPSECURITY_ATTRIBUTES       = POINTER
+LPVOID                      = POINTER
+PDWORD                      = POINTER
+LPSTR                       = POINTER
+PSID_IDENTIFIER_AUTHORITY   = POINTER
+PBOOL                       = POINTER
+LPCSTR                      = STRING
+LPCWSTR                     = WSTRING
+
 # a lookup table used by winapisdk to substitute certain type names with others
 reptypedict = {
     "BSTR"                          : POINTER,
