@@ -315,15 +315,15 @@ class PETest(unittest.TestCase):
             ql.os.fcall = ql.os.fcall_select(CDECL)
 
             params = ql.os.resolve_fcall_params({
-                'optstorage': PARAM_INT64,
-                'stream'    : POINTER,
-                'format'    : STRING,
-                'locale'    : DWORD,
-                'arglist'   : POINTER
+                '_Options' : PARAM_INT64,
+                '_Stream'  : POINTER,
+                '_Format'  : STRING,
+                '_Locale'  : DWORD,
+                '_ArgList' : POINTER
             })
 
-            format = params['format']
-            arglist = params['arglist']
+            format = params['_Format']
+            arglist = params['_ArgList']
 
             count = format.count("%")
             fargs = [ql.unpack(ql.mem.read(arglist + i * ql.pointersize, ql.pointersize)) for i in range(count)]

@@ -13,7 +13,7 @@ import os
 
 class Qltool_Test(unittest.TestCase):
     def test_qltool_exec_args(self):
-        create = [sys.executable, '../qltool', 'run', '-f', '../examples/rootfs/x8664_linux/bin/x8664_args', '--rootfs', '../examples/rootfs/x8664_linux', '--verbose', '0', '--args', 'test1', 'test2' ,'test3']
+        create = [sys.executable, '../qltool', 'run', '-f', '../examples/rootfs/x8664_linux/bin/x8664_args', '--rootfs', '../examples/rootfs/x8664_linux', '--verbose', 'off', '--args', 'test1', 'test2' ,'test3']
         p = subprocess.Popen(create, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         for line in iter(p.stdout.readline, b''):
             self.stdout = line
@@ -22,7 +22,7 @@ class Qltool_Test(unittest.TestCase):
 		
 
     def test_qltool_shellcode(self):
-        create = [sys.executable, '../qltool', 'code', '--os','linux','--arch', 'x86','--asm', '-f', '../examples/shellcodes/lin32_execve.asm']
+        create = [sys.executable, '../qltool', 'code', '--os','linux','--arch', 'x86', '--format', 'asm', '-f', '../examples/shellcodes/lin32_execve.asm']
         try:
             subprocess.check_output(create,stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as e:    
@@ -37,7 +37,7 @@ class Qltool_Test(unittest.TestCase):
             raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output)) 
 
     def test_qltool_json(self):
-        create = [sys.executable, '../qltool', 'run', '-f','../examples/rootfs/x86_linux/bin/x86_hello','--rootfs', '../examples/rootfs/x86_linux','--verbose', '0', '--json']
+        create = [sys.executable, '../qltool', 'run', '-f','../examples/rootfs/x86_linux/bin/x86_hello','--rootfs', '../examples/rootfs/x86_linux','--verbose', 'off', '--json']
         try:
             subprocess.check_output(create, stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as e:

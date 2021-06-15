@@ -98,9 +98,9 @@ class EFI_SMM_SAVE_STATE_REGISTER(ENUM_UC):
 
 @dxeapi(params = {
 	"This"		: POINTER,	# EFI_SMM_CPU_PROTOCOL
-	"Width"		: UINT,		# UINTN
+	"Width"		: ULONGLONG,# UINTN
 	"Register"	: INT,		# EFI_SMM_SAVE_STATE_REGISTER
-	"CpuIndex"	: UINT,		# UINTN
+	"CpuIndex"	: ULONGLONG,# UINTN
 	"Buffer"	: POINTER	# PTR(VOID))
 })
 def hook_SmmReadSaveState(ql, address, params):
@@ -108,9 +108,9 @@ def hook_SmmReadSaveState(ql, address, params):
 
 @dxeapi(params = {
 	"This"		: POINTER,	# EFI_SMM_CPU_PROTOCOL
-	"Width"		: UINT,		# UINTN
+	"Width"		: ULONGLONG,# UINTN
 	"Register"	: INT,		# EFI_SMM_SAVE_STATE_REGISTER
-	"CpuIndex"	: UINT,		# UINTN
+	"CpuIndex"	: ULONGLONG,# UINTN
 	"Buffer"	: POINTER	# PTR(VOID))
 })
 def hook_SmmWriteSaveState(ql, address, params):

@@ -564,11 +564,14 @@ class QlLinuxThreadManagement:
     
     def _prepare_lib_patch(self):
         if self.ql.loader.elf_entry != self.ql.loader.entry_point:
-            self.main_thread = self.ql.os.thread_class.spawn(self.ql, self.ql.loader.entry_point, self.ql.loader.elf_entry)
+            entry_address = self.ql.loader.elf_entry
+            if self.ql.archtype == QL_ARCH.ARM and entry_address & 1 == 1:
+                entry_address -= 1
+            self.main_thread = self.ql.os.thread_class.spawn(self.ql, self.ql.loader.entry_point, entry_address)
             self.cur_thread = self.main_thread
             self._clear_queued_msg()
             gevent.joinall([self.main_thread], raise_error=True)
-            if self.ql.reg.arch_pc != self.ql.loader.elf_entry:
+            if self.ql.reg.arch_pc != entry_address:
                 self.ql.log.error(f"{self.cur_thread} Expect {hex(self.ql.loader.elf_entry)} but get {hex(self.ql.reg.arch_pc)} when running loader.")
                 raise QlErrorExecutionStop('Dynamic library .init() failed!')
             self.ql.enable_lib_patch()

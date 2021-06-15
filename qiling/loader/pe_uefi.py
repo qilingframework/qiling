@@ -3,13 +3,13 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from typing import Sequence
+from typing import Optional, Sequence
 from pefile import PE
 
+from qiling import Qiling
 from qiling.const import QL_ARCH
 from qiling.exception import QlErrorArch, QlMemoryMappedError
-from qiling.loader.loader import QlLoader
-from qiling.os.memory import QlMemoryHeap
+from qiling.loader.loader import QlLoader, Image
 
 from qiling.os.uefi import context, st, smst
 from qiling.os.uefi.ProcessorBind import CPU_STACK_ALIGNMENT
@@ -19,12 +19,11 @@ from qiling.os.uefi.protocols import EfiSmmAccess2Protocol
 from qiling.os.uefi.protocols import EfiSmmBase2Protocol
 from qiling.os.uefi.protocols import EfiSmmCpuProtocol
 from qiling.os.uefi.protocols import EfiSmmSwDispatch2Protocol
-from qiling.os.uefi.protocols import PcdProtocol
-
 
 class QlLoaderPE_UEFI(QlLoader):
-    def __init__(self, ql):
-        super(QlLoaderPE_UEFI, self).__init__(ql)
+    def __init__(self, ql: Qiling):
+        super().__init__(ql)
+
         self.ql = ql
         self.modules = []
         self.events = {}
@@ -51,7 +50,7 @@ class QlLoaderPE_UEFI(QlLoader):
         for member in QlLoaderPE_UEFI.__save_members:
             saved_state[member] = getattr(self, member)
 
-        # since this class initialize the heap (that is hosted by the OS object), we will store it here.
+        # since this class initialize the heap (that is hosted by the OS object), we will store it here
         saved_state['heap'] = self.ql.os.heap.save()
 
         return saved_state
@@ -123,7 +122,7 @@ class QlLoaderPE_UEFI(QlLoader):
         self.install_loaded_image_protocol(image_base, image_size)
 
         # this would be used later be os.find_containing_image
-        self.images.append(self.coverage_image(image_base, image_base + image_size, path))
+        self.images.append(Image(image_base, image_base + image_size, path))
 
         # update next memory slot to allow sequencial loading. its availability
         # is unknown though
@@ -138,7 +137,7 @@ class QlLoaderPE_UEFI(QlLoader):
         else:
             self.modules.append(module_info)
 
-    def call_function(self, addr: int, args: Sequence[int], ret: int):
+    def call_function(self, addr: int, args: Sequence[int], ret: Optional[int]):
         """Call a function after properly setting up its arguments and return address.
 
         Args:
@@ -178,7 +177,7 @@ class QlLoaderPE_UEFI(QlLoader):
 
         return False
 
-    def execute_module(self, path: str, image_base: int, entry_point: int, eoe_trap: int):
+    def execute_module(self, path: str, image_base: int, entry_point: int, eoe_trap: Optional[int]):
         """Start the execution of a UEFI module.
 
         Args:
@@ -281,14 +280,6 @@ class QlLoaderPE_UEFI(QlLoader):
 
         for proto in protocols:
             self.smm_context.install_protocol(proto.descriptor, 1)
-
-        # map mmio ranges
-        # TODO: move to somehwere more appropriate (+ hook accesses?)
-        mmio_map = self.ql.os.profile["MMIO"]
-        self.ql.mem.map(
-            int(mmio_map['sbreg_base'], 0),
-            int(mmio_map['sbreg_size'], 0)
-        )
 
         # set stack and frame pointers
         self.ql.reg.rsp = sp

@@ -149,8 +149,8 @@ def context_reg(ql, saved_states=None, *args, **kwargs):
 
         for idx in range(8):
             _addr = ql.reg.arch_sp + idx * 4
-            _val = ql.mem.read(_addr, ql.archbit // 8)
-            print("$sp+0x%02x|[0x%08x]=> 0x%08x" % (idx*4, _addr, ql.unpack(_val)), end="")
+            _val = ql.mem.read(_addr, ql.pointersize)
+            print(f"$sp+0x{idx*4:02x}|[0x{_addr:08x}]=> 0x{ql.unpack(_val):08x}", end="")
 
             try: # try to deference wether its a pointer
                 _deref = ql.mem.read(_addr, 4)
@@ -158,16 +158,16 @@ def context_reg(ql, saved_states=None, *args, **kwargs):
                 _deref = None
 
             if _deref:
-                print(" => 0x%08x" % ql.unpack(_deref))
+                print(f" => 0x{ql.unpack(_deref):08x}")
 
 
 def print_asm(ql, instructions):
     for ins in instructions:
         fmt = (ins.address, ins.mnemonic.ljust(6), ins.op_str)
         if ql.reg.arch_pc == ins.address:
-            print("PC ==>  0x%x\t%s %s" % fmt)
+            print(f"PC ==>  0x{fmt[0]:x}\t{fmt[1]} {fmt[2]}")
         else:
-            print("\t0x%x\t%s %s" % fmt)
+            print(f"\t0x{fmt[0]:x}\t{fmt[1]} {fmt[2]}")
 
 
 def context_asm(ql, address, size, *args, **kwargs):

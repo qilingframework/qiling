@@ -65,6 +65,11 @@ class QlGdb(QlDebugger, object):
         else:
             self.entry_point = self.ql.os.entry_point
 
+        # Only part of the binary file will be debugged.
+        if self.ql.entry_point is not None and self.ql.exit_point is not None:
+            self.entry_point = self.ql.entry_point
+            exit_point = self.ql.exit_point
+
         self.gdb.initialize(self.ql, self.entry_point, exit_point=exit_point, mappings=[(hex(load_address))])
 
         #Setup register tables, order of tables is important
@@ -216,13 +221,12 @@ class QlGdb(QlDebugger, object):
                 
                 elif self.ql.archtype == QL_ARCH.ARM:
                     mode = self.ql.arch.check_thumb()
-                    
-                    for reg in self.tables[QL_ARCH.ARM][:16]:
+
+                    # r0-r12,sp,lr,pc,cpsr ,see https://sourceware.org/git/?p=binutils-gdb.git;a=blob;f=gdb/arch/arm.h;h=fa589fd0582c0add627a068e6f4947a909c45e86;hb=HEAD#l127
+                    for reg in self.tables[QL_ARCH.ARM][:16] + [self.tables[QL_ARCH.ARM][25]]:
                         r = self.ql.reg.read(reg)
                         if mode == UC_MODE_THUMB and reg == "pc":
                             r += 1
-                        elif mode != UC_MODE_THUMB and reg == "pc":
-                            r += 4
                         tmp = self.addr_to_str(r)
                         s += tmp
 
@@ -364,7 +368,7 @@ class QlGdb(QlDebugger, object):
                             reg_value = self.addr_to_str(reg_value, short = True)
                     
                     elif self.ql.archtype== QL_ARCH.ARM:
-                        if reg_index < 17:
+                        if reg_index < 26:
                             reg_value = self.ql.reg.read(self.tables[QL_ARCH.ARM][reg_index - 1])
                         else:
                             reg_value = 0
@@ -669,6 +673,10 @@ class QlGdb(QlDebugger, object):
                     self.send("")
 
                 elif subcmd.startswith('File:open'):
+                    if self.ql.ostype == QL_OS.UEFI and self.ql.custom_engine == True:
+                        self.send("F-1")
+                        return
+
                     (file_path, flags, mode) = subcmd.split(':')[-1].split(',')
                     file_path = unhexlify(file_path).decode(encoding='UTF-8')
                     flags = int(flags, base=16)
@@ -684,6 +692,7 @@ class QlGdb(QlDebugger, object):
                         self.send("F%x" % fd)
                     else:
                         self.send("F-1")
+                        return                        
 
                 elif subcmd.startswith('File:pread:'):
                     (fd, count, offset) = subcmd.split(':')[-1].split(',')

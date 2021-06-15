@@ -113,9 +113,8 @@ def hook_SmmAllocatePages(ql, address, params):
 })
 def hook_SmmFreePages(ql, address, params):
 	address = params["Memory"]
-	alloc_size = params["Pages"] * PAGE_SIZE
 
-	ret = ql.mem.free(address, alloc_size)
+	ret = ql.loader.smm_context.heap.free(address)
 
 	return EFI_SUCCESS if ret else EFI_INVALID_PARAMETER
 
@@ -288,6 +287,7 @@ def initialize(ql, gSmst : int):
 	ql.loader.smm_context.conf_table_data_ptr = conf_data
 	ql.loader.smm_context.conf_table_data_next_ptr = conf_data
 
+	install_configuration_table(ql.loader.smm_context, "HOB_LIST", None)
 	install_configuration_table(ql.loader.smm_context, "SMM_RUNTIME_SERVICES_TABLE", gSmmRT)
 
 __all__ = [

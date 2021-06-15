@@ -1696,6 +1696,42 @@ class WindowsStruct:
             already_read += size
         self.addr = addr
 
+class AlignedWindowsStruct(WindowsStruct):
+    def __init__(self, ql):
+        super().__init__(ql)
+
+    def write(self, addr):
+        super().write(addr)
+
+    def read(self, addr):
+        super().read(addr)
+
+    def generic_write(self, addr: int, attributes: list):
+        super().generic_write(addr, attributes)
+
+    def generic_read(self, addr: int, attributes: list):
+        self.ql.log.debug("Reading unpacked Windows object aligned " + self.__class__.__name__)
+        already_read = 0
+        for elem in attributes:
+            (val, size, endianness, type, alignment) = elem
+            if already_read != 0:
+                modulo = already_read % alignment
+                already_read = already_read + modulo
+
+            value = self.ql.mem.read(addr + already_read, size)
+            self.ql.log.debug("Reading from %x value %s" % (addr + already_read, value))
+            if type == int:
+                elem[0] = int.from_bytes(value, endianness)
+            elif type == bytes:
+                elem[0] = value
+            elif issubclass(type, WindowsStruct):
+                obj = type(self.ql)
+                obj.read(addr)
+                elem[0] = obj
+            else:
+                raise QlErrorNotImplemented("API not implemented")
+            already_read += size
+        self.addr = addr
 
 class Token:
     class TokenInformationClass(IntEnum):
@@ -2234,7 +2270,7 @@ class ProcessBasicInformation(WindowsStruct):
 #   USHORT MaximumLength;
 #   PWSTR  Buffer;
 # } UNICODE_STRING
-class UnicodeString(WindowsStruct):
+class UnicodeString(AlignedWindowsStruct):
     def write(self, addr):
         super().generic_write(addr, [self.length, self.maxLength, self.buffer])
 
@@ -2243,10 +2279,16 @@ class UnicodeString(WindowsStruct):
 
     def __init__(self, ql, length=None, maxLength=None, buffer=None):
         super().__init__(ql)
-        self.size = self.USHORT_SIZE * 2 + self.POINTER_SIZE
-        self.length = [length, self.USHORT_SIZE, "little", int]
-        self.maxLength = [maxLength, self.USHORT_SIZE, "little", int]
-        self.buffer = [buffer, self.POINTER_SIZE, "little", int]
+
+        # on x64, self.buffer is aligned to 8
+        if (ql.archtype == 32):
+            self.size = self.USHORT_SIZE * 2 + self.POINTER_SIZE
+        else:
+            self.size = self.USHORT_SIZE * 2 + 4 + self.POINTER_SIZE
+
+        self.length = [length, self.USHORT_SIZE, "little", int, self.USHORT_SIZE]
+        self.maxLength = [maxLength, self.USHORT_SIZE, "little", int, self.USHORT_SIZE]
+        self.buffer = [buffer, self.POINTER_SIZE, "little", int, self.POINTER_SIZE]
 
 
 # typedef struct _OBJECT_TYPE_INFORMATION {

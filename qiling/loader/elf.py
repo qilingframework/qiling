@@ -15,7 +15,7 @@ from elftools.elf.descriptions import describe_reloc_type
 from qiling.const import *
 
 from qiling.exception import *
-from .loader import QlLoader
+from .loader import QlLoader, Image
 from qiling.os.linux.function_hook import FunctionHook
 from qiling.os.linux.syscall_nums import SYSCALL_NR
 from qiling.os.linux.kernel_api.hook import *
@@ -422,7 +422,7 @@ class QlLoaderELF(QlLoader, ELFParse):
         self.ql.os.elf_entry = self.elf_entry = load_address + elfhead['e_entry']
         self.stack_address = new_stack
         self.load_address = load_address
-        self.images.append(self.coverage_image(load_address, load_address + mem_end, self.path))
+        self.images.append(Image(load_address, load_address + mem_end, self.path))
         self.ql.os.function_hook = FunctionHook(self.ql, self.elf_phdr + mem_start, self.elf_phnum, self.elf_phent,
                                                 load_address, load_address + mem_end)
         self.init_sp = self.ql.reg.arch_sp

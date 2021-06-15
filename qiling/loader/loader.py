@@ -2,27 +2,27 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
-from collections import namedtuple
 
-from qiling.const import QL_OS, QL_OS_ALL, QL_ARCH, QL_ENDIAN
-from qiling.exception import QlErrorArch, QlErrorOsType, QlErrorOutput
+from typing import Any, Mapping, MutableSequence, NamedTuple
 
+from qiling import Qiling
+
+Image = NamedTuple('Image', (('base', int), ('end', int), ('path', str)))
 
 class QlLoader():
-    def __init__(self, ql):
-        self.ql     = ql
-        self.env    = self.ql.env
-        self.argv   = self.ql.argv
-        self.images = []
-        self.coverage_image = namedtuple('Image', 'base end path')
+    def __init__(self, ql: Qiling):
+        self.ql = ql
+        self.env = self.ql.env
+        self.argv = self.ql.argv
+        self.images: MutableSequence[Image] = []
         self.skip_exit_check = False
-    
-    def save(self):
-        saved_state = {}
-        saved_state['images'] = list(map(tuple, self.images))
+
+    def save(self) -> Mapping[str, Any]:
+        saved_state = {
+            'images': [tuple(img) for img in self.images]
+        }
+
         return saved_state
 
-    def restore(self, saved_state):
-        for (base, end, path) in saved_state['images']:
-            self.images.append(self.coverage_image(base, end, path))
-
+    def restore(self, saved_state: Mapping[str, Any]):
+        self.images = [Image(*img) for img in saved_state['images']]

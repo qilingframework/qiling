@@ -1,9 +1,19 @@
 This file details the changelog of Qiling Framework.
 
 ------------------------------------
-[Version 1.2.4]: April [SOMETHING], 2021
-
+[Version 1.2.4]: July 0th, 2021
 -
+
+------------------------------------
+[Version 1.2.4]: June 15th, 2021
+
+- Added custom engine extension
+- Added more posix syscall
+- Refactor: Posix syscall
+- Refactor: Memory management
+- Refactor: Heap management
+- Cleanup and getting ready for engine module
+
 
 ------------------------------------
 [Version 1.2.3]: March 30th, 2021
@@ -13,6 +23,7 @@ This file details the changelog of Qiling Framework.
 - Fixed return value for uid/gid related syscall
 - Resolved multilevel symbolic links
 - Demigod set.api implementation
+- Added support for arguments inside IDA plugin
 - Major refactor, see commit 4aa8e59e04d5a8a5520e4e1e2595ecc78a80beba
 - Clean and remove rootfs
 - ql.filter now accepts a regular expression
@@ -43,8 +54,8 @@ This file details the changelog of Qiling Framework.
 - Added support for custom envs variables inside IDA plugin
 - Demigod: Fixed lkm mapping and added support for MIPS32EL
 - Demigod: Added support for Linux x86 32bit
-- Added support for binaries that return from their entrypoint (PE / ELF).
-- Configure Qiling with 'stop_on_stackpointer' or 'stop_on_exit_trap'.
+- Added support for binaries that return from their entrypoint (PE / ELF)
+- Configure Qiling with 'stop_on_stackpointer' or 'stop_on_exit_trap'
 - Add basic Windows driver tests / example
 - UEFI refactor
 
@@ -100,7 +111,7 @@ This file details the changelog of Qiling Framework.
 - Added experimental 8086 and DOS support.
 - Fixed path transformation on Windows when running Linux.
 - IDA Plugin able to instrument code now
-- Refactor ql.fs_mapper (now ql.os.fs_mapper).
+- Refactor ql.fs_mapper (now ql.os.fs_mapper)
 
 
 ------------------------------------

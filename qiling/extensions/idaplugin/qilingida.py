@@ -9,6 +9,7 @@ import time
 import struct
 import re
 import logging
+import shlex
 from enum import Enum
 from elftools.elf.elffile import ELFFile
 from json import load
@@ -673,10 +674,12 @@ BUTTON CANCEL Cancel
 Setup Qiling
 <#Select Rootfs to open#Rootfs path\:        :{path_name}>
 <#Custom script path   #Custom script path\: :{script_name}>
+<#Custom parameter   #Custom parameter\: :{parameters}>
 <#Custom env   #Custom env\: :{env_var}>
 """, {
             'path_name': Form.DirInput(swidth=50),
             'script_name': Form.FileInput(swidth=50, open=True),
+            'parameters': Form.StringInput(swidth=50),
             'env_var': Form.FileInput(swidth=70, open=True),
         })
 
@@ -893,7 +896,7 @@ class QlEmuMisc:
 
 class QlEmuQiling:
     def __init__(self):
-        self.path = get_input_file_path()
+        self.path = None
         self.rootfs = None
         self.ql = None
         self.status = None
@@ -908,9 +911,9 @@ class QlEmuQiling:
             qlstderr = QlEmuMisc.QLStdIO('stderr', sys.__stderr__.fileno())
 
         if sys.platform != 'win32':
-            self.ql = Qiling(argv=[self.path], rootfs=self.rootfs, verbose=QL_VERBOSE.DEBUG, env=self.env, stdin=qlstdin, stdout=qlstdout, stderr=qlstderr, log_plain=True, *args, **kwargs)
+            self.ql = Qiling(argv=self.path, rootfs=self.rootfs, verbose=QL_VERBOSE.DEBUG, env=self.env, stdin=qlstdin, stdout=qlstdout, stderr=qlstderr, log_plain=True, *args, **kwargs)
         else:
-            self.ql = Qiling(argv=[self.path], rootfs=self.rootfs, verbose=QL_VERBOSE.DEBUG, env=self.env, log_plain=True, *args, **kwargs)
+            self.ql = Qiling(argv=self.path, rootfs=self.rootfs, verbose=QL_VERBOSE.DEBUG, env=self.env, log_plain=True, *args, **kwargs)
 
         self.exit_addr = self.ql.os.exit_point
         if self.ql.ostype == QL_OS.LINUX:
@@ -1412,6 +1415,10 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         return True
 
     def _get_jmp_ins(self, ida_addr, insns):
+        # This cloud really happen! See issue #804. TODO: Investigate or re-design insns structure or replace it with ESIL.
+        # So we have to fallback to legacy path.
+        if ida_addr not in insns:
+            return (None, None)
         ins_list = insns[ida_addr]
         result = []
         for bbid, ins in ins_list:
@@ -1494,7 +1501,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 high = IDA.get_operand(ida_addr, 1)
                 reg = IDA.print_operand(ida_addr, 0).lower()
                 val = (high << 16) + low
-                logging.info(f"Force set {reg1} to {hex(val)}")
+                logging.info(f"Force set {reg} to {hex(val)}")
                 ql.reg.__setattr__(reg, val)
                 return True
             elif "csel" in instr: # csel dst, src1, src2, cond
@@ -1560,8 +1567,11 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             ql.emu_stop()
 
     def _skip_unmapped_rw(self, ql, type, addr, size, value):
-        map_addr = ql.mem.align(addr)
-        map_size = ql.mem.align(size)
+        alignment = 0x1000
+        # Round down
+        map_addr = addr & (~(alignment - 1))
+        # Round up
+        map_size = ((size + (alignment - 1)) & (~(alignment - 1)))
         if not ql.mem.is_mapped(map_addr, map_size):
             logging.warning(f"Invalid memory R/W, trying to map {hex(map_size)} at {hex(map_addr)}")
             ql.mem.map(map_addr, map_size)
@@ -1622,6 +1632,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         self.paths = {bbid: [] for bbid in self.bb_mapping.keys()}
         reals = [self.first_block, *self.real_blocks]
         self.deflatqlemu = QlEmuQiling()
+        self.deflatqlemu.path = self.qlemu.path
         self.deflatqlemu.rootfs = self.qlemu.rootfs
         first_block = self.bb_mapping[self.first_block]
         if IDA.get_ql_arch_string() == "arm32":
@@ -1656,8 +1667,9 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             }
             ql_bb_start_ea = self.deflatqlemu.ql_addr_from_ida(bb.start_ea) + self.append
             ctx = ql.save()
+            # Skip force execution in the first block.
             # `end=0` is a workaround for ql remembering last exit_point.
-            if braddr is None:
+            if braddr is None or bb.id == self.first_block:
                 ql.run(begin=ql_bb_start_ea, end=0, count=0xFFF)
             else:
                 self.hook_data['force'] = {braddr: True}
@@ -1841,6 +1853,9 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
     def ql_deflat(self):
         if len(self.bb_mapping) == 0:
             self.ql_parse_blocks_for_deobf()
+        if not self.qlinit:
+            logging.info("Qiling should be setup firstly!")
+            return
         self.mba, self.insns, self.mbbs = self._prepare_microcodes(maturity=3)
         logging.debug("Microcode generation done. Going to search path.")
         if not self._search_path():
@@ -2059,10 +2074,15 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
 
         rootfspath = setupdlg.path_name.value
         customscript = setupdlg.script_name.value
+        parameter = setupdlg.parameters.value
         env = setupdlg.env_var.value
 
         if customscript != '':
             self.customscriptpath = customscript
+
+        para_array = shlex.split(parameter)
+        self.qlemu.path = [get_input_file_path()] + para_array
+        logging.info(self.qlemu.path)
 
         if env != '':
             try:

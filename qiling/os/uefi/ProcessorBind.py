@@ -4,7 +4,9 @@
 #
 
 import ctypes
-from typing import Any, Dict
+from typing import Mapping, MutableMapping, Sequence, Optional
+
+from qiling import Qiling
 
 bits = 64
 psize = bits // 8
@@ -14,9 +16,9 @@ dummy_ptr_type = {
 	64 : ctypes.c_uint64
 }[bits]
 
-_pointer_type_cache: Dict[str, type] = {}
+_pointer_type_cache: MutableMapping[str, type] = {}
 
-def PTR(ptype):
+def PTR(ptype: Optional[type]) -> type:
 	pname = 'c_void' if ptype is None else ptype.__name__
 
 	if pname not in _pointer_type_cache:
@@ -60,7 +62,7 @@ class STRUCT(ctypes.LittleEndianStructure):
 	def __init__(self):
 		pass
 
-	def saveTo(self, ql, address: int) -> None:
+	def saveTo(self, ql: Qiling, address: int) -> None:
 		"""Store self contents to a specified memory address.
 		"""
 
@@ -69,7 +71,7 @@ class STRUCT(ctypes.LittleEndianStructure):
 		ql.mem.write(address, data)
 
 	@classmethod
-	def loadFrom(cls, ql, address: int) -> Any:
+	def loadFrom(cls, ql: Qiling, address: int) -> 'STRUCT':
 		"""Construct an instance of the structure from saved contents.
 		"""
 
@@ -92,7 +94,7 @@ class STRUCT(ctypes.LittleEndianStructure):
 		return getattr(cls, fname).offset
 
 	@classmethod
-	def memberat(cls, offset: int) -> str:
+	def memberat(cls, offset: int) -> Optional[str]:
 		for fname, _ in cls._fields_:
 			if cls.offsetof(fname) == offset:
 				return fname
@@ -107,7 +109,7 @@ class ENUM(ctypes.c_int, metaclass=EnumMeta):
 
 	# a list or tuple of names (strings)
 	# names will be enumerate by their corresponding index in the list
-	_members_ = []
+	_members_: Sequence[str] = []
 
 class EnumUCMeta(type(ctypes.c_int)):
 	def __getattr__(self, key):
@@ -119,7 +121,7 @@ class ENUM_UC(ctypes.c_int, metaclass=EnumUCMeta):
 
 	# a dictionary of (names : str, value : int) tuples
 	# names will be enumerate by their paired value
-	_members_ = {}
+	_members_: Mapping[str, int] = {}
 
 __all__ = [
 	'VOID',

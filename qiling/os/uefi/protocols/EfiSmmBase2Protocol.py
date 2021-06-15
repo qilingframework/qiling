@@ -3,9 +3,10 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-
-from qiling.const import *
+from qiling import Qiling
 from qiling.os.const import *
+
+from ..const import EFI_SUCCESS, EFI_INVALID_PARAMETER
 from ..fncc import *
 from ..utils import *
 from ..ProcessorBind import *
@@ -25,7 +26,7 @@ class EFI_SMM_BASE2_PROTOCOL(STRUCT):
 	"This"		: POINTER,
 	"InSmram"	: POINTER
 })
-def hook_InSmm(ql, address, params):
+def hook_InSmm(ql: Qiling, address: int, params):
 	ql.log.info(f'InSmram = {ql.loader.in_smm}')
 
 	write_int8(ql, params["InSmram"], int(ql.loader.in_smm))
@@ -36,7 +37,7 @@ def hook_InSmm(ql, address, params):
 	"This"	: POINTER,
 	"Smst"	: POINTER
 })
-def hook_GetSmstLocation(ql, address, params):
+def hook_GetSmstLocation(ql: Qiling, address: int, params):
 	Smst = params["Smst"]
 
 	if Smst == 0:

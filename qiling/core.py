@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from .os.memory import QlMemoryManager
     from .loader.loader import QlLoader
 
-from .const import QL_ARCH_ENDIAN, QL_ENDIAN, QL_OS
+from .const import QL_ARCH_ENDIAN, QL_ENDIAN, QL_OS, QL_VERBOSE, QL_CUSTOM_ENGINE
 from .exception import QlErrorFileNotFound, QlErrorArch, QlErrorOsType, QlErrorOutput
 from .utils import *
 from .core_struct import QlCoreStructs
@@ -35,7 +35,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             ostype=None,
             archtype=None,
             bigendian=False,
-            verbose=1,
+            verbose=QL_VERBOSE.DEFAULT,
             profile=None,
             console=True,
             log_file=None,
@@ -65,6 +65,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._env = env if env else {}
         self._code = code
         self._shellcoder = shellcoder
+        self._custom_engine = False
         self._ostype = ostype
         self._archtype = archtype
         self._archendian = None
@@ -126,6 +127,13 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             if (self._ostype and type(self._ostype) == str):
                 self._ostype = ostype_convert(self._ostype.lower())
 
+            if self._archtype in QL_CUSTOM_ENGINE:
+                self._custom_engine = True
+                if self._ostype == None:
+                    self._ostype = arch_os_convert(self._archtype)
+                if self._code == None:
+                    self._code = self._archtype
+
             self._argv = ["qilingcode"]
             if self._rootfs is None:
                 self._rootfs = "."
@@ -133,7 +141,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         # file check
         if self._code is None:
             if not os.path.exists(str(self._argv[0])):
-                raise QlErrorFileNotFound("Target binary not found")
+                raise QlErrorFileNotFound("Target binary not found: %s" %(self._argv[0]))
             if not os.path.exists(self._rootfs):
                 raise QlErrorFileNotFound("Target rootfs not found")
 
@@ -198,24 +206,28 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         ##############
         # Components #
         ##############
-        self._mem = component_setup("os", "memory", self)
-        self._reg = component_setup("arch", "register", self)
+        if not self._custom_engine:
+            self._mem = component_setup("os", "memory", self)
+            self._reg = component_setup("arch", "register", self)
+
         self._arch = arch_setup(self.archtype, self)
         
         # Once we finish setting up arch layer, we can init QlCoreHooks.
-        self.uc = self.arch.init_uc
+        self.uc = self.arch.init_uc if not self._custom_engine else None
         QlCoreHooks.__init__(self, self.uc)
-
-        self._os = os_setup(self.archtype, self.ostype, self)
+        
+        if not self._custom_engine:
+            self._os = os_setup(self.archtype, self.ostype, self)
 
         # Run the loader
         self.loader.run()
+        
+        if not self._custom_engine:
+            # Setup Outpt
+            self.os.utils.setup_output()
 
-        # Setup Outpt
-        self.os.utils.setup_output()
-
-        # Add extra guard options when configured to do so
-        self._init_stop_guard()
+            # Add extra guard options when configured to do so
+            self._init_stop_guard()
 
 
     #####################
@@ -278,6 +290,17 @@ class Qiling(QlCoreHooks, QlCoreStructs):
     ##################
 
     # If an option doesn't have a setter, it means that it can be only set during Qiling.__init__
+
+    @property
+    def custom_engine(self) -> bool:
+        """ Specify whether are we on custom engine
+
+            Type: bool
+            Example: Qiling(custom_engine=True)
+        """
+        return self._custom_engine
+
+
     @property
     def console(self) -> bool:
         """ Specify whether enabling console output. 
@@ -540,7 +563,8 @@ class Qiling(QlCoreHooks, QlCoreStructs):
     def verbose(self, v):
         self._verbose = v
         self.log.setLevel(ql_resolve_logger_level(self._verbose))
-        self.os.utils.setup_output()
+        if not self._custom_engine:
+            self.os.utils.setup_output()
 
     @property
     def patch_bin(self) -> list:
@@ -667,7 +691,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         # Allocate a guard page, we need this in both cases
         # On a negative stack pointer, we still need a return address (otherwise we end up at 0)
         # Make sure it is not close to the heap (PE), otherwise the heap cannot grow
-        self._exit_trap_addr = self.mem.find_free_space(0x1000, min_addr=0x9000000, alignment=0x10)
+        self._exit_trap_addr = self.mem.find_free_space(0x1000, minaddr=0x9000000, align=0x10)
         self.mem.map(self._exit_trap_addr, 0x1000, info='[Stop guard]')
 
         # Stop on a negative stack pointer
@@ -705,12 +729,19 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
     # Emulate the binary from begin until @end, with timeout in @timeout and
     # number of emulated instructions in @count
-    def run(self, begin=None, end=None, timeout=0, count=0):
+    def run(self, begin=None, end=None, timeout=0, count=0, code = None):
         # replace the original entry point, exit point, timeout and count
         self.entry_point = begin
         self.exit_point = end
         self.timeout = timeout
         self.count = count
+
+        if self._custom_engine:
+            if code == None:
+                return self.arch.run(self._code)
+            else:
+                return self.arch.run(code) 
+
         self.write_exit_trap()
 
         # init debugger
