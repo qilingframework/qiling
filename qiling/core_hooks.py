@@ -59,7 +59,7 @@ class QlCoreHooks:
         ql, hook_type = pack_data
         catched = False
         if hook_type in self._hook.keys():
-            for h in self._hook[hook_type]:
+            for h in self._hook[hook_type][:]:
                 if h.check(ql, intno):
                     catched = True
                     ret = h.call(ql, intno)
@@ -76,7 +76,7 @@ class QlCoreHooks:
         if hook_type in self._insn_hook.keys():
             retval = None
 
-            for h in self._insn_hook[hook_type]:
+            for h in self._insn_hook[hook_type][:]:
                 if h.bound_check(ql.reg.arch_pc):
                     ret = h.call(ql, *args[ : -1])
 
@@ -106,7 +106,7 @@ class QlCoreHooks:
     def _hook_trace_cb(self, uc, addr, size, pack_data):
         ql, hook_type = pack_data
         if hook_type in self._hook.keys():
-            for h in self._hook[hook_type]:
+            for h in self._hook[hook_type][:]:
                 if h.bound_check(ql.reg.arch_pc):
                     ret = h.call(ql, addr, size)
                     if isinstance(ret, int) == True and ret & QL_HOOK_BLOCK  != 0:
@@ -124,7 +124,7 @@ class QlCoreHooks:
         ql, hook_type = pack_data
         handled = False
         if hook_type in self._hook.keys():
-            for h in self._hook[hook_type]:
+            for h in self._hook[hook_type][:]:
                 if h.bound_check(addr, size):
                     handled = True
                     ret = h.call(ql, access, addr, size, value)
@@ -148,7 +148,7 @@ class QlCoreHooks:
         ql, hook_type = pack_data
         catched = False
         if hook_type in self._hook.keys():
-            for h in self._hook[hook_type]:
+            for h in self._hook[hook_type][:]:
                 catched = True
                 ret = h.call(ql)
                 if isinstance(ret, int) == True and ret & QL_HOOK_BLOCK  != 0:
@@ -161,7 +161,7 @@ class QlCoreHooks:
     def _hook_addr_cb(self, uc, addr, size, pack_data):
         ql, addr = pack_data
         if addr in self._addr_hook.keys():
-            for h in self._addr_hook[addr]:
+            for h in self._addr_hook[addr][:]:
                 ret = h.call(ql, addr, size)
                 if isinstance(ret, int) == True and ret & QL_HOOK_BLOCK  != 0:
                     break
