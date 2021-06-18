@@ -251,7 +251,7 @@ class QlMemoryManager:
         return self.ql.uc.mem_read(addr, size)
 
     def read_ptr(self, addr: int, size: int=None) -> int:
-        """Read an integer value from a memory address.
+        """Read an pointer value from a memory address.
 
         Args:
             addr: memory address to read
@@ -261,6 +261,24 @@ class QlMemoryManager:
         """
 
         if not size:
+            size = self.ql.pointersize
+
+        return self.read_uint(addr, size)
+
+    def read_uint(self, addr: int, size: int=None) -> int:
+        """Read an unsigned integer value from a memory address.
+
+        Args:
+            addr: memory address to read
+            size: integer size (in bytes): either 1, 2, 4, 8, or None for arch native size
+
+        Returns: integer value stored at the specified memory address
+        """
+
+        if not size:
+            # Generally, the size of an unsigned integer is the same as pointer.
+            #     Maybe, It's better to add a new member(_uintsize) to Qiling (class),
+            #     And I think it's also OK like this.
             size = self.ql.pointersize
 
         __unpack = {
