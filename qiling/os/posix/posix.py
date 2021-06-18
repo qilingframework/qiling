@@ -123,8 +123,8 @@ class QlOsPosix(QlOs):
                 self.ql.reg.a1,
                 self.ql.reg.a2,
                 self.ql.reg.a3,
-                self.ql.reg.sp + 0x10,
-                self.ql.reg.sp + 0x14
+                self.ql.mem.read_uint(self.ql.reg.sp + 0x10, 4),
+                self.ql.mem.read_uint(self.ql.reg.sp + 0x14, 4),
             )
 
         def __syscall_args_x86():
