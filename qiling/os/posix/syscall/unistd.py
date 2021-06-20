@@ -257,7 +257,7 @@ def ql_syscall_write(ql, write_fd, write_buf, write_count, *args, **kw):
         if hasattr(ql.os.fd[write_fd], "write"):
             ql.os.fd[write_fd].write(buf)
         else:
-            ql.log.warning("write(%d,%x,%i) failed due to write_fd" % (write_fd, write_buf, write_count, regreturn))
+            ql.log.warning("write(%d,%x,%i) failed due to write_fd" % (write_fd, write_buf, write_count))
 
         regreturn = write_count
 
@@ -484,6 +484,8 @@ def ql_syscall_pipe(ql, pipe_pipefd, *args, **kw):
     rd, wd = ql_pipe.open()
 
     idx1 = -1
+    idx2 = -1
+
     for i in range(256):
         if ql.os.fd[i] == 0:
             idx1 = i
