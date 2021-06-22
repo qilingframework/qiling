@@ -567,7 +567,7 @@ class QlLoaderELF(QlLoader, ELFParse):
                 loc = elffile.get_section(section['sh_info'])['sh_offset'] + rel['r_offset']
                 loc += mem_start
 
-                if describe_reloc_type(rel['r_info_type'], elffile) == 'R_X86_64_32S':
+                if describe_reloc_type(rel['r_info_type'], elffile) in ('R_X86_64_32S', 'R_X86_64_32'):
                     # patch this reloc
                     if rel['r_addend']:
                         val = sym_offset + rel['r_addend']
@@ -587,7 +587,12 @@ class QlLoaderELF(QlLoader, ELFParse):
                     # ql.log.info('R_X86_64_64 %s: [0x%x] = 0x%x' %(symbol_name, loc, val))
                     ql.mem.write(loc, ql.pack64(val))
 
-                elif describe_reloc_type(rel['r_info_type'], elffile) == 'R_X86_64_PC32':
+                elif describe_reloc_type(rel['r_info_type'], elffile) == 'R_X86_64_PC64':
+                    val = rel['r_addend'] - loc
+                    val += rev_reloc_symbols[symbol_name]
+                    ql.mem.write(loc, ql.pack64(val))
+
+                elif describe_reloc_type(rel['r_info_type'], elffile) in ('R_X86_64_PC32', 'R_X86_64_PLT32'):
                     # patch branch address: X86 case
                     val = rel['r_addend'] - loc
                     val += rev_reloc_symbols[symbol_name]
@@ -595,7 +600,7 @@ class QlLoaderELF(QlLoader, ELFParse):
                     # ql.log.info('R_X86_64_PC32 %s: [0x%x] = 0x%x' %(symbol_name, loc, val & 0xFFFFFFFF))
                     ql.mem.write(loc, ql.pack32(val & 0xFFFFFFFF))
 
-                elif describe_reloc_type(rel['r_info_type'], elffile) == 'R_386_PC32':
+                elif describe_reloc_type(rel['r_info_type'], elffile) in ('R_386_PC32', 'R_386_PLT32'):
                     val = ql.unpack(ql.mem.read(loc, 4))
                     val = rev_reloc_symbols[symbol_name] + val - loc
                     ql.mem.write(loc, ql.pack32(val & 0xFFFFFFFF))
