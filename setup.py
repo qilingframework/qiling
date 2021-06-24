@@ -22,6 +22,11 @@ requirements = [
     "gevent>=20.9.0"
 ]
 
+from qiling.engine.requestments import evm_req
+evm_extra = {
+    "evm": evm_req
+}
+
 with open("README.md", "r", encoding="utf-8") as ld:
     long_description = ld.read()
 
@@ -67,4 +72,5 @@ setup(
     scripts=['qltool'],
     include_package_data=True,
     install_requires=requirements,
+    extras_require=evm_extra,
 )
