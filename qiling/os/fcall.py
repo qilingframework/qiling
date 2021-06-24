@@ -16,6 +16,8 @@ CallHook = Callable[[Qiling, int, Mapping], int]
 OnEnterHook = Callable[[Qiling, int, Mapping], Tuple[int, Mapping]]
 OnExitHook = Callable[[Qiling, int, Mapping, int], int]
 
+TypedArg = Tuple[Any, str, Any]
+
 class QlFunctionCall:
 	def __init__(self, ql: Qiling, cc: QlCC, accessors: Mapping[int, Accessor] = {}) -> None:
 		"""Initialize function call handler.
@@ -94,7 +96,27 @@ class QlFunctionCall:
 
 		return sum(self.accessors.get(typ, default)[2] for typ in ptypes)
 
-	def call(self, func: CallHook, proto: Mapping[str, Any], params: Mapping[str, Any], hook_onenter: Optional[OnEnterHook], hook_onexit: Optional[OnExitHook], passthru: bool) -> Tuple[Mapping, int, int]:
+	@staticmethod
+	def __get_typed_args(proto: Mapping[str, Any], args: Mapping[str, Any]) -> Iterable[TypedArg]:
+		types = list(proto.values())
+		names = list(args.keys())
+		values = list(args.values())
+
+		# variadic functions are invoked with unknown set of arguments which
+		# do not explicitly appear in prototype (there is an ellipsis instead).
+		#
+		# when a hooked variadic function is called, it updates the arguments
+		# mapping with the additional arguments it was given. that makes the
+		# arguments mapping longer than the prototype mapping; in other words:
+		# at this point we may have more values and names than types.
+		#
+		# here we expand the types list to meet names length, in such a case.
+		if len(names) > len(types):
+			types.extend([None] * (len(names) - len(types)))
+
+		return zip(types, names, values)
+
+	def call(self, func: CallHook, proto: Mapping[str, Any], params: Mapping[str, Any], hook_onenter: Optional[OnEnterHook], hook_onexit: Optional[OnExitHook], passthru: bool) -> Tuple[Iterable[TypedArg], int, int]:
 		"""Execute a hooked function.
 
 		Args:
@@ -132,6 +154,8 @@ class QlFunctionCall:
 		if retval is not None:
 			self.cc.setReturnValue(retval)
 
+		targs = QlFunctionCall.__get_typed_args(proto, params)
+
 		# TODO: resolve return value
 
 		# unwind stack frame; note that function prototype sometimes does not
@@ -148,4 +172,4 @@ class QlFunctionCall:
 		nslots = self.__count_slots(proto.values())
 		retaddr = -1 if passthru else self.cc.unwind(nslots)
 
-		return params, retval, retaddr
+		return targs, retval, retaddr

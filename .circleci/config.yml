@@ -5,28 +5,31 @@ jobs:
     macos:
       xcode: 10.1
     environment:
-      HOMEBREW_NO_AUTO_UPDATE: 1
       MACOSX_DEPLOYMENT_TARGET: 10.13.6
     steps:
       - checkout
       - run:
-          name: "Install wget"
+          name: "Install cmake"
           command: |
-            brew install wget cmake
+            curl -OL https://distfiles.macports.org/MacPorts/MacPorts-2.6.4-10.13-HighSierra.pkg
+            sudo installer -pkg MacPorts-2.6.4-10.13-HighSierra.pkg -target /
+            export PATH=/opt/local/bin:/opt/local/sbin:$PATH
+            sudo port -q -N install cmake pkgconfig
 
       - restore_cache:
           keys:
-            - python-{{ .Environment.CIRCLE_JOB }}-3.7.0-macos-10.13.6
+            - python-{{ .Environment.CIRCLE_JOB }}-3.7-port-macos-10.13.6
 
-      - run: 
+      - run:
           name: "Install qiling framework"
           command: |
+            export PATH=/opt/local/bin:/opt/local/sbin:$PATH
             pip3 install --upgrade pip
             pip3 install wheel setuptools
             pip3 install .
             cd examples
             rm -rf rootfs
-            wget https://github.com/qilingframework/rootfs/archive/refs/heads/master.zip 
+            curl -OL https://github.com/qilingframework/rootfs/archive/refs/heads/master.zip
             unzip master.zip && mv rootfs-master rootfs
             cd .. && ./examples/scripts/dylibcollector.sh
             cd examples/rootfs/x8664_macos/kext
@@ -35,7 +38,7 @@ jobs:
       - save_cache:
           paths:
             - ~/Library/Caches/pip
-          key: python-{{ .Environment.CIRCLE_JOB }}-3.7.0-macos-10.13.6
+          key: python-{{ .Environment.CIRCLE_JOB }}-3.7-port-macos-10.13.6
 
       - run:
           name: "Run macos test"

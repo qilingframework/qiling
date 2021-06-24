@@ -1,4 +1,4 @@
-FROM python:3.6-slim AS builder
+FROM python:3.8-slim AS builder
 
 LABEL maintainer="Kevin Foo <chfl4gs@qiling.io>"
 
@@ -13,14 +13,14 @@ COPY . /qiling
 RUN cd /qiling \
   && pip wheel . -w wheels
 
-FROM python:3.6-slim AS base
+FROM python:3.8-slim AS base
 
 COPY --from=builder /qiling /qiling
 
 WORKDIR /qiling
 
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends unzip \
+  && apt-get install -y --no-install-recommends unzip apt-utils \
   && rm -rf /var/lib/apt/lists/* \
   && pip3 install wheels/*.whl \
   && rm -rf wheels

@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from .os.memory import QlMemoryManager
     from .loader.loader import QlLoader
 
-from .const import QL_ARCH_ENDIAN, QL_ENDIAN, QL_OS, QL_CUSTOM_ENGINE
+from .const import QL_ARCH_ENDIAN, QL_ENDIAN, QL_OS, QL_VERBOSE, QL_CUSTOM_ENGINE
 from .exception import QlErrorFileNotFound, QlErrorArch, QlErrorOsType, QlErrorOutput
 from .utils import *
 from .core_struct import QlCoreStructs
@@ -35,7 +35,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             ostype=None,
             archtype=None,
             bigendian=False,
-            verbose=1,
+            verbose=QL_VERBOSE.DEFAULT,
             profile=None,
             console=True,
             log_file=None,
@@ -691,7 +691,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         # Allocate a guard page, we need this in both cases
         # On a negative stack pointer, we still need a return address (otherwise we end up at 0)
         # Make sure it is not close to the heap (PE), otherwise the heap cannot grow
-        self._exit_trap_addr = self.mem.find_free_space(0x1000, min_addr=0x9000000, alignment=0x10)
+        self._exit_trap_addr = self.mem.find_free_space(0x1000, minaddr=0x9000000, align=0x10)
         self.mem.map(self._exit_trap_addr, 0x1000, info='[Stop guard]')
 
         # Stop on a negative stack pointer

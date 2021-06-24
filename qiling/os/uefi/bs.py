@@ -510,7 +510,7 @@ def hook_SetMem(ql: Qiling, address: int, params):
 def hook_CreateEventEx(ql: Qiling, address: int, params):
 	return CreateEvent(ql, params)
 
-def CreateEvent(ql, params):
+def CreateEvent(ql: Qiling, params):
 	event_id = len(ql.loader.events)
 	event_dic = {
 		"NotifyFunction": params["NotifyFunction"],

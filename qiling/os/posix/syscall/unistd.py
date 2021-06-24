@@ -99,6 +99,11 @@ def ql_syscall_setgid32(ql, *args, **kw):
 def ql_syscall_setuid(ql, *args, **kw):
     return 0
 
+def ql_syscall_setresuid(ql, *args, **kw):
+    return 0
+
+def ql_syscall_setresgid(ql, *args, **kw):
+    return 0
 
 def ql_syscall_faccessat(ql, faccessat_dfd, faccessat_filename, faccessat_mode, *args, **kw):
 
@@ -200,6 +205,12 @@ def ql_syscall_close(ql, close_fd, *args, **kw):
 
 def ql_syscall_pread64(ql, read_fd, read_buf, read_len, read_offt, *args, **kw):
     data = None
+
+    # https://chromium.googlesource.com/linux-syscall-support/+/2c73abf02fd8af961e38024882b9ce0df6b4d19b
+    # https://chromiumcodereview.appspot.com/10910222
+    if ql.archtype == QL_ARCH.MIPS:
+        read_offt = ql.unpack64(ql.mem.read(ql.reg.arch_sp + 0x10, size=0x08))
+
     if read_fd < 256 and ql.os.fd[read_fd] != 0:
         try:
             pos = ql.os.fd[read_fd].tell()
@@ -246,7 +257,7 @@ def ql_syscall_write(ql, write_fd, write_buf, write_count, *args, **kw):
         if hasattr(ql.os.fd[write_fd], "write"):
             ql.os.fd[write_fd].write(buf)
         else:
-            ql.log.warning("write(%d,%x,%i) failed due to write_fd" % (write_fd, write_buf, write_count, regreturn))
+            ql.log.warning("write(%d,%x,%i) failed due to write_fd" % (write_fd, write_buf, write_count))
 
         regreturn = write_count
 
@@ -410,6 +421,8 @@ def ql_syscall_execve(ql, execve_pathname, execve_argv, execve_envp, *args, **kw
 
     ql.mem.map_info     = []
     ql.clear_ql_hooks()
+    # Clean debugger to prevent port conflicts
+    ql.debugger = None
 
     if ql.code:
         return     
@@ -471,6 +484,8 @@ def ql_syscall_pipe(ql, pipe_pipefd, *args, **kw):
     rd, wd = ql_pipe.open()
 
     idx1 = -1
+    idx2 = -1
+
     for i in range(256):
         if ql.os.fd[i] == 0:
             idx1 = i

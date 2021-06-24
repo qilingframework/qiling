@@ -17,6 +17,25 @@ def ql_syscall_time(ql, *args, **kw):
     regreturn = int(time.time())
     return regreturn
 
+def ql_syscall_clock_nanosleep_time64(ql, nanosleep_clk_id, nanosleep_flags, nanosleep_req, nanosleep_rem, *args, **kw):
+    def _sched_sleep(cur_thread):
+        gevent.sleep(tv_sec)
+
+    n = ql.pointersize
+
+    tv_sec = ql.unpack(ql.mem.read(nanosleep_req, n))
+    tv_sec += ql.unpack(ql.mem.read(nanosleep_req + n, n)) / 1000000000
+
+    if ql.os.thread_management == None:
+        time.sleep(tv_sec)
+    else:
+        ql.emu_stop()
+        ql.os.thread_management.cur_thread.sched_cb = _sched_sleep
+        th = ql.os.thread_management.cur_thread
+
+    regreturn = 0
+    return regreturn
+
 
 def ql_syscall_nanosleep(ql, nanosleep_req, nanosleep_rem, *args, **kw):
     def _sched_sleep(cur_thread):

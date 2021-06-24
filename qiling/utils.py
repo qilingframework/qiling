@@ -9,7 +9,8 @@ thoughout the qiling framework
 """
 import importlib, os, copy, re, pefile, configparser, logging, sys
 from logging import LogRecord
-from typing import Optional, Mapping
+from typing import Container, Optional, Mapping
+from enum import EnumMeta
 
 from unicorn import UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
 
@@ -178,11 +179,14 @@ def ql_get_arch_bits(arch: QL_ARCH) -> int:
 
     raise QlErrorArch("Invalid Arch Bit")
 
+def enum_values(e: EnumMeta) -> Container:
+    return e.__members__.values()
+
 def ql_is_valid_ostype(ostype: QL_OS) -> bool:
-    return ostype in QL_OS
+    return ostype in enum_values(QL_OS)
 
 def ql_is_valid_arch(arch: QL_ARCH) -> bool:
-    return arch in QL_ARCH
+    return arch in enum_values(QL_ARCH)
 
 def loadertype_convert_str(ostype: QL_OS) -> Optional[str]:
     adapter = {}
@@ -248,7 +252,11 @@ def ql_elf_parse_emu_env(path):
         return elfdata
 
     with open(path, "rb") as f:
-        elfdata = f.read(20)
+        size = os.fstat(f.fileno()).st_size
+        if size >= 512:
+            elfdata = f.read(512)
+        else:
+            elfdata = f.read(20)
 
     ident = getident()
     ostype = None
@@ -264,7 +272,10 @@ def ql_elf_parse_emu_env(path):
         if osabi == 0x09:
             ostype = QL_OS.FREEBSD
         elif osabi in (0x0, 0x03) or osabi >= 0x11:
-            ostype = QL_OS.LINUX
+            if b"ldqnx.so" in ident:
+                ostype = QL_OS.QNX
+            else:
+                ostype = QL_OS.LINUX
 
         if e_machine == b"\x03\x00":
             archendian = QL_ENDIAN.EL
@@ -391,7 +402,7 @@ def ql_guess_emu_env(path):
         arch, ostype, archendian = ql_pe_parse_emu_env(path)
   
     if ostype not in (QL_OS):
-        raise QlErrorOsType("File does not belong to either 'linux', 'windows', 'freebsd', 'macos', 'ios', 'dos'")
+        raise QlErrorOsType("File does not belong to either 'linux', 'windows', 'freebsd', 'macos', 'ios', 'dos', 'qnx'")
 
     return arch, ostype, archendian
 
@@ -420,7 +431,7 @@ def debugger_setup(debugger, ql):
         else:  
             remotedebugsrv, *debug_opts = debug_opts
 
-        if debugger_convert(remotedebugsrv) not in (QL_DEBUGGER):
+        if debugger_convert(remotedebugsrv) not in enum_values(QL_DEBUGGER):
             raise QlErrorOutput("Error: Debugger not supported")
 
     debugsession = ql_get_module_function(f"qiling.debugger.{remotedebugsrv}.{remotedebugsrv}", f"Ql{str.capitalize(remotedebugsrv)}")
@@ -485,7 +496,7 @@ def profile_setup(ostype, profile, ql):
     config.read(profiles)
     return config, debugmsg
 
-def ql_resolve_logger_level(verbose):
+def ql_resolve_logger_level(verbose: QL_VERBOSE):
     level = logging.INFO
     if verbose == QL_VERBOSE.OFF:
         level = logging.WARNING

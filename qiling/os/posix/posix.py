@@ -22,6 +22,7 @@ from qiling.os.posix.syscall import *
 from qiling.os.linux.syscall import *
 from qiling.os.macos.syscall import *
 from qiling.os.freebsd.syscall import *
+from qiling.os.qnx.syscall import *
 
 SYSCALL_PREF: str = f'ql_syscall_'
 
@@ -61,6 +62,8 @@ class QlOsPosix(QlOs):
         # handle a special case
         if (self.ql.archtype == QL_ARCH.ARM64) and (self.ql.ostype == QL_OS.MACOS):
             self.__syscall_id_reg = UC_ARM64_REG_X16
+        if (self.ql.archtype == QL_ARCH.ARM) and (self.ql.ostype == QL_OS.QNX):
+            self.__syscall_id_reg = UC_ARM_REG_R12
 
         def __set_syscall_ret_arm(retval: int):
             self.ql.reg.r0 = retval
@@ -242,49 +245,47 @@ class QlOsPosix(QlOs):
             self.utils.syscalls_counter += 1
 
             try:
-                ret = 0
 
                 if onenter_hook is not None:
-                    ret = onenter_hook(self.ql, *self.get_syscall_args())
+                    onenter_hook(self.ql, *self.get_syscall_args())
 
-                if type(ret) is not int or (ret & QL_CALL_BLOCK) == 0:
-                    syscall_basename = syscall_hook.__name__[len(SYSCALL_PREF):]
-                    args = []
+                syscall_basename = syscall_hook.__name__[len(SYSCALL_PREF):]
+                args = []
 
-                    # ignore first arg, which is 'ql'
-                    arg_names = tuple(signature(syscall_hook).parameters.values())[1:]
-                    arg_values = self.get_syscall_args()
+                # ignore first arg, which is 'ql'
+                arg_names = tuple(signature(syscall_hook).parameters.values())[1:]
+                arg_values = self.get_syscall_args()
 
-                    for name, value in zip(arg_names, arg_values):
-                        name = str(name)
+                for name, value in zip(arg_names, arg_values):
+                    name = str(name)
 
-                        # ignore python special args
-                        if name in ('*args', '**kw', '**kwargs'):
-                            continue
+                    # ignore python special args
+                    if name in ('*args', '**kw', '**kwargs'):
+                        continue
 
-                        # cut the first part of the arg if it is of form fstatat64_fd
-                        if name.startswith(f'{syscall_basename}_'):
-                            name = name.partition('_')[-1]
+                    # cut the first part of the arg if it is of form fstatat64_fd
+                    if name.startswith(f'{syscall_basename}_'):
+                        name = name.partition('_')[-1]
 
-                        args.append(f'{name} = {value:#x}')
+                    args.append(f'{name} = {value:#x}')
 
-                    faddr = f'{self.ql.reg.arch_pc:#0{self.ql.archbit // 4 + 2}x}: ' if self.ql.verbose >= QL_VERBOSE.DEBUG else ''
-                    fargs = ', '.join(args)
+                faddr = f'{self.ql.reg.arch_pc:#0{self.ql.archbit // 4 + 2}x}: ' if self.ql.verbose >= QL_VERBOSE.DEBUG else ''
+                fargs = ', '.join(args)
 
-                    log = f'{faddr}{syscall_basename}({fargs})'
+                log = f'{faddr}{syscall_basename}({fargs})'
 
-                    if self.ql.verbose >= QL_VERBOSE.DEBUG:
-                        self.ql.log.debug(log)
-                    else:
-                        self.ql.log.info(log)
+                if self.ql.verbose >= QL_VERBOSE.DEBUG:
+                    self.ql.log.debug(log)
+                else:
+                    self.ql.log.info(log)
 
-                    ret = syscall_hook(self.ql, *arg_values)
+                ret = syscall_hook(self.ql, *arg_values)
 
-                    if ret is not None and type(ret) is int:
-                        # each name has a list of calls, we want the last one and we want to update the return value
-                        self.utils.syscalls[syscall_name][-1]["result"] = ret
-                        ret = self.set_syscall_return(ret)
-                        self.ql.log.debug(f'{syscall_basename}() = {QlOsPosix.getNameFromErrorCode(ret)}')
+                if ret is not None and type(ret) is int:
+                    # each name has a list of calls, we want the last one and we want to update the return value
+                    self.utils.syscalls[syscall_name][-1]["result"] = ret
+                    ret = self.set_syscall_return(ret)
+                    self.ql.log.debug(f'{syscall_basename}() = {QlOsPosix.getNameFromErrorCode(ret)}')
 
                 if onexit_hook is not None:
                     onexit_hook(self.ql, *self.get_syscall_args())

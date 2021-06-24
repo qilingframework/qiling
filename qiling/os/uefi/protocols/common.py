@@ -3,7 +3,6 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from qiling.os.uefi import guids_db
 from qiling.os.uefi.const import EFI_SUCCESS, EFI_NOT_FOUND, EFI_UNSUPPORTED, EFI_BUFFER_TOO_SMALL, EFI_INVALID_PARAMETER
 from qiling.os.uefi.utils import read_int64, write_int64
 from qiling.os.uefi.UefiSpec import EFI_LOCATE_SEARCH_TYPE
@@ -121,10 +120,6 @@ def LocateProtocol(context, params):
 			write_int64(context.ql, params['Interface'], guid_dic[protocol])
 			return EFI_SUCCESS
 
-	friendly_name = guids_db.get(protocol.upper(), 'UNKNOWN')
-
-	context.ql.log.warning(f'protocol with guid {protocol} not found ({friendly_name})')
-
 	return EFI_NOT_FOUND
 
 def InstallConfigurationTable(context, params):
@@ -133,7 +128,7 @@ def InstallConfigurationTable(context, params):
 
 	if not guid:
 		return EFI_INVALID_PARAMETER
-	
+
 	context.install_configuration_table(guid, table)
 
 	return EFI_SUCCESS

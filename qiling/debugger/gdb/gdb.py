@@ -673,6 +673,10 @@ class QlGdb(QlDebugger, object):
                     self.send("")
 
                 elif subcmd.startswith('File:open'):
+                    if self.ql.ostype == QL_OS.UEFI and self.ql.custom_engine == True:
+                        self.send("F-1")
+                        return
+
                     (file_path, flags, mode) = subcmd.split(':')[-1].split(',')
                     file_path = unhexlify(file_path).decode(encoding='UTF-8')
                     flags = int(flags, base=16)
@@ -688,6 +692,7 @@ class QlGdb(QlDebugger, object):
                         self.send("F%x" % fd)
                     else:
                         self.send("F-1")
+                        return                        
 
                 elif subcmd.startswith('File:pread:'):
                     (fd, count, offset) = subcmd.split(':')[-1].split(',')

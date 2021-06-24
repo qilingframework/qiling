@@ -12,7 +12,7 @@ from qiling.os.windows.structs import *
 from qiling.exception import *
 from qiling.const import *
 from qiling.arch.x86_const import *
-from .loader import QlLoader
+from .loader import QlLoader, Image
 from qiling.os.memory import QlMemoryHeap
 
 
@@ -141,7 +141,7 @@ class Process():
             self.add_ldr_data_table_entry(dll_name)
 
         # add DLL to coverage images
-        self.images.append(self.coverage_image(dll_base, dll_base+dll_len, path))
+        self.images.append(Image(dll_base, dll_base+dll_len, path))
 
         self.ql.log.info("Done with loading %s" % path)
 
@@ -472,7 +472,7 @@ class QlLoaderPE(QlLoader, Process):
             self.sizeOfStackReserve = self.pe.OPTIONAL_HEADER.SizeOfStackReserve
             self.ql.log.info("Loading %s to 0x%x" % (self.path, self.pe_image_address))
             self.ql.log.info("PE entry point at 0x%x" % self.entry_point)
-            self.images.append(self.coverage_image(self.pe_image_address, self.pe_image_address + self.pe.NT_HEADERS.OPTIONAL_HEADER.SizeOfImage, self.path))
+            self.images.append(Image(self.pe_image_address, self.pe_image_address + self.pe.NT_HEADERS.OPTIONAL_HEADER.SizeOfImage, self.path))
 
             # Stack should not init at the very bottom. Will cause errors with Dlls
             sp = self.stack_address + self.stack_size - 0x1000
