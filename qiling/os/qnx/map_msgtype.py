@@ -13,6 +13,12 @@ def map_msgtype(ql, msgtype):
 
 # QNX message types extracted from openqnx
 msgtype_table = {
+    # services/system/public/sys/sysmsg.h
+    "sys_conf":   (0x000),
+    "sys_cmd":    (0x001),
+    "sys_log":    (0x002),
+    "sys_vendor": (0x003),
+
     "mem_map":    (0x040),
 
     # lib/c/public/sys/iomsg.h
