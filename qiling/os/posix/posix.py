@@ -303,6 +303,16 @@ class QlOsPosix(QlOs):
                 raise QlErrorSyscallNotFound("Syscall Not Found")
 
     def get_syscall(self) -> int:
+        if self.ql.archtype == QL_ARCH.ARM:
+            # When ARM-OABI
+            # oabi_syscall_nr = 0x900000 + syscall_nr
+            # Ref1: https://marcin.juszkiewicz.com.pl/download/tables/syscalls.html
+            # Ref2: https://github.com/rootkiter/Reverse-bins/blob/master/syscall_header/armv4l_unistd.h
+            # Ref3: https://github.com/unicorn-engine/unicorn/issues/1137
+            code_val = self.ql.mem.read_ptr(self.ql.reg.arch_pc-4, 4)
+            svc_imm  = code_val & 0x00ffffff
+            if (svc_imm >= 0x900000):
+                    return svc_imm - 0x900000
         return self.ql.reg.read(self.__syscall_id_reg)
 
     def set_syscall_return(self, retval: int) -> int:
