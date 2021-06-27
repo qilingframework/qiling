@@ -85,7 +85,8 @@ class QlOsLinux(QlOsPosix):
             self.thread_class = thread.QlLinuxX8664Thread
 
         for i in range(256):
-            if self.fd[i] != 0 and self.fd[i].close_on_exec:
+            if hasattr(self.fd[i], 'close_on_exec') and \
+                    self.fd[i].close_on_exec:
                 self.fd[i] = 0                
 
     def hook_syscall(self, int= None, intno= None):
