@@ -82,12 +82,7 @@ class QlOsLinux(QlOsPosix):
             self.ql.hook_insn(self.hook_syscall, UC_X86_INS_SYSCALL)
             # Keep test for _cc
             #self.ql.hook_insn(hook_posix_api, UC_X86_INS_SYSCALL)
-            self.thread_class = thread.QlLinuxX8664Thread
-
-        for i in range(256):
-            if hasattr(self.fd[i], 'close_on_exec') and \
-                    self.fd[i].close_on_exec:
-                self.fd[i] = 0                
+            self.thread_class = thread.QlLinuxX8664Thread               
 
     def hook_syscall(self, int= None, intno= None):
         return self.load_syscall()
