@@ -6,9 +6,9 @@
 
 from qiling.const import *
 from qiling.os.linux.thread import *
-from qiling.const import *
 from qiling.os.posix.filestruct import *
 from qiling.os.filestruct import *
+from qiling.os.posix.const import *
 from qiling.os.posix.const_mapping import *
 from qiling.exception import *
 
@@ -91,28 +91,26 @@ def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *ar
     return regreturn
 
 
-def ql_syscall_fcntl(ql, fcntl_fd, fcntl_cmd, *args, **kw):
-    F_SETFD = 2
-    F_GETFL = 3
-    F_SETFL = 4
-    regreturn = 0
-    if fcntl_cmd == F_SETFD:
+def ql_syscall_fcntl(ql, fcntl_fd, fcntl_cmd, fcntl_arg, *args, **kw):
+    if ql.os.fd[fcntl_fd] == 0:
+        return -EBADF
+
+    f = ql.os.fd[fcntl_fd]
+    
+    if fcntl_cmd == F_GETFD:
+        regreturn = f.close_on_exec
+
+    elif fcntl_cmd == F_SETFD:
+        f.close_on_exec = 1 if fcntl_arg & FD_CLOEXEC else 0
         regreturn = 0
-    elif fcntl_cmd == F_GETFL:
-        regreturn = 2
-    elif fcntl_cmd == F_SETFL:
-        regreturn = 0
+
+    else:
+        regreturn = -1
 
     return regreturn
 
 
 def ql_syscall_fcntl64(ql, fcntl_fd, fcntl_cmd, fcntl_arg, *args, **kw):
-
-    F_DUPFD = 0
-    F_GETFD = 1
-    F_SETFD = 2
-    F_GETFL = 3
-    F_SETFL = 4
 
     # https://linux.die.net/man/2/fcntl64
     if fcntl_cmd == F_DUPFD:

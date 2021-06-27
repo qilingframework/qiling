@@ -155,10 +155,10 @@ class QlOsPosix(QlOs):
             QL_ARCH.X8664: __syscall_args_x8664
         }[self.ql.archtype]
 
-        self.fd = QlFileDes([0] * 256)
-        self.fd[0] = self.stdin
-        self.fd[1] = self.stdout
-        self.fd[2] = self.stderr
+        self._fd = QlFileDes([0] * 256)
+        self._fd[0] = self.stdin
+        self._fd[1] = self.stdout
+        self._fd[2] = self.stderr
 
     # ql.syscall - get syscall for all posix series
     @property
@@ -191,7 +191,6 @@ class QlOsPosix(QlOs):
         """
 
         return f'{ret:#x}{f" ({errors[-ret]})" if -ret in errors else f""}'
-
 
     def load_syscall(self):
         # import syscall mapping function
@@ -310,3 +309,7 @@ class QlOsPosix(QlOs):
 
     def get_syscall_args(self):
         return self.__syscall_args()
+
+    @property
+    def fd(self):
+        return self._fd

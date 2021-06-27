@@ -16,7 +16,7 @@ from qiling.os.posix.const import ECHILD
 
 
 def ql_syscall_wait4(ql, wait4_pid, wait4_wstatus, wait4_options, wait4_rusage, *args, **kw):
-    wait4_pid = ql.unpacks(ql.pack(wait4_pid))  # convert to signed
+    wait4_pid = ql.unpack32s(ql.pack32(wait4_pid))  # convert to signed (pid_t is 32bit)
     try:
         spid, status, rusage = os.wait4(wait4_pid, wait4_options)
         if wait4_wstatus != 0:

@@ -10,10 +10,10 @@ from multiprocessing import Process
 
 from qiling.const import *
 from qiling.os.linux.thread import *
-from qiling.const import *
 from qiling.os.posix.filestruct import *
 from qiling.os.filestruct import *
 from qiling.os.posix.const_mapping import *
+from qiling.os.posix.const import *
 from qiling.exception import *
 from qiling.os.posix.stat import *
 from qiling.core_hooks import QlCoreHooks
@@ -234,9 +234,9 @@ def ql_syscall_read(ql, read_fd, read_buf, read_len, *args, **kw):
             ql.mem.write(read_buf, data)
             regreturn = len(data)
         except:
-            regreturn = -1
+            regreturn = -EBADF
     else:
-        regreturn = -1
+        regreturn = -EBADF
 
     if data:
         ql.log.debug("read() CONTENT:")
@@ -257,7 +257,7 @@ def ql_syscall_write(ql, write_fd, write_buf, write_count, *args, **kw):
         if hasattr(ql.os.fd[write_fd], "write"):
             ql.os.fd[write_fd].write(buf)
         else:
-            ql.log.warning("write(%d,%x,%i) failed due to write_fd" % (write_fd, write_buf, write_count))
+            ql.log.warning("write(fd = %d, buf = %x, count = %i) failed due to write_fd" % (write_fd, write_buf, write_count))
 
         regreturn = write_count
 

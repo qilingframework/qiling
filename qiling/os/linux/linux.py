@@ -84,6 +84,10 @@ class QlOsLinux(QlOsPosix):
             #self.ql.hook_insn(hook_posix_api, UC_X86_INS_SYSCALL)
             self.thread_class = thread.QlLinuxX8664Thread
 
+        for i in range(256):
+            if self.fd[i] != 0 and self.fd[i].close_on_exec:
+                self.fd[i] = 0                
+
     def hook_syscall(self, int= None, intno= None):
         return self.load_syscall()
 
