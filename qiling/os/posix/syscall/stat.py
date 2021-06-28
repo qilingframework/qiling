@@ -7,7 +7,7 @@
 from qiling.const import *
 from qiling.os.linux.thread import *
 from qiling.os.posix.stat import *
-from qiling.const import *
+from qiling.os.posix.const import *
 from qiling.os.posix.const_mapping import *
 from qiling.exception import *
 import struct
@@ -854,7 +854,7 @@ def ql_syscall_fstat64(ql, fstat64_fd, fstat64_buf_ptr, *args, **kw):
         regreturn = -1
     elif ql.os.fd[fstat64_fd].fstat() == -1:
         regreturn = 0
-    elif fstat64_fd < 256 and ql.os.fd[fstat64_fd] != 0:
+    elif 0 <= fstat64_fd < NR_OPEN and ql.os.fd[fstat64_fd] != 0:
         user_fileno = fstat64_fd
         fstat64_info = ql.os.fd[user_fileno].fstat()
         fstat64_buf = pack_stat64_struct(ql, fstat64_info)
@@ -871,7 +871,7 @@ def ql_syscall_fstat64(ql, fstat64_fd, fstat64_buf_ptr, *args, **kw):
 
 
 def ql_syscall_fstat(ql, fstat_fd, fstat_buf_ptr, *args, **kw):
-    if fstat_fd < 256 and ql.os.fd[fstat_fd] != 0 and hasattr(ql.os.fd[fstat_fd], "fstat"):
+    if 0 <= fstat_fd < NR_OPEN and ql.os.fd[fstat_fd] != 0 and hasattr(ql.os.fd[fstat_fd], "fstat"):
         user_fileno = fstat_fd
         fstat_info = ql.os.fd[user_fileno].fstat()
         fstat_buf = pack_stat_struct(ql, fstat_info)

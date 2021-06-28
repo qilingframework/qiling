@@ -8,10 +8,10 @@ import struct, ipaddress
 
 from qiling.const import *
 from qiling.os.linux.thread import *
-from qiling.const import *
 from qiling.os.posix.filestruct import *
 from qiling.os.filestruct import *
 from qiling.os.posix.const_mapping import *
+from qiling.os.posix.const import *
 from qiling.exception import *
 
 
@@ -26,7 +26,7 @@ def ql_syscall_socket(ql, socket_domain, socket_type, socket_protocol, *args, **
         socket_type = 1
 
     idx = -1
-    for i in range(256):
+    for i in range(NR_OPEN):
         if ql.os.fd[i] == 0:
             idx = i
             break
@@ -94,7 +94,7 @@ def ql_syscall_setsockopt(ql, *args, **kw):
 
 
 def ql_syscall_shutdown(ql, shutdown_fd, shutdown_how, *args, **kw):
-    if shutdown_fd >=0 and shutdown_fd < 256 and ql.os.fd[shutdown_fd] != 0:
+    if 0 <= shutdown_fd < NR_OPEN and ql.os.fd[shutdown_fd] != 0:
         try:
             ql.os.fd[shutdown_fd].shutdown(shutdown_how)
             regreturn = 0
@@ -153,7 +153,7 @@ def ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen,  *args, **kw):
 
 
 def ql_syscall_getsockname(ql, sockfd, addr, addrlenptr, *args, **kw):
-    if sockfd < 256 and ql.os.fd[sockfd] != 0:
+    if 0 <= sockfd < NR_OPEN and ql.os.fd[sockfd] != 0:
         host, port = ql.os.fd[sockfd].getsockname()
         data = struct.pack("<h", int(ql.os.fd[sockfd].family))
         data += struct.pack(">H", port)
@@ -171,7 +171,7 @@ def ql_syscall_getsockname(ql, sockfd, addr, addrlenptr, *args, **kw):
 
 
 def ql_syscall_getpeername(ql, sockfd, addr, addrlenptr, *args, **kw):
-    if sockfd < 256 and ql.os.fd[sockfd] != 0:
+    if 0 <= sockfd < NR_OPEN and ql.os.fd[sockfd] != 0:
         host, port = ql.os.fd[sockfd].getpeername()
         data = struct.pack("<h", int(ql.os.fd[sockfd].family))
         data += struct.pack(">H", port)
@@ -189,7 +189,7 @@ def ql_syscall_getpeername(ql, sockfd, addr, addrlenptr, *args, **kw):
 
 
 def ql_syscall_listen(ql, listen_sockfd, listen_backlog, *args, **kw):
-    if listen_sockfd < 256 and ql.os.fd[listen_sockfd] != 0:
+    if 0 <= listen_sockfd < NR_OPEN and ql.os.fd[listen_sockfd] != 0:
         try:
             ql.os.fd[listen_sockfd].listen(listen_backlog)
             regreturn = 0
@@ -217,7 +217,7 @@ def ql_syscall_accept(ql, accept_sockfd, accept_addr, accept_addrlen, *args, **k
             return -1
 
         idx = -1
-        for i in range(256):
+        for i in range(NR_OPEN):
             if ql.os.fd[i] == 0:
                 idx = i
                 break
@@ -243,7 +243,7 @@ def ql_syscall_accept(ql, accept_sockfd, accept_addr, accept_addrlen, *args, **k
 
 
 def ql_syscall_recv(ql, recv_sockfd, recv_buf, recv_len, recv_flags, *args, **kw):
-    if recv_sockfd < 256 and ql.os.fd[recv_sockfd] != 0:
+    if 0 <= recv_sockfd < NR_OPEN and ql.os.fd[recv_sockfd] != 0:
         tmp_buf = ql.os.fd[recv_sockfd].recv(recv_len, recv_flags)
         if tmp_buf:
             ql.log.debug("recv() CONTENT:")
@@ -257,7 +257,7 @@ def ql_syscall_recv(ql, recv_sockfd, recv_buf, recv_len, recv_flags, *args, **kw
 
 def ql_syscall_send(ql, send_sockfd, send_buf, send_len, send_flags, *args, **kw):
     regreturn = 0
-    if send_sockfd < 256 and ql.os.fd[send_sockfd] != 0:
+    if 0 <= send_sockfd < NR_OPEN and ql.os.fd[send_sockfd] != 0:
         try:
             ql.log.debug("debug send() start")
             tmp_buf = ql.mem.read(send_buf, send_len)  
@@ -283,7 +283,7 @@ def ql_syscall_recvfrom(ql, recvfrom_sockfd, recvfrom_buf, recvfrom_len, recvfro
     if ql.os.fd[recvfrom_sockfd].socktype == SOCK_STREAM:
         return ql_syscall_recv(ql, recvfrom_sockfd, recvfrom_buf, recvfrom_len, recvfrom_flags, *args, **kw)
     else:
-        if recvfrom_sockfd < 256 and ql.os.fd[recvfrom_sockfd] != 0:
+        if 0 <= recvfrom_sockfd < NR_OPEN and ql.os.fd[recvfrom_sockfd] != 0:
             tmp_buf, tmp_addr = ql.os.fd[recvfrom_sockfd].recvfrom(recvfrom_len, recvfrom_flags)
             if tmp_buf:
                 ql.log.debug("recvfrom() CONTENT:")
@@ -317,7 +317,7 @@ def ql_syscall_sendto(ql, sendto_sockfd, sendto_buf, sendto_len, sendto_flags, s
         return ql_syscall_send(ql, sendto_sockfd, sendto_buf, sendto_len, sendto_flags, *args, **kw)
     else:
         regreturn = 0
-        if sendto_sockfd < 256 and ql.os.fd[sendto_sockfd] != 0:
+        if 0 <= sendto_sockfd < NR_OPEN and ql.os.fd[sendto_sockfd] != 0:
             try:
                 ql.log.debug("debug sendto() start")
                 tmp_buf = ql.mem.read(sendto_buf, sendto_len)

@@ -14,6 +14,9 @@ THREAD_EVENT_CREATE_THREAD    = 4
 THREAD_EVENT_BLOCKING_EVENT   = 5
 THREAD_EVENT_EXIT_GROUP_EVENT = 6
 
+# File Open Limits
+NR_OPEN = 1024
+
 linux_socket_types = {
     'SOCK_STREAM'    : 0x1,
     'SOCK_DGRAM'     : 0x2,

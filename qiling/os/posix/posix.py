@@ -15,7 +15,7 @@ from qiling import Qiling
 from qiling.const import QL_ARCH, QL_OS, QL_INTERCEPT, QL_CALL_BLOCK, QL_VERBOSE
 from qiling.exception import QlErrorSyscallNotFound
 from qiling.os.os import QlOs
-from qiling.os.posix.const import errors
+from qiling.os.posix.const import errors, NR_OPEN
 from qiling.utils import QlFileDes, ostype_convert_str, ql_get_module_function, ql_syscall_mapping_function
 
 from qiling.os.posix.syscall import *
@@ -155,7 +155,7 @@ class QlOsPosix(QlOs):
             QL_ARCH.X8664: __syscall_args_x8664
         }[self.ql.archtype]
 
-        self._fd = QlFileDes([0] * 256)
+        self._fd = QlFileDes([0] * NR_OPEN)
         self._fd[0] = self.stdin
         self._fd[1] = self.stdout
         self._fd[2] = self.stderr

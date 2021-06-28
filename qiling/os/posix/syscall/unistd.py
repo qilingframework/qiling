@@ -12,8 +12,8 @@ from qiling.const import *
 from qiling.os.linux.thread import *
 from qiling.os.posix.filestruct import *
 from qiling.os.filestruct import *
-from qiling.os.posix.const_mapping import *
 from qiling.os.posix.const import *
+from qiling.os.posix.const_mapping import *
 from qiling.exception import *
 from qiling.os.posix.stat import *
 from qiling.core_hooks import QlCoreHooks
@@ -196,7 +196,7 @@ def ql_syscall_access(ql, access_path, access_mode, *args, **kw):
 
 def ql_syscall_close(ql, close_fd, *args, **kw):
     regreturn = -1
-    if close_fd < 256 and ql.os.fd[close_fd] != 0:
+    if 0 <= close_fd < NR_OPEN and ql.os.fd[close_fd] != 0:
         ql.os.fd[close_fd].close()
         ql.os.fd[close_fd] = 0
         regreturn = 0
@@ -211,7 +211,7 @@ def ql_syscall_pread64(ql, read_fd, read_buf, read_len, read_offt, *args, **kw):
     if ql.archtype == QL_ARCH.MIPS:
         read_offt = ql.unpack64(ql.mem.read(ql.reg.arch_sp + 0x10, size=0x08))
 
-    if read_fd < 256 and ql.os.fd[read_fd] != 0:
+    if 0 <= read_fd < NR_OPEN and ql.os.fd[read_fd] != 0:
         try:
             pos = ql.os.fd[read_fd].tell()
             ql.os.fd[read_fd].lseek(read_offt)
@@ -228,7 +228,7 @@ def ql_syscall_pread64(ql, read_fd, read_buf, read_len, read_offt, *args, **kw):
 
 def ql_syscall_read(ql, read_fd, read_buf, read_len, *args, **kw):
     data = None
-    if read_fd < 256 and ql.os.fd[read_fd] != 0:
+    if 0 <= read_fd < NR_OPEN and ql.os.fd[read_fd] != 0:
         try:
             data = ql.os.fd[read_fd].read(read_len)
             ql.mem.write(read_buf, data)
@@ -432,7 +432,7 @@ def ql_syscall_execve(ql, execve_pathname, execve_argv, execve_envp, *args, **kw
     ql.os.load()
     
     # check the close-on-exec flag
-    for i in range(256):
+    for i in range(NR_OPEN):
         if hasattr(ql.os.fd[i], 'close_on_exec') and \
                 ql.os.fd[i].close_on_exec:
             ql.os.fd[i] = 0 
@@ -442,9 +442,10 @@ def ql_syscall_execve(ql, execve_pathname, execve_argv, execve_envp, *args, **kw
 
 
 def ql_syscall_dup(ql, dup_oldfd, *args, **kw):
-    regreturn = -1
+    regreturn = -EBADF
     if dup_oldfd in range(0, 256):
         if ql.os.fd[dup_oldfd] != 0:
+            regreturn = -EMFILE
             newfd = ql.os.fd[dup_oldfd].dup()
             for idx, val in enumerate(ql.os.fd):
                 if val == 0:
@@ -456,19 +457,19 @@ def ql_syscall_dup(ql, dup_oldfd, *args, **kw):
 
 
 def ql_syscall_dup2(ql, dup2_oldfd, dup2_newfd, *args, **kw):
-    if 0 <= dup2_newfd < 256 and 0 <= dup2_oldfd < 256:
+    if 0 <= dup2_newfd < NR_OPEN and 0 <= dup2_oldfd < NR_OPEN:
         if ql.os.fd[dup2_oldfd] != 0:
             ql.os.fd[dup2_newfd] = ql.os.fd[dup2_oldfd].dup()
             regreturn = dup2_newfd
         else:
-            regreturn = -1
+            regreturn = -EBADF
     else:
-        regreturn = -1
+        regreturn = -EBADF
     return regreturn
 
 
 def ql_syscall_dup3(ql, dup3_oldfd, dup3_newfd, dup3_flags, null2, null3, null4):
-    if 0 <= dup3_newfd < 256 and 0 <= dup3_oldfd < 256:
+    if 0 <= dup3_newfd < NR_OPEN and 0 <= dup3_oldfd < NR_OPEN:
         if ql.os.fd[dup3_oldfd] != 0:
             ql.os.fd[dup3_newfd] = ql.os.fd[dup3_oldfd].dup()
             regreturn = dup3_newfd
@@ -493,7 +494,7 @@ def ql_syscall_pipe(ql, pipe_pipefd, *args, **kw):
     idx1 = -1
     idx2 = -1
 
-    for i in range(256):
+    for i in range(NR_OPEN):
         if ql.os.fd[i] == 0:
             idx1 = i
             break
@@ -501,7 +502,7 @@ def ql_syscall_pipe(ql, pipe_pipefd, *args, **kw):
         regreturn = -1
     else:
         idx2 = -1
-        for i in range(256):
+        for i in range(NR_OPEN):
             if ql.os.fd[i] == 0 and i != idx1:
                 idx2 = i
                 break
@@ -572,7 +573,7 @@ def ql_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args, **kw):
 def ql_syscall_unlink(ql, unlink_pathname, *args, **kw):
     pathname = ql.mem.string(unlink_pathname)
     real_path = ql.os.path.transform_to_real_path(pathname)
-    opened_fds = [getattr(ql.os.fd[i], 'name', None) for i in range(256) if ql.os.fd[i] != 0]
+    opened_fds = [getattr(ql.os.fd[i], 'name', None) for i in range(NR_OPEN) if ql.os.fd[i] != 0]
     path = pathlib.Path(real_path)
 
     if any((real_path not in opened_fds, path.is_block_device(), path.is_fifo(), path.is_socket(), path.is_symlink())):

@@ -6,7 +6,6 @@
 
 from qiling.const import *
 from qiling.os.linux.thread import *
-from qiling.const import *
 from qiling.os.posix.filestruct import *
 from qiling.os.filestruct import *
 from qiling.os.posix.const_mapping import *

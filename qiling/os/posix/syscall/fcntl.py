@@ -21,7 +21,7 @@ def ql_syscall_open(ql, filename, flags, mode, *args, **kw):
     flags = flags & 0xffffffff
     mode = mode & 0xffffffff
 
-    for i in range(256):
+    for i in range(NR_OPEN):
         if ql.os.fd[i] == 0:
             idx = i
             break
@@ -61,7 +61,7 @@ def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *ar
     openat_flags = openat_flags & 0xffffffff
     openat_mode = openat_mode & 0xffffffff
 
-    for i in range(256):
+    for i in range(NR_OPEN):
         if ql.os.fd[i] == 0:
             idx = i
             break
@@ -92,12 +92,26 @@ def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *ar
 
 
 def ql_syscall_fcntl(ql, fcntl_fd, fcntl_cmd, fcntl_arg, *args, **kw):
-    if ql.os.fd[fcntl_fd] == 0:
+    if not (0 <= fcntl_fd < NR_OPEN) or \
+            ql.os.fd[fcntl_fd] == 0:
         return -EBADF
 
     f = ql.os.fd[fcntl_fd]
     
-    if fcntl_cmd == F_GETFD:
+    if fcntl_cmd == F_DUPFD:
+        if 0 <= fcntl_arg < NR_OPEN:            
+            for idx, val in enumerate(ql.os.fd):
+                if val == 0 and idx >= fcntl_arg:
+                    new_fd = ql.os.fd[fcntl_fd].dup()
+                    ql.os.fd[idx] = new_fd
+                    regreturn = idx
+                    break
+            else:
+                regreturn = -EMFILE
+        else:
+            regreturn = -EINVAL
+
+    elif fcntl_cmd == F_GETFD:
         regreturn = f.close_on_exec
 
     elif fcntl_cmd == F_SETFD:
@@ -114,7 +128,7 @@ def ql_syscall_fcntl64(ql, fcntl_fd, fcntl_cmd, fcntl_arg, *args, **kw):
 
     # https://linux.die.net/man/2/fcntl64
     if fcntl_cmd == F_DUPFD:
-        if 0 <= fcntl_arg < 256 and 0 <= fcntl_fd < 256:
+        if 0 <= fcntl_arg < NR_OPEN and 0 <= fcntl_fd < NR_OPEN:
             if ql.os.fd[fcntl_fd] != 0:
                 new_fd = ql.os.fd[fcntl_fd].dup()
                 for idx, val in enumerate(ql.os.fd):
