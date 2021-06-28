@@ -21,6 +21,11 @@ from qiling.os.qnx.structs import *
 from qiling.os.qnx.message import *
 from qiling.os.qnx.const import *
 
+# Source: openqnx lib/c/support/_syspage_time.c
+def ql_syscall_clock_time(ql, id, new, old, *args, **kw):
+    clock_now = time_ns()
+    ql.mem.write(old, ql.pack64(clock_now))
+    return 0
 
 def ql_syscall_sys_cpupage_get(ql, index, *args, **kw):
     # CPUPAGE_ADDR 
