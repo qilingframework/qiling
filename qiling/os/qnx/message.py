@@ -73,14 +73,14 @@ def ql_qnx_msg_sys_conf(ql, coid, smsg, sparts, rmsg, rparts, *args, **kw):
     elif name_ == 204:
         name = "_CS_LOCALE"
     else:
-        raise NotImplementedError("cmd type not implemented")
+        raise NotImplementedError("name type not implemented")
 
     # output syscall with decoded arguments
     ql.log.debug("sys_conf(subtype=%s, cmd=%s, name=%s, spare=%d, value=%d)" % (subtype, cmd, name, spare, value))
 
     # sys_conf(_SYS_SUB_GET, _CONF_STR, _CS_LIBPATH)
     if subtype_ == 0 and cmd_ == (1 << 20) and name_ == 200:
-        libpath = "/usr/lib"
+        libpath = "/usr/lib\0"
         # first iov_t
         iov_base = ql.unpack32(ql.mem.read(rmsg, 4))
         iov_len = ql.unpack32(ql.mem.read(rmsg + 4, 4))
@@ -89,7 +89,9 @@ def ql_qnx_msg_sys_conf(ql, coid, smsg, sparts, rmsg, rparts, *args, **kw):
             # second iov_t
             iov_base = ql.unpack32(ql.mem.read(rmsg + 8, 4))
             iov_len = ql.unpack32(ql.mem.read(rmsg + 12, 4))
-            ql.mem.write(iov_base, pack("<s", libpath.encode("utf-8")))
+            ql.mem.write(iov_base, libpath.encode("utf-8"))
+    else:
+        raise NotImplementedError("sys_conf message type not implemented")
 
     return 0
 
