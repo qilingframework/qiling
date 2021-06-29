@@ -60,7 +60,9 @@ def ql_qnx_msg_io_read(ql, coid, smsg, sparts, rmsg, rparts, *args, **kw):
     if combine_len & _IO_COMBINE_FLAG != 0 or xtype != 0:
         raise NotImplementedError("IO combine and XTYPE support not implemented")
 
-    return ql_syscall_read(ql, coid, rmsg, rparts)
+    rlen = c_int32(rparts).value
+    assert nbytes == -rlen, "different sizes for io_read"
+    return ql_syscall_read(ql, coid, rmsg, nbytes)
 
 def ql_qnx_msg_mem_map(ql, coid, smsg, sparts, rmsg, rparts, *args, **kw):
     (type_, zero, reserved1, addr, len_, prot, flags,
