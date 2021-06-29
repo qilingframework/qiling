@@ -585,19 +585,26 @@ def ql_syscall_unlink(ql, unlink_pathname, *args, **kw):
     return regreturn
 
 
-def ql_syscall_unlinkat(ql, dirfd, pathname, flag, *args, **kw):
-    #FIXME dirfd(relative path) not implement.
+def ql_syscall_unlinkat(ql, fd, pathname, *args, **kw):
     file_path = ql.mem.string(pathname)
     real_path = ql.os.path.transform_to_real_path(file_path)
-    ql.log.debug("unlinkat(%d, %s, 0%o)" % (dirfd, real_path, flag))
+    
     try:
-        os.unlink(real_path)
-        return 0
-    except FileNotFoundError:
-        ql.log.debug("No such file or directory")
-        return -1
+        dir_fd = ql.os.fd[fd].fileno()
     except:
-        return -1
+        dir_fd = None    
+    
+    regreturn = 0
+    try:
+        if dir_fd is None:
+            os.unlink(real_path)
+        else:
+            os.unlink(file_path, dir_fd=dir_fd)               
+    except OSError as e:
+        regreturn = -e.errno    
+
+    ql.log.debug("unlinkat(fd = %d, path = '%s') = %d" % (fd, file_path, regreturn))    
+    return regreturn
 
 # https://man7.org/linux/man-pages/man2/getdents.2.html
 #    struct linux_dirent {

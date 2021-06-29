@@ -24,11 +24,11 @@ class ql_file:
         self._close_on_exec = 0
 
     @classmethod
-    def open(self, open_path, open_flags, open_mode):
+    def open(self, open_path, open_flags, open_mode, dir_fd=None):
         open_mode &= 0x7fffffff
 
         try:
-            fd = os.open(open_path, open_flags, open_mode)
+            fd = os.open(open_path, open_flags, open_mode, dir_fd=dir_fd)
         except OSError as e:
             raise QlSyscallError(e.errno, e.args[1] + ' : ' + e.filename)
         return self(open_path, fd)

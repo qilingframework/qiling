@@ -112,18 +112,21 @@ def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *ar
                 mode = 0
 
             openat_flags = ql_open_flag_mapping(ql, openat_flags)
-            ql.os.fd[idx] = ql.os.fs_mapper.open_ql_file(openat_path, openat_flags, openat_mode)
+            try:
+                dir_fd = ql.os.fd[openat_fd].fileno()
+            except:
+                dir_fd = None
+
+            ql.os.fd[idx] = ql.os.fs_mapper.open_ql_file(openat_path, openat_flags, openat_mode, dir_fd)
             regreturn = idx
         except QlSyscallError as e:
             regreturn = -e.errno
 
-    ql.log.debug("openat(%d, %s, %s, 0o%o) = %d" % (
-    openat_fd, relative_path, open_flags_mapping(openat_flags, ql.archtype), openat_mode, regreturn))
-
-    if regreturn >= 0 and regreturn != 2:
-        ql.log.debug("File Found: %s" % real_path)
-    else:
-        ql.log.debug("File Not Found %s" % real_path)
+    ql.log.debug(
+        "openat(fd = %d, path = %s, flags = %s, mode = 0o%o) = %d" % 
+        (openat_fd, openat_path, open_flags_mapping(openat_flags, ql.archtype), openat_mode, regreturn)
+    )
+    
     return regreturn
 
 

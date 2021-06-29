@@ -95,11 +95,14 @@ class QlFsMapper:
     def mapping_count(self):
         return len(self._mapping)
 
-    def open_ql_file(self, path, openflags, openmode):
+    def open_ql_file(self, path, openflags, openmode, dir_fd=None):
         if self.has_mapping(path):
             self.ql.log.info(f"mapping {path}")
             return self._open_mapping_ql_file(path, openflags, openmode)
         else:
+            if dir_fd:
+                return ql_file.open(path, openflags, openmode, dir_fd=dir_fd)
+
             real_path = self.ql.os.path.transform_to_real_path(path)
             return ql_file.open(real_path, openflags, openmode)
 
