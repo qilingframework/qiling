@@ -12,6 +12,7 @@ from qiling.os.posix.syscall import ql_syscall_read, ql_syscall_write, ql_syscal
 _IO_COMBINE_FLAG = 0x8000
 
 def ql_qnx_msg_io_close(ql, coid, smsg, sparts, rmsg, rparts, *args, **kw):
+    ql.log.debug("io_close(fd = %d)" % coid)
     ql.os.fd[coid].close()
     ql.os.fd[coid] = 0
 
@@ -23,19 +24,28 @@ def ql_qnx_msg_io_connect(ql, coid, smsg, sparts, rmsg, rparts, *args, **kw):
     assert iov_len == 40, "io_connect: wrong size for first first iov_t"
     # lib/c/public/sys/iomsg.h
     (type_, subtype_, file_type_, reply_max_, entry_max_, key_, handle_, ioflag_, mode_, sflag_, access_, zero_, path_len_, eflag_, extra_type_, extra_len_) = unpack("<HHIHHIIIIHHHHBBH", ql.mem.read(iov_base, iov_len))
-    ql.log.debug("io_connect(type=%d, subtype=%d, file_type=%d, replay_max=%d, entry_max=%d, key=%d, handle=%d, ioflag=%d, mode=%d, sflag=%d, access=%d, zero=%d, path_len=%d, eflag=%d, extra_type=%d, extra_len=%d)" % (type_, subtype_, file_type_, reply_max_, entry_max_, key_, handle_, ioflag_, mode_, sflag_, access_, zero_, path_len_, eflag_, extra_type_, extra_len_))
+    ql.log.debug("io_connect(type = %d, subtype = %d, file_type = %d, replay_max = %d, entry_max = %d, key = %d, handle = %d, ioflag = %d, mode = %d, sflag = %d, access = %d, zero = %d, path_len = %d, eflag = %d, extra_type = %d, extra_len = %d)" % (type_, subtype_, file_type_, reply_max_, entry_max_, key_, handle_, ioflag_, mode_, sflag_, access_, zero_, path_len_, eflag_, extra_type_, extra_len_))
     # second iov_t
     iov_base = ql.unpack32(ql.mem.read(smsg + 8, 4))
     iov_len = ql.unpack32(ql.mem.read(smsg + 12, 4))
     path = ql.mem.read(iov_base, iov_len).decode("utf-8").rstrip('\x00')
     # ignore third iov_t
+    if mode_ == 0:
+        mode = "O_RDONLY"
+    elif mode_ == 1:
+        mode = "O_WRONLY"
+    elif mode_ == 2:
+        mode = "O_RDWR"
+    else:
+        raise NotImplementedError("file mode not implemented")
+    ql.log.debug("io_connect(fd = %d, path = %s, mode = %s)" % (coid, path, mode))
     # connect file to fd
     ql.os.fd[coid] = ql.os.fs_mapper.open_ql_file(path, mode_, ioflag_)
     return 0
 
 # lib/c/1/fstat.c
 def ql_qnx_msg_io_stat(ql, coid, smsg, sparts, rmsg, rparts, *args, **kw):
-    ql.log.debug("io_stat(fd=%d)" % coid)
+    ql.log.debug("io_stat(fd = %d)" % coid)
     # struct _io_stat in lib/c/public/sys/iomsg.h
     (type_, combine_len_, zero_) = unpack("<HHI", ql.mem.read(smsg, 8))
     # check parameters
@@ -60,6 +70,7 @@ def ql_qnx_msg_io_read(ql, coid, smsg, sparts, rmsg, rparts, *args, **kw):
     if combine_len & _IO_COMBINE_FLAG != 0 or xtype != 0:
         raise NotImplementedError("IO combine and XTYPE support not implemented")
 
+    ql.log.debug("io_read(fd = %d, nbytes = %d)" % (coid, nbytes))
     rlen = c_int32(rparts).value
     assert nbytes == -rlen, "different sizes for io_read"
     return ql_syscall_read(ql, coid, rmsg, nbytes)
@@ -113,7 +124,7 @@ def ql_qnx_msg_sys_conf(ql, coid, smsg, sparts, rmsg, rparts, *args, **kw):
         raise NotImplementedError("name type not implemented")
 
     # output syscall with decoded arguments
-    ql.log.debug("sys_conf(subtype=%s, cmd=%s, name=%s, spare=%d, value=%d)" % (subtype, cmd, name, spare, value))
+    ql.log.debug("sys_conf(subtype = %s, cmd = %s, name = %s, spare = %d, value = %d)" % (subtype, cmd, name, spare, value))
 
     # sys_conf(_SYS_SUB_GET, _CONF_STR, _CS_LIBPATH)
     if subtype_ == 0 and cmd_ == (1 << 20) and name_ == 200:
@@ -141,6 +152,7 @@ def ql_syscall_connect_attach(ql, nd, pid, chid, index, flags, *args, **kw):
     return idx
 
 def ql_syscall_connect_detach(ql, coid, *args, **kw):
+    ql.log.debug("connect_detach(fd = %d)" % coid)
     if ql.os.fd[coid] != 0 and isinstance(ql.os.fd[coid], ql_file):
         ql.os.fd[coid].close()
     ql.os.fd[coid] = 0
