@@ -96,7 +96,7 @@ def syscall_mmap_impl(ql, addr, mlen, prot, flags, fd, pgoffset, ver):
             pgoffset = pgoffset * 4096
     elif (ql.archtype== QL_ARCH.ARM) and (ql.ostype== QL_OS.QNX):
         MAP_ANONYMOUS=0x00080000
-        mmap_id = ql.unpack32s(ql.pack32s(mmap_fd))
+        mmap_id = ql.unpack32s(ql.pack32s(fd))
     else:
         fd = ql.unpack32s(ql.pack32(fd))
         if ver == 2:
