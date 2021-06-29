@@ -96,7 +96,15 @@ def ql_qnx_msg_sys_conf(ql, coid, smsg, sparts, rmsg, rparts, *args, **kw):
     return 0
 
 def ql_syscall_connect_attach(ql, nd, pid, chid, index, flags, *args, **kw):
-    return 42
+    for i in range(256):
+        if ql.os.fd[i] == 0:
+            idx = i
+            break
+    ql.os.fd[idx] = QlFsMappedObject()
+    return idx
 
 def ql_syscall_connect_detach(ql, coid, *args, **kw):
+    if ql.os.fd[coid] != 0 and isinstance(ql.os.fd[coid], ql_file):
+        ql.os.fd[coid].close()
+    ql.os.fd[coid] = 0
     return 0
