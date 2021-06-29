@@ -29,8 +29,7 @@ def ql_syscall_open(ql, filename, flags, mode, *args, **kw):
         idx = -1
 
     if idx == -1:
-        # errno ENOMEM Insufficient kernel memory was available.
-        regreturn = -12 
+        regreturn = -EMFILE
     else:
         try:
             if ql.archtype== QL_ARCH.ARM:
@@ -50,6 +49,43 @@ def ql_syscall_open(ql, filename, flags, mode, *args, **kw):
         ql.log.debug("File Not Found %s" % real_path)
     return regreturn
 
+def ql_syscall_creat(ql, filename, mode, *args, **kw):
+    flags = linux_open_flags["O_WRONLY"] | linux_open_flags["O_CREAT"] | linux_open_flags["O_TRUNC"]
+
+    path = ql.mem.string(filename)
+    real_path = ql.os.path.transform_to_real_path(path)
+    relative_path = ql.os.path.transform_to_relative_path(path)
+
+    flags = flags & 0xffffffff
+    mode = mode & 0xffffffff
+
+    for i in range(NR_OPEN):
+        if ql.os.fd[i] == 0:
+            idx = i
+            break
+    else:
+        idx = -1
+
+    if idx == -1:
+        regreturn = -ENOMEM 
+    else:
+        try:
+            if ql.archtype== QL_ARCH.ARM:
+                mode = 0
+
+            flags = ql_open_flag_mapping(ql, flags)
+            ql.os.fd[idx] = ql.os.fs_mapper.open_ql_file(path, flags, mode)
+            regreturn = idx
+        except QlSyscallError as e:
+            regreturn = -e.errno
+
+    ql.log.debug("open(%s, %s, 0o%o) = %d" % (relative_path, open_flags_mapping(flags, ql.archtype), mode, regreturn))
+
+    if regreturn >= 0 and regreturn != 2:
+        ql.log.debug("File Found: %s" % real_path)
+    else:
+        ql.log.debug("File Not Found %s" % real_path)
+    return regreturn
 
 def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *args, **kw):
     openat_fd = ql.unpacks(ql.pack(openat_fd))
@@ -69,7 +105,7 @@ def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *ar
         idx = -1
 
     if idx == -1:
-        regreturn = -1
+        regreturn = -EMFILE
     else:
         try:
             if ql.archtype== QL_ARCH.ARM:
@@ -78,8 +114,8 @@ def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *ar
             openat_flags = ql_open_flag_mapping(ql, openat_flags)
             ql.os.fd[idx] = ql.os.fs_mapper.open_ql_file(openat_path, openat_flags, openat_mode)
             regreturn = idx
-        except QlSyscallError:
-            regreturn = -1
+        except QlSyscallError as e:
+            regreturn = -e.errno
 
     ql.log.debug("openat(%d, %s, %s, 0o%o) = %d" % (
     openat_fd, relative_path, open_flags_mapping(openat_flags, ql.archtype), openat_mode, regreturn))
@@ -112,10 +148,17 @@ def ql_syscall_fcntl(ql, fcntl_fd, fcntl_cmd, fcntl_arg, *args, **kw):
             regreturn = -EINVAL
 
     elif fcntl_cmd == F_GETFD:
-        regreturn = f.close_on_exec
+        regreturn = getattr(f, "close_on_exec", 0)
 
     elif fcntl_cmd == F_SETFD:
         f.close_on_exec = 1 if fcntl_arg & FD_CLOEXEC else 0
+        regreturn = 0
+
+    elif fcntl_cmd == F_GETFL:
+        regreturn = ql.os.fd[fcntl_fd].fcntl(fcntl_cmd, fcntl_arg)        
+
+    elif fcntl_cmd == F_SETFL:
+        ql.os.fd[fcntl_fd].fcntl(fcntl_cmd, fcntl_arg)
         regreturn = 0
 
     else:

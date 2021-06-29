@@ -807,6 +807,15 @@ def ql_syscall_chmod(ql, filename, mode, null1, null2, null3, null4):
     ql.log.debug("chmod(%s,%d) = %d" % (filename, mode, regreturn))
     return regreturn
 
+def ql_syscall_fchmod(ql, fd, mode, *args, **kw):
+    if not (0 < fd < NR_OPEN) or\
+            ql.os.fd[fd] == 0:
+        return -EBADF
+
+    regreturn = 0    
+    ql.log.debug("fchmod(%d, %d) = %d" % (fd, mode, regreturn))
+    return regreturn
+
 def ql_syscall_fstatat64(ql, fstatat64_dirfd, fstatat64_path, fstatat64_buf_ptr, fstatat64_flag, *args, **kw):
     # FIXME: dirfd(relative path) not implement.
     fstatat64_path = ql.mem.string(fstatat64_path)
@@ -945,6 +954,19 @@ def ql_syscall_fstatfs(ql, fd, buf, *args, **kw):
     if data:
         ql.log.debug("fstatfs() CONTENT:")
         ql.log.debug(str(data))
+    return regreturn
+
+def ql_syscall_statfs(ql, path, buf, *args, **kw):
+    data = b"0" * (12*8)  # for now, just return 0s
+    regreturn = None
+    try:
+        ql.mem.write(buf, data)
+        regreturn = 0
+    except:
+        regreturn = -1
+
+    ql.log.info("statfs(0x%x, 0x%x) = %d" % (path, buf, regreturn))
+    
     return regreturn
 
 

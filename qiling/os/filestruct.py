@@ -50,6 +50,12 @@ class ql_file:
     
     def fstat(self):
         return Fstat(self.__fd)
+
+    def fcntl(self, fcntl_cmd, fcntl_arg):
+        try:
+            return fcntl.fcntl(self.__fd, fcntl_cmd, fcntl_arg)
+        except Exception:
+            pass
     
     def ioctl(self, ioctl_cmd, ioctl_arg):
         try:
