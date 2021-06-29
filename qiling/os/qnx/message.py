@@ -30,7 +30,7 @@ def ql_qnx_msg_io_connect(ql, coid, smsg, sparts, rmsg, rparts, *args, **kw):
     path = ql.mem.read(iov_base, iov_len).decode("utf-8").rstrip('\x00')
     # ignore third iov_t
     # connect file to fd
-    ql.os.fd[coid] = ql.os.fs_mapper.open_ql_file(path, ioflag_, mode_)
+    ql.os.fd[coid] = ql.os.fs_mapper.open_ql_file(path, mode_, ioflag_)
     return 0
 
 # lib/c/1/fstat.c
