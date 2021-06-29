@@ -5,11 +5,46 @@
 from struct import pack, unpack
 from ctypes import c_int32
 from binascii import hexlify
+from qiling.os.mapper import QlFsMappedObject
 from qiling.os.qnx.helpers import get_message_body
 from qiling.os.posix.syscall import ql_syscall_read, ql_syscall_write, ql_syscall_mmap
 
 _IO_COMBINE_FLAG = 0x8000
 
+def ql_qnx_msg_io_close(ql, coid, smsg, sparts, rmsg, rparts, *args, **kw):
+    ql.os.fd[coid].close()
+    ql.os.fd[coid] = 0
+
+# lib/c/support/_connect_ctrl.c::_connect_io()
+def ql_qnx_msg_io_connect(ql, coid, smsg, sparts, rmsg, rparts, *args, **kw):
+    # first iov_t
+    iov_base = ql.unpack32(ql.mem.read(smsg, 4))
+    iov_len = ql.unpack32(ql.mem.read(smsg + 4, 4))
+    assert iov_len == 40, "io_connect: wrong size for first first iov_t"
+    # lib/c/public/sys/iomsg.h
+    (type_, subtype_, file_type_, reply_max_, entry_max_, key_, handle_, ioflag_, mode_, sflag_, access_, zero_, path_len_, eflag_, extra_type_, extra_len_) = unpack("<HHIHHIIIIHHHHBBH", ql.mem.read(iov_base, iov_len))
+    ql.log.debug("io_connect(type=%d, subtype=%d, file_type=%d, replay_max=%d, entry_max=%d, key=%d, handle=%d, ioflag=%d, mode=%d, sflag=%d, access=%d, zero=%d, path_len=%d, eflag=%d, extra_type=%d, extra_len=%d)" % (type_, subtype_, file_type_, reply_max_, entry_max_, key_, handle_, ioflag_, mode_, sflag_, access_, zero_, path_len_, eflag_, extra_type_, extra_len_))
+    # second iov_t
+    iov_base = ql.unpack32(ql.mem.read(smsg + 8, 4))
+    iov_len = ql.unpack32(ql.mem.read(smsg + 12, 4))
+    path = ql.mem.read(iov_base, iov_len).decode("utf-8").rstrip('\x00')
+    # ignore third iov_t
+    # connect file to fd
+    ql.os.fd[coid] = ql.os.fs_mapper.open_ql_file(path, ioflag_, mode_)
+    return 0
+
+# lib/c/1/fstat.c
+def ql_qnx_msg_io_stat(ql, coid, smsg, sparts, rmsg, rparts, *args, **kw):
+    ql.log.debug("io_stat(fd=%d)" % coid)
+    # struct _io_stat in lib/c/public/sys/iomsg.h
+    (type_, combine_len_, zero_) = unpack("<HHI", ql.mem.read(smsg, 8))
+    # check parameters
+    assert (type_, combine_len_, zero_) == (0x104, 8, 0), "io_stat message is wrong"
+    assert (c_int32(sparts).value, c_int32(rparts).value) == (-8, -72), "input/output sizes are wrong"
+    # struct stat in lib/c/public/sys/stat.h
+    stat = ql.os.fd[coid].fstat()
+    ql.mem.write(rmsg, pack("<QQIIiiIIIIIIiIQ", stat.st_ino, stat.st_size, stat.st_dev, stat.st_rdev, stat.st_uid, stat.st_gid, int(stat.st_mtime), int(stat.st_atime), int(stat.st_ctime), stat.st_mode, stat.st_nlink, stat.st_blksize, stat.st_blocks, stat.st_blksize, stat.st_blocks))
+    return 0
 
 def ql_qnx_msg_io_write(ql, coid, smsg, sparts, rmsg, rparts, *args, **kw):
     (type_, combine_len, nbytes, xtype, zero) = unpack("<HHIII", get_message_body(ql, smsg, sparts))
