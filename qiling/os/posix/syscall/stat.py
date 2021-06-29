@@ -930,6 +930,17 @@ def ql_syscall_mkdir(ql, pathname, mode, *args, **kw):
         regreturn = -1
     return regreturn
 
+def ql_syscall_rmdir(ql, pathname, *args, **kw):
+    file_path = ql.mem.string(pathname)
+    real_path = ql.os.path.transform_to_real_path(file_path)
+    ql.log.debug("rmdir(%s)" % (real_path))
+    try:
+        if os.path.exists(real_path):
+            os.rmdir(real_path)
+        regreturn = 0
+    except:
+        regreturn = -1
+    return regreturn
 
 def ql_syscall_fstatfs(ql, fd, buf, *args, **kw):
     data = b"0" * (12*8)  # for now, just return 0s
