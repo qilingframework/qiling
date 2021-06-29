@@ -430,13 +430,6 @@ def ql_syscall_execve(ql, execve_pathname, execve_argv, execve_envp, *args, **kw
     ql._uc               = ql.arch.init_uc
     QlCoreHooks.__init__(ql, ql._uc)
     ql.os.load()
-    
-    # check the close-on-exec flag
-    for i in range(NR_OPEN):
-        if hasattr(ql.os.fd[i], 'close_on_exec') and \
-                ql.os.fd[i].close_on_exec:
-            ql.os.fd[i] = 0 
-
     ql.loader.run()
     ql.run()
 
