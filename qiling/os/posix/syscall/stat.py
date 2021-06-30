@@ -7,7 +7,7 @@
 from qiling.const import *
 from qiling.os.linux.thread import *
 from qiling.os.posix.stat import *
-from qiling.const import *
+from qiling.os.posix.const import *
 from qiling.os.posix.const_mapping import *
 from qiling.exception import *
 import struct
@@ -807,6 +807,15 @@ def ql_syscall_chmod(ql, filename, mode, null1, null2, null3, null4):
     ql.log.debug("chmod(%s,%d) = %d" % (filename, mode, regreturn))
     return regreturn
 
+def ql_syscall_fchmod(ql, fd, mode, *args, **kw):
+    if not (0 < fd < NR_OPEN) or\
+            ql.os.fd[fd] == 0:
+        return -EBADF
+
+    regreturn = 0    
+    ql.log.debug("fchmod(%d, %d) = %d" % (fd, mode, regreturn))
+    return regreturn
+
 def ql_syscall_fstatat64(ql, fstatat64_dirfd, fstatat64_path, fstatat64_buf_ptr, fstatat64_flag, *args, **kw):
     # FIXME: dirfd(relative path) not implement.
     fstatat64_path = ql.mem.string(fstatat64_path)
@@ -854,7 +863,7 @@ def ql_syscall_fstat64(ql, fstat64_fd, fstat64_buf_ptr, *args, **kw):
         regreturn = -1
     elif ql.os.fd[fstat64_fd].fstat() == -1:
         regreturn = 0
-    elif fstat64_fd < 256 and ql.os.fd[fstat64_fd] != 0:
+    elif 0 <= fstat64_fd < NR_OPEN and ql.os.fd[fstat64_fd] != 0:
         user_fileno = fstat64_fd
         fstat64_info = ql.os.fd[user_fileno].fstat()
         fstat64_buf = pack_stat64_struct(ql, fstat64_info)
@@ -871,7 +880,7 @@ def ql_syscall_fstat64(ql, fstat64_fd, fstat64_buf_ptr, *args, **kw):
 
 
 def ql_syscall_fstat(ql, fstat_fd, fstat_buf_ptr, *args, **kw):
-    if fstat_fd < 256 and ql.os.fd[fstat_fd] != 0 and hasattr(ql.os.fd[fstat_fd], "fstat"):
+    if 0 <= fstat_fd < NR_OPEN and ql.os.fd[fstat_fd] != 0 and hasattr(ql.os.fd[fstat_fd], "fstat"):
         user_fileno = fstat_fd
         fstat_info = ql.os.fd[user_fileno].fstat()
         fstat_buf = pack_stat_struct(ql, fstat_info)
@@ -956,6 +965,19 @@ def ql_syscall_fstatfs(ql, fd, buf, *args, **kw):
     if data:
         ql.log.debug("fstatfs() CONTENT:")
         ql.log.debug(str(data))
+    return regreturn
+
+def ql_syscall_statfs(ql, path, buf, *args, **kw):
+    data = b"0" * (12*8)  # for now, just return 0s
+    regreturn = None
+    try:
+        ql.mem.write(buf, data)
+        regreturn = 0
+    except:
+        regreturn = -1
+
+    ql.log.info("statfs(0x%x, 0x%x) = %d" % (path, buf, regreturn))
+    
     return regreturn
 
 

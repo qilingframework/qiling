@@ -7,6 +7,10 @@ from qiling import Qiling
 from qiling.arch.x86_const import *
 from qiling.const import QL_ARCH
 
+from datetime import datetime
+from math import floor
+import ctypes
+
 def ql_syscall_set_thread_area(ql: Qiling, u_info_addr, *args, **kw):
     if ql.archtype == QL_ARCH.X86:
         GDT_ENTRY_TLS_MIN = 12
@@ -47,3 +51,23 @@ def ql_syscall_set_tls(ql, address, *args, **kw):
         ql.mem.write(ql.arch.arm_get_tls_addr + 12, ql.pack32(address))
         ql.reg.r0 = address
         ql.log.debug("settls(0x%x)" % address)
+
+def ql_syscall_clock_gettime(ql, clock_gettime_clock_id, clock_gettime_timespec, *args, **kw):
+    # 
+    class timespec(ctypes.Structure):
+        _fields_ = [
+            ("tv_sec", ctypes.c_uint64),
+            ("tv_nsec", ctypes.c_int64)
+        ]
+
+        _pack_ = 8
+
+    now = datetime.now().timestamp()
+    tv_sec = floor(now)
+    tv_nsec = floor((now - floor(now)) * 1e6)
+    tp = timespec(tv_sec= tv_sec, tv_nsec=tv_nsec)
+    ql.mem.write(clock_gettime_timespec, bytes(tp))
+
+    ql.log.debug("clock_gettime(clock_id = %d, timespec = 0x%x)" % (clock_gettime_clock_id, clock_gettime_timespec))
+    
+    return 0
