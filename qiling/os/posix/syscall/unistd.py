@@ -129,11 +129,16 @@ def ql_syscall_faccessat(ql, faccessat_dfd, faccessat_filename, faccessat_mode, 
 def ql_syscall_lseek(ql, lseek_fd, lseek_ofset, lseek_origin, *args, **kw):
     lseek_ofset = ql.unpacks(ql.pack(lseek_ofset))
     regreturn = 0
-    ql.log.debug("lseek(%d, 0x%x, 0x%x) = %d" % (lseek_fd, lseek_ofset, lseek_origin, regreturn))
-    try:
-        regreturn = ql.os.fd[lseek_fd].lseek(lseek_ofset, lseek_origin)
-    except OSError:
-        regreturn = -1
+
+    if 0 <= lseek_fd < NR_OPEN and ql.os.fd[lseek_fd] != 0:        
+        try:
+            regreturn = ql.os.fd[lseek_fd].lseek(lseek_ofset, lseek_origin)
+        except OSError:
+            regreturn = -1
+    else:
+        regreturn = -EBADF
+
+    ql.log.debug("lseek(fd = %d, ofset = 0x%x, origin = 0x%x) = %d" % (lseek_fd, lseek_ofset, lseek_origin, regreturn))
     return regreturn
 
 
