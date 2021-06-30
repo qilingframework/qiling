@@ -8,6 +8,7 @@ from unicorn import UcError
 from qiling.os.posix.posix import QlOsPosix
 from qiling.os.qnx.structs import _thread_local_storage
 from qiling.const import QL_ARCH
+from . import syspage_path
 
 class QlOsQnx(QlOsPosix):
     def __init__(self, ql):
@@ -48,10 +49,9 @@ class QlOsQnx(QlOsPosix):
         self.tls_data_addr = int(self.ql.os.profile.get("OS32", "tls_data_address"), 16)
 
         self.syspage_addr = int(self.ql.os.profile.get("OS32", "syspage_address"), 16)
-        self.syspage_bin = self.ql.os.profile.get("MISC", "syspage_bin")
 
         self.ql.mem.map(self.syspage_addr, 0x4000, info="[syspage_mem]")
-        with open(self.syspage_bin, "rb") as sp:
+        with open(syspage_path, "rb") as sp:
             self.ql.mem.write(self.syspage_addr, sp.read())
 
 
