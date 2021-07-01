@@ -189,6 +189,8 @@ class QlOsPosix(QlOs):
 
         Returns: The string representation of the error.
         """
+        if type(ret) is not int:
+            return '?'
 
         return f'{ret:#x}{f" ({errors[-ret]})" if -ret in errors else f""}'
 
@@ -271,20 +273,19 @@ class QlOsPosix(QlOs):
                 faddr = f'{self.ql.reg.arch_pc:#0{self.ql.archbit // 4 + 2}x}: ' if self.ql.verbose >= QL_VERBOSE.DEBUG else ''
                 fargs = ', '.join(args)
 
-                log = f'{faddr}{syscall_basename}({fargs})'
+                ret = syscall_hook(self.ql, *arg_values)
+                log = f'{faddr}{syscall_basename}({fargs}) = {QlOsPosix.getNameFromErrorCode(ret)}'
 
                 if self.ql.verbose >= QL_VERBOSE.DEBUG:
                     self.ql.log.debug(log)
                 else:
                     self.ql.log.info(log)
 
-                ret = syscall_hook(self.ql, *arg_values)
-
                 if ret is not None and type(ret) is int:
                     # each name has a list of calls, we want the last one and we want to update the return value
                     self.utils.syscalls[syscall_name][-1]["result"] = ret
                     ret = self.set_syscall_return(ret)
-                    self.ql.log.debug(f'{syscall_basename}() = {QlOsPosix.getNameFromErrorCode(ret)}')
+                    # self.ql.log.debug(f'{syscall_basename}() = {QlOsPosix.getNameFromErrorCode(ret)}')
 
                 if onexit_hook is not None:
                     onexit_hook(self.ql, *self.get_syscall_args())
