@@ -11,6 +11,14 @@ from datetime import datetime
 from math import floor
 import ctypes
 
+class timespec(ctypes.Structure):
+    _fields_ = [
+        ("tv_sec", ctypes.c_uint64),
+        ("tv_nsec", ctypes.c_int64)
+    ]
+
+    _pack_ = 8
+
 def ql_syscall_set_thread_area(ql: Qiling, u_info_addr, *args, **kw):
     if ql.archtype == QL_ARCH.X86:
         GDT_ENTRY_TLS_MIN = 12
@@ -52,16 +60,7 @@ def ql_syscall_set_tls(ql, address, *args, **kw):
         ql.reg.r0 = address
         ql.log.debug("settls(0x%x)" % address)
 
-def ql_syscall_clock_gettime(ql, clock_gettime_clock_id, clock_gettime_timespec, *args, **kw):
-    # 
-    class timespec(ctypes.Structure):
-        _fields_ = [
-            ("tv_sec", ctypes.c_uint64),
-            ("tv_nsec", ctypes.c_int64)
-        ]
-
-        _pack_ = 8
-
+def ql_syscall_clock_gettime(ql, clock_gettime_clock_id, clock_gettime_timespec, *args, **kw):    
     now = datetime.now().timestamp()
     tv_sec = floor(now)
     tv_nsec = floor((now - floor(now)) * 1e6)
@@ -71,3 +70,16 @@ def ql_syscall_clock_gettime(ql, clock_gettime_clock_id, clock_gettime_timespec,
     ql.log.debug("clock_gettime(clock_id = %d, timespec = 0x%x)" % (clock_gettime_clock_id, clock_gettime_timespec))
     
     return 0
+
+def ql_syscall_gettimeofday(ql, gettimeofday_tv, gettimeofday_tz, *args, **kw):
+    now = datetime.now().timestamp()
+    tv_sec = floor(now)
+    tv_nsec = floor((now - floor(now)) * 1e6)
+    tp = timespec(tv_sec= tv_sec, tv_nsec=tv_nsec)
+
+    if gettimeofday_tv != 0:
+        ql.mem.write(gettimeofday_tv, bytes(tp))
+    if gettimeofday_tz != 0:
+        ql.mem.write(gettimeofday_tz, b'\x00' * 8)
+    regreturn = 0
+    return regreturn
