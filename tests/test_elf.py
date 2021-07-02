@@ -117,11 +117,11 @@ class ELFTest(unittest.TestCase):
             lines = f.readlines()
             assert lines[0].strip() == b'PING 127.0.0.1 (127.0.0.1) 56(84) bytes of data.'
             assert lines[1].strip().startswith(b'64 bytes from : icmp_seq=1 ttl=0 time=')
-            assert lines[1].strip().startswith(b'64 bytes from : icmp_seq=2 ttl=0 time=')
-            assert lines[2].strip() == b''
-            assert lines[3].strip() == b'--- 127.0.0.1 ping statistics ---'
-            assert lines[4].strip().startswith(b'1 packets transmitted, 1 received, 0% packet loss, time ')
-            assert lines[5].strip().startswith(b'rtt min/avg/max/mdev = ')
+            assert lines[2].strip().startswith(b'64 bytes from : icmp_seq=2 ttl=0 time=')
+            assert lines[3].strip() == b''
+            assert lines[4].strip() == b'--- 127.0.0.1 ping statistics ---'
+            assert lines[5].strip().startswith(b'2 packets transmitted, 2 received, 0% packet loss, time ')
+            assert lines[6].strip().startswith(b'rtt min/avg/max/mdev = ')
 
                 
         del ql
