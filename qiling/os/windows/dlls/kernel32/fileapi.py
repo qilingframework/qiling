@@ -438,8 +438,8 @@ def hook_CreateDirectoryA(ql, address, params):
 @winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'LPDWORD': 'DWORD'})
 def hook_GetFileSize(ql, address, params):
     try:
-        handle = ql.handle_manager.get(params['hFile'].file)
-        return os.path.getsize(handle.name)
+        handle = ql.os.handle_manager.get(params['hFile'])
+        return os.path.getsize(handle.obj.name)
     except:
         ql.os.last_error = ERROR_INVALID_HANDLE 
         return 0xFFFFFFFF #INVALID_FILE_SIZE
