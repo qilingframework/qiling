@@ -102,6 +102,30 @@ class ELFTest(unittest.TestCase):
         del self.set_api_onenter
         del ql
 
+    def test_elf_linux_ping_x8664(self):
+        ql_stdout = open('output.txt', 'wb')
+        ql = Qiling(['../examples/rootfs/x8664_linux/bin/ping', '-c', '2', '127.0.0.1'], '../examples/rootfs/x8664_linux', stdout=ql_stdout)
+        
+        def myclose(*args, **kw):
+            return 0
+        ql.set_syscall('close', myclose)
+
+        ql.run()
+        ql_stdout.close()
+
+        with open('output.txt', 'rb') as f:
+            lines = f.readlines()
+            assert lines[0].strip() == b'PING 127.0.0.1 (127.0.0.1) 56(84) bytes of data.'
+            assert lines[1].strip().startswith(b'64 bytes from : icmp_seq=1 ttl=0 time=')
+            assert lines[1].strip().startswith(b'64 bytes from : icmp_seq=2 ttl=0 time=')
+            assert lines[2].strip() == b''
+            assert lines[3].strip() == b'--- 127.0.0.1 ping statistics ---'
+            assert lines[4].strip().startswith(b'1 packets transmitted, 1 received, 0% packet loss, time ')
+            assert lines[5].strip().startswith(b'rtt min/avg/max/mdev = ')
+
+                
+        del ql
+
 
     def test_elf_hijackapi_linux_x8664(self):
 
