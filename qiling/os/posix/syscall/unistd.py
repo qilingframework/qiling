@@ -111,6 +111,9 @@ def ql_syscall_capget(ql, hdrp, datap, *args, **kw):
 def ql_syscall_capset(ql, hdrp, datap, *args, **kw):
     return 0
 
+def ql_syscall_kill(ql, pid, sig, *args, **kw):
+    return 0
+
 def ql_syscall_faccessat(ql, faccessat_dfd, faccessat_filename, faccessat_mode, *args, **kw):
 
     access_path = ql.mem.string(faccessat_filename)
@@ -386,6 +389,9 @@ def ql_syscall_vfork(ql, *args, **kw):
         ql.emu_stop()
     return regreturn
 
+
+def ql_syscall_fork(ql, *args, **kw):
+    return ql_syscall_vfork(ql, *args, **kw)
 
 def ql_syscall_setsid(ql, *args, **kw):
     regreturn = os.getpid()
