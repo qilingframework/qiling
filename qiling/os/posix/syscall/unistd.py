@@ -384,6 +384,9 @@ def ql_syscall_vfork(ql, *args, **kw):
     return regreturn
 
 
+def ql_syscall_fork(ql, *args, **kw):
+    return ql_syscall_vfork(ql, *args, **kw)
+
 def ql_syscall_setsid(ql, *args, **kw):
     regreturn = os.getpid()
     return regreturn
