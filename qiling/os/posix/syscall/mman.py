@@ -16,6 +16,7 @@ from qiling.const import *
 from qiling.os.linux.thread import *
 from qiling.os.posix.filestruct import *
 from qiling.os.filestruct import *
+from qiling.os.posix.const import *
 from qiling.os.posix.const_mapping import *
 from qiling.exception import *
 
@@ -135,7 +136,7 @@ def syscall_mmap_impl(ql, addr, mlen, prot, flags, fd, pgoffset, ver):
     except Exception as e:
         raise QlMemoryMappedError("Error: trying to zero memory")
 
-    if ((flags & MAP_ANONYMOUS) == 0) and fd < 256 and ql.os.fd[fd] != 0:
+    if ((flags & MAP_ANONYMOUS) == 0) and 0 <= fd < NR_OPEN and ql.os.fd[fd] != 0:
         ql.os.fd[fd].lseek(pgoffset)
         data = ql.os.fd[fd].read(mlen)
         mem_info = str(ql.os.fd[fd].name)
