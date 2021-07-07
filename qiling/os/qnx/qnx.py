@@ -3,12 +3,12 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+import os
 from unicorn import UcError
 
 from qiling.os.posix.posix import QlOsPosix
 from qiling.os.qnx.structs import _thread_local_storage
 from qiling.const import QL_ARCH
-from . import syspage_path
 
 class QlOsQnx(QlOsPosix):
     def __init__(self, ql):
@@ -51,9 +51,10 @@ class QlOsQnx(QlOsPosix):
         self.syspage_addr = int(self.ql.os.profile.get("OS32", "syspage_address"), 16)
 
         self.ql.mem.map(self.syspage_addr, 0x4000, info="[syspage_mem]")
+
+        syspage_path = os.path.join(self.ql.rootfs, "syspage.bin")
         with open(syspage_path, "rb") as sp:
             self.ql.mem.write(self.syspage_addr, sp.read())
-
 
         # Address of struct _thread_local_storage for our thread
         self.ql.mem.write(self.cpupage_addr, self.ql.pack32(self.cpupage_tls_addr))
