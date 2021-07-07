@@ -206,3 +206,33 @@ def ql_syscall_flock(ql, flock_fd, flock_operation, *args, **kw):
     # Should always return 0, we don't need a actual file lock
     regreturn = 0
     return regreturn
+
+
+def ql_syscall_rename(ql, oldname_buf, newname_buf, *args, **kw):
+    """
+    rename(const char *oldpath, const char *newpath)
+    description: change the name or location of a file
+    ret value: On success, zero is returned. On error, -1 is returned
+    """
+    regreturn = 0  # default value is success
+    oldpath = ql.mem.string(oldname_buf)
+    newpath = ql.mem.string(newname_buf)
+
+    ql.log.debug(f"rename() path: {oldpath} -> {newpath}")
+
+    old_realpath = ql.os.path.transform_to_real_path(oldpath)
+    new_realpath = ql.os.path.transform_to_real_path(newpath)
+
+    if old_realpath == new_realpath:
+        # do nothing, just return success
+        return regreturn
+
+    try:
+        os.rename(old_realpath, new_realpath)
+        regreturn = 0
+    except OSError:
+        ql.log.exception(f"rename(): {newpath} is exist!")
+        regreturn = -1
+
+    return regreturn
+
