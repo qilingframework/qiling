@@ -17,7 +17,8 @@ from qiling.os.memory import QlMemoryHeap
 
 
 class QlPeCacheEntry:
-    def __init__(self, data, cmdlines, import_symbols, import_table):
+    def __init__(self, ba: int, data: bytearray, cmdlines: Sequence, import_symbols: Mapping, import_table: Mapping):
+        self. ba = ba
         self.data = data
         self.cmdlines = cmdlines
         self.import_symbols = import_symbols
@@ -41,6 +42,7 @@ class QlPeCache:
     def save(self, path: str, entry: QlPeCacheEntry):
         fcache = self.create_filename(path)
 
+        data = (entry.ba, entry.data, entry.cmdlines, entry.import_symbols, entry.import_table)
         # cache this dll file
         with open(fcache, "wb") as fcache_file:
             pickle.dump(data, fcache_file)
@@ -97,23 +99,36 @@ class Process():
                 for warning in warnings:
                     self.ql.log.warning(f' - {warning}')
             data = bytearray(dll.get_memory_mapped_image())
-            cmdlines = []
+            image_base = dll.OPTIONAL_HEADER.ImageBase or self.dll_last_address
+            image_size = self.ql.mem.align(len(data), 0x1000)
 
+            self.ql.log.debug(f'DLL preferred base address: {image_base:#x}')
+
+            if not self.ql.mem.is_available(image_base, image_size):
+                image_base = self.ql.mem.find_free_space(image_size, minaddr=image_base, align=0x10000)
+                self.ql.log.debug(f'DLL preferred base address is taken, loading to: {image_base:#x}')
+
+            cmdlines = []
             import_symbols = {}
             import_table = {}
+
             for entry in dll.DIRECTORY_ENTRY_EXPORT.symbols:
-                import_symbols[self.dll_last_address + entry.address] = {"name": entry.name,
-                                                                              "ordinal": entry.ordinal,
-                                                                              "dll": dll_name.split('.')[0]
-                                                                              }
+                import_symbols[image_base + entry.address] = {
+                    "name": entry.name,
+                    "ordinal": entry.ordinal,
+                    "dll": dll_name.split('.')[0]
+                }
+
                 if entry.name:
-                    import_table[entry.name] = self.dll_last_address + entry.address
-                import_table[entry.ordinal] = self.dll_last_address + entry.address
+                    import_table[entry.name] = image_base + entry.address
+
+                import_table[entry.ordinal] = image_base + entry.address
                 cmdline_entry = self.set_cmdline(entry.name, entry.address, data)
                 if cmdline_entry:
                     cmdlines.append(cmdline_entry)
 
             if self.libcache:
+                cached = QlPeCacheEntry(image_base, data, cmdlines, import_symbols, import_table)
                 self.libcache.save(path, cached)
                 self.ql.log.info("Cached %s" % path)
 
