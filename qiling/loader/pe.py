@@ -4,17 +4,17 @@
 #
 
 import os, pefile, pickle, secrets, traceback
+from typing import Any, MutableMapping, Optional, Mapping, Sequence
 
+from qiling import Qiling
+from qiling.arch.x86_const import *
+from qiling.const import *
 from qiling.os.const import POINTER
+from qiling.os.memory import QlMemoryHeap
 from qiling.os.windows.fncc import CDECL
 from qiling.os.windows.utils import *
 from qiling.os.windows.structs import *
-from qiling.exception import *
-from qiling.const import *
-from qiling.arch.x86_const import *
 from .loader import QlLoader, Image
-from qiling.os.memory import QlMemoryHeap
-
 
 class QlPeCacheEntry:
     def __init__(self, ba: int, data: bytearray, cmdlines: Sequence, import_symbols: Mapping, import_table: Mapping):
@@ -47,26 +47,34 @@ class QlPeCache:
         with open(fcache, "wb") as fcache_file:
             pickle.dump(data, fcache_file)
 
-
 class Process():
-    def __init__(self, ql):
+    # let linter recognize mixin members
+    dlls: MutableMapping[str, int]
+    import_address_table: MutableMapping[str, Any]
+    import_symbols: MutableMapping[int, Any]
+    export_symbols: MutableMapping[int, Any]
+    libcache: Optional[QlPeCache]
+
+    def __init__(self, ql: Qiling):
         self.ql = ql
 
-    def align(self, size, unit):
+    def align(self, size: int, unit: int) -> int:
         return (size // unit + (1 if size % unit else 0)) * unit
 
-    def load_dll(self, dll_name, driver=False):
-        dll_name = dll_name.decode()
+    def load_dll(self, name: bytes, driver: bool = False) -> int:
+        dll_name = name.decode()
 
         self.ql.dlls = os.path.join("Windows", "System32")
 
-        if 'C:\\' in dll_name.upper():
+        if dll_name.upper().startswith('C:\\'):
             path = self.ql.os.path.transform_to_real_path(dll_name)
             dll_name = path_leaf(dll_name)
         else:
             dll_name = dll_name.lower()
+
             if not is_file_library(dll_name):
                 dll_name = dll_name + ".dll"
+
             path = os.path.join(self.ql.rootfs, self.ql.dlls, dll_name)
 
         if not os.path.exists(path):
@@ -108,11 +116,15 @@ class Process():
             dll = pefile.PE(path, fast_load=True)
             dll.parse_data_directories()
             warnings = dll.get_warnings()
+
             if warnings:
                 self.ql.log.warning(f'Warnings while loading {path}:')
+
                 for warning in warnings:
                     self.ql.log.warning(f' - {warning}')
+
             data = bytearray(dll.get_memory_mapped_image())
+
             image_base = dll.OPTIONAL_HEADER.ImageBase or self.dll_last_address
             image_size = self.ql.mem.align(len(data), 0x1000)
 
@@ -138,6 +150,7 @@ class Process():
 
                 import_table[entry.ordinal] = image_base + entry.address
                 cmdline_entry = self.set_cmdline(entry.name, entry.address, data)
+
                 if cmdline_entry:
                     cmdlines.append(cmdline_entry)
 
@@ -174,9 +187,9 @@ class Process():
             self.add_ldr_data_table_entry(dll_name)
 
         # add DLL to coverage images
-        self.images.append(Image(dll_base, dll_base+dll_len, path))
+        self.images.append(Image(dll_base, dll_base + dll_len, path))
 
-        self.ql.log.info("Done with loading %s" % path)
+        self.ql.log.info(f'Done with loading {path}')
 
         return dll_base
 
@@ -412,15 +425,17 @@ class Process():
 
 
 class QlLoaderPE(QlLoader, Process):
-    def __init__(self, ql):
-        super(QlLoaderPE, self).__init__(ql)
+    def __init__(self, ql: Qiling):
+        super().__init__(ql)
+
         self.ql         = ql
-        if type(self.ql.libcache) == bool:
-            self.libcache = QlPeCache() if self.ql.libcache else None
-        else:
-            self.libcache = self.ql.libcache
         self.path       = self.ql.path
         self.is_driver  = False
+
+        if ql.libcache is True:
+            self.libcache = QlPeCache()
+        else:
+            self.libcache = ql.libcache or None
 
     def run(self):
         self.init_dlls = [b"ntdll.dll", b"kernel32.dll", b"user32.dll"]
