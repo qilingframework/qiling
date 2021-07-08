@@ -120,7 +120,10 @@ def syscall_mmap_impl(ql, addr, mlen, prot, flags, fd, pgoffset, ver):
 
     # initialized mapping
     if need_mmap:
-        mmap_base = ql.loader.mmap_address
+        if (flags & MAP_FIXED) > 0:
+            mmap_base = addr
+        else:
+            mmap_base = ql.loader.mmap_address
         ql.loader.mmap_address = mmap_base + eff_mmap_size
         ql.log.debug("%s - mapping needed for 0x%x" % (api_name, addr))
         try:
