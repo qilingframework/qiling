@@ -75,22 +75,36 @@ class Process():
         # If the dll is already loaded
         if dll_name in self.dlls:
             return self.dlls[dll_name]
-        else:
-            self.dlls[dll_name] = self.dll_last_address
 
-        self.ql.log.info("Loading %s to 0x%x" % (path, self.dll_last_address))
+        self.ql.log.info(f'Loading {path} ...')
+
+        cached = None
+        loaded = False
 
         if self.libcache:
             cached = self.libcache.restore(path)
 
         if cached:
             data = cached.data
-            import_symbols = cached.import_symbols
-            import_table = cached.import_table
-            for entry in cached.cmdlines:
-                self.set_cmdline(entry['name'], entry['address'], data)
-            self.ql.log.info("Loaded %s from cache" % path)
-        else:
+
+            image_base = cached.ba
+            image_size = self.ql.mem.align(len(data), 0x1000)
+
+            # verify whether we can load the dll to the same address it was loaded when it was cached.
+            # if not, the dll will have to be realoded in order to have its symbols relocated using the
+            # new address
+            if self.ql.mem.is_available(image_base, image_size):
+                import_symbols = cached.import_symbols
+                import_table = cached.import_table
+
+                for entry in cached.cmdlines:
+                    self.set_cmdline(entry['name'], entry['address'], data)
+
+                self.ql.log.info(f'Loaded {path} from cache')
+                loaded = True
+
+        # either file was not cached, or could not be loaded to the same location in memory
+        if not cached or not loaded:
             dll = pefile.PE(path, fast_load=True)
             dll.parse_data_directories()
             warnings = dll.get_warnings()
@@ -143,12 +157,17 @@ class Process():
         except Exception as ex:
             self.ql.log.exception(f'Unable to add {dll_name} import symbols')
 
-        dll_base = self.dll_last_address
-        dll_len = self.ql.mem.align(len(bytes(data)), 0x1000)
+        dll_base = image_base
+        dll_len = image_size
+
         self.dll_size += dll_len
         self.ql.mem.map(dll_base, dll_len, info=dll_name)
         self.ql.mem.write(dll_base, bytes(data))
-        self.dll_last_address += dll_len
+
+        self.dlls[dll_name] = dll_base
+
+        if dll_base == self.dll_last_address:
+            self.dll_last_address += dll_len
 
         # if this is NOT a driver, add dll to ldr data
         if not driver:
