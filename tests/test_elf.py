@@ -102,7 +102,6 @@ class ELFTest(unittest.TestCase):
         del self.set_api_onenter
         del ql
 
-
     def test_elf_hijackapi_linux_x8664(self):
 
         def my_puts_enter(ql: Qiling):

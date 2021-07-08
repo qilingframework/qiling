@@ -86,6 +86,15 @@ class ql_socket:
         
     def getpeername(self):
         return self.__socket.getpeername()
+
+    def getsockopt(self, level, optname, optlen):
+        return self.__socket.getsockopt(level, optname, optlen)
+
+    def setsockopt(self, level, optname, optval, optlen):
+        if optval is not None:
+            return self.__socket.setsockopt(level, optname, optval)
+        else:
+            return self.__socket.setsockopt(level, optname, None, optval)
     
     def accept(self):
         try:
@@ -101,6 +110,9 @@ class ql_socket:
     
     def send(self, send_buf, send_flags):
         return self.__socket.send(send_buf, send_flags)
+
+    def recvmsg(self, bufsize, ancbufsize, flags):
+        return self.__socket.recvmsg(bufsize, ancbufsize, flags)
 
     def recvfrom(self, recvfrom_len, recvfrom_flags):
         return self.__socket.recvfrom(recvfrom_len, recvfrom_flags)

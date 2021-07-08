@@ -143,3 +143,6 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
     clone_child_stack, clone_flags, clone_newtls, clone_parent_tidptr, clone_child_tidptr, regreturn))
 
     return regreturn
+
+def ql_syscall_sched_yield(ql, *args, **kw):
+    return 0

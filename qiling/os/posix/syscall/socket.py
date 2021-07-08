@@ -5,6 +5,8 @@
 
 import struct, ipaddress
 
+from unicorn.unicorn import UcError
+
 
 from qiling.const import *
 from qiling.os.linux.thread import *
@@ -13,6 +15,53 @@ from qiling.os.filestruct import *
 from qiling.os.posix.const_mapping import *
 from qiling.os.posix.const import *
 from qiling.exception import *
+
+import ctypes
+
+class msghdr(ctypes.Structure):
+    _fields_ = [
+        ("msg_name"      , ctypes.c_uint64),
+        ("msg_namelen"   , ctypes.c_int32 ),
+        ("msg_iov"       , ctypes.c_uint64),
+        ("msg_iovlen"    , ctypes.c_int32 ),
+        ("msg_control"   , ctypes.c_uint64),
+        ("msg_controllen", ctypes.c_int32 ),
+        ("msg_flags"     , ctypes.c_int32 )
+    ]
+
+    _pack_ = 8
+
+    @classmethod
+    def load(self, ql, addr):
+        data = ql.mem.read(addr, ctypes.sizeof(msghdr))
+        return msghdr.from_buffer(data)
+
+class cmsghdr(ctypes.Structure):
+    _fields_ = [
+        ("cmsg_len"     , ctypes.c_int32),
+        ("cmsg_level"   , ctypes.c_int32),
+        ("cmsg_type"    , ctypes.c_int32),        
+    ]
+
+    _pack_ = 8
+
+    @classmethod
+    def load(self, ql, addr):
+        data = ql.mem.read(addr, ctypes.sizeof(cmsghdr))
+        return cmsghdr.from_buffer(data)
+
+class iovec(ctypes.Structure):
+    _fields_ = [
+        ("iov_base"  , ctypes.c_uint64),
+        ("iov_len"   , ctypes.c_uint64),
+    ]
+
+    _pack_ = 8
+
+    @classmethod
+    def load(self, ql, addr):
+        data = ql.mem.read(addr, ctypes.sizeof(iovec))
+        return iovec.from_buffer(data)
 
 
 def ql_bin_to_ip(ip):
@@ -88,8 +137,40 @@ def ql_syscall_connect(ql, connect_sockfd, connect_addr, connect_addrlen, *args,
     return regreturn
 
 
-def ql_syscall_setsockopt(ql, *args, **kw):
+def ql_syscall_getsockopt(ql, sockfd, level, optname, optval_addr, optlen_addr, *args, **kw):
+    if not (0 <= sockfd < NR_OPEN) or\
+            ql.os.fd[sockfd] == 0:
+        return -EBADF
+    
+    
+    try:
+        optlen = min(ql.unpack32s(ql.mem.read(optlen_addr, 4)), 1024)
+        if optlen < 0:
+            return -EINVAL
+            
+        optval = ql.os.fd[sockfd].getsockopt(level, optname, optlen)
+        ql.mem.write(optval_addr, optval)
+    except UcError:
+        return -EFAULT
+    
+    return 0
+
+
+def ql_syscall_setsockopt(ql, sockfd, level, optname, optval_addr, optlen, *args, **kw):
+    if not (0 <= sockfd < NR_OPEN) or\
+            ql.os.fd[sockfd] == 0:
+        return -EBADF
+
     regreturn = 0
+    if optval_addr == 0:
+        ql.os.fd[sockfd].setsockopt(level, optname, None, optlen)
+    else:
+        try:
+            optval = ql.mem.read(optval_addr, optlen)
+            ql.os.fd[sockfd].setsockopt(level, optname, optval, None)
+        except UcError:
+            regreturn = -EFAULT
+    
     return regreturn
 
 
@@ -277,6 +358,51 @@ def ql_syscall_send(ql, send_sockfd, send_buf, send_len, send_flags, *args, **kw
     return regreturn
 
 
+def ql_syscall_recvmsg(ql, sockfd, msg_addr, flags, *args, **kw):    
+    regreturn = 0
+    if  0 <= sockfd < NR_OPEN and ql.os.fd[sockfd] != 0:
+        msg = msghdr.load(ql, msg_addr)
+
+        try:
+            data, ancdata, mflags, addr = ql.os.fd[sockfd].recvmsg(msg.msg_namelen, msg.msg_controllen, flags)            
+
+            # TODO: handle the addr
+
+            iovec_addr  = msg.msg_iov
+            has_written = 0
+            for i in range(msg.msg_iovlen):
+                vec = iovec.load(ql, iovec_addr)
+                size = min(vec.iov_len, len(data) - has_written)
+                ql.mem.write(
+                    vec.iov_base, 
+                    data[has_written: has_written + size]
+                )
+                iovec_addr += ctypes.sizeof(iovec)
+
+            cmsg_addr = msg.msg_control
+            for cmsg_level, cmsg_type, cmsg_data in ancdata:
+                cmsg = cmsghdr.load(ql, cmsg_addr)
+                cmsg.cmsg_len = len(cmsg_data)
+                cmsg.cmsg_level = cmsg_level
+                cmsg.cmsg_type = cmsg_type
+                cmsg_data_addr = cmsg_addr + ctypes.sizeof(cmsghdr)
+                
+                ql.mem.write(cmsg_data_addr, cmsg_data)
+                ql.mem.write(cmsg_addr, bytes(cmsg))
+
+                cmsg_addr += cmsg.cmsg_len
+
+            msg.msg_flags = mflags            
+            ql.mem.write(msg_addr, bytes(msg))
+
+            regreturn = len(data)
+        except OSError as e:
+            regreturn = -e.errno
+    else:
+        regreturn = -EBADF
+
+    return regreturn
+
 def ql_syscall_recvfrom(ql, recvfrom_sockfd, recvfrom_buf, recvfrom_len, recvfrom_flags, recvfrom_addr, recvfrom_addrlen, *args, **kw):
     # For x8664, recvfrom() is called finally when calling recv() in TCP communications
     SOCK_STREAM = 1
@@ -348,7 +474,7 @@ def ql_syscall_sendto(ql, sendto_sockfd, sendto_buf, sendto_len, sendto_flags, s
                     regreturn = ql.os.fd[sendto_sockfd].sendto(bytes(tmp_buf), sendto_flags, (host, port))
                 ql.log.debug("debug sendto end")
             except:
-                ql.log.info(sys.exc_info()[0])
+                ql.log.debug(sys.exc_info()[0])
                 if ql.verbose >= QL_VERBOSE.DEBUG:
                     raise
         else:
