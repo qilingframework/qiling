@@ -25,20 +25,22 @@ class QlPeCacheEntry:
 
 # A default simple cache implementation
 class QlPeCache:
-    def create_filename(self, path, address):
-        return path + ".%x.cache2" % address
+    def create_filename(self, path: str) -> str:
+        return f'{path}.cache2'
 
-    def restore(self, path, address):
-        fcache = self.create_filename(path, address)
+    def restore(self, path: str) -> Optional[QlPeCacheEntry]:
+        fcache = self.create_filename(path)
+
         # pickle file cannot be outdated
         if os.path.exists(fcache) and os.stat(fcache).st_mtime > os.stat(path).st_mtime:
             with open(fcache, "rb") as fcache_file:
                 return QlPeCacheEntry(*pickle.load(fcache_file))
+
         return None
 
-    def save(self, path, address, entry):
-        fcache = self.create_filename(path, address)
-        data = (entry.data, entry.cmdlines, entry.import_symbols, entry.import_table)
+    def save(self, path: str, entry: QlPeCacheEntry):
+        fcache = self.create_filename(path)
+
         # cache this dll file
         with open(fcache, "wb") as fcache_file:
             pickle.dump(data, fcache_file)
@@ -77,9 +79,7 @@ class Process():
         self.ql.log.info("Loading %s to 0x%x" % (path, self.dll_last_address))
 
         if self.libcache:
-            cached = self.libcache.restore(path, self.dll_last_address)
-        else:
-            cached = None
+            cached = self.libcache.restore(path)
 
         if cached:
             data = cached.data
@@ -114,8 +114,7 @@ class Process():
                     cmdlines.append(cmdline_entry)
 
             if self.libcache:
-                cached = QlPeCacheEntry(data, cmdlines, import_symbols, import_table)
-                self.libcache.save(path, self.dll_last_address, cached)
+                self.libcache.save(path, cached)
                 self.ql.log.info("Cached %s" % path)
 
         # Add dll to IAT
