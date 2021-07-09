@@ -58,6 +58,7 @@ LPSECURITY_ATTRIBUTES       = POINTER
 LPVOID                      = POINTER
 LPCVOID                     = POINTER
 LPINTERNET_BUFFERSA         = POINTER
+LPMESSAGEFILTER             = POINTER
 PBYTE                       = POINTER
 PDWORD                      = POINTER
 PVOID                       = POINTER
