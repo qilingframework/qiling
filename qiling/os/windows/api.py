@@ -6,12 +6,13 @@
 from qiling.os.const import *
 
 LOCALE_T = INT
+LONG = PARAM_INTN
 ULONG = PARAM_INTN
 CCHAR = PARAM_INT8
 CHAR = PARAM_INT8
 UCHAR = PARAM_INT16
-USHORT = PARAM_INT16
 SHORT = PARAM_INT16
+USHORT = PARAM_INT16
 
 # ntoskrnl workarounds:
 BOOLEAN = INT
@@ -70,6 +71,10 @@ PCACTCTXW                   = POINTER
 DWORD_PTR                   = POINTER
 LPWSADATA                   = POINTER
 LPWSAPROTOCOL_INFOA         = POINTER
+LPUNKNOWN                   = POINTER
+REFCLSID                    = POINTER
+REFIID                      = POINTER
+PSECURITY_DESCRIPTOR        = POINTER
 LPCSTR                      = STRING
 LPCWSTR                     = WSTRING
 
