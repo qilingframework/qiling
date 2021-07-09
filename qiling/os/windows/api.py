@@ -23,6 +23,8 @@ PCUNICODE_STRING = WSTRING
 PUNICODE_STRING = WSTRING
 WCHAR = PARAM_INT16
 
+GROUP                       = INT
+SOCKET                      = INT
 PROCESSINFOCLASS            = INT
 OBJECT_INFORMATION_CLASS    = INT
 ACCESS_MASK                 = INT
@@ -66,6 +68,8 @@ PBOOL                       = POINTER
 LPPOINT                     = POINTER
 PCACTCTXW                   = POINTER
 DWORD_PTR                   = POINTER
+LPWSADATA                   = POINTER
+LPWSAPROTOCOL_INFOA         = POINTER
 LPCSTR                      = STRING
 LPCWSTR                     = WSTRING
 
