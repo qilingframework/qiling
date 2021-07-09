@@ -130,6 +130,10 @@ class Process():
 
             self.ql.log.debug(f'DLL preferred base address: {image_base:#x}')
 
+            if (image_base + image_size) > self.ql.mem.max_mem_addr:
+                image_base = self.dll_last_address
+                self.ql.log.debug(f'DLL preferred base address exceeds memory upper bound, loading to: {image_base:#x}')
+
             if not self.ql.mem.is_available(image_base, image_size):
                 image_base = self.ql.mem.find_free_space(image_size, minaddr=image_base, align=0x10000)
                 self.ql.log.debug(f'DLL preferred base address is taken, loading to: {image_base:#x}')
