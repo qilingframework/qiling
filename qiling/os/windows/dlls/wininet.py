@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -9,7 +9,7 @@ from qiling.os.const import *
 from qiling.os.windows.utils import *
 
 
-dllname = 'wininet_dll'
+dllname = "wininet_dll"
 
 # void InternetOpenA(
 #   LPCSTR lpszAgent,
@@ -132,7 +132,11 @@ def hook_HttpOpenRequestA(ql, address, params):
 #   DWORD               dwFlags,
 #   DWORD_PTR           dwContext
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={'lpBuffersIn': 'POINTER', 'lpBuffersOut': 'STRING'})
+@winsdkapi(
+    cc=STDCALL,
+    dllname=dllname,
+    replace_params={"lpBuffersIn": "POINTER", "lpBuffersOut": "STRING"},
+)
 def hook_HttpSendRequestExA(ql, address, params):
     pass
 
@@ -205,7 +209,7 @@ def hook_HttpSendRequestW(ql, address, params):
 #   DWORD     dwFlags,
 #   LPVOID    *lppvData
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'HWND': 'POINTER'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={"HWND": "POINTER"})
 def hook_InternetErrorDlg(ql, address, params):
     pass
 
@@ -238,6 +242,10 @@ def hook_InternetWriteFile(ql, address, params):
 #   DWORD               dwFlags,
 #   DWORD_PTR           dwContext
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'LPINTERNET_BUFFERSA': 'POINTER'})
+@winsdkapi(
+    cc=STDCALL,
+    dllname=dllname,
+    replace_params_type={"LPINTERNET_BUFFERSA": "POINTER"},
+)
 def hook_HttpEndRequestA(ql, address, params):
     return 1

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 import struct
@@ -11,7 +11,8 @@ from qiling.os.windows.handle import *
 from qiling.os.windows.const import *
 from qiling.os.windows.structs import *
 
-dllname = 'advapi32_dll'
+dllname = "advapi32_dll"
+
 
 def _RegOpenKey(ql, address, params):
     hKey = params["hKey"]
@@ -27,7 +28,9 @@ def _RegOpenKey(ql, address, params):
     key = s_hKey + "\\" + s_lpSubKey
 
     # Keys in the profile are saved as KEY\PARAM = VALUE, so i just want to check that the key is the same
-    keys_profile = [key.rsplit("\\", 1)[0] for key in ql.os.profile["REGISTRY"].keys()]
+    keys_profile = [
+        key.rsplit("\\", 1)[0] for key in ql.os.profile["REGISTRY"].keys()
+    ]
     if key.lower() in keys_profile:
         ql.log.debug("Using profile for key of  %s" % key)
         ql.os.registry_manager.access(key)
@@ -55,12 +58,17 @@ def RegQueryValue(ql, address, params):
     s_hKey = ql.os.handle_manager.get(hKey).obj
     params["hKey"] = s_hKey
     # read reg_type
-    reg_type = Registry.RegNone if lpType == 0 else ql.unpack32(ql.mem.read(lpType, 4))
+    reg_type = (
+        Registry.RegNone if lpType == 0 else ql.unpack32(ql.mem.read(lpType, 4))
+    )
 
     try:
         # Keys in the profile are saved as KEY\PARAM = VALUE, so i just want to check that the key is the same
         value = ql.os.profile["REGISTRY"][s_hKey + "\\" + s_lpValueName]
-        ql.log.debug("Using profile for value of key %s" % (s_hKey + "\\" + s_lpValueName,))
+        ql.log.debug(
+            "Using profile for value of key %s"
+            % (s_hKey + "\\" + s_lpValueName,)
+        )
 
         # TODO i have no fucking idea on how to set a None value, fucking configparser
         if value == "None":
@@ -72,7 +80,9 @@ def RegQueryValue(ql, address, params):
 
     except KeyError:
         # Read the registry
-        reg_type, value = ql.os.registry_manager.read(s_hKey, s_lpValueName, reg_type)
+        reg_type, value = ql.os.registry_manager.read(
+            s_hKey, s_lpValueName, reg_type
+        )
 
     # error key
     if reg_type is None or value is None:
@@ -80,7 +90,9 @@ def RegQueryValue(ql, address, params):
         return ERROR_FILE_NOT_FOUND
     else:
         # set lpData
-        length = ql.os.registry_manager.write_reg_value_into_mem(value, reg_type, lpData)
+        length = ql.os.registry_manager.write_reg_value_into_mem(
+            value, reg_type, lpData
+        )
         # set lpcbData
         max_size = int.from_bytes(ql.mem.read(lpcbData, 4), byteorder="little")
         ql.mem.write(lpcbData, ql.pack(length))
@@ -226,7 +238,9 @@ def hook_RegCreateKeyW(ql, address, params):
 #   PHKEY                       phkResult,
 #   LPDWORD                     lpdwDisposition
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'DWORD': 'POINTER'})
+@winsdkapi(
+    cc=STDCALL, dllname=dllname, replace_params_type={"DWORD": "POINTER"}
+)
 def hook_RegCreateKeyExW(ql, address, params):
     ret = ERROR_SUCCESS
 
@@ -280,6 +294,7 @@ def hook_RegSetValueA(ql, address, params):
 
     return ret
 
+
 # LSTATUS RegSetValueExA(
 #   HKEY       hKey,
 #   LPCSTR     lpValueName,
@@ -304,7 +319,6 @@ def hook_RegSetValueExA(ql, address, params):
     ql.os.registry_manager.write(s_hKey, s_lpValueName, dwType, s_lpData)
 
     return ret
-
 
 
 # LSTATUS RegSetValueExW(
@@ -406,8 +420,12 @@ def hook_GetTokenInformation(ql, address, params):
     dst = params["TokenInformation"]
     token = ql.os.handle_manager.get(id_token).obj
     information_value = token.get(information)
-    ql.mem.write(return_point, len(information_value).to_bytes(4, byteorder="little"))
-    return_size = int.from_bytes(ql.mem.read(return_point, 4), byteorder="little")
+    ql.mem.write(
+        return_point, len(information_value).to_bytes(4, byteorder="little")
+    )
+    return_size = int.from_bytes(
+        ql.mem.read(return_point, 4), byteorder="little"
+    )
     ql.log.debug("The target is checking for its permissions")
     if return_size > max_size:
         ql.os.last_error = ERROR_INSUFFICIENT_BUFFER
@@ -433,12 +451,13 @@ def hook_GetSidSubAuthorityCount(ql, address, params):
 #   PSID  pSid,
 #   DWORD nSubAuthority
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'DWORD': 'INT'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={"DWORD": "INT"})
 def hook_GetSidSubAuthority(ql, address, params):
     num = params["nSubAuthority"]
     sid = ql.os.handle_manager.get(params["pSid"]).obj
     addr_authority = sid.addr + 8 + (ql.pointersize * num)
     return addr_authority
+
 
 # LSTATUS RegEnumValueA(
 #   HKEY    hKey,
@@ -452,7 +471,8 @@ def hook_GetSidSubAuthority(ql, address, params):
 # );
 @winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_RegEnumValueA(ql, address, params):
-    return 259 # ERROR_NO_MORE_ITEMS
+    return 259  # ERROR_NO_MORE_ITEMS
+
 
 # SC_HANDLE OpenSCManagerA(
 #   LPCSTR lpMachineName,
@@ -470,6 +490,7 @@ def hook_OpenSCManagerA(ql, address, params):
         ql.os.handle_manager.append(new_handle)
     return new_handle.id
 
+
 # SC_HANDLE CreateServiceA(
 #   SC_HANDLE hSCManager,
 #   LPCSTR    lpServiceName,
@@ -485,21 +506,25 @@ def hook_OpenSCManagerA(ql, address, params):
 #   LPCSTR    lpServiceStartName,
 #   LPCSTR    lpPassword
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={
-    "hSCManager":HANDLE,
-    "lpServiceName": STRING,
-    "lpDisplayName": STRING,
-    "dwDesiredAccess": DWORD,
-    "dwServiceType": DWORD,
-    "dwStartType": DWORD,
-    "dwErrorControl": DWORD,
-    "lpBinaryPathName": STRING,
-    "lpLoadOrderGroup": STRING,
-    "lpdwTagId": POINTER,
-    "lpDependencies": STRING,
-    "lpServiceStartName": STRING,
-    "lpPassword": STRING
-    })
+@winsdkapi(
+    cc=STDCALL,
+    dllname=dllname,
+    replace_params={
+        "hSCManager": HANDLE,
+        "lpServiceName": STRING,
+        "lpDisplayName": STRING,
+        "dwDesiredAccess": DWORD,
+        "dwServiceType": DWORD,
+        "dwStartType": DWORD,
+        "dwErrorControl": DWORD,
+        "lpBinaryPathName": STRING,
+        "lpLoadOrderGroup": STRING,
+        "lpdwTagId": POINTER,
+        "lpDependencies": STRING,
+        "lpServiceStartName": STRING,
+        "lpPassword": STRING,
+    },
+)
 def hook_CreateServiceA(ql, address, params):
     hSCManager = params["hSCManager"]
     lpServiceName = params["lpServiceName"]
@@ -509,16 +534,21 @@ def hook_CreateServiceA(ql, address, params):
     ql.os.handle_manager.append(new_handle)
     return new_handle.id
 
+
 # SC_HANDLE OpenServiceA(
 #   SC_HANDLE hSCManager,
 #   LPCSTR    lpServiceName,
 #   DWORD     dwDesiredAccess
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname,replace_params={
-    "hSCManager":HANDLE,
-    "lpServiceName": STRING,
-    "dwDesiredAccess": DWORD    
-})
+@winsdkapi(
+    cc=STDCALL,
+    dllname=dllname,
+    replace_params={
+        "hSCManager": HANDLE,
+        "lpServiceName": STRING,
+        "dwDesiredAccess": DWORD,
+    },
+)
 def hook_OpenServiceA(ql, address, params):
     hSCManager = params["hSCManager"]
     lpServiceName = params["lpServiceName"]
@@ -529,14 +559,16 @@ def hook_OpenServiceA(ql, address, params):
     else:
         return 0
 
+
 # BOOL CloseServiceHandle(
 #   SC_HANDLE hSCObject
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={"hSCObject":HANDLE})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={"hSCObject": HANDLE})
 def hook_CloseServiceHandle(ql, address, params):
     hSCObject = params["hSCObject"]
     ql.os.handle_manager.delete(hSCObject)
     return 1
+
 
 # BOOL StartServiceA(
 #   SC_HANDLE hService,
@@ -546,6 +578,7 @@ def hook_CloseServiceHandle(ql, address, params):
 @winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_StartServiceA(ql, address, params):
     return 1
+
 
 # BOOL AllocateAndInitializeSid(
 #   PSID_IDENTIFIER_AUTHORITY pIdentifierAuthority,
@@ -578,10 +611,10 @@ def hook_AllocateAndInitializeSid(ql, address, params):
 
 
 # Some default Sids:
-__adminsid = None # Administrators (S-1-5-32-544)
-__userssid = None # All Users (S-1-5-32-545)
-__guestssid = None # All Users (S-1-5-32-546)
-__poweruserssid = None # Power Users (S-1-5-32-547)
+__adminsid = None  # Administrators (S-1-5-32-544)
+__userssid = None  # All Users (S-1-5-32-545)
+__guestssid = None  # All Users (S-1-5-32-546)
+__poweruserssid = None  # Power Users (S-1-5-32-547)
 
 
 def get_adminsid(ql):
@@ -592,6 +625,7 @@ def get_adminsid(ql):
         __adminsid = Sid(ql, revision=1, identifier=5, subs=subs, subs_count=2)
     return __adminsid
 
+
 def get_userssid(ql):
     global __userssid
     if __userssid == None:
@@ -599,6 +633,7 @@ def get_userssid(ql):
         subs = b"\x20\x00\x00\x00\x21\x02\x00\x00"
         __userssid = Sid(ql, revision=1, identifier=5, subs=subs, subs_count=2)
     return __userssid
+
 
 def get_guestssid(ql):
     global __guestssid
@@ -608,12 +643,15 @@ def get_guestssid(ql):
         __guestssid = Sid(ql, revision=1, identifier=5, subs=subs, subs_count=2)
     return __guestssid
 
+
 def get_poweruserssid(ql):
     global __poweruserssid
     if __poweruserssid == None:
         # nSubAuthority0 = SECURITY_BUILTIN_DOMAIN_RID[0x20], nSubAuthority1 = DOMAIN_ALIAS_RID_POWER_USERS[0x223]
         subs = b"\x20\x00\x00\x00\x23\x02\x00\x00"
-        __poweruserssid = Sid(ql, revision=1, identifier=5, subs=subs, subs_count=2)
+        __poweruserssid = Sid(
+            ql, revision=1, identifier=5, subs=subs, subs_count=2
+        )
     return __poweruserssid
 
 
@@ -630,17 +668,19 @@ def hook_CheckTokenMembership(ql, address, params):
     if token_handle == 0:
         # For now, treat power users as admins
         if get_adminsid(ql) == sid or get_poweruserssid(ql) == sid:
-            IsMember = 1 if ql.os.profile["SYSTEM"]["permission"] == "root" else 0
+            IsMember = (
+                1 if ql.os.profile["SYSTEM"]["permission"] == "root" else 0
+            )
         elif get_userssid(ql) == sid:
             # FIXME: is this true for all tokens? probably not...
             IsMember = 1
         elif get_guestssid(ql) == sid:
             IsMember = 0
         else:
-            assert False, 'unimplemented'
+            assert False, "unimplemented"
     else:
-        assert False, 'unimplemented'
-    ql.mem.write(params['IsMember'], ql.pack(IsMember))
+        assert False, "unimplemented"
+    ql.mem.write(params["IsMember"], ql.pack(IsMember))
     return 1
 
 

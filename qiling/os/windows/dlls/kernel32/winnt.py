@@ -8,16 +8,25 @@ from qiling.os.windows.const import *
 from qiling.os.windows.fncc import *
 
 
-dllname = 'kernel32_dll'
+dllname = "kernel32_dll"
 
 # LONG InterlockedExchange(
 #  LONG volatile *Target,
 #  LONG          Value
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={"Target": POINTER, "Value": UINT})
+@winsdkapi(
+    cc=STDCALL,
+    dllname=dllname,
+    replace_params={"Target": POINTER, "Value": UINT},
+)
 def hook_InterlockedExchange(ql, address, params):
-    old = int.from_bytes(ql.mem.read(params['Target'], ql.pointersize), byteorder='little')
-    ql.mem.write(params['Target'], params['Value'].to_bytes(length=ql.pointersize, byteorder='little'))
+    old = int.from_bytes(
+        ql.mem.read(params["Target"], ql.pointersize), byteorder="little"
+    )
+    ql.mem.write(
+        params["Target"],
+        params["Value"].to_bytes(length=ql.pointersize, byteorder="little"),
+    )
     return old
 
 
@@ -26,9 +35,9 @@ def hook_InterlockedExchange(ql, address, params):
 # );
 @winsdkapi(cc=STDCALL, dllname=dllname, replace_params={"Target": POINTER})
 def hook_InterlockedIncrement(ql, address, params):
-    val = int.from_bytes(ql.mem.read(params['Target'], 4), byteorder='little')
+    val = int.from_bytes(ql.mem.read(params["Target"], 4), byteorder="little")
     val += 1 & (2 ** 32)  # increment and overflow back to 0 if applicable
-    ql.mem.write(params['Target'], val.to_bytes(length=4, byteorder='little'))
+    ql.mem.write(params["Target"], val.to_bytes(length=4, byteorder="little"))
     return val
 
 
@@ -37,11 +46,11 @@ def hook_InterlockedIncrement(ql, address, params):
 # );
 @winsdkapi(cc=STDCALL, dllname=dllname, replace_params={"Target": POINTER})
 def hook_InterlockedDecrement(ql, address, params):
-    val = int.from_bytes(ql.mem.read(params['Target'], 4), byteorder='little')
+    val = int.from_bytes(ql.mem.read(params["Target"], 4), byteorder="little")
     val -= 1
     if val == -1:
         val = 0xFFFFFFFF
-    ql.mem.write(params['Target'], val.to_bytes(length=4, byteorder='little'))
+    ql.mem.write(params["Target"], val.to_bytes(length=4, byteorder="little"))
     return val
 
 
@@ -50,7 +59,15 @@ def hook_InterlockedDecrement(ql, address, params):
 #   DWORD     TypeMask,
 #   BYTE      Condition
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={"ConditionMask": ULONGLONG, "TypeMask": DWORD, "Condition": BYTE})
+@winsdkapi(
+    cc=STDCALL,
+    dllname=dllname,
+    replace_params={
+        "ConditionMask": ULONGLONG,
+        "TypeMask": DWORD,
+        "Condition": BYTE,
+    },
+)
 def hook_VerSetConditionMask(ql, address, params):
     # ConditionMask = params["ConditionMask"]
     TypeMask = params["TypeMask"]

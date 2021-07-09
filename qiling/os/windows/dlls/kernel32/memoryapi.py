@@ -14,7 +14,7 @@ from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
 
-dllname = 'kernel32_dll'
+dllname = "kernel32_dll"
 
 # LPVOID VirtualAlloc(
 #   LPVOID lpAddress,
@@ -47,7 +47,11 @@ def hook_VirtualFree(ql, address, params):
 #  DWORD  flNewProtect,
 #  PDWORD lpflOldProtect
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'SIZE_T': 'UINT', 'DWORD': 'UINT'})
+@winsdkapi(
+    cc=STDCALL,
+    dllname=dllname,
+    replace_params_type={"SIZE_T": "UINT", "DWORD": "UINT"},
+)
 def hook_VirtualProtect(ql, address, params):
     return 1
 
@@ -57,7 +61,11 @@ def hook_VirtualProtect(ql, address, params):
 #  PMEMORY_BASIC_INFORMATION lpBuffer,
 #  SIZE_T                    dwLength
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'SIZE_T': 'UINT', 'DWORD': 'UINT'})
+@winsdkapi(
+    cc=STDCALL,
+    dllname=dllname,
+    replace_params_type={"SIZE_T": "UINT", "DWORD": "UINT"},
+)
 def hook_VirtualQuery(ql, address, params):
     """
     typedef struct _MEMORY_BASIC_INFORMATION {
@@ -74,7 +82,7 @@ def hook_VirtualQuery(ql, address, params):
     base = None
     size = None
     for chunk in ql.os.heap.chunks:
-        if chunk.address <= params['lpAddress'] < chunk.address + chunk.size:
+        if chunk.address <= params["lpAddress"] < chunk.address + chunk.size:
             base = chunk.address
             size = chunk.size
 
@@ -86,17 +94,31 @@ def hook_VirtualQuery(ql, address, params):
         ql.os.last_error = ERROR_INVALID_PARAMETER
         return 0
 
-    mbi = params['lpBuffer']
-    ql.mem.write(mbi, base.to_bytes(length=ql.pointersize, byteorder='little'))
-    ql.mem.write(mbi + ql.pointersize * 1, base.to_bytes(length=ql.pointersize, byteorder='little'))
-    ql.mem.write(mbi + ql.pointersize * 2,
-                 (0x40).to_bytes(length=ql.pointersize, byteorder='little'))  # 0x40 = EXECUTE_READ_WRITE
-    ql.mem.write(mbi + ql.pointersize * 3, size.to_bytes(length=ql.pointersize, byteorder='little'))
-    ql.mem.write(mbi + ql.pointersize * 4,
-                 (0x1000).to_bytes(length=ql.pointersize, byteorder='little'))  # 0x1000 == MEM_COMMIT
-    ql.mem.write(mbi + ql.pointersize * 5,
-                 (0x40).to_bytes(length=ql.pointersize, byteorder='little'))  # 0x40 = EXECUTE_READ_WRITE
-    ql.mem.write(mbi + ql.pointersize * 6,
-                 (0x40000).to_bytes(length=ql.pointersize, byteorder='little'))  # 0x40000 = MEM_MAPPED
+    mbi = params["lpBuffer"]
+    ql.mem.write(mbi, base.to_bytes(length=ql.pointersize, byteorder="little"))
+    ql.mem.write(
+        mbi + ql.pointersize * 1,
+        base.to_bytes(length=ql.pointersize, byteorder="little"),
+    )
+    ql.mem.write(
+        mbi + ql.pointersize * 2,
+        (0x40).to_bytes(length=ql.pointersize, byteorder="little"),
+    )  # 0x40 = EXECUTE_READ_WRITE
+    ql.mem.write(
+        mbi + ql.pointersize * 3,
+        size.to_bytes(length=ql.pointersize, byteorder="little"),
+    )
+    ql.mem.write(
+        mbi + ql.pointersize * 4,
+        (0x1000).to_bytes(length=ql.pointersize, byteorder="little"),
+    )  # 0x1000 == MEM_COMMIT
+    ql.mem.write(
+        mbi + ql.pointersize * 5,
+        (0x40).to_bytes(length=ql.pointersize, byteorder="little"),
+    )  # 0x40 = EXECUTE_READ_WRITE
+    ql.mem.write(
+        mbi + ql.pointersize * 6,
+        (0x40000).to_bytes(length=ql.pointersize, byteorder="little"),
+    )  # 0x40000 = MEM_MAPPED
 
     return ql.pointersize * 7

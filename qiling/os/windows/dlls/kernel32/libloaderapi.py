@@ -16,7 +16,8 @@ from qiling.os.windows.handle import *
 from qiling.exception import *
 
 
-dllname = 'kernel32_dll'
+dllname = "kernel32_dll"
+
 
 def _GetModuleHandle(ql, address, params):
     lpModuleName = params["lpModuleName"]
@@ -81,7 +82,7 @@ def hook_GetModuleFileNameA(ql, address, params):
         filename = ql.loader.filepath
         filename_len = len(filename)
         if filename_len > nSize - 1:
-            filename = ql.loader.filepath[:nSize - 1]
+            filename = ql.loader.filepath[: nSize - 1]
             ret = nSize
         else:
             ret = filename_len
@@ -106,10 +107,10 @@ def hook_GetModuleFileNameW(ql, address, params):
     # GetModuleHandle can return pe_image_address as handle, and GetModuleFileName will try to retrieve it.
     # Pretty much 0 and pe_image_address value should do the same operations
     if not ql.code and (hModule == 0 or hModule == ql.loader.pe_image_address):
-        filename = ql.loader.filepath.decode('ascii').encode('utf-16le')
+        filename = ql.loader.filepath.decode("ascii").encode("utf-16le")
         filename_len = len(filename)
         if filename_len > nSize - 1:
-            filename = ql.loader.filepath[:nSize - 1]
+            filename = ql.loader.filepath[: nSize - 1]
             ret = nSize
         else:
             ret = filename_len
@@ -123,7 +124,9 @@ def hook_GetModuleFileNameW(ql, address, params):
 #   HMODULE hModule,
 #   LPCSTR  lpProcName
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'LPCSTR': 'POINTER'})
+@winsdkapi(
+    cc=STDCALL, dllname=dllname, replace_params_type={"LPCSTR": "POINTER"}
+)
 def hook_GetProcAddress(ql, address, params):
     if params["lpProcName"] > MAXUSHORT:
         # Look up by name
@@ -138,15 +141,22 @@ def hook_GetProcAddress(ql, address, params):
 
     # Check if dll is loaded
     try:
-        dll_name = [key for key, value in ql.loader.dlls.items() if value == params['hModule']][0]
+        dll_name = [
+            key
+            for key, value in ql.loader.dlls.items()
+            if value == params["hModule"]
+        ][0]
     except IndexError as ie:
-        ql.log.info('Failed to import function "%s" with handle 0x%X' % (lpProcName, params['hModule']))
+        ql.log.info(
+            'Failed to import function "%s" with handle 0x%X'
+            % (lpProcName, params["hModule"])
+        )
         return 0
 
     # Handle case where module is self
     if dll_name == os.path.basename(ql.loader.path):
         for addr, export in ql.loader.export_symbols.items():
-            if export['name'] == lpProcName:
+            if export["name"] == lpProcName:
                 return addr
 
     if lpProcName in ql.loader.import_address_table[dll_name]:
@@ -173,7 +183,9 @@ def hook_LoadLibraryA(ql, address, params):
 #   HANDLE hFile,
 #   DWORD  dwFlags
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'HANDLE': 'POINTER'})
+@winsdkapi(
+    cc=STDCALL, dllname=dllname, replace_params_type={"HANDLE": "POINTER"}
+)
 def hook_LoadLibraryExA(ql, address, params):
     lpLibFileName = params["lpLibFileName"]
     dll_base = ql.loader.load_dll(lpLibFileName.encode())
@@ -195,7 +207,9 @@ def hook_LoadLibraryW(ql, address, params):
 #   HANDLE hFile,
 #   DWORD  dwFlags
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'HANDLE': 'POINTER'})
+@winsdkapi(
+    cc=STDCALL, dllname=dllname, replace_params_type={"HANDLE": "POINTER"}
+)
 def hook_LoadLibraryExW(ql, address, params):
     lpLibFileName = params["lpLibFileName"].encode()
     dll_base = ql.loader.load_dll(lpLibFileName)
@@ -206,7 +220,9 @@ def hook_LoadLibraryExW(ql, address, params):
 #   HMODULE hModule,
 #   HRSRC   hResInfo
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'HMODULE': 'POINTER'})
+@winsdkapi(
+    cc=STDCALL, dllname=dllname, replace_params_type={"HMODULE": "POINTER"}
+)
 def hook_SizeofResource(ql, address, params):
     # Return size of resource
     # TODO set a valid value. More tests have to be made to find it.
@@ -217,7 +233,9 @@ def hook_SizeofResource(ql, address, params):
 #   HMODULE hModule,
 #   HRSRC   hResInfo
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'HMODULE': 'POINTER'})
+@winsdkapi(
+    cc=STDCALL, dllname=dllname, replace_params_type={"HMODULE": "POINTER"}
+)
 def hook_LoadResource(ql, address, params):
     pointer = params["hResInfo"]
     return pointer
@@ -226,7 +244,9 @@ def hook_LoadResource(ql, address, params):
 # LPVOID LockResource(
 #   HGLOBAL hResData
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'HMODULE': 'POINTER'})
+@winsdkapi(
+    cc=STDCALL, dllname=dllname, replace_params_type={"HMODULE": "POINTER"}
+)
 def hook_LockResource(ql, address, params):
     pointer = params["hResData"]
     return pointer
@@ -235,7 +255,9 @@ def hook_LockResource(ql, address, params):
 # BOOL DisableThreadLibraryCalls(
 #  HMODULE hLibModule
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'HMODULE': 'POINTER'})
+@winsdkapi(
+    cc=STDCALL, dllname=dllname, replace_params_type={"HMODULE": "POINTER"}
+)
 def hook_DisableThreadLibraryCalls(ql, address, params):
     return 1
 
@@ -243,7 +265,9 @@ def hook_DisableThreadLibraryCalls(ql, address, params):
 # BOOL FreeLibrary(
 #   HMODULE hLibModule
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'HMODULE': 'POINTER'})
+@winsdkapi(
+    cc=STDCALL, dllname=dllname, replace_params_type={"HMODULE": "POINTER"}
+)
 def hook_FreeLibrary(ql, address, params):
     return 1
 

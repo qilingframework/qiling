@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
 # Everything about the bug and firmware https://www.exploit-db.com/exploits/33863
 
-import os,sys
+import os, sys
 
 # This is new. Instead of unicorn, we import unicornafl. It's the same Uc with some new `afl_` functions
 import unicornafl
@@ -17,26 +17,30 @@ sys.path.append("../../..")
 from qiling import *
 from qiling.const import QL_VERBOSE
 
+
 def main(input_file, enable_trace=False):
-    
+
     env_vars = {
         "REQUEST_METHOD": "POST",
         "REQUEST_URI": "/hedwig.cgi",
         "CONTENT_TYPE": "application/x-www-form-urlencoded",
         "REMOTE_ADDR": "127.0.0.1",
-        "HTTP_COOKIE": "uid=1234&password="+"A" * 0x1000,  # fill up
+        "HTTP_COOKIE": "uid=1234&password=" + "A" * 0x1000,  # fill up
         # "CONTENT_LENGTH": "8", # no needed
     }
 
-    ql = Qiling(["./rootfs/htdocs/web/hedwig.cgi"], "./rootfs",
-                verbose=QL_VERBOSE.DEBUG, env=env_vars,
-                console = True if enable_trace else False)
-    
+    ql = Qiling(
+        ["./rootfs/htdocs/web/hedwig.cgi"],
+        "./rootfs",
+        verbose=QL_VERBOSE.DEBUG,
+        env=env_vars,
+        console=True if enable_trace else False,
+    )
+
     def place_input_callback(uc, input, _, data):
         env_var = ("HTTP_COOKIE=uid=1234&password=").encode()
         env_vars = env_var + input + b"\x00" + (ql.path).encode() + b"\x00"
         ql.mem.write(ql.target_addr, env_vars)
-
 
     def start_afl(_ql: Qiling):
 
@@ -47,9 +51,11 @@ def main(input_file, enable_trace=False):
         # This will only return after the fuzzing stopped.
         try:
             print("Starting afl_fuzz().")
-            if not _ql.uc.afl_fuzz(input_file=input_file,
-                        place_input_callback=place_input_callback,
-                        exits=[ql.os.exit_point]):
+            if not _ql.uc.afl_fuzz(
+                input_file=input_file,
+                place_input_callback=place_input_callback,
+                exits=[ql.os.exit_point],
+            ):
                 print("Ran once without AFL attached.")
                 os._exit(0)  # that's a looot faster than tidying up.
         except unicornafl.UcAflError as ex:

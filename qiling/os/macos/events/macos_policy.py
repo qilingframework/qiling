@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -23,7 +23,24 @@ def init_ctx(f):
             cred_addr = self.ql.os.heap.alloc(ctypes.sizeof(ucred_t))
             self.manager.cred = ucred_t(self.ql, cred_addr)
             self.manager.cred.cr_ref = 2
-            pyarr = [20, 12, 61, 79, 80, 81, 98, 33, 100, 204, 250, 395, 398, 399, 701, 0]
+            pyarr = [
+                20,
+                12,
+                61,
+                79,
+                80,
+                81,
+                98,
+                33,
+                100,
+                204,
+                250,
+                395,
+                398,
+                399,
+                701,
+                0,
+            ]
             self.manager.cred.cr_posix = ucred_t.posix_cred_t(
                 501,
                 501,
@@ -33,7 +50,8 @@ def init_ctx(f):
                 20,
                 20,
                 501,
-                2)
+                2,
+            )
             self.manager.cred.cr_label = POINTER64(self.manager.label.base)
             self.manager.cred.updateToMem()
 
@@ -41,14 +59,18 @@ def init_ctx(f):
             tmp_addr = self.ql.os.heap.alloc(ctypes.sizeof(vnode_t))
             self.manager.vnode = vnode_t(self.ql, tmp_addr)
             tmp_name = self.ql.os.heap.alloc(len(self.manager.current_proc))
-            self.manager.ql.mem.write(tmp_name, self.manager.current_proc.encode())
+            self.manager.ql.mem.write(
+                tmp_name, self.manager.current_proc.encode()
+            )
             self.manager.vnode.v_name = POINTER64(tmp_name)
             self.manager.vnode.updateToMem()
 
         return f(self, *args, **kw)
+
     return wrapper
 
-class QlMacOSPolicy():
+
+class QlMacOSPolicy:
     def __init__(self, ql, manager):
         self.ql = ql
         self.manager = manager
@@ -67,19 +89,33 @@ class QlMacOSPolicy():
         fg.fg_data = POINTER64(self.manager.vnode.base)
         fg.updateToMem()
 
-        self.manager.emit_by_type(MACPolicy_EventType.EV_MAC_mpo_file_check_mmap, 
-            [self.manager.cred.base, fg_addr, self.manager.label.base, prot, flags, file_pos, 0])
+        self.manager.emit_by_type(
+            MACPolicy_EventType.EV_MAC_mpo_file_check_mmap,
+            [
+                self.manager.cred.base,
+                fg_addr,
+                self.manager.label.base,
+                prot,
+                flags,
+                file_pos,
+                0,
+            ],
+        )
+
 
 base_event_MAC = 0x2000
 
+
 class AutoNumber(enum.Enum):
-     def __new__(cls):
+    def __new__(cls):
         value = len(cls.__members__) + base_event_MAC
         obj = object.__new__(cls)
         obj._value_ = value
         return obj
 
+
 NUM_EVENT_MAC_POLICY = 335
+
 
 class MACPolicy_EventType(AutoNumber):
     EV_MAC_mpo_audit_check_postselect = ()

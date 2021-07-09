@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -14,9 +14,7 @@ from .arm_const import *
 class QlArchARM(QlArch):
     def __init__(self, ql):
         super(QlArchARM, self).__init__(ql)
-        register_mappings = [
-            reg_map
-        ]
+        register_mappings = [reg_map]
 
         for reg_maper in register_mappings:
             self.ql.reg.expand_mapping(reg_maper)
@@ -32,20 +30,16 @@ class QlArchARM(QlArch):
         self.ql.mem.write(self.ql.reg.sp, self.ql.pack32(value))
         return self.ql.reg.sp
 
-
     def stack_pop(self):
         data = self.ql.unpack32(self.ql.mem.read(self.ql.reg.sp, 4))
         self.ql.reg.sp += 4
         return data
 
-
     def stack_read(self, offset):
         return self.ql.unpack32(self.ql.mem.read(self.ql.reg.sp + offset, 4))
 
-
     def stack_write(self, offset, data):
         return self.ql.mem.write(self.ql.reg.sp + offset, self.ql.pack32(data))
-
 
     # get initialized unicorn engine
     def get_init_uc(self):
@@ -59,7 +53,6 @@ class QlArchARM(QlArch):
             uc = None
         return uc
 
-
     # get PC
     def get_pc(self):
         mode = self.ql.arch.check_thumb()
@@ -67,19 +60,17 @@ class QlArchARM(QlArch):
             append = 1
         else:
             append = 0
-            
+
         return self.ql.reg.pc + append
 
-
     def enable_vfp(self):
-        self.ql.reg.c1_c0_2 = self.ql.reg.c1_c0_2 | (0xf << 20)
+        self.ql.reg.c1_c0_2 = self.ql.reg.c1_c0_2 | (0xF << 20)
         if self.ql.archendian == QL_ENDIAN.EB:
             self.ql.reg.fpexc = 0x40000000
-            #self.ql.reg.fpexc = 0x00000040
+            # self.ql.reg.fpexc = 0x00000040
         else:
             self.ql.reg.fpexc = 0x40000000
         self.ql.log.debug("Enable ARM VFP")
-
 
     def check_thumb(self):
         reg_cpsr = self.ql.reg.cpsr

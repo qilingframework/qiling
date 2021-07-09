@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 from Registry import Registry
@@ -17,7 +17,7 @@ ERROR_INSUFFICIENT_BUFFER = 0x7A
 ERROR_ALREADY_EXISTS = 0xB7
 ERROR_MORE_DATA = 0xEA
 ERROR_NOT_OWNER = 0x120
-ERROR_OLD_WIN_VERSION = 0X47E
+ERROR_OLD_WIN_VERSION = 0x47E
 # ...
 
 # https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-erref/596a1078-e883-4972-9bbc-49e60bebca55
@@ -33,9 +33,9 @@ STATUS_NO_YIELD_PERFORMED = 0x40000024
 
 INVALID_HANDLE_VALUE = -1
 
-STD_INPUT_HANDLE = 0xfffffff6
-STD_OUTPUT_HANDLE = 0xfffffff5
-STD_ERROR_HANDLE = 0xfffffff4
+STD_INPUT_HANDLE = 0xFFFFFFF6
+STD_OUTPUT_HANDLE = 0xFFFFFFF5
+STD_ERROR_HANDLE = 0xFFFFFFF4
 
 # Registry Type
 
@@ -49,7 +49,7 @@ REG_KEYS = {
     0x80000004: "HKEY_PERFORMANCE_DATA",
     0x80000060: "HKEY_PERFORMANCE_NLSTEXT",
     0x80000050: "HKEY_PERFORMANCE_TEXT",
-    0x80000003: "HKEY_USERS"
+    0x80000003: "HKEY_USERS",
 }
 
 REG_TYPES = {
@@ -65,7 +65,6 @@ REG_TYPES = {
     "REG_FULL_RESOURCE_DESCRIPTOR": Registry.RegFullResourceDescriptor,
     "REG_RESOURCE_REQUIREMENTS_LIST": Registry.RegResourceRequirementsList,
     "REG_QWORD": Registry.RegQWord,
-
     Registry.RegNone: "REG_NONE",
     Registry.RegSZ: "REG_SZ",
     Registry.RegExpandSZ: "REG_EXPAND_SZ",
@@ -77,7 +76,7 @@ REG_TYPES = {
     Registry.RegResourceList: "REG_RESOURCE_LIST",
     Registry.RegFullResourceDescriptor: "REG_FULL_RESOURCE_DESCRIPTOR",
     Registry.RegResourceRequirementsList: "REG_RESOURCE_REQUIREMENTS_LIST",
-    Registry.RegQWord: "REG_QWORD"
+    Registry.RegQWord: "REG_QWORD",
 }
 
 RTL_MAXIMUM_ATOM_LENGTH = 255
@@ -103,9 +102,9 @@ SEM_FAILCRITICALERRORS = 0x0001
 SEM_NOGPFAULTERRORBOX = 0x0002
 SEM_NOALIGNMENTFAULTEXCEPT = 0x0004
 SEM_NOOPENFILEERRORBOX = 0x8000
-RTL_SEM_FAILCRITICALERRORS = (SEM_FAILCRITICALERRORS << 4)
-RTL_SEM_NOGPFAULTERRORBOX = (SEM_NOGPFAULTERRORBOX << 4)
-RTL_SEM_NOALIGNMENTFAULTEXCEPT = (SEM_NOALIGNMENTFAULTEXCEPT << 4)
+RTL_SEM_FAILCRITICALERRORS = SEM_FAILCRITICALERRORS << 4
+RTL_SEM_NOGPFAULTERRORBOX = SEM_NOGPFAULTERRORBOX << 4
+RTL_SEM_NOALIGNMENTFAULTEXCEPT = SEM_NOALIGNMENTFAULTEXCEPT << 4
 RTL_RANGE_LIST_ADD_IF_CONFLICT = 0x00000001
 RTL_RANGE_LIST_ADD_SHARED = 0x00000002
 RTL_RANGE_SHARED = 0x01
@@ -375,12 +374,9 @@ LOCALE_EN_US = {
     "jShortTimeFormat": "HH:mm",
     "jFullDateFormat": "EEEE, MMMM d, yyyy",
     "jMediumDateFormat": "dd-MMM-yy",
-    "jDateTimePattern": "{1} {0}"
+    "jDateTimePattern": "{1} {0}",
 }
-LOCALE = {
-    0x409: LOCALE_EN_US,
-    "default": LOCALE_EN_US
-}
+LOCALE = {0x409: LOCALE_EN_US, "default": LOCALE_EN_US}
 # SYSTEM_INFORMATION_CLASS
 # Defined in Winternl.h
 # Used by NTQuerySystemInformation and ZwQuerySystemInformation
@@ -454,18 +450,16 @@ SM_CYICON = 12
 # https://docs.microsoft.com/it-it/windows/win32/inputdev/virtual-key-codes
 # https://www.win.tue.nl/~aeb/linux/kbd/scancodes-1.html
 MAPVK_VK_TO_VSC = {
-    0x5b: 0x5b,
-    0x10: 0x2a,
-    0xa0: 0x2a,
-    0xa1: 0x36,
-    0x11: 0x1d,
-    0x12: 0x38
+    0x5B: 0x5B,
+    0x10: 0x2A,
+    0xA0: 0x2A,
+    0xA1: 0x36,
+    0x11: 0x1D,
+    0x12: 0x38,
 }
 # more to add, just inserted the necessary for a sample
 
-MAP_VK = {
-    0: MAPVK_VK_TO_VSC
-}
+MAP_VK = {0: MAPVK_VK_TO_VSC}
 
 # Crypt String Mappings
 # https://docs.microsoft.com/en-us/windows/win32/api/wincrypt/nf-wincrypt-cryptstringtobinarya
@@ -559,33 +553,23 @@ VER_NT_WORKSTATION = 0x0000001
 SYSTEMS_VERSION = {
     "1001": "Windows 10",
     "1000": "Windows Server 2016",
-
     "631": "Windows 8.1",
     "630": "Windows Server 2012 R2",
-
     "621": "Windows 8",
     "620": "Windows Server 2012",
-
     "611": "Windows 7",
     "610": "Windows Server 2008 R2",
-
     "601": "Windows Vista",
     "600": "Windows Server 2008",
-
     # ...
-
     "510": "Windows XP"
     # ...
 }
 
 # Mapper for ordinal syscalls
-Mapper = {
-    "shell32": {
-        175: "SHGetSpecialFolderPathW"
-    }
-}
+Mapper = {"shell32": {175: "SHGetSpecialFolderPathW"}}
 
-MAXUSHORT = 0xffff
+MAXUSHORT = 0xFFFF
 
 DRIVE_UNKNOWN = 0
 DRIVE_NO_ROOT_DIR = 1

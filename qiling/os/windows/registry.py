@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -15,11 +15,11 @@ from qiling.const import *
 # Registry Manager reads data from two places
 # 1. config.json
 #       if you want to modify the registry key/value, you can modify config.json
-#       If there is a registry entry in config.json that needs to be read, 
+#       If there is a registry entry in config.json that needs to be read,
 #       Registry Manager will read from config.json first.
 # 2. windows hive files
 
-# Registry Manager will only write registry changes to config.json 
+# Registry Manager will only write registry changes to config.json
 # and will not modify the hive file.
 
 
@@ -27,12 +27,14 @@ class RegistryManager:
     def __init__(self, ql, hive=None):
         self.ql = ql
         self.log_registry_dir = self.ql.rootfs
-        
+
         if self.log_registry_dir == None:
             self.log_registry_dir = "qlog"
 
         self.registry_diff = self.ql.targetname + "_diff.json"
-        self.regdiff = os.path.join(self.log_registry_dir, "registry", self.registry_diff)    
+        self.regdiff = os.path.join(
+            self.log_registry_dir, "registry", self.registry_diff
+        )
 
         # hive dir
         if hive:
@@ -41,12 +43,16 @@ class RegistryManager:
             self.hive = os.path.join(ql.rootfs, "Windows", "registry")
             ql.log.debug("Windows Registry PATH: %s" % self.hive)
             if not os.path.exists(self.hive) and not self.ql.code:
-                raise QlErrorFileNotFound(f"Error: Registry files not found in '{self.hive}'!")
+                raise QlErrorFileNotFound(
+                    f"Error: Registry files not found in '{self.hive}'!"
+                )
 
         if not os.path.exists(self.regdiff):
             self.registry_config = {}
             try:
-                os.makedirs(os.path.join(self.log_registry_dir, "registry"), 0o755)
+                os.makedirs(
+                    os.path.join(self.log_registry_dir, "registry"), 0o755
+                )
             except Exception:
                 pass
         else:
@@ -61,20 +67,30 @@ class RegistryManager:
                 try:
                     self.registry_config = json.loads(data)
                 except json.decoder.JSONDecodeError:
-                    raise QlErrorJsonDecode("Windows Registry JSON decode error")
+                    raise QlErrorJsonDecode(
+                        "Windows Registry JSON decode error"
+                    )
                 finally:
                     self.f_config.close()
 
         # hkey local system
         self.hklm = {}
         try:
-            self.hklm['SECURITY'] = Registry.Registry(os.path.join(self.hive, 'SECURITY'))
-            self.hklm['SAM'] = Registry.Registry(os.path.join(self.hive, 'SAM'))
-            self.hklm['SOFTWARE'] = Registry.Registry(os.path.join(self.hive, 'SOFTWARE'))
-            self.hklm['SYSTEM'] = Registry.Registry(os.path.join(self.hive, 'SYSTEM'))
-            self.hklm['HARDWARE'] = Registry.Registry(os.path.join(self.hive, 'HARDWARE'))
+            self.hklm["SECURITY"] = Registry.Registry(
+                os.path.join(self.hive, "SECURITY")
+            )
+            self.hklm["SAM"] = Registry.Registry(os.path.join(self.hive, "SAM"))
+            self.hklm["SOFTWARE"] = Registry.Registry(
+                os.path.join(self.hive, "SOFTWARE")
+            )
+            self.hklm["SYSTEM"] = Registry.Registry(
+                os.path.join(self.hive, "SYSTEM")
+            )
+            self.hklm["HARDWARE"] = Registry.Registry(
+                os.path.join(self.hive, "HARDWARE")
+            )
             # hkey current user
-            self.hkcu = Registry.Registry(os.path.join(self.hive, 'NTUSER.DAT'))
+            self.hkcu = Registry.Registry(os.path.join(self.hive, "NTUSER.DAT"))
         except FileNotFoundError:
             if not ql.code:
                 QlErrorFileNotFound("WARNING: Registry files not found!")
@@ -98,7 +114,9 @@ class RegistryManager:
                 sub = "\\".join(keys[1:])
                 data = reg.open(sub)
             else:
-                raise QlErrorNotImplemented("Windows Registry %s not implemented" % (keys[0]))
+                raise QlErrorNotImplemented(
+                    "Windows Registry %s not implemented" % (keys[0])
+                )
         except Exception:
             return False
 
@@ -110,15 +128,20 @@ class RegistryManager:
         # read reg conf first
         if key in self.regdiff and subkey in self.regdiff[key]:
             if self.regdiff[key][subkey].type in REG_TYPES:
-                return REG_TYPES[self.regdiff[key][subkey].type], self.regdiff[key][subkey].value
+                return (
+                    REG_TYPES[self.regdiff[key][subkey].type],
+                    self.regdiff[key][subkey].value,
+                )
             else:
                 raise QlErrorNotImplemented(
-                    "Windows Registry Type %s not implemented" % self.regdiff[key][subkey].type)
+                    "Windows Registry Type %s not implemented"
+                    % self.regdiff[key][subkey].type
+                )
 
         # read hive
         reg = None
         data = None
-        keys = key.split('\\')
+        keys = key.split("\\")
         try:
             if keys[0] == "HKEY_LOCAL_MACHINE":
                 reg = self.hklm[keys[1]]
@@ -129,13 +152,22 @@ class RegistryManager:
                 sub = "\\".join(keys[1:])
                 data = reg.open(sub)
             else:
-                raise QlErrorNotImplemented("Windows Registry %s not implemented" % (keys[0]))
+                raise QlErrorNotImplemented(
+                    "Windows Registry %s not implemented" % (keys[0])
+                )
 
             for value in data.values():
-                if value.name() == subkey and (reg_type == Registry.RegNone or
-                                               value.value_type() == reg_type):
+                if value.name() == subkey and (
+                    reg_type == Registry.RegNone
+                    or value.value_type() == reg_type
+                ):
 
-                    self.access(key, value_name=subkey, value=value.value(), type=value.value_type())
+                    self.access(
+                        key,
+                        value_name=subkey,
+                        value=value.value(),
+                        type=value.value_type(),
+                    )
                     return value.value_type(), value.value()
 
         except Registry.RegistryKeyNotFoundException:
@@ -150,12 +182,14 @@ class RegistryManager:
             if key not in self.accessed:
                 self.accessed[key] = []
         else:
-            self.accessed[key].append({
-                "value_name": value_name,
-                "value": value,
-                "type": type,
-                "position": self.ql.os.utils.syscalls_counter
-            })
+            self.accessed[key].append(
+                {
+                    "value_name": value_name,
+                    "value": value,
+                    "type": type,
+                    "position": self.ql.os.utils.syscalls_counter,
+                }
+            )
             # we don't have to increase the counter since we are technically inside a hook
 
     def create(self, key):
@@ -167,7 +201,7 @@ class RegistryManager:
         # write registry changes to config.json
         self.registry_config[key][subkey] = {
             "type": REG_TYPES[reg_type],
-            "value": data
+            "value": data,
         }
 
     def delete(self, key, subkey):
@@ -191,7 +225,9 @@ class RegistryManager:
                 self.ql.mem.write(address, bytes(reg_value))
                 length = len(reg_value)
             else:
-                raise QlErrorNotImplemented("Windows Registry Type not implemented")
+                raise QlErrorNotImplemented(
+                    "Windows Registry Type not implemented"
+                )
         elif reg_type == Registry.RegDWord:
             data = self.ql.pack32(reg_value)
             self.ql.mem.write(address, data)
@@ -202,7 +238,9 @@ class RegistryManager:
             length = len(data)
         else:
             raise QlErrorNotImplemented(
-                "Windows Registry Type write to memory %s not implemented" % (REG_TYPES[reg_type]))
+                "Windows Registry Type write to memory %s not implemented"
+                % (REG_TYPES[reg_type])
+            )
 
         return length
 

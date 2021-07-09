@@ -13,7 +13,7 @@ from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
 
-dllname = 'kernel32_dll'
+dllname = "kernel32_dll"
 
 # HANDLE HeapCreate(
 #   DWORD  flOptions,
@@ -56,7 +56,7 @@ def hook_HeapSize(ql, address, params):
 # );
 @winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_HeapFree(ql, address, params):
-    return ql.os.heap.free(params['lpMem'])
+    return ql.os.heap.free(params["lpMem"])
 
 
 # BOOL HeapSetInformation(
@@ -65,7 +65,7 @@ def hook_HeapFree(ql, address, params):
 #  PVOID                  HeapInformation,
 #  SIZE_T                 HeapInformationLength
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'SIZE_T': 'UINT'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={"SIZE_T": "UINT"})
 def hook_HeapSetInformation(ql, address, params):
     return 1
 

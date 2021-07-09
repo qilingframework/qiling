@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -45,7 +45,7 @@ GSMSR = 0xC0000101
 # WINDOWS SETUP VALUE
 # Linux also needs these
 GS_SEGMENT_ADDR = 0x6000000
-GS_SEGMENT_SIZE = (20 << 20)    # 20 MB
+GS_SEGMENT_SIZE = 20 << 20  # 20 MB
 
 FS_SEGMENT_ADDR = 0x6000
 FS_SEGMENT_SIZE = 0x6000
@@ -75,77 +75,74 @@ reg_map_16 = {
 }
 
 reg_map_32 = {
-    "eax": UC_X86_REG_EAX, 
-    "ecx": UC_X86_REG_ECX, 
+    "eax": UC_X86_REG_EAX,
+    "ecx": UC_X86_REG_ECX,
     "edx": UC_X86_REG_EDX,
     "ebx": UC_X86_REG_EBX,
-    "esp": UC_X86_REG_ESP, 
+    "esp": UC_X86_REG_ESP,
     "ebp": UC_X86_REG_EBP,
-    "esi": UC_X86_REG_ESI, 
-    "edi": UC_X86_REG_EDI, 
+    "esi": UC_X86_REG_ESI,
+    "edi": UC_X86_REG_EDI,
     "eip": UC_X86_REG_EIP,
 }
 
 reg_map_64 = {
     "rax": UC_X86_REG_RAX,
-    "rbx": UC_X86_REG_RBX, 
-    "rcx": UC_X86_REG_RCX, 
+    "rbx": UC_X86_REG_RBX,
+    "rcx": UC_X86_REG_RCX,
     "rdx": UC_X86_REG_RDX,
-    "rsi": UC_X86_REG_RSI, 
+    "rsi": UC_X86_REG_RSI,
     "rdi": UC_X86_REG_RDI,
     "rbp": UC_X86_REG_RBP,
-    "rsp": UC_X86_REG_RSP, 
+    "rsp": UC_X86_REG_RSP,
     "r8": UC_X86_REG_R8,
-    "r9": UC_X86_REG_R9, 
+    "r9": UC_X86_REG_R9,
     "r10": UC_X86_REG_R10,
     "r11": UC_X86_REG_R11,
-    "r12": UC_X86_REG_R12, 
-    "r13": UC_X86_REG_R13, 
+    "r12": UC_X86_REG_R12,
+    "r13": UC_X86_REG_R13,
     "r14": UC_X86_REG_R14,
     "r15": UC_X86_REG_R15,
     "rip": UC_X86_REG_RIP,
 }
 
-reg_map_seg_base = {
-    "fsbase" : UC_X86_REG_FS_BASE,
-    "gsbase" : UC_X86_REG_GS_BASE
-}
+reg_map_seg_base = {"fsbase": UC_X86_REG_FS_BASE, "gsbase": UC_X86_REG_GS_BASE}
 
 reg_map_r = {
-    "r8b":  UC_X86_REG_R8B,
-    "r9b":  UC_X86_REG_R9B,
+    "r8b": UC_X86_REG_R8B,
+    "r9b": UC_X86_REG_R9B,
     "r10b": UC_X86_REG_R10B,
     "r11b": UC_X86_REG_R11B,
     "r12b": UC_X86_REG_R12B,
     "r13b": UC_X86_REG_R13B,
     "r14b": UC_X86_REG_R14B,
     "r15b": UC_X86_REG_R15B,
-    "r8w":  UC_X86_REG_R8W,
-    "r9w":  UC_X86_REG_R9W,
+    "r8w": UC_X86_REG_R8W,
+    "r9w": UC_X86_REG_R9W,
     "r10w": UC_X86_REG_R10W,
     "r11w": UC_X86_REG_R11W,
     "r12w": UC_X86_REG_R12W,
     "r13w": UC_X86_REG_R13W,
     "r14w": UC_X86_REG_R14W,
     "r15w": UC_X86_REG_R15W,
-    "r8d":  UC_X86_REG_R8D,
-    "r9d":  UC_X86_REG_R9D,
+    "r8d": UC_X86_REG_R8D,
+    "r9d": UC_X86_REG_R9D,
     "r10d": UC_X86_REG_R10D,
     "r11d": UC_X86_REG_R11D,
     "r12d": UC_X86_REG_R12D,
     "r13d": UC_X86_REG_R13D,
     "r14d": UC_X86_REG_R14D,
-    "r15d": UC_X86_REG_R15D,    
+    "r15d": UC_X86_REG_R15D,
 }
 
 reg_map_cr = {
-    "cr0": UC_X86_REG_CR0, 
+    "cr0": UC_X86_REG_CR0,
     "cr1": UC_X86_REG_CR1,
-    "cr2": UC_X86_REG_CR2, 
-    "cr3": UC_X86_REG_CR3, 
+    "cr2": UC_X86_REG_CR2,
+    "cr3": UC_X86_REG_CR3,
     "cr4": UC_X86_REG_CR4,
-    "cr5": UC_X86_REG_CR5, 
-    "cr6": UC_X86_REG_CR6, 
+    "cr5": UC_X86_REG_CR5,
+    "cr6": UC_X86_REG_CR6,
     "cr7": UC_X86_REG_CR7,
     "cr8": UC_X86_REG_CR8,
     "cr9": UC_X86_REG_CR9,
@@ -158,13 +155,13 @@ reg_map_cr = {
 }
 
 reg_map_dr = {
-    "dr0": UC_X86_REG_DR0, 
+    "dr0": UC_X86_REG_DR0,
     "dr1": UC_X86_REG_DR1,
-    "dr2": UC_X86_REG_DR2, 
-    "dr3": UC_X86_REG_DR3, 
+    "dr2": UC_X86_REG_DR2,
+    "dr3": UC_X86_REG_DR3,
     "dr4": UC_X86_REG_DR4,
-    "dr5": UC_X86_REG_DR5, 
-    "dr6": UC_X86_REG_DR6, 
+    "dr5": UC_X86_REG_DR5,
+    "dr6": UC_X86_REG_DR6,
     "dr7": UC_X86_REG_DR7,
     "dr8": UC_X86_REG_DR8,
     "dr9": UC_X86_REG_DR9,
@@ -177,24 +174,24 @@ reg_map_dr = {
 }
 
 reg_map_st = {
-    "st0": UC_X86_REG_ST0, 
+    "st0": UC_X86_REG_ST0,
     "st1": UC_X86_REG_ST1,
-    "st2": UC_X86_REG_ST2, 
-    "st3": UC_X86_REG_ST3, 
+    "st2": UC_X86_REG_ST2,
+    "st3": UC_X86_REG_ST3,
     "st4": UC_X86_REG_ST4,
-    "st5": UC_X86_REG_ST5, 
-    "st6": UC_X86_REG_ST6, 
-    "st7": UC_X86_REG_ST7
+    "st5": UC_X86_REG_ST5,
+    "st6": UC_X86_REG_ST6,
+    "st7": UC_X86_REG_ST7,
 }
 
 reg_map_misc = {
-    "ef": UC_X86_REG_EFLAGS, 
-    "cs": UC_X86_REG_CS, 
+    "ef": UC_X86_REG_EFLAGS,
+    "cs": UC_X86_REG_CS,
     "ss": UC_X86_REG_SS,
-    "ds": UC_X86_REG_DS, 
-    "es": UC_X86_REG_ES, 
+    "ds": UC_X86_REG_DS,
+    "es": UC_X86_REG_ES,
     "fs": UC_X86_REG_FS,
-    "gs": UC_X86_REG_GS, 
+    "gs": UC_X86_REG_GS,
 }
 
 reg_map_fp = {
@@ -312,4 +309,3 @@ reg_map_zmm = {
     "zmm30": UC_X86_REG_ZMM30,
     "zmm31": UC_X86_REG_ZMM31,
 }
-

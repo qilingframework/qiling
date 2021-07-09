@@ -12,7 +12,7 @@ from qiling.os.windows.utils import *
 from qiling.os.windows.handle import *
 from qiling.os.windows.const import *
 
-dllname = 'crypt32_dll'
+dllname = "crypt32_dll"
 
 # BOOL CryptStringToBinaryA(
 #   LPCSTR pszString,
@@ -23,8 +23,16 @@ dllname = 'crypt32_dll'
 #   DWORD  *pdwSkip,
 #   DWORD  *pdwFlags
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'BYTE': 'POINTER'},
-           replace_params={"pcbBinary": POINTER, "pdwSkip": POINTER, "pdwFlags": POINTER})
+@winsdkapi(
+    cc=STDCALL,
+    dllname=dllname,
+    replace_params_type={"BYTE": "POINTER"},
+    replace_params={
+        "pcbBinary": POINTER,
+        "pdwSkip": POINTER,
+        "pdwFlags": POINTER,
+    },
+)
 def hook_CryptStringToBinaryA(ql, address, params):
     flag_src = params["dwFlags"]
     string_src = params["pszString"]
@@ -33,7 +41,9 @@ def hook_CryptStringToBinaryA(ql, address, params):
     string_dst = params["pbBinary"]
     flag_dst = params["pdwFlags"]
 
-    size_dst = int.from_bytes(ql.mem.read(size_dst_pointer, 4), byteorder="little")
+    size_dst = int.from_bytes(
+        ql.mem.read(size_dst_pointer, 4), byteorder="little"
+    )
     if size_dst != 0 and size_dst < size_src:
         raise QlErrorNotImplemented("API not implemented")
     if flag_src == CRYPT_STRING_BASE64:
@@ -53,15 +63,27 @@ def hook_CryptStringToBinaryA(ql, address, params):
     else:
         if flag_dst != 0:
             # Is optional
-            ql.mem.write(flag_dst, flag_src.to_bytes(length=4, byteorder='little'))
+            ql.mem.write(
+                flag_dst, flag_src.to_bytes(length=4, byteorder="little")
+            )
         # Write size
-        ql.mem.write(size_dst_pointer, len(output).to_bytes(length=4, byteorder='little'))
+        ql.mem.write(
+            size_dst_pointer, len(output).to_bytes(length=4, byteorder="little")
+        )
         # Write result
         ql.mem.write(string_dst, bytes(output, encoding="utf-16le"))
     return 1
 
 
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'BYTE': 'POINTER'},
-           replace_params={"pcbBinary": POINTER, "pdwSkip": POINTER, "pdwFlags": POINTER})
+@winsdkapi(
+    cc=STDCALL,
+    dllname=dllname,
+    replace_params_type={"BYTE": "POINTER"},
+    replace_params={
+        "pcbBinary": POINTER,
+        "pdwSkip": POINTER,
+        "pdwFlags": POINTER,
+    },
+)
 def hook_CryptStringToBinaryW(ql, address, params):
     return hook_CryptStringToBinaryA.__wrapped__(ql, address, params)

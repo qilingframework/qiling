@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -7,9 +7,10 @@ from typing import Any, Mapping, MutableSequence, NamedTuple
 
 from qiling import Qiling
 
-Image = NamedTuple('Image', (('base', int), ('end', int), ('path', str)))
+Image = NamedTuple("Image", (("base", int), ("end", int), ("path", str)))
 
-class QlLoader():
+
+class QlLoader:
     def __init__(self, ql: Qiling):
         self.ql = ql
         self.env = self.ql.env
@@ -18,11 +19,9 @@ class QlLoader():
         self.skip_exit_check = False
 
     def save(self) -> Mapping[str, Any]:
-        saved_state = {
-            'images': [tuple(img) for img in self.images]
-        }
+        saved_state = {"images": [tuple(img) for img in self.images]}
 
         return saved_state
 
     def restore(self, saved_state: Mapping[str, Any]):
-        self.images = [Image(*img) for img in saved_state['images']]
+        self.images = [Image(*img) for img in saved_state["images"]]

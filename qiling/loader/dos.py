@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -12,20 +12,22 @@ from qiling.os.disk import QlDisk
 
 # @see: http://pinvoke.net/default.aspx/Structures.IMAGE_DOS_HEADER
 class ComParser:
-    '''Most basic COM file parser.
-    '''
+    """Most basic COM file parser."""
 
     def __init__(self, ql: Qiling, data: bytes) -> None:
-        assert data[0:2] == b'MZ'
+        assert data[0:2] == b"MZ"
 
-        nbytes  = ql.unpack16(data[2:4]) or 0x200    # number of bytes in last block; 0 means it is fully populated
-        nblocks = ql.unpack16(data[4:6])             # number of blocks used
+        nbytes = (
+            ql.unpack16(data[2:4]) or 0x200
+        )  # number of bytes in last block; 0 means it is fully populated
+        nblocks = ql.unpack16(data[4:6])  # number of blocks used
         self.size = (nblocks - 1) * 0x200 + nbytes
 
         self.init_ss = ql.unpack16(data[14:16])
         self.init_sp = ql.unpack16(data[16:18])
         self.init_ip = ql.unpack16(data[20:22])
         self.init_cs = ql.unpack16(data[22:24])
+
 
 class QlLoaderDOS(QlLoader):
     def __init__(self, ql: Qiling):
@@ -76,8 +78,8 @@ class QlLoaderDOS(QlLoader):
                 content = f.read()
 
             cs = 0x0000
-            ip = 0x7c00
-            sp = 0xfff0
+            ip = 0x7C00
+            sp = 0xFFF0
             ss = cs
 
             base_address = (cs << 4) + ip

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 
 from ..const import QL_ARCH
@@ -20,14 +20,11 @@ class QlArchEngine(QlArch):
     def stack_push(self, value):
         pass
 
-
     def stack_pop(self):
         pass
 
-
     def stack_write(self, value, data):
         pass
-
 
     def stack_read(self, value):
         pass

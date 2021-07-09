@@ -13,7 +13,7 @@ from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
 
-dllname = 'ole32_dll'
+dllname = "ole32_dll"
 
 # HRESULT OleInitialize(
 #   IN LPVOID pvReserved
@@ -40,6 +40,7 @@ def hook_CoRegisterMessageFilter(ql, address, params):
 @winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_CoInitializeEx(ql, address, params):
     return S_OK
+
 
 # HRESULT CoInitializeSecurity(
 #   PSECURITY_DESCRIPTOR        pSecDesc,

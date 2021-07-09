@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -7,6 +7,7 @@ from typing import Any, Mapping
 
 from qiling import Qiling
 from qiling.const import QL_INTERCEPT
+
 
 def dxeapi(params: Mapping[str, Any] = {}):
     def decorator(func):

@@ -20,7 +20,7 @@ def hook_kernel_api(ql: Qiling, address: int, size):
         api_func = ql.os.user_defined_api[QL_INTERCEPT.CALL].get(api_name)
 
         if not api_func:
-            api_func = getattr(api, f'hook_{api_name}', None)
+            api_func = getattr(api, f"hook_{api_name}", None)
 
         if api_func:
             try:
@@ -28,9 +28,13 @@ def hook_kernel_api(ql: Qiling, address: int, size):
             except Exception:
                 ql.log.exception("")
                 ql.log.debug("%s Exception Found" % api_name)
-                raise QlErrorSyscallError("Linux kernel API Implementation Error")
+                raise QlErrorSyscallError(
+                    "Linux kernel API Implementation Error"
+                )
         else:
-            ql.log.warning(f'api {api_name} is not implemented')
+            ql.log.warning(f"api {api_name} is not implemented")
 
             if ql.debug_stop:
-                raise QlErrorSyscallNotFound("Linux kernel API implementation not found")
+                raise QlErrorSyscallNotFound(
+                    "Linux kernel API implementation not found"
+                )

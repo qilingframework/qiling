@@ -7,7 +7,12 @@ from unicorn import UcError
 
 from qiling import Qiling
 from qiling.arch.x86_const import UC_X86_INS_SYSCALL
-from qiling.arch.x86 import GDTManager, ql_x8664_set_gs, ql_x86_register_cs, ql_x86_register_ds_ss_es
+from qiling.arch.x86 import (
+    GDTManager,
+    ql_x8664_set_gs,
+    ql_x86_register_cs,
+    ql_x86_register_ds_ss_es,
+)
 from qiling.cc import QlCC, intel, arm, mips
 from qiling.const import QL_ARCH
 from qiling.os.fcall import QlFunctionCall
@@ -19,6 +24,7 @@ from . import utils
 from . import futex
 from . import thread
 
+
 class QlOsLinux(QlOsPosix):
     def __init__(self, ql: Qiling):
         super(QlOsLinux, self).__init__(ql)
@@ -26,11 +32,11 @@ class QlOsLinux(QlOsPosix):
         self.ql = ql
 
         cc: QlCC = {
-            QL_ARCH.X86   : intel.cdecl,
-            QL_ARCH.X8664 : intel.amd64,
-            QL_ARCH.ARM   : arm.aarch32,
-            QL_ARCH.ARM64 : arm.aarch64,
-            QL_ARCH.MIPS  : mips.mipso32
+            QL_ARCH.X86: intel.cdecl,
+            QL_ARCH.X8664: intel.amd64,
+            QL_ARCH.ARM: arm.aarch32,
+            QL_ARCH.ARM64: arm.aarch64,
+            QL_ARCH.MIPS: mips.mipso32,
         }[ql.archtype](ql)
 
         self.fcall = QlFunctionCall(ql, cc)
@@ -82,42 +88,47 @@ class QlOsLinux(QlOsPosix):
             ql_x86_register_ds_ss_es(self)
             self.ql.hook_insn(self.hook_syscall, UC_X86_INS_SYSCALL)
             # Keep test for _cc
-            #self.ql.hook_insn(hook_posix_api, UC_X86_INS_SYSCALL)
-            self.thread_class = thread.QlLinuxX8664Thread     
-        
+            # self.ql.hook_insn(hook_posix_api, UC_X86_INS_SYSCALL)
+            self.thread_class = thread.QlLinuxX8664Thread
+
         for i in range(NR_OPEN):
-            if hasattr(self.fd[i], 'close_on_exec') and \
-                    self.fd[i].close_on_exec:
+            if (
+                hasattr(self.fd[i], "close_on_exec")
+                and self.fd[i].close_on_exec
+            ):
                 self.fd[i] = 0
 
-    def hook_syscall(self, int= None, intno= None):
+    def hook_syscall(self, int=None, intno=None):
         return self.load_syscall()
 
-
-    def add_function_hook(self, fn, cb, userdata = None):
+    def add_function_hook(self, fn, cb, userdata=None):
         self.function_hook_tmp.append((fn, cb, userdata))
-
 
     def register_function_after_load(self, function):
         if function not in self.function_after_load_list:
             self.function_after_load_list.append(function)
 
-
     def run_function_after_load(self):
         for f in self.function_after_load_list:
             f()
 
-
     def run(self):
         for function, callback, userdata in self.ql.os.function_hook_tmp:
-            self.ql.os.function_hook.add_function_hook(function, callback, userdata)
+            self.ql.os.function_hook.add_function_hook(
+                function, callback, userdata
+            )
 
         if self.ql.exit_point is not None:
             self.exit_point = self.ql.exit_point
 
         try:
             if self.ql.code:
-                self.ql.emu_start(self.entry_point, (self.entry_point + len(self.ql.code)), self.ql.timeout, self.ql.count)
+                self.ql.emu_start(
+                    self.entry_point,
+                    (self.entry_point + len(self.ql.code)),
+                    self.ql.timeout,
+                    self.ql.count,
+                )
             else:
                 if self.ql.multithread == True:
                     # start multithreading
@@ -126,24 +137,36 @@ class QlOsLinux(QlOsPosix):
                     thread_management.run()
 
                 else:
-                    if  self.ql.entry_point is not None:
+                    if self.ql.entry_point is not None:
                         self.ql.loader.elf_entry = self.ql.entry_point
 
                     elif self.ql.loader.elf_entry != self.ql.loader.entry_point:
                         entry_address = self.ql.loader.elf_entry
-                        if self.ql.archtype == QL_ARCH.ARM and entry_address & 1 == 1:
+                        if (
+                            self.ql.archtype == QL_ARCH.ARM
+                            and entry_address & 1 == 1
+                        ):
                             entry_address -= 1
-                        self.ql.emu_start(self.ql.loader.entry_point, entry_address, self.ql.timeout)
+                        self.ql.emu_start(
+                            self.ql.loader.entry_point,
+                            entry_address,
+                            self.ql.timeout,
+                        )
                         self.ql.enable_lib_patch()
                         self.run_function_after_load()
                         self.ql.loader.skip_exit_check = False
                         self.ql.write_exit_trap()
 
-                    self.ql.emu_start(self.ql.loader.elf_entry, self.exit_point, self.ql.timeout, self.ql.count)
+                    self.ql.emu_start(
+                        self.ql.loader.elf_entry,
+                        self.exit_point,
+                        self.ql.timeout,
+                        self.ql.count,
+                    )
 
         except UcError:
             # TODO: this is bad We need a better approach for this
-            #if self.ql.output != QL_OUTPUT.DEBUG:
+            # if self.ql.output != QL_OUTPUT.DEBUG:
             #    return
 
             self.emu_error()

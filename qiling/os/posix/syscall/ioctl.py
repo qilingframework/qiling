@@ -7,6 +7,7 @@ import struct
 
 from qiling.os.posix.filestruct import ql_socket
 
+
 def ql_syscall_ioctl(ql, ioctl_fd, ioctl_cmd, ioctl_arg, *args, **kw):
     TCGETS = 0x5401
     TIOCGWINSZ = 0x5413
@@ -14,29 +15,28 @@ def ql_syscall_ioctl(ql, ioctl_fd, ioctl_cmd, ioctl_arg, *args, **kw):
     TCSETSW = 0x5403
 
     SIOCGIFADDR = 0x8915
-    SIOCGIFNETMASK = 0x891b
-
+    SIOCGIFNETMASK = 0x891B
 
     def ioctl(fd, cmd, arg):
-    # Stub for 'ioctl' syscall
-    # Return the list of element to pack back depending on target ioctl
-    #If the ioctl is disallowed, return False
+        # Stub for 'ioctl' syscall
+        # Return the list of element to pack back depending on target ioctl
+        # If the ioctl is disallowed, return False
 
-        ioctl_allowed = None # list of (fd, cmd), None value for wildcard
-        ioctl_disallowed = None # list of (fd, cmd), None value for wildcard
+        ioctl_allowed = None  # list of (fd, cmd), None value for wildcard
+        ioctl_disallowed = None  # list of (fd, cmd), None value for wildcard
 
         ioctl_allowed = [
-        (0, TCGETS),
-        (0, TIOCGWINSZ),
-        (0, TIOCSWINSZ),
-        (1, TCGETS),
-        (1, TIOCGWINSZ),
-        (1, TIOCSWINSZ),
+            (0, TCGETS),
+            (0, TIOCGWINSZ),
+            (0, TIOCSWINSZ),
+            (1, TCGETS),
+            (1, TIOCGWINSZ),
+            (1, TIOCSWINSZ),
         ]
 
         ioctl_disallowed = [
-        (2, TCGETS),
-        (0, TCSETSW),
+            (2, TCGETS),
+            (0, TCSETSW),
         ]
 
         allowed = False
@@ -48,20 +48,22 @@ def ql_syscall_ioctl(ql, ioctl_fd, ioctl_cmd, ioctl_arg, *args, **kw):
             if test in ioctl_disallowed:
                 disallowed = True
         if allowed and disallowed:
-            raise ValueError("fd: %x, cmd: %x is allowed and disallowed" % (fd, cmd))
+            raise ValueError(
+                "fd: %x, cmd: %x is allowed and disallowed" % (fd, cmd)
+            )
 
         if allowed:
 
             if cmd == TCGETS:
                 return 0, 0, 0, 0
             elif cmd == TIOCGWINSZ:
-            # struct winsize
-            # {
-            #   unsigned short ws_row;	/* rows, in characters */
-            #   unsigned short ws_col;	/* columns, in characters */
-            #   unsigned short ws_xpixel;	/* horizontal size, pixels */
-            #   unsigned short ws_ypixel;	/* vertical size, pixels */
-            # };
+                # struct winsize
+                # {
+                #   unsigned short ws_row;	/* rows, in characters */
+                #   unsigned short ws_col;	/* columns, in characters */
+                #   unsigned short ws_xpixel;	/* horizontal size, pixels */
+                #   unsigned short ws_ypixel;	/* vertical size, pixels */
+                # };
                 return 1000, 360, 1000, 1000
             elif cmd == TIOCSWINSZ:
                 # Ignore it
@@ -73,7 +75,9 @@ def ql_syscall_ioctl(ql, ioctl_fd, ioctl_cmd, ioctl_arg, *args, **kw):
         else:
             raise KeyError("Unknown ioctl fd:%x cmd:%x" % (fd, cmd))
 
-    if isinstance(ql.os.fd[ioctl_fd], ql_socket) and (ioctl_cmd == SIOCGIFADDR or ioctl_cmd == SIOCGIFNETMASK):
+    if isinstance(ql.os.fd[ioctl_fd], ql_socket) and (
+        ioctl_cmd == SIOCGIFADDR or ioctl_cmd == SIOCGIFNETMASK
+    ):
         try:
             tmp_arg = ql.mem.read(ioctl_arg, 64)
             ql.log.debug("query network card : %s" % tmp_arg)
@@ -94,8 +98,10 @@ def ql_syscall_ioctl(ql, ioctl_fd, ioctl_cmd, ioctl_arg, *args, **kw):
             else:
                 return
             regreturn = 0
-        except :
+        except:
             regreturn = -1
 
-    ql.log.debug(f'ioctl({ioctl_fd:#x}, {ioctl_cmd:#x}, {ioctl_arg:#x}) = {regreturn}')
+    ql.log.debug(
+        f"ioctl({ioctl_fd:#x}, {ioctl_cmd:#x}, {ioctl_arg:#x}) = {regreturn}"
+    )
     return regreturn

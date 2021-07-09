@@ -8,7 +8,8 @@ import os
 
 from qiling.const import *
 
-def ql_syscall_getrandom(ql, buf, buflen, flags,*args, **kw):
+
+def ql_syscall_getrandom(ql, buf, buflen, flags, *args, **kw):
     data = None
     regreturn = None
     try:

@@ -12,13 +12,14 @@ from qiling.os.filestruct import *
 from qiling.os.posix.const_mapping import *
 from qiling.exception import *
 
+
 def ql_syscall_gettid(ql, *args, **kw):
     if ql.os.thread_management:
-      th = ql.os.thread_management.cur_thread
-      regreturn = th.id
+        th = ql.os.thread_management.cur_thread
+        regreturn = th.id
     else:
-      # thread_management is None only if it is a single-threaded process.
-      # In single-threaded process, the thread ID is equal to the process ID
-      # per Posix documentation.
-      regreturn = ql.os.pid
+        # thread_management is None only if it is a single-threaded process.
+        # In single-threaded process, the thread ID is equal to the process ID
+        # per Posix documentation.
+        regreturn = ql.os.pid
     return regreturn

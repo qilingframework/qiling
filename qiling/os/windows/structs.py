@@ -17,34 +17,36 @@ from .wdk_const import *
 
 
 class POINTER32(ctypes.Structure):
-    _fields_ = [('value', ctypes.c_uint32)]
+    _fields_ = [("value", ctypes.c_uint32)]
 
 
 class POINTER64(ctypes.Structure):
-    _fields_ = [('value', ctypes.c_uint64)]
+    _fields_ = [("value", ctypes.c_uint64)]
 
 
 class TEB:
-    def __init__(self,
-                 ql,
-                 base=0,
-                 exception_list=0,
-                 stack_base=0,
-                 stack_limit=0,
-                 sub_system_tib=0,
-                 fiber_data=0,
-                 arbitrary_user_pointer=0,
-                 Self=0,
-                 environment_pointer=0,
-                 client_id_unique_process=0,
-                 client_id_unique_thread=0,
-                 rpc_handle=0,
-                 tls_storage=0,
-                 peb_address=0,
-                 last_error_value=0,
-                 last_status_value=0,
-                 count_owned_locks=0,
-                 hard_error_mode=0):
+    def __init__(
+        self,
+        ql,
+        base=0,
+        exception_list=0,
+        stack_base=0,
+        stack_limit=0,
+        sub_system_tib=0,
+        fiber_data=0,
+        arbitrary_user_pointer=0,
+        Self=0,
+        environment_pointer=0,
+        client_id_unique_process=0,
+        client_id_unique_thread=0,
+        rpc_handle=0,
+        tls_storage=0,
+        peb_address=0,
+        last_error_value=0,
+        last_status_value=0,
+        count_owned_locks=0,
+        hard_error_mode=0,
+    ):
         self.ql = ql
         self.base = base
         self.ExceptionList = exception_list
@@ -66,7 +68,7 @@ class TEB:
         self.HardErrorMode = hard_error_mode
 
     def bytes(self):
-        s = b''
+        s = b""
         s += self.ql.pack(self.ExceptionList)  # 0x00
         s += self.ql.pack(self.StackBase)  # 0x04
         s += self.ql.pack(self.StackLimit)  # 0x08
@@ -91,20 +93,22 @@ class TEB:
 
 
 class PEB:
-    def __init__(self,
-                 ql,
-                 base=0,
-                 flag=0,
-                 mutant=0,
-                 image_base_address=0,
-                 ldr_address=0,
-                 process_parameters=0,
-                 sub_system_data=0,
-                 process_heap=0,
-                 fast_peb_lock=0,
-                 alt_thunk_s_list_ptr=0,
-                 ifeo_key=0,
-                 number_processors=0):
+    def __init__(
+        self,
+        ql,
+        base=0,
+        flag=0,
+        mutant=0,
+        image_base_address=0,
+        ldr_address=0,
+        process_parameters=0,
+        sub_system_data=0,
+        process_heap=0,
+        fast_peb_lock=0,
+        alt_thunk_s_list_ptr=0,
+        ifeo_key=0,
+        number_processors=0,
+    ):
         self.ql = ql
         self.base = base
         self.flag = flag
@@ -124,7 +128,7 @@ class PEB:
             self.size = 0x07B0
 
     def write(self, addr):
-        s = b''
+        s = b""
         s += self.ql.pack(self.flag)  # 0x0 / 0x0
         s += self.ql.pack(self.Mutant)  # 0x4 / 0x8
         s += self.ql.pack(self.ImageBaseAddress)  # 0x8 / 0x10
@@ -141,27 +145,20 @@ class PEB:
 
 
 class LDR_DATA:
-    def __init__(self,
-                 ql,
-                 base=0,
-                 Length=0,
-                 Initialized=0,
-                 SsHandle=0,
-                 InLoadOrderModuleList={
-                     'Flink': 0,
-                     'Blink': 0
-                 },
-                 InMemoryOrderModuleList={
-                     'Flink': 0,
-                     'Blink': 0
-                 },
-                 InInitializationOrderModuleList={
-                     'Flink': 0,
-                     'Blink': 0
-                 },
-                 EntryInProgress=0,
-                 ShutdownInProgress=0,
-                 ShutdownThreadId=0):
+    def __init__(
+        self,
+        ql,
+        base=0,
+        Length=0,
+        Initialized=0,
+        SsHandle=0,
+        InLoadOrderModuleList={"Flink": 0, "Blink": 0},
+        InMemoryOrderModuleList={"Flink": 0, "Blink": 0},
+        InInitializationOrderModuleList={"Flink": 0, "Blink": 0},
+        EntryInProgress=0,
+        ShutdownInProgress=0,
+        ShutdownThreadId=0,
+    ):
         self.ql = ql
         self.base = base
         self.Length = Length
@@ -175,17 +172,16 @@ class LDR_DATA:
         self.selfShutdownThreadId = ShutdownThreadId
 
     def bytes(self):
-        s = b''
+        s = b""
         s += self.ql.pack32(self.Length)  # 0x0
         s += self.ql.pack32(self.Initialized)  # 0x4
         s += self.ql.pack(self.SsHandle)  # 0x8
-        s += self.ql.pack(self.InLoadOrderModuleList['Flink'])  # 0x0c
-        s += self.ql.pack(self.InLoadOrderModuleList['Blink'])
-        s += self.ql.pack(self.InMemoryOrderModuleList['Flink'])  # 0x14
-        s += self.ql.pack(self.InMemoryOrderModuleList['Blink'])
-        s += self.ql.pack(
-            self.InInitializationOrderModuleList['Flink'])  # 0x1C
-        s += self.ql.pack(self.InInitializationOrderModuleList['Blink'])
+        s += self.ql.pack(self.InLoadOrderModuleList["Flink"])  # 0x0c
+        s += self.ql.pack(self.InLoadOrderModuleList["Blink"])
+        s += self.ql.pack(self.InMemoryOrderModuleList["Flink"])  # 0x14
+        s += self.ql.pack(self.InMemoryOrderModuleList["Blink"])
+        s += self.ql.pack(self.InInitializationOrderModuleList["Flink"])  # 0x1C
+        s += self.ql.pack(self.InInitializationOrderModuleList["Blink"])
         s += self.ql.pack(self.EntryInProgress)
         s += self.ql.pack(self.ShutdownInProgress)
         s += self.ql.pack(self.selfShutdownThreadId)
@@ -194,42 +190,35 @@ class LDR_DATA:
 
 
 class LDR_DATA_TABLE_ENTRY:
-    def __init__(self,
-                 ql,
-                 base=0,
-                 InLoadOrderLinks={
-                     'Flink': 0,
-                     'Blink': 0
-                 },
-                 InMemoryOrderLinks={
-                     'Flink': 0,
-                     'Blink': 0
-                 },
-                 InInitializationOrderLinks={
-                     'Flink': 0,
-                     'Blink': 0
-                 },
-                 DllBase=0,
-                 EntryPoint=0,
-                 SizeOfImage=0,
-                 FullDllName='',
-                 BaseDllName='',
-                 Flags=0,
-                 LoadCount=0,
-                 TlsIndex=0,
-                 HashLinks=0,
-                 SectionPointer=0,
-                 CheckSum=0,
-                 TimeDateStamp=0,
-                 LoadedImports=0,
-                 EntryPointActivationContext=0,
-                 PatchInformation=0,
-                 ForwarderLinks=0,
-                 ServiceTagLinks=0,
-                 StaticLinks=0,
-                 ContextInformation=0,
-                 OriginalBase=0,
-                 LoadTime=0):
+    def __init__(
+        self,
+        ql,
+        base=0,
+        InLoadOrderLinks={"Flink": 0, "Blink": 0},
+        InMemoryOrderLinks={"Flink": 0, "Blink": 0},
+        InInitializationOrderLinks={"Flink": 0, "Blink": 0},
+        DllBase=0,
+        EntryPoint=0,
+        SizeOfImage=0,
+        FullDllName="",
+        BaseDllName="",
+        Flags=0,
+        LoadCount=0,
+        TlsIndex=0,
+        HashLinks=0,
+        SectionPointer=0,
+        CheckSum=0,
+        TimeDateStamp=0,
+        LoadedImports=0,
+        EntryPointActivationContext=0,
+        PatchInformation=0,
+        ForwarderLinks=0,
+        ServiceTagLinks=0,
+        StaticLinks=0,
+        ContextInformation=0,
+        OriginalBase=0,
+        LoadTime=0,
+    ):
         self.ql = ql
         self.base = base
         self.InLoadOrderLinks = InLoadOrderLinks
@@ -241,19 +230,21 @@ class LDR_DATA_TABLE_ENTRY:
 
         FullDllName = FullDllName.encode("utf-16le")
         self.FullDllName = {}
-        self.FullDllName['Length'] = len(FullDllName)
-        self.FullDllName['MaximumLength'] = len(FullDllName) + 2
-        self.FullDllName['BufferPtr'] = ql.heap.alloc(
-            self.FullDllName['MaximumLength'])
-        ql.mem.write(self.FullDllName['BufferPtr'], FullDllName + b"\x00\x00")
+        self.FullDllName["Length"] = len(FullDllName)
+        self.FullDllName["MaximumLength"] = len(FullDllName) + 2
+        self.FullDllName["BufferPtr"] = ql.heap.alloc(
+            self.FullDllName["MaximumLength"]
+        )
+        ql.mem.write(self.FullDllName["BufferPtr"], FullDllName + b"\x00\x00")
 
         BaseDllName = BaseDllName.encode("utf-16le")
         self.BaseDllName = {}
-        self.BaseDllName['Length'] = len(BaseDllName)
-        self.BaseDllName['MaximumLength'] = len(BaseDllName) + 2
-        self.BaseDllName['BufferPtr'] = ql.heap.alloc(
-            self.BaseDllName['MaximumLength'])
-        ql.mem.write(self.BaseDllName['BufferPtr'], BaseDllName + b"\x00\x00")
+        self.BaseDllName["Length"] = len(BaseDllName)
+        self.BaseDllName["MaximumLength"] = len(BaseDllName) + 2
+        self.BaseDllName["BufferPtr"] = ql.heap.alloc(
+            self.BaseDllName["MaximumLength"]
+        )
+        ql.mem.write(self.BaseDllName["BufferPtr"], BaseDllName + b"\x00\x00")
 
         self.Flags = Flags
         self.LoadCount = LoadCount
@@ -273,37 +264,38 @@ class LDR_DATA_TABLE_ENTRY:
         self.LoadTime = LoadTime
 
     def attrs(self):
-        return ", ".join("{}={}".format(k, getattr(self, k))
-                         for k in self.__dict__.keys())
+        return ", ".join(
+            "{}={}".format(k, getattr(self, k)) for k in self.__dict__.keys()
+        )
 
     def print(self):
         return "[{}:{}]".format(self.__class__.__name__, self.attrs())
 
     def bytes(self):
-        s = b''
-        s += self.ql.pack(self.InLoadOrderLinks['Flink'])  # 0x0
-        s += self.ql.pack(self.InLoadOrderLinks['Blink'])
-        s += self.ql.pack(self.InMemoryOrderLinks['Flink'])  # 0x8
-        s += self.ql.pack(self.InMemoryOrderLinks['Blink'])
-        s += self.ql.pack(self.InInitializationOrderLinks['Flink'])  # 0x10
-        s += self.ql.pack(self.InInitializationOrderLinks['Blink'])
+        s = b""
+        s += self.ql.pack(self.InLoadOrderLinks["Flink"])  # 0x0
+        s += self.ql.pack(self.InLoadOrderLinks["Blink"])
+        s += self.ql.pack(self.InMemoryOrderLinks["Flink"])  # 0x8
+        s += self.ql.pack(self.InMemoryOrderLinks["Blink"])
+        s += self.ql.pack(self.InInitializationOrderLinks["Flink"])  # 0x10
+        s += self.ql.pack(self.InInitializationOrderLinks["Blink"])
         s += self.ql.pack(self.DllBase)  # 0x18
         s += self.ql.pack(self.EntryPoint)  # 0x1c
         s += self.ql.pack(self.SizeOfImage)  # 0x20
-        s += self.ql.pack16(self.FullDllName['Length'])  # 0x24
-        s += self.ql.pack16(self.FullDllName['MaximumLength'])  # 0x26
+        s += self.ql.pack16(self.FullDllName["Length"])  # 0x24
+        s += self.ql.pack16(self.FullDllName["MaximumLength"])  # 0x26
 
         if self.ql.arch == QL_ARCH.X8664:
             s += self.ql.pack32(0)
 
-        s += self.ql.pack(self.FullDllName['BufferPtr'])  # 0x28
-        s += self.ql.pack16(self.BaseDllName['Length'])
-        s += self.ql.pack16(self.BaseDllName['MaximumLength'])
+        s += self.ql.pack(self.FullDllName["BufferPtr"])  # 0x28
+        s += self.ql.pack16(self.BaseDllName["Length"])
+        s += self.ql.pack16(self.BaseDllName["MaximumLength"])
 
         if self.ql.arch == QL_ARCH.X8664:
             s += self.ql.pack32(0)
 
-        s += self.ql.pack(self.BaseDllName['BufferPtr'])
+        s += self.ql.pack(self.BaseDllName["BufferPtr"])
         s += self.ql.pack(self.Flags)
         s += self.ql.pack(self.LoadCount)
         s += self.ql.pack(self.TlsIndex)
@@ -324,7 +316,7 @@ class LDR_DATA_TABLE_ENTRY:
         return s
 
 
-'''
+"""
 https://docs.microsoft.com/en-us/windows/win32/api/subauth/ns-subauth-unicode_string
 
 typedef struct _UNICODE_STRING {
@@ -332,22 +324,28 @@ typedef struct _UNICODE_STRING {
   USHORT MaximumLength;
   PWSTR  Buffer;
 } UNICODE_STRING, *PUNICODE_STRING;
-'''
+"""
 
 
 class UNICODE_STRING64(ctypes.Structure):
     _pack_ = 8
-    _fields_ = (('Length', ctypes.c_uint16), ('MaximumLength', ctypes.c_int16),
-                ('Buffer', ctypes.c_uint64))
+    _fields_ = (
+        ("Length", ctypes.c_uint16),
+        ("MaximumLength", ctypes.c_int16),
+        ("Buffer", ctypes.c_uint64),
+    )
 
 
 class UNICODE_STRING32(ctypes.Structure):
     _pack_ = 4
-    _fields_ = (('Length', ctypes.c_uint16), ('MaximumLength', ctypes.c_int16),
-                ('Buffer', ctypes.c_uint32))
+    _fields_ = (
+        ("Length", ctypes.c_uint16),
+        ("MaximumLength", ctypes.c_int16),
+        ("Buffer", ctypes.c_uint32),
+    )
 
 
-'''
+"""
 https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/ns-wdm-_driver_object
 
 typedef struct _DRIVER_OBJECT {
@@ -367,7 +365,7 @@ typedef struct _DRIVER_OBJECT {
   PDRIVER_UNLOAD     DriverUnload;
   PDRIVER_DISPATCH   MajorFunction[IRP_MJ_MAXIMUM_FUNCTION + 1];
 } DRIVER_OBJECT, *PDRIVER_OBJECT;
-'''
+"""
 
 
 class DRIVER_OBJECT64(ctypes.Structure):
@@ -387,7 +385,8 @@ class DRIVER_OBJECT64(ctypes.Structure):
         ("_DriverInit", POINTER64),
         ("_DriverStartIo", POINTER64),
         ("_DriverUnload", POINTER64),
-        ("_MajorFunction", ctypes.c_uint64 * (IRP_MJ_MAXIMUM_FUNCTION + 1)))
+        ("_MajorFunction", ctypes.c_uint64 * (IRP_MJ_MAXIMUM_FUNCTION + 1)),
+    )
 
     def __init__(self, ql, base):
         self.ql = ql
@@ -440,7 +439,8 @@ class DRIVER_OBJECT32(ctypes.Structure):
         ("_DriverInit", POINTER32),
         ("_DriverStartIo", POINTER32),
         ("_DriverUnload", POINTER32),
-        ("_MajorFunction", ctypes.c_uint32 * (IRP_MJ_MAXIMUM_FUNCTION + 1)))
+        ("_MajorFunction", ctypes.c_uint32 * (IRP_MJ_MAXIMUM_FUNCTION + 1)),
+    )
 
     def __init__(self, ql, base):
         self.ql = ql
@@ -476,94 +476,97 @@ class DRIVER_OBJECT32(ctypes.Structure):
         return obj._DriverUnload.value
 
 
-
 class KSYSTEM_TIME(ctypes.Structure):
-    _fields_ = (('LowPart', ctypes.c_uint32), ('High1Time', ctypes.c_int32),
-                ('High2Time', ctypes.c_int32))
+    _fields_ = (
+        ("LowPart", ctypes.c_uint32),
+        ("High1Time", ctypes.c_int32),
+        ("High2Time", ctypes.c_int32),
+    )
 
 
 class LARGE_INTEGER_DUMMYSTRUCTNAME(ctypes.Structure):
     _fields_ = (
-        ('LowPart', ctypes.c_uint32),
-        ('HighPart', ctypes.c_int32),
+        ("LowPart", ctypes.c_uint32),
+        ("HighPart", ctypes.c_int32),
     )
 
 
 class LARGE_INTEGER(ctypes.Union):
     _fields_ = (
-        ('u', LARGE_INTEGER_DUMMYSTRUCTNAME),
-        ('QuadPart', ctypes.c_int64),
+        ("u", LARGE_INTEGER_DUMMYSTRUCTNAME),
+        ("QuadPart", ctypes.c_int64),
     )
 
 
 class KUSER_SHARED_DATA(ctypes.Structure):
     _fields_ = (
-        ('TickCountLowDeprecated', ctypes.c_uint32),
-        ('TickCountMultiplier', ctypes.c_uint32),
-        ('InterruptTime', KSYSTEM_TIME),
-        ('SystemTime', KSYSTEM_TIME),
-        ('TimeZoneBias', KSYSTEM_TIME),
-        ('ImageNumberLow', ctypes.c_uint16),
-        ('ImageNumberHigh', ctypes.c_uint16),
-        ('NtSystemRoot', ctypes.c_uint16 * 260),
-        ('MaxStackTraceDepth', ctypes.c_uint32),
-        ('CryptoExponent', ctypes.c_uint32),
-        ('TimeZoneId', ctypes.c_uint32),
-        ('LargePageMinimum', ctypes.c_uint32),
-        ('Reserved2', ctypes.c_uint32 * 7),
-        ('NtProductType', ctypes.c_uint32),
-        ('ProductTypeIsValid', ctypes.c_uint32),
-        ('NtMajorVersion', ctypes.c_uint32),
-        ('NtMinorVersion', ctypes.c_uint32),
-        ('ProcessorFeatures', ctypes.c_uint8 * PROCESSOR_FEATURE_MAX),
-        ('Reserved1', ctypes.c_uint32),
-        ('Reserved3', ctypes.c_uint32),
-        ('TimeSlip', ctypes.c_uint32),
-        ('AlternativeArchitecture', ctypes.c_uint32),
-        ('AltArchitecturePad', ctypes.c_uint32),
-        ('SystemExpirationDate', LARGE_INTEGER),
-        ('SuiteMask', ctypes.c_uint32),
-        ('KdDebuggerEnabled', ctypes.c_uint8),
-        ('NXSupportPolicy', ctypes.c_uint8),
-        ('ActiveConsoleId', ctypes.c_uint32),
-        ('DismountCount', ctypes.c_uint32),
-        ('ComPlusPackage', ctypes.c_uint32),
-        ('LastSystemRITEventTickCount', ctypes.c_uint32),
-        ('NumberOfPhysicalPages', ctypes.c_uint32),
-        ('SafeBootMode', ctypes.c_uint8),
-        ('TscQpcData', ctypes.c_uint8),
-        ('TscQpcFlags', ctypes.c_uint8),
-        ('TscQpcPad', ctypes.c_uint8 * 3),
-        ('SharedDataFlags', ctypes.c_uint8),
-        ('DataFlagsPad', ctypes.c_uint8 * 3),
-        ('TestRetInstruction', ctypes.c_uint8),
-        ('_padding0', ctypes.c_uint8 * 0x2F8))
+        ("TickCountLowDeprecated", ctypes.c_uint32),
+        ("TickCountMultiplier", ctypes.c_uint32),
+        ("InterruptTime", KSYSTEM_TIME),
+        ("SystemTime", KSYSTEM_TIME),
+        ("TimeZoneBias", KSYSTEM_TIME),
+        ("ImageNumberLow", ctypes.c_uint16),
+        ("ImageNumberHigh", ctypes.c_uint16),
+        ("NtSystemRoot", ctypes.c_uint16 * 260),
+        ("MaxStackTraceDepth", ctypes.c_uint32),
+        ("CryptoExponent", ctypes.c_uint32),
+        ("TimeZoneId", ctypes.c_uint32),
+        ("LargePageMinimum", ctypes.c_uint32),
+        ("Reserved2", ctypes.c_uint32 * 7),
+        ("NtProductType", ctypes.c_uint32),
+        ("ProductTypeIsValid", ctypes.c_uint32),
+        ("NtMajorVersion", ctypes.c_uint32),
+        ("NtMinorVersion", ctypes.c_uint32),
+        ("ProcessorFeatures", ctypes.c_uint8 * PROCESSOR_FEATURE_MAX),
+        ("Reserved1", ctypes.c_uint32),
+        ("Reserved3", ctypes.c_uint32),
+        ("TimeSlip", ctypes.c_uint32),
+        ("AlternativeArchitecture", ctypes.c_uint32),
+        ("AltArchitecturePad", ctypes.c_uint32),
+        ("SystemExpirationDate", LARGE_INTEGER),
+        ("SuiteMask", ctypes.c_uint32),
+        ("KdDebuggerEnabled", ctypes.c_uint8),
+        ("NXSupportPolicy", ctypes.c_uint8),
+        ("ActiveConsoleId", ctypes.c_uint32),
+        ("DismountCount", ctypes.c_uint32),
+        ("ComPlusPackage", ctypes.c_uint32),
+        ("LastSystemRITEventTickCount", ctypes.c_uint32),
+        ("NumberOfPhysicalPages", ctypes.c_uint32),
+        ("SafeBootMode", ctypes.c_uint8),
+        ("TscQpcData", ctypes.c_uint8),
+        ("TscQpcFlags", ctypes.c_uint8),
+        ("TscQpcPad", ctypes.c_uint8 * 3),
+        ("SharedDataFlags", ctypes.c_uint8),
+        ("DataFlagsPad", ctypes.c_uint8 * 3),
+        ("TestRetInstruction", ctypes.c_uint8),
+        ("_padding0", ctypes.c_uint8 * 0x2F8),
+    )
 
 
 class LIST_ENTRY32(ctypes.Structure):
     _pack_ = 4
     _fields_ = (
-        ('Flink', ctypes.c_uint32),
-        ('Blink', ctypes.c_uint32),
+        ("Flink", ctypes.c_uint32),
+        ("Blink", ctypes.c_uint32),
     )
 
 
 class KDEVICE_QUEUE_ENTRY32(ctypes.Structure):
     _pack_ = 4
     _fields_ = (
-        ('DeviceListEntry', LIST_ENTRY32),
-        ('SortKey', ctypes.c_uint32),
-        ('Inserted', ctypes.c_uint8)
-        )
+        ("DeviceListEntry", LIST_ENTRY32),
+        ("SortKey", ctypes.c_uint32),
+        ("Inserted", ctypes.c_uint8),
+    )
 
 
 class WAIT_ENTRY32(ctypes.Structure):
     _pack_ = 4
     _fields_ = (
-        ('DmaWaitEntry', LIST_ENTRY32),
-        ('NumberOfChannels', ctypes.c_uint32),
-        ('DmaContext', ctypes.c_uint32)
-        )
+        ("DmaWaitEntry", LIST_ENTRY32),
+        ("NumberOfChannels", ctypes.c_uint32),
+        ("DmaContext", ctypes.c_uint32),
+    )
 
 
 class WAIT_QUEUE_UNION32(ctypes.Union):
@@ -573,47 +576,53 @@ class WAIT_QUEUE_UNION32(ctypes.Union):
 
 class WAIT_CONTEXT_BLOCK32(ctypes.Structure):
     _pack_ = 4
-    _fields_ = (('WaitQueue', WAIT_QUEUE_UNION32),
-                ('DeviceRoutine', POINTER32),
-                ('DeviceContext', POINTER32),
-                ('NumberOfMapRegisters', ctypes.c_uint32),
-                ('DeviceObject', POINTER32),
-                ('CurrentIrp', POINTER32),
-                ('BufferChainingDpc', POINTER32))
+    _fields_ = (
+        ("WaitQueue", WAIT_QUEUE_UNION32),
+        ("DeviceRoutine", POINTER32),
+        ("DeviceContext", POINTER32),
+        ("NumberOfMapRegisters", ctypes.c_uint32),
+        ("DeviceObject", POINTER32),
+        ("CurrentIrp", POINTER32),
+        ("BufferChainingDpc", POINTER32),
+    )
 
 
 class KDEVICE_QUEUE32(ctypes.Structure):
     _pack_ = 4
-    _fields_ = (('Type', ctypes.c_int16), ('Size', ctypes.c_int16),
-                ('DeviceListHead', LIST_ENTRY32), ('Lock', ctypes.c_uint32),
-                ('Busy', ctypes.c_uint8))
+    _fields_ = (
+        ("Type", ctypes.c_int16),
+        ("Size", ctypes.c_int16),
+        ("DeviceListHead", LIST_ENTRY32),
+        ("Lock", ctypes.c_uint32),
+        ("Busy", ctypes.c_uint8),
+    )
 
 
 class SINGLE_LIST_ENTRY32(ctypes.Structure):
-    _fields_ = [(('Next', ctypes.c_uint32))]
+    _fields_ = [(("Next", ctypes.c_uint32))]
 
 
 # https://github.com/ntdiff/headers/blob/master/Win10_1507_TS1/x64/System32/hal.dll/Standalone/_KDPC.h
 class KDPC32(ctypes.Structure):
     _pack_ = 4
     _fields_ = (
-        ('Type', ctypes.c_uint8),
-        ('Importance', ctypes.c_uint8),
-        ('Number', ctypes.c_uint16),
-        ('DpcListEntry', LIST_ENTRY32),
-        ('DeferredRoutine', POINTER32),
-        ('DeferredContext', POINTER32),
-        ('SystemArgument1', POINTER32),
-        ('SystemArgument2', POINTER32),
-        ('DpcData', POINTER32),
+        ("Type", ctypes.c_uint8),
+        ("Importance", ctypes.c_uint8),
+        ("Number", ctypes.c_uint16),
+        ("DpcListEntry", LIST_ENTRY32),
+        ("DeferredRoutine", POINTER32),
+        ("DeferredContext", POINTER32),
+        ("SystemArgument1", POINTER32),
+        ("SystemArgument2", POINTER32),
+        ("DpcData", POINTER32),
     )
 
 
 class DISPATCHER_HEADER32(ctypes.Structure):
     _fields_ = (
-        ('Lock', ctypes.c_int32),
-        ('SignalState', ctypes.c_int32),
-        ('WaitListHead', LIST_ENTRY32),
+        ("Lock", ctypes.c_int32),
+        ("SignalState", ctypes.c_int32),
+        ("WaitListHead", LIST_ENTRY32),
     )
 
 
@@ -621,31 +630,31 @@ class DISPATCHER_HEADER32(ctypes.Structure):
 class DEVICE_OBJECT32(ctypes.Structure):
     _pack_ = 4
     _fields_ = (
-        ('Type', ctypes.c_int16),
-        ('Size', ctypes.c_uint16),
-        ('ReferenceCount', ctypes.c_int32),
-        ('DriverObject', POINTER32),
-        ('NextDevice', POINTER32),
-        ('AttachedDevice', POINTER32),
-        ('CurrentIrp', POINTER32),
-        ('Timer', POINTER32),
-        ('Flags', ctypes.c_uint32),
-        ('Characteristics', ctypes.c_uint32),
-        ('Vpb', POINTER32),
-        ('DeviceExtension', ctypes.c_uint32),
-        ('DeviceType', ctypes.c_uint32),
-        ('StackSize', ctypes.c_int16),
-        ('Queue', WAIT_CONTEXT_BLOCK32),
-        ('AlignmentRequirement', ctypes.c_uint32),
-        ('DeviceQueue', KDEVICE_QUEUE32),
-        ('Dpc', KDPC32),
-        ('ActiveThreadCount', ctypes.c_uint32),
-        ('SecurityDescriptor', POINTER32),
-        ('DeviceLock', DISPATCHER_HEADER32),
-        ('SectorSize', ctypes.c_uint16),
-        ('Spare1', ctypes.c_uint16),
-        ('DeviceObjectExtension', POINTER32),
-        ('Reserved', POINTER32),
+        ("Type", ctypes.c_int16),
+        ("Size", ctypes.c_uint16),
+        ("ReferenceCount", ctypes.c_int32),
+        ("DriverObject", POINTER32),
+        ("NextDevice", POINTER32),
+        ("AttachedDevice", POINTER32),
+        ("CurrentIrp", POINTER32),
+        ("Timer", POINTER32),
+        ("Flags", ctypes.c_uint32),
+        ("Characteristics", ctypes.c_uint32),
+        ("Vpb", POINTER32),
+        ("DeviceExtension", ctypes.c_uint32),
+        ("DeviceType", ctypes.c_uint32),
+        ("StackSize", ctypes.c_int16),
+        ("Queue", WAIT_CONTEXT_BLOCK32),
+        ("AlignmentRequirement", ctypes.c_uint32),
+        ("DeviceQueue", KDEVICE_QUEUE32),
+        ("Dpc", KDPC32),
+        ("ActiveThreadCount", ctypes.c_uint32),
+        ("SecurityDescriptor", POINTER32),
+        ("DeviceLock", DISPATCHER_HEADER32),
+        ("SectorSize", ctypes.c_uint16),
+        ("Spare1", ctypes.c_uint16),
+        ("DeviceObjectExtension", POINTER32),
+        ("Reserved", POINTER32),
     )
 
 
@@ -653,22 +662,27 @@ class DEVICE_OBJECT32(ctypes.Structure):
 class LIST_ENTRY64(ctypes.Structure):
     _pack_ = 8
     _fields_ = (
-        ('Flink', ctypes.c_uint64),
-        ('Blink', ctypes.c_uint64),
+        ("Flink", ctypes.c_uint64),
+        ("Blink", ctypes.c_uint64),
     )
 
 
 class KDEVICE_QUEUE_ENTRY64(ctypes.Structure):
     _pack_ = 8
-    _fields_ = (('DeviceListEntry', LIST_ENTRY64),
-                ('SortKey', ctypes.c_uint32), ('Inserted', ctypes.c_uint8))
+    _fields_ = (
+        ("DeviceListEntry", LIST_ENTRY64),
+        ("SortKey", ctypes.c_uint32),
+        ("Inserted", ctypes.c_uint8),
+    )
 
 
 class WAIT_ENTRY64(ctypes.Structure):
     _pack_ = 8
-    _fields_ = (('DmaWaitEntry', LIST_ENTRY64),
-                ('NumberOfChannels', ctypes.c_uint32), ('DmaContext',
-                                                        ctypes.c_uint32))
+    _fields_ = (
+        ("DmaWaitEntry", LIST_ENTRY64),
+        ("NumberOfChannels", ctypes.c_uint32),
+        ("DmaContext", ctypes.c_uint32),
+    )
 
 
 class WAIT_QUEUE_UNION64(ctypes.Union):
@@ -677,77 +691,85 @@ class WAIT_QUEUE_UNION64(ctypes.Union):
 
 class WAIT_CONTEXT_BLOCK64(ctypes.Structure):
     _pack_ = 8
-    _fields_ = (('WaitQueue', WAIT_QUEUE_UNION64),
-                ('DeviceRoutine', POINTER64), ('DeviceContext', POINTER64),
-                ('NumberOfMapRegisters', ctypes.c_uint32), ('DeviceObject',
-                                                            POINTER64),
-                ('CurrentIrp', POINTER64), ('BufferChainingDpc', POINTER64))
+    _fields_ = (
+        ("WaitQueue", WAIT_QUEUE_UNION64),
+        ("DeviceRoutine", POINTER64),
+        ("DeviceContext", POINTER64),
+        ("NumberOfMapRegisters", ctypes.c_uint32),
+        ("DeviceObject", POINTER64),
+        ("CurrentIrp", POINTER64),
+        ("BufferChainingDpc", POINTER64),
+    )
 
 
 class KDEVICE_QUEUE64(ctypes.Structure):
     _pack_ = 8
-    _fields_ = (('Type', ctypes.c_int16), ('Size', ctypes.c_int16),
-                ('DeviceListHead', LIST_ENTRY64), ('Lock', ctypes.c_uint32),
-                ('Busy', ctypes.c_uint8))
+    _fields_ = (
+        ("Type", ctypes.c_int16),
+        ("Size", ctypes.c_int16),
+        ("DeviceListHead", LIST_ENTRY64),
+        ("Lock", ctypes.c_uint32),
+        ("Busy", ctypes.c_uint8),
+    )
 
 
 class SINGLE_LIST_ENTRY64(ctypes.Structure):
     _pack_ = 8
-    _fields_ = [(('Next', ctypes.c_uint64))]
+    _fields_ = [(("Next", ctypes.c_uint64))]
 
 
 class KDPC64(ctypes.Structure):
     _pack_ = 8
     _fields_ = (
-        ('Type', ctypes.c_uint8),
-        ('Importance', ctypes.c_uint8),
-        ('Number', ctypes.c_uint16),
-        ('DpcListEntry', LIST_ENTRY64),
-        ('DeferredRoutine', POINTER64),
-        ('DeferredContext', POINTER64),
-        ('SystemArgument1', POINTER64),
-        ('SystemArgument2', POINTER64),
-        ('DpcData', POINTER64),
+        ("Type", ctypes.c_uint8),
+        ("Importance", ctypes.c_uint8),
+        ("Number", ctypes.c_uint16),
+        ("DpcListEntry", LIST_ENTRY64),
+        ("DeferredRoutine", POINTER64),
+        ("DeferredContext", POINTER64),
+        ("SystemArgument1", POINTER64),
+        ("SystemArgument2", POINTER64),
+        ("DpcData", POINTER64),
     )
 
 
 class DISPATCHER_HEADER64(ctypes.Structure):
     _pack_ = 8
     _fields_ = (
-        ('Lock', ctypes.c_int32),
-        ('SignalState', ctypes.c_int32),
-        ('WaitListHead', LIST_ENTRY64),
+        ("Lock", ctypes.c_int32),
+        ("SignalState", ctypes.c_int32),
+        ("WaitListHead", LIST_ENTRY64),
     )
 
 
 class DEVICE_OBJECT64(ctypes.Structure):
     _pack_ = 8
     _fields_ = (
-        ('Type', ctypes.c_int16),
-        ('Size', ctypes.c_uint16),
-        ('ReferenceCount', ctypes.c_int32),
-        ('DriverObject', POINTER64),
-        ('NextDevice', POINTER64),
-        ('AttachedDevice', POINTER64),
-        ('CurrentIrp', POINTER64),
-        ('Timer', POINTER64),
-        ('Flags', ctypes.c_uint32),
-        ('Characteristics', ctypes.c_uint32),
-        ('Vpb', POINTER64),
-        ('DeviceExtension', ctypes.c_uint64),
-        ('DeviceType', ctypes.c_uint32),
-        ('StackSize', ctypes.c_int16),
-        ('Queue', WAIT_CONTEXT_BLOCK64),
-        ('AlignmentRequirement', ctypes.c_uint32),
-        ('DeviceQueue', KDEVICE_QUEUE64),
-        ('Dpc', KDPC64),
-        ('ActiveThreadCount', ctypes.c_uint32),
-        ('SecurityDescriptor', POINTER64),
-        ('DeviceLock', DISPATCHER_HEADER64),
-        ('SectorSize', ctypes.c_uint16),
-        ('Spare1', ctypes.c_uint16),
-        ('DeviceObjectExtension', POINTER64),
-        ('Reserved', POINTER64),
+        ("Type", ctypes.c_int16),
+        ("Size", ctypes.c_uint16),
+        ("ReferenceCount", ctypes.c_int32),
+        ("DriverObject", POINTER64),
+        ("NextDevice", POINTER64),
+        ("AttachedDevice", POINTER64),
+        ("CurrentIrp", POINTER64),
+        ("Timer", POINTER64),
+        ("Flags", ctypes.c_uint32),
+        ("Characteristics", ctypes.c_uint32),
+        ("Vpb", POINTER64),
+        ("DeviceExtension", ctypes.c_uint64),
+        ("DeviceType", ctypes.c_uint32),
+        ("StackSize", ctypes.c_int16),
+        ("Queue", WAIT_CONTEXT_BLOCK64),
+        ("AlignmentRequirement", ctypes.c_uint32),
+        ("DeviceQueue", KDEVICE_QUEUE64),
+        ("Dpc", KDPC64),
+        ("ActiveThreadCount", ctypes.c_uint32),
+        ("SecurityDescriptor", POINTER64),
+        ("DeviceLock", DISPATCHER_HEADER64),
+        ("SectorSize", ctypes.c_uint16),
+        ("Spare1", ctypes.c_uint16),
+        ("DeviceObjectExtension", POINTER64),
+        ("Reserved", POINTER64),
     )
 
 
@@ -763,28 +785,26 @@ class DEVICE_OBJECT64(ctypes.Structure):
 class IO_STATUS_BLOCK_DUMMY64(ctypes.Union):
     _pack_ = 8
     _fields_ = (
-        ('Status', ctypes.c_int32),
-        ('Pointer', POINTER64),
+        ("Status", ctypes.c_int32),
+        ("Pointer", POINTER64),
     )
 
 
 class IO_STATUS_BLOCK64(ctypes.Structure):
     _pack_ = 8
-    _fields_ = (('Status', IO_STATUS_BLOCK_DUMMY64), ('Information',
-                                                      POINTER64))
+    _fields_ = (("Status", IO_STATUS_BLOCK_DUMMY64), ("Information", POINTER64))
 
 
 class IO_STATUS_BLOCK_DUMMY32(ctypes.Union):
     _fields_ = (
-        ('Status', ctypes.c_int32),
-        ('Pointer', POINTER32),
+        ("Status", ctypes.c_int32),
+        ("Pointer", POINTER32),
     )
 
 
 class IO_STATUS_BLOCK32(ctypes.Structure):
     _pack_ = 4
-    _fields_ = (('Status', IO_STATUS_BLOCK_DUMMY32), ('Information',
-                                                      POINTER32))
+    _fields_ = (("Status", IO_STATUS_BLOCK_DUMMY32), ("Information", POINTER32))
 
 
 # struct IO_STACK_LOCATION {
@@ -816,104 +836,115 @@ class IO_STATUS_BLOCK32(ctypes.Structure):
 # };
 class IO_STACK_LOCATION_FILESYSTEMCONTROL64(ctypes.Structure):
     _pack_ = 8
-    _fields_ = (('OutputBufferLength', ctypes.c_uint32), ('_padding1',
-                                                          ctypes.c_uint32),
-                ('InputBufferLength', ctypes.c_uint32), ('_padding2',
-                                                         ctypes.c_uint32),
-                ('FsControlCode', ctypes.c_uint32), ('Type3InputBuffer',
-                                                     POINTER64))
+    _fields_ = (
+        ("OutputBufferLength", ctypes.c_uint32),
+        ("_padding1", ctypes.c_uint32),
+        ("InputBufferLength", ctypes.c_uint32),
+        ("_padding2", ctypes.c_uint32),
+        ("FsControlCode", ctypes.c_uint32),
+        ("Type3InputBuffer", POINTER64),
+    )
 
 
 class IO_STACK_LOCATION_FILESYSTEMCONTROL32(ctypes.Structure):
     _pack_ = 4
     _fields_ = (
-        ('OutputBufferLength', ctypes.c_uint32),
-        ('InputBufferLength', ctypes.c_uint32),
-        ('FsControlCode', ctypes.c_uint32),
-        ('Type3InputBuffer', POINTER32))
+        ("OutputBufferLength", ctypes.c_uint32),
+        ("InputBufferLength", ctypes.c_uint32),
+        ("FsControlCode", ctypes.c_uint32),
+        ("Type3InputBuffer", POINTER32),
+    )
 
 
 class IO_STACK_LOCATION_DEVICEIOCONTROL64(ctypes.Structure):
     _pack_ = 8
     _fields_ = (
-        ('OutputBufferLength', ctypes.c_uint32),
-        ('_padding1', ctypes.c_uint32),
-        ('InputBufferLength', ctypes.c_uint32),
-        ('_padding2', ctypes.c_uint32),
-        ('IoControlCode', ctypes.c_uint32),
-        ('Type3InputBuffer', POINTER64))
+        ("OutputBufferLength", ctypes.c_uint32),
+        ("_padding1", ctypes.c_uint32),
+        ("InputBufferLength", ctypes.c_uint32),
+        ("_padding2", ctypes.c_uint32),
+        ("IoControlCode", ctypes.c_uint32),
+        ("Type3InputBuffer", POINTER64),
+    )
 
 
 class IO_STACK_LOCATION_DEVICEIOCONTROL32(ctypes.Structure):
     _pack_ = 4
     _fields_ = (
-        ('OutputBufferLength', ctypes.c_uint32),
-        ('InputBufferLength', ctypes.c_uint32),
-        ('IoControlCode', ctypes.c_uint32),
-        ('Type3InputBuffer', POINTER32)
-        )
+        ("OutputBufferLength", ctypes.c_uint32),
+        ("InputBufferLength", ctypes.c_uint32),
+        ("IoControlCode", ctypes.c_uint32),
+        ("Type3InputBuffer", POINTER32),
+    )
+
 
 class IO_STACK_LOCATION_WRITE64(ctypes.Structure):
     _pack_ = 8
     _fields_ = (
-        ('Length', ctypes.c_uint32),
-        ('_padding1', ctypes.c_uint32),
-        ('Key', ctypes.c_uint32),
-        ('Flags', ctypes.c_uint32),
-        ('ByteOffset', LARGE_INTEGER)
+        ("Length", ctypes.c_uint32),
+        ("_padding1", ctypes.c_uint32),
+        ("Key", ctypes.c_uint32),
+        ("Flags", ctypes.c_uint32),
+        ("ByteOffset", LARGE_INTEGER),
     )
+
 
 class IO_STACK_LOCATION_WRITE32(ctypes.Structure):
     _pack_ = 4
     _fields_ = (
-        ('Length', ctypes.c_uint32),
-        ('Key', ctypes.c_uint32),
-        ('Flags', ctypes.c_uint32),
-        ('ByteOffset', LARGE_INTEGER)
+        ("Length", ctypes.c_uint32),
+        ("Key", ctypes.c_uint32),
+        ("Flags", ctypes.c_uint32),
+        ("ByteOffset", LARGE_INTEGER),
     )
+
 
 class IO_STACK_LOCATION_PARAM64(ctypes.Union):
     _pack_ = 8
-    _fields_ = (('FileSystemControl', IO_STACK_LOCATION_FILESYSTEMCONTROL64),
-                ('DeviceIoControl', IO_STACK_LOCATION_DEVICEIOCONTROL64),
-                ('Write', IO_STACK_LOCATION_WRITE64))
+    _fields_ = (
+        ("FileSystemControl", IO_STACK_LOCATION_FILESYSTEMCONTROL64),
+        ("DeviceIoControl", IO_STACK_LOCATION_DEVICEIOCONTROL64),
+        ("Write", IO_STACK_LOCATION_WRITE64),
+    )
 
 
 class IO_STACK_LOCATION_PARAM32(ctypes.Union):
     _pack_ = 4
-    _fields_ = (('FileSystemControl', IO_STACK_LOCATION_FILESYSTEMCONTROL32),
-                ('DeviceIoControl', IO_STACK_LOCATION_DEVICEIOCONTROL32),
-                ('Write', IO_STACK_LOCATION_WRITE32))
+    _fields_ = (
+        ("FileSystemControl", IO_STACK_LOCATION_FILESYSTEMCONTROL32),
+        ("DeviceIoControl", IO_STACK_LOCATION_DEVICEIOCONTROL32),
+        ("Write", IO_STACK_LOCATION_WRITE32),
+    )
 
 
 class IO_STACK_LOCATION64(ctypes.Structure):
     _pack_ = 8
     _fields_ = (
-        ('MajorFunction', ctypes.c_byte),
-        ('MinorFunction', ctypes.c_byte),
-        ('Flags', ctypes.c_byte),
-        ('Control', ctypes.c_byte),
-        ('_padding1', ctypes.c_byte * 0x4),
-        ('Parameters', IO_STACK_LOCATION_PARAM64),
-        ('DeviceObject', POINTER64),
-        ('FileObject', POINTER64),
-        ('CompletionRoutine', POINTER64),
-        ('Context', POINTER64),
+        ("MajorFunction", ctypes.c_byte),
+        ("MinorFunction", ctypes.c_byte),
+        ("Flags", ctypes.c_byte),
+        ("Control", ctypes.c_byte),
+        ("_padding1", ctypes.c_byte * 0x4),
+        ("Parameters", IO_STACK_LOCATION_PARAM64),
+        ("DeviceObject", POINTER64),
+        ("FileObject", POINTER64),
+        ("CompletionRoutine", POINTER64),
+        ("Context", POINTER64),
     )
 
 
 class IO_STACK_LOCATION32(ctypes.Structure):
     _pack_ = 4
     _fields_ = (
-        ('MajorFunction', ctypes.c_byte),
-        ('MinorFunction', ctypes.c_byte),
-        ('Flags', ctypes.c_byte),
-        ('Control', ctypes.c_byte),
-        ('Parameters', IO_STACK_LOCATION_PARAM32),
-        ('DeviceObject', POINTER32),
-        ('FileObject', POINTER32),
-        ('CompletionRoutine', POINTER32),
-        ('Context', POINTER32),
+        ("MajorFunction", ctypes.c_byte),
+        ("MinorFunction", ctypes.c_byte),
+        ("Flags", ctypes.c_byte),
+        ("Control", ctypes.c_byte),
+        ("Parameters", IO_STACK_LOCATION_PARAM32),
+        ("DeviceObject", POINTER32),
+        ("FileObject", POINTER32),
+        ("CompletionRoutine", POINTER32),
+        ("Context", POINTER32),
     )
 
 
@@ -926,16 +957,18 @@ class IO_STACK_LOCATION32(ctypes.Structure):
 
 class AssociatedIrp64(ctypes.Union):
     _fields_ = (
-        ('MasterIrp', POINTER64),  # ('MasterIrp', ctypes.POINTER(IRP64)),
-        ('IrpCount', ctypes.c_uint32),
-        ('SystemBuffer', POINTER64))
+        ("MasterIrp", POINTER64),  # ('MasterIrp', ctypes.POINTER(IRP64)),
+        ("IrpCount", ctypes.c_uint32),
+        ("SystemBuffer", POINTER64),
+    )
 
 
 class AssociatedIrp32(ctypes.Union):
     _fields_ = (
-        ('MasterIrp', POINTER32),  # ('MasterIrp', ctypes.POINTER(IRP32)),
-        ('IrpCount', ctypes.c_uint32),
-        ('SystemBuffer', POINTER32))
+        ("MasterIrp", POINTER32),  # ('MasterIrp', ctypes.POINTER(IRP32)),
+        ("IrpCount", ctypes.c_uint32),
+        ("SystemBuffer", POINTER32),
+    )
 
 
 # struct _IRP {
@@ -949,43 +982,43 @@ class AssociatedIrp32(ctypes.Union):
 class IRP64(ctypes.Structure):
     _pack_ = 8
     _fields_ = (
-        ('Type', ctypes.c_uint16),
-        ('Size', ctypes.c_uint16),
-        ('MdlAddress', POINTER64),
-        ('Flags', ctypes.c_uint32),
-        ('AssociatedIrp', AssociatedIrp64),
-        ('ThreadListEntry', LIST_ENTRY64),
-        ('IoStatus', IO_STATUS_BLOCK64),
-        ('_padding1', ctypes.c_char * 0x8),
-        ('UserIosb', POINTER64),
-        ('UserEvent', POINTER64),
-        ('Overlay', ctypes.c_char * 0x10),
-        ('CancelRoutine', POINTER64),
-        ('UserBuffer', POINTER64),
-        ('_padding1', ctypes.c_char * 0x40),
-        ('irpstack', ctypes.POINTER(IO_STACK_LOCATION64)),
-        ('_padding2', ctypes.c_char * 0x10),
+        ("Type", ctypes.c_uint16),
+        ("Size", ctypes.c_uint16),
+        ("MdlAddress", POINTER64),
+        ("Flags", ctypes.c_uint32),
+        ("AssociatedIrp", AssociatedIrp64),
+        ("ThreadListEntry", LIST_ENTRY64),
+        ("IoStatus", IO_STATUS_BLOCK64),
+        ("_padding1", ctypes.c_char * 0x8),
+        ("UserIosb", POINTER64),
+        ("UserEvent", POINTER64),
+        ("Overlay", ctypes.c_char * 0x10),
+        ("CancelRoutine", POINTER64),
+        ("UserBuffer", POINTER64),
+        ("_padding1", ctypes.c_char * 0x40),
+        ("irpstack", ctypes.POINTER(IO_STACK_LOCATION64)),
+        ("_padding2", ctypes.c_char * 0x10),
     )
 
 
 class IRP32(ctypes.Structure):
     _fields_ = (
-        ('Type', ctypes.c_uint16),
-        ('Size', ctypes.c_uint16),
-        ('MdlAddress', POINTER32),
-        ('Flags', ctypes.c_uint32),
-        ('AssociatedIrp', AssociatedIrp32),
-        ('ThreadListEntry', LIST_ENTRY32),
-        ('IoStatus', IO_STATUS_BLOCK32),
-        ('_padding1', ctypes.c_char * 0x8),
-        ('UserIosb', POINTER32),  # 0x28
-        ('UserEvent', POINTER32),
-        ('Overlay', ctypes.c_char * 8),
-        ('CancelRoutine', POINTER32),
-        ('UserBuffer', POINTER32),
-        ('_padding1', ctypes.c_char * 0x20),
-        ('irpstack', ctypes.POINTER(IO_STACK_LOCATION32)),
-        ('_padding2', ctypes.c_char * 8),
+        ("Type", ctypes.c_uint16),
+        ("Size", ctypes.c_uint16),
+        ("MdlAddress", POINTER32),
+        ("Flags", ctypes.c_uint32),
+        ("AssociatedIrp", AssociatedIrp32),
+        ("ThreadListEntry", LIST_ENTRY32),
+        ("IoStatus", IO_STATUS_BLOCK32),
+        ("_padding1", ctypes.c_char * 0x8),
+        ("UserIosb", POINTER32),  # 0x28
+        ("UserEvent", POINTER32),
+        ("Overlay", ctypes.c_char * 8),
+        ("CancelRoutine", POINTER32),
+        ("UserBuffer", POINTER32),
+        ("_padding1", ctypes.c_char * 0x20),
+        ("irpstack", ctypes.POINTER(IO_STACK_LOCATION32)),
+        ("_padding2", ctypes.c_char * 8),
     )
 
 
@@ -1003,21 +1036,32 @@ class IRP32(ctypes.Structure):
 
 class MDL64(ctypes.Structure):
     _pack_ = 8
-    _fields_ = (('Next', POINTER64), ('Size', ctypes.c_uint16),
-                ('MdlFlags', ctypes.c_uint16), ('Process', POINTER64),
-                ('MappedSystemVa', POINTER64), ('StartVa', POINTER64),
-                ('ByteCount', ctypes.c_uint32), ('ByteOffset',
-                                                 ctypes.c_uint32))
+    _fields_ = (
+        ("Next", POINTER64),
+        ("Size", ctypes.c_uint16),
+        ("MdlFlags", ctypes.c_uint16),
+        ("Process", POINTER64),
+        ("MappedSystemVa", POINTER64),
+        ("StartVa", POINTER64),
+        ("ByteCount", ctypes.c_uint32),
+        ("ByteOffset", ctypes.c_uint32),
+    )
 
 
 class MDL32(ctypes.Structure):
-    _fields_ = (('Next', POINTER32), ('Size', ctypes.c_uint16),
-                ('MdlFlags', ctypes.c_uint16), ('Process', POINTER32),
-                ('MappedSystemVa', POINTER32), ('StartVa', POINTER32),
-                ('ByteCount', ctypes.c_uint32), ('ByteOffset',
-                                                 ctypes.c_uint32))
+    _fields_ = (
+        ("Next", POINTER32),
+        ("Size", ctypes.c_uint16),
+        ("MdlFlags", ctypes.c_uint16),
+        ("Process", POINTER32),
+        ("MappedSystemVa", POINTER32),
+        ("StartVa", POINTER32),
+        ("ByteCount", ctypes.c_uint32),
+        ("ByteOffset", ctypes.c_uint32),
+    )
 
-#TODO: Repeated and might not be needed
+
+# TODO: Repeated and might not be needed
 
 # class DISPATCHER_HEADER64(ctypes.Structure):
 #     _fields_ = (
@@ -1045,97 +1089,103 @@ class MDL32(ctypes.Structure):
 
 class KAPC_STATE64(ctypes.Structure):
     _fields_ = (
-        ('ApcListHead', LIST_ENTRY64 * 2),
-        ('Process', POINTER64),
-        ('KernelApcInProgress', ctypes.c_uint8),
-        ('KernelApcPending', ctypes.c_uint8),
-        ('UserApcPending', ctypes.c_uint8),
+        ("ApcListHead", LIST_ENTRY64 * 2),
+        ("Process", POINTER64),
+        ("KernelApcInProgress", ctypes.c_uint8),
+        ("KernelApcPending", ctypes.c_uint8),
+        ("UserApcPending", ctypes.c_uint8),
     )
 
 
 class KAPC_STATE32(ctypes.Structure):
     _fields_ = (
-        ('ApcListHead', LIST_ENTRY32 * 2),
-        ('Process', POINTER32),
-        ('KernelApcInProgress', ctypes.c_uint8),
-        ('KernelApcPending', ctypes.c_uint8),
-        ('UserApcPending', ctypes.c_uint8),
+        ("ApcListHead", LIST_ENTRY32 * 2),
+        ("Process", POINTER32),
+        ("KernelApcInProgress", ctypes.c_uint8),
+        ("KernelApcPending", ctypes.c_uint8),
+        ("UserApcPending", ctypes.c_uint8),
     )
 
 
 class KTIMER64(ctypes.Structure):
     _fields_ = (
-        ('Header', DISPATCHER_HEADER64),
-        ('DueTime', LARGE_INTEGER),
-        ('TimerListEntry', LIST_ENTRY64),
-        ('Dpc', POINTER64),
-        ('Period', ctypes.c_uint32),
+        ("Header", DISPATCHER_HEADER64),
+        ("DueTime", LARGE_INTEGER),
+        ("TimerListEntry", LIST_ENTRY64),
+        ("Dpc", POINTER64),
+        ("Period", ctypes.c_uint32),
     )
 
 
 class KTIMER32(ctypes.Structure):
     _fields_ = (
-        ('Header', DISPATCHER_HEADER32),
-        ('DueTime', LARGE_INTEGER),
-        ('TimerListEntry', LIST_ENTRY32),
-        ('Dpc', POINTER32),
-        ('Period', ctypes.c_uint32),
+        ("Header", DISPATCHER_HEADER32),
+        ("DueTime", LARGE_INTEGER),
+        ("TimerListEntry", LIST_ENTRY32),
+        ("Dpc", POINTER32),
+        ("Period", ctypes.c_uint32),
     )
 
 
 class KWAIT_BLOCK64(ctypes.Structure):
     _fields_ = (
-        ('WaitListEntry', LIST_ENTRY64),
-        ('Thread', POINTER64),
-        ('Object', POINTER64),
-        ('NextWaitBlock', POINTER64),
-        ('WaitKey', ctypes.c_uint16),
-        ('WaitType', ctypes.c_uint8),
-        ('BlockState', ctypes.c_uint8),
+        ("WaitListEntry", LIST_ENTRY64),
+        ("Thread", POINTER64),
+        ("Object", POINTER64),
+        ("NextWaitBlock", POINTER64),
+        ("WaitKey", ctypes.c_uint16),
+        ("WaitType", ctypes.c_uint8),
+        ("BlockState", ctypes.c_uint8),
     )
 
 
 class KWAIT_BLOCK32(ctypes.Structure):
     _fields_ = (
-        ('WaitListEntry', LIST_ENTRY32),
-        ('Thread', POINTER32),
-        ('Object', POINTER32),
-        ('NextWaitBlock', POINTER32),
-        ('WaitKey', ctypes.c_uint16),
-        ('WaitType', ctypes.c_uint8),
-        ('BlockState', ctypes.c_uint8),
+        ("WaitListEntry", LIST_ENTRY32),
+        ("Thread", POINTER32),
+        ("Object", POINTER32),
+        ("NextWaitBlock", POINTER32),
+        ("WaitKey", ctypes.c_uint16),
+        ("WaitType", ctypes.c_uint8),
+        ("BlockState", ctypes.c_uint8),
     )
 
 
 class GROUP_AFFINITY64(ctypes.Structure):
-    _fields_ = (('Mask', ctypes.c_uint64), ('Group', ctypes.c_uint16),
-                ('Reserved', ctypes.c_uint16 * 3))
+    _fields_ = (
+        ("Mask", ctypes.c_uint64),
+        ("Group", ctypes.c_uint16),
+        ("Reserved", ctypes.c_uint16 * 3),
+    )
 
 
 class GROUP_AFFINITY32(ctypes.Structure):
-    _fields_ = (('Mask', ctypes.c_uint32), ('Group', ctypes.c_uint16),
-                ('Reserved', ctypes.c_uint16 * 3))
+    _fields_ = (
+        ("Mask", ctypes.c_uint32),
+        ("Group", ctypes.c_uint16),
+        ("Reserved", ctypes.c_uint16 * 3),
+    )
 
 
 class KAPC64(ctypes.Structure):
     _pack_ = 8
     _fields_ = (
-        ('Type', ctypes.c_uint8),
-        ('SpareByte0', ctypes.c_uint8),
-        ('Size', ctypes.c_uint8),
-        ('SpareByte1', ctypes.c_uint8),
-        ('SpareLong0', ctypes.c_uint32),
-        ('Thread', POINTER64),
-        ('ApcListEntry', LIST_ENTRY64),
-        ('KernelRoutine', POINTER64),
-        ('RundownRoutine', POINTER64),
-        ('NormalRoutine', POINTER64),
-        ('NormalContext', POINTER64),
-        ('SystemArgument1', POINTER64),
-        ('SystemArgument2', POINTER64),
-        ('ApcStateIndex', ctypes.c_uint8),
-        ('ApcMode', ctypes.c_uint8),
-        ('Inserted', ctypes.c_uint8),
+        ("Type", ctypes.c_uint8),
+        ("SpareByte0", ctypes.c_uint8),
+        ("Size", ctypes.c_uint8),
+        ("SpareByte1", ctypes.c_uint8),
+        ("SpareLong0", ctypes.c_uint32),
+        ("Thread", POINTER64),
+        ("ApcListEntry", LIST_ENTRY64),
+        ("KernelRoutine", POINTER64),
+        ("RundownRoutine", POINTER64),
+        ("NormalRoutine", POINTER64),
+        ("NormalContext", POINTER64),
+        ("SystemArgument1", POINTER64),
+        ("SystemArgument2", POINTER64),
+        ("ApcStateIndex", ctypes.c_uint8),
+        ("ApcMode", ctypes.c_uint8),
+        ("Inserted", ctypes.c_uint8),
     )
 
 
@@ -1174,65 +1224,66 @@ class KTHREAD_COUNTERS64(ctypes.Structure):
 class KTHREAD64(ctypes.Structure):
     _pack_ = 8
     _fields_ = (
-        ('Header', DISPATCHER_HEADER64),
-        ('CycleTime', ctypes.c_uint64),
-        ('QuantumTarget', ctypes.c_uint64),
-        ('InitialStack', POINTER64),
-        ('StackLimit', POINTER64),
-        ('KernelStack', POINTER64),
-        ('ThreadLock', ctypes.c_uint64),
-        ('WaitRegister', ctypes.c_uint8),  # _KWAIT_STATUS_REGISTER
-        ('Running', ctypes.c_uint8),
-        ('Alerted', ctypes.c_uint8 * 2),
-        ('MiscFlags', ctypes.c_uint32),
-        ('ApcState', KAPC_STATE64),
-        ('DeferredProcessor', ctypes.c_uint32),
-        ('ApcQueueLock', ctypes.c_uint64),
-        ('WaitStatus', ctypes.c_int64),
-        ('WaitBlockList', POINTER64),
-        ('WaitListEntry', LIST_ENTRY64),
-        ('Queue', POINTER64),
-        ('Teb', POINTER64),
-        ('Timer', KTIMER64),
-        ('ThreadFlags', ctypes.c_int32),
-        ('Spare0', ctypes.c_uint32),
-        ('WaitBlock', KWAIT_BLOCK64 * 4),
-        ('QueueListEntry', LIST_ENTRY64),
-        ('TrapFrame', POINTER64),
-        ('FirstArgument', POINTER64),
-        ('CallbackStack', POINTER64),
-        ('ApcStateIndex', ctypes.c_uint8),
-        ('BasePriority', ctypes.c_char),
-        ('PriorityDecrement', ctypes.c_char),
-        ('Preempted', ctypes.c_uint8),
-        ('AdjustReason', ctypes.c_uint8),
-        ('AdjustIncrement', ctypes.c_char),
-        ('PreviousMode', ctypes.c_char),
-        ('Saturation', ctypes.c_char),
-        ('SystemCallNumber', ctypes.c_uint32),
-        ('FreezeCount', ctypes.c_uint32),
-        ('UserAffinity', GROUP_AFFINITY64),
-        ('Process', POINTER64),
-        ('Affinity', GROUP_AFFINITY64),
-        ('IdealProcessor', ctypes.c_uint32),
-        ('UserIdealProcessor', ctypes.c_uint32),
-        ('ApcStatePointer', POINTER64 * 2),
-        ('SavedApcState', KAPC_STATE64),
-        ('Win32Thread', POINTER64),
-        ('StackBase', POINTER64),
-        ('SuspendApc', KAPC64),
-        ('SuspendSemaphore', KSEMAPHORE64),
-        ('ThreadListEntry', LIST_ENTRY64),
-        ('MutantListHead', LIST_ENTRY64),
-        ('SListFaultAddress', POINTER64),
-        ('ReadOperationCount', ctypes.c_int64),
-        ('WriteOperationCount', ctypes.c_int64),
-        ('OtherOperationCount', ctypes.c_int64),
-        ('ReadTransferCount', ctypes.c_int64),
-        ('WriteTransferCount', ctypes.c_int64),
-        ('OtherTransferCount', ctypes.c_int64),
-        ('ThreadCounters', POINTER64),
-        ('XStateSave', POINTER64))
+        ("Header", DISPATCHER_HEADER64),
+        ("CycleTime", ctypes.c_uint64),
+        ("QuantumTarget", ctypes.c_uint64),
+        ("InitialStack", POINTER64),
+        ("StackLimit", POINTER64),
+        ("KernelStack", POINTER64),
+        ("ThreadLock", ctypes.c_uint64),
+        ("WaitRegister", ctypes.c_uint8),  # _KWAIT_STATUS_REGISTER
+        ("Running", ctypes.c_uint8),
+        ("Alerted", ctypes.c_uint8 * 2),
+        ("MiscFlags", ctypes.c_uint32),
+        ("ApcState", KAPC_STATE64),
+        ("DeferredProcessor", ctypes.c_uint32),
+        ("ApcQueueLock", ctypes.c_uint64),
+        ("WaitStatus", ctypes.c_int64),
+        ("WaitBlockList", POINTER64),
+        ("WaitListEntry", LIST_ENTRY64),
+        ("Queue", POINTER64),
+        ("Teb", POINTER64),
+        ("Timer", KTIMER64),
+        ("ThreadFlags", ctypes.c_int32),
+        ("Spare0", ctypes.c_uint32),
+        ("WaitBlock", KWAIT_BLOCK64 * 4),
+        ("QueueListEntry", LIST_ENTRY64),
+        ("TrapFrame", POINTER64),
+        ("FirstArgument", POINTER64),
+        ("CallbackStack", POINTER64),
+        ("ApcStateIndex", ctypes.c_uint8),
+        ("BasePriority", ctypes.c_char),
+        ("PriorityDecrement", ctypes.c_char),
+        ("Preempted", ctypes.c_uint8),
+        ("AdjustReason", ctypes.c_uint8),
+        ("AdjustIncrement", ctypes.c_char),
+        ("PreviousMode", ctypes.c_char),
+        ("Saturation", ctypes.c_char),
+        ("SystemCallNumber", ctypes.c_uint32),
+        ("FreezeCount", ctypes.c_uint32),
+        ("UserAffinity", GROUP_AFFINITY64),
+        ("Process", POINTER64),
+        ("Affinity", GROUP_AFFINITY64),
+        ("IdealProcessor", ctypes.c_uint32),
+        ("UserIdealProcessor", ctypes.c_uint32),
+        ("ApcStatePointer", POINTER64 * 2),
+        ("SavedApcState", KAPC_STATE64),
+        ("Win32Thread", POINTER64),
+        ("StackBase", POINTER64),
+        ("SuspendApc", KAPC64),
+        ("SuspendSemaphore", KSEMAPHORE64),
+        ("ThreadListEntry", LIST_ENTRY64),
+        ("MutantListHead", LIST_ENTRY64),
+        ("SListFaultAddress", POINTER64),
+        ("ReadOperationCount", ctypes.c_int64),
+        ("WriteOperationCount", ctypes.c_int64),
+        ("OtherOperationCount", ctypes.c_int64),
+        ("ReadTransferCount", ctypes.c_int64),
+        ("WriteTransferCount", ctypes.c_int64),
+        ("OtherTransferCount", ctypes.c_int64),
+        ("ThreadCounters", POINTER64),
+        ("XStateSave", POINTER64),
+    )
 
 
 # struct _RTL_PROCESS_MODULE_INFORMATION {
@@ -1250,31 +1301,31 @@ class KTHREAD64(ctypes.Structure):
 class RTL_PROCESS_MODULE_INFORMATION64(ctypes.Structure):
     _pack_ = 8
     _fields_ = (
-        ('Section', ctypes.c_uint64),
-        ('MappedBase', ctypes.c_uint64),
-        ('ImageBase', ctypes.c_uint64),
-        ('ImageSize', ctypes.c_uint32),
-        ('Flags', ctypes.c_uint32),
-        ('LoadOrderIndex', ctypes.c_uint16),
-        ('InitOrderIndex', ctypes.c_uint16),
-        ('LoadCount', ctypes.c_uint16),
-        ('OffsetToFileName', ctypes.c_uint16),
-        ('FullPathName', ctypes.c_char * 256)
+        ("Section", ctypes.c_uint64),
+        ("MappedBase", ctypes.c_uint64),
+        ("ImageBase", ctypes.c_uint64),
+        ("ImageSize", ctypes.c_uint32),
+        ("Flags", ctypes.c_uint32),
+        ("LoadOrderIndex", ctypes.c_uint16),
+        ("InitOrderIndex", ctypes.c_uint16),
+        ("LoadCount", ctypes.c_uint16),
+        ("OffsetToFileName", ctypes.c_uint16),
+        ("FullPathName", ctypes.c_char * 256),
     )
 
 
 class RTL_PROCESS_MODULE_INFORMATION32(ctypes.Structure):
     _fields_ = (
-        ('Section', ctypes.c_uint32),
-        ('MappedBase', ctypes.c_uint32),
-        ('ImageBase', ctypes.c_uint32),
-        ('ImageSize', ctypes.c_uint32),
-        ('Flags', ctypes.c_uint32),
-        ('LoadOrderIndex', ctypes.c_uint16),
-        ('InitOrderIndex', ctypes.c_uint16),
-        ('LoadCount', ctypes.c_uint16),
-        ('OffsetToFileName', ctypes.c_uint16),
-        ('FullPathName', ctypes.c_char * 256)
+        ("Section", ctypes.c_uint32),
+        ("MappedBase", ctypes.c_uint32),
+        ("ImageBase", ctypes.c_uint32),
+        ("ImageSize", ctypes.c_uint32),
+        ("Flags", ctypes.c_uint32),
+        ("LoadOrderIndex", ctypes.c_uint16),
+        ("InitOrderIndex", ctypes.c_uint16),
+        ("LoadCount", ctypes.c_uint16),
+        ("OffsetToFileName", ctypes.c_uint16),
+        ("FullPathName", ctypes.c_char * 256),
     )
 
 
@@ -1429,7 +1480,7 @@ class RTL_PROCESS_MODULE_INFORMATION32(ctypes.Structure):
 # };
 class EPROCESS64(ctypes.Structure):
     _pack_ = 8
-    _fields_ = (('dummy', ctypes.c_char * 0x4d0), )
+    _fields_ = (("dummy", ctypes.c_char * 0x4D0),)
 
     def __init__(self, ql, base):
         self.ql = ql
@@ -1437,7 +1488,7 @@ class EPROCESS64(ctypes.Structure):
 
 
 class EPROCESS32(ctypes.Structure):
-    _fields_ = (('dummy', ctypes.c_char * 0x2c0), )
+    _fields_ = (("dummy", ctypes.c_char * 0x2C0),)
 
     def __init__(self, ql, base):
         self.ql = ql
@@ -1446,27 +1497,20 @@ class EPROCESS32(ctypes.Structure):
 
 # FIXME: duplicate class
 class LdrData:
-    def __init__(self,
-                 ql,
-                 base=0,
-                 length=0,
-                 initialized=0,
-                 ss_handle=0,
-                 in_load_order_module_list={
-                     'Flink': 0,
-                     'Blink': 0
-                 },
-                 in_memory_order_module_list={
-                     'Flink': 0,
-                     'Blink': 0
-                 },
-                 in_initialization_order_module_list={
-                     'Flink': 0,
-                     'Blink': 0
-                 },
-                 entry_in_progress=0,
-                 shutdown_in_progress=0,
-                 shutdown_thread_id=0):
+    def __init__(
+        self,
+        ql,
+        base=0,
+        length=0,
+        initialized=0,
+        ss_handle=0,
+        in_load_order_module_list={"Flink": 0, "Blink": 0},
+        in_memory_order_module_list={"Flink": 0, "Blink": 0},
+        in_initialization_order_module_list={"Flink": 0, "Blink": 0},
+        entry_in_progress=0,
+        shutdown_in_progress=0,
+        shutdown_thread_id=0,
+    ):
         self.ql = ql
         self.base = base
         self.Length = length
@@ -1474,23 +1518,24 @@ class LdrData:
         self.SsHandle = ss_handle
         self.InLoadOrderModuleList = in_load_order_module_list
         self.InMemoryOrderModuleList = in_memory_order_module_list
-        self.InInitializationOrderModuleList = in_initialization_order_module_list
+        self.InInitializationOrderModuleList = (
+            in_initialization_order_module_list
+        )
         self.EntryInProgress = entry_in_progress
         self.ShutdownInProgress = shutdown_in_progress
         self.selfShutdownThreadId = shutdown_thread_id
 
     def bytes(self):
-        s = b''
+        s = b""
         s += self.ql.pack32(self.Length)  # 0x0
         s += self.ql.pack32(self.Initialized)  # 0x4
         s += self.ql.pack(self.SsHandle)  # 0x8
-        s += self.ql.pack(self.InLoadOrderModuleList['Flink'])  # 0x0c
-        s += self.ql.pack(self.InLoadOrderModuleList['Blink'])
-        s += self.ql.pack(self.InMemoryOrderModuleList['Flink'])  # 0x14
-        s += self.ql.pack(self.InMemoryOrderModuleList['Blink'])
-        s += self.ql.pack(
-            self.InInitializationOrderModuleList['Flink'])  # 0x1C
-        s += self.ql.pack(self.InInitializationOrderModuleList['Blink'])
+        s += self.ql.pack(self.InLoadOrderModuleList["Flink"])  # 0x0c
+        s += self.ql.pack(self.InLoadOrderModuleList["Blink"])
+        s += self.ql.pack(self.InMemoryOrderModuleList["Flink"])  # 0x14
+        s += self.ql.pack(self.InMemoryOrderModuleList["Blink"])
+        s += self.ql.pack(self.InInitializationOrderModuleList["Flink"])  # 0x1C
+        s += self.ql.pack(self.InInitializationOrderModuleList["Blink"])
         s += self.ql.pack(self.EntryInProgress)
         s += self.ql.pack(self.ShutdownInProgress)
         s += self.ql.pack(self.selfShutdownThreadId)
@@ -1498,42 +1543,35 @@ class LdrData:
 
 
 class LdrDataTableEntry:
-    def __init__(self,
-                 ql,
-                 base=0,
-                 in_load_order_links={
-                     'Flink': 0,
-                     'Blink': 0
-                 },
-                 in_memory_order_links={
-                     'Flink': 0,
-                     'Blink': 0
-                 },
-                 in_initialization_order_links={
-                     'Flink': 0,
-                     'Blink': 0
-                 },
-                 dll_base=0,
-                 entry_point=0,
-                 size_of_image=0,
-                 full_dll_name='',
-                 base_dll_name='',
-                 flags=0,
-                 load_count=0,
-                 tls_index=0,
-                 hash_links=0,
-                 section_pointer=0,
-                 check_sum=0,
-                 time_date_stamp=0,
-                 loaded_imports=0,
-                 entry_point_activation_context=0,
-                 patch_information=0,
-                 forwarder_links=0,
-                 service_tag_links=0,
-                 static_links=0,
-                 context_information=0,
-                 original_base=0,
-                 load_time=0):
+    def __init__(
+        self,
+        ql,
+        base=0,
+        in_load_order_links={"Flink": 0, "Blink": 0},
+        in_memory_order_links={"Flink": 0, "Blink": 0},
+        in_initialization_order_links={"Flink": 0, "Blink": 0},
+        dll_base=0,
+        entry_point=0,
+        size_of_image=0,
+        full_dll_name="",
+        base_dll_name="",
+        flags=0,
+        load_count=0,
+        tls_index=0,
+        hash_links=0,
+        section_pointer=0,
+        check_sum=0,
+        time_date_stamp=0,
+        loaded_imports=0,
+        entry_point_activation_context=0,
+        patch_information=0,
+        forwarder_links=0,
+        service_tag_links=0,
+        static_links=0,
+        context_information=0,
+        original_base=0,
+        load_time=0,
+    ):
         self.ql = ql
         self.base = base
         self.InLoadOrderLinks = in_load_order_links
@@ -1545,23 +1583,23 @@ class LdrDataTableEntry:
 
         full_dll_name = full_dll_name.encode("utf-16le")
         self.FullDllName = {
-            'Length': len(full_dll_name),
-            'MaximumLength': len(full_dll_name) + 2
+            "Length": len(full_dll_name),
+            "MaximumLength": len(full_dll_name) + 2,
         }
-        self.FullDllName['BufferPtr'] = self.ql.os.heap.alloc(
-            self.FullDllName['MaximumLength'])
-        ql.mem.write(self.FullDllName['BufferPtr'],
-                     full_dll_name + b"\x00\x00")
+        self.FullDllName["BufferPtr"] = self.ql.os.heap.alloc(
+            self.FullDllName["MaximumLength"]
+        )
+        ql.mem.write(self.FullDllName["BufferPtr"], full_dll_name + b"\x00\x00")
 
         base_dll_name = base_dll_name.encode("utf-16le")
         self.BaseDllName = {
-            'Length': len(base_dll_name),
-            'MaximumLength': len(base_dll_name) + 2
+            "Length": len(base_dll_name),
+            "MaximumLength": len(base_dll_name) + 2,
         }
-        self.BaseDllName['BufferPtr'] = self.ql.os.heap.alloc(
-            self.BaseDllName['MaximumLength'])
-        ql.mem.write(self.BaseDllName['BufferPtr'],
-                     base_dll_name + b"\x00\x00")
+        self.BaseDllName["BufferPtr"] = self.ql.os.heap.alloc(
+            self.BaseDllName["MaximumLength"]
+        )
+        ql.mem.write(self.BaseDllName["BufferPtr"], base_dll_name + b"\x00\x00")
 
         self.Flags = flags
         self.LoadCount = load_count
@@ -1581,33 +1619,34 @@ class LdrDataTableEntry:
         self.LoadTime = load_time
 
     def attrs(self):
-        return ", ".join("{}={}".format(k, getattr(self, k))
-                         for k in self.__dict__.keys())
+        return ", ".join(
+            "{}={}".format(k, getattr(self, k)) for k in self.__dict__.keys()
+        )
 
     def print(self):
         return "[{}:{}]".format(self.__class__.__name__, self.attrs())
 
     def bytes(self):
-        s = b''
-        s += self.ql.pack(self.InLoadOrderLinks['Flink'])  # 0x0
-        s += self.ql.pack(self.InLoadOrderLinks['Blink'])
-        s += self.ql.pack(self.InMemoryOrderLinks['Flink'])  # 0x8
-        s += self.ql.pack(self.InMemoryOrderLinks['Blink'])
-        s += self.ql.pack(self.InInitializationOrderLinks['Flink'])  # 0x10
-        s += self.ql.pack(self.InInitializationOrderLinks['Blink'])
+        s = b""
+        s += self.ql.pack(self.InLoadOrderLinks["Flink"])  # 0x0
+        s += self.ql.pack(self.InLoadOrderLinks["Blink"])
+        s += self.ql.pack(self.InMemoryOrderLinks["Flink"])  # 0x8
+        s += self.ql.pack(self.InMemoryOrderLinks["Blink"])
+        s += self.ql.pack(self.InInitializationOrderLinks["Flink"])  # 0x10
+        s += self.ql.pack(self.InInitializationOrderLinks["Blink"])
         s += self.ql.pack(self.DllBase)  # 0x18
         s += self.ql.pack(self.EntryPoint)  # 0x1c
         s += self.ql.pack(self.SizeOfImage)  # 0x20
-        s += self.ql.pack16(self.FullDllName['Length'])  # 0x24
-        s += self.ql.pack16(self.FullDllName['MaximumLength'])  # 0x26
+        s += self.ql.pack16(self.FullDllName["Length"])  # 0x24
+        s += self.ql.pack16(self.FullDllName["MaximumLength"])  # 0x26
         if self.ql.archtype == QL_ARCH.X8664:
             s += self.ql.pack32(0)
-        s += self.ql.pack(self.FullDllName['BufferPtr'])  # 0x28
-        s += self.ql.pack16(self.BaseDllName['Length'])
-        s += self.ql.pack16(self.BaseDllName['MaximumLength'])
+        s += self.ql.pack(self.FullDllName["BufferPtr"])  # 0x28
+        s += self.ql.pack16(self.BaseDllName["Length"])
+        s += self.ql.pack16(self.BaseDllName["MaximumLength"])
         if self.ql.archtype == QL_ARCH.X8664:
             s += self.ql.pack32(0)
-        s += self.ql.pack(self.BaseDllName['BufferPtr'])
+        s += self.ql.pack(self.BaseDllName["BufferPtr"])
         s += self.ql.pack(self.Flags)
         s += self.ql.pack(self.LoadCount)
         s += self.ql.pack(self.TlsIndex)
@@ -1629,7 +1668,6 @@ class LdrDataTableEntry:
 
 
 class WindowsStruct:
-
     def __init__(self, ql):
         self.ql = ql
         self.addr = None
@@ -1658,14 +1696,20 @@ class WindowsStruct:
             (val, size, endianness, typ) = elem
             if typ == int:
                 value = val.to_bytes(size, endianness)
-                self.ql.log.debug("Writing to %d with value %s" % (addr + already_written, value))
+                self.ql.log.debug(
+                    "Writing to %d with value %s"
+                    % (addr + already_written, value)
+                )
                 self.ql.mem.write(addr + already_written, value)
             elif typ == bytes:
                 if isinstance(val, bytearray):
                     value = bytes(val)
                 else:
                     value = val
-                self.ql.log.debug("Writing at addr %d value %s" % (addr + already_written, value))
+                self.ql.log.debug(
+                    "Writing at addr %d value %s"
+                    % (addr + already_written, value)
+                )
 
                 self.ql.mem.write(addr + already_written, value)
             elif issubclass(typ, WindowsStruct):
@@ -1682,7 +1726,9 @@ class WindowsStruct:
         for elem in attributes:
             (val, size, endianness, type) = elem
             value = self.ql.mem.read(addr + already_read, size)
-            self.ql.log.debug("Reading from %d value %s" % (addr + already_read, value))
+            self.ql.log.debug(
+                "Reading from %d value %s" % (addr + already_read, value)
+            )
             if type == int:
                 elem[0] = int.from_bytes(value, endianness)
             elif type == bytes:
@@ -1695,6 +1741,7 @@ class WindowsStruct:
                 raise QlErrorNotImplemented("API not implemented")
             already_read += size
         self.addr = addr
+
 
 class AlignedWindowsStruct(WindowsStruct):
     def __init__(self, ql):
@@ -1710,7 +1757,9 @@ class AlignedWindowsStruct(WindowsStruct):
         super().generic_write(addr, attributes)
 
     def generic_read(self, addr: int, attributes: list):
-        self.ql.log.debug("Reading unpacked Windows object aligned " + self.__class__.__name__)
+        self.ql.log.debug(
+            "Reading unpacked Windows object aligned " + self.__class__.__name__
+        )
         already_read = 0
         for elem in attributes:
             (val, size, endianness, type, alignment) = elem
@@ -1719,7 +1768,9 @@ class AlignedWindowsStruct(WindowsStruct):
                 already_read = already_read + modulo
 
             value = self.ql.mem.read(addr + already_read, size)
-            self.ql.log.debug("Reading from %x value %s" % (addr + already_read, value))
+            self.ql.log.debug(
+                "Reading from %x value %s" % (addr + already_read, value)
+            )
             if type == int:
                 elem[0] = int.from_bytes(value, endianness)
             elif type == bytes:
@@ -1733,57 +1784,58 @@ class AlignedWindowsStruct(WindowsStruct):
             already_read += size
         self.addr = addr
 
+
 class Token:
     class TokenInformationClass(IntEnum):
         # https://docs.microsoft.com/it-it/windows/win32/api/winnt/ne-winnt-token_information_class
-        TokenUser = 1,
-        TokenGroups = 2,
-        TokenPrivileges = 3,
-        TokenOwner = 4,
-        TokenPrimaryGroup = 5,
-        TokenDefaultDacl = 6,
-        TokenSource = 7,
-        TokenType = 8,
-        TokenImpersonationLevel = 9,
-        TokenStatistics = 10,
-        TokenRestrictedSids = 11,
-        TokenSessionId = 12,
-        TokenGroupsAndPrivileges = 13,
-        TokenSessionReference = 14,
-        TokenSandBoxInert = 15,
-        TokenAuditPolicy = 16,
-        TokenOrigin = 17,
-        TokenElevationType = 18,
-        TokenLinkedToken = 19,
-        TokenElevation = 20,
-        TokenHasRestrictions = 21,
-        TokenAccessInformation = 22,
-        TokenVirtualizationAllowed = 23,
-        TokenVirtualizationEnabled = 24,
-        TokenIntegrityLevel = 25,
-        TokenUIAccess = 26,
-        TokenMandatoryPolicy = 27,
-        TokenLogonSid = 28,
-        TokenIsAppContainer = 29,
-        TokenCapabilities = 30,
-        TokenAppContainerSid = 31,
-        TokenAppContainerNumber = 32,
-        TokenUserClaimAttributes = 33,
-        TokenDeviceClaimAttributes = 34,
-        TokenRestrictedUserClaimAttributes = 35,
-        TokenRestrictedDeviceClaimAttributes = 36,
-        TokenDeviceGroups = 37,
-        TokenRestrictedDeviceGroups = 38,
-        TokenSecurityAttributes = 39,
-        TokenIsRestricted = 40,
-        TokenProcessTrustLevel = 41,
-        TokenPrivateNameSpace = 42,
-        TokenSingletonAttributes = 43,
-        TokenBnoIsolation = 44,
-        TokenChildProcessFlags = 45,
-        TokenIsLessPrivilegedAppContainer = 46,
-        TokenIsSandboxed = 47,
-        TokenOriginatingProcessTrustLevel = 48,
+        TokenUser = (1,)
+        TokenGroups = (2,)
+        TokenPrivileges = (3,)
+        TokenOwner = (4,)
+        TokenPrimaryGroup = (5,)
+        TokenDefaultDacl = (6,)
+        TokenSource = (7,)
+        TokenType = (8,)
+        TokenImpersonationLevel = (9,)
+        TokenStatistics = (10,)
+        TokenRestrictedSids = (11,)
+        TokenSessionId = (12,)
+        TokenGroupsAndPrivileges = (13,)
+        TokenSessionReference = (14,)
+        TokenSandBoxInert = (15,)
+        TokenAuditPolicy = (16,)
+        TokenOrigin = (17,)
+        TokenElevationType = (18,)
+        TokenLinkedToken = (19,)
+        TokenElevation = (20,)
+        TokenHasRestrictions = (21,)
+        TokenAccessInformation = (22,)
+        TokenVirtualizationAllowed = (23,)
+        TokenVirtualizationEnabled = (24,)
+        TokenIntegrityLevel = (25,)
+        TokenUIAccess = (26,)
+        TokenMandatoryPolicy = (27,)
+        TokenLogonSid = (28,)
+        TokenIsAppContainer = (29,)
+        TokenCapabilities = (30,)
+        TokenAppContainerSid = (31,)
+        TokenAppContainerNumber = (32,)
+        TokenUserClaimAttributes = (33,)
+        TokenDeviceClaimAttributes = (34,)
+        TokenRestrictedUserClaimAttributes = (35,)
+        TokenRestrictedDeviceClaimAttributes = (36,)
+        TokenDeviceGroups = (37,)
+        TokenRestrictedDeviceGroups = (38,)
+        TokenSecurityAttributes = (39,)
+        TokenIsRestricted = (40,)
+        TokenProcessTrustLevel = (41,)
+        TokenPrivateNameSpace = (42,)
+        TokenSingletonAttributes = (43,)
+        TokenBnoIsolation = (44,)
+        TokenChildProcessFlags = (45,)
+        TokenIsLessPrivilegedAppContainer = (46,)
+        TokenIsSandboxed = (47,)
+        TokenOriginatingProcessTrustLevel = (48,)
         MaxTokenInfoClass = 49
 
     def __init__(self, ql):
@@ -1791,8 +1843,12 @@ class Token:
         self.struct = {}
         self.ql = ql
         # TODO find a GOOD reference paper for the values
-        self.struct[Token.TokenInformationClass.TokenUIAccess.value] = self.ql.pack(0x1)
-        self.struct[Token.TokenInformationClass.TokenGroups.value] = self.ql.pack(0x1)
+        self.struct[
+            Token.TokenInformationClass.TokenUIAccess.value
+        ] = self.ql.pack(0x1)
+        self.struct[
+            Token.TokenInformationClass.TokenGroups.value
+        ] = self.ql.pack(0x1)
         # still not sure why 0x1234 executes gandcrab as admin, but 544 no. No idea (see sid refs for the values)
         sub = 0x1234 if ql.os.profile["SYSTEM"]["permission"] == "root" else 545
         sub = sub.to_bytes(4, "little")
@@ -1801,7 +1857,9 @@ class Token:
         sid.write(sid_addr)
         handle = Handle(obj=sid, id=sid_addr)
         self.ql.os.handle_manager.append(handle)
-        self.struct[Token.TokenInformationClass.TokenIntegrityLevel] = self.ql.pack(sid_addr)
+        self.struct[
+            Token.TokenInformationClass.TokenIntegrityLevel
+        ] = self.ql.pack(sid_addr)
 
     def get(self, value):
         res = self.struct[value]
@@ -1830,28 +1888,42 @@ class Sid(WindowsStruct):
     # https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/c6ce4275-3d90-4890-ab3a-514745e4637e
     # https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/81d92bba-d22b-4a8c-908a-554ab29148ab
 
-    def __init__(self, ql, revision=None, subs_count=None, identifier=None, subs=None):
+    def __init__(
+        self, ql, revision=None, subs_count=None, identifier=None, subs=None
+    ):
         # TODO find better documentation
         super().__init__(ql)
         self.revision = [revision, self.BYTE_SIZE, "little", int]
         self.subs_count = [subs_count, self.BYTE_SIZE, "little", int]
         # FIXME: understand if is correct to set them as big
         self.identifier = [identifier, 6, "big", int]
-        self.subs = [subs, self.subs_count[0] * self.DWORD_SIZE, "little", bytes]
+        self.subs = [
+            subs,
+            self.subs_count[0] * self.DWORD_SIZE,
+            "little",
+            bytes,
+        ]
         self.size = 2 + 6 + self.subs_count[0] * 4
 
     def write(self, addr):
-        super().generic_write(addr, [self.revision, self.subs_count, self.identifier, self.subs])
+        super().generic_write(
+            addr, [self.revision, self.subs_count, self.identifier, self.subs]
+        )
 
     def read(self, addr):
-        super().generic_read(addr, [self.revision, self.subs_count, self.identifier, self.subs])
+        super().generic_read(
+            addr, [self.revision, self.subs_count, self.identifier, self.subs]
+        )
         self.size = 2 + 6 + self.subs_count[0] * 4
 
     def __eq__(self, other):
         # FIXME
         if not isinstance(other, Sid):
             return False
-        return self.subs == other.subs and self.identifier[0] == other.identifier[0]
+        return (
+            self.subs == other.subs
+            and self.identifier[0] == other.identifier[0]
+        )
 
 
 class Mutex:
@@ -1872,26 +1944,28 @@ class Mutex:
 
 class IMAGE_IMPORT_DESCRIPTOR(ctypes.Structure):
     _fields_ = (
-        ('OriginalFirstThunk', ctypes.c_uint32),
-        ('TimeDateStamp', ctypes.c_uint32),
-        ('ForwarderChain', ctypes.c_uint32), 
-        ('Name', ctypes.c_uint32),
-        ('FirstThunk', ctypes.c_uint32)
+        ("OriginalFirstThunk", ctypes.c_uint32),
+        ("TimeDateStamp", ctypes.c_uint32),
+        ("ForwarderChain", ctypes.c_uint32),
+        ("Name", ctypes.c_uint32),
+        ("FirstThunk", ctypes.c_uint32),
     )
 
 
 class CLIENT_ID32(ctypes.Structure):
     _fields_ = (
-        ('UniqueProcess', ctypes.c_uint32),
-        ('UniqueThread', ctypes.c_uint32)
+        ("UniqueProcess", ctypes.c_uint32),
+        ("UniqueThread", ctypes.c_uint32),
     )
 
 
 class CLIENT_ID64(ctypes.Structure):
     _fields_ = (
-        ('UniqueProcess', ctypes.c_uint64),
-        ('UniqueThread', ctypes.c_uint64)
+        ("UniqueProcess", ctypes.c_uint64),
+        ("UniqueThread", ctypes.c_uint64),
     )
+
+
 # typedef struct tagPOINT {
 #   LONG x;
 #   LONG y;
@@ -1909,6 +1983,7 @@ class Point(WindowsStruct):
     def read(self, addr):
         super().generic_read(addr, [self.x, self.y])
 
+
 # typedef struct _SYSTEM_BASIC_INFORMATION
 # {
 # 	ULONG Reserved;
@@ -1924,35 +1999,114 @@ class Point(WindowsStruct):
 # 	CCHAR NumberOfProcessors;
 # } SYSTEM_BASIC_INFORMATION, * PSYSTEM_BASIC_INFORMATION;
 
+
 class SystemBasicInforation(WindowsStruct):
-    def __init__(self,ql, Reserved,TimerResolution,PageSize=None, NumberOfPhysicalPages=None, LowestPhysicalPageNumber=None,
-                 HighestPhysicalPageNumber=None, AllocationGranularity=None,MinimumUserModeAddress=None,
-                 MaximumUserModeAddress=None,ActiveProcessorsAffinityMask=None,NumberOfProcessors=None):
+    def __init__(
+        self,
+        ql,
+        Reserved,
+        TimerResolution,
+        PageSize=None,
+        NumberOfPhysicalPages=None,
+        LowestPhysicalPageNumber=None,
+        HighestPhysicalPageNumber=None,
+        AllocationGranularity=None,
+        MinimumUserModeAddress=None,
+        MaximumUserModeAddress=None,
+        ActiveProcessorsAffinityMask=None,
+        NumberOfProcessors=None,
+    ):
         super().__init__(ql)
-        self.size=self.BYTE_SIZE * 24 + 5*self.POINTER_SIZE
-        self.Reserved =[Reserved, self.DWORD_SIZE, "little", int]
-        self.TimerResolution=[TimerResolution, self.DWORD_SIZE, "little", int]
-        self.PageSize=[PageSize, self.DWORD_SIZE, "little", int]
-        self.NumberOfPhysicalPages = [NumberOfPhysicalPages, self.DWORD_SIZE, "little", int]
-        self.LowestPhysicalPageNumber = [LowestPhysicalPageNumber, self.DWORD_SIZE, "little", int]
-        self.HighestPhysicalPageNumber = [HighestPhysicalPageNumber, self.DWORD_SIZE, "little", int]
-        self.AllocationGranularity = [AllocationGranularity, self.DWORD_SIZE, "little", int]
-        self.MinimumUserModeAddress = [MinimumUserModeAddress, self.POINTER_SIZE, "little", int]
-        self.MaximumUserModeAddress = [MaximumUserModeAddress, self.POINTER_SIZE, "little", int]
-        self.ActiveProcessorsAffinityMask = [ActiveProcessorsAffinityMask, self.POINTER_SIZE, "little", int]
-        self.NumberOfProcessors = [NumberOfProcessors, self.POINTER_SIZE, "little", int]
+        self.size = self.BYTE_SIZE * 24 + 5 * self.POINTER_SIZE
+        self.Reserved = [Reserved, self.DWORD_SIZE, "little", int]
+        self.TimerResolution = [TimerResolution, self.DWORD_SIZE, "little", int]
+        self.PageSize = [PageSize, self.DWORD_SIZE, "little", int]
+        self.NumberOfPhysicalPages = [
+            NumberOfPhysicalPages,
+            self.DWORD_SIZE,
+            "little",
+            int,
+        ]
+        self.LowestPhysicalPageNumber = [
+            LowestPhysicalPageNumber,
+            self.DWORD_SIZE,
+            "little",
+            int,
+        ]
+        self.HighestPhysicalPageNumber = [
+            HighestPhysicalPageNumber,
+            self.DWORD_SIZE,
+            "little",
+            int,
+        ]
+        self.AllocationGranularity = [
+            AllocationGranularity,
+            self.DWORD_SIZE,
+            "little",
+            int,
+        ]
+        self.MinimumUserModeAddress = [
+            MinimumUserModeAddress,
+            self.POINTER_SIZE,
+            "little",
+            int,
+        ]
+        self.MaximumUserModeAddress = [
+            MaximumUserModeAddress,
+            self.POINTER_SIZE,
+            "little",
+            int,
+        ]
+        self.ActiveProcessorsAffinityMask = [
+            ActiveProcessorsAffinityMask,
+            self.POINTER_SIZE,
+            "little",
+            int,
+        ]
+        self.NumberOfProcessors = [
+            NumberOfProcessors,
+            self.POINTER_SIZE,
+            "little",
+            int,
+        ]
+
     def write(self, addr):
 
-        super().generic_write(addr, [self.Reserved, self.TimerResolution, self.PageSize, self.NumberOfPhysicalPages,
-               self.LowestPhysicalPageNumber, self.HighestPhysicalPageNumber ,self.AllocationGranularity,
-               self.MinimumUserModeAddress,self.MaximumUserModeAddress,self.ActiveProcessorsAffinityMask,
-               self.NumberOfProcessors])
+        super().generic_write(
+            addr,
+            [
+                self.Reserved,
+                self.TimerResolution,
+                self.PageSize,
+                self.NumberOfPhysicalPages,
+                self.LowestPhysicalPageNumber,
+                self.HighestPhysicalPageNumber,
+                self.AllocationGranularity,
+                self.MinimumUserModeAddress,
+                self.MaximumUserModeAddress,
+                self.ActiveProcessorsAffinityMask,
+                self.NumberOfProcessors,
+            ],
+        )
 
     def read(self, addr):
-        super().generic_read(addr, [self.Reserved, self.TimerResolution, self.PageSize, self.NumberOfPhysicalPages,
-               self.LowestPhysicalPageNumber, self.HighestPhysicalPageNumber ,self.AllocationGranularity,
-               self.MinimumUserModeAddress,self.MaximumUserModeAddress,self.ActiveProcessorsAffinityMask,
-               self.NumberOfProcessors])
+        super().generic_read(
+            addr,
+            [
+                self.Reserved,
+                self.TimerResolution,
+                self.PageSize,
+                self.NumberOfPhysicalPages,
+                self.LowestPhysicalPageNumber,
+                self.HighestPhysicalPageNumber,
+                self.AllocationGranularity,
+                self.MinimumUserModeAddress,
+                self.MaximumUserModeAddress,
+                self.ActiveProcessorsAffinityMask,
+                self.NumberOfProcessors,
+            ],
+        )
+
 
 # typedef struct hostent {
 #  char  *h_name;
@@ -1962,7 +2116,15 @@ class SystemBasicInforation(WindowsStruct):
 #  char  **h_addr_list;
 # } HOSTENT, *PHOSTENT, *LPHOSTENT;
 class Hostent(WindowsStruct):
-    def __init__(self, ql, name=None, aliases=None, addr_type=None, length=None, addr_list=None):
+    def __init__(
+        self,
+        ql,
+        name=None,
+        aliases=None,
+        addr_type=None,
+        length=None,
+        addr_list=None,
+    ):
         super().__init__(ql)
         self.name = [name, self.POINTER_SIZE, "little", int]
         self.aliases = [aliases, self.POINTER_SIZE, "little", int]
@@ -1972,10 +2134,28 @@ class Hostent(WindowsStruct):
         self.size = self.POINTER_SIZE * 2 + self.SHORT_SIZE * 2 + len(addr_list)
 
     def write(self, addr):
-        super().generic_write(addr, [self.name, self.aliases, self.addr_type, self.length, self.addr_list])
+        super().generic_write(
+            addr,
+            [
+                self.name,
+                self.aliases,
+                self.addr_type,
+                self.length,
+                self.addr_list,
+            ],
+        )
 
     def read(self, addr):
-        super().generic_read(addr, [self.name, self.aliases, self.addr_type, self.length, self.addr_list])
+        super().generic_read(
+            addr,
+            [
+                self.name,
+                self.aliases,
+                self.addr_type,
+                self.length,
+                self.addr_list,
+            ],
+        )
 
 
 # typedef struct _OSVERSIONINFOEXA {
@@ -1992,8 +2172,20 @@ class Hostent(WindowsStruct):
 #   BYTE  wReserved;
 # } OSVERSIONINFOEXA, *POSVERSIONINFOEXA, *LPOSVERSIONINFOEXA;
 class OsVersionInfoExA(WindowsStruct):
-    def __init__(self, ql, size=None, major=None, minor=None, build=None, platform=None, version=None,
-                 service_major=None, service_minor=None, suite=None, product=None):
+    def __init__(
+        self,
+        ql,
+        size=None,
+        major=None,
+        minor=None,
+        build=None,
+        platform=None,
+        version=None,
+        service_major=None,
+        service_minor=None,
+        suite=None,
+        product=None,
+    ):
         super().__init__(ql)
         self.size = [size, self.DWORD_SIZE, "little", int]
         self.major = [major, self.DWORD_SIZE, "little", int]
@@ -2008,12 +2200,40 @@ class OsVersionInfoExA(WindowsStruct):
         self.reserved = [0, self.BYTE_SIZE, "little", int]
 
     def write(self, addr):
-        super().generic_write(addr, [self.size, self.major, self.minor, self.build, self.platform, self.version,
-                                     self.service_major, self.service_minor, self.suite, self.product, self.reserved])
+        super().generic_write(
+            addr,
+            [
+                self.size,
+                self.major,
+                self.minor,
+                self.build,
+                self.platform,
+                self.version,
+                self.service_major,
+                self.service_minor,
+                self.suite,
+                self.product,
+                self.reserved,
+            ],
+        )
 
     def read(self, addr):
-        super().generic_read(addr, [self.size, self.major, self.minor, self.build, self.platform, self.version,
-                                    self.service_major, self.service_minor, self.suite, self.product, self.reserved])
+        super().generic_read(
+            addr,
+            [
+                self.size,
+                self.major,
+                self.minor,
+                self.build,
+                self.platform,
+                self.version,
+                self.service_major,
+                self.service_minor,
+                self.suite,
+                self.product,
+                self.reserved,
+            ],
+        )
 
 
 # typedef struct _OSVERSIONINFOW {
@@ -2025,7 +2245,16 @@ class OsVersionInfoExA(WindowsStruct):
 #   WCHAR szCSDVersion[128];
 # }
 class OsVersionInfoW(WindowsStruct):
-    def __init__(self, ql, size=None, major=None, minor=None, build=None, platform=None, version=None):
+    def __init__(
+        self,
+        ql,
+        size=None,
+        major=None,
+        minor=None,
+        build=None,
+        platform=None,
+        version=None,
+    ):
         super().__init__(ql)
         self.size = [size, self.ULONG_SIZE, "little", int]
         self.major = [major, self.ULONG_SIZE, "little", int]
@@ -2035,10 +2264,30 @@ class OsVersionInfoW(WindowsStruct):
         self.version = [version, 128, "little", bytes]
 
     def write(self, addr):
-        self.generic_write(addr, [self.size, self.major, self.minor, self.build, self.platform, self.version])
+        self.generic_write(
+            addr,
+            [
+                self.size,
+                self.major,
+                self.minor,
+                self.build,
+                self.platform,
+                self.version,
+            ],
+        )
 
     def read(self, addr):
-        self.generic_read(addr, [self.size, self.major, self.minor, self.build, self.platform, self.version])
+        self.generic_read(
+            addr,
+            [
+                self.size,
+                self.major,
+                self.minor,
+                self.build,
+                self.platform,
+                self.version,
+            ],
+        )
 
 
 # typedef struct _SYSTEM_INFO {
@@ -2060,8 +2309,20 @@ class OsVersionInfoW(WindowsStruct):
 #   WORD      wProcessorRevision;
 # } SYSTEM_INFO, *LPSYSTEM_INFO;
 class SystemInfo(WindowsStruct):
-    def __init__(self, ql, dummy=None, page_size=None, min_address=None, max_address=None, mask=None, processors=None,
-                 processor_type=None, allocation=None, processor_level=None, processor_revision=None):
+    def __init__(
+        self,
+        ql,
+        dummy=None,
+        page_size=None,
+        min_address=None,
+        max_address=None,
+        mask=None,
+        processors=None,
+        processor_type=None,
+        allocation=None,
+        processor_level=None,
+        processor_revision=None,
+    ):
         super().__init__(ql)
         self.dummy = [dummy, self.DWORD_SIZE, "little", int]
         self.page_size = [page_size, self.DWORD_SIZE, "little", int]
@@ -2072,18 +2333,49 @@ class SystemInfo(WindowsStruct):
         self.processor_type = [processor_type, self.DWORD_SIZE, "little", int]
         self.allocation = [allocation, self.DWORD_SIZE, "little", int]
         self.processor_level = [processor_level, self.WORD_SIZE, "little", int]
-        self.processor_revision = [processor_revision, self.WORD_SIZE, "little", int]
-        self.size = self.DWORD_SIZE * 5 + self.WORD_SIZE * 2 + self.POINTER_SIZE * 3
+        self.processor_revision = [
+            processor_revision,
+            self.WORD_SIZE,
+            "little",
+            int,
+        ]
+        self.size = (
+            self.DWORD_SIZE * 5 + self.WORD_SIZE * 2 + self.POINTER_SIZE * 3
+        )
 
     def write(self, addr):
-        super().generic_write(addr, [self.dummy, self.page_size, self.min_address, self.max_address, self.mask,
-                                     self.processors, self.processor_type, self.allocation, self.processor_level,
-                                     self.processor_revision])
+        super().generic_write(
+            addr,
+            [
+                self.dummy,
+                self.page_size,
+                self.min_address,
+                self.max_address,
+                self.mask,
+                self.processors,
+                self.processor_type,
+                self.allocation,
+                self.processor_level,
+                self.processor_revision,
+            ],
+        )
 
     def read(self, addr):
-        super().generic_read(addr, [self.dummy, self.page_size, self.min_address, self.max_address, self.mask,
-                                    self.processors, self.processor_type, self.allocation, self.processor_level,
-                                    self.processor_revision])
+        super().generic_read(
+            addr,
+            [
+                self.dummy,
+                self.page_size,
+                self.min_address,
+                self.max_address,
+                self.mask,
+                self.processors,
+                self.processor_type,
+                self.allocation,
+                self.processor_level,
+                self.processor_revision,
+            ],
+        )
 
 
 # typedef struct _SYSTEMTIME {
@@ -2099,8 +2391,18 @@ class SystemInfo(WindowsStruct):
 
 
 class SystemTime(WindowsStruct):
-    def __init__(self, ql, year=None, month=None, day_week=None, day=None, hour=None, minute=None, seconds=None,
-                 milliseconds=None):
+    def __init__(
+        self,
+        ql,
+        year=None,
+        month=None,
+        day_week=None,
+        day=None,
+        hour=None,
+        minute=None,
+        seconds=None,
+        milliseconds=None,
+    ):
         super().__init__(ql)
         self.year = [year, self.WORD_SIZE, "little", int]
         self.month = [month, self.WORD_SIZE, "little", int]
@@ -2113,12 +2415,34 @@ class SystemTime(WindowsStruct):
         self.size = self.WORD_SIZE * 8
 
     def write(self, addr):
-        super().generic_write(addr, [self.year, self.month, self.day_week, self.day, self.hour,
-                                     self.minute, self.seconds, self.milliseconds])
+        super().generic_write(
+            addr,
+            [
+                self.year,
+                self.month,
+                self.day_week,
+                self.day,
+                self.hour,
+                self.minute,
+                self.seconds,
+                self.milliseconds,
+            ],
+        )
 
     def read(self, addr):
-        super().generic_read(addr, [self.year, self.month, self.day_week, self.day, self.hour,
-                                    self.minute, self.seconds, self.milliseconds])
+        super().generic_read(
+            addr,
+            [
+                self.year,
+                self.month,
+                self.day_week,
+                self.day,
+                self.hour,
+                self.minute,
+                self.seconds,
+                self.milliseconds,
+            ],
+        )
 
 
 # typedef struct _STARTUPINFO {
@@ -2142,8 +2466,24 @@ class SystemTime(WindowsStruct):
 #   HANDLE hStdError;
 # } STARTUPINFO, *LPSTARTUPINFO;
 class StartupInfo(WindowsStruct):
-    def __init__(self, ql, desktop=None, title=None, x=None, y=None, x_size=None, y_size=None, x_chars=None,
-                 y_chars=None, fill_attribute=None, flags=None, show=None, std_input=None, output=None, error=None):
+    def __init__(
+        self,
+        ql,
+        desktop=None,
+        title=None,
+        x=None,
+        y=None,
+        x_size=None,
+        y_size=None,
+        x_chars=None,
+        y_chars=None,
+        fill_attribute=None,
+        flags=None,
+        show=None,
+        std_input=None,
+        output=None,
+        error=None,
+    ):
         super().__init__(ql)
         self.size = 53 + 3 * self.ql.pointersize
         self.cb = [self.size, self.DWORD_SIZE, "little", int]
@@ -2166,16 +2506,55 @@ class StartupInfo(WindowsStruct):
         self.error = [error, self.POINTER_SIZE, "little", int]
 
     def read(self, addr):
-        super().generic_read(addr, [self.cb, self.reserved, self.desktop, self.title, self.x, self.y, self.x_size,
-                                    self.y_size, self.x_chars, self.y_chars, self.fill_attribute, self.flags, self.show,
-                                    self.reserved2, self.reserved3, self.input, self.output, self.error])
+        super().generic_read(
+            addr,
+            [
+                self.cb,
+                self.reserved,
+                self.desktop,
+                self.title,
+                self.x,
+                self.y,
+                self.x_size,
+                self.y_size,
+                self.x_chars,
+                self.y_chars,
+                self.fill_attribute,
+                self.flags,
+                self.show,
+                self.reserved2,
+                self.reserved3,
+                self.input,
+                self.output,
+                self.error,
+            ],
+        )
         self.size = self.cb
 
     def write(self, addr):
-        super().generic_write(addr, [self.cb, self.reserved, self.desktop, self.title, self.x, self.y, self.x_size,
-                                     self.y_size, self.x_chars, self.y_chars, self.fill_attribute, self.flags,
-                                     self.show,
-                                     self.reserved2, self.reserved3, self.input, self.output, self.error])
+        super().generic_write(
+            addr,
+            [
+                self.cb,
+                self.reserved,
+                self.desktop,
+                self.title,
+                self.x,
+                self.y,
+                self.x_size,
+                self.y_size,
+                self.x_chars,
+                self.y_chars,
+                self.fill_attribute,
+                self.flags,
+                self.show,
+                self.reserved2,
+                self.reserved3,
+                self.input,
+                self.output,
+                self.error,
+            ],
+        )
 
 
 # typedef struct _SHELLEXECUTEINFOA {
@@ -2199,11 +2578,31 @@ class StartupInfo(WindowsStruct):
 #   HANDLE    hProcess;
 # } SHELLEXECUTEINFOA, *LPSHELLEXECUTEINFOA;
 class ShellExecuteInfoA(WindowsStruct):
-    def __init__(self, ql, fMask=None, hwnd=None, lpVerb=None, lpFile=None, lpParams=None, lpDir=None, show=None,
-                 instApp=None, lpIDList=None, lpClass=None, hkeyClass=None,
-                 dwHotKey=None, dummy=None, hProcess=None):
+    def __init__(
+        self,
+        ql,
+        fMask=None,
+        hwnd=None,
+        lpVerb=None,
+        lpFile=None,
+        lpParams=None,
+        lpDir=None,
+        show=None,
+        instApp=None,
+        lpIDList=None,
+        lpClass=None,
+        hkeyClass=None,
+        dwHotKey=None,
+        dummy=None,
+        hProcess=None,
+    ):
         super().__init__(ql)
-        self.size = self.DWORD_SIZE + self.ULONG_SIZE + self.INT_SIZE * 2 + self.POINTER_SIZE * 11
+        self.size = (
+            self.DWORD_SIZE
+            + self.ULONG_SIZE
+            + self.INT_SIZE * 2
+            + self.POINTER_SIZE * 11
+        )
         self.cb = [self.size, self.DWORD_SIZE, "little", int]
         # FIXME: check how longs behave, is strange that i have to put big here
         self.mask = [fMask, self.ULONG_SIZE, "big", int]
@@ -2222,14 +2621,48 @@ class ShellExecuteInfoA(WindowsStruct):
         self.process = [hProcess, self.POINTER_SIZE, "little", int]
 
     def write(self, addr):
-        super().generic_write(addr, [self.cb, self.mask, self.hwnd, self.verb, self.file, self.params, self.dir,
-                                     self.show, self.instApp, self.id_list, self.class_name, self.class_key,
-                                     self.hot_key, self.dummy, self.process])
+        super().generic_write(
+            addr,
+            [
+                self.cb,
+                self.mask,
+                self.hwnd,
+                self.verb,
+                self.file,
+                self.params,
+                self.dir,
+                self.show,
+                self.instApp,
+                self.id_list,
+                self.class_name,
+                self.class_key,
+                self.hot_key,
+                self.dummy,
+                self.process,
+            ],
+        )
 
     def read(self, addr):
-        super().generic_read(addr, [self.cb, self.mask, self.hwnd, self.verb, self.file, self.params, self.dir,
-                                    self.show, self.instApp, self.id_list, self.class_name, self.class_key,
-                                    self.hot_key, self.dummy, self.process])
+        super().generic_read(
+            addr,
+            [
+                self.cb,
+                self.mask,
+                self.hwnd,
+                self.verb,
+                self.file,
+                self.params,
+                self.dir,
+                self.show,
+                self.instApp,
+                self.id_list,
+                self.class_name,
+                self.class_key,
+                self.hot_key,
+                self.dummy,
+                self.process,
+            ],
+        )
         self.size = self.cb
 
 
@@ -2243,8 +2676,16 @@ class ShellExecuteInfoA(WindowsStruct):
 #   public UIntPtr InheritedFromUniqueProcessId;
 # }
 class ProcessBasicInformation(WindowsStruct):
-    def __init__(self, ql, exitStatus=None, pebBaseAddress=None, affinityMask=None, basePriority=None, uniqueId=None,
-                 parentPid=None):
+    def __init__(
+        self,
+        ql,
+        exitStatus=None,
+        pebBaseAddress=None,
+        affinityMask=None,
+        basePriority=None,
+        uniqueId=None,
+        parentPid=None,
+    ):
         super().__init__(ql)
         self.size = self.DWORD_SIZE + self.POINTER_SIZE * 4 + self.INT_SIZE
         self.exitStatus = [exitStatus, self.DWORD_SIZE, "little", int]
@@ -2255,14 +2696,30 @@ class ProcessBasicInformation(WindowsStruct):
         self.parentPid = [parentPid, self.POINTER_SIZE, "little", int]
 
     def write(self, addr):
-        super().generic_write(addr,
-                              [self.exitStatus, self.pebBaseAddress, self.affinityMask, self.basePriority, self.pid,
-                               self.parentPid])
+        super().generic_write(
+            addr,
+            [
+                self.exitStatus,
+                self.pebBaseAddress,
+                self.affinityMask,
+                self.basePriority,
+                self.pid,
+                self.parentPid,
+            ],
+        )
 
     def read(self, addr):
-        super().generic_read(addr,
-                             [self.exitStatus, self.pebBaseAddress, self.affinityMask, self.basePriority, self.pid,
-                              self.parentPid])
+        super().generic_read(
+            addr,
+            [
+                self.exitStatus,
+                self.pebBaseAddress,
+                self.affinityMask,
+                self.basePriority,
+                self.pid,
+                self.parentPid,
+            ],
+        )
 
 
 # typedef struct _UNICODE_STRING {
@@ -2281,14 +2738,32 @@ class UnicodeString(AlignedWindowsStruct):
         super().__init__(ql)
 
         # on x64, self.buffer is aligned to 8
-        if (ql.archtype == 32):
+        if ql.archtype == 32:
             self.size = self.USHORT_SIZE * 2 + self.POINTER_SIZE
         else:
             self.size = self.USHORT_SIZE * 2 + 4 + self.POINTER_SIZE
 
-        self.length = [length, self.USHORT_SIZE, "little", int, self.USHORT_SIZE]
-        self.maxLength = [maxLength, self.USHORT_SIZE, "little", int, self.USHORT_SIZE]
-        self.buffer = [buffer, self.POINTER_SIZE, "little", int, self.POINTER_SIZE]
+        self.length = [
+            length,
+            self.USHORT_SIZE,
+            "little",
+            int,
+            self.USHORT_SIZE,
+        ]
+        self.maxLength = [
+            maxLength,
+            self.USHORT_SIZE,
+            "little",
+            int,
+            self.USHORT_SIZE,
+        ]
+        self.buffer = [
+            buffer,
+            self.POINTER_SIZE,
+            "little",
+            int,
+            self.POINTER_SIZE,
+        ]
 
 
 # typedef struct _OBJECT_TYPE_INFORMATION {
@@ -2303,10 +2778,19 @@ class ObjectTypeInformation(WindowsStruct):
     def read(self, addr):
         super().generic_read(addr, [self.us, self.handles, self.objects])
 
-    def __init__(self, ql, typeName: UnicodeString = None, handles=None, objects=None):
+    def __init__(
+        self, ql, typeName: UnicodeString = None, handles=None, objects=None
+    ):
         super().__init__(ql)
-        self.size = self.ULONG_SIZE * 2 + (self.USHORT_SIZE * 2 + self.POINTER_SIZE)
-        self.us = [typeName, self.USHORT_SIZE * 2 + self.POINTER_SIZE, "little", UnicodeString]
+        self.size = self.ULONG_SIZE * 2 + (
+            self.USHORT_SIZE * 2 + self.POINTER_SIZE
+        )
+        self.us = [
+            typeName,
+            self.USHORT_SIZE * 2 + self.POINTER_SIZE,
+            "little",
+            UnicodeString,
+        ]
         # FIXME: understand if is correct to set them as big
         self.handles = [handles, self.ULONG_SIZE, "big", int]
         self.objects = [objects, self.ULONG_SIZE, "big", int]
@@ -2323,13 +2807,21 @@ class ObjectAllTypesInformation(WindowsStruct):
     def read(self, addr):
         super().generic_read(addr, [self.number, self.typeInfo])
 
-    def __init__(self, ql, objects=None, objectTypeInfo: ObjectTypeInformation = None):
+    def __init__(
+        self, ql, objects=None, objectTypeInfo: ObjectTypeInformation = None
+    ):
         super().__init__(ql)
-        self.size = self.ULONG_SIZE + (self.ULONG_SIZE * 2 + (self.USHORT_SIZE * 2 + self.POINTER_SIZE))
+        self.size = self.ULONG_SIZE + (
+            self.ULONG_SIZE * 2 + (self.USHORT_SIZE * 2 + self.POINTER_SIZE)
+        )
         # FIXME: understand if is correct to set them as big
         self.number = [objects, self.ULONG_SIZE, "big", int]
-        self.typeInfo = [objectTypeInfo, self.ULONG_SIZE * 2 + (self.USHORT_SIZE * 2 + self.POINTER_SIZE), "little",
-                         ObjectTypeInformation]
+        self.typeInfo = [
+            objectTypeInfo,
+            self.ULONG_SIZE * 2 + (self.USHORT_SIZE * 2 + self.POINTER_SIZE),
+            "little",
+            ObjectTypeInformation,
+        ]
 
 
 # typedef struct _WIN32_FIND_DATAA {
@@ -2349,58 +2841,81 @@ class ObjectAllTypesInformation(WindowsStruct):
 # } WIN32_FIND_DATAA, *PWIN32_FIND_DATAA, *LPWIN32_FIND_DATAA;
 class Win32FindData(WindowsStruct):
     def write(self, addr):
-        super().generic_write(addr, 
+        super().generic_write(
+            addr,
             [
-                self.file_attributes, self.creation_time,
-                self.last_acces_time, self.last_write_time, 
-                self.file_size_high, self.file_size_low, 
-                self.reserved_0, self.reserved_1, self.file_name,
-                self.alternate_file_name, self.file_type, 
-                self.creator_type, self.finder_flags
-            ])
-    
-    def read(self, addr):
-        super().generic_read(addr, 
-            [
-                self.file_attributes, self.creation_time,
-                self.last_acces_time, self.last_write_time, 
-                self.file_size_high, self.file_size_low, 
-                self.reserved_0, self.reserved_1, self.file_name,
-                self.alternate_file_name, self.file_type, 
-                self.creator_type, self.finder_flags
-            ])
+                self.file_attributes,
+                self.creation_time,
+                self.last_acces_time,
+                self.last_write_time,
+                self.file_size_high,
+                self.file_size_low,
+                self.reserved_0,
+                self.reserved_1,
+                self.file_name,
+                self.alternate_file_name,
+                self.file_type,
+                self.creator_type,
+                self.finder_flags,
+            ],
+        )
 
-    def __init_(self, 
-                ql, 
-                file_attributes=None, 
-                creation_time=None, 
-                last_acces_time=None,
-                last_write_time=None, 
-                file_size_high=None,
-                file_size_low=None,
-                reserved_0=None, 
-                reserved_1=None, 
-                file_name=None,
-                alternate_filename=None,
-                file_type=None, 
-                creator_type=None, 
-                finder_flags=None):
+    def read(self, addr):
+        super().generic_read(
+            addr,
+            [
+                self.file_attributes,
+                self.creation_time,
+                self.last_acces_time,
+                self.last_write_time,
+                self.file_size_high,
+                self.file_size_low,
+                self.reserved_0,
+                self.reserved_1,
+                self.file_name,
+                self.alternate_file_name,
+                self.file_type,
+                self.creator_type,
+                self.finder_flags,
+            ],
+        )
+
+    def __init_(
+        self,
+        ql,
+        file_attributes=None,
+        creation_time=None,
+        last_acces_time=None,
+        last_write_time=None,
+        file_size_high=None,
+        file_size_low=None,
+        reserved_0=None,
+        reserved_1=None,
+        file_name=None,
+        alternate_filename=None,
+        file_type=None,
+        creator_type=None,
+        finder_flags=None,
+    ):
         super().__init__(ql)
-        
+
         # Size of FileTime == 2*(DWORD)
         self.size = (
-            self.DWORD_SIZE               # dwFileAttributes
-            + (3 * (2 * self.DWORD_SIZE)) # ftCreationTime, ftLastAccessTime, ftLastWriteTime
-            + self.DWORD_SIZE             # nFileSizeHigh
-            + self.DWORD_SIZE             # nFileSizeLow
-            + self.DWORD_SIZE             # dwReservered0
-            + self.DWORD_SIZE             # dwReservered1
-            + (self.BYTE_SIZE * 260)      # cFileName[MAX_PATH]
-            + (self.BYTE_SIZE * 14)       # cAlternateFileName[14]
-            + self.DWORD_SIZE             # dwFileType
-            + self.DWORD_SIZE             # dwCreatorType
-            + self.WORD_SIZE)             # wFinderFlags
-        
+            self.DWORD_SIZE  # dwFileAttributes
+            + (
+                3 * (2 * self.DWORD_SIZE)
+            )  # ftCreationTime, ftLastAccessTime, ftLastWriteTime
+            + self.DWORD_SIZE  # nFileSizeHigh
+            + self.DWORD_SIZE  # nFileSizeLow
+            + self.DWORD_SIZE  # dwReservered0
+            + self.DWORD_SIZE  # dwReservered1
+            + (self.BYTE_SIZE * 260)  # cFileName[MAX_PATH]
+            + (self.BYTE_SIZE * 14)  # cAlternateFileName[14]
+            + self.DWORD_SIZE  # dwFileType
+            + self.DWORD_SIZE  # dwCreatorType
+            + self.WORD_SIZE
+        )  # wFinderFlags
+
         self.file_attributes = file_attributes
         self.creation_time = creation_time
         self.last_acces_time = last_acces_time

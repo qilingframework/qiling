@@ -11,12 +11,15 @@ from qiling.os.filestruct import *
 from qiling.os.posix.const_mapping import *
 from qiling.exception import *
 
-def ql_syscall_rt_sigaction(ql, rt_sigaction_signum, rt_sigaction_act, rt_sigaction_oldact, *args, **kw):
+
+def ql_syscall_rt_sigaction(
+    ql, rt_sigaction_signum, rt_sigaction_act, rt_sigaction_oldact, *args, **kw
+):
     if rt_sigaction_oldact != 0:
         if ql.os.sigaction_act[rt_sigaction_signum] == 0:
-            ql.mem.write(rt_sigaction_oldact, b'\x00' * 20)
+            ql.mem.write(rt_sigaction_oldact, b"\x00" * 20)
         else:
-            data = b''
+            data = b""
             for key in ql.os.sigaction_act[rt_sigaction_signum]:
                 data += ql.pack32(key)
             ql.mem.write(rt_sigaction_oldact, data)
@@ -31,7 +34,15 @@ def ql_syscall_rt_sigaction(ql, rt_sigaction_signum, rt_sigaction_act, rt_sigact
     return regreturn
 
 
-def ql_syscall_rt_sigprocmask(ql, rt_sigprocmask_how, rt_sigprocmask_nset, rt_sigprocmask_oset, rt_sigprocmask_sigsetsize, *args, **kw):
+def ql_syscall_rt_sigprocmask(
+    ql,
+    rt_sigprocmask_how,
+    rt_sigprocmask_nset,
+    rt_sigprocmask_oset,
+    rt_sigprocmask_sigsetsize,
+    *args,
+    **kw
+):
     SIG_BLOCK = 0x0
     SIG_UNBLOCK = 0x1
 

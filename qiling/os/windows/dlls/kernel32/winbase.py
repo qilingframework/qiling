@@ -11,7 +11,7 @@ import configparser
 from qiling.os.windows.structs import *
 
 
-dllname = 'kernel32_dll'
+dllname = "kernel32_dll"
 
 # __analysis_noreturn VOID FatalExit(
 #   int ExitCode
@@ -27,7 +27,7 @@ def hook_FatalExit(ql, address, params):
 # );
 @winsdkapi(cc=STDCALL, dllname=dllname, replace_params={"Ptr": POINTER})
 def hook_EncodePointer(ql, address, params):
-    return params['Ptr']
+    return params["Ptr"]
 
 
 # PVOID DecodePointer(
@@ -35,7 +35,7 @@ def hook_EncodePointer(ql, address, params):
 # );
 @winsdkapi(cc=STDCALL, dllname=dllname, replace_params={"Ptr": POINTER})
 def hook_DecodePointer(ql, address, params):
-    return params['Ptr']
+    return params["Ptr"]
 
 
 # UINT WinExec(
@@ -94,7 +94,7 @@ def hook_SetHandleCount(ql, address, params):
 # );
 @winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GlobalLock(ql, address, params):
-    return params['hMem']
+    return params["hMem"]
 
 
 # LPVOID GlobalUnlock(
@@ -109,7 +109,7 @@ def hook_GlobalUnlock(ql, address, params):
 #  UINT   uFlags,
 #  SIZE_T dwBytes
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'SIZE_T': 'UINT'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={"SIZE_T": "UINT"})
 def hook_GlobalAlloc(ql, address, params):
     return ql.os.heap.alloc(params["dwBytes"])
 
@@ -388,29 +388,50 @@ def hook_VerifyVersionInfoW(ql, address, params):
         elif value == VER_LESS_EQUAL:
             operator = "<="
         else:
-            raise QlErrorNotImplemented("API not implemented with operator %d" % value)
+            raise QlErrorNotImplemented(
+                "API not implemented with operator %d" % value
+            )
         # Versions should be compared together
-        if key == VER_MAJORVERSION or key == VER_MINORVERSION or key == VER_PRODUCT_TYPE:
+        if (
+            key == VER_MAJORVERSION
+            or key == VER_MINORVERSION
+            or key == VER_PRODUCT_TYPE
+        ):
             major_version_asked = os_asked.major[0]
             minor_version_asked = os_asked.minor[0]
             product_type = os_asked.product[0]
-            concat = str(major_version_asked) + str(minor_version_asked) + str(product_type)
+            concat = (
+                str(major_version_asked)
+                + str(minor_version_asked)
+                + str(product_type)
+            )
 
             # Just a print for analysts, will remove it from here in the future
             if key == VER_MAJORVERSION:
                 ql.log.debug("The Target is checking the windows Version!")
                 version_asked = SYSTEMS_VERSION.get(concat, None)
                 if version_asked is None:
-                    raise QlErrorNotImplemented("API not implemented for version %s" % concat)
+                    raise QlErrorNotImplemented(
+                        "API not implemented for version %s" % concat
+                    )
                 else:
-                    ql.log.debug("The target asks for version %s %s" % (operator, version_asked))
+                    ql.log.debug(
+                        "The target asks for version %s %s"
+                        % (operator, version_asked)
+                    )
             # We can finally compare
-            qiling_os = str(ql.os.profile.get("SYSTEM", "majorVersion")) + str(
-                ql.os.profile.get("SYSTEM", "minorVersion")) + str(
-                ql.os.profile.get("SYSTEM", "productType"))
+            qiling_os = (
+                str(ql.os.profile.get("SYSTEM", "majorVersion"))
+                + str(ql.os.profile.get("SYSTEM", "minorVersion"))
+                + str(ql.os.profile.get("SYSTEM", "productType"))
+            )
             res = compare(int(qiling_os), operator, int(concat))
         elif key == VER_SERVICEPACKMAJOR:
-            res = compare(ql.os.profile.getint("SYSTEM", "VER_SERVICEPACKMAJOR"), operator, os_asked.service_major[0])
+            res = compare(
+                ql.os.profile.getint("SYSTEM", "VER_SERVICEPACKMAJOR"),
+                operator,
+                os_asked.service_major[0],
+            )
         else:
             raise QlErrorNotImplemented("API not implemented for key %s" % key)
         # The result is a AND between every value, so if we find a False we just exit from the loop
@@ -426,7 +447,11 @@ def hook_VerifyVersionInfoW(ql, address, params):
 #   LPWSTR  lpBuffer,
 #   LPDWORD pcbBuffer
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={"lpBuffer": POINTER, "pcbBuffer": POINTER})
+@winsdkapi(
+    cc=STDCALL,
+    dllname=dllname,
+    replace_params={"lpBuffer": POINTER, "pcbBuffer": POINTER},
+)
 def hook_GetUserNameW(ql, address, params):
     username = (ql.os.profile["USER"]["username"] + "\x00").encode("utf-16le")
     dst = params["lpBuffer"]
@@ -457,14 +482,16 @@ def hook_GetUserNameA(ql, address, params):
         ql.mem.write(dst, username)
     return 1
 
+
 # BOOL GetUserNameA(
 #   LPCSTR  lpBuffer,
 #   LPDWORD pcbBuffer
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={
-    "lpBuffer": POINTER,
-    "pcbBuffer": POINTER
-})
+@winsdkapi(
+    cc=STDCALL,
+    dllname=dllname,
+    replace_params={"lpBuffer": POINTER, "pcbBuffer": POINTER},
+)
 def hook_GetUserNameA(ql, address, params):
     username = (ql.os.profile["USER"]["username"] + "\x00").encode()
     dst = params["lpBuffer"]
@@ -484,13 +511,19 @@ def hook_GetUserNameA(ql, address, params):
 # );
 @winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetComputerNameW(ql, address, params):
-    computer = (ql.os.profile["SYSTEM"]["computername"] + "\x00").encode("utf-16le")
+    computer = (ql.os.profile["SYSTEM"]["computername"] + "\x00").encode(
+        "utf-16le"
+    )
     dst = params["lpBuffer"]
     pointer_to_max_size = params["nSize"]
-    nSize = int.from_bytes(ql.mem.read(pointer_to_max_size, ql.pointersize), byteorder="little")
-    ql.mem.write(pointer_to_max_size, (len(computer)-2).to_bytes(4, byteorder="little"))
+    nSize = int.from_bytes(
+        ql.mem.read(pointer_to_max_size, ql.pointersize), byteorder="little"
+    )
+    ql.mem.write(
+        pointer_to_max_size, (len(computer) - 2).to_bytes(4, byteorder="little")
+    )
     if len(computer) > nSize:
-        #ql.os.last_error = ERROR_BUFFER_OVERFLOW
+        # ql.os.last_error = ERROR_BUFFER_OVERFLOW
         return 0
     else:
         ql.mem.write(dst, computer)
@@ -514,6 +547,7 @@ def hook_GetComputerNameA(ql, address, params):
         ql.mem.write(dst, computer)
     return 1
 
+
 # DWORD GetPrivateProfileStringA(
 #   LPCSTR lpAppName,
 #   LPCSTR lpKeyName,
@@ -522,22 +556,25 @@ def hook_GetComputerNameA(ql, address, params):
 #   DWORD  nSize,
 #   LPCSTR lpFileName
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={
-    "lpAppName": STRING,
-    "lpKeyName": STRING,
-    "lpDefault": STRING,
-    "lpReturnedString": POINTER,
-    "nSize": DWORD,
-    "lpFileName": STRING
-
-})
+@winsdkapi(
+    cc=STDCALL,
+    dllname=dllname,
+    replace_params={
+        "lpAppName": STRING,
+        "lpKeyName": STRING,
+        "lpDefault": STRING,
+        "lpReturnedString": POINTER,
+        "nSize": DWORD,
+        "lpFileName": STRING,
+    },
+)
 def hook_GetPrivateProfileStringA(ql, address, params):
     lpAppName = params["lpAppName"]
     lpKeyName = params["lpKeyName"]
     lpDefault = params["lpDefault"]
     lpReturnedString = params["lpReturnedString"]
     nSize = params["nSize"]
-    lpFileName = params['lpFileName']
+    lpFileName = params["lpFileName"]
 
     try:
         f = open(lpFileName)
@@ -551,36 +588,42 @@ def hook_GetPrivateProfileStringA(ql, address, params):
     else:
         value = lpDefault
     write_len = len(value)
-    if write_len > nSize-1:
-        write_len = nSize-1
+    if write_len > nSize - 1:
+        write_len = nSize - 1
     ql.mem.write(lpReturnedString, value[write_len:] + b"\x00")
     f.close()
     return write_len
-    
+
+
 # BOOL WritePrivateProfileStringA(
 #   LPCSTR lpAppName,
 #   LPCSTR lpKeyName,
 #   LPCSTR lpString,
 #   LPCSTR lpFileName
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={
-    "lpAppName": STRING,
-    "lpKeyName": STRING,
-    "lpString": STRING,
-    "lpFileName": STRING
-
-})
+@winsdkapi(
+    cc=STDCALL,
+    dllname=dllname,
+    replace_params={
+        "lpAppName": STRING,
+        "lpKeyName": STRING,
+        "lpString": STRING,
+        "lpFileName": STRING,
+    },
+)
 def hook_WritePrivateProfileStringA(ql, address, params):
     pass
+
 
 # UINT GetSystemDirectoryA(
 #   LPSTR lpBuffer,
 #   UINT  uSize
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={
-    "lpBuffer": POINTER,
-    "uSize": DWORD
-})
+@winsdkapi(
+    cc=STDCALL,
+    dllname=dllname,
+    replace_params={"lpBuffer": POINTER, "uSize": DWORD},
+)
 def hook_GetSystemDirectoryA(ql, address, params):
     lpBuffer = params["lpBuffer"]
     uSize = params["uSize"]
@@ -588,14 +631,16 @@ def hook_GetSystemDirectoryA(ql, address, params):
     ql.mem.write(lpBuffer, value)
     return len(value)
 
+
 # UINT GetWindowsDirectoryA(
 #   LPSTR lpBuffer,
 #   UINT  uSize
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={
-    "lpBuffer": POINTER,
-    "uSize": DWORD
-})
+@winsdkapi(
+    cc=STDCALL,
+    dllname=dllname,
+    replace_params={"lpBuffer": POINTER, "uSize": DWORD},
+)
 def hook_GetWindowsDirectoryA(ql, address, params):
     lpBuffer = params["lpBuffer"]
     uSize = params["uSize"]
@@ -603,14 +648,16 @@ def hook_GetWindowsDirectoryA(ql, address, params):
     ql.mem.write(lpBuffer, value)
     return len(value)
 
+
 # DWORD CharLowerBuffA(
 #   LPSTR lpsz,
 #   DWORD cchLength
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={
-    "lpsz": POINTER,
-    "cchLength": DWORD
-})
+@winsdkapi(
+    cc=STDCALL,
+    dllname=dllname,
+    replace_params={"lpsz": POINTER, "cchLength": DWORD},
+)
 def hook_CharLowerBuffA(ql, address, params):
     lpBuffer = params["lpBuffer"]
     cchLength = params["cchLength"]
@@ -621,12 +668,17 @@ def hook_CharLowerBuffA(ql, address, params):
     ql.mem.write(lpBuffer, data)
     return len(data)
 
+
 # LPSTR CharLowerA(
 #   LPSTR lpsz
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={
-    "lpsz": POINTER,
-})
+@winsdkapi(
+    cc=STDCALL,
+    dllname=dllname,
+    replace_params={
+        "lpsz": POINTER,
+    },
+)
 def hook_CharLowerA(ql, address, params):
     lpsz = params["lpsz"]
     if (lpsz >> 16) > 0:
@@ -636,34 +688,30 @@ def hook_CharLowerA(ql, address, params):
         ql.mem.write(lpsz, value)
         return len(value)
     else:
-        value = chr(lpsz & 0xffff)
+        value = chr(lpsz & 0xFFFF)
         return value.lower()
+
 
 # void ExitThread(
 #   DWORD dwExitCode
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={
-    "dwExitCode": DWORD
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={"dwExitCode": DWORD})
 def hook_ExitThread(ql, address, params):
-    #ql.emu_stop()
+    # ql.emu_stop()
     pass
+
 
 # BOOL FreeLibrary(
 #   HMODULE hLibModule
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={
-    "hLibModule": HANDLE
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={"hLibModule": HANDLE})
 def hook_FreeLibrary(ql, address, params):
     return 1
+
 
 # BOOL DeleteFileA(
 #   LPCSTR lpFileName
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={
-    "lpFileName": STRING
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={"lpFileName": STRING})
 def hook_DeleteFileA(ql, address, params):
     return 1
-

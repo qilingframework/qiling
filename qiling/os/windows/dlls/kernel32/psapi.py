@@ -14,7 +14,7 @@ from qiling.os.windows.handle import *
 from qiling.exception import *
 
 
-dllname = 'kernel32_dll'
+dllname = "kernel32_dll"
 
 # BOOL GetModuleInformation(
 #   HANDLE       hProcess,

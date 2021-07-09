@@ -16,7 +16,7 @@ from qiling.os.windows.handle import *
 from qiling.exception import *
 
 
-dllname = 'kernel32_dll'
+dllname = "kernel32_dll"
 
 # BOOL IsDebuggerPresent();
 @winsdkapi(cc=STDCALL, dllname=dllname)
@@ -31,7 +31,7 @@ def hook_IsDebuggerPresent(ql, address, params):
 @winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_CheckRemoteDebuggerPresent(ql, address, params):
     pointer = params["pbDebuggerPresent"]
-    ql.mem.write(pointer, 0x0.to_bytes(1, byteorder="little"))
+    ql.mem.write(pointer, 0x0 .to_bytes(1, byteorder="little"))
     return 1
 
 
@@ -50,5 +50,5 @@ def hook_OutputDebugStringW(ql, address, params):
 # );
 @winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_OutputDebugStringA(ql, address, params):
-    ql.log.info('OutputDebugStringA: "%s"' % (params['lpOutputString']))
+    ql.log.info('OutputDebugStringA: "%s"' % (params["lpOutputString"]))
     return 0

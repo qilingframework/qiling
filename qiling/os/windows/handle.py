@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 # A Simple Windows Handle Simulation
 
 
 class Handle:
-    ID = 0xa0000000
+    ID = 0xA0000000
 
-    def __init__(self, id=None, obj=None,
-                 name=None, permissions=None):
+    def __init__(self, id=None, obj=None, name=None, permissions=None):
         if id is None:
             self.id = Handle.ID
             Handle.ID += 1
@@ -18,7 +17,7 @@ class Handle:
         self.obj = obj
         self.name = name
         self.permissions = permissions
- 
+
     # rewrite "="
     def __eq__(self, other):
         return self.id == other.id
@@ -26,9 +25,9 @@ class Handle:
 
 class HandleManager:
     # IO
-    STD_INPUT_HANDLE = Handle(id=0xfffffff6)
-    STD_OUTPUT_HANDLE = Handle(id=0xfffffff5)
-    STD_ERROR_HANDLE = Handle(id=0xfffffff4)
+    STD_INPUT_HANDLE = Handle(id=0xFFFFFFF6)
+    STD_OUTPUT_HANDLE = Handle(id=0xFFFFFFF5)
+    STD_ERROR_HANDLE = Handle(id=0xFFFFFFF4)
 
     # Register
     HKEY_CLASSES_ROOT = Handle(id=0x80000000)

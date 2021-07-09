@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 
 from qiling import Qiling
 from qiling.os.windows.const import ERROR_INVALID_PARAMETER
+
 
 class Fiber:
     def __init__(self, idx, cb=None):
@@ -29,7 +30,9 @@ class FiberManager:
             fiber = self.fibers[idx]
 
             if fiber.cb:
-                self.ql.log.debug(f'Skipping emulation of callback function {fiber.cb:#x} for fiber {fiber.idx:#x}')
+                self.ql.log.debug(
+                    f"Skipping emulation of callback function {fiber.cb:#x} for fiber {fiber.idx:#x}"
+                )
 
                 """
                 ret_addr = self.ql.reg.read(UC_X86_REG_RIP + 6 ) #FIXME, use capstone to get addr of next instr?

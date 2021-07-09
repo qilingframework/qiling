@@ -14,44 +14,54 @@ from qiling.os.filestruct import *
 from qiling.os.posix.const_mapping import *
 from qiling.exception import *
 
-def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, clone_newtls, clone_child_tidptr, *args, **kw):
-   
-    CSIGNAL = 0x000000ff	
-    CLONE_VM = 0x00000100	
-    CLONE_FS = 0x00000200	
-    CLONE_FILES = 0x00000400	
-    CLONE_SIGHAND = 0x00000800	
-    CLONE_PIDFD = 0x00001000	
-    CLONE_PTRACE = 0x00002000	
-    CLONE_VFORK = 0x00004000	
-    CLONE_PARENT = 0x00008000	
-    CLONE_THREAD = 0x00010000	
-    CLONE_NEWNS = 0x00020000	
-    CLONE_SYSVSEM = 0x00040000	
-    CLONE_SETTLS = 0x00080000	
-    CLONE_PARENT_SETTID = 0x00100000	
-    CLONE_CHILD_CLEARTID = 0x00200000	
-    CLONE_DETACHED = 0x00400000	
-    CLONE_UNTRACED = 0x00800000	
-    CLONE_CHILD_SETTID = 0x01000000	
-    CLONE_NEWCGROUP = 0x02000000	
-    CLONE_NEWUTS = 0x04000000	
-    CLONE_NEWIPC = 0x08000000	
-    CLONE_NEWUSER = 0x10000000	
-    CLONE_NEWPID = 0x20000000	
-    CLONE_NEWNET = 0x40000000	
+
+def ql_syscall_clone(
+    ql,
+    clone_flags,
+    clone_child_stack,
+    clone_parent_tidptr,
+    clone_newtls,
+    clone_child_tidptr,
+    *args,
+    **kw,
+):
+
+    CSIGNAL = 0x000000FF
+    CLONE_VM = 0x00000100
+    CLONE_FS = 0x00000200
+    CLONE_FILES = 0x00000400
+    CLONE_SIGHAND = 0x00000800
+    CLONE_PIDFD = 0x00001000
+    CLONE_PTRACE = 0x00002000
+    CLONE_VFORK = 0x00004000
+    CLONE_PARENT = 0x00008000
+    CLONE_THREAD = 0x00010000
+    CLONE_NEWNS = 0x00020000
+    CLONE_SYSVSEM = 0x00040000
+    CLONE_SETTLS = 0x00080000
+    CLONE_PARENT_SETTID = 0x00100000
+    CLONE_CHILD_CLEARTID = 0x00200000
+    CLONE_DETACHED = 0x00400000
+    CLONE_UNTRACED = 0x00800000
+    CLONE_CHILD_SETTID = 0x01000000
+    CLONE_NEWCGROUP = 0x02000000
+    CLONE_NEWUTS = 0x04000000
+    CLONE_NEWIPC = 0x08000000
+    CLONE_NEWUSER = 0x10000000
+    CLONE_NEWPID = 0x20000000
+    CLONE_NEWNET = 0x40000000
     CLONE_IO = 0x80000000
 
     # X8664 clone_flags, clone_child_stack, clone_parent_tidptr, clone_child_tidptr, clone_newtls
-    if ql.archtype== QL_ARCH.X8664:
+    if ql.archtype == QL_ARCH.X8664:
         ori_clone_newtls = clone_child_tidptr
         clone_child_tidptr = clone_newtls
         clone_newtls = ori_clone_newtls
 
-    if ql.archtype== QL_ARCH.MIPS:
+    if ql.archtype == QL_ARCH.MIPS:
         clone_child_tidptr = ql.unpack32(ql.mem.read(clone_child_tidptr, 4))
 
-    f_th = ql.os.thread_management.cur_thread	
+    f_th = ql.os.thread_management.cur_thread
     newtls = None
     set_child_tid_addr = None
 
@@ -61,9 +71,9 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
         if ql.platform == QL_OS.WINDOWS:
             try:
                 pid = Process()
-                pid = 0 
+                pid = 0
             except:
-                pid = -1  
+                pid = -1
         else:
             pid = os.fork()
 
@@ -84,8 +94,18 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
             regreturn = 0
         else:
             regreturn = pid
-        
-        ql.log.debug("clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d" % (clone_child_stack, clone_flags, clone_newtls, clone_parent_tidptr, clone_child_tidptr, regreturn))
+
+        ql.log.debug(
+            "clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d"
+            % (
+                clone_child_stack,
+                clone_flags,
+                clone_newtls,
+                clone_parent_tidptr,
+                clone_child_tidptr,
+                regreturn,
+            )
+        )
 
         ql.emu_stop()
         return regreturn
@@ -93,7 +113,12 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
     if clone_flags & CLONE_CHILD_SETTID == CLONE_CHILD_SETTID:
         set_child_tid_addr = clone_child_tidptr
 
-    th = ql.os.thread_class.spawn(ql, ql.reg.arch_pc + 2, ql.os.exit_point, set_child_tid_addr = set_child_tid_addr)
+    th = ql.os.thread_class.spawn(
+        ql,
+        ql.reg.arch_pc + 2,
+        ql.os.exit_point,
+        set_child_tid_addr=set_child_tid_addr,
+    )
     th.path = f_th.path
     ql.log.debug(f"{str(th)} created.")
 
@@ -116,17 +141,32 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
     ql.reg.arch_sp = clone_child_stack
 
     # We have to find next pc manually for some archs since the pc is current instruction (like `syscall`).
-    if ql.archtype in (QL_ARCH.X8664, ):
-        ql.reg.arch_pc += list(ql.disassembler.disasm_lite(bytes(ql.mem.read(ql.reg.arch_pc, 4)), ql.reg.arch_pc))[0][1]
+    if ql.archtype in (QL_ARCH.X8664,):
+        ql.reg.arch_pc += list(
+            ql.disassembler.disasm_lite(
+                bytes(ql.mem.read(ql.reg.arch_pc, 4)), ql.reg.arch_pc
+            )
+        )[0][1]
         ql.log.debug(f"Fix pc for child thread to {hex(ql.reg.arch_pc)}")
     ql.os.set_syscall_return(0)
     th.save()
     if th is None or f_th is None:
         raise Exception()
-    ql.log.debug("Currently running pid is: %d; tid is: %d " % (
-    os.getpid(), ql.os.thread_management.cur_thread.id))
-    ql.log.debug("clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d" % (
-    clone_child_stack, clone_flags, clone_newtls, clone_parent_tidptr, clone_child_tidptr, regreturn))
+    ql.log.debug(
+        "Currently running pid is: %d; tid is: %d "
+        % (os.getpid(), ql.os.thread_management.cur_thread.id)
+    )
+    ql.log.debug(
+        "clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d"
+        % (
+            clone_child_stack,
+            clone_flags,
+            clone_newtls,
+            clone_parent_tidptr,
+            clone_child_tidptr,
+            regreturn,
+        )
+    )
 
     # Restore the stack and return value of the parent process
     ql.restore(ctx)
@@ -137,12 +177,24 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
     f_th.stop_event = THREAD_EVENT_CREATE_THREAD
     f_th.stop_return_val = th
 
-    ql.log.debug("Currently running pid is: %d; tid is: %d " % (
-    os.getpid(), ql.os.thread_management.cur_thread.id))
-    ql.log.debug("clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d" % (
-    clone_child_stack, clone_flags, clone_newtls, clone_parent_tidptr, clone_child_tidptr, regreturn))
+    ql.log.debug(
+        "Currently running pid is: %d; tid is: %d "
+        % (os.getpid(), ql.os.thread_management.cur_thread.id)
+    )
+    ql.log.debug(
+        "clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d"
+        % (
+            clone_child_stack,
+            clone_flags,
+            clone_newtls,
+            clone_parent_tidptr,
+            clone_child_tidptr,
+            regreturn,
+        )
+    )
 
     return regreturn
+
 
 def ql_syscall_sched_yield(ql, *args, **kw):
     return 0

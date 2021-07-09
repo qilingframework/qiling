@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -14,9 +14,9 @@ from qiling.const import *
 
 
 class MachoParser:
-    
-    # arch = "x8664" or "x86" 
-    def __init__(self, ql, path, arch= None):
+
+    # arch = "x8664" or "x86"
+    def __init__(self, ql, path, arch=None):
         self.ql = ql
         self.binary_file = self.readFile(path)
         self.raw_data = self.binary_file
@@ -38,50 +38,55 @@ class MachoParser:
 
     def parseFile(self):
         if not self.binary_file:
-            return 
-        
+            return
+
         if not self.parseHeader():
             return
 
         if not self.parseLoadCommand():
-            return 
+            return
 
         if not self.parseData():
-            return 
-        
+            return
 
     def parseHeader(self):
         self.magic = self.getMagic(self.binary_file)
-        
+
         if self.magic in MAGIC_64:
             self.ql.log.debug("Got a 64bit Header ")
             self.header = BinaryHeader(self.binary_file)
 
-        #elif self.magic in MAGIC_X86:
+        # elif self.magic in MAGIC_X86:
         #    # x86
-        #    ql.log.debug("Got a x86 Header") 
+        #    ql.log.debug("Got a x86 Header")
         #    self.header = BinaryHeader(self.binary_file)
 
         elif self.magic in MAGIC_FAT:
-            # fat 
+            # fat
             self.ql.log.debug("Got a fat header")
             fat = FatHeader(self.binary_file)
             file_info = fat.getBinary(self.archtype)
-            self.binary_file = self.binary_file[file_info.offset : file_info.offset + file_info.size]
+            self.binary_file = self.binary_file[
+                file_info.offset : file_info.offset + file_info.size
+            ]
             self.header = BinaryHeader(self.binary_file)
         else:
             self.ql.log.info("unknow header!")
             return False
-        
+
         if not self.header:
             self.ql.log.info("parse header error")
-            return False 
+            return False
 
         return True
 
     def parseLoadCommand(self):
         self.ql.log.debug("Parse LoadCommand")
-        if not self.header.lc_num or not self.header.lc_size or not self.header.header_size:
+        if (
+            not self.header.lc_num
+            or not self.header.lc_size
+            or not self.header.header_size
+        ):
             return False
 
         FR = FileReader(self.binary_file)
@@ -96,7 +101,7 @@ class MachoParser:
                 lc = LoadCommand(self.lc_raw[offset:])
             else:
                 self.ql.log.info("cmd size overflow")
-                return False 
+                return False
 
             if self.header.lc_size >= offset + lc.cmd_size:
                 complete_cmd = lc.get_complete()
@@ -104,21 +109,22 @@ class MachoParser:
             else:
                 self.ql.log.info("cmd size overflow")
                 return False
-            
+
             self.commands.append(complete_cmd)
-            
+
             offset += lc.cmd_size
-        
+
         return True
 
-
     def parseData(self):
-        self.segments = []      
+        self.segments = []
         self.sections = [None]
         for command in self.commands:
             if command.cmd_id == LC_SEGMENT_64:
                 tmp = Segment(command, self.binary_file)
-                tmp.sections_index += range(len(self.sections), len(self.sections) + len(tmp.sections))
+                tmp.sections_index += range(
+                    len(self.sections), len(self.sections) + len(tmp.sections)
+                )
                 self.segments.append(tmp)
                 for section in tmp.sections:
                     self.sections.append(section)
@@ -137,11 +143,13 @@ class MachoParser:
             elif command.cmd_id == LC_CODE_SIGNATURE:
                 self.code_signature = CodeSignature(command, self.binary_file)
             elif command.cmd_id == LC_SEGMENT_SPLIT_INFO:
-                self.seg_split_info = SegmentSplitInfo(command, self.binary_file)
+                self.seg_split_info = SegmentSplitInfo(
+                    command, self.binary_file
+                )
             elif command.cmd_id == LC_DYSYMTAB:
                 self.dysymbol_table = DySymbolTable(command, self.binary_file)
         return True
-    
+
     @staticmethod
     def getMagic(binary):
         return unpack("<L", binary[:4])[0]
@@ -151,4 +159,3 @@ class MachoParser:
             if seg.name == name:
                 return seg
         return None
-

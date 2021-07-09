@@ -1,36 +1,47 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
 import sys
+
 sys.path.append("..")
 
 from qiling import Qiling
 from qiling.const import QL_VERBOSE
 
+
 def dump(ql, *args, **kw):
     ql.save(reg=False, cpu_context=True, snapshot="/tmp/snapshot.bin")
     ql.emu_stop()
 
+
 if __name__ == "__main__":
-    ql = Qiling(["rootfs/x8664_linux/bin/sleep_hello"], "rootfs/x8664_linux", verbose=QL_VERBOSE.DEFAULT)
+    ql = Qiling(
+        ["rootfs/x8664_linux/bin/sleep_hello"],
+        "rootfs/x8664_linux",
+        verbose=QL_VERBOSE.DEFAULT,
+    )
     # load base address from profile file
     X64BASE = int(ql.profile.get("OS64", "load_address"), 16)
     # take a snapshot
     ql.hook_address(dump, X64BASE + 0x1094)
     ql.run()
 
-    ql = Qiling(["rootfs/x8664_linux/bin/sleep_hello"], "rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG)
+    ql = Qiling(
+        ["rootfs/x8664_linux/bin/sleep_hello"],
+        "rootfs/x8664_linux",
+        verbose=QL_VERBOSE.DEBUG,
+    )
     X64BASE = int(ql.profile.get("OS64", "load_address"), 16)
     ql.restore(snapshot="/tmp/snapshot.bin")
     # enable gdbserver to listen at localhost address, port 9999
     ql.debugger = "gdb:0.0.0.0:9999"
-    begin_point = X64BASE + 0x109e
-    end_point = X64BASE + 0x10bc
-    ql.run(begin = begin_point, end = end_point)
+    begin_point = X64BASE + 0x109E
+    end_point = X64BASE + 0x10BC
+    ql.run(begin=begin_point, end=end_point)
 
-'''
+"""
 Partial Execution: https://docs.qiling.io/en/latest/snapshot/
 
 This example shows how to partially debug an elf file. First let the program run, hook at the main address and take a snapshot. Then resume the snapshot to construct a reasonable call_state (registers, memory mapping, dynamic library loading, etc) for our target piece of code, and directly assign the pc pointer to the beginning of the part you want to simulate.
@@ -64,4 +75,4 @@ Then in a new terminal start gdb remote debug:
         0x5555555550bd:      nopl   (%rax)
 
 The source code of sleep_hello can be found at qiling/examples/src/linux/sleep_hello.c. As the above gdb output shows, we skipped the sleep function to directly debug the code afterwards.
-'''
+"""

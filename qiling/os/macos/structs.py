@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -11,16 +11,16 @@ from enum import IntEnum
 class POINTER64(ctypes.Structure):
     _fields_ = [("value", ctypes.c_uint64)]
 
+
 class list_entry(ctypes.Structure):
     _fields_ = (
         ("le_next", POINTER64),
         ("le_prev", POINTER64),
     )
 
+
 class list_head(ctypes.Structure):
-    _fields_ = (
-        ("lh_first", POINTER64),
-    )
+    _fields_ = (("lh_first", POINTER64),)
 
     def __init__(self, ql, base):
         self.ql = ql
@@ -36,22 +36,24 @@ class list_head(ctypes.Structure):
         newObj.base = self.base
         return newObj
 
+
 class tailq_head(ctypes.Structure):
     _fields_ = (
         ("tqh_first", POINTER64),
         ("tqh_last", POINTER64),
     )
 
+
 class slist_head(ctypes.Structure):
-    _fields_ = (
-        ("slh_first", POINTER64),
-    )
+    _fields_ = (("slh_first", POINTER64),)
+
 
 class tailq_entry(ctypes.Structure):
     _fields_ = (
         ("tqe_next", POINTER64),
         ("tqe_prev", POINTER64),
     )
+
 
 # struct IOExternalMethodArguments
 # {
@@ -70,7 +72,7 @@ class tailq_entry(ctypes.Structure):
 #     uint32_t      structureInputSize;
 
 #     IOMemoryDescriptor * structureInputDescriptor;
-   
+
 #     uint64_t *        scalarOutput;
 #     uint32_t      scalarOutputCount;
 
@@ -86,6 +88,7 @@ class tailq_entry(ctypes.Structure):
 
 #     uint32_t      __reserved[30];
 # };
+
 
 class IOExternalMethodArguments(ctypes.Structure):
     _pack_ = 8
@@ -108,8 +111,9 @@ class IOExternalMethodArguments(ctypes.Structure):
         ("_structureOutputDescriptorSize", ctypes.c_uint32),
         ("___reservedA", ctypes.c_uint32),
         ("_structureVariableOutputData", POINTER64),
-        ("___reserved", ctypes.c_uint32 * 30)
+        ("___reserved", ctypes.c_uint32 * 30),
     )
+
     def __init__(self, ql, base):
         self.ql = ql
         self.base = base
@@ -119,26 +123,38 @@ class IOExternalMethodArguments(ctypes.Structure):
         data = self.ql.mem.read(self.base, ctypes.sizeof(self))
         obj = type(self).from_buffer(data)
         array = self.ql.mem.read(obj._scalarInput.value, obj._scalarInputCount)
-        return [struct.unpack("<Q", array[i: i + 8]) for i in range(0, len(array), 8)]
+        return [
+            struct.unpack("<Q", array[i : i + 8])
+            for i in range(0, len(array), 8)
+        ]
 
     @property
     def structureInput(self):
         data = self.ql.mem.read(self.base, ctypes.sizeof(self))
         obj = type(self).from_buffer(data)
-        return self.ql.mem.read(obj._structureInput.value, obj._structureInputSize)
+        return self.ql.mem.read(
+            obj._structureInput.value, obj._structureInputSize
+        )
 
     @property
     def scalarOutput(self):
         data = self.ql.mem.read(self.base, ctypes.sizeof(self))
         obj = type(self).from_buffer(data)
-        array = self.ql.mem.read(obj._scalarOutput.value, obj._scalarOutputCount)
-        return [struct.unpack("<Q", array[i: i + 8]) for i in range(0, len(array), 8)]
+        array = self.ql.mem.read(
+            obj._scalarOutput.value, obj._scalarOutputCount
+        )
+        return [
+            struct.unpack("<Q", array[i : i + 8])
+            for i in range(0, len(array), 8)
+        ]
 
     @property
     def structureOutput(self):
         data = self.ql.mem.read(self.base, ctypes.sizeof(self))
         obj = type(self).from_buffer(data)
-        return self.ql.mem.read(obj._structureOutput.value, obj._structureOutputSize)
+        return self.ql.mem.read(
+            obj._structureOutput.value, obj._structureOutputSize
+        )
 
     def updateToMem(self):
         self.ql.mem.write(self.base, bytes(self))
@@ -150,7 +166,8 @@ class IOExternalMethodArguments(ctypes.Structure):
         newObj.base = self.base
         return newObj
 
-# typedef IOReturn (*IOExternalMethodAction)(OSObject * target, void * reference, 
+
+# typedef IOReturn (*IOExternalMethodAction)(OSObject * target, void * reference,
 #                         IOExternalMethodArguments * arguments);
 # struct IOExternalMethodDispatch
 # {
@@ -161,6 +178,7 @@ class IOExternalMethodArguments(ctypes.Structure):
 #     uint32_t           checkStructureOutputSize;
 # };
 
+
 class IOExternalMethodDispatch(ctypes.Structure):
     _pack_ = 8
     _fields_ = (
@@ -168,8 +186,9 @@ class IOExternalMethodDispatch(ctypes.Structure):
         ("checkScalarInputCount", ctypes.c_uint32),
         ("checkStructureInputSize", ctypes.c_uint32),
         ("checkScalarOutputCount", ctypes.c_uint32),
-        ("checkStructureOutputSize", ctypes.c_uint32)
+        ("checkStructureOutputSize", ctypes.c_uint32),
     )
+
     def __init__(self, ql, base):
         self.ql = ql
         self.base = base
@@ -184,13 +203,14 @@ class IOExternalMethodDispatch(ctypes.Structure):
         newObj.base = self.base
         return newObj
 
+
 # typedef struct kmod_info {
 #     struct kmod_info  * next;
 #     int32_t             info_version;           // version of this structure
 #     uint32_t            id;
 #     char                name[KMOD_MAX_NAME];
 #     char                version[KMOD_MAX_NAME];
-#     int32_t             reference_count;        // # linkage refs to this 
+#     int32_t             reference_count;        // # linkage refs to this
 #     kmod_reference_t  * reference_list;         // who this refs (links on)
 #     vm_address_t        address;                // starting address
 #     vm_size_t           size;                   // total size
@@ -198,6 +218,7 @@ class IOExternalMethodDispatch(ctypes.Structure):
 #     kmod_start_func_t * start;
 #     kmod_stop_func_t  * stop;
 # } kmod_info_t;
+
 
 class kmod_info_t(ctypes.Structure):
     _pack_ = 8
@@ -213,7 +234,7 @@ class kmod_info_t(ctypes.Structure):
         ("size", ctypes.c_uint64),
         ("hdr_size", ctypes.c_uint64),
         ("start", POINTER64),
-        ("stop", POINTER64)
+        ("stop", POINTER64),
     )
 
     def __init__(self, ql, base):
@@ -230,17 +251,17 @@ class kmod_info_t(ctypes.Structure):
         newObj.base = self.base
         return newObj
 
+
 # struct queue_entry {
 #     struct queue_entry  *next;      /* next element */
 #     struct queue_entry  *prev;      /* previous element */
 # };
 
+
 class queue_entry(ctypes.Structure):
     _pack_ = 8
-    _fields_ = (
-        ("next", POINTER64),
-        ("prev", POINTER64)
-    )
+    _fields_ = (("next", POINTER64), ("prev", POINTER64))
+
 
 # typedef struct _OSMallocTag_ {
 #     queue_chain_t   OSMT_link;
@@ -250,6 +271,7 @@ class queue_entry(ctypes.Structure):
 #     char            OSMT_name[OSMT_MAX_NAME];
 # }
 
+
 class OSMallocTag(ctypes.Structure):
     _pack_ = 8
     _fields_ = (
@@ -257,7 +279,7 @@ class OSMallocTag(ctypes.Structure):
         ("OSMT_refcnt", ctypes.c_uint32),
         ("OSMT_state", ctypes.c_uint32),
         ("OSMT_attr", ctypes.c_uint32),
-        ("OSMT_name", ctypes.c_char * 64)
+        ("OSMT_name", ctypes.c_char * 64),
     )
 
     def __init__(self, ql, base):
@@ -273,6 +295,7 @@ class OSMallocTag(ctypes.Structure):
         newObj.ql = self.ql
         newObj.base = self.base
         return newObj
+
 
 # typedef struct {
 #     uint64_t            lck_grp_spin_util_cnt;
@@ -323,6 +346,7 @@ class OSMallocTag(ctypes.Structure):
 #     lck_grp_stat_t      lck_grp_stat;
 # } lck_grp_t;
 
+
 class lck_grp_spin_stat_t(ctypes.Structure):
     _fields_ = (
         ("lck_grp_spin_util_cnt", ctypes.c_uint64),
@@ -331,6 +355,7 @@ class lck_grp_spin_stat_t(ctypes.Structure):
         ("lck_grp_spin_held_max", ctypes.c_uint64),
         ("lck_grp_spin_held_cum", ctypes.c_uint64),
     )
+
 
 class lck_grp_mtx_stat_t(ctypes.Structure):
     _fields_ = (
@@ -344,6 +369,7 @@ class lck_grp_mtx_stat_t(ctypes.Structure):
         ("lck_grp_mtx_wait_cum", ctypes.c_uint64),
     )
 
+
 class lck_grp_rw_stat_t(ctypes.Structure):
     _fields_ = (
         ("lck_grp_rw_util_cnt", ctypes.c_uint64),
@@ -356,12 +382,14 @@ class lck_grp_rw_stat_t(ctypes.Structure):
         ("lck_grp_rw_wait_cum", ctypes.c_uint64),
     )
 
+
 class lck_grp_stat_t(ctypes.Structure):
     _fields_ = (
         ("lck_grp_spin_stat", lck_grp_spin_stat_t),
         ("lck_grp_mtx_stat", lck_grp_mtx_stat_t),
         ("lck_grp_rw_stat", lck_grp_rw_stat_t),
     )
+
 
 class lck_grp_t(ctypes.Structure):
     _fields_ = (
@@ -372,7 +400,7 @@ class lck_grp_t(ctypes.Structure):
         ("lck_grp_rwcnt", ctypes.c_uint32),
         ("lck_grp_attr", ctypes.c_uint32),
         ("lck_grp_name", ctypes.c_char * 64),
-        ("lck_grp_stat", lck_grp_stat_t)
+        ("lck_grp_stat", lck_grp_stat_t),
     )
 
     def __init__(self, ql, base):
@@ -388,15 +416,15 @@ class lck_grp_t(ctypes.Structure):
         newObj.ql = self.ql
         newObj.base = self.base
         return newObj
+
 
 # typedef struct _lck_grp_attr_ {
 #     uint32_t    grp_attr_val;
 # } lck_grp_attr_t;
 
+
 class lck_grp_attr_t(ctypes.Structure):
-    _fields_ = (
-        ("grp_attr_val", ctypes.c_uint32),
-    )
+    _fields_ = (("grp_attr_val", ctypes.c_uint32),)
 
     def __init__(self, ql, base):
         self.ql = ql
@@ -411,15 +439,15 @@ class lck_grp_attr_t(ctypes.Structure):
         newObj.ql = self.ql
         newObj.base = self.base
         return newObj
+
 
 # typedef struct _lck_attr_ {
 #     unsigned int    lck_attr_val;
 # } lck_attr_t;
 
+
 class lck_attr_t(ctypes.Structure):
-    _fields_ = (
-        ("lck_attr_val", ctypes.c_uint32),
-    )
+    _fields_ = (("lck_attr_val", ctypes.c_uint32),)
 
     def __init__(self, ql, base):
         self.ql = ql
@@ -434,6 +462,7 @@ class lck_attr_t(ctypes.Structure):
         newObj.ql = self.ql
         newObj.base = self.base
         return newObj
+
 
 # typedef struct _lck_mtx_ {
 #     union {
@@ -464,6 +493,7 @@ class lck_attr_t(ctypes.Structure):
 #     };
 # } lck_mtx_t;
 
+
 class lck_mtx_t(ctypes.Structure):
     class lck_mtx_tmp_union(ctypes.Union):
         class lck_mtx_tmp_union_struct_1(ctypes.Structure):
@@ -477,36 +507,40 @@ class lck_mtx_t(ctypes.Structure):
                         ("lck_mtx_promoted", ctypes.c_uint32, 1),
                         ("lck_mtx_spin", ctypes.c_uint32, 1),
                         ("lck_mtx_is_ext", ctypes.c_uint32, 1),
-                        ("lck_mtx_pad3", ctypes.c_uint32, 3)
+                        ("lck_mtx_pad3", ctypes.c_uint32, 3),
                     ]
-                _anonymous_ = ("tmp_struct", )
+
+                _anonymous_ = ("tmp_struct",)
                 _fields_ = (
                     ("tmp_struct", lck_mtx_tmp_union_struct_union_struct),
-                    ("lck_mtx_state", ctypes.c_uint32)
+                    ("lck_mtx_state", ctypes.c_uint32),
                 )
-            _anonymous_ = ("tmp_union", )
+
+            _anonymous_ = ("tmp_union",)
             _fields_ = (
                 ("lck_mtx_owner", ctypes.c_uint64),
                 ("tmp_union", lck_mtx_tmp_union_struct_union),
-                ("lck_mtx_pad32", ctypes.c_uint32)
+                ("lck_mtx_pad32", ctypes.c_uint32),
             )
 
         class lck_mtx_tmp_union_struct_2(ctypes.Structure):
             _fields_ = (
                 ("lck_mtx_ptr", POINTER64),
                 ("lck_mtx_tag", ctypes.c_uint32),
-                ("lck_mtx_pad32_2", ctypes.c_uint32)
+                ("lck_mtx_pad32_2", ctypes.c_uint32),
             )
 
-        _anonymous_ = ("tmp_struct_1", "tmp_struct_2", )
+        _anonymous_ = (
+            "tmp_struct_1",
+            "tmp_struct_2",
+        )
         _fields_ = (
             ("tmp_struct_1", lck_mtx_tmp_union_struct_1),
             ("tmp_struct_2", lck_mtx_tmp_union_struct_2),
         )
-    _anonymous_ = ("tmp_union", )
-    _fields_ = (
-        ("tmp_union", lck_mtx_tmp_union),
-    )
+
+    _anonymous_ = ("tmp_union",)
+    _fields_ = (("tmp_union", lck_mtx_tmp_union),)
 
     def __init__(self, ql, base):
         self.ql = ql
@@ -522,6 +556,7 @@ class lck_mtx_t(ctypes.Structure):
         newObj.base = self.base
         return newObj
 
+
 # typedef struct {
 #     unsigned int        type;
 #     unsigned int        pad4;
@@ -529,13 +564,15 @@ class lck_mtx_t(ctypes.Structure):
 #     vm_offset_t     thread;
 # } lck_mtx_deb_t;
 
+
 class lck_mtx_deb_t(ctypes.Structure):
     _fields_ = (
         ("type", ctypes.c_uint32),
         ("pad4", ctypes.c_uint32),
         ("pc", ctypes.c_uint64),
-        ("thread", ctypes.c_uint64)
+        ("thread", ctypes.c_uint64),
     )
+
 
 # typedef struct _lck_mtx_ext_ {
 #     lck_mtx_t       lck_mtx;
@@ -547,6 +584,7 @@ class lck_mtx_deb_t(ctypes.Structure):
 #     unsigned int        lck_mtx_pad2[2];
 # } lck_mtx_ext_t;
 
+
 class lck_mtx_ext_t(ctypes.Structure):
     _fields_ = (
         ("lck_mtx", lck_mtx_t),
@@ -555,8 +593,9 @@ class lck_mtx_ext_t(ctypes.Structure):
         ("lck_mtx_pad1", ctypes.c_uint32),
         ("lck_mtx_deb", lck_mtx_deb_t),
         ("lck_mtx_stat", ctypes.c_uint64),
-        ("lck_mtx_pad2", ctypes.c_uint32 * 2)
+        ("lck_mtx_pad2", ctypes.c_uint32 * 2),
     )
+
     def __init__(self, ql, base):
         self.ql = ql
         self.base = base
@@ -570,6 +609,7 @@ class lck_mtx_ext_t(ctypes.Structure):
         newObj.ql = self.ql
         newObj.base = self.base
         return newObj
+
 
 # struct kauth_listener {
 #     TAILQ_ENTRY(kauth_listener) kl_link;
@@ -578,17 +618,19 @@ class lck_mtx_ext_t(ctypes.Structure):
 #     void *                      kl_idata;
 # };
 
+
 class kauth_listener_t(ctypes.Structure):
     class kauth_listener_struct(ctypes.Structure):
         _fields_ = (
             ("tqe_next", POINTER64),
             ("tqe_prev", POINTER64),
         )
+
     _fields_ = (
         ("kl_link", kauth_listener_struct),
         ("kl_identifier", POINTER64),
         ("kl_callback", POINTER64),
-        ("kl_idata", POINTER64)
+        ("kl_idata", POINTER64),
     )
 
     def __init__(self, ql, base):
@@ -605,11 +647,13 @@ class kauth_listener_t(ctypes.Structure):
         newObj.base = self.base
         return newObj
 
+
 # struct kauth_local_listener {
 #     kauth_listener_t            kll_listenerp;
 #     kauth_scope_callback_t      kll_callback;
 #     void *                      kll_idata;
 # };
+
 
 class kauth_local_listener_t(ctypes.Structure):
     _fields_ = (
@@ -617,6 +661,7 @@ class kauth_local_listener_t(ctypes.Structure):
         ("kll_callback", POINTER64),
         ("kll_idata", POINTER64),
     )
+
 
 # struct kauth_scope {
 #     TAILQ_ENTRY(kauth_scope)    ks_link;
@@ -627,20 +672,23 @@ class kauth_local_listener_t(ctypes.Structure):
 #     u_int                       ks_flags;
 # };
 
+
 class kauth_scope(ctypes.Structure):
     class kauth_scope_struct(ctypes.Structure):
         _fields_ = (
             ("tqe_next", POINTER64),
             ("tqe_prev", POINTER64),
         )
+
     _fields_ = (
         ("ks_link", kauth_scope_struct),
         ("ks_listeners", kauth_local_listener_t * 15),
         ("ks_identifier", POINTER64),
         ("ks_callback", POINTER64),
         ("ks_idata", POINTER64),
-        ("ks_flags", ctypes.c_uint32)
+        ("ks_flags", ctypes.c_uint32),
     )
+
     def __init__(self, ql, base):
         self.ql = ql
         self.base = base
@@ -654,6 +702,7 @@ class kauth_scope(ctypes.Structure):
         newObj.ql = self.ql
         newObj.base = self.base
         return newObj
+
 
 # struct domain {
 #     int dom_family;     /* AF_xxx */
@@ -678,6 +727,7 @@ class kauth_scope(ctypes.Structure):
 #     struct domain_old *dom_old; /* domain pointer per net_add_domain */
 # };
 
+
 class domain_t(ctypes.Structure):
     class domain_struct(ctypes.Structure):
         _fields_ = (
@@ -701,8 +751,9 @@ class domain_t(ctypes.Structure):
         ("dom_maxrtkey", ctypes.c_int32),
         ("dom_protohdrlen", ctypes.c_int32),
         ("dom_name", POINTER64),
-        ("dom_old", POINTER64)
+        ("dom_old", POINTER64),
     )
+
     def __init__(self, ql, base):
         self.ql = ql
         self.base = base
@@ -720,6 +771,7 @@ class domain_t(ctypes.Structure):
     def dump(self):
         for field in self._fields_:
             print(field[0], getattr(self, field[0]))
+
 
 # struct kev_d_vectors {
 #     u_int32_t   data_length;    /* Length of the event data */
@@ -744,11 +796,13 @@ class domain_t(ctypes.Structure):
 #     struct kev_d_vectors dv[N_KEV_VECTORS]; /* Up to n data vectors */
 # };
 
+
 class kev_d_vectors(ctypes.Structure):
     _fields_ = (
         ("data_length", ctypes.c_uint32),
         ("data_ptr", POINTER64),
     )
+
 
 class kev_msg(ctypes.Structure):
     _fields_ = (
@@ -756,7 +810,7 @@ class kev_msg(ctypes.Structure):
         ("kev_class", ctypes.c_uint32),
         ("kev_subclass", ctypes.c_uint32),
         ("event_code", ctypes.c_uint32),
-        ("dv", kev_d_vectors * 5)
+        ("dv", kev_d_vectors * 5),
     )
 
     def __init__(self, ql, base):
@@ -777,6 +831,7 @@ class kev_msg(ctypes.Structure):
         for field in self._fields_:
             print(field[0], getattr(self, field[0]))
 
+
 # struct nlist_64 {
 #     union {
 #         uint32_t  n_strx; /* index into the string table */
@@ -786,6 +841,7 @@ class kev_msg(ctypes.Structure):
 #     uint16_t n_desc;       /* see <mach-o/stab.h> */
 #     uint64_t n_value;      /* value of this symbol (or stab offset) */
 # };
+
 
 class nlist64_t(ctypes.Structure):
     _fields_ = (
@@ -811,7 +867,14 @@ class nlist64_t(ctypes.Structure):
         return newObj
 
     def __str__(self):
-        return "\tn_strx = %d" % self.n_strx + "\n\tn_type = %d" % self.n_type + "\n\tn_sect = %d" % self.n_sect + "\n\tn_desc = %d" % self.n_desc + "\n\tn_value = 0x%x" % self.n_value
+        return (
+            "\tn_strx = %d" % self.n_strx
+            + "\n\tn_type = %d" % self.n_type
+            + "\n\tn_sect = %d" % self.n_sect
+            + "\n\tn_desc = %d" % self.n_desc
+            + "\n\tn_value = 0x%x" % self.n_value
+        )
+
 
 # struct sysent {        /* system call table */
 #     sy_call_t    *sy_call;    /* implementing function */
@@ -822,6 +885,7 @@ class nlist64_t(ctypes.Structure):
 #                      * 32-bit system calls
 #                      */
 # };
+
 
 class sysent_t(ctypes.Structure):
     _fields_ = (
@@ -845,6 +909,7 @@ class sysent_t(ctypes.Structure):
         newObj.ql = self.ql
         newObj.base = self.base
         return newObj
+
 
 # struct proc {
 #     LIST_ENTRY(proc) p_list;        /* List of all processes. */
@@ -1041,11 +1106,13 @@ class sysent_t(ctypes.Structure):
 
 # };
 
+
 class timeval_t(ctypes.Structure):
     _fields_ = (
         ("tv_sec", ctypes.c_long),
         ("tv_usec", ctypes.c_int32),
     )
+
 
 class itimerval_t(ctypes.Structure):
     _fields_ = (
@@ -1053,14 +1120,14 @@ class itimerval_t(ctypes.Structure):
         ("it_value", timeval_t),
     )
 
+
 class proc_t(ctypes.Structure):
     # struct lck_spin_t {
     #     unsigned long    opaque[10];
     # };
     class lck_spin_t(ctypes.Structure):
-        _fields_ = (
-            ("opaque", ctypes.c_ulong * 10),
-        )
+        _fields_ = (("opaque", ctypes.c_ulong * 10),)
+
     _fields_ = (
         ("p_list", list_entry),
         ("p_pid", ctypes.c_int32),
@@ -1148,7 +1215,7 @@ class proc_t(ctypes.Structure):
         ("p_nice", ctypes.c_char),
         ("p_resv1", ctypes.c_ubyte),
         ("p_comm", ctypes.c_char * (16 + 1)),
-        ("p_name", ctypes.c_char * (2*16 + 1)),
+        ("p_name", ctypes.c_char * (2 * 16 + 1)),
         ("p_pgrp", POINTER64),
         ("p_csflags", ctypes.c_uint32),
         ("p_pcaction", ctypes.c_uint32),
@@ -1216,6 +1283,7 @@ class proc_t(ctypes.Structure):
         newObj.base = self.base
         return newObj
 
+
 # _STRUCT_TIMESPEC
 # {
 #     __darwin_time_t tv_sec;
@@ -1226,6 +1294,7 @@ class timespec_t(ctypes.Structure):
         ("tv_sec", ctypes.c_long),
         ("tv_nsec", ctypes.c_long),
     )
+
 
 # typedef struct __attribute__((packed)) {
 #     uint32_t length;
@@ -1252,6 +1321,7 @@ class timespec_t(ctypes.Structure):
 #     uint32_t st_rdev;
 #     off_t st_size;
 # } attrListAttributes;
+
 
 class attrListAttributes_t(ctypes.Structure):
     # typedef struct attribute_set {
@@ -1299,8 +1369,9 @@ class attrListAttributes_t(ctypes.Structure):
         ("allocsize", ctypes.c_int64),
         ("st_blksize", ctypes.c_uint32),
         ("st_rdev", ctypes.c_uint32),
-        ("st_size", ctypes.c_uint32)
+        ("st_size", ctypes.c_uint32),
     )
+
 
 # struct attrlist {
 #     u_short bitmapcount;            /* number of attr. bit sets in list (should be 5) */
@@ -1311,6 +1382,7 @@ class attrListAttributes_t(ctypes.Structure):
 #     attrgroup_t fileattr;           /* file attribute group */
 #     attrgroup_t forkattr;           /* fork attribute group */
 # };
+
 
 class attrlist_t(ctypes.Structure):
     _fields_ = (
@@ -1337,6 +1409,7 @@ class attrlist_t(ctypes.Structure):
         newObj.base = self.base
         return newObj
 
+
 # struct getattrlistbulk_args {
 #     char dirfd_l_[PADL_(int)]; int dirfd; char dirfd_r_[PADR_(int)];
 #     char alist_l_[PADL_(user_addr_t)]; user_addr_t alist; char alist_r_[PADR_(user_addr_t)];
@@ -1344,6 +1417,7 @@ class attrlist_t(ctypes.Structure):
 #     char bufferSize_l_[PADL_(user_size_t)]; user_size_t bufferSize; char bufferSize_r_[PADR_(user_size_t)];
 #     char options_l_[PADL_(uint64_t)]; uint64_t options; char options_r_[PADR_(uint64_t)];
 # };
+
 
 class getattrlistbulk_args_t(ctypes.Structure):
     _fields_ = (
@@ -1368,6 +1442,7 @@ class getattrlistbulk_args_t(ctypes.Structure):
         newObj.ql = self.ql
         newObj.base = self.base
         return newObj
+
 
 # /* use kern_iovec for system space requests */
 # struct kern_iovec {
@@ -1397,14 +1472,16 @@ class getattrlistbulk_args_t(ctypes.Structure):
 #     user_size_t uio_resid_64;
 #     int             uio_size;       /* size for use with kfree */
 #     int             uio_max_iovs;   /* max number of iovecs this uio_t can hold */
-#     u_int32_t       uio_flags;      
+#     u_int32_t       uio_flags;
 # };
+
 
 class kern_iovec_t(ctypes.Structure):
     _fields_ = (
         ("iov_base", ctypes.c_uint64),
         ("iov_len", ctypes.c_uint64),
     )
+
 
 class user_iovec_t(ctypes.Structure):
     _fields_ = (
@@ -1426,11 +1503,13 @@ class user_iovec_t(ctypes.Structure):
         newObj.base = self.base
         return newObj
 
+
 class iovecs_t(ctypes.Union):
     _fields_ = (
         ("kiovp", POINTER64),
         ("uiovp", POINTER64),
     )
+
 
 class uio_t(ctypes.Structure):
     _fields_ = (
@@ -1459,11 +1538,12 @@ class uio_t(ctypes.Structure):
         newObj.base = self.base
         return newObj
 
+
 # struct vnode_attr {
 #     uint64_t    va_supported;
 #     uint64_t    va_active;
 #     int     va_vaflags;
-    
+
 #     dev_t       va_rdev;    /* device id (device nodes only) */
 #     uint64_t    va_nlink;   /* number of references to this file */
 #     uint64_t    va_total_size;  /* size in bytes of all forks */
@@ -1483,7 +1563,7 @@ class uio_t(ctypes.Structure):
 #     struct timespec va_modify_time; /* time of last data modification */
 #     struct timespec va_change_time; /* time of last metadata change */
 #     struct timespec va_backup_time; /* time of last backup */
-    
+
 #     uint64_t    va_fileid;  /* file unique ID in filesystem */
 #     uint64_t    va_linkid;  /* file link unique ID */
 #     uint64_t    va_parentid;    /* parent ID */
@@ -1497,13 +1577,13 @@ class uio_t(ctypes.Structure):
 #     char *      va_name;    /* Name for ATTR_CMN_NAME; MAXPATHLEN bytes */
 #     guid_t      va_uuuid;   /* file owner UUID */
 #     guid_t      va_guuid;   /* file group UUID */
-    
+
 #     uint64_t    va_nchildren;     /* Number of items in a directory */
 #     uint64_t    va_dirlinkcount;  /* Real references to dir (i.e. excluding "." and ".." refs) */
 
 #     struct kauth_acl *va_base_acl;
 #     struct timespec va_addedtime;   /* timestamp when item was added to parent directory */
-        
+
 #     uint32_t va_dataprotect_class;  /* class specified for this file if it didn't exist */
 #     uint32_t va_dataprotect_flags;  /* flags from NP open(2) to the filesystem */
 
@@ -1523,27 +1603,23 @@ class uio_t(ctypes.Structure):
 #     uint64_t va_private_size; /* If the file were deleted, how many bytes would be freed immediately */
 # };
 
+
 class vnode_attr_t(ctypes.Structure):
     # typedef struct {
     # #define KAUTH_GUID_SIZE 16  /* 128-bit identifier */
     #     unsigned char g_guid[KAUTH_GUID_SIZE];
     # } guid_t;
     class guid_t(ctypes.Structure):
-        _fields_ = (
-            ("g_guid", ctypes.c_ubyte * 16),
-        )
+        _fields_ = (("g_guid", ctypes.c_ubyte * 16),)
 
     # typedef struct fsid { int32_t val[2]; } fsid_t; /* file system id type */
     class fsid_t(ctypes.Structure):
-        _fields_ = (
-            ("val", ctypes.c_int32 * 2),
-        )
+        _fields_ = (("val", ctypes.c_int32 * 2),)
 
     _fields_ = (
         ("va_supported", ctypes.c_uint64),
         ("va_active", ctypes.c_uint64),
         ("va_vaflags", ctypes.c_int),
-
         ("va_rdev", ctypes.c_int32),
         ("va_nlink", ctypes.c_uint64),
         ("va_total_size", ctypes.c_uint64),
@@ -1551,43 +1627,34 @@ class vnode_attr_t(ctypes.Structure):
         ("va_data_size", ctypes.c_uint64),
         ("va_data_alloc", ctypes.c_uint64),
         ("va_iosize", ctypes.c_uint32),
-
         ("va_uid", ctypes.c_uint32),
         ("va_gid", ctypes.c_uint32),
         ("va_mode", ctypes.c_uint16),
         ("va_flags", ctypes.c_uint32),
         ("va_acl", POINTER64),
-
         ("va_create_time", timespec_t),
         ("va_access_time", timespec_t),
         ("va_modify_time", timespec_t),
         ("va_change_time", timespec_t),
         ("va_backup_time", timespec_t),
-
         ("va_fileid", ctypes.c_uint64),
         ("va_linkid", ctypes.c_uint64),
         ("va_parentid", ctypes.c_uint64),
         ("va_fsid", ctypes.c_uint32),
         ("va_filerev", ctypes.c_uint64),
         ("va_gen", ctypes.c_uint32),
-
         ("va_encoding", ctypes.c_uint32),
-
         ("va_type", ctypes.c_int),
         ("va_name", POINTER64),
         ("va_uuuid", guid_t),
         ("va_guuid", guid_t),
-
         ("va_nchildren", ctypes.c_uint64),
         ("va_dirlinkcount", ctypes.c_uint64),
-
         ("va_base_acl", POINTER64),
         ("va_addedtime", timespec_t),
-
         ("va_dataprotect_class", ctypes.c_uint32),
         ("va_dataprotect_flags", ctypes.c_uint32),
         ("va_document_id", ctypes.c_uint32),
-
         ("va_devid", ctypes.c_uint32),
         ("va_objtype", ctypes.c_uint32),
         ("va_objtag", ctypes.c_uint32),
@@ -1596,9 +1663,7 @@ class vnode_attr_t(ctypes.Structure):
         ("va_rsrc_length", ctypes.c_uint64),
         ("va_rsrc_alloc", ctypes.c_uint64),
         ("va_fsid64", fsid_t),
-
         ("va_write_gencount", ctypes.c_uint32),
-
         ("va_private_size", ctypes.c_uint64),
     )
 

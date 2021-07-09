@@ -4,6 +4,7 @@
 #
 
 import sys
+
 sys.path.append("..")
 
 from qiling import Qiling

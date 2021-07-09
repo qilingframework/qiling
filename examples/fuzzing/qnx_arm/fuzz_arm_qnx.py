@@ -28,20 +28,20 @@ from qiling import *
 stdin_fstat = os.fstat(sys.stdin.fileno())
 
 # This is mostly taken from the crackmes
-class MyPipe():
+class MyPipe:
     def __init__(self):
-        self.buf = b''
+        self.buf = b""
 
     def write(self, s):
         self.buf += s
 
     def read(self, size):
         if size <= len(self.buf):
-            ret = self.buf[: size]
+            ret = self.buf[:size]
             self.buf = self.buf[size:]
         else:
             ret = self.buf
-            self.buf = ''
+            self.buf = ""
         return ret
 
     def fileno(self):
@@ -65,11 +65,14 @@ class MyPipe():
 
 def main(input_file, enable_trace=False):
     stdin = MyPipe()
-    ql = Qiling(["./arm_fuzz"], "../../rootfs/arm_qnx",
-                stdin=stdin,
-                stdout=1 if enable_trace else None,
-                stderr=1 if enable_trace else None,
-                console = True if enable_trace else False)
+    ql = Qiling(
+        ["./arm_fuzz"],
+        "../../rootfs/arm_qnx",
+        stdin=stdin,
+        stdout=1 if enable_trace else None,
+        stderr=1 if enable_trace else None,
+        console=True if enable_trace else False,
+    )
 
     # or this for output:
     # ... stdout=sys.stdout, stderr=sys.stderr)
@@ -84,10 +87,12 @@ def main(input_file, enable_trace=False):
         # We start our AFL forkserver or run once if AFL is not available.
         # This will only return after the fuzzing stopped.
         try:
-            #print("Starting afl_fuzz().")
-            if not _ql.uc.afl_fuzz(input_file=input_file,
-                        place_input_callback=place_input_callback,
-                        exits=[ql.os.exit_point]):
+            # print("Starting afl_fuzz().")
+            if not _ql.uc.afl_fuzz(
+                input_file=input_file,
+                place_input_callback=place_input_callback,
+                exits=[ql.os.exit_point],
+            ):
                 print("Ran once without AFL attached.")
                 os._exit(0)  # that's a looot faster than tidying up.
         except unicornafl.UcAflError as ex:
@@ -100,10 +105,10 @@ def main(input_file, enable_trace=False):
     LIBC_BASE = int(ql.profile.get("OS32", "interp_address"), 16)
 
     # crash in case we reach SignalKill
-    ql.hook_address(callback=lambda x: os.abort(), address=LIBC_BASE + 0x456d4)
+    ql.hook_address(callback=lambda x: os.abort(), address=LIBC_BASE + 0x456D4)
 
     # Add hook at main() that will fork Unicorn and start instrumentation.
-    main_addr = 0x08048aa0
+    main_addr = 0x08048AA0
     ql.hook_address(callback=start_afl, address=main_addr)
 
     if enable_trace:
@@ -112,20 +117,29 @@ def main(input_file, enable_trace=False):
         count = [0]
 
         def spaced_hex(data):
-            return b' '.join(hexlify(data)[i:i+2] for i in range(0, len(hexlify(data)), 2)).decode('utf-8')
+            return b" ".join(
+                hexlify(data)[i : i + 2]
+                for i in range(0, len(hexlify(data)), 2)
+            ).decode("utf-8")
 
         def disasm(count, ql, address, size):
             buf = ql.mem.read(address, size)
             try:
                 for i in md.disasm(buf, address):
-                    return "{:08X}\t{:08X}: {:24s} {:10s} {:16s}".format(count[0], i.address, spaced_hex(buf), i.mnemonic,
-                                                                        i.op_str)
+                    return "{:08X}\t{:08X}: {:24s} {:10s} {:16s}".format(
+                        count[0],
+                        i.address,
+                        spaced_hex(buf),
+                        i.mnemonic,
+                        i.op_str,
+                    )
             except:
                 import traceback
+
                 print(traceback.format_exc())
 
         def trace_cb(ql, address, size, count):
-            rtn = '{:100s}'.format(disasm(count, ql, address, size))
+            rtn = "{:100s}".format(disasm(count, ql, address, size))
             print(rtn)
             count[0] += 1
 

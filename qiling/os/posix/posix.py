@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -16,7 +16,12 @@ from qiling.const import QL_ARCH, QL_OS, QL_INTERCEPT, QL_CALL_BLOCK, QL_VERBOSE
 from qiling.exception import QlErrorSyscallNotFound
 from qiling.os.os import QlOs
 from qiling.os.posix.const import errors, NR_OPEN
-from qiling.utils import QlFileDes, ostype_convert_str, ql_get_module_function, ql_syscall_mapping_function
+from qiling.utils import (
+    QlFileDes,
+    ostype_convert_str,
+    ql_get_module_function,
+    ql_syscall_mapping_function,
+)
 
 from qiling.os.posix.syscall import *
 from qiling.os.linux.syscall import *
@@ -24,10 +29,10 @@ from qiling.os.macos.syscall import *
 from qiling.os.freebsd.syscall import *
 from qiling.os.qnx.syscall import *
 
-SYSCALL_PREF: str = f'ql_syscall_'
+SYSCALL_PREF: str = f"ql_syscall_"
+
 
 class QlOsPosix(QlOs):
-
     def __init__(self, ql: Qiling):
         super(QlOsPosix, self).__init__(ql)
 
@@ -38,29 +43,33 @@ class QlOsPosix(QlOs):
             self.uid = 0
             self.gid = 0
         else:
-            self.uid = self.profile.getint("KERNEL","uid")
-            self.gid = self.profile.getint("KERNEL","gid")
+            self.uid = self.profile.getint("KERNEL", "uid")
+            self.gid = self.profile.getint("KERNEL", "gid")
 
         self.pid = self.profile.getint("KERNEL", "pid")
         self.ipv6 = self.profile.getboolean("NETWORK", "ipv6")
-        self.bindtolocalhost = self.profile.getboolean("NETWORK", "bindtolocalhost")
+        self.bindtolocalhost = self.profile.getboolean(
+            "NETWORK", "bindtolocalhost"
+        )
 
         self.posix_syscall_hooks = {
-            QL_INTERCEPT.CALL : {},
+            QL_INTERCEPT.CALL: {},
             QL_INTERCEPT.ENTER: {},
-            QL_INTERCEPT.EXIT : {}
+            QL_INTERCEPT.EXIT: {},
         }
 
         self.__syscall_id_reg = {
             QL_ARCH.ARM64: UC_ARM64_REG_X8,
-            QL_ARCH.ARM  : UC_ARM_REG_R7,
-            QL_ARCH.MIPS : UC_MIPS_REG_V0,
-            QL_ARCH.X86  : UC_X86_REG_EAX,
-            QL_ARCH.X8664: UC_X86_REG_RAX
+            QL_ARCH.ARM: UC_ARM_REG_R7,
+            QL_ARCH.MIPS: UC_MIPS_REG_V0,
+            QL_ARCH.X86: UC_X86_REG_EAX,
+            QL_ARCH.X8664: UC_X86_REG_RAX,
         }[self.ql.archtype]
 
         # handle a special case
-        if (self.ql.archtype == QL_ARCH.ARM64) and (self.ql.ostype == QL_OS.MACOS):
+        if (self.ql.archtype == QL_ARCH.ARM64) and (
+            self.ql.ostype == QL_OS.MACOS
+        ):
             self.__syscall_id_reg = UC_ARM64_REG_X16
         if (self.ql.archtype == QL_ARCH.ARM) and (self.ql.ostype == QL_OS.QNX):
             self.__syscall_id_reg = UC_ARM_REG_R12
@@ -91,10 +100,10 @@ class QlOsPosix(QlOs):
 
         self.__set_syscall_retval: Callable = {
             QL_ARCH.ARM64: __set_syscall_ret_arm64,
-            QL_ARCH.ARM  : __set_syscall_ret_arm,
-            QL_ARCH.MIPS : __set_syscall_ret_mips,
-            QL_ARCH.X86  : __set_syscall_ret_x86,
-            QL_ARCH.X8664: __set_syscall_ret_x8664
+            QL_ARCH.ARM: __set_syscall_ret_arm,
+            QL_ARCH.MIPS: __set_syscall_ret_mips,
+            QL_ARCH.X86: __set_syscall_ret_x86,
+            QL_ARCH.X8664: __set_syscall_ret_x8664,
         }[self.ql.archtype]
 
         def __syscall_args_arm64():
@@ -104,7 +113,7 @@ class QlOsPosix(QlOs):
                 self.ql.reg.x2,
                 self.ql.reg.x3,
                 self.ql.reg.x4,
-                self.ql.reg.x5
+                self.ql.reg.x5,
             )
 
         def __syscall_args_arm():
@@ -114,7 +123,7 @@ class QlOsPosix(QlOs):
                 self.ql.reg.r2,
                 self.ql.reg.r3,
                 self.ql.reg.r4,
-                self.ql.reg.r5
+                self.ql.reg.r5,
             )
 
         def __syscall_args_mips():
@@ -124,7 +133,7 @@ class QlOsPosix(QlOs):
                 self.ql.reg.a2,
                 self.ql.reg.a3,
                 self.ql.reg.sp + 0x10,
-                self.ql.reg.sp + 0x14
+                self.ql.reg.sp + 0x14,
             )
 
         def __syscall_args_x86():
@@ -134,7 +143,7 @@ class QlOsPosix(QlOs):
                 self.ql.reg.edx,
                 self.ql.reg.esi,
                 self.ql.reg.edi,
-                self.ql.reg.ebp
+                self.ql.reg.ebp,
             )
 
         def __syscall_args_x8664():
@@ -144,15 +153,15 @@ class QlOsPosix(QlOs):
                 self.ql.reg.rdx,
                 self.ql.reg.r10,
                 self.ql.reg.r8,
-                self.ql.reg.r9
+                self.ql.reg.r9,
             )
 
         self.__syscall_args: Callable = {
             QL_ARCH.ARM64: __syscall_args_arm64,
-            QL_ARCH.ARM  : __syscall_args_arm,
-            QL_ARCH.MIPS : __syscall_args_mips,
-            QL_ARCH.X86  : __syscall_args_x86,
-            QL_ARCH.X8664: __syscall_args_x8664
+            QL_ARCH.ARM: __syscall_args_arm,
+            QL_ARCH.MIPS: __syscall_args_mips,
+            QL_ARCH.X86: __syscall_args_x86,
+            QL_ARCH.X8664: __syscall_args_x8664,
         }[self.ql.archtype]
 
         self._fd = QlFileDes([0] * NR_OPEN)
@@ -165,9 +174,14 @@ class QlOsPosix(QlOs):
     def syscall(self):
         return self.get_syscall()
 
-    def set_syscall(self, target: Union[int, str], handler: Callable, intercept: QL_INTERCEPT):
+    def set_syscall(
+        self,
+        target: Union[int, str],
+        handler: Callable,
+        intercept: QL_INTERCEPT,
+    ):
         if type(target) is str:
-            target = f'{SYSCALL_PREF}{target}'
+            target = f"{SYSCALL_PREF}{target}"
 
         # BUG: workaround missing arg
         if intercept is None:
@@ -190,7 +204,7 @@ class QlOsPosix(QlOs):
         Returns: The string representation of the error.
         """
         if type(ret) is not int:
-            return '?'
+            return "?"
 
         return f'{ret:#x}{f" ({errors[-ret]})" if -ret in errors else f""}'
 
@@ -216,10 +230,16 @@ class QlOsPosix(QlOs):
             syscall_name = syscall_hook.__name__
         else:
             _ostype_str = ostype_convert_str(self.ql.ostype)
-            _posix_syscall = ql_get_module_function(f"qiling.os.posix", "syscall")
-            _os_syscall = ql_get_module_function(f"qiling.os.{_ostype_str.lower()}", "syscall")
+            _posix_syscall = ql_get_module_function(
+                f"qiling.os.posix", "syscall"
+            )
+            _os_syscall = ql_get_module_function(
+                f"qiling.os.{_ostype_str.lower()}", "syscall"
+            )
 
-            if syscall_name in dir(_posix_syscall) or syscall_name in dir(_os_syscall):
+            if syscall_name in dir(_posix_syscall) or syscall_name in dir(
+                _os_syscall
+            ):
                 syscall_hook = eval(syscall_name)
                 syscall_name = syscall_hook.__name__
             else:
@@ -228,20 +248,22 @@ class QlOsPosix(QlOs):
         if syscall_hook:
             args = self.get_syscall_args()
 
-            self.utils.syscalls.setdefault(syscall_name, []).append({
-                "params": {
-                    "param0": args[0],
-                    "param1": args[1],
-                    "param2": args[2],
-                    "param3": args[3],
-                    "param4": args[4],
-                    "param5": args[5]
-                },
-                "result": None,
-                "address": self.ql.reg.arch_pc,
-                "return_address": None,
-                "position": self.utils.syscalls_counter
-            })
+            self.utils.syscalls.setdefault(syscall_name, []).append(
+                {
+                    "params": {
+                        "param0": args[0],
+                        "param1": args[1],
+                        "param2": args[2],
+                        "param3": args[3],
+                        "param4": args[4],
+                        "param5": args[5],
+                    },
+                    "result": None,
+                    "address": self.ql.reg.arch_pc,
+                    "return_address": None,
+                    "position": self.utils.syscalls_counter,
+                }
+            )
 
             self.utils.syscalls_counter += 1
 
@@ -250,31 +272,37 @@ class QlOsPosix(QlOs):
                 if onenter_hook is not None:
                     onenter_hook(self.ql, *self.get_syscall_args())
 
-                syscall_basename = syscall_hook.__name__[len(SYSCALL_PREF):]
+                syscall_basename = syscall_hook.__name__[len(SYSCALL_PREF) :]
                 args = []
 
                 # ignore first arg, which is 'ql'
-                arg_names = tuple(signature(syscall_hook).parameters.values())[1:]
+                arg_names = tuple(signature(syscall_hook).parameters.values())[
+                    1:
+                ]
                 arg_values = self.get_syscall_args()
 
                 for name, value in zip(arg_names, arg_values):
                     name = str(name)
 
                     # ignore python special args
-                    if name in ('*args', '**kw', '**kwargs'):
+                    if name in ("*args", "**kw", "**kwargs"):
                         continue
 
                     # cut the first part of the arg if it is of form fstatat64_fd
-                    if name.startswith(f'{syscall_basename}_'):
-                        name = name.partition('_')[-1]
+                    if name.startswith(f"{syscall_basename}_"):
+                        name = name.partition("_")[-1]
 
-                    args.append(f'{name} = {value:#x}')
+                    args.append(f"{name} = {value:#x}")
 
-                faddr = f'{self.ql.reg.arch_pc:#0{self.ql.archbit // 4 + 2}x}: ' if self.ql.verbose >= QL_VERBOSE.DEBUG else ''
-                fargs = ', '.join(args)
+                faddr = (
+                    f"{self.ql.reg.arch_pc:#0{self.ql.archbit // 4 + 2}x}: "
+                    if self.ql.verbose >= QL_VERBOSE.DEBUG
+                    else ""
+                )
+                fargs = ", ".join(args)
 
                 ret = syscall_hook(self.ql, *arg_values)
-                log = f'{faddr}{syscall_basename}({fargs}) = {QlOsPosix.getNameFromErrorCode(ret)}'
+                log = f"{faddr}{syscall_basename}({fargs}) = {QlOsPosix.getNameFromErrorCode(ret)}"
 
                 if self.ql.verbose >= QL_VERBOSE.DEBUG:
                     self.ql.log.debug(log)
@@ -294,10 +322,12 @@ class QlOsPosix(QlOs):
                 raise
             except Exception as e:
                 self.ql.log.exception("")
-                self.ql.log.info(f'Syscall ERROR: {syscall_name} DEBUG: {e}')
+                self.ql.log.info(f"Syscall ERROR: {syscall_name} DEBUG: {e}")
                 raise e
         else:
-            self.ql.log.warning(f'{self.ql.reg.arch_pc:#x}: syscall {syscall_name} number = {syscall:#x}({syscall:d}) not implemented')
+            self.ql.log.warning(
+                f"{self.ql.reg.arch_pc:#x}: syscall {syscall_name} number = {syscall:#x}({syscall:d}) not implemented"
+            )
 
             if self.ql.debug_stop:
                 raise QlErrorSyscallNotFound("Syscall Not Found")

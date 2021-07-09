@@ -6,11 +6,13 @@
 from qiling.const import QL_ARCH
 from qiling.os.posix.posix import SYSCALL_PREF
 
+
 def map_syscall(ql, syscall_num):
     if ql.archtype == QL_ARCH.X8664:
         for k, v in syscall_table.items():
             if v == syscall_num:
-                return f'{SYSCALL_PREF}{k}'
+                return f"{SYSCALL_PREF}{k}"
+
 
 syscall_table = {
     "syscall": (0),

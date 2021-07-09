@@ -13,7 +13,7 @@ from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
 
-dllname = 'oleaut32_dll'
+dllname = "oleaut32_dll"
 
 # TODO this file is VERY experimental.
 
@@ -25,7 +25,7 @@ dllname = 'oleaut32_dll'
 def hook_SysAllocStringLen(ql, address, params):
     addr = ql.os.heap.alloc(params["ui"] + 1)
     if params["strIn"] != 0:
-        ql.mem.write(addr, params["strIn"][:params["ui"]].encode("utf-16le"))
+        ql.mem.write(addr, params["strIn"][: params["ui"]].encode("utf-16le"))
     return addr
 
 
@@ -65,7 +65,9 @@ def hook_SysReAllocStringLen(ql, address, params):
     size = params["len"]
     addr = ql.os.heap.alloc(size + 1)
     ql.mem.write(addr, content[:size].encode("utf-16le"))
-    ql.mem.write(params["pbstr"], addr.to_bytes(ql.pointersize, byteorder="little"))
+    ql.mem.write(
+        params["pbstr"], addr.to_bytes(ql.pointersize, byteorder="little")
+    )
     return 1
 
 

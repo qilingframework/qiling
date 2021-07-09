@@ -15,7 +15,7 @@ from qiling.exception import *
 from qiling.const import *
 
 
-dllname = 'kernel32_dll'
+dllname = "kernel32_dll"
 
 # HANDLE CreateToolhelp32Snapshot(
 #   DWORD dwFlags,
@@ -48,6 +48,8 @@ def hook_Process32FirstW(ql, address, params):
 @winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_Process32NextW(ql, address, params):
     # Return True if more process, 0 else
-    if ql.os.syscall_count["Process32NextW"] >= 3:  # I don' know how many process the sample want's to cycle
+    if (
+        ql.os.syscall_count["Process32NextW"] >= 3
+    ):  # I don' know how many process the sample want's to cycle
         return 0x0
     return 0x1

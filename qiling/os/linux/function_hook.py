@@ -8,44 +8,45 @@ import struct
 
 from qiling.const import *
 
-PT_DYNAMIC      = 2
-DT_NULL 		= 0
-DT_NEEDED 		= 1
-DT_PLTRELSZ 	= 2
-DT_PLTGOT 		= 3
-DT_HASH 		= 4
-DT_STRTAB 		= 5
-DT_SYMTAB 		= 6
-DT_RELA 		= 7
-DT_RELASZ 		= 8
-DT_RELAENT 		= 9
-DT_STRSZ 		= 10
-DT_SYMENT 		= 11
-DT_INIT 		= 12
-DT_FINI 		= 13
-DT_SONAME 		= 14
-DT_RPATH 		= 15
-DT_SYMBOLIC 	= 16
-DT_REL 			= 17
-DT_RELSZ 		= 18
-DT_RELENT 		= 19
-DT_PLTREL 		= 20
-DT_DEBUG 		= 21
-DT_TEXTREL 		= 22
-DT_JMPREL 		= 23
-DT_BIND_NOW 	= 24
-DT_INIT_ARRAY 	= 25
-DT_FINI_ARRAY 	= 26
+PT_DYNAMIC = 2
+DT_NULL = 0
+DT_NEEDED = 1
+DT_PLTRELSZ = 2
+DT_PLTGOT = 3
+DT_HASH = 4
+DT_STRTAB = 5
+DT_SYMTAB = 6
+DT_RELA = 7
+DT_RELASZ = 8
+DT_RELAENT = 9
+DT_STRSZ = 10
+DT_SYMENT = 11
+DT_INIT = 12
+DT_FINI = 13
+DT_SONAME = 14
+DT_RPATH = 15
+DT_SYMBOLIC = 16
+DT_REL = 17
+DT_RELSZ = 18
+DT_RELENT = 19
+DT_PLTREL = 20
+DT_DEBUG = 21
+DT_TEXTREL = 22
+DT_JMPREL = 23
+DT_BIND_NOW = 24
+DT_INIT_ARRAY = 25
+DT_FINI_ARRAY = 26
 DT_INIT_ARRAYSZ = 27
 DT_FINI_ARRAYSZ = 28
-DT_RUNPATH 		= 29
-DT_FLAGS 		= 30
-DT_ENCODING 	= 32
-DT_GNU_HASH	    = 0x6ffffef5
+DT_RUNPATH = 29
+DT_FLAGS = 30
+DT_ENCODING = 32
+DT_GNU_HASH = 0x6FFFFEF5
 
-DT_MIPS_LOCAL_GOTNO = 0x7000000a
+DT_MIPS_LOCAL_GOTNO = 0x7000000A
 DT_MIPS_SYMTABNO = 0x70000011
 DT_MIPS_GOTSYM = 0x70000013
+
 
 class HookFunc:
     def __init__(self, ql, fn):
@@ -68,69 +69,73 @@ class HookFunc:
 
     def get_ret_pc(self):
         # ARM
-        if self.ql.archtype== QL_ARCH.ARM:
+        if self.ql.archtype == QL_ARCH.ARM:
             return self.ql.reg.lr
 
         # MIPS32
-        elif self.ql.archtype== QL_ARCH.MIPS:
+        elif self.ql.archtype == QL_ARCH.MIPS:
             return self.ql.reg.ra
 
         # ARM64
-        elif self.ql.archtype== QL_ARCH.ARM64:
+        elif self.ql.archtype == QL_ARCH.ARM64:
             return self.ql.reg.x30
 
         # X86
-        elif  self.ql.archtype== QL_ARCH.X86:
-            return self.ql.unpack(self.ql.mem.read(self.ql.reg.esp, self.ql.pointersize))
+        elif self.ql.archtype == QL_ARCH.X86:
+            return self.ql.unpack(
+                self.ql.mem.read(self.ql.reg.esp, self.ql.pointersize)
+            )
 
         # X8664
-        elif  self.ql.archtype== QL_ARCH.X8664:
-            return self.ql.unpack(self.ql.mem.read(self.ql.reg.rsp, self.ql.pointersize))
+        elif self.ql.archtype == QL_ARCH.X8664:
+            return self.ql.unpack(
+                self.ql.mem.read(self.ql.reg.rsp, self.ql.pointersize)
+            )
         else:
             raise
 
     def context_fixup(self):
         # ARM
-        if self.ql.archtype== QL_ARCH.ARM:
+        if self.ql.archtype == QL_ARCH.ARM:
             pass
 
         # MIPS32
-        elif self.ql.archtype== QL_ARCH.MIPS:
+        elif self.ql.archtype == QL_ARCH.MIPS:
             pass
 
         # ARM64
-        elif self.ql.archtype== QL_ARCH.ARM64:
+        elif self.ql.archtype == QL_ARCH.ARM64:
             pass
 
         # X86
-        elif  self.ql.archtype== QL_ARCH.X86:
+        elif self.ql.archtype == QL_ARCH.X86:
             self.ql.reg.esp = self.ql.reg.esp + self.ql.pointersize
 
         # X8664
-        elif  self.ql.archtype== QL_ARCH.X8664:
+        elif self.ql.archtype == QL_ARCH.X8664:
             self.ql.reg.rsp = self.ql.reg.rsp + self.ql.pointersize
         else:
             raise
 
     def set_ret(self, addr):
         # ARM
-        if self.ql.archtype== QL_ARCH.ARM:
+        if self.ql.archtype == QL_ARCH.ARM:
             self.ql.reg.lr = addr
 
         # MIPS32
-        elif self.ql.archtype== QL_ARCH.MIPS:
+        elif self.ql.archtype == QL_ARCH.MIPS:
             self.ql.reg.ra = addr
 
         # ARM64
-        elif self.ql.archtype== QL_ARCH.ARM64:
+        elif self.ql.archtype == QL_ARCH.ARM64:
             self.ql.mem.write(self.ql.reg.sp, self.ql.pack(addr))
 
         # X86
-        elif  self.ql.archtype== QL_ARCH.X86:
+        elif self.ql.archtype == QL_ARCH.X86:
             self.ql.mem.write(self.ql.reg.esp, self.ql.pack(addr))
 
         # X8664
-        elif  self.ql.archtype== QL_ARCH.X8664:
+        elif self.ql.archtype == QL_ARCH.X8664:
             self.ql.mem.write(self.ql.reg.rsp, self.ql.pack(addr))
         else:
             raise
@@ -139,19 +144,21 @@ class HookFunc:
         # if self.ql.archtype == QL_ARCH.ARM or self.ql.archtype == QL_ARCH.ARM64:
         #     self.ql.reg.arch_pc = self.ql.reg.arch_pc + 4
 
-        next_pc = self.ql.unpack(self.ql.mem.read(self.hook_data_ptr, self.ql.pointersize))
+        next_pc = self.ql.unpack(
+            self.ql.mem.read(self.hook_data_ptr, self.ql.pointersize)
+        )
         self.ret_pc = self.get_ret_pc()
         onenter_cb = None
         onenter_userdata = None
 
         if len(self.hook_onenter) != 0:
             onenter_cb, onenter_userdata = self.hook_onenter[0]
-        
+
         cb = None
         userdata = None
         if len(self.hook) != 0:
             cb, userdata = self.hook[0]
-        
+
         if onenter_cb == None:
             ret = 0
         else:
@@ -172,26 +179,26 @@ class HookFunc:
 
         else:
             self.context_fixup()
-    
+
     def ret(self):
         # ARM
-        if self.ql.archtype== QL_ARCH.ARM:
+        if self.ql.archtype == QL_ARCH.ARM:
             self.ql.reg.arch_pc = self.ret_pc
 
         # MIPS32
-        elif self.ql.archtype== QL_ARCH.MIPS:
+        elif self.ql.archtype == QL_ARCH.MIPS:
             self.ql.reg.arch_pc = self.ret_pc
 
         # ARM64
-        elif self.ql.archtype== QL_ARCH.ARM64:
+        elif self.ql.archtype == QL_ARCH.ARM64:
             self.ql.reg.arch_pc = self.ret_pc
 
         # X86
-        elif  self.ql.archtype== QL_ARCH.X86:
+        elif self.ql.archtype == QL_ARCH.X86:
             self.ql.reg.arch_pc = self.ret_pc
 
         # X8664
-        elif  self.ql.archtype== QL_ARCH.X8664:
+        elif self.ql.archtype == QL_ARCH.X8664:
             self.ql.reg.arch_pc = self.ret_pc
         else:
             raise
@@ -223,29 +230,38 @@ class HookFuncRel(HookFunc):
         self.hook_fuc_ptr = None
         self.ori_offest = None
         self.ori_data = None
-    
+
     def _hook_fuc_enter(self, ql):
         self.call_enter()
-    
+
     def _hook_fuc_exit(self, ql):
         self.call_exit()
-    
+
     def enable(self):
-        if self.rel == None or self.hook_fuc_ptr == None or self.hook_data_ptr == None:
+        if (
+            self.rel == None
+            or self.hook_fuc_ptr == None
+            or self.hook_data_ptr == None
+        ):
             raise
-        
+
         self.exit_addr = self.hook_fuc_ptr + 8
 
         self.ql.hook_address(self._hook_fuc_enter, self.hook_fuc_ptr)
         self.ql.hook_address(self._hook_fuc_exit, self.hook_fuc_ptr + 8)
-        
+
         self.ori_offest = self.rel.r_offset
         self.rel.r_offset = self.hook_data_ptr - self.load_base
-        self.ori_data = self.ql.mem.read(self.ori_offest + self.load_base, self.ql.pointersize)        
-        
+        self.ori_data = self.ql.mem.read(
+            self.ori_offest + self.load_base, self.ql.pointersize
+        )
+
         self.ql.mem.write(self.rel.ptr, self.rel.pack())
-        self.ql.mem.write(self.ori_offest + self.load_base, self.ql.pack(self.hook_fuc_ptr))
+        self.ql.mem.write(
+            self.ori_offest + self.load_base, self.ql.pack(self.hook_fuc_ptr)
+        )
         self.ql.mem.write(self.hook_data_ptr, bytes(self.ori_data))
+
 
 class HookFuncMips(HookFunc):
     def __init__(self, ql, fucname, got, gotidx, load_base):
@@ -253,31 +269,51 @@ class HookFuncMips(HookFunc):
         self.load_base = load_base
         self.got = got
         self.gotidx = gotidx
-    
+
     def _hook_fuc_enter(self, ql):
-        self.ql.reg.t9 = self.ql.unpack(self.ql.mem.read(self.hook_data_ptr, self.ql.pointersize))
+        self.ql.reg.t9 = self.ql.unpack(
+            self.ql.mem.read(self.hook_data_ptr, self.ql.pointersize)
+        )
         self.call_enter()
-    
+
     def _hook_fuc_exit(self, ql):
         self.call_exit()
 
-        tmp = self.ql.unpack(self.ql.mem.read(self.got + self.load_base + self.gotidx * self.ql.pointersize, self.ql.pointersize))
+        tmp = self.ql.unpack(
+            self.ql.mem.read(
+                self.got + self.load_base + self.gotidx * self.ql.pointersize,
+                self.ql.pointersize,
+            )
+        )
         if tmp != self.hook_fuc_ptr:
-            self.ql.mem.write(self.got + self.load_base + self.gotidx * self.ql.pointersize, self.ql.pack(self.hook_fuc_ptr))
+            self.ql.mem.write(
+                self.got + self.load_base + self.gotidx * self.ql.pointersize,
+                self.ql.pack(self.hook_fuc_ptr),
+            )
             self.ql.mem.write(self.hook_data_ptr, self.ql.pack(tmp))
-    
-    def _hook_got(self):
-        self.ori_data = self.ql.mem.read(self.got + self.load_base + self.gotidx * self.ql.pointersize, self.ql.pointersize) 
 
-        self.ql.mem.write(self.got + self.load_base + self.gotidx * self.ql.pointersize, self.ql.pack(self.hook_fuc_ptr))
+    def _hook_got(self):
+        self.ori_data = self.ql.mem.read(
+            self.got + self.load_base + self.gotidx * self.ql.pointersize,
+            self.ql.pointersize,
+        )
+
+        self.ql.mem.write(
+            self.got + self.load_base + self.gotidx * self.ql.pointersize,
+            self.ql.pack(self.hook_fuc_ptr),
+        )
         self.ql.mem.write(self.hook_data_ptr, bytes(self.ori_data))
-    
+
     def enable(self):
-        if self.got == None or self.hook_fuc_ptr == None or self.hook_data_ptr == None:
+        if (
+            self.got == None
+            or self.hook_fuc_ptr == None
+            or self.hook_data_ptr == None
+        ):
             raise
 
         self.ql.os.register_function_after_load(self._hook_got)
-        
+
         self.exit_addr = self.hook_fuc_ptr + 8
 
         self.ql.hook_address(self._hook_fuc_enter, self.hook_fuc_ptr)
@@ -285,7 +321,17 @@ class HookFuncMips(HookFunc):
 
 
 class ELF_Phdr:
-    def __init__(self, p_type, p_offset, p_vaddr, p_paddr, p_filesz, p_memsz, p_flags, p_align):
+    def __init__(
+        self,
+        p_type,
+        p_offset,
+        p_vaddr,
+        p_paddr,
+        p_filesz,
+        p_memsz,
+        p_flags,
+        p_align,
+    ):
         self.p_type = p_type
         self.p_offset = p_offset
         self.p_vaddr = p_vaddr
@@ -295,103 +341,153 @@ class ELF_Phdr:
         self.p_flags = p_flags
         self.p_align = p_align
 
+
 class ELF32_Phdr(ELF_Phdr):
     Phdr_SIZE = 4 * 8
-    def __init__(self, buf, endian = 0):
+
+    def __init__(self, buf, endian=0):
         if len(buf) != self.Phdr_SIZE:
             raise
 
-        fmt = '<IIIIIIII' if endian == 0 else '>IIIIIIII'
+        fmt = "<IIIIIIII" if endian == 0 else ">IIIIIIII"
 
-        p_type, p_offset, p_vaddr, p_paddr, p_filesz, p_memsz, p_flags, p_align = struct.unpack(fmt, buf)
-        super(ELF32_Phdr, self).__init__(p_type, p_offset, p_vaddr, p_paddr, p_filesz, p_memsz, p_flags, p_align)
+        (
+            p_type,
+            p_offset,
+            p_vaddr,
+            p_paddr,
+            p_filesz,
+            p_memsz,
+            p_flags,
+            p_align,
+        ) = struct.unpack(fmt, buf)
+        super(ELF32_Phdr, self).__init__(
+            p_type,
+            p_offset,
+            p_vaddr,
+            p_paddr,
+            p_filesz,
+            p_memsz,
+            p_flags,
+            p_align,
+        )
+
 
 class ELF64_Phdr(ELF_Phdr):
     Phdr_SIZE = 8 * 7
-    def __init__(self, buf, endian = 0):
+
+    def __init__(self, buf, endian=0):
         if len(buf) != self.Phdr_SIZE:
             raise
-        
-        fmt = '<IIQQQQQQ' if endian == 0 else '>IIQQQQQQ'
 
-        p_type, p_flags, p_offset, p_vaddr, p_paddr, p_filesz, p_memsz, p_align = struct.unpack(fmt, buf)
-        super(ELF64_Phdr, self).__init__(p_type, p_offset, p_vaddr, p_paddr, p_filesz, p_memsz, p_flags, p_align)
-        
+        fmt = "<IIQQQQQQ" if endian == 0 else ">IIQQQQQQ"
+
+        (
+            p_type,
+            p_flags,
+            p_offset,
+            p_vaddr,
+            p_paddr,
+            p_filesz,
+            p_memsz,
+            p_align,
+        ) = struct.unpack(fmt, buf)
+        super(ELF64_Phdr, self).__init__(
+            p_type,
+            p_offset,
+            p_vaddr,
+            p_paddr,
+            p_filesz,
+            p_memsz,
+            p_flags,
+            p_align,
+        )
+
+
 class ELF_Dyn:
     def __init__(self, d_tag, d_un):
         self.d_tag = d_tag
         self.d_un = d_un
 
+
 class ELF32_Dyn(ELF_Dyn):
     Dyn_SIZE = 4 * 2
-    def __init__(self, buf, endian = 0):
+
+    def __init__(self, buf, endian=0):
         if len(buf) != self.Dyn_SIZE:
             raise
-        
-        fmt = '<iI' if endian == 0 else '>iI'
+
+        fmt = "<iI" if endian == 0 else ">iI"
 
         d_tag, d_un = struct.unpack(fmt, buf)
         super(ELF32_Dyn, self).__init__(d_tag, d_un)
 
+
 class ELF64_Dyn(ELF_Dyn):
     Dyn_SIZE = 8 * 2
-    def __init__(self, buf, endian = 0):
+
+    def __init__(self, buf, endian=0):
         if len(buf) != self.Dyn_SIZE:
             raise
-        
-        fmt = '<qQ' if endian == 0 else '>qQ'
+
+        fmt = "<qQ" if endian == 0 else ">qQ"
 
         d_tag, d_un = struct.unpack(fmt, buf)
         super(ELF64_Dyn, self).__init__(d_tag, d_un)
+
 
 class ELF_Rel:
     def __init__(self, r_offset, r_info):
         self.r_offset = r_offset
         self.r_info = r_info
 
+
 class ELF32_Rel(ELF_Rel):
     Rel_SIZE = 4 * 2
-    def __init__(self, buf, endian = 0, ptr = None):
+
+    def __init__(self, buf, endian=0, ptr=None):
         if len(buf) != self.Rel_SIZE:
             raise
-        
+
         self.ptr = ptr
-        self.fmt = '<II' if endian == 0 else '>II'
+        self.fmt = "<II" if endian == 0 else ">II"
 
         r_offset, r_info = struct.unpack(self.fmt, buf)
         super(ELF32_Rel, self).__init__(r_offset, r_info)
 
     @property
     def r_type(self):
-        return self.r_info & 0xff
+        return self.r_info & 0xFF
 
     @property
     def r_sym(self):
         return self.r_info >> 8
-    
+
     def pack(self):
         return struct.pack(self.fmt, self.r_offset, self.r_info)
 
+
 class ELF64_Rel(ELF_Rel):
     Rel_SIZE = 8 * 2
-    def __init__(self, buf, endian = 0, ptr = None):
+
+    def __init__(self, buf, endian=0, ptr=None):
         if len(buf) != self.Rel_SIZE:
             raise
-        
+
         self.ptr = ptr
-        self.fmt = '<QQ' if endian == 0 else '>QQ'
+        self.fmt = "<QQ" if endian == 0 else ">QQ"
 
         r_offset, r_info = struct.unpack(self.fmt, buf)
         super(ELF64_Rel, self).__init__(r_offset, r_info)
 
     @property
     def r_type(self):
-        return self.r_info & 0xffffffff
-        
+        return self.r_info & 0xFFFFFFFF
+
     @property
     def r_sym(self):
         return self.r_info >> 32
-    
+
     def pack(self):
         return struct.pack(self.fmt, self.r_offset, self.r_info)
 
@@ -402,45 +498,49 @@ class ELF_Rela:
         self.r_info = r_info
         self.r_addend = r_addend
 
+
 class ELF32_Rela(ELF_Rela):
     Rela_SIZE = 4 * 3
-    def __init__(self, buf, endian = 0, ptr = None):
+
+    def __init__(self, buf, endian=0, ptr=None):
         if len(buf) != self.Rela_SIZE:
             raise
-        
+
         self.ptr = ptr
-        self.fmt = '<IIi' if endian == 0 else '>IIi'
+        self.fmt = "<IIi" if endian == 0 else ">IIi"
 
         r_offset, r_info, r_addend = struct.unpack(self.fmt, buf)
         super(ELF32_Rela, self).__init__(r_offset, r_info, r_addend)
 
     @property
     def r_type(self):
-        return self.r_info & 0xff
+        return self.r_info & 0xFF
 
     @property
     def r_sym(self):
         return self.r_info >> 8
-    
+
     def pack(self):
         return struct.pack(self.fmt, self.r_offset, self.r_info, self.r_addend)
 
+
 class ELF64_Rela(ELF_Rela):
     Rela_SIZE = 8 * 3
-    def __init__(self, buf, endian = 0, ptr = None):
+
+    def __init__(self, buf, endian=0, ptr=None):
         if len(buf) != self.Rela_SIZE:
             raise
-        
+
         self.ptr = ptr
-        self.fmt = '<QQq' if endian == 0 else '>QQq'
+        self.fmt = "<QQq" if endian == 0 else ">QQq"
 
         r_offset, r_info, r_addend = struct.unpack(self.fmt, buf)
         super(ELF64_Rela, self).__init__(r_offset, r_info, r_addend)
 
     @property
     def r_type(self):
-        return self.r_info & 0xffffffff
-        
+        return self.r_info & 0xFFFFFFFF
+
     @property
     def r_sym(self):
         return self.r_info >> 32
@@ -448,8 +548,9 @@ class ELF64_Rela(ELF_Rela):
     def pack(self):
         return struct.pack(self.fmt, self.r_offset, self.r_info, self.r_addend)
 
+
 class ELF_Sym:
-    def __init__(self, st_name ,st_value ,st_size ,st_info ,st_other ,st_shndx):
+    def __init__(self, st_name, st_value, st_size, st_info, st_other, st_shndx):
         self.st_name = st_name
         self.st_value = st_value
         self.st_size = st_size
@@ -457,55 +558,90 @@ class ELF_Sym:
         self.st_other = st_other
         self.st_shndx = st_shndx
 
+
 class ELF32_Sym(ELF_Sym):
     Sym_SIZE = 4 * 4
-    def __init__(self, buf, endian = 0):
+
+    def __init__(self, buf, endian=0):
         if len(buf) != self.Sym_SIZE:
             raise
-        
-        self.fmt = '<IIIBBH' if endian == 0 else '>IIIBBH'
 
-        st_name ,st_value ,st_size ,st_info ,st_other ,st_shndx = struct.unpack(self.fmt, buf)
-        super(ELF32_Sym, self).__init__(st_name ,st_value ,st_size ,st_info ,st_other ,st_shndx)
-    
+        self.fmt = "<IIIBBH" if endian == 0 else ">IIIBBH"
+
+        st_name, st_value, st_size, st_info, st_other, st_shndx = struct.unpack(
+            self.fmt, buf
+        )
+        super(ELF32_Sym, self).__init__(
+            st_name, st_value, st_size, st_info, st_other, st_shndx
+        )
+
     def pack(self):
-        struct.pack(self.fmt ,self.st_name ,self.st_value ,self.st_size ,self.st_info ,self.st_other ,self.st_shndx)
+        struct.pack(
+            self.fmt,
+            self.st_name,
+            self.st_value,
+            self.st_size,
+            self.st_info,
+            self.st_other,
+            self.st_shndx,
+        )
+
 
 class ELF64_Sym(ELF_Sym):
     Sym_SIZE = 8 * 3
-    def __init__(self, buf, endian = 0):
+
+    def __init__(self, buf, endian=0):
         if len(buf) != self.Sym_SIZE:
             raise
-        
-        self.fmt = '<IBBHQQ' if endian == 0 else '>IBBHQQ'
 
-        st_name ,st_info ,st_other ,st_shndx ,st_value ,st_size = struct.unpack(self.fmt, buf)
-        super(ELF64_Sym, self).__init__(st_name ,st_value ,st_size ,st_info ,st_other ,st_shndx)
-    
+        self.fmt = "<IBBHQQ" if endian == 0 else ">IBBHQQ"
+
+        st_name, st_info, st_other, st_shndx, st_value, st_size = struct.unpack(
+            self.fmt, buf
+        )
+        super(ELF64_Sym, self).__init__(
+            st_name, st_value, st_size, st_info, st_other, st_shndx
+        )
+
     def pack(self):
-        struct.pack(self.fmt ,self.st_name ,self.st_info ,self.st_other ,self.st_shndx ,self.st_value ,self.st_size)
+        struct.pack(
+            self.fmt,
+            self.st_name,
+            self.st_info,
+            self.st_other,
+            self.st_shndx,
+            self.st_value,
+            self.st_size,
+        )
+
 
 class ELF_Symtab:
-    def __init__(self, ql, symtab, endian = 0):
+    def __init__(self, ql, symtab, endian=0):
         self.ql = ql
         self.symtab = symtab
         self.endian = endian
 
         self.symclass = ELF32_Sym if self.ql.archbit == 32 else ELF64_Sym
-    
+
     def __getitem__(self, idx):
-        buf = self.ql.mem.read(self.symtab + idx * self.symclass.Sym_SIZE, self.symclass.Sym_SIZE)
+        buf = self.ql.mem.read(
+            self.symtab + idx * self.symclass.Sym_SIZE, self.symclass.Sym_SIZE
+        )
         return self.symclass(buf, self.endian)
 
     def __setitem__(self, idx, sym):
-        self.ql.mem.write(self.symtab + idx * self.symclass.Sym_SIZE, sym.pack())
+        self.ql.mem.write(
+            self.symtab + idx * self.symclass.Sym_SIZE, sym.pack()
+        )
+
 
 class ELF_Strtab:
     def __init__(self, strtab):
         self.strtab = bytes(strtab)
-    
+
     def __getitem__(self, idx):
-        return self.strtab[idx: self.strtab.index(b'\x00', idx)]
+        return self.strtab[idx : self.strtab.index(b"\x00", idx)]
+
 
 class FunctionHook:
     def __init__(self, ql, phoff, phnum, phentsize, load_base, hook_mem):
@@ -515,7 +651,7 @@ class FunctionHook:
         self.phnum = phnum
         self.phentsize = phentsize
         self.load_base = load_base
-        self.add_function_hook = self.add_function_hook_default 
+        self.add_function_hook = self.add_function_hook_default
 
         self.dynamic = None
 
@@ -536,7 +672,9 @@ class FunctionHook:
         self.strtab_size = None
 
         self.symtab = None
-        self.syment = ELF32_Sym.Sym_SIZE if ql.archbit == 32 else ELF64_Sym.Sym_SIZE
+        self.syment = (
+            ELF32_Sym.Sym_SIZE if ql.archbit == 32 else ELF64_Sym.Sym_SIZE
+        )
 
         self.plt_rel_size = None
         self.plt_rel = None
@@ -544,11 +682,15 @@ class FunctionHook:
 
         self.rela = None
         self.rela_size = None
-        self.relaent = ELF32_Rela.Rela_SIZE if ql.archbit == 32 else ELF64_Rela.Rela_SIZE
+        self.relaent = (
+            ELF32_Rela.Rela_SIZE if ql.archbit == 32 else ELF64_Rela.Rela_SIZE
+        )
 
         self.rel = None
         self.rel_size = None
-        self.relent = ELF32_Rel.Rel_SIZE if ql.archbit == 32 else ELF64_Rel.Rel_SIZE
+        self.relent = (
+            ELF32_Rel.Rel_SIZE if ql.archbit == 32 else ELF64_Rel.Rel_SIZE
+        )
 
         self.plt_got = None
         self.mips_local_gotno = None
@@ -563,39 +705,39 @@ class FunctionHook:
             self.GLOB_DAT = 21
             self.JMP_SLOT = 22
             # orr r1, r1, r1
-            ins = b'\x01\x10\x81\xe1'
+            ins = b"\x01\x10\x81\xe1"
             self.add_function_hook = self.add_function_hook_relocation
 
         # MIPS32
-        elif self.ql.archtype== QL_ARCH.MIPS:
+        elif self.ql.archtype == QL_ARCH.MIPS:
             self.GLOB_DAT = 21
             self.JMP_SLOT = 22
             # add $t9, $t9, $zero
-            ins = b' \xc8 \x03'
+            ins = b" \xc8 \x03"
             self.add_function_hook = self.add_function_hook_mips
 
         # ARM64
-        elif self.ql.archtype== QL_ARCH.ARM64:
+        elif self.ql.archtype == QL_ARCH.ARM64:
             self.GLOB_DAT = 1025
             self.JMP_SLOT = 1026
             # orr x1,x1,x1
-            ins = b'\x21\x00\x01\xaa'
+            ins = b"\x21\x00\x01\xaa"
             self.add_function_hook = self.add_function_hook_relocation
 
         # X86
-        elif  self.ql.archtype== QL_ARCH.X86:
+        elif self.ql.archtype == QL_ARCH.X86:
             self.GLOB_DAT = 6
             self.JMP_SLOT = 7
             # nop
-            ins = b'\x90'
+            ins = b"\x90"
             self.add_function_hook = self.add_function_hook_relocation
 
         # X8664
-        elif  self.ql.archtype== QL_ARCH.X8664:
+        elif self.ql.archtype == QL_ARCH.X8664:
             self.GLOB_DAT = 6
             self.JMP_SLOT = 7
             # nop
-            ins = b'\x90'
+            ins = b"\x90"
             self.add_function_hook = self.add_function_hook_relocation
 
         self._parse()
@@ -609,8 +751,14 @@ class FunctionHook:
         if self.plt_rel != None:
             self.rel_list += self.plt_rel
             self.show_relocation(self.plt_rel)
-        
-        if self.ql.archtype == QL_ARCH.MIPS and self.plt_got != None and self.mips_gotsym != None and self.mips_local_gotno != None and self.mips_symtabno != None:
+
+        if (
+            self.ql.archtype == QL_ARCH.MIPS
+            and self.plt_got != None
+            and self.mips_gotsym != None
+            and self.mips_local_gotno != None
+            and self.mips_symtabno != None
+        ):
             self.show_dynsym_name(self.mips_gotsym, self.mips_symtabno)
 
         self.ql.mem.map(hook_mem, 0x2000, perms=7, info="[hook_mem]")
@@ -646,7 +794,9 @@ class FunctionHook:
         Pdata = self.ql.mem.read(self.phoff, Pnum * Psize)
 
         for i in range(Pnum):
-            buf = Pdata[i * ELF32_Phdr.Phdr_SIZE : (i + 1) * ELF32_Phdr.Phdr_SIZE]
+            buf = Pdata[
+                i * ELF32_Phdr.Phdr_SIZE : (i + 1) * ELF32_Phdr.Phdr_SIZE
+            ]
             P = ELF32_Phdr(buf, self.endian)
             yield P
         return
@@ -678,7 +828,9 @@ class FunctionHook:
         Pdata = self.ql.mem.read(self.phoff, Pnum * Psize)
 
         for i in range(Pnum):
-            buf = Pdata[i * ELF64_Phdr.Phdr_SIZE : (i + 1) * ELF64_Phdr.Phdr_SIZE]
+            buf = Pdata[
+                i * ELF64_Phdr.Phdr_SIZE : (i + 1) * ELF64_Phdr.Phdr_SIZE
+            ]
             P = ELF64_Phdr(buf, self.endian)
             yield P
         return
@@ -721,7 +873,7 @@ class FunctionHook:
             if D.d_tag == DT_NULL:
                 break
         return
-    
+
     def parse_dynamic32(self):
         # typedef struct
         # {
@@ -762,7 +914,7 @@ class FunctionHook:
             if p.p_type == PT_DYNAMIC:
                 self.dynamic = p.p_vaddr + self.load_base
                 break
-        
+
         if self.dynamic == None:
             return
 
@@ -829,59 +981,126 @@ class FunctionHook:
                 self.mips_symtabno = d.d_un
             elif d.d_tag == DT_MIPS_GOTSYM:
                 self.mips_gotsym = d.d_un
-            
+
             elif d.d_tag == DT_NEEDED:
                 pass
             else:
                 pass
-            
+
         if self.strtab != None and self.strtab_size != None:
-            self.strtab = ELF_Strtab(self.ql.mem.read(self.strtab, self.strtab_size))
-        
+            self.strtab = ELF_Strtab(
+                self.ql.mem.read(self.strtab, self.strtab_size)
+            )
+
         if self.rela != None and self.rela_size != None:
             rela_buf = self.ql.mem.read(self.rela, self.rela_size)
             rela_ptr = self.rela
             if self.ql.archbit == 32:
-                self.rela = [ELF32_Rela(rela_buf[_ * self.relaent : (_ + 1) * self.relaent], self.endian, rela_ptr + _ * self.relaent) for _ in range(self.rela_size // self.relaent)]
+                self.rela = [
+                    ELF32_Rela(
+                        rela_buf[_ * self.relaent : (_ + 1) * self.relaent],
+                        self.endian,
+                        rela_ptr + _ * self.relaent,
+                    )
+                    for _ in range(self.rela_size // self.relaent)
+                ]
             elif self.ql.archbit == 64:
-                self.rela = [ELF64_Rela(rela_buf[_ * self.relaent : (_ + 1) * self.relaent], self.endian, rela_ptr + _ * self.relaent) for _ in range(self.rela_size // self.relaent)]
-        
+                self.rela = [
+                    ELF64_Rela(
+                        rela_buf[_ * self.relaent : (_ + 1) * self.relaent],
+                        self.endian,
+                        rela_ptr + _ * self.relaent,
+                    )
+                    for _ in range(self.rela_size // self.relaent)
+                ]
+
         if self.rel != None and self.rel_size != None:
             rel_buf = self.ql.mem.read(self.rel, self.rel_size)
             rel_ptr = self.rel
             if self.ql.archbit == 32:
-                self.rel = [ELF32_Rel(rel_buf[_ * self.relent : (_ + 1) * self.relent], self.endian, rel_ptr + _ * self.relent) for _ in range(self.rel_size // self.relent)]
+                self.rel = [
+                    ELF32_Rel(
+                        rel_buf[_ * self.relent : (_ + 1) * self.relent],
+                        self.endian,
+                        rel_ptr + _ * self.relent,
+                    )
+                    for _ in range(self.rel_size // self.relent)
+                ]
             elif self.ql.archbit == 64:
-                self.rel = [ELF64_Rel(rel_buf[_ * self.relent : (_ + 1) * self.relent], self.endian, rel_ptr + _ * self.relent) for _ in range(self.rel_size // self.relent)]
+                self.rel = [
+                    ELF64_Rel(
+                        rel_buf[_ * self.relent : (_ + 1) * self.relent],
+                        self.endian,
+                        rel_ptr + _ * self.relent,
+                    )
+                    for _ in range(self.rel_size // self.relent)
+                ]
 
         if self.plt_rel != None and self.plt_rel_size != None:
             plt_rel_buf = self.ql.mem.read(self.plt_rel, self.plt_rel_size)
             plt_rel_ptr = self.plt_rel
             if self.plt_rel_type == DT_REL:
                 if self.ql.archbit == 32:
-                    self.plt_rel = [ELF32_Rel(plt_rel_buf[_ * self.relent : (_ + 1) * self.relent], self.endian, plt_rel_ptr + _ * self.relent) for _ in range(self.plt_rel_size // self.relent)]
+                    self.plt_rel = [
+                        ELF32_Rel(
+                            plt_rel_buf[
+                                _ * self.relent : (_ + 1) * self.relent
+                            ],
+                            self.endian,
+                            plt_rel_ptr + _ * self.relent,
+                        )
+                        for _ in range(self.plt_rel_size // self.relent)
+                    ]
                 elif self.ql.archbit == 64:
-                    self.plt_rel = [ELF64_Rel(plt_rel_buf[_ * self.relent : (_ + 1) * self.relent], self.endian, plt_rel_ptr + _ * self.relent) for _ in range(self.plt_rel_size // self.relent)]
+                    self.plt_rel = [
+                        ELF64_Rel(
+                            plt_rel_buf[
+                                _ * self.relent : (_ + 1) * self.relent
+                            ],
+                            self.endian,
+                            plt_rel_ptr + _ * self.relent,
+                        )
+                        for _ in range(self.plt_rel_size // self.relent)
+                    ]
             else:
                 if self.ql.archbit == 32:
-                    self.plt_rel = [ELF32_Rela(plt_rel_buf[_ * self.relaent : (_ + 1) * self.relaent], self.endian, plt_rel_ptr + _ * self.relaent) for _ in range(self.plt_rel_size // self.relaent)]
+                    self.plt_rel = [
+                        ELF32_Rela(
+                            plt_rel_buf[
+                                _ * self.relaent : (_ + 1) * self.relaent
+                            ],
+                            self.endian,
+                            plt_rel_ptr + _ * self.relaent,
+                        )
+                        for _ in range(self.plt_rel_size // self.relaent)
+                    ]
                 elif self.ql.archbit == 64:
-                    self.plt_rel = [ELF64_Rela(plt_rel_buf[_ * self.relaent : (_ + 1) * self.relaent], self.endian, plt_rel_ptr + _ * self.relaent) for _ in range(self.plt_rel_size // self.relaent)]
-        
+                    self.plt_rel = [
+                        ELF64_Rela(
+                            plt_rel_buf[
+                                _ * self.relaent : (_ + 1) * self.relaent
+                            ],
+                            self.endian,
+                            plt_rel_ptr + _ * self.relaent,
+                        )
+                        for _ in range(self.plt_rel_size // self.relaent)
+                    ]
+
         if self.symtab != None:
             self.symtab = ELF_Symtab(self.ql, self.symtab, self.endian)
-        
-    
+
     def show_relocation(self, rel):
         for r in rel:
-            if (r.r_type == self.JMP_SLOT or r.r_type == self.GLOB_DAT) and r.r_sym != 0:
+            if (
+                r.r_type == self.JMP_SLOT or r.r_type == self.GLOB_DAT
+            ) and r.r_sym != 0:
                 rel_name = self.strtab[self.symtab[r.r_sym].st_name]
-                self.ql.log.debug('rel name ' + str(rel_name))
-    
+                self.ql.log.debug("rel name " + str(rel_name))
+
     def show_dynsym_name(self, s, e):
         for symidx in range(s, e):
             rel_name = self.strtab[self.symtab[symidx].st_name]
-            self.ql.log.debug('dynsym name ' + str(rel_name))
+            self.ql.log.debug("dynsym name " + str(rel_name))
 
     def _hook_int(self, ql, intno):
         idx = (self.ql.reg.arch_pc - self.hook_mem) // 0x10
@@ -901,7 +1120,7 @@ class FunctionHook:
 
         if len(self.free_list) == 0:
             raise
-        
+
         hf.idx = self.free_list[0]
         del self.free_list[0]
 
@@ -920,21 +1139,22 @@ class FunctionHook:
         #         self.ql.hook_intno(self._hook_int, 7)
         #     self.hook_int = True
 
-
-    def add_function_hook_relocation(self, funcname, cb, pos, userdata = None):
+    def add_function_hook_relocation(self, funcname, cb, pos, userdata=None):
         if type(funcname) != str:
             raise
-        
+
         for r in self.rel_list:
-            if (r.r_type == self.JMP_SLOT or r.r_type == self.GLOB_DAT) and r.r_sym != 0:
+            if (
+                r.r_type == self.JMP_SLOT or r.r_type == self.GLOB_DAT
+            ) and r.r_sym != 0:
                 tmp_name = self.strtab[self.symtab[r.r_sym].st_name]
                 if tmp_name == funcname.encode():
                     self._hook_function(tmp_name, r, cb, pos, userdata)
-    
-    def add_function_hook_default(self, funcname, cb, userdata = None):
+
+    def add_function_hook_default(self, funcname, cb, userdata=None):
         pass
-    
-    def add_function_hook_mips(self, funcname, cb, pos, userdata = None):
+
+    def add_function_hook_mips(self, funcname, cb, pos, userdata=None):
         self.add_function_hook_relocation(funcname, cb, userdata)
 
         for symidx in range(self.mips_gotsym, self.mips_symtabno):
@@ -945,12 +1165,18 @@ class FunctionHook:
                     self.hook_list[fn].add_hook(cb, pos, userdata)
                     return
 
-                hf = HookFuncMips(self.ql, fn, self.plt_got, symidx - self.mips_gotsym + self.mips_local_gotno, self.load_base)
+                hf = HookFuncMips(
+                    self.ql,
+                    fn,
+                    self.plt_got,
+                    symidx - self.mips_gotsym + self.mips_local_gotno,
+                    self.load_base,
+                )
                 hf.add_hook(cb, pos, userdata)
 
                 if len(self.free_list) == 0:
                     raise
-                
+
                 hf.idx = self.free_list[0]
                 del self.free_list[0]
 

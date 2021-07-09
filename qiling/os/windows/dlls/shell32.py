@@ -16,7 +16,7 @@ from qiling.exception import *
 from qiling.os.windows.structs import *
 from qiling.const import *
 
-dllname = 'shell32_dll'
+dllname = "shell32_dll"
 
 # DWORD_PTR SHGetFileInfoA(
 #   LPCSTR     pszPath,
@@ -49,8 +49,12 @@ def hook_SHGetFileInfoW(ql, address, params):
 
 def _ShellExecute(ql, obj: ShellExecuteInfoA):
 
-    operation = ql.os.utils.read_wstring(obj.verb[0]) if obj.verb[0] != 0 else ""
-    params = ql.os.utils.read_wstring(obj.params[0]) if obj.params[0] != 0 else ""
+    operation = (
+        ql.os.utils.read_wstring(obj.verb[0]) if obj.verb[0] != 0 else ""
+    )
+    params = (
+        ql.os.utils.read_wstring(obj.params[0]) if obj.params[0] != 0 else ""
+    )
     file = ql.os.utils.read_wstring(obj.file[0]) if obj.file[0] != 0 else ""
     directory = ql.os.utils.read_wstring(obj.dir[0]) if obj.dir[0] != 0 else ""
 
@@ -94,10 +98,19 @@ def hook_ShellExecuteExW(ql, address, params):
 #   LPCWSTR lpDirectory,
 #   INT     nShowCmd
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'LPCWSTR': 'POINTER'})
+@winsdkapi(
+    cc=STDCALL, dllname=dllname, replace_params_type={"LPCWSTR": "POINTER"}
+)
 def hook_ShellExecuteW(ql, address, params):
-    shellInfo = ShellExecuteInfoA(ql, hwnd=params["hwnd"], lpVerb=params["lpOperation"], lpFile=params["lpFile"],
-                                  lpParams=params["lpParameters"], lpDir=params["lpDirectory"], show=params["nShowCmd"])
+    shellInfo = ShellExecuteInfoA(
+        ql,
+        hwnd=params["hwnd"],
+        lpVerb=params["lpOperation"],
+        lpFile=params["lpFile"],
+        lpParams=params["lpParameters"],
+        lpDir=params["lpDirectory"],
+        show=params["nShowCmd"],
+    )
     _ = _ShellExecute(ql, shellInfo)
     return 33
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -12,7 +12,7 @@ from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
 
-dllname = 'msi_dll'
+dllname = "msi_dll"
 
 # UINT MsiGetComponentStateA(
 #   MSIHANDLE    hInstall,

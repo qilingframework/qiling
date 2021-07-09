@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -10,11 +10,25 @@ from unicorn.arm_const import *
 
 from qiling.os.const import *
 from qiling.const import *
-from qiling.os.macos.structs import IOExternalMethodArguments, IOExternalMethodDispatch, POINTER64
+from qiling.os.macos.structs import (
+    IOExternalMethodArguments,
+    IOExternalMethodDispatch,
+    POINTER64,
+)
 
-def IOConnectCallMethod(ql, selector, 
-                        input_array, input_cnt, input_struct, input_struct_size,
-                        output_array, output_cnt, output_struct, output_struct_size):
+
+def IOConnectCallMethod(
+    ql,
+    selector,
+    input_array,
+    input_cnt,
+    input_struct,
+    input_struct_size,
+    output_array,
+    output_cnt,
+    output_struct,
+    output_struct_size,
+):
 
     if ql.os.IOKit is not True:
         ql.log.info("Must have a IOKit driver")
@@ -26,7 +40,10 @@ def IOConnectCallMethod(ql, selector,
 
     if input_array is not None and input_cnt != 0:
         input_array_addr = ql.os.heap.alloc(input_cnt)
-        ql.mem.write(input_array_addr, b''.join(struct.pack("<Q", x) for x in input_array))
+        ql.mem.write(
+            input_array_addr,
+            b"".join(struct.pack("<Q", x) for x in input_array),
+        )
         ql.log.debug("Created input array at 0x%x" % input_array_addr)
     else:
         input_array_addr = 0
@@ -40,7 +57,10 @@ def IOConnectCallMethod(ql, selector,
 
     if output_array is not None and output_cnt != 0:
         output_array_addr = ql.os.heap.alloc(output_cnt)
-        ql.mem.write(output_array_addr, b''.join(struct.pack("<Q", x) for x in output_array))
+        ql.mem.write(
+            output_array_addr,
+            b"".join(struct.pack("<Q", x) for x in output_array),
+        )
         ql.log.debug("Created output array at 0x%x" % output_array_addr)
     else:
         output_array_addr = 0
@@ -53,7 +73,9 @@ def IOConnectCallMethod(ql, selector,
         output_struct_addr = 0
 
     dispatch_addr = ql.os.heap.alloc(ctypes.sizeof(IOExternalMethodDispatch))
-    ql.log.debug("Created IOExternalMethodDispatch object at 0x%x" % dispatch_addr)
+    ql.log.debug(
+        "Created IOExternalMethodDispatch object at 0x%x" % dispatch_addr
+    )
     dispatch_obj = IOExternalMethodDispatch(ql, dispatch_addr)
 
     args_obj.___reservedA = 0
@@ -80,18 +102,18 @@ def IOConnectCallMethod(ql, selector,
 
     args_obj.updateToMem()
     ql.log.debug("Initialized IOExternalMethodArguments object")
-    ql.os.savedrip=0xffffff8000a106ba
+    ql.os.savedrip = 0xFFFFFF8000A106BA
     ql.run(begin=ql.loader.user_alloc)
     ql.os.user_object = ql.reg.rax
     ql.log.debug("Created user object at 0x%x" % ql.os.user_object)
 
     ql.reg.rdi = ql.os.user_object
-    ql.reg.rsi = 0x1337 # owningTask
-    ql.reg.rdx = 0 # securityID
-    ql.reg.rcx = 0 # type
-    ql.reg.r8 = 0 # properties
+    ql.reg.rsi = 0x1337  # owningTask
+    ql.reg.rdx = 0  # securityID
+    ql.reg.rcx = 0  # type
+    ql.reg.r8 = 0  # properties
     ql.stack_push(0)
-    ql.os.savedrip=0xffffff8000a10728
+    ql.os.savedrip = 0xFFFFFF8000A10728
     ql.run(begin=ql.loader.user_initWithTask)
     ql.log.debug("Initialized user object")
 
@@ -103,13 +125,15 @@ def IOConnectCallMethod(ql, selector,
     ql.reg.rcx = dispatch_addr
     ql.reg.r8 = ql.os.kext_object
     ql.reg.r9 = 0
-    ql.os.savedrip=0xffffff8000a6e9c7
+    ql.os.savedrip = 0xFFFFFF8000A6E9C7
     ql.run(begin=ql.loader.user_externalMethod)
 
     args_obj.loadFromMem()
     output_array = args_obj.scalarOutput
     ql.log.debug("Finish IOConnectCallMethod")
-    return args_obj.scalarOutput, type(output_struct).from_buffer(args_obj.structureOutput)
+    return args_obj.scalarOutput, type(output_struct).from_buffer(
+        args_obj.structureOutput
+    )
 
 
 def gen_stub_code(ql, params, func, ret=0):
@@ -131,7 +155,14 @@ def gen_stub_code(ql, params, func, ret=0):
         43: 11 11 11
         46: ff e0                   jmp    rax
     """
-    reg_list = [b"\x48\xbf", b"\x48\xbe", b"\x48\xba", b"\x48\xb9", b"\x49\xb8", b"\x49\xb9"]
+    reg_list = [
+        b"\x48\xbf",
+        b"\x48\xbe",
+        b"\x48\xba",
+        b"\x48\xb9",
+        b"\x49\xb8",
+        b"\x49\xb9",
+    ]
     remains = 0
     shellcode = b""
     if len(params) <= 6:
@@ -142,7 +173,9 @@ def gen_stub_code(ql, params, func, ret=0):
             shellcode += reg_list[idx] + struct.pack("<Q", p)
         remains = len(params) - 6
         for i in range(remains):
-            shellcode += b"\x48\xb8" + struct.pack("<Q", params[i + 6]) + b"\x50"
+            shellcode += (
+                b"\x48\xb8" + struct.pack("<Q", params[i + 6]) + b"\x50"
+            )
 
     clean_stack = b""
     if remains > 0:
@@ -151,7 +184,9 @@ def gen_stub_code(ql, params, func, ret=0):
             0:  48 81 c4 ff ff 00 00    add    rsp,0xffff
             7:  c3                      ret
         """
-        clean_stack = b"\x48\x81\xc4" + struct.pack("<H", remains * 8) + b"\x00\x00\xc3"
+        clean_stack = (
+            b"\x48\x81\xc4" + struct.pack("<H", remains * 8) + b"\x00\x00\xc3"
+        )
     else:
         """
         clean_stack:
@@ -173,6 +208,7 @@ def gen_stub_code(ql, params, func, ret=0):
     ql.mem.write(trampoline, shellcode)
     return trampoline
 
+
 def env_dict_to_array(env_dict):
     env_list = []
     for item in env_dict:
@@ -188,5 +224,5 @@ def page_align_end(addr, page_size):
 
 
 def set_eflags_cf(ql, target_cf):
-    ql.reg.ef = ( ql.reg.ef & 0xfffffffe ) | target_cf
+    ql.reg.ef = (ql.reg.ef & 0xFFFFFFFE) | target_cf
     return ql.reg.ef

@@ -14,7 +14,7 @@ from qiling.os.windows.handle import *
 from qiling.exception import *
 
 
-dllname = 'kernel32_dll'
+dllname = "kernel32_dll"
 
 # BOOL GetStringTypeW(
 #   DWORD                         dwInfoType,
@@ -54,7 +54,9 @@ def hook_GetStringTypeExA(ql, address, params):
 #   LPCCH                              lpDefaultChar,
 #   LPBOOL                             lpUsedDefaultChar
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'LPCWCH': 'WSTRING'})
+@winsdkapi(
+    cc=STDCALL, dllname=dllname, replace_params_type={"LPCWCH": "WSTRING"}
+)
 def hook_WideCharToMultiByte(ql, address, params):
     ret = 0
 
@@ -77,9 +79,13 @@ def hook_WideCharToMultiByte(ql, address, params):
 #  LPWSTR                            lpWideCharStr,
 #  int                               cchWideChar
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'DWORD': 'UINT', 'LPCCH': 'WSTRING'})
+@winsdkapi(
+    cc=STDCALL,
+    dllname=dllname,
+    replace_params_type={"DWORD": "UINT", "LPCCH": "WSTRING"},
+)
 def hook_MultiByteToWideChar(ql, address, params):
-    wide_str = (params['lpMultiByteStr']+"\x00").encode('utf-16le')
-    if params['cchWideChar'] != 0:
-        ql.mem.write(params['lpWideCharStr'], wide_str)
+    wide_str = (params["lpMultiByteStr"] + "\x00").encode("utf-16le")
+    if params["cchWideChar"] != 0:
+        ql.mem.write(params["lpWideCharStr"], wide_str)
     return len(wide_str)

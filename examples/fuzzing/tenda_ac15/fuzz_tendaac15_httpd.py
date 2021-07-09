@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -14,26 +14,33 @@
 import os, pickle, socket, sys, threading
 
 import unicornafl
+
 unicornafl.monkeypatch()
 
 sys.path.append("../../../")
 from qiling import *
 from qiling.const import QL_VERBOSE
 
+
 def patcher(ql):
-    br0_addr = ql.mem.search("br0".encode() + b'\x00')
+    br0_addr = ql.mem.search("br0".encode() + b"\x00")
     for addr in br0_addr:
-        ql.mem.write(addr, b'lo\x00')
+        ql.mem.write(addr, b"lo\x00")
 
 
 def main(input_file, enable_trace=False):
-    ql = Qiling(["rootfs/bin/httpd"], "rootfs", verbose=QL_VERBOSE.DEBUG, console = True if enable_trace else False)
+    ql = Qiling(
+        ["rootfs/bin/httpd"],
+        "rootfs",
+        verbose=QL_VERBOSE.DEBUG,
+        console=True if enable_trace else False,
+    )
 
     # save current emulated status
     ql.restore(snapshot="snapshot.bin")
 
     # return should be 0x7ff3ca64
-    fuzz_mem=ql.mem.search(b"CCCCAAAA")
+    fuzz_mem = ql.mem.search(b"CCCCAAAA")
     target_address = fuzz_mem[0]
 
     def place_input_callback(uc, input, _, data):
@@ -47,10 +54,12 @@ def main(input_file, enable_trace=False):
         # We start our AFL forkserver or run once if AFL is not available.
         # This will only return after the fuzzing stopped.
         try:
-            #print("Starting afl_fuzz().")
-            if not _ql.uc.afl_fuzz(input_file=input_file,
-                        place_input_callback=place_input_callback,
-                        exits=[ql.os.exit_point]):
+            # print("Starting afl_fuzz().")
+            if not _ql.uc.afl_fuzz(
+                input_file=input_file,
+                place_input_callback=place_input_callback,
+                exits=[ql.os.exit_point],
+            ):
                 print("Ran once without AFL attached.")
                 os._exit(0)  # that's a looot faster than tidying up.
         except unicornafl.UcAflError as ex:
@@ -60,15 +69,16 @@ def main(input_file, enable_trace=False):
             if ex != unicornafl.UC_AFL_RET_CALLED_TWICE:
                 raise
 
-    ql.hook_address(callback=start_afl, address=0x10930+8)
-    
+    ql.hook_address(callback=start_afl, address=0x10930 + 8)
+
     try:
-        ql.run(begin = 0x10930+4, end = 0x7a0cc+4)
+        ql.run(begin=0x10930 + 4, end=0x7A0CC + 4)
         os._exit(0)
     except:
         if enable_trace:
             print("\nFuzzer Went Shit")
-        os._exit(0)        
+        os._exit(0)
+
 
 if __name__ == "__main__":
     if len(sys.argv) == 1:

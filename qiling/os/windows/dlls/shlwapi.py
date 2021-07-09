@@ -10,7 +10,7 @@ from qiling.os.windows.utils import *
 from qiling.os.windows.const import *
 
 
-dllname = 'shlwapi_dll'
+dllname = "shlwapi_dll"
 
 
 # LPCSTR PathFindExtensionA(
@@ -50,7 +50,9 @@ def hook_PathFindFileNameA(ql, address, params):
     pointer = params["pszPath"]
     pathname = ql.os.utils.read_cstring(pointer)
     params["pszPath"] = pathname
-    size_before_last_slash = len("".join(pathname.split("\\")[:-1])) + pathname.count("\\")
+    size_before_last_slash = len(
+        "".join(pathname.split("\\")[:-1])
+    ) + pathname.count("\\")
     pointer_start = pointer + size_before_last_slash
     return pointer
 
@@ -64,7 +66,9 @@ def hook_PathFindFileNameW(ql, address, params):
     pointer = params["pszPath"]
     pathname = ql.os.utils.read_wstring(pointer)
     params["pszPath"] = pathname
-    size_before_last_slash = len("".join(pathname.split("\\")[:-1])) + pathname.count("\\")
+    size_before_last_slash = len(
+        "".join(pathname.split("\\")[:-1])
+    ) + pathname.count("\\")
     pointer_start = pointer + size_before_last_slash
     return pointer
 

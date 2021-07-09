@@ -14,7 +14,7 @@ from qiling.os.windows.handle import *
 from qiling.exception import *
 
 
-dllname = 'kernel32_dll'
+dllname = "kernel32_dll"
 
 # LPTOP_LEVEL_EXCEPTION_FILTER SetUnhandledExceptionFilter(
 #   LPTOP_LEVEL_EXCEPTION_FILTER lpTopLevelExceptionFilter
@@ -40,9 +40,9 @@ def hook_GetLastError(ql, address, params):
 # void SetLastError(
 #  DWORD dwErrCode
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'DWORD': 'UINT'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={"DWORD": "UINT"})
 def hook_SetLastError(ql, address, params):
-    ql.os.last_error = params['dwErrCode']
+    ql.os.last_error = params["dwErrCode"]
     return 0
 
 
@@ -85,7 +85,7 @@ def hook_RaiseException(ql, address, params):
 #   ULONG                       First,
 #   PVECTORED_EXCEPTION_HANDLER Handler
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'ULONG': 'UINT'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={"ULONG": "UINT"})
 def hook_AddVectoredExceptionHandler(ql, address, params):
 
     # this case is an anomaly from other interrupts (from what i learned, can be wrong)
@@ -122,7 +122,7 @@ def hook_AddVectoredExceptionHandler(ql, address, params):
     size = find_size_function(ql, addr)
     # the interrupts 0x2d, 0x3 must be hooked
     hook = ql.hook_intno(exec_standard_into, 0x3, user_data=addr)
-    hook = ql.hook_intno(exec_into_0x2d, 0x2d, user_data=addr)
+    hook = ql.hook_intno(exec_into_0x2d, 0x2D, user_data=addr)
     handle = Handle(obj=hook)
     ql.os.handle_manager.append(handle)
     return handle.id
@@ -131,7 +131,7 @@ def hook_AddVectoredExceptionHandler(ql, address, params):
 # ULONG RemoveVectoredExceptionHandler(
 #   PVOID Handle
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'PVOID': 'HANDLE'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={"PVOID": "HANDLE"})
 def hook_RemoveVectoredExceptionHandler(ql, address, params):
     hook = ql.os.handle_manager.get(params["Handle"]).obj
     hook.remove()

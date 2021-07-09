@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -10,7 +10,6 @@ from qiling.os.macos.mach_port import *
 
 # TODO: finished
 class QlMachoThread(QlThread):
-
     def __init__(self, ql):
         super(QlMachoThread, self).__init__(ql)
         self.ql = ql
@@ -22,7 +21,6 @@ class QlMachoThread(QlThread):
 
 
 class QlMachoThreadManagement:
-
     def __init__(self, ql):
         self.ql = ql
         self.cur_thread = None

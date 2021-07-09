@@ -18,10 +18,15 @@ class TestAndroid(unittest.TestCase):
         # FUTURE FIX: at this stage, need a file called /proc/self/exe in the rootfs - Android linker calls stat against /proc/self/exe and bails if it can't find it
         # qiling handles readlink against /proc/self/exe, but doesn't handle it in stat
         # https://cs.android.com/android/platform/superproject/+/master:bionic/linker/linker_main.cpp;l=221
-        self.assertTrue(os.path.isfile(os.path.join(rootfs, "proc", "self", "exe")), rootfs +
-                        "/proc/self/exe not found, Android linker will bail. Need a file at that location (empty is fine)")
+        self.assertTrue(
+            os.path.isfile(os.path.join(rootfs, "proc", "self", "exe")),
+            rootfs
+            + "/proc/self/exe not found, Android linker will bail. Need a file at that location (empty is fine)",
+        )
 
-        ql = Qiling([test_binary], rootfs, verbose=QL_VERBOSE.DEBUG, multithread=True)
+        ql = Qiling(
+            [test_binary], rootfs, verbose=QL_VERBOSE.DEBUG, multithread=True
+        )
         ql.run()
 
 

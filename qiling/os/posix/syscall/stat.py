@@ -30,7 +30,7 @@ import ctypes
 # #ifdef	__STAT_TIME_T_EXT
 # 	__int32_t st_atim_ext;
 # #endif
-# 	struct	timespec st_atim;	/* time of last access */               uint64_t * 2      
+# 	struct	timespec st_atim;	/* time of last access */               uint64_t * 2
 # #ifdef	__STAT_TIME_T_EXT
 # 	__int32_t st_mtim_ext;
 # #endif
@@ -82,10 +82,11 @@ class FreeBSDX86Stat(ctypes.Structure):
         ("st_blksize", ctypes.c_int32),
         ("st_flags", ctypes.c_uint32),
         ("st_gen", ctypes.c_uint64),
-        ("st_spare", ctypes.c_uint64 * 10)
+        ("st_spare", ctypes.c_uint64 * 10),
     ]
 
     _pack_ = 4
+
 
 class FreeBSDX8664Stat(ctypes.Structure):
     _fields_ = [
@@ -111,10 +112,11 @@ class FreeBSDX8664Stat(ctypes.Structure):
         ("st_blksize", ctypes.c_int32),
         ("st_flags", ctypes.c_uint32),
         ("st_gen", ctypes.c_uint64),
-        ("st_spare", ctypes.c_uint64 * 10)
+        ("st_spare", ctypes.c_uint64 * 10),
     ]
 
     _pack_ = 8
+
 
 # Does FreeBSD really have stat64?
 FreeBSDX86Stat64 = FreeBSDX86Stat
@@ -133,7 +135,7 @@ FreeBSDX8664Stat64 = FreeBSDX8664Stat
 # #define __DARWIN_STRUCT_STAT64 { \
 # 	dev_t		st_dev;                 /* [XSI] ID of device containing file */ \      int32_t
 # 	mode_t		st_mode;                /* [XSI] Mode of file (see below) */ \          uint16_t
-# 	nlink_t		st_nlink;               /* [XSI] Number of hard links */ \              uint16_t      
+# 	nlink_t		st_nlink;               /* [XSI] Number of hard links */ \              uint16_t
 # 	__darwin_ino64_t st_ino;                /* [XSI] File serial number */ \            uint64_t
 # 	uid_t		st_uid;                 /* [XSI] User ID of the file */ \               uint32_t
 # 	gid_t		st_gid;                 /* [XSI] Group ID of the file */ \              uint32_t
@@ -152,6 +154,7 @@ FreeBSDX8664Stat64 = FreeBSDX8664Stat
 #  * lstat(), and stat() functions.
 #  */
 # #if __DARWIN_64_BIT_INO_T
+
 
 class MacOSStat(ctypes.Structure):
     _fields_ = [
@@ -176,11 +179,12 @@ class MacOSStat(ctypes.Structure):
         ("st_flags", ctypes.c_uint32),
         ("st_gen", ctypes.c_uint32),
         ("st_lspare", ctypes.c_int32),
-        ("st_qspare", ctypes.c_int64 * 2)
+        ("st_qspare", ctypes.c_int64 * 2),
     ]
 
     # No 32bit macos.
     _pack_ = 8
+
 
 # They are the same in source code.
 MacOSStat64 = MacOSStat
@@ -269,6 +273,7 @@ MacOSStat64 = MacOSStat
 # 	unsigned long		st_blocks;                                                  uint64_t
 # };
 
+
 class LinuxMips32Stat(ctypes.Structure):
     _fields_ = [
         ("st_dev", ctypes.c_uint32),
@@ -290,10 +295,11 @@ class LinuxMips32Stat(ctypes.Structure):
         ("st_ctime_ns", ctypes.c_uint32),
         ("st_blksize", ctypes.c_uint32),
         ("st_blocks", ctypes.c_uint32),
-        ("st_pad4", ctypes.c_uint32 * 14)
+        ("st_pad4", ctypes.c_uint32 * 14),
     ]
 
     _pack_ = 4
+
 
 class LinuxMips64Stat(ctypes.Structure):
     _fields_ = [
@@ -315,10 +321,11 @@ class LinuxMips64Stat(ctypes.Structure):
         ("st_ctime_ns", ctypes.c_uint32),
         ("st_blksize", ctypes.c_uint32),
         ("st_pad2", ctypes.c_uint32),
-        ("st_blocks", ctypes.c_uint64)
+        ("st_blocks", ctypes.c_uint64),
     ]
 
     _pack_ = 8
+
 
 class LinuxMips32Stat64(ctypes.Structure):
     _fields_ = [
@@ -340,10 +347,11 @@ class LinuxMips32Stat64(ctypes.Structure):
         ("st_ctime_ns", ctypes.c_uint32),
         ("st_blksize", ctypes.c_uint32),
         ("st_pad2", ctypes.c_uint32),
-        ("st_blocks", ctypes.c_int64)
+        ("st_blocks", ctypes.c_int64),
     ]
 
     _pack_ = 4
+
 
 # https://elixir.bootlin.com/linux/latest/source/arch/x86/include/uapi/asm/stat.h#L10
 #
@@ -413,6 +421,7 @@ class LinuxMips32Stat64(ctypes.Structure):
 # };
 # #endif
 
+
 class LinuxX86Stat(ctypes.Structure):
     _fields_ = [
         ("st_dev", ctypes.c_uint32),
@@ -432,10 +441,11 @@ class LinuxX86Stat(ctypes.Structure):
         ("st_ctime", ctypes.c_uint32),
         ("st_ctime_ns", ctypes.c_uint32),
         ("__unused4", ctypes.c_uint32),
-        ("__unused5", ctypes.c_uint32)
+        ("__unused5", ctypes.c_uint32),
     ]
 
     _pack_ = 4
+
 
 class LinuxX8664Stat(ctypes.Structure):
     _fields_ = [
@@ -461,6 +471,7 @@ class LinuxX8664Stat(ctypes.Structure):
 
     _pack_ = 8
 
+
 class LinuxX86Stat64(ctypes.Structure):
     _fields_ = [
         ("st_dev", ctypes.c_uint64),
@@ -481,10 +492,11 @@ class LinuxX86Stat64(ctypes.Structure):
         ("st_mtime_ns", ctypes.c_uint32),
         ("st_ctime", ctypes.c_uint32),
         ("st_ctime_ns", ctypes.c_uint32),
-        ("st_ino", ctypes.c_uint64)
+        ("st_ino", ctypes.c_uint64),
     ]
 
     _pack_ = 4
+
 
 # https://elixir.bootlin.com/linux/latest/source/arch/arm/include/uapi/asm/stat.h#L21
 #
@@ -568,6 +580,7 @@ class LinuxX86Stat64(ctypes.Structure):
 # 	unsigned int	__unused5;                                                      uint32_t
 # };
 
+
 class LinuxARMStat(ctypes.Structure):
     _fields_ = [
         ("st_dev", ctypes.c_uint32),
@@ -587,10 +600,11 @@ class LinuxARMStat(ctypes.Structure):
         ("st_ctime", ctypes.c_uint32),
         ("st_ctime_ns", ctypes.c_uint32),
         ("__unused4", ctypes.c_uint32),
-        ("__unused6", ctypes.c_uint32)
+        ("__unused6", ctypes.c_uint32),
     ]
 
     _pack_ = 8
+
 
 class LinuxARM64Stat(ctypes.Structure):
     _fields_ = [
@@ -613,10 +627,11 @@ class LinuxARM64Stat(ctypes.Structure):
         ("st_ctime", ctypes.c_int64),
         ("st_ctime_ns", ctypes.c_uint64),
         ("__unused4", ctypes.c_uint32),
-        ("__unused5", ctypes.c_uint32)
+        ("__unused5", ctypes.c_uint32),
     ]
 
     _pack_ = 8
+
 
 class LinuxARMEBStat(ctypes.BigEndianStructure):
     _fields_ = [
@@ -638,10 +653,11 @@ class LinuxARMEBStat(ctypes.BigEndianStructure):
         ("st_ctime", ctypes.c_uint32),
         ("st_ctime_ns", ctypes.c_uint32),
         ("__unused4", ctypes.c_uint32),
-        ("__unused5", ctypes.c_uint32)
+        ("__unused5", ctypes.c_uint32),
     ]
 
     _pack_ = 8
+
 
 class LinuxARMStat64(ctypes.Structure):
     _fields_ = [
@@ -655,7 +671,7 @@ class LinuxARMStat64(ctypes.Structure):
         ("st_rdev", ctypes.c_uint64),
         ("__pad3", ctypes.c_uint8 * 4),
         ("st_size", ctypes.c_int64),
-        ('st_blksize', ctypes.c_int32),
+        ("st_blksize", ctypes.c_int32),
         ("st_blocks", ctypes.c_uint64),
         ("st_atime", ctypes.c_uint32),
         ("st_atime_ns", ctypes.c_uint32),
@@ -667,6 +683,7 @@ class LinuxARMStat64(ctypes.Structure):
     ]
 
     _pack_ = 8
+
 
 class LinuxARMEBStat64(ctypes.BigEndianStructure):
     _fields_ = [
@@ -680,7 +697,7 @@ class LinuxARMEBStat64(ctypes.BigEndianStructure):
         ("st_rdev", ctypes.c_uint64),
         ("__pad3", ctypes.c_uint8 * 4),
         ("st_size", ctypes.c_int64),
-        ('st_blksize', ctypes.c_int32),
+        ("st_blksize", ctypes.c_int32),
         ("st_blocks", ctypes.c_uint64),
         ("st_atime", ctypes.c_uint32),
         ("st_atime_ns", ctypes.c_uint32),
@@ -692,6 +709,7 @@ class LinuxARMEBStat64(ctypes.BigEndianStructure):
     ]
 
     _pack_ = 8
+
 
 class LinuxARM64EBStat(ctypes.BigEndianStructure):
     _fields_ = [
@@ -714,7 +732,7 @@ class LinuxARM64EBStat(ctypes.BigEndianStructure):
         ("st_ctime", ctypes.c_int64),
         ("st_ctime_ns", ctypes.c_uint64),
         ("__unused4", ctypes.c_uint32),
-        ("__unused5", ctypes.c_uint32)
+        ("__unused5", ctypes.c_uint32),
     ]
 
     _pack_ = 8
@@ -722,7 +740,9 @@ class LinuxARM64EBStat(ctypes.BigEndianStructure):
 
 def get_stat64_struct(ql):
     if ql.archbit == 64:
-        ql.log.warning(f"Trying to stat64 on a 64bit system with {ql.ostype} and {ql.archtype}!")
+        ql.log.warning(
+            f"Trying to stat64 on a 64bit system with {ql.ostype} and {ql.archtype}!"
+        )
     if ql.ostype == QL_OS.LINUX:
         if ql.archtype == QL_ARCH.X86:
             return LinuxX86Stat64()
@@ -732,8 +752,11 @@ def get_stat64_struct(ql):
             return LinuxARMStat64()
     elif ql.ostype == QL_OS.MACOS:
         return MacOSStat64()
-    ql.log.warning(f"Unrecognized arch && os with {ql.archtype} and {ql.ostype} for stat64! Fallback to Linux x86.")
+    ql.log.warning(
+        f"Unrecognized arch && os with {ql.archtype} and {ql.ostype} for stat64! Fallback to Linux x86."
+    )
     return LinuxX86Stat64()
+
 
 def get_stat_struct(ql):
     if ql.ostype == QL_OS.FREEBSD:
@@ -763,8 +786,11 @@ def get_stat_struct(ql):
                 return LinuxARM64Stat()
             else:
                 return LinuxARM64EBStat()
-    ql.log.warning(f"Unrecognized arch && os with {ql.archtype} and {ql.ostype} for stat! Fallback to Linux x86.")
+    ql.log.warning(
+        f"Unrecognized arch && os with {ql.archtype} and {ql.ostype} for stat! Fallback to Linux x86."
+    )
     return LinuxX86Stat()
+
 
 def pack_stat_struct(ql, info):
     stat = get_stat_struct(ql)
@@ -776,6 +802,7 @@ def pack_stat_struct(ql, info):
             stat.__setattr__(field, int(info[field]))
     return bytes(stat)
 
+
 def pack_stat64_struct(ql, info):
     stat64 = get_stat64_struct(ql)
     for field, _ in stat64._fields_:
@@ -786,8 +813,9 @@ def pack_stat64_struct(ql, info):
             stat64.__setattr__(field, int(info[field]))
     return bytes(stat64)
 
+
 def statFamily(ql, path, ptr, name, stat_func, struct_func):
-    file = (ql.mem.string(path))
+    file = ql.mem.string(path)
     real_path = ql.os.path.transform_to_real_path(file)
     regreturn = 0
     try:
@@ -801,22 +829,32 @@ def statFamily(ql, path, ptr, name, stat_func, struct_func):
         ql.log.debug(f'{name}("{file}", {hex(ptr)}) write completed')
         return regreturn
 
+
 def ql_syscall_chmod(ql, filename, mode, null1, null2, null3, null4):
     regreturn = 0
     filename = ql.mem.string(filename)
     ql.log.debug("chmod(%s,%d) = %d" % (filename, mode, regreturn))
     return regreturn
 
+
 def ql_syscall_fchmod(ql, fd, mode, *args, **kw):
-    if not (0 < fd < NR_OPEN) or\
-            ql.os.fd[fd] == 0:
+    if not (0 < fd < NR_OPEN) or ql.os.fd[fd] == 0:
         return -EBADF
 
-    regreturn = 0    
+    regreturn = 0
     ql.log.debug("fchmod(%d, %d) = %d" % (fd, mode, regreturn))
     return regreturn
 
-def ql_syscall_fstatat64(ql, fstatat64_dirfd, fstatat64_path, fstatat64_buf_ptr, fstatat64_flag, *args, **kw):
+
+def ql_syscall_fstatat64(
+    ql,
+    fstatat64_dirfd,
+    fstatat64_path,
+    fstatat64_buf_ptr,
+    fstatat64_flag,
+    *args,
+    **kw,
+):
     # FIXME: dirfd(relative path) not implement.
     fstatat64_path = ql.mem.string(fstatat64_path)
 
@@ -837,7 +875,16 @@ def ql_syscall_fstatat64(ql, fstatat64_dirfd, fstatat64_path, fstatat64_buf_ptr,
 
     return regreturn
 
-def ql_syscall_newfstatat(ql, newfstatat_dirfd, newfstatat_path, newfstatat_buf_ptr, newfstatat_flag, *args, **kw):
+
+def ql_syscall_newfstatat(
+    ql,
+    newfstatat_dirfd,
+    newfstatat_path,
+    newfstatat_buf_ptr,
+    newfstatat_flag,
+    *args,
+    **kw,
+):
     # FIXME: dirfd(relative path) not implement.
     newfstatat_path = ql.mem.string(newfstatat_path)
 
@@ -857,6 +904,7 @@ def ql_syscall_newfstatat(ql, newfstatat_dirfd, newfstatat_path, newfstatat_buf_
         ql.log.debug("Directory Not Found: %s" % relative_path)
 
     return regreturn
+
 
 def ql_syscall_fstat64(ql, fstat64_fd, fstat64_buf_ptr, *args, **kw):
     if not hasattr(ql.os.fd[fstat64_fd], "fstat"):
@@ -880,7 +928,11 @@ def ql_syscall_fstat64(ql, fstat64_fd, fstat64_buf_ptr, *args, **kw):
 
 
 def ql_syscall_fstat(ql, fstat_fd, fstat_buf_ptr, *args, **kw):
-    if 0 <= fstat_fd < NR_OPEN and ql.os.fd[fstat_fd] != 0 and hasattr(ql.os.fd[fstat_fd], "fstat"):
+    if (
+        0 <= fstat_fd < NR_OPEN
+        and ql.os.fd[fstat_fd] != 0
+        and hasattr(ql.os.fd[fstat_fd], "fstat")
+    ):
         user_fileno = fstat_fd
         fstat_info = ql.os.fd[user_fileno].fstat()
         fstat_buf = pack_stat_struct(ql, fstat_info)
@@ -898,20 +950,28 @@ def ql_syscall_fstat(ql, fstat_fd, fstat_buf_ptr, *args, **kw):
 
 # int stat(const char *path, struct stat *buf);
 def ql_syscall_stat(ql, stat_path, stat_buf_ptr, *args, **kw):
-    return statFamily(ql, stat_path, stat_buf_ptr, "stat", Stat, pack_stat_struct)
+    return statFamily(
+        ql, stat_path, stat_buf_ptr, "stat", Stat, pack_stat_struct
+    )
 
 
 # int stat64(const char *path, struct stat64 *buf);
 def ql_syscall_stat64(ql, stat64_path, stat64_buf_ptr, *args, **kw):
-    return statFamily(ql, stat64_path, stat64_buf_ptr, "stat64", Stat, pack_stat64_struct)
+    return statFamily(
+        ql, stat64_path, stat64_buf_ptr, "stat64", Stat, pack_stat64_struct
+    )
 
 
 def ql_syscall_lstat(ql, lstat_path, lstat_buf_ptr, *args, **kw):
-    return statFamily(ql, lstat_path, lstat_buf_ptr, "lstat", Lstat, pack_stat64_struct)
+    return statFamily(
+        ql, lstat_path, lstat_buf_ptr, "lstat", Lstat, pack_stat64_struct
+    )
 
 
 def ql_syscall_lstat64(ql, lstat64_path, lstat64_buf_ptr, *args, **kw):
-    return statFamily(ql, lstat64_path, lstat64_buf_ptr, "lstat64", Lstat, pack_stat64_struct)
+    return statFamily(
+        ql, lstat64_path, lstat64_buf_ptr, "lstat64", Lstat, pack_stat64_struct
+    )
 
 
 def ql_syscall_mknodat(ql, dirfd, pathname, mode, dev, *args, **kw):
@@ -939,6 +999,7 @@ def ql_syscall_mkdir(ql, pathname, mode, *args, **kw):
         regreturn = -1
     return regreturn
 
+
 def ql_syscall_rmdir(ql, pathname, *args, **kw):
     file_path = ql.mem.string(pathname)
     real_path = ql.os.path.transform_to_real_path(file_path)
@@ -951,8 +1012,9 @@ def ql_syscall_rmdir(ql, pathname, *args, **kw):
         regreturn = -1
     return regreturn
 
+
 def ql_syscall_fstatfs(ql, fd, buf, *args, **kw):
-    data = b"0" * (12*8)  # for now, just return 0s
+    data = b"0" * (12 * 8)  # for now, just return 0s
     regreturn = None
     try:
         ql.mem.write(buf, data)
@@ -967,8 +1029,9 @@ def ql_syscall_fstatfs(ql, fd, buf, *args, **kw):
         ql.log.debug(str(data))
     return regreturn
 
+
 def ql_syscall_statfs(ql, path, buf, *args, **kw):
-    data = b"0" * (12*8)  # for now, just return 0s
+    data = b"0" * (12 * 8)  # for now, just return 0s
     regreturn = None
     try:
         ql.mem.write(buf, data)
@@ -977,7 +1040,7 @@ def ql_syscall_statfs(ql, path, buf, *args, **kw):
         regreturn = -1
 
     ql.log.info("statfs(0x%x, 0x%x) = %d" % (path, buf, regreturn))
-    
+
     return regreturn
 
 

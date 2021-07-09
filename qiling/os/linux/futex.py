@@ -9,21 +9,23 @@ import gevent
 from gevent.event import Event
 from queue import Queue
 
+
 class QlLinuxFutexManagement:
-    
-    FUTEX_BITSET_MATCH_ANY = 0xffffffff
-    
+
+    FUTEX_BITSET_MATCH_ANY = 0xFFFFFFFF
+
     def __init__(self):
         self._wait_list = {}
-    
+
     @property
     def wait_list(self):
         return self._wait_list
-    
+
     def futex_wait(self, ql, uaddr, t, val, bitset=FUTEX_BITSET_MATCH_ANY):
         def _sched_wait_event(cur_thread):
             ql.log.debug(f"Wait for notifications.")
             event.wait()
+
         uaddr_value = ql.unpack32(ql.mem.read(uaddr, 4))
         if uaddr_value != val:
             ql.log.debug(f"uaddr: {hex(uaddr_value)} != {hex(val)}")
@@ -35,8 +37,10 @@ class QlLinuxFutexManagement:
         self.wait_list[uaddr].put((bitset, t, event))
         t.sched_cb = _sched_wait_event
         return 0
-    
-    def get_futex_wake_list(self, ql, addr, number, bitset=FUTEX_BITSET_MATCH_ANY):
+
+    def get_futex_wake_list(
+        self, ql, addr, number, bitset=FUTEX_BITSET_MATCH_ANY
+    ):
         wakes = []
         if addr not in self.wait_list or number == 0:
             ql.log.debug(f"No thread at {hex(addr)}")

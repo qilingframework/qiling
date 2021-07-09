@@ -8,49 +8,51 @@
 from qiling.const import QL_ARCH
 from qiling.os.posix.posix import SYSCALL_PREF
 
+
 def map_syscall(ql, syscall_num):
-    for k,v in syscall_table.items():
+    for k, v in syscall_table.items():
         if ql.archtype == QL_ARCH.X8664:
             if syscall_num >= 0x2000000 and syscall_num <= 0x3000000:
                 syscall_num = syscall_num - 0x2000000
 
             if v[0] == syscall_num:
-                return f'{SYSCALL_PREF}{k}'
+                return f"{SYSCALL_PREF}{k}"
 
         elif ql.archtype == QL_ARCH.ARM64:
-            if syscall_num >= 0xffffffffffffff00:
-                syscall_num = syscall_num - 0xffffffffffffff00
+            if syscall_num >= 0xFFFFFFFFFFFFFF00:
+                syscall_num = syscall_num - 0xFFFFFFFFFFFFFF00
 
             if v[1] == syscall_num:
-                return f'{SYSCALL_PREF}{k}'
+                return f"{SYSCALL_PREF}{k}"
+
 
 syscall_table = {
-    "kernelrpc_mach_vm_allocate_trap": (0x100000a, -1),
-    "kernelrpc_mach_vm_deallocate_trap": (0x100000c, -1),
-    "kernelrpc_mach_vm_map_trap": (0x100000f, -1),
+    "kernelrpc_mach_vm_allocate_trap": (0x100000A, -1),
+    "kernelrpc_mach_vm_deallocate_trap": (0x100000C, -1),
+    "kernelrpc_mach_vm_map_trap": (0x100000F, -1),
     "kernelrpc_mach_port_deallocate_trap": (0x1000012, -1),
     "kernelrpc_mach_port_mod_refs_trap": (0x1000013, -1),
     "kernelrpc_mach_port_construct_trap": (0x1000018, -1),
-    "mach_reply_port": (0x100001a, -1),
-    "thread_self_trap": (0x100001b, -1),
-    "task_self_trap": (0x100001c, -1),
-    "host_self_trap": (0x100001d, -1),
-    "mach_msg_trap": (0x100001f, -1),
+    "mach_reply_port": (0x100001A, -1),
+    "thread_self_trap": (0x100001B, -1),
+    "task_self_trap": (0x100001C, -1),
+    "host_self_trap": (0x100001D, -1),
+    "mach_msg_trap": (0x100001F, -1),
     "thread_fast_set_cthread_self64": (0x3000003, -1),
     # FIXME: Lets fix this later
-    #"kernelrpc_mach_vm_allocate_trap": (-1, 9),
-    #"kernelrpc_mach_vm_deallocate_trap": (-1, 11),
-    #"kernelrpc_mach_vm_protect_trap": (-1, 13),
-    #"kernelrpc_mach_vm_map_trap": (-1, 14),
-    #"kernelrpc_mach_port_destroy_trap": (-1, 16),
-    #"kernelrpc_mach_port_deallocate_trap": (-1, 17),
-    #"kernelrpc_mach_port_mod_refs_trap": (-1, 18),
-    #"kernelrpc_mach_port_move_member_trap": (-1, 19),
-    #"kernelrpc_mach_port_insert_right_trap": (-1, 20),
-    #"kernelrpc_mach_port_insert_member_trap": (-1, 21),
-    #"kernelrpc_mach_port_extract_member_trap": (-1, 22),
-    #"kernelrpc_mach_port_construct_trap": (-1, 23),
-    #"kernelrpc_mach_port_destruct_trap": (-1, 24),    
+    # "kernelrpc_mach_vm_allocate_trap": (-1, 9),
+    # "kernelrpc_mach_vm_deallocate_trap": (-1, 11),
+    # "kernelrpc_mach_vm_protect_trap": (-1, 13),
+    # "kernelrpc_mach_vm_map_trap": (-1, 14),
+    # "kernelrpc_mach_port_destroy_trap": (-1, 16),
+    # "kernelrpc_mach_port_deallocate_trap": (-1, 17),
+    # "kernelrpc_mach_port_mod_refs_trap": (-1, 18),
+    # "kernelrpc_mach_port_move_member_trap": (-1, 19),
+    # "kernelrpc_mach_port_insert_right_trap": (-1, 20),
+    # "kernelrpc_mach_port_insert_member_trap": (-1, 21),
+    # "kernelrpc_mach_port_extract_member_trap": (-1, 22),
+    # "kernelrpc_mach_port_construct_trap": (-1, 23),
+    # "kernelrpc_mach_port_destruct_trap": (-1, 24),
     "nosys": (379, -1),
     "exit": (1, 1),
     "fork": (2, 2),
@@ -391,7 +393,7 @@ syscall_table = {
     "fsgetpath": (427, 427),
     "audit_session_self": (428, 428),
     "audit_session_join": (429, 429),
-    #"thread_self_trap": (-1, 26),
+    # "thread_self_trap": (-1, 26),
     "semaphore_wait_signal_trap": (-1, 36),
     "semaphore_timedwait_signal_trap": (-1, 38),
     "kernelrpc_mach_port_guard_trap": (-1, 40),

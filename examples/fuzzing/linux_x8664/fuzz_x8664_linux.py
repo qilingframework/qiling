@@ -33,12 +33,12 @@ from qiling import Qiling
 from qiling.const import QL_VERBOSE
 from qiling.os.posix import stat
 
-class MyPipe():
-    """Fake stdin to handle incoming fuzzed keystrokes.
-    """
+
+class MyPipe:
+    """Fake stdin to handle incoming fuzzed keystrokes."""
 
     def __init__(self):
-        self.buf = b''
+        self.buf = b""
 
     def write(self, s: bytes):
         self.buf += s
@@ -70,30 +70,38 @@ class MyPipe():
     def fstat(self):
         return stat.Fstat(self.fileno())
 
+
 def main(input_file: str):
     stdin = MyPipe()
 
-    ql = Qiling(["./x8664_fuzz"], "../../rootfs/x8664_linux",
-            verbose=QL_VERBOSE.OFF, # keep qiling logging off
-            console=False,          # thwart program output
-            stdin=stdin,            # redirect stdin to our fake one
-            stdout=None,
-            stderr=None)
+    ql = Qiling(
+        ["./x8664_fuzz"],
+        "../../rootfs/x8664_linux",
+        verbose=QL_VERBOSE.OFF,  # keep qiling logging off
+        console=False,  # thwart program output
+        stdin=stdin,  # redirect stdin to our fake one
+        stdout=None,
+        stderr=None,
+    )
 
-    def place_input_callback(uc: UcAfl.Uc, input: bytes, persistent_round: int, data: Any) -> Optional[bool]:
-        """Called with every newly generated input.
-        """
+    def place_input_callback(
+        uc: UcAfl.Uc, input: bytes, persistent_round: int, data: Any
+    ) -> Optional[bool]:
+        """Called with every newly generated input."""
 
         stdin.write(input)
 
     def start_afl(_ql: Qiling):
-        """Callback from inside.
-        """
+        """Callback from inside."""
 
         # We start our AFL forkserver or run once if AFL is not available.
         # This will only return after the fuzzing stopped.
         try:
-            if not _ql.uc.afl_fuzz(input_file=input_file, place_input_callback=place_input_callback, exits=[ql.os.exit_point]):
+            if not _ql.uc.afl_fuzz(
+                input_file=input_file,
+                place_input_callback=place_input_callback,
+                exits=[ql.os.exit_point],
+            ):
                 _ql.log.warning("Ran once without AFL attached")
                 os._exit(0)
 
@@ -113,10 +121,11 @@ def main(input_file: str):
     ql.hook_address(callback=lambda x: os.abort(), address=ba + 0x1225)
 
     # set a hook on main() to let unicorn fork and start instrumentation
-    ql.hook_address(callback=start_afl, address=ba + 0x122c)
+    ql.hook_address(callback=start_afl, address=ba + 0x122C)
 
     # okay, ready to roll
     ql.run()
+
 
 if __name__ == "__main__":
     if len(sys.argv) == 1:

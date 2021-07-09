@@ -13,11 +13,21 @@ from qiling.os.filestruct import *
 from qiling.os.posix.const_mapping import *
 from qiling.exception import *
 
+
 def ql_syscall_time(ql, *args, **kw):
     regreturn = int(time.time())
     return regreturn
 
-def ql_syscall_clock_nanosleep_time64(ql, nanosleep_clk_id, nanosleep_flags, nanosleep_req, nanosleep_rem, *args, **kw):
+
+def ql_syscall_clock_nanosleep_time64(
+    ql,
+    nanosleep_clk_id,
+    nanosleep_flags,
+    nanosleep_req,
+    nanosleep_rem,
+    *args,
+    **kw
+):
     def _sched_sleep(cur_thread):
         gevent.sleep(tv_sec)
 
@@ -56,7 +66,16 @@ def ql_syscall_nanosleep(ql, nanosleep_req, nanosleep_rem, *args, **kw):
     regreturn = 0
     return regreturn
 
-def ql_syscall_clock_nanosleep(ql, clock_nanosleep_clockid, clock_nanosleep_flags, clock_nanosleep_req, clock_nanosleep_remain, *args, **kw):
+
+def ql_syscall_clock_nanosleep(
+    ql,
+    clock_nanosleep_clockid,
+    clock_nanosleep_flags,
+    clock_nanosleep_req,
+    clock_nanosleep_remain,
+    *args,
+    **kw
+):
     def _sched_sleep(cur_thread):
         gevent.sleep(tv_sec)
 
@@ -76,7 +95,9 @@ def ql_syscall_clock_nanosleep(ql, clock_nanosleep_clockid, clock_nanosleep_flag
     return regreturn
 
 
-def ql_syscall_setitimer(ql, setitimer_which, setitimer_new_value, setitimer_old_value, *args, **kw):
+def ql_syscall_setitimer(
+    ql, setitimer_which, setitimer_new_value, setitimer_old_value, *args, **kw
+):
     # TODO:The system provides each process with three interval timers, each decrementing in a distinct time domain.
     # When any timer expires, a signal is sent to the process, and the timer (potentially) restarts.
     # But I haven’t figured out how to send a signal yet.
@@ -87,7 +108,7 @@ def ql_syscall_setitimer(ql, setitimer_which, setitimer_new_value, setitimer_old
 def ql_syscall_times(ql, times_tbuf, *args, **kw):
     tmp_times = os.times()
     if times_tbuf != 0:
-        tmp_buf = b''
+        tmp_buf = b""
         tmp_buf += ql.pack32(int(tmp_times.user * 1000))
         tmp_buf += ql.pack32(int(tmp_times.system * 1000))
         tmp_buf += ql.pack32(int(tmp_times.children_user * 1000))
@@ -95,4 +116,3 @@ def ql_syscall_times(ql, times_tbuf, *args, **kw):
         ql.mem.write(times_tbuf, tmp_buf)
     regreturn = int(tmp_times.elapsed * 100)
     return regreturn
-

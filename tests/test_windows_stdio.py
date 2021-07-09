@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -12,9 +12,10 @@ sys.path.append("..")
 from qiling import *
 from qiling.const import QL_VERBOSE
 
+
 class StringBuffer:
     def __init__(self):
-        self.buffer = b''
+        self.buffer = b""
 
     def read(self, n):
         ret = self.buffer[:n]
@@ -23,7 +24,7 @@ class StringBuffer:
 
     def read_all(self):
         ret = self.buffer
-        self.buffer = b''
+        self.buffer = b""
         return ret
 
     def write(self, string):
@@ -36,14 +37,19 @@ def instruction_count(ql, address, size, user_data):
 
 
 def get_count(flag):
-    ql = Qiling(["../examples/rootfs/x86_windows/bin/crackme.exe"], "../examples/rootfs/x86_windows", verbose=QL_VERBOSE.OFF, libcache = True)
+    ql = Qiling(
+        ["../examples/rootfs/x86_windows/bin/crackme.exe"],
+        "../examples/rootfs/x86_windows",
+        verbose=QL_VERBOSE.OFF,
+        libcache=True,
+    )
     ql.stdin = StringBuffer()
     ql.stdout = StringBuffer()
-    ql.stdin.write(bytes("".join(flag) + "\n", 'utf-8'))
+    ql.stdin.write(bytes("".join(flag) + "\n", "utf-8"))
     count = [0]
     ql.hook_code(instruction_count, count)
     ql.run()
-    print(ql.stdout.read_all().decode('utf-8'), end='')
+    print(ql.stdout.read_all().decode("utf-8"), end="")
     print(" ============ count: %d ============ " % count[0])
     return count[0]
 
@@ -62,7 +68,9 @@ def solve():
                 data = get_count(prefix + flag)
                 if data > base:
                     base = data
-                    print("\n\n\n>>> FLAG: " + "".join(prefix + flag) + "\n\n\n")
+                    print(
+                        "\n\n\n>>> FLAG: " + "".join(prefix + flag) + "\n\n\n"
+                    )
                     break
             if flag[i] == "}":
                 break

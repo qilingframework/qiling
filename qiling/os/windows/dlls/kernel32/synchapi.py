@@ -16,7 +16,7 @@ from qiling.os.windows.structs import *
 from qiling.const import *
 
 
-dllname = 'kernel32_dll'
+dllname = "kernel32_dll"
 
 # void Sleep(
 #  DWORD dwMilliseconds
@@ -73,7 +73,7 @@ def hook_InitializeCriticalSectionEx(ql, address, params):
 #  LPCRITICAL_SECTION lpCriticalSection,
 #  DWORD              dwSpinCount
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'DWORD': 'UINT'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={"DWORD": "UINT"})
 def hook_InitializeCriticalSectionAndSpinCount(ql, address, params):
     return 1
 
@@ -120,7 +120,9 @@ def hook_WaitForSingleObjectEx(ql, address, params):
 #   BOOL         bWaitAll,
 #   DWORD        dwMilliseconds
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'HANDLE': 'POINTER'})
+@winsdkapi(
+    cc=STDCALL, dllname=dllname, replace_params_type={"HANDLE": "POINTER"}
+)
 def hook_WaitForMultipleObjects(ql, address, params):
     ret = 0
     nCount = params["nCount"]
@@ -129,7 +131,9 @@ def hook_WaitForMultipleObjects(ql, address, params):
     dwMilliseconds = params["dwMilliseconds"]
 
     for i in range(nCount):
-        handle_value = ql.unpack(ql.mem.read(lpHandles + i * ql.pointersize, ql.pointersize))
+        handle_value = ql.unpack(
+            ql.mem.read(lpHandles + i * ql.pointersize, ql.pointersize)
+        )
         if handle_value != 0:
             thread = ql.os.handle_manager.get(handle_value).obj
             ql.os.thread_manager.cur_thread.waitfor(thread)
@@ -220,6 +224,7 @@ def hook_CreateMutexW(ql, address, params):
 def hook_CreateMutexA(ql, address, params):
     return hook_CreateMutexW.__wrapped__(ql, address, params)
 
+
 # BOOL ReleaseMutex(
 #   HANDLE hMutex
 # );
@@ -244,6 +249,7 @@ def hook_ReleaseMutex(ql, address, params):
     mutex.unlock()
     return 1
 
+
 # HANDLE CreateEventA(
 #  LPSECURITY_ATTRIBUTES lpEventAttributes,
 #  BOOL                  bManualReset,
@@ -265,7 +271,7 @@ def hook_CreateEventA(ql, address, params):
         ql.os.last_error = ERROR_ALREADY_EXISTS
     else:
         mutex = Mutex(name, namespace)
-        if params['bInitialState']:
+        if params["bInitialState"]:
             mutex.lock()
         handle = Handle(obj=mutex, name=name)
         ql.os.handle_manager.append(handle)

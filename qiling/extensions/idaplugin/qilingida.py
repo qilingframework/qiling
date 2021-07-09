@@ -37,9 +37,10 @@ import ida_auto
 import ida_netnode
 import ida_hexrays
 import ida_range
+
 # PyQt
 from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtWidgets import (QPushButton, QHBoxLayout)
+from PyQt5.QtWidgets import QPushButton, QHBoxLayout
 
 # Qiling
 from qiling import *
@@ -57,18 +58,23 @@ from qiling.os.filestruct import ql_file
 from keystone import *
 
 
-QilingHomePage = 'https://www.qiling.io'
-QilingStableVersionURL = 'https://raw.githubusercontent.com/qilingframework/qiling/master/qiling/__version__.py'
-logging.basicConfig(level=logging.INFO, format='[%(levelname)s][%(module)s:%(lineno)d] %(message)s')
+QilingHomePage = "https://www.qiling.io"
+QilingStableVersionURL = "https://raw.githubusercontent.com/qilingframework/qiling/master/qiling/__version__.py"
+logging.basicConfig(
+    level=logging.INFO,
+    format="[%(levelname)s][%(module)s:%(lineno)d] %(message)s",
+)
+
 
 class Colors(Enum):
     Blue = 0xE8864A
     Pink = 0xC0C0FB
     White = 0xFFFFFF
     Black = 0x000000
-    Green = 0xd3ead9
-    Gray = 0xd9d9d9
+    Green = 0xD3EAD9
+    Gray = 0xD9D9D9
     Beige = 0xCCF2FF
+
 
 class IDA:
     def __init__(self):
@@ -134,8 +140,11 @@ class IDA:
         # fcb_ret: has a retn instruction in the end
         # fcb_noret: in most cases, exit() is called
         # fcb_indjump: jmp $eax
-        if (bb.type == ida_gdl.fcb_ret or bb.type == ida_gdl.fcb_noret or
-                (bb.type == ida_gdl.fcb_indjump and len(list(bb.succs())) == 0)):
+        if (
+            bb.type == ida_gdl.fcb_ret
+            or bb.type == ida_gdl.fcb_noret
+            or (bb.type == ida_gdl.fcb_indjump and len(list(bb.succs())) == 0)
+        ):
             return True
         for b in bb.succs():
             if b.type == ida_gdl.fcb_extern:
@@ -192,7 +201,7 @@ class IDA:
     def get_segment(arg):
         if type(arg) is int:
             return IDA.__addr_in_seg(arg)
-        else: # str
+        else:  # str
             return IDA.get_segment_by_name(arg)
 
     @staticmethod
@@ -213,14 +222,14 @@ class IDA:
     def get_segment_perm(arg):
         seg = IDA.get_segment(arg)
         if seg is not None:
-            return seg.perm # RWX e.g. 0b101 = R + X
+            return seg.perm  # RWX e.g. 0b101 = R + X
         return None
 
     @staticmethod
     def get_segment_type(arg):
         seg = IDA.get_segment(arg)
         if seg is not None:
-            return seg.type # 0x1 SEG_DATA 0x2 SEG_CODE See doc for details
+            return seg.type  # 0x1 SEG_DATA 0x2 SEG_CODE See doc for details
         return None
 
     @staticmethod
@@ -324,7 +333,11 @@ class IDA:
         ftype = info.filetype
         if ftype == ida_ida.f_MACHO:
             return "macho"
-        elif ftype == ida_ida.f_PE or ftype == ida_ida.f_EXE or ftype == ida_ida.f_EXE_old: # is this correct?
+        elif (
+            ftype == ida_ida.f_PE
+            or ftype == ida_ida.f_EXE
+            or ftype == ida_ida.f_EXE_old
+        ):  # is this correct?
             return "pe"
         elif ftype == ida_ida.f_ELF:
             return "elf"
@@ -373,8 +386,8 @@ class IDA:
         return ida_bytes.patch_bytes(addr, bs)
 
     @staticmethod
-    def fill_bytes(start, end, bs = b'\x90'):
-        return ida_bytes.patch_bytes(start, bs*(end-start))
+    def fill_bytes(start, end, bs=b"\x90"):
+        return ida_bytes.patch_bytes(start, bs * (end - start))
 
     @staticmethod
     def nop_selection():
@@ -382,7 +395,7 @@ class IDA:
         return IDA.fill_bytes(start, end)
 
     @staticmethod
-    def fill_block(bb, bs=b'\x90'):
+    def fill_block(bb, bs=b"\x90"):
         return IDA.fill_bytes(bb.start_ea, bb.end_ea, bs)
 
     @staticmethod
@@ -395,7 +408,7 @@ class IDA:
 
     @staticmethod
     def create_bytes_array(start, end):
-        return IDA.create_data(start, ida_bytes.byte_flag(), end-start)
+        return IDA.create_data(start, ida_bytes.byte_flag(), end - start)
 
     @staticmethod
     def create_byte(ea, length, force=False):
@@ -427,7 +440,9 @@ class IDA:
 
     # NOTE: The [start, end) range should include all control flows except long calls.
     @staticmethod
-    def get_micro_code_mba(start, end, decomp_flags=ida_hexrays.DECOMP_WARNINGS, maturity=7):
+    def get_micro_code_mba(
+        start, end, decomp_flags=ida_hexrays.DECOMP_WARNINGS, maturity=7
+    ):
         mbrgs = ida_hexrays.mba_ranges_t()
         rg = ida_range.range_t(start, end)
         mbrgs.ranges.push_back(rg)
@@ -445,7 +460,9 @@ class IDA:
             cur = cur.next
         return
 
+
 ### View Class
+
 
 class QlEmuRegView(simplecustviewer_t):
     def __init__(self, ql_emu_plugin):
@@ -479,7 +496,20 @@ class QlEmuRegView(simplecustviewer_t):
 
             def finish_populating_widget_popup(self, widget, popup):
                 if self.form.title == get_widget_title(widget):
-                    attach_dynamic_action_to_popup(widget, popup, action_desc_t(None, "Edit Register", self.PopupActionHandler(self.form, self.form.menu_update),  None, None, -1))
+                    attach_dynamic_action_to_popup(
+                        widget,
+                        popup,
+                        action_desc_t(
+                            None,
+                            "Edit Register",
+                            self.PopupActionHandler(
+                                self.form, self.form.menu_update
+                            ),
+                            None,
+                            None,
+                            -1,
+                        ),
+                    )
 
         if self.hooks is None:
             self.hooks = Hooks(self)
@@ -487,16 +517,23 @@ class QlEmuRegView(simplecustviewer_t):
 
         return True
 
-    def SetReg(self, addr, ql:Qiling):
+    def SetReg(self, addr, ql: Qiling):
         arch = ql.archtype
         if arch == "":
             return
 
-        #clear
+        # clear
         self.ClearLines()
 
         view_title = COLSTR("Reg value at { ", SCOLOR_AUTOCMT)
-        view_title += COLSTR("IDA Address:0x%X | QL Address:0x%X" % (addr - self.ql_emu_plugin.qlemu.baseaddr + get_imagebase(), addr), SCOLOR_DREF)
+        view_title += COLSTR(
+            "IDA Address:0x%X | QL Address:0x%X"
+            % (
+                addr - self.ql_emu_plugin.qlemu.baseaddr + get_imagebase(),
+                addr,
+            ),
+            SCOLOR_DREF,
+        )
         # TODO: Add disass should be better
         view_title += COLSTR(" }", SCOLOR_AUTOCMT)
         self.AddLine(view_title)
@@ -505,7 +542,7 @@ class QlEmuRegView(simplecustviewer_t):
         reglist = QlEmuMisc.get_reg_map(ql)
         line = ""
         cols = 3
-        reglist = [reglist[i:i+cols] for i in range(0,len(reglist),cols)]
+        reglist = [reglist[i : i + cols] for i in range(0, len(reglist), cols)]
         for regs in reglist:
             for reg in regs:
                 line += COLSTR(" %4s: " % str(reg), SCOLOR_REG)
@@ -517,7 +554,7 @@ class QlEmuRegView(simplecustviewer_t):
                 line += COLSTR(str(value_format % regvalue), SCOLOR_NUMBER)
                 # TODO: ljust will looks better
             self.AddLine(line)
-            line = ''
+            line = ""
         self.AddLine(line)
         self.Refresh()
 
@@ -531,6 +568,7 @@ class QlEmuRegView(simplecustviewer_t):
             self.hooks = None
         self.ql_emu_plugin.ql_close_reg_view()
 
+
 class QlEmuStackView(simplecustviewer_t):
     def __init__(self, ql_emu_plugin):
         super(QlEmuStackView, self).__init__()
@@ -542,15 +580,15 @@ class QlEmuStackView(simplecustviewer_t):
             return False
         return True
 
-    def SetStack(self, ql:Qiling):
+    def SetStack(self, ql: Qiling):
         self.ClearLines()
         if ql is None:
             return
 
         sp = ql.reg.arch_sp
-        self.AddLine('')
-        self.AddLine(COLSTR('  Stack at 0x%X' % sp, SCOLOR_AUTOCMT))
-        self.AddLine('')
+        self.AddLine("")
+        self.AddLine(COLSTR("  Stack at 0x%X" % sp, SCOLOR_AUTOCMT))
+        self.AddLine("")
 
         arch = ql.archtype
         if arch == "":
@@ -558,23 +596,26 @@ class QlEmuStackView(simplecustviewer_t):
 
         reg_bit_size = ql_get_arch_bits(arch)
         reg_byte_size = reg_bit_size // 8
-        value_format = '% .16X' if reg_bit_size == 64 else '% .8X'
+        value_format = "% .16X" if reg_bit_size == 64 else "% .8X"
 
         for i in range(-30, 30):
             clr = SCOLOR_DREF if i < 0 else SCOLOR_INSN
-            cur_addr = (sp + i * reg_byte_size)
-            line = ('  ' + value_format + ': ') % cur_addr
+            cur_addr = sp + i * reg_byte_size
+            line = ("  " + value_format + ": ") % cur_addr
             try:
                 value = ql.mem.read(cur_addr, reg_byte_size)
-                value, = struct.unpack('Q' if reg_bit_size == 64 else 'I', value)
+                (value,) = struct.unpack(
+                    "Q" if reg_bit_size == 64 else "I", value
+                )
                 line += value_format % value
             except Exception:
-                line += '?' * reg_byte_size * 2
+                line += "?" * reg_byte_size * 2
 
             self.AddLine(COLSTR(line, clr))
 
     def OnClose(self):
         self.ql_emu_plugin.ql_close_stack_view()
+
 
 class QlEmuMemView(simplecustviewer_t):
     def __init__(self, ql_emu_plugin, addr, size):
@@ -590,7 +631,7 @@ class QlEmuMemView(simplecustviewer_t):
             return False
         return True
 
-    def SetMem(self, ql:Qiling):
+    def SetMem(self, ql: Qiling):
         self.ClearLines()
 
         if ql is None:
@@ -604,20 +645,27 @@ class QlEmuMemView(simplecustviewer_t):
         size = len(memory)
 
         view_title = COLSTR("  Memory at [ ", SCOLOR_AUTOCMT)
-        view_title += COLSTR("0x%X: %d byte(s)" % (self.addr, size), SCOLOR_DREF)
+        view_title += COLSTR(
+            "0x%X: %d byte(s)" % (self.addr, size), SCOLOR_DREF
+        )
         view_title += COLSTR(" ]", SCOLOR_AUTOCMT)
         self.AddLine(str(view_title))
         self.AddLine("")
-        self.AddLine(COLSTR("                0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F", SCOLOR_AUTOCMT))
+        self.AddLine(
+            COLSTR(
+                "                0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F",
+                SCOLOR_AUTOCMT,
+            )
+        )
 
         startAddress = self.addr
         line = ""
         chars = ""
-        get_char = lambda byte: chr(byte) if 0x20 <= byte <= 0x7E else '.'
+        get_char = lambda byte: chr(byte) if 0x20 <= byte <= 0x7E else "."
 
         if size != 0:
             for x in range(size):
-                if x%16==0:
+                if x % 16 == 0:
                     line += COLSTR(" %.12X: " % startAddress, SCOLOR_AUTOCMT)
                 if len(self.lastContent) == len(memory):
                     if memory[x] != self.lastContent[x]:
@@ -630,7 +678,7 @@ class QlEmuMemView(simplecustviewer_t):
                     line += COLSTR(str("%.2X " % memory[x]), SCOLOR_NUMBER)
                     chars += COLSTR(get_char(memory[x]), SCOLOR_NUMBER)
 
-                if (x+1)%16==0:
+                if (x + 1) % 16 == 0:
                     line += "  " + chars
                     self.AddLine(line)
                     startAddress += 16
@@ -638,9 +686,10 @@ class QlEmuMemView(simplecustviewer_t):
                     chars = ""
 
             # add padding
-            tail = 16 - size%16
+            tail = 16 - size % 16
             if tail != 0:
-                for x in range(tail): line += "   "
+                for x in range(tail):
+                    line += "   "
                 line += "  " + chars
                 self.AddLine(line)
 
@@ -650,25 +699,33 @@ class QlEmuMemView(simplecustviewer_t):
     def OnClose(self):
         self.ql_emu_plugin.ql_close_mem_view(self.viewid)
 
+
 ### Dialog Class
 class QlEmuMemDialog(Form):
     def __init__(self):
-        Form.__init__(self, r"""STARTITEM {id:mem_addr}
+        Form.__init__(
+            self,
+            r"""STARTITEM {id:mem_addr}
 BUTTON YES* Add
 BUTTON CANCEL Cancel
 Show Memory Range
 Specify start address and size of new memory range.
 <##Address\::{mem_addr}> <##Size\::{mem_size}>
 <##Comment\::{mem_cmnt}>
-""", {
-        'mem_addr': Form.NumericInput(swidth=20, tp=Form.FT_HEX),
-        'mem_size': Form.NumericInput(swidth=10, tp=Form.FT_DEC),
-        'mem_cmnt': Form.StringInput(swidth=41)
-    })
+""",
+            {
+                "mem_addr": Form.NumericInput(swidth=20, tp=Form.FT_HEX),
+                "mem_size": Form.NumericInput(swidth=10, tp=Form.FT_DEC),
+                "mem_cmnt": Form.StringInput(swidth=41),
+            },
+        )
+
 
 class QlEmuSetupDialog(Form):
     def __init__(self):
-        Form.__init__(self, r"""STARTITEM {id:path_name}
+        Form.__init__(
+            self,
+            r"""STARTITEM {id:path_name}
 BUTTON YES* Start
 BUTTON CANCEL Cancel
 Setup Qiling
@@ -676,34 +733,45 @@ Setup Qiling
 <#Custom script path   #Custom script path\: :{script_name}>
 <#Custom parameter   #Custom parameter\: :{parameters}>
 <#Custom env   #Custom env\: :{env_var}>
-""", {
-            'path_name': Form.DirInput(swidth=50),
-            'script_name': Form.FileInput(swidth=50, open=True),
-            'parameters': Form.StringInput(swidth=50),
-            'env_var': Form.FileInput(swidth=70, open=True),
-        })
+""",
+            {
+                "path_name": Form.DirInput(swidth=50),
+                "script_name": Form.FileInput(swidth=50, open=True),
+                "parameters": Form.StringInput(swidth=50),
+                "env_var": Form.FileInput(swidth=70, open=True),
+            },
+        )
+
 
 class QlEmuSaveDialog(Form):
     def __init__(self):
-        Form.__init__(self, r"""STARTITEM {id:path_name}
+        Form.__init__(
+            self,
+            r"""STARTITEM {id:path_name}
 BUTTON YES* Save
 BUTTON CANCEL Cancel
 Save Path
 <#Save to#Path\::{path_name}>
-""", {
-        'path_name': Form.FileInput(swidth=50, save=True),
-    })
+""",
+            {
+                "path_name": Form.FileInput(swidth=50, save=True),
+            },
+        )
+
 
 class QlEmuLoadDialog(Form):
     def __init__(self):
-        Form.__init__(self, r"""STARTITEM {id:file_name}
+        Form.__init__(
+            self,
+            r"""STARTITEM {id:file_name}
 BUTTON YES* Load
 BUTTON CANCEL Cancel
 Load File
 <#Load From#File\::{file_name}>
-""", {
-        'file_name': Form.FileInput(swidth=50, open=True)
-    })
+""",
+            {"file_name": Form.FileInput(swidth=50, open=True)},
+        )
+
 
 class QlEmuAboutDialog(Form):
     def __init__(self, version):
@@ -719,20 +787,25 @@ Qiling:: About
             Qiling Team.
             Qiling is released under the GPL v2.
             Find more info at https://www.qiling.io
-            """ %(version, QLVERSION), {
-            'FormChangeCb': self.FormChangeCb(self.OnFormChange),
-            })
+            """
+            % (version, QLVERSION),
+            {
+                "FormChangeCb": self.FormChangeCb(self.OnFormChange),
+            },
+        )
 
         self.Compile()
 
     # callback to be executed when any form control changed
     def OnFormChange(self, fid):
-        if fid == -2:   # Goto homepage
+        if fid == -2:  # Goto homepage
             import webbrowser
+
             # open Keypatch homepage in a new tab, if possible
-            webbrowser.open(QilingHomePage, new = 2)
+            webbrowser.open(QilingHomePage, new=2)
 
         return 1
+
 
 class QlEmuUpdateDialog(Form):
     def __init__(self, version, message):
@@ -743,39 +816,52 @@ Qiling:: Check for update
             {FormChangeCb}
             Your Qiling is v%s
             %s
-            """ %(version, message), {
-            'FormChangeCb': self.FormChangeCb(self.OnFormChange),
-            })
+            """
+            % (version, message),
+            {
+                "FormChangeCb": self.FormChangeCb(self.OnFormChange),
+            },
+        )
         self.Compile()
 
     # callback to be executed when any form control changed
     def OnFormChange(self, fid):
-        if fid == -2:   # Goto homepage
+        if fid == -2:  # Goto homepage
             import webbrowser
+
             # open Keypatch homepage in a new tab, if possible
-            webbrowser.open(QilingHomePage, new = 2)
+            webbrowser.open(QilingHomePage, new=2)
 
         return 1
 
+
 class QlEmuRegEditDialog(Form):
     def __init__(self, regName):
-        Form.__init__(self, r"""STARTITEM {id:reg_val}
+        Form.__init__(
+            self,
+            r"""STARTITEM {id:reg_val}
 BUTTON YES* Save
 BUTTON CANCEL Cancel
 Register Value
 {reg_label}
 <##:{reg_val}>
-""", {
-        'reg_label': Form.StringLabel("Edit [ " + regName + " ] value"),
-        'reg_val': Form.NumericInput(tp=Form.FT_HEX, swidth=20)
-        })
+""",
+            {
+                "reg_label": Form.StringLabel("Edit [ " + regName + " ] value"),
+                "reg_val": Form.NumericInput(tp=Form.FT_HEX, swidth=20),
+            },
+        )
+
 
 class QlEmuRegDialog(Choose):
-    def __init__(self, reglist, flags=0, width=None, height=None, embedded=False):
+    def __init__(
+        self, reglist, flags=0, width=None, height=None, embedded=False
+    ):
         Choose.__init__(
-            self, "QL Register Edit",
-            [ ["Register", 10 | Choose.CHCOL_PLAIN],
-              ["Value", 30] ])
+            self,
+            "QL Register Edit",
+            [["Register", 10 | Choose.CHCOL_PLAIN], ["Value", 30]],
+        )
         self.popup_names = ["", "", "Edit Value", ""]
         self.items = reglist
 
@@ -794,9 +880,9 @@ class QlEmuRegDialog(Choose):
 
     def OnGetLine(self, n):
         if self.items[n][2] == 32:
-            return [ self.items[n][0], "0x%08X" % self.items[n][1] ]
+            return [self.items[n][0], "0x%08X" % self.items[n][1]]
         if self.items[n][2] == 64:
-            return [ self.items[n][0], "0x%16X" % self.items[n][1] ]
+            return [self.items[n][0], "0x%16X" % self.items[n][1]]
 
     def OnGetSize(self):
         return len(self.items)
@@ -804,9 +890,14 @@ class QlEmuRegDialog(Choose):
     def OnClose(self):
         pass
 
+
 ### Misc
 class QlEmuMisc:
-    MenuItem = collections.namedtuple("MenuItem", ["action", "handler", "title", "tooltip", "shortcut", "popup"])
+    MenuItem = collections.namedtuple(
+        "MenuItem",
+        ["action", "handler", "title", "tooltip", "shortcut", "popup"],
+    )
+
     class menu_action_handler(action_handler_t):
         def __init__(self, handler, action):
             action_handler_t.__init__(self)
@@ -823,13 +914,17 @@ class QlEmuMisc:
             return AST_ENABLE_ALWAYS
 
     @staticmethod
-    def get_reg_map(ql:Qiling):
+    def get_reg_map(ql: Qiling):
         tables = {
-            QL_ARCH.X86     : list({**x86_reg_map_32, **x86_reg_map_misc, **x86_reg_map_st}.keys()),
-            QL_ARCH.X8664   : list({**x86_reg_map_64, **x86_reg_map_misc, **x86_reg_map_st}.keys()),
-            QL_ARCH.ARM     : list({**arm_reg_map}.keys()),
-            QL_ARCH.ARM64   : list({**arm64_reg_map}.keys()),
-            QL_ARCH.MIPS    : list({**mips_reg_map}.keys()),
+            QL_ARCH.X86: list(
+                {**x86_reg_map_32, **x86_reg_map_misc, **x86_reg_map_st}.keys()
+            ),
+            QL_ARCH.X8664: list(
+                {**x86_reg_map_64, **x86_reg_map_misc, **x86_reg_map_st}.keys()
+            ),
+            QL_ARCH.ARM: list({**arm_reg_map}.keys()),
+            QL_ARCH.ARM64: list({**arm64_reg_map}.keys()),
+            QL_ARCH.MIPS: list({**mips_reg_map}.keys()),
         }
 
         if ql.archtype == QL_ARCH.X86:
@@ -884,7 +979,7 @@ class QlEmuMisc:
 
         def write(self, write_buf):
             super().write(write_buf)
-            msg(write_buf.decode('utf-8'))
+            msg(write_buf.decode("utf-8"))
 
         def flush(self):
             pass
@@ -892,7 +987,9 @@ class QlEmuMisc:
         def isatty(self):
             return False
 
+
 ### Qiling wrapper
+
 
 class QlEmuQiling:
     def __init__(self):
@@ -905,28 +1002,51 @@ class QlEmuQiling:
         self.env = {}
 
     def start(self, *args, **kwargs):
-        if sys.platform != 'win32':
-            qlstdin = QlEmuMisc.QLStdIO('stdin', sys.__stdin__.fileno())
-            qlstdout = QlEmuMisc.QLStdIO('stdout', sys.__stdout__.fileno())
-            qlstderr = QlEmuMisc.QLStdIO('stderr', sys.__stderr__.fileno())
+        if sys.platform != "win32":
+            qlstdin = QlEmuMisc.QLStdIO("stdin", sys.__stdin__.fileno())
+            qlstdout = QlEmuMisc.QLStdIO("stdout", sys.__stdout__.fileno())
+            qlstderr = QlEmuMisc.QLStdIO("stderr", sys.__stderr__.fileno())
 
-        if sys.platform != 'win32':
-            self.ql = Qiling(argv=self.path, rootfs=self.rootfs, verbose=QL_VERBOSE.DEBUG, env=self.env, stdin=qlstdin, stdout=qlstdout, stderr=qlstderr, log_plain=True, *args, **kwargs)
+        if sys.platform != "win32":
+            self.ql = Qiling(
+                argv=self.path,
+                rootfs=self.rootfs,
+                verbose=QL_VERBOSE.DEBUG,
+                env=self.env,
+                stdin=qlstdin,
+                stdout=qlstdout,
+                stderr=qlstderr,
+                log_plain=True,
+                *args,
+                **kwargs,
+            )
         else:
-            self.ql = Qiling(argv=self.path, rootfs=self.rootfs, verbose=QL_VERBOSE.DEBUG, env=self.env, log_plain=True, *args, **kwargs)
+            self.ql = Qiling(
+                argv=self.path,
+                rootfs=self.rootfs,
+                verbose=QL_VERBOSE.DEBUG,
+                env=self.env,
+                log_plain=True,
+                *args,
+                **kwargs,
+            )
 
         self.exit_addr = self.ql.os.exit_point
         if self.ql.ostype == QL_OS.LINUX:
-            f = open(self.ql.path, 'rb')
+            f = open(self.ql.path, "rb")
             elffile = ELFFile(f)
             elf_header = elffile.header
-            if elf_header['e_type'] == 'ET_EXEC':
+            if elf_header["e_type"] == "ET_EXEC":
                 self.baseaddr = self.ql.os.elf_mem_start
-            elif elf_header['e_type'] == 'ET_DYN':
+            elif elf_header["e_type"] == "ET_DYN":
                 if self.ql.archbit == 32:
-                    self.baseaddr = int(self.ql.os.profile.get("OS32", "load_address"), 16)
+                    self.baseaddr = int(
+                        self.ql.os.profile.get("OS32", "load_address"), 16
+                    )
                 elif self.ql.archbit == 64:
-                    self.baseaddr = int(self.ql.os.profile.get("OS64", "load_address"), 16)
+                    self.baseaddr = int(
+                        self.ql.os.profile.get("OS64", "load_address"), 16
+                    )
         else:
             self.baseaddr = 0x0
 
@@ -935,11 +1055,18 @@ class QlEmuQiling:
 
     def set_reg(self):
         reglist = QlEmuMisc.get_reg_map(self.ql)
-        regs = [ [ row, int(self.ql.reg.read(row)), ql_get_arch_bits(self.ql.archtype) ] for row in reglist ]
+        regs = [
+            [
+                row,
+                int(self.ql.reg.read(row)),
+                ql_get_arch_bits(self.ql.archtype),
+            ]
+            for row in reglist
+        ]
         regs_len = len(regs)
         RegDig = QlEmuRegDialog(regs)
         if RegDig.show():
-            for idx, val in enumerate(RegDig.items[0:regs_len-1]):
+            for idx, val in enumerate(RegDig.items[0 : regs_len - 1]):
                 self.ql.reg.write(reglist[idx], val[1])
             return True
         else:
@@ -954,8 +1081,10 @@ class QlEmuQiling:
 
         savepath = savedlg.path_name.value
 
-        self.ql.save(reg=True, mem=True,fd=True, cpu_context=True, snapshot=savepath)
-        logging.info('Save to ' + savepath)
+        self.ql.save(
+            reg=True, mem=True, fd=True, cpu_context=True, snapshot=savepath
+        )
+        logging.info("Save to " + savepath)
         return True
 
     def load(self):
@@ -968,7 +1097,7 @@ class QlEmuQiling:
         loadname = loaddlg.file_name.value
 
         self.ql.restore(snapshot=loadname)
-        logging.info('Restore from ' + loadname)
+        logging.info("Restore from " + loadname)
         return True
 
     def remove_ql(self):
@@ -982,7 +1111,9 @@ class QlEmuQiling:
     def ida_addr_from_ql_addr(self, addr):
         return addr - self.baseaddr + get_imagebase()
 
+
 ### Plugin
+
 
 class QlEmuPlugin(plugin_t, UI_Hooks):
     ### Ida Plugin Data
@@ -1021,16 +1152,24 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
 
     def init(self):
         # init data
-        logging.info('---------------------------------------------------------------------------------------')
-        logging.info('Qiling Emulator Plugin For IDA, by Qiling Team. Version {0}, 2020'.format(QLVERSION))
-        logging.info('Based on Qiling v{0}'.format(QLVERSION))
-        logging.info('Find more information about Qiling at https://qiling.io')
-        logging.info('---------------------------------------------------------------------------------------')
+        logging.info(
+            "---------------------------------------------------------------------------------------"
+        )
+        logging.info(
+            "Qiling Emulator Plugin For IDA, by Qiling Team. Version {0}, 2020".format(
+                QLVERSION
+            )
+        )
+        logging.info("Based on Qiling v{0}".format(QLVERSION))
+        logging.info("Find more information about Qiling at https://qiling.io")
+        logging.info(
+            "---------------------------------------------------------------------------------------"
+        )
         self.qlemu = QlEmuQiling()
         self.ql_hook_ui_actions()
         return PLUGIN_KEEP
 
-    def run(self, arg = 0):
+    def run(self, arg=0):
         logging.info(f"Registering actions.")
         self.ql_register_menu_actions()
         self.ql_attach_main_menu_actions()
@@ -1051,7 +1190,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         if self.qlemu is None:
             self.qlemu = QlEmuQiling()
         if self.ql_set_rootfs():
-            logging.info(f'Rootfs: {self.qlemu.rootfs}')
+            logging.info(f"Rootfs: {self.qlemu.rootfs}")
             logging.info(f"Custom user script: {self.customscriptpath}")
             logging.info(f"Custom env: {self.qlemu.env}")
             show_wait_box("Qiling is processing ...")
@@ -1067,16 +1206,16 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             self.userobj.custom_prepare(self.qlemu.ql)
 
     def ql_load_user_script(self):
-        if self.qlinit :
+        if self.qlinit:
             self.ql_get_user_script(is_reload=True, is_start=True)
         else:
-            logging.error('Qiling should be setup firstly.')
+            logging.error("Qiling should be setup firstly.")
 
     def ql_reload_user_script(self):
         if self.qlinit:
             self.ql_get_user_script(is_reload=True)
         else:
-            logging.error('Qiling should be setup firstly.')
+            logging.error("Qiling should be setup firstly.")
 
     def ql_continue(self):
         if self.qlinit:
@@ -1088,7 +1227,10 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 self.qlemu.ql.restore(self.qlemu.status)
                 show_wait_box("Qiling is processing ...")
                 try:
-                    self.qlemu.run(begin=self.qlemu.ql.reg.arch_pc, end=self.qlemu.exit_addr)
+                    self.qlemu.run(
+                        begin=self.qlemu.ql.reg.arch_pc,
+                        end=self.qlemu.exit_addr,
+                    )
                 finally:
                     hide_wait_box()
             else:
@@ -1103,12 +1245,13 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                     self.qlemu.ql.hook_del(hook)
             self.ql_update_views(self.qlemu.ql.reg.arch_pc, self.qlemu.ql)
         else:
-            logging.error('Qiling should be setup firstly.')
+            logging.error("Qiling should be setup firstly.")
 
     def _color_path(self, color):
         def _cb(ql, addr, size):
             real_addr = addr - self.qlemu.baseaddr + get_imagebase()
             set_color(real_addr, CIC_ITEM, color)
+
         return _cb
 
     def ql_run_selection(self):
@@ -1118,7 +1261,9 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             self.qlemu.status = None
             if self.userobj is not None:
                 userhook = self.userobj.custom_execute_selection(self.qlemu.ql)
-            colorhook = self.qlemu.ql.hook_code(self._color_path(Colors.Pink.value))
+            colorhook = self.qlemu.ql.hook_code(
+                self._color_path(Colors.Pink.value)
+            )
             show_wait_box("Qiling is processing ...")
             try:
                 self.qlemu.run(begin=start, end=end)
@@ -1131,7 +1276,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             self.qlemu.status = self.qlemu.ql.save()
             self.ql_update_views(self.qlemu.ql.reg.arch_pc, self.qlemu.ql)
         else:
-            logging.error('Qiling should be setup firstly.')
+            logging.error("Qiling should be setup firstly.")
 
     def ql_set_pc(self):
         if self.qlinit:
@@ -1141,7 +1286,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             self.qlemu.status = self.qlemu.ql.save()
             self.ql_update_views(self.qlemu.ql.reg.arch_pc, self.qlemu.ql)
         else:
-            logging.error('Qiling should be setup firstly.')
+            logging.error("Qiling should be setup firstly.")
 
     def ql_run_to_here(self):
         if self.qlinit:
@@ -1151,13 +1296,18 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 self.qlemu.ql.restore(self.qlemu.status)
                 show_wait_box("Qiling is processing ...")
                 try:
-                    self.qlemu.run(begin=self.qlemu.ql.reg.arch_pc, end=curr_addr+self.qlemu.baseaddr-get_imagebase())
+                    self.qlemu.run(
+                        begin=self.qlemu.ql.reg.arch_pc,
+                        end=curr_addr + self.qlemu.baseaddr - get_imagebase(),
+                    )
                 finally:
                     hide_wait_box()
             else:
                 show_wait_box("Qiling is processing ...")
                 try:
-                    self.qlemu.run(end=curr_addr+self.qlemu.baseaddr-get_imagebase())
+                    self.qlemu.run(
+                        end=curr_addr + self.qlemu.baseaddr - get_imagebase()
+                    )
                 finally:
                     hide_wait_box()
 
@@ -1166,7 +1316,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             self.qlemu.status = self.qlemu.ql.save()
             self.ql_update_views(self.qlemu.ql.reg.arch_pc, self.qlemu.ql)
         else:
-            logging.error('Qiling should be setup firstly.')
+            logging.error("Qiling should be setup firstly.")
 
     def ql_step(self):
         if self.qlinit:
@@ -1176,27 +1326,29 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             self.stephook = self.qlemu.ql.hook_code(callback=self.ql_step_hook)
             if self.userobj is not None:
                 userhook = self.userobj.custom_step(self.qlemu.ql)
-            self.qlemu.run(begin=self.qlemu.ql.reg.arch_pc, end=self.qlemu.exit_addr)
+            self.qlemu.run(
+                begin=self.qlemu.ql.reg.arch_pc, end=self.qlemu.exit_addr
+            )
             if userhook and userhook is not None:
                 for hook in userhook:
                     self.qlemu.ql.hook_del(hook)
             self.ql_update_views(self.qlemu.ql.reg.arch_pc, self.qlemu.ql)
         else:
-            logging.error('Qiling should be setup firstly.')
+            logging.error("Qiling should be setup firstly.")
 
     def ql_save(self):
         if self.qlinit:
             if self.qlemu.save() != True:
-                logging.error('Fail to save the snapshot.')
+                logging.error("Fail to save the snapshot.")
         else:
-            logging.error('Qiling should be setup firstly.')
+            logging.error("Qiling should be setup firstly.")
 
     def ql_load(self):
         if self.qlinit:
             if self.qlemu.load() != True:
-                logging.error('Fail to load the snapshot.')
+                logging.error("Fail to load the snapshot.")
         else:
-            logging.error('Qiling should be setup firstly.')
+            logging.error("Qiling should be setup firstly.")
 
     def ql_chang_reg(self):
         if self.qlinit:
@@ -1204,7 +1356,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             self.ql_update_views(self.qlemu.ql.reg.arch_pc, self.qlemu.ql)
             self.qlemu.status = self.qlemu.ql.save()
         else:
-            logging.error('Qiling should be setup firstly.')
+            logging.error("Qiling should be setup firstly.")
 
     def ql_reset(self):
         if self.qlinit:
@@ -1212,20 +1364,22 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             self.qlemu = QlEmuQiling()
             self.ql_start()
         else:
-            logging.error('Qiling should be setup firstly.')
+            logging.error("Qiling should be setup firstly.")
 
     def ql_close(self):
         if self.qlinit:
-            heads = Heads(get_segm_start(get_screen_ea()), get_segm_end(get_screen_ea()))
+            heads = Heads(
+                get_segm_start(get_screen_ea()), get_segm_end(get_screen_ea())
+            )
             for i in heads:
                 set_color(i, CIC_ITEM, 0xFFFFFF)
             self.qlemu.remove_ql()
             del self.qlemu
             self.qlemu = None
             self.qlinit = False
-            logging.info('Qiling is deleted.')
+            logging.info("Qiling is deleted.")
         else:
-            logging.error('Qiling is not started.')
+            logging.error("Qiling is not started.")
 
     def ql_show_reg_view(self):
         if self.qlinit:
@@ -1233,11 +1387,13 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 self.qlemuregview = QlEmuRegView(self)
                 QlEmuRegView(self)
                 self.qlemuregview.Create()
-                self.qlemuregview.SetReg(self.qlemu.ql.reg.arch_pc, self.qlemu.ql)
+                self.qlemuregview.SetReg(
+                    self.qlemu.ql.reg.arch_pc, self.qlemu.ql
+                )
                 self.qlemuregview.Show()
                 self.qlemuregview.Refresh()
         else:
-            logging.error('Qiling should be setup firstly.')
+            logging.error("Qiling should be setup firstly.")
 
     def ql_show_stack_view(self):
         if self.qlinit:
@@ -1248,7 +1404,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 self.qlemustackview.Show()
                 self.qlemustackview.Refresh()
         else:
-            logging.error('Qiling should be setup firstly.')
+            logging.error("Qiling should be setup firstly.")
 
     def ql_show_mem_view(self, addr=get_screen_ea(), size=0x10):
         if self.qlinit:
@@ -1258,40 +1414,57 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             memdialog.mem_size.value = size
             ok = memdialog.Execute()
             if ok == 1:
-                mem_addr = memdialog.mem_addr.value - self.qlemu.baseaddr + get_imagebase()
+                mem_addr = (
+                    memdialog.mem_addr.value
+                    - self.qlemu.baseaddr
+                    + get_imagebase()
+                )
                 mem_size = memdialog.mem_size.value
                 mem_cmnt = memdialog.mem_cmnt.value
 
                 if mem_addr not in self.qlemumemview:
                     if not self.qlemu.ql.mem.is_mapped(mem_addr, mem_size):
-                        ok = ask_yn(1, "Memory [%X:%X] is not mapped!\nDo you want to map it?\n   YES - Load Binary\n   NO - Fill page with zeroes\n   Cancel - Close dialog" % (mem_addr, mem_addr + mem_size))
+                        ok = ask_yn(
+                            1,
+                            "Memory [%X:%X] is not mapped!\nDo you want to map it?\n   YES - Load Binary\n   NO - Fill page with zeroes\n   Cancel - Close dialog"
+                            % (mem_addr, mem_addr + mem_size),
+                        )
                         if ok == 0:
                             self.qlemu.ql.mem.map(mem_addr, mem_size)
-                            self.qlemu.ql.mem.write(self.qlemu.ql.mem.align(mem_addr), b"\x00"*mem_size)
+                            self.qlemu.ql.mem.write(
+                                self.qlemu.ql.mem.align(mem_addr),
+                                b"\x00" * mem_size,
+                            )
                         elif ok == 1:
                             # TODO: map_binary
                             return
                         else:
                             return
-                    self.qlemumemview[mem_addr] = QlEmuMemView(self, mem_addr, mem_size)
+                    self.qlemumemview[mem_addr] = QlEmuMemView(
+                        self, mem_addr, mem_size
+                    )
                     if mem_cmnt == []:
                         self.qlemumemview[mem_addr].Create("QL Memory")
                     else:
-                        self.qlemumemview[mem_addr].Create("QL Memory [ " + mem_cmnt + " ]")
+                        self.qlemumemview[mem_addr].Create(
+                            "QL Memory [ " + mem_cmnt + " ]"
+                        )
                     self.qlemumemview[mem_addr].SetMem(self.qlemu.ql)
                 self.qlemumemview[mem_addr].Show()
                 self.qlemumemview[mem_addr].Refresh()
         else:
-            logging.error('Qiling should be setup firstly.')
+            logging.error("Qiling should be setup firstly.")
 
     def ql_unload_plugin(self):
-        heads = Heads(get_segm_start(get_screen_ea()), get_segm_end(get_screen_ea()))
+        heads = Heads(
+            get_segm_start(get_screen_ea()), get_segm_end(get_screen_ea())
+        )
         for i in heads:
             set_color(i, CIC_ITEM, 0xFFFFFF)
         self.ql_close()
         self.ql_detach_main_menu_actions()
         self.ql_unregister_menu_actions()
-        logging.info('Unload plugin successfully!')
+        logging.info("Unload plugin successfully!")
 
     def ql_menu_null(self):
         pass
@@ -1308,22 +1481,36 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             try:
                 version_stable = re.findall(r"\"([\d\.]+)\"", content)[0]
             except (TypeError, IndexError):
-                warning("ERROR: Failed to find the Qiling version string from response.")
-                logging.warning("Failed to find the Qiling version string from response.")
+                warning(
+                    "ERROR: Failed to find the Qiling version string from response."
+                )
+                logging.warning(
+                    "Failed to find the Qiling version string from response."
+                )
 
             # compare with the current version
             if version_stable == QLVERSION:
-                self.updatedlg = QlEmuUpdateDialog(QLVERSION, "Good, you are already on the latest stable version!")
+                self.updatedlg = QlEmuUpdateDialog(
+                    QLVERSION,
+                    "Good, you are already on the latest stable version!",
+                )
                 self.updatedlg.Execute()
                 self.updatedlg.Free()
             else:
-                self.updatedlg = QlEmuUpdateDialog(QLVERSION, "Download latest stable version {0} from https://github.com/qilingframework/qiling/blob/master/qiling/extensions/idaplugin".format(version_stable))
+                self.updatedlg = QlEmuUpdateDialog(
+                    QLVERSION,
+                    "Download latest stable version {0} from https://github.com/qilingframework/qiling/blob/master/qiling/extensions/idaplugin".format(
+                        version_stable
+                    ),
+                )
                 self.updatedlg.Execute()
                 self.updatedlg.Free()
         else:
             # fail to download
             warning("ERROR: Failed to connect to Github. Try again later.")
-            logging.warning("Failed to connect to Github when checking for the latest update. Try again later.")
+            logging.warning(
+                "Failed to connect to Github when checking for the latest update. Try again later."
+            )
 
     def _remove_from_bb_lists(self, bbid):
         if bbid in self.real_blocks:
@@ -1335,7 +1522,9 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
 
     def ql_mark_real(self):
         if len(self.bb_mapping) == 0:
-            logging.error(f"Please perform auto analysis before marking blocks manually!")
+            logging.error(
+                f"Please perform auto analysis before marking blocks manually!"
+            )
             return
         cur_addr = IDA.get_current_address()
         cur_block = IDA.get_block(cur_addr)
@@ -1345,7 +1534,9 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
 
     def ql_mark_fake(self):
         if len(self.bb_mapping) == 0:
-            logging.error(f"Please perform auto analysis before marking blocks manually!")
+            logging.error(
+                f"Please perform auto analysis before marking blocks manually!"
+            )
             return
         cur_addr = IDA.get_current_address()
         cur_block = IDA.get_block(cur_addr)
@@ -1355,7 +1546,9 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
 
     def ql_mark_retn(self):
         if len(self.bb_mapping) == 0:
-            logging.error(f"Please perform auto analysis before marking blocks manually!")
+            logging.error(
+                f"Please perform auto analysis before marking blocks manually!"
+            )
             return
         cur_addr = IDA.get_current_address()
         cur_block = IDA.get_block(cur_addr)
@@ -1378,18 +1571,26 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             return False
         last_ins = ins_list[-1]
         if last_ins.opcode != ida_hexrays.m_goto:
-            logging.warning(f"jmp_mbb at {hex(mbb.start)} the opcode of last instruction {last_ins._print()} isn't goto")
+            logging.warning(
+                f"jmp_mbb at {hex(mbb.start)} the opcode of last instruction {last_ins._print()} isn't goto"
+            )
             return False
         if last_ins.l.t != ida_hexrays.mop_b:
-            logging.warning(f"jmp_mbb at {hex(mbb.start)} the l of last instruction {last_ins._print()} doesn't have a microcode block reference")
+            logging.warning(
+                f"jmp_mbb at {hex(mbb.start)} the l of last instruction {last_ins._print()} doesn't have a microcode block reference"
+            )
             return False
         goto_mbb = self.mbbs[last_ins.l.b]
         mbb_start = goto_mbb.start
         dispatcher_bb = self.bb_mapping[self.dispatcher]
         pre_dispatcher_bb = self.bb_mapping[self.pre_dispatcher]
-        if self.__in_bb(mbb_start, dispatcher_bb) or self.__in_bb(mbb_start, pre_dispatcher_bb):
+        if self.__in_bb(mbb_start, dispatcher_bb) or self.__in_bb(
+            mbb_start, pre_dispatcher_bb
+        ):
             return True
-        logging.warning(f"The address {hex(mbb_start)} where jmp_mbb goes isn't pre_dispatcher or dispatcher block!")
+        logging.warning(
+            f"The address {hex(mbb_start)} where jmp_mbb goes isn't pre_dispatcher or dispatcher block!"
+        )
         return False
 
     # Identify if the given microcode block is a next_mbb.
@@ -1402,16 +1603,24 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             return False
         first_ins = ins_list[0]
         if first_ins.opcode != ida_hexrays.m_mov:
-            logging.warning(f"next_mbb at {hex(mbb.start)} the opcode of first instruction {first_ins._print()} isn't mov")
+            logging.warning(
+                f"next_mbb at {hex(mbb.start)} the opcode of first instruction {first_ins._print()} isn't mov"
+            )
             return False
         if first_ins.l.t != ida_hexrays.mop_n:
-            logging.warning(f"next_mbb at {hex(mbb.start)} the l of first instruction {first_ins._print()} isn't an immediate number")
+            logging.warning(
+                f"next_mbb at {hex(mbb.start)} the l of first instruction {first_ins._print()} isn't an immediate number"
+            )
             return False
         if first_ins.d.t != ida_hexrays.mop_r:
-            logging.warning(f"next_mbb at {hex(mbb.start)} the d of first instruction {first_ins._print()} isn't a reg")
+            logging.warning(
+                f"next_mbb at {hex(mbb.start)} the d of first instruction {first_ins._print()} isn't a reg"
+            )
             return False
         if len(ins_list) == 1:
-            logging.info(f"A block with only one instruction which is `mov #imm, reg` at {hex(mbb.start)}.")
+            logging.info(
+                f"A block with only one instruction which is `mov #imm, reg` at {hex(mbb.start)}."
+            )
         return True
 
     def _get_jmp_ins(self, ida_addr, insns):
@@ -1425,7 +1634,9 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             if ida_hexrays.is_mcode_jcond(ins.opcode):
                 result.append((bbid, ins))
         if len(result) > 1:
-            logging.warning(f"More than one conditional jmp detected at {hex(ida_addr)}!")
+            logging.warning(
+                f"More than one conditional jmp detected at {hex(ida_addr)}!"
+            )
         elif len(result) == 0:
             logging.warning(f"No conditional jmp found at {hex(ida_addr)}!")
             return (None, None)
@@ -1445,7 +1656,9 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         # According to comments in hexrays.hpp, it may be a mop_v. I guess that shouldn't exist
         # so we add a sanity check here.
         if ins.d.t != ida_hexrays.mop_b:
-            logging.warning(f"Sanity check: microcode {ins._print()} doesn't refer a block!")
+            logging.warning(
+                f"Sanity check: microcode {ins._print()} doesn't refer a block!"
+            )
         jmp_mbb = mbbs[ins.d.b]
         next_mbb = mbbs[bbid].nextb
         if not (self.__is_next_mbb(next_mbb) and self.__is_jmp_mbb(jmp_mbb)):
@@ -1454,7 +1667,9 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             if self.__is_jmp_mbb(next_mbb) and self.__is_next_mbb(jmp_mbb):
                 jmp_mbb, next_mbb = next_mbb, jmp_mbb
             else:
-                logging.error(f"Fail to identify microcode blocks at {hex(ida_addr)}")
+                logging.error(
+                    f"Fail to identify microcode blocks at {hex(ida_addr)}"
+                )
                 return False
         ins_list = list(IDA.micro_code_from_mbb(next_mbb))
         first_ins = ins_list[0]
@@ -1484,7 +1699,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
     #                and original assembly.
     #              For current implementation we don't record 'LT' or 'GT' which makes it hard to patch code after force execution.
     def _force_execution_by_parsing_assembly(self, ql, ida_addr):
-        if "x86" in IDA.get_ql_arch_string(): # cmovlg eax, ebx
+        if "x86" in IDA.get_ql_arch_string():  # cmovlg eax, ebx
             reg1 = IDA.print_operand(ida_addr, 0).lower()
             reg2 = IDA.print_operand(ida_addr, 1).lower()
             reg2_val = ql.reg.__getattribute__(reg2)
@@ -1494,7 +1709,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         elif "arm" in IDA.get_ql_arch_string():
             instr = IDA.get_instruction(ida_addr).lower()
             logging.info(f"Going to force execute: {instr}")
-            if instr.startswith("it"): # itt eq\n moveqw low\n movteq high\n
+            if instr.startswith("it"):  # itt eq\n moveqw low\n movteq high\n
                 ida_addr = ida_addr + IDA.get_instruction_size(ida_addr)
                 low = IDA.get_operand(ida_addr, 1)
                 ida_addr = ida_addr + IDA.get_instruction_size(ida_addr)
@@ -1504,7 +1719,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 logging.info(f"Force set {reg} to {hex(val)}")
                 ql.reg.__setattr__(reg, val)
                 return True
-            elif "csel" in instr: # csel dst, src1, src2, cond
+            elif "csel" in instr:  # csel dst, src1, src2, cond
                 dst = IDA.print_operand(ida_addr, 0).lower()
                 src = IDA.print_operand(ida_addr, 2).lower()
                 src_val = ql.reg.__getattribute__(src)
@@ -1523,36 +1738,46 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         return False
 
     def _guide_hook(self, ql, addr, size):
-        start_bb_id = self.hook_data['startbb']
+        start_bb_id = self.hook_data["startbb"]
         ida_addr = self.deflatqlemu.ida_addr_from_ql_addr(addr)
-        func = self.hook_data['func']
+        func = self.hook_data["func"]
         if ida_addr < func.start_ea or ida_addr >= func.end_ea:
-            logging.error(f"Address {hex(ida_addr)} out of function boundaries!")
+            logging.error(
+                f"Address {hex(ida_addr)} out of function boundaries!"
+            )
             ql.emu_stop()
-            self.hook_data['result'] = False
+            self.hook_data["result"] = False
             return
         cur_bb = IDA.get_block(ida_addr)
-        if "force" in self.hook_data and ida_addr in self.hook_data['force']:
-            if self.hook_data['force'][ida_addr]:
+        if "force" in self.hook_data and ida_addr in self.hook_data["force"]:
+            if self.hook_data["force"][ida_addr]:
                 logging.info(f"Force execution at {hex(ida_addr)}")
                 result = self._force_execution_with_microcode(ql, ida_addr)
                 if not result:
-                    logging.warning(f"Fail to force execution by microcode at {hex(ida_addr)}, trying legacy approach")
-                    result = self._force_execution_by_parsing_assembly(ql, ida_addr)
+                    logging.warning(
+                        f"Fail to force execution by microcode at {hex(ida_addr)}, trying legacy approach"
+                    )
+                    result = self._force_execution_by_parsing_assembly(
+                        ql, ida_addr
+                    )
                     if not result:
-                        logging.error(f"Fail to force execution by legacy approach at {hex(ida_addr)}, stop now...")
-                        self.hook_data['result'] = False
+                        logging.error(
+                            f"Fail to force execution by legacy approach at {hex(ida_addr)}, stop now..."
+                        )
+                        self.hook_data["result"] = False
                         ql.emu_stop()
                         return
-                    self.hook_data['force_legacy'] = True
+                    self.hook_data["force_legacy"] = True
             else:
                 pass
-            if not self.hook_data['force_legacy']:
+            if not self.hook_data["force_legacy"]:
                 next_ida_addr = self._ida_address_after_branch(ida_addr)
             else:
                 next_ida_addr = ida_addr + IDA.get_instruction_size(ida_addr)
             logging.info(f"Goto {hex(next_ida_addr)} after branch...")
-            ql.reg.arch_pc = self.deflatqlemu.ql_addr_from_ida(next_ida_addr) + self.append
+            ql.reg.arch_pc = (
+                self.deflatqlemu.ql_addr_from_ida(next_ida_addr) + self.append
+            )
             ida_addr = next_ida_addr
         # TODO: Maybe we can detect whether the program will access unmapped
         #       here so that we won't map the memory.
@@ -1571,16 +1796,18 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         # Round down
         map_addr = addr & (~(alignment - 1))
         # Round up
-        map_size = ((size + (alignment - 1)) & (~(alignment - 1)))
+        map_size = (size + (alignment - 1)) & (~(alignment - 1))
         if not ql.mem.is_mapped(map_addr, map_size):
-            logging.warning(f"Invalid memory R/W, trying to map {hex(map_size)} at {hex(map_addr)}")
+            logging.warning(
+                f"Invalid memory R/W, trying to map {hex(map_size)} at {hex(map_addr)}"
+            )
             ql.mem.map(map_addr, map_size)
-            ql.mem.write(map_addr, b'\x00'*map_size)
+            ql.mem.write(map_addr, b"\x00" * map_size)
         return True
 
     def _find_branch_in_real_block(self, bb):
-        #paddr = bb.start_ea
-        #while paddr < bb.end_ea:
+        # paddr = bb.start_ea
+        # while paddr < bb.end_ea:
         #    ins = IDA.get_instruction(paddr)
         #    sz = IDA.get_instruction_size(paddr)
         #    if ins.lower().startswith("cmov"):
@@ -1602,23 +1829,37 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
     def _log_paths_str(self):
         for bbid, succs in self.paths.items():
             if len(succs) == 1:
-                logging.info(f"{self._block_str(bbid)} -> {self._block_str(succs[0])}")
+                logging.info(
+                    f"{self._block_str(bbid)} -> {self._block_str(succs[0])}"
+                )
             elif len(succs) == 2:
-                logging.info(f"{self._block_str(bbid)} --(force jump)--> {self._block_str(succs[0])}")
-                logging.info(f"|----(skip jump)----> {self._block_str(succs[1])}")
+                logging.info(
+                    f"{self._block_str(bbid)} --(force jump)--> {self._block_str(succs[0])}"
+                )
+                logging.info(
+                    f"|----(skip jump)----> {self._block_str(succs[1])}"
+                )
             elif len(succs) > 2:
-                logging.warning(f"succs: {succs} found from {self._block_str(bbid)}!")
+                logging.warning(
+                    f"succs: {succs} found from {self._block_str(bbid)}!"
+                )
 
     # Is this correct?
     def _thumb_detect(self, ida_addr):
         return IDA.get_instruction_size(ida_addr) == 2
 
     def _log_verbose(self, ql, addr, size):
-        logging.debug(f"addr: {hex(addr)} ida_addr: {hex(self.deflatqlemu.ida_addr_from_ql_addr(addr))}")
-        registers = [ k for k in ql.reg.register_mapping.keys() if type(k) is str ]
+        logging.debug(
+            f"addr: {hex(addr)} ida_addr: {hex(self.deflatqlemu.ida_addr_from_ql_addr(addr))}"
+        )
+        registers = [
+            k for k in ql.reg.register_mapping.keys() if type(k) is str
+        ]
         for idx in range(0, len(registers), 3):
-            regs = registers[idx:idx+3]
-            s = "\t".join(map(lambda v: f"{v:4}: {ql.reg.__getattribute__(v):016x}", regs))
+            regs = registers[idx : idx + 3]
+            s = "\t".join(
+                map(lambda v: f"{v:4}: {ql.reg.__getattribute__(v):016x}", regs)
+            )
             logging.debug(s)
 
     # Q: Why we need emulation to help us find real control flow considering there are some
@@ -1652,47 +1893,54 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         ql.hook_mem_write_invalid(self._skip_unmapped_rw)
         ql.hook_mem_unmapped(self._skip_unmapped_rw)
         # set up stack before we really run.
-        ql.run(begin=self.deflatqlemu.ql_addr_from_ida(first_block.start_ea) + self.append, end=self.deflatqlemu.ql_addr_from_ida(first_block.end_ea), count=0xFFF)
+        ql.run(
+            begin=self.deflatqlemu.ql_addr_from_ida(first_block.start_ea)
+            + self.append,
+            end=self.deflatqlemu.ql_addr_from_ida(first_block.end_ea),
+            count=0xFFF,
+        )
         # okay, we can set up our core hook now.
         ql.hook_code(self._guide_hook)
         for bbid in reals:
-            logging.debug(f"Search control flow for block: {self._block_str(bbid)}")
+            logging.debug(
+                f"Search control flow for block: {self._block_str(bbid)}"
+            )
             bb = self.bb_mapping[bbid]
             braddr = self._find_branch_in_real_block(bb)
             self.hook_data = {
                 "startbb": bbid,
                 "func": IDA.get_function(first_block.start_ea),
                 "result": True,
-                "force_legacy": False
+                "force_legacy": False,
             }
-            ql_bb_start_ea = self.deflatqlemu.ql_addr_from_ida(bb.start_ea) + self.append
+            ql_bb_start_ea = (
+                self.deflatqlemu.ql_addr_from_ida(bb.start_ea) + self.append
+            )
             ctx = ql.save()
             # Skip force execution in the first block.
             # `end=0` is a workaround for ql remembering last exit_point.
             if braddr is None or bb.id == self.first_block:
                 ql.run(begin=ql_bb_start_ea, end=0, count=0xFFF)
             else:
-                self.hook_data['force'] = {braddr: True}
+                self.hook_data["force"] = {braddr: True}
                 ctx2 = ql.save()
                 ql.run(begin=ql_bb_start_ea, end=0, count=0xFFF)
                 ql.restore(ctx2)
-                if not self.hook_data['result']:
+                if not self.hook_data["result"]:
                     return False
-                self.hook_data['force'] = {braddr: False}
+                self.hook_data["force"] = {braddr: False}
                 ql.run(begin=ql_bb_start_ea, end=0, count=0xFFF)
             ql.restore(ctx)
-            if not self.hook_data['result']:
+            if not self.hook_data["result"]:
                 return False
         self._log_paths_str()
         return True
-
 
     # IDA doesn't support arm assembling, so it's a good chance to replace IDA
     # assembler implmentation with keystone.
     def _initialize_keystone(self):
         if self.ks is None:
             self.ks = self.deflatqlemu.ql.create_assembler()
-
 
     def _asm(self, *args, **kwargs):
         self._initialize_keystone()
@@ -1734,10 +1982,10 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
     def _arch_parse_cond_from_addr(self, braddr):
         arch = IDA.get_ql_arch_string()
         instr = IDA.get_instruction(braddr).lower()
-        if "x86" in arch: # cmovge
+        if "x86" in arch:  # cmovge
             return instr[4:]
         elif "arm" in arch:
-            if instr.startswith("it"): # itt eq
+            if instr.startswith("it"):  # itt eq
                 tks = instr.split(" ")
                 if len(tks) != 2:
                     logging.error(f"Can't get condition from {instr}")
@@ -1750,7 +1998,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
 
     # Really FORCE ida to analyse again.
     def _force_analysis(self, start, end):
-        ida_bytes.del_items(start, 0, end-start)
+        ida_bytes.del_items(start, 0, end - start)
         ida_auto.plan_and_wait(start, end)
         return
 
@@ -1758,7 +2006,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
     # and call IDA to analyse it again. Nice job again as always, Hexrays!
     def _patch_bytes_with_force_analysis(self, start, bs):
         IDA.patch_bytes(start, bs)
-        return self._force_analysis(start, start+len(bs))
+        return self._force_analysis(start, start + len(bs))
 
     def _arch_branch_patch(self, braddr, bbid):
         bb = self.bb_mapping[bbid]
@@ -1771,22 +2019,27 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         # Parse condition before patching nop.
         cond = self._arch_parse_cond_from_addr(braddr)
         buffer = [0] * (bb.end_ea - braddr)
-        instr_to_assemble = self._arch_cond_jmp_instruction(cond, f"{hex(force_addr)}h")
+        instr_to_assemble = self._arch_cond_jmp_instruction(
+            cond, f"{hex(force_addr)}h"
+        )
         logging.info(f"Assemble {instr_to_assemble} at {hex(force_addr)}")
         bs1, _ = self._asm(instr_to_assemble, braddr)
-        buffer[:len(bs1)] = bs1
+        buffer[: len(bs1)] = bs1
         next_instr_address = braddr + len(bs1)
         instr_to_assemble = self._arch_jmp_instruction(f"{hex(normal_addr)}h")
         logging.info(f"Assemble {instr_to_assemble} at {hex(normal_addr)}")
         bs2, _ = self._asm(instr_to_assemble, next_instr_address)
-        buffer[len(bs1):len(bs1) + len(bs2)] = bs2
-        logging.info(f"Patch real block with branch from {hex(braddr)} to {hex(bb.end_ea)}")
+        buffer[len(bs1) : len(bs1) + len(bs2)] = bs2
+        logging.info(
+            f"Patch real block with branch from {hex(braddr)} to {hex(bb.end_ea)}"
+        )
         self._patch_bytes_with_force_analysis(braddr, bytes(buffer))
-
 
     def _patch_codes(self):
         if len(self.paths[self.first_block]) != 1:
-            logging.error(f"Found wrong ways in first block: {self._block_str(self.bb_mapping[self.first_block])}, should be 1 path but get {len(self.paths[self.first_block])}, exit.")
+            logging.error(
+                f"Found wrong ways in first block: {self._block_str(self.bb_mapping[self.first_block])}, should be 1 path but get {len(self.paths[self.first_block])}, exit."
+            )
             return
         logging.info("NOP dispatcher block")
         dispatcher_bb = self.bb_mapping[self.dispatcher]
@@ -1795,10 +2048,12 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         #    Besides
         buffer = [0] * (dispatcher_bb.end_ea - dispatcher_bb.start_ea)
         first_jmp_addr = dispatcher_bb.start_ea
-        instr_to_assemble = self._arch_jmp_instruction(f"{hex(self.bb_mapping[self.paths[self.first_block][0]].start_ea)}h")
+        instr_to_assemble = self._arch_jmp_instruction(
+            f"{hex(self.bb_mapping[self.paths[self.first_block][0]].start_ea)}h"
+        )
         logging.info(f"Assemble {instr_to_assemble} at {hex(first_jmp_addr)}")
         bs, _ = self._asm(instr_to_assemble, first_jmp_addr)
-        buffer[:len(bs)] = bs
+        buffer[: len(bs)] = bs
         logging.info(f"Patch first jump at {hex(first_jmp_addr)}")
         self._patch_bytes_with_force_analysis(first_jmp_addr, bytes(buffer))
         for bbid in self.real_blocks:
@@ -1809,33 +2064,60 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 last_instr_address = IDA.get_prev_head(bb.end_ea)
                 buffer = [0x90] * (bb.end_ea - last_instr_address)
                 if len(self.paths[bbid]) != 1:
-                    logging.warning(f"Found wrong ways in block: {self._block_str(bb)}, should be 1 path but get {len(self.paths[bbid])}")
+                    logging.warning(
+                        f"Found wrong ways in block: {self._block_str(bb)}, should be 1 path but get {len(self.paths[bbid])}"
+                    )
                     continue
-                instr_to_assemble = self._arch_jmp_instruction(f"{hex(self.bb_mapping[self.paths[bbid][0]].start_ea)}h")
-                logging.info(f"Assemble {instr_to_assemble} at {hex(last_instr_address)}")
+                instr_to_assemble = self._arch_jmp_instruction(
+                    f"{hex(self.bb_mapping[self.paths[bbid][0]].start_ea)}h"
+                )
+                logging.info(
+                    f"Assemble {instr_to_assemble} at {hex(last_instr_address)}"
+                )
                 bs, _ = self._asm(instr_to_assemble, last_instr_address)
-                buffer[:len(bs)] = bs
-                logging.info(f"Patch real block from {hex(last_instr_address)} to {hex(bb.end_ea)}")
-                self._patch_bytes_with_force_analysis(last_instr_address, bytes(buffer))
+                buffer[: len(bs)] = bs
+                logging.info(
+                    f"Patch real block from {hex(last_instr_address)} to {hex(bb.end_ea)}"
+                )
+                self._patch_bytes_with_force_analysis(
+                    last_instr_address, bytes(buffer)
+                )
             else:
                 if len(self.paths[bbid]) != 2:
-                    logging.warning(f"Found wrong ways in block: {self._block_str(bb)}, should be 2 paths but get {len(self.paths[bbid])}")
+                    logging.warning(
+                        f"Found wrong ways in block: {self._block_str(bb)}, should be 2 paths but get {len(self.paths[bbid])}"
+                    )
                     continue
                 self._arch_branch_patch(braddr, bbid)
         for bbid in self.fake_blocks:
             bb = self.bb_mapping[bbid]
             logging.info(f"Patch NOP for block: {self._block_str(bb)}")
-            self._patch_bytes_with_force_analysis(bb.start_ea, b"\x00"*(bb.end_ea-bb.start_ea))
+            self._patch_bytes_with_force_analysis(
+                bb.start_ea, b"\x00" * (bb.end_ea - bb.start_ea)
+            )
         logging.info(f"Patch NOP for pre_dispatcher.")
         bb = self.bb_mapping[self.pre_dispatcher]
-        self._patch_bytes_with_force_analysis(bb.start_ea, b"\x00"*(bb.end_ea-bb.start_ea))
+        self._patch_bytes_with_force_analysis(
+            bb.start_ea, b"\x00" * (bb.end_ea - bb.start_ea)
+        )
 
-    def _prepare_microcodes(self, decomp_flags=ida_hexrays.DECOMP_WARNINGS | ida_hexrays.DECOMP_NO_WAIT, maturity=7):
+    def _prepare_microcodes(
+        self,
+        decomp_flags=ida_hexrays.DECOMP_WARNINGS | ida_hexrays.DECOMP_NO_WAIT,
+        maturity=7,
+    ):
         dispatcher_bb = self.bb_mapping[self.dispatcher]
         target_function = IDA.get_function(dispatcher_bb.start_ea)
         # Reduce optimization to make pattern more stable.
-        logging.info(f"Generate microcode from {hex(target_function.start_ea)} to {hex(target_function.end_ea)}")
-        mba = IDA.get_micro_code_mba(target_function.start_ea, target_function.end_ea, decomp_flags, maturity)
+        logging.info(
+            f"Generate microcode from {hex(target_function.start_ea)} to {hex(target_function.end_ea)}"
+        )
+        mba = IDA.get_micro_code_mba(
+            target_function.start_ea,
+            target_function.end_ea,
+            decomp_flags,
+            maturity,
+        )
         insns = {}
         mbbs = {}
         for i in range(mba.qty):
@@ -1859,11 +2141,15 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         self.mba, self.insns, self.mbbs = self._prepare_microcodes(maturity=3)
         logging.debug("Microcode generation done. Going to search path.")
         if not self._search_path():
-            logging.info(f"Fail to search path. Please fire an issue to us at https://github.com/qilingframework/qiling with relevant logs!")
+            logging.info(
+                f"Fail to search path. Please fire an issue to us at https://github.com/qilingframework/qiling with relevant logs!"
+            )
             return
         logging.debug("Real control flows search done. Going to patch codes.")
         self._patch_codes()
-        logging.debug("Codes patched. Let's tell IDA to analyse the whole function again.")
+        logging.debug(
+            "Codes patched. Let's tell IDA to analyse the whole function again."
+        )
         IDA.perform_analysis(self.deflat_func.start_ea, self.deflat_func.end_ea)
         del self.deflatqlemu
         self.deflatqlemu = None
@@ -1878,7 +2164,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         cur_addr = IDA.get_current_address()
         flowchart = IDA.get_flowchart(cur_addr)
         self.deflat_func = IDA.get_function(cur_addr)
-        self.bb_mapping = {bb.id:bb for bb in flowchart}
+        self.bb_mapping = {bb.id: bb for bb in flowchart}
         if flowchart is None:
             return
         bb_count = {}
@@ -1895,7 +2181,9 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 max_ref_bb_id = bb_id
         self.pre_dispatcher = max_ref_bb_id
         try:
-            self.dispatcher = list(self.bb_mapping[self.pre_dispatcher].succs())[0].id
+            self.dispatcher = list(
+                self.bb_mapping[self.pre_dispatcher].succs()
+            )[0].id
             self.first_block = flowchart[0].id
         except IndexError:
             logging.error("Fail to get dispatcher and first_block.")
@@ -1904,11 +2192,18 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         self.fake_blocks = []
         self.retn_blocks = []
         for bb in flowchart:
-            if self.pre_dispatcher in [b.id for b in bb.succs()] and IDA.get_instructions_count(bb.start_ea, bb.end_ea) > 1:
+            if (
+                self.pre_dispatcher in [b.id for b in bb.succs()]
+                and IDA.get_instructions_count(bb.start_ea, bb.end_ea) > 1
+            ):
                 self.real_blocks.append(bb.id)
             elif IDA.block_is_terminating(bb):
                 self.retn_blocks.append(bb.id)
-            elif bb.id != self.first_block and bb.id != self.pre_dispatcher and bb.id != self.dispatcher:
+            elif (
+                bb.id != self.first_block
+                and bb.id != self.pre_dispatcher
+                and bb.id != self.dispatcher
+            ):
                 self.fake_blocks.append(bb.id)
         for bbid in self.real_blocks:
             IDA.color_block(self.bb_mapping[bbid], Colors.Green.value)
@@ -1923,13 +2218,20 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         logging.info(f"Dispatcher: {self._block_str(self.dispatcher)}")
         logging.info(f"Pre dispatcher: {self._block_str(self.pre_dispatcher)}")
         logging.info(f"Real blocks:")
-        for s in map(self._block_str, self.real_blocks): logging.info(s)
+        for s in map(self._block_str, self.real_blocks):
+            logging.info(s)
         logging.info(f"Fake blocks:")
-        for s in map(self._block_str, self.fake_blocks): logging.info(s)
+        for s in map(self._block_str, self.fake_blocks):
+            logging.info(s)
         logging.info(f"Return blocks:")
-        for s in map(self._block_str, self.retn_blocks): logging.info(s)
-        logging.info(f"Auto analysis finished, please check whether the result is correct.")
-        logging.info(f"You may change the property of each block manually if necessary.")
+        for s in map(self._block_str, self.retn_blocks):
+            logging.info(s)
+        logging.info(
+            f"Auto analysis finished, please check whether the result is correct."
+        )
+        logging.info(
+            f"You may change the property of each block manually if necessary."
+        )
 
     # jb addr
     # jnb addr
@@ -1937,14 +2239,28 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
     # jmp addr / nop
     # nop
     def _junk_useless_jcc(self, start, end):
-        bs = IDA.get_bytes(start, end-start)
+        bs = IDA.get_bytes(start, end - start)
         patterns = []
         # Volume 2 Table A-2
         for opc in range(0x70, 0x7F, 2):
             # jb -> jnb
             r_opc = opc + 1
-            patterns.append( re.compile(re.escape(bytes([opc])) + rb'.' + re.escape(bytes([r_opc])) + rb'.') )
-            patterns.append( re.compile(re.escape(bytes([r_opc])) + rb'.' + re.escape(bytes([opc])) + rb'.') )
+            patterns.append(
+                re.compile(
+                    re.escape(bytes([opc]))
+                    + rb"."
+                    + re.escape(bytes([r_opc]))
+                    + rb"."
+                )
+            )
+            patterns.append(
+                re.compile(
+                    re.escape(bytes([r_opc]))
+                    + rb"."
+                    + re.escape(bytes([opc]))
+                    + rb"."
+                )
+            )
 
         for pattern in patterns:
             logging.debug(f"Start with pattern: {pattern}")
@@ -1953,29 +2269,41 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             while result is not None:
                 l = result.span()[0]
                 r = result.span()[1]
-                l_offset = tmpbs[l+1]
-                r_offset = tmpbs[l+3]
+                l_offset = tmpbs[l + 1]
+                r_offset = tmpbs[l + 3]
                 tmpbs = tmpbs[r:]
                 result = re.search(pattern, tmpbs)
                 if l_offset == r_offset + 2:
-                    logging.info(f"Get a junk jcc at [{hex(start+l)}, {hex(start+r)}] with offset {hex(l_offset)}.")
+                    logging.info(
+                        f"Get a junk jcc at [{hex(start+l)}, {hex(start+r)}] with offset {hex(l_offset)}."
+                    )
                     # If it jumps down, check if we can fill the codes with nops safely.
                     if l_offset <= 0x7F:
                         can_fill_with_nops = True
-                        for addr in range(start+l, start + l +  2 + l_offset):
-                            if len(IDA.get_xrefsto(addr, flags=ida_xref.XREF_FAR)) != 0:
-                                logging.info(f"Find multiple Xrefs at {hex(addr)}, patch a jmp...")
+                        for addr in range(start + l, start + l + 2 + l_offset):
+                            if (
+                                len(
+                                    IDA.get_xrefsto(
+                                        addr, flags=ida_xref.XREF_FAR
+                                    )
+                                )
+                                != 0
+                            ):
+                                logging.info(
+                                    f"Find multiple Xrefs at {hex(addr)}, patch a jmp..."
+                                )
                                 can_fill_with_nops = False
                                 break
                         if can_fill_with_nops:
-                            logging.info(f"Fill NOPs from {hex(start+l)} to {hex(start + l + 2 + l_offset)}.")
-                            IDA.fill_bytes(start+l, start + l + 2 + l_offset)
+                            logging.info(
+                                f"Fill NOPs from {hex(start+l)} to {hex(start + l + 2 + l_offset)}."
+                            )
+                            IDA.fill_bytes(start + l, start + l + 2 + l_offset)
                             continue
                     # Or we simply patch a jmp.
                     logging.info(f"Patch a jmp at {start+l:x}.")
-                    IDA.fill_bytes(start+l, start+r)
-                    IDA.patch_bytes(start+l, b"\xeb" + bytes([l_offset]))
-
+                    IDA.fill_bytes(start + l, start + r)
+                    IDA.patch_bytes(start + l, b"\xeb" + bytes([l_offset]))
 
     # Remove junk code by fixed patterns.
     # If you find new patterns, please fire an issue or PR!
@@ -1984,13 +2312,14 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         _, start, end = IDA.get_last_selection()
         self._junk_useless_jcc(start, end)
 
-
     def ql_nop_items_without_colors(self):
         _, start, end = IDA.get_last_selection()
         cur_start, cur_end = IDA.get_item(start)
         while cur_start < end:
             if not IDA.is_colored_item(cur_start):
-                logging.info(f"Item at [{hex(cur_start)}, {hex(cur_end)}) doesn't have a color, nop it.")
+                logging.info(
+                    f"Item at [{hex(cur_start)}, {hex(cur_end)}) doesn't have a color, nop it."
+                )
                 IDA.fill_bytes(cur_start, cur_end)
             cur_start, cur_end = IDA.get_item(cur_end)
 
@@ -2016,7 +2345,9 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             for num in range(0, bp_count):
                 bp_list.append(get_bpt_ea(num))
 
-            if addr in bp_list and (addr != self.lastaddr or self.is_change_addr>1):
+            if addr in bp_list and (
+                addr != self.lastaddr or self.is_change_addr > 1
+            ):
                 self.qlemu.status = ql.save()
                 ql.os.stop()
                 self.lastaddr = addr
@@ -2025,7 +2356,6 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
 
             self.is_change_addr += 1
 
-
     def ql_untill_hook(self, ql, addr, size):
         addr = addr - self.qlemu.baseaddr + get_imagebase()
         set_color(addr, CIC_ITEM, 0x00B3CBFF)
@@ -2033,15 +2363,17 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
     ### User Scripts
 
     def ql_get_user_script(self, is_reload=False, is_start=False):
-        def get_user_scripts_obj(scriptpath:str, classname:str, is_reload:bool):
+        def get_user_scripts_obj(
+            scriptpath: str, classname: str, is_reload: bool
+        ):
             try:
                 import os, sys
                 import importlib
 
-                modulepath,filename = os.path.split(scriptpath)
+                modulepath, filename = os.path.split(scriptpath)
                 logging.info(modulepath)
                 logging.info(filename)
-                scriptname,_ = os.path.splitext(filename)
+                scriptname, _ = os.path.splitext(filename)
                 logging.info(scriptname)
                 sys.path.append(modulepath)
                 module = importlib.import_module(scriptname)
@@ -2054,14 +2386,16 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 logging.exception("")
                 return None
 
-        self.userobj = get_user_scripts_obj(self.customscriptpath, 'QILING_IDA', is_reload)
+        self.userobj = get_user_scripts_obj(
+            self.customscriptpath, "QILING_IDA", is_reload
+        )
         if self.userobj is not None:
             if is_reload and not is_start:
-                logging.info('Custom user script is reloaded.')
+                logging.info("Custom user script is reloaded.")
             else:
-                logging.info('Custom user script is loaded successfully.')
+                logging.info("Custom user script is loaded successfully.")
         else:
-            logging.info('Custom user script not found.')
+            logging.info("Custom user script not found.")
 
     ### Dialog
 
@@ -2077,14 +2411,14 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         parameter = setupdlg.parameters.value
         env = setupdlg.env_var.value
 
-        if customscript != '':
+        if customscript != "":
             self.customscriptpath = customscript
 
         para_array = shlex.split(parameter)
         self.qlemu.path = [get_input_file_path()] + para_array
         logging.info(self.qlemu.path)
 
-        if env != '':
+        if env != "":
             try:
                 env_f = open(env)
                 self.qlemu.env = load(env_f)
@@ -2103,60 +2437,313 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
 
     menuitems = []
 
-    def ql_register_new_action(self, act_name, act_text, act_handler, shortcut, tooltip, icon):
+    def ql_register_new_action(
+        self, act_name, act_text, act_handler, shortcut, tooltip, icon
+    ):
         new_action = action_desc_t(
-            act_name,       # The action name. This acts like an ID and must be unique
-            act_text,       # The action text.
-            act_handler,    # The action handler.
-            shortcut,       # Optional: the action shortcut
-            tooltip,        # Optional: the action tooltip (available in menus/toolbar)
-            icon)           # Optional: the action icon (shows when in menus/toolbars)
+            act_name,  # The action name. This acts like an ID and must be unique
+            act_text,  # The action text.
+            act_handler,  # The action handler.
+            shortcut,  # Optional: the action shortcut
+            tooltip,  # Optional: the action tooltip (available in menus/toolbar)
+            icon,
+        )  # Optional: the action icon (shows when in menus/toolbars)
         register_action(new_action)
 
     def ql_handle_menu_action(self, action):
         [x.handler() for x in self.menuitems if x.action == action]
 
     def ql_register_menu_actions(self):
-        self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":start",             self.ql_start,                 "Setup",                      "Setup",                     None,                   True   ))
-        self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":reloaduserscripts", self.ql_reload_user_script,      "Reload User Scripts",        "Reload User Scripts",       None,                   True   ))
-        self.menuitems.append(QlEmuMisc.MenuItem("-",                                     self.ql_menu_null,              "",                           None,                        None,                   True   ))
-        self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":runtohere",         self.ql_run_to_here,             "Execute Till",               "Execute Till",              None,                   True   ))
-        self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":runselection",      self.ql_run_selection,           "Execute Selection",         "Execute Selection",              None,                True))
-        self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":runfromhere",       self.ql_continue,              "Continue",                   "Continue",                  None,                   True   ))
-        self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":setpc",             self.ql_set_pc,                "Set PC",                     "Set PC",              None,                True))
-        self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":step",              self.ql_step,                  "Step",                       "Step (CTRL+SHIFT+F9)",      "CTRL+SHIFT+F9",        True   ))
-        self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":changreg",          self.ql_chang_reg,              "Edit Register",              "Edit Register",             None,                   True   ))
-        self.menuitems.append(QlEmuMisc.MenuItem("-",                                     self.ql_menu_null,              "",                           None,                        None,                   True   ))
-        self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":reset",             self.ql_reset,                 "Restart",                    "Restart Qiling",            None,                   True   ))
-        self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":close",             self.ql_close,                 "Close",                      "Close Qiling",              None,                   False  ))
-        self.menuitems.append(QlEmuMisc.MenuItem("-",                                     self.ql_menu_null,              "",                           None,                        None,                   True   ))
-        self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":reg view",          self.ql_show_reg_view,           "View Register",              "View Register",             None,                   True   ))
-        self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":stack view",        self.ql_show_stack_view,         "View Stack",                 "View Stack",                None,                   True   ))
-        self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":memory view",       self.ql_show_mem_view,           "View Memory",                "View Memory",               None,                   True   ))
-        self.menuitems.append(QlEmuMisc.MenuItem("-",                                     self.ql_menu_null,              "",                           None,                        None,                   True   ))
-        self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":save",              self.ql_save,                  "Save Snapshot",              "Save Snapshot",             None,                   True   ))
-        self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":load",              self.ql_load,                  "Load Snapshot",              "Load Snapshot",             None,                   True   ))
-        self.menuitems.append(QlEmuMisc.MenuItem("-",                                     self.ql_menu_null,              "",                           None,                        None,                   True   ))
+        self.menuitems.append(
+            QlEmuMisc.MenuItem(
+                self.plugin_name + ":start",
+                self.ql_start,
+                "Setup",
+                "Setup",
+                None,
+                True,
+            )
+        )
+        self.menuitems.append(
+            QlEmuMisc.MenuItem(
+                self.plugin_name + ":reloaduserscripts",
+                self.ql_reload_user_script,
+                "Reload User Scripts",
+                "Reload User Scripts",
+                None,
+                True,
+            )
+        )
+        self.menuitems.append(
+            QlEmuMisc.MenuItem("-", self.ql_menu_null, "", None, None, True)
+        )
+        self.menuitems.append(
+            QlEmuMisc.MenuItem(
+                self.plugin_name + ":runtohere",
+                self.ql_run_to_here,
+                "Execute Till",
+                "Execute Till",
+                None,
+                True,
+            )
+        )
+        self.menuitems.append(
+            QlEmuMisc.MenuItem(
+                self.plugin_name + ":runselection",
+                self.ql_run_selection,
+                "Execute Selection",
+                "Execute Selection",
+                None,
+                True,
+            )
+        )
+        self.menuitems.append(
+            QlEmuMisc.MenuItem(
+                self.plugin_name + ":runfromhere",
+                self.ql_continue,
+                "Continue",
+                "Continue",
+                None,
+                True,
+            )
+        )
+        self.menuitems.append(
+            QlEmuMisc.MenuItem(
+                self.plugin_name + ":setpc",
+                self.ql_set_pc,
+                "Set PC",
+                "Set PC",
+                None,
+                True,
+            )
+        )
+        self.menuitems.append(
+            QlEmuMisc.MenuItem(
+                self.plugin_name + ":step",
+                self.ql_step,
+                "Step",
+                "Step (CTRL+SHIFT+F9)",
+                "CTRL+SHIFT+F9",
+                True,
+            )
+        )
+        self.menuitems.append(
+            QlEmuMisc.MenuItem(
+                self.plugin_name + ":changreg",
+                self.ql_chang_reg,
+                "Edit Register",
+                "Edit Register",
+                None,
+                True,
+            )
+        )
+        self.menuitems.append(
+            QlEmuMisc.MenuItem("-", self.ql_menu_null, "", None, None, True)
+        )
+        self.menuitems.append(
+            QlEmuMisc.MenuItem(
+                self.plugin_name + ":reset",
+                self.ql_reset,
+                "Restart",
+                "Restart Qiling",
+                None,
+                True,
+            )
+        )
+        self.menuitems.append(
+            QlEmuMisc.MenuItem(
+                self.plugin_name + ":close",
+                self.ql_close,
+                "Close",
+                "Close Qiling",
+                None,
+                False,
+            )
+        )
+        self.menuitems.append(
+            QlEmuMisc.MenuItem("-", self.ql_menu_null, "", None, None, True)
+        )
+        self.menuitems.append(
+            QlEmuMisc.MenuItem(
+                self.plugin_name + ":reg view",
+                self.ql_show_reg_view,
+                "View Register",
+                "View Register",
+                None,
+                True,
+            )
+        )
+        self.menuitems.append(
+            QlEmuMisc.MenuItem(
+                self.plugin_name + ":stack view",
+                self.ql_show_stack_view,
+                "View Stack",
+                "View Stack",
+                None,
+                True,
+            )
+        )
+        self.menuitems.append(
+            QlEmuMisc.MenuItem(
+                self.plugin_name + ":memory view",
+                self.ql_show_mem_view,
+                "View Memory",
+                "View Memory",
+                None,
+                True,
+            )
+        )
+        self.menuitems.append(
+            QlEmuMisc.MenuItem("-", self.ql_menu_null, "", None, None, True)
+        )
+        self.menuitems.append(
+            QlEmuMisc.MenuItem(
+                self.plugin_name + ":save",
+                self.ql_save,
+                "Save Snapshot",
+                "Save Snapshot",
+                None,
+                True,
+            )
+        )
+        self.menuitems.append(
+            QlEmuMisc.MenuItem(
+                self.plugin_name + ":load",
+                self.ql_load,
+                "Load Snapshot",
+                "Load Snapshot",
+                None,
+                True,
+            )
+        )
+        self.menuitems.append(
+            QlEmuMisc.MenuItem("-", self.ql_menu_null, "", None, None, True)
+        )
         if UseAsScript:
-            self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":unload",            self.ql_unload_plugin,           "Unload Plugin",              "Unload Plugin",             None,                   False  ))
-            self.menuitems.append(QlEmuMisc.MenuItem("-",                                     self.ql_menu_null,              "",                           None,                        None,                   False  ))
-        self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":about",             self.ql_about,                 "About",                      "About",                     None,                   False  ))
-        self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":checkupdate",       self.ql_check_update,           "Check Update",               "Check Update",              None,                   False  ))
-        self.menuitems.append(QlEmuMisc.MenuItem("-",                                     self.ql_menu_null,              "",                           None,                        None,                   True   ))
-        self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":parseblocks",       self.ql_parse_blocks_for_deobf,           "Auto Analysis For Deflat",               "Auto Analysis For Deflat",              None,                   True  ))
+            self.menuitems.append(
+                QlEmuMisc.MenuItem(
+                    self.plugin_name + ":unload",
+                    self.ql_unload_plugin,
+                    "Unload Plugin",
+                    "Unload Plugin",
+                    None,
+                    False,
+                )
+            )
+            self.menuitems.append(
+                QlEmuMisc.MenuItem(
+                    "-", self.ql_menu_null, "", None, None, False
+                )
+            )
+        self.menuitems.append(
+            QlEmuMisc.MenuItem(
+                self.plugin_name + ":about",
+                self.ql_about,
+                "About",
+                "About",
+                None,
+                False,
+            )
+        )
+        self.menuitems.append(
+            QlEmuMisc.MenuItem(
+                self.plugin_name + ":checkupdate",
+                self.ql_check_update,
+                "Check Update",
+                "Check Update",
+                None,
+                False,
+            )
+        )
+        self.menuitems.append(
+            QlEmuMisc.MenuItem("-", self.ql_menu_null, "", None, None, True)
+        )
+        self.menuitems.append(
+            QlEmuMisc.MenuItem(
+                self.plugin_name + ":parseblocks",
+                self.ql_parse_blocks_for_deobf,
+                "Auto Analysis For Deflat",
+                "Auto Analysis For Deflat",
+                None,
+                True,
+            )
+        )
         # TODO: Dispatcher blocks should support assignment.
-        self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":markreal",       self.ql_mark_real,           "Mark as Real Block",               "Mark as Real Block",              None,                   True  ))
-        self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":markfake",       self.ql_mark_fake,           "Mark as Fake Block",               "Mark as Fake Block",              None,                   True  ))
-        self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":markretn",       self.ql_mark_retn,           "Mark as Return Block",               "Mark as Return Block",              None,                   True  ))
-        self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":deflat",       self.ql_deflat,           "Deflat",               "Deflat",              None,                   True  ))
-        self.menuitems.append(QlEmuMisc.MenuItem("-",                                     self.ql_menu_null,              "",                           None,                        None,                   True   ))
-        self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":removejunkcodebypatterns",       self.ql_remove_junk_code_by_patterns,           "Remove Junk Code by Patterns",               "Remove Junk Code by Patterns",              None,                   True  ))
-        self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":nopinstructions",       self.ql_nop_items_without_colors,           "Nop Items without Color",               "Nop Items without Color",              None,                   True  ))
+        self.menuitems.append(
+            QlEmuMisc.MenuItem(
+                self.plugin_name + ":markreal",
+                self.ql_mark_real,
+                "Mark as Real Block",
+                "Mark as Real Block",
+                None,
+                True,
+            )
+        )
+        self.menuitems.append(
+            QlEmuMisc.MenuItem(
+                self.plugin_name + ":markfake",
+                self.ql_mark_fake,
+                "Mark as Fake Block",
+                "Mark as Fake Block",
+                None,
+                True,
+            )
+        )
+        self.menuitems.append(
+            QlEmuMisc.MenuItem(
+                self.plugin_name + ":markretn",
+                self.ql_mark_retn,
+                "Mark as Return Block",
+                "Mark as Return Block",
+                None,
+                True,
+            )
+        )
+        self.menuitems.append(
+            QlEmuMisc.MenuItem(
+                self.plugin_name + ":deflat",
+                self.ql_deflat,
+                "Deflat",
+                "Deflat",
+                None,
+                True,
+            )
+        )
+        self.menuitems.append(
+            QlEmuMisc.MenuItem("-", self.ql_menu_null, "", None, None, True)
+        )
+        self.menuitems.append(
+            QlEmuMisc.MenuItem(
+                self.plugin_name + ":removejunkcodebypatterns",
+                self.ql_remove_junk_code_by_patterns,
+                "Remove Junk Code by Patterns",
+                "Remove Junk Code by Patterns",
+                None,
+                True,
+            )
+        )
+        self.menuitems.append(
+            QlEmuMisc.MenuItem(
+                self.plugin_name + ":nopinstructions",
+                self.ql_nop_items_without_colors,
+                "Nop Items without Color",
+                "Nop Items without Color",
+                None,
+                True,
+            )
+        )
 
         for item in self.menuitems:
             if item.action == "-":
                 continue
-            self.ql_register_new_action(item.action, item.title, QlEmuMisc.menu_action_handler(self, item.action), item.shortcut, item.tooltip,  -1)
+            self.ql_register_new_action(
+                item.action,
+                item.title,
+                QlEmuMisc.menu_action_handler(self, item.action),
+                item.shortcut,
+                item.tooltip,
+                -1,
+            )
 
     def ql_unregister_menu_actions(self):
         for item in self.menuitems:
@@ -2164,11 +2751,18 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
 
     def ql_attach_main_menu_actions(self):
         for item in self.menuitems:
-            attach_action_to_menu("Edit/Plugins/" + self.plugin_name + "/" + item.title, item.action, SETMENU_APP)
+            attach_action_to_menu(
+                "Edit/Plugins/" + self.plugin_name + "/" + item.title,
+                item.action,
+                SETMENU_APP,
+            )
 
     def ql_detach_main_menu_actions(self):
         for item in self.menuitems:
-            detach_action_from_menu("Edit/Plugins/" + self.plugin_name + "/" + item.title, item.action)
+            detach_action_from_menu(
+                "Edit/Plugins/" + self.plugin_name + "/" + item.title,
+                item.action,
+            )
 
     ### POPUP MENU
 
@@ -2186,7 +2780,12 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         if get_widget_type(widget) == BWN_DISASM:
             for item in self.menuitems:
                 if item.popup:
-                    attach_action_to_popup(widget, popup_handle, item.action, self.plugin_name + "/")
+                    attach_action_to_popup(
+                        widget,
+                        popup_handle,
+                        item.action,
+                        self.plugin_name + "/",
+                    )
 
     ### Close View
 
@@ -2223,6 +2822,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
 def PLUGIN_ENTRY():
     qlEmu = QlEmuPlugin()
     return qlEmu
+
 
 if UseAsScript:
     if __name__ == "__main__":

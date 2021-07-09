@@ -14,7 +14,7 @@ from qiling.os.windows.handle import *
 from qiling.exception import *
 
 
-dllname = 'kernel32_dll'
+dllname = "kernel32_dll"
 
 # BOOL QueryPerformanceCounter(
 #   LARGE_INTEGER *lpPerformanceCount
@@ -30,5 +30,7 @@ def hook_QueryPerformanceCounter(ql, address, params):
 # );
 @winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_QueryPerformanceFrequency(ql, address, params):
-    ql.mem.write(params['lpFrequency'], (10000000).to_bytes(length=8, byteorder='little'))
+    ql.mem.write(
+        params["lpFrequency"], (10000000).to_bytes(length=8, byteorder="little")
+    )
     return 1

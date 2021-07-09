@@ -15,7 +15,7 @@ from qiling.os.windows.handle import *
 from qiling.exception import *
 
 
-dllname = 'kernel32_dll'
+dllname = "kernel32_dll"
 
 # BOOL IsWow64Process(
 #   HANDLE hProcess,
@@ -24,8 +24,8 @@ dllname = 'kernel32_dll'
 @winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_IsWow64Process(ql, address, params):
     pointer = params["Wow64Process"]
-    false = 0x0.to_bytes(length=1, byteorder='little')
-    true = 0x1.to_bytes(length=1, byteorder='little')
+    false = 0x0 .to_bytes(length=1, byteorder="little")
+    true = 0x1 .to_bytes(length=1, byteorder="little")
     if ql.archbit == 32:
         ql.mem.write(pointer, false)
     else:

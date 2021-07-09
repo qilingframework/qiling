@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-# task class not finished 
+# task class not finished
 # TODO: finished
-class MachoTask():
+class MachoTask:
     def __init__(self):
-        self.id = 9876                  # random id
+        self.id = 9876  # random id
         self.min_offset = 0x00000000
         self.max_offset = 0xFFE00000

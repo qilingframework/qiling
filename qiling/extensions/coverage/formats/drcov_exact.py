@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -22,5 +22,6 @@ class QlDrCoverageExact(QlDrCoverage):
 
     def activate(self):
         # We treat every instruction as a block on its own.
-        self.bb_callback = self.ql.hook_code(self.block_callback, user_data=self)
-        
+        self.bb_callback = self.ql.hook_code(
+            self.block_callback, user_data=self
+        )

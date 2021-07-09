@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -12,7 +12,8 @@ from tkinter import filedialog
 from tkinter import messagebox as msgbox
 from tkinter import scrolledtext
 
-class QLGuiPerfApp():
+
+class QLGuiPerfApp:
     def __init__(self):
         self.root = Tk()
         self.root.minsize(1024, 384)
@@ -29,13 +30,18 @@ class QLGuiPerfApp():
 
         self.scrollData = scrolledtext.ScrolledText(self.root, wrap=WORD)
         self.scrollData.pack(fill=BOTH, expand=True)
-        self.scrollData.tag_configure("qiling_highlight", foreground="yellow", background="green")
+        self.scrollData.tag_configure(
+            "qiling_highlight", foreground="yellow", background="green"
+        )
         self.root.mainloop()
-        
+
     def open_perf_file(self):
-        filename = filedialog.askopenfilename(initialdir=".", title="Select a perf file"
-        ,filetypes=(("perf files", "*.perf"),) )
-        
+        filename = filedialog.askopenfilename(
+            initialdir=".",
+            title="Select a perf file",
+            filetypes=(("perf files", "*.perf"),),
+        )
+
         try:
             output_stream = io.StringIO()
             stats = pstats.Stats(filename, stream=output_stream)
@@ -54,11 +60,17 @@ class QLGuiPerfApp():
         self.scrollData.mark_set("searchLimit", end)
         count = IntVar()
         while True:
-            index = self.scrollData.search(keyword, "matchEnd", "searchLimit", count=count, regexp=False)
-            if index == "": break
-            if count.get() == 0: break
+            index = self.scrollData.search(
+                keyword, "matchEnd", "searchLimit", count=count, regexp=False
+            )
+            if index == "":
+                break
+            if count.get() == 0:
+                break
             self.scrollData.mark_set("matchStart", index)
-            self.scrollData.mark_set("matchEnd", "%s+%sc" % (index, count.get() ))
+            self.scrollData.mark_set(
+                "matchEnd", "%s+%sc" % (index, count.get())
+            )
             self.scrollData.tag_add(tag, "matchStart", "matchEnd")
 
 
@@ -69,11 +81,15 @@ def console_print(filename):
     except:
         print("Failed to load perf file => {}".format(filename))
 
+
 def usage():
     print("View performance results from Qiling test runs")
     print("----------------------------------------------")
     print("{} --gui             : Launch in gui mode".format(sys.argv[0]))
-    print("{} input_file.perf   : Print contents of perf file".format(sys.argv[0]))
+    print(
+        "{} input_file.perf   : Print contents of perf file".format(sys.argv[0])
+    )
+
 
 def main():
     if len(sys.argv) == 2:
@@ -85,6 +101,7 @@ def main():
             sys.exit(0)
 
     usage()
+
 
 if __name__ == "__main__":
     main()

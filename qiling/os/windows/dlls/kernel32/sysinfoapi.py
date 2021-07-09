@@ -15,7 +15,7 @@ from qiling.os.windows.handle import *
 from qiling.exception import *
 from qiling.os.windows.structs import *
 
-dllname = 'kernel32_dll'
+dllname = "kernel32_dll"
 
 # NOT_BUILD_WINDOWS_DEPRECATE DWORD GetVersion(
 # );
@@ -49,9 +49,19 @@ def hook_GetVersionExW(ql, address, params):
 @winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetSystemInfo(ql, address, params):
     pointer = params["lpSystemInfo"]
-    system_info = SystemInfo(ql, 0, ql.os.heap.page_size, ql.loader.pe_image_address,
-                             ql.loader.dll_address + ql.loader.dll_size, 0x3, 0x4, 0x24a, ql.os.heap.page_size * 10,
-                             0x6, 0x4601)
+    system_info = SystemInfo(
+        ql,
+        0,
+        ql.os.heap.page_size,
+        ql.loader.pe_image_address,
+        ql.loader.dll_address + ql.loader.dll_size,
+        0x3,
+        0x4,
+        0x24A,
+        ql.os.heap.page_size * 10,
+        0x6,
+        0x4601,
+    )
     system_info.write(pointer)
     return 0
 
@@ -62,10 +72,20 @@ def hook_GetSystemInfo(ql, address, params):
 @winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetLocalTime(ql, address, params):
     import datetime
-    ptr = params['lpSystemTime']
+
+    ptr = params["lpSystemTime"]
     d = datetime.datetime.now()
-    system_time = SystemTime(ql, d.year, d.month, d.isoweekday(), d.day, d.hour, d.minute, d.second,
-                             d.microsecond // 1000)
+    system_time = SystemTime(
+        ql,
+        d.year,
+        d.month,
+        d.isoweekday(),
+        d.day,
+        d.hour,
+        d.minute,
+        d.second,
+        d.microsecond // 1000,
+    )
     system_time.write(ptr)
     return 0
 
@@ -98,6 +118,7 @@ def hook_GetWindowsDirectoryW(ql, address, params):
     ql.mem.write(dst, value)
     return len(value) - 2
 
+
 # UINT GetSystemWindowsDirectoryW(
 #   LPWSTR lpBuffer,
 #   UINT   uSize
@@ -106,17 +127,29 @@ def hook_GetWindowsDirectoryW(ql, address, params):
 def hook_GetSystemWindowsDirectoryW(ql, address, params):
     return hook_GetWindowsDirectoryW.__wrapped__(ql, address, params)
 
+
 # void GetNativeSystemInfo(
 #   LPSYSTEM_INFO lpSystemInfo
 # );
 @winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetNativeSystemInfo(ql, address, params):
     pointer = params["lpSystemInfo"]
-    system_info = SystemInfo(ql, 0, ql.os.heap.page_size, ql.loader.pe_image_address,
-                             ql.loader.dll_address + ql.loader.dll_size, 0x3, 0x4, 0x24a, ql.os.heap.page_size * 10,
-                             0x6, 0x4601)
+    system_info = SystemInfo(
+        ql,
+        0,
+        ql.os.heap.page_size,
+        ql.loader.pe_image_address,
+        ql.loader.dll_address + ql.loader.dll_size,
+        0x3,
+        0x4,
+        0x24A,
+        ql.os.heap.page_size * 10,
+        0x6,
+        0x4601,
+    )
     system_info.write(pointer)
     return 0
+
 
 # void GetSystemTime(
 #   LPSYSTEMTIME lpSystemTime);

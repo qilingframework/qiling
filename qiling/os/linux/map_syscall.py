@@ -11,18 +11,20 @@ from typing import Callable
 from qiling.const import QL_ARCH
 from qiling.os.posix.posix import SYSCALL_PREF
 
+
 def map_syscall(ql, syscall_num):
     predicate: Callable = {
         QL_ARCH.ARM64: lambda v: v[0] == syscall_num,
-        QL_ARCH.ARM:   lambda v: v[1] == syscall_num,
+        QL_ARCH.ARM: lambda v: v[1] == syscall_num,
         QL_ARCH.X8664: lambda v: v[2] == syscall_num,
-        QL_ARCH.X86:   lambda v: v[4] == syscall_num,
-        QL_ARCH.MIPS:  lambda v: v[5] == syscall_num
+        QL_ARCH.X86: lambda v: v[4] == syscall_num,
+        QL_ARCH.MIPS: lambda v: v[5] == syscall_num,
     }[ql.archtype]
 
     for k, v in syscall_table.items():
         if predicate(v):
-            return f'{SYSCALL_PREF}{k}'
+            return f"{SYSCALL_PREF}{k}"
+
 
 syscall_table = {
     "_llseek": (-1, 140, -1, -1, 140, 4140, 140, -1),
@@ -478,7 +480,7 @@ syscall_table = {
     "utimensat_time64": (-1, 412, -1, -1, 412, 4412, 412, -1),
     "utimes": (-1, 269, 235, 1073742059, 271, 4267, 251, 1036),
     "vfork": (-1, 190, 58, 1073741882, 190, -1, 189, -1),
-    'fork' : (-1, 2, 57, 1073741881, 2, 4002, 2, -1),
+    "fork": (-1, 2, 57, 1073741881, 2, 4002, 2, -1),
     "vhangup": (58, 111, 153, 1073741977, 111, 4111, 111, 1123),
     "vm86": (-1, -1, -1, -1, 166, 4113, 113, -1),
     "vm86old": (-1, -1, -1, -1, 113, -1, -1, -1),

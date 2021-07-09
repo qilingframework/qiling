@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -18,9 +18,13 @@ def get_all_subclasses(cls):
 
     return all_subclasses
 
-class CoverageFactory():
+
+class CoverageFactory:
     def __init__(self):
-        self.coverage_collectors = {subcls.FORMAT_NAME:subcls for subcls in get_all_subclasses(base.QlBaseCoverage)}
+        self.coverage_collectors = {
+            subcls.FORMAT_NAME: subcls
+            for subcls in get_all_subclasses(base.QlBaseCoverage)
+        }
 
     @property
     def formats(self):
@@ -29,7 +33,9 @@ class CoverageFactory():
     def get_coverage_collector(self, ql, name):
         return self.coverage_collectors[name](ql)
 
+
 factory = CoverageFactory()
+
 
 @contextmanager
 def collect_coverage(ql, name, coverage_file):

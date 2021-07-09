@@ -7,7 +7,7 @@ from qiling.os.const import *
 from qiling.os.windows.fncc import *
 from qiling.exception import QlErrorNotImplemented
 
-dllname = 'kernel32_dll'
+dllname = "kernel32_dll"
 
 # HANDLE WINAPI GetStdHandle(
 #   _In_ DWORD nStdHandle
@@ -32,7 +32,7 @@ def hook_GetCommandLineA(ql, address, params):
 # );
 @winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetCommandLineW(ql, address, params):
-    cmdline = ql.loader.cmdline.decode('ascii').encode('utf-16le')
+    cmdline = ql.loader.cmdline.decode("ascii").encode("utf-16le")
     addr = ql.os.heap.alloc(len(cmdline))
     ql.mem.write(addr, cmdline)
     return addr
@@ -77,12 +77,14 @@ def hook_ExpandEnvironmentStringsW(ql, address, params):
     string: str = params["lpSrc"]
     start = string.find("%")
     end = string.rfind("%")
-    substring = string[start + 1:end]
+    substring = string[start + 1 : end]
     result = ql.os.profile["PATH"].get(substring, None)
     if result is None:
         ql.log.debug(substring)
         raise QlErrorNotImplemented("API not implemented")
-    result = (string[:start] + result + string[end + 1:] + "\x00").encode("utf-16le")
+    result = (string[:start] + result + string[end + 1 :] + "\x00").encode(
+        "utf-16le"
+    )
     dst = params["lpDst"]
     max_size = params["nSize"]
     if len(result) <= max_size:
@@ -99,6 +101,7 @@ def hook_ExpandEnvironmentStringsW(ql, address, params):
 def hook_GetEnvironmentVariableA(ql, address, params):
     ret = 0
     return ret
+
 
 # DWORD GetEnvironmentVariableW(
 #   LPCWSTR lpName,

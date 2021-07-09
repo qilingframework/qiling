@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -17,16 +17,17 @@ from .interrupts import handlers
 
 # @see: https://en.wikipedia.org/wiki/FLAGS_register
 class Flags(IntEnum):
-    CF = (1 << 0)    # carry
-    PF = (1 << 2)    # parity
-    AF = (1 << 4)    # alignment
-    ZF = (1 << 6)    # zero
-    SF = (1 << 7)    # sign
-    TF = (1 << 8)    # trap
-    IF = (1 << 9)    # interrupt
-    DF = (1 << 10)   # direction
-    OF = (1 << 11)   # overflow
-    IOPL = (3 << 12) # io privilege
+    CF = 1 << 0  # carry
+    PF = 1 << 2  # parity
+    AF = 1 << 4  # alignment
+    ZF = 1 << 6  # zero
+    SF = 1 << 7  # sign
+    TF = 1 << 8  # trap
+    IF = 1 << 9  # interrupt
+    DF = 1 << 10  # direction
+    OF = 1 << 11  # overflow
+    IOPL = 3 << 12  # io privilege
+
 
 class QlOsDos(QlOs):
     def __init__(self, ql: Qiling):
@@ -74,22 +75,25 @@ class QlOsDos(QlOs):
         self.set_flag_value(Flags.ZF, 0b0)
 
     def hook_syscall(self):
-
         def cb(ql: Qiling, intno: int):
             ah = ql.reg.ah
             intinfo = (intno, ah)
 
-            func = self.user_defined_api[QL_INTERCEPT.CALL].get(intinfo) or handlers.get(intno)
+            func = self.user_defined_api[QL_INTERCEPT.CALL].get(
+                intinfo
+            ) or handlers.get(intno)
             onenter = self.user_defined_api[QL_INTERCEPT.ENTER].get(intinfo)
-            onexit  = self.user_defined_api[QL_INTERCEPT.EXIT].get(intinfo)
+            onexit = self.user_defined_api[QL_INTERCEPT.EXIT].get(intinfo)
 
             if onenter is not None:
                 onenter(ql)
 
             if func is None:
-                raise NotImplementedError(f'DOS interrupt {intno:02x}h is not implemented')
+                raise NotImplementedError(
+                    f"DOS interrupt {intno:02x}h is not implemented"
+                )
 
-            ql.log.debug(f'Handling interrupt {intno:02x}h (leaf {ah:#04x})')
+            ql.log.debug(f"Handling interrupt {intno:02x}h (leaf {ah:#04x})")
             func(ql)
 
             if onexit is not None:
@@ -101,7 +105,7 @@ class QlOsDos(QlOs):
         if self.ql.exit_point is not None:
             self.exit_point = self.ql.exit_point
 
-        if  self.ql.entry_point is not None:
+        if self.ql.entry_point is not None:
             self.ql.loader.elf_entry = self.ql.entry_point
         else:
             self.ql.entry_point = self.ql.loader.start_address
@@ -111,10 +115,15 @@ class QlOsDos(QlOs):
             self.ticks_per_second = self.ql.loader.ticks_per_second
 
             try:
-                self.ql.emu_start(self.ql.entry_point, self.exit_point, self.ql.timeout, self.ql.count)
+                self.ql.emu_start(
+                    self.ql.entry_point,
+                    self.exit_point,
+                    self.ql.timeout,
+                    self.ql.count,
+                )
             except UcError:
                 self.emu_error()
                 raise
 
             if self.ql._internal_exception != None:
-                raise self.ql._internal_exception 
+                raise self.ql._internal_exception

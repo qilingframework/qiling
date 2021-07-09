@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -22,47 +22,69 @@ from .utils import QlOsUtils
 class QlFsMappedObject:
     def __init__(self):
         pass
-    
+
     def read(self, expected_len):
-        raise NotImplementedError("QlFsMappedObject method not implemented: read")
-    
+        raise NotImplementedError(
+            "QlFsMappedObject method not implemented: read"
+        )
+
     def write(self, buffer):
-        raise NotImplementedError("QlFsMappedObject method not implemented: write")
-    
+        raise NotImplementedError(
+            "QlFsMappedObject method not implemented: write"
+        )
+
     def fileno(self):
-        raise NotImplementedError("QlFsMappedObject method not implemented: fileno")
-    
+        raise NotImplementedError(
+            "QlFsMappedObject method not implemented: fileno"
+        )
+
     def lseek(self, lseek_offset, lseek_origin):
-        raise NotImplementedError("QlFsMappedObject method not implemented: lseek")
-    
+        raise NotImplementedError(
+            "QlFsMappedObject method not implemented: lseek"
+        )
+
     def close(self):
-        raise NotImplementedError("QlFsMappedObject method not implemented: close")
-    
+        raise NotImplementedError(
+            "QlFsMappedObject method not implemented: close"
+        )
+
     def fstat(self):
-        raise NotImplementedError("QlFsMappedObject method not implemented: fstat")
-    
+        raise NotImplementedError(
+            "QlFsMappedObject method not implemented: fstat"
+        )
+
     def ioctl(self, ioctl_cmd, ioctl_arg):
-        raise NotImplementedError("QlFsMappedObject method not implemented: ioctl")
+        raise NotImplementedError(
+            "QlFsMappedObject method not implemented: ioctl"
+        )
 
     def tell(self):
-        raise NotImplementedError("QlFsMappedObject method not implemented: tell")
-    
+        raise NotImplementedError(
+            "QlFsMappedObject method not implemented: tell"
+        )
+
     def dup(self):
-        raise NotImplementedError("QlFsMappedObject method not implemented: dup")
-    
-    def readline(self, end = b'\n'):
-        raise NotImplementedError("QlFsMappedObject method not implemented: readline")
+        raise NotImplementedError(
+            "QlFsMappedObject method not implemented: dup"
+        )
+
+    def readline(self, end=b"\n"):
+        raise NotImplementedError(
+            "QlFsMappedObject method not implemented: readline"
+        )
 
     @property
     def name(self):
-        raise NotImplementedError("QlFsMappedObject property not implemented: name")
+        raise NotImplementedError(
+            "QlFsMappedObject property not implemented: name"
+        )
+
 
 class QlFsMapper:
-    
     def __init__(self, ql):
         self._mapping = {}
         self._ql = ql
-    
+
     @property
     def ql(self):
         return self._ql
@@ -77,7 +99,7 @@ class QlFsMapper:
             return new_instance
         else:
             return real_dest
-    
+
     def _open_mapping(self, ql_path, openmode):
         real_dest = self._mapping[ql_path]
         if isinstance(real_dest, str):
@@ -115,9 +137,9 @@ class QlFsMapper:
             return open(real_path, openmode)
 
     def _parse_path(self, p):
-        if "__fspath__" in dir(p): # p is a os.PathLike object.
+        if "__fspath__" in dir(p):  # p is a os.PathLike object.
             p = p.__fspath__()
-            if isinstance(p, bytes): # os.PathLike.__fspath__ may return bytes.
+            if isinstance(p, bytes):  # os.PathLike.__fspath__ may return bytes.
                 p = p.decode("utf-8")
         return p
 
@@ -130,4 +152,3 @@ class QlFsMapper:
         ql_path = self._parse_path(ql_path)
         real_dest = self._parse_path(real_dest)
         self._mapping[ql_path] = real_dest
-        

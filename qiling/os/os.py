@@ -16,6 +16,7 @@ from .mapper import QlFsMapper
 from .utils import QlOsUtils
 from .path import QlPathManager
 
+
 class QlOs:
     Resolver = Callable[[int], Any]
 
@@ -27,26 +28,38 @@ class QlOs:
         self.child_processes = False
         self.thread_management = None
         self.profile = self.ql.profile
-        self.path = QlPathManager(ql, self.ql.profile.get("MISC", "current_path"))
+        self.path = QlPathManager(
+            ql, self.ql.profile.get("MISC", "current_path")
+        )
         self.exit_code = 0
 
         self.user_defined_api = {
-            QL_INTERCEPT.CALL : {},
+            QL_INTERCEPT.CALL: {},
             QL_INTERCEPT.ENTER: {},
-            QL_INTERCEPT.EXIT : {}
+            QL_INTERCEPT.EXIT: {},
         }
 
         # IDAPython has some hack on standard io streams and thus they don't have corresponding fds.
         try:
             import ida_idaapi
         except ImportError:
-            self.stdin  = ql_file('stdin',  sys.stdin.fileno())
-            self.stdout = ql_file('stdout', sys.stdout.fileno())
-            self.stderr = ql_file('stderr', sys.stderr.fileno())
+            self.stdin = ql_file("stdin", sys.stdin.fileno())
+            self.stdout = ql_file("stdout", sys.stdout.fileno())
+            self.stderr = ql_file("stderr", sys.stderr.fileno())
         else:
-            self.stdin  = sys.stdin.buffer  if hasattr(sys.stdin,  "buffer") else sys.stdin
-            self.stdout = sys.stdout.buffer if hasattr(sys.stdout, "buffer") else sys.stdout
-            self.stderr = sys.stderr.buffer if hasattr(sys.stderr, "buffer") else sys.stderr
+            self.stdin = (
+                sys.stdin.buffer if hasattr(sys.stdin, "buffer") else sys.stdin
+            )
+            self.stdout = (
+                sys.stdout.buffer
+                if hasattr(sys.stdout, "buffer")
+                else sys.stdout
+            )
+            self.stderr = (
+                sys.stderr.buffer
+                if hasattr(sys.stderr, "buffer")
+                else sys.stderr
+            )
 
         if self.ql.stdin != 0:
             self.stdin = self.ql.stdin
@@ -59,9 +72,9 @@ class QlOs:
 
         # defult exit point
         self.exit_point = {
-            16: 0xfffff,            # 20bit address lane
-            32: 0x8fffffff,
-            64: 0xffffffffffffffff
+            16: 0xFFFFF,  # 20bit address lane
+            32: 0x8FFFFFFF,
+            64: 0xFFFFFFFFFFFFFFFF,
         }.get(self.ql.archbit, None)
 
         if self.ql.code:
@@ -72,9 +85,9 @@ class QlOs:
 
         # default fcall paramters resolving methods
         self.resolvers = {
-            STRING : lambda ptr: ptr and self.utils.read_cstring(ptr),
+            STRING: lambda ptr: ptr and self.utils.read_cstring(ptr),
             WSTRING: lambda ptr: ptr and self.utils.read_wstring(ptr),
-            GUID   : lambda ptr: ptr and str(self.utils.read_guid(ptr))
+            GUID: lambda ptr: ptr and str(self.utils.read_guid(ptr)),
         }
 
         # let the user override default resolvers or add custom ones
@@ -88,7 +101,9 @@ class QlOs:
     def restore(self, saved_state):
         pass
 
-    def resolve_fcall_params(self, params: Mapping[str, Any]) -> Mapping[str, Any]:
+    def resolve_fcall_params(
+        self, params: Mapping[str, Any]
+    ) -> Mapping[str, Any]:
         """Transform function call raw parameters values into meaningful ones, according to
         their assigned type.
 
@@ -115,22 +130,37 @@ class QlOs:
 
         return resolved
 
-    def process_fcall_params(self, targs: Iterable[Tuple[Any, str, Any]]) -> Sequence[Tuple[str, str]]:
+    def process_fcall_params(
+        self, targs: Iterable[Tuple[Any, str, Any]]
+    ) -> Sequence[Tuple[str, str]]:
         ahandlers: Mapping[type, Callable[[Any], str]] = {
-            int       : lambda v: f'{v:#x}' if v else f'0',
-            str       : lambda v: QlOsUtils.stringify(v),
-            bytearray : lambda v: QlOsUtils.stringify(v.decode("utf-8")),
-            tuple     : lambda v: QlOsUtils.stringify(v[1])
+            int: lambda v: f"{v:#x}" if v else f"0",
+            str: lambda v: QlOsUtils.stringify(v),
+            bytearray: lambda v: QlOsUtils.stringify(v.decode("utf-8")),
+            tuple: lambda v: QlOsUtils.stringify(v[1]),
         }
 
-        return tuple((aname, ahandlers[type(avalue)](avalue)) for atype, aname, avalue in targs)
+        return tuple(
+            (aname, ahandlers[type(avalue)](avalue))
+            for atype, aname, avalue in targs
+        )
 
-    def call(self, pc: int, func: Callable, proto: Mapping[str, Any], onenter: Optional[Callable], onexit: Optional[Callable], passthru: bool = False):
+    def call(
+        self,
+        pc: int,
+        func: Callable,
+        proto: Mapping[str, Any],
+        onenter: Optional[Callable],
+        onexit: Optional[Callable],
+        passthru: bool = False,
+    ):
         # resolve arguments values according to their types
         args = self.resolve_fcall_params(proto)
 
         # call hooked function
-        targs, retval, retaddr = self.fcall.call(func, proto, args, onenter, onexit, passthru)
+        targs, retval, retaddr = self.fcall.call(
+            func, proto, args, onenter, onexit, passthru
+        )
 
         # post-process arguments values
         pargs = self.process_fcall_params(targs)
@@ -142,7 +172,7 @@ class QlOs:
         self.utils._call_api(pc, func.__name__, args, retval, retaddr)
 
         # TODO: PE_RUN is a Windows and UEFI property; move somewhere else?
-        if hasattr(self, 'PE_RUN') and not self.PE_RUN:
+        if hasattr(self, "PE_RUN") and not self.PE_RUN:
             return retval
 
         if not passthru:
@@ -151,15 +181,22 @@ class QlOs:
         return retval
 
     # TODO: separate this method into os-specific functionalities, instead of 'if-else'
-    def set_api(self, api_name: str, intercept_function: Callable, intercept: QL_INTERCEPT):
+    def set_api(
+        self,
+        api_name: str,
+        intercept_function: Callable,
+        intercept: QL_INTERCEPT,
+    ):
         if self.ql.ostype == QL_OS.UEFI:
-            api_name = f'hook_{api_name}'
+            api_name = f"hook_{api_name}"
 
         # BUG: workaround missing arg
         if intercept is None:
             intercept = QL_INTERCEPT.CALL
 
-        if (self.ql.ostype in (QL_OS.WINDOWS, QL_OS.UEFI, QL_OS.DOS)) or (self.ql.ostype in (QL_OS_POSIX) and self.ql.loader.is_driver):
+        if (self.ql.ostype in (QL_OS.WINDOWS, QL_OS.UEFI, QL_OS.DOS)) or (
+            self.ql.ostype in (QL_OS_POSIX) and self.ql.loader.is_driver
+        ):
             self.user_defined_api[intercept][api_name] = intercept_function
         else:
             self.add_function_hook(api_name, intercept_function, intercept)
@@ -171,7 +208,7 @@ class QlOs:
 
     def stop(self):
         if self.ql.multithread:
-            self.thread_management.stop() 
+            self.thread_management.stop()
         else:
             self.ql.emu_stop()
 
@@ -201,4 +238,6 @@ class QlOs:
             self.ql.log.info("\n")
             self.utils.disassembler(self.ql, self.ql.reg.arch_pc, 64)
         except:
-            self.ql.log.error("Error: PC(0x%x) Unreachable" % self.ql.reg.arch_pc)
+            self.ql.log.error(
+                "Error: PC(0x%x) Unreachable" % self.ql.reg.arch_pc
+            )

@@ -14,31 +14,31 @@ from qiling.os.windows.handle import *
 from qiling.exception import *
 
 
-dllname = 'kernel32_dll'
+dllname = "kernel32_dll"
 
 # DWORD FlsFree(
 #  DWORD dwFlsIndex
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'DWORD': 'UINT'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={"DWORD": "UINT"})
 def hook_FlsFree(ql, address, params):
-    return ql.os.fiber_manager.free(params['dwFlsIndex'])
+    return ql.os.fiber_manager.free(params["dwFlsIndex"])
 
 
 # LPVOID FlsGetValue(
 #  DWORD dwFlsIndex
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'DWORD': 'UINT'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={"DWORD": "UINT"})
 def hook_FlsGetValue(ql, address, params):
-    return ql.os.fiber_manager.get(params['dwFlsIndex'])
+    return ql.os.fiber_manager.get(params["dwFlsIndex"])
 
 
 # LPVOID FlsSetValue(
 #  DWORD dwFlsIndex
 #  PVOID lpFlsData
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'DWORD': 'UINT'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={"DWORD": "UINT"})
 def hook_FlsSetValue(ql, address, params):
-    return ql.os.fiber_manager.set(params['dwFlsIndex'], params['lpFlsData'])
+    return ql.os.fiber_manager.set(params["dwFlsIndex"], params["lpFlsData"])
 
 
 # DWORD FlsAlloc(
@@ -47,7 +47,7 @@ def hook_FlsSetValue(ql, address, params):
 @winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_FlsAlloc(ql, address, params):
     # global cb = params['lpCallback']
-    cb = params['lpCallback']
+    cb = params["lpCallback"]
     if cb:
         return ql.os.fiber_manager.alloc(cb)
     else:

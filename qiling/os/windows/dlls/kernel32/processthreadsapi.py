@@ -15,21 +15,36 @@ from qiling.exception import *
 from qiling.os.windows.structs import *
 
 
-dllname = 'kernel32_dll'
+dllname = "kernel32_dll"
 
 
 # void ExitProcess(
 #   UINT uExitCode
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'UINT': 'DWORD'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={"UINT": "DWORD"})
 def hook_ExitProcess(ql, address, params):
     ql.emu_stop()
     ql.os.PE_RUN = False
 
 
 def _GetStartupInfo(ql, address, params):
-    startup_info = StartupInfo(ql, 0xc3c930, 0, 0, 0, 0x64, 0x64, 0x84, 0x80, 0xff, 0x40, 0x1, STD_INPUT_HANDLE,
-                               STD_OUTPUT_HANDLE, STD_ERROR_HANDLE)
+    startup_info = StartupInfo(
+        ql,
+        0xC3C930,
+        0,
+        0,
+        0,
+        0x64,
+        0x64,
+        0x84,
+        0x80,
+        0xFF,
+        0x40,
+        0x1,
+        STD_INPUT_HANDLE,
+        STD_OUTPUT_HANDLE,
+        STD_ERROR_HANDLE,
+    )
 
     pointer = params["lpStartupInfo"]
     startup_info.write(pointer)
@@ -67,12 +82,12 @@ def hook_TlsAlloc(ql, address, params):
 # );
 @winsdkapi(cc=STDCALL, dllname=dllname, replace_params={"dwTlsIndex": UINT})
 def hook_TlsFree(ql, address, params):
-    idx = params['dwTlsIndex']
+    idx = params["dwTlsIndex"]
     if idx not in ql.os.thread_manager.cur_thread.tls:
         ql.os.last_error = 0x57  # (ERROR_INVALID_PARAMETER)
         return 0
     else:
-        del (ql.os.thread_manager.cur_thread.tls[idx])
+        del ql.os.thread_manager.cur_thread.tls[idx]
         return 1
 
 
@@ -81,7 +96,7 @@ def hook_TlsFree(ql, address, params):
 # );
 @winsdkapi(cc=STDCALL, dllname=dllname, replace_params={"dwTlsIndex": UINT})
 def hook_TlsGetValue(ql, address, params):
-    idx = params['dwTlsIndex']
+    idx = params["dwTlsIndex"]
     if idx not in ql.os.thread_manager.cur_thread.tls:
         ql.os.last_error = 0x57  # (ERROR_INVALID_PARAMETER)
         return 0
@@ -95,14 +110,18 @@ def hook_TlsGetValue(ql, address, params):
 # LPVOID TlsSetValue(
 #  DWORD dwTlsIndex
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={"dwTlsIndex": UINT, "lpTlsValue": POINTER})
+@winsdkapi(
+    cc=STDCALL,
+    dllname=dllname,
+    replace_params={"dwTlsIndex": UINT, "lpTlsValue": POINTER},
+)
 def hook_TlsSetValue(ql, address, params):
-    idx = params['dwTlsIndex']
+    idx = params["dwTlsIndex"]
     if idx not in ql.os.thread_manager.cur_thread.tls:
         ql.os.last_error = 0x57  # (ERROR_INVALID_PARAMETER)
         return 0
     else:
-        ql.os.thread_manager.cur_thread.tls[idx] = params['lpTlsValue']
+        ql.os.thread_manager.cur_thread.tls[idx] = params["lpTlsValue"]
         return 1
 
 
@@ -165,11 +184,7 @@ def hook_CreateThread(ql, address, params):
         thread_status = QlWindowsThread.RUNNING
 
     # create new thread
-    thread_id = new_thread.create(
-        lpStartAddress,
-        lpParameter,
-        thread_status
-    )
+    thread_id = new_thread.create(lpStartAddress, lpParameter, thread_status)
 
     # append the new thread to ThreadManager
     ql.os.thread_manager.append(new_thread)
@@ -203,7 +218,9 @@ def hook_GetCurrentProcess(ql, address, params):
 def hook_TerminateProcess(ql, address, params):
     # Samples will try to kill other process! We don't want to always stop!
     process = params["hProcess"]
-    if process == ql.os.profile.getint("KERNEL", "pid"):  # or process == ql.os.image_address:
+    if process == ql.os.profile.getint(
+        "KERNEL", "pid"
+    ):  # or process == ql.os.image_address:
         ql.emu_stop()
         ql.os.PE_RUN = False
     ret = 1
@@ -222,7 +239,7 @@ def hook_GetCurrentThread(ql, address, params):
 #   BOOL  bInheritHandle,
 #   DWORD dwProcessId
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'BOOL': 'HANDLE'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={"BOOL": "HANDLE"})
 def hook_OpenProcess(ql, address, params):
     proc = params["dwProcessId"]
     # If the specified process is the System Process (0x00000000),
@@ -244,8 +261,15 @@ def hook_OpenProcess(ql, address, params):
 #   DWORD   DesiredAccess,
 #   PHANDLE TokenHandle
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname,
-           replace_params={"ProcessHandle": HANDLE, "DesiredAccess": DWORD, "TokenHandle": POINTER})
+@winsdkapi(
+    cc=STDCALL,
+    dllname=dllname,
+    replace_params={
+        "ProcessHandle": HANDLE,
+        "DesiredAccess": DWORD,
+        "TokenHandle": POINTER,
+    },
+)
 def hook_OpenProcessToken(ql, address, params):
     token_pointer = params["TokenHandle"]
     token = Token(ql)
@@ -270,8 +294,16 @@ def hook_GetThreadContext(ql, address, params):
 #   BOOL    OpenAsSelf,
 #   PHANDLE TokenHandle
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname,
-           replace_params={"ThreadHandle": HANDLE, "DesiredAccess": DWORD, "OpenAsSelf": BOOL, "TokenHandle": POINTER})
+@winsdkapi(
+    cc=STDCALL,
+    dllname=dllname,
+    replace_params={
+        "ThreadHandle": HANDLE,
+        "DesiredAccess": DWORD,
+        "OpenAsSelf": BOOL,
+        "TokenHandle": POINTER,
+    },
+)
 def hook_OpenThreadToken(ql, address, params):
     token_pointer = params["TokenHandle"]
     token = Token(ql)
