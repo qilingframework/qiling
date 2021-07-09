@@ -5,27 +5,13 @@
 
 import base64
 
-from qiling.os.windows.fncc import *
-from qiling.os.const import *
+from qiling import Qiling
 from qiling.exception import QlErrorNotImplemented
-from qiling.os.windows.utils import *
-from qiling.os.windows.handle import *
-from qiling.os.windows.const import *
+from qiling.os.windows.api import *
+from qiling.os.windows.const import CRYPT_STRING_BASE64
+from qiling.os.windows.fncc import *
 
-dllname = 'crypt32_dll'
-
-# BOOL CryptStringToBinaryA(
-#   LPCSTR pszString,
-#   DWORD  cchString,
-#   DWORD  dwFlags,
-#   BYTE   *pbBinary,
-#   DWORD  *pcbBinary,
-#   DWORD  *pdwSkip,
-#   DWORD  *pdwFlags
-# );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'BYTE': 'POINTER'},
-           replace_params={"pcbBinary": POINTER, "pdwSkip": POINTER, "pdwFlags": POINTER})
-def hook_CryptStringToBinaryA(ql, address, params):
+def _CryptStringToBinary(ql: Qiling, address: int, params) -> int:
     flag_src = params["dwFlags"]
     string_src = params["pszString"]
     size_src = params["cchString"]
@@ -60,8 +46,35 @@ def hook_CryptStringToBinaryA(ql, address, params):
         ql.mem.write(string_dst, bytes(output, encoding="utf-16le"))
     return 1
 
+# BOOL CryptStringToBinaryA(
+#   LPCSTR pszString,
+#   DWORD  cchString,
+#   DWORD  dwFlags,
+#   BYTE   *pbBinary,
+#   DWORD  *pcbBinary,
+#   DWORD  *pdwSkip,
+#   DWORD  *pdwFlags
+# );
+@winsdkapi_new(cc=STDCALL, params={
+    'pszString' : LPCSTR,
+    'cchString' : DWORD,
+    'dwFlags'   : DWORD,
+    'pbBinary'  : PBYTE,
+    'pcbBinary' : PDWORD,
+    'pdwSkip'   : PDWORD,
+    'pdwFlags'  : PDWORD
+})
+def hook_CryptStringToBinaryA(ql: Qiling, address: int, params):
+    return _CryptStringToBinary(ql, address, params)
 
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'BYTE': 'POINTER'},
-           replace_params={"pcbBinary": POINTER, "pdwSkip": POINTER, "pdwFlags": POINTER})
-def hook_CryptStringToBinaryW(ql, address, params):
-    return hook_CryptStringToBinaryA.__wrapped__(ql, address, params)
+@winsdkapi_new(cc=STDCALL, params={
+    'pszString' : LPCWSTR,
+    'cchString' : DWORD,
+    'dwFlags'   : DWORD,
+    'pbBinary'  : PBYTE,
+    'pcbBinary' : PDWORD,
+    'pdwSkip'   : PDWORD,
+    'pdwFlags'  : PDWORD
+})
+def hook_CryptStringToBinaryW(ql: Qiling, address: int, params):
+    return _CryptStringToBinary(ql, address, params)
