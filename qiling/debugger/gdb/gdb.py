@@ -239,7 +239,7 @@ class QlGdb(QlDebugger, object):
                 elif self.ql.archtype == QL_ARCH.MIPS:
                     for reg in self.tables[QL_ARCH.MIPS][:38]:
                         r = self.ql.reg.read(reg)
-                        if self.ql.archendian == QL_ENDIAN.EB:
+                        if self.ql.archendian == QL_ENDIAN.EL:
                             tmp = self.addr_to_str(r, endian ="little")
                         else:
                             tmp = self.addr_to_str(r)    
