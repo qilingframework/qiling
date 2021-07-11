@@ -90,8 +90,6 @@ def syscall_mmap_impl(ql, addr, mlen, prot, flags, fd, pgoffset, ver):
     if (ql.archtype == QL_ARCH.ARM64) or (ql.archtype == QL_ARCH.X8664):
         fd = ql.unpack64(ql.pack64(fd))
     elif (ql.archtype == QL_ARCH.MIPS):
-        fd = ql.unpack32s(ql.mem.read(fd, 4))
-        pgoffset = ql.unpack32(ql.mem.read(pgoffset, 4))
         MAP_ANONYMOUS = 2048
         if ver == 2:
             pgoffset = pgoffset * 4096
