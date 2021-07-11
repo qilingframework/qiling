@@ -90,6 +90,7 @@ class QlOsPosix(QlOs):
         if (self.ql.archtype == QL_ARCH.ARM) and (self.ql.ostype == QL_OS.QNX):
             self.__syscall_id_reg = UC_ARM_REG_R12
 
+        # TODO: use abstract to access __syscall_cc and __syscall_id_reg by defining a system call class
         self.__syscall_cc: QlCC = {
             QL_ARCH.ARM64: aarch64,
             QL_ARCH.ARM  : aarch32,
@@ -242,6 +243,9 @@ class QlOsPosix(QlOs):
 
     def get_syscall(self) -> int:
         return self.ql.reg.read(self.__syscall_id_reg)
+
+    def set_syscall_return(self, retval: int):
+        self.__syscall_cc.setReturnValue(retval)
 
     @property
     def fd(self):
