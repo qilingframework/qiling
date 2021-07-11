@@ -38,7 +38,12 @@ def ql_syscall_munmap(ql, munmap_addr, munmap_len, *args, **kw):
                 _fd.write(_buff)
 
     munmap_len = ((munmap_len + 0x1000 - 1) // 0x1000) * 0x1000
-    ql.mem.unmap(munmap_addr, munmap_len)
+    
+    # making more gentle unmap mempage-by-mempage to avoid "unicorn.unicorn.UcError: No memory available or memory not present (UC_ERR_NOMEM)" error
+    for begin, end, perms, name in ql.mem.map_info[:]:
+        if munmap_addr <= begin < munmap_addr + munmap_len:
+            ql.mem.unmap(begin, min(munmap_addr + munmap_len, end - begin))
+         
     regreturn = 0
     return regreturn
 
