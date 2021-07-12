@@ -131,13 +131,13 @@ def syscall_mmap_impl(ql, addr, mlen, prot, flags, fd, pgoffset, ver):
         except Exception as e:
             raise QlMemoryMappedError("Error: mapping needed but failed")
 
-    ql.log.debug("%s - addr range  0x%x - 0x%x: " % (api_name, mmap_base, mmap_base + eff_mmap_size - 1))
+        # FIXME: MIPS32 Big Endian
+        try:
+            ql.mem.write(mmap_base, b'\x00' * eff_mmap_size)
+        except Exception as e:
+            raise QlMemoryMappedError("Error: trying to zero memory")
 
-    # FIXME: MIPS32 Big Endian
-    try:
-        ql.mem.write(mmap_base, b'\x00' * eff_mmap_size)
-    except Exception as e:
-        raise QlMemoryMappedError("Error: trying to zero memory")
+    ql.log.debug("%s - addr range  0x%x - 0x%x: " % (api_name, mmap_base, mmap_base + eff_mmap_size - 1))
 
     if ((flags & MAP_ANONYMOUS) == 0) and 0 <= fd < NR_OPEN and ql.os.fd[fd] != 0:
         ql.os.fd[fd].lseek(pgoffset)
