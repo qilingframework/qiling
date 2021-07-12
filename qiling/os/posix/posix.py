@@ -15,7 +15,7 @@ from qiling import Qiling
 from qiling.const import QL_ARCH, QL_OS, QL_INTERCEPT, QL_CALL_BLOCK, QL_VERBOSE
 from qiling.exception import QlErrorSyscallNotFound
 from qiling.os.os import QlOs
-from qiling.os.posix.const import errors
+from qiling.os.posix.const import errors, NR_OPEN
 from qiling.utils import QlFileDes, ostype_convert_str, ql_get_module_function, ql_syscall_mapping_function
 
 from qiling.os.posix.syscall import *
@@ -155,10 +155,10 @@ class QlOsPosix(QlOs):
             QL_ARCH.X8664: __syscall_args_x8664
         }[self.ql.archtype]
 
-        self.fd = QlFileDes([0] * 256)
-        self.fd[0] = self.stdin
-        self.fd[1] = self.stdout
-        self.fd[2] = self.stderr
+        self._fd = QlFileDes([0] * NR_OPEN)
+        self._fd[0] = self.stdin
+        self._fd[1] = self.stdout
+        self._fd[2] = self.stderr
 
     # ql.syscall - get syscall for all posix series
     @property
@@ -189,9 +189,10 @@ class QlOsPosix(QlOs):
 
         Returns: The string representation of the error.
         """
+        if type(ret) is not int:
+            return '?'
 
         return f'{ret:#x}{f" ({errors[-ret]})" if -ret in errors else f""}'
-
 
     def load_syscall(self):
         # import syscall mapping function
@@ -272,20 +273,19 @@ class QlOsPosix(QlOs):
                 faddr = f'{self.ql.reg.arch_pc:#0{self.ql.archbit // 4 + 2}x}: ' if self.ql.verbose >= QL_VERBOSE.DEBUG else ''
                 fargs = ', '.join(args)
 
-                log = f'{faddr}{syscall_basename}({fargs})'
+                ret = syscall_hook(self.ql, *arg_values)
+                log = f'{faddr}{syscall_basename}({fargs}) = {QlOsPosix.getNameFromErrorCode(ret)}'
 
                 if self.ql.verbose >= QL_VERBOSE.DEBUG:
                     self.ql.log.debug(log)
                 else:
                     self.ql.log.info(log)
 
-                ret = syscall_hook(self.ql, *arg_values)
-
                 if ret is not None and type(ret) is int:
                     # each name has a list of calls, we want the last one and we want to update the return value
                     self.utils.syscalls[syscall_name][-1]["result"] = ret
                     ret = self.set_syscall_return(ret)
-                    self.ql.log.debug(f'{syscall_basename}() = {QlOsPosix.getNameFromErrorCode(ret)}')
+                    # self.ql.log.debug(f'{syscall_basename}() = {QlOsPosix.getNameFromErrorCode(ret)}')
 
                 if onexit_hook is not None:
                     onexit_hook(self.ql, *self.get_syscall_args())
@@ -310,3 +310,7 @@ class QlOsPosix(QlOs):
 
     def get_syscall_args(self):
         return self.__syscall_args()
+
+    @property
+    def fd(self):
+        return self._fd

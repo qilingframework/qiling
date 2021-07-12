@@ -21,13 +21,14 @@ class ql_file:
         # information for syscall mmap
         self._is_map_shared = False
         self._mapped_offset = -1
+        self._close_on_exec = 0
 
     @classmethod
-    def open(self, open_path, open_flags, open_mode):
+    def open(self, open_path, open_flags, open_mode, dir_fd=None):
         open_mode &= 0x7fffffff
 
         try:
-            fd = os.open(open_path, open_flags, open_mode)
+            fd = os.open(open_path, open_flags, open_mode, dir_fd=dir_fd)
         except OSError as e:
             raise QlSyscallError(e.errno, e.args[1] + ' : ' + e.filename)
         return self(open_path, fd)
@@ -49,6 +50,12 @@ class ql_file:
     
     def fstat(self):
         return Fstat(self.__fd)
+
+    def fcntl(self, fcntl_cmd, fcntl_arg):
+        try:
+            return fcntl.fcntl(self.__fd, fcntl_cmd, fcntl_arg)
+        except Exception:
+            pass
     
     def ioctl(self, ioctl_cmd, ioctl_arg):
         try:
@@ -76,3 +83,11 @@ class ql_file:
     @property
     def name(self):
         return self.__path
+
+    @property
+    def close_on_exec(self):
+        return self._close_on_exec
+
+    @close_on_exec.setter
+    def close_on_exec(self, value: int):
+        self._close_on_exec = value

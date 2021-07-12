@@ -98,7 +98,12 @@ def ql_syscall_socketcall(ql, socketcall_call, socketcall_args, *args, **kw):
         return ql_syscall_accept(ql, socketcall_sockfd, socketcall_addr, socketcall_addrlen)
     
     elif socketcall_call == SOCKETCALL_SYS_SETSOCKOPT:
-        return ql_syscall_setsockopt(ql)
+        socketcall_sockfd = ql.unpack(ql.mem.read(socketcall_args, ql.pointersize))
+        socketcall_level = ql.unpack(ql.mem.read(socketcall_args + ql.pointersize, ql.pointersize))
+        socketcall_optname = ql.unpack(ql.mem.read(socketcall_args + ql.pointersize * 2, ql.pointersize))
+        socketcall_optval = ql.unpack(ql.mem.read(socketcall_args + ql.pointersize * 3, ql.pointersize))
+        socketcall_optlen = ql.unpack(ql.mem.read(socketcall_args + ql.pointersize * 4, ql.pointersize))        
+        return ql_syscall_setsockopt(ql, socketcall_sockfd, socketcall_level, socketcall_optname, socketcall_optval, socketcall_optlen)
 
     else:
         ql.log.debug("error call %d" % socketcall_call)
