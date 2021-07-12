@@ -112,7 +112,7 @@ def syscall_mmap_impl(ql, addr, mlen, prot, flags, fd, pgoffset, ver):
         if (flags & MAP_FIXED) > 0:
             ql.log.debug("%s - MAP_FIXED, mapping not needed" % api_name)
             try:
-                ql.mem.protect(addr, eff_mmap_size, prot)
+                ql.mem.protect(addr, mlen, prot)
             except Exception as e:
                 ql.log.debug(e)
                 raise QlMemoryMappedError("Error: change protection at: 0x%x - 0x%x" % (addr, addr + eff_mmap_size - 1))
