@@ -115,7 +115,7 @@ def syscall_mmap_impl(ql, addr, mlen, prot, flags, fd, pgoffset, ver):
                 ql.mem.protect(addr, mlen, prot)
             except Exception as e:
                 ql.log.debug(e)
-                raise QlMemoryMappedError("Error: change protection at: 0x%x - 0x%x" % (addr, addr + mlen - 1))
+                raise QlMemoryMappedError("Error: change protection at: 0x%x - 0x%x" % (addr, addr + eff_mmap_size - 1))
             need_mmap = False
 
     # initialized mapping
@@ -148,7 +148,7 @@ def syscall_mmap_impl(ql, addr, mlen, prot, flags, fd, pgoffset, ver):
         ql.log.debug("mem write : " + hex(len(data)))
         ql.log.debug("mem mmap  : " + mem_info)
         ql.mem.add_mapinfo(mmap_base,
-                           mmap_base + (eff_mmap_size if need_mmap else mlen),
+                           mmap_base + eff_mmap_size,
                            mem_p=UC_PROT_ALL,
                            mem_info=("[%s] " % api_name) + mem_info)
         try:
