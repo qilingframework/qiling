@@ -59,7 +59,7 @@ def hook_SysStringLen(ql: Qiling, address: int, params):
 #   unsigned int  len
 # );
 @winsdkapi_new(cc=STDCALL, params={
-    'pbstr' : BSTR,
+    'pbstr' : POINTER,
     'psz'   : OLECHAR,
     'len'   : UINT
 })
@@ -69,7 +69,7 @@ def hook_SysReAllocStringLen(ql: Qiling, address: int, params):
     addr = ql.os.heap.alloc(size + 1)
 
     ql.mem.write(addr, content[:size].encode("utf-16le"))
-    ql.mem.write(params["pbstr"], addr.to_bytes(ql.pointersize, byteorder="little"))
+    ql.mem.write(params["pbstr"], ql.pack(addr))
 
     return 1
 

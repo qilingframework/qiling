@@ -79,6 +79,8 @@ REFIID                      = POINTER
 PSECURITY_DESCRIPTOR        = POINTER
 LPCSTR                      = STRING
 LPCWSTR                     = WSTRING
+BSTR                        = WSTRING
+OLECHAR                     = WSTRING
 
 # a lookup table used by winapisdk to substitute certain type names with others
 reptypedict = {
