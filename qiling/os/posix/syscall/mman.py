@@ -106,6 +106,9 @@ def syscall_mmap_impl(ql, addr, mlen, prot, flags, fd, pgoffset, ver):
     mmap_base = addr
     need_mmap = True
     eff_mmap_size = ((mlen + 0x1000 - 1) // 0x1000) * 0x1000
+    # align eff_mmap_size to page boundary
+    aligned_address = (addr >> 12) << 12
+    eff_mmap_size -= mmap_base - aligned_address
 
     # initial ql.loader.mmap_address
     if addr != 0 and ql.mem.is_mapped(addr, mlen):
@@ -115,7 +118,7 @@ def syscall_mmap_impl(ql, addr, mlen, prot, flags, fd, pgoffset, ver):
                 ql.mem.protect(addr, mlen, prot)
             except Exception as e:
                 ql.log.debug(e)
-                raise QlMemoryMappedError("Error: change protection at: 0x%x - 0x%x" % (addr, addr + eff_mmap_size - 1))
+                raise QlMemoryMappedError("Error: change protection at: 0x%x - 0x%x" % (addr, addr + mlen - 1))
             need_mmap = False
 
     # initialized mapping
