@@ -96,6 +96,11 @@ class Process():
                 self.ql.log.warning(f'Warnings while loading {path}:')
                 for warning in warnings:
                     self.ql.log.warning(f' - {warning}')
+
+            # [Room for Improvement] too much time when kernelbase.dll is loaded. 
+            #self.ql.log.debug('relocate {}, {:x}'.format(dll_name, self.dll_last_address))
+            #dll.relocate_image(self.dll_last_address)
+            
             data = bytearray(dll.get_memory_mapped_image())
             cmdlines = []
 
@@ -466,7 +471,7 @@ class QlLoaderPE(QlLoader, Process):
             if self.pe_image_address + self.pe_image_address_size > self.ql.os.heap_base_address:
                 # pe reloc
                 self.pe_image_address = self.image_address
-                self.pe.relocate_image(self.image_address)
+                #self.pe.relocate_image(self.image_address)
 
             self.entry_point = self.pe_entry_point = self.pe_image_address + self.pe.OPTIONAL_HEADER.AddressOfEntryPoint
             self.sizeOfStackReserve = self.pe.OPTIONAL_HEADER.SizeOfStackReserve

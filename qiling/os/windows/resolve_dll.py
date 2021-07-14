@@ -7,6 +7,7 @@ from qiling import Qiling
 from qiling.const import QL_ARCH, QL_INTERCEPT
 from qiling.exception import QlErrorSyscallError, QlErrorSyscallNotFound
 
+import os
 import pefile
 from capstone import*
 from unicorn import *
@@ -29,16 +30,16 @@ def resolve_symbol(ql: Qiling, address: int, size):
     jump_address = -1
     jump_pointer_address = -1
     if op.mnemonic in ['jmp', 'call']:
-        print(op.mnemonic, op.op_str)
-        _arch_utils.parser.parse("{} {}".format(op.mnemonic, op.op_str))
-        jump_pointer = _arch_utils.parser.calculate(ql, size)['operand']
+        #print(op.mnemonic, op.op_str)
+        parser = OpcodeParser()
+        jump_pointer = parser.calculate(ql, "{} {}".format(op.mnemonic, op.op_str), size)['operand']
 
         if jump_pointer != None:
             if "address" in jump_pointer.keys():
                 jump_address = jump_pointer['address']
             elif "pointer" in jump_pointer.keys():
                 jump_pointer_address = jump_pointer['pointer']
-                jump_address = jump_pointer['value']
+                jump_address = jump_pointer['address']
 
     # check if library is already imported or not.
     if (not is_in_allocated_memory_address(ql, jump_address)) and (jump_address != -1) and (jump_pointer_address != -1):
@@ -109,6 +110,9 @@ def load_additional_dll(ql, import_address):
                 #  ref: https://docs.microsoft.com/en-us/windows/win32/apiindex/windows-apisets                   
                 if (export_dll_name[0:4] == 'api-') or (export_dll_name[0:4] == 'ext-'):
                     export_dll_name, target_symbol = get_export_symbol_from_api_dll(ql, export_dll_name, target_symbol)
+                    # export dll is not exist
+                    if (export_dll_name is None):
+                        continue
 
                 # *Additional dll must not be loaded because import symbol is not resolved, but the case of API set dll, export_dll might be loaded.*
                 if (export_dll_name not in dll_list.keys()):
@@ -173,7 +177,8 @@ def resolve_import_dll_address(ql, import_dll_name, export_dll_name, target_symb
     export_dll_bin = pefile.PE(os.path.join(ql.rootfs, 'Windows/system32/{}'.format(export_dll_name)))
     export_dll_base = dll_list[export_dll_name]['base']
 
-    export_symbol_list = list(filter(lambda x: x.name.decode('utf-8') == target_symbol, export_dll_bin.DIRECTORY_ENTRY_EXPORT.symbols))
+    # insert if statement since sometimes DIRECTORY_ENTRY_EXPORT.symbols.name is None
+    export_symbol_list = list(filter(lambda x: x.name.decode('utf-8') == target_symbol if x.name != None else False, export_dll_bin.DIRECTORY_ENTRY_EXPORT.symbols))
     if len(export_symbol_list) == 0:
         return False
 
@@ -210,6 +215,9 @@ def get_export_symbol_from_api_dll(ql, api_dll_name, target_symbol):
         return string
 
     print(os.path.join(ql.rootfs, 'Windows/system32/{}'.format(api_dll_name)))
+    if not os.path.exists(os.path.join(ql.rootfs, 'Windows/system32/{}'.format(api_dll_name))):
+        return None, None
+
     api_dll = pefile.PE(os.path.join(ql.rootfs, 'Windows/system32/{}'.format(api_dll_name)))
     
     dll_name, export_symbol = _get_string_from_pe(api_dll, target_symbol).split('.')
@@ -254,14 +262,15 @@ class OpcodeCalculateTransformer(Transformer):
         return args[0]
     
     def cast(self, args):
+        if args[1] == None:
+            return None
+            
         if args[0].value == 'byte':
-            return args[1] & 0xff
+            args[1]['address'] &= 0xff
         elif args[0].value == 'dword':
-            return args[1] & 0xffff
-        elif args[0].value == 'qword':
-            return args[1]
+            args[1]['address'] &= 0xffff
 
-        return
+        return args[1]
 
     def pointer(self, args):
         reg = self.ql.reg.save()
@@ -277,7 +286,7 @@ class OpcodeCalculateTransformer(Transformer):
                 ),
                 "little"
             ) 
-            return {"pointer": pointer_address, "value": pointer_value}
+            return {"pointer": pointer_address, "address": pointer_value}
         except:
             return None
         
@@ -357,16 +366,15 @@ class OpcodeParser():
         """
         self.parser = Lark(parser_grammer, parser="lalr", propagate_positions=True)
 
-    def parse(self, opcode):
+    def calculate(self, ql, opcode, op_size):
         self.tree = self.parser.parse(opcode)
-        return self.tree
-
-    def calculate(self, ql, op_size):
         return OpcodeCalculateTransformer(ql, op_size).transform(self.tree)
 
 
 if __name__ == "__main__":
-    ql = Qiling(["../examples/rootfs/x8664_windows/bin/x8664_return_main.exe"], "../examples/rootfs/x8664_windows")
+    ql = Qiling(["../examples/rootfs/x8664_windows/bin/api_set_dll_demo.exe"],
+                    "../examples/rootfs/x8664_windows",
+                    verbose=QL_VERBOSE.DEFAULT)
     ql.hook_code(resolve_symbol)
 
     ql.run()
