@@ -14,7 +14,153 @@ from unicorn import *
 from lark import Lark, ast_utils, Transformer, v_args
 
 
+class OpcodeCalculateTransformer(Transformer):
+    def __init__(self, ql, op_size):
+        self.ql = ql
+        self.op_size = op_size
+
+        self.reg = self.ql.reg.save()
+        self.pointer_address = []
+
+        self.do_calculate = False
+        return 
+
+    # def start(self, args):
+    #     #args example: {'opcode': 'mov', 'operand': 0}
+    #     if isinstance(args[0], int):
+    #         return args, self.pointer_address
+    #     else:
+    #         return args[0], self.pointer_address
+
+    def start(self, args):
+        # opcode only
+        if len(args) == 1:
+            return args[0]
+        else:
+            return {"opcode": args[0]["opcode"], "operand":args[1]["operand"]}
+
+    def operand(self, args):
+        return {"operand": args[0]}
+
+    def connection(self, args):
+        return args
+
+    def element(self, args):
+        return args[0]
+    
+    def cast(self, args):
+        if args[1] == None:
+            return None
+
+        if args[0].value == 'byte':
+            args[1]['address'] &= 0xff
+        elif args[0].value == 'dword':
+            args[1]['address'] &= 0xffff
+
+        return args[1]
+
+    def pointer(self, args):
+        reg = self.ql.reg.save()
+    
+        # args example: [{'address': 140737488474144}]
+        pointer_address = args[0]['address']
+
+        try:
+            pointer_value = int.from_bytes(
+                self.ql.mem.read(
+                    pointer_address, 
+                    8
+                ),
+                "little"
+            ) 
+            return {"pointer": pointer_address, "address": pointer_value}
+        except:
+            return None
+        
+    def address(self, args):
+        return {"address": args[0]}
+
+    def add_op(self, args):
+        return args[0] + args[1]
+
+    def sub_op(self, args):
+        return args[0] - args[1]
+
+    def mul_op(self, args):
+        return args[0] * args[1]
+
+    def primitive(self, args):
+        return args[0]
+
+    def OPCODE(self, args):
+        return {"opcode": args.value}
+
+    def HEX(self, args):
+        return int(args.value, 16)
+
+    def NUMBER(self, args):
+        return int(args.value)
+
+    def REGISTER(self, args):
+        if args.value == "rip":
+            # rip is not increment, need to add opcode size
+            return self.reg[args.value] + self.op_size
+        else:
+            return self.reg[args.value]
+
+    def STRING(self, args):
+        return args.value
+
+class OpcodeParser():
+    def __init__(self):
+        parser_grammer = r"""
+            start : OPCODE (operand)?
+
+            operand : connection
+                | element
+
+            connection : element "," element
+            element : cast
+                    | pointer
+                    | address
+
+            cast : TYPE ( pointer | address )
+            pointer : "ptr" "[" address "]"
+                    | "[" address "]"
+
+            address : (primitive | add_op | sub_op | mul_op)
+
+
+
+            add_op : (primitive)  "+"  (primitive | add_op | sub_op | mul_op)
+            sub_op : (primitive)  "-"  (primitive | add_op | sub_op | mul_op)
+            mul_op : (primitive)  "*"  (primitive | add_op | sub_op | mul_op)
+
+            primitive : REGISTER
+                    | HEX
+                    | NUMBER
+                    | STRING
+
+            // <uppercase>.<priority>
+            OPCODE.2: /[0-9a-z]+/
+            HEX.2 : /0x[0-9a-f]+/
+            NUMBER.2 : /-?[0-9]+/
+            TYPE.2 : /(([qd]?|xmm)word|byte)/
+            REGISTER.2 : /(r|e)?ax|a(l|h)|(r|e)?bx|b(l|h)|(r|e)?cx|c(l|h)|(r|e)?dx|d(l|h)|(r|e)?bp(l)?|(r|e)?sp(l)?|(r|e)?ip(l)?|(r|e)si(l)?|(r|e)di(l)?|r8(d|w|b)?|r9(d|w|b)?|r10(d|w|b)?|r11(d|w|b)?|r12(d|w|b)?|r13(d|w|b)?|r14(d|w|b)?|r15(d|w|b)?|xmm[01]/
+            STRING : /[0-9a-zA-Z._:]+/
+
+            %ignore " "
+        """
+        self.parser = Lark(parser_grammer, parser="lalr", propagate_positions=True)
+
+    def calculate(self, ql, opcode, op_size):
+        self.tree = self.parser.parse(opcode)
+        return OpcodeCalculateTransformer(ql, op_size).transform(self.tree)
+
+parser = OpcodeParser()
+
 def resolve_symbol(ql: Qiling, address: int, size):
+    global parser
     reg = ql.reg.save()
 
     # Check the address to jump is in memory map. If not, check if it needs to load additional dll.
@@ -29,17 +175,19 @@ def resolve_symbol(ql: Qiling, address: int, size):
     
     jump_address = -1
     jump_pointer_address = -1
+    #print("0x{:08x}".format(address), op.mnemonic, op.op_str)
     if op.mnemonic in ['jmp', 'call']:
-        #print(op.mnemonic, op.op_str)
-        parser = OpcodeParser()
+        
         jump_pointer = parser.calculate(ql, "{} {}".format(op.mnemonic, op.op_str), size)['operand']
 
         if jump_pointer != None:
-            if "address" in jump_pointer.keys():
-                jump_address = jump_pointer['address']
-            elif "pointer" in jump_pointer.keys():
+            if "pointer" in jump_pointer.keys():
                 jump_pointer_address = jump_pointer['pointer']
                 jump_address = jump_pointer['address']
+
+            elif "address" in jump_pointer.keys():
+                jump_address = jump_pointer['address']
+            
 
     # check if library is already imported or not.
     if (not is_in_allocated_memory_address(ql, jump_address)) and (jump_address != -1) and (jump_pointer_address != -1):
@@ -205,7 +353,7 @@ def get_export_symbol_from_api_dll(ql, api_dll_name, target_symbol):
             return ''
 
         while True:
-            print(hex(export_symbol_list[0].address))
+            #print(hex(export_symbol_list[0].address))
             char = api_dll.get_data(export_symbol_list[0].address+offset, 1)
             if char == b'\x00':
                 break
@@ -227,148 +375,7 @@ def get_export_symbol_from_api_dll(ql, api_dll_name, target_symbol):
     return dll_name+'.dll', export_symbol
 
 
-class OpcodeCalculateTransformer(Transformer):
-    def __init__(self, ql, op_size):
-        self.ql = ql
-        self.op_size = op_size
 
-        self.reg = self.ql.reg.save()
-        self.pointer_address = []
-
-        self.do_calculate = False
-        return 
-
-    # def start(self, args):
-    #     #args example: {'opcode': 'mov', 'operand': 0}
-    #     if isinstance(args[0], int):
-    #         return args, self.pointer_address
-    #     else:
-    #         return args[0], self.pointer_address
-
-    def start(self, args):
-        # opcode only
-        if len(args) == 1:
-            return args[0]
-        else:
-            return {"opcode": args[0]["opcode"], "operand":args[1]["operand"]}
-
-    def operand(self, args):
-        return {"operand": args[0]}
-
-    def connection(self, args):
-        return args
-
-    def element(self, args):
-        return args[0]
-    
-    def cast(self, args):
-        if args[1] == None:
-            return None
-            
-        if args[0].value == 'byte':
-            args[1]['address'] &= 0xff
-        elif args[0].value == 'dword':
-            args[1]['address'] &= 0xffff
-
-        return args[1]
-
-    def pointer(self, args):
-        reg = self.ql.reg.save()
-    
-        # args example: [{'address': 140737488474144}]
-        pointer_address = args[0]['address']
-
-        try:
-            pointer_value = int.from_bytes(
-                self.ql.mem.read(
-                    pointer_address, 
-                    8
-                ),
-                "little"
-            ) 
-            return {"pointer": pointer_address, "address": pointer_value}
-        except:
-            return None
-        
-    def address(self, args):
-        return {"address": args[0]}
-
-    def add_op(self, args):
-        return args[0] + args[1]
-
-    def sub_op(self, args):
-        return args[0] - args[1]
-
-    def mul_op(self, args):
-        return args[0] * args[1]
-
-    def primitive(self, args):
-        return args[0]
-
-    def OPCODE(self, args):
-        return {"opcode": args.value}
-
-    def HEX(self, args):
-        return int(args.value, 16)
-
-    def NUMBER(self, args):
-        return int(args.value)
-
-    def REGISTER(self, args):
-        if args.value == "rip":
-            # rip is not increment, need to add opcode size
-            return self.reg[args.value] + self.op_size
-        else:
-            return self.reg[args.value]
-
-    def STRING(self, args):
-        return args.value
-
-class OpcodeParser():
-    def __init__(self):
-        parser_grammer = r"""
-            start : OPCODE (operand)?
-
-            operand : connection
-                | element
-
-            connection : element "," element
-            element : cast
-                    | pointer
-                    | address
-
-            cast : TYPE ( pointer | address )
-            pointer : "ptr" "[" address "]"
-                    | "[" address "]"
-
-            address : (primitive | add_op | sub_op | mul_op)
-
-
-
-            add_op : (primitive)  "+"  (primitive | add_op | sub_op | mul_op)
-            sub_op : (primitive)  "-"  (primitive | add_op | sub_op | mul_op)
-            mul_op : (primitive)  "*"  (primitive | add_op | sub_op | mul_op)
-
-            primitive : REGISTER
-                    | HEX
-                    | NUMBER
-                    | STRING
-
-            // <uppercase>.<priority>
-            OPCODE.2: /[0-9a-z]+/
-            HEX.2 : /0x[0-9a-f]+/
-            NUMBER.2 : /-?[0-9]+/
-            TYPE.2 : /(([qd]?|xmm)word|byte)/
-            REGISTER.2 : /(r|e)?ax|a(l|h)|(r|e)?bx|b(l|h)|(r|e)?cx|c(l|h)|(r|e)?dx|d(l|h)|(r|e)?bp(l)?|(r|e)?sp(l)?|(r|e)?ip(l)?|(r|e)si(l)?|(r|e)di(l)?|r8(d|w|b)?|r9(d|w|b)?|r10(d|w|b)?|r11(d|w|b)?|r12(d|w|b)?|r13(d|w|b)?|r14(d|w|b)?|r15(d|w|b)?|xmm[01]/
-            STRING : /[0-9a-zA-Z._:]+/
-
-            %ignore " "
-        """
-        self.parser = Lark(parser_grammer, parser="lalr", propagate_positions=True)
-
-    def calculate(self, ql, opcode, op_size):
-        self.tree = self.parser.parse(opcode)
-        return OpcodeCalculateTransformer(ql, op_size).transform(self.tree)
 
 
 if __name__ == "__main__":
