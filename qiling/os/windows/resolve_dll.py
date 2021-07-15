@@ -175,7 +175,7 @@ def resolve_symbol(ql: Qiling, address: int, size):
     
     jump_address = -1
     jump_pointer_address = -1
-    #print("0x{:08x}".format(address), op.mnemonic, op.op_str)
+    print("0x{:08x}".format(address), op.mnemonic, op.op_str)
     if op.mnemonic in ['jmp', 'call']:
         
         jump_pointer = parser.calculate(ql, "{} {}".format(op.mnemonic, op.op_str), size)['operand']
@@ -188,14 +188,13 @@ def resolve_symbol(ql: Qiling, address: int, size):
             elif "address" in jump_pointer.keys():
                 jump_address = jump_pointer['address']
             
-
+        print(jump_pointer)
     # check if library is already imported or not.
     if (not is_in_allocated_memory_address(ql, jump_address)) and (jump_address != -1) and (jump_pointer_address != -1):
-        #print('{:016x}: _is_in_allocated_memory_address'.format(jump_pointer_address))
+        print('{:016x}: _is_in_allocated_memory_address'.format(jump_pointer_address))
         load_additional_dll(ql, jump_pointer_address)
 
 
-        
 
 def is_in_allocated_memory_address(ql, address):
         for mi in ql.mem.map_info:
@@ -224,7 +223,7 @@ def load_additional_dll(ql, import_address):
 
     for mi in map_info:
         dll_name = mi[3]
-        if '.dll' in dll_name:
+        if ('.dll' in dll_name) or ('[PE]' == dll_name):
             dll_list[dll_name] = {
                 'dll': dll_name,
                 'base': mi[0],
@@ -232,18 +231,24 @@ def load_additional_dll(ql, import_address):
             }
             dll_last_address = mi[1]
 
+    print(dll_list.keys())
 
     for dll_name in dll_list.keys():
         if (dll_list[dll_name]['base'] < import_address) and (import_address < dll_list[dll_name]['end']):
             target_dll_name = dll_name
+            target_dll_base = dll_list[dll_name]['base']
             break
     else:
         return
 
     print('Windows/system32/{}'.format(target_dll_name))
 
-    target_dll_bin = pefile.PE(ql.rootfs+'/Windows/system32/{}'.format(target_dll_name))
-    target_dll_image_base = target_dll_bin.OPTIONAL_HEADER.ImageBase
+    if dll_name == '[PE]':
+        target_dll_bin = ql.loader.pe
+        target_dll_image_base = target_dll_bin.OPTIONAL_HEADER.ImageBase
+    else:
+        target_dll_bin = pefile.PE(ql.rootfs+'/Windows/system32/{}'.format(target_dll_name))
+        target_dll_image_base = target_dll_bin.OPTIONAL_HEADER.ImageBase
 
     target_symbol = None
     for entry_import in target_dll_bin.DIRECTORY_ENTRY_IMPORT:
@@ -275,13 +280,17 @@ def load_additional_dll(ql, import_address):
                     ql.mem.map(export_dll_base, export_dll_len, info=export_dll_name)
                     ql.mem.write(export_dll_base, bytes(export_dll_data))
 
-                resolve_import_dll_address(ql, target_dll_name, export_dll_name, target_symbol, import_address)
+                else:
+                    export_dll_bin = pefile.PE(ql.rootfs+'/Windows/system32/{}'.format(export_dll_name))
+                    export_dll_base = dll_list[export_dll_name]['base']
+
+                resolve_import_dll_address(ql, target_dll_bin, target_dll_base, export_dll_bin, export_dll_base, target_symbol, import_address)
 
                 return True
 
     return False
 
-def resolve_import_dll_address(ql, import_dll_name, export_dll_name, target_symbol, import_address):
+def resolve_import_dll_address(ql, import_dll_bin, import_dll_base, export_dll_bin, export_dll_base, target_symbol, import_address):
     """
     Make IAT of import address.
 
@@ -293,25 +302,8 @@ def resolve_import_dll_address(ql, import_dll_name, export_dll_name, target_symb
         boolean:  True if Add dll to memory successfully, otherwise False.
     """        
 
-    dll_list = {}
-    #  ql.mem.map_info example: [140737221971968, 140737222746112, 7, 'kernel32.dll']
-    map_info = ql.mem.map_info
-
-    for mi in map_info:
-        dll_name = mi[3]
-        if '.dll' in dll_name:
-            dll_list[dll_name] = {
-                'dll': dll_name,
-                'base': mi[0],
-            }
-
-    if import_dll_name not in dll_list.keys():
-        return False
 
     # dll_name is the dll imported by the binary
-    print('[+] {}'.format(import_dll_name))
-    import_dll_bin = pefile.PE(os.path.join(ql.rootfs, 'Windows/system32/{}'.format(import_dll_name)))
-    import_dll_base = dll_list[import_dll_name]['base']
     import_dll_image_base = import_dll_bin.OPTIONAL_HEADER.ImageBase
 
     # split \x00 since section.Name sometime like this b'.text\x00\x00\x00' 
@@ -320,10 +312,6 @@ def resolve_import_dll_address(ql, import_dll_name, export_dll_name, target_symb
     # entry_import_dll_name is the dll described as import dll in dll_name
     if import_dll_bin.OPTIONAL_HEADER.DATA_DIRECTORY[pefile.DIRECTORY_ENTRY['IMAGE_DIRECTORY_ENTRY_IMPORT']].VirtualAddress == 0:
         return False
-
-    # export dll is already loaded at _load_additional_dll.
-    export_dll_bin = pefile.PE(os.path.join(ql.rootfs, 'Windows/system32/{}'.format(export_dll_name)))
-    export_dll_base = dll_list[export_dll_name]['base']
 
     # insert if statement since sometimes DIRECTORY_ENTRY_EXPORT.symbols.name is None
     export_symbol_list = list(filter(lambda x: x.name.decode('utf-8') == target_symbol if x.name != None else False, export_dll_bin.DIRECTORY_ENTRY_EXPORT.symbols))
