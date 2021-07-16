@@ -72,6 +72,7 @@ PVECTORED_EXCEPTION_HANDLER = POINTER
 PBOOL                       = POINTER
 LPPOINT                     = POINTER
 PCACTCTXW                   = POINTER
+PFLS_CALLBACK_FUNCTION      = POINTER
 DWORD_PTR                   = POINTER
 LPWSADATA                   = POINTER
 LPWSAPROTOCOL_INFOA         = POINTER
