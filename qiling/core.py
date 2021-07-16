@@ -16,6 +16,7 @@ if TYPE_CHECKING:
     from .os.memory import QlMemoryManager
     from .loader.loader import QlLoader
 
+from .mcu import QlMcu
 from .const import QL_ARCH_ENDIAN, QL_ENDIAN, QL_OS, QL_VERBOSE, QL_CUSTOM_ENGINE
 from .exception import QlErrorFileNotFound, QlErrorArch, QlErrorOsType, QlErrorOutput
 from .utils import *
@@ -35,6 +36,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             ostype=None,
             archtype=None,
             bigendian=False,
+            engine=False,
             verbose=QL_VERBOSE.DEFAULT,
             profile=None,
             console=True,
@@ -69,6 +71,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._ostype = ostype
         self._archtype = archtype
         self._archendian = None
+        self._engine = engine
         self._archbit = None
         self._pointersize = None
         self._profile = profile
@@ -134,7 +137,8 @@ class Qiling(QlCoreHooks, QlCoreStructs):
                 if self._code == None:
                     self._code = self._archtype
 
-            self._argv = ["qilingcode"]
+            if self._argv is None:
+                self._argv = ["qilingcode"]
             if self._rootfs is None:
                 self._rootfs = "."
 
@@ -152,7 +156,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         # Loader #
         ##########
         if self._code is None:
-            guessed_archtype, guessed_ostype, guessed_archendian = ql_guess_emu_env(self._path)
+            guessed_archtype, guessed_ostype, guessed_archendian = ql_guess_emu_env(self._path, self._engine)
             if self._ostype is None:
                 self._ostype = guessed_ostype
             if self._archtype is None:
@@ -160,18 +164,18 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             if self.archendian is None:
                 self._archendian = guessed_archendian
 
-            if not ql_is_valid_ostype(self._ostype):
+            if not self._engine and not ql_is_valid_ostype(self._ostype):
                 raise QlErrorOsType("Invalid OSType")
 
             if not ql_is_valid_arch(self._archtype):
                 raise QlErrorArch("Invalid Arch %s" % self._archtype)
 
-        self._loader = loader_setup(self._ostype, self)
+        self._loader = loader_setup(self._ostype, self._engine, self)
 
         #####################
         # Profile & Logging #
         #####################
-        self._profile, debugmsg = profile_setup(self.ostype, self.profile, self)
+        self._profile, debugmsg = profile_setup(self.ostype, self.profile, self._engine, self)
 
         # Log's configuration
 
@@ -216,13 +220,17 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self.uc = self.arch.init_uc if not self._custom_engine else None
         QlCoreHooks.__init__(self, self.uc)
         
-        if not self._custom_engine:
+        if not self._custom_engine and not self._engine:
             self._os = os_setup(self.archtype, self.ostype, self)
 
+        if self._engine:
+            self.engine = QlMcu(self)
+
         # Run the loader
-        self.loader.run()
+        if not self._engine:
+            self.loader.run()
         
-        if not self._custom_engine:
+        if not self._custom_engine and not self._engine:
             # Setup Outpt
             self.os.utils.setup_output()
 

@@ -378,10 +378,13 @@ def ql_pe_parse_emu_env(path):
     return arch, ostype, archendian
 
 
-def ql_guess_emu_env(path):
+def ql_guess_emu_env(path, engine):
     arch = None
     ostype = None
     archendian = None
+
+    if engine:
+        return QL_ARCH.CORTEX_M, None, QL_ENDIAN.EL
 
     if os.path.isdir(path) and (str(path)).endswith(".kext"):
         return QL_ARCH.X8664, QL_OS.MACOS, QL_ENDIAN.EL
@@ -409,8 +412,8 @@ def ql_guess_emu_env(path):
     return arch, ostype, archendian
 
 
-def loader_setup(ostype, ql):
-    loadertype_str = loadertype_convert_str(ostype)
+def loader_setup(ostype, engine, ql):
+    loadertype_str = 'MCU' if engine else loadertype_convert_str(ostype)
     function_name = "QlLoader" + loadertype_str
     return ql_get_module_function(f"qiling.loader.{loadertype_str.lower()}", function_name)(ql)
 
@@ -447,7 +450,7 @@ def arch_setup(archtype, ql):
     if ql._custom_engine:
         return ql_get_module_function(f"qiling.arch.engine", 'QlArchEngine')(ql)
 
-    if archtype == QL_ARCH.ARM_THUMB:
+    if archtype in [QL_ARCH.ARM_THUMB, QL_ARCH.CORTEX_M]:
         archtype =  QL_ARCH.ARM
 
     archmanager = arch_convert_str(archtype).upper()
@@ -480,14 +483,14 @@ def os_setup(archtype, ostype, ql):
     return ql_get_module_function(f"qiling.os.{ostype_str.lower()}.{ostype_str.lower()}", function_name)(ql)
 
 
-def profile_setup(ostype, profile, ql):
+def profile_setup(ostype, profile, engine, ql):
     _profile = "Default"
     if profile != None:
         _profile = profile
         
     debugmsg = "Profile: %s" % _profile
 
-    os_profile = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", ostype_convert_str(ostype) + ".ql")
+    os_profile = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", 'mcu' if engine else ostype_convert_str(ostype) + ".ql")
 
     if profile:
         profiles = [os_profile, profile]
