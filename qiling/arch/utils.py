@@ -7,7 +7,7 @@
 This module is intended for general purpose functions that are only used in qiling.arch
 """
 
-from capstone import Cs, CS_ARCH_ARM, CS_ARCH_ARM64, CS_ARCH_X86, CS_ARCH_MIPS, CS_MODE_16, CS_MODE_32, CS_MODE_64, CS_MODE_ARM, CS_MODE_THUMB, CS_MODE_MIPS32 ,CS_MODE_BIG_ENDIAN, CS_MODE_LITTLE_ENDIAN
+from capstone import CS_MODE_MCLASS, Cs, CS_ARCH_ARM, CS_ARCH_ARM64, CS_ARCH_X86, CS_ARCH_MIPS, CS_MODE_16, CS_MODE_32, CS_MODE_64, CS_MODE_ARM, CS_MODE_THUMB, CS_MODE_MIPS32 ,CS_MODE_BIG_ENDIAN, CS_MODE_LITTLE_ENDIAN
 from keystone import Ks, KS_ARCH_ARM, KS_ARCH_ARM64, KS_ARCH_X86, KS_ARCH_MIPS, KS_MODE_16, KS_MODE_32, KS_MODE_64, KS_MODE_ARM, KS_MODE_THUMB, KS_MODE_MIPS32 ,KS_MODE_BIG_ENDIAN, KS_MODE_LITTLE_ENDIAN
 
 from qiling.const import QL_ARCH, QL_ENDIAN
@@ -42,6 +42,9 @@ def ql_create_disassembler(archtype: QL_ARCH, archendian: QL_ENDIAN, reg_cpsr=No
 
     elif archtype == QL_ARCH.ARM_THUMB:
         md = Cs(CS_ARCH_ARM, CS_MODE_THUMB)
+
+    elif archtype == QL_ARCH.CORTEX_M:
+        md = Cs(CS_ARCH_ARM, CS_MODE_THUMB | CS_MODE_MCLASS)
 
     elif archtype == QL_ARCH.ARM64:
         md = Cs(CS_ARCH_ARM64, CS_MODE_ARM)

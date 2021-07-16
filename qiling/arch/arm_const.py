@@ -22,6 +22,17 @@ reg_map = {
             "sp": UC_ARM_REG_SP, 
             "lr": UC_ARM_REG_LR,
             "pc": UC_ARM_REG_PC,
+            # cortex-M Special Register
+            "msp": UC_ARM_REG_MSP,
+            "psp": UC_ARM_REG_PSP,
+            "psr": UC_ARM_REG_INVALID,
+            "apsr": UC_ARM_REG_APSR,
+            "ipsr": UC_ARM_REG_IPSR,
+            "epsr": UC_ARM_REG_INVALID,
+            "primask": UC_ARM_REG_INVALID,
+            "faultmask": UC_ARM_REG_INVALID,
+            "basepri": UC_ARM_REG_INVALID,
+            "control": UC_ARM_REG_CONTROL,
             # CPSR needs to be at offset 25 for GDB, see https://sourceware.org/git/?p=binutils-gdb.git;a=blob;f=gdb/arch/arm.h;h=fa589fd0582c0add627a068e6f4947a909c45e86;hb=HEAD#l34
             # The fp registers inbetween have become obsolete
             "f0": UC_ARM_REG_INVALID,

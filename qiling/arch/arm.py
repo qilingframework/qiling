@@ -55,6 +55,8 @@ class QlArchARM(QlArch):
             uc = Uc(UC_ARCH_ARM, UC_MODE_THUMB)
         elif self.ql.archtype == QL_ARCH.ARM:
             uc = Uc(UC_ARCH_ARM, UC_MODE_ARM)
+        elif self.ql.archtype == QL_ARCH.CORTEX_M:
+            uc = Uc(UC_ARCH_ARM, UC_MODE_THUMB | UC_MODE_MCLASS)
         else:
             uc = None
         return uc
