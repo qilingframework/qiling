@@ -3,18 +3,10 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import struct
-import time
-
+from qiling import Qiling
+from qiling.os.windows.api import *
 from qiling.os.windows.const import *
-from qiling.os.const import *
 from qiling.os.windows.fncc import *
-from qiling.os.windows.utils import *
-from qiling.os.windows.thread import *
-from qiling.os.windows.handle import *
-from qiling.exception import *
-
-dllname = 'kernel32_dll'
 
 # LPVOID VirtualAlloc(
 #   LPVOID lpAddress,
@@ -22,24 +14,33 @@ dllname = 'kernel32_dll'
 #   DWORD  flAllocationType,
 #   DWORD  flProtect
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname)
-def hook_VirtualAlloc(ql, address, params):
+@winsdkapi_new(cc=STDCALL, params={
+    'lpAddress'        : LPVOID,
+    'dwSize'           : SIZE_T,
+    'flAllocationType' : DWORD,
+    'flProtect'        : DWORD
+})
+def hook_VirtualAlloc(ql: Qiling, address: int, params):
     dwSize = params["dwSize"]
-    addr = ql.os.heap.alloc(dwSize)
-    return addr
 
+    return ql.os.heap.alloc(dwSize)
 
 # BOOL VirtualFree(
 #   LPVOID lpAddress,
 #   SIZE_T dwSize,
 #   DWORD  dwFreeType
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname)
-def hook_VirtualFree(ql, address, params):
+@winsdkapi_new(cc=STDCALL, params={
+    'lpAddress'  : LPVOID,
+    'dwSize'     : SIZE_T,
+    'dwFreeType' : DWORD
+})
+def hook_VirtualFree(ql: Qiling, address: int, params):
     lpAddress = params["lpAddress"]
-    ql.os.heap.free(lpAddress)
-    return 1
 
+    ql.os.heap.free(lpAddress)
+
+    return 1
 
 # BOOL VirtualProtect(
 #  LPVOID lpAddress,
@@ -47,38 +48,46 @@ def hook_VirtualFree(ql, address, params):
 #  DWORD  flNewProtect,
 #  PDWORD lpflOldProtect
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'SIZE_T': 'UINT', 'DWORD': 'UINT'})
-def hook_VirtualProtect(ql, address, params):
+@winsdkapi_new(cc=STDCALL, params={
+    'lpAddress'      : LPVOID,
+    'dwSize'         : SIZE_T,
+    'flNewProtect'   : DWORD,
+    'lpflOldProtect' : PDWORD
+})
+def hook_VirtualProtect(ql: Qiling, address: int, params):
     return 1
-
 
 # SIZE_T VirtualQuery(
 #  LPCVOID                   lpAddress,
 #  PMEMORY_BASIC_INFORMATION lpBuffer,
 #  SIZE_T                    dwLength
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'SIZE_T': 'UINT', 'DWORD': 'UINT'})
-def hook_VirtualQuery(ql, address, params):
-    """
-    typedef struct _MEMORY_BASIC_INFORMATION {
-      PVOID  BaseAddress;
-      PVOID  AllocationBase;
-      DWORD  AllocationProtect;
-      SIZE_T RegionSize;
-      DWORD  State;
-      DWORD  Protect;
-      DWORD  Type;
-    } MEMORY_BASIC_INFORMATION, *PMEMORY_BASIC_INFORMATION;
-    """
+@winsdkapi_new(cc=STDCALL, params={
+    'lpAddress' : LPCVOID,
+    'lpBuffer'  : PMEMORY_BASIC_INFORMATION,
+    'dwLength'  : SIZE_T
+})
+def hook_VirtualQuery(ql: Qiling, address: int, params):
+    # typedef struct _MEMORY_BASIC_INFORMATION {
+    #   PVOID  BaseAddress;
+    #   PVOID  AllocationBase;
+    #   DWORD  AllocationProtect;
+    #   SIZE_T RegionSize;
+    #   DWORD  State;
+    #   DWORD  Protect;
+    #   DWORD  Type;
+    # } MEMORY_BASIC_INFORMATION, *PMEMORY_BASIC_INFORMATION;
+
     # find chunk,
     base = None
     size = None
+
     for chunk in ql.os.heap.chunks:
         if chunk.address <= params['lpAddress'] < chunk.address + chunk.size:
             base = chunk.address
             size = chunk.size
-
-    if not base and not size:
+            break
+    else:
         # Page not found
         # printable = sorted(['0x%x-0x%x' % (chunk.address, chunk.address+chunk.size) for chunk in ql.os.heap.chunks])
         # ql.log.debug('Could not find memory chunk containing address 0x%x in %s' % (params['lpAddress'],
@@ -87,16 +96,17 @@ def hook_VirtualQuery(ql, address, params):
         return 0
 
     mbi = params['lpBuffer']
-    ql.mem.write(mbi, base.to_bytes(length=ql.pointersize, byteorder='little'))
-    ql.mem.write(mbi + ql.pointersize * 1, base.to_bytes(length=ql.pointersize, byteorder='little'))
-    ql.mem.write(mbi + ql.pointersize * 2,
-                 (0x40).to_bytes(length=ql.pointersize, byteorder='little'))  # 0x40 = EXECUTE_READ_WRITE
-    ql.mem.write(mbi + ql.pointersize * 3, size.to_bytes(length=ql.pointersize, byteorder='little'))
-    ql.mem.write(mbi + ql.pointersize * 4,
-                 (0x1000).to_bytes(length=ql.pointersize, byteorder='little'))  # 0x1000 == MEM_COMMIT
-    ql.mem.write(mbi + ql.pointersize * 5,
-                 (0x40).to_bytes(length=ql.pointersize, byteorder='little'))  # 0x40 = EXECUTE_READ_WRITE
-    ql.mem.write(mbi + ql.pointersize * 6,
-                 (0x40000).to_bytes(length=ql.pointersize, byteorder='little'))  # 0x40000 = MEM_MAPPED
+    values = (
+        base,
+        base,
+        0x40,   # EXECUTE_READ_WRITE
+        size,
+        0x1000, # MEM_COMMIT
+        0x40,   # EXECUTE_READ_WRITE
+        0x40000 # MEM_MAPPED
+    )
 
-    return ql.pointersize * 7
+    for i, v in enumerate(values):
+        ql.mem.write(mbi + i * ql.pointersize, ql.pack(v))
+
+    return ql.pointersize * len(values)
