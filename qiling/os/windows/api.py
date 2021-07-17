@@ -52,6 +52,7 @@ PHKEY                       = POINTER
 INSTALLSTATE                = POINTER
 LPDWORD                     = POINTER
 LPBYTE                      = POINTER
+LPHANDLE                    = POINTER
 LPWSTR                      = POINTER
 MSIHANDLE                   = POINTER
 LPSECURITY_ATTRIBUTES       = POINTER

@@ -3,18 +3,10 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import struct
-import time
+from qiling import Qiling
+from qiling.os.windows.api import *
 from qiling.os.windows.const import *
-from qiling.os.const import *
 from qiling.os.windows.fncc import *
-from qiling.os.windows.utils import *
-from qiling.os.windows.thread import *
-from qiling.os.windows.handle import *
-from qiling.exception import *
-
-
-dllname = 'kernel32_dll'
 
 # BOOL DuplicateHandle(
 #   HANDLE   hSourceProcessHandle,
@@ -25,22 +17,34 @@ dllname = 'kernel32_dll'
 #   BOOL     bInheritHandle,
 #   DWORD    dwOptions
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'HANDLE': 'POINTER'})
-def hook_DuplicateHandle(ql, address, params):
+@winsdkapi_new(cc=STDCALL, params={
+    'hSourceProcessHandle' : HANDLE,
+    'hSourceHandle'        : HANDLE,
+    'hTargetProcessHandle' : HANDLE,
+    'lpTargetHandle'       : LPHANDLE,
+    'dwDesiredAccess'      : DWORD,
+    'bInheritHandle'       : BOOL,
+    'dwOptions'            : DWORD
+})
+def hook_DuplicateHandle(ql: Qiling, address: int, params):
     # TODO for how we manage handle, i think this doesn't work
     content = params["hSourceHandle"]
     dst = params["lpTargetHandle"]
-    ql.mem.write(dst, content.to_bytes(length=ql.pointersize, byteorder='little'))
-    return 1
 
+    ql.mem.write(dst, ql.pack(content))
+
+    return 1
 
 # BOOL CloseHandle(
 #   HANDLE hObject
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname)
-def hook_CloseHandle(ql, address, params):
+@winsdkapi_new(cc=STDCALL, params={
+    'hObject' : HANDLE
+})
+def hook_CloseHandle(ql: Qiling, address: int, params):
     value = params["hObject"]
     handle = ql.os.handle_manager.get(value)
+
     if handle is None:
         ql.os.last_error = ERROR_INVALID_HANDLE
         return 0
@@ -53,15 +57,20 @@ def hook_CloseHandle(ql, address, params):
 
     return 1
 
-
 # BOOL SetHandleInformation(
 #   HANDLE hObject,
 #   DWORD  dwMask,
 #   DWORD  dwFlags
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'HANDLE': 'POINTER'})
-def hook_SetHandleInformation(ql, address, params):
+@winsdkapi_new(cc=STDCALL, params={
+    'hObject' : HANDLE,
+    'dwMask'  : DWORD,
+    'dwFlags' : DWORD
+})
+def hook_SetHandleInformation(ql: Qiling, address: int, params):
     val = params["hObject"]
+
     handle = ql.os.handle_manager.get(val)
     handle.permissions = params["dwFlags"]
+
     return 1
