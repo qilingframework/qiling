@@ -65,6 +65,7 @@ LPINTERNET_BUFFERSA         = POINTER
 LPMESSAGEFILTER             = POINTER
 LPOVERLAPPED                = POINTER
 LPTOP_LEVEL_EXCEPTION_FILTER= POINTER
+LPWCH                       = POINTER
 LPWIN32_FIND_DATAA          = POINTER
 PBYTE                       = POINTER
 PDWORD                      = POINTER
