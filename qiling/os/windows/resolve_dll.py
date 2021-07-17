@@ -49,13 +49,15 @@ class OpcodeCalculateTransformer(Transformer):
         return args[0]
     
     def cast(self, args):
-        if args[1] == None:
+        if (args[1] == None) or ('address' not in args[1].keys()):
             return None
 
         if args[0].value == 'byte':
             args[1]['address'] &= 0xff
-        elif args[0].value == 'dword':
+        elif args[0].value == 'word':
             args[1]['address'] &= 0xffff
+        elif args[0].value == 'dword':
+            args[1]['address'] &= 0xffffffff
 
         return args[1]
 
@@ -77,6 +79,9 @@ class OpcodeCalculateTransformer(Transformer):
         except:
             return None
         
+    def gs_pointer(self, args):
+        return {}
+
     def address(self, args):
         return {"address": args[0]}
 
@@ -122,11 +127,15 @@ class OpcodeParser():
             connection : element "," element
             element : cast
                     | pointer
+                    | gs_pointer
                     | address
 
-            cast : TYPE ( pointer | address )
+            cast : TYPE ( pointer | address | gs_pointer)
             pointer : "ptr" "[" address "]"
                     | "[" address "]"
+
+            gs_pointer : "ptr" "gs:[" address "]"
+                    | "ptr" "fs:[" address "]"
 
             address : (primitive | add_op | sub_op | mul_op)
 
@@ -175,10 +184,12 @@ def resolve_symbol(ql: Qiling, address: int, size):
     
     jump_address = -1
     jump_pointer_address = -1
-    print("0x{:08x}".format(address), op.mnemonic, op.op_str)
-    if op.mnemonic in ['jmp', 'call']:
-        
-        jump_pointer = parser.calculate(ql, "{} {}".format(op.mnemonic, op.op_str), size)['operand']
+    #print("0x{:08x}".format(address), op.mnemonic, op.op_str)
+    if op.mnemonic in ['jmp', 'call', 'mov']:
+        if op.mnemonic in ['jmp', 'call']:
+            jump_pointer = parser.calculate(ql, "{} {}".format(op.mnemonic, op.op_str), size)['operand']
+        if op.mnemonic in ['mov']:
+            jump_pointer = parser.calculate(ql, "{} {}".format(op.mnemonic, op.op_str), size)['operand'][1]
 
         if jump_pointer != None:
             if "pointer" in jump_pointer.keys():
@@ -188,19 +199,37 @@ def resolve_symbol(ql: Qiling, address: int, size):
             elif "address" in jump_pointer.keys():
                 jump_address = jump_pointer['address']
             
-        print(jump_pointer)
     # check if library is already imported or not.
-    if (not is_in_allocated_memory_address(ql, jump_address)) and (jump_address != -1) and (jump_pointer_address != -1):
-        print('{:016x}: _is_in_allocated_memory_address'.format(jump_pointer_address))
-        load_additional_dll(ql, jump_pointer_address)
+    if(is_in_executable_memory_address(ql, jump_pointer_address)):
+        if (not is_in_executable_memory_address(ql, jump_address)) and (jump_address != -1) and (jump_pointer_address != -1):
+            #print('is_in_executable_memory_address: pointer:{:016x}, address:{:016x}'.format(jump_pointer_address, jump_address))
+            load_additional_dll(ql, jump_pointer_address)
 
+    #input()
 
+def get_base_address(ql, map_name):
+    map_info = ql.mem.map_info
 
-def is_in_allocated_memory_address(ql, address):
-        for mi in ql.mem.map_info:
+    for mi in map_info:
+        _map_name = mi[3]
+        if ('.dll' in _map_name) or ('[PE]' == _map_name):
+            if _map_name == map_name:
+                return mi[0]
+
+    return None
+
+def is_in_executable_memory_address(ql, address):
+    for mi in ql.mem.map_info:
+        if ('.dll' in mi[3]) or ('[PE]' == mi[3]):
             if (mi[0] < address) and (address < mi[1]):
                 return True
-        return False
+    return False
+
+def is_in_allocated_memory_address(ql, address):
+    for mi in ql.mem.map_info:
+        if (mi[0] < address) and (address < mi[1]):
+            return True
+    return False
 
 
 def load_additional_dll(ql, import_address):
@@ -231,7 +260,7 @@ def load_additional_dll(ql, import_address):
             }
             dll_last_address = mi[1]
 
-    print(dll_list.keys())
+    #print(dll_list.keys())
 
     for dll_name in dll_list.keys():
         if (dll_list[dll_name]['base'] < import_address) and (import_address < dll_list[dll_name]['end']):
@@ -241,7 +270,7 @@ def load_additional_dll(ql, import_address):
     else:
         return
 
-    print('Windows/system32/{}'.format(target_dll_name))
+    #print('Windows/system32/{}'.format(target_dll_name))
 
     if dll_name == '[PE]':
         target_dll_bin = ql.loader.pe
@@ -250,6 +279,11 @@ def load_additional_dll(ql, import_address):
         target_dll_bin = pefile.PE(ql.rootfs+'/Windows/system32/{}'.format(target_dll_name))
         target_dll_image_base = target_dll_bin.OPTIONAL_HEADER.ImageBase
 
+    #print(target_dll_bin)
+    # Sometimes pe file don't have DIRECTORY_ENTRY_IMPORT
+    if not hasattr(target_dll_bin, 'DIRECTORY_ENTRY_IMPORT'):
+        return False
+
     target_symbol = None
     for entry_import in target_dll_bin.DIRECTORY_ENTRY_IMPORT:
         for entry_import_symbol in entry_import.imports:
@@ -257,37 +291,44 @@ def load_additional_dll(ql, import_address):
                 target_symbol = entry_import_symbol.name.decode('utf-8')
 
                 # Go to proccess of loading additional dll from import_address if the import symbol exists.
-                export_dll_name = entry_import.dll.decode('utf-8')
-
+                export_dll_name = entry_import.dll.decode('utf-8').lower()
+                #print('export_dll_name: {}'.format(export_dll_name))
                 # The case of API Set dll
                 #  ref: https://docs.microsoft.com/en-us/windows/win32/apiindex/windows-apisets                   
                 if (export_dll_name[0:4] == 'api-') or (export_dll_name[0:4] == 'ext-'):
                     export_dll_name, target_symbol = get_export_symbol_from_api_dll(ql, export_dll_name, target_symbol)
+
+                    #print('export_dll_name: {}'.format(export_dll_name))
                     # export dll is not exist
                     if (export_dll_name is None):
                         continue
 
                 # *Additional dll must not be loaded because import symbol is not resolved, but the case of API set dll, export_dll might be loaded.*
                 if (export_dll_name not in dll_list.keys()):
-                    export_dll_bin = pefile.PE(ql.rootfs+'/Windows/system32/{}'.format(export_dll_name))
-                    export_dll_base = dll_last_address
+                    ql.loader.load_dll(export_dll_name.encode('utf-8'))
 
-                    export_dll_bin.parse_data_directories()
-                    export_dll_bin.relocate_image(export_dll_base)
-                    export_dll_data = bytearray(export_dll_bin.get_memory_mapped_image())
+                    # export_dll_bin = pefile.PE(ql.rootfs+'/Windows/system32/{}'.format(export_dll_name))
+                    # export_dll_base = dll_last_address
 
-                    export_dll_len = ql.mem.align(len(bytes(export_dll_data)), 0x1000)
-                    ql.mem.map(export_dll_base, export_dll_len, info=export_dll_name)
-                    ql.mem.write(export_dll_base, bytes(export_dll_data))
+                    # export_dll_bin.parse_data_directories()
+                    # export_dll_bin.relocate_image(export_dll_base)
+                    # export_dll_data = bytearray(export_dll_bin.get_memory_mapped_image())
 
-                else:
-                    export_dll_bin = pefile.PE(ql.rootfs+'/Windows/system32/{}'.format(export_dll_name))
-                    export_dll_base = dll_list[export_dll_name]['base']
+                    # export_dll_len = ql.mem.align(len(bytes(export_dll_data)), 0x1000)
+                    # ql.mem.map(export_dll_base, export_dll_len, info=export_dll_name)
+                    # ql.mem.write(export_dll_base, bytes(export_dll_data))
+
+
+
+
+                export_dll_bin = pefile.PE(ql.rootfs+'/Windows/system32/{}'.format(export_dll_name))
+                export_dll_base = get_base_address(ql, export_dll_name)
 
                 resolve_import_dll_address(ql, target_dll_bin, target_dll_base, export_dll_bin, export_dll_base, target_symbol, import_address)
 
                 return True
 
+    #print('no dll: ', target_dll_name)
     return False
 
 def resolve_import_dll_address(ql, import_dll_bin, import_dll_base, export_dll_bin, export_dll_base, target_symbol, import_address):
@@ -302,7 +343,7 @@ def resolve_import_dll_address(ql, import_dll_bin, import_dll_base, export_dll_b
         boolean:  True if Add dll to memory successfully, otherwise False.
     """        
 
-
+    #print(import_dll_base, export_dll_base, target_symbol, import_address)
     # dll_name is the dll imported by the binary
     import_dll_image_base = import_dll_bin.OPTIONAL_HEADER.ImageBase
 
@@ -318,10 +359,10 @@ def resolve_import_dll_address(ql, import_dll_bin, import_dll_base, export_dll_b
     if len(export_symbol_list) == 0:
         return False
 
-    print('[+] import address: {:016x}, import_dll_base: {:016x}, import_dll_image_base: {:016x}'.format(import_address, import_dll_base, import_dll_image_base))
-    print('[+] memory write {:016x} -> {}'.format(
-        import_address, 
-        (export_symbol_list[0].address+export_dll_base).to_bytes(8,'little')))
+    #print('[+] import address: {:016x}, import_dll_base: {:016x}, import_dll_image_base: {:016x}'.format(import_address, import_dll_base, import_dll_image_base))
+    # print('[+] memory write {:016x} -> {}'.format(
+    #     import_address, 
+    #     (export_symbol_list[0].address+export_dll_base).to_bytes(8,'little')))
 
     ql.mem.write(
         import_address, 
@@ -350,7 +391,7 @@ def get_export_symbol_from_api_dll(ql, api_dll_name, target_symbol):
             offset += 1
         return string
 
-    print(os.path.join(ql.rootfs, 'Windows/system32/{}'.format(api_dll_name)))
+    #print(os.path.join(ql.rootfs, 'Windows/system32/{}'.format(api_dll_name)))
     if not os.path.exists(os.path.join(ql.rootfs, 'Windows/system32/{}'.format(api_dll_name))):
         return None, None
 
@@ -358,7 +399,7 @@ def get_export_symbol_from_api_dll(ql, api_dll_name, target_symbol):
     
     dll_name, export_symbol = _get_string_from_pe(api_dll, target_symbol).split('.')
 
-    print(dll_name, export_symbol)
+    #print(dll_name, export_symbol)
 
     return dll_name+'.dll', export_symbol
 
