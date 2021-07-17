@@ -32,6 +32,7 @@ ACCESS_MASK                 = INT
 LPARAM                      = UINT
 WPARAM                      = UINT
 SYSTEM_INFORMATION_CLASS    = UINT
+HEAP_INFORMATION_CLASS      = UINT
 INTERNET_PORT               = DWORD
 TOKEN_INFORMATION_CLASS     = DWORD
 WORD                        = DWORD

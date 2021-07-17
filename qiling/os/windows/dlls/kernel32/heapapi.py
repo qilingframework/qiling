@@ -3,61 +3,69 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import struct
-import time
-from qiling.os.windows.const import *
-from qiling.os.const import *
+from qiling import Qiling
+from qiling.os.windows.api import *
 from qiling.os.windows.fncc import *
-from qiling.os.windows.utils import *
-from qiling.os.windows.thread import *
-from qiling.os.windows.handle import *
-from qiling.exception import *
-
-dllname = 'kernel32_dll'
 
 # HANDLE HeapCreate(
 #   DWORD  flOptions,
 #   SIZE_T dwInitialSize,
 #   SIZE_T dwMaximumSize
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname)
-def hook_HeapCreate(ql, address, params):
+@winsdkapi_new(cc=STDCALL, params={
+    'flOptions'     : DWORD,
+    'dwInitialSize' : SIZE_T,
+    'dwMaximumSize' : SIZE_T
+})
+def hook_HeapCreate(ql: Qiling, address: int, params):
     dwInitialSize = params["dwInitialSize"]
-    addr = ql.os.heap.alloc(dwInitialSize)
-    return addr
 
+    return ql.os.heap.alloc(dwInitialSize)
 
 # DECLSPEC_ALLOCATOR LPVOID HeapAlloc(
 #   HANDLE hHeap,
 #   DWORD  dwFlags,
 #   SIZE_T dwBytes
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname)
-def hook_HeapAlloc(ql, address, params):
-    ret = ql.os.heap.alloc(params["dwBytes"])
-    return ret
+@winsdkapi_new(cc=STDCALL, params={
+    'hHeap'   : HANDLE,
+    'dwFlags' : DWORD,
+    'dwBytes' : SIZE_T
+})
+def hook_HeapAlloc(ql: Qiling, address: int, params):
+    dwBytes = params["dwBytes"]
 
+    return ql.os.heap.alloc(dwBytes)
 
 # SIZE_T HeapSize(
 #   HANDLE  hHeap,
 #   DWORD   dwFlags,
 #   LPCVOID lpMem
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname)
-def hook_HeapSize(ql, address, params):
+@winsdkapi_new(cc=STDCALL, params={
+    'hHeap'   : HANDLE,
+    'dwFlags' : DWORD,
+    'lpMem'   : LPCVOID
+})
+def hook_HeapSize(ql: Qiling, address: int, params):
     pointer = params["lpMem"]
-    return ql.os.heap.size(pointer)
 
+    return ql.os.heap.size(pointer)
 
 # BOOL HeapFree(
 #  HANDLE                 hHeap,
 #  DWORD                  dwFlags,
 #  _Frees_ptr_opt_ LPVOID lpMem
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname)
-def hook_HeapFree(ql, address, params):
-    return ql.os.heap.free(params['lpMem'])
+@winsdkapi_new(cc=STDCALL, params={
+    'hHeap'   : HANDLE,
+    'dwFlags' : DWORD,
+    'lpMem'   : LPVOID
+})
+def hook_HeapFree(ql: Qiling, address: int, params):
+    lpMem = params['lpMem']
 
+    return ql.os.heap.free(lpMem)
 
 # BOOL HeapSetInformation(
 #  HANDLE                 HeapHandle,
@@ -65,14 +73,17 @@ def hook_HeapFree(ql, address, params):
 #  PVOID                  HeapInformation,
 #  SIZE_T                 HeapInformationLength
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'SIZE_T': 'UINT'})
-def hook_HeapSetInformation(ql, address, params):
+@winsdkapi_new(cc=STDCALL, params={
+    'HeapHandle'            : HANDLE,
+    'HeapInformationClass'  : HEAP_INFORMATION_CLASS,
+    'HeapInformation'       : PVOID,
+    'HeapInformationLength' : SIZE_T
+})
+def hook_HeapSetInformation(ql: Qiling, address: int, params):
     return 1
-
 
 # HANDLE GetProcessHeap(
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname)
-def hook_GetProcessHeap(ql, address, params):
-    ret = ql.os.heap.start_address
-    return ret
+@winsdkapi_new(cc=STDCALL, params={})
+def hook_GetProcessHeap(ql: Qiling, address: int, params):
+    return ql.os.heap.start_address
