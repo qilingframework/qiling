@@ -17,11 +17,12 @@ from qiling.os.memory import QlMemoryHeap
 
 
 class QlPeCacheEntry:
-    def __init__(self, data, cmdlines, import_symbols, import_table):
+    def __init__(self, data, cmdlines, import_symbols, import_table, entry_import_list):
         self.data = data
         self.cmdlines = cmdlines
         self.import_symbols = import_symbols
         self.import_table = import_table
+        self.entry_import_list = entry_import_list
 
 # A default simple cache implementation
 class QlPeCache:
@@ -38,7 +39,7 @@ class QlPeCache:
 
     def save(self, path, address, entry):
         fcache = self.create_filename(path, address)
-        data = (entry.data, entry.cmdlines, entry.import_symbols, entry.import_table)
+        data = (entry.data, entry.cmdlines, entry.import_symbols, entry.import_table, entry.entry_import_list)
         # cache this dll file
         with open(fcache, "wb") as fcache_file:
             pickle.dump(data, fcache_file)
@@ -85,6 +86,7 @@ class Process():
             data = cached.data
             import_symbols = cached.import_symbols
             import_table = cached.import_table
+            entry_import_list = cached.entry_import_list
             for entry in cached.cmdlines:
                 self.set_cmdline(entry['name'], entry['address'], data)
             self.ql.log.info("Loaded %s from cache" % path)
@@ -100,6 +102,19 @@ class Process():
             # [Room for Improvement] too much time when kernelbase.dll is loaded. 
             #self.ql.log.debug('relocate {}, {:x}'.format(dll_name, self.dll_last_address))
             dll.relocate_image(self.dll_last_address)
+
+            # make entry import table for resolving dll address
+            entry_import_list = {}
+            if hasattr(dll, 'DIRECTORY_ENTRY_IMPORT'):
+                for entry_import in dll.DIRECTORY_ENTRY_IMPORT:
+                    for entry_import_symbol in entry_import.imports:
+                        if entry_import_symbol.name == None:
+                            continue
+                        entry_import_list[entry_import_symbol.address] = {
+                            'symbol': entry_import_symbol.name.decode('utf-8'), 
+                            'dll': entry_import.dll.decode('utf-8').lower()
+                        }
+                        
             
             data = bytearray(dll.get_memory_mapped_image())
             cmdlines = []
@@ -119,7 +134,7 @@ class Process():
                     cmdlines.append(cmdline_entry)
 
             if self.libcache:
-                cached = QlPeCacheEntry(data, cmdlines, import_symbols, import_table)
+                cached = QlPeCacheEntry(data, cmdlines, import_symbols, import_table, entry_import_list)
                 self.libcache.save(path, self.dll_last_address, cached)
                 self.ql.log.info("Cached %s" % path)
 
@@ -128,6 +143,11 @@ class Process():
             self.import_address_table[dll_name] = import_table
         except Exception as ex:
             self.ql.log.exception(f'Unable to add {dll_name} to IAT')
+
+        try:
+            self.entry_import_table[dll_name] = entry_import_list
+        except Exception as ex:
+            self.ql.log.exception(f'Unable to add {dll_name} to entry_import_table')
 
         try:
             self.import_symbols.update(import_symbols)
@@ -430,6 +450,7 @@ class QlLoaderPE(QlLoader, Process):
         self.import_symbols = {}
         self.export_symbols = {}
         self.import_address_table = {}
+        self.entry_import_table = {}
         self.ldr_list = []
         self.pe_image_address = 0
         self.pe_image_address_size = 0
@@ -478,6 +499,19 @@ class QlLoaderPE(QlLoader, Process):
             self.ql.log.info("Loading %s to 0x%x" % (self.path, self.pe_image_address))
             self.ql.log.info("PE entry point at 0x%x" % self.entry_point)
             self.images.append(Image(self.pe_image_address, self.pe_image_address + self.pe.NT_HEADERS.OPTIONAL_HEADER.SizeOfImage, self.path))
+
+            # make entry import table for resolving dll address
+            entry_import_list = {}
+            if hasattr(self.pe, 'DIRECTORY_ENTRY_IMPORT'):
+                for entry_import in self.pe.DIRECTORY_ENTRY_IMPORT:
+                    for entry_import_symbol in entry_import.imports:
+                        #print(entry_import_symbol.address, self.pe_image_address, self.image_address)
+                        entry_import_list[entry_import_symbol.address] = {
+                            'symbol': entry_import_symbol.name.decode('utf-8'), 
+                            'dll': entry_import.dll.decode('utf-8').lower()
+                        }
+                self.entry_import_table['[PE]'] = entry_import_list
+                        
 
             # Stack should not init at the very bottom. Will cause errors with Dlls
             sp = self.stack_address + self.stack_size - 0x1000

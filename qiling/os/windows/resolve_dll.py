@@ -88,7 +88,7 @@ def resolve_symbol(ql: Qiling, address: int, size):
 
 
         if (not is_in_executable_memory_address(ql, jump_address)) and (jump_address != -1) and (jump_pointer_address != -1):
-            print('is_in_executable_memory_address: pointer:{:016x}, address:{:016x}'.format(jump_pointer_address, jump_address))
+            #print('is_in_executable_memory_address: pointer:{:016x}, address:{:016x}'.format(jump_pointer_address, jump_address))
             load_additional_dll(ql, jump_pointer_address)
 
     return 
@@ -136,8 +136,6 @@ def load_additional_dll(ql, import_address):
 
     dll_last_address = 0x0
 
-    #print(ql.loader.import_address_table)
-
     for mi in map_info:
         dll_name = mi[3]
         if ('.dll' in dll_name) or ('[PE]' == dll_name):
@@ -160,47 +158,88 @@ def load_additional_dll(ql, import_address):
 
     #print('Windows/system32/{}'.format(target_dll_name))
 
-    if dll_name == '[PE]':
-        target_dll_bin = ql.loader.pe
-        target_dll_image_base = target_dll_bin.OPTIONAL_HEADER.ImageBase
-    else:
-        target_dll_bin = pefile.PE(ql.rootfs+'/Windows/system32/{}'.format(target_dll_name))
-        target_dll_image_base = target_dll_bin.OPTIONAL_HEADER.ImageBase
+    # if dll_name == '[PE]':
+    #     target_dll_bin = ql.loader.pe
+    #     target_dll_image_base = target_dll_bin.OPTIONAL_HEADER.ImageBase
+    # else:
+    #     target_dll_bin = pefile.PE(ql.rootfs+'/Windows/system32/{}'.format(target_dll_name))
+    #     target_dll_image_base = target_dll_bin.OPTIONAL_HEADER.ImageBase
 
     #print(target_dll_bin)
     # Sometimes pe file don't have DIRECTORY_ENTRY_IMPORT
-    if not hasattr(target_dll_bin, 'DIRECTORY_ENTRY_IMPORT'):
+    # if not hasattr(target_dll_bin, 'DIRECTORY_ENTRY_IMPORT'):
+    #     return False
+    #print(ql.loader.entry_import_table[target_dll_name].keys())
+
+    if import_address not in ql.loader.entry_import_table[target_dll_name].keys():
+        #print('not in table: {}'.format(import_address))
         return False
 
-    target_symbol = None
-    for entry_import in target_dll_bin.DIRECTORY_ENTRY_IMPORT:
-        for entry_import_symbol in entry_import.imports:
-            if (entry_import_symbol.address - target_dll_image_base + dll_list[dll_name]['base']) == import_address:
-                target_symbol = entry_import_symbol.name.decode('utf-8')
+    entry_import = ql.loader.entry_import_table[target_dll_name][import_address]
+    target_symbol, export_dll_name = entry_import['symbol'], entry_import['dll']
 
-                # Go to proccess of loading additional dll from import_address if the import symbol exists.
-                export_dll_name = entry_import.dll.decode('utf-8').lower()
-                #print('export_dll_name: {}'.format(export_dll_name))
-                # The case of API Set dll
-                #  ref: https://docs.microsoft.com/en-us/windows/win32/apiindex/windows-apisets                   
-                if (export_dll_name[0:4] == 'api-') or (export_dll_name[0:4] == 'ext-'):
-                    export_dll_name, target_symbol = get_export_symbol_from_api_dll(ql, export_dll_name, target_symbol)
+    #print(export_dll_name, target_symbol)
 
-                    #print('export_dll_name: {}'.format(export_dll_name))
-                    # export dll is not exist
-                    if (export_dll_name is None):
-                        continue
+    if entry_import['dll'] not in ql.loader.import_address_table.keys():
+        #print('export_dll_name: {}'.format(export_dll_name))
+        # The case of API Set dll
+        #  ref: https://docs.microsoft.com/en-us/windows/win32/apiindex/windows-apisets                   
+        if (export_dll_name[0:4] == 'api-') or (export_dll_name[0:4] == 'ext-'):
+            export_dll_name, target_symbol = get_export_symbol_from_api_dll(ql, export_dll_name, target_symbol)
 
-                # *Additional dll must not be loaded because import symbol is not resolved, but the case of API set dll, export_dll might be loaded.*
-                if (export_dll_name not in dll_list.keys()):
-                    ql.loader.load_dll(export_dll_name.encode('utf-8'))
+            #print('export_dll_name: {}'.format(export_dll_name))
+            # export dll is not exist
+            if (export_dll_name is None):
+                return False
 
-                export_dll_bin = pefile.PE(ql.rootfs+'/Windows/system32/{}'.format(export_dll_name))
-                export_dll_base = get_base_address(ql, export_dll_name)
+        # *Additional dll must not be loaded because import symbol is not resolved, but the case of API set dll, export_dll might be loaded.*
+        if (export_dll_name not in dll_list.keys()):
+            ql.loader.load_dll(export_dll_name.encode('utf-8'))
 
-                resolve_import_dll_address(ql, target_dll_bin, target_dll_base, export_dll_bin, export_dll_base, target_symbol, import_address)
 
-                return True
+
+    #print('[+] import address: {:016x}, import_dll_base: {:016x}, import_dll_image_base: {:016x}'.format(import_address, import_dll_base, import_dll_image_base))
+    # print('[+] memory write {:016x} -> {}'.format(
+    #     import_address, 
+    #     (export_symbol_list[0].address+export_dll_base).to_bytes(8,'little')))
+
+    #print(ql.loader.import_address_table[export_dll_name][target_symbol.encode('utf-8')])
+
+    export_dll_base = get_base_address(ql, export_dll_name)
+    ql.mem.write(
+        import_address, 
+        (ql.loader.import_address_table[export_dll_name][target_symbol.encode('utf-8')]).to_bytes(8,'little')
+    )
+
+    # target_symbol = None
+    # for entry_import in target_dll_bin.DIRECTORY_ENTRY_IMPORT:
+    #     for entry_import_symbol in entry_import.imports:
+    #         if (entry_import_symbol.address - target_dll_image_base + dll_list[dll_name]['base']) == import_address:
+    #             target_symbol = entry_import_symbol.name.decode('utf-8')
+
+    #             # Go to proccess of loading additional dll from import_address if the import symbol exists.
+    #             export_dll_name = entry_import.dll.decode('utf-8').lower()
+    #             #print('export_dll_name: {}'.format(export_dll_name))
+    #             # The case of API Set dll
+    #             #  ref: https://docs.microsoft.com/en-us/windows/win32/apiindex/windows-apisets                   
+    #             if (export_dll_name[0:4] == 'api-') or (export_dll_name[0:4] == 'ext-'):
+    #                 export_dll_name, target_symbol = get_export_symbol_from_api_dll(ql, export_dll_name, target_symbol)
+
+    #                 #print('export_dll_name: {}'.format(export_dll_name))
+    #                 # export dll is not exist
+    #                 if (export_dll_name is None):
+    #                     continue
+
+    #             # *Additional dll must not be loaded because import symbol is not resolved, but the case of API set dll, export_dll might be loaded.*
+    #             if (export_dll_name not in dll_list.keys()):
+    #                 ql.loader.load_dll(export_dll_name.encode('utf-8'))
+
+    #             export_dll_bin = pefile.PE(ql.rootfs+'/Windows/system32/{}'.format(export_dll_name))
+    #             export_dll_base = get_base_address(ql, export_dll_name)
+
+    #             resolve_import_dll_address(ql, target_dll_bin, target_dll_base, export_dll_bin, export_dll_base, target_symbol, import_address)
+
+    #             return True
 
     #print('no dll: ', target_dll_name)
     return False
