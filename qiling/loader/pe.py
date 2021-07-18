@@ -614,32 +614,6 @@ class QlLoaderPE(QlLoader, Process):
             sys_dlls = self.sys_dlls
             for each in sys_dlls:
                 super().load_dll(each, self.is_driver)
-            # parse directory entry import
-            # if self.pe.OPTIONAL_HEADER.DATA_DIRECTORY[pefile.DIRECTORY_ENTRY['IMAGE_DIRECTORY_ENTRY_IMPORT']].VirtualAddress != 0:
-            #     for entry in self.pe.DIRECTORY_ENTRY_IMPORT:
-            #         dll_name = str(entry.dll.lower(), 'utf-8', 'ignore')
-            #         # skip windows API dll
-            #         if (dll_name[0:4] == 'api-') or (dll_name[0:4] == 'ext-'):
-            #             continue
-
-            #         super().load_dll(entry.dll, self.is_driver)
-            #         for imp in entry.imports:
-            #             # fix IAT
-            #             # ql.log.info(imp.name)
-            #             # ql.log.info(self.import_address_table[imp.name])
-            #             if imp.name:
-            #                 try:
-            #                     addr = self.import_address_table[dll_name][imp.name]
-            #                 except KeyError:
-            #                     self.ql.log.debug("Error in loading function %s" % imp.name.decode())
-            #             else:
-            #                 addr = self.import_address_table[dll_name][imp.ordinal]
-
-            #             if self.ql.archtype == QL_ARCH.X86:
-            #                 address = self.ql.pack32(addr)
-            #             else:
-            #                 address = self.ql.pack64(addr)
-            #             self.ql.mem.write(imp.address, address)
 
             self.ql.log.debug("Done with loading %s" % self.path)
             self.ql.os.entry_point = self.entry_point
