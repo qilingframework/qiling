@@ -31,14 +31,14 @@ class PETest(unittest.TestCase):
 
     def test_pe_win_x8664_hello(self):
         ql = Qiling(["../examples/rootfs/x8664_windows/bin/x8664_hello.exe"], "../examples/rootfs/x8664_windows",
-                    verbose=QL_VERBOSE.DEFAULT)
+                    verbose=QL_VERBOSE.DEFAULT, libcache=True)
         ql.run()
         del ql
 
 
     def test_pe_win_x86_hello(self):
         ql = Qiling(["../examples/rootfs/x86_windows/bin/x86_hello.exe"], "../examples/rootfs/x86_windows",
-                    verbose=QL_VERBOSE.DEFAULT, profile="profiles/append_test.ql")
+                    verbose=QL_VERBOSE.DEFAULT, profile="profiles/append_test.ql", libcache=True)
         ql.run()
         del ql
 
@@ -62,7 +62,7 @@ class PETest(unittest.TestCase):
                 return 0
 
         ql = Qiling(["../examples/rootfs/x86_windows/bin/UselessDisk.bin"], "../examples/rootfs/x86_windows",
-                    verbose=QL_VERBOSE.DEBUG)
+                    verbose=QL_VERBOSE.DEBUG, libcache=True)
         ql.add_fs_mapper(r"\\.\PHYSICALDRIVE0", Fake_Drive())
         ql.run()
         del ql
@@ -114,7 +114,7 @@ class PETest(unittest.TestCase):
                 raise QlErrorNotImplemented("API not implemented")
 
         ql = Qiling(["../examples/rootfs/x86_windows/bin/GandCrab502.bin"], "../examples/rootfs/x86_windows",
-                    verbose=QL_VERBOSE.DEBUG, profile="profiles/windows_gandcrab_admin.ql")
+                    verbose=QL_VERBOSE.DEBUG, profile="profiles/windows_gandcrab_admin.ql", libcache=True)
         default_user = ql.os.profile["USER"]["username"]
         default_computer = ql.os.profile["SYSTEM"]["computername"]
 
@@ -128,7 +128,7 @@ class PETest(unittest.TestCase):
 
         # RUN AS USER
         ql = Qiling(["../examples/rootfs/x86_windows/bin/GandCrab502.bin"], "../examples/rootfs/x86_windows",
-                    verbose=QL_VERBOSE.DEBUG, profile="profiles/windows_gandcrab_user.ql")
+                    verbose=QL_VERBOSE.DEBUG, profile="profiles/windows_gandcrab_user.ql", libcache=True)
 
         ql.run()
         num_syscalls_user = ql.os.utils.syscalls_counter
@@ -136,7 +136,7 @@ class PETest(unittest.TestCase):
         del ql
 
         ql = Qiling(["../examples/rootfs/x86_windows/bin/GandCrab502.bin"], "../examples/rootfs/x86_windows",
-                    verbose=QL_VERBOSE.DEBUG, profile="profiles/windows_gandcrab_russian_keyboard.ql")
+                    verbose=QL_VERBOSE.DEBUG, profile="profiles/windows_gandcrab_russian_keyboard.ql", libcache=True)
         num_syscalls_russ = ql.os.utils.syscalls_counter
 
         ql.run()
@@ -149,7 +149,7 @@ class PETest(unittest.TestCase):
             self.thread_id = ql.os.thread_manager.cur_thread.id
             return address, params
 
-        ql = Qiling(["../examples/rootfs/x86_windows/bin/MultiThread.exe"], "../examples/rootfs/x86_windows")
+        ql = Qiling(["../examples/rootfs/x86_windows/bin/MultiThread.exe"], "../examples/rootfs/x86_windows", libcache=True)
         ql.set_api("GetCurrentThreadId", ThreadId_onEnter, QL_INTERCEPT.ENTER)
         ql.run()
         
@@ -161,31 +161,31 @@ class PETest(unittest.TestCase):
 
 
     def test_pe_win_x86_clipboard(self):
-        ql = Qiling(["../examples/rootfs/x8664_windows/bin//x8664_clipboard_test.exe"], "../examples/rootfs/x8664_windows")
+        ql = Qiling(["../examples/rootfs/x8664_windows/bin//x8664_clipboard_test.exe"], "../examples/rootfs/x8664_windows", libcache=True)
         ql.run()
         del ql
 
 
     def test_pe_win_x86_tls(self):
-        ql = Qiling(["../examples/rootfs/x8664_windows/bin/x8664_tls.exe"], "../examples/rootfs/x8664_windows")
+        ql = Qiling(["../examples/rootfs/x8664_windows/bin/x8664_tls.exe"], "../examples/rootfs/x8664_windows", libcache=True)
         ql.run()
         del ql
 
 
     def test_pe_win_x86_getlasterror(self):
-        ql = Qiling(["../examples/rootfs/x86_windows/bin/GetLastError.exe"], "../examples/rootfs/x86_windows")
+        ql = Qiling(["../examples/rootfs/x86_windows/bin/GetLastError.exe"], "../examples/rootfs/x86_windows", libcache=True)
         ql.run()
         del ql
 
 
     def test_pe_win_x86_regdemo(self):
-        ql = Qiling(["../examples/rootfs/x86_windows/bin/RegDemo.exe"], "../examples/rootfs/x86_windows")
+        ql = Qiling(["../examples/rootfs/x86_windows/bin/RegDemo.exe"], "../examples/rootfs/x86_windows", libcache=True)
         ql.run()
         del ql
 
 
     def test_pe_win_x8664_fls(self):
-        ql = Qiling(["../examples/rootfs/x8664_windows/bin/Fls.exe"], "../examples/rootfs/x8664_windows", verbose=QL_VERBOSE.DEFAULT)
+        ql = Qiling(["../examples/rootfs/x8664_windows/bin/Fls.exe"], "../examples/rootfs/x8664_windows", verbose=QL_VERBOSE.DEFAULT, libcache=True)
         ql.run()
         del ql
 
@@ -223,7 +223,7 @@ class PETest(unittest.TestCase):
             ql.log.info("No Print")
             ql.emu_stop()
 
-        ql = Qiling(["../examples/rootfs/x86_windows/bin/wannacry.bin"], "../examples/rootfs/x86_windows")
+        ql = Qiling(["../examples/rootfs/x86_windows/bin/wannacry.bin"], "../examples/rootfs/x86_windows", libcache=True)
         ql.hook_address(stop, 0x40819a)
         ql.run()
         del ql
@@ -232,7 +232,7 @@ class PETest(unittest.TestCase):
     def test_pe_win_x86_NtQueryInformationSystem(self):
         ql = Qiling(
         ["../examples/rootfs/x86_windows/bin/NtQuerySystemInformation.exe"],
-        "../examples/rootfs/x86_windows")
+        "../examples/rootfs/x86_windows", libcache=True)
         ql.run()
         del ql
 
@@ -240,7 +240,7 @@ class PETest(unittest.TestCase):
     def test_pe_win_al_khaser(self):
         if 'QL_FAST_TEST' in os.environ:
             return
-        ql = Qiling(["../examples/rootfs/x86_windows/bin/al-khaser.bin"], "../examples/rootfs/x86_windows")
+        ql = Qiling(["../examples/rootfs/x86_windows/bin/al-khaser.bin"], "../examples/rootfs/x86_windows", libcache=True)
 
         # The hooks are to remove the prints to file. It crashes. will debug why in the future
         def results(ql):
@@ -292,7 +292,7 @@ class PETest(unittest.TestCase):
             self.set_api_onexit = self.set_api = len( params["str"])
 
         def my_sandbox(path, rootfs):
-            ql = Qiling(path, rootfs, verbose=QL_VERBOSE.DEBUG)
+            ql = Qiling(path, rootfs, libcache=True, verbose=QL_VERBOSE.DEBUG)
             ql.set_api("puts", my_onenter, QL_INTERCEPT.ENTER)
             ql.set_api("puts", my_puts64)
             ql.set_api("puts", my_onexit, QL_INTERCEPT.EXIT)
@@ -337,7 +337,7 @@ class PETest(unittest.TestCase):
 
             return address, params
 
-        ql = Qiling(["../examples/rootfs/x86_windows/bin/argv.exe"], "../examples/rootfs/x86_windows")
+        ql = Qiling(["../examples/rootfs/x86_windows/bin/argv.exe"], "../examples/rootfs/x86_windows", libcache=True)
         ql.set_api('__stdio_common_vfprintf', check_print, QL_INTERCEPT.ENTER)
         ql.run()
         
@@ -386,7 +386,7 @@ class PETest(unittest.TestCase):
             ql.reg.eip = lpDialogFunc
 
         def our_sandbox(path, rootfs):
-            ql = Qiling(path, rootfs)
+            ql = Qiling(path, rootfs, libcache=True)
             ql.patch(0x004010B5, b'\x90\x90')
             ql.patch(0x004010CD, b'\x90\x90')
             ql.patch(0x0040110B, b'\x90\x90')
@@ -403,7 +403,7 @@ class PETest(unittest.TestCase):
     def test_pe_win_x86_cmdln(self):
         ql = Qiling(
         ["../examples/rootfs/x86_windows/bin/cmdln32.exe", 'arg1', 'arg2 with spaces'],
-        "../examples/rootfs/x86_windows")
+        "../examples/rootfs/x86_windows", libcache=True)
         ql.stdout = TestOut()
         ql.run()
         expected_string = b'<C:\\Users\\Qiling\\Desktop\\cmdln32.exe arg1 "arg2 with spaces">\n'
@@ -417,7 +417,7 @@ class PETest(unittest.TestCase):
     def test_pe_win_x8664_cmdln(self):
         ql = Qiling(
         ["../examples/rootfs/x8664_windows/bin/cmdln64.exe", 'arg1', 'arg2 with spaces'],
-        "../examples/rootfs/x8664_windows")
+        "../examples/rootfs/x8664_windows", libcache=True)
         ql.stdout = TestOut()
         ql.run()
         expected_string = b'<C:\\Users\\Qiling\\Desktop\\cmdln64.exe arg1 "arg2 with spaces">\n'
@@ -474,6 +474,14 @@ class PETest(unittest.TestCase):
         ql.run()
         del ql
 
+    def test_pe_win_x8664_relocate_dll_image_and_api_set_dii(self):
+        # First force the cache to be recreated
+        ql = Qiling(["../examples/rootfs/x8664_windows/bin/api_set_dll_demo.exe"],
+                    "../examples/rootfs/x8664_windows",
+                    libcache=True,
+                    verbose=QL_VERBOSE.DEFAULT)
+        ql.run()
+        del ql
 
     def test_pe_win_x8664_relocate_dll_image_and_api_set_dii(self):
         # First force the cache to be recreated

@@ -24,6 +24,7 @@ from . import clipboard
 from . import fiber
 from . import registry
 from . import utils
+from . import resolve_dll
 
 import qiling.os.windows.dlls as api
 
@@ -113,6 +114,9 @@ class QlOsWindows(QlOs):
 
     # hook WinAPI in PE EMU
     def hook_winapi(self, ql: Qiling, address: int, size: int):
+        # resolve dll address if not
+        resolve_dll.resolve_symbol(ql, address, size)
+
         if address in ql.loader.import_symbols:
             entry = ql.loader.import_symbols[address]
             api_name = entry['name']
