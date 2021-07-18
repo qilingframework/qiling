@@ -10,175 +10,29 @@ from qiling.exception import QlErrorSyscallError, QlErrorSyscallNotFound
 import os
 import pefile
 from capstone import*
+from capstone.x86 import *
 from unicorn import *
-from lark import Lark, ast_utils, Transformer, v_args
 
 
-class OpcodeCalculateTransformer(Transformer):
-    def __init__(self, ql, op_size):
-        self.ql = ql
-        self.op_size = op_size
+def calibrate_reg_name(reg_name):
+    if reg_name not in ['sil', 'dil']:
+        return reg_name
 
-        self.reg = self.ql.reg.save()
-        self.pointer_address = []
-
-        self.do_calculate = False
-        return 
-
-    # def start(self, args):
-    #     #args example: {'opcode': 'mov', 'operand': 0}
-    #     if isinstance(args[0], int):
-    #         return args, self.pointer_address
-    #     else:
-    #         return args[0], self.pointer_address
-
-    def start(self, args):
-        # opcode only
-        if len(args) == 1:
-            return args[0]
-        else:
-            return {"opcode": args[0]["opcode"], "operand":args[1]["operand"]}
-
-    def operand(self, args):
-        return {"operand": args[0]}
-
-    def connection(self, args):
-        return args
-
-    def element(self, args):
-        return args[0]
-    
-    def cast(self, args):
-        if (args[1] == None) or ('address' not in args[1].keys()):
-            return None
-
-        if args[0].value == 'byte':
-            args[1]['address'] &= 0xff
-        elif args[0].value == 'word':
-            args[1]['address'] &= 0xffff
-        elif args[0].value == 'dword':
-            args[1]['address'] &= 0xffffffff
-
-        return args[1]
-
-    def pointer(self, args):
-        reg = self.ql.reg.save()
-    
-        # args example: [{'address': 140737488474144}]
-        pointer_address = args[0]['address']
-
-        try:
-            pointer_value = int.from_bytes(
-                self.ql.mem.read(
-                    pointer_address, 
-                    8
-                ),
-                "little"
-            ) 
-            return {"pointer": pointer_address, "address": pointer_value}
-        except:
-            return None
-        
-    def gs_pointer(self, args):
-        return {}
-
-    def address(self, args):
-        return {"address": args[0]}
-
-    def add_op(self, args):
-        return args[0] + args[1]
-
-    def sub_op(self, args):
-        return args[0] - args[1]
-
-    def mul_op(self, args):
-        return args[0] * args[1]
-
-    def primitive(self, args):
-        return args[0]
-
-    def OPCODE(self, args):
-        return {"opcode": args.value}
-
-    def HEX(self, args):
-        return int(args.value, 16)
-
-    def NUMBER(self, args):
-        return int(args.value)
-
-    def REGISTER(self, args):
-        if args.value == "rip":
-            # rip is not increment, need to add opcode size
-            return self.reg[args.value] + self.op_size
-        else:
-            return self.reg[args.value]
-
-    def STRING(self, args):
-        return args.value
-
-class OpcodeParser():
-    def __init__(self):
-        parser_grammer = r"""
-            start : OPCODE (operand)?
-
-            operand : connection
-                | element
-
-            connection : element "," element
-            element : cast
-                    | pointer
-                    | gs_pointer
-                    | address
-
-            cast : TYPE ( pointer | address | gs_pointer)
-            pointer : "ptr" "[" address "]"
-                    | "[" address "]"
-
-            gs_pointer : "ptr" "gs:[" address "]"
-                    | "ptr" "fs:[" address "]"
-
-            address : (primitive | add_op | sub_op | mul_op)
-
-
-
-            add_op : (primitive)  "+"  (primitive | add_op | sub_op | mul_op)
-            sub_op : (primitive)  "-"  (primitive | add_op | sub_op | mul_op)
-            mul_op : (primitive)  "*"  (primitive | add_op | sub_op | mul_op)
-
-            primitive : REGISTER
-                    | HEX
-                    | NUMBER
-                    | STRING
-
-            // <uppercase>.<priority>
-            OPCODE.2: /[0-9a-z]+/
-            HEX.2 : /0x[0-9a-f]+/
-            NUMBER.2 : /-?[0-9]+/
-            TYPE.2 : /(([qd]?|xmm)word|byte)/
-            REGISTER.2 : /(r|e)?ax|a(l|h)|(r|e)?bx|b(l|h)|(r|e)?cx|c(l|h)|(r|e)?dx|d(l|h)|(r|e)?bp(l)?|(r|e)?sp(l)?|(r|e)?ip(l)?|(r|e)si(l)?|(r|e)di(l)?|r8(d|w|b)?|r9(d|w|b)?|r10(d|w|b)?|r11(d|w|b)?|r12(d|w|b)?|r13(d|w|b)?|r14(d|w|b)?|r15(d|w|b)?|xmm[01]/
-            STRING : /[0-9a-zA-Z._:]+/
-
-            %ignore " "
-        """
-        self.parser = Lark(parser_grammer, parser="lalr", propagate_positions=True)
-
-    def calculate(self, ql, opcode, op_size):
-        self.tree = self.parser.parse(opcode)
-        return OpcodeCalculateTransformer(ql, op_size).transform(self.tree)
-
-parser = OpcodeParser()
+    if reg_name == 'sil':
+        return 'si'
+    elif reg_name == 'dil':
+        return 'di'
 
 def resolve_symbol(ql: Qiling, address: int, size):
-    global parser
-    reg = ql.reg.save()
+    #reg = ql.reg.save()
 
     # Check the address to jump is in memory map. If not, check if it needs to load additional dll.
     buf = ql.mem.read(address, size)
     if ql.archtype == QL_ARCH.X8664:
-        md = Cs(CS_ARCH_X86, CS_MODE_64)
+        md = Cs(CS_ARCH_X86, CS_MODE_64)   
     else:
         md = Cs(CS_ARCH_X86, CS_MODE_32)
-    
+    md.detail = True
     
     op = list(md.disasm(buf, address))[0]
     
@@ -187,25 +41,57 @@ def resolve_symbol(ql: Qiling, address: int, size):
     #print("0x{:08x}".format(address), op.mnemonic, op.op_str)
     if op.mnemonic in ['jmp', 'call', 'mov']:
         if op.mnemonic in ['jmp', 'call']:
-            jump_pointer = parser.calculate(ql, "{} {}".format(op.mnemonic, op.op_str), size)['operand']
-        if op.mnemonic in ['mov']:
-            jump_pointer = parser.calculate(ql, "{} {}".format(op.mnemonic, op.op_str), size)['operand'][1]
+            pointer_operand = op.operands[0]
+        elif op.mnemonic in ['mov']:
+            pointer_operand = op.operands[1]
+        
+        if pointer_operand.type == X86_OP_MEM:
+            #print("\t\toperands.type: MEM")
+            jump_pointer_address = 0
+            if pointer_operand.value.mem.base != 0:
+                #print("\t\t\toperands.mem.base: REG = %s" % (op.reg_name(pointer_operand.value.mem.base)))
+                reg_name = calibrate_reg_name(op.reg_name(pointer_operand.value.mem.base))
+                jump_pointer_address += ql.reg.read(reg_name)
+                if 'ip' in reg_name:
+                    jump_pointer_address += size
 
-        if jump_pointer != None:
-            if "pointer" in jump_pointer.keys():
-                jump_pointer_address = jump_pointer['pointer']
-                jump_address = jump_pointer['address']
+            if pointer_operand.value.mem.index != 0:
+                #print("\t\t\toperands.mem.index: REG = %s" % (op.reg_name(pointer_operand.value.mem.index)))
+                reg_name = calibrate_reg_name(op.reg_name(pointer_operand.value.mem.index))
+                jump_pointer_address += ql.reg.read(reg_name)
+                if 'ip' in reg_name:
+                    jump_pointer_address += size
 
-            elif "address" in jump_pointer.keys():
-                jump_address = jump_pointer['address']
-            
-    # check if library is already imported or not.
-    if(is_in_executable_memory_address(ql, jump_pointer_address)):
+            if pointer_operand.value.mem.disp != 0:
+                #print("\t\t\toperands.mem.disp: 0x%x" % (pointer_operand.value.mem.disp))
+                jump_pointer_address += pointer_operand.value.mem.disp
+
+        #print(' pointer:{:016x}, address:{:016x}'.format(jump_pointer_address, jump_address))
+        # check if library is already imported or not.
+        if(is_in_executable_memory_address(ql, jump_pointer_address)):
+            if ql.archtype == QL_ARCH.X8664:
+                jump_address = int.from_bytes(
+                    ql.mem.read(
+                        jump_pointer_address, 
+                        8
+                    ),
+                    'little'
+                )   
+            else:
+                jump_address = int.from_bytes(
+                    ql.mem.read(
+                        jump_pointer_address, 
+                        4
+                    ),
+                    'little'
+                ) 
+
+
         if (not is_in_executable_memory_address(ql, jump_address)) and (jump_address != -1) and (jump_pointer_address != -1):
-            #print('is_in_executable_memory_address: pointer:{:016x}, address:{:016x}'.format(jump_pointer_address, jump_address))
+            print('is_in_executable_memory_address: pointer:{:016x}, address:{:016x}'.format(jump_pointer_address, jump_address))
             load_additional_dll(ql, jump_pointer_address)
 
-    #input()
+    return 
 
 def get_base_address(ql, map_name):
     map_info = ql.mem.map_info
@@ -249,6 +135,8 @@ def load_additional_dll(ql, import_address):
     map_info = ql.mem.map_info
 
     dll_last_address = 0x0
+
+    #print(ql.loader.import_address_table)
 
     for mi in map_info:
         dll_name = mi[3]
@@ -306,20 +194,6 @@ def load_additional_dll(ql, import_address):
                 # *Additional dll must not be loaded because import symbol is not resolved, but the case of API set dll, export_dll might be loaded.*
                 if (export_dll_name not in dll_list.keys()):
                     ql.loader.load_dll(export_dll_name.encode('utf-8'))
-
-                    # export_dll_bin = pefile.PE(ql.rootfs+'/Windows/system32/{}'.format(export_dll_name))
-                    # export_dll_base = dll_last_address
-
-                    # export_dll_bin.parse_data_directories()
-                    # export_dll_bin.relocate_image(export_dll_base)
-                    # export_dll_data = bytearray(export_dll_bin.get_memory_mapped_image())
-
-                    # export_dll_len = ql.mem.align(len(bytes(export_dll_data)), 0x1000)
-                    # ql.mem.map(export_dll_base, export_dll_len, info=export_dll_name)
-                    # ql.mem.write(export_dll_base, bytes(export_dll_data))
-
-
-
 
                 export_dll_bin = pefile.PE(ql.rootfs+'/Windows/system32/{}'.format(export_dll_name))
                 export_dll_base = get_base_address(ql, export_dll_name)
