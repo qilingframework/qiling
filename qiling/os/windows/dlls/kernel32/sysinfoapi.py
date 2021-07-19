@@ -3,143 +3,172 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import struct
-import time
 from datetime import datetime
-from qiling.os.windows.const import *
-from qiling.os.const import *
-from qiling.os.windows.fncc import *
-from qiling.os.windows.utils import *
-from qiling.os.windows.thread import *
-from qiling.os.windows.handle import *
-from qiling.exception import *
-from qiling.os.windows.structs import *
 
-dllname = 'kernel32_dll'
+from qiling import Qiling
+from qiling.os.windows.api import *
+from qiling.os.windows.const import *
+from qiling.os.windows.fncc import *
+from qiling.os.windows.structs import SystemInfo, SystemTime
 
 # NOT_BUILD_WINDOWS_DEPRECATE DWORD GetVersion(
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname)
-def hook_GetVersion(ql, address, params):
-    ret = 0x0004
-    ret = ret << 16
-    ret = ret | 0x0004
-    return ret
+@winsdkapi_new(cc=STDCALL, params={})
+def hook_GetVersion(ql: Qiling, address: int, params):
+    return (0x0004 << 16) | 0x0004
 
+def __GetVersionEx(ql: Qiling, address: int, params):
+    return 1
 
 # NOT_BUILD_WINDOWS_DEPRECATE BOOL GetVersionExA(
 #   LPOSVERSIONINFOA lpVersionInformation
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname)
-def hook_GetVersionExA(ql, address, params):
-    return hook_GetVersionExW.__wrapped__(ql, address, params)
-
+@winsdkapi_new(cc=STDCALL, params={
+    'lpVersionInformation' : LPOSVERSIONINFOA
+})
+def hook_GetVersionExA(ql: Qiling, address: int, params):
+    return __GetVersionEx(ql, address, params)
 
 # NOT_BUILD_WINDOWS_DEPRECATE BOOL GetVersionExW(
 #   LPOSVERSIONINFOW lpVersionInformation
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname)
-def hook_GetVersionExW(ql, address, params):
-    return 1
+@winsdkapi_new(cc=STDCALL, params={
+    'lpVersionInformation' : LPOSVERSIONINFOW
+})
+def hook_GetVersionExW(ql: Qiling, address: int, params):
+    return __GetVersionEx(ql, address, params)
 
-
-# void GetSystemInfo(
-#   LPSYSTEM_INFO lpSystemInfo
-# );
-@winsdkapi(cc=STDCALL, dllname=dllname)
-def hook_GetSystemInfo(ql, address, params):
+def __GetSystemInfo(ql: Qiling, address: int, params):
     pointer = params["lpSystemInfo"]
+
+    # FIXME: dll_size no longer reflects the upper bound of used memory; should find a better way to specify max_address
     system_info = SystemInfo(ql, 0, ql.os.heap.page_size, ql.loader.pe_image_address,
                              ql.loader.dll_address + ql.loader.dll_size, 0x3, 0x4, 0x24a, ql.os.heap.page_size * 10,
                              0x6, 0x4601)
     system_info.write(pointer)
+
     return 0
 
+# void GetSystemInfo(
+#   LPSYSTEM_INFO lpSystemInfo
+# );
+@winsdkapi_new(cc=STDCALL, params={
+    'lpSystemInfo' : LPSYSTEM_INFO
+})
+def hook_GetSystemInfo(ql: Qiling, address: int, params):
+    return __GetSystemInfo(ql, address, params)
 
 # void GetLocalTime(
 #   LPSYSTEMTIME lpSystemTime
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname)
-def hook_GetLocalTime(ql, address, params):
-    import datetime
+@winsdkapi_new(cc=STDCALL, params={
+    'lpSystemTime' : LPSYSTEMTIME
+})
+def hook_GetLocalTime(ql: Qiling, address: int, params):
     ptr = params['lpSystemTime']
-    d = datetime.datetime.now()
-    system_time = SystemTime(ql, d.year, d.month, d.isoweekday(), d.day, d.hour, d.minute, d.second,
-                             d.microsecond // 1000)
-    system_time.write(ptr)
-    return 0
+    d = datetime.now()
 
+    system_time = SystemTime(ql, d.year, d.month, d.isoweekday(), d.day, d.hour, d.minute, d.second, d.microsecond // 1000)
+    system_time.write(ptr)
+
+    return 0
 
 # void GetSystemTimeAsFileTime(
 #   LPFILETIME lpSystemTimeAsFileTime
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname)
-def hook_GetSystemTimeAsFileTime(ql, address, params):
+@winsdkapi_new(cc=STDCALL, params={
+    'lpSystemTimeAsFileTime' : LPFILETIME
+})
+def hook_GetSystemTimeAsFileTime(ql: Qiling, address: int, params):
     # TODO
     pass
 
-
 # DWORD GetTickCount(
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname)
-def hook_GetTickCount(ql, address, params):
-    ret = 200000
-    return ret
+@winsdkapi_new(cc=STDCALL, params={})
+def hook_GetTickCount(ql: Qiling, address: int, params):
+    return 200000
 
+def __GetWindowsDirectory(ql: Qiling, address: int, params, wstring: bool):
+    dst = params["lpBuffer"]
+
+    enc, clen = ('utf-16le', 2) if wstring else ('utf-8', 1)
+    value = f'{ql.os.windir}\x00'.encode(enc)
+
+    ql.mem.write(dst, value)
+
+    return len(value) - clen
 
 # UINT GetWindowsDirectoryW(
 #   LPWSTR lpBuffer,
 #   UINT   uSize
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname)
-def hook_GetWindowsDirectoryW(ql, address, params):
-    dst = params["lpBuffer"]
-    value = (ql.os.windir + "\x00").encode("utf-16le")
-    ql.mem.write(dst, value)
-    return len(value) - 2
+@winsdkapi_new(cc=STDCALL, params={
+    'lpBuffer' : LPWSTR,
+    'uSize'    : UINT
+})
+def hook_GetWindowsDirectoryW(ql: Qiling, address: int, params):
+    return __GetWindowsDirectory(ql, address, params, True)
+
+@winsdkapi_new(cc=STDCALL, params={
+    'lpBuffer' : LPSTR,
+    'uSize'    : UINT
+})
+def hook_GetWindowsDirectoryA(ql: Qiling, address: int, params):
+    return __GetWindowsDirectory(ql, address, params, False)
 
 # UINT GetSystemWindowsDirectoryW(
 #   LPWSTR lpBuffer,
 #   UINT   uSize
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname)
-def hook_GetSystemWindowsDirectoryW(ql, address, params):
-    return hook_GetWindowsDirectoryW.__wrapped__(ql, address, params)
+@winsdkapi_new(cc=STDCALL, params={
+    'lpBuffer' : LPWSTR,
+    'uSize'    : UINT
+})
+def hook_GetSystemWindowsDirectoryW(ql: Qiling, address: int, params):
+    return __GetWindowsDirectory(ql, address, params, True)
+
+@winsdkapi_new(cc=STDCALL, params={
+    'lpBuffer' : LPSTR,
+    'uSize'    : UINT
+})
+def hook_GetSystemWindowsDirectoryA(ql: Qiling, address: int, params):
+    return __GetWindowsDirectory(ql, address, params, False)
 
 # void GetNativeSystemInfo(
 #   LPSYSTEM_INFO lpSystemInfo
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname)
-def hook_GetNativeSystemInfo(ql, address, params):
-    pointer = params["lpSystemInfo"]
-    system_info = SystemInfo(ql, 0, ql.os.heap.page_size, ql.loader.pe_image_address,
-                             ql.loader.dll_address + ql.loader.dll_size, 0x3, 0x4, 0x24a, ql.os.heap.page_size * 10,
-                             0x6, 0x4601)
-    system_info.write(pointer)
-    return 0
+@winsdkapi_new(cc=STDCALL, params={
+    'lpSystemInfo' : LPSYSTEM_INFO
+})
+def hook_GetNativeSystemInfo(ql: Qiling, address: int, params):
+    return __GetSystemInfo(ql, address, params)
 
 # void GetSystemTime(
-#   LPSYSTEMTIME lpSystemTime);
-@winsdkapi(cc=STDCALL, dllname=dllname)
-def hook_GetSystemTIme(ql, address, params):
-    dt = datetime.now().microsecond.to_bytes(8, byteorder="little")
+#   LPSYSTEMTIME lpSystemTime
+# );
+@winsdkapi_new(cc=STDCALL, params={
+    'lpSystemTime' : LPSYSTEMTIME
+})
+def hook_GetSystemTIme(ql: Qiling, address: int, params):
     pointer = params["lpSystemTime"]
-    ql.mem.write(pointer, dt)
+
+    ms = ql.pack64(datetime.now().microsecond)
+    ql.mem.write(pointer, ms)
+
     return 0
-
-
-# typedef struct _FILETIME {
-#   DWORD dwLowDateTime;
-#   DWORD dwHighDateTime;
-# } FILETIME, *PFILETIME, *LPFILETIME;
 
 # void GetSystemTimePreciseAsFileTime(
 #   LPFILETIME lpSystemTimeAsFileTime
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname)
-def hook_GetSystemTimePreciseAsFileTime(ql, address, params):
-    # todo check if the value is correct
-    dt = datetime.now().microsecond.to_bytes(8, byteorder="little")
+@winsdkapi_new(cc=STDCALL, params={
+    'lpSystemTimeAsFileTime' : LPFILETIME
+})
+def hook_GetSystemTimePreciseAsFileTime(ql: Qiling, address: int, params):
     pointer = params["lpSystemTimeAsFileTime"]
-    ql.mem.write(pointer, dt)
+
+    # TODO: check if the value is correct
+    ms = ql.pack64(datetime.now().microsecond)
+    ql.mem.write(pointer, ms)
+
     return 0

@@ -75,6 +75,8 @@ LPOVERLAPPED                = POINTER
 LPTOP_LEVEL_EXCEPTION_FILTER= POINTER
 LPSTARTUPINFOA              = POINTER
 LPSTARTUPINFOW              = POINTER
+LPSYSTEM_INFO               = POINTER
+LPSYSTEMTIME                = POINTER
 LPTHREAD_START_ROUTINE      = POINTER
 LPWCH                       = POINTER
 LPWIN32_FIND_DATAA          = POINTER
@@ -104,6 +106,8 @@ LPCSTR                      = STRING
 LPCWSTR                     = WSTRING
 BSTR                        = WSTRING
 OLECHAR                     = WSTRING
+LPOSVERSIONINFOA            = STRING
+LPOSVERSIONINFOW            = WSTRING
 
 # a lookup table used by winapisdk to substitute certain type names with others
 reptypedict = {
