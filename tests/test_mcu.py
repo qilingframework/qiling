@@ -15,9 +15,10 @@ class MCUTest(unittest.TestCase):
                     archtype="cortex_m",
                     engine=True)
 
-        ql.engine.setup()
-        ql.engine.flash()        
-        ql.engine.start()
+        ql.uc.setup()
+        ql.uc.flash()
+        ql.uc.reset()
+        ql.uc.run(count=10000)
 
         del ql
 

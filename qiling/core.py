@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from .os.memory import QlMemoryManager
     from .loader.loader import QlLoader
 
-from .mcu import QlMcu
+from .mcu.stm32.cortex_m import STM32CortexMCore
 from .const import QL_ARCH_ENDIAN, QL_ENDIAN, QL_OS, QL_VERBOSE, QL_CUSTOM_ENGINE
 from .exception import QlErrorFileNotFound, QlErrorArch, QlErrorOsType, QlErrorOutput
 from .utils import *
@@ -217,14 +217,15 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._arch = arch_setup(self.archtype, self)
         
         # Once we finish setting up arch layer, we can init QlCoreHooks.
-        self.uc = self.arch.init_uc if not self._custom_engine else None
+        if self._engine:
+            self.uc = STM32CortexMCore(self)
+        else:
+            self.uc = self.arch.init_uc if not self._custom_engine else None
+
         QlCoreHooks.__init__(self, self.uc)
         
         if not self._custom_engine and not self._engine:
             self._os = os_setup(self.archtype, self.ostype, self)
-
-        if self._engine:
-            self.engine = QlMcu(self)
 
         # Run the loader
         if not self._engine:
