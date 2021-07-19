@@ -66,7 +66,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._code = code
         self._shellcoder = shellcoder
         self._custom_engine = False
-        self._microcontroller = False
         self._ostype = ostype
         self._archtype = archtype
         self._archendian = None
@@ -128,19 +127,14 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             if (self._ostype and type(self._ostype) == str):
                 self._ostype = ostype_convert(self._ostype.lower())
 
-            if self._archtype in QL_CUSTOM_ENGINE:
-                self._custom_engine = True
+            if self._archtype in QL_CUSTOM_ENGINE or self._archtype in QL_MCU:
+                if self._archtype in QL_CUSTOM_ENGINE:
+                    self._custom_engine = True
                 if self._ostype == None:
                     self._ostype = arch_os_convert(self._archtype)
                 if self._code == None:
                     self._code = self._archtype
 
-            if self._archtype in QL_MCU:
-                self._microcontroller = True
-                if self._ostype == None:
-                    self._ostype = arch_os_convert(self._archtype)
-                if self._code == None:
-                    self._code = self._archtype
 
             if self._argv is None:
                 self._argv = ["qilingcode"]
@@ -225,19 +219,19 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self.uc = self.arch.init_uc if not self._custom_engine else None
         QlCoreHooks.__init__(self, self.uc)
         
-        if not self._custom_engine and not self._microcontroller:
-            self._os = os_setup(self.archtype, self.ostype, self)
+        if self._custom_engine or self.archtype in QL_MCU:
+            return
+
+        self._os = os_setup(self.archtype, self.ostype, self)
 
         # Run the loader
-        if not self._microcontroller:
-            self.loader.run()
+        self.loader.run()
         
-        if not self._custom_engine and not self._microcontroller:
-            # Setup Outpt
-            self.os.utils.setup_output()
+        # Setup Outpt
+        self.os.utils.setup_output()
 
-            # Add extra guard options when configured to do so
-            self._init_stop_guard()
+        # Add extra guard options when configured to do so
+        self._init_stop_guard()
 
 
     #####################

@@ -32,6 +32,9 @@ class QL_OS(IntEnum):
     QNX = 208
     MCU = 209
 
+class QL_MCU(IntEnum):
+    STM32F411 = 301
+
 class QL_VERBOSE(IntEnum):
     OFF = 0
     DEFAULT = 1
