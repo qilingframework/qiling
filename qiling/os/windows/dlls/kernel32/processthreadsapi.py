@@ -194,6 +194,16 @@ def hook_CreateThread(ql: Qiling, address: int, params):
     # set thread handle
     return new_handle.id
 
+# void ExitThread(
+#   DWORD dwExitCode
+# );
+@winsdkapi_new(cc=STDCALL, params={
+    'dwExitCode' : DWORD
+})
+def hook_ExitThread(ql: Qiling, address: int, params):
+    #ql.emu_stop()
+    pass
+
 # HANDLE GetCurrentProcess(
 # );
 @winsdkapi_new(cc=STDCALL, params={})

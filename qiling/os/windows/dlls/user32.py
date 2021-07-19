@@ -557,6 +557,58 @@ def hook_DefWindowProcA(ql: Qiling, address: int, params):
     # TODO don't know how to get right return value
     return 0xD10C
 
+def __CharLowerBuff(ql: Qiling, address: int, params, wstring: bool):
+    lpBuffer = params["lpBuffer"]
+    cchLength = params["cchLength"]
+
+    data = ql.mem.read(lpBuffer, cchLength)
+
+    enc = 'utf-16le' if wstring else 'utf-8'
+    data = data.decode(enc)
+    data = data.lower()
+    data = data.encode(enc)
+
+    ql.mem.write(lpBuffer, data)
+
+    return len(data)
+
+# DWORD CharLowerBuffA(
+#   LPSTR lpsz,
+#   DWORD cchLength
+# );
+@winsdkapi_new(cc=STDCALL, params={
+    'lpsz'      : LPSTR,
+    'cchLength' : DWORD
+})
+def hook_CharLowerBuffA(ql: Qiling, address: int, params):
+    return __CharLowerBuff(ql, address, params, False)
+
+@winsdkapi_new(cc=STDCALL, params={
+    'lpsz'      : LPWSTR,
+    'cchLength' : DWORD
+})
+def hook_CharLowerBuffW(ql: Qiling, address: int, params):
+    return __CharLowerBuff(ql, address, params, True)
+
+# LPSTR CharLowerA(
+#   LPSTR lpsz
+# );
+@winsdkapi_new(cc=STDCALL, params={
+    'lpsz' : LPSTR
+})
+def hook_CharLowerA(ql: Qiling, address: int, params):
+    lpsz = params["lpsz"]
+
+    if (lpsz >> 16) > 0:
+        value = ql.os.utils.read_cstring(lpsz)
+        value = value.lower()
+        value = value.encode("utf-8")
+        ql.mem.write(lpsz, value)
+        return len(value)
+    else:
+        value = chr(lpsz & 0xffff)
+        return value.lower()
+
 # LPWSTR CharNextW(
 #   LPCWSTR lpsz
 # );

@@ -97,7 +97,16 @@ def __GetWindowsDirectory(ql: Qiling, address: int, params, wstring: bool):
 
     ql.mem.write(dst, value)
 
-    return len(value) - clen
+
+def __GetSystemDirectory(ql: Qiling, address: int, params, wstring: bool):
+    lpBuffer = params["lpBuffer"]
+
+    enc = 'utf-16le' if wstring else 'utf-8'
+    res = os.path.join(ql.os.windir, 'System32')
+
+    ql.mem.write(lpBuffer, f'{res}\x00'.encode(enc))
+
+    return len(res)
 
 # UINT GetWindowsDirectoryW(
 #   LPWSTR lpBuffer,
@@ -134,6 +143,24 @@ def hook_GetSystemWindowsDirectoryW(ql: Qiling, address: int, params):
 })
 def hook_GetSystemWindowsDirectoryA(ql: Qiling, address: int, params):
     return __GetWindowsDirectory(ql, address, params, False)
+
+@winsdkapi_new(cc=STDCALL, params={
+    'lpBuffer' : LPWSTR,
+    'uSize'    : UINT
+})
+def hook_GetSystemDirectoryW(ql: Qiling, address: int, params):
+    return __GetSystemDirectory(ql, address, params, True)
+
+# UINT GetSystemDirectoryA(
+#   LPSTR lpBuffer,
+#   UINT  uSize
+# );
+@winsdkapi_new(cc=STDCALL, params={
+    'lpBuffer' : LPSTR,
+    'uSize'    : UINT
+})
+def hook_GetSystemDirectoryA(ql: Qiling, address: int, params):
+    return __GetSystemDirectory(ql, address, params, False)
 
 # void GetNativeSystemInfo(
 #   LPSYSTEM_INFO lpSystemInfo
