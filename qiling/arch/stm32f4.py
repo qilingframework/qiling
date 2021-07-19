@@ -1,20 +1,22 @@
-from unicorn import UC_ARCH_ARM, UC_MODE_THUMB, UC_MODE_MCLASS, UC_HOOK_CODE
-from capstone import Cs, CS_ARCH_ARM, CS_MODE_THUMB, CS_MODE_MCLASS
+#!/usr/bin/env python3
+# 
+# Cross Platform and Multi Architecture Advanced Binary Emulation Framework
+#
 
-from ..mcu import QlMcu
-from .exceptions.manager import ExceptionManager
+from unicorn import *
+from unicorn.arm_const import *
 
+from capstone import *
 
-class STM32CortexMCore(QlMcu):
+from qiling.const import *
+from qiling.mcu.stm32.exceptions.manager import ExceptionManager
+from .arm import QlArchARM
+
+class QlArchSTM32F4(QlArchARM):
     def __init__(self, ql):
-        super().__init__(ql, UC_ARCH_ARM, UC_MODE_THUMB | UC_MODE_MCLASS)
+        super().__init__(ql)
 
         self.md = Cs(CS_ARCH_ARM, CS_MODE_THUMB | CS_MODE_MCLASS)
-        def hook_code(mu, address, size, user_data):     
-            code = mu.mem_read(address, size)
-            for i in self.md.disasm(code, address):
-                print(hex(i.address), i.mnemonic, i.op_str)
-        self.hook_add(UC_HOOK_CODE, hook_code)
 
         ## Exception Model
         self.emgr = ExceptionManager(self)
@@ -30,9 +32,22 @@ class STM32CortexMCore(QlMcu):
             'core_perip': (0xE0000000, 0xE0100000),
         }
 
-    def setup(self):
+    def get_init_uc(self):
+        return Uc(UC_ARCH_ARM, UC_MODE_ARM + UC_MODE_MCLASS)
+
+    def setup(self):        
+        def hook_code(mu, address, size, user_data):     
+            code = mu.mem_read(address, size)
+            for i in self.md.disasm(code, address):
+                print(hex(i.address), i.mnemonic, i.op_str)
+
+        self.ql.uc.hook_add(UC_HOOK_CODE, hook_code)
+
         for begin, end in self.mapinfo.values():
             self.mem.map(begin, end - begin)
+        
+    def flash(self):
+        self.ql.loader.run()
 
     def reset(self):
         if self.BOOT[0] == 0:
@@ -48,9 +63,17 @@ class STM32CortexMCore(QlMcu):
         
     def step(self):
         self.emgr.interrupt()
-        self.emu_start(self.pc | 1, 0, count=1)
+        self.ql.uc.emu_start(self.get_pc(), 0, count=1)
 
     def run(self, count=-1):        
         while count != 0:
             self.step()
             count -= 1
+
+    @property
+    def reg(self):
+        return self.ql.reg
+    
+    @property
+    def mem(self):
+        return self.ql.mem

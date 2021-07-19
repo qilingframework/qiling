@@ -1,43 +1,43 @@
 from unicorn.unicorn import UcError
-from qiling.mcu.mcu import QlMcu
+from qiling.arch.arch import QlArch
 from .const import ETYPE
 
 class CoreException:
     def __init__(self, 
-            mcu: QlMcu,
+            arch: QlArch,
             number: int,
             IRQn: int,
-            type: ETYPE,
+            etype: ETYPE,
             priority: int,
             offset: int):
-        self.mcu = mcu
+        self.arch = arch
 
         self.number   = number
         self.IRQn     = IRQn
-        self.type     = ETYPE.UNKNOWN
+        self.etype    = etype
         self.priority = priority
         self.offset   = offset
 
     def prepare(self):
-        address = self.mcu.boot_space + self.offset
-        entry = self.mcu.mem.read_ptr(address)
+        address = self.arch.boot_space + self.offset
+        entry = self.arch.mem.read_ptr(address)
 
         self.EXC_RETURN = 0xFFFFFFF9
-        self.mcu.reg.write('pc', entry)
-        self.mcu.reg.write('lr', self.EXC_RETURN)
+        self.arch.ql.reg.write('pc', entry)
+        self.arch.ql.reg.write('lr', self.EXC_RETURN)
 
     def save_context(self):
-        self.context = self.mcu.context_save()
+        self.context = self.arch.context_save()
 
     def restore_context(self):
-        self.mcu.context_restore(self.context)
+        self.arch.context_restore(self.context)
 
     def handle(self):
         self.save_context()
         self.prepare()
         try:
             ## FIXME: Why unicorn try fetch last instruction
-            self.mcu.emu_start(self.mcu.pc | 1, self.EXC_RETURN)            
+            self.arch.ql.uc.emu_start(self.arch.get_pc(), self.EXC_RETURN)            
         except UcError:
             pass
         

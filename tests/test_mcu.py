@@ -12,13 +12,12 @@ from qiling.core import Qiling
 class MCUTest(unittest.TestCase):
     def test_mcu_led_hex_stm32f411(self):
         ql = Qiling(["../examples/rootfs/stm32f411/hex/rand_blink.hex"],                    
-                    archtype="cortex_m",
-                    engine=True)
+                    archtype="stm32f4")
 
-        ql.uc.setup()
-        ql.uc.flash()
-        ql.uc.reset()
-        ql.uc.run(count=10000)
+        ql.arch.setup()
+        ql.arch.flash()
+        ql.arch.reset()
+        ql.run(count=10000)
 
         del ql
 

@@ -16,8 +16,7 @@ if TYPE_CHECKING:
     from .os.memory import QlMemoryManager
     from .loader.loader import QlLoader
 
-from .mcu.stm32.cortex_m import STM32CortexMCore
-from .const import QL_ARCH_ENDIAN, QL_ENDIAN, QL_OS, QL_VERBOSE, QL_CUSTOM_ENGINE
+from .const import QL_ARCH_ENDIAN, QL_ENDIAN, QL_MCU, QL_OS, QL_VERBOSE, QL_CUSTOM_ENGINE
 from .exception import QlErrorFileNotFound, QlErrorArch, QlErrorOsType, QlErrorOutput
 from .utils import *
 from .core_struct import QlCoreStructs
@@ -36,7 +35,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             ostype=None,
             archtype=None,
             bigendian=False,
-            engine=False,
             verbose=QL_VERBOSE.DEFAULT,
             profile=None,
             console=True,
@@ -68,10 +66,10 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._code = code
         self._shellcoder = shellcoder
         self._custom_engine = False
+        self._microcontroller = False
         self._ostype = ostype
         self._archtype = archtype
         self._archendian = None
-        self._engine = engine
         self._archbit = None
         self._pointersize = None
         self._profile = profile
@@ -137,6 +135,13 @@ class Qiling(QlCoreHooks, QlCoreStructs):
                 if self._code == None:
                     self._code = self._archtype
 
+            if self._archtype in QL_MCU:
+                self._microcontroller = True
+                if self._ostype == None:
+                    self._ostype = arch_os_convert(self._archtype)
+                if self._code == None:
+                    self._code = self._archtype
+
             if self._argv is None:
                 self._argv = ["qilingcode"]
             if self._rootfs is None:
@@ -156,7 +161,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         # Loader #
         ##########
         if self._code is None:
-            guessed_archtype, guessed_ostype, guessed_archendian = ql_guess_emu_env(self._path, self._engine)
+            guessed_archtype, guessed_ostype, guessed_archendian = ql_guess_emu_env(self._path)
             if self._ostype is None:
                 self._ostype = guessed_ostype
             if self._archtype is None:
@@ -164,18 +169,18 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             if self.archendian is None:
                 self._archendian = guessed_archendian
 
-            if not self._engine and not ql_is_valid_ostype(self._ostype):
+            if not ql_is_valid_ostype(self._ostype):
                 raise QlErrorOsType("Invalid OSType")
 
             if not ql_is_valid_arch(self._archtype):
                 raise QlErrorArch("Invalid Arch %s" % self._archtype)
 
-        self._loader = loader_setup(self._ostype, self._engine, self)
+        self._loader = loader_setup(self._ostype, self)
 
         #####################
         # Profile & Logging #
         #####################
-        self._profile, debugmsg = profile_setup(self.ostype, self.profile, self._engine, self)
+        self._profile, debugmsg = profile_setup(self.ostype, self.profile, self)
 
         # Log's configuration
 
@@ -217,21 +222,17 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._arch = arch_setup(self.archtype, self)
         
         # Once we finish setting up arch layer, we can init QlCoreHooks.
-        if self._engine:
-            self.uc = STM32CortexMCore(self)
-        else:
-            self.uc = self.arch.init_uc if not self._custom_engine else None
-
+        self.uc = self.arch.init_uc if not self._custom_engine else None
         QlCoreHooks.__init__(self, self.uc)
         
-        if not self._custom_engine and not self._engine:
+        if not self._custom_engine and not self._microcontroller:
             self._os = os_setup(self.archtype, self.ostype, self)
 
         # Run the loader
-        if not self._engine:
+        if not self._microcontroller:
             self.loader.run()
         
-        if not self._custom_engine and not self._engine:
+        if not self._custom_engine and not self._microcontroller:
             # Setup Outpt
             self.os.utils.setup_output()
 
@@ -750,6 +751,9 @@ class Qiling(QlCoreHooks, QlCoreStructs):
                 return self.arch.run(self._code)
             else:
                 return self.arch.run(code) 
+
+        if self._microcontroller:
+            return self.arch.run(count=count)
 
         self.write_exit_trap()
 

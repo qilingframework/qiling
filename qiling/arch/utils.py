@@ -43,9 +43,6 @@ def ql_create_disassembler(archtype: QL_ARCH, archendian: QL_ENDIAN, reg_cpsr=No
     elif archtype == QL_ARCH.ARM_THUMB:
         md = Cs(CS_ARCH_ARM, CS_MODE_THUMB)
 
-    elif archtype == QL_ARCH.CORTEX_M:
-        md = Cs(CS_ARCH_ARM, CS_MODE_THUMB | CS_MODE_MCLASS)
-
     elif archtype == QL_ARCH.ARM64:
         md = Cs(CS_ARCH_ARM64, CS_MODE_ARM)
 
