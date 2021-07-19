@@ -90,13 +90,14 @@ def hook_GetTickCount(ql: Qiling, address: int, params):
     return 200000
 
 def __GetWindowsDirectory(ql: Qiling, address: int, params, wstring: bool):
-    dst = params["lpBuffer"]
+    lpBuffer = params["lpBuffer"]
 
-    enc, clen = ('utf-16le', 2) if wstring else ('utf-8', 1)
-    value = f'{ql.os.windir}\x00'.encode(enc)
+    enc = 'utf-16le' if wstring else 'utf-8'
+    res = os.path.normpath(ql.os.windir)
 
-    ql.mem.write(dst, value)
+    ql.mem.write(lpBuffer, f'{res}\x00'.encode(enc))
 
+    return len(res)
 
 def __GetSystemDirectory(ql: Qiling, address: int, params, wstring: bool):
     lpBuffer = params["lpBuffer"]
