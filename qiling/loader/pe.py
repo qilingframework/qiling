@@ -480,6 +480,7 @@ class QlLoaderPE(QlLoader, Process):
         super().init_exports()
 
     def load(self):
+        self.ql.log.info("Qiling dynamic loader start")
         # set stack pointer
         self.ql.log.info("Initiate stack address at 0x%x " % self.stack_address)
         self.ql.mem.map(self.stack_address, self.stack_size, info="[stack]")
@@ -505,7 +506,6 @@ class QlLoaderPE(QlLoader, Process):
             if hasattr(self.pe, 'DIRECTORY_ENTRY_IMPORT'):
                 for entry_import in self.pe.DIRECTORY_ENTRY_IMPORT:
                     for entry_import_symbol in entry_import.imports:
-                        #print(entry_import_symbol.address, self.pe_image_address, self.image_address)
                         entry_import_list[entry_import_symbol.address] = {
                             'symbol': entry_import_symbol.name.decode('utf-8'), 
                             'dll': entry_import.dll.decode('utf-8').lower()
@@ -644,49 +644,3 @@ class QlLoaderPE(QlLoader, Process):
         # move entry_point to ql.os
         self.ql.os.entry_point = self.entry_point
         self.init_sp = self.ql.reg.arch_sp
-
-    def _get_export_symbol_from_api_dll(self, api_dll_name, target_symbol):
-        """
-        API set dll (https://docs.microsoft.com/en-us/windows/win32/apiindex/windows-apisets) loader.
-        The function extract actual export symbol and DLL name from API set dll(likes 'api-ms-xxxx.dll').
-
-        Args:
-            api_dll_name (str): API Set DLL name
-            target_symbol (str): The symbol looking for.
-        Return:
-            dll_name (str): actual DLL name.
-            export_symbol (str): Actual symbol name.
-        """
-
-        def _get_string_from_pe(api_dll, target_symbol):
-            offset = 0
-            string = ''
-            dll_base = api_dll.OPTIONAL_HEADER.ImageBase
-
-            export_symbol_list = list(filter(lambda x: x.name == target_symbol.encode('utf-8'), api_dll.DIRECTORY_ENTRY_EXPORT.symbols))
-            if len(export_symbol_list) == 0:
-                self.ql.log.debug("Error: can't find symbol from API Set dll (symbol: %s, apiset dll: %s" % (api_dll, target_symbol))
-                return ''
-
-            while True:
-                char = api_dll.get_data(export_symbol_list[0].address+offset, 1)
-                if char == b'\x00':
-                    break
-
-                string += char.decode('utf-8')
-                offset += 1
-
-            return string
-        
-        try:
-            api_dll = pefile.PE(os.path.join(self.ql.rootfs, self.ql.dlls, api_dll_name))
-        except:
-            self.ql.log.warning('Failed to load API dll %s' % (api_dll_name))
-            return None, None
-
-        # result of _get_string_from_pe has 2 types, "kernel32.GetPriorityClass" and "advapi32.dll.OpenProcessToken"
-        # therefore, both types need to be supported.
-        dll_name, export_symbol = _get_string_from_pe(api_dll, target_symbol).rsplit('.', 1)
-        if dll_name[-4:] == '.dll':
-            return dll_name, export_symbol
-        return dll_name+'.dll', export_symbol

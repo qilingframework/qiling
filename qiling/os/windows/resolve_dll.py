@@ -163,6 +163,8 @@ def load_additional_dll(ql, import_address):
         if (export_dll_name not in dll_list.keys()):
             ql.loader.load_dll(export_dll_name.encode("utf-8"))
 
+    ql.log.debug("load additional DLL (%s -> %s)" % (export_dll_name, target_symbol))
+
     ql.mem.write(
         import_address, 
         (ql.loader.import_address_table[export_dll_name][target_symbol.encode("utf-8")]).to_bytes(8,"little")
@@ -192,6 +194,8 @@ def get_export_symbol_from_api_dll(ql, api_dll_name, target_symbol):
             string += char.decode("utf-8")
             offset += 1
         return string
+
+    ql.log.debug("load windos API (%s -> %s)" % (api_dll_name, target_symbol))
 
     if not os.path.exists(os.path.join(ql.rootfs, "Windows/system32/{}".format(api_dll_name))):
         return None, None
