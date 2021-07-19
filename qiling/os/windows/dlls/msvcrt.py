@@ -240,11 +240,10 @@ def hook___acrt_iob_func(ql: Qiling, address: int, params):
     ret = 0
     return ret
 
-# __stdio_common_vfprintf(_OptionsStorage, FILE* _Stream, char const* _Format, _locale_t _Locale, va_list _ArgList)
-@winsdkapi(cc=CDECL, replace_params={'optstorage': PARAM_INT64, 'stream': POINTER, 'format': STRING, 'locale': DWORD, 'arglist': POINTER})
+@winsdkapi(cc=CDECL, replace_params={'_Options': PARAM_INT64, '_Stream': POINTER, '_Format': STRING, '_Locale': DWORD, '_ArgList': POINTER})
 def hook___stdio_common_vfprintf(ql: Qiling, address: int, params):
-    format = params['format']
-    arglist = params['arglist']
+    format = params['_Format']
+    arglist = params['_ArgList']
 
     args = ql.os.utils.va_list(format, arglist)
     count = ql.os.utils.printf(format, args, wstring=False)
@@ -252,11 +251,10 @@ def hook___stdio_common_vfprintf(ql: Qiling, address: int, params):
 
     return count
 
-
-@winsdkapi(cc=CDECL, replace_params={'optstorage': PARAM_INT64, 'stream': POINTER, 'format': WSTRING, 'locale': DWORD, 'arglist': POINTER})
+@winsdkapi(cc=CDECL, replace_params={'_Options': PARAM_INT64, '_Stream': POINTER, '_Format': WSTRING, '_Locale': DWORD, '_ArgList': POINTER})
 def hook___stdio_common_vfwprintf(ql: Qiling, address: int, params):
-    format = params['format']
-    arglist = params['arglist']
+    format = params['_Format']
+    arglist = params['_ArgList']
 
     args = ql.os.utils.va_list(format, arglist)
     count = ql.os.utils.printf(format, args, wstring=True)
@@ -264,18 +262,51 @@ def hook___stdio_common_vfwprintf(ql: Qiling, address: int, params):
 
     return count
 
-# int __cdecl __stdio_common_vswprintf_s(unsigned __int64,wchar_t*,size_t,const wchar_t*,_locale_t,__ms_va_list)
-@winsdkapi(cc=CDECL, replace_params={'optstorage': PARAM_INT64, 'buff': POINTER, 'size': SIZE_T, 'format': WSTRING, 'locale': DWORD, 'arglist': POINTER})
-def hook___stdio_common_vswprintf_s(ql: Qiling, address: int, params):
-    buff = params['buff']
-    format = params['format']
-    arglist = params['arglist']
+@winsdkapi(cc=CDECL, replace_params={'_Options': PARAM_INT64, '_Buffer': POINTER, '_BufferCount': SIZE_T, '_Format': STRING, '_Locale': DWORD, '_ArgList': POINTER})
+def hook___stdio_common_vsprintf(ql: Qiling, address: int, params):
+    buff = params['_Buffer']
+    format = params['_Format']
+    arglist = params['_ArgList']
+
+    # TODO: take _BufferCount into account
+
+    args = ql.os.utils.va_list(format, arglist)
+    count = ql.os.utils.sprintf(buff, format, args, wstring=False)
+    ql.os.utils.update_ellipsis(params, args)
+
+    return count
+
+@winsdkapi(cc=CDECL, replace_params={'_Options': PARAM_INT64, '_Buffer': POINTER, '_BufferCount': SIZE_T, '_Format': WSTRING, '_Locale': DWORD, '_ArgList': POINTER})
+def hook___stdio_common_vswprintf(ql: Qiling, address: int, params):
+    buff = params['_Buffer']
+    format = params['_Format']
+    arglist = params['_ArgList']
+
+    # TODO: take _BufferCount into account
 
     args = ql.os.utils.va_list(format, arglist)
     count = ql.os.utils.sprintf(buff, format, args, wstring=True)
     ql.os.utils.update_ellipsis(params, args)
 
     return count
+
+# all the "_s" versions are aliases to their non-"_s" counterparts
+
+@winsdkapi(cc=CDECL, replace_params={'_Options': PARAM_INT64, '_Stream': POINTER, '_Format': STRING, '_Locale': DWORD, '_ArgList': POINTER})
+def hook___stdio_common_vfprintf_s(ql: Qiling, address: int, params):
+    return hook___stdio_common_vfprintf.__wrapped__(ql, address, params)
+
+@winsdkapi(cc=CDECL, replace_params={'_Options': PARAM_INT64, '_Stream': POINTER, '_Format': WSTRING, '_Locale': DWORD, '_ArgList': POINTER})
+def hook___stdio_common_vfwprintf_s(ql: Qiling, address: int, params):
+    return hook___stdio_common_vfwprintf.__wrapped__(ql, address, params)
+
+@winsdkapi(cc=CDECL, replace_params={'_Options': PARAM_INT64, '_Buffer': POINTER, '_BufferCount': SIZE_T, '_Format': STRING, '_Locale': DWORD, '_ArgList': POINTER})
+def hook___stdio_common_vsprintf_s(ql: Qiling, address: int, params):
+    return hook___stdio_common_vsprintf.__wrapped__(ql, address, params)
+
+@winsdkapi(cc=CDECL, replace_params={'_Options': PARAM_INT64, '_Buffer': POINTER, '_BufferCount': SIZE_T, '_Format': WSTRING, '_Locale': DWORD, '_ArgList': POINTER})
+def hook___stdio_common_vswprintf_s(ql: Qiling, address: int, params):
+    return hook___stdio_common_vswprintf.__wrapped__(ql, address, params)
 
 @winsdkapi(cc=CDECL)
 def hook___lconv_init(ql: Qiling, address: int, params):

@@ -12,6 +12,7 @@ from qiling.cc import QlCC, intel, arm, mips
 from qiling.const import QL_ARCH
 from qiling.os.fcall import QlFunctionCall
 from qiling.os.const import *
+from qiling.os.posix.const import NR_OPEN
 from qiling.os.posix.posix import QlOsPosix
 
 from . import utils
@@ -82,7 +83,12 @@ class QlOsLinux(QlOsPosix):
             self.ql.hook_insn(self.hook_syscall, UC_X86_INS_SYSCALL)
             # Keep test for _cc
             #self.ql.hook_insn(hook_posix_api, UC_X86_INS_SYSCALL)
-            self.thread_class = thread.QlLinuxX8664Thread
+            self.thread_class = thread.QlLinuxX8664Thread     
+        
+        for i in range(NR_OPEN):
+            if hasattr(self.fd[i], 'close_on_exec') and \
+                    self.fd[i].close_on_exec:
+                self.fd[i] = 0
 
     def hook_syscall(self, int= None, intno= None):
         return self.load_syscall()

@@ -56,6 +56,25 @@ def ql_syscall_nanosleep(ql, nanosleep_req, nanosleep_rem, *args, **kw):
     regreturn = 0
     return regreturn
 
+def ql_syscall_clock_nanosleep(ql, clock_nanosleep_clockid, clock_nanosleep_flags, clock_nanosleep_req, clock_nanosleep_remain, *args, **kw):
+    def _sched_sleep(cur_thread):
+        gevent.sleep(tv_sec)
+
+    n = ql.pointersize
+
+    tv_sec = ql.unpack(ql.mem.read(clock_nanosleep_req, n))
+    tv_sec += ql.unpack(ql.mem.read(clock_nanosleep_req + n, n)) / 1000000000
+
+    if ql.os.thread_management == None:
+        time.sleep(tv_sec)
+    else:
+        ql.emu_stop()
+        ql.os.thread_management.cur_thread.sched_cb = _sched_sleep
+        th = ql.os.thread_management.cur_thread
+
+    regreturn = 0
+    return regreturn
+
 
 def ql_syscall_setitimer(ql, setitimer_which, setitimer_new_value, setitimer_old_value, *args, **kw):
     # TODO:The system provides each process with three interval timers, each decrementing in a distinct time domain.
@@ -77,15 +96,3 @@ def ql_syscall_times(ql, times_tbuf, *args, **kw):
     regreturn = int(tmp_times.elapsed * 100)
     return regreturn
 
-
-def ql_syscall_gettimeofday(ql, gettimeofday_tv, gettimeofday_tz, *args, **kw):
-    tmp_time = time.time()
-    tv_sec = int(tmp_time)
-    tv_usec = int((tmp_time - tv_sec) * 1000000)
-
-    if gettimeofday_tv != 0:
-        ql.mem.write(gettimeofday_tv, ql.pack32(tv_sec) + ql.pack32(tv_usec))
-    if gettimeofday_tz != 0:
-        ql.mem.write(gettimeofday_tz, b'\x00' * 8)
-    regreturn = 0
-    return regreturn

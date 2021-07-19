@@ -315,15 +315,15 @@ class PETest(unittest.TestCase):
             ql.os.fcall = ql.os.fcall_select(CDECL)
 
             params = ql.os.resolve_fcall_params({
-                'optstorage': PARAM_INT64,
-                'stream'    : POINTER,
-                'format'    : STRING,
-                'locale'    : DWORD,
-                'arglist'   : POINTER
+                '_Options' : PARAM_INT64,
+                '_Stream'  : POINTER,
+                '_Format'  : STRING,
+                '_Locale'  : DWORD,
+                '_ArgList' : POINTER
             })
 
-            format = params['format']
-            arglist = params['arglist']
+            format = params['_Format']
+            arglist = params['_ArgList']
 
             count = format.count("%")
             fargs = [ql.unpack(ql.mem.read(arglist + i * ql.pointersize, ql.pointersize)) for i in range(count)]
@@ -428,20 +428,20 @@ class PETest(unittest.TestCase):
         del ql
 
     class RefreshCache(QlPeCache):
-        def restore(self, path, address):
+        def restore(self, path):
             # If the cache entry exists, delete it
-            fcache = self.create_filename(path, address)
+            fcache = self.create_filename(path)
             if os.path.exists(fcache):
                 os.remove(fcache)
-            return super().restore(path, address)
+            return super().restore(path)
 
     class TestCache(QlPeCache):
         def __init__(self, testcase):
-            self.testcase = testcase
             super().__init__()
+            self.testcase = testcase
 
-        def restore(self, path, address):
-            entry = super().restore(path, address)
+        def restore(self, path):
+            entry = super().restore(path)
             self.testcase.assertTrue(entry is not None)  # Check that it loaded a cache entry
             if path.endswith('msvcrt.dll'):
                 self.testcase.assertEqual(len(entry.cmdlines), 2)
@@ -450,7 +450,7 @@ class PETest(unittest.TestCase):
             self.testcase.assertIsInstance(entry.data, bytearray)
             return entry
 
-        def save(self, path, address, entry):
+        def save(self, path, entry):
             self.testcase.assertFalse(True)  # This should not be called!
 
 
@@ -474,7 +474,7 @@ class PETest(unittest.TestCase):
         ql.run()
         del ql
 
-    def test_pe_win_x8664_relocate_dll_image_and_api_set_dii(self):
+    def test_pe_win_x8664_relocate_dll_image_and_api_set_dll(self):
         # First force the cache to be recreated
         ql = Qiling(["../examples/rootfs/x8664_windows/bin/api_set_dll_demo.exe"],
                     "../examples/rootfs/x8664_windows",
@@ -483,13 +483,6 @@ class PETest(unittest.TestCase):
         ql.run()
         del ql
 
-    def test_pe_win_x8664_relocate_dll_image_and_api_set_dii(self):
-        # First force the cache to be recreated
-        ql = Qiling(["../examples/rootfs/x8664_windows/bin/api_set_dll_demo.exe"],
-                    "../examples/rootfs/x8664_windows",
-                    verbose=QL_VERBOSE.DEFAULT)
-        ql.run()
-        del ql
 
 
 

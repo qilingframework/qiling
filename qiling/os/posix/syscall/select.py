@@ -44,10 +44,7 @@ def ql_syscall__newselect(ql, _newselect_nfds, _newselect_readfds, _newselect_wr
     n = ql.pointersize
 
     if _newselect_timeout != 0:
-        if ql.archtype == QL_ARCH.MIPS:
-            timeout_ptr = ql.unpack(ql.mem.read(_newselect_timeout, n))
-        else:
-            timeout_ptr = _newselect_timeout
+        timeout_ptr = _newselect_timeout
         sec = ql.unpack(ql.mem.read(timeout_ptr, n))
         usec = ql.unpack(ql.mem.read(timeout_ptr + n, n))
         timeout_total = sec + float(usec)/1000000

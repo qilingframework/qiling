@@ -239,6 +239,8 @@ def ql_get_module_function(module_name: str, function_name: str):
         imp_module = importlib.import_module(module_name)
     except ModuleNotFoundError:
         raise QlErrorModuleNotFound(f'Unable to import module {module_name}')
+    except KeyError:
+        raise QlErrorModuleNotFound(f'Unable to import module {module_name}')
 
     try:
         module_function = getattr(imp_module, function_name)

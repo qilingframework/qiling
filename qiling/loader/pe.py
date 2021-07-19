@@ -4,20 +4,21 @@
 #
 
 import os, pefile, pickle, secrets, traceback
+from typing import Any, MutableMapping, Optional, Mapping, Sequence
 
+from qiling import Qiling
+from qiling.arch.x86_const import *
+from qiling.const import *
 from qiling.os.const import POINTER
+from qiling.os.memory import QlMemoryHeap
 from qiling.os.windows.fncc import CDECL
 from qiling.os.windows.utils import *
 from qiling.os.windows.structs import *
-from qiling.exception import *
-from qiling.const import *
-from qiling.arch.x86_const import *
 from .loader import QlLoader, Image
-from qiling.os.memory import QlMemoryHeap
-
 
 class QlPeCacheEntry:
-    def __init__(self, data, cmdlines, import_symbols, import_table, entry_import_list):
+    def __init__(self, ba: int, data: bytearray, cmdlines: Sequence, import_symbols: Mapping, import_table: Mapping, entry_import_list: Mapping):
+        self. ba = ba
         self.data = data
         self.cmdlines = cmdlines
         self.import_symbols = import_symbols
@@ -26,44 +27,55 @@ class QlPeCacheEntry:
 
 # A default simple cache implementation
 class QlPeCache:
-    def create_filename(self, path, address):
-        return path + ".%x.cache2" % address
+    def create_filename(self, path: str) -> str:
+        return f'{path}.cache2'
 
-    def restore(self, path, address):
-        fcache = self.create_filename(path, address)
+    def restore(self, path: str) -> Optional[QlPeCacheEntry]:
+        fcache = self.create_filename(path)
+
         # pickle file cannot be outdated
         if os.path.exists(fcache) and os.stat(fcache).st_mtime > os.stat(path).st_mtime:
             with open(fcache, "rb") as fcache_file:
                 return QlPeCacheEntry(*pickle.load(fcache_file))
+
         return None
 
-    def save(self, path, address, entry):
-        fcache = self.create_filename(path, address)
-        data = (entry.data, entry.cmdlines, entry.import_symbols, entry.import_table, entry.entry_import_list)
+    def save(self, path: str, entry: QlPeCacheEntry):
+        fcache = self.create_filename(path)
+
+        data = (entry.ba, entry.data, entry.cmdlines, entry.import_symbols, entry.import_table, entry.entry_import_list)
         # cache this dll file
         with open(fcache, "wb") as fcache_file:
             pickle.dump(data, fcache_file)
 
-
 class Process():
-    def __init__(self, ql):
+    # let linter recognize mixin members
+    dlls: MutableMapping[str, int]
+    import_address_table: MutableMapping[str, Any]
+    import_symbols: MutableMapping[int, Any]
+    export_symbols: MutableMapping[int, Any]
+    libcache: Optional[QlPeCache]
+
+    def __init__(self, ql: Qiling):
         self.ql = ql
 
-    def align(self, size, unit):
+    def align(self, size: int, unit: int) -> int:
         return (size // unit + (1 if size % unit else 0)) * unit
 
-    def load_dll(self, dll_name, driver=False):
-        dll_name = dll_name.decode()
+    def load_dll(self, name: bytes, driver: bool = False) -> int:
+        dll_name = name.decode()
 
         self.ql.dlls = os.path.join("Windows", "System32")
 
-        if 'C:\\' in dll_name.upper():
+        if dll_name.upper().startswith('C:\\'):
             path = self.ql.os.path.transform_to_real_path(dll_name)
             dll_name = path_leaf(dll_name)
         else:
             dll_name = dll_name.lower()
+
             if not is_file_library(dll_name):
                 dll_name = dll_name + ".dll"
+
             path = os.path.join(self.ql.rootfs, self.ql.dlls, dll_name)
 
         if not os.path.exists(path):
@@ -72,30 +84,44 @@ class Process():
         # If the dll is already loaded
         if dll_name in self.dlls:
             return self.dlls[dll_name]
-        else:
-            self.dlls[dll_name] = self.dll_last_address
 
-        self.ql.log.info("Loading %s to 0x%x" % (path, self.dll_last_address))
+        self.ql.log.info(f'Loading {path} ...')
+
+        cached = None
+        loaded = False
 
         if self.libcache:
-            cached = self.libcache.restore(path, self.dll_last_address)
-        else:
-            cached = None
+            cached = self.libcache.restore(path)
 
         if cached:
             data = cached.data
-            import_symbols = cached.import_symbols
-            import_table = cached.import_table
-            entry_import_list = cached.entry_import_list
-            for entry in cached.cmdlines:
-                self.set_cmdline(entry['name'], entry['address'], data)
-            self.ql.log.info("Loaded %s from cache" % path)
-        else:
+
+            image_base = cached.ba
+            image_size = self.ql.mem.align(len(data), 0x1000)
+
+            # verify whether we can load the dll to the same address it was loaded when it was cached.
+            # if not, the dll will have to be realoded in order to have its symbols relocated using the
+            # new address
+            if self.ql.mem.is_available(image_base, image_size):
+                import_symbols = cached.import_symbols
+                import_table = cached.import_table
+                entry_import_list = cached.entry_import_list
+
+                for entry in cached.cmdlines:
+                    self.set_cmdline(entry['name'], entry['address'], data)
+
+                self.ql.log.info(f'Loaded {path} from cache')
+                loaded = True
+
+        # either file was not cached, or could not be loaded to the same location in memory
+        if not cached or not loaded:
             dll = pefile.PE(path, fast_load=True)
             dll.parse_data_directories()
             warnings = dll.get_warnings()
+
             if warnings:
                 self.ql.log.warning(f'Warnings while loading {path}:')
+
                 for warning in warnings:
                     self.ql.log.warning(f' - {warning}')
 
@@ -117,25 +143,43 @@ class Process():
                         
             
             data = bytearray(dll.get_memory_mapped_image())
-            cmdlines = []
 
+            image_base = dll.OPTIONAL_HEADER.ImageBase or self.dll_last_address
+            image_size = self.ql.mem.align(len(data), 0x1000)
+
+            self.ql.log.debug(f'DLL preferred base address: {image_base:#x}')
+
+            if (image_base + image_size) > self.ql.mem.max_mem_addr:
+                image_base = self.dll_last_address
+                self.ql.log.debug(f'DLL preferred base address exceeds memory upper bound, loading to: {image_base:#x}')
+
+            if not self.ql.mem.is_available(image_base, image_size):
+                image_base = self.ql.mem.find_free_space(image_size, minaddr=image_base, align=0x10000)
+                self.ql.log.debug(f'DLL preferred base address is taken, loading to: {image_base:#x}')
+
+            cmdlines = []
             import_symbols = {}
             import_table = {}
+
             for entry in dll.DIRECTORY_ENTRY_EXPORT.symbols:
-                import_symbols[self.dll_last_address + entry.address] = {"name": entry.name,
-                                                                              "ordinal": entry.ordinal,
-                                                                              "dll": dll_name.split('.')[0]
-                                                                              }
+                import_symbols[image_base + entry.address] = {
+                    "name": entry.name,
+                    "ordinal": entry.ordinal,
+                    "dll": dll_name.split('.')[0]
+                }
+
                 if entry.name:
-                    import_table[entry.name] = self.dll_last_address + entry.address
-                import_table[entry.ordinal] = self.dll_last_address + entry.address
+                    import_table[entry.name] = image_base + entry.address
+
+                import_table[entry.ordinal] = image_base + entry.address
                 cmdline_entry = self.set_cmdline(entry.name, entry.address, data)
+
                 if cmdline_entry:
                     cmdlines.append(cmdline_entry)
 
             if self.libcache:
-                cached = QlPeCacheEntry(data, cmdlines, import_symbols, import_table, entry_import_list)
-                self.libcache.save(path, self.dll_last_address, cached)
+                cached = QlPeCacheEntry(image_base, data, cmdlines, import_symbols, import_table, entry_import_list)
+                self.libcache.save(path, cached)
                 self.ql.log.info("Cached %s" % path)
 
         # Add dll to IAT
@@ -154,21 +198,26 @@ class Process():
         except Exception as ex:
             self.ql.log.exception(f'Unable to add {dll_name} import symbols')
 
-        dll_base = self.dll_last_address
-        dll_len = self.ql.mem.align(len(bytes(data)), 0x1000)
+        dll_base = image_base
+        dll_len = image_size
+
         self.dll_size += dll_len
         self.ql.mem.map(dll_base, dll_len, info=dll_name)
         self.ql.mem.write(dll_base, bytes(data))
-        self.dll_last_address += dll_len
+
+        self.dlls[dll_name] = dll_base
+
+        if dll_base == self.dll_last_address:
+            self.dll_last_address += dll_len
 
         # if this is NOT a driver, add dll to ldr data
         if not driver:
             self.add_ldr_data_table_entry(dll_name)
 
         # add DLL to coverage images
-        self.images.append(Image(dll_base, dll_base+dll_len, path))
+        self.images.append(Image(dll_base, dll_base + dll_len, path))
 
-        self.ql.log.info("Done with loading %s" % path)
+        self.ql.log.info(f'Done with loading {path}')
 
         return dll_base
 
@@ -404,15 +453,17 @@ class Process():
     
 
 class QlLoaderPE(QlLoader, Process):
-    def __init__(self, ql):
-        super(QlLoaderPE, self).__init__(ql)
+    def __init__(self, ql: Qiling):
+        super().__init__(ql)
+
         self.ql         = ql
-        if type(self.ql.libcache) == bool:
-            self.libcache = QlPeCache() if self.ql.libcache else None
-        else:
-            self.libcache = self.ql.libcache
         self.path       = self.ql.path
         self.is_driver  = False
+
+        if ql.libcache is True:
+            self.libcache = QlPeCache()
+        else:
+            self.libcache = ql.libcache or None
 
     def run(self):
         self.init_dlls = [b"ntdll.dll", b"kernel32.dll", b"user32.dll"]
