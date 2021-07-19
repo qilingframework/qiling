@@ -59,7 +59,7 @@ danielhenrymantilla
 iamyeh
 alfink
 bambu
-
+madprogrammer
 
 
 Alpha testers (in no particular order, named by github id)
