@@ -1,4 +1,5 @@
-from unicorn import UC_ARCH_ARM, UC_MODE_THUMB, UC_MODE_MCLASS
+from unicorn import UC_ARCH_ARM, UC_MODE_THUMB, UC_MODE_MCLASS, UC_HOOK_CODE
+from capstone import Cs, CS_ARCH_ARM, CS_MODE_THUMB, CS_MODE_MCLASS
 
 from ..mcu import QlMcu
 from .exceptions.manager import ExceptionManager
@@ -7,6 +8,13 @@ from .exceptions.manager import ExceptionManager
 class STM32CortexMCore(QlMcu):
     def __init__(self, ql):
         super().__init__(ql, UC_ARCH_ARM, UC_MODE_THUMB | UC_MODE_MCLASS)
+
+        self.md = Cs(CS_ARCH_ARM, CS_MODE_THUMB | CS_MODE_MCLASS)
+        def hook_code(mu, address, size, user_data):     
+            code = mu.mem_read(address, size)
+            for i in self.md.disasm(code, address):
+                print(hex(i.address), i.mnemonic, i.op_str)
+        self.hook_add(UC_HOOK_CODE, hook_code)
 
         ## Exception Model
         self.emgr = ExceptionManager(self)

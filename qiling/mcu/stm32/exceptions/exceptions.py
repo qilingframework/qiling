@@ -1,3 +1,4 @@
+from unicorn.unicorn import UcError
 from qiling.mcu.mcu import QlMcu
 from .const import ETYPE
 
@@ -35,8 +36,10 @@ class CoreException:
         self.save_context()
         self.prepare()
         try:
-            self.mcu.emu_start(self.pc | 1, self.EXC_RETURN)
-        except:
+            ## FIXME: Why unicorn try fetch last instruction
+            self.mcu.emu_start(self.mcu.pc | 1, self.EXC_RETURN)            
+        except UcError:
             pass
+        
         
         self.restore_context()
