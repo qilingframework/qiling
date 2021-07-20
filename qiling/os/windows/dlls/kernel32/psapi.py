@@ -3,18 +3,9 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import struct
-import time
-from qiling.os.windows.const import *
-from qiling.os.const import *
+from qiling import Qiling
+from qiling.os.windows.api import *
 from qiling.os.windows.fncc import *
-from qiling.os.windows.utils import *
-from qiling.os.windows.thread import *
-from qiling.os.windows.handle import *
-from qiling.exception import *
-
-
-dllname = 'kernel32_dll'
 
 # BOOL GetModuleInformation(
 #   HANDLE       hProcess,
@@ -22,7 +13,12 @@ dllname = 'kernel32_dll'
 #   LPMODULEINFO lpmodinfo,
 #   DWORD        cb
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname)
-def hook_K32GetModuleInformation(self, address, params):
+@winsdkapi_new(cc=STDCALL, params={
+    'hProcess'  : HANDLE,
+    'hModule'   : HMODULE,
+    'lpmodinfo' : LPMODULEINFO,
+    'cb'        : DWORD
+})
+def hook_K32GetModuleInformation(ql: Qiling, address: int, params):
     # TODO
     return 0
