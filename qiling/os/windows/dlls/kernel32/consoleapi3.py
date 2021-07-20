@@ -3,22 +3,15 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import struct
-import time
-from qiling.os.windows.const import *
-from qiling.os.const import *
+from qiling import Qiling
+from qiling.os.windows.api import *
 from qiling.os.windows.fncc import *
-from qiling.os.windows.utils import *
-from qiling.os.windows.thread import *
-from qiling.os.windows.handle import *
-from qiling.exception import *
-
-
-dllname = 'kernel32_dll'
+from qiling.os.windows.handle import Handle
 
 # HWND WINAPI GetConsoleWindow(void);
-@winsdkapi(cc=STDCALL, dllname=dllname)
-def hook_GetConsoleWindow(ql, address, params):
+@winsdkapi_new(cc=STDCALL, params={})
+def hook_GetConsoleWindow(ql: Qiling, address: int, params):
     handle = Handle(name="console_window")
     ql.os.handle_manager.append(handle)
+
     return handle.id
