@@ -6,6 +6,7 @@
 from qiling import Qiling
 from qiling.os.windows.api import *
 from qiling.os.windows.fncc import *
+from qiling.os.windows.utils import cmp
 
 # BOOL GetStringTypeW(
 #   DWORD                         dwInfoType,
@@ -97,3 +98,48 @@ def hook_MultiByteToWideChar(ql: Qiling, address: int, params):
         ql.mem.write(params['lpWideCharStr'], wide_str)
 
     return len(wide_str)
+
+def __CompareString(ql: Qiling, address: int, params) -> int:
+    lpString1 = params["lpString1"]
+    lpString2 = params["lpString2"]
+
+    cchCount1 = params["cchCount1"]
+    cchCount2 = params["cchCount2"]
+
+    if cchCount1 > 0:
+        lpString1 = lpString1[:cchCount1]
+
+    if cchCount2 > 0:
+        lpString2 = lpString2[:cchCount2]
+
+    return cmp(lpString1, lpString2)
+
+# int CompareStringA(
+#   LCID   Locale,
+#   DWORD  dwCmpFlags,
+#   PCNZCH lpString1,
+#   int    cchCount1,
+#   PCNZCH lpString2,
+#   int    cchCount2
+# );
+@winsdkapi_new(cc=STDCALL, params={
+    'Locale'     : LCID,
+    'dwCmpFlags' : DWORD,
+    'lpString1'  : PCNZCH,
+    'cchCount1'  : INT,
+    'lpString2'  : PCNZCH,
+    'cchCount2'  : INT
+})
+def hook_CompareStringA(ql: Qiling, address: int, params):
+    return __CompareString(ql, address, params)
+
+@winsdkapi_new(cc=STDCALL, params={
+    'Locale'     : LCID,
+    'dwCmpFlags' : DWORD,
+    'lpString1'  : PCNZWCH,
+    'cchCount1'  : INT,
+    'lpString2'  : PCNZWCH,
+    'cchCount2'  : INT
+})
+def hook_CompareStringW(ql: Qiling, address: int, params):
+    return __CompareString(ql, address, params)
