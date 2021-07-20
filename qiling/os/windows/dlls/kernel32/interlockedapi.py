@@ -3,25 +3,21 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import struct
-import time
-from qiling.os.windows.const import *
-from qiling.os.const import *
+from qiling import Qiling
+from qiling.os.windows.api import *
 from qiling.os.windows.fncc import *
-from qiling.os.windows.utils import *
-from qiling.os.windows.thread import *
-from qiling.os.windows.handle import *
-from qiling.exception import *
-
-
-dllname = 'kernel32_dll'
+from qiling.os.windows.handle import Handle
 
 # void InitializeSListHead(
 #   PSLIST_HEADER ListHead
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname)
-def hook_InitializeSListHead(ql, address, params):
-    addr = params["ListHead"]
-    handle = Handle(obj=[], id=addr)
+@winsdkapi_new(cc=STDCALL, params={
+    'ListHead' : PSLIST_HEADER
+})
+def hook_InitializeSListHead(ql: Qiling, address: int, params):
+    ListHead = params["ListHead"]
+
+    handle = Handle(obj=[], id=ListHead)
     ql.os.handle_manager.append(handle)
+
     return 0

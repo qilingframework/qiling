@@ -107,6 +107,7 @@ LPWSAPROTOCOL_INFOA         = POINTER
 LPUNKNOWN                   = POINTER
 REFCLSID                    = POINTER
 REFIID                      = POINTER
+PSLIST_HEADER               = POINTER
 PSECURITY_DESCRIPTOR        = POINTER
 UINT_PTR                    = POINTER
 LPCSTR                      = STRING
