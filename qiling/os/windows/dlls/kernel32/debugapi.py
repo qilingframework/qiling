@@ -3,52 +3,49 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import struct
-import time
-
-
+from qiling import Qiling
+from qiling.os.windows.api import *
 from qiling.os.windows.const import *
-from qiling.os.const import *
 from qiling.os.windows.fncc import *
-from qiling.os.windows.utils import *
-from qiling.os.windows.thread import *
-from qiling.os.windows.handle import *
-from qiling.exception import *
-
-
-dllname = 'kernel32_dll'
 
 # BOOL IsDebuggerPresent();
-@winsdkapi(cc=STDCALL, dllname=dllname)
-def hook_IsDebuggerPresent(ql, address, params):
+@winsdkapi_new(cc=STDCALL, params={})
+def hook_IsDebuggerPresent(ql: Qiling, address: int, params):
     return 0
-
 
 # BOOL CheckRemoteDebuggerPresent(
 #   HANDLE hProcess,
 #   PBOOL  pbDebuggerPresent
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname)
-def hook_CheckRemoteDebuggerPresent(ql, address, params):
+@winsdkapi_new(cc=STDCALL, params={
+    'hProcess'          : HANDLE,
+    'pbDebuggerPresent' : PBOOL
+})
+def hook_CheckRemoteDebuggerPresent(ql: Qiling, address: int, params):
     pointer = params["pbDebuggerPresent"]
-    ql.mem.write(pointer, 0x0.to_bytes(1, byteorder="little"))
-    return 1
 
+    ql.mem.write(pointer, b'\x00')
+
+    return 1
 
 # void OutputDebugStringW(
 #   LPCWSTR lpOutputString
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname)
-def hook_OutputDebugStringW(ql, address, params):
-    string = params["lpOutputString"]
-    ql.log.info('OutputDebugStringW: "%s"' % (string.encode()))
-    return 0
+@winsdkapi_new(cc=STDCALL, params={
+    'lpOutputString' : LPCWSTR
+})
+def hook_OutputDebugStringW(ql: Qiling, address: int, params):
+    ql.log.info(f'OutputDebugStringW: "{params["lpOutputString"]}"')
 
+    return 0
 
 # void OutputDebugStringA(
 #  LPCSTR lpOutputString
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname)
-def hook_OutputDebugStringA(ql, address, params):
-    ql.log.info('OutputDebugStringA: "%s"' % (params['lpOutputString']))
+@winsdkapi_new(cc=STDCALL, params={
+    'lpOutputString' : LPCSTR
+})
+def hook_OutputDebugStringA(ql: Qiling, address: int, params):
+    ql.log.info(f'OutputDebugStringA: "{params["lpOutputString"]}"')
+
     return 0
