@@ -4,7 +4,6 @@
 #
 
 import configparser
-from typing import TypeVar
 
 from qiling import Qiling
 from qiling.exception import QlErrorNotImplemented
@@ -12,6 +11,7 @@ from qiling.os.windows.api import *
 from qiling.os.windows.const import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.structs import OsVersionInfoExA
+from qiling.os.windows.utils import cmp
 
 # __analysis_noreturn VOID FatalExit(
 #   int ExitCode
@@ -310,24 +310,17 @@ def hook_lstrlenA(ql: Qiling, address: int, params):
 def hook_lstrlenW(ql: Qiling, address: int, params):
     return __lstrlen(ql, address, params)
 
-Comparable = TypeVar('Comparable', str, int)
-
-# TODO: duplicated from shlwapi.py
-# an alternative to Python2 cmp builtin which no longer exists in Python3
-def __cmp__(a: Comparable, b: Comparable) -> int:
-    return (a > b) - (a < b)
-
 def __lstrcmp(ql: Qiling, address: int, params):
     str1 = params["lpString1"]
     str2 = params["lpString2"]
 
-    return __cmp__(str1, str2)
+    return cmp(str1, str2)
 
 def __lstrcmpi(ql: Qiling, address: int, params):
     str1 = params["lpString1"].lower()
     str2 = params["lpString2"].lower()
 
-    return __cmp__(str1, str2)
+    return cmp(str1, str2)
 
 # int lstrcmpiW(
 #   LPCWSTR lpString1,

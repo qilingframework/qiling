@@ -3,11 +3,10 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from typing import TypeVar
-
 from qiling import Qiling
 from qiling.os.windows.api import *
 from qiling.os.windows.fncc import *
+from qiling.os.windows.utils import cmp
 
 # LPCSTR PathFindExtensionA(
 #   LPCSTR pszPath
@@ -67,12 +66,6 @@ def hook_PathFindFileNameW(ql: Qiling, address: int, params):
     # TODO: do we need to multiply the offset by sizeof wchar?
     return pointer + len(f'\\{pathname}'.rsplit('\\', 1)[0])
 
-Comparable = TypeVar('Comparable', str, int)
-
-# an alternative to Python2 cmp builtin which no longer exists in Python3
-def __cmp__(a: Comparable, b: Comparable) -> int:
-    return (a > b) - (a < b)
-
 # int StrCmpW(
 #   PCWSTR psz1,
 #   PCWSTR psz2
@@ -85,7 +78,7 @@ def hook_StrCmpW(ql: Qiling, address: int, params):
     str1 = params["psz1"]
     str2 = params["psz2"]
 
-    return __cmp__(str1, str2)
+    return cmp(str1, str2)
 
 @winsdkapi_new(cc=STDCALL, params={
     'psz1' : PCWSTR,
@@ -95,4 +88,4 @@ def hook_StrCmpIW(ql: Qiling, address: int, params):
     str1 = params["psz1"].lower()
     str2 = params["psz2"].lower()
 
-    return __cmp__(str1, str2)
+    return cmp(str1, str2)
