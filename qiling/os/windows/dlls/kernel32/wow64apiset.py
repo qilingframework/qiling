@@ -3,31 +3,28 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import struct
-import time
-from qiling.os.windows.const import *
-from qiling.os.const import *
+from qiling import Qiling
+from qiling.exception import QlErrorNotImplemented
+from qiling.os.windows.api import *
 from qiling.os.windows.fncc import *
-from qiling.os.windows.utils import *
-
-from qiling.os.windows.thread import *
-from qiling.os.windows.handle import *
-from qiling.exception import *
-
-
-dllname = 'kernel32_dll'
 
 # BOOL IsWow64Process(
 #   HANDLE hProcess,
 #   PBOOL  Wow64Process
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname)
-def hook_IsWow64Process(ql, address, params):
-    pointer = params["Wow64Process"]
-    false = 0x0.to_bytes(length=1, byteorder='little')
-    true = 0x1.to_bytes(length=1, byteorder='little')
-    if ql.archbit == 32:
-        ql.mem.write(pointer, false)
-    else:
+@winsdkapi_new(cc=STDCALL, params={
+    'hProcess'     : HANDLE,
+    'Wow64Process' : PBOOL
+})
+def hook_IsWow64Process(ql: Qiling, address: int, params):
+    Wow64Process = params["Wow64Process"]
+
+    if ql.archbit != 32:
         raise QlErrorNotImplemented("API not implemented")
+
+    false = b'\x00'
+    # true = b'\x01'
+
+    ql.mem.write(Wow64Process, false)
+
     return 1
