@@ -12,7 +12,7 @@ from .. import utils
 # exit
 def __leaf_4c(ql: Qiling):
 	ql.log.info("Program terminated gracefully")
-	ql.uc.emu_stop()
+	ql.emu_stop()
 
 # write a character to screen
 def __leaf_02(ql: Qiling):

@@ -7,7 +7,7 @@
 This module is intended for general purpose functions that are only used in qiling.os
 """
 
-from typing import Any, MutableMapping, Mapping, Optional, Sequence, MutableSequence, Tuple
+from typing import Any, MutableMapping, Mapping, Union, Sequence, MutableSequence, Tuple
 from os.path import basename
 from uuid import UUID
 import ctypes
@@ -103,7 +103,7 @@ class QlOsUtils:
     def stringify(s: str) -> str:
         return f'"{repr(s)[1:-1]}"'
 
-    def print_function(self, address: int, fname: str, pargs: Sequence[Tuple[str, str]], ret: Optional[int], passthru: bool):
+    def print_function(self, address: int, fname: str, pargs: Sequence[Tuple[str, str]], ret: Union[int, str, None], passthru: bool):
         '''Print out function invocation detais.
 
         Args:
@@ -127,8 +127,11 @@ class QlOsUtils:
         # arguments list
         fargs = ', '.join(__assign_arg(name, value) for name, value in pargs)
 
+        if type(ret) is int:
+            ret = f'{ret:#x}'
+
         # optional prefixes and suffixes
-        fret = f' = {ret:#x}' if ret is not None else ''
+        fret = f' = {ret}' if ret is not None else ''
         fpass = f' (PASSTHRU)' if passthru else ''
         faddr = f'{address:#0{self.ql.archbit // 4 + 2}x}: ' if self.ql.verbose >= QL_VERBOSE.DEBUG else ''
 
