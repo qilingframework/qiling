@@ -267,41 +267,39 @@ class PETest(unittest.TestCase):
 
 
     def test_pe_win_x8664_customapi(self):
-        @winsdkapi(cc=CDECL, replace_params={"str": STRING})
-        def my_puts64(ql, address, params):
-            ret = 0
-            print("\n+++++++++ My Windows 64bit Windows API +++++++++\n")
-            print("params: ", params)
-            print("+++++++++\n")
+        @winsdkapi_new(cc=CDECL, params={
+            "str" : STRING
+        })
+        def my_puts64(ql: Qiling, address: int, params):
+            print(f'[oncall] my_puts64: params = {params}')
+
             params["str"] = "Hello Hello Hello"
             ret = len(params["str"])
-            self.set_api = len(params["str"])
+            self.set_api = ret
+
             return ret
 
-        def my_onenter(ql, address, params):
-            print("\n+++++++++\nmy OnEnter")
-            print("params: ", params)
-            print("+++++++++\n")
-            self.set_api_onenter = self.set_api = len( params["str"])
-            return  address, params
+        def my_onenter(ql: Qiling, address: int, params):
+            print(f'[onenter] my_onenter: params = {params}')
 
-        def my_onexit(ql, address, params, retval):
-            print("\n+++++++++\nmy OnExit")
-            print("params: ", params)
-            print("+++++++++\n")
-            self.set_api_onexit = self.set_api = len( params["str"])
+            self.set_api_onenter = len(params["str"])
+
+        def my_onexit(ql: Qiling, address: int, params, retval: int):
+            print(f'[onexit] my_onexit: params = {params}')
+
+            self.set_api_onexit = len(params["str"])
 
         def my_sandbox(path, rootfs):
             ql = Qiling(path, rootfs, verbose=QL_VERBOSE.DEBUG)
             ql.set_api("puts", my_onenter, QL_INTERCEPT.ENTER)
-            ql.set_api("puts", my_puts64)
+            ql.set_api("puts", my_puts64, QL_INTERCEPT.CALL)
             ql.set_api("puts", my_onexit, QL_INTERCEPT.EXIT)
             ql.run()
-            
-            self.assertEqual(17, self.set_api)
+
             self.assertEqual(12, self.set_api_onenter)
+            self.assertEqual(17, self.set_api)
             self.assertEqual(17, self.set_api_onexit)
-            
+
             del self.set_api
             del self.set_api_onenter
             del self.set_api_onexit

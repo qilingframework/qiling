@@ -11,7 +11,8 @@ sys.path.append("..")
 from qiling import Qiling
 from qiling.const import QL_VERBOSE
 from qiling.os.const import POINTER, DWORD, STRING, HANDLE
-from qiling.os.windows.fncc import winsdkapi, STDCALL
+from qiling.os.windows.api import *
+from qiling.os.windows.fncc import *
 from qiling.os.windows.dlls.kernel32.fileapi import _CreateFile
 
 def init_unseen_symbols(ql: Qiling, address: int, name: str, ordinal: int, dll_name: str):
@@ -35,7 +36,14 @@ def init_unseen_symbols(ql: Qiling, address: int, name: str, ordinal: int, dll_n
 #   DWORD                   dwCreationFlags,
 #   LPDWORD                 lpThreadId
 # );
-@winsdkapi(cc=STDCALL, dllname='kernel32_dll')
+@winsdkapi_new(cc=STDCALL, params={
+    'lpThreadAttributes' : LPSECURITY_ATTRIBUTES,
+    'dwStackSize'        : SIZE_T,
+    'lpStartAddress'     : LPTHREAD_START_ROUTINE,
+    'lpParameter'        : LPVOID,
+    'dwCreationFlags'    : DWORD,
+    'lpThreadId'         : LPDWORD
+})
 def hook_CreateThread(ql: Qiling, address: int, params):
     # set thread handle
     return 1
@@ -49,14 +57,14 @@ def hook_CreateThread(ql: Qiling, address: int, params):
 #   DWORD                 dwFlagsAndAttributes,
 #   HANDLE                hTemplateFile
 # );
-@winsdkapi(cc=STDCALL, dllname='kernel32_dll', replace_params={
-    "lpFileName": STRING,
-    "dwDesiredAccess": DWORD,
-    "dwShareMode": DWORD,
-    "lpSecurityAttributes": POINTER,
-    "dwCreationDisposition": DWORD,
-    "dwFlagsAndAttributes": DWORD,
-    "hTemplateFile": HANDLE
+@winsdkapi_new(cc=STDCALL, params={
+    'lpFileName'            : LPCSTR,
+    'dwDesiredAccess'       : DWORD,
+    'dwShareMode'           : DWORD,
+    'lpSecurityAttributes'  : LPSECURITY_ATTRIBUTES,
+    'dwCreationDisposition' : DWORD,
+    'dwFlagsAndAttributes'  : DWORD,
+    'hTemplateFile'         : HANDLE
 })
 def hook_CreateFileA(ql: Qiling, address: int, params):
     lpFileName = params["lpFileName"]
@@ -95,12 +103,12 @@ def _WriteFile(ql: Qiling, address: int, params):
         ql.mem.write(lpNumberOfBytesWritten, ql.pack32(nNumberOfBytesToWrite))
     return ret
 
-@winsdkapi(cc=STDCALL, dllname='kernel32_dll', replace_params={
-    "hFile": HANDLE,
-    "lpBuffer": POINTER,
-    "nNumberOfBytesToWrite": DWORD,
-    "lpNumberOfBytesWritten": POINTER,
-    "lpOverlapped": POINTER
+@winsdkapi_new(cc=STDCALL, params={
+    'hFile'                  : HANDLE,
+    'lpBuffer'               : LPCVOID,
+    'nNumberOfBytesToWrite'  : DWORD,
+    'lpNumberOfBytesWritten' : LPDWORD,
+    'lpOverlapped'           : LPOVERLAPPED
 })
 def hook_WriteFile(ql: Qiling, address: int, params):
     hFile = params["hFile"]
@@ -129,7 +137,11 @@ def hook_WriteFile(ql: Qiling, address: int, params):
 #   DWORD     dwNumServiceArgs,
 #   LPCSTR    *lpServiceArgVectors
 # );
-@winsdkapi(cc=STDCALL, dllname='advapi32_dll')
+@winsdkapi_new(cc=STDCALL, params={
+    'hService'            : SC_HANDLE,
+    'dwNumServiceArgs'    : DWORD,
+    'lpServiceArgVectors' : POINTER
+})
 def hook_StartServiceA(ql: Qiling, address: int, params):
     try:
         hService = params["hService"]

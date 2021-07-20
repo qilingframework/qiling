@@ -7,12 +7,13 @@ import sys
 sys.path.append("..")
 
 from qiling import Qiling
-from qiling.const import QL_INTERCEPT
+from qiling.const import QL_VERBOSE, QL_INTERCEPT
+from qiling.os.windows.api import STRING
 from qiling.os.windows.fncc import *
-from qiling.os.const import STRING
-from qiling.const import QL_VERBOSE
 
-@winsdkapi(cc=CDECL, replace_params={"str": STRING}) 
+@winsdkapi_new(cc=CDECL, params={
+    "str" : STRING
+})
 def my_puts(ql: Qiling, address: int, params):
     ql.log.info(f'puts was overriden by this hook')
 
@@ -39,7 +40,7 @@ def my_sandbox(path, rootfs):
     ql = Qiling(path, rootfs, verbose=QL_VERBOSE.DEBUG)
 
     ql.set_api("_cexit", my_onenter, QL_INTERCEPT.ENTER)
-    ql.set_api("puts", my_puts)
+    ql.set_api("puts", my_puts, QL_INTERCEPT.CALL)
     ql.set_api("atexit", my_onexit, QL_INTERCEPT.EXIT)
 
     ql.run()

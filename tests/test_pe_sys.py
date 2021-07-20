@@ -12,7 +12,8 @@ from qiling import Qiling
 from qiling.const import QL_VERBOSE
 from qiling.os.const import POINTER, DWORD, STRING, HANDLE
 from qiling.os.windows.wdk_const import *
-from qiling.os.windows.fncc import winsdkapi, STDCALL
+from qiling.os.windows.api import *
+from qiling.os.windows.fncc import *
 from qiling.os.windows.dlls.kernel32.fileapi import _CreateFile
 
 
@@ -41,8 +42,15 @@ class PETest(unittest.TestCase):
         #   DWORD                   dwCreationFlags,
         #   LPDWORD                 lpThreadId
         # );
-        @winsdkapi(cc=STDCALL, dllname='kernel32_dll')
-        def hook_CreateThread(ql, address, params):
+        @winsdkapi_new(cc=STDCALL, params={
+            'lpThreadAttributes' : LPSECURITY_ATTRIBUTES,
+            'dwStackSize'        : SIZE_T,
+            'lpStartAddress'     : LPTHREAD_START_ROUTINE,
+            'lpParameter'        : LPVOID,
+            'dwCreationFlags'    : DWORD,
+            'lpThreadId'         : LPDWORD
+        })
+        def hook_CreateThread(ql: Qiling, address: int, params):
             # set thread handle
             return 1
 
@@ -55,16 +63,16 @@ class PETest(unittest.TestCase):
         #   DWORD                 dwFlagsAndAttributes,
         #   HANDLE                hTemplateFile
         # );
-        @winsdkapi(cc=STDCALL, dllname='kernel32_dll', replace_params={
-            "lpFileName": STRING,
-            "dwDesiredAccess": DWORD,
-            "dwShareMode": DWORD,
-            "lpSecurityAttributes": POINTER,
-            "dwCreationDisposition": DWORD,
-            "dwFlagsAndAttributes": DWORD,
-            "hTemplateFile": HANDLE
+        @winsdkapi_new(cc=STDCALL, params={
+            'lpFileName'            : LPCSTR,
+            'dwDesiredAccess'       : DWORD,
+            'dwShareMode'           : DWORD,
+            'lpSecurityAttributes'  : LPSECURITY_ATTRIBUTES,
+            'dwCreationDisposition' : DWORD,
+            'dwFlagsAndAttributes'  : DWORD,
+            'hTemplateFile'         : HANDLE
         })
-        def hook_CreateFileA(ql, address, params):
+        def hook_CreateFileA(ql: Qiling, address: int, params):
             lpFileName = params["lpFileName"]
             if lpFileName.startswith("\\\\.\\"):
                 if ql.amsint32_driver:
@@ -72,7 +80,7 @@ class PETest(unittest.TestCase):
                 else:
                     return (-1)
             else:
-                ret = _CreateFile(ql, address, params, "CreateFileA")
+                ret = _CreateFile(ql, address, params)
 
             return ret
 
@@ -102,14 +110,14 @@ class PETest(unittest.TestCase):
                 ql.mem.write(lpNumberOfBytesWritten, ql.pack32(nNumberOfBytesToWrite))
             return ret
 
-        @winsdkapi(cc=STDCALL, dllname='kernel32_dll', replace_params={
-            "hFile": HANDLE,
-            "lpBuffer": POINTER,
-            "nNumberOfBytesToWrite": DWORD,
-            "lpNumberOfBytesWritten": POINTER,
-            "lpOverlapped": POINTER
+        @winsdkapi_new(cc=STDCALL, params={
+            'hFile'                  : HANDLE,
+            'lpBuffer'               : LPCVOID,
+            'nNumberOfBytesToWrite'  : DWORD,
+            'lpNumberOfBytesWritten' : LPDWORD,
+            'lpOverlapped'           : LPOVERLAPPED
         })
-        def hook_WriteFile(ql, address, params):
+        def hook_WriteFile(ql: Qiling, address: int, params):
             hFile = params["hFile"]
             lpBuffer = params["lpBuffer"]
             nNumberOfBytesToWrite = params["nNumberOfBytesToWrite"]
@@ -136,8 +144,12 @@ class PETest(unittest.TestCase):
         #   DWORD     dwNumServiceArgs,
         #   LPCSTR    *lpServiceArgVectors
         # );
-        @winsdkapi(cc=STDCALL, dllname='advapi32_dll')
-        def hook_StartServiceA(ql, address, params):
+        @winsdkapi_new(cc=STDCALL, params={
+            'hService'            : SC_HANDLE,
+            'dwNumServiceArgs'    : DWORD,
+            'lpServiceArgVectors' : POINTER
+        })
+        def hook_StartServiceA(ql: Qiling, address: int, params):
             hService = params["hService"]
             service_handle = ql.os.handle_manager.get(hService)
             ql.test_set_api = True

@@ -56,7 +56,7 @@ def hook_GetStringTypeExA(ql: Qiling, address: int, params):
 @winsdkapi_new(cc=STDCALL, params={
     'CodePage'          : UINT,
     'dwFlags'           : DWORD,
-    'lpWideCharStr'     : LPCWCH,
+    'lpWideCharStr'     : WSTRING, # LPCWCH
     'cchWideChar'       : INT,
     'lpMultiByteStr'    : LPSTR,
     'cbMultiByte'       : INT,
