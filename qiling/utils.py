@@ -482,11 +482,14 @@ def os_setup(archtype, ostype, ql):
 
 def profile_setup(ostype, profile, ql):
     _profile = "Default"
+    
     if profile != None:
         _profile = profile
-        
     debugmsg = "Profile: %s" % _profile
 
+    if ostype in QL_ARCH_NONOS:
+        return profile, debugmsg
+    
     os_profile = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", ostype_convert_str(ostype) + ".ql")
 
     if profile:
