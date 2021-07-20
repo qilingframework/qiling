@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from .os.memory import QlMemoryManager
     from .loader.loader import QlLoader
 
-from .const import QL_ARCH_ENDIAN, QL_ENDIAN, QL_MCU, QL_OS, QL_VERBOSE, QL_CUSTOM_ENGINE
+from .const import QL_ARCH_ENDIAN, QL_ENDIAN, QL_ARCH_MCU, QL_OS, QL_VERBOSE, QL_CUSTOM_ENGINE
 from .exception import QlErrorFileNotFound, QlErrorArch, QlErrorOsType, QlErrorOutput
 from .utils import *
 from .core_struct import QlCoreStructs
@@ -122,12 +122,12 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
         if self._code or (self._archtype and type(self._archtype) == str):
             if (self._archtype and type(self._archtype) == str):
-                self._archtype = arch_convert(self._archtype.lower())
+                self._archtype= arch_convert(self._archtype.lower())
 
             if (self._ostype and type(self._ostype) == str):
                 self._ostype = ostype_convert(self._ostype.lower())
 
-            if self._archtype in QL_CUSTOM_ENGINE or self._archtype in QL_MCU:
+            if self._archtype in QL_CUSTOM_ENGINE or self._ostype == None:
                 if self._archtype in QL_CUSTOM_ENGINE:
                     self._custom_engine = True
                 if self._ostype == None:
@@ -219,7 +219,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self.uc = self.arch.init_uc if not self._custom_engine else None
         QlCoreHooks.__init__(self, self.uc)
         
-        if self._custom_engine or self.archtype in QL_MCU:
+        if self._custom_engine or self.archtype in QL_ARCH_MCU:
             return
 
         self._os = os_setup(self.archtype, self.ostype, self)
@@ -746,7 +746,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             else:
                 return self.arch.run(code) 
 
-        if self._microcontroller:
+        if self.archtype in QL_ARCH_MCU:
             return self.arch.run(count=count)
 
         self.write_exit_trap()

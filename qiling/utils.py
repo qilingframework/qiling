@@ -15,7 +15,7 @@ from enum import EnumMeta
 from unicorn import UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
 
 from .exception import *
-from .const import QL_VERBOSE, QL_ARCH, QL_ENDIAN, QL_OS, QL_DEBUGGER, QL_ARCH_1BIT, QL_ARCH_16BIT, QL_ARCH_32BIT, QL_ARCH_64BIT
+from .const import QL_MCU, QL_VERBOSE, QL_ARCH, QL_ENDIAN, QL_OS, QL_DEBUGGER, QL_ARCH_1BIT, QL_ARCH_16BIT, QL_ARCH_32BIT, QL_ARCH_64BIT
 from .const import debugger_map, arch_map, os_map, arch_os_map, loader_map
 
 FMT_STR = "%(levelname)s\t%(message)s"
@@ -208,9 +208,9 @@ def ostype_convert(ostype: str) -> Optional[QL_OS]:
 def arch_convert_str(arch: QL_ARCH) -> Optional[str]:
     return __reverse_mapping(arch_map).get(arch)
 
-def arch_convert(arch: str) -> Optional[QL_ARCH]:
+def arch_convert(arch: str)  -> Optional[QL_ARCH]:
     return arch_map.get(arch)
-
+    
 def arch_os_convert(arch):
     adapter = {}
     adapter.update(arch_os_map)
