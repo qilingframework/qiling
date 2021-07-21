@@ -59,7 +59,18 @@ class QlLoaderMCU(QlLoader):
         super(QlLoaderMCU, self).__init__(ql)
         
         self.ihexfile = IhexParser(self.argv[0])        
-        
+
+        self.mapinfo = {
+            'sram'      : (0x20000000, 0x20020000),
+            'system'    : (0x1FFF0000, 0x1FFF7800),            
+            'flash'     : (0x08000000, 0x08080000),             
+            'peripheral': (0x40000000, 0x40100000),
+            'core_perip': (0xE0000000, 0xE0100000),
+        }
+
     def run(self):
+        for begin, end in self.mapinfo.values():
+            self.ql.mem.map(begin, end - begin)
+
         for begin, end, data in self.ihexfile.segments:
             self.ql.mem.write(begin, data)            

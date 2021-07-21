@@ -21,18 +21,18 @@ class QlArchCORTEX_M(QlArchARM):
         ## Memory Model
         self.BOOT = [0, 0]
         self.boot_space = 0
-        self.mapinfo = {
-            'sram'      : (0x20000000, 0x20020000),
-            'system'    : (0x1FFF0000, 0x1FFF7800),            
-            'flash'     : (0x08000000, 0x08080000),             
-            'peripheral': (0x40000000, 0x40100000),
-            'core_perip': (0xE0000000, 0xE0100000),
-        }
+        # self.mapinfo = {
+        #     'sram'      : (0x20000000, 0x20020000),
+        #     'system'    : (0x1FFF0000, 0x1FFF7800),            
+        #     'flash'     : (0x08000000, 0x08080000),             
+        #     'peripheral': (0x40000000, 0x40100000),
+        #     'core_perip': (0xE0000000, 0xE0100000),
+        # }
 
     def get_init_uc(self):
         return Uc(UC_ARCH_ARM, UC_MODE_ARM + UC_MODE_MCLASS)
 
-    def setup(self):        
+    #def setup(self):        
         # def hook_code(ql, address, size):
         #     code = ql.mem.read(address, size)
         #     for i in self.md.disasm(code, address):
@@ -40,8 +40,8 @@ class QlArchCORTEX_M(QlArchARM):
 
         # self.ql.hook_code(hook_code)
 
-        for begin, end in self.mapinfo.values():
-            self.mem.map(begin, end - begin)
+        # for begin, end in self.mapinfo.values():
+        #     self.mem.map(begin, end - begin)
         
     def flash(self):
         self.ql.loader.run()
