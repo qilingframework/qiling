@@ -271,7 +271,7 @@ def hook_StartImage(ql: Qiling, address: int, params):
 	"ExitData"		: POINTER		# PTR(CHAR16)
 })
 def hook_Exit(ql: Qiling, address: int, params):
-	ql.uc.emu_stop()
+	ql.emu_stop()
 
 	return EFI_SUCCESS
 
@@ -286,7 +286,7 @@ def hook_UnloadImage(ql: Qiling, address: int, params):
 	"MapKey"		: ULONGLONG	# UINTN
 })
 def hook_ExitBootServices(ql: Qiling, address: int, params):
-	ql.uc.emu_stop()
+	ql.emu_stop()
 
 	return EFI_SUCCESS
 
