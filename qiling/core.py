@@ -222,17 +222,15 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         # Setup Outpt
         self.arch.utils.setup_output()
 
-        if self._custom_engine or self.archtype in QL_ARCH_NONOS:
-            return
-
-        self._os = os_setup(self.archtype, self.ostype, self)
-
+        if not (self._custom_engine or self.archtype in QL_ARCH_NONOS):
+            self._os = os_setup(self.archtype, self.ostype, self)
+        
         # Run the loader
-        self.loader.run()     
+        self.loader.run()
 
-        # Add extra guard options when configured to do so
-        self._init_stop_guard()
-
+        if not (self._custom_engine or self.archtype in QL_ARCH_NONOS):
+            # Add extra guard options when configured to do so
+            self._init_stop_guard()    
 
     #####################
     # Qiling Components #

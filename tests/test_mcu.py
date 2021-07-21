@@ -13,10 +13,6 @@ class MCUTest(unittest.TestCase):
     def test_mcu_led_hex_stm32f411(self):
         ql = Qiling(["../examples/rootfs/stm32f411/hex/rand_blink.hex"],                    
                     archtype="cortex_m", profile="stm32f411", verbose=10)
-
-        #ql.arch.setup()
-        ql.arch.flash()
-        ql.arch.reset()
         ql.run(count=10000)
 
         del ql

@@ -19,8 +19,8 @@ class QlArchCORTEX_M(QlArchARM):
         self.emgr = ExceptionManager(self)
 
         ## Memory Model
-        self.BOOT = [0, 0]
-        self.boot_space = 0
+        # self.BOOT = [0, 0]
+        #self.boot_space = 0
         # self.mapinfo = {
         #     'sram'      : (0x20000000, 0x20020000),
         #     'system'    : (0x1FFF0000, 0x1FFF7800),            
@@ -43,20 +43,20 @@ class QlArchCORTEX_M(QlArchARM):
         # for begin, end in self.mapinfo.values():
         #     self.mem.map(begin, end - begin)
         
-    def flash(self):
-        self.ql.loader.run()
+    # def flash(self):
+    #     self.ql.loader.run()
 
-    def reset(self):
-        if self.BOOT[0] == 0:
-            self.boot_space = self.mapinfo['flash'][0]
-        elif self.BOOT[1] == 0:
-            self.boot_space = self.mapinfo['system'][0]
-        elif self.BOOT[1] == 1:
-            self.boot_space = self.mapinfo['sram'][0]
+    # def reset(self):
+    #     if self.BOOT[0] == 0:
+    #         self.boot_space = self.mapinfo['flash'][0]
+    #     elif self.BOOT[1] == 0:
+    #         self.boot_space = self.mapinfo['system'][0]
+    #     elif self.BOOT[1] == 1:
+    #         self.boot_space = self.mapinfo['sram'][0]
 
-        self.reg.write('lr', 0xffffffff)
-        self.reg.write('msp', self.mem.read_ptr(self.boot_space))
-        self.reg.write('pc', self.mem.read_ptr(self.boot_space + 0x4))
+    #     self.reg.write('lr', 0xffffffff)
+    #     self.reg.write('msp', self.mem.read_ptr(self.boot_space))
+    #     self.reg.write('pc', self.mem.read_ptr(self.boot_space + 0x4))
         
     def step(self):
         self.emgr.interrupt()

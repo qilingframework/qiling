@@ -8,7 +8,7 @@ import struct
 
 from qiling.const import *
 from qiling.core import Qiling
-
+from qiling.mcu.stm32.exceptions.manager import ExceptionManager
 from .loader import QlLoader
 
 class IhexParser:
@@ -57,9 +57,10 @@ class IhexParser:
 class QlLoaderMCU(QlLoader):
     def __init__(self, ql:Qiling):
         super(QlLoaderMCU, self).__init__(ql)
-        
+        self.emgr = ExceptionManager(self)
         self.ihexfile = IhexParser(self.argv[0])        
-
+        self.BOOT = [0, 0]
+        self.boot_space = 0
         self.mapinfo = {
             'sram'      : (0x20000000, 0x20020000),
             'system'    : (0x1FFF0000, 0x1FFF7800),            
@@ -68,9 +69,24 @@ class QlLoaderMCU(QlLoader):
             'core_perip': (0xE0000000, 0xE0100000),
         }
 
+    def reset(self):
+        if self.BOOT[0] == 0:
+            self.boot_space = self.mapinfo['flash'][0]
+        elif self.BOOT[1] == 0:
+            self.boot_space = self.mapinfo['system'][0]
+        elif self.BOOT[1] == 1:
+            self.boot_space = self.mapinfo['sram'][0]
+
+        self.ql.reg.write('lr', 0xffffffff)
+        self.ql.reg.write('msp', self.ql.mem.read_ptr(self.boot_space))
+        self.ql.reg.write('pc', self.ql.mem.read_ptr(self.boot_space + 0x4))
+
+
     def run(self):
         for begin, end in self.mapinfo.values():
             self.ql.mem.map(begin, end - begin)
 
         for begin, end, data in self.ihexfile.segments:
-            self.ql.mem.write(begin, data)            
+            self.ql.mem.write(begin, data)
+
+        self.reset()               
