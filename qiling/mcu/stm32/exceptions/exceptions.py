@@ -21,7 +21,7 @@ class CoreException:
         self.reg_context = ['ipsr', 'pc', 'lr', 'r12', 'r3', 'r2', 'r1', 'r0']
 
     def update_regs(self):
-        address = self.arch.boot_space + self.offset
+        address = self.arch.ql.loader.boot_space + self.offset
         entry = self.arch.mem.read_ptr(address)
 
         self.EXC_RETURN = 0xFFFFFFF9
