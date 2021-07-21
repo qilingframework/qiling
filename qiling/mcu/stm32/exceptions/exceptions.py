@@ -18,7 +18,9 @@ class CoreException:
         self.priority = priority
         self.offset   = offset
 
-    def prepare(self):
+        self.reg_context = ['ipsr', 'pc', 'lr', 'r12', 'r3', 'r2', 'r1', 'r0']
+
+    def update_regs(self):
         address = self.arch.boot_space + self.offset
         entry = self.arch.mem.read_ptr(address)
 
@@ -26,20 +28,21 @@ class CoreException:
         self.arch.ql.reg.write('pc', entry)
         self.arch.ql.reg.write('lr', self.EXC_RETURN)
 
-    def save_context(self):
-        self.context = self.arch.context_save()
+    def save_regs(self):
+        for reg in self.reg_context:
+            self.arch.stack_push(self.arch.ql.reg.read(reg))
 
-    def restore_context(self):
-        self.arch.context_restore(self.context)
+    def restore_regs(self):
+        for reg in self.reg_context[::-1]:
+            self.arch.ql.reg.write(reg, self.arch.stack_pop())
 
     def handle(self):
-        self.save_context()
-        self.prepare()
+        self.save_regs()
+        self.update_regs()
         try:
             ## FIXME: Why unicorn try fetch last instruction
-            self.arch.ql.uc.emu_start(self.arch.get_pc(), self.EXC_RETURN)            
+            self.arch.ql.emu_start(self.arch.get_pc(), self.EXC_RETURN)            
         except UcError:
             pass
-        
-        
-        self.restore_context()
+                
+        self.restore_regs()

@@ -39,7 +39,7 @@ class QlArchCORTEX_M(QlArchARM):
         def hook_code(mu, address, size, user_data):     
             code = mu.mem_read(address, size)
             for i in self.md.disasm(code, address):
-                print(hex(i.address), i.mnemonic, i.op_str)
+                self.ql.log.info('%s %s %s' % (hex(i.address), i.mnemonic, i.op_str))
 
         self.ql.uc.hook_add(UC_HOOK_CODE, hook_code)
 
@@ -63,7 +63,7 @@ class QlArchCORTEX_M(QlArchARM):
         
     def step(self):
         self.emgr.interrupt()
-        self.ql.uc.emu_start(self.get_pc(), 0, count=1)
+        self.ql.emu_start(self.get_pc() | 1, 0, count=1)
 
     def run(self, count=-1):        
         while count != 0:
