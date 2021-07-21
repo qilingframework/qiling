@@ -52,6 +52,9 @@ def ql_create_disassembler(archtype: QL_ARCH, archendian: QL_ENDIAN, reg_cpsr=No
     elif archtype == QL_ARCH.A8086:
         md = Cs(CS_ARCH_X86, CS_MODE_16)
 
+    elif archtype == QL_ARCH.CORTEX_M:
+        md = Cs(CS_ARCH_ARM, CS_MODE_THUMB + CS_MODE_MCLASS)
+
     elif archtype == QL_ARCH.EVM:
         raise NotImplementedError('evm')
 

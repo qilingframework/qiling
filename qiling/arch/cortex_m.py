@@ -4,9 +4,6 @@
 #
 
 from unicorn import *
-from unicorn.arm_const import *
-
-from capstone import *
 
 from qiling.const import *
 from qiling.mcu.stm32.exceptions.manager import ExceptionManager
@@ -16,7 +13,7 @@ class QlArchCORTEX_M(QlArchARM):
     def __init__(self, ql):
         super().__init__(ql)
 
-        self.md = Cs(CS_ARCH_ARM, CS_MODE_THUMB | CS_MODE_MCLASS)
+        self.md = self.create_disassembler()
 
         ## Exception Model
         self.emgr = ExceptionManager(self)
@@ -36,12 +33,12 @@ class QlArchCORTEX_M(QlArchARM):
         return Uc(UC_ARCH_ARM, UC_MODE_ARM + UC_MODE_MCLASS)
 
     def setup(self):        
-        def hook_code(mu, address, size, user_data):     
-            code = mu.mem_read(address, size)
+        def hook_code(ql, address, size):
+            code = ql.mem.read(address, size)
             for i in self.md.disasm(code, address):
                 self.ql.log.info('%s %s %s' % (hex(i.address), i.mnemonic, i.op_str))
 
-        self.ql.uc.hook_add(UC_HOOK_CODE, hook_code)
+        self.ql.hook_code(hook_code)
 
         for begin, end in self.mapinfo.values():
             self.mem.map(begin, end - begin)
