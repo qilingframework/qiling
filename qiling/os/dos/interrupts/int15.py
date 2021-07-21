@@ -26,7 +26,7 @@ def __leaf_53(ql: Qiling):
 	elif al == 0x07:
 		if (ql.reg.bx == 1) and (ql.reg.cx == 3):
 			ql.log.info("Emulation Stop")
-			ql.uc.emu_stop()
+			ql.emu_stop()
 	else:
 		raise NotImplementedError()
 
