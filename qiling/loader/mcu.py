@@ -8,7 +8,7 @@ import struct
 
 from qiling.const import *
 from qiling.core import Qiling
-from qiling.mcu.stm32.exceptions.manager import ExceptionManager
+from qiling.mcu.exceptions.manager import ExceptionManager
 from .loader import QlLoader
 
 class IhexParser:
@@ -43,9 +43,6 @@ class IhexParser:
         addr = bytes.fromhex(line[3: 7])
         data = bytes.fromhex(line[9: 9 + size * 2])
 
-        if type == '01':
-            return
-        
         if type == '04':            
             self.base = struct.unpack('>I', data + b'\x00\x00')[0]            
         elif type == '05':
@@ -59,8 +56,6 @@ class QlLoaderMCU(QlLoader):
         super(QlLoaderMCU, self).__init__(ql)
         self.emgr = ExceptionManager(self)
         self.ihexfile = IhexParser(self.argv[0])        
-        self.BOOT = [0, 0]
-        self.boot_space = 0
         self.mapinfo = {
             'sram'      : (0x20000000, 0x20020000),
             'system'    : (0x1FFF0000, 0x1FFF7800),            
@@ -70,17 +65,16 @@ class QlLoaderMCU(QlLoader):
         }
 
     def reset(self):
-        if self.BOOT[0] == 0:
-            self.boot_space = self.mapinfo['flash'][0]
-        elif self.BOOT[1] == 0:
-            self.boot_space = self.mapinfo['system'][0]
-        elif self.BOOT[1] == 1:
-            self.boot_space = self.mapinfo['sram'][0]
+        if self.ql.arch.BOOT[0] == 0:
+            self.ql.arch.boot_space = self.mapinfo['flash'][0]
+        elif self.ql.arch.BOOT[1] == 0:
+            self.ql.arch.boot_space = self.mapinfo['system'][0]
+        elif self.ql.arch.BOOT[1] == 1:
+            self.ql.arch.boot_space = self.mapinfo['sram'][0]
 
         self.ql.reg.write('lr', 0xffffffff)
-        self.ql.reg.write('msp', self.ql.mem.read_ptr(self.boot_space))
-        self.ql.reg.write('pc', self.ql.mem.read_ptr(self.boot_space + 0x4))
-
+        self.ql.reg.write('msp', self.ql.mem.read_ptr(self.ql.arch.boot_space))
+        self.ql.reg.write('pc', self.ql.mem.read_ptr(self.ql.arch.boot_space + 0x4))
 
     def run(self):
         for begin, end in self.mapinfo.values():

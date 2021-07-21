@@ -6,7 +6,8 @@
 from unicorn import *
 
 from qiling.const import *
-from qiling.mcu.stm32.exceptions.manager import ExceptionManager
+from qiling.mcu.peripheral.systick_timer import SysTickTimer
+from qiling.mcu.exceptions.manager import ExceptionManager
 from .arm import QlArchARM
 
 class QlArchCORTEX_M(QlArchARM):
@@ -19,53 +20,30 @@ class QlArchCORTEX_M(QlArchARM):
         self.emgr = ExceptionManager(self)
 
         ## Memory Model
-        # self.BOOT = [0, 0]
-        #self.boot_space = 0
-        # self.mapinfo = {
-        #     'sram'      : (0x20000000, 0x20020000),
-        #     'system'    : (0x1FFF0000, 0x1FFF7800),            
-        #     'flash'     : (0x08000000, 0x08080000),             
-        #     'peripheral': (0x40000000, 0x40100000),
-        #     'core_perip': (0xE0000000, 0xE0100000),
-        # }
+        self.BOOT = [0, 0]
+        self.boot_space = 0
+        
+        self.peripherals = [
+            SysTickTimer(self)
+        ]
 
     def get_init_uc(self):
         return Uc(UC_ARCH_ARM, UC_MODE_ARM + UC_MODE_MCLASS)
-
-    #def setup(self):        
-        # def hook_code(ql, address, size):
-        #     code = ql.mem.read(address, size)
-        #     for i in self.md.disasm(code, address):
-        #         self.ql.log.info('%s %s %s' % (hex(i.address), i.mnemonic, i.op_str))
-
-        # self.ql.hook_code(hook_code)
-
-        # for begin, end in self.mapinfo.values():
-        #     self.mem.map(begin, end - begin)
-        
-    # def flash(self):
-    #     self.ql.loader.run()
-
-    # def reset(self):
-    #     if self.BOOT[0] == 0:
-    #         self.boot_space = self.mapinfo['flash'][0]
-    #     elif self.BOOT[1] == 0:
-    #         self.boot_space = self.mapinfo['system'][0]
-    #     elif self.BOOT[1] == 1:
-    #         self.boot_space = self.mapinfo['sram'][0]
-
-    #     self.reg.write('lr', 0xffffffff)
-    #     self.reg.write('msp', self.mem.read_ptr(self.boot_space))
-    #     self.reg.write('pc', self.mem.read_ptr(self.boot_space + 0x4))
         
     def step(self):
         self.emgr.interrupt()
-        self.ql.emu_start(self.get_pc() | 1, 0, count=1)
+        self.ql.emu_start(self.get_pc(), 0, count=1)
+        for perip in self.peripherals:
+            perip.step()
 
     def run(self, count=-1):        
         while count != 0:
             self.step()
             count -= 1
+
+    def check_thumb(self):
+        ## FIXME: unicorn do not implement epsr
+        return UC_MODE_THUMB
 
     @property
     def reg(self):
