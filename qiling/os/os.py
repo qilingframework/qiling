@@ -80,7 +80,7 @@ class QlOs:
         # let the user override default resolvers or add custom ones
         self.resolvers.update(resolvers)
 
-        self.utils.setup_output()
+        self.ql.arch.utils.setup_output()
 
     def save(self):
         return {}

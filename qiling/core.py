@@ -219,6 +219,9 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self.uc = self.arch.init_uc if not self._custom_engine else None
         QlCoreHooks.__init__(self, self.uc)
         
+        # Setup Outpt
+        self.arch.utils.setup_output()
+        
         if self._custom_engine or self.archtype in QL_ARCH_NONOS:
             return
 
@@ -227,9 +230,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         # Run the loader
         self.loader.run()
         
-        # Setup Outpt
-        self.os.utils.setup_output()
-
         # Add extra guard options when configured to do so
         self._init_stop_guard()
 
@@ -568,7 +568,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._verbose = v
         self.log.setLevel(ql_resolve_logger_level(self._verbose))
         if not self._custom_engine:
-            self.os.utils.setup_output()
+            self.arch.utils.setup_output()
 
     @property
     def patch_bin(self) -> list:

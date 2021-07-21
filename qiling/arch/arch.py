@@ -8,13 +8,14 @@ from abc import ABC, abstractmethod
 from capstone import Cs
 from keystone import Ks
 
-from . import utils
 from qiling import Qiling
+from .utils import QlArchUtils, ql_create_disassembler, ql_create_assembler
 from qiling.const import QL_ARCH
 
 class QlArch(ABC):
     def __init__(self, ql: Qiling):
         self.ql = ql
+        self.utils = QlArchUtils(ql)
 
     # ql.init_Uc - initialized unicorn engine
     @property
@@ -81,7 +82,7 @@ class QlArch(ABC):
             reg_cpsr = self.ql.reg.cpsr
         else:
             reg_cpsr = None
-        return utils.ql_create_disassembler(self.ql.archtype, self.ql.archendian, reg_cpsr)
+        return ql_create_disassembler(self.ql.archtype, self.ql.archendian, reg_cpsr)
 
 
     def create_assembler(self) -> Ks:
@@ -89,4 +90,5 @@ class QlArch(ABC):
             reg_cpsr = self.ql.reg.cpsr
         else:
             reg_cpsr = None
-        return utils.ql_create_assembler(self.ql.archtype, self.ql.archendian, reg_cpsr)
+        return ql_create_assembler(self.ql.archtype, self.ql.archendian, reg_cpsr)
+
