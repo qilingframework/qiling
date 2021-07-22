@@ -20,7 +20,7 @@ class IhexParser:
 
         with open(path, 'r') as f:
             for line in f.read().splitlines():
-                self.parse_line(line)
+                self.parse_line(line.strip())
 
             begin, end, bindata = 0, 0, b''
             for addr, data in self.mem:
@@ -37,6 +37,9 @@ class IhexParser:
             self.segments.append((begin, end, bindata))
 
     def parse_line(self, line):
+        if len(line) < 9:
+            return
+        
         size = int(line[1: 3], 16)        
         type = line[7: 9]
 
