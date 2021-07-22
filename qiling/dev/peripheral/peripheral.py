@@ -4,8 +4,8 @@
 #
 
 class Peripheral:
-    def __init__(self, core):
-        self.core = core
+    def __init__(self, ql):
+        self.ql = ql
 
     def step(self):
         raise NotImplementedError

@@ -11,8 +11,8 @@ class SysTickTimer(Peripheral):
     STK_VAL   = 2
     STK_CALIB = 3
 
-    def __init__(self, core):
-        super().__init__(core)
+    def __init__(self, ql):
+        super().__init__(ql)
 
         self.stk_ctrl  = 0x00000000
         self.stk_load  = 0x00000010
@@ -21,7 +21,7 @@ class SysTickTimer(Peripheral):
 
     def step(self):
         if self.stk_val == 0:
-            self.core.emgr.send_interrupt(15)
+            self.ql.arch.emgr.send_interrupt(15)
             self.stk_val = self.stk_load
         
         self.stk_val -= 1

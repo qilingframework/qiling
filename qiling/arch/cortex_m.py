@@ -23,7 +23,7 @@ class QlArchCORTEX_M(QlArchARM):
         self.boot_space = 0
         
         self.peripherals = [
-            SysTickTimer(self)
+            SysTickTimer(ql)
         ]
 
     def get_init_uc(self):
