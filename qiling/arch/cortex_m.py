@@ -41,5 +41,5 @@ class QlArchCORTEX_M(QlArchARM):
             count -= 1
 
     def check_thumb(self):
-        ## FIXME: unicorn do not implement epsr
+        ## FIXME: unicorn do not implement epsr yet
         return UC_MODE_THUMB
