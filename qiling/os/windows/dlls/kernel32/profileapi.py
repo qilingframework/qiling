@@ -10,7 +10,7 @@ from qiling.os.windows.fncc import *
 # BOOL QueryPerformanceCounter(
 #   LARGE_INTEGER *lpPerformanceCount
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpPerformanceCount' : POINTER
 })
 def hook_QueryPerformanceCounter(ql: Qiling, address: int, params):
@@ -19,7 +19,7 @@ def hook_QueryPerformanceCounter(ql: Qiling, address: int, params):
 # BOOL QueryPerformanceFrequency(
 #  LARGE_INTEGER *lpFrequency
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpFrequency' : POINTER
 })
 def hook_QueryPerformanceFrequency(ql: Qiling, address: int, params):

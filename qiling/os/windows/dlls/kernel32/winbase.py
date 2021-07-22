@@ -16,7 +16,7 @@ from qiling.os.windows.utils import cmp
 # __analysis_noreturn VOID FatalExit(
 #   int ExitCode
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'ExitCode' : INT
 })
 def hook_FatalExit(ql: Qiling, address: int, params):
@@ -26,7 +26,7 @@ def hook_FatalExit(ql: Qiling, address: int, params):
 # PVOID EncodePointer(
 #  _In_ PVOID Ptr
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'Ptr' : PVOID
 })
 def hook_EncodePointer(ql: Qiling, address: int, params):
@@ -35,7 +35,7 @@ def hook_EncodePointer(ql: Qiling, address: int, params):
 # PVOID DecodePointer(
 #  _In_ PVOID Ptr
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'Ptr' : PVOID
 })
 def hook_DecodePointer(ql: Qiling, address: int, params):
@@ -45,7 +45,7 @@ def hook_DecodePointer(ql: Qiling, address: int, params):
 #   LPCSTR lpCmdLine,
 #   UINT   uCmdShow
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpCmdLine' : LPCSTR,
     'uCmdShow'  : UINT
 })
@@ -56,7 +56,7 @@ def hook_WinExec(ql: Qiling, address: int, params):
 #   UINT   uFlags,
 #   SIZE_T uBytes
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'uFlags' : UINT,
     'uBytes' : SIZE_T
 })
@@ -70,7 +70,7 @@ def hook_LocalAlloc(ql: Qiling, address: int, params):
 #   SIZE_T                 uBytes,
 #   UINT                   uFlags
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hMem'   : HLOCAL,
     'uBytes' : SIZE_T,
     'uFlags' : UINT
@@ -93,7 +93,7 @@ def hook_LocalReAlloc(ql: Qiling, address: int, params):
 # HLOCAL LocalFree(
 #   _Frees_ptr_opt_ HLOCAL hMem
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hMem' : HLOCAL
 })
 def hook_LocalFree(ql: Qiling, address: int, params):
@@ -106,7 +106,7 @@ def hook_LocalFree(ql: Qiling, address: int, params):
 # UINT SetHandleCount(
 #   UINT uNumber
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'uNumber' : UINT
 })
 def hook_SetHandleCount(ql: Qiling, address: int, params):
@@ -115,7 +115,7 @@ def hook_SetHandleCount(ql: Qiling, address: int, params):
 # LPVOID GlobalLock(
 #  HGLOBAL hMem
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hMem' : HGLOBAL
 })
 def hook_GlobalLock(ql: Qiling, address: int, params):
@@ -124,7 +124,7 @@ def hook_GlobalLock(ql: Qiling, address: int, params):
 # LPVOID GlobalUnlock(
 #  HGLOBAL hMem
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hMem' : HGLOBAL
 })
 def hook_GlobalUnlock(ql: Qiling, address: int, params):
@@ -134,7 +134,7 @@ def hook_GlobalUnlock(ql: Qiling, address: int, params):
 #  UINT   uFlags,
 #  SIZE_T dwBytes
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'uFlags'  : UINT,
     'dwBytes' : SIZE_T
 })
@@ -146,7 +146,7 @@ def hook_GlobalAlloc(ql: Qiling, address: int, params):
 # HGLOBAL GlobalFree(
 #   _Frees_ptr_opt_ HGLOBAL hMem
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hMem' : HGLOBAL
 })
 def hook_GlobalFree(ql: Qiling, address: int, params):
@@ -159,7 +159,7 @@ def hook_GlobalFree(ql: Qiling, address: int, params):
 # HGLOBAL GlobalHandle(
 #   LPCVOID pMem
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'pMem' : LPCVOID
 })
 def hook_GlobalHandle(ql: Qiling, address: int, params):
@@ -170,7 +170,7 @@ def hook_GlobalHandle(ql: Qiling, address: int, params):
 #   LPCSTR lpString2,
 #   int    iMaxLength
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpString1'  : LPSTR,
     'lpString2'  : LPCSTR,
     'iMaxLength' : INT
@@ -193,7 +193,7 @@ def hook_lstrcpynA(ql: Qiling, address: int, params):
 #   LPCWSTR lpString2,
 #   int    iMaxLength
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpString1'  : LPWSTR,
     'lpString2'  : LPCWSTR,
     'iMaxLength' : INT
@@ -215,7 +215,7 @@ def hook_lstrcpynW(ql: Qiling, address: int, params):
 #   LPSTR  lpString1,
 #   LPCSTR lpString2,
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpString1' : LPSTR,
     'lpString2' : LPCSTR
 })
@@ -232,7 +232,7 @@ def hook_lstrcpyA(ql: Qiling, address: int, params):
 #   LPSTR  lpString1,
 #   LPCSTR lpString2,
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpString1' : LPWSTR,
     'lpString2' : LPCWSTR
 })
@@ -249,7 +249,7 @@ def hook_lstrcpyW(ql: Qiling, address: int, params):
 #   LPSTR  lpString1,
 #   LPCSTR lpString2
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpString1' : LPSTR,
     'lpString2' : LPCSTR
 })
@@ -270,7 +270,7 @@ def hook_lstrcatA(ql: Qiling, address: int, params):
 #   LPWSTR  lpString1,
 #   LPCWSTR lpString2
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpString1' : LPWSTR,
     'lpString2' : LPCWSTR
 })
@@ -295,7 +295,7 @@ def __lstrlen(ql: Qiling, address: int, params):
 # int lstrlenA(
 #   LPCSTR lpString
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpString' : LPCSTR
 })
 def hook_lstrlenA(ql: Qiling, address: int, params):
@@ -304,7 +304,7 @@ def hook_lstrlenA(ql: Qiling, address: int, params):
 # int lstrlenW(
 #   LPCWSTR lpString
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpString' : LPCWSTR
 })
 def hook_lstrlenW(ql: Qiling, address: int, params):
@@ -326,7 +326,7 @@ def __lstrcmpi(ql: Qiling, address: int, params):
 #   LPCWSTR lpString1,
 #   LPCWSTR lpString2
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpString1' : LPCWSTR,
     'lpString2' : LPCWSTR
 })
@@ -337,7 +337,7 @@ def hook_lstrcmpiW(ql: Qiling, address: int, params):
 #   LPCSTR lpString1,
 #   LPCSTR lpString2
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpString1' : LPCSTR,
     'lpString2' : LPCSTR
 })
@@ -348,7 +348,7 @@ def hook_lstrcmpiA(ql: Qiling, address: int, params):
 #   LPCWSTR lpString1,
 #   LPCWSTR lpString2
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpString1' : LPCWSTR,
     'lpString2' : LPCWSTR
 })
@@ -359,7 +359,7 @@ def hook_lstrcmpW(ql: Qiling, address: int, params):
 #   LPCSTR lpString1,
 #   LPCSTR lpString2
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpString1' : LPCSTR,
     'lpString2' : LPCSTR
 })
@@ -371,7 +371,7 @@ def hook_lstrcmpA(ql: Qiling, address: int, params):
 #   LPCSTR  lpName,
 #   LPCSTR  lpType
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hModule' : HMODULE,
     'lpName'  : LPCSTR,
     'lpType'  : LPCSTR
@@ -387,7 +387,7 @@ def hook_FindResourceA(ql: Qiling, address: int, params):
 #   const VOID *lp,
 #   UINT_PTR   ucb
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lp'  : LPVOID,
     'ucb' : UINT_PTR
 })
@@ -399,7 +399,7 @@ def hook_IsBadReadPtr(ql: Qiling, address: int, params):
 #   const VOID *lp,
 #   UINT_PTR   ucb
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lp'  : LPVOID,
     'ucb' : UINT_PTR
 })
@@ -426,7 +426,7 @@ def compare(p1: int, operator: int, p2: int) -> bool:
 #   DWORD              dwTypeMask,
 #   DWORDLONG          dwlConditionMask
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpVersionInformation' : LPOSVERSIONINFOEXW,
     'dwTypeMask'           : DWORD,
     'dwlConditionMask'     : DWORDLONG
@@ -512,7 +512,7 @@ def __GetUserName(ql: Qiling, address: int, params, wstring: bool):
 #   LPWSTR  lpBuffer,
 #   LPDWORD pcbBuffer
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpBuffer'  : LPWSTR,
     'pcbBuffer' : LPDWORD
 })
@@ -523,7 +523,7 @@ def hook_GetUserNameW(ql: Qiling, address: int, params):
 #   LPCSTR  lpBuffer,
 #   LPDWORD pcbBuffer
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpBuffer'  : LPSTR,
     'pcbBuffer' : LPDWORD
 })
@@ -551,7 +551,7 @@ def __GetComputerName(ql: Qiling, address: int, params, wstring: bool):
 #   LPWSTR  lpBuffer,
 #   LPDWORD nSize
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpBuffer' : LPWSTR,
     'nSize'    : LPDWORD
 })
@@ -562,7 +562,7 @@ def hook_GetComputerNameW(ql: Qiling, address: int, params):
 #   LPCSTR  lpBuffer,
 #   LPDWORD nSize
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpBuffer' : LPSTR,
     'nSize'    : LPDWORD
 })
@@ -577,7 +577,7 @@ def hook_GetComputerNameA(ql: Qiling, address: int, params):
 #   DWORD  nSize,
 #   LPCSTR lpFileName
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpAppName'        : LPCSTR,
     'lpKeyName'        : LPCSTR,
     'lpDefault'        : LPCSTR,
@@ -621,7 +621,7 @@ def hook_GetPrivateProfileStringA(ql: Qiling, address: int, params):
 #   LPCSTR lpString,
 #   LPCSTR lpFileName
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpAppName'  : LPCSTR,
     'lpKeyName'  : LPCSTR,
     'lpString'   : LPCSTR,
@@ -633,7 +633,7 @@ def hook_WritePrivateProfileStringA(ql: Qiling, address: int, params):
 # BOOL DeleteFileA(
 #   LPCSTR lpFileName
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpFileName' : LPCSTR
 })
 def hook_DeleteFileA(ql: Qiling, address: int, params):

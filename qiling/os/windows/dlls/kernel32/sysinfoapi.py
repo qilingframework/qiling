@@ -13,7 +13,7 @@ from qiling.os.windows.structs import SystemInfo, SystemTime
 
 # NOT_BUILD_WINDOWS_DEPRECATE DWORD GetVersion(
 # );
-@winsdkapi_new(cc=STDCALL, params={})
+@winsdkapi(cc=STDCALL, params={})
 def hook_GetVersion(ql: Qiling, address: int, params):
     return (0x0004 << 16) | 0x0004
 
@@ -23,7 +23,7 @@ def __GetVersionEx(ql: Qiling, address: int, params):
 # NOT_BUILD_WINDOWS_DEPRECATE BOOL GetVersionExA(
 #   LPOSVERSIONINFOA lpVersionInformation
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpVersionInformation' : LPOSVERSIONINFOA
 })
 def hook_GetVersionExA(ql: Qiling, address: int, params):
@@ -32,7 +32,7 @@ def hook_GetVersionExA(ql: Qiling, address: int, params):
 # NOT_BUILD_WINDOWS_DEPRECATE BOOL GetVersionExW(
 #   LPOSVERSIONINFOW lpVersionInformation
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpVersionInformation' : LPOSVERSIONINFOW
 })
 def hook_GetVersionExW(ql: Qiling, address: int, params):
@@ -52,7 +52,7 @@ def __GetSystemInfo(ql: Qiling, address: int, params):
 # void GetSystemInfo(
 #   LPSYSTEM_INFO lpSystemInfo
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpSystemInfo' : LPSYSTEM_INFO
 })
 def hook_GetSystemInfo(ql: Qiling, address: int, params):
@@ -61,7 +61,7 @@ def hook_GetSystemInfo(ql: Qiling, address: int, params):
 # void GetLocalTime(
 #   LPSYSTEMTIME lpSystemTime
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpSystemTime' : LPSYSTEMTIME
 })
 def hook_GetLocalTime(ql: Qiling, address: int, params):
@@ -76,7 +76,7 @@ def hook_GetLocalTime(ql: Qiling, address: int, params):
 # void GetSystemTimeAsFileTime(
 #   LPFILETIME lpSystemTimeAsFileTime
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpSystemTimeAsFileTime' : LPFILETIME
 })
 def hook_GetSystemTimeAsFileTime(ql: Qiling, address: int, params):
@@ -85,7 +85,7 @@ def hook_GetSystemTimeAsFileTime(ql: Qiling, address: int, params):
 
 # DWORD GetTickCount(
 # );
-@winsdkapi_new(cc=STDCALL, params={})
+@winsdkapi(cc=STDCALL, params={})
 def hook_GetTickCount(ql: Qiling, address: int, params):
     return 200000
 
@@ -113,14 +113,14 @@ def __GetSystemDirectory(ql: Qiling, address: int, params, wstring: bool):
 #   LPWSTR lpBuffer,
 #   UINT   uSize
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpBuffer' : LPWSTR,
     'uSize'    : UINT
 })
 def hook_GetWindowsDirectoryW(ql: Qiling, address: int, params):
     return __GetWindowsDirectory(ql, address, params, True)
 
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpBuffer' : LPSTR,
     'uSize'    : UINT
 })
@@ -131,21 +131,21 @@ def hook_GetWindowsDirectoryA(ql: Qiling, address: int, params):
 #   LPWSTR lpBuffer,
 #   UINT   uSize
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpBuffer' : LPWSTR,
     'uSize'    : UINT
 })
 def hook_GetSystemWindowsDirectoryW(ql: Qiling, address: int, params):
     return __GetWindowsDirectory(ql, address, params, True)
 
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpBuffer' : LPSTR,
     'uSize'    : UINT
 })
 def hook_GetSystemWindowsDirectoryA(ql: Qiling, address: int, params):
     return __GetWindowsDirectory(ql, address, params, False)
 
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpBuffer' : LPWSTR,
     'uSize'    : UINT
 })
@@ -156,7 +156,7 @@ def hook_GetSystemDirectoryW(ql: Qiling, address: int, params):
 #   LPSTR lpBuffer,
 #   UINT  uSize
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpBuffer' : LPSTR,
     'uSize'    : UINT
 })
@@ -166,7 +166,7 @@ def hook_GetSystemDirectoryA(ql: Qiling, address: int, params):
 # void GetNativeSystemInfo(
 #   LPSYSTEM_INFO lpSystemInfo
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpSystemInfo' : LPSYSTEM_INFO
 })
 def hook_GetNativeSystemInfo(ql: Qiling, address: int, params):
@@ -175,7 +175,7 @@ def hook_GetNativeSystemInfo(ql: Qiling, address: int, params):
 # void GetSystemTime(
 #   LPSYSTEMTIME lpSystemTime
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpSystemTime' : LPSYSTEMTIME
 })
 def hook_GetSystemTIme(ql: Qiling, address: int, params):
@@ -189,7 +189,7 @@ def hook_GetSystemTIme(ql: Qiling, address: int, params):
 # void GetSystemTimePreciseAsFileTime(
 #   LPFILETIME lpSystemTimeAsFileTime
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpSystemTimeAsFileTime' : LPFILETIME
 })
 def hook_GetSystemTimePreciseAsFileTime(ql: Qiling, address: int, params):

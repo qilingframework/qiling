@@ -11,7 +11,7 @@ from qiling.os.windows.fncc import *
 # HRESULT OleInitialize(
 #   IN LPVOID pvReserved
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'pvReserved' : LPVOID
 })
 def hook_OleInitialize(ql: Qiling, address: int, params):
@@ -22,7 +22,7 @@ def hook_OleInitialize(ql: Qiling, address: int, params):
 #   LPMESSAGEFILTER lpMessageFilter,
 #   LPMESSAGEFILTER *lplpMessageFilter
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpMessageFilter'   : LPMESSAGEFILTER,
     'lplpMessageFilter' : LPMESSAGEFILTER
 })
@@ -33,7 +33,7 @@ def hook_CoRegisterMessageFilter(ql: Qiling, address: int, params):
 #   LPVOID pvReserved,
 #   DWORD  dwCoInit
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'pvReserved' : LPVOID,
     'dwCoInit'   : DWORD
 })
@@ -51,7 +51,7 @@ def hook_CoInitializeEx(ql: Qiling, address: int, params):
 #   DWORD                       dwCapabilities,
 #   void                        *pReserved3
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'pSecDesc'       : PSECURITY_DESCRIPTOR,
     'cAuthSvc'       : LONG,
     'asAuthSvc'      : POINTER,
@@ -72,7 +72,7 @@ def hook_CoInitializeSecurity(ql: Qiling, address: int, params):
 #   REFIID    riid,
 #   LPVOID    *ppv
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'rclsid'       : REFCLSID,
     'pUnkOuter'    : LPUNKNOWN,
     'dwClsContext' : DWORD,

@@ -10,7 +10,7 @@ from qiling.os.windows.fncc import *
 # HANDLE WINAPI GetStdHandle(
 #   _In_ DWORD nStdHandle
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'nStdHandle' : DWORD
 })
 def hook_GetStdHandle(ql, address, params):
@@ -20,7 +20,7 @@ def hook_GetStdHandle(ql, address, params):
 
 # LPSTR GetCommandLineA(
 # );
-@winsdkapi_new(cc=STDCALL, params={})
+@winsdkapi(cc=STDCALL, params={})
 def hook_GetCommandLineA(ql: Qiling, address: int, params):
     cmdline = ql.loader.cmdline + b"\x00"
     addr = ql.os.heap.alloc(len(cmdline))
@@ -31,7 +31,7 @@ def hook_GetCommandLineA(ql: Qiling, address: int, params):
 
 # LPSTR GetCommandLineW(
 # );
-@winsdkapi_new(cc=STDCALL, params={})
+@winsdkapi(cc=STDCALL, params={})
 def hook_GetCommandLineW(ql: Qiling, address: int, params):
     cmdline = ql.loader.cmdline.decode('ascii').encode('utf-16le')
     addr = ql.os.heap.alloc(len(cmdline))
@@ -42,7 +42,7 @@ def hook_GetCommandLineW(ql: Qiling, address: int, params):
 
 # LPWCH GetEnvironmentStrings(
 # );
-@winsdkapi_new(cc=STDCALL, params={})
+@winsdkapi(cc=STDCALL, params={})
 def hook_GetEnvironmentStrings(ql: Qiling, address: int, params):
     envstr = b"\x00"
     addr = ql.os.heap.alloc(len(envstr))
@@ -53,7 +53,7 @@ def hook_GetEnvironmentStrings(ql: Qiling, address: int, params):
 
 # LPWCH GetEnvironmentStringsW(
 # );
-@winsdkapi_new(cc=STDCALL, params={})
+@winsdkapi(cc=STDCALL, params={})
 def hook_GetEnvironmentStringsW(ql: Qiling, address: int, params):
     envstr = b"\x00\x00"
     addr = ql.os.heap.alloc(len(envstr))
@@ -65,7 +65,7 @@ def hook_GetEnvironmentStringsW(ql: Qiling, address: int, params):
 # BOOL FreeEnvironmentStringsW(
 #   LPWCH penv
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'penv' : LPWCH
 })
 def hook_FreeEnvironmentStringsW(ql: Qiling, address: int, params):
@@ -76,7 +76,7 @@ def hook_FreeEnvironmentStringsW(ql: Qiling, address: int, params):
 #   LPWSTR  lpDst,
 #   DWORD   nSize
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpSrc' : LPCWSTR,
     'lpDst' : LPWSTR,
     'nSize' : DWORD
@@ -118,7 +118,7 @@ def hook_ExpandEnvironmentStringsW(ql: Qiling, address: int, params):
 #   LPSTR  lpBuffer,
 #   DWORD  nSize
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpName'   : LPCSTR,
     'lpBuffer' : LPSTR,
     'nSize'    : DWORD
@@ -131,7 +131,7 @@ def hook_GetEnvironmentVariableA(ql: Qiling, address: int, params):
 #   LPWSTR  lpBuffer,
 #   DWORD  nSize
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpName'   : LPCWSTR,
     'lpBuffer' : LPWSTR,
     'nSize'    : DWORD

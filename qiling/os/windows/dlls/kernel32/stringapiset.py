@@ -14,7 +14,7 @@ from qiling.os.windows.utils import cmp
 #   int                           cchSrc,
 #   LPWORD                        lpCharType
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'dwInfoType' : DWORD,
     'lpSrcStr'   : LPCWCH,
     'cchSrc'     : INT,
@@ -32,7 +32,7 @@ def hook_GetStringTypeW(ql: Qiling, address: int, params):
 #   INT    count,
 #   LPWORD chartype
 #  )
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'Locale'     : LCID,
     'dwInfoType' : DWORD,
     'lpSrcStr'   : LPCSTR,
@@ -53,7 +53,7 @@ def hook_GetStringTypeExA(ql: Qiling, address: int, params):
 #   LPCCH                              lpDefaultChar,
 #   LPBOOL                             lpUsedDefaultChar
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'CodePage'          : UINT,
     'dwFlags'           : DWORD,
     'lpWideCharStr'     : WSTRING, # LPCWCH
@@ -83,7 +83,7 @@ def hook_WideCharToMultiByte(ql: Qiling, address: int, params):
 #  LPWSTR                            lpWideCharStr,
 #  int                               cchWideChar
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'CodePage'       : UINT,
     'dwFlags'        : DWORD,
     'lpMultiByteStr' : WSTRING, # LPCCH
@@ -122,7 +122,7 @@ def __CompareString(ql: Qiling, address: int, params) -> int:
 #   PCNZCH lpString2,
 #   int    cchCount2
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'Locale'     : LCID,
     'dwCmpFlags' : DWORD,
     'lpString1'  : PCNZCH,
@@ -133,7 +133,7 @@ def __CompareString(ql: Qiling, address: int, params) -> int:
 def hook_CompareStringA(ql: Qiling, address: int, params):
     return __CompareString(ql, address, params)
 
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'Locale'     : LCID,
     'dwCmpFlags' : DWORD,
     'lpString1'  : PCNZWCH,

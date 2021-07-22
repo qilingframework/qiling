@@ -25,7 +25,7 @@ from qiling.utils import verify_ret
 # NTSYSAPI NTSTATUS RtlGetVersion(
 #   PRTL_OSVERSIONINFOW lpVersionInformation
 # );
-@winsdkapi_new(cc=CDECL, params={
+@winsdkapi(cc=CDECL, params={
     'lpVersionInformation' : PRTL_OSVERSIONINFOW
 })
 def hook_RtlGetVersion(ql: Qiling, address: int, params):
@@ -47,7 +47,7 @@ def hook_RtlGetVersion(ql: Qiling, address: int, params):
 #   PVOID           ThreadInformation,
 #   ULONG           ThreadInformationLength
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'ThreadHandle'            : HANDLE,
     'ThreadInformationClass'  : THREADINFOCLASS,
     'ThreadInformation'       : PVOID,
@@ -79,7 +79,7 @@ def hook_ZwSetInformationThread(ql: Qiling, address: int, params):
 # NTSYSAPI NTSTATUS ZwClose(
 #   HANDLE Handle
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'Handle' : HANDLE
 })
 def hook_ZwClose(ql: Qiling, address: int, params):
@@ -92,7 +92,7 @@ def hook_ZwClose(ql: Qiling, address: int, params):
 
     return STATUS_SUCCESS
 
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'Handle' : HANDLE
 })
 def hook_NtClose(ql: Qiling, address: int, params):
@@ -111,7 +111,7 @@ def hook_NtClose(ql: Qiling, address: int, params):
 #   PCSTR Format,
 #   ...
 # );
-@winsdkapi_new(cc=CDECL, params={
+@winsdkapi(cc=CDECL, params={
     'ComponentId' : ULONG,
     'Level'       : ULONG,
     'Format'      : PCSTR
@@ -136,7 +136,7 @@ def hook_DbgPrintEx(ql: Qiling, address: int, params):
 #   PCSTR Format,
 #   ...
 # );
-@winsdkapi_new(cc=CDECL, params={
+@winsdkapi(cc=CDECL, params={
     'Format': PCSTR
     # ...
 })
@@ -202,7 +202,7 @@ def __IoCreateDevice(ql: Qiling, address: int, params):
 #   BOOLEAN         Exclusive,
 #   PDEVICE_OBJECT  *DeviceObject
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'DriverObject'          : PDRIVER_OBJECT,
     'DeviceExtensionSize'   : ULONG,
     'DeviceName'            : PUNICODE_STRING,
@@ -225,7 +225,7 @@ def hook_IoCreateDevice(ql: Qiling, address: int, params):
 #   LPCGUID          DeviceClassGuid,
 #   PDEVICE_OBJECT   *DeviceObject
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'DriverObject'          : PDRIVER_OBJECT,
     'DeviceExtensionSize'   : ULONG,
     'DeviceName'            : PUNICODE_STRING,
@@ -243,7 +243,7 @@ def hook_IoCreateDeviceSecure(ql: Qiling, address: int, params):
 #   PSECURITY_DESCRIPTOR SecurityDescriptor,
 #   ULONG                Revision
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'SecurityDescriptor' : PSECURITY_DESCRIPTOR,
     'Revision'           : ULONG
 })
@@ -254,7 +254,7 @@ def hook_RtlCreateSecurityDescriptor(ql: Qiling, address: int, params):
 # void IoDeleteDevice(
 #   PDEVICE_OBJECT DeviceObject
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'DeviceObject' : PDEVICE_OBJECT
 })
 def hook_IoDeleteDevice(ql: Qiling, address: int, params):
@@ -266,7 +266,7 @@ def hook_IoDeleteDevice(ql: Qiling, address: int, params):
 #   PUNICODE_STRING SymbolicLinkName,
 #   PUNICODE_STRING DeviceName
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'SymbolicLinkName' : PUNICODE_STRING,
     'DeviceName'       : PUNICODE_STRING
 })
@@ -276,7 +276,7 @@ def hook_IoCreateSymbolicLink(ql: Qiling, address: int, params):
 # NTSTATUS IoDeleteSymbolicLink(
 #   PUNICODE_STRING SymbolicLinkName
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'SymbolicLinkName' : PUNICODE_STRING
 })
 def hook_IoDeleteSymbolicLink(ql: Qiling, address: int, params):
@@ -286,7 +286,7 @@ def hook_IoDeleteSymbolicLink(ql: Qiling, address: int, params):
 #   PIRP  Irp,
 #   CCHAR PriorityBoost
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'Irp'           : PIRP,
     'PriorityBoost' : CCHAR
 })
@@ -297,7 +297,7 @@ def hook_IofCompleteRequest(ql: Qiling, address: int, params):
 #   PIRP  Irp,
 #   CCHAR PriorityBoost
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'Irp'           : PIRP,
     'PriorityBoost' : CCHAR
 })
@@ -311,7 +311,7 @@ def hook_IoCompleteRequest(ql: Qiling, address: int, params):
 #   PUNICODE_STRING         DestinationString,
 #   __drv_aliasesMem PCWSTR SourceString
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'DestinationString' : PUNICODE_STRING,
     'SourceString'      : PCWSTR
 }, passthru=True)
@@ -322,7 +322,7 @@ def hook_RtlInitUnicodeString(ql: Qiling, address: int, params):
 #  PUNICODE_STRING  DestinationString,
 #  PCUNICODE_STRING SourceString
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'DestinationString' : PUNICODE_STRING,
     'SourceString'      : PCUNICODE_STRING
 }, passthru=True)
@@ -334,7 +334,7 @@ def hook_RtlCopyUnicodeString(ql: Qiling, address: int, params):
 #   PCANSI_STRING   SourceString,
 #   BOOLEAN         AllocateDestinationString
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'DestinationString'         : PUNICODE_STRING,
     'SourceString'              : PCANSI_STRING,
     'AllocateDestinationString' : BOOLEAN
@@ -346,7 +346,7 @@ def hook_RtlAnsiStringToUnicodeString(ql: Qiling, address: int, params):
 #   PANSI_STRING          DestinationString,
 #   __drv_aliasesMem PCSZ SourceString
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'DestinationString' : PANSI_STRING,
     'SourceString'      : PCSZ
 }, passthru=True)
@@ -358,7 +358,7 @@ def hook_RtlInitAnsiString(ql: Qiling, address: int, params):
 #   PCUNICODE_STRING SourceString,
 #   BOOLEAN          AllocateDestinationString
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'DestinationString'         : PANSI_STRING,
     'SourceString'              : PCUNICODE_STRING,
     'AllocateDestinationString' : BOOLEAN
@@ -370,7 +370,7 @@ def hook_RtlUnicodeStringToAnsiString(ql: Qiling, address: int, params):
 #  __drv_strictTypeMatch(__drv_typeExpr)POOL_TYPE PoolType,
 #  SIZE_T                                         NumberOfBytes
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'PoolType'      : POOL_TYPE,
     'NumberOfBytes' : SIZE_T
 })
@@ -384,7 +384,7 @@ def hook_ExAllocatePool(ql: Qiling, address: int, params):
 #  SIZE_T                                         NumberOfBytes,
 #  ULONG                                          Tag
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'PoolType'      : POOL_TYPE,
     'NumberOfBytes' : SIZE_T,
     'Tag'           : ULONG
@@ -399,7 +399,7 @@ def hook_ExAllocatePoolWithTag(ql: Qiling, address: int, params):
 #  SIZE_T                                         NumberOfBytes,
 #  ULONG                                          Tag
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'PoolType'      : POOL_TYPE,
     'NumberOfBytes' : SIZE_T,
     'Tag'           : ULONG
@@ -413,7 +413,7 @@ def hook_ExAllocatePoolWithQuotaTag(ql: Qiling, address: int, params):
 #  __drv_strictTypeMatch(__drv_typeExpr)POOL_TYPE PoolType,
 #  SIZE_T                                         NumberOfBytes
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'PoolType'      : POOL_TYPE,
     'NumberOfBytes' : SIZE_T
 })
@@ -428,7 +428,7 @@ def hook_ExAllocatePoolWithQuota(ql: Qiling, address: int, params):
 #  ULONG                                                 Tag,
 #  __drv_strictTypeMatch(__drv_typeExpr)EX_POOL_PRIORITY Priority
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'PoolType'      : POOL_TYPE,
     'NumberOfBytes' : SIZE_T,
     'Tag'           : ULONG,
@@ -443,7 +443,7 @@ def hook_ExAllocatePoolWithTagPriority(ql: Qiling, address: int, params):
 #  PVOID P,
 #  ULONG Tag
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'P'   : PVOID,
     'Tag' : ULONG
 })
@@ -457,7 +457,7 @@ hook_only_routine_address = [b'IoCreateDeviceSecure']
 # PVOID MmGetSystemRoutineAddress(
 #  PUNICODE_STRING SystemRoutineName
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'SystemRoutineName' : PUNICODE_STRING
 })
 def hook_MmGetSystemRoutineAddress(ql: Qiling, address: int, params):
@@ -491,7 +491,7 @@ def hook_MmGetSystemRoutineAddress(ql: Qiling, address: int, params):
 #    const wchar_t *string2,
 #    size_t count
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'string1' : WSTRING,
     'string2' : WSTRING,
     'count'   : SIZE_T
@@ -504,7 +504,7 @@ def hook__wcsnicmp(ql: Qiling, address: int, params):
 #    const char *string2,
 #    size_t count
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'string1' : WSTRING,
     'string2' : WSTRING,
     'count'   : SIZE_T
@@ -517,7 +517,7 @@ def hook__strnicmp(ql: Qiling, address: int, params):
 #    const unsigned char *string2,
 #    size_t count
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'string1' : WSTRING,
     'string2' : WSTRING,
     'count'   : SIZE_T
@@ -531,7 +531,7 @@ def hook__mbsnicmp(ql: Qiling, address: int, params):
 #    size_t count,
 #    _locale_t locale
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'string1' : WSTRING,
     'string2' : WSTRING,
     'count'   : SIZE_T,
@@ -546,7 +546,7 @@ def hook__strnicmp_l(ql: Qiling, address: int, params):
 #    size_t count,
 #    _locale_t locale
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'string1' : WSTRING,
     'string2' : WSTRING,
     'count'   : SIZE_T,
@@ -561,7 +561,7 @@ def hook__wcsnicmp_l(ql: Qiling, address: int, params):
 #    size_t count,
 #    _locale_t locale
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'string1' : WSTRING,
     'string2' : WSTRING,
     'count'   : SIZE_T,
@@ -574,7 +574,7 @@ def hook__mbsnicmp_l(ql: Qiling, address: int, params):
 #    wchar_t *str,
 #    wchar_t c
 # );  // C++ only
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'str' : WSTRING,
     'c'   : WCHAR
 }, passthru=True)
@@ -587,7 +587,7 @@ def hook_wcschr(ql: Qiling, address: int, params):
 #   PULONG          BuildNumber,
 #   PUNICODE_STRING CSDVersion
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'MajorVersion' : PULONG,
     'MinorVersion' : PULONG,
     'BuildNumber'  : PULONG,
@@ -601,7 +601,7 @@ def hook_PsGetVersion(ql: Qiling, address: int, params):
 #   const VOID *Source2,
 #   SIZE_T     Length
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'Source1' : POINTER,
     'Source2' : POINTER,
     'Length'  : SIZE_T
@@ -612,12 +612,12 @@ def hook_RtlCompareMemory(ql: Qiling, address: int, params):
 hook_NtBuildNumber = 0xF0001DB1
 
 # void KeEnterCriticalRegion();
-@winsdkapi_new(cc=STDCALL, params={})
+@winsdkapi(cc=STDCALL, params={})
 def hook_KeEnterCriticalRegion(ql: Qiling, address: int, params):
     return None
 
 # void KeLeaveCriticalRegion();
-@winsdkapi_new(cc=STDCALL, params={})
+@winsdkapi(cc=STDCALL, params={})
 def hook_KeLeaveCriticalRegion(ql: Qiling, address: int, params):
     return None
 
@@ -629,7 +629,7 @@ def hook_KeLeaveCriticalRegion(ql: Qiling, address: int, params):
 #  ULONG BugCheckOnFailure,
 #  ULONG  Priority
 #);
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'MemoryDescriptorList' : PMDL,
     'AccessMode'           : KPROCESSOR_MODE,
     'CacheType'            : MEMORY_CACHING_TYPE,
@@ -655,7 +655,7 @@ def hook_MmMapLockedPagesSpecifyCache(ql: Qiling, address: int, params):
 # SIZE_T              Length,
 # ULONG               Alignment
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'Address'   : POINTER,
     'Length'    : SIZE_T,
     'Alignment' : ULONG
@@ -668,7 +668,7 @@ def hook_ProbeForRead(ql: Qiling, address: int, params):
 # SIZE_T              Length,
 # ULONG               Alignment
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'Address'   : POINTER,
     'Length'    : SIZE_T,
     'Alignment' : ULONG
@@ -682,7 +682,7 @@ def hook_ProbeForWrite(ql: Qiling, address: int, params):
 #    const wchar_t *format,
 #    va_list argptr
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'buffer' : WSTRING,
     'count'  : SIZE_T,
     'format' : WSTRING
@@ -696,7 +696,7 @@ def hook__vsnwprintf(ql: Qiling, address: int, params):
 #    const char *mbchar,
 #    size_t count
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'wchar'  : WSTRING,
     'mbchar' : STRING,
     'count'  : SIZE_T
@@ -710,7 +710,7 @@ def hook_mbtowc(ql: Qiling, address: int, params):
 #    size_t count,
 #    _locale_t locale
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'wchar'  : WSTRING,
     'mbchar' : STRING,
     'count'  : SIZE_T,
@@ -722,7 +722,7 @@ def hook__mbtowc_l(ql: Qiling, address: int, params):
 # WCHAR RtlAnsiCharToUnicodeChar(
 #   _Inout_ PUCHAR *SourceCharacter
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'SourceCharacter' : STRING
 }, passthru=True)
 def hook_RtlAnsiCharToUnicodeChar(ql: Qiling, address: int, params):
@@ -735,7 +735,7 @@ def hook_RtlAnsiCharToUnicodeChar(ql: Qiling, address: int, params):
 #   const CHAR *MultiByteString,
 #   ULONG      BytesInMultiByteString
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'UnicodeString'           : PWCH,
     'MaxBytesInUnicodeString' : ULONG,
     'BytesInUnicodeString'    : PULONG,
@@ -794,7 +794,7 @@ def _NtQuerySystemInformation(ql: Qiling, address: int, params):
 
     return STATUS_SUCCESS
 
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'SystemInformationClass'  : SYSTEM_INFORMATION_CLASS,
     'SystemInformation'       : PVOID,
     'SystemInformationLength' : ULONG,
@@ -803,7 +803,7 @@ def _NtQuerySystemInformation(ql: Qiling, address: int, params):
 def hook_NtQuerySystemInformation(ql: Qiling, address: int, params):
     return _NtQuerySystemInformation(ql, address, params)
 
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'SystemInformationClass'  : SYSTEM_INFORMATION_CLASS,
     'SystemInformation'       : PVOID,
     'SystemInformationLength' : ULONG,
@@ -817,7 +817,7 @@ def hook_ZwQuerySystemInformation(ql: Qiling, address: int, params):
 #   EVENT_TYPE Type,
 #   BOOLEAN    State
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'Event' : PRKEVENT,
     'Type'  : EVENT_TYPE,
     'State' : BOOLEAN
@@ -834,7 +834,7 @@ def hook_KeInitializeEvent(ql: Qiling, address: int, params):
 #   PIO_CSQ_RELEASE_LOCK          CsqReleaseLock,
 #   PIO_CSQ_COMPLETE_CANCELED_IRP CsqCompleteCanceledIrp
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'Csq'                    : POINTER,
     'CsqInsertIrp'           : POINTER,
     'CsqRemoveIrp'           : POINTER,
@@ -852,7 +852,7 @@ def hook_IoCsqInitialize(ql: Qiling, address: int, params):
 #   PULONG         Key,
 #   PDRIVER_CANCEL CancelFunction
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'DeviceObject'   : PDEVICE_OBJECT,
     'Irp'            : PIRP,
     'Key'            : PULONG,
@@ -864,19 +864,19 @@ def hook_IoStartPacket(ql: Qiling, address: int, params):
 # VOID IoAcquireCancelSpinLock(
 #   _Out_ PKIRQL Irql
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'Irql' : POINTER
 }, passthru=True)
 def hook_IoAcquireCancelSpinLock(ql: Qiling, address: int, params):
     return None
 
 # PEPROCESS PsGetCurrentProcess();
-@winsdkapi_new(cc=STDCALL, params={})
+@winsdkapi(cc=STDCALL, params={})
 def hook_PsGetCurrentProcess(ql: Qiling, address: int, params):
     return ql.eprocess_address
 
 # HANDLE PsGetCurrentProcessId();
-@winsdkapi_new(cc=STDCALL, params={})
+@winsdkapi(cc=STDCALL, params={})
 def hook_PsGetCurrentProcessId(ql: Qiling, address: int, params):
     # current process ID is 101
     # TODO: let user customize this?
@@ -887,7 +887,7 @@ def hook_PsGetCurrentProcessId(ql: Qiling, address: int, params):
 #   IN  PUNICODE_STRING DriverName    OPTIONAL,
 #   IN  PDRIVER_INITIALIZE InitializationFunction
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'DriverName'             : PUNICODE_STRING,
     'InitializationFunction' : PDRIVER_INITIALIZE
 })
@@ -927,7 +927,7 @@ def hook_IoCreateDriver(ql: Qiling, address: int, params):
 #   PLARGE_INTEGER SystemTime,
 #   PLARGE_INTEGER LocalTime
 # );
-@winsdkapi_new(cc=STDCALL,params={
+@winsdkapi(cc=STDCALL,params={
     'SystemTime' : PLARGE_INTEGER,
     'LocalTime'  : PLARGE_INTEGER
 }, passthru=True)
@@ -939,7 +939,7 @@ def hook_ExSystemTimeToLocalTime(ql: Qiling, address: int, params):
 #   PLARGE_INTEGER Time,
 #   PTIME_FIELDS   TimeFields
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'Time'       : PLARGE_INTEGER,
     'TimeFields' : PTIME_FIELDS
 }, passthru=True)
@@ -952,7 +952,7 @@ def hook_RtlTimeToTimeFields(ql: Qiling, address: int, params):
 #    const char *format,
 #    va_list argptr
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'buffer'           : POINTER,
     'numberOfElements' : SIZE_T,
     'format'           : STRING
@@ -968,7 +968,7 @@ def hook_vsprintf_s(ql: Qiling, address: int, params):
 #    locale_t locale,
 #    va_list argptr
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'buffer'           : POINTER,
     'numberOfElements' : SIZE_T,
     'format'           : STRING,
@@ -984,7 +984,7 @@ def hook__vsprintf_s_l(ql: Qiling, address: int, params):
 #    const wchar_t *format,
 #    va_list argptr
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'buffer'           : POINTER,
     'numberOfElements' : SIZE_T,
     'format'           : WSTRING
@@ -1000,7 +1000,7 @@ def hook_vswprintf_s(ql: Qiling, address: int, params):
 #    locale_t locale,
 #    va_list argptr
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'buffer'           : POINTER,
     'numberOfElements' : SIZE_T,
     'format'           : WSTRING,
@@ -1013,7 +1013,7 @@ def hook__vswprintf_s_l(ql: Qiling, address: int, params):
 # BOOLEAN MmIsAddressValid(
 #   PVOID VirtualAddress
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'VirtualAddress' : POINTER
 })
 def hook_MmIsAddressValid(ql: Qiling, address: int, params):
@@ -1027,7 +1027,7 @@ def hook_MmIsAddressValid(ql: Qiling, address: int, params):
 #   ULONG_PTR BugCheckParameter4
 # );
 # ULONG_PTR == POINTER
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'BugCheckCode'       : ULONG,
     'BugCheckParameter1' : ULONG_PTR,
     'BugCheckParameter2' : ULONG_PTR,
@@ -1040,17 +1040,17 @@ def hook_KeBugCheckEx(ql: Qiling, address: int, params):
 # void KeBugCheck(
 #   ULONG BugCheckCode
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'BugCheckCode' : ULONG
 })
 def hook_KeBugCheck(ql: Qiling, address: int, params):
     pass
 
-@winsdkapi_new(cc=STDCALL, params={})
+@winsdkapi(cc=STDCALL, params={})
 def hook_PsProcessType(ql: Qiling, address: int, params):
     pass
 
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'Process' : POINTER
 })
 def hook_PsGetProcessImageFileName(ql: Qiling, address: int, params):
@@ -1064,7 +1064,7 @@ def hook_PsGetProcessImageFileName(ql: Qiling, address: int, params):
 #   PEPROCESS *Process
 # );
 
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     "ProcessId" : HANDLE,
     "Process"   : POINTER
 })
@@ -1088,7 +1088,7 @@ def hook_PsLookupProcessByProcessId(ql: Qiling, address: int, params):
 #   ACCESS_MASK        DesiredAccess,
 #   POBJECT_ATTRIBUTES ObjectAttributes
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'KeyHandle'        : PHANDLE,
     'DesiredAccess'    : ACCESS_MASK,
     'ObjectAttributes' : POBJECT_ATTRIBUTES
@@ -1096,7 +1096,7 @@ def hook_PsLookupProcessByProcessId(ql: Qiling, address: int, params):
 def hook_ZwOpenKey(ql: Qiling, address: int, params):
     return STATUS_SUCCESS
 
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'KeyHandle'        : PHANDLE,
     'DesiredAccess'    : ACCESS_MASK,
     'ObjectAttributes' : POBJECT_ATTRIBUTES
@@ -1112,7 +1112,7 @@ def hook_NtOpenKey(ql: Qiling, address: int, params):
 #     BOOLEAN Alertable,
 #     PLARGE_INTEGER Timeout
 #     );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'Object'     : PVOID,
     'WaitReason' : KWAIT_REASON,
     'WaitMode'   : KPROCESSOR_MODE,
@@ -1125,7 +1125,7 @@ def hook_KeWaitForSingleObject(ql: Qiling, address: int, params):
 # LONG_PTR ObfReferenceObject(
 #   PVOID Object
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'Object' : PVOID
 }, passthru=True)
 def hook_ObfReferenceObject(ql: Qiling, address: int, params):
@@ -1140,7 +1140,7 @@ def hook_ObfReferenceObject(ql: Qiling, address: int, params):
 #   PKSTART_ROUTINE    StartRoutine,
 #   PVOID              StartContext
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'ThreadHandle'     : PHANDLE,
     'DesiredAccess'    : ULONG,
     'ObjectAttributes' : POBJECT_ATTRIBUTES,
@@ -1177,7 +1177,7 @@ def hook_PsCreateSystemThread(ql: Qiling, address: int, params):
 #   PVOID                      *Object,
 #   POBJECT_HANDLE_INFORMATION HandleInformation
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'Handle'            : HANDLE,
     'DesiredAccess'     : ACCESS_MASK,
     'ObjectType'        : POBJECT_TYPE,
@@ -1193,7 +1193,7 @@ def hook_ObReferenceObjectByHandle(ql: Qiling, address: int, params):
 #   KPRIORITY Increment,
 #   BOOLEAN   Wait
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'Event'     : PRKEVENT,
     'Increment' : KPRIORITY,
     'Wait'      : BOOLEAN
@@ -1206,7 +1206,7 @@ def hook_KeSetEvent(ql: Qiling, address: int, params):
 #   KPRIORITY Increment,
 #   BOOLEAN   Wait
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'Event'     : PRKEVENT,
     'Increment' : KPRIORITY,
     'Wait'      : BOOLEAN
@@ -1217,7 +1217,7 @@ def hook_KeResetEvent(ql: Qiling, address: int, params):
 # void KeClearEvent(
 #   PRKEVENT Event
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'Event' : PRKEVENT
 })
 def hook_KeClearEvent(ql: Qiling, address: int, params):
@@ -1226,7 +1226,7 @@ def hook_KeClearEvent(ql: Qiling, address: int, params):
 # NTSTATUS PsTerminateSystemThread(
 #   NTSTATUS ExitStatus
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'ExitStatus' : NTSTATUS
 })
 def hook_PsTerminateSystemThread(ql: Qiling, address: int, params):
@@ -1238,7 +1238,7 @@ def hook_PsTerminateSystemThread(ql: Qiling, address: int, params):
 #   POBJECT_TYPE    ObjectType,
 #   KPROCESSOR_MODE AccessMode
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'Object'        : PVOID,
     'DesiredAccess' : ACCESS_MASK,
     'ObjectType'    : POBJECT_TYPE,
@@ -1256,7 +1256,7 @@ def hook_ObReferenceObjectByPointer(ql: Qiling, address: int, params):
 #   KPROCESSOR_MODE AccessMode,
 #   PHANDLE         Handle
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'Object'            : PVOID,
     'HandleAttributes'  : ULONG,
     'PassedAccessState' : PACCESS_STATE,
@@ -1276,14 +1276,14 @@ def hook_ObOpenObjectByPointer(ql: Qiling, address: int, params):
 
     return STATUS_SUCCESS
 
-@winsdkapi_new(cc=CDECL, params={})
+@winsdkapi(cc=CDECL, params={})
 def hook_ObfDereferenceObject(ql: Qiling, address: int, params):
     return STATUS_SUCCESS
 
 # NTSYSAPI NTSTATUS NTAPI NtTerminateProcess(
 #     IN HANDLE               ProcessHandle OPTIONAL,
 #     IN NTSTATUS             ExitStatus );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'ProcessHandle' : HANDLE,
     'ExitStatus'    : NTSTATUS
 })

@@ -33,7 +33,7 @@ def _SHGetFileInfo(ql: Qiling, address: int, params) -> int:
 #   UINT        cbFileInfo,
 #   UINT        uFlags
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'pszPath'          : LPCSTR,
     'dwFileAttributes' : DWORD,
     'psfi'             : POINTER,
@@ -50,7 +50,7 @@ def hook_SHGetFileInfoA(ql: Qiling, address: int, params):
 #   UINT        cbFileInfo,
 #   UINT        uFlags
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'pszPath'          : LPCWSTR,
     'dwFileAttributes' : DWORD,
     'psfi'             : POINTER,
@@ -82,7 +82,7 @@ def _ShellExecute(ql: Qiling, obj: ShellExecuteInfoA):
 # BOOL ShellExecuteExW(
 #   SHELLEXECUTEINFOA *pExecInfo
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'pExecInfo' : POINTER
 })
 def hook_ShellExecuteExW(ql: Qiling, address: int, params):
@@ -108,7 +108,7 @@ def hook_ShellExecuteExW(ql: Qiling, address: int, params):
 #   LPCWSTR lpDirectory,
 #   INT     nShowCmd
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hwnd'         : HWND,
     'lpOperation'  : POINTER, # LPCWSTR
     'lpFile'       : POINTER, # LPCWSTR
@@ -135,7 +135,7 @@ def hook_ShellExecuteW(ql: Qiling, address: int, params):
 #   int    csidl,
 #   BOOL   fCreate
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hwnd'    : HWND,
     'pszPath' : LPWSTR,
     'csidl'   : INT,

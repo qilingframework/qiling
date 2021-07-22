@@ -14,7 +14,7 @@ from qiling.os.windows.structs import Mutex
 # void Sleep(
 #  DWORD dwMilliseconds
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'dwMilliseconds' : DWORD
 })
 def hook_Sleep(ql: Qiling, address: int, params):
@@ -24,7 +24,7 @@ def hook_Sleep(ql: Qiling, address: int, params):
 # void EnterCriticalSection(
 #  LPCRITICAL_SECTION lpCriticalSection
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpCriticalSection' : LPCRITICAL_SECTION
 })
 def hook_EnterCriticalSection(ql: Qiling, address: int, params):
@@ -33,7 +33,7 @@ def hook_EnterCriticalSection(ql: Qiling, address: int, params):
 # void LeaveCriticalSection(
 #  LPCRITICAL_SECTION lpCriticalSection
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpCriticalSection' : LPCRITICAL_SECTION
 })
 def hook_LeaveCriticalSection(ql: Qiling, address: int, params):
@@ -42,7 +42,7 @@ def hook_LeaveCriticalSection(ql: Qiling, address: int, params):
 # void DeleteCriticalSection(
 #   LPCRITICAL_SECTION lpCriticalSection
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpCriticalSection' : LPCRITICAL_SECTION
 })
 def hook_DeleteCriticalSection(ql: Qiling, address: int, params):
@@ -51,7 +51,7 @@ def hook_DeleteCriticalSection(ql: Qiling, address: int, params):
 # void InitializeCriticalSection(
 #   LPCRITICAL_SECTION lpCriticalSection
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpCriticalSection' : LPCRITICAL_SECTION
 })
 def hook_InitializeCriticalSection(ql: Qiling, address: int, params):
@@ -62,7 +62,7 @@ def hook_InitializeCriticalSection(ql: Qiling, address: int, params):
 #   DWORD              dwSpinCount,
 #   DWORD              Flags
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpCriticalSection' : LPCRITICAL_SECTION,
     'dwSpinCount'       : DWORD,
     'Flags'             : DWORD
@@ -74,7 +74,7 @@ def hook_InitializeCriticalSectionEx(ql: Qiling, address: int, params):
 #  LPCRITICAL_SECTION lpCriticalSection,
 #  DWORD              dwSpinCount
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpCriticalSection' : LPCRITICAL_SECTION,
     'dwSpinCount'       : DWORD
 })
@@ -85,7 +85,7 @@ def hook_InitializeCriticalSectionAndSpinCount(ql: Qiling, address: int, params)
 #   HANDLE hHandle,
 #   DWORD  dwMilliseconds
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hHandle'        : HANDLE,
     'dwMilliseconds' : DWORD
 })
@@ -104,7 +104,7 @@ def hook_WaitForSingleObject(ql: Qiling, address: int, params):
 #   DWORD  dwMilliseconds
 #   BOOL   bAlertable
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hHandle'        : HANDLE,
     'dwMilliseconds' : DWORD,
     'bAlertable'     : BOOL
@@ -125,7 +125,7 @@ def hook_WaitForSingleObjectEx(ql: Qiling, address: int, params):
 #   BOOL         bWaitAll,
 #   DWORD        dwMilliseconds
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'nCount'         : DWORD,
     'lpHandles'      : HANDLE,
     'bWaitAll'       : BOOL,
@@ -203,7 +203,7 @@ def __CreateMutex(ql: Qiling, address: int, params):
 #   BOOL    bInheritHandle,
 #   LPCWSTR lpName
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'dwDesiredAccess' : DWORD,
     'bInheritHandle'  : BOOL,
     'lpName'          : LPCWSTR
@@ -216,7 +216,7 @@ def hook_OpenMutexW(ql: Qiling, address: int, params):
 #   BOOL    bInheritHandle,
 #   LPCSTR lpName
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'dwDesiredAccess' : DWORD,
     'bInheritHandle'  : BOOL,
     'lpName'          : LPCSTR
@@ -229,7 +229,7 @@ def hook_OpenMutexA(ql: Qiling, address: int, params):
 #   BOOL                  bInitialOwner,
 #   LPCWSTR               lpName
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpMutexAttributes' : LPSECURITY_ATTRIBUTES,
     'bInitialOwner'     : BOOL,
     'lpName'            : LPCWSTR
@@ -242,7 +242,7 @@ def hook_CreateMutexW(ql: Qiling, address: int, params):
 #   BOOL                  bInitialOwner,
 #   LPCSTR               lpName
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpMutexAttributes' : LPSECURITY_ATTRIBUTES,
     'bInitialOwner'     : BOOL,
     'lpName'            : LPCSTR
@@ -253,7 +253,7 @@ def hook_CreateMutexA(ql: Qiling, address: int, params):
 # BOOL ReleaseMutex(
 #   HANDLE hMutex
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hMutex' : HANDLE
 })
 def hook_ReleaseMutex(ql: Qiling, address: int, params):
@@ -310,7 +310,7 @@ def __CreateEvent(ql: Qiling, address: int, params):
 #  BOOL                  bInitialState,
 #  LPCSTR                lpName
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpEventAttributes' : LPSECURITY_ATTRIBUTES,
     'bManualReset'      : BOOL,
     'bInitialState'     : BOOL,
@@ -325,7 +325,7 @@ def hook_CreateEventA(ql: Qiling, address: int, params):
 #  BOOL                  bInitialState,
 #  LPCWSTR               lpName
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpEventAttributes' : LPSECURITY_ATTRIBUTES,
     'bManualReset'      : BOOL,
     'bInitialState'     : BOOL,
@@ -334,13 +334,13 @@ def hook_CreateEventA(ql: Qiling, address: int, params):
 def hook_CreateEventW(ql: Qiling, address: int, params):
     return __CreateEvent(ql, address, params)
 
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'SRWLock' : PSRWLOCK
 })
 def hook_TryAcquireSRWLockExclusive(ql: Qiling, address: int, params):
     pass
 
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'SRWLock' : PSRWLOCK
 })
 def hook_TryAcquireSRWLockShared(ql: Qiling, address: int, params):
@@ -349,7 +349,7 @@ def hook_TryAcquireSRWLockShared(ql: Qiling, address: int, params):
 # void InitializeSRWLock(
 #  PSRWLOCK SRWLock
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'SRWLock' : PSRWLOCK
 })
 def hook_InitializeSRWLock(ql: Qiling, address: int, params):
@@ -358,7 +358,7 @@ def hook_InitializeSRWLock(ql: Qiling, address: int, params):
 # void AcquireSRWLockExclusive(
 #   PSRWLOCK SRWLock
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'SRWLock' : PSRWLOCK
 })
 def hook_AcquireSRWLockExclusive(ql: Qiling, address: int, params):
@@ -367,7 +367,7 @@ def hook_AcquireSRWLockExclusive(ql: Qiling, address: int, params):
 # void AcquireSRWLockShared(
 #   PSRWLOCK SRWLock
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'SRWLock' : PSRWLOCK
 })
 def hook_AcquireSRWLockShared(ql: Qiling, address: int, params):
@@ -376,7 +376,7 @@ def hook_AcquireSRWLockShared(ql: Qiling, address: int, params):
 # void ReleaseSRWLockExclusive(
 #   PSRWLOCK SRWLock
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'SRWLock' : PSRWLOCK
 })
 def hook_ReleaseSRWLockExclusive(ql: Qiling, address: int, params):
@@ -385,7 +385,7 @@ def hook_ReleaseSRWLockExclusive(ql: Qiling, address: int, params):
 # void ReleaseSRWLockShared(
 #   PSRWLOCK SRWLock
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'SRWLock' : PSRWLOCK
 })
 def hook_ReleaseSRWLockShared(ql: Qiling, address: int, params):

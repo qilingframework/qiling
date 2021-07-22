@@ -10,7 +10,7 @@ from qiling.os.windows.fncc import *
 # BOOL WINAPI SetConsoleTitle(
 #   _In_ LPCTSTR lpConsoleTitle
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpConsoleTitle' : LPCTSTR
 })
 def hook_SetConsoleTitleW(ql: Qiling, address: int, params):
@@ -20,7 +20,7 @@ def hook_SetConsoleTitleW(ql: Qiling, address: int, params):
 #   _In_  HANDLE                      hConsoleOutput,
 #   _Out_ PCONSOLE_SCREEN_BUFFER_INFO lpConsoleScreenBufferInfo
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hConsoleOutput'            : HANDLE,
     'lpConsoleScreenBufferInfo' : PCONSOLE_SCREEN_BUFFER_INFO
 })
@@ -32,7 +32,7 @@ def hook_GetConsoleScreenBufferInfo(ql: Qiling, address: int, params):
 #   _In_ HANDLE hConsoleOutput,
 #   _In_ WORD   wAttributes
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hConsoleOutput' : HANDLE,
     'wAttributes'    : WORD
 })

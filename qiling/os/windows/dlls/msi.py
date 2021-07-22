@@ -14,7 +14,7 @@ from qiling.os.windows.fncc import *
 #   INSTALLSTATE *piInstalled,
 #   INSTALLSTATE *piAction
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hInstall'    : MSIHANDLE,
     'szComponent' : LPCSTR,
     'piInstalled' : INSTALLSTATE,

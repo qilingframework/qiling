@@ -12,7 +12,7 @@ from qiling.os.windows.fncc import *
 #   HANDLE hProcess,
 #   PBOOL  Wow64Process
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hProcess'     : HANDLE,
     'Wow64Process' : PBOOL
 })

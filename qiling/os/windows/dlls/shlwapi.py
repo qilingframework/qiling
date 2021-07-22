@@ -11,7 +11,7 @@ from qiling.os.windows.utils import cmp
 # LPCSTR PathFindExtensionA(
 #   LPCSTR pszPath
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'pszPath' : POINTER # LPCSTR
 })
 def hook_PathFindExtensionA(ql: Qiling, address: int, params):
@@ -25,7 +25,7 @@ def hook_PathFindExtensionA(ql: Qiling, address: int, params):
 # LPCSTR PathFindExtensionW(
 #   LPWSTR pszPath
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'pszPath' : POINTER # LPCWSTR
 })
 def hook_PathFindExtensionW(ql: Qiling, address: int, params):
@@ -40,7 +40,7 @@ def hook_PathFindExtensionW(ql: Qiling, address: int, params):
 # LPCSTR PathFindFileNameA(
 #   LPCSTR pszPath
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'pszPath' : POINTER # LPCSTR
 })
 def hook_PathFindFileNameA(ql: Qiling, address: int, params):
@@ -54,7 +54,7 @@ def hook_PathFindFileNameA(ql: Qiling, address: int, params):
 # LPCSTR PathFindFileNameW(
 #   LPWSTR pszPath
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'pszPath' : LPCWSTR
 })
 def hook_PathFindFileNameW(ql: Qiling, address: int, params):
@@ -70,7 +70,7 @@ def hook_PathFindFileNameW(ql: Qiling, address: int, params):
 #   PCWSTR psz1,
 #   PCWSTR psz2
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'psz1' : PCWSTR,
     'psz2' : PCWSTR
 })
@@ -80,7 +80,7 @@ def hook_StrCmpW(ql: Qiling, address: int, params):
 
     return cmp(str1, str2)
 
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'psz1' : PCWSTR,
     'psz2' : PCWSTR
 })

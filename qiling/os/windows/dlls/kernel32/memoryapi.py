@@ -14,7 +14,7 @@ from qiling.os.windows.fncc import *
 #   DWORD  flAllocationType,
 #   DWORD  flProtect
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpAddress'        : LPVOID,
     'dwSize'           : SIZE_T,
     'flAllocationType' : DWORD,
@@ -30,7 +30,7 @@ def hook_VirtualAlloc(ql: Qiling, address: int, params):
 #   SIZE_T dwSize,
 #   DWORD  dwFreeType
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpAddress'  : LPVOID,
     'dwSize'     : SIZE_T,
     'dwFreeType' : DWORD
@@ -48,7 +48,7 @@ def hook_VirtualFree(ql: Qiling, address: int, params):
 #  DWORD  flNewProtect,
 #  PDWORD lpflOldProtect
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpAddress'      : LPVOID,
     'dwSize'         : SIZE_T,
     'flNewProtect'   : DWORD,
@@ -62,7 +62,7 @@ def hook_VirtualProtect(ql: Qiling, address: int, params):
 #  PMEMORY_BASIC_INFORMATION lpBuffer,
 #  SIZE_T                    dwLength
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpAddress' : LPCVOID,
     'lpBuffer'  : PMEMORY_BASIC_INFORMATION,
     'dwLength'  : SIZE_T

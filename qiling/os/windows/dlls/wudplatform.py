@@ -7,16 +7,16 @@ from qiling import Qiling
 from qiling.os.windows.api import *
 from qiling.os.windows.fncc import *
 
-@winsdkapi_new(cc=STDCALL, params={})
+@winsdkapi(cc=STDCALL, params={})
 def hook_WudfIsUserDebuggerPresent(ql: Qiling, address: int, params):
     return 0
 
 
-@winsdkapi_new(cc=STDCALL, params={})
+@winsdkapi(cc=STDCALL, params={})
 def hook_WudfIsAnyDebuggerPresent(ql: Qiling, address: int, params):
     return 0
 
 
-@winsdkapi_new(cc=STDCALL, params={})
+@winsdkapi(cc=STDCALL, params={})
 def hook_WudfIsKernelDebuggerPresent(ql: Qiling, address: int, params):
     return 0

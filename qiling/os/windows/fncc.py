@@ -14,7 +14,7 @@ STDCALL = 1
 CDECL   = 2
 MS64    = 3
 
-def winsdkapi_new(cc: int, params: Mapping[str, Any] = {}, passthru: bool = False):
+def winsdkapi(cc: int, params: Mapping[str, Any] = {}, passthru: bool = False):
     def decorator(func):
         @wraps(func)
         def wrapper(ql: Qiling, pc: int, api_name: str):

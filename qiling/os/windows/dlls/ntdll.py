@@ -20,7 +20,7 @@ from qiling.os.windows import structs
 #    const void *src,
 #    size_t count
 # );
-@winsdkapi_new(cc=CDECL, params={
+@winsdkapi(cc=CDECL, params={
     'dest'  : POINTER,
     'src'   : POINTER,
     'count' : UINT
@@ -83,7 +83,7 @@ def _QueryInformationProcess(ql: Qiling, address: int, params):
 #   _In_      ULONG            ProcessInformationLength,
 #   _Out_opt_ PULONG           ReturnLength
 # );
-@winsdkapi_new(cc=CDECL, params={
+@winsdkapi(cc=CDECL, params={
     'ProcessHandle'            : HANDLE,
     'ProcessInformationClass'  : PROCESSINFOCLASS,
     'ProcessInformation'       : PVOID,
@@ -102,7 +102,7 @@ def hook_ZwQueryInformationProcess(ql: Qiling, address: int, params):
 #   IN ULONG            ProcessInformationLength,
 #   OUT PULONG          ReturnLength
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'ProcessHandle'            : HANDLE,
     'ProcessInformationClass'  : PROCESSINFOCLASS,
     'ProcessInformation'       : PVOID,
@@ -164,7 +164,7 @@ def _QuerySystemInformation(ql: Qiling, address: int, params):
 #   IN ULONG                    SystemInformationLength,
 #   OUT PULONG                  ReturnLength
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'SystemInformationClass'  : SYSTEM_INFORMATION_CLASS,
     'SystemInformation'       : PVOID,
     'SystemInformationLength' : ULONG,
@@ -182,7 +182,7 @@ def hook_NtQuerySystemInformation(ql: Qiling, address: int, params):
 #   IN ULONG                    SystemInformationLength,
 #   OUT PULONG                  ReturnLength
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'SystemInformationClass'  : SYSTEM_INFORMATION_CLASS,
     'SystemInformation'       : PVOID,
     'SystemInformationLength' : ULONG,
@@ -200,7 +200,7 @@ def hook_ZwQuerySystemInformation(ql: Qiling, address: int, params):
 #     ObjectAttributes: POBJECT_ATTRIBUTES,
 #     Flags: ULONG
 # ) -> NTSTATUS
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'DebugObjectHandle' : PHANDLE,
     'DesiredAccess'     : ACCESS_MASK,
     'ObjectAttributes'  : POBJECT_ATTRIBUTES,
@@ -219,7 +219,7 @@ def hook_ZwCreateDebugObject(ql: Qiling, address: int, params):
 #   ULONG                    ObjectInformationLength,
 #   PULONG                   ReturnLength
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'Handle'                  : HANDLE,
     'ObjectInformationClass'  : OBJECT_INFORMATION_CLASS,
     'ObjectInformation'       : PVOID,
@@ -265,7 +265,7 @@ def hook_ZwQueryObject(ql: Qiling, address: int, params):
 #   _In_      PVOID            ProcessInformation
 #   _In_      ULONG            ProcessInformationLength
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'ProcessHandle'            : HANDLE,
     'ProcessInformationClass'  : PROCESSINFOCLASS,
     'ProcessInformation'       : PVOID,
@@ -274,7 +274,7 @@ def hook_ZwQueryObject(ql: Qiling, address: int, params):
 def hook_ZwSetInformationProcess(ql: Qiling, address: int, params):
     _SetInformationProcess(ql, address, params)
 
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'ProcessHandle'            : HANDLE,
     'ProcessInformationClass'  : PROCESSINFOCLASS,
     'ProcessInformation'       : PVOID,
@@ -334,7 +334,7 @@ def _SetInformationProcess(ql: Qiling, address: int, params):
 # NTAPI
 # NtYieldExecution(
 #  );
-@winsdkapi_new(cc=STDCALL, params={})
+@winsdkapi(cc=STDCALL, params={})
 def hook_ZwYieldExecution(ql: Qiling, address: int, params):
     # FIXME: offer timeslice of this thread
     return STATUS_NO_YIELD_PERFORMED
@@ -344,7 +344,7 @@ def hook_ZwYieldExecution(ql: Qiling, address: int, params):
 #  IN PANSI_STRING         FunctionName OPTIONAL,
 #  IN WORD                 Oridinal OPTIONAL,
 #  OUT PVOID               *FunctionAddress );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'ModuleHandle'    : HMODULE,
     'FunctionName'    : PANSI_STRING,
     'Ordinal'         : WORD,
@@ -377,7 +377,7 @@ def hook_LdrGetProcedureAddress(ql: Qiling, address: int, params):
 #  ULONG  Flags,
 #  SIZE_T Size
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'HeapHandle' : PVOID,
     'Flags'      : ULONG,
     'Size'       : SIZE_T
@@ -386,7 +386,7 @@ def hook_RtlAllocateHeap(ql: Qiling, address: int, params):
     return ql.os.heap.alloc(params["Size"])
 
 # wchar_t* wcsstr( const wchar_t* dest, const wchar_t* src );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'dest' : POINTER, # WSTRING
     'src'  : WSTRING
 })
@@ -402,7 +402,7 @@ def hook_wcsstr(ql: Qiling, address: int, params):
     return 0
 
 # HANDLE CsrGetProcessId();
-@winsdkapi_new(cc=STDCALL, params={})
+@winsdkapi(cc=STDCALL, params={})
 def hook_CsrGetProcessId(ql: Qiling, address: int, params):
     pid = ql.os.profile["PROCESSES"].getint("csrss.exe", fallback=12345)
     return pid

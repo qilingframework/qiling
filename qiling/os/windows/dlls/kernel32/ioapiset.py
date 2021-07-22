@@ -18,7 +18,7 @@ from qiling.os.windows.fncc import *
 #   LPDWORD      lpBytesReturned,
 #   LPOVERLAPPED lpOverlapped
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hDevice'         : HANDLE,
     'dwIoControlCode' : DWORD,
     'lpInBuffer'      : LPVOID,

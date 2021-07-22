@@ -15,7 +15,7 @@ from qiling.os.windows.structs import Token, StartupInfo
 # void ExitProcess(
 #   UINT uExitCode
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'uExitCode' : UINT
 })
 def hook_ExitProcess(ql: Qiling, address: int, params):
@@ -34,7 +34,7 @@ def _GetStartupInfo(ql: Qiling, address: int, params):
 # VOID WINAPI GetStartupInfoA(
 #   _Out_ LPSTARTUPINFO lpStartupInfo
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpStartupInfo' : LPSTARTUPINFOA
 })
 def hook_GetStartupInfoA(ql: Qiling, address: int, params):
@@ -43,14 +43,14 @@ def hook_GetStartupInfoA(ql: Qiling, address: int, params):
 # VOID WINAPI GetStartupInfoW(
 #   _Out_ LPSTARTUPINFO lpStartupInfo
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpStartupInfo' : LPSTARTUPINFOW
 })
 def hook_GetStartupInfoW(ql: Qiling, address: int, params):
     return _GetStartupInfo(ql, address, params)
 
 # DWORD TlsAlloc();
-@winsdkapi_new(cc=STDCALL, params={})
+@winsdkapi(cc=STDCALL, params={})
 def hook_TlsAlloc(ql: Qiling, address: int, params):
     idx = ql.os.thread_manager.cur_thread.tls_index
     ql.os.thread_manager.cur_thread.tls_index += 1
@@ -61,7 +61,7 @@ def hook_TlsAlloc(ql: Qiling, address: int, params):
 # DWORD TlsFree(
 #  DWORD dwTlsIndex
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'dwTlsIndex' : DWORD
 })
 def hook_TlsFree(ql: Qiling, address: int, params):
@@ -77,7 +77,7 @@ def hook_TlsFree(ql: Qiling, address: int, params):
 # LPVOID TlsGetValue(
 #  DWORD dwTlsIndex
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'dwTlsIndex' : DWORD
 })
 def hook_TlsGetValue(ql: Qiling, address: int, params):
@@ -96,7 +96,7 @@ def hook_TlsGetValue(ql: Qiling, address: int, params):
 #   DWORD  dwTlsIndex,
 #   LPVOID lpTlsValue
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'dwTlsIndex' : DWORD,
     'lpTlsValue' : LPVOID
 })
@@ -112,13 +112,13 @@ def hook_TlsSetValue(ql: Qiling, address: int, params):
 
 # DWORD GetCurrentThreadId(
 # );
-@winsdkapi_new(cc=STDCALL, params={})
+@winsdkapi(cc=STDCALL, params={})
 def hook_GetCurrentThreadId(ql: Qiling, address: int, params):
     return ql.os.thread_manager.cur_thread.id
 
 # DWORD GetCurrentProcessId(
 # );
-@winsdkapi_new(cc=STDCALL, params={})
+@winsdkapi(cc=STDCALL, params={})
 def hook_GetCurrentProcessId(ql: Qiling, address: int, params):
     # Let's return a valid value
     return ql.os.profile.getint("KERNEL", "pid")
@@ -126,7 +126,7 @@ def hook_GetCurrentProcessId(ql: Qiling, address: int, params):
 # BOOL IsProcessorFeaturePresent(
 #   DWORD ProcessorFeature
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'ProcessorFeature' : DWORD
 })
 def hook_IsProcessorFeaturePresent(ql: Qiling, address: int, params):
@@ -146,7 +146,7 @@ def hook_IsProcessorFeaturePresent(ql: Qiling, address: int, params):
 #   DWORD                   dwCreationFlags,
 #   LPDWORD                 lpThreadId
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpThreadAttributes' : LPSECURITY_ATTRIBUTES,
     'dwStackSize'        : SIZE_T,
     'lpStartAddress'     : LPTHREAD_START_ROUTINE,
@@ -197,7 +197,7 @@ def hook_CreateThread(ql: Qiling, address: int, params):
 # void ExitThread(
 #   DWORD dwExitCode
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'dwExitCode' : DWORD
 })
 def hook_ExitThread(ql: Qiling, address: int, params):
@@ -206,7 +206,7 @@ def hook_ExitThread(ql: Qiling, address: int, params):
 
 # HANDLE GetCurrentProcess(
 # );
-@winsdkapi_new(cc=STDCALL, params={})
+@winsdkapi(cc=STDCALL, params={})
 def hook_GetCurrentProcess(ql: Qiling, address: int, params):
     # FIXME: should return handle, not pid
     return ql.os.profile.getint("KERNEL", "pid")
@@ -215,7 +215,7 @@ def hook_GetCurrentProcess(ql: Qiling, address: int, params):
 #   HANDLE hProcess,
 #   UINT   uExitCode
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hProcess'  : HANDLE,
     'uExitCode' : UINT
 })
@@ -230,7 +230,7 @@ def hook_TerminateProcess(ql: Qiling, address: int, params):
     return 1
 
 # HANDLE GetCurrentThread();
-@winsdkapi_new(cc=STDCALL, params={})
+@winsdkapi(cc=STDCALL, params={})
 def hook_GetCurrentThread(ql: Qiling, address: int, params):
     return ql.os.thread_manager.cur_thread.id
 
@@ -239,7 +239,7 @@ def hook_GetCurrentThread(ql: Qiling, address: int, params):
 #   BOOL  bInheritHandle,
 #   DWORD dwProcessId
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'dwDesiredAccess' : DWORD,
     'bInheritHandle'  : BOOL,
     'dwProcessId'     : DWORD
@@ -267,7 +267,7 @@ def hook_OpenProcess(ql: Qiling, address: int, params):
 #   DWORD   DesiredAccess,
 #   PHANDLE TokenHandle
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'ProcessHandle' : HANDLE,
     'DesiredAccess' : DWORD,
     'TokenHandle'   : PHANDLE
@@ -287,7 +287,7 @@ def hook_OpenProcessToken(ql: Qiling, address: int, params):
 #   HANDLE    hThread,
 #   LPCONTEXT lpContext
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hThread'   : HANDLE,
     'lpContext' : LPCONTEXT
 })
@@ -300,7 +300,7 @@ def hook_GetThreadContext(ql: Qiling, address: int, params):
 #   BOOL    OpenAsSelf,
 #   PHANDLE TokenHandle
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'ThreadHandle'  : HANDLE,
     'DesiredAccess' : DWORD,
     'OpenAsSelf'    : BOOL,
@@ -324,7 +324,7 @@ def hook_OpenThreadToken(ql: Qiling, address: int, params):
 #   LPFILETIME lpKernelTime,
 #   LPFILETIME lpUserTime
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hThread'        : HANDLE,
     'lpCreationTime' : LPFILETIME,
     'lpExitTime'     : LPFILETIME,

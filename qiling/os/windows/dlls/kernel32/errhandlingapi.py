@@ -12,7 +12,7 @@ from qiling.os.windows.handle import *
 # LPTOP_LEVEL_EXCEPTION_FILTER SetUnhandledExceptionFilter(
 #   LPTOP_LEVEL_EXCEPTION_FILTER lpTopLevelExceptionFilter
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpTopLevelExceptionFilter' : LPTOP_LEVEL_EXCEPTION_FILTER
 })
 def hook_SetUnhandledExceptionFilter(ql: Qiling, address: int, params):
@@ -28,14 +28,14 @@ def hook_SetUnhandledExceptionFilter(ql: Qiling, address: int, params):
     return 0
 
 # _Post_equals_last_error_ DWORD GetLastError();
-@winsdkapi_new(cc=STDCALL, params={})
+@winsdkapi(cc=STDCALL, params={})
 def hook_GetLastError(ql: Qiling, address: int, params):
     return ql.os.last_error
 
 # void SetLastError(
 #  DWORD dwErrCode
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'dwErrCode' : DWORD
 })
 def hook_SetLastError(ql: Qiling, address: int, params):
@@ -44,7 +44,7 @@ def hook_SetLastError(ql: Qiling, address: int, params):
 # LONG UnhandledExceptionFilter(
 #   _EXCEPTION_POINTERS *ExceptionInfo
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'ExceptionInfo' : POINTER
 })
 def hook_UnhandledExceptionFilter(ql: Qiling, address: int, params):
@@ -53,7 +53,7 @@ def hook_UnhandledExceptionFilter(ql: Qiling, address: int, params):
 # UINT SetErrorMode(
 #   UINT uMode
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'uMode' : UINT
 })
 def hook_SetErrorMode(ql: Qiling, address: int, params):
@@ -66,7 +66,7 @@ def hook_SetErrorMode(ql: Qiling, address: int, params):
 #   DWORD           nNumberOfArguments,
 #   const ULONG_PTR *lpArguments
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'dwExceptionCode'    : DWORD,
     'dwExceptionFlags'   : DWORD,
     'nNumberOfArguments' : DWORD,
@@ -85,7 +85,7 @@ def hook_RaiseException(ql: Qiling, address: int, params):
 #   ULONG                       First,
 #   PVECTORED_EXCEPTION_HANDLER Handler
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'First'   : ULONG,
     'Handler' : PVECTORED_EXCEPTION_HANDLER
 })
@@ -135,7 +135,7 @@ def hook_AddVectoredExceptionHandler(ql: Qiling, address: int, params):
 # ULONG RemoveVectoredExceptionHandler(
 #   PVOID Handle
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'Handle' : HANDLE
 })
 def hook_RemoveVectoredExceptionHandler(ql: Qiling, address: int, params):

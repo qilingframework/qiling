@@ -11,7 +11,7 @@ from qiling.const import QL_VERBOSE, QL_INTERCEPT
 from qiling.os.windows.api import STRING
 from qiling.os.windows.fncc import *
 
-@winsdkapi_new(cc=CDECL, params={
+@winsdkapi(cc=CDECL, params={
     "str" : STRING
 })
 def my_puts(ql: Qiling, address: int, params):

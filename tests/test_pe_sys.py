@@ -42,7 +42,7 @@ class PETest(unittest.TestCase):
         #   DWORD                   dwCreationFlags,
         #   LPDWORD                 lpThreadId
         # );
-        @winsdkapi_new(cc=STDCALL, params={
+        @winsdkapi(cc=STDCALL, params={
             'lpThreadAttributes' : LPSECURITY_ATTRIBUTES,
             'dwStackSize'        : SIZE_T,
             'lpStartAddress'     : LPTHREAD_START_ROUTINE,
@@ -63,7 +63,7 @@ class PETest(unittest.TestCase):
         #   DWORD                 dwFlagsAndAttributes,
         #   HANDLE                hTemplateFile
         # );
-        @winsdkapi_new(cc=STDCALL, params={
+        @winsdkapi(cc=STDCALL, params={
             'lpFileName'            : LPCSTR,
             'dwDesiredAccess'       : DWORD,
             'dwShareMode'           : DWORD,
@@ -110,7 +110,7 @@ class PETest(unittest.TestCase):
                 ql.mem.write(lpNumberOfBytesWritten, ql.pack32(nNumberOfBytesToWrite))
             return ret
 
-        @winsdkapi_new(cc=STDCALL, params={
+        @winsdkapi(cc=STDCALL, params={
             'hFile'                  : HANDLE,
             'lpBuffer'               : LPCVOID,
             'nNumberOfBytesToWrite'  : DWORD,
@@ -144,7 +144,7 @@ class PETest(unittest.TestCase):
         #   DWORD     dwNumServiceArgs,
         #   LPCSTR    *lpServiceArgVectors
         # );
-        @winsdkapi_new(cc=STDCALL, params={
+        @winsdkapi(cc=STDCALL, params={
             'hService'            : SC_HANDLE,
             'dwNumServiceArgs'    : DWORD,
             'lpServiceArgVectors' : POINTER

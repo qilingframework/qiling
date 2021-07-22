@@ -12,7 +12,7 @@ from qiling.os.windows.fncc import *
 #   SIZE_T dwInitialSize,
 #   SIZE_T dwMaximumSize
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'flOptions'     : DWORD,
     'dwInitialSize' : SIZE_T,
     'dwMaximumSize' : SIZE_T
@@ -27,7 +27,7 @@ def hook_HeapCreate(ql: Qiling, address: int, params):
 #   DWORD  dwFlags,
 #   SIZE_T dwBytes
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hHeap'   : HANDLE,
     'dwFlags' : DWORD,
     'dwBytes' : SIZE_T
@@ -42,7 +42,7 @@ def hook_HeapAlloc(ql: Qiling, address: int, params):
 #   DWORD   dwFlags,
 #   LPCVOID lpMem
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hHeap'   : HANDLE,
     'dwFlags' : DWORD,
     'lpMem'   : LPCVOID
@@ -57,7 +57,7 @@ def hook_HeapSize(ql: Qiling, address: int, params):
 #  DWORD                  dwFlags,
 #  _Frees_ptr_opt_ LPVOID lpMem
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hHeap'   : HANDLE,
     'dwFlags' : DWORD,
     'lpMem'   : LPVOID
@@ -73,7 +73,7 @@ def hook_HeapFree(ql: Qiling, address: int, params):
 #  PVOID                  HeapInformation,
 #  SIZE_T                 HeapInformationLength
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'HeapHandle'            : HANDLE,
     'HeapInformationClass'  : HEAP_INFORMATION_CLASS,
     'HeapInformation'       : PVOID,
@@ -84,6 +84,6 @@ def hook_HeapSetInformation(ql: Qiling, address: int, params):
 
 # HANDLE GetProcessHeap(
 # );
-@winsdkapi_new(cc=STDCALL, params={})
+@winsdkapi(cc=STDCALL, params={})
 def hook_GetProcessHeap(ql: Qiling, address: int, params):
     return ql.os.heap.start_address

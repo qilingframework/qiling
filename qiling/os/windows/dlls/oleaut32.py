@@ -13,7 +13,7 @@ from qiling.os.windows.fncc import *
 #   const OLECHAR *strIn,
 #   UINT          ui
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'strIn' : POINTER, # OLECHAR
     'ui'    : UINT
 })
@@ -31,7 +31,7 @@ def hook_SysAllocStringLen(ql: Qiling, address: int, params):
 # void SysFreeString(
 #   BSTR bstrString
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'bstrString' : POINTER # BSTR
 })
 def hook_SysFreeString(ql: Qiling, address: int, params):
@@ -45,7 +45,7 @@ def hook_SysFreeString(ql: Qiling, address: int, params):
 # UINT SysStringLen(
 #   BSTR pbstr
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'pbstr' : BSTR
 })
 def hook_SysStringLen(ql: Qiling, address: int, params):
@@ -58,7 +58,7 @@ def hook_SysStringLen(ql: Qiling, address: int, params):
 #   const OLECHAR *psz,
 #   unsigned int  len
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'pbstr' : POINTER,
     'psz'   : OLECHAR,
     'len'   : UINT
@@ -76,7 +76,7 @@ def hook_SysReAllocStringLen(ql: Qiling, address: int, params):
 # BSTR SysAllocString(
 #   const OLECHAR *psz
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'psz' : OLECHAR
 })
 def hook_SysAllocString(ql: Qiling, address: int, params):

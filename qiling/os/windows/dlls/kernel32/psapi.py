@@ -13,7 +13,7 @@ from qiling.os.windows.fncc import *
 #   LPMODULEINFO lpmodinfo,
 #   DWORD        cb
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hProcess'  : HANDLE,
     'hModule'   : HMODULE,
     'lpmodinfo' : LPMODULEINFO,

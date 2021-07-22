@@ -9,7 +9,7 @@ from qiling.os.windows.const import *
 from qiling.os.windows.fncc import *
 
 # BOOL IsDebuggerPresent();
-@winsdkapi_new(cc=STDCALL, params={})
+@winsdkapi(cc=STDCALL, params={})
 def hook_IsDebuggerPresent(ql: Qiling, address: int, params):
     return 0
 
@@ -17,7 +17,7 @@ def hook_IsDebuggerPresent(ql: Qiling, address: int, params):
 #   HANDLE hProcess,
 #   PBOOL  pbDebuggerPresent
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hProcess'          : HANDLE,
     'pbDebuggerPresent' : PBOOL
 })
@@ -31,7 +31,7 @@ def hook_CheckRemoteDebuggerPresent(ql: Qiling, address: int, params):
 # void OutputDebugStringW(
 #   LPCWSTR lpOutputString
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpOutputString' : LPCWSTR
 })
 def hook_OutputDebugStringW(ql: Qiling, address: int, params):
@@ -42,7 +42,7 @@ def hook_OutputDebugStringW(ql: Qiling, address: int, params):
 # void OutputDebugStringA(
 #  LPCSTR lpOutputString
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpOutputString' : LPCSTR
 })
 def hook_OutputDebugStringA(ql: Qiling, address: int, params):

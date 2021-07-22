@@ -11,20 +11,20 @@ from qiling.os.windows.fncc import *
 # BOOL SetThreadLocale(
 #   LCID Locale
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'Locale' : LCID
 })
 def hook_SetThreadLocale(ql: Qiling, address: int, params):
     return LOCALE_CUSTOM_DEFAULT
 
 # LCID GetThreadLocale();
-@winsdkapi_new(cc=STDCALL, params={})
+@winsdkapi(cc=STDCALL, params={})
 def hook_GetThreadLocale(ql: Qiling, address: int, params):
     return LOCALE_CUSTOM_DEFAULT
 
 # UINT GetACP(
 # );
-@winsdkapi_new(cc=STDCALL, params={})
+@winsdkapi(cc=STDCALL, params={})
 def hook_GetACP(ql: Qiling, address: int, params):
     return OEM_US
 
@@ -32,7 +32,7 @@ def hook_GetACP(ql: Qiling, address: int, params):
 #   UINT     CodePage,
 #   LPCPINFO lpCPInfo
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'CodePage' : UINT,
     'lpCPInfo' : LPCPINFO
 })
@@ -45,7 +45,7 @@ def hook_GetCPInfo(ql: Qiling, address: int, params):
 #   LPSTR  lpLCData,
 #   int    cchData
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'Locale'   : LCID,
     'LCType'   : LCTYPE,
     'lpLCData' : LPSTR,
@@ -73,7 +73,7 @@ def hook_GetLocaleInfoA(ql: Qiling, address: int, params):
 # BOOL IsValidCodePage(
 #  UINT CodePage
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'CodePage' : UINT
 })
 def hook_IsValidCodePage(ql: Qiling, address: int, params):
@@ -101,7 +101,7 @@ def __LCMapString(ql: Qiling, address: int, params, wstring: bool):
 #   LPWSTR  lpDestStr,
 #   int     cchDest
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'Locale'     : LCID,
     'dwMapFlags' : DWORD,
     'lpSrcStr'   : LPCWSTR,
@@ -120,7 +120,7 @@ def hook_LCMapStringW(ql: Qiling, address: int, params):
 #   LPSTR  lpDestStr,
 #   int    cchDest
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'Locale'     : LCID,
     'dwMapFlags' : DWORD,
     'lpSrcStr'   : LPCSTR,
@@ -142,7 +142,7 @@ def hook_LCMapStringA(ql: Qiling, address: int, params):
 #   LPVOID           lpReserved,
 #   LPARAM           sortHandle
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpLocaleName'         : LPCWSTR,
     'dwMapFlags'           : DWORD,
     'lpSrcStr'             : LPCWSTR,
@@ -157,14 +157,14 @@ def hook_LCMapStringEx(ql: Qiling, address: int, params):
     return __LCMapString(ql, address, params, True)
 
 # LANGID GetUserDefaultUILanguage();
-@winsdkapi_new(cc=STDCALL, params={})
+@winsdkapi(cc=STDCALL, params={})
 def hook_GetUserDefaultUILanguage(ql: Qiling, address: int, params):
     # TODO find better documentation
     # https://docs.microsoft.com/it-it/windows/win32/intl/language-identifiers
     return ql.os.profile.getint("USER", "language")
 
 # LANGID GetSystemDefaultUILanguage();
-@winsdkapi_new(cc=STDCALL, params={})
+@winsdkapi(cc=STDCALL, params={})
 def hook_GetSystemDefaultUILanguage(ql: Qiling, address: int, params):
     # TODO find better documentation
     # https://docs.microsoft.com/it-it/windows/win32/intl/language-identifiers

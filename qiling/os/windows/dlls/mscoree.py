@@ -10,7 +10,7 @@ from qiling.os.windows.fncc import *
 # void STDMETHODCALLTYPE CorExitProcess (
 #   int  exitCode
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'exitCode' : INT
 })
 def hook_CorExitProcess(ql: Qiling, address: int, params):

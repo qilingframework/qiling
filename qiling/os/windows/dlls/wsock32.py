@@ -14,7 +14,7 @@ WSAAPI = STDCALL
 #  WORD      wVersionRequired,
 #  LPWSADATA lpWSAData
 # );
-@winsdkapi_new(cc=WSAAPI, params={
+@winsdkapi(cc=WSAAPI, params={
     'wVersionRequested' : WORD,
     'lpWSAData'         : LPWSADATA
 })
@@ -29,7 +29,7 @@ def hook_WSAStartup(ql: Qiling, address: int, params):
 #  GROUP               g,
 #  DWORD               dwFlags
 # );
-@winsdkapi_new(cc=WSAAPI, params={
+@winsdkapi(cc=WSAAPI, params={
     'af'             : INT,
     'type'           : INT,
     'protocol'       : INT,
@@ -45,7 +45,7 @@ def hook_WSASocketA(ql: Qiling, address: int, params):
 #  const sockaddr *name,
 #  int            namelen
 # );
-@winsdkapi_new(cc=WSAAPI, params={
+@winsdkapi(cc=WSAAPI, params={
     's'       : SOCKET,
     'name'    : POINTER,
     'namelen' : INT
@@ -72,7 +72,7 @@ def hook_connect(ql: Qiling, address: int, params):
 # hostent * gethostbyname(
 #  const char *name
 # );
-@winsdkapi_new(cc=WSAAPI, params={
+@winsdkapi(cc=WSAAPI, params={
     'name' : POINTER
 })
 def hook_gethostbyname(ql: Qiling, address: int, params):

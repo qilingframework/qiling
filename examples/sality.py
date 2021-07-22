@@ -36,7 +36,7 @@ def init_unseen_symbols(ql: Qiling, address: int, name: str, ordinal: int, dll_n
 #   DWORD                   dwCreationFlags,
 #   LPDWORD                 lpThreadId
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpThreadAttributes' : LPSECURITY_ATTRIBUTES,
     'dwStackSize'        : SIZE_T,
     'lpStartAddress'     : LPTHREAD_START_ROUTINE,
@@ -57,7 +57,7 @@ def hook_CreateThread(ql: Qiling, address: int, params):
 #   DWORD                 dwFlagsAndAttributes,
 #   HANDLE                hTemplateFile
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpFileName'            : LPCSTR,
     'dwDesiredAccess'       : DWORD,
     'dwShareMode'           : DWORD,
@@ -103,7 +103,7 @@ def _WriteFile(ql: Qiling, address: int, params):
         ql.mem.write(lpNumberOfBytesWritten, ql.pack32(nNumberOfBytesToWrite))
     return ret
 
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hFile'                  : HANDLE,
     'lpBuffer'               : LPCVOID,
     'nNumberOfBytesToWrite'  : DWORD,
@@ -137,7 +137,7 @@ def hook_WriteFile(ql: Qiling, address: int, params):
 #   DWORD     dwNumServiceArgs,
 #   LPCSTR    *lpServiceArgVectors
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hService'            : SC_HANDLE,
     'dwNumServiceArgs'    : DWORD,
     'lpServiceArgVectors' : POINTER

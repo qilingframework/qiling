@@ -13,7 +13,7 @@ from qiling.os.windows.fncc import *
 #   DWORD dwFlags,
 #   DWORD th32ProcessID
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'dwFlags'       : DWORD,
     'th32ProcessID' : DWORD
 })
@@ -32,7 +32,7 @@ def hook_CreateToolhelp32Snapshot(ql: Qiling, address: int, params):
 #   HANDLE            hSnapshot,
 #   LPPROCESSENTRY32W lppe
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hSnapshot' : HANDLE,
     'lppe'      : LPPROCESSENTRY32W
 })
@@ -43,7 +43,7 @@ def hook_Process32FirstW(ql: Qiling, address: int, params):
 #   HANDLE            hSnapshot,
 #   LPPROCESSENTRY32W lppe
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hSnapshot' : HANDLE,
     'lppe'      : LPPROCESSENTRY32W
 })

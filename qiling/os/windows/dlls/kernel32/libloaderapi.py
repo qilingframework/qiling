@@ -34,7 +34,7 @@ def _GetModuleHandle(ql: Qiling, address: int, params):
 # HMODULE GetModuleHandleA(
 #   LPCSTR lpModuleName
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpModuleName' : LPCSTR
 })
 def hook_GetModuleHandleA(ql: Qiling, address: int, params):
@@ -43,7 +43,7 @@ def hook_GetModuleHandleA(ql: Qiling, address: int, params):
 # HMODULE GetModuleHandleW(
 #   LPCWSTR lpModuleName
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpModuleName' : LPCWSTR
 })
 def hook_GetModuleHandleW(ql: Qiling, address: int, params):
@@ -54,7 +54,7 @@ def hook_GetModuleHandleW(ql: Qiling, address: int, params):
 #   LPCWSTR lpModuleName,
 #   HMODULE *phModule
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'dwFlags'      : DWORD,
     'lpModuleName' : LPCWSTR,
     'phModule'     : HMODULE
@@ -72,7 +72,7 @@ def hook_GetModuleHandleExW(ql: Qiling, address: int, params):
 #   LPSTR   lpFilename,
 #   DWORD   nSize
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hModule'    : HMODULE,
     'lpFilename' : LPSTR,
     'nSize'      : DWORD
@@ -108,7 +108,7 @@ def hook_GetModuleFileNameA(ql: Qiling, address: int, params):
 #   LPSTR   lpFilename,
 #   DWORD   nSize
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hModule'    : HMODULE,
     'lpFilename' : LPWSTR,
     'nSize'      : DWORD
@@ -143,7 +143,7 @@ def hook_GetModuleFileNameW(ql: Qiling, address: int, params):
 #   HMODULE hModule,
 #   LPCSTR  lpProcName
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hModule'    : HMODULE,
     'lpProcName' : POINTER # LPCSTR
 })
@@ -195,7 +195,7 @@ def _LoadLibraryEx(ql: Qiling, address: int, params):
 # HMODULE LoadLibraryA(
 #   LPCSTR lpLibFileName
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpLibFileName' : LPCSTR
 })
 def hook_LoadLibraryA(ql: Qiling, address: int, params):
@@ -206,7 +206,7 @@ def hook_LoadLibraryA(ql: Qiling, address: int, params):
 #   HANDLE hFile,
 #   DWORD  dwFlags
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpLibFileName' : LPCSTR,
     'hFile'         : HANDLE,
     'dwFlags'       : DWORD
@@ -217,7 +217,7 @@ def hook_LoadLibraryExA(ql: Qiling, address: int, params):
 # HMODULE LoadLibraryW(
 #   LPCWSTR lpLibFileName
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpLibFileName' : LPCWSTR
 })
 def hook_LoadLibraryW(ql: Qiling, address: int, params):
@@ -228,7 +228,7 @@ def hook_LoadLibraryW(ql: Qiling, address: int, params):
 #   HANDLE hFile,
 #   DWORD  dwFlags
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpLibFileName' : LPCWSTR,
     'hFile'         : HANDLE,
     'dwFlags'       : DWORD
@@ -240,7 +240,7 @@ def hook_LoadLibraryExW(ql: Qiling, address: int, params):
 #   HMODULE hModule,
 #   HRSRC   hResInfo
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hModule'  : HMODULE,
     'hResInfo' : HRSRC
 })
@@ -253,7 +253,7 @@ def hook_SizeofResource(ql: Qiling, address: int, params):
 #   HMODULE hModule,
 #   HRSRC   hResInfo
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hModule'  : HMODULE,
     'hResInfo' : HRSRC
 })
@@ -265,7 +265,7 @@ def hook_LoadResource(ql: Qiling, address: int, params):
 # LPVOID LockResource(
 #   HGLOBAL hResData
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hResData' : HGLOBAL
 })
 def hook_LockResource(ql: Qiling, address: int, params):
@@ -276,7 +276,7 @@ def hook_LockResource(ql: Qiling, address: int, params):
 # BOOL DisableThreadLibraryCalls(
 #  HMODULE hLibModule
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hLibModule' : HMODULE
 })
 def hook_DisableThreadLibraryCalls(ql: Qiling, address: int, params):
@@ -285,7 +285,7 @@ def hook_DisableThreadLibraryCalls(ql: Qiling, address: int, params):
 # BOOL FreeLibrary(
 #   HMODULE hLibModule
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hLibModule' : HMODULE
 })
 def hook_FreeLibrary(ql: Qiling, address: int, params):
@@ -294,7 +294,7 @@ def hook_FreeLibrary(ql: Qiling, address: int, params):
 # BOOL SetDefaultDllDirectories(
 #   DWORD DirectoryFlags
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'DirectoryFlags' : DWORD
 })
 def hook_SetDefaultDllDirectories(ql: Qiling, address: int, params):

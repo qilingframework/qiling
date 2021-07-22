@@ -9,7 +9,7 @@ from qiling.os.windows.fncc import *
 from qiling.os.windows.handle import Handle
 
 # HWND WINAPI GetConsoleWindow(void);
-@winsdkapi_new(cc=STDCALL, params={})
+@winsdkapi(cc=STDCALL, params={})
 def hook_GetConsoleWindow(ql: Qiling, address: int, params):
     handle = Handle(name="console_window")
     ql.os.handle_manager.append(handle)

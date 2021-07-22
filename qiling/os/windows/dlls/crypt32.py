@@ -55,7 +55,7 @@ def _CryptStringToBinary(ql: Qiling, address: int, params) -> int:
 #   DWORD  *pdwSkip,
 #   DWORD  *pdwFlags
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'pszString' : LPCSTR,
     'cchString' : DWORD,
     'dwFlags'   : DWORD,
@@ -67,7 +67,7 @@ def _CryptStringToBinary(ql: Qiling, address: int, params) -> int:
 def hook_CryptStringToBinaryA(ql: Qiling, address: int, params):
     return _CryptStringToBinary(ql, address, params)
 
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'pszString' : LPCWSTR,
     'cchString' : DWORD,
     'dwFlags'   : DWORD,

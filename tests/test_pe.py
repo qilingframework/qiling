@@ -267,7 +267,7 @@ class PETest(unittest.TestCase):
 
 
     def test_pe_win_x8664_customapi(self):
-        @winsdkapi_new(cc=CDECL, params={
+        @winsdkapi(cc=CDECL, params={
             "str" : STRING
         })
         def my_puts64(ql: Qiling, address: int, params):

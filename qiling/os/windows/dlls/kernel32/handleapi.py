@@ -17,7 +17,7 @@ from qiling.os.windows.fncc import *
 #   BOOL     bInheritHandle,
 #   DWORD    dwOptions
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hSourceProcessHandle' : HANDLE,
     'hSourceHandle'        : HANDLE,
     'hTargetProcessHandle' : HANDLE,
@@ -38,7 +38,7 @@ def hook_DuplicateHandle(ql: Qiling, address: int, params):
 # BOOL CloseHandle(
 #   HANDLE hObject
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hObject' : HANDLE
 })
 def hook_CloseHandle(ql: Qiling, address: int, params):
@@ -62,7 +62,7 @@ def hook_CloseHandle(ql: Qiling, address: int, params):
 #   DWORD  dwMask,
 #   DWORD  dwFlags
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hObject' : HANDLE,
     'dwMask'  : DWORD,
     'dwFlags' : DWORD

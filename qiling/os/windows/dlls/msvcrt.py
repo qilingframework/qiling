@@ -15,7 +15,7 @@ from qiling.os.windows.handle import Handle
 # void __set_app_type (
 #    int at
 # )
-@winsdkapi_new(cc=CDECL, params={
+@winsdkapi(cc=CDECL, params={
     'at' : INT
 })
 def hook___set_app_type(ql: Qiling, address: int, params):
@@ -28,7 +28,7 @@ def hook___set_app_type(ql: Qiling, address: int, params):
 #    int _DoWildCard,
 #    _startupinfo * _StartInfo
 # );
-@winsdkapi_new(cc=CDECL, params={
+@winsdkapi(cc=CDECL, params={
     '_Argc'       : POINTER,
     '_Argv'       : POINTER,
     '_Env'        : POINTER,
@@ -39,25 +39,25 @@ def hook___getmainargs(ql: Qiling, address: int, params):
     return 0
 
 # int* __p__fmode();
-@winsdkapi_new(cc=CDECL, params={})
+@winsdkapi(cc=CDECL, params={})
 def hook___p__fmode(ql: Qiling, address: int, params):
     addr = ql.os.heap.alloc(ql.pointersize)
     return addr
 
 # int* __p__commode();
-@winsdkapi_new(cc=CDECL, params={})
+@winsdkapi(cc=CDECL, params={})
 def hook___p__commode(ql: Qiling, address: int, params):
     addr = ql.os.heap.alloc(ql.pointersize)
     return addr
 
 # char** __p__acmdln();
-@winsdkapi_new(cc=CDECL, params={})
+@winsdkapi(cc=CDECL, params={})
 def hook___p__acmdln(ql: Qiling, address: int, params):
     addr = ql.loader.import_address_table['msvcrt.dll'][b'_acmdln']
     return addr
 
 # wchar_t ** __p__wcmdln();
-@winsdkapi_new(cc=CDECL, params={})
+@winsdkapi(cc=CDECL, params={})
 def hook___p__wcmdln(ql: Qiling, address: int, params):
     addr = ql.loader.import_address_table['msvcrt.dll'][b'_wcmdln']
     return addr
@@ -66,7 +66,7 @@ def hook___p__wcmdln(ql: Qiling, address: int, params):
 #    unsigned int new,
 #    unsigned int mask
 # );
-@winsdkapi_new(cc=CDECL, params={
+@winsdkapi(cc=CDECL, params={
     'new'  : UINT,
     'mask' : UINT
 })
@@ -77,7 +77,7 @@ def hook__controlfp(ql: Qiling, address: int, params):
 # int atexit(
 #    void (__cdecl *func)(void)
 # );
-@winsdkapi_new(cc=CDECL, params={
+@winsdkapi(cc=CDECL, params={
     'func' : POINTER
 })
 def hook_atexit(ql: Qiling, address: int, params):
@@ -85,7 +85,7 @@ def hook_atexit(ql: Qiling, address: int, params):
     return ret
 
 # char*** __p__environ(void)
-@winsdkapi_new(cc=CDECL, params={})
+@winsdkapi(cc=CDECL, params={})
 def hook___p__environ(ql: Qiling, address: int, params):
     ret = ql.os.heap.alloc(ql.pointersize * len(ql.os.env))
 
@@ -104,7 +104,7 @@ def hook___p__environ(ql: Qiling, address: int, params):
 # int puts(
 #    const char *str
 # );
-@winsdkapi_new(cc=CDECL, params={
+@winsdkapi(cc=CDECL, params={
     'str' : STRING
 })
 def hook_puts(ql: Qiling, address: int, params):
@@ -115,7 +115,7 @@ def hook_puts(ql: Qiling, address: int, params):
     return len(s)
 
 # void _cexit( void );
-@winsdkapi_new(cc=CDECL, params={})
+@winsdkapi(cc=CDECL, params={})
 def hook__cexit(ql: Qiling, address: int, params):
     pass
 
@@ -123,7 +123,7 @@ def hook__cexit(ql: Qiling, address: int, params):
 #    PVFV *,
 #    PVFV *
 # );
-@winsdkapi_new(cc=CDECL, params={
+@winsdkapi(cc=CDECL, params={
     'pfbegin' : POINTER,
     'pfend'   : POINTER
 })
@@ -133,7 +133,7 @@ def hook__initterm(ql: Qiling, address: int, params):
 # void exit(
 #    int const status
 # );
-@winsdkapi_new(cc=CDECL, params={
+@winsdkapi(cc=CDECL, params={
     'status' : INT
 })
 def hook_exit(ql: Qiling, address: int, params):
@@ -144,7 +144,7 @@ def hook_exit(ql: Qiling, address: int, params):
 #    PVFV *,
 #    PVFV *
 # );
-@winsdkapi_new(cc=CDECL, params={
+@winsdkapi(cc=CDECL, params={
     'pfbegin' : POINTER,
     'pfend'   : POINTER
 })
@@ -152,7 +152,7 @@ def hook__initterm_e(ql: Qiling, address: int, params):
     return 0
 
 # char***    __cdecl __p___argv (void);
-@winsdkapi_new(cc=CDECL, params={})
+@winsdkapi(cc=CDECL, params={})
 def hook___p___argv(ql: Qiling, address: int, params):
     # allocate argv pointers array
     p_argv = ql.os.heap.alloc(ql.pointersize * len(ql.os.argv))
@@ -170,7 +170,7 @@ def hook___p___argv(ql: Qiling, address: int, params):
     return ret
 
 # int* __p___argc(void)
-@winsdkapi_new(cc=CDECL, params={})
+@winsdkapi(cc=CDECL, params={})
 def hook___p___argc(ql: Qiling, address: int, params):
     ret = ql.os.heap.alloc(ql.pointersize)
 
@@ -179,7 +179,7 @@ def hook___p___argc(ql: Qiling, address: int, params):
     return ret
 
 # TODO: this one belongs to ucrtbase.dll
-@winsdkapi_new(cc=CDECL, params={})
+@winsdkapi(cc=CDECL, params={})
 def hook__get_initial_narrow_environment(ql: Qiling, address: int, params):
     ret = 0
 
@@ -195,7 +195,7 @@ def hook__get_initial_narrow_environment(ql: Qiling, address: int, params):
     return ret
 
 # int sprintf ( char * str, const char * format, ... );
-@winsdkapi_new(cc=CDECL, params={
+@winsdkapi(cc=CDECL, params={
     'buff'   : POINTER,
     'format' : STRING,
     'arglist': POINTER
@@ -215,7 +215,7 @@ def hook_sprintf(ql: Qiling, address: int, params):
     return count
 
 # int printf(const char *format, ...)
-@winsdkapi_new(cc=CDECL, params={
+@winsdkapi(cc=CDECL, params={
     'format': STRING
 })
 def hook_printf(ql: Qiling, address: int, params):
@@ -234,7 +234,7 @@ def hook_printf(ql: Qiling, address: int, params):
     return count
 
 # int wprintf(const wchar_t *format, ...)
-@winsdkapi_new(cc=CDECL, params={
+@winsdkapi(cc=CDECL, params={
     'format': WSTRING
 })
 def hook_wprintf(ql: Qiling, address: int, params):
@@ -253,7 +253,7 @@ def hook_wprintf(ql: Qiling, address: int, params):
     return count
 
 # MSVCRT_FILE * CDECL MSVCRT___acrt_iob_func(unsigned idx)
-@winsdkapi_new(cc=CDECL, params={
+@winsdkapi(cc=CDECL, params={
     'idx': UINT
 })
 def hook___acrt_iob_func(ql: Qiling, address: int, params):
@@ -271,7 +271,7 @@ def __stdio_common_vfprintf(ql: Qiling, address: int, params, wstring: bool):
 
     return count
 
-@winsdkapi_new(cc=CDECL, params={
+@winsdkapi(cc=CDECL, params={
     '_Options' : PARAM_INT64,
     '_Stream'  : POINTER,
     '_Format'  : STRING,
@@ -281,7 +281,7 @@ def __stdio_common_vfprintf(ql: Qiling, address: int, params, wstring: bool):
 def hook___stdio_common_vfprintf(ql: Qiling, address: int, params):
     return __stdio_common_vfprintf(ql, address, params, False)
 
-@winsdkapi_new(cc=CDECL, params={
+@winsdkapi(cc=CDECL, params={
     '_Options' : PARAM_INT64,
     '_Stream'  : POINTER,
     '_Format'  : WSTRING,
@@ -304,7 +304,7 @@ def __stdio_common_vsprintf(ql: Qiling, address: int, params, wstring: bool):
 
     return count
 
-@winsdkapi_new(cc=CDECL, params={
+@winsdkapi(cc=CDECL, params={
     '_Options'     : PARAM_INT64,
     '_Buffer'      : POINTER,
     '_BufferCount' : SIZE_T,
@@ -315,7 +315,7 @@ def __stdio_common_vsprintf(ql: Qiling, address: int, params, wstring: bool):
 def hook___stdio_common_vsprintf(ql: Qiling, address: int, params):
     return __stdio_common_vsprintf(ql, address, params, False)
 
-@winsdkapi_new(cc=CDECL, params={
+@winsdkapi(cc=CDECL, params={
     '_Options'     : PARAM_INT64,
     '_Buffer'      : POINTER,
     '_BufferCount' : SIZE_T,
@@ -328,7 +328,7 @@ def hook___stdio_common_vswprintf(ql: Qiling, address: int, params):
 
 # all the "_s" versions are aliases to their non-"_s" counterparts
 
-@winsdkapi_new(cc=CDECL, params={
+@winsdkapi(cc=CDECL, params={
     '_Options' : PARAM_INT64,
     '_Stream'  : POINTER,
     '_Format'  : STRING,
@@ -338,7 +338,7 @@ def hook___stdio_common_vswprintf(ql: Qiling, address: int, params):
 def hook___stdio_common_vfprintf_s(ql: Qiling, address: int, params):
     return hook___stdio_common_vfprintf.__wrapped__(ql, address, params)
 
-@winsdkapi_new(cc=CDECL, params={
+@winsdkapi(cc=CDECL, params={
     '_Options' : PARAM_INT64,
     '_Stream'  : POINTER,
     '_Format'  : WSTRING,
@@ -348,7 +348,7 @@ def hook___stdio_common_vfprintf_s(ql: Qiling, address: int, params):
 def hook___stdio_common_vfwprintf_s(ql: Qiling, address: int, params):
     return hook___stdio_common_vfwprintf.__wrapped__(ql, address, params)
 
-@winsdkapi_new(cc=CDECL, params={
+@winsdkapi(cc=CDECL, params={
     '_Options'     : PARAM_INT64,
     '_Buffer'      : POINTER,
     '_BufferCount' : SIZE_T,
@@ -359,7 +359,7 @@ def hook___stdio_common_vfwprintf_s(ql: Qiling, address: int, params):
 def hook___stdio_common_vsprintf_s(ql: Qiling, address: int, params):
     return hook___stdio_common_vsprintf.__wrapped__(ql, address, params)
 
-@winsdkapi_new(cc=CDECL, params={
+@winsdkapi(cc=CDECL, params={
     '_Options'     : PARAM_INT64,
     '_Buffer'      : POINTER,
     '_BufferCount' : SIZE_T,
@@ -370,14 +370,14 @@ def hook___stdio_common_vsprintf_s(ql: Qiling, address: int, params):
 def hook___stdio_common_vswprintf_s(ql: Qiling, address: int, params):
     return hook___stdio_common_vswprintf.__wrapped__(ql, address, params)
 
-@winsdkapi_new(cc=CDECL, params={})
+@winsdkapi(cc=CDECL, params={})
 def hook___lconv_init(ql: Qiling, address: int, params):
     return 0
 
 # size_t strlen(
 #    const char *str
 # );
-@winsdkapi_new(cc=CDECL, params={
+@winsdkapi(cc=CDECL, params={
     'str' : STRING
 })
 def hook_strlen(ql: Qiling, address: int, params):
@@ -390,7 +390,7 @@ def hook_strlen(ql: Qiling, address: int, params):
 #    const char *string2,
 #    size_t count
 # );
-@winsdkapi_new(cc=CDECL, params={
+@winsdkapi(cc=CDECL, params={
     'string1' : STRING,
     'string2' : STRING,
     'count'   : SIZE_T
@@ -413,7 +413,7 @@ def hook_strncmp(ql: Qiling, address: int, params):
     return result
 
 # void* malloc（unsigned int size)
-@winsdkapi_new(cc=CDECL, params={
+@winsdkapi(cc=CDECL, params={
     'size' : UINT
 })
 def hook_malloc(ql: Qiling, address: int, params):
@@ -424,7 +424,7 @@ def hook_malloc(ql: Qiling, address: int, params):
 # _onexit_t _onexit(
 #    _onexit_t function
 # );
-@winsdkapi_new(cc=CDECL, params={
+@winsdkapi(cc=CDECL, params={
     'function' : POINTER
 })
 def hook__onexit(ql: Qiling, address: int, params):
@@ -440,7 +440,7 @@ def hook__onexit(ql: Qiling, address: int, params):
 #    int c,
 #    size_t count
 # );
-@winsdkapi_new(cc=CDECL, params={
+@winsdkapi(cc=CDECL, params={
     'dest'  : POINTER,
     'c'     : INT,
     'count' : SIZE_T
@@ -458,7 +458,7 @@ def hook_memset(ql: Qiling, address: int, params):
 #    size_t num,
 #    size_t size
 # );
-@winsdkapi_new(cc=CDECL, params={
+@winsdkapi(cc=CDECL, params={
     'num'  : SIZE_T,
     'size' : SIZE_T
 })
@@ -477,7 +477,7 @@ def hook_calloc(ql: Qiling, address: int, params):
 #   const void *src,
 #   size_t num
 # );
-@winsdkapi_new(cc=CDECL, params={
+@winsdkapi(cc=CDECL, params={
     'dest' : POINTER,
     'src'  : POINTER,
     'num'  : SIZE_T
@@ -491,7 +491,7 @@ def hook_memmove(ql: Qiling, address: int, params):
 # int _ismbblead(
 #    unsigned int c
 # );
-@winsdkapi_new(cc=CDECL, params={
+@winsdkapi(cc=CDECL, params={
     'c' : UINT
 })
 def hook__ismbblead(ql: Qiling, address: int, params):
@@ -509,7 +509,7 @@ def hook__ismbblead(ql: Qiling, address: int, params):
 #    const wchar_t *filename,
 #    const wchar_t *mode
 # );
-@winsdkapi_new(cc=CDECL, params={
+@winsdkapi(cc=CDECL, params={
     'pFile'    : POINTER,
     'filename' : WSTRING,
     'mode'     : WSTRING
@@ -527,7 +527,7 @@ def hook__wfopen_s(ql: Qiling, address: int, params):
     return 1
 
 # time_t time( time_t *destTime );
-@winsdkapi_new(cc=CDECL, params={
+@winsdkapi(cc=CDECL, params={
     'destTime' : POINTER
 })
 def hook__time64(ql: Qiling, address: int, params):

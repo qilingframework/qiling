@@ -170,7 +170,7 @@ def __RegDeleteValue(ql: Qiling, address: int, params):
 #   REGSAM samDesired,
 #   PHKEY  phkResult
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hKey'      : HKEY,
     'lpSubKey'  : LPCSTR,
     'ulOptions' : DWORD,
@@ -187,7 +187,7 @@ def hook_RegOpenKeyExA(ql: Qiling, address: int, params):
 #   REGSAM  samDesired,
 #   PHKEY   phkResult
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hKey'      : HKEY,
     'lpSubKey'  : LPCWSTR,
     'ulOptions' : DWORD,
@@ -202,7 +202,7 @@ def hook_RegOpenKeyExW(ql: Qiling, address: int, params):
 #   LPCWSTR lpSubKey,
 #   PHKEY   phkResult
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hKey'      : HKEY,
     'lpSubKey'  : LPCWSTR,
     'phkResult' : PHKEY
@@ -215,7 +215,7 @@ def hook_RegOpenKeyW(ql: Qiling, address: int, params):
 #   LPCSTR lpSubKey,
 #   PHKEY   phkResult
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hKey'      : HKEY,
     'lpSubKey'  : LPCSTR,
     'phkResult' : PHKEY
@@ -231,7 +231,7 @@ def hook_RegOpenKeyA(ql: Qiling, address: int, params):
 #   LPBYTE  lpData,
 #   LPDWORD lpcbData
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hKey'        : HKEY,
     'lpValueName' : LPCSTR,
     'lpReserved'  : LPDWORD,
@@ -250,7 +250,7 @@ def hook_RegQueryValueExA(ql: Qiling, address: int, params):
 #   LPBYTE  lpData,
 #   LPDWORD lpcbData
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hKey'        : HKEY,
     'lpValueName' : LPCWSTR,
     'lpReserved'  : LPDWORD,
@@ -264,7 +264,7 @@ def hook_RegQueryValueExW(ql: Qiling, address: int, params):
 # LSTATUS RegCloseKey(
 #   HKEY hKey
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hKey' : HKEY
 })
 def hook_RegCloseKey(ql: Qiling, address: int, params):
@@ -278,7 +278,7 @@ def hook_RegCloseKey(ql: Qiling, address: int, params):
 #   LPCSTR lpSubKey,
 #   PHKEY  phkResult
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hKey'      : HKEY,
     'lpSubKey'  : LPCSTR,
     'phkResult' : PHKEY
@@ -291,7 +291,7 @@ def hook_RegCreateKeyA(ql: Qiling, address: int, params):
 #   LPCWSTR lpSubKey,
 #   PHKEY  phkResult
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hKey'      : HKEY,
     'lpSubKey'  : LPCWSTR,
     'phkResult' : PHKEY
@@ -310,7 +310,7 @@ def hook_RegCreateKeyW(ql: Qiling, address: int, params):
 #   PHKEY                       phkResult,
 #   LPDWORD                     lpdwDisposition
 # );
-@winsdkapi_new(cc=STDCALL, params={ # replace_params_type={'DWORD': 'POINTER'}
+@winsdkapi(cc=STDCALL, params={ # replace_params_type={'DWORD': 'POINTER'}
     'hKey'                 : HKEY,
     'lpSubKey'             : LPCWSTR,
     'Reserved'             : DWORD,
@@ -332,7 +332,7 @@ def hook_RegCreateKeyExW(ql: Qiling, address: int, params):
 #   LPCSTR lpData,
 #   DWORD  cbData
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hKey'     : HKEY,
     'lpSubKey' : LPCSTR,
     'dwType'   : DWORD,
@@ -342,7 +342,7 @@ def hook_RegCreateKeyExW(ql: Qiling, address: int, params):
 def hook_RegSetValueA(ql: Qiling, address: int, params):
     return __RegSetValue(ql, address, params)
 
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hKey'     : HKEY,
     'lpSubKey' : LPCWSTR,
     'dwType'   : DWORD,
@@ -360,7 +360,7 @@ def hook_RegSetValueW(ql: Qiling, address: int, params):
 #   const BYTE *lpData,
 #   DWORD      cbData
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hKey'        : HKEY,
     'lpValueName' : LPCSTR,
     'Reserved'    : DWORD,
@@ -379,7 +379,7 @@ def hook_RegSetValueExA(ql: Qiling, address: int, params):
 #   const BYTE *lpData,
 #   DWORD      cbData
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hKey'        : HKEY,
     'lpValueName' : LPCWSTR,
     'Reserved'    : DWORD,
@@ -394,7 +394,7 @@ def hook_RegSetValueExW(ql: Qiling, address: int, params):
 #   HKEY   hKey,
 #   LPCSTR lpSubKey
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hKey'     : HKEY,
     'lpSubKey' : LPCSTR
 })
@@ -405,7 +405,7 @@ def hook_RegDeleteKeyA(ql: Qiling, address: int, params):
 #   HKEY   hKey,
 #   LPCWSTR lpSubKey
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hKey'     : HKEY,
     'lpSubKey' : LPCWSTR
 })
@@ -416,7 +416,7 @@ def hook_RegDeleteKeyW(ql: Qiling, address: int, params):
 #   HKEY    hKey,
 #   LPCSTR lpValueName
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hKey'        : HKEY,
     'lpValueName' : LPCSTR
 })
@@ -427,7 +427,7 @@ def hook_RegDeleteValueA(ql: Qiling, address: int, params):
 #   HKEY    hKey,
 #   LPCWSTR lpValueName
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hKey'        : HKEY,
     'lpValueName' : LPCWSTR
 })
@@ -441,7 +441,7 @@ def hook_RegDeleteValueW(ql: Qiling, address: int, params):
 #   DWORD                   TokenInformationLength,
 #   PDWORD                  ReturnLength
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'TokenHandle'            : HANDLE,
     'TokenInformationClass'  : TOKEN_INFORMATION_CLASS,
     'TokenInformation'       : LPVOID,
@@ -474,7 +474,7 @@ def hook_GetTokenInformation(ql: Qiling, address: int, params):
 # PUCHAR GetSidSubAuthorityCount(
 #   PSID pSid
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'pSid' : PSID
 })
 def hook_GetSidSubAuthorityCount(ql: Qiling, address: int, params):
@@ -487,7 +487,7 @@ def hook_GetSidSubAuthorityCount(ql: Qiling, address: int, params):
 #   PSID  pSid,
 #   DWORD nSubAuthority
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'pSid'          : PSID,
     'nSubAuthority' : DWORD
 })
@@ -508,7 +508,7 @@ def hook_GetSidSubAuthority(ql: Qiling, address: int, params):
 #   LPBYTE  lpData,
 #   LPDWORD lpcbData
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hKey'           : HKEY,
     'dwIndex'        : DWORD,
     'lpValueName'    : LPSTR,
@@ -526,7 +526,7 @@ def hook_RegEnumValueA(ql: Qiling, address: int, params):
 #   LPCSTR lpDatabaseName,
 #   DWORD  dwDesiredAccess
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpMachineName'   : LPCSTR,
     'lpDatabaseName'  : LPCSTR,
     'dwDesiredAccess' : DWORD
@@ -559,7 +559,7 @@ def hook_OpenSCManagerA(ql: Qiling, address: int, params):
 #   LPCSTR    lpServiceStartName,
 #   LPCSTR    lpPassword
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hSCManager'         : SC_HANDLE,
     'lpServiceName'      : LPCSTR,
     'lpDisplayName'      : LPCSTR,
@@ -590,7 +590,7 @@ def hook_CreateServiceA(ql: Qiling, address: int, params):
 #   LPCSTR    lpServiceName,
 #   DWORD     dwDesiredAccess
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hSCManager'      : SC_HANDLE,
     'lpServiceName'   : LPCSTR,
     'dwDesiredAccess' : DWORD
@@ -609,7 +609,7 @@ def hook_OpenServiceA(ql: Qiling, address: int, params):
 # BOOL CloseServiceHandle(
 #   SC_HANDLE hSCObject
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hSCObject' : SC_HANDLE
 })
 def hook_CloseServiceHandle(ql: Qiling, address: int, params):
@@ -623,7 +623,7 @@ def hook_CloseServiceHandle(ql: Qiling, address: int, params):
 #   DWORD     dwNumServiceArgs,
 #   LPCSTR    *lpServiceArgVectors
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hService'            : SC_HANDLE,
     'dwNumServiceArgs'    : DWORD,
     'lpServiceArgVectors' : POINTER
@@ -644,7 +644,7 @@ def hook_StartServiceA(ql: Qiling, address: int, params):
 #   DWORD                     nSubAuthority7,
 #   PSID                      *pSid
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'pIdentifierAuthority' : PSID_IDENTIFIER_AUTHORITY,
     'nSubAuthorityCount'   : BYTE,
     'nSubAuthority0'       : DWORD,
@@ -721,7 +721,7 @@ def get_poweruserssid(ql):
 #   IN PSID SidToCheck,
 #   OUT PBOOL IsMember
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'TokenHandle' : HANDLE,
     'SidToCheck'  : PSID,
     'IsMember'    : PBOOL
@@ -751,7 +751,7 @@ def hook_CheckTokenMembership(ql: Qiling, address: int, params):
 # PVOID FreeSid(
 #   PSID pSid
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'pSid' : PSID
 })
 def hook_FreeSid(ql: Qiling, address: int, params):
@@ -763,7 +763,7 @@ def hook_FreeSid(ql: Qiling, address: int, params):
 #   PSID pSid1,
 #   PSID pSid2
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'pSid1' : PSID,
     'pSid2' : PSID
 })

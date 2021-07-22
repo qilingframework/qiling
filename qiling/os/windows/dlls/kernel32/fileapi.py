@@ -19,7 +19,7 @@ from qiling.os.windows.structs import Win32FindData
 # DWORD GetFileType(
 #   HANDLE hFile
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hFile' : HANDLE
 })
 def hook_GetFileType(ql: Qiling, address: int, params):
@@ -42,7 +42,7 @@ def hook_GetFileType(ql: Qiling, address: int, params):
 #  LPCSTR             lpFileName,
 #  LPWIN32_FIND_DATAA lpFindFileData
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpFileName'     : LPCSTR,
     'lpFindFileData' : LPWIN32_FIND_DATAA
 })
@@ -104,7 +104,7 @@ def hook_FindFirstFileA(ql: Qiling, address: int, params):
 #  LPVOID             lpSearchFilter,
 #  DWORD              dwAdditionalFlags
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpFileName'        : LPCSTR,
     'fInfoLevelId'      : DWORD,    # FINDEX_INFO_LEVELS
     'lpFindFileData'    : LPVOID,
@@ -119,7 +119,7 @@ def hook_FindFirstFileExA(ql: Qiling, address: int, params):
 #  LPCSTR             lpFileName,
 #  LPWIN32_FIND_DATAA lpFindFileData
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hFindFile'      : HANDLE,
     'lpFindFileData' : LPWIN32_FIND_DATAA
 })
@@ -129,7 +129,7 @@ def hook_FindNextFileA(ql: Qiling, address: int, params):
 # BOOL FindClose(
 #    HANDLE hFindFile
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hFindFile' : HANDLE
 })
 def hook_FindClose(ql: Qiling, address: int, params):
@@ -142,7 +142,7 @@ def hook_FindClose(ql: Qiling, address: int, params):
 #   LPDWORD      lpNumberOfBytesRead,
 #   LPOVERLAPPED lpOverlapped
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hFile'                : HANDLE,
     'lpBuffer'             : LPVOID,
     'nNumberOfBytesToRead' : DWORD,
@@ -187,7 +187,7 @@ def hook_ReadFile(ql: Qiling, address: int, params):
 #   LPDWORD      lpNumberOfBytesWritten,
 #   LPOVERLAPPED lpOverlapped
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hFile'                  : HANDLE,
     'lpBuffer'               : LPCVOID,
     'nNumberOfBytesToWrite'  : DWORD,
@@ -257,7 +257,7 @@ def _CreateFile(ql: Qiling, address: int, params):
 #   DWORD                 dwFlagsAndAttributes,
 #   HANDLE                hTemplateFile
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpFileName'            : LPCSTR,
     'dwDesiredAccess'       : DWORD,
     'dwShareMode'           : DWORD,
@@ -278,7 +278,7 @@ def hook_CreateFileA(ql: Qiling, address: int, params):
 #   DWORD                 dwFlagsAndAttributes,
 #   HANDLE                hTemplateFile
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpFileName'            : LPCWSTR,
     'dwDesiredAccess'       : DWORD,
     'dwShareMode'           : DWORD,
@@ -294,7 +294,7 @@ def hook_CreateFileW(ql: Qiling, address: int, params):
 #   DWORD  nBufferLength,
 #   LPWSTR lpBuffer
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'nBufferLength' : DWORD,
     'lpBuffer'      : LPWSTR
 })
@@ -314,7 +314,7 @@ def hook_GetTempPathW(ql: Qiling, address: int, params):
 #   DWORD  nBufferLength,
 #   LPSTR lpBuffer
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'nBufferLength' : DWORD,
     'lpBuffer'      : LPSTR
 })
@@ -335,7 +335,7 @@ def hook_GetTempPathA(ql: Qiling, address: int, params):
 #   LPWSTR  lpszShortPath,
 #   DWORD   cchBuffer
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpszLongPath'  : LPCWSTR,
     'lpszShortPath' : LPWSTR,
     'cchBuffer'     : DWORD
@@ -376,7 +376,7 @@ def hook_GetShortPathNameW(ql: Qiling, address: int, params):
 #   LPWSTR  lpFileSystemNameBuffer,
 #   DWORD   nFileSystemNameSize
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpRootPathName'           : LPCWSTR,
     'lpVolumeNameBuffer'       : LPWSTR,
     'nVolumeNameSize'          : DWORD,
@@ -426,7 +426,7 @@ def hook_GetVolumeInformationW(ql: Qiling, address: int, params):
 # UINT GetDriveTypeW(
 #   LPCWSTR lpRootPathName
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpRootPathName' : LPCWSTR
 })
 def hook_GetDriveTypeW(ql: Qiling, address: int, params):
@@ -449,7 +449,7 @@ def hook_GetDriveTypeW(ql: Qiling, address: int, params):
 #   LPDWORD lpNumberOfFreeClusters,
 #   LPDWORD lpTotalNumberOfClusters
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpRootPathName'          : LPCWSTR,
     'lpSectorsPerCluster'     : LPDWORD,
     'lpBytesPerSector'        : LPDWORD,
@@ -483,7 +483,7 @@ def hook_GetDiskFreeSpaceW(ql: Qiling, address: int, params):
 #  LPCSTR                lpPathName,
 #  LPSECURITY_ATTRIBUTES lpSecurityAttributes
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpPathName'           : LPCSTR,
     'lpSecurityAttributes' : LPSECURITY_ATTRIBUTES
 })
@@ -506,7 +506,7 @@ def hook_CreateDirectoryA(ql: Qiling, address: int, params):
 #  HANDLE  hFile,
 #  LPDWORD lpFileSizeHigh
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hFile'          : HANDLE,
     'lpFileSizeHigh' : LPDWORD
 })
@@ -536,7 +536,7 @@ def _CreateFileMapping(ql: Qiling, address: int, params):
 #   DWORD                 dwMaximumSizeLow,
 #   LPCSTR                lpName
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hFile'                   : HANDLE,
     'lpFileMappingAttributes' : LPSECURITY_ATTRIBUTES,
     'flProtect'               : DWORD,
@@ -555,7 +555,7 @@ def hook_CreateFileMappingA(ql: Qiling, address: int, params):
 #   DWORD                 dwMaximumSizeLow,
 #   LPCWSTR               lpName
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hFile'                   : HANDLE,
     'lpFileMappingAttributes' : LPSECURITY_ATTRIBUTES,
     'flProtect'               : DWORD,
@@ -573,7 +573,7 @@ def hook_CreateFileMappingW(ql: Qiling, address: int, params):
 #   DWORD  dwFileOffsetLow,
 #   SIZE_T dwNumberOfBytesToMap
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'hFileMappingObject'   : HANDLE,
     'dwDesiredAccess'      : DWORD,
     'dwFileOffsetHigh'     : DWORD,
@@ -609,7 +609,7 @@ def hook_MapViewOfFile(ql: Qiling, address: int, params):
 # BOOL UnmapViewOfFile(
 #   LPCVOID lpBaseAddress
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpBaseAddress' : LPCVOID
 })
 def hook_UnmapViewOfFile(ql: Qiling, address: int, params):
@@ -630,7 +630,7 @@ def hook_UnmapViewOfFile(ql: Qiling, address: int, params):
 #   LPCSTR lpNewFileName,
 #   BOOL   bFailIfExists
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpExistingFileName' : LPCSTR,
     'lpNewFileName'      : LPCSTR,
     'bFailIfExists'      : BOOL
@@ -650,14 +650,14 @@ def hook_CopyFileA(ql: Qiling, address: int, params):
 #   LPCSTR lpFileName,
 #   DWORD  dwFileAttributes
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpFileName'       : LPCSTR,
     'dwFileAttributes' : DWORD
 })
 def hook_SetFileAttributesA(ql: Qiling, address: int, params):
     return 1
 
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'lpFileName'       : LPCWSTR,
     'dwFileAttributes' : DWORD
 })

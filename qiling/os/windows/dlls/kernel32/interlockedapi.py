@@ -11,7 +11,7 @@ from qiling.os.windows.handle import Handle
 # void InitializeSListHead(
 #   PSLIST_HEADER ListHead
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'ListHead' : PSLIST_HEADER
 })
 def hook_InitializeSListHead(ql: Qiling, address: int, params):

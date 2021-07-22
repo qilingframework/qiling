@@ -12,7 +12,7 @@ from qiling.os.windows.fncc import *
 #  LONG volatile *Target,
 #  LONG          Value
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'Target' : POINTER,
     'Value'  : INT # LONG
 })
@@ -28,7 +28,7 @@ def hook_InterlockedExchange(ql: Qiling, address: int, params):
 # LONG InterlockedIncrement(
 #  LONG volatile *Target,
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'Target' : POINTER
 })
 def hook_InterlockedIncrement(ql: Qiling, address: int, params):
@@ -43,7 +43,7 @@ def hook_InterlockedIncrement(ql: Qiling, address: int, params):
 # LONG InterlockedDecrement(
 #  LONG volatile *Target,
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'Target' : POINTER
 })
 def hook_InterlockedDecrement(ql: Qiling, address: int, params):
@@ -61,7 +61,7 @@ def hook_InterlockedDecrement(ql: Qiling, address: int, params):
 #   DWORD     TypeMask,
 #   BYTE      Condition
 # );
-@winsdkapi_new(cc=STDCALL, params={
+@winsdkapi(cc=STDCALL, params={
     'ConditionMask' : ULONGLONG,
     'TypeMask'      : DWORD,
     'Condition'     : BYTE
