@@ -8,7 +8,7 @@ import struct
 
 from qiling.const import *
 from qiling.core import Qiling
-from qiling.mcu.exceptions.manager import ExceptionManager
+from qiling.dev.mcu.exceptions.manager import ExceptionManager
 from .loader import QlLoader
 
 class IhexParser:
@@ -53,9 +53,8 @@ class IhexParser:
 
 class QlLoaderMCU(QlLoader):
     def __init__(self, ql:Qiling):
-        super(QlLoaderMCU, self).__init__(ql)
-        self.emgr = ExceptionManager(self)
-        self.ihexfile = IhexParser(self.argv[0])        
+        super(QlLoaderMCU, self).__init__(ql)                
+        self.ihexfile = IhexParser(self.argv[0])
         self.mapinfo = {
             'sram'      : (0x20000000, 0x20020000),
             'system'    : (0x1FFF0000, 0x1FFF7800),            
