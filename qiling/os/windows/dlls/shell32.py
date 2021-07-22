@@ -62,7 +62,7 @@ def hook_SHGetFileInfoW(ql: Qiling, address: int, params):
 
 def _ShellExecute(ql: Qiling, obj: ShellExecuteInfoA):
     def __wstr(shellex: Sequence):
-        return ql.os.utils.read_wstring(shellex[0])
+        return ql.os.utils.read_wstring(shellex[0]) if shellex[0] else ''
 
     ql.log.debug(f'Target executed a shell command!')
     ql.log.debug(f' | Operation  : "{__wstr(obj.verb)}"')
