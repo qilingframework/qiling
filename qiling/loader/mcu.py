@@ -82,4 +82,4 @@ class QlLoaderMCU(QlLoader):
         for begin, end, data in self.ihexfile.segments:
             self.ql.mem.write(begin, data)
 
-        self.reset()               
+        self.reset()        

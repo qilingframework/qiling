@@ -584,7 +584,7 @@ class QlLinuxThreadManagement:
     # Stop the world, urge all threads to stop immediately.
     def stop(self):
         self.ql.log.debug("[Thread Manager] Stop the world.")
-        self.ql.emu_stop()
+        self.ql.stop()
         for t in self.threads:
             gevent.kill(t)
 

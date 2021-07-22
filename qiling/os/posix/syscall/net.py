@@ -113,5 +113,5 @@ def ql_syscall_socketcall(ql, socketcall_call, socketcall_args, *args, **kw):
 
     else:
         ql.log.debug("error call %d" % socketcall_call)
-        ql.os.stop(stop_event=THREAD_EVENT_UNEXECPT_EVENT)
+        ql.stop(stop_event=THREAD_EVENT_UNEXECPT_EVENT)
         raise
