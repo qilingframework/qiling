@@ -19,10 +19,10 @@ class ExceptionManager:
         self.arch.reg.write('pc', entry)
         self.arch.reg.write('lr', self.EXC_RETURN)
 
-        try:
-            self.arch.ql.emu_start(self.arch.get_pc(), self.EXC_RETURN)            
-        except UcError:
-            pass
+        #try:
+        self.arch.ql.emu_start(self.arch.get_pc(), self.EXC_RETURN)            
+        #except UcError:
+        #    pass
 
         self.arch.ql.log.debug('Exit Interrupt')
 
