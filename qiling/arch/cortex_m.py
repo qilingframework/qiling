@@ -7,7 +7,7 @@ from unicorn import *
 
 from qiling.const import *
 from qiling.dev.peripheral.systick_timer import SysTickTimer
-from qiling.dev.mcu.exceptions.manager import ExceptionManager
+from qiling.dev.mcu.exceptions.nvic import NVIC
 
 from .arm import QlArchARM
 
@@ -16,7 +16,7 @@ class QlArchCORTEX_M(QlArchARM):
         super().__init__(ql)
 
         ## Exception Model
-        self.emgr = ExceptionManager(self.ql)
+        self.nvic = NVIC(self.ql)
 
         ## Memory Model
         self.BOOT = [0, 0]
@@ -30,7 +30,7 @@ class QlArchCORTEX_M(QlArchARM):
         return Uc(UC_ARCH_ARM, UC_MODE_ARM + UC_MODE_MCLASS)
 
     def step(self):
-        self.emgr.interrupt()
+        self.nvic.interrupt()
         self.ql.emu_start(self.get_pc(), 0, count=1)
         for perip in self.peripherals:
             perip.step()
@@ -41,5 +41,4 @@ class QlArchCORTEX_M(QlArchARM):
             count -= 1
 
     def check_thumb(self):
-        ## FIXME: unicorn do not implement epsr yet
         return UC_MODE_THUMB

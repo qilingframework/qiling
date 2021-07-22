@@ -21,7 +21,7 @@ class SysTickTimer(Peripheral):
 
     def step(self):
         if self.stk_val == 0:
-            self.ql.arch.emgr.send_interrupt(15)
+            self.ql.arch.nvic.send_interrupt(15)
             self.stk_val = self.stk_load
         
         self.stk_val -= 1
