@@ -36,7 +36,7 @@ __reg_cpsr_v = {
 class QlArchUtils:
     def __init__(self, ql: Qiling):
         self.ql = ql
-        self.md = None
+        self.qd = None
         self._disasm_hook = None
         self._block_hook = None
 
@@ -50,12 +50,12 @@ class QlArchUtils:
     def disassembler(self, ql, address, size):
         tmp = self.ql.mem.read(address, size)
 
-        if not self.md:
-            self.md = self.ql.create_disassembler()
+        if not self.qd:
+            self.qd = self.ql.create_disassembler()
         elif self.ql.archtype == QL_ARCH.ARM: # Update disassembler for arm considering thumb swtich.
-            self.md = self.ql.create_disassembler()
+            self.qd = self.ql.create_disassembler()
 
-        insn = self.md.disasm(tmp, address)
+        insn = self.qd.disasm(tmp, address)
         opsize = int(size)
 
         offset, name = self.get_offset_and_name(address)
@@ -99,30 +99,30 @@ class QlArchUtils:
 
 def ql_create_disassembler(archtype: QL_ARCH, archendian: QL_ENDIAN, reg_cpsr=None) -> Cs:
     if archtype == QL_ARCH.X86:
-        md = Cs(CS_ARCH_X86, CS_MODE_32)
+        qd = Cs(CS_ARCH_X86, CS_MODE_32)
 
     elif archtype == QL_ARCH.X8664:
-        md = Cs(CS_ARCH_X86, CS_MODE_64)
+        qd = Cs(CS_ARCH_X86, CS_MODE_64)
 
     elif archtype == QL_ARCH.ARM:
         mode = CS_MODE_THUMB if reg_cpsr & __reg_cpsr_v[archendian] else CS_MODE_ARM
 
-        md = Cs(CS_ARCH_ARM, mode) # FIXME: should be: mode + __cs_endian[archendian]
+        qd = Cs(CS_ARCH_ARM, mode) # FIXME: should be: mode + __cs_endian[archendian]
 
     elif archtype == QL_ARCH.ARM_THUMB:
-        md = Cs(CS_ARCH_ARM, CS_MODE_THUMB)
+        qd = Cs(CS_ARCH_ARM, CS_MODE_THUMB)
 
     elif archtype == QL_ARCH.ARM64:
-        md = Cs(CS_ARCH_ARM64, CS_MODE_ARM)
+        qd = Cs(CS_ARCH_ARM64, CS_MODE_ARM)
 
     elif archtype == QL_ARCH.MIPS:
-        md = Cs(CS_ARCH_MIPS, CS_MODE_MIPS32 + __cs_endian[archendian])
+        qd = Cs(CS_ARCH_MIPS, CS_MODE_MIPS32 + __cs_endian[archendian])
 
     elif archtype == QL_ARCH.A8086:
-        md = Cs(CS_ARCH_X86, CS_MODE_16)
+        qd = Cs(CS_ARCH_X86, CS_MODE_16)
 
     elif archtype == QL_ARCH.CORTEX_M:
-        md = Cs(CS_ARCH_ARM, CS_MODE_THUMB + CS_MODE_MCLASS)
+        qd = Cs(CS_ARCH_ARM, CS_MODE_THUMB + CS_MODE_MCLASS)
 
     elif archtype == QL_ARCH.EVM:
         raise NotImplementedError('evm')
@@ -130,7 +130,7 @@ def ql_create_disassembler(archtype: QL_ARCH, archendian: QL_ENDIAN, reg_cpsr=No
     else:
         raise QlErrorArch(f'{archtype:d}')
 
-    return md
+    return qd
 
 def ql_create_assembler(archtype: QL_ARCH, archendian: QL_ENDIAN, reg_cpsr=None) -> Ks:
     if archtype == QL_ARCH.X86:
