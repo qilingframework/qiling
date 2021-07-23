@@ -4,12 +4,11 @@
 #
 
 import os, re
-from typing import Any, List, MutableSequence, Optional, Sequence, Tuple
+from typing import Any, List, Mapping, MutableSequence, Optional, Sequence, Tuple
 
 from unicorn import UC_PROT_NONE, UC_PROT_READ, UC_PROT_WRITE, UC_PROT_EXEC, UC_PROT_ALL
 
 from qiling import Qiling
-from qiling.const import *
 from qiling.exception import *
 
 # tuple: range start, range end, permissions mask, range label
@@ -82,21 +81,20 @@ class QlMemoryManager:
             mem_info: map entry label
         """
 
-        tmp_map_info: MutableSequence[MapInfoEntry] = []
-        insert_flag = 0
-        map_info = self.map_info
-
-        if len(map_info) == 0:
-            tmp_map_info.append((mem_s, mem_e, mem_p, mem_info))
+        if not self.map_info:
+            self.map_info.append((mem_s, mem_e, mem_p, mem_info))
         else:
-            for s, e, p, info in map_info:
+            tmp_map_info: MutableSequence[MapInfoEntry] = []
+            inserted = False
+
+            for s, e, p, info in self.map_info:
                 if e <= mem_s:
                     tmp_map_info.append((s, e, p, info))
                     continue
 
                 if s >= mem_e:
-                    if insert_flag == 0:
-                        insert_flag = 1
+                    if not inserted:
+                        inserted = True
                         tmp_map_info.append((mem_s, mem_e, mem_p, mem_info))
 
                     tmp_map_info.append((s, e, p, info))
@@ -108,8 +106,8 @@ class QlMemoryManager:
                 if s == mem_s:
                     pass
 
-                if insert_flag == 0:
-                    insert_flag = 1
+                if not inserted:
+                    inserted = True
                     tmp_map_info.append((mem_s, mem_e, mem_p, mem_info))
 
                 if e > mem_e:
@@ -118,10 +116,10 @@ class QlMemoryManager:
                 if e == mem_e:
                     pass
 
-            if insert_flag == 0:
+            if not inserted:
                 tmp_map_info.append((mem_s, mem_e, mem_p, mem_info))
 
-        self.map_info = tmp_map_info
+            self.map_info = tmp_map_info
 
     def del_mapinfo(self, mem_s: int, mem_e: int):
         """Subtract a memory range from map.
