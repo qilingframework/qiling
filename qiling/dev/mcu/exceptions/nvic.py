@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from sys import intern
+import struct
 from unicorn.unicorn import UcError
 
 from .manager import ExceptionManager
@@ -17,6 +17,8 @@ class NVIC(ExceptionManager):
         # https://developer.arm.com/documentation/ddi0439/b/Nested-Vectored-Interrupt-Controller
         
         self.INTR_NUM = 256
+        self.IRQN_OFFSET = 16
+
         self.enable   = [0] * self.INTR_NUM
         self.pending  = [0] * self.INTR_NUM
         self.active   = [0] * self.INTR_NUM
@@ -98,3 +100,37 @@ class NVIC(ExceptionManager):
             self.active[isr_number] = 0
 
         self.restore_regs()
+
+    def writeDoubleWord(self, offset, value):
+        def wrapper(list, value):
+            def function(offset, index):
+                for i in range(32):
+                    if index >> i & 1:
+                        list[offset + i + self.IRQN_OFFSET] = value
+            return function
+
+        set_enable    = wrapper(self.enable , 1)
+        clear_enable  = wrapper(self.enable , 0)
+        set_pending   = wrapper(self.pending, 1)
+        clear_pending = wrapper(self.pending, 0)
+
+        # active bits is read only
+        
+        if   0x000 <= offset <= 0x01C:
+            set_enable((offset - 0x000) * 32, value)
+
+        elif 0x080 <= offset <= 0x09C:
+            clear_enable((offset - 0x080) * 32, value)
+
+        elif 0x100 <= offset <= 0x11C:
+            set_pending((offset - 0x100) * 32, value)
+
+        elif 0x180 <= offset <= 0x19C:
+            clear_pending((offset - 0x180) * 32, value)
+
+        elif 0x300 <= offset <= 0x3EC:
+            offset -= 0x300
+            for i in range(4):
+                index = offset + i + self.IRQN_OFFSET
+                prior = struct.unpack('b', struct.pack('B', (value >> i) & 255))[0]
+                self.priority[index] = prior
