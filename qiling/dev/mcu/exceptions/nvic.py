@@ -117,16 +117,16 @@ class NVIC(ExceptionManager):
         # active bits is read only
         
         if   0x000 <= offset <= 0x01C:
-            set_enable((offset - 0x000) * 32, value)
+            set_enable((offset - 0x000) * 8, value)
 
         elif 0x080 <= offset <= 0x09C:
-            clear_enable((offset - 0x080) * 32, value)
+            clear_enable((offset - 0x080) * 8, value)
 
         elif 0x100 <= offset <= 0x11C:
-            set_pending((offset - 0x100) * 32, value)
+            set_pending((offset - 0x100) * 8, value)
 
         elif 0x180 <= offset <= 0x19C:
-            clear_pending((offset - 0x180) * 32, value)
+            clear_pending((offset - 0x180) * 8, value)
 
         elif 0x300 <= offset <= 0x3EC:
             offset -= 0x300
@@ -134,3 +134,41 @@ class NVIC(ExceptionManager):
                 index = offset + i + self.IRQN_OFFSET
                 prior = struct.unpack('b', struct.pack('B', (value >> i) & 255))[0]
                 self.priority[index] = prior
+
+    def readDoubleWord(self, offset):
+        def wrapper(list):
+            def function(start):
+                value = 0
+                for i in range(start, start + 32):
+                    value = value << 1 | list[i]
+                return value
+            return function
+
+        get_enable  = wrapper(self.enable)
+        get_pending = wrapper(self.pending)
+        get_active = wrapper(self.pending)
+
+        retval = 0
+        if   0x000 <= offset <= 0x01C:
+            retval = get_enable((offset - 0x000) * 8 + self.IRQN_OFFSET)
+
+        elif 0x080 <= offset <= 0x09C:
+            retval = get_enable((offset - 0x080) * 8 + self.IRQN_OFFSET)
+
+        elif 0x100 <= offset <= 0x11C:
+            retval = get_pending((offset - 0x100) * 8 + self.IRQN_OFFSET)
+
+        elif 0x180 <= offset <= 0x19C:
+            retval = get_pending((offset - 0x180) * 8 + self.IRQN_OFFSET)
+
+        elif 0x200 <= offset <= 0x21C:
+            retval = get_active((offset - 0x000) * 8 + self.IRQN_OFFSET)
+
+        elif 0x300 <= offset <= 0x3EC:
+            offset -= 0x300
+            retval = 0
+            for i in range(4):
+                index = offset + i + self.IRQN_OFFSET
+                retval = retval << 8 | struct.unpack('B', struct.pack('b', self.priority[index]))[0]
+
+        return retval
