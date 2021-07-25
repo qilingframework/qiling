@@ -50,7 +50,21 @@ def ql_qnx_msg_io_connect(ql, coid, smsg, sparts, rmsg, rparts, *args, **kw):
     ql.os.fd[coid] = ql.os.fs_mapper.open_ql_file(path, mode_, ioflag_)
     return 0
 
-
+# lib/c/1/lseek.c
+def ql_qnx_msg_io_lseek(ql, coid, smsg, sparts, rmsg, rparts, *args, **kw):
+    # struct _io_lseek in lib/c/public/sys/iomsg.h
+    (type, combine_len, whence, zero, offset) = unpack("<HHhHQ", ql.mem.read(smsg, 16))
+    # check parameters
+    assert (c_int32(sparts).value, c_int32(rparts).value) == (-16, -8), "input/output sizes are wrong"
+    assert (type, combine_len, zero) == (0x109, 16, 0), "io_stat message is wrong"
+    if not whence in lseek_whence:
+        raise NotImplementedError("unknown lseek direction")
+    fd = ql.os.connections[coid].fd
+    ql.log.debug(f'msg_io_lseek(coid = {coid} => fd = {fd}, offset = {offset}, whence = {lseek_whence[whence]})')
+    # lseek file
+    regreturn = ql_syscall_lseek(ql, fd, offset, whence)
+    ql.mem.write(rmsg, ql.pack64(regreturn))
+    return 0
 
 # lib/c/1/fstat.c
 def ql_qnx_msg_io_stat(ql, coid, smsg, sparts, rmsg, rparts, *args, **kw):
