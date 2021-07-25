@@ -62,7 +62,7 @@ class QlOsQnx(QlOsPosix):
 
         # Fill TLS structure with proper values
         tls._errptr.value = self.tls_data_addr
-        tls.pid = 1
+        tls.pid = self.ql.os.pid
         tls.tid = 1
 
         # Write TLS to memory
