@@ -68,16 +68,15 @@ def ql_qnx_msg_io_lseek(ql, coid, smsg, sparts, rmsg, rparts, *args, **kw):
 
 # lib/c/1/fstat.c
 def ql_qnx_msg_io_stat(ql, coid, smsg, sparts, rmsg, rparts, *args, **kw):
-    ql.log.debug("io_stat(fd = %d)" % coid)
     # struct _io_stat in lib/c/public/sys/iomsg.h
-    (type_, combine_len_, zero_) = unpack("<HHI", ql.mem.read(smsg, 8))
+    (type, combine_len, zero) = unpack("<HHI", ql.mem.read(smsg, 8))
     # check parameters
-    assert (type_, combine_len_, zero_) == (0x104, 8, 0), "io_stat message is wrong"
     assert (c_int32(sparts).value, c_int32(rparts).value) == (-8, -72), "input/output sizes are wrong"
-    # struct stat in lib/c/public/sys/stat.h
-    stat = ql.os.fd[coid].fstat()
-    ql.mem.write(rmsg, pack("<QQIIiiIIIIIIiIQ", stat.st_ino, stat.st_size, stat.st_dev, stat.st_rdev, stat.st_uid, stat.st_gid, int(stat.st_mtime), int(stat.st_atime), int(stat.st_ctime), stat.st_mode, stat.st_nlink, stat.st_blksize, stat.st_blocks, stat.st_blksize, stat.st_blocks))
-    return 0
+    assert (type, combine_len, zero) == (0x104, 8, 0), "io_stat message is wrong"
+    fd = ql.os.connections[coid].fd
+    ql.log.debug(f'msg_io_stat(coid = {coid} => fd = {fd})')
+    # fstat file
+    return ql_syscall_fstat(ql, fd, rmsg)
 
 def ql_qnx_msg_io_write(ql, coid, smsg, sparts, rmsg, rparts, *args, **kw):
     (type_, combine_len, nbytes, xtype, zero) = unpack("<HHIII", get_message_body(ql, smsg, sparts))
