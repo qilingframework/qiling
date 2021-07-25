@@ -11,7 +11,7 @@ def map_msgtype(ql, msgtype):
             if v == msgtype:
                 return f'ql_qnx_msg_{k}'
 
-# QNX message types extracted from openqnx
+# QNX message types extracted from openqnx services/system/public/sys/sysmsg.h
 msgtype_table = {
     # services/system/public/sys/sysmsg.h
     "sys_conf":   (0x000),
@@ -19,7 +19,15 @@ msgtype_table = {
     "sys_log":    (0x002),
     "sys_vendor": (0x003),
 
-    "mem_map":    (0x040),
+    # services/system/public/sys/memmsg.h
+    "mem_map":        (0x040),
+    "mem_ctrl":       (0x041),
+    "mem_info":       (0x042),
+    "mem_offset":     (0x043),
+    "mem_debug_info": (0x044),
+    "mem_swap":       (0x045),
+    "mem_pmem_add":   (0x046),
+    "mem_peer":       (0x047),
 
     # lib/c/public/sys/iomsg.h
     "io_connect":         (0x100),
