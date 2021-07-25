@@ -29,25 +29,91 @@ def ql_qnx_msg_io_connect(ql, coid, smsg, sparts, rmsg, rparts, *args, **kw):
     iov_base = ql.unpack32(ql.mem.read(smsg, 4))
     iov_len = ql.unpack32(ql.mem.read(smsg + 4, 4))
     assert iov_len == 40, "io_connect: wrong size for first first iov_t"
-    # lib/c/public/sys/iomsg.h
-    (type_, subtype_, file_type_, reply_max_, entry_max_, key_, handle_, ioflag_, mode_, sflag_, access_, zero_, path_len_, eflag_, extra_type_, extra_len_) = unpack("<HHIHHIIIIHHHHBBH", ql.mem.read(iov_base, iov_len))
-    ql.log.debug("io_connect(type = %d, subtype = %d, file_type = %d, replay_max = %d, entry_max = %d, key = %d, handle = %d, ioflag = %d, mode = %d, sflag = %d, access = %d, zero = %d, path_len = %d, eflag = %d, extra_type = %d, extra_len = %d)" % (type_, subtype_, file_type_, reply_max_, entry_max_, key_, handle_, ioflag_, mode_, sflag_, access_, zero_, path_len_, eflag_, extra_type_, extra_len_))
+    # struct _io_connect in lib/c/public/sys/iomsg.h
+    (type, subtype, file_type, reply_max, entry_max, key, handle, ioflag, mode, sflag, access, zero, path_len, eflag, extra_type, extra_len) = unpack("<HHIHHIIIIHHHHBBH", ql.mem.read(iov_base, iov_len))
     # second iov_t
     iov_base = ql.unpack32(ql.mem.read(smsg + 8, 4))
     iov_len = ql.unpack32(ql.mem.read(smsg + 12, 4))
     path = ql.mem.read(iov_base, iov_len).decode("utf-8").rstrip('\x00')
-    # ignore third iov_t
-    if mode_ == 0:
-        mode = "O_RDONLY"
-    elif mode_ == 1:
-        mode = "O_WRONLY"
-    elif mode_ == 2:
-        mode = "O_RDWR"
+    real_path = ql.os.path.transform_to_real_path(path)
+    # check parameters
+    assert (type, reply_max, entry_max, key, handle, zero, eflag, extra_type) == (0x100, 0xa18, 0x10, 0, 0, 0, 0, 0), "io_connect message is wrong"
+    if not subtype in io_connect_subtypes:
+        raise NotImplementedError(f'msg_io_connect subtype {subtype} not implemented')
+    if not file_type in file_types:
+        raise NotImplementedError(f'msg_io_connect file_type {file_type} not implemented')
+    if not sflag in file_sharing_modes:
+        raise NotImplementedError(f'msg_io_connect sharing flag {sflag} not implemented')
+    if access != 0 and not access in file_access:
+        raise NotImplementedError(f'msg_io_connect access {access} not implemented')
+    ioflag_lo = ioflag & IO_FLAG_MASK
+    ioflag_hi = ioflag & (~IO_FLAG_MASK)
+    real_mode = mode & (~S_IFMT)
+    # ql.log.debug(f'msg_io_connect(subtype = {subtype}, file_type = {file_type}, ioflag = 0x{ioflag:x}, mode = 0x{mode:x}, sflag = 0x{sflag:x}, access = {access}, extra_len = {extra_len})')
+    ql.log.debug(f'msg_io_connect(subtype = {io_connect_subtypes[subtype]}, file_type = {file_types[file_type]}, ioflag = {_constant_mapping(ioflag_lo, io_connect_ioflag) + _constant_mapping(ioflag_hi, file_open_flags)}, mode = 0x{real_mode:x}, type = {_constant_mapping((mode & S_IFMT), file_stats)}, sflag = {file_sharing_modes[sflag]})')
+    # convert _IO_FLAG_? to O_? flag and then to O_? flags of host system
+    ioflag -= 1
+    #ioflag = ql_open_flag_mapping(ql, ioflag)
+    # handle subtype
+    if subtype == 0: # == _IO_CONNECT_COMBINE
+        # third iov_t if required for alignment
+        if sparts > 2:
+            iov_base = ql.unpack32(ql.mem.read(smsg + 16, 4))
+            iov_len = ql.unpack32(ql.mem.read(smsg + 20, 4))
+        # forth iov_t
+        if sparts > 3:
+            iov_base = ql.unpack32(ql.mem.read(smsg + 24, 4))
+            iov_len = ql.unpack32(ql.mem.read(smsg + 28, 4))
+        # struct _io_* in lib/c/public/sys/iomsg.h
+        iov_msg = ql.mem.read(iov_base, iov_len)
+        (x_type, x_combine_len) = unpack("<HH", iov_msg[:4])
+        # ql.log.debug(f'msg_io_connect(_IO_CONNECT_COMBINE): extra iov_t(type = 0x{x_type:x}, combine_len = 0x{x_combine_len:x})')
+        if x_type == 0x104: # == _IO_STAT
+            # struct _io_stat in lib/c/public/sys/iomsg.h
+            (x_type, x_combine_len, x_zero) = unpack("<HHI", iov_msg)
+            ql.log.debug(f'msg_io_connect(_IO_CONNECT_COMBINE + _IO_STAT, path = {path})')
+            if not os.path.exists(real_path):
+                return -1
+            # reply iov_t no. 2
+            iov_base = ql.unpack32(ql.mem.read(rmsg + 8, 4))
+            iov_len = ql.unpack32(ql.mem.read(rmsg + 12, 4))
+            #ql.os.fd[coid] = ql.os.fs_mapper.open_ql_file(path, ioflag, real_mode)
+            ql.os.connections[coid].fd = ql_syscall_open(ql, ql.unpack32(ql.mem.read(smsg + 8, 4)), ioflag, real_mode)
+            ql_syscall_fstat(ql, ql.os.connections[coid].fd, iov_base)
+        else:
+            raise NotImplementedError(f'msg_io_connect(_IO_CONNECT_COMBINE) for type 0x{x_type:x} not implemented')
+    elif subtype == 2: # == _IO_CONNECT_OPEN
+        ql.log.debug(f'open(path = {path}, openflags = 0x{ioflag:x}, openmode = 0x{real_mode:x})')
+        ql.os.connections[coid].fd = ql_syscall_open(ql, ql.unpack32(ql.mem.read(smsg + 8, 4)), ioflag, real_mode)
+        #ql.os.fd[coid] = ql.os.fs_mapper.open_ql_file(path, ioflag, real_mode)
+    elif subtype == 5: # == _IO_CONNECT_MKNOD
+        ql.log.debug(f'mkdir(path = {real_path}, mode = 0x{real_mode:x})')
+        os.mkdir(real_path, real_mode)
     else:
-        raise NotImplementedError("file mode not implemented")
-    ql.log.debug("io_connect(fd = %d, path = %s, mode = %s)" % (coid, path, mode))
-    # connect file to fd
-    ql.os.fd[coid] = ql.os.fs_mapper.open_ql_file(path, mode_, ioflag_)
+        raise NotImplementedError(f'msg_io_connect for {io_connect_subtypes[subtype]} not implemented')
+    # reply iov_t no. 1
+    iov_base = ql.unpack32(ql.mem.read(rmsg, 4))
+    iov_len = ql.unpack32(ql.mem.read(rmsg + 4, 4))
+    assert iov_len == 20, "msg_io_connect() reply iov_t 1 wrong size"
+    if os.path.isdir(real_path):
+        eflag = io_connect_eflag['_IO_CONNECT_EFLAG_DIR']
+    elif path.endswith('..'):
+        eflag = io_connect_eflag['_IO_CONNECT_EFLAG_DOTDOT']
+    elif path.endswith('.'):
+        eflag = io_connect_eflag['_IO_CONNECT_EFLAG_DOT']
+    else:
+        eflag = 0
+    if os.path.islink(real_path):
+        umask = file_stats['_S_IFLNK']
+    elif os.path.isdir(real_path):
+        umask = file_stats['_S_IFDIR']
+    elif os.path.isfile(real_path):
+        umask = file_stats['_S_IFREG']
+    else:
+        ql.log.warn("msg_io_connect(): type of {real_path} not handled properly?")
+        umask = 0
+    # struct _io_connect_link_reply in lib/c/public/sys/iomsg.h
+    ql.mem.write(iov_base, pack("<IIBBHIHH", 0, file_type, eflag, 0, 0, umask, 0, 0))
     return 0
 
 # lib/c/1/lseek.c
