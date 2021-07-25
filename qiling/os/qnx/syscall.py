@@ -27,6 +27,21 @@ def ql_syscall_clock_time(ql, id, new, old, *args, **kw):
     ql.mem.write(old, ql.pack64(clock_now))
     return 0
 
+def ql_syscall_connect_attach(ql, nd, pid, chid, index, flags, *args, **kw):
+    for i in range(256):
+        if ql.os.fd[i] == 0:
+            idx = i
+            break
+    ql.os.fd[idx] = QlFsMappedObject()
+    return idx
+
+def ql_syscall_connect_detach(ql, coid, *args, **kw):
+    ql.log.debug("connect_detach(fd = %d)" % coid)
+    if ql.os.fd[coid] != 0 and isinstance(ql.os.fd[coid], ql_file):
+        ql.os.fd[coid].close()
+    ql.os.fd[coid] = 0
+    return 0
+
 def ql_syscall_sys_cpupage_get(ql, index, *args, **kw):
     # CPUPAGE_ADDR 
     if index == 0xffffffff:
