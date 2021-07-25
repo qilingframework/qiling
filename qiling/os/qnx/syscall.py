@@ -18,13 +18,27 @@ from qiling.utils import ql_get_module_function
 from qiling.os.qnx.helpers import get_message_body, ux32s
 from qiling.os.qnx.map_msgtype import map_msgtype
 from qiling.os.qnx.structs import *
+from qiling.os.qnx.types import clock_types
 from qiling.os.qnx.message import *
 from qiling.os.qnx.const import *
 
 # Source: openqnx lib/c/support/_syspage_time.c
 def ql_syscall_clock_time(ql, id, new, old, *args, **kw):
-    clock_now = time_ns()
-    ql.mem.write(old, ql.pack64(clock_now))
+    # check parameters
+    if not id in clock_types:
+        raise NotImplementedError(f'Unknown clock id {id} not implemented')
+    if id != 0:
+        raise NotImplementedError(f'Clock type {clock_types[id]} not implemented')
+    # set time
+    if new != 0:
+        clock_new = ql.unpack64(ql.mem.read(new, 8))
+        ql.log.warn(f'syscall_clock_time(id = {clock_types[id]}, new = {clock_new}) set time not supported')
+        return -1
+    # get time
+    if old != 0:
+        clock_old = ql.unpack64(ql.mem.read(old, 8))
+        ql.log.debug(f'syscall_clock_time(id = {clock_types[id]}, old = {clock_old})')
+        ql.mem.write(old, ql.pack64(time_ns()))
     return 0
 
 def ql_syscall_connect_attach(ql, nd, pid, chid, index, flags, *args, **kw):
