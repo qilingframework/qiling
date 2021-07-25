@@ -163,6 +163,18 @@ def ql_qnx_msg_io_read(ql, coid, smsg, sparts, rmsg, rparts, *args, **kw):
     assert nbytes == -rlen, "different sizes for io_read"
     return ql_syscall_read(ql, ql.os.connections[coid].fd, rmsg, nbytes)
 
+def ql_qnx_msg_mem_ctrl(ql, coid, smsg, sparts, rmsg, rparts, *args, **kw):
+    # struct _mem_ctrl in services/system/public/sys/memmsg.h
+    (type, subtype, flags, addr, len) = unpack("<HHIQQ", ql.mem.read(smsg, 24))
+    # check parameters
+    assert (c_int32(sparts).value, c_int32(rparts).value) == (-24, 0), "input/output sizes are wrong"
+    assert (type) == (0x041), "mem_ctrl message is wrong"
+    if not subtype in mem_ctrl_subtypes:
+        raise NotImplementedError(f'MEM_CTRL subtype {subtype} not implemented')
+    ql.log.warn(f'msg_mem_ctrl(subtype = {mem_ctrl_subtypes[subtype]}, flags = 0x{flags:x}, addr = 0x{addr:x}, len = 0x{len:x}) not implemented')
+    # TODO: implement mem_ctrl
+    return -1
+
 def ql_qnx_msg_mem_map(ql, coid, smsg, sparts, rmsg, rparts, *args, **kw):
     (type_, zero, reserved1, addr, len_, prot, flags,
             fd, preload, align, offset) = unpack("<HHIQQIIiIQq", get_message_body(ql, smsg, sparts))
