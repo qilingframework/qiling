@@ -74,6 +74,25 @@ def ql_syscall_connect_detach(ql, coid, *args, **kw):
     del ql.os.connections[coid]
     return 0
 
+# Source: openqnx services/system/ker/ker_connect.c
+def ql_syscall_connect_client_info(ql, scoid, info, ngroups, *args, **kw):
+    # scoid == -1 is used for the calling process
+    if scoid != 0xffffffff:
+        raise NotImplementedError("Other processes are not implemented")
+    # struct _client_info in services/system/ker/ker_connect.c
+    ql.mem.write(info, pack("<IiiI", ND_LOCAL_NODE, ql.os.pid, 0, 0))
+    # info.cred is initialized with zero which stands for super-user, let's keep it this way
+    return 0
+
+def ql_syscall_connect_flags(ql, pid, coid, mask, bits, *args, **kw):
+    # check parameters
+    assert pid == 0, "Is it possible to change the connection flags of another process?"
+    assert coid in ql.os.connections, "Connection Id must exist in connections mapping"
+    assert mask == 0x01, "Is the mask is always FD_CLOEXEC?"
+    # lib/c/public/fcntl.h
+    ql.log.debug(f'syscall_connect_flags(coid = 0x{coid:x}, flags = FD_CLOEXEC, bits = 0x{bits:x})')
+    return 0
+
 def ql_syscall_sys_cpupage_get(ql, index, *args, **kw):
     # CPUPAGE_ADDR 
     if index == 0xffffffff:
