@@ -145,12 +145,13 @@ def ql_qnx_msg_io_stat(ql, coid, smsg, sparts, rmsg, rparts, *args, **kw):
     return ql_syscall_fstat(ql, fd, rmsg)
 
 def ql_qnx_msg_io_write(ql, coid, smsg, sparts, rmsg, rparts, *args, **kw):
-    (type_, combine_len, nbytes, xtype, zero) = unpack("<HHIII", get_message_body(ql, smsg, sparts))
+    # struct _io_write in lib/c/public/sys/iomsg.h
+    (type, combine_len, nbytes, xtype, zero) = unpack("<HHiII", get_message_body(ql, smsg, sparts))
 
     if combine_len & _IO_COMBINE_FLAG != 0 or xtype != 0:
         raise NotImplementedError("IO combine and XTYPE support not implemented")
 
-    return ql_syscall_write(ql, coid, ql.unpack32(ql.mem.read(smsg + 8, 4)), nbytes)
+    return ql_syscall_write(ql, ql.os.connections[coid].fd, ql.unpack32(ql.mem.read(smsg + 8, 4)), nbytes)
 
 def ql_qnx_msg_io_read(ql, coid, smsg, sparts, rmsg, rparts, *args, **kw):
     (type_, combine_len, nbytes, xtype, zero) = unpack("<HHIII", get_message_body(ql, smsg, sparts))
@@ -158,10 +159,9 @@ def ql_qnx_msg_io_read(ql, coid, smsg, sparts, rmsg, rparts, *args, **kw):
     if combine_len & _IO_COMBINE_FLAG != 0 or xtype != 0:
         raise NotImplementedError("IO combine and XTYPE support not implemented")
 
-    ql.log.debug("io_read(fd = %d, nbytes = %d)" % (coid, nbytes))
     rlen = c_int32(rparts).value
     assert nbytes == -rlen, "different sizes for io_read"
-    return ql_syscall_read(ql, coid, rmsg, nbytes)
+    return ql_syscall_read(ql, ql.os.connections[coid].fd, rmsg, nbytes)
 
 def ql_qnx_msg_mem_map(ql, coid, smsg, sparts, rmsg, rparts, *args, **kw):
     (type_, zero, reserved1, addr, len_, prot, flags,
