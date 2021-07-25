@@ -266,20 +266,11 @@ def mmap_prot_mapping(prots):
     if prots == 0x0:
         return 'PROT_NONE'
 
-    # QNX (openqnx)
-    # lib/c/public/sys/mman.h
-    if prots >= 0x100:
-        mmap_prots = {
-            'PROT_READ' : 0x100,
-            'PROT_WRITE': 0x200,
-            'PROT_EXEC' : 0x400,
-        }
-    else:
-        mmap_prots = {
-            'PROT_READ' : 0x1,
-            'PROT_WRITE': 0x2,
-            'PROT_EXEC' : 0x4,
-        }
+    mmap_prots = {
+        'PROT_READ' : 0x1,
+        'PROT_WRITE': 0x2,
+        'PROT_EXEC' : 0x4,
+    }
 
     return _constant_mapping(prots, mmap_prots)
 
