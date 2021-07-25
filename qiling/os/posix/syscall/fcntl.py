@@ -32,7 +32,7 @@ def ql_syscall_open(ql, filename, flags, mode, *args, **kw):
         regreturn = -EMFILE
     else:
         try:
-            if ql.archtype== QL_ARCH.ARM:
+            if ql.archtype== QL_ARCH.ARM and ql.ostype!= QL_OS.QNX:
                 mode = 0
 
             flags = ql_open_flag_mapping(ql, flags)
