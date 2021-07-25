@@ -13,9 +13,10 @@ from qiling.os.posix.syscall import ql_syscall_read, ql_syscall_write, ql_syscal
 _IO_COMBINE_FLAG = 0x8000
 
 def ql_qnx_msg_io_close(ql, coid, smsg, sparts, rmsg, rparts, *args, **kw):
-    ql.log.debug("io_close(fd = %d)" % coid)
-    ql.os.fd[coid].close()
-    ql.os.fd[coid] = 0
+    fd = ql.os.connections[coid].fd
+    ql.os.connections[coid].fd = None
+    ql.log.debug(f'msg_io_close(coid = {coid} => fd = {fd})')
+    return ql_syscall_close(ql, fd)
 
 # lib/c/support/_connect_ctrl.c::_connect_io()
 def ql_qnx_msg_io_connect(ql, coid, smsg, sparts, rmsg, rparts, *args, **kw):
