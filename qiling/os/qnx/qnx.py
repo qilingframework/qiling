@@ -7,6 +7,8 @@ import os
 from unicorn import UcError
 
 from qiling.os.posix.posix import QlOsPosix
+from qiling.os.qnx.const import NTO_SIDE_CHANNEL, SYSMGR_PID, SYSMGR_CHID, SYSMGR_COID
+from qiling.os.qnx.helpers import QnxConn
 from qiling.os.qnx.structs import _thread_local_storage
 from qiling.const import QL_ARCH
 
@@ -15,6 +17,17 @@ class QlOsQnx(QlOsPosix):
         super(QlOsQnx, self).__init__(ql)
         self.load()
 
+        # use counters to get free Ids
+        self.channel_id = 1
+        # TODO: replace 0x400 with NR_OPEN from Qiling 1.25
+        self.connection_id_lo = 0x400 + 1
+        self.connection_id_hi = NTO_SIDE_CHANNEL + 1
+        # map Connection Id (coid) to Process Id (pid) and Channel Id (chid)
+        self.connections = {}
+        self.connections[0] = QnxConn(SYSMGR_PID, SYSMGR_CHID, fd = self.stdin.fileno())
+        self.connections[1] = QnxConn(SYSMGR_PID, SYSMGR_CHID, fd = self.stdout.fileno())
+        self.connections[2] = QnxConn(SYSMGR_PID, SYSMGR_CHID, fd = self.stderr.fileno())
+        self.connections[SYSMGR_COID] = QnxConn(SYSMGR_PID, SYSMGR_CHID)
 
     def load(self):
         if self.ql.code:
