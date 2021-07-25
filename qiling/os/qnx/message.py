@@ -9,6 +9,7 @@ from qiling.os.mapper import QlFsMappedObject
 from qiling.os.qnx.helpers import get_message_body
 from qiling.os.posix.syscall import ql_syscall_read, ql_syscall_write, ql_syscall_mmap
 
+# TODO: move this to qiling.os.qnx.const?
 _IO_COMBINE_FLAG = 0x8000
 
 def ql_qnx_msg_io_close(ql, coid, smsg, sparts, rmsg, rparts, *args, **kw):
