@@ -15,12 +15,21 @@ except ImportError:
 from binascii import hexlify
 
 from qiling.utils import ql_get_module_function
+from qiling.os.posix.const_mapping import _constant_mapping
 from qiling.os.qnx.helpers import get_message_body, ux32s
 from qiling.os.qnx.map_msgtype import map_msgtype
 from qiling.os.qnx.structs import *
-from qiling.os.qnx.types import clock_types
+from qiling.os.qnx.types import channel_create_flags, clock_types
 from qiling.os.qnx.message import *
 from qiling.os.qnx.const import *
+
+def ql_syscall_channel_create(ql, flags, *args, **kw):
+    # TODO: Can we ignore the flags?
+    ql.log.debug(f'syscall_channel_create(flags = {_constant_mapping(flags, channel_create_flags)})')
+    # return new Channel Id
+    regreturn = ql.os.channel_id
+    ql.os.channel_id += 1
+    return regreturn
 
 # Source: openqnx lib/c/support/_syspage_time.c
 def ql_syscall_clock_time(ql, id, new, old, *args, **kw):
