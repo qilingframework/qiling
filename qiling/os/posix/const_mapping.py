@@ -167,6 +167,24 @@ def ql_open_flag_mapping(ql, flags):
         'O_LARGEFILE': None
     }
 
+    qnx_open_flags = {
+        'O_RDONLY'    : 0x00000,
+        'O_WRONLY'    : 0x00001,
+        'O_RDWR'      : 0x00002,
+        'O_APPEND'    : 0x00008,
+        'O_SYNC'      : 0x00020,
+        'O_NONBLOCK'  : 0x00080,
+        'O_CREAT'     : 0x00100,
+        'O_TRUNC'     : 0x00200,
+        'O_EXCL'      : 0x00400,
+        'O_NOCTTY'    : 0x00800,
+        'O_LARGEFILE' : 0x08000,
+        'O_ASYNC'     : 0x10000,
+        'O_NOFOLLOW'  : None,
+        'O_DIRECTORY' : None,
+        'O_BINARY'    : None
+    }
+
     f = {}
     t = {}
 
@@ -186,6 +204,8 @@ def ql_open_flag_mapping(ql, flags):
         f = freebsd_open_flags
     elif ql.ostype == QL_OS.WINDOWS:
         f = windows_open_flags
+    elif ql.ostype == QL_OS.QNX:
+        f = qnx_open_flags
 
     if ql.platform == QL_OS.LINUX:
         t = linux_x86_open_flags
