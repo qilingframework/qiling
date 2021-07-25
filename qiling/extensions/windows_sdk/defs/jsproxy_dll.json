@@ -1,8 +1,0 @@
-{
-    "InternetInitializeAutoProxyDll": [
-        {
-            "name": "dwReserved",
-            "type": "DWORD"
-        }
-    ]
-}
