@@ -176,15 +176,23 @@ def ql_qnx_msg_mem_ctrl(ql, coid, smsg, sparts, rmsg, rparts, *args, **kw):
     return -1
 
 def ql_qnx_msg_mem_map(ql, coid, smsg, sparts, rmsg, rparts, *args, **kw):
-    (type_, zero, reserved1, addr, len_, prot, flags,
-            fd, preload, align, offset) = unpack("<HHIQQIIiIQq", get_message_body(ql, smsg, sparts))
-
-    ret = ql_syscall_mmap(ql, addr, len_, prot, flags, fd, offset)
-    if c_int32(sparts).value < 0:
-        ql.mem.write(rmsg, pack("<QQQ", len_, ret, ret))
-    else:
+    # struct _mem_map in services/system/public/sys/memmsg.h
+    (type, zero, reserved1, addr, len, prot, flags, fd, preload, align, offset) = unpack("<HHIQQIIiIQq", ql.mem.read(smsg, 56))
+    # map QNX protection flags to POSIX protection flags
+    prot >>= 8
+    # check parameters
+    if c_int32(sparts).value > 0:
         raise NotImplementedError("mmap with IOV not implemented")
-
+    assert (c_int32(sparts).value, c_int32(rparts).value) == (-56, -24), "input/output sizes are wrong"
+    assert (type, zero, reserved1) == (0x040, 0, 0), "mem_map message is wrong"
+    # map message fd to underlying fd
+    if fd > 0:
+        fd = ql.os.connections[fd].fd
+    ql.log.debug(f'mem_map(addr = 0x{addr:x}, len = 0x{len:x}, prot = {mmap_prot_mapping(prot)}, flags = {_constant_mapping(flags, mmap_flags)}, fd = {fd}, preload = 0x{preload:x}, align = 0x{align:x}, offset = 0x{offset:x})')
+    # map memory
+    ret = ql_syscall_mmap(ql, addr, len, prot, flags, fd, offset)
+    # struct _mem_map_replay in services/system/public/sys/memmsg.h
+    ql.mem.write(rmsg, pack("<QQQ", len, ret, ret))
     return 0
 
 def ql_qnx_msg_sys_conf(ql, coid, smsg, sparts, rmsg, rparts, *args, **kw):
