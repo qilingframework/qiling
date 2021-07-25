@@ -16,10 +16,10 @@ from binascii import hexlify
 
 from qiling.utils import ql_get_module_function
 from qiling.os.posix.const_mapping import _constant_mapping
-from qiling.os.qnx.helpers import get_message_body, ux32s
+from qiling.os.qnx.helpers import get_message_body, QnxConn, ux32s
 from qiling.os.qnx.map_msgtype import map_msgtype
 from qiling.os.qnx.structs import *
-from qiling.os.qnx.types import channel_create_flags, clock_types
+from qiling.os.qnx.types import channel_create_flags, clock_types, connect_attach_flags
 from qiling.os.qnx.message import *
 from qiling.os.qnx.const import *
 
@@ -51,18 +51,27 @@ def ql_syscall_clock_time(ql, id, new, old, *args, **kw):
     return 0
 
 def ql_syscall_connect_attach(ql, nd, pid, chid, index, flags, *args, **kw):
-    for i in range(256):
-        if ql.os.fd[i] == 0:
-            idx = i
-            break
-    ql.os.fd[idx] = QlFsMappedObject()
-    return idx
+    # check parameters
+    assert (nd, flags) == (ND_LOCAL_NODE, connect_attach_flags['_NTO_COF_CLOEXEC']), "syscall_connect_attach parameters are wrong"
+    ql.log.debug(f'syscall_connect_attach(nd = ND_LOCAL_NODE, pid = {pid}, chid = {chid}, index = 0x{index:x}, flags = _NTO_COF_CLOEXEC)')
+    # return new Connection Id
+    if index & NTO_SIDE_CHANNEL:
+        regreturn = ql.os.connection_id_hi
+        ql.os.connection_id_hi += 1
+    else:
+        regreturn = ql.os.connection_id_lo
+        ql.os.connection_id_lo += 1
+    assert not regreturn in ql.os.connections, "Connection Id is already in use"
+    ql.os.connections[regreturn] = QnxConn(pid, chid)
+    return regreturn
 
 def ql_syscall_connect_detach(ql, coid, *args, **kw):
-    ql.log.debug("connect_detach(fd = %d)" % coid)
-    if ql.os.fd[coid] != 0 and isinstance(ql.os.fd[coid], ql_file):
-        ql.os.fd[coid].close()
-    ql.os.fd[coid] = 0
+    # check parameters
+    assert coid in ql.os.connections, "Connection Id must exist in connections mapping"
+    assert ql.os.connections[coid].fd == None, "File Descriptor has to be closed properly"
+    ql.log.debug(f'connect_detach(coid = 0x{coid:x})')
+    # close connection
+    del ql.os.connections[coid]
     return 0
 
 def ql_syscall_sys_cpupage_get(ql, index, *args, **kw):
