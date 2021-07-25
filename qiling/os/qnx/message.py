@@ -2,12 +2,17 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
+import os
 from struct import pack, unpack
 from ctypes import c_int32
 from binascii import hexlify
+from qiling.os.filestruct import ql_file
 from qiling.os.mapper import QlFsMappedObject
-from qiling.os.qnx.helpers import get_message_body
-from qiling.os.posix.syscall import ql_syscall_read, ql_syscall_write, ql_syscall_mmap
+from qiling.os.qnx.const import IO_FLAG_MASK, PAGESIZE, S_IFMT
+from qiling.os.qnx.helpers import get_message_body, QnxConn
+from qiling.os.qnx.types import file_access, file_stats, file_types, file_open_flags, file_sharing_modes, io_connect_eflag, io_connect_ioflag, io_connect_subtypes, lseek_whence, mem_ctrl_subtypes, mmap_flags, sysconf_conditions, sysconf_consts, sysconf_names, sysconf_subtypes
+from qiling.os.posix.const_mapping import _constant_mapping, mmap_prot_mapping, ql_open_flag_mapping
+from qiling.os.posix.syscall import ql_syscall_close, ql_syscall_fstat, ql_syscall_lseek, ql_syscall_mmap, ql_syscall_open, ql_syscall_read, ql_syscall_write
 
 # TODO: move this to qiling.os.qnx.const?
 _IO_COMBINE_FLAG = 0x8000
@@ -44,6 +49,8 @@ def ql_qnx_msg_io_connect(ql, coid, smsg, sparts, rmsg, rparts, *args, **kw):
     # connect file to fd
     ql.os.fd[coid] = ql.os.fs_mapper.open_ql_file(path, mode_, ioflag_)
     return 0
+
+
 
 # lib/c/1/fstat.c
 def ql_qnx_msg_io_stat(ql, coid, smsg, sparts, rmsg, rparts, *args, **kw):
