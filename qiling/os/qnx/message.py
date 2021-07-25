@@ -196,57 +196,52 @@ def ql_qnx_msg_mem_map(ql, coid, smsg, sparts, rmsg, rparts, *args, **kw):
     return 0
 
 def ql_qnx_msg_sys_conf(ql, coid, smsg, sparts, rmsg, rparts, *args, **kw):
-    (type_, subtype_, cmd_, name_, spare, value) = unpack("<HHiiiq", get_message_body(ql, smsg, sparts))
-
-    # services/system/public/sys/sysmsg.h
-    if subtype_ == 0:
-        subtype = "_SYS_SUB_GET"
-    elif subtype_ == 1:
-        subtype = "_SYS_SUB_SET"
-    else:
-        raise NotImplementedError("subtype not implemented")
-
-    # lib/c/public/sys/conf.h
-    if cmd_ == (1 << 20):
-        # checking for string
-        cmd = "_CONF_STR"
-    elif cmd_ == (2 << 20):
-        # checking for number
-        cmd = "_CONF_NUM"
-    else:
-        raise NotImplementedError("cmd type not implemented")
-
-    # lib/c/public/confname.h
-    if name_ == 200:
-        # search path for dynamic loader, e.g. /usr/lib
-        name = "_CS_LIBPATH"
-    elif name_ == 201:
-        name = "_CS_DOMAIN"
-    elif name_ == 202:
-        name = "_CS_RESOLVE"
-    elif name_ == 203:
-        name = "_CS_TIMEZONE"
-    elif name_ == 204:
-        name = "_CS_LOCALE"
-    else:
-        raise NotImplementedError("name type not implemented")
-
-    # output syscall with decoded arguments
-    ql.log.debug("sys_conf(subtype = %s, cmd = %s, name = %s, spare = %d, value = %d)" % (subtype, cmd, name, spare, value))
-
-    # sys_conf(_SYS_SUB_GET, _CONF_STR, _CS_LIBPATH)
-    if subtype_ == 0 and cmd_ == (1 << 20) and name_ == 200:
-        libpath = "/usr/lib\0"
+    # struct _sys_conf in services/system/public/sys/sysmsg.h
+    (type, subtype, cmd, name, spare, value) = unpack("<HHiiiq", get_message_body(ql, smsg, sparts))
+    # check parameters
+    assert (c_int32(sparts).value) == (-24), "input size is wrong"
+    assert (type) == (0x000)
+    if not subtype in sysconf_subtypes:
+        raise NotImplementedError(f'subtype {subtype} not implemented')
+    if not cmd in sysconf_conditions:
+        raise NotImplementedError(f'cmd type {cmd} not implemented')
+    # sys_conf(_SYS_SUB_GET, _CONF_STR, *) in lib/c/1a/confstr.c
+    if subtype == 0 and cmd == (1 << 20):
+        # check parameters
+        assert (c_int32(rparts).value) == (2), "output size is wrong"
+        if not name in sysconf_names:
+            raise NotImplementedError(f'name type {name} not implemented')
+        ql.log.debug(f'msg_sys_conf(subtype = {sysconf_subtypes[subtype]}, cmd = {sysconf_conditions[cmd]}, name = {sysconf_names[name]}, spare = {spare}, value = {value})')
+        # get string
+        if name == 200: # == _CS_LIBPATH
+            retstr = "/usr/lib\0"
+        elif name == 203: # == _CS_TIMEZONE
+            retstr = "UTC\0"
+        else:
+            raise NotImplementedError("sys_conf name not implemented")
         # first iov_t
         iov_base = ql.unpack32(ql.mem.read(rmsg, 4))
         iov_len = ql.unpack32(ql.mem.read(rmsg + 4, 4))
-        ql.mem.write(iov_base, pack("<IIIiq", 0, 0, 0, 0, len(libpath)))
+        ql.mem.write(iov_base, pack("<IIIiq", 0, 0, 0, 0, len(retstr)))
         if value != 0:
             # second iov_t
             iov_base = ql.unpack32(ql.mem.read(rmsg + 8, 4))
             iov_len = ql.unpack32(ql.mem.read(rmsg + 12, 4))
-            ql.mem.write(iov_base, libpath.encode("utf-8"))
+            ql.mem.write(iov_base, retstr.encode("utf-8"))
+    # sys_conf(_SYS_SUB_GET, _CONF_NUM, *) in lib/c/1/sysconf.c
+    elif subtype == 0 and cmd == (2 << 20):
+        # check parameters
+        assert (c_int32(rparts).value) == (-24), "output size is wrong"
+        if not name in sysconf_consts:
+            raise NotImplementedError(f'name type {name} not implemented')
+        ql.log.debug(f'msg_sys_conf(subtype = {sysconf_subtypes[subtype]}, cmd = {sysconf_conditions[cmd]}, name = {sysconf_consts[name]}, spare = {spare}, value = {value})')
+        # get value
+        if name == 11: # == _SC_PAGESIZE
+            retval = PAGESIZE
+        else:
+            raise NotImplementedError("sys_conf name not implemented")
+        # struct _sys_conf_reply in services/system/public/sys/sysmsg.h
+        ql.mem.write(rmsg, pack("<IIIiq", 0, 0, 0, 0, retval))
     else:
-        raise NotImplementedError("sys_conf message type not implemented")
-
+        raise NotImplementedError("sys_conf message not implemented")
     return 0
