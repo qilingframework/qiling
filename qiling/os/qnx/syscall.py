@@ -180,23 +180,29 @@ def ql_syscall_msg_sendvnc(ql, coid, smsg, sparts, rmsg, rparts, *args, **kw):
     return _msg_sendv(ql, coid, smsg, sparts, rmsg, rparts, *args, **kw)
 
 def _msg_sendv(ql, coid, smsg, sparts, rmsg, rparts, *args, **kw):
-    sbody = get_message_body(ql, smsg, sparts)
-    type_ = ql.unpack16(sbody[:2])
+    assert coid in ql.os.connections, "Connection Id must exist in connections mapping"
+    conn = ql.os.connections[coid]
+    if conn.pid == SYSMGR_PID and conn.chid == SYSMGR_CHID:
+        sbody = get_message_body(ql, smsg, sparts)
+        type_ = ql.unpack16(sbody[:2])
 
-    msg_name = map_msgtype(ql, type_)
-    _msg_handler = ql_get_module_function(f"qiling.os.qnx", "message")
+        msg_name = map_msgtype(ql, type_)
+        _msg_handler = ql_get_module_function(f"qiling.os.qnx", "message")
 
-    if msg_name in dir(_msg_handler):
-        msg_hook = eval(msg_name)
-        msg_name = msg_hook.__name__
+        if msg_name in dir(_msg_handler):
+            msg_hook = eval(msg_name)
+            msg_name = msg_hook.__name__
+        else:
+            msg_hook = None
+            msg_name = None
+
+        if msg_hook:
+            ret = msg_hook(ql, coid, smsg, sparts, rmsg, rparts, *args, **kw)
+        else:
+            ql.log.warning(f'_msg_sendv: no hook for message type {type_:#04x}')
+            ret = -1
     else:
-        msg_hook = None
-        msg_name = None
-
-    if msg_hook:
-        ret = msg_hook(ql, coid, smsg, sparts, rmsg, rparts, *args, **kw)
-    else:
-        ql.log.warning(f'_msg_sendv: no hook for message type {type_:#04x}')
+        ql.log.warn(f'syscall_msg_sendv(coid = {coid}): unhandled message for pid = {conn.pid}, chid = {conn.chid}')
         ret = -1
 
     return ret
