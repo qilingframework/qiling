@@ -177,4 +177,4 @@ class NVIC(ExceptionManager, Peripheral):
 
     @property
     def name(self):
-        return 'nvic'
+        return 'NVIC'
