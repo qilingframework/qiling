@@ -3,12 +3,14 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from sys import intern
+import struct
 from unicorn.unicorn import UcError
 
 from .manager import ExceptionManager
+from qiling.dev.peripheral.peripheral import Peripheral
 
-class NVIC(ExceptionManager):    
+
+class NVIC(ExceptionManager, Peripheral):
     def __init__(self, ql):
         super().__init__(ql)
         
@@ -17,6 +19,8 @@ class NVIC(ExceptionManager):
         # https://developer.arm.com/documentation/ddi0439/b/Nested-Vectored-Interrupt-Controller
         
         self.INTR_NUM = 256
+        self.IRQN_OFFSET = 16
+
         self.enable   = [0] * self.INTR_NUM
         self.pending  = [0] * self.INTR_NUM
         self.active   = [0] * self.INTR_NUM
@@ -44,7 +48,7 @@ class NVIC(ExceptionManager):
         self.pending[isr_number] = 1
 
     def handle_interupt(self, offset):
-        self.ql.log.debug('Enter Interrupt')
+        self.ql.log.debug('Enter into interrupt')
         address = self.ql.arch.boot_space + offset
         entry = self.ql.mem.read_ptr(address)
 
@@ -60,7 +64,7 @@ class NVIC(ExceptionManager):
         except UcError:
             pass
 
-        self.ql.log.debug('Exit Interrupt')
+        self.ql.log.debug('Exit from interrupt')
 
     def save_regs(self):
         for reg in self.reg_context:
@@ -98,3 +102,79 @@ class NVIC(ExceptionManager):
             self.active[isr_number] = 0
 
         self.restore_regs()
+
+    def write_word(self, offset, value):
+        def wrapper(list, value):
+            def function(offset, index):
+                for i in range(32):
+                    if index >> i & 1:
+                        list[offset + i + self.IRQN_OFFSET] = value
+            return function
+
+        set_enable    = wrapper(self.enable , 1)
+        clear_enable  = wrapper(self.enable , 0)
+        set_pending   = wrapper(self.pending, 1)
+        clear_pending = wrapper(self.pending, 0)
+
+        # active bits is read only
+        
+        if   0x000 <= offset <= 0x01C:
+            set_enable((offset - 0x000) * 8, value)
+
+        elif 0x080 <= offset <= 0x09C:
+            clear_enable((offset - 0x080) * 8, value)
+
+        elif 0x100 <= offset <= 0x11C:
+            set_pending((offset - 0x100) * 8, value)
+
+        elif 0x180 <= offset <= 0x19C:
+            clear_pending((offset - 0x180) * 8, value)
+
+        elif 0x300 <= offset <= 0x3EC:
+            offset -= 0x300
+            for i in range(4):
+                index = offset + i + self.IRQN_OFFSET
+                prior = struct.unpack('b', struct.pack('B', (value >> i) & 255))[0]
+                self.priority[index] = prior
+
+    def read_word(self, offset):
+        def wrapper(list):
+            def function(start):
+                value = 0
+                for i in range(start, start + 32):
+                    value = value << 1 | list[i]
+                return value
+            return function
+
+        get_enable  = wrapper(self.enable)
+        get_pending = wrapper(self.pending)
+        get_active = wrapper(self.pending)
+
+        retval = 0
+        if   0x000 <= offset <= 0x01C:
+            retval = get_enable((offset - 0x000) * 8 + self.IRQN_OFFSET)
+
+        elif 0x080 <= offset <= 0x09C:
+            retval = get_enable((offset - 0x080) * 8 + self.IRQN_OFFSET)
+
+        elif 0x100 <= offset <= 0x11C:
+            retval = get_pending((offset - 0x100) * 8 + self.IRQN_OFFSET)
+
+        elif 0x180 <= offset <= 0x19C:
+            retval = get_pending((offset - 0x180) * 8 + self.IRQN_OFFSET)
+
+        elif 0x200 <= offset <= 0x21C:
+            retval = get_active((offset - 0x000) * 8 + self.IRQN_OFFSET)
+
+        elif 0x300 <= offset <= 0x3EC:
+            offset -= 0x300
+            retval = 0
+            for i in range(4):
+                index = offset + i + self.IRQN_OFFSET
+                retval = retval << 8 | struct.unpack('B', struct.pack('b', self.priority[index]))[0]
+
+        return struct.pack('<I', retval)
+
+    @property
+    def name(self):
+        return 'NVIC'

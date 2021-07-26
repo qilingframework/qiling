@@ -58,12 +58,20 @@ class QlLoaderMCU(QlLoader):
     def __init__(self, ql:Qiling):
         super(QlLoaderMCU, self).__init__(ql)                
         self.ihexfile = IhexParser(self.argv[0])
+        
         self.mapinfo = {
             'sram'      : (0x20000000, 0x20020000),
             'system'    : (0x1FFF0000, 0x1FFF7800),            
             'flash'     : (0x08000000, 0x08080000),             
             'peripheral': (0x40000000, 0x40100000),
-            'core_perip': (0xE0000000, 0xE0100000),
+            'core_perip': (0xE000E000, 0xE000F000),
+        }
+
+        self.perip_region = {
+            'NVIC': [(0xE000E100, 0xE000E4F0), (0xE000EF00, 0xE000EF04)],
+            'STK': [(0xE000E010, 0xE000E020)],
+            'SCB': [(0xE000ED00, 0xE000ED40)],
+            'FPU': [(0xE000ED88, 0xE000ED8C), (0xE000EF30, 0xE000EF44)]
         }
 
     def reset(self):
@@ -85,4 +93,15 @@ class QlLoaderMCU(QlLoader):
         for begin, end, data in self.ihexfile.segments:
             self.ql.mem.write(begin, data)
 
+        self.ql.arch.mapinfo = self.mapinfo
+        self.ql.arch.perip_region = self.perip_region
+
+        PPB_BEGIN, PPB_END = self.mapinfo['core_perip']
+        PERIP_BEGIN, PERIP_END = self.mapinfo['peripheral']
+        
+        self.ql.hook_mem_read(self.ql.arch.perip_read_hook, begin=PPB_BEGIN, end=PPB_END)
+        self.ql.hook_mem_read(self.ql.arch.perip_read_hook, begin=PERIP_BEGIN, end=PERIP_END)
+        self.ql.hook_mem_write(self.ql.arch.perip_write_hook, begin=PPB_BEGIN, end=PPB_END)
+        self.ql.hook_mem_write(self.ql.arch.perip_write_hook, begin=PERIP_BEGIN, end=PERIP_END)
+        
         self.reset()        
