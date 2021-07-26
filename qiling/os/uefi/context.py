@@ -1,8 +1,9 @@
-from abc import ABC
-from typing import Mapping, Tuple
+from abc import ABC, abstractmethod
+from typing import Any, Mapping, Optional, Tuple
 
 from qiling import Qiling
 from qiling.os.memory import QlMemoryHeap
+from qiling.os.uefi.ProcessorBind import STRUCT
 from qiling.os.uefi.UefiSpec import EFI_CONFIGURATION_TABLE, EFI_SYSTEM_TABLE
 from qiling.os.uefi.smst import EFI_SMM_SYSTEM_TABLE2
 from qiling.os.uefi import utils
@@ -16,6 +17,8 @@ class UefiContext(ABC):
 		# These members must be initialized before attempting to install a configuration table.
 		self.conf_table_data_ptr = 0
 		self.conf_table_data_next_ptr = 0
+
+		self.conftable: UefiConfTable
 
 	def init_heap(self, base: int, size: int):
 		self.heap = QlMemoryHeap(self.ql, base, base + size)
@@ -59,50 +62,17 @@ class UefiContext(ABC):
 
 		return utils.execute_protocol_notifications(self.ql, from_hook)
 
-	def install_configuration_table(self, guid: str, table: int):
-		ptr = self.conf_table_array_ptr
-		nitems = self.conf_table_array_nitems
-		efi_guid = utils.str_to_guid(guid)
-
-		idx = 0
-
-		for _ in range(nitems):
-			entry = EFI_CONFIGURATION_TABLE.loadFrom(self.ql, ptr)
-
-			if utils.CompareGuid(entry.VendorGuid, efi_guid):
-				break
-
-			ptr += EFI_CONFIGURATION_TABLE.sizeof()
-			idx += 1
-
-		instance = EFI_CONFIGURATION_TABLE()
-		instance.VendorGuid = efi_guid
-		instance.VendorTable = table
-		instance.saveTo(self.ql, ptr)
-
-		self.conf_table_array_nitems = max(idx + 1, nitems)
-
 class DxeContext(UefiContext):
-	@property
-	def system_table(self):
-		return EFI_SYSTEM_TABLE.loadFrom(self.ql, self.ql.loader.gST)
+	def __init__(self, ql: Qiling):
+		super().__init__(ql)
 
-	@property
-	def conf_table_array_ptr(self) -> int:
-		return self.system_table.ConfigurationTable.value
-
-	@property
-	def conf_table_array_nitems(self) -> int:
-		return self.system_table.NumberOfTableEntries
-
-	@conf_table_array_nitems.setter
-	def conf_table_array_nitems(self, value: int):
-		with EFI_SYSTEM_TABLE.bindTo(self.ql, self.ql.loader.gST) as gST:
-			gST.NumberOfTableEntries = value
+		self.conftable = DxeConfTable(ql)
 
 class SmmContext(UefiContext):
-	def __init__(self, ql):
-		super(SmmContext, self).__init__(ql)
+	def __init__(self, ql: Qiling):
+		super().__init__(ql)
+
+		self.conftable = SmmConfTable(ql)
 
 		# assume tseg is inaccessible to non-smm
 		self.tseg_open = False
@@ -113,19 +83,96 @@ class SmmContext(UefiContext):
 		# registered sw smi handlers
 		self.swsmi_handlers: Mapping[int, Tuple[int, Mapping]] = {}
 
-	@property
-	def system_table(self):
-		return EFI_SMM_SYSTEM_TABLE2.loadFrom(self.ql, self.ql.loader.gSmst)
+class UefiConfTable:
+	_struct_systbl: STRUCT
+	_fname_arrptr: str
+	_fname_nitems: str
+
+	def __init__(self, ql: Qiling):
+		self.ql = ql
+
+		self.__arrptr_off = self._struct_systbl.offsetof(self._fname_arrptr)
+		self.__nitems_off = self._struct_systbl.offsetof(self._fname_nitems)
 
 	@property
-	def conf_table_array_ptr(self) -> int:
-		return self.system_table.SmmConfigurationTable.value
+	@abstractmethod
+	def system_table(self) -> int:
+		pass
 
 	@property
-	def conf_table_array_nitems(self) -> int:
-		return self.system_table.NumberOfTableEntries
+	def baseptr(self) -> int:
+		addr = self.system_table + self.__arrptr_off
 
-	@conf_table_array_nitems.setter
-	def conf_table_array_nitems(self, value: int):
-		with EFI_SMM_SYSTEM_TABLE2.bindTo(self.ql, self.ql.loader.gSmst) as gSmst:
-			gSmst.NumberOfTableEntries = value
+		return utils.read_int64(self.ql, addr)
+
+	@property
+	def nitems(self) -> int:
+		addr = self.system_table + self.__nitems_off
+
+		return utils.read_int64(self.ql, addr)	# UINTN
+
+	@nitems.setter
+	def nitems(self, value: int):
+		addr = self.system_table + self.__nitems_off
+
+		utils.write_int64(self.ql, addr, value)
+
+	def install(self, guid: str, table: int):
+		ptr = self.find(guid)
+		append = ptr is None
+
+		if append:
+			ptr = self.baseptr + self.nitems * EFI_CONFIGURATION_TABLE.sizeof()
+			append = True
+
+		instance = EFI_CONFIGURATION_TABLE()
+		instance.VendorGuid = utils.str_to_guid(guid)
+		instance.VendorTable = table
+		instance.saveTo(self.ql, ptr)
+
+		if append:
+			self.nitems += 1
+
+	def find(self, guid: str) -> Optional[int]:
+		ptr = self.baseptr
+		nitems = self.nitems
+		efi_guid = utils.str_to_guid(guid)
+
+		for _ in range(nitems):
+			entry = EFI_CONFIGURATION_TABLE.loadFrom(self.ql, ptr)
+
+			if utils.CompareGuid(entry.VendorGuid, efi_guid):
+				return ptr
+
+			ptr += EFI_CONFIGURATION_TABLE.sizeof()
+
+		return None
+
+	def get_vendor_table(self, guid: str) -> Optional[int]:
+		ptr = self.find(guid)
+
+		if ptr is not None:
+			entry = EFI_CONFIGURATION_TABLE.loadFrom(self.ql, ptr)
+
+			return entry.VendorTable.value
+
+		# not found
+		return None
+
+class DxeConfTable(UefiConfTable):
+	_struct_systbl = EFI_SYSTEM_TABLE
+	_fname_arrptr = 'ConfigurationTable'
+	_fname_nitems = 'NumberOfTableEntries'
+
+	@property
+	def system_table(self) -> int:
+		return self.ql.loader.gST
+
+class SmmConfTable(UefiConfTable):
+	_struct_systbl = EFI_SMM_SYSTEM_TABLE2
+	_fname_arrptr = 'SmmConfigurationTable'
+	_fname_nitems = 'NumberOfTableEntries'
+
+	@property
+	def system_table(self) -> int:
+		return self.ql.loader.gSmst
