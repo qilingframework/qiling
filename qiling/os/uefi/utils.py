@@ -10,7 +10,6 @@ from typing import Optional, Mapping
 
 from qiling import Qiling
 from qiling.os.uefi.const import EFI_SUCCESS
-from qiling.os.uefi.UefiSpec import EFI_CONFIGURATION_TABLE
 from qiling.os.uefi.UefiBaseType import EFI_GUID
 
 def signal_event(ql: Qiling, event_id: int) -> None:
@@ -181,25 +180,10 @@ def install_configuration_table(context, key: str, table: Optional[int]):
 		context.ql.mem.write(table, data)
 		context.conf_table_data_next_ptr += len(data)
 
-	context.install_configuration_table(guid, table)
+	context.conftable.install(guid, table)
 
 def GetEfiConfigurationTable(context, guid: str) -> Optional[int]:
 	"""Find a configuration table by its GUID.
 	"""
 
-	ptr = context.conf_table_array_ptr
-	nitems = context.conf_table_array_nitems
-	efi_guid = str_to_guid(guid)
-
-	# find configuration table entry by guid. if found, ptr would be set to the matching entry
-	# in the array. if not, ptr would be set to one past end of array
-	for _ in range(nitems):
-		entry = EFI_CONFIGURATION_TABLE.loadFrom(context.ql, ptr)
-
-		if CompareGuid(entry.VendorGuid, efi_guid):
-			return entry.VendorTable
-
-		ptr += EFI_CONFIGURATION_TABLE.sizeof()
-
-	# not found
-	return None
+	return context.conftable.get_vendor_table(guid)

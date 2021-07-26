@@ -230,7 +230,7 @@ def hook_SmiHandlerRegister(ql: Qiling, address: int, params):
 def hook_SmiHandlerUnRegister(ql: Qiling, address: int, params):
 	return EFI_SUCCESS
 
-def initialize(ql: Qiling, gSmst: int):
+def initialize(ql: Qiling, context, gSmst: int):
 	ql.loader.gSmst = gSmst
 
 	gSmmRT = gSmst + EFI_SMM_SYSTEM_TABLE2.sizeof()	# smm runtime services
@@ -273,15 +273,8 @@ def initialize(ql: Qiling, gSmst: int):
 	instance = init_struct(ql, gSmst, descriptor)
 	instance.saveTo(ql, gSmst)
 
-	# configuration table data space; its location is calculated by leaving
-	# enough space for 100 configuration table entries. only a few entries are
-	# expected, so 100 should definitely suffice
-	conf_data = cfg + EFI_CONFIGURATION_TABLE.sizeof() * 100
-	ql.loader.smm_context.conf_table_data_ptr = conf_data
-	ql.loader.smm_context.conf_table_data_next_ptr = conf_data
-
-	install_configuration_table(ql.loader.smm_context, "HOB_LIST", None)
-	install_configuration_table(ql.loader.smm_context, "SMM_RUNTIME_SERVICES_TABLE", gSmmRT)
+	install_configuration_table(context, "HOB_LIST", None)
+	install_configuration_table(context, "SMM_RUNTIME_SERVICES_TABLE", gSmmRT)
 
 __all__ = [
 	'EFI_SMM_SYSTEM_TABLE2',

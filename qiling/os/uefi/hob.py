@@ -34,7 +34,7 @@ def GetHobList(ql: Qiling, context: UefiContext) -> int:
 
 	assert hoblist_vend is not None, 'hob list guid not found'
 
-	return ql.unpack64(hoblist_vend)
+	return hoblist_vend
 
 def CreateHob(ql: Qiling, context: UefiContext, hob) -> int:
 	"""Add a HOB to the end of the HOB list.
