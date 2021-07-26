@@ -11,7 +11,7 @@ class Peripheral:
         pass
 
     def readDoubleWord(self, offset):
-        pass
+        return b'\x00\x00\x00\x00'
 
     def writeDoubleWord(self, offset, value):
         pass
@@ -19,6 +19,7 @@ class Peripheral:
     def read(self, offset, size):
         if size == 4:
             return self.readDoubleWord(offset)
+        return b'\x00' * size
 
     def write(self, offset, size, value):
         if size == 4:

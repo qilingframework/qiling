@@ -48,7 +48,7 @@ class NVIC(ExceptionManager, Peripheral):
         self.pending[isr_number] = 1
 
     def handle_interupt(self, offset):
-        self.ql.log.debug('Enter Interrupt')
+        self.ql.log.debug('Enter into interrupt')
         address = self.ql.arch.boot_space + offset
         entry = self.ql.mem.read_ptr(address)
 
@@ -64,7 +64,7 @@ class NVIC(ExceptionManager, Peripheral):
         except UcError:
             pass
 
-        self.ql.log.debug('Exit Interrupt')
+        self.ql.log.debug('Exit from interrupt')
 
     def save_regs(self):
         for reg in self.reg_context:
@@ -173,7 +173,7 @@ class NVIC(ExceptionManager, Peripheral):
                 index = offset + i + self.IRQN_OFFSET
                 retval = retval << 8 | struct.unpack('B', struct.pack('b', self.priority[index]))[0]
 
-        return retval
+        return struct.pack('<I', retval)
 
     @property
     def name(self):
