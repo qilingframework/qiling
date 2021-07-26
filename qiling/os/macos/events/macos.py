@@ -269,10 +269,10 @@ class QlMacOSEvManager:
             remains = 0
             if len(params) <= 6:
                 for idx, p in enumerate(params):
-                    self.ql.uc.reg_write(reg_list[idx], p)
+                    self.ql.reg.write(reg_list[idx], p)
             else:
                 for idx, p in enumerate(params[:6]):
-                    self.ql.uc.reg_write(reg_list[idx], p)
+                    self.ql.reg.write(reg_list[idx], p)
                 remains = len(params) - 6
                 for i in range(remains):
                     self.ql.stack_push(params[6 + i])
@@ -645,9 +645,9 @@ class QlMacOSEvManager:
         sysent = self.ql.loader.kernel_local_symbols_detail[b"_sysent"]["n_value"]
         system_table = [sysent_t(self.ql, sysent + x * ctypes.sizeof(sysent_t)).loadFromMem() for x in range(nsyscall)]
 
-        self.ql.uc.reg_write(UC_X86_REG_RAX, sysnum)
+        self.ql.reg.write(UC_X86_REG_RAX, sysnum)
         reg_list = [UC_X86_REG_RDI, UC_X86_REG_RSI, UC_X86_REG_RDX, UC_X86_REG_R10, UC_X86_REG_R8, UC_X86_REG_R9]
         for idx, p in enumerate(params):
-            self.ql.uc.reg_write(reg_list[idx], p)
+            self.ql.reg.write(reg_list[idx], p)
         self.ql.os.savedrip=self.deadcode
         self.ql.run(begin=system_table[sysnum].sy_call.value)

@@ -67,20 +67,22 @@ class ELFTest(unittest.TestCase):
             params = ql.os.resolve_fcall_params(ELFTest.PARAMS_PUTS)
             print(f'puts("{params["s"]}")')
             reg = ql.reg.read("rax")
-            print("reg : 0x%x" % reg)
-            ql.reg.rax = reg
+            print("reg : %#x" % reg)
             self.set_api = reg
 
-        def write_onEnter(ql, arg1, arg2, arg3, *args):
-            print("enter write syscall!")
-            ql.reg.rsi = arg2 + 1
-            ql.reg.rdx = arg3 - 1
+        def write_onEnter(ql: Qiling, fd: int, str_ptr: int, str_len: int, *args):
             self.set_api_onenter = True
+            print("enter write syscall!")
 
-        def write_onexit(ql, arg1, arg2, arg3, *args):
-            print("exit write syscall!")
-            ql.reg.rax = arg3 + 1
+            # override syscall pc (ignored) and set of params with our own
+            return None, (fd, str_ptr + 1, str_len - 1)
+
+        def write_onexit(ql: Qiling, fd: int, str_ptr: int, str_len: int, retval: int, *args):
             self.set_api_onexit = True
+            print("exit write syscall!")
+
+            # override syscall return value with our own
+            return str_len + 1
 
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_args","1234test", "12345678", "bin/x8664_hello"],  "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG)
         ql.set_syscall(1, write_onEnter, QL_INTERCEPT.ENTER)
@@ -93,7 +95,7 @@ class ELFTest(unittest.TestCase):
         ql.run()
 
         self.assertEqual([0x1000,0x2000], ql.mem.search(b"\xFF\xFE\xFD\xFC\xFB\xFA\xFB\xFC\xFC\xFE\xFD"))
-        self.assertEqual(93824992233162, self.set_api)
+        self.assertEqual(0x5555555546ca, self.set_api)
         self.assertEqual(True, self.set_api_onexit)
         self.assertEqual(True, self.set_api_onenter)
 

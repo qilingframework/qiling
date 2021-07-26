@@ -424,7 +424,7 @@ class Process():
         shared_user_data = KUSER_SHARED_DATA()
 
         shared_user_data_len = self.align(ctypes.sizeof(KUSER_SHARED_DATA), 0x1000)
-        self.ql.uc.mem_map(KI_USER_SHARED_DATA, shared_user_data_len)
+        self.ql.mem.map(KI_USER_SHARED_DATA, shared_user_data_len)
         self.ql.mem.write(KI_USER_SHARED_DATA, bytes(shared_user_data))
 
 
@@ -568,10 +568,10 @@ class QlLoaderPE(QlLoader, Process):
                 super().init_ki_user_shared_data()
 
                 # setup IRQ Level in CR8 to PASSIVE_LEVEL (0)
-                self.ql.uc.reg_write(UC_X86_REG_CR8, 0)
+                self.ql.reg.write(UC_X86_REG_CR8, 0)
 
                 # setup CR4, some drivers may check this at initialized time
-                self.ql.uc.reg_write(UC_X86_REG_CR4, 0x6f8)
+                self.ql.reg.write(UC_X86_REG_CR4, 0x6f8)
 
                 self.ql.log.debug('Setting up DriverEntry args')
                 self.ql.stop_execution_pattern = 0xDEADC0DE

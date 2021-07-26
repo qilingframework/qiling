@@ -2,13 +2,17 @@ This file details the changelog of Qiling Framework.
 
 ------------------------------------
 [Version 1.2.5]: July 0th, 2021
--
+- Added QNX
+- Aded Dynamically executed QNX
+- Added more Posix syscall
+- Bugfix: GDB server on MIPS binary
+
 
 ------------------------------------
 [Version 1.2.4]: June 15th, 2021
 
 - Added custom engine extension
-- Added more posix syscall
+- Added more Posix syscall
 - Refactor: Posix syscall
 - Refactor: Memory management
 - Refactor: Heap management
