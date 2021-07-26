@@ -14,12 +14,13 @@ class DoubleWordPeripheralABC(ABC):
 
 
 class PeripheralRegisterABC(ABC):
-    def __init__(self, max_length, reset_value) -> None:
+    def __init__(self, ql, max_length, reset_value) -> None:
+        self.ql = ql
+        self.max_length = max_length
+        self.reset_value = reset_value        
+
         self.register_field = []
         self.tags = []
-
-        self.max_length = max_length
-        self.reset_value = reset_value
 
     def flag_field(self, offset: int, mode: enumerate):
         pass
@@ -35,4 +36,4 @@ class PeripheralRegisterABC(ABC):
 
 
     def read(self, addr: int, size: int) -> bytearray:
-        return self.ql.uc.mem_read(addr, size)
+        return self.ql.mem.read(addr, size)
