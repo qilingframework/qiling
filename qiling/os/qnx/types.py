@@ -41,6 +41,19 @@ sysconf_consts = {
 	# TODO: add 15 - 173
 }
 
+# lib/c/public/confname.h
+pathconf_names = {
+	1 : '_PC_LINK_MAX',
+	2 : '_PC_MAX_CANON',
+	3 : '_PC_MAX_INPUT',
+	4 : '_PC_NAME_MAX',
+	5 : '_PC_PATH_MAX',
+	6 : '_PC_PIPE_BUF',
+	7 : '_PC_NO_TRUNC',
+	8 : '_PC_VDISABLE',
+	9 : '_PC_CHOWN_RESTRICTED'
+}
+
 # lib/c/public/fcntl.h
 file_open_flags = {
 	'O_RDONLY'    : 0o0000000, # read-only

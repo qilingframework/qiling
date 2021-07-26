@@ -10,7 +10,7 @@ from qiling.os.filestruct import ql_file
 from qiling.os.mapper import QlFsMappedObject
 from qiling.os.qnx.const import IO_FLAG_MASK, PAGESIZE, S_IFMT
 from qiling.os.qnx.helpers import get_message_body, QnxConn
-from qiling.os.qnx.types import file_access, file_stats, file_types, file_open_flags, file_sharing_modes, io_connect_eflag, io_connect_ioflag, io_connect_subtypes, lseek_whence, mem_ctrl_subtypes, mmap_flags, sysconf_conditions, sysconf_consts, sysconf_names, sysconf_subtypes
+from qiling.os.qnx.types import file_access, file_stats, file_types, file_open_flags, file_sharing_modes, io_connect_eflag, io_connect_ioflag, io_connect_subtypes, lseek_whence, mem_ctrl_subtypes, mmap_flags, pathconf_names, sysconf_conditions, sysconf_consts, sysconf_names, sysconf_subtypes
 from qiling.os.posix.const_mapping import _constant_mapping, mmap_prot_mapping, ql_open_flag_mapping
 from qiling.os.posix.syscall import ql_syscall_close, ql_syscall_fstat, ql_syscall_lseek, ql_syscall_mmap, ql_syscall_open, ql_syscall_read, ql_syscall_write
 
@@ -55,7 +55,7 @@ def ql_qnx_msg_io_connect(ql, coid, smsg, sparts, rmsg, rparts, *args, **kw):
     ioflag -= 1
     #ioflag = ql_open_flag_mapping(ql, ioflag)
     # handle subtype
-    if subtype == 0: # == _IO_CONNECT_COMBINE
+    if subtype == 0 or subtype == 1: # == _IO_CONNECT_COMBINE or _IO_CONNECT_COMBINE_CLOSE
         # third iov_t if required for alignment
         if sparts > 2:
             iov_base = ql.unpack32(ql.mem.read(smsg + 16, 4))
@@ -80,8 +80,18 @@ def ql_qnx_msg_io_connect(ql, coid, smsg, sparts, rmsg, rparts, *args, **kw):
             #ql.os.fd[coid] = ql.os.fs_mapper.open_ql_file(path, ioflag, real_mode)
             ql.os.connections[coid].fd = ql_syscall_open(ql, ql.unpack32(ql.mem.read(smsg + 8, 4)), ioflag, real_mode)
             ql_syscall_fstat(ql, ql.os.connections[coid].fd, iov_base)
+        elif x_type == 0x108: # == _IO_PATHCONF
+            # struct _io_pathconf in lib/c/public/sys/iomsg.h
+            (x_type, x_combine_len, x_name, x_zero) = unpack("<HHhH", iov_msg)
+            if not x_name in pathconf_names:
+                raise NotImplementedError("unknown path_conf name")
+            ql.log.debug(f'msg_io_connect(_IO_CONNECT_COMBINE + _IO_PATHCONF, name = {pathconf_names[x_name]}, path = {path})')
+            if x_name == 5: # == _PC_NAME_MAX
+                return 1024
         else:
-            raise NotImplementedError(f'msg_io_connect(_IO_CONNECT_COMBINE) for type 0x{x_type:x} not implemented')
+            # TODO: Can we throw this exception here?
+            # raise NotImplementedError(f'msg_io_connect(_IO_CONNECT_COMBINE) for type 0x{x_type:x} not implemented')
+            ql.log.warn(f'msg_io_connect(_IO_CONNECT_COMBINE) for type 0x{x_type:x} not implemented')
     elif subtype == 2: # == _IO_CONNECT_OPEN
         ql.log.debug(f'open(path = {path}, openflags = 0x{ioflag:x}, openmode = 0x{real_mode:x})')
         ql.os.connections[coid].fd = ql_syscall_open(ql, ql.unpack32(ql.mem.read(smsg + 8, 4)), ioflag, real_mode)
