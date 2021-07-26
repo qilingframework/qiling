@@ -103,7 +103,7 @@ class NVIC(ExceptionManager, Peripheral):
 
         self.restore_regs()
 
-    def writeWord(self, offset, value):
+    def write_word(self, offset, value):
         def wrapper(list, value):
             def function(offset, index):
                 for i in range(32):
@@ -137,7 +137,7 @@ class NVIC(ExceptionManager, Peripheral):
                 prior = struct.unpack('b', struct.pack('B', (value >> i) & 255))[0]
                 self.priority[index] = prior
 
-    def readWord(self, offset):
+    def read_word(self, offset):
         def wrapper(list):
             def function(start):
                 value = 0

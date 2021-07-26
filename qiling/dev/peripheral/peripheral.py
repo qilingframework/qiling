@@ -10,20 +10,20 @@ class Peripheral:
     def step(self):
         pass
 
-    def readWord(self, offset):
+    def read_word(self, offset):
         return b'\x00\x00\x00\x00'
 
-    def writeWord(self, offset, value):
+    def write_word(self, offset, value):
         pass
 
     def read(self, offset, size):
         if size == 4:
-            return self.readWord(offset)
+            return self.read_word(offset)
         return b'\x00' * size
 
     def write(self, offset, size, value):
         if size == 4:
-            return self.writeWord(offset, value)
+            return self.write_word(offset, value)
 
     @property
     def name(self):
