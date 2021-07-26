@@ -28,4 +28,4 @@ class SysTickTimer(Peripheral):
 
     @property
     def name(self):
-        return 'SysTick'
+        return 'STK'

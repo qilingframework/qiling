@@ -68,8 +68,10 @@ class QlLoaderMCU(QlLoader):
         }
 
         self.perip_region = {
-            'NVIC': [(0xE000E100, 0xE000E4EF), (0xE000EF00, 0xE000EF03)],
-            'SysTick': [(0xE000E010, 0xE000E01F)]
+            'NVIC': [(0xE000E100, 0xE000E4F0), (0xE000EF00, 0xE000EF04)],
+            'STK': [(0xE000E010, 0xE000E020)],
+            'SCB': [(0xE000ED00, 0xE000ED40)],
+            'FPU': [(0xE000ED88, 0xE000ED8C), (0xE000EF30, 0xE000EF44)]
         }
 
     def reset(self):

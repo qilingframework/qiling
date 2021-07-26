@@ -7,6 +7,8 @@ from unicorn import *
 
 from qiling.const import *
 from qiling.dev.peripheral.systick_timer import SysTickTimer
+from qiling.dev.peripheral.float_unit import FloatingPointUnit
+from qiling.dev.peripheral.sysctrl_block import SystemControlBlock
 from qiling.dev.mcu.exceptions.nvic import NVIC
 
 from .arm import QlArchARM
@@ -18,6 +20,8 @@ class QlArchCORTEX_M(QlArchARM):
         ## Core Peripherals
         self.nvic = NVIC(self.ql)
         self.systick = SysTickTimer(ql)
+        self.sysctrl_block = SystemControlBlock(ql)
+        self.float_unit = FloatingPointUnit(ql)
 
         ## Memory Model
         self.BOOT = [0, 0]
@@ -29,6 +33,8 @@ class QlArchCORTEX_M(QlArchARM):
         self.peripherals = [
             self.nvic,
             self.systick,
+            self.sysctrl_block,
+            self.float_unit,
         ]
 
         def hook_perip_mem_write(ql, access, addr, size, value):
@@ -43,7 +49,7 @@ class QlArchCORTEX_M(QlArchARM):
             perip = self.search_peripheral(addr, addr+size)
             if perip:
                 base = self.perip_region[perip.name][0][0]
-                perip.read(addr - base, size)
+                ql.mem.write(addr, perip.read(addr - base, size))
             else:            
                 ql.log.warning('Read  non-mapped peripheral (0x%08x)' % (addr))
 
