@@ -20,6 +20,13 @@ class MCUTest(unittest.TestCase):
 
         del ql
 
+    def test_mcu_usart_output_stm32f411(self):
+        ql = Qiling(["../examples/rootfs/stm32f411/hex/hello_usart.hex"],                    
+                    archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.OFF)
+        ql.run(count=5000)
+
+        del ql
+
 if __name__ == "__main__":
     unittest.main()
 
