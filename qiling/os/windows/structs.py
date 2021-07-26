@@ -2370,7 +2370,7 @@ class Win32FindData(WindowsStruct):
                 self.creator_type, self.finder_flags
             ])
 
-    def __init_(self, 
+    def __init__(self, 
                 ql, 
                 file_attributes=None, 
                 creation_time=None, 
