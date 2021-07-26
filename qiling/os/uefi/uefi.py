@@ -62,9 +62,9 @@ class QlOsUefi(QlOs):
 			return super(QlOsUefi, self).process_fcall_params([(None, '', v)])[0][1]
 
 		ahandlers: Mapping[Any, Callable[[Any], str]] = {
-			STRING		: lambda v: QlOsUtils.stringify(v),
-			WSTRING		: lambda v: f'L{QlOsUtils.stringify(v)}',
-			GUID		: lambda v: guids_db.get(v.upper(), v)
+			STRING	: lambda v: QlOsUtils.stringify(v),
+			WSTRING	: lambda v: f'L{QlOsUtils.stringify(v)}',
+			GUID	: lambda v: guids_db.get(v.upper(), v)
 		}
 
 		return tuple((aname, ahandlers.get(atype, fallback)(avalue)) for atype, aname, avalue in targs)

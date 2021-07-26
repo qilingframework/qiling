@@ -40,13 +40,13 @@ from qiling.os.uefi.UefiSpec import EFI_SYSTEM_TABLE, EFI_BOOT_SERVICES, EFI_RUN
 #		| VendorTable*         -> (3) |
 #		+-----------------------------+
 #
-#		... sizeof EFI_CONFIGURATION_TABLE x 98
+#		... the remainder of the chunk may be used for additional EFI_CONFIGURATION_TABLE entries
+
+# dynamically allocated (context.conf_table_data_ptr):
 #
 #	(5)	+-- VOID* --------------------+
 #		| ...                         |
 #		+-----------------------------+
-#
-#		... the remainder of the 256 KiB chunk may be used for more conf table data
 
 def initialize(ql: Qiling, context: UefiContext, gST: int):
 	ql.loader.gST = gST

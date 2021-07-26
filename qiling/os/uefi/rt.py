@@ -184,7 +184,7 @@ def hook_QueryCapsuleCapabilities(ql: Qiling, address: int, params):
 def hook_QueryVariableInfo(ql: Qiling, address: int, params):
 	return EFI_SUCCESS
 
-def initialize(ql, gRT : int):
+def initialize(ql: Qiling, gRT: int):
 	descriptor = {
 		'struct' : EFI_RUNTIME_SERVICES,
 		'fields' : (
