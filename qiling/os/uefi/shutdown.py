@@ -19,7 +19,7 @@ def hook_EndOfExecution(ql: Qiling):
     if ql.loader.modules:
         ql.loader.execute_next_module()
     else:
-        if ql.loader.unload_modules():
+        if ql.loader.unload_modules(ql.loader.smm_context) or ql.loader.unload_modules(ql.loader.dxe_context):
             return
 
         ql.log.info(f'No more modules to run')

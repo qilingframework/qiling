@@ -1,23 +1,20 @@
-[OS64]
-heap_address	= 0x78000000
-heap_size		= 0x02000000
-stack_address	= 0x77800000
-stack_size		= 0x00800000
+[DXE]
+heap_address	= 0x04000000
+heap_size		= 0x01000000
+stack_address	= 0x05000000
+stack_size		= 0x00080000
 image_address 	= 0x00100000
 
-[OS32]
-heap_address	= 0x78000000
-heap_size		= 0x02000000
-stack_address	= 0x77800000
-stack_size		= 0x00800000
-image_address 	= 0x00100000
-
-[SMRAM]
-heap_address	= 0x7A000000
-heap_size		= 0x02000000
-# stack_address	= 0x77800000
-# stack_size	= 0x00800000
-# image_address = 0x77000000
+[SMM]
+smram_base		= 0x70000000
+smram_size		= 0x08000000
+heap_address	= 0x77000000
+heap_size		= 0x00800000
+# allocated somewhere in smram; address stored in gSmmInitStack
+stack_address	= 0x77ff0000
+# PcdCpuSmmStackSize
+stack_size		= 0x00010000
+image_address	= 0x70100000
 
 [HOB_LIST]
 # EFI_GLOBAL_VARIABLE

@@ -3,7 +3,7 @@ from typing import Any, Mapping, Optional, Tuple
 
 from qiling import Qiling
 from qiling.os.memory import QlMemoryHeap
-from qiling.os.uefi.ProcessorBind import STRUCT
+from qiling.os.uefi.ProcessorBind import STRUCT, CPU_STACK_ALIGNMENT
 from qiling.os.uefi.UefiSpec import EFI_CONFIGURATION_TABLE, EFI_SYSTEM_TABLE
 from qiling.os.uefi.smst import EFI_SMM_SYSTEM_TABLE2
 from qiling.os.uefi import utils
@@ -11,8 +11,11 @@ from qiling.os.uefi import utils
 class UefiContext(ABC):
 	def __init__(self, ql: Qiling):
 		self.ql = ql
-		self.heap = None
+		self.heap: QlMemoryHeap
+		self.top_of_stack: int
 		self.protocols = {}
+		self.loaded_image_protocol_modules = []
+		self.next_image_base: int
 
 		# These members must be initialized before attempting to install a configuration table.
 		self.conf_table_data_ptr = 0
@@ -20,11 +23,20 @@ class UefiContext(ABC):
 
 		self.conftable: UefiConfTable
 
+	# TODO: implement save state
+	def save(self) -> Mapping[str, Any]:
+		return {}
+
+	# TODO: implement restore state
+	def restore(self, saved_state: Mapping[str, Any]):
+		pass
+
 	def init_heap(self, base: int, size: int):
 		self.heap = QlMemoryHeap(self.ql, base, base + size)
 
 	def init_stack(self, base: int, size: int):
-		self.ql.mem.map(base, size)
+		self.ql.mem.map(base, size, info='[stack]')
+		self.top_of_stack = (base + size - 1) & ~(CPU_STACK_ALIGNMENT - 1)
 
 	def install_protocol(self, proto_desc: Mapping, handle, address: int = None, from_hook: bool = False):
 		guid = proto_desc['guid']
@@ -73,6 +85,9 @@ class SmmContext(UefiContext):
 		super().__init__(ql)
 
 		self.conftable = SmmConfTable(ql)
+
+		self.smram_base: int
+		self.smram_size: int
 
 		# assume tseg is inaccessible to non-smm
 		self.tseg_open = False
