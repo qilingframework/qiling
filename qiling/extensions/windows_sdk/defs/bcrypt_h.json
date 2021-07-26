@@ -1,8 +1,0 @@
-{
-    "BCryptUnregisterConfigChangeNotify": [
-        {
-            "name": "hEvent",
-            "type": "HANDLE"
-        }
-    ]
-}
