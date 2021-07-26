@@ -7,8 +7,10 @@ import struct
 from unicorn.unicorn import UcError
 
 from .manager import ExceptionManager
+from qiling.dev.peripheral.peripheral import Peripheral
 
-class NVIC(ExceptionManager):    
+
+class NVIC(ExceptionManager, Peripheral):
     def __init__(self, ql):
         super().__init__(ql)
         
@@ -172,3 +174,7 @@ class NVIC(ExceptionManager):
                 retval = retval << 8 | struct.unpack('B', struct.pack('b', self.priority[index]))[0]
 
         return retval
+
+    @property
+    def name(self):
+        return 'nvic'

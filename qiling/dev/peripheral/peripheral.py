@@ -8,4 +8,14 @@ class Peripheral:
         self.ql = ql
 
     def step(self):
-        raise NotImplementedError
+        pass
+
+    def readDoubleWord(self, offset):
+        pass
+
+    def writeDoubleWord(self, offset, value):
+        pass
+
+    @property
+    def name(self):
+        return 'unknown'

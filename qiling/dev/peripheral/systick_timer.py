@@ -25,3 +25,7 @@ class SysTickTimer(Peripheral):
             self.stk_val = self.stk_load
         
         self.stk_val -= 1
+
+    @property
+    def name(self):
+        return 'SysTick'
