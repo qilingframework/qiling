@@ -15,15 +15,15 @@ class MCUTest(unittest.TestCase):
         ql = Qiling(["../examples/rootfs/stm32f411/hex/rand_blink.hex"],                    
                     archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DISASM)
 
-        # Set verbose=QL_VERBOSE.OFF to find warning
+        # Set verbose=QL_VERBOSE.DEFAULT to find warning
         ql.run(count=1000)
 
         del ql
 
     def test_mcu_usart_output_stm32f411(self):
         ql = Qiling(["../examples/rootfs/stm32f411/hex/hello_usart.hex"],                    
-                    archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.OFF)
-        ql.run(count=5000)
+                    archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DEFAULT)
+        ql.run(count=2000)
 
         del ql
 
