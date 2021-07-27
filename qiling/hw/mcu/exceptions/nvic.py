@@ -7,7 +7,7 @@ import struct
 from unicorn.unicorn import UcError
 
 from .manager import ExceptionManager
-from qiling.dev.peripheral.peripheral import Peripheral
+from qiling.hw.peripheral import Peripheral
 
 
 class NVIC(ExceptionManager, Peripheral):

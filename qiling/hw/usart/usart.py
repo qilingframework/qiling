@@ -4,7 +4,7 @@
 #
 
 import struct
-from qiling.dev.peripheral.peripheral import Peripheral
+from qiling.hw.peripheral import Peripheral
 
 class USART(Peripheral):
     SR = 0x00

@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from qiling.dev.peripheral.peripheral import Peripheral
+from qiling.hw.peripheral import Peripheral
 
 
 class STM32F4Rcc(Peripheral):

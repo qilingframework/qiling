@@ -6,10 +6,10 @@
 from unicorn import *
 
 from qiling.const import *
-from qiling.dev.peripheral.systick_timer import SysTickTimer
-from qiling.dev.peripheral.float_unit import FloatingPointUnit
-from qiling.dev.peripheral.sysctrl_block import SystemControlBlock
-from qiling.dev.mcu.exceptions.nvic import NVIC
+from qiling.hw.systick_timer import SysTickTimer
+from qiling.hw.float_unit import FloatingPointUnit
+from qiling.hw.sysctrl_block import SystemControlBlock
+from qiling.hw.mcu.exceptions.nvic import NVIC
 
 from .arm import QlArchARM
 

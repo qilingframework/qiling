@@ -8,8 +8,8 @@ import struct
 
 from qiling.const import *
 from qiling.core import Qiling
-from qiling.dev.peripheral.usart.usart import USART
-from qiling.dev.peripheral.misc.stm32f4_rcc import STM32F4Rcc
+from qiling.hw.usart.usart import USART
+from qiling.hw.misc.stm32f4_rcc import STM32F4Rcc
 
 from .loader import QlLoader
 
