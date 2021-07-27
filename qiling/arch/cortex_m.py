@@ -43,7 +43,7 @@ class QlArchCORTEX_M(QlArchARM):
                 base = self.perip_region[perip.name][0][0]
                 perip.write(addr - base, size, value)
             else:            
-                ql.log.warning('Write non-mapped peripheral (0x%08x)' % (addr))
+                ql.log.warning('Write non-mapped peripheral (*0x%08x = 0x%08x)' % (addr, value))
         
         def hook_perip_mem_read(ql, access, addr, size, value):
             perip = self.search_peripheral(addr, addr+size)
@@ -51,7 +51,7 @@ class QlArchCORTEX_M(QlArchARM):
                 base = self.perip_region[perip.name][0][0]
                 ql.mem.write(addr, perip.read(addr - base, size))
             else:            
-                ql.log.warning('Read  non-mapped peripheral (0x%08x)' % (addr))
+                ql.log.warning('Read non-mapped peripheral (0x%08x)' % (addr))
 
         self.perip_read_hook = hook_perip_mem_read
         self.perip_write_hook = hook_perip_mem_write        

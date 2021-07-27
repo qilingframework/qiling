@@ -8,6 +8,7 @@ import struct
 
 from qiling.const import *
 from qiling.core import Qiling
+from qiling.dev.peripheral.usart.usart import USART
 from qiling.dev.peripheral.misc.stm32f4_rcc import STM32F4Rcc
 
 from .loader import QlLoader
@@ -73,7 +74,8 @@ class QlLoaderMCU(QlLoader):
             'STK': [(0xE000E010, 0xE000E020)],
             'SCB': [(0xE000ED00, 0xE000ED40)],
             'FPU': [(0xE000ED88, 0xE000ED8C), (0xE000EF30, 0xE000EF44)],
-            'RCC': [(0x40023800, 0x40023C00)]
+            'RCC': [(0x40023800, 0x40023C00)],
+            'USART': [(0x40004400, 0x40004800)]
         }
 
     def reset(self):
@@ -107,5 +109,6 @@ class QlLoaderMCU(QlLoader):
         self.ql.hook_mem_write(self.ql.arch.perip_write_hook, begin=PERIP_BEGIN, end=PERIP_END)
 
         self.ql.arch.peripherals.append(STM32F4Rcc(self.ql))
+        self.ql.arch.peripherals.append(USART(self.ql))
         
         self.reset()        
