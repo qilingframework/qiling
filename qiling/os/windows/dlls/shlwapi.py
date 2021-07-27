@@ -3,84 +3,89 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import struct
+from qiling import Qiling
+from qiling.os.windows.api import *
 from qiling.os.windows.fncc import *
-from qiling.os.const import *
-from qiling.os.windows.utils import *
-from qiling.os.windows.const import *
-
-
-dllname = 'shlwapi_dll'
-
+from qiling.os.windows.utils import cmp
 
 # LPCSTR PathFindExtensionA(
-#   LPWSTR pszPath
-# );
-@winsdkapi(cc=STDCALL, dllname=dllname)
-def hook_PathFindExtensionA(ql, address, params):
-    # Must return the address of the dot
-    pointer = params["pszPath"]
-    pathname = ql.os.utils.read_wstring(pointer)
-    params["pszPath"] = pathname
-    size_before_dot = len(pathname.split(".")[0])
-    pointer_dot = pointer + size_before_dot
-    return pointer_dot
-
-
-# LPCSTR PathFindExtensionW(
 #   LPCSTR pszPath
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname)
-def hook_PathFindExtensionW(ql, address, params):
-    # Must return the address of the dot
+@winsdkapi(cc=STDCALL, params={
+    'pszPath' : POINTER # LPCSTR
+})
+def hook_PathFindExtensionA(ql: Qiling, address: int, params):
+    pointer = params["pszPath"]
+    pathname = ql.os.utils.read_cstring(pointer)
+    #params["pszPath"] = pathname
+
+    # return a pointer to the dot, or null-terminator if there is no dot
+    return pointer + len(pathname.rsplit('.', 1)[0])
+
+# LPCSTR PathFindExtensionW(
+#   LPWSTR pszPath
+# );
+@winsdkapi(cc=STDCALL, params={
+    'pszPath' : POINTER # LPCWSTR
+})
+def hook_PathFindExtensionW(ql: Qiling, address: int, params):
     pointer = params["pszPath"]
     pathname = ql.os.utils.read_wstring(pointer)
-    params["pszPath"] = pathname
-    size_before_dot = len(pathname.split(".")[0])
-    pointer_dot = pointer + size_before_dot
-    return pointer_dot
+    #params["pszPath"] = pathname
 
+    # return a pointer to the dot, or null-terminator if there is no dot
+    # TODO: do we need to multiply the offset by sizeof wchar?
+    return pointer + len(pathname.rsplit('.', 1)[0])
 
 # LPCSTR PathFindFileNameA(
 #   LPCSTR pszPath
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname)
-def hook_PathFindFileNameA(ql, address, params):
-    # Must return the address of the start of the filename
+@winsdkapi(cc=STDCALL, params={
+    'pszPath' : POINTER # LPCSTR
+})
+def hook_PathFindFileNameA(ql: Qiling, address: int, params):
     pointer = params["pszPath"]
     pathname = ql.os.utils.read_cstring(pointer)
-    params["pszPath"] = pathname
-    size_before_last_slash = len("".join(pathname.split("\\")[:-1])) + pathname.count("\\")
-    pointer_start = pointer + size_before_last_slash
-    return pointer
+    #params["pszPath"] = pathname
 
+    # return a pointer to the filename, or to the path if there is dir prefix
+    return pointer + len(f'\\{pathname}'.rsplit('\\', 1)[0])
 
 # LPCSTR PathFindFileNameW(
 #   LPWSTR pszPath
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname)
-def hook_PathFindFileNameW(ql, address, params):
-    # Must return the address of the start of the filename
+@winsdkapi(cc=STDCALL, params={
+    'pszPath' : LPCWSTR
+})
+def hook_PathFindFileNameW(ql: Qiling, address: int, params):
     pointer = params["pszPath"]
     pathname = ql.os.utils.read_wstring(pointer)
-    params["pszPath"] = pathname
-    size_before_last_slash = len("".join(pathname.split("\\")[:-1])) + pathname.count("\\")
-    pointer_start = pointer + size_before_last_slash
-    return pointer
+    #params["pszPath"] = pathname
 
+    # return a pointer to the filename, or to the path if there is dir prefix
+    # TODO: do we need to multiply the offset by sizeof wchar?
+    return pointer + len(f'\\{pathname}'.rsplit('\\', 1)[0])
 
 # int StrCmpW(
 #   PCWSTR psz1,
 #   PCWSTR psz2
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname)
-def hook_StrCmpW(ql, address, params):
-    # Copy String2 into String
+@winsdkapi(cc=STDCALL, params={
+    'psz1' : PCWSTR,
+    'psz2' : PCWSTR
+})
+def hook_StrCmpW(ql: Qiling, address: int, params):
     str1 = params["psz1"]
     str2 = params["psz2"]
-    if str(str1) == str(str2):
-        return 0
-    elif str(str1) > str(str2):
-        return 1
-    else:
-        return -1
+
+    return cmp(str1, str2)
+
+@winsdkapi(cc=STDCALL, params={
+    'psz1' : PCWSTR,
+    'psz2' : PCWSTR
+})
+def hook_StrCmpIW(ql: Qiling, address: int, params):
+    str1 = params["psz1"].lower()
+    str2 = params["psz2"].lower()
+
+    return cmp(str1, str2)

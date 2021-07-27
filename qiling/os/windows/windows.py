@@ -127,10 +127,10 @@ class QlOsWindows(QlOs):
             if not api_func:
                 api_func = getattr(api, f'hook_{api_name}', None)
 
+            if api_func:
                 self.syscall_count.setdefault(api_name, 0)
                 self.syscall_count[api_name] += 1
 
-            if api_func:
                 try:
                     api_func(ql, address, api_name)
                 except Exception as ex:
