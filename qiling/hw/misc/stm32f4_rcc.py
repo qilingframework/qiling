@@ -5,7 +5,6 @@
 
 from qiling.hw.peripheral import Peripheral
 
-
 class STM32F4Rcc(Peripheral):
     def __init__(self, ql):
         super().__init__(ql)

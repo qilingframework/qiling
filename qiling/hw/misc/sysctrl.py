@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from .peripheral import Peripheral
+from qiling.hw.peripheral import Peripheral
 
 class SystemControlBlock(Peripheral):
     def __init__(self, ql):

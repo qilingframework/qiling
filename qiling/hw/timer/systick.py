@@ -3,9 +3,9 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from .peripheral import Peripheral
+from qiling.hw.peripheral import Peripheral
 
-class SysTickTimer(Peripheral):
+class SysTick(Peripheral):
     STK_CTRL  = 0
     STK_LOAD  = 1
     STK_VAL   = 2

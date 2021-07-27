@@ -6,11 +6,10 @@
 import struct
 from unicorn.unicorn import UcError
 
-from .manager import ExceptionManager
 from qiling.hw.peripheral import Peripheral
 
 
-class NVIC(ExceptionManager, Peripheral):
+class NVIC(Peripheral):
     def __init__(self, ql):
         super().__init__(ql)
         

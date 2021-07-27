@@ -6,10 +6,9 @@
 from unicorn import *
 
 from qiling.const import *
-from qiling.hw.systick_timer import SysTickTimer
-from qiling.hw.float_unit import FloatingPointUnit
-from qiling.hw.sysctrl_block import SystemControlBlock
-from qiling.hw.mcu.exceptions.nvic import NVIC
+from qiling.hw.irqc.nvic import NVIC
+from qiling.hw.timer.systick import SysTick
+from qiling.hw.misc.sysctrl import SystemControlBlock
 
 from .arm import QlArchARM
 
@@ -19,9 +18,8 @@ class QlArchCORTEX_M(QlArchARM):
 
         ## Core Peripherals
         self.nvic = NVIC(self.ql)
-        self.systick = SysTickTimer(ql)
-        self.sysctrl_block = SystemControlBlock(ql)
-        self.float_unit = FloatingPointUnit(ql)
+        self.systick = SysTick(ql)
+        self.sysctrl_block = SystemControlBlock(ql)        
 
         ## Memory Model
         self.BOOT = [0, 0]
@@ -33,8 +31,7 @@ class QlArchCORTEX_M(QlArchARM):
         self.peripherals = [
             self.nvic,
             self.systick,
-            self.sysctrl_block,
-            self.float_unit,
+            self.sysctrl_block,            
         ]
 
         def hook_perip_mem_write(ql, access, addr, size, value):
