@@ -88,13 +88,13 @@ jobs:
               wget https://github.com/qilingframework/rootfs/archive/refs/heads/master.zip
               unzip master.zip && mv rootfs-master rootfs
               cd rootfs/x86_linux/kernel && unzip -P infected m0hamed_rootkit.ko.zip
-              cd ../../../../tests && ./test_elf.sh
+              cd ../../../../tests && ./test_onlinux.sh
         elif [ ${{ matrix.os }} == 'ubuntu-20.04' ]; then
               cd examples
               rm -rf rootfs
               wget https://github.com/qilingframework/rootfs/archive/refs/heads/master.zip
               unzip master.zip && mv rootfs-master rootfs
-              docker run -it --rm -v ${GITHUB_WORKSPACE}:/qiling qilingframework/qiling:dev bash -c "pip3 install . && cd examples/rootfs/x86_linux/kernel && unzip -P infected m0hamed_rootkit.ko.zip && cd ../../../../tests && ./test_elf.sh"
+              docker run -it --rm -v ${GITHUB_WORKSPACE}:/qiling qilingframework/qiling:dev bash -c "pip3 install . && cd examples/rootfs/x86_linux/kernel && unzip -P infected m0hamed_rootkit.ko.zip && cd ../../../../tests && ./test_onlinux.sh"
         else
               pip3 install setuptools wheel
               pip3 install .
@@ -103,7 +103,7 @@ jobs:
               wget https://github.com/qilingframework/rootfs/archive/refs/heads/master.zip
               unzip master.zip && mv rootfs-master rootfs
               cd rootfs/x86_linux/kernel && unzip -P infected m0hamed_rootkit.ko.zip
-              cd ../../../../tests && ./test_elf.sh
+              cd ../../../../tests && ./test_onlinux.sh
         fi
 
 
