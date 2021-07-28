@@ -22,7 +22,7 @@ class QlOs:
     def __init__(self, ql: Qiling, resolvers: Mapping[Any, Resolver] = {}):
         self.ql = ql
         self.utils = QlOsUtils(ql)
-        self.fcall: Optional[QlFunctionCall] = None
+        self.fcall: QlFunctionCall
         self.fs_mapper = QlFsMapper(ql)
         self.child_processes = False
         self.thread_management = None
