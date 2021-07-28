@@ -6,7 +6,7 @@
 from unicorn import *
 
 from qiling.const import *
-from qiling.hw.irqc.nvic import NVIC
+from qiling.hw.intc.nvic import NVIC
 from qiling.hw.timer.systick import SysTick
 from qiling.hw.misc.sysctrl import SystemControlBlock
 
