@@ -26,7 +26,7 @@ def ql_syscall_munmap(ql, munmap_addr, munmap_len, *args, **kw):
     mapped_fd = [fd for fd in ql.os.fd if fd != 0 and isinstance(fd, ql_file) and fd._is_map_shared and not (fd.name.endswith(".so") or fd.name.endswith(".dylib"))]
 
     if len(mapped_fd):
-        all_mem_info = [_mem_info for _, _, _, _mem_info in ql.mem.map_info if _mem_info not in ("[mapped]", "[stack]", "[hook_mem]")]
+        all_mem_info = [_mem_info for _, _, _, _mem_info,_ in ql.mem.map_info if _mem_info not in ("[mapped]", "[stack]", "[hook_mem]")]
 
         for _fd in mapped_fd:
             if _fd.name in [each.split()[-1] for each in all_mem_info]:
