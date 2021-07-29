@@ -6,6 +6,7 @@
 class Peripheral:
     def __init__(self, ql):
         self.ql = ql
+        self._tag = ''
 
     def step(self):
         pass
@@ -26,5 +27,9 @@ class Peripheral:
             return self.write_word(offset, value)
 
     @property
-    def name(self):
-        return 'unknown'
+    def tag(self):
+        return self._tag
+
+    @tag.setter
+    def tag(self, value):
+        self._tag = value

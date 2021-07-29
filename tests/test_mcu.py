@@ -23,6 +23,9 @@ class MCUTest(unittest.TestCase):
     def test_mcu_usart_output_stm32f411(self):
         ql = Qiling(["../examples/rootfs/stm32f411/hex/hello_usart.hex"],                    
                     archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DEFAULT)
+        
+        ql.hw.create_hardware('char', 'usart', 'usart2')
+        ql.hw.create_hardware('misc', 'stm32f4_rcc', 'rcc')
         ql.run(count=2000)
 
         del ql

@@ -11,6 +11,3 @@ class SystemControlBlock(Peripheral):
 
     ## TODO: Implement specific details
 
-    @property
-    def name(self):
-        return 'SCB'

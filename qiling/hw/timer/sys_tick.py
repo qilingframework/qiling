@@ -21,11 +21,7 @@ class SysTick(Peripheral):
 
     def step(self):
         if self.stk_val == 0:
-            self.ql.arch.nvic.send_interrupt(15)
+            self.ql.hw.nvic.send_interrupt(15)
             self.stk_val = self.stk_load
         
         self.stk_val -= 1
-
-    @property
-    def name(self):
-        return 'STK'

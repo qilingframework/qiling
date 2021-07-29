@@ -9,7 +9,7 @@ from unicorn.unicorn import UcError
 from qiling.hw.peripheral import Peripheral
 
 
-class NVIC(Peripheral):
+class Nvic(Peripheral):
     def __init__(self, ql):
         super().__init__(ql)
         
@@ -173,7 +173,3 @@ class NVIC(Peripheral):
                 retval = retval << 8 | struct.unpack('B', struct.pack('b', self.priority[index]))[0]
 
         return struct.pack('<I', retval)
-
-    @property
-    def name(self):
-        return 'NVIC'
