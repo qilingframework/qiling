@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from .arch.arch import QlArch
     from .os.os import QlOs
     from .os.memory import QlMemoryManager
+    from .hw.hw import QlHwManager
     from .loader.loader import QlLoader
 
 from .const import QL_ARCH_ENDIAN, QL_ENDIAN, QL_ARCH_NONOS, QL_OS, QL_VERBOSE, QL_CUSTOM_ENGINE
@@ -210,6 +211,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         # Components #
         ##############
         if not self._custom_engine:
+            self._hw  = component_setup("hw", "hw", self)
             self._mem = component_setup("os", "memory", self)
             self._reg = component_setup("arch", "register", self)
 
@@ -251,6 +253,15 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             Example: ql.reg.eax = 1
         """
         return self._reg
+
+    @property
+    def hw(self) -> "QlHwManager":
+        """ Qiling hardware manager.
+
+            Example: 
+        """
+        return self._hw
+
 
     @property
     def arch(self) -> "QlArch":
