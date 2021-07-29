@@ -243,8 +243,10 @@ Contact us at email info@qiling.io, or via Twitter [@qiling_io](https://twitter.
 - cq674350529
 - elicn
 - bkerler (viperbjk)
+- madprogrammer
+- danielmoos
 
 ---
 
 #### This is an awesome project! Can I donate?
-Yes, details please refer to [Cardano Stake Pool](https://www.qiling.io/stake/) or [SWAG](https://www.qiling.io/swag/)
+Yes, checkout [SWAG](https://www.qiling.io/swag/)
