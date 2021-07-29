@@ -67,25 +67,13 @@ class Nvic(Peripheral):
 
     def save_regs(self):
         for reg in self.reg_context:
-            if reg == 'xpsr':
-                ipsr = self.ql.reg.read('ipsr')
-                apsr = self.ql.reg.read('apsr')
-                epsr = 0x01000000
-                val = ipsr | apsr | epsr
-            else:
-                val = self.ql.reg.read(reg)
-
+            val = self.ql.reg.read(reg)
             self.ql.arch.stack_push(val)
 
     def restore_regs(self):
         for reg in reversed(self.reg_context):
             val = self.ql.arch.stack_pop()
-            if reg == 'xpsr':
-                self.ql.reg.write('ipsr', val & 0x000001ff)
-                self.ql.reg.write('apsr', val & 0xf80f0000)
-                # self.ql.reg.write('epsr', val & 0x0600fc00)
-            else:
-                self.ql.reg.write(reg, val)
+            self.ql.reg.write(reg, val)
 
     def interrupt(self):
         self.save_regs()
