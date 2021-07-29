@@ -131,6 +131,32 @@ class ELFTest(unittest.TestCase):
         del ql         
 
 
+    def test_elf_linux_x8664_flex_api(self):
+        opened = []
+
+        def onenter_fopen(ql: Qiling):
+            params = ql.os.resolve_fcall_params({
+                'filename' : STRING,
+                'mode'     : STRING
+            })
+
+            # log opened filenames
+            opened.append(params['filename'])
+
+        def hook_main(ql: Qiling):
+            # set up fopen hook when reaching main
+            ql.set_api('fopen', onenter_fopen, QL_INTERCEPT.ENTER)
+
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_fetch_urandom"],  "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEFAULT)
+
+        ba = ql.loader.images[0].base
+        ql.hook_address(hook_main, ba + 0x10e0)
+        ql.run()
+
+        # test whether we interpected opening urandom
+        self.assertListEqual(opened, [r'/dev/urandom'])
+
+
     def test_elf_linux_x8664_static(self):
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_hello_static"], "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG)
         ql.run()
