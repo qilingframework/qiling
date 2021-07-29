@@ -4,7 +4,7 @@
 #
 
 import os, re
-from typing import Any, List, Mapping, MutableSequence, Optional, Sequence, Tuple
+from typing import Any, Callable, ClassVar, List, MutableSequence, Optional, Sequence, Tuple
 
 from unicorn import UC_PROT_NONE, UC_PROT_READ, UC_PROT_WRITE, UC_PROT_EXEC, UC_PROT_ALL
 
@@ -23,6 +23,7 @@ class QlMemoryManager:
     def __init__(self, ql: Qiling):
         self.ql = ql
         self.map_info: MutableSequence[MapInfoEntry] = []
+        self.mmio_cbs = {}
 
         bit_stuff = {
             64 : (1 << 64) - 1,
@@ -71,7 +72,7 @@ class QlMemoryManager:
 
         self.__write_string(addr, value, encoding)
 
-    def add_mapinfo(self, mem_s: int, mem_e: int, mem_p: int, mem_info: str):
+    def add_mapinfo(self, mem_s: int, mem_e: int, mem_p: int, mem_info: str, is_mmio=False):
         """Add a new memory range to map.
 
         Args:
@@ -81,45 +82,8 @@ class QlMemoryManager:
             mem_info: map entry label
         """
 
-        if not self.map_info:
-            self.map_info.append((mem_s, mem_e, mem_p, mem_info))
-        else:
-            tmp_map_info: MutableSequence[MapInfoEntry] = []
-            inserted = False
-
-            for s, e, p, info in self.map_info:
-                if e <= mem_s:
-                    tmp_map_info.append((s, e, p, info))
-                    continue
-
-                if s >= mem_e:
-                    if not inserted:
-                        inserted = True
-                        tmp_map_info.append((mem_s, mem_e, mem_p, mem_info))
-
-                    tmp_map_info.append((s, e, p, info))
-                    continue
-
-                if s < mem_s:
-                    tmp_map_info.append((s, mem_s, p, info))
-
-                if s == mem_s:
-                    pass
-
-                if not inserted:
-                    inserted = True
-                    tmp_map_info.append((mem_s, mem_e, mem_p, mem_info))
-
-                if e > mem_e:
-                    tmp_map_info.append((mem_e, e, p, info))
-
-                if e == mem_e:
-                    pass
-
-            if not inserted:
-                tmp_map_info.append((mem_s, mem_e, mem_p, mem_info))
-
-            self.map_info = tmp_map_info
+        self.map_info.append((mem_s, mem_e, mem_p, mem_info, is_mmio))
+        self.map_info = sorted(self.map_info, key=lambda tp: tp[0])
 
     def del_mapinfo(self, mem_s: int, mem_e: int):
         """Subtract a memory range from map.
@@ -129,30 +93,7 @@ class QlMemoryManager:
             mem_e: memory range end
         """
 
-        tmp_map_info: MutableSequence[MapInfoEntry] = []
-
-        for s, e, p, info in self.map_info:
-            if e <= mem_s:
-                tmp_map_info.append((s, e, p, info))
-                continue
-
-            if s >= mem_e:
-                tmp_map_info.append((s, e, p, info))
-                continue
-
-            if s < mem_s:
-                tmp_map_info.append((s, mem_s, p, info))
-
-            if s == mem_s:
-                pass
-
-            if e > mem_e:
-                tmp_map_info.append((mem_e, e, p, info))
-
-            if e == mem_e:
-                pass
-
-        self.map_info = tmp_map_info
+        self.map_info = [region for region in self.map_info if region[0] != mem_s and region[1] != mem_e]
 
     def get_mapinfo(self) -> Sequence[Tuple[int, int, str, str, Optional[str]]]:
         """Get memory map info.
@@ -171,11 +112,11 @@ class QlMemoryManager:
 
             return ''.join(val if idx & ps else '-' for idx, val in perms_d.items())
 
-        def __process(lbound: int, ubound: int, perms: int, label: str) -> Tuple[int, int, str, str, Optional[str]]:
+        def __process(lbound: int, ubound: int, perms: int, label: str, is_mmio) -> Tuple[int, int, str, str, Optional[str]]:
             perms_str = __perms_mapping(perms)
 
             image = self.ql.os.find_containing_image(lbound)
-            container = image.path if image else None
+            container = image.path if image and not is_mmio else None
 
             return (lbound, ubound, perms_str, label, container)
 
@@ -194,7 +135,7 @@ class QlMemoryManager:
 
     # TODO: relying on the label string is risky; find a more reliable method
     def get_lib_base(self, filename: str) -> int:
-        return next((s for s, _, _, info in self.map_info if os.path.split(info)[1] == filename), -1)
+        return next((s for s, _, _, info, _ in self.map_info if os.path.split(info)[1] == filename), -1)
 
     def align(self, addr: int, alignment: int = 0x1000) -> int:
         """Round up to nearest alignment.
@@ -209,24 +150,30 @@ class QlMemoryManager:
 
         return (addr + (alignment - 1)) & mask
 
-    def save(self) -> Mapping[int, Tuple[int, int, int, str, bytes]]:
+    def save(self):
         """Save entire memory content.
         """
 
-        mem_dict = {}
+        mem_dict = {
+            "ram" : [],
+            "mmio" : []
+        }
 
-        for i, (lbound, ubound, perm, label) in enumerate(self.map_info, 1):
-            data = self.read(lbound, ubound - lbound)
-            mem_dict[i] = (lbound, ubound, perm, label, bytes(data))
+        for lbound, ubound, perm, label, mmio in self.map_info:
+            if not mmio:
+                data = self.read(lbound, ubound - lbound)
+                mem_dict['ram'].append((lbound, ubound, perm, label, bytes(data)))
+            else:
+                mem_dict['mmio'].append(lbound, ubound, perm, label, *self.mmio_cbs[(lbound, ubound)])
 
         return mem_dict
 
-    def restore(self, mem_dict: Mapping[int, Tuple[int, int, int, str, bytes]]):
+    def restore(self, mem_dict):
         """Restore saved memory content.
         """
 
-        for key, (lbound, ubound, perms, label, data) in mem_dict.items():
-            self.ql.log.debug(f'restore key: {key} {lbound:#08x} {ubound:#08x} {label}')
+        for lbound, ubound, perms, label, data in mem_dict['ram']:
+            self.ql.log.debug(f'To restore mapping: {lbound:#08x} {ubound:#08x} {label}')
 
             size = ubound - lbound
             if not self.is_mapped(lbound, size):
@@ -235,6 +182,12 @@ class QlMemoryManager:
 
             self.ql.log.debug(f'writing {lbound:#08x}, size = {size:#x}, write_size = {len(data):#x}')
             self.write(lbound, data)
+        
+        for lbound, ubount, perms, label, read_cb, write_cb in mem_dict['mmio']:
+            self.ql.log.debug(f"To restore mmio mapping: {lbound:#08x} {ubound:#08x} {label}")
+
+            #TODO: Handle overlapped MMIO?
+            self.map_mmio(lbound, ubound - lbound, read_cb, write_cb, info=label)
 
     def read(self, addr: int, size: int) -> bytearray:
         """Read bytes from memory.
@@ -310,7 +263,7 @@ class QlMemoryManager:
 
         assert begin < end, 'search arguments do not make sense'
 
-        ranges = [(max(begin, lbound), min(ubound, end)) for lbound, ubound, _, _ in self.map_info if (begin <= lbound < end) or (begin < ubound <= end)]
+        ranges = [(max(begin, lbound), min(ubound, end)) for lbound, ubound, _, _, _ in self.map_info if (begin <= lbound < end) or (begin < ubound <= end)]
         results = []
 
         for lbound, ubound in ranges:
@@ -331,6 +284,8 @@ class QlMemoryManager:
 
         self.del_mapinfo(addr, addr + size)
         self.ql.uc.mem_unmap(addr, size)
+        if (addr, addr + size) in self.mmio_cbs:
+            del self.mmio_cbs[(addr, addr+size)]
 
     def unmap_all(self):
         """Reclaim the entire memory space.
@@ -353,7 +308,7 @@ class QlMemoryManager:
         end = addr + size
 
         # make sure neither begin nor end are enclosed within a mapped range, or entirely enclosing one
-        return not any((lbound <= begin < ubound) or (lbound < end <= ubound) or (begin <= lbound < ubound <= end) for lbound, ubound, _, _ in self.map_info)
+        return not any((lbound <= begin < ubound) or (lbound < end <= ubound) or (begin <= lbound < ubound <= end) for lbound, ubound, _, _, _ in self.map_info)
 
     def is_mapped(self, addr: int, size: int) -> bool:
         """Query whether the memory range starting at `addr` and is of length of `size` bytes
@@ -411,8 +366,8 @@ class QlMemoryManager:
         assert minaddr < maxaddr
 
         # get gap ranges between mapped ones and memory bounds
-        gaps_ubounds = tuple(lbound for lbound, _, _, _ in self.map_info) + (mem_ubound,)
-        gaps_lbounds = (mem_lbound,) + tuple(ubound for _, ubound, _, _ in self.map_info)
+        gaps_ubounds = tuple(lbound for lbound, _, _, _, _ in self.map_info) + (mem_ubound,)
+        gaps_lbounds = (mem_lbound,) + tuple(ubound for _, ubound, _, _, _ in self.map_info)
         gaps = zip(gaps_lbounds, gaps_ubounds)
 
         for lbound, ubound in gaps:
@@ -472,6 +427,29 @@ class QlMemoryManager:
 
         self.ql.uc.mem_map(addr, size, perms)
         self.add_mapinfo(addr, addr + size, perms, info or '[mapped]')
+    
+    def _mmio_read_cb(self, uc, offset, size, data):
+        ql, cb = data
+        return cb(ql, offset, size)
+
+    def _mmio_write_cb(self, uc, offset, size, value, data):
+        ql, cb = data
+        cb(ql, offset, size, value)
+
+    def map_mmio(self, addr: int, size: int, read_cb: Callable, write_cb: Callable, info: str="[IO Memory]"):
+        # TODO: mmio memory overlap with ram? Is that possible?
+        # TODO: Can read_cb or write_cb be None? How uc handle that access?
+        prot = 0
+        if read_cb is not None:
+            prot |= UC_PROT_READ
+        
+        if write_cb is not None:
+            prot |= UC_PROT_WRITE
+
+        self.ql.uc.mmio_map(addr, size, self._mmio_read_cb, (self.ql, read_cb), self._mmio_write_cb, (self.ql, write_cb))
+        self.add_mapinfo(addr, addr+size, prot, info, True)
+
+        self.mmio_cbs[(addr, addr+size)] = (read_cb, write_cb)
 
     def mmio_map(self, addr:int, size:int, read_cb, write_cb, user_data_read=None, user_data_write=None):
         self.ql.uc.mmio_map(addr, size, read_cb, user_data_read, write_cb, user_data_write)
