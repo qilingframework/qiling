@@ -6,7 +6,7 @@
 import struct
 from qiling.hw.peripheral import QlPeripheral
 
-class Usart(QlPeripheral):
+class USART(QlPeripheral):
     SR = 0x00
     DR = 0x04
     BRR = 0x08
@@ -18,13 +18,13 @@ class Usart(QlPeripheral):
     def __init__(self, ql, base_addr):
         super().__init__(ql, base_addr)
         self.mem = { 
-            Usart.SR: 0xc0, 
-            Usart.DR: 0x00,
-            Usart.BRR: 0x00,
-            Usart.CR1: 0x00,
-            Usart.CR2: 0x00,
-            Usart.CR3: 0x00,
-            Usart.GTPR: 0x00,
+            USART.SR: 0xc0, 
+            USART.DR: 0x00,
+            USART.BRR: 0x00,
+            USART.CR1: 0x00,
+            USART.CR2: 0x00,
+            USART.CR3: 0x00,
+            USART.GTPR: 0x00,
         }
 
     def read(self, offset, size):
@@ -33,5 +33,5 @@ class Usart(QlPeripheral):
 
     def write(self, offset, size, value):
         self.mem[offset] = value
-        if offset == Usart.DR:
+        if offset == USART.DR:
             self.ql.log.info('[%s] %s' % (self.tag, repr(chr(value))))

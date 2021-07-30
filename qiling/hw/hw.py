@@ -12,16 +12,10 @@ class QlHwManager:
 
         self._entity = {}
 
-    def create(self, hw_type, hw_name, base_addr:int, hw_tag=None):
+    def create(self, hw_name, hw_tag, hw_base):
         """You can access the `hw_tag` by `ql.hw.hw_tag` or `ql.hw['hw_tag']`"""
 
-        if hw_tag is None:
-            hw_tag = hw_name
-            
-        ## underscore to camel-case
-        hw_class = ''.join([token.capitalize() for token in hw_name.split('_')])
-
-        entity = ql_get_module_function(f'qiling.hw.{hw_type}.{hw_name}', hw_class)(self.ql, base_addr)
+        entity = ql_get_module_function('qiling.hw', hw_name)(self.ql, hw_base)
         
         entity.tag = hw_tag
         self[hw_tag] = entity

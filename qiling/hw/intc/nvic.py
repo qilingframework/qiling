@@ -8,7 +8,7 @@ from unicorn.unicorn import UcError
 from qiling.hw.peripheral import QlPeripheral
 
 
-class Nvic(QlPeripheral):
+class NVIC(QlPeripheral):
     def __init__(self, ql, base_addr):
         super().__init__(ql, base_addr)
         

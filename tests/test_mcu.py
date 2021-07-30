@@ -25,8 +25,8 @@ class MCUTest(unittest.TestCase):
                     archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DEFAULT)
         
         # create/remove
-        ql.hw.create('char', 'usart', 0x40023800, 'usart2')
-        ql.hw.create('misc', 'stm32f4_rcc', 0x40023800, 'rcc')
+        ql.hw.create('USART', 'usart2', 0x40023800)
+        ql.hw.create('STM32F4RCC', 'rcc', 0x40023800)
         ql.run(count=2000)
 
         del ql

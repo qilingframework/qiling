@@ -6,7 +6,7 @@
 from qiling.hw.peripheral import QlPeripheral
 
 
-class Stm32f4Rcc(QlPeripheral):
+class STM32F4RCC(QlPeripheral):
     def __init__(self, ql, base_addr):
         super().__init__(ql, base_addr)
         self.mem = {}
