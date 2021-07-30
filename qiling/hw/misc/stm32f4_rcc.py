@@ -11,7 +11,7 @@ class Stm32f4Rcc(QlPeripheral):
         super().__init__(ql, base_addr)
         self.mem = {}
 
-    def read_double_word(self, offset):
+    def read(self, offset, size):
         ## TODO: Temporary plan, wait for me to implement uart and then change it.
         if offset == 0:
             return b'\xff\xff\x00\x00'

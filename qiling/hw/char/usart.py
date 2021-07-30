@@ -5,9 +5,8 @@
 
 import struct
 from qiling.hw.peripheral import QlPeripheral
-from qiling.hw.core.register import PeripheralRegisterGroup
 
-class Usart(QlPeripheral, PeripheralRegisterGroup):
+class Usart(QlPeripheral):
     SR = 0x00
     DR = 0x04
     BRR = 0x08
@@ -28,11 +27,11 @@ class Usart(QlPeripheral, PeripheralRegisterGroup):
             Usart.GTPR: 0x00,
         }
 
-    def read_double_word(self, offset):
+    def read(self, offset, size):
         retval = self.mem[offset]
         return struct.pack('<I', retval)
 
-    def write_double_word(self, offset, value):
+    def write(self, offset, size, value):
         self.mem[offset] = value
         if offset == Usart.DR:
             self.ql.log.info('[%s] %s' % (self.tag, repr(chr(value))))
