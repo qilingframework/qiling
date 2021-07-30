@@ -108,27 +108,25 @@ class QlLoaderMCU(QlLoader):
         self.reset()
 
 
-        # def sram_read_cb(uc, offset, size, data):
-        #     print(f'\nread sram mem {hex(0x22000000+offset)}+{size} ==> {data}\n')
-        #     real_addr = alias_to_bitband(0x20000000, offset)
-        #     print(hex(real_addr))
+        def sram_read_cb(ql, offset, size):
+            print(f'\nRead sram mem {hex(0x22000000+offset)}+{size} ==> {data}\n')
+            real_addr = alias_to_bitband(0x20000000, offset)
+            print(f'Redirect to {hex(real_addr)}\n')
 
+        def sram_write_cb(ql, offset, size, value):
+            print(f'\nWrite sram mem {hex(0x22000000+offset)}+{size} {value} ==> {data}\n')
+            real_addr = alias_to_bitband(0x20000000, offset)
+            print(f'Redirect to {hex(real_addr)}\n')
 
-        # def sram_write_cb(uc, offset, size, value, data):
-        #     print(f'\nwrite sram mem {hex(0x22000000+offset)}+{size} {value} ==> {data}\n')
-        #     real_addr = alias_to_bitband(0x20000000, offset)
-        #     print(hex(real_addr))
-
-        def peripheral_read_cb(uc, offset, size, data):
-            print(f'\nread peripheral mem {hex(0x42000000+offset)}+{size} ==> {data}\n')
+        def peripheral_read_cb(ql, offset, size):
+            print(f'\nRead peripheral mem {hex(0x42000000+offset)} + {size}')
             real_addr = alias_to_bitband(0x40000000, offset)
-            print(hex(real_addr))
+            print(f'Redirect to {hex(real_addr)}\n')
 
-        def peripheral_write_cb(uc, offset, size, value, data):
-            print(f'\nwrite peripheral mem {hex(0x42000000+offset)}+{size} {value} ==> {data}\n')
+        def peripheral_write_cb(ql, offset, size, value):
+            print(f'\nWrite peripheral mem {hex(0x42000000+offset)} + {size} ==> {value}')
             real_addr = alias_to_bitband(0x40000000, offset)
-            print(hex(real_addr))
+            print(f'Redirect to {hex(real_addr)}\n')
         
-        # FIXME: SystemError: null argument to internal routine
-        # self.ql.mem.mmio_map(0x22000000, 0x2000000, sram_read_cb, sram_write_cb, None, None) 
-        self.ql.mem.mmio_map(0x42000000, 0x2000000, peripheral_read_cb, peripheral_write_cb, None, None)   
+        self.ql.mem.map_mmio(0x22000000, 0x2000000, sram_read_cb, sram_write_cb, info="[SRAM Memory]")
+        self.ql.mem.map_mmio(0x42000000, 0x2000000, peripheral_read_cb, peripheral_write_cb, info="[Peripheral Memory]")   
