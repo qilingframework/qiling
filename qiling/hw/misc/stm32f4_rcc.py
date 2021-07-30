@@ -3,9 +3,10 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from qiling.hw.hw import QlHardware
+from qiling.hw.peripheral import QlPeripheral
 
-class Stm32f4Rcc(QlHardware):
+
+class Stm32f4Rcc(QlPeripheral):
     def __init__(self, ql):
         super().__init__(ql)
         self.mem = {}

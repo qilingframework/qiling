@@ -4,10 +4,10 @@
 #
 
 import struct
-from qiling.hw.hw import QlHardware
+from qiling.hw.peripheral import QlPeripheral
 
 
-class Usart(QlHardware):
+class Usart(QlPeripheral):
     SR = 0x00
     DR = 0x04
     BRR = 0x08

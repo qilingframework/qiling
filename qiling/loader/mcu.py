@@ -115,10 +115,19 @@ class QlLoaderMCU(QlLoader):
                     8: ql.pack64,
                     }.get(size)(data)
 
+        def unpack_data(ql, size, data):
+            return {
+                    1: ql.unpack8,
+                    2: ql.unpack16,
+                    4: ql.unpack32,
+                    8: ql.unpack64,
+                    }.get(size)(data)
+
         def sram_read_cb(ql, offset, size):
-            ql.log.warning(f'Read sram mem {hex(0x22000000+offset)}+{size} ==> {data}')
+            ql.log.warning(f'Read sram mem {hex(0x22000000+offset)} + {size}')
             real_addr = alias_to_bitband(0x20000000, offset)
             ql.log.warning(f'Redirect to {hex(real_addr)}')
+            return unpack_data(size, ql.mem.read(real_addr, size))
 
         def sram_write_cb(ql, offset, size, value):
             ql.log.warning(f'Write sram mem {hex(0x22000000+offset)} + {size} ==> {value}')
@@ -131,6 +140,7 @@ class QlLoaderMCU(QlLoader):
             ql.log.warning(f'Read peripheral mem {hex(0x42000000+offset)} + {size}')
             real_addr = alias_to_bitband(0x40000000, offset)
             ql.log.warning(f'Redirect to {hex(real_addr)}')
+            return unpack_data(size, ql.mem.read(real_addr, size))
 
         def peripheral_write_cb(ql, offset, size, value):
             peripheral_base = 0x40000000
