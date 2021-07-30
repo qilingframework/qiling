@@ -25,21 +25,20 @@ class QlPeripheral:
         return register
 
     ### Read/Write Peripheral Memory
-    def read(self, offset, size) -> bytearray:
+    def read(self, offset, size) -> bytes:
         if size in [1, 2, 4, 8]:
             real_addr = self.base_addr + offset
             data = self.ql.mem.read(real_addr, size)
-            return data
+            return bytes(data)
         
         return b'\x00' * size
 
     def write(self, offset, size, value):
         if size in [1, 2, 4, 8]:
             real_addr = self.base_addr + offset
-            print(real_addr, self.pack(size, value))
             self.ql.mem.write(real_addr, self.pack(size, value))
-        
-        return b'\x00' * size
+        else:
+            raise ValueError
 
     ### Utils
     def pack(self, size, data):
