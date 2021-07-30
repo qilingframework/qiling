@@ -8,6 +8,7 @@ import struct
 
 from qiling.const import *
 from qiling.core import Qiling
+from qiling.hw.utils.bitbanding import alias_to_bitband
 
 from .loader import QlLoader
 
@@ -104,4 +105,30 @@ class QlLoaderMCU(QlLoader):
         self.ql.hook_mem_write(self.ql.arch.perip_write_hook, begin=PPB_BEGIN, end=PPB_END)
         self.ql.hook_mem_write(self.ql.arch.perip_write_hook, begin=PERIP_BEGIN, end=PERIP_END)
         
-        self.reset()        
+        self.reset()
+
+
+        # def sram_read_cb(uc, offset, size, data):
+        #     print(f'\nread sram mem {hex(0x22000000+offset)}+{size} ==> {data}\n')
+        #     real_addr = alias_to_bitband(0x20000000, offset)
+        #     print(hex(real_addr))
+
+
+        # def sram_write_cb(uc, offset, size, value, data):
+        #     print(f'\nwrite sram mem {hex(0x22000000+offset)}+{size} {value} ==> {data}\n')
+        #     real_addr = alias_to_bitband(0x20000000, offset)
+        #     print(hex(real_addr))
+
+        def peripheral_read_cb(uc, offset, size, data):
+            print(f'\nread peripheral mem {hex(0x42000000+offset)}+{size} ==> {data}\n')
+            real_addr = alias_to_bitband(0x40000000, offset)
+            print(hex(real_addr))
+
+        def peripheral_write_cb(uc, offset, size, value, data):
+            print(f'\nwrite peripheral mem {hex(0x42000000+offset)}+{size} {value} ==> {data}\n')
+            real_addr = alias_to_bitband(0x40000000, offset)
+            print(hex(real_addr))
+        
+        # FIXME: SystemError: null argument to internal routine
+        # self.ql.mem.mmio_map(0x22000000, 0x2000000, sram_read_cb, sram_write_cb, None, None) 
+        self.ql.mem.mmio_map(0x42000000, 0x2000000, peripheral_read_cb, peripheral_write_cb, None, None)   

@@ -473,6 +473,9 @@ class QlMemoryManager:
         self.ql.uc.mem_map(addr, size, perms)
         self.add_mapinfo(addr, addr + size, perms, info or '[mapped]')
 
+    def mmio_map(self, addr:int, size:int, read_cb, write_cb, user_data_read=None, user_data_write=None):
+        self.ql.uc.mmio_map(addr, size, read_cb, user_data_read, write_cb, user_data_write)
+
 # A Simple Heap Implementation
 class Chunk():
     def __init__(self, address: int, size: int):

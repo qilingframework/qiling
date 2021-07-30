@@ -11,6 +11,6 @@
 # 0x40000000 | (0x1c & 0x1ffffff) >> 5
 
 
-def alias_to_bitband(peripheral_base, alias_offset):
+def alias_to_bitband(peripheral_base, alias_offset) -> int:
     return peripheral_base | (alias_offset & 0x1ffffff) >> 5
 
