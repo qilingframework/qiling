@@ -5,11 +5,9 @@
 
 import struct
 from unicorn.unicorn import UcError
+from qiling.hw.hw import QlHardware
 
-from qiling.hw.peripheral import Peripheral
-
-
-class Nvic(Peripheral):
+class Nvic(QlHardware):
     def __init__(self, ql):
         super().__init__(ql)
         
@@ -90,7 +88,7 @@ class Nvic(Peripheral):
 
         self.restore_regs()
 
-    def write_word(self, offset, value):
+    def write_double_word(self, offset, value):
         def wrapper(list, value):
             def function(offset, index):
                 for i in range(32):
@@ -124,7 +122,7 @@ class Nvic(Peripheral):
                 prior = struct.unpack('b', struct.pack('B', (value >> i) & 255))[0]
                 self.priority[index] = prior
 
-    def read_word(self, offset):
+    def read_double_word(self, offset):
         def wrapper(list):
             def function(start):
                 value = 0

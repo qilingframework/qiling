@@ -3,14 +3,14 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from qiling.hw.peripheral import Peripheral
+from qiling.hw.hw import QlHardware
 
-class Stm32f4Rcc(Peripheral):
+class Stm32f4Rcc(QlHardware):
     def __init__(self, ql):
         super().__init__(ql)
         self.mem = {}
 
-    def read_word(self, offset):
+    def read_double_word(self, offset):
         ## TODO: Temporary plan, wait for me to implement uart and then change it.
         if offset == 0:
             return b'\xff\xff\x00\x00'

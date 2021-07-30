@@ -4,9 +4,7 @@
 #
 
 from unicorn import *
-
 from qiling.const import *
-from qiling.hw.misc.sysctrl import SystemControlBlock
 
 from .arm import QlArchARM
 

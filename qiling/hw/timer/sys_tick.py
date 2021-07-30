@@ -3,9 +3,9 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from qiling.hw.peripheral import Peripheral
+from qiling.hw.hw import QlHardware
 
-class SysTick(Peripheral):
+class SysTick(QlHardware):
     STK_CTRL  = 0
     STK_LOAD  = 1
     STK_VAL   = 2
