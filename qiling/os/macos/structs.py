@@ -719,7 +719,7 @@ class domain_t(ctypes.Structure):
 
     def dump(self):
         for field in self._fields_:
-            print(field[0], getattr(self, field[0]))
+            self.ql.log.info(field[0], getattr(self, field[0]))
 
 # struct kev_d_vectors {
 #     u_int32_t   data_length;    /* Length of the event data */
@@ -775,7 +775,7 @@ class kev_msg(ctypes.Structure):
 
     def dump(self):
         for field in self._fields_:
-            print(field[0], getattr(self, field[0]))
+            self.ql.log.info(field[0], getattr(self, field[0]))
 
 # struct nlist_64 {
 #     union {

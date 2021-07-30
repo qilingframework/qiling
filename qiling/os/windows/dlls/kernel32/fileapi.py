@@ -56,7 +56,7 @@ def hook_FindFirstFileA(ql: Qiling, address: int, params):
         return ERROR_INVALID_PARAMETER
 
     target_dir = os.path.join(ql.rootfs, filename.replace("\\", os.sep))
-    print('TARGET_DIR = %s' % target_dir)
+    ql.log.info('TARGET_DIR = %s' % target_dir)
     real_path = ql.os.path.transform_to_real_path(filename)
 
     # Verify the directory is in ql.rootfs to ensure no path traversal has taken place
@@ -490,7 +490,7 @@ def hook_GetDiskFreeSpaceW(ql: Qiling, address: int, params):
 def hook_CreateDirectoryA(ql: Qiling, address: int, params):
     path_name = params["lpPathName"]
     target_dir = os.path.join(ql.rootfs, path_name.replace("\\", os.sep))
-    print('TARGET_DIR = %s' % target_dir)
+    ql.log.info('TARGET_DIR = %s' % target_dir)
 
     # Verify the directory is in ql.rootfs to ensure no path traversal has taken place
     real_path = ql.os.path.transform_to_real_path(path_name)
