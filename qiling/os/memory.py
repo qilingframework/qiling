@@ -9,6 +9,7 @@ from typing import Any, Callable, ClassVar, List, MutableSequence, Optional, Seq
 from unicorn import UC_PROT_NONE, UC_PROT_READ, UC_PROT_WRITE, UC_PROT_EXEC, UC_PROT_ALL
 
 from qiling import Qiling
+from qiling.const import *
 from qiling.exception import *
 
 # tuple: range start, range end, permissions mask, range label
@@ -450,9 +451,6 @@ class QlMemoryManager:
         self.add_mapinfo(addr, addr+size, prot, info, True)
 
         self.mmio_cbs[(addr, addr+size)] = (read_cb, write_cb)
-
-    def mmio_map(self, addr:int, size:int, read_cb, write_cb, user_data_read=None, user_data_write=None):
-        self.ql.uc.mmio_map(addr, size, read_cb, user_data_read, write_cb, user_data_write)
 
 # A Simple Heap Implementation
 class Chunk():

@@ -41,7 +41,7 @@ class QlArchUtils:
         self._block_hook = None
 
     def get_offset_and_name(self, addr: int) -> Tuple[int, str]:
-        for begin, end, _, name in self.ql.mem.map_info:
+        for begin, end, _, name, _ in self.ql.mem.map_info:
             if begin <= addr < end:
                 return addr - begin, basename(name)
 
