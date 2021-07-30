@@ -29,7 +29,7 @@ class QlArchCORTEX_M(QlArchARM):
             if perip:
                 base = self.perip_region[perip.tag][0][0]
                 perip.write(addr - base, size, value)
-            else:            
+            else:
                 ql.log.warning('Write non-mapped peripheral (*0x%08x = 0x%08x)' % (addr, value))
         
         def hook_perip_mem_read(ql, access, addr, size, value):
