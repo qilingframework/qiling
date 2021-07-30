@@ -12,7 +12,7 @@ class QlHwManager:
 
         self._entity = {}
 
-    def add_hardware(self, hw_type, hw_name, base_addr:int, hw_tag=None):
+    def create(self, hw_type, hw_name, base_addr:int, hw_tag=None):
         """You can access the `hw_tag` by `ql.hw.hw_tag` or `ql.hw['hw_tag']`"""
 
         if hw_tag is None:
