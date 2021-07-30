@@ -74,7 +74,7 @@ class NVIC(QlPeripheral):
             val = self.ql.arch.stack_pop()
             self.ql.reg.write(reg, val)
 
-    def interrupt(self):
+    def step(self):
         self.save_regs()
 
         intrs = [i for i in range(self.INTR_NUM) if (self.pending[i] == 1 and self.enable[i])]

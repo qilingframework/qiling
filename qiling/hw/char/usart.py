@@ -29,7 +29,7 @@ class USART(QlPeripheral):
 
     def read(self, offset, size):
         retval = self.mem[offset]
-        return struct.pack('<I', retval)
+        return retval
 
     def write(self, offset, size, value):
         self.mem[offset] = value
