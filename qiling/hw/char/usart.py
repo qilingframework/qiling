@@ -5,9 +5,9 @@
 
 import struct
 from qiling.hw.peripheral import QlPeripheral
+from qiling.hw.core.register import PeripheralRegisterGroup
 
-
-class Usart(QlPeripheral):
+class Usart(QlPeripheral, PeripheralRegisterGroup):
     SR = 0x00
     DR = 0x04
     BRR = 0x08
@@ -16,8 +16,8 @@ class Usart(QlPeripheral):
     CR3 = 0x14
     GTPR = 0x18
 
-    def __init__(self, ql):
-        super().__init__(ql)
+    def __init__(self, ql, base_addr):
+        super().__init__(ql, base_addr)
         self.mem = { 
             Usart.SR: 0xc0, 
             Usart.DR: 0x00,

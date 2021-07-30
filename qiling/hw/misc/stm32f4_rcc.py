@@ -7,8 +7,8 @@ from qiling.hw.peripheral import QlPeripheral
 
 
 class Stm32f4Rcc(QlPeripheral):
-    def __init__(self, ql):
-        super().__init__(ql)
+    def __init__(self, ql, base_addr):
+        super().__init__(ql, base_addr)
         self.mem = {}
 
     def read_double_word(self, offset):

@@ -1,59 +1,12 @@
+from qiling.hw.core.register import PeripheralRegister
+
+
 class QlPeripheral:
-    def __init__(self, ql):
+    def __init__(self, ql, base_addr):
         self.ql = ql
+        self.base_addr = base_addr
         self._tag = ''
-
-    def read(self, offset, size) -> bytearray:
-        if size == 4:
-            return self.read_double_word(offset)
-        
-        if size == 2:
-            return self.read_word(offset)
-
-        if size == 1:
-            return self.read_byte(offset)
-        
-        return b'\x00' * size
-
-    def write(self, offset, size, value):
-        if size == 4:
-            return self.write_double_word(offset, value)
-        
-        if size == 2:
-            return self.write_word(offset, value)
-
-        if size == 1:
-            return self.write_byte(offset, value)
-        
-        return b'\x00' * size
-
-    def read_callback(self):
-        def ql_read_cb(ql, offset, size):
-            return self.read(offset)
-        return ql_read_cb
-    
-    def write_callback(self):
-        def ql_write_cb(ql, offset, size, value):
-            return self.write(offset, size, value)
-        return ql_write_cb    
-
-    def read_double_word(self, offset) -> bytearray:
-        return b'\x00' * 4
-
-    def read_word(self, offset) -> bytearray:
-        return b'\x00' * 2
-
-    def read_byte(self, offset) -> bytearray:
-        return b'\x00' * 1
-
-    def write_double_word(self, offset, value):
-        pass
-
-    def write_word(self, offset, value):
-        pass
-
-    def write_byte(self, offset, value):
-        pass
+        self.registers = []
 
     def step(self):
         pass
@@ -66,3 +19,57 @@ class QlPeripheral:
     def tag(self, value):
         self._tag = value
 
+    def add_register(self, base_addr, offset, name):
+        register = PeripheralRegister(self.ql, base_addr, offset, name)
+        self.registers.append(register)
+        return register
+
+    ### Read/Write Peripheral Memory
+    def read(self, offset, size) -> bytearray:
+        if size in [1, 2, 4, 8]:
+            real_addr = self.base_addr + offset
+            data = self.ql.mem.read(real_addr, size)
+            return data
+        
+        return b'\x00' * size
+
+    def write(self, offset, size, value):
+        if size in [1, 2, 4, 8]:
+            real_addr = self.base_addr + offset
+            print(real_addr, self.pack(size, value))
+            self.ql.mem.write(real_addr, self.pack(size, value))
+        
+        return b'\x00' * size
+
+    ### Utils
+    def pack(self, size, data):
+        return {
+                1: self.ql.pack8,
+                2: self.ql.pack16,
+                4: self.ql.pack32,
+                8: self.ql.pack64,
+                }.get(size)(data)
+
+    def packs(self, size, data):
+        return {
+                1: self.ql.pack8s,
+                2: self.ql.pack16s,
+                4: self.ql.pack32s,
+                8: self.ql.pack64s,
+                }.get(size)(data)
+
+    def unpack(self, size, data):
+        return {
+                1: self.ql.unpack8,
+                2: self.ql.unpack16,
+                4: self.ql.unpack32,
+                8: self.ql.unpack64,
+                }.get(size)(data)
+
+    def unpacks(self, size, data):
+        return {
+                1: self.ql.unpack8s,
+                2: self.ql.unpack16s,
+                4: self.ql.unpack32s,
+                8: self.ql.unpack64s,
+                }.get(size)(data)

@@ -14,6 +14,6 @@ class Register(Enum):
     GPIOx_AFRH      = 0x24  # GPIO alternate function high register - Read-Write
 
 
-
+# class 
 
 

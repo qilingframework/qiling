@@ -12,7 +12,7 @@ class QlHwManager:
 
         self._entity = {}
 
-    def add_hardware(self, hw_type, hw_name, hw_tag=None):
+    def add_hardware(self, hw_type, hw_name, base_addr:int, hw_tag=None):
         """You can access the `hw_tag` by `ql.hw.hw_tag` or `ql.hw['hw_tag']`"""
 
         if hw_tag is None:
@@ -21,7 +21,7 @@ class QlHwManager:
         ## underscore to camel-case
         hw_class = ''.join([token.capitalize() for token in hw_name.split('_')])
 
-        entity = ql_get_module_function(f'qiling.hw.{hw_type}.{hw_name}', hw_class)(self.ql)
+        entity = ql_get_module_function(f'qiling.hw.{hw_type}.{hw_name}', hw_class)(self.ql, base_addr)
         
         entity.tag = hw_tag
         self[hw_tag] = entity

@@ -107,47 +107,31 @@ class QlLoaderMCU(QlLoader):
         
         self.reset()
 
-        def pack_data(ql, size, data):
-            return {
-                    1: ql.pack8,
-                    2: ql.pack16,
-                    4: ql.pack32,
-                    8: ql.pack64,
-                    }.get(size)(data)
-
-        def unpack_data(ql, size, data):
-            return {
-                    1: ql.unpack8,
-                    2: ql.unpack16,
-                    4: ql.unpack32,
-                    8: ql.unpack64,
-                    }.get(size)(data)
-
         def sram_read_cb(ql, offset, size):
             ql.log.warning(f'Read sram mem {hex(0x22000000+offset)} + {size}')
             real_addr = alias_to_bitband(0x20000000, offset)
             ql.log.warning(f'Redirect to {hex(real_addr)}')
-            return unpack_data(size, ql.mem.read(real_addr, size))
+            return ql.unpack(size, ql.mem.read(real_addr, size))
 
         def sram_write_cb(ql, offset, size, value):
             ql.log.warning(f'Write sram mem {hex(0x22000000+offset)} + {size} ==> {value}')
             real_addr = alias_to_bitband(0x20000000, offset)
             ql.log.warning(f'Redirect to {hex(real_addr)}')
-            data = pack_data(ql, size, value)
+            data = ql.pack(ql, size, value)
             ql.mem.write(real_addr, data)
 
         def peripheral_read_cb(ql, offset, size):
             ql.log.warning(f'Read peripheral mem {hex(0x42000000+offset)} + {size}')
             real_addr = alias_to_bitband(0x40000000, offset)
             ql.log.warning(f'Redirect to {hex(real_addr)}')
-            return unpack_data(size, ql.mem.read(real_addr, size))
+            return ql.unpack(size, ql.mem.read(real_addr, size))
 
         def peripheral_write_cb(ql, offset, size, value):
             peripheral_base = 0x40000000
             ql.log.warning(f'Write peripheral mem {hex(0x42000000+offset)} + {size} ==> {value}')
             real_addr = alias_to_bitband(peripheral_base, offset)
             ql.log.warning(f'Redirect to {hex(real_addr)}')
-            data = pack_data(ql, size, value)
+            data = ql.pack(ql, size, value)
             ql.mem.write(real_addr, data)
         
         self.ql.mem.map_mmio(0x22000000, 0x2000000, sram_read_cb, sram_write_cb, info="[SRAM Memory]")

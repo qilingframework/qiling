@@ -1,9 +1,9 @@
 from qiling.hw.core.register_field import *
 
 
-
 class PeripheralRegister:
-    def __init__(self, base_addr, offset, name) -> None:
+    def __init__(self, ql, base_addr, offset, name) -> None:
+        self.ql = ql
         self.base_addr = base_addr
         self.offset = offset
         self.name = name

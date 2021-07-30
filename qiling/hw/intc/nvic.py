@@ -9,8 +9,8 @@ from qiling.hw.peripheral import QlPeripheral
 
 
 class Nvic(QlPeripheral):
-    def __init__(self, ql):
-        super().__init__(ql)
+    def __init__(self, ql, base_addr):
+        super().__init__(ql, base_addr)
         
         # reference:
         # https://www.youtube.com/watch?v=uFBNf7F3l60

@@ -13,8 +13,8 @@ class QlArchCORTEX_M(QlArchARM):
         super().__init__(ql)
 
         ## Core Hardwares
-        self.ql.hw.add_hardware('intc', 'nvic')
-        self.ql.hw.add_hardware('timer', 'sys_tick')
+        self.ql.hw.add_hardware('intc', 'nvic', 0xE000E100)
+        self.ql.hw.add_hardware('timer', 'sys_tick', 0xE000E010)
 
         ## Memory Model
         self.BOOT = [0, 0]
@@ -37,7 +37,7 @@ class QlArchCORTEX_M(QlArchARM):
             if perip:
                 base = self.perip_region[perip.tag][0][0]
                 ql.mem.write(addr, perip.read(addr - base, size))
-            else:            
+            else:
                 ql.log.warning('Read non-mapped peripheral (0x%08x)' % (addr))
 
         self.perip_read_hook = hook_perip_mem_read
