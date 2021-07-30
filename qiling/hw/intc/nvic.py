@@ -5,9 +5,10 @@
 
 import struct
 from unicorn.unicorn import UcError
-from qiling.hw.hw import QlHardware
+from qiling.hw.peripheral import QlPeripheral
 
-class Nvic(QlHardware):
+
+class Nvic(QlPeripheral):
     def __init__(self, ql):
         super().__init__(ql)
         
