@@ -15,8 +15,8 @@ class QlArchCORTEX_M(QlArchARM):
         super().__init__(ql)
 
         ## Core Hardwares
-        self.ql.hw.create_hardware('intc', 'nvic')
-        self.ql.hw.create_hardware('timer', 'sys_tick')
+        self.ql.hw.add_hardware('intc', 'nvic')
+        self.ql.hw.add_hardware('timer', 'sys_tick')
 
         ## Memory Model
         self.BOOT = [0, 0]
