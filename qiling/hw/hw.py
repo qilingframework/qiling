@@ -34,12 +34,12 @@ class QlHardware:
         
         return b'\x00' * size
 
-    def read_cb(self):
+    def read_callback(self):
         def ql_read_cb(ql, offset, size):
             return self.read(offset)
         return ql_read_cb
     
-    def write_cb(self):
+    def write_callback(self):
         def ql_write_cb(ql, offset, size, value):
             return self.write(offset, size, value)
         return ql_write_cb    
