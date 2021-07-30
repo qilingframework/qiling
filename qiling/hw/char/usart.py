@@ -34,4 +34,4 @@ class USART(QlPeripheral):
     def write(self, offset, size, value):
         self.mem[offset] = value
         if offset == USART.DR:
-            self.ql.log.info('[%s] %s' % (self.tag, repr(chr(value))))
+            self.ql.log.info('[usart] %s' % (repr(chr(value))))

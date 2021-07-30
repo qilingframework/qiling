@@ -19,9 +19,8 @@ class QlHwManager:
         if type(region) is tuple:
             region = [region]
 
-        base = region[0][0]
-        entity = ql_get_module_function('qiling.hw', name)(self.ql, base)    
-        entity.tag = tag
+        base_addr = region[0][0]
+        entity = ql_get_module_function('qiling.hw', name)(self.ql, base_addr)    
 
         self._entity[tag] = entity
         self._region[tag] = region
@@ -35,7 +34,9 @@ class QlHwManager:
         for tag in self._entity.keys():
             for lbound, rbound in self._region[tag]:
                 if check_bound(lbound, rbound):
-                    return self._entity[tag]
+                    return tag, self._entity[tag]
+        
+        return '', None
 
     def step(self):
         for _, entity in self._entity.items():
@@ -50,9 +51,9 @@ class QlHwManager:
     def setup_mmio(self, begin, size, info=""):
         def mmio_read_cb(ql, offset, size):
             address = begin + offset
-            hardware = self.find(address, size)
+            tag, hardware = self.find(address, size)
             if hardware:
-                base = self._region[hardware.tag][0][0]
+                base = self._region[tag][0][0]
                 return hardware.read(address - base, size)
             else:
                 ql.log.warning('%s Read non-mapped hardware [0x%08x]' % (info, address))
@@ -61,9 +62,9 @@ class QlHwManager:
 
         def mmio_write_cb(ql, offset, size, value):
             address = begin + offset
-            hardware = self.find(address, size)
+            tag, hardware = self.find(address, size)
             if hardware:
-                base = self._region[hardware.tag][0][0]
+                base = self._region[tag][0][0]
                 hardware.write(address - base, size, value)
             else:
                 ql.log.warning('%s Write non-mapped hardware [0x%08x] = 0x%08x' % (info, address, value))

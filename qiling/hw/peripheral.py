@@ -11,14 +11,6 @@ class QlPeripheral:
     def step(self):
         pass
 
-    @property
-    def tag(self):
-        return self._tag
-
-    @tag.setter
-    def tag(self, value):
-        self._tag = value
-
     def add_register(self, base_addr, offset, name):
         register = PeripheralRegister(self.ql, base_addr, offset, name)
         self.registers.append(register)
