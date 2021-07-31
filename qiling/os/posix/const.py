@@ -210,19 +210,25 @@ mac_open_flags = {
 
 
 linux_open_flags = {
-    'O_RDONLY'   : 0x0,
-    'O_WRONLY'   : 0x1,
-    'O_RDWR'     : 0x2,
-    'O_CREAT'    : 0x40,
-    'O_EXCL'     : 0x80,
-    'O_NOCTTY'   : 0x100,
-    'O_TRUNC'    : 0x200,
-    'O_APPEND'   : 0x400,
-    'O_NONBLOCK' : 0x800,
-    'O_ASYNC'    : 0x2000,
-    'O_DIRECTORY': 0x10000,
-    'O_NOFOLLOW' : 0x20000,
-    'O_SYNC'     : 0x101000,
+    'O_RDONLY'    : 0o000000000,
+    'O_WRONLY'    : 0o000000001,
+    'O_RDWR'      : 0o000000002,
+    'O_CREAT'     : 0o000000100,
+    'O_EXCL'      : 0o000000200,
+    'O_NOCTTY'    : 0o000000400,
+    'O_TRUNC'     : 0o000001000,
+    'O_APPEND'    : 0o000002000,
+    'O_NONBLOCK'  : 0o000004000,
+    'O_DSYNC'     : 0o000010000,
+    'FASYNC'      : 0o000020000,
+    'O_DIRECT'    : 0o000040000,
+    'O_LARGEFILE' : 0o000100000,
+    'O_DIRECTORY' : 0o000200000,
+    'O_NOFOLLOW'  : 0o000400000,
+    'O_NOATIME'   : 0o001000000,
+    'O_CLOEXEC'   : 0o002000000,
+    'O_SYNC'      : 0o004000000 | 0o000010000, # O_DSYNC
+    'O_PATH'      : 0o010000000
 }
 
 
