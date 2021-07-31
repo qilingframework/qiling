@@ -3,13 +3,14 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from typing import Callable
 from unicorn import UcError
 
 from qiling import Qiling
 from qiling.arch.x86_const import UC_X86_INS_SYSCALL
 from qiling.arch.x86 import GDTManager, ql_x8664_set_gs, ql_x86_register_cs, ql_x86_register_ds_ss_es
 from qiling.cc import QlCC, intel, arm, mips
-from qiling.const import QL_ARCH
+from qiling.const import QL_ARCH, QL_INTERCEPT
 from qiling.os.fcall import QlFunctionCall
 from qiling.os.const import *
 from qiling.os.posix.const import NR_OPEN
@@ -37,7 +38,6 @@ class QlOsLinux(QlOsPosix):
 
         self.thread_class = None
         self.futexm = None
-        self.function_hook_tmp = []
         self.fh = None
         self.function_after_load_list = []
         self.elf_mem_start = 0x0
@@ -94,8 +94,8 @@ class QlOsLinux(QlOsPosix):
         return self.load_syscall()
 
 
-    def add_function_hook(self, fn, cb, userdata = None):
-        self.function_hook_tmp.append((fn, cb, userdata))
+    def add_function_hook(self, fn: str, cb: Callable, intercept: QL_INTERCEPT):
+        self.ql.os.function_hook.add_function_hook(fn, cb, intercept)
 
 
     def register_function_after_load(self, function):
@@ -109,9 +109,6 @@ class QlOsLinux(QlOsPosix):
 
 
     def run(self):
-        for function, callback, userdata in self.ql.os.function_hook_tmp:
-            self.ql.os.function_hook.add_function_hook(function, callback, userdata)
-
         if self.ql.exit_point is not None:
             self.exit_point = self.ql.exit_point
 
