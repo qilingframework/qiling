@@ -11,14 +11,6 @@ class QlPeripheral:
     def step(self):
         pass
 
-    @property
-    def tag(self):
-        return self._tag
-
-    @tag.setter
-    def tag(self, value):
-        self._tag = value
-
     def add_register(self, base_addr, offset, name):
         register = PeripheralRegister(self.ql, base_addr, offset, name)
         self.registers.append(register)
@@ -26,19 +18,20 @@ class QlPeripheral:
 
     ### Read/Write Peripheral Memory
     def read(self, offset, size) -> bytes:
-        if size in [1, 2, 4, 8]:
-            real_addr = self.base_addr + offset
-            data = self.ql.mem.read(real_addr, size)
-            return bytes(data)
+        # if size in [1, 2, 4, 8]:
+        #     real_addr = self.base_addr + offset
+        #     data = self.ql.mem.read(real_addr, size)
+        #     return bytes(data)
         
-        return b'\x00' * size
+        return 0
 
     def write(self, offset, size, value):
-        if size in [1, 2, 4, 8]:
-            real_addr = self.base_addr + offset
-            self.ql.mem.write(real_addr, self.pack(size, value))
-        else:
-            raise ValueError
+        pass
+        # if size in [1, 2, 4, 8]:
+        #     real_addr = self.base_addr + offset
+        #     self.ql.mem.write(real_addr, self.pack(size, value))
+        # else:
+        #     raise ValueError
 
     ### Utils
     def pack(self, size, data):

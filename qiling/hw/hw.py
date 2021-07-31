@@ -11,27 +11,62 @@ class QlHwManager:
         self.ql = ql
 
         self._entity = {}
+        self._region = {}
 
-    def add_hardware(self, hw_type, hw_name, base_addr:int, hw_tag=None):
+    def create(self, name, tag, region):
         """You can access the `hw_tag` by `ql.hw.hw_tag` or `ql.hw['hw_tag']`"""
 
-        if hw_tag is None:
-            hw_tag = hw_name
-            
-        ## underscore to camel-case
-        hw_class = ''.join([token.capitalize() for token in hw_name.split('_')])
+        if type(region) is tuple:
+            region = [region]
 
-        entity = ql_get_module_function(f'qiling.hw.{hw_type}.{hw_name}', hw_class)(self.ql, base_addr)
+        base_addr = region[0][0]
+        entity = ql_get_module_function('qiling.hw', name)(self.ql, base_addr)    
+
+        self._entity[tag] = entity
+        self._region[tag] = region
+
+        setattr(self, tag, entity)
+    
+    def find(self, addr, size):
+        def check_bound(lbound, rbound):
+            return lbound <= addr and addr + size <= rbound
         
-        entity.tag = hw_tag
-        self[hw_tag] = entity
-        setattr(self, hw_tag, entity)
+        for tag in self._entity.keys():
+            for lbound, rbound in self._region[tag]:
+                if check_bound(lbound, rbound):
+                    return tag, self._entity[tag]
+        
+        return '', None
 
-    def items(self):
-        return self._entity.items()
+    def step(self):
+        for _, entity in self._entity.items():
+            entity.step()
 
     def __getitem__(self, key):
         return self._entity[key]
 
     def __setitem__(self, key, value):
         self._entity[key] = value
+
+    def setup_mmio(self, begin, size, info=""):
+        def mmio_read_cb(ql, offset, size):
+            address = begin + offset
+            tag, hardware = self.find(address, size)
+            if hardware:
+                base = self._region[tag][0][0]
+                return hardware.read(address - base, size)
+            else:
+                ql.log.warning('%s Read non-mapped hardware [0x%08x]' % (info, address))
+                
+            return 0
+
+        def mmio_write_cb(ql, offset, size, value):
+            address = begin + offset
+            tag, hardware = self.find(address, size)
+            if hardware:
+                base = self._region[tag][0][0]
+                hardware.write(address - base, size, value)
+            else:
+                ql.log.warning('%s Write non-mapped hardware [0x%08x] = 0x%08x' % (info, address, value))
+
+        self.ql.mem.map_mmio(begin, size, mmio_read_cb, mmio_write_cb, info=info)

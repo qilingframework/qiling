@@ -13,8 +13,8 @@ class QlArchCORTEX_M(QlArchARM):
         super().__init__(ql)
 
         ## Core Hardwares
-        self.ql.hw.add_hardware('intc', 'nvic', 0xE000E100)
-        self.ql.hw.add_hardware('timer', 'sys_tick', 0xE000E010)
+        self.ql.hw.create('NVIC', 'nvic', [(0xE000E100, 0xE000E4F0), (0xE000EF00, 0xE000EF04)])
+        self.ql.hw.create('SysTick', 'sys_tick', (0xE000E010, 0xE000E020))
 
         ## Memory Model
         self.BOOT = [0, 0]
@@ -24,42 +24,12 @@ class QlArchCORTEX_M(QlArchARM):
         self.mapinfo = {}
         self.perip_region = {}
 
-        def hook_perip_mem_write(ql, access, addr, size, value):
-            perip = self.search_peripheral(addr, addr+size)
-            if perip:
-                base = self.perip_region[perip.tag][0][0]
-                perip.write(addr - base, size, value)
-            else:
-                ql.log.warning('Write non-mapped peripheral (*0x%08x = 0x%08x)' % (addr, value))
-        
-        def hook_perip_mem_read(ql, access, addr, size, value):
-            perip = self.search_peripheral(addr, addr+size)
-            if perip:
-                base = self.perip_region[perip.tag][0][0]
-                ql.mem.write(addr, perip.read(addr - base, size))
-            else:
-                ql.log.warning('Read non-mapped peripheral (0x%08x)' % (addr))
-
-        self.perip_read_hook = hook_perip_mem_read
-        self.perip_write_hook = hook_perip_mem_write        
-
-    def search_peripheral(self, begin, end):
-        def check_bound(lbound, rbound):
-            return lbound <= begin and end <= rbound
-        
-        for tag, perip in self.ql.hw.items():
-            for lbound, rbound in self.perip_region[tag]:
-                if check_bound(lbound, rbound):
-                    return perip
-
     def get_init_uc(self):
         return Uc(UC_ARCH_ARM, UC_MODE_ARM + UC_MODE_MCLASS)
 
     def step(self):
-        self.ql.hw.nvic.interrupt()
         self.ql.emu_start(self.get_pc(), 0, count=1)
-        for _, hw in self.ql.hw.items():
-            hw.step()
+        self.ql.hw.step()
 
     def run(self, count=-1):        
         while count != 0:

@@ -8,7 +8,7 @@ from unicorn.unicorn import UcError
 from qiling.hw.peripheral import QlPeripheral
 
 
-class Nvic(QlPeripheral):
+class NVIC(QlPeripheral):
     def __init__(self, ql, base_addr):
         super().__init__(ql, base_addr)
         
@@ -74,7 +74,7 @@ class Nvic(QlPeripheral):
             val = self.ql.arch.stack_pop()
             self.ql.reg.write(reg, val)
 
-    def interrupt(self):
+    def step(self):
         self.save_regs()
 
         intrs = [i for i in range(self.INTR_NUM) if (self.pending[i] == 1 and self.enable[i])]

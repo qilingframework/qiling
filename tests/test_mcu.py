@@ -7,11 +7,11 @@
 import sys, unittest
 sys.path.append("..")
 
-from qiling.core import Qiling
-from qiling.const import QL_VERBOSE
-
 class MCUTest(unittest.TestCase):
     def test_mcu_led_stm32f411(self):
+        from qiling.core import Qiling
+        from qiling.const import QL_VERBOSE
+
         ql = Qiling(["../examples/rootfs/stm32f411/hex/rand_blink.hex"],                    
                     archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DISASM)
 
@@ -21,12 +21,15 @@ class MCUTest(unittest.TestCase):
         del ql
 
     def test_mcu_usart_output_stm32f411(self):
+        from qiling.core import Qiling
+        from qiling.const import QL_VERBOSE
+
         ql = Qiling(["../examples/rootfs/stm32f411/hex/hello_usart.hex"],                    
                     archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DEFAULT)
         
         # create/remove
-        ql.hw.add_hardware('char', 'usart', 'usart2')
-        ql.hw.add_hardware('misc', 'stm32f4_rcc', 'rcc')
+        ql.hw.create('USART', 'usart2', (0x40004400, 0x40004800))
+        ql.hw.create('STM32F4RCC', 'rcc', (0x40023800, 0x40023C00))
         ql.run(count=2000)
 
         del ql
