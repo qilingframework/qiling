@@ -22,7 +22,7 @@ class SysTick(QlPeripheral):
 
     def step(self):
         if self.stk_val == 0:
-            self.ql.hw.nvic.send_interrupt(15)
+            self.ql.hw.nvic.set_pending(-1)
             self.stk_val = self.stk_load
         
         self.stk_val -= 1

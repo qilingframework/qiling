@@ -5,16 +5,17 @@
 
 from unicorn import *
 from qiling.const import *
-
 from .arm import QlArchARM
+
 
 class QlArchCORTEX_M(QlArchARM):
     def __init__(self, ql):
         super().__init__(ql)
 
         ## Core Hardwares
-        self.ql.hw.create('NVIC', 'nvic', [(0xE000E100, 0xE000E4F0), (0xE000EF00, 0xE000EF04)])
-        self.ql.hw.create('SysTick', 'sys_tick', (0xE000E010, 0xE000E020))
+        self.ql.hw.create('NVIC'   , 'nvic'   , [(0xE000E100, 0xE000E4F0), (0xE000EF00, 0xE000EF04)])
+        self.ql.hw.create('SCB'    , 'sysctrl', (0xE000ED00, 0xE000ED3F))
+        self.ql.hw.create('SysTick', 'systick', (0xE000E010, 0xE000E020))
 
         ## Memory Model
         self.BOOT = [0, 0]

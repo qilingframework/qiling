@@ -11,3 +11,4 @@ from .intc.nvic import NVIC
 from .timer.sys_tick import SysTick
 
 from .misc.stm32f4_rcc import STM32F4RCC
+from .misc.sysctrl import SCB
