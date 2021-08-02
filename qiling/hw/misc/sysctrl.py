@@ -95,3 +95,9 @@ class SCB(QlPeripheral):
         if IRQn == -1:
             return (self.scb.ICSR  >> 26) & 1
         return 0
+
+    def read(self, offset, size):
+        return 0
+
+    def write(self, offset, size, value):
+        pass
