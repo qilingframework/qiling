@@ -16,7 +16,7 @@ class QlPeripheral:
         return register
 
     ### Read/Write Peripheral Memory
-    def read(self, offset, size) -> bytes:
+    def read(self, offset, size) -> int:
         if size in [1, 2, 4, 8]:
             real_addr = self.ql.hw.base_addr(self.tag) + offset
             data = self.ql.mem.read(real_addr, size)
