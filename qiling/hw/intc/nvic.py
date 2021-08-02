@@ -37,9 +37,20 @@ class NVIC(QlPeripheral):
         NVIC_Type = type(self).Type
         self.nvic = NVIC_Type()
 
+        ## The max number of interrupt request
         self.IRQN_MAX = NVIC_Type.ISER.size * 8
+
+        ## The ISER unit size
         self.MASK     = self.IRQN_MAX // len(self.nvic.ISER) - 1
         self.OFFSET   = self.MASK.bit_length()
+
+        ## special write behavior
+        self.triggers = [
+            (NVIC_Type.ISER, self.enable),
+            (NVIC_Type.ICER, self.disable),
+            (NVIC_Type.ISPR, self.set_pending),
+            (NVIC_Type.ICPR, self.clear_pending),
+        ]
 
         self.reg_context = ['xpsr', 'pc', 'lr', 'r12', 'r3', 'r2', 'r1', 'r0']
 
@@ -126,3 +137,23 @@ class NVIC(QlPeripheral):
             self.handle_interupt((IRQn + 16) << 2)            
 
         self.restore_regs()
+
+    def read(self, offset, size):
+        buf = ctypes.create_string_buffer(size)
+        ctypes.memmove(buf, ctypes.addressof(self.nvic) + offset, size)
+        return int.from_bytes(buf.raw, byteorder='little', signed=False)
+
+    def write(self, offset, size, value):
+        def write_byte(ofs, byte):
+            for var, func in self.trigger:
+                if var.offset <= ofs < var.offset + var.size:
+                    for i in range(8):
+                        if (byte >> i) & 1:
+                            func(i + ofs - var.offset)
+                    break
+            else:
+                ctypes.memmove(ctypes.addressof(self.nvic) + ofs, byte, 1)
+
+        for ofs in range(offset, offset + size):
+            write_byte(ofs, value & 0xff)
+            value >>= 8
