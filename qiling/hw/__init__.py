@@ -12,3 +12,5 @@ from .timer.sys_tick import SysTick
 
 from .misc.stm32f4_rcc import STM32F4RCC
 from .misc.sysctrl import SCB
+
+from .gpio.stm32f4 import STM32F4GPIO

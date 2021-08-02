@@ -15,16 +15,16 @@ class QlHwManager:
         self._region = {}
         self.band_alias = {}
 
-    def create(self, name, tag, region):
+    def create(self, name, tag, region, **kwargs):
         """You can access the `hw_tag` by `ql.hw.hw_tag` or `ql.hw['hw_tag']`"""
 
         if type(region) is tuple:
             region = [region]
+        self._region[tag] = region
 
-        entity = ql_get_module_function('qiling.hw', name)(self.ql, tag)    
+        entity = ql_get_module_function('qiling.hw', name)(self.ql, tag, **kwargs)    
 
         self._entity[tag] = entity
-        self._region[tag] = region
 
         setattr(self, tag, entity)
     
@@ -98,7 +98,7 @@ class QlHwManager:
             base_addr = in_band_alias(address)
             if base_addr != False:
                 real_addr = alias_to_bitband(base_addr, offset)
-                ql.log.warning(f'{info} Read bit-band alias [{hex(address)}], redirect to [{hex(real_addr)}] = {hex(value)}')
+                ql.log.warning(f'{info} Read bit-band alias [{hex(address)}], redirect to [{hex(real_addr)}]')
                 address = real_addr
 
             tag, hardware = self.find(address, size)

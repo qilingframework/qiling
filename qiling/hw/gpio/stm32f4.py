@@ -1,4 +1,5 @@
 from enum import Enum
+from qiling.hw.peripheral import QlPeripheral
 
 
 class Register(Enum):
@@ -14,6 +15,30 @@ class Register(Enum):
     GPIOx_AFRH      = 0x24  # GPIO alternate function high register - Read-Write
 
 
-# class 
+class STM32F4GPIO(QlPeripheral):
+    def __init__(self, ql, tag, **kwargs):
+        super().__init__(ql, tag, **kwargs)
+        self.mode_reset = 0x00, 
+        self.ospeed_reset = 0x00,
+        self.pupd_reset = 0x00
+
+        mode_value = kwargs.get('mode_reset', None)
+        ospeed_value = kwargs.get('ospeed_reset', None)
+        pupd_value = kwargs.get('pupd_reset', None)
+
+        if mode_value:
+            self.mode_reset = mode_value
+        if ospeed_value:
+            self.ospeed_reset = ospeed_value
+        if pupd_value:
+            self.ospeed_reset = pupd_value
+
+        self.base_addr = self.ql.hw.base_addr(tag)
+
+        self.create_gpiox_registers()
+
+
+    def create_gpiox_registers(self):
+        self.add_register(self.base_addr, 0x00, 'MODER', self.mode_reset)
 
 
