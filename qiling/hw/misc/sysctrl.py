@@ -67,9 +67,9 @@ class SCB(QlPeripheral):
         if IRQn == IRQ.NMI:
             self.scb.ICSR |= 1 << 31
         if IRQn == IRQ.PENDSV:
-            self.scb.ICSR |= 2 << 27 # set-bit and clear-bit
+            self.scb.ICSR |= 3 << 27 # set-bit and clear-bit
         if IRQn == IRQ.SYSTICK:
-            self.scb.ICSR |= 2 << 25 # set-bit and clear-bit
+            self.scb.ICSR |= 3 << 25 # set-bit and clear-bit
 
         if IRQn == IRQ.MEMORY_MANAGEMENT_FAULT:
             self.scb.SHCSR |= 1 << 13
@@ -84,9 +84,9 @@ class SCB(QlPeripheral):
         if IRQn == IRQ.NMI:
             self.scb.ICSR &= (1 << 31) ^ 0xffffffff
         if IRQn == IRQ.PENDSV:
-            self.scb.ICSR &= (2 << 27) ^ 0xffffffff
+            self.scb.ICSR &= (3 << 27) ^ 0xffffffff
         if IRQn == IRQ.SYSTICK:
-            self.scb.ICSR &= (2 << 25) ^ 0xffffffff
+            self.scb.ICSR &= (3 << 25) ^ 0xffffffff
 
         if IRQn == IRQ.MEMORY_MANAGEMENT_FAULT:
             self.scb.SHCSR &= (1 << 13) ^ 0xffffffff
@@ -99,11 +99,11 @@ class SCB(QlPeripheral):
 
     def get_pending(self, IRQn):
         if IRQn == IRQ.NMI:
-            return (self.scb.SHCSR >> 31) & 1
+            return (self.scb.ICSR >> 31) & 1
         if IRQn == IRQ.PENDSV:
-            return (self.scb.SHCSR >> 28) & 1
+            return (self.scb.ICSR >> 28) & 1
         if IRQn == IRQ.SYSTICK:
-            return (self.scb.SHCSR >> 26) & 1
+            return (self.scb.ICSR >> 26) & 1
 
         if IRQn == IRQ.MEMORY_MANAGEMENT_FAULT:
             return (self.scb.SHCSR >> 13) & 1

@@ -52,6 +52,7 @@ class NVIC(QlPeripheral):
             (NVIC_Type.ICPR, self.clear_pending),
         ]
 
+        self.intrs = []
         self.reg_context = ['xpsr', 'pc', 'lr', 'r12', 'r3', 'r2', 'r1', 'r0']
 
     def enable(self, IRQn):
@@ -79,14 +80,17 @@ class NVIC(QlPeripheral):
             self.nvic.ISPR[IRQn >> self.OFFSET] |= 1 << (IRQn & self.MASK)
             self.nvic.ICPR[IRQn >> self.OFFSET] |= 1 << (IRQn & self.MASK)
         else:
-            return self.ql.hw.sysctrl.set_pending(IRQn)
+            self.ql.hw.sysctrl.set_pending(IRQn)
+        
+        if self.get_enable(IRQn):
+            self.intrs.append(IRQn)
 
     def clear_pending(self, IRQn):
         if IRQn >= 0:
             self.nvic.ISPR[IRQn >> self.OFFSET] &= self.MASK ^ (1 << (IRQn & self.MASK))
             self.nvic.ICPR[IRQn >> self.OFFSET] &= self.MASK ^ (1 << (IRQn & self.MASK))
         else:
-            return self.ql.hw.sysctrl.clear_pending(IRQn)
+            self.ql.hw.sysctrl.clear_pending(IRQn)
 
     def get_pending(self, IRQn):
         if IRQn >= 0:
@@ -126,17 +130,17 @@ class NVIC(QlPeripheral):
         self.ql.log.debug('Exit from interrupt')
 
     def step(self):
-        intrs = [IRQn for IRQn in range(-15, self.IRQN_MAX) if (self.get_pending(IRQn) and self.get_enable(IRQn))]        
-        if not intrs:
+        if not self.intrs:
             return
 
-        intrs.sort(key=lambda x: self.get_priority(x))
+        self.intrs.sort(key=lambda x: self.get_priority(x))
         self.save_regs()
                 
-        for IRQn in intrs:
+        for IRQn in self.intrs:
             self.clear_pending(IRQn)
             self.handle_interupt((IRQn + 16) << 2)            
 
+        self.intrs.clear()
         self.restore_regs()
 
     def read(self, offset, size):
