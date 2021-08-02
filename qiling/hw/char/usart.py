@@ -3,35 +3,38 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import struct
+import ctypes
 from qiling.hw.peripheral import QlPeripheral
 
+
 class USART(QlPeripheral):
-    SR = 0x00
-    DR = 0x04
-    BRR = 0x08
-    CR1 = 0x0C
-    CR2 = 0x10
-    CR3 = 0x14
-    GTPR = 0x18
+    class Type(ctypes.Structure):
+        _fields_ = [
+            ('SR'  , ctypes.c_uint32),
+            ('DR'  , ctypes.c_uint32),
+            ('BRR' , ctypes.c_uint32),
+            ('CR1' , ctypes.c_uint32),
+            ('CR2' , ctypes.c_uint32),
+            ('CR3' , ctypes.c_uint32),
+            ('GTPR', ctypes.c_uint32),
+        ]
 
     def __init__(self, ql, tag):
         super().__init__(ql, tag)
-        self.mem = { 
-            USART.SR: 0xc0, 
-            USART.DR: 0x00,
-            USART.BRR: 0x00,
-            USART.CR1: 0x00,
-            USART.CR2: 0x00,
-            USART.CR3: 0x00,
-            USART.GTPR: 0x00,
-        }
+        
+        USART_Type = type(self).Type
+        self.usart = USART_Type(
+            SR = 0xc0,
+        )
 
     def read(self, offset, size):
-        retval = self.mem[offset]
-        return retval
+        buf = ctypes.create_string_buffer(size)
+        ctypes.memmove(buf, ctypes.addressof(self.usart) + offset, size)
+        return int.from_bytes(buf.raw, byteorder='little', signed=False)
 
     def write(self, offset, size, value):
-        self.mem[offset] = value
-        if offset == USART.DR:
-            self.ql.log.info('[usart] %s' % (repr(chr(value))))
+        data = (value).to_bytes(size, byteorder='little', signed=False)
+        ctypes.memmove(ctypes.addressof(self.usart) + offset, data, size)
+
+        if offset == type(self).Type.DR.offset:
+            self.ql.log.info('[%s] %s' % (self.tag, repr(chr(value))))

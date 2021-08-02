@@ -32,11 +32,11 @@ class SCB(QlPeripheral):
         super().__init__(ql, tag)
 
         SCB_Type = type(self).Type
-        self.scb = SCB_Type()
-
-        self.scb.CPUID = 0x410FC241
-        self.scb.AIRCR = 0xFA050000
-        self.scb.CCR   = 0x00000200
+        self.scb = SCB_Type(
+            CPUID = 0x410FC241,
+            AIRCR = 0xFA050000,
+            CCR   = 0x00000200,
+        )
 
     def enable(self, IRQn):
         if IRQn == IRQ.USAGE_FAULT:
