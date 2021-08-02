@@ -27,8 +27,8 @@ class NVIC(QlPeripheral):
             ('STIR'     , ctypes.c_uint32 * 8),
         ]
 
-    def __init__(self, ql, base_addr):
-        super().__init__(ql, base_addr)
+    def __init__(self, ql, tag):
+        super().__init__(ql, tag)
         
         # reference:
         # https://www.youtube.com/watch?v=uFBNf7F3l60

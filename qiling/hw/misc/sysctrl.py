@@ -34,8 +34,8 @@ class SCB(QlPeripheral):
             ('CPACR'    , ctypes.c_uint32)
         ]
 
-    def __init__(self, ql, base_addr):
-        super().__init__(ql, base_addr)
+    def __init__(self, ql, tag):
+        super().__init__(ql, tag)
 
         SCB_Type = type(self).Type
         self.scb = SCB_Type()

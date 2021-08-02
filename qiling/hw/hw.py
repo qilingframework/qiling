@@ -21,8 +21,7 @@ class QlHwManager:
         if type(region) is tuple:
             region = [region]
 
-        base_addr = region[0][0]
-        entity = ql_get_module_function('qiling.hw', name)(self.ql, base_addr)    
+        entity = ql_get_module_function('qiling.hw', name)(self.ql, tag)    
 
         self._entity[tag] = entity
         self._region[tag] = region
@@ -42,6 +41,9 @@ class QlHwManager:
                     return tag, self._entity[tag]
         
         return '', None
+
+    def base_addr(self, tag):
+        return self._region[tag][0][0]
 
     def step(self):
         for _, entity in self._entity.items():
@@ -63,7 +65,7 @@ class QlHwManager:
         def mmio_read_cb(ql, access, addr, size, value):
             tag, hardware = self.find(addr, size)
             if hardware:
-                base = self._region[tag][0][0]
+                base = self.base_addr(tag)
                 value = hardware.read(addr - base, size)
                 ql.mem.write(addr, (value).to_bytes(size, byteorder='little'))
             else:
@@ -74,7 +76,7 @@ class QlHwManager:
         def mmio_write_cb(ql, access, addr, size, value):
             tag, hardware = self.find(addr, size)
             if hardware:
-                base = self._region[tag][0][0]
+                base = self.base_addr(tag)
                 hardware.write(addr - base, size, value)
             else:
                 ql.log.warning('%s Write non-mapped hardware [0x%08x] = 0x%08x' % (info, addr, value))
@@ -102,7 +104,7 @@ class QlHwManager:
             tag, hardware = self.find(address, size)
             
             if hardware:
-                base = self._region[tag][0][0]
+                base = self.base_addr(tag)
                 return hardware.read(address - base, size)
             else:
                 ql.log.warning('%s Read non-mapped hardware [0x%08x]' % (info, address))
@@ -121,7 +123,7 @@ class QlHwManager:
             tag, hardware = self.find(address, size)
 
             if hardware:
-                base = self._region[tag][0][0]
+                base = self.base_addr(tag)
                 hardware.write(address - base, size, value)
             else:
                 ql.log.warning('%s Write non-mapped hardware [0x%08x] = 0x%08x' % (info, address, value))

@@ -15,8 +15,8 @@ class USART(QlPeripheral):
     CR3 = 0x14
     GTPR = 0x18
 
-    def __init__(self, ql, base_addr):
-        super().__init__(ql, base_addr)
+    def __init__(self, ql, tag):
+        super().__init__(ql, tag)
         self.mem = { 
             USART.SR: 0xc0, 
             USART.DR: 0x00,

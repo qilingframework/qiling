@@ -7,8 +7,8 @@ from qiling.hw.peripheral import QlPeripheral
 
 
 class STM32F4RCC(QlPeripheral):
-    def __init__(self, ql, base_addr):
-        super().__init__(ql, base_addr)
+    def __init__(self, ql, tag):
+        super().__init__(ql, tag)
         self.mem = {}
 
     def read(self, offset, size):

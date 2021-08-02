@@ -12,8 +12,8 @@ class SysTick(QlPeripheral):
     STK_VAL   = 2
     STK_CALIB = 3
 
-    def __init__(self, ql, base_addr):
-        super().__init__(ql, base_addr)
+    def __init__(self, ql, tag):
+        super().__init__(ql, tag)
 
         self.stk_ctrl  = 0x00000000
         self.stk_load  = 0x00000010
