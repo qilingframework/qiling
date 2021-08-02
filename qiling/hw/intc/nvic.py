@@ -126,11 +126,12 @@ class NVIC(QlPeripheral):
         self.ql.log.debug('Exit from interrupt')
 
     def step(self):
-        self.save_regs()
-
-        intrs = [IRQn for IRQn in range(-15, self.IRQN_MAX) if (self.get_pending(IRQn) and self.get_enable(IRQn))]
+        intrs = [IRQn for IRQn in range(-15, self.IRQN_MAX) if (self.get_pending(IRQn) and self.get_enable(IRQn))]        
+        if not intrs:
+            return
 
         intrs.sort(key=lambda x: self.get_priority(x))
+        self.save_regs()
                 
         for IRQn in intrs:
             self.clear_pending(IRQn)
