@@ -7,6 +7,7 @@
 import ctypes
 
 from qiling.hw.peripheral import QlPeripheral
+from qiling.hw.const.cm import IRQ
 
 class SCB(QlPeripheral):
     class Type(ctypes.Structure):
@@ -25,13 +26,6 @@ class SCB(QlPeripheral):
             ('MMFAR'    , ctypes.c_uint32),
             ('BFSR'     , ctypes.c_uint32),
             ('AFSR'     , ctypes.c_uint32),
-            ('PFR'      , ctypes.c_uint32 * 2),
-            ('DFR'      , ctypes.c_uint32),
-            ('ADR'      , ctypes.c_uint32),
-            ('MMFR'     , ctypes.c_uint32 * 4),
-            ('ISAR'     , ctypes.c_uint32 * 5),
-            ('RESERVED0', ctypes.c_uint32 * 5),
-            ('CPACR'    , ctypes.c_uint32)
         ]
 
     def __init__(self, ql, tag):
@@ -40,64 +34,91 @@ class SCB(QlPeripheral):
         SCB_Type = type(self).Type
         self.scb = SCB_Type()
 
+        self.scb.CPUID = 0x410FC241
+        self.scb.AIRCR = 0xFA050000
+        self.scb.CCR   = 0x00000200
+
     def enable(self, IRQn):
-        if IRQn in [-10, -11, -12]:
-            self.scb.SHCSR |= 1 << (28 + IRQn)
+        if IRQn == IRQ.USAGE_FAULT:
+            self.scb.SHCSR |= 1 << 18
+        if IRQn == IRQ.BUS_FAULT:
+            self.scb.SHCSR |= 1 << 17
+        if IRQn == IRQ.MEMORY_MANAGEMENT_FAULT:
+            self.scb.SHCSR |= 1 << 16
         
     def disable(self, IRQn):
-        if IRQn in [-10, -11, -12]:
-            self.scb.SHCSR &= (1 << (28 + IRQn)) ^ 0xffffffff
+        if IRQn == IRQ.USAGE_FAULT:
+            self.scb.SHCSR &= (1 << 18) ^ 0xffffffff
+        if IRQn == IRQ.BUS_FAULT:
+            self.scb.SHCSR &= (1 << 17) ^ 0xffffffff
+        if IRQn == IRQ.MEMORY_MANAGEMENT_FAULT:
+            self.scb.SHCSR &= (1 << 16) ^ 0xffffffff
 
     def get_enable(self, IRQn):
-        if IRQn in [-10, -11, -12]:
-            return (self.scb.SHCSR >> (28 + IRQn)) & 1
+        if IRQn == IRQ.USAGE_FAULT:
+            return (self.scb.SHCSR >> 18) & 1
+        if IRQn == IRQ.BUS_FAULT:
+            return (self.scb.SHCSR >> 17) & 1
+        if IRQn == IRQ.MEMORY_MANAGEMENT_FAULT:
+            return (self.scb.SHCSR >> 16) & 1
         return 1
 
     def set_pending(self, IRQn):
-        if IRQn == -12:
+        if IRQn == IRQ.NMI:
+            self.scb.ICSR |= 1 << 31
+        if IRQn == IRQ.PENDSV:
+            self.scb.ICSR |= 2 << 27 # set-bit and clear-bit
+        if IRQn == IRQ.SYSTICK:
+            self.scb.ICSR |= 2 << 25 # set-bit and clear-bit
+
+        if IRQn == IRQ.MEMORY_MANAGEMENT_FAULT:
             self.scb.SHCSR |= 1 << 13
-        if IRQn == -11:
+        if IRQn == IRQ.BUS_FAULT:
             self.scb.SHCSR |= 1 << 14        
-        if IRQn == -10:
+        if IRQn == IRQ.USAGE_FAULT:
             self.scb.SHCSR |= 1 << 12
-        if IRQn == -5:
-            self.scb.SHCSR |= 1 << 15        
-        if IRQn == -2:
-            self.scb.ICSR  |= 1 << 28
-        if IRQn == -1:
-            self.scb.ICSR  |= 1 << 26
+        if IRQn == IRQ.SVCALL:
+            self.scb.SHCSR |= 1 << 15
 
     def clear_pending(self, IRQn):
-        if IRQn == -12:
+        if IRQn == IRQ.NMI:
+            self.scb.ICSR &= (1 << 31) ^ 0xffffffff
+        if IRQn == IRQ.PENDSV:
+            self.scb.ICSR &= (2 << 27) ^ 0xffffffff
+        if IRQn == IRQ.SYSTICK:
+            self.scb.ICSR &= (2 << 25) ^ 0xffffffff
+
+        if IRQn == IRQ.MEMORY_MANAGEMENT_FAULT:
             self.scb.SHCSR &= (1 << 13) ^ 0xffffffff
-        if IRQn == -11:
-            self.scb.SHCSR &= (1 << 14) ^ 0xffffffff
-        if IRQn == -10:
+        if IRQn == IRQ.BUS_FAULT:
+            self.scb.SHCSR &= (1 << 14) ^ 0xffffffff        
+        if IRQn == IRQ.USAGE_FAULT:
             self.scb.SHCSR &= (1 << 12) ^ 0xffffffff
-        if IRQn == -5:
+        if IRQn == IRQ.SVCALL:
             self.scb.SHCSR &= (1 << 15) ^ 0xffffffff
-        if IRQn == -2:
-            self.scb.ICSR  &= (1 << 28) ^ 0xffffffff
-        if IRQn == -1:
-            self.scb.ICSR  &= (1 << 26) ^ 0xffffffff
 
     def get_pending(self, IRQn):
-        if IRQn == -12:
+        if IRQn == IRQ.NMI:
+            return (self.scb.SHCSR >> 31) & 1
+        if IRQn == IRQ.PENDSV:
+            return (self.scb.SHCSR >> 28) & 1
+        if IRQn == IRQ.SYSTICK:
+            return (self.scb.SHCSR >> 26) & 1
+
+        if IRQn == IRQ.MEMORY_MANAGEMENT_FAULT:
             return (self.scb.SHCSR >> 13) & 1
-        if IRQn == -11:
-            return (self.scb.SHCSR >> 14) & 1
-        if IRQn == -10:
+        if IRQn == IRQ.BUS_FAULT:
+            return (self.scb.SHCSR >> 14) & 1        
+        if IRQn == IRQ.USAGE_FAULT:
             return (self.scb.SHCSR >> 12) & 1
-        if IRQn == -5:
+        if IRQn == IRQ.SVCALL:
             return (self.scb.SHCSR >> 15) & 1
-        if IRQn == -2:
-            return (self.scb.ICSR  >> 28) & 1
-        if IRQn == -1:
-            return (self.scb.ICSR  >> 26) & 1
         return 0
 
     def read(self, offset, size):
-        return 0
+        buf = ctypes.create_string_buffer(size)
+        ctypes.memmove(buf, ctypes.addressof(self.scb) + offset, size)
+        return int.from_bytes(buf.raw, byteorder='little', signed=False)
 
     def write(self, offset, size, value):
         pass
