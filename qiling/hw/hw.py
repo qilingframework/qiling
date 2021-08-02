@@ -4,6 +4,7 @@
 #
 
 from qiling.utils import ql_get_module_function
+from qiling.hw.utils.bitbanding import alias_to_bitband
 
 
 class QlHwManager:
@@ -12,6 +13,7 @@ class QlHwManager:
 
         self._entity = {}
         self._region = {}
+        self.band_alias = {}
 
     def create(self, name, tag, region):
         """You can access the `hw_tag` by `ql.hw.hw_tag` or `ql.hw['hw_tag']`"""
@@ -27,6 +29,9 @@ class QlHwManager:
 
         setattr(self, tag, entity)
     
+    def create_band_alias(self, name:str, base_addr:int, alias_addr, size:int):
+        self.band_alias[name] = (base_addr, alias_addr, alias_addr + size - 1)
+
     def find(self, addr, size):
         def check_bound(lbound, rbound):
             return lbound <= addr and addr + size <= rbound
@@ -79,9 +84,23 @@ class QlHwManager:
         self.ql.hook_mem_write(mmio_write_cb, begin=begin, end=begin + size)
 
     def setup_mmio2(self, begin, size, info=""):
+        def in_band_alias(addr):
+            for v in self.band_alias.values():
+                if v[1] <= addr <= v[2]:
+                    return v[0]
+            return False
+
         def mmio_read_cb(ql, offset, size):
             address = begin + offset
+
+            base_addr = in_band_alias(address)
+            if base_addr != False:
+                real_addr = alias_to_bitband(base_addr, offset)
+                ql.log.warning(f'{info} Read bit-band alias [{hex(address)}], redirect to [{hex(real_addr)}] = {hex(value)}')
+                address = real_addr
+
             tag, hardware = self.find(address, size)
+            
             if hardware:
                 base = self._region[tag][0][0]
                 return hardware.read(address - base, size)
@@ -92,7 +111,15 @@ class QlHwManager:
 
         def mmio_write_cb(ql, offset, size, value):
             address = begin + offset
+            
+            base_addr = in_band_alias(address)
+            if base_addr != False:
+                real_addr = alias_to_bitband(base_addr, offset)
+                ql.log.warning(f'{info} Write bit-band alias [{hex(address)}], redirect to [{hex(real_addr)}] = {hex(value)}')
+                address = real_addr
+
             tag, hardware = self.find(address, size)
+
             if hardware:
                 base = self._region[tag][0][0]
                 hardware.write(address - base, size, value)
