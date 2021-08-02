@@ -55,12 +55,6 @@ class QlHwManager:
     def __setitem__(self, key, value):
         self._entity[key] = value
 
-    ## FIXME: Bugs in unicorn2
-    ## `setup_mmio` and `setup_mmio2` are both used to set the mmio
-    ## `setup_mmio`  uses the `hook_mem` to simulate the mmio in Qiling
-    ## `setup_mmio2` uses the unicorn2 `hook_mmio` which have some *bugs*
-    ## so I use `setup_mmio` as a temporary solution before it is fixed
-
     def setup_mmio(self, begin, size, info=""):
         def mmio_read_cb(ql, access, addr, size, value):
             tag, hardware = self.find(addr, size)

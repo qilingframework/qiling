@@ -85,8 +85,8 @@ class QlLoaderMCU(QlLoader):
         for begin, end, data in self.ihexfile.segments:
             self.ql.mem.write(begin, data)
 
-        self.ql.hw.setup_mmio(0x40000000, 0x1000000, info='[PPB]')
-        self.ql.hw.setup_mmio(0xE0000000, 0x1000000, info='[PERIP]')
+        self.ql.hw.setup_mmio2(0x40000000, 0x1000000, info='[PPB]')
+        self.ql.hw.setup_mmio2(0xE0000000, 0x1000000, info='[PERIP]')
         self.ql.hw.setup_mmio2(0x22000000, 0x2000000, info="[SRAM Memory]")
         self.ql.hw.setup_mmio2(0x42000000, 0x2000000, info="[Peripheral Memory]")
 
