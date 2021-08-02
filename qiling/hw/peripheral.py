@@ -21,46 +21,13 @@ class QlPeripheral:
         if size in [1, 2, 4, 8]:
             real_addr = self.base_addr + offset
             data = self.ql.mem.read(real_addr, size)
-            return bytes(data)
+            return int.from_bytes(data, byteorder='little', signed=False)
         
         return 0
 
     def write(self, offset, size, value):
         if size in [1, 2, 4, 8]:
             real_addr = self.base_addr + offset
-            self.ql.mem.write(real_addr, self.pack(size, value))
+            self.ql.mem.write(real_addr, (value).to_bytes(size, byteorder='little', signed=False))
         else:
             raise ValueError
-
-    ### Utils
-    def pack(self, size, data):
-        return {
-                1: self.ql.pack8,
-                2: self.ql.pack16,
-                4: self.ql.pack32,
-                8: self.ql.pack64,
-                }.get(size)(data)
-
-    def packs(self, size, data):
-        return {
-                1: self.ql.pack8s,
-                2: self.ql.pack16s,
-                4: self.ql.pack32s,
-                8: self.ql.pack64s,
-                }.get(size)(data)
-
-    def unpack(self, size, data):
-        return {
-                1: self.ql.unpack8,
-                2: self.ql.unpack16,
-                4: self.ql.unpack32,
-                8: self.ql.unpack64,
-                }.get(size)(data)
-
-    def unpacks(self, size, data):
-        return {
-                1: self.ql.unpack8s,
-                2: self.ql.unpack16s,
-                4: self.ql.unpack32s,
-                8: self.ql.unpack64s,
-                }.get(size)(data)
