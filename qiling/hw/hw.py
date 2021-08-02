@@ -60,7 +60,7 @@ class QlHwManager:
             if hardware:
                 base = self._region[tag][0][0]
                 value = hardware.read(addr - base, size)
-                ql.mem.write(addr, ql.pack32(value))
+                ql.mem.write(addr, (value).to_bytes(size, byteorder='little'))
             else:
                 ql.log.warning('%s Read non-mapped hardware [0x%08x]' % (info, addr))
                 
