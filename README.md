@@ -51,7 +51,7 @@ Visit our website https://www.qiling.io for more information.
 ---
 #### License
 
-This project is released and distributed under [free software license GPLv2](https://github.com/qilingframework/qiling/blob/master/COPYING).
+This project is released and distributed under [free software license GPLv2](https://github.com/qilingframework/qiling/blob/master/COPYING) and later version.
 
 ---
 
