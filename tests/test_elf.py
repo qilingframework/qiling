@@ -1076,6 +1076,21 @@ class ELFTest(unittest.TestCase):
         self.assertTrue("bin\n" in output.read().decode("utf-8"))
         del ql
 
+
+    def test_armoabi_eb_linux_syscall_elf_static(self):
+        # src: https://github.com/qilingframework/qiling/blob/1f1e9bc756e59a0bfc112d32735f8882b1afc165/examples/src/linux/posix_syscall.c
+        path = ["../examples/rootfs/armeb_linux/bin/posix_syscall_msb.armoabi"]
+        rootfs = "../examples/rootfs/armeb_linux"
+        ql = Qiling(path, rootfs, verbose = QL_VERBOSE.DEBUG)
+        ql.run()
+
+    def test_armoabi_le_linux_syscall_elf_static(self):
+        # src: https://github.com/qilingframework/qiling/blob/1f1e9bc756e59a0bfc112d32735f8882b1afc165/examples/src/linux/posix_syscall.c
+        path = ["../examples/rootfs/arm_linux/bin/posix_syscall_lsb.armoabi"]
+        rootfs = "../examples/rootfs/arm_linux"
+        ql = Qiling(path, rootfs, verbose = QL_VERBOSE.DEBUG)
+        ql.run()
+
     def test_elf_linux_x86_getdents64(self):
         class MyPipe():
             def __init__(self):
