@@ -28,7 +28,16 @@ class MCUTest(unittest.TestCase):
         # create/remove
         ql.hw.create('USART', 'usart2', (0x40004400, 0x40004800))
         ql.hw.create('STM32F4RCC', 'rcc', (0x40023800, 0x40023C00))
+        
         ql.run(count=2000)
+        buf = ql.hw.usart2.recv()
+        print('[1] Received from usart: ', buf)
+        self.assertEqual(buf, b'Hello USART\n')
+
+        ql.run(count=40000)
+        buf = ql.hw.usart2.recv()
+        print('[2] Received from usart: ', buf)
+        self.assertEqual(buf, b'Hello USART\n')
 
         del ql
 
