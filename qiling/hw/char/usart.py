@@ -5,7 +5,7 @@
 
 import ctypes
 from qiling.hw.peripheral import QlPeripheral
-
+from qiling.hw.const.usart import STATE
 
 class USART(QlPeripheral):
     class Type(ctypes.Structure):
@@ -27,14 +27,41 @@ class USART(QlPeripheral):
             SR = 0xc0,
         )
 
+        self.SR = USART_Type.SR.offset
+        self.DR = USART_Type.DR.offset
+
+        self.recv_buf = bytearray()
+
+    def set_flag(self, offset, flag):
+        if flag:
+            self.usart.SR |= 1 << offset
+        else:
+            self.usart.SR &= (1 << offset) & 0xffffffff
+    
+    def get_flag(self, offset):
+        return (self.usart.SR >> offset) & 1        
+
     def read(self, offset, size):
+        if offset == self.DR:
+            self.set_flag(STATE.RXNE, 0) # clear RXNE
+            
         buf = ctypes.create_string_buffer(size)
         ctypes.memmove(buf, ctypes.addressof(self.usart) + offset, size)
-        return int.from_bytes(buf.raw, byteorder='little', signed=False)
+        return int.from_bytes(buf.raw, byteorder='little')
 
     def write(self, offset, size, value):
-        data = (value).to_bytes(size, byteorder='little', signed=False)
-        ctypes.memmove(ctypes.addressof(self.usart) + offset, data, size)
+        data = (value).to_bytes(size, byteorder='little')
 
-        if offset == type(self).Type.DR.offset:
+        if offset == self.DR:
             self.ql.log.info('[%s] %s' % (self.tag, repr(chr(value))))
+        else:
+            ctypes.memmove(ctypes.addressof(self.usart) + offset, data, size)
+
+    def send_raw(self, data: bytes):
+        self.recv_buf += data
+
+    def step(self):
+        if not self.get_flag(STATE.RXNE):
+            if self.recv_buf:
+                self.set_flag(STATE.RXNE, 1)
+                self.usart.DR = self.recv_buf.pop(0)

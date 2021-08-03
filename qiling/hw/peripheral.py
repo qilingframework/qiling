@@ -23,13 +23,13 @@ class QlPeripheral:
         if size in [1, 2, 4, 8]:
             real_addr = self.ql.hw.base_addr(self.tag) + offset
             # data = self.ql.mem.read(real_addr, size)
-            # return int.from_bytes(data, byteorder='little', signed=False)
+            # return int.from_bytes(data, byteorder='little')
         
         return 0
 
     def write(self, offset, size, value):
         if size in [1, 2, 4, 8]:
             real_addr = self.ql.hw.base_addr(self.tag) + offset
-            # self.ql.mem.write(real_addr, (value).to_bytes(size, byteorder='little', signed=False))
+            # self.ql.mem.write(real_addr, (value).to_bytes(size, byteorder='little'))
         else:
             raise ValueError
