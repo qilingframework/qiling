@@ -31,6 +31,7 @@ class USART(QlPeripheral):
         self.DR = USART_Type.DR.offset
 
         self.recv_buf = bytearray()
+        self.send_buf = bytearray()
 
     def set_flag(self, offset, flag):
         if flag:
@@ -53,12 +54,17 @@ class USART(QlPeripheral):
         data = (value).to_bytes(size, byteorder='little')
 
         if offset == self.DR:
-            self.ql.log.info('[%s] %s' % (self.tag, repr(chr(value))))
+            self.send_buf.append(value)
         else:
             ctypes.memmove(ctypes.addressof(self.usart) + offset, data, size)
 
-    def send_raw(self, data: bytes):
+    def send(self, data: bytes):
         self.recv_buf += data
+
+    def recv(self) -> bytes:
+        data = bytes(self.send_buf)
+        self.send_buf.clear()
+        return data
 
     def step(self):
         if not self.get_flag(STATE.RXNE):
