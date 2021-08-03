@@ -164,7 +164,7 @@ class QlLoaderPE_UEFI(QlLoader):
             if unload_ptr != 0:
                 self.ql.log.info(f'Unloading module {handle:#x}, calling {unload_ptr:#x}')
 
-                self.call_function(unload_ptr, [handle], self.end_of_execution_ptr)
+                self.call_function(unload_ptr, [handle], context.end_of_execution_ptr)
                 context.loaded_image_protocol_modules.remove(handle)
 
                 return True
@@ -204,7 +204,7 @@ class QlLoaderPE_UEFI(QlLoader):
             return
 
         path, image_base, entry_point, context = self.modules.pop(0)
-        self.execute_module(path, image_base, entry_point, context, self.end_of_execution_ptr)
+        self.execute_module(path, image_base, entry_point, context, context.end_of_execution_ptr)
 
     def __init_dxe_environment(self, ql: Qiling) -> DxeContext:
         """Initialize DXE data structures (BS, RT and DS) and install essential protocols.
@@ -238,6 +238,10 @@ class QlLoaderPE_UEFI(QlLoader):
 
         context.conf_table_data_ptr = conf_data
         context.conf_table_data_next_ptr = conf_data
+
+        # the end of execution hook should be set on an address that is not expected to be
+        # executed, like the system table location
+        context.end_of_execution_ptr = gST
 
         st.initialize(ql, context, gST)
 
@@ -288,6 +292,10 @@ class QlLoaderPE_UEFI(QlLoader):
         context.conf_table_data_ptr = conf_data
         context.conf_table_data_next_ptr = conf_data
 
+        # the end of execution hook should be set on an address that is not expected to be
+        # executed, like the system table location
+        context.end_of_execution_ptr = gSmst
+
         smst.initialize(ql, context, gSmst)
 
         protocols = (
@@ -329,10 +337,8 @@ class QlLoaderPE_UEFI(QlLoader):
 
                 if is_smm_module:
                     self.context = self.smm_context
-                    self.system_table = self.gSmst
                 else:
                     self.context = self.dxe_context
-                    self.system_table = self.gST
 
                 self.map_and_load(dependency, self.context)
 
@@ -342,10 +348,9 @@ class QlLoaderPE_UEFI(QlLoader):
             ql.log.critical("Couldn't map dependency")
 
         # set up an end-of-execution hook to regain control when module is done
-        # executing (i.e. when the entry point function returns). that should be
-        # set on an address that is not expected to be executed, so we picked SystemTable's address
-        self.end_of_execution_ptr = self.system_table
-        ql.hook_address(hook_EndOfExecution, self.end_of_execution_ptr)
+        # executing (i.e. when the entry point function returns).
+        ql.hook_address(hook_EndOfExecution, self.dxe_context.end_of_execution_ptr)
+        ql.hook_address(hook_EndOfExecution, self.smm_context.end_of_execution_ptr)
 
         self.execute_next_module()
 

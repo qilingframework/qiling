@@ -56,7 +56,7 @@ def execute_protocol_notifications(ql: Qiling, from_hook: bool = False) -> bool:
 	if from_hook:
 		ql.stack_push(next_hook)
 	else:
-		ql.stack_push(ql.loader.end_of_execution_ptr)
+		ql.stack_push(ql.loader.smm_context.end_of_execution_ptr)
 		ql.reg.arch_pc = next_hook
 
 	return True
@@ -71,7 +71,7 @@ def check_and_notify_protocols(ql: Qiling, from_hook: bool = False) -> bool:
 			# We need to push the address to the stack as opposed to setting it to the instruction pointer.
 			ql.loader.call_function(0, notify_context, notify_func)
 		else:
-			ql.loader.call_function(notify_func, notify_context, ql.loader.end_of_execution_ptr)
+			ql.loader.call_function(notify_func, notify_context, ql.loader.context.end_of_execution_ptr)
 
 		return True
 

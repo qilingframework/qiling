@@ -22,6 +22,7 @@ class UefiContext(ABC):
 		self.conf_table_data_next_ptr = 0
 
 		self.conftable: UefiConfTable
+		self.end_of_execution_ptr: int
 
 	# TODO: implement save state
 	def save(self) -> Mapping[str, Any]:
