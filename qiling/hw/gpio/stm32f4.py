@@ -1,3 +1,5 @@
+import ctypes
+
 from enum import Enum
 from qiling.hw.peripheral import QlPeripheral
 
@@ -16,8 +18,25 @@ class Register(Enum):
 
 
 class STM32F4GPIO(QlPeripheral):
+    class Type(ctypes.Structure):
+        _fields_ = [
+            ('MODER', ctypes.c_uint32),
+            ('OTYPER', ctypes.c_uint32),
+            ('OSPEEDR', ctypes.c_uint32),
+            ('PUPDR', ctypes.c_uint32),
+            ('IDR', ctypes.c_uint32),
+            ('ODR', ctypes.c_uint32),
+            ('BSRR', ctypes.c_uint32),
+            ('LCKR', ctypes.c_uint32),
+            ('AFR', ctypes.c_uint32 * 2)
+        ]
+
     def __init__(self, ql, tag, **kwargs):
         super().__init__(ql, tag, **kwargs)
+
+        GPIO_Type = type(self).Type
+        self.gpio = GPIO_Type()
+
         self.mode_reset = 0x00, 
         self.ospeed_reset = 0x00,
         self.pupd_reset = 0x00
@@ -33,12 +52,13 @@ class STM32F4GPIO(QlPeripheral):
         if pupd_value:
             self.ospeed_reset = pupd_value
 
-        self.base_addr = self.ql.hw.base_addr(tag)
+    def read(self, offset, size):
+        buf = ctypes.create_string_buffer(size)
+        ctypes.memmove(buf, ctypes.addressof(self.gpio) + offset, size)
+        return int.from_bytes(buf.raw, byteorder='little')
 
-        self.create_gpiox_registers()
-
-
-    def create_gpiox_registers(self):
-        self.add_register(self.base_addr, 0x00, 'MODER', self.mode_reset)
-
-
+    def write(self, offset, size, value):
+        for ofs in range(offset, offset + size):
+            data = (value & 0xff).to_bytes(size, byteorder='little')
+            ctypes.memmove(ctypes.addressof(self.rcc) + ofs, data, 1)
+            value >>= 8
