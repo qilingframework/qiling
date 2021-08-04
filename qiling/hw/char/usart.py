@@ -37,7 +37,7 @@ class USART(QlPeripheral):
         if flag:
             self.usart.SR |= 1 << offset
         else:
-            self.usart.SR &= (1 << offset) & 0xffffffff
+            self.usart.SR &= (1 << offset) ^ 0xffffffff
     
     def get_flag(self, offset):
         return (self.usart.SR >> offset) & 1        
