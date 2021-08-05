@@ -3,26 +3,44 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+import ctypes
 from qiling.hw.peripheral import QlPeripheral
 
 
 class SysTick(QlPeripheral):
-    STK_CTRL  = 0
-    STK_LOAD  = 1
-    STK_VAL   = 2
-    STK_CALIB = 3
+    class Type(ctypes.Structure):
+        _fields_ = [
+            ('CTRL' , ctypes.c_uint32),
+            ('LOAD' , ctypes.c_int32),
+            ('VAL'  , ctypes.c_int32),
+            ('CALIB', ctypes.c_uint32),
+        ]
 
     def __init__(self, ql, tag):
         super().__init__(ql, tag)
 
-        self.stk_ctrl  = 0x00000000
-        self.stk_load  = 0x00000010
-        self.stk_val   = 0x00000000
-        self.stk_calib = 0xC0000000
+        SysTick_Type = type(self).Type
+        self.systick = SysTick_Type()        
+        
+        self.RATIO = 1000
+        self.LOAD_OFFSET = SysTick_Type.LOAD.offset
 
     def step(self):
-        if self.stk_val == 0:
-            self.ql.hw.nvic.set_pending(-1)
-            self.stk_val = self.stk_load
-        
-        self.stk_val -= 1
+        if not self.systick.CTRL & 1:
+            return
+
+        if self.systick.VAL <= 0:
+            self.systick.VAL = self.systick.LOAD
+            if self.systick.CTRL & 2:
+                self.ql.hw.intc.set_pending(-1)
+        else:
+            self.systick.VAL -= self.RATIO
+
+    def read(self, offset, size):
+        buf = ctypes.create_string_buffer(size)
+        ctypes.memmove(buf, ctypes.addressof(self.systick) + offset, size)
+        return int.from_bytes(buf.raw, byteorder='little')
+
+    def write(self, offset, size, value):
+        data = (value).to_bytes(size, 'little')
+        ctypes.memmove(ctypes.addressof(self.systick) + offset, data, size)        
