@@ -44,6 +44,29 @@ linux_socket_domain = {
     'AF_MAX'       : 0xc,
 }
 
+
+linux_socket_level = {
+    'SOL_SOCKET'    : 0x0001,
+}
+
+
+linux_socket_options = {
+    "SO_DEBUG"      : 0x0001,
+    "SO_REUSEADDR"  : 0x0002,
+    "SO_KEEPALIVE"  : 0x0009,
+    "SO_DONTROUTE"  : 0x0005,
+    "SO_BROADCAST"  : 0x0006,
+    "SO_LINGER"     : 0x000d,
+    "SO_OOBINLINE"  : 0x000a,
+    "SO_SNDBUF"     : 0x0007,
+    "SO_RCVBUF"     : 0x0008,
+    "SO_SNDLOWAT"   : 0x0013,
+    "SO_RCVLOWAT"   : 0x0012,
+    "SO_SNDTIMEO"   : 0x0015,
+    "SO_RCVTIMEO"   : 0x0014,
+}
+
+
 macos_socket_domain = {
     'AF_UNSPEC'    : 0x0,
     'AF_LOCAL'     : 0x1,
@@ -129,6 +152,29 @@ arm_socket_domain = {
 }
 
 
+# https://gfiber.googlesource.com/toolchains/mindspeed/+/refs/heads/newkernel_dev/arm-unknown-linux-gnueabi/sysroot/usr/include/asm/socket.h
+arm_socket_level = {
+    'SOL_SOCKET'    : 0x0001,
+}
+
+# https://gfiber.googlesource.com/toolchains/mindspeed/+/refs/heads/newkernel_dev/arm-unknown-linux-gnueabi/sysroot/usr/include/asm/socket.h
+arm_socket_options = {
+    "SO_DEBUG"      : 0x0001,
+    "SO_REUSEADDR"  : 0x0002,
+    "SO_KEEPALIVE"  : 0x0009,
+    "SO_DONTROUTE"  : 0x0005,
+    "SO_BROADCAST"  : 0x0006,
+    "SO_LINGER"     : 0x000d,
+    "SO_OOBINLINE"  : 0x000a,
+    "SO_SNDBUF"     : 0x0007,
+    "SO_RCVBUF"     : 0x0008,
+    "SO_SNDLOWAT"   : 0x0013,
+    "SO_RCVLOWAT"   : 0x0012,
+    "SO_SNDTIMEO"   : 0x0015,
+    "SO_RCVTIMEO"   : 0x0014,
+}
+
+
 mips_socket_types = {
     'SOCK_DGRAM'     : 0x1,
     'SOCK_STREAM'    : 0x2,
@@ -192,6 +238,29 @@ mips_socket_domain = {
     'AF_SMC'        : 0x2b,
     'AF_MAX'        : 0x2c,
 }
+
+# https://docs.huihoo.com/doxygen/linux/kernel/3.7/arch_2mips_2include_2uapi_2asm_2socket_8h_source.html
+mips_socket_level = {
+    'SOL_SOCKET'    : 0xffff,
+}
+
+# https://docs.huihoo.com/doxygen/linux/kernel/3.7/arch_2mips_2include_2uapi_2asm_2socket_8h_source.html
+mips_socket_options = {
+    "SO_DEBUG"      : 0x0001,
+    "SO_REUSEADDR"  : 0x0004,
+    "SO_KEEPALIVE"  : 0x0008,
+    "SO_DONTROUTE"  : 0x0010,
+    "SO_BROADCAST"  : 0x0020,
+    "SO_LINGER"     : 0x0080,
+    "SO_OOBINLINE"  : 0x0100,
+    "SO_SNDBUF"     : 0x1001,
+    "SO_RCVBUF"     : 0x1002,
+    "SO_SNDLOWAT"   : 0x1003,
+    "SO_RCVLOWAT"   : 0x1004,
+    "SO_SNDTIMEO"   : 0x1005,
+    "SO_RCVTIMEO"   : 0x1006,
+}
+
 
 mac_open_flags = {
     "O_RDONLY"   : 0x0000,
