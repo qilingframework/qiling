@@ -78,12 +78,24 @@ def ql_syscall_socket(ql, socket_domain, socket_type, socket_protocol, *args, **
         if idx == -1:
             regreturn = -1
         else:
-            if ql.verbose >= QL_VERBOSE.DEBUG: # set REUSEADDR options under debug mode
+            # ql_socket.open should use host platform based socket_type.
+            try:
+                emu_socket_value = socket_type
+                emu_socket_type = socket_type_mapping(socket_type, ql.archtype)
+                socket_type = getattr(socket, emu_socket_type)
+                ql.log.debug("Convert emu_socket_type {}:{} to host platform based socket_type {}:{}".format(
+                    emu_socket_type, emu_socket_value, emu_socket_type, socket_type))
+
+            except Exception:
+                ql.log.debug("Can't convert emu_socket_type to host platform based socket_type")
+
+            if ql.verbose >= QL_VERBOSE.DEBUG:  # set REUSEADDR options under debug mode
                 ql.os.fd[idx] = ql_socket.open(socket_domain, socket_type, socket_protocol, (socket.SOL_SOCKET, socket.SO_REUSEADDR, 1))
             else:
                 ql.os.fd[idx] = ql_socket.open(socket_domain, socket_type, socket_protocol)
 
             regreturn = (idx)
+
     except Exception:
         ql.log.exception("")
         regreturn = -1
