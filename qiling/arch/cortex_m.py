@@ -13,7 +13,7 @@ class QlArchCORTEX_M(QlArchARM):
         super().__init__(ql)
 
         ## Core Hardwares
-        self.ql.hw.create('NVIC'   , 'nvic'   , [(0xE000E100, 0xE000E4F0), (0xE000EF00, 0xE000EF04)])
+        self.ql.hw.create('NVIC'   , 'intc'   , [(0xE000E100, 0xE000E4F0), (0xE000EF00, 0xE000EF04)])
         self.ql.hw.create('SCB'    , 'sysctrl', (0xE000ED00, 0xE000ED3F))
         self.ql.hw.create('SysTick', 'systick', (0xE000E010, 0xE000E020))
 
