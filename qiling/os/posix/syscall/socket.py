@@ -173,11 +173,19 @@ def ql_syscall_setsockopt(ql, sockfd, level, optname, optval_addr, optlen, *args
         ql.os.fd[sockfd].setsockopt(level, optname, None, optlen)
     else:
         try:
+            # TODO: Add function to resolve level and optname.
             # Fix for mips, mips SOL_SOCKET=0xffff
             # https://docs.huihoo.com/doxygen/linux/kernel/3.7/arch_2mips_2include_2uapi_2asm_2socket_8h_source.html
             if ql.archtype == QL_ARCH.MIPS and level == 0xffff:
                 level = getattr(socket, 'SOL_SOCKET')
-                ql.log.debug("level: {}".format(level))
+                ql.log.debug("Fix level for mips new level is {}".format(level))
+
+            # Fix for mips mips SO_REUSEADDR=0x04
+            # https://docs.huihoo.com/doxygen/linux/kernel/3.7/arch_2mips_2include_2uapi_2asm_2socket_8h_source.html
+            if ql.archtype == QL_ARCH.MIPS and optname == 0x04:
+                optname = getattr(socket, 'SO_REUSEADDR')
+                ql.log.debug("Fix optname for mips new optname is {}".format(optname))
+
             optval = ql.mem.read(optval_addr, optlen)
             ql.os.fd[sockfd].setsockopt(level, optname, optval, None)
         except UcError:
