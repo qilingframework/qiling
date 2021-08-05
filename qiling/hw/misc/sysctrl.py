@@ -121,4 +121,5 @@ class SCB(QlPeripheral):
         return int.from_bytes(buf.raw, byteorder='little')
 
     def write(self, offset, size, value):
-        pass
+        data = (value).to_bytes(size, 'little')
+        ctypes.memmove(ctypes.addressof(self.scb) + offset, data, size)

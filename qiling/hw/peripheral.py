@@ -20,16 +20,8 @@ class QlPeripheral:
 
     ### Read/Write Peripheral Memory
     def read(self, offset, size) -> int:
-        if size in [1, 2, 4, 8]:
-            real_addr = self.ql.hw.base_addr(self.tag) + offset
-            # data = self.ql.mem.read(real_addr, size)
-            # return int.from_bytes(data, byteorder='little')
-        
+        self.ql.log.warning('[%s] Read [0x%08x:%d]' % (self.tag, offset, size))
         return 0
 
     def write(self, offset, size, value):
-        if size in [1, 2, 4, 8]:
-            real_addr = self.ql.hw.base_addr(self.tag) + offset
-            # self.ql.mem.write(real_addr, (value).to_bytes(size, byteorder='little'))
-        else:
-            raise ValueError
+        self.ql.log.warning('[%s] Write [0x%08x:%d] = %08x' % (self.tag, offset, size, value))
