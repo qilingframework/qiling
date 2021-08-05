@@ -83,11 +83,11 @@ def ql_syscall_socket(ql, socket_domain, socket_type, socket_protocol, *args, **
                 emu_socket_value = socket_type
                 emu_socket_type = socket_type_mapping(socket_type, ql.archtype)
                 socket_type = getattr(socket, emu_socket_type)
-                ql.log.debug("Convert emu_socket_type {}:{} to host platform based socket_type {}:{}".format(
+                ql.log.info("Convert emu_socket_type {}:{} to host platform based socket_type {}:{}".format(
                     emu_socket_type, emu_socket_value, emu_socket_type, socket_type))
 
             except Exception:
-                ql.log.debug("Can't convert emu_socket_type to host platform based socket_type")
+                ql.log.info("Can't convert emu_socket_type to host platform based socket_type")
 
             if ql.verbose >= QL_VERBOSE.DEBUG:  # set REUSEADDR options under debug mode
                 ql.os.fd[idx] = ql_socket.open(socket_domain, socket_type, socket_protocol, (socket.SOL_SOCKET, socket.SO_REUSEADDR, 1))
@@ -173,6 +173,11 @@ def ql_syscall_setsockopt(ql, sockfd, level, optname, optval_addr, optlen, *args
         ql.os.fd[sockfd].setsockopt(level, optname, None, optlen)
     else:
         try:
+            # Fix for mips, mips SOL_SOCKET=0xffff
+            # https://docs.huihoo.com/doxygen/linux/kernel/3.7/arch_2mips_2include_2uapi_2asm_2socket_8h_source.html
+            if ql.archtype == QL_ARCH.MIPS and level == 0xffff:
+                level = getattr(socket, 'SOL_SOCKET')
+                ql.log.debug("level: {}".format(level))
             optval = ql.mem.read(optval_addr, optlen)
             ql.os.fd[sockfd].setsockopt(level, optname, optval, None)
         except UcError:
