@@ -173,18 +173,25 @@ def ql_syscall_setsockopt(ql, sockfd, level, optname, optval_addr, optlen, *args
         ql.os.fd[sockfd].setsockopt(level, optname, None, optlen)
     else:
         try:
-            # TODO: Add function to resolve level and optname.
-            # Fix for mips, mips SOL_SOCKET=0xffff
-            # https://docs.huihoo.com/doxygen/linux/kernel/3.7/arch_2mips_2include_2uapi_2asm_2socket_8h_source.html
-            if ql.archtype == QL_ARCH.MIPS and level == 0xffff:
-                level = getattr(socket, 'SOL_SOCKET')
-                ql.log.debug("Fix level for mips new level is {}".format(level))
+            try:
+                emu_level = level
+                emu_level_name = socket_level_mapping(emu_level, ql.archtype)
+                level = getattr(socket, emu_level_name)
+                ql.log.info("Convert emu_level {}:{} to host platform based level {}:{}".format(
+                    emu_level_name, emu_level, emu_level_name, level))
 
-            # Fix for mips mips SO_REUSEADDR=0x04
-            # https://docs.huihoo.com/doxygen/linux/kernel/3.7/arch_2mips_2include_2uapi_2asm_2socket_8h_source.html
-            if ql.archtype == QL_ARCH.MIPS and optname == 0x04:
-                optname = getattr(socket, 'SO_REUSEADDR')
-                ql.log.debug("Fix optname for mips new optname is {}".format(optname))
+            except Exception:
+                ql.log.info("Can't convert emu_level to host platform based level")
+
+            try:
+                emu_opt = optname
+                emu_opt_name = socket_option_mapping(emu_opt, ql.archtype)
+                optname = getattr(socket, emu_opt_name)
+                ql.log.info("Convert emu_optname {}:{} to host platform based optname {}:{}".format(
+                    emu_opt_name, emu_opt, emu_opt_name, optname))
+
+            except Exception:
+                ql.log.info("Can't convert emu_optname to host platform based optname")
 
             optval = ql.mem.read(optval_addr, optlen)
             ql.os.fd[sockfd].setsockopt(level, optname, optval, None)

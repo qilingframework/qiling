@@ -301,3 +301,31 @@ def socket_domain_mapping(p, arch):
             }.get(arch)
 
     return _constant_mapping(p, socket_domain_map, single_mapping=True)
+
+
+def socket_level_mapping(t, arch):
+    socket_level_map = {
+            QL_ARCH.X86: linux_socket_level,
+            QL_ARCH.X8664: linux_socket_level,
+            QL_ARCH.ARM: arm_socket_level,
+            QL_ARCH.ARM_THUMB: arm_socket_level,
+            QL_ARCH.ARM64: arm_socket_level,
+            QL_ARCH.MIPS: mips_socket_level,
+            QL_OS.MACOS: linux_socket_level,
+            }.get(arch)
+
+    return _constant_mapping(t, socket_level_map)
+
+
+def socket_option_mapping(t, arch):
+    socket_option_map = {
+            QL_ARCH.X86: linux_socket_options,
+            QL_ARCH.X8664: linux_socket_options,
+            QL_ARCH.ARM: arm_socket_options,
+            QL_ARCH.ARM_THUMB: arm_socket_options,
+            QL_ARCH.ARM64: arm_socket_options,
+            QL_ARCH.MIPS: mips_socket_options,
+            QL_OS.MACOS: linux_socket_options,
+            }.get(arch)
+
+    return _constant_mapping(t, socket_option_map)
