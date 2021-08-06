@@ -541,3 +541,13 @@ errors = {
     130: 'EOWNERDEAD',
     131: 'ENOTRECOVERABLE',
 }
+
+# shm syscall
+IPC_CREAT = 8**3
+IPC_EXCL = 2*(8**3)
+IPC_NOWAIT = 4*(8**3)
+
+SHM_RDONLY = 8**4
+SHM_RND = 2*(8**4)
+SHM_REMAP= 4*(8**4)
+SHM_EXEC = 1*(8**5)
