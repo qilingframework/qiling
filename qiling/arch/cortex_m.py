@@ -32,8 +32,8 @@ class QlArchCORTEX_M(QlArchARM):
         self.ql.emu_start(self.get_pc(), 0, count=1)
         self.ql.hw.step()
 
-    def run(self, count=-1):        
-        while count != 0:
+    def run(self, count=-1, end=None):        
+        while count != 0 and self.get_pc() != end:
             self.step()
             count -= 1
 

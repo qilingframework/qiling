@@ -756,7 +756,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
                 return self.arch.run(code) 
 
         if self.archtype in QL_ARCH_NONOS:
-            return self.arch.run(count=count)
+            return self.arch.run(end=end, count=count)
 
         self.write_exit_trap()
 
