@@ -36,6 +36,9 @@ class QlArchCORTEX_M(QlArchARM):
         while count != 0 and self.get_pc() != end:
             self.step()
             count -= 1
+    
+    def debug_run(self, count):
+        self.ql.emu_start(self.get_pc(), 0, count=count)
 
     def check_thumb(self):
         return UC_MODE_THUMB
