@@ -325,7 +325,7 @@ def socket_ip_option_mapping(t, arch):
         QL_ARCH.ARM: linux_socket_ip_options,
         QL_ARCH.ARM_THUMB: linux_socket_ip_options,
         QL_ARCH.ARM64: linux_socket_ip_options,
-        QL_ARCH.MIPS: linux_socket_ip_options,
+        QL_ARCH.MIPS: mips_socket_ip_options,
         QL_OS.MACOS: macos_socket_ip_options,
     }.get(arch)
 
