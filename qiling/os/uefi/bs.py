@@ -14,9 +14,6 @@ from qiling.os.uefi.ProcessorBind import *
 from qiling.os.uefi.UefiSpec import *
 from qiling.os.uefi.protocols import common
 
-# TODO: find a better solution than hardcoding this
-pointer_size = 8
-
 @dxeapi(params = {
 	"NewTpl" : ULONGLONG		# EFI_TPL
 })
@@ -396,7 +393,7 @@ def hook_LocateHandleBuffer(ql: Qiling, address: int, params):
 
 	for handle in handles:
 		write_int64(ql, address, handle)
-		address += pointer_size
+		address += ql.pointersize
 
 	return EFI_SUCCESS
 
@@ -416,7 +413,7 @@ def hook_InstallMultipleProtocolInterfaces(ql: Qiling, address: int, params):
 	handle = read_int64(ql, params["Handle"])
 
 	if handle == 0:
-		handle = ql.loader.dxe_context.heap.alloc(pointer_size)
+		handle = ql.loader.dxe_context.heap.alloc(ql.pointersize)
 
 	dic = ql.loader.dxe_context.protocols.get(handle, {})
 
