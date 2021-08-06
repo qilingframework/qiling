@@ -285,7 +285,8 @@ def socket_type_mapping(t, arch):
             QL_ARCH.MIPS: mips_socket_types,
             QL_OS.MACOS: linux_socket_types,
             }.get(arch)
-
+    # https://code.woboq.org/linux/linux/net/socket.c.html#1363
+    t &= SOCK_TYPE_MASK
     return _constant_mapping(t, socket_type_map, single_mapping=True)
 
 

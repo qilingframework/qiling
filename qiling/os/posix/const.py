@@ -17,15 +17,16 @@ THREAD_EVENT_EXIT_GROUP_EVENT = 6
 # File Open Limits
 NR_OPEN = 1024
 
+SOCK_TYPE_MASK = 0x0f
+
 linux_socket_types = {
     'SOCK_STREAM'    : 0x1,
     'SOCK_DGRAM'     : 0x2,
     'SOCK_RAW'       : 0x3,
     'SOCK_RDM'       : 0x4,
     'SOCK_SEQPACKET' : 0x5,
+    'SOCK_DCCP'      : 0x6,
     'SOCK_PACKET'    : 0xa,
-    'SOCK_NONBLOCK'  : 0x800,
-    'SOCK_CLOEXEC'   : 0x80000,
 }
 
 
@@ -169,8 +170,6 @@ arm_socket_types = {
     'SOCK_SEQPACKET' : 0x5,
     'SOCK_DCCP'      : 0x6,
     'SOCK_PACKET'    : 0xa,
-    'SOCK_NONBLOCK'  : 0x4000,
-    'SOCK_CLOEXEC'   : 0x2000000,
 }
 
 
@@ -255,15 +254,13 @@ arm_socket_options = {
 
 
 mips_socket_types = {
-    'SOCK_DGRAM'     : 0x1,
     'SOCK_STREAM'    : 0x2,
+    'SOCK_DGRAM'     : 0x1,
     'SOCK_RAW'       : 0x3,
     'SOCK_RDM'       : 0x4,
     'SOCK_SEQPACKET' : 0x5,
     'SOCK_DCCP'      : 0x6,
     'SOCK_PACKET'    : 0xa,
-    'SOCK_CLOEXEC'   : 0x80000,
-    'SOCK_NONBLOCK'  : 0x80,
 }
 
 
