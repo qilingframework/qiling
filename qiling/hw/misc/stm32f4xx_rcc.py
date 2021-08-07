@@ -8,7 +8,7 @@ from qiling.hw.peripheral import QlPeripheral
 
 uint32_t = ctypes.c_uint32
 
-class STM32F4RCC(QlPeripheral):
+class STM32F4xxRcc(QlPeripheral):
     class Type(ctypes.Structure):
         _fields_ = [
             ('CR', uint32_t),

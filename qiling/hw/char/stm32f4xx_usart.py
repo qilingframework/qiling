@@ -7,7 +7,7 @@ import ctypes
 from qiling.hw.peripheral import QlPeripheral
 from qiling.hw.const.usart import STATE
 
-class USART(QlPeripheral):
+class STM32F4xxUsart(QlPeripheral):
     class Type(ctypes.Structure):
         _fields_ = [
             ('SR'  , ctypes.c_uint32),

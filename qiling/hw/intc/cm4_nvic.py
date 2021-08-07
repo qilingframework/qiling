@@ -9,7 +9,7 @@ from unicorn.unicorn import UcError
 from qiling.hw.peripheral import QlPeripheral
 
 
-class NVIC(QlPeripheral):
+class CortexM4Nvic(QlPeripheral):
     class Type(ctypes.Structure):
         _fields_ = [
             ('ISER'     , ctypes.c_uint32 * 8),
@@ -34,11 +34,11 @@ class NVIC(QlPeripheral):
         # https://www.youtube.com/watch?v=uFBNf7F3l60
         # https://developer.arm.com/documentation/ddi0439/b/Nested-Vectored-Interrupt-Controller 
         
-        NVIC_Type = type(self).Type
-        self.nvic = NVIC_Type()
+        CortexM4Nvic_Type = type(self).Type
+        self.nvic = CortexM4Nvic_Type()
 
         ## The max number of interrupt request
-        self.IRQN_MAX = NVIC_Type.ISER.size * 8
+        self.IRQN_MAX = CortexM4Nvic_Type.ISER.size * 8
 
         ## The ISER unit size
         self.MASK     = self.IRQN_MAX // len(self.nvic.ISER) - 1
@@ -46,10 +46,10 @@ class NVIC(QlPeripheral):
 
         ## special write behavior
         self.triggers = [
-            (NVIC_Type.ISER, self.enable),
-            (NVIC_Type.ICER, self.disable),
-            (NVIC_Type.ISPR, self.set_pending),
-            (NVIC_Type.ICPR, self.clear_pending),
+            (CortexM4Nvic_Type.ISER, self.enable),
+            (CortexM4Nvic_Type.ICER, self.disable),
+            (CortexM4Nvic_Type.ISPR, self.set_pending),
+            (CortexM4Nvic_Type.ICPR, self.clear_pending),
         ]
 
         self.intrs = []

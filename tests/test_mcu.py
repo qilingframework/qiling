@@ -26,8 +26,8 @@ class MCUTest(unittest.TestCase):
                     archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DEFAULT)
         
         # create/remove
-        ql.hw.create('USART', 'usart2', (0x40004400, 0x40004800))
-        ql.hw.create('STM32F4RCC', 'rcc', (0x40023800, 0x40023C00))
+        ql.hw.create('STM32F4xxUsart', 'usart2', (0x40004400, 0x40004800))
+        ql.hw.create('STM32F4xxRcc', 'rcc', (0x40023800, 0x40023C00))
         
         ql.run(count=2000)
         buf = ql.hw.usart2.recv()
@@ -45,8 +45,8 @@ class MCUTest(unittest.TestCase):
         ql = Qiling(["../examples/rootfs/stm32f411/hex/md5_server.hex"],                    
             archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.OFF)
         
-        ql.hw.create('USART', 'usart2', (0x40004400, 0x40004800))
-        ql.hw.create('STM32F4RCC', 'rcc', (0x40023800, 0x40023C00))
+        ql.hw.create('STM32F4xxUsart', 'usart2', (0x40004400, 0x40004800))
+        ql.hw.create('STM32F4xxRcc', 'rcc', (0x40023800, 0x40023C00))
 
 
         ql.run(count=1000)

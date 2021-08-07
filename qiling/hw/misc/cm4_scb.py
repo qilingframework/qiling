@@ -9,7 +9,7 @@ import ctypes
 from qiling.hw.peripheral import QlPeripheral
 from qiling.hw.const.cm import IRQ
 
-class SCB(QlPeripheral):
+class CortexM4Scb(QlPeripheral):
     class Type(ctypes.Structure):
         _fields_ = [
             ('CPUID'    , ctypes.c_uint32),
@@ -31,8 +31,8 @@ class SCB(QlPeripheral):
     def __init__(self, ql, tag):
         super().__init__(ql, tag)
 
-        SCB_Type = type(self).Type
-        self.scb = SCB_Type(
+        CortexM4Scb_Type = type(self).Type
+        self.scb = CortexM4Scb_Type(
             CPUID = 0x410FC241,
             AIRCR = 0xFA050000,
             CCR   = 0x00000200,
