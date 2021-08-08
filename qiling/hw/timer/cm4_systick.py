@@ -20,7 +20,9 @@ class CortexM4SysTick(QlPeripheral):
         super().__init__(ql, tag)
 
         CortexM4SysTick_Type = type(self).Type
-        self.systick = CortexM4SysTick_Type()        
+        self.systick = CortexM4SysTick_Type(
+            CALIB = 0xC0000000
+        )        
         
         self.RATIO = 1000
         self.LOAD_OFFSET = CortexM4SysTick_Type.LOAD.offset
