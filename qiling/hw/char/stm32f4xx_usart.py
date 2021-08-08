@@ -5,7 +5,7 @@
 
 import ctypes
 from qiling.hw.peripheral import QlPeripheral
-from qiling.hw.const.usart import STATE
+from qiling.hw.const.usart import USART_SR
 
 class STM32F4xxUsart(QlPeripheral):
     class Type(ctypes.Structure):
@@ -31,30 +31,25 @@ class STM32F4xxUsart(QlPeripheral):
         self.DR = USART_Type.DR.offset
 
         self.recv_buf = bytearray()
-        self.send_buf = bytearray()
+        self.send_buf = bytearray()   
 
-    def set_flag(self, offset, flag):
-        if flag:
-            self.usart.SR |= 1 << offset
-        else:
-            self.usart.SR &= (1 << offset) ^ 0xffffffff
-    
-    def get_flag(self, offset):
-        return (self.usart.SR >> offset) & 1        
-
-    def read(self, offset, size):
-        if offset == self.DR:
-            self.set_flag(STATE.RXNE, 0) # clear RXNE
-            
+    def read(self, offset, size):    
         buf = ctypes.create_string_buffer(size)
         ctypes.memmove(buf, ctypes.addressof(self.usart) + offset, size)
-        return int.from_bytes(buf.raw, byteorder='little')
+        retval = int.from_bytes(buf.raw, byteorder='little')
+
+        if offset == self.DR:
+            self.usart.SR &= ~USART_SR.RXNE            
+            retval &= 0x3ff
+
+        return retval
 
     def write(self, offset, size, value):
         data = (value).to_bytes(size, byteorder='little')
 
         if offset == self.DR:
             self.send_buf.append(value)
+            self.usart.SR |= USART_SR.TC            
         else:
             ctypes.memmove(ctypes.addressof(self.usart) + offset, data, size)
 
@@ -67,7 +62,7 @@ class STM32F4xxUsart(QlPeripheral):
         return data
 
     def step(self):
-        if not self.get_flag(STATE.RXNE):
+        if not (self.usart.SR & USART_SR.RXNE):
             if self.recv_buf:
-                self.set_flag(STATE.RXNE, 1)
+                self.usart.SR |= USART_SR.RXNE
                 self.usart.DR = self.recv_buf.pop(0)
