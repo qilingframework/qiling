@@ -78,12 +78,31 @@ def ql_syscall_socket(ql, socket_domain, socket_type, socket_protocol, *args, **
         if idx == -1:
             regreturn = -1
         else:
-            if ql.verbose >= QL_VERBOSE.DEBUG: # set REUSEADDR options under debug mode
+            # ql_socket.open should use host platform based socket_type.
+            try:
+                emu_socket_value = socket_type
+                emu_socket_type = socket_type_mapping(socket_type, ql.archtype)
+                socket_type = getattr(socket, emu_socket_type)
+                ql.log.info("Convert emu_socket_type {}:{} to host platform based socket_type {}:{}".format(
+                    emu_socket_type, emu_socket_value, emu_socket_type, socket_type))
+
+            except AttributeError:
+                ql.log.error("Can't convert emu_socket_type {}:{} to host platform based socket_type".format(
+                    emu_socket_type, emu_socket_value))
+                raise
+
+            except Exception:
+                ql.log.error("Can't convert emu_socket_type {} to host platform based socket_type".format(
+                    emu_socket_value))
+                raise
+
+            if ql.verbose >= QL_VERBOSE.DEBUG:  # set REUSEADDR options under debug mode
                 ql.os.fd[idx] = ql_socket.open(socket_domain, socket_type, socket_protocol, (socket.SOL_SOCKET, socket.SO_REUSEADDR, 1))
             else:
                 ql.os.fd[idx] = ql_socket.open(socket_domain, socket_type, socket_protocol)
 
             regreturn = (idx)
+
     except Exception:
         ql.log.exception("")
         regreturn = -1
@@ -142,7 +161,52 @@ def ql_syscall_getsockopt(ql, sockfd, level, optname, optval_addr, optlen_addr, 
         optlen = min(ql.unpack32s(ql.mem.read(optlen_addr, 4)), 1024)
         if optlen < 0:
             return -EINVAL
-            
+
+
+        try:
+            emu_level = level
+            emu_level_name = socket_level_mapping(emu_level, ql.archtype)
+            level = getattr(socket, emu_level_name)
+            ql.log.info("Convert emu_level {}:{} to host platform based level {}:{}".format(
+                emu_level_name, emu_level, emu_level_name, level))
+
+        except AttributeError:
+            ql.log.error("Can't convert emu_level {}:{} to host platform based emu_level".format(
+                emu_level_name, emu_level))
+            raise
+
+        except Exception:
+            ql.log.error("Can't convert emu_level {} to host platform based level".format(emu_level))
+            raise
+
+        try:
+            emu_opt = optname
+
+            emu_level_name = socket_level_mapping(emu_level, ql.archtype)
+            # emu_opt_name is based on level
+            if emu_level_name == "IPPROTO_IP":
+                emu_opt_name = socket_ip_option_mapping(emu_opt, ql.archtype)
+            else:
+                emu_opt_name = socket_option_mapping(emu_opt, ql.archtype)
+
+            # Fix for mips
+            if ql.archtype == QL_ARCH.MIPS:
+                if emu_opt_name.endswith("_NEW") or emu_opt_name.endswith("_OLD"):
+                    emu_opt_name = emu_opt_name[:-4]
+
+            optname = getattr(socket, emu_opt_name)
+            ql.log.info("Convert emu_optname {}:{} to host platform based optname {}:{}".format(
+                emu_opt_name, emu_opt, emu_opt_name, optname))
+
+        except AttributeError:
+            ql.log.error("Can't convert emu_optname {}:{} to host platform based emu_optname".format(
+                emu_opt_name, emu_opt))
+            raise
+
+        except Exception:
+            ql.log.error("Can't convert emu_optname {} to host platform based optname".format(emu_opt))
+            raise
+
         optval = ql.os.fd[sockfd].getsockopt(level, optname, optlen)
         ql.mem.write(optval_addr, optval)
     except UcError:
@@ -161,11 +225,59 @@ def ql_syscall_setsockopt(ql, sockfd, level, optname, optval_addr, optlen, *args
         ql.os.fd[sockfd].setsockopt(level, optname, None, optlen)
     else:
         try:
+            try:
+                emu_level = level
+                emu_level_name = socket_level_mapping(emu_level, ql.archtype)
+                level = getattr(socket, emu_level_name)
+                ql.log.info("Convert emu_level {}:{} to host platform based level {}:{}".format(
+                    emu_level_name, emu_level, emu_level_name, level))
+
+            except AttributeError:
+                ql.log.error("Can't convert emu_level {}:{} to host platform based emu_level".format(
+                    emu_level_name, emu_level))
+                raise
+
+            except Exception:
+                ql.log.error("Can't convert emu_level {} to host platform based level".format(emu_level))
+                raise
+
+            try:
+                emu_opt = optname
+
+                emu_level_name = socket_level_mapping(emu_level, ql.archtype)
+                # emu_opt_name is based on level
+                if emu_level_name == "IPPROTO_IP":
+                    emu_opt_name = socket_ip_option_mapping(emu_opt, ql.archtype)
+                else:
+                    emu_opt_name = socket_option_mapping(emu_opt, ql.archtype)
+
+                # Fix for mips
+                if ql.archtype == QL_ARCH.MIPS:
+                    if emu_opt_name.endswith("_NEW") or emu_opt_name.endswith("_OLD"):
+                        emu_opt_name = emu_opt_name[:-4]
+
+                optname = getattr(socket, emu_opt_name)
+                ql.log.info("Convert emu_optname {}:{} to host platform based optname {}:{}".format(
+                    emu_opt_name, emu_opt, emu_opt_name, optname))
+
+            except AttributeError:
+                ql.log.error("Can't convert emu_optname {}:{} to host platform based emu_optname".format(
+                    emu_opt_name, emu_opt))
+                raise
+
+            except Exception:
+                ql.log.error("Can't convert emu_optname {} to host platform based optname".format(emu_opt))
+                raise
+
             optval = ql.mem.read(optval_addr, optlen)
             ql.os.fd[sockfd].setsockopt(level, optname, optval, None)
+
         except UcError:
             regreturn = -EFAULT
-    
+
+        except:
+            regreturn = -1
+
     return regreturn
 
 
