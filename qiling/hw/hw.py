@@ -92,34 +92,54 @@ class QlHwManager:
             base_addr = in_band_alias(address)
             if base_addr != False:
                 real_addr = alias_to_bitband(base_addr, offset)
-                ql.log.warning(f'{info} Read bit-band alias [{hex(address)}], redirect to [{hex(real_addr)}]')
-                address = real_addr
-
-            tag, hardware = self.find(address, size)
-            
-            if hardware:
-                base = self.base_addr(tag)
-                return hardware.read(address - base, size)
-            else:
-                ql.log.warning('%s Read non-mapped hardware [0x%08x]' % (info, address))
+                real_addr = real_addr & (-size)
+                buf = bytearray(self.ql.mem.read(real_addr, size))
+                # Bit position in the N bytes read...
+                bitpos = (offset >> 2) & ((size * 8) - 1)
+                # ...converted to byte in buffer and bit in byte
+                bit = (buf[bitpos >> 3] >> (bitpos & 7)) & 1
+                ql.log.warning(f'{info} Read bit-band alias [{hex(address)}], redirect to [{hex(real_addr)} >> {bitpos}]')
                 
-            return 0
+                return bit
+            else:
+                tag, hardware = self.find(address, size)
+                
+                if hardware:
+                    base = self.base_addr(tag)
+                    return hardware.read(address - base, size)
+                else:
+                    ql.log.warning('%s Read non-mapped hardware [0x%08x]' % (info, address))
+                    
+                return 0
 
         def mmio_write_cb(ql, offset, size, value):
             address = begin + offset
             
             base_addr = in_band_alias(address)
             if base_addr != False:
+                buf = bytearray(4)
                 real_addr = alias_to_bitband(base_addr, offset)
-                ql.log.warning(f'{info} Write bit-band alias [{hex(address)}], redirect to [{hex(real_addr)}] = {hex(value)}')
-                address = real_addr
-
-            tag, hardware = self.find(address, size)
-
-            if hardware:
-                base = self.base_addr(tag)
-                hardware.write(address - base, size, value)
+                real_addr = real_addr & (-size)
+                buf = bytearray(self.ql.mem.read(real_addr, size))
+                # Bit position in the N bytes read... 
+                bitpos = (offset >> 2) & ((size * 8) - 1)
+                # ...converted to byte in buffer and bit in byte
+                bit = 1 << (bitpos & 7)
+                
+                if (value & 1):
+                    buf[bitpos >> 3] |= bit
+                else:
+                    buf[bitpos >> 3] &= ~bit
+                
+                self.ql.mem.write(real_addr, bytes(buf))
+                ql.log.warning(f'{info} Write bit-band alias [{hex(address)}], redirect to [{hex(real_addr)} >> {bitpos}] = {hex(value)}')
             else:
-                ql.log.warning('%s Write non-mapped hardware [0x%08x] = 0x%08x' % (info, address, value))
+                tag, hardware = self.find(address, size)
+
+                if hardware:
+                    base = self.base_addr(tag)
+                    hardware.write(address - base, size, value)
+                else:
+                    ql.log.warning('%s Write non-mapped hardware [0x%08x] = 0x%08x' % (info, address, value))
 
         self.ql.mem.map_mmio(begin, size, mmio_read_cb, mmio_write_cb, info=info)

@@ -8,7 +8,6 @@ import struct
 
 from qiling.const import *
 from qiling.core import Qiling
-from qiling.hw.utils.bitbanding import alias_to_bitband
 
 from .loader import QlLoader
 
