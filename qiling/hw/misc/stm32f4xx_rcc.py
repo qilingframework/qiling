@@ -69,4 +69,4 @@ class STM32F4xxRcc(QlPeripheral):
 
     def write(self, offset, size, value):
         data = (value).to_bytes(size, 'little')
-        ctypes.memmove(ctypes.addressof(self.systick) + offset, data, size)
+        ctypes.memmove(ctypes.addressof(self.rcc) + offset, data, size)
