@@ -7,6 +7,7 @@ from binascii import crc32
 
 from qiling.const import QL_ENDIAN
 from qiling.os.const import *
+from qiling.os.uefi import guids_db
 from qiling.os.uefi.const import *
 from qiling.os.uefi.fncc import dxeapi
 from qiling.os.uefi.utils import *
@@ -426,7 +427,7 @@ def hook_InstallMultipleProtocolInterfaces(ql: Qiling, address: int, params):
 		GUID = str(ql.os.utils.read_guid(GUID_ptr))
 		dic[GUID] = protocol_ptr
 
-		ql.log.info(f' | {GUID} {protocol_ptr:#x}')
+		ql.log.info(f'Installing protocol interface {guids_db.get(GUID.upper(), GUID)} to {protocol_ptr:#x}')
 		index += 2
 
 	ql.loader.dxe_context.protocols[handle] = dic
@@ -460,7 +461,7 @@ def hook_UninstallMultipleProtocolInterfaces(ql: Qiling, address: int, params):
 
 		del dic[GUID]
 
-		ql.log.info(f' | {GUID}, {protocol_ptr:#x}')
+		ql.log.info(f'Uninstalling protocol interface {guids_db.get(GUID.upper(), GUID)} from {protocol_ptr:#x}')
 		index += 2
 
 	return EFI_SUCCESS
