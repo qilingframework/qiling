@@ -142,7 +142,8 @@ class Process():
             import_symbols = {}
             import_table = {}
 
-            for entry in dll.DIRECTORY_ENTRY_EXPORT.symbols:
+            dll_symbols = getattr(getattr(dll, 'DIRECTORY_ENTRY_EXPORT', None), 'symbols', [])
+            for entry in dll_symbols:
                 import_symbols[image_base + entry.address] = {
                     "name": entry.name,
                     "ordinal": entry.ordinal,
