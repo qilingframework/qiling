@@ -88,8 +88,8 @@ class QlHwManager:
 
         def mmio_read_cb(ql, offset, size):
             address = begin + offset
-
             base_addr = in_band_alias(address)
+            
             if base_addr != False:
                 real_addr = alias_to_bitband(base_addr, offset)
                 real_addr = real_addr & (-size)
@@ -114,8 +114,8 @@ class QlHwManager:
 
         def mmio_write_cb(ql, offset, size, value):
             address = begin + offset
-            
             base_addr = in_band_alias(address)
+
             if base_addr != False:
                 buf = bytearray(4)
                 real_addr = alias_to_bitband(base_addr, offset)
