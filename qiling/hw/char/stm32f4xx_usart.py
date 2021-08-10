@@ -5,7 +5,7 @@
 
 import ctypes
 from qiling.hw.peripheral import QlPeripheral
-from qiling.hw.const.usart import USART_SR
+from qiling.hw.const.usart import USART_SR, USART_CR1
 
 class STM32F4xxUsart(QlPeripheral):
     class Type(ctypes.Structure):
@@ -66,3 +66,12 @@ class STM32F4xxUsart(QlPeripheral):
             if self.recv_buf:
                 self.usart.SR |= USART_SR.RXNE
                 self.usart.DR = self.recv_buf.pop(0)
+
+        # TODO: someone can simplify it ?
+
+        if  (self.usart.CR1 & USART_CR1.PEIE   and self.usart.SR & USART_SR.PE)   or \
+            (self.usart.CR1 & USART_CR1.TXEIE  and self.usart.SR & USART_SR.TXE)  or \
+            (self.usart.CR1 & USART_CR1.TCIE   and self.usart.SR & USART_SR.TC)   or \
+            (self.usart.CR1 & USART_CR1.RXNEIE and self.usart.SR & USART_SR.RXNE) or \
+            (self.usart.CR1 & USART_CR1.IDLEIE and self.usart.SR & USART_SR.IDLE):
+            self.ql.hw.intc.set_pending(38)

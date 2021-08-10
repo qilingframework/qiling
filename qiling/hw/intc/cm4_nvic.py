@@ -150,14 +150,14 @@ class CortexM4Nvic(QlPeripheral):
 
     def write(self, offset, size, value):
         def write_byte(ofs, byte):
-            for var, func in self.trigger:
+            for var, func in self.triggers:
                 if var.offset <= ofs < var.offset + var.size:
                     for i in range(8):
                         if (byte >> i) & 1:
-                            func(i + ofs - var.offset)
+                            func(i + (ofs - var.offset) * 8)
                     break
             else:
-                ctypes.memmove(ctypes.addressof(self.nvic) + ofs, byte, 1)
+                ctypes.memmove(ctypes.addressof(self.nvic) + ofs, bytes([byte]), 1)                
 
         for ofs in range(offset, offset + size):
             write_byte(ofs, value & 0xff)
