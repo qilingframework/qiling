@@ -152,6 +152,7 @@ class ELFTest(unittest.TestCase):
         ba = ql.loader.images[0].base
         ql.hook_address(hook_main, ba + 0x10e0)
         ql.run()
+        del ql
 
         # test whether we interpected opening urandom
         self.assertListEqual(opened, [r'/dev/urandom'])
@@ -741,6 +742,7 @@ class ELFTest(unittest.TestCase):
         ql.set_syscall(4092, test_syscall_truncate)
         ql.set_syscall(4093, test_syscall_ftruncate)
         ql.run()
+        del ql
 
 
     def test_elf_linux_arm_custom_syscall(self):
@@ -829,6 +831,7 @@ class ELFTest(unittest.TestCase):
             stdin.write(payload)
             ql.run()
             del stdin
+            del ql
             return ins_count[0]
 
 
@@ -1090,6 +1093,7 @@ class ELFTest(unittest.TestCase):
         rootfs = "../examples/rootfs/arm_linux"
         ql = Qiling(path, rootfs, verbose = QL_VERBOSE.DEBUG)
         ql.run()
+        del ql
 
     def test_elf_linux_x86_getdents64(self):
         class MyPipe():
