@@ -83,7 +83,7 @@ def ql_syscall_socket(ql, socket_domain, socket_type, socket_protocol, *args, **
                 emu_socket_value = socket_type
                 emu_socket_type = socket_type_mapping(socket_type, ql.archtype)
                 socket_type = getattr(socket, emu_socket_type)
-                ql.log.info("Convert emu_socket_type {}:{} to host platform based socket_type {}:{}".format(
+                ql.log.debug("Convert emu_socket_type {}:{} to host platform based socket_type {}:{}".format(
                     emu_socket_type, emu_socket_value, emu_socket_type, socket_type))
 
             except AttributeError:
@@ -167,7 +167,7 @@ def ql_syscall_getsockopt(ql, sockfd, level, optname, optval_addr, optlen_addr, 
             emu_level = level
             emu_level_name = socket_level_mapping(emu_level, ql.archtype)
             level = getattr(socket, emu_level_name)
-            ql.log.info("Convert emu_level {}:{} to host platform based level {}:{}".format(
+            ql.log.debug("Convert emu_level {}:{} to host platform based level {}:{}".format(
                 emu_level_name, emu_level, emu_level_name, level))
 
         except AttributeError:
@@ -195,7 +195,7 @@ def ql_syscall_getsockopt(ql, sockfd, level, optname, optval_addr, optlen_addr, 
                     emu_opt_name = emu_opt_name[:-4]
 
             optname = getattr(socket, emu_opt_name)
-            ql.log.info("Convert emu_optname {}:{} to host platform based optname {}:{}".format(
+            ql.log.debug("Convert emu_optname {}:{} to host platform based optname {}:{}".format(
                 emu_opt_name, emu_opt, emu_opt_name, optname))
 
         except AttributeError:
@@ -229,7 +229,7 @@ def ql_syscall_setsockopt(ql, sockfd, level, optname, optval_addr, optlen, *args
                 emu_level = level
                 emu_level_name = socket_level_mapping(emu_level, ql.archtype)
                 level = getattr(socket, emu_level_name)
-                ql.log.info("Convert emu_level {}:{} to host platform based level {}:{}".format(
+                ql.log.debug("Convert emu_level {}:{} to host platform based level {}:{}".format(
                     emu_level_name, emu_level, emu_level_name, level))
 
             except AttributeError:
@@ -257,7 +257,7 @@ def ql_syscall_setsockopt(ql, sockfd, level, optname, optval_addr, optlen, *args
                         emu_opt_name = emu_opt_name[:-4]
 
                 optname = getattr(socket, emu_opt_name)
-                ql.log.info("Convert emu_optname {}:{} to host platform based optname {}:{}".format(
+                ql.log.debug("Convert emu_optname {}:{} to host platform based optname {}:{}".format(
                     emu_opt_name, emu_opt, emu_opt_name, optname))
 
             except AttributeError:
