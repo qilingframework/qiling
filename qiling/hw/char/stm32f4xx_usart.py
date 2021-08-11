@@ -19,15 +19,15 @@ class STM32F4xxUsart(QlPeripheral):
             ('GTPR', ctypes.c_uint32),
         ]
 
-    def __init__(self, ql, tag):
+    def __init__(self, ql, tag, IRQn=None):
         super().__init__(ql, tag)
         
         USART_Type = type(self).Type
         self.usart = USART_Type(
             SR = 0xc0,
         )
-
-        self.SR = USART_Type.SR.offset
+        
+        self.IRQn = IRQn
         self.DR = USART_Type.DR.offset
 
         self.recv_buf = bytearray()
@@ -67,9 +67,10 @@ class STM32F4xxUsart(QlPeripheral):
                 self.usart.SR |= USART_SR.RXNE
                 self.usart.DR = self.recv_buf.pop(0)
 
-        if  (self.usart.CR1 & USART_CR1.PEIE   and self.usart.SR & USART_SR.PE)   or \
-            (self.usart.CR1 & USART_CR1.TXEIE  and self.usart.SR & USART_SR.TXE)  or \
-            (self.usart.CR1 & USART_CR1.TCIE   and self.usart.SR & USART_SR.TC)   or \
-            (self.usart.CR1 & USART_CR1.RXNEIE and self.usart.SR & USART_SR.RXNE) or \
-            (self.usart.CR1 & USART_CR1.IDLEIE and self.usart.SR & USART_SR.IDLE):
-            self.ql.hw.intc.set_pending(38)
+        if self.IRQn is not None:
+            if  (self.usart.CR1 & USART_CR1.PEIE   and self.usart.SR & USART_SR.PE)   or \
+                (self.usart.CR1 & USART_CR1.TXEIE  and self.usart.SR & USART_SR.TXE)  or \
+                (self.usart.CR1 & USART_CR1.TCIE   and self.usart.SR & USART_SR.TC)   or \
+                (self.usart.CR1 & USART_CR1.RXNEIE and self.usart.SR & USART_SR.RXNE) or \
+                (self.usart.CR1 & USART_CR1.IDLEIE and self.usart.SR & USART_SR.IDLE):
+                self.ql.hw.intc.set_pending(self.IRQn)
