@@ -6,6 +6,8 @@
 
 from .char.stm32f4xx_usart import STM32F4xxUsart
 
+from .dma.stm32f4xx_dma import STM32F4xxDma
+
 from .intc.cm4_nvic import CortexM4Nvic
 
 from .timer.cm4_systick import CortexM4SysTick

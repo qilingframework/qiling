@@ -48,11 +48,11 @@ class CortexM4Scb(QlPeripheral):
         
     def disable(self, IRQn):
         if IRQn == IRQ.USAGE_FAULT:
-            self.scb.SHCSR &= (1 << 18) ^ 0xffffffff
+            self.scb.SHCSR &= ~(1 << 18)
         if IRQn == IRQ.BUS_FAULT:
-            self.scb.SHCSR &= (1 << 17) ^ 0xffffffff
+            self.scb.SHCSR &= ~(1 << 17)
         if IRQn == IRQ.MEMORY_MANAGEMENT_FAULT:
-            self.scb.SHCSR &= (1 << 16) ^ 0xffffffff
+            self.scb.SHCSR &= ~(1 << 16)
 
     def get_enable(self, IRQn):
         if IRQn == IRQ.USAGE_FAULT:
@@ -82,20 +82,20 @@ class CortexM4Scb(QlPeripheral):
 
     def clear_pending(self, IRQn):
         if IRQn == IRQ.NMI:
-            self.scb.ICSR &= (1 << 31) ^ 0xffffffff
+            self.scb.ICSR &= ~(1 << 31)
         if IRQn == IRQ.PENDSV:
-            self.scb.ICSR &= (3 << 27) ^ 0xffffffff
+            self.scb.ICSR &= ~(3 << 27)
         if IRQn == IRQ.SYSTICK:
-            self.scb.ICSR &= (3 << 25) ^ 0xffffffff
+            self.scb.ICSR &= ~(3 << 25)
 
         if IRQn == IRQ.MEMORY_MANAGEMENT_FAULT:
-            self.scb.SHCSR &= (1 << 13) ^ 0xffffffff
+            self.scb.SHCSR &= ~(1 << 13)
         if IRQn == IRQ.BUS_FAULT:
-            self.scb.SHCSR &= (1 << 14) ^ 0xffffffff        
+            self.scb.SHCSR &= ~(1 << 14)        
         if IRQn == IRQ.USAGE_FAULT:
-            self.scb.SHCSR &= (1 << 12) ^ 0xffffffff
+            self.scb.SHCSR &= ~(1 << 12)
         if IRQn == IRQ.SVCALL:
-            self.scb.SHCSR &= (1 << 15) ^ 0xffffffff
+            self.scb.SHCSR &= ~(1 << 15)
 
     def get_pending(self, IRQn):
         if IRQn == IRQ.NMI:
