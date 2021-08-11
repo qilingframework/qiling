@@ -104,6 +104,8 @@ class QlOsPosix(QlOs):
         self._fd[1] = self.stdout
         self._fd[2] = self.stderr
 
+        self._shms = {}
+
     # ql.syscall - get syscall for all posix series
     @property
     def syscall(self):
