@@ -34,15 +34,14 @@ class Stream(ctypes.Structure):
 
     def step(self, mem):
         if self.NDTR == 0:
-            return False
+            return
 
-        dir = self.transfer_direction()
-        if dir == DMA.MEMORY_TO_PERIPH:
-            src = self.M0AR
-            dst = self.PAR
-            size = self.transfer_size()
+        dir_flag = self.transfer_direction() == DMA.MEMORY_TO_PERIPH 
+        
+        size = self.transfer_size()        
+        src, dst = (self.M0AR, self.PAR) if dir_flag else (self.PAR, self.M0AR)
 
-            mem.write(dst, bytes(mem.read(src, size)))
+        mem.write(dst, bytes(mem.read(src, size)))
         
         self.NDTR -= 1
         if self.CR & DMA_CR.MINC:
@@ -50,9 +49,10 @@ class Stream(ctypes.Structure):
         if self.CR & DMA_CR.PINC:
             self.PAR  += size
 
-        return self.NDTR == 0
+        if self.NDTR == 0:
+            self.CR &= ~DMA_CR.EN
+            return True
         
-
 class STM32F4xxDma(QlPeripheral):
     class Type(ctypes.Structure):
         _fields_ = [
@@ -103,6 +103,5 @@ class STM32F4xxDma(QlPeripheral):
             if not stream.enable():
                 continue
                                     
-            if stream.step(self.ql.mem):
-                stream.CR &= ~DMA_CR.EN
+            if stream.step(self.ql.mem):                
                 self.ql.hw.intc.set_pending(self.IRQn[id])
