@@ -7,9 +7,9 @@
 import ctypes
 
 from qiling.hw.peripheral import QlPeripheral
-from qiling.hw.const.cm import IRQ
+from qiling.hw.const.cm4 import IRQ
 
-class SCB(QlPeripheral):
+class CortexM4Scb(QlPeripheral):
     class Type(ctypes.Structure):
         _fields_ = [
             ('CPUID'    , ctypes.c_uint32),
@@ -31,8 +31,8 @@ class SCB(QlPeripheral):
     def __init__(self, ql, tag):
         super().__init__(ql, tag)
 
-        SCB_Type = type(self).Type
-        self.scb = SCB_Type(
+        CortexM4Scb_Type = type(self).Type
+        self.scb = CortexM4Scb_Type(
             CPUID = 0x410FC241,
             AIRCR = 0xFA050000,
             CCR   = 0x00000200,
@@ -48,11 +48,11 @@ class SCB(QlPeripheral):
         
     def disable(self, IRQn):
         if IRQn == IRQ.USAGE_FAULT:
-            self.scb.SHCSR &= (1 << 18) ^ 0xffffffff
+            self.scb.SHCSR &= ~(1 << 18)
         if IRQn == IRQ.BUS_FAULT:
-            self.scb.SHCSR &= (1 << 17) ^ 0xffffffff
+            self.scb.SHCSR &= ~(1 << 17)
         if IRQn == IRQ.MEMORY_MANAGEMENT_FAULT:
-            self.scb.SHCSR &= (1 << 16) ^ 0xffffffff
+            self.scb.SHCSR &= ~(1 << 16)
 
     def get_enable(self, IRQn):
         if IRQn == IRQ.USAGE_FAULT:
@@ -82,20 +82,20 @@ class SCB(QlPeripheral):
 
     def clear_pending(self, IRQn):
         if IRQn == IRQ.NMI:
-            self.scb.ICSR &= (1 << 31) ^ 0xffffffff
+            self.scb.ICSR &= ~(1 << 31)
         if IRQn == IRQ.PENDSV:
-            self.scb.ICSR &= (3 << 27) ^ 0xffffffff
+            self.scb.ICSR &= ~(3 << 27)
         if IRQn == IRQ.SYSTICK:
-            self.scb.ICSR &= (3 << 25) ^ 0xffffffff
+            self.scb.ICSR &= ~(3 << 25)
 
         if IRQn == IRQ.MEMORY_MANAGEMENT_FAULT:
-            self.scb.SHCSR &= (1 << 13) ^ 0xffffffff
+            self.scb.SHCSR &= ~(1 << 13)
         if IRQn == IRQ.BUS_FAULT:
-            self.scb.SHCSR &= (1 << 14) ^ 0xffffffff        
+            self.scb.SHCSR &= ~(1 << 14)        
         if IRQn == IRQ.USAGE_FAULT:
-            self.scb.SHCSR &= (1 << 12) ^ 0xffffffff
+            self.scb.SHCSR &= ~(1 << 12)
         if IRQn == IRQ.SVCALL:
-            self.scb.SHCSR &= (1 << 15) ^ 0xffffffff
+            self.scb.SHCSR &= ~(1 << 15)
 
     def get_pending(self, IRQn):
         if IRQn == IRQ.NMI:

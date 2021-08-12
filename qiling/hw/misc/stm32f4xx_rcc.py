@@ -8,7 +8,7 @@ from qiling.hw.peripheral import QlPeripheral
 
 uint32_t = ctypes.c_uint32
 
-class STM32F4RCC(QlPeripheral):
+class STM32F4xxRcc(QlPeripheral):
     class Type(ctypes.Structure):
         _fields_ = [
             ('CR', uint32_t),
@@ -49,20 +49,24 @@ class STM32F4RCC(QlPeripheral):
         super().__init__(ql, tag)
 
         RCC_Type = type(self).Type
-        self.rcc = RCC_Type()
+        self.rcc = RCC_Type(
+            CR         = 0x00000083, # FIXME: The value may need to be update 
+            PLLCFGR    = 0x24003010,
+            AHB1LPENR  = 0x0061900F,
+            AHB2LPENR  = 0x00000080,
+            APB1LPENR  = 0x10E2C80F,
+            APB2LPENR  = 0x00077930,
+            CSR        = 0x0E000000,
+            PLLI2SCFGR = 0x24003000,
+        )
 
         self.mem = {}
 
-    def read(self, offset, size):
-        if offset == 0: 
-            return 0xffff  #FIXME: Must be this value?
-        # return 0
+    def read(self, offset, size):        
         buf = ctypes.create_string_buffer(size)
         ctypes.memmove(buf, ctypes.addressof(self.rcc) + offset, size)
         return int.from_bytes(buf.raw, byteorder='little')
 
     def write(self, offset, size, value):
-        for ofs in range(offset, offset + size):
-            data = (value & 0xff).to_bytes(size, byteorder='little')
-            ctypes.memmove(ctypes.addressof(self.rcc) + ofs, data, 1)
-            value >>= 8
+        data = (value).to_bytes(size, 'little')
+        ctypes.memmove(ctypes.addressof(self.rcc) + offset, data, size)

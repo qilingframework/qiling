@@ -5,9 +5,9 @@
 
 import ctypes
 from qiling.hw.peripheral import QlPeripheral
-from qiling.hw.const.usart import STATE
+from qiling.hw.const.usart import USART_SR, USART_CR1
 
-class USART(QlPeripheral):
+class STM32F4xxUsart(QlPeripheral):
     class Type(ctypes.Structure):
         _fields_ = [
             ('SR'  , ctypes.c_uint32),
@@ -19,42 +19,37 @@ class USART(QlPeripheral):
             ('GTPR', ctypes.c_uint32),
         ]
 
-    def __init__(self, ql, tag):
+    def __init__(self, ql, tag, IRQn=None):
         super().__init__(ql, tag)
         
         USART_Type = type(self).Type
         self.usart = USART_Type(
             SR = 0xc0,
         )
-
-        self.SR = USART_Type.SR.offset
+        
+        self.IRQn = IRQn
         self.DR = USART_Type.DR.offset
 
         self.recv_buf = bytearray()
-        self.send_buf = bytearray()
-
-    def set_flag(self, offset, flag):
-        if flag:
-            self.usart.SR |= 1 << offset
-        else:
-            self.usart.SR &= (1 << offset) ^ 0xffffffff
-    
-    def get_flag(self, offset):
-        return (self.usart.SR >> offset) & 1        
+        self.send_buf = bytearray()   
 
     def read(self, offset, size):
-        if offset == self.DR:
-            self.set_flag(STATE.RXNE, 0) # clear RXNE
-            
         buf = ctypes.create_string_buffer(size)
         ctypes.memmove(buf, ctypes.addressof(self.usart) + offset, size)
-        return int.from_bytes(buf.raw, byteorder='little')
+        retval = int.from_bytes(buf.raw, byteorder='little')
+
+        if offset == self.DR:
+            self.usart.SR &= ~USART_SR.RXNE            
+            retval &= 0x3ff
+
+        return retval
 
     def write(self, offset, size, value):
         data = (value).to_bytes(size, byteorder='little')
 
         if offset == self.DR:
             self.send_buf.append(value)
+            self.usart.SR |= USART_SR.TC            
         else:
             ctypes.memmove(ctypes.addressof(self.usart) + offset, data, size)
 
@@ -67,7 +62,15 @@ class USART(QlPeripheral):
         return data
 
     def step(self):
-        if not self.get_flag(STATE.RXNE):
+        if not (self.usart.SR & USART_SR.RXNE):
             if self.recv_buf:
-                self.set_flag(STATE.RXNE, 1)
+                self.usart.SR |= USART_SR.RXNE
                 self.usart.DR = self.recv_buf.pop(0)
+
+        if self.IRQn is not None:
+            if  (self.usart.CR1 & USART_CR1.PEIE   and self.usart.SR & USART_SR.PE)   or \
+                (self.usart.CR1 & USART_CR1.TXEIE  and self.usart.SR & USART_SR.TXE)  or \
+                (self.usart.CR1 & USART_CR1.TCIE   and self.usart.SR & USART_SR.TC)   or \
+                (self.usart.CR1 & USART_CR1.RXNEIE and self.usart.SR & USART_SR.RXNE) or \
+                (self.usart.CR1 & USART_CR1.IDLEIE and self.usart.SR & USART_SR.IDLE):
+                self.ql.hw.intc.set_pending(self.IRQn)

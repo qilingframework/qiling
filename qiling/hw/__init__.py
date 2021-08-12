@@ -4,13 +4,15 @@
 #
 
 
-from .char.usart import USART
+from .char.stm32f4xx_usart import STM32F4xxUsart
 
-from .intc.nvic import NVIC
+from .dma.stm32f4xx_dma import STM32F4xxDma
 
-from .timer.sys_tick import SysTick
+from .intc.cm4_nvic import CortexM4Nvic
 
-from .misc.stm32f4_rcc import STM32F4RCC
-from .misc.sysctrl import SCB
+from .timer.cm4_systick import CortexM4SysTick
+
+from .misc.stm32f4xx_rcc import STM32F4xxRcc
+from .misc.cm4_scb import CortexM4Scb
 
 from .gpio.stm32f4 import STM32F4GPIO

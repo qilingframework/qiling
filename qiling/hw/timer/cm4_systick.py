@@ -7,7 +7,7 @@ import ctypes
 from qiling.hw.peripheral import QlPeripheral
 
 
-class SysTick(QlPeripheral):
+class CortexM4SysTick(QlPeripheral):
     class Type(ctypes.Structure):
         _fields_ = [
             ('CTRL' , ctypes.c_uint32),
@@ -19,11 +19,13 @@ class SysTick(QlPeripheral):
     def __init__(self, ql, tag):
         super().__init__(ql, tag)
 
-        SysTick_Type = type(self).Type
-        self.systick = SysTick_Type()        
+        CortexM4SysTick_Type = type(self).Type
+        self.systick = CortexM4SysTick_Type(
+            CALIB = 0xC0000000
+        )        
         
         self.RATIO = 1000
-        self.LOAD_OFFSET = SysTick_Type.LOAD.offset
+        self.LOAD_OFFSET = CortexM4SysTick_Type.LOAD.offset
 
     def step(self):
         if not self.systick.CTRL & 1:
