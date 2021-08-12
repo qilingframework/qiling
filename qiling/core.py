@@ -214,6 +214,9 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             self._mem = component_setup("os", "memory", self)
             self._reg = component_setup("arch", "register", self)
 
+        if self.archtype in QL_ARCH_NONOS:   
+            self._hw  = component_setup("hw", "hw", self)                
+
         self._arch = arch_setup(self.archtype, self)
         
         # Once we finish setting up arch layer, we can init QlCoreHooks.
@@ -225,9 +228,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
         if not (self._custom_engine or self.archtype in QL_ARCH_NONOS):
             self._os = os_setup(self.archtype, self.ostype, self)
-        else:
-            self._hw  = component_setup("hw", "hw", self)    
-        
+       
         # Run the loader
         self.loader.run()
 
