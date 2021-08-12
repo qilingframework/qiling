@@ -31,8 +31,7 @@ class CortexM4Scb(QlPeripheral):
     def __init__(self, ql, tag):
         super().__init__(ql, tag)
 
-        CortexM4Scb_Type = type(self).Type
-        self.scb = CortexM4Scb_Type(
+        self.scb = self.struct(
             CPUID = 0x410FC241,
             AIRCR = 0xFA050000,
             CCR   = 0x00000200,

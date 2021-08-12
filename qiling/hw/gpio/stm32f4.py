@@ -34,8 +34,7 @@ class STM32F4GPIO(BaseGPIO):
     def __init__(self, ql, tag, **kwargs):
         super().__init__(ql, tag, **kwargs)
 
-        GPIO_Type = type(self).Type
-        self.gpio = GPIO_Type()
+        self.gpio = self.struct()
 
         self.mode_reset = 0x00, 
         self.ospeed_reset = 0x00,

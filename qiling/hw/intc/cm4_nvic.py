@@ -34,11 +34,10 @@ class CortexM4Nvic(QlPeripheral):
         # https://www.youtube.com/watch?v=uFBNf7F3l60
         # https://developer.arm.com/documentation/ddi0439/b/Nested-Vectored-Interrupt-Controller 
         
-        CortexM4Nvic_Type = type(self).Type
-        self.nvic = CortexM4Nvic_Type()
+        self.nvic = self.struct()
 
         ## The max number of interrupt request
-        self.IRQN_MAX = CortexM4Nvic_Type.ISER.size * 8
+        self.IRQN_MAX = self.struct.ISER.size * 8
 
         ## The ISER unit size
         self.MASK     = self.IRQN_MAX // len(self.nvic.ISER) - 1
@@ -46,10 +45,10 @@ class CortexM4Nvic(QlPeripheral):
 
         ## special write behavior
         self.triggers = [
-            (CortexM4Nvic_Type.ISER, self.enable),
-            (CortexM4Nvic_Type.ICER, self.disable),
-            (CortexM4Nvic_Type.ISPR, self.set_pending),
-            (CortexM4Nvic_Type.ICPR, self.clear_pending),
+            (self.struct.ISER, self.enable),
+            (self.struct.ICER, self.disable),
+            (self.struct.ISPR, self.set_pending),
+            (self.struct.ICPR, self.clear_pending),
         ]
 
         self.intrs = []

@@ -48,9 +48,8 @@ class STM32F4xxRcc(QlPeripheral):
     def __init__(self, ql, tag):
         super().__init__(ql, tag)
 
-        RCC_Type = type(self).Type
-        self.rcc = RCC_Type(
-            CR         = 0x00000083, # FIXME: The value may need to be update 
+        self.rcc = self.struct(
+            CR         = 0x00000083,
             PLLCFGR    = 0x24003010,
             AHB1LPENR  = 0x0061900F,
             AHB2LPENR  = 0x00000080,
@@ -58,11 +57,9 @@ class STM32F4xxRcc(QlPeripheral):
             APB2LPENR  = 0x00077930,
             CSR        = 0x0E000000,
             PLLI2SCFGR = 0x24003000,
-        )
+        )        
 
-        self.mem = {}
-
-    def read(self, offset, size):        
+    def read(self, offset, size):
         buf = ctypes.create_string_buffer(size)
         ctypes.memmove(buf, ctypes.addressof(self.rcc) + offset, size)
         return int.from_bytes(buf.raw, byteorder='little')

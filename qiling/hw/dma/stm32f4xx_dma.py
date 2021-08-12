@@ -66,11 +66,7 @@ class STM32F4xxDma(QlPeripheral):
     def __init__(self, ql, tag, IRQn=None):
         super().__init__(ql, tag)
         
-        DMA_Type = type(self).Type
-        self.dma = DMA_Type()
-
-        self.LIFCR = DMA_Type.LIFCR.offset
-        self.HIFCR = DMA_Type.HIFCR.offset
+        self.dma = self.struct()
 
         self.stream_base = 0x10
         self.stream_size = ctypes.sizeof(Stream)        
@@ -87,13 +83,15 @@ class STM32F4xxDma(QlPeripheral):
         return retval
 
     def write(self, offset, size, value):        
-        if offset == self.LIFCR:
+        if offset == self.struct.LIFCR.offset:
             self.dma.LISR &= ~value
-        elif offset == self.HIFCR:
+
+        elif offset == self.struct.HIFCR.offset:
             self.dma.HISR &= ~value
+
         elif offset > self.HIFCR:
             stream_id = self.stream_index(offset)
-            self.ql.log.warning('DMA write 0x%08x stream %d at 0x%02x' % (value, stream_id, offset - stream_id * 0x18 - 0x10))
+            self.ql.log.debug('DMA write 0x%08x stream %d at 0x%02x' % (value, stream_id, offset - stream_id * 0x18 - 0x10))
 
             data = (value).to_bytes(size, byteorder='little')
             ctypes.memmove(ctypes.addressof(self.dma) + offset, data, size)

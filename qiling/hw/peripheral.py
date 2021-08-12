@@ -1,24 +1,23 @@
-from qiling.hw.core.register import PeripheralRegister
+#!/usr/bin/env python3
+# 
+# Cross Platform and Multi Architecture Advanced Binary Emulation Framework
+#
+
+import ctypes
 
 
 class QlPeripheral:
+    class Type(ctypes.Structure):
+        _fields_ = []
+    
     def __init__(self, ql, tag, **kwargs):
         self.ql = ql
         self.tag = tag
-        self.registers = {}
+        self.struct = type(self).Type
 
     def step(self):
         pass
 
-    def add_register(self, base_addr, offset, name, reset_value=0x0):
-        register = PeripheralRegister(self.ql, base_addr, offset, name, reset_value)
-        self.registers[name] = register
-        return register
-
-    def add_field(self, register:PeripheralRegister, name, offset, width, access_mode=None):
-        return register.add_field(name, offset, width, access_mode)
-
-    ### Read/Write Peripheral Memory
     def read(self, offset, size) -> int:
         self.ql.log.warning('[%s] Read [0x%08x:%d]' % (self.tag, offset, size))
         return 0

@@ -22,13 +22,11 @@ class STM32F4xxUsart(QlPeripheral):
     def __init__(self, ql, tag, IRQn=None):
         super().__init__(ql, tag)
         
-        USART_Type = type(self).Type
-        self.usart = USART_Type(
-            SR = 0xc0,
+        self.usart = self.struct(
+            SR = 0x000000c0,
         )
         
         self.IRQn = IRQn
-        self.DR = USART_Type.DR.offset
 
         self.recv_buf = bytearray()
         self.send_buf = bytearray()   
@@ -38,7 +36,7 @@ class STM32F4xxUsart(QlPeripheral):
         ctypes.memmove(buf, ctypes.addressof(self.usart) + offset, size)
         retval = int.from_bytes(buf.raw, byteorder='little')
 
-        if offset == self.DR:
+        if offset == self.struct.DR.offset:
             self.usart.SR &= ~USART_SR.RXNE            
             retval &= 0x3ff
 
@@ -47,7 +45,7 @@ class STM32F4xxUsart(QlPeripheral):
     def write(self, offset, size, value):
         data = (value).to_bytes(size, byteorder='little')
 
-        if offset == self.DR:
+        if offset == self.struct.DR.offset:
             self.send_buf.append(value)
             self.usart.SR |= USART_SR.TC            
         else:

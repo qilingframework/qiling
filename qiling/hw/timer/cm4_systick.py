@@ -19,13 +19,11 @@ class CortexM4SysTick(QlPeripheral):
     def __init__(self, ql, tag):
         super().__init__(ql, tag)
 
-        CortexM4SysTick_Type = type(self).Type
-        self.systick = CortexM4SysTick_Type(
+        self.systick = self.struct(
             CALIB = 0xC0000000
         )        
         
-        self.RATIO = 1000
-        self.LOAD_OFFSET = CortexM4SysTick_Type.LOAD.offset
+        self.RATIO = 1000        
 
     def step(self):
         if not self.systick.CTRL & 1:
