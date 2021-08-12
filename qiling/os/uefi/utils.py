@@ -89,6 +89,18 @@ def ptr_write8(ql: Qiling, addr: int, val: int) -> None:
 
 	ql.mem.write(addr, ql.pack8(val))
 
+def ptr_read16(ql: Qiling, addr: int) -> int:
+	"""Read WORD data from a pointer
+	"""
+
+	return ql.unpack16(ql.mem.read(addr, 2))
+
+def ptr_write16(ql: Qiling, addr: int, val: int) -> None:
+	"""Write WORD data to a pointer
+	"""
+
+	ql.mem.write(addr, ql.pack16(val))
+
 def ptr_read32(ql: Qiling, addr: int) -> int:
 	"""Read DWORD data from a pointer
 	"""
@@ -116,6 +128,8 @@ def ptr_write64(ql: Qiling, addr: int, val: int) -> None:
 # backward comptability
 read_int8   = ptr_read8
 write_int8  = ptr_write8
+read_int16  = ptr_read16
+write_int16 = ptr_write16
 read_int32  = ptr_read32
 write_int32 = ptr_write32
 read_int64  = ptr_read64
