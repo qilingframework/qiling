@@ -34,11 +34,6 @@ class MCUTest(unittest.TestCase):
         print('[1] Received from usart: ', buf)
         self.assertEqual(buf, b'Hello USART\n')
 
-        ql.run(count=40000)
-        buf = ql.hw.usart2.recv()
-        print('[2] Received from usart: ', buf)
-        self.assertEqual(buf, b'Hello USART\n')
-
         del ql
 
     def test_mcu_usart_input_stm32f411(self):
@@ -53,25 +48,13 @@ class MCUTest(unittest.TestCase):
         
         ql.hw.usart2.send(b'Hello\n')
         ql.run(count=30000)
-
-        buf = ql.hw.usart2.recv()
-        print('[1] Received from usart: ', buf)
-        self.assertEqual(buf, b'8b1a9953c4611296a827abf8c47804d7\n')
-
         ql.hw.usart2.send(b'USART\n')
         ql.run(count=30000)
-
-        buf = ql.hw.usart2.recv()
-        print('[2] Received from usart: ', buf)
-        self.assertEqual(buf, b'2daeb613094400290a24fe5086c68f06\n')
-
-
         ql.hw.usart2.send(b'Input\n')
         ql.run(count=30000)
         
         buf = ql.hw.usart2.recv()
-        print('[3] Received from usart: ', buf)
-        self.assertEqual(buf, b'324118a6721dd6b8a9b9f4e327df2bf5\n')
+        self.assertEqual(buf, b'8b1a9953c4611296a827abf8c47804d7\n2daeb613094400290a24fe5086c68f06\n324118a6721dd6b8a9b9f4e327df2bf5\n')
 
 
 if __name__ == "__main__":
