@@ -22,7 +22,7 @@ reg save hklm\SAM examples\rootfs\x8664_windows\Windows\registry\SAM
 xcopy /d /y examples\rootfs\x8664_windows\Windows\registry\* examples\rootfs\x86_windows\Windows\registry\
 
 REM 
-REM  Dlls
+REM  Dlls for x86 tests
 REM
 if exist %WINDIR%\SysWOW64\advapi32.dll xcopy /f /y %WINDIR%\SysWOW64\advapi32.dll "examples\rootfs\x86_windows\Windows\System32\"
 if exist %WINDIR%\SysWOW64\rpcrt4.dll xcopy /f /y %WINDIR%\SysWOW64\rpcrt4.dll "examples\rootfs\x86_windows\Windows\System32\"
@@ -64,11 +64,17 @@ if exist %WINDIR%\SysWOW64\downlevel\api-ms-win-core-synch-l1-2-0.dll xcopy /f /
 if exist %WINDIR%\SysWOW64\downlevel\api-ms-win-core-fibers-l1-1-1.dll xcopy /f /y %WINDIR%\SysWOW64\downlevel\api-ms-win-core-fibers-l1-1-1.dll "examples\rootfs\x86_windows\Windows\System32\"
 if exist %WINDIR%\SysWOW64\downlevel\api-ms-win-core-localization-l1-2-1.dll xcopy /f /y %WINDIR%\SysWOW64\downlevel\api-ms-win-core-localization-l1-2-1.dll "examples\rootfs\x86_windows\Windows\System32\"
 if exist %WINDIR%\SysWOW64\downlevel\api-ms-win-core-sysinfo-l1-2-1.dll xcopy /f /y %WINDIR%\SysWOW64\downlevel\api-ms-win-core-sysinfo-l1-2-1.dll "examples\rootfs\x86_windows\Windows\System32\"
+if exist %WINDIR%\SysWOW64\downlevel\api-ms-win-core-rtlsupport-l1-1-0.dll xcopy /f /y %WINDIR%\SysWOW64\downlevel\api-ms-win-core-rtlsupport-l1-1-0.dll "examples\rootfs\x86_windows\Windows\System32\"
+if exist %WINDIR%\SysWOW64\downlevel\api-ms-win-core-rtlsupport-l1-1-0.dll echo f | xcopy /f /y %WINDIR%\SysWOW64\downlevel\api-ms-win-core-rtlsupport-l1-1-0.dll "examples\rootfs\x86_windows\Windows\System32\api-ms-win-core-rtlsupport-l1-2-0.dll"
+if exist %WINDIR%\SysWOW64\downlevel\api-ms-win-eventing-provider-l1-1-0.dll xcopy /f /y %WINDIR%\SysWOW64\downlevel\api-ms-win-eventing-provider-l1-1-0.dll "examples\rootfs\x86_windows\Windows\System32\"
 if exist %WINDIR%\SysWOW64\shlwapi.dll xcopy /f /y %WINDIR%\SysWOW64\shlwapi.dll "examples\rootfs\x86_windows\Windows\System32\"
 if exist %WINDIR%\SysWOW64\setupapi.dll xcopy /f /y %WINDIR%\SysWOW64\setupapi.dll "examples\rootfs\x86_windows\Windows\System32\"
 if exist %WINDIR%\System32\ntoskrnl.exe xcopy /f /y %WINDIR%\System32\ntoskrnl.exe "examples\rootfs\x86_windows\Windows\System32\"
 if exist %WINDIR%\winsxs\amd64_microsoft-windows-printing-xpsprint_31bf3856ad364e35_10.0.17763.194_none_20349c5a971eb293\XpsPrint.dll xcopy /f /y %WINDIR%\winsxs\amd64_microsoft-windows-printing-xpsprint_31bf3856ad364e35_10.0.17763.194_none_20349c5a971eb293\XpsPrint.dll "examples\rootfs\x86_windows\Windows\System32\"
 
+REM
+REM  Dlls for x8664 tests
+REM
 if exist %WINDIR%\System32\ntoskrnl.exe xcopy /f /y %WINDIR%\System32\ntoskrnl.exe "examples\rootfs\x8664_windows\Windows\System32\"
 if exist %WINDIR%\System32\advapi32.dll xcopy /f /y %WINDIR%\System32\advapi32.dll "examples\rootfs\x8664_windows\Windows\System32\"
 if exist %WINDIR%\System32\kernel32.dll xcopy /f /y %WINDIR%\System32\kernel32.dll "examples\rootfs\x8664_windows\Windows\System32\"
@@ -84,6 +90,10 @@ if exist %WINDIR%\System32\downlevel\api-ms-win-crt-runtime-l1-1-0.dll xcopy /f 
 if exist %WINDIR%\System32\downlevel\api-ms-win-crt-math-l1-1-0.dll xcopy /f /y %WINDIR%\System32\downlevel\api-ms-win-crt-math-l1-1-0.dll "examples\rootfs\x8664_windows\Windows\System32\"
 if exist %WINDIR%\System32\downlevel\api-ms-win-crt-locale-l1-1-0.dll xcopy /f /y %WINDIR%\System32\downlevel\api-ms-win-crt-locale-l1-1-0.dll "examples\rootfs\x8664_windows\Windows\System32\"
 if exist %WINDIR%\System32\downlevel\api-ms-win-crt-heap-l1-1-0.dll xcopy /f /y %WINDIR%\System32\downlevel\api-ms-win-crt-heap-l1-1-0.dll "examples\rootfs\x8664_windows\Windows\System32\"
+if exist %WINDIR%\System32\downlevel\api-ms-win-core-apiquery-l1-1-0.dll xcopy /f /y %WINDIR%\System32\downlevel\api-ms-win-core-apiquery-l1-1-0.dll "examples\rootfs\x8664_windows\Windows\System32\"
+if exist %WINDIR%\System32\downlevel\api-ms-win-core-rtlsupport-l1-1-0.dll xcopy /f /y %WINDIR%\System32\downlevel\api-ms-win-core-rtlsupport-l1-1-0.dll "examples\rootfs\x8664_windows\Windows\System32\"
+if exist %WINDIR%\System32\downlevel\api-ms-win-core-rtlsupport-l1-1-0.dll echo f | xcopy /f /y %WINDIR%\System32\downlevel\api-ms-win-core-rtlsupport-l1-1-0.dll "examples\rootfs\x8664_windows\Windows\System32\api-ms-win-core-rtlsupport-l1-2-0.dll"
+if exist %WINDIR%\System32\downlevel\api-ms-win-eventing-provider-l1-1-0.dll xcopy /f /y %WINDIR%\System32\downlevel\api-ms-win-eventing-provider-l1-1-0.dll "examples\rootfs\x8664_windows\Windows\System32\"
 if exist %WINDIR%\System32\vcruntime140d.dll xcopy /f /y %WINDIR%\System32\vcruntime140d.dll "examples\rootfs\x8664_windows\Windows\System32\"
 if exist %WINDIR%\System32\ucrtbased.dll xcopy /f /y %WINDIR%\System32\ucrtbased.dll "examples\rootfs\x8664_windows\Windows\System32\"
 

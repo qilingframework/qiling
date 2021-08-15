@@ -193,6 +193,10 @@ class Process():
         # add DLL to coverage images
         self.images.append(Image(dll_base, dll_base + dll_len, path))
 
+        if not cached or not loaded:
+            # parse directory entry import
+            self.init_imports(dll, driver)
+
         self.ql.log.info(f'Done with loading {path}')
 
         return dll_base
@@ -338,6 +342,39 @@ class Process():
         self.ql.mem.write(ldr_table_entry.base, ldr_table_entry.bytes())
 
         self.ldr_list.append(ldr_table_entry)
+
+    def init_imports(self, pe, driver):
+        if pe.OPTIONAL_HEADER.DATA_DIRECTORY[pefile.DIRECTORY_ENTRY['IMAGE_DIRECTORY_ENTRY_IMPORT']].VirtualAddress != 0:
+            self.pe.full_load()
+        else:
+            return
+
+        for entry in pe.DIRECTORY_ENTRY_IMPORT:
+            dll_loaded = False
+            dll_name = str(entry.dll.lower(), 'utf-8', 'ignore')
+            for imp in entry.imports:
+                if imp.bound:
+                    continue
+
+                # Only load dll if encounter unbound symbol
+                if not dll_loaded:
+                    self.load_dll(entry.dll, driver)
+                    dll_loaded == True
+
+                if imp.name:
+                    try:
+                        addr = self.import_address_table[dll_name][imp.name]
+                    except KeyError:
+                        self.ql.log.debug(f"Error in loading function {dll_name}.{imp.name.decode()}")
+                        continue
+                else:
+                    addr = self.import_address_table[dll_name][imp.ordinal]
+
+                if self.ql.archtype == QL_ARCH.X86:
+                    address = self.ql.pack32(addr)
+                else:
+                    address = self.ql.pack64(addr)
+                self.ql.mem.write(imp.address, address)
 
     def init_exports(self):
         if self.ql.code:
@@ -628,27 +665,7 @@ class QlLoaderPE(QlLoader, Process):
             for each in sys_dlls:
                 super().load_dll(each, self.is_driver)
             # parse directory entry import
-            if self.pe.OPTIONAL_HEADER.DATA_DIRECTORY[pefile.DIRECTORY_ENTRY['IMAGE_DIRECTORY_ENTRY_IMPORT']].VirtualAddress != 0:
-                for entry in self.pe.DIRECTORY_ENTRY_IMPORT:
-                    dll_name = str(entry.dll.lower(), 'utf-8', 'ignore')
-                    super().load_dll(entry.dll, self.is_driver)
-                    for imp in entry.imports:
-                        # fix IAT
-                        # ql.log.info(imp.name)
-                        # ql.log.info(self.import_address_table[imp.name])
-                        if imp.name:
-                            try:
-                                addr = self.import_address_table[dll_name][imp.name]
-                            except KeyError:
-                                self.ql.log.debug("Error in loading function %s" % imp.name.decode())
-                        else:
-                            addr = self.import_address_table[dll_name][imp.ordinal]
-
-                        if self.ql.archtype == QL_ARCH.X86:
-                            address = self.ql.pack32(addr)
-                        else:
-                            address = self.ql.pack64(addr)
-                        self.ql.mem.write(imp.address, address)
+            super().init_imports(self.pe, self.is_driver)
 
             self.ql.log.debug("Done with loading %s" % self.path)
             self.ql.os.entry_point = self.entry_point
