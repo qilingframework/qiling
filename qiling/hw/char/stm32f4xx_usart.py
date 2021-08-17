@@ -23,7 +23,7 @@ class STM32F4xxUsart(QlPeripheral):
         super().__init__(ql, tag)
         
         self.usart = self.struct(
-            SR = 0x000000c0,
+            SR = USART_SR.RESET,
         )
         
         self.IRQn = IRQn
@@ -37,20 +37,20 @@ class STM32F4xxUsart(QlPeripheral):
         retval = int.from_bytes(buf.raw, byteorder='little')
 
         if offset == self.struct.DR.offset:
-            self.usart.SR &= ~USART_SR.RXNE            
-            retval &= 0x3ff
+            self.usart.SR &= ~USART_SR.RXNE        
 
         return retval
 
     def write(self, offset, size, value):
         if offset == self.struct.SR.offset:
-            value = value | (self.usart.SR & (USART_SR.TC))
-        
-        data = (value).to_bytes(size, byteorder='little')        
-        if offset == self.struct.DR.offset:
-            self.send_buf.append(value)
-            self.usart.SR |= USART_SR.TXE|USART_SR.TC        
+            self.usart.SR &= value | USART_SR.CTS | USART_SR.LBD | USART_SR.TC | USART_SR.RXNE
+
+        elif offset == self.struct.DR.offset:
+            self.send_buf.append(value & 0xff)
+            self.usart.SR |= USART_SR.TC
+
         else:
+            data = (value).to_bytes(size, byteorder='little')
             ctypes.memmove(ctypes.addressof(self.usart) + offset, data, size)
 
     def send(self, data: bytes):
@@ -66,6 +66,9 @@ class STM32F4xxUsart(QlPeripheral):
             if self.recv_buf:
                 self.usart.SR |= USART_SR.RXNE
                 self.usart.DR = self.recv_buf.pop(0)
+        
+        if not (self.usart.SR & USART_SR.TXE):
+            self.usart.SR |= USART_SR.TXE
 
         if self.IRQn is not None:
             if  (self.usart.CR1 & USART_CR1.PEIE   and self.usart.SR & USART_SR.PE)   or \

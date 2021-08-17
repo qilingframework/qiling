@@ -4,7 +4,6 @@
 #
 
 import ctypes
-from qiling.const import QL_VERBOSE
 
 from unicorn.unicorn import UcError
 from qiling.hw.peripheral import QlPeripheral
