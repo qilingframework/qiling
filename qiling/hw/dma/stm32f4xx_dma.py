@@ -89,17 +89,26 @@ class STM32F4xxDma(QlPeripheral):
         elif offset == self.struct.HIFCR.offset:
             self.dma.HISR &= ~value
 
-        elif offset > self.HIFCR:
+        elif offset > self.struct.HIFCR.offset:
             stream_id = self.stream_index(offset)
             self.ql.log.debug('DMA write 0x%08x stream %d at 0x%02x' % (value, stream_id, offset - stream_id * 0x18 - 0x10))
 
             data = (value).to_bytes(size, byteorder='little')
             ctypes.memmove(ctypes.addressof(self.dma) + offset, data, size)
 
+    def transfer_complete(self, id):
+        tc_bits = [5, 11, 21, 27]
+        if id > 4:
+            self.dma.HISR |= 1 << tc_bits[id - 4]
+        else:
+            self.dma.LISR |= 1 << tc_bits[id]
+
+        self.ql.hw.intc.set_pending(self.IRQn[id])
+
     def step(self):
         for id, stream in enumerate(self.dma.stream):
             if not stream.enable():
                 continue
                                     
-            if stream.step(self.ql.mem):                
-                self.ql.hw.intc.set_pending(self.IRQn[id])
+            if stream.step(self.ql.mem):
+                self.transfer_complete(id)                

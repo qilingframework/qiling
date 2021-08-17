@@ -43,11 +43,13 @@ class STM32F4xxUsart(QlPeripheral):
         return retval
 
     def write(self, offset, size, value):
-        data = (value).to_bytes(size, byteorder='little')
-
+        if offset == self.struct.SR.offset:
+            value = value | (self.usart.SR & (USART_SR.TC))
+        
+        data = (value).to_bytes(size, byteorder='little')        
         if offset == self.struct.DR.offset:
             self.send_buf.append(value)
-            self.usart.SR |= USART_SR.TC            
+            self.usart.SR |= USART_SR.TXE|USART_SR.TC        
         else:
             ctypes.memmove(ctypes.addressof(self.usart) + offset, data, size)
 
