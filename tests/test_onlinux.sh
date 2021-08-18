@@ -7,12 +7,14 @@
 cd ..
 pip3 install . 
 
-cd examples
-rm -rf rootfs
-wget https://github.com/qilingframework/rootfs/archive/refs/heads/master.zip
-unzip master.zip && mv rootfs-master rootfs
-cd rootfs/x86_linux/kernel && unzip -P infected m0hamed_rootkit.ko.zip
-cd ../../../../tests
+if [ ! -f "master.zip" ]; then
+    cd examples
+    rm -rf rootfs
+    wget https://github.com/qilingframework/rootfs/archive/refs/heads/master.zip
+    unzip master.zip && mv rootfs-master rootfs
+    cd rootfs/x86_linux/kernel && unzip -P infected m0hamed_rootkit.ko.zip
+    cd ../../../../tests
+fi    
 
 python3 ./test_posix.py && 
 python3 ./test_elf_multithread.py &&
