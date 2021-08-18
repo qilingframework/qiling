@@ -4,17 +4,19 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-cd ..
-pip3 install . 
+# cd ..
+# pip3 install . 
 
-if [ ! -f "master.zip" ]; then
-    cd examples
-    rm -rf rootfs
-    wget https://github.com/qilingframework/rootfs/archive/refs/heads/master.zip
-    unzip master.zip && mv rootfs-master rootfs
-    cd rootfs/x86_linux/kernel && unzip -P infected m0hamed_rootkit.ko.zip
-    cd ../../../../tests
-fi    
+# cd examples
+
+# if [ ! -f "master.zip" ]; then
+#     rm -rf rootfs
+#     wget https://github.com/qilingframework/rootfs/archive/refs/heads/master.zip
+#     unzip master.zip && mv rootfs-master rootfs
+# fi    
+
+# cd rootfs/x86_linux/kernel && unzip -P infected m0hamed_rootkit.ko.zip
+# cd ../../../../tests
 
 python3 ./test_posix.py && 
 python3 ./test_elf_multithread.py &&
