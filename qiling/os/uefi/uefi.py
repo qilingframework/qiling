@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from typing import Any, Callable, Iterable, Mapping, Sequence, Tuple
+from typing import Any, Callable, Iterable, Mapping, MutableSequence, Sequence, Tuple
 from unicorn import UcError
 
 from qiling import Qiling
@@ -22,6 +22,9 @@ class QlOsUefi(QlOs):
 		self.in_smm: bool
 		self.PE_RUN = True
 		self.heap = None # Will be initialized by the loader.
+
+		self.on_module_enter: MutableSequence[Callable[[str], bool]] = []
+		self.on_module_exit: MutableSequence[Callable[[int], bool]] = []
 
 		cc: QlCC = {
 			32: intel.cdecl,
@@ -79,7 +82,7 @@ class QlOsUefi(QlOs):
 		Returns: `True` if subsequent modules execution should be thwarted, `False` otherwise
 		"""
 
-		return False
+		return bool(sum(callback(nmodules) for callback in self.on_module_exit))
 
 	def notify_before_module_execution(self, module: str) -> bool:
 		"""Callback fired before a module is about to start executing.
@@ -92,7 +95,7 @@ class QlOsUefi(QlOs):
 
 		self.running_module = module
 
-		return False
+		return bool(sum(callback(module) for callback in self.on_module_enter))
 
 
 	def emit_context(self):
