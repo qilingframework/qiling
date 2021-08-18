@@ -87,8 +87,9 @@ jobs:
               cd examples
               rm -rf rootfs
               wget https://github.com/qilingframework/rootfs/archive/refs/heads/master.zip
-              unzip master.zip && mv rootfs-master rootfs  
-              docker run -it --rm -v ${GITHUB_WORKSPACE}:/qiling qilingframework/qiling:dev bash -c "cd ../tests && ./test_onlinux.sh"
+              unzip master.zip && mv rootfs-master rootfs 
+              cd ../tests
+              docker run -it --rm -v ${GITHUB_WORKSPACE}:/qiling qilingframework/qiling:dev bash -c "./test_onlinux.sh"
         else
               pip3 install setuptools wheel
               cd tests && ./test_onlinux.sh
