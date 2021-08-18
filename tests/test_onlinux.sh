@@ -4,9 +4,10 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+cd ..
 pip3 install . 
 
-cd ../examples
+cd examples
 rm -rf rootfs
 wget https://github.com/qilingframework/rootfs/archive/refs/heads/master.zip
 unzip master.zip && mv rootfs-master rootfs
