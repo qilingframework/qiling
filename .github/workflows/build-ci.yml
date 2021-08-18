@@ -87,6 +87,7 @@ jobs:
         unzip master.zip && mv rootfs-master rootfs
         cd rootfs/x86_linux/kernel && unzip -P infected m0hamed_rootkit.ko.zip
         cd ../../../../
+        pwd
         if [ ${{ matrix.os }} == 'ubuntu-20.04' ]; then
               docker run -it --rm -v ${GITHUB_WORKSPACE}:/qiling qilingframework/qiling:dev bash -c "cd tests && ./test_onlinux.sh"
         else
