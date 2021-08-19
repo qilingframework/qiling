@@ -3,18 +3,16 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from typing import MutableSequence
 from .const import *
 from qiling.const import *
 
 
-def _invert_dict(d):
+def _invert_dict(d: Mapping) -> Mapping:
     return { v:k for k, v in d.items()}
 
 
-def _constant_mapping(bits, d_map, ret=None, single_mapping=False):
-    if ret is None:
-        ret = []
-
+def _constant_mapping(bits: int, d_map: Mapping[str, int], ret: MutableSequence[str] = [], single_mapping: bool = False) -> str:
     b_map = _invert_dict(d_map)
 
     if single_mapping:
