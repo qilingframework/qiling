@@ -14,5 +14,5 @@ python3 ./test_shellcode.py &&
 python3 ./test_edl.py &&
 python3 ./test_qnx.py &&
 pwd
-ls ../
+ls ../qiling
 cd ../qiling/engine/tests && python3 ./test_evm.py 
