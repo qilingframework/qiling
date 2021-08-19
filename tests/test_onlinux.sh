@@ -12,9 +12,9 @@ python3 ./test_debugger.py &&
 python3 ./test_uefi.py && 
 python3 ./test_shellcode.py && 
 python3 ./test_edl.py &&
-python3 ./test_qnx.py &&
+python3 ./test_qnx.py && echo "Done OS Test"
 
 if [ -d ../qiling/engine/tests ]; then
     cd ../qiling/engine/tests
-    python3 ./test_evm.py
+    python3 ./test_evm.py && echo "Done EVM test"
 fi
