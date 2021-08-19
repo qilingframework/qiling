@@ -24,19 +24,21 @@ requirements = [
 
 evm_extra = {
     "evm": [
-         "blake2b-py>=0.1.2",
-         "cached-property>=1.5.2;python_version<'3.8'",
-         "typing-extensions>=3.7.4.3;python_version<'3.8'",
-         "eth-keys>=0.2.1",
-         "eth-typing>=2.2.0",
-         "eth-utils>=1.9.4",
-         "eth_abi>=2.1.1",
-         "lru-dict>=1.1.6",
-         "py-ecc>=1.4.7",
-         "rlp>=2",
-         "trie==2.0.0-alpha.5",
-         "eth-hash[pycryptodome]",
-         "numpy",
+        "blake2b-py>=0.1.2",
+        "cached-property>=1.5.2;python_version<'3.8'",
+        "typing-extensions>=3.7.4.3;python_version<'3.8'",
+        "eth-keys>=0.2.1",
+        "eth-typing>=2.2.0",
+        "eth-utils>=1.9.4",
+        "eth_abi>=2.1.1",
+        "lru-dict>=1.1.6",
+        "py-ecc>=1.4.7",
+        "rlp>=2",
+        "trie==2.0.0-alpha.5",
+        "eth-hash[pycryptodome]",
+        "numpy",
+        "rich",
+        "cmd2"
      ] 
 }
 

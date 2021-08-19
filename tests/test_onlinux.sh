@@ -14,3 +14,5 @@ python3 ./test_shellcode.py &&
 python3 ./test_edl.py &&
 python3 ./test_qnx.py 
 
+[ -f test_mcu.py ] && python3 ./test_mcu.py &&
+[ -d ../qiling/engine/tests ] && cd ../qiling/engine/tests && python3 ./test_evm.py 
