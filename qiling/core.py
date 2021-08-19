@@ -222,7 +222,8 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         QlCoreHooks.__init__(self, self.uc)
         
         # Setup Outpt
-        self.arch.utils.setup_output()
+        if not self._custom_engine:
+            self.arch.utils.setup_output()
 
         if not (self._custom_engine or self.archtype in QL_ARCH_NONOS):
             self._os = os_setup(self.archtype, self.ostype, self)

@@ -11,7 +11,10 @@ python3 ./test_debugger.py &&
 python3 ./test_uefi.py && 
 python3 ./test_shellcode.py && 
 python3 ./test_edl.py &&
-python3 ./test_qnx.py && echo "Done OS Test"
+python3 ./test_qnx.py && 
+python3 ./test_android.py && echo "Done OS Test"
+
+python3 ./test_mcu.py && echo "Done MCU Test"
 
 if [ -d ../qiling/engine/tests ]; then
     cd ../qiling/engine/tests
