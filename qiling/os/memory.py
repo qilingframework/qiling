@@ -445,6 +445,9 @@ class QlMemoryManager:
         return addr
 
     def protect(self, addr, size, perms):
+        # mask off perms bits that are not supported by unicorn
+        perms &= UC_PROT_ALL
+
         aligned_address = (addr >> 12) << 12
         aligned_size = self.align((addr & 0xFFF) + size)
         self.ql.uc.mem_protect(aligned_address, aligned_size, perms)
