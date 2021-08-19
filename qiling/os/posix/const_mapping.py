@@ -270,6 +270,10 @@ def mmap_prot_mapping(prots):
         'PROT_READ' : 0x1,
         'PROT_WRITE': 0x2,
         'PROT_EXEC' : 0x4,
+
+        # not supported by unicorn
+        'PROT_GROWSDOWN' : 0x01000000,
+        'PROT_GROWSUP'   : 0x02000000
     }
 
     return _constant_mapping(prots, mmap_prots)
