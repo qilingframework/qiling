@@ -88,14 +88,14 @@ jobs:
         cd ../qiling
         wget https://github.com/qilingframework/engine/archive/refs/heads/master.zip
         unzip master.zip && mv engine-master rootfs
-        cd rootfs/x86_linux/kernel && unzip -P infected m0hamed_rootkit.ko.zip
+        cd ../examples/rootfs/x86_linux/kernel && unzip -P infected m0hamed_rootkit.ko.zip
         cd ../../../../
         
         if [ ${{ matrix.os }} == 'ubuntu-20.04' ]; then
               docker run -it --rm -v ${GITHUB_WORKSPACE}:/qiling qilingframework/qiling:dev bash -c "pip3 install . && cd tests && ./test_onlinux.sh"
         else
               pip3 install setuptools wheel
-              pip3 install .[evm]
+              pip3 install -e .[evm]
               cd tests && ./test_onlinux.sh
         fi
 
