@@ -8,6 +8,7 @@ import struct
 
 from qiling.const import *
 from qiling.core import Qiling
+from qiling.hw.utils.bitbanding import alias_to_bitband
 
 from .loader import QlLoader
 
@@ -62,7 +63,16 @@ class QlLoaderMCU(QlLoader):
         self.mapinfo = {
             'sram'      : (0x20000000, 0x20020000),
             'system'    : (0x1FFF0000, 0x1FFF7800),            
-            'flash'     : (0x08000000, 0x08080000),                         
+            'flash'     : (0x08000000, 0x08080000),             
+            'peripheral': (0x40000000, 0x40100000),
+            'core_perip': (0xE000E000, 0xE000F000),
+        }
+
+        self.perip_region = {
+            'nvic': [(0xE000E100, 0xE000E4F0), (0xE000EF00, 0xE000EF04)],
+            'sys_tick': [(0xE000E010, 0xE000E020)],                        
+            'rcc': [(0x40023800, 0x40023C00)],
+            'usart2': [(0x40004400, 0x40004800)]
         }
 
     def reset(self):
@@ -84,9 +94,51 @@ class QlLoaderMCU(QlLoader):
         for begin, end, data in self.ihexfile.segments:
             self.ql.mem.write(begin, data)
 
-        self.ql.hw.setup_mmio2(0x40000000, 0x1000000, info='[PPB]')
-        self.ql.hw.setup_mmio2(0xE0000000, 0x1000000, info='[PERIP]')
-        self.ql.hw.setup_mmio2(0x22000000, 0x2000000, info="[SRAM Memory]")
-        self.ql.hw.setup_mmio2(0x42000000, 0x2000000, info="[Peripheral Memory]")
+        self.ql.arch.mapinfo = self.mapinfo
+        self.ql.arch.perip_region = self.perip_region
 
+        PPB_BEGIN, PPB_END = self.mapinfo['core_perip']
+        PERIP_BEGIN, PERIP_END = self.mapinfo['peripheral']
+        
+        self.ql.hook_mem_read(self.ql.arch.perip_read_hook, begin=PPB_BEGIN, end=PPB_END)
+        self.ql.hook_mem_read(self.ql.arch.perip_read_hook, begin=PERIP_BEGIN, end=PERIP_END)
+        self.ql.hook_mem_write(self.ql.arch.perip_write_hook, begin=PPB_BEGIN, end=PPB_END)
+        self.ql.hook_mem_write(self.ql.arch.perip_write_hook, begin=PERIP_BEGIN, end=PERIP_END)
+        
         self.reset()
+
+        def pack_data(ql, size, data):
+            return {
+                    1: ql.pack8,
+                    2: ql.pack16,
+                    4: ql.pack32,
+                    8: ql.pack64,
+                    }.get(size)(data)
+
+        def sram_read_cb(ql, offset, size):
+            ql.log.warning(f'Read sram mem {hex(0x22000000+offset)}+{size} ==> {data}')
+            real_addr = alias_to_bitband(0x20000000, offset)
+            ql.log.warning(f'Redirect to {hex(real_addr)}')
+
+        def sram_write_cb(ql, offset, size, value):
+            ql.log.warning(f'Write sram mem {hex(0x22000000+offset)} + {size} ==> {value}')
+            real_addr = alias_to_bitband(0x20000000, offset)
+            ql.log.warning(f'Redirect to {hex(real_addr)}')
+            data = pack_data(ql, size, value)
+            ql.mem.write(real_addr, data)
+
+        def peripheral_read_cb(ql, offset, size):
+            ql.log.warning(f'Read peripheral mem {hex(0x42000000+offset)} + {size}')
+            real_addr = alias_to_bitband(0x40000000, offset)
+            ql.log.warning(f'Redirect to {hex(real_addr)}')
+
+        def peripheral_write_cb(ql, offset, size, value):
+            peripheral_base = 0x40000000
+            ql.log.warning(f'Write peripheral mem {hex(0x42000000+offset)} + {size} ==> {value}')
+            real_addr = alias_to_bitband(peripheral_base, offset)
+            ql.log.warning(f'Redirect to {hex(real_addr)}')
+            data = pack_data(ql, size, value)
+            ql.mem.write(real_addr, data)
+        
+        self.ql.mem.map_mmio(0x22000000, 0x2000000, sram_read_cb, sram_write_cb, info="[SRAM Memory]")
+        self.ql.mem.map_mmio(0x42000000, 0x2000000, peripheral_read_cb, peripheral_write_cb, info="[Peripheral Memory]")   

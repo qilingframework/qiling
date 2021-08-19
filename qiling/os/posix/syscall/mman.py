@@ -182,28 +182,3 @@ def ql_syscall_mmap(ql, mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, 
 
 def ql_syscall_mmap2(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset):
     return syscall_mmap_impl(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset, 2)
-
-def ql_syscall_shmget(ql, key, size, shmflg, *args, **kwargs):
-    if (shmflg & IPC_CREAT) == 0:
-        if key not in ql.os._shms:
-            return ENOENT
-    else:
-        if (shmflg & IPC_EXCL) != 0:
-            if key in ql.os._shms:
-                return EEXIST
-        else:
-            #addr = ql.mem.map_anywhere(size)
-            ql.os._shms[key] = (key, size)
-            return key
-
-def ql_syscall_shmat(ql, shmid, shmaddr, shmflg, *args, **kwargs):
-    # shmid == key
-    # dummy implementation
-    if shmid not in ql.os._shms:
-        return EINVAL
-    key, size = ql.os._shms[shmid]
-    if shmaddr == 0:
-        addr = ql.mem.map_anywhere(size)
-    else:
-        addr = ql.mem.map(shmaddr, size, info="[shm]")
-    return addr

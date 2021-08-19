@@ -2003,7 +2003,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             set_color(addr, CIC_ITEM, 0x00FFD700)
             self.ql_update_views(self.qlemu.ql.reg.arch_pc, ql)
             self.qlemu.status = ql.save()
-            ql.os.stop()
+            ql.stop()
             self.qlemu.ql.hook_del(self.stephook)
             jumpto(addr)
 
@@ -2018,7 +2018,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
 
             if addr in bp_list and (addr != self.lastaddr or self.is_change_addr>1):
                 self.qlemu.status = ql.save()
-                ql.os.stop()
+                ql.stop()
                 self.lastaddr = addr
                 self.is_change_addr = -1
                 jumpto(addr)

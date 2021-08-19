@@ -22,7 +22,7 @@ class QlOs:
     def __init__(self, ql: Qiling, resolvers: Mapping[Any, Resolver] = {}):
         self.ql = ql
         self.utils = QlOsUtils(ql)
-        self.fcall: QlFunctionCall
+        self.fcall: Optional[QlFunctionCall] = None
         self.fs_mapper = QlFsMapper(ql)
         self.child_processes = False
         self.thread_management = None
@@ -168,13 +168,6 @@ class QlOs:
         for image in self.ql.loader.images:
             if image.base <= pc < image.end:
                 return image
-
-    # stop emulation
-    def stop(self):
-        if self.ql.multithread:
-            self.thread_management.stop() 
-        else:
-            self.ql.emu_stop()    
 
     def emu_error(self):
         self.ql.log.error("\n")

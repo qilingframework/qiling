@@ -211,11 +211,9 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         # Components #
         ##############
         if not self._custom_engine:
+            self._hw  = component_setup("hw", "hw", self)
             self._mem = component_setup("os", "memory", self)
             self._reg = component_setup("arch", "register", self)
-
-        if self.archtype in QL_ARCH_NONOS:   
-            self._hw  = component_setup("hw", "hw", self)                
 
         self._arch = arch_setup(self.archtype, self)
         
@@ -228,7 +226,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
         if not (self._custom_engine or self.archtype in QL_ARCH_NONOS):
             self._os = os_setup(self.archtype, self.ostype, self)
-       
+        
         # Run the loader
         self.loader.run()
 
@@ -758,7 +756,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
                 return self.arch.run(code) 
 
         if self.archtype in QL_ARCH_NONOS:
-            return self.arch.run(end=end, count=count)
+            return self.arch.run(count=count)
 
         self.write_exit_trap()
 
@@ -908,6 +906,13 @@ class Qiling(QlCoreHooks, QlCoreStructs):
     def emu_stop(self):
         self.uc.emu_stop()
     
+    # stop emulation
+    def stop(self):
+        if self.multithread:
+            self.os.thread_management.stop() 
+        else:
+            self.uc.emu_stop()            
+
     # start emulation
     def emu_start(self, begin, end, timeout=0, count=0):
         self.uc.emu_start(begin, end, timeout, count)

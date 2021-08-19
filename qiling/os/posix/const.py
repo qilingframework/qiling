@@ -17,16 +17,15 @@ THREAD_EVENT_EXIT_GROUP_EVENT = 6
 # File Open Limits
 NR_OPEN = 1024
 
-SOCK_TYPE_MASK = 0x0f
-
 linux_socket_types = {
     'SOCK_STREAM'    : 0x1,
     'SOCK_DGRAM'     : 0x2,
     'SOCK_RAW'       : 0x3,
     'SOCK_RDM'       : 0x4,
     'SOCK_SEQPACKET' : 0x5,
-    'SOCK_DCCP'      : 0x6,
     'SOCK_PACKET'    : 0xa,
+    'SOCK_NONBLOCK'  : 0x800,
+    'SOCK_CLOEXEC'   : 0x80000,
 }
 
 
@@ -44,103 +43,6 @@ linux_socket_domain = {
     'AF_INET6'     : 0xa,
     'AF_MAX'       : 0xc,
 }
-
-# https://github.com/torvalds/linux/blob/master/include/uapi/linux/in.h
-linux_socket_level = {
-    'IPPROTO_IP'    : 0x0000,
-    'SOL_SOCKET'    : 0x0001,
-    'IPPROTO_TCP'   : 0x0006,
-    'IPPROTO_UDP'   : 0x0011,
-    'IPPROTO_IPV6'  : 0x0029,
-    'IPPROTO_RAW'   : 0x00ff,
-}
-
-
-linux_socket_options = {
-    "SO_DEBUG"           : 0x0001,
-    "SO_REUSEADDR"       : 0x0002,
-    "SO_KEEPALIVE"       : 0x0009,
-    "SO_DONTROUTE"       : 0x0005,
-    "SO_BROADCAST"       : 0x0006,
-    "SO_LINGER"          : 0x000d,
-    "SO_OOBINLINE"       : 0x000a,
-    "SO_SNDBUF"          : 0x0007,
-    "SO_RCVBUF"          : 0x0008,
-    "SO_SNDLOWAT"        : 0x0013,
-    "SO_RCVLOWAT"        : 0x0012,
-    "SO_SNDTIMEO"        : 0x0015,
-    "SO_RCVTIMEO"        : 0x0014,
-}
-
-# https://man7.org/linux/man-pages/man7/ip.7.html
-# https://github.com/torvalds/linux/blob/master/include/uapi/linux/in.h
-linux_socket_ip_options = {
-    "IP_TOS"                    : 0x0001,
-    "IP_TTL"                    : 0x0002,
-    "IP_HDRINCL"                : 0x0003,
-    "IP_OPTIONS"                : 0x0004,
-    "IP_ROUTER_ALERT"           : 0x0005,
-    "IP_RECVOPTS"               : 0x0006,
-    "IP_RETOPTS"                : 0x0007,
-    "IP_PKTINFO"                : 0x0008,
-    "IP_MTU_DISCOVER"           : 0x000a,
-    "IP_RECVERR"                : 0x000b,
-    "IP_RECVTTL"                : 0x000c,
-    "IP_RECVTOS"                : 0x000d,
-    "IP_MTU"                    : 0x000e,
-    "IP_FREEBIND"               : 0x000f,
-    "IP_PASSSEC"                : 0x0012,
-    "IP_TRANSPARENT"            : 0x0013,
-    "IP_RECVORIGDSTADDR"        : 0x0014,
-    "IP_NODEFRAG"               : 0x0016,
-    "IP_BIND_ADDRESS_NO_PORT"   : 0x0018,
-    "IP_MULTICAST_IF"           : 0x0020,
-    "IP_MULTICAST_TTL"          : 0x0021,
-    "IP_MULTICAST_LOOP"         : 0x0022,
-    "IP_ADD_MEMBERSHIP"         : 0x0023,
-    "IP_DROP_MEMBERSHIP"        : 0x0024,
-    "IP_UNBLOCK_SOURCE"         : 0x0025,
-    "IP_BLOCK_SOURCE"           : 0x0026,
-    "IP_ADD_SOURCE_MEMBERSHIP"  : 0x0027,
-    "IP_DROP_SOURCE_MEMBERSHIP" : 0x0028,
-    "IP_MSFILTER"               : 0x0029,
-    "IP_MULTICAST_ALL"          : 0x0031,
-}
-
-
-macos_socket_ip_options = {
-    "IP_TOS"                   : 0x0003,
-    "IP_TTL"                   : 0x0004,
-    "IP_HDRINCL"               : 0x0002,
-    "IP_OPTIONS"               : 0x0001,
-    # "IP_ROUTER_ALERT"          : 0x0005,
-    "IP_RECVOPTS"              : 0x0005,
-    "IP_RETOPTS"               : 0x0008,
-    # "IP_PKTINFO"               : 0x0008,
-    # "IP_MTU_DISCOVER"          : 0x000a,
-    # "IP_RECVERR"               : 0x000b,
-    # "IP_RECVTTL"               : 0x000c,
-    # "IP_RECVTOS"               : 0x000d,
-    # "IP_MTU"                   : 0x000e,
-    # "IP_FREEBIND"              : 0x000f,
-    # "IP_PASSSEC"               : 0x0012,
-    # "IP_TRANSPARENT"           : 0x0013,
-    # "IP_RECVORIGDSTADDR"       : 0x0014,
-    # "IP_NODEFRAG"              : 0x0016,
-    # "IP_BIND_ADDRESS_NO_PORT"  : 0x0018,
-    "IP_MULTICAST_IF"          : 0x0009,
-    "IP_MULTICAST_TTL"         : 0x000a,
-    "IP_MULTICAST_LOOP"        : 0x000b,
-    "IP_ADD_MEMBERSHIP"        : 0x000c,
-    "IP_DROP_MEMBERSHIP"       : 0x000d,
-    # "IP_UNBLOCK_SOURCE"        : 0x0025,
-    # "IP_BLOCK_SOURCE"          : 0x0026,
-    # "IP_ADD_SOURCE_MEMBERSHIP" : 0x0027,
-    # "IP_DROP_SOURCE_MEMBERSHIP" : 0x0028,
-    # "IP_MSFILTER"              : 0x0029,
-    # "IP_MULTICAST_ALL"         : 0x0031,
-}
-
 
 macos_socket_domain = {
     'AF_UNSPEC'    : 0x0,
@@ -161,15 +63,16 @@ macos_socket_domain = {
 }
 
 
-# https://gfiber.googlesource.com/toolchains/mindspeed/+/refs/heads/newkernel_dev/arm-unknown-linux-gnueabi/sysroot/usr/include/bits/socket.h
 arm_socket_types = {
-    'SOCK_STREAM'    : 0x1,
-    'SOCK_DGRAM'     : 0x2,
+    'SOCK_DGRAM'     : 0x1,
+    'SOCK_STREAM'    : 0x2,
     'SOCK_RAW'       : 0x3,
     'SOCK_RDM'       : 0x4,
     'SOCK_SEQPACKET' : 0x5,
     'SOCK_DCCP'      : 0x6,
     'SOCK_PACKET'    : 0xa,
+    'SOCK_NONBLOCK'  : 0x800,
+    'SOCK_CLOEXEC'   : 0x80000,
 }
 
 
@@ -225,42 +128,16 @@ arm_socket_domain = {
 }
 
 
-# https://gfiber.googlesource.com/toolchains/mindspeed/+/refs/heads/newkernel_dev/arm-unknown-linux-gnueabi/sysroot/usr/include/asm/socket.h
-arm_socket_level = {
-    'IPPROTO_IP'    : 0x0000,
-    'SOL_SOCKET'    : 0x0001,
-    'IPPROTO_TCP'   : 0x0006,
-    'IPPROTO_UDP'   : 0x0011,
-    'IPPROTO_IPV6'  : 0x0029,
-    'IPPROTO_RAW'   : 0x00ff,
-}
-
-# https://gfiber.googlesource.com/toolchains/mindspeed/+/refs/heads/newkernel_dev/arm-unknown-linux-gnueabi/sysroot/usr/include/asm/socket.h
-arm_socket_options = {
-    "SO_DEBUG"           : 0x0001,
-    "SO_REUSEADDR"       : 0x0002,
-    "SO_KEEPALIVE"       : 0x0009,
-    "SO_DONTROUTE"       : 0x0005,
-    "SO_BROADCAST"       : 0x0006,
-    "SO_LINGER"          : 0x000d,
-    "SO_OOBINLINE"       : 0x000a,
-    "SO_SNDBUF"          : 0x0007,
-    "SO_RCVBUF"          : 0x0008,
-    "SO_SNDLOWAT"        : 0x0013,
-    "SO_RCVLOWAT"        : 0x0012,
-    "SO_SNDTIMEO"        : 0x0015,
-    "SO_RCVTIMEO"        : 0x0014,
-}
-
-
 mips_socket_types = {
-    'SOCK_STREAM'    : 0x2,
     'SOCK_DGRAM'     : 0x1,
+    'SOCK_STREAM'    : 0x2,
     'SOCK_RAW'       : 0x3,
     'SOCK_RDM'       : 0x4,
     'SOCK_SEQPACKET' : 0x5,
     'SOCK_DCCP'      : 0x6,
     'SOCK_PACKET'    : 0xa,
+    'SOCK_CLOEXEC'   : 0x80000,
+    'SOCK_NONBLOCK'  : 0x80,
 }
 
 
@@ -315,89 +192,6 @@ mips_socket_domain = {
     'AF_MAX'        : 0x2c,
 }
 
-# https://docs.huihoo.com/doxygen/linux/kernel/3.7/arch_2mips_2include_2uapi_2asm_2socket_8h_source.html
-# https://android-review.linaro.org/plugins/gitiles/platform/prebuilts/gcc/darwin-x86/mips/mipsel-linux-android-4.4.3/+/78060bd30f50c43c7442f32e7740efcdb87ba587/sysroot/usr/include/linux/in.h
-mips_socket_level = {
-    'SOL_SOCKET'    : 0xffff,
-    'IPPROTO_IP'    : 0x0000,
-    'IPPROTO_TCP'   : 0x0006,
-    'IPPROTO_UDP'   : 0x0011,
-    'IPPROTO_IPV6'  : 0x0029,
-    'IPPROTO_RAW'   : 0x00ff,
-}
-
-# https://docs.huihoo.com/doxygen/linux/kernel/3.7/arch_2mips_2include_2uapi_2asm_2socket_8h_source.html
-# https://github.com/torvalds/linux/blob/master/arch/mips/include/uapi/asm/socket.h
-mips_socket_options = {
-    "SO_DEBUG"                  : 0x0001,
-    "SO_REUSEADDR"              : 0x0004,
-    "SO_KEEPALIVE"              : 0x0008,
-    "SO_DONTROUTE"              : 0x0010,
-    "SO_BROADCAST"              : 0x0020,
-    "SO_LINGER"                 : 0x0080,
-    "SO_OOBINLINE"              : 0x0100,
-    "SO_SNDBUF"                 : 0x1001,
-    "SO_RCVBUF"                 : 0x1002,
-    "SO_SNDLOWAT"               : 0x1003,
-    "SO_RCVLOWAT"               : 0x1004,
-    "SO_SNDTIMEO_OLD"           : 0x1005,
-    "SO_RCVTIMEO_OLD"           : 0x1006,
-    "SO_TIMESTAMP_OLD"          : 0x001d,
-    # "SO_TIMESTAMPNS_OLD"        : 0x0023,
-    # "SO_TIMESTAMPING_OLD"       : 0x0025,
-    "SO_TIMESTAMP_NEW"          : 0x003f,
-    "SO_TIMESTAMPNS_NEW"        : 0x0040,
-    "SO_TIMESTAMPING_NEW"       : 0x0041,
-    "SO_RCVTIMEO_NEW"           : 0x0042,
-    "SO_SNDTIMEO_NEW"           : 0x0043,
-}
-
-
-mips_socket_ip_options = {
-    "IP_TOS"                    : 0x0001,
-    "IP_TTL"                    : 0x0002,
-    "IP_HDRINCL"                : 0x0003,
-    "IP_OPTIONS"                : 0x0004,
-    "IP_ROUTER_ALERT"           : 0x0005,
-    "IP_RECVOPTS"               : 0x0006,
-    "IP_RETOPTS"                : 0x0007,
-    "IP_PKTINFO"                : 0x0008,
-    "IP_MTU_DISCOVER"           : 0x000a,
-    "IP_RECVERR"                : 0x000b,
-    "IP_RECVTTL"                : 0x000c,
-    "IP_RECVTOS"                : 0x000d,
-    "IP_MTU"                    : 0x000e,
-    "IP_FREEBIND"               : 0x000f,
-    "IP_PASSSEC"                : 0x0012,
-    "IP_TRANSPARENT"            : 0x0013,
-    "IP_RECVORIGDSTADDR"        : 0x0014,
-    "IP_NODEFRAG"               : 0x0016,
-    "IP_BIND_ADDRESS_NO_PORT"   : 0x0018,
-    "IP_MULTICAST_IF"           : 0x0020,
-    "IP_MULTICAST_TTL"          : 0x0021,
-    "IP_MULTICAST_LOOP"         : 0x0022,
-    "IP_ADD_MEMBERSHIP"         : 0x0023,
-    "IP_DROP_MEMBERSHIP"        : 0x0024,
-    "IP_UNBLOCK_SOURCE"         : 0x0025,
-    "IP_BLOCK_SOURCE"           : 0x0026,
-    "IP_ADD_SOURCE_MEMBERSHIP"  : 0x0027,
-    "IP_DROP_SOURCE_MEMBERSHIP" : 0x0028,
-    "IP_MSFILTER"               : 0x0029,
-    "IP_MULTICAST_ALL"          : 0x0031,
-    "SO_SNDTIMEO_OLD"           : 0x1005,
-    "SO_RCVTIMEO_OLD"           : 0x1006,
-    "SO_TIMESTAMP_OLD"          : 0x001d,
-    # "SO_TIMESTAMPNS_OLD"        : 0x0023,
-    # "SO_TIMESTAMPING_OLD"       : 0x0025,
-    "SO_TIMESTAMP_NEW"          : 0x003f,
-    "SO_TIMESTAMPNS_NEW"        : 0x0040,
-    "SO_TIMESTAMPING_NEW"       : 0x0041,
-    "SO_RCVTIMEO_NEW"           : 0x0042,
-    "SO_SNDTIMEO_NEW"           : 0x0043,
-
-}
-
-
 mac_open_flags = {
     "O_RDONLY"   : 0x0000,
     "O_WRONLY"   : 0x0001,
@@ -416,25 +210,19 @@ mac_open_flags = {
 
 
 linux_open_flags = {
-    'O_RDONLY'    : 0o000000000,
-    'O_WRONLY'    : 0o000000001,
-    'O_RDWR'      : 0o000000002,
-    'O_CREAT'     : 0o000000100,
-    'O_EXCL'      : 0o000000200,
-    'O_NOCTTY'    : 0o000000400,
-    'O_TRUNC'     : 0o000001000,
-    'O_APPEND'    : 0o000002000,
-    'O_NONBLOCK'  : 0o000004000,
-    'O_DSYNC'     : 0o000010000,
-    'FASYNC'      : 0o000020000,
-    'O_DIRECT'    : 0o000040000,
-    'O_LARGEFILE' : 0o000100000,
-    'O_DIRECTORY' : 0o000200000,
-    'O_NOFOLLOW'  : 0o000400000,
-    'O_NOATIME'   : 0o001000000,
-    'O_CLOEXEC'   : 0o002000000,
-    'O_SYNC'      : 0o004000000 | 0o000010000, # O_DSYNC
-    'O_PATH'      : 0o010000000
+    'O_RDONLY'   : 0x0,
+    'O_WRONLY'   : 0x1,
+    'O_RDWR'     : 0x2,
+    'O_CREAT'    : 0x40,
+    'O_EXCL'     : 0x80,
+    'O_NOCTTY'   : 0x100,
+    'O_TRUNC'    : 0x200,
+    'O_APPEND'   : 0x400,
+    'O_NONBLOCK' : 0x800,
+    'O_ASYNC'    : 0x2000,
+    'O_DIRECTORY': 0x10000,
+    'O_NOFOLLOW' : 0x20000,
+    'O_SYNC'     : 0x101000,
 }
 
 
@@ -747,13 +535,3 @@ errors = {
     130: 'EOWNERDEAD',
     131: 'ENOTRECOVERABLE',
 }
-
-# shm syscall
-IPC_CREAT = 8**3
-IPC_EXCL = 2*(8**3)
-IPC_NOWAIT = 4*(8**3)
-
-SHM_RDONLY = 8**4
-SHM_RND = 2*(8**4)
-SHM_REMAP= 4*(8**4)
-SHM_EXEC = 1*(8**5)

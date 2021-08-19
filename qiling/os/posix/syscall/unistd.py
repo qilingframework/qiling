@@ -32,7 +32,7 @@ def ql_syscall_exit(ql, exit_code, *args, **kw):
         td.sched_cb = _sched_cb_exit
     else:
         ql.os.exit_code = exit_code
-        ql.os.stop()
+        ql.stop()
 
 
 def ql_syscall_exit_group(ql, exit_code, *args, **kw):
@@ -49,7 +49,7 @@ def ql_syscall_exit_group(ql, exit_code, *args, **kw):
         td.sched_cb = _sched_cb_exit
     else:
         ql.os.exit_code = exit_code
-        ql.os.stop()
+        ql.stop()
 
 
 def ql_syscall_alarm(ql, alarm_seconds, *args, **kw):

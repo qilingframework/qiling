@@ -4,7 +4,74 @@
 #
 
 from qiling.utils import ql_get_module_function
-from qiling.hw.utils.bitbanding import alias_to_bitband
+
+class QlHardware:
+    def __init__(self, ql):
+        self.ql = ql
+        self._tag = ''
+
+    def read(self, offset, size) -> bytearray:
+        if size == 4:
+            return self.read_double_word(offset)
+        
+        if size == 2:
+            return self.read_word(offset)
+
+        if size == 1:
+            return self.read_byte(offset)
+        
+        return b'\x00' * size
+
+    def write(self, offset, size, value):
+        if size == 4:
+            return self.write_double_word(offset, value)
+        
+        if size == 2:
+            return self.write_word(offset, value)
+
+        if size == 1:
+            return self.write_byte(offset, value)
+        
+        return b'\x00' * size
+
+    def read_cb(self):
+        def ql_read_cb(ql, offset, size):
+            return self.read(offset)
+        return ql_read_cb
+    
+    def write_cb(self):
+        def ql_write_cb(ql, offset, size, value):
+            return self.write(offset, size, value)
+        return ql_write_cb    
+
+    def read_double_word(self, offset) -> bytearray:
+        return b'\x00' * 4
+
+    def read_word(self, offset) -> bytearray:
+        return b'\x00' * 2
+
+    def read_byte(self, offset) -> bytearray:
+        return b'\x00' * 1
+
+    def write_double_word(self, offset, value):
+        pass
+
+    def write_word(self, offset, value):
+        pass
+
+    def write_byte(self, offset, value):
+        pass
+
+    def step(self):
+        pass
+
+    @property
+    def tag(self):
+        return self._tag
+
+    @tag.setter
+    def tag(self, value):
+        self._tag = value
 
 
 class QlHwManager:
@@ -12,134 +79,27 @@ class QlHwManager:
         self.ql = ql
 
         self._entity = {}
-        self._region = {}
-        self.band_alias = {}
 
-    def create(self, name, tag, region, **kwargs):
+    def add_hardware(self, hw_type, hw_name, hw_tag=None):
         """You can access the `hw_tag` by `ql.hw.hw_tag` or `ql.hw['hw_tag']`"""
 
-        if type(region) is tuple:
-            region = [region]
-        self._region[tag] = region
+        if hw_tag is None:
+            hw_tag = hw_name
+            
+        ## underscore to camel-case
+        hw_class = ''.join([token.capitalize() for token in hw_name.split('_')])
 
-        entity = ql_get_module_function('qiling.hw', name)(self.ql, tag, **kwargs)    
-
-        self._entity[tag] = entity
-
-        setattr(self, tag, entity)
-    
-    def create_band_alias(self, name:str, base_addr:int, alias_addr, size:int):
-        self.band_alias[name] = (base_addr, alias_addr, alias_addr + size - 1)
-
-    def find(self, addr, size):
-        def check_bound(lbound, rbound):
-            return lbound <= addr and addr + size <= rbound
+        entity = ql_get_module_function(f'qiling.hw.{hw_type}.{hw_name}', hw_class)(self.ql)
         
-        for tag in self._entity.keys():
-            for lbound, rbound in self._region[tag]:
-                if check_bound(lbound, rbound):
-                    return tag, self._entity[tag]
-        
-        return '', None
+        entity.tag = hw_tag
+        self[hw_tag] = entity
+        setattr(self, hw_tag, entity)
 
-    def base_addr(self, tag):
-        return self._region[tag][0][0]
-
-    def step(self):
-        for _, entity in self._entity.items():
-            entity.step()
+    def items(self):
+        return self._entity.items()
 
     def __getitem__(self, key):
         return self._entity[key]
 
     def __setitem__(self, key, value):
         self._entity[key] = value
-
-    def setup_mmio(self, begin, size, info=""):
-        def mmio_read_cb(ql, access, addr, size, value):
-            tag, hardware = self.find(addr, size)
-            if hardware:
-                base = self.base_addr(tag)
-                value = hardware.read(addr - base, size)
-                ql.mem.write(addr, (value).to_bytes(size, byteorder='little'))
-            else:
-                ql.log.warning('%s Read non-mapped hardware [0x%08x]' % (info, addr))
-                
-            return 0
-
-        def mmio_write_cb(ql, access, addr, size, value):
-            tag, hardware = self.find(addr, size)
-            if hardware:
-                base = self.base_addr(tag)
-                hardware.write(addr - base, size, value)
-            else:
-                ql.log.warning('%s Write non-mapped hardware [0x%08x] = 0x%08x' % (info, addr, value))
-
-        self.ql.mem.map(begin, size)
-        self.ql.hook_mem_read(mmio_read_cb, begin=begin, end=begin + size)
-        self.ql.hook_mem_write(mmio_write_cb, begin=begin, end=begin + size)
-
-    def setup_mmio2(self, begin, size, info=""):
-        def in_band_alias(addr):
-            for v in self.band_alias.values():
-                if v[1] <= addr <= v[2]:
-                    return v[0]
-            return False
-
-        def mmio_read_cb(ql, offset, size):
-            address = begin + offset
-            base_addr = in_band_alias(address)
-            
-            if base_addr != False:
-                real_addr = alias_to_bitband(base_addr, offset)
-                real_addr = real_addr & (-size)
-                buf = bytearray(self.ql.mem.read(real_addr, size))
-                # Bit position in the N bytes read...
-                bitpos = (offset >> 2) & ((size * 8) - 1)
-                # ...converted to byte in buffer and bit in byte
-                bit = (buf[bitpos >> 3] >> (bitpos & 7)) & 1
-                ql.log.warning(f'{info} Read bit-band alias [{hex(address)}], redirect to [{hex(real_addr)} >> {bitpos}]')
-                
-                return bit
-            else:
-                tag, hardware = self.find(address, size)
-                
-                if hardware:
-                    base = self.base_addr(tag)
-                    return hardware.read(address - base, size)
-                else:
-                    ql.log.warning('%s Read non-mapped hardware [0x%08x]' % (info, address))
-                    
-                return 0
-
-        def mmio_write_cb(ql, offset, size, value):
-            address = begin + offset
-            base_addr = in_band_alias(address)
-
-            if base_addr != False:
-                buf = bytearray(4)
-                real_addr = alias_to_bitband(base_addr, offset)
-                real_addr = real_addr & (-size)
-                buf = bytearray(self.ql.mem.read(real_addr, size))
-                # Bit position in the N bytes read... 
-                bitpos = (offset >> 2) & ((size * 8) - 1)
-                # ...converted to byte in buffer and bit in byte
-                bit = 1 << (bitpos & 7)
-                
-                if (value & 1):
-                    buf[bitpos >> 3] |= bit
-                else:
-                    buf[bitpos >> 3] &= ~bit
-                
-                self.ql.mem.write(real_addr, bytes(buf))
-                ql.log.warning(f'{info} Write bit-band alias [{hex(address)}], redirect to [{hex(real_addr)} >> {bitpos}] = {hex(value)}')
-            else:
-                tag, hardware = self.find(address, size)
-
-                if hardware:
-                    base = self.base_addr(tag)
-                    hardware.write(address - base, size, value)
-                else:
-                    ql.log.warning('%s Write non-mapped hardware [0x%08x] = 0x%08x' % (info, address, value))
-
-        self.ql.mem.map_mmio(begin, size, mmio_read_cb, mmio_write_cb, info=info)
