@@ -9,6 +9,7 @@ sys.path.append("..")
 
 from qiling.core import Qiling
 from qiling.const import QL_VERBOSE
+        
 
 class MCUTest(unittest.TestCase):
     def test_mcu_led_stm32f411(self):
@@ -24,11 +25,37 @@ class MCUTest(unittest.TestCase):
         ql = Qiling(["../examples/rootfs/stm32f411/hex/hello_usart.hex"],                    
                     archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DEFAULT)
         
-        ql.hw.add_hardware('char', 'usart', 'usart2')
-        ql.hw.add_hardware('misc', 'stm32f4_rcc', 'rcc')
+        # create/remove
+        ql.hw.create('STM32F4xxUsart', 'usart2', (0x40004400, 0x40004800))
+        ql.hw.create('STM32F4xxRcc', 'rcc', (0x40023800, 0x40023C00))
+        
         ql.run(count=2000)
+        buf = ql.hw.usart2.recv()
+        print('[1] Received from usart: ', buf)
+        self.assertEqual(buf, b'Hello USART\n')
 
         del ql
+
+    def test_mcu_usart_input_stm32f411(self):
+        ql = Qiling(["../examples/rootfs/stm32f411/hex/md5_server.hex"],                    
+            archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.OFF)
+        
+        ql.hw.create('STM32F4xxUsart', 'usart2', (0x40004400, 0x40004800))
+        ql.hw.create('STM32F4xxRcc', 'rcc', (0x40023800, 0x40023C00))
+
+
+        ql.run(count=1000)
+        
+        ql.hw.usart2.send(b'Hello\n')
+        ql.run(count=30000)
+        ql.hw.usart2.send(b'USART\n')
+        ql.run(count=30000)
+        ql.hw.usart2.send(b'Input\n')
+        ql.run(count=30000)
+        
+        buf = ql.hw.usart2.recv()
+        self.assertEqual(buf, b'8b1a9953c4611296a827abf8c47804d7\n2daeb613094400290a24fe5086c68f06\n324118a6721dd6b8a9b9f4e327df2bf5\n')
+
 
 if __name__ == "__main__":
     unittest.main()
