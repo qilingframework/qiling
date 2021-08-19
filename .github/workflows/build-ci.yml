@@ -87,7 +87,7 @@ jobs:
         unzip master.zip && mv rootfs-master rootfs
         cd ../qiling
         wget https://github.com/qilingframework/engine/archive/refs/heads/main.zip
-        unzip main.zip && mv engine-main rootfs
+        unzip main.zip && mv engine-main engine
         cd ../examples/rootfs/x86_linux/kernel && unzip -P infected m0hamed_rootkit.ko.zip
         cd ../../../../
         
