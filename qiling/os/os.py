@@ -169,6 +169,13 @@ class QlOs:
             if image.base <= pc < image.end:
                 return image
 
+    # stop emulation
+    def stop(self):
+        if self.ql.multithread:
+            self.thread_management.stop() 
+        else:
+            self.ql.emu_stop()    
+
     def emu_error(self):
         self.ql.log.error("\n")
 
