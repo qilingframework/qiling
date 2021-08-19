@@ -94,7 +94,30 @@ class QlMemoryManager:
             mem_e: memory range end
         """
 
-        self.map_info = [region for region in self.map_info if region[0] != mem_s and region[1] != mem_e]
+        tmp_map_info: MutableSequence[MapInfoEntry] = []
+
+        for s, e, p, info, mmio in self.map_info:
+            if e <= mem_s:
+                tmp_map_info.append((s, e, p, info, mmio))
+                continue
+
+            if s >= mem_e:
+                tmp_map_info.append((s, e, p, info, mmio))
+                continue
+
+            if s < mem_s:
+                tmp_map_info.append((s, mem_s, p, info, mmio))
+
+            if s == mem_s:
+                pass
+
+            if e > mem_e:
+                tmp_map_info.append((mem_e, e, p, info, mmio))
+
+            if e == mem_e:
+                pass
+
+        self.map_info = tmp_map_info
 
     def get_mapinfo(self) -> Sequence[Tuple[int, int, str, str, Optional[str]]]:
         """Get memory map info.
