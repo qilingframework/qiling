@@ -92,7 +92,6 @@ jobs:
         pip3 install -e .[evm]
 
         if [ ${{ matrix.python-version }} == '3.9' ]; then
-          pwd
           rm -rf qiling/engine
         fi
         
