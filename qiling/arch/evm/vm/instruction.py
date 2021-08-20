@@ -1,14 +1,14 @@
-from ...engine_hooks import QlEngineHooks
+from ..hooks import QlEVMHooks
 
 
 class EVMInsn:
-    def __init__(self, pc, byte, mnemonic, imm_op, hook_info:QlEngineHooks) -> None:
+    def __init__(self, pc, byte, mnemonic, imm_op, hook_info:QlEVMHooks) -> None:
         self.pc = pc
         self.byte = byte
         self.mnemonic = mnemonic
         self.imm_op = imm_op
         self.hook_info = hook_info
-        self.callback_list = QlEngineHooks()
+        self.callback_list = QlEVMHooks()
         if mnemonic[:4] == 'PUSH':
             self.imm_size = int(mnemonic[4:])
         else:

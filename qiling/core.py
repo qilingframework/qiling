@@ -65,7 +65,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._env = env if env else {}
         self._code = code
         self._shellcoder = shellcoder
-        self._custom_engine = False
         self._ostype = ostype
         self._archtype = archtype
         self._archendian = None
@@ -225,15 +224,17 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         if self.archtype not in QL_ARCH_NONEOS:
             self.arch.utils.setup_output()
 
-        if (self.archtype not in QL_ARCH_NONEOS) or (self.archtype not in QL_ARCH_HARDWARE):
-            self._os = os_setup(self.archtype, self.ostype, self)
+        if (self.archtype not in QL_ARCH_NONEOS):
+            if (self.archtype not in QL_ARCH_HARDWARE):
+                self._os = os_setup(self.archtype, self.ostype, self)
         
         # Run the loader
         self.loader.run()
 
-        if (self.archtype not in QL_ARCH_NONEOS) or (self.archtype not in QL_ARCH_HARDWARE):
-            # Add extra guard options when configured to do so
-            self._init_stop_guard()    
+        if (self.archtype not in QL_ARCH_NONEOS):
+            if (self.archtype not in QL_ARCH_HARDWARE):
+                # Add extra guard options when configured to do so
+                self._init_stop_guard()    
 
     #####################
     # Qiling Components #
@@ -304,16 +305,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
     ##################
 
     # If an option doesn't have a setter, it means that it can be only set during Qiling.__init__
-
-    # @property
-    # def custom_engine(self) -> bool:
-    #     """ Specify whether are we on custom engine
-
-    #         Type: bool
-    #         Example: Qiling(custom_engine=True)
-    #     """
-    #     return self._custom_engine
-
 
     @property
     def console(self) -> bool:

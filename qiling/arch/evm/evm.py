@@ -6,13 +6,14 @@
 
 from eth_typing.evm import Address
 from qiling.const import *
-from .evm.vm.evm import QlEVMEmulator
-from .evm.abi import QlEVMABI
+from ..arch import QlArch
+from .vm.evm import QlEVMEmulator
+from .abi import QlEVMABI
 
 
-class QlArchEVM:
+class QlArchEVM(QlArch):
     def __init__(self, ql) -> None:
-        self.ql = ql
+        super(QlArchEVM, self).__init__(ql)
         self.emu = QlEVMEmulator(self.ql)
         self.abi = QlEVMABI()
 
@@ -44,3 +45,15 @@ class QlArchEVM:
 
     def run(self, msg):
         return self.emu.vm.execute_message(msg)
+
+    def stack_push(self, value):
+        return None
+
+    def stack_pop(self):
+        return None
+
+    def stack_read(self, offset):
+        return None
+
+    def stack_write(self, offset, data):
+        return None
