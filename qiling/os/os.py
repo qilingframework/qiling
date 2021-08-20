@@ -22,7 +22,7 @@ class QlOs:
     def __init__(self, ql: Qiling, resolvers: Mapping[Any, Resolver] = {}):
         self.ql = ql
         self.utils = QlOsUtils(ql)
-        self.fcall: Optional[QlFunctionCall] = None
+        self.fcall: QlFunctionCall
         self.fs_mapper = QlFsMapper(ql)
         self.child_processes = False
         self.thread_management = None
@@ -80,7 +80,7 @@ class QlOs:
         # let the user override default resolvers or add custom ones
         self.resolvers.update(resolvers)
 
-        self.utils.setup_output()
+        self.ql.arch.utils.setup_output()
 
     def save(self):
         return {}

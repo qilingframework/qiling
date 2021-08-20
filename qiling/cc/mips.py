@@ -10,6 +10,7 @@ from . import QlCommonBaseCC
 class mipso32(QlCommonBaseCC):
 	_argregs = (UC_MIPS_REG_A0, UC_MIPS_REG_A1, UC_MIPS_REG_A2, UC_MIPS_REG_A3) + (None, ) * 12
 	_shadow = 4
+	_retaddr_on_stack = False
 
 	def __init__(self, ql: Qiling):
 		super().__init__(ql, UC_MIPS_REG_V0)

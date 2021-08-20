@@ -7,7 +7,7 @@
 This module is intended for general purpose functions that are only used in qiling.os
 """
 
-from typing import Any, MutableMapping, Mapping, Optional, Sequence, MutableSequence, Tuple
+from typing import Any, MutableMapping, Mapping, Union, Sequence, MutableSequence, Tuple
 from os.path import basename
 from uuid import UUID
 import ctypes
@@ -103,7 +103,7 @@ class QlOsUtils:
     def stringify(s: str) -> str:
         return f'"{repr(s)[1:-1]}"'
 
-    def print_function(self, address: int, fname: str, pargs: Sequence[Tuple[str, str]], ret: Optional[int], passthru: bool):
+    def print_function(self, address: int, fname: str, pargs: Sequence[Tuple[str, str]], ret: Union[int, str, None], passthru: bool):
         '''Print out function invocation detais.
 
         Args:
@@ -127,8 +127,11 @@ class QlOsUtils:
         # arguments list
         fargs = ', '.join(__assign_arg(name, value) for name, value in pargs)
 
+        if type(ret) is int:
+            ret = f'{ret:#x}'
+
         # optional prefixes and suffixes
-        fret = f' = {ret:#x}' if ret is not None else ''
+        fret = f' = {ret}' if ret is not None else ''
         fpass = f' (PASSTHRU)' if passthru else ''
         faddr = f'{address:#0{self.ql.archbit // 4 + 2}x}: ' if self.ql.verbose >= QL_VERBOSE.DEBUG else ''
 
@@ -195,63 +198,6 @@ class QlOsUtils:
         self.ql.hook_address(restore, end, )
         # we want to rewrite the return address to the function
         self.ql.stack_write(0, start)
-
-    def get_offset_and_name(self, addr: int) -> Tuple[int, str]:
-        for begin, end, _, name in self.ql.mem.map_info:
-            if begin <= addr < end:
-                return addr - begin, basename(name)
-
-        return addr, '-'
-
-    def disassembler(self, ql, address, size):
-        tmp = self.ql.mem.read(address, size)
-
-        if not self.md:
-            self.md = self.ql.create_disassembler()
-        elif self.ql.archtype == QL_ARCH.ARM: # Update disassembler for arm considering thumb swtich.
-            self.md = self.ql.create_disassembler()
-
-        insn = self.md.disasm(tmp, address)
-        opsize = int(size)
-
-        offset, name = self.get_offset_and_name(address)
-        log_data = '0x%0*x {%-20s + 0x%06x}   ' % (self.ql.archbit // 4, address, name, offset)
-
-        temp_str = ""
-        for i in tmp:
-            temp_str += ("%02x " % i)
-        log_data += temp_str.ljust(30)
-
-        first = True
-        for i in insn:
-            if not first:
-                log_data += '\n> '
-            first = False
-            log_data += "%s %s" % (i.mnemonic, i.op_str)
-        self.ql.log.info(log_data)
-
-        if self.ql.verbose >= QL_VERBOSE.DUMP:
-            for reg in self.ql.reg.register_mapping:
-                if isinstance(reg, str):
-                    REG_NAME = reg
-                    REG_VAL = self.ql.reg.read(reg)
-                    self.ql.log.debug("%s\t:\t 0x%x" % (REG_NAME, REG_VAL))
-
-    def setup_output(self):
-        def ql_hook_block_disasm(ql, address, size):
-            self.ql.log.info("\nTracing basic block at 0x%x" % (address))
-
-        if self._disasm_hook:
-            self._disasm_hook.remove()
-            self._disasm_hook = None
-        if self._block_hook:
-            self._block_hook.remove()
-            self._block_hook = None
-
-        if self.ql.verbose >= QL_VERBOSE.DISASM:
-            if self.ql.verbose >= QL_VERBOSE.DUMP:
-                self._block_hook = self.ql.hook_block(ql_hook_block_disasm)
-            self._disasm_hook = self.ql.hook_code(self.disassembler)
 
     def io_Write(self, in_buffer):
         heap = self.ql.os.heap

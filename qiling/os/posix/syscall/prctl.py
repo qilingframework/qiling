@@ -19,6 +19,6 @@ def ql_syscall_arch_prctl(ql, ARCHX, ARCH_SET_FS, *args, **kw):
     return regreturn
 
 
-def ql_syscall_prctl(ql, *args, **kw):
+def ql_syscall_prctl(ql, option, arg1, arg2, arg3, arg4, arg5, *args, **kw):
     regreturn = 0
     return regreturn

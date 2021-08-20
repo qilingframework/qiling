@@ -265,11 +265,11 @@ class sysctl_oid_t(ctypes.Structure):
     def dump(self):
         for field in self._fields_:
             if isinstance(getattr(self, field[0]), POINTER64):
-                print("%s: 0x%x" % (field[0], getattr(self, field[0]).value))
+                self.ql.log.info("%s: 0x%x" % (field[0], getattr(self, field[0]).value))
             elif isinstance(getattr(self, field[0]), sysctl_oid_t.slist_entry):
-                print("%s: Struct( 0x%x )" % (field[0], getattr(self, field[0]).sle_next.value))
+                self.ql.log.info("%s: Struct( 0x%x )" % (field[0], getattr(self, field[0]).sle_next.value))
             else:
-                print("%s: 0x%x" % (field[0], getattr(self, field[0])))
+                self.ql.log.info("%s: 0x%x" % (field[0], getattr(self, field[0])))
 
 class sysctl_args_t(ctypes.Structure):
     _fields_ = (
@@ -429,11 +429,11 @@ class kern_ctl_reg_t(ctypes.Structure):
     def dump(self):
         for field in self._fields_:
             if isinstance(getattr(self, field[0]), POINTER64):
-                print("%s: 0x%x" % (field[0], getattr(self, field[0]).value))
+                self.ql.log.info("%s: 0x%x" % (field[0], getattr(self, field[0]).value))
             elif isinstance(getattr(self, field[0]), int):
-                print("%s: %d" % (field[0], getattr(self, field[0])))
+                self.ql.log.info("%s: %d" % (field[0], getattr(self, field[0])))
             elif isinstance(getattr(self, field[0]), bytes):
-                print("%s: %s" % (field[0], getattr(self, field[0]).decode()))
+                self.ql.log.info("%s: %s" % (field[0], getattr(self, field[0]).decode()))
 
 
 # struct sockaddr_ctl {

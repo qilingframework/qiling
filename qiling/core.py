@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from .os.memory import QlMemoryManager
     from .loader.loader import QlLoader
 
-from .const import QL_ARCH_ENDIAN, QL_ENDIAN, QL_OS, QL_VERBOSE, QL_CUSTOM_ENGINE
+from .const import QL_ARCH_ENDIAN, QL_ENDIAN, QL_OS, QL_VERBOSE, QL_ARCH_NONEOS, QL_ARCH_HARDWARE
 from .exception import QlErrorFileNotFound, QlErrorArch, QlErrorOsType, QlErrorOutput
 from .utils import *
 from .core_struct import QlCoreStructs
@@ -122,19 +122,20 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
         if self._code or (self._archtype and type(self._archtype) == str):
             if (self._archtype and type(self._archtype) == str):
-                self._archtype = arch_convert(self._archtype.lower())
+                self._archtype= arch_convert(self._archtype.lower())
 
             if (self._ostype and type(self._ostype) == str):
                 self._ostype = ostype_convert(self._ostype.lower())
 
-            if self._archtype in QL_CUSTOM_ENGINE:
-                self._custom_engine = True
+            if self._archtype in QL_ARCH_NONEOS or self._ostype == None:
                 if self._ostype == None:
                     self._ostype = arch_os_convert(self._archtype)
                 if self._code == None:
                     self._code = self._archtype
 
-            self._argv = ["qilingcode"]
+
+            if self._argv is None:
+                self._argv = ["qilingcode"]
             if self._rootfs is None:
                 self._rootfs = "."
 
@@ -206,29 +207,33 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         ##############
         # Components #
         ##############
-        if not self._custom_engine:
+
+        if self.archtype not in QL_ARCH_NONEOS:
             self._mem = component_setup("os", "memory", self)
             self._reg = component_setup("arch", "register", self)
+        
+        if self.archtype in QL_ARCH_HARDWARE:   
+            self._hw  = component_setup("hw", "hw", self)
 
         self._arch = arch_setup(self.archtype, self)
         
         # Once we finish setting up arch layer, we can init QlCoreHooks.
-        self.uc = self.arch.init_uc if not self._custom_engine else None
+        self.uc = self.arch.init_uc if self.archtype not in QL_ARCH_NONEOS else None
         QlCoreHooks.__init__(self, self.uc)
         
-        if not self._custom_engine:
-            self._os = os_setup(self.archtype, self.ostype, self)
+        # Setup Outpt
+        if self.archtype not in QL_ARCH_NONEOS:
+            self.arch.utils.setup_output()
 
+        if (self.archtype not in QL_ARCH_NONEOS) or (self.archtype not in QL_ARCH_HARDWARE):
+            self._os = os_setup(self.archtype, self.ostype, self)
+        
         # Run the loader
         self.loader.run()
-        
-        if not self._custom_engine:
-            # Setup Outpt
-            self.os.utils.setup_output()
 
+        if (self.archtype not in QL_ARCH_NONEOS) or (self.archtype not in QL_ARCH_HARDWARE):
             # Add extra guard options when configured to do so
-            self._init_stop_guard()
-
+            self._init_stop_guard()    
 
     #####################
     # Qiling Components #
@@ -249,6 +254,15 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             Example: ql.reg.eax = 1
         """
         return self._reg
+
+    @property
+    def hw(self) -> "QlHwManager":
+        """ Qiling hardware manager.
+
+            Example: 
+        """
+        return self._hw
+
 
     @property
     def arch(self) -> "QlArch":
@@ -291,14 +305,14 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
     # If an option doesn't have a setter, it means that it can be only set during Qiling.__init__
 
-    @property
-    def custom_engine(self) -> bool:
-        """ Specify whether are we on custom engine
+    # @property
+    # def custom_engine(self) -> bool:
+    #     """ Specify whether are we on custom engine
 
-            Type: bool
-            Example: Qiling(custom_engine=True)
-        """
-        return self._custom_engine
+    #         Type: bool
+    #         Example: Qiling(custom_engine=True)
+    #     """
+    #     return self._custom_engine
 
 
     @property
@@ -563,8 +577,8 @@ class Qiling(QlCoreHooks, QlCoreStructs):
     def verbose(self, v):
         self._verbose = v
         self.log.setLevel(ql_resolve_logger_level(self._verbose))
-        if not self._custom_engine:
-            self.os.utils.setup_output()
+        if self.archtype not in QL_ARCH_NONEOS:
+            self.arch.utils.setup_output()
 
     @property
     def patch_bin(self) -> list:
@@ -736,11 +750,14 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self.timeout = timeout
         self.count = count
 
-        if self._custom_engine:
+        if self.archtype in QL_ARCH_NONEOS:
             if code == None:
                 return self.arch.run(self._code)
             else:
                 return self.arch.run(code) 
+
+        if self.archtype in QL_ARCH_HARDWARE:
+            return self.arch.run(count=count)
 
         self.write_exit_trap()
 
@@ -889,7 +906,13 @@ class Qiling(QlCoreHooks, QlCoreStructs):
     # stop emulation
     def emu_stop(self):
         self.uc.emu_stop()
-
+    
+    # stop emulation
+    def stop(self):
+        if self.multithread:
+            self.os.thread_management.stop() 
+        else:
+            self.uc.emu_stop()            
 
     # start emulation
     def emu_start(self, begin, end, timeout=0, count=0):

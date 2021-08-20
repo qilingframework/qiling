@@ -90,14 +90,12 @@ def syscall_mmap_impl(ql, addr, mlen, prot, flags, fd, pgoffset, ver):
     if (ql.archtype == QL_ARCH.ARM64) or (ql.archtype == QL_ARCH.X8664):
         fd = ql.unpack64(ql.pack64(fd))
     elif (ql.archtype == QL_ARCH.MIPS):
-        fd = ql.unpack32s(ql.mem.read(fd, 4))
-        pgoffset = ql.unpack32(ql.mem.read(pgoffset, 4))
         MAP_ANONYMOUS = 2048
         if ver == 2:
             pgoffset = pgoffset * 4096
     elif (ql.archtype== QL_ARCH.ARM) and (ql.ostype== QL_OS.QNX):
         MAP_ANONYMOUS=0x00080000
-        mmap_id = ql.unpack32s(ql.pack32s(fd))
+        fd = ql.unpack32s(ql.pack32s(fd))
     else:
         fd = ql.unpack32s(ql.pack32(fd))
         if ver == 2:
@@ -106,21 +104,27 @@ def syscall_mmap_impl(ql, addr, mlen, prot, flags, fd, pgoffset, ver):
     mmap_base = addr
     need_mmap = True
     eff_mmap_size = ((mlen + 0x1000 - 1) // 0x1000) * 0x1000
+    # align eff_mmap_size to page boundary
+    aligned_address = (addr >> 12) << 12
+    eff_mmap_size -= mmap_base - aligned_address
 
     # initial ql.loader.mmap_address
     if addr != 0 and ql.mem.is_mapped(addr, mlen):
         if (flags & MAP_FIXED) > 0:
             ql.log.debug("%s - MAP_FIXED, mapping not needed" % api_name)
             try:
-                ql.mem.protect(addr, eff_mmap_size, prot)
+                ql.mem.protect(addr, mlen, prot)
             except Exception as e:
                 ql.log.debug(e)
-                raise QlMemoryMappedError("Error: change protection at: 0x%x - 0x%x" % (addr, addr + eff_mmap_size - 1))
+                raise QlMemoryMappedError("Error: change protection at: 0x%x - 0x%x" % (addr, addr + mlen - 1))
             need_mmap = False
 
     # initialized mapping
     if need_mmap:
-        mmap_base = ql.loader.mmap_address
+        if (flags & MAP_FIXED) > 0:
+            mmap_base = addr
+        else:
+            mmap_base = ql.loader.mmap_address
         ql.loader.mmap_address = mmap_base + eff_mmap_size
         ql.log.debug("%s - mapping needed for 0x%x" % (api_name, addr))
         try:
@@ -178,3 +182,28 @@ def ql_syscall_mmap(ql, mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, 
 
 def ql_syscall_mmap2(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset):
     return syscall_mmap_impl(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset, 2)
+
+def ql_syscall_shmget(ql, key, size, shmflg, *args, **kwargs):
+    if (shmflg & IPC_CREAT) == 0:
+        if key not in ql.os._shms:
+            return ENOENT
+    else:
+        if (shmflg & IPC_EXCL) != 0:
+            if key in ql.os._shms:
+                return EEXIST
+        else:
+            #addr = ql.mem.map_anywhere(size)
+            ql.os._shms[key] = (key, size)
+            return key
+
+def ql_syscall_shmat(ql, shmid, shmaddr, shmflg, *args, **kwargs):
+    # shmid == key
+    # dummy implementation
+    if shmid not in ql.os._shms:
+        return EINVAL
+    key, size = ql.os._shms[shmid]
+    if shmaddr == 0:
+        addr = ql.mem.map_anywhere(size)
+    else:
+        addr = ql.mem.map(shmaddr, size, info="[shm]")
+    return addr

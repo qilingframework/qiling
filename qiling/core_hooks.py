@@ -13,7 +13,7 @@ from unicorn import *
 
 from .core_hooks_types import Hook, HookAddr, HookIntr, HookRet
 from .utils import catch_KeyboardInterrupt
-from .const import QL_HOOK_BLOCK
+from .const import QL_HOOK_BLOCK, QL_ARCH_NONEOS, QL_ARCH_HARDWARE
 from .exception import QlErrorCoreHook
 
 
@@ -250,7 +250,7 @@ class QlCoreHooks:
 
 
     def hook_code(self, callback, user_data=None, begin=1, end=0):
-        if self.custom_engine:
+        if self.archtype in QL_ARCH_NONEOS:
             from .engine.engine_hooks import ql_engine_hooks
             return ql_engine_hooks(self, 'ENGINE_HOOK_CODE', callback, user_data, begin, end)
         return self.ql_hook(UC_HOOK_CODE, callback, user_data, begin, end)
@@ -291,7 +291,7 @@ class QlCoreHooks:
     def hook_address(self, callback, address, user_data=None):
         h = HookAddr(callback, address, user_data)
         
-        if self.custom_engine:
+        if self.archtype in QL_ARCH_NONEOS:
             from .engine.engine_hooks import engine_hook_address
             return engine_hook_address(self, 'ENGINE_HOOK_ADDR', h, address)
 
@@ -327,7 +327,7 @@ class QlCoreHooks:
 
 
     def hook_insn(self, callback, arg1, user_data=None, begin=1, end=0):
-        if self.custom_engine:
+        if self.archtype in QL_ARCH_NONEOS:
             from .engine.engine_hooks import engine_hook_insn
             return engine_hook_insn(self, 'ENGINE_HOOK_INSN', callback, arg1, user_data, begin, end)
         return self.ql_hook(UC_HOOK_INSN, callback, user_data, begin, end, arg1)
@@ -343,7 +343,7 @@ class QlCoreHooks:
         else:
             hook_type, h = args
 
-        if self.custom_engine: 
+        if self.archtype in QL_ARCH_NONEOS:
             from .engine.engine_hooks import engine_hook_del
             return engine_hook_del(hook_type, h)
 

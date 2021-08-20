@@ -4,8 +4,15 @@
 #
 
 import ntpath
+from typing import TypeVar
 
 from qiling import Qiling
+
+Comparable = TypeVar('Comparable', str, int)
+
+# an alternative to Python2 cmp builtin which no longer exists in Python3
+def cmp(a: Comparable, b: Comparable) -> int:
+    return (a > b) - (a < b)
 
 def ql_x86_windows_hook_mem_error(ql: Qiling, access, addr: int, size: int, value: int):
     ql.log.debug(f'ERROR: unmapped memory access at {addr:#x}')

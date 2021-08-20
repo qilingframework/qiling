@@ -96,15 +96,3 @@ def ql_syscall_times(ql, times_tbuf, *args, **kw):
     regreturn = int(tmp_times.elapsed * 100)
     return regreturn
 
-
-def ql_syscall_gettimeofday(ql, gettimeofday_tv, gettimeofday_tz, *args, **kw):
-    tmp_time = time.time()
-    tv_sec = int(tmp_time)
-    tv_usec = int((tmp_time - tv_sec) * 1000000)
-
-    if gettimeofday_tv != 0:
-        ql.mem.write(gettimeofday_tv, ql.pack32(tv_sec) + ql.pack32(tv_usec))
-    if gettimeofday_tz != 0:
-        ql.mem.write(gettimeofday_tz, b'\x00' * 8)
-    regreturn = 0
-    return regreturn

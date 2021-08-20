@@ -29,3 +29,29 @@ def ql_syscall_writev(ql, writev_fd, writev_vec, writev_vien, *args, **kw):
             ql.os.fd[writev_fd].write(buf)
 
     return regreturn
+
+
+def ql_syscall_readv(ql, fd, vec, vlen, *args, **kw):
+    regreturn = 0
+    size_t_len = ql.pointersize
+    iov = ql.mem.read(vec, vlen * size_t_len * 2)
+    ql.log.debug("readv() CONTENT:")
+
+    for i in range(vlen):
+        addr = ql.unpack(
+            iov[i * size_t_len * 2 : i * size_t_len * 2 + size_t_len]
+        )
+        l = ql.unpack(
+            iov[
+                i * size_t_len * 2
+                + size_t_len : i * size_t_len * 2
+                + size_t_len * 2
+            ]
+        )
+        regreturn += l
+        if hasattr(ql.os.fd[fd], "read"):
+            data = ql.os.fd[fd].read(l)
+            ql.log.debug(data)
+            ql.mem.write(addr, data)
+
+    return regreturn
