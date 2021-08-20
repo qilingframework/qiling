@@ -10,6 +10,7 @@ import select
 import termios
 import threading
 
+
 class Termios(ctypes.Structure):
     _fields_ = [
         ('c_iflag' , ctypes.c_int32),     # input flags
@@ -44,17 +45,24 @@ class QlSerial:
         self.ql = ql
         self.baudrate = baudrate
 
-        self.master_r, self.slave_r = QlSerial.create_pty(baudrate)
-        self.master_w, self.slave_w = QlSerial.create_pty(baudrate)
+        self.master_x, self.slave_x = QlSerial.create_pty(baudrate)
+        self.master_y, self.slave_y = QlSerial.create_pty(baudrate)
 
-        print(os.ttyname(self.slave_r))
-        print(os.ttyname(self.slave_w))
-    
-    def run(self):
-        while True:
-            select.select([self.master_r, self.master_w], [self.master_r, self.master_w], [])
-            data = os.read(self.master_r, 0x400)
-            os.write(self.master_w, data)
+        self.started = False
+
+    def start(self):
+        def daemon():
+            while True:
+                rlist, _, _ = select.select([self.master_x, self.master_y], [], [])
+                if self.master_x in rlist:
+                    os.write(self.master_y, os.read(self.master_x, 0x100))
+                if self.master_y in rlist:
+                    os.write(self.master_x, os.read(self.master_y, 0x100))
+                select.select([self.master_x, self.master_y], [self.master_x, self.master_y], [])
+        
+        if not self.started:
+            self.started = True
+            threading.Thread(target=daemon).start()
 
     @classmethod
     def create_pty(cls, baudrate):
