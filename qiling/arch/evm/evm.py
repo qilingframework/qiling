@@ -14,7 +14,6 @@ from .abi import QlEVMABI
 class QlArchEVM(QlArch):
     def __init__(self, ql) -> None:
         super(QlArchEVM, self).__init__(ql)
-        # self.ql = ql
         self.emu = QlEVMEmulator(self.ql)
         self.abi = QlEVMABI()
 
@@ -46,3 +45,15 @@ class QlArchEVM(QlArch):
 
     def run(self, msg):
         return self.emu.vm.execute_message(msg)
+
+    def stack_push(self, value):
+        return None
+
+    def stack_pop(self):
+        return None
+
+    def stack_read(self, offset):
+        return None
+
+    def stack_write(self, offset, data):
+        return None

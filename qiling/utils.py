@@ -455,7 +455,7 @@ def arch_setup(archtype, ql):
     else:
         arch_str = arch_convert_str(archtype)
 
-    if archtype == QL_ARCH_NONEOS:
+    if archtype in QL_ARCH_NONEOS:
         return ql_get_module_function(f"qiling.arch.{arch_str.lower()}.{arch_str.lower()}", archmanager)(ql)
     else:    
         return ql_get_module_function(f"qiling.arch.{arch_str.lower()}", archmanager)(ql)

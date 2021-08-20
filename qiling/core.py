@@ -224,15 +224,17 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         if self.archtype not in QL_ARCH_NONEOS:
             self.arch.utils.setup_output()
 
-        if (self.archtype not in QL_ARCH_NONEOS) or (self.archtype not in QL_ARCH_HARDWARE):
-            self._os = os_setup(self.archtype, self.ostype, self)
+        if (self.archtype not in QL_ARCH_NONEOS):
+            if (self.archtype not in QL_ARCH_HARDWARE):
+                self._os = os_setup(self.archtype, self.ostype, self)
         
         # Run the loader
         self.loader.run()
 
-        if (self.archtype not in QL_ARCH_NONEOS) or (self.archtype not in QL_ARCH_HARDWARE):
-            # Add extra guard options when configured to do so
-            self._init_stop_guard()    
+        if (self.archtype not in QL_ARCH_NONEOS):
+            if (self.archtype not in QL_ARCH_HARDWARE):
+                # Add extra guard options when configured to do so
+                self._init_stop_guard()    
 
     #####################
     # Qiling Components #
