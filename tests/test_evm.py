@@ -2,7 +2,7 @@
 
 import sys, unittest
 
-sys.path.append("../../..")
+sys.path.append("..")
 from qiling import Qiling
 
 
