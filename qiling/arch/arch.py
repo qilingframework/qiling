@@ -91,4 +91,3 @@ class QlArch(ABC):
         else:
             reg_cpsr = None
         return ql_create_assembler(self.ql.archtype, self.ql.archendian, reg_cpsr)
-

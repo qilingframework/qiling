@@ -6,8 +6,8 @@
 
 from eth_typing.evm import Address
 from qiling.const import *
-from qiling.engine.evm.vm.evm import QlEVMEmulator
-from qiling.engine.evm.abi import QlEVMABI
+from .evm.vm.evm import QlEVMEmulator
+from .evm.abi import QlEVMABI
 
 
 class QlArchEVM:

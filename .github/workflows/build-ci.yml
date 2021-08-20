@@ -83,12 +83,8 @@ jobs:
         rm -rf rootfs
         wget https://github.com/qilingframework/rootfs/archive/refs/heads/master.zip
         unzip master.zip && mv rootfs-master rootfs
-        cd ../qiling
-        rm -rf engine
-        wget https://github.com/qilingframework/engine/archive/refs/heads/main.zip
-        unzip main.zip && mv engine-main engine
-        cd ../examples/rootfs/x86_linux/kernel && unzip -P infected m0hamed_rootkit.ko.zip
-        cd ../../../../
+        cd rootfs/x86_linux/kernel && unzip -P infected m0hamed_rootkit.ko.zip
+        cd ../../../
         pip3 install -e .[evm]
 
         if [ ${{ matrix.python-version }} == '3.9' ]; then
