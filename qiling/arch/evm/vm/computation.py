@@ -54,7 +54,7 @@ from .memory import Memory
 from .message import Message
 from .stack import Stack
 from .disassembler import EVMDisasm
-from ...engine_hooks import engine_hooks_info
+from ..hooks import evm_hooks_info
 from .utils import analysis_bytecode, bytecode_to_bytes, runtime_code_detector
 
 
@@ -454,7 +454,7 @@ class BaseComputation(Configurable, ComputationAPI):
             else:
                 code = CodeStream(self.msg.code)
 
-        return EVMDisasm().disasm(code, engine_hooks_info)
+        return EVMDisasm().disasm(code, evm_hooks_info)
 
     #
     # Opcode API

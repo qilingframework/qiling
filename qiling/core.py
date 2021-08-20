@@ -65,7 +65,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._env = env if env else {}
         self._code = code
         self._shellcoder = shellcoder
-        self._custom_engine = False
         self._ostype = ostype
         self._archtype = archtype
         self._archendian = None
@@ -304,16 +303,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
     ##################
 
     # If an option doesn't have a setter, it means that it can be only set during Qiling.__init__
-
-    # @property
-    # def custom_engine(self) -> bool:
-    #     """ Specify whether are we on custom engine
-
-    #         Type: bool
-    #         Example: Qiling(custom_engine=True)
-    #     """
-    #     return self._custom_engine
-
 
     @property
     def console(self) -> bool:

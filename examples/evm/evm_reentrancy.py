@@ -2,9 +2,9 @@ import sys
 
 sys.path.append("../../../..")
 from qiling import *
-from qiling.engine.evm.vm.utils import bytecode_to_bytes, runtime_code_detector
-from qiling.engine.evm.vm.vm import BaseVM
-from qiling.engine.evm.constants import CREATE_CONTRACT_ADDRESS
+from qiling.arch.evm.vm.utils import bytecode_to_bytes, runtime_code_detector
+from qiling.arch.evm.vm.vm import BaseVM
+from qiling.arch.evm.constants import CREATE_CONTRACT_ADDRESS
 
 
 if __name__ == '__main__':

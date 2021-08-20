@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from eth_abi import encode_abi
-from ..evm.vm.utils import bytecode_to_bytes
+from .vm.utils import bytecode_to_bytes
 
 
 class QlEVMABI:

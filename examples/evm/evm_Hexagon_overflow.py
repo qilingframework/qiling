@@ -5,8 +5,8 @@ import sys
 
 sys.path.append("../../../..")
 from qiling import *
-from qiling.engine.evm.vm.utils import analysis_bytecode, bytecode_to_bytes
-from qiling.engine.evm.vm.disassembler import EVMDisasm
+from qiling.arch.evm.vm.utils import analysis_bytecode, bytecode_to_bytes
+from qiling.arch.evm.vm.disassembler import EVMDisasm
 
 
 def example_run_evm():
