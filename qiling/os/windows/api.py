@@ -20,6 +20,7 @@ WCHAR                       = SHORT
 ACCESS_MASK                 = INT
 BOOLEAN                     = INT
 GROUP                       = INT
+HFILE                       = INT
 OBJECT_INFORMATION_CLASS    = INT
 PROCESSINFOCLASS            = INT
 SOCKET                      = INT
