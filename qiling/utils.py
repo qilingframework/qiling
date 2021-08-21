@@ -444,9 +444,6 @@ def arch_setup(archtype, ql):
     if not ql_is_valid_arch(archtype):
         raise QlErrorArch("Invalid Arch")
     
-    if ql._custom_engine:
-        return ql_get_module_function(f"qiling.arch.engine", 'QlArchEngine')(ql)
-
     if archtype == QL_ARCH.ARM_THUMB:
         archtype =  QL_ARCH.ARM
 
@@ -458,7 +455,10 @@ def arch_setup(archtype, ql):
     else:
         arch_str = arch_convert_str(archtype)
 
-    return ql_get_module_function(f"qiling.arch.{arch_str.lower()}", archmanager)(ql)
+    if archtype in QL_ARCH_NONEOS:
+        return ql_get_module_function(f"qiling.arch.{arch_str.lower()}.{arch_str.lower()}", archmanager)(ql)
+    else:    
+        return ql_get_module_function(f"qiling.arch.{arch_str.lower()}", archmanager)(ql)
 
 
 # This function is extracted from os_setup so I put it here.

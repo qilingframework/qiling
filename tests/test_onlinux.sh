@@ -16,7 +16,6 @@ python3 ./test_android.py && echo "Done OS Test"
 
 python3 ./test_mcu.py && echo "Done MCU Test"
 
-# if [ -d ../qiling/engine/tests ]; then
-#     cd ../qiling/engine/tests
-#     python3 ./test_evm.py && echo "Done EVM test"
-# fi
+if [ -f  ./test_evm.py ]; then
+    python3 ./test_evm.py && echo "Done EVM test"
+fi
