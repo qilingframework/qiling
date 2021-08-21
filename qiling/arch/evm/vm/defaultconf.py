@@ -1,9 +1,9 @@
-from .host import QlEVMHostInfo
+from .host import QlArchEVMHostInfo
 from .. import constants as eth_constants
 from .. import constants
 
 
-MAINNET_GENESIS_HOST = QlEVMHostInfo(
+MAINNET_GENESIS_HOST = QlArchEVMHostInfo(
     coinbase=constants.ZERO_ADDRESS,
     timestamp=100*10**18,
     block_number=0,

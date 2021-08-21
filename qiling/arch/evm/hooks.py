@@ -6,14 +6,14 @@
 from qiling.core_hooks_types import Hook, HookAddr, HookIntr, HookRet
 
 
-class QlEVMHooks:
+class QlArchEVMHooks:
     def __init__(self) -> None:
         super().__init__()
         self.hook_code_list = []
         self.hook_insn_list = []
         self.hook_addr_dict = {}
 
-evm_hooks_info = QlEVMHooks()
+evm_hooks_info = QlArchEVMHooks()
 
 
 def _ql_evm_hook(ql, hook_type, h, *args):

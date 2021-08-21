@@ -1,6 +1,6 @@
 
 
-class QlEVMHostInfo:
+class QlArchEVMHostInfo:
     def __init__(self, coinbase, timestamp, block_number, difficulty, gas_limit, prev_hashes, chain_id) -> None:
         self.coinbase = coinbase
         self.timestamp = timestamp
