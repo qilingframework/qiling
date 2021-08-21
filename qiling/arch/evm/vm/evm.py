@@ -7,7 +7,7 @@ from .forks import *
 from .. import constants
 from .vm import BaseVM
 from .utils import bytecode_to_bytes, runtime_code_detector
-
+from ..abi import QlArchEVMABI
 
 # Code name	                    Release date	Release block   Opcode supported    
 
@@ -39,12 +39,13 @@ father_VMs = {
 }
 
 
-class QlEVMEmulator:
+class QlArchEVMEmulator:
     def __init__(self, ql, fork_name=constants.BERLIN_FORK) -> None:
         self.ql = ql
+        self.abi = QlArchEVMABI()
         try:
             father_VM = father_VMs[fork_name]
-            vm = type('QlEVM', (father_VM,), dict())
+            vm = type('QlArchEVM', (father_VM,), dict())
         except:
             raise ValueError('Fork name error')
 
