@@ -85,6 +85,7 @@ jobs:
         unzip master.zip && mv rootfs-master rootfs
         cd rootfs/x86_linux/kernel && unzip -P infected m0hamed_rootkit.ko.zip
         cd ../../../
+        pwd
         pip3 install -e .[evm]
 
         if [ ${{ matrix.python-version }} == '3.9' ]; then
