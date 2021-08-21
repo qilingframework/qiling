@@ -2,7 +2,6 @@ import sys
 sys.path.append("../..")
 from qiling import *
 
-
 if __name__ == '__main__':
     ql = Qiling(archtype="evm")
     ql.debugger = True

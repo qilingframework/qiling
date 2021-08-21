@@ -3,6 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+import os
 import configparser
 
 from qiling import Qiling
@@ -12,6 +13,142 @@ from qiling.os.windows.const import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.structs import OsVersionInfoExA
 from qiling.os.windows.utils import cmp
+
+# HFILE _lclose(
+#   HFILE hFile
+# );
+@winsdkapi(cc=STDCALL, params={
+    'hFile' : HFILE
+})
+def hook__lclose(ql: Qiling, address: int, params):
+    fileno = params["hFile"]
+
+    if fileno < 0:
+        return HFILE_ERROR
+
+    os.close(fileno)
+
+    return fileno
+
+# HFILE _lcreat(
+#   LPCSTR lpPathName,
+#   int    iAttribute
+# );
+@winsdkapi(cc=STDCALL, params={
+    'lpPathName' : LPCSTR,
+    'iAttribute' : INT
+})
+def hook__lcreat(ql: Qiling, address: int, params):
+    s_lpPathName = params["lpPathName"]
+    iAttribute = params["iAttribute"]
+
+    # There are 4 access bits, we don't care about hidden or system
+    mode = "w+b"
+    if iAttribute & 2:
+        mode += "r+b"
+
+    try:
+        f = ql.os.fs_mapper.open(s_lpPathName, mode)
+    except FileNotFoundError:
+        ql.os.last_error = ERROR_FILE_NOT_FOUND
+        return -1
+
+    # The file obj will be closed, dup the file handle to keep open
+    return os.dup(f.fileno())
+
+# HFILE _lopen(
+#   LPCSTR lpPathName,
+#   int    iReadWrite
+# );
+@winsdkapi(cc=STDCALL, params={
+    'lpPathName' : LPCSTR,
+    'iReadWrite' : INT
+})
+def hook__lopen(ql: Qiling, address: int, params):
+    s_lpPathName = params["lpPathName"]
+    iReadWrite = params["iReadWrite"]
+
+    # access mask DesiredAccess
+    mode = ""
+    if iReadWrite & (OF_WRITE | OF_READWRITE):
+        mode += "wb"
+    else:
+        mode += "r"
+
+    try:
+        f = ql.os.fs_mapper.open(s_lpPathName, mode)
+    except FileNotFoundError:
+        ql.os.last_error = ERROR_FILE_NOT_FOUND
+        return -1
+
+    # The file obj will be closed, dup the file handle to keep open
+    return os.dup(f.fileno())
+
+# UINT _lread(
+#   HFILE  hFile,
+#   LPVOID lpBuffer,
+#   UINT   uBytes
+# );
+@winsdkapi(cc=STDCALL, params={
+    'hFile'    : HFILE,
+    'lpBuffer' : LPVOID,
+    'uBytes'   : UINT
+})
+def hook__lread(ql: Qiling, address: int, params):
+    fileno = params["hFile"]
+    lpBuffer = params["lpBuffer"]
+    uBytes = params["uBytes"]
+
+    if fileno < 0:
+        return HFILE_ERROR
+
+    data = os.read(fileno, uBytes)
+    ql.mem.write(lpBuffer, data)
+
+    return len(data)
+
+# LONG _llseek(
+#   HFILE hFile,
+#   LONG  lOffset,
+#   int   iOrigin
+# );
+@winsdkapi(cc=STDCALL, params={
+    'hFile'   : HFILE,
+    'lOffset' : LONG,
+    'iOrigin' : INT
+})
+def hook__llseek(ql: Qiling, address: int, params):
+    fileno = params["hFile"]
+    lOffset = params["lOffset"]
+    iOrigin = params["iOrigin"]
+
+    if fileno < 0:
+        return HFILE_ERROR
+
+    return os.lseek(fileno, lOffset, iOrigin)
+
+# UINT _lwrite(
+#   HFILE hFile,
+#   LPCCH lpBuffer,
+#   UINT  uBytes
+# );
+@winsdkapi(cc=STDCALL, params={
+    'hFile'    : HFILE,
+    'lpBuffer' : LPCCH,
+    'uBytes'   : UINT
+})
+def hook__lwrite(ql: Qiling, address: int, params):
+    fileno = params["hFile"]
+    lpBuffer = params["lpBuffer"]
+    uBytes = params["uBytes"]
+
+    if fileno < 0:
+        return HFILE_ERROR
+
+    wbuf = ql.mem.read(lpBuffer, uBytes)
+    len = os.write(fileno, wbuf)
+
+    return len
 
 # __analysis_noreturn VOID FatalExit(
 #   int ExitCode

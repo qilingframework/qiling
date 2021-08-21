@@ -3,30 +3,28 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from typing import MutableSequence
 from .const import *
 from qiling.const import *
 
 
-def _invert_dict(d):
+def _invert_dict(d: Mapping) -> Mapping:
     return { v:k for k, v in d.items()}
 
 
-def _constant_mapping(bits, d_map, ret=None, single_mapping=False):
-    if ret is None:
-        ret = []
-
+def _constant_mapping(bits: int, d_map: Mapping[str, int], ret: MutableSequence[str] = [], single_mapping: bool = False) -> str:
     b_map = _invert_dict(d_map)
 
     if single_mapping:
         return b_map[bits]
 
     for val, sym in b_map.items():
-        if val & bits != 0:
+        if val & bits:
             bits ^= val
             ret.append(sym)
 
-    if bits != 0:
-        ret.append(str(bits))
+    if bits:
+        ret.append(f'{bits:#x}')
 
     return " | ".join(ret)
 
@@ -227,13 +225,13 @@ def open_flags_mapping(flags, arch):
     arm64_open_flags = arm_open_flags
 
     mapping_dict = {
-            QL_ARCH.X86: linux_open_flags,
-            QL_ARCH.X8664: linux_open_flags,
-            QL_ARCH.ARM: arm_open_flags,
-            QL_ARCH.ARM64: arm64_open_flags,
-            QL_ARCH.MIPS: mips_open_flags,
-            QL_OS.MACOS: mac_open_flags,
-            }.get(arch)
+        QL_ARCH.X86: linux_open_flags,
+        QL_ARCH.X8664: linux_open_flags,
+        QL_ARCH.ARM: arm_open_flags,
+        QL_ARCH.ARM64: arm64_open_flags,
+        QL_ARCH.MIPS: mips_open_flags,
+        QL_OS.MACOS: mac_open_flags,
+    }[arch]
 
     ret = ["O_RDONLY"]
 
@@ -270,6 +268,10 @@ def mmap_prot_mapping(prots):
         'PROT_READ' : 0x1,
         'PROT_WRITE': 0x2,
         'PROT_EXEC' : 0x4,
+
+        # not supported by unicorn
+        'PROT_GROWSDOWN' : 0x01000000,
+        'PROT_GROWSUP'   : 0x02000000
     }
 
     return _constant_mapping(prots, mmap_prots)
@@ -277,43 +279,45 @@ def mmap_prot_mapping(prots):
 
 def socket_type_mapping(t, arch):
     socket_type_map = {
-            QL_ARCH.X86: linux_socket_types,
-            QL_ARCH.X8664: linux_socket_types,
-            QL_ARCH.ARM: arm_socket_types,
-            QL_ARCH.ARM_THUMB: arm_socket_types,
-            QL_ARCH.ARM64: arm_socket_types,
-            QL_ARCH.MIPS: mips_socket_types,
-            QL_OS.MACOS: linux_socket_types,
-            }.get(arch)
+        QL_ARCH.X86: linux_socket_types,
+        QL_ARCH.X8664: linux_socket_types,
+        QL_ARCH.ARM: arm_socket_types,
+        QL_ARCH.ARM_THUMB: arm_socket_types,
+        QL_ARCH.ARM64: arm_socket_types,
+        QL_ARCH.MIPS: mips_socket_types,
+        QL_OS.MACOS: linux_socket_types,
+    }[arch]
+
     # https://code.woboq.org/linux/linux/net/socket.c.html#1363
     t &= SOCK_TYPE_MASK
+
     return _constant_mapping(t, socket_type_map, single_mapping=True)
 
 
 def socket_domain_mapping(p, arch):
     socket_domain_map = {
-            QL_ARCH.X86: linux_socket_domain,
-            QL_ARCH.X8664: linux_socket_domain,
-            QL_ARCH.ARM: arm_socket_domain,
-            QL_ARCH.ARM_THUMB: arm_socket_domain,
-            QL_ARCH.ARM64: arm_socket_domain,
-            QL_ARCH.MIPS: mips_socket_domain,
-            QL_OS.MACOS: macos_socket_domain,
-            }.get(arch)
+        QL_ARCH.X86: linux_socket_domain,
+        QL_ARCH.X8664: linux_socket_domain,
+        QL_ARCH.ARM: arm_socket_domain,
+        QL_ARCH.ARM_THUMB: arm_socket_domain,
+        QL_ARCH.ARM64: arm_socket_domain,
+        QL_ARCH.MIPS: mips_socket_domain,
+        QL_OS.MACOS: macos_socket_domain,
+    }[arch]
 
     return _constant_mapping(p, socket_domain_map, single_mapping=True)
 
 
 def socket_level_mapping(t, arch):
     socket_level_map = {
-            QL_ARCH.X86: linux_socket_level,
-            QL_ARCH.X8664: linux_socket_level,
-            QL_ARCH.ARM: arm_socket_level,
-            QL_ARCH.ARM_THUMB: arm_socket_level,
-            QL_ARCH.ARM64: arm_socket_level,
-            QL_ARCH.MIPS: mips_socket_level,
-            QL_OS.MACOS: linux_socket_level,
-            }.get(arch)
+        QL_ARCH.X86: linux_socket_level,
+        QL_ARCH.X8664: linux_socket_level,
+        QL_ARCH.ARM: arm_socket_level,
+        QL_ARCH.ARM_THUMB: arm_socket_level,
+        QL_ARCH.ARM64: arm_socket_level,
+        QL_ARCH.MIPS: mips_socket_level,
+        QL_OS.MACOS: linux_socket_level,
+    }[arch]
 
     return _constant_mapping(t, socket_level_map, single_mapping=True)
 
@@ -327,20 +331,20 @@ def socket_ip_option_mapping(t, arch):
         QL_ARCH.ARM64: linux_socket_ip_options,
         QL_ARCH.MIPS: mips_socket_ip_options,
         QL_OS.MACOS: macos_socket_ip_options,
-    }.get(arch)
+    }[arch]
 
     return _constant_mapping(t, socket_option_map, single_mapping=True)
 
 
 def socket_option_mapping(t, arch):
     socket_option_map = {
-            QL_ARCH.X86: linux_socket_options,
-            QL_ARCH.X8664: linux_socket_options,
-            QL_ARCH.ARM: arm_socket_options,
-            QL_ARCH.ARM_THUMB: arm_socket_options,
-            QL_ARCH.ARM64: arm_socket_options,
-            QL_ARCH.MIPS: mips_socket_options,
-            QL_OS.MACOS: linux_socket_options,
-            }.get(arch)
+        QL_ARCH.X86: linux_socket_options,
+        QL_ARCH.X8664: linux_socket_options,
+        QL_ARCH.ARM: arm_socket_options,
+        QL_ARCH.ARM_THUMB: arm_socket_options,
+        QL_ARCH.ARM64: arm_socket_options,
+        QL_ARCH.MIPS: mips_socket_options,
+        QL_OS.MACOS: linux_socket_options,
+    }[arch]
 
     return _constant_mapping(t, socket_option_map, single_mapping=True)
