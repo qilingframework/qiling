@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from inspect import signature
+from inspect import signature, Parameter
 from typing import Union, Callable
 
 from unicorn.arm64_const import UC_ARM64_REG_X8, UC_ARM64_REG_X16
@@ -13,7 +13,7 @@ from unicorn.x86_const import UC_X86_REG_EAX, UC_X86_REG_RAX
 
 from qiling import Qiling
 from qiling.cc import QlCC, intel, arm, mips
-from qiling.const import QL_ARCH, QL_OS, QL_INTERCEPT, QL_CALL_BLOCK, QL_VERBOSE
+from qiling.const import QL_ARCH, QL_OS, QL_INTERCEPT
 from qiling.exception import QlErrorSyscallNotFound
 from qiling.os.os import QlOs
 from qiling.os.posix.const import errors, NR_OPEN
@@ -209,14 +209,14 @@ class QlOsPosix(QlOs):
             args = []
 
             # ignore first arg, which is 'ql'
-            arg_names = tuple(signature(syscall_hook).parameters.values())[1:]
+            args_info = tuple(signature(syscall_hook).parameters.values())[1:]
 
-            for name, value in zip(arg_names, params):
-                name = str(name)
-
-                # ignore python special args
-                if name in ('*args', '**kw', '**kwargs'):
+            for info, value in zip(args_info, params):
+                # skip python special args, like: *args and **kwargs
+                if info.kind != Parameter.POSITIONAL_OR_KEYWORD:
                     continue
+
+                name = info.name
 
                 # cut the first part of the arg if it is of form fstatat64_fd
                 if name.startswith(f'{syscall_basename}_'):
