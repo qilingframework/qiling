@@ -2,7 +2,6 @@ import afl, os, sys
 from underflow_test import underflow
 
 
-
 afl.init()
 
 sys.stdin.seek(0)
