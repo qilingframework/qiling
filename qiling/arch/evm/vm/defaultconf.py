@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+# 
+# Cross Platform and Multi Architecture Advanced Binary Emulation Framework
+#
+
 from .host import QlArchEVMHostInfo
 from .. import constants as eth_constants
 from .. import constants

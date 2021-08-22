@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+# 
+# Cross Platform and Multi Architecture Advanced Binary Emulation Framework
+#
+
 # https://etherscan.io/tx/0x9243d45ca81db4f16a0ded3e57982b4bc95ec32ce69d541bf6e019d949cbc6c8
 # https://www.anquanke.com/post/id/145520
 
