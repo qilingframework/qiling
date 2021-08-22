@@ -198,11 +198,13 @@ if __name__ == "__main__":
     ql.run(0x4053B2)
     ql.log.info("test kill thread")
     if ql.amsint32_driver:
-        ql.amsint32_driver.os.io_Write(ql.pack32(0xdeadbeef))
-        ql.amsint32_driver.hook_address(hook_stop_address, 0x10423)
+        ql.amsint32_driver.os.utils.io_Write(ql.pack32(0xdeadbeef))
+
+        # TODO: Should stop at 0x10423, but for now just stop at 0x0001066a
+        ql.amsint32_driver.hook_address(hook_stop_address, 0x0001066a)
 
         # TODO: not sure whether this one is really STDCALL
         ql.amsint32_driver.os.fcall = ql.amsint32_driver.os.fcall_select(STDCALL)
         ql.amsint32_driver.os.fcall.writeParams(((DWORD, 0),))
 
-        ql.amsint32_driver.run(0x102D0)
+        ql.amsint32_driver.run(begin=0x102D0)
