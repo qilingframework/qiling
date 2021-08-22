@@ -10,40 +10,46 @@ uint32_t = ctypes.c_uint32
 
 class STM32F4xxRcc(QlPeripheral):
     class Type(ctypes.Structure):
+        """ the structure available in :
+			stm32f401xc.h
+			stm32f401xe.h
+			stm32f411xe.h 
+		"""
+
         _fields_ = [
-            ('CR', uint32_t),
-            ('PLLCFGR', uint32_t),
-            ('CFGR', uint32_t),
-            ('CIR', uint32_t),
-            ('AHB1RSTR', uint32_t),
-            ('AHB2RSTR', uint32_t),
-            ('AHB3RSTR', uint32_t),
-            ('RESERVED0', uint32_t),
-            ('APB1RSTR', uint32_t),
-            ('APB2RSTR', uint32_t),
-            ('RESERVED1', uint32_t * 2),
-            ('AHB1ENR', uint32_t),
-            ('AHB2ENR', uint32_t),
-            ('AHB3ENR', uint32_t),
-            ('RESERVED2', uint32_t),
-            ('APB1ENR', uint32_t),
-            ('APB2ENR', uint32_t),
-            ('RESERVED3', uint32_t * 2),
-            ('AHB1LPENR', uint32_t),
-            ('AHB2LPENR', uint32_t),
-            ('AHB3LPENR', uint32_t),
-            ('RESERVED4', uint32_t),
-            ('APB1LPENR', uint32_t),
-            ('APB2LPENR', uint32_t),
-            ('RESERVED5', uint32_t * 2),
-            ('BDCR', uint32_t),
-            ('CSR', uint32_t),
-            ('RESERVED6', uint32_t * 2),
-            ('SSCGR', uint32_t),
-            ('PLLI2SCFGR', uint32_t),
-            ('RESERVED7', uint32_t),
-            ('DCKCFGR', uint32_t)
-        ]
+			('CR'        , ctypes.c_uint32),      # RCC clock control register,                                  Address offset: 0x00
+			('PLLCFGR'   , ctypes.c_uint32),      # RCC PLL configuration register,                              Address offset: 0x04
+			('CFGR'      , ctypes.c_uint32),      # RCC clock configuration register,                            Address offset: 0x08
+			('CIR'       , ctypes.c_uint32),      # RCC clock interrupt register,                                Address offset: 0x0C
+			('AHB1RSTR'  , ctypes.c_uint32),      # RCC AHB1 peripheral reset register,                          Address offset: 0x10
+			('AHB2RSTR'  , ctypes.c_uint32),      # RCC AHB2 peripheral reset register,                          Address offset: 0x14
+			('AHB3RSTR'  , ctypes.c_uint32),      # RCC AHB3 peripheral reset register,                          Address offset: 0x18
+			('RESERVED0' , ctypes.c_uint32),      # Reserved, 0x1C
+			('APB1RSTR'  , ctypes.c_uint32),      # RCC APB1 peripheral reset register,                          Address offset: 0x20
+			('APB2RSTR'  , ctypes.c_uint32),      # RCC APB2 peripheral reset register,                          Address offset: 0x24
+			('RESERVED1' , ctypes.c_uint32 * 2),  # Reserved, 0x28-0x2C
+			('AHB1ENR'   , ctypes.c_uint32),      # RCC AHB1 peripheral clock register,                          Address offset: 0x30
+			('AHB2ENR'   , ctypes.c_uint32),      # RCC AHB2 peripheral clock register,                          Address offset: 0x34
+			('AHB3ENR'   , ctypes.c_uint32),      # RCC AHB3 peripheral clock register,                          Address offset: 0x38
+			('RESERVED2' , ctypes.c_uint32),      # Reserved, 0x3C
+			('APB1ENR'   , ctypes.c_uint32),      # RCC APB1 peripheral clock enable register,                   Address offset: 0x40
+			('APB2ENR'   , ctypes.c_uint32),      # RCC APB2 peripheral clock enable register,                   Address offset: 0x44
+			('RESERVED3' , ctypes.c_uint32 * 2),  # Reserved, 0x48-0x4C
+			('AHB1LPENR' , ctypes.c_uint32),      # RCC AHB1 peripheral clock enable in low power mode register, Address offset: 0x50
+			('AHB2LPENR' , ctypes.c_uint32),      # RCC AHB2 peripheral clock enable in low power mode register, Address offset: 0x54
+			('AHB3LPENR' , ctypes.c_uint32),      # RCC AHB3 peripheral clock enable in low power mode register, Address offset: 0x58
+			('RESERVED4' , ctypes.c_uint32),      # Reserved, 0x5C
+			('APB1LPENR' , ctypes.c_uint32),      # RCC APB1 peripheral clock enable in low power mode register, Address offset: 0x60
+			('APB2LPENR' , ctypes.c_uint32),      # RCC APB2 peripheral clock enable in low power mode register, Address offset: 0x64
+			('RESERVED5' , ctypes.c_uint32 * 2),  # Reserved, 0x68-0x6C
+			('BDCR'      , ctypes.c_uint32),      # RCC Backup domain control register,                          Address offset: 0x70
+			('CSR'       , ctypes.c_uint32),      # RCC clock control & status register,                         Address offset: 0x74
+			('RESERVED6' , ctypes.c_uint32 * 2),  # Reserved, 0x78-0x7C
+			('SSCGR'     , ctypes.c_uint32),      # RCC spread spectrum clock generation register,               Address offset: 0x80
+			('PLLI2SCFGR', ctypes.c_uint32),      # RCC PLLI2S configuration register,                           Address offset: 0x84
+			('RESERVED7' , ctypes.c_uint32),      # Reserved, 0x88
+			('DCKCFGR'   , ctypes.c_uint32),      # RCC Dedicated Clocks configuration register,                 Address offset: 0x8C
+		]
 
     def __init__(self, ql, tag):
         super().__init__(ql, tag)
