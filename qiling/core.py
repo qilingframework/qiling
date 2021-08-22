@@ -5,7 +5,7 @@
 
 from configparser import ConfigParser
 import ntpath, os, pickle, platform
-import io
+
 # See https://stackoverflow.com/questions/39740632/python-type-hinting-without-cyclic-imports
 from typing import Dict, List, Union
 from typing import TYPE_CHECKING
@@ -493,48 +493,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             Type: Exception
         """
         return self._internal_exception
-
-    @property
-    def stdin(self) -> io.IOBase:
-        """ Stdin of the program. Can be any object which implements (even part of) io.IOBase.
-
-            Type: io.Base
-            Example: - ql = Qiling(stdin=sys.stdin)
-                     - ql.stdin = sys.stdin
-        """
-        return self._stdin
-
-    @stdin.setter
-    def stdin(self, s):
-        self._stdin = s
-
-    @property
-    def stdout(self) -> io.IOBase:
-        """ Stdout of the program. Can be any object which implements (even part of) io.IOBase.
-
-            Type: io.Base
-            Example: - ql = Qiling(stdout=sys.stdout)
-                     - ql.stdout = sys.stdout
-        """
-        return self._stdout
-
-    @stdout.setter
-    def stdout(self, s):
-        self._stdout = s
-
-    @property
-    def stderr(self) -> io.IOBase:
-        """ Stdout of the program. Can be any object which implements (even part of) io.IOBase.
-
-            Type: io.Base
-            Example: - ql = Qiling(stderr=sys.stderr)
-                     - ql.stderr = sys.stderr
-        """
-        return self._stderr
-
-    @stderr.setter
-    def stderr(self, s):
-        self._stderr = s
 
     @property
     def libcache(self) -> bool:
