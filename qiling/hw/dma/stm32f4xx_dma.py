@@ -9,12 +9,12 @@ from qiling.hw.const.dma import DMA, DMA_CR
 
 class Stream(ctypes.Structure):
     _fields_ = [
-        ('CR'   , ctypes.c_uint32),
-        ('NDTR' , ctypes.c_uint32), # Number of data items to transfer
-        ('PAR'  , ctypes.c_uint32),
-        ('M0AR' , ctypes.c_uint32),
-        ('M1AR' , ctypes.c_uint32),
-        ('FCR'  , ctypes.c_uint32),
+        ('CR'  , ctypes.c_uint32),  # DMA stream x configuration register
+        ('NDTR', ctypes.c_uint32),  # DMA stream x number of data register
+        ('PAR' , ctypes.c_uint32),  # DMA stream x peripheral address register
+        ('M0AR', ctypes.c_uint32),  # DMA stream x memory 0 address register
+        ('M1AR', ctypes.c_uint32),  # DMA stream x memory 1 address register
+        ('FCR' , ctypes.c_uint32),  # DMA stream x FIFO control register
     ]
 
     def enable(self):
@@ -55,11 +55,37 @@ class Stream(ctypes.Structure):
         
 class STM32F4xxDma(QlPeripheral):
     class Type(ctypes.Structure):
+        """ the structure available in :
+			stm32f413xx.h
+			stm32f407xx.h
+			stm32f469xx.h
+			stm32f446xx.h
+			stm32f427xx.h
+			stm32f401xc.h
+			stm32f415xx.h
+			stm32f412cx.h
+			stm32f410rx.h
+			stm32f410tx.h
+			stm32f439xx.h
+			stm32f412vx.h
+			stm32f417xx.h
+			stm32f479xx.h
+			stm32f429xx.h
+			stm32f412rx.h
+			stm32f423xx.h
+			stm32f437xx.h
+			stm32f412zx.h
+			stm32f401xe.h
+			stm32f410cx.h
+			stm32f405xx.h
+			stm32f411xe.h 
+		"""
+
         _fields_ = [
-            ('LISR'  , ctypes.c_uint32),
-            ('HISR'  , ctypes.c_uint32),
-            ('LIFCR' , ctypes.c_uint32),
-            ('HIFCR' , ctypes.c_uint32),
+			('LISR' , ctypes.c_uint32),  # DMA low interrupt status register,      Address offset: 0x00
+			('HISR' , ctypes.c_uint32),  # DMA high interrupt status register,     Address offset: 0x04
+			('LIFCR', ctypes.c_uint32),  # DMA low interrupt flag clear register,  Address offset: 0x08
+			('HIFCR', ctypes.c_uint32),  # DMA high interrupt flag clear register, Address offset: 0x0C
             ('stream', Stream * 8),
         ]
 

@@ -15,4 +15,4 @@ from .timer.cm4_systick import CortexM4SysTick
 from .misc.stm32f4xx_rcc import STM32F4xxRcc
 from .misc.cm4_scb import CortexM4Scb
 
-from .gpio.stm32f4 import STM32F4GPIO
+from .gpio.stm32f4xx_gpio import STM32F4xxGpio

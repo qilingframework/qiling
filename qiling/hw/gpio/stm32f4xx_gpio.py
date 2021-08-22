@@ -4,32 +4,46 @@ from enum import IntEnum
 from qiling.hw.gpio.gpio import BaseGPIO
 
 
-class GPIOx(IntEnum):
-    MODE      = 0x00  # GPIO port mode register - Read-Write
-    OTYPER    = 0x04  # GPIO port output type register - Read-Write
-    OSPEEDR   = 0x08  # GPIO port output speed register - Read-Write
-    PUPDR     = 0x0C  # GPIO port pull-up/pull-down register - Read-Write
-    IDR       = 0x10  # GPIO port input data register - Read-only
-    ODR       = 0x14  # GPIO port output data register - Read-Write
-    BSRR      = 0x18  # GPIO port bit set/reset register - Write-Only
-    LCKR      = 0x1C  # GPIO port configuration lock register - Read-Write
-    AFRL      = 0x20  # GPIO alternate function low register - Read-Write
-    AFRH      = 0x24  # GPIO alternate function high register - Read-Write
-
-
-class STM32F4GPIO(BaseGPIO):
+class STM32F4xxGpio(BaseGPIO):
     class Type(ctypes.Structure):
+        """ the structure available in :
+			stm32f413xx.h
+			stm32f407xx.h
+			stm32f469xx.h
+			stm32f446xx.h
+			stm32f427xx.h
+			stm32f401xc.h
+			stm32f415xx.h
+			stm32f412cx.h
+			stm32f410rx.h
+			stm32f410tx.h
+			stm32f439xx.h
+			stm32f412vx.h
+			stm32f417xx.h
+			stm32f479xx.h
+			stm32f429xx.h
+			stm32f412rx.h
+			stm32f423xx.h
+			stm32f437xx.h
+			stm32f412zx.h
+			stm32f401xe.h
+			stm32f410cx.h
+			stm32f405xx.h
+			stm32f411xe.h 
+		"""
+
         _fields_ = [
-            ('MODER', ctypes.c_uint32),
-            ('OTYPER', ctypes.c_uint32),
-            ('OSPEEDR', ctypes.c_uint32),
-            ('PUPDR', ctypes.c_uint32),
-            ('IDR', ctypes.c_uint32),
-            ('ODR', ctypes.c_uint32),
-            ('BSRR', ctypes.c_uint32),
-            ('LCKR', ctypes.c_uint32),
-            ('AFR', ctypes.c_uint32 * 2)
-        ]
+			('MODER'  , ctypes.c_uint32),      # GPIO port mode register,               Address offset: 0x00
+			('OTYPER' , ctypes.c_uint32),      # GPIO port output type register,        Address offset: 0x04
+			('OSPEEDR', ctypes.c_uint32),      # GPIO port output speed register,       Address offset: 0x08
+			('PUPDR'  , ctypes.c_uint32),      # GPIO port pull-up/pull-down register,  Address offset: 0x0C
+			('IDR'    , ctypes.c_uint32),      # GPIO port input data register,         Address offset: 0x10
+			('ODR'    , ctypes.c_uint32),      # GPIO port output data register,        Address offset: 0x14
+			('BSRR'   , ctypes.c_uint32),      # GPIO port bit set/reset register,      Address offset: 0x18
+			('LCKR'   , ctypes.c_uint32),      # GPIO port configuration lock register, Address offset: 0x1C
+            ('AFRL'   , ctypes.c_uint32),      # GPIO alternate function registers,     Address offset: 0x20-0x24
+			('AFRH'   , ctypes.c_uint32),      # GPIO alternate function registers,     Address offset: 0x20-0x24
+		]
 
     def __init__(self, ql, tag, **kwargs):
         super().__init__(ql, tag, **kwargs)
@@ -45,14 +59,11 @@ class STM32F4GPIO(BaseGPIO):
         pupd_value = kwargs.get('pupd_reset', None)
 
         if mode_value:
-            self.mode_reset = mode_value
-            self.write(GPIOx.MODE, 4, mode_value)
+            self.gpio.MODER = mode_value
         if ospeed_value:
-            self.ospeed_reset = ospeed_value
-            self.write(GPIOx.OSPEEDR, 4, ospeed_value)
+            self.gpio.OSPEEDR = ospeed_value
         if pupd_value:
-            self.pupd_reset = pupd_value
-            self.write(GPIOx.PUPDR, 4, pupd_value)
+            self.gpio.OSPEEDR = ospeed_value            
 
         self.reset()
 
@@ -69,29 +80,29 @@ class STM32F4GPIO(BaseGPIO):
 
     def mock_read(self, offset:int) -> int:
         val = 0
-        if offset == GPIOx.MODE:
+        if offset == self.struct.MODER.offset:
             val = self.gpiox_mode
-        elif offset == GPIOx.OTYPER:
+        elif offset == self.struct.OTYPER.offset:
             val = self.gpiox_otyper
-        elif offset == GPIOx.OSPEEDR:
+        elif offset == self.struct.OSPEEDR.offset:
             val = self.gpiox_ospeedr
-        elif offset == GPIOx.PUPDR:
+        elif offset == self.struct.PUPDR.offset:
             val = self.gpiox_pupdr
-        elif offset == GPIOx.IDR:
+        elif offset == self.struct.IDR.offset:
             value = 0
             for i in len(self.states):
                 if self.states[i]:
                     value |= 1 << i
             val = value
-        elif offset == GPIOx.ODR:
+        elif offset == self.struct.ODR.offset:
             val = self.gpiox_odr
-        elif offset == GPIOx.BSRR:
+        elif offset == self.struct.BSRR.offset:
             val = self.gpiox_bsrr
-        elif offset == GPIOx.LCKR:
+        elif offset == self.struct.LCKR.offset:
             val = self.gpiox_lckr
-        elif offset == GPIOx.AFRL:
+        elif offset == self.struct.AFRL.offset:
             val = self.gpiox_afrl
-        elif offset == GPIOx.AFRH:
+        elif offset == self.struct.AFRH.offset:
             val = self.gpiox_afrh
         else:
             raise
@@ -109,27 +120,27 @@ class STM32F4GPIO(BaseGPIO):
         self.ql.log.warning(f'[{self.tag}] Write [{hex(self.ql.hw._region[self.tag][0][0] + offset)}] = {hex(value)}')
 
     def mock_write(self, offset:int, value:int):
-        if offset == GPIOx.MODE:
+        if offset == self.struct.MODER.offset:
             self.gpiox_mode = value
-        elif offset == GPIOx.OTYPER:
+        elif offset == self.struct.OTYPER.offset:
             self.gpiox_otyper = value
-        elif offset == GPIOx.OSPEEDR:
+        elif offset == self.struct.OSPEEDR.offset:
             self.gpiox_ospeedr = value
-        elif offset == GPIOx.PUPDR:
+        elif offset == self.struct.PUPDR.offset:
             self.gpiox_pupdr = value
-        elif offset == GPIOx.IDR:
+        elif offset == self.struct.IDR.offset:
             pass
-        elif offset == GPIOx.ODR:
+        elif offset == self.struct.ODR.offset:
             self.gpiox_odr = value
             #TODO
-        elif offset == GPIOx.BSRR:
+        elif offset == self.struct.BSRR.offset:
             self.gpiox_bsrr = value
             #TODO
-        elif offset == GPIOx.LCKR:
+        elif offset == self.struct.LCKR.offset:
             self.gpiox_lckr = value
-        elif offset == GPIOx.AFRL:
+        elif offset == self.struct.AFRL.offset:
             self.gpiox_afrl = value
-        elif offset == GPIOx.AFRH:
+        elif offset == self.struct.AFRH.offset:
             self.gpiox_afrh = value
         else:
             raise
