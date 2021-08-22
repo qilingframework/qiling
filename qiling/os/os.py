@@ -141,9 +141,9 @@ class QlOs:
         # append syscall to list
         self.utils._call_api(pc, func.__name__, args, retval, retaddr)
 
-        # TODO: PE_RUN is a Windows and UEFI property; move somewhere else?
+        # [Windows and UEFI] if emulation has stopped, do not update the return address
         if hasattr(self, 'PE_RUN') and not self.PE_RUN:
-            return retval
+            passthru = True
 
         if not passthru:
             self.ql.reg.arch_pc = retaddr
