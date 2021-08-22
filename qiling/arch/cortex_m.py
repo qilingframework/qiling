@@ -18,12 +18,7 @@ class QlArchCORTEX_M(QlArchARM):
         self.ql.hw.create('CortexM4SysTick', 'systick', (0xE000E010, 0xE000E020))
 
         ## Memory Model
-        self.BOOT = [0, 0]
         self.boot_space = 0
-        
-        ## load from profile
-        self.mapinfo = {}
-        self.perip_region = {}
 
     def get_init_uc(self):
         return Uc(UC_ARCH_ARM, UC_MODE_ARM + UC_MODE_MCLASS)

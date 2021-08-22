@@ -61,17 +61,11 @@ class QlLoaderMCU(QlLoader):
         
         self.mapinfo = {
             'sram'      : (0x20000000, 0x20020000),
-            'system'    : (0x1FFF0000, 0x1FFF7800),            
             'flash'     : (0x08000000, 0x08080000),                         
         }
 
     def reset(self):
-        if self.ql.arch.BOOT[0] == 0:
-            self.ql.arch.boot_space = self.mapinfo['flash'][0]
-        elif self.ql.arch.BOOT[1] == 0:
-            self.ql.arch.boot_space = self.mapinfo['system'][0]
-        elif self.ql.arch.BOOT[1] == 1:
-            self.ql.arch.boot_space = self.mapinfo['sram'][0]
+        self.ql.arch.boot_space = self.mapinfo['flash'][0]
 
         self.ql.reg.write('lr', 0xffffffff)
         self.ql.reg.write('msp', self.ql.mem.read_ptr(self.ql.arch.boot_space))
