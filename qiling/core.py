@@ -48,9 +48,9 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             filter = None,
             stop_on_stackpointer = False,
             stop_on_exit_trap = False,
-            stdin=0,
-            stdout=0,
-            stderr=0,
+            stdin=None,
+            stdout=None,
+            stderr=None,
     ):
         """ Create a Qiling instance.
 
@@ -89,9 +89,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         ##################################
         # Definition after ql=Qiling()   #
         ##################################
-        self._stdin = stdin
-        self._stdout = stdout
-        self._stderr = stderr
         self._verbose = verbose
         self._libcache = libcache
         self._patch_bin = []
@@ -229,7 +226,16 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         if (self.archtype not in QL_ARCH_NONEOS):
             if (self.archtype not in QL_ARCH_HARDWARE):
                 self._os = os_setup(self.archtype, self.ostype, self)
-        
+
+                if stdin is not None:
+                    self._os.stdin = stdin
+
+                if stdout is not None:
+                    self._os.stdout = stdout
+
+                if stderr is not None:
+                    self._os.stderr = stderr
+
         # Run the loader
         self.loader.run()
 
