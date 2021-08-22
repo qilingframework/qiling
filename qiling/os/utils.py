@@ -8,7 +8,6 @@ This module is intended for general purpose functions that are only used in qili
 """
 
 from typing import Any, MutableMapping, Mapping, Union, Sequence, MutableSequence, Tuple
-from os.path import basename
 from uuid import UUID
 import ctypes
 
@@ -29,40 +28,52 @@ class QlOsUtils:
     def __init__(self, ql: Qiling):
         self.ql = ql
 
-        self.md = None
-        self._disasm_hook = None
-        self._block_hook = None
-
         # We can save every syscall called
         self.syscalls = {}
         self.syscalls_counter = 0
         self.appeared_strings = {}
 
     def clear_syscalls(self):
+        """Reset API and string appearance stats.
+        """
+
         self.syscalls = {}
         self.syscalls_counter = 0
         self.appeared_strings = {}
 
-    def _call_api(self, address: int, name: str, params: Mapping, retval: Any, retaddr: int):
-        if name.startswith("hook_"):
+    def _call_api(self, address: int, name: str, params: Mapping, retval: Any, retaddr: int) -> None:
+        """Record API calls along with their details.
+
+        Args:
+            address : location of the calling instruction
+            name    : api function name
+            params  : mapping of the parameters name to their effective values
+            retval  : value returned by the api function
+            retaddr : address to which the api function returned
+        """
+
+        if name.startswith('hook_'):
             name = name[5:]
 
         self.syscalls.setdefault(name, []).append({
-            "params": params,
-            "retval": retval,
-            "address": address,
-            "retaddr": retaddr,
-            "position": self.syscalls_counter
+            'params': params,
+            'retval': retval,
+            'address': address,
+            'retaddr': retaddr,
+            'position': self.syscalls_counter
         })
 
         self.syscalls_counter += 1
 
-    def string_appearance(self, string):
-        strings = string.split(" ")
-        for string in strings:
-            val = self.appeared_strings.get(string, set())
-            val.add(self.syscalls_counter)
-            self.appeared_strings[string] = val
+    def string_appearance(self, s: str) -> None:
+        """Record strings appearance as they are encountered during emulation.
+
+        Args:
+            s : string to record
+        """
+
+        for token in s.split(' '):
+            self.appeared_strings.setdefault(token, set()).add(self.syscalls_counter)
 
     @staticmethod
     def read_string(ql: Qiling, address: int, terminator: str) -> str:
@@ -101,6 +112,9 @@ class QlOsUtils:
 
     @staticmethod
     def stringify(s: str) -> str:
+        """Decorate a string with quotation marks.
+        """
+
         return f'"{repr(s)[1:-1]}"'
 
     def print_function(self, address: int, fname: str, pargs: Sequence[Tuple[str, str]], ret: Union[int, str, None], passthru: bool):
@@ -188,14 +202,14 @@ class QlOsUtils:
         def restore(ql: Qiling):
             self.ql.log.debug(f"Executed code from {start:#x} to {end:#x}")
             # now we can restore the register to be where we were supposed to
-            old_hook_addr = ql.reg.arch_pc
             ql.reg.arch_sp = old_sp + ql.pointersize
             ql.reg.arch_pc = ret
+
             # we want to execute the code once, not more
-            ql.hook_address(lambda q: None, old_hook_addr)
+            hret.remove()
 
         # we have to set an address to restore the registers
-        self.ql.hook_address(restore, end, )
+        hret = self.ql.hook_address(restore, end)
         # we want to rewrite the return address to the function
         self.ql.stack_write(0, start)
 
