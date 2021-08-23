@@ -41,41 +41,54 @@ class Termios(ctypes.Structure):
         termios.tcsetattr(fd, termios.TCSANOW, self.getattr())    
 
 class QlSerial:
-    def __init__(self, ql, baudrate=115200):        
+    def __init__(self, ql, baudrate=9600, read_daemon=None, write_daemon=None):
         self.ql = ql
         self.baudrate = baudrate
 
-        self.master_x, self.slave_x = QlSerial.create_pty(baudrate)
-        self.master_y, self.slave_y = QlSerial.create_pty(baudrate)
+        self.master_x, self.slave_x = QlSerial.create_pty(self.baudrate) # Ql port
+        self.master_y, self.slave_y = QlSerial.create_pty(self.baudrate) # User port
 
-        self.started = False
+        self.port_x = os.ttyname(self.slave_x)
+        self.port_y = os.ttyname(self.slave_y)        
+    
+        def serial_daemon():
+            wlist = [self.master_x, self.master_y]
+            while True:
+                rlist, _, _ = select.select([self.master_x, self.master_y], wlist, [])
+                
+                wlist = []
+                if self.master_x in rlist:
+                    data = os.read(self.master_x, 0x400)
+                    os.write(self.master_y, data)
+                    wlist.append(self.master_y)                
+                
+                if self.master_y in rlist:
+                    data = os.read(self.master_y, 0x400)
+                    os.write(self.master_x, data)
+                    wlist.append(self.master_x)
+        
+        self.read_daemon_thread = threading.Thread(target=read_daemon, args=(self.port_x,)) if read_daemon else None
+        self.write_daemon_thread = threading.Thread(target=write_daemon, args=(self.port_x,)) if write_daemon else None
+        
+        self.serial_daemon_thread = threading.Thread(target=serial_daemon)
 
     def start(self):
-        def daemon():
-            while True:
-                rlist, _, _ = select.select([self.master_x, self.master_y], [], [])
-                if self.master_x in rlist:
-                    os.write(self.master_y, os.read(self.master_x, 0x100))
-                if self.master_y in rlist:
-                    os.write(self.master_x, os.read(self.master_y, 0x100))
-                select.select([self.master_x, self.master_y], [self.master_x, self.master_y], [])
-        
-        if not self.started:
-            self.started = True
-            threading.Thread(target=daemon).start()
+        if self.read_daemon_thread:
+            self.read_daemon_thread.start()
+        if self.write_daemon_thread:
+            self.write_daemon_thread.start()
+        self.serial_daemon_thread.start()
+
 
     @classmethod
     def create_pty(cls, baudrate):
         master, slave = pty.openpty()
         
         t = Termios(master)
-
-        ## baudrate
         speed = getattr(termios, f'B{baudrate}', termios.B115200)
         t.c_ispeed = speed
         t.c_ospeed = speed
 
-        ## raw mode
         t.c_iflag &= ~(termios.IGNBRK|termios.BRKINT|termios.PARMRK|termios.ISTRIP|termios.INLCR|termios.IGNCR|termios.ICRNL|termios.IXON)
         t.c_oflag &= ~termios.OPOST
         t.c_cflag &= ~(termios.ECHO|termios.ECHONL|termios.ICANON|termios.ISIG|termios.IEXTEN)
