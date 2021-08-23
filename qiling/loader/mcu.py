@@ -56,7 +56,8 @@ class IhexParser:
 
 class QlLoaderMCU(QlLoader):
     def __init__(self, ql:Qiling):
-        super(QlLoaderMCU, self).__init__(ql)                
+        super(QlLoaderMCU, self).__init__(ql)   
+        self.load_address = 0             
         self.ihexfile = IhexParser(self.argv[0])
         
         self.mapinfo = {

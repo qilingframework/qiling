@@ -679,6 +679,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         return self._stop_options
 
     def __enable_bin_patch(self):
+        
         for addr, code in self.patch_bin:
             self.mem.write(self.loader.load_address + addr, code)
 
@@ -749,6 +750,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
                 return self.arch.run(code) 
 
         if self.archtype in QL_ARCH_HARDWARE:
+            self.__enable_bin_patch()
             return self.arch.run(count=count)
 
         self.write_exit_trap()

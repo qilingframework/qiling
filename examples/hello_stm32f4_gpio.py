@@ -13,7 +13,7 @@ def h_addr(ql, addr, data):
     print('---------------------')
 
 def test_mcu_gpio_stm32f411():
-    ql = Qiling(["../examples/rootfs/stm32f411/hex/hello_gpioA.hex"],                    
+    ql = Qiling(["../examples/rootfs/stm32f411/hello_gpioA.hex"],                    
                 archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DEFAULT)
 
     ql.hw.create('STM32F4xxUsart', 'usart2', (0x40004400, 0x40004800))

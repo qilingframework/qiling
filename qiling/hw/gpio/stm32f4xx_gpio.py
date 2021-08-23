@@ -50,8 +50,8 @@ class STM32F4xxGpio(BaseGPIO):
 
         self.gpio = self.struct()
 
-        self.mode_reset = 0x00, 
-        self.ospeed_reset = 0x00,
+        self.mode_reset = 0x00
+        self.ospeed_reset = 0x00
         self.pupd_reset = 0x00
 
         mode_value = kwargs.get('mode_reset', None)
