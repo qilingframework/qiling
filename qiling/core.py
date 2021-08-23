@@ -9,6 +9,8 @@ import io
 # See https://stackoverflow.com/questions/39740632/python-type-hinting-without-cyclic-imports
 from typing import Dict, List, Union
 from typing import TYPE_CHECKING
+
+from unicorn.unicorn import Uc
 if TYPE_CHECKING:
     from .arch.register import QlRegisterManager
     from .arch.arch import QlArch
@@ -655,7 +657,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             self._log_filter.update_filter(ft)
 
     @property
-    def uc(self):
+    def uc(self) -> Uc:
         """ Raw uc instance.
 
             Type: Uc

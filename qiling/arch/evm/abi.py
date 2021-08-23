@@ -4,7 +4,7 @@ from eth_abi import encode_abi
 from .vm.utils import bytecode_to_bytes
 
 
-class QlEVMABI:
+class QlArchEVMABI:
     @staticmethod
     def convert(datatypes:list, values:list) -> str:
         for idx, item in enumerate(datatypes):
