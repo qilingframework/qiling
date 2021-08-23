@@ -3,7 +3,11 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+import time
 import ctypes
+import serial
+
+from qiling.hw.utils.serial import QlSerial
 from qiling.hw.peripheral import QlPeripheral
 from qiling.hw.const.usart import USART_SR, USART_CR1
 
@@ -46,7 +50,7 @@ class STM32F4xxUsart(QlPeripheral):
 		]
 
     
-    def __init__(self, ql, tag, IRQn=None):
+    def __init__(self, ql, tag, IRQn=None, virtual_serial=False):
         super().__init__(ql, tag)
         
         self.usart = self.struct(
@@ -57,6 +61,29 @@ class STM32F4xxUsart(QlPeripheral):
 
         self.recv_buf = bytearray()
         self.send_buf = bytearray()   
+
+        interval = 0.5
+        def read_daemon(port):
+            s = serial.Serial(port)
+            while True:
+                buf = s.read_all()
+                if buf:
+                    self.recv_buf += buf
+                time.sleep(interval)
+
+        def write_daemon(port):
+            s = serial.Serial(port)
+            while True:
+                if self.send_buf:
+                    s.write(self.send_buf)
+                    self.send_buf.clear()
+                time.sleep(interval)
+
+        if virtual_serial:
+            self.serial = QlSerial(self.ql, read_daemon=read_daemon, write_daemon=write_daemon)
+
+            self.ql.log.info(f'[{self.tag}] User port {self.serial.port_y}')
+            self.serial.start()
 
     def read(self, offset, size):
         buf = ctypes.create_string_buffer(size)

@@ -13,7 +13,7 @@ from qiling.const import QL_VERBOSE
 
 class MCUTest(unittest.TestCase):
     def test_mcu_led_stm32f411(self):
-        ql = Qiling(["../examples/rootfs/stm32f411/rand_blink.hex"],                    
+        ql = Qiling(["../examples/rootfs/mcu/stm32f411/rand_blink.hex"],                    
                     archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DISASM)
 
         # Set verbose=QL_VERBOSE.DEFAULT to find warning
@@ -22,7 +22,7 @@ class MCUTest(unittest.TestCase):
         del ql
 
     def test_mcu_usart_output_stm32f411(self):
-        ql = Qiling(["../examples/rootfs/stm32f411/hello_usart.hex"],                    
+        ql = Qiling(["../examples/rootfs/mcu/stm32f411/hello_usart.hex"],                    
                     archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DEFAULT)
         
         # create/remove
@@ -37,7 +37,7 @@ class MCUTest(unittest.TestCase):
         del ql
 
     def test_mcu_usart_input_stm32f411(self):
-        ql = Qiling(["../examples/rootfs/stm32f411/md5_server.hex"],                    
+        ql = Qiling(["../examples/rootfs/mcu/stm32f411/md5_server.hex"],                    
             archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.OFF)
         
         ql.hw.create('STM32F4xxUsart', 'usart2', (0x40004400, 0x40004800))
@@ -57,7 +57,7 @@ class MCUTest(unittest.TestCase):
         self.assertEqual(buf, b'8b1a9953c4611296a827abf8c47804d7\n2daeb613094400290a24fe5086c68f06\n324118a6721dd6b8a9b9f4e327df2bf5\n')
 
     def test_mcu_patch(self):
-        ql = Qiling(["../examples/rootfs/stm32f411/patch_test.hex"],                    
+        ql = Qiling(["../examples/rootfs/mcu/stm32f411/patch_test.hex"],                    
                     archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DEFAULT)
 
         ql.hw.create('STM32F4xxUsart', 'usart2', (0x40004400, 0x40004800))
