@@ -481,14 +481,14 @@ def os_setup(archtype: QL_ARCH, ostype: QL_OS, ql):
 
 
 def profile_setup(ql):
+    if ql.archtype in QL_ARCH_HARDWARE:
+        return ql_hw_profile_setup(ql)
+
     _profile = "Default"
     
     if ql.profile != None:
         _profile = ql.profile
     debugmsg = "Profile: %s" % _profile
-
-    if ql.archtype in QL_ARCH_HARDWARE:
-        return ql_hw_profile_setup(ql)
 
     os_profile = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", ostype_convert_str(ql.ostype) + ".ql")
 
@@ -503,7 +503,18 @@ def profile_setup(ql):
     return config, debugmsg
 
 def ql_hw_profile_setup(ql):
-    return 1, 1
+    config = configparser.ConfigParser()
+    debugmsg = "Profile: %s" % ql.profile
+
+    profile_name = '%s.ql' % ql.profile
+    profile_dir  = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles")
+
+    for path, _, files in os.walk(profile_dir):
+        if profile_name in files:            
+            config.read(os.path.join(profile_dir, path, profile_name))
+            break
+
+    return config, debugmsg
 
 def ql_resolve_logger_level(verbose: QL_VERBOSE):
     level = logging.INFO
