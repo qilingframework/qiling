@@ -73,9 +73,9 @@ class STM32F4xxGpio(BaseGPIO):
         data = int.from_bytes(buf.raw, byteorder='little')
         mock_data = self.mock_read(offset)
         if mock_data != data:
-            self.ql.log.warning(f'[{self.tag}] mock_data {hex(mock_data)} != data {hex(data)} when read {hex(offset)}')
+            self.ql.log.debug(f'[{self.tag}] mock_data {hex(mock_data)} != data {hex(data)} when read {hex(offset)}')
             # data = mock_data
-        self.ql.log.warning(f'[{self.tag}] Read [{hex(self.ql.hw._region[self.tag][0][0] + offset)}] = {hex(data)}')
+        self.ql.log.debug(f'[{self.tag}] Read [{hex(self.ql.hw._region[self.tag][0][0] + offset)}] = {hex(data)}')
         return data
 
     def mock_read(self, offset:int) -> int:
@@ -90,7 +90,7 @@ class STM32F4xxGpio(BaseGPIO):
             val = self.gpiox_pupdr
         elif offset == self.struct.IDR.offset:
             value = 0
-            for i in len(self.states):
+            for i in range(len(self.states)):
                 if self.states[i]:
                     value |= 1 << i
             val = value
@@ -105,7 +105,7 @@ class STM32F4xxGpio(BaseGPIO):
         elif offset == self.struct.AFRH.offset:
             val = self.gpiox_afrh
         else:
-            raise
+            print(offset)
 
         return val
 
@@ -117,7 +117,7 @@ class STM32F4xxGpio(BaseGPIO):
             ctypes.memmove(ctypes.addressof(self.gpio) + ofs, data, 1)
             value >>= 8
         
-        self.ql.log.warning(f'[{self.tag}] Write [{hex(self.ql.hw._region[self.tag][0][0] + offset)}] = {hex(value)}')
+        self.ql.log.debug(f'[{self.tag}] Write [{hex(self.ql.hw._region[self.tag][0][0] + offset)}] = {hex(value)}')
 
     def mock_write(self, offset:int, value:int):
         if offset == self.struct.MODER.offset:
@@ -143,7 +143,7 @@ class STM32F4xxGpio(BaseGPIO):
         elif offset == self.struct.AFRH.offset:
             self.gpiox_afrh = value
         else:
-            raise
+            pass
 
     def reset(self):
         super().reset()

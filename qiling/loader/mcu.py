@@ -62,6 +62,7 @@ class QlLoaderMCU(QlLoader):
         
         self.mapinfo = {
             'sram'      : (0x20000000, 0x20020000),
+            'sys'       : (0x1FFF0000, 0x1FFFF000),
             'flash'     : (0x08000000, 0x08080000),                         
         }
 
