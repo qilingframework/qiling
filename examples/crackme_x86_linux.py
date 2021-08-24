@@ -74,7 +74,7 @@ class Solver:
         hobj = self.ql.hook_code(__count_instructions)
 
         # feed stdin with input
-        self.ql.stdin.write(input + b'\n')
+        self.ql.os.stdin.write(input + b'\n')
 
         # resume emulation till function returns
         self.ql.run(begin=self.replay_starts, end=self.replay_ends)

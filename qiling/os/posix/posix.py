@@ -4,7 +4,7 @@
 #
 
 from inspect import signature, Parameter
-from typing import Union, Callable
+from typing import TextIO, Union, Callable
 
 from unicorn.arm64_const import UC_ARM64_REG_X8, UC_ARM64_REG_X16
 from unicorn.arm_const import UC_ARM_REG_R7
@@ -54,7 +54,7 @@ class mipso32(mips.mipso32):
 class QlOsPosix(QlOs):
 
     def __init__(self, ql: Qiling):
-        super(QlOsPosix, self).__init__(ql)
+        super().__init__(ql)
 
         self.ql = ql
         self.sigaction_act = [0] * 256
@@ -100,13 +100,31 @@ class QlOsPosix(QlOs):
         }[self.ql.archtype](ql)
 
         self._fd = QlFileDes([0] * NR_OPEN)
-        self._fd[0] = self.stdin
-        self._fd[1] = self.stdout
-        self._fd[2] = self.stderr
+
+        # the QlOs constructor cannot assign the standard streams using their designated properties since
+        # it runs before the _fd array is declared. instead, it assigns them to the private members and here
+        # we force _fd to update manually.
+        self.stdin  = self._stdin
+        self.stdout = self._stdout
+        self.stderr = self._stderr
 
         self._shms = {}
 
-    # ql.syscall - get syscall for all posix series
+    @QlOs.stdin.setter
+    def stdin(self, stream: TextIO) -> None:
+        self._stdin = stream
+        self._fd[0] = stream
+
+    @QlOs.stdout.setter
+    def stdout(self, stream: TextIO) -> None:
+        self._stdout = stream
+        self._fd[1] = stream
+
+    @QlOs.stderr.setter
+    def stderr(self, stream: TextIO) -> None:
+        self._stderr = stream
+        self._fd[2] = stream
+
     @property
     def syscall(self):
         return self.get_syscall()
