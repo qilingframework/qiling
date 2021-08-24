@@ -4,7 +4,7 @@
 #
 
 from qiling.utils import ql_get_module_function
-
+from qiling.exception import QlErrorModuleFunctionNotFound
 
 class QlHwManager:
     def __init__(self, ql):
@@ -16,11 +16,13 @@ class QlHwManager:
     def create(self, name, tag, base, **kwargs):
         """You can access the `tag` by `ql.hw.tag` or `ql.hw['tag']`"""
 
-        entity = ql_get_module_function('qiling.hw', name)(self.ql, tag, **kwargs)
-
-        setattr(self, tag, entity)
-        self.entity[tag] = entity
-        self.region[tag] = [(lbound + base, rbound + base) for (lbound, rbound) in entity.region]
+        try:
+            entity = ql_get_module_function('qiling.hw', name)(self.ql, tag, **kwargs)
+            setattr(self, tag, entity)
+            self.entity[tag] = entity
+            self.region[tag] = [(lbound + base, rbound + base) for (lbound, rbound) in entity.region]
+        except QlErrorModuleFunctionNotFound as e:
+            self.ql.log.warning(f'The {name}({tag}) has not been implemented')
         
     def find(self, addr, size):
         def check_bound(lbound, rbound):
