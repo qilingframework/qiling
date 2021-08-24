@@ -1,6 +1,11 @@
+#!/usr/bin/env python3
+# 
+# Cross Platform and Multi Architecture Advanced Binary Emulation Framework
+#
+
 import sys
 
-sys.path.append("../../../../../")
+sys.path.append("../../../..")
 from qiling import *
 
 
@@ -40,6 +45,3 @@ def underflow(fuzz_balance):
     if int(result.output_data.hex()[2:], 16) > 20:
         raise OverflowError()
 
-
-# if __name__ == "__main__":
-#     underflow(11)

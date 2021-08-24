@@ -1,9 +1,14 @@
+#!/usr/bin/env python3
+# 
+# Cross Platform and Multi Architecture Advanced Binary Emulation Framework
+#
+
 # from ....core import Qiling
 from .state import BaseState
 from .message import Message
 from .defaultconf import MAINNET_GENESIS_HOST
 from .execution_context import ExecutionContext
-from .host import QlEVMHostInfo
+from .host import QlArchEVMHostInfo
 from .._utils.datatypes import Configurable
 from eth_typing import Address
 
@@ -28,7 +33,7 @@ class BaseVM(Configurable):
         return self._state
 
     @classmethod
-    def build_state(cls, ql, HostInfo:QlEVMHostInfo=MAINNET_GENESIS_HOST):
+    def build_state(cls, ql, HostInfo:QlArchEVMHostInfo=MAINNET_GENESIS_HOST):
         execution_context = cls.create_execution_context(HostInfo)
         return cls.get_state_class()(ql, execution_context)
 
@@ -44,7 +49,7 @@ class BaseVM(Configurable):
     #
 
     @classmethod
-    def create_execution_context(cls, HostInfo:QlEVMHostInfo=MAINNET_GENESIS_HOST):
+    def create_execution_context(cls, HostInfo:QlArchEVMHostInfo=MAINNET_GENESIS_HOST):
         return ExecutionContext(
             coinbase=HostInfo.coinbase,
             timestamp=HostInfo.timestamp,

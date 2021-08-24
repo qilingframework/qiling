@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+# 
+# Cross Platform and Multi Architecture Advanced Binary Emulation Framework
+#
+
 # from ....core import Qiling
 from ..db.atomic import AtomicDB
 from typing import Tuple, Type

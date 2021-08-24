@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+# 
+# Cross Platform and Multi Architecture Advanced Binary Emulation Framework
+#
+
 from rich import box
 from rich import print as rprint
 from rich.align import Align

@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+# 
+# Cross Platform and Multi Architecture Advanced Binary Emulation Framework
+#
+
 from py_ecc import (
     optimized_bn128 as bn128,
 )

@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+# 
+# Cross Platform and Multi Architecture Advanced Binary Emulation Framework
+#
+
 from collections import namedtuple
 opcode_map = namedtuple('opcode', ['mnemonic', 'description'])
 

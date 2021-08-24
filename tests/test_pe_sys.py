@@ -11,11 +11,11 @@ sys.path.append("..")
 from qiling import Qiling
 from qiling.const import QL_VERBOSE
 from qiling.os.const import POINTER, DWORD, STRING, HANDLE
+from qiling.os.windows import utils
 from qiling.os.windows.wdk_const import *
 from qiling.os.windows.api import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.dlls.kernel32.fileapi import _CreateFile
-
 
 class PETest(unittest.TestCase):
 
@@ -126,7 +126,7 @@ class PETest(unittest.TestCase):
             if hFile == 0x13371337:
                 buffer = ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
                 try:
-                    r, nNumberOfBytesToWrite = ql.amsint32_driver.os.io_Write(buffer)
+                    r, nNumberOfBytesToWrite = utils.io_Write(ql.amsint32_driver, buffer)
                     ql.mem.write(lpNumberOfBytesWritten, ql.pack32(nNumberOfBytesToWrite))
                 except Exception:
                     print("Error")
@@ -211,8 +211,8 @@ class PETest(unittest.TestCase):
         ql.run(begin=0x4053B2)
         print("test kill thread")
         if ql.amsint32_driver:
-            ql.amsint32_driver.os.utils.io_Write(ql.pack32(0xdeadbeef))
-            
+            utils.io_Write(ql.amsint32_driver, ql.pack32(0xdeadbeef))
+
             # TODO: Should stop at 0x10423, but for now just stop at 0x0001066a
             stop_addr = 0x0001066a
             ql.amsint32_driver.hook_address(self.hook_third_stop_address, stop_addr)
@@ -259,7 +259,7 @@ class PETest(unittest.TestCase):
         IOCTL_SIOCTL_METHOD_OUT_DIRECT = (40000, 0x901, METHOD_OUT_DIRECT, FILE_ANY_ACCESS)
         output_buffer_size = 0x1000
         in_buffer = b'Test input\0'
-        Status, Information_value, output_data = ql.os.utils.ioctl((IOCTL_SIOCTL_METHOD_OUT_DIRECT, output_buffer_size, in_buffer))
+        Status, Information_value, output_data = utils.ioctl(ql, (IOCTL_SIOCTL_METHOD_OUT_DIRECT, output_buffer_size, in_buffer))
 
         expected_result = b'This String is from Device Driver !!!\x00'
         self.assertEqual(Status, 0)
