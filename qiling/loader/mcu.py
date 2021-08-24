@@ -80,7 +80,7 @@ class QlLoaderMCU(QlLoader):
         for begin, end, data in self.ihexfile.segments:
             self.ql.mem.write(begin, data)
 
-        self.ql.hw.setup_mmio(0x40000000, 0x1000000, info='[PERIP]')
-        self.ql.hw.setup_mmio(0xE0000000, 0x1000000, info='[PPB]')
+        self.ql.hw.setup_mmio(0xE0000000, 0x10000, info='[PPB]')
+        self.ql.hw.setup_mmio(0x40000000, 0x100000, info='[PERIP]')        
 
         self.reset()
