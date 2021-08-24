@@ -12,11 +12,6 @@ class QlArchCORTEX_M(QlArchARM):
     def __init__(self, ql):
         super().__init__(ql)
 
-        ## Core Hardwares
-        self.ql.hw.create('CortexM4Nvic'   , 'intc'   , 0xE000E100)
-        self.ql.hw.create('CortexM4Scb'    , 'sysctrl', 0xE000ED00)
-        self.ql.hw.create('CortexM4SysTick', 'systick', 0xE000E010)
-
         ## Memory Model
         self.boot_space = 0
 

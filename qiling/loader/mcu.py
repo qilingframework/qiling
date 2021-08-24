@@ -60,15 +60,7 @@ class QlLoaderMCU(QlLoader):
         self.load_address = 0             
         self.ihexfile = IhexParser(self.argv[0])
         
-        self.mapinfo = {
-            'sram'      : (0x20000000, 0x20020000),
-            'sys'       : (0x1FFF0000, 0x1FFFF000),
-            'flash'     : (0x08000000, 0x08080000),                         
-        }
-
     def reset(self):
-        self.ql.arch.boot_space = self.mapinfo['flash'][0]
-
         self.ql.reg.write('lr', 0xffffffff)
         self.ql.reg.write('msp', self.ql.mem.read_ptr(self.ql.arch.boot_space))
         self.ql.reg.write('pc', self.ql.mem.read_ptr(self.ql.arch.boot_space + 0x4))
@@ -80,6 +72,8 @@ class QlLoaderMCU(QlLoader):
                 size = eval(section['size'])
                 base = eval(section['base'])
                 self.ql.mem.map(base, size, info=section_name.lower())
+                if section_name == 'FLASH':
+                    self.ql.arch.boot_space = base
 
             if section['type'] == 'bitband':
                 size = eval(section['size'])
@@ -89,11 +83,13 @@ class QlLoaderMCU(QlLoader):
 
             if section['type'] == 'mmio':
                 size = eval(section['size'])
-                base = eval(section['base'])                               
+                base = eval(section['base'])
                 self.ql.hw.setup_mmio(base, size, info=f'[{section_name}]')
 
             if section['type'] == 'periperal':
-                pass
+                cls = section['class']
+                base = eval(section['base'])
+                self.ql.hw.create(cls, section_name.lower(), base)
                 
         for begin, _, data in self.ihexfile.segments:
             self.ql.mem.write(begin, data)

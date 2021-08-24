@@ -130,4 +130,4 @@ class STM32F4xxUsart(QlPeripheral):
                 (self.usart.CR1 & USART_CR1.TCIE   and self.usart.SR & USART_SR.TC)   or \
                 (self.usart.CR1 & USART_CR1.RXNEIE and self.usart.SR & USART_SR.RXNE) or \
                 (self.usart.CR1 & USART_CR1.IDLEIE and self.usart.SR & USART_SR.IDLE):
-                self.ql.hw.intc.set_pending(self.IRQn)
+                self.ql.hw.nvic.set_pending(self.IRQn)

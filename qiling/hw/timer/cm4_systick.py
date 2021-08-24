@@ -32,7 +32,7 @@ class CortexM4SysTick(QlPeripheral):
         if self.systick.VAL <= 0:
             self.systick.VAL = self.systick.LOAD
             if self.systick.CTRL & 2:
-                self.ql.hw.intc.set_pending(-1)
+                self.ql.hw.nvic.set_pending(-1)
         else:
             self.systick.VAL -= self.RATIO
 

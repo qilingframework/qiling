@@ -129,7 +129,7 @@ class STM32F4xxDma(QlPeripheral):
         else:
             self.dma.LISR |= 1 << tc_bits[id]
 
-        self.ql.hw.intc.set_pending(self.IRQn[id])
+        self.ql.hw.nvic.set_pending(self.IRQn[id])
 
     def step(self):
         for id, stream in enumerate(self.dma.stream):
