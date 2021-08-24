@@ -2,11 +2,10 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
-import ctypes
 
+import ctypes
 from qiling.hw.peripheral import QlPeripheral
 
-uint32_t = ctypes.c_uint32
 
 class STM32F4xxRcc(QlPeripheral):
     class Type(ctypes.Structure):
