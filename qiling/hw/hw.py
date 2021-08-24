@@ -61,7 +61,7 @@ class QlHwManager:
             return bit
 
         def bitband_write_cb(ql, offset, size, value):
-            addr = bitband_addr(base, offset) & (-size)            
+            addr = bitband_addr(offset) & (-size)            
             buf = self.ql.mem.read(addr, size)
             
             bitpos = (offset >> 2) & ((size * 8) - 1)

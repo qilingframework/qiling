@@ -76,7 +76,7 @@ class QlLoaderMCU(QlLoader):
                     self.ql.arch.boot_space = base
 
             if section['type'] == 'bitband':
-                size = eval(section['size'])
+                size = eval(section['size']) * 0x100
                 base = eval(section['base'])
                 alias = eval(section['alias'])
                 self.ql.hw.setup_bitband(base, alias, size, info=section_name.lower())
