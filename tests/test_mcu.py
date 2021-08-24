@@ -23,11 +23,7 @@ class MCUTest(unittest.TestCase):
 
     def test_mcu_usart_output_stm32f411(self):
         ql = Qiling(["../examples/rootfs/mcu/stm32f411/hello_usart.hex"],                    
-                    archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DEFAULT)
-        
-        # create/remove
-        ql.hw.create('STM32F4xxUsart', 'usart2', 0x40004400)
-        ql.hw.create('STM32F4xxRcc', 'rcc', 0x40023800)
+                    archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DEFAULT)        
         
         ql.run(count=2000)
         buf = ql.hw.usart2.recv()
@@ -40,10 +36,6 @@ class MCUTest(unittest.TestCase):
         ql = Qiling(["../examples/rootfs/mcu/stm32f411/md5_server.hex"],                    
             archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.OFF)
         
-        ql.hw.create('STM32F4xxUsart', 'usart2', 0x40004400)
-        ql.hw.create('STM32F4xxRcc', 'rcc', 0x40023800)
-
-
         ql.run(count=1000)
         
         ql.hw.usart2.send(b'Hello\n')
@@ -59,10 +51,6 @@ class MCUTest(unittest.TestCase):
     def test_mcu_patch(self):
         ql = Qiling(["../examples/rootfs/mcu/stm32f411/patch_test.hex"],                    
                     archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DEFAULT)
-
-        ql.hw.create('STM32F4xxUsart', 'usart2', 0x40004400)
-        ql.hw.create('STM32F4xxRcc', 'rcc', 0x40023800)
-        ql.hw.create('STM32F4xxGpio', 'gpioA', 0x40020000, mode_reset=0x0C000000, ospeed_reset=0x0C000000, pupd_reset=0x64000000)
 
         ql.patch(0x80005CA, b'\x00\xBF')
         ql.run(count=4000)

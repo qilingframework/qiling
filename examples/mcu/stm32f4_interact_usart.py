@@ -5,7 +5,7 @@
 
 
 import sys
-sys.path.append("..")
+sys.path.append("../..")
 
 import time
 import threading
@@ -13,11 +13,8 @@ import threading
 from qiling.core import Qiling
 from qiling.const import QL_VERBOSE
 
-ql = Qiling(["../examples/rootfs/stm32f411/hex/md5_server.hex"], 
+ql = Qiling(["../../examples/rootfs/mcu/stm32f411/md5_server.hex"], 
             archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.OFF)
-
-ql.hw.create('STM32F4xxUsart', 'usart2', 0x40004400)
-ql.hw.create('STM32F4xxRcc', 'rcc', 0x40023800)
 
 threading.Thread(target=lambda : ql.run(count=-1)).start()
 
