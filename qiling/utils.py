@@ -488,7 +488,7 @@ def profile_setup(ql, profile):
     debugmsg = "Profile: %s" % _profile
 
     if ql.archtype in QL_ARCH_HARDWARE:
-        return ql_hw_profile_setup(ql.archtype, profile)
+        return ql_hw_profile_setup(ql, profile)
 
     os_profile = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", ostype_convert_str(ql.ostype) + ".ql")
 
@@ -502,7 +502,7 @@ def profile_setup(ql, profile):
     
     return config, debugmsg
 
-def ql_hw_profile_setup(archtype, profile):
+def ql_hw_profile_setup(ql, profile):
     return
 
 def ql_resolve_logger_level(verbose: QL_VERBOSE):
