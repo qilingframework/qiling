@@ -19,8 +19,8 @@ class QlPeripheral:
         pass
 
     def read(self, offset, size) -> int:
-        self.ql.log.warning('[%s] Read [0x%08x:%d]' % (self.tag, offset, size))
+        self.ql.log.debug('[%s] Read [0x%08x:%d]' % (self.tag, offset, size))
         return 0
 
     def write(self, offset, size, value):
-        self.ql.log.warning('[%s] Write [0x%08x:%d] = %08x' % (self.tag, offset, size, value))
+        self.ql.log.debug('[%s] Write [0x%08x:%d] = %08x' % (self.tag, offset, size, value))

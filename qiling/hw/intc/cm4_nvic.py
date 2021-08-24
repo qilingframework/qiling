@@ -7,6 +7,7 @@ import ctypes
 
 from unicorn.unicorn import UcError
 from qiling.hw.peripheral import QlPeripheral
+from qiling.const import QL_VERBOSE
 
 
 class CortexM4Nvic(QlPeripheral):
@@ -111,7 +112,9 @@ class CortexM4Nvic(QlPeripheral):
             self.ql.reg.write(reg, val)
 
     def handle_interupt(self, offset):
-        self.ql.log.debug('Enter into interrupt')
+        if self.ql.verbose >= QL_VERBOSE.DISASM:
+            self.ql.log.info('Enter into interrupt')
+
         address = self.ql.arch.boot_space + offset
         entry = self.ql.mem.read_ptr(address)
 
@@ -126,7 +129,8 @@ class CortexM4Nvic(QlPeripheral):
         except UcError:
             pass
 
-        self.ql.log.debug('Exit from interrupt')
+        if self.ql.verbose >= QL_VERBOSE.DISASM:
+            self.ql.log.debug('Exit from interrupt')
 
     def step(self):
         if not self.intrs:
