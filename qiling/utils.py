@@ -480,20 +480,20 @@ def os_setup(archtype: QL_ARCH, ostype: QL_OS, ql):
     return ql_get_module_function(f"qiling.os.{ostype_str.lower()}.{ostype_str.lower()}", function_name)(ql)
 
 
-def profile_setup(ql, profile):
+def profile_setup(ql):
     _profile = "Default"
     
-    if profile != None:
-        _profile = profile
+    if ql.profile != None:
+        _profile = ql.profile
     debugmsg = "Profile: %s" % _profile
 
     if ql.archtype in QL_ARCH_HARDWARE:
-        return ql_hw_profile_setup(ql, profile)
+        return ql_hw_profile_setup(ql)
 
     os_profile = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", ostype_convert_str(ql.ostype) + ".ql")
 
-    if profile:
-        profiles = [os_profile, profile]
+    if ql.profile:
+        profiles = [os_profile, ql.profile]
     else:
         profiles = [os_profile]
 
@@ -502,8 +502,8 @@ def profile_setup(ql, profile):
     
     return config, debugmsg
 
-def ql_hw_profile_setup(ql, profile):
-    return
+def ql_hw_profile_setup(ql):
+    return 1, 1
 
 def ql_resolve_logger_level(verbose: QL_VERBOSE):
     level = logging.INFO
