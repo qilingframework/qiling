@@ -3,6 +3,11 @@ type = memory
 size = 0x80000
 base = 0x8000000
 
+[FLASH OTP]
+type = memory
+size = 0x400
+base = 0x1fff7800
+
 [SRAM]
 type = memory
 size = 0x20000
