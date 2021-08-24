@@ -781,14 +781,14 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             with open(snapshot, "rb") as load_state:
                 saved_states = pickle.load(load_state)
 
+        if "mem" in saved_states:
+            self.mem.restore(saved_states["mem"])
+
         if "cpu_context" in saved_states:
             self.arch.context_restore(saved_states["cpu_context"])
 
         if "reg" in saved_states:
             self.reg.restore(saved_states["reg"])
-
-        if "mem" in saved_states:
-            self.mem.restore(saved_states["mem"])
 
         if "fd" in saved_states:
             self.os.fd.restore(saved_states["fd"])
