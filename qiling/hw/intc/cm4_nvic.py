@@ -165,3 +165,7 @@ class CortexM4Nvic(QlPeripheral):
         for ofs in range(offset, offset + size):
             write_byte(ofs, value & 0xff)
             value >>= 8
+
+    @property
+    def region(self):
+        return [(0, self.struct.RESERVED5.offset), (self.struct.STIR.offset, ctypes.sizeof(self.struct))]

@@ -13,18 +13,15 @@ class QlHwManager:
         self.entity = {}
         self.region = {}        
 
-    def create(self, name, tag, region, **kwargs):
+    def create(self, name, tag, base, **kwargs):
         """You can access the `tag` by `ql.hw.tag` or `ql.hw['tag']`"""
-
-        if type(region) is tuple:
-            region = [region]
 
         entity = ql_get_module_function('qiling.hw', name)(self.ql, tag, **kwargs)
 
-        self.region[tag] = region        
-        self.entity[tag] = entity
         setattr(self, tag, entity)
-
+        self.entity[tag] = entity
+        self.region[tag] = [(lbound + base, rbound + base) for (lbound, rbound) in entity.region]
+        
     def find(self, addr, size):
         def check_bound(lbound, rbound):
             return lbound <= addr and addr + size <= rbound

@@ -16,9 +16,9 @@ def test_mcu_gpio_stm32f411():
     ql = Qiling(["../examples/rootfs/stm32f411/hex/hello_gpioA.hex"],                    
                 archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DEFAULT)
 
-    ql.hw.create('STM32F4xxUsart', 'usart2', (0x40004400, 0x40004800))
-    ql.hw.create('STM32F4xxRcc', 'rcc', (0x40023800, 0x40023C00))
-    ql.hw.create('STM32F4xxGpio', 'gpioA', (0x40020000, 0x40020000 + 0x400), mode_reset=0x0C000000, ospeed_reset=0x0C000000, pupd_reset=0x64000000)
+    ql.hw.create('STM32F4xxUsart', 'usart2', 0x40004400)
+    ql.hw.create('STM32F4xxRcc', 'rcc', 0x40023800)
+    ql.hw.create('STM32F4xxGpio', 'gpioA', 0x40020000, mode_reset=0x0C000000, ospeed_reset=0x0C000000, pupd_reset=0x64000000)
 
     # ql.hook_address(h_addr, 0x08000DB4)
     # ql.hook_code(h_addr, begin=0x08000DB4, end=0x8000DC2)
