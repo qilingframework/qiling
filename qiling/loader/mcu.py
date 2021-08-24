@@ -74,13 +74,28 @@ class QlLoaderMCU(QlLoader):
         self.ql.reg.write('pc', self.ql.mem.read_ptr(self.ql.arch.boot_space + 0x4))
 
     def run(self):
-        for begin, end in self.mapinfo.values():
-            self.ql.mem.map(begin, end - begin)
+        for section_name in self.ql.profile.sections():
+            section = self.ql.profile[section_name]
+            if section['type'] == 'memory':
+                size = eval(section['size'])
+                base = eval(section['base'])
+                self.ql.mem.map(base, size, info=section_name.lower())
 
-        for begin, end, data in self.ihexfile.segments:
+            if section['type'] == 'bitband':
+                size = eval(section['size'])
+                base = eval(section['base'])
+                alias = eval(section['alias'])
+                self.ql.hw.setup_bitband(base, alias, size, info=section_name.lower())
+
+            if section['type'] == 'mmio':
+                size = eval(section['size'])
+                base = eval(section['base'])                               
+                self.ql.hw.setup_mmio(base, size, info=f'[{section_name}]')
+
+            if section['type'] == 'periperal':
+                pass
+                
+        for begin, _, data in self.ihexfile.segments:
             self.ql.mem.write(begin, data)
-
-        self.ql.hw.setup_mmio(0xE0000000, 0x10000, info='[PPB]')
-        self.ql.hw.setup_mmio(0x40000000, 0x100000, info='[PERIP]')        
 
         self.reset()
