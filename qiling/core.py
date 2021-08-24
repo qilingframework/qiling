@@ -174,7 +174,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         #####################
         # Profile & Logging #
         #####################
-        self._profile, debugmsg = profile_setup(self.ostype, self.profile, self)
+        self._profile, debugmsg = profile_setup(self, self.profile)
 
         # Log's configuration
 

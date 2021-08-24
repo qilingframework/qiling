@@ -17,6 +17,9 @@ THREAD_EVENT_EXIT_GROUP_EVENT = 6
 # File Open Limits
 NR_OPEN = 1024
 
+# https://code.woboq.org/linux/linux/include/linux/net.h.html#76
+SOCK_TYPE_MASK = 0x0f
+
 linux_socket_types = {
     'SOCK_STREAM'    : 0x1,
     'SOCK_DGRAM'     : 0x2,

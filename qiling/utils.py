@@ -15,7 +15,7 @@ from enum import EnumMeta
 from unicorn import UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
 
 from .exception import *
-from .const import QL_ARCH_NONEOS, QL_VERBOSE, QL_ARCH, QL_ENDIAN, QL_OS, QL_DEBUGGER, QL_ARCH_1BIT, QL_ARCH_16BIT, QL_ARCH_32BIT, QL_ARCH_64BIT
+from .const import QL_ARCH_NONEOS, QL_VERBOSE, QL_ARCH, QL_ENDIAN, QL_OS, QL_DEBUGGER, QL_ARCH_1BIT, QL_ARCH_16BIT, QL_ARCH_32BIT, QL_ARCH_64BIT, QL_ARCH_HARDWARE
 from .const import debugger_map, arch_map, os_map, arch_os_map, loader_map
 
 FMT_STR = "%(levelname)s\t%(message)s"
@@ -480,14 +480,17 @@ def os_setup(archtype, ostype, ql):
     return ql_get_module_function(f"qiling.os.{ostype_str.lower()}.{ostype_str.lower()}", function_name)(ql)
 
 
-def profile_setup(ostype, profile, ql):
+def profile_setup(ql, profile):
     _profile = "Default"
     
     if profile != None:
         _profile = profile
     debugmsg = "Profile: %s" % _profile
-  
-    os_profile = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", ostype_convert_str(ostype) + ".ql")
+
+    if ql.archtype in QL_ARCH_HARDWARE:
+        return ql_hw_profile_setup(ql.archtype, profile)
+
+    os_profile = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", ostype_convert_str(ql.ostype) + ".ql")
 
     if profile:
         profiles = [os_profile, profile]
@@ -498,6 +501,9 @@ def profile_setup(ostype, profile, ql):
     config.read(profiles)
     
     return config, debugmsg
+
+def ql_hw_profile_setup(archtype, profile):
+    return
 
 def ql_resolve_logger_level(verbose: QL_VERBOSE):
     level = logging.INFO
