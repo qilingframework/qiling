@@ -60,6 +60,48 @@ class ELFTest(unittest.TestCase):
 
         del ql
 
+    def _test_elf_linux_x86_snapshot_restore_common(self, reg=False, ctx=False):
+        rootfs = "../examples/rootfs/x86_linux"
+        cmdline = ["../examples/rootfs/x86_linux/bin/x86_hello"]
+        snapshot = os.path.join(rootfs, 'snapshot_restore_reg_ctx.snapshot')
+
+        ql = Qiling(cmdline, rootfs, verbose=QL_VERBOSE.DEBUG)
+
+        X86BASE = int(ql.profile.get("OS32", "load_address"), 16)
+        hook_address = X86BASE + 0x542 # call printf
+
+        def dump(ql):
+            nonlocal snapshot
+            nonlocal reg
+            nonlocal ctx
+            ql.save(reg=reg, cpu_context=ctx, os_context=True, loader=True, snapshot=snapshot)
+            ql.emu_stop()
+        ql.hook_address(dump, hook_address)
+
+        ql.run()
+
+        # make sure that the ending PC is the same as the hook address because dump stops the emulater
+        assert ql.reg.arch_pc == hook_address, f"0x{ql.reg.arch_pc:x} != 0x{hook_address:x}"
+        del ql
+
+        ql = Qiling(cmdline, rootfs, verbose=QL_VERBOSE.DEBUG)
+        ql.restore(snapshot=snapshot)
+
+        # ensure that the starting PC is same as the PC we stopped on when taking the snapshot
+        assert ql.reg.arch_pc == hook_address, f"0x{ql.reg.arch_pc:x} != 0x{hook_address:x}"
+
+        ql.run(begin=hook_address)
+        del ql
+
+    def test_elf_linux_x86_snapshot_restore_reg(self):
+        self._test_elf_linux_x86_snapshot_restore_common(reg=True, ctx=False)
+
+    def test_elf_linux_x86_snapshot_restore_ctx(self):
+        self._test_elf_linux_x86_snapshot_restore_common(reg=False, ctx=True)
+
+    def test_elf_linux_x86_snapshot_restore_reg_ctx(self):
+        self._test_elf_linux_x86_snapshot_restore_common(reg=True, ctx=True)
+
     PARAMS_PUTS = {'s': STRING}
 
     def test_elf_linux_x8664(self):
