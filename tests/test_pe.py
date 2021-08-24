@@ -389,8 +389,10 @@ class PETest(unittest.TestCase):
             ql.patch(0x004010CD, b'\x90\x90')
             ql.patch(0x0040110B, b'\x90\x90')
             ql.patch(0x00401112, b'\x90\x90')
-            ql.stdin = StringBuffer()
-            ql.stdin.write(b"Ea5yR3versing\n")
+
+            ql.os.stdin = StringBuffer()
+            ql.os.stdin.write(b"Ea5yR3versing\n")
+
             ql.hook_address(force_call_dialog_func, 0x00401016)
             ql.run()
             del ql
@@ -402,13 +404,13 @@ class PETest(unittest.TestCase):
         ql = Qiling(
         ["../examples/rootfs/x86_windows/bin/cmdln32.exe", 'arg1', 'arg2 with spaces'],
         "../examples/rootfs/x86_windows")
-        ql.stdout = TestOut()
+        ql.os.stdout = TestOut()
         ql.run()
         expected_string = b'<C:\\Users\\Qiling\\Desktop\\cmdln32.exe arg1 "arg2 with spaces">\n'
         expected_keys = [b'_acmdln', b'_wcmdln', b'__p__acmdln', b'__p__wcmdln', b'GetCommandLineA', b'GetCommandLineW']
         for key in expected_keys:
-            self.assertTrue(key in ql.stdout.output)
-            self.assertEqual(expected_string, ql.stdout.output[key])
+            self.assertTrue(key in ql.os.stdout.output)
+            self.assertEqual(expected_string, ql.os.stdout.output[key])
         del ql
 
 
@@ -416,13 +418,13 @@ class PETest(unittest.TestCase):
         ql = Qiling(
         ["../examples/rootfs/x8664_windows/bin/cmdln64.exe", 'arg1', 'arg2 with spaces'],
         "../examples/rootfs/x8664_windows")
-        ql.stdout = TestOut()
+        ql.os.stdout = TestOut()
         ql.run()
         expected_string = b'<C:\\Users\\Qiling\\Desktop\\cmdln64.exe arg1 "arg2 with spaces">\n'
         expected_keys = [b'_acmdln', b'_wcmdln', b'GetCommandLineA', b'GetCommandLineW']
         for key in expected_keys:
-            self.assertTrue(key in ql.stdout.output)
-            self.assertEqual(expected_string, ql.stdout.output[key])
+            self.assertTrue(key in ql.os.stdout.output)
+            self.assertEqual(expected_string, ql.os.stdout.output[key])
         del ql
 
     class RefreshCache(QlPeCache):

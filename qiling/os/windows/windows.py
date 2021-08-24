@@ -172,15 +172,6 @@ class QlOsWindows(QlOs):
         if  self.ql.entry_point is not None:
             self.ql.loader.entry_point = self.ql.entry_point
 
-        if self.ql.stdin != 0:
-            self.stdin = self.ql.stdin
-
-        if self.ql.stdout != 0:
-            self.stdout = self.ql.stdout
-
-        if self.ql.stderr != 0:
-            self.stderr = self.ql.stderr
-
         try:
             if self.ql.code:
                 self.ql.emu_start(self.ql.loader.entry_point, (self.ql.loader.entry_point + len(self.ql.code)), self.ql.timeout, self.ql.count)

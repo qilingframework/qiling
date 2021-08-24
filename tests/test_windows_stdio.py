@@ -37,13 +37,13 @@ def instruction_count(ql, address, size, user_data):
 
 def get_count(flag):
     ql = Qiling(["../examples/rootfs/x86_windows/bin/crackme.exe"], "../examples/rootfs/x86_windows", verbose=QL_VERBOSE.OFF, libcache = True)
-    ql.stdin = StringBuffer()
-    ql.stdout = StringBuffer()
-    ql.stdin.write(bytes("".join(flag) + "\n", 'utf-8'))
+    ql.os.stdin = StringBuffer()
+    ql.os.stdout = StringBuffer()
+    ql.os.stdin.write(bytes("".join(flag) + "\n", 'utf-8'))
     count = [0]
     ql.hook_code(instruction_count, count)
     ql.run()
-    print(ql.stdout.read_all().decode('utf-8'), end='')
+    print(ql.os.stdout.read_all().decode('utf-8'), end='')
     print(" ============ count: %d ============ " % count[0])
     return count[0]
 
