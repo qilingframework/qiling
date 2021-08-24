@@ -48,12 +48,16 @@ class MCUTest(unittest.TestCase):
         buf = ql.hw.usart2.recv()
         self.assertEqual(buf, b'8b1a9953c4611296a827abf8c47804d7\n2daeb613094400290a24fe5086c68f06\n324118a6721dd6b8a9b9f4e327df2bf5\n')
 
+        del ql
+
     def test_mcu_patch(self):
         ql = Qiling(["../examples/rootfs/mcu/stm32f411/patch_test.hex"],                    
                     archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DEFAULT)
 
         ql.patch(0x80005CA, b'\x00\xBF')
         ql.run(count=4000)
+
+        del ql
 
 if __name__ == "__main__":
     unittest.main()
