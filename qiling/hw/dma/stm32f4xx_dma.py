@@ -89,7 +89,18 @@ class STM32F4xxDma(QlPeripheral):
             ('stream', Stream * 8),
         ]
 
-    def __init__(self, ql, tag, IRQn=None):
+    def __init__(
+            self, ql, tag, 
+            stream0_intn=None,
+            stream1_intn=None,
+            stream2_intn=None,
+            stream3_intn=None,
+            stream4_intn=None,
+            stream5_intn=None,
+            stream6_intn=None,
+            stream7_intn=None
+        ):
+
         super().__init__(ql, tag)
         
         self.dma = self.struct()
@@ -97,7 +108,16 @@ class STM32F4xxDma(QlPeripheral):
         self.stream_base = 0x10
         self.stream_size = ctypes.sizeof(Stream)        
 
-        self.IRQn = IRQn
+        self.intn = [
+            stream0_intn,
+            stream1_intn,
+            stream2_intn,
+            stream3_intn,
+            stream4_intn,
+            stream5_intn,
+            stream6_intn,
+            stream7_intn,
+        ]
 
     def stream_index(self, offset):
         return (offset - self.stream_base) // self.stream_size
@@ -129,7 +149,8 @@ class STM32F4xxDma(QlPeripheral):
         else:
             self.dma.LISR |= 1 << tc_bits[id]
 
-        self.ql.hw.nvic.set_pending(self.IRQn[id])
+        if self.intn[id] is not None:
+            self.ql.hw.nvic.set_pending(self.intn[id])
 
     def step(self):
         for id, stream in enumerate(self.dma.stream):

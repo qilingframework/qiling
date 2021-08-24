@@ -89,7 +89,9 @@ class QlLoaderMCU(QlLoader):
             if section['type'] == 'periperal':
                 cls = section['class']
                 base = eval(section['base'])
-                self.ql.hw.create(cls, section_name.lower(), base)
+                kwarg = {key: eval(section[key]) for key in section if key not in ['type', 'class', 'base']}
+                
+                self.ql.hw.create(cls, section_name.lower(), base, **kwarg)
                 
         for begin, _, data in self.ihexfile.segments:
             self.ql.mem.write(begin, data)
