@@ -71,15 +71,15 @@ class QlLoaderMCU(QlLoader):
             if section['type'] == 'memory':
                 size = eval(section['size'])
                 base = eval(section['base'])
-                self.ql.mem.map(base, size, info=section_name.lower())
+                self.ql.mem.map(base, size, info=f'[{section_name}]')
                 if section_name == 'FLASH':
                     self.ql.arch.boot_space = base
 
             if section['type'] == 'bitband':
-                size = eval(section['size']) * 0x100
+                size = eval(section['size']) * 32
                 base = eval(section['base'])
                 alias = eval(section['alias'])
-                self.ql.hw.setup_bitband(base, alias, size, info=section_name.lower())
+                self.ql.hw.setup_bitband(base, alias, size, info=f'[{section_name}]')
 
             if section['type'] == 'mmio':
                 size = eval(section['size'])

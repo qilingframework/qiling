@@ -37,12 +37,6 @@ class QlHwManager:
         for _, entity in self.entity.items():
             entity.step()
 
-    def __getitem__(self, key):
-        return self.entity[key]
-
-    def __setitem__(self, key, value):
-        self.entity[key] = value
-
     def setup_bitband(self, base, alias, size, info=""):
         """ reference: 
                 https://github.com/qemu/qemu/blob/453d9c61dd5681159051c6e4d07e7b2633de2e70/hw/arm/armv7m.c
@@ -97,3 +91,18 @@ class QlHwManager:
                 ql.log.debug('%s Write non-mapped hardware [0x%08x] = 0x%08x' % (info, address, value))
 
         self.ql.mem.map_mmio(begin, size, mmio_read_cb, mmio_write_cb, info=info)
+
+    def show_info(self):
+        self.ql.log.info(f'{"Start":8s}   {"End":8s}   {"Label":8s} {"Class"}')
+
+        for tag, region in self.region.items():
+            for lbound, ubound in region:
+                label = tag.upper()
+                classname = self.entity[tag].__class__.__name__
+                self.ql.log.info(f'{lbound:08x} - {ubound:08x}   {label:8s} {classname}')
+
+    def __getitem__(self, key):
+        return self.entity[key]
+
+    def __setitem__(self, key, value):
+        self.entity[key] = value
