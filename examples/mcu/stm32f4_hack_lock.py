@@ -71,7 +71,6 @@ def crack(passwd):
     else:
         print('Fail, the passwd is not', passwd)
 
-<<<<<<< HEAD
     del ql
     
 pool = Pool()
@@ -80,5 +79,3 @@ for passwd in dicts():
 
 pool.close()
 pool.join()
-=======
->>>>>>> e08ec1cff738eb9b1d5c5c682cfe671f9c71917c
