@@ -5,13 +5,13 @@
 
 
 import sys
-sys.path.append("..")
+sys.path.append("../..")
 
 from qiling.core import Qiling
 from qiling.const import QL_VERBOSE
         
 
-ql = Qiling(["/home/moe/KJ_Lock/Project/KJ_Lock(mdk).hex"],                    
+ql = Qiling(["../../examples/rootfs/mcu/stm32f407/kjlock.hex"],                    
                     archtype="cortex_m", profile="stm32f407", verbose=QL_VERBOSE.DEFAULT)
 
 ql.hw.show_info()
