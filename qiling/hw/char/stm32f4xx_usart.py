@@ -50,14 +50,14 @@ class STM32F4xxUsart(QlPeripheral):
 		]
 
     
-    def __init__(self, ql, tag, IRQn=None, virtual_serial=False):
+    def __init__(self, ql, tag, intn=None, virtual_serial=False):
         super().__init__(ql, tag)
         
         self.usart = self.struct(
             SR = USART_SR.RESET,
         )
         
-        self.IRQn = IRQn
+        self.intn = intn
 
         self.recv_buf = bytearray()
         self.send_buf = bytearray()   
@@ -124,10 +124,10 @@ class STM32F4xxUsart(QlPeripheral):
         if not (self.usart.SR & USART_SR.TXE):
             self.usart.SR |= USART_SR.TXE
 
-        if self.IRQn is not None:
+        if self.intn is not None:
             if  (self.usart.CR1 & USART_CR1.PEIE   and self.usart.SR & USART_SR.PE)   or \
                 (self.usart.CR1 & USART_CR1.TXEIE  and self.usart.SR & USART_SR.TXE)  or \
                 (self.usart.CR1 & USART_CR1.TCIE   and self.usart.SR & USART_SR.TC)   or \
                 (self.usart.CR1 & USART_CR1.RXNEIE and self.usart.SR & USART_SR.RXNE) or \
                 (self.usart.CR1 & USART_CR1.IDLEIE and self.usart.SR & USART_SR.IDLE):
-                self.ql.hw.intc.set_pending(self.IRQn)
+                self.ql.hw.nvic.set_pending(self.intn)

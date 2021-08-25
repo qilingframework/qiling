@@ -12,11 +12,6 @@ class QlArchCORTEX_M(QlArchARM):
     def __init__(self, ql):
         super().__init__(ql)
 
-        ## Core Hardwares
-        self.ql.hw.create('CortexM4Nvic'   , 'intc'   , [(0xE000E100, 0xE000E4F0), (0xE000EF00, 0xE000EF04)])
-        self.ql.hw.create('CortexM4Scb'    , 'sysctrl', (0xE000ED00, 0xE000ED3F))
-        self.ql.hw.create('CortexM4SysTick', 'systick', (0xE000E010, 0xE000E020))
-
         ## Memory Model
         self.boot_space = 0
 
@@ -32,8 +27,5 @@ class QlArchCORTEX_M(QlArchARM):
             self.step()
             count -= 1
     
-    def debug_run(self, count):
-        self.ql.emu_start(self.get_pc(), 0, count=count)
-
     def check_thumb(self):
         return UC_MODE_THUMB

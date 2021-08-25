@@ -75,7 +75,7 @@ class STM32F4xxGpio(BaseGPIO):
         if mock_data != data:
             self.ql.log.debug(f'[{self.tag}] mock_data {hex(mock_data)} != data {hex(data)} when read {hex(offset)}')
             # data = mock_data
-        self.ql.log.debug(f'[{self.tag}] Read [{hex(self.ql.hw._region[self.tag][0][0] + offset)}] = {hex(data)}')
+        self.ql.log.debug(f'[{self.tag}] Read [{hex(self.base + offset)}] = {hex(data)}')
         return data
 
     def mock_read(self, offset:int) -> int:
@@ -117,7 +117,7 @@ class STM32F4xxGpio(BaseGPIO):
             ctypes.memmove(ctypes.addressof(self.gpio) + ofs, data, 1)
             value >>= 8
         
-        self.ql.log.debug(f'[{self.tag}] Write [{hex(self.ql.hw._region[self.tag][0][0] + offset)}] = {hex(value)}')
+        self.ql.log.debug(f'[{self.tag}] Write [{hex(self.base + offset)}] = {hex(value)}')
 
     def mock_write(self, offset:int, value:int):
         if offset == self.struct.MODER.offset:

@@ -139,8 +139,11 @@ class QlMemoryManager:
         def __process(lbound: int, ubound: int, perms: int, label: str, is_mmio) -> Tuple[int, int, str, str, Optional[str]]:
             perms_str = __perms_mapping(perms)
 
-            image = self.ql.os.find_containing_image(lbound)
-            container = image.path if image and not is_mmio else None
+            if hasattr(self.ql, 'os'):
+                image = self.ql.os.find_containing_image(lbound)
+                container = image.path if image and not is_mmio else None
+            else:
+                container = None
 
             return (lbound, ubound, perms_str, label, container)
 

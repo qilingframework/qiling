@@ -60,27 +60,27 @@ class CortexM4Nvic(QlPeripheral):
             self.nvic.ISER[IRQn >> self.OFFSET] |= 1 << (IRQn & self.MASK)
             self.nvic.ICER[IRQn >> self.OFFSET] |= 1 << (IRQn & self.MASK)
         else:
-            self.ql.hw.sysctrl.enable(IRQn)
+            self.ql.hw.scb.enable(IRQn)
 
     def disable(self, IRQn):
         if IRQn >= 0:
             self.nvic.ISER[IRQn >> self.OFFSET] &= self.MASK ^ (1 << (IRQn & self.MASK))
             self.nvic.ICER[IRQn >> self.OFFSET] &= self.MASK ^ (1 << (IRQn & self.MASK))
         else:
-            self.ql.hw.sysctrl.disable(IRQn)
+            self.ql.hw.scb.disable(IRQn)
 
     def get_enable(self, IRQn):
         if IRQn >= 0:
             return (self.nvic.ISER[IRQn >> self.OFFSET] >> (IRQn & self.MASK)) & 1
         else:
-            return self.ql.hw.sysctrl.get_enable(IRQn)
+            return self.ql.hw.scb.get_enable(IRQn)
 
     def set_pending(self, IRQn):
         if IRQn >= 0:
             self.nvic.ISPR[IRQn >> self.OFFSET] |= 1 << (IRQn & self.MASK)
             self.nvic.ICPR[IRQn >> self.OFFSET] |= 1 << (IRQn & self.MASK)
         else:
-            self.ql.hw.sysctrl.set_pending(IRQn)
+            self.ql.hw.scb.set_pending(IRQn)
         
         if self.get_enable(IRQn):
             self.intrs.append(IRQn)
@@ -90,13 +90,13 @@ class CortexM4Nvic(QlPeripheral):
             self.nvic.ISPR[IRQn >> self.OFFSET] &= self.MASK ^ (1 << (IRQn & self.MASK))
             self.nvic.ICPR[IRQn >> self.OFFSET] &= self.MASK ^ (1 << (IRQn & self.MASK))
         else:
-            self.ql.hw.sysctrl.clear_pending(IRQn)
+            self.ql.hw.scb.clear_pending(IRQn)
 
     def get_pending(self, IRQn):
         if IRQn >= 0:
             return (self.nvic.ISER[IRQn >> self.OFFSET] >> (IRQn & self.MASK)) & 1
         else:
-            return self.ql.hw.sysctrl.get_pending(IRQn)
+            return self.ql.hw.scb.get_pending(IRQn)
 
     def get_priority(self, IRQn):
         return 0
@@ -165,3 +165,7 @@ class CortexM4Nvic(QlPeripheral):
         for ofs in range(offset, offset + size):
             write_byte(ofs, value & 0xff)
             value >>= 8
+
+    @property
+    def region(self):
+        return [(0, self.struct.RESERVED5.offset), (self.struct.STIR.offset, ctypes.sizeof(self.struct))]

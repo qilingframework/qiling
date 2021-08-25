@@ -60,29 +60,40 @@ class QlLoaderMCU(QlLoader):
         self.load_address = 0             
         self.ihexfile = IhexParser(self.argv[0])
         
-        self.mapinfo = {
-            'sram'      : (0x20000000, 0x20020000),
-            'sys'       : (0x1FFF0000, 0x1FFFF000),
-            'flash'     : (0x08000000, 0x08080000),                         
-        }
-
     def reset(self):
-        self.ql.arch.boot_space = self.mapinfo['flash'][0]
-
         self.ql.reg.write('lr', 0xffffffff)
         self.ql.reg.write('msp', self.ql.mem.read_ptr(self.ql.arch.boot_space))
         self.ql.reg.write('pc', self.ql.mem.read_ptr(self.ql.arch.boot_space + 0x4))
 
     def run(self):
-        for begin, end in self.mapinfo.values():
-            self.ql.mem.map(begin, end - begin)
+        for section_name in self.ql.profile.sections():
+            section = self.ql.profile[section_name]
+            if section['type'] == 'memory':
+                size = eval(section['size'])
+                base = eval(section['base'])
+                self.ql.mem.map(base, size, info=f'[{section_name}]')
+                if section_name == 'FLASH':
+                    self.ql.arch.boot_space = base
 
-        for begin, end, data in self.ihexfile.segments:
+            if section['type'] == 'bitband':
+                size = eval(section['size']) * 32
+                base = eval(section['base'])
+                alias = eval(section['alias'])
+                self.ql.hw.setup_bitband(base, alias, size, info=f'[{section_name}]')
+
+            if section['type'] == 'mmio':
+                size = eval(section['size'])
+                base = eval(section['base'])
+                self.ql.hw.setup_mmio(base, size, info=f'[{section_name}]')
+
+            if section['type'] == 'periperal':
+                cls = section['class']
+                base = eval(section['base'])
+                kwarg = {key: eval(section[key]) for key in section if key not in ['type', 'class', 'base']}
+                
+                self.ql.hw.create(cls, section_name.lower(), base, **kwarg)
+                
+        for begin, _, data in self.ihexfile.segments:
             self.ql.mem.write(begin, data)
-
-        self.ql.hw.setup_mmio2(0x40000000, 0x1000000, info='[PPB]')
-        self.ql.hw.setup_mmio2(0xE0000000, 0x1000000, info='[PERIP]')
-        self.ql.hw.setup_mmio2(0x22000000, 0x2000000, info="[SRAM Memory]")
-        self.ql.hw.setup_mmio2(0x42000000, 0x2000000, info="[Peripheral Memory]")
 
         self.reset()

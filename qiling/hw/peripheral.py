@@ -24,3 +24,15 @@ class QlPeripheral:
 
     def write(self, offset, size, value):
         self.ql.log.debug('[%s] Write [0x%08x:%d] = %08x' % (self.tag, offset, size, value))
+
+    @property
+    def region(self):
+        return [(0, ctypes.sizeof(self.struct))]
+
+    @property
+    def size(self):
+        return sum(rbound-lbound for lbound, rbound in self.region)
+
+    @property
+    def base(self):
+        return self.ql.hw.region[self.tag][0][0]
