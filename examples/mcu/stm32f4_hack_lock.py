@@ -9,28 +9,30 @@ sys.path.append("../..")
 
 from qiling.core import Qiling
 from qiling.const import QL_VERBOSE
-        
 
-ql = Qiling(["../../examples/rootfs/mcu/stm32f407/backdoorlock.hex"],                    
-                    archtype="cortex_m", profile="stm32f407", verbose=QL_VERBOSE.DEFAULT)
+def dicts():
+    a = 0x79df7
+    b = 0x75ee0
+    c = 0xcc5ee
+    M = 0xf4247
 
-ql.hw.show_info()
-ql.mem.show_mapinfo()
+    for x in range(1, 20):
+        yield str((a*x*x + b*x + c) % M)
 
-ql.patch(0x80031e4, b'\x00\xBF' * 11)
-ql.patch(0x80032f8, b'\x00\xBF' * 13)
-ql.patch(0x80013b8, b'\x00\xBF' * 10)
+# Cracking the passwd of lock
+for passwd in dicts():
+    ql = Qiling(["../../examples/rootfs/mcu/stm32f407/backdoorlock.hex"],                    
+                        archtype="cortex_m", profile="stm32f407", verbose=QL_VERBOSE.OFF)
 
-print('Start')
-ql.run(end=0x80031e0|1)
-ql.run(count=100, end=0x8003200|1)
+    print('Try to use', passwd)
 
-# ql.hw.usart1.send(b'618618\r')
-ql.hw.usart1.send(b'778899\r')
+    ql.patch(0x80031e4, b'\x00\xBF' * 11)
+    ql.patch(0x80032f8, b'\x00\xBF' * 13)
+    ql.patch(0x80013b8, b'\x00\xBF' * 10)
 
-for _ in range(7):
-    ql.run(end=0x8003216|1)
-    print('Input:', chr(ql.reg.read('r0')))
+    ql.hw.usart1.send(passwd.encode() + b'\r')
 
-ql.run(end=0x8003224|1)
-print('Success')
+    ql.run(count=500000, end=0x8003225)
+    if ql.arch.get_pc() == 0x8003225:
+        print('Success, the passwd is', passwd)
+
