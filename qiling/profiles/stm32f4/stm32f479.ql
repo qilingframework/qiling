@@ -418,7 +418,7 @@ class = STM32F4xxCrc
 [RCC]
 type = periperal
 base = 0x40023800
-class = STM32F4xxRcc_V3
+class = STM32F4xxRccV3
 intn = 5
 
 [DMA1]

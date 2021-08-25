@@ -265,7 +265,7 @@ intn = 84
 [SYSCFG]
 type = periperal
 base = 0x40013800
-class = STM32F4xxSyscfg_V2
+class = STM32F4xxSyscfgV2
 
 [EXTI]
 type = periperal
@@ -341,7 +341,7 @@ class = STM32F4xxCrc
 [RCC]
 type = periperal
 base = 0x40023800
-class = STM32F4xxRcc_V1
+class = STM32F4xxRccV1
 intn = 5
 
 [DMA1]

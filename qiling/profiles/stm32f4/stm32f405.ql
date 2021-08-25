@@ -173,21 +173,21 @@ intn = 53
 [I2C1]
 type = periperal
 base = 0x40005400
-class = STM32F4xxI2c_V1
+class = STM32F4xxI2cV1
 ev_intn = 31
 er_intn = 32
 
 [I2C2]
 type = periperal
 base = 0x40005800
-class = STM32F4xxI2c_V1
+class = STM32F4xxI2cV1
 ev_intn = 33
 er_intn = 34
 
 [I2C3]
 type = periperal
 base = 0x40005c00
-class = STM32F4xxI2c_V1
+class = STM32F4xxI2cV1
 ev_intn = 72
 er_intn = 73
 
@@ -359,7 +359,7 @@ class = STM32F4xxCrc
 [RCC]
 type = periperal
 base = 0x40023800
-class = STM32F4xxRcc_V2
+class = STM32F4xxRccV2
 intn = 5
 
 [DMA1]
