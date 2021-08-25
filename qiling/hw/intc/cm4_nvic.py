@@ -133,7 +133,7 @@ class CortexM4Nvic(QlPeripheral):
             self.ql.log.debug('Exit from interrupt')
 
     def step(self):
-        if not self.intrs:
+        if self.ql.reg.read('primask') or not self.intrs:
             return
 
         self.intrs.sort(key=lambda x: self.get_priority(x))
