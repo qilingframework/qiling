@@ -11,7 +11,7 @@ from qiling.core import Qiling
 from qiling.const import QL_VERBOSE
         
 
-ql = Qiling(["../../examples/rootfs/mcu/stm32f407/kjlock.hex"],                    
+ql = Qiling(["../../examples/rootfs/mcu/stm32f407/backdoorlock.hex"],                    
                     archtype="cortex_m", profile="stm32f407", verbose=QL_VERBOSE.DEFAULT)
 
 ql.hw.show_info()
