@@ -717,7 +717,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
         if self.archtype in QL_ARCH_HARDWARE:
             self.__enable_bin_patch()
-            return self.arch.run(count=count)
+            return self.arch.run(count=count, end=end)
 
         self.write_exit_trap()
 
