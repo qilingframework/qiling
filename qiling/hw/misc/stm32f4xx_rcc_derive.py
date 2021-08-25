@@ -7,7 +7,7 @@ import ctypes
 from .stm32f4xx_rcc import STM32F4xxRcc
 
 
-class STM32F4xxRcc_V1(STM32F4xxRcc):
+class STM32F4xxRccV1(STM32F4xxRcc):
     class Type(ctypes.Structure):
         """ the structure available in :
 			stm32f413xx.h
@@ -54,7 +54,7 @@ class STM32F4xxRcc_V1(STM32F4xxRcc):
 			('DCKCFGR2'  , ctypes.c_uint32),      # RCC Dedicated Clocks configuration register 2,               Address offset: 0x94
 		]
 
-class STM32F4xxRcc_V2(STM32F4xxRcc):
+class STM32F4xxRccV2(STM32F4xxRcc):
     class Type(ctypes.Structure):
         """ the structure available in :
 			stm32f407xx.h
@@ -96,7 +96,7 @@ class STM32F4xxRcc_V2(STM32F4xxRcc):
 			('PLLI2SCFGR', ctypes.c_uint32),      # RCC PLLI2S configuration register,                           Address offset: 0x84
 		]
 
-class STM32F4xxRcc_V3(STM32F4xxRcc):
+class STM32F4xxRccV3(STM32F4xxRcc):
     class Type(ctypes.Structure):
         """ the structure available in :
 			stm32f469xx.h
