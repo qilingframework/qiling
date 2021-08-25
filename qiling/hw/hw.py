@@ -22,7 +22,7 @@ class QlHwManager:
             self.entity[tag] = entity
             self.region[tag] = [(lbound + base, rbound + base) for (lbound, rbound) in entity.region]
         except QlErrorModuleFunctionNotFound as e:
-            self.ql.log.warning(f'The {name}({tag}) has not been implemented')
+            self.ql.log.debug(f'The {name}({tag}) has not been implemented')
         
     def find(self, addr, size):
         def check_bound(lbound, rbound):
