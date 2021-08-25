@@ -23,9 +23,11 @@ class QlArchCORTEX_M(QlArchARM):
         self.ql.hw.step()
 
     def run(self, count=-1, end=None):        
-        while count != 0 and self.get_pc() != end:
+        while count != 0:
             self.step()
             count -= 1
+            if self.get_pc() == end:
+                break
     
     def check_thumb(self):
         return UC_MODE_THUMB
