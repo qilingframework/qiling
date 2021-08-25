@@ -27,8 +27,5 @@ class QlArchCORTEX_M(QlArchARM):
             self.step()
             count -= 1
     
-    def debug_run(self, count):
-        self.ql.emu_start(self.get_pc(), 0, count=count)
-
     def check_thumb(self):
         return UC_MODE_THUMB
