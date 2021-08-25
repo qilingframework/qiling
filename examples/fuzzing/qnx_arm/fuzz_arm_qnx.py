@@ -19,54 +19,15 @@ unicornafl.monkeypatch()
 import sys, os
 from binascii import hexlify
 
-from capstone import *
-
 sys.path.append("../../..")
 from qiling import *
-
-# we cache this for some extra speed
-stdin_fstat = os.fstat(sys.stdin.fileno())
-
-# This is mostly taken from the crackmes
-class MyPipe():
-    def __init__(self):
-        self.buf = b''
-
-    def write(self, s):
-        self.buf += s
-
-    def read(self, size):
-        if size <= len(self.buf):
-            ret = self.buf[: size]
-            self.buf = self.buf[size:]
-        else:
-            ret = self.buf
-            self.buf = ''
-        return ret
-
-    def fileno(self):
-        return 0
-
-    def show(self):
-        pass
-
-    def clear(self):
-        pass
-
-    def flush(self):
-        pass
-
-    def close(self):
-        self.outpipe.close()
-
-    def fstat(self):
-        return stdin_fstat
-
+from qiling.extensions import pipe
 
 def main(input_file, enable_trace=False):
-    stdin = MyPipe()
+    mock_stdin = pipe.SimpleInStream(sys.stdin.fileno())
+
     ql = Qiling(["./arm_fuzz"], "../../rootfs/arm_qnx",
-                stdin=stdin,
+                stdin=mock_stdin,
                 stdout=1 if enable_trace else None,
                 stderr=1 if enable_trace else None,
                 console = True if enable_trace else False)
@@ -75,7 +36,7 @@ def main(input_file, enable_trace=False):
     # ... stdout=sys.stdout, stderr=sys.stderr)
 
     def place_input_callback(uc, input, _, data):
-        stdin.write(input)
+        ql.os.stdin.write(input)
 
     def start_afl(_ql: Qiling):
         """

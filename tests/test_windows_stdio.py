@@ -4,47 +4,31 @@
 #
 
 import sys
-
-from unicorn import *
-from unicorn.x86_const import *
+from typing import Sequence
 
 sys.path.append("..")
 from qiling import *
 from qiling.const import QL_VERBOSE
+from qiling.extensions import pipe
 
-class StringBuffer:
-    def __init__(self):
-        self.buffer = b''
-
-    def read(self, n):
-        ret = self.buffer[:n]
-        self.buffer = self.buffer[n:]
-        return ret
-
-    def read_all(self):
-        ret = self.buffer
-        self.buffer = b''
-        return ret
-
-    def write(self, string):
-        self.buffer += string
-        return len(string)
-
-
-def instruction_count(ql, address, size, user_data):
+def instruction_count(ql: Qiling, address: int, size: int, user_data):
     user_data[0] += 1
 
 
-def get_count(flag):
+def get_count(flag: Sequence[str]):
     ql = Qiling(["../examples/rootfs/x86_windows/bin/crackme.exe"], "../examples/rootfs/x86_windows", verbose=QL_VERBOSE.OFF, libcache = True)
-    ql.os.stdin = StringBuffer()
-    ql.os.stdout = StringBuffer()
-    ql.os.stdin.write(bytes("".join(flag) + "\n", 'utf-8'))
+    ql.os.stdin = pipe.SimpleStringBuffer()
+    ql.os.stdout = pipe.SimpleStringBuffer()
+
     count = [0]
     ql.hook_code(instruction_count, count)
+
+    ql.os.stdin.write(bytes("".join(flag) + "\n", 'utf-8'))
     ql.run()
-    print(ql.os.stdout.read_all().decode('utf-8'), end='')
-    print(" ============ count: %d ============ " % count[0])
+
+    print(ql.os.stdout.read().decode('utf-8'), end='')
+    print(f' ============ count: {count[0]:d} ============ ')
+
     return count[0]
 
 

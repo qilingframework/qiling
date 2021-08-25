@@ -7,28 +7,7 @@ import sys
 sys.path.append("..")
 
 from qiling import Qiling
-
-class StringBuffer:
-    def __init__(self):
-        self.buffer = b''
-
-    def read(self, n):
-        ret = self.buffer[:n]
-        self.buffer = self.buffer[n:]
-        return ret
-
-    def readline(self, end=b'\n'):
-        ret = b''
-        while True:
-            c = self.read(1)
-            ret += c
-            if c == end:
-                break
-        return ret
-
-    def write(self, string):
-        self.buffer += string
-        return len(string)
+from qiling.extensions import pipe
 
 def force_call_dialog_func(ql: Qiling):
     # get DialogFunc address
@@ -43,10 +22,9 @@ def force_call_dialog_func(ql: Qiling):
     ql.reg.eip = lpDialogFunc
 
 def our_sandbox(path, rootfs):
-    stdin = StringBuffer()
-    ql = Qiling(path, rootfs, stdin=stdin)
+    ql = Qiling(path, rootfs, stdin=pipe.SimpleInStream(sys.stdin.fileno()))
 
-    stdin.write(b"Ea5yR3versing\n")
+    ql.os.stdin.write(b"Ea5yR3versing\n")
     ql.hook_address(force_call_dialog_func, 0x00401016)
     ql.run()
 

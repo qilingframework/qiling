@@ -9,10 +9,10 @@ sys.path.append("..")
 from qiling import Qiling
 from qiling.const import QL_OS, QL_INTERCEPT, QL_VERBOSE
 from qiling.exception import *
+from qiling.extensions import pipe
 from qiling.os.const import STRING
 from qiling.os.posix import syscall
 from qiling.os.mapper import QlFsMappedObject
-from qiling.os.posix.stat import Fstat
 
 class ELFTest(unittest.TestCase):
 
@@ -823,41 +823,6 @@ class ELFTest(unittest.TestCase):
 
 
     def test_elf_linux_x86_crackme(self):
-        class MyPipe():
-            def __init__(self):
-                self.buf = b''
-
-            def write(self, s):
-                self.buf += s
-
-            def read(self, l):
-                if l <= len(self.buf):
-                    ret = self.buf[ : l]
-                    self.buf = self.buf[l : ]
-                else:
-                    ret = self.buf
-                    self.buf = ''
-                return ret
-
-            def fileno(self):
-                return 0
-
-            def fstat(self):
-                return Fstat(sys.stdin.fileno())
- 
-            def show(self):
-                pass
-
-            def clear(self):
-                pass
-
-            def flush(self):
-                pass
-
-            def close(self):
-                self.outpipe.close()
-
-
         def instruction_count(ql, address, size, user_data):
             user_data[0] += 1
 
@@ -865,14 +830,14 @@ class ELFTest(unittest.TestCase):
             pass
 
         def run_one_round(payload):
-            stdin = MyPipe()
-            ql = Qiling(["../examples/rootfs/x86_linux/bin/crackme_linux"], "../examples/rootfs/x86_linux", console = False, stdin = stdin)
+            mock_stdin = pipe.SimpleInStream(sys.stdin.fileno())
+            ql = Qiling(["../examples/rootfs/x86_linux/bin/crackme_linux"], "../examples/rootfs/x86_linux", console=False, stdin=mock_stdin)
             ins_count = [0]
             ql.hook_code(instruction_count, ins_count)
             ql.set_syscall("_llseek", my__llseek)
-            stdin.write(payload)
+            ql.os.stdin.write(payload)
             ql.run()
-            del stdin
+            del mock_stdin
             del ql
             return ins_count[0]
 
@@ -1014,77 +979,20 @@ class ELFTest(unittest.TestCase):
         del ql
 
     def test_x8664_absolute_path(self):
-        class MyPipe():
-            def __init__(self):
-                self.buf = b''
-
-            def write(self, s):
-                self.buf += s
-
-            def read(self, l):
-                pass
-
-            def fileno(self):
-                return 0
-
-            def fstat(self):
-                return Fstat(sys.stdin.fileno())
- 
-            def show(self):
-                pass
-
-            def clear(self):
-                pass
-
-            def flush(self):
-                pass
-
-            def close(self):
-                pass
-        
-        pipe = MyPipe()
-        ql = Qiling(["../examples/rootfs/x8664_linux/bin/absolutepath"],  "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG, stdout=pipe)
+        mock_stdout = pipe.SimpleOutStream(sys.stdout.fileno())
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/absolutepath"],  "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG, stdout=mock_stdout)
 
         ql.run()
-        
-        self.assertEqual(pipe.buf, b'test_complete\n\ntest_complete\n\n')
+        self.assertEqual(ql.os.stdout.read(), b'test_complete\n\ntest_complete\n\n')
 
         del ql
 
     def test_x8664_getcwd(self):
-        class MyPipe():
-            def __init__(self):
-                self.buf = b''
-
-            def write(self, s):
-                self.buf += s
-
-            def read(self, l):
-                pass
-
-            def fileno(self):
-                return 0
-
-            def fstat(self):
-                return Fstat(sys.stdin.fileno())
- 
-            def show(self):
-                pass
-
-            def clear(self):
-                pass
-
-            def flush(self):
-                pass
-
-            def close(self):
-                pass
-        
-        pipe = MyPipe()
-        ql = Qiling(["../examples/rootfs/x8664_linux/bin/testcwd"],  "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG, stdout=pipe)
+        mock_stdout = pipe.SimpleOutStream(sys.stdout.fileno())
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/testcwd"],  "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG, stdout=mock_stdout)
 
         ql.run()
-        self.assertEqual(pipe.buf, b'/\n/lib\n/bin\n/\n')
+        self.assertEqual(ql.os.stdout.read(), b'/\n/lib\n/bin\n/\n')
 
         del ql
 
@@ -1138,41 +1046,12 @@ class ELFTest(unittest.TestCase):
         del ql
 
     def test_elf_linux_x86_getdents64(self):
-        class MyPipe():
-            def __init__(self):
-                self.buf = b''
+        mock_stdout = pipe.SimpleOutStream(sys.stdout.fileno())
+        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_getdents64"], "../examples/rootfs/x86_linux", verbose=QL_VERBOSE.DEBUG, stdout=mock_stdout)
 
-            def write(self, s):
-                self.buf += s
-
-            def read(self, l):
-                pass
-
-            def fileno(self):
-                return 0
-
-            def fstat(self):
-                return Fstat(sys.stdin.fileno())
-
-            def fstat64(self):
-                return self.fstat()
-
-            def show(self):
-                pass
-
-            def clear(self):
-                pass
-
-            def flush(self):
-                pass
-
-            def close(self):
-                pass
-        
-        pipe = MyPipe()
-        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_getdents64"], "../examples/rootfs/x86_linux", verbose=QL_VERBOSE.DEBUG, stdout=pipe)
         ql.run()
-        self.assertTrue("bin\n" in pipe.buf.decode("utf-8"))
+        self.assertTrue("bin\n" in ql.os.stdout.read().decode("utf-8"))
+
         del ql
 
 if __name__ == "__main__":
