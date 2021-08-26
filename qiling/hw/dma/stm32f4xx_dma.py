@@ -90,7 +90,7 @@ class STM32F4xxDma(QlPeripheral):
         ]
 
     def __init__(
-            self, ql, tag, 
+            self, ql, label, 
             stream0_intn=None,
             stream1_intn=None,
             stream2_intn=None,
@@ -101,7 +101,7 @@ class STM32F4xxDma(QlPeripheral):
             stream7_intn=None
         ):
 
-        super().__init__(ql, tag)
+        super().__init__(ql, label)
         
         self.dma = self.struct()
 

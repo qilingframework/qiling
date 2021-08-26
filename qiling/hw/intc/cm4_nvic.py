@@ -28,8 +28,8 @@ class CortexM4Nvic(QlPeripheral):
             ('STIR'     , ctypes.c_uint32 * 8),
         ]
 
-    def __init__(self, ql, tag):
-        super().__init__(ql, tag)
+    def __init__(self, ql, label):
+        super().__init__(ql, label)
         
         # reference:
         # https://www.youtube.com/watch?v=uFBNf7F3l60

@@ -13,31 +13,31 @@ class QlHwManager:
         self.entity = {}
         self.region = {}        
 
-    def create(self, name, tag, base, **kwargs):
-        """You can access the `tag` by `ql.hw.tag` or `ql.hw['tag']`"""
+    def create(self, name, label, base, **kwargs):
+        """You can access the `label` by `ql.hw.label` or `ql.hw['label']`"""
 
         try:
-            entity = ql_get_module_function('qiling.hw', name)(self.ql, tag, **kwargs)
-            setattr(self, tag, entity)
-            self.entity[tag] = entity
-            self.region[tag] = [(lbound + base, rbound + base) for (lbound, rbound) in entity.region]
+            entity = ql_get_module_function('qiling.hw', name)(self.ql, label, **kwargs)
+            setattr(self, label, entity)
+            self.entity[label] = entity
+            self.region[label] = [(lbound + base, rbound + base) for (lbound, rbound) in entity.region]
         except QlErrorModuleFunctionNotFound as e:
-            self.ql.log.debug(f'The {name}({tag}) has not been implemented')
+            self.ql.log.debug(f'The {name}({label}) has not been implemented')
 
-    def remove(self, tag):
-        if tag in self.entity:
-            self.entity.pop(tag)
-            self.region.pop(tag)
-            delattr(self, tag)
+    def delete(self, label):
+        if label in self.entity:
+            self.entity.pop(label)
+            self.region.pop(label)
+            delattr(self, label)
         
     def find(self, addr, size):
         def check_bound(lbound, rbound):
             return lbound <= addr and addr + size <= rbound
         
-        for tag in self.entity.keys():
-            for lbound, rbound in self.region[tag]:
+        for label in self.entity.keys():
+            for lbound, rbound in self.region[label]:
                 if check_bound(lbound, rbound):
-                    return self.entity[tag]
+                    return self.entity[label]
 
     def step(self):
         for _, entity in self.entity.items():
@@ -101,10 +101,10 @@ class QlHwManager:
     def show_info(self):
         self.ql.log.info(f'{"Start":8s}   {"End":8s}   {"Label":8s} {"Class"}')
 
-        for tag, region in self.region.items():
+        for label, region in self.region.items():
             for lbound, ubound in region:
-                label = tag.upper()
-                classname = self.entity[tag].__class__.__name__
+                label = label.upper()
+                classname = self.entity[label].__class__.__name__
                 self.ql.log.info(f'{lbound:08x} - {ubound:08x}   {label:8s} {classname}')
 
     def __getitem__(self, key):

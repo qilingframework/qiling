@@ -16,8 +16,8 @@ class CortexM4SysTick(QlPeripheral):
             ('CALIB', ctypes.c_uint32),
         ]
 
-    def __init__(self, ql, tag):
-        super().__init__(ql, tag)
+    def __init__(self, ql, label):
+        super().__init__(ql, label)
 
         self.systick = self.struct(
             CALIB = 0xC0000000

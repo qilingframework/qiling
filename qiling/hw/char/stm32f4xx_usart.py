@@ -50,8 +50,8 @@ class STM32F4xxUsart(QlPeripheral):
 		]
 
     
-    def __init__(self, ql, tag, intn=None, virtual_serial=False):
-        super().__init__(ql, tag)
+    def __init__(self, ql, label, intn=None, virtual_serial=False):
+        super().__init__(ql, label)
         
         self.usart = self.struct(
             SR = USART_SR.RESET,
@@ -82,7 +82,7 @@ class STM32F4xxUsart(QlPeripheral):
         if virtual_serial:
             self.serial = QlSerial(self.ql, read_daemon=read_daemon, write_daemon=write_daemon)
 
-            self.ql.log.info(f'[{self.tag}] User port {self.serial.port_y}')
+            self.ql.log.info(f'[{self.label}] User port {self.serial.port_y}')
             self.serial.start()
 
     def read(self, offset, size):

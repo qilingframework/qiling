@@ -50,8 +50,8 @@ class STM32F4xxRcc(QlPeripheral):
 			('DCKCFGR'   , ctypes.c_uint32),      # RCC Dedicated Clocks configuration register,                 Address offset: 0x8C
 		]
 
-    def __init__(self, ql, tag, intn=None):
-        super().__init__(ql, tag)
+    def __init__(self, ql, label, intn=None):
+        super().__init__(ql, label)
 
         self.rcc = self.struct(
             CR         = 0x00000083,
