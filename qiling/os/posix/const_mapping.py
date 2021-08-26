@@ -12,11 +12,14 @@ def _invert_dict(d: Mapping) -> Mapping:
     return { v:k for k, v in d.items()}
 
 
-def _constant_mapping(bits: int, d_map: Mapping[str, int], ret: MutableSequence[str] = [], single_mapping: bool = False) -> str:
+def _constant_mapping(bits: int, d_map: Mapping[str, int], ret: MutableSequence[str] = None, single_mapping: bool = False) -> str:
     b_map = _invert_dict(d_map)
 
     if single_mapping:
         return b_map[bits]
+
+    if ret is None:
+        ret = []
 
     for val, sym in b_map.items():
         if val & bits:
