@@ -27,7 +27,7 @@ class QlHwManager:
             self.entity[label] = entity
             self.region[label] = [(lbound + base, rbound + base) for (lbound, rbound) in entity.region]
         except QlErrorModuleFunctionNotFound:
-            self.ql.log.debug(f'The {cls}({label}) has not been implemented')
+            self.ql.log.warning(f'The {cls}({label}) has not been implemented')
 
     def delete(self, label):
         if label in self.entity:
