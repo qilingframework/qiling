@@ -13,22 +13,37 @@ class QlHwManager:
         self.entity = {}
         self.region = {}        
 
-    def create(self, name, label, base, **kwargs):
+    def create(self, label, cls=None, base=None):
         """You can access the `label` by `ql.hw.label` or `ql.hw['label']`"""
 
+        profile_cls, profile_base, kwargs = self.load_profile(label.upper())
+
+        cls = profile_cls if cls is None else cls
+        base = profile_base if base is None else base        
+
         try:
-            entity = ql_get_module_function('qiling.hw', name)(self.ql, label, **kwargs)
+            entity = ql_get_module_function('qiling.hw', cls)(self.ql, label, **kwargs)
             setattr(self, label, entity)
             self.entity[label] = entity
             self.region[label] = [(lbound + base, rbound + base) for (lbound, rbound) in entity.region]
-        except QlErrorModuleFunctionNotFound as e:
-            self.ql.log.debug(f'The {name}({label}) has not been implemented')
+        except QlErrorModuleFunctionNotFound:
+            self.ql.log.debug(f'The {cls}({label}) has not been implemented')
 
     def delete(self, label):
         if label in self.entity:
             self.entity.pop(label)
             self.region.pop(label)
             delattr(self, label)
+
+    def load_profile(self, label):
+        section = self.ql.profile[label]
+        
+        cls = section['class']
+        base = eval(section['base'])
+        kwargs = {key: eval(section[key]) for key in section 
+            if key not in ['type', 'class', 'base']}
+
+        return cls, base, kwargs
         
     def find(self, addr, size):
         def check_bound(lbound, rbound):
@@ -103,9 +118,8 @@ class QlHwManager:
 
         for label, region in self.region.items():
             for lbound, ubound in region:
-                label = label.upper()
                 classname = self.entity[label].__class__.__name__
-                self.ql.log.info(f'{lbound:08x} - {ubound:08x}   {label:8s} {classname}')
+                self.ql.log.info(f'{lbound:08x} - {ubound:08x}   {label.upper():8s} {classname}')
 
     def __getitem__(self, key):
         return self.entity[key]
