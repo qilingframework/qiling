@@ -16,6 +16,9 @@ from qiling.const import QL_VERBOSE
 ql = Qiling(["../../examples/rootfs/mcu/stm32f411/md5_server.hex"], 
             archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.OFF)
 
+ql.hw.create('usart2')
+ql.hw.create('rcc')
+
 threading.Thread(target=lambda : ql.run(count=-1)).start()
 
 while True:

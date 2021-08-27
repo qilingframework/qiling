@@ -26,33 +26,8 @@ def dicts():
 def crack(passwd):
     ql = Qiling(["../../examples/rootfs/mcu/stm32f407/backdoorlock.hex"],                    
                         archtype="cortex_m", profile="stm32f407", verbose=QL_VERBOSE.OFF)
-
-    ql.hw.remove('usart2')
-    ql.hw.remove('usart3')
-    ql.hw.remove('uart4')
-    ql.hw.remove('uart5')
-    ql.hw.remove('usart6')
-    ql.hw.remove('pwr')
-    ql.hw.remove('spi1')
-    ql.hw.remove('spi2')
-    ql.hw.remove('spi3')
-    ql.hw.remove('dma1')
-    ql.hw.remove('dma2')
-    ql.hw.remove('crc')
-    ql.hw.remove('rcc')
-    ql.hw.remove('gpioa')
-    ql.hw.remove('gpiob')
-    ql.hw.remove('gpioc')
-    ql.hw.remove('gpiod')
-    ql.hw.remove('gpioe')
-    ql.hw.remove('gpiof')
-    ql.hw.remove('gpiog')
-    ql.hw.remove('gpioh')
-    ql.hw.remove('gpioi')
-    ql.hw.remove('i2s2ext')
-    ql.hw.remove('i2s3ext')
-    ql.hw.remove('exti')
-    ql.hw.remove('syscfg')
+    
+    ql.hw.create('usart1')
 
     ql.hw.show_info()
 
@@ -72,7 +47,7 @@ def crack(passwd):
         print('Fail, the passwd is not', passwd)
 
     del ql
-    
+
 pool = Pool()
 for passwd in dicts():
     pool.apply_async(crack, args=(passwd,))
