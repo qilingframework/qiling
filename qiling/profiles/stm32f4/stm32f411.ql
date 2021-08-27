@@ -40,18 +40,18 @@ type = mmio
 size = 0x10000
 base = 0xE0000000
 
-[SysTick]
-type = periperal
+[SYSTICK]
+type = core periperal
 base = 0xE000E010
 class = CortexM4SysTick
 
 [NVIC]
-type = periperal
+type = core periperal
 base = 0xE000E100
 class = CortexM4Nvic
 
 [SCB]
-type = periperal
+type = core periperal
 base = 0xE000ED00
 class = CortexM4Scb
 
