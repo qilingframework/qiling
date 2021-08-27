@@ -63,7 +63,7 @@ class QlLoaderMCU(QlLoader):
     def reset(self):
         self.ql.reg.write('lr', 0xffffffff)
         self.ql.reg.write('msp', self.ql.mem.read_ptr(self.ql.arch.boot_space))
-        self.ql.reg.write('pc', self.ql.mem.read_ptr(self.ql.arch.boot_space + 0x4))
+        self.ql.reg.write('pc' , self.entry_point)
 
     def run(self):
         for section_name in self.ql.profile.sections():
@@ -93,3 +93,7 @@ class QlLoaderMCU(QlLoader):
             self.ql.mem.write(begin, data)
 
         self.reset()
+
+    @property
+    def entry_point(self):
+        return self.ql.mem.read_ptr(self.ql.arch.boot_space + 0x4)
