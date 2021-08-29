@@ -10,12 +10,8 @@ This module is intended for general purpose functions that are only used in qili
 from typing import Tuple
 from os.path import basename
 
-from capstone import Cs
-from keystone import Ks
-
 from qiling import Qiling
-from qiling.const import QL_ARCH, QL_ENDIAN, QL_VERBOSE
-from qiling.exception import QlErrorArch
+from qiling.const import QL_ARCH, QL_VERBOSE
 
 class QlArchUtils:
     def __init__(self, ql: Qiling):
@@ -80,10 +76,3 @@ class QlArchUtils:
             if self.ql.verbose >= QL_VERBOSE.DUMP:
                 self._block_hook = self.ql.hook_block(ql_hook_block_disasm)
             self._disasm_hook = self.ql.hook_code(self.disassembler)
-
-
-def ql_create_disassembler(archtype: QL_ARCH, archendian: QL_ENDIAN, reg_cpsr=None) -> Cs:
-    raise QlErrorArch(f'{archtype:d}')
-
-def ql_create_assembler(archtype: QL_ARCH, archendian: QL_ENDIAN, reg_cpsr=None) -> Ks:
-    raise QlErrorArch(f'{archtype:d}')

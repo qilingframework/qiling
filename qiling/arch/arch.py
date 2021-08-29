@@ -12,7 +12,7 @@ from capstone import Cs
 from keystone import Ks
 
 from qiling import Qiling
-from .utils import QlArchUtils, ql_create_disassembler, ql_create_assembler
+from .utils import QlArchUtils
 
 class QlArch(ABC):
     def __init__(self, ql: Qiling):
