@@ -450,7 +450,7 @@ def arch_setup(archtype, ql):
     archmanager = arch_convert_str(archtype).upper()
     archmanager = ("QlArch" + archmanager)
 
-    if archtype == QL_ARCH.X8664:
+    if archtype in (QL_ARCH.X8664, QL_ARCH.A8086):
         arch_str = "x86"
     else:
         arch_str = arch_convert_str(archtype)
