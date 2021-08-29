@@ -4,6 +4,8 @@
 #
 
 from unicorn import Uc, UC_ARCH_MIPS, UC_MODE_MIPS32, UC_MODE_BIG_ENDIAN, UC_MODE_LITTLE_ENDIAN
+from capstone import Cs, CS_ARCH_MIPS, CS_MODE_MIPS32, CS_MODE_BIG_ENDIAN, CS_MODE_LITTLE_ENDIAN
+from keystone import Ks, KS_ARCH_MIPS, KS_MODE_MIPS32, KS_MODE_BIG_ENDIAN, KS_MODE_LITTLE_ENDIAN
 
 from qiling import Qiling
 from qiling.const import QL_ENDIAN
@@ -34,3 +36,25 @@ class QlArchMIPS(QlArch):
         }[self.ql.archendian]
 
         return Uc(UC_ARCH_MIPS, UC_MODE_MIPS32 + endian)
+
+    def create_disassembler(self) -> Cs:
+        if self._disasm is None:
+            endian = {
+                QL_ENDIAN.EL : CS_MODE_LITTLE_ENDIAN,
+                QL_ENDIAN.EB : CS_MODE_BIG_ENDIAN
+            }[self.ql.archendian]
+
+            self._disasm = Cs(CS_ARCH_MIPS, CS_MODE_MIPS32 + endian)
+
+        return self._disasm
+
+    def create_assembler(self) -> Ks:
+        if self._asm is None:
+            endian = {
+                QL_ENDIAN.EL : KS_MODE_LITTLE_ENDIAN,
+                QL_ENDIAN.EB : KS_MODE_BIG_ENDIAN
+            }[self.ql.archendian]
+
+            self._asm = Ks(KS_ARCH_MIPS, KS_MODE_MIPS32 + endian)
+
+        return self._asm

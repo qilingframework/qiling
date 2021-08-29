@@ -10,22 +10,12 @@ This module is intended for general purpose functions that are only used in qili
 from typing import Tuple
 from os.path import basename
 
-from capstone import Cs, CS_ARCH_ARM, CS_ARCH_ARM64, CS_ARCH_MIPS, CS_MODE_ARM, CS_MODE_THUMB, CS_MODE_MIPS32 ,CS_MODE_BIG_ENDIAN, CS_MODE_LITTLE_ENDIAN
-from keystone import Ks, KS_ARCH_ARM, KS_ARCH_ARM64, KS_ARCH_MIPS, KS_MODE_ARM, KS_MODE_THUMB, KS_MODE_MIPS32 ,KS_MODE_BIG_ENDIAN, KS_MODE_LITTLE_ENDIAN
+from capstone import Cs, CS_ARCH_ARM, CS_ARCH_ARM64, CS_MODE_ARM, CS_MODE_THUMB, CS_MODE_BIG_ENDIAN, CS_MODE_LITTLE_ENDIAN
+from keystone import Ks, KS_ARCH_ARM, KS_ARCH_ARM64, KS_MODE_ARM, KS_MODE_THUMB, KS_MODE_BIG_ENDIAN, KS_MODE_LITTLE_ENDIAN
 
 from qiling import Qiling
 from qiling.const import QL_ARCH, QL_ENDIAN, QL_VERBOSE
 from qiling.exception import QlErrorArch
-
-__cs_endian = {
-    QL_ENDIAN.EL : CS_MODE_LITTLE_ENDIAN,
-    QL_ENDIAN.EB : CS_MODE_BIG_ENDIAN
-}
-
-__ks_endian = {
-    QL_ENDIAN.EL : KS_MODE_LITTLE_ENDIAN,
-    QL_ENDIAN.EB : KS_MODE_BIG_ENDIAN
-}
 
 __reg_cpsr_v = {
     QL_ENDIAN.EL : 0b100000,
@@ -109,9 +99,6 @@ def ql_create_disassembler(archtype: QL_ARCH, archendian: QL_ENDIAN, reg_cpsr=No
     elif archtype == QL_ARCH.ARM64:
         md = Cs(CS_ARCH_ARM64, CS_MODE_ARM)
 
-    elif archtype == QL_ARCH.MIPS:
-        md = Cs(CS_ARCH_MIPS, CS_MODE_MIPS32 + __cs_endian[archendian])
-
     elif archtype == QL_ARCH.EVM:
         raise NotImplementedError('evm')
 
@@ -131,9 +118,6 @@ def ql_create_assembler(archtype: QL_ARCH, archendian: QL_ENDIAN, reg_cpsr=None)
 
     elif archtype == QL_ARCH.ARM64:
         ks = Ks(KS_ARCH_ARM64, KS_MODE_LITTLE_ENDIAN)
-
-    elif archtype == QL_ARCH.MIPS:
-        ks = Ks(KS_ARCH_MIPS, KS_MODE_MIPS32 + __ks_endian[archendian])
 
     elif archtype == QL_ARCH.EVM:
         raise NotImplementedError('evm')
