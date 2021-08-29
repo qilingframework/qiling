@@ -5,7 +5,10 @@
 
 from struct import pack
 from typing import Union
+
 from unicorn import Uc, UC_ARCH_X86, UC_MODE_16, UC_MODE_32, UC_MODE_64
+from capstone import Cs, CS_ARCH_X86, CS_MODE_16, CS_MODE_32, CS_MODE_64
+from keystone import Ks, KS_ARCH_X86, KS_MODE_16, KS_MODE_32, KS_MODE_64
 
 from qiling import Qiling
 from qiling.arch.arch import QlArch
@@ -74,6 +77,18 @@ class QlArchA8086(QlArchIntel):
     def get_init_uc(self) -> Uc:
         return Uc(UC_ARCH_X86, UC_MODE_16)
 
+    def create_disassembler(self) -> Cs:
+        if not self._disasm:
+            self._disasm = Cs(CS_ARCH_X86, CS_MODE_16)
+
+        return self._disasm
+
+    def create_assembler(self) -> Ks:
+        if not self._asm:
+            self._asm = Ks(KS_ARCH_X86, KS_MODE_16)
+
+        return self._asm
+
 class QlArchX86(QlArchIntel):
     def __init__(self, ql: Qiling):
         super().__init__(ql)
@@ -96,6 +111,18 @@ class QlArchX86(QlArchIntel):
 
     def get_init_uc(self) -> Uc:
         return Uc(UC_ARCH_X86, UC_MODE_32)
+
+    def create_disassembler(self) -> Cs:
+        if not self._disasm:
+            self._disasm = Cs(CS_ARCH_X86, CS_MODE_32)
+
+        return self._disasm
+
+    def create_assembler(self) -> Ks:
+        if not self._asm:
+            self._asm = Ks(KS_ARCH_X86, KS_MODE_32)
+
+        return self._asm
 
 class QlArchX8664(QlArchIntel):
     def __init__(self, ql: Qiling):
@@ -124,6 +151,18 @@ class QlArchX8664(QlArchIntel):
 
     def get_init_uc(self) -> Uc:
         return Uc(UC_ARCH_X86, UC_MODE_64)
+
+    def create_disassembler(self) -> Cs:
+        if not self._disasm:
+            self._disasm = Cs(CS_ARCH_X86, CS_MODE_64)
+
+        return self._disasm
+
+    def create_assembler(self) -> Ks:
+        if not self._asm:
+            self._asm = Ks(KS_ARCH_X86, KS_MODE_64)
+
+        return self._asm
 
 
 class GDTManager:
