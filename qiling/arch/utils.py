@@ -96,9 +96,6 @@ def ql_create_disassembler(archtype: QL_ARCH, archendian: QL_ENDIAN, reg_cpsr=No
     elif archtype == QL_ARCH.ARM_THUMB:
         md = Cs(CS_ARCH_ARM, CS_MODE_THUMB)
 
-    elif archtype == QL_ARCH.EVM:
-        raise NotImplementedError('evm')
-
     else:
         raise QlErrorArch(f'{archtype:d}')
 
@@ -112,9 +109,6 @@ def ql_create_assembler(archtype: QL_ARCH, archendian: QL_ENDIAN, reg_cpsr=None)
 
     elif archtype == QL_ARCH.ARM_THUMB:
         ks = Ks(KS_ARCH_ARM, KS_MODE_THUMB)
-
-    elif archtype == QL_ARCH.EVM:
-        raise NotImplementedError('evm')
 
     else:
         raise QlErrorArch(f'{archtype:d}')
