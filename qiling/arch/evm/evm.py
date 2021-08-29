@@ -27,9 +27,3 @@ class QlArchEVM(QlArch):
 
     def stack_write(self, offset, data):
         return None
-
-    def create_disassembler(self):
-        raise NotImplementedError('evm')
-
-    def create_assembler(self):
-        raise NotImplementedError('evm')

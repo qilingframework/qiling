@@ -13,7 +13,6 @@ from keystone import Ks
 
 from qiling import Qiling
 from .utils import QlArchUtils, ql_create_disassembler, ql_create_assembler
-from qiling.const import QL_ARCH
 
 class QlArch(ABC):
     def __init__(self, ql: Qiling):
@@ -119,16 +118,14 @@ class QlArch(ABC):
 
 
     def create_disassembler(self) -> Cs:
-        if self.ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB):
-            reg_cpsr = self.ql.reg.cpsr
-        else:
-            reg_cpsr = None
-        return ql_create_disassembler(self.ql.archtype, self.ql.archendian, reg_cpsr)
+        """Get disassembler insatnce bound to arch.
+        """
+
+        raise NotImplementedError(self.__class__.__name__)
 
 
     def create_assembler(self) -> Ks:
-        if self.ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB):
-            reg_cpsr = self.ql.reg.cpsr
-        else:
-            reg_cpsr = None
-        return ql_create_assembler(self.ql.archtype, self.ql.archendian, reg_cpsr)
+        """Get assembler insatnce bound to arch.
+        """
+
+        raise NotImplementedError(self.__class__.__name__)
