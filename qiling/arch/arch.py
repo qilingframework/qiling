@@ -17,10 +17,13 @@ class QlArch(ABC):
         self.ql = ql
         self.utils = QlArchUtils(ql)
 
+        self._disasm: Cs
+        self._asm: Ks
+
     # ql.init_Uc - initialized unicorn engine
     @property
     def init_uc(self):
-        return self.ql.arch.get_init_uc()
+        return self.get_init_uc()
 
 
     # push value to stack
@@ -45,7 +48,7 @@ class QlArch(ABC):
     @abstractmethod
     def stack_read(self, offset: int) -> int:
         pass
- 
+
 
        # set PC
     def set_pc(self, address: int):
