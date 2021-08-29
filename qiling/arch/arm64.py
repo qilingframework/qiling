@@ -4,6 +4,8 @@
 #
 
 from unicorn import Uc, UC_ARCH_ARM64, UC_MODE_ARM
+from capstone import Cs, CS_ARCH_ARM64, CS_MODE_ARM
+from keystone import Ks, KS_ARCH_ARM64, KS_MODE_LITTLE_ENDIAN
 
 from qiling import Qiling
 from qiling.arch.arch import QlArch
@@ -28,6 +30,18 @@ class QlArchARM64(QlArch):
     # get initialized unicorn engine
     def get_init_uc(self) -> Uc:
         return Uc(UC_ARCH_ARM64, UC_MODE_ARM)
+
+    def create_disassembler(self) -> Cs:
+        if self._disasm is None:
+            self._disasm = Cs(CS_ARCH_ARM64, CS_MODE_ARM)
+
+        return self._disasm
+
+    def create_assembler(self) -> Ks:
+        if self._asm is None:
+            self._asm = Ks(KS_ARCH_ARM64, KS_MODE_LITTLE_ENDIAN)
+
+        return self._asm
 
     def enable_vfp(self):
         self.ql.reg.cpacr_el1 = self.ql.reg.cpacr_el1 | 0x300000
