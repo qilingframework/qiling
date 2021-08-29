@@ -11,12 +11,12 @@ from typing import Tuple
 from os.path import basename
 
 from qiling import Qiling
-from qiling.const import QL_ARCH, QL_VERBOSE
+from qiling.const import QL_VERBOSE
 
 class QlArchUtils:
     def __init__(self, ql: Qiling):
         self.ql = ql
-        self.qd = None
+
         self._disasm_hook = None
         self._block_hook = None
 
@@ -27,39 +27,20 @@ class QlArchUtils:
 
         return addr, '-'
 
-    def disassembler(self, ql, address, size):
-        tmp = self.ql.mem.read(address, size)
-
-        if not self.qd:
-            self.qd = self.ql.create_disassembler()
-        elif self.ql.archtype == QL_ARCH.ARM: # Update disassembler for arm considering thumb swtich.
-            self.qd = self.ql.create_disassembler()
-
-        insn = self.qd.disasm(tmp, address)
-        opsize = int(size)
+    def disassembler(self, ql: Qiling, address: int, size: int):
+        tmp = ql.mem.read(address, size)
+        qd = ql.arch.create_disassembler()
 
         offset, name = self.get_offset_and_name(address)
-        log_data = '0x%0*x {%-20s + 0x%06x}   ' % (self.ql.archbit // 4, address, name, offset)
+        log_data = f'{address:0{ql.archbit // 4}x} [{name:20s} + {offset:#08x}]  {tmp.hex(" "):30s}'
+        log_insn = '\n> '.join(f'{insn.mnemonic:20s} {insn.op_str}' for insn in qd.disasm(tmp, address))
 
-        temp_str = ""
-        for i in tmp:
-            temp_str += ("%02x " % i)
-        log_data += temp_str.ljust(30)
+        ql.log.info(log_data + log_insn)
 
-        first = True
-        for i in insn:
-            if not first:
-                log_data += '\n> '
-            first = False
-            log_data += "%s %s" % (i.mnemonic, i.op_str)
-        self.ql.log.info(log_data)
-
-        if self.ql.verbose >= QL_VERBOSE.DUMP:
-            for reg in self.ql.reg.register_mapping:
-                if isinstance(reg, str):
-                    REG_NAME = reg
-                    REG_VAL = self.ql.reg.read(reg)
-                    self.ql.log.debug("%s\t:\t 0x%x" % (REG_NAME, REG_VAL))
+        if ql.verbose >= QL_VERBOSE.DUMP:
+            for reg in ql.reg.register_mapping:
+                if type(reg) is str:
+                    ql.log.debug(f'{reg}\t: {ql.reg.read(reg):#x}')
 
     def setup_output(self):
         def ql_hook_block_disasm(ql, address, size):
