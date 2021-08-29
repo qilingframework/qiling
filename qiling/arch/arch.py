@@ -4,6 +4,7 @@
 #
 
 from abc import ABC, abstractmethod
+from typing import Optional
 
 from capstone import Cs
 from keystone import Ks
@@ -17,8 +18,8 @@ class QlArch(ABC):
         self.ql = ql
         self.utils = QlArchUtils(ql)
 
-        self._disasm: Cs
-        self._asm: Ks
+        self._disasm: Optional[Cs] = None
+        self._asm: Optional[Ks] = None
 
     # ql.init_Uc - initialized unicorn engine
     @property
