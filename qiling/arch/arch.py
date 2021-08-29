@@ -3,9 +3,11 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from abc import ABC, abstractmethod
+from abc import ABC
 from typing import Optional
 
+from unicorn import Uc
+from unicorn.unicorn import UcContext
 from capstone import Cs
 from keystone import Ks
 
@@ -23,7 +25,7 @@ class QlArch(ABC):
 
     # ql.init_Uc - initialized unicorn engine
     @property
-    def init_uc(self):
+    def init_uc(self) -> Uc:
         return self.get_init_uc()
 
 
@@ -86,8 +88,8 @@ class QlArch(ABC):
         self.ql.mem.write(self.ql.reg.arch_sp + offset, self.ql.pack(value))
 
 
-       # set PC
-    def set_pc(self, address: int):
+    # set PC
+    def set_pc(self, address: int) -> None:
         self.ql.reg.arch_pc = address
 
 
@@ -97,7 +99,7 @@ class QlArch(ABC):
 
 
     # set stack pointer
-    def set_sp(self, address: int):
+    def set_sp(self, address: int) -> None:
         self.ql.reg.arch_sp = address
 
 
@@ -107,12 +109,12 @@ class QlArch(ABC):
 
 
     # Unicorn's CPU state save
-    def context_save(self):
+    def context_save(self) -> UcContext:
         return self.ql.uc.context_save()
 
 
     # Unicorn's CPU state restore method
-    def context_restore(self, saved_context):
+    def context_restore(self, saved_context: UcContext):
         self.ql.uc.context_restore(saved_context)
 
 
