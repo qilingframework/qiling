@@ -10,17 +10,12 @@ This module is intended for general purpose functions that are only used in qili
 from typing import Tuple
 from os.path import basename
 
-from capstone import Cs, CS_ARCH_ARM, CS_MODE_ARM, CS_MODE_THUMB
-from keystone import Ks, KS_ARCH_ARM, KS_MODE_ARM, KS_MODE_THUMB
+from capstone import Cs
+from keystone import Ks
 
 from qiling import Qiling
 from qiling.const import QL_ARCH, QL_ENDIAN, QL_VERBOSE
 from qiling.exception import QlErrorArch
-
-__reg_cpsr_v = {
-    QL_ENDIAN.EL : 0b100000,
-    QL_ENDIAN.EB : 0b100000   # FIXME: should be: 0b000000
-}
 
 class QlArchUtils:
     def __init__(self, ql: Qiling):
@@ -88,29 +83,7 @@ class QlArchUtils:
 
 
 def ql_create_disassembler(archtype: QL_ARCH, archendian: QL_ENDIAN, reg_cpsr=None) -> Cs:
-    if archtype == QL_ARCH.ARM:
-        mode = CS_MODE_THUMB if reg_cpsr & __reg_cpsr_v[archendian] else CS_MODE_ARM
-
-        md = Cs(CS_ARCH_ARM, mode) # FIXME: should be: mode + __cs_endian[archendian]
-
-    elif archtype == QL_ARCH.ARM_THUMB:
-        md = Cs(CS_ARCH_ARM, CS_MODE_THUMB)
-
-    else:
-        raise QlErrorArch(f'{archtype:d}')
-
-    return md
+    raise QlErrorArch(f'{archtype:d}')
 
 def ql_create_assembler(archtype: QL_ARCH, archendian: QL_ENDIAN, reg_cpsr=None) -> Ks:
-    if archtype == QL_ARCH.ARM:
-        mode = KS_MODE_THUMB if reg_cpsr & __reg_cpsr_v[archendian] else KS_MODE_ARM
-
-        ks = Ks(KS_ARCH_ARM, mode) # FIXME: should be: mode + __ks_endian[archendian]
-
-    elif archtype == QL_ARCH.ARM_THUMB:
-        ks = Ks(KS_ARCH_ARM, KS_MODE_THUMB)
-
-    else:
-        raise QlErrorArch(f'{archtype:d}')
-
-    return ks
+    raise QlErrorArch(f'{archtype:d}')
