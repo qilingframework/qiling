@@ -3,8 +3,8 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from inspect import signature
-from typing import Union, Callable
+from inspect import signature, Parameter
+from typing import TextIO, Union, Callable
 
 from unicorn.arm64_const import UC_ARM64_REG_X8, UC_ARM64_REG_X16
 from unicorn.arm_const import UC_ARM_REG_R7
@@ -13,7 +13,7 @@ from unicorn.x86_const import UC_X86_REG_EAX, UC_X86_REG_RAX
 
 from qiling import Qiling
 from qiling.cc import QlCC, intel, arm, mips
-from qiling.const import QL_ARCH, QL_OS, QL_INTERCEPT, QL_CALL_BLOCK, QL_VERBOSE
+from qiling.const import QL_ARCH, QL_OS, QL_INTERCEPT
 from qiling.exception import QlErrorSyscallNotFound
 from qiling.os.os import QlOs
 from qiling.os.posix.const import errors, NR_OPEN
@@ -54,7 +54,7 @@ class mipso32(mips.mipso32):
 class QlOsPosix(QlOs):
 
     def __init__(self, ql: Qiling):
-        super(QlOsPosix, self).__init__(ql)
+        super().__init__(ql)
 
         self.ql = ql
         self.sigaction_act = [0] * 256
@@ -100,11 +100,31 @@ class QlOsPosix(QlOs):
         }[self.ql.archtype](ql)
 
         self._fd = QlFileDes([0] * NR_OPEN)
-        self._fd[0] = self.stdin
-        self._fd[1] = self.stdout
-        self._fd[2] = self.stderr
 
-    # ql.syscall - get syscall for all posix series
+        # the QlOs constructor cannot assign the standard streams using their designated properties since
+        # it runs before the _fd array is declared. instead, it assigns them to the private members and here
+        # we force _fd to update manually.
+        self.stdin  = self._stdin
+        self.stdout = self._stdout
+        self.stderr = self._stderr
+
+        self._shms = {}
+
+    @QlOs.stdin.setter
+    def stdin(self, stream: TextIO) -> None:
+        self._stdin = stream
+        self._fd[0] = stream
+
+    @QlOs.stdout.setter
+    def stdout(self, stream: TextIO) -> None:
+        self._stdout = stream
+        self._fd[1] = stream
+
+    @QlOs.stderr.setter
+    def stderr(self, stream: TextIO) -> None:
+        self._stderr = stream
+        self._fd[2] = stream
+
     @property
     def syscall(self):
         return self.get_syscall()
@@ -207,14 +227,14 @@ class QlOsPosix(QlOs):
             args = []
 
             # ignore first arg, which is 'ql'
-            arg_names = tuple(signature(syscall_hook).parameters.values())[1:]
+            args_info = tuple(signature(syscall_hook).parameters.values())[1:]
 
-            for name, value in zip(arg_names, params):
-                name = str(name)
-
-                # ignore python special args
-                if name in ('*args', '**kw', '**kwargs'):
+            for info, value in zip(args_info, params):
+                # skip python special args, like: *args and **kwargs
+                if info.kind != Parameter.POSITIONAL_OR_KEYWORD:
                     continue
+
+                name = info.name
 
                 # cut the first part of the arg if it is of form fstatat64_fd
                 if name.startswith(f'{syscall_basename}_'):
@@ -242,6 +262,17 @@ class QlOsPosix(QlOs):
                 raise QlErrorSyscallNotFound("Syscall Not Found")
 
     def get_syscall(self) -> int:
+        if self.ql.archtype == QL_ARCH.ARM:
+            # When ARM-OABI
+            # svc_imm = 0x900000 + syscall_nr
+            # syscall_nr = svc_imm - 0x900000
+            # Ref1: https://marcin.juszkiewicz.com.pl/download/tables/syscalls.html
+            # Ref2: https://github.com/rootkiter/Reverse-bins/blob/master/syscall_header/armv4l_unistd.h
+            # Ref3: https://github.com/unicorn-engine/unicorn/issues/1137
+            code_val = self.ql.mem.read_ptr(self.ql.reg.arch_pc-4, 4)
+            svc_imm  = code_val & 0x00ffffff
+            if (svc_imm >= 0x900000):
+                    return svc_imm - 0x900000
         return self.ql.reg.read(self.__syscall_id_reg)
 
     def set_syscall_return(self, retval: int):

@@ -39,3 +39,23 @@ PTHREAD_ERRORCHECK_DISABLE = 4
 # POSIX error codes
 EOK    = 0
 EINVAL = 22
+
+# Source: openqnx services/system/public/sys/neutrino.h
+NTO_SIDE_CHANNEL = 0x40000000    # first side channel (2nd bit from the top)
+NTO_GLOBAL_CHANNEL = 0x40000000  # global channel (2nd bit from the top)
+
+SYSMGR_PID  = 1                  # System Manager Process ID
+SYSMGR_CHID = 1                  # System Manager Channel ID
+SYSMGR_COID = NTO_SIDE_CHANNEL   # System Manager Connection ID
+
+# Source: openqnx lib/c/public/sys/iomsg.h
+IO_FLAG_MASK = 0x03
+
+# Source: openqnx lib/c/public/sys/mman.h
+PAGESIZE = 0x1000
+
+# Source: openqnx lib/c/public/sys/netmgr.h
+ND_LOCAL_NODE = 0 # Node Descriptor for the Local Node
+
+# Source: openqnx lib/c/public/sys/stat.h
+S_IFMT = 0xf000

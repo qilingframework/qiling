@@ -1,8 +1,0 @@
-{
-    "SendSAS": [
-        {
-            "name": "AsUser",
-            "type": "BOOL"
-        }
-    ]
-}

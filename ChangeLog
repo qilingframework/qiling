@@ -6,6 +6,8 @@ This file details the changelog of Qiling Framework.
 - Aded Dynamically executed QNX
 - Added more Posix syscall
 - Bugfix: GDB server on MIPS binary
+- Major refactor of Windows DLL
+- Add Win32 16bit compatibility file api
 
 
 ------------------------------------

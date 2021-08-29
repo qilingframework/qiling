@@ -673,7 +673,7 @@ class QlGdb(QlDebugger, object):
                     self.send("")
 
                 elif subcmd.startswith('File:open'):
-                    if self.ql.ostype == QL_OS.UEFI and self.ql.custom_engine == True:
+                    if self.ql.ostype == QL_OS.UEFI:
                         self.send("F-1")
                         return
 

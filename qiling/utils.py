@@ -15,7 +15,7 @@ from enum import EnumMeta
 from unicorn import UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
 
 from .exception import *
-from .const import QL_VERBOSE, QL_ARCH, QL_ENDIAN, QL_OS, QL_DEBUGGER, QL_ARCH_1BIT, QL_ARCH_16BIT, QL_ARCH_32BIT, QL_ARCH_64BIT
+from .const import QL_ARCH_NONEOS, QL_VERBOSE, QL_ARCH, QL_ENDIAN, QL_OS, QL_DEBUGGER, QL_ARCH_1BIT, QL_ARCH_16BIT, QL_ARCH_32BIT, QL_ARCH_64BIT
 from .const import debugger_map, arch_map, os_map, arch_os_map, loader_map
 
 FMT_STR = "%(levelname)s\t%(message)s"
@@ -444,9 +444,6 @@ def arch_setup(archtype, ql):
     if not ql_is_valid_arch(archtype):
         raise QlErrorArch("Invalid Arch")
     
-    if ql._custom_engine:
-        return ql_get_module_function(f"qiling.arch.engine", 'QlArchEngine')(ql)
-
     if archtype == QL_ARCH.ARM_THUMB:
         archtype =  QL_ARCH.ARM
 
@@ -458,7 +455,10 @@ def arch_setup(archtype, ql):
     else:
         arch_str = arch_convert_str(archtype)
 
-    return ql_get_module_function(f"qiling.arch.{arch_str.lower()}", archmanager)(ql)
+    if archtype in QL_ARCH_NONEOS:
+        return ql_get_module_function(f"qiling.arch.{arch_str.lower()}.{arch_str.lower()}", archmanager)(ql)
+    else:    
+        return ql_get_module_function(f"qiling.arch.{arch_str.lower()}", archmanager)(ql)
 
 
 # This function is extracted from os_setup so I put it here.
@@ -467,7 +467,7 @@ def ql_syscall_mapping_function(ostype):
     return ql_get_module_function(f"qiling.os.{ostype_str.lower()}.map_syscall", "map_syscall")
 
 
-def os_setup(archtype, ostype, ql):
+def os_setup(archtype: QL_ARCH, ostype: QL_OS, ql):
     if not ql_is_valid_ostype(ostype):
         raise QlErrorOsType("Invalid OSType")
 

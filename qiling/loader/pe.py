@@ -161,7 +161,8 @@ class Process():
             import_symbols = {}
             import_table = {}
 
-            for entry in dll.DIRECTORY_ENTRY_EXPORT.symbols:
+            dll_symbols = getattr(getattr(dll, 'DIRECTORY_ENTRY_EXPORT', None), 'symbols', [])
+            for entry in dll_symbols:
                 import_symbols[image_base + entry.address] = {
                     "name": entry.name,
                     "ordinal": entry.ordinal,
@@ -396,7 +397,7 @@ class Process():
         driver_object_size = ctypes.sizeof(self.driver_object)
         self.ql.mem.write(driver_object_addr, bytes(self.driver_object))
         self.structure_last_addr += driver_object_size
-        self.ql.driver_object_address = driver_object_addr
+        self.driver_object_address = driver_object_addr
 
 
     def init_registry_path(self):
@@ -412,7 +413,7 @@ class Process():
         regitry_path_size = ctypes.sizeof(regitry_path_data)
         self.ql.mem.write(regitry_path_addr, bytes(regitry_path_data))
         self.structure_last_addr += regitry_path_size
-        self.ql.regitry_path_address = regitry_path_addr
+        self.regitry_path_address = regitry_path_addr
 
 
     def init_eprocess(self):
@@ -448,7 +449,7 @@ class Process():
         shared_user_data = KUSER_SHARED_DATA()
 
         shared_user_data_len = self.align(ctypes.sizeof(KUSER_SHARED_DATA), 0x1000)
-        self.ql.uc.mem_map(KI_USER_SHARED_DATA, shared_user_data_len)
+        self.ql.mem.map(KI_USER_SHARED_DATA, shared_user_data_len)
         self.ql.mem.write(KI_USER_SHARED_DATA, bytes(shared_user_data))
     
 
@@ -606,10 +607,10 @@ class QlLoaderPE(QlLoader, Process):
                 super().init_ki_user_shared_data()
 
                 # setup IRQ Level in CR8 to PASSIVE_LEVEL (0)
-                self.ql.uc.reg_write(UC_X86_REG_CR8, 0)
+                self.ql.reg.write(UC_X86_REG_CR8, 0)
 
                 # setup CR4, some drivers may check this at initialized time
-                self.ql.uc.reg_write(UC_X86_REG_CR4, 0x6f8)
+                self.ql.reg.write(UC_X86_REG_CR4, 0x6f8)
 
                 self.ql.log.debug('Setting up DriverEntry args')
                 self.ql.stop_execution_pattern = 0xDEADC0DE
@@ -620,20 +621,20 @@ class QlLoaderPE(QlLoader, Process):
                         # so if the user did not configure stop options, write a sentinel return value
                         self.ql.mem.write(sp, self.ql.stop_execution_pattern.to_bytes(length=4, byteorder='little'))
 
-                    self.ql.log.debug('Writing 0x%08X (PDRIVER_OBJECT) to [ESP+4](0x%08X)' % (self.ql.driver_object_address, sp+0x4))
-                    self.ql.log.debug('Writing 0x%08X (RegistryPath) to [ESP+8](0x%08X)' % (self.ql.regitry_path_address, sp+0x8))
+                    self.ql.log.debug('Writing 0x%08X (PDRIVER_OBJECT) to [ESP+4](0x%08X)' % (self.ql.loader.driver_object_address, sp+0x4))
+                    self.ql.log.debug('Writing 0x%08X (RegistryPath) to [ESP+8](0x%08X)' % (self.ql.loader.regitry_path_address, sp+0x8))
                 elif self.ql.archtype == QL_ARCH.X8664:  # Win64
                     if not self.ql.stop_options.any:
                         # We know that a driver will return,
                         # so if the user did not configure stop options, write a sentinel return value
                         self.ql.mem.write(sp, self.ql.stop_execution_pattern.to_bytes(length=8, byteorder='little'))
 
-                    self.ql.log.debug('Setting RCX (arg1) to %16X (PDRIVER_OBJECT)' % (self.ql.driver_object_address))
-                    self.ql.log.debug('Setting RDX (arg2) to %16X (PUNICODE_STRING)' % (self.ql.regitry_path_address))
+                    self.ql.log.debug('Setting RCX (arg1) to %16X (PDRIVER_OBJECT)' % (self.ql.loader.driver_object_address))
+                    self.ql.log.debug('Setting RDX (arg2) to %16X (PUNICODE_STRING)' % (self.ql.loader.regitry_path_address))
 
                 # setup args for DriverEntry()
                 self.ql.os.fcall = self.ql.os.fcall_select(CDECL)
-                self.ql.os.fcall.writeParams(((POINTER, self.ql.driver_object_address), (POINTER, self.ql.regitry_path_address)))
+                self.ql.os.fcall.writeParams(((POINTER, self.ql.loader.driver_object_address), (POINTER, self.ql.loader.regitry_path_address)))
 
             # mmap PE file into memory
             self.ql.mem.map(self.pe_image_address, self.align(self.pe_image_address_size, 0x1000), info="[PE]")

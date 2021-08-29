@@ -4,7 +4,7 @@
 #
 
 import sys
-from typing import Any, Iterable, Optional, Callable, Mapping, Sequence, Tuple
+from typing import Any, Iterable, Optional, Callable, Mapping, Sequence, TextIO, Tuple
 
 from qiling import Qiling
 from qiling.const import QL_OS, QL_INTERCEPT, QL_OS_POSIX
@@ -21,8 +21,14 @@ class QlOs:
 
     def __init__(self, ql: Qiling, resolvers: Mapping[Any, Resolver] = {}):
         self.ql = ql
+
+        # standard streams overrides (elicn: should they be io.IOBase ?)
+        self._stdin:  TextIO
+        self._stdout: TextIO
+        self._stderr: TextIO
+
         self.utils = QlOsUtils(ql)
-        self.fcall: Optional[QlFunctionCall] = None
+        self.fcall: QlFunctionCall
         self.fs_mapper = QlFsMapper(ql)
         self.child_processes = False
         self.thread_management = None
@@ -40,22 +46,13 @@ class QlOs:
         try:
             import ida_idaapi
         except ImportError:
-            self.stdin  = ql_file('stdin',  sys.stdin.fileno())
-            self.stdout = ql_file('stdout', sys.stdout.fileno())
-            self.stderr = ql_file('stderr', sys.stderr.fileno())
+            self._stdin  = ql_file('stdin',  sys.stdin.fileno())
+            self._stdout = ql_file('stdout', sys.stdout.fileno())
+            self._stderr = ql_file('stderr', sys.stderr.fileno())
         else:
-            self.stdin  = sys.stdin.buffer  if hasattr(sys.stdin,  "buffer") else sys.stdin
-            self.stdout = sys.stdout.buffer if hasattr(sys.stdout, "buffer") else sys.stdout
-            self.stderr = sys.stderr.buffer if hasattr(sys.stderr, "buffer") else sys.stderr
-
-        if self.ql.stdin != 0:
-            self.stdin = self.ql.stdin
-
-        if self.ql.stdout != 0:
-            self.stdout = self.ql.stdout
-
-        if self.ql.stderr != 0:
-            self.stderr = self.ql.stderr
+            self._stdin  = getattr(sys.stdin,  'buffer', sys.stdin)
+            self._stdout = getattr(sys.stdout, 'buffer', sys.stdout)
+            self._stderr = getattr(sys.stderr, 'buffer', sys.stderr)
 
         # defult exit point
         self.exit_point = {
@@ -80,13 +77,49 @@ class QlOs:
         # let the user override default resolvers or add custom ones
         self.resolvers.update(resolvers)
 
-        self.utils.setup_output()
+        self.ql.arch.utils.setup_output()
 
     def save(self):
         return {}
 
     def restore(self, saved_state):
         pass
+
+    @property
+    def stdin(self) -> TextIO:
+        """Program's standard input stream. May be replaced by any object that implements
+        the `io.IOBase` interface, either fully or partially.
+        """
+
+        return self._stdin
+
+    @property
+    def stdout(self) -> TextIO:
+        """Program's standard output stream. May be replaced by any object that implements
+        the `io.IOBase` interface, either fully or partially.
+        """
+
+        return self._stdout
+
+    @property
+    def stderr(self) -> TextIO:
+        """Program's standard error stream. May be replaced by any object that implements
+        the `io.IOBase` interface, either fully or partially.
+        """
+
+        return self._stderr
+
+    @stdin.setter
+    def stdin(self, stream: TextIO) -> None:
+        self._stdin = stream
+
+    @stdout.setter
+    def stdout(self, stream: TextIO) -> None:
+        self._stdout = stream
+
+    @stderr.setter
+    def stderr(self, stream: TextIO) -> None:
+        self._stderr = stream
 
     def resolve_fcall_params(self, params: Mapping[str, Any]) -> Mapping[str, Any]:
         """Transform function call raw parameters values into meaningful ones, according to
@@ -141,9 +174,9 @@ class QlOs:
         # append syscall to list
         self.utils._call_api(pc, func.__name__, args, retval, retaddr)
 
-        # TODO: PE_RUN is a Windows and UEFI property; move somewhere else?
+        # [Windows and UEFI] if emulation has stopped, do not update the return address
         if hasattr(self, 'PE_RUN') and not self.PE_RUN:
-            return retval
+            passthru = True
 
         if not passthru:
             self.ql.reg.arch_pc = retaddr

@@ -719,6 +719,165 @@ class LinuxARM64EBStat(ctypes.BigEndianStructure):
 
     _pack_ = 8
 
+# Source: openqnx lib/c/public/sys/stat.h
+#
+# struct stat {
+# #if _FILE_OFFSET_BITS - 0 == 64
+# 	ino_t			st_ino;			/* File serial number.					*/
+# 	off_t			st_size;
+# #elif !defined(_FILE_OFFSET_BITS) || _FILE_OFFSET_BITS == 32
+# #if defined(__LITTLEENDIAN__)
+# 	ino_t			st_ino;			/* File serial number.					*/
+# 	ino_t			st_ino_hi;
+# 	off_t			st_size;
+# 	off_t			st_size_hi;
+# #elif defined(__BIGENDIAN__)
+# 	ino_t			st_ino_hi;
+# 	ino_t			st_ino;			/* File serial number.					*/
+# 	off_t			st_size_hi;
+# 	off_t			st_size;
+# #else
+#  #error endian not configured for system
+# #endif
+# #else
+#  #error _FILE_OFFSET_BITS value is unsupported
+# #endif
+# 	_CSTD dev_t		st_dev;			/* ID of device containing file.		*/
+# 	_CSTD dev_t		st_rdev;		/* Device ID, for inode that is device	*/
+# 	uid_t			st_uid;
+# 	gid_t			st_gid;
+# 	_CSTD time_t	st_mtime;		/* Time of last data modification		*/
+# 	_CSTD time_t	st_atime;		/* Time last accessed					*/
+# 	_CSTD time_t	st_ctime;		/* Time of last status change			*/
+# 	_CSTD mode_t	st_mode;		/* see below							*/
+# 	nlink_t			st_nlink;
+# 	blksize_t		st_blocksize;	/* Size of a block used by st_nblocks   */
+# 	_Int32t			st_nblocks;		/* Number of blocks st_blocksize blocks */
+# 	blksize_t		st_blksize;		/* Prefered I/O block size for object   */
+# #if _FILE_OFFSET_BITS - 0 == 64
+# 	blkcnt_t		st_blocks;		/* Number of 512 byte blocks			*/
+# #elif !defined(_FILE_OFFSET_BITS) || _FILE_OFFSET_BITS == 32
+# #if defined(__LITTLEENDIAN__)
+# 	blkcnt_t		st_blocks;
+# 	blkcnt_t		st_blocks_hi;
+# #elif defined(__BIGENDIAN__)
+# 	blkcnt_t		st_blocks_hi;
+# 	blkcnt_t		st_blocks;
+# #else
+#  #error endian not configured for system
+# #endif
+# #else
+#  #error _FILE_OFFSET_BITS value is unsupported
+# #endif
+# };
+
+# struct stat64 {
+# 	ino64_t			st_ino;			/* File serial number.					*/
+# 	off64_t			st_size;
+# 	_CSTD dev_t		st_dev;			/* ID of device containing file.		*/
+# 	_CSTD dev_t		st_rdev;		/* Device ID, for inode that is device	*/
+# 	uid_t			st_uid;
+# 	gid_t			st_gid;
+# 	_CSTD time_t	st_mtime;		/* Time of last data modification		*/
+# 	_CSTD time_t	st_atime;		/* Time last accessed					*/
+# 	_CSTD time_t	st_ctime;		/* Time of last status change			*/
+# 	_CSTD mode_t	st_mode;		/* see below							*/
+# 	nlink_t			st_nlink;
+# 	blksize_t		st_blocksize;	/* Size of a block used by st_nblocks   */
+# 	_Int32t			st_nblocks;		/* Number of blocks st_blocksize blocks */
+# 	blksize_t		st_blksize;		/* Prefered I/O block size for object   */
+# 	blkcnt64_t		st_blocks;		/* Number of 512 byte blocks			*/
+# };
+
+class QNXARMStat(ctypes.Structure):
+    _fields_ = [
+        ("st_ino", ctypes.c_uint32),
+        ("st_ino_hi", ctypes.c_uint32), # this field must be zero
+        ("st_size", ctypes.c_uint32),
+        ("st_size_hi", ctypes.c_uint32), # this field must be zero
+        ("st_dev", ctypes.c_uint32),
+        ("st_rdev", ctypes.c_uint32),
+        ("st_uid", ctypes.c_int32),
+        ("st_gid", ctypes.c_int32),
+        ("st_mtime", ctypes.c_uint32),
+        ("st_atime", ctypes.c_uint32),
+        ("st_ctime", ctypes.c_uint32),
+        ("st_mode", ctypes.c_uint32),
+        ("st_nlink", ctypes.c_uint32),
+        ("st_blksize", ctypes.c_uint32),
+        ("st_blocks", ctypes.c_uint32),
+        ("st_blksize", ctypes.c_uint32),
+        ("st_blocks", ctypes.c_uint32),
+        ("st_blocks_hi", ctypes.c_uint32) # this field must be zero
+    ]
+
+    _pack_ = 4
+
+class QNXARM64Stat(ctypes.Structure):
+    _fields_ = [
+        ("st_ino", ctypes.c_uint64),
+        ("st_size", ctypes.c_uint64),
+        ("st_dev", ctypes.c_uint32),
+        ("st_rdev", ctypes.c_uint32),
+        ("st_uid", ctypes.c_int32),
+        ("st_gid", ctypes.c_int32),
+        ("st_mtime", ctypes.c_uint32),
+        ("st_atime", ctypes.c_uint32),
+        ("st_ctime", ctypes.c_uint32),
+        ("st_mode", ctypes.c_uint32),
+        ("st_nlink", ctypes.c_uint32),
+        ("st_blksize", ctypes.c_uint32),
+        ("st_blocks", ctypes.c_int32),
+        ("st_blksize", ctypes.c_uint32),
+        ("st_blocks", ctypes.c_uint64)
+    ]
+
+    _pack_ = 8
+
+class QNXARMEBStat(ctypes.BigEndianStructure):
+    _fields_ = [
+        ("st_ino_hi", ctypes.c_uint32), # this field must be zero
+        ("st_ino", ctypes.c_uint32),
+        ("st_size_hi", ctypes.c_uint32), # this field must be zero
+        ("st_size", ctypes.c_uint32),
+        ("st_dev", ctypes.c_uint32),
+        ("st_rdev", ctypes.c_uint32),
+        ("st_uid", ctypes.c_int32),
+        ("st_gid", ctypes.c_int32),
+        ("st_mtime", ctypes.c_uint32),
+        ("st_atime", ctypes.c_uint32),
+        ("st_ctime", ctypes.c_uint32),
+        ("st_mode", ctypes.c_uint32),
+        ("st_nlink", ctypes.c_uint32),
+        ("st_blksize", ctypes.c_uint32),
+        ("st_blocks", ctypes.c_uint32),
+        ("st_blksize", ctypes.c_uint32),
+        ("st_blocks_hi", ctypes.c_uint32), # this field must be zero
+        ("st_blocks", ctypes.c_uint32)
+    ]
+
+    _pack_ = 4
+
+class QNXARMStat64(ctypes.Structure):
+    _fields_ = [
+        ("st_ino", ctypes.c_uint64),
+        ("st_size", ctypes.c_uint64),
+        ("st_dev", ctypes.c_uint32),
+        ("st_rdev", ctypes.c_uint32),
+        ("st_uid", ctypes.c_int32),
+        ("st_gid", ctypes.c_int32),
+        ("st_mtime", ctypes.c_uint32),
+        ("st_atime", ctypes.c_uint32),
+        ("st_ctime", ctypes.c_uint32),
+        ("st_mode", ctypes.c_uint32),
+        ("st_nlink", ctypes.c_uint32),
+        ("st_blksize", ctypes.c_uint32),
+        ("st_blocks", ctypes.c_uint32),
+        ("st_blksize", ctypes.c_uint32),
+        ("st_blocks", ctypes.c_uint64)
+    ]
+
+    _pack_ = 8
 
 def get_stat64_struct(ql):
     if ql.archbit == 64:
@@ -732,6 +891,8 @@ def get_stat64_struct(ql):
             return LinuxARMStat64()
     elif ql.ostype == QL_OS.MACOS:
         return MacOSStat64()
+    elif ql.ostype == QL_OS.QNX:
+        return QNXARMStat64()
     ql.log.warning(f"Unrecognized arch && os with {ql.archtype} and {ql.ostype} for stat64! Fallback to Linux x86.")
     return LinuxX86Stat64()
 
@@ -763,6 +924,14 @@ def get_stat_struct(ql):
                 return LinuxARM64Stat()
             else:
                 return LinuxARM64EBStat()
+    elif ql.ostype == QL_OS.QNX:
+        if ql.archtype == QL_ARCH.ARM64:
+            return QNXARM64Stat()
+        elif ql.archtype == QL_ARCH.ARM:
+            if ql.archendian == QL_ENDIAN.EL:
+                return QNXARMStat()
+            else:
+                return QNXARMEBStat()
     ql.log.warning(f"Unrecognized arch && os with {ql.archtype} and {ql.ostype} for stat! Fallback to Linux x86.")
     return LinuxX86Stat()
 
