@@ -17,24 +17,6 @@ from qiling.exception import QlGDTError
 
 class QlArchIntel(QlArch):
 
-    def stack_push(self, value: int) -> int:
-        self.ql.reg.arch_sp -= self.ql.pointersize
-        self.ql.mem.write(self.ql.reg.arch_sp, self.ql.pack(value))
-
-        return self.ql.reg.arch_sp
-
-    def stack_pop(self) -> int:
-        data = self.ql.unpack(self.ql.mem.read(self.ql.reg.arch_sp, self.ql.pointersize))
-        self.ql.reg.arch_sp += self.ql.pointersize
-
-        return data
-
-    def stack_read(self, offset: int) -> int:
-        return self.ql.unpack(self.ql.mem.read(self.ql.reg.arch_sp + offset, self.ql.pointersize))
-
-    def stack_write(self, offset: int, data: bytes) -> None:
-        self.ql.mem.write(self.ql.reg.arch_sp + offset, self.ql.pack(data))
-
     # TODO: generalize this
     def get_reg_bit(self, register: Union[str, int]) -> int:
         if type(register) is str:

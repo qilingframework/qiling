@@ -27,28 +27,63 @@ class QlArch(ABC):
         return self.get_init_uc()
 
 
-    # push value to stack
-    @abstractmethod
-    def stack_push(self, data: int) -> int:
-        pass
+    def stack_push(self, value: int) -> int:
+        """Push a value onto the architectural stack.
+
+        Args:
+            value: a numeric value to push
+
+        Returns: the top of stack after pushing the value
+        """
+
+        self.ql.reg.arch_sp -= self.ql.pointersize
+        self.ql.mem.write(self.ql.reg.arch_sp, self.ql.pack(value))
+
+        return self.ql.reg.arch_sp
 
 
-    # pop value to stack
-    @abstractmethod
     def stack_pop(self) -> int:
-        pass
+        """Pop a value from the architectural stack.
+
+        Returns: the value at the top of stack
+        """
+
+        data = self.ql.unpack(self.ql.mem.read(self.ql.reg.arch_sp, self.ql.pointersize))
+        self.ql.reg.arch_sp += self.ql.pointersize
+
+        return data
 
 
-    # write stack value
-    @abstractmethod
-    def stack_write(self, offset: int, data: int) -> None:
-        pass
-
-
-    #  read stack value
-    @abstractmethod
     def stack_read(self, offset: int) -> int:
-        pass
+        """Peek the architectural stack at a specified offset from its top, without affecting
+        the top of the stack.
+
+        Note that this operation violates the FIFO property of the stack and may be used cautiously.
+
+        Args:
+            offset: offset in bytes from the top of the stack, not necessarily aligned to the
+                    native stack item size. the offset may be either positive or netagive, where
+                    a 0 value means overwriting the value at the top of the stack
+
+        Returns: the value at the specified address
+        """
+
+        return self.ql.unpack(self.ql.mem.read(self.ql.reg.arch_sp + offset, self.ql.pointersize))
+
+
+    def stack_write(self, offset: int, value: int) -> None:
+        """Write a value to the architectural stack at a specified offset from its top, without
+        affecting the top of the stack.
+
+        Note that this operation violates the FIFO property of the stack and may be used cautiously.
+
+        Args:
+            offset: offset in bytes from the top of the stack, not necessarily aligned to the
+                    native stack item size. the offset may be either positive or netagive, where
+                    a 0 value means overwriting the value at the top of the stack
+        """
+
+        self.ql.mem.write(self.ql.reg.arch_sp + offset, self.ql.pack(value))
 
 
        # set PC
