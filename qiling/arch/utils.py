@@ -10,8 +10,12 @@ This module is intended for general purpose functions that are only used in qili
 from typing import Tuple
 from os.path import basename
 
+from keystone import (Ks, KS_ARCH_ARM, KS_ARCH_ARM64, KS_ARCH_MIPS, KS_ARCH_X86,
+    KS_MODE_ARM, KS_MODE_THUMB, KS_MODE_MIPS32, KS_MODE_16, KS_MODE_32, KS_MODE_64,
+    KS_MODE_LITTLE_ENDIAN, KS_MODE_BIG_ENDIAN)
+
 from qiling import Qiling
-from qiling.const import QL_VERBOSE
+from qiling.const import QL_ARCH, QL_ENDIAN, QL_VERBOSE
 
 class QlArchUtils:
     def __init__(self, ql: Qiling):
@@ -57,3 +61,35 @@ class QlArchUtils:
             if self.ql.verbose >= QL_VERBOSE.DUMP:
                 self._block_hook = self.ql.hook_block(ql_hook_block_disasm)
             self._disasm_hook = self.ql.hook_code(self.disassembler)
+
+# used by qltool prior to ql instantiation. to get an assembler object
+# after ql instantiation, use the appropriate ql.arch method
+def assembler(arch: QL_ARCH, endianess: QL_ENDIAN) -> Ks:
+    """Instantiate an assembler object for a specified architecture.
+
+    Args:
+        arch: architecture type
+        endianess: architecture endianess
+
+    Returns: an assembler object
+    """
+
+    endian = {
+        QL_ENDIAN.EL : KS_MODE_LITTLE_ENDIAN,
+        QL_ENDIAN.EB : KS_MODE_BIG_ENDIAN
+    }[endianess]
+
+    asm_map = {
+        QL_ARCH.ARM       : (KS_ARCH_ARM, KS_MODE_ARM),
+        QL_ARCH.ARM64     : (KS_ARCH_ARM64, KS_MODE_LITTLE_ENDIAN),
+        QL_ARCH.ARM_THUMB : (KS_ARCH_ARM, KS_MODE_THUMB),
+        QL_ARCH.MIPS      : (KS_ARCH_MIPS, KS_MODE_MIPS32 + endian),
+        QL_ARCH.A8086     : (KS_ARCH_X86, KS_MODE_16),
+        QL_ARCH.X86       : (KS_ARCH_X86, KS_MODE_32),
+        QL_ARCH.X8664     : (KS_ARCH_X86, KS_MODE_64)
+    }
+
+    if arch in asm_map:
+        return Ks(*asm_map[arch])
+
+    raise NotImplementedError

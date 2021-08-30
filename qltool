@@ -11,7 +11,7 @@ import pickle
 import unicorn
 
 from qiling import Qiling
-from qiling.arch.utils import ql_create_assembler
+from qiling.arch import utils as arch_utils
 from qiling.debugger.qdb import QlQdb
 from qiling.utils import arch_convert
 from qiling.const import QL_VERBOSE, QL_ENDIAN, os_map, arch_map, verbose_map
@@ -69,8 +69,7 @@ def handle_code(options: argparse.Namespace):
             'big'   : QL_ENDIAN.EB
         }[options.endian]
 
-        # TODO: Thumb support.
-        assembler = ql_create_assembler(archtype, archendian, 0)
+        assembler = arch_utils.assembler(archtype, archendian)
         code, _ = assembler.asm(assembly)
         code = bytes(code)
 
