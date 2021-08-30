@@ -31,52 +31,15 @@ from typing import Any, Optional
 sys.path.append("../../..")
 from qiling import Qiling
 from qiling.const import QL_VERBOSE
-from qiling.os.posix import stat
-
-class MyPipe():
-    """Fake stdin to handle incoming fuzzed keystrokes.
-    """
-
-    def __init__(self):
-        self.buf = b''
-
-    def write(self, s: bytes):
-        self.buf += s
-
-    def read(self, size: int) -> bytes:
-        ret = self.buf[:size]
-        self.buf = self.buf[size:]
-
-        return ret
-
-    def fileno(self) -> int:
-        return 0
-
-    def show(self):
-        pass
-
-    def clear(self):
-        pass
-
-    def flush(self):
-        pass
-
-    def close(self):
-        self.outpipe.close()
-
-    def lseek(self, offset: int, origin: int):
-        pass
-
-    def fstat(self):
-        return stat.Fstat(self.fileno())
+from qiling.extensions import pipe
 
 def main(input_file: str):
-    stdin = MyPipe()
+    mock_stdin = pipe.SimpleInStream(sys.stdin.fileno())
 
     ql = Qiling(["./x8664_fuzz"], "../../rootfs/x8664_linux",
             verbose=QL_VERBOSE.OFF, # keep qiling logging off
             console=False,          # thwart program output
-            stdin=stdin,            # redirect stdin to our fake one
+            stdin=mock_stdin,       # redirect stdin to our mock to feed it with incoming fuzzed keystrokes
             stdout=None,
             stderr=None)
 
@@ -84,7 +47,7 @@ def main(input_file: str):
         """Called with every newly generated input.
         """
 
-        stdin.write(input)
+        ql.os.stdin.write(input)
 
     def start_afl(_ql: Qiling):
         """Callback from inside.

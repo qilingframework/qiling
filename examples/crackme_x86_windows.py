@@ -8,41 +8,27 @@ sys.path.append("..")
 
 from qiling import Qiling
 from qiling.const import QL_VERBOSE
-
-class StringBuffer:
-    def __init__(self):
-        self.buffer = b''
-
-    def read(self, n):
-        ret = self.buffer[:n]
-        self.buffer = self.buffer[n:]
-        return ret
-
-    def read_all(self):
-        ret = self.buffer
-        self.buffer = b''
-        return ret
-
-    def write(self, string):
-        self.buffer += string
-        return len(string)
+from qiling.extensions import pipe
 
 def instruction_count(ql: Qiling, address: int, size: int, user_data):
     user_data[0] += 1
 
 def get_count(flag):
-    stdin = StringBuffer()
-    stdout = StringBuffer()
+    mock_stdin = pipe.SimpleStringBuffer()
+    mock_stdout = pipe.SimpleStringBuffer()
 
-    ql = Qiling(["rootfs/x86_windows/bin/crackme.exe"], "rootfs/x86_windows", verbose=QL_VERBOSE.OFF, stdin=stdin, stdout=stdout)
+    ql = Qiling(["rootfs/x86_windows/bin/crackme.exe"], "rootfs/x86_windows",
+        verbose=QL_VERBOSE.OFF,
+        stdin=mock_stdin,
+        stdout=mock_stdout)
 
-    stdin.write(bytes("".join(flag) + "\n", 'utf-8'))
+    ql.os.stdin.write(bytes("".join(flag) + "\n", 'utf-8'))
     count = [0]
 
     ql.hook_code(instruction_count, count)
     ql.run()
 
-    print(stdout.read_all().decode('utf-8'), end='')
+    print(ql.os.stdout.read().decode('utf-8'), end='')
     print(" ============ count: %d ============ " % count[0])
 
     return count[0]
@@ -68,7 +54,6 @@ def solve():
         print("SOLVED!!!")
     except KeyboardInterrupt:
         print("STOP: KeyboardInterrupt")
-
 
 if __name__ == "__main__":
     solve()

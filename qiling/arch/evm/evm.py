@@ -27,3 +27,6 @@ class QlArchEVM(QlArch):
 
     def stack_write(self, offset, data):
         return None
+
+    def get_init_uc(self):
+        return None
