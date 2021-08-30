@@ -82,7 +82,7 @@ class QlArchARM(QlArch):
         # note: we do not cache the assembler instance; rather we refresh it
         # each time to make sure thumb mode is taken into account
 
-        if self.ql.archtype == QL_ARCH.ARM:
+        if self.ql.archtype == QL_ARCH.ARM or self.ql.archtype == QL_ARCH.CORTEX_M:
             # FIXME: mode should take endianess into account
             mode = KS_MODE_THUMB if self.__is_thumb() else KS_MODE_ARM
 
