@@ -216,7 +216,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._arch = arch_setup(self.archtype, self)
         
         # Once we finish setting up arch layer, we can init QlCoreHooks.
-        self.uc = self.arch.init_uc if self.archtype not in QL_ARCH_NONEOS else None
+        self.uc = self.arch.init_uc
         QlCoreHooks.__init__(self, self.uc)
         
         # Setup Outpt

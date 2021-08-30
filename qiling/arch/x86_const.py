@@ -111,7 +111,7 @@ reg_map_seg_base = {
     "gsbase" : UC_X86_REG_GS_BASE
 }
 
-reg_map_r = {
+reg_map_64_b = {
     "r8b":  UC_X86_REG_R8B,
     "r9b":  UC_X86_REG_R9B,
     "r10b": UC_X86_REG_R10B,
@@ -120,6 +120,9 @@ reg_map_r = {
     "r13b": UC_X86_REG_R13B,
     "r14b": UC_X86_REG_R14B,
     "r15b": UC_X86_REG_R15B,
+}
+
+reg_map_64_w = {
     "r8w":  UC_X86_REG_R8W,
     "r9w":  UC_X86_REG_R9W,
     "r10w": UC_X86_REG_R10W,
@@ -128,6 +131,9 @@ reg_map_r = {
     "r13w": UC_X86_REG_R13W,
     "r14w": UC_X86_REG_R14W,
     "r15w": UC_X86_REG_R15W,
+}
+
+reg_map_64_d = {
     "r8d":  UC_X86_REG_R8D,
     "r9d":  UC_X86_REG_R9D,
     "r10d": UC_X86_REG_R10D,
@@ -135,7 +141,7 @@ reg_map_r = {
     "r12d": UC_X86_REG_R12D,
     "r13d": UC_X86_REG_R13D,
     "r14d": UC_X86_REG_R14D,
-    "r15d": UC_X86_REG_R15D,    
+    "r15d": UC_X86_REG_R15D,
 }
 
 reg_map_cr = {

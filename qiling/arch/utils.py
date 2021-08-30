@@ -10,32 +10,17 @@ This module is intended for general purpose functions that are only used in qili
 from typing import Tuple
 from os.path import basename
 
-from capstone import Cs, CS_ARCH_ARM, CS_ARCH_ARM64, CS_ARCH_X86, CS_ARCH_MIPS, CS_MODE_16, CS_MODE_32, CS_MODE_64, CS_MODE_ARM, CS_MODE_THUMB, CS_MODE_MIPS32 ,CS_MODE_BIG_ENDIAN, CS_MODE_LITTLE_ENDIAN
-from keystone import Ks, KS_ARCH_ARM, KS_ARCH_ARM64, KS_ARCH_X86, KS_ARCH_MIPS, KS_MODE_16, KS_MODE_32, KS_MODE_64, KS_MODE_ARM, KS_MODE_THUMB, KS_MODE_MIPS32 ,KS_MODE_BIG_ENDIAN, KS_MODE_LITTLE_ENDIAN
+from keystone import (Ks, KS_ARCH_ARM, KS_ARCH_ARM64, KS_ARCH_MIPS, KS_ARCH_X86,
+    KS_MODE_ARM, KS_MODE_THUMB, KS_MODE_MIPS32, KS_MODE_16, KS_MODE_32, KS_MODE_64,
+    KS_MODE_LITTLE_ENDIAN, KS_MODE_BIG_ENDIAN)
 
 from qiling import Qiling
 from qiling.const import QL_ARCH, QL_ENDIAN, QL_VERBOSE
-from qiling.exception import QlErrorArch
-
-__cs_endian = {
-    QL_ENDIAN.EL : CS_MODE_LITTLE_ENDIAN,
-    QL_ENDIAN.EB : CS_MODE_BIG_ENDIAN
-}
-
-__ks_endian = {
-    QL_ENDIAN.EL : KS_MODE_LITTLE_ENDIAN,
-    QL_ENDIAN.EB : KS_MODE_BIG_ENDIAN
-}
-
-__reg_cpsr_v = {
-    QL_ENDIAN.EL : 0b100000,
-    QL_ENDIAN.EB : 0b100000   # FIXME: should be: 0b000000
-}
 
 class QlArchUtils:
     def __init__(self, ql: Qiling):
         self.ql = ql
-        self.qd = None
+
         self._disasm_hook = None
         self._block_hook = None
 
@@ -46,39 +31,20 @@ class QlArchUtils:
 
         return addr, '-'
 
-    def disassembler(self, ql, address, size):
-        tmp = self.ql.mem.read(address, size)
-
-        if not self.qd:
-            self.qd = self.ql.create_disassembler()
-        elif self.ql.archtype == QL_ARCH.ARM: # Update disassembler for arm considering thumb swtich.
-            self.qd = self.ql.create_disassembler()
-
-        insn = self.qd.disasm(tmp, address)
-        opsize = int(size)
+    def disassembler(self, ql: Qiling, address: int, size: int):
+        tmp = ql.mem.read(address, size)
+        qd = ql.arch.create_disassembler()
 
         offset, name = self.get_offset_and_name(address)
-        log_data = '0x%0*x {%-20s + 0x%06x}   ' % (self.ql.archbit // 4, address, name, offset)
+        log_data = f'{address:0{ql.archbit // 4}x} [{name:20s} + {offset:#08x}]  {tmp.hex(" "):30s}'
+        log_insn = '\n> '.join(f'{insn.mnemonic:20s} {insn.op_str}' for insn in qd.disasm(tmp, address))
 
-        temp_str = ""
-        for i in tmp:
-            temp_str += ("%02x " % i)
-        log_data += temp_str.ljust(30)
+        ql.log.info(log_data + log_insn)
 
-        first = True
-        for i in insn:
-            if not first:
-                log_data += '\n> '
-            first = False
-            log_data += "%s %s" % (i.mnemonic, i.op_str)
-        self.ql.log.info(log_data)
-
-        if self.ql.verbose >= QL_VERBOSE.DUMP:
-            for reg in self.ql.reg.register_mapping:
-                if isinstance(reg, str):
-                    REG_NAME = reg
-                    REG_VAL = self.ql.reg.read(reg)
-                    self.ql.log.debug("%s\t:\t 0x%x" % (REG_NAME, REG_VAL))
+        if ql.verbose >= QL_VERBOSE.DUMP:
+            for reg in ql.reg.register_mapping:
+                if type(reg) is str:
+                    ql.log.debug(f'{reg}\t: {ql.reg.read(reg):#x}')
 
     def setup_output(self):
         def ql_hook_block_disasm(ql, address, size):
@@ -96,67 +62,34 @@ class QlArchUtils:
                 self._block_hook = self.ql.hook_block(ql_hook_block_disasm)
             self._disasm_hook = self.ql.hook_code(self.disassembler)
 
+# used by qltool prior to ql instantiation. to get an assembler object
+# after ql instantiation, use the appropriate ql.arch method
+def assembler(arch: QL_ARCH, endianess: QL_ENDIAN) -> Ks:
+    """Instantiate an assembler object for a specified architecture.
 
-def ql_create_disassembler(archtype: QL_ARCH, archendian: QL_ENDIAN, reg_cpsr=None) -> Cs:
-    if archtype == QL_ARCH.X86:
-        md = Cs(CS_ARCH_X86, CS_MODE_32)
+    Args:
+        arch: architecture type
+        endianess: architecture endianess
 
-    elif archtype == QL_ARCH.X8664:
-        md = Cs(CS_ARCH_X86, CS_MODE_64)
+    Returns: an assembler object
+    """
 
-    elif archtype == QL_ARCH.ARM:
-        mode = CS_MODE_THUMB if reg_cpsr & __reg_cpsr_v[archendian] else CS_MODE_ARM
+    endian = {
+        QL_ENDIAN.EL : KS_MODE_LITTLE_ENDIAN,
+        QL_ENDIAN.EB : KS_MODE_BIG_ENDIAN
+    }[endianess]
 
-        md = Cs(CS_ARCH_ARM, mode) # FIXME: should be: mode + __cs_endian[archendian]
+    asm_map = {
+        QL_ARCH.ARM       : (KS_ARCH_ARM, KS_MODE_ARM),
+        QL_ARCH.ARM64     : (KS_ARCH_ARM64, KS_MODE_LITTLE_ENDIAN),
+        QL_ARCH.ARM_THUMB : (KS_ARCH_ARM, KS_MODE_THUMB),
+        QL_ARCH.MIPS      : (KS_ARCH_MIPS, KS_MODE_MIPS32 + endian),
+        QL_ARCH.A8086     : (KS_ARCH_X86, KS_MODE_16),
+        QL_ARCH.X86       : (KS_ARCH_X86, KS_MODE_32),
+        QL_ARCH.X8664     : (KS_ARCH_X86, KS_MODE_64)
+    }
 
-    elif archtype == QL_ARCH.ARM_THUMB:
-        md = Cs(CS_ARCH_ARM, CS_MODE_THUMB)
+    if arch in asm_map:
+        return Ks(*asm_map[arch])
 
-    elif archtype == QL_ARCH.ARM64:
-        md = Cs(CS_ARCH_ARM64, CS_MODE_ARM)
-
-    elif archtype == QL_ARCH.MIPS:
-        md = Cs(CS_ARCH_MIPS, CS_MODE_MIPS32 + __cs_endian[archendian])
-
-    elif archtype == QL_ARCH.A8086:
-        md = Cs(CS_ARCH_X86, CS_MODE_16)
-
-    elif archtype == QL_ARCH.EVM:
-        raise NotImplementedError('evm')
-
-    else:
-        raise QlErrorArch(f'{archtype:d}')
-
-    return md
-
-def ql_create_assembler(archtype: QL_ARCH, archendian: QL_ENDIAN, reg_cpsr=None) -> Ks:
-    if archtype == QL_ARCH.X86:
-        ks = Ks(KS_ARCH_X86, KS_MODE_32)
-
-    elif archtype == QL_ARCH.X8664:
-        ks = Ks(KS_ARCH_X86, KS_MODE_64)
-
-    elif archtype == QL_ARCH.ARM:
-        mode = KS_MODE_THUMB if reg_cpsr & __reg_cpsr_v[archendian] else KS_MODE_ARM
-
-        ks = Ks(KS_ARCH_ARM, mode) # FIXME: should be: mode + __ks_endian[archendian]
-
-    elif archtype == QL_ARCH.ARM_THUMB:
-        ks = Ks(KS_ARCH_ARM, KS_MODE_THUMB)
-
-    elif archtype == QL_ARCH.ARM64:
-        ks = Ks(KS_ARCH_ARM64, KS_MODE_LITTLE_ENDIAN)
-
-    elif archtype == QL_ARCH.MIPS:
-        ks = Ks(KS_ARCH_MIPS, KS_MODE_MIPS32 + __ks_endian[archendian])
-
-    elif archtype == QL_ARCH.A8086:
-        ks = Ks(KS_ARCH_X86, KS_MODE_16)
-
-    elif archtype == QL_ARCH.EVM:
-        raise NotImplementedError('evm')
-
-    else:
-        raise QlErrorArch(f'{archtype:d}')
-
-    return ks
+    raise NotImplementedError
