@@ -62,7 +62,7 @@ class QlLoaderMCU(QlLoader):
         
     def reset(self):
         self.ql.reg.write('lr', 0xffffffff)
-        self.ql.reg.write('msp', self.ql.mem.read_ptr(self.ql.arch.boot_space))
+        self.ql.reg.write('msp', self.ql.mem.read_ptr(0x0))
         self.ql.reg.write('pc' , self.entry_point)
 
     def run(self):
@@ -73,7 +73,7 @@ class QlLoaderMCU(QlLoader):
                 base = eval(section['base'])
                 self.ql.mem.map(base, size, info=f'[{section_name}]')
                 if section_name == 'FLASH':
-                    self.ql.arch.boot_space = base
+                    self.ql.hw.setup_remap(0, base, size)
 
             if section['type'] == 'bitband':
                 size = eval(section['size']) * 32
@@ -96,4 +96,4 @@ class QlLoaderMCU(QlLoader):
 
     @property
     def entry_point(self):
-        return self.ql.mem.read_ptr(self.ql.arch.boot_space + 0x4)
+        return self.ql.mem.read_ptr(0x4)

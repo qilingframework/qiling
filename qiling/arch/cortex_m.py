@@ -14,9 +14,6 @@ class QlArchCORTEX_M(QlArchARM):
     def __init__(self, ql):
         super().__init__(ql)
 
-        ## Memory Model
-        self.boot_space = 0
-
     def get_init_uc(self):
         return Uc(UC_ARCH_ARM, UC_MODE_ARM + UC_MODE_MCLASS + UC_MODE_THUMB)
 
