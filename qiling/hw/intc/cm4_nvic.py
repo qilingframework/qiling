@@ -101,6 +101,8 @@ class CortexM4Nvic(QlPeripheral):
     def get_priority(self, IRQn):
         return 0
 
+    # def set_priority(self, )
+
     def save_regs(self):
         for reg in self.reg_context:
             val = self.ql.reg.read(reg)
@@ -118,8 +120,7 @@ class CortexM4Nvic(QlPeripheral):
         if self.ql.verbose >= QL_VERBOSE.DISASM:
             self.ql.log.info('Enter into interrupt')
 
-        address = self.ql.arch.boot_space + offset
-        entry = self.ql.mem.read_ptr(address)
+        entry = self.ql.mem.read_ptr(offset)
 
         ## TODO: handle other exceptionreturn behavior
         EXC_RETURN = 0xFFFFFFF9
@@ -165,6 +166,10 @@ class CortexM4Nvic(QlPeripheral):
                             func(i + (ofs - var.offset) * 8)
                     break
             else:
+                ipr = self.struct.IPR
+                if ipr.offset <= ofs < ipr.offset + ipr.size:
+                    byte &= 240
+                
                 ctypes.memmove(ctypes.addressof(self.nvic) + ofs, bytes([byte]), 1)                
 
         for ofs in range(offset, offset + size):
