@@ -26,6 +26,7 @@ reg_map = {
             "msp": UC_ARM_REG_MSP,
             "psp": UC_ARM_REG_PSP,
             "xpsr": UC_ARM_REG_XPSR,
+            "xpsr_cond": UC_ARM_REG_XPSR_NZCVQG,
             "apsr": UC_ARM_REG_APSR,
             "ipsr": UC_ARM_REG_IPSR,
             "epsr": UC_ARM_REG_EPSR,

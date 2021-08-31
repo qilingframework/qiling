@@ -109,7 +109,10 @@ class CortexM4Nvic(QlPeripheral):
     def restore_regs(self):
         for reg in reversed(self.reg_context):
             val = self.ql.arch.stack_pop()
-            self.ql.reg.write(reg, val)
+            if reg == 'xpsr':
+                self.ql.reg.write('xpsr_cond', val)
+            else:
+                self.ql.reg.write(reg, val)
 
     def handle_interupt(self, offset):
         if self.ql.verbose >= QL_VERBOSE.DISASM:
@@ -126,11 +129,13 @@ class CortexM4Nvic(QlPeripheral):
 
         try:
             self.ql.emu_start(self.ql.arch.get_pc(), EXC_RETURN)
-        except UcError:
-            pass
+        except UcError as uc_error:
+            if self.ql.arch.get_pc() != EXC_RETURN:
+                self.ql.log.info(uc_error)
+                raise uc_error
 
         if self.ql.verbose >= QL_VERBOSE.DISASM:
-            self.ql.log.debug('Exit from interrupt')
+            self.ql.log.info('Exit from interrupt')
 
     def step(self):
         if self.ql.reg.read('primask') or not self.intrs:
