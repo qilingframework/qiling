@@ -15,3 +15,7 @@ class IRQ(IntEnum):
     SVCALL = -5
     PENDSV = -2
     SYSTICK = -1
+
+class MODE(IntEnum):
+    THREAD = 0
+    HANDLER = 1

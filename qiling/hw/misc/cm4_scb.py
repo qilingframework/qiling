@@ -7,7 +7,7 @@
 import ctypes
 
 from qiling.hw.peripheral import QlPeripheral
-from qiling.hw.const.cm4 import IRQ
+from qiling.arch.cm_const import IRQ
 
 class CortexM4Scb(QlPeripheral):
     class Type(ctypes.Structure):

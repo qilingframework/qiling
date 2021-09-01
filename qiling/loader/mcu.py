@@ -57,15 +57,20 @@ class IhexParser:
 class QlLoaderMCU(QlLoader):
     def __init__(self, ql:Qiling):
         super(QlLoaderMCU, self).__init__(ql)   
+        
         self.load_address = 0             
         self.ihexfile = IhexParser(self.argv[0])
-        
+    
     def reset(self):
+        for begin, _, data in self.ihexfile.segments:
+            self.ql.mem.write(begin, data)
+
         self.ql.reg.write('lr', 0xffffffff)
         self.ql.reg.write('msp', self.ql.mem.read_ptr(0x0))
         self.ql.reg.write('pc' , self.entry_point)
 
     def run(self):
+        ## Load memory / mmio / peripheral from profile
         for section_name in self.ql.profile.sections():
             section = self.ql.profile[section_name]
             if section['type'] == 'memory':
@@ -73,7 +78,7 @@ class QlLoaderMCU(QlLoader):
                 base = eval(section['base'])
                 self.ql.mem.map(base, size, info=f'[{section_name}]')
                 if section_name == 'FLASH':
-                    self.ql.hw.setup_remap(0, base, size)
+                    self.ql.hw.setup_remap(0, base, size, info=f'[CODE]')
 
             if section['type'] == 'bitband':
                 size = eval(section['size']) * 32
@@ -88,10 +93,10 @@ class QlLoaderMCU(QlLoader):
 
             if section['type'] == 'core periperal':
                 self.ql.hw.create(section_name.lower())
+        
+        ## Handle interrupt from instruction execution
+        self.ql.hook_intr(self.ql.arch.intr_cb)
                 
-        for begin, _, data in self.ihexfile.segments:
-            self.ql.mem.write(begin, data)
-
         self.reset()
 
     @property

@@ -4,6 +4,7 @@
 #
 
 import ctypes
+from qiling.arch.cm_const import IRQ
 from qiling.hw.peripheral import QlPeripheral
 
 
@@ -32,7 +33,7 @@ class CortexM4SysTick(QlPeripheral):
         if self.systick.VAL <= 0:
             self.systick.VAL = self.systick.LOAD
             if self.systick.CTRL & 2:
-                self.ql.hw.nvic.set_pending(-1)
+                self.ql.hw.nvic.set_pending(IRQ.SYSTICK)
         else:
             self.systick.VAL -= self.RATIO
 
