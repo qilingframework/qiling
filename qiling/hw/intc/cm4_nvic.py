@@ -7,6 +7,7 @@ import ctypes
 
 from unicorn.unicorn import UcError
 from qiling.hw.peripheral import QlPeripheral
+from qiling.hw.const.cm4 import IRQ
 from qiling.const import QL_VERBOSE
 
 
@@ -83,6 +84,16 @@ class CortexM4Nvic(QlPeripheral):
             self.ql.hw.scb.set_pending(IRQn)
         
         if self.get_enable(IRQn):
+            if self.is_configurable(IRQn) and (self.ql.reg.read('primask') & 0x1):
+                return
+            
+            if IRQn != IRQ.NMI and (self.ql.reg.read('faultmask') & 0x1):
+                return
+
+            basepri = self.ql.reg.read('basepri') & 0xf0
+            if basepri != 0 and pri >= self.get_priority(IRQn):
+                return
+
             self.intrs.append(IRQn)
 
     def clear_pending(self, IRQn):
@@ -99,9 +110,13 @@ class CortexM4Nvic(QlPeripheral):
             return self.ql.hw.scb.get_pending(IRQn)
 
     def get_priority(self, IRQn):
-        return 0
+        if IRQn >= 0:
+            return self.nvic.IPR[IRQn]
+        else:
+            return self.ql.hw.scb.get_priority(IRQn)
 
-    # def set_priority(self, )
+    def is_configurable(self, IRQn):
+        return IRQn > IRQ.HARD_FAULT
 
     def save_regs(self):
         for reg in self.reg_context:
@@ -139,7 +154,7 @@ class CortexM4Nvic(QlPeripheral):
             self.ql.log.info('Exit from interrupt')
 
     def step(self):
-        if self.ql.reg.read('primask') or not self.intrs:
+        if not self.intrs:
             return
 
         self.intrs.sort(key=lambda x: self.get_priority(x))

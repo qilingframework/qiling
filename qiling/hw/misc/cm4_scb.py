@@ -114,6 +114,9 @@ class CortexM4Scb(QlPeripheral):
             return (self.scb.SHCSR >> 15) & 1
         return 0
 
+    def get_priority(self, IRQn):
+        return self.scb.SHP[(IRQn & 0xf) - 4]
+
     def read(self, offset, size):
         buf = ctypes.create_string_buffer(size)
         ctypes.memmove(buf, ctypes.addressof(self.scb) + offset, size)
