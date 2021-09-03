@@ -309,7 +309,7 @@ class QlMemoryManager:
 
         assert begin < end, 'search arguments do not make sense'
 
-        ranges = [(max(begin, lbound), min(ubound, end)) for lbound, ubound, _, _ in self.map_info if (begin <= lbound < end) or (begin < ubound <= end)]
+        ranges = [(max(begin, lbound), min(ubound, end)) for lbound, ubound, _, _ in self.map_info if not (end < lbound or ubound < begin)]
         results = []
 
         for lbound, ubound in ranges:
