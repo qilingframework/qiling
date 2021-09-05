@@ -4,7 +4,7 @@
 #
 
 import ctypes
-from qiling.arch.cm_const import IRQ
+from qiling.arch.arm_const import IRQ
 from qiling.hw.peripheral import QlPeripheral
 
 

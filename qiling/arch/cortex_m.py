@@ -8,23 +8,19 @@ from capstone import Cs, CS_ARCH_ARM, CS_MODE_ARM, CS_MODE_MCLASS, CS_MODE_THUMB
 from keystone import Ks, KS_ARCH_ARM, KS_MODE_ARM, KS_MODE_THUMB
 
 from .arm import QlArchARM
-from .arm_const import reg_map
-from .cm_const import IRQ, MODE
+from .arm_const import IRQ, CONTROL
 
 class QlArchCORTEX_M(QlArchARM):
     def __init__(self, ql):
         super().__init__(ql)
 
-        self.mode = MODE.THREAD
-        self.register_msp()
-
         ## something strange thing happened
         def intr_cb(ql, intno):
-            if ql.arch.mode == MODE.HANDLER:
+            if self.is_handler_mode():
                 if intno == 8:
                     ql.emu_stop()
             
-            elif ql.arch.mode == MODE.THREAD:
+            else:
                 if intno == 2:
                     ql.hw.nvic.set_pending(IRQ.SVCALL)                    
                 else:
@@ -50,6 +46,9 @@ class QlArchCORTEX_M(QlArchARM):
         self.ql.hw.step()
 
     def run(self, count=-1, end=None):
+        if type(end) is int:
+            end |= 1
+        
         while count != 0:
             if self.get_pc() == end:
                 break
@@ -57,15 +56,8 @@ class QlArchCORTEX_M(QlArchARM):
             self.step()
             count -= 1
 
-    def exc_return(self):
-        if self.ql.reg.uc_sp == reg_map['msp']:
-            return 0xFFFFFFF9
-        
-        elif self.ql.reg.uc_sp == reg_map['psp']:
-            return 0xFFFFFFFD
+    def is_handler_mode(self):
+        return self.ql.reg.read('ipsr') > 1
 
-    def register_msp(self):
-        self.ql.reg.register_sp(reg_map['msp'])
-
-    def register_psp(self):
-        self.ql.reg.register_sp(reg_map['psp'])
+    def using_psp(self):
+        return not self.is_handler_mode() and (self.ql.reg.read('control') & CONTROL.SPSEL) > 0

@@ -6,7 +6,7 @@
 import ctypes
 
 from qiling.hw.peripheral import QlPeripheral
-from qiling.arch.cm_const import IRQ, MODE
+from qiling.arch.arm_const import IRQ, EXC_RETURN
 from qiling.const import QL_VERBOSE
 
 
@@ -121,40 +121,45 @@ class CortexM4Nvic(QlPeripheral):
         for reg in self.reg_context:
             val = self.ql.reg.read(reg)
             self.ql.arch.stack_push(val)
-
-        self.ql.arch.mode = MODE.HANDLER
-
+        
         if self.ql.verbose >= QL_VERBOSE.DISASM:
             self.ql.log.info(f'Enter into interrupt {self.intrs}')
 
     def exit_intr(self):
+        if self.ql.arch.get_pc() & EXC_RETURN.RETURN_SP:
+            self.ql.reg.write('control', 0b010)            
+        else:
+            self.ql.reg.write('control', 0b000)
+
+        self.ql.reg.write('ipsr', 0)
+
         for reg in reversed(self.reg_context):
             val = self.ql.arch.stack_pop()
-            if reg == 'xpsr':
-                self.ql.reg.write('xpsr_cond', val)
+            if reg == 'xpsr':                
+                self.ql.reg.write('xpsr_cond', val)                
             else:
                 self.ql.reg.write(reg, val)
 
         self.intrs.clear()        
-        self.ql.arch.mode = MODE.THREAD
 
         if self.ql.verbose >= QL_VERBOSE.DISASM:
             self.ql.log.info('Exit from interrupt')
 
-    def handle_interupt(self, offset):
+    def handle_interupt(self, IRQn):
+
+        isr = IRQn + 16
+        offset = isr << 2
         entry = self.ql.mem.read_ptr(offset)
-        exc_return = self.ql.arch.exc_return()
+        exc_return = 0xFFFFFFFD if self.ql.arch.using_psp() else 0xFFFFFFF9
+
+        self.clear_pending(IRQn)
+        self.ql.reg.write('ipsr', isr)                
 
         self.ql.reg.write('pc', entry)
-        self.ql.reg.write('lr', exc_return)
+        self.ql.reg.write('lr', exc_return) 
 
         self.ql.emu_start(self.ql.arch.get_pc(), 0)
         
-        if self.ql.arch.get_pc() & 0b100:
-            self.ql.arch.register_psp()
-        else:
-            self.ql.arch.register_msp()
-
     def step(self):
         if not self.intrs:
             return
@@ -162,9 +167,8 @@ class CortexM4Nvic(QlPeripheral):
         self.intrs.sort(key=lambda x: self.get_priority(x))
         self.enter_intr()
                         
-        for IRQn in self.intrs:
-            self.clear_pending(IRQn)
-            self.handle_interupt((IRQn + 16) << 2)            
+        for IRQn in self.intrs:            
+            self.handle_interupt(IRQn)            
 
         self.exit_intr()
 
