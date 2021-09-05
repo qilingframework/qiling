@@ -6,7 +6,7 @@
 import ctypes
 
 from qiling.hw.peripheral import QlPeripheral
-from qiling.arch.arm_const import IRQ, EXC_RETURN
+from qiling.arch.arm_const import IRQ, EXC_RETURN, CONTROL
 from qiling.const import QL_VERBOSE
 
 
@@ -118,6 +118,7 @@ class CortexM4Nvic(QlPeripheral):
         return IRQn > IRQ.HARD_FAULT
 
     def enter_intr(self):
+        # Save Stack
         for reg in self.reg_context:
             val = self.ql.reg.read(reg)
             self.ql.arch.stack_push(val)
@@ -126,33 +127,37 @@ class CortexM4Nvic(QlPeripheral):
             self.ql.log.info(f'Enter into interrupt {self.intrs}')
 
     def exit_intr(self):
-        if self.ql.arch.get_pc() & EXC_RETURN.RETURN_SP:
-            self.ql.reg.write('control', 0b010)            
-        else:
-            self.ql.reg.write('control', 0b000)
-
+        # Exit handler mode
         self.ql.reg.write('ipsr', 0)
 
+        # switch the stack accroding exc_return
+        old_ctrl = self.ql.reg.read('control')
+        if self.ql.arch.get_pc() & EXC_RETURN.RETURN_SP:
+            self.ql.reg.write('control', old_ctrl |  CONTROL.SPSEL)            
+        else:
+            self.ql.reg.write('control', old_ctrl & ~CONTROL.SPSEL)
+
+        # Restore stack
         for reg in reversed(self.reg_context):
             val = self.ql.arch.stack_pop()
             if reg == 'xpsr':                
-                self.ql.reg.write('xpsr_cond', val)                
+                self.ql.reg.write('XPSR_NZCVQG', val)
             else:
-                self.ql.reg.write(reg, val)
-
-        self.intrs.clear()        
+                self.ql.reg.write(reg, val)        
 
         if self.ql.verbose >= QL_VERBOSE.DISASM:
             self.ql.log.info('Exit from interrupt')
 
     def handle_interupt(self, IRQn):
+        self.clear_pending(IRQn)
 
         isr = IRQn + 16
         offset = isr << 2
-        entry = self.ql.mem.read_ptr(offset)
-        exc_return = 0xFFFFFFFD if self.ql.arch.using_psp() else 0xFFFFFFF9
 
-        self.clear_pending(IRQn)
+        entry = self.ql.mem.read_ptr(offset)
+        exc_return = 0xFFFFFFFD if self.ql.arch.using_psp() else 0xFFFFFFF9        
+
+        # Enter handler mode
         self.ql.reg.write('ipsr', isr)                
 
         self.ql.reg.write('pc', entry)
@@ -163,14 +168,15 @@ class CortexM4Nvic(QlPeripheral):
     def step(self):
         if not self.intrs:
             return
-        
+
         self.intrs.sort(key=lambda x: self.get_priority(x))
-        self.enter_intr()
-                        
+        
+        self.enter_intr()                    
         for IRQn in self.intrs:            
             self.handle_interupt(IRQn)            
 
         self.exit_intr()
+        self.intrs.clear()
 
     def read(self, offset, size):
         buf = ctypes.create_string_buffer(size)
