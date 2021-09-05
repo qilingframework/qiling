@@ -70,3 +70,8 @@ class CONTROL(IntEnum):
 class EXC_RETURN(IntEnum):
     RETURN_SP   = 0b0100
     RETURN_MODE = 0b1000
+
+class EXCP(IntEnum):
+    SWI = 2            # software interrupt
+    EXCEPTION_EXIT = 8 # Return from v7M exception
+    

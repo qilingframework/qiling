@@ -10,7 +10,7 @@ from keystone import Ks, KS_ARCH_ARM, KS_MODE_ARM, KS_MODE_THUMB
 from qiling.const import QL_VERBOSE
 
 from .arm import QlArchARM
-from .arm_const import IRQ, EXC_RETURN, CONTROL
+from .arm_const import IRQ, EXC_RETURN, CONTROL, EXCP
 
 class QlArchCORTEX_M(QlArchARM):
     def __init__(self, ql):
@@ -18,18 +18,15 @@ class QlArchCORTEX_M(QlArchARM):
 
         self.reg_context = ['xpsr', 'pc', 'lr', 'r12', 'r3', 'r2', 'r1', 'r0']
 
-        ## something strange thing happened
         def intr_cb(ql, intno):
-            if self.is_handler_mode():
-                if intno == 8:
-                    ql.emu_stop()
+            if intno == EXCP.SWI:
+                ql.hw.nvic.set_pending(IRQ.SVCALL)                    
+
+            elif intno == EXCP.EXCEPTION_EXIT:
+                ql.emu_stop()            
             
             else:
-                if intno == 2:
-                    ql.hw.nvic.set_pending(IRQ.SVCALL)                    
-                else:
-                    print(intno)
-                    exit(0)
+                ql.log.warning(f'Unhandled interrupt number ({intno})')
 
         self.intr_cb = intr_cb
 
