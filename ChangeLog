@@ -1,13 +1,16 @@
 This file details the changelog of Qiling Framework.
 
 ------------------------------------
-[Version 1.2.5]: July 0th, 2021
+[Version 1.3]: Sept 0th, 2021
 - Added QNX
 - Aded Dynamically executed QNX
 - Added more Posix syscall
 - Bugfix: GDB server on MIPS binary
 - Major refactor of Windows DLL
 - Add Win32 16bit compatibility file api
+- Fixed ql.mem.search logic
+- ql.arch refactor
+- Added EVM engine
 
 
 ------------------------------------

@@ -7,7 +7,7 @@
 import ctypes
 
 from qiling.hw.peripheral import QlPeripheral
-from qiling.hw.const.cm4 import IRQ
+from qiling.arch.arm_const import IRQ
 
 class CortexM4Scb(QlPeripheral):
     class Type(ctypes.Structure):
@@ -28,8 +28,8 @@ class CortexM4Scb(QlPeripheral):
             ('AFSR'     , ctypes.c_uint32),
         ]
 
-    def __init__(self, ql, tag):
-        super().__init__(ql, tag)
+    def __init__(self, ql, label):
+        super().__init__(ql, label)
 
         self.scb = self.struct(
             CPUID = 0x410FC241,
@@ -113,6 +113,9 @@ class CortexM4Scb(QlPeripheral):
         if IRQn == IRQ.SVCALL:
             return (self.scb.SHCSR >> 15) & 1
         return 0
+
+    def get_priority(self, IRQn):
+        return self.scb.SHP[(IRQn & 0xf) - 4]
 
     def read(self, offset, size):
         buf = ctypes.create_string_buffer(size)

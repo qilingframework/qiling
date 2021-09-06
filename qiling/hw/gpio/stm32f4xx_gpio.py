@@ -45,8 +45,8 @@ class STM32F4xxGpio(BaseGPIO):
 			('AFRH'   , ctypes.c_uint32),      # GPIO alternate function registers,     Address offset: 0x20-0x24
 		]
 
-    def __init__(self, ql, tag, **kwargs):
-        super().__init__(ql, tag, **kwargs)
+    def __init__(self, ql, label, **kwargs):
+        super().__init__(ql, label, **kwargs)
 
         self.gpio = self.struct()
 
@@ -73,9 +73,9 @@ class STM32F4xxGpio(BaseGPIO):
         data = int.from_bytes(buf.raw, byteorder='little')
         mock_data = self.mock_read(offset)
         if mock_data != data:
-            self.ql.log.debug(f'[{self.tag}] mock_data {hex(mock_data)} != data {hex(data)} when read {hex(offset)}')
+            self.ql.log.debug(f'[{self.label}] mock_data {hex(mock_data)} != data {hex(data)} when read {hex(offset)}')
             # data = mock_data
-        self.ql.log.debug(f'[{self.tag}] Read [{hex(self.base + offset)}] = {hex(data)}')
+        self.ql.log.debug(f'[{self.label}] Read [{hex(self.base + offset)}] = {hex(data)}')
         return data
 
     def mock_read(self, offset:int) -> int:
@@ -117,7 +117,7 @@ class STM32F4xxGpio(BaseGPIO):
             ctypes.memmove(ctypes.addressof(self.gpio) + ofs, data, 1)
             value >>= 8
         
-        self.ql.log.debug(f'[{self.tag}] Write [{hex(self.base + offset)}] = {hex(value)}')
+        self.ql.log.debug(f'[{self.label}] Write [{hex(self.base + offset)}] = {hex(value)}')
 
     def mock_write(self, offset:int, value:int):
         if offset == self.struct.MODER.offset:

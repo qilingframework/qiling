@@ -2,8 +2,8 @@ from qiling.hw.peripheral import QlPeripheral
 
 
 class BaseGPIO(QlPeripheral):
-    def __init__(self, ql, tag, **kwargs):
-        super().__init__(ql, tag, **kwargs)
+    def __init__(self, ql, label, **kwargs):
+        super().__init__(ql, label, **kwargs)
         self.states = []
 
     

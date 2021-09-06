@@ -15,3 +15,14 @@ class SPI_CR2(IntEnum):
     SSOE    = 1 << 2
     TXDMAEN = 1 << 1
     RXDMAEN = 1 << 0
+
+class SPI_SR(IntEnum):
+    FRE    = 1 << 8
+    BSY    = 1 << 7
+    OVR    = 1 << 6
+    MODF   = 1 << 5
+    CRCERR = 1 << 4
+    UDR    = 1 << 3
+    CHSIDE = 1 << 2
+    TXE    = 1 << 1
+    RXNE   = 1 << 0

@@ -25,6 +25,9 @@ class MCUTest(unittest.TestCase):
         ql = Qiling(["../examples/rootfs/mcu/stm32f411/hello_usart.hex"],                    
                     archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DEFAULT)        
         
+        ql.hw.create('usart2')
+        ql.hw.create('rcc')
+
         ql.run(count=2000)
         buf = ql.hw.usart2.recv()
         print('[1] Received from usart: ', buf)
@@ -35,6 +38,9 @@ class MCUTest(unittest.TestCase):
     def test_mcu_usart_input_stm32f411(self):
         ql = Qiling(["../examples/rootfs/mcu/stm32f411/md5_server.hex"],                    
             archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.OFF)
+
+        ql.hw.create('usart2')
+        ql.hw.create('rcc')
         
         ql.run(count=1000)
         
@@ -53,6 +59,10 @@ class MCUTest(unittest.TestCase):
     def test_mcu_patch(self):
         ql = Qiling(["../examples/rootfs/mcu/stm32f411/patch_test.hex"],                    
                     archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DEFAULT)
+
+        ql.hw.create('usart2')
+        ql.hw.create('rcc')
+        ql.hw.create('gpioa')
 
         ql.patch(0x80005CA, b'\x00\xBF')
         ql.run(count=4000)

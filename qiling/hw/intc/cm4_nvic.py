@@ -5,9 +5,8 @@
 
 import ctypes
 
-from unicorn.unicorn import UcError
 from qiling.hw.peripheral import QlPeripheral
-from qiling.const import QL_VERBOSE
+from qiling.arch.arm_const import IRQ
 
 
 class CortexM4Nvic(QlPeripheral):
@@ -28,8 +27,8 @@ class CortexM4Nvic(QlPeripheral):
             ('STIR'     , ctypes.c_uint32 * 8),
         ]
 
-    def __init__(self, ql, tag):
-        super().__init__(ql, tag)
+    def __init__(self, ql, label):
+        super().__init__(ql, label)
         
         # reference:
         # https://www.youtube.com/watch?v=uFBNf7F3l60
@@ -52,8 +51,7 @@ class CortexM4Nvic(QlPeripheral):
             (self.struct.ICPR, self.clear_pending),
         ]
 
-        self.intrs = []
-        self.reg_context = ['xpsr', 'pc', 'lr', 'r12', 'r3', 'r2', 'r1', 'r0']
+        self.intrs = []        
 
     def enable(self, IRQn):
         if IRQn >= 0:
@@ -83,6 +81,16 @@ class CortexM4Nvic(QlPeripheral):
             self.ql.hw.scb.set_pending(IRQn)
         
         if self.get_enable(IRQn):
+            if self.is_configurable(IRQn) and (self.ql.reg.read('primask') & 0x1):
+                return
+            
+            if IRQn != IRQ.NMI and (self.ql.reg.read('faultmask') & 0x1):
+                return
+
+            basepri = self.ql.reg.read('basepri') & 0xf0
+            if basepri != 0 and basepri >= self.get_priority(IRQn):
+                return
+
             self.intrs.append(IRQn)
 
     def clear_pending(self, IRQn):
@@ -99,52 +107,27 @@ class CortexM4Nvic(QlPeripheral):
             return self.ql.hw.scb.get_pending(IRQn)
 
     def get_priority(self, IRQn):
-        return 0
+        if IRQn >= 0:
+            return self.nvic.IPR[IRQn]
+        else:
+            return self.ql.hw.scb.get_priority(IRQn)
 
-    def save_regs(self):
-        for reg in self.reg_context:
-            val = self.ql.reg.read(reg)
-            self.ql.arch.stack_push(val)
-
-    def restore_regs(self):
-        for reg in reversed(self.reg_context):
-            val = self.ql.arch.stack_pop()
-            self.ql.reg.write(reg, val)
-
-    def handle_interupt(self, offset):
-        if self.ql.verbose >= QL_VERBOSE.DISASM:
-            self.ql.log.info('Enter into interrupt')
-
-        address = self.ql.arch.boot_space + offset
-        entry = self.ql.mem.read_ptr(address)
-
-        ## TODO: handle other exceptionreturn behavior
-        EXC_RETURN = 0xFFFFFFF9
-
-        self.ql.reg.write('pc', entry)
-        self.ql.reg.write('lr', EXC_RETURN)
-
-        try:
-            self.ql.emu_start(self.ql.arch.get_pc(), EXC_RETURN)
-        except UcError:
-            pass
-
-        if self.ql.verbose >= QL_VERBOSE.DISASM:
-            self.ql.log.debug('Exit from interrupt')
-
+    def is_configurable(self, IRQn):
+        return IRQn > IRQ.HARD_FAULT
+        
     def step(self):
         if not self.intrs:
             return
 
         self.intrs.sort(key=lambda x: self.get_priority(x))
-        self.save_regs()
-                
+        
+        self.ql.arch.enter_intr()                    
         for IRQn in self.intrs:
-            self.clear_pending(IRQn)
-            self.handle_interupt((IRQn + 16) << 2)            
+            self.clear_pending(IRQn) 
+            self.ql.arch.handle_interupt(IRQn)            
 
+        self.ql.arch.exit_intr()
         self.intrs.clear()
-        self.restore_regs()
 
     def read(self, offset, size):
         buf = ctypes.create_string_buffer(size)
@@ -160,6 +143,10 @@ class CortexM4Nvic(QlPeripheral):
                             func(i + (ofs - var.offset) * 8)
                     break
             else:
+                ipr = self.struct.IPR
+                if ipr.offset <= ofs < ipr.offset + ipr.size:
+                    byte &= 0xf0 # IPR[3: 0] reserved
+                
                 ctypes.memmove(ctypes.addressof(self.nvic) + ofs, bytes([byte]), 1)                
 
         for ofs in range(offset, offset + size):

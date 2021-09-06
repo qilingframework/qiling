@@ -10,6 +10,7 @@ sys.path.append("..")
 from qiling import Qiling
 from qiling.const import *
 from qiling.exception import *
+from qiling.extensions import pipe
 from qiling.loader.pe import QlPeCache
 from qiling.os.const import *
 from qiling.os.windows.fncc import *
@@ -349,28 +350,6 @@ class PETest(unittest.TestCase):
 
 
     def test_pe_win_x86_crackme(self):
-        class StringBuffer:
-            def __init__(self):
-                self.buffer = b''
-
-            def read(self, n):
-                ret = self.buffer[:n]
-                self.buffer = self.buffer[n:]
-                return ret
-
-            def readline(self, end=b'\n'):
-                ret = b''
-                while True:
-                    c = self.read(1)
-                    ret += c
-                    if c == end:
-                        break
-                return ret
-
-            def write(self, string):
-                self.buffer += string
-                return len(string)
-
         def force_call_dialog_func(ql):
             # get DialogFunc address
             lpDialogFunc = ql.unpack32(ql.mem.read(ql.reg.esp - 0x8, 4))
@@ -390,7 +369,7 @@ class PETest(unittest.TestCase):
             ql.patch(0x0040110B, b'\x90\x90')
             ql.patch(0x00401112, b'\x90\x90')
 
-            ql.os.stdin = StringBuffer()
+            ql.os.stdin = pipe.SimpleStringBuffer()
             ql.os.stdin.write(b"Ea5yR3versing\n")
 
             ql.hook_address(force_call_dialog_func, 0x00401016)

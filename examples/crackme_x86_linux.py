@@ -7,39 +7,23 @@ import sys
 sys.path.append("..")
 
 import string
-from typing import TextIO
 
 from qiling import Qiling
-from qiling.os.posix import stat
+from qiling.const import QL_VERBOSE
+from qiling.extensions import pipe
 
 ROOTFS = r"rootfs/x86_linux"
 
-class MyPipe(TextIO):
-    def __init__(self):
-        self.buf = bytearray()
-
-    def write(self, s: bytes):
-        self.buf.extend(s)
-
-    def read(self, size: int) -> bytes:
-        ret = self.buf[:size]
-        self.buf = self.buf[size:]
-
-        return bytes(ret)
-
-    def fileno(self) -> int:
-        return sys.stdin.fileno()
-
-    def fstat(self):
-        return stat.Fstat(self.fileno())
-
 class Solver:
     def __init__(self, invalid: bytes):
+        mock_stdin = pipe.SimpleInStream(sys.stdin.fileno())
+        mock_stdout = pipe.NullOutStream(sys.stdout.fileno())
+
         # create a silent qiling instance
         self.ql = Qiling([rf"{ROOTFS}/bin/crackme_linux"], ROOTFS,
-            console=False,      # thwart qiling logger output
-            stdin=MyPipe(),     # take over the input to the program using a fake stdin
-            stdout=sys.stdout)  # thwart program output
+            verbose=QL_VERBOSE.OFF, # thwart qiling logger output
+            stdin=mock_stdin,       # take over the input to the program using a fake stdin
+            stdout=mock_stdout)     # disregard program output
 
         # execute program until it reaches the 'main' function
         self.ql.run(end=0x0804851b)
@@ -120,13 +104,13 @@ def main():
         for ch in string.printable:
             flag[idx] = ord(ch)
 
-            print(f'\rGuessing... [{"".join(chr(ch) if ch else "_" for ch in flag)}]', end='', file=sys.stderr, flush=True)
+            print(f'Guessing... [{"".join(chr(ch) if ch else "_" for ch in flag)}]', end='\r', file=sys.stderr, flush=True)
 
             if solver.replay(bytes(flag)):
                 break
 
         else:
-            print(f'No match found')
+            raise RuntimeError('no match found')
 
     print(f'\nFlag found!')
 

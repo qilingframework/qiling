@@ -191,7 +191,7 @@ class QlMemoryManager:
                 data = self.read(lbound, ubound - lbound)
                 mem_dict['ram'].append((lbound, ubound, perm, label, bytes(data)))
             else:
-                mem_dict['mmio'].append(lbound, ubound, perm, label, *self.mmio_cbs[(lbound, ubound)])
+                mem_dict['mmio'].append((lbound, ubound, perm, label, *self.mmio_cbs[(lbound, ubound)]))
 
         return mem_dict
 
@@ -210,7 +210,7 @@ class QlMemoryManager:
             self.ql.log.debug(f'writing {lbound:#08x}, size = {size:#x}, write_size = {len(data):#x}')
             self.write(lbound, data)
         
-        for lbound, ubount, perms, label, read_cb, write_cb in mem_dict['mmio']:
+        for lbound, ubound, perms, label, read_cb, write_cb in mem_dict['mmio']:
             self.ql.log.debug(f"To restore mmio mapping: {lbound:#08x} {ubound:#08x} {label}")
 
             #TODO: Handle overlapped MMIO?
@@ -289,7 +289,7 @@ class QlMemoryManager:
 
         assert begin < end, 'search arguments do not make sense'
 
-        ranges = [(max(begin, lbound), min(ubound, end)) for lbound, ubound, _, _, _ in self.map_info if (begin <= lbound < end) or (begin < ubound <= end)]
+        ranges = [(max(begin, lbound), min(ubound, end)) for lbound, ubound, _, _, _ in self.map_info if not (end < lbound or ubound < begin)]
         results = []
 
         for lbound, ubound in ranges:
