@@ -5,6 +5,7 @@
 
 import ctypes
 from qiling.hw.peripheral import QlPeripheral
+from qiling.hw.const.stm32f4xx_spi import SPI_SR
 
 
 class STM32F4xxSpi(QlPeripheral):
@@ -64,10 +65,35 @@ class STM32F4xxSpi(QlPeripheral):
 		self.intn = intn
 
 	def read(self, offset, size):
+		if offset == self.struct.DR.offset:
+			self.spi.SR &= ~SPI_SR.RXNE
+
 		buf = ctypes.create_string_buffer(size)
 		ctypes.memmove(buf, ctypes.addressof(self.spi) + offset, size)
 		return int.from_bytes(buf.raw, byteorder='little')
 
 	def write(self, offset, size, value):
+		if offset in [self.struct.SR.offset, self.struct.RXCRCR.offset, self.struct.TXCRCR.offset]:
+			return
+
+		if offset == self.struct.CR1.offset:
+			value &= 0xffff
+
+		elif offset == self.struct.CR2.offset:
+			value &= 0xf7
+		
+		elif offset == self.struct.DR.offset:
+			value &= 0x1ff
+			self.spi.SR |= SPI_SR.RXNE
+
+		elif offset == self.struct.CRCPR.offset:
+			value &= 0xffff		
+
+		elif offset == self.struct.I2SCFGR.offset:
+			value &= 0xfbf
+
+		elif offset == self.struct.I2SPR.offset:
+			value &= 0x3ff
+
 		data = (value).to_bytes(size, 'little')
 		ctypes.memmove(ctypes.addressof(self.spi) + offset, data, size)

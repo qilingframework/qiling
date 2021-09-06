@@ -5,6 +5,7 @@
 
 from enum import IntEnum
 
+
 class DMA_CR(IntEnum):
     CHSEL    = 7 << 25
     CHSEL_0  = 1 << 25
