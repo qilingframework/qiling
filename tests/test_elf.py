@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import sys, unittest, string, random, os, io
+import sys, unittest, string, random, os, io, re
 
 sys.path.append("..")
 from qiling import Qiling
@@ -1007,6 +1007,44 @@ class ELFTest(unittest.TestCase):
 
         ql.run()
         self.assertTrue("bin\n" in ql.os.stdout.read().decode("utf-8"))
+
+        del ql
+    
+    def test_memory_search(self):
+        ql = Qiling(code = b"\xCC", archtype = "x8664", ostype = "linux", verbose=QL_VERBOSE.DEBUG)
+        
+        ql.mem.map(0x1000, 0x1000)
+        ql.mem.map(0x2000, 0x1000)
+        ql.mem.map(0x3000, 0x1000)
+
+        ql.mem.write(0x1000, b"\x47\x06\x0d\x1e\x0d\x1a\x53\x0f\x07\x06\x06\x09\x53\x0f\x01\x1e\x0d\x53\x11\x07\x1d\x53\x1d\x18\x4f\x53\x06\x0d\x1e\x0d\x1a\x53\x0f\x07\x06\x06\x09\x53\x04\x0d\x1c\x53\x11\x07\x1d\x53\x0c\x07\x1f\x06\x45")
+        ql.mem.write(0x2000, b"\x47\x06\x0d\x1e\x0d\x1a\x53\x0f\x07\x06\x06\x09\x53\x1a\x1d\x06\x53\x09\x1a\x07\x1d\x06\x0c\x53\x09\x06\x0c\x53\x0c\x0d\x1b\x0d\x1a\x1c\x53\x11\x07\x1d\x4f\x53\x06\x0d\x1e\x0d\x1a\x53\x0f\x07\x06\x06\x09\x53\x05\x09\x03\x0d\x53\x11\x07\x1d\x53\x0b\x1a\x11\x45")
+        ql.mem.write(0x3000, b"\x47\x06\x0d\x1e\x0d\x1a\x53\x0f\x07\x06\x06\x09\x53\x1b\x09\x11\x53\x0f\x07\x07\x0c\x0a\x11\x0d\x4f\x53\x06\x0d\x1e\x0d\x1a\x53\x0f\x07\x06\x06\x09\x53\x1c\x0d\x04\x04\x53\x09\x53\x04\x01\x0d\x53\x09\x06\x0c\x53\x00\x1d\x1a\x1c\x53\x11\x07\x1d\x45")
+        ql.mem.write(0x1FFB, b"\x1f\x00\x07\x53\x03\x06\x07\x1f\x1b")
+
+        # Needle not in haystack
+        self.assertEqual([], ql.mem.search(re.escape(b"\x3a\x01\x0b\x03\x53\x29\x1b\x1c\x04\x0d\x11")))
+
+        # Needle appears several times in haystack
+        self.assertEqual([0x1000 + 24, 0x2000 + 38, 0x3000 + 24], ql.mem.search(re.escape(b"\x4f\x53\x06\x0d\x1e\x0d\x1a")))
+
+        # Needle inside haystack
+        self.assertEqual([0x1000 + 13], ql.mem.search(re.escape(b"\x0f\x01\x1e\x0d\x53\x11\x07\x1d\x53\x1d\x18"), begin=0x1000 + 10, end=0x1000 + 30))
+
+        # Needle before haystack
+        self.assertEqual([], ql.mem.search(re.escape(b"\x04\x0d\x1c\x53\x11\x07\x1d\x53\x0c\x07\x1f\x06"), begin=0x1337))
+
+        # Needle after haystack
+        self.assertEqual([], ql.mem.search(re.escape(b"\x1b\x09\x11\x53\x0f\x07\x07\x0c\x0a\x11\x0d"), end=0x3000 + 13))
+
+        # Needle exactly inside haystack
+        self.assertEqual([0x2000 + 13], ql.mem.search(re.escape(b"\x1a\x1d\x06\x53\x09\x1a\x07\x1d\x06\x0c"), begin=0x2000 + 13, end=0x2000 + 23))
+
+        # Needle 'tears' two mapped regions
+        self.assertEqual([], ql.mem.search(re.escape(b"\x1f\x00\x07\x53\x03\x06\x07\x1f\x1b"), begin=0x1F00, end=0x200F))
+
+        # Needle is a regex
+        self.assertEqual([0x1000 + 11, 0x2000 + 11, 0x3000 + 43], ql.mem.search(b"\x09\x53(\x0f|\x1a|\x04)[^\x0d]"))
 
         del ql
 
