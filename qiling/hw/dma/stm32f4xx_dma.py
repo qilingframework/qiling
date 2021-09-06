@@ -5,7 +5,7 @@
 
 import ctypes
 from qiling.hw.peripheral import QlPeripheral
-from qiling.hw.const.dma import DMA, DMA_CR
+from qiling.hw.const.stm32f4xx_dma import DMA, DMA_CR
 
 class Stream(ctypes.Structure):
     _fields_ = [

@@ -9,7 +9,7 @@ import serial
 
 from qiling.hw.utils.serial import QlSerial
 from qiling.hw.peripheral import QlPeripheral
-from qiling.hw.const.usart import USART_SR, USART_CR1
+from qiling.hw.const.stm32f4xx_usart import USART_SR, USART_CR1
 
 class STM32F4xxUsart(QlPeripheral):
     class Type(ctypes.Structure):
