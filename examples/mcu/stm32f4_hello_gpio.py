@@ -14,14 +14,16 @@ def h_addr(ql, addr, data):
 
 def test_mcu_gpio_stm32f411():
     ql = Qiling(["../../examples/rootfs/mcu/stm32f411/hello_gpioA.hex"],                    
-                archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DEFAULT)
+                archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DEBUG)
 
     ql.hw.create('usart2')
     ql.hw.create('rcc')
     ql.hw.create('gpioa')
 
-    ql.run(count=2745)
+    ql.hw.gpioa.hook_set(5, lambda: print('LED light up'))
+    ql.hw.gpioa.hook_reset(5, lambda: print('LED light off'))
 
+    ql.run(count=10000)
 
 if __name__ == "__main__":
     test_mcu_gpio_stm32f411()
