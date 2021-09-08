@@ -6,8 +6,10 @@
 import ctypes
 
 from qiling.hw.peripheral import QlPeripheral
+from qiling.hw.gpio.hooks import GpioHooks
 
-class STM32F4xxGpio(QlPeripheral):
+
+class STM32F4xxGpio(QlPeripheral, GpioHooks):
     class Type(ctypes.Structure):
         """ the structure available in :
             stm32f413xx.h
@@ -53,16 +55,14 @@ class STM32F4xxGpio(QlPeripheral):
             ospeedr_reset = 0x00,
             pupdr_reset    = 0x00
         ):
-        super().__init__(ql, label)
+        QlPeripheral.__init__(self, ql, label)
+        GpioHooks.__init__(self, ql, 16)
 
         self.gpio = self.struct(
             MODER   = moder_reset,
             OSPEEDR = ospeedr_reset,
             PUPDR   = pupdr_reset,
         )        
-        
-        self.hook_set_func = [lambda: ...] * 16
-        self.hook_reset_func = [lambda: ...] * 16
 
     def read(self, offset, size):
         if offset == self.struct.BSRR.offset:
@@ -106,13 +106,7 @@ class STM32F4xxGpio(QlPeripheral):
             value &= 0x1ffff        
         
         data = (value).to_bytes(size, 'little')
-        ctypes.memmove(ctypes.addressof(self.gpio) + offset, data, size)
-
-    def hook_set(self, i, func):
-        self.hook_set_func[i] = func
-
-    def hook_reset(self, i, func):
-        self.hook_reset_func[i] = func
+        ctypes.memmove(ctypes.addressof(self.gpio) + offset, data, size) 
 
     def set_pin(self, i):
         self.ql.log.debug(f'[{self.label}] Set P{self.label[-1].upper()}{i}')
