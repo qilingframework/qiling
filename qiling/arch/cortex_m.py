@@ -8,9 +8,11 @@ from capstone import Cs, CS_ARCH_ARM, CS_MODE_ARM, CS_MODE_MCLASS, CS_MODE_THUMB
 from keystone import Ks, KS_ARCH_ARM, KS_MODE_ARM, KS_MODE_THUMB
 
 from qiling.const import QL_VERBOSE
+from qiling.exception import QlErrorNotImplemented
 
 from .arm import QlArchARM
 from .arm_const import IRQ, EXC_RETURN, CONTROL, EXCP
+
 
 class QlArchCORTEX_M(QlArchARM):
     def __init__(self, ql):
@@ -26,7 +28,7 @@ class QlArchCORTEX_M(QlArchARM):
                 ql.emu_stop()            
             
             else:
-                ql.log.warning(f'Unhandled interrupt number ({intno})')
+                raise QlErrorNotImplemented(f'Unhandled interrupt number ({intno})')
 
         self.intr_cb = intr_cb
 
