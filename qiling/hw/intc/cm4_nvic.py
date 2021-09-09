@@ -81,16 +81,6 @@ class CortexM4Nvic(QlPeripheral):
             self.ql.hw.scb.set_pending(IRQn)
         
         if self.get_enable(IRQn):
-            if self.is_configurable(IRQn) and (self.ql.reg.read('primask') & 0x1):
-                return
-            
-            if IRQn != IRQ.NMI and (self.ql.reg.read('faultmask') & 0x1):
-                return
-
-            basepri = self.ql.reg.read('basepri') & 0xf0
-            if basepri != 0 and basepri <= self.get_priority(IRQn):
-                return
-
             self.intrs.append(IRQn)
 
     def clear_pending(self, IRQn):
@@ -110,24 +100,20 @@ class CortexM4Nvic(QlPeripheral):
         if IRQn >= 0:
             return self.nvic.IPR[IRQn]
         else:
-            return self.ql.hw.scb.get_priority(IRQn)
-
-    def is_configurable(self, IRQn):
-        return IRQn > IRQ.HARD_FAULT
+            return self.ql.hw.scb.get_priority(IRQn)    
         
     def step(self):
         if not self.intrs:
             return
 
         self.intrs.sort(key=lambda x: self.get_priority(x))        
-        
-        self.ql.arch.enter_intr()
+                
         while self.intrs:
             IRQn = self.intrs.pop(0)
             self.clear_pending(IRQn)
+            self.ql.arch.enter_intr()
             self.ql.arch.handle_interupt(IRQn)
-
-        self.ql.arch.exit_intr()        
+            self.ql.arch.exit_intr()
 
     def read(self, offset, size):
         buf = ctypes.create_string_buffer(size)

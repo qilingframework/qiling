@@ -97,6 +97,16 @@ class QlArchCORTEX_M(QlArchARM):
             self.ql.log.info('Exit from interrupt')
 
     def handle_interupt(self, IRQn):
+        if IRQn > IRQ.HARD_FAULT and (self.ql.reg.read('primask') & 0x1):
+            return
+            
+        if IRQn != IRQ.NMI and (self.ql.reg.read('faultmask') & 0x1):
+            return
+
+        basepri = self.ql.reg.read('basepri') & 0xf0
+        if basepri != 0 and basepri <= self.ql.hw.nvic.get_priority(IRQn):
+            return
+
         if self.ql.verbose >= QL_VERBOSE.DISASM:
             self.ql.log.info(f'Handle the IRQn: {IRQn}')
 
