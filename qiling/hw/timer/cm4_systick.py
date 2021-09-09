@@ -53,7 +53,7 @@ class CortexM4SysTick(QlPeripheral):
 
         # restart the timer
         if offset == self.struct.LOAD.offset:            
-            self.systick.VAL = self.systick.LOAD
+            self.systick.VAL = value
 
         data = (value).to_bytes(size, 'little')
         ctypes.memmove(ctypes.addressof(self.systick) + offset, data, size)        
