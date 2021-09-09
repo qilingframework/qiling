@@ -190,7 +190,14 @@ class QlOsPosix(QlOs):
                 syscall_hook = None
 
         if syscall_hook:
-            params = [self.__syscall_cc.getRawParam(i) for i in range(6)]
+            # extract the parameters list from hook signature
+            param_names = tuple(signature(syscall_hook).parameters.values())
+
+            # skip first arg (always 'ql') and filter out python special args (*args and **kwargs)
+            param_names = [info.name for info in param_names[1:] if info.kind == Parameter.POSITIONAL_OR_KEYWORD]
+
+            # read parameter values
+            params = [self.__syscall_cc.getRawParam(i) for i in range(len(param_names))]
 
             try:
         		# if set, fire up the on-enter hook and let it override original args set
@@ -226,16 +233,7 @@ class QlOsPosix(QlOs):
             syscall_basename = syscall_hook.__name__[len(SYSCALL_PREF):]
             args = []
 
-            # ignore first arg, which is 'ql'
-            args_info = tuple(signature(syscall_hook).parameters.values())[1:]
-
-            for info, value in zip(args_info, params):
-                # skip python special args, like: *args and **kwargs
-                if info.kind != Parameter.POSITIONAL_OR_KEYWORD:
-                    continue
-
-                name = info.name
-
+            for name, value in zip(param_names, params):
                 # cut the first part of the arg if it is of form fstatat64_fd
                 if name.startswith(f'{syscall_basename}_'):
                     name = name.partition('_')[-1]
