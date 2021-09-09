@@ -119,15 +119,15 @@ class CortexM4Nvic(QlPeripheral):
         if not self.intrs:
             return
 
-        self.intrs.sort(key=lambda x: self.get_priority(x))
+        self.intrs.sort(key=lambda x: self.get_priority(x))        
         
-        self.ql.arch.enter_intr()                    
-        for IRQn in self.intrs:
-            self.clear_pending(IRQn) 
-            self.ql.arch.handle_interupt(IRQn)            
+        self.ql.arch.enter_intr()
+        while self.intrs:
+            IRQn = self.intrs.pop(0)
+            self.clear_pending(IRQn)
+            self.ql.arch.handle_interupt(IRQn)
 
-        self.ql.arch.exit_intr()
-        self.intrs.clear()
+        self.ql.arch.exit_intr()        
 
     def read(self, offset, size):
         buf = ctypes.create_string_buffer(size)
