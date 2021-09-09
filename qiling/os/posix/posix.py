@@ -245,7 +245,7 @@ class QlOsPosix(QlOs):
 
             # record syscall statistics
             self.utils.syscalls.setdefault(syscall_name, []).append({
-                "params": dict(zip((f'param{i}' for i in range(6)), params)),
+                "params": dict(zip(param_names, params)),
                 "result": retval,
                 "address": self.ql.reg.arch_pc,
                 "return_address": None,
