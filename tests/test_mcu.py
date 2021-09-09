@@ -69,6 +69,28 @@ class MCUTest(unittest.TestCase):
 
         del ql
 
+    def test_mcu_freertos(self):
+        ql = Qiling(["../examples/rootfs/mcu/stm32f411/os-demo.hex"],                    
+            archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DEBUG)
+
+        ql.hw.create('usart2')
+        ql.hw.create('rcc')
+        ql.hw.create('gpioa')
+
+        count = 0
+        def counter():
+            nonlocal count
+            count += 1
+
+        ql.hw.gpioa.hook_set(5, counter)
+
+        ql.run(count=200000)
+
+        self.assertTrue(count >= 5)
+        self.assertTrue(ql.hw.usart2.recv().startswith(b'Free RTOS\n' * 5))
+
+        del ql
+
 if __name__ == "__main__":
     unittest.main()
 
