@@ -88,7 +88,7 @@ class CortexM4Nvic(QlPeripheral):
                 return
 
             basepri = self.ql.reg.read('basepri') & 0xf0
-            if basepri != 0 and basepri >= self.get_priority(IRQn):
+            if basepri != 0 and basepri <= self.get_priority(IRQn):
                 return
 
             self.intrs.append(IRQn)
