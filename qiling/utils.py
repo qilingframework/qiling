@@ -9,7 +9,7 @@ thoughout the qiling framework
 """
 import importlib, os, copy, re, pefile, configparser, logging, sys
 from logging import LogRecord
-from typing import Container, Optional, Mapping
+from typing import Container, Optional, Mapping, Sequence
 from enum import EnumMeta
 
 from unicorn import UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
@@ -498,16 +498,14 @@ def profile_setup(ostype, profile, ql):
     config.read(profiles)
     return config, debugmsg
 
-def ql_resolve_logger_level(verbose: QL_VERBOSE):
-    level = logging.INFO
-    if verbose == QL_VERBOSE.OFF:
-        level = logging.WARNING
-    elif verbose >= QL_VERBOSE.DEBUG:
-        level = logging.DEBUG
-    elif verbose >= QL_VERBOSE.DEFAULT:
-        level = logging.INFO
-    
-    return level
+def ql_resolve_logger_level(verbose: QL_VERBOSE) -> int:
+    return {
+        QL_VERBOSE.OFF     : logging.WARNING,
+        QL_VERBOSE.DEFAULT : logging.INFO,
+        QL_VERBOSE.DEBUG   : logging.DEBUG,
+        QL_VERBOSE.DISASM  : logging.DEBUG,
+        QL_VERBOSE.DUMP    : logging.DEBUG
+    }[verbose]
 
 QL_INSTANCE_ID = 114514
 
@@ -522,20 +520,22 @@ def ql_setup_logger(ql, log_file: Optional[str], console: bool, filters: Optiona
         # We should leave the root logger untouched.
         log = logging.getLogger(f"qiling{QL_INSTANCE_ID}")
         QL_INSTANCE_ID += 1
-        
+
         # Disable propagation to avoid duplicate output.
         log.propagate = False
         # Clear all handlers and filters.
         log.handlers = []
-        log.filters = []    
+        log.filters = []
 
         # Do we have console output?
         if console:
             handler = logging.StreamHandler()
+
             if not log_plain and not sys.platform == "win32":
                 formatter = QilingColoredFormatter(ql, FMT_STR)
             else:
                 formatter = QilingPlainFormatter(ql, FMT_STR)
+
             handler.setFormatter(formatter)
             log.addHandler(handler)
         else:
