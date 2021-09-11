@@ -512,7 +512,7 @@ def ql_resolve_logger_level(verbose: QL_VERBOSE):
 QL_INSTANCE_ID = 114514
 
 # TODO: qltool compatibility
-def ql_setup_logger(ql, log_file, console, filters, multithread, log_override, log_plain):
+def ql_setup_logger(ql, log_file: Optional[str], console: bool, filters: Optional[Sequence], log_override: Optional[logging.Logger], log_plain: bool):
     global QL_INSTANCE_ID
 
     # If there is an override for our logger, then use it.
