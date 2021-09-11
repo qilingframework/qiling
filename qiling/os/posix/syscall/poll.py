@@ -1,11 +1,9 @@
-from multiprocessing import Process
+#!/usr/bin/env python3
+#
+# Cross Platform and Multi Architecture Advanced Binary Emulation Framework
+#
 
-from qiling.const import *
-from qiling.os.linux.thread import *
-from qiling.os.posix.filestruct import *
-from qiling.os.filestruct import *
-from qiling.os.posix.const_mapping import *
-from qiling.exception import *
+from qiling import Qiling
 
-def ql_syscall_poll(ql, fds, nfds, timeout, *args, **kw):
+def ql_syscall_poll(ql: Qiling, fds: int, nfds: int, timeout: int):
     return 0
