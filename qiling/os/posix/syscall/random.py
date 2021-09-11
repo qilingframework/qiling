@@ -5,20 +5,16 @@
 
 import os
 
+from qiling import Qiling
 
-from qiling.const import *
-
-def ql_syscall_getrandom(ql, buf, buflen, flags,*args, **kw):
-    data = None
-    regreturn = None
+def ql_syscall_getrandom(ql: Qiling, buf: int, buflen: int, flags: int):
     try:
         data = os.urandom(buflen)
         ql.mem.write(buf, data)
-        regreturn = len(data)
     except:
-        regreturn = -1
+        retval = -1
+    else:
+        ql.log.debug(f'getrandom() CONTENT: {data.hex(" ")}')
+        retval = len(data)
 
-    if data:
-        ql.log.debug("getrandom() CONTENT:")
-        ql.log.debug(str(data))
-    return regreturn
+    return retval
