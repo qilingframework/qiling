@@ -4,78 +4,79 @@
 #
 
 import select
+from typing import Tuple, Sequence, Mapping
 
-from qiling.const import *
-from qiling.os.linux.thread import *
-from qiling.os.posix.filestruct import *
-from qiling.os.filestruct import *
-from qiling.os.posix.const_mapping import *
-from qiling.exception import *
+from qiling import Qiling
+from qiling.const import QL_VERBOSE
 
-def ql_syscall__newselect(ql, _newselect_nfds, _newselect_readfds, _newselect_writefds, _newselect_exceptfds, _newselect_timeout, *args, **kw):
-
+def ql_syscall__newselect(ql: Qiling, nfds: int, readfds: int, writefds: int, exceptfds: int, timeout: int):
     regreturn = 0
 
-    def parse_fd_set(ql, max_fd, struct_addr):
+    def parse_fd_set(ql: Qiling, max_fd: int, struct_addr: int) -> Tuple[Sequence[int], Mapping[int, int]]:
         fd_list = []
         fd_map = {}
-        idx = 0
-        tmp = 0
-        if struct_addr == 0:
-            return fd_list, fd_map
-        while idx < max_fd:
-            if idx % 32 == 0:
-                tmp = ql.unpack32(ql.mem.read(struct_addr + idx, 4))
-            if tmp & 0x1 != 0:
-                fd_list.append(ql.os.fd[idx].fileno())
-                fd_map[ql.os.fd[idx].fileno()] = idx
-            tmp = tmp >> 1
-            idx += 1
+
+        if struct_addr:
+            tmp = 0
+
+            for i in range(max_fd):
+                if i % 32 == 0:
+                    tmp = ql.unpack32(ql.mem.read(struct_addr + i, 4))
+
+                if tmp & 0x1:
+                    fileno = ql.os.fd[i].fileno()
+
+                    fd_list.append(fileno)
+                    fd_map[fileno] = i
+
+                tmp = tmp >> 1
+
         return fd_list, fd_map
 
-    def set_fd_set(buf, idx):
+    def set_fd_set(buf: bytes, idx: int) -> bytes:
         buf = buf[ : idx // 8] + bytes([buf[idx // 8] | (0x1 << (idx % 8))]) + buf[idx // 8 + 1 : ]
         return buf
 
-    tmp_r_fd, tmp_r_map = parse_fd_set(ql, _newselect_nfds, _newselect_readfds)
-    tmp_w_fd, tmp_w_map = parse_fd_set(ql, _newselect_nfds, _newselect_writefds)
-    tmp_e_fd, tmp_e_map = parse_fd_set(ql, _newselect_nfds, _newselect_exceptfds)
+    def handle_ready_fds(ptr: int, ready_fds: Sequence, fds_map: Mapping):
+        tmp_buf = b'\x00' * (nfds // 8 + 1)
+
+        for fd in ready_fds:
+            tmp_buf = set_fd_set(tmp_buf, fds_map[fd])
+
+        ql.mem.write(ptr, tmp_buf)
+
+    tmp_r_fd, tmp_r_map = parse_fd_set(ql, nfds, readfds)
+    tmp_w_fd, tmp_w_map = parse_fd_set(ql, nfds, writefds)
+    tmp_e_fd, tmp_e_map = parse_fd_set(ql, nfds, exceptfds)
 
     n = ql.pointersize
 
-    if _newselect_timeout != 0:
-        timeout_ptr = _newselect_timeout
-        sec = ql.unpack(ql.mem.read(timeout_ptr, n))
-        usec = ql.unpack(ql.mem.read(timeout_ptr + n, n))
-        timeout_total = sec + float(usec)/1000000
+    if timeout:
+        sec  = ql.unpack(ql.mem.read(timeout + n * 0, n))
+        usec = ql.unpack(ql.mem.read(timeout + n * 1, n))
+
+        timeout_total = sec + float(usec) / 1000000
     else:
         timeout_total = None
 
     try:
-        ans = select.select(tmp_r_fd, tmp_w_fd, tmp_e_fd, timeout_total)
-        regreturn = len(ans[0]) + len(ans[1]) + len(ans[2])
+        ready_rfds, ready_wfds, ready_efds = select.select(tmp_r_fd, tmp_w_fd, tmp_e_fd, timeout_total)
+        regreturn = len(ready_rfds) + len(ready_wfds) + len(ready_efds)
 
-        if _newselect_readfds != 0:
-            tmp_buf = b'\x00' * (_newselect_nfds // 8 + 1)
-            for i in ans[0]:
-                ql.log.debug("debug : " + str(tmp_r_map[i]))
-                tmp_buf = set_fd_set(tmp_buf, tmp_r_map[i])
-            ql.mem.write(_newselect_readfds, tmp_buf)
+        if readfds:
+            handle_ready_fds(readfds, ready_rfds, tmp_r_map)
 
-        if _newselect_writefds != 0:
-            tmp_buf = b'\x00' * (_newselect_nfds // 8 + 1)
-            for i in ans[1]:
-                tmp_buf = set_fd_set(tmp_buf, tmp_w_map[i])
-            ql.mem.write(_newselect_writefds, tmp_buf)
+        if writefds:
+            handle_ready_fds(writefds, ready_wfds, tmp_w_map)
 
-        if _newselect_exceptfds != 0:
-            tmp_buf = b'\x00' * (_newselect_nfds // 8 + 1)
-            for i in ans[2]:
-                tmp_buf = set_fd_set(tmp_buf, tmp_e_map[i])
-            ql.mem.write(_newselect_exceptfds, tmp_buf)
+        if exceptfds:
+            handle_ready_fds(exceptfds, ready_efds, tmp_e_map)
+
     except KeyboardInterrupt:
         raise
+
     except:
         if ql.verbose >= QL_VERBOSE.DEBUG:
             raise
+
     return regreturn
