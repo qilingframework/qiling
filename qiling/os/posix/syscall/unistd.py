@@ -248,7 +248,7 @@ def ql_syscall_read(ql: Qiling, fd, buf: int, length: int):
             data = ql.os.fd[fd].read(length)
             ql.mem.write(buf, data)
 
-            ql.log.debug(f'read() CONTENT: {data}')
+            ql.log.debug(f'read() CONTENT: {repr(data.decode())}')
             regreturn = len(data)
         except:
             regreturn = -EBADF
@@ -263,7 +263,7 @@ def ql_syscall_write(ql: Qiling, fd: int, buf: int, count: int):
         data = ql.mem.read(buf, count)
 
         if data:
-            ql.log.debug(f'write() CONTENT: {data}')
+            ql.log.debug(f'write() CONTENT: {repr(data.decode())}')
 
         if hasattr(ql.os.fd[fd], 'write'):
             ql.os.fd[fd].write(data)
