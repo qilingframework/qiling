@@ -202,6 +202,10 @@ class QlOs:
             if image.base <= pc < image.end:
                 return image
 
+    # os main method; derivatives must implement one of their own
+    def run(self) -> None:
+        raise NotImplementedError
+
     def stop(self):
         if self.ql.multithread:
             self.thread_management.stop() 
