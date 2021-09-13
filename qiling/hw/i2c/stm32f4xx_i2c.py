@@ -51,8 +51,8 @@ class STM32F4xxI2c(QlPeripheral):
 			TRISE = 0x0002
 		)
 
-		self.ev_intn = ev_intn
-		self.er_intn = er_intn
+		self.ev_intn = ev_intn # event interrupt
+		self.er_intn = er_intn # error interrupt
 
 	def read(self, offset, size):
 		buf = ctypes.create_string_buffer(size)
