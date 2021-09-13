@@ -26,3 +26,7 @@ class QlLoader():
 
     def restore(self, saved_state: Mapping[str, Any]):
         self.images = [Image(*img) for img in saved_state['images']]
+
+    # loader main method; derivatives must implement one of their own
+    def run(self) -> None:
+        raise NotImplementedError
