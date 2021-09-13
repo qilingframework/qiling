@@ -9,7 +9,7 @@ from qiling import Qiling
 
 Image = NamedTuple('Image', (('base', int), ('end', int), ('path', str)))
 
-class QlLoader():
+class QlLoader:
     def __init__(self, ql: Qiling):
         self.ql = ql
         self.env = self.ql.env

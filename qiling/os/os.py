@@ -6,6 +6,8 @@
 import sys
 from typing import Any, Iterable, Optional, Callable, Mapping, Sequence, TextIO, Tuple
 
+from unicorn import UcError
+
 from qiling import Qiling
 from qiling.const import QL_OS, QL_INTERCEPT, QL_OS_POSIX
 from qiling.os.const import STRING, WSTRING, GUID
@@ -213,29 +215,28 @@ class QlOs:
             self.ql.emu_stop()
 
     def emu_error(self):
-        self.ql.log.error("\n")
-
+        self.ql.log.error(f'CPU Context:')
         for reg in self.ql.reg.register_mapping:
             if isinstance(reg, str):
-                REG_NAME = reg
-                REG_VAL = self.ql.reg.read(reg)
-                self.ql.log.error("%s\t:\t 0x%x" % (REG_NAME, REG_VAL))
+                self.ql.log.error(f'{reg}\t: {self.ql.reg.read(reg):#x}')
 
-        self.ql.log.error("\n")
-        self.ql.log.error("PC = 0x%x" % (self.ql.reg.arch_pc))
-        containing_image = self.find_containing_image(self.ql.reg.arch_pc)
-        if containing_image:
-            offset = self.ql.reg.arch_pc - containing_image.base
-            self.ql.log.error(" (%s+0x%x)" % (containing_image.path, offset))
-        else:
-            self.ql.log.info("\n")
-        self.ql.mem.show_mapinfo()
+        pc = self.ql.reg.arch_pc
 
         try:
-            buf = self.ql.mem.read(self.ql.reg.arch_pc, 8)
-            self.ql.log.error("%r" % ([hex(_) for _ in buf]))
+            data = self.ql.mem.read(pc, size=8)
+        except UcError:
+            pc_info = ' (unreachable)'
+        else:
+            self.ql.log.error('Hexdump:')
+            self.ql.log.error(data.hex(' '))
 
-            self.ql.log.info("\n")
-            self.utils.disassembler(self.ql, self.ql.reg.arch_pc, 64)
-        except:
-            self.ql.log.error("Error: PC(0x%x) Unreachable" % self.ql.reg.arch_pc)
+            self.ql.log.error('Disassembly:')
+            self.ql.arch.utils.disassembler(self.ql, pc, 64)
+
+            containing_image = self.find_containing_image(pc)
+            pc_info = f' ({containing_image.path} + {pc - containing_image.base:#x})' if containing_image else ''
+        finally:
+            self.ql.log.error(f'PC = {pc:#0{self.ql.pointersize * 2 + 2}x}{pc_info}\n')
+
+            self.ql.log.info(f'Memory map:')
+            self.ql.mem.show_mapinfo()
