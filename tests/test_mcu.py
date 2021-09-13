@@ -56,7 +56,7 @@ class MCUTest(unittest.TestCase):
 
         del ql
 
-    def test_mcu_patch(self):
+    def test_mcu_patch_stm32f411(self):
         ql = Qiling(["../examples/rootfs/mcu/stm32f411/patch_test.hex"],                    
                     archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DEFAULT)
 
@@ -69,7 +69,7 @@ class MCUTest(unittest.TestCase):
 
         del ql
 
-    def test_mcu_freertos(self):
+    def test_mcu_freertos_stm32f411(self):
         ql = Qiling(["../examples/rootfs/mcu/stm32f411/os-demo.hex"],                    
             archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DEBUG)
 
@@ -88,6 +88,24 @@ class MCUTest(unittest.TestCase):
 
         self.assertTrue(count >= 5)
         self.assertTrue(ql.hw.usart2.recv().startswith(b'Free RTOS\n' * 5))
+
+        del ql
+
+    def test_mcu_dma_stm32f411(self):
+        ql = Qiling(["../examples/rootfs/mcu/stm32f411/dma-clock.hex"],                    
+            archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DEBUG)
+
+        ql.hw.create('usart2')
+        ql.hw.create('dma1')
+        ql.hw.create('rcc')
+
+        ql.run(count=200000)
+        buf = ql.hw.usart2.recv()
+
+        ## check timestamp
+        tick = [int(x) for x in buf.split()]
+        for i in range(1, len(tick)):
+            assert(4 <= tick[i] - tick[i - 1] <= 6)
 
         del ql
 
