@@ -17,7 +17,7 @@ def ql_syscall_writev(ql: Qiling, fd: int, vec: int, vlen: int):
         regreturn += l
 
         buf = ql.mem.read(addr, l)
-        ql.log.debug(buf)
+        ql.log.debug(f'{buf.decode()!r}')
 
         if hasattr(ql.os.fd[fd], 'write'):
             ql.os.fd[fd].write(buf)
@@ -38,7 +38,7 @@ def ql_syscall_readv(ql: Qiling, fd: int, vec: int, vlen: int):
 
         if hasattr(ql.os.fd[fd], 'read'):
             data = ql.os.fd[fd].read(l)
-            ql.log.debug(data)
+            ql.log.debug(f'{data.decode()!r}')
             ql.mem.write(addr, data)
 
     return regreturn
