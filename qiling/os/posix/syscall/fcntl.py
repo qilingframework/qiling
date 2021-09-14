@@ -3,16 +3,16 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from qiling import Qiling
-from qiling.const import *
-from qiling.os.linux.thread import *
-from qiling.os.posix.filestruct import *
-from qiling.os.filestruct import *
-from qiling.os.posix.const import *
-from qiling.os.posix.const_mapping import *
-from qiling.exception import *
+import os
 
-def ql_syscall_open(ql: Qiling, filename, flags, mode, *args, **kw):
+from qiling import Qiling
+from qiling.const import QL_OS, QL_ARCH
+from qiling.exception import QlSyscallError
+from qiling.os.posix.const import *
+from qiling.os.posix.const_mapping import ql_open_flag_mapping, open_flags_mapping
+from qiling.os.posix.filestruct import ql_socket
+
+def ql_syscall_open(ql: Qiling, filename: int, flags: int, mode: int):
     path = ql.os.utils.read_cstring(filename)
     real_path = ql.os.path.transform_to_real_path(path)
     relative_path = ql.os.path.transform_to_relative_path(path)
@@ -38,12 +38,13 @@ def ql_syscall_open(ql: Qiling, filename, flags, mode, *args, **kw):
     ql.log.debug("open(%s, %s, 0o%o) = %d" % (relative_path, open_flags_mapping(flags, ql.archtype), mode, regreturn))
 
     if regreturn >= 0 and regreturn != 2:
-        ql.log.debug("File Found: %s" % real_path)
+        ql.log.debug(f'File found: {real_path:s}')
     else:
-        ql.log.debug("File Not Found %s" % real_path)
+        ql.log.debug(f'File not found {real_path:s}')
+
     return regreturn
 
-def ql_syscall_creat(ql: Qiling, filename, mode, *args, **kw):
+def ql_syscall_creat(ql: Qiling, filename: int, mode: int):
     flags = linux_open_flags["O_WRONLY"] | linux_open_flags["O_CREAT"] | linux_open_flags["O_TRUNC"]
 
     path = ql.os.utils.read_cstring(filename)
@@ -71,13 +72,14 @@ def ql_syscall_creat(ql: Qiling, filename, mode, *args, **kw):
     ql.log.debug("creat(%s, %s, 0o%o) = %d" % (relative_path, open_flags_mapping(flags, ql.archtype), mode, regreturn))
 
     if regreturn >= 0 and regreturn != 2:
-        ql.log.debug("File Found: %s" % real_path)
+        ql.log.debug(f'File found: {real_path:s}')
     else:
-        ql.log.debug("File Not Found %s" % real_path)
+        ql.log.debug(f'File not found {real_path:s}')
+
     return regreturn
 
-def ql_syscall_openat(ql: Qiling, fd, path, flags, mode, *args, **kw):
-    path = ql.os.utils.read_cstring(path)
+def ql_syscall_openat(ql: Qiling, fd: int, path: int, flags: int, mode: int):
+    file_path = ql.os.utils.read_cstring(path)
     # real_path = ql.os.path.transform_to_real_path(path)
     # relative_path = ql.os.path.transform_to_relative_path(path)
 
@@ -99,28 +101,27 @@ def ql_syscall_openat(ql: Qiling, fd, path, flags, mode, *args, **kw):
             except:
                 dir_fd = None
 
-            ql.os.fd[idx] = ql.os.fs_mapper.open_ql_file(path, flags, mode, dir_fd)
+            ql.os.fd[idx] = ql.os.fs_mapper.open_ql_file(file_path, flags, mode, dir_fd)
             regreturn = idx
         except QlSyscallError as e:
             regreturn = -e.errno
 
-    ql.log.debug(f'openat(fd = {fd:d}, path = {path}, flags = {open_flags_mapping(flags, ql.archtype)}, mode = {mode:#o}) = {regreturn:d}')
+    ql.log.debug(f'openat(fd = {fd:d}, path = {file_path}, flags = {open_flags_mapping(flags, ql.archtype)}, mode = {mode:#o}) = {regreturn:d}')
 
     return regreturn
 
 
-def ql_syscall_fcntl(ql: Qiling, fcntl_fd, fcntl_cmd, fcntl_arg, *args, **kw):
-    if not (0 <= fcntl_fd < NR_OPEN) or \
-            ql.os.fd[fcntl_fd] == 0:
+def ql_syscall_fcntl(ql: Qiling, fd: int, cmd: int, arg: int):
+    if not (0 <= fd < NR_OPEN) or ql.os.fd[fd] == 0:
         return -EBADF
 
-    f = ql.os.fd[fcntl_fd]
-    
-    if fcntl_cmd == F_DUPFD:
-        if 0 <= fcntl_arg < NR_OPEN:            
+    f = ql.os.fd[fd]
+
+    if cmd == F_DUPFD:
+        if 0 <= arg < NR_OPEN:
             for idx, val in enumerate(ql.os.fd):
-                if val == 0 and idx >= fcntl_arg:
-                    new_fd = ql.os.fd[fcntl_fd].dup()
+                if val == 0 and idx >= arg:
+                    new_fd = ql.os.fd[fd].dup()
                     ql.os.fd[idx] = new_fd
                     regreturn = idx
                     break
@@ -129,18 +130,18 @@ def ql_syscall_fcntl(ql: Qiling, fcntl_fd, fcntl_cmd, fcntl_arg, *args, **kw):
         else:
             regreturn = -EINVAL
 
-    elif fcntl_cmd == F_GETFD:
+    elif cmd == F_GETFD:
         regreturn = getattr(f, "close_on_exec", 0)
 
-    elif fcntl_cmd == F_SETFD:
-        f.close_on_exec = 1 if fcntl_arg & FD_CLOEXEC else 0
+    elif cmd == F_SETFD:
+        f.close_on_exec = 1 if arg & FD_CLOEXEC else 0
         regreturn = 0
 
-    elif fcntl_cmd == F_GETFL:
-        regreturn = ql.os.fd[fcntl_fd].fcntl(fcntl_cmd, fcntl_arg)        
+    elif cmd == F_GETFL:
+        regreturn = ql.os.fd[fd].fcntl(cmd, arg)
 
-    elif fcntl_cmd == F_SETFL:
-        ql.os.fd[fcntl_fd].fcntl(fcntl_cmd, fcntl_arg)
+    elif cmd == F_SETFL:
+        ql.os.fd[fd].fcntl(cmd, arg)
         regreturn = 0
 
     else:
@@ -149,15 +150,15 @@ def ql_syscall_fcntl(ql: Qiling, fcntl_fd, fcntl_cmd, fcntl_arg, *args, **kw):
     return regreturn
 
 
-def ql_syscall_fcntl64(ql: Qiling, fcntl_fd, fcntl_cmd, fcntl_arg, *args, **kw):
+def ql_syscall_fcntl64(ql: Qiling, fd: int, cmd: int, arg: int):
 
     # https://linux.die.net/man/2/fcntl64
-    if fcntl_cmd == F_DUPFD:
-        if 0 <= fcntl_arg < NR_OPEN and 0 <= fcntl_fd < NR_OPEN:
-            if ql.os.fd[fcntl_fd] != 0:
-                new_fd = ql.os.fd[fcntl_fd].dup()
+    if cmd == F_DUPFD:
+        if 0 <= arg < NR_OPEN and 0 <= fd < NR_OPEN:
+            if ql.os.fd[fd] != 0:
+                new_fd = ql.os.fd[fd].dup()
                 for idx, val in enumerate(ql.os.fd):
-                    if val == 0 and idx >= fcntl_arg:
+                    if val == 0 and idx >= arg:
                         ql.os.fd[idx] = new_fd
                         regreturn = idx
                         break
@@ -165,29 +166,34 @@ def ql_syscall_fcntl64(ql: Qiling, fcntl_fd, fcntl_cmd, fcntl_arg, *args, **kw):
                 regreturn = -1
         else:
             regreturn = -1
-    elif fcntl_cmd == F_GETFL:
+
+    elif cmd == F_GETFL:
         regreturn = 2
-    elif fcntl_cmd == F_SETFL:
-        if isinstance(ql.os.fd[fcntl_fd], ql_socket):
-            ql.os.fd[fcntl_fd].fcntl(fcntl_cmd, fcntl_arg)
+
+    elif cmd == F_SETFL:
+        if isinstance(ql.os.fd[fd], ql_socket):
+            ql.os.fd[fd].fcntl(cmd, arg)
         regreturn = 0
-    elif fcntl_cmd == F_GETFD:
+
+    elif cmd == F_GETFD:
         regreturn = 2
-    elif fcntl_cmd == F_SETFD:
+
+    elif cmd == F_SETFD:
         regreturn = 0
+
     else:
         regreturn = 0
 
     return regreturn
 
 
-def ql_syscall_flock(ql, flock_fd, flock_operation, *args, **kw):
+def ql_syscall_flock(ql: Qiling, fd: int, operation: int):
     # Should always return 0, we don't need a actual file lock
-    regreturn = 0
-    return regreturn
+
+    return 0
 
 
-def ql_syscall_rename(ql: Qiling, oldname_buf, newname_buf, *args, **kw):
+def ql_syscall_rename(ql: Qiling, oldname_buf: int, newname_buf: int):
     """
     rename(const char *oldpath, const char *newpath)
     description: change the name or location of a file
@@ -208,10 +214,8 @@ def ql_syscall_rename(ql: Qiling, oldname_buf, newname_buf, *args, **kw):
 
     try:
         os.rename(old_realpath, new_realpath)
-        regreturn = 0
     except OSError:
-        ql.log.exception(f"rename(): {newpath} is exist!")
+        ql.log.exception(f"rename(): {newpath} exists!")
         regreturn = -1
 
     return regreturn
-

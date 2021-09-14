@@ -161,36 +161,40 @@ class QlOsPosix(QlOs):
     def load_syscall(self):
         # import syscall mapping function
         map_syscall = ql_syscall_mapping_function(self.ql.ostype)
-        syscall = self.syscall
-        syscall_name = map_syscall(self.ql, syscall)
+        syscall_id = self.syscall
+        syscall_name = map_syscall(self.ql, syscall_id)
 
         # get syscall on-enter hook (if any)
         hooks_dict = self.posix_syscall_hooks[QL_INTERCEPT.ENTER]
-        onenter_hook = hooks_dict.get(syscall_name) or hooks_dict.get(syscall)
+        onenter_hook = hooks_dict.get(syscall_name) or hooks_dict.get(syscall_id)
 
         # get syscall on-exit hook (if any)
         hooks_dict = self.posix_syscall_hooks[QL_INTERCEPT.EXIT]
-        onexit_hook = hooks_dict.get(syscall_name) or hooks_dict.get(syscall)
+        onexit_hook = hooks_dict.get(syscall_name) or hooks_dict.get(syscall_id)
 
         # get syscall replacement hook (if any)
         hooks_dict = self.posix_syscall_hooks[QL_INTERCEPT.CALL]
-        syscall_hook = hooks_dict.get(syscall_name) or hooks_dict.get(syscall)
+        syscall_hook = hooks_dict.get(syscall_name) or hooks_dict.get(syscall_id)
+
+        if not syscall_hook:
+            osname = ostype_convert_str(self.ql.ostype)
+            os_syscalls = ql_get_module_function(f"qiling.os.{osname.lower()}", "syscall")
+            posix_syscalls = ql_get_module_function(f"qiling.os.posix", "syscall")
+
+            # look in os-specific and posix syscall hooks
+            syscall_hook = getattr(os_syscalls, syscall_name, None) or getattr(posix_syscalls, syscall_name, None)
 
         if syscall_hook:
             syscall_name = syscall_hook.__name__
-        else:
-            _ostype_str = ostype_convert_str(self.ql.ostype)
-            _posix_syscall = ql_get_module_function(f"qiling.os.posix", "syscall")
-            _os_syscall = ql_get_module_function(f"qiling.os.{_ostype_str.lower()}", "syscall")
 
-            if syscall_name in dir(_posix_syscall) or syscall_name in dir(_os_syscall):
-                syscall_hook = eval(syscall_name)
-                syscall_name = syscall_hook.__name__
-            else:
-                syscall_hook = None
+            # extract the parameters list from hook signature
+            param_names = tuple(signature(syscall_hook).parameters.values())
 
-        if syscall_hook:
-            params = [self.__syscall_cc.getRawParam(i) for i in range(6)]
+            # skip first arg (always 'ql') and filter out python special args (*args and **kwargs)
+            param_names = [info.name for info in param_names[1:] if info.kind == Parameter.POSITIONAL_OR_KEYWORD]
+
+            # read parameter values
+            params = [self.__syscall_cc.getRawParam(i) for i in range(len(param_names))]
 
             try:
         		# if set, fire up the on-enter hook and let it override original args set
@@ -218,24 +222,14 @@ class QlOsPosix(QlOs):
                 raise
 
             except Exception as e:
-                self.ql.log.exception("")
-                self.ql.log.info(f'Syscall ERROR: {syscall_name} DEBUG: {e}')
+                self.ql.log.exception(f'Syscall ERROR: {syscall_name} DEBUG: {e}')
                 raise e
 
             # print out log entry
-            syscall_basename = syscall_hook.__name__[len(SYSCALL_PREF):]
+            syscall_basename = syscall_name[len(SYSCALL_PREF):]
             args = []
 
-            # ignore first arg, which is 'ql'
-            args_info = tuple(signature(syscall_hook).parameters.values())[1:]
-
-            for info, value in zip(args_info, params):
-                # skip python special args, like: *args and **kwargs
-                if info.kind != Parameter.POSITIONAL_OR_KEYWORD:
-                    continue
-
-                name = info.name
-
+            for name, value in zip(param_names, params):
                 # cut the first part of the arg if it is of form fstatat64_fd
                 if name.startswith(f'{syscall_basename}_'):
                     name = name.partition('_')[-1]
@@ -247,7 +241,7 @@ class QlOsPosix(QlOs):
 
             # record syscall statistics
             self.utils.syscalls.setdefault(syscall_name, []).append({
-                "params": dict(zip((f'param{i}' for i in range(6)), params)),
+                "params": dict(zip(param_names, params)),
                 "result": retval,
                 "address": self.ql.reg.arch_pc,
                 "return_address": None,
@@ -256,10 +250,10 @@ class QlOsPosix(QlOs):
 
             self.utils.syscalls_counter += 1
         else:
-            self.ql.log.warning(f'{self.ql.reg.arch_pc:#x}: syscall {syscall_name} number = {syscall:#x}({syscall:d}) not implemented')
+            self.ql.log.warning(f'{self.ql.reg.arch_pc:#x}: syscall {syscall_name} number = {syscall_id:#x}({syscall_id:d}) not implemented')
 
             if self.ql.debug_stop:
-                raise QlErrorSyscallNotFound("Syscall Not Found")
+                raise QlErrorSyscallNotFound(f'Syscall not found: {syscall_name}')
 
     def get_syscall(self) -> int:
         if self.ql.archtype == QL_ARCH.ARM:
