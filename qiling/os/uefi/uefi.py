@@ -173,16 +173,18 @@ class QlOsUefi(QlOs):
 
 		try:
 			data = self.ql.mem.read(pc, size=64)
-
+		except UcError:
+			pc_info = ' (unreachable)'
+		else:
 			self.emit_context()
 			self.emit_hexdump(pc, data)
 			self.emit_disasm(pc, data)
 
 			containing_image = self.find_containing_image(pc)
-			img_info = f' ({containing_image.path} + {pc - containing_image.base:#x})' if containing_image else ''
-			self.ql.log.error(f'PC = {pc:#x}{img_info}')
-		except UcError:
-			self.ql.log.error(f'PC = {pc:#x} (unreachable)')
+			pc_info = f' ({containing_image.path} + {pc - containing_image.base:#x})' if containing_image else ''
+		finally:
+			self.ql.log.error(f'PC = {pc:#010x}{pc_info}')
+			self.ql.log.error(f'')
 
 		self.ql.log.error(f'Memory map:')
 		self.ql.mem.show_mapinfo()
