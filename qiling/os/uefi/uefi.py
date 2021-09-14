@@ -3,6 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+import re
 from typing import Any, Callable, Iterable, Mapping, MutableSequence, Sequence, Tuple
 from unicorn import UcError
 
@@ -100,41 +101,30 @@ class QlOsUefi(QlOs):
 
 
 	def emit_context(self):
-		# TODO: add xmm, ymm, zmm registers
 		rgroups = (
-			('rax', 'eax', 'ax', 'ah', 'al'),
-			('rbx', 'ebx', 'bx', 'bh', 'bl'),
-			('rcx', 'ecx', 'cx', 'ch', 'cl'),
-			('rdx', 'edx', 'dx', 'dh', 'dl'),
-			('rsi', 'esi', 'si', ''),  # BUG: sil is missing
-			('rdi', 'edi', 'di', ''),  # BUG: dil is missing
-			('rsp', 'esp', 'sp', ''),  # BUG: spl is missing
-			('rbp', 'ebp', 'bp', ''),  # BUG: bpl is missing
-			('rip', 'eip', 'ip', ''),
-			(),
-			('r8',  'r8d',  'r8w',  'r8b' ),
-			('r9',  'r9d',  'r9w',  'r9b' ),
-			('r10', 'r10d', 'r10w', 'r10b'),
-			('r11', 'r11d', 'r11w', 'r11b'),
-			('r12', 'r12d', 'r12w', 'r12b'),
-			('r13', 'r13d', 'r13w', 'r13b'),
-			('r14', 'r14d', 'r14w', 'r14b'),
-			('r15', 'r15d', 'r15w', 'r15b'),
-			(),
-			('', '', 'cs'),
-			('', '', 'ds'),
-			('', '', 'es'),
-			('', '', 'fs'),
-			('', '', 'gs'),
-			('', '', 'ss')
+			((8, 'rax'), (8, 'r8'),  (4, 'cs')),
+			((8, 'rbx'), (8, 'r9'),  (4, 'ds')),
+			((8, 'rcx'), (8, 'r10'), (4, 'es')),
+			((8, 'rdx'), (8, 'r11'), (4, 'fs')),
+			((8, 'rsi'), (8, 'r12'), (4, 'gs')),
+			((8, 'rdi'), (8, 'r13'), (4, 'ss')),
+			((8, 'rsp'), (8, 'r14')),
+			((8, 'rbp'), (8, 'r15')),
+			((8, 'rip'), )
 		)
 
-		sizes = (64, 32, 16, 8, 8)
+		p = re.compile(r'^((?:00)+)')
+
+		def __emit_reg(size: int, reg: str):
+			val = f'{self.ql.reg.read(reg):0{size * 2}x}'
+			padded = p.sub("\x1b[90m\\1\x1b[39m", val, 1)
+
+			return f'{reg:3s} = {padded}'
 
 		self.ql.log.error(f'CPU Context:')
 
-		for grp in rgroups:
-			self.ql.log.error(', '.join((f'{reg:4s} = {self.ql.reg.read(reg):0{bits // 4}x}') for reg, bits in zip(grp, sizes) if reg))
+		for regs in rgroups:
+			self.ql.log.error(f'{" | ".join(__emit_reg(size, reg) for size, reg in regs)}')
 
 		self.ql.log.error(f'')
 
@@ -161,9 +151,7 @@ class QlOsUefi(QlOs):
 		self.ql.log.error('Disassembly:')
 
 		for insn in tuple(md.disasm(data, address))[:num_insns]:
-			opcodes = ''.join(f'{ch:02x}' for ch in insn.bytes)
-
-			self.ql.log.error(f'{insn.address:08x} : {opcodes:28s}  {insn.mnemonic:10s} {insn.op_str:s}')
+			self.ql.log.error(f'{insn.address:08x} : {insn.bytes.hex():28s}  {insn.mnemonic:10s} {insn.op_str:s}')
 
 		self.ql.log.error(f'')
 
