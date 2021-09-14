@@ -39,7 +39,7 @@ class UefiContext(ABC):
 		self.ql.mem.map(base, size, info='[stack]')
 		self.top_of_stack = (base + size - 1) & ~(CPU_STACK_ALIGNMENT - 1)
 
-	def install_protocol(self, proto_desc: Mapping, handle, address: int = None, from_hook: bool = False):
+	def install_protocol(self, proto_desc: Mapping, handle: int, address: int = None, from_hook: bool = False):
 		guid = proto_desc['guid']
 
 		if handle not in self.protocols:
@@ -58,7 +58,7 @@ class UefiContext(ABC):
 		self.protocols[handle][guid] = address
 		return self.notify_protocol(handle, guid, address, from_hook)
 
-	def notify_protocol(self, handle, protocol, interface, from_hook):
+	def notify_protocol(self, handle: int, protocol: str, interface: int, from_hook: bool):
 		for (event_id, event_dic) in self.ql.loader.events.items():
 			if event_dic['Guid'] == protocol:
 				if event_dic['CallbackArgs'] == None:

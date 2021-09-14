@@ -9,6 +9,7 @@ from unicorn import UcError
 from qiling import Qiling
 from qiling.cc import QlCC, intel
 from qiling.os.const import *
+from qiling.os.memory import QlMemoryHeap
 from qiling.os.os import QlOs, QlOsUtils
 from qiling.os.fcall import QlFunctionCall, TypedArg
 from . import guids_db
@@ -21,7 +22,7 @@ class QlOsUefi(QlOs):
 		self.running_module: str
 		self.in_smm: bool
 		self.PE_RUN = True
-		self.heap = None # Will be initialized by the loader.
+		self.heap: QlMemoryHeap	# Will be initialized by the loader.
 
 		self.on_module_enter: MutableSequence[Callable[[str], bool]] = []
 		self.on_module_exit: MutableSequence[Callable[[int], bool]] = []

@@ -29,6 +29,10 @@ class QlLoaderPE_UEFI(QlLoader):
         self.events = {}
         self.notify_list = []
 
+        self.dxe_context: DxeContext
+        self.smm_context: SmmContext
+        self.context: UefiContext
+
     # list of members names to save and restore
     __save_members = (
         'modules',
@@ -56,7 +60,7 @@ class QlLoaderPE_UEFI(QlLoader):
 
         self.ql.os.heap.restore(saved_state['heap'])
 
-    def install_loaded_image_protocol(self, image_base, image_size):
+    def install_loaded_image_protocol(self, image_base: int, image_size: int):
         fields = {
             'gST'        : self.gST,
             'image_base' : image_base,
@@ -155,6 +159,14 @@ class QlLoaderPE_UEFI(QlLoader):
         self.ql.reg.rip = addr
 
     def unload_modules(self, context: UefiContext) -> bool:
+        """Invoke images unload callbacks, if set.
+
+        Args:
+            context: uefi context instance
+
+        Returns: `True` to stop the teardown process, `False` to proceed
+        """
+
         for handle in context.loaded_image_protocol_modules:
             struct_addr = context.protocols[handle][self.loaded_image_protocol_guid]
             loaded_image_protocol = EfiLoadedImageProtocol.EFI_LOADED_IMAGE_PROTOCOL.loadFrom(self.ql, struct_addr)
@@ -177,6 +189,7 @@ class QlLoaderPE_UEFI(QlLoader):
         Args:
             image_base  : module base address
             entry_point : module entry point address
+            context     : module execution context (either dxe or smm)
             eoe_trap    : end-of-execution trap address; may be None
         """
 
@@ -342,10 +355,10 @@ class QlLoaderPE_UEFI(QlLoader):
 
                 self.map_and_load(dependency, self.context)
 
-            ql.log.info(f"Done with loading {ql.path}")
+            ql.log.info(f"Done loading modules")
 
         except QlMemoryMappedError:
-            ql.log.critical("Couldn't map dependency")
+            ql.log.critical("Could not map dependency")
 
         # set up an end-of-execution hook to regain control when module is done
         # executing (i.e. when the entry point function returns).
