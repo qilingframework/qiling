@@ -4,3 +4,4 @@
 #
 
 from .cm4_systick import CortexM4SysTick
+from .stm32f4xx_rtc import STM32F4xxRtc
