@@ -16,7 +16,11 @@ class QlRegisterManager:
     """
 
     def __init__(self, ql: Qiling):
-        self.register_mapping: MutableMapping[str, int] = {}
+        # this funny way of initialization is used to avoid calling self setattr and
+        # getattr upon init. if it did, it would go into an endless recursion
+        self.register_mapping: MutableMapping[str, int]
+        super().__setattr__('register_mapping', {})
+
         self.ql = ql
         self.uc_pc = 0
         self.uc_sp = 0
@@ -24,11 +28,7 @@ class QlRegisterManager:
     def __getattr__(self, name: str) -> Any:
         name = name.lower()
 
-        # this is checked first to prevent endless recursion upon init
-        if name == 'register_mapping':
-            return super().__getattribute__(name)
-
-        elif name in self.register_mapping:
+        if name in self.register_mapping:
             return self.ql.uc.reg_read(self.register_mapping[name])
 
         else:
@@ -38,11 +38,7 @@ class QlRegisterManager:
     def __setattr__(self, name: str, value: Any):
         name = name.lower()
 
-        # this is checked first to prevent endless recursion upon init
-        if name == 'register_mapping':
-            super().__setattr__(name, value)
-
-        elif name in self.register_mapping:
+        if name in self.register_mapping:
             self.ql.uc.reg_write(self.register_mapping[name], value)
 
         else:
