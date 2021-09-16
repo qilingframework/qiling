@@ -182,7 +182,8 @@ class QlOsPosix(QlOs):
             posix_syscalls = ql_get_module_function(f"qiling.os.posix", "syscall")
 
             # look in os-specific and posix syscall hooks
-            syscall_hook = getattr(os_syscalls, syscall_name, None) or getattr(posix_syscalls, syscall_name, None)
+            if syscall_name:
+                syscall_hook = getattr(os_syscalls, syscall_name, None) or getattr(posix_syscalls, syscall_name, None)
 
         if syscall_hook:
             syscall_name = syscall_hook.__name__
