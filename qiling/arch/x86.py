@@ -48,7 +48,6 @@ class QlArchA8086(QlArchIntel):
         for reg_maper in reg_maps:
             self.ql.reg.expand_mapping(reg_maper)
 
-        self.ql.reg.create_reverse_mapping()
         self.ql.reg.register_pc(reg_map_16["sp"])
         self.ql.reg.register_sp(reg_map_16["ip"])
 
@@ -83,7 +82,6 @@ class QlArchX86(QlArchIntel):
         for reg_maper in reg_maps:
             self.ql.reg.expand_mapping(reg_maper)
 
-        self.ql.reg.create_reverse_mapping()
         self.ql.reg.register_sp(reg_map_32["esp"])
         self.ql.reg.register_pc(reg_map_32["eip"])
 
@@ -123,7 +121,6 @@ class QlArchX8664(QlArchIntel):
         for reg_maper in reg_maps:
             self.ql.reg.expand_mapping(reg_maper)
 
-        self.ql.reg.create_reverse_mapping()
         self.ql.reg.register_sp(reg_map_64["rsp"])
         self.ql.reg.register_pc(reg_map_64["rip"])
 

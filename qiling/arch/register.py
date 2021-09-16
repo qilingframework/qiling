@@ -17,7 +17,6 @@ class QlRegisterManager:
 
     def __init__(self, ql: Qiling):
         self.register_mapping: MutableMapping[str, int] = {}
-        self.reverse_mapping: Mapping[int, str] = {}
         self.ql = ql
         self.uc_pc = 0
         self.uc_sp = 0
@@ -137,7 +136,7 @@ class QlRegisterManager:
 
     @property
     def arch_pc_name(self) -> str:
-        return self.reverse_mapping[self.uc_pc]
+        return next(k for k, v in self.register_mapping.items() if v == self.uc_pc)
 
     @property
     def arch_sp(self) -> int:
@@ -147,7 +146,3 @@ class QlRegisterManager:
     @arch_sp.setter
     def arch_sp(self, value: int) -> None:
         return self.ql.uc.reg_write(self.uc_sp, value)
-
-
-    def create_reverse_mapping(self):
-        self.reverse_mapping = {v:k for k, v in self.register_mapping.items()}
