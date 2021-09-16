@@ -126,7 +126,7 @@ def hook__cexit(ql: Qiling, address: int, params):
 @winsdkapi(cc=CDECL, params={
     'pfbegin' : POINTER,
     'pfend'   : POINTER
-})
+}, passthru=True)
 def hook__initterm(ql: Qiling, address: int, params):
     pass
 
@@ -147,7 +147,7 @@ def hook_exit(ql: Qiling, address: int, params):
 @winsdkapi(cc=CDECL, params={
     'pfbegin' : POINTER,
     'pfend'   : POINTER
-})
+}, passthru=True)
 def hook__initterm_e(ql: Qiling, address: int, params):
     return 0
 
@@ -182,8 +182,11 @@ def hook___p___argc(ql: Qiling, address: int, params):
 @winsdkapi(cc=CDECL, params={})
 def hook__get_initial_narrow_environment(ql: Qiling, address: int, params):
     ret = 0
+    env = ql.env
+    if len(env) == 0:
+        env = {"a": "b"}  # Set dummy value to prevent msvcp140 dll entrypoint (DllMain) from crashing
 
-    for i, (k, v) in enumerate(ql.env.items()):
+    for i, (k, v) in enumerate(env.items()):
         entry = bytes(f'{k}={v}', 'ascii') + b'\x00'
         p_entry = ql.os.heap.alloc(len(entry))
 

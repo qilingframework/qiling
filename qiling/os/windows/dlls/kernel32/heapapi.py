@@ -19,7 +19,9 @@ from qiling.os.windows.fncc import *
 })
 def hook_HeapCreate(ql: Qiling, address: int, params):
     dwInitialSize = params["dwInitialSize"]
-
+    # TODO: this implementation is probably wrong.
+    #  This method should returns a heap that later can be used with HeapAlloc to allocate memory on it
+    #  Instead it behaves like alloc
     return ql.os.heap.alloc(dwInitialSize)
 
 # DECLSPEC_ALLOCATOR LPVOID HeapAlloc(
@@ -37,6 +39,34 @@ def hook_HeapAlloc(ql: Qiling, address: int, params):
 
     return ql.os.heap.alloc(dwBytes)
 
+# DECLSPEC_ALLOCATOR LPVOID HeapReAlloc(
+#   HANDLE                 hHeap,
+#   DWORD                  dwFlags,
+#   _Frees_ptr_opt_ LPVOID lpMem,
+#   SIZE_T                 dwBytes
+# );
+@winsdkapi(cc=STDCALL, params={
+    'hHeap'   : HANDLE,
+    'dwFlags' : DWORD,
+    'lpMem': LPCVOID,
+    'dwBytes' : SIZE_T
+})
+def hook_HeapReAlloc(ql: Qiling, address: int, params):
+    oldLoc = params["lpMem"]
+    oldSize = ql.os.heap.size(oldLoc)
+    oldCont = bytes(ql.mem.read(oldLoc, oldSize))
+    ql.os.heap.free(oldLoc)
+
+    newSize = params["dwBytes"]
+    if newSize < oldSize:
+        oldCont = oldCont[0:newSize]
+
+    newLoc = ql.os.heap.alloc(newSize)
+    if newLoc:
+        ql.mem.write(newLoc, oldCont)
+
+    return newLoc
+
 # SIZE_T HeapSize(
 #   HANDLE  hHeap,
 #   DWORD   dwFlags,
@@ -51,6 +81,19 @@ def hook_HeapSize(ql: Qiling, address: int, params):
     pointer = params["lpMem"]
 
     return ql.os.heap.size(pointer)
+
+# BOOL HeapValidate(
+#  HANDLE                 hHeap,
+#  DWORD                  dwFlags,
+#  LPVOID                lpMem
+# );
+@winsdkapi(cc=STDCALL, params={
+    'hHeap'   : HANDLE,
+    'dwFlags' : DWORD,
+    'lpMem'   : LPVOID
+})
+def hook_HeapValidate(ql: Qiling, address: int, params):
+    return 1
 
 # BOOL HeapFree(
 #  HANDLE                 hHeap,
