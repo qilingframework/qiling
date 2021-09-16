@@ -642,6 +642,7 @@ class QlLoaderPE(QlLoader, Process):
                                 addr = self.import_address_table[dll_name][imp.name]
                             except KeyError:
                                 self.ql.log.debug("Error in loading function %s" % imp.name.decode())
+                                continue
                         else:
                             addr = self.import_address_table[dll_name][imp.ordinal]
 
