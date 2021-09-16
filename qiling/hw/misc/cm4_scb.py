@@ -123,5 +123,9 @@ class CortexM4Scb(QlPeripheral):
         return int.from_bytes(buf.raw, byteorder='little')
 
     def write(self, offset, size, value):
+        if offset == self.struct.ICSR.offset:
+            if (value >> 28) & 1:
+                self.ql.hw.nvic.set_pending(IRQ.PENDSV)                
+
         data = (value).to_bytes(size, 'little')
         ctypes.memmove(ctypes.addressof(self.scb) + offset, data, size)
