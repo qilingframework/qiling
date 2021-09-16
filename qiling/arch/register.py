@@ -15,8 +15,6 @@ class QlRegisterManager:
     arch directories and are mapped to Unicorn Engine's definitions
     """
 
-    __priv_members = ('register_mapping', 'ql', 'uc_pc', 'uc_sp')
-
     def __init__(self, ql: Qiling):
         self.register_mapping: MutableMapping[str, int] = {}
         self.reverse_mapping: Mapping[int, str] = {}
@@ -27,7 +25,8 @@ class QlRegisterManager:
     def __getattr__(self, name: str) -> Any:
         name = name.lower()
 
-        if name in QlRegisterManager.__priv_members:
+        # this is checked first to prevent endless recursion upon init
+        if name == 'register_mapping':
             return super().__getattribute__(name)
 
         elif name in self.register_mapping:
@@ -39,7 +38,8 @@ class QlRegisterManager:
     def __setattr__(self, name: str, value: Any):
         name = name.lower()
 
-        if name in QlRegisterManager.__priv_members:
+        # this is checked first to prevent endless recursion upon init
+        if name == 'register_mapping':
             super().__setattr__(name, value)
 
         elif name in self.register_mapping:
