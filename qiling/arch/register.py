@@ -24,7 +24,7 @@ class QlRegisterManager:
         self.uc_pc = 0
         self.uc_sp = 0
 
-    def __getattribute__(self, name: str) -> Any:
+    def __getattr__(self, name: str) -> Any:
         name = name.lower()
 
         if name in QlRegisterManager.__priv_members:
