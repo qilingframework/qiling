@@ -3,23 +3,21 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from qiling import Qiling
 
-from qiling.const import *
-from qiling.os.linux.thread import *
-from qiling.const import *
-from qiling.os.posix.filestruct import *
-from qiling.os.filestruct import *
-from qiling.os.posix.const_mapping import *
-from qiling.exception import *
+def ql_syscall_uname(ql: Qiling, buf: int):
+    UTSLEN = 65
 
-def ql_syscall_uname(ql, address, *args, **kw):
-    buf =  b''
-    buf += b'QilingOS'.ljust(65, b'\x00')
-    buf += b'ql_vm'.ljust(65, b'\x00')
-    buf += b'99.0-RELEASE'.ljust(65, b'\x00')
-    buf += b'QilingOS 99.0-RELEASE r1'.ljust(65, b'\x00')
-    buf += b'ql_processor'.ljust(65, b'\x00')
-    buf += b''.ljust(65, b'\x00')
-    ql.mem.write(address, buf)
-    regreturn = 0
-    return regreturn
+    fields = (
+        b'QilingOS',                 # sysname
+        b'ql_vm',                    # nodename
+        b'99.0-RELEASE',             # release
+        b'QilingOS 99.0-RELEASE r1', # version
+        b'ql_processor',             # machine
+        b''                          # domainname
+    )
+
+    for i, f in enumerate(fields):
+        ql.mem.write(buf + i * UTSLEN, f.ljust(UTSLEN, b'\x00'))
+
+    return 0

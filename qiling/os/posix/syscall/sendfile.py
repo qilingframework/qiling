@@ -3,21 +3,15 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from qiling import Qiling
+from qiling.os.posix.const import NR_OPEN
 
-from qiling.const import *
-from qiling.os.linux.thread import *
-from qiling.os.posix.filestruct import *
-from qiling.os.filestruct import *
-from qiling.os.posix.const import *
-from qiling.os.posix.const_mapping import *
-from qiling.exception import *
-
-def ql_syscall_sendfile64(ql, sendfile64_out_fd, sendfile64_in_fd, sendfile64_offest, sendfile64_count, *args, **kw):
-    if 0 <= sendfile64_out_fd < NR_OPEN and 0 <= sendfile64_in_fd < NR_OPEN \
-            and ql.os.fd[sendfile64_out_fd] != 0 and ql.os.fd[sendfile64_in_fd] != 0:
-        ql.os.fd[sendfile64_in_fd].lseek(ql.unpack32(ql.mem.read(sendfile64_offest, 4)))
-        buf = ql.os.fd[sendfile64_in_fd].read(sendfile64_count)
-        regreturn = ql.os.fd[sendfile64_out_fd].write(buf)
+def ql_syscall_sendfile64(ql: Qiling, out_fd: int, in_fd: int, offest: int, count: int):
+    if (0 <= out_fd < NR_OPEN and ql.os.fd[out_fd] != 0) and (0 <= in_fd < NR_OPEN and ql.os.fd[in_fd] != 0):
+        ql.os.fd[in_fd].lseek(ql.unpack32(ql.mem.read(offest, 4)))
+        buf = ql.os.fd[in_fd].read(count)
+        regreturn = ql.os.fd[out_fd].write(buf)
     else:
         regreturn = -1
+
     return regreturn

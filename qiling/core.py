@@ -179,7 +179,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
                                                               self._log_file,
                                                               self._console,
                                                               self._filter,
-                                                              self._multithread,
                                                               self._log_override,
                                                               self._log_plain)
 

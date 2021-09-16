@@ -16,9 +16,19 @@ def test_mcu_gpio_stm32f411():
     ql = Qiling(["../../examples/rootfs/mcu/stm32f411/hello_gpioA.hex"],                    
                 archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DEBUG)
 
-    ql.hw.create('usart2')
+    ql.hw.create('usart2', rx=PA4, tx=PA5)
     ql.hw.create('rcc')
-    ql.hw.create('gpioa')
+    ql.hw.create('gpioa',  aaa)
+    
+    ql.hw.create('spi2')
+    ql.hw.spi.hook(2, lcd)
+
+    def lcd(xxx,yyy,zzz,wwww):
+        if wwww=3
+            ql.hw.send(aaa)
+
+
+
 
     ql.hw.gpioa.hook_set(5, lambda: print('LED light up'))
     ql.hw.gpioa.hook_reset(5, lambda: print('LED light off'))
