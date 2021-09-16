@@ -123,22 +123,37 @@ class QlRegisterManager:
 
     @property
     def arch_pc(self) -> int:
+        """Get the value of the architectural program counter register.
+        """
+
         return self.ql.uc.reg_read(self.uc_pc)
 
 
     @arch_pc.setter
     def arch_pc(self, value: int) -> None:
+        """Set the value of the architectural program counter register.
+        """
+
         return self.ql.uc.reg_write(self.uc_pc, value)
 
     @property
     def arch_pc_name(self) -> str:
+        """Get the architectural program counter register name.
+        """
+
         return next(k for k, v in self.register_mapping.items() if v == self.uc_pc)
 
     @property
     def arch_sp(self) -> int:
+        """Get the value of the architectural stack pointer register.
+        """
+
         return self.ql.uc.reg_read(self.uc_sp)
 
 
     @arch_sp.setter
     def arch_sp(self, value: int) -> None:
+        """Set the value of the architectural stack pointer register.
+        """
+
         return self.ql.uc.reg_write(self.uc_sp, value)
