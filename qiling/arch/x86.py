@@ -4,7 +4,6 @@
 #
 
 from struct import pack
-from typing import Union
 
 from unicorn import Uc, UC_ARCH_X86, UC_MODE_16, UC_MODE_32, UC_MODE_64
 from capstone import Cs, CS_ARCH_X86, CS_MODE_16, CS_MODE_32, CS_MODE_64
@@ -18,10 +17,7 @@ from qiling.exception import QlGDTError
 class QlArchIntel(QlArch):
 
     # TODO: generalize this
-    def get_reg_bit(self, register: Union[str, int]) -> int:
-        if type(register) is str:
-            register = self.ql.reg.get_uc_reg(register)
-
+    def get_reg_bit(self, register: int) -> int:
         # all regs in reg_map_misc are 16 bits except of eflags
         if register == UC_X86_REG_EFLAGS:
             return self.ql.archbit

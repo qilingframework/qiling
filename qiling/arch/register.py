@@ -109,6 +109,9 @@ class QlRegisterManager:
         """Get register size in bits.
         """
 
+        if type(reg) is str:
+            reg = self.register_mapping[reg]
+
         return self.ql.arch.get_reg_bit(reg)
 
 
@@ -144,10 +147,6 @@ class QlRegisterManager:
     @arch_sp.setter
     def arch_sp(self, value: int) -> None:
         return self.ql.uc.reg_write(self.uc_sp, value)
-
-
-    def get_uc_reg(self, reg_name: str) -> int:
-        return self.register_mapping[reg_name]
 
 
     def create_reverse_mapping(self):
