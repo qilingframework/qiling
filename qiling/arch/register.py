@@ -32,7 +32,8 @@ class QlRegisterManager:
         elif name in self.register_mapping:
             return self.ql.uc.reg_read(self.register_mapping[name])
 
-        return super().__getattribute__(name)
+        else:
+            return super().__getattribute__(name)
 
 
     def __setattr__(self, name: str, value: Any):
@@ -45,7 +46,8 @@ class QlRegisterManager:
         elif name in self.register_mapping:
             self.ql.uc.reg_write(self.register_mapping[name], value)
 
-        super().__setattr__(name, value)
+        else:
+            super().__setattr__(name, value)
 
 
     def expand_mapping(self, extra: Mapping[str, int]) -> None:
