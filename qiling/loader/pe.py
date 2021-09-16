@@ -77,6 +77,11 @@ class Process():
 
             path = os.path.join(self.ql.rootfs, self.ql.dlls, dll_name)
 
+        if dll_name.startswith("api-ms-win-"):
+            self.ql.log.warning("Refusing to load virtual DLL %s" % dll_name)
+            # Usually we should not reach this point and instead imports from such DLLs should be redirected earlier
+            return 0
+
         if not os.path.exists(path):
             raise QlErrorFileNotFound("Cannot find dll in %s" % path)
 
@@ -133,10 +138,16 @@ class Process():
             if (image_base + image_size) > self.ql.mem.max_mem_addr:
                 image_base = self.dll_last_address
                 self.ql.log.debug(f'DLL preferred base address exceeds memory upper bound, loading to: {image_base:#x}')
+                dll.relocate_image(image_base)  # Apply code patches as described by .reloc section
+                data = bytearray(dll.get_memory_mapped_image())
+                image_size = self.ql.mem.align(len(data), 0x1000)
 
             if not self.ql.mem.is_available(image_base, image_size):
                 image_base = self.ql.mem.find_free_space(image_size, minaddr=image_base, align=0x10000)
                 self.ql.log.debug(f'DLL preferred base address is taken, loading to: {image_base:#x}')
+                dll.relocate_image(image_base) # Apply code patches as described by .reloc section
+                data = bytearray(dll.get_memory_mapped_image())
+                image_size = self.ql.mem.align(len(data), 0x1000)
 
             cmdlines = []
             import_symbols = {}
@@ -194,10 +205,59 @@ class Process():
         # add DLL to coverage images
         self.images.append(Image(dll_base, dll_base + dll_len, path))
 
-        self.ql.log.info(f'Done with loading {path}')
+        if not cached or not loaded:
+            # parse directory entry import
+            self.ql.log.debug("Init imports for %s" % dll_name)
+            self.init_imports(dll, driver)
 
+            self.call_dll_entrypoint(dll, dll_base, dll_len, dll_name)
+
+        self.ql.log.info(f'Done with loading {path}')
         return dll_base
 
+    def call_dll_entrypoint(self, dll, dll_base, dll_len, dll_name):
+        if dll.get_section_by_rva(dll.OPTIONAL_HEADER.AddressOfEntryPoint) is not None:
+            entry_point = dll_base + dll.OPTIONAL_HEADER.AddressOfEntryPoint
+
+            if dll_name in ["kernelbase.dll", "kernel32.dll"]:
+                self.ql.log.debug("Ignore calling entry point of %s" % dll_name)
+            else:
+                self.ql.log.info("Calling entry point of dll %s at 0x%x" % (dll_name, entry_point))
+                # Strategy: Write a "call entrypoint" instruction into memory and execute it. Setup stack/regs manually
+
+                code_loc = dll_base + dll_len - 16  # location to put the "call entrypoint" instructions to
+
+                # make relative call to entry point, followed by NOP so that we can break there
+                asmstr = f"call {hex(entry_point - code_loc)};nop;"
+
+                # Assemble and write to location
+                assembler = self.ql.create_assembler()
+                bs, sz = assembler.asm(asmstr)
+                bi = bytes(bs)
+                code_loc_end = code_loc + len(bi)
+                self.ql.mem.write(code_loc, bi)
+
+                # Setup registers/stack for call
+                if self.ql.archtype == QL_ARCH.X86:
+                    self.ql.log.debug('Setting up DllMain args')
+                    self.ql.stack_push(dll_base)  # hinstDLL = base address of DLL
+                    self.ql.stack_push(1)  # fdwReason = DLL_PROCESS_ATTACH
+                    self.ql.stack_push(0)  # lpReserved = 0
+
+                elif self.ql.archtype == QL_ARCH.X8664:
+                    self.ql.log.debug('Setting up DllMain args')
+                    self.ql.reg.rcx = dll_base  # hinstDLL = base address of DLL
+                    self.ql.reg.rdx = 1  # fdwReason = DLL_PROCESS_ATTACH
+                else:
+                    raise QlErrorArch("Unknown ql.arch")
+
+                # Execute the call to the entry point
+                try:
+                    self.ql.emu_start(code_loc, code_loc_end, 0, 0)
+                except UcError as e:
+                    self.ql.os.emu_error()
+                    raise e
+                self.ql.log.info("Done calling entry point of dll %s at 0x%x" % (dll_name, entry_point))
 
     def _alloc_cmdline(self, wide):
         addr = self.ql.os.heap.alloc(len(self.cmdline) * (2 if wide else 1))
@@ -339,6 +399,72 @@ class Process():
         self.ql.mem.write(ldr_table_entry.base, ldr_table_entry.bytes())
 
         self.ldr_list.append(ldr_table_entry)
+
+    def init_imports(self, pe, driver):
+        if pe.OPTIONAL_HEADER.DATA_DIRECTORY[pefile.DIRECTORY_ENTRY['IMAGE_DIRECTORY_ENTRY_IMPORT']].VirtualAddress != 0:
+            self.pe.full_load()
+        else:
+            return
+
+        for entry in pe.DIRECTORY_ENTRY_IMPORT:
+            dll_loaded = False
+            dll_name = str(entry.dll.lower(), 'utf-8', 'ignore')
+            original_dll_name = dll_name
+            replaced_dll = False
+            self.ql.log.debug("Requesting imports from %s" % dll_name)
+
+            if dll_name.startswith("api-ms-win-"):
+                # DLLs starting with this prefix contain no actual code.
+                # Instead the windows loader loads the actual code from one of the main windows dlls.
+                # https://github.com/lucasg/Dependencies shows the correct replacement dlls
+                #
+                # The correct way to find the dll that replaces all symbols from this dll involves using the hashmap
+                # inside of apisetschema.dll (see https://lucasg.github.io/2017/10/15/Api-set-resolution/ ).
+                # Currently, we use a simpler, more hacky approach, that seems to work in a lot of cases:
+                #  We just scan through some key dlls and hope that we find the requested symbols there
+                # Note: You might be tempted to load the actual dll (dll_name), because they also contain a reference to
+                #  the replacement dll. However, chances are, that these dlls do not exist in the rootfs and maybe they
+                #  don't even exist on windows. Therefore this approach is a bad idea.
+
+                first_imp = entry.imports[0]
+                key_dlls = ["ntdll.dll", "kernelbase.dll"]  # DLLs that seem to contain most of the requested symbols
+                for key_dll in key_dlls:
+                    if first_imp.name in self.import_address_table[key_dll]:
+                        self.ql.log.debug(f"Redirect {dll_name} to {key_dll}")
+                        dll_name = key_dll
+                        break
+                if dll_name == original_dll_name:
+                    self.ql.log.warning(f"Failed to resolve {original_dll_name}")
+                    continue
+                replaced_dll = True
+
+            for imp in entry.imports:
+                if imp.bound:
+                    continue
+
+                # Only load dll if encounter unbound symbol
+                if not dll_loaded and not replaced_dll:
+                    self.load_dll(entry.dll, driver)
+                    dll_loaded = True
+
+                if imp.name:
+                    try:
+                        addr = self.import_address_table[dll_name][imp.name]
+                    except KeyError:
+                        self.ql.log.warning(f"Error in loading function {original_dll_name}.{imp.name.decode()}")
+                        continue
+                else:
+                    addr = self.import_address_table[dll_name][imp.ordinal]
+
+                if self.ql.archtype == QL_ARCH.X86:
+                    address = self.ql.pack32(addr)
+                else:
+                    address = self.ql.pack64(addr)
+                try:
+                    self.ql.mem.write(imp.address, address)
+                except BaseException as e:
+                    self.ql.log.warning(f"Cannot write mem for import of dll {dll_name}: {e}")
+                    raise e
 
     def init_exports(self):
         if self.ql.code:
@@ -629,27 +755,8 @@ class QlLoaderPE(QlLoader, Process):
             for each in sys_dlls:
                 super().load_dll(each, self.is_driver)
             # parse directory entry import
-            if self.pe.OPTIONAL_HEADER.DATA_DIRECTORY[pefile.DIRECTORY_ENTRY['IMAGE_DIRECTORY_ENTRY_IMPORT']].VirtualAddress != 0:
-                for entry in self.pe.DIRECTORY_ENTRY_IMPORT:
-                    dll_name = str(entry.dll.lower(), 'utf-8', 'ignore')
-                    super().load_dll(entry.dll, self.is_driver)
-                    for imp in entry.imports:
-                        # fix IAT
-                        # ql.log.info(imp.name)
-                        # ql.log.info(self.import_address_table[imp.name])
-                        if imp.name:
-                            try:
-                                addr = self.import_address_table[dll_name][imp.name]
-                            except KeyError:
-                                self.ql.log.debug("Error in loading function %s" % imp.name.decode())
-                        else:
-                            addr = self.import_address_table[dll_name][imp.ordinal]
-
-                        if self.ql.archtype == QL_ARCH.X86:
-                            address = self.ql.pack32(addr)
-                        else:
-                            address = self.ql.pack64(addr)
-                        self.ql.mem.write(imp.address, address)
+            self.ql.log.debug("Init imports for %s" % self.path)
+            super().init_imports(self.pe, self.is_driver)
 
             self.ql.log.debug("Done with loading %s" % self.path)
             self.ql.os.entry_point = self.entry_point
