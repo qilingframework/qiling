@@ -5,17 +5,17 @@
 
 import ctypes
 from qiling.hw.peripheral import QlPeripheral
-
+from qiling.hw.const.stm32f4xx_rcc import RCC_CR
 
 class STM32F4xxRcc(QlPeripheral):
-    class Type(ctypes.Structure):
-        """ the structure available in :
+	class Type(ctypes.Structure):
+		""" the structure available in :
 			stm32f401xc.h
 			stm32f401xe.h
 			stm32f411xe.h 
 		"""
 
-        _fields_ = [
+		_fields_ = [
 			('CR'        , ctypes.c_uint32),      # RCC clock control register,                                  Address offset: 0x00
 			('PLLCFGR'   , ctypes.c_uint32),      # RCC PLL configuration register,                              Address offset: 0x04
 			('CFGR'      , ctypes.c_uint32),      # RCC clock configuration register,                            Address offset: 0x08
@@ -50,25 +50,34 @@ class STM32F4xxRcc(QlPeripheral):
 			('DCKCFGR'   , ctypes.c_uint32),      # RCC Dedicated Clocks configuration register,                 Address offset: 0x8C
 		]
 
-    def __init__(self, ql, label, intn=None):
-        super().__init__(ql, label)
+	def __init__(self, ql, label, intn=None):
+		super().__init__(ql, label)
 
-        self.rcc = self.struct(
-            CR         = 0x00000083,
-            PLLCFGR    = 0x24003010,
-            AHB1LPENR  = 0x0061900F,
-            AHB2LPENR  = 0x00000080,
-            APB1LPENR  = 0x10E2C80F,
-            APB2LPENR  = 0x00077930,
-            CSR        = 0x0E000000,
-            PLLI2SCFGR = 0x24003000,
-        )        
+		self.rcc = self.struct(
+			CR         = 0x00000083,
+			PLLCFGR    = 0x24003010,
+			AHB1LPENR  = 0x0061900F,
+			AHB2LPENR  = 0x00000080,
+			APB1LPENR  = 0x10E2C80F,
+			APB2LPENR  = 0x00077930,
+			CSR        = 0x0E000000,
+			PLLI2SCFGR = 0x24003000,
+		)        
 
-    def read(self, offset, size):
-        buf = ctypes.create_string_buffer(size)
-        ctypes.memmove(buf, ctypes.addressof(self.rcc) + offset, size)
-        return int.from_bytes(buf.raw, byteorder='little')
+	def read(self, offset, size):
+		buf = ctypes.create_string_buffer(size)
+		ctypes.memmove(buf, ctypes.addressof(self.rcc) + offset, size)
+		return int.from_bytes(buf.raw, byteorder='little')
 
-    def write(self, offset, size, value):
-        data = (value).to_bytes(size, 'little')
-        ctypes.memmove(ctypes.addressof(self.rcc) + offset, data, size)
+	def write(self, offset, size, value):
+		if offset == self.struct.CR.offset:			
+			if value & RCC_CR.PLLON:
+				self.rcc.CR |= RCC_CR.PLLON
+				self.rcc.CR |= RCC_CR.PLLRDY
+			
+			if value & RCC_CR.PLLI2SON:
+				self.rcc.CR |= RCC_CR.PLLI2SON	
+				self.rcc.CR |= RCC_CR.PLLI2SRDY
+		else:
+			data = (value).to_bytes(size, 'little')
+			ctypes.memmove(ctypes.addressof(self.rcc) + offset, data, size)
