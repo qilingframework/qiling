@@ -49,7 +49,7 @@ class CortexM4SysTick(QlPeripheral):
         if offset == self.struct.CTRL.offset:
             value &= SYSTICK_CTRL.MASK
         else:
-            value &= 0xFFFFFF
+            value &= 0xffffff # only low-24 bit available
 
         # restart the timer
         if offset == self.struct.LOAD.offset:            
