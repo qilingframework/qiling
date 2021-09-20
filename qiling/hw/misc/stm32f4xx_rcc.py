@@ -5,7 +5,8 @@
 
 import ctypes
 from qiling.hw.peripheral import QlPeripheral
-from qiling.hw.const.stm32f4xx_rcc import RCC_CR
+from qiling.hw.const.stm32f4xx_rcc import RCC_CR, RCC_CFGR
+
 
 class STM32F4xxRcc(QlPeripheral):
 	class Type(ctypes.Structure):
@@ -62,7 +63,19 @@ class STM32F4xxRcc(QlPeripheral):
 			APB2LPENR  = 0x00077930,
 			CSR        = 0x0E000000,
 			PLLI2SCFGR = 0x24003000,
-		)        
+		)
+
+		self.cr_rdyon = [
+			(RCC_CR.HSIRDY   , RCC_CR.HSION   ),
+			(RCC_CR.HSERDY   , RCC_CR.HSEON   ),
+			(RCC_CR.PLLRDY   , RCC_CR.PLLON   ),
+			(RCC_CR.PLLI2SRDY, RCC_CR.PLLI2SON),
+		]
+
+		self.cfgr_rdyon = [
+			(RCC_CFGR.SWS_0, RCC_CFGR.SW_0),
+			(RCC_CFGR.SWS_1, RCC_CFGR.SW_1),
+		]
 
 	def read(self, offset, size):
 		buf = ctypes.create_string_buffer(size)
@@ -70,14 +83,23 @@ class STM32F4xxRcc(QlPeripheral):
 		return int.from_bytes(buf.raw, byteorder='little')
 
 	def write(self, offset, size, value):
-		if offset == self.struct.CR.offset:			
-			if value & RCC_CR.PLLON:
-				self.rcc.CR |= RCC_CR.PLLON
-				self.rcc.CR |= RCC_CR.PLLRDY
-			
-			if value & RCC_CR.PLLI2SON:
-				self.rcc.CR |= RCC_CR.PLLI2SON	
-				self.rcc.CR |= RCC_CR.PLLI2SRDY
-		else:
-			data = (value).to_bytes(size, 'little')
-			ctypes.memmove(ctypes.addressof(self.rcc) + offset, data, size)
+		if offset == self.struct.CR.offset:
+			value = (self.rcc.CR & RCC_CR.RO_MASK) | (value & RCC_CR.RW_MASK)
+		elif offset == self.struct.CFGR.offset:
+			value = (self.rcc.CFGR & RCC_CFGR.RO_MASK) | (value & RCC_CFGR.RW_MASK)
+
+		data = (value).to_bytes(size, 'little')
+		ctypes.memmove(ctypes.addressof(self.rcc) + offset, data, size)
+
+	def step(self):
+		for rdy, on in self.cr_rdyon:
+			if self.rcc.CR & on:
+				self.rcc.CR |= rdy
+			else:
+				self.rcc.CR &= ~rdy
+
+		for rdy, on in self.cfgr_rdyon:
+			if self.rcc.CFGR & on:
+				self.rcc.CFGR |= rdy
+			else:
+				self.rcc.CFGR &= ~rdy
