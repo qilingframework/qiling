@@ -109,6 +109,29 @@ class MCUTest(unittest.TestCase):
 
         del ql
 
+    def test_mcu_i2c_stm32f411(self):
+        ql = Qiling(["/media/moe/keystone/awesome-mcu/examples/i2c-lcd/build/i2c-lcd.hex"],
+            archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DEBUG)
+
+        ql.hw.create('i2c1')
+        ql.hw.create('rcc')
+        ql.hw.create('gpioa')
+        ql.hw.create('gpiob')
+
+        flag = False
+        def indicator():
+            nonlocal flag
+            flag = True
+
+        ql.hw.gpioa.hook_set(5, indicator)
+
+        ql.hw.i2c1.connect(0x3f << 1)
+        ql.run(count=550000)
+
+        self.assertTrue(flag)
+
+        del ql
+
 if __name__ == "__main__":
     unittest.main()
 

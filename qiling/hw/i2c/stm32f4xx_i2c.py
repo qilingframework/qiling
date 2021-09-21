@@ -4,7 +4,9 @@
 #
 
 import ctypes
+
 from qiling.hw.peripheral import QlPeripheral
+from qiling.hw.const.stm32f4xx_i2c import I2C_CR1, I2C_CR2, I2C_SR1, I2C_SR2, I2C_DR
 
 
 class STM32F4xxI2c(QlPeripheral):
@@ -45,20 +47,130 @@ class STM32F4xxI2c(QlPeripheral):
 		]
 
 	def __init__(self, ql, label, ev_intn=None, er_intn=None):
-		super().__init__(ql, label)
+		super().__init__(ql, label)		
+
+		self.ev_intn = ev_intn # event interrupt
+		self.er_intn = er_intn # error interrupt
+		
+		self.reset()
+
+	def reset(self):
+		self.address1 = None
+		self.address2 = None
 
 		self.i2c = self.struct(
 			TRISE = 0x0002
 		)
 
-		self.ev_intn = ev_intn # event interrupt
-		self.er_intn = er_intn # error interrupt
-
 	def read(self, offset, size):
+		self.ql.log.debug(f'[{self.label.upper()}] [R] {self.find_field(offset, size):10s}')
+
 		buf = ctypes.create_string_buffer(size)
 		ctypes.memmove(buf, ctypes.addressof(self.i2c) + offset, size)
 		return int.from_bytes(buf.raw, byteorder='little')
 
 	def write(self, offset, size, value):
+		if offset in [self.struct.SR1.offset, self.struct.SR2.offset]:
+			return
+
+		self.ql.log.debug(f'[{self.label.upper()}] [W] {self.find_field(offset, size):10s} = {hex(value)}')
+
+		if offset == self.struct.CR1.offset:
+			value &= I2C_CR1.RW_MASK
+
+			if value & I2C_CR1.START:
+				# Setting the START bit causes the interface to generate a Start condition 
+				# and to switch to Master mode (MSL bit set) when the BUSY bit is cleared.
+				self.generate_start()
+
+			if value & I2C_CR1.STOP:
+				self.generate_stop()
+
+		elif offset == self.struct.DR.offset:
+			value &= I2C_DR.DR			
+
 		data = (value).to_bytes(size, 'little')
 		ctypes.memmove(ctypes.addressof(self.i2c) + offset, data, size)
+
+		if offset == self.struct.DR.offset:
+			self.i2c.SR1 &= ~I2C_SR1.TXE
+
+			if self.is_master_mode():				
+				if self.i2c.SR1 & I2C_SR1.ADDR:
+					self.send_data()
+				else:
+					self.send_address()	
+
+	## I2C Control register 2 (I2C_CR2)
+	def send_event_interrupt(self):
+		"""
+			This interrupt is generated when:
+			- SB = 1 (Master)
+			- ADDR = 1 (Master/Slave)
+			- ADD10= 1 (Master)
+			- STOPF = 1 (Slave)
+			- BTF = 1 with no TxE or RxNE event
+			- TxE event to 1 if ITBUFEN = 1
+			- RxNE event to 1if ITBUFEN = 1
+		"""
+		if self.ev_intn is not None and self.i2c.CR2 & I2C_CR2.ITEVTEN:
+			self.ql.hw.nvic.set_pending(self.ev_intn)
+
+	## I2C Status register 1 (I2C_SR1)
+	def generate_start(self):
+		"""
+		  	SB: Start bit (Master mode)
+			0: No Start condition
+			1: Start condition generated.
+		- Set when a Start condition generated.
+		- Cleared by software by reading the SR1 register followed by writing the DR register, or by hardware when PE=0
+		"""
+
+		# TODO: generate a start condition
+		# TODO: fetch address from SDA
+		self.i2c.OAR1 = self.address1 << 1
+		self.i2c.SR1 |= I2C_SR1.SB
+		self.send_event_interrupt()
+		self.set_master_mode()
+
+	def generate_stop(self):
+		pass#self.set_slave_mode()
+	
+	def send_address(self):
+		if self.i2c.DR == self.i2c.OAR1 >> 1:			
+			# TODO: send address
+			# TODO: send ACK
+			self.i2c.SR1 |= I2C_SR1.ADDR
+			self.i2c.SR1 |= I2C_SR1.TXE
+
+	def send_data(self):
+		self.i2c.SR1 |= I2C_SR1.BTF
+		self.i2c.SR1 |= I2C_SR1.TXE
+
+	## I2C Status register 2 (I2C_SR2)
+	def is_master_mode(self):
+		"""
+		  	I2C Status register 2 (I2C_SR2) MSL bit
+			0: Slave Mode
+			1: Master Mode
+		"""
+		return self.i2c.SR2 & I2C_SR2.MSL
+
+	def set_master_mode(self):
+		"""
+			I2C Status register 2 (I2C_SR2) MSL bit
+			- Set by hardware as soon as the interface is in Master mode (SB=1)
+			- Cleared by hardware after detecting a Stop condition on the bus 
+			  or a loss of arbitration (ARLO=1), or by hardware when PE=0.
+		"""
+		self.i2c.SR2 |= I2C_SR2.MSL
+	
+	def set_slave_mode(self):		
+		self.i2c.SR2 &= ~I2C_SR2.MSL
+
+	def connect(self, address):
+		self.address1 = address
+
+	def show_info(self):
+		self.ql.log.info(f'[{self.label.upper()} INFO]')
+		self.ql.log.info(f'Mode: {"Master" if self.is_master_mode() else "Slave"} Mode')
