@@ -118,7 +118,11 @@ class QlOsWindows(QlOs):
             api_name = entry['name']
 
             if api_name is None:
-                api_name = const.Mapper[entry['dll']][entry['ordinal']]
+                if entry['dll'] in const.Mapper:
+                    api_name = const.Mapper[entry['dll']][entry['ordinal']]
+                else:
+                    ql.log.warning(f"dll {entry['dll']} ordinal {entry['ordinal']} not implemented")
+                    raise QlErrorSyscallNotFound("Windows DLL Missing")
             else:
                 api_name = api_name.decode()
 
