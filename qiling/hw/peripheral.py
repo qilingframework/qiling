@@ -10,7 +10,7 @@ class QlPeripheral:
     class Type(ctypes.Structure):
         _fields_ = []
     
-    def __init__(self, ql, label, **kwargs):
+    def __init__(self, ql, label):
         self.ql = ql
         self.label = label
         self.struct = type(self).Type
@@ -19,11 +19,17 @@ class QlPeripheral:
         pass
 
     def read(self, offset, size) -> int:
-        self.ql.log.debug('[%s] Read [0x%08x:%d]' % (self.label, offset, size))
+        self.ql.log.debug(f'[{self.label.upper()}] [R] {self.find_field(offset, size):10s}')
         return 0
 
     def write(self, offset, size, value):
-        self.ql.log.debug('[%s] Write [0x%08x:%d] = %08x' % (self.label, offset, size, value))
+        self.ql.log.debug(f'[{self.label.upper()}] [W] {self.find_field(offset, size):10s} = {hex(value)}')        
+
+    def find_field(self, offset, size) -> str:
+        for name, _ in self.struct._fields_:
+            field = getattr(self.struct, name)
+            if (offset, size) == (field.offset, field.size):
+                return name
 
     @property
     def region(self):
