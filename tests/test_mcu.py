@@ -110,7 +110,7 @@ class MCUTest(unittest.TestCase):
         del ql
 
     def test_mcu_i2c_stm32f411(self):
-        ql = Qiling(["/media/moe/keystone/awesome-mcu/examples/i2c-lcd/build/i2c-lcd.hex"],
+        ql = Qiling(["../examples/rootfs/mcu/stm32f411/i2c-lcd.hex"],
             archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DEBUG)
 
         ql.hw.create('i2c1')
