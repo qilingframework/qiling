@@ -221,6 +221,7 @@ class QlOs:
                 self.ql.log.error(f'{reg}\t: {self.ql.reg.read(reg):#x}')
 
         pc = self.ql.reg.arch_pc
+        pc_info = ''
 
         try:
             data = self.ql.mem.read(pc, size=8)
@@ -228,7 +229,7 @@ class QlOs:
             pc_info = ' (unreachable)'
         else:
             self.ql.log.error('Hexdump:')
-            self.ql.log.error(data.hex(' '))
+            self.ql.log.error(data.hex())
 
             self.ql.log.error('Disassembly:')
             self.ql.arch.utils.disassembler(self.ql, pc, 64)
