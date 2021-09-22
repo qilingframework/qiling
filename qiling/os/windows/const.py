@@ -499,6 +499,8 @@ FILE_ATTRIBUTE_SPARSE_FILE = 0x0004
 FILE_ATTRIBUTE_TEMPORARY = 0x0100
 FILE_ATTRIBUTE_VIRTUAL = 0x10000
 
+HFILE_ERROR = -1
+
 # ShellApi Constants
 # https://docs.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-shgetfileinfow
 

@@ -38,7 +38,7 @@ def ql_syscall_readv(ql: Qiling, fd: int, vec: int, vlen: int):
 
         if hasattr(ql.os.fd[fd], 'read'):
             data = ql.os.fd[fd].read(l)
-            ql.log.debug(f'{data.decode()!r}')
+            ql.log.debug(f'{data!r}')
             ql.mem.write(addr, data)
 
     return regreturn
