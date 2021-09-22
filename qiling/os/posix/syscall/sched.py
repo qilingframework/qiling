@@ -44,7 +44,6 @@ def ql_syscall_clone(ql: Qiling, flags: int, child_stack: int, parent_tidptr: in
         newtls = ori_newtls
 
     f_th = ql.os.thread_management.cur_thread
-    newtls = None
     set_child_tid_addr = None
 
     # Shared virtual memory
