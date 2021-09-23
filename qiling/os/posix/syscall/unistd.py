@@ -156,7 +156,8 @@ def ql_syscall_lseek(ql: Qiling, fd: int, offset: int, lseek_origin: int):
 
 
 def ql_syscall__llseek(ql: Qiling, fd: int, offset_high: int, offset_low: int, result: int, whence: int):
-    offset = (offset_high << 32) | offset_low
+    # treat offset as a signed value
+    offset = ql.unpack64s(ql.pack64((offset_high << 32) | offset_low))
     origin = whence
 
     try:
