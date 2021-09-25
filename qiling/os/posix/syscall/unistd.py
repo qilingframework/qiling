@@ -156,7 +156,8 @@ def ql_syscall_lseek(ql: Qiling, fd: int, offset: int, lseek_origin: int):
 
 
 def ql_syscall__llseek(ql: Qiling, fd: int, offset_high: int, offset_low: int, result: int, whence: int):
-    offset = (offset_high << 32) | offset_low
+    # treat offset as a signed value
+    offset = ql.unpack64s(ql.pack64((offset_high << 32) | offset_low))
     origin = whence
 
     try:
@@ -247,11 +248,12 @@ def ql_syscall_read(ql: Qiling, fd, buf: int, length: int):
         try:
             data = ql.os.fd[fd].read(length)
             ql.mem.write(buf, data)
-
-            ql.log.debug(f'read() CONTENT: {data.decode()!r}')
-            regreturn = len(data)
         except:
             regreturn = -EBADF
+        else:
+            ql.log.debug(f'read() CONTENT: {data!r}')
+            regreturn = len(data)
+
     else:
         regreturn = -EBADF
 
@@ -261,9 +263,10 @@ def ql_syscall_read(ql: Qiling, fd, buf: int, length: int):
 def ql_syscall_write(ql: Qiling, fd: int, buf: int, count: int):
     try:
         data = ql.mem.read(buf, count)
-
-        if data:
-            ql.log.debug(f'write() CONTENT: {data.decode()!r}')
+    except:
+        regreturn = -1
+    else:
+        ql.log.debug(f'write() CONTENT: {data.decode()!r}')
 
         if hasattr(ql.os.fd[fd], 'write'):
             ql.os.fd[fd].write(data)
@@ -271,12 +274,6 @@ def ql_syscall_write(ql: Qiling, fd: int, buf: int, count: int):
             ql.log.warning(f'write failed since fd {fd:d} does not have a write method')
 
         regreturn = count
-
-    except:
-        regreturn = -1
-
-        if ql.verbose >= QL_VERBOSE.DEBUG:
-            raise
 
     return regreturn
 
