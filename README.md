@@ -222,13 +222,14 @@ Contact us at email info@qiling.io, or via Twitter [@qiling_io](https://twitter.
 
 - LAU kaijern (xwings) <kj@qiling.io>
 - NGUYEN Anh Quynh <aquynh@gmail.com>
-- DING tianZe (D1iv3) <dddliv3@gmail.com>
-- SUN bowen (w1tcher) <w1tcher.bupt@gmail.com>
-- CHEN huitao (null) <null@qiling.io>
-- YU tong (sp1ke) <spikeinhouse@gmail.com>
-- Earl Marcus (klks84) klks84@gmail.com 
 - WU chenxu (kabeor) <kabeor@qiling.io>
 - KONG ziqiao (lazymio) <mio@lazym.io>
+- YU zheng (dataisland) <dataisland@outlook.com>
+- DING tianze (D1iv3) <dddliv3@gmail.com>
+- SUN bowen (w1tcher) <w1tcher.bupt@gmail.com>
+- CHEN uitao (null) <null@qiling.io>
+- YU tong (sp1ke) <spikeinhouse@gmail.com>
+- Earl MARCUS (klks84) klks84@gmail.com
 
 #### Travis-CI, Docker, Website and Documentation
 

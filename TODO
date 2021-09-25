@@ -23,3 +23,9 @@ Release
     __version__ = "X.X.X" + "-dev"
 15. Update changelog and add section for next Update
 16. commit and push
+
+
+-------------------- Add New Contributors --------------------
+- CREDITS.TXT
+- README.md 
+- https://qiling.io page
