@@ -15,12 +15,32 @@ VERSION = gb['__version__']
 requirements = [
     "capstone>=4.0.1",
     "unicorn>=1.0.2",
-    "pefile>=2019.4.18",
+    "pefile==2021.5.24",
     "python-registry>=1.3.1",
     "keystone-engine>=0.9.2",
     "pyelftools>=0.26",
     "gevent>=20.9.0"
 ]
+
+evm_extra = {
+    "evm": [
+        "blake2b-py>=0.1.2",
+        "cached-property>=1.5.2;python_version<'3.8'",
+        "typing-extensions>=3.7.4.3;python_version<'3.8'",
+        "eth-keys>=0.2.1",
+        "eth-typing>=2.2.0",
+        "eth-utils>=1.9.4",
+        "eth_abi>=2.1.1",
+        "lru-dict>=1.1.6",
+        "py-ecc>=1.4.7",
+        "rlp>=2",
+        "trie==2.0.0-alpha.5",
+        "eth-hash[pycryptodome]",
+        "numpy",
+        "rich",
+        "cmd2"
+     ] 
+}
 
 with open("README.md", "r", encoding="utf-8") as ld:
     long_description = ld.read()
@@ -46,8 +66,8 @@ setup(
         # How mature is this project? Common values are
         #   3 - Alpha
         #   5 - Production/Stable
-        'Development Status :: 5 - Production/Stable',
-        #'Development Status :: 3 - Alpha',
+        #'Development Status :: 5 - Production/Stable',
+        'Development Status :: 3 - Alpha',
 
         # Indicate who your project is intended for
         'Intended Audience :: Developers',
@@ -67,4 +87,5 @@ setup(
     scripts=['qltool'],
     include_package_data=True,
     install_requires=requirements,
+    extras_require=evm_extra,
 )

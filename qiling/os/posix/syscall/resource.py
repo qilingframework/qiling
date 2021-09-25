@@ -14,44 +14,39 @@ except ImportError:
             pass
     resource = DummyResource()
 
+import os
 
-from qiling.const import *
-from qiling.os.linux.thread import *
-from qiling.const import *
-from qiling.os.posix.filestruct import *
-from qiling.os.filestruct import *
-from qiling.os.posix.const_mapping import *
-from qiling.exception import *
+from qiling import Qiling
 
-def ql_syscall_ugetrlimit(ql, ugetrlimit_resource, ugetrlimit_rlim, *args, **kw):
-    rlim = resource.getrlimit(ugetrlimit_resource)
-    ql.mem.write(ugetrlimit_rlim, ql.pack32s(rlim[0]) + ql.pack32s(rlim[1]))
-    regreturn = 0
-    return regreturn
+def __getrlimit_common(ql: Qiling, res: int, rlim: int) -> int:
+    rlimit = resource.getrlimit(res)
+    ql.mem.write(rlim, ql.pack32s(rlimit[0]) + ql.pack32s(rlimit[1]))
 
-def ql_syscall_getrlimit(ql, getrlimit_resource, getrlimit_rlim, *args, **kw):
-    return ql_syscall_ugetrlimit(ql, getrlimit_resource, getrlimit_rlim, *args, **kw)
+    return 0
 
-def ql_syscall_setrlimit(ql, setrlimit_resource, setrlimit_rlim, *args, **kw):
+def ql_syscall_ugetrlimit(ql: Qiling, res: int, rlim: int):
+    return __getrlimit_common(ql, res, rlim)
+
+def ql_syscall_getrlimit(ql: Qiling, res: int, rlim: int):
+    return __getrlimit_common(ql, res, rlim)
+
+def ql_syscall_setrlimit(ql: Qiling, setrlimit_resource: int, setrlimit_rlim: int):
     # maybe we can nop the setrlimit
     tmp_rlim = (ql.unpack32s(ql.mem.read(setrlimit_rlim, 4)), ql.unpack32s(ql.mem.read(setrlimit_rlim + 4, 4)))
     resource.setrlimit(setrlimit_resource, tmp_rlim)
-    regreturn = 0
-    return regreturn
 
+    return 0
 
-def ql_syscall_prlimit64(ql, prlimit64_pid, prlimit64_resource, prlimit64_new_limit, prlimit64_old_limit, *args, **kw):
+def ql_syscall_prlimit64(ql: Qiling, pid: int, res: int, new_limit: int, old_limit: int):
     # setrlimit() and getrlimit()
-    if prlimit64_pid == 0 and prlimit64_new_limit == 0:
-        rlim = resource.getrlimit(prlimit64_resource)
-        ql.mem.write(prlimit64_old_limit, ql.packs(rlim[0]) + ql.packs(rlim[1]))
-        regreturn = 0
-    else:
-        # set other process which pid != 0
-        regreturn = -1
-    return regreturn
+    if pid == 0 and new_limit == 0:
+        rlim = resource.getrlimit(res)
+        ql.mem.write(old_limit, ql.packs(rlim[0]) + ql.packs(rlim[1]))
 
+        return 0
 
-def ql_syscall_getpriority(ql, getpriority_which, getpriority_who, null1, null2, null3, null4):
-    base = os.getpriority(getpriority_which, getpriority_who)
-    return base
+    # set other process which pid != 0
+    return -1
+
+def ql_syscall_getpriority(ql: Qiling, getpriority_which: int, getpriority_who: int):
+    return os.getpriority(getpriority_which, getpriority_who)

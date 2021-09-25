@@ -4,12 +4,11 @@
 #
 
 import os, re
-from typing import Any, List, MutableSequence, Optional, Sequence, Tuple
+from typing import Any, List, Mapping, MutableSequence, Optional, Sequence, Tuple
 
 from unicorn import UC_PROT_NONE, UC_PROT_READ, UC_PROT_WRITE, UC_PROT_EXEC, UC_PROT_ALL
 
 from qiling import Qiling
-from qiling.const import *
 from qiling.exception import *
 
 # tuple: range start, range end, permissions mask, range label
@@ -82,21 +81,20 @@ class QlMemoryManager:
             mem_info: map entry label
         """
 
-        tmp_map_info: MutableSequence[MapInfoEntry] = []
-        insert_flag = 0
-        map_info = self.map_info
-
-        if len(map_info) == 0:
-            tmp_map_info.append((mem_s, mem_e, mem_p, mem_info))
+        if not self.map_info:
+            self.map_info.append((mem_s, mem_e, mem_p, mem_info))
         else:
-            for s, e, p, info in map_info:
+            tmp_map_info: MutableSequence[MapInfoEntry] = []
+            inserted = False
+
+            for s, e, p, info in self.map_info:
                 if e <= mem_s:
                     tmp_map_info.append((s, e, p, info))
                     continue
 
                 if s >= mem_e:
-                    if insert_flag == 0:
-                        insert_flag = 1
+                    if not inserted:
+                        inserted = True
                         tmp_map_info.append((mem_s, mem_e, mem_p, mem_info))
 
                     tmp_map_info.append((s, e, p, info))
@@ -108,8 +106,8 @@ class QlMemoryManager:
                 if s == mem_s:
                     pass
 
-                if insert_flag == 0:
-                    insert_flag = 1
+                if not inserted:
+                    inserted = True
                     tmp_map_info.append((mem_s, mem_e, mem_p, mem_info))
 
                 if e > mem_e:
@@ -118,10 +116,10 @@ class QlMemoryManager:
                 if e == mem_e:
                     pass
 
-            if insert_flag == 0:
+            if not inserted:
                 tmp_map_info.append((mem_s, mem_e, mem_p, mem_info))
 
-        self.map_info = tmp_map_info
+            self.map_info = tmp_map_info
 
     def del_mapinfo(self, mem_s: int, mem_e: int):
         """Subtract a memory range from map.
@@ -283,13 +281,7 @@ class QlMemoryManager:
             data: bytes to write
         """
 
-        try:
-            self.ql.uc.mem_write(addr, data)
-        except:
-            self.show_mapinfo()
-            self.ql.log.debug(f'addresss write length: {len(data):d}')
-            self.ql.log.error(f'addresss write error: {addr:#x}')
-            raise
+        self.ql.uc.mem_write(addr, data)
 
     def search(self, needle: bytes, begin: int = None, end: int = None) -> Sequence[int]:
         """Search for a sequence of bytes in memory.
@@ -312,7 +304,7 @@ class QlMemoryManager:
 
         assert begin < end, 'search arguments do not make sense'
 
-        ranges = [(max(begin, lbound), min(ubound, end)) for lbound, ubound, _, _ in self.map_info if (begin <= lbound < end) or (begin < ubound <= end)]
+        ranges = [(max(begin, lbound), min(ubound, end)) for lbound, ubound, _, _ in self.map_info if not (end < lbound or ubound < begin)]
         results = []
 
         for lbound, ubound in ranges:
@@ -447,9 +439,13 @@ class QlMemoryManager:
 
         return addr
 
-    def protect(self, addr, size, perms):
+    def protect(self, addr: int, size: int, perms):
+        # mask off perms bits that are not supported by unicorn
+        perms &= UC_PROT_ALL
+
         aligned_address = (addr >> 12) << 12
         aligned_size = self.align((addr & 0xFFF) + size)
+
         self.ql.uc.mem_protect(aligned_address, aligned_size, perms)
 
 

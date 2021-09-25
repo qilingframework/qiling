@@ -3,46 +3,29 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from qiling import Qiling
 
-from qiling.const import *
-from qiling.os.linux.thread import *
-from qiling.const import *
-from qiling.os.posix.filestruct import *
-from qiling.os.filestruct import *
-from qiling.os.posix.const_mapping import *
-from qiling.exception import *
-
-def ql_syscall_rt_sigaction(ql, rt_sigaction_signum, rt_sigaction_act, rt_sigaction_oldact, *args, **kw):
-    if rt_sigaction_oldact != 0:
-        if ql.os.sigaction_act[rt_sigaction_signum] == 0:
-            ql.mem.write(rt_sigaction_oldact, b'\x00' * 20)
+def ql_syscall_rt_sigaction(ql: Qiling, signum: int, act: int, oldact: int):
+    if oldact:
+        if ql.os.sigaction_act[signum] == 0:
+            data = b'\x00' * 20
         else:
-            data = b''
-            for key in ql.os.sigaction_act[rt_sigaction_signum]:
-                data += ql.pack32(key)
-            ql.mem.write(rt_sigaction_oldact, data)
+            data = b''.join(ql.pack32(key) for key in ql.os.sigaction_act[signum])
 
-    if rt_sigaction_act != 0:
-        data = []
-        for key in range(5):
-            data.append(ql.unpack32(ql.mem.read(rt_sigaction_act + 4 * key, 4)))
-        ql.os.sigaction_act[rt_sigaction_signum] = data
+        ql.mem.write(oldact, data)
 
-    regreturn = 0
-    return regreturn
+    if act:
+        ql.os.sigaction_act[signum] = [ql.unpack32(ql.mem.read(act + 4 * key, 4)) for key in range(5)]
+
+    return 0
 
 
-def ql_syscall_rt_sigprocmask(ql, rt_sigprocmask_how, rt_sigprocmask_nset, rt_sigprocmask_oset, rt_sigprocmask_sigsetsize, *args, **kw):
-    SIG_BLOCK = 0x0
-    SIG_UNBLOCK = 0x1
+def ql_syscall_rt_sigprocmask(ql: Qiling, how: int, nset: int, oset: int, sigsetsize: int):
+    # SIG_BLOCK = 0x0
+    # SIG_UNBLOCK = 0x1
 
-    if rt_sigprocmask_how == SIG_BLOCK:
-        pass
-
-    regreturn = 0
-    return regreturn
+    return 0
 
 
-def ql_syscall_signal(ql, sig, __sighandler_t, *args, **kw):
-    regreturn = 0
-    return regreturn
+def ql_syscall_signal(ql: Qiling, sig: int, sighandler: int):
+    return 0

@@ -3,89 +3,57 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+import os
 import time
+import gevent
 
-from qiling.const import *
-from qiling.os.linux.thread import *
-from qiling.const import *
-from qiling.os.posix.filestruct import *
-from qiling.os.filestruct import *
-from qiling.os.posix.const_mapping import *
-from qiling.exception import *
+from qiling import Qiling
 
-def ql_syscall_time(ql, *args, **kw):
-    regreturn = int(time.time())
-    return regreturn
+def ql_syscall_time(ql: Qiling):
+    return int(time.time())
 
-def ql_syscall_clock_nanosleep_time64(ql, nanosleep_clk_id, nanosleep_flags, nanosleep_req, nanosleep_rem, *args, **kw):
-    def _sched_sleep(cur_thread):
-        gevent.sleep(tv_sec)
-
+def __sleep_common(ql: Qiling, req: int, rem: int) -> int:
     n = ql.pointersize
 
-    tv_sec = ql.unpack(ql.mem.read(nanosleep_req, n))
-    tv_sec += ql.unpack(ql.mem.read(nanosleep_req + n, n)) / 1000000000
+    tv_sec = ql.unpack(ql.mem.read(req, n))
+    tv_sec += ql.unpack(ql.mem.read(req + n, n)) / 1000000000
 
-    if ql.os.thread_management == None:
-        time.sleep(tv_sec)
-    else:
+    if ql.os.thread_management:
+        def _sched_sleep(cur_thread):
+            gevent.sleep(tv_sec)
+
         ql.emu_stop()
         ql.os.thread_management.cur_thread.sched_cb = _sched_sleep
+
+        # FIXME: this seems to be incomplete
         th = ql.os.thread_management.cur_thread
-
-    regreturn = 0
-    return regreturn
-
-
-def ql_syscall_nanosleep(ql, nanosleep_req, nanosleep_rem, *args, **kw):
-    def _sched_sleep(cur_thread):
-        gevent.sleep(tv_sec)
-
-    n = ql.pointersize
-
-    tv_sec = ql.unpack(ql.mem.read(nanosleep_req, n))
-    tv_sec += ql.unpack(ql.mem.read(nanosleep_req + n, n)) / 1000000000
-
-    if ql.os.thread_management == None:
-        time.sleep(tv_sec)
     else:
-        ql.emu_stop()
-        ql.os.thread_management.cur_thread.sched_cb = _sched_sleep
-        th = ql.os.thread_management.cur_thread
+        time.sleep(tv_sec)
 
-    regreturn = 0
-    return regreturn
+    return 0
 
+def ql_syscall_clock_nanosleep_time64(ql: Qiling, clk_id: int, flags: int, req: int, rem: int):
+    return __sleep_common(ql, req, rem)
 
-def ql_syscall_setitimer(ql, setitimer_which, setitimer_new_value, setitimer_old_value, *args, **kw):
+def ql_syscall_nanosleep(ql: Qiling, req: int, rem: int):
+    return __sleep_common(ql, req, rem)
+
+def ql_syscall_clock_nanosleep(ql: Qiling, clockid: int, flags: int, req: int, rem: int):
+    return __sleep_common(ql, req, rem)
+
+def ql_syscall_setitimer(ql: Qiling, which: int, new_value: int, old_value: int):
     # TODO:The system provides each process with three interval timers, each decrementing in a distinct time domain.
     # When any timer expires, a signal is sent to the process, and the timer (potentially) restarts.
     # But I haven’t figured out how to send a signal yet.
-    regreturn = 0
-    return regreturn
 
+    return 0
 
-def ql_syscall_times(ql, times_tbuf, *args, **kw):
-    tmp_times = os.times()
-    if times_tbuf != 0:
-        tmp_buf = b''
-        tmp_buf += ql.pack32(int(tmp_times.user * 1000))
-        tmp_buf += ql.pack32(int(tmp_times.system * 1000))
-        tmp_buf += ql.pack32(int(tmp_times.children_user * 1000))
-        tmp_buf += ql.pack32(int(tmp_times.children_system * 1000))
-        ql.mem.write(times_tbuf, tmp_buf)
-    regreturn = int(tmp_times.elapsed * 100)
-    return regreturn
+def ql_syscall_times(ql: Qiling, tbuf: int):
+    times = os.times()
 
+    if tbuf:
+        fields = (times.user, times.system, times.children_user, times.children_system)
 
-def ql_syscall_gettimeofday(ql, gettimeofday_tv, gettimeofday_tz, *args, **kw):
-    tmp_time = time.time()
-    tv_sec = int(tmp_time)
-    tv_usec = int((tmp_time - tv_sec) * 1000000)
+        ql.mem.write(tbuf, b''.join(ql.pack32(int(f * 1000)) for f in fields))
 
-    if gettimeofday_tv != 0:
-        ql.mem.write(gettimeofday_tv, ql.pack32(tv_sec) + ql.pack32(tv_usec))
-    if gettimeofday_tz != 0:
-        ql.mem.write(gettimeofday_tz, b'\x00' * 8)
-    regreturn = 0
-    return regreturn
+    return int(times.elapsed * 100)

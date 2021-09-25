@@ -3,130 +3,149 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from unicorn import *
-from unicorn.x86_const import *
-
 from struct import pack
 
-from .arch import QlArch
-from .x86_const import *
-from qiling.const import *
-from qiling.exception import *
+from unicorn import Uc, UC_ARCH_X86, UC_MODE_16, UC_MODE_32, UC_MODE_64
+from capstone import Cs, CS_ARCH_X86, CS_MODE_16, CS_MODE_32, CS_MODE_64
+from keystone import Ks, KS_ARCH_X86, KS_MODE_16, KS_MODE_32, KS_MODE_64
 
+from qiling import Qiling
+from qiling.arch.arch import QlArch
+from qiling.arch.x86_const import *
+from qiling.exception import QlGDTError
 
-class QlArchX86(QlArch):
-    def __init__(self, ql):
-        super(QlArchX86, self).__init__(ql)
+class QlArchIntel(QlArch):
 
-        x86_register_mappings = [
-            reg_map_8, reg_map_16, reg_map_32,
-            reg_map_cr, reg_map_st, reg_map_misc
-        ]
+    # TODO: generalize this
+    def get_reg_bit(self, register: int) -> int:
+        # all regs in reg_map_misc are 16 bits except of eflags
+        if register == UC_X86_REG_EFLAGS:
+            return self.ql.archbit
 
-        for reg_maper in x86_register_mappings:
+        regmaps = (
+            (reg_map_8, 8),
+            (reg_map_16, 16),
+            (reg_map_32, 32),
+            (reg_map_64, 64),
+            (reg_map_misc, 16),
+            (reg_map_cr, 64 if self.ql.archbit == 64 else 32),
+            (reg_map_st, 32),
+            (reg_map_seg_base, 64 if self.ql.archbit == 64 else 32),
+        )
+
+        return next((rsize for rmap, rsize in regmaps if register in rmap.values()), 0)
+
+class QlArchA8086(QlArchIntel):
+    def __init__(self, ql: Qiling):
+        super().__init__(ql)
+
+        reg_maps = (
+            reg_map_8,
+            reg_map_16,
+            reg_map_misc
+        )
+
+        for reg_maper in reg_maps:
             self.ql.reg.expand_mapping(reg_maper)
 
-        self.ql.reg.create_reverse_mapping()
+        self.ql.reg.register_pc(reg_map_16["sp"])
+        self.ql.reg.register_sp(reg_map_16["ip"])
+
+    def get_init_uc(self) -> Uc:
+        return Uc(UC_ARCH_X86, UC_MODE_16)
+
+    def create_disassembler(self) -> Cs:
+        if not self._disasm:
+            self._disasm = Cs(CS_ARCH_X86, CS_MODE_16)
+
+        return self._disasm
+
+    def create_assembler(self) -> Ks:
+        if not self._asm:
+            self._asm = Ks(KS_ARCH_X86, KS_MODE_16)
+
+        return self._asm
+
+class QlArchX86(QlArchIntel):
+    def __init__(self, ql: Qiling):
+        super().__init__(ql)
+
+        reg_maps = (
+            reg_map_8,
+            reg_map_16,
+            reg_map_32,
+            reg_map_cr,
+            reg_map_st,
+            reg_map_misc
+        )
+
+        for reg_maper in reg_maps:
+            self.ql.reg.expand_mapping(reg_maper)
 
         self.ql.reg.register_sp(reg_map_32["esp"])
         self.ql.reg.register_pc(reg_map_32["eip"])
 
+    def get_init_uc(self) -> Uc:
+        return Uc(UC_ARCH_X86, UC_MODE_32)
 
-    def stack_push(self, value):
-        self.ql.reg.esp -= 4
-        self.ql.mem.write(self.ql.reg.esp , self.ql.pack32(value))
-        return self.ql.reg.esp
+    def create_disassembler(self) -> Cs:
+        if not self._disasm:
+            self._disasm = Cs(CS_ARCH_X86, CS_MODE_32)
 
+        return self._disasm
 
-    def stack_pop(self):
-        data = self.ql.unpack32(self.ql.mem.read(self.ql.reg.esp, 4))
-        self.ql.reg.esp += 4
-        return data
+    def create_assembler(self) -> Ks:
+        if not self._asm:
+            self._asm = Ks(KS_ARCH_X86, KS_MODE_32)
 
+        return self._asm
 
-    def stack_read(self, offset):
-        return self.ql.unpack32(self.ql.mem.read(self.ql.reg.esp+offset, 4))
+class QlArchX8664(QlArchIntel):
+    def __init__(self, ql: Qiling):
+        super().__init__(ql)
 
+        reg_maps = (
+            reg_map_8,
+            reg_map_16,
+            reg_map_32,
+            reg_map_64,
+            reg_map_cr,
+            reg_map_st,
+            reg_map_misc,
+            reg_map_64_b,
+            reg_map_64_w,
+            reg_map_64_d,
+            reg_map_seg_base
+        )
 
-    def stack_write(self, offset, data):
-        return self.ql.mem.write(self.ql.reg.esp + offset, self.ql.pack32(data))
-
-
-    # get register big, mostly use for x86    
-    def get_reg_bit(self, register):
-        if type(register) == str:
-            register = self.ql.reg.get_uc_reg(register)
-        if register in ({v for k, v in reg_map_32.items()}):
-            return 32 
-
-
-    # get initialized unicorn engine
-    def get_init_uc(self):
-        uc = Uc(UC_ARCH_X86, UC_MODE_32)  
-        return uc
-
-
-class QlArchX8664(QlArch):
-    def __init__(self, ql):
-        super(QlArchX8664, self).__init__(ql)
-
-        x64_register_mappings = [
-            reg_map_8, reg_map_16, reg_map_32, reg_map_64,
-            reg_map_cr, reg_map_st, reg_map_misc, reg_map_r, reg_map_seg_base
-        ]
-
-        for reg_maper in x64_register_mappings:
+        for reg_maper in reg_maps:
             self.ql.reg.expand_mapping(reg_maper)
-
-        self.ql.reg.create_reverse_mapping()
 
         self.ql.reg.register_sp(reg_map_64["rsp"])
         self.ql.reg.register_pc(reg_map_64["rip"])
 
+    def get_init_uc(self) -> Uc:
+        return Uc(UC_ARCH_X86, UC_MODE_64)
 
-    def stack_push(self, value):
-        self.ql.reg.rsp -= 8
-        self.ql.mem.write(self.ql.reg.rsp, self.ql.pack64(value))
-        return self.ql.reg.rsp
+    def create_disassembler(self) -> Cs:
+        if not self._disasm:
+            self._disasm = Cs(CS_ARCH_X86, CS_MODE_64)
 
+        return self._disasm
 
-    def stack_pop(self):
-        data = self.ql.unpack64(self.ql.mem.read(self.ql.reg.rsp, 8))
-        self.ql.reg.rsp += 8
-        return data
+    def create_assembler(self) -> Ks:
+        if not self._asm:
+            self._asm = Ks(KS_ARCH_X86, KS_MODE_64)
 
-
-    def stack_read(self, offset):
-        return self.ql.unpack64(self.ql.mem.read(self.ql.reg.rsp + offset, 8))
-
-
-    def stack_write(self, offset, data):
-        return self.ql.mem.write(self.ql.reg.rsp + offset, self.ql.pack64(data))
-
-
-    # get initialized unicorn engine
-    def get_init_uc(self):
-        uc = Uc(UC_ARCH_X86, UC_MODE_64)  
-        return uc
-
-
-    # get register big, mostly use for x86  
-    def get_reg_bit(self, register):
-        if type(register) == str:
-            register = self.ql.reg.get_uc_reg(register)
-
-        if register in ({v for k, v in reg_map_64.items()}):
-            return 64
-        else:
-            return 32
+        return self._asm
 
 
 class GDTManager:
     # Added GDT management module.
-    def __init__(self, ql, GDT_ADDR = QL_X86_GDT_ADDR, GDT_LIMIT =  QL_X86_GDT_LIMIT, GDT_ENTRY_ENTRIES = 16):
+    def __init__(self, ql: Qiling, GDT_ADDR = QL_X86_GDT_ADDR, GDT_LIMIT =  QL_X86_GDT_LIMIT, GDT_ENTRY_ENTRIES = 16):
         ql.log.debug(f"Map GDT at {hex(GDT_ADDR)} with GDT_LIMIT={GDT_LIMIT}")
 
-        if ql.mem.is_mapped(GDT_ADDR, GDT_LIMIT) == False:
+        if not ql.mem.is_mapped(GDT_ADDR, GDT_LIMIT):
             ql.mem.map(GDT_ADDR, GDT_LIMIT, info="[GDT]")
 
         # setup GDT by writing to GDTR
@@ -139,10 +158,10 @@ class GDTManager:
         self.gdt_limit = GDT_LIMIT
 
 
-    def register_gdt_segment(self, index, SEGMENT_ADDR, SEGMENT_SIZE, SPORT, RPORT):
+    def register_gdt_segment(self, index: int, SEGMENT_ADDR: int, SEGMENT_SIZE: int, SPORT, RPORT):
         # FIXME: Temp fix for FS and GS
         if index in (14, 15):
-            if self.ql.mem.is_mapped(SEGMENT_ADDR, SEGMENT_ADDR) == False:
+            if not self.ql.mem.is_mapped(SEGMENT_ADDR, SEGMENT_ADDR):
                 self.ql.mem.map(SEGMENT_ADDR, SEGMENT_ADDR, info="[FS/GS]")
 
         if index < 0 or index >= self.gdt_number:
@@ -154,26 +173,24 @@ class GDTManager:
         self.ql.log.debug(f"Write to {hex(self.gdt_addr + (index << 3))} for new entry {gdt_entry}")
 
 
-    def get_gdt_buf(self, start, end):
+    def get_gdt_buf(self, start: int, end: int) -> bytearray:
         return self.ql.mem.read(self.gdt_addr + (start << 3), (end << 3) - (start << 3))
 
 
-    def set_gdt_buf(self, start, end, buf):
-        return self.ql.mem.write(self.gdt_addr + (start << 3), buf[ : (end << 3) - (start << 3)])
+    def set_gdt_buf(self, start: int, end: int, buf: bytes) -> None:
+        self.ql.mem.write(self.gdt_addr + (start << 3), buf[ : (end << 3) - (start << 3)])
 
 
-    def get_free_idx(self, start = 0, end = -1):
+    def get_free_idx(self, start: int = 0, end: int = -1) -> int:
         # The Linux kernel determines whether the segment is empty by judging whether the content in the current GDT segment is 0.
         if end == -1:
             end = self.gdt_number
 
-        idx = -1
         for i in range(start, end):
             if self.ql.unpack64(self.ql.mem.read(self.gdt_addr + (i << 3), 8)) == 0:
-                idx = i
-                break
+                return i
 
-        return idx
+        return -1
 
 
     def _create_gdt_entry(self, base, limit, access, flags):
@@ -237,19 +254,20 @@ def ql_x86_register_fs(self):
     self.ql.reg.fs = self.gdtm.create_selector(14,  QL_X86_S_GDT |  QL_X86_S_PRIV_3)
 
 
-def ql_x8664_set_gs(ql):
-    if ql.mem.is_mapped(GS_SEGMENT_ADDR, GS_SEGMENT_SIZE) == False:
+def ql_x8664_set_gs(ql: Qiling):
+    if not ql.mem.is_mapped(GS_SEGMENT_ADDR, GS_SEGMENT_SIZE):
         ql.mem.map(GS_SEGMENT_ADDR, GS_SEGMENT_SIZE, info="[GS]")
+
     ql.reg.msr(GSMSR, GS_SEGMENT_ADDR)
 
 
-def ql_x8664_get_gs(ql):
+def ql_x8664_get_gs(ql: Qiling):
     return ql.reg.msr(GSMSR)
 
 
-def ql_x8664_set_fs(ql, addr):
+def ql_x8664_set_fs(ql: Qiling, addr: int):
     ql.reg.msr(FSMSR, addr)
 
 
-def ql_x8664_get_fs(ql):
+def ql_x8664_get_fs(ql: Qiling):
     return ql.reg.msr(FSMSR)

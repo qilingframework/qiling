@@ -3,37 +3,31 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import struct
+from qiling import Qiling
 
+def ql_syscall_sysinfo(ql: Qiling, info: int):
+    # TODO: the packing method for 'long' fields is set to ql.pack even though
+    # it is unclear whether it should match pointersize or be 64 bits anyway
 
-from qiling.const import *
-from qiling.os.linux.thread import *
-from qiling.const import *
-from qiling.os.posix.filestruct import *
-from qiling.os.filestruct import *
-from qiling.os.posix.const_mapping import *
-from qiling.exception import *
-
-def ql_syscall_sysinfo(ql, sysinfo_info, *args, **kw):
-
-    data = b''
-    data += struct.pack("QQQQQQQQQQHQQI",
-                       0x1234, # uptime
-                       0x2000, # loads (1 min)
-                       0x2000, # loads (5 min)
-                       0x2000, # loads (15 min)
-                       0x10000000, # total ram
-                       0x10000000, # free ram
-                       0x10000000, # shared memory
-                       0x0, # memory used by buffers
-                       0x0, # total swap
-                       0x0, # free swap
-                       0x1, # nb current processes
-                       0x0, # total high mem
-                       0x0, # available high mem
-                       0x1, # memory unit size
+    fields = (
+        (0x0000000000001234, ql.pack),   # uptime
+        (0x0000000000002000, ql.pack),   # loads (1 min)
+        (0x0000000000002000, ql.pack),   # loads (5 min)
+        (0x0000000000002000, ql.pack),   # loads (15 min)
+        (0x0000000010000000, ql.pack),   # total ram
+        (0x0000000010000000, ql.pack),   # free ram
+        (0x0000000010000000, ql.pack),   # shared memory
+        (0x0000000000000000, ql.pack),   # memory used by buffers
+        (0x0000000000000000, ql.pack),   # total swap
+        (0x0000000000000000, ql.pack),   # free swap
+        (0x0001,             ql.pack16), # nb current processes
+        (0x0000000000000000, ql.pack),   # total high mem
+        (0x0000000000000000, ql.pack),   # available high mem
+        (0x00000000,         ql.pack32)  # memory unit size
     )
 
-    regreturn = 0
-    #ql.mem.write(sysinfo_info, data)
-    return regreturn
+    data = b''.join(pmethod(val) for val, pmethod in fields)
+
+    ql.mem.write(info, data.ljust(64, b'\x00'))
+
+    return 0

@@ -1,8 +1,0 @@
-{
-    "GetDispenserManager": [
-        {
-            "name": "VOID",
-            "type": "IDispenserManager"
-        }
-    ]
-}

@@ -1,8 +1,0 @@
-{
-    "RoReportUnhandledError": [
-        {
-            "name": "pRestrictedErrorInfo",
-            "type": "IRestrictedErrorInfo"
-        }
-    ]
-}

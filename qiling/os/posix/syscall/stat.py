@@ -3,16 +3,14 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-
-from qiling.const import *
-from qiling.os.linux.thread import *
-from qiling.os.posix.stat import *
-from qiling.const import *
-from qiling.os.posix.const_mapping import *
-from qiling.exception import *
-import struct
 import os
 import ctypes
+from typing import Callable
+
+from qiling import Qiling
+from qiling.const import QL_OS, QL_ARCH, QL_ENDIAN
+from qiling.os.posix.const import NR_OPEN, EBADF
+from qiling.os.posix.stat import Stat, Lstat
 
 # Caveat: Never use types like ctypes.c_long whose size differs across platforms.
 
@@ -719,8 +717,167 @@ class LinuxARM64EBStat(ctypes.BigEndianStructure):
 
     _pack_ = 8
 
+# Source: openqnx lib/c/public/sys/stat.h
+#
+# struct stat {
+# #if _FILE_OFFSET_BITS - 0 == 64
+# 	ino_t			st_ino;			/* File serial number.					*/
+# 	off_t			st_size;
+# #elif !defined(_FILE_OFFSET_BITS) || _FILE_OFFSET_BITS == 32
+# #if defined(__LITTLEENDIAN__)
+# 	ino_t			st_ino;			/* File serial number.					*/
+# 	ino_t			st_ino_hi;
+# 	off_t			st_size;
+# 	off_t			st_size_hi;
+# #elif defined(__BIGENDIAN__)
+# 	ino_t			st_ino_hi;
+# 	ino_t			st_ino;			/* File serial number.					*/
+# 	off_t			st_size_hi;
+# 	off_t			st_size;
+# #else
+#  #error endian not configured for system
+# #endif
+# #else
+#  #error _FILE_OFFSET_BITS value is unsupported
+# #endif
+# 	_CSTD dev_t		st_dev;			/* ID of device containing file.		*/
+# 	_CSTD dev_t		st_rdev;		/* Device ID, for inode that is device	*/
+# 	uid_t			st_uid;
+# 	gid_t			st_gid;
+# 	_CSTD time_t	st_mtime;		/* Time of last data modification		*/
+# 	_CSTD time_t	st_atime;		/* Time last accessed					*/
+# 	_CSTD time_t	st_ctime;		/* Time of last status change			*/
+# 	_CSTD mode_t	st_mode;		/* see below							*/
+# 	nlink_t			st_nlink;
+# 	blksize_t		st_blocksize;	/* Size of a block used by st_nblocks   */
+# 	_Int32t			st_nblocks;		/* Number of blocks st_blocksize blocks */
+# 	blksize_t		st_blksize;		/* Prefered I/O block size for object   */
+# #if _FILE_OFFSET_BITS - 0 == 64
+# 	blkcnt_t		st_blocks;		/* Number of 512 byte blocks			*/
+# #elif !defined(_FILE_OFFSET_BITS) || _FILE_OFFSET_BITS == 32
+# #if defined(__LITTLEENDIAN__)
+# 	blkcnt_t		st_blocks;
+# 	blkcnt_t		st_blocks_hi;
+# #elif defined(__BIGENDIAN__)
+# 	blkcnt_t		st_blocks_hi;
+# 	blkcnt_t		st_blocks;
+# #else
+#  #error endian not configured for system
+# #endif
+# #else
+#  #error _FILE_OFFSET_BITS value is unsupported
+# #endif
+# };
 
-def get_stat64_struct(ql):
+# struct stat64 {
+# 	ino64_t			st_ino;			/* File serial number.					*/
+# 	off64_t			st_size;
+# 	_CSTD dev_t		st_dev;			/* ID of device containing file.		*/
+# 	_CSTD dev_t		st_rdev;		/* Device ID, for inode that is device	*/
+# 	uid_t			st_uid;
+# 	gid_t			st_gid;
+# 	_CSTD time_t	st_mtime;		/* Time of last data modification		*/
+# 	_CSTD time_t	st_atime;		/* Time last accessed					*/
+# 	_CSTD time_t	st_ctime;		/* Time of last status change			*/
+# 	_CSTD mode_t	st_mode;		/* see below							*/
+# 	nlink_t			st_nlink;
+# 	blksize_t		st_blocksize;	/* Size of a block used by st_nblocks   */
+# 	_Int32t			st_nblocks;		/* Number of blocks st_blocksize blocks */
+# 	blksize_t		st_blksize;		/* Prefered I/O block size for object   */
+# 	blkcnt64_t		st_blocks;		/* Number of 512 byte blocks			*/
+# };
+
+class QNXARMStat(ctypes.Structure):
+    _fields_ = [
+        ("st_ino", ctypes.c_uint32),
+        ("st_ino_hi", ctypes.c_uint32), # this field must be zero
+        ("st_size", ctypes.c_uint32),
+        ("st_size_hi", ctypes.c_uint32), # this field must be zero
+        ("st_dev", ctypes.c_uint32),
+        ("st_rdev", ctypes.c_uint32),
+        ("st_uid", ctypes.c_int32),
+        ("st_gid", ctypes.c_int32),
+        ("st_mtime", ctypes.c_uint32),
+        ("st_atime", ctypes.c_uint32),
+        ("st_ctime", ctypes.c_uint32),
+        ("st_mode", ctypes.c_uint32),
+        ("st_nlink", ctypes.c_uint32),
+        ("st_blksize", ctypes.c_uint32),
+        ("st_blocks", ctypes.c_uint32),
+        ("st_blksize", ctypes.c_uint32),
+        ("st_blocks", ctypes.c_uint32),
+        ("st_blocks_hi", ctypes.c_uint32) # this field must be zero
+    ]
+
+    _pack_ = 4
+
+class QNXARM64Stat(ctypes.Structure):
+    _fields_ = [
+        ("st_ino", ctypes.c_uint64),
+        ("st_size", ctypes.c_uint64),
+        ("st_dev", ctypes.c_uint32),
+        ("st_rdev", ctypes.c_uint32),
+        ("st_uid", ctypes.c_int32),
+        ("st_gid", ctypes.c_int32),
+        ("st_mtime", ctypes.c_uint32),
+        ("st_atime", ctypes.c_uint32),
+        ("st_ctime", ctypes.c_uint32),
+        ("st_mode", ctypes.c_uint32),
+        ("st_nlink", ctypes.c_uint32),
+        ("st_blksize", ctypes.c_uint32),
+        ("st_blocks", ctypes.c_int32),
+        ("st_blksize", ctypes.c_uint32),
+        ("st_blocks", ctypes.c_uint64)
+    ]
+
+    _pack_ = 8
+
+class QNXARMEBStat(ctypes.BigEndianStructure):
+    _fields_ = [
+        ("st_ino_hi", ctypes.c_uint32), # this field must be zero
+        ("st_ino", ctypes.c_uint32),
+        ("st_size_hi", ctypes.c_uint32), # this field must be zero
+        ("st_size", ctypes.c_uint32),
+        ("st_dev", ctypes.c_uint32),
+        ("st_rdev", ctypes.c_uint32),
+        ("st_uid", ctypes.c_int32),
+        ("st_gid", ctypes.c_int32),
+        ("st_mtime", ctypes.c_uint32),
+        ("st_atime", ctypes.c_uint32),
+        ("st_ctime", ctypes.c_uint32),
+        ("st_mode", ctypes.c_uint32),
+        ("st_nlink", ctypes.c_uint32),
+        ("st_blksize", ctypes.c_uint32),
+        ("st_blocks", ctypes.c_uint32),
+        ("st_blksize", ctypes.c_uint32),
+        ("st_blocks_hi", ctypes.c_uint32), # this field must be zero
+        ("st_blocks", ctypes.c_uint32)
+    ]
+
+    _pack_ = 4
+
+class QNXARMStat64(ctypes.Structure):
+    _fields_ = [
+        ("st_ino", ctypes.c_uint64),
+        ("st_size", ctypes.c_uint64),
+        ("st_dev", ctypes.c_uint32),
+        ("st_rdev", ctypes.c_uint32),
+        ("st_uid", ctypes.c_int32),
+        ("st_gid", ctypes.c_int32),
+        ("st_mtime", ctypes.c_uint32),
+        ("st_atime", ctypes.c_uint32),
+        ("st_ctime", ctypes.c_uint32),
+        ("st_mode", ctypes.c_uint32),
+        ("st_nlink", ctypes.c_uint32),
+        ("st_blksize", ctypes.c_uint32),
+        ("st_blocks", ctypes.c_uint32),
+        ("st_blksize", ctypes.c_uint32),
+        ("st_blocks", ctypes.c_uint64)
+    ]
+
+    _pack_ = 8
+
+def get_stat64_struct(ql: Qiling):
     if ql.archbit == 64:
         ql.log.warning(f"Trying to stat64 on a 64bit system with {ql.ostype} and {ql.archtype}!")
     if ql.ostype == QL_OS.LINUX:
@@ -732,10 +889,12 @@ def get_stat64_struct(ql):
             return LinuxARMStat64()
     elif ql.ostype == QL_OS.MACOS:
         return MacOSStat64()
+    elif ql.ostype == QL_OS.QNX:
+        return QNXARMStat64()
     ql.log.warning(f"Unrecognized arch && os with {ql.archtype} and {ql.ostype} for stat64! Fallback to Linux x86.")
     return LinuxX86Stat64()
 
-def get_stat_struct(ql):
+def get_stat_struct(ql: Qiling):
     if ql.ostype == QL_OS.FREEBSD:
         if ql.archtype == QL_ARCH.X8664 or ql.archbit == 64:
             return FreeBSDX8664Stat()
@@ -763,102 +922,111 @@ def get_stat_struct(ql):
                 return LinuxARM64Stat()
             else:
                 return LinuxARM64EBStat()
+    elif ql.ostype == QL_OS.QNX:
+        if ql.archtype == QL_ARCH.ARM64:
+            return QNXARM64Stat()
+        elif ql.archtype == QL_ARCH.ARM:
+            if ql.archendian == QL_ENDIAN.EL:
+                return QNXARMStat()
+            else:
+                return QNXARMEBStat()
     ql.log.warning(f"Unrecognized arch && os with {ql.archtype} and {ql.ostype} for stat! Fallback to Linux x86.")
     return LinuxX86Stat()
 
-def pack_stat_struct(ql, info):
-    stat = get_stat_struct(ql)
+def __common_pack_stat_struct(stat, info) -> bytes:
     for field, _ in stat._fields_:
         val = stat.__getattribute__(field)
+
         if isinstance(val, ctypes.Array):
             stat.__setattr__(field, (0,) * len(val))
         else:
             stat.__setattr__(field, int(info[field]))
+
     return bytes(stat)
 
-def pack_stat64_struct(ql, info):
-    stat64 = get_stat64_struct(ql)
-    for field, _ in stat64._fields_:
-        val = stat64.__getattribute__(field)
-        if isinstance(val, ctypes.Array):
-            stat64.__setattr__(field, (0,) * len(val))
-        else:
-            stat64.__setattr__(field, int(info[field]))
-    return bytes(stat64)
 
-def statFamily(ql, path, ptr, name, stat_func, struct_func):
-    file = (ql.mem.string(path))
-    real_path = ql.os.path.transform_to_real_path(file)
+def pack_stat_struct(ql: Qiling, info):
+    stat = get_stat_struct(ql)
+
+    return __common_pack_stat_struct(stat, info)
+
+def pack_stat64_struct(ql: Qiling, info):
+    stat = get_stat64_struct(ql)
+
+    return __common_pack_stat_struct(stat, info)
+
+def statFamily(ql: Qiling, path: int, ptr: int, name: str, stat_func, struct_func: Callable):
+    file_path = ql.os.utils.read_cstring(path)
+    real_path = ql.os.path.transform_to_real_path(file_path)
     regreturn = 0
+
     try:
         info = stat_func(real_path)
     except OSError as e:
-        ql.log.debug(f'{name}("{file}", {hex(ptr)}) read/write fail')
+        ql.log.debug(f'{name}("{file_path}", {ptr:#x}) read/write fail')
         return -e.errno
     else:
         buf = struct_func(ql, info)
         ql.mem.write(ptr, buf)
-        ql.log.debug(f'{name}("{file}", {hex(ptr)}) write completed')
+        ql.log.debug(f'{name}("{file_path}", {ptr:#x}) write completed')
         return regreturn
 
-def ql_syscall_chmod(ql, filename, mode, null1, null2, null3, null4):
-    regreturn = 0
-    filename = ql.mem.string(filename)
-    ql.log.debug("chmod(%s,%d) = %d" % (filename, mode, regreturn))
-    return regreturn
+def ql_syscall_chmod(ql: Qiling, filename: int, mode: int):
+    ql.log.debug(f'chmod("{ql.os.utils.read_cstring(filename)}", {mode:d}) = 0')
 
-def ql_syscall_fstatat64(ql, fstatat64_dirfd, fstatat64_path, fstatat64_buf_ptr, fstatat64_flag, *args, **kw):
+    return 0
+
+def ql_syscall_fchmod(ql: Qiling, fd: int, mode: int):
+    if not (0 < fd < NR_OPEN) or ql.os.fd[fd] == 0:
+        return -EBADF
+
+    return 0
+
+def ql_syscall_fstatat64(ql: Qiling, dirfd: int, path: int, buf_ptr: int, flag: int):
     # FIXME: dirfd(relative path) not implement.
-    fstatat64_path = ql.mem.string(fstatat64_path)
+    file_path = ql.os.utils.read_cstring(path)
+    real_path = ql.os.path.transform_to_real_path(file_path)
+    relative_path = ql.os.path.transform_to_relative_path(file_path)
 
-    real_path = ql.os.path.transform_to_real_path(fstatat64_path)
-    relative_path = ql.os.path.transform_to_relative_path(fstatat64_path)
+    if os.path.exists(real_path):
+        buf = pack_stat64_struct(ql, Stat(real_path))
+        ql.mem.write(buf_ptr, buf)
 
-    regreturn = -1
-    if os.path.exists(real_path) == True:
-        fstatat64_info = Stat(real_path)
-        fstatat64_buf = pack_stat64_struct(ql, fstatat64_info)
-        ql.mem.write(fstatat64_buf_ptr, fstatat64_buf)
         regreturn = 0
-
-    if regreturn == 0:
-        ql.log.debug("Directory Found: %s" % relative_path)
     else:
-        ql.log.debug("Directory Not Found: %s" % relative_path)
-
-    return regreturn
-
-def ql_syscall_newfstatat(ql, newfstatat_dirfd, newfstatat_path, newfstatat_buf_ptr, newfstatat_flag, *args, **kw):
-    # FIXME: dirfd(relative path) not implement.
-    newfstatat_path = ql.mem.string(newfstatat_path)
-
-    real_path = ql.os.path.transform_to_real_path(newfstatat_path)
-    relative_path = ql.os.path.transform_to_relative_path(newfstatat_path)
-
-    regreturn = -1
-    if os.path.exists(real_path) == True:
-        newfstatat_info = Stat(real_path)
-        newfstatat_buf = pack_stat_struct(ql, newfstatat_info)
-        ql.mem.write(newfstatat_buf_ptr, newfstatat_buf)
-        regreturn = 0
-
-    if regreturn == 0:
-        ql.log.debug("Directory Found: %s" % relative_path)
-    else:
-        ql.log.debug("Directory Not Found: %s" % relative_path)
-
-    return regreturn
-
-def ql_syscall_fstat64(ql, fstat64_fd, fstat64_buf_ptr, *args, **kw):
-    if not hasattr(ql.os.fd[fstat64_fd], "fstat"):
         regreturn = -1
-    elif ql.os.fd[fstat64_fd].fstat() == -1:
+
+    ql.log.debug(f'Directory {"found" if regreturn == 0 else "not found"}: {relative_path}')
+
+    return regreturn
+
+def ql_syscall_newfstatat(ql: Qiling, dirfd: int, path: int, buf_ptr: int, flag: int):
+    # FIXME: dirfd(relative path) not implement.
+    file_path = ql.os.utils.read_cstring(path)
+    real_path = ql.os.path.transform_to_real_path(file_path)
+    relative_path = ql.os.path.transform_to_relative_path(file_path)
+
+    if os.path.exists(real_path):
+        buf = pack_stat_struct(ql, Stat(real_path))
+        ql.mem.write(buf_ptr, buf)
+
         regreturn = 0
-    elif fstat64_fd < 256 and ql.os.fd[fstat64_fd] != 0:
-        user_fileno = fstat64_fd
-        fstat64_info = ql.os.fd[user_fileno].fstat()
-        fstat64_buf = pack_stat64_struct(ql, fstat64_info)
-        ql.mem.write(fstat64_buf_ptr, fstat64_buf)
+    else:
+        regreturn = -1
+
+    ql.log.debug(f'Directory {"found" if regreturn == 0 else "not found"}: {relative_path}')
+
+    return regreturn
+
+def ql_syscall_fstat64(ql: Qiling, fd, buf_ptr):
+    if not hasattr(ql.os.fd[fd], "fstat"):
+        regreturn = -1
+    elif ql.os.fd[fd].fstat() == -1:
+        regreturn = 0
+    elif 0 <= fd < NR_OPEN and ql.os.fd[fd] != 0:
+        buf = pack_stat64_struct(ql, ql.os.fd[fd].fstat())
+        ql.mem.write(buf_ptr, buf)
+
         regreturn = 0
     else:
         regreturn = -1
@@ -867,15 +1035,19 @@ def ql_syscall_fstat64(ql, fstat64_fd, fstat64_buf_ptr, *args, **kw):
         ql.log.debug("fstat64 write completed")
     else:
         ql.log.debug("fstat64 read/write fail")
+
     return regreturn
 
 
-def ql_syscall_fstat(ql, fstat_fd, fstat_buf_ptr, *args, **kw):
-    if fstat_fd < 256 and ql.os.fd[fstat_fd] != 0 and hasattr(ql.os.fd[fstat_fd], "fstat"):
-        user_fileno = fstat_fd
-        fstat_info = ql.os.fd[user_fileno].fstat()
-        fstat_buf = pack_stat_struct(ql, fstat_info)
-        ql.mem.write(fstat_buf_ptr, fstat_buf)
+def ql_syscall_fstat(ql: Qiling, fd, buf_ptr):
+    if not hasattr(ql.os.fd[fd], "fstat"):
+        regreturn = -1
+    # elif ql.os.fd[fd].fstat() == -1:
+    #     regreturn = 0
+    elif 0 <= fd < NR_OPEN and ql.os.fd[fd] != 0:
+        buf = pack_stat_struct(ql,  ql.os.fd[fd].fstat())
+        ql.mem.write(buf_ptr, buf)
+
         regreturn = 0
     else:
         regreturn = -1
@@ -884,72 +1056,95 @@ def ql_syscall_fstat(ql, fstat_fd, fstat_buf_ptr, *args, **kw):
         ql.log.debug("fstat write completed")
     else:
         ql.log.debug("fstat read/write fail")
+
     return regreturn
 
 
 # int stat(const char *path, struct stat *buf);
-def ql_syscall_stat(ql, stat_path, stat_buf_ptr, *args, **kw):
-    return statFamily(ql, stat_path, stat_buf_ptr, "stat", Stat, pack_stat_struct)
+def ql_syscall_stat(ql: Qiling, path: int, buf_ptr: int):
+    return statFamily(ql, path, buf_ptr, "stat", Stat, pack_stat_struct)
 
 
 # int stat64(const char *path, struct stat64 *buf);
-def ql_syscall_stat64(ql, stat64_path, stat64_buf_ptr, *args, **kw):
-    return statFamily(ql, stat64_path, stat64_buf_ptr, "stat64", Stat, pack_stat64_struct)
+def ql_syscall_stat64(ql: Qiling, path: int, buf_ptr: int):
+    return statFamily(ql, path, buf_ptr, "stat64", Stat, pack_stat64_struct)
 
 
-def ql_syscall_lstat(ql, lstat_path, lstat_buf_ptr, *args, **kw):
-    return statFamily(ql, lstat_path, lstat_buf_ptr, "lstat", Lstat, pack_stat64_struct)
+def ql_syscall_lstat(ql: Qiling, path: int, buf_ptr: int):
+    return statFamily(ql, path, buf_ptr, "lstat", Lstat, pack_stat64_struct)
 
 
-def ql_syscall_lstat64(ql, lstat64_path, lstat64_buf_ptr, *args, **kw):
-    return statFamily(ql, lstat64_path, lstat64_buf_ptr, "lstat64", Lstat, pack_stat64_struct)
+def ql_syscall_lstat64(ql: Qiling, path: int, buf_ptr: int):
+    return statFamily(ql, path, buf_ptr, "lstat64", Lstat, pack_stat64_struct)
 
 
-def ql_syscall_mknodat(ql, dirfd, pathname, mode, dev, *args, **kw):
+def ql_syscall_mknodat(ql: Qiling, dirfd: int, pathname: int, mode: int, dev: int):
     # FIXME: dirfd(relative path) not implement.
-    file_path = ql.mem.string(pathname)
+    file_path = ql.os.utils.read_cstring(pathname)
     real_path = ql.os.path.transform_to_real_path(file_path)
-    ql.log.debug("mknodat(%d, %s, 0%o, %d)" % (dirfd, real_path, mode, dev))
+    regreturn = 0
+
     try:
         os.mknod(real_path, mode, dev)
-        regreturn = 0
     except:
         regreturn = -1
+
     return regreturn
 
 
-def ql_syscall_mkdir(ql, pathname, mode, *args, **kw):
-    file_path = ql.mem.string(pathname)
+def ql_syscall_mkdir(ql: Qiling, pathname: int, mode: int):
+    file_path = ql.os.utils.read_cstring(pathname)
     real_path = ql.os.path.transform_to_real_path(file_path)
-    ql.log.debug("mkdir(%s, 0%o)" % (real_path, mode))
+    regreturn = 0
+
     try:
         if not os.path.exists(real_path):
             os.mkdir(real_path, mode)
-        regreturn = 0
     except:
         regreturn = -1
+
     return regreturn
 
+def ql_syscall_rmdir(ql: Qiling, pathname: int):
+    file_path = ql.os.utils.read_cstring(pathname)
+    real_path = ql.os.path.transform_to_real_path(file_path)
+    regreturn = 0
 
-def ql_syscall_fstatfs(ql, fd, buf, *args, **kw):
-    data = b"0" * (12*8)  # for now, just return 0s
-    regreturn = None
     try:
-        ql.mem.write(buf, data)
-        regreturn = 0
+        if os.path.exists(real_path):
+            os.rmdir(real_path)
     except:
         regreturn = -1
 
-    ql.log.info("fstatfs(0x%x, 0x%x) = %d" % (fd, buf, regreturn))
+    return regreturn
+
+def ql_syscall_fstatfs(ql: Qiling, fd: int, buf: int):
+    data = b"0" * (12 * 8)  # for now, just return 0s
+    regreturn = 0
+
+    try:
+        ql.mem.write(buf, data)
+    except:
+        regreturn = -1
 
     if data:
         ql.log.debug("fstatfs() CONTENT:")
         ql.log.debug(str(data))
+
     return regreturn
 
+def ql_syscall_statfs(ql: Qiling, path: int, buf: int):
+    data = b"0" * (12 * 8)  # for now, just return 0s
+    regreturn = 0
 
-def ql_syscall_umask(ql, mode, *args, **kw):
+    try:
+        ql.mem.write(buf, data)
+    except:
+        regreturn = -1
+
+    return regreturn
+
+def ql_syscall_umask(ql: Qiling, mode: int):
     oldmask = os.umask(mode)
-    ql.log.debug("umask(0%o) return oldmask 0%o" % (mode, oldmask))
-    regreturn = oldmask
-    return regreturn
+
+    return oldmask

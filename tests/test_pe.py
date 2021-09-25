@@ -10,6 +10,7 @@ sys.path.append("..")
 from qiling import Qiling
 from qiling.const import *
 from qiling.exception import *
+from qiling.extensions import pipe
 from qiling.loader.pe import QlPeCache
 from qiling.os.const import *
 from qiling.os.windows.fncc import *
@@ -267,41 +268,39 @@ class PETest(unittest.TestCase):
 
 
     def test_pe_win_x8664_customapi(self):
-        @winsdkapi(cc=CDECL, replace_params={"str": STRING})
-        def my_puts64(ql, address, params):
-            ret = 0
-            print("\n+++++++++ My Windows 64bit Windows API +++++++++\n")
-            print("params: ", params)
-            print("+++++++++\n")
+        @winsdkapi(cc=CDECL, params={
+            "str" : STRING
+        })
+        def my_puts64(ql: Qiling, address: int, params):
+            print(f'[oncall] my_puts64: params = {params}')
+
             params["str"] = "Hello Hello Hello"
             ret = len(params["str"])
-            self.set_api = len(params["str"])
+            self.set_api = ret
+
             return ret
 
-        def my_onenter(ql, address, params):
-            print("\n+++++++++\nmy OnEnter")
-            print("params: ", params)
-            print("+++++++++\n")
-            self.set_api_onenter = self.set_api = len( params["str"])
-            return  address, params
+        def my_onenter(ql: Qiling, address: int, params):
+            print(f'[onenter] my_onenter: params = {params}')
 
-        def my_onexit(ql, address, params, retval):
-            print("\n+++++++++\nmy OnExit")
-            print("params: ", params)
-            print("+++++++++\n")
-            self.set_api_onexit = self.set_api = len( params["str"])
+            self.set_api_onenter = len(params["str"])
+
+        def my_onexit(ql: Qiling, address: int, params, retval: int):
+            print(f'[onexit] my_onexit: params = {params}')
+
+            self.set_api_onexit = len(params["str"])
 
         def my_sandbox(path, rootfs):
             ql = Qiling(path, rootfs, verbose=QL_VERBOSE.DEBUG)
             ql.set_api("puts", my_onenter, QL_INTERCEPT.ENTER)
-            ql.set_api("puts", my_puts64)
+            ql.set_api("puts", my_puts64, QL_INTERCEPT.CALL)
             ql.set_api("puts", my_onexit, QL_INTERCEPT.EXIT)
             ql.run()
-            
-            self.assertEqual(17, self.set_api)
+
             self.assertEqual(12, self.set_api_onenter)
+            self.assertEqual(17, self.set_api)
             self.assertEqual(17, self.set_api_onexit)
-            
+
             del self.set_api
             del self.set_api_onenter
             del self.set_api_onexit
@@ -351,28 +350,6 @@ class PETest(unittest.TestCase):
 
 
     def test_pe_win_x86_crackme(self):
-        class StringBuffer:
-            def __init__(self):
-                self.buffer = b''
-
-            def read(self, n):
-                ret = self.buffer[:n]
-                self.buffer = self.buffer[n:]
-                return ret
-
-            def readline(self, end=b'\n'):
-                ret = b''
-                while True:
-                    c = self.read(1)
-                    ret += c
-                    if c == end:
-                        break
-                return ret
-
-            def write(self, string):
-                self.buffer += string
-                return len(string)
-
         def force_call_dialog_func(ql):
             # get DialogFunc address
             lpDialogFunc = ql.unpack32(ql.mem.read(ql.reg.esp - 0x8, 4))
@@ -391,8 +368,10 @@ class PETest(unittest.TestCase):
             ql.patch(0x004010CD, b'\x90\x90')
             ql.patch(0x0040110B, b'\x90\x90')
             ql.patch(0x00401112, b'\x90\x90')
-            ql.stdin = StringBuffer()
-            ql.stdin.write(b"Ea5yR3versing\n")
+
+            ql.os.stdin = pipe.SimpleStringBuffer()
+            ql.os.stdin.write(b"Ea5yR3versing\n")
+
             ql.hook_address(force_call_dialog_func, 0x00401016)
             ql.run()
             del ql
@@ -404,13 +383,13 @@ class PETest(unittest.TestCase):
         ql = Qiling(
         ["../examples/rootfs/x86_windows/bin/cmdln32.exe", 'arg1', 'arg2 with spaces'],
         "../examples/rootfs/x86_windows")
-        ql.stdout = TestOut()
+        ql.os.stdout = TestOut()
         ql.run()
         expected_string = b'<C:\\Users\\Qiling\\Desktop\\cmdln32.exe arg1 "arg2 with spaces">\n'
         expected_keys = [b'_acmdln', b'_wcmdln', b'__p__acmdln', b'__p__wcmdln', b'GetCommandLineA', b'GetCommandLineW']
         for key in expected_keys:
-            self.assertTrue(key in ql.stdout.output)
-            self.assertEqual(expected_string, ql.stdout.output[key])
+            self.assertTrue(key in ql.os.stdout.output)
+            self.assertEqual(expected_string, ql.os.stdout.output[key])
         del ql
 
 
@@ -418,30 +397,30 @@ class PETest(unittest.TestCase):
         ql = Qiling(
         ["../examples/rootfs/x8664_windows/bin/cmdln64.exe", 'arg1', 'arg2 with spaces'],
         "../examples/rootfs/x8664_windows")
-        ql.stdout = TestOut()
+        ql.os.stdout = TestOut()
         ql.run()
         expected_string = b'<C:\\Users\\Qiling\\Desktop\\cmdln64.exe arg1 "arg2 with spaces">\n'
         expected_keys = [b'_acmdln', b'_wcmdln', b'GetCommandLineA', b'GetCommandLineW']
         for key in expected_keys:
-            self.assertTrue(key in ql.stdout.output)
-            self.assertEqual(expected_string, ql.stdout.output[key])
+            self.assertTrue(key in ql.os.stdout.output)
+            self.assertEqual(expected_string, ql.os.stdout.output[key])
         del ql
 
     class RefreshCache(QlPeCache):
-        def restore(self, path, address):
+        def restore(self, path):
             # If the cache entry exists, delete it
-            fcache = self.create_filename(path, address)
+            fcache = self.create_filename(path)
             if os.path.exists(fcache):
                 os.remove(fcache)
-            return super().restore(path, address)
+            return super().restore(path)
 
     class TestCache(QlPeCache):
         def __init__(self, testcase):
-            self.testcase = testcase
             super().__init__()
+            self.testcase = testcase
 
-        def restore(self, path, address):
-            entry = super().restore(path, address)
+        def restore(self, path):
+            entry = super().restore(path)
             self.testcase.assertTrue(entry is not None)  # Check that it loaded a cache entry
             if path.endswith('msvcrt.dll'):
                 self.testcase.assertEqual(len(entry.cmdlines), 2)
@@ -450,7 +429,7 @@ class PETest(unittest.TestCase):
             self.testcase.assertIsInstance(entry.data, bytearray)
             return entry
 
-        def save(self, path, address, entry):
+        def save(self, path, entry):
             self.testcase.assertFalse(True)  # This should not be called!
 
 

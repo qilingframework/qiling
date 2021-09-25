@@ -35,6 +35,5 @@ test.file
 *.o
 core
 *.perf
+tests/output.txt
 
-# future
-engine/

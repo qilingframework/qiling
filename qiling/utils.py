@@ -9,13 +9,13 @@ thoughout the qiling framework
 """
 import importlib, os, copy, re, pefile, configparser, logging, sys
 from logging import LogRecord
-from typing import Container, Optional, Mapping
+from typing import Container, Optional, Mapping, Sequence
 from enum import EnumMeta
 
 from unicorn import UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
 
 from .exception import *
-from .const import QL_VERBOSE, QL_ARCH, QL_ENDIAN, QL_OS, QL_DEBUGGER, QL_ARCH_1BIT, QL_ARCH_16BIT, QL_ARCH_32BIT, QL_ARCH_64BIT
+from .const import QL_ARCH_NONEOS, QL_VERBOSE, QL_ARCH, QL_ENDIAN, QL_OS, QL_DEBUGGER, QL_ARCH_1BIT, QL_ARCH_16BIT, QL_ARCH_32BIT, QL_ARCH_64BIT
 from .const import debugger_map, arch_map, os_map, arch_os_map, loader_map
 
 FMT_STR = "%(levelname)s\t%(message)s"
@@ -239,6 +239,8 @@ def ql_get_module_function(module_name: str, function_name: str):
         imp_module = importlib.import_module(module_name)
     except ModuleNotFoundError:
         raise QlErrorModuleNotFound(f'Unable to import module {module_name}')
+    except KeyError:
+        raise QlErrorModuleNotFound(f'Unable to import module {module_name}')
 
     try:
         module_function = getattr(imp_module, function_name)
@@ -442,21 +444,21 @@ def arch_setup(archtype, ql):
     if not ql_is_valid_arch(archtype):
         raise QlErrorArch("Invalid Arch")
     
-    if ql._custom_engine:
-        return ql_get_module_function(f"qiling.arch.engine", 'QlArchEngine')(ql)
-
     if archtype == QL_ARCH.ARM_THUMB:
         archtype =  QL_ARCH.ARM
 
     archmanager = arch_convert_str(archtype).upper()
     archmanager = ("QlArch" + archmanager)
 
-    if archtype == QL_ARCH.X8664:
+    if archtype in (QL_ARCH.X8664, QL_ARCH.A8086):
         arch_str = "x86"
     else:
         arch_str = arch_convert_str(archtype)
 
-    return ql_get_module_function(f"qiling.arch.{arch_str.lower()}", archmanager)(ql)
+    if archtype in QL_ARCH_NONEOS:
+        return ql_get_module_function(f"qiling.arch.{arch_str.lower()}.{arch_str.lower()}", archmanager)(ql)
+    else:    
+        return ql_get_module_function(f"qiling.arch.{arch_str.lower()}", archmanager)(ql)
 
 
 # This function is extracted from os_setup so I put it here.
@@ -465,7 +467,7 @@ def ql_syscall_mapping_function(ostype):
     return ql_get_module_function(f"qiling.os.{ostype_str.lower()}.map_syscall", "map_syscall")
 
 
-def os_setup(archtype, ostype, ql):
+def os_setup(archtype: QL_ARCH, ostype: QL_OS, ql):
     if not ql_is_valid_ostype(ostype):
         raise QlErrorOsType("Invalid OSType")
 
@@ -496,21 +498,19 @@ def profile_setup(ostype, profile, ql):
     config.read(profiles)
     return config, debugmsg
 
-def ql_resolve_logger_level(verbose: QL_VERBOSE):
-    level = logging.INFO
-    if verbose == QL_VERBOSE.OFF:
-        level = logging.WARNING
-    elif verbose >= QL_VERBOSE.DEBUG:
-        level = logging.DEBUG
-    elif verbose >= QL_VERBOSE.DEFAULT:
-        level = logging.INFO
-    
-    return level
+def ql_resolve_logger_level(verbose: QL_VERBOSE) -> int:
+    return {
+        QL_VERBOSE.OFF     : logging.WARNING,
+        QL_VERBOSE.DEFAULT : logging.INFO,
+        QL_VERBOSE.DEBUG   : logging.DEBUG,
+        QL_VERBOSE.DISASM  : logging.DEBUG,
+        QL_VERBOSE.DUMP    : logging.DEBUG
+    }[verbose]
 
 QL_INSTANCE_ID = 114514
 
 # TODO: qltool compatibility
-def ql_setup_logger(ql, log_file, console, filters, multithread, log_override, log_plain):
+def ql_setup_logger(ql, log_file: Optional[str], console: bool, filters: Optional[Sequence], log_override: Optional[logging.Logger], log_plain: bool):
     global QL_INSTANCE_ID
 
     # If there is an override for our logger, then use it.
@@ -520,20 +520,22 @@ def ql_setup_logger(ql, log_file, console, filters, multithread, log_override, l
         # We should leave the root logger untouched.
         log = logging.getLogger(f"qiling{QL_INSTANCE_ID}")
         QL_INSTANCE_ID += 1
-        
+
         # Disable propagation to avoid duplicate output.
         log.propagate = False
         # Clear all handlers and filters.
         log.handlers = []
-        log.filters = []    
+        log.filters = []
 
         # Do we have console output?
         if console:
             handler = logging.StreamHandler()
+
             if not log_plain and not sys.platform == "win32":
                 formatter = QilingColoredFormatter(ql, FMT_STR)
             else:
                 formatter = QilingPlainFormatter(ql, FMT_STR)
+
             handler.setFormatter(formatter)
             log.addHandler(handler)
         else:

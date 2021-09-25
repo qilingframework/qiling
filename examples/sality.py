@@ -11,7 +11,9 @@ sys.path.append("..")
 from qiling import Qiling
 from qiling.const import QL_VERBOSE
 from qiling.os.const import POINTER, DWORD, STRING, HANDLE
-from qiling.os.windows.fncc import winsdkapi, STDCALL
+from qiling.os.windows import utils
+from qiling.os.windows.api import *
+from qiling.os.windows.fncc import *
 from qiling.os.windows.dlls.kernel32.fileapi import _CreateFile
 
 def init_unseen_symbols(ql: Qiling, address: int, name: str, ordinal: int, dll_name: str):
@@ -35,7 +37,14 @@ def init_unseen_symbols(ql: Qiling, address: int, name: str, ordinal: int, dll_n
 #   DWORD                   dwCreationFlags,
 #   LPDWORD                 lpThreadId
 # );
-@winsdkapi(cc=STDCALL, dllname='kernel32_dll')
+@winsdkapi(cc=STDCALL, params={
+    'lpThreadAttributes' : LPSECURITY_ATTRIBUTES,
+    'dwStackSize'        : SIZE_T,
+    'lpStartAddress'     : LPTHREAD_START_ROUTINE,
+    'lpParameter'        : LPVOID,
+    'dwCreationFlags'    : DWORD,
+    'lpThreadId'         : LPDWORD
+})
 def hook_CreateThread(ql: Qiling, address: int, params):
     # set thread handle
     return 1
@@ -49,14 +58,14 @@ def hook_CreateThread(ql: Qiling, address: int, params):
 #   DWORD                 dwFlagsAndAttributes,
 #   HANDLE                hTemplateFile
 # );
-@winsdkapi(cc=STDCALL, dllname='kernel32_dll', replace_params={
-    "lpFileName": STRING,
-    "dwDesiredAccess": DWORD,
-    "dwShareMode": DWORD,
-    "lpSecurityAttributes": POINTER,
-    "dwCreationDisposition": DWORD,
-    "dwFlagsAndAttributes": DWORD,
-    "hTemplateFile": HANDLE
+@winsdkapi(cc=STDCALL, params={
+    'lpFileName'            : LPCSTR,
+    'dwDesiredAccess'       : DWORD,
+    'dwShareMode'           : DWORD,
+    'lpSecurityAttributes'  : LPSECURITY_ATTRIBUTES,
+    'dwCreationDisposition' : DWORD,
+    'dwFlagsAndAttributes'  : DWORD,
+    'hTemplateFile'         : HANDLE
 })
 def hook_CreateFileA(ql: Qiling, address: int, params):
     lpFileName = params["lpFileName"]
@@ -95,12 +104,12 @@ def _WriteFile(ql: Qiling, address: int, params):
         ql.mem.write(lpNumberOfBytesWritten, ql.pack32(nNumberOfBytesToWrite))
     return ret
 
-@winsdkapi(cc=STDCALL, dllname='kernel32_dll', replace_params={
-    "hFile": HANDLE,
-    "lpBuffer": POINTER,
-    "nNumberOfBytesToWrite": DWORD,
-    "lpNumberOfBytesWritten": POINTER,
-    "lpOverlapped": POINTER
+@winsdkapi(cc=STDCALL, params={
+    'hFile'                  : HANDLE,
+    'lpBuffer'               : LPCVOID,
+    'nNumberOfBytesToWrite'  : DWORD,
+    'lpNumberOfBytesWritten' : LPDWORD,
+    'lpOverlapped'           : LPOVERLAPPED
 })
 def hook_WriteFile(ql: Qiling, address: int, params):
     hFile = params["hFile"]
@@ -110,7 +119,7 @@ def hook_WriteFile(ql: Qiling, address: int, params):
     if hFile == 0x13371337:
         buffer = ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
         try:
-            r, nNumberOfBytesToWrite = ql.amsint32_driver.os.io_Write(buffer)
+            r, nNumberOfBytesToWrite = utils.io_Write(ql.amsint32_driver, buffer)
             ql.mem.write(lpNumberOfBytesWritten, ql.pack32(nNumberOfBytesToWrite))
         except Exception as e:
             ql.log.exception("")
@@ -129,7 +138,11 @@ def hook_WriteFile(ql: Qiling, address: int, params):
 #   DWORD     dwNumServiceArgs,
 #   LPCSTR    *lpServiceArgVectors
 # );
-@winsdkapi(cc=STDCALL, dllname='advapi32_dll')
+@winsdkapi(cc=STDCALL, params={
+    'hService'            : SC_HANDLE,
+    'dwNumServiceArgs'    : DWORD,
+    'lpServiceArgVectors' : POINTER
+})
 def hook_StartServiceA(ql: Qiling, address: int, params):
     try:
         hService = params["hService"]
@@ -186,11 +199,13 @@ if __name__ == "__main__":
     ql.run(0x4053B2)
     ql.log.info("test kill thread")
     if ql.amsint32_driver:
-        ql.amsint32_driver.os.io_Write(ql.pack32(0xdeadbeef))
-        ql.amsint32_driver.hook_address(hook_stop_address, 0x10423)
+        utils.io_Write(ql.amsint32_driver, ql.pack32(0xdeadbeef))
+
+        # TODO: Should stop at 0x10423, but for now just stop at 0x0001066a
+        ql.amsint32_driver.hook_address(hook_stop_address, 0x0001066a)
 
         # TODO: not sure whether this one is really STDCALL
         ql.amsint32_driver.os.fcall = ql.amsint32_driver.os.fcall_select(STDCALL)
         ql.amsint32_driver.os.fcall.writeParams(((DWORD, 0),))
 
-        ql.amsint32_driver.run(0x102D0)
+        ql.amsint32_driver.run(begin=0x102D0)

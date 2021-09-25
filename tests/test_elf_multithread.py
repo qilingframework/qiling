@@ -14,6 +14,7 @@ from qiling.exception import *
 from qiling.os.posix import syscall
 from qiling.os.mapper import QlFsMappedObject
 from qiling.os.posix.stat import Fstat
+from qiling.os.filestruct import ql_file
 
 class ELFTest(unittest.TestCase):
 
@@ -27,6 +28,24 @@ class ELFTest(unittest.TestCase):
         self.assertEqual("child", ql.loader.argv[0])
 
         del QL_TEST
+        del ql
+
+    def test_elf_linux_cloexec_x8664(self):
+        with open('../examples/rootfs/x8664_linux/testfile', 'wb') as f:
+            f.write(b'0123456789')
+
+        err = ql_file.open('output.txt', os.O_RDWR | os.O_CREAT, 0o777)
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_cloexec_test"],  
+                    "../examples/rootfs/x8664_linux", 
+                    verbose=QL_VERBOSE.DEBUG,         
+                    stderr=err,
+                    multithread=True)
+
+        ql.run()
+        os.close(err.fileno())
+        with open('output.txt', 'rb') as f:
+            self.assertTrue(b'fail' in f.read())            
+
         del ql
 
 

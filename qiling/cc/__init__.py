@@ -89,6 +89,7 @@ class QlCommonBaseCC(QlCC):
 
 	_argregs = ()
 	_shadow = 0
+	_retaddr_on_stack = True
 
 	def __init__(self, ql: Qiling, retreg: int):
 		super().__init__(ql)
@@ -125,7 +126,7 @@ class QlCommonBaseCC(QlCC):
 			si = index - self._argregs.index(None)
 
 			# skip return address and shadow space
-			return stack_access, (1 + self._shadow + si) * self._asize
+			return stack_access, (self._retaddr_on_stack + self._shadow + si) * self._asize
 		else:
 			return reg_access, reg
 

@@ -5,146 +5,157 @@
 
 from qiling.os.const import *
 
-LOCALE_T = INT
-ULONG = PARAM_INTN
-CCHAR = PARAM_INT8
-CHAR = PARAM_INT8
-UCHAR = PARAM_INT16
+# See: https://docs.microsoft.com/en-us/windows/win32/winprog/windows-data-types
+
+LONG   = PARAM_INTN
+ULONG  = PARAM_INTN
+CHAR   = PARAM_INT8
+UCHAR  = PARAM_INT16
+SHORT  = PARAM_INT16
 USHORT = PARAM_INT16
-SHORT = PARAM_INT16
 
-# ntoskrnl workarounds:
-BOOLEAN = INT
-PANSI_STRING = STRING
-PCANSI_STRING = STRING
-PCSZ = STRING
-PCWSTR = WSTRING
-PCUNICODE_STRING = WSTRING
-PUNICODE_STRING = WSTRING
-WCHAR = PARAM_INT16
+CCHAR                       = BYTE
+WCHAR                       = SHORT
 
-# a lookup table used by winapisdk to substitute certain type names with others
-reptypedict = {
-    "BSTR"                          : POINTER,
-    "DLGPROC"                       : POINTER,
-    "DWORDLONG"                     : ULONGLONG,
-    "DWORD_PTR"                     : POINTER,
-    "GROUP"                         : INT,
-    "HBITMAP"                       : HANDLE,
-    "HDC"                           : POINTER,
-    "HEAP_INFORMATION_CLASS"        : UINT,
-    "HGLOBAL"                       : POINTER,
-    "HIMAGELIST"                    : HANDLE,
-    "HHOOK"                         : POINTER,
-    "HINSTANCE"                     : HANDLE,
-    "HINTERNET"                     : POINTER,
-    "HKEY"                          : HANDLE,
-    "HLOCAL"                        : POINTER,
-    "HMODULE"                       : HANDLE,
-    "HOOKPROC"                      : POINTER,
-    "HRSRC"                         : POINTER,
-    "HWND"                          : HANDLE,
-    "INSTALLSTATE"                  : POINTER,
-    "INTERNET_PORT"                 : DWORD,
-    "INT_PTR"                       : POINTER,
-    "LARGE_INTEGER"                 : POINTER,
-    "LCID"                          : POINTER,
-    "LONG"                          : ULONGLONG,
-    "LPARAM"                        : POINTER,
-    "LPBOOL"                        : POINTER,
-    "LPBYTE"                        : POINTER,
-    "LPCCH"                         : POINTER,
-    "LPCONTEXT"                     : POINTER,
-    "LPCPINFO"                      : POINTER,
-    "LPCRITICAL_SECTION"            : POINTER,
-    "LPCSTR"                        : STRING,
-    "LPCVOID"                       : POINTER,
-    "LPCWCH"                        : POINTER,
-    "LPCWSTR"                       : WSTRING,
-    "LPDWORD"                       : POINTER,
-    "LPFILETIME"                    : POINTER,
-    "LPINTERNET_BUFFERSA"           : POINTER,
-    "LPMESSAGEFILTER"               : POINTER,
-    "LPMODULEINFO"                  : POINTER,
-    "LPNLSVERSIONINFO"              : POINTER,
-    "LPOSVERSIONINFOA"              : STRING,
-    "LPOSVERSIONINFOEXW"            : POINTER,
-    "LPOSVERSIONINFOW"              : WSTRING,
-    "LPOVERLAPPED"                  : POINTER,
-    "LPPOINT"                       : POINTER,
-    "LPPROCESSENTRY32W"             : POINTER,
-    "LPSECURITY_ATTRIBUTES"         : POINTER,
-    "LPSTARTUPINFOA"                : POINTER,
-    "LPSTARTUPINFOW"                : POINTER,
-    "LPSTR"                         : POINTER,
-    "LPSTREAM"                      : POINTER,
-    "LPSYSTEMTIME"                  : POINTER,
-    "LPSYSTEM_INFO"                 : POINTER,
-    "LPTHREAD_START_ROUTINE"        : POINTER,
-    "LPTOP_LEVEL_EXCEPTION_FILTER"  : DWORD,
-    "LPUNKNOWN"                     : POINTER,
-    "LPVOID"                        : POINTER,
-    "LPWCH"                         : POINTER,
-    "LPWIN32_FIND_DATAA"            : POINTER,
-    "LPWORD"                        : POINTER,
-    "LPWSADATA"                     : STRING,
-    "LPWSAPROTOCOL_INFOA"           : POINTER,
-    "LPWSTR"                        : POINTER,
-    "MSIHANDLE"                     : POINTER,
-    "OBJECT_INFORMATION_CLASS"      : INT,
-    "OLECHAR"                       : WSTRING,
-    "PANSI_STRING"                  : STRING,
-    "PBOOL"                         : POINTER,
-    "PCACTCTXW"                     : POINTER,
-    "PCANSI_STRING"                 : STRING,
-    "PCNZCH"                        : STRING,
-    "PCSZ"                          : STRING,
-    "PCWSTR"                        : WSTRING,
-    "PDWORD"                        : POINTER,
-    "PFLS_CALLBACK_FUNCTION"        : POINTER,
-    "PHKEY"                         : POINTER,
-    "PMEMORY_BASIC_INFORMATION"     : POINTER,
-    "PROCESSINFOCLASS"              : INT,
-    "PSECURITY_DESCRIPTOR"          : POINTER,
-    "PSID"                          : HANDLE,
-    "PSID_IDENTIFIER_AUTHORITY"     : POINTER,
-    "PSLIST_HEADER"                 : POINTER,
-    "PSRWLOCK"                      : POINTER,
-    "PTP_POOL"                      : POINTER,
-    "PULONG"                        : POINTER,
-    "PVECTORED_EXCEPTION_HANDLER"   : HANDLE,
-    "PVOID"                         : POINTER,
-    "PWSTR"                         : WSTRING,
-    "REFCLSID"                      : POINTER,
-    "REFIID"                        : POINTER,
-    "REGSAM"                        : POINTER,
-    "SC_HANDLE"                     : HANDLE,
-    "SHELLEXECUTEINFOA"             : POINTER,
-    "SHELLEXECUTEINFOW"             : POINTER,
-    "SHFILEINFOW"                   : POINTER,
-    "SOCKET"                        : INT,
-    "SOLE_AUTHENTICATION_SERVICE"   : POINTER,
-    "TOKEN_INFORMATION_CLASS"       : DWORD,
-    "UINT_PTR"                      : POINTER,
-    "ULONG"                         : UINT,
-    "ULONG_PTR"                     : POINTER,
-    "WER_REGISTER_FILE_TYPE"        : INT,
-    "WORD"                          : DWORD,
-    "WPARAM"                        : UINT,
-    "_EXCEPTION_POINTERS"           : POINTER,
-    "int"                           : INT,
-    "size_t"                        : SIZE_T,
-    "sockaddr"                      : POINTER,
-    "unsigned int"                  : UINT,
-    "void"                          : POINTER,
+ACCESS_MASK                 = INT
+BOOLEAN                     = INT
+GROUP                       = INT
+HFILE                       = INT
+OBJECT_INFORMATION_CLASS    = INT
+PROCESSINFOCLASS            = INT
+SOCKET                      = INT
 
-    # work around the need of "eval"
-    "POINTER" : POINTER,
-    "BOOL"    : BOOL,
-    "BYTE"    : BYTE,
-    "DWORD"   : DWORD,
-    "HANDLE"  : HANDLE,
-    "SIZE_T"  : SIZE_T,
-    "UINT"    : UINT,
-    "WSTRING" : WSTRING
-}
+EX_POOL_PRIORITY            = UINT
+HEAP_INFORMATION_CLASS      = UINT
+KPRIORITY                   = UINT
+LOCALE_T                    = UINT
+LPARAM                      = UINT
+SYSTEM_INFORMATION_CLASS    = UINT
+WPARAM                      = UINT
+
+EVENT_TYPE                  = DWORD
+INTERNET_PORT               = DWORD
+KPROCESSOR_MODE             = DWORD
+KWAIT_REASON                = DWORD
+LCTYPE                      = DWORD
+MEMORY_CACHING_TYPE         = DWORD
+NTSTATUS                    = DWORD
+POOL_TYPE                   = DWORD
+THREADINFOCLASS             = DWORD
+TOKEN_INFORMATION_CLASS     = DWORD
+WORD                        = DWORD
+
+DWORDLONG                   = ULONGLONG
+
+HINSTANCE                   = HANDLE
+HKEY                        = HANDLE
+HMODULE                     = HANDLE
+HWND                        = HANDLE
+PSID                        = HANDLE
+SC_HANDLE                   = HANDLE
+
+LPCSTR                      = STRING
+LPOSVERSIONINFOA            = STRING
+PANSI_STRING                = STRING
+PCANSI_STRING               = STRING
+PCNZCH                      = STRING
+PCSTR                       = STRING
+PCSZ                        = STRING
+
+BSTR                        = WSTRING
+LPCTSTR                     = WSTRING
+LPCWSTR                     = WSTRING
+LPOSVERSIONINFOW            = WSTRING
+OLECHAR                     = WSTRING
+PCNZWCH                     = WSTRING
+PCUNICODE_STRING            = WSTRING
+PCWSTR                      = WSTRING
+PUNICODE_STRING             = WSTRING
+
+DLGPROC                     = POINTER
+DWORD_PTR                   = POINTER
+HDC                         = POINTER
+HGLOBAL                     = POINTER
+HHOOK                       = POINTER
+HINTERNET                   = POINTER
+HLOCAL                      = POINTER
+HOOKPROC                    = POINTER
+HRSRC                       = POINTER
+INSTALLSTATE                = POINTER
+INT_PTR                     = POINTER
+LCID                        = POINTER
+LPBOOL                      = POINTER
+LPBYTE                      = POINTER
+LPCCH                       = POINTER
+LPCGUID                     = POINTER
+LPCONTEXT                   = POINTER
+LPCPINFO                    = POINTER
+LPCRITICAL_SECTION          = POINTER
+LPCVOID                     = POINTER
+LPCWCH                      = POINTER
+LPDWORD                     = POINTER
+LPFILETIME                  = POINTER
+LPHANDLE                    = POINTER
+LPINTERNET_BUFFERSA         = POINTER
+LPMESSAGEFILTER             = POINTER
+LPMODULEINFO                = POINTER
+LPNLSVERSIONINFO            = POINTER
+LPOSVERSIONINFOEXW          = POINTER
+LPOVERLAPPED                = POINTER
+LPPOINT                     = POINTER
+LPPROCESSENTRY32W           = POINTER
+LPSECURITY_ATTRIBUTES       = POINTER
+LPSTARTUPINFOA              = POINTER
+LPSTARTUPINFOW              = POINTER
+LPSTR                       = POINTER
+LPSYSTEMTIME                = POINTER
+LPSYSTEM_INFO               = POINTER
+LPTHREAD_START_ROUTINE      = POINTER
+LPTOP_LEVEL_EXCEPTION_FILTER= POINTER
+LPUNKNOWN                   = POINTER
+LPVOID                      = POINTER
+LPWCH                       = POINTER
+LPWIN32_FIND_DATAA          = POINTER
+LPWORD                      = POINTER
+LPWSADATA                   = POINTER
+LPWSAPROTOCOL_INFOA         = POINTER
+LPWSTR                      = POINTER
+MSIHANDLE                   = POINTER
+PACCESS_STATE               = POINTER
+PBOOL                       = POINTER
+PBYTE                       = POINTER
+PCACTCTXW                   = POINTER
+PCLIENT_ID                  = POINTER
+PCONSOLE_SCREEN_BUFFER_INFO = POINTER
+PDEVICE_OBJECT              = POINTER
+PDRIVER_CANCEL              = POINTER
+PDRIVER_INITIALIZE          = POINTER
+PDRIVER_OBJECT              = POINTER
+PDWORD                      = POINTER
+PFLS_CALLBACK_FUNCTION      = POINTER
+PHANDLE                     = POINTER
+PHKEY                       = POINTER
+PIRP                        = POINTER
+PKSTART_ROUTINE             = POINTER
+PLARGE_INTEGER              = POINTER
+PMDL                        = POINTER
+PMEMORY_BASIC_INFORMATION   = POINTER
+POBJECT_ATTRIBUTES          = POINTER
+POBJECT_HANDLE_INFORMATION  = POINTER
+POBJECT_TYPE                = POINTER
+PRKEVENT                    = POINTER
+PRTL_OSVERSIONINFOW         = POINTER
+PSECURITY_DESCRIPTOR        = POINTER
+PSID_IDENTIFIER_AUTHORITY   = POINTER
+PSLIST_HEADER               = POINTER
+PSRWLOCK                    = POINTER
+PTIME_FIELDS                = POINTER
+PULONG                      = POINTER
+PVECTORED_EXCEPTION_HANDLER = POINTER
+PVOID                       = POINTER
+PWCH                        = POINTER
+REFCLSID                    = POINTER
+REFIID                      = POINTER
+REGSAM                      = POINTER
+UINT_PTR                    = POINTER
+ULONG_PTR                   = POINTER

@@ -7,6 +7,7 @@ from .futex import *
 from .ioctl import *
 from .mman import *
 from .net import *
+from .poll import *
 from .prctl import *
 from .ptrace import *
 from .resource import *

@@ -71,7 +71,7 @@ class TestAndroid(unittest.TestCase):
                         ql.buf_out=tmp[1]
             return 0
 
-        ql.uc.hook_add(UC_HOOK_MEM_INVALID, hook_mem_invalid)
+        ql.hook_mem_invalid(hook_mem_invalid)
         replace_function(ql, 0x148595A0, devprg_time_usec)  # Register 0xC221000
         replace_function(ql, 0x1485C614, devprg_tx_blocking)  # Function being used by UART in DP_LOGI
 

@@ -3,16 +3,16 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import sys, unittest, string, random, os, io
+import sys, unittest, string, random, os, io, re
 
 sys.path.append("..")
 from qiling import Qiling
 from qiling.const import QL_OS, QL_INTERCEPT, QL_VERBOSE
 from qiling.exception import *
+from qiling.extensions import pipe
 from qiling.os.const import STRING
 from qiling.os.posix import syscall
 from qiling.os.mapper import QlFsMappedObject
-from qiling.os.posix.stat import Fstat
 
 class ELFTest(unittest.TestCase):
 
@@ -60,6 +60,48 @@ class ELFTest(unittest.TestCase):
 
         del ql
 
+    def _test_elf_linux_x86_snapshot_restore_common(self, reg=False, ctx=False):
+        rootfs = "../examples/rootfs/x86_linux"
+        cmdline = ["../examples/rootfs/x86_linux/bin/x86_hello"]
+        snapshot = os.path.join(rootfs, 'snapshot_restore_reg_ctx.snapshot')
+
+        ql = Qiling(cmdline, rootfs, verbose=QL_VERBOSE.DEBUG)
+
+        X86BASE = int(ql.profile.get("OS32", "load_address"), 16)
+        hook_address = X86BASE + 0x542 # call printf
+
+        def dump(ql):
+            nonlocal snapshot
+            nonlocal reg
+            nonlocal ctx
+            ql.save(reg=reg, cpu_context=ctx, os_context=True, loader=True, snapshot=snapshot)
+            ql.emu_stop()
+        ql.hook_address(dump, hook_address)
+
+        ql.run()
+
+        # make sure that the ending PC is the same as the hook address because dump stops the emulater
+        assert ql.reg.arch_pc == hook_address, f"0x{ql.reg.arch_pc:x} != 0x{hook_address:x}"
+        del ql
+
+        ql = Qiling(cmdline, rootfs, verbose=QL_VERBOSE.DEBUG)
+        ql.restore(snapshot=snapshot)
+
+        # ensure that the starting PC is same as the PC we stopped on when taking the snapshot
+        assert ql.reg.arch_pc == hook_address, f"0x{ql.reg.arch_pc:x} != 0x{hook_address:x}"
+
+        ql.run(begin=hook_address)
+        del ql
+
+    def test_elf_linux_x86_snapshot_restore_reg(self):
+        self._test_elf_linux_x86_snapshot_restore_common(reg=True, ctx=False)
+
+    def test_elf_linux_x86_snapshot_restore_ctx(self):
+        self._test_elf_linux_x86_snapshot_restore_common(reg=False, ctx=True)
+
+    def test_elf_linux_x86_snapshot_restore_reg_ctx(self):
+        self._test_elf_linux_x86_snapshot_restore_common(reg=True, ctx=True)
+
     PARAMS_PUTS = {'s': STRING}
 
     def test_elf_linux_x8664(self):
@@ -67,20 +109,22 @@ class ELFTest(unittest.TestCase):
             params = ql.os.resolve_fcall_params(ELFTest.PARAMS_PUTS)
             print(f'puts("{params["s"]}")')
             reg = ql.reg.read("rax")
-            print("reg : 0x%x" % reg)
-            ql.reg.rax = reg
+            print("reg : %#x" % reg)
             self.set_api = reg
 
-        def write_onEnter(ql, arg1, arg2, arg3, *args):
-            print("enter write syscall!")
-            ql.reg.rsi = arg2 + 1
-            ql.reg.rdx = arg3 - 1
+        def write_onEnter(ql: Qiling, fd: int, str_ptr: int, str_len: int, *args):
             self.set_api_onenter = True
+            print("enter write syscall!")
 
-        def write_onexit(ql, arg1, arg2, arg3, *args):
-            print("exit write syscall!")
-            ql.reg.rax = arg3 + 1
+            # override syscall pc (ignored) and set of params with our own
+            return None, (fd, str_ptr + 1, str_len - 1)
+
+        def write_onexit(ql: Qiling, fd: int, str_ptr: int, str_len: int, retval: int, *args):
             self.set_api_onexit = True
+            print("exit write syscall!")
+
+            # override syscall return value with our own
+            return str_len + 1
 
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_args","1234test", "12345678", "bin/x8664_hello"],  "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG)
         ql.set_syscall(1, write_onEnter, QL_INTERCEPT.ENTER)
@@ -93,7 +137,7 @@ class ELFTest(unittest.TestCase):
         ql.run()
 
         self.assertEqual([0x1000,0x2000], ql.mem.search(b"\xFF\xFE\xFD\xFC\xFB\xFA\xFB\xFC\xFC\xFE\xFD"))
-        self.assertEqual(93824992233162, self.set_api)
+        self.assertEqual(0x5555555546ca, self.set_api)
         self.assertEqual(True, self.set_api_onexit)
         self.assertEqual(True, self.set_api_onenter)
 
@@ -101,7 +145,6 @@ class ELFTest(unittest.TestCase):
         del self.set_api_onexit
         del self.set_api_onenter
         del ql
-
 
     def test_elf_hijackapi_linux_x8664(self):
 
@@ -128,6 +171,33 @@ class ELFTest(unittest.TestCase):
         del self.test_exit_rdi
         del self.test_enter_str
         del ql         
+
+
+    def test_elf_linux_x8664_flex_api(self):
+        opened = []
+
+        def onenter_fopen(ql: Qiling):
+            params = ql.os.resolve_fcall_params({
+                'filename' : STRING,
+                'mode'     : STRING
+            })
+
+            # log opened filenames
+            opened.append(params['filename'])
+
+        def hook_main(ql: Qiling):
+            # set up fopen hook when reaching main
+            ql.set_api('fopen', onenter_fopen, QL_INTERCEPT.ENTER)
+
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_fetch_urandom"],  "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEFAULT)
+
+        ba = ql.loader.images[0].base
+        ql.hook_address(hook_main, ba + 0x10e0)
+        ql.run()
+        del ql
+
+        # test whether we interpected opening urandom
+        self.assertListEqual(opened, [r'/dev/urandom'])
 
 
     def test_elf_linux_x8664_static(self):
@@ -189,7 +259,7 @@ class ELFTest(unittest.TestCase):
 
         def test_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *args):
             target = False
-            pathname = ql.mem.string(openat_path)
+            pathname = ql.os.utils.read_cstring(openat_path)
 
             if pathname == "test_syscall_open.txt":
                 print("test => openat(%d, %s, 0x%x, 0%o)" % (openat_fd, pathname, openat_flags, openat_mode))
@@ -207,7 +277,7 @@ class ELFTest(unittest.TestCase):
 
         def test_syscall_unlink(ql, unlink_pathname, *args):
             target = False
-            pathname = ql.mem.string(unlink_pathname)
+            pathname = ql.os.utils.read_cstring(unlink_pathname)
 
             if pathname == "test_syscall_unlink.txt":
                 print("test => unlink(%s)" % (pathname))
@@ -223,7 +293,7 @@ class ELFTest(unittest.TestCase):
 
         def test_syscall_truncate(ql, trunc_pathname, trunc_length, *args):
             target = False
-            pathname = ql.mem.string(trunc_pathname)
+            pathname = ql.os.utils.read_cstring(trunc_pathname)
 
             if pathname == "test_syscall_truncate.txt":
                 print("test => truncate(%s, 0x%x)" % (pathname, trunc_length))
@@ -330,7 +400,7 @@ class ELFTest(unittest.TestCase):
 
         # def test_syscall_open(ql, open_pathname, open_flags, open_mode, *args):
             # target = False
-            # pathname = ql.mem.string(open_pathname)
+            # pathname = ql.os.utils.read_cstring(open_pathname)
 
             # if pathname == "test_syscall_open.txt":
                 # print("test => open(%s, 0x%x, 0%o)" % (pathname, open_flags, open_mode))
@@ -345,7 +415,7 @@ class ELFTest(unittest.TestCase):
 
         # def test_syscall_unlink(ql, unlink_pathname, *args):
             # target = False
-            # pathname = ql.mem.string(unlink_pathname)
+            # pathname = ql.os.utils.read_cstring(unlink_pathname)
 
             # if pathname == "test_syscall_unlink.txt":
                 # print("test => unlink(%s)" % (pathname))
@@ -359,7 +429,7 @@ class ELFTest(unittest.TestCase):
 
         # def test_syscall_truncate(ql, trunc_pathname, trunc_length, *args):
             # target = False
-            # pathname = ql.mem.string(trunc_pathname)
+            # pathname = ql.os.utils.read_cstring(trunc_pathname)
 
             # if pathname == "test_syscall_truncate.txt":
                 # print("test => truncate(%s, 0x%x)" % (pathname, trunc_length))
@@ -492,7 +562,7 @@ class ELFTest(unittest.TestCase):
 
         def test_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *args):
             target = False
-            pathname = ql.mem.string(openat_path)
+            pathname = ql.os.utils.read_cstring(openat_path)
 
             if pathname == "test_syscall_open.txt":
                 print("test => openat(%d, %s, 0x%x, 0%o)" % (openat_fd, pathname, openat_flags, openat_mode))
@@ -511,7 +581,7 @@ class ELFTest(unittest.TestCase):
 
         def test_syscall_unlink(ql, unlink_pathname, *args):
             target = False
-            pathname = ql.mem.string(unlink_pathname)
+            pathname = ql.os.utils.read_cstring(unlink_pathname)
 
             if pathname == "test_syscall_unlink.txt":
                 print("test => unlink(%s)" % (pathname))
@@ -528,7 +598,7 @@ class ELFTest(unittest.TestCase):
 
         def test_syscall_truncate(ql, trunc_pathname, trunc_length, *args):
             target = False
-            pathname = ql.mem.string(trunc_pathname)
+            pathname = ql.os.utils.read_cstring(trunc_pathname)
 
             if pathname == "test_syscall_truncate.txt":
                 print("test => truncate(%s, 0x%x)" % (pathname, trunc_length))
@@ -638,7 +708,7 @@ class ELFTest(unittest.TestCase):
 
         def test_syscall_open(ql, open_pathname, open_flags, open_mode, *args):
             target = False
-            pathname = ql.mem.string(open_pathname)
+            pathname = ql.os.utils.read_cstring(open_pathname)
 
             if pathname == "test_syscall_open.txt":
                 print("test => open(%s, 0x%x, 0%o)" % (pathname, open_flags, open_mode))
@@ -656,7 +726,7 @@ class ELFTest(unittest.TestCase):
 
         def test_syscall_unlink(ql, unlink_pathname, *args):
             target = False
-            pathname = ql.mem.string(unlink_pathname)
+            pathname = ql.os.utils.read_cstring(unlink_pathname)
 
             if pathname == "test_syscall_unlink.txt":
                 print("test => unlink(%s)" % (pathname))
@@ -672,7 +742,7 @@ class ELFTest(unittest.TestCase):
 
         def test_syscall_truncate(ql, trunc_pathname, trunc_length, *args):
             target = False
-            pathname = ql.mem.string(trunc_pathname)
+            pathname = ql.os.utils.read_cstring(trunc_pathname)
 
             if pathname == "test_syscall_truncate.txt":
                 print("test => truncate(%s, 0x%x)" % (pathname, trunc_length))
@@ -714,6 +784,7 @@ class ELFTest(unittest.TestCase):
         ql.set_syscall(4092, test_syscall_truncate)
         ql.set_syscall(4093, test_syscall_ftruncate)
         ql.run()
+        del ql
 
 
     def test_elf_linux_arm_custom_syscall(self):
@@ -752,41 +823,6 @@ class ELFTest(unittest.TestCase):
 
 
     def test_elf_linux_x86_crackme(self):
-        class MyPipe():
-            def __init__(self):
-                self.buf = b''
-
-            def write(self, s):
-                self.buf += s
-
-            def read(self, l):
-                if l <= len(self.buf):
-                    ret = self.buf[ : l]
-                    self.buf = self.buf[l : ]
-                else:
-                    ret = self.buf
-                    self.buf = ''
-                return ret
-
-            def fileno(self):
-                return 0
-
-            def fstat(self):
-                return Fstat(sys.stdin.fileno())
- 
-            def show(self):
-                pass
-
-            def clear(self):
-                pass
-
-            def flush(self):
-                pass
-
-            def close(self):
-                self.outpipe.close()
-
-
         def instruction_count(ql, address, size, user_data):
             user_data[0] += 1
 
@@ -794,14 +830,15 @@ class ELFTest(unittest.TestCase):
             pass
 
         def run_one_round(payload):
-            stdin = MyPipe()
-            ql = Qiling(["../examples/rootfs/x86_linux/bin/crackme_linux"], "../examples/rootfs/x86_linux", console = False, stdin = stdin)
+            mock_stdin = pipe.SimpleInStream(sys.stdin.fileno())
+            ql = Qiling(["../examples/rootfs/x86_linux/bin/crackme_linux"], "../examples/rootfs/x86_linux", console=False, stdin=mock_stdin)
             ins_count = [0]
             ql.hook_code(instruction_count, ins_count)
             ql.set_syscall("_llseek", my__llseek)
-            stdin.write(payload)
+            ql.os.stdin.write(payload)
             ql.run()
-            del stdin
+            del mock_stdin
+            del ql
             return ins_count[0]
 
 
@@ -942,77 +979,20 @@ class ELFTest(unittest.TestCase):
         del ql
 
     def test_x8664_absolute_path(self):
-        class MyPipe():
-            def __init__(self):
-                self.buf = b''
-
-            def write(self, s):
-                self.buf += s
-
-            def read(self, l):
-                pass
-
-            def fileno(self):
-                return 0
-
-            def fstat(self):
-                return Fstat(sys.stdin.fileno())
- 
-            def show(self):
-                pass
-
-            def clear(self):
-                pass
-
-            def flush(self):
-                pass
-
-            def close(self):
-                pass
-        
-        pipe = MyPipe()
-        ql = Qiling(["../examples/rootfs/x8664_linux/bin/absolutepath"],  "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG, stdout=pipe)
+        mock_stdout = pipe.SimpleOutStream(sys.stdout.fileno())
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/absolutepath"],  "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG, stdout=mock_stdout)
 
         ql.run()
-        
-        self.assertEqual(pipe.buf, b'test_complete\n\ntest_complete\n\n')
+        self.assertEqual(ql.os.stdout.read(), b'test_complete\n\ntest_complete\n\n')
 
         del ql
 
     def test_x8664_getcwd(self):
-        class MyPipe():
-            def __init__(self):
-                self.buf = b''
-
-            def write(self, s):
-                self.buf += s
-
-            def read(self, l):
-                pass
-
-            def fileno(self):
-                return 0
-
-            def fstat(self):
-                return Fstat(sys.stdin.fileno())
- 
-            def show(self):
-                pass
-
-            def clear(self):
-                pass
-
-            def flush(self):
-                pass
-
-            def close(self):
-                pass
-        
-        pipe = MyPipe()
-        ql = Qiling(["../examples/rootfs/x8664_linux/bin/testcwd"],  "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG, stdout=pipe)
+        mock_stdout = pipe.SimpleOutStream(sys.stdout.fileno())
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/testcwd"],  "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG, stdout=mock_stdout)
 
         ql.run()
-        self.assertEqual(pipe.buf, b'/\n/lib\n/bin\n/\n')
+        self.assertEqual(ql.os.stdout.read(), b'/\n/lib\n/bin\n/\n')
 
         del ql
 
@@ -1049,42 +1029,67 @@ class ELFTest(unittest.TestCase):
         self.assertTrue("bin\n" in output.read().decode("utf-8"))
         del ql
 
-    def test_elf_linux_x86_getdents64(self):
-        class MyPipe():
-            def __init__(self):
-                self.buf = b''
+    # TODO: Disable for now
+    # def test_armoabi_eb_linux_syscall_elf_static(self):
+    #     # src: https://github.com/qilingframework/qiling/blob/1f1e9bc756e59a0bfc112d32735f8882b1afc165/examples/src/linux/posix_syscall.c
+    #     path = ["../examples/rootfs/armeb_linux/bin/posix_syscall_msb.armoabi"]
+    #     rootfs = "../examples/rootfs/armeb_linux"
+    #     ql = Qiling(path, rootfs, verbose = QL_VERBOSE.DEBUG)
+    #     ql.run()
 
-            def write(self, s):
-                self.buf += s
-
-            def read(self, l):
-                pass
-
-            def fileno(self):
-                return 0
-
-            def fstat(self):
-                return Fstat(sys.stdin.fileno())
-
-            def fstat64(self):
-                return self.fstat()
-
-            def show(self):
-                pass
-
-            def clear(self):
-                pass
-
-            def flush(self):
-                pass
-
-            def close(self):
-                pass
-        
-        pipe = MyPipe()
-        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_getdents64"], "../examples/rootfs/x86_linux", verbose=QL_VERBOSE.DEBUG, stdout=pipe)
+    def test_armoabi_le_linux_syscall_elf_static(self):
+        # src: https://github.com/qilingframework/qiling/blob/1f1e9bc756e59a0bfc112d32735f8882b1afc165/examples/src/linux/posix_syscall.c
+        path = ["../examples/rootfs/arm_linux/bin/posix_syscall_lsb.armoabi"]
+        rootfs = "../examples/rootfs/arm_linux"
+        ql = Qiling(path, rootfs, verbose = QL_VERBOSE.DEBUG)
         ql.run()
-        self.assertTrue("bin\n" in pipe.buf.decode("utf-8"))
+        del ql
+
+    def test_elf_linux_x86_getdents64(self):
+        mock_stdout = pipe.SimpleOutStream(sys.stdout.fileno())
+        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_getdents64"], "../examples/rootfs/x86_linux", verbose=QL_VERBOSE.DEBUG, stdout=mock_stdout)
+
+        ql.run()
+        self.assertTrue("bin\n" in ql.os.stdout.read().decode("utf-8"))
+
+        del ql
+    
+    def test_memory_search(self):
+        ql = Qiling(code = b"\xCC", archtype = "x8664", ostype = "linux", verbose=QL_VERBOSE.DEBUG)
+        
+        ql.mem.map(0x1000, 0x1000)
+        ql.mem.map(0x2000, 0x1000)
+        ql.mem.map(0x3000, 0x1000)
+
+        ql.mem.write(0x1000, b"\x47\x06\x0d\x1e\x0d\x1a\x53\x0f\x07\x06\x06\x09\x53\x0f\x01\x1e\x0d\x53\x11\x07\x1d\x53\x1d\x18\x4f\x53\x06\x0d\x1e\x0d\x1a\x53\x0f\x07\x06\x06\x09\x53\x04\x0d\x1c\x53\x11\x07\x1d\x53\x0c\x07\x1f\x06\x45")
+        ql.mem.write(0x2000, b"\x47\x06\x0d\x1e\x0d\x1a\x53\x0f\x07\x06\x06\x09\x53\x1a\x1d\x06\x53\x09\x1a\x07\x1d\x06\x0c\x53\x09\x06\x0c\x53\x0c\x0d\x1b\x0d\x1a\x1c\x53\x11\x07\x1d\x4f\x53\x06\x0d\x1e\x0d\x1a\x53\x0f\x07\x06\x06\x09\x53\x05\x09\x03\x0d\x53\x11\x07\x1d\x53\x0b\x1a\x11\x45")
+        ql.mem.write(0x3000, b"\x47\x06\x0d\x1e\x0d\x1a\x53\x0f\x07\x06\x06\x09\x53\x1b\x09\x11\x53\x0f\x07\x07\x0c\x0a\x11\x0d\x4f\x53\x06\x0d\x1e\x0d\x1a\x53\x0f\x07\x06\x06\x09\x53\x1c\x0d\x04\x04\x53\x09\x53\x04\x01\x0d\x53\x09\x06\x0c\x53\x00\x1d\x1a\x1c\x53\x11\x07\x1d\x45")
+        ql.mem.write(0x1FFB, b"\x1f\x00\x07\x53\x03\x06\x07\x1f\x1b")
+
+        # Needle not in haystack
+        self.assertEqual([], ql.mem.search(re.escape(b"\x3a\x01\x0b\x03\x53\x29\x1b\x1c\x04\x0d\x11")))
+
+        # Needle appears several times in haystack
+        self.assertEqual([0x1000 + 24, 0x2000 + 38, 0x3000 + 24], ql.mem.search(re.escape(b"\x4f\x53\x06\x0d\x1e\x0d\x1a")))
+
+        # Needle inside haystack
+        self.assertEqual([0x1000 + 13], ql.mem.search(re.escape(b"\x0f\x01\x1e\x0d\x53\x11\x07\x1d\x53\x1d\x18"), begin=0x1000 + 10, end=0x1000 + 30))
+
+        # Needle before haystack
+        self.assertEqual([], ql.mem.search(re.escape(b"\x04\x0d\x1c\x53\x11\x07\x1d\x53\x0c\x07\x1f\x06"), begin=0x1337))
+
+        # Needle after haystack
+        self.assertEqual([], ql.mem.search(re.escape(b"\x1b\x09\x11\x53\x0f\x07\x07\x0c\x0a\x11\x0d"), end=0x3000 + 13))
+
+        # Needle exactly inside haystack
+        self.assertEqual([0x2000 + 13], ql.mem.search(re.escape(b"\x1a\x1d\x06\x53\x09\x1a\x07\x1d\x06\x0c"), begin=0x2000 + 13, end=0x2000 + 23))
+
+        # Needle 'tears' two mapped regions
+        self.assertEqual([], ql.mem.search(re.escape(b"\x1f\x00\x07\x53\x03\x06\x07\x1f\x1b"), begin=0x1F00, end=0x200F))
+
+        # Needle is a regex
+        self.assertEqual([0x1000 + 11, 0x2000 + 11, 0x3000 + 43], ql.mem.search(b"\x09\x53(\x0f|\x1a|\x04)[^\x0d]"))
+
         del ql
 
 if __name__ == "__main__":
