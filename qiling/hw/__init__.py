@@ -11,5 +11,5 @@ from .intc import *
 from .math import *
 from .misc import *
 from .power import *
-from .ssi import *
+from .spi import *
 from .timer import *
