@@ -3,8 +3,11 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+import ctypes
+
 from qiling.utils import ql_get_module_function
 from qiling.exception import QlErrorModuleFunctionNotFound
+
 
 class QlHwManager:
     def __init__(self, ql):
@@ -91,6 +94,8 @@ class QlHwManager:
         self.ql.mem.map_mmio(alias, size, bitband_read_cb, bitband_write_cb, info=info)
 
     def setup_mmio(self, begin, size, info=""):
+        mmio = ctypes.create_string_buffer(size)        
+
         def mmio_read_cb(ql, offset, size):
             address = begin + offset                        
             hardware = self.find(address, size)
@@ -98,9 +103,11 @@ class QlHwManager:
             if hardware:
                 return hardware.read(address - hardware.base, size)
             else:
-                ql.log.debug('%s Read non-mapped hardware [0x%08x]' % (info, address))
+                ql.log.debug('%s Read non-mapped hardware [0x%08x]' % (info, address))                
                 
-            return 0
+                buf = ctypes.create_string_buffer(size)
+                ctypes.memmove(buf, ctypes.addressof(mmio) + offset, size)
+                return int.from_bytes(buf.raw, byteorder='little')
 
         def mmio_write_cb(ql, offset, size, value):
             address = begin + offset
@@ -110,6 +117,7 @@ class QlHwManager:
                 hardware.write(address - hardware.base, size, value)
             else:
                 ql.log.debug('%s Write non-mapped hardware [0x%08x] = 0x%08x' % (info, address, value))
+                ctypes.memmove(ctypes.addressof(mmio) + offset, (value).to_bytes(size, 'little'), size)
 
         self.ql.mem.map_mmio(begin, size, mmio_read_cb, mmio_write_cb, info=info)
 

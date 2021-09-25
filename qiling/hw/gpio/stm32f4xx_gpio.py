@@ -98,12 +98,7 @@ class STM32F4xxGpio(QlPeripheral, GpioHooks):
                     else:
                         self.reset_pin(i - 16)                        
             
-            return
-
-        if offset == self.struct.OTYPER.offset:
-            value &= 0xffff
-        elif offset == self.struct.LCKR.offset:
-            value &= 0x1ffff        
+            return    
         
         data = (value).to_bytes(size, 'little')
         ctypes.memmove(ctypes.addressof(self.gpio) + offset, data, size) 
