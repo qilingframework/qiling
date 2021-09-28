@@ -16,6 +16,7 @@ if TYPE_CHECKING:
     from .arch.arch import QlArch
     from .os.os import QlOs
     from .os.memory import QlMemoryManager
+    from .hw.hw import QlHwManager
     from .loader.loader import QlLoader
 
 from .const import QL_ARCH_ENDIAN, QL_ENDIAN, QL_OS, QL_VERBOSE, QL_ARCH_NONEOS, QL_ARCH_HARDWARE
@@ -170,7 +171,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         #####################
         # Profile & Logging #
         #####################
-        self._profile, debugmsg = profile_setup(self.ostype, self.profile, self)
+        self._profile, debugmsg = profile_setup(self)
 
         # Log's configuration
 
@@ -643,6 +644,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         return self._stop_options
 
     def __enable_bin_patch(self):
+        
         for addr, code in self.patch_bin:
             self.mem.write(self.loader.load_address + addr, code)
 
@@ -705,6 +707,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self.exit_point = end
         self.timeout = timeout
         self.count = count
+        self.end = end
 
         if self.archtype in QL_ARCH_NONEOS:
             if code == None:
@@ -713,7 +716,12 @@ class Qiling(QlCoreHooks, QlCoreStructs):
                 return self.arch.run(code) 
 
         if self.archtype in QL_ARCH_HARDWARE:
-            return self.arch.run(count=count)
+            self.__enable_bin_patch()
+            if self.count == 0:
+                self.count = -1
+            # else:
+            #     self.count = 0
+            return self.arch.run(count=self.count, end=self.end)
 
         self.write_exit_trap()
 

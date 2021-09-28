@@ -17,10 +17,15 @@ def ql_syscall_open(ql: Qiling, filename: int, flags: int, mode: int):
     real_path = ql.os.path.transform_to_real_path(path)
     relative_path = ql.os.path.transform_to_relative_path(path)
 
-    flags &= 0xffffffff
-    mode &= 0xffffffff
+    flags = flags & 0xffffffff
+    mode = mode & 0xffffffff
 
-    idx = next((i for i in range(NR_OPEN) if ql.os.fd[i] == 0), -1)
+    for i in range(NR_OPEN):
+        if ql.os.fd[i] == 0:
+            idx = i
+            break
+    else:
+        idx = -1
 
     if idx == -1:
         regreturn = -EMFILE
@@ -47,14 +52,19 @@ def ql_syscall_open(ql: Qiling, filename: int, flags: int, mode: int):
 def ql_syscall_creat(ql: Qiling, filename: int, mode: int):
     flags = linux_open_flags["O_WRONLY"] | linux_open_flags["O_CREAT"] | linux_open_flags["O_TRUNC"]
 
-    path = ql.os.utils.read_cstring(filename)
+    path = ql.mem.string(filename)
     real_path = ql.os.path.transform_to_real_path(path)
     relative_path = ql.os.path.transform_to_relative_path(path)
 
-    flags &= 0xffffffff
-    mode &= 0xffffffff
+    flags = flags & 0xffffffff
+    mode = mode & 0xffffffff
 
-    idx = next((i for i in range(NR_OPEN) if ql.os.fd[i] == 0), -1)
+    for i in range(NR_OPEN):
+        if ql.os.fd[i] == 0:
+            idx = i
+            break
+    else:
+        idx = -1
 
     if idx == -1:
         regreturn = -ENOMEM 
@@ -69,7 +79,7 @@ def ql_syscall_creat(ql: Qiling, filename: int, mode: int):
         except QlSyscallError as e:
             regreturn = -e.errno
 
-    ql.log.debug("creat(%s, %s, 0o%o) = %d" % (relative_path, open_flags_mapping(flags, ql.archtype), mode, regreturn))
+    ql.log.debug("open(%s, %s, 0o%o) = %d" % (relative_path, open_flags_mapping(flags, ql.archtype), mode, regreturn))
 
     if regreturn >= 0 and regreturn != 2:
         ql.log.debug(f'File found: {real_path:s}')
@@ -78,15 +88,22 @@ def ql_syscall_creat(ql: Qiling, filename: int, mode: int):
 
     return regreturn
 
-def ql_syscall_openat(ql: Qiling, fd: int, path: int, flags: int, mode: int):
-    file_path = ql.os.utils.read_cstring(path)
-    # real_path = ql.os.path.transform_to_real_path(path)
-    # relative_path = ql.os.path.transform_to_relative_path(path)
+def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *args, **kw):
+    openat_fd = ql.unpacks(ql.pack(openat_fd))
+    openat_path = ql.mem.string(openat_path)
 
-    flags &= 0xffffffff
-    mode &= 0xffffffff
+    real_path = ql.os.path.transform_to_real_path(openat_path)
+    relative_path = ql.os.path.transform_to_relative_path(openat_path)
 
-    idx = next((i for i in range(NR_OPEN) if ql.os.fd[i] == 0), -1)
+    openat_flags = openat_flags & 0xffffffff
+    openat_mode = openat_mode & 0xffffffff
+
+    for i in range(NR_OPEN):
+        if ql.os.fd[i] == 0:
+            idx = i
+            break
+    else:
+        idx = -1
 
     if idx == -1:
         regreturn = -EMFILE
@@ -95,9 +112,9 @@ def ql_syscall_openat(ql: Qiling, fd: int, path: int, flags: int, mode: int):
             if ql.archtype== QL_ARCH.ARM:
                 mode = 0
 
-            flags = ql_open_flag_mapping(ql, flags)
+            openat_flags = ql_open_flag_mapping(ql, openat_flags)
             try:
-                dir_fd = ql.os.fd[fd].fileno()
+                dir_fd = ql.os.fd[openat_fd].fileno()
             except:
                 dir_fd = None
 
@@ -200,8 +217,8 @@ def ql_syscall_rename(ql: Qiling, oldname_buf: int, newname_buf: int):
     ret value: On success, zero is returned. On error, -1 is returned
     """
     regreturn = 0  # default value is success
-    oldpath = ql.os.utils.read_cstring(oldname_buf)
-    newpath = ql.os.utils.read_cstring(newname_buf)
+    oldpath = ql.mem.string(oldname_buf)
+    newpath = ql.mem.string(newname_buf)
 
     ql.log.debug(f"rename() path: {oldpath} -> {newpath}")
 

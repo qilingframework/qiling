@@ -11,21 +11,19 @@ jobs:
       matrix:
         #os: [windows-2019, macos-10.15, ubuntu-18.04, ubuntu-20.04]
         os: [windows-2019, ubuntu-18.04, ubuntu-20.04]
-        python-version: [3.7, 3.8, 3.9]
+        python-version: [3.7.6, 3.9.5]
         exclude:
           - os: ubuntu-20.04
-            python-version: 3.7       
-          - os: ubuntu-18.04
-            python-version: 3.7
-          - os: ubuntu-18.04
-            python-version: 3.9            
+            python-version: 3.7.6       
+          - os: ubuntu-20.04
+            python-version: 3.9.5
           - os: windows-2019
-            python-version: 3.7             
+            python-version: 3.7.6                 
           # - os: macos-10.15
-          #   python-version: 3.8
+          #   python-version: 3.7.6                       
         include:
           - os: ubuntu-20.04
-            python-version: 3.8
+            python-version: 3.9.5
             container: Docker
 
     steps:
@@ -85,12 +83,9 @@ jobs:
         rm -rf rootfs
         wget https://github.com/qilingframework/rootfs/archive/refs/heads/master.zip
         unzip master.zip && mv rootfs-master rootfs
-        cd ../qiling
-        rm -rf engine
-        wget https://github.com/qilingframework/engine/archive/refs/heads/main.zip
-        unzip main.zip && mv engine-main engine
-        cd ../examples/rootfs/x86_linux/kernel && unzip -P infected m0hamed_rootkit.ko.zip
+        cd rootfs/x86_linux/kernel && unzip -P infected m0hamed_rootkit.ko.zip
         cd ../../../../
+        pwd
         pip3 install -e .[evm]
 
         if [ ${{ matrix.python-version }} == '3.9' ]; then

@@ -17,6 +17,7 @@ THREAD_EVENT_EXIT_GROUP_EVENT = 6
 # File Open Limits
 NR_OPEN = 1024
 
+# https://code.woboq.org/linux/linux/include/linux/net.h.html#76
 SOCK_TYPE_MASK = 0x0f
 
 linux_socket_types = {
@@ -25,8 +26,9 @@ linux_socket_types = {
     'SOCK_RAW'       : 0x3,
     'SOCK_RDM'       : 0x4,
     'SOCK_SEQPACKET' : 0x5,
-    'SOCK_DCCP'      : 0x6,
     'SOCK_PACKET'    : 0xa,
+    'SOCK_NONBLOCK'  : 0x800,
+    'SOCK_CLOEXEC'   : 0x80000,
 }
 
 
@@ -162,15 +164,16 @@ macos_socket_domain = {
 }
 
 
-# https://gfiber.googlesource.com/toolchains/mindspeed/+/refs/heads/newkernel_dev/arm-unknown-linux-gnueabi/sysroot/usr/include/bits/socket.h
 arm_socket_types = {
-    'SOCK_STREAM'    : 0x1,
-    'SOCK_DGRAM'     : 0x2,
+    'SOCK_DGRAM'     : 0x1,
+    'SOCK_STREAM'    : 0x2,
     'SOCK_RAW'       : 0x3,
     'SOCK_RDM'       : 0x4,
     'SOCK_SEQPACKET' : 0x5,
     'SOCK_DCCP'      : 0x6,
     'SOCK_PACKET'    : 0xa,
+    'SOCK_NONBLOCK'  : 0x800,
+    'SOCK_CLOEXEC'   : 0x80000,
 }
 
 
@@ -256,13 +259,15 @@ arm_socket_options = {
 
 
 mips_socket_types = {
-    'SOCK_STREAM'    : 0x2,
     'SOCK_DGRAM'     : 0x1,
+    'SOCK_STREAM'    : 0x2,
     'SOCK_RAW'       : 0x3,
     'SOCK_RDM'       : 0x4,
     'SOCK_SEQPACKET' : 0x5,
     'SOCK_DCCP'      : 0x6,
     'SOCK_PACKET'    : 0xa,
+    'SOCK_CLOEXEC'   : 0x80000,
+    'SOCK_NONBLOCK'  : 0x80,
 }
 
 
@@ -419,25 +424,19 @@ mac_open_flags = {
 
 
 linux_open_flags = {
-    'O_RDONLY'    : 0o000000000,
-    'O_WRONLY'    : 0o000000001,
-    'O_RDWR'      : 0o000000002,
-    'O_CREAT'     : 0o000000100,
-    'O_EXCL'      : 0o000000200,
-    'O_NOCTTY'    : 0o000000400,
-    'O_TRUNC'     : 0o000001000,
-    'O_APPEND'    : 0o000002000,
-    'O_NONBLOCK'  : 0o000004000,
-    'O_DSYNC'     : 0o000010000,
-    'FASYNC'      : 0o000020000,
-    'O_DIRECT'    : 0o000040000,
-    'O_LARGEFILE' : 0o000100000,
-    'O_DIRECTORY' : 0o000200000,
-    'O_NOFOLLOW'  : 0o000400000,
-    'O_NOATIME'   : 0o001000000,
-    'O_CLOEXEC'   : 0o002000000,
-    'O_SYNC'      : 0o004000000 | 0o000010000, # O_DSYNC
-    'O_PATH'      : 0o010000000
+    'O_RDONLY'   : 0x0,
+    'O_WRONLY'   : 0x1,
+    'O_RDWR'     : 0x2,
+    'O_CREAT'    : 0x40,
+    'O_EXCL'     : 0x80,
+    'O_NOCTTY'   : 0x100,
+    'O_TRUNC'    : 0x200,
+    'O_APPEND'   : 0x400,
+    'O_NONBLOCK' : 0x800,
+    'O_ASYNC'    : 0x2000,
+    'O_DIRECTORY': 0x10000,
+    'O_NOFOLLOW' : 0x20000,
+    'O_SYNC'     : 0x101000,
 }
 
 
@@ -750,13 +749,3 @@ errors = {
     130: 'EOWNERDEAD',
     131: 'ENOTRECOVERABLE',
 }
-
-# shm syscall
-IPC_CREAT = 8**3
-IPC_EXCL = 2*(8**3)
-IPC_NOWAIT = 4*(8**3)
-
-SHM_RDONLY = 8**4
-SHM_RND = 2*(8**4)
-SHM_REMAP= 4*(8**4)
-SHM_EXEC = 1*(8**5)

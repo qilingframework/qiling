@@ -173,33 +173,6 @@ class ELFTest(unittest.TestCase):
         del ql         
 
 
-    def test_elf_linux_x8664_flex_api(self):
-        opened = []
-
-        def onenter_fopen(ql: Qiling):
-            params = ql.os.resolve_fcall_params({
-                'filename' : STRING,
-                'mode'     : STRING
-            })
-
-            # log opened filenames
-            opened.append(params['filename'])
-
-        def hook_main(ql: Qiling):
-            # set up fopen hook when reaching main
-            ql.set_api('fopen', onenter_fopen, QL_INTERCEPT.ENTER)
-
-        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_fetch_urandom"],  "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEFAULT)
-
-        ba = ql.loader.images[0].base
-        ql.hook_address(hook_main, ba + 0x10e0)
-        ql.run()
-        del ql
-
-        # test whether we interpected opening urandom
-        self.assertListEqual(opened, [r'/dev/urandom'])
-
-
     def test_elf_linux_x8664_static(self):
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_hello_static"], "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG)
         ql.run()
@@ -259,7 +232,7 @@ class ELFTest(unittest.TestCase):
 
         def test_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *args):
             target = False
-            pathname = ql.os.utils.read_cstring(openat_path)
+            pathname = ql.mem.string(openat_path)
 
             if pathname == "test_syscall_open.txt":
                 print("test => openat(%d, %s, 0x%x, 0%o)" % (openat_fd, pathname, openat_flags, openat_mode))
@@ -277,7 +250,7 @@ class ELFTest(unittest.TestCase):
 
         def test_syscall_unlink(ql, unlink_pathname, *args):
             target = False
-            pathname = ql.os.utils.read_cstring(unlink_pathname)
+            pathname = ql.mem.string(unlink_pathname)
 
             if pathname == "test_syscall_unlink.txt":
                 print("test => unlink(%s)" % (pathname))
@@ -293,7 +266,7 @@ class ELFTest(unittest.TestCase):
 
         def test_syscall_truncate(ql, trunc_pathname, trunc_length, *args):
             target = False
-            pathname = ql.os.utils.read_cstring(trunc_pathname)
+            pathname = ql.mem.string(trunc_pathname)
 
             if pathname == "test_syscall_truncate.txt":
                 print("test => truncate(%s, 0x%x)" % (pathname, trunc_length))
@@ -400,7 +373,7 @@ class ELFTest(unittest.TestCase):
 
         # def test_syscall_open(ql, open_pathname, open_flags, open_mode, *args):
             # target = False
-            # pathname = ql.os.utils.read_cstring(open_pathname)
+            # pathname = ql.mem.string(open_pathname)
 
             # if pathname == "test_syscall_open.txt":
                 # print("test => open(%s, 0x%x, 0%o)" % (pathname, open_flags, open_mode))
@@ -415,7 +388,7 @@ class ELFTest(unittest.TestCase):
 
         # def test_syscall_unlink(ql, unlink_pathname, *args):
             # target = False
-            # pathname = ql.os.utils.read_cstring(unlink_pathname)
+            # pathname = ql.mem.string(unlink_pathname)
 
             # if pathname == "test_syscall_unlink.txt":
                 # print("test => unlink(%s)" % (pathname))
@@ -429,7 +402,7 @@ class ELFTest(unittest.TestCase):
 
         # def test_syscall_truncate(ql, trunc_pathname, trunc_length, *args):
             # target = False
-            # pathname = ql.os.utils.read_cstring(trunc_pathname)
+            # pathname = ql.mem.string(trunc_pathname)
 
             # if pathname == "test_syscall_truncate.txt":
                 # print("test => truncate(%s, 0x%x)" % (pathname, trunc_length))
@@ -562,7 +535,7 @@ class ELFTest(unittest.TestCase):
 
         def test_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *args):
             target = False
-            pathname = ql.os.utils.read_cstring(openat_path)
+            pathname = ql.mem.string(openat_path)
 
             if pathname == "test_syscall_open.txt":
                 print("test => openat(%d, %s, 0x%x, 0%o)" % (openat_fd, pathname, openat_flags, openat_mode))
@@ -581,7 +554,7 @@ class ELFTest(unittest.TestCase):
 
         def test_syscall_unlink(ql, unlink_pathname, *args):
             target = False
-            pathname = ql.os.utils.read_cstring(unlink_pathname)
+            pathname = ql.mem.string(unlink_pathname)
 
             if pathname == "test_syscall_unlink.txt":
                 print("test => unlink(%s)" % (pathname))
@@ -598,7 +571,7 @@ class ELFTest(unittest.TestCase):
 
         def test_syscall_truncate(ql, trunc_pathname, trunc_length, *args):
             target = False
-            pathname = ql.os.utils.read_cstring(trunc_pathname)
+            pathname = ql.mem.string(trunc_pathname)
 
             if pathname == "test_syscall_truncate.txt":
                 print("test => truncate(%s, 0x%x)" % (pathname, trunc_length))
@@ -708,7 +681,7 @@ class ELFTest(unittest.TestCase):
 
         def test_syscall_open(ql, open_pathname, open_flags, open_mode, *args):
             target = False
-            pathname = ql.os.utils.read_cstring(open_pathname)
+            pathname = ql.mem.string(open_pathname)
 
             if pathname == "test_syscall_open.txt":
                 print("test => open(%s, 0x%x, 0%o)" % (pathname, open_flags, open_mode))
@@ -726,7 +699,7 @@ class ELFTest(unittest.TestCase):
 
         def test_syscall_unlink(ql, unlink_pathname, *args):
             target = False
-            pathname = ql.os.utils.read_cstring(unlink_pathname)
+            pathname = ql.mem.string(unlink_pathname)
 
             if pathname == "test_syscall_unlink.txt":
                 print("test => unlink(%s)" % (pathname))
@@ -742,7 +715,7 @@ class ELFTest(unittest.TestCase):
 
         def test_syscall_truncate(ql, trunc_pathname, trunc_length, *args):
             target = False
-            pathname = ql.os.utils.read_cstring(trunc_pathname)
+            pathname = ql.mem.string(trunc_pathname)
 
             if pathname == "test_syscall_truncate.txt":
                 print("test => truncate(%s, 0x%x)" % (pathname, trunc_length))
@@ -784,7 +757,6 @@ class ELFTest(unittest.TestCase):
         ql.set_syscall(4092, test_syscall_truncate)
         ql.set_syscall(4093, test_syscall_ftruncate)
         ql.run()
-        del ql
 
 
     def test_elf_linux_arm_custom_syscall(self):
@@ -1027,22 +999,6 @@ class ELFTest(unittest.TestCase):
         ql.run()
         output.seek(0)
         self.assertTrue("bin\n" in output.read().decode("utf-8"))
-        del ql
-
-    # TODO: Disable for now
-    # def test_armoabi_eb_linux_syscall_elf_static(self):
-    #     # src: https://github.com/qilingframework/qiling/blob/1f1e9bc756e59a0bfc112d32735f8882b1afc165/examples/src/linux/posix_syscall.c
-    #     path = ["../examples/rootfs/armeb_linux/bin/posix_syscall_msb.armoabi"]
-    #     rootfs = "../examples/rootfs/armeb_linux"
-    #     ql = Qiling(path, rootfs, verbose = QL_VERBOSE.DEBUG)
-    #     ql.run()
-
-    def test_armoabi_le_linux_syscall_elf_static(self):
-        # src: https://github.com/qilingframework/qiling/blob/1f1e9bc756e59a0bfc112d32735f8882b1afc165/examples/src/linux/posix_syscall.c
-        path = ["../examples/rootfs/arm_linux/bin/posix_syscall_lsb.armoabi"]
-        rootfs = "../examples/rootfs/arm_linux"
-        ql = Qiling(path, rootfs, verbose = QL_VERBOSE.DEBUG)
-        ql.run()
         del ql
 
     def test_elf_linux_x86_getdents64(self):

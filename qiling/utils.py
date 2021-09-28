@@ -15,7 +15,7 @@ from enum import EnumMeta
 from unicorn import UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
 
 from .exception import *
-from .const import QL_ARCH_NONEOS, QL_VERBOSE, QL_ARCH, QL_ENDIAN, QL_OS, QL_DEBUGGER, QL_ARCH_1BIT, QL_ARCH_16BIT, QL_ARCH_32BIT, QL_ARCH_64BIT
+from .const import QL_ARCH_NONEOS, QL_VERBOSE, QL_ARCH, QL_ENDIAN, QL_OS, QL_DEBUGGER, QL_ARCH_1BIT, QL_ARCH_16BIT, QL_ARCH_32BIT, QL_ARCH_64BIT, QL_ARCH_HARDWARE
 from .const import debugger_map, arch_map, os_map, arch_os_map, loader_map
 
 FMT_STR = "%(levelname)s\t%(message)s"
@@ -157,7 +157,7 @@ def catch_KeyboardInterrupt(ql):
             try:
                 return func(*args, **kw)
             except BaseException as e:
-                ql.os.stop()
+                ql.stop()
                 ql._internal_exception = e
 
         return wrapper
@@ -208,9 +208,9 @@ def ostype_convert(ostype: str) -> Optional[QL_OS]:
 def arch_convert_str(arch: QL_ARCH) -> Optional[str]:
     return __reverse_mapping(arch_map).get(arch)
 
-def arch_convert(arch: str) -> Optional[QL_ARCH]:
+def arch_convert(arch: str)  -> Optional[QL_ARCH]:
     return arch_map.get(arch)
-
+    
 def arch_os_convert(arch):
     adapter = {}
     adapter.update(arch_os_map)
@@ -480,22 +480,40 @@ def os_setup(archtype: QL_ARCH, ostype: QL_OS, ql):
     return ql_get_module_function(f"qiling.os.{ostype_str.lower()}.{ostype_str.lower()}", function_name)(ql)
 
 
-def profile_setup(ostype, profile, ql):
+def profile_setup(ql):
+    if ql.archtype in QL_ARCH_HARDWARE:
+        return ql_hw_profile_setup(ql)
+
     _profile = "Default"
-    if profile != None:
-        _profile = profile
-        
+    
+    if ql.profile != None:
+        _profile = ql.profile
     debugmsg = "Profile: %s" % _profile
 
-    os_profile = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", ostype_convert_str(ostype) + ".ql")
+    os_profile = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", ostype_convert_str(ql.ostype) + ".ql")
 
-    if profile:
-        profiles = [os_profile, profile]
+    if ql.profile:
+        profiles = [os_profile, ql.profile]
     else:
         profiles = [os_profile]
 
     config = configparser.ConfigParser()
     config.read(profiles)
+    
+    return config, debugmsg
+
+def ql_hw_profile_setup(ql):
+    config = configparser.ConfigParser()
+    debugmsg = "Profile: %s" % ql.profile
+
+    profile_name = '%s.ql' % ql.profile
+    profile_dir  = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles")
+
+    for path, _, files in os.walk(profile_dir):
+        if profile_name in files:            
+            config.read(os.path.join(profile_dir, path, profile_name))
+            break
+
     return config, debugmsg
 
 def ql_resolve_logger_level(verbose: QL_VERBOSE) -> int:

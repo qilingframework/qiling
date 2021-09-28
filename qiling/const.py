@@ -30,6 +30,10 @@ class QL_OS(IntEnum):
     DOS = 206
     EVM = 207
     QNX = 208
+    CORTEX_M = 109
+
+class QL_MCU(IntEnum):
+    STM32F411 = 301
 
 class QL_MCU(IntEnum):
     STM32F411 = 301
@@ -53,10 +57,11 @@ class QL_INTERCEPT(IntEnum):
 
 QL_DEBUGGER_ALL = (QL_DEBUGGER.IDAPRO, QL_DEBUGGER.GDB, QL_DEBUGGER.QDB)
 
+QL_ARCH_MCU32   = (QL_ARCH.CORTEX_M,)
 QL_ARCH_ENDIAN = (QL_ARCH.MIPS, QL_ARCH.ARM)
 QL_ARCH_1BIT   = (QL_ARCH.EVM,)
 QL_ARCH_16BIT  = (QL_ARCH.A8086,)
-QL_ARCH_32BIT  = (QL_ARCH.ARM, QL_ARCH.ARM_THUMB, QL_ARCH.MIPS, QL_ARCH.X86)
+QL_ARCH_32BIT  = (QL_ARCH.ARM, QL_ARCH.ARM_THUMB, QL_ARCH.MIPS, QL_ARCH.X86) + QL_ARCH_MCU32
 QL_ARCH_64BIT  = (QL_ARCH.ARM64, QL_ARCH.X8664)
 QL_ARCH_MCU32   = (QL_ARCH.CORTEX_M,)
 QL_ARCH_MCU    = QL_ARCH_MCU32
@@ -81,6 +86,7 @@ def __reverse_enum(e: EnumMeta) -> Mapping[str, __QL_CE]:
 debugger_map: Mapping[str, QL_DEBUGGER] = __reverse_enum(QL_DEBUGGER)
 arch_map    : Mapping[str, QL_ARCH]     = __reverse_enum(QL_ARCH)
 os_map      : Mapping[str, QL_OS]       = __reverse_enum(QL_OS)
+mcu_map     : Mapping[str, QL_MCU]       = __reverse_enum(QL_MCU)
 verbose_map : Mapping[str, QL_VERBOSE]  = __reverse_enum(QL_VERBOSE)
 
 loader_map = {
@@ -91,9 +97,11 @@ loader_map = {
     QL_OS.WINDOWS : "PE",
     QL_OS.UEFI    : "PE_UEFI",
     QL_OS.DOS     : "DOS",
-    QL_OS.EVM     : "EVM"
+    QL_OS.EVM     : "EVM",
+    QL_ARCH.CORTEX_M  : "MCU",
 }
 
 arch_os_map = {
-    QL_ARCH.EVM: QL_OS.EVM
+    QL_ARCH.EVM: QL_OS.EVM,
+    QL_ARCH.CORTEX_M: QL_OS.CORTEX_M,
 }

@@ -30,7 +30,7 @@ class QlOs:
         self._stderr: TextIO
 
         self.utils = QlOsUtils(ql)
-        self.fcall: QlFunctionCall
+        self.fcall: Optional[QlFunctionCall] = None
         self.fs_mapper = QlFsMapper(ql)
         self.child_processes = False
         self.thread_management = None
