@@ -11,20 +11,21 @@ Advisor
 NGUYEN Anh Quynh <aquynh@gmail.com>
 
 
+Core Developers
+===============
+WU chenxu (kabeor) <kabeor@qiling.io>
+KONG ziqiao (lazymio) <mio@lazym.io>
+YU zheng (dataisland) <dataisland@outlook.com>
+DING tianze (D1iv3) <dddliv3@gmail.com>
+SUN bowen (w1tcher) <w1tcher.bupt@gmail.com>
+CHEN uitao (null) <null@qiling.io>
+YU tong (sp1ke) <spikeinhouse@gmail.com>
+Earl MARCUS (klks84) klks84@gmail.com
+
+
 Travis, Website and Documentations
 ==================================
 FOO Kevin (chfl4gs) <chfl4gs@qiling.io>
-
-
-Core Developers
-===============
-DING tianze (D1iv3) <dddliv3@gmail.com>
-SUN bowen (w1tcher) <w1tcher.bupt@gmail.com>
-CHEN huitao (null) <null@qiling.io>
-YU tong (sp1ke) <spikeinhouse@gmail.com>
-Earl MARCUS (klks84) klks84@gmail.com
-WU chenxu (kabeor) <kabeor@qiling.io>
-KONG ziqiao (lazymio) <mio@lazym.io>
 
 
 Key Contributors (in no particular order)
