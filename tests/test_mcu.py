@@ -125,7 +125,10 @@ class MCUTest(unittest.TestCase):
 
         ql.hw.gpioa.hook_set(5, indicator)
 
-        ql.hw.i2c1.connect(0x3f << 1)
+        class LCD:
+            address = 0x3f << 1
+
+        ql.hw.i2c1.connect(LCD())
         ql.run(count=550000)
 
         self.assertTrue(flag)

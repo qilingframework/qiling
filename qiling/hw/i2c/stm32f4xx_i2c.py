@@ -55,9 +55,8 @@ class STM32F4xxI2c(QlPeripheral):
 		self.reset()
 
 	def reset(self):
-		self.address1 = None
-		self.address2 = None
-
+		self.perip = None
+		
 		self.i2c = self.struct(
 			TRISE = 0x0002
 		)
@@ -70,36 +69,36 @@ class STM32F4xxI2c(QlPeripheral):
 		return int.from_bytes(buf.raw, byteorder='little')
 
 	def write(self, offset, size, value):
-		if offset in [self.struct.SR1.offset, self.struct.SR2.offset]:
-			return
-
 		self.ql.log.debug(f'[{self.label.upper()}] [W] {self.find_field(offset, size):10s} = {hex(value)}')
+		
+		if offset in [self.struct.SR1.offset, self.struct.SR2.offset]:
+			return		
 
 		if offset == self.struct.CR1.offset:
-			value &= I2C_CR1.RW_MASK
+			self.i2c.CR1 = value & I2C_CR1.RW_MASK
 
 			if value & I2C_CR1.START:
-				# Setting the START bit causes the interface to generate a Start condition 
-				# and to switch to Master mode (MSL bit set) when the BUSY bit is cleared.
 				self.generate_start()
 
 			if value & I2C_CR1.STOP:
 				self.generate_stop()
 
-		elif offset == self.struct.DR.offset:
-			value &= I2C_DR.DR			
-
-		data = (value).to_bytes(size, 'little')
-		ctypes.memmove(ctypes.addressof(self.i2c) + offset, data, size)
+			return
 
 		if offset == self.struct.DR.offset:
+			self.i2c.DR = value & I2C_DR.DR
 			self.i2c.SR1 &= ~I2C_SR1.TXE
 
 			if self.is_master_mode():				
 				if self.i2c.SR1 & I2C_SR1.ADDR:
 					self.send_data()
 				else:
-					self.send_address()	
+					self.send_address()
+
+			return
+
+		data = (value).to_bytes(size, 'little')
+		ctypes.memmove(ctypes.addressof(self.i2c) + offset, data, size)
 
 	## I2C Control register 2 (I2C_CR2)
 	def send_event_interrupt(self):
@@ -128,24 +127,27 @@ class STM32F4xxI2c(QlPeripheral):
 
 		# TODO: generate a start condition
 		# TODO: fetch address from SDA
-		self.i2c.OAR1 = self.address1 << 1
+		self.i2c.OAR1 = self.perip.address << 1
 		self.i2c.SR1 |= I2C_SR1.SB
+		self.i2c.CR1 &= ~I2C_CR1.START
+
 		self.send_event_interrupt()
 		self.set_master_mode()
 
 	def generate_stop(self):
-		pass#self.set_slave_mode()
+		# TODO: generate a stop condition
+
+		self.i2c.CR1 &= ~I2C_CR1.STOP
+		self.set_slave_mode()
 	
 	def send_address(self):
 		if self.i2c.DR == self.i2c.OAR1 >> 1:			
 			# TODO: send address
 			# TODO: send ACK
-			self.i2c.SR1 |= I2C_SR1.ADDR
-			self.i2c.SR1 |= I2C_SR1.TXE
+			self.i2c.SR1 |= I2C_SR1.ADDR | I2C_SR1.TXE			
 
 	def send_data(self):
-		self.i2c.SR1 |= I2C_SR1.BTF
-		self.i2c.SR1 |= I2C_SR1.TXE
+		self.i2c.SR1 |= I2C_SR1.BTF | I2C_SR1.TXE		
 
 	## I2C Status register 2 (I2C_SR2)
 	def is_master_mode(self):
@@ -160,16 +162,20 @@ class STM32F4xxI2c(QlPeripheral):
 		"""
 			I2C Status register 2 (I2C_SR2) MSL bit
 			- Set by hardware as soon as the interface is in Master mode (SB=1)
-			- Cleared by hardware after detecting a Stop condition on the bus 
-			  or a loss of arbitration (ARLO=1), or by hardware when PE=0.
+			
 		"""
 		self.i2c.SR2 |= I2C_SR2.MSL
 	
 	def set_slave_mode(self):		
+		"""
+			I2C Status register 2 (I2C_SR2) MSL bit
+			- Cleared by hardware after detecting a Stop condition on the bus 
+			  or a loss of arbitration (ARLO=1), or by hardware when PE=0.
+		"""
 		self.i2c.SR2 &= ~I2C_SR2.MSL
 
-	def connect(self, address):
-		self.address1 = address
+	def connect(self, perip):
+		self.perip = perip
 
 	def show_info(self):
 		self.ql.log.info(f'[{self.label.upper()} INFO]')
