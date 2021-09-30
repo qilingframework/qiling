@@ -50,7 +50,7 @@ class STM32F4xxUsart(QlPeripheral):
 		]
 
     
-    def __init__(self, ql, label, intn=None, virtual_serial=False):
+    def __init__(self, ql, label, intn=None):
         super().__init__(ql, label)
         
         self.usart = self.struct(
@@ -60,30 +60,7 @@ class STM32F4xxUsart(QlPeripheral):
         self.intn = intn
 
         self.recv_buf = bytearray()
-        self.send_buf = bytearray()   
-
-        interval = 0.5
-        def read_daemon(port):
-            s = serial.Serial(port)
-            while True:
-                buf = s.read_all()
-                if buf:
-                    self.recv_buf += buf
-                time.sleep(interval)
-
-        def write_daemon(port):
-            s = serial.Serial(port)
-            while True:
-                if self.send_buf:
-                    s.write(self.send_buf)
-                    self.send_buf.clear()
-                time.sleep(interval)
-
-        if virtual_serial:
-            self.serial = QlSerial(self.ql, read_daemon=read_daemon, write_daemon=write_daemon)
-
-            self.ql.log.info(f'[{self.label}] User port {self.serial.port_y}')
-            self.serial.start()
+        self.send_buf = bytearray()
 
     def read(self, offset, size):
         buf = ctypes.create_string_buffer(size)
@@ -131,3 +108,27 @@ class STM32F4xxUsart(QlPeripheral):
                 (self.usart.CR1 & USART_CR1.RXNEIE and self.usart.SR & USART_SR.RXNE) or \
                 (self.usart.CR1 & USART_CR1.IDLEIE and self.usart.SR & USART_SR.IDLE):
                 self.ql.hw.nvic.set_pending(self.intn)
+
+    def open_serial(self):
+        def read_daemon(port):
+            s = serial.Serial(port)
+            while True:
+                buf = s.read_all()
+                if buf:
+                    self.recv_buf += buf
+                time.sleep(0.5)
+
+        def write_daemon(port):
+            s = serial.Serial(port)
+            while True:
+                if self.send_buf:
+                    s.write(self.send_buf)
+                    self.send_buf.clear()
+                time.sleep(0.5)
+
+        self.serial = QlSerial(self.ql, read_daemon=read_daemon, write_daemon=write_daemon)
+
+        self.ql.log.info(f'[{self.label}] User port {self.serial.port_y}')
+        
+        self.serial.start()
+        return self.serial.port_y
