@@ -20,7 +20,7 @@ class QlArchIntel(QlArch):
     def get_reg_bit(self, register: int) -> int:
         # all regs in reg_map_misc are 16 bits except of eflags
         if register == UC_X86_REG_EFLAGS:
-            return self.ql.archbit
+            return 32
 
         regmaps = (
             (reg_map_8, 8),
