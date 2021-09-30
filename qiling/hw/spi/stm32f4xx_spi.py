@@ -5,7 +5,7 @@
 
 import ctypes
 from qiling.hw.peripheral import QlPeripheral
-from qiling.hw.const.spi import *
+from qiling.hw.const.stm32f4xx_spi import *
 
 
 class STM32F4xxSpi(QlPeripheral):
@@ -89,11 +89,7 @@ class STM32F4xxSpi(QlPeripheral):
         elif offset == self.struct.DR.offset:
             value &= 0x1ff
             self.spi.SR |= SPI_SR.RXNE
-            # gpio.enable(self.struct.CR2 & SPI_CR2.RXDMAEN |
-            #             self.struct.CR2 & SPI_CR2.TXDMAEN |
-            #             self.struct.CR2 & SPI_CR2.RXNEIE  |
-            #             self.struct.CR2 & SPI_CR2.TXEIE    )
-
+        
         elif offset == self.struct.CRCPR.offset:
             value &= 0xffff		
 
