@@ -135,6 +135,20 @@ class MCUTest(unittest.TestCase):
 
         del ql
 
+    def test_mcu_spi_stm32f411(self):
+        ql = Qiling(["../examples/rootfs/mcu/stm32f411/spi-test.hex"],
+            archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DEBUG)
+
+        ql.hw.create('spi1')
+        ql.hw.create('rcc')
+        ql.hw.create('usart2')
+        ql.hw.create('gpioa')
+
+        ql.run(count=30000)
+        self.assertTrue(ql.hw.usart2.recv() == b'----------------SPI TEST----------------\najcmfoiblenhakdmgpjclfoibkengajd\nmfpicleohbkdngajcmfoiblenhakdmgp\njclfoibkengajdmfpicleohbkdngajcm\nfoiblenhakdmgpjclfoibkengajdmfpi\ncleohbkdngajcmfoiblenhakdmgpjclf\noibkenhajdmfpicleohbkdngajcmfpib\nlenhakdmgpjclfoibkenhajdmfpicleo\nhbkdngajcmfpiblenhakdmgpjclfoibk\n----------------TEST END----------------\n')
+
+        del ql
+
 if __name__ == "__main__":
     unittest.main()
 
