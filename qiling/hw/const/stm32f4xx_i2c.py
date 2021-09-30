@@ -45,9 +45,12 @@ class I2C_OAR1(IntEnum):
 	ADD9    = 1 << 9
 	ADDMODE = 1 << 15
 
+	ADDR1_7B = 0x7f << 1
+	ADDR1_10B = 0x3ff
+
 class I2C_OAR2(IntEnum):
 	ENDUAL = 1 << 0
-	ADD2   = 0x7f << 1
+	ADDR2   = 0x7f << 1
 
 class I2C_DR(IntEnum):
 	DR = 0xff << 0
