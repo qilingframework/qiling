@@ -25,12 +25,15 @@ class QlPeripheral:
     def write(self, offset, size, value):
         self.ql.log.debug(f'[{self.label.upper()}] [W] {self.find_field(offset, size):10s} = {hex(value)}')        
 
+    def in_field(self, field, offset, size):
+        return field.offset <= offset and offset + size <= field.offset + field.size
+
     def find_field(self, offset, size) -> str:
         for name, _ in self.struct._fields_:
             field = getattr(self.struct, name)
             if (offset, size) == (field.offset, field.size):
                 return name
-            if field.offset <= offset and offset + size <= field.offset + field.size:
+            if self.in_field(field, offset, size):
                 return f'{name}[{offset - field.offset}:{offset - field.offset + size}]'
 
     @property

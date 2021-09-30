@@ -67,7 +67,7 @@ class STM32F4xxSpi(QlPeripheral):
     def read(self, offset, size):
         self.ql.log.debug(f'[{self.label.upper()}] [R] {self.find_field(offset, size):10s}')
 
-        if offset == self.struct.DR.offset:
+        if self.in_field(self.struct.DR, offset, size):
             self.spi.SR &= ~SPI_SR.RXNE
 
         buf = ctypes.create_string_buffer(size)
@@ -88,10 +88,6 @@ class STM32F4xxSpi(QlPeripheral):
         elif offset == self.struct.CR2.offset:
             value &= SPI_CR2.RW_MASK
         
-        elif offset == self.struct.DR.offset:
-            value &= 0x1ff
-            self.spi.SR |= SPI_SR.RXNE
-        
         elif offset == self.struct.CRCPR.offset:
             value &= SPI_CRCPR.CRCPOLY		
 
@@ -102,4 +98,13 @@ class STM32F4xxSpi(QlPeripheral):
             value &= SPI_I2SPR.RW_MASK
 
         data = (value).to_bytes(size, 'little')
-        ctypes.memmove(ctypes.addressof(self.spi) + offset, data, size)        
+        ctypes.memmove(ctypes.addressof(self.spi) + offset, data, size)   
+
+        if self.in_field(self.struct.DR, offset, size):
+            self.send_data()     
+
+    def send_interrupt(self):
+        self.ql.hw.nvic.set_pending(self.intn)
+
+    def send_data(self):
+        self.spi.SR |= SPI_SR.RXNE
