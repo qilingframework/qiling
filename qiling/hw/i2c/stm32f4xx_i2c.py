@@ -197,7 +197,3 @@ class STM32F4xxI2c(QlPeripheral):
 
 	def connect(self, dev):
 		self.devices.append(dev)
-
-	def show_info(self):
-		self.ql.log.info(f'[{self.label.upper()} INFO]')
-		self.ql.log.info(f'Mode: {"Master" if self.is_master_mode() else "Slave"} Mode')
