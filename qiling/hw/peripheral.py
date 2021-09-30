@@ -30,6 +30,8 @@ class QlPeripheral:
             field = getattr(self.struct, name)
             if (offset, size) == (field.offset, field.size):
                 return name
+            if field.offset <= offset and offset + size <= field.offset + field.size:
+                return f'{name}[{offset - field.offset}:{offset - field.offset + size}]'
 
     @property
     def region(self):
