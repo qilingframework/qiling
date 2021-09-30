@@ -5,7 +5,7 @@
 
 import ctypes
 from qiling.hw.peripheral import QlPeripheral
-from qiling.hw.const.stm32f4xx_spi import *
+from qiling.hw.const.stm32f4xx_spi import SPI_CR1, SPI_CR2, SPI_SR, SPI_CRCPR, SPI_I2SCFGR, SPI_I2SPR
 
 
 class STM32F4xxSpi(QlPeripheral):
@@ -65,41 +65,41 @@ class STM32F4xxSpi(QlPeripheral):
         self.intn = intn
 
     def read(self, offset, size):
+        self.ql.log.debug(f'[{self.label.upper()}] [R] {self.find_field(offset, size):10s}')
+
         if offset == self.struct.DR.offset:
             self.spi.SR &= ~SPI_SR.RXNE
-            return self.read_data()
 
         buf = ctypes.create_string_buffer(size)
         ctypes.memmove(buf, ctypes.addressof(self.spi) + offset, size)
         data = int.from_bytes(buf.raw, byteorder='little')
-        self.ql.log.debug(f'[{self.tag}] Read [{hex(self.base + offset)}] = {hex(data)}')
 
         return data
 
     def write(self, offset, size, value):
+        self.ql.log.debug(f'[{self.label.upper()}] [W] {self.find_field(offset, size):10s} = {hex(value)}')
+
         if offset in [self.struct.SR.offset, self.struct.RXCRCR.offset, self.struct.TXCRCR.offset]:
             return
 
         if offset == self.struct.CR1.offset:
-            value &= 0xffff
+            value &= SPI_CR1.RW_MASK
 
         elif offset == self.struct.CR2.offset:
-            value &= 0xf7
+            value &= SPI_CR2.RW_MASK
         
         elif offset == self.struct.DR.offset:
             value &= 0x1ff
             self.spi.SR |= SPI_SR.RXNE
         
         elif offset == self.struct.CRCPR.offset:
-            value &= 0xffff		
+            value &= SPI_CRCPR.CRCPOLY		
 
         elif offset == self.struct.I2SCFGR.offset:
-            value &= 0xfbf
+            value &= SPI_I2SCFGR.RW_MASK
 
         elif offset == self.struct.I2SPR.offset:
-            value &= 0x3ff
+            value &= SPI_I2SPR.RW_MASK
 
         data = (value).to_bytes(size, 'little')
-        ctypes.memmove(ctypes.addressof(self.spi) + offset, data, size)
-        
-        self.ql.log.debug(f'[{self.tag}] Write [{hex(self.base + offset)}] = {hex(value)}')
+        ctypes.memmove(ctypes.addressof(self.spi) + offset, data, size)        

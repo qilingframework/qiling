@@ -22,6 +22,8 @@ class SPI_CR1(IntEnum):
 	BIDIOE   = 1 << 14
 	BIDIMODE = 1 << 15
 
+	RW_MASK = 0xffff
+
 class SPI_CR2(IntEnum):
 	RXDMAEN = 1 << 0
 	TXDMAEN = 1 << 1
@@ -30,6 +32,8 @@ class SPI_CR2(IntEnum):
 	ERRIE   = 1 << 5
 	RXNEIE  = 1 << 6
 	TXEIE   = 1 << 7
+
+	RW_MASK = RXDMAEN|TXDMAEN|SSOE|FRF|ERRIE|RXNEIE|TXEIE
 
 class SPI_SR(IntEnum):
 	RXNE   = 1 << 0
@@ -42,6 +46,9 @@ class SPI_SR(IntEnum):
 	BSY    = 1 << 7
 	FRE    = 1 << 8
 
+class SPI_CRCPR(IntEnum):
+	CRCPOLY = 0xffff
+
 class SPI_I2SCFGR(IntEnum):
 	CHLEN   = 1 << 0
 	DATLEN  = 0x3 << 1
@@ -52,7 +59,11 @@ class SPI_I2SCFGR(IntEnum):
 	I2SE    = 1 << 10
 	I2SMOD  = 1 << 11
 
+	RW_MASK = CHLEN|DATLEN|CKPOL|I2SSTD|PCMSYNC|I2SCFG|I2SE|I2SMOD
+
 class SPI_I2SPR(IntEnum):
 	I2SDIV = 0xff << 0
 	ODD    = 1 << 8
 	MCKOE  = 1 << 9
+
+	RW_MASK = I2SDIV|ODD|MCKOE
