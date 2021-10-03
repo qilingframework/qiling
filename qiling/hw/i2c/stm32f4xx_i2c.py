@@ -140,7 +140,9 @@ class STM32F4xxI2c(QlPeripheral):
 	def generate_stop(self):
 		# TODO: generate a stop condition
 		self.i2c.CR1 &= ~I2C_CR1.STOP
+		
 		self.i2c.SR1 |= I2C_SR1.STOPF
+		self.i2c.SR1 &= ~I2C_SR1.ADDR
 		self.set_slave_mode()
 	
 	def send_address(self):
