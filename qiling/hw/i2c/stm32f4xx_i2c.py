@@ -53,6 +53,7 @@ class STM32F4xxI2c(QlPeripheral):
 		self.er_intn = er_intn # error interrupt
 		
 		self.devices = []
+		self.current = None
 		
 		self.reset()
 
@@ -144,13 +145,17 @@ class STM32F4xxI2c(QlPeripheral):
 	
 	def send_address(self):
 		if self.i2c.DR == self.i2c.OAR1 >> 1:
-			# TODO: send address
+			for dev in self.devices:
+				if self.i2c.DR == dev.address:
+					self.current = dev
+			
 			# TODO: send ACK
 			self.i2c.SR1 |= I2C_SR1.ADDR | I2C_SR1.TXE
 			self.send_event_interrupt()
 
 	def send_data(self):
 		self.i2c.SR1 |= I2C_SR1.BTF | I2C_SR1.TXE
+		self.current.send(self.i2c.DR)
 		self.send_event_interrupt()
 
 	## I2C Status register 2 (I2C_SR2)
