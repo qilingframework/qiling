@@ -70,7 +70,7 @@ class MCUTest(unittest.TestCase):
         del ql
 
     def test_mcu_freertos_stm32f411(self):
-        ql = Qiling(["../examples/rootfs/mcu/stm32f411/os-demo.hex"],                    
+        ql = Qiling(["../examples/rootfs/mcu/stm32f411/os-demo.bin", 0x8000000],                    
             archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DEBUG)
 
         ql.hw.create('usart2')
@@ -110,7 +110,7 @@ class MCUTest(unittest.TestCase):
         del ql
 
     def test_mcu_i2c_stm32f411(self):
-        ql = Qiling(["../examples/rootfs/mcu/stm32f411/i2c-lcd.hex"],
+        ql = Qiling(["../examples/rootfs/mcu/stm32f411/i2c-lcd.bin", 0x8000000],
             archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DEBUG)
 
         ql.hw.create('i2c1')

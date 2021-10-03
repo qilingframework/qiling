@@ -58,12 +58,32 @@ class QlLoaderMCU(QlLoader):
     def __init__(self, ql:Qiling):
         super(QlLoaderMCU, self).__init__(ql)   
         
-        self.load_address = 0             
-        self.ihexfile = IhexParser(self.argv[0])
+        self.load_address = 0
+        
+        self.path = self.argv[0]        
+        if self.path.endswith('.elf'):
+            self.filetype = 'elf'            
+            
+        elif self.path.endswith('.bin'):
+            self.filetype = 'bin'
+            self.offset = self.argv[1]
+            with open(self.path, 'rb') as f:
+                self.fileimage = f.read()
+
+        else: # elif self.path.endswith('.hex'):
+            self.filetype = 'hex'
+            self.ihexfile = IhexParser(self.path)
     
     def reset(self):
-        for begin, _, data in self.ihexfile.segments:
-            self.ql.mem.write(begin, data)
+        if self.filetype == 'elf':
+            raise NotImplementedError('MCU elf loader')
+
+        elif self.filetype == 'bin':
+            self.ql.mem.write(self.offset, self.fileimage)
+
+        else:
+            for begin, _, data in self.ihexfile.segments:
+                self.ql.mem.write(begin, data)
 
         self.ql.reg.write('lr', 0xffffffff)
         self.ql.reg.write('msp', self.ql.mem.read_ptr(0x0))
