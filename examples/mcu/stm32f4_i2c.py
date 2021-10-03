@@ -139,8 +139,23 @@ def stm32f411_i2c():
     ql.hw.i2c1.connect(lcd)
     
     lcd.run()
-    ql.run(count=550000)    
+    ql.run(count=600000)        
+
+def stm32f411_i2c_plus():
+    ql = Qiling(["../rootfs/mcu/stm32f411/lcd-plus.hex"],
+        archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DEFAULT)
+
+    ql.hw.create('i2c1')
+    ql.hw.create('rcc')
+    ql.hw.create('gpioa')
+    ql.hw.create('gpiob')
+    
+    lcd = LCD1602()
+    ql.hw.i2c1.connect(lcd)
+    
+    lcd.run()
+    ql.run(count=2000000)    
 
 
 if __name__ == "__main__":
-    stm32f411_i2c()
+    stm32f411_i2c_plus()
