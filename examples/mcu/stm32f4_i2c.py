@@ -106,8 +106,7 @@ class LCD1602(LCD):
             cmd = up | (lo >> 4)
             if self.buf[0] & 0x1:                
                 if self.cur_col < 16 and self.cur_row < 2:
-                    self.data[self.cur_row][self.cur_col] = cmd
-                    print('print', self.buf, chr(cmd))
+                    self.data[self.cur_row][self.cur_col] = cmd                    
                 
                 self.cur_col += 1
 
