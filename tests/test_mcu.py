@@ -128,6 +128,9 @@ class MCUTest(unittest.TestCase):
         class LCD:
             address = 0x3f << 1
 
+            def send(self, data):
+                pass
+
         ql.hw.i2c1.connect(LCD())
         ql.run(count=550000)
 
