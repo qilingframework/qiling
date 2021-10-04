@@ -152,6 +152,26 @@ class MCUTest(unittest.TestCase):
 
         del ql
 
+    def test_mcu_led_rust_stm32f411(self):
+        ql = Qiling(["../examples/rootfs/mcu/stm32f411/led-rust.hex"],
+                    archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DEBUG)
+
+        count = 0
+        def counter():
+            nonlocal count
+            count += 1            
+
+        ql.hw.create('gpioa').hook_set(5, counter)
+        ql.hw.create('rcc')
+
+        ql.patch(0x800032e, b'\x00\xBF\x00\xBF')
+        ql.patch(0x800033c, b'\x00\xBF\x00\xBF')
+
+        ql.run(count=1000)
+        self.assertTrue(count > 25)
+
+        del ql
+
 if __name__ == "__main__":
     unittest.main()
 
