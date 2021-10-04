@@ -106,10 +106,8 @@ class LCD1602(LCD):
             cmd = up | (lo >> 4)
             if self.buf[0] & 0x1:                
                 if self.cur_col < 16 and self.cur_row < 2:
-                    self.data[self.cur_row][self.cur_col] = cmd                    
-                
-                self.cur_col += 1
-
+                    self.data[self.cur_row][self.cur_col] = cmd                
+                    self.cur_col += 1
                 self.pixels = LCD.make_screen(self.data)
             elif cmd == 0x1:
                 self.data = [[ord(' ') for _ in range(self.cols)] for _ in range(self.rows)]
@@ -126,8 +124,8 @@ class LCD1602(LCD):
     def run(self):
         threading.Thread(target=self.render).start()
 
-def stm32f411_i2c():
-    ql = Qiling(["../rootfs/mcu/stm32f411/i2c-lcd.hex"],
+def make(path, lcd):
+    ql = Qiling([path],
         archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DEFAULT)
 
     ql.hw.create('i2c1')
@@ -135,27 +133,13 @@ def stm32f411_i2c():
     ql.hw.create('gpioa')
     ql.hw.create('gpiob')
 
-    lcd = LCD1602()
     ql.hw.i2c1.connect(lcd)
     
-    lcd.run()
-    ql.run(count=600000)        
-
-def stm32f411_i2c_plus():
-    ql = Qiling(["../rootfs/mcu/stm32f411/lcd-plus.hex"],
-        archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DEFAULT)
-
-    ql.hw.create('i2c1')
-    ql.hw.create('rcc')
-    ql.hw.create('gpioa')
-    ql.hw.create('gpiob')
-    
-    lcd = LCD1602()
-    ql.hw.i2c1.connect(lcd)
-    
-    lcd.run()
-    ql.run(count=2000000)    
-
+    return ql
 
 if __name__ == "__main__":
-    stm32f411_i2c_plus()
+    lcd = LCD1602()
+    lcd.run()
+    
+    make("../rootfs/mcu/stm32f411/i2c-lcd.hex", lcd).run(count=700000)
+    make("../rootfs/mcu/stm32f411/lcd-plus.hex", lcd).run(count=2000000)
