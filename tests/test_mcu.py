@@ -70,7 +70,7 @@ class MCUTest(unittest.TestCase):
         del ql
 
     def test_mcu_freertos_stm32f411(self):
-        ql = Qiling(["../examples/rootfs/mcu/stm32f411/os-demo.bin", 0x8000000],                    
+        ql = Qiling(["../examples/rootfs/mcu/stm32f411/os-demo.elf"],
             archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DEBUG)
 
         ql.hw.create('usart2')
@@ -92,7 +92,7 @@ class MCUTest(unittest.TestCase):
         del ql
 
     def test_mcu_dma_stm32f411(self):
-        ql = Qiling(["../examples/rootfs/mcu/stm32f411/dma-clock.hex"],                    
+        ql = Qiling(["../examples/rootfs/mcu/stm32f411/dma-clock.elf"],                    
             archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DEBUG)
 
         ql.hw.create('usart2')
@@ -139,7 +139,7 @@ class MCUTest(unittest.TestCase):
         del ql
 
     def test_mcu_spi_stm32f411(self):
-        ql = Qiling(["../examples/rootfs/mcu/stm32f411/spi-test.hex"],
+        ql = Qiling(["../examples/rootfs/mcu/stm32f411/spi-test.bin", 0x8000000],
             archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DEBUG)
 
         ql.hw.create('spi1')

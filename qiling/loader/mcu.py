@@ -10,6 +10,8 @@ from qiling.const import *
 from qiling.core import Qiling
 
 from .loader import QlLoader
+from .elf import ELFParse
+
 
 class IhexParser:
     def __init__(self, path):
@@ -58,31 +60,49 @@ class QlLoaderMCU(QlLoader):
     def __init__(self, ql:Qiling):
         super(QlLoaderMCU, self).__init__(ql)   
         
-        self.load_address = 0
-        
-        self.path = self.argv[0]        
-        if self.path.endswith('.elf'):
-            self.filetype = 'elf'            
-            
-        elif self.path.endswith('.bin'):
-            self.filetype = 'bin'
-            self.offset = self.argv[1]
-            with open(self.path, 'rb') as f:
-                self.fileimage = f.read()
+        self.load_address = 0        
+        self.path = self.argv[0]
+        self.filetype = self.guess_filetype()
 
-        else: # elif self.path.endswith('.hex'):
-            self.filetype = 'hex'
-            self.ihexfile = IhexParser(self.path)
+        if self.filetype == 'elf':
+            self.elf = ELFParse(self.path, self.ql)
+            
+        elif self.filetype == 'bin':
+            self.map_address = self.argv[1]
+
+        else: # self.filetype == 'hex':
+            self.ihex = IhexParser(self.path)
+
+    def guess_filetype(self):
+        if self.path.endswith('.elf'):
+            return 'elf'            
+            
+        if self.path.endswith('.bin'):
+            return 'bin'
+
+        if self.path.endswith('.hex'):
+            return 'hex'
+
+        return 'elf'
     
     def reset(self):
         if self.filetype == 'elf':
-            raise NotImplementedError('MCU elf loader')
+            for segment in self.elf.parse_segments():
+                if segment['p_type'] != 'PT_LOAD':
+                    continue
+
+                for section in self.elf.parse_sections():
+                    if segment.section_in_segment(section):
+                        self.ql.mem.write(section.header['sh_addr'], section.data())
+
+            # TODO: load symbol table
 
         elif self.filetype == 'bin':
-            self.ql.mem.write(self.offset, self.fileimage)
+            with open(self.path, 'rb') as f:
+                self.ql.mem.write(self.map_address, f.read())
 
-        else:
-            for begin, _, data in self.ihexfile.segments:
+        else: # self.filetype == 'hex':
+            for begin, _, data in self.ihex.segments:
                 self.ql.mem.write(begin, data)
 
         self.ql.reg.write('lr', 0xffffffff)
