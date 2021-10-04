@@ -162,13 +162,10 @@ class MCUTest(unittest.TestCase):
             count += 1            
 
         ql.hw.create('gpioa').hook_set(5, counter)
-        ql.hw.create('rcc')
-
-        ql.patch(0x800032e, b'\x00\xBF\x00\xBF')
-        ql.patch(0x800033c, b'\x00\xBF\x00\xBF')
+        ql.hw.create('rcc')        
 
         ql.run(count=1000)
-        self.assertTrue(count > 25)
+        self.assertTrue(count >= 5)
 
         del ql
 

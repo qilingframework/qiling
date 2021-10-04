@@ -34,17 +34,26 @@ class CortexM4SysTick(QlPeripheral):
 
         if self.systick.VAL <= 0:
             self.systick.VAL = self.systick.LOAD
+            self.systick.CTRL |= SYSTICK_CTRL.COUNTFLAG
+
             if self.systick.CTRL & SYSTICK_CTRL.TICKINT:
                 self.ql.hw.nvic.set_pending(IRQ.SYSTICK)
         else:
             self.systick.VAL -= self.RATIO
 
-    def read(self, offset, size):
+    def read(self, offset, size):       
+        self.ql.log.debug(f'[{self.label.upper()}] [R] {self.find_field(offset, size):10s}')
+
         buf = ctypes.create_string_buffer(size)
         ctypes.memmove(buf, ctypes.addressof(self.systick) + offset, size)
+
+        if offset == self.struct.CTRL.offset:
+            self.systick.CTRL &= ~SYSTICK_CTRL.COUNTFLAG        
         return int.from_bytes(buf.raw, byteorder='little')
 
     def write(self, offset, size, value):
+        self.ql.log.debug(f'[{self.label.upper()}] [W] {self.find_field(offset, size):10s} = {hex(value)}')
+        
         # ignore the reserved bit
         if offset == self.struct.CTRL.offset:
             value &= SYSTICK_CTRL.MASK

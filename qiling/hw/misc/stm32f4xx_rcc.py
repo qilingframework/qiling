@@ -77,12 +77,18 @@ class STM32F4xxRcc(QlPeripheral):
 			(RCC_CFGR.SWS_1, RCC_CFGR.SW_1),
 		]
 
+		self.intn = intn
+
 	def read(self, offset, size):
+		self.ql.log.debug(f'[{self.label.upper()}] [R] {self.find_field(offset, size):10s}')
+		
 		buf = ctypes.create_string_buffer(size)
 		ctypes.memmove(buf, ctypes.addressof(self.rcc) + offset, size)
 		return int.from_bytes(buf.raw, byteorder='little')
 
 	def write(self, offset, size, value):
+		self.ql.log.debug(f'[{self.label.upper()}] [W] {self.find_field(offset, size):10s} = {hex(value)}')
+
 		if offset == self.struct.CR.offset:
 			value = (self.rcc.CR & RCC_CR.RO_MASK) | (value & RCC_CR.RW_MASK)
 		elif offset == self.struct.CFGR.offset:
