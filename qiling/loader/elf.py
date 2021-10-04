@@ -6,6 +6,7 @@
 import io
 import os
 
+from enum import IntEnum
 from typing import Optional, Sequence, Mapping, Tuple
 
 from elftools.common.utils import preserve_stream_pos
@@ -28,29 +29,30 @@ from qiling.os.linux.kernel_api.kernel_api import hook_sys_open, hook_sys_read, 
 
 # auxiliary vector types
 # see: https://man7.org/linux/man-pages/man3/getauxval.3.html
-AT_NULL     = 0
-AT_IGNORE   = 1
-AT_EXECFD   = 2
-AT_PHDR     = 3
-AT_PHENT    = 4
-AT_PHNUM    = 5
-AT_PAGESZ   = 6
-AT_BASE     = 7
-AT_FLAGS    = 8
-AT_ENTRY    = 9
-AT_NOTELF   = 10
-AT_UID      = 11
-AT_EUID     = 12
-AT_GID      = 13
-AT_EGID     = 14
-AT_PLATFORM = 15
-AT_HWCAP    = 16
-AT_CLKTCK   = 17
-AT_SECURE   = 23
-AT_BASE_PLATFORM = 24
-AT_RANDOM   = 25
-AT_HWCAP2   = 26
-AT_EXECFN   = 31
+class AUX(IntEnum):
+    AT_NULL     = 0
+    AT_IGNORE   = 1
+    AT_EXECFD   = 2
+    AT_PHDR     = 3
+    AT_PHENT    = 4
+    AT_PHNUM    = 5
+    AT_PAGESZ   = 6
+    AT_BASE     = 7
+    AT_FLAGS    = 8
+    AT_ENTRY    = 9
+    AT_NOTELF   = 10
+    AT_UID      = 11
+    AT_EUID     = 12
+    AT_GID      = 13
+    AT_EGID     = 14
+    AT_PLATFORM = 15
+    AT_HWCAP    = 16
+    AT_CLKTCK   = 17
+    AT_SECURE   = 23
+    AT_BASE_PLATFORM = 24
+    AT_RANDOM   = 25
+    AT_HWCAP2   = 26
+    AT_EXECFN   = 31
 
 # start area memory for API hooking
 # we will reserve 0x1000 bytes for this (which contains multiple slots of 4/8 bytes, each for one api)
@@ -324,43 +326,41 @@ class QlLoaderELF(QlLoader):
         new_stack = cpustraddr  = __push_str(new_stack, 'i686')
 
         # store aux vector data for gdb use
-        self.elf_phdr = load_address + elffile['e_phoff']
-        self.elf_phent = elffile['e_phentsize']
-        self.elf_phnum = elffile['e_phnum']
-        self.elf_pagesz = pagesize
-        self.elf_guid = self.ql.os.uid
-        self.elf_flags = 0
-        self.elf_entry = load_address + elffile['e_entry']
-        self.randstraddr = randstraddr
-        self.cpustraddr = cpustraddr
+        elf_phdr = load_address + elffile['e_phoff']
+        elf_phent = elffile['e_phentsize']
+        elf_phnum = elffile['e_phnum']
+        elf_entry = load_address + elffile['e_entry']
 
         if self.ql.archbit == 64:
-            self.elf_hwcap = 0x078bfbfd
+            elf_hwcap = 0x078bfbfd
         elif self.ql.archbit == 32:
-            self.elf_hwcap = 0x1fb8d7
+            elf_hwcap = 0x1fb8d7
 
             if self.ql.archendian == QL_ENDIAN.EB:
-                self.elf_hwcap = 0xd7b81f
+                # FIXME: considering this is a 32 bits value, it is not a big-endian version of the
+                # value above like it is meant to be, since the one above has an implied leading zero
+                # byte (i.e. 0x001fb8d7) which the EB value didn't take into account
+                elf_hwcap = 0xd7b81f
 
         # setup aux vector
         aux_entries = (
-            (AT_PHDR, self.elf_phdr + mem_start),
-            (AT_PHENT, self.elf_phent),
-            (AT_PHNUM, self.elf_phnum),
-            (AT_PAGESZ, self.elf_pagesz),
-            (AT_BASE, interp_address),
-            (AT_FLAGS, self.elf_flags),
-            (AT_ENTRY, self.elf_entry),
-            (AT_UID, self.elf_guid),
-            (AT_EUID, self.elf_guid),
-            (AT_GID, self.elf_guid),
-            (AT_EGID, self.elf_guid),
-            (AT_HWCAP, self.elf_hwcap),
-            (AT_CLKTCK, 100),
-            (AT_RANDOM, self.randstraddr),
-            (AT_PLATFORM, self.cpustraddr),
-            (AT_SECURE, 0),
-            (AT_NULL, 0)
+            (AUX.AT_PHDR, elf_phdr + mem_start),
+            (AUX.AT_PHENT, elf_phent),
+            (AUX.AT_PHNUM, elf_phnum),
+            (AUX.AT_PAGESZ, pagesize),
+            (AUX.AT_BASE, interp_address),
+            (AUX.AT_FLAGS, 0),
+            (AUX.AT_ENTRY, elf_entry),
+            (AUX.AT_UID, self.ql.os.uid),
+            (AUX.AT_EUID, self.ql.os.uid),
+            (AUX.AT_GID, self.ql.os.gid),
+            (AUX.AT_EGID, self.ql.os.gid),
+            (AUX.AT_HWCAP, elf_hwcap),
+            (AUX.AT_CLKTCK, 100),
+            (AUX.AT_RANDOM, randstraddr),
+            (AUX.AT_PLATFORM, cpustraddr),
+            (AUX.AT_SECURE, 0),
+            (AUX.AT_NULL, 0)
         )
 
         # add all aux entries
@@ -370,17 +370,24 @@ class QlLoaderELF(QlLoader):
         new_stack = QlLoaderELF.align(new_stack - len(elf_table), 0x10)
         self.ql.mem.write(new_stack, bytes(elf_table))
 
-        self.ql.os.entry_point = self.entry_point = entry_point
-        self.ql.os.elf_mem_start = mem_start
-        self.ql.os.elf_entry = self.elf_entry
+        # if enabled, gdb would need to retrieve aux vector data.
+        # note that gdb needs the AT_PHDR entry to hold the original elf_phdr value
+        self.aux_vec = dict(aux_entries)
+        self.aux_vec[AUX.AT_PHDR] = elf_phdr
+
+        self.elf_entry = elf_entry
         self.stack_address = new_stack
         self.load_address = load_address
         self.images.append(Image(load_address, load_address + mem_end, self.path))
-        self.ql.os.function_hook = FunctionHook(self.ql, self.elf_phdr + mem_start, self.elf_phnum, self.elf_phent, load_address, load_address + mem_end)
         self.init_sp = self.ql.reg.arch_sp
 
+        self.ql.os.entry_point = self.entry_point = entry_point
+        self.ql.os.elf_mem_start = mem_start
+        self.ql.os.elf_entry = self.elf_entry
+        self.ql.os.function_hook = FunctionHook(self.ql, elf_phdr + mem_start, elf_phnum, elf_phent, load_address, load_address + mem_end)
+
         # If there is a loader, we ignore exit
-        self.skip_exit_check = self.elf_entry != self.entry_point
+        self.skip_exit_check = (self.elf_entry != self.entry_point)
 
         # map vsyscall section for some specific needs
         if self.ql.archtype == QL_ARCH.X8664 and self.ql.ostype == QL_OS.LINUX:
