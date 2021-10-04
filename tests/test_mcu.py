@@ -70,7 +70,7 @@ class MCUTest(unittest.TestCase):
         del ql
 
     def test_mcu_freertos_stm32f411(self):
-        ql = Qiling(["../examples/rootfs/mcu/stm32f411/os-demo.hex"],                    
+        ql = Qiling(["../examples/rootfs/mcu/stm32f411/os-demo.bin", 0x8000000],                    
             archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DEBUG)
 
         ql.hw.create('usart2')
@@ -110,7 +110,7 @@ class MCUTest(unittest.TestCase):
         del ql
 
     def test_mcu_i2c_stm32f411(self):
-        ql = Qiling(["../examples/rootfs/mcu/stm32f411/i2c-lcd.hex"],
+        ql = Qiling(["../examples/rootfs/mcu/stm32f411/i2c-lcd.bin", 0x8000000],
             archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DEBUG)
 
         ql.hw.create('i2c1')
@@ -125,10 +125,30 @@ class MCUTest(unittest.TestCase):
 
         ql.hw.gpioa.hook_set(5, indicator)
 
-        ql.hw.i2c1.connect(0x3f << 1)
+        class LCD:
+            address = 0x3f << 1
+
+            def send(self, data):
+                pass
+
+        ql.hw.i2c1.connect(LCD())
         ql.run(count=550000)
 
         self.assertTrue(flag)
+
+        del ql
+
+    def test_mcu_spi_stm32f411(self):
+        ql = Qiling(["../examples/rootfs/mcu/stm32f411/spi-test.hex"],
+            archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DEBUG)
+
+        ql.hw.create('spi1')
+        ql.hw.create('rcc')
+        ql.hw.create('usart2')
+        ql.hw.create('gpioa')
+
+        ql.run(count=30000)
+        self.assertTrue(ql.hw.usart2.recv() == b'----------------SPI TEST----------------\najcmfoiblenhakdmgpjclfoibkengajd\nmfpicleohbkdngajcmfoiblenhakdmgp\njclfoibkengajdmfpicleohbkdngajcm\nfoiblenhakdmgpjclfoibkengajdmfpi\ncleohbkdngajcmfoiblenhakdmgpjclf\noibkenhajdmfpicleohbkdngajcmfpib\nlenhakdmgpjclfoibkenhajdmfpicleo\nhbkdngajcmfpiblenhakdmgpjclfoibk\n----------------TEST END----------------\n')
 
         del ql
 

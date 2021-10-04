@@ -29,6 +29,8 @@ class QlHwManager:
             setattr(self, label, entity)
             self.entity[label] = entity
             self.region[label] = [(lbound + base, rbound + base) for (lbound, rbound) in entity.region]
+
+            return entity
         except QlErrorModuleFunctionNotFound:
             self.ql.log.warning(f'The {cls}({label}) has not been implemented')
 
