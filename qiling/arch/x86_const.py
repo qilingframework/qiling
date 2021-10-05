@@ -150,17 +150,7 @@ reg_map_cr = {
     "cr2": UC_X86_REG_CR2, 
     "cr3": UC_X86_REG_CR3, 
     "cr4": UC_X86_REG_CR4,
-    "cr5": UC_X86_REG_CR5, 
-    "cr6": UC_X86_REG_CR6, 
-    "cr7": UC_X86_REG_CR7,
-    "cr8": UC_X86_REG_CR8,
-    "cr9": UC_X86_REG_CR9,
-    "cr10": UC_X86_REG_CR10,
-    "cr11": UC_X86_REG_CR11,
-    "cr12": UC_X86_REG_CR12,
-    "cr13": UC_X86_REG_CR13,
-    "cr14": UC_X86_REG_CR14,
-    "cr15": UC_X86_REG_CR15,
+    "cr8": UC_X86_REG_CR8
 }
 
 reg_map_dr = {
@@ -172,14 +162,6 @@ reg_map_dr = {
     "dr5": UC_X86_REG_DR5, 
     "dr6": UC_X86_REG_DR6, 
     "dr7": UC_X86_REG_DR7,
-    "dr8": UC_X86_REG_DR8,
-    "dr9": UC_X86_REG_DR9,
-    "dr10": UC_X86_REG_DR10,
-    "dr11": UC_X86_REG_DR11,
-    "dr12": UC_X86_REG_DR12,
-    "dr13": UC_X86_REG_DR13,
-    "dr14": UC_X86_REG_DR14,
-    "dr15": UC_X86_REG_DR15,
 }
 
 reg_map_st = {
