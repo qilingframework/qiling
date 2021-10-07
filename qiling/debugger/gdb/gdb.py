@@ -23,6 +23,7 @@ from qiling.arch.x86_const import reg_map_st as x86_reg_map_st
 from qiling.arch.arm_const import reg_map as arm_reg_map
 from qiling.arch.arm64_const import reg_map as arm64_reg_map
 from qiling.arch.mips_const import reg_map as mips_reg_map
+from qiling.loader.elf import AUX
 
 GDB_SIGNAL_INT  = 2
 GDB_SIGNAL_SEGV = 11
@@ -561,20 +562,20 @@ class QlGdb(QlDebugger, object):
                             ID_AT_NULL      = "00000000"
                             AT_NULL         = "00000000"
 
-                        AT_HWCAP    = self.addr_to_str(self.ql.loader.elf_hwcap)  # mock cpuid 0x1f8bfbff
-                        AT_PAGESZ   = self.addr_to_str(self.ql.loader.elf_pagesz)  # System page size, fixed in qiling
-                        AT_PHDR     = self.addr_to_str(self.ql.loader.elf_phdr)  # Program headers for program
-                        AT_PHENT    = self.addr_to_str(self.ql.loader.elf_phent)  # Size of program header entry
-                        AT_PHNUM    = self.addr_to_str(self.ql.loader.elf_phnum)  # Number of program headers
-                        AT_BASE     = self.addr_to_str(self.ql.loader.interp_address)  # Base address of interpreter
-                        AT_FLAGS    = self.addr_to_str(self.ql.loader.elf_flags)
-                        AT_ENTRY    = self.addr_to_str(self.ql.loader.elf_entry)  # Entry point of program
-                        AT_UID      = self.addr_to_str(self.ql.loader.elf_guid)  # UID from ql.profile
-                        AT_EUID     = self.addr_to_str(self.ql.loader.elf_guid)  # UID from ql.profile
-                        AT_GID      = self.addr_to_str(self.ql.loader.elf_guid)  # UID from ql.profile
-                        AT_EGID     = self.addr_to_str(self.ql.loader.elf_guid)  # UID from ql.profile
-                        AT_RANDOM   = self.addr_to_str(self.ql.loader.randstraddr)  # Address of 16 random bytes
-                        AT_PLATFORM = self.addr_to_str(self.ql.loader.cpustraddr)  # String identifying platform
+                        AT_HWCAP    = self.addr_to_str(self.ql.loader.aux_vec[AUX.AT_HWCAP])    # mock cpuid 0x1f8bfbff
+                        AT_PAGESZ   = self.addr_to_str(self.ql.loader.aux_vec[AUX.AT_PAGESZ])   # System page size, fixed in qiling
+                        AT_PHDR     = self.addr_to_str(self.ql.loader.aux_vec[AUX.AT_PHDR])     # Program headers for program
+                        AT_PHENT    = self.addr_to_str(self.ql.loader.aux_vec[AUX.AT_PHENT])    # Size of program header entry
+                        AT_PHNUM    = self.addr_to_str(self.ql.loader.aux_vec[AUX.AT_PHNUM])    # Number of program headers
+                        AT_BASE     = self.addr_to_str(self.ql.loader.aux_vec[AUX.AT_BASE])     # Base address of interpreter
+                        AT_FLAGS    = self.addr_to_str(self.ql.loader.aux_vec[AUX.AT_FLAGS])
+                        AT_ENTRY    = self.addr_to_str(self.ql.loader.aux_vec[AUX.AT_ENTRY])    # Entry point of program
+                        AT_UID      = self.addr_to_str(self.ql.loader.aux_vec[AUX.AT_UID])      # UID from ql.profile
+                        AT_EUID     = self.addr_to_str(self.ql.loader.aux_vec[AUX.AT_EUID])     # UID from ql.profile
+                        AT_GID      = self.addr_to_str(self.ql.loader.aux_vec[AUX.AT_GID])      # UID from ql.profile
+                        AT_EGID     = self.addr_to_str(self.ql.loader.aux_vec[AUX.AT_EGID])     # UID from ql.profile
+                        AT_RANDOM   = self.addr_to_str(self.ql.loader.aux_vec[AUX.AT_RANDOM])   # Address of 16 random bytes
+                        AT_PLATFORM = self.addr_to_str(self.ql.loader.aux_vec[AUX.AT_PLATFORM]) # String identifying platform
 
                         auxvdata_c = (
                                         ANNEX + AT_SYSINFO_EHDR +
