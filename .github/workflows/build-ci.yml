@@ -88,10 +88,6 @@ jobs:
         pwd
         pip3 install -e .[evm]
 
-        if [ ${{ matrix.python-version }} == '3.9' ]; then
-          rm -rf tests/test_evm.py
-        fi
-        
         if [ ${{ matrix.os }} == 'ubuntu-20.04' ]; then
           docker run -it --rm -v ${GITHUB_WORKSPACE}:/qiling qilingframework/qiling:dev bash -c "rm -rf tests/test_evm.py && cd tests && ./test_onlinux.sh"
         else
