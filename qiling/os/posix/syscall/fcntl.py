@@ -12,6 +12,7 @@ from qiling.os.posix.const import *
 from qiling.os.posix.const_mapping import ql_open_flag_mapping, open_flags_mapping
 from qiling.os.posix.filestruct import ql_socket
 
+
 def ql_syscall_open(ql: Qiling, filename: int, flags: int, mode: int):
     path = ql.os.utils.read_cstring(filename)
     real_path = ql.os.path.transform_to_real_path(path)
@@ -31,7 +32,7 @@ def ql_syscall_open(ql: Qiling, filename: int, flags: int, mode: int):
         regreturn = -EMFILE
     else:
         try:
-            if ql.archtype== QL_ARCH.ARM and ql.ostype!= QL_OS.QNX:
+            if ql.archtype == QL_ARCH.ARM and ql.ostype != QL_OS.QNX:
                 mode = 0
 
             flags = ql_open_flag_mapping(ql, flags)
@@ -70,7 +71,7 @@ def ql_syscall_creat(ql: Qiling, filename: int, mode: int):
         regreturn = -ENOMEM 
     else:
         try:
-            if ql.archtype== QL_ARCH.ARM:
+            if ql.archtype == QL_ARCH.ARM:
                 mode = 0
 
             flags = ql_open_flag_mapping(ql, flags)
@@ -109,7 +110,7 @@ def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *ar
         regreturn = -EMFILE
     else:
         try:
-            if ql.archtype== QL_ARCH.ARM:
+            if ql.archtype == QL_ARCH.ARM:
                 mode = 0
 
             openat_flags = ql_open_flag_mapping(ql, openat_flags)
@@ -118,12 +119,12 @@ def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *ar
             except:
                 dir_fd = None
 
-            ql.os.fd[idx] = ql.os.fs_mapper.open_ql_file(file_path, flags, mode, dir_fd)
+            ql.os.fd[idx] = ql.os.fs_mapper.open_ql_file(openat_path, openat_flags, mode, dir_fd)
             regreturn = idx
         except QlSyscallError as e:
             regreturn = -e.errno
 
-    ql.log.debug(f'openat(fd = {fd:d}, path = {file_path}, flags = {open_flags_mapping(flags, ql.archtype)}, mode = {mode:#o}) = {regreturn:d}')
+    ql.log.debug(f'openat(fd = {openat_fd:d}, path = {openat_path}, flags = {open_flags_mapping(openat_flags, ql.archtype)}, mode = {mode:#o}) = {regreturn:d}')
 
     return regreturn
 
