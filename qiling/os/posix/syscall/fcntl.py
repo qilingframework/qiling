@@ -119,12 +119,12 @@ def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *ar
             except:
                 dir_fd = None
 
-            ql.os.fd[idx] = ql.os.fs_mapper.open_ql_file(openat_path, openat_flags, mode, dir_fd)
+            ql.os.fd[idx] = ql.os.fs_mapper.open_ql_file(openat_path, openat_flags, openat_mode, dir_fd)
             regreturn = idx
         except QlSyscallError as e:
             regreturn = -e.errno
 
-    ql.log.debug(f'openat(fd = {openat_fd:d}, path = {openat_path}, flags = {open_flags_mapping(openat_flags, ql.archtype)}, mode = {mode:#o}) = {regreturn:d}')
+    ql.log.debug(f'openat(fd = {openat_fd:d}, path = {openat_path}, flags = {open_flags_mapping(openat_flags, ql.archtype)}, mode = {openat_mode:#o}) = {regreturn:d}')
 
     return regreturn
 
