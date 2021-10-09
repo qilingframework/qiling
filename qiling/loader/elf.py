@@ -98,12 +98,20 @@ class QlLoaderELF(QlLoader):
             self.load_driver(elffile, stack_address + stack_size)
             self.ql.hook_code(hook_kernel_api)
 
-        # is it an executable or shared object?
-        elif elftype == 'ET_EXEC' or elftype == 'ET_DYN':
-            self.load_with_ld(elffile, stack_address + stack_size, argv=self.argv, env=self.env)
+        # is it an executable?
+        elif elftype == 'ET_EXEC':
+            load_address = 0
+
+            self.load_with_ld(elffile, stack_address + stack_size, load_address, self.argv, self.env)
+
+        # is it a shared object?
+        elif elftype == 'ET_DYN':
+            load_address = int(self.profile.get('load_address'), 0)
+
+            self.load_with_ld(elffile, stack_address + stack_size, load_address, self.argv, self.env)
 
         else:
-            raise QlErrorELFFormat(f'unexpected elf type value (e_type = {elffile["e_type"]})')
+            raise QlErrorELFFormat(f'unexpected elf type value (e_type = {elftype})')
 
         self.is_driver = (elftype == 'ET_REL')
 
@@ -165,14 +173,7 @@ class QlLoaderELF(QlLoader):
 
         return (value + alignment - 1) & ~(alignment - 1)
 
-    def load_with_ld(self, elffile: ELFFile, stack_addr: int, load_address: int = None, argv: Sequence[str] = [], env: Mapping[str, str] = {}):
-        if load_address is None:
-            load_address = int(self.profile.get('load_address'), 0)
-
-        # correct the load address if needed
-        if elffile['e_type'] == 'ET_EXEC':
-            load_address = 0
-
+    def load_with_ld(self, elffile: ELFFile, stack_addr: int, load_address: int, argv: Sequence[str] = [], env: Mapping[str, str] = {}):
         pagesize = 0x1000
 
         # get list of loadable segments; these segments will be loaded to memory
