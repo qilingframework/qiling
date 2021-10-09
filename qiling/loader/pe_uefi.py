@@ -364,9 +364,6 @@ class QlLoaderPE_UEFI(QlLoader):
 
         self.execute_next_module()
 
-    def restore_runtime_services(self):
-        pass
-
     def set_exit_hook(self, address: int):
         """Set up an end-of-execution hook to regain control when module is done
         executing; i.e. when the module entry point function returns.
@@ -375,8 +372,6 @@ class QlLoaderPE_UEFI(QlLoader):
         def __module_exit_trap(ql: Qiling):
             if ql.os.notify_after_module_execution(len(self.modules)):
                 return
-
-            self.restore_runtime_services()
 
             if utils.execute_protocol_notifications(ql):
                 return
