@@ -209,6 +209,16 @@ class QlLoaderELF(QlLoader):
 
                 # overlapping segments? something probably went wrong
                 elif lbound < prev_ubound:
+                    # EDL ELF files use 0x400 bytes pages, which might make some segments look as if they
+                    # start at the same segment as their predecessor. though that is fixable, unicorn
+                    # supports only 0x1000 bytes pages; this becomes problematic when using mem.protect
+                    #
+                    # this workaround unifies such "overlapping" segments, which may apply more permissive
+                    # protection flags to that memory region.
+                    if self.ql.archtype == QL_ARCH.ARM64:
+                        load_regions[-1] = (prev_lbound, ubound, prev_perms | perms)
+                        continue
+
                     raise RuntimeError
 
             else:
