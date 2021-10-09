@@ -11,9 +11,8 @@ from qiling.const import QL_ARCH
 from qiling.exception import QlErrorArch, QlMemoryMappedError
 from qiling.loader.loader import QlLoader, Image
 
-from qiling.os.uefi import st, smst
+from qiling.os.uefi import st, smst, utils
 from qiling.os.uefi.context import DxeContext, SmmContext, UefiContext
-from qiling.os.uefi.shutdown import hook_EndOfExecution
 from qiling.os.uefi.protocols import EfiLoadedImageProtocol
 from qiling.os.uefi.protocols import EfiSmmAccess2Protocol
 from qiling.os.uefi.protocols import EfiSmmBase2Protocol
@@ -360,12 +359,36 @@ class QlLoaderPE_UEFI(QlLoader):
         except QlMemoryMappedError:
             ql.log.critical("Could not map dependency")
 
-        # set up an end-of-execution hook to regain control when module is done
-        # executing (i.e. when the entry point function returns).
-        ql.hook_address(hook_EndOfExecution, self.dxe_context.end_of_execution_ptr)
-        ql.hook_address(hook_EndOfExecution, self.smm_context.end_of_execution_ptr)
+        self.set_exit_hook(self.dxe_context.end_of_execution_ptr)
+        self.set_exit_hook(self.smm_context.end_of_execution_ptr)
 
         self.execute_next_module()
 
     def restore_runtime_services(self):
-        pass # not sure why do we need to restore RT
+        pass
+
+    def set_exit_hook(self, address: int):
+        """Set up an end-of-execution hook to regain control when module is done
+        executing; i.e. when the module entry point function returns.
+        """
+
+        def __module_exit_trap(ql: Qiling):
+            if ql.os.notify_after_module_execution(len(self.modules)):
+                return
+
+            self.restore_runtime_services()
+
+            if utils.execute_protocol_notifications(ql):
+                return
+
+            if self.modules:
+                self.execute_next_module()
+            else:
+                if self.unload_modules(self.smm_context) or self.unload_modules(self.dxe_context):
+                    return
+
+                ql.log.info(f'No more modules to run')
+                ql.emu_stop()
+                ql.os.PE_RUN = False
+
+        self.ql.hook_address(__module_exit_trap, address)
