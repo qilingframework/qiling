@@ -156,6 +156,23 @@ class QlOsUefi(QlOs):
 		self.ql.log.error(f'')
 
 
+	def emit_stack(self, nitems: int = 4):
+		self.ql.log.error('Stack:')
+
+		for i in range(-nitems, nitems + 1):
+			offset = i * self.ql.pointersize
+
+			try:
+				item = self.ql.arch.stack_read(offset)
+			except UcError:
+				data = '(unavailable)'
+			else:
+				data = f'{item:0{self.ql.pointersize * 2}x}'
+
+			self.ql.log.error(f'{self.ql.reg.arch_sp + offset:08x} : {data}{" <=" if i == 0 else ""}')
+
+		self.ql.log.error('')
+
 	def emu_error(self):
 		pc = self.ql.reg.arch_pc
 
@@ -173,6 +190,8 @@ class QlOsUefi(QlOs):
 		finally:
 			self.ql.log.error(f'PC = {pc:#010x}{pc_info}')
 			self.ql.log.error(f'')
+
+		self.emit_stack()
 
 		self.ql.log.error(f'Memory map:')
 		self.ql.mem.show_mapinfo()
