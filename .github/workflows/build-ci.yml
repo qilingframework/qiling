@@ -93,12 +93,15 @@ jobs:
         cd ../../../../
         pip3 install -e .[evm]
 
-        if [ ${{ matrix.os }} == 'ubuntu-20.04' ]; then
-          docker run -it --rm -v ${GITHUB_WORKSPACE}:/qiling qilingframework/qiling:dev bash -c "rm -rf tests/test_evm.py && cd tests && ./test_onlinux.sh"
-        else
-          pip3 install setuptools wheel
-          cd tests && ./test_onlinux.sh
-        fi
+        pip3 install setuptools wheel
+        cd tests && ./test_onlinux.sh
+
+        # if [ ${{ matrix.os }} == 'ubuntu-20.04' ]; then
+        #   docker run -it --rm -v ${GITHUB_WORKSPACE}:/qiling qilingframework/qiling:dev bash -c "cd tests && ./test_onlinux.sh"
+        # else
+        #   pip3 install setuptools wheel
+        #   cd tests && ./test_onlinux.sh
+        # fi
 
 
     # - name: mac run tests
