@@ -11,21 +11,15 @@ jobs:
       matrix:
         #os: [windows-2019, macos-10.15, ubuntu-18.04, ubuntu-20.04]
         os: [windows-2019, ubuntu-18.04, ubuntu-20.04]
-        python-version: [3.7, 3.8, 3.9]
+        python-version: [3.8, 3.9]
         exclude:
-          - os: ubuntu-20.04
-            python-version: 3.7       
           - os: ubuntu-18.04
-            python-version: 3.7
-          - os: ubuntu-18.04
-            python-version: 3.9            
-          - os: windows-2019
-            python-version: 3.7             
-          # - os: macos-10.15
-          #   python-version: 3.8
-        include:
-          - os: ubuntu-20.04
             python-version: 3.8
+          - os: ubuntu-18.04
+            python-version: 3.9                     
+        include:
+          - os: ubuntu-18.04
+            python-version: 3.9
             container: Docker
 
     steps:
@@ -93,15 +87,12 @@ jobs:
         cd ../../../../
         pip3 install -e .[evm]
 
-        pip3 install setuptools wheel
-        cd tests && ./test_onlinux.sh
-
-        # if [ ${{ matrix.os }} == 'ubuntu-20.04' ]; then
-        #   docker run -it --rm -v ${GITHUB_WORKSPACE}:/qiling qilingframework/qiling:dev bash -c "cd tests && ./test_onlinux.sh"
-        # else
-        #   pip3 install setuptools wheel
-        #   cd tests && ./test_onlinux.sh
-        # fi
+        if [ ${{ matrix.os }} == 'ubuntu-18.04' ]; then
+          ddocker run -it --rm -v ${GITHUB_WORKSPACE}:/qiling qilingframework/qiling:dev bash -c "cd tests && ./test_onlinux.sh"
+        else
+          pip3 install setuptools wheel
+          cd tests && ./test_onlinux.sh
+        fi
 
 
     # - name: mac run tests
