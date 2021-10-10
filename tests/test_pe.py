@@ -128,23 +128,15 @@ class PETest(unittest.TestCase):
         del ql
 
         # RUN AS USER
-        ql = Qiling(["../examples/rootfs/x86_windows/bin/GandCrab502.bin"], "../examples/rootfs/x86_windows",
-                    verbose=QL_VERBOSE.DEBUG, profile="profiles/windows_gandcrab_user.ql")
+        ql = Qiling(["../examples/rootfs/x86_windows/bin/GandCrab502.bin"], "../examples/rootfs/x86_windows", profile="profiles/windows_gandcrab_user.ql")
 
         ql.run()
         num_syscalls_user = ql.os.utils.syscalls_counter
 
-        del ql
-
-        # ql = Qiling(["../examples/rootfs/x86_windows/bin/GandCrab502.bin"], "../examples/rootfs/x86_windows",
-        #             verbose=QL_VERBOSE.DEBUG, profile="profiles/windows_gandcrab_russian_keyboard.ql")
-        # num_syscalls_russ = ql.os.utils.syscalls_counter
-
-        # ql.run()
-        # del ql
-        
         # let's check that gandcrab behave takes a different path if a different environment is found
         assert num_syscalls_admin != num_syscalls_user != num_syscalls_russ
+
+        del ql
 
     def test_pe_win_x86_multithread(self):
         def ThreadId_onEnter(ql, address, params):
