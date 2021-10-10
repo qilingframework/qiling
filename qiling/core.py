@@ -208,9 +208,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         if self.archtype not in QL_ARCH_NONEOS:
             self._mem = component_setup("os", "memory", self)
             self._reg = component_setup("arch", "register", self)
-        
-        if self.archtype in QL_ARCH_HARDWARE:   
-            self._hw  = component_setup("hw", "hw", self)
 
         self._arch = arch_setup(self.archtype, self)
         
@@ -262,14 +259,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             Example: ql.reg.eax = 1
         """
         return self._reg
-
-    @property
-    def hw(self) -> "QlHwManager":
-        """ Qiling hardware manager.
-
-            Example: 
-        """
-        return self._hw
 
 
     @property
