@@ -1,7 +1,8 @@
 This file details the changelog of Qiling Framework.
 
 ------------------------------------
-[Version 1.3]: Sept 0th, 2021
+[Version 1.3]: Sept 25th, 2021
+
 - Added QNX
 - Aded Dynamically executed QNX
 - Added more Posix syscall
