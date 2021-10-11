@@ -26,7 +26,8 @@ class QLWinSingleTest:
     def _run_test(self, results):
         try:
             results['result'] = self._test()
-        except Exception:
+        except Exception as e:
+            results['exception'] = e
             results['result'] = False
 
     def run(self):
@@ -35,7 +36,10 @@ class QLWinSingleTest:
             p = mb.Process(target=QLWinSingleTest._run_test, args=(self, results))
             p.start()
             p.join()
-            return results['result']
+            if "exception" not in results:
+                return results['result']
+            else:
+                raise results['exceptions']
 
 
 class TestOut:
@@ -188,9 +192,7 @@ class PETest(unittest.TestCase):
             ql.set_api("GetCurrentThreadId", ThreadId_onEnter, QL_INTERCEPT.ENTER)
             ql.run()
             
-            if 255 != thread_id:
-                return False
-            if 1 != thread_id:
+            if not ( 1<= thread_id < 255):
                 return False
             
             del ql
@@ -392,11 +394,11 @@ class PETest(unittest.TestCase):
                 ql.set_api("puts", my_onexit, QL_INTERCEPT.EXIT)
                 ql.run()
 
-                if 12 != self.set_api_onenter:
+                if 12 != set_api_onenter:
                     return False
-                if 17 != self.set_api:
+                if 17 != set_api:
                     return False
-                if 17 != self.set_api_onexit:
+                if 17 != set_api_onexit:
                     return False
 
                 del ql
