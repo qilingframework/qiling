@@ -16,7 +16,7 @@ from qiling.os.const import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
 from qiling.os.mapper import QlFsMappedObject
-import multiprocessing as mb
+import multiprocess as mb
 
 class QLWinSingleTest:
 
