@@ -204,6 +204,7 @@ class PETest(unittest.TestCase):
             ql = Qiling(["../examples/rootfs/x8664_windows/bin//x8664_clipboard_test.exe"], "../examples/rootfs/x8664_windows")
             ql.run()
             del ql
+            return True
         
         self.assertTrue(QLWinSingleTest(_t).run())
 
@@ -213,6 +214,7 @@ class PETest(unittest.TestCase):
             ql = Qiling(["../examples/rootfs/x8664_windows/bin/x8664_tls.exe"], "../examples/rootfs/x8664_windows")
             ql.run()
             del ql
+            return True
         
         self.assertTrue(QLWinSingleTest(_t).run())
 
