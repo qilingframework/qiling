@@ -860,3 +860,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
         if self._internal_exception != None:
             raise self._internal_exception
+    
+    def __del__(self):
+        del self._uc
