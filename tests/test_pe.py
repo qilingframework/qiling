@@ -404,7 +404,7 @@ class PETest(unittest.TestCase):
                 del ql
                 return True
 
-            my_sandbox(["../examples/rootfs/x8664_windows/bin/x8664_hello.exe"], "../examples/rootfs/x8664_windows")
+            return my_sandbox(["../examples/rootfs/x8664_windows/bin/x8664_hello.exe"], "../examples/rootfs/x8664_windows")
         
         self.assertTrue(QLWinSingleTest(_t).run())
 
