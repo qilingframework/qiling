@@ -18,7 +18,7 @@ if TYPE_CHECKING:
     from .os.memory import QlMemoryManager
     from .loader.loader import QlLoader
 
-from .const import QL_ARCH_ENDIAN, QL_ENDIAN, QL_OS, QL_VERBOSE, QL_ARCH_NONEOS, QL_ARCH_HARDWARE
+from .const import QL_ARCH_ENDIAN, QL_ENDIAN, QL_OS, QL_VERBOSE, QL_ARCH_NONEOS
 from .exception import QlErrorFileNotFound, QlErrorArch, QlErrorOsType, QlErrorOutput
 from .utils import *
 from .core_struct import QlCoreStructs
@@ -220,25 +220,23 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             self.arch.utils.setup_output()
 
         if (self.archtype not in QL_ARCH_NONEOS):
-            if (self.archtype not in QL_ARCH_HARDWARE):
-                self._os = os_setup(self.archtype, self.ostype, self)
+            self._os = os_setup(self.archtype, self.ostype, self)
 
-                if stdin is not None:
-                    self._os.stdin = stdin
+            if stdin is not None:
+                self._os.stdin = stdin
 
-                if stdout is not None:
-                    self._os.stdout = stdout
+            if stdout is not None:
+                self._os.stdout = stdout
 
-                if stderr is not None:
-                    self._os.stderr = stderr
+            if stderr is not None:
+                self._os.stderr = stderr
 
         # Run the loader
         self.loader.run()
 
         if (self.archtype not in QL_ARCH_NONEOS):
-            if (self.archtype not in QL_ARCH_HARDWARE):
-                # Add extra guard options when configured to do so
-                self._init_stop_guard()    
+            # Add extra guard options when configured to do so
+            self._init_stop_guard()    
 
     #####################
     # Qiling Components #
@@ -700,9 +698,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
                 return self.arch.run(self._code)
             else:
                 return self.arch.run(code) 
-
-        if self.archtype in QL_ARCH_HARDWARE:
-            return self.arch.run(count=count)
 
         self.write_exit_trap()
 
