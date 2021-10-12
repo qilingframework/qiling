@@ -18,6 +18,12 @@ from qiling.os.windows.utils import *
 from qiling.os.mapper import QlFsMappedObject
 import multiprocess as mb
 
+# On Windows, the CPython GC is too conservative and may hold too
+# many Unicorn objects (nearly 16GB) until free-ing them which may
+# cause failure during tests.
+#
+# Use subprocess to make sure resources are free-ed when the subprocess
+# is killed.
 class QLWinSingleTest:
 
     def __init__(self, test):
@@ -39,7 +45,7 @@ class QLWinSingleTest:
             if "exception" not in results:
                 return results['result']
             else:
-                raise results['exceptions']
+                raise results['exception']
 
 
 class TestOut:
