@@ -25,7 +25,7 @@ class QlArchUtils:
         self._block_hook = None
 
     def get_offset_and_name(self, addr: int) -> Tuple[int, str]:
-        for begin, end, _, name in self.ql.mem.map_info:
+        for begin, end, _, name, _ in self.ql.mem.map_info:
             if begin <= addr < end:
                 return addr - begin, basename(name)
 
@@ -36,7 +36,7 @@ class QlArchUtils:
         qd = ql.arch.create_disassembler()
 
         offset, name = self.get_offset_and_name(address)
-        log_data = f'{address:0{ql.archbit // 4}x} [{name:20s} + {offset:#08x}]  {tmp.hex(" "):30s}'
+        log_data = f'{address:0{ql.archbit // 4}x} [{name:20s} + {offset:#08x}]  {" ".join(map(lambda x: f"{x:x}", tmp)):30s}'
         log_insn = '\n> '.join(f'{insn.mnemonic:20s} {insn.op_str}' for insn in qd.disasm(tmp, address))
 
         ql.log.info(log_data + log_insn)
