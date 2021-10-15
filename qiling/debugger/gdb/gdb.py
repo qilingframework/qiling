@@ -506,106 +506,43 @@ class QlGdb(QlDebugger, object):
                 elif subcmd.startswith('Xfer:auxv:read::'):
                     if self.ql.code:
                         return
-                    if self.ql.ostype in (QL_OS.LINUX, QL_OS.FREEBSD) :
-                        if self.ql.archbit == 64:
-                            ANNEX               = "00000000000000"
-                            AT_SYSINFO_EHDR     = "0000000000000000" # System-supplied DSO's ELF header
-                            ID_AT_HWCAP         = "1000000000000000"
-                            ID_AT_PAGESZ        = "0600000000000000"
-                            ID_AT_CLKTCK        = "1100000000000000"
-                            AT_CLKTCK           = "6400000000000000" # Frequency of times() 100
-                            ID_AT_PHDR          = "0300000000000000"
-                            ID_AT_PHENT         = "0400000000000000"
-                            ID_AT_PHNUM         = "0500000000000000"
-                            ID_AT_BASE          = "0700000000000000"
-                            ID_AT_FLAGS         = "0800000000000000"
-                            ID_AT_ENTRY         = "0900000000000000"
-                            ID_AT_UID           = "0b00000000000000"
-                            ID_AT_EUID          = "0c00000000000000"
-                            ID_AT_GID           = "0d00000000000000"
-                            ID_AT_EGID          = "0e00000000000000"
-                            ID_AT_SECURE        = "1700000000000000"
-                            AT_SECURE           = "0000000000000000"
-                            ID_AT_RANDOM        = "1900000000000000"
-                            ID_AT_HWCAP2        = "1a00000000000000"
-                            AT_HWCAP2           = "0000000000000000"
-                            ID_AT_EXECFN        = "1f00000000000000"
-                            AT_EXECFN           = "0000000000000000" # File name of executable
-                            ID_AT_PLATFORM      = "0f00000000000000"
-                            ID_AT_NULL          = "0000000000000000"
-                            AT_NULL             = "0000000000000000"
 
-                        elif self.ql.archbit == 32:
-                            ANNEX           = "000000"
-                            AT_SYSINFO_EHDR = "00000000"  # System-supplied DSO's ELF header
-                            ID_AT_HWCAP     = "10000000"
-                            ID_AT_PAGESZ    = "06000000"
-                            ID_AT_CLKTCK    = "11000000"
-                            AT_CLKTCK       = "64000000"  # Frequency of times() 100
-                            ID_AT_PHDR      = "03000000"
-                            ID_AT_PHENT     = "04000000"
-                            ID_AT_PHNUM     = "05000000"
-                            ID_AT_BASE      = "07000000"
-                            ID_AT_FLAGS     = "08000000"
-                            ID_AT_ENTRY     = "09000000"
-                            ID_AT_UID       = "0b000000"
-                            ID_AT_EUID      = "0c000000"
-                            ID_AT_GID       = "0d000000"
-                            ID_AT_EGID      = "0e000000"
-                            ID_AT_SECURE    = "17000000"
-                            AT_SECURE       = "00000000"
-                            ID_AT_RANDOM    = "19000000"
-                            ID_AT_HWCAP2    = "1a000000"
-                            AT_HWCAP2       = "00000000"
-                            ID_AT_EXECFN    = "1f000000"
-                            AT_EXECFN       = "00000000"  # File name of executable
-                            ID_AT_PLATFORM  = "0f000000"
-                            ID_AT_NULL      = "00000000"
-                            AT_NULL         = "00000000"
+                    if self.ql.ostype in (QL_OS.LINUX, QL_OS.FREEBSD):
+                        def __read_auxv() -> Iterator[int]:
+                            auxv_entries = (
+                                AUX.AT_HWCAP,
+                                AUX.AT_PAGESZ,
+                                AUX.AT_CLKTCK,
+                                AUX.AT_PHDR,
+                                AUX.AT_PHENT,
+                                AUX.AT_PHNUM,
+                                AUX.AT_BASE,
+                                AUX.AT_FLAGS,
+                                AUX.AT_ENTRY,
+                                AUX.AT_UID,
+                                AUX.AT_EUID,
+                                AUX.AT_GID,
+                                AUX.AT_EGID,
+                                AUX.AT_SECURE,
+                                AUX.AT_RANDOM,
+                                AUX.AT_HWCAP2,
+                                AUX.AT_EXECFN,
+                                AUX.AT_PLATFORM,
+                                AUX.AT_NULL
+                            )
 
-                        AT_HWCAP    = self.addr_to_str(self.ql.loader.aux_vec[AUX.AT_HWCAP])    # mock cpuid 0x1f8bfbff
-                        AT_PAGESZ   = self.addr_to_str(self.ql.loader.aux_vec[AUX.AT_PAGESZ])   # System page size, fixed in qiling
-                        AT_PHDR     = self.addr_to_str(self.ql.loader.aux_vec[AUX.AT_PHDR])     # Program headers for program
-                        AT_PHENT    = self.addr_to_str(self.ql.loader.aux_vec[AUX.AT_PHENT])    # Size of program header entry
-                        AT_PHNUM    = self.addr_to_str(self.ql.loader.aux_vec[AUX.AT_PHNUM])    # Number of program headers
-                        AT_BASE     = self.addr_to_str(self.ql.loader.aux_vec[AUX.AT_BASE])     # Base address of interpreter
-                        AT_FLAGS    = self.addr_to_str(self.ql.loader.aux_vec[AUX.AT_FLAGS])
-                        AT_ENTRY    = self.addr_to_str(self.ql.loader.aux_vec[AUX.AT_ENTRY])    # Entry point of program
-                        AT_UID      = self.addr_to_str(self.ql.loader.aux_vec[AUX.AT_UID])      # UID from ql.profile
-                        AT_EUID     = self.addr_to_str(self.ql.loader.aux_vec[AUX.AT_EUID])     # UID from ql.profile
-                        AT_GID      = self.addr_to_str(self.ql.loader.aux_vec[AUX.AT_GID])      # UID from ql.profile
-                        AT_EGID     = self.addr_to_str(self.ql.loader.aux_vec[AUX.AT_EGID])     # UID from ql.profile
-                        AT_RANDOM   = self.addr_to_str(self.ql.loader.aux_vec[AUX.AT_RANDOM])   # Address of 16 random bytes
-                        AT_PLATFORM = self.addr_to_str(self.ql.loader.aux_vec[AUX.AT_PLATFORM]) # String identifying platform
+                            for e in auxv_entries:
+                                yield e.value
+                                yield self.ql.loader.aux_vec[e]
 
-                        auxvdata_c = (
-                                        ANNEX + AT_SYSINFO_EHDR +
-                                        ID_AT_HWCAP + AT_HWCAP +
-                                        ID_AT_PAGESZ + AT_PAGESZ +
-                                        ID_AT_CLKTCK + AT_CLKTCK +
-                                        ID_AT_PHDR + AT_PHDR +
-                                        ID_AT_PHENT + AT_PHENT +
-                                        ID_AT_PHNUM + AT_PHNUM +
-                                        ID_AT_BASE + AT_BASE +
-                                        ID_AT_FLAGS + AT_FLAGS +
-                                        ID_AT_ENTRY + AT_ENTRY +
-                                        ID_AT_UID + AT_UID +
-                                        ID_AT_EUID + AT_EUID +
-                                        ID_AT_GID + AT_GID +
-                                        ID_AT_EGID + AT_EGID +
-                                        ID_AT_SECURE + AT_SECURE +
-                                        ID_AT_RANDOM + AT_RANDOM +
-                                        ID_AT_HWCAP2 + AT_HWCAP2 +
-                                        ID_AT_EXECFN + AT_EXECFN +
-                                        ID_AT_PLATFORM + AT_PLATFORM +
-                                        ID_AT_NULL + AT_NULL
-                                    )
+                        annex = self.addr_to_str(0)[:-2]
+                        sysinfo_ehdr = self.addr_to_str(0)
 
-                        auxvdata = self.bin_to_escstr(unhexlify(auxvdata_c))
-                        #self.send(b'l!%s' % auxvdata)
+                        auxvdata_c = unhexlify(''.join([annex, sysinfo_ehdr] + [self.addr_to_str(val) for val in __read_auxv()]))
+                        auxvdata = self.bin_to_escstr(auxvdata_c)
                     else:
                         auxvdata = b""
-                    
+
                     self.send(b'l!%s' % auxvdata)
 
                 elif subcmd.startswith('Xfer:exec-file:read:'):
