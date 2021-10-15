@@ -121,6 +121,15 @@ class QlOsPosix(QlOs):
         self._stderr = stream
         self._fd[2] = stream
 
+    @QlOs.root.getter
+    def root(self) -> bool:
+        return (self.euid == 0) and (self.egid == 0)
+
+    @QlOs.root.setter
+    def root(self, enabled: bool) -> None:
+        self.euid = 0 if enabled else self.uid
+        self.egid = 0 if enabled else self.gid
+
     @property
     def syscall(self):
         return self.get_syscall()
