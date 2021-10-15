@@ -35,21 +35,17 @@ GDB_SIGNAL_BUS  = 10
 
 class QlGdb(QlDebugger, object):
     """docstring for Debugsession"""
-    def __init__(self, ql, ip, port):
+    def __init__(self, ql: Qiling, ip: str = '127.0.01', port: int = 9999):
         super(QlGdb, self).__init__(ql)
+
         self.ql             = ql
         self.last_pkt       = None
-        self.exe_abspath    = (os.path.abspath(self.ql.argv[0]))
-        self.rootfs_abspath = (os.path.abspath(self.ql.rootfs)) 
+        self.exe_abspath    = os.path.abspath(self.ql.argv[0])
+        self.rootfs_abspath = os.path.abspath(self.ql.rootfs)
         self.gdb            = QlGdbUtils()
 
-        if ip == None:
-            ip = '127.0.0.1'
-        
-        if port == None:
-           port = 9999
-        else:
-            port = int(port)
+        if type(port) is str:
+            port = int(port, 0)
 
         self.ip = ip
         self.port = port
