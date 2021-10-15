@@ -6,12 +6,11 @@
 # gdbserver --remote-debug 0.0.0.0:9999 /path/to binary
 # documentation: according to https://sourceware.org/gdb/current/onlinedocs/gdb/Remote-Protocol.html#Remote-Protocol
 
-from unicorn import *
-
-import struct, os, re, socket
+import struct, os, socket
 from binascii import unhexlify
+from typing import Iterator, Literal
 
-from .utils import QlGdbUtils
+from qiling import Qiling
 from qiling.const import *
 from qiling.utils import *
 from qiling.debugger import QlDebugger
@@ -24,6 +23,8 @@ from qiling.arch.arm_const import reg_map as arm_reg_map
 from qiling.arch.arm64_const import reg_map as arm64_reg_map
 from qiling.arch.mips_const import reg_map as mips_reg_map
 from qiling.loader.elf import AUX
+
+from .utils import QlGdbUtils
 
 GDB_SIGNAL_INT  = 2
 GDB_SIGNAL_SEGV = 11
@@ -222,13 +223,13 @@ class QlGdb(QlDebugger, object):
                         s += tmp
                 
                 elif self.ql.archtype == QL_ARCH.ARM:
-                    mode = self.ql.arch.check_thumb()
+                    
 
                     # r0-r12,sp,lr,pc,cpsr ,see https://sourceware.org/git/?p=binutils-gdb.git;a=blob;f=gdb/arch/arm.h;h=fa589fd0582c0add627a068e6f4947a909c45e86;hb=HEAD#l127
                     for reg in self.tables[QL_ARCH.ARM][:16] + [self.tables[QL_ARCH.ARM][25]]:
-                        r = self.ql.reg.read(reg)
-                        if mode == UC_MODE_THUMB and reg == "pc":
-                            r += 1
+                        # if reg is pc, make sure to take thumb mode into account
+                        r = self.ql.arch.get_pc() if reg == "pc" else self.ql.reg.read(reg)
+
                         tmp = self.addr_to_str(r)
                         s += tmp
 
