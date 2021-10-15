@@ -59,12 +59,8 @@ class QlOsPosix(QlOs):
         self.ql = ql
         self.sigaction_act = [0] * 256
 
-        if self.ql.root:
-            self.uid = 0
-            self.gid = 0
-        else:
-            self.uid = self.profile.getint("KERNEL","uid")
-            self.gid = self.profile.getint("KERNEL","gid")
+        self.uid = self.euid = self.profile.getint("KERNEL","uid")
+        self.gid = self.egid = self.profile.getint("KERNEL","gid")
 
         self.pid = self.profile.getint("KERNEL", "pid")
         self.ipv6 = self.profile.getboolean("NETWORK", "ipv6")
