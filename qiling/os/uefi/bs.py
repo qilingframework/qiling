@@ -494,10 +494,10 @@ def hook_CopyMem(ql: Qiling, address: int, params):
 })
 def hook_SetMem(ql: Qiling, address: int, params):
 	buffer = params["Buffer"]
-	value = params["Value"] & 0xff
+	value: int = params["Value"] & 0xff
 	size = params["Size"]
 
-	ql.mem.write(buffer, bytes(value) * size)
+	ql.mem.write(buffer, bytes(chr(value), 'ascii') * size)
 
 @dxeapi(params = {
 	"Type"			: UINT,		# UINT32
