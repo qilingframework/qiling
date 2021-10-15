@@ -83,18 +83,23 @@ class QlGdb(QlDebugger, object):
             QL_ARCH.MIPS    : list({**mips_reg_map}.keys()),
         }
 
-    def addr_to_str(self, addr, short=False, endian="big"):
-        if self.ql.archbit == 64 and short == False:
-            addr = (hex(int.from_bytes(self.ql.pack64(addr), byteorder=endian)))
-            addr = '{:0>16}'.format(addr[2:])
-        elif self.ql.archbit == 32 or short == True:
-            addr = (hex(int.from_bytes(self.ql.pack32(addr), byteorder=endian)))
-            addr = ('{:0>8}'.format(addr[2:]))
-        elif self.ql.archbit == 16 or short == True:
-            addr = (hex(int.from_bytes(self.ql.pack32(addr), byteorder=endian)))
-            addr = ('{:0>8}'.format(addr[2:]))            
-        addr = str(addr)    
-        return addr
+    def addr_to_str(self, addr: int, short: bool = False, endian: Literal['little', 'big'] = 'big') -> str:
+        # a hacky way to divide archbits by 2 if short, and leave it unchanged if not
+        nbits = self.ql.archbit // (int(short) + 1)
+
+        if nbits == 64:
+            s = f'{int.from_bytes(self.ql.pack64(addr), byteorder=endian):016x}'
+
+        elif nbits == 32:
+            s = f'{int.from_bytes(self.ql.pack32(addr), byteorder=endian):08x}'
+
+        elif nbits == 16:
+            s = f'{int.from_bytes(self.ql.pack16(addr), byteorder=endian):04x}'
+
+        else:
+            raise RuntimeError
+
+        return s
 
     def bin_to_escstr(self, rawbin):
         rawbin_escape = ""
