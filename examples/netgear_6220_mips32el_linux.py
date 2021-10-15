@@ -58,7 +58,7 @@ def my_bind(ql: Qiling):
 
 def my_netgear(path, rootfs):
     ql = Qiling(path, rootfs, verbose=QL_VERBOSE.DEBUG, profile="netgear_6220.ql", multithread=False)
-    ql.root = False
+    ql.os.root = False
 
     ql.add_fs_mapper('/proc', '/proc')
     ql.set_syscall(4004, my_syscall_write)
