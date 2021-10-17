@@ -4,6 +4,7 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
 
+import io
 import struct
 from elftools.elf.elffile import ELFFile
 
@@ -65,7 +66,8 @@ class QlLoaderMCU(QlLoader):
         self.filetype = self.guess_filetype()
 
         if self.filetype == 'elf':
-            self.elf = ELFFile(open(self.path, 'rb'))
+            with open(self.path, 'rb') as infile:
+                self.elf = ELFFile(io.BytesIO(infile.read()))
             
         elif self.filetype == 'bin':
             self.map_address = self.argv[1]
@@ -88,12 +90,10 @@ class QlLoaderMCU(QlLoader):
     def reset(self):
         if self.filetype == 'elf':
             for segment in self.elf.iter_segments():
-                if segment['p_type'] != 'PT_LOAD':
-                    continue
-
-                for section in self.elf.iter_sections():
-                    if segment.section_in_segment(section):
-                        self.ql.mem.write(section.header['sh_addr'], section.data())
+                if segment['p_type'] == 'PT_LOAD':
+                    for section in self.elf.iter_sections():
+                        if segment.section_in_segment(section):
+                            self.ql.mem.write(section.header['sh_addr'], section.data())
 
             # TODO: load symbol table
 
@@ -110,25 +110,35 @@ class QlLoaderMCU(QlLoader):
         self.ql.reg.write('pc' , self.entry_point)
 
     def run(self):
-        ## Load memory / mmio / peripheral from profile
+        def readint(raw):
+            if raw.startswith('0o'):
+                return int(raw, 8)
+
+            elif raw.startswith('0x'):
+                return int(raw, 16)            
+                        
+            else:
+                return int(raw, 10)
+
         for section_name in self.ql.profile.sections():
             section = self.ql.profile[section_name]
             if section['type'] == 'memory':
-                size = eval(section['size'])
-                base = eval(section['base'])
+                size = readint(section['size'])
+                base = readint(section['base'])
                 self.ql.mem.map(base, size, info=f'[{section_name}]')
+                
                 if section_name == 'FLASH':
                     self.ql.hw.setup_remap(0, base, size, info=f'[CODE]')
 
             if section['type'] == 'bitband':
-                size = eval(section['size']) * 32
-                base = eval(section['base'])
-                alias = eval(section['alias'])
+                size = readint(section['size']) * 32
+                base = readint(section['base'])
+                alias = readint(section['alias'])
                 self.ql.hw.setup_bitband(base, alias, size, info=f'[{section_name}]')
 
             if section['type'] == 'mmio':
-                size = eval(section['size'])
-                base = eval(section['base'])
+                size = readint(section['size'])
+                base = readint(section['base'])
                 self.ql.hw.setup_mmio(base, size, info=f'[{section_name}]')
 
             if section['type'] == 'core periperal':
