@@ -91,11 +91,11 @@ class STM32F4xxRtc(QlPeripheral):
         self.wkup_intn = wkup_intn
         self.alarm_intn = alarm_intn
 
-    def read(self, offset, size):
+    def read(self, offset: int, size: int) -> int:
         buf = ctypes.create_string_buffer(size)
         ctypes.memmove(buf, ctypes.addressof(self.rtc) + offset, size)
         return int.from_bytes(buf.raw, byteorder='little')
 
-    def write(self, offset, size, value):
+    def write(self, offset: int, size: int, value: int):
         data = (value).to_bytes(size, 'little')
         ctypes.memmove(ctypes.addressof(self.rtc) + offset, data, size)

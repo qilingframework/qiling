@@ -115,12 +115,12 @@ class CortexM4Nvic(QlPeripheral):
             self.ql.arch.handle_interupt(IRQn)
             self.ql.arch.exit_intr()
 
-    def read(self, offset, size):
+    def read(self, offset: int, size: int) -> int:
         buf = ctypes.create_string_buffer(size)
         ctypes.memmove(buf, ctypes.addressof(self.nvic) + offset, size)
         return int.from_bytes(buf.raw, byteorder='little')
 
-    def write(self, offset, size, value):
+    def write(self, offset: int, size: int, value: int):
         def write_byte(ofs, byte):
             for var, func in self.triggers:
                 if var.offset <= ofs < var.offset + var.size:

@@ -64,7 +64,7 @@ class STM32F4xxSpi(QlPeripheral):
 
         self.intn = intn
 
-    def read(self, offset, size):
+    def read(self, offset: int, size: int) -> int:
         self.ql.log.debug(f'[{self.label.upper()}] [R] {self.find_field(offset, size):10s}')
 
         if self.in_field(self.struct.DR, offset, size):
@@ -76,7 +76,7 @@ class STM32F4xxSpi(QlPeripheral):
 
         return data
 
-    def write(self, offset, size, value):
+    def write(self, offset: int, size: int, value: int):
         self.ql.log.debug(f'[{self.label.upper()}] [W] {self.find_field(offset, size):10s} = {hex(value)}')
 
         if offset in [self.struct.SR.offset, self.struct.RXCRCR.offset, self.struct.TXCRCR.offset]:

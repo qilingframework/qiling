@@ -122,13 +122,13 @@ class STM32F4xxDma(QlPeripheral):
     def stream_index(self, offset):
         return (offset - self.stream_base) // self.stream_size
 
-    def read(self, offset, size):        
+    def read(self, offset: int, size: int) -> int:        
         buf = ctypes.create_string_buffer(size)
         ctypes.memmove(buf, ctypes.addressof(self.dma) + offset, size)
         retval = int.from_bytes(buf.raw, byteorder='little')
         return retval
 
-    def write(self, offset, size, value):        
+    def write(self, offset: int, size: int, value: int):        
         if offset == self.struct.LIFCR.offset:
             self.dma.LISR &= ~value
 

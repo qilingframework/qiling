@@ -5,12 +5,14 @@
 
 import ctypes
 
+from qiling.core import Qiling
+
 
 class QlPeripheral:
     class Type(ctypes.Structure):
         _fields_ = []
     
-    def __init__(self, ql, label):
+    def __init__(self, ql: Qiling, label: str):
         self.ql = ql
         self.label = label
         self.struct = type(self).Type
@@ -18,11 +20,11 @@ class QlPeripheral:
     def step(self):
         pass
 
-    def read(self, offset, size) -> int:
+    def read(self, offset: int, size: int) -> int:
         self.ql.log.debug(f'[{self.label.upper()}] [R] {self.find_field(offset, size):10s}')
         return 0
 
-    def write(self, offset, size, value):
+    def write(self, offset: int, size: int, value: int):
         self.ql.log.debug(f'[{self.label.upper()}] [W] {self.find_field(offset, size):10s} = {hex(value)}')        
 
     def in_field(self, field, offset, size):
