@@ -706,8 +706,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self.entry_point = begin
         self.exit_point = end
         self.timeout = timeout
-        self.count = count
-        self.end = end
+        self.count = count        
 
         if self.archtype in QL_ARCH_NONEOS:
             if code == None:
@@ -717,9 +716,9 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
         if self.archtype in QL_ARCH_HARDWARE:
             self.__enable_bin_patch()
-            if self.count == 0:
+            if self.count <= 0:
                 self.count = -1
-            return self.arch.run(count=self.count, end=self.end)
+            return self.arch.run(count=self.count, end=self.exit_point)
 
         self.write_exit_trap()
 
