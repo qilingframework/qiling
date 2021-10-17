@@ -5,20 +5,25 @@
 
 import ctypes
 
+from qiling.core import Qiling
+from qiling.hw.peripheral import QlPeripheral
 from qiling.utils import ql_get_module_function
 from qiling.exception import QlErrorModuleFunctionNotFound
 
 
 class QlHwManager:
-    def __init__(self, ql):
+    def __init__(self, ql: Qiling):
         self.ql = ql
 
         self.entity = {}
         self.region = {}        
 
-    def create(self, label, cls=None, base=None):
-        """You can access the `label` by `ql.hw.label` or `ql.hw['label']`"""
+    def create(self, label: str, cls: "QlPeripheral"=None, base: int=None) -> "QlPeripheral":
+        """ Create the peripheral accroding the label and profiles.
 
+            cls: Structure of the peripheral. Use defualt ql structure if not provide.
+            base: Base address. Use defualt address if not provide.
+        """
         profile_cls, profile_base, kwargs = self.load_profile(label.upper())
 
         cls = profile_cls if cls is None else cls
@@ -34,13 +39,21 @@ class QlHwManager:
         except QlErrorModuleFunctionNotFound:
             self.ql.log.warning(f'The {cls}({label}) has not been implemented')
 
-    def delete(self, label):
+    def delete(self, label: str):
+        """ Remove the peripheral
+        """
         if label in self.entity:
             self.entity.pop(label)
             self.region.pop(label)
             delattr(self, label)
 
-    def load_profile(self, label):
+    def load_profile(self, label: str):
+        """ Get peripheral information (structure, base address, initialization list)from profile.
+
+        Args:
+            label (str): Peripheral Label
+        
+        """
         section = self.ql.profile[label]
         
         cls = section['class']
@@ -50,16 +63,18 @@ class QlHwManager:
 
         return cls, base, kwargs
         
-    def find(self, addr, size):
-        def check_bound(lbound, rbound):
-            return lbound <= addr and addr + size <= rbound
+    def find(self, address: int):
+        """ Find the peripheral at `address`
+        """
         
         for label in self.entity.keys():
             for lbound, rbound in self.region[label]:
-                if check_bound(lbound, rbound):
+                if lbound <= address <= rbound:
                     return self.entity[label]
 
     def step(self):
+        """ Update all peripheral's state 
+        """
         for _, entity in self.entity.items():
             entity.step()
 
@@ -100,7 +115,7 @@ class QlHwManager:
 
         def mmio_read_cb(ql, offset, size):
             address = begin + offset                        
-            hardware = self.find(address, size)
+            hardware = self.find(address)
             
             if hardware:
                 return hardware.read(address - hardware.base, size)
@@ -113,7 +128,7 @@ class QlHwManager:
 
         def mmio_write_cb(ql, offset, size, value):
             address = begin + offset
-            hardware = self.find(address, size)
+            hardware = self.find(address)
 
             if hardware:
                 hardware.write(address - hardware.base, size, value)
