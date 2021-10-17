@@ -11,8 +11,8 @@ Advisor
 NGUYEN Anh Quynh <aquynh@gmail.com>
 
 
-Core Developers
-===============
+Core Developers Crew
+====================
 Earl MARCUS (klks84) klks84@gmail.com
 DING tianze (D1iv3) <dddliv3@gmail.com>
 SUN bowen (w1tcher) <w1tcher.bupt@gmail.com>
@@ -21,7 +21,7 @@ YU tong (sp1ke) <spikeinhouse@gmail.com>
 WU chenxu (kabeor) <kabeor@qiling.io>
 KONG ziqiao (lazymio) <mio@lazym.io>
 YU zheng (dataisland) <dataisland@outlook.com>
-Eli <elichn@gmail.com>
+Eli Cohen Nehemia (elicn) <elichn@gmail.com>
 
 
 Travis, Website and Documentations
