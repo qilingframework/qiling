@@ -3,82 +3,74 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import sys, subprocess, threading, unittest, socket, time
-
-from binascii import unhexlify
+import sys, threading, unittest, socket, time
 
 sys.path.append("..")
-from qiling import *
-from qiling.exception import *
+from qiling import Qiling
 from qiling.const import QL_VERBOSE
 
-DELAY = 1
+class SimpleGdbClient:
+    DELAY = 0.6
 
-def checksum(data):
-    checksum = 0
-    for c in data:
-        if type(c) == str:
-            checksum += (ord(c))
-        else:
-            checksum += c
-    return checksum & 0xff
+    def __init__(self, host: str, port: int):
+        sock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+        txtf = sock.makefile('w')
 
-def send_raw(netout, r):
-    netout.write(r)
-    netout.flush()
-        
-def send(netout, msg):
-    time.sleep(DELAY) 
-    send_raw(netout, '$%s#%.2x' % (msg, checksum(msg)))
+        sock.connect((host, port))
+
+        self.__sock = sock
+        self.__file = txtf
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, ex_type, ex_value, ex_traceback):
+        self.__sock.close()
+
+    @staticmethod
+    def checksum(data: str) -> int:
+        return sum(ord(c) for c in data) & 0xff
+
+    def send(self, msg: str):
+        time.sleep(SimpleGdbClient.DELAY)
+
+        self.__file.write(f'${msg}#{SimpleGdbClient.checksum(msg):02x}')
+        self.__file.flush()
 
 class DebuggerTest(unittest.TestCase):
-    
+
     def test_pe_gdbdebug(self):
         ql = Qiling(["../examples/rootfs/x86_windows/bin/x86_hello.exe"], "../examples/rootfs/x86_windows/", verbose=QL_VERBOSE.DEBUG)
-        ql.debugger = "127.0.0.1:9996"
+        ql.debugger = 'gdb:127.0.0.1:9996'
 
         # some random command test just to make sure we covered most of the command
         def gdb_test_client():
-            time.sleep(DELAY)
-            gdb_client = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-            netout     = gdb_client.makefile('w')
-            gdb_client.connect(('127.0.0.1',9996))
-            time.sleep(DELAY) 
-            send(netout, "qSupported:multiprocess+;swbreak+;hwbreak+;qRelocInsn+;fork-events+;vfork-events+;exec-events+;vContSupported+;QThreadEvents+;no-resumed+;xmlRegisters=i386")
-            time.sleep(DELAY) 
-            send(netout, "vMustReplyEmpty")
-            time.sleep(DELAY) 
-            send(netout, "QStartNoAckMode")
-            time.sleep(DELAY) 
-            send(netout, "Hgp0.0")
-            time.sleep(DELAY) 
-            send(netout, "qXfer:auxv:read::0, 1000")
-            time.sleep(DELAY) 
-            send(netout, "?")
-            time.sleep(DELAY) 
-            send(netout, "qXfer:threads:read::0,fff")
-            time.sleep(DELAY) 
-            send(netout, "qAttached:"+ str(ql.os.pid))
-            time.sleep(DELAY) 
-            send(netout, "qC")
-            time.sleep(DELAY) 
-            send(netout, "g")
-            time.sleep(DELAY) 
-            send(netout, "m200, 100")
-            time.sleep(DELAY) 
-            send(netout, "p10")
-            time.sleep(DELAY)
-            send(netout, "c")
-            time.sleep(DELAY)
-            send(netout, "k")
-            time.sleep(DELAY)
-            gdb_client.close()
+            # yield to allow ql to launch its gdbserver
+            time.sleep(1.337 * 2)
 
-        debugger_file_therad =  threading.Thread(target=gdb_test_client, daemon=True)
-        debugger_file_therad.start()
-        
+            with SimpleGdbClient('127.0.0.1', 9996) as client:
+                client.send('qSupported:multiprocess+;swbreak+;hwbreak+;qRelocInsn+;fork-events+;vfork-events+;exec-events+;vContSupported+;QThreadEvents+;no-resumed+;xmlRegisters=i386')
+                client.send('vMustReplyEmpty')
+                client.send('QStartNoAckMode')
+                client.send('Hgp0.0')
+                client.send('qXfer:auxv:read::0, 1000')
+                client.send('?')
+                client.send('qXfer:threads:read::0,fff')
+                client.send('qAttached:'+ str(ql.os.pid))
+                client.send('qC')
+                client.send('g')
+                client.send('m200, 100')
+                client.send('p10')
+                client.send('c')
+                client.send('k')
+
+                # yield to make sure ql gdbserver has enough time to receive our last command
+                time.sleep(1.337)
+
+        threading.Thread(target=gdb_test_client, daemon=True).start()
+
         ql.run()
         del ql
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     unittest.main()

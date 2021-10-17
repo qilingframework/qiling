@@ -335,6 +335,7 @@ class QlLoaderELF(QlLoader):
 
         new_stack = randstraddr = __push_str(new_stack, 'a' * 16)
         new_stack = cpustraddr  = __push_str(new_stack, 'i686')
+        new_stack = execfn      = __push_str(new_stack, argv[0])
 
         # store aux vector data for gdb use
         elf_phdr = load_address + elffile['e_phoff']
@@ -369,6 +370,8 @@ class QlLoaderELF(QlLoader):
             (AUX.AT_HWCAP, elf_hwcap),
             (AUX.AT_CLKTCK, 100),
             (AUX.AT_RANDOM, randstraddr),
+            (AUX.AT_HWCAP2, 0),
+            (AUX.AT_EXECFN, execfn),
             (AUX.AT_PLATFORM, cpustraddr),
             (AUX.AT_SECURE, 0),
             (AUX.AT_NULL, 0)

@@ -420,25 +420,21 @@ def component_setup(component_type, component_name, ql):
     return ql_get_module_function(f"qiling.{component_type}.{component_name}", function_name)(ql)
 
 
-def debugger_setup(debugger, ql):
-    # default remote server
-    remotedebugsrv = "gdb"
-    debug_opts = [None, None]
+def debugger_setup(options, ql):
+    if options is True:
+        options = 'gdb'
 
-    if debugger != True and type(debugger) is str:
-        debug_opts = debugger.split(":")
+    if type(options) is str:
+        objname, *args = options.split(':')
 
-        if len(debug_opts) == 2 and debug_opts[0] != "qdb":
-            pass
-        else:  
-            remotedebugsrv, *debug_opts = debug_opts
+        if debugger_convert(objname) not in enum_values(QL_DEBUGGER):
+            raise QlErrorOutput('Debugger not supported')
 
-        if debugger_convert(remotedebugsrv) not in enum_values(QL_DEBUGGER):
-            raise QlErrorOutput("Error: Debugger not supported")
+        obj = ql_get_module_function(f'qiling.debugger.{objname}.{objname}', f'Ql{str.capitalize(objname)}')
 
-    debugsession = ql_get_module_function(f"qiling.debugger.{remotedebugsrv}.{remotedebugsrv}", f"Ql{str.capitalize(remotedebugsrv)}")
+        return obj(ql, *args)
 
-    return debugsession(ql, *debug_opts)
+    return None
 
 def arch_setup(archtype, ql):
     if not ql_is_valid_arch(archtype):
