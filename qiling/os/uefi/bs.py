@@ -499,7 +499,7 @@ def hook_SetMem(ql: Qiling, address: int, params):
 	size = params["Size"]
 
 	byteorder = 'little' if ql.archendian == QL_ENDIAN.EL else 'big'
-	ql.mem.write(buffer, value.to_bytes(1, byteorder=byteorder) * size)
+	ql.mem.write(buffer, bytes([value]) * size)
 
 @dxeapi(params = {
 	"Type"			: UINT,		# UINT32
