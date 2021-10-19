@@ -301,7 +301,7 @@ def ql_syscall_bind(ql: Qiling, bind_fd, bind_addr, bind_addrlen):
     port, host = struct.unpack(">HI", data[2:8])
     host = ql_bin_to_ip(host)
 
-    if ql.root == False and port <= 1024:
+    if not ql.os.root and port <= 1024:
         port = port + 8000
 
     if sin_family == 1:

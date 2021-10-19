@@ -63,7 +63,7 @@ def ql_syscall_issetugid(ql: Qiling):
 
 
 def ql_syscall_getuid(ql: Qiling):
-    return 0
+    return ql.os.uid
 
 
 def ql_syscall_getuid32(ql: Qiling):
@@ -75,15 +75,15 @@ def ql_syscall_getgid32(ql: Qiling):
 
 
 def ql_syscall_geteuid(ql: Qiling):
-    return 0
+    return ql.os.euid
 
 
 def ql_syscall_getegid(ql: Qiling):
-    return 0
+    return ql.os.egid
 
 
 def ql_syscall_getgid(ql: Qiling):
-    return 0
+    return ql.os.gid
 
 
 def ql_syscall_setgroups(ql: Qiling, gidsetsize: int, grouplist: int):

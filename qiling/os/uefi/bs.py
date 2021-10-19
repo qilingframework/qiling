@@ -5,6 +5,7 @@
 
 from binascii import crc32
 
+from qiling.const import QL_ENDIAN
 from qiling.os.const import *
 from qiling.os.uefi.const import *
 from qiling.os.uefi.fncc import dxeapi
@@ -494,10 +495,11 @@ def hook_CopyMem(ql: Qiling, address: int, params):
 })
 def hook_SetMem(ql: Qiling, address: int, params):
 	buffer = params["Buffer"]
-	value = params["Value"] & 0xff
+	value: int = params["Value"] & 0xff
 	size = params["Size"]
 
-	ql.mem.write(buffer, bytes(value) * size)
+	byteorder = 'little' if ql.archendian == QL_ENDIAN.EL else 'big'
+	ql.mem.write(buffer, bytes([value]) * size)
 
 @dxeapi(params = {
 	"Type"			: UINT,		# UINT32
