@@ -26,7 +26,10 @@ class CortexM4SysTick(QlPeripheral):
         )        
         
         # Maybe we will want to customize the timer speed in the future
-        self.RATIO = 1        
+        self.ratio = 1
+
+    def set_ratio(self, ratio):
+        self.ratio = ratio
 
     def step(self):
         if not self.systick.CTRL & SYSTICK_CTRL.ENABLE:
@@ -39,7 +42,7 @@ class CortexM4SysTick(QlPeripheral):
             if self.systick.CTRL & SYSTICK_CTRL.TICKINT:
                 self.ql.hw.nvic.set_pending(IRQ.SYSTICK)
         else:
-            self.systick.VAL -= self.RATIO
+            self.systick.VAL -= self.ratio
 
     def read(self, offset: int, size: int) -> int:       
         self.ql.log.debug(f'[{self.label.upper()}] [R] {self.find_field(offset, size):10s}')

@@ -27,7 +27,11 @@ def crack(passwd):
     ql = Qiling(["../../examples/rootfs/mcu/stm32f407/backdoorlock.hex"],                    
                         archtype="cortex_m", profile="stm32f407", verbose=QL_VERBOSE.OFF)
     
+    ql.hw.create('spi2')
+    ql.hw.create('gpioe')
+    ql.hw.create('gpiof')
     ql.hw.create('usart1')
+    ql.hw.create('rcc')
 
     ql.hw.show_info()
 
@@ -40,7 +44,8 @@ def crack(passwd):
 
     ql.hw.usart1.send(passwd.encode() + b'\r')
 
-    ql.run(count=300000, end=0x8003225)
+    ql.hw.systick.set_ratio(100)
+    ql.run(count=1000000, end=0x8003225)
     if ql.arch.get_pc() == 0x8003225:
         print('Success, the passwd is', passwd)
     else:
