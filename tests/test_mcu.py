@@ -169,6 +169,36 @@ class MCUTest(unittest.TestCase):
 
         del ql
 
+    def test_mcu_hacklock_stm32f407(self):
+        def crack(passwd):
+            ql = Qiling(["../examples/rootfs/mcu/stm32f407/backdoorlock.hex"],                    
+                                archtype="cortex_m", profile="stm32f407", verbose=QL_VERBOSE.OFF)
+            
+            ql.hw.create('spi2')
+            ql.hw.create('gpioe')
+            ql.hw.create('gpiof')
+            ql.hw.create('usart1')
+            ql.hw.create('rcc')
+
+            print('Testing passwd', passwd)
+
+            ql.patch(0x8000238, b'\x00\xBF' * 4)
+            ql.patch(0x80031e4, b'\x00\xBF' * 11)
+            ql.patch(0x80032f8, b'\x00\xBF' * 13)
+            ql.patch(0x80013b8, b'\x00\xBF' * 10)
+
+            ql.hw.usart1.send(passwd.encode() + b'\r')
+
+            ql.hw.systick.set_ratio(400)
+            
+            ql.run(count=400000, end=0x8003225)
+            
+            return ql.arch.get_pc() == 0x8003225
+
+        self.assertTrue(crack('618618'))
+        self.assertTrue(crack('778899'))
+        self.assertFalse(crack('123456'))
+
 if __name__ == "__main__":
     unittest.main()
 
