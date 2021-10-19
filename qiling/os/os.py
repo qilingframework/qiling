@@ -123,6 +123,19 @@ class QlOs:
     def stderr(self, stream: TextIO) -> None:
         self._stderr = stream
 
+    @property
+    def root(self) -> bool:
+        """An indication whether the process is running as root.
+        """
+
+        # for this to work the os derivative should override this property
+        # and implement the os logic. in case it is not, return False
+        return False
+
+    @root.setter
+    def root(self, enabled: bool) -> None:
+        raise NotImplementedError('Running as root is not implemented for this OS')
+
     def resolve_fcall_params(self, params: Mapping[str, Any]) -> Mapping[str, Any]:
         """Transform function call raw parameters values into meaningful ones, according to
         their assigned type.

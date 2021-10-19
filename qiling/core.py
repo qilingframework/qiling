@@ -95,7 +95,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._patch_lib = []
         self._debug_stop = False
         self._debugger = None
-        self._root = False
 
         ###############################
         # Properties configured later #
@@ -573,19 +572,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
     @debugger.setter
     def debugger(self, dbger):
         self._debugger = dbger
-
-    @property
-    def root(self) -> bool:
-        """ Whether run current program as root?
-
-            Type: bool
-            Examples: ql.root = True
-        """
-        return self._root
-
-    @root.setter
-    def root(self, root):
-        self._root = root
 
     @property
     def filter(self) -> str:
