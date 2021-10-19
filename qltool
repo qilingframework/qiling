@@ -123,8 +123,8 @@ def handle_run(options: argparse.Namespace):
     )
 
     # attach Qdb at entry point
-    if options.qdb == True:
-        QlQdb(ql, rr=options.rr)
+    if options.qdb is True:
+        QlQdb(ql, rr=options.rr).do_start()
         exit()
 
     return ql
