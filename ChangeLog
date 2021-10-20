@@ -1,6 +1,15 @@
 This file details the changelog of Qiling Framework.
 
 ------------------------------------
+[Version 1.4]: Oct 20th, 2021
+- Added MCU Engine
+- Bug fix for qdb
+- Bug fix for debugger
+- Bug fix for ql.mem
+- Bump to Unicorn 2
+
+
+------------------------------------
 [Version 1.3]: Sept 25th, 2021
 
 - Added QNX
