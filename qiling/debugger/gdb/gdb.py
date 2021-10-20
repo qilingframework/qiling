@@ -6,12 +6,11 @@
 # gdbserver --remote-debug 0.0.0.0:9999 /path/to binary
 # documentation: according to https://sourceware.org/gdb/current/onlinedocs/gdb/Remote-Protocol.html#Remote-Protocol
 
-from unicorn import *
-
-import struct, os, re, socket
+import struct, os, socket
 from binascii import unhexlify
+from typing import Iterator, Literal
 
-from .utils import QlGdbUtils
+from qiling import Qiling
 from qiling.const import *
 from qiling.utils import *
 from qiling.debugger import QlDebugger
@@ -23,6 +22,9 @@ from qiling.arch.x86_const import reg_map_st as x86_reg_map_st
 from qiling.arch.arm_const import reg_map as arm_reg_map
 from qiling.arch.arm64_const import reg_map as arm64_reg_map
 from qiling.arch.mips_const import reg_map as mips_reg_map
+from qiling.loader.elf import AUX
+
+from .utils import QlGdbUtils
 
 GDB_SIGNAL_INT  = 2
 GDB_SIGNAL_SEGV = 11
@@ -34,33 +36,35 @@ GDB_SIGNAL_BUS  = 10
 
 class QlGdb(QlDebugger, object):
     """docstring for Debugsession"""
-    def __init__(self, ql, ip, port):
+    def __init__(self, ql: Qiling, ip: str = '127.0.01', port: int = 9999):
         super(QlGdb, self).__init__(ql)
+
         self.ql             = ql
         self.last_pkt       = None
-        self.exe_abspath    = (os.path.abspath(self.ql.argv[0]))
-        self.rootfs_abspath = (os.path.abspath(self.ql.rootfs)) 
+        self.exe_abspath    = os.path.abspath(self.ql.argv[0])
+        self.rootfs_abspath = os.path.abspath(self.ql.rootfs)
         self.gdb            = QlGdbUtils()
 
-        if ip == None:
-            ip = '127.0.0.1'
-        
-        if port == None:
-           port = 9999
-        else:
-            port = int(port)
+        if type(port) is str:
+            port = int(port, 0)
 
         self.ip = ip
         self.port = port
 
-        if ql.code:
+
+        if ql.archtype in QL_ARCH_HARDWARE:
+            load_address = ql.loader.load_address
+            exit_point = load_address + os.path.getsize(ql.path)
+        elif ql.code:
             load_address = ql.os.entry_point
             exit_point = load_address + len(ql.code)
         else:
             load_address = ql.loader.load_address
             exit_point = load_address + os.path.getsize(ql.path)
 
-        if self.ql.ostype in (QL_OS.LINUX, QL_OS.FREEBSD) and not self.ql.code:
+        if ql.archtype in QL_ARCH_HARDWARE:
+            self.entry_point = ql.loader.entry_point
+        elif self.ql.ostype in (QL_OS.LINUX, QL_OS.FREEBSD) and not self.ql.code:
             self.entry_point = self.ql.os.elf_entry
         else:
             self.entry_point = self.ql.os.entry_point
@@ -74,26 +78,32 @@ class QlGdb(QlDebugger, object):
 
         #Setup register tables, order of tables is important
         self.tables = {
-            QL_ARCH.A8086   : list({**x86_reg_map_16, **x86_reg_map_misc}.keys()),
-            QL_ARCH.X86     : list({**x86_reg_map_32, **x86_reg_map_misc, **x86_reg_map_st}.keys()),
-            QL_ARCH.X8664   : list({**x86_reg_map_64, **x86_reg_map_misc, **x86_reg_map_st}.keys()),
-            QL_ARCH.ARM     : list({**arm_reg_map}.keys()),
-            QL_ARCH.ARM64   : list({**arm64_reg_map}.keys()),
-            QL_ARCH.MIPS    : list({**mips_reg_map}.keys()),
+            QL_ARCH.A8086       : list({**x86_reg_map_16, **x86_reg_map_misc}.keys()),
+            QL_ARCH.X86         : list({**x86_reg_map_32, **x86_reg_map_misc, **x86_reg_map_st}.keys()),
+            QL_ARCH.X8664       : list({**x86_reg_map_64, **x86_reg_map_misc, **x86_reg_map_st}.keys()),
+            QL_ARCH.ARM         : list({**arm_reg_map}.keys()),
+            QL_ARCH.CORTEX_M    : list({**arm_reg_map}.keys()),
+            QL_ARCH.ARM64       : list({**arm64_reg_map}.keys()),
+            QL_ARCH.MIPS        : list({**mips_reg_map}.keys()),
         }
 
-    def addr_to_str(self, addr, short=False, endian="big"):
-        if self.ql.archbit == 64 and short == False:
-            addr = (hex(int.from_bytes(self.ql.pack64(addr), byteorder=endian)))
-            addr = '{:0>16}'.format(addr[2:])
-        elif self.ql.archbit == 32 or short == True:
-            addr = (hex(int.from_bytes(self.ql.pack32(addr), byteorder=endian)))
-            addr = ('{:0>8}'.format(addr[2:]))
-        elif self.ql.archbit == 16 or short == True:
-            addr = (hex(int.from_bytes(self.ql.pack32(addr), byteorder=endian)))
-            addr = ('{:0>8}'.format(addr[2:]))            
-        addr = str(addr)    
-        return addr
+    def addr_to_str(self, addr: int, short: bool = False, endian: Literal['little', 'big'] = 'big') -> str:
+        # a hacky way to divide archbits by 2 if short, and leave it unchanged if not
+        nbits = self.ql.archbit // (int(short) + 1)
+
+        if nbits == 64:
+            s = f'{int.from_bytes(self.ql.pack64(addr), byteorder=endian):016x}'
+
+        elif nbits == 32:
+            s = f'{int.from_bytes(self.ql.pack32(addr), byteorder=endian):08x}'
+
+        elif nbits == 16:
+            s = f'{int.from_bytes(self.ql.pack16(addr), byteorder=endian):04x}'
+
+        else:
+            raise RuntimeError
+
+        return s
 
     def bin_to_escstr(self, rawbin):
         rawbin_escape = ""
@@ -165,6 +175,7 @@ class QlGdb(QlDebugger, object):
                         QL_ARCH.X8664        : [ 0x06, 0x07, 0x10 ],
                         QL_ARCH.MIPS         : [ 0x1d, 0x00, 0x25 ],        
                         QL_ARCH.ARM          : [ 0x0b, 0x0d, 0x0f ],
+                        QL_ARCH.CORTEX_M     : [ 0x0b, 0x0d, 0x0f ],
                         QL_ARCH.ARM64        : [ 0x1d, 0xf1, 0x20 ]
                         }
                     return adapter.get(arch)
@@ -220,13 +231,13 @@ class QlGdb(QlDebugger, object):
                         s += tmp
                 
                 elif self.ql.archtype == QL_ARCH.ARM:
-                    mode = self.ql.arch.check_thumb()
+                    
 
                     # r0-r12,sp,lr,pc,cpsr ,see https://sourceware.org/git/?p=binutils-gdb.git;a=blob;f=gdb/arch/arm.h;h=fa589fd0582c0add627a068e6f4947a909c45e86;hb=HEAD#l127
                     for reg in self.tables[QL_ARCH.ARM][:16] + [self.tables[QL_ARCH.ARM][25]]:
-                        r = self.ql.reg.read(reg)
-                        if mode == UC_MODE_THUMB and reg == "pc":
-                            r += 1
+                        # if reg is pc, make sure to take thumb mode into account
+                        r = self.ql.arch.get_pc() if reg == "pc" else self.ql.reg.read(reg)
+
                         tmp = self.addr_to_str(r)
                         s += tmp
 
@@ -495,7 +506,7 @@ class QlGdb(QlDebugger, object):
 
 
                 elif subcmd.startswith('Xfer:threads:read::0,'):
-                    if self.ql.ostype in QL_OS_NONPID:
+                    if self.ql.ostype in QL_OS_NONPID or self.ql.archtype in QL_ARCH_HARDWARE:
                         self.send("l")
                     else:    
                         file_contents = ("<threads>\r\n<thread id=\""+ str(self.ql.os.pid) + "\" core=\"1\" name=\"" + self.ql.targetname + "\"/>\r\n</threads>")
@@ -504,106 +515,43 @@ class QlGdb(QlDebugger, object):
                 elif subcmd.startswith('Xfer:auxv:read::'):
                     if self.ql.code:
                         return
-                    if self.ql.ostype in (QL_OS.LINUX, QL_OS.FREEBSD) :
-                        if self.ql.archbit == 64:
-                            ANNEX               = "00000000000000"
-                            AT_SYSINFO_EHDR     = "0000000000000000" # System-supplied DSO's ELF header
-                            ID_AT_HWCAP         = "1000000000000000"
-                            ID_AT_PAGESZ        = "0600000000000000"
-                            ID_AT_CLKTCK        = "1100000000000000"
-                            AT_CLKTCK           = "6400000000000000" # Frequency of times() 100
-                            ID_AT_PHDR          = "0300000000000000"
-                            ID_AT_PHENT         = "0400000000000000"
-                            ID_AT_PHNUM         = "0500000000000000"
-                            ID_AT_BASE          = "0700000000000000"
-                            ID_AT_FLAGS         = "0800000000000000"
-                            ID_AT_ENTRY         = "0900000000000000"
-                            ID_AT_UID           = "0b00000000000000"
-                            ID_AT_EUID          = "0c00000000000000"
-                            ID_AT_GID           = "0d00000000000000"
-                            ID_AT_EGID          = "0e00000000000000"
-                            ID_AT_SECURE        = "1700000000000000"
-                            AT_SECURE           = "0000000000000000"
-                            ID_AT_RANDOM        = "1900000000000000"
-                            ID_AT_HWCAP2        = "1a00000000000000"
-                            AT_HWCAP2           = "0000000000000000"
-                            ID_AT_EXECFN        = "1f00000000000000"
-                            AT_EXECFN           = "0000000000000000" # File name of executable
-                            ID_AT_PLATFORM      = "0f00000000000000"
-                            ID_AT_NULL          = "0000000000000000"
-                            AT_NULL             = "0000000000000000"
 
-                        elif self.ql.archbit == 32:
-                            ANNEX           = "000000"
-                            AT_SYSINFO_EHDR = "00000000"  # System-supplied DSO's ELF header
-                            ID_AT_HWCAP     = "10000000"
-                            ID_AT_PAGESZ    = "06000000"
-                            ID_AT_CLKTCK    = "11000000"
-                            AT_CLKTCK       = "64000000"  # Frequency of times() 100
-                            ID_AT_PHDR      = "03000000"
-                            ID_AT_PHENT     = "04000000"
-                            ID_AT_PHNUM     = "05000000"
-                            ID_AT_BASE      = "07000000"
-                            ID_AT_FLAGS     = "08000000"
-                            ID_AT_ENTRY     = "09000000"
-                            ID_AT_UID       = "0b000000"
-                            ID_AT_EUID      = "0c000000"
-                            ID_AT_GID       = "0d000000"
-                            ID_AT_EGID      = "0e000000"
-                            ID_AT_SECURE    = "17000000"
-                            AT_SECURE       = "00000000"
-                            ID_AT_RANDOM    = "19000000"
-                            ID_AT_HWCAP2    = "1a000000"
-                            AT_HWCAP2       = "00000000"
-                            ID_AT_EXECFN    = "1f000000"
-                            AT_EXECFN       = "00000000"  # File name of executable
-                            ID_AT_PLATFORM  = "0f000000"
-                            ID_AT_NULL      = "00000000"
-                            AT_NULL         = "00000000"
+                    if self.ql.ostype in (QL_OS.LINUX, QL_OS.FREEBSD):
+                        def __read_auxv() -> Iterator[int]:
+                            auxv_entries = (
+                                AUX.AT_HWCAP,
+                                AUX.AT_PAGESZ,
+                                AUX.AT_CLKTCK,
+                                AUX.AT_PHDR,
+                                AUX.AT_PHENT,
+                                AUX.AT_PHNUM,
+                                AUX.AT_BASE,
+                                AUX.AT_FLAGS,
+                                AUX.AT_ENTRY,
+                                AUX.AT_UID,
+                                AUX.AT_EUID,
+                                AUX.AT_GID,
+                                AUX.AT_EGID,
+                                AUX.AT_SECURE,
+                                AUX.AT_RANDOM,
+                                AUX.AT_HWCAP2,
+                                AUX.AT_EXECFN,
+                                AUX.AT_PLATFORM,
+                                AUX.AT_NULL
+                            )
 
-                        AT_HWCAP    = self.addr_to_str(self.ql.loader.elf_hwcap)  # mock cpuid 0x1f8bfbff
-                        AT_PAGESZ   = self.addr_to_str(self.ql.loader.elf_pagesz)  # System page size, fixed in qiling
-                        AT_PHDR     = self.addr_to_str(self.ql.loader.elf_phdr)  # Program headers for program
-                        AT_PHENT    = self.addr_to_str(self.ql.loader.elf_phent)  # Size of program header entry
-                        AT_PHNUM    = self.addr_to_str(self.ql.loader.elf_phnum)  # Number of program headers
-                        AT_BASE     = self.addr_to_str(self.ql.loader.interp_address)  # Base address of interpreter
-                        AT_FLAGS    = self.addr_to_str(self.ql.loader.elf_flags)
-                        AT_ENTRY    = self.addr_to_str(self.ql.loader.elf_entry)  # Entry point of program
-                        AT_UID      = self.addr_to_str(self.ql.loader.elf_guid)  # UID from ql.profile
-                        AT_EUID     = self.addr_to_str(self.ql.loader.elf_guid)  # UID from ql.profile
-                        AT_GID      = self.addr_to_str(self.ql.loader.elf_guid)  # UID from ql.profile
-                        AT_EGID     = self.addr_to_str(self.ql.loader.elf_guid)  # UID from ql.profile
-                        AT_RANDOM   = self.addr_to_str(self.ql.loader.randstraddr)  # Address of 16 random bytes
-                        AT_PLATFORM = self.addr_to_str(self.ql.loader.cpustraddr)  # String identifying platform
+                            for e in auxv_entries:
+                                yield e.value
+                                yield self.ql.loader.aux_vec[e]
 
-                        auxvdata_c = (
-                                        ANNEX + AT_SYSINFO_EHDR +
-                                        ID_AT_HWCAP + AT_HWCAP +
-                                        ID_AT_PAGESZ + AT_PAGESZ +
-                                        ID_AT_CLKTCK + AT_CLKTCK +
-                                        ID_AT_PHDR + AT_PHDR +
-                                        ID_AT_PHENT + AT_PHENT +
-                                        ID_AT_PHNUM + AT_PHNUM +
-                                        ID_AT_BASE + AT_BASE +
-                                        ID_AT_FLAGS + AT_FLAGS +
-                                        ID_AT_ENTRY + AT_ENTRY +
-                                        ID_AT_UID + AT_UID +
-                                        ID_AT_EUID + AT_EUID +
-                                        ID_AT_GID + AT_GID +
-                                        ID_AT_EGID + AT_EGID +
-                                        ID_AT_SECURE + AT_SECURE +
-                                        ID_AT_RANDOM + AT_RANDOM +
-                                        ID_AT_HWCAP2 + AT_HWCAP2 +
-                                        ID_AT_EXECFN + AT_EXECFN +
-                                        ID_AT_PLATFORM + AT_PLATFORM +
-                                        ID_AT_NULL + AT_NULL
-                                    )
+                        annex = self.addr_to_str(0)[:-2]
+                        sysinfo_ehdr = self.addr_to_str(0)
 
-                        auxvdata = self.bin_to_escstr(unhexlify(auxvdata_c))
-                        #self.send(b'l!%s' % auxvdata)
+                        auxvdata_c = unhexlify(''.join([annex, sysinfo_ehdr] + [self.addr_to_str(val) for val in __read_auxv()]))
+                        auxvdata = self.bin_to_escstr(auxvdata_c)
                     else:
                         auxvdata = b""
-                    
+
                     self.send(b'l!%s' % auxvdata)
 
                 elif subcmd.startswith('Xfer:exec-file:read:'):
@@ -673,7 +621,7 @@ class QlGdb(QlDebugger, object):
                     self.send("")
 
                 elif subcmd.startswith('File:open'):
-                    if self.ql.ostype == QL_OS.UEFI:
+                    if self.ql.ostype == QL_OS.UEFI or self.ql.archtype in QL_ARCH_HARDWARE:
                         self.send("F-1")
                         return
 

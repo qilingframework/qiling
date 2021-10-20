@@ -218,35 +218,9 @@ Contact us at email info@qiling.io, or via Twitter [@qiling_io](https://twitter.
 
 ---
 
-#### Core developers
+#### Core developers, Key Contributors and etc
 
-- LAU kaijern (xwings) <kj@qiling.io>
-- NGUYEN Anh Quynh <aquynh@gmail.com>
-- DING tianZe (D1iv3) <dddliv3@gmail.com>
-- SUN bowen (w1tcher) <w1tcher.bupt@gmail.com>
-- CHEN huitao (null) <null@qiling.io>
-- YU tong (sp1ke) <spikeinhouse@gmail.com>
-- Earl Marcus (klks84) klks84@gmail.com 
-- WU chenxu (kabeor) <kabeor@qiling.io>
-- KONG ziqiao (lazymio) <mio@lazym.io>
-
-#### Travis-CI, Docker, Website and Documentation
-
-- FOO Kevin (chfl4gs) <chfl4gs@qiling.io>
-
-#### Key Contributors (in no particular order)
-
-- 0ssigeno
-- liba2k
-- assafcarlsbad
-- ucgJhe
-- jhumble
-- Mark Jansen (learn-more)
-- cq674350529
-- elicn
-- bkerler (viperbjk)
-- madprogrammer
-- danielmoos
+Please refer to [CREDITS.TXT](https://github.com/qilingframework/qiling/blob/master/CREDITS.TXT)
 
 ---
 

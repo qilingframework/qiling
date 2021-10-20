@@ -16,6 +16,7 @@ if TYPE_CHECKING:
     from .arch.arch import QlArch
     from .os.os import QlOs
     from .os.memory import QlMemoryManager
+    from .hw.hw import QlHwManager
     from .loader.loader import QlLoader
 
 from .const import QL_ARCH_ENDIAN, QL_ENDIAN, QL_OS, QL_VERBOSE, QL_ARCH_NONEOS, QL_ARCH_HARDWARE
@@ -95,7 +96,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._patch_lib = []
         self._debug_stop = False
         self._debugger = None
-        self._root = False
 
         ###############################
         # Properties configured later #
@@ -170,7 +170,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         #####################
         # Profile & Logging #
         #####################
-        self._profile, debugmsg = profile_setup(self.ostype, self.profile, self)
+        self._profile, debugmsg = profile_setup(self)
 
         # Log's configuration
 
@@ -588,19 +588,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._debugger = dbger
 
     @property
-    def root(self) -> bool:
-        """ Whether run current program as root?
-
-            Type: bool
-            Examples: ql.root = True
-        """
-        return self._root
-
-    @root.setter
-    def root(self, root):
-        self._root = root
-
-    @property
     def filter(self) -> str:
         """ Filter logs with regex.
             Type: str
@@ -643,6 +630,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         return self._stop_options
 
     def __enable_bin_patch(self):
+        
         for addr, code in self.patch_bin:
             self.mem.write(self.loader.load_address + addr, code)
 
@@ -704,32 +692,36 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self.entry_point = begin
         self.exit_point = end
         self.timeout = timeout
-        self.count = count
+        self.count = count        
+
+        # init debugger
+        if self._debugger != False and self._debugger != None:
+            self._debugger = debugger_setup(self._debugger, self)
+
+        if self.archtype not in QL_ARCH_NONEOS and  self.archtype not in QL_ARCH_HARDWARE:
+            self.write_exit_trap()
+            # patch binary
+            self.__enable_bin_patch()
+
+            # emulate the binary
+            self.os.run()
 
         if self.archtype in QL_ARCH_NONEOS:
             if code == None:
                 return self.arch.run(self._code)
             else:
                 return self.arch.run(code) 
-
+        
         if self.archtype in QL_ARCH_HARDWARE:
-            return self.arch.run(count=count)
-
-        self.write_exit_trap()
-
-        # init debugger
-        if self._debugger != False and self._debugger != None:
-            self._debugger = debugger_setup(self._debugger, self)
-
-        # patch binary
-        self.__enable_bin_patch()
-
-        # emulate the binary
-        self.os.run()
-
+            self.__enable_bin_patch()
+            if self.count <= 0:
+                self.count = -1
+            self.arch.run(count=self.count, end=self.exit_point)
+        
         # run debugger
         if self._debugger != False and self._debugger != None:
             self._debugger.run()
+            
 
 
     # patch code to memory address

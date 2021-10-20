@@ -13,7 +13,7 @@ from unicorn import *
 
 from .core_hooks_types import Hook, HookAddr, HookIntr, HookRet
 from .utils import catch_KeyboardInterrupt
-from .const import QL_HOOK_BLOCK, QL_ARCH_NONEOS, QL_ARCH_HARDWARE
+from .const import QL_HOOK_BLOCK, QL_ARCH_NONEOS
 from .exception import QlErrorCoreHook
 
 

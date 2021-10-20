@@ -59,12 +59,8 @@ class QlOsPosix(QlOs):
         self.ql = ql
         self.sigaction_act = [0] * 256
 
-        if self.ql.root:
-            self.uid = 0
-            self.gid = 0
-        else:
-            self.uid = self.profile.getint("KERNEL","uid")
-            self.gid = self.profile.getint("KERNEL","gid")
+        self.uid = self.euid = self.profile.getint("KERNEL","uid")
+        self.gid = self.egid = self.profile.getint("KERNEL","gid")
 
         self.pid = self.profile.getint("KERNEL", "pid")
         self.ipv6 = self.profile.getboolean("NETWORK", "ipv6")
@@ -124,6 +120,15 @@ class QlOsPosix(QlOs):
     def stderr(self, stream: TextIO) -> None:
         self._stderr = stream
         self._fd[2] = stream
+
+    @QlOs.root.getter
+    def root(self) -> bool:
+        return (self.euid == 0) and (self.egid == 0)
+
+    @QlOs.root.setter
+    def root(self, enabled: bool) -> None:
+        self.euid = 0 if enabled else self.uid
+        self.egid = 0 if enabled else self.gid
 
     @property
     def syscall(self):
