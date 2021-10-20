@@ -694,33 +694,34 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self.timeout = timeout
         self.count = count        
 
+        # init debugger
+        if self._debugger != False and self._debugger != None:
+            self._debugger = debugger_setup(self._debugger, self)
+
+        if self.archtype not in QL_ARCH_NONEOS and  self.archtype not in QL_ARCH_HARDWARE:
+            self.write_exit_trap()
+            # patch binary
+            self.__enable_bin_patch()
+
+            # emulate the binary
+            self.os.run()
+
         if self.archtype in QL_ARCH_NONEOS:
             if code == None:
                 return self.arch.run(self._code)
             else:
                 return self.arch.run(code) 
-
+        
         if self.archtype in QL_ARCH_HARDWARE:
             self.__enable_bin_patch()
             if self.count <= 0:
                 self.count = -1
-            return self.arch.run(count=self.count, end=self.exit_point)
-
-        self.write_exit_trap()
-
-        # init debugger
-        if self._debugger != False and self._debugger != None:
-            self._debugger = debugger_setup(self._debugger, self)
-
-        # patch binary
-        self.__enable_bin_patch()
-
-        # emulate the binary
-        self.os.run()
-
+            self.arch.run(count=self.count, end=self.exit_point)
+        
         # run debugger
         if self._debugger != False and self._debugger != None:
             self._debugger.run()
+            
 
 
     # patch code to memory address

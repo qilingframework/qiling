@@ -51,14 +51,20 @@ class QlGdb(QlDebugger, object):
         self.ip = ip
         self.port = port
 
-        if ql.code:
+
+        if ql.archtype in QL_ARCH_HARDWARE:
+            load_address = ql.loader.load_address
+            exit_point = load_address + os.path.getsize(ql.path)
+        elif ql.code:
             load_address = ql.os.entry_point
             exit_point = load_address + len(ql.code)
         else:
             load_address = ql.loader.load_address
             exit_point = load_address + os.path.getsize(ql.path)
 
-        if self.ql.ostype in (QL_OS.LINUX, QL_OS.FREEBSD) and not self.ql.code:
+        if ql.archtype in QL_ARCH_HARDWARE:
+            self.entry_point = ql.loader.entry_point
+        elif self.ql.ostype in (QL_OS.LINUX, QL_OS.FREEBSD) and not self.ql.code:
             self.entry_point = self.ql.os.elf_entry
         else:
             self.entry_point = self.ql.os.entry_point
@@ -72,12 +78,13 @@ class QlGdb(QlDebugger, object):
 
         #Setup register tables, order of tables is important
         self.tables = {
-            QL_ARCH.A8086   : list({**x86_reg_map_16, **x86_reg_map_misc}.keys()),
-            QL_ARCH.X86     : list({**x86_reg_map_32, **x86_reg_map_misc, **x86_reg_map_st}.keys()),
-            QL_ARCH.X8664   : list({**x86_reg_map_64, **x86_reg_map_misc, **x86_reg_map_st}.keys()),
-            QL_ARCH.ARM     : list({**arm_reg_map}.keys()),
-            QL_ARCH.ARM64   : list({**arm64_reg_map}.keys()),
-            QL_ARCH.MIPS    : list({**mips_reg_map}.keys()),
+            QL_ARCH.A8086       : list({**x86_reg_map_16, **x86_reg_map_misc}.keys()),
+            QL_ARCH.X86         : list({**x86_reg_map_32, **x86_reg_map_misc, **x86_reg_map_st}.keys()),
+            QL_ARCH.X8664       : list({**x86_reg_map_64, **x86_reg_map_misc, **x86_reg_map_st}.keys()),
+            QL_ARCH.ARM         : list({**arm_reg_map}.keys()),
+            QL_ARCH.CORTEX_M    : list({**arm_reg_map}.keys()),
+            QL_ARCH.ARM64       : list({**arm64_reg_map}.keys()),
+            QL_ARCH.MIPS        : list({**mips_reg_map}.keys()),
         }
 
     def addr_to_str(self, addr: int, short: bool = False, endian: Literal['little', 'big'] = 'big') -> str:
@@ -168,6 +175,7 @@ class QlGdb(QlDebugger, object):
                         QL_ARCH.X8664        : [ 0x06, 0x07, 0x10 ],
                         QL_ARCH.MIPS         : [ 0x1d, 0x00, 0x25 ],        
                         QL_ARCH.ARM          : [ 0x0b, 0x0d, 0x0f ],
+                        QL_ARCH.CORTEX_M     : [ 0x0b, 0x0d, 0x0f ],
                         QL_ARCH.ARM64        : [ 0x1d, 0xf1, 0x20 ]
                         }
                     return adapter.get(arch)
@@ -498,7 +506,7 @@ class QlGdb(QlDebugger, object):
 
 
                 elif subcmd.startswith('Xfer:threads:read::0,'):
-                    if self.ql.ostype in QL_OS_NONPID:
+                    if self.ql.ostype in QL_OS_NONPID or self.ql.archtype in QL_ARCH_HARDWARE:
                         self.send("l")
                     else:    
                         file_contents = ("<threads>\r\n<thread id=\""+ str(self.ql.os.pid) + "\" core=\"1\" name=\"" + self.ql.targetname + "\"/>\r\n</threads>")
@@ -613,7 +621,7 @@ class QlGdb(QlDebugger, object):
                     self.send("")
 
                 elif subcmd.startswith('File:open'):
-                    if self.ql.ostype == QL_OS.UEFI:
+                    if self.ql.ostype == QL_OS.UEFI or self.ql.archtype in QL_ARCH_HARDWARE:
                         self.send("F-1")
                         return
 
