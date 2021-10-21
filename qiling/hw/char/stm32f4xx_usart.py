@@ -74,17 +74,36 @@ class STM32F4xxUsart(QlPeripheral):
             self.usart.SR &= value | USART_SR.CTS | USART_SR.LBD | USART_SR.TC | USART_SR.RXNE
 
         elif offset == self.struct.DR.offset:
-            self.send_buf.append(value & 0xff)
+            self.transfer(value & 0xff)
             self.usart.SR |= USART_SR.TC
 
         else:
             data = (value).to_bytes(size, byteorder='little')
             ctypes.memmove(ctypes.addressof(self.usart) + offset, data, size)
 
+    def transfer(self, value: int):
+        """ transfer data to buffer
+
+        Args:
+            value (int): transfer data
+        """        
+        self.send_buf.append(value)
+        self.ql.log.debug(f'[{self.label}] Send {repr(chr(value))}')
+
     def send(self, data: bytes):
+        """ send user data into USART.
+
+        Args:
+            data (bytes): Input Data
+        """        
         self.recv_buf += data
 
     def recv(self) -> bytes:
+        """ receive data from USART.
+
+        Returns:
+            bytes: USART send buffer data
+        """
         data = bytes(self.send_buf)
         self.send_buf.clear()
         return data

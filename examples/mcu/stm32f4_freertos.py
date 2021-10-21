@@ -13,17 +13,8 @@ def stm32f411_freertos():
     ql.hw.create('rcc')
     ql.hw.create('gpioa')
 
-    count = 0
-    def counter():
-        nonlocal count
-        count += 1
-
-    ql.hw.gpioa.hook_set(5, counter)
-
+    ql.hw.systick.set_ratio(100)
     ql.run(count=200000)
-
-    print(count >= 5)
-    print(ql.hw.usart2.recv())
 
 if __name__ == "__main__":
     stm32f411_freertos()
