@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import sys, unittest
+import platform, sys, unittest
 
 sys.path.append("..")
 from qiling import Qiling
