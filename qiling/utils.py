@@ -423,8 +423,7 @@ def arch_setup(archtype, ql):
     if archtype == QL_ARCH.ARM_THUMB:
         archtype =  QL_ARCH.ARM
 
-    archmanager = arch_convert_str(archtype).upper()
-    archmanager = ("QlArch" + archmanager)
+    archmanager = f'QlArch{arch_convert_str(archtype).upper()}'
 
     if archtype in (QL_ARCH.X8664, QL_ARCH.A8086):
         arch_str = "x86"
@@ -466,7 +465,7 @@ def profile_setup(ql):
         _profile = ql.profile
     debugmsg = "Profile: %s" % _profile
 
-    os_profile = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", ostype_convert_str(ql.ostype) + ".ql")
+    os_profile = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", ostype_convert_str(ql.ostype).lower() + ".ql")
 
     if ql.profile:
         profiles = [os_profile, ql.profile]
