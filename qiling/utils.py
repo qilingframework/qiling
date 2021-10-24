@@ -39,14 +39,6 @@ class COLOR_CODE:
     CYAN    = '\033[96m'
     ENDC    = '\033[0m'
 
-LEVEL_COLORS = {
-    'WARNING'  : COLOR_CODE.YELLOW,
-    'INFO'     : COLOR_CODE.BLUE,
-    'DEBUG'    : COLOR_CODE.MAGENTA,
-    'CRITICAL' : COLOR_CODE.CRIMSON,
-    'ERROR'    : COLOR_CODE.RED
-}
-
 class QilingColoredFormatter(logging.Formatter):
     def __init__(self, ql, *args, **kwargs):
         super(QilingColoredFormatter, self).__init__(*args, **kwargs)
@@ -129,7 +121,7 @@ class QlFileDes:
 
     def __repr__(self):
         return repr(self.__fds)
-    
+
     def save(self):
         return self.__fds
 
@@ -223,12 +215,6 @@ def arch_os_convert(arch):
         return adapter[arch]
     # invalid
     return None
-
-def os_arch_convert(arch):
-    adapter = {}
-    adapter.update(arch_map)
-    adapter = {v: k for k, v in adapter.items()}
-    return adapter.get(arch)
 
 def debugger_convert(debugger: str) -> Optional[QL_DEBUGGER]:
     return debugger_map.get(debugger)
