@@ -9,19 +9,14 @@ thoughout the qiling framework
 """
 import importlib, os, copy, re, pefile, configparser, logging, sys
 from logging import LogRecord
-from typing import Container, Optional, Mapping, Sequence
-from enum import EnumMeta
+from typing import Any, Container, Optional, Mapping, Sequence, Tuple, Type
+from enum import Enum
 
 from unicorn import UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
 
 from .exception import *
-from .const import (
-    QL_VERBOSE, QL_ENDIAN,
-    QL_ARCH,  QL_OS, QL_DEBUGGER, 
-    QL_ARCH_HARDWARE, QL_ARCH_NONEOS,
-    QL_ARCH_1BIT, QL_ARCH_16BIT, QL_ARCH_32BIT, QL_ARCH_64BIT,     
-    debugger_map, arch_map, os_map, arch_os_map, loader_map
-)
+from .const import QL_ARCH_HARDWARE, QL_ARCH_NONEOS, QL_VERBOSE, QL_ARCH, QL_ENDIAN, QL_OS, QL_DEBUGGER, QL_ARCH_1BIT, QL_ARCH_16BIT, QL_ARCH_32BIT, QL_ARCH_64BIT
+from .const import debugger_map, arch_map, os_map, arch_os_map, loader_map
 
 FMT_STR = "%(levelname)s\t%(message)s"
 
@@ -182,7 +177,7 @@ def ql_get_arch_bits(arch: QL_ARCH) -> int:
 
     raise QlErrorArch("Invalid Arch Bit")
 
-def enum_values(e: EnumMeta) -> Container:
+def enum_values(e: Type[Enum]) -> Container:
     return e.__members__.values()
 
 def ql_is_valid_ostype(ostype: QL_OS) -> bool:
@@ -211,7 +206,7 @@ def ostype_convert(ostype: str) -> Optional[QL_OS]:
 def arch_convert_str(arch: QL_ARCH) -> Optional[str]:
     return __reverse_mapping(arch_map).get(arch)
 
-def arch_convert(arch: str)  -> Optional[QL_ARCH]:
+def arch_convert(arch: str) -> Optional[QL_ARCH]:
     return arch_map.get(arch)
     
 def arch_os_convert(arch):
@@ -246,7 +241,7 @@ def ql_get_module_function(module_name: str, function_name: str):
 
     return module_function
 
-def ql_elf_parse_emu_env(path):
+def ql_elf_parse_emu_env(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], Optional[QL_ENDIAN]]:
     def getident():
         return elfdata
 
@@ -302,7 +297,7 @@ def ql_elf_parse_emu_env(path):
 
     return arch, ostype, archendian
 
-def ql_macho_parse_emu_env(path):
+def ql_macho_parse_emu_env(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], Optional[QL_ENDIAN]]:
    
     def getident():
         return machodata
@@ -340,7 +335,7 @@ def ql_macho_parse_emu_env(path):
     return arch, ostype, archendian
 
 
-def ql_pe_parse_emu_env(path):
+def ql_pe_parse_emu_env(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], Optional[QL_ENDIAN]]:
     try:
         pe = pefile.PE(path, fast_load=True)
     except:
@@ -375,7 +370,7 @@ def ql_pe_parse_emu_env(path):
     return arch, ostype, archendian
 
 
-def ql_guess_emu_env(path):
+def ql_guess_emu_env(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], Optional[QL_ENDIAN]]:
     arch = None
     ostype = None
     archendian = None
@@ -406,7 +401,7 @@ def ql_guess_emu_env(path):
     return arch, ostype, archendian
 
 
-def loader_setup(ostype, ql):
+def loader_setup(ostype: QL_OS, ql):
     loadertype_str = loadertype_convert_str(ostype)
     function_name = "QlLoader" + loadertype_str
     return ql_get_module_function(f"qiling.loader.{loadertype_str.lower()}", function_name)(ql)
