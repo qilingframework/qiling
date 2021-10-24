@@ -8,9 +8,7 @@ from typing import Iterable, Iterator, Mapping, Tuple
 
 from capstone import Cs, CsInsn, CS_OP_IMM, CS_OP_MEM, CS_OP_REG
 from capstone.x86 import X86Op
-from capstone.x86_const import X86_INS_LEA
-
-from unicorn.x86_const import UC_X86_REG_INVALID, UC_X86_REG_RIP
+from capstone.x86_const import X86_INS_LEA, X86_REG_INVALID, X86_REG_RIP
 
 from qiling import Qiling
 
@@ -54,14 +52,14 @@ def __to_trace_line(record: TraceRecord, symsmap: Mapping[int, str] = {}) -> str
 	# current instruction instead of the next one.
 	#
 	# here we patch rip value recorded in state to point to the next instruction boundary
-	state = tuple((reg, val + insn.size if reg == UC_X86_REG_RIP else val) for reg, val in state)
+	state = tuple((reg, val + insn.size if reg == X86_REG_RIP else val) for reg, val in state)
 
 	def __read_reg(reg: int) -> int:
 		"""[internal] Read a register value from the recorded state. Only registers that were
 		referenced by the current instruction can be read.
 		"""
 
-		return 0 if reg == UC_X86_REG_INVALID else next(v for r, v in state if r == reg)
+		return 0 if reg == X86_REG_INVALID else next(v for r, v in state if r == reg)
 
 	def __resolve(address: int) -> str:
 		"""[internal] Find the symbol that matches to the specified address (if any).
