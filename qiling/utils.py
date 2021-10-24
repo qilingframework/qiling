@@ -191,11 +191,13 @@ def loadertype_convert_str(ostype: QL_OS) -> Optional[str]:
     adapter.update(loader_map)
     return adapter.get(ostype)
 
-def __reverse_mapping(mapping: Mapping) -> Mapping:
-    return {v: k for k, v in mapping.items()}
+def __value_to_key(e: Type[Enum], val: Any) -> Optional[str]:
+    key = e._value2member_map_[val]
+
+    return None if key is None else key.name
 
 def ostype_convert_str(ostype: QL_OS) -> Optional[str]:
-    return __reverse_mapping(os_map).get(ostype)
+    return __value_to_key(QL_OS, ostype)
 
 def ostype_convert(ostype: str) -> Optional[QL_OS]:
     if ostype == "darwin":
@@ -204,7 +206,7 @@ def ostype_convert(ostype: str) -> Optional[QL_OS]:
     return os_map.get(ostype)
 
 def arch_convert_str(arch: QL_ARCH) -> Optional[str]:
-    return __reverse_mapping(arch_map).get(arch)
+    return __value_to_key(QL_ARCH, arch)
 
 def arch_convert(arch: str) -> Optional[QL_ARCH]:
     return arch_map.get(arch)
@@ -221,7 +223,7 @@ def debugger_convert(debugger: str) -> Optional[QL_DEBUGGER]:
     return debugger_map.get(debugger)
 
 def debugger_convert_str(debugger_id: QL_DEBUGGER) -> Optional[str]:
-    return __reverse_mapping(debugger_map).get(debugger_id)
+    return __value_to_key(QL_DEBUGGER, debugger_id)
 
 # Call `function_name` in `module_name`.
 # e.g. map_syscall in qiling.os.linux.map_syscall
