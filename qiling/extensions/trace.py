@@ -112,11 +112,10 @@ def __to_trace_line(record: TraceRecord, symsmap: Mapping[int, str] = {}) -> str
 		# unexpected op type
 		raise RuntimeError
 
-	opcode = ''.join(f'{b:02x}' for b in insn.bytes)
 	operands = ', '.join(__parse_op(o) for o in insn.operands)
 	reads = ', '.join(f'{insn.reg_name(reg)} = {val:#x}' for reg, val in state)
 
-	return f'{insn.address:08x} | {opcode:24s} {insn.mnemonic:10} {operands:56s} | {reads}'
+	return f'{insn.address:08x} | {insn.bytes.hex():24s} {insn.mnemonic:10} {operands:56s} | {reads}'
 
 def enable_full_trace(ql: Qiling):
 	"""Enable instruction-level tracing.
