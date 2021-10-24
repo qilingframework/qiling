@@ -41,8 +41,8 @@ class COLOR_CODE:
 
 class QilingColoredFormatter(logging.Formatter):
     def __init__(self, ql, *args, **kwargs):
-        super(QilingColoredFormatter, self).__init__(*args, **kwargs)
-        self._ql = ql
+        super().__init__(*args, **kwargs)
+        self.ql = ql
 
     def get_colored_level(self, record: LogRecord) -> str:
         LEVEL_NAME = {
@@ -59,18 +59,21 @@ class QilingColoredFormatter(logging.Formatter):
         # In case we have multiple formatters, we have to keep a copy of the record.
         record = copy.copy(record)
         record.levelname = self.get_colored_level(record)
+
+        # early logging may access ql.os when it is not yet set
         try:
-            cur_thread = self._ql.os.thread_management.cur_thread
-            if cur_thread is not None:
-                record.levelname = f"{record.levelname} {COLOR_CODE.GREEN}{str(cur_thread)}{COLOR_CODE.ENDC}"
+            cur_thread = self.ql.os.thread_management.cur_thread
         except AttributeError:
             pass
-        return super(QilingColoredFormatter, self).format(record)
+        else:
+            record.levelname = f"{record.levelname} {COLOR_CODE.GREEN}{str(cur_thread)}{COLOR_CODE.ENDC}"
+
+        return super().format(record)
 
 class QilingPlainFormatter(logging.Formatter):
     def __init__(self, ql, *args, **kwargs):
-        super(QilingPlainFormatter, self).__init__(*args, **kwargs)
-        self._ql = ql
+        super().__init__(*args, **kwargs)
+        self.ql = ql
 
     def get_level(self, record: LogRecord) -> str:
         LEVEL_NAME = {
@@ -85,13 +88,16 @@ class QilingPlainFormatter(logging.Formatter):
 
     def format(self, record: LogRecord):
         record.levelname = self.get_level(record)
+
+        # early logging may access ql.os when it is not yet set
         try:
-            cur_thread = self._ql.os.thread_management.cur_thread
-            if cur_thread is not None:
-                record.levelname = f"{record.levelname} {str(cur_thread)}"
+            cur_thread = self.ql.os.thread_management.cur_thread
         except AttributeError:
             pass
-        return super(QilingPlainFormatter, self).format(record)
+        else:
+            record.levelname = f"{record.levelname} {str(cur_thread)}"
+
+        return super().format(record)
 
 class RegexFilter(logging.Filter):
     def __init__(self, regexp):
