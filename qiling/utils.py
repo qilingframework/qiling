@@ -7,21 +7,17 @@
 This module is intended for general purpose functions that can be used
 thoughout the qiling framework
 """
-import importlib, os, copy, re, pefile, configparser, logging, sys
+import importlib, os, copy, re, pefile, logging, sys
+from configparser import ConfigParser
 from logging import LogRecord
-from typing import Container, Optional, Mapping, Sequence
-from enum import EnumMeta
+from typing import Any, Container, Optional, Sequence, Tuple, Type
+from enum import Enum
 
 from unicorn import UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
 
 from .exception import *
-from .const import (
-    QL_VERBOSE, QL_ENDIAN,
-    QL_ARCH,  QL_OS, QL_DEBUGGER, 
-    QL_ARCH_HARDWARE, QL_ARCH_NONEOS,
-    QL_ARCH_1BIT, QL_ARCH_16BIT, QL_ARCH_32BIT, QL_ARCH_64BIT,     
-    debugger_map, arch_map, os_map, arch_os_map, loader_map
-)
+from .const import QL_ARCH_HARDWARE, QL_ARCH_NONEOS, QL_VERBOSE, QL_ARCH, QL_ENDIAN, QL_OS, QL_DEBUGGER, QL_ARCH_1BIT, QL_ARCH_16BIT, QL_ARCH_32BIT, QL_ARCH_64BIT
+from .const import debugger_map, arch_map, os_map, arch_os_map, loader_map
 
 FMT_STR = "%(levelname)s\t%(message)s"
 
@@ -39,18 +35,10 @@ class COLOR_CODE:
     CYAN    = '\033[96m'
     ENDC    = '\033[0m'
 
-LEVEL_COLORS = {
-    'WARNING'  : COLOR_CODE.YELLOW,
-    'INFO'     : COLOR_CODE.BLUE,
-    'DEBUG'    : COLOR_CODE.MAGENTA,
-    'CRITICAL' : COLOR_CODE.CRIMSON,
-    'ERROR'    : COLOR_CODE.RED
-}
-
 class QilingColoredFormatter(logging.Formatter):
     def __init__(self, ql, *args, **kwargs):
-        super(QilingColoredFormatter, self).__init__(*args, **kwargs)
-        self._ql = ql
+        super().__init__(*args, **kwargs)
+        self.ql = ql
 
     def get_colored_level(self, record: LogRecord) -> str:
         LEVEL_NAME = {
@@ -67,18 +55,21 @@ class QilingColoredFormatter(logging.Formatter):
         # In case we have multiple formatters, we have to keep a copy of the record.
         record = copy.copy(record)
         record.levelname = self.get_colored_level(record)
+
+        # early logging may access ql.os when it is not yet set
         try:
-            cur_thread = self._ql.os.thread_management.cur_thread
-            if cur_thread is not None:
-                record.levelname = f"{record.levelname} {COLOR_CODE.GREEN}{str(cur_thread)}{COLOR_CODE.ENDC}"
+            cur_thread = self.ql.os.thread_management.cur_thread
         except AttributeError:
             pass
-        return super(QilingColoredFormatter, self).format(record)
+        else:
+            record.levelname = f"{record.levelname} {COLOR_CODE.GREEN}{str(cur_thread)}{COLOR_CODE.ENDC}"
+
+        return super().format(record)
 
 class QilingPlainFormatter(logging.Formatter):
     def __init__(self, ql, *args, **kwargs):
-        super(QilingPlainFormatter, self).__init__(*args, **kwargs)
-        self._ql = ql
+        super().__init__(*args, **kwargs)
+        self.ql = ql
 
     def get_level(self, record: LogRecord) -> str:
         LEVEL_NAME = {
@@ -93,13 +84,16 @@ class QilingPlainFormatter(logging.Formatter):
 
     def format(self, record: LogRecord):
         record.levelname = self.get_level(record)
+
+        # early logging may access ql.os when it is not yet set
         try:
-            cur_thread = self._ql.os.thread_management.cur_thread
-            if cur_thread is not None:
-                record.levelname = f"{record.levelname} {str(cur_thread)}"
+            cur_thread = self.ql.os.thread_management.cur_thread
         except AttributeError:
             pass
-        return super(QilingPlainFormatter, self).format(record)
+        else:
+            record.levelname = f"{record.levelname} {str(cur_thread)}"
+
+        return super().format(record)
 
 class RegexFilter(logging.Filter):
     def __init__(self, regexp):
@@ -129,7 +123,7 @@ class QlFileDes:
 
     def __repr__(self):
         return repr(self.__fds)
-    
+
     def save(self):
         return self.__fds
 
@@ -184,7 +178,7 @@ def ql_get_arch_bits(arch: QL_ARCH) -> int:
 
     raise QlErrorArch("Invalid Arch Bit")
 
-def enum_values(e: EnumMeta) -> Container:
+def enum_values(e: Type[Enum]) -> Container:
     return e.__members__.values()
 
 def ql_is_valid_ostype(ostype: QL_OS) -> bool:
@@ -194,15 +188,15 @@ def ql_is_valid_arch(arch: QL_ARCH) -> bool:
     return arch in enum_values(QL_ARCH)
 
 def loadertype_convert_str(ostype: QL_OS) -> Optional[str]:
-    adapter = {}
-    adapter.update(loader_map)
-    return adapter.get(ostype)
+    return loader_map.get(ostype)
 
-def __reverse_mapping(mapping: Mapping) -> Mapping:
-    return {v: k for k, v in mapping.items()}
+def __value_to_key(e: Type[Enum], val: Any) -> Optional[str]:
+    key = e._value2member_map_[val]
+
+    return None if key is None else key.name
 
 def ostype_convert_str(ostype: QL_OS) -> Optional[str]:
-    return __reverse_mapping(os_map).get(ostype)
+    return __value_to_key(QL_OS, ostype)
 
 def ostype_convert(ostype: str) -> Optional[QL_OS]:
     if ostype == "darwin":
@@ -211,30 +205,19 @@ def ostype_convert(ostype: str) -> Optional[QL_OS]:
     return os_map.get(ostype)
 
 def arch_convert_str(arch: QL_ARCH) -> Optional[str]:
-    return __reverse_mapping(arch_map).get(arch)
+    return __value_to_key(QL_ARCH, arch)
 
-def arch_convert(arch: str)  -> Optional[QL_ARCH]:
+def arch_convert(arch: str) -> Optional[QL_ARCH]:
     return arch_map.get(arch)
-    
-def arch_os_convert(arch):
-    adapter = {}
-    adapter.update(arch_os_map)
-    if arch in adapter:
-        return adapter[arch]
-    # invalid
-    return None
 
-def os_arch_convert(arch):
-    adapter = {}
-    adapter.update(arch_map)
-    adapter = {v: k for k, v in adapter.items()}
-    return adapter.get(arch)
+def arch_os_convert(arch: QL_ARCH) -> Optional[QL_OS]:
+    return arch_os_map.get(arch)
 
 def debugger_convert(debugger: str) -> Optional[QL_DEBUGGER]:
     return debugger_map.get(debugger)
 
 def debugger_convert_str(debugger_id: QL_DEBUGGER) -> Optional[str]:
-    return __reverse_mapping(debugger_map).get(debugger_id)
+    return __value_to_key(QL_DEBUGGER, debugger_id)
 
 # Call `function_name` in `module_name`.
 # e.g. map_syscall in qiling.os.linux.map_syscall
@@ -254,20 +237,14 @@ def ql_get_module_function(module_name: str, function_name: str):
 
     return module_function
 
-def ql_elf_parse_emu_env(path):
-    def getident():
-        return elfdata
-
+def ql_elf_parse_emu_env(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], Optional[QL_ENDIAN]]:
     with open(path, "rb") as f:
         size = os.fstat(f.fileno()).st_size
-        if size >= 512:
-            elfdata = f.read(512)
-        else:
-            elfdata = f.read(20)
 
-    ident = getident()
-    ostype = None
+        ident = f.read(512 if size >= 512 else 20)
+
     arch = None
+    ostype = None
     archendian = None
 
     if ident[:4] == b'\x7fELF':
@@ -287,134 +264,132 @@ def ql_elf_parse_emu_env(path):
         if e_machine == b"\x03\x00":
             archendian = QL_ENDIAN.EL
             arch = QL_ARCH.X86
+
         elif e_machine == b"\x08\x00" and endian == 1 and elfbit == 1:
             archendian = QL_ENDIAN.EL
             arch = QL_ARCH.MIPS
+
         elif e_machine == b"\x00\x08" and endian == 2 and elfbit == 1:
             archendian = QL_ENDIAN.EB
             arch = QL_ARCH.MIPS
+
         elif e_machine == b"\x28\x00" and endian == 1 and elfbit == 1:
             archendian = QL_ENDIAN.EL
             arch = QL_ARCH.ARM
+
         elif e_machine == b"\x00\x28" and endian == 2 and elfbit == 1:
             archendian = QL_ENDIAN.EB
             arch = QL_ARCH.ARM
+
         elif e_machine == b"\xB7\x00":
             archendian = QL_ENDIAN.EL
             arch = QL_ARCH.ARM64
+
         elif e_machine == b"\x3E\x00":
             archendian = QL_ENDIAN.EL
             arch = QL_ARCH.X8664
-        else:
-            arch = None
 
     return arch, ostype, archendian
 
-def ql_macho_parse_emu_env(path):
-   
-    def getident():
-        return machodata
-
-    with open(path, "rb") as f:
-        machodata = f.read(32)
-
-    ident = getident()
-
+def ql_macho_parse_emu_env(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], Optional[QL_ENDIAN]]:
     macho_macos_sig64 = b'\xcf\xfa\xed\xfe'
     macho_macos_sig32 = b'\xce\xfa\xed\xfe'
     macho_macos_fat = b'\xca\xfe\xba\xbe'  # should be header for FAT
 
-    ostype = None
     arch = None
-    archendian = None
+    ostype = None
+    endian = None
 
-    if ident[: 4] in (macho_macos_sig32, macho_macos_sig64, macho_macos_fat):
+    with open(path, 'rb') as f:
+        ident = f.read(32)
+
+    if ident[:4] in (macho_macos_sig32, macho_macos_sig64, macho_macos_fat):
         ostype = QL_OS.MACOS
-    else:
-        ostype = None
 
-    if ostype:
-        # if ident[0x7] == 0: # 32 bit
+        # if ident[7] == 0: # 32 bit
         #    arch = QL_ARCH.X86
-        if ident[0x4] == 7 and ident[0x7] == 1:  # X86 64 bit
-            archendian = QL_ENDIAN.EL
+
+        if ident[4] == 0x07 and ident[7] == 0x01:  # X86 64 bit
+            endian = QL_ENDIAN.EL
             arch = QL_ARCH.X8664
-        elif ident[0x4] == 12 and ident[0x7] == 1:  # ARM64  ident[0x4] = 0x0C
-            archendian = QL_ENDIAN.EL
+
+        elif ident[4] == 0x0c and ident[7] == 0x01:  # ARM64
+            endian = QL_ENDIAN.EL
             arch = QL_ARCH.ARM64
-        else:
-            arch = None
 
-    return arch, ostype, archendian
+    return arch, ostype, endian
 
 
-def ql_pe_parse_emu_env(path):
+def ql_pe_parse_emu_env(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], Optional[QL_ENDIAN]]:
     try:
         pe = pefile.PE(path, fast_load=True)
     except:
         return None, None, None
 
-    ostype = None
     arch = None
+    ostype = None
     archendian = None
 
     machine_map = {
-        pefile.MACHINE_TYPE['IMAGE_FILE_MACHINE_I386']: QL_ARCH.X86,
-        pefile.MACHINE_TYPE['IMAGE_FILE_MACHINE_AMD64']: QL_ARCH.X8664,
-        pefile.MACHINE_TYPE['IMAGE_FILE_MACHINE_ARM']: QL_ARCH.ARM,
-        pefile.MACHINE_TYPE['IMAGE_FILE_MACHINE_THUMB']: QL_ARCH.ARM,
-        # pefile.MACHINE_TYPE['IMAGE_FILE_MACHINE_ARM64']     :   QL_ARCH.ARM64       #pefile does not have the definition
+        pefile.MACHINE_TYPE['IMAGE_FILE_MACHINE_I386']  : QL_ARCH.X86,
+        pefile.MACHINE_TYPE['IMAGE_FILE_MACHINE_AMD64'] : QL_ARCH.X8664,
+        pefile.MACHINE_TYPE['IMAGE_FILE_MACHINE_ARM']   : QL_ARCH.ARM,
+        pefile.MACHINE_TYPE['IMAGE_FILE_MACHINE_THUMB'] : QL_ARCH.ARM,
+        # pefile.MACHINE_TYPE['IMAGE_FILE_MACHINE_ARM64'] :   QL_ARCH.ARM64       #pefile does not have the definition
         # for IMAGE_FILE_MACHINE_ARM64
         0xAA64: QL_ARCH.ARM64  # Temporary workaround for Issues #21 till pefile gets updated
     }
+
     # get arch
-    archendian = QL_ENDIAN.EL
     arch = machine_map.get(pe.FILE_HEADER.Machine)
 
     if arch:
-        if pe.OPTIONAL_HEADER.Subsystem >= pefile.SUBSYSTEM_TYPE['IMAGE_SUBSYSTEM_EFI_APPLICATION'] and \
-        pe.OPTIONAL_HEADER.Subsystem <= pefile.SUBSYSTEM_TYPE['IMAGE_SUBSYSTEM_EFI_ROM'] :
+        subsystem_uefi = (
+            pefile.SUBSYSTEM_TYPE['IMAGE_SUBSYSTEM_EFI_APPLICATION'],
+            pefile.SUBSYSTEM_TYPE['IMAGE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER'],
+            pefile.SUBSYSTEM_TYPE['IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER'],
+            pefile.SUBSYSTEM_TYPE['IMAGE_SUBSYSTEM_EFI_ROM']
+        )
+
+        if pe.OPTIONAL_HEADER.Subsystem in subsystem_uefi:
             ostype = QL_OS.UEFI
         else:
             ostype = QL_OS.WINDOWS
-    else:
-        ostype = None
+
+        archendian = QL_ENDIAN.EL
 
     return arch, ostype, archendian
 
 
-def ql_guess_emu_env(path):
+def ql_guess_emu_env(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], Optional[QL_ENDIAN]]:
     arch = None
     ostype = None
-    archendian = None
+    endian = None
 
-    if os.path.isdir(path) and (str(path)).endswith(".kext"):
+    if os.path.isdir(path) and path.endswith('.kext'):
         return QL_ARCH.X8664, QL_OS.MACOS, QL_ENDIAN.EL
 
-    if os.path.isfile(path) and (str(path)).endswith(".DOS_COM"):
+    if os.path.isfile(path) and path.endswith('.DOS_COM'):
         return QL_ARCH.A8086, QL_OS.DOS, QL_ENDIAN.EL
 
-    if os.path.isfile(path) and (str(path)).endswith(".DOS_MBR"):
+    if os.path.isfile(path) and path.endswith('.DOS_MBR'):
         return QL_ARCH.A8086, QL_OS.DOS, QL_ENDIAN.EL
 
-    if os.path.isfile(path) and (str(path)).endswith(".DOS_EXE"):
+    if os.path.isfile(path) and path.endswith('.DOS_EXE'):
         return QL_ARCH.A8086, QL_OS.DOS, QL_ENDIAN.EL
 
-    arch, ostype, archendian = ql_elf_parse_emu_env(path)
+    arch, ostype, endian = ql_elf_parse_emu_env(path)
 
-    if arch == None or ostype == None or archendian == None:
-        arch, ostype, archendian = ql_macho_parse_emu_env(path)
+    if arch is None or ostype is None or endian is None:
+        arch, ostype, endian = ql_macho_parse_emu_env(path)
 
-    if arch == None or ostype == None or archendian == None:
-        arch, ostype, archendian = ql_pe_parse_emu_env(path)
-  
-    if ostype not in (QL_OS):
-        raise QlErrorOsType("File does not belong to either 'linux', 'windows', 'freebsd', 'macos', 'ios', 'dos', 'qnx'")
+    if arch is None or ostype is None or endian is None:
+        arch, ostype, endian = ql_pe_parse_emu_env(path)
 
-    return arch, ostype, archendian
+    return arch, ostype, endian
 
 
-def loader_setup(ostype, ql):
+def loader_setup(ostype: QL_OS, ql):
     loadertype_str = loadertype_convert_str(ostype)
     function_name = "QlLoader" + loadertype_str
     return ql_get_module_function(f"qiling.loader.{loadertype_str.lower()}", function_name)(ql)
@@ -448,8 +423,7 @@ def arch_setup(archtype, ql):
     if archtype == QL_ARCH.ARM_THUMB:
         archtype =  QL_ARCH.ARM
 
-    archmanager = arch_convert_str(archtype).upper()
-    archmanager = ("QlArch" + archmanager)
+    archmanager = f'QlArch{arch_convert_str(archtype).upper()}'
 
     if archtype in (QL_ARCH.X8664, QL_ARCH.A8086):
         arch_str = "x86"
@@ -486,36 +460,35 @@ def profile_setup(ql):
         return ql_hw_profile_setup(ql)
 
     _profile = "Default"
-    
+
     if ql.profile != None:
         _profile = ql.profile
     debugmsg = "Profile: %s" % _profile
 
-    os_profile = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", ostype_convert_str(ql.ostype) + ".ql")
+    os_profile = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", ostype_convert_str(ql.ostype).lower() + ".ql")
 
     if ql.profile:
         profiles = [os_profile, ql.profile]
     else:
         profiles = [os_profile]
 
-    config = configparser.ConfigParser()
+    config = ConfigParser()
     config.read(profiles)
-    
+
     return config, debugmsg
 
 def ql_hw_profile_setup(ql):
-    config = configparser.ConfigParser()
-    debugmsg = "Profile: %s" % ql.profile
+    config = ConfigParser()
 
-    profile_name = '%s.ql' % ql.profile
+    profile_name = f'{ql.profile}.ql'
     profile_dir  = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles")
 
     for path, _, files in os.walk(profile_dir):
-        if profile_name in files:            
+        if profile_name in files:
             config.read(os.path.join(profile_dir, path, profile_name))
             break
 
-    return config, debugmsg
+    return config, f'Profile: {ql.profile}'
 
 def ql_resolve_logger_level(verbose: QL_VERBOSE) -> int:
     return {
@@ -596,7 +569,7 @@ def verify_ret(ql, err):
                     pass
                 else:
                     raise
-        
+
         if ql.archtype == QL_ARCH.X8664: # Win64
             if ql.os.init_sp == ql.reg.arch_sp or ql.os.init_sp + 8 == ql.reg.arch_sp or ql.os.init_sp + 0x10 == ql.reg.arch_sp:  # FIXME
                 # 0x11626	 c3	  	ret
@@ -611,4 +584,4 @@ def verify_ret(ql, err):
             else:
                 raise
     else:
-        raise        
+        raise

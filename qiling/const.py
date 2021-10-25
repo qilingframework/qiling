@@ -3,8 +3,8 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from enum import EnumMeta, IntEnum
-from typing import Mapping, TypeVar
+from enum import Enum, IntEnum
+from typing import Any, Mapping, Type
 
 class QL_ENDIAN(IntEnum):
     EL = 1
@@ -69,9 +69,7 @@ QL_OS_ALL           = QL_OS_POSIX + QL_OS_NONPID + (QL_OS.WINDOWS,)
 QL_HOOK_BLOCK = 0b0001
 QL_CALL_BLOCK = 0b0010
 
-__QL_CE = TypeVar('__QL_CE', QL_DEBUGGER, QL_ARCH, QL_OS, QL_VERBOSE)
-
-def __reverse_enum(e: EnumMeta) -> Mapping[str, __QL_CE]:
+def __reverse_enum(e: Type[Enum]) -> Mapping[str, Any]:
     '''Create a reverse mapping for an enum.
     '''
 
