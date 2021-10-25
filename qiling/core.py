@@ -49,6 +49,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             filter = None,
             stop_on_stackpointer = False,
             stop_on_exit_trap = False,
+            afl=False,
             stdin=None,
             stdout=None,
             stderr=None,
@@ -85,6 +86,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._platform = ostype_convert(platform.system().lower())
         self._internal_exception = None
         self._uc = None
+        self._afl = afl
         self._stop_options = QlStopOptions(stackpointer=stop_on_stackpointer, exit_trap=stop_on_exit_trap)
 
         ##################################
@@ -431,6 +433,17 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             Example: Qiling(code=b"\x90", ostype="macos", archtype="x8664", bigendian=False)
         """
         return self._archendian
+
+    @property
+    def afl(self) -> bool:
+        """ AFL Support
+
+            Check if we have UC_MODE_AFL.
+
+            Type: bool
+            Example: Qiling(...afl=True)
+        """
+        return self._afl
 
     @property
     def archbit(self) -> int:

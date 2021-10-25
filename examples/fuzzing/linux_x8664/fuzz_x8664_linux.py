@@ -7,9 +7,6 @@ Steps:
     $ git clone https://github.com/AFLplusplus/AFLplusplus.git
     $ make -C AFLplusplus
 
-  o Build Unicorn support
-    $ ( cd AFLplusplus/unicorn_mode ; ./build_unicorn_support.sh )
-
   o Start fuzzing
     $ AFL_AUTORESUME=1 AFL_PATH="$(realpath ./AFLplusplus)" PATH="$AFL_PATH:$PATH" afl-fuzz -i afl_inputs -o afl_outputs -U -- python3 ./fuzz_x8664_linux.py @@
 
@@ -18,11 +15,13 @@ Steps:
 """
 
 # This is new. Instead of unicorn, we import unicornafl. It's the same Uc with some new `afl_` functions
-import unicornafl as UcAfl
+#import unicornafl as UcAfl
 
 # Make sure Qiling uses our patched unicorn instead of it's own, second so without instrumentation!
-UcAfl.monkeypatch()
+#UcAfl.monkeypatch()
 
+# This is newer. Now unicornafl is brought into Unicorn2. :)
+import unicorn
 import os
 import sys
 
@@ -39,11 +38,12 @@ def main(input_file: str):
     ql = Qiling(["./x8664_fuzz"], "../../rootfs/x8664_linux",
             verbose=QL_VERBOSE.OFF, # keep qiling logging off
             console=False,          # thwart program output
+            afl = True,             # Enable AFL support
             stdin=mock_stdin,       # redirect stdin to our mock to feed it with incoming fuzzed keystrokes
             stdout=None,
             stderr=None)
 
-    def place_input_callback(uc: UcAfl.Uc, input: bytes, persistent_round: int, data: Any) -> Optional[bool]:
+    def place_input_callback(uc: unicorn.Uc, input: bytes, persistent_round: int, data: Any) -> Optional[bool]:
         """Called with every newly generated input.
         """
 
@@ -60,12 +60,12 @@ def main(input_file: str):
                 _ql.log.warning("Ran once without AFL attached")
                 os._exit(0)
 
-        except UcAfl.UcAflError as ex:
+        except unicorn.UcError as ex:
             # This hook triggers more than once in this example.
             # If this is the exception cause, we don't care.
 
             # TODO: choose a better hook position :)
-            if ex.errno != UcAfl.UC_AFL_RET_CALLED_TWICE:
+            if ex.errno != unicorn.UC_ERR_AFL_RET_CALLED_TWICE:
                 raise
 
     # get image base address

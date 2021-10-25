@@ -5,7 +5,7 @@
 
 from struct import pack
 
-from unicorn import Uc, UC_ARCH_X86, UC_MODE_16, UC_MODE_32, UC_MODE_64
+from unicorn import Uc, UC_ARCH_X86, UC_MODE_16, UC_MODE_32, UC_MODE_64, UC_MODE_AFL
 from capstone import Cs, CS_ARCH_X86, CS_MODE_16, CS_MODE_32, CS_MODE_64
 from keystone import Ks, KS_ARCH_X86, KS_MODE_16, KS_MODE_32, KS_MODE_64
 
@@ -34,6 +34,11 @@ class QlArchIntel(QlArch):
         )
 
         return next((rsize for rmap, rsize in regmaps if register in rmap.values()), 0)
+    
+    def get_init_uc(self, x86_mode) -> Uc:
+        if self.ql.afl:
+            x86_mode |= UC_MODE_AFL
+        return Uc(UC_ARCH_X86, x86_mode)
 
 class QlArchA8086(QlArchIntel):
     def __init__(self, ql: Qiling):
@@ -52,7 +57,7 @@ class QlArchA8086(QlArchIntel):
         self.ql.reg.register_sp(reg_map_16["ip"])
 
     def get_init_uc(self) -> Uc:
-        return Uc(UC_ARCH_X86, UC_MODE_16)
+        return super().get_init_uc(UC_MODE_16)
 
     def create_disassembler(self) -> Cs:
         if not self._disasm:
@@ -86,7 +91,7 @@ class QlArchX86(QlArchIntel):
         self.ql.reg.register_pc(reg_map_32["eip"])
 
     def get_init_uc(self) -> Uc:
-        return Uc(UC_ARCH_X86, UC_MODE_32)
+        return super().get_init_uc(UC_MODE_32)
 
     def create_disassembler(self) -> Cs:
         if not self._disasm:
@@ -125,7 +130,7 @@ class QlArchX8664(QlArchIntel):
         self.ql.reg.register_pc(reg_map_64["rip"])
 
     def get_init_uc(self) -> Uc:
-        return Uc(UC_ARCH_X86, UC_MODE_64)
+        return super().get_init_uc(UC_MODE_64)
 
     def create_disassembler(self) -> Cs:
         if not self._disasm:

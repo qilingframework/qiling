@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from unicorn import Uc, UC_ARCH_ARM, UC_MODE_ARM, UC_MODE_THUMB, UC_MODE_BIG_ENDIAN
+from unicorn import Uc, UC_ARCH_ARM, UC_MODE_ARM, UC_MODE_THUMB, UC_MODE_BIG_ENDIAN, UC_MODE_AFL
 from capstone import Cs, CS_ARCH_ARM, CS_MODE_ARM, CS_MODE_THUMB
 from keystone import Ks, KS_ARCH_ARM, KS_MODE_ARM, KS_MODE_THUMB
 
@@ -42,6 +42,9 @@ class QlArchARM(QlArch):
 
         else:
             raise QlErrorArch(f'unsupported arch type {self.ql.archtype}')
+
+        if self.ql.afl:
+            mode |= UC_MODE_AFL
 
         return Uc(UC_ARCH_ARM, mode)
 

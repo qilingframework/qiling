@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from unicorn import Uc, UC_ARCH_ARM, UC_MODE_ARM, UC_MODE_MCLASS, UC_MODE_THUMB
+from unicorn import Uc, UC_ARCH_ARM, UC_MODE_ARM, UC_MODE_MCLASS, UC_MODE_THUMB, UC_MODE_AFL
 from capstone import Cs, CS_ARCH_ARM, CS_MODE_ARM, CS_MODE_MCLASS, CS_MODE_THUMB
 from keystone import Ks, KS_ARCH_ARM, KS_MODE_ARM, KS_MODE_THUMB
 
@@ -33,7 +33,10 @@ class QlArchCORTEX_M(QlArchARM):
         self.intr_cb = intr_cb
 
     def get_init_uc(self):
-        return Uc(UC_ARCH_ARM, UC_MODE_ARM + UC_MODE_MCLASS + UC_MODE_THUMB)
+        mode = UC_MODE_ARM + UC_MODE_MCLASS + UC_MODE_THUMB
+        if self.ql.afl:
+            mode &= UC_MODE_AFL
+        return Uc(UC_ARCH_ARM, mode)
 
     def create_disassembler(self) -> Cs:
         return Cs(CS_ARCH_ARM, CS_MODE_ARM + CS_MODE_MCLASS + CS_MODE_THUMB)

@@ -7,6 +7,7 @@ from typing import TextIO
 
 from qiling.os.posix import stat
 
+import os
 class SimpleStringBuffer(TextIO):
     """Simple FIFO pipe.
     """
@@ -59,6 +60,9 @@ class SimpleStreamBase:
 
     def fstat(self):
         return stat.Fstat(self.fileno())
+
+    def lseek(self, pos, how):
+        return os.lseek(self.__fd, pos, how)
 
 class SimpleInStream(SimpleStreamBase, SimpleStringBuffer):
     """Simple input stream. May be used to mock stdin.

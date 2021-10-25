@@ -6,7 +6,6 @@
 
 Just read on [the frontpage](../../README.md) what qiling can do, then think you can fuzz all of this with code coverage.
 
-
 ![Qilingfuzz Screenshopt, Around 160 execs per second and 13 crashes found..](qilingfzz.png)
 
 ## But How
@@ -15,7 +14,8 @@ Just read on [the frontpage](../../README.md) what qiling can do, then think you
 
 It has been tested with the recent Qiling framework (the one you cloned), and [afl++](https://github.com/AFLplusplus/AFLplusplus)
 
-Unicornafl adds methods to kick off the afl forkserver at any time to unicorn-engine.
+~~Unicornafl adds methods to kick off the afl forkserver at any time to unicorn-engine.~~
+No more need for unicornafl. Install Unicorn2 and you are ready to go.
 *That means you can fuzz _any unicorn project_ (even c/rust/...) with a few lines of code.*
 
 in this case, we make use of `afl_fuzz(..)`.

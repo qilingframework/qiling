@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from unicorn import Uc, UC_ARCH_ARM64, UC_MODE_ARM
+from unicorn import Uc, UC_ARCH_ARM64, UC_MODE_ARM, UC_MODE_AFL
 from capstone import Cs, CS_ARCH_ARM64, CS_MODE_ARM
 from keystone import Ks, KS_ARCH_ARM64, KS_MODE_LITTLE_ENDIAN
 
@@ -28,7 +28,11 @@ class QlArchARM64(QlArch):
 
     # get initialized unicorn engine
     def get_init_uc(self) -> Uc:
-        return Uc(UC_ARCH_ARM64, UC_MODE_ARM)
+        if self.ql.afl:
+            mode = UC_MODE_ARM | UC_MODE_AFL
+        else:
+            mode = UC_MODE_ARM
+        return Uc(UC_ARCH_ARM64, mode)
 
     def create_disassembler(self) -> Cs:
         if self._disasm is None:
