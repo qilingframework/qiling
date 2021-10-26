@@ -40,8 +40,9 @@ class QlPeripheral:
     @staticmethod
     def read_debug(read):
         def read_wrapper(self, offset: int, size: int) -> int:
-            self.ql.log.debug(f'[{self.label.upper()}] [R] {self.find_field(offset, size):10s}')
-            return read(self, offset, size)
+            retval = read(self, offset, size)
+            self.ql.log.debug(f'[{self.label.upper()}] [R] {self.find_field(offset, size):10s} = {hex(retval)}')
+            return retval
         
         return read_wrapper
 
