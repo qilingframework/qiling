@@ -111,9 +111,7 @@ class CortexM4Nvic(QlPeripheral):
         while self.intrs:
             IRQn = self.intrs.pop(0)
             self.clear_pending(IRQn)
-            self.ql.arch.enter_intr()
-            self.ql.arch.handle_interupt(IRQn)
-            self.ql.arch.exit_intr()
+            self.ql.arch.handle_interupt(IRQn)            
 
     def read(self, offset: int, size: int) -> int:
         buf = ctypes.create_string_buffer(size)
