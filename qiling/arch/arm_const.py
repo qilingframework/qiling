@@ -68,6 +68,7 @@ class CONTROL(IntEnum):
     PRIV  = 0b001
 
 class EXC_RETURN(IntEnum):
+    MASK = 0xfffffff0
     RETURN_SP   = 0b0100
     RETURN_MODE = 0b1000
 
