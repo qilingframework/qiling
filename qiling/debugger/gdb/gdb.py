@@ -493,7 +493,7 @@ class QlGdb(QlDebugger, object):
                 elif subcmd.startswith('Xfer:features:read'):
                     xfercmd_file    = subcmd.split(':')[3]
                     xfercmd_abspath = os.path.dirname(os.path.abspath(__file__))
-                    xml_folder      = arch_convert_str(self.ql.archtype)
+                    xml_folder      = arch_convert_str(self.ql.archtype).lower()
                     xfercmd_file    = os.path.join(xfercmd_abspath,"xml",xml_folder, xfercmd_file)                        
 
                     if os.path.exists(xfercmd_file) and self.ql.ostype is not QL_OS.WINDOWS:

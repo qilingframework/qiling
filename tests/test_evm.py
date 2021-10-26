@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 
-import sys, unittest
+import platform, sys, unittest
 
 sys.path.append("..")
 from qiling import Qiling
 
 if sys.version_info.major == 3 and sys.version_info.minor == 9:
     sys.exit(0)
+
+if platform.system() == "Darwin" and platform.machine() == "arm64":
+    sys.exit(0)    
 
 class Checklist:
     def __init__(self) -> None:

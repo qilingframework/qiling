@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import sys, unittest
+import platform, sys, unittest
 
 from unicorn import UcError
 
@@ -16,6 +16,9 @@ from qiling.os.windows.wdk_const import *
 from qiling.os.windows.api import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.dlls.kernel32.fileapi import _CreateFile
+
+if platform.system() == "Darwin" and platform.machine() == "arm64":
+    sys.exit(0)
 
 class PETest(unittest.TestCase):
 
