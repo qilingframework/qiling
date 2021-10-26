@@ -36,13 +36,33 @@ class QlPeripheral:
             called after each instruction is executed
         """        
         pass
+    
+    @staticmethod
+    def read_debug(read):
+        def read_wrapper(self, offset: int, size: int) -> int:
+            retval = read(self, offset, size)
+            self.ql.log.debug(f'[{self.label.upper()}] [R] {self.find_field(offset, size):10s} = {hex(retval)}')
+            return retval
+        
+        return read_wrapper
+
+    @staticmethod
+    def write_debug(write):
+        def write_wrapper(self, offset: int, size: int, value: int):
+            field, extra = self.find_field(offset, size), ''
+            if field.startswith('DR') and value <= 255:
+                extra = f'({repr(chr(value))})'
+
+            self.ql.log.debug(f'[{self.label.upper()}] [W] {field:10s} = {hex(value)} {extra}')
+            return write(self, offset, size, value)
+
+        return write_wrapper
 
     def read(self, offset: int, size: int) -> int:
-        self.ql.log.debug(f'[{self.label.upper()}] [R] {self.find_field(offset, size):10s}')
         return 0
 
     def write(self, offset: int, size: int, value: int):
-        self.ql.log.debug(f'[{self.label.upper()}] [W] {self.find_field(offset, size):10s} = {hex(value)}')        
+        pass
 
     def in_field(self, field, offset: int, size: int) -> bool:
         return field.offset <= offset and offset + size <= field.offset + field.size
