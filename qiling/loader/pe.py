@@ -605,7 +605,10 @@ class QlLoaderPE(QlLoader, Process):
             self.ql.mem.write(self.pe_image_address, bytes(data))
             # setup IMAGE_LOAD_CONFIG_DIRECTORY
             if self.pe.OPTIONAL_HEADER.DATA_DIRECTORY[pefile.DIRECTORY_ENTRY['IMAGE_DIRECTORY_ENTRY_LOAD_CONFIG']].VirtualAddress != 0:
-                SecurityCookie_rva = self.pe.DIRECTORY_ENTRY_LOAD_CONFIG.struct.SecurityCookie - self.pe.OPTIONAL_HEADER.ImageBase
+                try:
+                    SecurityCookie_rva = self.pe.DIRECTORY_ENTRY_LOAD_CONFIG.struct.SecurityCookie - self.pe.OPTIONAL_HEADER.ImageBase
+                except AttributeError as e:
+                    raise QlErrorFileType("Missing PE attributes")
                 SecurityCookie_value = default_security_cookie_value = self.ql.mem.read(self.pe_image_address+SecurityCookie_rva, self.ql.pointersize)
                 while SecurityCookie_value == default_security_cookie_value:
                     SecurityCookie_value = secrets.token_bytes(self.ql.pointersize)
