@@ -59,9 +59,8 @@ class STM32F4xxUsart(QlPeripheral):
         self.recv_buf = bytearray()
         self.send_buf = bytearray()
 
+    @QlPeripheral.read_debug
     def read(self, offset: int, size: int) -> int:
-        self.ql.log.debug(f'[{self.label.upper()}] [R] {self.find_field(offset, size):10s}')
-
         buf = ctypes.create_string_buffer(size)
         ctypes.memmove(buf, ctypes.addressof(self.usart) + offset, size)
         retval = int.from_bytes(buf.raw, byteorder='little')
@@ -71,9 +70,8 @@ class STM32F4xxUsart(QlPeripheral):
 
         return retval
 
-    def write(self, offset: int, size: int, value: int):
-        self.ql.log.debug(f'[{self.label.upper()}] [W] {self.find_field(offset, size):10s} = {hex(value)}')
-
+    @QlPeripheral.write_debug
+    def write(self, offset: int, size: int, value: int):        
         if offset == self.struct.SR.offset:
             self.usart.SR &= value | USART_SR.CTS | USART_SR.LBD | USART_SR.TC | USART_SR.RXNE
 
@@ -94,8 +92,7 @@ class STM32F4xxUsart(QlPeripheral):
             data = self.usart.DR
 
             self.usart.SR |= USART_SR.TXE            
-            self.send_buf.append(data)            
-            self.ql.log.debug(f'[{self.label}] Send {repr(chr(data))}')
+            self.send_buf.append(data)
 
         if not (self.usart.SR & USART_SR.RXNE): 
             # TXE bit must had been cleared

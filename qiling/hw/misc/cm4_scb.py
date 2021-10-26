@@ -117,11 +117,13 @@ class CortexM4Scb(QlPeripheral):
     def get_priority(self, IRQn):
         return self.scb.SHP[(IRQn & 0xf) - 4]
 
+    @QlPeripheral.read_debug
     def read(self, offset: int, size: int) -> int:
         buf = ctypes.create_string_buffer(size)
         ctypes.memmove(buf, ctypes.addressof(self.scb) + offset, size)
         return int.from_bytes(buf.raw, byteorder='little')
 
+    @QlPeripheral.write_debug
     def write(self, offset: int, size: int, value: int):
         if offset == self.struct.ICSR.offset:
             if (value >> 28) & 1:
