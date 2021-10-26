@@ -54,13 +54,8 @@ class QlInterruptContext(ContextDecorator):
                 else:
                     self.ql.reg.write(reg, val)        
 
-<<<<<<< HEAD
         if self.ql.verbose >= QL_VERBOSE.DISASM:
             self.ql.log.info('Exit from interrupt')
-=======
-            if self.ql.verbose >= QL_VERBOSE.DISASM:
-                self.ql.log.info('Exit from interrupt')
->>>>>>> b1b3e73119859b104e413ca68091f0cbe53e70e1
 
 class QlArchCORTEX_M(QlArchARM):
     def __init__(self, ql):
@@ -116,7 +111,6 @@ class QlArchCORTEX_M(QlArchARM):
     def using_psp(self):
         return not self.is_handler_mode() and (self.ql.reg.read('control') & CONTROL.SPSEL) > 0
 
-<<<<<<< HEAD
     def handle_interupt(self, IRQn):        
         basepri = self.ql.reg.read('basepri') & 0xf0
         if basepri and basepri <= self.ql.hw.nvic.get_priority(IRQn):
@@ -143,34 +137,3 @@ class QlArchCORTEX_M(QlArchARM):
             self.ql.reg.write('lr', exc_return) 
 
             self.ql.emu_start(self.ql.arch.get_pc(), 0, count=0xffffff)
-=======
-    def handle_interupt(self, IRQn):
-        @QlInterruptContext(self.ql)
-        def exec_interupt():
-            if IRQn > IRQ.HARD_FAULT and (self.ql.reg.read('primask') & 0x1):
-                return
-                
-            if IRQn != IRQ.NMI and (self.ql.reg.read('faultmask') & 0x1):
-                return
-
-            basepri = self.ql.reg.read('basepri') & 0xf0
-            if basepri != 0 and basepri <= self.ql.hw.nvic.get_priority(IRQn):
-                return
-
-            if self.ql.verbose >= QL_VERBOSE.DISASM:
-                self.ql.log.debug(f'Handle the IRQn: {IRQn}')
-
-            isr = IRQn + 16
-            offset = isr * 4
-
-            entry = self.ql.mem.read_ptr(offset)
-            exc_return = 0xFFFFFFFD if self.ql.arch.using_psp() else 0xFFFFFFF9        
-
-            self.ql.reg.write('ipsr', isr)
-            self.ql.reg.write('pc', entry)
-            self.ql.reg.write('lr', exc_return) 
-
-            self.ql.emu_start(self.ql.arch.get_pc(), 0, count=0xffffff)
-        
-        exec_interupt()
->>>>>>> b1b3e73119859b104e413ca68091f0cbe53e70e1
