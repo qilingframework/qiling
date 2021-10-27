@@ -859,8 +859,12 @@ class Qiling(QlCoreHooks, QlCoreStructs):
     def stop(self):
         if self.multithread:
             self.os.thread_management.stop() 
+
+        elif self.archtype in QL_ARCH_HARDWARE:
+            self.arch.stop()
+
         else:
-            self.uc.emu_stop()            
+            self.uc.emu_stop()        
 
     # start emulation
     def emu_start(self, begin, end, timeout=0, count=0):

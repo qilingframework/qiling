@@ -59,6 +59,7 @@ class STM32F4xxUsart(QlPeripheral):
         self.recv_buf = bytearray()
         self.send_buf = bytearray()
 
+    @QlPeripheral.read_debug
     def read(self, offset: int, size: int) -> int:
         buf = ctypes.create_string_buffer(size)
         ctypes.memmove(buf, ctypes.addressof(self.usart) + offset, size)
@@ -69,26 +70,36 @@ class STM32F4xxUsart(QlPeripheral):
 
         return retval
 
-    def write(self, offset: int, size: int, value: int):
+    @QlPeripheral.write_debug
+    def write(self, offset: int, size: int, value: int):        
         if offset == self.struct.SR.offset:
             self.usart.SR &= value | USART_SR.CTS | USART_SR.LBD | USART_SR.TC | USART_SR.RXNE
 
         elif offset == self.struct.DR.offset:
-            self.transfer(value & 0xff)
-            self.usart.SR |= USART_SR.TC
+            self.usart.SR &= ~USART_SR.TXE
+            self.usart.DR = value
 
         else:
             data = (value).to_bytes(size, byteorder='little')
             ctypes.memmove(ctypes.addressof(self.usart) + offset, data, size)
 
-    def transfer(self, value: int):
-        """ transfer data to buffer
-
-        Args:
-            value (int): transfer data
+    def transfer(self):
+        """ transfer data from DR to shift buffer and
+            receive data from user buffer into DR
         """        
-        self.send_buf.append(value)
-        self.ql.log.debug(f'[{self.label}] Send {repr(chr(value))}')
+
+        if not (self.usart.SR & USART_SR.TXE):
+            data = self.usart.DR
+
+            self.usart.SR |= USART_SR.TXE            
+            self.send_buf.append(data)
+
+        if not (self.usart.SR & USART_SR.RXNE): 
+            # TXE bit must had been cleared
+            if self.recv_buf:
+                self.usart.SR |= USART_SR.RXNE
+                self.usart.DR = self.recv_buf.pop(0)        
+        
 
     def send(self, data: bytes):
         """ send user data into USART.
@@ -109,13 +120,7 @@ class STM32F4xxUsart(QlPeripheral):
         return data
 
     def step(self):
-        if not (self.usart.SR & USART_SR.RXNE):
-            if self.recv_buf:
-                self.usart.SR |= USART_SR.RXNE
-                self.usart.DR = self.recv_buf.pop(0)
-        
-        if not (self.usart.SR & USART_SR.TXE):
-            self.usart.SR |= USART_SR.TXE
+        self.transfer()
 
         if self.intn is not None:
             if  (self.usart.CR1 & USART_CR1.PEIE   and self.usart.SR & USART_SR.PE)   or \

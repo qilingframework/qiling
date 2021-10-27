@@ -7,18 +7,59 @@ from unicorn import Uc, UC_ARCH_ARM, UC_MODE_ARM, UC_MODE_MCLASS, UC_MODE_THUMB
 from capstone import Cs, CS_ARCH_ARM, CS_MODE_ARM, CS_MODE_MCLASS, CS_MODE_THUMB
 from keystone import Ks, KS_ARCH_ARM, KS_MODE_ARM, KS_MODE_THUMB
 
+from contextlib import ContextDecorator
+
 from qiling.const import QL_VERBOSE
 from qiling.exception import QlErrorNotImplemented
 
 from .arm import QlArchARM
 from .arm_const import IRQ, EXC_RETURN, CONTROL, EXCP
 
+class QlInterruptContext(ContextDecorator):
+    def __init__(self, ql):
+        self.ql = ql
+        self.reg_context = ['xpsr', 'pc', 'lr', 'r12', 'r3', 'r2', 'r1', 'r0']
+
+    def __enter__(self):
+        for reg in self.reg_context:
+            val = self.ql.reg.read(reg)
+            self.ql.arch.stack_push(val)
+        
+        if self.ql.verbose >= QL_VERBOSE.DISASM:
+            self.ql.log.info(f'Enter into interrupt')
+
+    def __exit__(self, *exc):
+        retval = self.ql.arch.get_pc()
+        
+        if retval & EXC_RETURN.MASK != EXC_RETURN.MASK:
+            self.ql.log.warning('Interrupt Crash')
+            self.ql.stop()
+
+        else:
+            # Exit handler mode
+            self.ql.reg.write('ipsr', 0)
+
+            # switch the stack accroding exc_return
+            old_ctrl = self.ql.reg.read('control')
+            if retval & EXC_RETURN.RETURN_SP:
+                self.ql.reg.write('control', old_ctrl |  CONTROL.SPSEL)            
+            else:
+                self.ql.reg.write('control', old_ctrl & ~CONTROL.SPSEL)
+
+            # Restore stack
+            for reg in reversed(self.reg_context):
+                val = self.ql.arch.stack_pop()
+                if reg == 'xpsr':                
+                    self.ql.reg.write('XPSR_NZCVQG', val)
+                else:
+                    self.ql.reg.write(reg, val)        
+
+        if self.ql.verbose >= QL_VERBOSE.DISASM:
+            self.ql.log.info('Exit from interrupt')
 
 class QlArchCORTEX_M(QlArchARM):
     def __init__(self, ql):
         super().__init__(ql)
-
-        self.reg_context = ['xpsr', 'pc', 'lr', 'r12', 'r3', 'r2', 'r1', 'r0']
 
         def intr_cb(ql, intno):
             if intno == EXCP.SWI:
@@ -48,16 +89,21 @@ class QlArchCORTEX_M(QlArchARM):
         self.ql.emu_start(self.get_pc(), 0, count=1)
         self.ql.hw.step()
 
+    def stop(self):
+        self.runable = False
+
     def run(self, count=-1, end=None):
+        self.runable = True
+
         if type(end) is int:
-            end |= 1
+            end |= 1        
         
-        while count != 0:
+        while self.runable and count != 0:
             if self.get_pc() == end:
                 break
 
             self.step()
-            count -= 1
+            count -= 1    
 
     def is_handler_mode(self):
         return self.ql.reg.read('ipsr') > 1
@@ -65,61 +111,29 @@ class QlArchCORTEX_M(QlArchARM):
     def using_psp(self):
         return not self.is_handler_mode() and (self.ql.reg.read('control') & CONTROL.SPSEL) > 0
 
-    def enter_intr(self):
-        # Save Stack
-        for reg in self.reg_context:
-            val = self.ql.reg.read(reg)
-            self.ql.arch.stack_push(val)
-        
-        if self.ql.verbose >= QL_VERBOSE.DISASM:
-            self.ql.log.info(f'Enter into interrupt')
+    def handle_interupt(self, IRQn):        
+        basepri = self.ql.reg.read('basepri') & 0xf0
+        if basepri and basepri <= self.ql.hw.nvic.get_priority(IRQn):
+            return
 
-    def exit_intr(self):
-        # Exit handler mode
-        self.ql.reg.write('ipsr', 0)
-
-        # switch the stack accroding exc_return
-        old_ctrl = self.ql.reg.read('control')
-        if self.ql.arch.get_pc() & EXC_RETURN.RETURN_SP:
-            self.ql.reg.write('control', old_ctrl |  CONTROL.SPSEL)            
-        else:
-            self.ql.reg.write('control', old_ctrl & ~CONTROL.SPSEL)
-
-        # Restore stack
-        for reg in reversed(self.reg_context):
-            val = self.ql.arch.stack_pop()
-            if reg == 'xpsr':                
-                self.ql.reg.write('XPSR_NZCVQG', val)
-            else:
-                self.ql.reg.write(reg, val)        
-
-        if self.ql.verbose >= QL_VERBOSE.DISASM:
-            self.ql.log.info('Exit from interrupt')
-
-    def handle_interupt(self, IRQn):
         if IRQn > IRQ.HARD_FAULT and (self.ql.reg.read('primask') & 0x1):
             return
-            
+                
         if IRQn != IRQ.NMI and (self.ql.reg.read('faultmask') & 0x1):
             return
 
-        basepri = self.ql.reg.read('basepri') & 0xf0
-        if basepri != 0 and basepri <= self.ql.hw.nvic.get_priority(IRQn):
-            return
-
         if self.ql.verbose >= QL_VERBOSE.DISASM:
-            self.ql.log.info(f'Handle the IRQn: {IRQn}')
+            self.ql.log.debug(f'Handle the IRQn: {IRQn}')
+                
+        with QlInterruptContext(self.ql):
+            isr = IRQn + 16
+            offset = isr * 4
 
-        isr = IRQn + 16
-        offset = isr << 2
+            entry = self.ql.mem.read_ptr(offset)
+            exc_return = 0xFFFFFFFD if self.ql.arch.using_psp() else 0xFFFFFFF9        
 
-        entry = self.ql.mem.read_ptr(offset)
-        exc_return = 0xFFFFFFFD if self.ql.arch.using_psp() else 0xFFFFFFF9        
+            self.ql.reg.write('ipsr', isr)
+            self.ql.reg.write('pc', entry)
+            self.ql.reg.write('lr', exc_return) 
 
-        # Enter handler mode
-        self.ql.reg.write('ipsr', isr)                
-
-        self.ql.reg.write('pc', entry)
-        self.ql.reg.write('lr', exc_return) 
-
-        self.ql.emu_start(self.ql.arch.get_pc(), 0)
+            self.ql.emu_start(self.ql.arch.get_pc(), 0, count=0xffffff)
