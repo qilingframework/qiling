@@ -38,25 +38,30 @@ class QlPeripheral:
         pass
     
     @staticmethod
-    def read_debug(read):
-        def read_wrapper(self, offset: int, size: int) -> int:
-            retval = read(self, offset, size)
-            self.ql.log.debug(f'[{self.label.upper()}] [R] {self.find_field(offset, size):10s} = {hex(retval)}')
-            return retval
-        
-        return read_wrapper
+    def debug_info(width=4):
+        def decorator(func):            
+            def read_wrapper(self, offset: int, size: int) -> int:
+                retval = func(self, offset, size)
+                self.ql.log.debug(f'[{self.label.upper()}] [R] {self.find_field(offset, size):{width}s} = {hex(retval)}')
+                return retval
 
-    @staticmethod
-    def write_debug(write):
-        def write_wrapper(self, offset: int, size: int, value: int):
-            field, extra = self.find_field(offset, size), ''
-            if field.startswith('DR') and value <= 255:
-                extra = f'({repr(chr(value))})'
+            def write_wrapper(self, offset: int, size: int, value: int):
+                field, extra = self.find_field(offset, size), ''
+                if field.startswith('DR') and value <= 255:
+                    extra = f'({repr(chr(value))})'
 
-            self.ql.log.debug(f'[{self.label.upper()}] [W] {field:10s} = {hex(value)} {extra}')
-            return write(self, offset, size, value)
+                self.ql.log.debug(f'[{self.label.upper()}] [W] {field:{width}s} = {hex(value)} {extra}')
+                return func(self, offset, size, value)
 
-        return write_wrapper
+            funcmap = {
+                'read' : read_wrapper,
+                'write': write_wrapper,
+            }
+
+            name = func.__name__
+            return funcmap[name] if name in funcmap else func
+
+        return decorator
 
     def read(self, offset: int, size: int) -> int:
         return 0
