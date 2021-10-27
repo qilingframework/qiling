@@ -31,6 +31,8 @@ class QlPeripheral:
         self.label = label
         self.struct = type(self).Type
 
+        self.verbose = False
+
     def step(self):
         """ Update the state of the peripheral, 
             called after each instruction is executed
@@ -42,15 +44,19 @@ class QlPeripheral:
         def decorator(func):            
             def read_wrapper(self, offset: int, size: int) -> int:
                 retval = func(self, offset, size)
-                self.ql.log.debug(f'[{self.label.upper()}] [R] {self.find_field(offset, size):{width}s} = {hex(retval)}')
+                if self.verbose:
+                    self.ql.log.debug(f'[{self.label.upper()}] [R] {self.find_field(offset, size):{width}s} = {hex(retval)}')
+                
                 return retval
 
             def write_wrapper(self, offset: int, size: int, value: int):
-                field, extra = self.find_field(offset, size), ''
-                if field.startswith('DR') and value <= 255:
-                    extra = f'({repr(chr(value))})'
+                if self.verbose:
+                    field, extra = self.find_field(offset, size), ''
+                    if field.startswith('DR') and value <= 255:
+                        extra = f'({repr(chr(value))})'
 
-                self.ql.log.debug(f'[{self.label.upper()}] [W] {field:{width}s} = {hex(value)} {extra}')
+                    self.ql.log.debug(f'[{self.label.upper()}] [W] {field:{width}s} = {hex(value)} {extra}')
+                
                 return func(self, offset, size, value)
 
             funcmap = {
@@ -63,6 +69,9 @@ class QlPeripheral:
 
         return decorator
 
+    def watch(self):
+        self.verbose = True
+    
     def read(self, offset: int, size: int) -> int:
         return 0
 
