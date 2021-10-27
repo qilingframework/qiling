@@ -5,7 +5,7 @@
 
 import ctypes
 from qiling.hw.peripheral import QlPeripheral
-from qiling.hw.const.stm32f4xx_dma import DMA, DMA_CR
+from qiling.hw.const.stm32f4xx_dma import DMA, DMA_SxCR
 
 class Stream(ctypes.Structure):
     _fields_ = [
@@ -18,13 +18,13 @@ class Stream(ctypes.Structure):
     ]
 
     def enable(self):
-        return self.CR & DMA_CR.EN
+        return self.CR & DMA_SxCR.EN
 
     def transfer_direction(self):
-        return self.CR & DMA_CR.DIR
+        return self.CR & DMA_SxCR.DIR
 
     def transfer_size(self):
-        PSIZE = self.CR & DMA_CR.PSIZE
+        PSIZE = self.CR & DMA_SxCR.PSIZE
         if PSIZE == DMA.PDATAALIGN_BYTE:
             return 1
         if PSIZE == DMA.PDATAALIGN_HALFWORD:
@@ -44,13 +44,13 @@ class Stream(ctypes.Structure):
         mem.write(dst, bytes(mem.read(src, size)))
         
         self.NDTR -= 1
-        if self.CR & DMA_CR.MINC:
+        if self.CR & DMA_SxCR.MINC:
             self.M0AR += size
-        if self.CR & DMA_CR.PINC:
+        if self.CR & DMA_SxCR.PINC:
             self.PAR  += size
 
         if self.NDTR == 0:
-            self.CR &= ~DMA_CR.EN
+            self.CR &= ~DMA_SxCR.EN
             return True
         
 class STM32F4xxDma(QlPeripheral):
