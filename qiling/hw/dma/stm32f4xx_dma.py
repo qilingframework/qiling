@@ -122,12 +122,14 @@ class STM32F4xxDma(QlPeripheral):
     def stream_index(self, offset):
         return (offset - self.stream_base) // self.stream_size
 
+    @QlPeripheral.read_debug
     def read(self, offset: int, size: int) -> int:        
         buf = ctypes.create_string_buffer(size)
         ctypes.memmove(buf, ctypes.addressof(self.dma) + offset, size)
         retval = int.from_bytes(buf.raw, byteorder='little')
         return retval
 
+    @QlPeripheral.write_debug
     def write(self, offset: int, size: int, value: int):        
         if offset == self.struct.LIFCR.offset:
             self.dma.LISR &= ~value
@@ -137,10 +139,33 @@ class STM32F4xxDma(QlPeripheral):
 
         elif offset > self.struct.HIFCR.offset:
             stream_id = self.stream_index(offset)
-            self.ql.log.debug('DMA write 0x%08x stream %d at 0x%02x' % (value, stream_id, offset - stream_id * 0x18 - 0x10))
 
             data = (value).to_bytes(size, byteorder='little')
             ctypes.memmove(ctypes.addressof(self.dma) + offset, data, size)
+
+    def find_field(self, offset: int, size: int) -> str:
+        field_list = []
+        if offset < self.struct.stream.offset:
+            field_list.append(super().find_field(offset, min(size, self.struct.stream.offset - offset)))
+        
+        if offset >= self.struct.stream.offset:
+            for i in range(8):
+                prefix_offset = self.struct.stream.offset + ctypes.sizeof(Stream) * i
+                
+                for name, _ in Stream._fields_:
+                    field = getattr(Stream, name)
+                    field_offset = field.offset + prefix_offset
+
+                    lbound = max(0, offset - field_offset)
+                    ubound = min(offset + size  - field_offset, field.size)
+                    if lbound < ubound:
+                        if lbound == 0 and ubound == field.size:
+                            field_list.append(f'stream[{i}].{name}')
+                        else:
+                            field_list.append(f'stream[{i}].{name}[{lbound}:{ubound}]')
+                
+        return ','.join(field_list)
+
 
     def transfer_complete(self, id):
         tc_bits = [5, 11, 21, 27]
