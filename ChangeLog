@@ -2,7 +2,9 @@ This file details the changelog of Qiling Framework.
 
 ------------------------------------
 [Version 1.4.1]: Nov Xth, 2021
-- 
+- Clean and tidy up core utils module (WIP)
+- Clean and tidy up path module
+- Other small adjustments so support the above changes
 
 ------------------------------------
 [Version 1.4.0]: Oct 20th, 2021
