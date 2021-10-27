@@ -9,8 +9,8 @@ def stm32f411_dma():
     ql = Qiling(["../rootfs/mcu/stm32f411/dma-clock.hex"],                    
         archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DEBUG)
 
-    ql.hw.create('usart2')
-    ql.hw.create('dma1')
+    ql.hw.create('usart2').watch()
+    ql.hw.create('dma1').watch()
     ql.hw.create('rcc')
 
     ql.run(count=200000)

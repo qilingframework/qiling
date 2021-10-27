@@ -44,7 +44,7 @@ class CortexM4SysTick(QlPeripheral):
         else:
             self.systick.VAL -= self.ratio
 
-    @QlPeripheral.read_debug
+    @QlPeripheral.debug_info()
     def read(self, offset: int, size: int) -> int:
         buf = ctypes.create_string_buffer(size)
         ctypes.memmove(buf, ctypes.addressof(self.systick) + offset, size)
@@ -53,7 +53,7 @@ class CortexM4SysTick(QlPeripheral):
             self.systick.CTRL &= ~SYSTICK_CTRL.COUNTFLAG        
         return int.from_bytes(buf.raw, byteorder='little')
 
-    @QlPeripheral.write_debug
+    @QlPeripheral.debug_info()
     def write(self, offset: int, size: int, value: int):
         # ignore the reserved bit
         if offset == self.struct.CTRL.offset:

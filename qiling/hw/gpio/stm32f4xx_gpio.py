@@ -64,7 +64,7 @@ class STM32F4xxGpio(QlPeripheral, GpioHooks):
             PUPDR   = pupdr_reset,
         )        
 
-    @QlPeripheral.read_debug
+    @QlPeripheral.debug_info()
     def read(self, offset: int, size: int) -> int:
         if offset == self.struct.BSRR.offset:
             return 0x00
@@ -73,7 +73,7 @@ class STM32F4xxGpio(QlPeripheral, GpioHooks):
         ctypes.memmove(buf, ctypes.addressof(self.gpio) + offset, size)
         return int.from_bytes(buf.raw, byteorder='little')
 
-    @QlPeripheral.write_debug
+    @QlPeripheral.debug_info()
     def write(self, offset: int, size: int, value: int):
         if offset == self.struct.IDR.offset:
             return

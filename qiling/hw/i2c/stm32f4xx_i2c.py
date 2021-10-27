@@ -62,16 +62,14 @@ class STM32F4xxI2c(QlPeripheral):
 			TRISE = 0x0002
 		)
 
-	@QlPeripheral.read_debug
+	@QlPeripheral.debug_info()
 	def read(self, offset: int, size: int) -> int:		
 		buf = ctypes.create_string_buffer(size)
 		ctypes.memmove(buf, ctypes.addressof(self.i2c) + offset, size)
 		return int.from_bytes(buf.raw, byteorder='little')
 
-	@QlPeripheral.write_debug
+	@QlPeripheral.debug_info()
 	def write(self, offset: int, size: int, value: int):
-		self.ql.log.debug(f'[{self.label.upper()}] [W] {self.find_field(offset, size):10s} = {hex(value)}')
-		
 		if offset in [self.struct.SR1.offset, self.struct.SR2.offset]:
 			return		
 

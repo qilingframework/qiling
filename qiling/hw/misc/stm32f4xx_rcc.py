@@ -5,7 +5,7 @@
 
 import ctypes
 from qiling.hw.peripheral import QlPeripheral
-from qiling.hw.const.stm32f4xx_rcc import RCC_CR, RCC_CFGR
+from qiling.hw.const.stm32f4xx_rcc import RCC_CR, RCC_CFGR, RCC_CSR
 
 
 class STM32F4xxRcc(QlPeripheral):
@@ -77,15 +77,19 @@ class STM32F4xxRcc(QlPeripheral):
 			(RCC_CFGR.SWS_1, RCC_CFGR.SW_1),
 		]
 
+		self.csr_rdyon = [
+			(RCC_CSR.LSIRDY, RCC_CSR.LSION)
+		]
+
 		self.intn = intn
 
-	@QlPeripheral.read_debug
+	@QlPeripheral.debug_info()
 	def read(self, offset: int, size: int) -> int:		
 		buf = ctypes.create_string_buffer(size)
 		ctypes.memmove(buf, ctypes.addressof(self.rcc) + offset, size)
 		return int.from_bytes(buf.raw, byteorder='little')
 
-	@QlPeripheral.write_debug
+	@QlPeripheral.debug_info()
 	def write(self, offset: int, size: int, value: int):
 		if offset == self.struct.CR.offset:
 			value = (self.rcc.CR & RCC_CR.RO_MASK) | (value & RCC_CR.RW_MASK)
@@ -107,3 +111,9 @@ class STM32F4xxRcc(QlPeripheral):
 				self.rcc.CFGR |= rdy
 			else:
 				self.rcc.CFGR &= ~rdy
+
+		for rdy, on in self.csr_rdyon:
+			if self.rcc.CSR & on:
+				self.rcc.CSR |= rdy
+			else:
+				self.rcc.CSR &= ~rdy
