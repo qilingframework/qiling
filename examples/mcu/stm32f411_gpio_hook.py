@@ -9,9 +9,9 @@ def test_mcu_gpio_stm32f411():
     ql = Qiling(["../../examples/rootfs/mcu/stm32f411/hello_gpioA.hex"],                    
                 archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DEBUG)
 
-    ql.hw.create('usart2')
-    ql.hw.create('rcc')
-    ql.hw.create('gpioa')
+    ql.hw.create('usart2').watch()
+    ql.hw.create('rcc').watch()
+    ql.hw.create('gpioa').watch()
     
 
     ql.hw.gpioa.hook_set(5, lambda: print('LED light up'))
