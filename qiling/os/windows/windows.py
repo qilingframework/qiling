@@ -117,8 +117,14 @@ class QlOsWindows(QlOs):
             entry = ql.loader.import_symbols[address]
             api_name = entry['name']
 
+            # ql.log.warning(f"api_name: {api_name}")
+            # ql.log.warning(f"Imported DLL {entry['dll']}")
+            # ql.log.warning(f"const.Mapper: {const.Mapper}")
             if api_name is None:
-                api_name = const.Mapper[entry['dll']][entry['ordinal']]
+                if entry['dll'] in const.Mapper:
+                    api_name = const.Mapper[entry['dll']][entry['ordinal']]
+                else:
+                    ql.log.warning(f"dll {entry['dll']} ordinal {entry['ordinal']}")
             else:
                 api_name = api_name.decode()
 
