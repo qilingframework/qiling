@@ -5,6 +5,10 @@ This file details the changelog of Qiling Framework.
 - Clean and tidy up core utils module (WIP)
 - Clean and tidy up path module
 - Other small adjustments so support the above changes
+- Rearranged the code to be more Pythonic and more readable
+- Removed unused members and methods
+- Added typing annotations
+
 
 ------------------------------------
 [Version 1.4.0]: Oct 20th, 2021
