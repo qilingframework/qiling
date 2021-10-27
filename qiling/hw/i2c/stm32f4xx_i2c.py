@@ -70,8 +70,6 @@ class STM32F4xxI2c(QlPeripheral):
 
 	@QlPeripheral.debug_info()
 	def write(self, offset: int, size: int, value: int):
-		self.ql.log.debug(f'[{self.label.upper()}] [W] {self.find_field(offset, size):10s} = {hex(value)}')
-		
 		if offset in [self.struct.SR1.offset, self.struct.SR2.offset]:
 			return		
 
