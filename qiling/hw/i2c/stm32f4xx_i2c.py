@@ -141,7 +141,9 @@ class STM32F4xxI2c(QlPeripheral):
 		
 		self.i2c.SR1 |= I2C_SR1.STOPF
 		self.i2c.SR1 &= ~I2C_SR1.ADDR
+		
 		self.set_slave_mode()
+		self.send_event_interrupt()
 	
 	def send_address(self):
 		if self.i2c.DR == self.i2c.OAR1 >> 1:
