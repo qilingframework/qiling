@@ -11,3 +11,6 @@ def byte2bcd(value):
         value -= 10
 
     return (bcdhigh << 4) | value
+
+def bcd2byte(value):
+    return ((value & 0xF0) >> 0x4) * 10 + (value & 0xf)
