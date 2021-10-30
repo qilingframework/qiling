@@ -48,9 +48,17 @@ class QlOs:
         try:
             import ida_idaapi
         except ImportError:
-            self._stdin  = ql_file('stdin',  sys.stdin.fileno())
-            self._stdout = ql_file('stdout', sys.stdout.fileno())
-            self._stderr = ql_file('stderr', sys.stderr.fileno())
+            
+            #io.UnsupportedOperation: fileno
+            
+            #self._stdin  = ql_file('stdin',  sys.stdin.fileno())
+            #self._stdout = ql_file('stdout', sys.stdout.fileno())
+            #self._stderr = ql_file('stderr', sys.stderr.fileno())
+            
+            self._stdin  = ql_file('stdin',  0)
+            self._stdout = ql_file('stdout', 1)
+            self._stderr = ql_file('stderr', 2)
+            
         else:
             self._stdin  = getattr(sys.stdin,  'buffer', sys.stdin)
             self._stdout = getattr(sys.stdout, 'buffer', sys.stdout)
