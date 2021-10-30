@@ -3,16 +3,14 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+import time
 import ctypes
+from datetime import datetime
 
 from qiling.hw.peripheral import QlPeripheral
 from qiling.hw.const.stm32f4xx_rtc import RTC_TR, RTC_ISR
-from qiling.hw.utils.bcd import byte2bcd
+from qiling.hw.utils.bcd import bcd2byte, byte2bcd
 
-
-class Time:
-    def __init__(self):
-        pass
 
 class STM32F4xxRtc(QlPeripheral):
     class Type(ctypes.Structure):
@@ -133,8 +131,17 @@ class STM32F4xxRtc(QlPeripheral):
 
         self.rtc.TR = hour | minute | second | time_format
 
-    def get_time(self):
-        pass
+    def get_time(self, value):
+        hour   = (value & (RTC_TR.HT | RTC_TR.HU)) >> 16
+        minute = (value & (RTC_TR.MNT | RTC_TR.MNU)) >> 8
+        second = value & (RTC_TR.ST | RTC_TR.SU)
+        time_format = (value & RTC_TR.PM) >> 16
+
+        return hour, minute, second, time_format
+        
+    def increase(self):
+        self.calendar += 1
+        self.set_time(self.calendar.tm_hour, self.calendar.tm_min, self.calendar.tm_sec)
 
     def step(self):
         if self.rtc.ISR & RTC_ISR.INIT:
