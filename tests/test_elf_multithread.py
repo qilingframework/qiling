@@ -237,9 +237,6 @@ class ELFTest(unittest.TestCase):
 
 
     def test_udp_elf_linux_x86(self):
-        # if platform.system() == "Darwin" and platform.machine() == "arm64":
-        #     return
-
         def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
             try:
                 buf = ql.mem.read(write_buf, write_count)
@@ -259,9 +256,6 @@ class ELFTest(unittest.TestCase):
 
 
     def test_udp_elf_linux_x8664(self):
-        # if platform.system() == "Darwin" and platform.machine() == "arm64":
-        #     return
-
         def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
             try:
                 buf = ql.mem.read(write_buf, write_count)
