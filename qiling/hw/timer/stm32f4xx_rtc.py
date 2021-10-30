@@ -4,8 +4,15 @@
 #
 
 import ctypes
-from qiling.hw.peripheral import QlPeripheral
 
+from qiling.hw.peripheral import QlPeripheral
+from qiling.hw.const.stm32f4xx_rtc import RTC_TR, RTC_ISR
+from qiling.hw.utils.bcd import byte2bcd
+
+
+class Time:
+    def __init__(self):
+        pass
 
 class STM32F4xxRtc(QlPeripheral):
     class Type(ctypes.Structure):
@@ -99,5 +106,38 @@ class STM32F4xxRtc(QlPeripheral):
 
     @QlPeripheral.debug_info()
     def write(self, offset: int, size: int, value: int):
+        if offset == self.struct.ISR.offset:
+            for bitmask in [
+                RTC_ISR.TAMP1F, 
+                RTC_ISR.TSOVF, 
+                RTC_ISR.TSF, 
+                RTC_ISR.WUTF, 
+                RTC_ISR.ALRBF, 
+                RTC_ISR.ALRAF, 
+                RTC_ISR.RSF
+            ]:
+                if value & bitmask == 0:
+                    self.rtc.ISR &= ~bitmask
+
+            self.rtc.ISR = (self.rtc.ISR & ~RTC_ISR.INIT) | (value & RTC_ISR.INIT)            
+            return
+
         data = (value).to_bytes(size, 'little')
-        ctypes.memmove(ctypes.addressof(self.rtc) + offset, data, size)
+        ctypes.memmove(ctypes.addressof(self.rtc) + offset, data, size)    
+
+    def set_time(self, hour=0, minute=0, second=0, time_format=0):        
+        hour   = (byte2bcd(hour) << 16) & (RTC_TR.HT | RTC_TR.HU)
+        minute = (byte2bcd(minute) << 8) & (RTC_TR.MNT | RTC_TR.MNU)
+        second = byte2bcd(second) & (RTC_TR.ST | RTC_TR.SU)
+        time_format = (time_format << 16) & RTC_TR.PM
+
+        self.rtc.TR = hour | minute | second | time_format
+
+    def get_time(self):
+        pass
+
+    def step(self):
+        if self.rtc.ISR & RTC_ISR.INIT:
+            self.rtc.ISR |= RTC_ISR.INITF
+
+        self.rtc.ISR |= RTC_ISR.RSF
