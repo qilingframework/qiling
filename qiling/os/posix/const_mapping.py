@@ -76,23 +76,6 @@ def ql_open_flag_mapping(ql: Qiling, flags):
 
     return flag_mapping(flags, open_flags_name, f, t)
 
-# def open_flags_mapping(flags, archtype, ostype):
-#     if ostype == QL_OS.MACOS:
-#         mapping_dict = {
-#             QL_ARCH.X8664: macos_x86_open_flags,
-#             QL_ARCH.ARM64: linux_arm_open_flags,
-#         }[archtype]      
-#     else:
-#         mapping_dict = {
-#             QL_ARCH.X86: linux_x86_open_flags,
-#             QL_ARCH.X8664: linux_x86_open_flags,
-#             QL_ARCH.ARM: linux_arm_open_flags,
-#             QL_ARCH.ARM64: linux_arm_open_flags,
-#             QL_ARCH.MIPS: linux_mips_open_flags,
-#         }[archtype]
-#     ret = ["O_RDONLY"]
-#     return _constant_mapping(flags, mapping_dict, ret)
-
 
 def mmap_flag_mapping(flags):
     mmap_flags = {
@@ -110,7 +93,6 @@ def mmap_flag_mapping(flags):
         'MAP_ANON'      : 0x00080000,
         'MAP_SYSRAM'    : 0x01000000
     }
-
     return _constant_mapping(flags, mmap_flags)
 
 
