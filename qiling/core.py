@@ -51,7 +51,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             stdin=None,
             stdout=None,
             stderr=None,
-            noneos=None,
     ):
         """ Create a Qiling instance.
 
