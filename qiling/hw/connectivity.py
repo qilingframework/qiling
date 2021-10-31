@@ -84,12 +84,12 @@ class QlConnectivityPeripheral(QlPeripheral):
 
     @staticmethod
     def device_handler(func):
-        def wrapper(self):
-            func(self)
-
+        def wrapper(self):            
             if self.device_list and self.can_recv():
                 data = self.recv(numb=1)			
                 for device in self.device_list:
                     device.send(data)
+
+            func(self)
         
         return wrapper
