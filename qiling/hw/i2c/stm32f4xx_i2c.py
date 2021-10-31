@@ -6,10 +6,11 @@
 import ctypes
 
 from qiling.hw.peripheral import QlPeripheral
+from qiling.hw.connectivity import QlConnectivityPeripheral
 from qiling.hw.const.stm32f4xx_i2c import I2C_CR1, I2C_CR2, I2C_SR1, I2C_SR2, I2C_DR, I2C_OAR1, I2C_OAR2
 
 
-class STM32F4xxI2c(QlPeripheral):
+class STM32F4xxI2c(QlConnectivityPeripheral):
 	class Type(ctypes.Structure):
 		""" the structure is available in :
 			stm32f423xx.h
@@ -51,9 +52,6 @@ class STM32F4xxI2c(QlPeripheral):
 
 		self.ev_intn = ev_intn # event interrupt
 		self.er_intn = er_intn # error interrupt
-		
-		self.devices = []
-		self.current = None
 		
 		self.reset()
 
@@ -147,9 +145,6 @@ class STM32F4xxI2c(QlPeripheral):
 	
 	def send_address(self):
 		if self.i2c.DR == self.i2c.OAR1 >> 1:
-			for dev in self.devices:
-				if self.i2c.DR == dev.address:
-					self.current = dev
 			
 			# TODO: send ACK
 			self.i2c.SR1 |= I2C_SR1.ADDR | I2C_SR1.TXE
@@ -157,7 +152,8 @@ class STM32F4xxI2c(QlPeripheral):
 
 	def send_data(self):
 		self.i2c.SR1 |= I2C_SR1.BTF | I2C_SR1.TXE
-		self.current.send(self.i2c.DR)
+
+		self.send_to_user(self.i2c.DR)
 		self.send_event_interrupt()
 
 	## I2C Status register 2 (I2C_SR2)
@@ -191,16 +187,17 @@ class STM32F4xxI2c(QlPeripheral):
 	def fetch_device_address(self):
 		# dual addressing mode
 		if self.i2c.OAR2 & I2C_OAR2.ENDUAL:
-			self.i2c.OAR1 = self.devices[0].address << 1
-			self.i2c.OAR2 = I2C_OAR2.ENDUAL | (self.devices[1].address << 1)
+			self.i2c.OAR1 = self.device_list[0].address << 1
+			self.i2c.OAR2 = I2C_OAR2.ENDUAL | (self.device_list[1].address << 1)
 
 		# single device, 10-bit slave address
 		elif self.i2c.OAR1 & I2C_OAR1.ADDMODE: 
-			self.i2c.OAR1 = I2C_OAR1.ADDMODE | self.devices[0].address
+			self.i2c.OAR1 = I2C_OAR1.ADDMODE | self.device_list[0].address
 		
 		# single device, 7-bit slave address
 		else:
-			self.i2c.OAR1 = self.devices[0].address << 1
+			self.i2c.OAR1 = self.device_list[0].address << 1
 
-	def connect(self, dev):
-		self.devices.append(dev)
+	@QlConnectivityPeripheral.device_handler
+	def step(self):
+		pass

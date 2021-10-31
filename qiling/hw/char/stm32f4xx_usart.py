@@ -94,10 +94,11 @@ class STM32F4xxUsart(QlConnectivityPeripheral):
 
         if not (self.usart.SR & USART_SR.RXNE): 
             # TXE bit must had been cleared
-            if self.can_recv():
+            if self.has_input():
                 self.usart.SR |= USART_SR.RXNE
                 self.usart.DR = self.recv_from_user()
 
+    @QlConnectivityPeripheral.device_handler
     def step(self):
         self.transfer()
 
