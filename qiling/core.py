@@ -609,7 +609,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
     def uc(self) -> Uc:
         """ Raw uc instance.
 
-            Type: Uc
+            Type: Ucgit
         """
         return self._uc
 

@@ -53,6 +53,7 @@ def ql_syscall_exit_group(ql: Qiling, code: int):
         ql.os.exit_code = code
         ql.os.stop()
 
+
 def ql_syscall_alarm(ql: Qiling, seconds: int):
     return 0
 
