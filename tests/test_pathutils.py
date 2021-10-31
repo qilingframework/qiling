@@ -70,7 +70,7 @@ class TestPathUtils(unittest.TestCase):
     def test_convert_for_native_os(self):
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_hello_static"], "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG)
 
-        if ql.platform == QL_OS.WINDOWS:
+        if ql.platform_os == QL_OS.WINDOWS:
             rootfs = pathlib.Path("../examples/rootfs/x8664_windows").resolve()
             self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_for_native_os(rootfs, "/", "\\\\.\\PhysicalDrive0\\test")))
             self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_for_native_os(rootfs, "/", "\\\\.\\PhysicalDrive0\\..\\test")))

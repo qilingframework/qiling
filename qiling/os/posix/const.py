@@ -3,6 +3,11 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+#!/usr/bin/env python3
+# 
+# Cross Platform and Multi Architecture Advanced Binary Emulation Framework
+#
+
 from qiling.const import *
 
 # OS Threading Constants
@@ -19,7 +24,7 @@ NR_OPEN = 1024
 
 SOCK_TYPE_MASK = 0x0f
 
-linux_socket_types = {
+x86_socket_types = {
     'SOCK_STREAM'    : 0x1,
     'SOCK_DGRAM'     : 0x2,
     'SOCK_RAW'       : 0x3,
@@ -29,8 +34,7 @@ linux_socket_types = {
     'SOCK_PACKET'    : 0xa,
 }
 
-
-linux_socket_domain = {
+x86_socket_domain = {
     'AF_UNSPEC'    : 0x0,
     'AF_LOCAL'     : 0x1,
     'AF_INET'      : 0x2,
@@ -46,7 +50,7 @@ linux_socket_domain = {
 }
 
 # https://github.com/torvalds/linux/blob/master/include/uapi/linux/in.h
-linux_socket_level = {
+x86_socket_level = {
     'IPPROTO_IP'    : 0x0000,
     'SOL_SOCKET'    : 0x0001,
     'IPPROTO_TCP'   : 0x0006,
@@ -56,7 +60,7 @@ linux_socket_level = {
 }
 
 
-linux_socket_options = {
+x86_socket_options = {
     "SO_DEBUG"           : 0x0001,
     "SO_REUSEADDR"       : 0x0002,
     "SO_KEEPALIVE"       : 0x0009,
@@ -75,7 +79,7 @@ linux_socket_options = {
 
 # https://man7.org/linux/man-pages/man7/ip.7.html
 # https://github.com/torvalds/linux/blob/master/include/uapi/linux/in.h
-linux_socket_ip_options = {
+posix_socket_ip_options = {
     "IP_TOS"                    : 0x0001,
     "IP_TTL"                    : 0x0002,
     "IP_HDRINCL"                : 0x0003,
@@ -143,7 +147,7 @@ macos_socket_ip_options = {
 }
 
 
-macos_socket_domain = {
+macos_x86_socket_domain = {
     'AF_UNSPEC'    : 0x0,
     'AF_LOCAL'     : 0x1,
     'AF_INET'      : 0x2,
@@ -397,11 +401,9 @@ mips_socket_ip_options = {
     "SO_TIMESTAMPING_NEW"       : 0x0041,
     "SO_RCVTIMEO_NEW"           : 0x0042,
     "SO_SNDTIMEO_NEW"           : 0x0043,
-
 }
 
-
-mac_open_flags = {
+macos_x86_open_flags = {
     "O_RDONLY"   : 0x0000,
     "O_WRONLY"   : 0x0001,
     "O_RDWR"     : 0x0002,
@@ -417,8 +419,23 @@ mac_open_flags = {
     "O_DIRECTORY": 0x100000
 }
 
+macos_arm64_open_flags = {
+    "O_RDONLY"   : 0x0000,
+    "O_WRONLY"   : 0x0001,
+    "O_RDWR"     : 0x0002,
+    "O_NONBLOCK" : 0x0004,
+    "O_APPEND"   : 0x0008,
+    "O_ASYNC"    : 0x0040,
+    "O_SYNC"     : 0x0080,
+    "O_NOFOLLOW" : 0x0100,
+    "O_CREAT"    : 0x0200,
+    "O_TRUNC"    : 0x0400,
+    "O_EXCL"     : 0x0800,
+    "O_NOCTTY"   : 0x20000,
+    "O_DIRECTORY": 0x100000
+}
 
-linux_open_flags = {
+x86_open_flags = {
     'O_RDONLY'    : 0o000000000,
     'O_WRONLY'    : 0o000000001,
     'O_RDWR'      : 0o000000002,

@@ -208,6 +208,8 @@ def arch_convert_str(arch: QL_ARCH) -> Optional[str]:
     return __value_to_key(QL_ARCH, arch)
 
 def arch_convert(arch: str) -> Optional[QL_ARCH]:
+    if arch == "x86_64":
+        arch = "x8664"
     return arch_map.get(arch)
 
 def arch_os_convert(arch: QL_ARCH) -> Optional[QL_OS]:

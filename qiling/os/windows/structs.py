@@ -1999,7 +1999,7 @@ class OsVersionInfoExA(WindowsStruct):
         self.major = [major, self.DWORD_SIZE, "little", int]
         self.minor = [minor, self.DWORD_SIZE, "little", int]
         self.build = [build, self.DWORD_SIZE, "little", int]
-        self.platform = [platform, self.DWORD_SIZE, "little", int]
+        self.platform_os = [platform, self.DWORD_SIZE, "little", int]
         self.version = [version, 128, "little", bytes]
         self.service_major = [service_major, self.WORD_SIZE, "little", int]
         self.service_minor = [service_minor, self.WORD_SIZE, "little", int]
@@ -2008,11 +2008,11 @@ class OsVersionInfoExA(WindowsStruct):
         self.reserved = [0, self.BYTE_SIZE, "little", int]
 
     def write(self, addr):
-        super().generic_write(addr, [self.size, self.major, self.minor, self.build, self.platform, self.version,
+        super().generic_write(addr, [self.size, self.major, self.minor, self.build, self.platform_os, self.version,
                                      self.service_major, self.service_minor, self.suite, self.product, self.reserved])
 
     def read(self, addr):
-        super().generic_read(addr, [self.size, self.major, self.minor, self.build, self.platform, self.version,
+        super().generic_read(addr, [self.size, self.major, self.minor, self.build, self.platform_os, self.version,
                                     self.service_major, self.service_minor, self.suite, self.product, self.reserved])
 
 
@@ -2031,14 +2031,14 @@ class OsVersionInfoW(WindowsStruct):
         self.major = [major, self.ULONG_SIZE, "little", int]
         self.minor = [minor, self.ULONG_SIZE, "little", int]
         self.build = [build, self.ULONG_SIZE, "little", int]
-        self.platform = [platform, self.ULONG_SIZE, "little", int]
+        self.platform_os = [platform, self.ULONG_SIZE, "little", int]
         self.version = [version, 128, "little", bytes]
 
     def write(self, addr):
-        self.generic_write(addr, [self.size, self.major, self.minor, self.build, self.platform, self.version])
+        self.generic_write(addr, [self.size, self.major, self.minor, self.build, self.platform_os, self.version])
 
     def read(self, addr):
-        self.generic_read(addr, [self.size, self.major, self.minor, self.build, self.platform, self.version])
+        self.generic_read(addr, [self.size, self.major, self.minor, self.build, self.platform_os, self.version])
 
 
 # typedef struct _SYSTEM_INFO {

@@ -107,7 +107,7 @@ class QlPathManager:
 
     def convert_path(self, rootfs: Union[str, Path], cwd: str, path: str) -> Path:
         emulated_os = self.ql.ostype
-        hosting_os = self.ql.platform
+        hosting_os = self.ql.platform_os
 
         # emulated os and hosting platform are of the same type
         if  (emulated_os == hosting_os) or (emulated_os in QL_OS_POSIX and hosting_os in QL_OS_POSIX):

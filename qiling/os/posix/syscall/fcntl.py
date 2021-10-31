@@ -35,7 +35,8 @@ def ql_syscall_open(ql: Qiling, filename: int, flags: int, mode: int):
         except QlSyscallError as e:
             regreturn = - e.errno
 
-    ql.log.debug("open(%s, %s, 0o%o) = %d" % (relative_path, open_flags_mapping(flags, ql.archtype), mode, regreturn))
+
+    ql.log.debug("open(%s, %s, 0o%o) = %d" % (relative_path, open_flags_mapping(flags, ql.archtype, ql.ostype), mode, regreturn))
 
     if regreturn >= 0 and regreturn != 2:
         ql.log.debug(f'File found: {real_path:s}')
@@ -45,7 +46,7 @@ def ql_syscall_open(ql: Qiling, filename: int, flags: int, mode: int):
     return regreturn
 
 def ql_syscall_creat(ql: Qiling, filename: int, mode: int):
-    flags = linux_open_flags["O_WRONLY"] | linux_open_flags["O_CREAT"] | linux_open_flags["O_TRUNC"]
+    flags = posix_open_flags["O_WRONLY"] | posix_open_flags["O_CREAT"] | posix_open_flags["O_TRUNC"]
 
     path = ql.os.utils.read_cstring(filename)
     real_path = ql.os.path.transform_to_real_path(path)
@@ -69,7 +70,7 @@ def ql_syscall_creat(ql: Qiling, filename: int, mode: int):
         except QlSyscallError as e:
             regreturn = -e.errno
 
-    ql.log.debug("creat(%s, %s, 0o%o) = %d" % (relative_path, open_flags_mapping(flags, ql.archtype), mode, regreturn))
+    ql.log.debug("creat(%s, %s, 0o%o) = %d" % (relative_path, open_flags_mapping(flags, ql.archtype, ql.ostype), mode, regreturn))
 
     if regreturn >= 0 and regreturn != 2:
         ql.log.debug(f'File found: {real_path:s}')
@@ -105,8 +106,8 @@ def ql_syscall_openat(ql: Qiling, fd: int, path: int, flags: int, mode: int):
             regreturn = idx
         except QlSyscallError as e:
             regreturn = -e.errno
-
-    ql.log.debug(f'openat(fd = {fd:d}, path = {file_path}, flags = {open_flags_mapping(flags, ql.archtype)}, mode = {mode:#o}) = {regreturn:d}')
+            
+    ql.log.debug(f'openat(fd = {fd:d}, path = {file_path}, flags = {open_flags_mapping(flags, ql.archtype, ql.ostype)}, mode = {mode:#o}) = {regreturn:d}')
 
     return regreturn
 
