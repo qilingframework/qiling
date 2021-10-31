@@ -115,8 +115,8 @@ def mmap_prot_mapping(prots):
 def socket_type_mapping(t, archtype, ostype):
     if ostype == QL_OS.MACOS:    
         socket_type_map = {
-            QL_ARCH.ARM64: linux_arm_socket_types,
             QL_ARCH.X8664: linux_x86_socket_types,
+            QL_ARCH.ARM64: linux_arm_socket_types,
         }[archtype]
     else:
         socket_type_map = {
