@@ -9,7 +9,7 @@ from qiling import Qiling
 from qiling.const import QL_OS, QL_ARCH
 from qiling.exception import QlSyscallError
 from qiling.os.posix.const import *
-from qiling.os.posix.const_mapping import ql_open_flag_mapping, open_flags_mapping
+from qiling.os.posix.const_mapping import ql_open_flag_mapping
 from qiling.os.posix.filestruct import ql_socket
 
 def ql_syscall_open(ql: Qiling, filename: int, flags: int, mode: int):
@@ -29,6 +29,7 @@ def ql_syscall_open(ql: Qiling, filename: int, flags: int, mode: int):
             if ql.archtype== QL_ARCH.ARM and ql.ostype!= QL_OS.QNX:
                 mode = 0
 
+            #flags = ql_open_flag_mapping(ql, flags)
             flags = ql_open_flag_mapping(ql, flags)
             ql.os.fd[idx] = ql.os.fs_mapper.open_ql_file(path, flags, mode)
             regreturn = idx
@@ -36,7 +37,7 @@ def ql_syscall_open(ql: Qiling, filename: int, flags: int, mode: int):
             regreturn = - e.errno
 
 
-    ql.log.debug("open(%s, %s, 0o%o) = %d" % (relative_path, open_flags_mapping(flags, ql.archtype, ql.ostype), mode, regreturn))
+    ql.log.debug("open(%s, 0o%o) = %d" % (relative_path, mode, regreturn))
 
     if regreturn >= 0 and regreturn != 2:
         ql.log.debug(f'File found: {real_path:s}')
@@ -70,7 +71,7 @@ def ql_syscall_creat(ql: Qiling, filename: int, mode: int):
         except QlSyscallError as e:
             regreturn = -e.errno
 
-    ql.log.debug("creat(%s, %s, 0o%o) = %d" % (relative_path, open_flags_mapping(flags, ql.archtype, ql.ostype), mode, regreturn))
+    ql.log.debug("creat(%s, 0o%o) = %d" % (relative_path, mode, regreturn))
 
     if regreturn >= 0 and regreturn != 2:
         ql.log.debug(f'File found: {real_path:s}')
@@ -107,7 +108,7 @@ def ql_syscall_openat(ql: Qiling, fd: int, path: int, flags: int, mode: int):
         except QlSyscallError as e:
             regreturn = -e.errno
             
-    ql.log.debug(f'openat(fd = {fd:d}, path = {file_path}, flags = {open_flags_mapping(flags, ql.archtype, ql.ostype)}, mode = {mode:#o}) = {regreturn:d}')
+    ql.log.debug(f'openat(fd = {fd:d}, path = {file_path}, mode = {mode:#o}) = {regreturn:d}')
 
     return regreturn
 

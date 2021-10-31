@@ -43,132 +43,6 @@ def ql_open_flag_mapping(ql: Qiling, flags):
                 ret = ret | mapping_to[n]
         return ret
 
-    open_flags_name = [
-        "O_RDONLY",
-        "O_WRONLY",
-        "O_RDWR",
-        "O_NONBLOCK",
-        "O_APPEND",
-        "O_ASYNC",
-        "O_SYNC",
-        "O_NOFOLLOW",
-        "O_CREAT",
-        "O_TRUNC",
-        "O_EXCL",
-        "O_NOCTTY",
-        "O_DIRECTORY",
-        "O_BINARY",
-        "O_LARGEFILE"
-    ]
-
-    _macos_x86_open_flags = {
-        "O_RDONLY": 0x0,
-        "O_WRONLY": 0x1,
-        "O_RDWR": 0x2,
-        "O_NONBLOCK": 0x4,
-        "O_APPEND": 0x8,
-        "O_ASYNC": 0x40,
-        "O_SYNC": 0x80,
-        "O_NOFOLLOW": 0x100,
-        "O_CREAT": 0x200,
-        "O_TRUNC": 0x400,
-        "O_EXCL": 0x800,
-        "O_NOCTTY": 0x20000,
-        "O_DIRECTORY": 0x100000,
-        "O_BINARY": None,
-        'O_LARGEFILE': None
-    }
-
-    _linux_x86_open_flags = {
-        'O_RDONLY': 0x0,
-        'O_WRONLY': 0x1,
-        'O_RDWR': 0x2,
-        'O_NONBLOCK': 0x800,
-        'O_APPEND': 0x400,
-        'O_ASYNC': 0x2000,
-        'O_SYNC': 0x101000,
-        'O_NOFOLLOW': 0x20000,
-        'O_CREAT': 0x40,
-        'O_TRUNC': 0x200,
-        'O_EXCL': 0x80,
-        'O_NOCTTY': 0x100,
-        'O_DIRECTORY': 0x10000,
-        'O_BINARY': None,
-        'O_LARGEFILE': 0x0
-    }
-
-    _linux_arm_open_flags = {
-        'O_RDONLY': 0x0,
-        'O_WRONLY': 0x1,
-        'O_RDWR': 0x2,
-        'O_NONBLOCK': 0x800,
-        'O_APPEND': 0x400,
-        'O_ASYNC': 0x2000,
-        'O_SYNC': 0x101000,
-        'O_NOFOLLOW': 0x8000,
-        'O_CREAT': 0x40,
-        'O_TRUNC': 0x200,
-        'O_EXCL': 0x80,
-        'O_NOCTTY': 0x100,
-        'O_DIRECTORY': 0x4000,
-        'O_BINARY': None,
-        'O_LARGEFILE': 0x20000
-    }
-
-    _linux_mips_open_flags = {
-        'O_RDONLY': 0x0,
-        'O_WRONLY': 0x1,
-        'O_RDWR': 0x2,
-        'O_NONBLOCK': 0x80,
-        'O_APPEND': 0x8,
-        'O_ASYNC': 0x1000,
-        'O_SYNC': 0x4010,
-        'O_NOFOLLOW': 0x20000,
-        'O_CREAT': 0x100,
-        'O_TRUNC': 0x200,
-        'O_EXCL': 0x400,
-        'O_NOCTTY': 0x800,
-        'O_DIRECTORY': 0x10000,
-        'O_BINARY' : None,
-        'O_LARGEFILE': 0x2000
-    }
-
-    _freebsd_open_flags = {
-        'O_RDONLY': 0x0,
-        'O_WRONLY': 0x1,
-        'O_RDWR': 0x2,
-        'O_NONBLOCK': 0x4,
-        'O_APPEND': 0x8,
-        'O_ASYNC': 0x40,
-        'O_SYNC': 0x80,
-        'O_NOFOLLOW': 0x100,
-        'O_CREAT': 0x200,
-        'O_TRUNC': 0x400,
-        'O_EXCL': 0x800,
-        'O_NOCTTY': 0x8000,
-        'O_DIRECTORY': 0x20000,
-        'O_BINARY' : None,
-        'O_LARGEFILE': None
-    }
-
-    _qnx_open_flags = {
-        'O_RDONLY'    : 0x00000,
-        'O_WRONLY'    : 0x00001,
-        'O_RDWR'      : 0x00002,
-        'O_APPEND'    : 0x00008,
-        'O_SYNC'      : 0x00020,
-        'O_NONBLOCK'  : 0x00080,
-        'O_CREAT'     : 0x00100,
-        'O_TRUNC'     : 0x00200,
-        'O_EXCL'      : 0x00400,
-        'O_NOCTTY'    : 0x00800,
-        'O_LARGEFILE' : 0x08000,
-        'O_ASYNC'     : 0x10000,
-        'O_NOFOLLOW'  : None,
-        'O_DIRECTORY' : None,
-        'O_BINARY'    : None
-    }
-
     f = {}
     t = {}
 
@@ -177,47 +51,47 @@ def ql_open_flag_mapping(ql: Qiling, flags):
     
     if ql.ostype == QL_OS.LINUX:
         if ql.archtype in (QL_ARCH.X86, QL_ARCH.X8664):
-            f = _linux_x86_open_flags
+            f = linux_x86_open_flags
         elif ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB, QL_ARCH.ARM64):
-            f = _linux_arm_open_flags
+            f = linux_arm_open_flags
         elif ql.archtype == QL_ARCH.MIPS:
-            f = _linux_mips_open_flags
+            f = linux_mips_open_flags
     elif ql.ostype == QL_OS.MACOS:
         if ql.archtype in (QL_ARCH.X86, QL_ARCH.X8664):
-            f = _macos_x86_open_flags
+            f = macos_x86_open_flags
     elif ql.ostype == QL_OS.FREEBSD:
-        f = _freebsd_open_flags
+        f = freebsd_x86_open_flags
     elif ql.ostype == QL_OS.QNX:
-        f = _qnx_open_flags
+        f = qnx_arm64_open_flags
 
     if ql.platform_os == QL_OS.LINUX:
-        t = _linux_x86_open_flags
+        t = linux_x86_open_flags
     elif ql.platform_os == QL_OS.MACOS:
-        t = _macos_x86_open_flags
+        t = macos_x86_open_flags
     elif ql.platform_os == QL_OS.FREEBSD:
-        t = _freebsd_open_flags
+        t = freebsd_x86_open_flags
 
     if f == t:
         return flags
 
     return flag_mapping(flags, open_flags_name, f, t)
 
-def open_flags_mapping(flags, archtype, ostype):
-    if ostype == QL_OS.MACOS:
-        mapping_dict = {
-            QL_ARCH.X8664: macos_x86_open_flags,
-            QL_ARCH.ARM64: linux_arm_open_flags,
-        }[archtype]      
-    else:
-        mapping_dict = {
-            QL_ARCH.X86: linux_x86_open_flags,
-            QL_ARCH.X8664: linux_x86_open_flags,
-            QL_ARCH.ARM: linux_arm_open_flags,
-            QL_ARCH.ARM64: linux_arm_open_flags,
-            QL_ARCH.MIPS: linux_mips_open_flags,
-        }[archtype]
-    ret = ["O_RDONLY"]
-    return _constant_mapping(flags, mapping_dict, ret)
+# def open_flags_mapping(flags, archtype, ostype):
+#     if ostype == QL_OS.MACOS:
+#         mapping_dict = {
+#             QL_ARCH.X8664: macos_x86_open_flags,
+#             QL_ARCH.ARM64: linux_arm_open_flags,
+#         }[archtype]      
+#     else:
+#         mapping_dict = {
+#             QL_ARCH.X86: linux_x86_open_flags,
+#             QL_ARCH.X8664: linux_x86_open_flags,
+#             QL_ARCH.ARM: linux_arm_open_flags,
+#             QL_ARCH.ARM64: linux_arm_open_flags,
+#             QL_ARCH.MIPS: linux_mips_open_flags,
+#         }[archtype]
+#     ret = ["O_RDONLY"]
+#     return _constant_mapping(flags, mapping_dict, ret)
 
 
 def mmap_flag_mapping(flags):
