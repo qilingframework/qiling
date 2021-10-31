@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 
-import platform, sys, unittest
+import os, platform, sys, unittest
 
 sys.path.append("..")
 from qiling import Qiling
 
-if sys.version_info.major == 3 and sys.version_info.minor == 9:
+SECRET_KEY = os.environ.get('AM_I_IN_A_DOCKER_CONTAINER', False)
+
+if SECRET_KEY:
     sys.exit(0)
 
 if platform.system() == "Darwin" and platform.machine() == "arm64":

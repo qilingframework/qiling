@@ -36,4 +36,5 @@ test.file
 core
 *.perf
 tests/output.txt
+tests/testtest_*
 

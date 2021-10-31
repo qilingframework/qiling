@@ -5,11 +5,9 @@
 
 import time
 import ctypes
-from datetime import datetime
 
 from qiling.hw.peripheral import QlPeripheral
 from qiling.hw.const.stm32f4xx_rtc import RTC_TR, RTC_ISR
-from qiling.hw.utils.bcd import bcd2byte, byte2bcd
 
 
 class STM32F4xxRtc(QlPeripheral):
@@ -122,26 +120,6 @@ class STM32F4xxRtc(QlPeripheral):
 
         data = (value).to_bytes(size, 'little')
         ctypes.memmove(ctypes.addressof(self.rtc) + offset, data, size)    
-
-    def set_time(self, hour=0, minute=0, second=0, time_format=0):        
-        hour   = (byte2bcd(hour) << 16) & (RTC_TR.HT | RTC_TR.HU)
-        minute = (byte2bcd(minute) << 8) & (RTC_TR.MNT | RTC_TR.MNU)
-        second = byte2bcd(second) & (RTC_TR.ST | RTC_TR.SU)
-        time_format = (time_format << 16) & RTC_TR.PM
-
-        self.rtc.TR = hour | minute | second | time_format
-
-    def get_time(self, value):
-        hour   = (value & (RTC_TR.HT | RTC_TR.HU)) >> 16
-        minute = (value & (RTC_TR.MNT | RTC_TR.MNU)) >> 8
-        second = value & (RTC_TR.ST | RTC_TR.SU)
-        time_format = (value & RTC_TR.PM) >> 16
-
-        return hour, minute, second, time_format
-        
-    def increase(self):
-        self.calendar += 1
-        self.set_time(self.calendar.tm_hour, self.calendar.tm_min, self.calendar.tm_sec)
 
     def step(self):
         if self.rtc.ISR & RTC_ISR.INIT:
