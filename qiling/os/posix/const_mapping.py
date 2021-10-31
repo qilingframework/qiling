@@ -337,8 +337,8 @@ def socket_option_mapping(t, archtype, ostype):
         }[archtype]
     else: 
         socket_option_map = {
-            QL_ARCH.X86: x86_socket_options,
-            QL_ARCH.X8664: x86_socket_options,
+            QL_ARCH.X86: linux_x86_socket_options,
+            QL_ARCH.X8664: linux_x86_socket_options,
             QL_ARCH.ARM: linux_arm_socket_options,
             QL_ARCH.ARM_THUMB: linux_arm_socket_options,
             QL_ARCH.ARM64: linux_arm_socket_options,
