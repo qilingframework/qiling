@@ -6,9 +6,10 @@
 import ctypes
 
 from qiling.hw.peripheral import QlPeripheral
+from qiling.hw.connectivity import QlConnectivityPeripheral
 from qiling.hw.const.stm32f4xx_usart import USART_SR, USART_CR1
 
-class STM32F4xxUsart(QlPeripheral):
+class STM32F4xxUsart(QlConnectivityPeripheral):
     class Type(ctypes.Structure):
         """ the structure available in :
 			stm32f413xx.h
@@ -56,9 +57,6 @@ class STM32F4xxUsart(QlPeripheral):
         
         self.intn = intn
 
-        self.recv_buf = bytearray()
-        self.send_buf = bytearray()
-
     @QlPeripheral.debug_info()
     def read(self, offset: int, size: int) -> int:
         buf = ctypes.create_string_buffer(size)
@@ -92,33 +90,15 @@ class STM32F4xxUsart(QlPeripheral):
             data = self.usart.DR
 
             self.usart.SR |= USART_SR.TXE            
-            self.send_buf.append(data)
+            self.send_to_user(data)
 
         if not (self.usart.SR & USART_SR.RXNE): 
             # TXE bit must had been cleared
-            if self.recv_buf:
+            if self.has_input():
                 self.usart.SR |= USART_SR.RXNE
-                self.usart.DR = self.recv_buf.pop(0)        
-        
+                self.usart.DR = self.recv_from_user()
 
-    def send(self, data: bytes):
-        """ send user data into USART.
-
-        Args:
-            data (bytes): Input Data
-        """        
-        self.recv_buf += data
-
-    def recv(self) -> bytes:
-        """ receive data from USART.
-
-        Returns:
-            bytes: USART send buffer data
-        """
-        data = bytes(self.send_buf)
-        self.send_buf.clear()
-        return data
-
+    @QlConnectivityPeripheral.device_handler
     def step(self):
         self.transfer()
 

@@ -3,8 +3,11 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+import time
 import ctypes
+
 from qiling.hw.peripheral import QlPeripheral
+from qiling.hw.const.stm32f4xx_rtc import RTC_TR, RTC_ISR
 
 
 class STM32F4xxRtc(QlPeripheral):
@@ -99,5 +102,27 @@ class STM32F4xxRtc(QlPeripheral):
 
     @QlPeripheral.debug_info()
     def write(self, offset: int, size: int, value: int):
+        if offset == self.struct.ISR.offset:
+            for bitmask in [
+                RTC_ISR.TAMP1F, 
+                RTC_ISR.TSOVF, 
+                RTC_ISR.TSF, 
+                RTC_ISR.WUTF, 
+                RTC_ISR.ALRBF, 
+                RTC_ISR.ALRAF, 
+                RTC_ISR.RSF
+            ]:
+                if value & bitmask == 0:
+                    self.rtc.ISR &= ~bitmask
+
+            self.rtc.ISR = (self.rtc.ISR & ~RTC_ISR.INIT) | (value & RTC_ISR.INIT)            
+            return
+
         data = (value).to_bytes(size, 'little')
-        ctypes.memmove(ctypes.addressof(self.rtc) + offset, data, size)
+        ctypes.memmove(ctypes.addressof(self.rtc) + offset, data, size)    
+
+    def step(self):
+        if self.rtc.ISR & RTC_ISR.INIT:
+            self.rtc.ISR |= RTC_ISR.INITF
+
+        self.rtc.ISR |= RTC_ISR.RSF

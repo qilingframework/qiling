@@ -80,31 +80,32 @@ class LCD1602(LCD):
         print('LCD quit')
         pygame.quit()
 
-    def send(self, data):
-        self.buf.append(data)
+    def send(self, buf):
+        for data in buf:
+            self.buf.append(data)
 
-        if len(self.buf) == 4:
-            up = self.buf[0] & 0xf0
-            lo = self.buf[3] & 0xf0
-            cmd = up | (lo >> 4)
+            if len(self.buf) == 4:
+                up = self.buf[0] & 0xf0
+                lo = self.buf[3] & 0xf0
+                cmd = up | (lo >> 4)
 
-            if self.buf[0] & 0x1:                
-                if self.cur_col < 16 and self.cur_row < 2:
-                    self.data[self.cur_row][self.cur_col] = cmd                
-                    self.cur_col += 1
-                self.pixels = LCD.make_screen(self.data)
-            
-            elif cmd == 0x1:
-                self.data = [[ord(' ') for _ in range(self.cols)] for _ in range(self.rows)]
-                self.pixels = LCD.make_screen(self.data)
-            
-            elif up == 0x80:
-                self.cur_row, self.cur_col = 0, lo >> 4
+                if self.buf[0] & 0x1:                
+                    if self.cur_col < 16 and self.cur_row < 2:
+                        self.data[self.cur_row][self.cur_col] = cmd                
+                        self.cur_col += 1
+                    self.pixels = LCD.make_screen(self.data)
+                
+                elif cmd == 0x1:
+                    self.data = [[ord(' ') for _ in range(self.cols)] for _ in range(self.rows)]
+                    self.pixels = LCD.make_screen(self.data)
+                
+                elif up == 0x80:
+                    self.cur_row, self.cur_col = 0, lo >> 4
 
-            elif up == 0xc0:
-                self.cur_row, self.cur_col = 1, lo >> 4                
+                elif up == 0xc0:
+                    self.cur_row, self.cur_col = 1, lo >> 4                
 
-            self.buf = []
+                self.buf = []
 
     def run(self):
         threading.Thread(target=self.render).start()
