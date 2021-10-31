@@ -34,6 +34,7 @@ class ELFTest(unittest.TestCase):
         del QL_TEST
         del ql
 
+
     def test_elf_linux_cloexec_x8664(self):
         with open('../examples/rootfs/x8664_linux/testfile', 'wb') as f:
             f.write(b'0123456789')
@@ -149,9 +150,6 @@ class ELFTest(unittest.TestCase):
 
 
     def test_tcp_elf_linux_x86(self):
-        if platform.system() == "Darwin" and platform.machine() == "arm64":
-            return
-
         def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
             try:
                 buf = ql.mem.read(write_buf, write_count)
@@ -170,9 +168,6 @@ class ELFTest(unittest.TestCase):
 
 
     def test_tcp_elf_linux_x8664(self):
-        if platform.system() == "Darwin" and platform.machine() == "arm64":
-            return
-
         def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
             try:
                 buf = ql.mem.read(write_buf, write_count)
@@ -242,9 +237,6 @@ class ELFTest(unittest.TestCase):
 
 
     def test_udp_elf_linux_x86(self):
-        if platform.system() == "Darwin" and platform.machine() == "arm64":
-            return
-
         def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
             try:
                 buf = ql.mem.read(write_buf, write_count)
@@ -264,9 +256,6 @@ class ELFTest(unittest.TestCase):
 
 
     def test_udp_elf_linux_x8664(self):
-        if platform.system() == "Darwin" and platform.machine() == "arm64":
-            return
-
         def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
             try:
                 buf = ql.mem.read(write_buf, write_count)

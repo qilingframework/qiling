@@ -609,7 +609,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
     def uc(self) -> Uc:
         """ Raw uc instance.
 
-            Type: Uc
+            Type: Ucgit
         """
         return self._uc
 
@@ -864,7 +864,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             self.arch.stop()
 
         else:
-            self.uc.emu_stop()        
+            self.uc.emu_stop()    
 
     # start emulation
     def emu_start(self, begin, end, timeout=0, count=0):
