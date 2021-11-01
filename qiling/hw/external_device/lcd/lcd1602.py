@@ -130,6 +130,6 @@ class PyGameLCD1602(LCD1602PyGameRender):
     def step(self):
         self.check_event()
 
-        if len(self.buffer) > 4:
+        if len(self.buffer) >= 4:
             self.execute(self.buffer[:4])
             self.buffer = self.buffer[4:]
