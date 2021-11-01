@@ -52,18 +52,18 @@ class QlGdb(QlDebugger, object):
         self.port = port
 
 
-        if ql.archtype in QL_ARCH_HARDWARE:
-            load_address = ql.loader.load_address
+        if self.ql.baremetal:
+            load_address = self.ql.loader.load_address
             exit_point = load_address + os.path.getsize(ql.path)
-        elif ql.code:
-            load_address = ql.os.entry_point
+        elif self.ql.code:
+            load_address = self.ql.os.entry_point
             exit_point = load_address + len(ql.code)
         else:
             load_address = ql.loader.load_address
             exit_point = load_address + os.path.getsize(ql.path)
 
-        if ql.archtype in QL_ARCH_HARDWARE:
-            self.entry_point = ql.loader.entry_point
+        if self.ql.baremetal:
+            self.entry_point = self.ql.loader.entry_point
         elif self.ql.ostype in (QL_OS.LINUX, QL_OS.FREEBSD) and not self.ql.code:
             self.entry_point = self.ql.os.elf_entry
         else:
@@ -506,7 +506,7 @@ class QlGdb(QlDebugger, object):
 
 
                 elif subcmd.startswith('Xfer:threads:read::0,'):
-                    if self.ql.ostype in QL_OS_NONPID or self.ql.archtype in QL_ARCH_HARDWARE:
+                    if self.ql.ostype in QL_OS_NONPID or self.ql.baremetal:
                         self.send("l")
                     else:    
                         file_contents = ("<threads>\r\n<thread id=\""+ str(self.ql.os.pid) + "\" core=\"1\" name=\"" + self.ql.targetname + "\"/>\r\n</threads>")
@@ -621,7 +621,7 @@ class QlGdb(QlDebugger, object):
                     self.send("")
 
                 elif subcmd.startswith('File:open'):
-                    if self.ql.ostype == QL_OS.UEFI or self.ql.archtype in QL_ARCH_HARDWARE:
+                    if self.ql.ostype == QL_OS.UEFI or self.ql.baremetal:
                         self.send("F-1")
                         return
 
