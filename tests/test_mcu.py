@@ -131,6 +131,9 @@ class MCUTest(unittest.TestCase):
             def send(self, data):
                 pass
 
+            def step(self):
+                pass
+
         ql.hw.i2c1.connect(LCD())
         ql.run(count=550000)
 
