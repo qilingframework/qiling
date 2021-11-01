@@ -3,11 +3,13 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+import sys
 import pygame
 
 from qiling.hw.external_device.lcd.const import lcd1602_table
 
-class LCD1602Render:
+
+class LCD1602PyGameRender:
     def __init__(self, caption="LCD 1602"):
         self.unit = 10
         self.letter_size = (5, 8)
@@ -26,6 +28,7 @@ class LCD1602Render:
         )
 
         
+        pygame.init()
         self.win = pygame.display.set_mode(size)
         
         pygame.display.set_caption(caption)
@@ -59,9 +62,9 @@ class LCD1602Render:
 
     def quit(self):
         pygame.quit()
+        sys.exit(0)
 
-
-class LCD1602(LCD1602Render):
+class PyGameLCD1602(LCD1602PyGameRender):
     def __init__(self, address=0x3f):
         super().__init__()
         
