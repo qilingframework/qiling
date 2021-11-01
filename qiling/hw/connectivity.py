@@ -11,6 +11,27 @@ from qiling.core import Qiling
 from qiling.hw.peripheral import QlPeripheral
 
 
+class PeripheralTube(queue.Queue):
+    def __init__(self):
+        super().__init__()
+
+    def readable(self) -> bool:
+        return not self.empty()
+
+    def read(self, numb:int = 4096) -> bytes:
+        data = bytearray()
+        for _ in range(numb):
+            if not self.readable():
+                break
+            data.append(self.get())
+
+        return bytes(data)
+
+    def write(self, data: bytes):
+        for byte in bytearray(data):
+            self.put(byte)
+
+
 class QlConnectivityPeripheral(QlPeripheral):
     class Type(ctypes.Structure):
         """ Define the reigister fields of peripheral.
@@ -31,14 +52,14 @@ class QlConnectivityPeripheral(QlPeripheral):
     def __init__(self, ql: Qiling, label: str, limit:int = 1):
         super().__init__(ql, label)
         
-        self.rtube = queue.Queue()
-        self.wtube = queue.Queue()
+        self.itube = PeripheralTube()
+        self.otube = PeripheralTube()
 
         self.limit = limit
         self.device_list = []
 
     def has_input(self):
-        return not self.rtube.empty()
+        return self.itube.readable()
 
     def send(self, data: bytes):
         """ Send data into the peripheral.
@@ -46,37 +67,25 @@ class QlConnectivityPeripheral(QlPeripheral):
             Example:
                 ql.hw.usart1.send(b'hello')
         """
-
-        for byte in bytearray(data):
-            self.rtube.put(byte)
+        self.itube.write(data)        
 
     def recv(self, numb:int = 4096) -> bytes:
         """ Receive data from peripheral
 
             Example:
-                data = ql.hw.i2c1.send()
+                data = ql.hw.i2c1.recv()
         """
-        data = bytearray()
-        while self.can_recv() and numb != 0:
-            data.append(self.wtube.get())
-            numb -= 1
-
-        return bytes(data) 
-
-    def can_recv(self):
-        return not self.wtube.empty()
+        return self.otube.read(numb)
 
     def send_to_user(self, data: int):
         """ send single byte to user
-        """
-        
-        self.wtube.put(data)
+        """        
+        self.otube.put(data)
 
     def recv_from_user(self) -> bytes:
         """ Read single byte from user input
-        """
-        
-        return self.rtube.get()
+        """        
+        return self.itube.get()
 
     def connect(self, device):
         if len(self.device_list) < self.limit:
@@ -84,9 +93,12 @@ class QlConnectivityPeripheral(QlPeripheral):
 
     @staticmethod
     def device_handler(func):
+        """ Send one byte to all devices
+        """
         def wrapper(self):            
-            if self.device_list and self.can_recv():
-                data = self.recv(numb=1)			
+            if len(self.device_list) > 0 and self.otube.readable():
+                
+                data = self.recv(1)
                 for device in self.device_list:
                     device.send(data)
 
