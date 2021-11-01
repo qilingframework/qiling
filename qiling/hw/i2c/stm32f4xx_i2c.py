@@ -48,7 +48,7 @@ class STM32F4xxI2c(QlConnectivityPeripheral):
 		]
 
 	def __init__(self, ql, label, ev_intn=None, er_intn=None):
-		super().__init__(ql, label)		
+		super().__init__(ql, label, 2)		
 
 		self.ev_intn = ev_intn # event interrupt
 		self.er_intn = er_intn # error interrupt
