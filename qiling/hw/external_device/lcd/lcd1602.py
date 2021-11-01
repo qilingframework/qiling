@@ -29,7 +29,7 @@ class LCD1602PyGameRender:
 
         
         pygame.init()
-        self.win = pygame.display.set_mode(size)
+        self.win = pygame.display.set_mode(size, flags = pygame.NOFRAME)
         
         pygame.display.set_caption(caption)
 
@@ -56,9 +56,7 @@ class LCD1602PyGameRender:
         pygame.draw.rect(self.win, color, ((x, y), (self.unit-1, self.unit-1)))
 
     def check_event(self):
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
+        pygame.event.get()    
 
     def quit(self):
         pygame.quit()
