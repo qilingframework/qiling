@@ -18,12 +18,14 @@ def create(path, lcd):
     ql.hw.i2c1.watch()
     ql.hw.i2c1.connect(lcd)    
     
+    ql.hw.systick.set_ratio(100)
+
     return ql
 
 if __name__ == "__main__":
     lcd = PyGameLCD1602()    
     
-    create("../rootfs/mcu/stm32f411/i2c-lcd.hex", lcd).run(count=700000)
+    create("../rootfs/mcu/stm32f411/i2c-lcd.hex", lcd).run(count=50000)
     create("../rootfs/mcu/stm32f411/lcd-plus.hex", lcd).run(count=2000000)
 
     lcd.quit()
