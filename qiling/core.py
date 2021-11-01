@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from .hw.hw import QlHwManager
     from .loader.loader import QlLoader
 
-from .const import QL_ARCH_ENDIAN, QL_ENDIAN, QL_OS, QL_VERBOSE, QL_ARCH_NONEOS, QL_ARCH_HARDWARE
+from .const import QL_ARCH_ENDIAN, QL_ENDIAN, QL_OS, QL_VERBOSE, QL_ARCH_INTERPRETER, QL_ARCH_BAREMETAL
 from .exception import QlErrorFileNotFound, QlErrorArch, QlErrorOsType, QlErrorOutput
 from .utils import *
 from .core_struct import QlCoreStructs
@@ -68,7 +68,8 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._code = code
         self._ostype = ostype
         self._archtype = archtype
-        self._noneos = None,
+        self._interpreter = False,
+        self._baremetal = False,
         self._archendian = None
         self._archbit = None
         self._pointersize = None
@@ -110,29 +111,29 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         """
         Qiling Framework Core Engine
         """
-        ##############
-        # Shellcode? #
-        ##############
+        ###############
+        # code_exec() #
+        ###############
 
         if self._code or (self._archtype and type(self._archtype) == str):
             if (self._archtype and type(self._archtype) == str):
                 self._archtype= arch_convert(self._archtype.lower())
 
-            if (self._ostype and type(self._ostype) == str):
+            if self._ostype == None:
+                self._ostype = arch_os_convert(self._archtype)
+            else:
                 self._ostype = ostype_convert(self._ostype.lower())
 
-            if self._archtype in QL_ARCH_NONEOS or self._ostype == None:
-                if self._ostype == None:
-                    self._ostype = arch_os_convert(self._archtype)
-                if self._code == None:
-                    self._code = self._archtype
-
-
+            if self._code == None:
+                self._code = "qiling"
             if self._argv is None:
                 self._argv = ["qilingcode"]
             if self._rootfs is None:
                 self._rootfs = "."
-
+        
+        self._interpreter = True if self._archtype in (QL_ARCH_INTERPRETER) else False
+        self._baremetal = True if self._archtype in (QL_ARCH_BAREMETAL) else False
+        
         # file check
         if self._code is None:
             if not os.path.exists(str(self._argv[0])):
@@ -201,11 +202,11 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         # Components #
         ##############
 
-        if self.archtype not in QL_ARCH_NONEOS:
+        if not self._interpreter:
             self._mem = component_setup("os", "memory", self)
             self._reg = component_setup("arch", "register", self)
         
-        if self.archtype in QL_ARCH_HARDWARE:   
+        if self._baremetal:   
             self._hw  = component_setup("hw", "hw", self)
 
         self._arch = arch_setup(self.archtype, self)
@@ -215,11 +216,11 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         QlCoreHooks.__init__(self, self.uc)
         
         # Setup Outpt
-        if self.archtype not in QL_ARCH_NONEOS:
+        if not self._interpreter:
             self.arch.utils.setup_output()
 
-        if (self.archtype not in QL_ARCH_NONEOS):
-            if (self.archtype not in QL_ARCH_HARDWARE):
+        if not self._interpreter:
+            if not self._baremetal:
                 self._os = os_setup(self.archtype, self.ostype, self)
 
                 if stdin is not None:
@@ -234,8 +235,8 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         # Run the loader
         self.loader.run()
 
-        if (self.archtype not in QL_ARCH_NONEOS):
-            if (self.archtype not in QL_ARCH_HARDWARE):
+        if not self._interpreter:
+            if not self._baremetal:
                 # Add extra guard options when configured to do so
                 self._init_stop_guard()    
 
@@ -545,7 +546,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
     def verbose(self, v):
         self._verbose = v
         self.log.setLevel(ql_resolve_logger_level(self._verbose))
-        if self.archtype not in QL_ARCH_NONEOS:
+        if self.interpreter:
             self.arch.utils.setup_output()
 
     @property
@@ -630,6 +631,31 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._uc = u
 
     @property
+    def interpreter(self) -> bool:
+        """ Raw uc instance.
+
+            Type: Ucgit
+        """
+        return self._interpreter
+
+    @interpreter.setter
+    def interpreter(self, i):
+        self._interpreter = i
+
+    @property
+    def baremetal(self) -> bool:
+        """ Raw uc instance.
+
+            Type: Ucgit
+        """
+        return self._baremetal
+
+    @baremetal.setter
+    def baremetal(self, b):
+        self._baremetal = b
+
+
+    @property
     def stop_options(self) -> "QlStopOptions":
         """ The stop options configured:
             - stackpointer: Stop execution on a negative stackpointer
@@ -710,21 +736,22 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         if self._debugger != False and self._debugger != None:
             self._debugger = debugger_setup(self._debugger, self)
 
-        if self.archtype not in QL_ARCH_NONEOS and  self.archtype not in QL_ARCH_HARDWARE:
-            self.write_exit_trap()
-            # patch binary
-            self.__enable_bin_patch()
+        if not self.interpreter:
+            if not self.baremetal:
+                self.write_exit_trap()
+                # patch binary
+                self.__enable_bin_patch()
 
-            # emulate the binary
-            self.os.run()
+                # emulate the binary
+                self.os.run()
 
-        if self.archtype in QL_ARCH_NONEOS:
+        if self.interpreter:
             if code == None:
                 return self.arch.run(self._code)
             else:
                 return self.arch.run(code) 
         
-        if self.archtype in QL_ARCH_HARDWARE:
+        if self.baremetal:
             self.__enable_bin_patch()
             if self.count <= 0:
                 self.count = -1
@@ -872,7 +899,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         if self.multithread:
             self.os.thread_management.stop() 
 
-        elif self.archtype in QL_ARCH_HARDWARE:
+        elif self.baremetal:
             self.arch.stop()
 
         else:

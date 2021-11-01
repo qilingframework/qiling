@@ -16,7 +16,7 @@ from enum import Enum
 from unicorn import UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
 
 from .exception import *
-from .const import QL_ARCH_HARDWARE, QL_ARCH_NONEOS, QL_VERBOSE, QL_ARCH, QL_ENDIAN, QL_OS, QL_DEBUGGER, QL_ARCH_1BIT, QL_ARCH_16BIT, QL_ARCH_32BIT, QL_ARCH_64BIT
+from .const import QL_VERBOSE, QL_ARCH, QL_ENDIAN, QL_OS, QL_DEBUGGER, QL_ARCH_1BIT, QL_ARCH_16BIT, QL_ARCH_32BIT, QL_ARCH_64BIT
 from .const import debugger_map, arch_map, os_map, arch_os_map, loader_map
 
 FMT_STR = "%(levelname)s\t%(message)s"
@@ -432,7 +432,7 @@ def arch_setup(archtype, ql):
     else:
         arch_str = arch_convert_str(archtype)
 
-    if archtype in QL_ARCH_NONEOS:
+    if ql.interpreter:
         return ql_get_module_function(f"qiling.arch.{arch_str.lower()}.{arch_str.lower()}", archmanager)(ql)
     else:    
         return ql_get_module_function(f"qiling.arch.{arch_str.lower()}", archmanager)(ql)
@@ -458,7 +458,7 @@ def os_setup(archtype: QL_ARCH, ostype: QL_OS, ql):
 
 
 def profile_setup(ql):
-    if ql.archtype in QL_ARCH_HARDWARE:
+    if ql.baremetal:
         return ql_hw_profile_setup(ql)
 
     _profile = "Default"
