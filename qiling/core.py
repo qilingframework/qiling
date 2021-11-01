@@ -34,7 +34,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             rootfs=None,
             env=None,
             code=None,
-            shellcoder=None,
             ostype=None,
             archtype=None,
             bigendian=False,
@@ -67,9 +66,9 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._rootfs = rootfs
         self._env = env if env else {}
         self._code = code
-        self._shellcoder = shellcoder
         self._ostype = ostype
         self._archtype = archtype
+        self._noneos = None,
         self._archendian = None
         self._archbit = None
         self._pointersize = None
@@ -82,7 +81,8 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._log_override = log_override
         self._log_plain = log_plain
         self._filter = filter
-        self._platform = ostype_convert(platform.system().lower())
+        self._platform_os = ostype_convert(platform.system().lower())
+        self._platform_arch = arch_convert(platform.machine().lower())
         self._internal_exception = None
         self._uc = None
         self._stop_options = QlStopOptions(stackpointer=stop_on_stackpointer, exit_trap=stop_on_exit_trap)
@@ -113,10 +113,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         ##############
         # Shellcode? #
         ##############
-
-        # for Legacy
-        if self._shellcoder:
-            self._code = self._shellcoder
 
         if self._code or (self._archtype and type(self._archtype) == str):
             if (self._archtype and type(self._archtype) == str):
@@ -476,20 +472,36 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         return self._targetname
 
     @property
-    def platform(self):
-        """ Specify current platform where Qiling runs on.
+    def platform_os(self):
+        """ Specify current platform os where Qiling runs on.
 
             Type: int
             Values: All possible values from platform.system()
         """
-        return self._platform
+        return self._platform_os
 
-    @platform.setter
-    def platform(self, value):
+    @platform_os.setter
+    def platform_os(self, value):
         if type(value) is str:
-            self._platform = ostype_convert(value.lower())
+            self._platform_os = ostype_convert(value.lower())
         else:
-            self._platform = value
+            self._platform_os = value
+
+    @property
+    def platform_arch(self):
+        """ Specify current platform arch where Qiling runs on.
+
+            Type: int
+            Values: All possible values from platform.system()
+        """
+        return self._platform_arch
+
+    @platform_arch.setter
+    def platform_arch(self, value):
+        if type(value) is str:
+            self._platform_arch = arch_convert(value.lower())
+        else:
+            self._platform_arch = value
 
     @property
     def internal_exception(self) -> Exception:

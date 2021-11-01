@@ -3,6 +3,11 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+#!/usr/bin/env python3
+# 
+# Cross Platform and Multi Architecture Advanced Binary Emulation Framework
+#
+
 from qiling.const import *
 
 # OS Threading Constants
@@ -19,7 +24,7 @@ NR_OPEN = 1024
 
 SOCK_TYPE_MASK = 0x0f
 
-linux_socket_types = {
+linux_x86_socket_types = {
     'SOCK_STREAM'    : 0x1,
     'SOCK_DGRAM'     : 0x2,
     'SOCK_RAW'       : 0x3,
@@ -29,8 +34,7 @@ linux_socket_types = {
     'SOCK_PACKET'    : 0xa,
 }
 
-
-linux_socket_domain = {
+linux_x86_socket_domain = {
     'AF_UNSPEC'    : 0x0,
     'AF_LOCAL'     : 0x1,
     'AF_INET'      : 0x2,
@@ -46,7 +50,7 @@ linux_socket_domain = {
 }
 
 # https://github.com/torvalds/linux/blob/master/include/uapi/linux/in.h
-linux_socket_level = {
+linux_x86_socket_level = {
     'IPPROTO_IP'    : 0x0000,
     'SOL_SOCKET'    : 0x0001,
     'IPPROTO_TCP'   : 0x0006,
@@ -56,7 +60,7 @@ linux_socket_level = {
 }
 
 
-linux_socket_options = {
+linux_x86_socket_options = {
     "SO_DEBUG"           : 0x0001,
     "SO_REUSEADDR"       : 0x0002,
     "SO_KEEPALIVE"       : 0x0009,
@@ -143,7 +147,7 @@ macos_socket_ip_options = {
 }
 
 
-macos_socket_domain = {
+macos_x86_socket_domain = {
     'AF_UNSPEC'    : 0x0,
     'AF_LOCAL'     : 0x1,
     'AF_INET'      : 0x2,
@@ -163,7 +167,7 @@ macos_socket_domain = {
 
 
 # https://gfiber.googlesource.com/toolchains/mindspeed/+/refs/heads/newkernel_dev/arm-unknown-linux-gnueabi/sysroot/usr/include/bits/socket.h
-arm_socket_types = {
+linux_arm_socket_types = {
     'SOCK_STREAM'    : 0x1,
     'SOCK_DGRAM'     : 0x2,
     'SOCK_RAW'       : 0x3,
@@ -174,7 +178,7 @@ arm_socket_types = {
 }
 
 
-arm_socket_domain = {
+linux_arm_socket_domain = {
     'AF_UNSPEC'     : 0x0,
     'AF_FILE'       : 0x1,
     'AF_UNIX'       : 0x1,
@@ -227,7 +231,7 @@ arm_socket_domain = {
 
 
 # https://gfiber.googlesource.com/toolchains/mindspeed/+/refs/heads/newkernel_dev/arm-unknown-linux-gnueabi/sysroot/usr/include/asm/socket.h
-arm_socket_level = {
+linux_arm_socket_level = {
     'IPPROTO_IP'    : 0x0000,
     'SOL_SOCKET'    : 0x0001,
     'IPPROTO_TCP'   : 0x0006,
@@ -237,7 +241,7 @@ arm_socket_level = {
 }
 
 # https://gfiber.googlesource.com/toolchains/mindspeed/+/refs/heads/newkernel_dev/arm-unknown-linux-gnueabi/sysroot/usr/include/asm/socket.h
-arm_socket_options = {
+linux_arm_socket_options = {
     "SO_DEBUG"           : 0x0001,
     "SO_REUSEADDR"       : 0x0002,
     "SO_KEEPALIVE"       : 0x0009,
@@ -255,7 +259,7 @@ arm_socket_options = {
 }
 
 
-mips_socket_types = {
+linux_mips_socket_types = {
     'SOCK_STREAM'    : 0x2,
     'SOCK_DGRAM'     : 0x1,
     'SOCK_RAW'       : 0x3,
@@ -266,7 +270,7 @@ mips_socket_types = {
 }
 
 
-mips_socket_domain = {
+linux_mips_socket_domain = {
     'AF_UNSPEC'     : 0x0,
     'AF_FILE'       : 0x1,
     'AF_UNIX'       : 0x1,
@@ -319,7 +323,7 @@ mips_socket_domain = {
 
 # https://docs.huihoo.com/doxygen/linux/kernel/3.7/arch_2mips_2include_2uapi_2asm_2socket_8h_source.html
 # https://android-review.linaro.org/plugins/gitiles/platform/prebuilts/gcc/darwin-x86/mips/mipsel-linux-android-4.4.3/+/78060bd30f50c43c7442f32e7740efcdb87ba587/sysroot/usr/include/linux/in.h
-mips_socket_level = {
+linux_mips_socket_level = {
     'SOL_SOCKET'    : 0xffff,
     'IPPROTO_IP'    : 0x0000,
     'IPPROTO_TCP'   : 0x0006,
@@ -330,7 +334,7 @@ mips_socket_level = {
 
 # https://docs.huihoo.com/doxygen/linux/kernel/3.7/arch_2mips_2include_2uapi_2asm_2socket_8h_source.html
 # https://github.com/torvalds/linux/blob/master/arch/mips/include/uapi/asm/socket.h
-mips_socket_options = {
+linux_mips_socket_options = {
     "SO_DEBUG"                  : 0x0001,
     "SO_REUSEADDR"              : 0x0004,
     "SO_KEEPALIVE"              : 0x0008,
@@ -356,7 +360,7 @@ mips_socket_options = {
 }
 
 
-mips_socket_ip_options = {
+linux_mips_socket_ip_options = {
     "IP_TOS"                    : 0x0001,
     "IP_TTL"                    : 0x0002,
     "IP_HDRINCL"                : 0x0003,
@@ -397,81 +401,132 @@ mips_socket_ip_options = {
     "SO_TIMESTAMPING_NEW"       : 0x0041,
     "SO_RCVTIMEO_NEW"           : 0x0042,
     "SO_SNDTIMEO_NEW"           : 0x0043,
-
 }
 
+open_flags_name = [
+    "O_RDONLY",
+    "O_WRONLY",
+    "O_RDWR",
+    "O_NONBLOCK",
+    "O_APPEND",
+    "O_ASYNC",
+    "O_SYNC",
+    "O_NOFOLLOW",
+    "O_CREAT",
+    "O_TRUNC",
+    "O_EXCL",
+    "O_NOCTTY",
+    "O_DIRECTORY",
+    "O_BINARY",
+    "O_LARGEFILE"
+]
 
-mac_open_flags = {
-    "O_RDONLY"   : 0x0000,
-    "O_WRONLY"   : 0x0001,
-    "O_RDWR"     : 0x0002,
-    "O_NONBLOCK" : 0x0004,
-    "O_APPEND"   : 0x0008,
-    "O_ASYNC"    : 0x0040,
-    "O_SYNC"     : 0x0080,
-    "O_NOFOLLOW" : 0x0100,
-    "O_CREAT"    : 0x0200,
-    "O_TRUNC"    : 0x0400,
-    "O_EXCL"     : 0x0800,
-    "O_NOCTTY"   : 0x20000,
-    "O_DIRECTORY": 0x100000
+macos_x86_open_flags = {
+    "O_RDONLY": 0x0,
+    "O_WRONLY": 0x1,
+    "O_RDWR": 0x2,
+    "O_NONBLOCK": 0x4,
+    "O_APPEND": 0x8,
+    "O_ASYNC": 0x40,
+    "O_SYNC": 0x80,
+    "O_NOFOLLOW": 0x100,
+    "O_CREAT": 0x200,
+    "O_TRUNC": 0x400,
+    "O_EXCL": 0x800,
+    "O_NOCTTY": 0x20000,
+    "O_DIRECTORY": 0x100000,
+    "O_BINARY": None,
+    'O_LARGEFILE': None
 }
 
-
-linux_open_flags = {
-    'O_RDONLY'    : 0o000000000,
-    'O_WRONLY'    : 0o000000001,
-    'O_RDWR'      : 0o000000002,
-    'O_CREAT'     : 0o000000100,
-    'O_EXCL'      : 0o000000200,
-    'O_NOCTTY'    : 0o000000400,
-    'O_TRUNC'     : 0o000001000,
-    'O_APPEND'    : 0o000002000,
-    'O_NONBLOCK'  : 0o000004000,
-    'O_DSYNC'     : 0o000010000,
-    'FASYNC'      : 0o000020000,
-    'O_DIRECT'    : 0o000040000,
-    'O_LARGEFILE' : 0o000100000,
-    'O_DIRECTORY' : 0o000200000,
-    'O_NOFOLLOW'  : 0o000400000,
-    'O_NOATIME'   : 0o001000000,
-    'O_CLOEXEC'   : 0o002000000,
-    'O_SYNC'      : 0o004000000 | 0o000010000, # O_DSYNC
-    'O_PATH'      : 0o010000000
-}
-
-
-mips_open_flags = {
-    'O_RDONLY'   : 0x0,
-    'O_WRONLY'   : 0x1,
-    'O_RDWR'     : 0x2,
-    'O_APPEND'   : 0x8,
-    'O_NONBLOCK' : 0x80,
-    'O_CREAT'    : 0x100,
-    'O_TRUNC'    : 0x200,
-    'O_EXCL'     : 0x400,
-    'O_NOCTTY'   : 0x800,
-    'O_ASYNC'    : 0x1000,
-    'O_SYNC'     : 0x4000,
-    'O_NOFOLLOW' : 0x20000,
-    'O_DIRECTORY': 0x100000,
-}
-
-
-arm_open_flags = {
-    'O_RDONLY'   : 0x0,
-    'O_WRONLY'   : 0x1,
-    'O_RDWR'     : 0x2,
-    'O_CREAT'    : 0x40,
-    'O_EXCL'     : 0x80,
-    'O_NOCTTY'   : 0x100,
-    'O_TRUNC'    : 0x200,
-    'O_APPEND'   : 0x400,
-    'O_NONBLOCK' : 0x800,
-    'O_ASYNC'    : 0x2000,
+linux_x86_open_flags = {
+    'O_RDONLY': 0x0,
+    'O_WRONLY': 0x1,
+    'O_RDWR': 0x2,
+    'O_NONBLOCK': 0x800,
+    'O_APPEND': 0x400,
+    'O_ASYNC': 0x2000,
+    'O_SYNC': 0x101000,
+    'O_NOFOLLOW': 0x20000,
+    'O_CREAT': 0x40,
+    'O_TRUNC': 0x200,
+    'O_EXCL': 0x80,
+    'O_NOCTTY': 0x100,
     'O_DIRECTORY': 0x10000,
-    'O_NOFOLLOW' : 0x20000,
-    'O_SYNC'     : 0x101000,
+    'O_BINARY': None,
+    'O_LARGEFILE': 0x0
+}
+
+linux_arm_open_flags = {
+    'O_RDONLY': 0x0,
+    'O_WRONLY': 0x1,
+    'O_RDWR': 0x2,
+    'O_NONBLOCK': 0x800,
+    'O_APPEND': 0x400,
+    'O_ASYNC': 0x2000,
+    'O_SYNC': 0x101000,
+    'O_NOFOLLOW': 0x8000,
+    'O_CREAT': 0x40,
+    'O_TRUNC': 0x200,
+    'O_EXCL': 0x80,
+    'O_NOCTTY': 0x100,
+    'O_DIRECTORY': 0x4000,
+    'O_BINARY': None,
+    'O_LARGEFILE': 0x20000
+}
+
+linux_mips_open_flags = {
+    'O_RDONLY': 0x0,
+    'O_WRONLY': 0x1,
+    'O_RDWR': 0x2,
+    'O_NONBLOCK': 0x80,
+    'O_APPEND': 0x8,
+    'O_ASYNC': 0x1000,
+    'O_SYNC': 0x4010,
+    'O_NOFOLLOW': 0x20000,
+    'O_CREAT': 0x100,
+    'O_TRUNC': 0x200,
+    'O_EXCL': 0x400,
+    'O_NOCTTY': 0x800,
+    'O_DIRECTORY': 0x10000,
+    'O_BINARY' : None,
+    'O_LARGEFILE': 0x2000
+}
+
+freebsd_x86_open_flags = {
+    'O_RDONLY': 0x0,
+    'O_WRONLY': 0x1,
+    'O_RDWR': 0x2,
+    'O_NONBLOCK': 0x4,
+    'O_APPEND': 0x8,
+    'O_ASYNC': 0x40,
+    'O_SYNC': 0x80,
+    'O_NOFOLLOW': 0x100,
+    'O_CREAT': 0x200,
+    'O_TRUNC': 0x400,
+    'O_EXCL': 0x800,
+    'O_NOCTTY': 0x8000,
+    'O_DIRECTORY': 0x20000,
+    'O_BINARY' : None,
+    'O_LARGEFILE': None
+}
+
+qnx_arm64_open_flags = {
+    'O_RDONLY'    : 0x00000,
+    'O_WRONLY'    : 0x00001,
+    'O_RDWR'      : 0x00002,
+    'O_APPEND'    : 0x00008,
+    'O_SYNC'      : 0x00020,
+    'O_NONBLOCK'  : 0x00080,
+    'O_CREAT'     : 0x00100,
+    'O_TRUNC'     : 0x00200,
+    'O_EXCL'      : 0x00400,
+    'O_NOCTTY'    : 0x00800,
+    'O_LARGEFILE' : 0x08000,
+    'O_ASYNC'     : 0x10000,
+    'O_NOFOLLOW'  : None,
+    'O_DIRECTORY' : None,
+    'O_BINARY'    : None
 }
 
 # fcntl flags

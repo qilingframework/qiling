@@ -39,7 +39,7 @@ class PEShellcodeTest(unittest.TestCase):
         del ql
 
     def test_read_ptr32(self):
-        ql = Qiling(shellcoder=POINTER_TEST, archtype="x86", ostype="windows", rootfs="../examples/rootfs/x86_windows")
+        ql = Qiling(code=POINTER_TEST, archtype="x86", ostype="windows", rootfs="../examples/rootfs/x86_windows")
 
         addr = ql.loader.entry_point
         self.assertEqual(0x11, ql.mem.read_ptr(addr, 1))
@@ -50,7 +50,7 @@ class PEShellcodeTest(unittest.TestCase):
         del ql
 
     def test_read_ptr64(self):
-        ql = Qiling(shellcoder=POINTER_TEST, archtype="x8664", ostype="windows", rootfs="../examples/rootfs/x86_windows")
+        ql = Qiling(code=POINTER_TEST, archtype="x8664", ostype="windows", rootfs="../examples/rootfs/x86_windows")
 
         addr = ql.loader.entry_point
         self.assertEqual(0x11, ql.mem.read_ptr(addr, 1))
