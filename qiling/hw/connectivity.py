@@ -96,11 +96,14 @@ class QlConnectivityPeripheral(QlPeripheral):
         """ Send one byte to all devices
         """
         def wrapper(self):            
-            if len(self.device_list) > 0 and self.otube.readable():
-                
-                data = self.recv(1)
+            if len(self.device_list) > 0:                
+                if self.otube.readable():
+                    data = self.recv(1)
+                    for device in self.device_list:
+                        device.send(data)
+
                 for device in self.device_list:
-                    device.send(data)
+                    device.step()
 
             func(self)
         
