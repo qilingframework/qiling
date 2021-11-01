@@ -26,6 +26,6 @@ if __name__ == "__main__":
     lcd = PyGameLCD1602()    
     
     create("../rootfs/mcu/stm32f411/i2c-lcd.hex", lcd).run(count=50000)
-    create("../rootfs/mcu/stm32f411/lcd-plus.hex", lcd).run(count=2000000)
+    create("../rootfs/mcu/stm32f411/lcd-plus.hex", lcd).run(count=100000)
 
     lcd.quit()
