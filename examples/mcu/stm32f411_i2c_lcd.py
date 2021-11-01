@@ -4,7 +4,7 @@ sys.path.append("../..")
 
 from qiling.core import Qiling
 from qiling.const import QL_VERBOSE
-from qiling.hw.external_device.lcd.lcd1602 import LCD1602
+from qiling.hw.external_device.lcd.lcd1602 import PyGameLCD1602
 
 
 def create(path, lcd):
@@ -21,7 +21,7 @@ def create(path, lcd):
     return ql
 
 if __name__ == "__main__":
-    lcd = LCD1602()    
+    lcd = PyGameLCD1602()    
     
     create("../rootfs/mcu/stm32f411/i2c-lcd.hex", lcd).run(count=700000)
     create("../rootfs/mcu/stm32f411/lcd-plus.hex", lcd).run(count=2000000)
