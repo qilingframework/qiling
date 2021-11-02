@@ -54,7 +54,7 @@ class QlGdb(QlDebugger, object):
         if self.ql.baremetal:
             load_address = self.ql.loader.load_address
             exit_point = load_address + os.path.getsize(ql.path)
-        elif self.ql.code and not ql.baremetal:
+        elif self.ql.code and ql.gpos:
             load_address = self.ql.os.entry_point
             exit_point = load_address + len(ql.code)
         else:
