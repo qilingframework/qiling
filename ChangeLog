@@ -11,7 +11,7 @@ This file details the changelog of Qiling Framework.
 - Added typing annotations
 - Added ql.platform_os and ql.platform_arch
 - update ql.os.posix.const_mapping with more os/arch match
-- minor refactor on ql.interpreter and ql.baremetal
+- Minor refactor on ql.interpreter and ql.baremetal
 
 
 ------------------------------------
