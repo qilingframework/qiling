@@ -471,6 +471,34 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         return self._targetname
 
     @property
+    def interpreter(self) -> bool:
+        """ Interpreter Engine
+            - Blockchain related
+            - Java engine?
+
+            Type: bool
+        """
+        return self._interpreter
+
+    @property
+    def baremetal(self) -> bool:
+        """ MCU / Bare Metal type
+            - STM32, RTOS
+
+            Type: bool
+        """
+        return self._baremetal
+
+    @property
+    def gpos(self) -> bool:
+        """ General purpose OS
+            - Windows, Linux, MacOS and etc
+
+            Type: bool
+        """
+        return self._gpos
+
+    @property
     def platform_os(self):
         """ Specify current platform os where Qiling runs on.
 
@@ -627,43 +655,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
     @uc.setter
     def uc(self, u):
         self._uc = u
-
-    @property
-    def interpreter(self) -> bool:
-        """ Raw uc instance.
-
-            Type: Ucgit
-        """
-        return self._interpreter
-
-    @interpreter.setter
-    def interpreter(self, i):
-        self._interpreter = i
-
-    @property
-    def baremetal(self) -> bool:
-        """ Raw uc instance.
-
-            Type: Ucgit
-        """
-        return self._baremetal
-
-    @baremetal.setter
-    def baremetal(self, b):
-        self._baremetal = b
-
-
-    @property
-    def gpos(self) -> bool:
-        """ Raw uc instance.
-
-            Type: Ucgit
-        """
-        return self._gpos
-
-    @gpos.setter
-    def gpos(self, o):
-        self._gpos = o
 
     @property
     def stop_options(self) -> "QlStopOptions":
