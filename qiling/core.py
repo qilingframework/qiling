@@ -125,7 +125,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
                 self._ostype = ostype_convert(self._ostype.lower())
 
             if self._code == None:
-                self._code = "qiling"
+                self._code = "qilingcode"
             if self._argv is None:
                 self._argv = ["qilingcode"]
             if self._rootfs is None:
@@ -133,21 +133,16 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         
         self._interpreter = True if self._archtype in (QL_ARCH_INTERPRETER) else False
         self._baremetal = True if self._archtype in (QL_ARCH_BAREMETAL) else False
+        self._path = (str(self._argv[0]))
+        self._targetname = ntpath.basename(self._argv[0])
         
         # file check
-        if self._code is None:
+        if (self._path and self._rootfs) and self._code == None:
             if not os.path.exists(str(self._argv[0])):
                 raise QlErrorFileNotFound("Target binary not found: %s" %(self._argv[0]))
             if not os.path.exists(self._rootfs):
                 raise QlErrorFileNotFound("Target rootfs not found")
 
-        self._path = (str(self._argv[0]))
-        self._targetname = ntpath.basename(self._argv[0])
-
-        ##########
-        # Loader #
-        ##########
-        if self._code is None:
             guessed_archtype, guessed_ostype, guessed_archendian = ql_guess_emu_env(self._path)
             if self._ostype is None:
                 self._ostype = guessed_ostype
@@ -161,6 +156,10 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
             if not ql_is_valid_arch(self._archtype):
                 raise QlErrorArch("Invalid Arch %s" % self._archtype)
+
+        ##########
+        # Loader #
+        ##########
 
         self._loader = loader_setup(self._ostype, self)
 
@@ -736,32 +735,24 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         if self._debugger != False and self._debugger != None:
             self._debugger = debugger_setup(self._debugger, self)
 
-        if not self.interpreter:
-            if not self.baremetal:
-                self.write_exit_trap()
-                # patch binary
-                self.__enable_bin_patch()
-
-                # emulate the binary
-                self.os.run()
-
         if self.interpreter:
-            if code == None:
-                return self.arch.run(self._code)
-            else:
-                return self.arch.run(code) 
-        
-        if self.baremetal:
+            return self.arch.run(code)
+        elif self.baremetal:
             self.__enable_bin_patch()
             if self.count <= 0:
                 self.count = -1
-            self.arch.run(count=self.count, end=self.exit_point)
-        
+            self.arch.run(count=self.count, end=self.exit_point)        
+        else:
+            self.write_exit_trap()
+            # patch binary
+            self.__enable_bin_patch()
+            # emulate the binary
+            self.os.run()
+
         # run debugger
         if self._debugger != False and self._debugger != None:
             self._debugger.run()
             
-
 
     # patch code to memory address
     def patch(self, addr, code, file_name=b''):
