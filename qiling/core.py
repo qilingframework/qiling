@@ -123,7 +123,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
                 self._ostype = arch_os_convert(self._archtype)
             else:
                 self._ostype = ostype_convert(self._ostype.lower())
-
+                    
             if self._code == None:
                 self._code = "qiling"
             if self._argv is None:
@@ -139,7 +139,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             if not os.path.exists(str(self._argv[0])):
                 raise QlErrorFileNotFound("Target binary not found: %s" %(self._argv[0]))
             if not os.path.exists(self._rootfs):
-                raise QlErrorFileNotFound("Target rootfs not found")
+                raise QlErrorFileNotFound("Target rootfs not found: %s" %(self._rootfs))
 
         self._path = (str(self._argv[0]))
         self._targetname = ntpath.basename(self._argv[0])
