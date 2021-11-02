@@ -480,13 +480,13 @@ class ELFTest(unittest.TestCase):
         del ql
 
 
-    def test_elf_linux_mips32_static(self):
+    def test_elf_linux_mips32eb_static(self):
        ql = Qiling(["../examples/rootfs/mips32_linux/bin/mips32_hello_static"], "../examples/rootfs/mips32_linux")
        ql.run()
        del ql
 
 
-    def test_elf_linux_mips32(self):
+    def test_elf_linux_mips32eb(self):
         def random_generator(size=6, chars=string.ascii_uppercase + string.digits):
             return ''.join(random.choice(chars) for x in range(size))
 
