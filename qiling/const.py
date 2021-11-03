@@ -20,6 +20,8 @@ class QL_ARCH(IntEnum):
     A8086 = 107
     EVM = 108
     CORTEX_M = 109
+    RISCV = 110
+    RISCV64 = 111
 
 class QL_OS(IntEnum):
     LINUX = 201
