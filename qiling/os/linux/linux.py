@@ -31,7 +31,9 @@ class QlOsLinux(QlOsPosix):
             QL_ARCH.X8664 : intel.amd64,
             QL_ARCH.ARM   : arm.aarch32,
             QL_ARCH.ARM64 : arm.aarch64,
-            QL_ARCH.MIPS  : mips.mipso32
+            QL_ARCH.MIPS  : mips.mipso32,
+            QL_ARCH.RISCV : intel.riscv,
+            QL_ARCH.RISCV64: intel.riscv,
         }[ql.archtype](ql)
 
         self.fcall = QlFunctionCall(ql, cc)
@@ -84,6 +86,14 @@ class QlOsLinux(QlOsPosix):
             # Keep test for _cc
             #self.ql.hook_insn(hook_posix_api, UC_X86_INS_SYSCALL)
             self.thread_class = thread.QlLinuxX8664Thread     
+
+        elif self.ql.archtype == QL_ARCH.RISCV:
+            self.ql.hook_intno(self.hook_syscall, 8)
+            self.thread_class = None
+
+        elif self.ql.archtype == QL_ARCH.RISCV64:
+            self.ql.hook_intno(self.hook_syscall, 8)
+            self.thread_class = None
         
         for i in range(NR_OPEN):
             if hasattr(self.fd[i], 'close_on_exec') and \
