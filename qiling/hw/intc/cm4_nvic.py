@@ -6,7 +6,6 @@
 import ctypes
 
 from qiling.hw.peripheral import QlPeripheral
-from qiling.arch.arm_const import IRQ
 
 
 class CortexM4Nvic(QlPeripheral):
