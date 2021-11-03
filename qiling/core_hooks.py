@@ -15,7 +15,7 @@ from unicorn.unicorn_const import *
 
 from .core_hooks_types import Hook, HookAddr, HookIntr, HookRet
 from .utils import catch_KeyboardInterrupt
-from .const import QL_HOOK_BLOCK, QL_ARCH_NONEOS
+from .const import QL_HOOK_BLOCK
 from .exception import QlErrorCoreHook
 
 # Don't assume self is Qiling.
@@ -238,7 +238,7 @@ class QlCoreHooks:
 
 
     def hook_code(self, callback, user_data=None, begin=1, end=0):
-        if self.archtype in QL_ARCH_NONEOS:
+        if self.interpreter:
             from .arch.evm.hooks import ql_evm_hooks
             return ql_evm_hooks(self, 'HOOK_CODE', callback, user_data, begin, end)
 
@@ -281,7 +281,7 @@ class QlCoreHooks:
     def hook_address(self, callback, address, user_data=None):
         hook = HookAddr(callback, address, user_data)
 
-        if self.archtype in QL_ARCH_NONEOS:
+        if self.interpreter:
             from .arch.evm.hooks import evm_hook_address
             return evm_hook_address(self, 'HOOK_ADDR', hook, address)
 
@@ -320,7 +320,7 @@ class QlCoreHooks:
 
 
     def hook_insn(self, callback, arg1, user_data=None, begin=1, end=0):
-        if self.archtype in QL_ARCH_NONEOS:
+        if self.interpreter:
             from .arch.evm.hooks import evm_hook_insn
             return evm_hook_insn(self, 'HOOK_INSN', callback, arg1, user_data, begin, end)
 
@@ -337,7 +337,7 @@ class QlCoreHooks:
 
         hook_type, h = args
 
-        if self.archtype in QL_ARCH_NONEOS:
+        if self.interpreter:
             from .arch.evm.hooks import evm_hook_del
             return evm_hook_del(hook_type, h)
 

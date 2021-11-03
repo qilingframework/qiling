@@ -26,7 +26,7 @@ class QlGdbUtils(object):
 
     def initialize(self, ql, hook_address, exit_point=None, mappings=None):
         self.ql = ql
-        if self.ql.archtype in QL_ARCH_HARDWARE:
+        if self.ql.baremetal:
             self.current_address = self.entry_point
         else:
             self.current_address = self.entry_point = self.ql.os.entry_point   
