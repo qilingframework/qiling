@@ -12,7 +12,7 @@ from qiling.const import QL_ARCH
 from qiling.os.posix.posix import SYSCALL_PREF
 
 def map_syscall(ql, syscall_num):
-    syscalls_table = {
+    syscall_table = {
         QL_ARCH.ARM64:   arm64_syscall_table,
         QL_ARCH.ARM:     arm_syscall_table,
         QL_ARCH.X8664:   x8664_syscall_table,
@@ -20,9 +20,9 @@ def map_syscall(ql, syscall_num):
         QL_ARCH.MIPS:    mips_syscall_table,
 		QL_ARCH.RISCV:   riscv32_syscall_table,
         QL_ARCH.RISCV64: riscv64_syscall_table,
-    }.get(ql.archtype, None)
+    }[ql.archtype]
     
-    return f'{SYSCALL_PREF}{syscalls_table[syscall_num]}'
+    return f'{SYSCALL_PREF}{syscall_table[syscall_num]}'
 
 arm_syscall_table = {
     0: "restart_syscall",
