@@ -8,11 +8,6 @@ from unicorn.x86_const import (
 	UC_X86_REG_R9,	UC_X86_REG_R10
 )
 
-from unicorn.riscv_const import (
-    UC_RISCV_REG_A0, UC_RISCV_REG_A1, UC_RISCV_REG_A2, 
-    UC_RISCV_REG_A3, UC_RISCV_REG_A4, UC_RISCV_REG_A5, 
-)
-
 from qiling import Qiling
 from . import QlCommonBaseCC
 
@@ -87,13 +82,6 @@ class macosx64(QlIntel64):
 	"""
 
 	_argregs = (UC_X86_REG_RDI, UC_X86_REG_RSI, UC_X86_REG_RDX, UC_X86_REG_RCX, UC_X86_REG_R8, UC_X86_REG_R9) + (None, ) * 10
-
-class riscv(QlIntel64):
-	"""Default calling convention for RISCV
-		First 6 arguments are passed in regs, the rest are passed on the stack.
-	"""
-
-	_argregs = (UC_RISCV_REG_A0, UC_RISCV_REG_A1, UC_RISCV_REG_A2, UC_RISCV_REG_A3, UC_RISCV_REG_A4, UC_RISCV_REG_A5)
 
 class cdecl(QlIntel32):
 	"""Calling convention used by all operating systems (x86).
