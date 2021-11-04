@@ -13,7 +13,7 @@ from unicorn.x86_const import UC_X86_REG_EAX, UC_X86_REG_RAX
 from unicorn.riscv_const import UC_RISCV_REG_A7
 
 from qiling import Qiling
-from qiling.cc import QlCC, intel, arm, mips
+from qiling.cc import QlCC, intel, arm, mips, riscv
 from qiling.const import QL_ARCH, QL_OS, QL_INTERCEPT
 from qiling.exception import QlErrorSyscallNotFound
 from qiling.os.os import QlOs
@@ -51,6 +51,12 @@ class mipso32(mips.mipso32):
 
         self.ql.reg.v0 = value
         self.ql.reg.a3 = a3return
+
+class riscv32(riscv.riscv):
+    pass
+
+class riscv64(riscv.riscv):
+    pass
 
 class QlOsPosix(QlOs):
 
@@ -96,8 +102,8 @@ class QlOsPosix(QlOs):
             QL_ARCH.MIPS : mipso32,
             QL_ARCH.X86  : intel32,
             QL_ARCH.X8664: intel64,
-            QL_ARCH.RISCV: intel.riscv,
-            QL_ARCH.RISCV64: intel.riscv,
+            QL_ARCH.RISCV: riscv32,
+            QL_ARCH.RISCV64: riscv64,
         }[self.ql.archtype](ql)
 
         self._fd = QlFileDes([0] * NR_OPEN)

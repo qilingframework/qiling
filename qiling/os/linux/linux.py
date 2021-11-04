@@ -9,7 +9,7 @@ from unicorn import UcError
 from qiling import Qiling
 from qiling.arch.x86_const import UC_X86_INS_SYSCALL
 from qiling.arch.x86 import GDTManager, ql_x8664_set_gs, ql_x86_register_cs, ql_x86_register_ds_ss_es
-from qiling.cc import QlCC, intel, arm, mips
+from qiling.cc import QlCC, intel, arm, mips, riscv
 from qiling.const import QL_ARCH, QL_INTERCEPT
 from qiling.os.fcall import QlFunctionCall
 from qiling.os.const import *
@@ -32,8 +32,8 @@ class QlOsLinux(QlOsPosix):
             QL_ARCH.ARM   : arm.aarch32,
             QL_ARCH.ARM64 : arm.aarch64,
             QL_ARCH.MIPS  : mips.mipso32,
-            QL_ARCH.RISCV : intel.riscv,
-            QL_ARCH.RISCV64: intel.riscv,
+            QL_ARCH.RISCV : riscv.riscv,
+            QL_ARCH.RISCV64: riscv.riscv,
         }[ql.archtype](ql)
 
         self.fcall = QlFunctionCall(ql, cc)
