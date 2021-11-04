@@ -4,7 +4,7 @@
 #
 
 from unicorn import Uc, UC_ARCH_RISCV, UC_MODE_RISCV32
-from capstone import Cs, CS_ARCH_RISCV, CS_MODE_RISCV32
+from capstone import Cs
 from keystone import Ks
 
 from qiling import Qiling
@@ -26,8 +26,11 @@ class QlArchRISCV(QlArch):
         return Uc(UC_ARCH_RISCV, UC_MODE_RISCV32)
 
     def create_disassembler(self) -> Cs:
-        # raise QlErrorNotImplemented("Capstone does not yet support riscv")
-        return Cs(CS_ARCH_RISCV, CS_MODE_RISCV32)
+        try:
+            from capstone import CS_ARCH_RISCV, CS_MODE_RISCV32
+            return Cs(CS_ARCH_RISCV, CS_MODE_RISCV32)
+        except ImportError:
+            raise QlErrorNotImplemented("Capstone does not yet support riscv, upgrade to capstone 5.0")
 
     def create_assembler(self) -> Ks:
         raise QlErrorNotImplemented("Keystone does not yet support riscv")
