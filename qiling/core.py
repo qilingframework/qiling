@@ -157,9 +157,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
             if not ql_is_valid_arch(self._archtype):
                 raise QlErrorArch("Invalid Arch %s" % self._archtype)
-
-
-         
             
         #######################################
         # Loader and General Purpose OS check #
