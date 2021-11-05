@@ -13,7 +13,7 @@ from qiling.const import QL_VERBOSE
 from qiling.exception import QlErrorNotImplemented
 
 from .arm import QlArchARM
-from .arm_const import IRQ, EXC_RETURN, CONTROL, EXCP
+from .cortex_m_const import IRQ, EXC_RETURN, CONTROL, EXCP, reg_map
 
 class QlInterruptContext(ContextDecorator):
     def __init__(self, ql):
@@ -60,6 +60,13 @@ class QlInterruptContext(ContextDecorator):
 class QlArchCORTEX_M(QlArchARM):
     def __init__(self, ql):
         super().__init__(ql)
+
+        reg_maps = (
+            reg_map,            
+        )
+
+        for reg_maper in reg_maps:
+            self.ql.reg.expand_mapping(reg_maper)
 
         def intr_cb(ql, intno):
             if intno == EXCP.SWI:

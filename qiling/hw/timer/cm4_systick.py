@@ -4,7 +4,7 @@
 #
 
 import ctypes
-from qiling.arch.arm_const import IRQ
+from qiling.arch.cortex_m_const import IRQ
 from qiling.hw.peripheral import QlPeripheral
 from qiling.hw.const.cm4_systick import SYSTICK_CTRL
 
