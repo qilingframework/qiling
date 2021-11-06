@@ -68,9 +68,8 @@ class QlLoaderELF(QlLoader):
     def run(self):
         if self.ql.code:
             self.ql.mem.map(self.ql.os.entry_point, self.ql.os.code_ram_size, info="[shellcode_stack]")
-            self.ql.os.entry_point = (self.ql.os.entry_point + 0x200000 - 0x1000)
             self.ql.mem.write(self.ql.os.entry_point, self.ql.code)
-            self.ql.reg.arch_sp = self.ql.os.entry_point
+            self.ql.reg.arch_sp = self.ql.os.entry_point + self.ql.os.code_ram_size - 0x3000
             return
 
         section = {
