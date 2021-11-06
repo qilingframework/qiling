@@ -98,7 +98,7 @@ class STM32F4xxGpio(QlPeripheral, GpioHooks):
                     if new_bit:
                         self.set_pin(i)                        
                     else:
-                        self.reset_pin(i - 16)                        
+                        self.reset_pin(i)                        
             
             return    
         
