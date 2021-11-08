@@ -10,6 +10,7 @@ sys.path.append("..")
 from qiling import *
 from qiling.exception import *
 from qiling.const import QL_VERBOSE
+from qiling.os.const import STRING
 
 test = unhexlify('cccc')
 X86_LIN = unhexlify('31c050682f2f7368682f62696e89e3505389e1b00bcd80')
@@ -44,11 +45,62 @@ class TestShellcode(unittest.TestCase):
        ql = Qiling(code = ARM_LIN, archtype = "arm", ostype = "linux", verbose=QL_VERBOSE.OFF)
        ql.run()
 
-    
     def test_linux_arm64(self):
         print("Linux ARM 64bit Shellcode")
         ql = Qiling(code = ARM64_LIN, archtype = "arm64", ostype = "linux", verbose=QL_VERBOSE.OFF)
         ql.run()
+
+    def test_linux_arm_baremetal_bin(self):
+        def my_getenv(ql, *args, **kwargs):
+            env = {"ID": b"000000000000000", "ethaddr": b"11:22:33:44:55:66"}
+            params = ql.os.resolve_fcall_params({'key': STRING})
+            env_key = params['key']
+            env_value = env.get(env_key, b"")
+
+            wirtable_addr_ptr = ql.os.entry_point + 0x70000
+            ql.mem.write(wirtable_addr_ptr, b'\x00' * 0x20)
+            ql.mem.write(wirtable_addr_ptr, env_value)
+
+            ql.reg.r0 = wirtable_addr_ptr
+            ql.reg.arch_pc = ql.reg.lr
+
+        def check_password(ql, *args, **kwargs):
+            passwd_output = ql.mem.read(ql.reg.r0, ql.reg.r2)
+            passwd_input = ql.mem.read(ql.reg.r1, ql.reg.r2)
+            self.assertEqual(passwd_output, passwd_input)
+
+        def partial_run_init(ql):
+            # argv prepare
+            ql.reg.arch_sp -= 0x30
+            arg0_ptr = ql.reg.arch_sp
+            ql.mem.write(arg0_ptr, b"kaimendaji")
+
+            ql.reg.arch_sp -= 0x10
+            arg1_ptr = ql.reg.arch_sp
+            ql.mem.write(arg1_ptr, b"013f1f")
+
+            ql.reg.arch_sp -= 0x20
+            argv_ptr = ql.reg.arch_sp
+            ql.mem.write(argv_ptr, ql.pack(arg0_ptr))
+            ql.mem.write(argv_ptr + ql.pointersize, ql.pack(arg1_ptr))
+
+            ql.reg.r2 = 2
+            ql.reg.r3 = argv_ptr
+
+        print("Linux ARM bare-metal bin")
+
+        with open("../examples/shellcodes/u-boot.bin.img", "rb") as f:
+            uboot_code = f.read()
+
+        ql = Qiling(code=uboot_code[0x40:], archtype="arm", ostype="linux", verbose=QL_VERBOSE.OFF, profile="profiles/uboot_bin.ql")
+
+        image_base_addr = ql.os.entry_point
+        ql.hook_address(my_getenv, image_base_addr + 0x13AC0)
+        ql.hook_address(check_password, image_base_addr + 0x48634)
+
+        partial_run_init(ql)
+
+        ql.run(image_base_addr + 0x486B4, image_base_addr + 0x48718)
 
     # #This shellcode needs to be changed to something simpler not requiring rootfs
     # def test_windows_x86(self):
