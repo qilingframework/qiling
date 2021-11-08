@@ -20,9 +20,9 @@ def ql_syscall_arch_prctl(ql: Qiling, code: int, addr: int):
     }
 
     if code not in handlers:
-        raise NotImplementedError(f'prctl code {code:#x} not implemented')
-
-    handlers[code]()
+        ql.log.warning(f'prctl code {code:#x} not implemented')
+    else:
+        handlers[code]()
 
     return 0
 
