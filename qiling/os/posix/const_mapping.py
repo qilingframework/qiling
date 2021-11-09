@@ -56,6 +56,9 @@ def ql_open_flag_mapping(ql: Qiling, flags):
             f = linux_arm_open_flags
         elif ql.archtype == QL_ARCH.MIPS:
             f = linux_mips_open_flags
+        elif ql.archtype in (QL_ARCH.RISCV, QL_ARCH.RISCV64):
+            f = linux_riscv_open_flags
+
     elif ql.ostype == QL_OS.MACOS:
         if ql.archtype in (QL_ARCH.X86, QL_ARCH.X8664):
             f = macos_x86_open_flags
