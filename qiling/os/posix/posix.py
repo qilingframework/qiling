@@ -243,7 +243,8 @@ class QlOsPosix(QlOs):
                 raise e
 
             # print out log entry
-            syscall_basename = syscall_name[len(SYSCALL_PREF):]
+            syscall_basename = syscall_name[len(SYSCALL_PREF) if syscall_name.startswith(SYSCALL_PREF) else 0:] 
+
             args = []
 
             for name, value in zip(param_names, params):
@@ -253,7 +254,7 @@ class QlOsPosix(QlOs):
 
                 args.append((name, f'{value:#x}'))
 
-            sret = retval and QlOsPosix.getNameFromErrorCode(retval)
+            sret = QlOsPosix.getNameFromErrorCode(retval)
             self.utils.print_function(self.ql.reg.arch_pc, syscall_basename, args, sret, False)
 
             # record syscall statistics
