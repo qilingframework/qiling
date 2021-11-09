@@ -32,5 +32,16 @@ class RISCVTest(unittest.TestCase):
 
         del ql
 
+    def test_riscv64_hello_dyn_linux(self):
+        stdout = SimpleOutStream(1)
+        ql = Qiling(['../examples/rootfs/riscv64_linux/bin/hello-linux'], '../examples/rootfs/riscv64_linux/', 
+                    verbose=QL_VERBOSE.DEBUG, stdout=stdout)
+
+
+        ql.run(end=0x1249e) # avoid close 0, 1, 2
+        self.assertTrue(stdout.read() == b'Hello, World!\n')
+
+        del ql
+
 if __name__ == "__main__":
     unittest.main()
