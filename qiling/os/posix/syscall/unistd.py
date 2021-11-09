@@ -266,7 +266,7 @@ def ql_syscall_write(ql: Qiling, fd: int, buf: int, count: int):
     except:
         regreturn = -1
     else:
-        ql.log.debug(f'write() CONTENT: {data.decode()!r}')
+        ql.log.debug(f'write() CONTENT: {bytes(data)}')
 
         if hasattr(ql.os.fd[fd], 'write'):
             ql.os.fd[fd].write(data)
