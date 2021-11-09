@@ -8,18 +8,15 @@ from capstone import Cs
 from keystone import Ks
 
 from qiling import Qiling
-from qiling.arch.arch import QlArch
 from qiling.arch.riscv_const import *
 from qiling.exception import QlErrorNotImplemented
 
+from .riscv import QlArchRISCV
 
-class QlArchRISCV64(QlArch):
+
+class QlArchRISCV64(QlArchRISCV):
     def __init__(self, ql: Qiling):
         super().__init__(ql)
-
-        self.ql.reg.expand_mapping(reg_map)
-        self.ql.reg.register_sp(reg_map["sp"])
-        self.ql.reg.register_pc(reg_map["pc"])
 
     # get initialized unicorn engine
     def get_init_uc(self) -> Uc:

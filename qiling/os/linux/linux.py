@@ -88,10 +88,12 @@ class QlOsLinux(QlOsPosix):
             self.thread_class = thread.QlLinuxX8664Thread     
 
         elif self.ql.archtype == QL_ARCH.RISCV:
+            self.ql.arch.enable_float()
             self.ql.hook_intno(self.hook_syscall, 8)
             self.thread_class = None
 
         elif self.ql.archtype == QL_ARCH.RISCV64:
+            self.ql.arch.enable_float()
             self.ql.hook_intno(self.hook_syscall, 8)
             self.thread_class = None
         

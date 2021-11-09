@@ -17,7 +17,14 @@ class QlArchRISCV(QlArch):
     def __init__(self, ql: Qiling):
         super().__init__(ql)
 
-        self.ql.reg.expand_mapping(reg_map)
+        reg_maps = (
+            reg_map,
+            reg_csr_map,
+            reg_float_map,
+        )
+
+        for reg_maper in reg_maps:
+            self.ql.reg.expand_mapping(reg_maper)
         self.ql.reg.register_sp(reg_map["sp"])
         self.ql.reg.register_pc(reg_map["pc"])
 
@@ -34,3 +41,6 @@ class QlArchRISCV(QlArch):
 
     def create_assembler(self) -> Ks:
         raise QlErrorNotImplemented("Keystone does not yet support riscv")
+
+    def enable_float(self):
+        self.ql.reg.mstatus = self.ql.reg.mstatus | MSTATUS.FS_DIRTY
