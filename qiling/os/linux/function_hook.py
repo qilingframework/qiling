@@ -599,22 +599,20 @@ class FunctionHook:
             self.add_function_hook = self.add_function_hook_relocation
 
         elif  self.ql.archtype== QL_ARCH.RISCV:
-            # TODO: specific other parameters
-            # self.GLOB_DAT = 0
-            # self.JMP_SLOT = 0
+            self.GLOB_DAT = 21
+            self.JMP_SLOT = 22
             
             # ADDI x0, x0, 0
             ins = b'\x00\x01'
-            # self.add_function_hook = self.add_function_hook_relocation
+            self.add_function_hook = self.add_function_hook_relocation
 
         elif  self.ql.archtype== QL_ARCH.RISCV64:
-            # TODO: specific other parameters
-            # self.GLOB_DAT = 0
-            # self.JMP_SLOT = 0
+            self.GLOB_DAT = 21
+            self.JMP_SLOT = 22
             
             # ADDI x0, x0, 0
             ins = b'\x00\x01'
-            # self.add_function_hook = self.add_function_hook_relocation
+            self.add_function_hook = self.add_function_hook_relocation
 
         self._parse()
         if self.rel != None:
