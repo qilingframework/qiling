@@ -300,7 +300,6 @@ class QlQdb(cmd.Cmd, QlDebugger):
         """
         exit Qdb and stop running qiling instance
         """
-        # breakpoint()
 
         self._ql.stop()
         return True

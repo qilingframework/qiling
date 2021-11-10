@@ -87,7 +87,7 @@ def examine_mem(ql: Qiling, line: str) -> Union[bool, (str, int, int)]:
 
         for line in range(lines):
             offset = line * sz * 4
-            print("0x{addr+offset:x}:\t", end="")
+            print(f"0x{addr+offset:x}:\t", end="")
 
             idx = line * ql.pointersize
             for each in mem_read[idx:idx+ql.pointersize]:
