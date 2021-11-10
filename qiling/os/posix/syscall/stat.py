@@ -9,7 +9,7 @@ from typing import Callable
 
 from qiling import Qiling
 from qiling.const import QL_OS, QL_ARCH, QL_ENDIAN
-from qiling.os.posix.const import NR_OPEN, EBADF, AT_FDCWD, AT_EMPTY_PATH
+from qiling.os.posix.const import NR_OPEN, EBADF, AT_FDCWD
 from qiling.os.posix.stat import Stat, Lstat
 
 # Caveat: Never use types like ctypes.c_long whose size differs across platforms.
