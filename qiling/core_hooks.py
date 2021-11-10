@@ -54,7 +54,7 @@ class QlCoreHooks:
                         break
 
         if not handled:
-            raise QlErrorCoreHook("_hook_intr_cb : not handled")
+            ql.log.warning("[+] Unhandled Interupt: %i" % (intno))
 
 
     def _hook_insn_cb(self, uc: Uc, *args):

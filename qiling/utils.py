@@ -290,7 +290,15 @@ def ql_elf_parse_emu_env(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS],
         elif e_machine == b"\x3E\x00":
             archendian = QL_ENDIAN.EL
             arch = QL_ARCH.X8664
-
+        
+        elif e_machine == b"\xf3\x00" and elfbit == 1:
+            archendian = QL_ENDIAN.EL
+            arch = QL_ARCH.RISCV
+        
+        elif e_machine == b"\xf3\x00" and elfbit == 2:
+            archendian = QL_ENDIAN.EL
+            arch = QL_ARCH.RISCV64
+    
     return arch, ostype, archendian
 
 def ql_macho_parse_emu_env(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], Optional[QL_ENDIAN]]:

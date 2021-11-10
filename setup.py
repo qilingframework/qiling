@@ -14,7 +14,7 @@ VERSION = gb['__version__']
 
 requirements = [
     "capstone>=4.0.1",
-    "unicorn>=2.0.0-rc3",
+    "unicorn>=2.0.0-rc4",
     "pefile>=2021.9.3",
     "python-registry>=1.3.1",
     "keystone-engine>=0.9.2",
