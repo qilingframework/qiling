@@ -1156,13 +1156,12 @@ def ql_syscall_lstat64(ql: Qiling, path: int, buf_ptr: int):
     return statFamily(ql, path, buf_ptr, "lstat64", Lstat, pack_stat64_struct)
 
 
-def ql_syscall_mknodat(ql: Qiling, dirfd: int, pathname: int, mode: int, dev: int):
-    file_path = ql.os.utils.read_cstring(pathname)
-    real_path = ql.os.path.transform_to_real_path(file_path)
-    regreturn = 0
+def ql_syscall_mknodat(ql: Qiling, dirfd: int, path: int, mode: int, dev: int):
+    dirfd, real_path = transform_path(ql, dirfd, path)    
 
     try:
         os.mknod(real_path, mode, dev, dir_fd=dirfd)
+        regreturn = 0
     except:
         regreturn = -1
 
