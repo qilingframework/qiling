@@ -145,8 +145,6 @@ def ql_syscall_lseek(ql: Qiling, fd: int, offset: int, lseek_origin: int):
             regreturn = ql.os.fd[fd].lseek(offset, lseek_origin)
         except OSError:
             regreturn = -1
-        else:
-            regreturn = 0
     else:
         regreturn = -EBADF
 
