@@ -120,17 +120,19 @@ def _try_read(ql: Qiling, address: int, size: int) -> Optional[bytes]:
 
 # divider printer
 @contextmanager
-def context_printer(ql: Qiling, field_name: str, ruler: str = "=") -> None:
-    _height, _width = get_terminal_size()
-    print(field_name, ruler * (_width - len(field_name) - 1))
+def context_printer(ql: Qiling, field_name: str, ruler: str = "─") -> None:
+    height, width = get_terminal_size()
+    bar = (width - len(field_name)) // 2 - 1
+    print(ruler * bar, field_name, ruler * bar)
     yield
-    print(ruler * _width)
+    if "DISASM" in field_name:
+        print(ruler * width)
 
 
 def context_reg(ql: Qiling, saved_states: Optional[Mapping[str, int]] = None, /, *args, **kwargs) -> None:
 
     # context render for registers
-    with context_printer(ql, "[Registers]"):
+    with context_printer(ql, "[ REGISTERS ]"):
 
         _cur_regs = dump_regs(ql)
 
@@ -194,12 +196,12 @@ def context_reg(ql: Qiling, saved_states: Optional[Mapping[str, int]] = None, /,
             print(color.GREEN, "[{cpsr[mode]} mode], Thumb: {cpsr[thumb]}, FIQ: {cpsr[fiq]}, IRQ: {cpsr[irq]}, NEG: {cpsr[neg]}, ZERO: {cpsr[zero]}, Carry: {cpsr[carry]}, Overflow: {cpsr[overflow]}".format(cpsr=get_arm_flags(ql.reg.cpsr)), color.END, sep="")
 
     # context render for Stack
-    with context_printer(ql, "[Stack]", ruler="-"):
+    with context_printer(ql, "[ STACK ]", ruler="─"):
 
         for idx in range(8):
             _addr = ql.reg.arch_sp + idx * 4
             _val = ql.mem.read(_addr, ql.pointersize)
-            print(f"$sp+0x{idx*4:02x}|[0x{_addr:08x}]=> 0x{ql.unpack(_val):08x}", end="")
+            print(f"$sp+0x{idx*4:02x}│ [0x{_addr:08x}] —▸ 0x{ql.unpack(_val):08x}", end="")
 
             try:  # try to deference wether its a pointer
                 _deref = ql.mem.read(_addr, ql.pointersize)
@@ -213,14 +215,14 @@ def context_reg(ql: Qiling, saved_states: Optional[Mapping[str, int]] = None, /,
 def print_asm(ql: Qiling, ins: CsInsn) -> None:
     fmt = (ins.address, ins.mnemonic.ljust(6), ins.op_str)
     if ql.reg.arch_pc == ins.address:
-        print(f"PC ==>  0x{fmt[0]:x}\t{fmt[1]} {fmt[2]}")
+        print(f"{color.BOLD}    ►   0x{fmt[0]:x}\t{fmt[1]} {fmt[2]}{color.END}")
     else:
         print(f"\t0x{fmt[0]:x}\t{fmt[1]} {fmt[2]}")
 
 
 def context_asm(ql: Qiling, address: int) -> None:
 
-    with context_printer(ql, field_name="[Code]"):
+    with context_printer(ql, field_name="[ DISASM ]"):
 
         # assembly before current location
 

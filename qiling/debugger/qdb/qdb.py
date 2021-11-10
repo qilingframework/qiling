@@ -23,7 +23,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
     def __init__(self: QlQdb, ql: Qiling, init_hook: str = "", rr: bool = False) -> None:
 
         self._ql = ql
-        self.prompt = "(Qdb) "
+        self.prompt = f"{color.BOLD}{color.RED}Qdb> {color.END}"
         self.breakpoints = {}
         self._saved_reg_dump = None
         self.bp_list = {}
