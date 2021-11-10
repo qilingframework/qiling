@@ -9,7 +9,7 @@ from typing import Callable
 
 from qiling import Qiling
 from qiling.const import QL_OS, QL_ARCH, QL_ENDIAN
-from qiling.os.posix.const import NR_OPEN, EBADF
+from qiling.os.posix.const import NR_OPEN, EBADF, AT_FDCWD, AT_EMPTY_PATH
 from qiling.os.posix.stat import Stat, Lstat
 
 # Caveat: Never use types like ctypes.c_long whose size differs across platforms.
@@ -1025,6 +1025,36 @@ def statFamily(ql: Qiling, path: int, ptr: int, name: str, stat_func, struct_fun
         ql.log.debug(f'{name}("{file_path}", {ptr:#x}) write completed')
         return regreturn
 
+def transform_path(ql: Qiling, dirfd: int, path: int):
+    """
+    An absolute pathname
+        If pathname begins with a slash, then it is an absolute pathname that identifies the target file.  
+        In this case, dirfd is ignored.
+
+    A relative pathname
+        If pathname is a string that begins with a character other than a slash and dirfd is AT_FDCWD, 
+        then pathname is a  relative pathname that is interpreted relative to the process's current working directory.
+
+    A directory-relative pathname
+        If  pathname is a string that begins with a character other than a slash and dirfd is a file descriptor that refers to a
+        directory, then pathname is a relative pathname that is interpreted relative to the directory referred to by dirfd.
+
+    By file descriptor
+        If pathname is an empty string and the AT_EMPTY_PATH flag is specified in flags (see below), 
+        then the target file is the one referred to by the file descriptor dirfd.
+    """
+
+    path = ql.os.utils.read_cstring(path)
+    
+    if path.startswith('/'):
+        return None, ql.os.path.transform_to_relative_path(path)
+
+    if dirfd == AT_FDCWD:
+        return -100, ql.os.path.transform_to_relative_path(os.path.join(ql.os.path.cwd, path))
+
+    return dirfd, path
+    
+
 def ql_syscall_chmod(ql: Qiling, filename: int, mode: int):
     ql.log.debug(f'chmod("{ql.os.utils.read_cstring(filename)}", {mode:d}) = 0')
 
@@ -1037,38 +1067,28 @@ def ql_syscall_fchmod(ql: Qiling, fd: int, mode: int):
     return 0
 
 def ql_syscall_fstatat64(ql: Qiling, dirfd: int, path: int, buf_ptr: int, flag: int):
-    # FIXME: dirfd(relative path) not implement.
-    file_path = ql.os.utils.read_cstring(path)
-    real_path = ql.os.path.transform_to_real_path(file_path)
-    relative_path = ql.os.path.transform_to_relative_path(file_path)
+    dirfd, real_path = transform_path(ql, dirfd, path)
 
     if os.path.exists(real_path):
-        buf = pack_stat64_struct(ql, Stat(real_path))
+        buf = pack_stat64_struct(ql, Stat(real_path, dirfd))
         ql.mem.write(buf_ptr, buf)
 
         regreturn = 0
     else:
         regreturn = -1
-
-    ql.log.debug(f'Directory {"found" if regreturn == 0 else "not found"}: {relative_path}')
 
     return regreturn
 
 def ql_syscall_newfstatat(ql: Qiling, dirfd: int, path: int, buf_ptr: int, flag: int):
-    # FIXME: dirfd(relative path) not implement.
-    file_path = ql.os.utils.read_cstring(path)
-    real_path = ql.os.path.transform_to_real_path(file_path)
-    relative_path = ql.os.path.transform_to_relative_path(file_path)
-
+    dirfd, real_path = transform_path(ql, dirfd, path)
+    
     if os.path.exists(real_path):
-        buf = pack_stat_struct(ql, Stat(real_path))
+        buf = pack_stat_struct(ql, Stat(real_path, dirfd))
         ql.mem.write(buf_ptr, buf)
 
         regreturn = 0
     else:
         regreturn = -1
-
-    ql.log.debug(f'Directory {"found" if regreturn == 0 else "not found"}: {relative_path}')
 
     return regreturn
 
@@ -1123,6 +1143,10 @@ def ql_syscall_stat(ql: Qiling, path: int, buf_ptr: int):
 def ql_syscall_stat64(ql: Qiling, path: int, buf_ptr: int):
     return statFamily(ql, path, buf_ptr, "stat64", Stat, pack_stat64_struct)
 
+# int statx(int dirfd, const char *restrict pathname, int flags,
+#                  unsigned int mask, struct statx *restrict statxbuf);
+def ql_syscall_statx(ql: Qiling, dirfd: int, path: int, flags: int, mask: int, statxbuf: int):
+    return 0
 
 def ql_syscall_lstat(ql: Qiling, path: int, buf_ptr: int):
     return statFamily(ql, path, buf_ptr, "lstat", Lstat, pack_stat64_struct)
@@ -1133,13 +1157,12 @@ def ql_syscall_lstat64(ql: Qiling, path: int, buf_ptr: int):
 
 
 def ql_syscall_mknodat(ql: Qiling, dirfd: int, pathname: int, mode: int, dev: int):
-    # FIXME: dirfd(relative path) not implement.
     file_path = ql.os.utils.read_cstring(pathname)
     real_path = ql.os.path.transform_to_real_path(file_path)
     regreturn = 0
 
     try:
-        os.mknod(real_path, mode, dev)
+        os.mknod(real_path, mode, dev, dir_fd=dirfd)
     except:
         regreturn = -1
 
