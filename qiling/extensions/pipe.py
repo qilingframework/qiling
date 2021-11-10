@@ -13,16 +13,33 @@ class SimpleStringBuffer(TextIO):
 
     def __init__(self):
         self.buff = bytearray()
+        self.cur = 0
+
+    def lseek(self, offset: int, origin: int) -> int:
+        if origin == 0: # SEEK_SET
+            base = 0
+        elif origin == 1: # SEEK_CUR
+            base = self.cur
+        else: # SEEK_END
+            base = len(self.buff) - 1
+        
+        if base + offset >= len(self.buff):
+            self.cur = base + offset - 1
+        else:
+            self.cur = base + offset
+        
+        return self.cur
 
     def read(self, n: int = -1) -> bytes:
         if n == -1:
             ret = self.buff
-            rem = bytearray()
         else:
-            ret = self.buff[:n]
-            rem = self.buff[n:]
+            ret = self.buff[self.cur:self.cur + n]
 
-        self.buff = rem
+            if self.cur + n >= len(self.buff) - 1:
+                self.cur = len(self.buff)
+            else:
+                self.cur = self.cur + n
 
         return bytes(ret)
 
