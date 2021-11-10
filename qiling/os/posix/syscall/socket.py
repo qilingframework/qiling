@@ -338,37 +338,49 @@ def ql_syscall_bind(ql: Qiling, bind_fd, bind_addr, bind_addrlen):
     return regreturn
 
 
-def ql_syscall_getsockname(ql: Qiling, sockfd, addr, addrlenptr):
-    if 0 <= sockfd < NR_OPEN and ql.os.fd[sockfd] != 0:
-        host, port = ql.os.fd[sockfd].getsockname()
-        data = struct.pack("<h", int(ql.os.fd[sockfd].family))
-        data += struct.pack(">H", port)
-        data += ipaddress.ip_address(host).packed
-        addrlen = ql.mem.read(addrlenptr, 4)
-        addrlen = ql.unpack32(addrlen)
-        data = data[:addrlen]
-        ql.mem.write(addr, data)
-        regreturn = 0
+def ql_syscall_getsockname(ql: Qiling, sockfd: int, addr: int, addrlenptr: int):
+    if 0 <= sockfd < NR_OPEN:
+        socket = ql.os.fd[sockfd]
+
+        if isinstance(socket, ql_socket):
+            host, port = socket.getpeername()
+
+            data = struct.pack("<h", int(socket.family))
+            data += struct.pack(">H", port)
+            data += ipaddress.ip_address(host).packed
+
+            addrlen = ql.mem.read_ptr(addrlenptr)
+
+            ql.mem.write(addr, data[:addrlen])
+            regreturn = 0
+        else:
+            regreturn = -EPERM
     else:
-        regreturn = -1
+        regreturn = -EPERM
 
     ql.log.debug("getsockname(%d, 0x%x, 0x%x) = %d" % (sockfd, addr, addrlenptr, regreturn))
     return regreturn
 
 
-def ql_syscall_getpeername(ql: Qiling, sockfd, addr, addrlenptr):
-    if 0 <= sockfd < NR_OPEN and ql.os.fd[sockfd] != 0:
-        host, port = ql.os.fd[sockfd].getpeername()
-        data = struct.pack("<h", int(ql.os.fd[sockfd].family))
-        data += struct.pack(">H", port)
-        data += ipaddress.ip_address(host).packed
-        addrlen = ql.mem.read(addrlenptr, 4)
-        addrlen = ql.unpack32(addrlen)
-        data = data[:addrlen]
-        ql.mem.write(addr, data)
-        regreturn = 0
+def ql_syscall_getpeername(ql: Qiling, sockfd: int, addr: int, addrlenptr: int):
+    if 0 <= sockfd < NR_OPEN:
+        socket = ql.os.fd[sockfd]
+
+        if isinstance(socket, ql_socket):
+            host, port = socket.getpeername()
+
+            data = struct.pack("<h", int(socket.family))
+            data += struct.pack(">H", port)
+            data += ipaddress.ip_address(host).packed
+
+            addrlen = ql.mem.read_ptr(addrlenptr)
+
+            ql.mem.write(addr, data[:addrlen])
+            regreturn = 0
+        else:
+            regreturn = -EPERM
     else:
-        regreturn = -1
+        regreturn = -EPERM
 
     ql.log.debug("getpeername(%d, 0x%x, 0x%x) = %d" % (sockfd, addr, addrlenptr, regreturn))
     return regreturn

@@ -122,7 +122,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
                 self._ostype = arch_os_convert(self._archtype)
             else:
                 self._ostype = ostype_convert(self._ostype.lower())
-
+                    
             if self._code == None:
                 self._code = "qilingcode"
             if self._argv is None:
@@ -157,9 +157,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
             if not ql_is_valid_arch(self._archtype):
                 raise QlErrorArch("Invalid Arch %s" % self._archtype)
-
-
-         
             
         #######################################
         # Loader and General Purpose OS check #
