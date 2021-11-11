@@ -4,7 +4,7 @@
 #
 
 import ctypes
-from qiling.arch.arm_const import IRQ
+from qiling.arch.cortex_m_const import IRQ
 from qiling.hw.peripheral import QlPeripheral
 from qiling.hw.const.cm4_systick import SYSTICK_CTRL
 
@@ -44,9 +44,8 @@ class CortexM4SysTick(QlPeripheral):
         else:
             self.systick.VAL -= self.ratio
 
-    def read(self, offset: int, size: int) -> int:       
-        self.ql.log.debug(f'[{self.label.upper()}] [R] {self.find_field(offset, size):10s}')
-
+    @QlPeripheral.debug_info()
+    def read(self, offset: int, size: int) -> int:
         buf = ctypes.create_string_buffer(size)
         ctypes.memmove(buf, ctypes.addressof(self.systick) + offset, size)
 
@@ -54,9 +53,8 @@ class CortexM4SysTick(QlPeripheral):
             self.systick.CTRL &= ~SYSTICK_CTRL.COUNTFLAG        
         return int.from_bytes(buf.raw, byteorder='little')
 
+    @QlPeripheral.debug_info()
     def write(self, offset: int, size: int, value: int):
-        self.ql.log.debug(f'[{self.label.upper()}] [W] {self.find_field(offset, size):10s} = {hex(value)}')
-        
         # ignore the reserved bit
         if offset == self.struct.CTRL.offset:
             value &= SYSTICK_CTRL.MASK

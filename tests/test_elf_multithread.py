@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import sys, unittest, subprocess, string, random, os
+import platform, sys, unittest, subprocess, string, random, os
 
 from unicorn import UcError, UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
 
@@ -19,8 +19,12 @@ from qiling.os.filestruct import ql_file
 class ELFTest(unittest.TestCase):
 
     def test_elf_linux_execve_x8664(self):
-        ql = Qiling(["../examples/rootfs/x8664_linux/bin/posix_syscall_execve"],  "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG)
+        if platform.system() == "Darwin" and platform.machine() == "arm64":
+            return
+        
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/posix_syscall_execve"],  "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG)   
         ql.run()
+
         for key, value in ql.loader.env.items():
             QL_TEST=value
 
@@ -29,6 +33,7 @@ class ELFTest(unittest.TestCase):
 
         del QL_TEST
         del ql
+
 
     def test_elf_linux_cloexec_x8664(self):
         with open('../examples/rootfs/x8664_linux/testfile', 'wb') as f:
@@ -181,6 +186,9 @@ class ELFTest(unittest.TestCase):
 
 
     def test_tcp_elf_linux_arm(self):
+        if platform.system() == "Darwin" and platform.machine() == "arm64":
+            return
+
         def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
             try:
                 buf = ql.mem.read(write_buf, write_count)
@@ -199,6 +207,9 @@ class ELFTest(unittest.TestCase):
 
 
     def test_tcp_elf_linux_arm64(self):
+        if platform.system() == "Darwin" and platform.machine() == "arm64":
+            return
+
         def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
             try:
                 buf = ql.mem.read(write_buf, write_count)
@@ -217,6 +228,9 @@ class ELFTest(unittest.TestCase):
 
 
     def test_tcp_elf_linux_mips32el(self):
+        if platform.system() == "Darwin" and platform.machine() == "arm64":
+            return
+
         ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_tcp_test","20005"], "../examples/rootfs/mips32el_linux", multithread=True)
         ql.run()
         del ql
@@ -260,6 +274,9 @@ class ELFTest(unittest.TestCase):
         del ql
 
     def test_udp_elf_linux_arm64(self):
+        if platform.system() == "Darwin" and platform.machine() == "arm64":
+            return
+                    
         def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
             try:
                 buf = ql.mem.read(write_buf, write_count)

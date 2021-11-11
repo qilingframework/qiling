@@ -31,18 +31,52 @@ class QlPeripheral:
         self.label = label
         self.struct = type(self).Type
 
+        self.verbose = False
+
     def step(self):
         """ Update the state of the peripheral, 
             called after each instruction is executed
         """        
         pass
+    
+    @staticmethod
+    def debug_info(width=4):
+        def decorator(func):            
+            def read_wrapper(self, offset: int, size: int) -> int:
+                retval = func(self, offset, size)
+                if self.verbose:
+                    self.ql.log.debug(f'[{self.label.upper()}] [R] {self.find_field(offset, size):{width}s} = {hex(retval)}')
+                
+                return retval
 
+            def write_wrapper(self, offset: int, size: int, value: int):
+                if self.verbose:
+                    field, extra = self.find_field(offset, size), ''
+                    if field.startswith('DR') and value <= 255:
+                        extra = f'({repr(chr(value))})'
+
+                    self.ql.log.debug(f'[{self.label.upper()}] [W] {field:{width}s} = {hex(value)} {extra}')
+                
+                return func(self, offset, size, value)
+
+            funcmap = {
+                'read' : read_wrapper,
+                'write': write_wrapper,
+            }
+
+            name = func.__name__
+            return funcmap[name] if name in funcmap else func
+
+        return decorator
+
+    def watch(self):
+        self.verbose = True
+    
     def read(self, offset: int, size: int) -> int:
-        self.ql.log.debug(f'[{self.label.upper()}] [R] {self.find_field(offset, size):10s}')
         return 0
 
     def write(self, offset: int, size: int, value: int):
-        self.ql.log.debug(f'[{self.label.upper()}] [W] {self.find_field(offset, size):10s} = {hex(value)}')        
+        pass
 
     def in_field(self, field, offset: int, size: int) -> bool:
         return field.offset <= offset and offset + size <= field.offset + field.size

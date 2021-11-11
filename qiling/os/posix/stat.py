@@ -23,13 +23,13 @@ class StatBase:
         return self.__getitem__(key)
 
 class Stat(StatBase):
-    def __init__(self, path):
-        super().__init__(os.stat(path))
+    def __init__(self, path, dirfd=None):
+        super().__init__(os.stat(path, dir_fd=dirfd))
 
 class Fstat(StatBase):
     def __init__(self, fd: int):
         super().__init__(os.fstat(fd))
 
 class Lstat(StatBase):
-    def __init__(self, path):
-        super().__init__(os.lstat(path))
+    def __init__(self, path, dirfd=None):
+        super().__init__(os.lstat(path, dir_fd=dirfd))

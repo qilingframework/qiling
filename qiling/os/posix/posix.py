@@ -10,9 +10,10 @@ from unicorn.arm64_const import UC_ARM64_REG_X8, UC_ARM64_REG_X16
 from unicorn.arm_const import UC_ARM_REG_R7
 from unicorn.mips_const import UC_MIPS_REG_V0
 from unicorn.x86_const import UC_X86_REG_EAX, UC_X86_REG_RAX
+from unicorn.riscv_const import UC_RISCV_REG_A7
 
 from qiling import Qiling
-from qiling.cc import QlCC, intel, arm, mips
+from qiling.cc import QlCC, intel, arm, mips, riscv
 from qiling.const import QL_ARCH, QL_OS, QL_INTERCEPT
 from qiling.exception import QlErrorSyscallNotFound
 from qiling.os.os import QlOs
@@ -51,6 +52,12 @@ class mipso32(mips.mipso32):
         self.ql.reg.v0 = value
         self.ql.reg.a3 = a3return
 
+class riscv32(riscv.riscv):
+    pass
+
+class riscv64(riscv.riscv):
+    pass
+
 class QlOsPosix(QlOs):
 
     def __init__(self, ql: Qiling):
@@ -77,7 +84,9 @@ class QlOsPosix(QlOs):
             QL_ARCH.ARM  : UC_ARM_REG_R7,
             QL_ARCH.MIPS : UC_MIPS_REG_V0,
             QL_ARCH.X86  : UC_X86_REG_EAX,
-            QL_ARCH.X8664: UC_X86_REG_RAX
+            QL_ARCH.X8664: UC_X86_REG_RAX,
+            QL_ARCH.RISCV: UC_RISCV_REG_A7,
+            QL_ARCH.RISCV64: UC_RISCV_REG_A7,            
         }[self.ql.archtype]
 
         # handle a special case
@@ -92,7 +101,9 @@ class QlOsPosix(QlOs):
             QL_ARCH.ARM  : aarch32,
             QL_ARCH.MIPS : mipso32,
             QL_ARCH.X86  : intel32,
-            QL_ARCH.X8664: intel64
+            QL_ARCH.X8664: intel64,
+            QL_ARCH.RISCV: riscv32,
+            QL_ARCH.RISCV64: riscv64,
         }[self.ql.archtype](ql)
 
         self._fd = QlFileDes([0] * NR_OPEN)
@@ -232,7 +243,8 @@ class QlOsPosix(QlOs):
                 raise e
 
             # print out log entry
-            syscall_basename = syscall_name[len(SYSCALL_PREF):]
+            syscall_basename = syscall_name[len(SYSCALL_PREF) if syscall_name.startswith(SYSCALL_PREF) else 0:] 
+
             args = []
 
             for name, value in zip(param_names, params):
@@ -242,7 +254,7 @@ class QlOsPosix(QlOs):
 
                 args.append((name, f'{value:#x}'))
 
-            sret = retval and QlOsPosix.getNameFromErrorCode(retval)
+            sret = QlOsPosix.getNameFromErrorCode(retval)
             self.utils.print_function(self.ql.reg.arch_pc, syscall_basename, args, sret, False)
 
             # record syscall statistics

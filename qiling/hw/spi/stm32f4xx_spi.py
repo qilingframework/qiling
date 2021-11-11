@@ -4,11 +4,13 @@
 #
 
 import ctypes
+
 from qiling.hw.peripheral import QlPeripheral
+from qiling.hw.connectivity import QlConnectivityPeripheral
 from qiling.hw.const.stm32f4xx_spi import SPI_CR1, SPI_CR2, SPI_SR, SPI_CRCPR, SPI_I2SCFGR, SPI_I2SPR
 
 
-class STM32F4xxSpi(QlPeripheral):
+class STM32F4xxSpi(QlConnectivityPeripheral):
     class Type(ctypes.Structure):
         """ the structure available in :
             stm32f413xx.h
@@ -64,9 +66,8 @@ class STM32F4xxSpi(QlPeripheral):
 
         self.intn = intn
 
+    @QlPeripheral.debug_info()
     def read(self, offset: int, size: int) -> int:
-        self.ql.log.debug(f'[{self.label.upper()}] [R] {self.find_field(offset, size):10s}')
-
         if self.in_field(self.struct.DR, offset, size):
             self.spi.SR &= ~SPI_SR.RXNE
 
@@ -76,9 +77,8 @@ class STM32F4xxSpi(QlPeripheral):
 
         return data
 
+    @QlPeripheral.debug_info()
     def write(self, offset: int, size: int, value: int):
-        self.ql.log.debug(f'[{self.label.upper()}] [W] {self.find_field(offset, size):10s} = {hex(value)}')
-
         if offset in [self.struct.SR.offset, self.struct.RXCRCR.offset, self.struct.TXCRCR.offset]:
             return
 
@@ -101,10 +101,12 @@ class STM32F4xxSpi(QlPeripheral):
         ctypes.memmove(ctypes.addressof(self.spi) + offset, data, size)   
 
         if self.in_field(self.struct.DR, offset, size):
-            self.send_data()     
+            self.spi.SR |= SPI_SR.RXNE
+            self.send_to_user(self.spi.DR)
 
     def send_interrupt(self):
         self.ql.hw.nvic.set_pending(self.intn)
 
-    def send_data(self):
-        self.spi.SR |= SPI_SR.RXNE
+    @QlConnectivityPeripheral.device_handler
+    def step(self):
+        pass

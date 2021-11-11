@@ -80,7 +80,7 @@ def ql_syscall_socket(ql: Qiling, socket_domain, socket_type, socket_protocol):
             # ql_socket.open should use host platform based socket_type.
             try:
                 emu_socket_value = socket_type
-                emu_socket_type = socket_type_mapping(socket_type, ql.archtype)
+                emu_socket_type = socket_type_mapping(socket_type, ql.archtype, ql.ostype)
                 socket_type = getattr(socket, emu_socket_type)
                 ql.log.debug("Convert emu_socket_type {}:{} to host platform based socket_type {}:{}".format(
                     emu_socket_type, emu_socket_value, emu_socket_type, socket_type))
@@ -106,8 +106,8 @@ def ql_syscall_socket(ql: Qiling, socket_domain, socket_type, socket_protocol):
         ql.log.exception("")
         regreturn = -1
 
-    socket_type = socket_type_mapping(socket_type, ql.archtype)
-    socket_domain = socket_domain_mapping(socket_domain, ql.archtype)
+    socket_type = socket_type_mapping(socket_type, ql.archtype, ql.ostype)
+    socket_domain = socket_domain_mapping(socket_domain, ql.archtype, ql.ostype)
     ql.log.debug("socket(%s, %s, %s) = %d" % (socket_domain, socket_type, socket_protocol, regreturn))
 
     return regreturn
@@ -161,7 +161,7 @@ def ql_syscall_getsockopt(ql: Qiling, sockfd, level, optname, optval_addr, optle
 
         try:
             emu_level = level
-            emu_level_name = socket_level_mapping(emu_level, ql.archtype)
+            emu_level_name = socket_level_mapping(emu_level,  ql.archtype, ql.ostype)
             level = getattr(socket, emu_level_name)
             ql.log.debug("Convert emu_level {}:{} to host platform based level {}:{}".format(
                 emu_level_name, emu_level, emu_level_name, level))
@@ -178,12 +178,12 @@ def ql_syscall_getsockopt(ql: Qiling, sockfd, level, optname, optval_addr, optle
         try:
             emu_opt = optname
 
-            emu_level_name = socket_level_mapping(emu_level, ql.archtype)
+            emu_level_name = socket_level_mapping(emu_level, ql.archtype, ql.ostype)
             # emu_opt_name is based on level
             if emu_level_name == "IPPROTO_IP":
-                emu_opt_name = socket_ip_option_mapping(emu_opt, ql.archtype)
+                emu_opt_name = socket_ip_option_mapping(emu_opt, ql.archtype, ql.ostype)
             else:
-                emu_opt_name = socket_option_mapping(emu_opt, ql.archtype)
+                emu_opt_name = socket_option_mapping(emu_opt, ql.archtype, ql.ostype)
 
             # Fix for mips
             if ql.archtype == QL_ARCH.MIPS:
@@ -223,7 +223,7 @@ def ql_syscall_setsockopt(ql: Qiling, sockfd, level, optname, optval_addr, optle
         try:
             try:
                 emu_level = level
-                emu_level_name = socket_level_mapping(emu_level, ql.archtype)
+                emu_level_name = socket_level_mapping(emu_level, ql.archtype, ql.ostype)
                 level = getattr(socket, emu_level_name)
                 ql.log.debug("Convert emu_level {}:{} to host platform based level {}:{}".format(
                     emu_level_name, emu_level, emu_level_name, level))
@@ -240,12 +240,12 @@ def ql_syscall_setsockopt(ql: Qiling, sockfd, level, optname, optval_addr, optle
             try:
                 emu_opt = optname
 
-                emu_level_name = socket_level_mapping(emu_level, ql.archtype)
+                emu_level_name = socket_level_mapping(emu_level, ql.archtype, ql.ostype)
                 # emu_opt_name is based on level
                 if emu_level_name == "IPPROTO_IP":
-                    emu_opt_name = socket_ip_option_mapping(emu_opt, ql.archtype)
+                    emu_opt_name = socket_ip_option_mapping(emu_opt, ql.archtype, ql.ostype)
                 else:
-                    emu_opt_name = socket_option_mapping(emu_opt, ql.archtype)
+                    emu_opt_name = socket_option_mapping(emu_opt, ql.archtype, ql.ostype)
 
                 # Fix for mips
                 if ql.archtype == QL_ARCH.MIPS:
@@ -338,37 +338,49 @@ def ql_syscall_bind(ql: Qiling, bind_fd, bind_addr, bind_addrlen):
     return regreturn
 
 
-def ql_syscall_getsockname(ql: Qiling, sockfd, addr, addrlenptr):
-    if 0 <= sockfd < NR_OPEN and ql.os.fd[sockfd] != 0:
-        host, port = ql.os.fd[sockfd].getsockname()
-        data = struct.pack("<h", int(ql.os.fd[sockfd].family))
-        data += struct.pack(">H", port)
-        data += ipaddress.ip_address(host).packed
-        addrlen = ql.mem.read(addrlenptr, 4)
-        addrlen = ql.unpack32(addrlen)
-        data = data[:addrlen]
-        ql.mem.write(addr, data)
-        regreturn = 0
+def ql_syscall_getsockname(ql: Qiling, sockfd: int, addr: int, addrlenptr: int):
+    if 0 <= sockfd < NR_OPEN:
+        socket = ql.os.fd[sockfd]
+
+        if isinstance(socket, ql_socket):
+            host, port = socket.getpeername()
+
+            data = struct.pack("<h", int(socket.family))
+            data += struct.pack(">H", port)
+            data += ipaddress.ip_address(host).packed
+
+            addrlen = ql.mem.read_ptr(addrlenptr)
+
+            ql.mem.write(addr, data[:addrlen])
+            regreturn = 0
+        else:
+            regreturn = -EPERM
     else:
-        regreturn = -1
+        regreturn = -EPERM
 
     ql.log.debug("getsockname(%d, 0x%x, 0x%x) = %d" % (sockfd, addr, addrlenptr, regreturn))
     return regreturn
 
 
-def ql_syscall_getpeername(ql: Qiling, sockfd, addr, addrlenptr):
-    if 0 <= sockfd < NR_OPEN and ql.os.fd[sockfd] != 0:
-        host, port = ql.os.fd[sockfd].getpeername()
-        data = struct.pack("<h", int(ql.os.fd[sockfd].family))
-        data += struct.pack(">H", port)
-        data += ipaddress.ip_address(host).packed
-        addrlen = ql.mem.read(addrlenptr, 4)
-        addrlen = ql.unpack32(addrlen)
-        data = data[:addrlen]
-        ql.mem.write(addr, data)
-        regreturn = 0
+def ql_syscall_getpeername(ql: Qiling, sockfd: int, addr: int, addrlenptr: int):
+    if 0 <= sockfd < NR_OPEN:
+        socket = ql.os.fd[sockfd]
+
+        if isinstance(socket, ql_socket):
+            host, port = socket.getpeername()
+
+            data = struct.pack("<h", int(socket.family))
+            data += struct.pack(">H", port)
+            data += ipaddress.ip_address(host).packed
+
+            addrlen = ql.mem.read_ptr(addrlenptr)
+
+            ql.mem.write(addr, data[:addrlen])
+            regreturn = 0
+        else:
+            regreturn = -EPERM
     else:
-        regreturn = -1
+        regreturn = -EPERM
 
     ql.log.debug("getpeername(%d, 0x%x, 0x%x) = %d" % (sockfd, addr, addrlenptr, regreturn))
     return regreturn

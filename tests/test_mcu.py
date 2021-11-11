@@ -131,6 +131,9 @@ class MCUTest(unittest.TestCase):
             def send(self, data):
                 pass
 
+            def step(self):
+                pass
+
         ql.hw.i2c1.connect(LCD())
         ql.run(count=550000)
 
@@ -166,6 +169,20 @@ class MCUTest(unittest.TestCase):
 
         ql.run(count=1000)
         self.assertTrue(count >= 5)
+
+        del ql
+
+    def test_mcu_uart_rust_stm32f411(self):
+        ql = Qiling(["../examples/rootfs/mcu/stm32f411/uart-rust.hex"],
+                    archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DEBUG)
+
+        ql.hw.create('rcc')
+        ql.hw.create('gpioa')
+        ql.hw.create('usart2')
+
+        ql.hw.usart2.send(b'123')
+        ql.run(count=10000)
+        self.assertTrue(ql.hw.usart2.recv() == b'1')
 
         del ql
 

@@ -4,3 +4,4 @@
 #
 
 from .stm32f4xx_spi import STM32F4xxSpi
+from .gd32vf1xx_spi import GD32VF1xxSpi

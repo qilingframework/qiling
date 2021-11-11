@@ -6,9 +6,10 @@
 import ctypes
 
 from qiling.hw.peripheral import QlPeripheral
+from qiling.hw.connectivity import QlConnectivityPeripheral
 from qiling.hw.const.stm32f4xx_usart import USART_SR, USART_CR1
 
-class STM32F4xxUsart(QlPeripheral):
+class STM32F4xxUsart(QlConnectivityPeripheral):
     class Type(ctypes.Structure):
         """ the structure available in :
 			stm32f413xx.h
@@ -56,9 +57,7 @@ class STM32F4xxUsart(QlPeripheral):
         
         self.intn = intn
 
-        self.recv_buf = bytearray()
-        self.send_buf = bytearray()
-
+    @QlPeripheral.debug_info()
     def read(self, offset: int, size: int) -> int:
         buf = ctypes.create_string_buffer(size)
         ctypes.memmove(buf, ctypes.addressof(self.usart) + offset, size)
@@ -69,34 +68,39 @@ class STM32F4xxUsart(QlPeripheral):
 
         return retval
 
-    def write(self, offset: int, size: int, value: int):
+    @QlPeripheral.debug_info()
+    def write(self, offset: int, size: int, value: int):        
         if offset == self.struct.SR.offset:
             self.usart.SR &= value | USART_SR.CTS | USART_SR.LBD | USART_SR.TC | USART_SR.RXNE
 
         elif offset == self.struct.DR.offset:
-            self.send_buf.append(value & 0xff)
-            self.usart.SR |= USART_SR.TC
+            self.usart.SR &= ~USART_SR.TXE
+            self.usart.DR = value
 
         else:
             data = (value).to_bytes(size, byteorder='little')
             ctypes.memmove(ctypes.addressof(self.usart) + offset, data, size)
 
-    def send(self, data: bytes):
-        self.recv_buf += data
+    def transfer(self):
+        """ transfer data from DR to shift buffer and
+            receive data from user buffer into DR
+        """        
 
-    def recv(self) -> bytes:
-        data = bytes(self.send_buf)
-        self.send_buf.clear()
-        return data
-
-    def step(self):
-        if not (self.usart.SR & USART_SR.RXNE):
-            if self.recv_buf:
-                self.usart.SR |= USART_SR.RXNE
-                self.usart.DR = self.recv_buf.pop(0)
-        
         if not (self.usart.SR & USART_SR.TXE):
-            self.usart.SR |= USART_SR.TXE
+            data = self.usart.DR
+
+            self.usart.SR |= USART_SR.TXE            
+            self.send_to_user(data)
+
+        if not (self.usart.SR & USART_SR.RXNE): 
+            # TXE bit must had been cleared
+            if self.has_input():
+                self.usart.SR |= USART_SR.RXNE
+                self.usart.DR = self.recv_from_user()
+
+    @QlConnectivityPeripheral.device_handler
+    def step(self):
+        self.transfer()
 
         if self.intn is not None:
             if  (self.usart.CR1 & USART_CR1.PEIE   and self.usart.SR & USART_SR.PE)   or \
