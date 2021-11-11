@@ -102,11 +102,8 @@ def ql_syscall_openat(ql: Qiling, fd: int, path: int, flags: int, mode: int):
 
             if 0 <= fd < NR_OPEN:
                 dir_fd = ql.os.fd[fd].fileno()
-
             else:
                 dir_fd = None
-                if fd == AT_FDCWD:
-                    file_path = os.path.join(ql.os.path.cwd, file_path)
 
             ql.os.fd[idx] = ql.os.fs_mapper.open_ql_file(file_path, flags, mode, dir_fd)
 
