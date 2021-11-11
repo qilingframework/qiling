@@ -199,21 +199,25 @@ def ostype_convert_str(ostype: QL_OS) -> Optional[str]:
     return __value_to_key(QL_OS, ostype)
 
 def ostype_convert(ostype: str) -> Optional[QL_OS]:
-    if ostype == "darwin":
-        ostype = "macos"
+    alias_map = {
+        "darwin": "macos",
+    }
 
-    return os_map.get(ostype)
+    return os_map.get(alias_map.get(ostype, ostype))
 
 def arch_convert_str(arch: QL_ARCH) -> Optional[str]:
     return __value_to_key(QL_ARCH, arch)
 
 def arch_convert(arch: str) -> Optional[QL_ARCH]:
-    if arch == "x86_64":
-        arch = "x8664"
-    return arch_map.get(arch)
+    alias_map = {
+        "x86_64": "x8664",
+        "riscv32": "riscv",
+    }
+    
+    return arch_map.get(alias_map.get(arch, arch))
 
 def arch_os_convert(arch: QL_ARCH) -> Optional[QL_OS]:
-    return arch_os_map.get(arch)
+    return arch_os_map.get(arch, QL_OS.MCU)
 
 def debugger_convert(debugger: str) -> Optional[QL_DEBUGGER]:
     return debugger_map.get(debugger)
