@@ -1154,6 +1154,12 @@ class StatxTimestamp(ctypes.Structure):
     ]
 
 class Statx(ctypes.Structure):
+    """ 
+        Reference:
+         - https://man7.org/linux/man-pages/man2/statx.2.html
+         - https://code.woboq.org/userspace/glibc/sysdeps/unix/sysv/linux/statx.c.html
+
+    """
     _fields_ = [
         ('stx_mask', ctypes.c_uint32),
         ('stx_blksize', ctypes.c_uint32),
