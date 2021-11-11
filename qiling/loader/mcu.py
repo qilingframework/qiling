@@ -64,6 +64,7 @@ class QlLoaderMCU(QlLoader):
         self.load_address = 0        
         self.path = self.argv[0]
         self.filetype = self.guess_filetype()
+        self.entry_point = 0
 
         if self.filetype == 'elf':
             with open(self.path, 'rb') as infile:
@@ -105,9 +106,9 @@ class QlLoaderMCU(QlLoader):
             for begin, _, data in self.ihex.segments:
                 self.ql.mem.write(begin, data)
 
-        self.ql.reg.write('lr', 0xffffffff)
-        self.ql.reg.write('msp', self.ql.mem.read_ptr(0x0))
-        self.ql.reg.write('pc' , self.entry_point)
+        
+        self.ql.arch.reset_register()
+        self.entry_point = self.ql.reg.read('pc')
 
     def run(self):
         def readint(raw):
@@ -148,7 +149,3 @@ class QlLoaderMCU(QlLoader):
         self.ql.hook_intr(self.ql.arch.soft_interrupt_handler)
                 
         self.reset()
-
-    @property
-    def entry_point(self):
-        return self.ql.mem.read_ptr(0x4)
