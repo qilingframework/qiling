@@ -68,18 +68,6 @@ class QlArchCORTEX_M(QlArchARM):
         for reg_maper in reg_maps:
             self.ql.reg.expand_mapping(reg_maper)
 
-        def intr_cb(ql, intno):
-            if intno == EXCP.SWI:
-                ql.hw.nvic.set_pending(IRQ.SVCALL)                    
-
-            elif intno == EXCP.EXCEPTION_EXIT:
-                ql.emu_stop()            
-            
-            else:
-                raise QlErrorNotImplemented(f'Unhandled interrupt number ({intno})')
-
-        self.intr_cb = intr_cb
-
     def get_init_uc(self):
         return Uc(UC_ARCH_ARM, UC_MODE_ARM + UC_MODE_MCLASS + UC_MODE_THUMB)
 
@@ -91,6 +79,16 @@ class QlArchCORTEX_M(QlArchARM):
     
     def check_thumb(self):
         return UC_MODE_THUMB
+
+    def intr_handler(self, ql, intno):
+        if intno == EXCP.SWI:
+            ql.hw.nvic.set_pending(IRQ.SVCALL)                    
+
+        elif intno == EXCP.EXCEPTION_EXIT:
+            ql.emu_stop()            
+        
+        else:
+            raise QlErrorNotImplemented(f'Unhandled interrupt number ({intno})')
 
     def step(self):
         self.ql.emu_start(self.get_pc(), 0, count=1)

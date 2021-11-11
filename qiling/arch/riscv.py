@@ -44,3 +44,6 @@ class QlArchRISCV(QlArch):
 
     def enable_float(self):
         self.ql.reg.mstatus = self.ql.reg.mstatus | MSTATUS.FS_DIRTY
+
+    def intr_handler(self, ql, intno):
+        raise QlErrorNotImplemented(f'Unhandled interrupt number ({intno})')

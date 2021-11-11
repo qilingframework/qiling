@@ -145,7 +145,7 @@ class QlLoaderMCU(QlLoader):
                 self.ql.hw.create(section_name.lower())
         
         ## Handle interrupt from instruction execution
-        self.ql.hook_intr(self.ql.arch.intr_cb)
+        self.ql.hook_intr(self.ql.arch.intr_handler)
                 
         self.reset()
 
