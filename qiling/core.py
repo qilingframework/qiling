@@ -727,11 +727,12 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self.count = count        
 
         # init debugger
-        if self._debugger != False and self._debugger != None:
+        if self._debugger != False and self._debugger != None and not self.interpreter:
             self._debugger = debugger_setup(self._debugger, self)
 
         if self.interpreter:
             return self.arch.run(code)
+
         elif self.baremetal:
             self.__enable_bin_patch()
             if self.count <= 0:
