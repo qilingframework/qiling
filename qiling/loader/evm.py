@@ -15,7 +15,7 @@ class QlLoaderEVM(QlLoader):
         self.ql = ql
 
         if self.ql.code is None:
-            with open(self.ql.filename[0]) as f:
+            with open(self.ql.path) as f:
                 self.ql.code = f.read()
 
     def run(self):
