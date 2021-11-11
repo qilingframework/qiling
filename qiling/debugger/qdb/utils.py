@@ -370,6 +370,7 @@ def handle_bnj_mips(ql: Qiling, cur_addr: str) -> int:
     # default breakpoint address if no jumps and branches here
     ret_addr = cur_addr + MIPS_INST_SIZE
 
+    to_jump = False
     if line.mnemonic.startswith('j') or line.mnemonic.startswith('b'):
 
         # make sure at least delay slot executed
