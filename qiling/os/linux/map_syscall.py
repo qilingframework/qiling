@@ -2134,7 +2134,7 @@ riscv32_syscall_table = {
 	219: "keyctl",
 	220: "clone",
 	221: "execve",
-	222: "mmap",
+	222: "mmap2",
 	223: "fadvise64_64",
 	224: "swapon",
 	225: "swapoff",
