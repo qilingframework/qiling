@@ -12,6 +12,7 @@ Improvements:
 - Minor refactor on ql.interpreter and ql.baremetal (#975)
 - More update in MCU modules (#971)
 - Fix getpeername and getsockname syscalls (#986)
+- Qdb improvements (#999)
 
 
 ------------------------------------
