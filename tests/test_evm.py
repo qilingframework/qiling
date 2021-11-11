@@ -77,60 +77,39 @@ class EVMTest(unittest.TestCase):
         self.assertTrue(testcheck.visited_hookinsn)
 
     def test_underflow_filename(self):
-        ql = Qiling(["rootfs/evm/undeflow.hex"], archtype="evm", verbose=4)
-        testcheck = Checklist()
-        argu = ql.arch.evm.abi.convert(['uint256'], [20])
-        code = ql.code + argu
+        ql = Qiling(["rootfs/evm/Hexagon.hex"], archtype="evm", verbose=4)
 
         user1 = ql.arch.evm.create_account(balance=100*10**18)
         user2 = ql.arch.evm.create_account(balance=100*10**18)
         c1 = ql.arch.evm.create_account()
 
-        def hookcode_test(ql, *argv):
-            testcheck.visited_hookcode = True
-
-        def hookinsn_test(ql, *argv):
-            testcheck.visited_hookinsn = True
-
-        def hookaddr_test(ql):
-            testcheck.visited_hookaddr = True
-
-        h0 = ql.hook_code(hookcode_test)
-        h1 = ql.hook_address(hookaddr_test, 10)
-
-        # message1: deploy runtime code
-        msg0 = ql.arch.evm.create_message(user1, b'', code=code, contract_address=c1)
-        ql.run(code=msg0)
-
-        ql.hook_del(h0)
-        ql.hook_del(h1)
-        h2 = ql.hook_insn(hookinsn_test, 'PUSH4')
-
-        #  # SMART CONTRACT DEPENDENT - message2: check balance of user1, should be 20
         def check_balance(sender, destination):
             call_data = '0x70a08231'+ql.arch.evm.abi.convert(['address'], [sender])
-            msg2 = ql.arch.evm.create_message(sender, destination, call_data)
+            msg2 = ql.arch.evm.create_message(sender, destination, data=call_data)
             return ql.run(code=msg2)
-        
-        result = check_balance(user1, c1)
-        print('\n\nuser1 balance =', int(result.output.hex()[2:], 16))
-        ql.hook_del(h2)
 
-        # SMART CONTRACT DEPENDENT - message3: transform 21 from user1 to user2
+        # Deploy runtime code
+        msg0 = ql.arch.evm.create_message(user1, b'', code=ql.code, contract_address=c1)
+        ql.run(code=msg0)
+
+        # # SMART CONTRACT DEPENDENT: check balance of user1
+        result = check_balance(user1, c1)
+        print('User1 balance =', int(result.output.hex()[2:], 16))
+
+        # # SMART CONTRACT DEPENDENT: transform from user1 to user2
         call_data = '0xa9059cbb'+ ql.arch.evm.abi.convert(['address'], [user2]) + \
-                                        ql.arch.evm.abi.convert(['uint256'], [21])
-        msg1 = ql.arch.evm.create_message(user1, c1, call_data)    
+                                        ql.arch.evm.abi.convert(['uint256'], [0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe])
+        msg1 = ql.arch.evm.create_message(user1, c1, data=call_data)    
         result = ql.run(code=msg1)
-        print('\n\nis success =', int(result.output.hex()[2:], 16))
+        if int(result.output.hex()[2:], 16) ==  1:
+            print('User1 transfered Token to User1')
 
-        # message4: check balance of user1, should be MAX - 1
+        # # SMART CONTRACT DEPENDENT: User1 balance underflow, MAX - 1
         result = check_balance(user1, c1)
-        print('\n\nuser1 balance =', hex(int(result.output.hex()[2:], 16)))
-        
-        self.assertEqual(hex(int(result.output.hex()[2:], 16)), '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff')
-        self.assertTrue(testcheck.visited_hookaddr)
-        self.assertTrue(testcheck.visited_hookcode)
-        self.assertTrue(testcheck.visited_hookinsn)
+        self.assertEqual(int(result.output.hex()[2:], 16), 420000000000000)
+
+        result = check_balance(user2, c1)
+        self.assertEqual(int(result.output.hex()[2:], 16), 452312848583266388373324160190187140051835877600158453279131187530910662654)
 
 if __name__ == "__main__":
     unittest.main()
