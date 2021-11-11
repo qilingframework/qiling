@@ -127,8 +127,8 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         elif not os.path.exists(self._rootfs):
             raise QlErrorFileNotFound("Target rootfs not found")
         
-        self._path = (str(self._argv[0]))
-        self._targetname = ntpath.basename(self._argv[0])
+        self._path = self._argv[0]
+        self._targetname = ntpath.basename(self.path)
 
         #################
         # arch os setup #
