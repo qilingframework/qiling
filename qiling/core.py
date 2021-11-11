@@ -108,7 +108,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         """
         Qiling Framework Core Engine
         """
-
         ##############
         # argv setup #
         ##############
