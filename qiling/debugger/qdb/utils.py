@@ -68,7 +68,7 @@ def get_arm_flags(bits: int) -> Mapping[str, int]:
 
 # parse unsigned integer from string
 def parse_int(s: str) -> int:
-    return int(s, 0) 
+    return int(s, 0)
 
 
 # check wether negative value or not
