@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from .hw.hw import QlHwManager
     from .loader.loader import QlLoader
 
-from .const import QL_ARCH_ENDIAN, QL_ENDIAN, QL_VERBOSE, QL_OS_INTERPRETER, QL_OS_BAREMETAL, QL_OS_ALL
+from .const import QL_ARCH_ENDIAN, QL_ENDIAN, QL_VERBOSE, QL_OS_INTERPRETER, QL_OS_BAREMETAL, QL_OS_ALL, QL_OS_BARE_RTOS
 from .exception import QlErrorFileNotFound, QlErrorArch, QlErrorOsType
 from .utils import *
 from .core_struct import QlCoreStructs
@@ -194,7 +194,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         ##############
         # Components #
         ##############
-        if self.gpos or self.baremetal:
+        if self.gpos or self.baremetal or self.blob:
             self._mem = component_setup("os", "memory", self)
             self._reg = component_setup("arch", "register", self)
 
@@ -489,6 +489,15 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             Type: bool
         """
         return self.ostype in QL_OS_ALL
+
+    @property
+    def blob(self) -> bool:
+        """  Static linked bare binary type
+            - U-Boot, VxWorks, eCos
+
+            Type: bool
+        """
+        return self.ostype in QL_OS_BARE_RTOS
 
     @property
     def platform_os(self):
