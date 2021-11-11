@@ -106,6 +106,11 @@ class QlArchCORTEX_M(QlArchARM):
     def using_psp(self):
         return not self.is_handler_mode() and (self.ql.reg.read('control') & CONTROL.SPSEL) > 0
 
+    def reset_register(self):
+        self.ql.reg.write('lr', 0xffffffff)
+        self.ql.reg.write('msp', self.ql.mem.read_ptr(0x0))
+        self.ql.reg.write('pc' , self.ql.mem.read_ptr(0x4))
+
     def soft_interrupt_handler(self, ql, intno):
         if intno == EXCP.SWI:
             ql.hw.nvic.set_pending(IRQ.SVCALL)                    
