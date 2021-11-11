@@ -1154,7 +1154,7 @@ class StatxTimestamp(ctypes.Structure):
     ]
 
 class Statx(ctypes.Structure):
-    _fields = [
+    _fields_ = [
         ('stx_mask', ctypes.c_uint32),
         ('stx_blksize', ctypes.c_uint32),
         ('stx_attributes', ctypes.c_uint64),
@@ -1177,6 +1177,8 @@ class Statx(ctypes.Structure):
         ('stx_dev_minor', ctypes.c_uint32),
         ('__statx_pad2', ctypes.c_uint64 * 14),
     ]
+
+    _pack_ = 8
 
 # int statx(int dirfd, const char *restrict pathname, int flags,
 #                  unsigned int mask, struct statx *restrict statxbuf);
@@ -1201,7 +1203,7 @@ def ql_syscall_statx(ql: Qiling, dirfd: int, path: int, flags: int, mask: int, b
         else:
             st = Stat(real_path, fd)
         
-        statx = Statx(
+        stx = Statx(
             stx_mask = 0x07ff, # STATX_BASIC_STATS
             stx_blksize = st.st_blksize,
             stx_nlink = st.st_nlink,
@@ -1219,8 +1221,8 @@ def ql_syscall_statx(ql: Qiling, dirfd: int, path: int, flags: int, mask: int, b
             stx_dev_major = major(st.st_dev),
             stx_dev_minor = minor(st.st_dev),
         )
-        
-        ql.mem.write(buf_ptr, bytes(statx))
+
+        ql.mem.write(buf_ptr, bytes(stx))
 
         regreturn = 0
     
