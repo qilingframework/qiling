@@ -11,7 +11,7 @@ from contextlib import contextmanager
 
 from qiling.const import QL_ARCH
 
-from .utils import dump_regs, get_arm_flags, disasm, parse_int
+from .utils import dump_regs, get_arm_flags, disasm, parse_int, handle_bnj
 from .const import *
 
 
@@ -87,7 +87,7 @@ def examine_mem(ql: Qiling, line: str) -> Union[bool, (str, int, int)]:
 
         for line in range(lines):
             offset = line * sz * 4
-            print("0x{addr+offset:x}:\t", end="")
+            print(f"0x{addr+offset:x}:\t", end="")
 
             idx = line * ql.pointersize
             for each in mem_read[idx:idx+ql.pointersize]:
@@ -120,17 +120,19 @@ def _try_read(ql: Qiling, address: int, size: int) -> Optional[bytes]:
 
 # divider printer
 @contextmanager
-def context_printer(ql: Qiling, field_name: str, ruler: str = "=") -> None:
-    _height, _width = get_terminal_size()
-    print(field_name, ruler * (_width - len(field_name) - 1))
+def context_printer(ql: Qiling, field_name: str, ruler: str = "─") -> None:
+    height, width = get_terminal_size()
+    bar = (width - len(field_name)) // 2 - 1
+    print(ruler * bar, field_name, ruler * bar)
     yield
-    print(ruler * _width)
+    if "DISASM" in field_name:
+        print(ruler * width)
 
 
 def context_reg(ql: Qiling, saved_states: Optional[Mapping[str, int]] = None, /, *args, **kwargs) -> None:
 
     # context render for registers
-    with context_printer(ql, "[Registers]"):
+    with context_printer(ql, "[ REGISTERS ]"):
 
         _cur_regs = dump_regs(ql)
 
@@ -194,33 +196,56 @@ def context_reg(ql: Qiling, saved_states: Optional[Mapping[str, int]] = None, /,
             print(color.GREEN, "[{cpsr[mode]} mode], Thumb: {cpsr[thumb]}, FIQ: {cpsr[fiq]}, IRQ: {cpsr[irq]}, NEG: {cpsr[neg]}, ZERO: {cpsr[zero]}, Carry: {cpsr[carry]}, Overflow: {cpsr[overflow]}".format(cpsr=get_arm_flags(ql.reg.cpsr)), color.END, sep="")
 
     # context render for Stack
-    with context_printer(ql, "[Stack]", ruler="-"):
+    with context_printer(ql, "[ STACK ]", ruler="─"):
 
-        for idx in range(8):
-            _addr = ql.reg.arch_sp + idx * 4
-            _val = ql.mem.read(_addr, ql.pointersize)
-            print(f"$sp+0x{idx*4:02x}|[0x{_addr:08x}]=> 0x{ql.unpack(_val):08x}", end="")
+        for idx in range(10):
+            addr = ql.reg.arch_sp + idx * ql.pointersize
+            val = ql.mem.read(addr, ql.pointersize)
+            print(f"$sp+0x{idx*ql.pointersize:02x}│ [0x{addr:08x}] —▸ 0x{ql.unpack(val):08x}", end="")
 
             try:  # try to deference wether its a pointer
-                _deref = ql.mem.read(_addr, ql.pointersize)
+                buf = ql.mem.read(addr, ql.pointersize)
             except:
-                _deref = None
+                buf = None
 
-            if _deref:
-                print(f" => 0x{ql.unpack(_deref):08x}")
+            if (addr := ql.unpack(buf)):
+                try:  # try to deference again
+                    buf = ql.mem.read(addr, ql.pointersize)
+                except:
+                    buf = None
+
+                if buf:
+                    try:
+                        s = ql.mem.string(addr)
+                    except:
+                        s = None
+
+                    if s and s.isprintable():
+                        print(f" ◂— {ql.mem.string(addr)}", end="")
+                    else:
+                        print(f" ◂— 0x{ql.unpack(buf):08x}", end="")
+            print()
 
 
-def print_asm(ql: Qiling, ins: CsInsn) -> None:
-    fmt = (ins.address, ins.mnemonic.ljust(6), ins.op_str)
-    if ql.reg.arch_pc == ins.address:
-        print(f"PC ==>  0x{fmt[0]:x}\t{fmt[1]} {fmt[2]}")
-    else:
-        print(f"\t0x{fmt[0]:x}\t{fmt[1]} {fmt[2]}")
+def print_asm(ql: Qiling, insn: CsInsn, to_jump: Optional[bool] = None, address: int = None) -> None:
+
+    opcode = "".join(f"{b:02x}" for b in insn.bytes)
+    trace_line = f"0x{insn.address:08x} │ {opcode:10s} {insn.mnemonic:10} {insn.op_str:35s}"
+
+    cursor = " "
+    if ql.reg.arch_pc == insn.address:
+        cursor = "►"
+
+    jump_sign = " "
+    if to_jump and address != ql.reg.arch_pc+4:
+        jump_sign = f"{color.RED}✓{color.END}"
+
+    print(f"{jump_sign}  {cursor}   {color.DARKGRAY}{trace_line}{color.END}")
 
 
 def context_asm(ql: Qiling, address: int) -> None:
 
-    with context_printer(ql, field_name="[Code]"):
+    with context_printer(ql, field_name="[ DISASM ]"):
 
         # assembly before current location
 
@@ -249,7 +274,8 @@ def context_asm(ql: Qiling, address: int) -> None:
         # assembly for current location
 
         cur_ins = disasm(ql, address)
-        print_asm(ql, cur_ins)
+        to_jump, next_stop = handle_bnj(ql, address)
+        print_asm(ql, cur_ins, to_jump=to_jump)
 
         # assembly after current location
 
