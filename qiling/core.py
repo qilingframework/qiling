@@ -123,7 +123,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             else:
                 self._ostype = ostype_convert(self._ostype.lower())
                     
-            if self._code == None:
+            if self._code == None and not (str(self._argv[0])):
                 self._code = "qilingcode"
             if self._argv is None:
                 self._argv = ["qilingcode"]
@@ -140,9 +140,9 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         ##############
         if (not self._interpreter and not self._baremetal) and self._code == None:
             if not os.path.exists(str(self._argv[0])):
-                raise QlErrorFileNotFound("Target binary not found: %s" %(self._argv[0]))
+                raise QlErrorFileNotFound("Target binary not found: %s" % (self._argv[0]))
             if not os.path.exists(self._rootfs):
-                raise QlErrorFileNotFound("Target rootfs not found")
+                raise QlErrorFileNotFound("Target rootfs not found %s" % (self._rootfs))
         
             guessed_archtype, guessed_ostype, guessed_archendian = ql_guess_emu_env(self._path)
             

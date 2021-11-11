@@ -77,7 +77,7 @@ class EVMTest(unittest.TestCase):
         self.assertTrue(testcheck.visited_hookinsn)
 
     def test_underflow_filename(self):
-        ql = Qiling(["rootfs/evm/Hexagon.hex"], archtype="evm", verbose=4)
+        ql = Qiling(["../examples/rootfs/evm/Hexagon.hex"], archtype="evm", verbose=4)
 
         user1 = ql.arch.evm.create_account(balance=100*10**18)
         user2 = ql.arch.evm.create_account(balance=100*10**18)
@@ -89,7 +89,7 @@ class EVMTest(unittest.TestCase):
             return ql.run(code=msg2)
 
         # Deploy runtime code
-        msg0 = ql.arch.evm.create_message(user1, b'', code=ql.code, contract_address=c1)
+        msg0 = ql.arch.evm.create_message(user1, b'', contract_address=c1)
         ql.run(code=msg0)
 
         # # SMART CONTRACT DEPENDENT: check balance of user1
