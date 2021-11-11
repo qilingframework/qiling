@@ -198,18 +198,33 @@ def context_reg(ql: Qiling, saved_states: Optional[Mapping[str, int]] = None, /,
     # context render for Stack
     with context_printer(ql, "[ STACK ]", ruler="─"):
 
-        for idx in range(8):
-            _addr = ql.reg.arch_sp + idx * 4
-            _val = ql.mem.read(_addr, ql.pointersize)
-            print(f"$sp+0x{idx*4:02x}│ [0x{_addr:08x}] —▸ 0x{ql.unpack(_val):08x}", end="")
+        for idx in range(10):
+            addr = ql.reg.arch_sp + idx * ql.pointersize
+            val = ql.mem.read(addr, ql.pointersize)
+            print(f"$sp+0x{idx*ql.pointersize:02x}│ [0x{addr:08x}] —▸ 0x{ql.unpack(val):08x}", end="")
 
             try:  # try to deference wether its a pointer
-                _deref = ql.mem.read(_addr, ql.pointersize)
+                buf = ql.mem.read(addr, ql.pointersize)
             except:
-                _deref = None
+                buf = None
 
-            if _deref:
-                print(f" => 0x{ql.unpack(_deref):08x}")
+            if (addr := ql.unpack(buf)):
+                try:  # try to deference again
+                    buf = ql.mem.read(addr, ql.pointersize)
+                except:
+                    buf = None
+
+                if buf:
+                    try:
+                        s = ql.mem.string(addr)
+                    except:
+                        s = None
+
+                    if s and s.isprintable():
+                        print(f" ◂— {ql.mem.string(addr)}", end="")
+                    else:
+                        print(f" ◂— 0x{ql.unpack(buf):08x}", end="")
+            print()
 
 
 def print_asm(ql: Qiling, insn: CsInsn, to_jump: Optional[bool] = None, address: int = None) -> None:
