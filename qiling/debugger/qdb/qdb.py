@@ -22,8 +22,8 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
     def __init__(self: QlQdb, ql: Qiling, init_hook: str = "", rr: bool = False) -> None:
 
-        self._ql = ql
-        self.prompt = "(Qdb) "
+        self.ql = ql
+        self.prompt = f"{color.BOLD}{color.RED}Qdb> {color.END}"
         self.breakpoints = {}
         self._saved_reg_dump = None
         self.bp_list = {}
@@ -35,7 +35,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         super().__init__()
 
         # setup a breakpoint at entry point or user specified address
-        address = self._ql.loader.entry_point if not init_hook else parse_int(init_hook)
+        address = self.ql.loader.entry_point if not init_hook else parse_int(init_hook)
         self.set_breakpoint(address, is_temp=True)
         self.dbg_hook()
 
@@ -44,7 +44,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         hook every instruction with callback funtion _bp_handler
         """
 
-        self._ql.hook_code(self._bp_handler)
+        self.ql.hook_code(self._bp_handler)
 
     @property
     def cur_addr(self: QlQdb) -> int:
@@ -52,7 +52,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         getter for current address of qiling instance
         """
 
-        return self._ql.reg.arch_pc
+        return self.ql.reg.arch_pc
 
     @cur_addr.setter
     def cur_addr(self: QlQdb, address: int) -> None:
@@ -60,7 +60,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         setter for current address of qiling instance
         """
 
-        self._ql.reg.arch_pc = address
+        self.ql.reg.arch_pc = address
 
     def _bp_handler(self: QlQdb, *args) -> None:
         """
@@ -83,21 +83,21 @@ class QlQdb(cmd.Cmd, QlDebugger):
         internal function for saving state of qiling instance
         """
 
-        self._states_list.append(self._ql.save())
+        self._states_list.append(self.ql.save())
 
     def _restore(self: QlQdb, *args) -> None:
         """
         internal function for restoring state of qiling instance
         """
 
-        self._ql.restore(self._states_list.pop())
+        self.ql.restore(self._states_list.pop())
 
     def _run(self: Qldbg, *args) -> None:
         """
         internal function for launching qiling instance
         """
 
-        self._ql.run()
+        self.ql.run()
 
     def parseline(self: QlQdb, line: str) -> Tuple[Optional[str], Optional[str], str]:
         """
@@ -150,12 +150,12 @@ class QlQdb(cmd.Cmd, QlDebugger):
         launch qiling instance from a fresh start
         """
 
-        self._ql = Qiling(
-                argv=self._ql.argv,
-                rootfs=self._ql.rootfs,
-                verbose=self._ql.verbose,
-                console=self._ql.console,
-                log_file=self._ql.log_file,
+        self.ql = Qiling(
+                argv=self.ql.argv,
+                rootfs=self.ql.rootfs,
+                verbose=self.ql.verbose,
+                console=self.ql.console,
+                log_file=self.ql.log_file,
             )
 
         self.dbg_hook()
@@ -166,8 +166,8 @@ class QlQdb(cmd.Cmd, QlDebugger):
         show context information for current location
         """
 
-        context_reg(self._ql, self._saved_reg_dump)
-        context_asm(self._ql, self.cur_addr)
+        context_reg(self.ql, self._saved_reg_dump)
+        context_asm(self.ql, self.cur_addr)
 
     def do_backward(self: QlQdb, *args) -> None:
         """
@@ -187,13 +187,13 @@ class QlQdb(cmd.Cmd, QlDebugger):
         execute one instruction at a time
         """
 
-        if self._ql is None:
+        if self.ql is None:
             print(f"{color.RED}[!] The program is not being run.{color.END}")
 
         else:
-            self._saved_reg_dump = dict(filter(lambda d: isinstance(d[0], str), self._ql.reg.save().items()))
+            self._saved_reg_dump = dict(filter(lambda d: isinstance(d[0], str), self.ql.reg.save().items()))
 
-            next_stop = handle_bnj(self._ql, self.cur_addr)
+            _, next_stop = handle_bnj(self.ql, self.cur_addr)
 
             if next_stop is CODE_END:
                 return True
@@ -226,8 +226,8 @@ class QlQdb(cmd.Cmd, QlDebugger):
         pause at entry point by setting a temporary breakpoint on it
         """
 
-        # entry = self._ql.loader.entry_point  # ld.so
-        # entry = self._ql.loader.elf_entry # .text of binary
+        # entry = self.ql.loader.entry_point  # ld.so
+        # entry = self.ql.loader.elf_entry # .text of binary
 
         self._run()
 
@@ -236,7 +236,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         set breakpoint on specific address
         """
 
-        # address = parse_int(address) if address else self._ql.reg.arch_pc
+        # address = parse_int(address) if address else self.ql.reg.arch_pc
         address = parse_int(address) if address else self.cur_addr
 
         self.set_breakpoint(address)
@@ -263,7 +263,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         """
 
         try:
-            if not examine_mem(self._ql, line):
+            if not examine_mem(self.ql, line):
                 self.do_help("examine")
         except:
             print(f"{color.RED}[!] something went wrong ...{color.END}")
@@ -273,7 +273,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         show some runtime information
         """
 
-        self._ql.mem.show_mapinfo()
+        self.ql.mem.show_mapinfo()
         print(f"Breakpoints: {[hex(addr) for addr in self.bp_list.keys()]}")
 
     def do_disassemble(self: QlQdb, address: str, /, *args, **kwargs) -> None:
@@ -282,7 +282,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         """
 
         try:
-            context_asm(self._ql, parse_int(address), 4)
+            context_asm(self.ql, parse_int(address), 4)
         except:
             print(f"{color.RED}[!] something went wrong ...{color.END}")
 
@@ -300,9 +300,8 @@ class QlQdb(cmd.Cmd, QlDebugger):
         """
         exit Qdb and stop running qiling instance
         """
-        # breakpoint()
 
-        self._ql.stop()
+        self.ql.stop()
         return True
 
     do_r = do_run
