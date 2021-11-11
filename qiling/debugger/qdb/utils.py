@@ -68,7 +68,7 @@ def get_arm_flags(bits: int) -> Mapping[str, int]:
 
 # parse unsigned integer from string
 def parse_int(s: str) -> int:
-    return int(s, 16) if s.startswith("0x") else int(s)
+    return int(s, 0) 
 
 
 # check wether negative value or not
@@ -103,11 +103,12 @@ def is_thumb(bits: int) -> bool:
     return bits & 0x00000020 != 0
 
 
-def disasm(ql: Qiling, address: int) -> Optional[int]:
-    # md = ql.create_disassembler()
+def disasm(ql: Qiling, address: int, detail: bool = False) -> Optional[int]:
 
+    md = ql.disassembler
+    md.detail = detail
     try:
-        ret = next(ql.disassembler.disasm(_read_inst(ql, address), address))
+        ret = next(md.disasm(_read_inst(ql, address), address))
 
     except StopIteration:
         ret = None
@@ -350,7 +351,7 @@ def handle_bnj_arm(ql: Qiling, cur_addr: str) -> int:
     if ret_addr & 1:
         ret_addr -= 1
 
-    return ret_addr
+    return (to_jump, ret_addr)
 
 
 def handle_bnj_mips(ql: Qiling, cur_addr: str) -> int:
@@ -409,7 +410,7 @@ def handle_bnj_mips(ql: Qiling, cur_addr: str) -> int:
             # target address is always the rightmost one
             ret_addr = targets[-1]
 
-    return ret_addr
+    return (to_jump, ret_addr)
 
 class Breakpoint(object):
     """

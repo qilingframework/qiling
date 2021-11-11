@@ -11,7 +11,7 @@ from contextlib import contextmanager
 
 from qiling.const import QL_ARCH
 
-from .utils import dump_regs, get_arm_flags, disasm, parse_int
+from .utils import dump_regs, get_arm_flags, disasm, parse_int, handle_bnj
 from .const import *
 
 
@@ -212,12 +212,20 @@ def context_reg(ql: Qiling, saved_states: Optional[Mapping[str, int]] = None, /,
                 print(f" => 0x{ql.unpack(_deref):08x}")
 
 
-def print_asm(ql: Qiling, ins: CsInsn) -> None:
-    fmt = (ins.address, ins.mnemonic.ljust(6), ins.op_str)
-    if ql.reg.arch_pc == ins.address:
-        print(f"{color.BOLD}    ►   0x{fmt[0]:x}\t{fmt[1]} {fmt[2]}{color.END}")
-    else:
-        print(f"\t0x{fmt[0]:x}\t{fmt[1]} {fmt[2]}")
+def print_asm(ql: Qiling, insn: CsInsn, to_jump: Optional[bool] = None, address: int = None) -> None:
+
+    opcode = "".join(f"{b:02x}" for b in insn.bytes)
+    trace_line = f"0x{insn.address:08x} │ {opcode:10s} {insn.mnemonic:10} {insn.op_str:35s}"
+
+    cursor = " "
+    if ql.reg.arch_pc == insn.address:
+        cursor = "►"
+
+    jump_sign = " "
+    if to_jump and address != ql.reg.arch_pc+4:
+        jump_sign = f"{color.RED}✓{color.END}"
+
+    print(f"{jump_sign}  {cursor}   {color.DARKGRAY}{trace_line}{color.END}")
 
 
 def context_asm(ql: Qiling, address: int) -> None:
@@ -251,7 +259,8 @@ def context_asm(ql: Qiling, address: int) -> None:
         # assembly for current location
 
         cur_ins = disasm(ql, address)
-        print_asm(ql, cur_ins)
+        to_jump, next_stop = handle_bnj(ql, address)
+        print_asm(ql, cur_ins, to_jump=to_jump)
 
         # assembly after current location
 
