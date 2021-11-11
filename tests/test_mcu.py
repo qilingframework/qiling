@@ -216,6 +216,12 @@ class MCUTest(unittest.TestCase):
         self.assertTrue(crack('778899'))
         self.assertFalse(crack('123456'))
 
+    def test_mcu_setup_gd32vf103(self):
+        ql = Qiling(['../examples/rootfs/mcu/gd32vf103/blink.hex'], archtype="riscv32", 
+                    profile="gd32vf103", verbose=QL_VERBOSE.DISASM)
+        # only verify the process of setup
+        del ql
+
 if __name__ == "__main__":
     unittest.main()
 
