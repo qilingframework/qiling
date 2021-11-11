@@ -76,6 +76,8 @@ class QlArchEVMEmulator:
                       code: bytes = b'',
                       code_address: Address = None,
                       contract_address: Address = None):
+        if code == b'' and not data:
+            code = self.ql.loader.code
         if isinstance(data, str):
             data = bytecode_to_bytes(data)
         if isinstance(code, str):
