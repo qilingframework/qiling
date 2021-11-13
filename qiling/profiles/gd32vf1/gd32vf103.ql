@@ -56,6 +56,7 @@ ewmc_intn = 41
 
 [CAN1]
 type = peripheral
+class = GD32VF1xxCan
 base = 0x40006800
 tx_intn = 82
 rx0_intn = 83
@@ -134,18 +135,22 @@ base = 0x40010800
 
 [GPIOB]
 type = peripheral
+class = GD32VF1xxGpio
 base = 0x40010c00
 
 [GPIOC]
 type = peripheral
+class = GD32VF1xxGpio
 base = 0x40011000
 
 [GPIOD]
 type = peripheral
+class = GD32VF1xxGpio
 base = 0x40011400
 
 [GPIOE]
 type = peripheral
+class = GD32VF1xxGpio
 base = 0x40011800
 
 [I2C0]
@@ -157,6 +162,7 @@ er_intn = 51
 
 [I2C1]
 type = peripheral
+class = GD32VF1xxI2c
 base = 0x40005800
 ev_intn = 52
 er_intn = 53
@@ -192,11 +198,13 @@ intn = 54
 
 [SPI1]
 type = peripheral
+class = GD32VF1xxSpi
 base = 0x40003800
 intn = 55
 
 [SPI2]
 type = peripheral
+class = GD32VF1xxSpi
 base = 0x40003c00
 intn = 70
 
@@ -253,11 +261,13 @@ intn = 56
 
 [USART1]
 type = peripheral
+class = GD32VF1xxUsart
 base = 0x40004400
 intn = 57
 
 [USART2]
 type = peripheral
+class = GD32VF1xxUsart
 base = 0x40004800
 intn = 58
 
@@ -269,6 +279,7 @@ intn = 71
 
 [UART4]
 type = peripheral
+class = GD32VF1xxUart
 base = 0x40005000
 intn = 72
 
@@ -297,3 +308,4 @@ type = peripheral
 class = GD32VF1xxWwdgt
 base = 0x40002c00
 intn = 0
+
