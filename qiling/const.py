@@ -65,8 +65,6 @@ QL_OS_POSIX             = (QL_OS.LINUX, QL_OS.FREEBSD, QL_OS.MACOS, QL_OS.QNX)
 
 QL_OS_BAREMETAL   = (QL_OS.MCU,)
 QL_OS_INTERPRETER = (QL_OS.EVM,)
-QL_OS_ALL         = QL_OS_POSIX + QL_OS_NONPID + (QL_OS.WINDOWS,)
-QL_OS_BARE_RTOS   = (QL_OS.BARE,)
 
 QL_HOOK_BLOCK = 0b0001
 QL_CALL_BLOCK = 0b0010
@@ -92,7 +90,7 @@ loader_map = {
     QL_OS.DOS     : "DOS",
     QL_OS.EVM     : "EVM",
     QL_OS.MCU     : "MCU",
-    QL_OS.BARE    : "BLOB"
+    QL_OS.BARE    : "BARE"
 }
 
 arch_os_map = {

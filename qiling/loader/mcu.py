@@ -10,9 +10,9 @@ from elftools.elf.elffile import ELFFile
 
 from qiling.const import *
 from qiling.core import Qiling
+from qiling.utils import component_setup
 
 from .loader import QlLoader
-
 
 class IhexParser:
     def __init__(self, path):
@@ -60,7 +60,7 @@ class IhexParser:
 class QlLoaderMCU(QlLoader):
     def __init__(self, ql:Qiling):
         super(QlLoaderMCU, self).__init__(ql)   
-        
+        self.ql._hw  = component_setup("hw", "hw", self.ql)
         self.load_address = 0        
         self.path = self.argv[0]
         self.filetype = self.guess_filetype()

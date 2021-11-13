@@ -35,7 +35,7 @@ class QlOs:
         self.child_processes = False
         self.thread_management = None
         self.profile = self.ql.profile
-        self.path = QlPathManager(ql, self.ql.profile.get("MISC", "current_path"))
+        self.path = None if self.ql.baremetal else QlPathManager(ql, self.ql.profile.get("MISC", "current_path"))
         self.exit_code = 0
 
         self.user_defined_api = {

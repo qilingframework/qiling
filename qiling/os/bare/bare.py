@@ -1,0 +1,43 @@
+#!/usr/bin/env python3
+#
+# Cross Platform and Multi Architecture Advanced Binary Emulation Framework
+#
+
+from qiling import Qiling
+from qiling.cc import QlCC, intel, arm, mips
+from qiling.const import QL_ARCH
+from qiling.os.fcall import QlFunctionCall
+from qiling.os.os import QlOs
+
+class QlOsBare(QlOs):
+    """ QlOsBare for bare barines.
+
+    For bare binary such as u-boot, it's ready to be mapped and executed directly,
+    where there is(may be) no concept of os? Currently, some functionalities such as
+    resolve_fcall_params(), heap or add_fs_mapper() are based on os. To keep the
+    consistence of api usage, QlOsBare is introduced and placed at its loader temporarily.
+    """
+    def __init__(self, ql: Qiling):
+        super(QlOsBare, self).__init__(ql)
+
+        self.ql = ql
+
+        cc: QlCC = {
+            QL_ARCH.X86   : intel.cdecl,
+            QL_ARCH.X8664 : intel.amd64,
+            QL_ARCH.ARM   : arm.aarch32,
+            QL_ARCH.ARM64 : arm.aarch64,
+            QL_ARCH.MIPS  : mips.mipso32
+        }[ql.archtype](ql)
+
+        self.fcall = QlFunctionCall(ql, cc)
+
+    def run(self):
+        if self.ql.entry_point:
+            self.entry_point = self.ql.entry_point
+
+        self.exit_point = self.ql.loader.load_address + len(self.ql.code)
+        if self.ql.exit_point:
+            self.exit_point = self.ql.exit_point
+
+        self.ql.emu_start(self.entry_point, self.exit_point, self.ql.timeout, self.ql.count)
