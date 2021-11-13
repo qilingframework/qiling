@@ -41,17 +41,17 @@ size = 0x10000
 base = 0xE0000000
 
 [SYSTICK]
-type = core periperal
+type = core peripheral
 base = 0xE000E010
 class = CortexM4SysTick
 
 [NVIC]
-type = core periperal
+type = core peripheral
 base = 0xE000E100
 class = CortexM4Nvic
 
 [SCB]
-type = core periperal
+type = core peripheral
 base = 0xE000ED00
 class = CortexM4Scb
 
