@@ -49,8 +49,13 @@ class QlArchRISCV(QlArch):
         self.ql.reg.pc = 0x08000000
         
     def soft_interrupt_handler(self, ql, intno):
-        if intno == 2:
-            ql.log.warning(f'[{hex(self.get_pc())}] Illegal instruction')
+        if intno == 2:            
+            address, size = ql.reg.pc - 4, 4
+            tmp = ql.mem.read(address, size)
+            qd = ql.arch.create_disassembler()
+
+            insn = '\n> '.join(f'{insn.mnemonic} {insn.op_str}' for insn in qd.disasm(tmp, address))
+            ql.log.warning(f'[{hex(address)}] Illegal instruction ({insn})')
         else:
             raise QlErrorNotImplemented(f'Unhandled interrupt number ({intno})')
     
