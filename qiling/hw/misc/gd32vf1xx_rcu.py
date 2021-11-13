@@ -24,7 +24,7 @@ class GD32VF1xxRcu(QlPeripheral):
             ("DSV"    , ctypes.c_uint32), # Address offset: 0x34, Deep sleep mode Voltage register
         ]
 
-    def __init__(self, ql, label):
+    def __init__(self, ql, label, intn=None):
         super().__init__(ql, label)
 
         self.rcu = self.struct(
@@ -43,3 +43,15 @@ class GD32VF1xxRcu(QlPeripheral):
             DSV     =  0x00000000,
         )
 
+        self.intn = intn
+
+    @QlPeripheral.debug_info()
+    def read(self, offset: int, size: int) -> int:		
+        buf = ctypes.create_string_buffer(size)
+        ctypes.memmove(buf, ctypes.addressof(self.rcu) + offset, size)
+        return int.from_bytes(buf.raw, byteorder='little')
+    
+    @QlPeripheral.debug_info()
+    def write(self, offset: int, size: int, value: int):
+        data = (value).to_bytes(size, 'little')
+        ctypes.memmove(ctypes.addressof(self.rcu) + offset, data, size)
