@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from .hw.hw import QlHwManager
     from .loader.loader import QlLoader
 
-from .const import QL_ARCH_ENDIAN, QL_ENDIAN, QL_VERBOSE, QL_OS_INTERPRETER, QL_OS_BAREMETAL, QL_OS_ALL
+from .const import QL_ARCH_ENDIAN, QL_ENDIAN, QL_VERBOSE, QL_OS_INTERPRETER, QL_OS_BAREMETAL
 from .exception import QlErrorFileNotFound, QlErrorArch, QlErrorOsType
 from .utils import *
 from .core_struct import QlCoreStructs
@@ -194,24 +194,19 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         ##############
         # Components #
         ##############
-        if self.gpos or self.baremetal:
+        if not self.interpreter:
             self._mem = component_setup("os", "memory", self)
             self._reg = component_setup("arch", "register", self)
-
-            if self.baremetal:   
-                self._hw  = component_setup("hw", "hw", self)
+              
 
         self._arch = arch_setup(self.archtype, self)
         
         # Once we finish setting up arch layer, we can init QlCoreHooks.
-        self.uc = self.arch.init_uc
-        QlCoreHooks.__init__(self, self.uc)
+        if not self.interpreter:
+            self.uc = self.arch.init_uc
+            QlCoreHooks.__init__(self, self.uc)
         
-        # Setup Outpt
-        if self.gpos or self.baremetal:
             self.arch.utils.setup_output()
-
-        if self.gpos:
             self._os = os_setup(self.archtype, self.ostype, self)
 
             if stdin is not None:
@@ -225,10 +220,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
         # Run the loader
         self.loader.run()
-
-        if self.gpos:
-            # Add extra guard options when configured to do so
-            self._init_stop_guard()    
+        self._init_stop_guard()    
 
     #####################
     # Qiling Components #
@@ -480,15 +472,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             Type: bool
         """
         return self.ostype in QL_OS_BAREMETAL
-
-    @property
-    def gpos(self) -> bool:
-        """ General purpose OS
-            - Windows, Linux, MacOS and etc
-
-            Type: bool
-        """
-        return self.ostype in QL_OS_ALL
 
     @property
     def platform_os(self):
