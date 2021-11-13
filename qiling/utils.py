@@ -470,9 +470,6 @@ def os_setup(archtype: QL_ARCH, ostype: QL_OS, ql):
 
 
 def profile_setup(ql):
-    if ql.baremetal:
-        return ql_hw_profile_setup(ql)
-
     _profile = "Default"
 
     if ql.profile != None:
@@ -490,19 +487,6 @@ def profile_setup(ql):
     config.read(profiles)
 
     return config, debugmsg
-
-def ql_hw_profile_setup(ql):
-    config = ConfigParser()
-
-    profile_name = f'{ql.profile}.ql'
-    profile_dir  = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles")
-
-    for path, _, files in os.walk(profile_dir):
-        if profile_name in files:
-            config.read(os.path.join(profile_dir, path, profile_name))
-            break
-
-    return config, f'Profile: {ql.profile}'
 
 def ql_resolve_logger_level(verbose: QL_VERBOSE) -> int:
     return {
