@@ -82,11 +82,7 @@ def syscall_mmap_impl(ql: Qiling, addr: int, mlen: int, prot: int, flags: int, f
 
     mmap_base = addr
     need_mmap = True
-    eff_mmap_size = ((mlen + 0x1000 - 1) // 0x1000) * 0x1000
-    
-    # align eff_mmap_size to page boundary
-    aligned_address = (addr >> 12) << 12
-    eff_mmap_size -= mmap_base - aligned_address
+    eff_mmap_size = mlen
 
     # initial ql.loader.mmap_address
     if addr != 0 and ql.mem.is_mapped(addr, mlen):
@@ -98,21 +94,24 @@ def syscall_mmap_impl(ql: Qiling, addr: int, mlen: int, prot: int, flags: int, f
                 ql.log.debug(e)
                 raise QlMemoryMappedError("Error: change protection at: 0x%x - 0x%x" % (addr, addr + mlen - 1))
             need_mmap = False
+        else:
+            addr = 0
 
     # initialized mapping
     if need_mmap:
-        if (flags & MAP_FIXED) > 0:
-            mmap_base = addr
-        else:
+        eff_mmap_size = ((mlen + 0x1000 - 1) // 0x1000) * 0x1000
+        if addr == 0:
             mmap_base = ql.loader.mmap_address
-        ql.loader.mmap_address = mmap_base + eff_mmap_size
-        ql.log.debug("%s - mapping needed for 0x%x" % (api_name, addr))
+            ql.loader.mmap_address = mmap_base + eff_mmap_size
+        # align eff_mmap_size to page boundary
+        aligned_address = (mmap_base >> 12) << 12
+        eff_mmap_size -= mmap_base - aligned_address
+        ql.log.debug("%s - mapping needed for 0x%x" % (api_name, mmap_base))
         try:
             ql.mem.map(mmap_base, eff_mmap_size, info=("[syscall_%s]" % api_name))
         except Exception as e:
             raise QlMemoryMappedError("Error: mapping needed but failed")
-
-    ql.log.debug("%s - addr range  0x%x - 0x%x: " % (api_name, mmap_base, mmap_base + eff_mmap_size - 1))
+        ql.log.debug("%s - addr range  0x%x - 0x%x: " % (api_name, mmap_base, mmap_base + eff_mmap_size - 1))
 
     # FIXME: MIPS32 Big Endian
     try:
