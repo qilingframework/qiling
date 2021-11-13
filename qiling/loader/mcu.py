@@ -107,7 +107,7 @@ class QlLoaderMCU(QlLoader):
                 self.ql.mem.write(begin, data)
 
         
-        self.ql.arch.reset_register()
+        self.ql.arch.init_context()
         self.entry_point = self.ql.reg.read('pc')
 
     def run(self):

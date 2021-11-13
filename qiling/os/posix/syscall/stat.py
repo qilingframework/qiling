@@ -5,6 +5,7 @@
 
 import os
 import ctypes
+import struct
 from typing import Callable
 
 from qiling import Qiling
@@ -1044,15 +1045,17 @@ def transform_path(ql: Qiling, dirfd: int, path: int):
         then the target file is the one referred to by the file descriptor dirfd.
     """
 
+    dirfd = ql.unpacks(ql.pack(dirfd))
     path = ql.os.utils.read_cstring(path)
-    
+
     if path.startswith('/'):
-        return None, ql.os.path.transform_to_relative_path(path)
+        return None, os.path.join(ql.rootfs, path)
 
     if dirfd == AT_FDCWD:
-        return -100, ql.os.path.transform_to_relative_path(os.path.join(ql.os.path.cwd, path))
+        return None, ql.os.path.transform_to_real_path(path)
 
-    return dirfd, path
+    if 0 < dirfd < NR_OPEN:
+        return ql.os.fd[dirfd].fileno(), path
     
 
 def ql_syscall_chmod(ql: Qiling, filename: int, mode: int):
@@ -1143,10 +1146,145 @@ def ql_syscall_stat(ql: Qiling, path: int, buf_ptr: int):
 def ql_syscall_stat64(ql: Qiling, path: int, buf_ptr: int):
     return statFamily(ql, path, buf_ptr, "stat64", Stat, pack_stat64_struct)
 
+class StatxTimestamp32(ctypes.Structure):
+    _fields_ = [
+        ('tv_sec', ctypes.c_int32),
+        ('tv_nsec', ctypes.c_uint32),
+        ('__statx_timestamp_pad1', ctypes.c_int32)
+    ]
+
+class Statx32(ctypes.Structure):
+    """ 
+        Reference:
+         - https://man7.org/linux/man-pages/man2/statx.2.html
+         - https://code.woboq.org/userspace/glibc/sysdeps/unix/sysv/linux/statx.c.html
+
+    """
+    _fields_ = [
+        ('stx_mask', ctypes.c_uint32),
+        ('stx_blksize', ctypes.c_uint32),
+        ('stx_attributes', ctypes.c_uint32),
+        ('stx_nlink', ctypes.c_uint32),
+        ('stx_uid', ctypes.c_uint32),
+        ('stx_gid', ctypes.c_uint32),
+        ('stx_mode', ctypes.c_uint16),
+        ('__statx_pad1', ctypes.c_uint16),
+        ('stx_ino', ctypes.c_uint32),
+        ('stx_size', ctypes.c_uint32),
+        ('stx_blocks', ctypes.c_uint32),
+        ('stx_attributes_mask', ctypes.c_uint32),
+        ('stx_atime', StatxTimestamp32),
+        ('stx_btime', StatxTimestamp32),
+        ('stx_ctime', StatxTimestamp32),
+        ('stx_mtime', StatxTimestamp32),
+        ('stx_rdev_major', ctypes.c_uint32),
+        ('stx_rdev_minor', ctypes.c_uint32),
+        ('stx_dev_major', ctypes.c_uint32),
+        ('stx_dev_minor', ctypes.c_uint32),
+        ('__statx_pad2', ctypes.c_uint32 * 14),
+    ]
+
+    _pack_ = 8
+
+class StatxTimestamp64(ctypes.Structure):
+    _fields_ = [
+        ('tv_sec', ctypes.c_int64),
+        ('tv_nsec', ctypes.c_uint32),
+        ('__statx_timestamp_pad1', ctypes.c_int32)
+    ]
+
+class Statx64(ctypes.Structure):
+    """ 
+        Reference:
+         - https://man7.org/linux/man-pages/man2/statx.2.html
+         - https://code.woboq.org/userspace/glibc/sysdeps/unix/sysv/linux/statx.c.html
+
+    """
+    _fields_ = [
+        ('stx_mask', ctypes.c_uint32),
+        ('stx_blksize', ctypes.c_uint32),
+        ('stx_attributes', ctypes.c_uint64),
+        ('stx_nlink', ctypes.c_uint32),
+        ('stx_uid', ctypes.c_uint32),
+        ('stx_gid', ctypes.c_uint32),
+        ('stx_mode', ctypes.c_uint16),
+        ('__statx_pad1', ctypes.c_uint16),
+        ('stx_ino', ctypes.c_uint64),
+        ('stx_size', ctypes.c_uint64),
+        ('stx_blocks', ctypes.c_uint64),
+        ('stx_attributes_mask', ctypes.c_uint64),
+        ('stx_atime', StatxTimestamp64),
+        ('stx_btime', StatxTimestamp64),
+        ('stx_ctime', StatxTimestamp64),
+        ('stx_mtime', StatxTimestamp64),
+        ('stx_rdev_major', ctypes.c_uint32),
+        ('stx_rdev_minor', ctypes.c_uint32),
+        ('stx_dev_major', ctypes.c_uint32),
+        ('stx_dev_minor', ctypes.c_uint32),
+        ('__statx_pad2', ctypes.c_uint64 * 14),
+    ]
+
+    _pack_ = 4
+
 # int statx(int dirfd, const char *restrict pathname, int flags,
 #                  unsigned int mask, struct statx *restrict statxbuf);
-def ql_syscall_statx(ql: Qiling, dirfd: int, path: int, flags: int, mask: int, statxbuf: int):
-    return 0
+def ql_syscall_statx(ql: Qiling, dirfd: int, path: int, flags: int, mask: int, buf_ptr: int):
+    def statx_convert_timestamp(tv_sec, tv_nsec):
+        tv_sec  = struct.unpack('i', struct.pack('f', tv_sec))[0]
+        tv_nsec = struct.unpack('i', struct.pack('f', tv_nsec))[0]
+
+        if ql.archbit == 32:
+            return StatxTimestamp32(tv_sec=tv_sec, tv_nsec=tv_nsec)
+        else:
+            return StatxTimestamp64(tv_sec=tv_sec, tv_nsec=tv_nsec)
+
+
+    def major(dev):
+        return ((dev >> 8) & 0xfff) | ((dev >> 32) & ~0xfff)
+
+    def minor(dev):
+        return (dev & 0xff) | ((dev >> 12) & ~0xff)
+
+    fd, real_path = transform_path(ql, dirfd, path)
+    
+    try:
+        if len(real_path) == 0:
+            st = ql.os.fd[dirfd].fstat()
+        else:
+            st = Stat(real_path, fd)
+        
+        if ql.archbit == 32:
+            Statx = Statx32
+        else:
+            Statx = Statx64
+
+        stx = Statx(
+            stx_mask = 0x07ff, # STATX_BASIC_STATS
+            stx_blksize = st.st_blksize,
+            stx_nlink = st.st_nlink,
+            stx_uid = st.st_uid,
+            stx_gid = st.st_gid,
+            stx_mode = st.st_mode,
+            stx_ino = st.st_ino,
+            stx_size = st.st_size,
+            stx_blocks = st.st_blocks,
+            stx_atime = statx_convert_timestamp(st.st_atime, st.st_atime_ns),
+            stx_ctime = statx_convert_timestamp(st.st_ctime, st.st_ctime_ns),
+            stx_mtime = statx_convert_timestamp(st.st_mtime, st.st_mtime_ns),
+            stx_rdev_major = major(st.st_rdev),
+            stx_rdev_minor = minor(st.st_rdev),
+            stx_dev_major = major(st.st_dev),
+            stx_dev_minor = minor(st.st_dev),
+        )
+
+        ql.mem.write(buf_ptr, bytes(stx))
+
+        regreturn = 0
+    
+    except Exception as e:
+        regreturn = -1
+
+    return regreturn
 
 def ql_syscall_lstat(ql: Qiling, path: int, buf_ptr: int):
     return statFamily(ql, path, buf_ptr, "lstat", Lstat, pack_stat64_struct)

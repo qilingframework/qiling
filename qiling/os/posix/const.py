@@ -559,7 +559,7 @@ F_SETLKW	= 7
 
 FD_CLOEXEC = 1
 
-AT_FDCWD = 0xffffff9c # -100
+AT_FDCWD = -100
 
 # error code
 EPERM           = 1
