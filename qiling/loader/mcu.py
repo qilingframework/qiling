@@ -143,7 +143,7 @@ class QlLoaderMCU(QlLoader):
                 base = readint(section['base'])
                 self.ql.hw.setup_mmio(base, size, info=f'[{section_name}]')
 
-            if section['type'] == 'core periperal':
+            if section['type'] == 'core peripheral':
                 self.ql.hw.create(section_name.lower())
         
         ## Handle interrupt from instruction execution
