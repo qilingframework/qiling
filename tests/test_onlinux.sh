@@ -15,4 +15,5 @@ python3 ./test_qnx.py &&
 python3 ./test_android.py &&
 python3 ./test_mcu.py &&
 python3 ./test_evm.py &&
+python3 ./test_blob.py &&
 echo "Done Test"
