@@ -75,16 +75,16 @@ class QlLoaderMCU(QlLoader):
             self.map_address = self.argv[1]
 
         else: # self.filetype == 'hex':
-            self.ihex = IhexParser(self.path)
+            self.ihex = IhexParser(self.ql.path)
 
     def guess_filetype(self):
-        if self.path.endswith('.elf'):
+        if self.ql.path.endswith('.elf'):
             return 'elf'            
             
-        if self.path.endswith('.bin'):
+        if self.ql.path.endswith('.bin'):
             return 'bin'
 
-        if self.path.endswith('.hex'):
+        if self.ql.path.endswith('.hex'):
             return 'hex'
 
         return 'elf'
@@ -100,7 +100,7 @@ class QlLoaderMCU(QlLoader):
             # TODO: load symbol table
 
         elif self.filetype == 'bin':
-            with open(self.path, 'rb') as f:
+            with open(self.ql.path, 'rb') as f:
                 self.ql.mem.write(self.map_address, f.read())
 
         else: # self.filetype == 'hex':
