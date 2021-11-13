@@ -59,15 +59,16 @@ class IhexParser:
 
 class QlLoaderMCU(QlLoader):
     def __init__(self, ql:Qiling):
-        super(QlLoaderMCU, self).__init__(ql)   
-        self.ql._hw  = component_setup("hw", "hw", self.ql)
-        self.load_address = 0        
-        self.path = self.argv[0]
-        self.filetype = self.guess_filetype()
+        super().__init__(ql)   
+        
         self.entry_point = 0
+        self.load_address = 0
+        self.filetype = self.guess_filetype()
+        
+        self.ql._hw = component_setup("hw", "hw", self.ql)
 
         if self.filetype == 'elf':
-            with open(self.path, 'rb') as infile:
+            with open(self.ql.path, 'rb') as infile:
                 self.elf = ELFFile(io.BytesIO(infile.read()))
             
         elif self.filetype == 'bin':
