@@ -112,39 +112,29 @@ class QlLoaderMCU(QlLoader):
         self.entry_point = self.ql.reg.read('pc')
 
     def run(self):
-        def readint(raw):
-            if raw.startswith('0o'):
-                return int(raw, 8)
-
-            elif raw.startswith('0x'):
-                return int(raw, 16)            
-                        
-            else:
-                return int(raw, 10)
-
-        for section_name in self.ql.profile.sections():
-            section = self.ql.profile[section_name]
-            if section['type'] == 'memory':
-                size = readint(section['size'])
-                base = readint(section['base'])
-                self.ql.mem.map(base, size, info=f'[{section_name}]')
+        for name, args in self.env.items():
+            memtype = args['type']
+            if memtype == 'memory':
+                size = args['size']
+                base = args['base']
+                self.ql.mem.map(base, size, info=f'[{name}]')
                 
-                if section_name == 'FLASH':
+                if name == 'FLASH':
                     self.ql.hw.setup_remap(0, base, size, info=f'[CODE]')
 
-            if section['type'] == 'bitband':
-                size = readint(section['size']) * 32
-                base = readint(section['base'])
-                alias = readint(section['alias'])
-                self.ql.hw.setup_bitband(base, alias, size, info=f'[{section_name}]')
+            if memtype == 'bitband':
+                size = args['size'] * 32
+                base = args['base']
+                alias = args['alias']
+                self.ql.hw.setup_bitband(base, alias, size, info=f'[{name}]')
 
-            if section['type'] == 'mmio':
-                size = readint(section['size'])
-                base = readint(section['base'])
-                self.ql.hw.setup_mmio(base, size, info=f'[{section_name}]')
+            if memtype == 'mmio':
+                size = args['size']
+                base = args['base']
+                self.ql.hw.setup_mmio(base, size, info=f'[{name}]')
 
-            if section['type'] == 'core peripheral':
-                self.ql.hw.create(section_name.lower())
+            if memtype == 'core peripheral':
+                self.ql.hw.create(name.lower())
         
         ## Handle interrupt from instruction execution
         self.ql.hook_intr(self.ql.arch.soft_interrupt_handler)
