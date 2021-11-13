@@ -31,3 +31,13 @@ class GD32VF1xxGpio(QlPeripheral):
             LOCK  =  0x00000000,
         )
 
+    @QlPeripheral.debug_info()
+    def read(self, offset: int, size: int) -> int:		
+        buf = ctypes.create_string_buffer(size)
+        ctypes.memmove(buf, ctypes.addressof(self.gpio) + offset, size)
+        return int.from_bytes(buf.raw, byteorder='little')
+    
+    @QlPeripheral.debug_info()
+    def write(self, offset: int, size: int, value: int):
+        data = (value).to_bytes(size, 'little')
+        ctypes.memmove(ctypes.addressof(self.gpio) + offset, data, size)
