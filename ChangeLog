@@ -1,18 +1,25 @@
 This file details the changelog of Qiling Framework.
 
 ------------------------------------
-[Version 1.4.1]: Nov Xth, 2021
+[Version 1.4.1]: Nov 15th, 2021
 
 New features:
 - Introduced riscv, both 32 and 64 (#980)
+- Added U-boot (#1000)
 
 Improvements:
 - Refactored core hooks (#966)
 - update ql.os.posix.const_mapping with more os/arch match (#973)
-- Minor refactor on ql.interpreter and ql.baremetal (#975)
 - More update in MCU modules (#971)
 - Fix getpeername and getsockname syscalls (#986)
 - Qdb improvements (#999)
+
+Contributors:
+- cq674350529
+- ucgJhe
+- cla7aye15I4nd
+- elicn
+- xwings
 
 
 ------------------------------------
