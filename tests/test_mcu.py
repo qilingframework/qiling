@@ -216,10 +216,30 @@ class MCUTest(unittest.TestCase):
         self.assertTrue(crack('778899'))
         self.assertFalse(crack('123456'))
 
-    def test_mcu_setup_gd32vf103(self):
-        ql = Qiling(['../examples/rootfs/mcu/gd32vf103/blink.hex'], archtype="riscv32", 
-                    profile="gd32vf103", verbose=QL_VERBOSE.DISASM)
-        # only verify the process of setup
+    def test_mcu_blink_gd32vf103(self):
+        ql = Qiling(['../examples/rootfs/mcu/gd32vf103/blink.hex'], archtype="riscv64", 
+                    profile="gd32vf103", verbose=QL_VERBOSE.DEFAULT)
+
+        ql.hw.create('rcu')
+        ql.hw.create('gpioa')
+        ql.hw.create('gpioc').watch()
+
+        delay_cycles_begin = 0x800015c
+        delay_cycles_end = 0x800018c
+
+        def skip_delay(ql):
+            ql.reg.pc = delay_cycles_end
+
+        count = 0
+        def counter():
+            nonlocal count
+            count += 1
+
+        ql.hook_address(skip_delay, delay_cycles_begin)
+        ql.hw.gpioc.hook_set(13, counter)
+        ql.run(count=20000)
+        self.assertTrue(count > 350)
+        
         del ql
 
 if __name__ == "__main__":
