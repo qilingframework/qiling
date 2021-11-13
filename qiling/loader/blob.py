@@ -7,7 +7,7 @@ from qiling import Qiling
 from qiling.loader.loader import QlLoader
 from qiling.os.memory import QlMemoryHeap
 
-class QlLoaderBARE(QlLoader):
+class QlLoaderBLOB(QlLoader):
     def __init__(self, ql: Qiling):
         super().__init__(ql)
 

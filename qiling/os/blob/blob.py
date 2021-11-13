@@ -9,16 +9,16 @@ from qiling.const import QL_ARCH
 from qiling.os.fcall import QlFunctionCall
 from qiling.os.os import QlOs
 
-class QlOsBare(QlOs):
-    """ QlOsBare for bare barines.
+class QlOsBlob(QlOs):
+    """ QlOsBlob for bare barines.
 
     For bare binary such as u-boot, it's ready to be mapped and executed directly,
     where there is(may be) no concept of os? Currently, some functionalities such as
     resolve_fcall_params(), heap or add_fs_mapper() are based on os. To keep the
-    consistence of api usage, QlOsBare is introduced and placed at its loader temporarily.
+    consistence of api usage, QlOsBlob is introduced and placed at its loader temporarily.
     """
     def __init__(self, ql: Qiling):
-        super(QlOsBare, self).__init__(ql)
+        super(QlOsBlob, self).__init__(ql)
 
         self.ql = ql
 

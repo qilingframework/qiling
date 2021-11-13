@@ -51,7 +51,7 @@ class BlobTest(unittest.TestCase):
         with open("../examples/rootfs/blob/u-boot.bin.img", "rb") as f:
             uboot_code = f.read()
 
-        ql = Qiling(code=uboot_code[0x40:], archtype="arm", ostype="bare", profile="profiles/uboot_bin.ql", verbose=QL_VERBOSE.DEBUG)
+        ql = Qiling(code=uboot_code[0x40:], archtype="arm", ostype="blob", profile="profiles/uboot_bin.ql", verbose=QL_VERBOSE.DEBUG)
 
         image_base_addr = ql.loader.load_address
         ql.hook_address(my_getenv, image_base_addr + 0x13AC0)
