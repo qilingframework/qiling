@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-gd32vf103_env = {
+gd32vf103 = {
     "ADC0": {
         "base": 0x40012400,
         "struct": "GD32VF1xxAdc",
