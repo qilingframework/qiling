@@ -3,10 +3,10 @@ sys.path.append("../..")
 
 from qiling.core import Qiling
 from qiling.const import QL_VERBOSE
-from qiling.extensions.soc.gd32vf1 import gd32vf103_env
+from qiling.extensions.soc.gd32vf1 import gd32vf103
 
 ql = Qiling(['../rootfs/mcu/gd32vf103/blink.hex'], archtype="riscv64", 
-                    env=gd32vf103_env, verbose=QL_VERBOSE.DEBUG)
+                    env=gd32vf103, verbose=QL_VERBOSE.DEBUG)
 
 ql.hw.create('rcu')
 ql.hw.create('gpioa').watch()
