@@ -9,8 +9,8 @@ sys.path.append("..")
 
 from qiling.core import Qiling
 from qiling.const import QL_VERBOSE
-from qiling.extensions.soc.stm32f4 import stm32f407, stm32f411
-from qiling.extensions.soc.gd32vf1 import gd32vf103
+from qiling.extensions.mcu.stm32f4 import stm32f407, stm32f411
+from qiling.extensions.mcu.gd32vf1 import gd32vf103
 
 class MCUTest(unittest.TestCase):
     def test_mcu_led_stm32f411(self):
