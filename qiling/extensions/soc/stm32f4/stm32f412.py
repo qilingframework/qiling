@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-stm32f412_env = {
+stm32f412 = {
     "ADC1": {
         "base": 0x40012000,
         "struct": "STM32F4xxAdc",
