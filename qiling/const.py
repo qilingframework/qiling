@@ -33,6 +33,7 @@ class QL_OS(IntEnum):
     EVM = 207
     QNX = 208
     MCU = 209
+    BLOB = 210
 
 class QL_VERBOSE(IntEnum):
     OFF = 0
@@ -89,6 +90,7 @@ loader_map = {
     QL_OS.DOS     : "DOS",
     QL_OS.EVM     : "EVM",
     QL_OS.MCU     : "MCU",
+    QL_OS.BLOB    : "BLOB"
 }
 
 arch_os_map = {
