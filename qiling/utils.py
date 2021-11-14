@@ -7,7 +7,9 @@
 This module is intended for general purpose functions that can be used
 thoughout the qiling framework
 """
-import importlib, os, copy, re, pefile, logging, sys
+
+import importlib, os, copy, re, pefile, logging, sys, yaml
+
 from configparser import ConfigParser
 from logging import LogRecord
 from typing import Any, Container, Optional, Sequence, Tuple, Type
@@ -476,15 +478,18 @@ def profile_setup(ql):
         _profile = ql.profile
     debugmsg = "Profile: %s" % _profile
 
-    os_profile = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", ostype_convert_str(ql.ostype).lower() + ".ql")
+    if ql.baremetal:
+        config = {}
+        if ql.profile:
+            with open(ql.profile) as f: 
+                config = yaml.load(f, Loader=yaml.Loader)
 
-    if ql.profile:
-        profiles = [os_profile, ql.profile]
     else:
-        profiles = [os_profile]
+        profile_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", ostype_convert_str(ql.ostype).lower() + ".ql")
+        profiles = [profile_path, ql.profile] if ql.profile else [profile_path]
 
-    config = ConfigParser()
-    config.read(profiles)
+        config = ConfigParser()
+        config.read(profiles)
 
     return config, debugmsg
 
