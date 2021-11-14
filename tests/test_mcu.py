@@ -158,7 +158,7 @@ class MCUTest(unittest.TestCase):
 
     def test_mcu_led_rust_stm32f411(self):
         ql = Qiling(["../examples/rootfs/mcu/stm32f411/led-rust.hex"],
-                    archtype="cortex_m", env=stm32f411_env, verbose=QL_VERBOSE.DEBUG)
+                    archtype="cortex_m", env=gd32vf103_env, profile="profiles/stm32f411.yml", verbose=QL_VERBOSE.DEBUG)
 
         count = 0
         def counter():
@@ -173,9 +173,11 @@ class MCUTest(unittest.TestCase):
 
         del ql
 
-    def test_mcu_uart_rust_stm32f411(self):
+    def test_mcu_uart_rust_stm32f411(self): 
         ql = Qiling(["../examples/rootfs/mcu/stm32f411/uart-rust.hex"],
                     archtype="cortex_m", env=stm32f411_env, verbose=QL_VERBOSE.DEBUG)
+
+        ## cover env by profiles
 
         ql.hw.create('rcc')
         ql.hw.create('gpioa')
