@@ -111,7 +111,10 @@ class QlLoaderMCU(QlLoader):
         self.ql.arch.init_context()
         self.entry_point = self.ql.reg.read('pc')
 
-    def run(self):
+    def load_profile(self):
+        self.ql.env.update(self.ql.profile)
+
+    def load_env(self):
         for name, args in self.env.items():
             memtype = args['type']
             if memtype == 'memory':
@@ -135,6 +138,10 @@ class QlLoaderMCU(QlLoader):
 
             if memtype == 'core peripheral':
                 self.ql.hw.create(name.lower())
+
+    def run(self):
+        self.load_profile()
+        self.load_env()
         
         ## Handle interrupt from instruction execution
         self.ql.hook_intr(self.ql.arch.soft_interrupt_handler)
