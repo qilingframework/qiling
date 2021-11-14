@@ -3,7 +3,7 @@ sys.path.append("../..")
 
 from qiling.core import Qiling
 from qiling.const import QL_VERBOSE
-from qiling.extensions.soc.stm32f4 import stm32f411
+from qiling.extensions.mcu.stm32f4 import stm32f411
 
 
 def stm32f411_freertos():

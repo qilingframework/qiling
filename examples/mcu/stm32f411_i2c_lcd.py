@@ -5,7 +5,7 @@ sys.path.append("../..")
 from qiling.core import Qiling
 from qiling.const import QL_VERBOSE
 from qiling.hw.external_device.lcd.lcd1602 import PyGameLCD1602
-from qiling.extensions.soc.stm32f4 import stm32f411
+from qiling.extensions.mcu.stm32f4 import stm32f411
 
 def create(path, lcd):
     ql = Qiling([path], archtype="cortex_m", env=stm32f411, verbose=QL_VERBOSE.DEBUG)
