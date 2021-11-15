@@ -1,9 +1,15 @@
-import ctypes
+#!/usr/bin/env python3
+# 
+# Cross Platform and Multi Architecture Advanced Binary Emulation Framework
+#
 
+
+import ctypes
+from qiling.hw.gpio.hooks import GpioHooks
 from qiling.hw.peripheral import QlPeripheral
 
 
-class GD32VF1xxGpio(QlPeripheral):
+class GD32VF1xxGpio(QlPeripheral, GpioHooks):
     class Type(ctypes.Structure):
         """ General-purpose I/Os 
         """
@@ -19,7 +25,8 @@ class GD32VF1xxGpio(QlPeripheral):
         ]
 
     def __init__(self, ql, label):
-        super().__init__(ql, label)
+        QlPeripheral.__init__(self, ql, label)
+        GpioHooks.__init__(self, ql, 16)
 
         self.gpio = self.struct(
             CTL0  =  0x44444444,
@@ -31,3 +38,52 @@ class GD32VF1xxGpio(QlPeripheral):
             LOCK  =  0x00000000,
         )
 
+    @QlPeripheral.debug_info()
+    def read(self, offset: int, size: int) -> int:		
+        buf = ctypes.create_string_buffer(size)
+        ctypes.memmove(buf, ctypes.addressof(self.gpio) + offset, size)
+        return int.from_bytes(buf.raw, byteorder='little')
+    
+    @QlPeripheral.debug_info()
+    def write(self, offset: int, size: int, value: int):
+        if offset == self.struct.OCTL.offset: 
+            for i in range(16):
+                new_bit = (value >> i) & 1
+                old_bit = (self.gpio.OCTL >> i) & 1                
+
+                if new_bit !=  old_bit:
+                    if new_bit:
+                        self.set_pin(i)                        
+                    else:
+                        self.reset_pin(i)                        
+            
+            return
+
+        if offset == self.struct.BOP.offset:
+            for i in range(32):
+                if ((value >> i) & 1) == 0:
+                    continue
+                if i < 16:   
+                    self.set_pin(i)
+                else:
+                    self.reset_pin(i - 16)                    
+            
+            return
+
+        data = (value).to_bytes(size, 'little')
+        ctypes.memmove(ctypes.addressof(self.gpio) + offset, data, size)
+
+    def set_pin(self, i):
+        self.ql.log.debug(f'[{self.label}] Set P{self.label[-1].upper()}{i}')
+        
+        self.gpio.OCTL |= 1 << i        
+        self.hook_set_func[i]()
+    
+    def reset_pin(self, i):
+        self.ql.log.debug(f'[{self.label}] Reset P{self.label[-1].upper()}{i}')
+        
+        self.gpio.OCTL &= ~(1 << i)
+        self.hook_reset_func[i]()
+        
+    def pin(self, index):
+        return (self.gpio.OCTL >> index) & 1

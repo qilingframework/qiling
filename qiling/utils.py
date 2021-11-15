@@ -7,7 +7,9 @@
 This module is intended for general purpose functions that can be used
 thoughout the qiling framework
 """
-import importlib, os, copy, re, pefile, logging, sys
+
+import importlib, os, copy, re, pefile, logging, sys, yaml
+
 from configparser import ConfigParser
 from logging import LogRecord
 from typing import Any, Container, Optional, Sequence, Tuple, Type
@@ -470,39 +472,26 @@ def os_setup(archtype: QL_ARCH, ostype: QL_OS, ql):
 
 
 def profile_setup(ql):
-    if ql.baremetal:
-        return ql_hw_profile_setup(ql)
-
     _profile = "Default"
 
     if ql.profile != None:
         _profile = ql.profile
     debugmsg = "Profile: %s" % _profile
 
-    os_profile = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", ostype_convert_str(ql.ostype).lower() + ".ql")
+    if ql.baremetal:
+        config = {}
+        if ql.profile:
+            with open(ql.profile) as f: 
+                config = yaml.load(f, Loader=yaml.Loader)
 
-    if ql.profile:
-        profiles = [os_profile, ql.profile]
     else:
-        profiles = [os_profile]
+        profile_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", ostype_convert_str(ql.ostype).lower() + ".ql")
+        profiles = [profile_path, ql.profile] if ql.profile else [profile_path]
 
-    config = ConfigParser()
-    config.read(profiles)
+        config = ConfigParser()
+        config.read(profiles)
 
     return config, debugmsg
-
-def ql_hw_profile_setup(ql):
-    config = ConfigParser()
-
-    profile_name = f'{ql.profile}.ql'
-    profile_dir  = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles")
-
-    for path, _, files in os.walk(profile_dir):
-        if profile_name in files:
-            config.read(os.path.join(profile_dir, path, profile_name))
-            break
-
-    return config, f'Profile: {ql.profile}'
 
 def ql_resolve_logger_level(verbose: QL_VERBOSE) -> int:
     return {

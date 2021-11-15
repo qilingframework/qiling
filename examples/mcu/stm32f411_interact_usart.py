@@ -12,9 +12,11 @@ import threading
 
 from qiling.core import Qiling
 from qiling.const import QL_VERBOSE
+from qiling.extensions.mcu.stm32f4 import stm32f411
+
 
 ql = Qiling(["../../examples/rootfs/mcu/stm32f411/md5_server.hex"], 
-            archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.OFF)
+            archtype="cortex_m", env=stm32f411, verbose=QL_VERBOSE.OFF)
 
 ql.hw.create('usart2')
 ql.hw.create('rcc')

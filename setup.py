@@ -20,7 +20,8 @@ requirements = [
     "keystone-engine>=0.9.2",
     "pyelftools>=0.26",
     "gevent>=20.9.0",
-    "multiprocess>=0.70.12.2"
+    "multiprocess>=0.70.12.2",
+    "pyyaml>=6.0",
 ]
 
 evm_extra = {
