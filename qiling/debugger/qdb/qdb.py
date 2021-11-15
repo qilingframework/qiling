@@ -33,9 +33,22 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         super().__init__()
 
-        self.cur_addr = self.ql.loader.entry_point
+        self.dbg_hook(init_hook)
 
-        self.do_start()
+    def dbg_hook(self: QlQdb, init_hook: str):
+
+        # self.ql.loader.entry_point  # ld.so
+        # self.ql.loader.elf_entry    # .text of binary
+
+        if init_hook:
+            init_hook = parse_int(init_hook)
+
+            self.set_breakpoint(init_hook, is_temp=True)
+
+        self.cur_addr = self.ql.loader.entry_point
+        self._init_state = self.ql.save()
+
+        self.do_context()
         self.interactive()
 
     @property
@@ -72,6 +85,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
                 print(f"{color.CYAN}[+] hit breakpoint at 0x{self.cur_addr:08x}{color.END}")
                 bp.hitted = True
 
+            self.ql.stop()
             self.do_context()
 
     def _save(self: QlQdb, *args) -> None:
@@ -147,7 +161,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
     def do_run(self: QlQdb, *args) -> None:
         """
-        launching qiling instance
+        launch qiling instance
         """
 
         self._run()
@@ -173,7 +187,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
             self._restore()
             self.do_context()
 
-    def do_step(self: QlQdb, *args) -> Optional[bool, None]:
+    def do_step(self: QlQdb, *args) -> Optional[bool]:
         """
         execute one instruction at a time
         """
@@ -202,7 +216,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
     def set_breakpoint(self: QlQdb, address: int, is_temp: bool = False) -> None:
         """
-        internal function for placing breakpoints
+        internal function for placing breakpoint
         """
 
         bp = TempBreakpoint(address) if is_temp else Breakpoint(address)
@@ -221,14 +235,10 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
     def do_start(self: QlQdb, address: str = "", *args) -> None:
         """
-        move current context to ql.loader.entry_point
+        restore qiling instance context to initial state
         """
 
-        self.cur_addr = self.ql.loader.entry_point  # ld.so
-        # self.cur_addr = self.ql.loader.elf_entry    # .text of binary
-
-        # need a proper method for this
-        # self.ql.restore(self._init_state)
+        self.ql.restore(self._init_state)
 
         self.do_context()
 
