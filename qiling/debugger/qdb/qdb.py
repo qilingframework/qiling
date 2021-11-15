@@ -4,7 +4,7 @@
 #
 
 from __future__ import annotations
-from typing import Callable, Optional, Mapping, Tuple
+from typing import Callable, Optional, Mapping, Tuple, Union
 
 import cmd
 
@@ -24,7 +24,6 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         self.ql = ql
         self.prompt = f"{color.BOLD}{color.RED}Qdb> {color.END}"
-        self.breakpoints = {}
         self._saved_reg_dump = None
         self.bp_list = {}
         self.rr = rr
@@ -34,17 +33,10 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         super().__init__()
 
-        # setup a breakpoint at entry point or user specified address
-        address = self.ql.loader.entry_point if not init_hook else parse_int(init_hook)
-        self.set_breakpoint(address, is_temp=True)
-        self.dbg_hook()
+        self.cur_addr = self.ql.loader.entry_point
 
-    def dbg_hook(self: QlQdb):
-        """
-        hook every instruction with callback funtion _bp_handler
-        """
-
-        self.ql.hook_code(self._bp_handler)
+        self.do_start()
+        self.interactive()
 
     @property
     def cur_addr(self: QlQdb) -> int:
@@ -67,16 +59,20 @@ class QlQdb(cmd.Cmd, QlDebugger):
         internal function for handling once breakpoint hitted
         """
 
-        if (bp := self.bp_list.get(self.cur_addr, None)) is not None:
+        if (bp := self.bp_list.get(self.cur_addr, None)):
 
-            if not isinstance(bp, TempBreakpoint):
-                print(f"{color.CYAN}[+] hit breakpoint at 0x{self.cur_addr:08x}{color.END}")
+            if isinstance(bp, TempBreakpoint):
+                # remove TempBreakpoint once hitted
+                self.del_breakpoint(bp)
 
             else:
-                # remove TempBreakpoint once hitted
-                self.del_breakpoint(self.cur_addr)
+                if bp.hitted:
+                    return
 
-            self.interactive()
+                print(f"{color.CYAN}[+] hit breakpoint at 0x{self.cur_addr:08x}{color.END}")
+                bp.hitted = True
+
+            self.do_context()
 
     def _save(self: QlQdb, *args) -> None:
         """
@@ -92,12 +88,18 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         self.ql.restore(self._states_list.pop())
 
-    def _run(self: Qldbg, *args) -> None:
+    def _run(self: Qldbg, address: int = 0, count: int = 0) -> None:
         """
-        internal function for launching qiling instance
+        internal function for emulating instruction
         """
 
-        self.ql.run()
+        if not address:
+            address = self.cur_addr
+
+        if self.ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB) and is_thumb(self.ql.reg.cpsr):
+            address |= 1
+
+        self.ql.emu_start(address, 0, count=count)
 
     def parseline(self: QlQdb, line: str) -> Tuple[Optional[str], Optional[str], str]:
         """
@@ -126,16 +128,14 @@ class QlQdb(cmd.Cmd, QlDebugger):
         initial an interactive interface
         """
 
-        self.do_context()
-
         return self.cmdloop()
 
     def run(self: QlQdb, *args) -> None:
         """
-        do nothing, since it's already running when breakpoint hitted
+        internal command for running debugger
         """
 
-        pass
+        self._run()
 
     def emptyline(self: QlQdb, *args) -> None:
         """
@@ -147,18 +147,9 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
     def do_run(self: QlQdb, *args) -> None:
         """
-        launch qiling instance from a fresh start
+        launching qiling instance
         """
 
-        self.ql = Qiling(
-                argv=self.ql.argv,
-                rootfs=self.ql.rootfs,
-                verbose=self.ql.verbose,
-                console=self.ql.console,
-                log_file=self.ql.log_file,
-            )
-
-        self.dbg_hook()
         self._run()
 
     def do_context(self: QlQdb, *args) -> None:
@@ -198,45 +189,54 @@ class QlQdb(cmd.Cmd, QlDebugger):
             if next_stop is CODE_END:
                 return True
 
-            self.bp_list.update({next_stop: TempBreakpoint()})
-
             if self.rr:
                 self._save()
 
-            return True
+            count = 1
+            if self.ql.archtype == QL_ARCH.MIPS and next_stop != self.cur_addr + 4:
+                # make sure delay slot executed
+                count = 2
+
+            self._run(count=count)
+            self.do_context()
 
     def set_breakpoint(self: QlQdb, address: int, is_temp: bool = False) -> None:
         """
         internal function for placing breakpoints
         """
 
-        bp = TempBreakpoint() if is_temp else Breakpoint()
+        bp = TempBreakpoint(address) if is_temp else Breakpoint(address)
+
+        bp.hook = self.ql.hook_address(self._bp_handler, address)
 
         self.bp_list.update({address: bp})
 
-    def del_breakpoint(self: QlQdb, address: int) -> None:
+    def del_breakpoint(self: QlQdb, bp: Union[Breakpoint, TempBreakpoint]) -> None:
         """
         internal function for removing breakpoints
         """
 
-        self.bp_list.pop(address, None)
+        if self.bp_list.pop(bp.addr, None):
+            bp.hook.remove()
 
     def do_start(self: QlQdb, address: str = "", *args) -> None:
         """
-        pause at entry point by setting a temporary breakpoint on it
+        move current context to ql.loader.entry_point
         """
 
-        # entry = self.ql.loader.entry_point  # ld.so
-        # entry = self.ql.loader.elf_entry # .text of binary
+        self.cur_addr = self.ql.loader.entry_point  # ld.so
+        # self.cur_addr = self.ql.loader.elf_entry    # .text of binary
 
-        self._run()
+        # need a proper method for this
+        # self.ql.restore(self._init_state)
+
+        self.do_context()
 
     def do_breakpoint(self: QlQdb, address: str = "") -> None:
         """
         set breakpoint on specific address
         """
 
-        # address = parse_int(address) if address else self.ql.reg.arch_pc
         address = parse_int(address) if address else self.cur_addr
 
         self.set_breakpoint(address)
@@ -249,10 +249,10 @@ class QlQdb(cmd.Cmd, QlDebugger):
         """
 
         if address:
-            self.cur_addr = parse_int(address)
+            address = parse_int(address)
 
         print(f"{color.CYAN}continued from 0x{self.cur_addr:08x}{color.END}")
-        return True
+        self._run(address)
 
     def do_examine(self: QlQdb, line: str) -> None:
         """
@@ -302,7 +302,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         """
 
         self.ql.stop()
-        return True
+        exit()
 
     do_r = do_run
     do_s = do_step

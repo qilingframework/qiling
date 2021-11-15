@@ -417,13 +417,17 @@ class Breakpoint(object):
     """
     dummy class for breakpoint
     """
-    pass
+    def __init__(self, address: int):
+        self.addr = address
+        self.hitted = False
+        self.hook = None
 
 class TempBreakpoint(Breakpoint):
     """
     dummy class for temporay breakpoint
     """
-    pass
+    def __init__(self, address):
+        super().__init__(address)
 
 
 if __name__ == "__main__":
