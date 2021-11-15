@@ -1,4 +1,4 @@
-[![Documments](https://docs.qiling.io/)](https://docs.qiling.io/)
+[![Documentation Status](https://docs.qiling.io/)](https://docs.qiling.io/)
 [![Downloads](https://pepy.tech/badge/qiling)](https://pepy.tech/project/qiling)
 [![Chat on Telegram](https://img.shields.io/badge/Chat%20on-Telegram-brightgreen.svg)](https://t.me/qilingframework)
 
