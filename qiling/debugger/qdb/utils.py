@@ -36,6 +36,16 @@ def dump_regs(ql: Qiling) -> Mapping[str, int]:
                 "r12", "sp", "lr", "pc",
                 )
 
+    elif ql.archtype == QL_ARCH.CORTEX_M:
+
+        _reg_order = (
+                "r0", "r1", "r2", "r3",
+                "r4", "r5", "r6", "r7",
+                "r8", "r9", "r10", "r11",
+                "r12", "sp", "lr", "pc",
+                "xpsr", "control", "primask", "basepri", "faultmask"
+                )
+
     return {reg_name: getattr(ql.reg, reg_name) for reg_name in _reg_order}
 
 
@@ -87,6 +97,7 @@ def handle_bnj(ql: Qiling, cur_addr: str) -> Callable[[Qiling, str], int]:
             QL_ARCH.MIPS     : handle_bnj_mips,
             QL_ARCH.ARM      : handle_bnj_arm,
             QL_ARCH.ARM_THUMB: handle_bnj_arm,
+            QL_ARCH.CORTEX_M : handle_bnj_arm,
             }.get(ql.archtype)(ql, cur_addr)
 
 
@@ -116,11 +127,11 @@ def disasm(ql: Qiling, address: int, detail: bool = False) -> Optional[int]:
     return ret
 
 
-def _read_inst(ql: Qiling, addr: str) -> int:
+def _read_inst(ql: Qiling, addr: int) -> int:
 
     result = ql.mem.read(addr, 4)
 
-    if ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB):
+    if ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB, QL_ARCH.CORTEX_M):
         if is_thumb(ql.reg.cpsr):
 
             first_two = ql.unpack16(ql.mem.read(addr, 2))

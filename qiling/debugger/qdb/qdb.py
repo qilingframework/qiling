@@ -39,14 +39,15 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         # self.ql.loader.entry_point  # ld.so
         # self.ql.loader.elf_entry    # .text of binary
+        if not self.ql.baremetal:
 
-        if init_hook:
-            init_hook = parse_int(init_hook)
+            if init_hook:
+                init_hook = parse_int(init_hook)
 
-            self.set_breakpoint(init_hook, is_temp=True)
+                self.set_breakpoint(init_hook, is_temp=True)
 
-        self.cur_addr = self.ql.loader.entry_point
-        self._init_state = self.ql.save()
+            self.cur_addr = self.ql.loader.entry_point
+            self._init_state = self.ql.save()
 
         self.do_context()
         self.interactive()
@@ -102,7 +103,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         self.ql.restore(self._states_list.pop())
 
-    def _run(self: Qldbg, address: int = 0, count: int = 0) -> None:
+    def _run(self: Qldbg, address: int = 0, end: int = 0, count: int = 0) -> None:
         """
         internal function for emulating instruction
         """
@@ -110,10 +111,10 @@ class QlQdb(cmd.Cmd, QlDebugger):
         if not address:
             address = self.cur_addr
 
-        if self.ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB) and is_thumb(self.ql.reg.cpsr):
+        if self.ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB, QL_ARCH.CORTEX_M) and is_thumb(self.ql.reg.cpsr):
             address |= 1
 
-        self.ql.emu_start(address, 0, count=count)
+        self.ql.emu_start(begin=address, end=end, count=count)
 
     def parseline(self: QlQdb, line: str) -> Tuple[Optional[str], Optional[str], str]:
         """
@@ -196,6 +197,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
             print(f"{color.RED}[!] The program is not being run.{color.END}")
 
         else:
+            # save reg dump for data chaged highliting
             self._saved_reg_dump = dict(filter(lambda d: isinstance(d[0], str), self.ql.reg.save().items()))
 
             _, next_stop = handle_bnj(self.ql, self.cur_addr)
@@ -206,13 +208,21 @@ class QlQdb(cmd.Cmd, QlDebugger):
             if self.rr:
                 self._save()
 
-            count = 1
-            if self.ql.archtype == QL_ARCH.MIPS and next_stop != self.cur_addr + 4:
-                # make sure delay slot executed
-                count = 2
+            if self.ql.baremetal:
+                self.ql.arch.step()
+                # self.ql.arch.run(count=1, end=self.ql.exit_point)
+                # self._run(count=1)
+                self.do_context()
 
-            self._run(count=count)
-            self.do_context()
+            else:
+
+                count = 1
+                if self.ql.archtype == QL_ARCH.MIPS and next_stop != self.cur_addr + 4:
+                    # make sure delay slot executed
+                    count = 2
+
+                self._run(count=count)
+                self.do_context()
 
     def set_breakpoint(self: QlQdb, address: int, is_temp: bool = False) -> None:
         """
@@ -262,6 +272,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
             address = parse_int(address)
 
         print(f"{color.CYAN}continued from 0x{self.cur_addr:08x}{color.END}")
+
         self._run(address)
 
     def do_examine(self: QlQdb, line: str) -> None:
