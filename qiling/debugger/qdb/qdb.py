@@ -39,7 +39,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         # self.ql.loader.entry_point  # ld.so
         # self.ql.loader.elf_entry    # .text of binary
-        if not self.ql.baremetal:
+        if self.ql.archtype != QL_ARCH.CORTEX_M:
 
             if init_hook:
                 init_hook = parse_int(init_hook)
@@ -200,29 +200,22 @@ class QlQdb(cmd.Cmd, QlDebugger):
             # save reg dump for data chaged highliting
             self._saved_reg_dump = dict(filter(lambda d: isinstance(d[0], str), self.ql.reg.save().items()))
 
+            if self.rr:
+                self._save()
+
             _, next_stop = handle_bnj(self.ql, self.cur_addr)
 
             if next_stop is CODE_END:
                 return True
 
-            if self.rr:
-                self._save()
-
-            if self.ql.baremetal:
+            if self.ql.archtype == QL_ARCH.CORTEX_M:
                 self.ql.arch.step()
-                # self.ql.arch.run(count=1, end=self.ql.exit_point)
-                # self._run(count=1)
-                self.do_context()
+                self.ql.count -= 1
 
             else:
-
-                count = 1
-                if self.ql.archtype == QL_ARCH.MIPS and next_stop != self.cur_addr + 4:
-                    # make sure delay slot executed
-                    count = 2
-
                 self._run(count=count)
-                self.do_context()
+
+            self.do_context()
 
     def set_breakpoint(self: QlQdb, address: int, is_temp: bool = False) -> None:
         """
@@ -231,7 +224,9 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         bp = TempBreakpoint(address) if is_temp else Breakpoint(address)
 
-        bp.hook = self.ql.hook_address(self._bp_handler, address)
+        if self.ql.archtype != QL_ARCH.CORTEX_M:
+            # skip hook_address for cortex_m
+            bp.hook = self.ql.hook_address(self._bp_handler, address)
 
         self.bp_list.update({address: bp})
 
@@ -272,6 +267,18 @@ class QlQdb(cmd.Cmd, QlDebugger):
             address = parse_int(address)
 
         print(f"{color.CYAN}continued from 0x{self.cur_addr:08x}{color.END}")
+
+        count, end = 0, 0
+        if self.ql.archtype == QL_ARCH.CORTEX_M:
+            count = self.ql.count
+
+            if len(self.bp_list) > 0:
+                end = next(filter(lambda x: x > self.cur_addr, sorted(self.bp_list.keys())))
+
+            self._run(address, end=end, count=count)
+            print(f"{color.CYAN}[+] hit breakpoint at 0x{self.cur_addr:08x}{color.END}")
+            self.do_context()
+            return
 
         self._run(address)
 
