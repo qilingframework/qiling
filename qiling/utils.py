@@ -7,7 +7,9 @@
 This module is intended for general purpose functions that can be used
 thoughout the qiling framework
 """
-import importlib, os, copy, re, pefile, logging, sys
+
+import importlib, os, copy, re, pefile, logging, sys, yaml
+
 from configparser import ConfigParser
 from logging import LogRecord
 from typing import Any, Container, Optional, Sequence, Tuple, Type
@@ -199,21 +201,25 @@ def ostype_convert_str(ostype: QL_OS) -> Optional[str]:
     return __value_to_key(QL_OS, ostype)
 
 def ostype_convert(ostype: str) -> Optional[QL_OS]:
-    if ostype == "darwin":
-        ostype = "macos"
+    alias_map = {
+        "darwin": "macos",
+    }
 
-    return os_map.get(ostype)
+    return os_map.get(alias_map.get(ostype, ostype))
 
 def arch_convert_str(arch: QL_ARCH) -> Optional[str]:
     return __value_to_key(QL_ARCH, arch)
 
 def arch_convert(arch: str) -> Optional[QL_ARCH]:
-    if arch == "x86_64":
-        arch = "x8664"
-    return arch_map.get(arch)
+    alias_map = {
+        "x86_64": "x8664",
+        "riscv32": "riscv",
+    }
+    
+    return arch_map.get(alias_map.get(arch, arch))
 
 def arch_os_convert(arch: QL_ARCH) -> Optional[QL_OS]:
-    return arch_os_map.get(arch)
+    return arch_os_map.get(arch, QL_OS.MCU)
 
 def debugger_convert(debugger: str) -> Optional[QL_DEBUGGER]:
     return debugger_map.get(debugger)
@@ -466,39 +472,26 @@ def os_setup(archtype: QL_ARCH, ostype: QL_OS, ql):
 
 
 def profile_setup(ql):
-    if ql.baremetal:
-        return ql_hw_profile_setup(ql)
-
     _profile = "Default"
 
     if ql.profile != None:
         _profile = ql.profile
     debugmsg = "Profile: %s" % _profile
 
-    os_profile = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", ostype_convert_str(ql.ostype).lower() + ".ql")
+    if ql.baremetal:
+        config = {}
+        if ql.profile:
+            with open(ql.profile) as f: 
+                config = yaml.load(f, Loader=yaml.Loader)
 
-    if ql.profile:
-        profiles = [os_profile, ql.profile]
     else:
-        profiles = [os_profile]
+        profile_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", ostype_convert_str(ql.ostype).lower() + ".ql")
+        profiles = [profile_path, ql.profile] if ql.profile else [profile_path]
 
-    config = ConfigParser()
-    config.read(profiles)
+        config = ConfigParser()
+        config.read(profiles)
 
     return config, debugmsg
-
-def ql_hw_profile_setup(ql):
-    config = ConfigParser()
-
-    profile_name = f'{ql.profile}.ql'
-    profile_dir  = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles")
-
-    for path, _, files in os.walk(profile_dir):
-        if profile_name in files:
-            config.read(os.path.join(profile_dir, path, profile_name))
-            break
-
-    return config, f'Profile: {ql.profile}'
 
 def ql_resolve_logger_level(verbose: QL_VERBOSE) -> int:
     return {

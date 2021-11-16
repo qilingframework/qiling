@@ -50,7 +50,8 @@ class CortexM4Nvic(QlPeripheral):
             (self.struct.ICPR, self.clear_pending),
         ]
 
-        self.intrs = []        
+        self.intrs = []       
+        self.interrupt_handler = self.ql.arch.hard_interrupt_handler 
 
     def enable(self, IRQn):
         if IRQn >= 0:
@@ -110,7 +111,7 @@ class CortexM4Nvic(QlPeripheral):
         while self.intrs:
             IRQn = self.intrs.pop(0)
             self.clear_pending(IRQn)
-            self.ql.arch.handle_interupt(IRQn)            
+            self.interrupt_handler(self.ql, IRQn)
 
     @QlPeripheral.debug_info()
     def read(self, offset: int, size: int) -> int:

@@ -19,8 +19,8 @@ if TYPE_CHECKING:
     from .hw.hw import QlHwManager
     from .loader.loader import QlLoader
 
-from .const import QL_ARCH_ENDIAN, QL_ENDIAN, QL_OS, QL_VERBOSE, QL_ARCH_INTERPRETER, QL_ARCH_BAREMETAL, QL_OS_ALL
-from .exception import QlErrorFileNotFound, QlErrorArch, QlErrorOsType, QlErrorOutput
+from .const import QL_ARCH_ENDIAN, QL_ENDIAN, QL_VERBOSE, QL_OS_INTERPRETER, QL_OS_BAREMETAL
+from .exception import QlErrorFileNotFound, QlErrorArch, QlErrorOsType
 from .utils import *
 from .core_struct import QlCoreStructs
 from .core_hooks import QlCoreHooks
@@ -68,9 +68,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._code = code
         self._ostype = ostype
         self._archtype = archtype
-        self._interpreter = False
-        self._baremetal = False
-        self._gpos = False
         self._archendian = QL_ENDIAN.EL
         self._archbit = None
         self._pointersize = None
@@ -111,57 +108,69 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         """
         Qiling Framework Core Engine
         """
-        ###############
-        # code_exec() #
-        ###############
-        if self._code or (self._archtype and type(self._archtype) == str):
-            if (self._archtype and type(self._archtype) == str):
-                self._archtype= arch_convert(self._archtype.lower())
+        ##############
+        # argv setup #
+        ##############
+        if self._argv is None:
+            self._argv = ["qilingcode"]
 
-            if self._ostype == None:
-                self._ostype = arch_os_convert(self._archtype)
-            else:
-                self._ostype = ostype_convert(self._ostype.lower())
-                    
-            if self._code == None:
-                self._code = "qilingcode"
-            if self._argv is None:
-                self._argv = ["qilingcode"]
-            if self._rootfs is None:
-                self._rootfs = "."
+        elif not os.path.exists(str(self._argv[0])):
+            raise QlErrorFileNotFound("Target binary not found: %s" %(self._argv[0]))
+
+        ################
+        # rootfs setup #
+        ################
+        if self._rootfs is None:
+            self._rootfs = "."
+            
+        elif not os.path.exists(self._rootfs):
+            raise QlErrorFileNotFound("Target rootfs not found")
         
-        self._interpreter = True if self._archtype in (QL_ARCH_INTERPRETER) else False
-        self._baremetal = True if self._archtype in (QL_ARCH_BAREMETAL) else False
-        self._path = (str(self._argv[0]))
-        self._targetname = ntpath.basename(self._argv[0])
-        
-        ##############
-        # File check #
-        ##############
-        if (not self._interpreter and not self._baremetal) and self._code == None:
-            if not os.path.exists(str(self._argv[0])):
-                raise QlErrorFileNotFound("Target binary not found: %s" %(self._argv[0]))
-            if not os.path.exists(self._rootfs):
-                raise QlErrorFileNotFound("Target rootfs not found")
-        
-            guessed_archtype, guessed_ostype, guessed_archendian = ql_guess_emu_env(self._path)
+        self._path = self._argv[0]
+        self._targetname = ntpath.basename(self.path)
+
+        #################
+        # arch os setup #
+        #################
+        if type(self._archtype) is str:
+            self._archtype = arch_convert(self._archtype)
+        if type(self._ostype) is str:
+            self._ostype = ostype_convert(self._ostype)
+
+        if self._archtype is None:
+            guessed_archtype, guessed_ostype, guessed_archendian = ql_guess_emu_env(self._path)            
+            self._archtype = guessed_archtype
+            self._archendian = guessed_archendian
             
             if self._ostype is None:
                 self._ostype = guessed_ostype
-            if self._archtype is None:
-                self._archtype = guessed_archtype
-                self._archendian = guessed_archendian
 
-            if not ql_is_valid_ostype(self._ostype):
-                raise QlErrorOsType("Invalid OSType")
+        elif self._ostype == None:
+            self._ostype = arch_os_convert(self._archtype)
+        
+        if not ql_is_valid_ostype(self._ostype):
+            raise QlErrorOsType("Invalid OSType")
 
-            if not ql_is_valid_arch(self._archtype):
-                raise QlErrorArch("Invalid Arch %s" % self._archtype)
+        if not ql_is_valid_arch(self._archtype):
+            raise QlErrorArch("Invalid Arch %s" % self._archtype)
+
+
+        ########################
+        # Archbit & Endianness #
+        ########################
+        self._archbit = ql_get_arch_bits(self._archtype)
+        self._pointersize = (self.archbit // 8)
+ 
+        if bigendian == True and self._archtype in QL_ARCH_ENDIAN:
+            self._archendian = QL_ENDIAN.EB
+
+        # Once we finish setting up archendian and arcbit, we can init QlCoreStructs.
+        QlCoreStructs.__init__(self, self._archendian, self._archbit)
             
+
         #######################################
         # Loader and General Purpose OS check #
         #######################################
-        self._gpos = True if self._ostype in (QL_OS_ALL) else False 
         self._loader = loader_setup(self._ostype, self)
 
         #####################
@@ -182,41 +191,22 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         # Now that the logger is configured, we can log profile debug msg:
         self.log.debug(debugmsg)
 
-        ########################
-        # Archbit & Endianness #
-        ########################
-        self._archbit = ql_get_arch_bits(self._archtype)
-        self._pointersize = (self.archbit // 8)  
-
- 
-        if bigendian == True and self._archtype in (QL_ARCH_ENDIAN):
-            self._archendian = QL_ENDIAN.EB
-
-
-        # Once we finish setting up archendian and arcbit, we can init QlCoreStructs.
-        QlCoreStructs.__init__(self, self._archendian, self._archbit)
-
         ##############
         # Components #
         ##############
-        if self._gpos or self._baremetal:
+        if not self.interpreter:
             self._mem = component_setup("os", "memory", self)
             self._reg = component_setup("arch", "register", self)
-
-            if self._baremetal:   
-                self._hw  = component_setup("hw", "hw", self)
+              
 
         self._arch = arch_setup(self.archtype, self)
         
         # Once we finish setting up arch layer, we can init QlCoreHooks.
-        self.uc = self.arch.init_uc
-        QlCoreHooks.__init__(self, self.uc)
+        if not self.interpreter:
+            self.uc = self.arch.init_uc
+            QlCoreHooks.__init__(self, self.uc)
         
-        # Setup Outpt
-        if self._gpos or self._baremetal:
             self.arch.utils.setup_output()
-
-        if self._gpos:
             self._os = os_setup(self.archtype, self.ostype, self)
 
             if stdin is not None:
@@ -230,10 +220,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
         # Run the loader
         self.loader.run()
-
-        if self._gpos:
-            # Add extra guard options when configured to do so
-            self._init_stop_guard()    
+        self._init_stop_guard()    
 
     #####################
     # Qiling Components #
@@ -475,7 +462,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
             Type: bool
         """
-        return self._interpreter
+        return self.ostype in QL_OS_INTERPRETER
 
     @property
     def baremetal(self) -> bool:
@@ -484,16 +471,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
             Type: bool
         """
-        return self._baremetal
-
-    @property
-    def gpos(self) -> bool:
-        """ General purpose OS
-            - Windows, Linux, MacOS and etc
-
-            Type: bool
-        """
-        return self._gpos
+        return self.ostype in QL_OS_BAREMETAL
 
     @property
     def platform_os(self):

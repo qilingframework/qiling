@@ -13,6 +13,8 @@ class color:
    UNDERLINE = '\033[4m'
    BOLD      = '\033[1m'
    END       = '\033[0m'
+   RESET     = '\x1b[39m'
+
 
 
 FORMAT_LETTER = {

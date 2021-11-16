@@ -18,26 +18,27 @@ class QlHwManager:
         self.entity = {}
         self.region = {}        
 
-    def create(self, label: str, cls: "QlPeripheral"=None, base: int=None) -> "QlPeripheral":
-        """ Create the peripheral accroding the label and profiles.
+    def create(self, label: str, struct: "QlPeripheral"=None, base: int=None) -> "QlPeripheral":
+        """ Create the peripheral accroding the label and envs.
 
-            cls: Structure of the peripheral. Use defualt ql structure if not provide.
+            struct: Structure of the peripheral. Use defualt ql structure if not provide.
             base: Base address. Use defualt address if not provide.
         """
-        profile_cls, profile_base, kwargs = self.load_profile(label.upper())
+        env_struct, env_base, kwargs = self.load_env(label.upper())
 
-        cls = profile_cls if cls is None else cls
-        base = profile_base if base is None else base        
+        struct = env_struct if struct is None else struct
+        base = env_base if base is None else base        
 
         try:
-            entity = ql_get_module_function('qiling.hw', cls)(self.ql, label, **kwargs)
+            
+            entity = ql_get_module_function('qiling.hw', struct)(self.ql, label, **kwargs)
             setattr(self, label, entity)
             self.entity[label] = entity
             self.region[label] = [(lbound + base, rbound + base) for (lbound, rbound) in entity.region]
 
             return entity
         except QlErrorModuleFunctionNotFound:
-            self.ql.log.warning(f'The {cls}({label}) has not been implemented')
+            self.ql.log.warning(f'The {struct}({label}) has not been implemented')
 
     def delete(self, label: str):
         """ Remove the peripheral
@@ -47,21 +48,16 @@ class QlHwManager:
             self.region.pop(label)
             delattr(self, label)
 
-    def load_profile(self, label: str):
-        """ Get peripheral information (structure, base address, initialization list)from profile.
+    def load_env(self, label: str):
+        """ Get peripheral information (structure, base address, initialization list) from env.
 
         Args:
             label (str): Peripheral Label
         
         """
-        section = self.ql.profile[label]
+        args = self.ql.env[label]
         
-        cls = section['class']
-        base = eval(section['base'])
-        kwargs = {key: eval(section[key]) for key in section 
-            if key not in ['type', 'class', 'base']}
-
-        return cls, base, kwargs
+        return args['struct'], args['base'], args.get("kwargs", {})
         
     def find(self, address: int):
         """ Find the peripheral at `address`

@@ -98,12 +98,15 @@ def ql_syscall_openat(ql: Qiling, fd: int, path: int, flags: int, mode: int):
                 mode = 0
 
             flags = ql_open_flag_mapping(ql, flags)
-            try:
+            fd = ql.unpacks(ql.pack(fd))
+
+            if 0 <= fd < NR_OPEN:
                 dir_fd = ql.os.fd[fd].fileno()
-            except:
+            else:
                 dir_fd = None
 
             ql.os.fd[idx] = ql.os.fs_mapper.open_ql_file(file_path, flags, mode, dir_fd)
+
             regreturn = idx
         except QlSyscallError as e:
             regreturn = -e.errno

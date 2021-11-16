@@ -68,18 +68,6 @@ class QlArchCORTEX_M(QlArchARM):
         for reg_maper in reg_maps:
             self.ql.reg.expand_mapping(reg_maper)
 
-        def intr_cb(ql, intno):
-            if intno == EXCP.SWI:
-                ql.hw.nvic.set_pending(IRQ.SVCALL)                    
-
-            elif intno == EXCP.EXCEPTION_EXIT:
-                ql.emu_stop()            
-            
-            else:
-                raise QlErrorNotImplemented(f'Unhandled interrupt number ({intno})')
-
-        self.intr_cb = intr_cb
-
     def get_init_uc(self):
         return Uc(UC_ARCH_ARM, UC_MODE_ARM + UC_MODE_MCLASS + UC_MODE_THUMB)
 
@@ -118,25 +106,40 @@ class QlArchCORTEX_M(QlArchARM):
     def using_psp(self):
         return not self.is_handler_mode() and (self.ql.reg.read('control') & CONTROL.SPSEL) > 0
 
-    def handle_interupt(self, IRQn):        
+    def init_context(self):
+        self.ql.reg.write('lr', 0xffffffff)
+        self.ql.reg.write('msp', self.ql.mem.read_ptr(0x0))
+        self.ql.reg.write('pc' , self.ql.mem.read_ptr(0x4))
+
+    def soft_interrupt_handler(self, ql, intno):
+        if intno == EXCP.SWI:
+            ql.hw.nvic.set_pending(IRQ.SVCALL)                    
+
+        elif intno == EXCP.EXCEPTION_EXIT:
+            ql.emu_stop()            
+        
+        else:
+            raise QlErrorNotImplemented(f'Unhandled interrupt number ({intno})')
+
+    def hard_interrupt_handler(self, ql, intno):
         basepri = self.ql.reg.read('basepri') & 0xf0
-        if basepri and basepri <= self.ql.hw.nvic.get_priority(IRQn):
+        if basepri and basepri <= ql.hw.nvic.get_priority(intno):
             return
 
-        if IRQn > IRQ.HARD_FAULT and (self.ql.reg.read('primask') & 0x1):
+        if intno > IRQ.HARD_FAULT and (ql.reg.read('primask') & 0x1):
             return
                 
-        if IRQn != IRQ.NMI and (self.ql.reg.read('faultmask') & 0x1):
+        if intno != IRQ.NMI and (ql.reg.read('faultmask') & 0x1):
             return
 
-        if self.ql.verbose >= QL_VERBOSE.DISASM:
-            self.ql.log.debug(f'Handle the IRQn: {IRQn}')
+        if ql.verbose >= QL_VERBOSE.DISASM:
+            ql.log.debug(f'Handle the intno: {intno}')
                 
-        with QlInterruptContext(self.ql):
-            isr = IRQn + 16
+        with QlInterruptContext(ql):
+            isr = intno + 16
             offset = isr * 4
 
-            entry = self.ql.mem.read_ptr(offset)
+            entry = ql.mem.read_ptr(offset)
             exc_return = 0xFFFFFFFD if self.ql.arch.using_psp() else 0xFFFFFFF9        
 
             self.ql.reg.write('ipsr', isr)
