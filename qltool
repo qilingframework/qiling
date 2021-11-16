@@ -10,7 +10,7 @@ import ast
 import pickle
 import unicorn
 
-from qiling import Qiling
+from qiling import Qiling, ql_extended_info
 from qiling.arch import utils as arch_utils
 from qiling.debugger.qdb import QlQdb
 from qiling.utils import arch_convert
@@ -166,6 +166,20 @@ def handle_examples(parser: argparse.ArgumentParser):
 
     parser.exit(0, __ql_examples)
 
+def handle_info(parser: argparse.ArgumentParser):
+    info = ql_extended_info()
+
+    git  = info['git']
+    plat = info['platform']
+    libs = info['libs']
+
+    __ql_info = f"""Qiling {ql_version} on {plat['system']} {plat['release']} ({plat['machine']}), with Python {plat['python']}
+commit: {git['commit']} ({git['branch']})
+libs: {', '.join(f'{k}={v}' for k, v in libs.items())}
+"""
+
+    parser.exit(0, __ql_info)
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--version', action='version', version=f'qltool for Qiling {ql_version}, using Unicorn {unicorn.__version__}')
@@ -191,6 +205,9 @@ if __name__ == '__main__':
 
     # set "examples" subcommand
     expl_parser = commands.add_parser('examples', help='show examples and exit', add_help=False)
+
+    # set "info" subcommand
+    info_parser = commands.add_parser('info', help='show extended version info', add_help=False)
 
     comm_parser = run_parser
 
@@ -224,6 +241,9 @@ if __name__ == '__main__':
 
     if options.subcommand == 'examples':
         handle_examples(parser)
+
+    if options.subcommand == 'info':
+        handle_info(parser)
 
     if options.debug_stop and options.verbose not in (QL_VERBOSE.DEBUG, QL_VERBOSE.DUMP):
         parser.error('the debug_stop option requires verbose to be set to either "debug" or "dump"')
