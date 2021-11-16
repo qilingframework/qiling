@@ -111,10 +111,16 @@ class QlQdb(cmd.Cmd, QlDebugger):
         if not address:
             address = self.cur_addr
 
+        if self.ql.archtype == QL_ARCH.CORTEX_M and self.ql.count != 0:
+            count = self.ql.count
+
         if self.ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB, QL_ARCH.CORTEX_M) and is_thumb(self.ql.reg.cpsr):
             address |= 1
 
         self.ql.emu_start(begin=address, end=end, count=count)
+
+        if self.ql.count:
+            self.ql.count -= count
 
     def parseline(self: QlQdb, line: str) -> Tuple[Optional[str], Optional[str], str]:
         """
@@ -197,7 +203,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
             print(f"{color.RED}[!] The program is not being run.{color.END}")
 
         else:
-            # save reg dump for data chaged highliting
+            # save reg dump for data highliting changes
             self._saved_reg_dump = dict(filter(lambda d: isinstance(d[0], str), self.ql.reg.save().items()))
 
             if self.rr:
@@ -268,16 +274,21 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         print(f"{color.CYAN}continued from 0x{self.cur_addr:08x}{color.END}")
 
-        count, end = 0, 0
         if self.ql.archtype == QL_ARCH.CORTEX_M:
-            count = self.ql.count
+            end = 0
 
             if len(self.bp_list) > 0:
                 end = next(filter(lambda x: x > self.cur_addr, sorted(self.bp_list.keys())))
 
-            self._run(address, end=end, count=count)
-            print(f"{color.CYAN}[+] hit breakpoint at 0x{self.cur_addr:08x}{color.END}")
-            self.do_context()
+            self._run(address, end=end)
+
+            if end != 0:
+                print(f"{color.CYAN}[+] hit breakpoint at 0x{self.cur_addr:08x}{color.END}")
+
+            if self.ql.count:
+                # print context if still running
+                self.do_context()
+
             return
 
         self._run(address)
