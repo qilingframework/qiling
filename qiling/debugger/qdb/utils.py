@@ -77,9 +77,20 @@ def get_arm_flags(bits: int) -> Mapping[str, int]:
 
 
 # parse unsigned integer from string
-def parse_int(s: str) -> int:
+def _parse_int(s: str) -> int:
     return int(s, 0)
 
+
+# function dectorator for parse argument as integer
+def parse_int(func: Callable) -> Callable:
+    def wrap(qdb, s: str) -> int:
+        assert type(s) is str
+        try:
+            ret = _parse_int(s)
+        except:
+            ret = None
+        return func(qdb, ret)
+    return wrap
 
 # check wether negative value or not
 def is_negative(i: int) -> int:
@@ -250,7 +261,7 @@ def handle_bnj_arm(ql: Qiling, cur_addr: str) -> int:
 
     if to_jump:
         if '#' in line.op_str:
-            ret_addr = parse_int(line.op_str.split('#')[-1])
+            ret_addr = _parse_int(line.op_str.split('#')[-1])
         else:
             ret_addr = read_reg_val(line.op_str)
 
@@ -298,7 +309,7 @@ def handle_bnj_arm(ql: Qiling, cur_addr: str) -> int:
 
             if "]" in rn_offset.split(", ")[1]: # pre-indexed immediate
                 _, r, imm = line.op_str.replace("[", "").replace("]", "").replace("!", "").replace("#", "").split(", ")
-                ret_addr = ql.unpack32(ql.mem.read(parse_int(imm) + read_reg_val(r), 4))
+                ret_addr = ql.unpack32(ql.mem.read(_parse_int(imm) + read_reg_val(r), 4))
 
             else: # post-indexed immediate
                 # FIXME: weired behavior, immediate here does not apply
@@ -353,7 +364,7 @@ def handle_bnj_arm(ql: Qiling, cur_addr: str) -> int:
 
     elif line.mnemonic == "sub" and regdst_eq_pc(line.op_str):
         _, r, imm = line.op_str.split(", ")
-        ret_addr = read_reg_val(r) - parse_int(imm.strip("#"))
+        ret_addr = read_reg_val(r) - _parse_int(imm.strip("#"))
 
     elif line.mnemonic == "mov" and regdst_eq_pc(line.op_str):
         _, r = line.op_str.split(", ")
@@ -390,7 +401,7 @@ def handle_bnj_mips(ql: Qiling, cur_addr: str) -> int:
         # get registers or memory address from op_str
         targets = [
                 read_reg_val(each)
-                if '$' in each else parse_int(each)
+                if '$' in each else _parse_int(each)
                 for each in line.op_str.split(", ")
                 ]
 

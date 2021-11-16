@@ -11,7 +11,7 @@ from contextlib import contextmanager
 
 from qiling.const import QL_ARCH
 
-from .utils import dump_regs, get_arm_flags, disasm, parse_int, handle_bnj
+from .utils import dump_regs, get_arm_flags, disasm, _parse_int, handle_bnj
 from .const import *
 
 
@@ -59,7 +59,7 @@ def examine_mem(ql: Qiling, line: str) -> Union[bool, (str, int, int)]:
     elif ql.archtype == QL_ARCH.MIPS:
         addr = addr.replace("fp", "s8")
 
-    addr = getattr(ql.reg, addr) if addr in ql.reg.register_mapping.keys() else parse_int(addr)
+    addr = getattr(ql.reg, addr) if addr in ql.reg.register_mapping.keys() else _parse_int(addr)
 
     def unpack(bs, sz):
         return {

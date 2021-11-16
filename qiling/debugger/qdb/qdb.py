@@ -13,7 +13,7 @@ from qiling.const import QL_ARCH, QL_VERBOSE
 from qiling.debugger import QlDebugger
 
 from .frontend import context_reg, context_asm, examine_mem
-from .utils import parse_int, handle_bnj, is_thumb, CODE_END
+from .utils import _parse_int, handle_bnj, is_thumb, CODE_END, parse_int
 from .utils import Breakpoint, TempBreakpoint
 from .const import *
 
@@ -42,7 +42,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         if self.ql.archtype != QL_ARCH.CORTEX_M:
 
             if init_hook:
-                init_hook = parse_int(init_hook)
+                init_hook = _parse_int(init_hook)
 
                 self.set_breakpoint(init_hook, is_temp=True)
 
@@ -112,15 +112,21 @@ class QlQdb(cmd.Cmd, QlDebugger):
             address = self.cur_addr
 
         if self.ql.archtype == QL_ARCH.CORTEX_M and self.ql.count != 0:
-            count = self.ql.count
+
+            while self.ql.count:
+                self.ql.arch.step()
+                self.ql.count -= 1
+                if self.cur_addr in self.bp_list.keys():
+                    print(f"{color.CYAN}[+] hit breakpoint at 0x{self.cur_addr:08x}{color.END}")
+                    break
+
+            self.do_context()
+            return
 
         if self.ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB, QL_ARCH.CORTEX_M) and is_thumb(self.ql.reg.cpsr):
             address |= 1
 
         self.ql.emu_start(begin=address, end=end, count=count)
-
-        if self.ql.count:
-            self.ql.count -= count
 
     def parseline(self: QlQdb, line: str) -> Tuple[Optional[str], Optional[str], str]:
         """
@@ -203,7 +209,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
             print(f"{color.RED}[!] The program is not being run.{color.END}")
 
         else:
-            # save reg dump for data highliting changes
+            # save reg dump for data highlighting changes
             self._saved_reg_dump = dict(filter(lambda d: isinstance(d[0], str), self.ql.reg.save().items()))
 
             if self.rr:
@@ -244,7 +250,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         if self.bp_list.pop(bp.addr, None):
             bp.hook.remove()
 
-    def do_start(self: QlQdb, address: str = "", *args) -> None:
+    def do_start(self: QlQdb, *args) -> None:
         """
         restore qiling instance context to initial state
         """
@@ -253,43 +259,29 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         self.do_context()
 
-    def do_breakpoint(self: QlQdb, address: str = "") -> None:
+    @parse_int
+    def do_breakpoint(self: QlQdb, address: Optional[int] = 0) -> None:
         """
         set breakpoint on specific address
         """
 
-        address = parse_int(address) if address else self.cur_addr
+        if address is None:
+            address = self.cur_addr
 
         self.set_breakpoint(address)
 
         print(f"{color.CYAN}[+] Breakpoint at 0x{address:08x}{color.END}")
 
-    def do_continue(self: QlQdb, address: str = "") -> None:
+    @parse_int
+    def do_continue(self: QlQdb, address: Optional[int] = 0) -> None:
         """
-        continue execution from current address if no specified 
+        continue execution from current address if not specified
         """
 
-        if address:
-            address = parse_int(address)
+        if address is None:
+            address = self.cur_addr
 
-        print(f"{color.CYAN}continued from 0x{self.cur_addr:08x}{color.END}")
-
-        if self.ql.archtype == QL_ARCH.CORTEX_M:
-            end = 0
-
-            if len(self.bp_list) > 0:
-                end = next(filter(lambda x: x > self.cur_addr, sorted(self.bp_list.keys())))
-
-            self._run(address, end=end)
-
-            if end != 0:
-                print(f"{color.CYAN}[+] hit breakpoint at 0x{self.cur_addr:08x}{color.END}")
-
-            if self.ql.count:
-                # print context if still running
-                self.do_context()
-
-            return
+        print(f"{color.CYAN}continued from 0x{address:08x}{color.END}")
 
         self._run(address)
 
@@ -315,13 +307,14 @@ class QlQdb(cmd.Cmd, QlDebugger):
         self.ql.mem.show_mapinfo()
         print(f"Breakpoints: {[hex(addr) for addr in self.bp_list.keys()]}")
 
-    def do_disassemble(self: QlQdb, address: str, /, *args, **kwargs) -> None:
+    @parse_int
+    def do_disassemble(self: QlQdb, address: Optional[int] = 0, *args) -> None:
         """
         disassemble instructions from address specified
         """
 
         try:
-            context_asm(self.ql, parse_int(address), 4)
+            context_asm(self.ql, _parse_int(address), self.ql.pointersize)
         except:
             print(f"{color.RED}[!] something went wrong ...{color.END}")
 
