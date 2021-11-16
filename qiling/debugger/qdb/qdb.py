@@ -118,9 +118,8 @@ class QlQdb(cmd.Cmd, QlDebugger):
                 self.ql.count -= 1
                 if self.cur_addr in self.bp_list.keys():
                     print(f"{color.CYAN}[+] hit breakpoint at 0x{self.cur_addr:08x}{color.END}")
+                    self.do_context()
                     break
-
-            self.do_context()
             return
 
         if self.ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB, QL_ARCH.CORTEX_M) and is_thumb(self.ql.reg.cpsr):
