@@ -8,7 +8,6 @@ import os
 import sys
 import ast
 import pickle
-import unicorn
 
 from qiling import Qiling, ql_extended_info
 from qiling.arch import utils as arch_utils
@@ -182,7 +181,7 @@ libs: {', '.join(f'{k}={v}' for k, v in libs.items())}
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--version', action='version', version=f'qltool for Qiling {ql_version}, using Unicorn {unicorn.__version__}')
+    parser.add_argument('--version', action='version', version=f'qltool for Qiling {ql_version}')
 
     commands = parser.add_subparsers(title='sub commands', description='select execution mode', dest='subcommand')
 
