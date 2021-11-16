@@ -39,17 +39,25 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         # self.ql.loader.entry_point  # ld.so
         # self.ql.loader.elf_entry    # .text of binary
-        if self.ql.archtype != QL_ARCH.CORTEX_M:
 
-            if init_hook:
-                init_hook = _parse_int(init_hook)
+        if init_hook:
+            pause_entry = _parse_int(init_hook)
+        else:
+            pause_entry = self.ql.loader.entry_point
 
-                self.set_breakpoint(init_hook, is_temp=True)
+        self.set_breakpoint(pause_entry, is_temp=True)
 
-            self.cur_addr = self.ql.loader.entry_point
+        self.cur_addr = self.ql.loader.entry_point
+
+        if self.ql.archtype == QL_ARCH.CORTEX_M:
+            self._run()
+
+        else:
             self._init_state = self.ql.save()
 
-        self.do_context()
+        if pause_entry != self.cur_addr:
+            self.do_context()
+
         self.interactive()
 
     @property
@@ -114,12 +122,19 @@ class QlQdb(cmd.Cmd, QlDebugger):
         if self.ql.archtype == QL_ARCH.CORTEX_M and self.ql.count != 0:
 
             while self.ql.count:
-                self.ql.arch.step()
-                self.ql.count -= 1
-                if self.cur_addr in self.bp_list.keys():
-                    print(f"{color.CYAN}[+] hit breakpoint at 0x{self.cur_addr:08x}{color.END}")
+
+                if (bp := self.bp_list.pop(self.cur_addr, None)):
+                    if isinstance(bp, TempBreakpoint):
+                        self.del_breakpoint(bp)
+                    else:
+                        print(f"{color.CYAN}[+] hit breakpoint at 0x{self.cur_addr:08x}{color.END}")
+
                     self.do_context()
                     break
+
+                self.ql.arch.step()
+                self.ql.count -= 1
+
             return
 
         if self.ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB, QL_ARCH.CORTEX_M) and is_thumb(self.ql.reg.cpsr):
@@ -224,7 +239,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
                 self.ql.count -= 1
 
             else:
-                self._run(count=count)
+                self._run(count=1)
 
             self.do_context()
 
@@ -254,9 +269,10 @@ class QlQdb(cmd.Cmd, QlDebugger):
         restore qiling instance context to initial state
         """
 
-        self.ql.restore(self._init_state)
+        if self.ql.archtype != QL_ARCH.CORTEX_M:
 
-        self.do_context()
+            self.ql.restore(self._init_state)
+            self.do_context()
 
     @parse_int
     def do_breakpoint(self: QlQdb, address: Optional[int] = 0) -> None:
