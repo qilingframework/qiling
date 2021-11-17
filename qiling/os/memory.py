@@ -4,7 +4,7 @@
 #
 
 import os, re
-from typing import Any, Callable, ClassVar, List, MutableSequence, Optional, Sequence, Tuple
+from typing import Any, Callable, List, MutableSequence, Optional, Sequence, Tuple
 
 from unicorn import UC_PROT_NONE, UC_PROT_READ, UC_PROT_WRITE, UC_PROT_EXEC, UC_PROT_ALL
 
@@ -12,8 +12,8 @@ from qiling import Qiling
 from qiling.const import *
 from qiling.exception import *
 
-# tuple: range start, range end, permissions mask, range label
-MapInfoEntry = Tuple[int, int, int, str]
+# tuple: range start, range end, permissions mask, range label, is mmio?
+MapInfoEntry = Tuple[int, int, int, str, bool]
 
 class QlMemoryManager:
     """
@@ -73,7 +73,7 @@ class QlMemoryManager:
 
         self.__write_string(addr, value, encoding)
 
-    def add_mapinfo(self, mem_s: int, mem_e: int, mem_p: int, mem_info: str, is_mmio=False):
+    def add_mapinfo(self, mem_s: int, mem_e: int, mem_p: int, mem_info: str, is_mmio: bool = False):
         """Add a new memory range to map.
 
         Args:
@@ -81,6 +81,7 @@ class QlMemoryManager:
             mem_e: memory range end
             mem_p: permissions mask
             mem_info: map entry label
+            is_mmio: memory range is mmio
         """
 
         self.map_info.append((mem_s, mem_e, mem_p, mem_info, is_mmio))
@@ -136,7 +137,7 @@ class QlMemoryManager:
 
             return ''.join(val if idx & ps else '-' for idx, val in perms_d.items())
 
-        def __process(lbound: int, ubound: int, perms: int, label: str, is_mmio) -> Tuple[int, int, str, str, Optional[str]]:
+        def __process(lbound: int, ubound: int, perms: int, label: str, is_mmio: bool) -> Tuple[int, int, str, str, Optional[str]]:
             perms_str = __perms_mapping(perms)
 
             if hasattr(self.ql, 'os'):
@@ -451,8 +452,8 @@ class QlMemoryManager:
             raise QlMemoryMappedError('Requested memory is unavailable')
 
         self.ql.uc.mem_map(addr, size, perms)
-        self.add_mapinfo(addr, addr + size, perms, info or '[mapped]')
-    
+        self.add_mapinfo(addr, addr + size, perms, info or '[mapped]', is_mmio=False)
+
     def _mmio_read_cb(self, uc, offset, size, data):
         ql, cb = data
         return cb(ql, offset, size)
