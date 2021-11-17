@@ -187,12 +187,12 @@ class QlMemoryManager:
             "mmio" : []
         }
 
-        for lbound, ubound, perm, label, mmio in self.map_info:
-            if not mmio:
+        for lbound, ubound, perm, label, is_mmio in self.map_info:
+            if is_mmio:
+                mem_dict['mmio'].append((lbound, ubound, perm, label, *self.mmio_cbs[(lbound, ubound)]))
+            else:
                 data = self.read(lbound, ubound - lbound)
                 mem_dict['ram'].append((lbound, ubound, perm, label, bytes(data)))
-            else:
-                mem_dict['mmio'].append((lbound, ubound, perm, label, *self.mmio_cbs[(lbound, ubound)]))
 
         return mem_dict
 
