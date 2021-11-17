@@ -204,18 +204,18 @@ class QlMemoryManager:
         """
 
         for lbound, ubound, perms, label, data in mem_dict['ram']:
-            self.ql.log.debug(f'To restore mapping: {lbound:#08x} {ubound:#08x} {label}')
+            self.ql.log.debug(f'restoring memory range: {lbound:#08x} {ubound:#08x} {label}')
 
             size = ubound - lbound
             if not self.is_mapped(lbound, size):
                 self.ql.log.debug(f'mapping {lbound:#08x} {ubound:#08x}, mapsize = {size:#x}')
                 self.map(lbound, size, perms, label)
 
-            self.ql.log.debug(f'writing {lbound:#08x}, size = {size:#x}, write_size = {len(data):#x}')
+            self.ql.log.debug(f'writing {len(data):#x} bytes at {lbound:#08x}')
             self.write(lbound, data)
-        
+
         for lbound, ubound, perms, label, read_cb, write_cb in mem_dict['mmio']:
-            self.ql.log.debug(f"To restore mmio mapping: {lbound:#08x} {ubound:#08x} {label}")
+            self.ql.log.debug(f"restoring mmio range: {lbound:#08x} {ubound:#08x} {label}")
 
             #TODO: Handle overlapped MMIO?
             self.map_mmio(lbound, ubound - lbound, read_cb, write_cb, info=label)
@@ -309,6 +309,7 @@ class QlMemoryManager:
 
         self.del_mapinfo(addr, addr + size)
         self.ql.uc.mem_unmap(addr, size)
+
         if (addr, addr + size) in self.mmio_cbs:
             del self.mmio_cbs[(addr, addr+size)]
 
