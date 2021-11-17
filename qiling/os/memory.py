@@ -40,9 +40,14 @@ class QlMemoryManager:
 
         max_addr = bit_stuff[ql.archbit]
 
-        #self.read_ptr = read_ptr
         self.max_addr = max_addr
         self.max_mem_addr = max_addr
+
+        # memory page size
+        self.pagesize = 0x1000
+
+        # make sure pagesize is a power of 2
+        assert self.pagesize & (self.pagesize - 1) == 0, 'pagesize has to be a power of 2'
 
     def __read_string(self, addr: int) -> str:
         ret = bytearray()
@@ -168,13 +173,16 @@ class QlMemoryManager:
     def get_lib_base(self, filename: str) -> int:
         return next((s for s, _, _, info, _ in self.map_info if os.path.split(info)[1] == filename), -1)
 
-    def align(self, addr: int, alignment: int = 0x1000) -> int:
+    def align(self, addr: int, alignment: int = None) -> int:
         """Round up to nearest alignment.
 
         Args:
             addr: address to align
             alignment: alignment granularity, must be a power of 2
         """
+
+        if alignment is None:
+            alignment = self.pagesize
 
         # rounds up to nearest alignment
         mask = self.max_mem_addr & -alignment
@@ -365,7 +373,7 @@ class QlMemoryManager:
             return True
 
 
-    def find_free_space(self, size: int, minaddr: int = None, maxaddr: int = None, align=0x1000) -> int:
+    def find_free_space(self, size: int, minaddr: int = None, maxaddr: int = None, align: int = None) -> int:
         """Locate an unallocated memory that is large enough to contain a range in size of
         `size` and based at `minaddr`.
 
@@ -379,6 +387,9 @@ class QlMemoryManager:
 
         Raises: QlOutOfMemory in case no available memory space found with the specified requirements
         """
+
+        if align is None:
+            align = self.pagesize
 
         # memory space bounds (exclusive)
         mem_lbound = 0
@@ -407,7 +418,7 @@ class QlMemoryManager:
 
         raise QlOutOfMemory('Out Of Memory')
 
-    def map_anywhere(self, size: int, minaddr: int = None, maxaddr: int = None, align=0x1000, perms: int = UC_PROT_ALL, info: str = None) -> int:
+    def map_anywhere(self, size: int, minaddr: int = None, maxaddr: int = None, align: int = None, perms: int = UC_PROT_ALL, info: str = None) -> int:
         """Map a region anywhere in memory.
 
         Args:
@@ -421,6 +432,9 @@ class QlMemoryManager:
         Returns: mapped address
         """
 
+        if align is None:
+            align = self.pagesize
+
         addr = self.find_free_space(size, minaddr, maxaddr, align)
 
         self.map(addr, self.align(size), perms, info)
@@ -431,8 +445,8 @@ class QlMemoryManager:
         # mask off perms bits that are not supported by unicorn
         perms &= UC_PROT_ALL
 
-        aligned_address = (addr >> 12) << 12
-        aligned_size = self.align((addr & 0xFFF) + size)
+        aligned_address = addr & ~(self.pagesize - 1)
+        aligned_size = self.align((addr & (self.pagesize - 1)) + size)
 
         self.ql.uc.mem_protect(aligned_address, aligned_size, perms)
 
