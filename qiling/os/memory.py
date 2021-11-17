@@ -15,6 +15,9 @@ from qiling.exception import *
 # tuple: range start, range end, permissions mask, range label, is mmio?
 MapInfoEntry = Tuple[int, int, int, str, bool]
 
+MmioReadCallback  = Callable[[Qiling, int, int], int]
+MmioWriteCallback = Callable[[Qiling, int, int, int], None]
+
 class QlMemoryManager:
     """
     some ideas and code from:
@@ -454,28 +457,33 @@ class QlMemoryManager:
         self.ql.uc.mem_map(addr, size, perms)
         self.add_mapinfo(addr, addr + size, perms, info or '[mapped]', is_mmio=False)
 
-    def _mmio_read_cb(self, uc, offset, size, data):
-        ql, cb = data
-        return cb(ql, offset, size)
-
-    def _mmio_write_cb(self, uc, offset, size, value, data):
-        ql, cb = data
-        cb(ql, offset, size, value)
-
-    def map_mmio(self, addr: int, size: int, read_cb: Callable, write_cb: Callable, info: str="[IO Memory]"):
+    def map_mmio(self, addr: int, size: int, read_cb: Optional[MmioReadCallback], write_cb: Optional[MmioWriteCallback], info: str = '[mmio]'):
         # TODO: mmio memory overlap with ram? Is that possible?
         # TODO: Can read_cb or write_cb be None? How uc handle that access?
-        prot = 0
-        if read_cb is not None:
+        prot = UC_PROT_NONE
+
+        if read_cb:
             prot |= UC_PROT_READ
-        
-        if write_cb is not None:
+
+        if write_cb:
             prot |= UC_PROT_WRITE
 
-        self.ql.uc.mmio_map(addr, size, self._mmio_read_cb, (self.ql, read_cb), self._mmio_write_cb, (self.ql, write_cb))
-        self.add_mapinfo(addr, addr+size, prot, info, True)
+        # generic mmio read wrapper
+        def __mmio_read(uc, offset: int, size: int, user_data: MmioReadCallback):
+            cb = user_data
 
-        self.mmio_cbs[(addr, addr+size)] = (read_cb, write_cb)
+            return cb(self.ql, offset, size)
+
+        # generic mmio write wrapper
+        def __mmio_write(uc, offset: int, size: int, value: int, user_data: MmioWriteCallback):
+            cb = user_data
+
+            cb(self.ql, offset, size, value)
+
+        self.ql.uc.mmio_map(addr, size, __mmio_read, read_cb, __mmio_write, write_cb)
+        self.add_mapinfo(addr, addr + size, prot, info, is_mmio=True)
+
+        self.mmio_cbs[(addr, addr + size)] = (read_cb, write_cb)
 
 # A Simple Heap Implementation
 class Chunk():
