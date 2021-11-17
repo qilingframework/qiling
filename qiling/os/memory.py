@@ -288,7 +288,8 @@ class QlMemoryManager:
 
         assert begin < end, 'search arguments do not make sense'
 
-        ranges = [(max(begin, lbound), min(ubound, end)) for lbound, ubound, _, _, _ in self.map_info if not (end < lbound or ubound < begin)]
+        # narrow the search down to relevant ranges; mmio ranges are excluded due to potential read size effects
+        ranges = [(max(begin, lbound), min(ubound, end)) for lbound, ubound, _, _, is_mmio in self.map_info if not (end < lbound or ubound < begin or is_mmio)]
         results = []
 
         for lbound, ubound in ranges:
