@@ -70,6 +70,15 @@ class QlCC:
 
 		raise NotImplementedError
 
+	def setReturnAddress(self, addr: int) -> None:
+		"""Set function return address.
+
+		Args:
+			addr: return address to set
+		"""
+
+		raise NotImplementedError
+
 	def reserve(self, nslots: int) -> None:
 		"""Reserve slots for function arguments.
 
