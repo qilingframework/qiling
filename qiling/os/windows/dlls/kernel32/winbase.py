@@ -766,12 +766,3 @@ def hook_GetPrivateProfileStringA(ql: Qiling, address: int, params):
 })
 def hook_WritePrivateProfileStringA(ql: Qiling, address: int, params):
     pass
-
-# BOOL DeleteFileA(
-#   LPCSTR lpFileName
-# );
-@winsdkapi(cc=STDCALL, params={
-    'lpFileName' : LPCSTR
-})
-def hook_DeleteFileA(ql: Qiling, address: int, params):
-    return 1

@@ -87,6 +87,28 @@ class PETest(unittest.TestCase):
         self.assertTrue(QLWinSingleTest(_t).run())
 
 
+    def test_pe_win_x8664_file_upx(self):
+        def _t():
+            ql = Qiling(["../examples/rootfs/x8664_windows/bin/x8664_file_upx.exe"], "../examples/rootfs/x8664_windows",
+                        verbose=QL_VERBOSE.DEFAULT)
+            ql.run()
+            del ql
+            return True
+
+        self.assertTrue(QLWinSingleTest(_t).run())
+
+
+    def test_pe_win_x86_file_upx(self):
+        def _t():
+            ql = Qiling(["../examples/rootfs/x86_windows/bin/x86_file_upx.exe"], "../examples/rootfs/x86_windows",
+                        verbose=QL_VERBOSE.DEFAULT)
+            ql.run()
+            del ql
+            return True
+
+        self.assertTrue(QLWinSingleTest(_t).run())
+
+
     def test_pe_win_x86_uselessdisk(self):
         def _t():
             if 'QL_FAST_TEST' in os.environ:
@@ -98,7 +120,7 @@ class PETest(unittest.TestCase):
                 
                 def write(self, bs):
                     print(bs)
-                    return
+                    return len(bs)
 
                 def fstat(self):
                     return -1
