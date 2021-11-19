@@ -70,6 +70,26 @@ class QlCC:
 
 		raise NotImplementedError
 
+	def setReturnAddress(self, addr: int) -> None:
+		"""Set function return address.
+
+		Args:
+			addr: return address to set
+		"""
+
+		raise NotImplementedError
+
+	def reserve(self, nslots: int) -> None:
+		"""Reserve slots for function arguments.
+
+		This may be used to stage a new frame before executing a native function.
+
+		Args:
+			nslots: number of arg slots to reserve
+		"""
+
+		raise NotImplementedError
+
 	def unwind(self, nslots: int) -> int:
 		"""Unwind frame and return from function call.
 
@@ -149,3 +169,11 @@ class QlCommonBaseCC(QlCC):
 
 	def setReturnValue(self, value: int) -> None:
 		self.ql.reg.write(self._retreg, value)
+
+	def reserve(self, nslots: int) -> None:
+		assert nslots < len(self._argregs), 'too many slots'
+
+		# count how many slots should be reserved on the stack
+		si = self._argregs[:nslots].count(None)
+
+		self.ql.reg.arch_sp -= (self._shadow + si) * self._asize
