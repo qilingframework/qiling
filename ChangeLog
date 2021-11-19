@@ -7,7 +7,9 @@ New features:
 - Introduced riscv, both 32 and 64 (#980)
 - Added U-boot (#1000)
 
+
 Improvements:
+- Minor improvements to memory module (#1012)
 - Refactored core hooks (#966)
 - update ql.os.posix.const_mapping with more os/arch match (#973)
 - More update in MCU modules (#971)
