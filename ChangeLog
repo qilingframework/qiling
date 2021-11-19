@@ -6,7 +6,7 @@ This file details the changelog of Qiling Framework.
 New features:
 - Introduced riscv, both 32 and 64 (#980)
 - Added U-boot (#1000)
-
+- Abstract calls to native functions (#1013)
 
 Improvements:
 - Minor improvements to memory module (#1012)
