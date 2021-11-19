@@ -10,6 +10,7 @@ from qiling import Qiling
 from qiling.const import QL_ARCH
 from qiling.exception import QlErrorArch, QlMemoryMappedError
 from qiling.loader.loader import QlLoader, Image
+from qiling.os.const import POINTER
 
 from qiling.os.uefi import st, smst, utils
 from qiling.os.uefi.context import DxeContext, SmmContext, UefiContext
@@ -175,7 +176,7 @@ class QlLoaderPE_UEFI(QlLoader):
             if unload_ptr != 0:
                 self.ql.log.info(f'Unloading module {handle:#x}, calling {unload_ptr:#x}')
 
-                self.call_function(unload_ptr, [handle], context.end_of_execution_ptr)
+                self.ql.os.fcall.call_native(unload_ptr, ((POINTER, handle),), context.end_of_execution_ptr)
                 context.loaded_image_protocol_modules.remove(handle)
 
                 return True
@@ -206,9 +207,12 @@ class QlLoaderPE_UEFI(QlLoader):
         self.ql.reg.rsp = context.top_of_stack
         self.ql.reg.rbp = context.top_of_stack
 
-        self.call_function(entry_point, [ImageHandle, SystemTable], eoe_trap)
-        self.ql.os.entry_point = entry_point
+        self.ql.os.fcall.call_native(entry_point, (
+            (POINTER, ImageHandle),
+            (POINTER, SystemTable)
+        ), eoe_trap)
 
+        self.ql.os.entry_point = entry_point
         self.ql.log.info(f'Running from {entry_point:#010x} of {path}')
 
     def execute_next_module(self):
