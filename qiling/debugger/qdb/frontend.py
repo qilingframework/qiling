@@ -166,20 +166,21 @@ def context_reg(ql: Qiling, saved_states: Optional[Mapping[str, int]] = None, /,
 
         elif ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB, QL_ARCH.CORTEX_M):
 
-            regs_in_row = 4
-            if ql.archtype == QL_ARCH.CORTEX_M:
-                regs_in_row = 3
 
             _cur_regs.update({"sl": _cur_regs.pop("r10")})
             _cur_regs.update({"ip": _cur_regs.pop("r12")})
             _cur_regs.update({"fp": _cur_regs.pop("r11")})
 
-            # for re-order
-            _cur_regs.update({"xpsr": _cur_regs.pop("xpsr")})
-            _cur_regs.update({"control": _cur_regs.pop("control")})
-            _cur_regs.update({"primask": _cur_regs.pop("primask")})
-            _cur_regs.update({"faultmask": _cur_regs.pop("faultmask")})
-            _cur_regs.update({"basepri": _cur_regs.pop("basepri")})
+            regs_in_row = 4
+            if ql.archtype == QL_ARCH.CORTEX_M:
+                regs_in_row = 3
+
+                # for re-order
+                _cur_regs.update({"xpsr": _cur_regs.pop("xpsr")})
+                _cur_regs.update({"control": _cur_regs.pop("control")})
+                _cur_regs.update({"primask": _cur_regs.pop("primask")})
+                _cur_regs.update({"faultmask": _cur_regs.pop("faultmask")})
+                _cur_regs.update({"basepri": _cur_regs.pop("basepri")})
 
             _diff = None
             if saved_states is not None:
