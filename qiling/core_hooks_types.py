@@ -18,18 +18,21 @@ class Hook:
 
     def check(self, *args) -> bool:
         return True
-    
+
 
     def call(self, ql, *args):
-        if self.user_data == None:
+        if self.user_data is None:
             return self.callback(ql, *args)
+
         return self.callback(ql, *args, self.user_data)
 
 
 class HookAddr(Hook):
     def __init__(self, callback, address: int, user_data=None):
+        super().__init__(callback, user_data, address, address)
+
         self.addr = address
-    
+
 
     def call(self, ql, *args):
         if self.user_data == None:
@@ -39,14 +42,14 @@ class HookAddr(Hook):
 
 class HookIntr(Hook):
     def __init__(self, callback, intno: int, user_data=None):
+        super().__init__(callback, user_data, 0, -1)
+
         self.intno = intno
-    
+
 
     def check(self, ql, intno: int) -> bool:
         ql.log.debug("[+] Received Interupt: %i Hooked Interupt: %i" % (intno, self.intno))
-        if intno < 0 or self.intno == intno:
-            return True
-        return False
+        return (intno < 0) or (self.intno == intno)
 
 
 class HookRet:
@@ -54,7 +57,7 @@ class HookRet:
         self._ql = ql
         self._t = t
         self._h = h
-    
+
 
     def remove(self):
         self._ql.hook_del(self._t, self._h)

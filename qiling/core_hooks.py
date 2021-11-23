@@ -107,7 +107,7 @@ class QlCoreHooks:
                     if type(ret) is int and ret & QL_HOOK_BLOCK:
                         break
 
-        if not handled and hook_type in (UC_HOOK_MEM_READ_UNMAPPED, UC_HOOK_MEM_WRITE_UNMAPPED, UC_HOOK_MEM_FETCH_UNMAPPED, UC_HOOK_MEM_READ_PROT, UC_HOOK_MEM_WRITE_PROT, UC_HOOK_MEM_FETCH_PROT):
+        if not handled and hook_type & (UC_HOOK_MEM_UNMAPPED | UC_HOOK_MEM_PROT):
             raise QlErrorCoreHook("_hook_mem_cb : not handled")
 
         return True
@@ -246,7 +246,7 @@ class QlCoreHooks:
 
 
     def hook_intr(self, callback, user_data=None, begin=1, end=0):
-        return self.ql_hook(UC_HOOK_INTR,  callback, user_data, begin, end)
+        return self.ql_hook(UC_HOOK_INTR, callback, user_data, begin, end)
 
 
     def hook_block(self, callback, user_data=None, begin=1, end=0):
