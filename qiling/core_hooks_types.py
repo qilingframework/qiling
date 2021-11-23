@@ -34,12 +34,6 @@ class HookAddr(Hook):
         self.addr = address
 
 
-    def call(self, ql, *args):
-        if self.user_data == None:
-            return self.callback(ql)
-        return self.callback(ql, self.user_data)
-
-
 class HookIntr(Hook):
     def __init__(self, callback, intno: int, user_data=None):
         super().__init__(callback, user_data, 0, -1)

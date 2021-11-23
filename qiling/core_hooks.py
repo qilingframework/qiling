@@ -134,13 +134,13 @@ class QlCoreHooks:
 
 
     def _hook_addr_cb(self, uc: Uc, addr: int, size: int, pack_data):
-        ql, addr = pack_data
+        ql = pack_data
 
         if addr in self._addr_hook:
             hooks_list = self._addr_hook[addr]
 
             for hook in hooks_list:
-                ret = hook.call(ql, addr, size)
+                ret = hook.call(ql)
 
                 if type(ret) is int and ret & QL_HOOK_BLOCK:
                     break
@@ -157,7 +157,7 @@ class QlCoreHooks:
     def _ql_hook_addr_internal(self, callback: Callable, address: int) -> int:
         _callback = (catch_KeyboardInterrupt(self))(callback)
         # pack user_data & callback for wrapper _callback
-        return self._h_uc.hook_add(UC_HOOK_CODE, _callback, (self, address), address, address)
+        return self._h_uc.hook_add(UC_HOOK_CODE, _callback, self, address, address)
 
 
     def _ql_hook(self, hook_type: int, h: Hook, *args) -> None:
