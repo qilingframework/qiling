@@ -115,7 +115,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             self._argv = ["qilingcode"]
 
         elif not os.path.exists(str(self._argv[0])):
-            raise QlErrorFileNotFound("Target binary not found: %s" %(self._argv[0]))
+            raise QlErrorFileNotFound("Target binary not found: %s" % (self._argv[0]))
 
         ################
         # rootfs setup #
@@ -124,7 +124,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             self._rootfs = "."
             
         elif not os.path.exists(self._rootfs):
-            raise QlErrorFileNotFound("Target rootfs not found")
+            raise QlErrorFileNotFound("Target rootfs not found: %s" % (self._rootfs))
         
         self._path = self._argv[0]
         self._targetname = ntpath.basename(self.path)
@@ -149,10 +149,10 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             self._ostype = arch_os_convert(self._archtype)
         
         if not ql_is_valid_ostype(self._ostype):
-            raise QlErrorOsType("Invalid OS: %s" % self._ostype)
+            raise QlErrorOsType("Invalid OS: %s" % (self._ostype))
 
         if not ql_is_valid_arch(self._archtype):
-            raise QlErrorArch("Invalid ARCH: %s" % self._archtype)
+            raise QlErrorArch("Invalid ARCH: %s" % (self._archtype))
 
 
         ########################
