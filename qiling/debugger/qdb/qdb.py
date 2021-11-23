@@ -351,6 +351,13 @@ class QlQdb(cmd.Cmd, QlDebugger):
         self.ql.stop()
         exit()
 
+    def do_EOF(self: QlQdb, *args) -> None:
+        """
+        handle Ctrl+D
+        """
+        if input(f"{color.RED}[!] Are you sure about saying good bye ~ ? [Y/n]{color.END} ").strip() == "Y":
+            self.do_quit()
+
     do_r = do_run
     do_s = do_step
     do_q = do_quit
