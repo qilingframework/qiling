@@ -14,6 +14,29 @@ from qiling import Qiling
 
 TraceRecord = Tuple[CsInsn, Iterable[Tuple[int, int]]]
 
+# <WORKAROUND>
+def __uc2_workaround() -> Mapping[int, int]:
+	"""Starting from Unicron2, Unicron and Capstone Intel registers definitions are
+	no longer aligned and cannot be used interchangebly. This temporary workaround
+	maps capstone x86 registers definitions to unicorn x86 registers definitions.
+
+	see: https://github.com/unicorn-engine/unicorn/issues/1492
+	"""
+
+	from capstone import x86_const as cs_x86_const
+	from unicorn import x86_const as uc_x86_const
+
+	def __canonicalized_mapping(module, prefix: str) -> Mapping[str, int]:
+		return dict((k[len(prefix):], getattr(module, k)) for k in dir(module) if k.startswith(prefix))
+
+	cs_x86_regs = __canonicalized_mapping(cs_x86_const, 'X86_REG')
+	uc_x86_regs = __canonicalized_mapping(uc_x86_const, 'UC_X86_REG')
+
+	return dict((cs_x86_regs[k], uc_x86_regs[k]) for k in cs_x86_regs if k in uc_x86_regs)
+
+CS_UC_REGS = __uc2_workaround()
+# </WORKAROUND>
+
 def __get_trace_records(ql: Qiling, address: int, size: int, md: Cs) -> Iterator[TraceRecord]:
 	"""[private] Acquire trace info for the current instruction and yield as a trace record.
 	A trace record is a parsed instruction paired to a list of registers and their values.
@@ -36,7 +59,7 @@ def __get_trace_records(ql: Qiling, address: int, size: int, md: Cs) -> Iterator
 
 	for insn in md.disasm(buf, address):
 		# BUG: insn.regs_read doesn't work well, so we use insn.regs_access()[0]
-		state = tuple((reg, ql.reg.read(reg)) for reg in insn.regs_access()[0])
+		state = tuple((reg, ql.reg.read(CS_UC_REGS[reg])) for reg in insn.regs_access()[0])
 
 		yield (insn, state)
 
