@@ -3,8 +3,8 @@
 # More info, please refer to https://github.com/qilingframework/qiling/pull/765
 
 
-from collections import UserList
-from typing import Iterable, Iterator, Mapping, Tuple
+from collections import deque
+from typing import Deque, Iterable, Iterator, Mapping, Tuple
 
 from capstone import Cs, CsInsn, CS_OP_IMM, CS_OP_MEM, CS_OP_REG
 from capstone.x86 import X86Op
@@ -192,16 +192,13 @@ def enable_history_trace(ql: Qiling, nrecords: int):
 	# if available, use symbols map to resolve memory accesses
 	symsmap = getattr(ql.loader, 'symsmap', {})
 
-	# wrap the trace records list to allow it to be passed and modified by-ref
-	history: UserList[TraceRecord] = UserList()
+	history: Deque[TraceRecord] = deque(maxlen=nrecords)
 
 	def __trace_hook(ql: Qiling, address: int, size: int):
 		"""[internal] Trace hook callback.
 		"""
 
-		recent = list(__get_trace_records(ql, address, size, md))
-
-		history.data = (history + recent)[-nrecords:]
+		history.extend(__get_trace_records(ql, address, size, md))
 
 	ql.hook_code(__trace_hook)
 
