@@ -149,10 +149,10 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             self._ostype = arch_os_convert(self._archtype)
         
         if not ql_is_valid_ostype(self._ostype):
-            raise QlErrorOsType("Invalid OSType")
+            raise QlErrorOsType("Invalid OS: %s" % self._ostype)
 
         if not ql_is_valid_arch(self._archtype):
-            raise QlErrorArch("Invalid Arch %s" % self._archtype)
+            raise QlErrorArch("Invalid ARCH: %s" % self._archtype)
 
 
         ########################
