@@ -46,7 +46,9 @@ class QlCoreHooks:
             hooks_list = self._hook[hook_type]
 
             for hook in hooks_list:
-                if hook.check(ql, intno):
+                ql.log.debug(f'Received interrupt: {intno:#x}')
+
+                if hook.check(intno):
                     handled = True
                     ret = hook.call(ql, intno)
 
