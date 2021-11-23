@@ -218,3 +218,7 @@ class QlOsUefi(QlOs):
 
 		if self.ql._internal_exception is not None:
 			raise self.ql._internal_exception
+
+	def stop(self) -> None:
+		self.ql.emu_stop()
+		self.PE_RUN = False
