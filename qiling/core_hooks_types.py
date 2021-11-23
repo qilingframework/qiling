@@ -3,18 +3,20 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
+from typing import Any, Callable
+
 class Hook:
-    def __init__(self, callback, user_data=None, begin=1, end=0):
+    def __init__(self, callback: Callable, user_data: Any = None, begin: int = 1, end: int = 0):
         self.callback = callback
         self.user_data = user_data
         self.begin = begin
         self.end = end
 
-    def bound_check(self, pc, size=1):
+    def bound_check(self, pc: int, size: int = 1) -> bool:
         return (self.end < self.begin) or (self.begin <= pc <= self.end) or (self.begin <= (pc + size - 1) <= self.end)
 
 
-    def check(self, *args):
+    def check(self, *args) -> bool:
         return True
     
 
@@ -25,8 +27,7 @@ class Hook:
 
 
 class HookAddr(Hook):
-    def __init__(self, callback, address, user_data=None):
-        super(HookAddr, self).__init__(callback, user_data, address, address)
+    def __init__(self, callback, address: int, user_data=None):
         self.addr = address
     
 
@@ -37,12 +38,11 @@ class HookAddr(Hook):
 
 
 class HookIntr(Hook):
-    def __init__(self, callback, intno, user_data=None):
-        super(HookIntr, self).__init__(callback, user_data, 0, -1)
+    def __init__(self, callback, intno: int, user_data=None):
         self.intno = intno
     
 
-    def check(self, ql, intno):
+    def check(self, ql, intno: int) -> bool:
         ql.log.debug("[+] Received Interupt: %i Hooked Interupt: %i" % (intno, self.intno))
         if intno < 0 or self.intno == intno:
             return True
