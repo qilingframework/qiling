@@ -186,9 +186,6 @@ class ELFTest(unittest.TestCase):
 
 
     def test_tcp_elf_linux_arm(self):
-        if platform.system() == "Darwin" and platform.machine() == "arm64":
-            return
-
         def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
             try:
                 buf = ql.mem.read(write_buf, write_count)
@@ -207,9 +204,6 @@ class ELFTest(unittest.TestCase):
 
 
     def test_tcp_elf_linux_arm64(self):
-        if platform.system() == "Darwin" and platform.machine() == "arm64":
-            return
-
         def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
             try:
                 buf = ql.mem.read(write_buf, write_count)
@@ -228,9 +222,6 @@ class ELFTest(unittest.TestCase):
 
 
     def test_tcp_elf_linux_mips32el(self):
-        if platform.system() == "Darwin" and platform.machine() == "arm64":
-            return
-
         ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_tcp_test","20005"], "../examples/rootfs/mips32el_linux", multithread=True)
         ql.run()
         del ql

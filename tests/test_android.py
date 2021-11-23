@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import os, sys, unittest
+import os, platform, sys, unittest
 
 sys.path.append("..")
 from qiling import *
@@ -12,6 +12,9 @@ from qiling.const import QL_VERBOSE
 
 class TestAndroid(unittest.TestCase):
     def test_android_arm64(self):
+        if platform.system() != "Linux":
+            return
+
         test_binary = "../examples/rootfs/arm64_android/bin/arm64_android_hello"
         rootfs = "../examples/rootfs/arm64_android"
 
