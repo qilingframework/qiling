@@ -22,7 +22,7 @@ class QlOsUefi(QlOs):
 		self.entry_point = 0
 		self.running_module: str
 		self.in_smm: bool
-		self.PE_RUN = True
+		self.PE_RUN: bool
 		self.heap: QlMemoryHeap	# Will be initialized by the loader.
 
 		self.on_module_enter: MutableSequence[Callable[[str], bool]] = []
@@ -206,6 +206,8 @@ class QlOsUefi(QlOs):
 			self.exit_point = self.ql.exit_point
 
 		try:
+			self.PE_RUN = True
+
 			self.ql.emu_start(self.ql.loader.entry_point, self.exit_point, self.ql.timeout, self.ql.count)
 		except KeyboardInterrupt as ex:
 			self.ql.log.critical(f'Execution interrupted by user')
