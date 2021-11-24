@@ -69,7 +69,7 @@ def myvfork(ql: Qiling):
 
 def my_sandbox(path, rootfs):
     ql = Qiling(path, rootfs, verbose=QL_VERBOSE.DEBUG)
-    #ql.add_fs_mapper("/dev/urandom","/dev/urandom")
+    ql.add_fs_mapper("/dev/urandom","/dev/urandom")
     ql.hook_address(patcher, ql.loader.elf_entry)
     ql.hook_address(patch_checknetwork, 0x0002D26C)
 
