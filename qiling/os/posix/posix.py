@@ -195,7 +195,7 @@ class QlOsPosix(QlOs):
 
             # look in os-specific and posix syscall hooks
             if syscall_name:
-                self.ql.log.debug("syscall hooked 0x%x: %s()" % (self.ql.reg.pc, syscall_name))
+                self.ql.log.debug("syscall hooked 0x%x: %s()" % (self.ql.reg.arch_pc, syscall_name))
                 syscall_hook = getattr(os_syscalls, syscall_name, None) or getattr(posix_syscalls, syscall_name, None)
 
         if syscall_hook:

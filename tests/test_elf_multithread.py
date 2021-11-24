@@ -265,9 +265,6 @@ class ELFTest(unittest.TestCase):
         del ql
 
     def test_udp_elf_linux_arm64(self):
-        if platform.system() == "Darwin" and platform.machine() == "arm64":
-            return
-                    
         def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
             try:
                 buf = ql.mem.read(write_buf, write_count)
@@ -287,9 +284,6 @@ class ELFTest(unittest.TestCase):
 
 
     def test_udp_elf_linux_arm(self):
-        if platform.system() == "Darwin" and platform.machine() == "arm64":
-            return
-                    
         def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
             try:
                 buf = ql.mem.read(write_buf, write_count)
@@ -299,7 +293,7 @@ class ELFTest(unittest.TestCase):
             except:
                 pass
 
-        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_udp_test","20009"], "../examples/rootfs/arm_linux", multithread=True)
+        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_udp_test","20010"], "../examples/rootfs/arm_linux", multithread=True)
         ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
         ql.run()
 
