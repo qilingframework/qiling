@@ -265,9 +265,6 @@ class ELFTest(unittest.TestCase):
         del ql
 
     def test_udp_elf_linux_arm64(self):
-        if platform.system() == "Darwin" and platform.machine() == "arm64":
-            return
-                    
         def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
             try:
                 buf = ql.mem.read(write_buf, write_count)
@@ -284,6 +281,25 @@ class ELFTest(unittest.TestCase):
         self.assertEqual("server sendto() 14 return 14.\n", ql.buf_out)
 
         del ql
+
+
+    def test_udp_elf_linux_arm(self):
+        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
+            try:
+                buf = ql.mem.read(write_buf, write_count)
+                buf = buf.decode()
+                if buf.startswith("server sendto()"):
+                    ql.buf_out = buf
+            except:
+                pass
+
+        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_udp_test","20010"], "../examples/rootfs/arm_linux", multithread=True)
+        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
+        ql.run()
+
+        self.assertEqual("server sendto() 14 return 14.\n", ql.buf_out)
+
+        del ql        
 
 if __name__ == "__main__":
     unittest.main()
