@@ -81,8 +81,6 @@ def ql_syscall_ioctl(ql: Qiling, fd: int, cmd: int, arg: int):
     if isinstance(ql.os.fd[fd], ql_socket) and cmd in (SIOCGIFADDR, SIOCGIFNETMASK):
         try:
             tmp_arg = ql.mem.read(arg, 64)
-            ql.log.debug(f'query network card : {tmp_arg:s}')
-
             data = ql.os.fd[fd].ioctl(cmd, bytes(tmp_arg))
             ql.mem.write(arg, data)
         except:
