@@ -387,7 +387,6 @@ class QlLoaderPE_UEFI(QlLoader):
                     return
 
                 ql.log.info(f'No more modules to run')
-                ql.emu_stop()
-                ql.os.PE_RUN = False
+                ql.os.stop()
 
         self.ql.hook_address(__module_exit_trap, address)
