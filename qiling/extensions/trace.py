@@ -3,8 +3,8 @@
 # More info, please refer to https://github.com/qilingframework/qiling/pull/765
 
 
-from collections import UserList
-from typing import Iterable, Iterator, Mapping, Tuple
+from collections import deque
+from typing import Deque, Iterable, Iterator, Mapping, Tuple
 
 from capstone import Cs, CsInsn, CS_OP_IMM, CS_OP_MEM, CS_OP_REG
 from capstone.x86 import X86Op
@@ -13,6 +13,29 @@ from capstone.x86_const import X86_INS_LEA, X86_REG_INVALID, X86_REG_RIP
 from qiling import Qiling
 
 TraceRecord = Tuple[CsInsn, Iterable[Tuple[int, int]]]
+
+# <WORKAROUND>
+def __uc2_workaround() -> Mapping[int, int]:
+	"""Starting from Unicron2, Unicron and Capstone Intel registers definitions are
+	no longer aligned and cannot be used interchangebly. This temporary workaround
+	maps capstone x86 registers definitions to unicorn x86 registers definitions.
+
+	see: https://github.com/unicorn-engine/unicorn/issues/1492
+	"""
+
+	from capstone import x86_const as cs_x86_const
+	from unicorn import x86_const as uc_x86_const
+
+	def __canonicalized_mapping(module, prefix: str) -> Mapping[str, int]:
+		return dict((k[len(prefix):], getattr(module, k)) for k in dir(module) if k.startswith(prefix))
+
+	cs_x86_regs = __canonicalized_mapping(cs_x86_const, 'X86_REG')
+	uc_x86_regs = __canonicalized_mapping(uc_x86_const, 'UC_X86_REG')
+
+	return dict((cs_x86_regs[k], uc_x86_regs[k]) for k in cs_x86_regs if k in uc_x86_regs)
+
+CS_UC_REGS = __uc2_workaround()
+# </WORKAROUND>
 
 def __get_trace_records(ql: Qiling, address: int, size: int, md: Cs) -> Iterator[TraceRecord]:
 	"""[private] Acquire trace info for the current instruction and yield as a trace record.
@@ -36,7 +59,7 @@ def __get_trace_records(ql: Qiling, address: int, size: int, md: Cs) -> Iterator
 
 	for insn in md.disasm(buf, address):
 		# BUG: insn.regs_read doesn't work well, so we use insn.regs_access()[0]
-		state = tuple((reg, ql.reg.read(reg)) for reg in insn.regs_access()[0])
+		state = tuple((reg, ql.reg.read(CS_UC_REGS[reg])) for reg in insn.regs_access()[0])
 
 		yield (insn, state)
 
@@ -169,16 +192,13 @@ def enable_history_trace(ql: Qiling, nrecords: int):
 	# if available, use symbols map to resolve memory accesses
 	symsmap = getattr(ql.loader, 'symsmap', {})
 
-	# wrap the trace records list to allow it to be passed and modified by-ref
-	history: UserList[TraceRecord] = UserList()
+	history: Deque[TraceRecord] = deque(maxlen=nrecords)
 
 	def __trace_hook(ql: Qiling, address: int, size: int):
 		"""[internal] Trace hook callback.
 		"""
 
-		recent = list(__get_trace_records(ql, address, size, md))
-
-		history.data = (history + recent)[-nrecords:]
+		history.extend(__get_trace_records(ql, address, size, md))
 
 	ql.hook_code(__trace_hook)
 
