@@ -32,6 +32,8 @@ linux_x86_socket_types = {
     'SOCK_SEQPACKET' : 0x5,
     'SOCK_DCCP'      : 0x6,
     'SOCK_PACKET'    : 0xa,
+    'SOCK_NONBLOCK'  : 0x800,
+    'SOCK_CLOEXEC'   : 0x80000,    
 }
 
 linux_x86_socket_domain = {
@@ -175,6 +177,8 @@ linux_arm_socket_types = {
     'SOCK_SEQPACKET' : 0x5,
     'SOCK_DCCP'      : 0x6,
     'SOCK_PACKET'    : 0xa,
+    'SOCK_NONBLOCK'  : 0x800,
+    'SOCK_CLOEXEC'   : 0x80000,    
 }
 
 
