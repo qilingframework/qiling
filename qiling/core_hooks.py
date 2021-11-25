@@ -46,7 +46,9 @@ class QlCoreHooks:
             hooks_list = self._hook[hook_type]
 
             for hook in hooks_list:
-                if hook.check(ql, intno):
+                ql.log.debug(f'Received interrupt: {intno:#x}')
+
+                if hook.check(intno):
                     handled = True
                     ret = hook.call(ql, intno)
 
@@ -54,7 +56,7 @@ class QlCoreHooks:
                         break
 
         if not handled:
-            ql.log.warning("[+] Unhandled Interupt: %i" % (intno))
+            raise QlErrorCoreHook("_hook_intr_cb : not handled")
 
 
     def _hook_insn_cb(self, uc: Uc, *args):
@@ -107,7 +109,7 @@ class QlCoreHooks:
                     if type(ret) is int and ret & QL_HOOK_BLOCK:
                         break
 
-        if not handled and hook_type in (UC_HOOK_MEM_READ_UNMAPPED, UC_HOOK_MEM_WRITE_UNMAPPED, UC_HOOK_MEM_FETCH_UNMAPPED, UC_HOOK_MEM_READ_PROT, UC_HOOK_MEM_WRITE_PROT, UC_HOOK_MEM_FETCH_PROT):
+        if not handled and hook_type & (UC_HOOK_MEM_UNMAPPED | UC_HOOK_MEM_PROT):
             raise QlErrorCoreHook("_hook_mem_cb : not handled")
 
         return True
@@ -128,17 +130,17 @@ class QlCoreHooks:
                     break
 
         if not handled:
-            raise QlErrorCoreHook("_hook_intr_invalid_cb : not handled")
+            raise QlErrorCoreHook("_hook_insn_invalid_cb : not handled")
 
 
     def _hook_addr_cb(self, uc: Uc, addr: int, size: int, pack_data):
-        ql, addr = pack_data
+        ql = pack_data
 
         if addr in self._addr_hook:
             hooks_list = self._addr_hook[addr]
 
             for hook in hooks_list:
-                ret = hook.call(ql, addr, size)
+                ret = hook.call(ql)
 
                 if type(ret) is int and ret & QL_HOOK_BLOCK:
                     break
@@ -155,7 +157,7 @@ class QlCoreHooks:
     def _ql_hook_addr_internal(self, callback: Callable, address: int) -> int:
         _callback = (catch_KeyboardInterrupt(self))(callback)
         # pack user_data & callback for wrapper _callback
-        return self._h_uc.hook_add(UC_HOOK_CODE, _callback, (self, address), address, address)
+        return self._h_uc.hook_add(UC_HOOK_CODE, _callback, self, address, address)
 
 
     def _ql_hook(self, hook_type: int, h: Hook, *args) -> None:
@@ -207,25 +209,25 @@ class QlCoreHooks:
 
             self._hook[t].append(h)
 
-        type_handlers = {
-            UC_HOOK_INTR               : __handle_intr,
-            UC_HOOK_INSN               : __handle_insn,
-            UC_HOOK_CODE               : __handle_trace,
-            UC_HOOK_BLOCK              : __handle_trace,
-            UC_HOOK_MEM_READ_UNMAPPED  : __handle_mem,
-            UC_HOOK_MEM_WRITE_UNMAPPED : __handle_mem,
-            UC_HOOK_MEM_FETCH_UNMAPPED : __handle_mem,
-            UC_HOOK_MEM_READ_PROT      : __handle_mem,
-            UC_HOOK_MEM_WRITE_PROT     : __handle_mem,
-            UC_HOOK_MEM_FETCH_PROT     : __handle_mem,
-            UC_HOOK_MEM_READ           : __handle_mem,
-            UC_HOOK_MEM_WRITE          : __handle_mem,
-            UC_HOOK_MEM_FETCH          : __handle_mem,
-            UC_HOOK_MEM_READ_AFTER     : __handle_mem,
-            UC_HOOK_INSN_INVALID       : __handle_invalid_insn
-        }
+        type_handlers = (
+            (UC_HOOK_INTR,               __handle_intr),
+            (UC_HOOK_INSN,               __handle_insn),
+            (UC_HOOK_CODE,               __handle_trace),
+            (UC_HOOK_BLOCK,              __handle_trace),
+            (UC_HOOK_MEM_READ_UNMAPPED,  __handle_mem),
+            (UC_HOOK_MEM_WRITE_UNMAPPED, __handle_mem),
+            (UC_HOOK_MEM_FETCH_UNMAPPED, __handle_mem),
+            (UC_HOOK_MEM_READ_PROT,      __handle_mem),
+            (UC_HOOK_MEM_WRITE_PROT,     __handle_mem),
+            (UC_HOOK_MEM_FETCH_PROT,     __handle_mem),
+            (UC_HOOK_MEM_READ,           __handle_mem),
+            (UC_HOOK_MEM_WRITE,          __handle_mem),
+            (UC_HOOK_MEM_FETCH,          __handle_mem),
+            (UC_HOOK_MEM_READ_AFTER,     __handle_mem),
+            (UC_HOOK_INSN_INVALID,       __handle_invalid_insn)
+        )
 
-        for t, handler in type_handlers.items():
+        for t, handler in type_handlers:
             if hook_type & t:
                 handler(t)
 
@@ -246,7 +248,7 @@ class QlCoreHooks:
 
 
     def hook_intr(self, callback, user_data=None, begin=1, end=0):
-        return self.ql_hook(UC_HOOK_INTR,  callback, user_data, begin, end)
+        return self.ql_hook(UC_HOOK_INTR, callback, user_data, begin, end)
 
 
     def hook_block(self, callback, user_data=None, begin=1, end=0):
@@ -368,23 +370,23 @@ class QlCoreHooks:
                         self._h_uc.hook_del(self._addr_hook_fuc[t])
                         del self._addr_hook_fuc[t]
 
-        type_handlers = {
-            UC_HOOK_INTR               : __handle_common,
-            UC_HOOK_INSN               : __handle_insn,
-            UC_HOOK_CODE               : __handle_common,
-            UC_HOOK_BLOCK              : __handle_common,
-            UC_HOOK_MEM_READ_UNMAPPED  : __handle_common,
-            UC_HOOK_MEM_WRITE_UNMAPPED : __handle_common,
-            UC_HOOK_MEM_FETCH_UNMAPPED : __handle_common,
-            UC_HOOK_MEM_READ_PROT      : __handle_common,
-            UC_HOOK_MEM_WRITE_PROT     : __handle_common,
-            UC_HOOK_MEM_FETCH_PROT     : __handle_common,
-            UC_HOOK_MEM_READ           : __handle_common,
-            UC_HOOK_MEM_WRITE          : __handle_common,
-            UC_HOOK_MEM_FETCH          : __handle_common,
-            UC_HOOK_MEM_READ_AFTER     : __handle_common,
-            UC_HOOK_INSN_INVALID       : __handle_common
-        }
+        type_handlers = (
+            (UC_HOOK_INTR,               __handle_common),
+            (UC_HOOK_INSN,               __handle_insn),
+            (UC_HOOK_CODE,               __handle_common),
+            (UC_HOOK_BLOCK,              __handle_common),
+            (UC_HOOK_MEM_READ_UNMAPPED,  __handle_common),
+            (UC_HOOK_MEM_WRITE_UNMAPPED, __handle_common),
+            (UC_HOOK_MEM_FETCH_UNMAPPED, __handle_common),
+            (UC_HOOK_MEM_READ_PROT,      __handle_common),
+            (UC_HOOK_MEM_WRITE_PROT,     __handle_common),
+            (UC_HOOK_MEM_FETCH_PROT,     __handle_common),
+            (UC_HOOK_MEM_READ,           __handle_common),
+            (UC_HOOK_MEM_WRITE,          __handle_common),
+            (UC_HOOK_MEM_FETCH,          __handle_common),
+            (UC_HOOK_MEM_READ_AFTER,     __handle_common),
+            (UC_HOOK_INSN_INVALID,       __handle_common)
+        )
 
         # address hooks are a special case of UC_HOOK_CODE and
         # should be handled separately
@@ -392,7 +394,7 @@ class QlCoreHooks:
             __handle_addr(h.addr)
             return
 
-        for t, handler in type_handlers.items():
+        for t, handler in type_handlers:
             if hook_type & t:
                 handler(t)
 
