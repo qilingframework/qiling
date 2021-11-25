@@ -12,12 +12,6 @@ from qiling.hw.const.stm32f4xx_i2c import I2C_CR1, I2C_CR2, I2C_SR1, I2C_SR2, I2
 from qiling.hw.utils.access import Access, AccessSequence, Op
 
 
-class I2cMode(IntEnum):
-	Ready = 0
-	Transmitter = 1
-	Receiver = 2
-
-
 class STM32F4xxI2c(QlConnectivityPeripheral):
 	class Type(ctypes.Structure):
 		""" the structure is available in :
@@ -66,7 +60,6 @@ class STM32F4xxI2c(QlConnectivityPeripheral):
 		self.reset()
 
 	def reset(self):
-		self.mode = I2cMode.Ready
 		self.i2c = self.struct(
 			TRISE = 0x0002
 		)
@@ -108,11 +101,11 @@ class STM32F4xxI2c(QlConnectivityPeripheral):
 
 			if self.is_master_mode():
 				if self.is_7bit_mode():	
-					if self.mode == I2cMode.Ready:
-						self.send_address()
+					if self.i2c.SR2 & I2C_SR2.TRA:
+						self.send_data()
 
-					elif self.mode == I2cMode.Transmitter:
-						self.send_data()					
+					else:
+						self.send_address()					
 
 				# TODO 10-bit mode
 
@@ -180,7 +173,7 @@ class STM32F4xxI2c(QlConnectivityPeripheral):
 		self.i2c.SR1 &= ~I2C_SR1.ADDR
 		
 		self.set_slave_mode()
-		self.mode = I2cMode.Ready
+		self.i2c.SR2 &= ~I2C_SR2.TRA
 	
 	def send_address(self):
 		if self.i2c.DR == self.i2c.OAR1 >> 1:
@@ -188,7 +181,7 @@ class STM32F4xxI2c(QlConnectivityPeripheral):
 			# TODO: send ACK
 			self.i2c.SR1 &= ~I2C_SR1.SB
 			self.i2c.SR1 |= I2C_SR1.ADDR | I2C_SR1.TXE
-			self.mode = I2cMode.Transmitter
+			self.i2c.SR2 |= I2C_SR2.TRA
 
 	def send_data(self):
 		self.i2c.SR1 |= I2C_SR1.BTF | I2C_SR1.TXE
