@@ -45,7 +45,7 @@ class QlPeripheral:
             def read_wrapper(self, offset: int, size: int) -> int:
                 retval = func(self, offset, size)
                 if self.verbose:
-                    self.ql.log.debug(f'[{self.label.upper()}] [R] {self.find_field(offset, size):{width}s} = {hex(retval)}')
+                    self.ql.log.info(f'[{self.label.upper()}] [R] {self.find_field(offset, size):{width}s} = {hex(retval)}')
                 
                 return retval
 
@@ -55,7 +55,7 @@ class QlPeripheral:
                     if field.startswith('DR') and value <= 255:
                         extra = f'({repr(chr(value))})'
 
-                    self.ql.log.debug(f'[{self.label.upper()}] [W] {field:{width}s} = {hex(value)} {extra}')
+                    self.ql.log.info(f'[{self.label.upper()}] [W] {field:{width}s} = {hex(value)} {extra}')
                 
                 return func(self, offset, size, value)
 
