@@ -83,13 +83,13 @@ class STM32F4xxRcc(QlPeripheral):
 
 		self.intn = intn
 
-	@QlPeripheral.debug_info()
+	@QlPeripheral.monitor()
 	def read(self, offset: int, size: int) -> int:		
 		buf = ctypes.create_string_buffer(size)
 		ctypes.memmove(buf, ctypes.addressof(self.rcc) + offset, size)
 		return int.from_bytes(buf.raw, byteorder='little')
 
-	@QlPeripheral.debug_info()
+	@QlPeripheral.monitor()
 	def write(self, offset: int, size: int, value: int):
 		if offset == self.struct.CR.offset:
 			value = (self.rcc.CR & RCC_CR.RO_MASK) | (value & RCC_CR.RW_MASK)

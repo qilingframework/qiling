@@ -51,13 +51,13 @@ class GD32VF1xxRcu(QlPeripheral):
 
         self.intn = intn
 
-    @QlPeripheral.debug_info()
+    @QlPeripheral.monitor()
     def read(self, offset: int, size: int) -> int:		
         buf = ctypes.create_string_buffer(size)
         ctypes.memmove(buf, ctypes.addressof(self.rcu) + offset, size)
         return int.from_bytes(buf.raw, byteorder='little')
     
-    @QlPeripheral.debug_info()
+    @QlPeripheral.monitor()
     def write(self, offset: int, size: int, value: int):
         data = (value).to_bytes(size, 'little')
         ctypes.memmove(ctypes.addressof(self.rcu) + offset, data, size)

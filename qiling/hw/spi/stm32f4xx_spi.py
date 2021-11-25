@@ -66,7 +66,7 @@ class STM32F4xxSpi(QlConnectivityPeripheral):
 
         self.intn = intn
 
-    @QlPeripheral.debug_info()
+    @QlPeripheral.monitor()
     def read(self, offset: int, size: int) -> int:
         if self.in_field(self.struct.DR, offset, size):
             self.spi.SR &= ~SPI_SR.RXNE
@@ -77,7 +77,7 @@ class STM32F4xxSpi(QlConnectivityPeripheral):
 
         return data
 
-    @QlPeripheral.debug_info()
+    @QlPeripheral.monitor()
     def write(self, offset: int, size: int, value: int):
         if offset in [self.struct.SR.offset, self.struct.RXCRCR.offset, self.struct.TXCRCR.offset]:
             return
