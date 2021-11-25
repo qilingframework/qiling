@@ -4,10 +4,18 @@
 #
 
 import ctypes
+from enum import IntEnum
 
 from qiling.hw.peripheral import QlPeripheral
 from qiling.hw.connectivity import QlConnectivityPeripheral
 from qiling.hw.const.stm32f4xx_i2c import I2C_CR1, I2C_CR2, I2C_SR1, I2C_SR2, I2C_DR, I2C_OAR1, I2C_OAR2
+from qiling.hw.utils.access import Access, AccessSequence, Op
+
+
+class I2cMode(IntEnum):
+	Ready = 0
+	Transmitter = 1
+	Receiver = 2
 
 
 class STM32F4xxI2c(QlConnectivityPeripheral):
@@ -50,22 +58,34 @@ class STM32F4xxI2c(QlConnectivityPeripheral):
 	def __init__(self, ql, label, ev_intn=None, er_intn=None):
 		super().__init__(ql, label, 2)		
 
+		self.history = AccessSequence()
+
 		self.ev_intn = ev_intn # event interrupt
-		self.er_intn = er_intn # error interrupt
+		self.er_intn = er_intn # error interrupt		
 		
 		self.reset()
 
-	def reset(self):		
+	def reset(self):
+		self.mode = I2cMode.Ready
 		self.i2c = self.struct(
 			TRISE = 0x0002
 		)
 
+	@QlPeripheral.recorder()
 	@QlPeripheral.monitor()
-	def read(self, offset: int, size: int) -> int:		
+	def read(self, offset: int, size: int) -> int:	
 		buf = ctypes.create_string_buffer(size)
 		ctypes.memmove(buf, ctypes.addressof(self.i2c) + offset, size)
+
+		if self.history.match([
+			Access(Op.READ, self.struct.SR1.offset),
+			Access(Op.READ, self.struct.SR2.offset)
+		]):				
+			self.i2c.SR1 &= ~I2C_SR1.ADDR
+
 		return int.from_bytes(buf.raw, byteorder='little')
 
+	@QlPeripheral.recorder()
 	@QlPeripheral.monitor()
 	def write(self, offset: int, size: int, value: int):
 		if offset in [self.struct.SR1.offset, self.struct.SR2.offset]:
@@ -87,11 +107,12 @@ class STM32F4xxI2c(QlConnectivityPeripheral):
 			self.i2c.SR1 &= ~I2C_SR1.TXE
 
 			if self.is_master_mode():
-				if self.is_7bit_mode():				
-					if self.i2c.SR1 & I2C_SR1.ADDR:
-						self.send_data()
-					else:
+				if self.is_7bit_mode():	
+					if self.mode == I2cMode.Ready:
 						self.send_address()
+
+					elif self.mode == I2cMode.Transmitter:
+						self.send_data()					
 
 				# TODO 10-bit mode
 
@@ -159,6 +180,7 @@ class STM32F4xxI2c(QlConnectivityPeripheral):
 		self.i2c.SR1 &= ~I2C_SR1.ADDR
 		
 		self.set_slave_mode()
+		self.mode = I2cMode.Ready
 	
 	def send_address(self):
 		if self.i2c.DR == self.i2c.OAR1 >> 1:
@@ -166,6 +188,7 @@ class STM32F4xxI2c(QlConnectivityPeripheral):
 			# TODO: send ACK
 			self.i2c.SR1 &= ~I2C_SR1.SB
 			self.i2c.SR1 |= I2C_SR1.ADDR | I2C_SR1.TXE
+			self.mode = I2cMode.Transmitter
 
 	def send_data(self):
 		self.i2c.SR1 |= I2C_SR1.BTF | I2C_SR1.TXE
