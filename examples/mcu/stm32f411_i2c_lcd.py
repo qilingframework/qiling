@@ -25,7 +25,21 @@ def create(path, lcd):
 if __name__ == "__main__":
     lcd = PyGameLCD1602()    
     
+    ## Example 1
     create("../rootfs/mcu/stm32f411/i2c-lcd.hex", lcd).run(count=50000)
+
+    ## Example 2
     create("../rootfs/mcu/stm32f411/lcd-plus.hex", lcd).run(count=100000)
+    
+    ## Example 3
+    ql = create("../rootfs/mcu/stm32f411/i2cit-lcd.hex", lcd)
+    
+    delay_start = 0x8002936
+    delay_end = 0x8002955
+    def skip_delay(ql):
+        ql.reg.pc = delay_end
+
+    ql.hook_address(skip_delay, delay_start)
+    ql.run(count=100000)
 
     lcd.quit()
