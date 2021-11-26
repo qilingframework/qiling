@@ -12,7 +12,15 @@ class QlTimerPeripheral(QlPeripheral):
     def __init__(self, ql: Qiling, label: str):
         super().__init__(ql, label)
 
-        self.ratio = 1
+        self._ratio = 1
 
     def set_ratio(self, ratio):
-        self.ratio = ratio
+        self._ratio = ratio
+
+    @property
+    def ratio(self):
+        return self._ratio
+
+    @ratio.setter
+    def ratio(self, value):
+        self.set_ratio(value)

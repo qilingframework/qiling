@@ -77,7 +77,8 @@ class STM32F4xxTim(QlTimerPeripheral):
         self.cc_intn = cc_intn
         self.trg_com_tim11_intn = trg_com_tim11_intn
         self.up_tim10_intn = up_tim10_intn
-
+        
+        self.prescale_count = 0
         self.tim = self.struct()
 
     @QlPeripheral.monitor()
@@ -101,12 +102,30 @@ class STM32F4xxTim(QlTimerPeripheral):
         self.tim.SR |= TIM_SR.UIF
         self.ql.hw.nvic.set_pending(self.up_tim10_intn)
 
+    def set_ratio(self, ratio):
+        self.tim.CNT = 0
+        self.prescale_count = 0
+
+        self._ratio = ratio
+
+    @property
+    def ratio(self):
+        return max(round(self._ratio / (self.tim.PSC + 1)), 1)
+
+    @property
+    def prescale(self):
+        return max(round((self.tim.PSC + 1) / self._ratio) - 1, 0)
+
     def step(self):
         if self.tim.CR1 & TIM_CR1.CEN:
             if self.tim.CNT >= self.tim.ARR:
                 self.tim.CNT = 0
+                self.prescale_count = 0
                 self.send_update_interrupt()
 
-            else:
+            elif self.prescale_count == self.prescale:
+                self.prescale_count = 0
                 self.tim.CNT += self.ratio
-        
+
+            else:
+                self.prescale_count += 1
