@@ -5,12 +5,15 @@
 
 
 import ctypes
+from typing import Optional
 from qiling.core import Qiling
 
 from qiling.hw.peripheral import QlPeripheral
+from qiling.hw.timer.timer import QlTimerPeripheral
+from qiling.hw.const.stm32f4xx_tim import TIM_DIER, TIM_SR, TIM_CR1
 
 
-class STM32F4xxTim(QlPeripheral):
+class STM32F4xxTim(QlTimerPeripheral):
     class Type(ctypes.Structure):
         """ the structure available in :
                 stm32f401xc
@@ -63,10 +66,11 @@ class STM32F4xxTim(QlPeripheral):
         ]
 
     def __init__(self, ql: Qiling, label: str, 
-            brk_tim9_intn: int = None, 
-            cc_intn: int = None,
-            trg_com_tim11_intn: int = None,
-            up_tim10_intn: int = None):
+            brk_tim9_intn: Optional[int] = None, 
+            cc_intn: Optional[int] = None,
+            trg_com_tim11_intn: Optional[int] = None,
+            up_tim10_intn: Optional[int] = None):
+
         super().__init__(ql, label)
 
         self.brk_tim9_intn = brk_tim9_intn
@@ -86,3 +90,23 @@ class STM32F4xxTim(QlPeripheral):
     def write(self, offset: int, size: int, value: int):
         data = (value).to_bytes(size, 'little')
         ctypes.memmove(ctypes.addressof(self.tim) + offset, data, size)
+
+    def send_update_interrupt(self):
+        if self.up_tim10_intn is None:
+            return
+
+        if not self.tim.DIER & TIM_DIER.UIE:
+            return
+
+        self.tim.SR |= TIM_SR.UIF
+        self.ql.hw.nvic.set_pending(self.up_tim10_intn)
+
+    def step(self):
+        if self.tim.CR1 & TIM_CR1.CEN:
+            if self.tim.CNT >= self.tim.ARR:
+                self.tim.CNT = 0
+                self.send_update_interrupt()
+
+            else:
+                self.tim.CNT += self.ratio
+        
