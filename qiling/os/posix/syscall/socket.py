@@ -278,13 +278,14 @@ def ql_syscall_setsockopt(ql: Qiling, sockfd, level, optname, optval_addr, optle
 
 
 def ql_syscall_shutdown(ql: Qiling, shutdown_fd, shutdown_how):
+    
+    regreturn = 0
+    
     if 0 <= shutdown_fd < NR_OPEN and ql.os.fd[shutdown_fd] != 0:
         try:
             ql.os.fd[shutdown_fd].shutdown(shutdown_how)
         except:
             regreturn = -1
-        else:
-            regreturn = 0
 
     return regreturn
 
