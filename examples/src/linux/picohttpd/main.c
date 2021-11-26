@@ -1,6 +1,6 @@
 #include "httpd.h"
 
-int main(int c, char** v)
+int main(int c, char** v, int argc, const char **argv)
 {
     serve_forever("12913");
     return 0;

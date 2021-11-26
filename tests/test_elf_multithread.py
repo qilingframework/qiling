@@ -296,6 +296,20 @@ class ELFTest(unittest.TestCase):
         f = os.popen("curl http://127.0.0.1:12913")
         self.assertEqual("httpd_test_successful", f.read())
 
+    def test_http_elf_linux_arm(self):
+        def picohttpd():
+            ql = Qiling(["../examples/rootfs/arm_linux/bin/picohttpd"], "../examples/rootfs/arm_linux", multithread=True, verbose=QL_VERBOSE.DEBUG)    
+            ql.run()
+
+
+        picohttpd_therad = threading.Thread(target=picohttpd, daemon=True)
+        picohttpd_therad.start()
+
+        time.sleep(1)
+
+        f = os.popen("curl http://127.0.0.1:12913")
+        self.assertEqual("httpd_test_successful", f.read())
+
 
 if __name__ == "__main__":
     unittest.main()

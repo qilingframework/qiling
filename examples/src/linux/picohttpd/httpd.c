@@ -14,6 +14,14 @@
 
 #define CONNMAX 1000
 
+char    *method,    // "GET" or "POST"
+        *uri,       // "/index.html" things before '?'
+        *qs,        // "a=1&b=2"     things after  '?'
+        *prot;      // "HTTP/1.1"
+
+char    *payload;     // for POST
+int      payload_size;
+
 static int listenfd, clients[CONNMAX];
 static void error(char *);
 static void startServer(const char *);
