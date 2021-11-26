@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import platform, sys, unittest, subprocess, string, random, os
+import platform, sys, unittest, os, threading, time
 
 from unicorn import UcError, UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
 
@@ -281,27 +281,40 @@ class ELFTest(unittest.TestCase):
         self.assertEqual("server sendto() 14 return 14.\n", ql.buf_out)
 
         del ql
+   
+    def test_http_elf_linux_x8664(self):
+        def picohttpd():
+            ql = Qiling(["../examples/rootfs/x8664_linux/bin/picohttpd"], "../examples/rootfs/x8664_linux", multithread=True, verbose=QL_VERBOSE.DEBUG)    
+            ql.run()
 
 
-    def test_udp_elf_linux_arm(self):
-        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
-            try:
-                buf = ql.mem.read(write_buf, write_count)
-                buf = buf.decode()
-                if buf.startswith("server sendto()"):
-                    ql.buf_out = buf
-            except:
-                pass
+        picohttpd_therad = threading.Thread(target=picohttpd, daemon=True)
+        picohttpd_therad.start()
 
-        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_udp_test","20010"], "../examples/rootfs/arm_linux", multithread=True)
-        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
-        ql.run()
+        time.sleep(1)
 
-        self.assertEqual("server sendto() 14 return 14.\n", ql.buf_out)
+        f = os.popen("curl http://127.0.0.1:12913")
+        self.assertEqual("httpd_test_successful", f.read())
 
-        del ql        
+    def test_http_elf_linux_arm(self):
+        def picohttpd():
+            ql = Qiling(["../examples/rootfs/arm_linux/bin/picohttpd"], "../examples/rootfs/arm_linux", multithread=True, verbose=QL_VERBOSE.DEBUG)    
+            ql.run()
+
+
+        picohttpd_therad = threading.Thread(target=picohttpd, daemon=True)
+        picohttpd_therad.start()
+
+        time.sleep(1)
+
+        f = os.popen("curl http://127.0.0.1:12913")
+        self.assertEqual("httpd_test_successful", f.read())
+
 
 if __name__ == "__main__":
     unittest.main()
+
+
+
 
 
