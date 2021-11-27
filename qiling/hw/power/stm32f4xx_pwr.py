@@ -4,12 +4,13 @@
 #
 
 import ctypes
+from qiling.core import Qiling
 from qiling.hw.peripheral import QlPeripheral
 
 
 class STM32F4xxPwr(QlPeripheral):
-    class Type(ctypes.Structure):
-        """ the structure available in :
+	class Type(ctypes.Structure):
+		""" the structure available in :
 			stm32f413xx.h
 			stm32f407xx.h
 			stm32f469xx.h
@@ -35,7 +36,23 @@ class STM32F4xxPwr(QlPeripheral):
 			stm32f411xe.h 
 		"""
 
-        _fields_ = [
+		_fields_ = [
 			('CR' , ctypes.c_uint32),  # PWR power control register,        Address offset: 0x00
 			('CSR', ctypes.c_uint32),  # PWR power control/status register, Address offset: 0x04
 		]
+
+	def __init__(self, ql: Qiling, label: str):
+		super().__init__(ql, label)
+
+		self.pwr = self.struct()
+
+	@QlPeripheral.monitor()
+	def read(self, offset: int, size: int) -> int:		
+		buf = ctypes.create_string_buffer(size)
+		ctypes.memmove(buf, ctypes.addressof(self.pwr) + offset, size)
+		return int.from_bytes(buf.raw, byteorder='little')
+    
+	@QlPeripheral.monitor()
+	def write(self, offset: int, size: int, value: int):
+		data = (value).to_bytes(size, 'little')
+		ctypes.memmove(ctypes.addressof(self.pwr) + offset, data, size)
