@@ -71,34 +71,12 @@ class MCUTest(unittest.TestCase):
         del ql
 
     def test_mcu_freertos_stm32f411(self):
-        ql = Qiling(['../examples/rootfs/mcu/stm32f411/i2cit-lcd.elf'], 
-                archtype="cortex_m", env=stm32f411, verbose=QL_VERBOSE.DEFAULT)
+        ql = Qiling(["../examples/rootfs/mcu/stm32f411/os-demo.elf"],
+            archtype="cortex_m", env=stm32f411, verbose=QL_VERBOSE.DEBUG)
 
-        ql.hw.create('i2c1')
+        ql.hw.create('usart2')
         ql.hw.create('rcc')
         ql.hw.create('gpioa')
-        ql.hw.create('gpiob') 
-
-        class LCD:
-            address = 0x3f << 1
-
-            def send(self, data):
-                pass
-
-            def step(self):
-                pass
-
-        lcd = LCD()
-        ql.hw.i2c1.connect(lcd)
-
-        ql.hw.systick.set_ratio(100)
-
-        delay_start = 0x8002936
-        delay_end = 0x8002955
-        def skip_delay(ql):
-            ql.reg.pc = delay_end
-
-        ql.hook_address(skip_delay, delay_start)
 
         count = 0
         def counter():
@@ -107,8 +85,12 @@ class MCUTest(unittest.TestCase):
 
         ql.hw.gpioa.hook_set(5, counter)
 
-        ql.run(count=100000)
-        self.assertTrue(count > 90)
+        ql.run(count=200000)
+
+        self.assertTrue(count >= 5)
+        self.assertTrue(ql.hw.usart2.recv().startswith(b'Free RTOS\n' * 5))
+
+        del ql
 
     def test_mcu_dma_stm32f411(self):
         ql = Qiling(["../examples/rootfs/mcu/stm32f411/dma-clock.elf"],                    
