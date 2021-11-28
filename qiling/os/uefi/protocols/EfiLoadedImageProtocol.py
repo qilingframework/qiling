@@ -9,16 +9,16 @@ from ..UefiSpec import EFI_SYSTEM_TABLE, EFI_DEVICE_PATH_PROTOCOL, EFI_IMAGE_UNL
 from ..UefiMultiPhase import EFI_MEMORY_TYPE
 
 class EFI_LOADED_IMAGE_PROTOCOL(STRUCT):
+	_pack_ = 8
+
 	_fields_ = [
 		('Revision',		UINT32),
-		('PADDING_0',		UINT8 * 4),
 		('ParentHandle',	EFI_HANDLE),
 		('SystemTable',		PTR(EFI_SYSTEM_TABLE)),
 		('DeviceHandle',	EFI_HANDLE),
 		('FilePath',		PTR(EFI_DEVICE_PATH_PROTOCOL)),
 		('Reserved', 		PTR(VOID)),
 		('LoadOptionsSize',	UINT32),
-		('PADDING_1',		UINT8 * 4),
 		('LoadOptions',		PTR(VOID)),
 		('ImageBase',		PTR(VOID)),
 		('ImageSize',		UINT64),

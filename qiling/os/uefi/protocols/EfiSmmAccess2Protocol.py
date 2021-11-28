@@ -24,6 +24,7 @@ class EFI_MMRAM_DESCRIPTOR(STRUCT):
 # @see: MdePkg\Include\Protocol\MmAccess.h
 class EFI_SMM_ACCESS2_PROTOCOL(STRUCT):
 	EFI_SMM_ACCESS2_PROTOCOL = STRUCT
+	_pack_ = 8
 
 	_fields_ = [
 		('Open',			FUNCPTR(EFI_STATUS, PTR(EFI_SMM_ACCESS2_PROTOCOL))),
@@ -31,8 +32,7 @@ class EFI_SMM_ACCESS2_PROTOCOL(STRUCT):
 		('Lock',			FUNCPTR(EFI_STATUS, PTR(EFI_SMM_ACCESS2_PROTOCOL))),
 		('GetCapabilities',	FUNCPTR(EFI_STATUS, PTR(EFI_SMM_ACCESS2_PROTOCOL), PTR(UINTN), PTR(EFI_MMRAM_DESCRIPTOR))),
 		('LockState',		BOOLEAN),
-		('OpenState',		BOOLEAN),
-		('PADDING_0',		CHAR8 * 6)
+		('OpenState',		BOOLEAN)
 	]
 
 @dxeapi(params = {

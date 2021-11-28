@@ -45,12 +45,12 @@ class EFI_SMM_CPU_IO2_PROTOCOL(STRUCT):
 
 class EFI_SMM_SYSTEM_TABLE2(STRUCT):
 	EFI_SMM_SYSTEM_TABLE2 = STRUCT
+	_pack_ = 8
 
 	_fields_ = [
 		('Hdr',								EFI_TABLE_HEADER),
 		('SmmFirmwareVendor',				PTR(CHAR16)),
 		('SmmFirmwareRevision',				UINT32),
-		('PADDING_0',						UINT8 * 4),
 		('SmmInstallConfigurationTable',	FUNCPTR(EFI_STATUS, PTR(EFI_SMM_SYSTEM_TABLE2), PTR(EFI_GUID), PTR(VOID), UINTN)),
 		('SmmIo',							EFI_SMM_CPU_IO2_PROTOCOL),
 		('SmmAllocatePool',					FUNCPTR(EFI_STATUS, EFI_MEMORY_TYPE, UINTN, PTR(PTR(VOID)))),
@@ -244,7 +244,6 @@ def initialize(ql: Qiling, context, gSmst: int):
 			('Hdr',								None),
 			('SmmFirmwareVendor',				None),
 			('SmmFirmwareRevision',				None),
-			('PADDING_0',						None),
 			('SmmInstallConfigurationTable',	hook_SmmInstallConfigurationTable),
 			('SmmIo',							None),
 			('SmmAllocatePool',					hook_SmmAllocatePool),

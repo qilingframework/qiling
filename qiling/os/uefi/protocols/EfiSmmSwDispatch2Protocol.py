@@ -14,6 +14,8 @@ from .. import utils
 MAXIMUM_SWI_VALUE = 0xff
 
 class EFI_SMM_SW_CONTEXT(STRUCT):
+	_pack_ = 8
+
 	_fields_ = [
 		('SwSmiCpuIndex',	UINTN),	# index of the cpu which generated the swsmi
 		('CommandPort',		UINT8),	# port number used to trigger the swsmi
