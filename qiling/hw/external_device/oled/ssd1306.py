@@ -64,10 +64,8 @@ class PyGameSSD1306Spi(PyGameSSD1306Render):
             self.cmd  += data
 
     def draw(self, page, column, data):
-        print(page, column, data)
         for bit in range(8):
-            colors = ['#000000', '#ffffff']
-            
+            colors = ['#000000', '#ffffff']            
             self.draw_pixel(column, page * 8 + bit, colors[(data >> bit) & 1])
 
         pygame.display.update()
