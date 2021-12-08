@@ -539,14 +539,20 @@ class QlMemoryHeap:
     def __init__(self, ql: Qiling, start_address: int, end_address: int):
         self.ql = ql
         self.chunks: List[Chunk] = []
+
+        # heap boundaries
         self.start_address = start_address
         self.end_address = end_address
 
-        # current alloced memory size
+        # size of consecutive memory currently allocated for heap use
+        # invariant: current_alloc is aligned to memory page size
         self.current_alloc = 0
-        # curent use memory size
+
+        # size of consecutive memory currently used for chunks
+        # invariant: current_use never exceeds current_alloc
         self.current_use = 0
-        # save all memory regions allocated
+
+        # keep track of all memory regions allocated for heap use
         self.mem_alloc = []
 
     def save(self) -> Mapping[str, Any]:
@@ -570,17 +576,27 @@ class QlMemoryHeap:
         self.mem_alloc      = saved_state['mem_alloc']
 
     def alloc(self, size: int) -> int:
+        """Allocate heap memory.
+
+        Args:
+            size: requested allocation size in bytes
+
+        Returns:
+            The address of the newly allocated memory chunk, or 0 if allocation has failed
+        """
+
         # attempt to recycle an existing unused chunk first.
         # locate the smallest available chunk that has enough room
         chunk = min((chunk for chunk in self.chunks if (not chunk.inuse) and (chunk.size >= size)), default=None, key=lambda ch: ch.size)
 
         # if could not find any, create a new one
         if chunk is None:
-            # If we need mem_map new memory
+            # is new chunk going to exceed currently allocated heap space?
+            # in case it does, allocate additional heap space
             if self.current_use + size > self.current_alloc:
                 real_size = self.ql.mem.align(size)
 
-                # If the heap is not enough
+                # if that additional allocation is going to exceed heap upper bound, fail
                 if self.start_address + self.current_use + real_size > self.end_address:
                     return 0
 
