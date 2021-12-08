@@ -9,7 +9,7 @@ import pygame
 from qiling.hw.external_device.lcd.const import lcd1602_table
 
 
-class LCD1602PyGameRender:
+class PyGameLCD1602Render:
     def __init__(self, caption="LCD 1602"):
         self.unit = 10
         self.letter_size = (5, 8)
@@ -62,7 +62,7 @@ class LCD1602PyGameRender:
         pygame.quit()
         sys.exit(0)
 
-class PyGameLCD1602(LCD1602PyGameRender):
+class PyGameLCD1602(PyGameLCD1602Render):
     def __init__(self, address=0x3f):
         super().__init__()
         
