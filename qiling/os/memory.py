@@ -572,28 +572,25 @@ class QlMemoryHeap:
         self.current_use    = saved_state['current_use']
         self.mem_alloc      = saved_state['mem_alloc']
 
-    def alloc(self, size: int):
-        # Find the heap chunks that best matches size 
-        self.chunks.sort(key=Chunk.compare)
-        for chunk in self.chunks:
-            if chunk.inuse is False and chunk.size > size:
-                chunk.inuse = True
-                return chunk.address
+    def alloc(self, size: int) -> int:
+        # attempt to recycle an existing unused chunk first.
+        # locate the smallest available chunk that has enough room
+        chunk = min((chunk for chunk in self.chunks if (not chunk.inuse) and (chunk.size >= size)), default=None, key=lambda ch: ch.size)
 
-        chunk = None
-        # If we need mem_map new memory
-        if self.current_use + size > self.current_alloc:
-            real_size = self.ql.mem.align(size, self.page_size)
-            # If the heap is not enough
-            if self.start_address + self.current_use + real_size > self.end_address:
-                return 0
-            self.ql.mem.map(self.start_address + self.current_alloc, real_size, info="[heap]")
-            chunk = Chunk(self.start_address + self.current_use, size)
-            self.mem_alloc.append((self.start_address + self.current_alloc, real_size))
-            self.current_alloc += real_size
-            self.current_use += size
-            self.chunks.append(chunk)
-        else:
+        # if could not find any, create a new one
+        if chunk is None:
+            # If we need mem_map new memory
+            if self.current_use + size > self.current_alloc:
+                real_size = self.ql.mem.align(size, self.page_size)
+
+                # If the heap is not enough
+                if self.start_address + self.current_use + real_size > self.end_address:
+                    return 0
+
+                self.ql.mem.map(self.start_address + self.current_alloc, real_size, info="[heap]")
+                self.mem_alloc.append((self.start_address + self.current_alloc, real_size))
+                self.current_alloc += real_size
+
             chunk = Chunk(self.start_address + self.current_use, size)
             self.current_use += size
             self.chunks.append(chunk)
