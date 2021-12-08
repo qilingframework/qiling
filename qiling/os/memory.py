@@ -541,8 +541,7 @@ class QlMemoryHeap:
         self.chunks: List[Chunk] = []
         self.start_address = start_address
         self.end_address = end_address
-        # unicorn needs 0x1000
-        self.page_size = 0x1000
+
         # current alloced memory size
         self.current_alloc = 0
         # curent use memory size
@@ -555,7 +554,6 @@ class QlMemoryHeap:
             'chunks'        : self.chunks,
             'start_address' : self.start_address,
             'end_address'   : self.end_address,
-            'page_size'     : self.page_size,
             'current_alloc' : self.current_alloc,
             'current_use'   : self.current_use,
             'mem_alloc'     : self.mem_alloc
@@ -567,7 +565,6 @@ class QlMemoryHeap:
         self.chunks         = saved_state['chunks']
         self.start_address  = saved_state['start_address']
         self.end_address    = saved_state['end_address']
-        self.page_size      = saved_state['page_size']
         self.current_alloc  = saved_state['current_alloc']
         self.current_use    = saved_state['current_use']
         self.mem_alloc      = saved_state['mem_alloc']
@@ -581,7 +578,7 @@ class QlMemoryHeap:
         if chunk is None:
             # If we need mem_map new memory
             if self.current_use + size > self.current_alloc:
-                real_size = self.ql.mem.align(size, self.page_size)
+                real_size = self.ql.mem.align(size)
 
                 # If the heap is not enough
                 if self.start_address + self.current_use + real_size > self.end_address:
