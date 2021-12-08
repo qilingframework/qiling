@@ -43,8 +43,8 @@ def __GetSystemInfo(ql: Qiling, address: int, params):
     pointer = params["lpSystemInfo"]
 
     # FIXME: dll_size no longer reflects the upper bound of used memory; should find a better way to specify max_address
-    system_info = SystemInfo(ql, 0, ql.os.heap.page_size, ql.loader.pe_image_address,
-                             ql.loader.dll_address + ql.loader.dll_size, 0x3, 0x4, 0x24a, ql.os.heap.page_size * 10,
+    system_info = SystemInfo(ql, 0, ql.mem.pagesize, ql.loader.pe_image_address,
+                             ql.loader.dll_address + ql.loader.dll_size, 0x3, 0x4, 0x24a, ql.mem.pagesize * 10,
                              0x6, 0x4601)
     system_info.write(pointer)
 
