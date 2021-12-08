@@ -525,15 +525,11 @@ class QlMemoryManager:
         self.mmio_cbs[(addr, addr + size)] = (read_cb, write_cb)
 
 # A Simple Heap Implementation
-class Chunk():
+class Chunk:
     def __init__(self, address: int, size: int):
         self.inuse = True
         self.address = address
         self.size = size
-
-    @staticmethod
-    def compare(chunk):
-        return chunk.size
 
 class QlMemoryHeap:
     def __init__(self, ql: Qiling, start_address: int, end_address: int):
@@ -609,7 +605,6 @@ class QlMemoryHeap:
             self.chunks.append(chunk)
 
         chunk.inuse = True
-        #ql.log.debug("heap.alloc addresss: " + hex(chunk.address))
         return chunk.address
 
     def size(self, addr: int) -> int:
