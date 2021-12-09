@@ -525,29 +525,30 @@ class QlMemoryManager:
         self.mmio_cbs[(addr, addr + size)] = (read_cb, write_cb)
 
 # A Simple Heap Implementation
-class Chunk():
+class Chunk:
     def __init__(self, address: int, size: int):
         self.inuse = True
         self.address = address
         self.size = size
 
-    @staticmethod
-    def compare(chunk):
-        return chunk.size
-
 class QlMemoryHeap:
     def __init__(self, ql: Qiling, start_address: int, end_address: int):
         self.ql = ql
         self.chunks: List[Chunk] = []
+
+        # heap boundaries
         self.start_address = start_address
         self.end_address = end_address
-        # unicorn needs 0x1000
-        self.page_size = 0x1000
-        # current alloced memory size
+
+        # size of consecutive memory currently allocated for heap use
+        # invariant: current_alloc is aligned to memory page size
         self.current_alloc = 0
-        # curent use memory size
+
+        # size of consecutive memory currently used for chunks
+        # invariant: current_use never exceeds current_alloc
         self.current_use = 0
-        # save all memory regions allocated
+
+        # keep track of all memory regions allocated for heap use
         self.mem_alloc = []
 
     def save(self) -> Mapping[str, Any]:
@@ -555,7 +556,6 @@ class QlMemoryHeap:
             'chunks'        : self.chunks,
             'start_address' : self.start_address,
             'end_address'   : self.end_address,
-            'page_size'     : self.page_size,
             'current_alloc' : self.current_alloc,
             'current_use'   : self.current_use,
             'mem_alloc'     : self.mem_alloc
@@ -567,39 +567,44 @@ class QlMemoryHeap:
         self.chunks         = saved_state['chunks']
         self.start_address  = saved_state['start_address']
         self.end_address    = saved_state['end_address']
-        self.page_size      = saved_state['page_size']
         self.current_alloc  = saved_state['current_alloc']
         self.current_use    = saved_state['current_use']
         self.mem_alloc      = saved_state['mem_alloc']
 
-    def alloc(self, size: int):
-        # Find the heap chunks that best matches size 
-        self.chunks.sort(key=Chunk.compare)
-        for chunk in self.chunks:
-            if chunk.inuse is False and chunk.size > size:
-                chunk.inuse = True
-                return chunk.address
+    def alloc(self, size: int) -> int:
+        """Allocate heap memory.
 
-        chunk = None
-        # If we need mem_map new memory
-        if self.current_use + size > self.current_alloc:
-            real_size = self.ql.mem.align(size, self.page_size)
-            # If the heap is not enough
-            if self.start_address + self.current_use + real_size > self.end_address:
-                return 0
-            self.ql.mem.map(self.start_address + self.current_alloc, real_size, info="[heap]")
-            chunk = Chunk(self.start_address + self.current_use, size)
-            self.mem_alloc.append((self.start_address + self.current_alloc, real_size))
-            self.current_alloc += real_size
-            self.current_use += size
-            self.chunks.append(chunk)
-        else:
+        Args:
+            size: requested allocation size in bytes
+
+        Returns:
+            The address of the newly allocated memory chunk, or 0 if allocation has failed
+        """
+
+        # attempt to recycle an existing unused chunk first.
+        # locate the smallest available chunk that has enough room
+        chunk = min((chunk for chunk in self.chunks if (not chunk.inuse) and (chunk.size >= size)), default=None, key=lambda ch: ch.size)
+
+        # if could not find any, create a new one
+        if chunk is None:
+            # is new chunk going to exceed currently allocated heap space?
+            # in case it does, allocate additional heap space
+            if self.current_use + size > self.current_alloc:
+                real_size = self.ql.mem.align(size)
+
+                # if that additional allocation is going to exceed heap upper bound, fail
+                if self.start_address + self.current_use + real_size > self.end_address:
+                    return 0
+
+                self.ql.mem.map(self.start_address + self.current_alloc, real_size, info="[heap]")
+                self.mem_alloc.append((self.start_address + self.current_alloc, real_size))
+                self.current_alloc += real_size
+
             chunk = Chunk(self.start_address + self.current_use, size)
             self.current_use += size
             self.chunks.append(chunk)
 
         chunk.inuse = True
-        #ql.log.debug("heap.alloc addresss: " + hex(chunk.address))
         return chunk.address
 
     def size(self, addr: int) -> int:
