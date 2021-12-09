@@ -6,10 +6,11 @@
 import ctypes
 from qiling.arch.cortex_m_const import IRQ
 from qiling.hw.peripheral import QlPeripheral
+from qiling.hw.timer.timer import QlTimerPeripheral
 from qiling.hw.const.cm4_systick import SYSTICK_CTRL
 
 
-class CortexM4SysTick(QlPeripheral):
+class CortexM4SysTick(QlTimerPeripheral):
     class Type(ctypes.Structure):
         _fields_ = [
             ('CTRL' , ctypes.c_uint32),
@@ -23,13 +24,7 @@ class CortexM4SysTick(QlPeripheral):
 
         self.systick = self.struct(
             CALIB = 0xC0000000
-        )        
-        
-        # Maybe we will want to customize the timer speed in the future
-        self.ratio = 1
-
-    def set_ratio(self, ratio):
-        self.ratio = ratio
+        )
 
     def step(self):
         if not self.systick.CTRL & SYSTICK_CTRL.ENABLE:
@@ -44,7 +39,7 @@ class CortexM4SysTick(QlPeripheral):
         else:
             self.systick.VAL -= self.ratio
 
-    @QlPeripheral.debug_info()
+    @QlPeripheral.monitor()
     def read(self, offset: int, size: int) -> int:
         buf = ctypes.create_string_buffer(size)
         ctypes.memmove(buf, ctypes.addressof(self.systick) + offset, size)
@@ -53,7 +48,7 @@ class CortexM4SysTick(QlPeripheral):
             self.systick.CTRL &= ~SYSTICK_CTRL.COUNTFLAG        
         return int.from_bytes(buf.raw, byteorder='little')
 
-    @QlPeripheral.debug_info()
+    @QlPeripheral.monitor()
     def write(self, offset: int, size: int, value: int):
         # ignore the reserved bit
         if offset == self.struct.CTRL.offset:

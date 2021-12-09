@@ -1066,6 +1066,8 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             self.ql_load_user_script()
             self.userobj.custom_prepare(self.qlemu.ql)
 
+        ida_ida.ql_plugin = self
+
     def ql_load_user_script(self):
         if self.qlinit :
             self.ql_get_user_script(is_reload=True, is_start=True)

@@ -93,9 +93,7 @@ class QlLoaderMCU(QlLoader):
         if self.filetype == 'elf':
             for segment in self.elf.iter_segments():
                 if segment['p_type'] == 'PT_LOAD':
-                    for section in self.elf.iter_sections():
-                        if segment.section_in_segment(section):
-                            self.ql.mem.write(section.header['sh_addr'], section.data())
+                    self.ql.mem.write(segment['p_paddr'], segment.data())
 
             # TODO: load symbol table
 

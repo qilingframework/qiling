@@ -65,31 +65,31 @@ class STM32F4xxRcc(QlPeripheral):
 			PLLI2SCFGR = 0x24003000,
 		)
 
-		self.cr_rdyon = [
-			(RCC_CR.HSIRDY   , RCC_CR.HSION   ),
-			(RCC_CR.HSERDY   , RCC_CR.HSEON   ),
-			(RCC_CR.PLLRDY   , RCC_CR.PLLON   ),
-			(RCC_CR.PLLI2SRDY, RCC_CR.PLLI2SON),
-		]
-
-		self.cfgr_rdyon = [
-			(RCC_CFGR.SWS_0, RCC_CFGR.SW_0),
-			(RCC_CFGR.SWS_1, RCC_CFGR.SW_1),
-		]
-
-		self.csr_rdyon = [
-			(RCC_CSR.LSIRDY, RCC_CSR.LSION)
-		]
+		self.rdyon = {
+			'CR': [
+				(RCC_CR.HSIRDY   , RCC_CR.HSION   ),
+				(RCC_CR.HSERDY   , RCC_CR.HSEON   ),
+				(RCC_CR.PLLRDY   , RCC_CR.PLLON   ),
+				(RCC_CR.PLLI2SRDY, RCC_CR.PLLI2SON),
+			],
+			'CFGR': [
+				(RCC_CFGR.SWS_0, RCC_CFGR.SW_0),
+				(RCC_CFGR.SWS_1, RCC_CFGR.SW_1),
+			],
+			'CSR': [
+				(RCC_CSR.LSIRDY, RCC_CSR.LSION)
+			]
+		}
 
 		self.intn = intn
 
-	@QlPeripheral.debug_info()
+	@QlPeripheral.monitor()
 	def read(self, offset: int, size: int) -> int:		
 		buf = ctypes.create_string_buffer(size)
 		ctypes.memmove(buf, ctypes.addressof(self.rcc) + offset, size)
 		return int.from_bytes(buf.raw, byteorder='little')
 
-	@QlPeripheral.debug_info()
+	@QlPeripheral.monitor()
 	def write(self, offset: int, size: int, value: int):
 		if offset == self.struct.CR.offset:
 			value = (self.rcc.CR & RCC_CR.RO_MASK) | (value & RCC_CR.RW_MASK)
@@ -100,20 +100,11 @@ class STM32F4xxRcc(QlPeripheral):
 		ctypes.memmove(ctypes.addressof(self.rcc) + offset, data, size)
 
 	def step(self):
-		for rdy, on in self.cr_rdyon:
-			if self.rcc.CR & on:
-				self.rcc.CR |= rdy
-			else:
-				self.rcc.CR &= ~rdy
-
-		for rdy, on in self.cfgr_rdyon:
-			if self.rcc.CFGR & on:
-				self.rcc.CFGR |= rdy
-			else:
-				self.rcc.CFGR &= ~rdy
-
-		for rdy, on in self.csr_rdyon:
-			if self.rcc.CSR & on:
-				self.rcc.CSR |= rdy
-			else:
-				self.rcc.CSR &= ~rdy
+		for reg, rdyon in self.rdyon.items():
+			value = getattr(self.rcc, reg)
+			for rdy, on in rdyon:
+				if value & on:
+					value |= rdy
+				else:
+					value &= ~rdy
+			setattr(self.rcc, reg, value)

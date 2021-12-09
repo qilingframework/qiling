@@ -7,9 +7,70 @@ import ctypes
 from typing import List, Tuple
 
 from qiling.core import Qiling
+from qiling.exception import QlErrorBase
+from qiling.hw.utils.access import Access, Op
 
 
-class QlPeripheral:
+class QlPeripheralUtils:
+    @staticmethod
+    def monitor(width=4):
+        def decorator(func):
+            def read(self, offset: int, size: int) -> int:
+                retval = func(self, offset, size)
+                if self.verbose:
+                    self.ql.log.info(f'[{self.label.upper()}] [R] {self.find_field(offset, size):{width}s} = {hex(retval)}')
+                
+                return retval
+
+            def write(self, offset: int, size: int, value: int):
+                if self.verbose:
+                    field, extra = self.find_field(offset, size), ''
+                    if field.startswith('DR') and value <= 255:
+                        extra = f'({repr(chr(value))})'
+
+                    self.ql.log.info(f'[{self.label.upper()}] [W] {field:{width}s} = {hex(value)} {extra}')
+                
+                return func(self, offset, size, value)
+
+            funcmap = {
+                'read' : read,
+                'write': write,
+            }
+
+            name = func.__name__
+            if name in funcmap:
+                return funcmap[name]
+
+            raise QlErrorBase("Invalid peripheral decorator 'monitor'")
+
+        return decorator
+
+    @staticmethod
+    def recorder():
+        def decorator(func):
+            def read(self, offset: int, size: int) -> int:
+                self.history.add(Access(Op.READ, offset))
+                return func(self, offset, size)
+
+            def write(self, offset: int, size: int, value: int):
+                self.history.add(Access(Op.WRITE, offset, value))
+                return func(self, offset, size, value)
+
+            funcmap = {
+                'read' : read,
+                'write': write,
+            }
+
+            name = func.__name__
+            if name in funcmap:
+                return funcmap[name]
+
+            raise QlErrorBase("Invalid peripheral decorator 'recorder'")
+
+        return decorator
+
+
+class QlPeripheral(QlPeripheralUtils):
     class Type(ctypes.Structure):
         """ Define the reigister fields of peripheral.
 
@@ -38,43 +99,15 @@ class QlPeripheral:
             called after each instruction is executed
         """        
         pass
-    
-    @staticmethod
-    def debug_info(width=4):
-        def decorator(func):            
-            def read_wrapper(self, offset: int, size: int) -> int:
-                retval = func(self, offset, size)
-                if self.verbose:
-                    self.ql.log.debug(f'[{self.label.upper()}] [R] {self.find_field(offset, size):{width}s} = {hex(retval)}')
-                
-                return retval
-
-            def write_wrapper(self, offset: int, size: int, value: int):
-                if self.verbose:
-                    field, extra = self.find_field(offset, size), ''
-                    if field.startswith('DR') and value <= 255:
-                        extra = f'({repr(chr(value))})'
-
-                    self.ql.log.debug(f'[{self.label.upper()}] [W] {field:{width}s} = {hex(value)} {extra}')
-                
-                return func(self, offset, size, value)
-
-            funcmap = {
-                'read' : read_wrapper,
-                'write': write_wrapper,
-            }
-
-            name = func.__name__
-            return funcmap[name] if name in funcmap else func
-
-        return decorator
 
     def watch(self):
         self.verbose = True
     
+    @QlPeripheralUtils.monitor()
     def read(self, offset: int, size: int) -> int:
         return 0
 
+    @QlPeripheralUtils.monitor()
     def write(self, offset: int, size: int, value: int):
         pass
 

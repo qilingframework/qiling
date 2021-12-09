@@ -94,7 +94,7 @@ class MCUTest(unittest.TestCase):
 
     def test_mcu_dma_stm32f411(self):
         ql = Qiling(["../examples/rootfs/mcu/stm32f411/dma-clock.elf"],                    
-            archtype="cortex_m", env=stm32f411, verbose=QL_VERBOSE.DEBUG)
+            archtype="cortex_m", env=stm32f411, verbose=QL_VERBOSE.DEFAULT)
 
         ql.hw.create('usart2')
         ql.hw.create('dma1')
@@ -112,7 +112,7 @@ class MCUTest(unittest.TestCase):
 
     def test_mcu_i2c_stm32f411(self):
         ql = Qiling(["../examples/rootfs/mcu/stm32f411/i2c-lcd.bin", 0x8000000],
-            archtype="cortex_m", env=stm32f411, verbose=QL_VERBOSE.DEBUG)
+            archtype="cortex_m", env=stm32f411, verbose=QL_VERBOSE.DEFAULT)
 
         ql.hw.create('i2c1')
         ql.hw.create('rcc')
@@ -144,7 +144,7 @@ class MCUTest(unittest.TestCase):
 
     def test_mcu_spi_stm32f411(self):
         ql = Qiling(["../examples/rootfs/mcu/stm32f411/spi-test.bin", 0x8000000],
-            archtype="cortex_m", env=stm32f411, verbose=QL_VERBOSE.DEBUG)
+            archtype="cortex_m", env=stm32f411, verbose=QL_VERBOSE.DEFAULT)
 
         ql.hw.create('spi1')
         ql.hw.create('rcc')
@@ -158,7 +158,7 @@ class MCUTest(unittest.TestCase):
 
     def test_mcu_led_rust_stm32f411(self):
         ql = Qiling(["../examples/rootfs/mcu/stm32f411/led-rust.hex"],
-                    archtype="cortex_m", env=gd32vf103, profile="profiles/stm32f411.yml", verbose=QL_VERBOSE.DEBUG)
+                    archtype="cortex_m", env=gd32vf103, profile="profiles/stm32f411.yml", verbose=QL_VERBOSE.DEFAULT)
 
         count = 0
         def counter():
@@ -175,7 +175,7 @@ class MCUTest(unittest.TestCase):
 
     def test_mcu_uart_rust_stm32f411(self): 
         ql = Qiling(["../examples/rootfs/mcu/stm32f411/uart-rust.hex"],
-                    archtype="cortex_m", env=stm32f411, verbose=QL_VERBOSE.DEBUG)
+                    archtype="cortex_m", env=stm32f411, verbose=QL_VERBOSE.DEFAULT)
 
         ## cover env by profiles
 
@@ -218,6 +218,80 @@ class MCUTest(unittest.TestCase):
         self.assertTrue(crack('618618'))
         self.assertTrue(crack('778899'))
         self.assertFalse(crack('123456'))
+
+    def test_mcu_tim_speed_stm32f411(self):
+        ql = Qiling(['../examples/rootfs/mcu/stm32f411/basic-timer.elf'], 
+                archtype="cortex_m", env=stm32f411, verbose=QL_VERBOSE.DEFAULT)
+
+        ql.hw.create('rcc')
+        ql.hw.create('flash interface')
+        ql.hw.create('pwr')
+        ql.hw.create('gpioa')
+        ql.hw.create('usart2')
+        ql.hw.create('tim1')
+
+
+        ql.hw.tim1.set_ratio(1500)
+        ql.run(count=2500)
+
+        count = 0
+        def counter():
+            nonlocal count
+            count += 1
+
+        ql.hw.gpioa.hook_set(5, counter)
+        ql.run(count=10000)
+        count1 = count
+        count = 0
+
+        ql.hw.tim1.set_ratio(1400 * 2)
+        ql.run(count=10000)
+        count2 = count
+        count = 0
+
+        ql.hw.tim1.set_ratio(1600 // 2)
+        ql.run(count=10000)
+        count3 = count
+        count = 0
+
+        self.assertTrue(round(count2 / count1) == 2)
+        self.assertTrue(round(count1 / count3) == 2)
+        self.assertTrue(ql.hw.usart2.recv().startswith(b'hello\n'))
+
+    def test_mcu_i2c_interrupt_stm32f411(self):
+        ql = Qiling(['../examples/rootfs/mcu/stm32f411/i2cit-lcd.elf'], 
+                archtype="cortex_m", env=stm32f411, verbose=QL_VERBOSE.DEFAULT)
+
+        ql.hw.create('i2c1')
+        ql.hw.create('rcc').watch()
+        ql.hw.create('gpioa')
+        ql.hw.create('gpiob') 
+
+        class LCD:
+            address = 0x3f << 1
+
+            def send(self, data):
+                pass
+
+            def step(self):
+                pass
+
+        lcd = LCD()
+        ql.hw.i2c1.connect(lcd)
+
+        ql.hw.systick.set_ratio(100)
+
+        delay_start = 0x8002936
+        delay_end = 0x8002955
+        def skip_delay(ql):
+            ql.reg.pc = delay_end
+
+        ql.hook_address(skip_delay, delay_start)
+
+        ql.run(count=100000)
+
+        del ql
+
 
     def test_mcu_blink_gd32vf103(self):
         ql = Qiling(['../examples/rootfs/mcu/gd32vf103/blink.hex'], archtype="riscv64", 
