@@ -38,13 +38,13 @@ class GD32VF1xxGpio(QlPeripheral, GpioHooks):
             LOCK  =  0x00000000,
         )
 
-    @QlPeripheral.debug_info()
+    @QlPeripheral.monitor()
     def read(self, offset: int, size: int) -> int:		
         buf = ctypes.create_string_buffer(size)
         ctypes.memmove(buf, ctypes.addressof(self.gpio) + offset, size)
         return int.from_bytes(buf.raw, byteorder='little')
     
-    @QlPeripheral.debug_info()
+    @QlPeripheral.monitor()
     def write(self, offset: int, size: int, value: int):
         if offset == self.struct.OCTL.offset: 
             for i in range(16):

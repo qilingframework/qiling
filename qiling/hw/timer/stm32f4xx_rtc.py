@@ -94,13 +94,13 @@ class STM32F4xxRtc(QlPeripheral):
         self.wkup_intn = wkup_intn
         self.alarm_intn = alarm_intn
 
-    @QlPeripheral.debug_info()
+    @QlPeripheral.monitor()
     def read(self, offset: int, size: int) -> int:
         buf = ctypes.create_string_buffer(size)
         ctypes.memmove(buf, ctypes.addressof(self.rtc) + offset, size)
         return int.from_bytes(buf.raw, byteorder='little')
 
-    @QlPeripheral.debug_info()
+    @QlPeripheral.monitor()
     def write(self, offset: int, size: int, value: int):
         if offset == self.struct.ISR.offset:
             for bitmask in [

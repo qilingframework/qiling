@@ -57,7 +57,7 @@ class STM32F4xxUsart(QlConnectivityPeripheral):
         
         self.intn = intn
 
-    @QlPeripheral.debug_info()
+    @QlPeripheral.monitor()
     def read(self, offset: int, size: int) -> int:
         buf = ctypes.create_string_buffer(size)
         ctypes.memmove(buf, ctypes.addressof(self.usart) + offset, size)
@@ -68,7 +68,7 @@ class STM32F4xxUsart(QlConnectivityPeripheral):
 
         return retval
 
-    @QlPeripheral.debug_info()
+    @QlPeripheral.monitor()
     def write(self, offset: int, size: int, value: int):        
         if offset == self.struct.SR.offset:
             self.usart.SR &= value | USART_SR.CTS | USART_SR.LBD | USART_SR.TC | USART_SR.RXNE
