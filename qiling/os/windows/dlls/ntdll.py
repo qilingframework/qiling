@@ -131,7 +131,7 @@ def _QuerySystemInformation(ql: Qiling, address: int, params):
             ql,
             Reserved=0,
             TimerResolution=156250,
-            PageSize=ql.os.heap.page_size,
+            PageSize=ql.mem.pagesize,
             NumberOfPhysicalPages=0x003FC38A,
             LowestPhysicalPageNumber=1,
             HighestPhysicalPageNumber=0x0046DFFF,
