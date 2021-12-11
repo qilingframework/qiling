@@ -117,6 +117,14 @@ stm32f446 = {
         "size": 0x400,
         "type": "memory"
     },
+    "FLASH INTERFACE": {
+        "base": 0x40023c00,
+        "struct": "STM32F4xxFlash",
+        "kwargs": {
+            "intn": 4,
+        },
+        "type": "periperal"
+    },
     "FMPI2C1": {
         "base": 0x40006000,
         "struct": "STM32F4xxFmpi2c",

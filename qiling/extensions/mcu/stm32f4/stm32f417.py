@@ -126,6 +126,14 @@ stm32f417 = {
         "size": 0x400,
         "type": "memory"
     },
+    "FLASH INTERFACE": {
+        "base": 0x40023c00,
+        "struct": "STM32F4xxFlash",
+        "kwargs": {
+            "intn": 4,
+        },
+        "type": "periperal"
+    },
     "GPIOA": {
         "base": 0x40020000,
         "struct": "STM32F4xxGpio",
