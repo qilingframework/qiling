@@ -54,11 +54,6 @@ stm32f439 = {
         },
         "type": "periperal"
     },
-    "DAC": {
-        "base": 0x40007400,
-        "struct": "STM32F4xxDac",
-        "type": "periperal"
-    },
     "DAC1": {
         "base": 0x40007400,
         "struct": "STM32F4xxDac",
