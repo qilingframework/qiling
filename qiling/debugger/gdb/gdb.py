@@ -649,7 +649,11 @@ class QlGdb(QlDebugger, object):
                     offset = int(offset, base=16)
                     count = int(count, base=16)
 
-                    data = os.pread(fd, count, offset)
+                    if hasattr(os, 'pread'):
+                        data = os.pread(fd, count, offset)
+                    else:
+                        os.lseek(fd, offset, os.SEEK_SET)
+                        data = os.read(fd, count)
                     size = len(data)
                     data = self.bin_to_escstr(data)
 
