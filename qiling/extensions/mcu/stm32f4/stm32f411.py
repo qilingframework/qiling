@@ -162,7 +162,7 @@ stm32f411 = {
     },
     "PPB": {
         "base": 0xe0000000,
-        "size": 0x10000,
+        "size": 0x100000,
         "type": "mmio"
     },
     "PWR": {
