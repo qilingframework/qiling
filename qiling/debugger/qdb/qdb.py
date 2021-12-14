@@ -40,12 +40,8 @@ class QlQdb(cmd.Cmd, QlDebugger):
         # self.ql.loader.entry_point  # ld.so
         # self.ql.loader.elf_entry    # .text of binary
 
-        if init_hook:
-            pause_entry = _parse_int(init_hook)
-        else:
-            pause_entry = self.ql.loader.entry_point
-
-        self.set_breakpoint(pause_entry, is_temp=True)
+        if init_hook and self.ql.loader.entry_point != init_hook:
+            self.do_breakpoint(init_hook)
 
         self.cur_addr = self.ql.loader.entry_point
 
@@ -55,9 +51,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         else:
             self._init_state = self.ql.save()
 
-        if pause_entry != self.cur_addr:
-            self.do_context()
-
+        self.do_context()
         self.interactive()
 
     @property
@@ -239,7 +233,8 @@ class QlQdb(cmd.Cmd, QlDebugger):
                 self.ql.count -= 1
 
             else:
-                self._run(count=1)
+                count = 1 if next_stop == self.cur_addr + 4 else 2
+                self._run(count=count)
 
             self.do_context()
 
