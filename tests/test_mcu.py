@@ -319,6 +319,34 @@ class MCUTest(unittest.TestCase):
         
         del ql
 
+    def test_mcu_crc_stm32f407(self):
+        ql = Qiling(["../examples/rootfs/mcu/stm32f407/ai-sine-test.elf"],
+            archtype="cortex_m", env=stm32f407, verbose=QL_VERBOSE.DEFAULT)
+
+        ql.hw.create('rcc')
+        ql.hw.create('pwr')
+        ql.hw.create('flash interface')
+        ql.hw.create('gpioa')
+        ql.hw.create('gpiob')
+        ql.hw.create('gpiod')
+        ql.hw.create('spi1')
+        ql.hw.create('crc')
+
+        flag = False
+        def indicator(ql):
+            nonlocal flag
+            ql.log.info('PA7 set')
+            flag = True
+
+        ql.hw.gpioa.hook_set(7, indicator, ql)
+        ql.hw.systick.ratio = 1000
+
+        ql.run(count=600000)
+        self.assertTrue(flag)
+
+        del ql
+
+
 if __name__ == "__main__":
     unittest.main()
 
