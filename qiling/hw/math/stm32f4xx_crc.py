@@ -4,7 +4,6 @@
 #
 
 import ctypes
-import binascii
 from qiling.hw.peripheral import QlPeripheral
 
 
