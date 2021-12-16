@@ -70,7 +70,7 @@ class QlOsUefi(QlOs):
 			POINTER	: lambda v: f'{v:#010x}' if v else 'NULL',
 			STRING	: lambda v: QlOsUtils.stringify(v),
 			WSTRING	: lambda v: f'L{QlOsUtils.stringify(v)}',
-			GUID	: lambda v: guids_db.get(v.upper(), v)
+			GUID	: lambda v: guids_db.get(v.upper(), v) if v else 'NULL'
 		}
 
 		return tuple((aname, ahandlers.get(atype, fallback)(avalue)) for atype, aname, avalue in targs)
