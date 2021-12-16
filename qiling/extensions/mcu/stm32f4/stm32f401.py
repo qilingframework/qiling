@@ -7,17 +7,20 @@ stm32f401 = {
     "ADC1": {
         "base": 0x40012000,
         "struct": "STM32F4xxAdc",
-        "type": "periperal"
+        "type": "peripheral"
     },
     "CRC": {
         "base": 0x40023000,
         "struct": "STM32F4xxCrc",
-        "type": "periperal"
+        "type": "peripheral"
     },
     "DBGMCU": {
         "base": 0xe0042000,
         "struct": "STM32F4xxDbgmcu",
-        "type": "periperal"
+        "kwargs": {
+            "dev_id": 0x413,
+        },
+        "type": "core peripheral"
     },
     "DMA1": {
         "base": 0x40026000,
@@ -32,7 +35,7 @@ stm32f401 = {
             "stream6_intn": 17,
             "stream7_intn": 47
         },
-        "type": "periperal"
+        "type": "peripheral"
     },
     "DMA2": {
         "base": 0x40026400,
@@ -47,12 +50,12 @@ stm32f401 = {
             "stream6_intn": 69,
             "stream7_intn": 70
         },
-        "type": "periperal"
+        "type": "peripheral"
     },
     "EXTI": {
         "base": 0x40013c00,
         "struct": "STM32F4xxExti",
-        "type": "periperal"
+        "type": "peripheral"
     },
     "FLASH": {
         "base": 0x8000000,
@@ -64,35 +67,43 @@ stm32f401 = {
         "size": 0x400,
         "type": "memory"
     },
+    "FLASH INTERFACE": {
+        "base": 0x40023c00,
+        "struct": "STM32F4xxFlash",
+        "kwargs": {
+            "intn": 4,
+        },
+        "type": "peripheral"
+    },
     "GPIOA": {
         "base": 0x40020000,
         "struct": "STM32F4xxGpio",
-        "type": "periperal"
+        "type": "peripheral"
     },
     "GPIOB": {
         "base": 0x40020400,
         "struct": "STM32F4xxGpio",
-        "type": "periperal"
+        "type": "peripheral"
     },
     "GPIOC": {
         "base": 0x40020800,
         "struct": "STM32F4xxGpio",
-        "type": "periperal"
+        "type": "peripheral"
     },
     "GPIOD": {
         "base": 0x40020c00,
         "struct": "STM32F4xxGpio",
-        "type": "periperal"
+        "type": "peripheral"
     },
     "GPIOE": {
         "base": 0x40021000,
         "struct": "STM32F4xxGpio",
-        "type": "periperal"
+        "type": "peripheral"
     },
     "GPIOH": {
         "base": 0x40021c00,
         "struct": "STM32F4xxGpio",
-        "type": "periperal"
+        "type": "peripheral"
     },
     "I2C1": {
         "base": 0x40005400,
@@ -101,7 +112,7 @@ stm32f401 = {
             "er_intn": 32,
             "ev_intn": 31
         },
-        "type": "periperal"
+        "type": "peripheral"
     },
     "I2C2": {
         "base": 0x40005800,
@@ -110,7 +121,7 @@ stm32f401 = {
             "er_intn": 34,
             "ev_intn": 33
         },
-        "type": "periperal"
+        "type": "peripheral"
     },
     "I2C3": {
         "base": 0x40005c00,
@@ -119,22 +130,22 @@ stm32f401 = {
             "er_intn": 73,
             "ev_intn": 72
         },
-        "type": "periperal"
+        "type": "peripheral"
     },
     "I2S2ext": {
         "base": 0x40003400,
         "struct": "STM32F4xxSpi",
-        "type": "periperal"
+        "type": "peripheral"
     },
     "I2S3ext": {
         "base": 0x40004000,
         "struct": "STM32F4xxSpi",
-        "type": "periperal"
+        "type": "peripheral"
     },
     "IWDG": {
         "base": 0x40003000,
         "struct": "STM32F4xxIwdg",
-        "type": "periperal"
+        "type": "peripheral"
     },
     "NVIC": {
         "base": 0xe000e100,
@@ -154,13 +165,13 @@ stm32f401 = {
     },
     "PPB": {
         "base": 0xe0000000,
-        "size": 0x10000,
+        "size": 0x100000,
         "type": "mmio"
     },
     "PWR": {
         "base": 0x40007000,
         "struct": "STM32F4xxPwr",
-        "type": "periperal"
+        "type": "peripheral"
     },
     "RCC": {
         "base": 0x40023800,
@@ -168,7 +179,7 @@ stm32f401 = {
         "kwargs": {
             "intn": 5
         },
-        "type": "periperal"
+        "type": "peripheral"
     },
     "RTC": {
         "base": 0x40002800,
@@ -177,7 +188,7 @@ stm32f401 = {
             "alarm_intn": 41,
             "wkup_intn": 3
         },
-        "type": "periperal"
+        "type": "peripheral"
     },
     "SCB": {
         "base": 0xe000ed00,
@@ -190,7 +201,7 @@ stm32f401 = {
         "kwargs": {
             "intn": 49
         },
-        "type": "periperal"
+        "type": "peripheral"
     },
     "SPI1": {
         "base": 0x40013000,
@@ -198,7 +209,7 @@ stm32f401 = {
         "kwargs": {
             "intn": 35
         },
-        "type": "periperal"
+        "type": "peripheral"
     },
     "SPI2": {
         "base": 0x40003800,
@@ -206,7 +217,7 @@ stm32f401 = {
         "kwargs": {
             "intn": 36
         },
-        "type": "periperal"
+        "type": "peripheral"
     },
     "SPI3": {
         "base": 0x40003c00,
@@ -214,7 +225,7 @@ stm32f401 = {
         "kwargs": {
             "intn": 51
         },
-        "type": "periperal"
+        "type": "peripheral"
     },
     "SPI4": {
         "base": 0x40013400,
@@ -222,7 +233,7 @@ stm32f401 = {
         "kwargs": {
             "intn": 84
         },
-        "type": "periperal"
+        "type": "peripheral"
     },
     "SRAM": {
         "base": 0x20000000,
@@ -238,7 +249,7 @@ stm32f401 = {
     "SYSCFG": {
         "base": 0x40013800,
         "struct": "STM32F4xxSyscfg",
-        "type": "periperal"
+        "type": "peripheral"
     },
     "SYSTEM": {
         "base": 0x1fff0000,
@@ -259,17 +270,17 @@ stm32f401 = {
             "trg_com_tim11_intn": 26,
             "up_tim10_intn": 25
         },
-        "type": "periperal"
+        "type": "peripheral"
     },
     "TIM10": {
         "base": 0x40014400,
         "struct": "STM32F4xxTim",
-        "type": "periperal"
+        "type": "peripheral"
     },
     "TIM11": {
         "base": 0x40014800,
         "struct": "STM32F4xxTim",
-        "type": "periperal"
+        "type": "peripheral"
     },
     "TIM2": {
         "base": 0x40000000,
@@ -277,7 +288,7 @@ stm32f401 = {
         "kwargs": {
             "intn": 28
         },
-        "type": "periperal"
+        "type": "peripheral"
     },
     "TIM3": {
         "base": 0x40000400,
@@ -285,7 +296,7 @@ stm32f401 = {
         "kwargs": {
             "intn": 29
         },
-        "type": "periperal"
+        "type": "peripheral"
     },
     "TIM4": {
         "base": 0x40000800,
@@ -293,7 +304,7 @@ stm32f401 = {
         "kwargs": {
             "intn": 30
         },
-        "type": "periperal"
+        "type": "peripheral"
     },
     "TIM5": {
         "base": 0x40000c00,
@@ -301,12 +312,12 @@ stm32f401 = {
         "kwargs": {
             "intn": 50
         },
-        "type": "periperal"
+        "type": "peripheral"
     },
     "TIM9": {
         "base": 0x40014000,
         "struct": "STM32F4xxTim",
-        "type": "periperal"
+        "type": "peripheral"
     },
     "USART1": {
         "base": 0x40011000,
@@ -314,7 +325,7 @@ stm32f401 = {
         "kwargs": {
             "intn": 37
         },
-        "type": "periperal"
+        "type": "peripheral"
     },
     "USART2": {
         "base": 0x40004400,
@@ -322,7 +333,7 @@ stm32f401 = {
         "kwargs": {
             "intn": 38
         },
-        "type": "periperal"
+        "type": "peripheral"
     },
     "USART6": {
         "base": 0x40011400,
@@ -330,7 +341,7 @@ stm32f401 = {
         "kwargs": {
             "intn": 71
         },
-        "type": "periperal"
+        "type": "peripheral"
     },
     "WWDG": {
         "base": 0x40002c00,
@@ -338,6 +349,6 @@ stm32f401 = {
         "kwargs": {
             "intn": 0
         },
-        "type": "periperal"
+        "type": "peripheral"
     }
 }
