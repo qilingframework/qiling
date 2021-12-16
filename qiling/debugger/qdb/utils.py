@@ -322,7 +322,7 @@ def handle_bnj_arm(ql: Qiling, cur_addr: str) -> int:
         extra = 8 if 'pc' in (r0, r1, r2) else 0
 
         if imm:
-            expr = imm[0].split(", ")[0].partition(" ")
+            expr = imm[0].split()
             # TODO: should support more bit shifting and rotating operation
             if expr[0] == "lsl": # logical shift left
                 n = _parse_int(expr[-1].strip("#")) * 2
@@ -339,7 +339,7 @@ def handle_bnj_arm(ql: Qiling, cur_addr: str) -> int:
         r0, r1, *imm = line.op_str.strip("[]").split(", ")
 
         if imm:
-            expr = imm[0].split(", ")[0].partition(" ")
+            expr = imm[0].split()
             if expr[0] == "lsl": # logical shift left
                 n = _parse_int(expr[-1].strip("#")) * 2
 
