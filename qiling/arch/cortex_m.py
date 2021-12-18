@@ -85,6 +85,7 @@ class QlArchCORTEX_M(QlArchARM):
         self.ql.hw.step()
 
     def stop(self):
+        self.ql.emu_stop()
         self.runable = False
 
     def run(self, count=-1, end=None):
