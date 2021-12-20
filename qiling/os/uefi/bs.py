@@ -133,17 +133,22 @@ def hook_WaitForEvent(ql: Qiling, address: int, params):
 def hook_SignalEvent(ql: Qiling, address: int, params):
 	event_id = params["Event"]
 
-	if event_id in ql.loader.events:
-		signal_event(ql, event_id)
-		return EFI_SUCCESS
-	else:
+	if event_id not in ql.loader.events:
 		return EFI_INVALID_PARAMETER
+
+	signal_event(ql, event_id)
+
+	return EFI_SUCCESS
 
 @dxeapi(params = {
 	"Event": POINTER # EFI_EVENT
 })
 def hook_CloseEvent(ql: Qiling, address: int, params):
 	event_id = params["Event"]
+
+	if event_id not in ql.loader.events:
+		return EFI_INVALID_PARAMETER
+
 	del ql.loader.events[event_id]
 
 	return EFI_SUCCESS
