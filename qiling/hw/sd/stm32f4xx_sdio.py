@@ -57,7 +57,7 @@ class STM32F4xxSdio(QlPeripheral):
             ("FIFO"     , ctypes.c_uint32),      #SDIO data FIFO register,        Address offset: 0x80
         ]
 
-    def __init__(self, ql: Qiling, label: str, intn: int):
+    def __init__(self, ql: Qiling, label: str, intn: int = None):
         super().__init__(ql, label)
 
         self.intn = intn
