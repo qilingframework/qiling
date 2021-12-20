@@ -48,6 +48,7 @@ class IRQ(IntEnum):
     SVCALL = -5
     PENDSV = -2
     SYSTICK = -1
+    NOTHING = 0
 
 class CONTROL(IntEnum):
     FPCA  = 0b100
@@ -55,11 +56,29 @@ class CONTROL(IntEnum):
     PRIV  = 0b001
 
 class EXC_RETURN(IntEnum):
-    MASK = 0xfffffff0
+    MASK        = 0xfffffff0
     RETURN_SP   = 0b0100
     RETURN_MODE = 0b1000
 
 class EXCP(IntEnum):
-    SWI = 2            # software interrupt
-    EXCEPTION_EXIT = 8 # Return from v7M exception
-    
+    UDEF           =  1   # undefined instruction
+    SWI            =  2   # software interrupt
+    PREFETCH_ABORT =  3
+    DATA_ABORT     =  4
+    IRQ            =  5
+    FIQ            =  6
+    BKPT           =  7
+    EXCEPTION_EXIT =  8   # Return from v7M exception. 
+    KERNEL_TRAP    =  9   # Jumped to kernel code page. 
+    HVC            = 11   # HyperVisor Call
+    HYP_TRAP       = 12
+    SMC            = 13   # Secure Monitor Call
+    VIRQ           = 14
+    VFIQ           = 15
+    SEMIHOST       = 16   # semihosting call
+    NOCP           = 17   # v7M NOCP UsageFault
+    INVSTATE       = 18   # v7M INVSTATE UsageFault
+    STKOF          = 19   # v8M STKOF UsageFault
+    LAZYFP         = 20   # v7M fault during lazy FP stacking
+    LSERR          = 21   # v8M LSERR SecureFault
+    UNALIGNED      = 22   # v7M UNALIGNED UsageFault
