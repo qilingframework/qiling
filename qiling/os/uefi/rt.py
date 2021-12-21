@@ -3,12 +3,15 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+import time
+
 from qiling import Qiling
 from qiling.os.const import *
 from .const import *
 from .utils import *
 from .fncc import *
 from .ProcessorBind import *
+from .UefiBaseType import EFI_TIME
 from .UefiSpec import *
 
 @dxeapi(params={
@@ -16,6 +19,29 @@ from .UefiSpec import *
 	"Capabilities"	: POINTER	# OUT PTR(EFI_TIME_CAPABILITIES)
 })
 def hook_GetTime(ql: Qiling, address: int, params):
+	Time = params['Time']
+
+	if not Time:
+		return EFI_INVALID_PARAMETER
+
+	localtime = time.localtime()
+
+	efitime = EFI_TIME()
+	efitime.Year = localtime.tm_year
+	efitime.Month = localtime.tm_mon
+	efitime.Day = localtime.tm_mday
+	efitime.Hour = localtime.tm_hour
+	efitime.Minute = localtime.tm_min
+	efitime.Second = localtime.tm_sec
+	efitime.Nanosecond = 0
+
+	# tz and dst settings are stored in the "RtcTimeSettings" nvram variable.
+	# we just use the default settings instead
+	efitime.TimeZone = EFI_UNSPECIFIED_TIMEZONE
+	efitime.Daylight = 0
+
+	efitime.saveTo(ql, Time)
+
 	return EFI_SUCCESS
 
 @dxeapi(params={

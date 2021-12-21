@@ -10,6 +10,13 @@ from .ProcessorBind import *
 from .UefiBaseType import *
 from .UefiMultiPhase import *
 
+# definitions for EFI_TIME.Daylight
+EFI_TIME_ADJUST_DAYLIGHT = (1 << 1)
+EFI_TIME_IN_DAYLIGHT	 = (1 << 2)
+
+# definition for EFI_TIME.TimeZone
+EFI_UNSPECIFIED_TIMEZONE = 0x07ff
+
 class EFI_ALLOCATE_TYPE(ENUM):
 	_members_ = [
 		'AllocateAnyPages',
@@ -244,6 +251,9 @@ class EFI_SYSTEM_TABLE(STRUCT):
 	]
 
 __all__ = [
+	'EFI_TIME_ADJUST_DAYLIGHT',
+	'EFI_TIME_IN_DAYLIGHT',
+	'EFI_UNSPECIFIED_TIMEZONE',
 	'EFI_RUNTIME_SERVICES',
 	'EFI_BOOT_SERVICES',
 	'EFI_CONFIGURATION_TABLE',
