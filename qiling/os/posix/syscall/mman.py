@@ -111,7 +111,7 @@ def syscall_mmap_impl(ql: Qiling, addr: int, mlen: int, prot: int, flags: int, f
             ql.loader.mmap_address = mmap_base + mmap_size
         ql.log.debug("%s - mapping needed for 0x%x" % (api_name, mmap_base))
         try:
-            ql.mem.map(mmap_base, mmap_size, prot, "[syscall_%s]" % api_name)
+            ql.mem.map(mmap_base, mmap_size, info="[syscall_%s]" % api_name)
         except Exception as e:
             raise QlMemoryMappedError("Error: mapping needed but failed")
         ql.log.debug("%s - addr range  0x%x - 0x%x: " % (api_name, mmap_base, mmap_base + mmap_size - 1))
