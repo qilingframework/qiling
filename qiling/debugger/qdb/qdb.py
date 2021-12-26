@@ -123,7 +123,6 @@ class QlQdb(cmd.Cmd, QlDebugger):
                     else:
                         print(f"{color.CYAN}[+] hit breakpoint at 0x{self.cur_addr:08x}{color.END}")
 
-                    self.do_context()
                     break
 
                 self.ql.arch.step()
