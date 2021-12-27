@@ -77,13 +77,13 @@ class GD32VF1xxGpio(QlPeripheral, GpioHooks):
         self.ql.log.debug(f'[{self.label}] Set P{self.label[-1].upper()}{i}')
         
         self.gpio.OCTL |= 1 << i        
-        self.hook_set_func[i]()
+        self.call_hook_set(i)
     
     def reset_pin(self, i):
         self.ql.log.debug(f'[{self.label}] Reset P{self.label[-1].upper()}{i}')
         
         self.gpio.OCTL &= ~(1 << i)
-        self.hook_reset_func[i]()
+        self.call_hook_reset(i)
         
     def pin(self, index):
         return (self.gpio.OCTL >> index) & 1
