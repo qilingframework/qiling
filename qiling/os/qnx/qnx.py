@@ -4,17 +4,44 @@
 #
 
 import os
+
+from typing import Callable
 from unicorn import UcError
 
 from qiling.os.posix.posix import QlOsPosix
 from qiling.os.qnx.const import NTO_SIDE_CHANNEL, SYSMGR_PID, SYSMGR_CHID, SYSMGR_COID
 from qiling.os.qnx.helpers import QnxConn
 from qiling.os.qnx.structs import _thread_local_storage
-from qiling.const import QL_ARCH
+from qiling.cc import QlCC, intel, arm, mips, riscv
+from qiling.const import QL_ARCH, QL_INTERCEPT
+from qiling.os.fcall import QlFunctionCall
+from qiling.os.const import *
+from qiling.os.posix.const import NR_OPEN
+from qiling.os.posix.posix import QlOsPosix
 
 class QlOsQnx(QlOsPosix):
     def __init__(self, ql):
         super(QlOsQnx, self).__init__(ql)
+
+        self.ql = ql
+
+        cc: QlCC = {
+            QL_ARCH.X86   : intel.cdecl,
+            QL_ARCH.X8664 : intel.amd64,
+            QL_ARCH.ARM   : arm.aarch32,
+            QL_ARCH.ARM64 : arm.aarch64,
+            QL_ARCH.MIPS  : mips.mipso32,
+            QL_ARCH.RISCV : riscv.riscv,
+            QL_ARCH.RISCV64: riscv.riscv,
+        }[ql.archtype](ql)
+
+        self.fcall = QlFunctionCall(ql, cc)
+
+        self.thread_class = None
+        self.futexm = None
+        self.fh = None
+        self.function_after_load_list = []
+        self.elf_mem_start = 0x0
         self.load()
 
         # use counters to get free Ids
@@ -42,6 +69,20 @@ class QlOsQnx(QlOsPosix):
     
     def hook_syscall(self, intno= None, int = None):
         return self.load_syscall()
+
+
+    def add_function_hook(self, fn: str, cb: Callable, intercept: QL_INTERCEPT):
+        self.ql.os.function_hook.add_function_hook(fn, cb, intercept)
+
+
+    def register_function_after_load(self, function):
+        if function not in self.function_after_load_list:
+            self.function_after_load_list.append(function)
+
+
+    def run_function_after_load(self):
+        for f in self.function_after_load_list:
+            f()
 
 
     def hook_sigtrap(self, intno= None, int = None):
@@ -90,6 +131,7 @@ class QlOsQnx(QlOsPosix):
             else:
                 if self.ql.loader.elf_entry != self.ql.loader.entry_point:
                     self.ql.emu_start(self.ql.loader.entry_point, self.ql.loader.elf_entry, self.ql.timeout)
+                    self.run_function_after_load()
                     self.ql.enable_lib_patch()
 
                 self.ql.emu_start(self.ql.loader.elf_entry, self.exit_point, self.ql.timeout, self.ql.count)
