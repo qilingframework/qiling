@@ -84,11 +84,12 @@ def syscall_mmap_impl(ql: Qiling, addr: int, mlen: int, prot: int, flags: int, f
 
     need_mmap = True
     mmap_base = addr
-    mmap_size = (mlen - (addr & (pagesize - 1)) + pagesize - 1) & ~(pagesize - 1)
+    mmap_size = ql.mem.align_up(mlen - ql.mem.align(addr))
 
     if ql.ostype != QL_OS.QNX:
-        mmap_base &= ~(pagesize - 1)
-        if (flags & MAP_FIXED) > 0 and mmap_base != addr:
+        mmap_base = ql.mem.align(mmap_base)
+
+        if (flags & MAP_FIXED) and mmap_base != addr:
             return MAP_FAILED
 
     # initial ql.loader.mmap_address

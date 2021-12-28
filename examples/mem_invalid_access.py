@@ -11,8 +11,8 @@ from qiling.const import QL_VERBOSE
 def mem_crash(ql: Qiling, access: int, address: int, size: int, value: int):
     print(f'got crash')
 
-    PAGE_SIZE = 0x1000
-    aligned = address & ~(PAGE_SIZE - 1)
+    PAGE_SIZE = ql.mem.pagesize
+    aligned = ql.mem.align(address)
 
     # map the entire page containing the invalid address and fill it with 'Q's
     ql.mem.map(aligned, PAGE_SIZE)
