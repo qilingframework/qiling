@@ -493,7 +493,7 @@ class QlMemoryManager:
         perms &= UC_PROT_ALL
 
         aligned_address = self.align(addr)
-        aligned_size = self.align_up(size)
+        aligned_size = self.align_up((addr & (self.pagesize - 1)) + size)
 
         self.ql.uc.mem_protect(aligned_address, aligned_size, perms)
         self.change_mapinfo(aligned_address, aligned_address + aligned_size, mem_p = perms)
