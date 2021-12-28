@@ -96,7 +96,7 @@ class Process():
             data = cached.data
 
             image_base = cached.ba
-            image_size = self.ql.mem.align(len(data), 0x1000)
+            image_size = self.ql.mem.align_up(len(data))
 
             # verify whether we can load the dll to the same address it was loaded when it was cached.
             # if not, the dll will have to be realoded in order to have its symbols relocated using the
@@ -126,7 +126,7 @@ class Process():
             data = bytearray(dll.get_memory_mapped_image())
 
             image_base = dll.OPTIONAL_HEADER.ImageBase or self.dll_last_address
-            image_size = self.ql.mem.align(len(data), 0x1000)
+            image_size = self.ql.mem.align_up(len(data))
 
             self.ql.log.debug(f'DLL preferred base address: {image_base:#x}')
 
@@ -514,7 +514,7 @@ class QlLoaderPE(QlLoader, Process):
         if self.path and not self.ql.code:
             # for simplicity, no image base relocation
             self.pe_image_address = self.pe.OPTIONAL_HEADER.ImageBase
-            self.pe_image_address_size = self.ql.mem.align(self.pe.OPTIONAL_HEADER.SizeOfImage, 0x1000)
+            self.pe_image_address_size = self.ql.mem.align_up(self.pe.OPTIONAL_HEADER.SizeOfImage)
 
             if self.pe_image_address + self.pe_image_address_size > self.ql.os.heap_base_address:
                 # pe reloc
@@ -599,7 +599,7 @@ class QlLoaderPE(QlLoader, Process):
                 self.ql.os.fcall.writeParams(((POINTER, self.ql.loader.driver_object_address), (POINTER, self.ql.loader.regitry_path_address)))
 
             # mmap PE file into memory
-            self.ql.mem.map(self.pe_image_address, self.align(self.pe_image_address_size, 0x1000), info="[PE]")
+            self.ql.mem.map(self.pe_image_address, self.ql.mem.align_up(self.pe_image_address_size), info="[PE]")
             self.pe.parse_data_directories()
             data = bytearray(self.pe.get_memory_mapped_image())
             self.ql.mem.write(self.pe_image_address, bytes(data))

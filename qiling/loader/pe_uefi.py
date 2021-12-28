@@ -97,9 +97,9 @@ class QlLoaderPE_UEFI(QlLoader):
 
         # use image base only if it does not point to NULL
         image_base = pe.OPTIONAL_HEADER.ImageBase or self.next_image_base
-        image_size = ql.mem.align(pe.OPTIONAL_HEADER.SizeOfImage, 0x1000)
+        image_size = ql.mem.align_up(pe.OPTIONAL_HEADER.SizeOfImage)
 
-        assert (image_base % 0x1000) == 0, 'image base is expected to be page-aligned'
+        assert (image_base % ql.mem.pagesize) == 0, 'image base is expected to be page-aligned'
 
         if image_base != pe.OPTIONAL_HEADER.ImageBase:
             pe.relocate_image(image_base)

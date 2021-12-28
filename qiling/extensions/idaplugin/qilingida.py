@@ -1269,7 +1269,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                         ok = ask_yn(1, "Memory [%X:%X] is not mapped!\nDo you want to map it?\n   YES - Load Binary\n   NO - Fill page with zeroes\n   Cancel - Close dialog" % (mem_addr, mem_addr + mem_size))
                         if ok == 0:
                             self.qlemu.ql.mem.map(mem_addr, mem_size)
-                            self.qlemu.ql.mem.write(self.qlemu.ql.mem.align(mem_addr), b"\x00"*mem_size)
+                            self.qlemu.ql.mem.write(mem_addr, b"\x00"*mem_size)
                         elif ok == 1:
                             # TODO: map_binary
                             return

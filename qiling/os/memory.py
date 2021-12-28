@@ -455,7 +455,7 @@ class QlMemoryManager:
         gaps = zip(gaps_lbounds, gaps_ubounds)
 
         for lbound, ubound in gaps:
-            addr = self.align(lbound, align)
+            addr = self.align_up(lbound, align)
             end = addr + size
 
             # is aligned range within gap and satisfying min / max requirements?
@@ -481,9 +481,10 @@ class QlMemoryManager:
         if align is None:
             align = self.pagesize
 
+        size = self.align_up(size)
         addr = self.find_free_space(size, minaddr, maxaddr, align)
 
-        self.map(addr, self.align(size), perms, info)
+        self.map(addr, size, perms, info)
 
         return addr
 
@@ -491,8 +492,8 @@ class QlMemoryManager:
         # mask off perms bits that are not supported by unicorn
         perms &= UC_PROT_ALL
 
-        aligned_address = addr & ~(self.pagesize - 1)
-        aligned_size = self.align((addr & (self.pagesize - 1)) + size)
+        aligned_address = self.align(addr)
+        aligned_size = self.align_up(size)
 
         self.ql.uc.mem_protect(aligned_address, aligned_size, perms)
         self.change_mapinfo(aligned_address, aligned_address + aligned_size, mem_p = perms)
@@ -614,7 +615,7 @@ class QlMemoryHeap:
             # is new chunk going to exceed currently allocated heap space?
             # in case it does, allocate additional heap space
             if self.current_use + size > self.current_alloc:
-                real_size = self.ql.mem.align(size)
+                real_size = self.ql.mem.align_up(size)
 
                 # if that additional allocation is going to exceed heap upper bound, fail
                 if self.start_address + self.current_use + real_size > self.end_address:
