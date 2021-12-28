@@ -84,7 +84,7 @@ def syscall_mmap_impl(ql: Qiling, addr: int, mlen: int, prot: int, flags: int, f
 
     need_mmap = True
     mmap_base = addr
-    mmap_size = ql.mem.align_up(mlen - ql.mem.align(addr))
+    mmap_size = ql.mem.align_up(mlen)
 
     if ql.ostype != QL_OS.QNX:
         mmap_base = ql.mem.align(mmap_base)
