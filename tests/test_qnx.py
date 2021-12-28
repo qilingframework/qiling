@@ -26,7 +26,9 @@ class QNXTest(unittest.TestCase):
         def my_msg_sendv(ql: Qiling):
             # params = ql.os.resolve_fcall_params({'s': STRING})
             # print(f'puts("{params["s"]}")')
+            print("*" * 40)
             print("Set API_DONE")
+            print("*" * 40)
 
         ql = Qiling(["../examples/rootfs/arm_qnx/bin/hello_sqrt"], "../examples/rootfs/arm_qnx", verbose=QL_VERBOSE.DEBUG)
         ql.set_api('msg_sendv', my_msg_sendv)
