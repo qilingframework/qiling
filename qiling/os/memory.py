@@ -195,21 +195,45 @@ class QlMemoryManager:
     def get_lib_base(self, filename: str) -> int:
         return next((s for s, _, _, info, _ in self.map_info if os.path.split(info)[1] == filename), -1)
 
-    def align(self, addr: int, alignment: int = None) -> int:
-        """Round up to nearest alignment.
+    def align(self, value: int, alignment: int = None) -> int:
+        """Align a value down to the specified alignment boundary.
 
         Args:
-            addr: address to align
-            alignment: alignment granularity, must be a power of 2
+            value: a value to align
+            alignment: alignment boundary; must be a power of 2. if not specified
+            value will be aligned to page size
+
+        Returns: aligned value
         """
 
         if alignment is None:
             alignment = self.pagesize
 
-        # rounds up to nearest alignment
-        mask = self.max_mem_addr & -alignment
+        # make sure alignment is a power of 2
+        assert alignment & (alignment - 1) == 0
 
-        return (addr + (alignment - 1)) & mask
+        # round down to nearest alignment
+        return value & ~(alignment - 1)
+
+    def align_up(self, value: int, alignment: int = None) -> int:
+        """Align a value up to the specified alignment boundary.
+
+        Args:
+            value: value to align
+            alignment: alignment boundary; must be a power of 2. if not specified
+            value will be aligned to page size
+
+        Returns: aligned value
+        """
+
+        if alignment is None:
+            alignment = self.pagesize
+
+        # make sure alignment is a power of 2
+        assert alignment & (alignment - 1) == 0
+
+        # round up to nearest alignment
+        return (value + alignment - 1) & ~(alignment - 1)
 
     def save(self):
         """Save entire memory content.
