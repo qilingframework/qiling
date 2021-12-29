@@ -47,18 +47,6 @@ class QlOsQnx(QlOsPosix):
         self.elf_mem_start = 0x0
         self.load()
         
-        cc: QlCC = {
-            QL_ARCH.X86   : intel.cdecl,
-            QL_ARCH.X8664 : intel.amd64,
-            QL_ARCH.ARM   : arm.aarch32,
-            QL_ARCH.ARM64 : arm.aarch64,
-            QL_ARCH.MIPS  : mips.mipso32,
-            QL_ARCH.RISCV : riscv.riscv,
-            QL_ARCH.RISCV64: riscv.riscv,
-        }[ql.archtype](ql)
-
-        self.fcall = QlFunctionCall(ql, cc)
-
         # use counters to get free Ids
         self.channel_id = 1
         # TODO: replace 0x400 with NR_OPEN from Qiling 1.25
@@ -101,7 +89,7 @@ class QlOsQnx(QlOsPosix):
             f()
 
 
-            def hook_sigtrap(self, intno= None, int = None):
+    def hook_sigtrap(self, intno= None, int = None):
         self.ql.log.info("Trap Found")
         self.emu_error()
         exit(1)
@@ -118,10 +106,9 @@ class QlOsQnx(QlOsPosix):
         self.cpupage_tls_addr    = int(self.ql.os.profile.get("OS32", "cpupage_tls_address"), 16)
         self.tls_data_addr       = int(self.ql.os.profile.get("OS32", "tls_data_address"), 16)
         self.syspage_addr        = int(self.ql.os.profile.get("OS32", "syspage_address"), 16)
-        syspage_path        = os.path.join(self.ql.rootfs, "syspage.bin")
+        syspage_path             = os.path.join(self.ql.rootfs, "syspage.bin")
 
         self.ql.mem.map(self.syspage_addr, 0x4000, info="[syspage_mem]")
-
         
         with open(syspage_path, "rb") as sp:
             self.ql.mem.write(self.syspage_addr, sp.read())
