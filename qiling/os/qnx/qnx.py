@@ -3,6 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from typing import Callable
 import os
 
 from typing import Callable
@@ -13,6 +14,7 @@ from qiling.os.posix.posix import QlOsPosix
 from qiling.os.qnx.const import NTO_SIDE_CHANNEL, SYSMGR_PID, SYSMGR_CHID, SYSMGR_COID
 from qiling.os.qnx.helpers import QnxConn
 from qiling.os.qnx.structs import _thread_local_storage
+
 from qiling.cc import QlCC, intel, arm, mips, riscv
 from qiling.const import QL_ARCH, QL_INTERCEPT
 from qiling.os.fcall import QlFunctionCall
@@ -44,6 +46,18 @@ class QlOsQnx(QlOsPosix):
         self.function_after_load_list = []
         self.elf_mem_start = 0x0
         self.load()
+        
+        cc: QlCC = {
+            QL_ARCH.X86   : intel.cdecl,
+            QL_ARCH.X8664 : intel.amd64,
+            QL_ARCH.ARM   : arm.aarch32,
+            QL_ARCH.ARM64 : arm.aarch64,
+            QL_ARCH.MIPS  : mips.mipso32,
+            QL_ARCH.RISCV : riscv.riscv,
+            QL_ARCH.RISCV64: riscv.riscv,
+        }[ql.archtype](ql)
+
+        self.fcall = QlFunctionCall(ql, cc)
 
         # use counters to get free Ids
         self.channel_id = 1
@@ -87,7 +101,7 @@ class QlOsQnx(QlOsPosix):
             f()
 
 
-    def hook_sigtrap(self, intno= None, int = None):
+            def hook_sigtrap(self, intno= None, int = None):
         self.ql.log.info("Trap Found")
         self.emu_error()
         exit(1)

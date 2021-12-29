@@ -195,21 +195,45 @@ class QlMemoryManager:
     def get_lib_base(self, filename: str) -> int:
         return next((s for s, _, _, info, _ in self.map_info if os.path.split(info)[1] == filename), -1)
 
-    def align(self, addr: int, alignment: int = None) -> int:
-        """Round up to nearest alignment.
+    def align(self, value: int, alignment: int = None) -> int:
+        """Align a value down to the specified alignment boundary.
 
         Args:
-            addr: address to align
-            alignment: alignment granularity, must be a power of 2
+            value: a value to align
+            alignment: alignment boundary; must be a power of 2. if not specified
+            value will be aligned to page size
+
+        Returns: aligned value
         """
 
         if alignment is None:
             alignment = self.pagesize
 
-        # rounds up to nearest alignment
-        mask = self.max_mem_addr & -alignment
+        # make sure alignment is a power of 2
+        assert alignment & (alignment - 1) == 0
 
-        return (addr + (alignment - 1)) & mask
+        # round down to nearest alignment
+        return value & ~(alignment - 1)
+
+    def align_up(self, value: int, alignment: int = None) -> int:
+        """Align a value up to the specified alignment boundary.
+
+        Args:
+            value: value to align
+            alignment: alignment boundary; must be a power of 2. if not specified
+            value will be aligned to page size
+
+        Returns: aligned value
+        """
+
+        if alignment is None:
+            alignment = self.pagesize
+
+        # make sure alignment is a power of 2
+        assert alignment & (alignment - 1) == 0
+
+        # round up to nearest alignment
+        return (value + alignment - 1) & ~(alignment - 1)
 
     def save(self):
         """Save entire memory content.
@@ -431,7 +455,7 @@ class QlMemoryManager:
         gaps = zip(gaps_lbounds, gaps_ubounds)
 
         for lbound, ubound in gaps:
-            addr = self.align(lbound, align)
+            addr = self.align_up(lbound, align)
             end = addr + size
 
             # is aligned range within gap and satisfying min / max requirements?
@@ -457,9 +481,10 @@ class QlMemoryManager:
         if align is None:
             align = self.pagesize
 
+        size = self.align_up(size)
         addr = self.find_free_space(size, minaddr, maxaddr, align)
 
-        self.map(addr, self.align(size), perms, info)
+        self.map(addr, size, perms, info)
 
         return addr
 
@@ -467,8 +492,8 @@ class QlMemoryManager:
         # mask off perms bits that are not supported by unicorn
         perms &= UC_PROT_ALL
 
-        aligned_address = addr & ~(self.pagesize - 1)
-        aligned_size = self.align((addr & (self.pagesize - 1)) + size)
+        aligned_address = self.align(addr)
+        aligned_size = self.align_up((addr & (self.pagesize - 1)) + size)
 
         self.ql.uc.mem_protect(aligned_address, aligned_size, perms)
         self.change_mapinfo(aligned_address, aligned_address + aligned_size, mem_p = perms)
@@ -590,7 +615,7 @@ class QlMemoryHeap:
             # is new chunk going to exceed currently allocated heap space?
             # in case it does, allocate additional heap space
             if self.current_use + size > self.current_alloc:
-                real_size = self.ql.mem.align(size)
+                real_size = self.ql.mem.align_up(size)
 
                 # if that additional allocation is going to exceed heap upper bound, fail
                 if self.start_address + self.current_use + real_size > self.end_address:
