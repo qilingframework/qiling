@@ -101,7 +101,7 @@ class QlOsQnx(QlOsPosix):
             f()
 
 
-            def hook_sigtrap(self, intno= None, int = None):
+    def hook_sigtrap(self, intno= None, int = None):
         self.ql.log.info("Trap Found")
         self.emu_error()
         exit(1)
