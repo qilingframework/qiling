@@ -15,6 +15,7 @@ Improvements:
 - More update in MCU modules (#971)
 - Fix getpeername and getsockname syscalls (#986)
 - Qdb improvements (#999)
+- QNX improvements (#1054)
 
 Contributors:
 - cq674350529
