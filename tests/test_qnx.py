@@ -13,6 +13,7 @@ from qiling.const import QL_INTERCEPT, QL_CALL_BLOCK, QL_VERBOSE
 from qiling.os.const import STRING
 
 class QNXTest(unittest.TestCase):
+  
     def test_arm_qnx_static(self):
         env = {
             "FOO": "bar"
@@ -20,9 +21,11 @@ class QNXTest(unittest.TestCase):
         ql = Qiling(["../examples/rootfs/arm_qnx/bin/hello_static", "foo", "bar"], "../examples/rootfs/arm_qnx", env=env, verbose=QL_VERBOSE.DEBUG)
         ql.run()
 
+        
     def test_arm_qnx_sqrt(self):
         ql = Qiling(["../examples/rootfs/arm_qnx/bin/hello_sqrt"], "../examples/rootfs/arm_qnx", verbose=QL_VERBOSE.DEBUG)
         ql.run()
+    
 
     def test_set_api_arm_qnx_sqrt(self):
         self.set_api_puts_onenter = False

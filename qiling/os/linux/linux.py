@@ -16,7 +16,6 @@ from qiling.os.const import *
 from qiling.os.posix.const import NR_OPEN
 from qiling.os.posix.posix import QlOsPosix
 
-from . import utils
 from . import futex
 from . import thread
 
@@ -56,7 +55,7 @@ class QlOsLinux(QlOsPosix):
             self.ql.arch.enable_vfp()
             self.ql.hook_intno(self.hook_syscall, 2)
             self.thread_class = thread.QlLinuxARMThread
-            utils.ql_arm_init_get_tls(self.ql)
+            self.ql.arch.init_get_tls()
 
         # MIPS32
         elif self.ql.archtype == QL_ARCH.MIPS:
