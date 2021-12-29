@@ -98,7 +98,7 @@ def ql_qnx_msg_io_connect(ql:Qiling, coid, smsg, sparts, rmsg, rparts, *args, **
         else:
             # TODO: Can we throw this exception here?
             # raise NotImplementedError(f'msg_io_connect(_IO_CONNECT_COMBINE) for type 0x{x_type:x} not implemented')
-            ql.log.warn(f'msg_io_connect(_IO_CONNECT_COMBINE) for type 0x{x_type:x} not implemented')
+            ql.log.warning(f'msg_io_connect(_IO_CONNECT_COMBINE) for type 0x{x_type:x} not implemented')
     elif subtype == 2: # == _IO_CONNECT_OPEN
         ql.log.debug(f'open(path = {path}, openflags = 0x{ioflag:x}, openmode = 0x{real_mode:x})')
         ql.os.connections[coid].fd = ql_syscall_open(ql, ql.unpack32(ql.mem.read(smsg + 8, 4)), ioflag, real_mode)
@@ -127,7 +127,7 @@ def ql_qnx_msg_io_connect(ql:Qiling, coid, smsg, sparts, rmsg, rparts, *args, **
     elif os.path.isfile(real_path):
         umask = file_stats['_S_IFREG']
     else:
-        ql.log.warn("msg_io_connect(): type of {real_path} not handled properly?")
+        ql.log.warning("msg_io_connect(): type of {real_path} not handled properly?")
         umask = 0
     # struct _io_connect_link_reply in lib/c/public/sys/iomsg.h
     ql.mem.write(iov_base, pack("<IIBBHIHH", 0, file_type, eflag, 0, 0, umask, 0, 0))
@@ -190,7 +190,7 @@ def ql_qnx_msg_mem_ctrl(ql:Qiling, coid, smsg, sparts, rmsg, rparts, *args, **kw
     if not subtype in mem_ctrl_subtypes:
         raise NotImplementedError(f'MEM_CTRL subtype {subtype} not implemented')
     
-    ql.log.warn(f'msg_mem_ctrl(subtype = {mem_ctrl_subtypes[subtype]}, flags = 0x{flags:x}, addr = 0x{addr:x}, len = 0x{len:x}) not implemented')
+    ql.log.warning(f'msg_mem_ctrl(subtype = {mem_ctrl_subtypes[subtype]}, flags = 0x{flags:x}, addr = 0x{addr:x}, len = 0x{len:x}) not implemented')
     # TODO: implement mem_ctrl
     return -1
 
