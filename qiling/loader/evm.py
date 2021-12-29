@@ -13,10 +13,12 @@ class QlLoaderEVM(QlLoader):
     def __init__(self, ql:Qiling):
         super(QlLoaderEVM, self).__init__(ql)
         self.ql = ql
-
+        
         if self.ql.code is None:
-            with open(self.ql.filename[0]) as f:
-                self.ql.code = f.read()
+            with open(self.ql.path) as f:
+                self.code = f.read()
+        else:
+            self.code = ql.code
 
     def run(self):
         pass

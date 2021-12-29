@@ -26,7 +26,7 @@ class QlGdbUtils(object):
 
     def initialize(self, ql, hook_address, exit_point=None, mappings=None):
         self.ql = ql
-        if self.ql.archtype in QL_ARCH_HARDWARE:
+        if self.ql.baremetal:
             self.current_address = self.entry_point
         else:
             self.current_address = self.entry_point = self.ql.os.entry_point   
@@ -37,7 +37,7 @@ class QlGdbUtils(object):
     def entry_point_hook(self, ql, *args, **kwargs):
         self.ql.hook_del(self._tmp_hook)
         self.ql.hook_code(self.dbg_hook)
-        self.ql.os.stop()
+        self.ql.stop()
         self.ql.log.info("gdb> Stop at entry point: %#x" % self.ql.reg.arch_pc)
 
     def dbg_hook(self, ql, address, size):
@@ -64,7 +64,7 @@ class QlGdbUtils(object):
                     self.skip_bp_count -= 1
                 else:
                     self.breakpoint_count += 1
-                    self.ql.os.stop()
+                    self.ql.stop()
                     self.last_bp = address
                     ql.log.info("gdb> Breakpoint found, stop at address: 0x%x" % address)
                           
@@ -79,7 +79,7 @@ class QlGdbUtils(object):
         
         except KeyboardInterrupt as ex:
             ql.log.info("gdb> Paused at 0x%x, instruction size = %u" % (address, size))
-            self.ql.os.stop()
+            self.ql.stop()
         except:
             raise    
 

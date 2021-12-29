@@ -5,11 +5,12 @@
 
 import os
 import ctypes
+import struct
 from typing import Callable
 
 from qiling import Qiling
 from qiling.const import QL_OS, QL_ARCH, QL_ENDIAN
-from qiling.os.posix.const import NR_OPEN, EBADF
+from qiling.os.posix.const import NR_OPEN, EBADF, AT_FDCWD
 from qiling.os.posix.stat import Stat, Lstat
 
 # Caveat: Never use types like ctypes.c_long whose size differs across platforms.
@@ -717,6 +718,56 @@ class LinuxARM64EBStat(ctypes.BigEndianStructure):
 
     _pack_ = 8
 
+# Srouce: https://github.com/riscv-collab/riscv-gnu-toolchain/blob/master/linux-headers/include/asm-generic/stat.h
+# struct stat {
+# 	unsigned long	st_dev;		/* Device.  */
+# 	unsigned long	st_ino;		/* File serial number.  */
+# 	unsigned int	st_mode;	/* File mode.  */
+# 	unsigned int	st_nlink;	/* Link count.  */
+# 	unsigned int	st_uid;		/* User ID of the file's owner.  */
+# 	unsigned int	st_gid;		/* Group ID of the file's group. */
+# 	unsigned long	st_rdev;	/* Device number, if device.  */
+# 	unsigned long	__pad1;
+# 	long		st_size;	/* Size of file, in bytes.  */
+# 	int		st_blksize;	/* Optimal block size for I/O.  */
+# 	int		__pad2;
+# 	long		st_blocks;	/* Number 512-byte blocks allocated. */
+# 	long		st_atime;	/* Time of last access.  */
+# 	unsigned long	st_atime_nsec;
+# 	long		st_mtime;	/* Time of last modification.  */
+# 	unsigned long	st_mtime_nsec;
+# 	long		st_ctime;	/* Time of last status change.  */
+# 	unsigned long	st_ctime_nsec;
+# 	unsigned int	__unused4;
+# 	unsigned int	__unused5;
+# };
+
+class LinuxRISCVStat(ctypes.Structure):
+    _fields_ = [
+        ("st_dev", ctypes.c_uint64),
+        ("st_ino", ctypes.c_uint64),
+        ("st_mode", ctypes.c_uint32),
+        ("st_nlink", ctypes.c_uint32),
+        ("st_uid", ctypes.c_uint32),
+        ("st_gid", ctypes.c_uint32),
+        ("st_rdev", ctypes.c_uint64),
+        ("__pad1", ctypes.c_uint64),
+        ("st_size", ctypes.c_int64),
+        ("st_blksize", ctypes.c_int32),
+        ("__pad2", ctypes.c_int32),
+        ("st_blocks", ctypes.c_int64),
+        ("st_atime", ctypes.c_int64),
+        ("st_atime_nsec", ctypes.c_uint64),
+        ("st_mtime", ctypes.c_int64),
+        ("st_mtime_nsec", ctypes.c_uint64),
+        ("st_ctime", ctypes.c_int64),
+        ("st_ctime_nsec", ctypes.c_uint64),
+        ("__unused4", ctypes.c_uint32),
+        ("__unused5", ctypes.c_uint32),
+    ]
+
+    _pack_ = 8
+
 # Source: openqnx lib/c/public/sys/stat.h
 #
 # struct stat {
@@ -887,6 +938,8 @@ def get_stat64_struct(ql: Qiling):
             return LinuxMips32Stat64()
         elif ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB):
             return LinuxARMStat64()
+        elif ql.archtype in (QL_ARCH.RISCV, QL_ARCH.RISCV64):
+            return LinuxRISCVStat()
     elif ql.ostype == QL_OS.MACOS:
         return MacOSStat64()
     elif ql.ostype == QL_OS.QNX:
@@ -922,6 +975,8 @@ def get_stat_struct(ql: Qiling):
                 return LinuxARM64Stat()
             else:
                 return LinuxARM64EBStat()
+        elif ql.archtype in (QL_ARCH.RISCV, QL_ARCH.RISCV64):
+            return LinuxRISCVStat()
     elif ql.ostype == QL_OS.QNX:
         if ql.archtype == QL_ARCH.ARM64:
             return QNXARM64Stat()
@@ -971,6 +1026,38 @@ def statFamily(ql: Qiling, path: int, ptr: int, name: str, stat_func, struct_fun
         ql.log.debug(f'{name}("{file_path}", {ptr:#x}) write completed')
         return regreturn
 
+def transform_path(ql: Qiling, dirfd: int, path: int):
+    """
+    An absolute pathname
+        If pathname begins with a slash, then it is an absolute pathname that identifies the target file.  
+        In this case, dirfd is ignored.
+
+    A relative pathname
+        If pathname is a string that begins with a character other than a slash and dirfd is AT_FDCWD, 
+        then pathname is a  relative pathname that is interpreted relative to the process's current working directory.
+
+    A directory-relative pathname
+        If  pathname is a string that begins with a character other than a slash and dirfd is a file descriptor that refers to a
+        directory, then pathname is a relative pathname that is interpreted relative to the directory referred to by dirfd.
+
+    By file descriptor
+        If pathname is an empty string and the AT_EMPTY_PATH flag is specified in flags (see below), 
+        then the target file is the one referred to by the file descriptor dirfd.
+    """
+
+    dirfd = ql.unpacks(ql.pack(dirfd))
+    path = ql.os.utils.read_cstring(path)
+
+    if path.startswith('/'):
+        return None, os.path.join(ql.rootfs, path)
+
+    if dirfd == AT_FDCWD:
+        return None, ql.os.path.transform_to_real_path(path)
+
+    if 0 < dirfd < NR_OPEN:
+        return ql.os.fd[dirfd].fileno(), path
+    
+
 def ql_syscall_chmod(ql: Qiling, filename: int, mode: int):
     ql.log.debug(f'chmod("{ql.os.utils.read_cstring(filename)}", {mode:d}) = 0')
 
@@ -983,38 +1070,28 @@ def ql_syscall_fchmod(ql: Qiling, fd: int, mode: int):
     return 0
 
 def ql_syscall_fstatat64(ql: Qiling, dirfd: int, path: int, buf_ptr: int, flag: int):
-    # FIXME: dirfd(relative path) not implement.
-    file_path = ql.os.utils.read_cstring(path)
-    real_path = ql.os.path.transform_to_real_path(file_path)
-    relative_path = ql.os.path.transform_to_relative_path(file_path)
+    dirfd, real_path = transform_path(ql, dirfd, path)
 
     if os.path.exists(real_path):
-        buf = pack_stat64_struct(ql, Stat(real_path))
+        buf = pack_stat64_struct(ql, Stat(real_path, dirfd))
         ql.mem.write(buf_ptr, buf)
 
         regreturn = 0
     else:
         regreturn = -1
-
-    ql.log.debug(f'Directory {"found" if regreturn == 0 else "not found"}: {relative_path}')
 
     return regreturn
 
 def ql_syscall_newfstatat(ql: Qiling, dirfd: int, path: int, buf_ptr: int, flag: int):
-    # FIXME: dirfd(relative path) not implement.
-    file_path = ql.os.utils.read_cstring(path)
-    real_path = ql.os.path.transform_to_real_path(file_path)
-    relative_path = ql.os.path.transform_to_relative_path(file_path)
-
+    dirfd, real_path = transform_path(ql, dirfd, path)
+    
     if os.path.exists(real_path):
-        buf = pack_stat_struct(ql, Stat(real_path))
+        buf = pack_stat_struct(ql, Stat(real_path, dirfd))
         ql.mem.write(buf_ptr, buf)
 
         regreturn = 0
     else:
         regreturn = -1
-
-    ql.log.debug(f'Directory {"found" if regreturn == 0 else "not found"}: {relative_path}')
 
     return regreturn
 
@@ -1069,6 +1146,145 @@ def ql_syscall_stat(ql: Qiling, path: int, buf_ptr: int):
 def ql_syscall_stat64(ql: Qiling, path: int, buf_ptr: int):
     return statFamily(ql, path, buf_ptr, "stat64", Stat, pack_stat64_struct)
 
+class StatxTimestamp32(ctypes.Structure):
+    _fields_ = [
+        ('tv_sec', ctypes.c_int32),
+        ('tv_nsec', ctypes.c_uint32),
+        ('__statx_timestamp_pad1', ctypes.c_int32)
+    ]
+
+class Statx32(ctypes.Structure):
+    """ 
+        Reference:
+         - https://man7.org/linux/man-pages/man2/statx.2.html
+         - https://code.woboq.org/userspace/glibc/sysdeps/unix/sysv/linux/statx.c.html
+
+    """
+    _fields_ = [
+        ('stx_mask', ctypes.c_uint32),
+        ('stx_blksize', ctypes.c_uint32),
+        ('stx_attributes', ctypes.c_uint32),
+        ('stx_nlink', ctypes.c_uint32),
+        ('stx_uid', ctypes.c_uint32),
+        ('stx_gid', ctypes.c_uint32),
+        ('stx_mode', ctypes.c_uint16),
+        ('__statx_pad1', ctypes.c_uint16),
+        ('stx_ino', ctypes.c_uint32),
+        ('stx_size', ctypes.c_uint32),
+        ('stx_blocks', ctypes.c_uint32),
+        ('stx_attributes_mask', ctypes.c_uint32),
+        ('stx_atime', StatxTimestamp32),
+        ('stx_btime', StatxTimestamp32),
+        ('stx_ctime', StatxTimestamp32),
+        ('stx_mtime', StatxTimestamp32),
+        ('stx_rdev_major', ctypes.c_uint32),
+        ('stx_rdev_minor', ctypes.c_uint32),
+        ('stx_dev_major', ctypes.c_uint32),
+        ('stx_dev_minor', ctypes.c_uint32),
+        ('__statx_pad2', ctypes.c_uint32 * 14),
+    ]
+
+    _pack_ = 8
+
+class StatxTimestamp64(ctypes.Structure):
+    _fields_ = [
+        ('tv_sec', ctypes.c_int64),
+        ('tv_nsec', ctypes.c_uint32),
+        ('__statx_timestamp_pad1', ctypes.c_int32)
+    ]
+
+class Statx64(ctypes.Structure):
+    """ 
+        Reference:
+         - https://man7.org/linux/man-pages/man2/statx.2.html
+         - https://code.woboq.org/userspace/glibc/sysdeps/unix/sysv/linux/statx.c.html
+
+    """
+    _fields_ = [
+        ('stx_mask', ctypes.c_uint32),
+        ('stx_blksize', ctypes.c_uint32),
+        ('stx_attributes', ctypes.c_uint64),
+        ('stx_nlink', ctypes.c_uint32),
+        ('stx_uid', ctypes.c_uint32),
+        ('stx_gid', ctypes.c_uint32),
+        ('stx_mode', ctypes.c_uint16),
+        ('__statx_pad1', ctypes.c_uint16),
+        ('stx_ino', ctypes.c_uint64),
+        ('stx_size', ctypes.c_uint64),
+        ('stx_blocks', ctypes.c_uint64),
+        ('stx_attributes_mask', ctypes.c_uint64),
+        ('stx_atime', StatxTimestamp64),
+        ('stx_btime', StatxTimestamp64),
+        ('stx_ctime', StatxTimestamp64),
+        ('stx_mtime', StatxTimestamp64),
+        ('stx_rdev_major', ctypes.c_uint32),
+        ('stx_rdev_minor', ctypes.c_uint32),
+        ('stx_dev_major', ctypes.c_uint32),
+        ('stx_dev_minor', ctypes.c_uint32),
+        ('__statx_pad2', ctypes.c_uint64 * 14),
+    ]
+
+    _pack_ = 4
+
+# int statx(int dirfd, const char *restrict pathname, int flags,
+#                  unsigned int mask, struct statx *restrict statxbuf);
+def ql_syscall_statx(ql: Qiling, dirfd: int, path: int, flags: int, mask: int, buf_ptr: int):
+    def statx_convert_timestamp(tv_sec, tv_nsec):
+        tv_sec  = struct.unpack('i', struct.pack('f', tv_sec))[0]
+        tv_nsec = struct.unpack('i', struct.pack('f', tv_nsec))[0]
+
+        if ql.archbit == 32:
+            return StatxTimestamp32(tv_sec=tv_sec, tv_nsec=tv_nsec)
+        else:
+            return StatxTimestamp64(tv_sec=tv_sec, tv_nsec=tv_nsec)
+
+
+    def major(dev):
+        return ((dev >> 8) & 0xfff) | ((dev >> 32) & ~0xfff)
+
+    def minor(dev):
+        return (dev & 0xff) | ((dev >> 12) & ~0xff)
+
+    fd, real_path = transform_path(ql, dirfd, path)
+    
+    try:
+        if len(real_path) == 0:
+            st = ql.os.fd[dirfd].fstat()
+        else:
+            st = Stat(real_path, fd)
+        
+        if ql.archbit == 32:
+            Statx = Statx32
+        else:
+            Statx = Statx64
+
+        stx = Statx(
+            stx_mask = 0x07ff, # STATX_BASIC_STATS
+            stx_blksize = st.st_blksize,
+            stx_nlink = st.st_nlink,
+            stx_uid = st.st_uid,
+            stx_gid = st.st_gid,
+            stx_mode = st.st_mode,
+            stx_ino = st.st_ino,
+            stx_size = st.st_size,
+            stx_blocks = st.st_blocks,
+            stx_atime = statx_convert_timestamp(st.st_atime, st.st_atime_ns),
+            stx_ctime = statx_convert_timestamp(st.st_ctime, st.st_ctime_ns),
+            stx_mtime = statx_convert_timestamp(st.st_mtime, st.st_mtime_ns),
+            stx_rdev_major = major(st.st_rdev),
+            stx_rdev_minor = minor(st.st_rdev),
+            stx_dev_major = major(st.st_dev),
+            stx_dev_minor = minor(st.st_dev),
+        )
+
+        ql.mem.write(buf_ptr, bytes(stx))
+
+        regreturn = 0
+    
+    except Exception as e:
+        regreturn = -1
+
+    return regreturn
 
 def ql_syscall_lstat(ql: Qiling, path: int, buf_ptr: int):
     return statFamily(ql, path, buf_ptr, "lstat", Lstat, pack_stat64_struct)
@@ -1078,14 +1294,12 @@ def ql_syscall_lstat64(ql: Qiling, path: int, buf_ptr: int):
     return statFamily(ql, path, buf_ptr, "lstat64", Lstat, pack_stat64_struct)
 
 
-def ql_syscall_mknodat(ql: Qiling, dirfd: int, pathname: int, mode: int, dev: int):
-    # FIXME: dirfd(relative path) not implement.
-    file_path = ql.os.utils.read_cstring(pathname)
-    real_path = ql.os.path.transform_to_real_path(file_path)
-    regreturn = 0
+def ql_syscall_mknodat(ql: Qiling, dirfd: int, path: int, mode: int, dev: int):
+    dirfd, real_path = transform_path(ql, dirfd, path)    
 
     try:
-        os.mknod(real_path, mode, dev)
+        os.mknod(real_path, mode, dev, dir_fd=dirfd)
+        regreturn = 0
     except:
         regreturn = -1
 

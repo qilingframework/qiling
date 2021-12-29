@@ -93,7 +93,7 @@ def _QueryInformationProcess(ql: Qiling, address: int, params):
 def hook_ZwQueryInformationProcess(ql: Qiling, address: int, params):
     # TODO have no idea if is cdecl or stdcall
 
-    _QueryInformationProcess(ql, address, params)
+    return _QueryInformationProcess(ql, address, params)
 
 # __kernel_entry NTSTATUS NtQueryInformationProcess(
 #   IN HANDLE           ProcessHandle,
@@ -112,7 +112,7 @@ def hook_ZwQueryInformationProcess(ql: Qiling, address: int, params):
 def hook_NtQueryInformationProcess(ql: Qiling, address: int, params):
     # TODO have no idea if is cdecl or stdcall
 
-    _QueryInformationProcess(ql, address, params)
+    return _QueryInformationProcess(ql, address, params)
 
 def _QuerySystemInformation(ql: Qiling, address: int, params):
     siClass = params["SystemInformationClass"]
@@ -131,7 +131,7 @@ def _QuerySystemInformation(ql: Qiling, address: int, params):
             ql,
             Reserved=0,
             TimerResolution=156250,
-            PageSize=ql.os.heap.page_size,
+            PageSize=ql.mem.pagesize,
             NumberOfPhysicalPages=0x003FC38A,
             LowestPhysicalPageNumber=1,
             HighestPhysicalPageNumber=0x0046DFFF,

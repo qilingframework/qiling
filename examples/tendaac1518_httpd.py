@@ -58,7 +58,6 @@ def nvram_listener():
         finally:
             connection.close()
 
-
 def myvfork(ql: Qiling):
     regreturn = 0
     ql.log.info("vfork() = %d" % regreturn)
@@ -67,7 +66,7 @@ def myvfork(ql: Qiling):
 
 def my_sandbox(path, rootfs):
     ql = Qiling(path, rootfs, verbose=QL_VERBOSE.DEBUG)
-    #ql.add_fs_mapper("/dev/urandom","/dev/urandom")
+    ql.add_fs_mapper("/dev/urandom","/dev/urandom")
     ql.hook_address(patcher, ql.loader.elf_entry)
 
     # $ gdb-multiarch -q rootfs/bin/httpd 

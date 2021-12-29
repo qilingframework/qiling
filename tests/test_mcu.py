@@ -9,12 +9,13 @@ sys.path.append("..")
 
 from qiling.core import Qiling
 from qiling.const import QL_VERBOSE
-        
+from qiling.extensions.mcu.stm32f4 import stm32f407, stm32f411
+from qiling.extensions.mcu.gd32vf1 import gd32vf103
 
 class MCUTest(unittest.TestCase):
     def test_mcu_led_stm32f411(self):
         ql = Qiling(["../examples/rootfs/mcu/stm32f411/rand_blink.hex"],                    
-                    archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DISASM)
+                    archtype="cortex_m", env=stm32f411, verbose=QL_VERBOSE.DISASM)
 
         # Set verbose=QL_VERBOSE.DEFAULT to find warning
         ql.run(count=1000)
@@ -23,7 +24,7 @@ class MCUTest(unittest.TestCase):
 
     def test_mcu_usart_output_stm32f411(self):
         ql = Qiling(["../examples/rootfs/mcu/stm32f411/hello_usart.hex"],                    
-                    archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DEFAULT)        
+                    archtype="cortex_m", env=stm32f411, verbose=QL_VERBOSE.DEFAULT)        
         
         ql.hw.create('usart2')
         ql.hw.create('rcc')
@@ -37,7 +38,7 @@ class MCUTest(unittest.TestCase):
 
     def test_mcu_usart_input_stm32f411(self):
         ql = Qiling(["../examples/rootfs/mcu/stm32f411/md5_server.hex"],                    
-            archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.OFF)
+            archtype="cortex_m", env=stm32f411, verbose=QL_VERBOSE.OFF)
 
         ql.hw.create('usart2')
         ql.hw.create('rcc')
@@ -58,7 +59,7 @@ class MCUTest(unittest.TestCase):
 
     def test_mcu_patch_stm32f411(self):
         ql = Qiling(["../examples/rootfs/mcu/stm32f411/patch_test.hex"],                    
-                    archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DEFAULT)
+                    archtype="cortex_m", env=stm32f411, verbose=QL_VERBOSE.DEFAULT)
 
         ql.hw.create('usart2')
         ql.hw.create('rcc')
@@ -71,7 +72,7 @@ class MCUTest(unittest.TestCase):
 
     def test_mcu_freertos_stm32f411(self):
         ql = Qiling(["../examples/rootfs/mcu/stm32f411/os-demo.elf"],
-            archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DEBUG)
+            archtype="cortex_m", env=stm32f411, verbose=QL_VERBOSE.DEBUG)
 
         ql.hw.create('usart2')
         ql.hw.create('rcc')
@@ -93,7 +94,7 @@ class MCUTest(unittest.TestCase):
 
     def test_mcu_dma_stm32f411(self):
         ql = Qiling(["../examples/rootfs/mcu/stm32f411/dma-clock.elf"],                    
-            archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DEBUG)
+            archtype="cortex_m", env=stm32f411, verbose=QL_VERBOSE.DEFAULT)
 
         ql.hw.create('usart2')
         ql.hw.create('dma1')
@@ -111,7 +112,7 @@ class MCUTest(unittest.TestCase):
 
     def test_mcu_i2c_stm32f411(self):
         ql = Qiling(["../examples/rootfs/mcu/stm32f411/i2c-lcd.bin", 0x8000000],
-            archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DEBUG)
+            archtype="cortex_m", env=stm32f411, verbose=QL_VERBOSE.DEFAULT)
 
         ql.hw.create('i2c1')
         ql.hw.create('rcc')
@@ -131,6 +132,9 @@ class MCUTest(unittest.TestCase):
             def send(self, data):
                 pass
 
+            def step(self):
+                pass
+
         ql.hw.i2c1.connect(LCD())
         ql.run(count=550000)
 
@@ -140,7 +144,7 @@ class MCUTest(unittest.TestCase):
 
     def test_mcu_spi_stm32f411(self):
         ql = Qiling(["../examples/rootfs/mcu/stm32f411/spi-test.bin", 0x8000000],
-            archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DEBUG)
+            archtype="cortex_m", env=stm32f411, verbose=QL_VERBOSE.DEFAULT)
 
         ql.hw.create('spi1')
         ql.hw.create('rcc')
@@ -154,7 +158,7 @@ class MCUTest(unittest.TestCase):
 
     def test_mcu_led_rust_stm32f411(self):
         ql = Qiling(["../examples/rootfs/mcu/stm32f411/led-rust.hex"],
-                    archtype="cortex_m", profile="stm32f411", verbose=QL_VERBOSE.DEBUG)
+                    archtype="cortex_m", env=gd32vf103, profile="profiles/stm32f411.yml", verbose=QL_VERBOSE.DEFAULT)
 
         count = 0
         def counter():
@@ -169,10 +173,26 @@ class MCUTest(unittest.TestCase):
 
         del ql
 
+    def test_mcu_uart_rust_stm32f411(self): 
+        ql = Qiling(["../examples/rootfs/mcu/stm32f411/uart-rust.hex"],
+                    archtype="cortex_m", env=stm32f411, verbose=QL_VERBOSE.DEFAULT)
+
+        ## cover env by profiles
+
+        ql.hw.create('rcc')
+        ql.hw.create('gpioa')
+        ql.hw.create('usart2')
+
+        ql.hw.usart2.send(b'123')
+        ql.run(count=10000)
+        self.assertTrue(ql.hw.usart2.recv() == b'1')
+
+        del ql
+
     def test_mcu_hacklock_stm32f407(self):
         def crack(passwd):
             ql = Qiling(["../examples/rootfs/mcu/stm32f407/backdoorlock.hex"],                    
-                                archtype="cortex_m", profile="stm32f407", verbose=QL_VERBOSE.OFF)
+                                archtype="cortex_m", env=stm32f407, verbose=QL_VERBOSE.OFF)
             
             ql.hw.create('spi2')
             ql.hw.create('gpioe')
@@ -198,6 +218,134 @@ class MCUTest(unittest.TestCase):
         self.assertTrue(crack('618618'))
         self.assertTrue(crack('778899'))
         self.assertFalse(crack('123456'))
+
+    def test_mcu_tim_speed_stm32f411(self):
+        ql = Qiling(['../examples/rootfs/mcu/stm32f411/basic-timer.elf'], 
+                archtype="cortex_m", env=stm32f411, verbose=QL_VERBOSE.DEFAULT)
+
+        ql.hw.create('rcc')
+        ql.hw.create('flash interface')
+        ql.hw.create('pwr')
+        ql.hw.create('gpioa')
+        ql.hw.create('usart2')
+        ql.hw.create('tim1')
+
+
+        ql.hw.tim1.set_ratio(1500)
+        ql.run(count=2500)
+
+        count = 0
+        def counter():
+            nonlocal count
+            count += 1
+
+        ql.hw.gpioa.hook_set(5, counter)
+        ql.run(count=10000)
+        count1 = count
+        count = 0
+
+        ql.hw.tim1.set_ratio(1400 * 2)
+        ql.run(count=10000)
+        count2 = count
+        count = 0
+
+        ql.hw.tim1.set_ratio(1600 // 2)
+        ql.run(count=10000)
+        count3 = count
+        count = 0
+
+        self.assertTrue(round(count2 / count1) == 2)
+        self.assertTrue(round(count1 / count3) == 2)
+        self.assertTrue(ql.hw.usart2.recv().startswith(b'hello\n'))
+
+    def test_mcu_i2c_interrupt_stm32f411(self):
+        ql = Qiling(['../examples/rootfs/mcu/stm32f411/i2cit-lcd.elf'], 
+                archtype="cortex_m", env=stm32f411, verbose=QL_VERBOSE.DEFAULT)
+
+        ql.hw.create('i2c1')
+        ql.hw.create('rcc').watch()
+        ql.hw.create('gpioa')
+        ql.hw.create('gpiob') 
+
+        class LCD:
+            address = 0x3f << 1
+
+            def send(self, data):
+                pass
+
+            def step(self):
+                pass
+
+        lcd = LCD()
+        ql.hw.i2c1.connect(lcd)
+
+        ql.hw.systick.set_ratio(100)
+
+        delay_start = 0x8002936
+        delay_end = 0x8002955
+        def skip_delay(ql):
+            ql.reg.pc = delay_end
+
+        ql.hook_address(skip_delay, delay_start)
+
+        ql.run(count=100000)
+
+        del ql
+
+
+    def test_mcu_blink_gd32vf103(self):
+        ql = Qiling(['../examples/rootfs/mcu/gd32vf103/blink.hex'], archtype="riscv64", 
+                    env=gd32vf103, verbose=QL_VERBOSE.DEFAULT)
+
+        ql.hw.create('rcu')
+        ql.hw.create('gpioa')
+        ql.hw.create('gpioc').watch()
+
+        delay_cycles_begin = 0x800015c
+        delay_cycles_end = 0x800018c
+
+        def skip_delay(ql):
+            ql.reg.pc = delay_cycles_end
+
+        count = 0
+        def counter():
+            nonlocal count
+            count += 1
+
+        ql.hook_address(skip_delay, delay_cycles_begin)
+        ql.hw.gpioc.hook_set(13, counter)
+        ql.run(count=20000)
+        self.assertTrue(count > 350)
+        
+        del ql
+
+    def test_mcu_crc_stm32f407(self):
+        ql = Qiling(["../examples/rootfs/mcu/stm32f407/ai-sine-test.elf"],
+            archtype="cortex_m", env=stm32f407, verbose=QL_VERBOSE.DEFAULT)
+
+        ql.hw.create('rcc')
+        ql.hw.create('pwr')
+        ql.hw.create('flash interface')
+        ql.hw.create('gpioa')
+        ql.hw.create('gpiob')
+        ql.hw.create('gpiod')
+        ql.hw.create('spi1')
+        ql.hw.create('crc')
+
+        flag = False
+        def indicator(ql):
+            nonlocal flag
+            ql.log.info('PA7 set')
+            flag = True
+
+        ql.hw.gpioa.hook_set(7, indicator, ql)
+        ql.hw.systick.ratio = 1000
+
+        ql.run(count=600000)
+        self.assertTrue(flag)
+
+        del ql
+
 
 if __name__ == "__main__":
     unittest.main()

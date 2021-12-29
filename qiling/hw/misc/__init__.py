@@ -11,3 +11,6 @@ from .stm32f4xx_rcc_derive import (
     STM32F446Rcc, STM32F412Rcc,
 )
 from .stm32f4xx_syscfg import STM32F4xxSyscfg
+from .stm32f4xx_flash import STM32F4xxFlash
+from .stm32f4xx_dbg import STM32F4xxDbgmcu
+from .gd32vf1xx_rcu import GD32VF1xxRcu

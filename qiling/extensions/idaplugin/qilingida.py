@@ -42,7 +42,7 @@ from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import (QPushButton, QHBoxLayout)
 
 # Qiling
-from qiling import *
+from qiling import Qiling
 from qiling.const import *
 from qiling.arch.x86_const import reg_map_32 as x86_reg_map_32
 from qiling.arch.x86_const import reg_map_64 as x86_reg_map_64
@@ -1066,6 +1066,8 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             self.ql_load_user_script()
             self.userobj.custom_prepare(self.qlemu.ql)
 
+        ida_ida.ql_plugin = self
+
     def ql_load_user_script(self):
         if self.qlinit :
             self.ql_get_user_script(is_reload=True, is_start=True)
@@ -1267,7 +1269,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                         ok = ask_yn(1, "Memory [%X:%X] is not mapped!\nDo you want to map it?\n   YES - Load Binary\n   NO - Fill page with zeroes\n   Cancel - Close dialog" % (mem_addr, mem_addr + mem_size))
                         if ok == 0:
                             self.qlemu.ql.mem.map(mem_addr, mem_size)
-                            self.qlemu.ql.mem.write(self.qlemu.ql.mem.align(mem_addr), b"\x00"*mem_size)
+                            self.qlemu.ql.mem.write(mem_addr, b"\x00"*mem_size)
                         elif ok == 1:
                             # TODO: map_binary
                             return
@@ -1566,16 +1568,16 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 self.paths[start_bb_id].append(cur_bb.id)
             ql.emu_stop()
 
-    def _skip_unmapped_rw(self, ql, type, addr, size, value):
-        alignment = 0x1000
-        # Round down
-        map_addr = addr & (~(alignment - 1))
-        # Round up
-        map_size = ((size + (alignment - 1)) & (~(alignment - 1)))
+    def _skip_unmapped_rw(self, ql: Qiling, type, addr, size, value):
+        map_addr = ql.mem.align(addr)
+        map_size = ql.mem.align_up(size)
+
         if not ql.mem.is_mapped(map_addr, map_size):
             logging.warning(f"Invalid memory R/W, trying to map {hex(map_size)} at {hex(map_addr)}")
+
             ql.mem.map(map_addr, map_size)
-            ql.mem.write(map_addr, b'\x00'*map_size)
+            ql.mem.write(map_addr, b'\x00' * map_size)
+
         return True
 
     def _find_branch_in_real_block(self, bb):

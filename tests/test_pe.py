@@ -16,7 +16,10 @@ from qiling.os.const import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
 from qiling.os.mapper import QlFsMappedObject
+# This is intended.
+# See https://stackoverflow.com/questions/8804830/python-multiprocessing-picklingerror-cant-pickle-type-function
 import multiprocess as mb
+import traceback
 
 # On Windows, the CPython GC is too conservative and may hold too
 # many Unicorn objects (nearly 16GB) until free-ing them which may
@@ -33,7 +36,8 @@ class QLWinSingleTest:
         try:
             results['result'] = self._test()
         except Exception as e:
-            results['exception'] = e
+            tb = traceback.format_exc()
+            results['exception'] = tb
             results['result'] = False
 
     def run(self):
@@ -45,7 +49,7 @@ class QLWinSingleTest:
             if "exception" not in results:
                 return results['result']
             else:
-                raise results['exception']
+                raise RuntimeError(f"\n\nGot an exception during subprocess:\n\n{results['exception']}")
 
 
 class TestOut:

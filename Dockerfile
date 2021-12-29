@@ -3,6 +3,7 @@ FROM python:3.8-slim AS builder
 LABEL maintainer="Kevin Foo <chfl4gs@qiling.io>"
 
 ENV DEBIAN_FRONTEND=noninteractive
+ENV AM_I_IN_A_DOCKER_CONTAINER Yes
 
 RUN apt-get update \
   && apt-get -y upgrade \

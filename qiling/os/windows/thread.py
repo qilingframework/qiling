@@ -84,16 +84,17 @@ class QlWindowsThread(QlThread):
         stack_size = 1024
         new_stack = self.ql.os.heap.alloc(stack_size) + stack_size
         
+        self.saved_context = self.ql.reg.save()
+
+        # set return address, parameters
         if self.ql.archtype == QL_ARCH.X86:
             self.ql.mem.write(new_stack - 4, self.ql.pack32(self.ql.os.thread_manager.THREAD_RET_ADDR))
             self.ql.mem.write(new_stack, self.ql.pack32(func_params))
         elif self.ql.archtype == QL_ARCH.X8664:
             self.ql.mem.write(new_stack - 8, self.ql.pack64(self.ql.os.thread_manager.THREAD_RET_ADDR))
-            self.ql.mem.write(new_stack, self.ql.pack64(func_params))
+            self.saved_context["rcx"] = func_params
 
-        # set eip, ebp, esp
-        self.saved_context = self.ql.reg.save()
-
+        # set eip/rip, ebp/rbp, esp/rsp
         if self.ql.archtype == QL_ARCH.X86:
             self.saved_context["eip"] = func_addr
             self.saved_context["ebp"] = new_stack - 4

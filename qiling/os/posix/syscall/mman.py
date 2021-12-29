@@ -53,71 +53,73 @@ def ql_syscall_mprotect(ql: Qiling, start: int, mlen: int, prot: int):
 
 
 def syscall_mmap_impl(ql: Qiling, addr: int, mlen: int, prot: int, flags: int, fd: int, pgoffset: int, ver: int):
+    MAP_FAILED = -1
     MAP_SHARED = 0x01
     MAP_FIXED = 0x10
     MAP_ANONYMOUS = 0x20
 
+    pagesize = ql.mem.pagesize
     api_name = {
         0 : 'old_mmap',
         1 : 'mmap',
         2 : 'mmap2'
     }[ver]
 
-    # ql.log.debug(f'{api_name}({addr:#x}, {mlen:#x}, {mmap_prot_mapping(prot)} ({prot:#x}), {mmap_flag_mapping(flags)} ({flags:#x}), {fd:d}, {pgoffset:#x})')
-
-    # FIXME
-    # this is ugly patch, we might need to get value from elf parse,
-    # is32bit or is64bit value not by arch
-    if (ql.archtype == QL_ARCH.ARM64) or (ql.archtype == QL_ARCH.X8664):
+    if ql.archbit == 64:
         fd = ql.unpack64(ql.pack64(fd))
-    elif (ql.archtype == QL_ARCH.MIPS):
+
+    elif ql.archtype == QL_ARCH.MIPS:
         MAP_ANONYMOUS = 2048
         if ver == 2:
-            pgoffset = pgoffset * 4096
-    elif (ql.archtype== QL_ARCH.ARM) and (ql.ostype== QL_OS.QNX):
-        MAP_ANONYMOUS=0x00080000
+            pgoffset = pgoffset * pagesize
+
+    elif ql.archtype == QL_ARCH.ARM and ql.ostype== QL_OS.QNX:
+        MAP_ANONYMOUS = 0x00080000
         fd = ql.unpack32s(ql.pack32s(fd))
+
     else:
         fd = ql.unpack32s(ql.pack32(fd))
         if ver == 2:
-            pgoffset = pgoffset * 4096
+            pgoffset = pgoffset * pagesize
 
-    mmap_base = addr
     need_mmap = True
-    eff_mmap_size = ((mlen + 0x1000 - 1) // 0x1000) * 0x1000
-    # align eff_mmap_size to page boundary
-    aligned_address = (addr >> 12) << 12
-    eff_mmap_size -= mmap_base - aligned_address
+    mmap_base = addr
+    mmap_size = ql.mem.align_up(mlen - (addr & (pagesize - 1)))
+
+    if ql.ostype != QL_OS.QNX:
+        mmap_base = ql.mem.align(mmap_base)
+
+        if (flags & MAP_FIXED) and mmap_base != addr:
+            return MAP_FAILED
 
     # initial ql.loader.mmap_address
-    if addr != 0 and ql.mem.is_mapped(addr, mlen):
+    if mmap_base != 0 and ql.mem.is_mapped(mmap_base, mmap_size):
         if (flags & MAP_FIXED) > 0:
             ql.log.debug("%s - MAP_FIXED, mapping not needed" % api_name)
             try:
-                ql.mem.protect(addr, mlen, prot)
+                ql.mem.protect(mmap_base, mmap_size, prot)
             except Exception as e:
                 ql.log.debug(e)
-                raise QlMemoryMappedError("Error: change protection at: 0x%x - 0x%x" % (addr, addr + mlen - 1))
+                raise QlMemoryMappedError("Error: change protection at: 0x%x - 0x%x" % (mmap_base, mmap_base + mmap_size - 1))
             need_mmap = False
+        else:
+            mmap_base = 0
 
     # initialized mapping
     if need_mmap:
-        if (flags & MAP_FIXED) > 0:
-            mmap_base = addr
-        else:
+        if mmap_base == 0:
             mmap_base = ql.loader.mmap_address
-        ql.loader.mmap_address = mmap_base + eff_mmap_size
-        ql.log.debug("%s - mapping needed for 0x%x" % (api_name, addr))
+            ql.loader.mmap_address = mmap_base + mmap_size
+        ql.log.debug("%s - mapping needed for 0x%x" % (api_name, mmap_base))
         try:
-            ql.mem.map(mmap_base, eff_mmap_size, info=("[syscall_%s]" % api_name))
+            ql.mem.map(mmap_base, mmap_size, prot, "[syscall_%s]" % api_name)
         except Exception as e:
             raise QlMemoryMappedError("Error: mapping needed but failed")
-
-    ql.log.debug("%s - addr range  0x%x - 0x%x: " % (api_name, mmap_base, mmap_base + eff_mmap_size - 1))
+        ql.log.debug("%s - addr range  0x%x - 0x%x: " % (api_name, mmap_base, mmap_base + mmap_size - 1))
 
     # FIXME: MIPS32 Big Endian
     try:
-        ql.mem.write(mmap_base, b'\x00' * eff_mmap_size)
+        ql.mem.write(mmap_base, b'\x00' * mmap_size)
     except Exception as e:
         raise QlMemoryMappedError("Error: trying to zero memory")
 
@@ -130,11 +132,7 @@ def syscall_mmap_impl(ql: Qiling, addr: int, mlen: int, prot: int, flags: int, f
         ql.log.debug("mem write : " + hex(len(data)))
         ql.log.debug("mem mmap  : " + mem_info)
 
-        # FIXME: shouldn't we use ql.mem.map instead?
-        ql.mem.add_mapinfo(mmap_base,
-                           mmap_base + eff_mmap_size,
-                           mem_p=UC_PROT_ALL,
-                           mem_info=("[%s] " % api_name) + mem_info)
+        ql.mem.change_mapinfo(mmap_base, mmap_base + mmap_size, mem_info=("[%s] " % api_name) + mem_info)
         try:
             ql.mem.write(mmap_base, data)
         except Exception as e:

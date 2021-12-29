@@ -5,7 +5,7 @@
 
 import ctypes
 from qiling.hw.peripheral import QlPeripheral
-from qiling.hw.const.stm32f4xx_dma import DMA, DMA_CR
+from qiling.hw.const.stm32f4xx_dma import DMA, DMA_SxCR
 
 class Stream(ctypes.Structure):
     _fields_ = [
@@ -18,13 +18,13 @@ class Stream(ctypes.Structure):
     ]
 
     def enable(self):
-        return self.CR & DMA_CR.EN
+        return self.CR & DMA_SxCR.EN
 
     def transfer_direction(self):
-        return self.CR & DMA_CR.DIR
+        return self.CR & DMA_SxCR.DIR
 
     def transfer_size(self):
-        PSIZE = self.CR & DMA_CR.PSIZE
+        PSIZE = self.CR & DMA_SxCR.PSIZE
         if PSIZE == DMA.PDATAALIGN_BYTE:
             return 1
         if PSIZE == DMA.PDATAALIGN_HALFWORD:
@@ -44,13 +44,13 @@ class Stream(ctypes.Structure):
         mem.write(dst, bytes(mem.read(src, size)))
         
         self.NDTR -= 1
-        if self.CR & DMA_CR.MINC:
+        if self.CR & DMA_SxCR.MINC:
             self.M0AR += size
-        if self.CR & DMA_CR.PINC:
+        if self.CR & DMA_SxCR.PINC:
             self.PAR  += size
 
         if self.NDTR == 0:
-            self.CR &= ~DMA_CR.EN
+            self.CR &= ~DMA_SxCR.EN
             return True
         
 class STM32F4xxDma(QlPeripheral):
@@ -122,12 +122,14 @@ class STM32F4xxDma(QlPeripheral):
     def stream_index(self, offset):
         return (offset - self.stream_base) // self.stream_size
 
+    @QlPeripheral.monitor(width=15)
     def read(self, offset: int, size: int) -> int:        
         buf = ctypes.create_string_buffer(size)
         ctypes.memmove(buf, ctypes.addressof(self.dma) + offset, size)
         retval = int.from_bytes(buf.raw, byteorder='little')
         return retval
 
+    @QlPeripheral.monitor(width=15)
     def write(self, offset: int, size: int, value: int):        
         if offset == self.struct.LIFCR.offset:
             self.dma.LISR &= ~value
@@ -137,10 +139,33 @@ class STM32F4xxDma(QlPeripheral):
 
         elif offset > self.struct.HIFCR.offset:
             stream_id = self.stream_index(offset)
-            self.ql.log.debug('DMA write 0x%08x stream %d at 0x%02x' % (value, stream_id, offset - stream_id * 0x18 - 0x10))
 
             data = (value).to_bytes(size, byteorder='little')
             ctypes.memmove(ctypes.addressof(self.dma) + offset, data, size)
+
+    def find_field(self, offset: int, size: int) -> str:
+        field_list = []
+        if offset < self.struct.stream.offset:
+            field_list.append(super().find_field(offset, min(size, self.struct.stream.offset - offset)))
+        
+        if offset >= self.struct.stream.offset:
+            for i in range(8):
+                prefix_offset = self.struct.stream.offset + ctypes.sizeof(Stream) * i
+                
+                for name, _ in Stream._fields_:
+                    field = getattr(Stream, name)
+                    field_offset = field.offset + prefix_offset
+
+                    lbound = max(0, offset - field_offset)
+                    ubound = min(offset + size  - field_offset, field.size)
+                    if lbound < ubound:
+                        if lbound == 0 and ubound == field.size:
+                            field_list.append(f'stream[{i}].{name}')
+                        else:
+                            field_list.append(f'stream[{i}].{name}[{lbound}:{ubound}]')
+                
+        return ','.join(field_list)
+
 
     def transfer_complete(self, id):
         tc_bits = [5, 11, 21, 27]

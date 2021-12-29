@@ -36,6 +36,16 @@ def dump_regs(ql: Qiling) -> Mapping[str, int]:
                 "r12", "sp", "lr", "pc",
                 )
 
+    elif ql.archtype == QL_ARCH.CORTEX_M:
+
+        _reg_order = (
+                "r0", "r1", "r2", "r3",
+                "r4", "r5", "r6", "r7",
+                "r8", "r9", "r10", "r11",
+                "r12", "sp", "lr", "pc",
+                "xpsr", "control", "primask", "basepri", "faultmask"
+                )
+
     return {reg_name: getattr(ql.reg, reg_name) for reg_name in _reg_order}
 
 
@@ -67,9 +77,20 @@ def get_arm_flags(bits: int) -> Mapping[str, int]:
 
 
 # parse unsigned integer from string
-def parse_int(s: str) -> int:
-    return int(s, 16) if s.startswith("0x") else int(s)
+def _parse_int(s: str) -> int:
+    return int(s, 0)
 
+
+# function dectorator for parse argument as integer
+def parse_int(func: Callable) -> Callable:
+    def wrap(qdb, s: str) -> int:
+        assert type(s) is str
+        try:
+            ret = _parse_int(s)
+        except:
+            ret = None
+        return func(qdb, ret)
+    return wrap
 
 # check wether negative value or not
 def is_negative(i: int) -> int:
@@ -87,6 +108,7 @@ def handle_bnj(ql: Qiling, cur_addr: str) -> Callable[[Qiling, str], int]:
             QL_ARCH.MIPS     : handle_bnj_mips,
             QL_ARCH.ARM      : handle_bnj_arm,
             QL_ARCH.ARM_THUMB: handle_bnj_arm,
+            QL_ARCH.CORTEX_M : handle_bnj_arm,
             }.get(ql.archtype)(ql, cur_addr)
 
 
@@ -103,11 +125,12 @@ def is_thumb(bits: int) -> bool:
     return bits & 0x00000020 != 0
 
 
-def disasm(ql: Qiling, address: int) -> Optional[int]:
-    # md = ql.create_disassembler()
+def disasm(ql: Qiling, address: int, detail: bool = False) -> Optional[int]:
 
+    md = ql.disassembler
+    md.detail = detail
     try:
-        ret = next(ql.disassembler.disasm(_read_inst(ql, address), address))
+        ret = next(md.disasm(_read_inst(ql, address), address))
 
     except StopIteration:
         ret = None
@@ -115,11 +138,11 @@ def disasm(ql: Qiling, address: int) -> Optional[int]:
     return ret
 
 
-def _read_inst(ql: Qiling, addr: str) -> int:
+def _read_inst(ql: Qiling, addr: int) -> int:
 
     result = ql.mem.read(addr, 4)
 
-    if ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB):
+    if ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB, QL_ARCH.CORTEX_M):
         if is_thumb(ql.reg.cpsr):
 
             first_two = ql.unpack16(ql.mem.read(addr, 2))
@@ -237,8 +260,8 @@ def handle_bnj_arm(ql: Qiling, cur_addr: str) -> int:
         to_jump = cb_table.get(line.mnemonic)(read_reg_val(line.op_str.split(", ")[0]))
 
     if to_jump:
-        if '#' in line.op_str:
-            ret_addr = parse_int(line.op_str.split('#')[-1])
+        if "#" in line.op_str:
+            ret_addr = _parse_int(line.op_str.split("#")[-1])
         else:
             ret_addr = read_reg_val(line.op_str)
 
@@ -278,55 +301,62 @@ def handle_bnj_arm(ql: Qiling, cur_addr: str) -> int:
 
         ret_addr = next_addr
 
-        return ret_addr
-
     elif line.mnemonic in ("ldr",):
+
         if regdst_eq_pc(line.op_str):
-            _pc, _, rn_offset = line.op_str.partition(", ")
+            _, _, rn_offset = line.op_str.partition(", ")
+            r, _, imm = rn_offset.strip("[]!").partition(", #")
 
             if "]" in rn_offset.split(", ")[1]: # pre-indexed immediate
-                _, r, imm = line.op_str.replace("[", "").replace("]", "").replace("!", "").replace("#", "").split(", ")
-                ret_addr = ql.unpack32(ql.mem.read(parse_int(imm) + read_reg_val(r), 4))
+                ret_addr = ql.unpack32(ql.mem.read(_parse_int(imm) + read_reg_val(r), ARM_INST_SIZE))
 
             else: # post-indexed immediate
                 # FIXME: weired behavior, immediate here does not apply
-                _, r, imm = line.op_str.replace("[", "").replace("]", "").replace("!", "").replace("#", "").split(", ")
-                ret_addr = ql.unpack32(ql.mem.read(read_reg_val(r), 4))
+                ret_addr = ql.unpack32(ql.mem.read(read_reg_val(r), ARM_INST_SIZE))
 
     elif line.mnemonic in ("addls", "addne", "add") and regdst_eq_pc(line.op_str):
         V, C, Z, N = get_cpsr(ql.reg.cpsr)
+        r0, r1, r2, *imm = line.op_str.split(", ")
+
+        # program counter is awalys 8 bytes ahead when it comes with pc, need to add extra 8 bytes
+        extra = 8 if 'pc' in (r0, r1, r2) else 0
+
+        if imm:
+            expr = imm[0].split()
+            # TODO: should support more bit shifting and rotating operation
+            if expr[0] == "lsl": # logical shift left
+                n = _parse_int(expr[-1].strip("#")) * 2
 
         if line.mnemonic == "addls" and (C == 0 or Z == 1):
-            r0, r1, r2, imm = line.op_str.split(", ")
-            # program counter is awalys 8 bytes ahead , when it comes with pc need to add extra 8 bytes
-            ret_addr = 8 + read_reg_val(r1) + read_reg_val(r2) * 4
+            ret_addr = extra + read_reg_val(r1) + read_reg_val(r2) * n
 
-        elif line.mnemonic == "addne" and Z == 0:
-            r0, r1, r2, *rest = line.op_str.split(", ")
-            ret_addr = 8 + read_reg_val(r1) + (read_reg_val(r2) * 4 if rest else read_reg_val(r2))
-
-        elif line.mnemonic == "add":
-            r0, r1, r2 = line.op_str.split(", ")
-            ret_addr = 8 + sum(map(read_reg_val, [r1, r2]))
+        elif line.mnemonic == "add" or (line.mnemonic == "addne" and Z == 0):
+            ret_addr = extra + read_reg_val(r1) + (read_reg_val(r2) * n if imm else read_reg_val(r2))
 
     elif line.mnemonic in ("tbh", "tbb"):
 
         cur_addr += ARM_INST_SIZE
+        r0, r1, *imm = line.op_str.strip("[]").split(", ")
+
+        if imm:
+            expr = imm[0].split()
+            if expr[0] == "lsl": # logical shift left
+                n = _parse_int(expr[-1].strip("#")) * 2
 
         if line.mnemonic == "tbh":
-            r0, r1, _ = line.op_str.strip("[").strip("]").split(", ")
-            r1 = read_reg_val(r1) * 2
+
+            r1 = read_reg_val(r1) * n
 
         elif line.mnemonic == "tbb":
-            r0, r1 = line.op_str.strip("[").strip("]").split(", ")
+
             r1 = read_reg_val(r1)
 
-        to_add = int.from_bytes(ql.mem.read(cur_addr+r1, 2 if line.mnemonic == "tbh" else 1), byteorder="little") * 2
+        to_add = int.from_bytes(ql.mem.read(cur_addr+r1, 2 if line.mnemonic == "tbh" else 1), byteorder="little") * n
         ret_addr = cur_addr + to_add
 
     elif line.mnemonic.startswith("pop") and "pc" in line.op_str:
 
-        ret_addr = ql.stack_read(line.op_str.strip("{").strip("}").split(", ").index("pc") * 4)
+        ret_addr = ql.stack_read(line.op_str.strip("{}").split(", ").index("pc") * ARM_INST_SIZE)
         if not { # step to next instruction if cond does not meet
                 "pop"  : lambda *_: True,
                 "pop.w": lambda *_: True,
@@ -341,7 +371,7 @@ def handle_bnj_arm(ql: Qiling, cur_addr: str) -> int:
 
     elif line.mnemonic == "sub" and regdst_eq_pc(line.op_str):
         _, r, imm = line.op_str.split(", ")
-        ret_addr = read_reg_val(r) - parse_int(imm.strip("#"))
+        ret_addr = read_reg_val(r) - _parse_int(imm.strip("#"))
 
     elif line.mnemonic == "mov" and regdst_eq_pc(line.op_str):
         _, r = line.op_str.split(", ")
@@ -350,7 +380,7 @@ def handle_bnj_arm(ql: Qiling, cur_addr: str) -> int:
     if ret_addr & 1:
         ret_addr -= 1
 
-    return ret_addr
+    return (to_jump, ret_addr)
 
 
 def handle_bnj_mips(ql: Qiling, cur_addr: str) -> int:
@@ -369,6 +399,7 @@ def handle_bnj_mips(ql: Qiling, cur_addr: str) -> int:
     # default breakpoint address if no jumps and branches here
     ret_addr = cur_addr + MIPS_INST_SIZE
 
+    to_jump = False
     if line.mnemonic.startswith('j') or line.mnemonic.startswith('b'):
 
         # make sure at least delay slot executed
@@ -377,7 +408,7 @@ def handle_bnj_mips(ql: Qiling, cur_addr: str) -> int:
         # get registers or memory address from op_str
         targets = [
                 read_reg_val(each)
-                if '$' in each else parse_int(each)
+                if '$' in each else _parse_int(each)
                 for each in line.op_str.split(", ")
                 ]
 
@@ -409,19 +440,23 @@ def handle_bnj_mips(ql: Qiling, cur_addr: str) -> int:
             # target address is always the rightmost one
             ret_addr = targets[-1]
 
-    return ret_addr
+    return (to_jump, ret_addr)
 
 class Breakpoint(object):
     """
     dummy class for breakpoint
     """
-    pass
+    def __init__(self, address: int):
+        self.addr = address
+        self.hitted = False
+        self.hook = None
 
 class TempBreakpoint(Breakpoint):
     """
     dummy class for temporay breakpoint
     """
-    pass
+    def __init__(self, address):
+        super().__init__(address)
 
 
 if __name__ == "__main__":

@@ -9,7 +9,7 @@ from qiling import Qiling
 from qiling.const import QL_OS, QL_ARCH
 from qiling.exception import QlSyscallError
 from qiling.os.posix.const import *
-from qiling.os.posix.const_mapping import ql_open_flag_mapping, open_flags_mapping
+from qiling.os.posix.const_mapping import ql_open_flag_mapping
 from qiling.os.posix.filestruct import ql_socket
 
 def ql_syscall_open(ql: Qiling, filename: int, flags: int, mode: int):
@@ -29,13 +29,15 @@ def ql_syscall_open(ql: Qiling, filename: int, flags: int, mode: int):
             if ql.archtype== QL_ARCH.ARM and ql.ostype!= QL_OS.QNX:
                 mode = 0
 
+            #flags = ql_open_flag_mapping(ql, flags)
             flags = ql_open_flag_mapping(ql, flags)
             ql.os.fd[idx] = ql.os.fs_mapper.open_ql_file(path, flags, mode)
             regreturn = idx
         except QlSyscallError as e:
             regreturn = - e.errno
 
-    ql.log.debug("open(%s, %s, 0o%o) = %d" % (relative_path, open_flags_mapping(flags, ql.archtype), mode, regreturn))
+
+    ql.log.debug("open(%s, 0o%o) = %d" % (relative_path, mode, regreturn))
 
     if regreturn >= 0 and regreturn != 2:
         ql.log.debug(f'File found: {real_path:s}')
@@ -45,7 +47,7 @@ def ql_syscall_open(ql: Qiling, filename: int, flags: int, mode: int):
     return regreturn
 
 def ql_syscall_creat(ql: Qiling, filename: int, mode: int):
-    flags = linux_open_flags["O_WRONLY"] | linux_open_flags["O_CREAT"] | linux_open_flags["O_TRUNC"]
+    flags = posix_open_flags["O_WRONLY"] | posix_open_flags["O_CREAT"] | posix_open_flags["O_TRUNC"]
 
     path = ql.os.utils.read_cstring(filename)
     real_path = ql.os.path.transform_to_real_path(path)
@@ -69,7 +71,7 @@ def ql_syscall_creat(ql: Qiling, filename: int, mode: int):
         except QlSyscallError as e:
             regreturn = -e.errno
 
-    ql.log.debug("creat(%s, %s, 0o%o) = %d" % (relative_path, open_flags_mapping(flags, ql.archtype), mode, regreturn))
+    ql.log.debug("creat(%s, 0o%o) = %d" % (relative_path, mode, regreturn))
 
     if regreturn >= 0 and regreturn != 2:
         ql.log.debug(f'File found: {real_path:s}')
@@ -96,17 +98,20 @@ def ql_syscall_openat(ql: Qiling, fd: int, path: int, flags: int, mode: int):
                 mode = 0
 
             flags = ql_open_flag_mapping(ql, flags)
-            try:
+            fd = ql.unpacks(ql.pack(fd))
+
+            if 0 <= fd < NR_OPEN:
                 dir_fd = ql.os.fd[fd].fileno()
-            except:
+            else:
                 dir_fd = None
 
             ql.os.fd[idx] = ql.os.fs_mapper.open_ql_file(file_path, flags, mode, dir_fd)
+
             regreturn = idx
         except QlSyscallError as e:
             regreturn = -e.errno
-
-    ql.log.debug(f'openat(fd = {fd:d}, path = {file_path}, flags = {open_flags_mapping(flags, ql.archtype)}, mode = {mode:#o}) = {regreturn:d}')
+            
+    ql.log.debug(f'openat(fd = {fd:d}, path = {file_path}, mode = {mode:#o}) = {regreturn:d}')
 
     return regreturn
 

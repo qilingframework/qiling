@@ -64,6 +64,7 @@ class STM32F4xxGpio(QlPeripheral, GpioHooks):
             PUPDR   = pupdr_reset,
         )        
 
+    @QlPeripheral.monitor()
     def read(self, offset: int, size: int) -> int:
         if offset == self.struct.BSRR.offset:
             return 0x00
@@ -72,6 +73,7 @@ class STM32F4xxGpio(QlPeripheral, GpioHooks):
         ctypes.memmove(buf, ctypes.addressof(self.gpio) + offset, size)
         return int.from_bytes(buf.raw, byteorder='little')
 
+    @QlPeripheral.monitor()
     def write(self, offset: int, size: int, value: int):
         if offset == self.struct.IDR.offset:
             return
@@ -96,7 +98,7 @@ class STM32F4xxGpio(QlPeripheral, GpioHooks):
                     if new_bit:
                         self.set_pin(i)                        
                     else:
-                        self.reset_pin(i - 16)                        
+                        self.reset_pin(i)                        
             
             return    
         
@@ -107,13 +109,13 @@ class STM32F4xxGpio(QlPeripheral, GpioHooks):
         self.ql.log.debug(f'[{self.label}] Set P{self.label[-1].upper()}{i}')
         
         self.gpio.ODR |= 1 << i        
-        self.hook_set_func[i]()
+        self.call_hook_set(i)
     
     def reset_pin(self, i):
         self.ql.log.debug(f'[{self.label}] Reset P{self.label[-1].upper()}{i}')
         
         self.gpio.ODR &= ~(1 << i)
-        self.hook_reset_func[i]()
+        self.call_hook_reset(i)
         
     def pin(self, index):
         return (self.gpio.ODR >> index) & 1    

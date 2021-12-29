@@ -233,7 +233,7 @@ class ELFTest(unittest.TestCase):
                 real_path = ql.os.fd[read_fd].name
                 with open(real_path) as fd:
                     assert fd.read() == ql.mem.read(read_buf, read_count).decode()
-                if ql.platform != QL_OS.WINDOWS:
+                if ql.platform_os != QL_OS.WINDOWS:
                     os.remove(real_path)
 
             return regreturn
@@ -252,7 +252,7 @@ class ELFTest(unittest.TestCase):
                 real_path = ql.os.fd[write_fd].name
                 with open(real_path) as fd:
                     assert fd.read() == 'Hello testing\x00'
-                if ql.platform != QL_OS.WINDOWS:
+                if ql.platform_os != QL_OS.WINDOWS:
                     os.remove(real_path)
 
             return regreturn
@@ -270,7 +270,7 @@ class ELFTest(unittest.TestCase):
             if target:
                 real_path = ql.os.path.transform_to_real_path(pathname)
                 assert os.path.isfile(real_path) == True
-                if ql.platform != QL_OS.WINDOWS:
+                if ql.platform_os != QL_OS.WINDOWS:
                     os.remove(real_path)
 
             return regreturn
@@ -304,7 +304,7 @@ class ELFTest(unittest.TestCase):
             if target:
                 real_path = ql.os.path.transform_to_real_path(pathname)
                 assert os.stat(real_path).st_size == 0
-                if ql.platform != QL_OS.WINDOWS:
+                if ql.platform_os != QL_OS.WINDOWS:
                     os.remove(real_path)
 
             return regreturn
@@ -326,7 +326,7 @@ class ELFTest(unittest.TestCase):
             if target:
                 real_path = ql.os.path.transform_to_real_path(pathname)
                 assert os.stat(real_path).st_size == 0x10
-                if ql.platform != QL_OS.WINDOWS:
+                if ql.platform_os != QL_OS.WINDOWS:
                     os.remove(real_path)
 
             return regreturn
@@ -480,13 +480,13 @@ class ELFTest(unittest.TestCase):
         del ql
 
 
-    def test_elf_linux_mips32_static(self):
+    def test_elf_linux_mips32eb_static(self):
        ql = Qiling(["../examples/rootfs/mips32_linux/bin/mips32_hello_static"], "../examples/rootfs/mips32_linux")
        ql.run()
        del ql
 
 
-    def test_elf_linux_mips32(self):
+    def test_elf_linux_mips32eb(self):
         def random_generator(size=6, chars=string.ascii_uppercase + string.digits):
             return ''.join(random.choice(chars) for x in range(size))
 
@@ -534,7 +534,7 @@ class ELFTest(unittest.TestCase):
                 real_path = ql.os.fd[read_fd].name
                 with open(real_path) as fd:
                     assert fd.read() == ql.mem.read(read_buf, read_count).decode()
-                if ql.platform != QL_OS.WINDOWS:
+                if ql.platform_os != QL_OS.WINDOWS:
                     os.remove(real_path)
 
             return regreturn
@@ -554,7 +554,7 @@ class ELFTest(unittest.TestCase):
                 real_path = ql.os.fd[write_fd].name
                 with open(real_path) as fd:
                     assert fd.read() == 'Hello testing\x00'
-                if ql.platform != QL_OS.WINDOWS:
+                if ql.platform_os != QL_OS.WINDOWS:
                     os.remove(real_path)
 
             return regreturn
@@ -573,7 +573,7 @@ class ELFTest(unittest.TestCase):
             if target:
                 real_path = ql.os.path.transform_to_real_path(pathname)
                 assert os.path.isfile(real_path) == True
-                if ql.platform != QL_OS.WINDOWS:
+                if ql.platform_os != QL_OS.WINDOWS:
                     os.remove(real_path)
 
             return regreturn
@@ -609,7 +609,7 @@ class ELFTest(unittest.TestCase):
             if target:
                 real_path = ql.os.path.transform_to_real_path(pathname)
                 assert os.stat(real_path).st_size == 0
-                if ql.platform != QL_OS.WINDOWS:
+                if ql.platform_os != QL_OS.WINDOWS:
                     os.remove(real_path)
 
             return regreturn
@@ -628,7 +628,7 @@ class ELFTest(unittest.TestCase):
             if target:
                 real_path = ql.os.path.transform_to_real_path(pathname)
                 assert os.stat(real_path).st_size == 0x10
-                if ql.platform != QL_OS.WINDOWS:
+                if ql.platform_os != QL_OS.WINDOWS:
                     os.remove(real_path)
 
             return regreturn
@@ -681,7 +681,7 @@ class ELFTest(unittest.TestCase):
                 real_path = ql.os.fd[read_fd].name
                 with open(real_path) as fd:
                     assert fd.read() == ql.mem.read(read_buf, read_count).decode()
-                if ql.platform != QL_OS.WINDOWS:
+                if ql.platform_os != QL_OS.WINDOWS:
                     os.remove(real_path)
 
             return regreturn
@@ -701,7 +701,7 @@ class ELFTest(unittest.TestCase):
                 real_path = ql.os.fd[write_fd].name
                 with open(real_path) as fd:
                     assert fd.read() == 'Hello testing\x00'
-                if ql.platform != QL_OS.WINDOWS:
+                if ql.platform_os != QL_OS.WINDOWS:
                     os.remove(real_path)
 
             return regreturn
@@ -719,7 +719,7 @@ class ELFTest(unittest.TestCase):
             if target:
                 real_path = ql.os.path.transform_to_real_path(pathname)
                 assert os.path.isfile(real_path) == True
-                if ql.platform != QL_OS.WINDOWS:
+                if ql.platform_os != QL_OS.WINDOWS:
                     os.remove(real_path)
 
             return regreturn
@@ -753,7 +753,7 @@ class ELFTest(unittest.TestCase):
             if target:
                 real_path = ql.os.path.transform_to_real_path(pathname)
                 assert os.stat(real_path).st_size == 0
-                if ql.platform != QL_OS.WINDOWS:
+                if ql.platform_os != QL_OS.WINDOWS:
                     os.remove(real_path)
 
             return regreturn
@@ -771,7 +771,7 @@ class ELFTest(unittest.TestCase):
             if target:
                 real_path = ql.os.path.transform_to_real_path(pathname)
                 assert os.stat(real_path).st_size == 0x10
-                if ql.platform != QL_OS.WINDOWS:
+                if ql.platform_os != QL_OS.WINDOWS:
                     os.remove(real_path)
 
             return regreturn

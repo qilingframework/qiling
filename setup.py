@@ -14,13 +14,14 @@ VERSION = gb['__version__']
 
 requirements = [
     "capstone>=4.0.1",
-    "unicorn>=2.0.0-rc3",
-    "pefile==2021.5.24",
+    "unicorn>=2.0.0-rc5",
+    "pefile>=2021.9.3",
     "python-registry>=1.3.1",
     "keystone-engine>=0.9.2",
     "pyelftools>=0.26",
     "gevent>=20.9.0",
-    "multiprocess>=0.70.12.2"
+    "multiprocess>=0.70.12.2",
+    "pyyaml>=6.0",
 ]
 
 evm_extra = {
@@ -67,8 +68,8 @@ setup(
         # How mature is this project? Common values are
         #   3 - Alpha
         #   5 - Production/Stable
-        #'Development Status :: 5 - Production/Stable',
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 5 - Production/Stable',
+        #'Development Status :: 3 - Alpha',
 
         # Indicate who your project is intended for
         'Intended Audience :: Developers',

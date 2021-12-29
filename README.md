@@ -1,5 +1,7 @@
+[![Documentation Status](https://readthedocs.org/projects/qilingframework/badge/?version=latest)](https://docs.qiling.io)
 [![Downloads](https://pepy.tech/badge/qiling)](https://pepy.tech/project/qiling)
 [![Chat on Telegram](https://img.shields.io/badge/Chat%20on-Telegram-brightgreen.svg)](https://t.me/qilingframework)
+
 ---
 
 <p align="center">
@@ -193,14 +195,11 @@ With binary and GDB debugger enable:
 $ ./qltool run -f examples/rootfs/x8664_linux/bin/x8664_hello --gdb 127.0.0.1:9999 --rootfs examples/rootfs/x8664_linux
 ```
 
-See  https://docs.qiling.io/  for more details
-
 With code coverage collection (UEFI only for now):
 
 ```
 $ ./qltool run -f examples/rootfs/x8664_efi/bin/TcgPlatformSetupPolicy --rootfs examples/rootfs/x8664_efi --coverage-format drcov --coverage-file TcgPlatformSetupPolicy.cov
 ```
----
 
 With json output (Windows mainly):
 

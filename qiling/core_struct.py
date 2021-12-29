@@ -30,7 +30,7 @@ class QlCoreStructs:
 		self._fmt32s = f'{modifier}i'
 		self._fmt64  = f'{modifier}Q'
 		self._fmt64s = f'{modifier}q'
-
+		
 		handlers = {
 			64 : (self.pack64, self.pack64s, self.unpack64, self.unpack64s),
 			32 : (self.pack32, self.pack32s, self.unpack32, self.unpack32s),

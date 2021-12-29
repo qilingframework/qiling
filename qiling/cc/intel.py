@@ -25,6 +25,9 @@ class QlIntelBaseCC(QlCommonBaseCC):
 
 		super().__init__(ql, retreg)
 
+	def setReturnAddress(self, addr: int) -> None:
+		self.ql.arch.stack_push(addr)
+
 	def unwind(self, nslots: int) -> int:
 		# no cleanup; just pop out the return address
 		return self.ql.arch.stack_pop()

@@ -6,7 +6,6 @@
 import ctypes
 
 from qiling.hw.peripheral import QlPeripheral
-from qiling.arch.arm_const import IRQ
 
 
 class CortexM4Nvic(QlPeripheral):
@@ -51,7 +50,8 @@ class CortexM4Nvic(QlPeripheral):
             (self.struct.ICPR, self.clear_pending),
         ]
 
-        self.intrs = []        
+        self.intrs = []       
+        self.interrupt_handler = self.ql.arch.hard_interrupt_handler 
 
     def enable(self, IRQn):
         if IRQn >= 0:
@@ -111,15 +111,15 @@ class CortexM4Nvic(QlPeripheral):
         while self.intrs:
             IRQn = self.intrs.pop(0)
             self.clear_pending(IRQn)
-            self.ql.arch.enter_intr()
-            self.ql.arch.handle_interupt(IRQn)
-            self.ql.arch.exit_intr()
+            self.interrupt_handler(self.ql, IRQn)
 
+    @QlPeripheral.monitor()
     def read(self, offset: int, size: int) -> int:
         buf = ctypes.create_string_buffer(size)
         ctypes.memmove(buf, ctypes.addressof(self.nvic) + offset, size)
         return int.from_bytes(buf.raw, byteorder='little')
 
+    @QlPeripheral.monitor()
     def write(self, offset: int, size: int, value: int):
         def write_byte(ofs, byte):
             for var, func in self.triggers:

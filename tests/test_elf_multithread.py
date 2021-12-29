@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import sys, unittest, subprocess, string, random, os
+import platform, sys, unittest, os, threading, time
 
 from unicorn import UcError, UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
 
@@ -19,8 +19,12 @@ from qiling.os.filestruct import ql_file
 class ELFTest(unittest.TestCase):
 
     def test_elf_linux_execve_x8664(self):
-        ql = Qiling(["../examples/rootfs/x8664_linux/bin/posix_syscall_execve"],  "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG)
+        if platform.system() == "Darwin" and platform.machine() == "arm64":
+            return
+        
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/posix_syscall_execve"],  "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG)   
         ql.run()
+
         for key, value in ql.loader.env.items():
             QL_TEST=value
 
@@ -29,6 +33,7 @@ class ELFTest(unittest.TestCase):
 
         del QL_TEST
         del ql
+
 
     def test_elf_linux_cloexec_x8664(self):
         with open('../examples/rootfs/x8664_linux/testfile', 'wb') as f:
@@ -276,8 +281,40 @@ class ELFTest(unittest.TestCase):
         self.assertEqual("server sendto() 14 return 14.\n", ql.buf_out)
 
         del ql
+   
+    def test_http_elf_linux_x8664(self):
+        def picohttpd():
+            ql = Qiling(["../examples/rootfs/x8664_linux/bin/picohttpd"], "../examples/rootfs/x8664_linux", multithread=True, verbose=QL_VERBOSE.DEBUG)    
+            ql.run()
+
+
+        picohttpd_therad = threading.Thread(target=picohttpd, daemon=True)
+        picohttpd_therad.start()
+
+        time.sleep(1)
+
+        f = os.popen("curl http://127.0.0.1:12913")
+        self.assertEqual("httpd_test_successful", f.read())
+
+    def test_http_elf_linux_arm(self):
+        def picohttpd():
+            ql = Qiling(["../examples/rootfs/arm_linux/bin/picohttpd"], "../examples/rootfs/arm_linux", multithread=True, verbose=QL_VERBOSE.DEBUG)    
+            ql.run()
+
+
+        picohttpd_therad = threading.Thread(target=picohttpd, daemon=True)
+        picohttpd_therad.start()
+
+        time.sleep(1)
+
+        f = os.popen("curl http://127.0.0.1:12913")
+        self.assertEqual("httpd_test_successful", f.read())
+
 
 if __name__ == "__main__":
     unittest.main()
+
+
+
 
 

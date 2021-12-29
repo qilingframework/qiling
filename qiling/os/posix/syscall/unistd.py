@@ -145,8 +145,6 @@ def ql_syscall_lseek(ql: Qiling, fd: int, offset: int, lseek_origin: int):
             regreturn = ql.os.fd[fd].lseek(offset, lseek_origin)
         except OSError:
             regreturn = -1
-        else:
-            regreturn = 0
     else:
         regreturn = -EBADF
 
@@ -266,7 +264,7 @@ def ql_syscall_write(ql: Qiling, fd: int, buf: int, count: int):
     except:
         regreturn = -1
     else:
-        ql.log.debug(f'write() CONTENT: {data.decode()!r}')
+        ql.log.debug(f'write() CONTENT: {bytes(data)}')
 
         if hasattr(ql.os.fd[fd], 'write'):
             ql.os.fd[fd].write(data)
@@ -367,7 +365,7 @@ def ql_syscall_getppid(ql: Qiling):
 
 
 def ql_syscall_vfork(ql: Qiling):
-    if ql.platform == QL_OS.WINDOWS:
+    if ql.platform_os == QL_OS.WINDOWS:
         try:
             pid = Process()
             pid = 0
@@ -687,6 +685,13 @@ def __getdents_common(ql: Qiling, fd: int, dirp: int, count: int, *, is_64: bool
             d_type = _type_mapping(result)
             d_reclen = n + n + 2 + len(d_name) + 1
 
+            # TODO: Dirty fix for X8664 MACOS 11.6 APFS
+            # For some reason MACOS return int value is 64bit
+            try:
+                packed_d_ino = (ql.pack(d_ino), n)
+            except: 
+                packed_d_ino = (ql.pack64(d_ino), n)
+
             if is_64:
                 fields = (
                     (ql.pack(d_ino), n),
@@ -697,7 +702,7 @@ def __getdents_common(ql: Qiling, fd: int, dirp: int, count: int, *, is_64: bool
                 )
             else:
                 fields = (
-                    (ql.pack(d_ino), n),
+                    packed_d_ino,
                     (ql.pack(d_off), n),
                     (ql.pack16(d_reclen), 2),
                     (d_name, len(d_name)),

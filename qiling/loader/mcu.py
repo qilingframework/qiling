@@ -10,9 +10,9 @@ from elftools.elf.elffile import ELFFile
 
 from qiling.const import *
 from qiling.core import Qiling
+from qiling.utils import component_setup
 
 from .loader import QlLoader
-
 
 class IhexParser:
     def __init__(self, path):
@@ -59,30 +59,32 @@ class IhexParser:
 
 class QlLoaderMCU(QlLoader):
     def __init__(self, ql:Qiling):
-        super(QlLoaderMCU, self).__init__(ql)   
+        super().__init__(ql)   
         
-        self.load_address = 0        
-        self.path = self.argv[0]
+        self.entry_point = 0
+        self.load_address = 0
         self.filetype = self.guess_filetype()
+        
+        self.ql._hw = component_setup("hw", "hw", self.ql)
 
         if self.filetype == 'elf':
-            with open(self.path, 'rb') as infile:
+            with open(self.ql.path, 'rb') as infile:
                 self.elf = ELFFile(io.BytesIO(infile.read()))
             
         elif self.filetype == 'bin':
             self.map_address = self.argv[1]
 
         else: # self.filetype == 'hex':
-            self.ihex = IhexParser(self.path)
+            self.ihex = IhexParser(self.ql.path)
 
     def guess_filetype(self):
-        if self.path.endswith('.elf'):
+        if self.ql.path.endswith('.elf'):
             return 'elf'            
             
-        if self.path.endswith('.bin'):
+        if self.ql.path.endswith('.bin'):
             return 'bin'
 
-        if self.path.endswith('.hex'):
+        if self.ql.path.endswith('.hex'):
             return 'hex'
 
         return 'elf'
@@ -91,64 +93,55 @@ class QlLoaderMCU(QlLoader):
         if self.filetype == 'elf':
             for segment in self.elf.iter_segments():
                 if segment['p_type'] == 'PT_LOAD':
-                    for section in self.elf.iter_sections():
-                        if segment.section_in_segment(section):
-                            self.ql.mem.write(section.header['sh_addr'], section.data())
+                    self.ql.mem.write(segment['p_paddr'], segment.data())
 
             # TODO: load symbol table
 
         elif self.filetype == 'bin':
-            with open(self.path, 'rb') as f:
+            with open(self.ql.path, 'rb') as f:
                 self.ql.mem.write(self.map_address, f.read())
 
         else: # self.filetype == 'hex':
             for begin, _, data in self.ihex.segments:
                 self.ql.mem.write(begin, data)
 
-        self.ql.reg.write('lr', 0xffffffff)
-        self.ql.reg.write('msp', self.ql.mem.read_ptr(0x0))
-        self.ql.reg.write('pc' , self.entry_point)
+        
+        self.ql.arch.init_context()
+        self.entry_point = self.ql.reg.read('pc')
 
-    def run(self):
-        def readint(raw):
-            if raw.startswith('0o'):
-                return int(raw, 8)
+    def load_profile(self):
+        self.ql.env.update(self.ql.profile)
 
-            elif raw.startswith('0x'):
-                return int(raw, 16)            
-                        
-            else:
-                return int(raw, 10)
-
-        for section_name in self.ql.profile.sections():
-            section = self.ql.profile[section_name]
-            if section['type'] == 'memory':
-                size = readint(section['size'])
-                base = readint(section['base'])
-                self.ql.mem.map(base, size, info=f'[{section_name}]')
+    def load_env(self):
+        for name, args in self.env.items():
+            memtype = args['type']
+            if memtype == 'memory':
+                size = args['size']
+                base = args['base']
+                self.ql.mem.map(base, size, info=f'[{name}]')
                 
-                if section_name == 'FLASH':
+                if name == 'FLASH':
                     self.ql.hw.setup_remap(0, base, size, info=f'[CODE]')
 
-            if section['type'] == 'bitband':
-                size = readint(section['size']) * 32
-                base = readint(section['base'])
-                alias = readint(section['alias'])
-                self.ql.hw.setup_bitband(base, alias, size, info=f'[{section_name}]')
+            if memtype == 'bitband':
+                size = args['size'] * 32
+                base = args['base']
+                alias = args['alias']
+                self.ql.hw.setup_bitband(base, alias, size, info=f'[{name}]')
 
-            if section['type'] == 'mmio':
-                size = readint(section['size'])
-                base = readint(section['base'])
-                self.ql.hw.setup_mmio(base, size, info=f'[{section_name}]')
+            if memtype == 'mmio':
+                size = args['size']
+                base = args['base']
+                self.ql.hw.setup_mmio(base, size, info=f'[{name}]')
 
-            if section['type'] == 'core periperal':
-                self.ql.hw.create(section_name.lower())
+            if memtype == 'core peripheral':
+                self.ql.hw.create(name.lower())
+
+    def run(self):
+        self.load_profile()
+        self.load_env()
         
         ## Handle interrupt from instruction execution
-        self.ql.hook_intr(self.ql.arch.intr_cb)
+        self.ql.hook_intr(self.ql.arch.soft_interrupt_handler)
                 
         self.reset()
-
-    @property
-    def entry_point(self):
-        return self.ql.mem.read_ptr(0x4)

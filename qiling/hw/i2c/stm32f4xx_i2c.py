@@ -4,12 +4,15 @@
 #
 
 import ctypes
+from enum import IntEnum
 
 from qiling.hw.peripheral import QlPeripheral
+from qiling.hw.connectivity import QlConnectivityPeripheral
 from qiling.hw.const.stm32f4xx_i2c import I2C_CR1, I2C_CR2, I2C_SR1, I2C_SR2, I2C_DR, I2C_OAR1, I2C_OAR2
+from qiling.hw.utils.access import Access, AccessSequence, Op
 
 
-class STM32F4xxI2c(QlPeripheral):
+class STM32F4xxI2c(QlConnectivityPeripheral):
 	class Type(ctypes.Structure):
 		""" the structure is available in :
 			stm32f423xx.h
@@ -47,31 +50,37 @@ class STM32F4xxI2c(QlPeripheral):
 		]
 
 	def __init__(self, ql, label, ev_intn=None, er_intn=None):
-		super().__init__(ql, label)		
+		super().__init__(ql, label, 2)		
+
+		self.history = AccessSequence()
 
 		self.ev_intn = ev_intn # event interrupt
-		self.er_intn = er_intn # error interrupt
-		
-		self.devices = []
-		self.current = None
+		self.er_intn = er_intn # error interrupt		
 		
 		self.reset()
 
-	def reset(self):		
+	def reset(self):
 		self.i2c = self.struct(
 			TRISE = 0x0002
 		)
 
-	def read(self, offset: int, size: int) -> int:
-		self.ql.log.debug(f'[{self.label.upper()}] [R] {self.find_field(offset, size):10s}')
-
+	@QlPeripheral.recorder()
+	@QlPeripheral.monitor()
+	def read(self, offset: int, size: int) -> int:	
 		buf = ctypes.create_string_buffer(size)
 		ctypes.memmove(buf, ctypes.addressof(self.i2c) + offset, size)
+
+		if self.history.match([
+			Access(Op.READ, self.struct.SR1.offset),
+			Access(Op.READ, self.struct.SR2.offset)
+		]):				
+			self.i2c.SR1 &= ~I2C_SR1.ADDR
+
 		return int.from_bytes(buf.raw, byteorder='little')
 
+	@QlPeripheral.recorder()
+	@QlPeripheral.monitor()
 	def write(self, offset: int, size: int, value: int):
-		self.ql.log.debug(f'[{self.label.upper()}] [W] {self.find_field(offset, size):10s} = {hex(value)}')
-		
 		if offset in [self.struct.SR1.offset, self.struct.SR2.offset]:
 			return		
 
@@ -91,11 +100,12 @@ class STM32F4xxI2c(QlPeripheral):
 			self.i2c.SR1 &= ~I2C_SR1.TXE
 
 			if self.is_master_mode():
-				if self.is_7bit_mode():				
-					if self.i2c.SR1 & I2C_SR1.ADDR:
+				if self.is_7bit_mode():	
+					if self.i2c.SR2 & I2C_SR2.TRA:
 						self.send_data()
+
 					else:
-						self.send_address()
+						self.send_address()					
 
 				# TODO 10-bit mode
 
@@ -107,16 +117,35 @@ class STM32F4xxI2c(QlPeripheral):
 	## I2C Control register 2 (I2C_CR2)
 	def send_event_interrupt(self):
 		"""
-			This interrupt is generated when:
-			- SB = 1 (Master)
-			- ADDR = 1 (Master/Slave)
-			- ADD10= 1 (Master)
-			- STOPF = 1 (Slave)
-			- BTF = 1 with no TxE or RxNE event
-			- TxE event to 1 if ITBUFEN = 1
-			- RxNE event to 1 if ITBUFEN = 1
+			ITBUFEN: Buffer interrupt enable
+				0: TxE = 1 or RxNE = 1 does not generate any interrupt.
+				1: TxE = 1 or RxNE = 1 generates Event Interrupt (whatever the state of DMAEN)
+
+			ITEVTEN: Event interrupt enable
+				0: Event interrupt disabled
+				1: Event interrupt enabled
+				This interrupt is generated when:
+				- SB = 1 (Master)
+				- ADDR = 1 (Master/Slave)
+				- ADD10= 1 (Master)
+				- STOPF = 1 (Slave)
+				- BTF = 1 with no TxE or RxNE event
+				- TxE event to 1 if ITBUFEN = 1
+				- RxNE event to 1if ITBUFEN = 1
 		"""
-		if self.ev_intn is not None and self.i2c.CR2 & I2C_CR2.ITEVTEN:
+		if self.ev_intn is None:
+			return
+		
+		if not self.i2c.CR2 & I2C_CR2.ITEVTEN:
+			return
+
+		BUF_IT = I2C_SR1.TXE|I2C_SR1.RXNE
+		SLAVE_IT = I2C_SR1.STOPF|I2C_SR1.ADDR|I2C_SR1.BTF
+		MASTER_IT = I2C_SR1.SB|I2C_SR1.ADDR|I2C_SR1.ADD10|I2C_SR1.BTF
+
+		if  (self.i2c.CR2 & I2C_CR2.ITBUFEN and self.i2c.SR1 & BUF_IT) or \
+			(self.is_slave_mode()           and self.i2c.SR1 & SLAVE_IT) or \
+			(self.is_master_mode()          and self.i2c.SR1 & MASTER_IT):
 			self.ql.hw.nvic.set_pending(self.ev_intn)
 
 	## I2C Status register 1 (I2C_SR1)
@@ -134,7 +163,6 @@ class STM32F4xxI2c(QlPeripheral):
 		self.i2c.SR1 |= I2C_SR1.SB
 		self.i2c.CR1 &= ~I2C_CR1.START
 
-		self.send_event_interrupt()
 		self.set_master_mode()
 
 	def generate_stop(self):
@@ -143,22 +171,22 @@ class STM32F4xxI2c(QlPeripheral):
 		
 		self.i2c.SR1 |= I2C_SR1.STOPF
 		self.i2c.SR1 &= ~I2C_SR1.ADDR
+		
 		self.set_slave_mode()
+		self.i2c.SR2 &= ~I2C_SR2.TRA
 	
 	def send_address(self):
 		if self.i2c.DR == self.i2c.OAR1 >> 1:
-			for dev in self.devices:
-				if self.i2c.DR == dev.address:
-					self.current = dev
 			
 			# TODO: send ACK
+			self.i2c.SR1 &= ~I2C_SR1.SB
 			self.i2c.SR1 |= I2C_SR1.ADDR | I2C_SR1.TXE
-			self.send_event_interrupt()
+			self.i2c.SR2 |= I2C_SR2.TRA
 
 	def send_data(self):
 		self.i2c.SR1 |= I2C_SR1.BTF | I2C_SR1.TXE
-		self.current.send(self.i2c.DR)
-		self.send_event_interrupt()
+
+		self.send_to_user(self.i2c.DR)
 
 	## I2C Status register 2 (I2C_SR2)
 	def is_master_mode(self):
@@ -168,6 +196,9 @@ class STM32F4xxI2c(QlPeripheral):
 			1: Master Mode
 		"""
 		return self.i2c.SR2 & I2C_SR2.MSL
+
+	def is_slave_mode(self):
+		return not self.is_master_mode()
 
 	def set_master_mode(self):
 		"""
@@ -191,16 +222,17 @@ class STM32F4xxI2c(QlPeripheral):
 	def fetch_device_address(self):
 		# dual addressing mode
 		if self.i2c.OAR2 & I2C_OAR2.ENDUAL:
-			self.i2c.OAR1 = self.devices[0].address << 1
-			self.i2c.OAR2 = I2C_OAR2.ENDUAL | (self.devices[1].address << 1)
+			self.i2c.OAR1 = self.device_list[0].address << 1
+			self.i2c.OAR2 = I2C_OAR2.ENDUAL | (self.device_list[1].address << 1)
 
 		# single device, 10-bit slave address
 		elif self.i2c.OAR1 & I2C_OAR1.ADDMODE: 
-			self.i2c.OAR1 = I2C_OAR1.ADDMODE | self.devices[0].address
+			self.i2c.OAR1 = I2C_OAR1.ADDMODE | self.device_list[0].address
 		
 		# single device, 7-bit slave address
 		else:
-			self.i2c.OAR1 = self.devices[0].address << 1
+			self.i2c.OAR1 = self.device_list[0].address << 1
 
-	def connect(self, dev):
-		self.devices.append(dev)
+	@QlConnectivityPeripheral.device_handler
+	def step(self):
+		self.send_event_interrupt()

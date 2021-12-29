@@ -11,7 +11,7 @@ from contextlib import contextmanager
 
 from qiling.const import QL_ARCH
 
-from .utils import dump_regs, get_arm_flags, disasm, parse_int
+from .utils import dump_regs, get_arm_flags, disasm, _parse_int, handle_bnj
 from .const import *
 
 
@@ -59,7 +59,7 @@ def examine_mem(ql: Qiling, line: str) -> Union[bool, (str, int, int)]:
     elif ql.archtype == QL_ARCH.MIPS:
         addr = addr.replace("fp", "s8")
 
-    addr = getattr(ql.reg, addr) if addr in ql.reg.register_mapping.keys() else parse_int(addr)
+    addr = getattr(ql.reg, addr) if addr in ql.reg.register_mapping.keys() else _parse_int(addr)
 
     def unpack(bs, sz):
         return {
@@ -87,7 +87,7 @@ def examine_mem(ql: Qiling, line: str) -> Union[bool, (str, int, int)]:
 
         for line in range(lines):
             offset = line * sz * 4
-            print("0x{addr+offset:x}:\t", end="")
+            print(f"0x{addr+offset:x}:\t", end="")
 
             idx = line * ql.pointersize
             for each in mem_read[idx:idx+ql.pointersize]:
@@ -120,17 +120,19 @@ def _try_read(ql: Qiling, address: int, size: int) -> Optional[bytes]:
 
 # divider printer
 @contextmanager
-def context_printer(ql: Qiling, field_name: str, ruler: str = "=") -> None:
-    _height, _width = get_terminal_size()
-    print(field_name, ruler * (_width - len(field_name) - 1))
+def context_printer(ql: Qiling, field_name: str, ruler: str = "─") -> None:
+    height, width = get_terminal_size()
+    bar = (width - len(field_name)) // 2 - 1
+    print(ruler * bar, field_name, ruler * bar)
     yield
-    print(ruler * _width)
+    if "DISASM" in field_name:
+        print(ruler * width)
 
 
 def context_reg(ql: Qiling, saved_states: Optional[Mapping[str, int]] = None, /, *args, **kwargs) -> None:
 
     # context render for registers
-    with context_printer(ql, "[Registers]"):
+    with context_printer(ql, "[ REGISTERS ]"):
 
         _cur_regs = dump_regs(ql)
 
@@ -162,30 +164,41 @@ def context_reg(ql: Qiling, saved_states: Optional[Mapping[str, int]] = None, /,
 
             print(lines.format(*_cur_regs.values()))
 
-        elif ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB):
+        elif ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB, QL_ARCH.CORTEX_M):
+
 
             _cur_regs.update({"sl": _cur_regs.pop("r10")})
-            _cur_regs.update({"fp": _cur_regs.pop("r11")})
             _cur_regs.update({"ip": _cur_regs.pop("r12")})
+            _cur_regs.update({"fp": _cur_regs.pop("r11")})
 
+            regs_in_row = 4
+            if ql.archtype == QL_ARCH.CORTEX_M:
+                regs_in_row = 3
+
+                # for re-order
+                _cur_regs.update({"xpsr": _cur_regs.pop("xpsr")})
+                _cur_regs.update({"control": _cur_regs.pop("control")})
+                _cur_regs.update({"primask": _cur_regs.pop("primask")})
+                _cur_regs.update({"faultmask": _cur_regs.pop("faultmask")})
+                _cur_regs.update({"basepri": _cur_regs.pop("basepri")})
+
+            _diff = None
             if saved_states is not None:
                 _saved_states = copy.deepcopy(saved_states)
                 _saved_states.update({"sl": _saved_states.pop("r10")})
-                _saved_states.update({"fp": _saved_states.pop("r11")})
                 _saved_states.update({"ip": _saved_states.pop("r12")})
+                _saved_states.update({"fp": _saved_states.pop("r11")})
                 _diff = [k for k in _cur_regs if _cur_regs[k] != _saved_states[k]]
-
-            else:
-                _diff = None
 
             lines = ""
             for idx, r in enumerate(_cur_regs, 1):
-                line = "{}{:}: 0x{{:08x}} {}\t".format(_colors[(idx-1) // 4], r, color.END)
+
+                line = "{}{:}: 0x{{:08x}} {}  ".format(_colors[(idx-1) // regs_in_row], r, color.END)
 
                 if _diff and r in _diff:
                     line = "{}{}".format(color.UNDERLINE, color.BOLD) + line
 
-                if idx % 4 == 0:
+                if idx % regs_in_row == 0:
                     line += "\n"
 
                 lines += line
@@ -193,42 +206,64 @@ def context_reg(ql: Qiling, saved_states: Optional[Mapping[str, int]] = None, /,
             print(lines.format(*_cur_regs.values()))
             print(color.GREEN, "[{cpsr[mode]} mode], Thumb: {cpsr[thumb]}, FIQ: {cpsr[fiq]}, IRQ: {cpsr[irq]}, NEG: {cpsr[neg]}, ZERO: {cpsr[zero]}, Carry: {cpsr[carry]}, Overflow: {cpsr[overflow]}".format(cpsr=get_arm_flags(ql.reg.cpsr)), color.END, sep="")
 
-    # context render for Stack
-    with context_printer(ql, "[Stack]", ruler="-"):
+    if ql.archtype != QL_ARCH.CORTEX_M:
+    # context render for Stack, skip this for CORTEX_M
+        with context_printer(ql, "[ STACK ]", ruler="─"):
 
-        for idx in range(8):
-            _addr = ql.reg.arch_sp + idx * 4
-            _val = ql.mem.read(_addr, ql.pointersize)
-            print(f"$sp+0x{idx*4:02x}|[0x{_addr:08x}]=> 0x{ql.unpack(_val):08x}", end="")
+            for idx in range(10):
+                addr = ql.reg.arch_sp + idx * ql.pointersize
+                val = ql.mem.read(addr, ql.pointersize)
+                print(f"$sp+0x{idx*ql.pointersize:02x}│ [0x{addr:08x}] —▸ 0x{ql.unpack(val):08x}", end="")
 
-            try:  # try to deference wether its a pointer
-                _deref = ql.mem.read(_addr, ql.pointersize)
-            except:
-                _deref = None
+                try:  # try to deference wether its a pointer
+                    buf = ql.mem.read(addr, ql.pointersize)
+                except:
+                    buf = None
 
-            if _deref:
-                print(f" => 0x{ql.unpack(_deref):08x}")
+                if (addr := ql.unpack(buf)):
+                    try:  # try to deference again
+                        buf = ql.mem.read(addr, ql.pointersize)
+                    except:
+                        buf = None
+
+                    if buf:
+                        try:
+                            s = ql.mem.string(addr)
+                        except:
+                            s = None
+
+                        if s and s.isprintable():
+                            print(f" ◂— {ql.mem.string(addr)}", end="")
+                        else:
+                            print(f" ◂— 0x{ql.unpack(buf):08x}", end="")
+                print()
 
 
-def print_asm(ql: Qiling, ins: CsInsn) -> None:
-    fmt = (ins.address, ins.mnemonic.ljust(6), ins.op_str)
-    if ql.reg.arch_pc == ins.address:
-        print(f"PC ==>  0x{fmt[0]:x}\t{fmt[1]} {fmt[2]}")
-    else:
-        print(f"\t0x{fmt[0]:x}\t{fmt[1]} {fmt[2]}")
+def print_asm(ql: Qiling, insn: CsInsn, to_jump: Optional[bool] = None, address: int = None) -> None:
+
+    opcode = "".join(f"{b:02x}" for b in insn.bytes)
+    trace_line = f"0x{insn.address:08x} │ {opcode:10s} {insn.mnemonic:10} {insn.op_str:35s}"
+
+    cursor = " "
+    if ql.reg.arch_pc == insn.address:
+        cursor = "►"
+
+    jump_sign = " "
+    if to_jump and address != ql.reg.arch_pc+4:
+        jump_sign = f"{color.RED}✓{color.END}"
+
+    print(f"{jump_sign}  {cursor}   {color.DARKGRAY}{trace_line}{color.END}")
 
 
 def context_asm(ql: Qiling, address: int) -> None:
 
-    with context_printer(ql, field_name="[Code]"):
+    with context_printer(ql, field_name="[ DISASM ]"):
 
         # assembly before current location
 
         past_list = []
 
-        if ql.archtype in (QL_ARCH.MIPS, QL_ARCH.ARM, QL_ARCH.ARM_THUMB):
-
-            line = disasm(ql, address-0x10)
+        line = disasm(ql, address-0x10)
 
         while line:
             if line.address == address:
@@ -249,7 +284,8 @@ def context_asm(ql: Qiling, address: int) -> None:
         # assembly for current location
 
         cur_ins = disasm(ql, address)
-        print_asm(ql, cur_ins)
+        to_jump, next_stop = handle_bnj(ql, address)
+        print_asm(ql, cur_ins, to_jump=to_jump)
 
         # assembly after current location
 

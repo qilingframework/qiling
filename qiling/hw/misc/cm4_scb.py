@@ -7,7 +7,7 @@
 import ctypes
 
 from qiling.hw.peripheral import QlPeripheral
-from qiling.arch.arm_const import IRQ
+from qiling.arch.cortex_m_const import IRQ
 
 class CortexM4Scb(QlPeripheral):
     class Type(ctypes.Structure):
@@ -117,11 +117,13 @@ class CortexM4Scb(QlPeripheral):
     def get_priority(self, IRQn):
         return self.scb.SHP[(IRQn & 0xf) - 4]
 
+    @QlPeripheral.monitor()
     def read(self, offset: int, size: int) -> int:
         buf = ctypes.create_string_buffer(size)
         ctypes.memmove(buf, ctypes.addressof(self.scb) + offset, size)
         return int.from_bytes(buf.raw, byteorder='little')
 
+    @QlPeripheral.monitor()
     def write(self, offset: int, size: int, value: int):
         if offset == self.struct.ICSR.offset:
             if (value >> 28) & 1:

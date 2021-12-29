@@ -3,8 +3,8 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from enum import EnumMeta, IntEnum
-from typing import Mapping, TypeVar
+from enum import Enum, IntEnum
+from typing import Any, Mapping, Type
 
 class QL_ENDIAN(IntEnum):
     EL = 1
@@ -20,6 +20,8 @@ class QL_ARCH(IntEnum):
     A8086 = 107
     EVM = 108
     CORTEX_M = 109
+    RISCV = 110
+    RISCV64 = 111
 
 class QL_OS(IntEnum):
     LINUX = 201
@@ -30,7 +32,8 @@ class QL_OS(IntEnum):
     DOS = 206
     EVM = 207
     QNX = 208
-    CORTEX_M = 109
+    MCU = 209
+    BLOB = 210
 
 class QL_VERBOSE(IntEnum):
     OFF = 0
@@ -51,27 +54,22 @@ class QL_INTERCEPT(IntEnum):
 
 QL_DEBUGGER_ALL = (QL_DEBUGGER.IDAPRO, QL_DEBUGGER.GDB, QL_DEBUGGER.QDB)
 
-QL_ARCH_MCU32  = (QL_ARCH.CORTEX_M,)
-QL_ARCH_MCU    = QL_ARCH_MCU32
-
 QL_ARCH_ENDIAN = (QL_ARCH.MIPS, QL_ARCH.ARM)
 QL_ARCH_1BIT   = (QL_ARCH.EVM,)
 QL_ARCH_16BIT  = (QL_ARCH.A8086,)
-QL_ARCH_32BIT  = (QL_ARCH.ARM, QL_ARCH.ARM_THUMB, QL_ARCH.MIPS, QL_ARCH.X86) + QL_ARCH_MCU32
-QL_ARCH_64BIT  = (QL_ARCH.ARM64, QL_ARCH.X8664)
+QL_ARCH_32BIT  = (QL_ARCH.ARM, QL_ARCH.ARM_THUMB, QL_ARCH.MIPS, QL_ARCH.X86, QL_ARCH.CORTEX_M, QL_ARCH.RISCV)
+QL_ARCH_64BIT  = (QL_ARCH.ARM64, QL_ARCH.X8664, QL_ARCH.RISCV64)
 
-QL_OS_NONPID        = (QL_OS.DOS, QL_OS.UEFI)
-QL_ARCH_HARDWARE    = QL_ARCH_MCU
-QL_ARCH_NONEOS      = (QL_ARCH.EVM,)
-QL_OS_POSIX         = (QL_OS.LINUX, QL_OS.FREEBSD, QL_OS.MACOS, QL_OS.QNX)
-QL_OS_ALL           = QL_OS_POSIX + QL_OS_NONPID + (QL_OS.WINDOWS,)
+QL_OS_NONPID            = (QL_OS.DOS, QL_OS.UEFI)
+QL_OS_POSIX             = (QL_OS.LINUX, QL_OS.FREEBSD, QL_OS.MACOS, QL_OS.QNX)
+
+QL_OS_BAREMETAL   = (QL_OS.MCU,)
+QL_OS_INTERPRETER = (QL_OS.EVM,)
 
 QL_HOOK_BLOCK = 0b0001
 QL_CALL_BLOCK = 0b0010
 
-__QL_CE = TypeVar('__QL_CE', QL_DEBUGGER, QL_ARCH, QL_OS, QL_VERBOSE)
-
-def __reverse_enum(e: EnumMeta) -> Mapping[str, __QL_CE]:
+def __reverse_enum(e: Type[Enum]) -> Mapping[str, Any]:
     '''Create a reverse mapping for an enum.
     '''
 
@@ -91,10 +89,10 @@ loader_map = {
     QL_OS.UEFI    : "PE_UEFI",
     QL_OS.DOS     : "DOS",
     QL_OS.EVM     : "EVM",
-    QL_ARCH.CORTEX_M  : "MCU",
+    QL_OS.MCU     : "MCU",
+    QL_OS.BLOB    : "BLOB"
 }
 
 arch_os_map = {
     QL_ARCH.EVM: QL_OS.EVM,
-    QL_ARCH.CORTEX_M: QL_OS.CORTEX_M,
 }

@@ -598,6 +598,22 @@ class FunctionHook:
             ins = b'\x90'
             self.add_function_hook = self.add_function_hook_relocation
 
+        elif  self.ql.archtype== QL_ARCH.RISCV:
+            self.GLOB_DAT = 21
+            self.JMP_SLOT = 22
+            
+            # ADDI x0, x0, 0
+            ins = b'\x00\x01'
+            self.add_function_hook = self.add_function_hook_relocation
+
+        elif  self.ql.archtype== QL_ARCH.RISCV64:
+            self.GLOB_DAT = 21
+            self.JMP_SLOT = 22
+            
+            # ADDI x0, x0, 0
+            ins = b'\x00\x01'
+            self.add_function_hook = self.add_function_hook_relocation
+
         self._parse()
         if self.rel != None:
             self.show_relocation(self.rel)
@@ -798,7 +814,9 @@ class FunctionHook:
 
             elif d.d_tag == DT_PLTREL:
                 if d.d_un != self.plt_rel_type:
-                    raise
+                    # FIXME: I don't why it is a error
+                    # but it is triggered in riscv32
+                    pass
             elif d.d_tag == DT_PLTRELSZ:
                 self.plt_rel_size = d.d_un
             elif d.d_tag == DT_JMPREL:
