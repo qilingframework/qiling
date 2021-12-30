@@ -57,8 +57,14 @@ stm32f411 = {
         "struct": "STM32F4xxExti",
         "type": "peripheral"
     },
+    "CODE": {
+        "base": 0x08000000,
+        "size": 0x80000,
+        "alias": 0x0,
+        "type": "remap"
+    }, 
     "FLASH": {
-        "base": 0x8000000,
+        "base": 0x08000000,
         "size": 0x80000,
         "type": "memory"
     },

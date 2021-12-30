@@ -85,6 +85,7 @@ class QlArchCORTEX_M(QlArchARM):
         self.ql.hw.step()
 
     def stop(self):
+        self.ql.emu_stop()
         self.runable = False
 
     def run(self, count=-1, end=None):
@@ -112,13 +113,34 @@ class QlArchCORTEX_M(QlArchARM):
         self.ql.reg.write('pc' , self.ql.mem.read_ptr(0x4))
 
     def soft_interrupt_handler(self, ql, intno):
-        if intno == EXCP.SWI:
-            ql.hw.nvic.set_pending(IRQ.SVCALL)                    
+        forward_mapper = {
+            EXCP.UDEF           : IRQ.HARD_FAULT,    # undefined instruction
+            EXCP.SWI            : IRQ.SVCALL,        # software interrupt
+            EXCP.PREFETCH_ABORT : IRQ.HARD_FAULT,
+            EXCP.DATA_ABORT     : IRQ.HARD_FAULT,
+            EXCP.EXCEPTION_EXIT : IRQ.NOTHING,
+            # EXCP.KERNEL_TRAP    : IRQ.NOTHING,
+            # EXCP.HVC            : IRQ.NOTHING,
+            # EXCP.HYP_TRAP       : IRQ.NOTHING,
+            # EXCP.SMC            : IRQ.NOTHING,
+            # EXCP.VIRQ           : IRQ.NOTHING,
+            # EXCP.VFIQ           : IRQ.NOTHING,
+            # EXCP.SEMIHOST       : IRQ.NOTHING,
+            EXCP.NOCP           : IRQ.USAGE_FAULT,   # v7M NOCP UsageFault
+            EXCP.INVSTATE       : IRQ.USAGE_FAULT,   # v7M INVSTATE UsageFault
+            EXCP.STKOF          : IRQ.USAGE_FAULT,   # v8M STKOF UsageFault
+            # EXCP.LAZYFP         : IRQ.NOTHING,
+            # EXCP.LSERR          : IRQ.NOTHING,
+            EXCP.UNALIGNED      : IRQ.USAGE_FAULT,   # v7M UNALIGNED UsageFault
+        }
 
-        elif intno == EXCP.EXCEPTION_EXIT:
-            ql.emu_stop()            
-        
-        else:
+        ql.emu_stop()
+
+        try:
+            handle = forward_mapper.get(intno)
+            if handle != IRQ.NOTHING:
+                ql.hw.nvic.set_pending(handle)
+        except IndexError:
             raise QlErrorNotImplemented(f'Unhandled interrupt number ({intno})')
 
     def hard_interrupt_handler(self, ql, intno):

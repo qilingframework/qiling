@@ -119,9 +119,12 @@ class QlLoaderMCU(QlLoader):
                 size = args['size']
                 base = args['base']
                 self.ql.mem.map(base, size, info=f'[{name}]')
-                
-                if name == 'FLASH':
-                    self.ql.hw.setup_remap(0, base, size, info=f'[CODE]')
+            
+            if memtype == 'remap':
+                size = args['size']
+                base = args['base']
+                alias = args['alias']
+                self.ql.hw.setup_remap(alias, base, size, info=f'[{name}]')
 
             if memtype == 'bitband':
                 size = args['size'] * 32
