@@ -1,7 +1,24 @@
 This file details the changelog of Qiling Framework.
 
+
 ------------------------------------
-[Version 1.4.1]: Nov 15th, 2021
+[Version 1.4.2]: Jan 29th, 2022
+
+New features:
+-
+-
+
+Improvements:
+-
+-
+
+Contributors:
+-
+-
+
+
+------------------------------------
+[Version 1.4.1]: Dec 29th, 2021
 
 New features:
 - Introduced riscv, both 32 and 64 (#980)
@@ -15,6 +32,7 @@ Improvements:
 - More update in MCU modules (#971)
 - Fix getpeername and getsockname syscalls (#986)
 - Qdb improvements (#999)
+- QNX improvements (#1054)
 
 Contributors:
 - cq674350529
