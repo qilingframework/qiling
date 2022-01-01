@@ -10,7 +10,7 @@ from qiling import Qiling
 from qiling.const import QL_ARCH
 from qiling.exception import QlErrorArch, QlMemoryMappedError
 from qiling.loader.loader import QlLoader, Image
-from qiling.os.const import POINTER
+from qiling.os.const import PARAM_INTN, POINTER
 
 from qiling.os.uefi import st, smst, utils
 from qiling.os.uefi.context import DxeContext, SmmContext, UefiContext
@@ -144,19 +144,10 @@ class QlLoaderPE_UEFI(QlLoader):
             ret  : return address; may be None
         """
 
-        # arguments gpr (ms x64 cc)
-        regs = ('rcx', 'rdx', 'r8', 'r9')
-        assert len(args) <= len(regs), f'currently supporting up to {len(regs)} arguments'
+        types = (PARAM_INTN, ) * len(args)
+        targs = tuple(zip(types, args))
 
-        # set up the arguments
-        for reg, arg in zip(regs, args):
-            self.ql.reg.write(reg, arg)
-
-        # if provided, set return address
-        if ret is not None:
-            self.ql.stack_push(ret)
-
-        self.ql.reg.rip = addr
+        self.ql.os.fcall.call_native(addr, targs, ret)
 
     def unload_modules(self, context: UefiContext) -> bool:
         """Invoke images unload callbacks, if set.
