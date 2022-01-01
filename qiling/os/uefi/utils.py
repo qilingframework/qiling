@@ -26,7 +26,7 @@ def execute_protocol_notifications(ql: Qiling, from_hook: bool = False) -> bool:
 	if not ql.loader.notify_list:
 		return False
 
-	next_hook = ql.loader.smm_context.heap.alloc(ql.pointersize)
+	next_hook = ql.loader.context.heap.alloc(ql.pointersize)
 
 	def __notify_next(ql: Qiling):
 		if ql.loader.notify_list:
@@ -38,7 +38,7 @@ def execute_protocol_notifications(ql: Qiling, from_hook: bool = False) -> bool:
 			ql.log.info(f'Notify event: done')
 
 			# the last item on the list has been notified; tear down this hook
-			ql.loader.smm_context.heap.free(next_hook)
+			ql.loader.context.heap.free(next_hook)
 			hret.remove()
 
 			ql.reg.rax = EFI_SUCCESS
@@ -56,7 +56,7 @@ def execute_protocol_notifications(ql: Qiling, from_hook: bool = False) -> bool:
 	if from_hook:
 		ql.stack_push(next_hook)
 	else:
-		ql.stack_push(ql.loader.smm_context.end_of_execution_ptr)
+		ql.stack_push(ql.loader.context.end_of_execution_ptr)
 		ql.reg.arch_pc = next_hook
 
 	return True
