@@ -29,6 +29,9 @@ def execute_protocol_notifications(ql: Qiling, from_hook: bool = False) -> bool:
 	next_hook = ql.loader.context.heap.alloc(ql.pointersize)
 
 	def __notify_next(ql: Qiling):
+		# discard previous callback's shadow space
+		ql.reg.arch_sp += (4 * ql.pointersize)
+
 		if ql.loader.notify_list:
 			event_id, notify_func, callback_args = ql.loader.notify_list.pop(0)
 			ql.log.info(f'Notify event: id = {event_id}, (*{notify_func:#x})({", ".join(f"{a:#x}" for a in callback_args)})')
@@ -42,14 +45,13 @@ def execute_protocol_notifications(ql: Qiling, from_hook: bool = False) -> bool:
 			hret.remove()
 
 			ql.reg.rax = EFI_SUCCESS
-			ql.reg.arch_sp += (4 * ql.pointersize)
 			ql.reg.arch_pc = ql.stack_pop()
 
 	hret = ql.hook_address(__notify_next, next_hook)
 
-	# functions with more than 4 parameters expect the extra parameters to appear on
-	# the stack. allocate room for another 4 parameters, in case one of the fucntions
-	# will need it
+	# __notify_next unwinds the previous callback shadow space allocated by call_function. however, on its first invocation
+	# there is no such shadow space. to maintain stack consistency we set here a bogus shadow space that may be discarded
+	# safely
 	ql.reg.arch_sp -= (4 * ql.pointersize)
 
 	# To avoid having two versions of the code the first notify function will also be called from the __notify_next hook.
