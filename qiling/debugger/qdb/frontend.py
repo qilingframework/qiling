@@ -88,7 +88,7 @@ def examine_mem(ql: Qiling, line: str) -> Union[bool, (str, int, int)]:
         mem_read = []
         for offset in range(ct):
             # append data if read successfully, otherwise return error message
-            if (data := _try_read(ql, addr+(offset*sz), sz))[0]:
+            if (data := _try_read(ql, addr+(offset*sz), sz))[0] is not None:
                 mem_read.append(data[0])
 
             else:
@@ -231,27 +231,22 @@ def context_reg(ql: Qiling, saved_states: Optional[Mapping[str, int]] = None, /,
                 val = ql.mem.read(addr, ql.pointersize)
                 print(f"$sp+0x{idx*ql.pointersize:02x}│ [0x{addr:08x}] —▸ 0x{ql.unpack(val):08x}", end="")
 
-                try:  # try to deference wether its a pointer
-                    buf = ql.mem.read(addr, ql.pointersize)
-                except:
-                    buf = None
+                # try to dereference wether it's a pointer
+                if (buf := _try_read(ql, addr, ql.pointersize))[0] is not None:
 
-                if (addr := ql.unpack(buf)):
-                    try:  # try to deference again
-                        buf = ql.mem.read(addr, ql.pointersize)
-                    except:
-                        buf = None
+                    if (addr := ql.unpack(buf[0])):
 
-                    if buf:
-                        try:
-                            s = ql.mem.string(addr)
-                        except:
-                            s = None
+                        # try to dereference again
+                        if (buf := _try_read(ql, addr, ql.pointersize))[0] is not None:
+                            try:
+                                s = ql.mem.string(addr)
+                            except:
+                                s = None
 
-                        if s and s.isprintable():
-                            print(f" ◂— {ql.mem.string(addr)}", end="")
-                        else:
-                            print(f" ◂— 0x{ql.unpack(buf):08x}", end="")
+                            if s and s.isprintable():
+                                print(f" ◂— {ql.mem.string(addr)}", end="")
+                            else:
+                                print(f" ◂— 0x{ql.unpack(buf[0]):08x}", end="")
                 print()
 
 
