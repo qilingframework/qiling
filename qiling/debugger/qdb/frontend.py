@@ -42,26 +42,38 @@ def examine_mem(ql: Qiling, line: str) -> Union[bool, (str, int, int)]:
 
             return (f, s, c)
 
-        fmt, addr = line.strip("/").split()
+
+        fmt, *rest = line.strip("/").split()
+
+        rest = "".join(rest)
 
         fmt = get_fmt(fmt)
 
     elif len(_args) == 1:  # only address
-        addr = _args[0]
+        rest = _args[0]
         fmt = DEFAULT_FMT
 
     else:
-        return False
-
-    addr = addr.strip('$')
+        rest = _args
 
     if ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB):
-        addr = addr.replace("fp", "r11")
+        rest = rest.replace("fp", "r11")
 
     elif ql.archtype == QL_ARCH.MIPS:
-        addr = addr.replace("fp", "s8")
+        rest = rest.replace("fp", "s8")
 
-    addr = getattr(ql.reg, addr) if addr in ql.reg.register_mapping.keys() else _parse_int(addr)
+    # for supporting addition of register with constant value
+    elems = rest.split("+")
+    elems = [elem.strip("$") for elem in elems]
+
+    items = []
+    for elem in elems:
+        if elem in ql.reg.register_mapping.keys():
+            items.append(getattr(ql.reg, elem, None))
+        else:
+            items.append(_parse_int(elem))
+
+    addr = sum(items)
 
     def unpack(bs, sz):
         return {
