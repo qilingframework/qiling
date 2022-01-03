@@ -11,6 +11,8 @@ from contextlib import contextmanager
 
 from qiling.const import QL_ARCH
 
+import unicorn
+
 from .utils import dump_regs, get_arm_flags, disasm, _parse_int, handle_bnj
 from .const import *
 
@@ -83,7 +85,14 @@ def examine_mem(ql: Qiling, line: str) -> Union[bool, (str, int, int)]:
     else:
         lines = 1 if ct <= 4 else math.ceil(ct / 4)
 
-        mem_read = [ql.mem.read(addr+(offset*sz), sz) for offset in range(ct)]
+        mem_read = []
+        for offset in range(ct):
+            # append data if read successfully, otherwise return error message
+            if (data := _try_read(ql, addr+(offset*sz), sz))[0]:
+                mem_read.append(data[0])
+
+            else:
+                return data[1]
 
         for line in range(lines):
             offset = line * sz * 4
@@ -95,7 +104,6 @@ def examine_mem(ql: Qiling, line: str) -> Union[bool, (str, int, int)]:
                 prefix = "0x" if ft in ("x", "a") else ""
                 pad = '0' + str(sz*2) if ft in ('x', 'a', 't') else ''
                 ft = ft.lower() if ft in ("x", "o", "b", "d") else ft.lower().replace("t", "b").replace("a", "x")
-
                 print(f"{prefix}{data:{pad}{ft}}\t", end="")
 
             print()
@@ -110,12 +118,20 @@ def get_terminal_size() -> Iterable:
 
 # try to read data from ql memory
 def _try_read(ql: Qiling, address: int, size: int) -> Optional[bytes]:
+
+    result = None
+    err_msg = ""
     try:
         result = ql.mem.read(address, size)
-    except:
-        result = None
 
-    return result
+    except unicorn.unicorn.UcError as err:
+        if err.errno == 6: # Invalid memory read (UC_ERR_READ_UNMAPPED)
+            err_msg = f"Can not access memory at address 0x{address:08x}"
+
+    except:
+        pass
+
+    return (result, err_msg)
 
 
 # divider printer

@@ -302,11 +302,8 @@ class QlQdb(cmd.Cmd, QlDebugger):
         e.g. x/4wx 0x41414141 , print 4 word size begin from address 0x41414141 in hex
         """
 
-        try:
-            if not examine_mem(self.ql, line):
-                self.do_help("examine")
-        except:
-            print(f"{color.RED}[!] something went wrong ...{color.END}")
+        if type(err_msg := examine_mem(self.ql, line)) is str:
+            print(f"{color.RED}[!] {err_msg} ...{color.END}")
 
     def do_show(self: QlQdb, *args) -> None:
         """
