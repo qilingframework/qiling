@@ -303,8 +303,8 @@ class QlQdb(cmd.Cmd, QlDebugger):
         """
 
         try:
-            if not examine_mem(self.ql, line):
-                self.do_help("examine")
+            if type(err_msg := examine_mem(self.ql, line)) is str:
+                print(f"{color.RED}[!] {err_msg} ...{color.END}")
         except:
             print(f"{color.RED}[!] something went wrong ...{color.END}")
 

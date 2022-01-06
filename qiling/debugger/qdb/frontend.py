@@ -11,6 +11,8 @@ from contextlib import contextmanager
 
 from qiling.const import QL_ARCH
 
+import unicorn
+
 from .utils import dump_regs, get_arm_flags, disasm, _parse_int, handle_bnj
 from .const import *
 
@@ -40,26 +42,38 @@ def examine_mem(ql: Qiling, line: str) -> Union[bool, (str, int, int)]:
 
             return (f, s, c)
 
-        fmt, addr = line.strip("/").split()
+
+        fmt, *rest = line.strip("/").split()
+
+        rest = "".join(rest)
 
         fmt = get_fmt(fmt)
 
     elif len(_args) == 1:  # only address
-        addr = _args[0]
+        rest = _args[0]
         fmt = DEFAULT_FMT
 
     else:
-        return False
-
-    addr = addr.strip('$')
+        rest = _args
 
     if ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB):
-        addr = addr.replace("fp", "r11")
+        rest = rest.replace("fp", "r11")
 
     elif ql.archtype == QL_ARCH.MIPS:
-        addr = addr.replace("fp", "s8")
+        rest = rest.replace("fp", "s8")
 
-    addr = getattr(ql.reg, addr) if addr in ql.reg.register_mapping.keys() else _parse_int(addr)
+    # for supporting addition of register with constant value
+    elems = rest.split("+")
+    elems = [elem.strip("$") for elem in elems]
+
+    items = []
+    for elem in elems:
+        if elem in ql.reg.register_mapping.keys():
+            items.append(getattr(ql.reg, elem, None))
+        else:
+            items.append(_parse_int(elem))
+
+    addr = sum(items)
 
     def unpack(bs, sz):
         return {
@@ -83,7 +97,14 @@ def examine_mem(ql: Qiling, line: str) -> Union[bool, (str, int, int)]:
     else:
         lines = 1 if ct <= 4 else math.ceil(ct / 4)
 
-        mem_read = [ql.mem.read(addr+(offset*sz), sz) for offset in range(ct)]
+        mem_read = []
+        for offset in range(ct):
+            # append data if read successfully, otherwise return error message
+            if (data := _try_read(ql, addr+(offset*sz), sz))[0] is not None:
+                mem_read.append(data[0])
+
+            else:
+                return data[1]
 
         for line in range(lines):
             offset = line * sz * 4
@@ -95,7 +116,6 @@ def examine_mem(ql: Qiling, line: str) -> Union[bool, (str, int, int)]:
                 prefix = "0x" if ft in ("x", "a") else ""
                 pad = '0' + str(sz*2) if ft in ('x', 'a', 't') else ''
                 ft = ft.lower() if ft in ("x", "o", "b", "d") else ft.lower().replace("t", "b").replace("a", "x")
-
                 print(f"{prefix}{data:{pad}{ft}}\t", end="")
 
             print()
@@ -110,12 +130,20 @@ def get_terminal_size() -> Iterable:
 
 # try to read data from ql memory
 def _try_read(ql: Qiling, address: int, size: int) -> Optional[bytes]:
+
+    result = None
+    err_msg = ""
     try:
         result = ql.mem.read(address, size)
-    except:
-        result = None
 
-    return result
+    except unicorn.unicorn.UcError as err:
+        if err.errno == 6: # Invalid memory read (UC_ERR_READ_UNMAPPED)
+            err_msg = f"Can not access memory at address 0x{address:08x}"
+
+    except:
+        pass
+
+    return (result, err_msg)
 
 
 # divider printer
@@ -215,27 +243,22 @@ def context_reg(ql: Qiling, saved_states: Optional[Mapping[str, int]] = None, /,
                 val = ql.mem.read(addr, ql.pointersize)
                 print(f"$sp+0x{idx*ql.pointersize:02x}│ [0x{addr:08x}] —▸ 0x{ql.unpack(val):08x}", end="")
 
-                try:  # try to deference wether its a pointer
-                    buf = ql.mem.read(addr, ql.pointersize)
-                except:
-                    buf = None
+                # try to dereference wether it's a pointer
+                if (buf := _try_read(ql, addr, ql.pointersize))[0] is not None:
 
-                if (addr := ql.unpack(buf)):
-                    try:  # try to deference again
-                        buf = ql.mem.read(addr, ql.pointersize)
-                    except:
-                        buf = None
+                    if (addr := ql.unpack(buf[0])):
 
-                    if buf:
-                        try:
-                            s = ql.mem.string(addr)
-                        except:
-                            s = None
+                        # try to dereference again
+                        if (buf := _try_read(ql, addr, ql.pointersize))[0] is not None:
+                            try:
+                                s = ql.mem.string(addr)
+                            except:
+                                s = None
 
-                        if s and s.isprintable():
-                            print(f" ◂— {ql.mem.string(addr)}", end="")
-                        else:
-                            print(f" ◂— 0x{ql.unpack(buf):08x}", end="")
+                            if s and s.isprintable():
+                                print(f" ◂— {ql.mem.string(addr)}", end="")
+                            else:
+                                print(f" ◂— 0x{ql.unpack(buf[0]):08x}", end="")
                 print()
 
 
