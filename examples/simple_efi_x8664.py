@@ -11,7 +11,7 @@ sys.path.append("..")
 from qiling import Qiling
 from qiling.const import QL_INTERCEPT, QL_VERBOSE
 from qiling.os.uefi.const import EFI_SUCCESS, EFI_INVALID_PARAMETER
-from qiling.os.uefi.utils import check_and_notify_protocols, signal_event
+from qiling.os.uefi.utils import execute_protocol_notifications, signal_event
 
 def force_notify_RegisterProtocolNotify(ql: Qiling, address: int, params):
     event_id = params['Event']
@@ -23,7 +23,7 @@ def force_notify_RegisterProtocolNotify(ql: Qiling, address: int, params):
         event["Set"] = False
 
         signal_event(ql, event_id)
-        check_and_notify_protocols(ql, True)
+        execute_protocol_notifications(ql, True)
 
         return EFI_SUCCESS
 

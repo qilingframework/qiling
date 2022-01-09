@@ -436,7 +436,7 @@ def hook_InstallMultipleProtocolInterfaces(ql: Qiling, address: int, params):
 		index += 2
 
 	ql.loader.dxe_context.protocols[handle] = dic
-	check_and_notify_protocols(ql, True)
+	execute_protocol_notifications(ql, True)
 	write_int64(ql, params["Handle"], handle)
 
 	return EFI_SUCCESS
