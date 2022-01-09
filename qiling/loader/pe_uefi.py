@@ -203,6 +203,7 @@ class QlLoaderPE_UEFI(QlLoader):
             (POINTER, SystemTable)
         ), eoe_trap)
 
+        self.ql.os.running_module = path
         self.ql.os.entry_point = entry_point
         self.ql.log.info(f'Running from {entry_point:#010x} of {path}')
 

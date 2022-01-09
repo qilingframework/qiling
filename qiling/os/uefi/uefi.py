@@ -95,8 +95,6 @@ class QlOsUefi(QlOs):
 		Returns: `True` if module execution should be thwarted, `False` otherwise
 		"""
 
-		self.running_module = module
-
 		return bool(sum(callback(module) for callback in self.on_module_enter))
 
 
