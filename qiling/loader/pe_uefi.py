@@ -188,9 +188,6 @@ class QlLoaderPE_UEFI(QlLoader):
         ImageHandle = image_base
         SystemTable = self.gST
 
-        # set InSmm indicator
-        self.ql.os.in_smm = isinstance(context, SmmContext)
-
         # set effectively active heap
         self.ql.os.heap = context.heap
 

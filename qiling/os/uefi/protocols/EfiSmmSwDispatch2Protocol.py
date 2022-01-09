@@ -79,21 +79,13 @@ def hook_Register(ql: Qiling, address: int, params):
 		if idx > This.MaximumSwiValue:
 			return EFI_INVALID_PARAMETER
 
-	# prepare the context for the sw smi handler
-	SwContext = EFI_SMM_SW_CONTEXT()
-	SwContext.SwSmiCpuIndex = 0
-	SwContext.CommandPort = idx
-	SwContext.DataPort = 0
-
 	# allocate handle and return it through out parameter
 	Handle = ql.loader.smm_context.heap.alloc(ql.pointersize)
 	utils.write_int64(ql, DispatchHandle, Handle)
 
 	args = {
-		'DispatchHandle'	: Handle,
-		'SwRegisterContext'	: SwRegisterContext,
-		'SwContext'			: SwContext,
-		'CommBufferSize'	: 0
+		'DispatchHandle'  : Handle,
+		'RegisterContext' : SwRegisterContext
 	}
 
 	handlers[idx] = (DispatchFunction, args)

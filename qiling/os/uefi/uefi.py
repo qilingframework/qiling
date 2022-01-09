@@ -14,6 +14,7 @@ from qiling.os.memory import QlMemoryHeap
 from qiling.os.os import QlOs, QlOsUtils
 from qiling.os.fcall import QlFunctionCall, TypedArg
 from . import guids_db
+from qiling.os.uefi.smm import SmmEnv
 
 class QlOsUefi(QlOs):
 	def __init__(self, ql: Qiling):
@@ -21,7 +22,7 @@ class QlOsUefi(QlOs):
 
 		self.entry_point = 0
 		self.running_module: str
-		self.in_smm: bool
+		self.smm: SmmEnv
 		self.PE_RUN: bool
 		self.heap: QlMemoryHeap	# Will be initialized by the loader.
 
@@ -195,6 +196,9 @@ class QlOsUefi(QlOs):
 		self.ql.mem.show_mapinfo()
 
 	def run(self):
+		# TODO: this is not the right place for this
+		self.smm = SmmEnv(self.ql)
+
 		self.notify_before_module_execution(self.running_module)
 
 		if self.ql.entry_point is not None:
