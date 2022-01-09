@@ -13,7 +13,8 @@ from qiling.os.const import *
 from qiling.os.memory import QlMemoryHeap
 from qiling.os.os import QlOs, QlOsUtils
 from qiling.os.fcall import QlFunctionCall, TypedArg
-from . import guids_db
+
+from qiling.os.uefi import guids_db
 from qiling.os.uefi.smm import SmmEnv
 
 class QlOsUefi(QlOs):
