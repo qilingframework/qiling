@@ -370,6 +370,19 @@ class QlLoaderPE_UEFI(QlLoader):
         """
 
         def __module_exit_trap(ql: Qiling):
+            # this trap will be called when the current module entry point function
+            # returns. this is done do regain control, run necessary tear down code
+            # and proceed to the execution of the next module. if no more modules
+            # left, terminate gracefully.
+            #
+            # the tear down code may include queued protocol notifications and module
+            # unload callbacks. in such case the trap returns without calling 'os.stop'
+            # and the execution resumes with the current cpu state.
+            #
+            # note that the trap may be called multiple times for a single module,
+            # every time a tear down code needs to be executed, or for any other
+            # reason defined by the user.
+
             if ql.os.notify_after_module_execution(len(self.modules)):
                 return
 
