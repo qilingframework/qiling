@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Mapping, Optional, Tuple
+from typing import Any, Mapping, MutableSequence, Optional, Tuple
 
 from qiling import Qiling
 from qiling.os.memory import QlMemoryHeap
@@ -14,7 +14,7 @@ class UefiContext(ABC):
 		self.heap: QlMemoryHeap
 		self.top_of_stack: int
 		self.protocols = {}
-		self.loaded_image_protocol_modules = []
+		self.loaded_image_protocol_modules: MutableSequence[int] = []
 		self.next_image_base: int
 
 		# These members must be initialized before attempting to install a configuration table.
