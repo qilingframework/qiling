@@ -63,9 +63,9 @@ def hook_GetModuleHandleExW(ql: Qiling, address: int, params):
     res = _GetModuleHandle(ql, address, params)
     dst = params["phModule"]
 
-    ql.mem.write(dst, ql.pack32(res))
+    ql.mem.write(dst, ql.pack(res))
 
-    return 1
+    return res
 
 # DWORD GetModuleFileNameA(
 #   HMODULE hModule,

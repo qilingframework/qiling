@@ -171,12 +171,12 @@ def hook_ReadFile(ql: Qiling, address: int, params):
             read_len = nNumberOfBytesToRead
 
         ql.mem.write(lpBuffer, s)
-        ql.mem.write(lpNumberOfBytesRead, ql.pack(read_len))
+        ql.mem.write(lpNumberOfBytesRead, ql.pack32(read_len))
     else:
         f = ql.os.handle_manager.get(hFile).obj
         data = f.read(nNumberOfBytesToRead)
         ql.mem.write(lpBuffer, data)
-        ql.mem.write(lpNumberOfBytesRead, ql.pack32(lpNumberOfBytesRead))
+        ql.mem.write(lpNumberOfBytesRead, ql.pack32(len(data)))
 
     return 1
 
@@ -204,7 +204,7 @@ def hook_WriteFile(ql: Qiling, address: int, params):
         s = ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
         ql.os.stdout.write(s)
         ql.os.utils.string_appearance(s.decode())
-        ql.mem.write(lpNumberOfBytesWritten, ql.pack(nNumberOfBytesToWrite))
+        ql.mem.write(lpNumberOfBytesWritten, ql.pack32(nNumberOfBytesToWrite))
     else:
         f = ql.os.handle_manager.get(hFile)
 
@@ -216,8 +216,8 @@ def hook_WriteFile(ql: Qiling, address: int, params):
             f = f.obj
 
         buffer = ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
-        f.write(bytes(buffer))
-        ql.mem.write(lpNumberOfBytesWritten, ql.pack32(nNumberOfBytesToWrite))
+        nNumberOfBytesWritten = f.write(bytes(buffer))
+        ql.mem.write(lpNumberOfBytesWritten, ql.pack32(nNumberOfBytesWritten))
 
     return 1
 
@@ -235,7 +235,7 @@ def _CreateFile(ql: Qiling, address: int, params):
     if dwDesiredAccess & GENERIC_WRITE:
         mode += "wb"
     else:
-        mode += "r"
+        mode += "rb"
 
     try:
         f = ql.os.fs_mapper.open(s_lpFileName, mode)
@@ -663,3 +663,47 @@ def hook_SetFileAttributesA(ql: Qiling, address: int, params):
 })
 def hook_SetFileAttributesW(ql: Qiling, address: int, params):
     return 1
+
+# BOOL AreFileApisANSI();
+@winsdkapi(cc=STDCALL, params={})
+def hook_AreFileApisANSI(ql: Qiling, address: int, params):
+    # TODO make this coherent with SetFileApisToANSI/OEM calls
+    return 1
+
+# void SetFileApisToANSI();
+@winsdkapi(cc=STDCALL, params={})
+def hook_SetFileApisToANSI(ql: Qiling, address: int, params):
+    pass
+
+# void SetFileApisToOEM();
+@winsdkapi(cc=STDCALL, params={})
+def hook_SetFileApisToOEM(ql: Qiling, address: int, params):
+    pass
+
+# BOOL DeleteFileA(
+#   LPCSTR lpFileName
+# );
+@winsdkapi(cc=STDCALL, params={
+    'lpFileName' : LPCSTR
+})
+def hook_DeleteFileA(ql: Qiling, address: int, params):
+    lpFileName = ql.os.path.transform_to_real_path(params["lpFileName"])
+    try:
+        os.remove(lpFileName)
+        return 1
+    except:
+        return 0
+
+# BOOL DeleteFileW(
+#   LPCWSTR lpFileName
+# );
+@winsdkapi(cc=STDCALL, params={
+    'lpFileName' : LPCWSTR
+})
+def hook_DeleteFileW(ql: Qiling, address: int, params):
+    lpFileName = ql.os.path.transform_to_real_path(params["lpFileName"])
+    try:
+        os.remove(lpFileName)
+        return 1
+    except:
+        return 0
