@@ -27,9 +27,9 @@ class EFI_SMM_BASE2_PROTOCOL(STRUCT):
 	"InSmram"	: POINTER
 })
 def hook_InSmm(ql: Qiling, address: int, params):
-	ql.log.info(f'InSmram = {ql.loader.in_smm}')
+	ql.log.debug(f'InSmram = {ql.os.smm.active}')
 
-	write_int8(ql, params["InSmram"], int(ql.loader.in_smm))
+	write_int8(ql, params["InSmram"], int(ql.os.smm.active))
 
 	return EFI_SUCCESS
 

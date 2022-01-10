@@ -7,12 +7,9 @@ import binascii
 
 from uuid import UUID
 from typing import Optional, Mapping
-from contextlib import contextmanager
 
 from qiling import Qiling
 from qiling.os.uefi.const import EFI_SUCCESS
-from qiling.os.uefi.ProcessorBind import STRUCT
-from qiling.os.uefi.UefiSpec import EFI_CONFIGURATION_TABLE
 from qiling.os.uefi.UefiBaseType import EFI_GUID
 
 def signal_event(ql: Qiling, event_id: int) -> None:
@@ -29,9 +26,12 @@ def execute_protocol_notifications(ql: Qiling, from_hook: bool = False) -> bool:
 	if not ql.loader.notify_list:
 		return False
 
-	next_hook = ql.loader.smm_context.heap.alloc(ql.pointersize)
+	next_hook = ql.loader.context.heap.alloc(ql.pointersize)
 
 	def __notify_next(ql: Qiling):
+		# discard previous callback's shadow space
+		ql.reg.arch_sp += (4 * ql.pointersize)
+
 		if ql.loader.notify_list:
 			event_id, notify_func, callback_args = ql.loader.notify_list.pop(0)
 			ql.log.info(f'Notify event: id = {event_id}, (*{notify_func:#x})({", ".join(f"{a:#x}" for a in callback_args)})')
@@ -41,44 +41,27 @@ def execute_protocol_notifications(ql: Qiling, from_hook: bool = False) -> bool:
 			ql.log.info(f'Notify event: done')
 
 			# the last item on the list has been notified; tear down this hook
-			ql.loader.smm_context.heap.free(next_hook)
+			ql.loader.context.heap.free(next_hook)
 			hret.remove()
 
 			ql.reg.rax = EFI_SUCCESS
-			ql.reg.arch_sp += (4 * ql.pointersize)
 			ql.reg.arch_pc = ql.stack_pop()
 
 	hret = ql.hook_address(__notify_next, next_hook)
 
-	# functions with more than 4 parameters expect the extra parameters to appear on
-	# the stack. allocate room for another 4 parameters, in case one of the fucntions
-	# will need it
+	# __notify_next unwinds the previous callback shadow space allocated by call_function. however, on its first invocation
+	# there is no such shadow space. to maintain stack consistency we set here a bogus shadow space that may be discarded
+	# safely
 	ql.reg.arch_sp -= (4 * ql.pointersize)
 
 	# To avoid having two versions of the code the first notify function will also be called from the __notify_next hook.
 	if from_hook:
 		ql.stack_push(next_hook)
 	else:
-		ql.stack_push(ql.loader.end_of_execution_ptr)
+		ql.stack_push(ql.loader.context.end_of_execution_ptr)
 		ql.reg.arch_pc = next_hook
 
 	return True
-
-def check_and_notify_protocols(ql: Qiling, from_hook: bool = False) -> bool:
-	if ql.loader.notify_list:
-		event_id, notify_func, notify_context = ql.loader.notify_list.pop(0)
-		ql.log.info(f'Notify event: id = {event_id}, calling: {notify_func:#x} context: {notify_context}')
-
-		if from_hook:
-			# When running from a hook the caller pops the return address from the stack.
-			# We need to push the address to the stack as opposed to setting it to the instruction pointer.
-			ql.loader.call_function(0, notify_context, notify_func)
-		else:
-			ql.loader.call_function(notify_func, notify_context, ql.loader.end_of_execution_ptr)
-
-		return True
-
-	return False
 
 def ptr_read8(ql: Qiling, addr: int) -> int:
 	"""Read BYTE data from a pointer
@@ -91,6 +74,18 @@ def ptr_write8(ql: Qiling, addr: int, val: int) -> None:
 	"""
 
 	ql.mem.write(addr, ql.pack8(val))
+
+def ptr_read16(ql: Qiling, addr: int) -> int:
+	"""Read WORD data from a pointer
+	"""
+
+	return ql.unpack16(ql.mem.read(addr, 2))
+
+def ptr_write16(ql: Qiling, addr: int, val: int) -> None:
+	"""Write WORD data to a pointer
+	"""
+
+	ql.mem.write(addr, ql.pack16(val))
 
 def ptr_read32(ql: Qiling, addr: int) -> int:
 	"""Read DWORD data from a pointer
@@ -119,6 +114,8 @@ def ptr_write64(ql: Qiling, addr: int, val: int) -> None:
 # backward comptability
 read_int8   = ptr_read8
 write_int8  = ptr_write8
+read_int16  = ptr_read16
+write_int16 = ptr_write16
 read_int32  = ptr_read32
 write_int32 = ptr_write32
 read_int64  = ptr_read64
@@ -150,15 +147,6 @@ def init_struct(ql: Qiling, base: int, descriptor: Mapping):
 
 	return isntance
 
-@contextmanager
-def update_struct(cls: STRUCT, ql: Qiling, address: int):
-	struct = cls.loadFrom(ql, address)
-
-	try:
-		yield struct
-	finally:
-		struct.saveTo(ql, address)
-
 def str_to_guid(guid: str) -> EFI_GUID:
 	"""Construct an EFI_GUID structure out of a plain GUID string.
 	"""
@@ -170,7 +158,7 @@ def str_to_guid(guid: str) -> EFI_GUID:
 def CompareGuid(guid1: EFI_GUID, guid2: EFI_GUID) -> bool:
 	return bytes(guid1) == bytes(guid2)
 
-def install_configuration_table(context, key: str, table: int):
+def install_configuration_table(context, key: str, table: Optional[int]):
 	"""Create a new Configuration Table entry and add it to the list.
 
 	Args:
@@ -192,20 +180,10 @@ def install_configuration_table(context, key: str, table: int):
 		context.ql.mem.write(table, data)
 		context.conf_table_data_next_ptr += len(data)
 
-	context.install_configuration_table(guid, table)
+	context.conftable.install(guid, table)
 
 def GetEfiConfigurationTable(context, guid: str) -> Optional[int]:
 	"""Find a configuration table by its GUID.
 	"""
 
-	guid = guid.lower()
-	confs = context.conf_table_array
-
-	if guid in confs:
-		idx = confs.index(guid)
-		ptr = context.conf_table_array_ptr + (idx * EFI_CONFIGURATION_TABLE.sizeof())
-
-		return ptr
-
-	# not found
-	return None
+	return context.conftable.get_vendor_table(guid)

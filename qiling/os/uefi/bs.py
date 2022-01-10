@@ -7,15 +7,13 @@ from binascii import crc32
 
 from qiling.const import QL_ENDIAN
 from qiling.os.const import *
+from qiling.os.uefi import guids_db
 from qiling.os.uefi.const import *
 from qiling.os.uefi.fncc import dxeapi
 from qiling.os.uefi.utils import *
 from qiling.os.uefi.ProcessorBind import *
 from qiling.os.uefi.UefiSpec import *
 from qiling.os.uefi.protocols import common
-
-# TODO: find a better solution than hardcoding this
-pointer_size = 8
 
 @dxeapi(params = {
 	"NewTpl" : ULONGLONG		# EFI_TPL
@@ -135,17 +133,22 @@ def hook_WaitForEvent(ql: Qiling, address: int, params):
 def hook_SignalEvent(ql: Qiling, address: int, params):
 	event_id = params["Event"]
 
-	if event_id in ql.loader.events:
-		signal_event(ql, event_id)
-		return EFI_SUCCESS
-	else:
+	if event_id not in ql.loader.events:
 		return EFI_INVALID_PARAMETER
+
+	signal_event(ql, event_id)
+
+	return EFI_SUCCESS
 
 @dxeapi(params = {
 	"Event": POINTER # EFI_EVENT
 })
 def hook_CloseEvent(ql: Qiling, address: int, params):
 	event_id = params["Event"]
+
+	if event_id not in ql.loader.events:
+		return EFI_INVALID_PARAMETER
+
 	del ql.loader.events[event_id]
 
 	return EFI_SUCCESS
@@ -289,6 +292,9 @@ def hook_UnloadImage(ql: Qiling, address: int, params):
 def hook_ExitBootServices(ql: Qiling, address: int, params):
 	ql.emu_stop()
 
+	# TODO: cleanup BS tableas and data, and notify signal list gEfiEventExitBootServicesGuid
+	# @see: MdeModulePkg\Core\Dxe\DxeMain\DxeMain.c, CoreExitBootServices
+
 	return EFI_SUCCESS
 
 @dxeapi(params = {
@@ -393,7 +399,7 @@ def hook_LocateHandleBuffer(ql: Qiling, address: int, params):
 
 	for handle in handles:
 		write_int64(ql, address, handle)
-		address += pointer_size
+		address += ql.pointersize
 
 	return EFI_SUCCESS
 
@@ -413,7 +419,7 @@ def hook_InstallMultipleProtocolInterfaces(ql: Qiling, address: int, params):
 	handle = read_int64(ql, params["Handle"])
 
 	if handle == 0:
-		handle = ql.loader.dxe_context.heap.alloc(pointer_size)
+		handle = ql.loader.dxe_context.heap.alloc(ql.pointersize)
 
 	dic = ql.loader.dxe_context.protocols.get(handle, {})
 
@@ -426,11 +432,11 @@ def hook_InstallMultipleProtocolInterfaces(ql: Qiling, address: int, params):
 		GUID = str(ql.os.utils.read_guid(GUID_ptr))
 		dic[GUID] = protocol_ptr
 
-		ql.log.info(f' | {GUID} {protocol_ptr:#x}')
+		ql.log.info(f'Installing protocol interface {guids_db.get(GUID.upper(), GUID)} to {protocol_ptr:#x}')
 		index += 2
 
 	ql.loader.dxe_context.protocols[handle] = dic
-	check_and_notify_protocols(ql, True)
+	execute_protocol_notifications(ql, True)
 	write_int64(ql, params["Handle"], handle)
 
 	return EFI_SUCCESS
@@ -460,7 +466,7 @@ def hook_UninstallMultipleProtocolInterfaces(ql: Qiling, address: int, params):
 
 		del dic[GUID]
 
-		ql.log.info(f' | {GUID}, {protocol_ptr:#x}')
+		ql.log.info(f'Uninstalling protocol interface {guids_db.get(GUID.upper(), GUID)} from {protocol_ptr:#x}')
 		index += 2
 
 	return EFI_SUCCESS

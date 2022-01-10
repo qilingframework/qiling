@@ -101,9 +101,21 @@ class EFI_SMM_SAVE_STATE_REGISTER(ENUM_UC):
 	"Width"		: ULONGLONG,# UINTN
 	"Register"	: INT,		# EFI_SMM_SAVE_STATE_REGISTER
 	"CpuIndex"	: ULONGLONG,# UINTN
-	"Buffer"	: POINTER	# PTR(VOID))
+	"Buffer"	: POINTER	# PTR(VOID)
 })
-def hook_SmmReadSaveState(ql, address, params):
+def hook_SmmReadSaveState(ql: Qiling, address: int, params):
+	Width    = params['Width']
+	Register = params['Register']
+	CpuIndex = params['CpuIndex']
+	Buffer   = params['Buffer']
+
+	# currently supporting only one cpu
+	if CpuIndex > 0:
+		return EFI_INVALID_PARAMETER
+
+	data = ql.os.smm.ssa.read(Register, Width)
+	ql.mem.write(Buffer, bytes(data))
+
 	return EFI_SUCCESS
 
 @dxeapi(params = {
@@ -111,9 +123,21 @@ def hook_SmmReadSaveState(ql, address, params):
 	"Width"		: ULONGLONG,# UINTN
 	"Register"	: INT,		# EFI_SMM_SAVE_STATE_REGISTER
 	"CpuIndex"	: ULONGLONG,# UINTN
-	"Buffer"	: POINTER	# PTR(VOID))
+	"Buffer"	: POINTER	# PTR(VOID)
 })
-def hook_SmmWriteSaveState(ql, address, params):
+def hook_SmmWriteSaveState(ql: Qiling, address: int, params):
+	Width    = params['Width']
+	Register = params['Register']
+	CpuIndex = params['CpuIndex']
+	Buffer   = params['Buffer']
+
+	# currently supporting only one cpu
+	if CpuIndex > 0:
+		return EFI_INVALID_PARAMETER
+
+	data = ql.mem.read(Buffer, Width)
+	ql.os.smm.ssa.write(Register, bytes(data))
+
 	return EFI_SUCCESS
 
 class EFI_SMM_CPU_PROTOCOL(STRUCT):

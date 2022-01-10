@@ -5,8 +5,9 @@
 
 from qiling import Qiling
 from qiling.os.uefi import bs, rt, ds
+from qiling.os.uefi.context import UefiContext
 from qiling.os.uefi.utils import install_configuration_table
-from qiling.os.uefi.UefiSpec import EFI_SYSTEM_TABLE, EFI_BOOT_SERVICES, EFI_RUNTIME_SERVICES, EFI_CONFIGURATION_TABLE
+from qiling.os.uefi.UefiSpec import EFI_SYSTEM_TABLE, EFI_BOOT_SERVICES, EFI_RUNTIME_SERVICES
 
 # static mem layout:
 #
@@ -39,15 +40,15 @@ from qiling.os.uefi.UefiSpec import EFI_SYSTEM_TABLE, EFI_BOOT_SERVICES, EFI_RUN
 #		| VendorTable*         -> (3) |
 #		+-----------------------------+
 #
-#		... sizeof EFI_CONFIGURATION_TABLE x 98
+#		... the remainder of the chunk may be used for additional EFI_CONFIGURATION_TABLE entries
+
+# dynamically allocated (context.conf_table_data_ptr):
 #
 #	(5)	+-- VOID* --------------------+
 #		| ...                         |
 #		+-----------------------------+
-#
-#		... the remainder of the 256 KiB chunk may be used for more conf table data
 
-def initialize(ql: Qiling, gST: int):
+def initialize(ql: Qiling, context: UefiContext, gST: int):
 	ql.loader.gST = gST
 
 	gBS = gST + EFI_SYSTEM_TABLE.sizeof()		# boot services
@@ -74,22 +75,8 @@ def initialize(ql: Qiling, gST: int):
 
 	instance.saveTo(ql, gST)
 
-	# configuration tables bookkeeping
-	confs = []
-
-	# these are needed for utils.CoreInstallConfigurationTable
-	ql.loader.dxe_context.conf_table_array = confs
-	ql.loader.dxe_context.conf_table_array_ptr = cfg
-
-	# configuration table data space; its location is calculated by leaving
-	# enough space for 100 configuration table entries. only a few entries are
-	# expected, so 100 should definitely suffice
-	conf_data = cfg + EFI_CONFIGURATION_TABLE.sizeof() * 100
-	ql.loader.dxe_context.conf_table_data_ptr = conf_data
-	ql.loader.dxe_context.conf_table_data_next_ptr = conf_data
-
-	install_configuration_table(ql.loader.dxe_context, "HOB_LIST", None)
-	install_configuration_table(ql.loader.dxe_context, "DXE_SERVICE_TABLE", gDS)
+	install_configuration_table(context, "HOB_LIST", None)
+	install_configuration_table(context, "DXE_SERVICE_TABLE", gDS)
 
 __all__ = [
 	'initialize'

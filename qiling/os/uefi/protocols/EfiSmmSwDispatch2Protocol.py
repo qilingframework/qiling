@@ -14,6 +14,8 @@ from .. import utils
 MAXIMUM_SWI_VALUE = 0xff
 
 class EFI_SMM_SW_CONTEXT(STRUCT):
+	_pack_ = 8
+
 	_fields_ = [
 		('SwSmiCpuIndex',	UINTN),	# index of the cpu which generated the swsmi
 		('CommandPort',		UINT8),	# port number used to trigger the swsmi
@@ -59,7 +61,7 @@ def hook_Register(ql: Qiling, address: int, params):
 
 	# a value of -1 indicates that the swsmi index for this handler is flexible and
 	# should be assigned by the protocol
-	if idx == 0xffffffff:
+	if idx == ((1 << ql.archbit) - 1):
 		idx = next((i for i in range(1, MAXIMUM_SWI_VALUE) if i not in handlers), None)
 
 		if idx is None:
@@ -77,21 +79,13 @@ def hook_Register(ql: Qiling, address: int, params):
 		if idx > This.MaximumSwiValue:
 			return EFI_INVALID_PARAMETER
 
-	# prepare the context for the sw smi handler
-	SwContext = EFI_SMM_SW_CONTEXT()
-	SwContext.SwSmiCpuIndex = 0
-	SwContext.CommandPort = idx
-	SwContext.DataPort = 0
-
 	# allocate handle and return it through out parameter
 	Handle = ql.loader.smm_context.heap.alloc(ql.pointersize)
 	utils.write_int64(ql, DispatchHandle, Handle)
 
 	args = {
-		'DispatchHandle'	: Handle,
-		'SwRegisterContext'	: SwRegisterContext,
-		'SwContext'			: SwContext,
-		'CommBufferSize'	: 0
+		'DispatchHandle'  : Handle,
+		'RegisterContext' : SwRegisterContext
 	}
 
 	handlers[idx] = (DispatchFunction, args)

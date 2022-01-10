@@ -25,13 +25,14 @@ class EFI_GCD_MEMORY_TYPE(ENUM):
 	]
 
 class EFI_GCD_MEMORY_SPACE_DESCRIPTOR(STRUCT):
+	_pack_ = 8
+
 	_fields_ = [
 		('BaseAddress',		EFI_PHYSICAL_ADDRESS),
 		('Length',			UINT64),
 		('Capabilities',	UINT64),
 		('Attributes',		UINT64),
 		('GcdMemoryType',	EFI_GCD_MEMORY_TYPE),
-		('PADDING_0',		UINT8 * 4),
 		('ImageHandle',		EFI_HANDLE),
 		('DeviceHandle',	EFI_HANDLE)
 	]
@@ -45,11 +46,12 @@ class EFI_GCD_IO_TYPE(ENUM):
 	]
 
 class EFI_GCD_IO_SPACE_DESCRIPTOR(STRUCT):
+	_pack_ = 8
+
 	_fields_ = [
 		('BaseAddress',		EFI_PHYSICAL_ADDRESS),
 		('Length',			UINT64),
 		('GcdIoType',		EFI_GCD_IO_TYPE),
-		('PADDING_0',		UINT8 * 4),
 		('ImageHandle',		EFI_HANDLE),
 		('DeviceHandle',	EFI_HANDLE)
 	]
@@ -246,7 +248,7 @@ def hook_ProcessFirmwareVolume(ctx, address, params):
 def hook_SetMemorySpaceCapabilities(ctx, address, params):
 	return EFI_UNSUPPORTED
 
-def initialize(ql, gDS):
+def initialize(ql: Qiling, gDS: int):
 	descriptor = {
 		'struct' : EFI_DXE_SERVICES,
 		'fields' : (

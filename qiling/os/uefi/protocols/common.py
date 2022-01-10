@@ -129,6 +129,6 @@ def InstallConfigurationTable(context, params):
 	if not guid:
 		return EFI_INVALID_PARAMETER
 
-	context.install_configuration_table(guid, table)
+	context.conftable.install(guid, table)
 
 	return EFI_SUCCESS

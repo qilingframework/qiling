@@ -3,12 +3,15 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+import time
+
 from qiling import Qiling
 from qiling.os.const import *
 from .const import *
 from .utils import *
 from .fncc import *
 from .ProcessorBind import *
+from .UefiBaseType import EFI_TIME
 from .UefiSpec import *
 
 @dxeapi(params={
@@ -16,6 +19,29 @@ from .UefiSpec import *
 	"Capabilities"	: POINTER	# OUT PTR(EFI_TIME_CAPABILITIES)
 })
 def hook_GetTime(ql: Qiling, address: int, params):
+	Time = params['Time']
+
+	if not Time:
+		return EFI_INVALID_PARAMETER
+
+	localtime = time.localtime()
+
+	efitime = EFI_TIME()
+	efitime.Year = localtime.tm_year
+	efitime.Month = localtime.tm_mon
+	efitime.Day = localtime.tm_mday
+	efitime.Hour = localtime.tm_hour
+	efitime.Minute = localtime.tm_min
+	efitime.Second = localtime.tm_sec
+	efitime.Nanosecond = 0
+
+	# tz and dst settings are stored in the "RtcTimeSettings" nvram variable.
+	# we just use the default settings instead
+	efitime.TimeZone = EFI_UNSPECIFIED_TIMEZONE
+	efitime.Daylight = 0
+
+	efitime.saveTo(ql, Time)
+
 	return EFI_SUCCESS
 
 @dxeapi(params={
@@ -99,7 +125,7 @@ def hook_GetNextVariableName(ql: Qiling, address: int, params):
 		return EFI_INVALID_PARAMETER
 
 	name_size = read_int64(ql, var_name_size)
-	last_name = ql.os.read_wstring(var_name)
+	last_name = ql.os.utils.read_wstring(var_name)
 
 	vars = ql.env['Names'] # This is a list of variable names in correct order.
 
@@ -184,7 +210,7 @@ def hook_QueryCapsuleCapabilities(ql: Qiling, address: int, params):
 def hook_QueryVariableInfo(ql: Qiling, address: int, params):
 	return EFI_SUCCESS
 
-def initialize(ql, gRT : int):
+def initialize(ql: Qiling, gRT: int):
 	descriptor = {
 		'struct' : EFI_RUNTIME_SERVICES,
 		'fields' : (

@@ -10,6 +10,13 @@ from .ProcessorBind import *
 from .UefiBaseType import *
 from .UefiMultiPhase import *
 
+# definitions for EFI_TIME.Daylight
+EFI_TIME_ADJUST_DAYLIGHT = (1 << 1)
+EFI_TIME_IN_DAYLIGHT	 = (1 << 2)
+
+# definition for EFI_TIME.TimeZone
+EFI_UNSPECIFIED_TIMEZONE = 0x07ff
+
 class EFI_ALLOCATE_TYPE(ENUM):
 	_members_ = [
 		'AllocateAnyPages',
@@ -38,17 +45,19 @@ class EFI_LOCATE_SEARCH_TYPE(ENUM):
 ]
 
 class EFI_TIME_CAPABILITIES(STRUCT):
+	_pack_ = 8
+
 	_fields_ = [
 		('Resolution',	UINT32),
 		('Accuracy',	UINT32),
 		('SetsToZero',	BOOLEAN),
-		('PADDING_0',	UINT8 * 3)
 	]
 
 class EFI_MEMORY_DESCRIPTOR(STRUCT):
+	_pack_ = 8
+
 	_fields_ = [
 		('Type',			UINT32),
-		('PADDING_0',		UINT8 * 4),
 		('PhysicalStart',	EFI_PHYSICAL_ADDRESS),
 		('VirtualStart',	EFI_VIRTUAL_ADDRESS),
 		('NumberOfPages',	UINT64),
@@ -223,11 +232,12 @@ EFI_SIMPLE_TEXT_INPUT_PROTOCOL = STRUCT
 EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL = STRUCT
 
 class EFI_SYSTEM_TABLE(STRUCT):
+	_pack_ = 8
+
 	_fields_ = [
 		('Hdr',						EFI_TABLE_HEADER),
 		('FirmwareVendor',			PTR(CHAR16)),
 		('FirmwareRevision',		UINT32),
-		('PADDING_0',				UINT8 * 4),
 		('ConsoleInHandle',			EFI_HANDLE),
 		('ConIn',					PTR(EFI_SIMPLE_TEXT_INPUT_PROTOCOL)),
 		('ConsoleOutHandle',		EFI_HANDLE),
@@ -241,6 +251,9 @@ class EFI_SYSTEM_TABLE(STRUCT):
 	]
 
 __all__ = [
+	'EFI_TIME_ADJUST_DAYLIGHT',
+	'EFI_TIME_IN_DAYLIGHT',
+	'EFI_UNSPECIFIED_TIMEZONE',
 	'EFI_RUNTIME_SERVICES',
 	'EFI_BOOT_SERVICES',
 	'EFI_CONFIGURATION_TABLE',

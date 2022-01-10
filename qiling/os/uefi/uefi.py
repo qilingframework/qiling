@@ -3,24 +3,32 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from typing import Any, Callable, Iterable, Mapping, Sequence, Tuple
+import re
+from typing import Any, Callable, Iterable, Mapping, MutableSequence, Sequence, Tuple
 from unicorn import UcError
 
 from qiling import Qiling
 from qiling.cc import QlCC, intel
 from qiling.os.const import *
+from qiling.os.memory import QlMemoryHeap
 from qiling.os.os import QlOs, QlOsUtils
 from qiling.os.fcall import QlFunctionCall, TypedArg
-from . import guids_db
+
+from qiling.os.uefi import guids_db
+from qiling.os.uefi.smm import SmmEnv
 
 class QlOsUefi(QlOs):
 	def __init__(self, ql: Qiling):
 		super().__init__(ql)
 
 		self.entry_point = 0
-		self.running_module = None
-		self.PE_RUN = True
-		self.heap = None # Will be initialized by the loader.
+		self.running_module: str
+		self.smm: SmmEnv
+		self.PE_RUN: bool
+		self.heap: QlMemoryHeap	# Will be initialized by the loader.
+
+		self.on_module_enter: MutableSequence[Callable[[str], bool]] = []
+		self.on_module_exit: MutableSequence[Callable[[int], bool]] = []
 
 		cc: QlCC = {
 			32: intel.cdecl,
@@ -61,61 +69,62 @@ class QlOsUefi(QlOs):
 			return super(QlOsUefi, self).process_fcall_params([(None, '', v)])[0][1]
 
 		ahandlers: Mapping[Any, Callable[[Any], str]] = {
-			STRING		: lambda v: QlOsUtils.stringify(v),
-			WSTRING		: lambda v: f'L{QlOsUtils.stringify(v)}',
-			GUID		: lambda v: guids_db.get(v.upper(), v)
+			POINTER	: lambda v: f'{v:#010x}' if v else 'NULL',
+			STRING	: lambda v: QlOsUtils.stringify(v),
+			WSTRING	: lambda v: f'L{QlOsUtils.stringify(v)}',
+			GUID	: lambda v: guids_db.get(v.upper(), v) if v else 'NULL'
 		}
 
 		return tuple((aname, ahandlers.get(atype, fallback)(avalue)) for atype, aname, avalue in targs)
 
+	def notify_after_module_execution(self, nmodules: int) -> bool:
+		"""Callback fired after a module has finished executing successfully.
 
-	@staticmethod
-	def notify_after_module_execution(ql: Qiling, nmodules: int):
-		return False
+		Args:
+			nmodules: number of remaining modules to execute
 
+		Returns: `True` if subsequent modules execution should be thwarted, `False` otherwise
+		"""
 
-	@staticmethod
-	def notify_before_module_execution(ql: Qiling, module):
-		ql.os.running_module = module
-		return False
+		return bool(sum(callback(nmodules) for callback in self.on_module_exit))
+
+	def notify_before_module_execution(self, module: str) -> bool:
+		"""Callback fired before a module is about to start executing.
+
+		Args:
+			module: path of module to execute
+
+		Returns: `True` if module execution should be thwarted, `False` otherwise
+		"""
+
+		return bool(sum(callback(module) for callback in self.on_module_enter))
 
 
 	def emit_context(self):
-		# TODO: add xmm, ymm, zmm registers
 		rgroups = (
-			('rax', 'eax', 'ax', 'ah', 'al'),
-			('rbx', 'ebx', 'bx', 'bh', 'bl'),
-			('rcx', 'ecx', 'cx', 'ch', 'cl'),
-			('rdx', 'edx', 'dx', 'dh', 'dl'),
-			('rsi', 'esi', 'si', ''),  # BUG: sil is missing
-			('rdi', 'edi', 'di', ''),  # BUG: dil is missing
-			('rsp', 'esp', 'sp', ''),  # BUG: spl is missing
-			('rbp', 'ebp', 'bp', ''),  # BUG: bpl is missing
-			('rip', 'eip', 'ip', ''),
-			(),
-			('r8',  'r8d',  'r8w',  'r8b' ),
-			('r9',  'r9d',  'r9w',  'r9b' ),
-			('r10', 'r10d', 'r10w', 'r10b'),
-			('r11', 'r11d', 'r11w', 'r11b'),
-			('r12', 'r12d', 'r12w', 'r12b'),
-			('r13', 'r13d', 'r13w', 'r13b'),
-			('r14', 'r14d', 'r14w', 'r14b'),
-			('r15', 'r15d', 'r15w', 'r15b'),
-			(),
-			('', '', 'cs'),
-			('', '', 'ds'),
-			('', '', 'es'),
-			('', '', 'fs'),
-			('', '', 'gs'),
-			('', '', 'ss')
+			((8, 'rax'), (8, 'r8'),  (4, 'cs')),
+			((8, 'rbx'), (8, 'r9'),  (4, 'ds')),
+			((8, 'rcx'), (8, 'r10'), (4, 'es')),
+			((8, 'rdx'), (8, 'r11'), (4, 'fs')),
+			((8, 'rsi'), (8, 'r12'), (4, 'gs')),
+			((8, 'rdi'), (8, 'r13'), (4, 'ss')),
+			((8, 'rsp'), (8, 'r14')),
+			((8, 'rbp'), (8, 'r15')),
+			((8, 'rip'), )
 		)
 
-		sizes = (64, 32, 16, 8, 8)
+		p = re.compile(r'^((?:00)+)')
+
+		def __emit_reg(size: int, reg: str):
+			val = f'{self.ql.reg.read(reg):0{size * 2}x}'
+			padded = p.sub("\x1b[90m\\1\x1b[39m", val, 1)
+
+			return f'{reg:3s} = {padded}'
 
 		self.ql.log.error(f'CPU Context:')
 
-		for grp in rgroups:
-			self.ql.log.error(', '.join((f'{reg:4s} = {self.ql.reg.read(reg):0{bits // 4}x}') for reg, bits in zip(grp, sizes) if reg))
+		for regs in rgroups:
+			self.ql.log.error(f'{" | ".join(__emit_reg(size, reg) for size, reg in regs)}')
 
 		self.ql.log.error(f'')
 
@@ -142,35 +151,56 @@ class QlOsUefi(QlOs):
 		self.ql.log.error('Disassembly:')
 
 		for insn in tuple(md.disasm(data, address))[:num_insns]:
-			opcodes = ''.join(f'{ch:02x}' for ch in insn.bytes)
-
-			self.ql.log.error(f'{insn.address:08x} : {opcodes:28s}  {insn.mnemonic:10s} {insn.op_str:s}')
+			self.ql.log.error(f'{insn.address:08x} : {insn.bytes.hex():28s}  {insn.mnemonic:10s} {insn.op_str:s}')
 
 		self.ql.log.error(f'')
 
+
+	def emit_stack(self, nitems: int = 4):
+		self.ql.log.error('Stack:')
+
+		for i in range(-nitems, nitems + 1):
+			offset = i * self.ql.pointersize
+
+			try:
+				item = self.ql.arch.stack_read(offset)
+			except UcError:
+				data = '(unavailable)'
+			else:
+				data = f'{item:0{self.ql.pointersize * 2}x}'
+
+			self.ql.log.error(f'{self.ql.reg.arch_sp + offset:08x} : {data}{" <=" if i == 0 else ""}')
+
+		self.ql.log.error('')
 
 	def emu_error(self):
 		pc = self.ql.reg.arch_pc
 
 		try:
 			data = self.ql.mem.read(pc, size=64)
-
+		except UcError:
+			pc_info = ' (unreachable)'
+		else:
 			self.emit_context()
 			self.emit_hexdump(pc, data)
 			self.emit_disasm(pc, data)
 
 			containing_image = self.find_containing_image(pc)
-			img_info = f' ({containing_image.path} + {pc - containing_image.base:#x})' if containing_image else ''
-			self.ql.log.error(f'PC = {pc:#010x}{img_info}')
+			pc_info = f' ({containing_image.path} + {pc - containing_image.base:#x})' if containing_image else ''
+		finally:
+			self.ql.log.error(f'PC = {pc:#010x}{pc_info}')
+			self.ql.log.error(f'')
 
-			self.ql.log.error(f'Memory map:')
-			self.ql.mem.show_mapinfo()
-		except UcError:
-			self.ql.log.error(f'Error: PC({pc:#x}) is unreachable')
+		self.emit_stack()
 
+		self.ql.log.error(f'Memory map:')
+		self.ql.mem.show_mapinfo()
 
 	def run(self):
-		self.notify_before_module_execution(self.ql, self.running_module)
+		# TODO: this is not the right place for this
+		self.smm = SmmEnv(self.ql)
+
+		self.notify_before_module_execution(self.running_module)
 
 		if self.ql.entry_point is not None:
 			self.ql.loader.entry_point = self.ql.entry_point
@@ -179,6 +209,8 @@ class QlOsUefi(QlOs):
 			self.exit_point = self.ql.exit_point
 
 		try:
+			self.PE_RUN = True
+
 			self.ql.emu_start(self.ql.loader.entry_point, self.exit_point, self.ql.timeout, self.ql.count)
 		except KeyboardInterrupt as ex:
 			self.ql.log.critical(f'Execution interrupted by user')
@@ -191,3 +223,7 @@ class QlOsUefi(QlOs):
 
 		if self.ql._internal_exception is not None:
 			raise self.ql._internal_exception
+
+	def stop(self) -> None:
+		self.ql.emu_stop()
+		self.PE_RUN = False

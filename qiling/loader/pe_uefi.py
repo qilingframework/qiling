@@ -3,17 +3,17 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from typing import Optional, Sequence
 from pefile import PE
+from typing import Any, Mapping, Optional, Sequence
 
 from qiling import Qiling
 from qiling.const import QL_ARCH
 from qiling.exception import QlErrorArch, QlMemoryMappedError
 from qiling.loader.loader import QlLoader, Image
+from qiling.os.const import PARAM_INTN, POINTER
 
-from qiling.os.uefi import context, st, smst
-from qiling.os.uefi.ProcessorBind import CPU_STACK_ALIGNMENT
-from qiling.os.uefi.shutdown import hook_EndOfExecution
+from qiling.os.uefi import st, smst, utils
+from qiling.os.uefi.context import DxeContext, SmmContext, UefiContext
 from qiling.os.uefi.protocols import EfiLoadedImageProtocol
 from qiling.os.uefi.protocols import EfiSmmAccess2Protocol
 from qiling.os.uefi.protocols import EfiSmmBase2Protocol
@@ -28,23 +28,20 @@ class QlLoaderPE_UEFI(QlLoader):
         self.modules = []
         self.events = {}
         self.notify_list = []
-        self.next_image_base = 0
+
+        self.dxe_context: DxeContext
+        self.smm_context: SmmContext
+        self.context: UefiContext
 
     # list of members names to save and restore
     __save_members = (
         'modules',
         'events',
         'notify_list',
-        'next_image_base',
-        'loaded_image_protocol_modules',
-        'tpl',
-        'efi_conf_table_array',
-        'efi_conf_table_array_ptr',
-        'efi_conf_table_data_ptr',
-        'efi_conf_table_data_next_ptr'
+        'tpl'
     )
 
-    def save(self) -> dict:
+    def save(self) -> Mapping[str, Any]:
         saved_state = super(QlLoaderPE_UEFI, self).save()
 
         for member in QlLoaderPE_UEFI.__save_members:
@@ -55,7 +52,7 @@ class QlLoaderPE_UEFI(QlLoader):
 
         return saved_state
 
-    def restore(self, saved_state: dict):
+    def restore(self, saved_state: Mapping[str, Any]):
         super(QlLoaderPE_UEFI, self).restore(saved_state)
 
         for member in QlLoaderPE_UEFI.__save_members:
@@ -63,7 +60,7 @@ class QlLoaderPE_UEFI(QlLoader):
 
         self.ql.os.heap.restore(saved_state['heap'])
 
-    def install_loaded_image_protocol(self, image_base, image_size):
+    def install_loaded_image_protocol(self, image_base: int, image_size: int):
         fields = {
             'gST'        : self.gST,
             'image_base' : image_base,
@@ -71,11 +68,11 @@ class QlLoaderPE_UEFI(QlLoader):
         }
 
         descriptor = EfiLoadedImageProtocol.make_descriptor(fields)
-        self.dxe_context.install_protocol(descriptor, image_base)
+        self.context.install_protocol(descriptor, image_base)
 
-        self.loaded_image_protocol_modules.append(image_base)
+        self.context.loaded_image_protocol_modules.append(image_base)
 
-    def map_and_load(self, path: str, exec_now: bool=False):
+    def map_and_load(self, path: str, context: UefiContext, exec_now: bool=False):
         """Map and load a module into memory.
 
         The specified module would be mapped and loaded into the address set
@@ -86,6 +83,7 @@ class QlLoaderPE_UEFI(QlLoader):
 
         Args:
             path     : path of the module binary to load
+            context  : uefi context the module belongs to
             exec_now : execute module right away; will be enququed if not
 
         Raises:
@@ -96,7 +94,7 @@ class QlLoaderPE_UEFI(QlLoader):
         pe = PE(path, fast_load=True)
 
         # use image base only if it does not point to NULL
-        image_base = pe.OPTIONAL_HEADER.ImageBase or self.next_image_base
+        image_base = pe.OPTIONAL_HEADER.ImageBase or context.next_image_base
         image_size = ql.mem.align_up(pe.OPTIONAL_HEADER.SizeOfImage)
 
         assert (image_base % ql.mem.pagesize) == 0, 'image base is expected to be page-aligned'
@@ -126,9 +124,9 @@ class QlLoaderPE_UEFI(QlLoader):
 
         # update next memory slot to allow sequencial loading. its availability
         # is unknown though
-        self.next_image_base = image_base + image_size
+        context.next_image_base = image_base + image_size
 
-        module_info = (path, image_base, entry_point)
+        module_info = (path, image_base, entry_point, context)
 
         # execute the module right away or enqueue it
         if exec_now:
@@ -146,43 +144,43 @@ class QlLoaderPE_UEFI(QlLoader):
             ret  : return address; may be None
         """
 
-        # arguments gpr (ms x64 cc)
-        regs = ('rcx', 'rdx', 'r8', 'r9')
-        assert len(args) <= len(regs), f'currently supporting up to {len(regs)} arguments'
+        types = (PARAM_INTN, ) * len(args)
+        targs = tuple(zip(types, args))
 
-        # set up the arguments
-        for reg, arg in zip(regs, args):
-            self.ql.reg.write(reg, arg)
+        self.ql.os.fcall.call_native(addr, targs, ret)
 
-        # if provided, set return address
-        if ret is not None:
-            self.ql.stack_push(ret)
+    def unload_modules(self, context: UefiContext) -> bool:
+        """Invoke images unload callbacks, if set.
 
-        self.ql.reg.rip = addr
+        Args:
+            context: uefi context instance
 
-    def unload_modules(self):
-        for handle in self.loaded_image_protocol_modules:
-            struct_addr = self.dxe_context.protocols[handle][self.loaded_image_protocol_guid]
+        Returns: `True` to stop the teardown process, `False` to proceed
+        """
+
+        for handle in context.loaded_image_protocol_modules:
+            struct_addr = context.protocols[handle][self.loaded_image_protocol_guid]
             loaded_image_protocol = EfiLoadedImageProtocol.EFI_LOADED_IMAGE_PROTOCOL.loadFrom(self.ql, struct_addr)
 
-            unload_ptr = self.ql.unpack64(loaded_image_protocol.Unload)
+            unload_ptr = loaded_image_protocol.Unload.value
 
             if unload_ptr != 0:
                 self.ql.log.info(f'Unloading module {handle:#x}, calling {unload_ptr:#x}')
 
-                self.call_function(unload_ptr, [handle], self.end_of_execution_ptr)
-                self.loaded_image_protocol_modules.remove(handle)
+                self.ql.os.fcall.call_native(unload_ptr, ((POINTER, handle),), context.end_of_execution_ptr)
+                context.loaded_image_protocol_modules.remove(handle)
 
                 return True
 
         return False
 
-    def execute_module(self, path: str, image_base: int, entry_point: int, eoe_trap: Optional[int]):
+    def execute_module(self, path: str, image_base: int, entry_point: int, context: UefiContext, eoe_trap: Optional[int]):
         """Start the execution of a UEFI module.
 
         Args:
             image_base  : module base address
             entry_point : module entry point address
+            context     : module execution context (either dxe or smm)
             eoe_trap    : end-of-execution trap address; may be None
         """
 
@@ -190,120 +188,211 @@ class QlLoaderPE_UEFI(QlLoader):
         ImageHandle = image_base
         SystemTable = self.gST
 
-        self.call_function(entry_point, [ImageHandle, SystemTable], eoe_trap)
-        self.ql.os.entry_point = entry_point
+        # set effectively active heap
+        self.ql.os.heap = context.heap
 
+        # set stack and frame pointers
+        self.ql.reg.rsp = context.top_of_stack
+        self.ql.reg.rbp = context.top_of_stack
+
+        self.ql.os.fcall.call_native(entry_point, (
+            (POINTER, ImageHandle),
+            (POINTER, SystemTable)
+        ), eoe_trap)
+
+        self.ql.os.running_module = path
+        self.ql.os.entry_point = entry_point
         self.ql.log.info(f'Running from {entry_point:#010x} of {path}')
 
     def execute_next_module(self):
-        if not self.modules or self.ql.os.notify_before_module_execution(self.ql, self.modules[0][0]):
+        if not self.modules:
             return
 
-        path, image_base, entry_point = self.modules.pop(0)
-        self.execute_module(path, image_base, entry_point, self.end_of_execution_ptr)
+        path, image_base, entry_point, context = self.modules.pop(0)
 
-    def run(self):
-        # intel architecture uefi implementation only
-        if self.ql.archtype not in (QL_ARCH.X86, QL_ARCH.X8664):
-            raise QlErrorArch("Unsupported architecture")
+        if self.ql.os.notify_before_module_execution(path):
+            return
 
-        # x86-64 arch only
-        if self.ql.archtype != QL_ARCH.X8664:
-            raise QlErrorArch("Only 64 bit arch is supported at the moment")
+        self.execute_module(path, image_base, entry_point, context, context.end_of_execution_ptr)
 
-        self.loaded_image_protocol_guid = self.ql.os.profile["LOADED_IMAGE_PROTOCOL"]["Guid"]
-        self.loaded_image_protocol_modules = []
-        self.tpl = 4 # TPL_APPLICATION
+    def __init_dxe_environment(self, ql: Qiling) -> DxeContext:
+        """Initialize DXE data structures (BS, RT and DS) and install essential protocols.
+        """
 
-        arch_key = {
-            QL_ARCH.X86   : "OS32",
-            QL_ARCH.X8664 : "OS64"
-        }[self.ql.archtype]
-
-        # -------- init BS / RT / DXE data structures and protocols --------
-
-        os_profile = self.ql.os.profile[arch_key]
-        self.dxe_context = context.DxeContext(self.ql)
+        profile = ql.os.profile['DXE']
+        context = DxeContext(ql)
 
         # initialize and locate heap
-        heap_base = int(os_profile["heap_address"], 0)
-        heap_size = int(os_profile["heap_size"], 0)
-        self.dxe_context.init_heap(heap_base, heap_size)
-        self.heap_base_address = heap_base
-        self.ql.log.info(f"Located heap at {heap_base:#010x}")
+        heap_base = int(profile['heap_address'], 0)
+        heap_size = int(profile['heap_size'], 0)
+        context.init_heap(heap_base, heap_size)
+        ql.log.info(f'DXE heap at {heap_base:#010x}')
 
         # initialize and locate stack
-        stack_base = int(os_profile["stack_address"], 0)
-        stack_size = int(os_profile["stack_size"], 0)
-        self.dxe_context.init_stack(stack_base, stack_size)
-        sp = stack_base + stack_size - CPU_STACK_ALIGNMENT
-        self.ql.log.info(f"Located stack at {sp:#010x}")
+        stack_base = int(profile['stack_address'], 0)
+        stack_size = int(profile['stack_size'], 0)
+        context.init_stack(stack_base, stack_size)
+        ql.log.info(f'DXE stack at {context.top_of_stack:#010x}')
 
-        # TODO: statically allocating 256 KiB for ST, RT, BS, DS and Configuration Tables.
-        # however, this amount of memory is rather arbitrary
-        gST = self.dxe_context.heap.alloc(256 * 1024)
-        st.initialize(self.ql, gST)
+        # base address for next image
+        context.next_image_base = int(profile['image_address'], 0)
+
+        # statically allocating 4 KiB for ST, RT, BS, DS and about 100 configuration table entries.
+        # the actual size needed was rounded up to the nearest page boundary.
+        gST = context.heap.alloc(4 * 1024)
+
+        # TODO: statically allocating 64 KiB for data pointed by configuration table.
+        # note that this amount of memory was picked arbitrarily
+        conf_data = context.heap.alloc(64 * 1024)
+
+        context.conf_table_data_ptr = conf_data
+        context.conf_table_data_next_ptr = conf_data
+
+        # the end of execution hook should be set on an address that is not expected to be
+        # executed, like the system table location
+        context.end_of_execution_ptr = gST
+
+        st.initialize(ql, context, gST)
 
         protocols = (
             EfiSmmAccess2Protocol,
             EfiSmmBase2Protocol,
         )
 
-        for proto in protocols:
-            self.dxe_context.install_protocol(proto.descriptor, 1)
+        for p in protocols:
+            context.install_protocol(p.descriptor, 1)
 
-        # workaround
-        self.ql.os.heap = self.dxe_context.heap
+        return context
 
-        # -------- init SMM data structures and protocols --------
+    def __init_smm_environment(self, ql: Qiling) -> SmmContext:
+        """Initialize SMM data structures (SMST and SmmRT) and install essential protocols.
+        """
 
-        smm_profile = self.ql.os.profile['SMRAM']
-        self.smm_context = context.SmmContext(self.ql)
+        profile = ql.os.profile['SMM']
+        context = SmmContext(ql)
 
-        # initialize and locate SMM heap
-        heap_base = int(smm_profile["heap_address"], 0)
-        heap_size = int(smm_profile["heap_size"], 0)
-        self.smm_context.init_heap(heap_base, heap_size)
-        self.ql.log.info(f"Located SMM heap at {heap_base:#010x}")
+        # set smram boundaries
+        context.smram_base = int(profile["smram_base"], 0)
+        context.smram_size = int(profile["smram_size"], 0)
 
-        # TODO: statically allocating 256 KiB for SMM ST.
-        # however, this amount of memory is rather arbitrary
-        gSmst = self.smm_context.heap.alloc(256 * 1024)
-        smst.initialize(self.ql, gSmst)
+        # initialize and locate heap
+        heap_base = int(profile["heap_address"], 0)
+        heap_size = int(profile["heap_size"], 0)
+        context.init_heap(heap_base, heap_size)
+        ql.log.info(f"SMM heap at {heap_base:#010x}")
 
-        self.in_smm = False
+        # initialize and locate stack
+        stack_base = int(profile['stack_address'], 0)
+        stack_size = int(profile['stack_size'], 0)
+        context.init_stack(stack_base, stack_size)
+        ql.log.info(f'SMM stack at {context.top_of_stack:#010x}')
+
+        # base address for next image
+        context.next_image_base = int(profile['image_address'], 0)
+
+        # statically allocating 4 KiB for SMM ST and about 100 configuration table entries
+        # the actual size needed was rounded up to the nearest page boundary.
+        gSmst = context.heap.alloc(4 * 1024)
+
+        # TODO: statically allocating 64 KiB for data pointed by configuration table.
+        # note that this amount of memory was picked arbitrarily
+        conf_data = context.heap.alloc(64 * 1024)
+
+        context.conf_table_data_ptr = conf_data
+        context.conf_table_data_next_ptr = conf_data
+
+        # the end of execution hook should be set on an address that is not expected to be
+        # executed, like the system table location
+        context.end_of_execution_ptr = gSmst
+
+        smst.initialize(ql, context, gSmst)
 
         protocols = (
             EfiSmmCpuProtocol,
             EfiSmmSwDispatch2Protocol
         )
 
-        for proto in protocols:
-            self.smm_context.install_protocol(proto.descriptor, 1)
+        for p in protocols:
+            context.install_protocol(p.descriptor, 1)
 
-        # set stack and frame pointers
-        self.ql.reg.rsp = sp
-        self.ql.reg.rbp = sp
+        return context
+
+    def run(self):
+        ql = self.ql
+
+        # intel architecture uefi implementation only
+        if ql.archtype not in (QL_ARCH.X86, QL_ARCH.X8664):
+            raise QlErrorArch("Unsupported architecture")
+
+        # x86-64 arch only
+        if ql.archtype != QL_ARCH.X8664:
+            raise QlErrorArch("Only 64-bit modules are supported at the moment")
+
+        self.loaded_image_protocol_guid = ql.os.profile["LOADED_IMAGE_PROTOCOL"]["Guid"]
+        self.tpl = 4 # TPL_APPLICATION
+
+        # TODO: assign context to os rather than loader
+        self.dxe_context = self.__init_dxe_environment(ql)
+        self.smm_context = self.__init_smm_environment(ql)
 
         self.entry_point = 0
         self.load_address = 0
-        self.next_image_base = int(os_profile["image_address"], 0)
 
         try:
-            for dependency in self.ql.argv:
-                self.map_and_load(dependency)
+            for dependency in ql.argv:
+
+                # TODO: determine whether this is an smm or dxe module
+                is_smm_module = 'Smm' in dependency
+
+                if is_smm_module:
+                    self.context = self.smm_context
+                else:
+                    self.context = self.dxe_context
+
+                self.map_and_load(dependency, self.context)
+
+            ql.log.info(f"Done loading modules")
+
         except QlMemoryMappedError:
-            self.ql.log.critical("Couldn't map dependency")
+            ql.log.critical("Could not map dependency")
 
-        self.ql.log.info(f"Done with loading {self.ql.path}")
-
-        # set up an end-of-execution hook to regain control when module is done
-        # executing (i.e. when the entry point function returns). that should be
-        # set on a non-executable address, so SystemTable's address was picked
-        self.end_of_execution_ptr = gST
-        self.ql.hook_address(hook_EndOfExecution, self.end_of_execution_ptr)
+        self.set_exit_hook(self.dxe_context.end_of_execution_ptr)
+        self.set_exit_hook(self.smm_context.end_of_execution_ptr)
 
         self.execute_next_module()
 
-    def restore_runtime_services(self):
-        pass # not sure why do we need to restore RT
+    def set_exit_hook(self, address: int):
+        """Set up an end-of-execution hook to regain control when module is done
+        executing; i.e. when the module entry point function returns.
+        """
+
+        def __module_exit_trap(ql: Qiling):
+            # this trap will be called when the current module entry point function
+            # returns. this is done do regain control, run necessary tear down code
+            # and proceed to the execution of the next module. if no more modules
+            # left, terminate gracefully.
+            #
+            # the tear down code may include queued protocol notifications and module
+            # unload callbacks. in such case the trap returns without calling 'os.stop'
+            # and the execution resumes with the current cpu state.
+            #
+            # note that the trap may be called multiple times for a single module,
+            # every time a tear down code needs to be executed, or for any other
+            # reason defined by the user.
+
+            if ql.os.notify_after_module_execution(len(self.modules)):
+                return
+
+            if utils.execute_protocol_notifications(ql):
+                return
+
+            if self.modules:
+                self.execute_next_module()
+            else:
+                if self.unload_modules(self.smm_context) or self.unload_modules(self.dxe_context):
+                    return
+
+                ql.log.info(f'No more modules to run')
+                ql.os.stop()
+
+        self.ql.hook_address(__module_exit_trap, address)

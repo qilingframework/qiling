@@ -45,12 +45,12 @@ class EFI_SMM_CPU_IO2_PROTOCOL(STRUCT):
 
 class EFI_SMM_SYSTEM_TABLE2(STRUCT):
 	EFI_SMM_SYSTEM_TABLE2 = STRUCT
+	_pack_ = 8
 
 	_fields_ = [
 		('Hdr',								EFI_TABLE_HEADER),
 		('SmmFirmwareVendor',				PTR(CHAR16)),
 		('SmmFirmwareRevision',				UINT32),
-		('PADDING_0',						UINT8 * 4),
 		('SmmInstallConfigurationTable',	FUNCPTR(EFI_STATUS, PTR(EFI_SMM_SYSTEM_TABLE2), PTR(EFI_GUID), PTR(VOID), UINTN)),
 		('SmmIo',							EFI_SMM_CPU_IO2_PROTOCOL),
 		('SmmAllocatePool',					FUNCPTR(EFI_STATUS, EFI_MEMORY_TYPE, UINTN, PTR(PTR(VOID)))),
@@ -79,7 +79,7 @@ class EFI_SMM_SYSTEM_TABLE2(STRUCT):
 	"Guid"	: GUID,		# PTR(EFI_GUID)
 	"Table"	: POINTER	# PTR(VOID)
 })
-def hook_SmmInstallConfigurationTable(ql, address, params):
+def hook_SmmInstallConfigurationTable(ql: Qiling, address: int, params):
 	return common.InstallConfigurationTable(ql.loader.smm_context, params)
 
 @dxeapi(params = {
@@ -88,7 +88,7 @@ def hook_SmmInstallConfigurationTable(ql, address, params):
 	"Pages"		: ULONGLONG,	# UINTN
 	"Memory"	: POINTER		# PTR(EFI_PHYSICAL_ADDRESS)
 })
-def hook_SmmAllocatePages(ql, address, params):
+def hook_SmmAllocatePages(ql: Qiling, address: int, params):
 	alloc_size = params["Pages"] * PAGE_SIZE
 
 	if params['type'] == EFI_ALLOCATE_TYPE.AllocateAddress:
@@ -111,7 +111,7 @@ def hook_SmmAllocatePages(ql, address, params):
 	"Memory"	: ULONGLONG,	# EFI_PHYSICAL_ADDRESS
 	"Pages"		: ULONGLONG		# UINTN
 })
-def hook_SmmFreePages(ql, address, params):
+def hook_SmmFreePages(ql: Qiling, address: int, params):
 	address = params["Memory"]
 
 	ret = ql.loader.smm_context.heap.free(address)
@@ -123,7 +123,7 @@ def hook_SmmFreePages(ql, address, params):
 	"Size"		: INT,		# UINTN
 	"Buffer"	: POINTER	# PTR(PTR(VOID))
 })
-def hook_SmmAllocatePool(ql, address, params):
+def hook_SmmAllocatePool(ql: Qiling, address: int, params):
 	# TODO: allocate memory acording to "PoolType"
 	address = ql.loader.smm_context.heap.alloc(params["Size"])
 	write_int64(ql, params["Buffer"], address)
@@ -133,7 +133,7 @@ def hook_SmmAllocatePool(ql, address, params):
 @dxeapi(params = {
 	"Buffer": POINTER # PTR(VOID)
 })
-def hook_SmmFreePool(ql, address, params):
+def hook_SmmFreePool(ql: Qiling, address: int, params):
 	address = params["Buffer"]
 	ret = ql.loader.smm_context.heap.free(address)
 
@@ -144,7 +144,7 @@ def hook_SmmFreePool(ql, address, params):
 	"CpuNumber"		: INT,
 	"ProcArguments"	: POINTER
 })
-def hook_SmmStartupThisAp(ql, address, params):
+def hook_SmmStartupThisAp(ql: Qiling, address: int, params):
 	return EFI_INVALID_PARAMETER
 
 @dxeapi(params = {
@@ -153,7 +153,7 @@ def hook_SmmStartupThisAp(ql, address, params):
 	"InterfaceType"	: ULONGLONG,	# EFI_INTERFACE_TYPE
 	"Interface"		: POINTER,		# PTR(VOID)
 })
-def hook_SmmInstallProtocolInterface(ql, address, params):
+def hook_SmmInstallProtocolInterface(ql: Qiling, address: int, params):
 	return common.InstallProtocolInterface(ql.loader.smm_context, params)
 
 @dxeapi(params = {
@@ -161,7 +161,7 @@ def hook_SmmInstallProtocolInterface(ql, address, params):
 	"Protocol"	: GUID,		# PTR(EFI_GUID)
 	"Interface"	: POINTER	# PTR(VOID)
 })
-def hook_SmmUninstallProtocolInterface(ql, address, params):
+def hook_SmmUninstallProtocolInterface(ql: Qiling, address: int, params):
 	return common.UninstallProtocolInterface(ql.loader.smm_context, params)
 
 @dxeapi(params = {
@@ -169,7 +169,7 @@ def hook_SmmUninstallProtocolInterface(ql, address, params):
 	"Protocol"	: GUID,		# PTR(EFI_GUID)
 	"Interface"	: POINTER	# PTR(PTR(VOID))
 })
-def hook_SmmHandleProtocol(ql, address, params):
+def hook_SmmHandleProtocol(ql: Qiling, address: int, params):
 	return common.HandleProtocol(ql.loader.smm_context, params)
 
 @dxeapi(params = {
@@ -177,7 +177,7 @@ def hook_SmmHandleProtocol(ql, address, params):
 	"Function"		: POINTER,	# EFI_MM_NOTIFY_FN
 	"Registration"	: POINTER	# PTR(PTR(VOID))
 })
-def hook_SmmRegisterProtocolNotify(ql, address, params):
+def hook_SmmRegisterProtocolNotify(ql: Qiling, address: int, params):
 	event_id = len(ql.loader.events)
 	event_dic = {
 		"NotifyFunction": params["Function"],
@@ -196,7 +196,7 @@ def hook_SmmRegisterProtocolNotify(ql, address, params):
 	"BufferSize": POINTER,	# PTR(UINTN)
 	"Buffer"	: POINTER	# PTR(EFI_HANDLE)
 })
-def hook_SmmLocateHandle(ql, address, params):
+def hook_SmmLocateHandle(ql: Qiling, address: int, params):
 	return common.LocateHandle(ql.loader.smm_context, params)
 
 @dxeapi(params = {
@@ -204,7 +204,7 @@ def hook_SmmLocateHandle(ql, address, params):
 	"Registration"	: POINTER,	# PTR(VOID)
 	"Interface"		: POINTER	# PTR(PTR(VOID))
 })
-def hook_SmmLocateProtocol(ql, address, params):
+def hook_SmmLocateProtocol(ql: Qiling, address: int, params):
 	return common.LocateProtocol(ql.loader.smm_context, params)
 
 @dxeapi(params = {
@@ -213,7 +213,7 @@ def hook_SmmLocateProtocol(ql, address, params):
 	"CommBuffer"	: POINTER,
 	"CommBufferSize": POINTER
 })
-def hook_SmiManage(ql, address, params):
+def hook_SmiManage(ql: Qiling, address: int, params):
 	return EFI_NOT_FOUND
 
 @dxeapi(params = {
@@ -221,16 +221,16 @@ def hook_SmiManage(ql, address, params):
 	"HandlerType"	: GUID,
 	"DispatchHandle": POINTER
 })
-def hook_SmiHandlerRegister(ql, address, params):
+def hook_SmiHandlerRegister(ql: Qiling, address: int, params):
 	return EFI_SUCCESS
 
 @dxeapi(params = {
 	"DispatchHandle": POINTER
 })
-def hook_SmiHandlerUnRegister(ql, address, params):
+def hook_SmiHandlerUnRegister(ql: Qiling, address: int, params):
 	return EFI_SUCCESS
 
-def initialize(ql, gSmst : int):
+def initialize(ql: Qiling, context, gSmst: int):
 	ql.loader.gSmst = gSmst
 
 	gSmmRT = gSmst + EFI_SMM_SYSTEM_TABLE2.sizeof()	# smm runtime services
@@ -244,7 +244,6 @@ def initialize(ql, gSmst : int):
 			('Hdr',								None),
 			('SmmFirmwareVendor',				None),
 			('SmmFirmwareRevision',				None),
-			('PADDING_0',						None),
 			('SmmInstallConfigurationTable',	hook_SmmInstallConfigurationTable),
 			('SmmIo',							None),
 			('SmmAllocatePool',					hook_SmmAllocatePool),
@@ -273,22 +272,8 @@ def initialize(ql, gSmst : int):
 	instance = init_struct(ql, gSmst, descriptor)
 	instance.saveTo(ql, gSmst)
 
-	# configuration tables bookkeeping
-	confs = []
-
-	# these are needed for utils.SmmInstallConfigurationTable
-	ql.loader.smm_context.conf_table_array = confs
-	ql.loader.smm_context.conf_table_array_ptr = cfg
-
-	# configuration table data space; its location is calculated by leaving
-	# enough space for 100 configuration table entries. only a few entries are
-	# expected, so 100 should definitely suffice
-	conf_data = cfg + EFI_CONFIGURATION_TABLE.sizeof() * 100
-	ql.loader.smm_context.conf_table_data_ptr = conf_data
-	ql.loader.smm_context.conf_table_data_next_ptr = conf_data
-
-	install_configuration_table(ql.loader.smm_context, "HOB_LIST", None)
-	install_configuration_table(ql.loader.smm_context, "SMM_RUNTIME_SERVICES_TABLE", gSmmRT)
+	install_configuration_table(context, "HOB_LIST", None)
+	install_configuration_table(context, "SMM_RUNTIME_SERVICES_TABLE", gSmmRT)
 
 __all__ = [
 	'EFI_SMM_SYSTEM_TABLE2',

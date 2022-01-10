@@ -4,6 +4,7 @@
 #
 
 import ctypes
+from contextlib import contextmanager
 from typing import Mapping, MutableMapping, Sequence, Optional
 
 from qiling import Qiling
@@ -27,13 +28,13 @@ def PTR(ptype: Optional[type]) -> type:
 	return _pointer_type_cache[pname]
 
 VOID = None
-INT8  = ctypes.c_byte
+INT8  = ctypes.c_int8
 INT16 = ctypes.c_int16
 INT32 = ctypes.c_int32
 INT64 = ctypes.c_int64
 INTN  = INT64
 
-UINT8  = ctypes.c_ubyte
+UINT8  = ctypes.c_uint8
 UINT16 = ctypes.c_uint16
 UINT32 = ctypes.c_uint32
 UINT64 = ctypes.c_uint64
@@ -45,8 +46,6 @@ CHAR16 = UINT16
 
 FUNCPTR = lambda *args: PTR(ctypes.CFUNCTYPE(*args))
 UNION = ctypes.Union
-# SIZEOF = lambda t: ctypes.sizeof(t)
-# OFFSETOF = lambda cls, fname: getattr(cls, fname).offset
 
 CPU_STACK_ALIGNMENT = 16
 PAGE_SIZE = 0x1000
@@ -80,6 +79,16 @@ class STRUCT(ctypes.LittleEndianStructure):
 		return cls.from_buffer_copy(data)
 
 	@classmethod
+	@contextmanager
+	def bindTo(cls, ql: Qiling, address: int):
+		instance = cls.loadFrom(ql, address)
+
+		try:
+			yield instance
+		finally:
+			instance.saveTo(ql, address)
+
+	@classmethod
 	def sizeof(cls) -> int:
 		"""Get the C structure size in bytes.
 		"""
@@ -95,9 +104,10 @@ class STRUCT(ctypes.LittleEndianStructure):
 
 	@classmethod
 	def memberat(cls, offset: int) -> Optional[str]:
-		for fname, _ in cls._fields_:
-			if cls.offsetof(fname) == offset:
-				return fname
+		"""Get the member name at a given offset.
+		"""
+
+		return next((fname for fname, *_ in cls._fields_ if cls.offsetof(fname) == offset), None)
 
 class EnumMeta(type(ctypes.c_int)):
 	def __getattr__(self, key):
