@@ -125,6 +125,7 @@ def __to_trace_line(record: TraceRecord, symsmap: Mapping[int, str] = {}) -> str
 					2: 'word',
 					4: 'dword',
 					8: 'qword',
+					10: 'fword',
 					16: 'xmmword'
 				}[op.size]
 
