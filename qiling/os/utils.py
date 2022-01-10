@@ -184,24 +184,3 @@ class QlOsUtils:
 
     def update_ellipsis(self, params: MutableMapping, args: Sequence) -> None:
         params.update((f'{QlOsUtils.ELLIPSIS_PREF}{i}', a) for i, a in enumerate(args))
-
-    def exec_arbitrary(self, start: int, end: int):
-        old_sp = self.ql.reg.arch_sp
-
-        # we read where this hook is supposed to return
-        ret = self.ql.stack_read(0)
-
-        def restore(ql: Qiling):
-            self.ql.log.debug(f"Executed code from {start:#x} to {end:#x}")
-            # now we can restore the register to be where we were supposed to
-            ql.reg.arch_sp = old_sp + ql.pointersize
-            ql.reg.arch_pc = ret
-
-            # we want to execute the code once, not more
-            hret.remove()
-
-        # we have to set an address to restore the registers
-        hret = self.ql.hook_address(restore, end)
-        # we want to rewrite the return address to the function
-        self.ql.stack_write(0, start)
-
