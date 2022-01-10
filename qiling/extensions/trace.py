@@ -154,6 +154,8 @@ def enable_full_trace(ql: Qiling):
 	md = ql.create_disassembler()
 	md.detail = True
 
+	assert md.arch == CS_ARCH_X86, 'currently available only for intel architecture'
+
 	# if available, use symbols map to resolve memory accesses
 	symsmap = getattr(ql.loader, 'symsmap', {})
 
@@ -188,6 +190,8 @@ def enable_history_trace(ql: Qiling, nrecords: int):
 	# enable detailed disassembly info
 	md = ql.create_disassembler()
 	md.detail = True
+
+	assert md.arch == CS_ARCH_X86, 'currently available only for intel architecture'
 
 	# if available, use symbols map to resolve memory accesses
 	symsmap = getattr(ql.loader, 'symsmap', {})
