@@ -68,21 +68,21 @@ class QlOsUtils:
             self.appeared_strings.setdefault(token, set()).add(self.syscalls_counter)
 
     @staticmethod
-    def read_string(ql: Qiling, address: int, terminator: str) -> str:
-        result = ""
+    def read_string(ql: Qiling, address: int, terminator: bytes) -> str:
+        result = bytearray()
         charlen = len(terminator)
 
         char = ql.mem.read(address, charlen)
 
-        while char.decode(errors="ignore") != terminator:
+        while char != terminator:
             address += charlen
-            result += char.decode(errors="ignore")
+            result += char
             char = ql.mem.read(address, charlen)
 
-        return result
+        return result.decode(errors="ignore")
 
     def read_wstring(self, address: int) -> str:
-        s = QlOsUtils.read_string(self.ql, address, '\x00\x00')
+        s = QlOsUtils.read_string(self.ql, address, b'\x00\x00')
 
         # We need to remove \x00 inside the string. Compares do not work otherwise
         s = s.replace("\x00", "")
@@ -91,7 +91,7 @@ class QlOsUtils:
         return s
 
     def read_cstring(self, address: int) -> str:
-        s = QlOsUtils.read_string(self.ql, address, '\x00')
+        s = QlOsUtils.read_string(self.ql, address, b'\x00')
 
         self.string_appearance(s)
 
