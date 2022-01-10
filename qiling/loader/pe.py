@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import os, pefile, pickle, traceback
+import os, pefile, pickle, secrets, traceback
 from typing import Any, MutableMapping, Optional, Mapping, Sequence
 
 from qiling import Qiling
@@ -608,6 +608,21 @@ class QlLoaderPE(QlLoader, Process):
             self.pe.parse_data_directories()
             data = bytearray(self.pe.get_memory_mapped_image())
             self.ql.mem.write(self.pe_image_address, bytes(data))
+            
+            if self.is_driver:
+                # setup IMAGE_LOAD_CONFIG_DIRECTORY
+                if self.pe.OPTIONAL_HEADER.DATA_DIRECTORY[pefile.DIRECTORY_ENTRY['IMAGE_DIRECTORY_ENTRY_LOAD_CONFIG']].VirtualAddress != 0:
+                    SecurityCookie_rva = self.pe.DIRECTORY_ENTRY_LOAD_CONFIG.struct.SecurityCookie - self.pe.OPTIONAL_HEADER.ImageBase
+                    SecurityCookie_value = default_security_cookie_value = self.ql.mem.read(self.pe_image_address+SecurityCookie_rva, self.ql.pointersize)
+                    while SecurityCookie_value == default_security_cookie_value:
+                        SecurityCookie_value = secrets.token_bytes(self.ql.pointersize)
+                        # rol     rcx, 10h (rcx: cookie)
+                        # test    cx, 0FFFFh
+                        SecurityCookie_value_array = bytearray(SecurityCookie_value)
+                        # Sanity question: We are always little endian, right?
+                        SecurityCookie_value_array[-2:] = b'\x00\x00'
+                        SecurityCookie_value = bytes(SecurityCookie_value_array)
+                    self.ql.mem.write(self.pe_image_address+SecurityCookie_rva, SecurityCookie_value)
 
             # Add main PE to ldr_data_table
             mod_name = os.path.basename(self.path)
