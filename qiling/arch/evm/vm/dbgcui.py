@@ -6,7 +6,7 @@
 from rich import box
 from rich import print as rprint
 from rich.align import Align
-from rich.console import Console, RenderGroup
+from rich.console import Console, Group
 from rich.layout import Layout
 from rich.panel import Panel
 from rich.syntax import Syntax
@@ -138,7 +138,7 @@ def make_memory_panel(debugger) -> Panel:
 
     memory_panel = Panel(
         Align.center(
-            RenderGroup('', "\n", Align.center(mem_table)),
+            Group('', "\n", Align.center(mem_table)),
             vertical="top",
         ),
         box=box.ROUNDED,
