@@ -114,7 +114,7 @@ class QlFunctionCall:
 		if len(names) > len(types):
 			types.extend([None] * (len(names) - len(types)))
 
-		return zip(types, names, values)
+		return tuple(zip(types, names, values))
 
 	def call(self, func: CallHook, proto: Mapping[str, Any], params: Mapping[str, Any], hook_onenter: Optional[OnEnterHook], hook_onexit: Optional[OnExitHook], passthru: bool) -> Tuple[Iterable[TypedArg], int, int]:
 		"""Execute a hooked function.
