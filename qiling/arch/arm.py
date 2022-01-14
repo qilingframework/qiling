@@ -80,7 +80,8 @@ class QlArchARM(QlArch):
         return Cs(CS_ARCH_ARM, mode)
 
 
-    def create_assembler(self) -> Ks:
+    @property
+    def assembler(self) -> Ks:
         # note: we do not cache the assembler instance; rather we refresh it
         # each time to make sure thumb mode is taken into account
 

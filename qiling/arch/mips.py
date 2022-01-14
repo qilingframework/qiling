@@ -47,13 +47,11 @@ class QlArchMIPS(QlArch):
 
         return Cs(CS_ARCH_MIPS, CS_MODE_MIPS32 + endian)
 
-    def create_assembler(self) -> Ks:
-        if self._asm is None:
-            endian = {
-                QL_ENDIAN.EL : KS_MODE_LITTLE_ENDIAN,
-                QL_ENDIAN.EB : KS_MODE_BIG_ENDIAN
-            }[self.ql.archendian]
+    @cached_property
+    def assembler(self) -> Ks:
+        endian = {
+            QL_ENDIAN.EL : KS_MODE_LITTLE_ENDIAN,
+            QL_ENDIAN.EB : KS_MODE_BIG_ENDIAN
+        }[self.ql.archendian]
 
-            self._asm = Ks(KS_ARCH_MIPS, KS_MODE_MIPS32 + endian)
-
-        return self._asm
+        return Ks(KS_ARCH_MIPS, KS_MODE_MIPS32 + endian)

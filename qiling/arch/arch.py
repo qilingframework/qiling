@@ -4,7 +4,6 @@
 #
 
 from abc import abstractmethod
-from typing import Optional
 
 from unicorn import Uc
 from unicorn.unicorn import UcContext
@@ -18,8 +17,6 @@ class QlArch:
     def __init__(self, ql: Qiling):
         self.ql = ql
         self.utils = QlArchUtils(ql)
-
-        self._asm: Optional[Ks] = None
 
     @property
     @abstractmethod
@@ -113,8 +110,10 @@ class QlArch:
         pass
 
 
-    def create_assembler(self) -> Ks:
+    @property
+    @abstractmethod
+    def assembler(self) -> Ks:
         """Get assembler instance bound to arch.
         """
 
-        raise NotImplementedError(self.__class__.__name__)
+        pass
