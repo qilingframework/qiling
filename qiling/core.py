@@ -841,15 +841,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         return self.arch.stack_write(offset, data)
 
 
-    # Assembler/Diassembler API
-    @property
-    def assembler(self):
-        return self.create_assembler()
-
-
-    def create_assembler(self):
-        return self.arch.create_assembler()
-
     # stop emulation
     def emu_stop(self):
         self.uc.emu_stop()
