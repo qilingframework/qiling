@@ -62,7 +62,8 @@ class QlArchARM(QlArch):
 
         return bool(self.ql.reg.cpsr & cpsr_v)
 
-    def create_disassembler(self) -> Cs:
+    @property
+    def disassembler(self) -> Cs:
         # note: we do not cache the disassembler instance; rather we refresh it
         # each time to make sure thumb mode is taken into account
 
