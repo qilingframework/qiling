@@ -23,7 +23,7 @@ if platform.system() == "Darwin" and platform.machine() == "arm64":
 class PETest(unittest.TestCase):
 
     def hook_third_stop_address(self, ql):
-        print(" >>>> Third Stop address: 0x%08x" % ql.reg.arch_pc)
+        print(" >>>> Third Stop address: 0x%08x" % ql.arch.regs.arch_pc)
         self.third_stop = True
         ql.emu_stop()
 
@@ -177,13 +177,13 @@ class PETest(unittest.TestCase):
 
 
         def hook_first_stop_address(ql):
-            print(" >>>> First Stop address: 0x%08x" % ql.reg.arch_pc)
+            print(" >>>> First Stop address: 0x%08x" % ql.arch.regs.arch_pc)
             ql.first_stop = True    
             ql.emu_stop()
 
 
         def hook_second_stop_address(ql):
-            print(" >>>> Second Stop address: 0x%08x" % ql.reg.arch_pc)
+            print(" >>>> Second Stop address: 0x%08x" % ql.arch.regs.arch_pc)
             ql.second_stop = True
             ql.emu_stop()
 

@@ -299,7 +299,7 @@ def ql_syscall_shared_region_check_np(ql, p, uap, retvalp, *args, **kw):
 
 # 0x150
 def ql_syscall_proc_info(ql, callnum, pid, flavor, arg, buff, buffer_size):
-    retval = struct.unpack("<Q", ql.mem.read(ql.reg.rsp, 8))[0]
+    retval = struct.unpack("<Q", ql.mem.read(ql.arch.regs.rsp, 8))[0]
     ql.log.debug("proc_info(callnum: 0x%x, pid: %d, flavor:0x%x, arg: 0x%x, buffer: 0x%x, buffersize: 0x%x, retval: 0x%x)" % (
         callnum, pid, flavor, arg, buff, buffer_size, retval
     ))
@@ -431,5 +431,5 @@ def ql_syscall_abort_with_payload(ql, reason_namespace, reason_code, payload, pa
 # thread_set_tsd_base
 def ql_syscall_thread_fast_set_cthread_self64(ql, u_info_addr, *args, **kw):
     ql.log.debug("[mdep] thread fast set cthread self64(tsd_base:0x%x)" % (u_info_addr))
-    ql.reg.msr(GSMSR, u_info_addr)
+    ql.arch.regs.msr(GSMSR, u_info_addr)
     return KERN_SUCCESS

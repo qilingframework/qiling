@@ -46,7 +46,7 @@ def dump_regs(ql: Qiling) -> Mapping[str, int]:
                 "xpsr", "control", "primask", "basepri", "faultmask"
                 )
 
-    return {reg_name: getattr(ql.reg, reg_name) for reg_name in _reg_order}
+    return {reg_name: getattr(ql.arch.regs, reg_name) for reg_name in _reg_order}
 
 
 def get_arm_flags(bits: int) -> Mapping[str, int]:
@@ -143,7 +143,7 @@ def _read_inst(ql: Qiling, addr: int) -> int:
     result = ql.mem.read(addr, 4)
 
     if ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB, QL_ARCH.CORTEX_M):
-        if is_thumb(ql.reg.cpsr):
+        if is_thumb(ql.arch.regs.cpsr):
 
             first_two = ql.unpack16(ql.mem.read(addr, 2))
             result = ql.pack16(first_two)
@@ -164,13 +164,13 @@ def _read_inst(ql: Qiling, addr: int) -> int:
 def handle_bnj_arm(ql: Qiling, cur_addr: str) -> int:
 
     def _read_reg_val(regs, _reg):
-        return getattr(ql.reg, _reg.replace("ip", "r12").replace("fp", "r11"))
+        return getattr(ql.arch.regs, _reg.replace("ip", "r12").replace("fp", "r11"))
 
     def regdst_eq_pc(op_str):
         return op_str.partition(", ")[0] == "pc"
 
     read_inst = partial(_read_inst, ql)
-    read_reg_val = partial(_read_reg_val, ql.reg)
+    read_reg_val = partial(_read_reg_val, ql.arch.regs)
 
     ARM_INST_SIZE = 4
     ARM_THUMB_INST_SIZE = 2
@@ -254,7 +254,7 @@ def handle_bnj_arm(ql: Qiling, cur_addr: str) -> int:
 
     to_jump = False
     if line.mnemonic in jump_table:
-        to_jump = jump_table.get(line.mnemonic)(*get_cpsr(ql.reg.cpsr))
+        to_jump = jump_table.get(line.mnemonic)(*get_cpsr(ql.arch.regs.cpsr))
 
     elif line.mnemonic in cb_table:
         to_jump = cb_table.get(line.mnemonic)(read_reg_val(line.op_str.split(", ")[0]))
@@ -284,7 +284,7 @@ def handle_bnj_arm(ql: Qiling, cur_addr: str) -> int:
                 "ls": lambda V, C, Z, N: (C == 0 or Z == 1),
                 "le": lambda V, C, Z, N: (Z == 1 or N != V),
                 "hi": lambda V, C, Z, N: (Z == 0 and C == 1),
-                }.get(line.op_str)(*get_cpsr(ql.reg.cpsr))
+                }.get(line.op_str)(*get_cpsr(ql.arch.regs.cpsr))
 
         it_block_range = [each_char for each_char in line.mnemonic[1:]]
 
@@ -315,7 +315,7 @@ def handle_bnj_arm(ql: Qiling, cur_addr: str) -> int:
                 ret_addr = ql.unpack32(ql.mem.read(read_reg_val(r), ARM_INST_SIZE))
 
     elif line.mnemonic in ("addls", "addne", "add") and regdst_eq_pc(line.op_str):
-        V, C, Z, N = get_cpsr(ql.reg.cpsr)
+        V, C, Z, N = get_cpsr(ql.arch.regs.cpsr)
         r0, r1, r2, *imm = line.op_str.split(", ")
 
         # program counter is awalys 8 bytes ahead when it comes with pc, need to add extra 8 bytes
@@ -365,7 +365,7 @@ def handle_bnj_arm(ql: Qiling, cur_addr: str) -> int:
                 "pophi": lambda V, C, Z, N: (C == 1),
                 "popge": lambda V, C, Z, N: (N == V),
                 "poplt": lambda V, C, Z, N: (N != V),
-                }.get(line.mnemonic)(*get_cpsr(ql.reg.cpsr)):
+                }.get(line.mnemonic)(*get_cpsr(ql.arch.regs.cpsr)):
 
             ret_addr = cur_addr + ARM_INST_SIZE
 
@@ -389,7 +389,7 @@ def handle_bnj_mips(ql: Qiling, cur_addr: str) -> int:
     def _read_reg(regs, _reg):
         return signed_val(getattr(regs, _reg.strip('$').replace("fp", "s8")))
 
-    read_reg_val = partial(_read_reg, ql.reg)
+    read_reg_val = partial(_read_reg, ql.arch.regs)
 
     line = disasm(ql, cur_addr)
 

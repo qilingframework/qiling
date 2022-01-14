@@ -38,7 +38,7 @@ class QlGdbUtils(object):
         self.ql.hook_del(self._tmp_hook)
         self.ql.hook_code(self.dbg_hook)
         self.ql.stop()
-        self.ql.log.info("gdb> Stop at entry point: %#x" % self.ql.reg.arch_pc)
+        self.ql.log.info("gdb> Stop at entry point: %#x" % self.ql.arch.regs.arch_pc)
 
     def dbg_hook(self, ql, address, size):
         """

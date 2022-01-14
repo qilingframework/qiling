@@ -55,10 +55,10 @@ def ql_syscall_set_thread_area(ql: Qiling, u_info_addr, *args, **kw):
 
     elif ql.archtype == QL_ARCH.MIPS:
         CONFIG3_ULR = (1 << 13)
-        ql.reg.cp0_config3 = CONFIG3_ULR
-        ql.reg.cp0_userlocal = u_info_addr
-        ql.reg.v0 = 0
-        ql.reg.a3 = 0
+        ql.arch.regs.cp0_config3 = CONFIG3_ULR
+        ql.arch.regs.cp0_userlocal = u_info_addr
+        ql.arch.regs.v0 = 0
+        ql.arch.regs.a3 = 0
         ql.log.debug ("set_thread_area(0x%x)" % u_info_addr)
 
     return 0
@@ -66,9 +66,9 @@ def ql_syscall_set_thread_area(ql: Qiling, u_info_addr, *args, **kw):
 
 def ql_syscall_set_tls(ql, address, *args, **kw):
     if ql.archtype == QL_ARCH.ARM:
-        ql.reg.c13_c0_3 = address
+        ql.arch.regs.c13_c0_3 = address
         ql.mem.write(ql.arch.arm_get_tls_addr + 12, ql.pack32(address))
-        ql.reg.r0 = address
+        ql.arch.regs.r0 = address
         ql.log.debug("settls(0x%x)" % address)
 
 def ql_syscall_clock_gettime(ql, clock_gettime_clock_id, clock_gettime_timespec, *args, **kw):    

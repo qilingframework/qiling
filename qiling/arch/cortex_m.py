@@ -23,7 +23,7 @@ class QlInterruptContext(ContextDecorator):
 
     def __enter__(self):
         for reg in self.reg_context:
-            val = self.ql.reg.read(reg)
+            val = self.ql.arch.regs.read(reg)
             self.ql.arch.stack_push(val)
         
         if self.ql.verbose >= QL_VERBOSE.DISASM:
@@ -38,22 +38,22 @@ class QlInterruptContext(ContextDecorator):
 
         else:
             # Exit handler mode
-            self.ql.reg.write('ipsr', 0)
+            self.ql.arch.regs.write('ipsr', 0)
 
             # switch the stack accroding exc_return
-            old_ctrl = self.ql.reg.read('control')
+            old_ctrl = self.ql.arch.regs.read('control')
             if retval & EXC_RETURN.RETURN_SP:
-                self.ql.reg.write('control', old_ctrl |  CONTROL.SPSEL)            
+                self.ql.arch.regs.write('control', old_ctrl |  CONTROL.SPSEL)            
             else:
-                self.ql.reg.write('control', old_ctrl & ~CONTROL.SPSEL)
+                self.ql.arch.regs.write('control', old_ctrl & ~CONTROL.SPSEL)
 
             # Restore stack
             for reg in reversed(self.reg_context):
                 val = self.ql.arch.stack_pop()
                 if reg == 'xpsr':                
-                    self.ql.reg.write('XPSR_NZCVQG', val)
+                    self.ql.arch.regs.write('XPSR_NZCVQG', val)
                 else:
-                    self.ql.reg.write(reg, val)        
+                    self.ql.arch.regs.write(reg, val)        
 
         if self.ql.verbose >= QL_VERBOSE.DISASM:
             self.ql.log.info('Exit from interrupt')
@@ -67,7 +67,7 @@ class QlArchCORTEX_M(QlArchARM):
         )
 
         for reg_maper in reg_maps:
-            self.ql.reg.expand_mapping(reg_maper)
+            self.ql.arch.regs.expand_mapping(reg_maper)
 
     @cached_property
     def uc(self):
@@ -106,15 +106,15 @@ class QlArchCORTEX_M(QlArchARM):
             count -= 1    
 
     def is_handler_mode(self):
-        return self.ql.reg.read('ipsr') > 1
+        return self.ql.arch.regs.read('ipsr') > 1
 
     def using_psp(self):
-        return not self.is_handler_mode() and (self.ql.reg.read('control') & CONTROL.SPSEL) > 0
+        return not self.is_handler_mode() and (self.ql.arch.regs.read('control') & CONTROL.SPSEL) > 0
 
     def init_context(self):
-        self.ql.reg.write('lr', 0xffffffff)
-        self.ql.reg.write('msp', self.ql.mem.read_ptr(0x0))
-        self.ql.reg.write('pc' , self.ql.mem.read_ptr(0x4))
+        self.ql.arch.regs.write('lr', 0xffffffff)
+        self.ql.arch.regs.write('msp', self.ql.mem.read_ptr(0x0))
+        self.ql.arch.regs.write('pc' , self.ql.mem.read_ptr(0x4))
 
     def soft_interrupt_handler(self, ql, intno):
         forward_mapper = {
@@ -148,14 +148,14 @@ class QlArchCORTEX_M(QlArchARM):
             raise QlErrorNotImplemented(f'Unhandled interrupt number ({intno})')
 
     def hard_interrupt_handler(self, ql, intno):
-        basepri = self.ql.reg.read('basepri') & 0xf0
+        basepri = self.ql.arch.regs.read('basepri') & 0xf0
         if basepri and basepri <= ql.hw.nvic.get_priority(intno):
             return
 
-        if intno > IRQ.HARD_FAULT and (ql.reg.read('primask') & 0x1):
+        if intno > IRQ.HARD_FAULT and (ql.arch.regs.read('primask') & 0x1):
             return
                 
-        if intno != IRQ.NMI and (ql.reg.read('faultmask') & 0x1):
+        if intno != IRQ.NMI and (ql.arch.regs.read('faultmask') & 0x1):
             return
 
         if ql.verbose >= QL_VERBOSE.DISASM:
@@ -168,8 +168,8 @@ class QlArchCORTEX_M(QlArchARM):
             entry = ql.mem.read_ptr(offset)
             exc_return = 0xFFFFFFFD if self.ql.arch.using_psp() else 0xFFFFFFF9        
 
-            self.ql.reg.write('ipsr', isr)
-            self.ql.reg.write('pc', entry)
-            self.ql.reg.write('lr', exc_return) 
+            self.ql.arch.regs.write('ipsr', isr)
+            self.ql.arch.regs.write('pc', entry)
+            self.ql.arch.regs.write('lr', exc_return) 
 
             self.ql.emu_start(self.ql.arch.get_pc(), 0, count=0xffffff)

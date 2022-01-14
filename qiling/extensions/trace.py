@@ -59,7 +59,7 @@ def __get_trace_records(ql: Qiling, address: int, size: int, md: Cs) -> Iterator
 
 	for insn in md.disasm(buf, address):
 		# BUG: insn.regs_read doesn't work well, so we use insn.regs_access()[0]
-		state = tuple((reg, ql.reg.read(CS_UC_REGS[reg])) for reg in insn.regs_access()[0])
+		state = tuple((reg, ql.arch.regs.read(CS_UC_REGS[reg])) for reg in insn.regs_access()[0])
 
 		yield (insn, state)
 

@@ -26,9 +26,9 @@ class QlArchRISCV(QlArch):
         )
 
         for reg_maper in reg_maps:
-            self.ql.reg.expand_mapping(reg_maper)
-        self.ql.reg.register_sp(reg_map["sp"])
-        self.ql.reg.register_pc(reg_map["pc"])
+            self.ql.arch.regs.expand_mapping(reg_maper)
+        self.ql.arch.regs.register_sp(reg_map["sp"])
+        self.ql.arch.regs.register_pc(reg_map["pc"])
 
     @cached_property
     def uc(self) -> Uc:
@@ -48,15 +48,15 @@ class QlArchRISCV(QlArch):
         raise QlErrorNotImplemented("Keystone does not yet support riscv")
 
     def enable_float(self):
-        self.ql.reg.mstatus = self.ql.reg.mstatus | MSTATUS.FS_DIRTY
+        self.ql.arch.regs.mstatus = self.ql.arch.regs.mstatus | MSTATUS.FS_DIRTY
 
     def init_context(self):
-        self.ql.reg.pc = 0x08000000
+        self.ql.arch.regs.pc = 0x08000000
         
     def soft_interrupt_handler(self, ql, intno):
         if intno == 2:            
             try:
-                address, size = ql.reg.pc - 4, 4
+                address, size = ql.arch.regs.pc - 4, 4
                 tmp = ql.mem.read(address, size)
                 qd = ql.arch.disassembler
 
@@ -69,7 +69,7 @@ class QlArchRISCV(QlArch):
             raise QlErrorNotImplemented(f'Unhandled interrupt number ({intno})')
     
     def step(self):
-        self.ql.emu_start(self.ql.reg.arch_pc, 0, count=1)
+        self.ql.emu_start(self.ql.arch.regs.arch_pc, 0, count=1)
         self.ql.hw.step()
 
     def stop(self):
@@ -79,7 +79,7 @@ class QlArchRISCV(QlArch):
         self.runable = True
 
         while self.runable and count != 0:
-            if self.ql.reg.arch_pc == end:
+            if self.ql.arch.regs.arch_pc == end:
                 break
 
             self.step()

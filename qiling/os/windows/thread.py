@@ -11,7 +11,7 @@ from .utils import *
 
 
 def thread_scheduler(ql, address, size):
-    if ql.reg.arch_pc == ql.os.thread_manager.THREAD_RET_ADDR:
+    if ql.arch.regs.arch_pc == ql.os.thread_manager.THREAD_RET_ADDR:
         ql.os.thread_manager.cur_thread.stop()
         ql.os.thread_manager.do_schedule()
     else:
@@ -84,7 +84,7 @@ class QlWindowsThread(QlThread):
         stack_size = 1024
         new_stack = self.ql.os.heap.alloc(stack_size) + stack_size
         
-        self.saved_context = self.ql.reg.save()
+        self.saved_context = self.ql.arch.regs.save()
 
         # set return address, parameters
         if self.ql.archtype == QL_ARCH.X86:
@@ -111,10 +111,10 @@ class QlWindowsThread(QlThread):
         return self.id
 
     def suspend(self):
-        self.saved_context = self.ql.reg.save()
+        self.saved_context = self.ql.arch.regs.save()
 
     def resume(self):
-        self.ql.reg.restore(self.saved_context)
+        self.ql.arch.regs.restore(self.saved_context)
         self.status = QlWindowsThread.RUNNING
 
     def stop(self):

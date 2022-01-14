@@ -170,7 +170,7 @@ def hook_StartServiceA(ql: Qiling, address: int, params):
 
 
 def hook_stop_address(ql):
-    print(" >>>> Stop address: 0x%08x" % ql.reg.arch_pc)
+    print(" >>>> Stop address: 0x%08x" % ql.arch.regs.arch_pc)
     ql.emu_stop()
 
 

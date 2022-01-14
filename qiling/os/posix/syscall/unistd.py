@@ -221,7 +221,7 @@ def ql_syscall_pread64(ql: Qiling, fd: int, buf: int, length: int, offt: int):
     # https://chromium.googlesource.com/linux-syscall-support/+/2c73abf02fd8af961e38024882b9ce0df6b4d19b
     # https://chromiumcodereview.appspot.com/10910222
     if ql.archtype == QL_ARCH.MIPS:
-        offt = ql.unpack64(ql.mem.read(ql.reg.arch_sp + 0x10, 8))
+        offt = ql.unpack64(ql.mem.read(ql.arch.regs.arch_sp + 0x10, 8))
 
     if 0 <= fd < NR_OPEN and ql.os.fd[fd] != 0:
         try:
@@ -512,7 +512,7 @@ def ql_syscall_pipe(ql: Qiling, pipefd: int):
             ql.os.fd[idx2] = wd
 
             if ql.archtype== QL_ARCH.MIPS:
-                ql.reg.v1 = idx2
+                ql.arch.regs.v1 = idx2
                 regreturn = idx1
             else:
                 ql.mem.write(pipefd + 0, ql.pack32(idx1))

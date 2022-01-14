@@ -509,7 +509,7 @@ class QlEmuRegView(simplecustviewer_t):
         for regs in reglist:
             for reg in regs:
                 line += COLSTR(" %4s: " % str(reg), SCOLOR_REG)
-                regvalue = ql.reg.read(reg)
+                regvalue = ql.arch.regs.read(reg)
                 if arch in [QL_ARCH.X8664, QL_ARCH.ARM64]:
                     value_format = "0x%.16X"
                 else:
@@ -547,7 +547,7 @@ class QlEmuStackView(simplecustviewer_t):
         if ql is None:
             return
 
-        sp = ql.reg.arch_sp
+        sp = ql.arch.regs.arch_sp
         self.AddLine('')
         self.AddLine(COLSTR('  Stack at 0x%X' % sp, SCOLOR_AUTOCMT))
         self.AddLine('')
@@ -935,12 +935,12 @@ class QlEmuQiling:
 
     def set_reg(self):
         reglist = QlEmuMisc.get_reg_map(self.ql)
-        regs = [ [ row, int(self.ql.reg.read(row)), ql_get_arch_bits(self.ql.archtype) ] for row in reglist ]
+        regs = [ [ row, int(self.ql.arch.regs.read(row)), ql_get_arch_bits(self.ql.archtype) ] for row in reglist ]
         regs_len = len(regs)
         RegDig = QlEmuRegDialog(regs)
         if RegDig.show():
             for idx, val in enumerate(RegDig.items[0:regs_len-1]):
-                self.ql.reg.write(reglist[idx], val[1])
+                self.ql.arch.regs.write(reglist[idx], val[1])
             return True
         else:
             return False
@@ -1090,7 +1090,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 self.qlemu.ql.restore(self.qlemu.status)
                 show_wait_box("Qiling is processing ...")
                 try:
-                    self.qlemu.run(begin=self.qlemu.ql.reg.arch_pc, end=self.qlemu.exit_addr)
+                    self.qlemu.run(begin=self.qlemu.ql.arch.regs.arch_pc, end=self.qlemu.exit_addr)
                 finally:
                     hide_wait_box()
             else:
@@ -1103,7 +1103,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             if userhook and userhook is not None:
                 for hook in userhook:
                     self.qlemu.ql.hook_del(hook)
-            self.ql_update_views(self.qlemu.ql.reg.arch_pc, self.qlemu.ql)
+            self.ql_update_views(self.qlemu.ql.arch.regs.arch_pc, self.qlemu.ql)
         else:
             logging.error('Qiling should be setup firstly.')
 
@@ -1131,17 +1131,17 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 for hook in userhook:
                     self.qlemu.ql.hook_del(hook)
             self.qlemu.status = self.qlemu.ql.save()
-            self.ql_update_views(self.qlemu.ql.reg.arch_pc, self.qlemu.ql)
+            self.ql_update_views(self.qlemu.ql.arch.regs.arch_pc, self.qlemu.ql)
         else:
             logging.error('Qiling should be setup firstly.')
 
     def ql_set_pc(self):
         if self.qlinit:
             ea = IDA.get_current_address()
-            self.qlemu.ql.reg.arch_pc = ea
+            self.qlemu.ql.arch.regs.arch_pc = ea
             logging.info(f"QIling PC set to {hex(ea)}")
             self.qlemu.status = self.qlemu.ql.save()
-            self.ql_update_views(self.qlemu.ql.reg.arch_pc, self.qlemu.ql)
+            self.ql_update_views(self.qlemu.ql.arch.regs.arch_pc, self.qlemu.ql)
         else:
             logging.error('Qiling should be setup firstly.')
 
@@ -1153,7 +1153,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 self.qlemu.ql.restore(self.qlemu.status)
                 show_wait_box("Qiling is processing ...")
                 try:
-                    self.qlemu.run(begin=self.qlemu.ql.reg.arch_pc, end=curr_addr+self.qlemu.baseaddr-get_imagebase())
+                    self.qlemu.run(begin=self.qlemu.ql.arch.regs.arch_pc, end=curr_addr+self.qlemu.baseaddr-get_imagebase())
                 finally:
                     hide_wait_box()
             else:
@@ -1166,7 +1166,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             set_color(curr_addr, CIC_ITEM, 0x00B3CBFF)
             self.qlemu.ql.hook_del(untillhook)
             self.qlemu.status = self.qlemu.ql.save()
-            self.ql_update_views(self.qlemu.ql.reg.arch_pc, self.qlemu.ql)
+            self.ql_update_views(self.qlemu.ql.arch.regs.arch_pc, self.qlemu.ql)
         else:
             logging.error('Qiling should be setup firstly.')
 
@@ -1178,11 +1178,11 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             self.stephook = self.qlemu.ql.hook_code(callback=self.ql_step_hook)
             if self.userobj is not None:
                 userhook = self.userobj.custom_step(self.qlemu.ql)
-            self.qlemu.run(begin=self.qlemu.ql.reg.arch_pc, end=self.qlemu.exit_addr)
+            self.qlemu.run(begin=self.qlemu.ql.arch.regs.arch_pc, end=self.qlemu.exit_addr)
             if userhook and userhook is not None:
                 for hook in userhook:
                     self.qlemu.ql.hook_del(hook)
-            self.ql_update_views(self.qlemu.ql.reg.arch_pc, self.qlemu.ql)
+            self.ql_update_views(self.qlemu.ql.arch.regs.arch_pc, self.qlemu.ql)
         else:
             logging.error('Qiling should be setup firstly.')
 
@@ -1203,7 +1203,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
     def ql_chang_reg(self):
         if self.qlinit:
             self.qlemu.set_reg()
-            self.ql_update_views(self.qlemu.ql.reg.arch_pc, self.qlemu.ql)
+            self.ql_update_views(self.qlemu.ql.arch.regs.arch_pc, self.qlemu.ql)
             self.qlemu.status = self.qlemu.ql.save()
         else:
             logging.error('Qiling should be setup firstly.')
@@ -1235,7 +1235,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 self.qlemuregview = QlEmuRegView(self)
                 QlEmuRegView(self)
                 self.qlemuregview.Create()
-                self.qlemuregview.SetReg(self.qlemu.ql.reg.arch_pc, self.qlemu.ql)
+                self.qlemuregview.SetReg(self.qlemu.ql.arch.regs.arch_pc, self.qlemu.ql)
                 self.qlemuregview.Show()
                 self.qlemuregview.Refresh()
         else:
@@ -1463,7 +1463,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         imm = first_ins.l.nnn.value
         reg_name = ida_hexrays.get_mreg_name(first_ins.d.r, ql.pointersize)
         logging.info(f"Froce set {reg_name} to {hex(imm)}")
-        ql.reg.__setattr__(reg_name, imm)
+        ql.arch.regs.__setattr__(reg_name, imm)
         return True
 
     def _ida_address_after_branch(self, ida_addr):
@@ -1489,9 +1489,9 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         if "x86" in IDA.get_ql_arch_string(): # cmovlg eax, ebx
             reg1 = IDA.print_operand(ida_addr, 0).lower()
             reg2 = IDA.print_operand(ida_addr, 1).lower()
-            reg2_val = ql.reg.__getattribute__(reg2)
+            reg2_val = ql.arch.regs.__getattribute__(reg2)
             logging.info(f"Force set {reg1} to {hex(reg2_val)}")
-            ql.reg.__setattr__(reg1, reg2_val)
+            ql.arch.regs.__setattr__(reg1, reg2_val)
             return True
         elif "arm" in IDA.get_ql_arch_string():
             instr = IDA.get_instruction(ida_addr).lower()
@@ -1504,14 +1504,14 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 reg = IDA.print_operand(ida_addr, 0).lower()
                 val = (high << 16) + low
                 logging.info(f"Force set {reg} to {hex(val)}")
-                ql.reg.__setattr__(reg, val)
+                ql.arch.regs.__setattr__(reg, val)
                 return True
             elif "csel" in instr: # csel dst, src1, src2, cond
                 dst = IDA.print_operand(ida_addr, 0).lower()
                 src = IDA.print_operand(ida_addr, 2).lower()
-                src_val = ql.reg.__getattribute__(src)
+                src_val = ql.arch.regs.__getattribute__(src)
                 logging.info(f"Force set {dst} to {hex(src_val)}")
-                ql.reg.__setattr__(dst, src_val)
+                ql.arch.regs.__setattr__(dst, src_val)
                 return True
         return False
 
@@ -1554,12 +1554,12 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             else:
                 next_ida_addr = ida_addr + IDA.get_instruction_size(ida_addr)
             logging.info(f"Goto {hex(next_ida_addr)} after branch...")
-            ql.reg.arch_pc = self.deflatqlemu.ql_addr_from_ida(next_ida_addr) + self.append
+            ql.arch.regs.arch_pc = self.deflatqlemu.ql_addr_from_ida(next_ida_addr) + self.append
             ida_addr = next_ida_addr
         # TODO: Maybe we can detect whether the program will access unmapped
         #       here so that we won't map the memory.
         if self._has_call_insn(ida_addr):
-            ql.reg.arch_pc += IDA.get_instruction_size(ida_addr) + self.append
+            ql.arch.regs.arch_pc += IDA.get_instruction_size(ida_addr) + self.append
             return
         if start_bb_id == cur_bb.id:
             return
@@ -1617,10 +1617,10 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
 
     def _log_verbose(self, ql, addr, size):
         logging.debug(f"addr: {hex(addr)} ida_addr: {hex(self.deflatqlemu.ida_addr_from_ql_addr(addr))}")
-        registers = [ k for k in ql.reg.register_mapping.keys() if type(k) is str ]
+        registers = [ k for k in ql.arch.regs.register_mapping.keys() if type(k) is str ]
         for idx in range(0, len(registers), 3):
             regs = registers[idx:idx+3]
-            s = "\t".join(map(lambda v: f"{v:4}: {ql.reg.__getattribute__(v):016x}", regs))
+            s = "\t".join(map(lambda v: f"{v:4}: {ql.arch.regs.__getattribute__(v):016x}", regs))
             logging.debug(s)
 
     # Q: Why we need emulation to help us find real control flow considering there are some
@@ -1641,7 +1641,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             if self._thumb_detect(first_block.start_ea):
                 logging.info(f"Thumb detected, enable it.")
                 self.deflatqlemu.start(archtype=QL_ARCH.ARM_THUMB)
-                self.deflatqlemu.ql.reg.cpsr |= 0x20
+                self.deflatqlemu.ql.arch.regs.cpsr |= 0x20
                 self.append = 1
         else:
             self.deflatqlemu.start()
@@ -2003,7 +2003,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         addr = addr - self.qlemu.baseaddr + get_imagebase()
         if self.stepflag:
             set_color(addr, CIC_ITEM, 0x00FFD700)
-            self.ql_update_views(self.qlemu.ql.reg.arch_pc, ql)
+            self.ql_update_views(self.qlemu.ql.arch.regs.arch_pc, ql)
             self.qlemu.status = ql.save()
             ql.os.stop()
             self.qlemu.ql.hook_del(self.stephook)

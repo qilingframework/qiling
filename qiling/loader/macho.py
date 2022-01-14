@@ -105,7 +105,7 @@ class QlLoaderMACHO(QlLoader):
             
             self.ql.mem.write(self.entry_point, self.ql.code)
 
-            self.ql.reg.arch_sp = self.ql.os.entry_point
+            self.ql.arch.regs.arch_sp = self.ql.os.entry_point
             return
         
         self.ql.os.macho_task = MachoTask()
@@ -149,8 +149,8 @@ class QlLoaderMACHO(QlLoader):
         else:
             self.loadMacho()
         self.stack_address = (int(self.stack_sp))
-        self.ql.reg.arch_sp = self.stack_address # self.stack_sp
-        self.init_sp = self.ql.reg.arch_sp
+        self.ql.arch.regs.arch_sp = self.stack_address # self.stack_sp
+        self.init_sp = self.ql.arch.regs.arch_sp
         self.ql.os.macho_task.min_offset = page_align_end(self.vm_end_addr, PAGE_SIZE)
 
     def loadDriver(self, stack_addr, loadbase = -1, argv = [], env = {}):

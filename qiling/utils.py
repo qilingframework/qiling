@@ -558,8 +558,7 @@ def ql_setup_logger(ql, log_file: Optional[str], console: bool, filters: Optiona
 
 # verify if emulator returns properly
 def verify_ret(ql, err):
-    ql.log.debug("Got exception %u: init SP = %x, current SP = %x, PC = %x" %(err.errno, ql.os.init_sp, ql.reg.arch_sp, ql.reg.arch_pc))
-    # print("Got exception %u: init SP = %x, current SP = %x, PC = %x" %(err.errno, ql.os.init_sp, self.reg.arch_sp, self.reg.arch_pc))
+    ql.log.debug("Got exception %u: init SP = %x, current SP = %x, PC = %x" %(err.errno, ql.os.init_sp, ql.arch.regs.arch_sp, ql.arch.regs.arch_pc))
 
     ql.os.RUN = False
 
@@ -568,20 +567,20 @@ def verify_ret(ql, err):
         if ql.ostype == QL_OS.MACOS:
             if ql.loader.kext_name:
                 # FIXME: Should I push saved RIP before every method callings of IOKit object?
-                if ql.os.init_sp == ql.reg.arch_sp - 8:
+                if ql.os.init_sp == ql.arch.regs.arch_sp - 8:
                     pass
                 else:
                     raise
 
         if ql.archtype == QL_ARCH.X8664: # Win64
-            if ql.os.init_sp == ql.reg.arch_sp or ql.os.init_sp + 8 == ql.reg.arch_sp or ql.os.init_sp + 0x10 == ql.reg.arch_sp:  # FIXME
+            if ql.os.init_sp == ql.arch.regs.arch_sp or ql.os.init_sp + 8 == ql.arch.regs.arch_sp or ql.os.init_sp + 0x10 == ql.arch.regs.arch_sp:  # FIXME
                 # 0x11626	 c3	  	ret
                 # print("OK, stack balanced!")
                 pass
             else:
                 raise
         else:   # Win32
-            if ql.os.init_sp + 12 == ql.reg.arch_sp:   # 12 = 8 + 4
+            if ql.os.init_sp + 12 == ql.arch.regs.arch_sp:   # 12 = 8 + 4
                 # 0x114dd	 c2 08 00	  	ret 	8
                 pass
             else:

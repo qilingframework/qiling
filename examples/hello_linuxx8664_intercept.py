@@ -12,12 +12,12 @@ from qiling.os.linux.syscall_nums import SYSCALL_NR
 
 def write_onenter(ql: Qiling, arg1, arg2, arg3, *args):
     print("enter write syscall!")
-    ql.reg.rsi = arg2 + 1
-    ql.reg.rdx = arg3 - 1
+    ql.arch.regs.rsi = arg2 + 1
+    ql.arch.regs.rdx = arg3 - 1
 
 def write_onexit(ql: Qiling, arg1, arg2, arg3, *args):
     print("exit write syscall!")
-    ql.reg.rax = arg3 + 1
+    ql.arch.regs.rax = arg3 + 1
 
 if __name__ == "__main__":
     ql = Qiling(["rootfs/x8664_linux/bin/x8664_hello"], "rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG)

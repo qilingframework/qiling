@@ -27,8 +27,8 @@ ql.hw.systick.ratio = 1000
 
 ## a temporary method
 def hook_smlabb(ql):
-    ql.reg.r3 = ql.reg.r2 + ql.reg.r1 * ql.reg.r3
-    ql.reg.pc = (ql.reg.pc + 4) | 1
+    ql.arch.regs.r3 = ql.arch.regs.r2 + ql.arch.regs.r1 * ql.arch.regs.r3
+    ql.arch.regs.pc = (ql.arch.regs.pc + 4) | 1
 
 ql.hook_address(hook_smlabb, 0x8007a12)
 ql.hook_address(hook_smlabb, 0x8007b60)

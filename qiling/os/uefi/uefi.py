@@ -116,7 +116,7 @@ class QlOsUefi(QlOs):
 		p = re.compile(r'^((?:00)+)')
 
 		def __emit_reg(size: int, reg: str):
-			val = f'{self.ql.reg.read(reg):0{size * 2}x}'
+			val = f'{self.ql.arch.regs.read(reg):0{size * 2}x}'
 			padded = p.sub("\x1b[90m\\1\x1b[39m", val, 1)
 
 			return f'{reg:3s} = {padded}'
@@ -169,12 +169,12 @@ class QlOsUefi(QlOs):
 			else:
 				data = f'{item:0{self.ql.pointersize * 2}x}'
 
-			self.ql.log.error(f'{self.ql.reg.arch_sp + offset:08x} : {data}{" <=" if i == 0 else ""}')
+			self.ql.log.error(f'{self.ql.arch.regs.arch_sp + offset:08x} : {data}{" <=" if i == 0 else ""}')
 
 		self.ql.log.error('')
 
 	def emu_error(self):
-		pc = self.ql.reg.arch_pc
+		pc = self.ql.arch.regs.arch_pc
 
 		try:
 			data = self.ql.mem.read(pc, size=64)

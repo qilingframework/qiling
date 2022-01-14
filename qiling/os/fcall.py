@@ -131,7 +131,7 @@ class QlFunctionCall:
 		"""
 
 		ql = self.ql
-		pc = ql.reg.arch_pc
+		pc = ql.arch.regs.arch_pc
 
 		# if set, fire up the on-enter hook and let it override original args set
 		if hook_onenter:
@@ -194,4 +194,4 @@ class QlFunctionCall:
 			self.cc.setReturnAddress(ret)
 
 		# call
-		self.ql.reg.arch_pc = addr
+		self.ql.arch.regs.arch_pc = addr

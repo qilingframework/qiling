@@ -13,10 +13,10 @@ def ql_syscall_arch_prctl(ql: Qiling, code: int, addr: int):
     ARCH_GET_GS = 0x1004
 
     handlers = {
-        ARCH_SET_GS : lambda : ql.reg.msr(GSMSR, addr),
-        ARCH_SET_FS : lambda : ql.reg.msr(FSMSR, addr),
-        ARCH_GET_FS : lambda : ql.mem.write(addr, ql.pack64(ql.reg.msr(FSMSR))),
-        ARCH_GET_GS : lambda : ql.mem.write(addr, ql.pack64(ql.reg.msr(GSMSR)))
+        ARCH_SET_GS : lambda : ql.arch.regs.msr(GSMSR, addr),
+        ARCH_SET_FS : lambda : ql.arch.regs.msr(FSMSR, addr),
+        ARCH_GET_FS : lambda : ql.mem.write(addr, ql.pack64(ql.arch.regs.msr(FSMSR))),
+        ARCH_GET_GS : lambda : ql.mem.write(addr, ql.pack64(ql.arch.regs.msr(GSMSR)))
     }
 
     if code not in handlers:

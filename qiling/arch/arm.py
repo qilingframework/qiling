@@ -24,10 +24,10 @@ class QlArchARM(QlArch):
         )
 
         for reg_maper in reg_maps:
-            self.ql.reg.expand_mapping(reg_maper)
+            self.ql.arch.regs.expand_mapping(reg_maper)
 
-        self.ql.reg.register_sp(reg_map["sp"])
-        self.ql.reg.register_pc(reg_map["pc"])
+        self.ql.arch.regs.register_sp(reg_map["sp"])
+        self.ql.arch.regs.register_pc(reg_map["pc"])
 
         self.arm_get_tls_addr = 0xFFFF0FE0
 
@@ -52,7 +52,7 @@ class QlArchARM(QlArch):
     def get_pc(self) -> int:
         append = 1 if self.check_thumb() == UC_MODE_THUMB else 0
 
-        return self.ql.reg.pc + append
+        return self.ql.arch.regs.pc + append
 
     def __is_thumb(self) -> bool:
         cpsr_v = {
@@ -60,7 +60,7 @@ class QlArchARM(QlArch):
             QL_ENDIAN.EB : 0b100000   # FIXME: should be: 0b000000
         }[self.ql.archendian]
 
-        return bool(self.ql.reg.cpsr & cpsr_v)
+        return bool(self.ql.arch.regs.cpsr & cpsr_v)
 
     @property
     def disassembler(self) -> Cs:
@@ -98,13 +98,13 @@ class QlArchARM(QlArch):
         return Ks(KS_ARCH_ARM, mode)
 
     def enable_vfp(self) -> None:
-        self.ql.reg.c1_c0_2 = self.ql.reg.c1_c0_2 | (0xf << 20)
+        self.ql.arch.regs.c1_c0_2 = self.ql.arch.regs.c1_c0_2 | (0xf << 20)
 
         if self.ql.archendian == QL_ENDIAN.EB:
-            self.ql.reg.fpexc = 0x40000000
-            #self.ql.reg.fpexc = 0x00000040
+            self.ql.arch.regs.fpexc = 0x40000000
+            #self.ql.arch.regs.fpexc = 0x00000040
         else:
-            self.ql.reg.fpexc = 0x40000000
+            self.ql.arch.regs.fpexc = 0x40000000
 
     def check_thumb(self):
         return UC_MODE_THUMB if self.__is_thumb() else UC_MODE_ARM

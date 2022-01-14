@@ -81,14 +81,14 @@ class ELFTest(unittest.TestCase):
         ql.run()
 
         # make sure that the ending PC is the same as the hook address because dump stops the emulater
-        assert ql.reg.arch_pc == hook_address, f"0x{ql.reg.arch_pc:x} != 0x{hook_address:x}"
+        assert ql.arch.regs.arch_pc == hook_address, f"0x{ql.arch.regs.arch_pc:x} != 0x{hook_address:x}"
         del ql
 
         ql = Qiling(cmdline, rootfs, verbose=QL_VERBOSE.DEBUG)
         ql.restore(snapshot=snapshot)
 
         # ensure that the starting PC is same as the PC we stopped on when taking the snapshot
-        assert ql.reg.arch_pc == hook_address, f"0x{ql.reg.arch_pc:x} != 0x{hook_address:x}"
+        assert ql.arch.regs.arch_pc == hook_address, f"0x{ql.arch.regs.arch_pc:x} != 0x{hook_address:x}"
 
         ql.run(begin=hook_address)
         del ql
@@ -108,7 +108,7 @@ class ELFTest(unittest.TestCase):
         def my_puts(ql: Qiling):
             params = ql.os.resolve_fcall_params(ELFTest.PARAMS_PUTS)
             print(f'puts("{params["s"]}")')
-            reg = ql.reg.read("rax")
+            reg = ql.arch.regs.read("rax")
             print("reg : %#x" % reg)
             self.set_api = reg
 
@@ -153,7 +153,7 @@ class ELFTest(unittest.TestCase):
             self.test_enter_str = params["s"]
 
         def my_puts_exit(ql):
-            self.test_exit_rdi = ql.reg.rdi
+            self.test_exit_rdi = ql.arch.regs.rdi
 
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_puts"],  "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG)
         ql.set_api('puts', my_puts_enter, QL_INTERCEPT.ENTER)
@@ -313,9 +313,9 @@ class ELFTest(unittest.TestCase):
             target = False
             pathname = ql.os.fd[ftrunc_fd].name.split('/')[-1]
             
-            reg = ql.reg.read("eax")
+            reg = ql.arch.regs.read("eax")
             print("reg : 0x%x" % reg)
-            ql.reg.eax = reg 
+            ql.arch.regs.eax = reg 
 
             if pathname == "test_syscall_ftruncate.txt":
                 print("test => ftruncate(%d, 0x%x)" % (ftrunc_fd, ftrunc_length))
@@ -520,9 +520,9 @@ class ELFTest(unittest.TestCase):
             target = False
             pathname = ql.os.fd[read_fd].name.split('/')[-1]
 
-            reg = ql.reg.read("x0")
+            reg = ql.arch.regs.read("x0")
             print("reg : 0x%x" % reg)
-            ql.reg.x0 = reg  
+            ql.arch.regs.x0 = reg  
 
             if pathname == "test_syscall_read.txt":
                 print("test => read(%d, %s, %d)" % (read_fd, pathname, read_count))
@@ -667,9 +667,9 @@ class ELFTest(unittest.TestCase):
             target = False
             pathname = ql.os.fd[read_fd].name.split('/')[-1]
             
-            reg = ql.reg.read("v0")
+            reg = ql.arch.regs.read("v0")
             print("reg : 0x%x" % reg)
-            ql.reg.v0 = reg  
+            ql.arch.regs.v0 = reg  
             
             if pathname == "test_syscall_read.txt":
                 print("test => read(%d, %s, %d)" % (read_fd, pathname, read_count))
@@ -794,9 +794,9 @@ class ELFTest(unittest.TestCase):
             mapaddr = ql.mem.map_anywhere(0x100000)
             ql.log.info("0x%x" %  mapaddr)
             
-            reg = ql.reg.read("r0")
+            reg = ql.arch.regs.read("r0")
             print("reg : 0x%x" % reg)
-            ql.reg.r0 = reg
+            ql.arch.regs.r0 = reg
             
             
             try:

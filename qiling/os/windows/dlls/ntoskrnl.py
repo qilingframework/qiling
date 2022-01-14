@@ -898,7 +898,7 @@ def hook_IoCreateDriver(ql: Qiling, address: int, params):
     # print("\n\n>>> IoCreateDriver at %x, going to execute function at %x, RET = %x\n" %(address, init_func, ret_addr))
 
     # save SP & init_sp
-    sp = ql.reg.sp
+    sp = ql.arch.regs.sp
     init_sp = ql.os.init_sp
 
     ql.os.fcall = ql.os.fcall_select(STDCALL)
@@ -915,7 +915,7 @@ def hook_IoCreateDriver(ql: Qiling, address: int, params):
         verify_ret(ql, err)
 
     # reset SP since emulated function does not cleanup
-    ql.reg.sp = sp
+    ql.arch.regs.sp = sp
     ql.os.init_sp = init_sp
 
     # ret_addr = ql.stack_read(0)

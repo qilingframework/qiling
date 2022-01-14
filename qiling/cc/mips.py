@@ -21,4 +21,4 @@ class mipso32(QlCommonBaseCC):
 
 	def unwind(self, nslots: int) -> int:
 		# TODO: stack frame unwiding?
-		return self.ql.reg.ra
+		return self.ql.arch.regs.ra

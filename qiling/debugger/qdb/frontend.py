@@ -68,8 +68,8 @@ def examine_mem(ql: Qiling, line: str) -> Union[bool, (str, int, int)]:
 
     items = []
     for elem in elems:
-        if elem in ql.reg.register_mapping.keys():
-            items.append(getattr(ql.reg, elem, None))
+        if elem in ql.arch.regs.register_mapping.keys():
+            items.append(getattr(ql.arch.regs, elem, None))
         else:
             items.append(_parse_int(elem))
 
@@ -232,14 +232,14 @@ def context_reg(ql: Qiling, saved_states: Optional[Mapping[str, int]] = None, /,
                 lines += line
 
             print(lines.format(*_cur_regs.values()))
-            print(color.GREEN, "[{cpsr[mode]} mode], Thumb: {cpsr[thumb]}, FIQ: {cpsr[fiq]}, IRQ: {cpsr[irq]}, NEG: {cpsr[neg]}, ZERO: {cpsr[zero]}, Carry: {cpsr[carry]}, Overflow: {cpsr[overflow]}".format(cpsr=get_arm_flags(ql.reg.cpsr)), color.END, sep="")
+            print(color.GREEN, "[{cpsr[mode]} mode], Thumb: {cpsr[thumb]}, FIQ: {cpsr[fiq]}, IRQ: {cpsr[irq]}, NEG: {cpsr[neg]}, ZERO: {cpsr[zero]}, Carry: {cpsr[carry]}, Overflow: {cpsr[overflow]}".format(cpsr=get_arm_flags(ql.arch.regs.cpsr)), color.END, sep="")
 
     if ql.archtype != QL_ARCH.CORTEX_M:
     # context render for Stack, skip this for CORTEX_M
         with context_printer(ql, "[ STACK ]", ruler="─"):
 
             for idx in range(10):
-                addr = ql.reg.arch_sp + idx * ql.pointersize
+                addr = ql.arch.regs.arch_sp + idx * ql.pointersize
                 val = ql.mem.read(addr, ql.pointersize)
                 print(f"$sp+0x{idx*ql.pointersize:02x}│ [0x{addr:08x}] —▸ 0x{ql.unpack(val):08x}", end="")
 
@@ -268,11 +268,11 @@ def print_asm(ql: Qiling, insn: CsInsn, to_jump: Optional[bool] = None, address:
     trace_line = f"0x{insn.address:08x} │ {opcode:10s} {insn.mnemonic:10} {insn.op_str:35s}"
 
     cursor = " "
-    if ql.reg.arch_pc == insn.address:
+    if ql.arch.regs.arch_pc == insn.address:
         cursor = "►"
 
     jump_sign = " "
-    if to_jump and address != ql.reg.arch_pc+4:
+    if to_jump and address != ql.arch.regs.arch_pc+4:
         jump_sign = f"{color.RED}✓{color.END}"
 
     print(f"{jump_sign}  {cursor}   {color.DARKGRAY}{trace_line}{color.END}")
