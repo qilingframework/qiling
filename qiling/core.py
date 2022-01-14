@@ -847,15 +847,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         return self.create_assembler()
 
 
-    @property
-    def disassembler(self):
-        return self.create_disassembler()
-
-
-    def create_disassembler(self):
-        return self.arch.create_disassembler()
-
-
     def create_assembler(self):
         return self.arch.create_assembler()
 
