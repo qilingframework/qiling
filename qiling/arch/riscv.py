@@ -67,7 +67,7 @@ class QlArchRISCV(QlArch):
             raise QlErrorNotImplemented(f'Unhandled interrupt number ({intno})')
     
     def step(self):
-        self.ql.emu_start(self.get_pc(), 0, count=1)
+        self.ql.emu_start(self.ql.reg.arch_pc, 0, count=1)
         self.ql.hw.step()
 
     def stop(self):
@@ -77,7 +77,7 @@ class QlArchRISCV(QlArch):
         self.runable = True
 
         while self.runable and count != 0:
-            if self.get_pc() == end:
+            if self.ql.reg.arch_pc == end:
                 break
 
             self.step()
