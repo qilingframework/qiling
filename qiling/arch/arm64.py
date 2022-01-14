@@ -3,6 +3,8 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from functools import cached_property
+
 from unicorn import Uc, UC_ARCH_ARM64, UC_MODE_ARM
 from capstone import Cs, CS_ARCH_ARM64, CS_MODE_ARM
 from keystone import Ks, KS_ARCH_ARM64, KS_MODE_LITTLE_ENDIAN
@@ -26,8 +28,8 @@ class QlArchARM64(QlArch):
         self.ql.reg.register_sp(reg_map["sp"])
         self.ql.reg.register_pc(reg_map["pc"])
 
-    # get initialized unicorn engine
-    def get_init_uc(self) -> Uc:
+    @cached_property
+    def uc(self) -> Uc:
         return Uc(UC_ARCH_ARM64, UC_MODE_ARM)
 
     def create_disassembler(self) -> Cs:

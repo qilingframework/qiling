@@ -3,6 +3,8 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from functools import cached_property
+
 from unicorn import Uc, UC_ARCH_ARM, UC_MODE_ARM, UC_MODE_THUMB, UC_MODE_BIG_ENDIAN
 from capstone import Cs, CS_ARCH_ARM, CS_MODE_ARM, CS_MODE_THUMB
 from keystone import Ks, KS_ARCH_ARM, KS_MODE_ARM, KS_MODE_THUMB
@@ -29,8 +31,8 @@ class QlArchARM(QlArch):
 
         self.arm_get_tls_addr = 0xFFFF0FE0
 
-    # get initialized unicorn engine
-    def get_init_uc(self) -> Uc:
+    @cached_property
+    def uc(self) -> Uc:
         if self.ql.archendian == QL_ENDIAN.EB:
             mode = UC_MODE_ARM + UC_MODE_BIG_ENDIAN
 

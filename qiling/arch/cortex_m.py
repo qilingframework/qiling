@@ -3,11 +3,12 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from functools import cached_property
+from contextlib import ContextDecorator
+
 from unicorn import Uc, UC_ARCH_ARM, UC_MODE_ARM, UC_MODE_MCLASS, UC_MODE_THUMB
 from capstone import Cs, CS_ARCH_ARM, CS_MODE_ARM, CS_MODE_MCLASS, CS_MODE_THUMB
 from keystone import Ks, KS_ARCH_ARM, KS_MODE_ARM, KS_MODE_THUMB
-
-from contextlib import ContextDecorator
 
 from qiling.const import QL_VERBOSE
 from qiling.exception import QlErrorNotImplemented
@@ -68,7 +69,8 @@ class QlArchCORTEX_M(QlArchARM):
         for reg_maper in reg_maps:
             self.ql.reg.expand_mapping(reg_maper)
 
-    def get_init_uc(self):
+    @cached_property
+    def uc(self):
         return Uc(UC_ARCH_ARM, UC_MODE_ARM + UC_MODE_MCLASS + UC_MODE_THUMB)
 
     def create_disassembler(self) -> Cs:

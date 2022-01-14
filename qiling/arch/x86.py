@@ -4,6 +4,7 @@
 #
 
 from struct import pack
+from functools import cached_property
 
 from unicorn import Uc, UC_ARCH_X86, UC_MODE_16, UC_MODE_32, UC_MODE_64
 from capstone import Cs, CS_ARCH_X86, CS_MODE_16, CS_MODE_32, CS_MODE_64
@@ -51,7 +52,8 @@ class QlArchA8086(QlArchIntel):
         self.ql.reg.register_pc(reg_map_16["sp"])
         self.ql.reg.register_sp(reg_map_16["ip"])
 
-    def get_init_uc(self) -> Uc:
+    @cached_property
+    def uc(self) -> Uc:
         return Uc(UC_ARCH_X86, UC_MODE_16)
 
     def create_disassembler(self) -> Cs:
@@ -85,7 +87,8 @@ class QlArchX86(QlArchIntel):
         self.ql.reg.register_sp(reg_map_32["esp"])
         self.ql.reg.register_pc(reg_map_32["eip"])
 
-    def get_init_uc(self) -> Uc:
+    @cached_property
+    def uc(self) -> Uc:
         return Uc(UC_ARCH_X86, UC_MODE_32)
 
     def create_disassembler(self) -> Cs:
@@ -124,7 +127,8 @@ class QlArchX8664(QlArchIntel):
         self.ql.reg.register_sp(reg_map_64["rsp"])
         self.ql.reg.register_pc(reg_map_64["rip"])
 
-    def get_init_uc(self) -> Uc:
+    @cached_property
+    def uc(self) -> Uc:
         return Uc(UC_ARCH_X86, UC_MODE_64)
 
     def create_disassembler(self) -> Cs:
