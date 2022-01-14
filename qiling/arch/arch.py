@@ -95,11 +95,6 @@ class QlArch:
         return self.ql.reg.arch_pc
 
 
-    # set stack pointer
-    def set_sp(self, address: int) -> None:
-        self.ql.reg.arch_sp = address
-
-
     # get stack pointer
     def get_sp(self) -> int:
         return self.ql.reg.arch_sp 

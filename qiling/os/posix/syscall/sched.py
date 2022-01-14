@@ -71,7 +71,7 @@ def ql_syscall_clone(ql: Qiling, flags: int, child_stack: int, parent_tidptr: in
                 f_th.set_clear_child_tid_addr(child_tidptr)
 
             if child_stack != 0:
-                ql.arch.set_sp(child_stack)
+                ql.reg.arch_sp = child_stack
 
         # ql.log.debug(f'clone(new_stack = {child_stack:#x}, flags = {flags:#x}, tls = {newtls:#x}, ptidptr = {parent_tidptr:#x}, ctidptr = {child_tidptr:#x}) = {regreturn:d}')
         ql.emu_stop()
