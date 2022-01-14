@@ -57,7 +57,7 @@ class QlArchRISCV(QlArch):
             try:
                 address, size = ql.reg.pc - 4, 4
                 tmp = ql.mem.read(address, size)
-                qd = ql.arch.create_disassembler()
+                qd = ql.arch.disassembler
 
                 insn = '\n> '.join(f'{insn.mnemonic} {insn.op_str}' for insn in qd.disasm(tmp, address))
             except QlErrorNotImplemented:

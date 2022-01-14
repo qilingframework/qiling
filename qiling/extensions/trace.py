@@ -152,7 +152,7 @@ def enable_full_trace(ql: Qiling):
 	"""
 
 	# enable detailed disassembly info
-	md = ql.create_disassembler()
+	md = ql.arch.disassembler
 	md.detail = True
 
 	assert md.arch == CS_ARCH_X86, 'currently available only for intel architecture'
@@ -189,7 +189,7 @@ def enable_history_trace(ql: Qiling, nrecords: int):
 	"""
 
 	# enable detailed disassembly info
-	md = ql.create_disassembler()
+	md = ql.arch.disassembler
 	md.detail = True
 
 	assert md.arch == CS_ARCH_X86, 'currently available only for intel architecture'
