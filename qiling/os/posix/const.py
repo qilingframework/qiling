@@ -533,6 +533,24 @@ freebsd_x86_open_flags = {
     'O_LARGEFILE': None
 }
 
+windows_x86_open_flags = {
+    'O_RDONLY': 0x0,
+    'O_WRONLY': 0x1,
+    'O_RDWR': 0x2,
+    'O_NONBLOCK': None,
+    'O_APPEND': 0x8,
+    'O_ASYNC': None,
+    'O_SYNC': None,
+    'O_NOFOLLOW': None,
+    'O_CREAT': 0x100,
+    'O_TRUNC': 0x200,
+    'O_EXCL': 0x400,
+    'O_NOCTTY': None,
+    'O_DIRECTORY': None,
+    'O_BINARY': 0x8000,
+    'O_LARGEFILE': None
+}
+
 qnx_arm64_open_flags = {
     'O_RDONLY'    : 0x00000,
     'O_WRONLY'    : 0x00001,

@@ -68,21 +68,21 @@ class QlOsUtils:
             self.appeared_strings.setdefault(token, set()).add(self.syscalls_counter)
 
     @staticmethod
-    def read_string(ql: Qiling, address: int, terminator: str) -> str:
-        result = ""
+    def read_string(ql: Qiling, address: int, terminator: bytes) -> str:
+        result = bytearray()
         charlen = len(terminator)
 
         char = ql.mem.read(address, charlen)
 
-        while char.decode(errors="ignore") != terminator:
+        while char != terminator:
             address += charlen
-            result += char.decode(errors="ignore")
+            result += char
             char = ql.mem.read(address, charlen)
 
-        return result
+        return result.decode(errors="ignore")
 
     def read_wstring(self, address: int) -> str:
-        s = QlOsUtils.read_string(self.ql, address, '\x00\x00')
+        s = QlOsUtils.read_string(self.ql, address, b'\x00\x00')
 
         # We need to remove \x00 inside the string. Compares do not work otherwise
         s = s.replace("\x00", "")
@@ -91,7 +91,7 @@ class QlOsUtils:
         return s
 
     def read_cstring(self, address: int) -> str:
-        s = QlOsUtils.read_string(self.ql, address, '\x00')
+        s = QlOsUtils.read_string(self.ql, address, b'\x00')
 
         self.string_appearance(s)
 
@@ -184,24 +184,3 @@ class QlOsUtils:
 
     def update_ellipsis(self, params: MutableMapping, args: Sequence) -> None:
         params.update((f'{QlOsUtils.ELLIPSIS_PREF}{i}', a) for i, a in enumerate(args))
-
-    def exec_arbitrary(self, start: int, end: int):
-        old_sp = self.ql.reg.arch_sp
-
-        # we read where this hook is supposed to return
-        ret = self.ql.stack_read(0)
-
-        def restore(ql: Qiling):
-            self.ql.log.debug(f"Executed code from {start:#x} to {end:#x}")
-            # now we can restore the register to be where we were supposed to
-            ql.reg.arch_sp = old_sp + ql.pointersize
-            ql.reg.arch_pc = ret
-
-            # we want to execute the code once, not more
-            hret.remove()
-
-        # we have to set an address to restore the registers
-        hret = self.ql.hook_address(restore, end)
-        # we want to rewrite the return address to the function
-        self.ql.stack_write(0, start)
-

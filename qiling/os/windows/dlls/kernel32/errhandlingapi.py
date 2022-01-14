@@ -75,9 +75,7 @@ def hook_SetErrorMode(ql: Qiling, address: int, params):
 def hook_RaiseException(ql: Qiling, address: int, params):
     func_addr = ql.os.handle_manager.search("TopLevelExceptionHandler").obj
 
-    # TODO: this implementation won't work most of the time
-    size = find_size_function(ql, func_addr)
-    ql.os.exec_arbitrary(func_addr, func_addr + size)
+    ql.os.fcall.call_native(func_addr, [], None)
 
     return 0
 
@@ -122,7 +120,6 @@ def hook_AddVectoredExceptionHandler(ql: Qiling, address: int, params):
         ql.reg.esi = user_data
 
     addr = params["Handler"]
-    #size = find_size_function(ql, addr)
 
     # the interrupts 0x2d, 0x3 must be hooked
     hook = ql.hook_intno(exec_standard_into, 0x3, user_data=addr)

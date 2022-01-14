@@ -2,11 +2,10 @@
 
 # More info, please refer to https://github.com/qilingframework/qiling/pull/765
 
-
 from collections import deque
 from typing import Deque, Iterable, Iterator, Mapping, Tuple
 
-from capstone import Cs, CsInsn, CS_OP_IMM, CS_OP_MEM, CS_OP_REG
+from capstone import Cs, CsInsn, CS_ARCH_X86, CS_OP_IMM, CS_OP_MEM, CS_OP_REG
 from capstone.x86 import X86Op
 from capstone.x86_const import X86_INS_LEA, X86_REG_INVALID, X86_REG_RIP
 
@@ -16,7 +15,7 @@ TraceRecord = Tuple[CsInsn, Iterable[Tuple[int, int]]]
 
 # <WORKAROUND>
 def __uc2_workaround() -> Mapping[int, int]:
-	"""Starting from Unicron2, Unicron and Capstone Intel registers definitions are
+	"""Starting from Unicorn2, Unicorn and Capstone Intel registers definitions are
 	no longer aligned and cannot be used interchangebly. This temporary workaround
 	maps capstone x86 registers definitions to unicorn x86 registers definitions.
 
@@ -47,6 +46,7 @@ def __get_trace_records(ql: Qiling, address: int, size: int, md: Cs) -> Iterator
 	# unicorn denotes unsupported instructions by a magic size value. though these instructions
 	# are not emulated, capstone can still parse them.
 	if size == 0xf1f1f1f1:
+		# note that invalid instructions will generate a StopIteration exception here
 		yield next(__get_trace_records(ql, address, 16, md))
 		return
 
@@ -125,6 +125,7 @@ def __to_trace_line(record: TraceRecord, symsmap: Mapping[int, str] = {}) -> str
 					2: 'word',
 					4: 'dword',
 					8: 'qword',
+					10: 'fword',
 					16: 'xmmword'
 				}[op.size]
 
@@ -154,13 +155,15 @@ def enable_full_trace(ql: Qiling):
 	md = ql.create_disassembler()
 	md.detail = True
 
+	assert md.arch == CS_ARCH_X86, 'currently available only for intel architecture'
+
 	# if available, use symbols map to resolve memory accesses
 	symsmap = getattr(ql.loader, 'symsmap', {})
 
 	# show trace lines in a darker color so they would be easily distinguished from
 	# ordinary log records
-	DarkGray = "\x1b[90m"
-	Default = "\x1b[39m"
+	faded_color = "\033[2m"
+	reset_color = "\033[0m"
 
 	def __trace_hook(ql: Qiling, address: int, size: int):
 		"""[internal] Trace hook callback.
@@ -169,7 +172,7 @@ def enable_full_trace(ql: Qiling):
 		for record in __get_trace_records(ql, address, size, md):
 			line = __to_trace_line(record, symsmap)
 
-			ql.log.debug(f'{DarkGray}{line}{Default}')
+			ql.log.debug(f'{faded_color}{line}{reset_color}')
 
 	ql.hook_code(__trace_hook)
 
@@ -188,6 +191,8 @@ def enable_history_trace(ql: Qiling, nrecords: int):
 	# enable detailed disassembly info
 	md = ql.create_disassembler()
 	md.detail = True
+
+	assert md.arch == CS_ARCH_X86, 'currently available only for intel architecture'
 
 	# if available, use symbols map to resolve memory accesses
 	symsmap = getattr(ql.loader, 'symsmap', {})
