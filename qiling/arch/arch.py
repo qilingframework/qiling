@@ -95,11 +95,6 @@ class QlArch:
         return self.ql.reg.arch_pc
 
 
-    # get stack pointer
-    def get_sp(self) -> int:
-        return self.ql.reg.arch_sp 
-
-
     # Unicorn's CPU state save
     def context_save(self) -> UcContext:
         return self.ql.uc.context_save()
