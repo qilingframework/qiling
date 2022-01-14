@@ -69,23 +69,23 @@ class HookFunc:
     def get_ret_pc(self):
         # ARM
         if self.ql.archtype== QL_ARCH.ARM:
-            return self.ql.reg.lr
+            return self.ql.arch.regs.lr
 
         # MIPS32
         elif self.ql.archtype== QL_ARCH.MIPS:
-            return self.ql.reg.ra
+            return self.ql.arch.regs.ra
 
         # ARM64
         elif self.ql.archtype== QL_ARCH.ARM64:
-            return self.ql.reg.x30
+            return self.ql.arch.regs.x30
 
         # X86
         elif  self.ql.archtype== QL_ARCH.X86:
-            return self.ql.unpack(self.ql.mem.read(self.ql.reg.esp, self.ql.pointersize))
+            return self.ql.unpack(self.ql.mem.read(self.ql.arch.regs.esp, self.ql.pointersize))
 
         # X8664
         elif  self.ql.archtype== QL_ARCH.X8664:
-            return self.ql.unpack(self.ql.mem.read(self.ql.reg.rsp, self.ql.pointersize))
+            return self.ql.unpack(self.ql.mem.read(self.ql.arch.regs.rsp, self.ql.pointersize))
         else:
             raise
 
@@ -104,40 +104,40 @@ class HookFunc:
 
         # X86
         elif  self.ql.archtype== QL_ARCH.X86:
-            self.ql.reg.esp = self.ql.reg.esp + self.ql.pointersize
+            self.ql.arch.regs.esp = self.ql.arch.regs.esp + self.ql.pointersize
 
         # X8664
         elif  self.ql.archtype== QL_ARCH.X8664:
-            self.ql.reg.rsp = self.ql.reg.rsp + self.ql.pointersize
+            self.ql.arch.regs.rsp = self.ql.arch.regs.rsp + self.ql.pointersize
         else:
             raise
 
     def set_ret(self, addr):
         # ARM
         if self.ql.archtype== QL_ARCH.ARM:
-            self.ql.reg.lr = addr
+            self.ql.arch.regs.lr = addr
 
         # MIPS32
         elif self.ql.archtype== QL_ARCH.MIPS:
-            self.ql.reg.ra = addr
+            self.ql.arch.regs.ra = addr
 
         # ARM64
         elif self.ql.archtype== QL_ARCH.ARM64:
-            self.ql.mem.write(self.ql.reg.sp, self.ql.pack(addr))
+            self.ql.mem.write(self.ql.arch.regs.sp, self.ql.pack(addr))
 
         # X86
         elif  self.ql.archtype== QL_ARCH.X86:
-            self.ql.mem.write(self.ql.reg.esp, self.ql.pack(addr))
+            self.ql.mem.write(self.ql.arch.regs.esp, self.ql.pack(addr))
 
         # X8664
         elif  self.ql.archtype== QL_ARCH.X8664:
-            self.ql.mem.write(self.ql.reg.rsp, self.ql.pack(addr))
+            self.ql.mem.write(self.ql.arch.regs.rsp, self.ql.pack(addr))
         else:
             raise
 
     def call_enter(self):
         # if self.ql.archtype == QL_ARCH.ARM or self.ql.archtype == QL_ARCH.ARM64:
-        #     self.ql.reg.arch_pc = self.ql.reg.arch_pc + 4
+        #     self.ql.arch.regs.arch_pc = self.ql.arch.regs.arch_pc + 4
 
         next_pc = self.ql.unpack(self.ql.mem.read(self.hook_data_ptr, self.ql.pointersize))
         self.ret_pc = self.get_ret_pc()
@@ -168,7 +168,7 @@ class HookFunc:
                     cb(self.ql, userdata)
             else:
                 self.set_ret(self.exit_addr)
-                self.ql.reg.arch_pc = next_pc
+                self.ql.arch.regs.arch_pc = next_pc
 
         else:
             self.context_fixup()
@@ -176,29 +176,29 @@ class HookFunc:
     def ret(self):
         # ARM
         if self.ql.archtype== QL_ARCH.ARM:
-            self.ql.reg.arch_pc = self.ret_pc
+            self.ql.arch.regs.arch_pc = self.ret_pc
 
         # MIPS32
         elif self.ql.archtype== QL_ARCH.MIPS:
-            self.ql.reg.arch_pc = self.ret_pc
+            self.ql.arch.regs.arch_pc = self.ret_pc
 
         # ARM64
         elif self.ql.archtype== QL_ARCH.ARM64:
-            self.ql.reg.arch_pc = self.ret_pc
+            self.ql.arch.regs.arch_pc = self.ret_pc
 
         # X86
         elif  self.ql.archtype== QL_ARCH.X86:
-            self.ql.reg.arch_pc = self.ret_pc
+            self.ql.arch.regs.arch_pc = self.ret_pc
 
         # X8664
         elif  self.ql.archtype== QL_ARCH.X8664:
-            self.ql.reg.arch_pc = self.ret_pc
+            self.ql.arch.regs.arch_pc = self.ret_pc
         else:
             raise
 
     def call_exit(self):
         # if self.ql.archtype == QL_ARCH.ARM or self.ql.archtype == QL_ARCH.ARM64:
-        #     self.ql.reg.arch_pc = self.ql.reg.arch_pc + 4
+        #     self.ql.arch.regs.arch_pc = self.ql.arch.regs.arch_pc + 4
         onexit_cb = None
         onexit_userdata = None
 
@@ -255,7 +255,7 @@ class HookFuncMips(HookFunc):
         self.gotidx = gotidx
     
     def _hook_fuc_enter(self, ql):
-        self.ql.reg.t9 = self.ql.unpack(self.ql.mem.read(self.hook_data_ptr, self.ql.pointersize))
+        self.ql.arch.regs.t9 = self.ql.unpack(self.ql.mem.read(self.hook_data_ptr, self.ql.pointersize))
         self.call_enter()
     
     def _hook_fuc_exit(self, ql):
@@ -902,7 +902,7 @@ class FunctionHook:
             self.ql.log.debug('dynsym name ' + str(rel_name))
 
     def _hook_int(self, ql, intno):
-        idx = (self.ql.reg.arch_pc - self.hook_mem) // 0x10
+        idx = (self.ql.arch.regs.arch_pc - self.hook_mem) // 0x10
 
         if idx not in self.use_list.keys():
             raise

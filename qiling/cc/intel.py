@@ -107,6 +107,6 @@ class stdcall(QlIntel32):
 	def unwind(self, nslots: int) -> int:
 		retaddr = super().unwind(nslots)
 
-		self.ql.reg.arch_sp += (nslots * self._asize)
+		self.ql.arch.regs.arch_sp += (nslots * self._asize)
 
 		return retaddr

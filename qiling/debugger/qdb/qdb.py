@@ -60,7 +60,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         getter for current address of qiling instance
         """
 
-        return self.ql.reg.arch_pc
+        return self.ql.arch.regs.arch_pc
 
     @cur_addr.setter
     def cur_addr(self: QlQdb, address: int) -> None:
@@ -68,7 +68,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         setter for current address of qiling instance
         """
 
-        self.ql.reg.arch_pc = address
+        self.ql.arch.regs.arch_pc = address
 
     def _bp_handler(self: QlQdb, *args) -> None:
         """
@@ -130,7 +130,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
             return
 
-        if self.ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB, QL_ARCH.CORTEX_M) and is_thumb(self.ql.reg.cpsr):
+        if self.ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB, QL_ARCH.CORTEX_M) and is_thumb(self.ql.arch.regs.cpsr):
             address |= 1
 
         self.ql.emu_start(begin=address, end=end, count=count)
@@ -217,7 +217,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         else:
             # save reg dump for data highlighting changes
-            self._saved_reg_dump = dict(filter(lambda d: isinstance(d[0], str), self.ql.reg.save().items()))
+            self._saved_reg_dump = dict(filter(lambda d: isinstance(d[0], str), self.ql.arch.regs.save().items()))
 
             if self.rr:
                 self._save()

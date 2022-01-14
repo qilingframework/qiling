@@ -151,24 +151,24 @@ class QlCommonBaseCC(QlCC):
 			return reg_access, reg
 
 	def getRawParam(self, index: int, argbits: int = None) -> int:
-		read, loc = self.__access_param(index, self.ql.stack_read, self.ql.reg.read)
+		read, loc = self.__access_param(index, self.ql.stack_read, self.ql.arch.regs.read)
 
 		mask = (0 if argbits is None else (1 << argbits)) - 1
 
 		return read(loc) & mask
 
 	def setRawParam(self, index: int, value: int, argbits: int = None) -> None:
-		write, loc = self.__access_param(index, self.ql.stack_write, self.ql.reg.write)
+		write, loc = self.__access_param(index, self.ql.stack_write, self.ql.arch.regs.write)
 
 		mask = (0 if argbits is None else (1 << argbits)) - 1
 
 		write(loc, value & mask)
 
 	def getReturnValue(self) -> int:
-		return self.ql.reg.read(self._retreg)
+		return self.ql.arch.regs.read(self._retreg)
 
 	def setReturnValue(self, value: int) -> None:
-		self.ql.reg.write(self._retreg, value)
+		self.ql.arch.regs.write(self._retreg, value)
 
 	def reserve(self, nslots: int) -> None:
 		assert nslots < len(self._argregs), 'too many slots'
@@ -176,4 +176,4 @@ class QlCommonBaseCC(QlCC):
 		# count how many slots should be reserved on the stack
 		si = self._argregs[:nslots].count(None)
 
-		self.ql.reg.arch_sp -= (self._shadow + si) * self._asize
+		self.ql.arch.regs.arch_sp -= (self._shadow + si) * self._asize

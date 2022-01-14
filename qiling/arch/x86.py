@@ -47,10 +47,10 @@ class QlArchA8086(QlArchIntel):
         )
 
         for reg_maper in reg_maps:
-            self.ql.reg.expand_mapping(reg_maper)
+            self.ql.arch.regs.expand_mapping(reg_maper)
 
-        self.ql.reg.register_pc(reg_map_16["sp"])
-        self.ql.reg.register_sp(reg_map_16["ip"])
+        self.ql.arch.regs.register_pc(reg_map_16["sp"])
+        self.ql.arch.regs.register_sp(reg_map_16["ip"])
 
     @cached_property
     def uc(self) -> Uc:
@@ -78,10 +78,10 @@ class QlArchX86(QlArchIntel):
         )
 
         for reg_maper in reg_maps:
-            self.ql.reg.expand_mapping(reg_maper)
+            self.ql.arch.regs.expand_mapping(reg_maper)
 
-        self.ql.reg.register_sp(reg_map_32["esp"])
-        self.ql.reg.register_pc(reg_map_32["eip"])
+        self.ql.arch.regs.register_sp(reg_map_32["esp"])
+        self.ql.arch.regs.register_pc(reg_map_32["eip"])
 
     @cached_property
     def uc(self) -> Uc:
@@ -114,10 +114,10 @@ class QlArchX8664(QlArchIntel):
         )
 
         for reg_maper in reg_maps:
-            self.ql.reg.expand_mapping(reg_maper)
+            self.ql.arch.regs.expand_mapping(reg_maper)
 
-        self.ql.reg.register_sp(reg_map_64["rsp"])
-        self.ql.reg.register_pc(reg_map_64["rip"])
+        self.ql.arch.regs.register_sp(reg_map_64["rsp"])
+        self.ql.arch.regs.register_pc(reg_map_64["rip"])
 
     @cached_property
     def uc(self) -> Uc:
@@ -141,7 +141,7 @@ class GDTManager:
             ql.mem.map(GDT_ADDR, GDT_LIMIT, info="[GDT]")
 
         # setup GDT by writing to GDTR
-        ql.reg.write(UC_X86_REG_GDTR, (0, GDT_ADDR, GDT_LIMIT, 0x0))
+        ql.arch.regs.write(UC_X86_REG_GDTR, (0, GDT_ADDR, GDT_LIMIT, 0x0))
 
         self.ql = ql
         self.gdt_number = GDT_ENTRY_ENTRIES
@@ -208,13 +208,13 @@ class GDTManager:
 def ql_x86_register_cs(self):
     # While debugging the linux kernel segment, the cs segment was found on the third segment of gdt.
     self.gdtm.register_gdt_segment(3, 0, 0xfffff000, QL_X86_A_PRESENT | QL_X86_A_CODE | QL_X86_A_CODE_READABLE | QL_X86_A_PRIV_3 | QL_X86_A_EXEC | QL_X86_A_DIR_CON_BIT, QL_X86_S_GDT | QL_X86_S_PRIV_3)
-    self.ql.reg.cs = self.gdtm.create_selector(3, QL_X86_S_GDT | QL_X86_S_PRIV_3)
+    self.ql.arch.regs.cs = self.gdtm.create_selector(3, QL_X86_S_GDT | QL_X86_S_PRIV_3)
 
 
 def ql_x8664_register_cs(self):
     # While debugging the linux kernel segment, the cs segment was found on the sixth segment of gdt.
     self.gdtm.register_gdt_segment(6, 0, 0xfffffffffffff000, QL_X86_A_PRESENT | QL_X86_A_CODE | QL_X86_A_CODE_READABLE | QL_X86_A_PRIV_3 | QL_X86_A_EXEC | QL_X86_A_DIR_CON_BIT, QL_X86_S_GDT | QL_X86_S_PRIV_3)
-    self.ql.reg.cs = self.gdtm.create_selector(6, QL_X86_S_GDT | QL_X86_S_PRIV_3)
+    self.ql.arch.regs.cs = self.gdtm.create_selector(6, QL_X86_S_GDT | QL_X86_S_PRIV_3)
 
 
 def ql_x86_register_ds_ss_es(self):
@@ -222,44 +222,44 @@ def ql_x86_register_ds_ss_es(self):
     # While debugging the Linux kernel segment, I found that the three segments DS, SS, and ES all point to the same location in the GDT table. 
     # This position is the fifth segment table of GDT.
     self.gdtm.register_gdt_segment(5, 0, 0xfffff000, QL_X86_A_PRESENT | QL_X86_A_DATA | QL_X86_A_DATA_WRITABLE | QL_X86_A_PRIV_0 | QL_X86_A_DIR_CON_BIT, QL_X86_S_GDT | QL_X86_S_PRIV_0)
-    self.ql.reg.ds = self.gdtm.create_selector(5, QL_X86_S_GDT | QL_X86_S_PRIV_0)
-    self.ql.reg.ss = self.gdtm.create_selector(5, QL_X86_S_GDT | QL_X86_S_PRIV_0)
-    self.ql.reg.es = self.gdtm.create_selector(5, QL_X86_S_GDT | QL_X86_S_PRIV_0)
+    self.ql.arch.regs.ds = self.gdtm.create_selector(5, QL_X86_S_GDT | QL_X86_S_PRIV_0)
+    self.ql.arch.regs.ss = self.gdtm.create_selector(5, QL_X86_S_GDT | QL_X86_S_PRIV_0)
+    self.ql.arch.regs.es = self.gdtm.create_selector(5, QL_X86_S_GDT | QL_X86_S_PRIV_0)
 
 
 def ql_x8664_register_ds_ss_es(self):
     # TODO : The section permission here should be QL_X86_A_PRIV_3, but I do n’t know why it can only be set to QL_X86_A_PRIV_0.
     # When I debug the Linux kernel, I find that only the SS is set to the fifth segment table, and the rest are not set.
     self.gdtm.register_gdt_segment(5, 0, 0xfffff000, QL_X86_A_PRESENT | QL_X86_A_DATA | QL_X86_A_DATA_WRITABLE | QL_X86_A_PRIV_0 | QL_X86_A_DIR_CON_BIT, QL_X86_S_GDT | QL_X86_S_PRIV_0)
-    # ql.reg.write(UC_X86_REG_DS, ql.os.gdtm.create_selector(5, QL_X86_S_GDT | QL_X86_S_PRIV_0))
-    self.ql.reg.ss = self.gdtm.create_selector(5, QL_X86_S_GDT | QL_X86_S_PRIV_0)
-    # ql.reg.write(UC_X86_REG_ES, ql.os.gdtm.create_selector(5, QL_X86_S_GDT | QL_X86_S_PRIV_0))
+    # ql.arch.regs.write(UC_X86_REG_DS, ql.os.gdtm.create_selector(5, QL_X86_S_GDT | QL_X86_S_PRIV_0))
+    self.ql.arch.regs.ss = self.gdtm.create_selector(5, QL_X86_S_GDT | QL_X86_S_PRIV_0)
+    # ql.arch.regs.write(UC_X86_REG_ES, ql.os.gdtm.create_selector(5, QL_X86_S_GDT | QL_X86_S_PRIV_0))
 
 
 def ql_x86_register_gs(self):
     self.gdtm.register_gdt_segment(15, GS_SEGMENT_ADDR, GS_SEGMENT_SIZE, QL_X86_A_PRESENT | QL_X86_A_DATA | QL_X86_A_DATA_WRITABLE | QL_X86_A_PRIV_3 | QL_X86_A_DIR_CON_BIT, QL_X86_S_GDT |  QL_X86_S_PRIV_3)
-    self.ql.reg.gs = self.gdtm.create_selector(15, QL_X86_S_GDT | QL_X86_S_PRIV_0)
+    self.ql.arch.regs.gs = self.gdtm.create_selector(15, QL_X86_S_GDT | QL_X86_S_PRIV_0)
 
 
 def ql_x86_register_fs(self):
     self.gdtm.register_gdt_segment(14, FS_SEGMENT_ADDR, FS_SEGMENT_SIZE, QL_X86_A_PRESENT | QL_X86_A_DATA | QL_X86_A_DATA_WRITABLE | QL_X86_A_PRIV_3 | QL_X86_A_DIR_CON_BIT, QL_X86_S_GDT |  QL_X86_S_PRIV_3)
-    self.ql.reg.fs = self.gdtm.create_selector(14,  QL_X86_S_GDT |  QL_X86_S_PRIV_3)
+    self.ql.arch.regs.fs = self.gdtm.create_selector(14,  QL_X86_S_GDT |  QL_X86_S_PRIV_3)
 
 
 def ql_x8664_set_gs(ql: Qiling):
     if not ql.mem.is_mapped(GS_SEGMENT_ADDR, GS_SEGMENT_SIZE):
         ql.mem.map(GS_SEGMENT_ADDR, GS_SEGMENT_SIZE, info="[GS]")
 
-    ql.reg.msr(GSMSR, GS_SEGMENT_ADDR)
+    ql.arch.regs.msr(GSMSR, GS_SEGMENT_ADDR)
 
 
 def ql_x8664_get_gs(ql: Qiling):
-    return ql.reg.msr(GSMSR)
+    return ql.arch.regs.msr(GSMSR)
 
 
 def ql_x8664_set_fs(ql: Qiling, addr: int):
-    ql.reg.msr(FSMSR, addr)
+    ql.arch.regs.msr(FSMSR, addr)
 
 
 def ql_x8664_get_fs(ql: Qiling):
-    return ql.reg.msr(FSMSR)
+    return ql.arch.regs.msr(FSMSR)

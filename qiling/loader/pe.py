@@ -536,8 +536,8 @@ class QlLoaderPE(QlLoader, Process):
             sp = self.stack_address + self.stack_size - 0x1000
 
             if self.ql.archtype == QL_ARCH.X86:
-                self.ql.reg.esp = sp
-                self.ql.reg.ebp = sp
+                self.ql.arch.regs.esp = sp
+                self.ql.arch.regs.ebp = sp
 
                 if self.pe.is_dll():
                     self.ql.log.debug('Setting up DllMain args')
@@ -550,17 +550,17 @@ class QlLoaderPE(QlLoader, Process):
                     self.ql.mem.write(sp + 0x8, int(1).to_bytes(length=4, byteorder='little'))
 
             elif self.ql.archtype == QL_ARCH.X8664:
-                self.ql.reg.rsp = sp
-                self.ql.reg.rbp = sp
+                self.ql.arch.regs.rsp = sp
+                self.ql.arch.regs.rbp = sp
 
                 if self.pe.is_dll():
                     self.ql.log.debug('Setting up DllMain args')
 
                     self.ql.log.debug('Setting RCX (arg1) to %16X (IMAGE_BASE)' % (self.pe_image_address))
-                    self.ql.reg.rcx = self.pe_image_address
+                    self.ql.arch.regs.rcx = self.pe_image_address
 
                     self.ql.log.debug('Setting RDX (arg2) to 1 (DLL_PROCESS_ATTACH)')
-                    self.ql.reg.rdx = 1
+                    self.ql.arch.regs.rdx = 1
             else:
                 raise QlErrorArch("Unknown ql.arch")
 
@@ -574,10 +574,10 @@ class QlLoaderPE(QlLoader, Process):
                 super().init_ki_user_shared_data()
 
                 # setup IRQ Level in CR8 to PASSIVE_LEVEL (0)
-                self.ql.reg.write(UC_X86_REG_CR8, 0)
+                self.ql.arch.regs.write(UC_X86_REG_CR8, 0)
 
                 # setup CR4, some drivers may check this at initialized time
-                self.ql.reg.write(UC_X86_REG_CR4, 0x6f8)
+                self.ql.arch.regs.write(UC_X86_REG_CR4, 0x6f8)
 
                 self.ql.log.debug('Setting up DriverEntry args')
                 self.ql.stop_execution_pattern = 0xDEADC0DE
@@ -666,11 +666,11 @@ class QlLoaderPE(QlLoader, Process):
         elif self.ql.code:
             self.filepath = b""
             if self.ql.archtype == QL_ARCH.X86:
-                self.ql.reg.esp = self.stack_address + 0x3000
-                self.ql.reg.ebp = self.ql.reg.esp
+                self.ql.arch.regs.esp = self.stack_address + 0x3000
+                self.ql.arch.regs.ebp = self.ql.arch.regs.esp
             elif self.ql.archtype == QL_ARCH.X8664:
-                self.ql.reg.rsp = self.stack_address + 0x3000
-                self.ql.reg.rbp = self.ql.reg.rsp
+                self.ql.arch.regs.rsp = self.stack_address + 0x3000
+                self.ql.arch.regs.rbp = self.ql.arch.regs.rsp
 
             # load shellcode in
             self.ql.mem.map(self.entry_point, self.ql.os.code_ram_size, info="[shellcode_base]")
@@ -687,4 +687,4 @@ class QlLoaderPE(QlLoader, Process):
 
         # move entry_point to ql.os
         self.ql.os.entry_point = self.entry_point
-        self.init_sp = self.ql.reg.arch_sp
+        self.init_sp = self.ql.arch.regs.arch_sp

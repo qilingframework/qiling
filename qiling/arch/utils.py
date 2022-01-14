@@ -42,9 +42,9 @@ class QlArchUtils:
         ql.log.info(log_data + log_insn)
 
         if ql.verbose >= QL_VERBOSE.DUMP:
-            for reg in ql.reg.register_mapping:
+            for reg in ql.arch.regs.register_mapping:
                 if type(reg) is str:
-                    ql.log.debug(f'{reg}\t: {ql.reg.read(reg):#x}')
+                    ql.log.debug(f'{reg}\t: {ql.arch.regs.read(reg):#x}')
 
     def setup_output(self):
         def ql_hook_block_disasm(ql, address, size):

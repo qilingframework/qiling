@@ -32,7 +32,7 @@ class Solver:
         #
         # since the emulation halted upon entering 'main', its return address is there on
         # the stack. we use it to limit the emulation till function returns
-        self.replay_starts = self.ql.reg.arch_pc
+        self.replay_starts = self.ql.arch.regs.arch_pc
         self.replay_ends = self.ql.stack_read(0)
 
         # instead of restarting the whole program every time a new flag character is guessed,

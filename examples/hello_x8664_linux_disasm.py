@@ -29,7 +29,7 @@ def trace(ql: Qiling, address: int, size: int, md: Cs):
         opcode = ''.join(f'{b:02x}' for b in insn.bytes)
 
         # BUG: insn.regs_read doesn't work well, so we use insn.regs_access()[0] instead
-        reads = (f'{md.reg_name(reg)} = {ql.reg.read(reg):#x}' for reg in insn.regs_access()[0])
+        reads = (f'{md.reg_name(reg)} = {ql.arch.regs.read(reg):#x}' for reg in insn.regs_access()[0])
         trace_line = f'{insn.address:0{nibbles}x} | {opcode:20s} {insn.mnemonic:10} {insn.op_str:35s} | {", ".join(reads)}'
 
         # emit trace line in dark gray so it would be easier to tell trace info from other log entries

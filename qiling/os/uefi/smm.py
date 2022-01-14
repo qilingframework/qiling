@@ -155,7 +155,7 @@ class SmmEnv:
 		# write cpu state to ssa (partially)
 		# that can take place only after smram ranges have been unlocked
 		for ucreg, (width, regidx) in SmmEnv.SSA_REG_MAP.items():
-			val = self.ql.reg.read(ucreg)
+			val = self.ql.arch.regs.read(ucreg)
 
 			pack = {
 				8 : self.ql.pack64,
@@ -189,7 +189,7 @@ class SmmEnv:
 				1 : self.ql.unpack8
 			}[width]
 
-			self.ql.reg.write(ucreg, unpack(data))
+			self.ql.arch.regs.write(ucreg, unpack(data))
 
 		# lock smram ranges for access
 		for lbound, ubound in self.__mapped_smram_ranges():
@@ -237,7 +237,7 @@ class SmmEnv:
 			ql.log.info(f'Leaving SWSMI handler {idx:#04x}')
 
 			# unwind ms64 shadow space
-			ql.reg.arch_sp += (4 * ql.pointersize)
+			ql.arch.regs.arch_sp += (4 * ql.pointersize)
 
 			# release handler resources
 			heap.free(DispatchHandle)

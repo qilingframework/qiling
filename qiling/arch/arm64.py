@@ -23,10 +23,10 @@ class QlArchARM64(QlArch):
         )
 
         for reg_maper in reg_maps:
-            self.ql.reg.expand_mapping(reg_maper)
+            self.ql.arch.regs.expand_mapping(reg_maper)
 
-        self.ql.reg.register_sp(reg_map["sp"])
-        self.ql.reg.register_pc(reg_map["pc"])
+        self.ql.arch.regs.register_sp(reg_map["sp"])
+        self.ql.arch.regs.register_pc(reg_map["pc"])
 
     @cached_property
     def uc(self) -> Uc:
@@ -41,4 +41,4 @@ class QlArchARM64(QlArch):
         return Ks(KS_ARCH_ARM64, KS_MODE_LITTLE_ENDIAN)
 
     def enable_vfp(self):
-        self.ql.reg.cpacr_el1 = self.ql.reg.cpacr_el1 | 0x300000
+        self.ql.arch.regs.cpacr_el1 = self.ql.arch.regs.cpacr_el1 | 0x300000

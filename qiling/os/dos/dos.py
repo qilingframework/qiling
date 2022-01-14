@@ -56,10 +56,10 @@ class QlOsDos(QlOs):
             curses.endwin()
 
     def set_flag_value(self, fl: Flags, val: int) -> None:
-        self.ql.reg.ef = self.ql.reg.ef & (~fl) | (fl * val)
+        self.ql.arch.regs.ef = self.ql.arch.regs.ef & (~fl) | (fl * val)
 
     def test_flags(self, fl):
-        return self.ql.reg.ef & fl == fl
+        return self.ql.arch.regs.ef & fl == fl
 
     def set_cf(self):
         self.set_flag_value(Flags.CF, 0b1)
@@ -76,7 +76,7 @@ class QlOsDos(QlOs):
     def hook_syscall(self):
 
         def cb(ql: Qiling, intno: int):
-            ah = ql.reg.ah
+            ah = ql.arch.regs.ah
             intinfo = (intno, ah)
 
             func = self.user_defined_api[QL_INTERCEPT.CALL].get(intinfo) or handlers.get(intno)

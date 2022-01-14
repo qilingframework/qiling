@@ -70,7 +70,7 @@ class QlLoaderELF(QlLoader):
             self.ql.mem.map(self.ql.os.entry_point, self.ql.os.code_ram_size, info="[shellcode_stack]")
             self.ql.os.entry_point = (self.ql.os.entry_point + 0x200000 - 0x1000)
             self.ql.mem.write(self.ql.os.entry_point, self.ql.code)
-            self.ql.reg.arch_sp = self.ql.os.entry_point
+            self.ql.arch.regs.arch_sp = self.ql.os.entry_point
             return
 
         section = {
@@ -115,13 +115,13 @@ class QlLoaderELF(QlLoader):
 
         self.is_driver = (elftype == 'ET_REL')
 
-        self.ql.reg.arch_sp = self.stack_address
+        self.ql.arch.regs.arch_sp = self.stack_address
 
         # No idea why.
         if self.ql.ostype == QL_OS.FREEBSD:
-            # self.ql.reg.rbp = self.stack_address + 0x40
-            self.ql.reg.rdi = self.stack_address
-            self.ql.reg.r14 = self.stack_address
+            # self.ql.arch.regs.rbp = self.stack_address + 0x40
+            self.ql.arch.regs.rdi = self.stack_address
+            self.ql.arch.regs.r14 = self.stack_address
 
     @staticmethod
     def seg_perm_to_uc_prot(perm: int) -> int:
@@ -393,7 +393,7 @@ class QlLoaderELF(QlLoader):
         self.stack_address = new_stack
         self.load_address = load_address
         self.images.append(Image(load_address, load_address + mem_end, self.path))
-        self.init_sp = self.ql.reg.arch_sp
+        self.init_sp = self.ql.arch.regs.arch_sp
 
         self.ql.os.entry_point = self.entry_point = entry_point
         self.ql.os.elf_mem_start = mem_start

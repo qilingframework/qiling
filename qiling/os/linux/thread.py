@@ -222,7 +222,7 @@ class QlLinuxThread(QlThread):
         #    In this context, we do:
         #        - Call gevent functions to switch threads.
         #        - Forward blocking syscalls to gevent.
-        self.ql.reg.arch_pc = self.start_address
+        self.ql.arch.regs.arch_pc = self.start_address
         if not self._saved_context:
             self.save()
         
@@ -235,7 +235,7 @@ class QlLinuxThread(QlThread):
             self.restore()
 
             # Sanity check
-            if self.ql.reg.arch_pc == self.exit_point:
+            if self.ql.arch.regs.arch_pc == self.exit_point:
                 self.ql.log.warning(f"Nothing to do but still get scheduled!")
 
             # Run and log the run event
@@ -250,7 +250,7 @@ class QlLinuxThread(QlThread):
                 self.ql.os.emu_error()
                 self.ql.log.exception("")
                 raise e
-            self.ql.log.debug(f"Suspended at {hex(self.ql.reg.arch_pc)}")
+            self.ql.log.debug(f"Suspended at {hex(self.ql.arch.regs.arch_pc)}")
             self.save()
             
             # Note that this callback may be set by UC callbacks.
@@ -261,7 +261,7 @@ class QlLinuxThread(QlThread):
             self.ql.log.debug(f"Call sched_cb: {self.sched_cb}")
             self.sched_cb(self)
 
-            if self.status == THREAD_STATUS_TERMINATED or self.ql.reg.arch_pc == self.exit_point:
+            if self.status == THREAD_STATUS_TERMINATED or self.ql.arch.regs.arch_pc == self.exit_point:
                 break
 
         self._on_stop()
@@ -312,7 +312,7 @@ class QlLinuxThread(QlThread):
         # We can't modify UcContext directly.
         old_context = self.ql.arch.context_save()
         self.restore_context()
-        self.ql.reg.arch_pc = addr
+        self.ql.arch.regs.arch_pc = addr
         self.save_context()
         self.ql.arch.context_restore(old_context)
 
@@ -391,17 +391,17 @@ class QlLinuxX86Thread(QlLinuxThread):
 
         self.tls = bytes(self.ql.os.gdtm.get_gdt_buf(12, 14 + 1))
         self.ql.os.gdtm.set_gdt_buf(12, 14 + 1, old_tls)
-        self.ql.log.debug(f"Set tls to index={hex(index)} base={hex(base)} limit={hex(limit)} fs={hex(self.ql.reg.fs)} gs={hex(self.ql.reg.gs)} gdt_buf={self.tls}")
+        self.ql.log.debug(f"Set tls to index={hex(index)} base={hex(base)} limit={hex(limit)} fs={hex(self.ql.arch.regs.fs)} gs={hex(self.ql.arch.regs.gs)} gdt_buf={self.tls}")
 
     def save(self):
         self.save_context()
         self.tls = bytes(self.ql.os.gdtm.get_gdt_buf(12, 14 + 1))
-        self.ql.log.debug(f"Saved context. fs={hex(self.ql.reg.fs)} gs={hex(self.ql.reg.gs)} gdt_buf={self.tls}")
+        self.ql.log.debug(f"Saved context. fs={hex(self.ql.arch.regs.fs)} gs={hex(self.ql.arch.regs.gs)} gdt_buf={self.tls}")
 
     def restore(self):
         self.restore_context()
         self.ql.os.gdtm.set_gdt_buf(12, 14 + 1, self.tls)
-        self.ql.log.debug(f"Restored context. fs={hex(self.ql.reg.fs)} gs={hex(self.ql.reg.gs)} gdt_buf={self.tls}")
+        self.ql.log.debug(f"Restored context. fs={hex(self.ql.arch.regs.fs)} gs={hex(self.ql.arch.regs.gs)} gdt_buf={self.tls}")
 
     def clone(self):
         new_thread = super(QlLinuxX86Thread, self).clone()
@@ -416,7 +416,7 @@ class QlLinuxX8664Thread(QlLinuxThread):
 
     def set_thread_tls(self, tls_addr):
         self.tls = tls_addr
-        self.ql.reg.msr(FSMSR, self.tls)
+        self.ql.arch.regs.msr(FSMSR, self.tls)
         self.ql.log.debug(f"Set fsbase to {hex(tls_addr)} for {str(self)}")
 
     # Some notes:
@@ -424,13 +424,13 @@ class QlLinuxX8664Thread(QlLinuxThread):
     #     - https://stackoverflow.com/questions/11497563/detail-about-msr-gs-base-in-linux-x86-64
     def save(self):
         self.save_context()
-        self.tls = self.ql.reg.msr(FSMSR)
-        self.ql.log.debug(f"Saved context: fs={hex(self.ql.reg.fsbase)} tls={hex(self.tls)}")
+        self.tls = self.ql.arch.regs.msr(FSMSR)
+        self.ql.log.debug(f"Saved context: fs={hex(self.ql.arch.regs.fsbase)} tls={hex(self.tls)}")
 
     def restore(self):
         self.restore_context()
         self.set_thread_tls(self.tls)
-        self.ql.log.debug(f"Restored context: fs={hex(self.ql.reg.fsbase)} tls={hex(self.tls)}")
+        self.ql.log.debug(f"Restored context: fs={hex(self.ql.arch.regs.fsbase)} tls={hex(self.tls)}")
     
     def clone(self):
         new_thread = super(QlLinuxX8664Thread, self).clone()
@@ -447,19 +447,19 @@ class QlLinuxMIPS32Thread(QlLinuxThread):
     def set_thread_tls(self, tls_addr):
         self.tls = tls_addr
         CONFIG3_ULR = (1 << 13)
-        self.ql.reg.cp0_config3 = CONFIG3_ULR
-        self.ql.reg.cp0_userlocal = self.tls
-        self.ql.log.debug(f"Set cp0 to {hex(self.ql.reg.cp0_userlocal)}")
+        self.ql.arch.regs.cp0_config3 = CONFIG3_ULR
+        self.ql.arch.regs.cp0_userlocal = self.tls
+        self.ql.log.debug(f"Set cp0 to {hex(self.ql.arch.regs.cp0_userlocal)}")
 
     def save(self):
         self.save_context()
-        self.tls = self.ql.reg.cp0_userlocal
-        self.ql.log.debug(f"Saved context. cp0={hex(self.ql.reg.cp0_userlocal)}") 
+        self.tls = self.ql.arch.regs.cp0_userlocal
+        self.ql.log.debug(f"Saved context. cp0={hex(self.ql.arch.regs.cp0_userlocal)}") 
 
     def restore(self):
         self.restore_context()
         self.set_thread_tls(self.tls)
-        self.ql.log.debug(f"Restored context. cp0={hex(self.ql.reg.cp0_userlocal)}")
+        self.ql.log.debug(f"Restored context. cp0={hex(self.ql.arch.regs.cp0_userlocal)}")
 
     def clone(self):
         new_thread = super(QlLinuxMIPS32Thread, self).clone()
@@ -475,19 +475,19 @@ class QlLinuxARMThread(QlLinuxThread):
 
     def set_thread_tls(self, tls_addr):
         self.tls = tls_addr
-        self.ql.reg.c13_c0_3 = self.tls
-        self.ql.log.debug(f"Set c13_c0_3 to {hex(self.ql.reg.c13_c0_3)}")
+        self.ql.arch.regs.c13_c0_3 = self.tls
+        self.ql.log.debug(f"Set c13_c0_3 to {hex(self.ql.arch.regs.c13_c0_3)}")
 
     def save(self):
         self.save_context()
-        self.tls = self.ql.reg.c13_c0_3
-        self.ql.log.debug(f"Saved context. c13_c0_3={hex(self.ql.reg.c13_c0_3)}")
+        self.tls = self.ql.arch.regs.c13_c0_3
+        self.ql.log.debug(f"Saved context. c13_c0_3={hex(self.ql.arch.regs.c13_c0_3)}")
 
 
     def restore(self):
         self.restore_context()
         self.set_thread_tls(self.tls)
-        self.ql.log.debug(f"Restored context. c13_c0_3={hex(self.ql.reg.c13_c0_3)}")
+        self.ql.log.debug(f"Restored context. c13_c0_3={hex(self.ql.arch.regs.c13_c0_3)}")
     
     def clone(self):
         new_thread = super(QlLinuxARMThread, self).clone()
@@ -503,18 +503,18 @@ class QlLinuxARM64Thread(QlLinuxThread):
 
     def set_thread_tls(self, tls_addr):
         self.tls = tls_addr
-        self.ql.reg.tpidr_el0 = self.tls
-        self.ql.log.debug(f"Set tpidr_el0 to {hex(self.ql.reg.tpidr_el0)}")
+        self.ql.arch.regs.tpidr_el0 = self.tls
+        self.ql.log.debug(f"Set tpidr_el0 to {hex(self.ql.arch.regs.tpidr_el0)}")
 
     def save(self):
         self.save_context()
-        self.tls = self.ql.reg.tpidr_el0
-        self.ql.log.debug(f"Saved context. tpidr_el0={hex(self.ql.reg.tpidr_el0)}")
+        self.tls = self.ql.arch.regs.tpidr_el0
+        self.ql.log.debug(f"Saved context. tpidr_el0={hex(self.ql.arch.regs.tpidr_el0)}")
 
     def restore(self):
         self.restore_context()
         self.set_thread_tls(self.tls)
-        self.ql.log.debug(f"Restored context. tpidr_el0={hex(self.ql.reg.tpidr_el0)}")
+        self.ql.log.debug(f"Restored context. tpidr_el0={hex(self.ql.arch.regs.tpidr_el0)}")
     
     def clone(self):
         new_thread = super(QlLinuxARM64Thread, self).clone()
@@ -571,8 +571,8 @@ class QlLinuxThreadManagement:
             self.cur_thread = self.main_thread
             self._clear_queued_msg()
             gevent.joinall([self.main_thread], raise_error=True)
-            if self.ql.reg.arch_pc != entry_address:
-                self.ql.log.error(f"{self.cur_thread} Expect {hex(self.ql.loader.elf_entry)} but get {hex(self.ql.reg.arch_pc)} when running loader.")
+            if self.ql.arch.regs.arch_pc != entry_address:
+                self.ql.log.error(f"{self.cur_thread} Expect {hex(self.ql.loader.elf_entry)} but get {hex(self.ql.arch.regs.arch_pc)} when running loader.")
                 raise QlErrorExecutionStop('Dynamic library .init() failed!')
             self.ql.enable_lib_patch()
             self.ql.os.run_function_after_load()

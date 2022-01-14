@@ -71,7 +71,7 @@ def ql_syscall_clone(ql: Qiling, flags: int, child_stack: int, parent_tidptr: in
                 f_th.set_clear_child_tid_addr(child_tidptr)
 
             if child_stack != 0:
-                ql.reg.arch_sp = child_stack
+                ql.arch.regs.arch_sp = child_stack
 
         # ql.log.debug(f'clone(new_stack = {child_stack:#x}, flags = {flags:#x}, tls = {newtls:#x}, ptidptr = {parent_tidptr:#x}, ctidptr = {child_tidptr:#x}) = {regreturn:d}')
         ql.emu_stop()
@@ -81,7 +81,7 @@ def ql_syscall_clone(ql: Qiling, flags: int, child_stack: int, parent_tidptr: in
     if flags & CLONE_CHILD_SETTID == CLONE_CHILD_SETTID:
         set_child_tid_addr = child_tidptr
 
-    th = ql.os.thread_class.spawn(ql, ql.reg.arch_pc + 2, ql.os.exit_point, set_child_tid_addr = set_child_tid_addr)
+    th = ql.os.thread_class.spawn(ql, ql.arch.regs.arch_pc + 2, ql.os.exit_point, set_child_tid_addr = set_child_tid_addr)
     th.path = f_th.path
     ql.log.debug(f'{str(th)} created')
 
@@ -101,12 +101,12 @@ def ql_syscall_clone(ql: Qiling, flags: int, child_stack: int, parent_tidptr: in
     # (the return value of the child thread is 0, and the return value of the parent thread is the tid of the child thread)
     # and save the current context.
     regreturn = 0
-    ql.reg.arch_sp = child_stack
+    ql.arch.regs.arch_sp = child_stack
 
     # We have to find next pc manually for some archs since the pc is current instruction (like `syscall`).
     if ql.archtype in (QL_ARCH.X8664, ):
-        ql.reg.arch_pc += list(ql.arch.disassembler.disasm_lite(bytes(ql.mem.read(ql.reg.arch_pc, 4)), ql.reg.arch_pc))[0][1]
-        ql.log.debug(f"Fix pc for child thread to {hex(ql.reg.arch_pc)}")
+        ql.arch.regs.arch_pc += list(ql.arch.disassembler.disasm_lite(bytes(ql.mem.read(ql.arch.regs.arch_pc, 4)), ql.arch.regs.arch_pc))[0][1]
+        ql.log.debug(f"Fix pc for child thread to {hex(ql.arch.regs.arch_pc)}")
 
     ql.os.set_syscall_return(0)
     th.save()

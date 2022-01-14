@@ -49,8 +49,8 @@ class mipso32(mips.mipso32):
         else:
             a3return = 0
 
-        self.ql.reg.v0 = value
-        self.ql.reg.a3 = a3return
+        self.ql.arch.regs.v0 = value
+        self.ql.arch.regs.a3 = a3return
 
 class riscv32(riscv.riscv):
     pass
@@ -195,7 +195,7 @@ class QlOsPosix(QlOs):
 
             # look in os-specific and posix syscall hooks
             if syscall_name:
-                self.ql.log.debug("syscall hooked 0x%x: %s()" % (self.ql.reg.arch_pc, syscall_name))
+                self.ql.log.debug("syscall hooked 0x%x: %s()" % (self.ql.arch.regs.arch_pc, syscall_name))
                 syscall_hook = getattr(os_syscalls, syscall_name, None) or getattr(posix_syscalls, syscall_name, None)
 
         if syscall_hook:
@@ -252,20 +252,20 @@ class QlOsPosix(QlOs):
                 args.append((name, f'{value:#x}'))
 
             sret = QlOsPosix.getNameFromErrorCode(retval)
-            self.utils.print_function(self.ql.reg.arch_pc, syscall_basename, args, sret, False)
+            self.utils.print_function(self.ql.arch.regs.arch_pc, syscall_basename, args, sret, False)
 
             # record syscall statistics
             self.utils.syscalls.setdefault(syscall_name, []).append({
                 "params": dict(zip(param_names, params)),
                 "result": retval,
-                "address": self.ql.reg.arch_pc,
+                "address": self.ql.arch.regs.arch_pc,
                 "return_address": None,
                 "position": self.utils.syscalls_counter
             })
 
             self.utils.syscalls_counter += 1
         else:
-            self.ql.log.warning(f'{self.ql.reg.arch_pc:#x}: syscall {syscall_name} number = {syscall_id:#x}({syscall_id:d}) not implemented')
+            self.ql.log.warning(f'{self.ql.arch.regs.arch_pc:#x}: syscall {syscall_name} number = {syscall_id:#x}({syscall_id:d}) not implemented')
 
             if self.ql.debug_stop:
                 raise QlErrorSyscallNotFound(f'Syscall not found: {syscall_name}')
@@ -278,11 +278,11 @@ class QlOsPosix(QlOs):
             # Ref1: https://marcin.juszkiewicz.com.pl/download/tables/syscalls.html
             # Ref2: https://github.com/rootkiter/Reverse-bins/blob/master/syscall_header/armv4l_unistd.h
             # Ref3: https://github.com/unicorn-engine/unicorn/issues/1137
-            code_val = self.ql.mem.read_ptr(self.ql.reg.arch_pc-4, 4)
+            code_val = self.ql.mem.read_ptr(self.ql.arch.regs.arch_pc-4, 4)
             svc_imm  = code_val & 0x00ffffff
             if (svc_imm >= 0x900000):
                     return svc_imm - 0x900000
-        return self.ql.reg.read(self.__syscall_id_reg)
+        return self.ql.arch.regs.read(self.__syscall_id_reg)
 
     def set_syscall_return(self, retval: int):
         self.__syscall_cc.setReturnValue(retval)

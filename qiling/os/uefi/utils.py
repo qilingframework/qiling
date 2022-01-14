@@ -30,7 +30,7 @@ def execute_protocol_notifications(ql: Qiling, from_hook: bool = False) -> bool:
 
 	def __notify_next(ql: Qiling):
 		# discard previous callback's shadow space
-		ql.reg.arch_sp += (4 * ql.pointersize)
+		ql.arch.regs.arch_sp += (4 * ql.pointersize)
 
 		if ql.loader.notify_list:
 			event_id, notify_func, callback_args = ql.loader.notify_list.pop(0)
@@ -44,22 +44,22 @@ def execute_protocol_notifications(ql: Qiling, from_hook: bool = False) -> bool:
 			ql.loader.context.heap.free(next_hook)
 			hret.remove()
 
-			ql.reg.rax = EFI_SUCCESS
-			ql.reg.arch_pc = ql.stack_pop()
+			ql.arch.regs.rax = EFI_SUCCESS
+			ql.arch.regs.arch_pc = ql.stack_pop()
 
 	hret = ql.hook_address(__notify_next, next_hook)
 
 	# __notify_next unwinds the previous callback shadow space allocated by call_function. however, on its first invocation
 	# there is no such shadow space. to maintain stack consistency we set here a bogus shadow space that may be discarded
 	# safely
-	ql.reg.arch_sp -= (4 * ql.pointersize)
+	ql.arch.regs.arch_sp -= (4 * ql.pointersize)
 
 	# To avoid having two versions of the code the first notify function will also be called from the __notify_next hook.
 	if from_hook:
 		ql.stack_push(next_hook)
 	else:
 		ql.stack_push(ql.loader.context.end_of_execution_ptr)
-		ql.reg.arch_pc = next_hook
+		ql.arch.regs.arch_pc = next_hook
 
 	return True
 

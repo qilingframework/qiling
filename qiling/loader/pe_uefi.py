@@ -192,8 +192,8 @@ class QlLoaderPE_UEFI(QlLoader):
         self.ql.os.heap = context.heap
 
         # set stack and frame pointers
-        self.ql.reg.rsp = context.top_of_stack
-        self.ql.reg.rbp = context.top_of_stack
+        self.ql.arch.regs.rsp = context.top_of_stack
+        self.ql.arch.regs.rbp = context.top_of_stack
 
         self.ql.os.fcall.call_native(entry_point, (
             (POINTER, ImageHandle),

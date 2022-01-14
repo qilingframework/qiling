@@ -24,10 +24,10 @@ class QlArchMIPS(QlArch):
         )
 
         for reg_maper in reg_maps:
-            self.ql.reg.expand_mapping(reg_maper)
+            self.ql.arch.regs.expand_mapping(reg_maper)
 
-        self.ql.reg.register_sp(reg_map["sp"])
-        self.ql.reg.register_pc(reg_map["pc"])
+        self.ql.arch.regs.register_sp(reg_map["sp"])
+        self.ql.arch.regs.register_pc(reg_map["pc"])
 
     @cached_property
     def uc(self) -> Uc:

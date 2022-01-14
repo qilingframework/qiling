@@ -116,8 +116,8 @@ def hook_AddVectoredExceptionHandler(ql: Qiling, address: int, params):
         double_pointer = ql.os.heap.alloc(0x4)
         ql.mem.write(double_pointer, ql.pack32(pointer))
 
-        ql.reg.eax = double_pointer
-        ql.reg.esi = user_data
+        ql.arch.regs.eax = double_pointer
+        ql.arch.regs.esi = user_data
 
     addr = params["Handler"]
 

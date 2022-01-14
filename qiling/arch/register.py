@@ -8,7 +8,7 @@ from typing import Any, Mapping, MutableMapping, Union
 from unicorn import Uc
 
 class QlRegisterManager:
-    """This class exposes the ql.reg features that allows you to directly access
+    """This class exposes the ql.arch.regs features that allows you to directly access
     or assign values to CPU registers of a particular architecture.
 
     Registers exposed are listed in the *_const.py files in the respective

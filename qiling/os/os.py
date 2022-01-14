@@ -194,7 +194,7 @@ class QlOs:
             passthru = True
 
         if not passthru:
-            self.ql.reg.arch_pc = retaddr
+            self.ql.arch.regs.arch_pc = retaddr
 
         return retval
 
@@ -229,11 +229,11 @@ class QlOs:
 
     def emu_error(self):
         self.ql.log.error(f'CPU Context:')
-        for reg in self.ql.reg.register_mapping:
+        for reg in self.ql.arch.regs.register_mapping:
             if isinstance(reg, str):
-                self.ql.log.error(f'{reg}\t: {self.ql.reg.read(reg):#x}')
+                self.ql.log.error(f'{reg}\t: {self.ql.arch.regs.read(reg):#x}')
 
-        pc = self.ql.reg.arch_pc
+        pc = self.ql.arch.regs.arch_pc
 
         try:
             data = self.ql.mem.read(pc, size=8)

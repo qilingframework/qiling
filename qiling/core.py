@@ -194,16 +194,14 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         ##############
         # Components #
         ##############
+        self._arch = arch_setup(self.archtype, self)
+        self.uc = self.arch.uc
+
         if not self.interpreter:
             self._mem = component_setup("os", "memory", self)
-            self._reg = component_setup("arch", "register", self)
-              
 
-        self._arch = arch_setup(self.archtype, self)
-        
         # Once we finish setting up arch layer, we can init QlCoreHooks.
         if not self.interpreter:
-            self.uc = self.arch.uc
             QlCoreHooks.__init__(self, self.uc)
         
             self.arch.utils.setup_output()
@@ -662,7 +660,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         if self.stop_options.stackpointer:
             def _check_sp(ql, address, size):
                 if not ql.loader.skip_exit_check:
-                    sp = ql._initial_sp - ql.reg.arch_sp
+                    sp = ql._initial_sp - ql.arch.regs.arch_sp
                     if sp < 0:
                         self.log.info('Process returned from entrypoint (stackpointer)!')
                         ql.emu_stop()
@@ -678,7 +676,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             self.hook_address(_exit_trap, self._exit_trap_addr)
 
     def write_exit_trap(self):
-        self._initial_sp = self.reg.arch_sp
+        self._initial_sp = self.arch.regs.arch_sp
         if self.stop_options.any:
             if not self.loader.skip_exit_check:
                 self.log.debug(f'Setting up exit trap at 0x{hex(self._exit_trap_addr)}')
@@ -737,7 +735,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         saved_states = {}
 
         if reg == True:
-            saved_states.update({"reg": self.reg.save()})
+            saved_states.update({"reg": self.arch.regs.save()})
 
         if mem == True:
             saved_states.update({"mem": self.mem.save()})
@@ -776,7 +774,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             self.arch.context_restore(saved_states["cpu_context"])
 
         if "reg" in saved_states:
-            self.reg.restore(saved_states["reg"])
+            self.arch.regs.restore(saved_states["reg"])
 
         if "fd" in saved_states:
             self.os.fd.restore(saved_states["fd"])
