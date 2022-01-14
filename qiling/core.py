@@ -236,14 +236,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         return self._mem
 
     @property
-    def reg(self) -> "QlRegisterManager":
-        """ Qiling register manager.
-
-            Example: ql.reg.eax = 1
-        """
-        return self._reg
-
-    @property
     def hw(self) -> "QlHwManager":
         """ Qiling hardware manager.
 
