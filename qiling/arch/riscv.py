@@ -9,30 +9,28 @@ from unicorn import Uc, UC_ARCH_RISCV, UC_MODE_RISCV32
 from capstone import Cs
 from keystone import Ks
 
-from qiling import Qiling
 from qiling.arch.arch import QlArch
-from qiling.arch.riscv_const import *
+from qiling.arch.register import QlRegisterManager
+from qiling.arch import riscv_const
 from qiling.exception import QlErrorNotImplemented
 
-
 class QlArchRISCV(QlArch):
-    def __init__(self, ql: Qiling):
-        super().__init__(ql)
-
-        reg_maps = (
-            reg_map,
-            reg_csr_map,
-            reg_float_map,
-        )
-
-        for reg_maper in reg_maps:
-            self.ql.arch.regs.expand_mapping(reg_maper)
-        self.ql.arch.regs.register_sp(reg_map["sp"])
-        self.ql.arch.regs.register_pc(reg_map["pc"])
-
     @cached_property
     def uc(self) -> Uc:
         return Uc(UC_ARCH_RISCV, UC_MODE_RISCV32)
+
+    @cached_property
+    def regs(self) -> QlRegisterManager:
+        regs_map = dict(
+            **riscv_const.reg_map,
+            **riscv_const.reg_csr_map,
+            **riscv_const.reg_float_map,
+        )
+
+        pc_reg = 'pc'
+        sp_reg = 'sp'
+
+        return QlRegisterManager(self.uc, regs_map, pc_reg, sp_reg)
 
     @cached_property
     def disassembler(self) -> Cs:

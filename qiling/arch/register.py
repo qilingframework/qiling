@@ -15,15 +15,15 @@ class QlRegisterManager:
     arch directories and are mapped to Unicorn Engine's definitions
     """
 
-    def __init__(self, uc: Uc):
+    def __init__(self, uc: Uc, regs_map: Mapping[str, int], pc_reg: str, sp_reg: str):
         # this funny way of initialization is used to avoid calling self setattr and
         # getattr upon init. if it did, it would go into an endless recursion
-        self.register_mapping: MutableMapping[str, int]
-        super().__setattr__('register_mapping', {})
+        self.register_mapping: Mapping[str, int]
+        super().__setattr__('register_mapping', regs_map)
 
         self.uc = uc
-        self.uc_pc = 0
-        self.uc_sp = 0
+        self.uc_pc = self.register_mapping[pc_reg]
+        self.uc_sp = self.register_mapping[sp_reg]
 
     def __getattr__(self, name: str) -> Any:
         name = name.lower()
@@ -43,13 +43,6 @@ class QlRegisterManager:
 
         else:
             super().__setattr__(name, value)
-
-
-    def expand_mapping(self, extra: Mapping[str, int]) -> None:
-        """Expand registers mapping with additional ones.
-        """
-
-        self.register_mapping.update(extra)
 
 
     # read register
@@ -109,17 +102,6 @@ class QlRegisterManager:
             reg = self.register_mapping[reg]
 
         return self.ql.arch.get_reg_bit(reg)
-
-
-    # Generic methods to get SP and IP across Arch's #
-    # These functions should only be used if the     #
-    # caller is dealing with multiple Arch's         #
-    def register_sp(self, sp_id: int):
-        self.uc_sp = sp_id
-
-
-    def register_pc(self, pc_id: int):
-        self.uc_pc = pc_id
 
 
     @property

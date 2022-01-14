@@ -4,7 +4,6 @@
 #
 
 from abc import abstractmethod
-from functools import cached_property
 
 from unicorn import Uc
 from unicorn.unicorn import UcContext
@@ -28,9 +27,13 @@ class QlArch:
 
         pass
 
-    @cached_property
+    @property
+    @abstractmethod
     def regs(self) -> QlRegisterManager:
-        return QlRegisterManager(self.uc)
+        """Architectural registers.
+        """
+
+        pass
 
 
     def stack_push(self, value: int) -> int:

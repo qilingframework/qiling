@@ -12,6 +12,8 @@ from keystone import Ks, KS_ARCH_X86, KS_MODE_16, KS_MODE_32, KS_MODE_64
 
 from qiling import Qiling
 from qiling.arch.arch import QlArch
+from qiling.arch.register import QlRegisterManager
+from qiling.arch import x86_const
 from qiling.arch.x86_const import *
 from qiling.exception import QlGDTError
 
@@ -24,37 +26,35 @@ class QlArchIntel(QlArch):
             return 32
 
         regmaps = (
-            (reg_map_8, 8),
-            (reg_map_16, 16),
-            (reg_map_32, 32),
-            (reg_map_64, 64),
-            (reg_map_misc, 16),
-            (reg_map_cr, 64 if self.ql.archbit == 64 else 32),
-            (reg_map_st, 32),
-            (reg_map_seg_base, 64 if self.ql.archbit == 64 else 32),
+            (x86_const.reg_map_8, 8),
+            (x86_const.reg_map_16, 16),
+            (x86_const.reg_map_32, 32),
+            (x86_const.reg_map_64, 64),
+            (x86_const.reg_map_misc, 16),
+            (x86_const.reg_map_cr, 64 if self.ql.archbit == 64 else 32),
+            (x86_const.reg_map_st, 32),
+            (x86_const.reg_map_seg_base, 64 if self.ql.archbit == 64 else 32),
         )
 
         return next((rsize for rmap, rsize in regmaps if register in rmap.values()), 0)
 
 class QlArchA8086(QlArchIntel):
-    def __init__(self, ql: Qiling):
-        super().__init__(ql)
-
-        reg_maps = (
-            reg_map_8,
-            reg_map_16,
-            reg_map_misc
-        )
-
-        for reg_maper in reg_maps:
-            self.ql.arch.regs.expand_mapping(reg_maper)
-
-        self.ql.arch.regs.register_pc(reg_map_16["sp"])
-        self.ql.arch.regs.register_sp(reg_map_16["ip"])
-
     @cached_property
     def uc(self) -> Uc:
         return Uc(UC_ARCH_X86, UC_MODE_16)
+
+    @cached_property
+    def regs(self) -> QlRegisterManager:
+        regs_map = dict(
+            **x86_const.reg_map_8,
+            **x86_const.reg_map_16,
+            **x86_const.reg_map_misc
+        )
+
+        pc_reg = 'ip'
+        sp_reg = 'sp'
+
+        return QlRegisterManager(self.uc, regs_map, pc_reg, sp_reg)
 
     @cached_property
     def disassembler(self) -> Cs:
@@ -65,27 +65,25 @@ class QlArchA8086(QlArchIntel):
         return Ks(KS_ARCH_X86, KS_MODE_16)
 
 class QlArchX86(QlArchIntel):
-    def __init__(self, ql: Qiling):
-        super().__init__(ql)
-
-        reg_maps = (
-            reg_map_8,
-            reg_map_16,
-            reg_map_32,
-            reg_map_cr,
-            reg_map_st,
-            reg_map_misc
-        )
-
-        for reg_maper in reg_maps:
-            self.ql.arch.regs.expand_mapping(reg_maper)
-
-        self.ql.arch.regs.register_sp(reg_map_32["esp"])
-        self.ql.arch.regs.register_pc(reg_map_32["eip"])
-
     @cached_property
     def uc(self) -> Uc:
         return Uc(UC_ARCH_X86, UC_MODE_32)
+
+    @cached_property
+    def regs(self) -> QlRegisterManager:
+        regs_map = dict(
+            **x86_const.reg_map_8,
+            **x86_const.reg_map_16,
+            **x86_const.reg_map_32,
+            **x86_const.reg_map_cr,
+            **x86_const.reg_map_st,
+            **x86_const.reg_map_misc
+        )
+
+        pc_reg = 'eip'
+        sp_reg = 'esp'
+
+        return QlRegisterManager(self.uc, regs_map, pc_reg, sp_reg)
 
     @cached_property
     def disassembler(self) -> Cs:
@@ -96,33 +94,30 @@ class QlArchX86(QlArchIntel):
         return Ks(KS_ARCH_X86, KS_MODE_32)
 
 class QlArchX8664(QlArchIntel):
-    def __init__(self, ql: Qiling):
-        super().__init__(ql)
-
-        reg_maps = (
-            reg_map_8,
-            reg_map_16,
-            reg_map_32,
-            reg_map_64,
-            reg_map_cr,
-            reg_map_st,
-            reg_map_misc,
-            reg_map_64_b,
-            reg_map_64_w,
-            reg_map_64_d,
-            reg_map_seg_base
-        )
-
-        for reg_maper in reg_maps:
-            self.ql.arch.regs.expand_mapping(reg_maper)
-
-        self.ql.arch.regs.register_sp(reg_map_64["rsp"])
-        self.ql.arch.regs.register_pc(reg_map_64["rip"])
-
     @cached_property
     def uc(self) -> Uc:
         return Uc(UC_ARCH_X86, UC_MODE_64)
 
+    @cached_property
+    def regs(self) -> QlRegisterManager:
+        regs_map = dict(
+            **x86_const.reg_map_8,
+            **x86_const.reg_map_16,
+            **x86_const.reg_map_32,
+            **x86_const.reg_map_64,
+            **x86_const.reg_map_cr,
+            **x86_const.reg_map_st,
+            **x86_const.reg_map_misc,
+            **x86_const.reg_map_64_b,
+            **x86_const.reg_map_64_w,
+            **x86_const.reg_map_64_d,
+            **x86_const.reg_map_seg_base
+        )
+
+        pc_reg = 'rip'
+        sp_reg = 'rsp'
+
+        return QlRegisterManager(self.uc, regs_map, pc_reg, sp_reg)
     @cached_property
     def disassembler(self) -> Cs:
         return Cs(CS_ARCH_X86, CS_MODE_64)

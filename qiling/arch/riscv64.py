@@ -9,16 +9,12 @@ from unicorn import Uc, UC_ARCH_RISCV, UC_MODE_RISCV64
 from capstone import Cs
 from keystone import Ks
 
-from qiling import Qiling
 from qiling.arch.riscv_const import *
 from qiling.exception import QlErrorNotImplemented
 
 from .riscv import QlArchRISCV
 
 class QlArchRISCV64(QlArchRISCV):
-    def __init__(self, ql: Qiling):
-        super().__init__(ql)
-
     @cached_property
     def uc(self) -> Uc:
         return Uc(UC_ARCH_RISCV, UC_MODE_RISCV64)

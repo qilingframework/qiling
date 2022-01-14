@@ -12,22 +12,13 @@ from keystone import Ks, KS_ARCH_ARM, KS_MODE_ARM, KS_MODE_THUMB
 from qiling import Qiling
 from qiling.const import QL_ARCH, QL_ENDIAN
 from qiling.arch.arch import QlArch
-from qiling.arch.arm_const import *
+from qiling.arch import arm_const
+from qiling.arch.register import QlRegisterManager
 from qiling.exception import QlErrorArch
 
 class QlArchARM(QlArch):
     def __init__(self, ql: Qiling):
         super().__init__(ql)
-
-        reg_maps = (
-            reg_map,
-        )
-
-        for reg_maper in reg_maps:
-            self.ql.arch.regs.expand_mapping(reg_maper)
-
-        self.ql.arch.regs.register_sp(reg_map["sp"])
-        self.ql.arch.regs.register_pc(reg_map["pc"])
 
         self.arm_get_tls_addr = 0xFFFF0FE0
 
@@ -47,6 +38,13 @@ class QlArchARM(QlArch):
 
         return Uc(UC_ARCH_ARM, mode)
 
+    @cached_property
+    def regs(self) -> QlRegisterManager:
+        regs_map = arm_const.reg_map
+        pc_reg = 'pc'
+        sp_reg = 'sp'
+
+        return QlRegisterManager(self.uc, regs_map, pc_reg, sp_reg)
 
     # get PC
     def get_pc(self) -> int:
@@ -122,7 +120,7 @@ class QlArchARM(QlArch):
         # if ql.archendian == QL_ENDIAN.EB:
         #    sc = swap_endianess(sc)
 
-        self.ql.mem.write(self.ql.arch.arm_get_tls_addr, sc)
+        self.ql.mem.write(self.arm_get_tls_addr, sc)
         self.ql.log.debug("Set init_kernel_get_tls")    
 
     def swap_endianess(self, s: bytes, blksize=4) -> bytes:

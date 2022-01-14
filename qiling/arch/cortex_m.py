@@ -13,8 +13,10 @@ from keystone import Ks, KS_ARCH_ARM, KS_MODE_ARM, KS_MODE_THUMB
 from qiling.const import QL_VERBOSE
 from qiling.exception import QlErrorNotImplemented
 
-from .arm import QlArchARM
-from .cortex_m_const import IRQ, EXC_RETURN, CONTROL, EXCP, reg_map
+from qiling.arch.arm import QlArchARM
+from qiling.arch import arm_const, cortex_m_const
+from qiling.arch.register import QlRegisterManager
+from qiling.arch.cortex_m_const import IRQ, EXC_RETURN, CONTROL, EXCP
 
 class QlInterruptContext(ContextDecorator):
     def __init__(self, ql):
@@ -59,19 +61,21 @@ class QlInterruptContext(ContextDecorator):
             self.ql.log.info('Exit from interrupt')
 
 class QlArchCORTEX_M(QlArchARM):
-    def __init__(self, ql):
-        super().__init__(ql)
-
-        reg_maps = (
-            reg_map,            
-        )
-
-        for reg_maper in reg_maps:
-            self.ql.arch.regs.expand_mapping(reg_maper)
-
     @cached_property
     def uc(self):
         return Uc(UC_ARCH_ARM, UC_MODE_ARM + UC_MODE_MCLASS + UC_MODE_THUMB)
+
+    @cached_property
+    def regs(self) -> QlRegisterManager:
+        regs_map = dict(
+            **arm_const.reg_map,
+            **cortex_m_const.reg_map
+        )
+
+        pc_reg = 'pc'
+        sp_reg = 'sp'
+
+        return QlRegisterManager(self.uc, regs_map, pc_reg, sp_reg)
 
     @cached_property
     def disassembler(self) -> Cs:
