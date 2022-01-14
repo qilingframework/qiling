@@ -90,11 +90,6 @@ class QlArch:
         self.ql.mem.write(self.ql.reg.arch_sp + offset, self.ql.pack(value))
 
 
-    # set PC
-    def set_pc(self, address: int) -> None:
-        self.ql.reg.arch_pc = address
-
-
     # get PC
     def get_pc(self) -> int:
         return self.ql.reg.arch_pc
