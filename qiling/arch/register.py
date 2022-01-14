@@ -5,7 +5,7 @@
 
 from typing import Any, Mapping, MutableMapping, Union
 
-from qiling import Qiling
+from unicorn import Uc
 
 class QlRegisterManager:
     """This class exposes the ql.reg features that allows you to directly access
@@ -15,13 +15,13 @@ class QlRegisterManager:
     arch directories and are mapped to Unicorn Engine's definitions
     """
 
-    def __init__(self, ql: Qiling):
+    def __init__(self, uc: Uc):
         # this funny way of initialization is used to avoid calling self setattr and
         # getattr upon init. if it did, it would go into an endless recursion
         self.register_mapping: MutableMapping[str, int]
         super().__setattr__('register_mapping', {})
 
-        self.ql = ql
+        self.uc = uc
         self.uc_pc = 0
         self.uc_sp = 0
 
@@ -29,7 +29,7 @@ class QlRegisterManager:
         name = name.lower()
 
         if name in self.register_mapping:
-            return self.ql.uc.reg_read(self.register_mapping[name])
+            return self.uc.reg_read(self.register_mapping[name])
 
         else:
             return super().__getattribute__(name)
@@ -39,7 +39,7 @@ class QlRegisterManager:
         name = name.lower()
 
         if name in self.register_mapping:
-            self.ql.uc.reg_write(self.register_mapping[name], value)
+            self.uc.reg_write(self.register_mapping[name], value)
 
         else:
             super().__setattr__(name, value)
@@ -60,7 +60,7 @@ class QlRegisterManager:
         if type(register) is str:
             register = self.register_mapping[register.lower()]
 
-        return self.ql.uc.reg_read(register)
+        return self.uc.reg_read(register)
 
 
     def write(self, register: Union[str, int], value: int) -> None:
@@ -70,7 +70,7 @@ class QlRegisterManager:
         if type(register) is str:
             register = self.register_mapping[register.lower()]
 
-        return self.ql.uc.reg_write(register, value)
+        return self.uc.reg_write(register, value)
 
 
     def msr(self, msr: int, value: int = None):
@@ -79,9 +79,9 @@ class QlRegisterManager:
         """
 
         if value is None:
-            return self.ql.uc.msr_read(msr)
+            return self.uc.msr_read(msr)
 
-        self.ql.uc.msr_write(msr, value)
+        self.uc.msr_write(msr, value)
 
 
     def save(self) -> MutableMapping[str, Any]:
@@ -99,6 +99,7 @@ class QlRegisterManager:
             self.write(reg, val)
 
 
+    # FIXME: this no longer works
     # TODO: This needs to be implemented for all archs
     def bit(self, reg: Union[str, int]) -> int:
         """Get register size in bits.
@@ -126,7 +127,7 @@ class QlRegisterManager:
         """Get the value of the architectural program counter register.
         """
 
-        return self.ql.uc.reg_read(self.uc_pc)
+        return self.uc.reg_read(self.uc_pc)
 
 
     @arch_pc.setter
@@ -134,7 +135,7 @@ class QlRegisterManager:
         """Set the value of the architectural program counter register.
         """
 
-        return self.ql.uc.reg_write(self.uc_pc, value)
+        return self.uc.reg_write(self.uc_pc, value)
 
     @property
     def arch_pc_name(self) -> str:
@@ -148,7 +149,7 @@ class QlRegisterManager:
         """Get the value of the architectural stack pointer register.
         """
 
-        return self.ql.uc.reg_read(self.uc_sp)
+        return self.uc.reg_read(self.uc_sp)
 
 
     @arch_sp.setter
@@ -156,4 +157,4 @@ class QlRegisterManager:
         """Set the value of the architectural stack pointer register.
         """
 
-        return self.ql.uc.reg_write(self.uc_sp, value)
+        return self.uc.reg_write(self.uc_sp, value)
