@@ -32,11 +32,9 @@ class QlArchARM64(QlArch):
     def uc(self) -> Uc:
         return Uc(UC_ARCH_ARM64, UC_MODE_ARM)
 
-    def create_disassembler(self) -> Cs:
-        if self._disasm is None:
-            self._disasm = Cs(CS_ARCH_ARM64, CS_MODE_ARM)
-
-        return self._disasm
+    @cached_property
+    def disassembler(self) -> Cs:
+        return Cs(CS_ARCH_ARM64, CS_MODE_ARM)
 
     def create_assembler(self) -> Ks:
         if self._asm is None:

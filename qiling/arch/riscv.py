@@ -34,7 +34,8 @@ class QlArchRISCV(QlArch):
     def uc(self) -> Uc:
         return Uc(UC_ARCH_RISCV, UC_MODE_RISCV32)
 
-    def create_disassembler(self) -> Cs:
+    @cached_property
+    def disassembler(self) -> Cs:
         try:
             from capstone import CS_ARCH_RISCV, CS_MODE_RISCV32, CS_MODE_RISCVC
         except ImportError:

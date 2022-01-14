@@ -19,7 +19,6 @@ class QlArch:
         self.ql = ql
         self.utils = QlArchUtils(ql)
 
-        self._disasm: Optional[Cs] = None
         self._asm: Optional[Ks] = None
 
     @property
@@ -105,11 +104,13 @@ class QlArch:
         self.ql.uc.context_restore(saved_context)
 
 
-    def create_disassembler(self) -> Cs:
+    @property
+    @abstractmethod
+    def disassembler(self) -> Cs:
         """Get disassembler instance bound to arch.
         """
 
-        raise NotImplementedError(self.__class__.__name__)
+        pass
 
 
     def create_assembler(self) -> Ks:

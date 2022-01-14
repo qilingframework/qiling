@@ -56,11 +56,9 @@ class QlArchA8086(QlArchIntel):
     def uc(self) -> Uc:
         return Uc(UC_ARCH_X86, UC_MODE_16)
 
-    def create_disassembler(self) -> Cs:
-        if not self._disasm:
-            self._disasm = Cs(CS_ARCH_X86, CS_MODE_16)
-
-        return self._disasm
+    @cached_property
+    def disassembler(self) -> Cs:
+        return Cs(CS_ARCH_X86, CS_MODE_16)
 
     def create_assembler(self) -> Ks:
         if not self._asm:
@@ -91,11 +89,9 @@ class QlArchX86(QlArchIntel):
     def uc(self) -> Uc:
         return Uc(UC_ARCH_X86, UC_MODE_32)
 
-    def create_disassembler(self) -> Cs:
-        if not self._disasm:
-            self._disasm = Cs(CS_ARCH_X86, CS_MODE_32)
-
-        return self._disasm
+    @cached_property
+    def disassembler(self) -> Cs:
+        return Cs(CS_ARCH_X86, CS_MODE_32)
 
     def create_assembler(self) -> Ks:
         if not self._asm:
@@ -131,11 +127,9 @@ class QlArchX8664(QlArchIntel):
     def uc(self) -> Uc:
         return Uc(UC_ARCH_X86, UC_MODE_64)
 
-    def create_disassembler(self) -> Cs:
-        if not self._disasm:
-            self._disasm = Cs(CS_ARCH_X86, CS_MODE_64)
-
-        return self._disasm
+    @cached_property
+    def disassembler(self) -> Cs:
+        return Cs(CS_ARCH_X86, CS_MODE_64)
 
     def create_assembler(self) -> Ks:
         if not self._asm:
