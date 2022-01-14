@@ -413,7 +413,7 @@ class QlLoaderELF(QlLoader):
                 # each syscall should be 1KiB away
                 self.ql.mem.map(_vsyscall_addr, _vsyscall_size, info="[vsyscall]")
                 self.ql.mem.write(_vsyscall_addr, _vsyscall_size * b'\xcc')
-                assembler = self.ql.create_assembler()
+                assembler = self.ql.arch.assembler
 
                 def __assemble(asm: str) -> bytes:
                     bs, _ = assembler.asm(asm)
