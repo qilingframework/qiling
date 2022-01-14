@@ -69,7 +69,7 @@ def main(input_file, enable_trace=False):
 
     if enable_trace:
         # The following lines are only for `-t` debug output
-        md = ql.create_disassembler()
+        md = ql.arch.disassembler
         count = [0]
 
         def spaced_hex(data):

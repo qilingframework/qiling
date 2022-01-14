@@ -127,7 +127,7 @@ def is_thumb(bits: int) -> bool:
 
 def disasm(ql: Qiling, address: int, detail: bool = False) -> Optional[int]:
 
-    md = ql.disassembler
+    md = ql.arch.disassembler
     md.detail = detail
     try:
         ret = next(md.disasm(_read_inst(ql, address), address))

@@ -33,7 +33,7 @@ class QlArchUtils:
 
     def disassembler(self, ql: Qiling, address: int, size: int):
         tmp = ql.mem.read(address, size)
-        qd = ql.arch.create_disassembler()
+        qd = ql.arch.disassembler
 
         offset, name = self.get_offset_and_name(address)
         log_data = f'{address:0{ql.archbit // 4}x} [{name:20s} + {offset:#08x}]  {tmp.hex(" "):30s}'

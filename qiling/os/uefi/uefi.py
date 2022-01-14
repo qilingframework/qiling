@@ -146,7 +146,7 @@ class QlOsUefi(QlOs):
 
 
 	def emit_disasm(self, address: int, data: bytearray, num_insns: int = 8):
-		md = self.ql.create_disassembler()
+		md = self.ql.arch.disassembler
 
 		self.ql.log.error('Disassembly:')
 

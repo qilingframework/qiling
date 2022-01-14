@@ -38,7 +38,7 @@ def trace(ql: Qiling, address: int, size: int, md: Cs):
 if __name__ == "__main__":
     ql = Qiling(["rootfs/x8664_linux/bin/x8664_hello"], "rootfs/x8664_linux")
 
-    md = ql.create_disassembler()
+    md = ql.arch.disassembler
     md.detail = True
 
     ql.hook_code(trace, user_data=md)
