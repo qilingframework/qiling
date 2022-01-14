@@ -36,11 +36,9 @@ class QlArchARM64(QlArch):
     def disassembler(self) -> Cs:
         return Cs(CS_ARCH_ARM64, CS_MODE_ARM)
 
-    def create_assembler(self) -> Ks:
-        if self._asm is None:
-            self._asm = Ks(KS_ARCH_ARM64, KS_MODE_LITTLE_ENDIAN)
-
-        return self._asm
+    @cached_property
+    def assembler(self) -> Ks:
+        return Ks(KS_ARCH_ARM64, KS_MODE_LITTLE_ENDIAN)
 
     def enable_vfp(self):
         self.ql.reg.cpacr_el1 = self.ql.reg.cpacr_el1 | 0x300000

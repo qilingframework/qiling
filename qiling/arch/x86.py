@@ -60,11 +60,9 @@ class QlArchA8086(QlArchIntel):
     def disassembler(self) -> Cs:
         return Cs(CS_ARCH_X86, CS_MODE_16)
 
-    def create_assembler(self) -> Ks:
-        if not self._asm:
-            self._asm = Ks(KS_ARCH_X86, KS_MODE_16)
-
-        return self._asm
+    @cached_property
+    def assembler(self) -> Ks:
+        return Ks(KS_ARCH_X86, KS_MODE_16)
 
 class QlArchX86(QlArchIntel):
     def __init__(self, ql: Qiling):
@@ -93,11 +91,9 @@ class QlArchX86(QlArchIntel):
     def disassembler(self) -> Cs:
         return Cs(CS_ARCH_X86, CS_MODE_32)
 
-    def create_assembler(self) -> Ks:
-        if not self._asm:
-            self._asm = Ks(KS_ARCH_X86, KS_MODE_32)
-
-        return self._asm
+    @cached_property
+    def assembler(self) -> Ks:
+        return Ks(KS_ARCH_X86, KS_MODE_32)
 
 class QlArchX8664(QlArchIntel):
     def __init__(self, ql: Qiling):
@@ -131,11 +127,9 @@ class QlArchX8664(QlArchIntel):
     def disassembler(self) -> Cs:
         return Cs(CS_ARCH_X86, CS_MODE_64)
 
-    def create_assembler(self) -> Ks:
-        if not self._asm:
-            self._asm = Ks(KS_ARCH_X86, KS_MODE_64)
-
-        return self._asm
+    @cached_property
+    def assembler(self) -> Ks:
+        return Ks(KS_ARCH_X86, KS_MODE_64)
 
 
 class GDTManager:

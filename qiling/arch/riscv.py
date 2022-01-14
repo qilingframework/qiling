@@ -43,7 +43,8 @@ class QlArchRISCV(QlArch):
         else:
             return Cs(CS_ARCH_RISCV, CS_MODE_RISCV32 + CS_MODE_RISCVC)
 
-    def create_assembler(self) -> Ks:
+    @cached_property
+    def assembler(self) -> Ks:
         raise QlErrorNotImplemented("Keystone does not yet support riscv")
 
     def enable_float(self):

@@ -77,9 +77,10 @@ class QlArchCORTEX_M(QlArchARM):
     def disassembler(self) -> Cs:
         return Cs(CS_ARCH_ARM, CS_MODE_ARM + CS_MODE_MCLASS + CS_MODE_THUMB)
 
-    def create_assembler(self) -> Ks:
+    @cached_property
+    def assembler(self) -> Ks:
         return Ks(KS_ARCH_ARM, KS_MODE_ARM + KS_MODE_THUMB)
-    
+
     def check_thumb(self):
         return UC_MODE_THUMB
 
