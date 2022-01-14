@@ -3,6 +3,8 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from functools import cached_property
+
 from unicorn import Uc, UC_ARCH_MIPS, UC_MODE_MIPS32, UC_MODE_BIG_ENDIAN, UC_MODE_LITTLE_ENDIAN
 from capstone import Cs, CS_ARCH_MIPS, CS_MODE_MIPS32, CS_MODE_BIG_ENDIAN, CS_MODE_LITTLE_ENDIAN
 from keystone import Ks, KS_ARCH_MIPS, KS_MODE_MIPS32, KS_MODE_BIG_ENDIAN, KS_MODE_LITTLE_ENDIAN
@@ -27,8 +29,8 @@ class QlArchMIPS(QlArch):
         self.ql.reg.register_sp(reg_map["sp"])
         self.ql.reg.register_pc(reg_map["pc"])
 
-    # get initialized unicorn engine
-    def get_init_uc(self) -> Uc:
+    @cached_property
+    def uc(self) -> Uc:
         endian = {
             QL_ENDIAN.EB: UC_MODE_BIG_ENDIAN,
             QL_ENDIAN.EL: UC_MODE_LITTLE_ENDIAN

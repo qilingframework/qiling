@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from abc import ABC
+from abc import ABC, abstractmethod
 from typing import Optional
 
 from unicorn import Uc
@@ -22,10 +22,13 @@ class QlArch(ABC):
         self._disasm: Optional[Cs] = None
         self._asm: Optional[Ks] = None
 
-    # ql.init_Uc - initialized unicorn engine
     @property
-    def init_uc(self) -> Uc:
-        return self.get_init_uc()
+    @abstractmethod
+    def uc(self) -> Uc:
+        """Get unicorn instance bound to arch.
+        """
+
+        pass
 
 
     def stack_push(self, value: int) -> int:

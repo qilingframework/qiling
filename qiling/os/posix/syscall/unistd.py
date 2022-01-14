@@ -432,7 +432,7 @@ def ql_syscall_execve(ql: Qiling, pathname: int, argv: int, envp: int):
     if ql.code:
         return
 
-    ql._uc = ql.arch.init_uc
+    ql._uc = ql.arch.uc
     QlCoreHooks.__init__(ql, ql._uc)
 
     ql.os.load()

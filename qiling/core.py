@@ -203,7 +203,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         
         # Once we finish setting up arch layer, we can init QlCoreHooks.
         if not self.interpreter:
-            self.uc = self.arch.init_uc
+            self.uc = self.arch.uc
             QlCoreHooks.__init__(self, self.uc)
         
             self.arch.utils.setup_output()

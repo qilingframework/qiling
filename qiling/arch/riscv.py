@@ -3,6 +3,8 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from functools import cached_property
+
 from unicorn import Uc, UC_ARCH_RISCV, UC_MODE_RISCV32
 from capstone import Cs
 from keystone import Ks
@@ -28,8 +30,8 @@ class QlArchRISCV(QlArch):
         self.ql.reg.register_sp(reg_map["sp"])
         self.ql.reg.register_pc(reg_map["pc"])
 
-    # get initialized unicorn engine
-    def get_init_uc(self) -> Uc:
+    @cached_property
+    def uc(self) -> Uc:
         return Uc(UC_ARCH_RISCV, UC_MODE_RISCV32)
 
     def create_disassembler(self) -> Cs:
