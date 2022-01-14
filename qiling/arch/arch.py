@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import Optional
 
 from unicorn import Uc
@@ -14,7 +14,7 @@ from keystone import Ks
 from qiling import Qiling
 from .utils import QlArchUtils
 
-class QlArch(ABC):
+class QlArch:
     def __init__(self, ql: Qiling):
         self.ql = ql
         self.utils = QlArchUtils(ql)
@@ -121,14 +121,14 @@ class QlArch(ABC):
 
 
     def create_disassembler(self) -> Cs:
-        """Get disassembler insatnce bound to arch.
+        """Get disassembler instance bound to arch.
         """
 
         raise NotImplementedError(self.__class__.__name__)
 
 
     def create_assembler(self) -> Ks:
-        """Get assembler insatnce bound to arch.
+        """Get assembler instance bound to arch.
         """
 
         raise NotImplementedError(self.__class__.__name__)
