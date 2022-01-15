@@ -21,7 +21,7 @@ class QlIntelBaseCC(QlCommonBaseCC):
 			16: UC_X86_REG_AX,
 			32: UC_X86_REG_EAX,
 			64: UC_X86_REG_RAX
-		}[ql.archbit]
+		}[ql.arch.bits]
 
 		super().__init__(ql, retreg)
 

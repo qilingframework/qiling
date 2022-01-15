@@ -35,10 +35,10 @@ class QlMemoryManager:
             16 : (1 << 20) - 1   # 20bit address line
         }
 
-        if ql.archbit not in bit_stuff:
+        if ql.arch.bits not in bit_stuff:
             raise QlErrorStructConversion("Unsupported Qiling archtecture for memory manager")
 
-        max_addr = bit_stuff[ql.archbit]
+        max_addr = bit_stuff[ql.arch.bits]
 
         self.max_addr = max_addr
         self.max_mem_addr = max_addr

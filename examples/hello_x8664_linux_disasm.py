@@ -20,7 +20,7 @@ def trace(ql: Qiling, address: int, size: int, md: Cs):
     """
 
     buf = ql.mem.read(address, size)
-    nibbles = ql.archbit // 4
+    nibbles = ql.arch.bits // 4
 
     esc_dgray = "\x1b[90m"
     esc_reset = "\x1b[39m"

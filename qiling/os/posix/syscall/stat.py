@@ -929,7 +929,7 @@ class QNXARMStat64(ctypes.Structure):
     _pack_ = 8
 
 def get_stat64_struct(ql: Qiling):
-    if ql.archbit == 64:
+    if ql.arch.bits == 64:
         ql.log.warning(f"Trying to stat64 on a 64bit system with {ql.ostype} and {ql.archtype}!")
     if ql.ostype == QL_OS.LINUX:
         if ql.archtype == QL_ARCH.X86:
@@ -949,7 +949,7 @@ def get_stat64_struct(ql: Qiling):
 
 def get_stat_struct(ql: Qiling):
     if ql.ostype == QL_OS.FREEBSD:
-        if ql.archtype == QL_ARCH.X8664 or ql.archbit == 64:
+        if ql.archtype == QL_ARCH.X8664 or ql.arch.bits == 64:
             return FreeBSDX8664Stat()
         else:
             return FreeBSDX86Stat()
@@ -961,7 +961,7 @@ def get_stat_struct(ql: Qiling):
         elif ql.archtype == QL_ARCH.X86:
             return LinuxX86Stat()
         elif ql.archtype == QL_ARCH.MIPS:
-            if ql.archbit == 64:
+            if ql.arch.bits == 64:
                 return LinuxMips64Stat()
             else:
                 return LinuxMips32Stat()
@@ -1233,7 +1233,7 @@ def ql_syscall_statx(ql: Qiling, dirfd: int, path: int, flags: int, mask: int, b
         tv_sec  = struct.unpack('i', struct.pack('f', tv_sec))[0]
         tv_nsec = struct.unpack('i', struct.pack('f', tv_nsec))[0]
 
-        if ql.archbit == 32:
+        if ql.arch.bits == 32:
             return StatxTimestamp32(tv_sec=tv_sec, tv_nsec=tv_nsec)
         else:
             return StatxTimestamp64(tv_sec=tv_sec, tv_nsec=tv_nsec)
@@ -1253,7 +1253,7 @@ def ql_syscall_statx(ql: Qiling, dirfd: int, path: int, flags: int, mask: int, b
         else:
             st = Stat(real_path, fd)
         
-        if ql.archbit == 32:
+        if ql.arch.bits == 32:
             Statx = Statx32
         else:
             Statx = Statx64

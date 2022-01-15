@@ -756,7 +756,7 @@ def _NtQuerySystemInformation(ql: Qiling, address: int, params):
         # if SystemInformationLength = 0, we return the total size in ReturnLength
         NumberOfModules = 1
 
-        if ql.archbit == 64:
+        if ql.arch.bits == 64:
             # only 1 module for ntoskrnl.exe
             # FIXME: let users customize this?
             size = 4 + ctypes.sizeof(RTL_PROCESS_MODULE_INFORMATION64) * NumberOfModules
@@ -770,7 +770,7 @@ def _NtQuerySystemInformation(ql: Qiling, address: int, params):
             return STATUS_INFO_LENGTH_MISMATCH
 
         else:  # return all the loaded modules
-            if ql.archbit == 64:
+            if ql.arch.bits == 64:
                 module = RTL_PROCESS_MODULE_INFORMATION64()
             else:
                 module = RTL_PROCESS_MODULE_INFORMATION32()
@@ -1072,7 +1072,7 @@ def hook_PsLookupProcessByProcessId(ql: Qiling, address: int, params):
     ProcessId = params["ProcessId"]
     Process = params["Process"]
 
-    if ql.archbit == 64:
+    if ql.arch.bits == 64:
         obj = EPROCESS64
     else:
         obj = EPROCESS32

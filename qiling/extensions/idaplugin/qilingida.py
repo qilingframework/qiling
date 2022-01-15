@@ -923,9 +923,9 @@ class QlEmuQiling:
             if elf_header['e_type'] == 'ET_EXEC':
                 self.baseaddr = self.ql.os.elf_mem_start
             elif elf_header['e_type'] == 'ET_DYN':
-                if self.ql.archbit == 32:
+                if self.ql.arch.bits == 32:
                     self.baseaddr = int(self.ql.os.profile.get("OS32", "load_address"), 16)
-                elif self.ql.archbit == 64:
+                elif self.ql.arch.bits == 64:
                     self.baseaddr = int(self.ql.os.profile.get("OS64", "load_address"), 16)
         else:
             self.baseaddr = 0x0

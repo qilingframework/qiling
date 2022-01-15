@@ -139,7 +139,7 @@ class QlOsUtils:
         # optional prefixes and suffixes
         fret = f' = {ret}' if ret is not None else ''
         fpass = f' (PASSTHRU)' if passthru else ''
-        faddr = f'{address:#0{self.ql.archbit // 4 + 2}x}: ' if self.ql.verbose >= QL_VERBOSE.DEBUG else ''
+        faddr = f'{address:#0{self.ql.arch.bits // 4 + 2}x}: ' if self.ql.verbose >= QL_VERBOSE.DEBUG else ''
 
         log = f'{faddr}{fname}({fargs}){fret}{fpass}'
 
