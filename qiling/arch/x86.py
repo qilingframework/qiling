@@ -28,6 +28,8 @@ class QlArchIntel(QlArch):
         return QlMsrManager(self.uc)
 
 class QlArchA8086(QlArchIntel):
+    bits = 16
+
     @cached_property
     def uc(self) -> Uc:
         return Uc(UC_ARCH_X86, UC_MODE_16)
@@ -54,6 +56,8 @@ class QlArchA8086(QlArchIntel):
         return Ks(KS_ARCH_X86, KS_MODE_16)
 
 class QlArchX86(QlArchIntel):
+    bits = 32
+
     @cached_property
     def uc(self) -> Uc:
         return Uc(UC_ARCH_X86, UC_MODE_32)
@@ -83,6 +87,8 @@ class QlArchX86(QlArchIntel):
         return Ks(KS_ARCH_X86, KS_MODE_32)
 
 class QlArchX8664(QlArchIntel):
+    bits = 64
+
     @cached_property
     def uc(self) -> Uc:
         return Uc(UC_ARCH_X86, UC_MODE_64)

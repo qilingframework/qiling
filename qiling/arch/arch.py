@@ -15,6 +15,8 @@ from .register import QlRegisterManager
 from .utils import QlArchUtils
 
 class QlArch:
+    bits: int
+
     def __init__(self, ql: Qiling):
         self.ql = ql
         self.utils = QlArchUtils(ql)

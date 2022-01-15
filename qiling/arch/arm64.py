@@ -14,6 +14,8 @@ from qiling.arch import arm64_const
 from qiling.arch.register import QlRegisterManager
 
 class QlArchARM64(QlArch):
+    bits = 64
+
     @cached_property
     def uc(self) -> Uc:
         return Uc(UC_ARCH_ARM64, UC_MODE_ARM)
