@@ -37,6 +37,9 @@ class QlArch:
 
         pass
 
+    @property
+    def pointersize(self) -> int:
+        return self.bits // 8
 
     def stack_push(self, value: int) -> int:
         """Push a value onto the architectural stack.
