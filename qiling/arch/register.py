@@ -10,12 +10,18 @@ from unicorn import Uc
 class QlRegisterManager:
     """This class exposes the ql.arch.regs features that allows you to directly access
     or assign values to CPU registers of a particular architecture.
-
-    Registers exposed are listed in the *_const.py files in the respective
-    arch directories and are mapped to Unicorn Engine's definitions
     """
 
     def __init__(self, uc: Uc, regs_map: Mapping[str, int], pc_reg: str, sp_reg: str):
+        """Initialize the registers manager.
+
+        Args:
+            uc: initialized unicorn instance
+            regs_map: registers names mapped to their corresponding unicorn definitions
+            pc_reg: name of the architectural program counter register
+            sp_reg: name of the architectural stack pointer register
+        """
+
         # this funny way of initialization is used to avoid calling self setattr and
         # getattr upon init. if it did, it would go into an endless recursion
         self.register_mapping: Mapping[str, int]
