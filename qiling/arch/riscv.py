@@ -12,6 +12,7 @@ from keystone import Ks
 from qiling.arch.arch import QlArch
 from qiling.arch.register import QlRegisterManager
 from qiling.arch import riscv_const
+from qiling.arch.riscv_const import *
 from qiling.exception import QlErrorNotImplemented
 
 class QlArchRISCV(QlArch):
