@@ -160,14 +160,14 @@ class QlOsUefi(QlOs):
 		self.ql.log.error('Stack:')
 
 		for i in range(-nitems, nitems + 1):
-			offset = i * self.ql.pointersize
+			offset = i * self.ql.arch.pointersize
 
 			try:
 				item = self.ql.arch.stack_read(offset)
 			except UcError:
 				data = '(unavailable)'
 			else:
-				data = f'{item:0{self.ql.pointersize * 2}x}'
+				data = f'{item:0{self.ql.arch.pointersize * 2}x}'
 
 			self.ql.log.error(f'{self.ql.arch.regs.arch_sp + offset:08x} : {data}{" <=" if i == 0 else ""}')
 

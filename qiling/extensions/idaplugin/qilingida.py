@@ -1460,7 +1460,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         ins_list = list(IDA.micro_code_from_mbb(next_mbb))
         first_ins = ins_list[0]
         imm = first_ins.l.nnn.value
-        reg_name = ida_hexrays.get_mreg_name(first_ins.d.r, ql.pointersize)
+        reg_name = ida_hexrays.get_mreg_name(first_ins.d.r, ql.arch.pointersize)
         logging.info(f"Froce set {reg_name} to {hex(imm)}")
         ql.arch.regs.__setattr__(reg_name, imm)
         return True

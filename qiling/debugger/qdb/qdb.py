@@ -323,7 +323,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         """
 
         try:
-            context_asm(self.ql, _parse_int(address), self.ql.pointersize)
+            context_asm(self.ql, _parse_int(address), self.ql.arch.pointersize)
         except:
             print(f"{color.RED}[!] something went wrong ...{color.END}")
 

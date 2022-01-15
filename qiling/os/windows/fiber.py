@@ -35,12 +35,12 @@ class FiberManager:
                 ret_addr = self.ql.arch.regs.read(UC_X86_REG_RIP + 6 ) #FIXME, use capstone to get addr of next instr?
 
                 # Write Fls data to memory to be accessed by cb
-                addr = self.ql.os.heap.alloc(self.ql.pointersize)
-                data = fiber.data.to_bytes(self.ql.pointersize, byteorder='little')
+                addr = self.ql.os.heap.alloc(self.ql.arch.pointersize)
+                data = fiber.data.to_bytes(self.ql.arch.pointersize, byteorder='little')
                 self.ql.mem.write(addr, data)
 
                 # set up params and return address then jump to callback
-                if self.ql.pointersize == 8:
+                if self.ql.arch.pointersize == 8:
                     self.ql.arch.regs.write(UC_X86_REG_RCX, addr)
                 else:
                     self.ql.stack_push(ret_addr)

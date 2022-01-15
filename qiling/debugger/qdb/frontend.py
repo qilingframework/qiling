@@ -110,8 +110,8 @@ def examine_mem(ql: Qiling, line: str) -> Union[bool, (str, int, int)]:
             offset = line * sz * 4
             print(f"0x{addr+offset:x}:\t", end="")
 
-            idx = line * ql.pointersize
-            for each in mem_read[idx:idx+ql.pointersize]:
+            idx = line * ql.arch.pointersize
+            for each in mem_read[idx:idx+ql.arch.pointersize]:
                 data = unpack(each, sz)
                 prefix = "0x" if ft in ("x", "a") else ""
                 pad = '0' + str(sz*2) if ft in ('x', 'a', 't') else ''
@@ -239,17 +239,17 @@ def context_reg(ql: Qiling, saved_states: Optional[Mapping[str, int]] = None, /,
         with context_printer(ql, "[ STACK ]", ruler="─"):
 
             for idx in range(10):
-                addr = ql.arch.regs.arch_sp + idx * ql.pointersize
-                val = ql.mem.read(addr, ql.pointersize)
-                print(f"$sp+0x{idx*ql.pointersize:02x}│ [0x{addr:08x}] —▸ 0x{ql.unpack(val):08x}", end="")
+                addr = ql.arch.regs.arch_sp + idx * ql.arch.pointersize
+                val = ql.mem.read(addr, ql.arch.pointersize)
+                print(f"$sp+0x{idx*ql.arch.pointersize:02x}│ [0x{addr:08x}] —▸ 0x{ql.unpack(val):08x}", end="")
 
                 # try to dereference wether it's a pointer
-                if (buf := _try_read(ql, addr, ql.pointersize))[0] is not None:
+                if (buf := _try_read(ql, addr, ql.arch.pointersize))[0] is not None:
 
                     if (addr := ql.unpack(buf[0])):
 
                         # try to dereference again
-                        if (buf := _try_read(ql, addr, ql.pointersize))[0] is not None:
+                        if (buf := _try_read(ql, addr, ql.arch.pointersize))[0] is not None:
                             try:
                                 s = ql.mem.string(addr)
                             except:

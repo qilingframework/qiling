@@ -13,7 +13,7 @@ def ql_syscall_time(ql: Qiling):
     return int(time.time())
 
 def __sleep_common(ql: Qiling, req: int, rem: int) -> int:
-    n = ql.pointersize
+    n = ql.arch.pointersize
 
     tv_sec = ql.unpack(ql.mem.read(req, n))
     tv_sec += ql.unpack(ql.mem.read(req + n, n)) / 1000000000

@@ -1160,7 +1160,7 @@ def hook_PsCreateSystemThread(ql: Qiling, address: int, params):
     # set lpThreadId
     if lpThreadId != 0:
         ql.mem.write(lpThreadId, ql.pack(UniqueProcess))
-        ql.mem.write(lpThreadId + ql.pointersize, ql.pack(thread_id))
+        ql.mem.write(lpThreadId + ql.arch.pointersize, ql.pack(thread_id))
 
     # set lpThreadId
     if ThreadHandle != 0:

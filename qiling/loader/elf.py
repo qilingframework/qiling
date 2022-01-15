@@ -309,7 +309,7 @@ class QlLoaderELF(QlLoader):
             """
 
             data = (s if isinstance(s, bytes) else s.encode("utf-8")) + b'\x00'
-            top = QlLoaderELF.align(top - len(data), self.ql.pointersize)
+            top = QlLoaderELF.align(top - len(data), self.ql.arch.pointersize)
             self.ql.mem.write(top, data)
 
             return top
@@ -506,7 +506,7 @@ class QlLoaderELF(QlLoader):
                                 # we need to lookup from address to symbol, so we can find the right callback
                                 # for sys_xxx handler for syscall, the address must be aligned to pointer size
                                 if symbol_name.startswith('sys_'):
-                                    self.ql.os.hook_addr = QlLoaderELF.align_up(self.ql.os.hook_addr, self.ql.pointersize)
+                                    self.ql.os.hook_addr = QlLoaderELF.align_up(self.ql.os.hook_addr, self.ql.arch.pointersize)
 
                                 self.import_symbols[self.ql.os.hook_addr] = symbol_name
 
@@ -518,7 +518,7 @@ class QlLoaderELF(QlLoader):
                                 # we also need to do reverse lookup from symbol to address
                                 rev_reloc_symbols[symbol_name] = self.ql.os.hook_addr
                                 sym_offset = self.ql.os.hook_addr - mem_start
-                                self.ql.os.hook_addr += self.ql.pointersize
+                                self.ql.os.hook_addr += self.ql.arch.pointersize
                             else:
                                 # local symbol
                                 _section = elffile.get_section(_symbol['st_shndx'])
@@ -629,7 +629,7 @@ class QlLoaderELF(QlLoader):
         self.ql.os.entry_point = self.entry_point = entry_point
         self.elf_entry = self.ql.os.elf_entry = self.ql.os.entry_point
 
-        self.stack_address = QlLoaderELF.align(stack_addr, self.ql.pointersize)
+        self.stack_address = QlLoaderELF.align(stack_addr, self.ql.arch.pointersize)
         self.load_address = loadbase
 
         # remember address of syscall table, so external tools can access to it
@@ -648,20 +648,20 @@ class QlLoaderELF(QlLoader):
 
                 if hasattr(SYSCALL_NR, tmp_sc):
                     syscall_id = getattr(SYSCALL_NR, tmp_sc).value
-                    dest = SYSCALL_MEM + syscall_id * self.ql.pointersize
+                    dest = SYSCALL_MEM + syscall_id * self.ql.arch.pointersize
 
                     self.ql.log.debug(f'Writing syscall {tmp_sc} to {dest:#x}')
                     self.ql.mem.write(dest, self.ql.pack(addr))
 
         # write syscall addresses into syscall table
-        self.ql.mem.write(SYSCALL_MEM + 0 * self.ql.pointersize, self.ql.pack(self.ql.os.hook_addr + 0 * self.ql.pointersize))
-        self.ql.mem.write(SYSCALL_MEM + 1 * self.ql.pointersize, self.ql.pack(self.ql.os.hook_addr + 1 * self.ql.pointersize))
-        self.ql.mem.write(SYSCALL_MEM + 2 * self.ql.pointersize, self.ql.pack(self.ql.os.hook_addr + 2 * self.ql.pointersize))
+        self.ql.mem.write(SYSCALL_MEM + 0 * self.ql.arch.pointersize, self.ql.pack(self.ql.os.hook_addr + 0 * self.ql.arch.pointersize))
+        self.ql.mem.write(SYSCALL_MEM + 1 * self.ql.arch.pointersize, self.ql.pack(self.ql.os.hook_addr + 1 * self.ql.arch.pointersize))
+        self.ql.mem.write(SYSCALL_MEM + 2 * self.ql.arch.pointersize, self.ql.pack(self.ql.os.hook_addr + 2 * self.ql.arch.pointersize))
 
         # setup hooks for read/write/open syscalls
-        self.import_symbols[self.ql.os.hook_addr + 0 * self.ql.pointersize] = hook_sys_read
-        self.import_symbols[self.ql.os.hook_addr + 1 * self.ql.pointersize] = hook_sys_write
-        self.import_symbols[self.ql.os.hook_addr + 2 * self.ql.pointersize] = hook_sys_open
+        self.import_symbols[self.ql.os.hook_addr + 0 * self.ql.arch.pointersize] = hook_sys_read
+        self.import_symbols[self.ql.os.hook_addr + 1 * self.ql.arch.pointersize] = hook_sys_write
+        self.import_symbols[self.ql.os.hook_addr + 2 * self.ql.arch.pointersize] = hook_sys_open
 
     def get_elfdata_mapping(self, elffile: ELFFile) -> bytes:
         elfdata_mapping = bytearray()

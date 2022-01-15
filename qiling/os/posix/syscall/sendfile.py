@@ -20,7 +20,7 @@ def ql_syscall_sendfile(ql: Qiling, out_fd: int, in_fd: int, offset: int, count:
         in_fd_pos = ql.os.fd[in_fd].tell()
         if offset:
             # Handle sendfile64 and sendfile offset_ptr
-            offset = ql.unpack(ql.mem.read(offset, ql.pointersize))
+            offset = ql.unpack(ql.mem.read(offset, ql.arch.pointersize))
         else:
             offset = in_fd_pos
 

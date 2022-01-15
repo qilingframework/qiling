@@ -399,7 +399,7 @@ def hook_LocateHandleBuffer(ql: Qiling, address: int, params):
 
 	for handle in handles:
 		write_int64(ql, address, handle)
-		address += ql.pointersize
+		address += ql.arch.pointersize
 
 	return EFI_SUCCESS
 
@@ -419,7 +419,7 @@ def hook_InstallMultipleProtocolInterfaces(ql: Qiling, address: int, params):
 	handle = read_int64(ql, params["Handle"])
 
 	if handle == 0:
-		handle = ql.loader.dxe_context.heap.alloc(ql.pointersize)
+		handle = ql.loader.dxe_context.heap.alloc(ql.arch.pointersize)
 
 	dic = ql.loader.dxe_context.protocols.get(handle, {})
 

@@ -542,7 +542,7 @@ def ql_syscall_recvfrom(ql: Qiling, recvfrom_sockfd, recvfrom_buf, recvfrom_len,
                 ql.log.debug("recvfrom() addr is %s:%d" % (tmp_addr[0], tmp_addr[1]))
                 data += struct.pack(">H", tmp_addr[1])
                 data += ipaddress.ip_address(tmp_addr[0]).packed
-                addrlen = ql.unpack(ql.mem.read(recvfrom_addrlen, ql.pointersize))
+                addrlen = ql.unpack(ql.mem.read(recvfrom_addrlen, ql.arch.pointersize))
                 data = data[:addrlen]
             ql.mem.write(recvfrom_addr, data)
 
