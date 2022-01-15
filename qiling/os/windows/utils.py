@@ -47,7 +47,7 @@ def io_Write(ql: Qiling, in_buffer: bytes):
             # raise error?
             return (False, None)
 
-    if ql.archbit == 32:
+    if ql.arch.bits == 32:
         buf = ql.mem.read(ql.loader.driver_object.DeviceObject, ctypes.sizeof(DEVICE_OBJECT32))
         device_object = DEVICE_OBJECT32.from_buffer(buf)
     else:

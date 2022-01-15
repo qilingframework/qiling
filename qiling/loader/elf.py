@@ -76,7 +76,7 @@ class QlLoaderELF(QlLoader):
         section = {
             32 : 'OS32',
             64 : 'OS64'
-        }[self.ql.archbit]
+        }[self.ql.arch.bits]
 
         self.profile = self.ql.os.profile[section]
 
@@ -343,9 +343,9 @@ class QlLoaderELF(QlLoader):
         elf_phnum = elffile['e_phnum']
         elf_entry = load_address + elffile['e_entry']
 
-        if self.ql.archbit == 64:
+        if self.ql.arch.bits == 64:
             elf_hwcap = 0x078bfbfd
-        elif self.ql.archbit == 32:
+        elif self.ql.arch.bits == 32:
             elf_hwcap = 0x1fb8d7
 
             if self.ql.archendian == QL_ENDIAN.EB:

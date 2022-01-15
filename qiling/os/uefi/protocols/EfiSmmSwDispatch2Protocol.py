@@ -61,7 +61,7 @@ def hook_Register(ql: Qiling, address: int, params):
 
 	# a value of -1 indicates that the swsmi index for this handler is flexible and
 	# should be assigned by the protocol
-	if idx == ((1 << ql.archbit) - 1):
+	if idx == ((1 << ql.arch.bits) - 1):
 		idx = next((i for i in range(1, MAXIMUM_SWI_VALUE) if i not in handlers), None)
 
 		if idx is None:

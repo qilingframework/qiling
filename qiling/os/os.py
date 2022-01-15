@@ -61,7 +61,7 @@ class QlOs:
             16: 0xfffff,            # 20bit address lane
             32: 0x8fffffff,
             64: 0xffffffffffffffff
-        }.get(self.ql.archbit, None)
+        }.get(self.ql.arch.bits, None)
 
         if self.ql.code:
             self.code_ram_size = int(self.profile.get("CODE", "ram_size"), 16)

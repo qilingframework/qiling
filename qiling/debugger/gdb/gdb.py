@@ -88,7 +88,7 @@ class QlGdb(QlDebugger, object):
 
     def addr_to_str(self, addr: int, short: bool = False, endian: Literal['little', 'big'] = 'big') -> str:
         # a hacky way to divide archbits by 2 if short, and leave it unchanged if not
-        nbits = self.ql.archbit // (int(short) + 1)
+        nbits = self.ql.arch.bits // (int(short) + 1)
 
         if nbits == 64:
             s = f'{int.from_bytes(self.ql.pack64(addr), byteorder=endian):016x}'
@@ -182,7 +182,7 @@ class QlGdb(QlDebugger, object):
                 idhex, spid, pcid  = gdbqmark_converter(self.ql.archtype)  
                 sp          = self.addr_to_str(self.ql.arch.regs.arch_sp)
                 pc          = self.addr_to_str(self.ql.arch.regs.arch_pc)
-                nullfill    = "0" * int(self.ql.archbit / 4)
+                nullfill    = "0" * int(self.ql.arch.bits / 4)
 
                 if self.ql.archtype== QL_ARCH.MIPS:
                     if self.ql.archendian == QL_ENDIAN.EB:

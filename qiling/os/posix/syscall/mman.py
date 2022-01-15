@@ -65,7 +65,7 @@ def syscall_mmap_impl(ql: Qiling, addr: int, mlen: int, prot: int, flags: int, f
         2 : 'mmap2'
     }[ver]
 
-    if ql.archbit == 64:
+    if ql.arch.bits == 64:
         fd = ql.unpack64(ql.pack64(fd))
 
     elif ql.archtype == QL_ARCH.MIPS:
