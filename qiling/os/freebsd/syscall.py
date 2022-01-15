@@ -46,8 +46,8 @@ def ql_syscall_sysarch(ql, op, parms, *args, **kw):
 
 
     #ql.mem.map(ql.GS_SEGMENT_ADDR, ql.GS_SEGMENT_SIZE)
-    #ql.arch.regs.msr(GSMSR, ql.GS_SEGMENT_ADDR)
-    ql.arch.regs.msr(FSMSR, parms)
+    #ql.arch.msr.write(GSMSR, ql.GS_SEGMENT_ADDR)
+    ql.arch.msr.write(FSMSR, parms)
 
     #op_buf = ql.pack32(op)
     #ql.mem.write(parms, op_buf)

@@ -253,16 +253,16 @@ def ql_x8664_set_gs(ql: Qiling):
     if not ql.mem.is_mapped(GS_SEGMENT_ADDR, GS_SEGMENT_SIZE):
         ql.mem.map(GS_SEGMENT_ADDR, GS_SEGMENT_SIZE, info="[GS]")
 
-    ql.arch.regs.msr(GSMSR, GS_SEGMENT_ADDR)
+    ql.arch.msr.write(GSMSR, GS_SEGMENT_ADDR)
 
 
 def ql_x8664_get_gs(ql: Qiling):
-    return ql.arch.regs.msr(GSMSR)
+    return ql.arch.msr.read(GSMSR)
 
 
 def ql_x8664_set_fs(ql: Qiling, addr: int):
-    ql.arch.regs.msr(FSMSR, addr)
+    ql.arch.msr.write(FSMSR, addr)
 
 
 def ql_x8664_get_fs(ql: Qiling):
-    return ql.arch.regs.msr(FSMSR)
+    return ql.arch.msr.read(FSMSR)
