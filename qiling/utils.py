@@ -165,21 +165,6 @@ def catch_KeyboardInterrupt(ql):
 
     return decorator
 
-def ql_get_arch_bits(arch: QL_ARCH) -> int:
-    if arch in QL_ARCH_1BIT:
-        return 1
-
-    if arch in QL_ARCH_16BIT:
-        return 16
-
-    if arch in QL_ARCH_32BIT:
-        return 32
-
-    if arch in QL_ARCH_64BIT:
-        return 64
-
-    raise QlErrorArch("Invalid Arch Bit")
-
 def enum_values(e: Type[Enum]) -> Container:
     return e.__members__.values()
 

@@ -51,7 +51,6 @@ from qiling.arch.x86_const import reg_map_st as x86_reg_map_st
 from qiling.arch.arm_const import reg_map as arm_reg_map
 from qiling.arch.arm64_const import reg_map as arm64_reg_map
 from qiling.arch.mips_const import reg_map as mips_reg_map
-from qiling.utils import ql_get_arch_bits
 from qiling import __version__ as QLVERSION
 from qiling.os.filestruct import ql_file
 from keystone import *
@@ -556,7 +555,7 @@ class QlEmuStackView(simplecustviewer_t):
         if arch == "":
             return
 
-        reg_bit_size = ql_get_arch_bits(arch)
+        reg_bit_size = ql.arch.bits
         reg_byte_size = reg_bit_size // 8
         value_format = '% .16X' if reg_bit_size == 64 else '% .8X'
 
@@ -898,7 +897,7 @@ class QlEmuQiling:
     def __init__(self):
         self.path = None
         self.rootfs = None
-        self.ql = None
+        self.ql: Qiling
         self.status = None
         self.exit_addr = None
         self.baseaddr = None
@@ -935,7 +934,7 @@ class QlEmuQiling:
 
     def set_reg(self):
         reglist = QlEmuMisc.get_reg_map(self.ql)
-        regs = [ [ row, int(self.ql.arch.regs.read(row)), ql_get_arch_bits(self.ql.archtype) ] for row in reglist ]
+        regs = [ [ row, int(self.ql.arch.regs.read(row)), self.ql.arch.bits ] for row in reglist ]
         regs_len = len(regs)
         RegDig = QlEmuRegDialog(regs)
         if RegDig.show():
