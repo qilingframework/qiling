@@ -61,6 +61,8 @@ class QlInterruptContext(ContextDecorator):
             self.ql.log.info('Exit from interrupt')
 
 class QlArchCORTEX_M(QlArchARM):
+    bits = 32
+
     @cached_property
     def uc(self):
         return Uc(UC_ARCH_ARM, UC_MODE_ARM + UC_MODE_MCLASS + UC_MODE_THUMB)

@@ -70,7 +70,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._ostype = ostype
         self._archtype = archtype
         self._archendian = QL_ENDIAN.EL
-        self._archbit = None
         self._pointersize = None
         self._profile = profile
         self._console = console
@@ -155,18 +154,18 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         if not ql_is_valid_arch(self._archtype):
             raise QlErrorArch("Invalid ARCH: %s" % (self._archtype))
 
+        self._arch = arch_setup(self.archtype, self)
 
         ########################
         # Archbit & Endianness #
         ########################
-        self._archbit = ql_get_arch_bits(self._archtype)
-        self._pointersize = (self.archbit // 8)
+        self._pointersize = (self.arch.bits // 8)
  
         if bigendian == True and self._archtype in QL_ARCH_ENDIAN:
             self._archendian = QL_ENDIAN.EB
 
         # Once we finish setting up archendian and arcbit, we can init QlCoreStructs.
-        QlCoreStructs.__init__(self, self._archendian, self._archbit)
+        QlCoreStructs.__init__(self, self._archendian, self.arch.bits)
             
 
         #######################################
@@ -195,7 +194,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         ##############
         # Components #
         ##############
-        self._arch = arch_setup(self.archtype, self)
         self.uc = self.arch.uc
 
         if not self.interpreter:
@@ -401,14 +399,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             Example: Qiling(code=b"\x90", ostype="macos", archtype="x8664", bigendian=False)
         """
         return self._archendian
-
-    @property
-    def archbit(self) -> int:
-        """ The bits of the current architecutre.
-
-            Type: int
-        """
-        return self._archbit
 
     @property
     def pointersize(self) -> int:

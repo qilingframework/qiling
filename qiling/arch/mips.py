@@ -15,6 +15,8 @@ from qiling.arch import mips_const
 from qiling.arch.register import QlRegisterManager
 
 class QlArchMIPS(QlArch):
+    bits = 32
+
     @cached_property
     def uc(self) -> Uc:
         endian = {

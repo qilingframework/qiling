@@ -9,6 +9,8 @@ from .vm.evm import QlArchEVMEmulator
 
 
 class QlArchEVM(QlArch):
+    bits = 1
+
     def __init__(self, ql) -> None:
         super(QlArchEVM, self).__init__(ql)
         self.evm = QlArchEVMEmulator(self.ql)

@@ -15,6 +15,8 @@ from qiling.exception import QlErrorNotImplemented
 from .riscv import QlArchRISCV
 
 class QlArchRISCV64(QlArchRISCV):
+    bits = 64
+
     @cached_property
     def uc(self) -> Uc:
         return Uc(UC_ARCH_RISCV, UC_MODE_RISCV64)

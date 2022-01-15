@@ -17,6 +17,8 @@ from qiling.arch.register import QlRegisterManager
 from qiling.exception import QlErrorArch
 
 class QlArchARM(QlArch):
+    bits = 32
+
     def __init__(self, ql: Qiling):
         super().__init__(ql)
 
