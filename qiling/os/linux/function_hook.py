@@ -81,11 +81,11 @@ class HookFunc:
 
         # X86
         elif  self.ql.archtype== QL_ARCH.X86:
-            return self.ql.unpack(self.ql.mem.read(self.ql.arch.regs.esp, self.ql.pointersize))
+            return self.ql.unpack(self.ql.mem.read(self.ql.arch.regs.esp, self.ql.arch.pointersize))
 
         # X8664
         elif  self.ql.archtype== QL_ARCH.X8664:
-            return self.ql.unpack(self.ql.mem.read(self.ql.arch.regs.rsp, self.ql.pointersize))
+            return self.ql.unpack(self.ql.mem.read(self.ql.arch.regs.rsp, self.ql.arch.pointersize))
         else:
             raise
 
@@ -104,11 +104,11 @@ class HookFunc:
 
         # X86
         elif  self.ql.archtype== QL_ARCH.X86:
-            self.ql.arch.regs.esp = self.ql.arch.regs.esp + self.ql.pointersize
+            self.ql.arch.regs.esp = self.ql.arch.regs.esp + self.ql.arch.pointersize
 
         # X8664
         elif  self.ql.archtype== QL_ARCH.X8664:
-            self.ql.arch.regs.rsp = self.ql.arch.regs.rsp + self.ql.pointersize
+            self.ql.arch.regs.rsp = self.ql.arch.regs.rsp + self.ql.arch.pointersize
         else:
             raise
 
@@ -139,7 +139,7 @@ class HookFunc:
         # if self.ql.archtype == QL_ARCH.ARM or self.ql.archtype == QL_ARCH.ARM64:
         #     self.ql.arch.regs.arch_pc = self.ql.arch.regs.arch_pc + 4
 
-        next_pc = self.ql.unpack(self.ql.mem.read(self.hook_data_ptr, self.ql.pointersize))
+        next_pc = self.ql.unpack(self.ql.mem.read(self.hook_data_ptr, self.ql.arch.pointersize))
         self.ret_pc = self.get_ret_pc()
         onenter_cb = None
         onenter_userdata = None
@@ -241,7 +241,7 @@ class HookFuncRel(HookFunc):
         
         self.ori_offest = self.rel.r_offset
         self.rel.r_offset = self.hook_data_ptr - self.load_base
-        self.ori_data = self.ql.mem.read(self.ori_offest + self.load_base, self.ql.pointersize)        
+        self.ori_data = self.ql.mem.read(self.ori_offest + self.load_base, self.ql.arch.pointersize)        
         
         self.ql.mem.write(self.rel.ptr, self.rel.pack())
         self.ql.mem.write(self.ori_offest + self.load_base, self.ql.pack(self.hook_fuc_ptr))
@@ -255,21 +255,21 @@ class HookFuncMips(HookFunc):
         self.gotidx = gotidx
     
     def _hook_fuc_enter(self, ql):
-        self.ql.arch.regs.t9 = self.ql.unpack(self.ql.mem.read(self.hook_data_ptr, self.ql.pointersize))
+        self.ql.arch.regs.t9 = self.ql.unpack(self.ql.mem.read(self.hook_data_ptr, self.ql.arch.pointersize))
         self.call_enter()
     
     def _hook_fuc_exit(self, ql):
         self.call_exit()
 
-        tmp = self.ql.unpack(self.ql.mem.read(self.got + self.load_base + self.gotidx * self.ql.pointersize, self.ql.pointersize))
+        tmp = self.ql.unpack(self.ql.mem.read(self.got + self.load_base + self.gotidx * self.ql.arch.pointersize, self.ql.arch.pointersize))
         if tmp != self.hook_fuc_ptr:
-            self.ql.mem.write(self.got + self.load_base + self.gotidx * self.ql.pointersize, self.ql.pack(self.hook_fuc_ptr))
+            self.ql.mem.write(self.got + self.load_base + self.gotidx * self.ql.arch.pointersize, self.ql.pack(self.hook_fuc_ptr))
             self.ql.mem.write(self.hook_data_ptr, self.ql.pack(tmp))
     
     def _hook_got(self):
-        self.ori_data = self.ql.mem.read(self.got + self.load_base + self.gotidx * self.ql.pointersize, self.ql.pointersize) 
+        self.ori_data = self.ql.mem.read(self.got + self.load_base + self.gotidx * self.ql.arch.pointersize, self.ql.arch.pointersize) 
 
-        self.ql.mem.write(self.got + self.load_base + self.gotidx * self.ql.pointersize, self.ql.pack(self.hook_fuc_ptr))
+        self.ql.mem.write(self.got + self.load_base + self.gotidx * self.ql.arch.pointersize, self.ql.pack(self.hook_fuc_ptr))
         self.ql.mem.write(self.hook_data_ptr, bytes(self.ori_data))
     
     def enable(self):
@@ -786,19 +786,19 @@ class FunctionHook:
             if d.d_tag == DT_NULL:
                 break
             elif d.d_tag == DT_HASH:
-                # self.hash_nbucket = self.ql.unpack(self.ql.mem.read(self.load_base + d.d_un, self.ql.pointersize))
-                # self.hash_nchain = self.ql.unpack(self.ql.mem.read(self.load_base + d.d_un + self.ql.pointersize, self.ql.pointersize))
-                # self.hash_bucket = self.ql.mem.read(self.load_base + d.d_un + self.ql.pointersize * 2, self.ql.pointersize * self.hash_nbucket)
-                # self.hash_chain = self.ql.unpack(self.ql.mem.read(self.load_base + d.d_un + self.ql.pointersize * 2 + self.ql.pointersize * self.hash_nbucket, self.ql.pointersize))
+                # self.hash_nbucket = self.ql.unpack(self.ql.mem.read(self.load_base + d.d_un, self.ql.arch.pointersize))
+                # self.hash_nchain = self.ql.unpack(self.ql.mem.read(self.load_base + d.d_un + self.ql.arch.pointersize, self.ql.arch.pointersize))
+                # self.hash_bucket = self.ql.mem.read(self.load_base + d.d_un + self.ql.arch.pointersize * 2, self.ql.arch.pointersize * self.hash_nbucket)
+                # self.hash_chain = self.ql.unpack(self.ql.mem.read(self.load_base + d.d_un + self.ql.arch.pointersize * 2 + self.ql.arch.pointersize * self.hash_nbucket, self.ql.arch.pointersize))
                 pass
             elif d.d_tag == DT_GNU_HASH:
-                # self.gnu_nbucket = self.ql.unpack(self.ql.mem.read(self.load_base + d.d_un, self.ql.pointersize))
-                # self.gnu_symbias = self.ql.unpack(self.ql.mem.read(self.load_base + d.d_un + self.ql.pointersize, self.ql.pointersize))))
-                # self.gnu_maskwords = self.ql.unpack(self.ql.mem.read(self.load_base + d.d_un + self.ql.pointersize * 2, self.ql.pointersize))
-                # self.gnu_shift2 = self.ql.unpack(self.ql.mem.read(self.load_base + d.d_un + self.ql.pointersize * 3, self.ql.pointersize))
-                # self.gnu_bloom_filter = self.ql.mem.read(self.load_base + d.d_un + self.ql.pointersize * 4, self.gnu_maskwords)
-                # self.gnu_bucket = self.ql.mem.read(self.load_base + d.d_un + self.ql.pointersize * 4 + self.gnu_maskwords, self.ql.pointersize * self.gnu_nbucket)
-                # self.gnu_chain = self.load_base + d.d_un + self.ql.pointersize * 4 + self.gnu_maskwords + self.ql.pointersize * self.gnu_nbucket - self.ql.pointersize * self.gnu_symbias
+                # self.gnu_nbucket = self.ql.unpack(self.ql.mem.read(self.load_base + d.d_un, self.ql.arch.pointersize))
+                # self.gnu_symbias = self.ql.unpack(self.ql.mem.read(self.load_base + d.d_un + self.ql.arch.pointersize, self.ql.arch.pointersize))))
+                # self.gnu_maskwords = self.ql.unpack(self.ql.mem.read(self.load_base + d.d_un + self.ql.arch.pointersize * 2, self.ql.arch.pointersize))
+                # self.gnu_shift2 = self.ql.unpack(self.ql.mem.read(self.load_base + d.d_un + self.ql.arch.pointersize * 3, self.ql.arch.pointersize))
+                # self.gnu_bloom_filter = self.ql.mem.read(self.load_base + d.d_un + self.ql.arch.pointersize * 4, self.gnu_maskwords)
+                # self.gnu_bucket = self.ql.mem.read(self.load_base + d.d_un + self.ql.arch.pointersize * 4 + self.gnu_maskwords, self.ql.arch.pointersize * self.gnu_nbucket)
+                # self.gnu_chain = self.load_base + d.d_un + self.ql.arch.pointersize * 4 + self.gnu_maskwords + self.ql.arch.pointersize * self.gnu_nbucket - self.ql.arch.pointersize * self.gnu_symbias
                 pass
 
             elif d.d_tag == DT_STRTAB:

@@ -494,7 +494,7 @@ def hook_GetSidSubAuthorityCount(ql: Qiling, address: int, params):
 def hook_GetSidSubAuthority(ql: Qiling, address: int, params):
     num = params["nSubAuthority"]
     sid = ql.os.handle_manager.get(params["pSid"]).obj
-    addr_authority = sid.addr + 8 + (ql.pointersize * num)
+    addr_authority = sid.addr + 8 + (ql.arch.pointersize * num)
 
     return addr_authority
 

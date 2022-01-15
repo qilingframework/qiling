@@ -115,7 +115,7 @@ class QlCommonBaseCC(QlCC):
 		super().__init__(ql)
 
 		# native address size in bytes
-		self._asize = self.ql.pointersize
+		self._asize = self.ql.arch.pointersize
 
 		# return value register
 		self._retreg = retreg

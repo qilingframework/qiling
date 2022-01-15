@@ -50,7 +50,7 @@ class QlArch:
         Returns: the top of stack after pushing the value
         """
 
-        self.regs.arch_sp -= self.ql.pointersize
+        self.regs.arch_sp -= self.pointersize
         self.ql.mem.write(self.regs.arch_sp, self.ql.pack(value))
 
         return self.regs.arch_sp
@@ -62,8 +62,8 @@ class QlArch:
         Returns: the value at the top of stack
         """
 
-        data = self.ql.unpack(self.ql.mem.read(self.regs.arch_sp, self.ql.pointersize))
-        self.regs.arch_sp += self.ql.pointersize
+        data = self.ql.unpack(self.ql.mem.read(self.regs.arch_sp, self.pointersize))
+        self.regs.arch_sp += self.pointersize
 
         return data
 
@@ -82,7 +82,7 @@ class QlArch:
         Returns: the value at the specified address
         """
 
-        return self.ql.unpack(self.ql.mem.read(self.regs.arch_sp + offset, self.ql.pointersize))
+        return self.ql.unpack(self.ql.mem.read(self.regs.arch_sp + offset, self.pointersize))
 
 
     def stack_write(self, offset: int, value: int) -> None:

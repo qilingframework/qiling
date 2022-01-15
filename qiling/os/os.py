@@ -249,7 +249,7 @@ class QlOs:
             containing_image = self.find_containing_image(pc)
             pc_info = f' ({containing_image.path} + {pc - containing_image.base:#x})' if containing_image else ''
         finally:
-            self.ql.log.error(f'PC = {pc:#0{self.ql.pointersize * 2 + 2}x}{pc_info}\n')
+            self.ql.log.error(f'PC = {pc:#0{self.ql.arch.pointersize * 2 + 2}x}{pc_info}\n')
 
             self.ql.log.info(f'Memory map:')
             self.ql.mem.show_mapinfo()

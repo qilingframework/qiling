@@ -297,7 +297,7 @@ class QlMemoryManager:
         """
 
         if not size:
-            size = self.ql.pointersize
+            size = self.ql.arch.pointersize
 
         __unpack = {
             1 : self.ql.unpack8,

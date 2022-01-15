@@ -462,7 +462,7 @@ class PETest(unittest.TestCase):
                 arglist = params['_ArgList']
 
                 count = format.count("%")
-                fargs = [ql.unpack(ql.mem.read(arglist + i * ql.pointersize, ql.pointersize)) for i in range(count)]
+                fargs = [ql.unpack(ql.mem.read(arglist + i * ql.arch.pointersize, ql.arch.pointersize)) for i in range(count)]
 
                 target_txt = ""
 

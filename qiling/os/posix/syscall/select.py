@@ -49,7 +49,7 @@ def ql_syscall__newselect(ql: Qiling, nfds: int, readfds: int, writefds: int, ex
     tmp_w_fd, tmp_w_map = parse_fd_set(ql, nfds, writefds)
     tmp_e_fd, tmp_e_map = parse_fd_set(ql, nfds, exceptfds)
 
-    n = ql.pointersize
+    n = ql.arch.pointersize
 
     if timeout:
         sec  = ql.unpack(ql.mem.read(timeout + n * 0, n))

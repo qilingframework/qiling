@@ -1635,7 +1635,7 @@ class WindowsStruct:
         self.addr = None
         self.ULONG_SIZE = 8
         self.LONG_SIZE = 4
-        self.POINTER_SIZE = self.ql.pointersize
+        self.POINTER_SIZE = self.ql.arch.pointersize
         self.INT_SIZE = 2
         self.DWORD_SIZE = 4
         self.WORD_SIZE = 2
@@ -2145,7 +2145,7 @@ class StartupInfo(WindowsStruct):
     def __init__(self, ql, desktop=None, title=None, x=None, y=None, x_size=None, y_size=None, x_chars=None,
                  y_chars=None, fill_attribute=None, flags=None, show=None, std_input=None, output=None, error=None):
         super().__init__(ql)
-        self.size = 53 + 3 * self.ql.pointersize
+        self.size = 53 + 3 * self.ql.arch.pointersize
         self.cb = [self.size, self.DWORD_SIZE, "little", int]
         self.reserved = [0, self.POINTER_SIZE, "little", int]
         self.desktop = [desktop, self.POINTER_SIZE, "little", int]

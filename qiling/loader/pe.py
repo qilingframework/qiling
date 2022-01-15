@@ -210,12 +210,12 @@ class Process():
         if name == b"_acmdln":
             addr, packed_addr = self._alloc_cmdline(wide=False)
             cmdline_entry = {"name": name, "address": address}
-            memory[address:address + self.ql.pointersize] = packed_addr
+            memory[address:address + self.ql.arch.pointersize] = packed_addr
             self.ql.mem.write(addr, self.cmdline)
         elif name == b"_wcmdln":
             addr, packed_addr = self._alloc_cmdline(wide=True)
             cmdline_entry = {"name": name, "address": address}
-            memory[address:address + self.ql.pointersize] = packed_addr
+            memory[address:address + self.ql.arch.pointersize] = packed_addr
             encoded = self.cmdline.decode('ascii').encode('UTF-16LE')
             self.ql.mem.write(addr, encoded)
 
@@ -277,16 +277,16 @@ class Process():
             self.ql,
             base=ldr_addr,
             in_load_order_module_list={
-                'Flink': ldr_addr + 2 * self.ql.pointersize,
-                'Blink': ldr_addr + 2 * self.ql.pointersize
+                'Flink': ldr_addr + 2 * self.ql.arch.pointersize,
+                'Blink': ldr_addr + 2 * self.ql.arch.pointersize
             },
             in_memory_order_module_list={
-                'Flink': ldr_addr + 4 * self.ql.pointersize,
-                'Blink': ldr_addr + 4 * self.ql.pointersize
+                'Flink': ldr_addr + 4 * self.ql.arch.pointersize,
+                'Blink': ldr_addr + 4 * self.ql.arch.pointersize
             },
             in_initialization_order_module_list={
-                'Flink': ldr_addr + 6 * self.ql.pointersize,
-                'Blink': ldr_addr + 6 * self.ql.pointersize
+                'Flink': ldr_addr + 6 * self.ql.arch.pointersize,
+                'Blink': ldr_addr + 6 * self.ql.arch.pointersize
             }
         )
         self.ql.mem.write(ldr_addr, ldr_data.bytes())
@@ -316,8 +316,8 @@ class Process():
             ldr_table_entry.InInitializationOrderLinks['Flink'] = flink.InInitializationOrderModuleList['Flink']
 
             flink.InLoadOrderModuleList['Flink'] = ldr_table_entry.base
-            flink.InMemoryOrderModuleList['Flink'] = ldr_table_entry.base + 2 * self.ql.pointersize
-            flink.InInitializationOrderModuleList['Flink'] = ldr_table_entry.base + 4 * self.ql.pointersize
+            flink.InMemoryOrderModuleList['Flink'] = ldr_table_entry.base + 2 * self.ql.arch.pointersize
+            flink.InInitializationOrderModuleList['Flink'] = ldr_table_entry.base + 4 * self.ql.arch.pointersize
 
         else:
             flink = self.ldr_list[-1]
@@ -326,8 +326,8 @@ class Process():
             ldr_table_entry.InInitializationOrderLinks['Flink'] = flink.InInitializationOrderLinks['Flink']
 
             flink.InLoadOrderLinks['Flink'] = ldr_table_entry.base
-            flink.InMemoryOrderLinks['Flink'] = ldr_table_entry.base + 2 * self.ql.pointersize
-            flink.InInitializationOrderLinks['Flink'] = ldr_table_entry.base + 4 * self.ql.pointersize
+            flink.InMemoryOrderLinks['Flink'] = ldr_table_entry.base + 2 * self.ql.arch.pointersize
+            flink.InInitializationOrderLinks['Flink'] = ldr_table_entry.base + 4 * self.ql.arch.pointersize
 
         # Blink
         blink = self.LDR
@@ -336,8 +336,8 @@ class Process():
         ldr_table_entry.InInitializationOrderLinks['Blink'] = blink.InInitializationOrderModuleList['Blink']
 
         blink.InLoadOrderModuleList['Blink'] = ldr_table_entry.base
-        blink.InMemoryOrderModuleList['Blink'] = ldr_table_entry.base + 2 * self.ql.pointersize
-        blink.InInitializationOrderModuleList['Blink'] = ldr_table_entry.base + 4 * self.ql.pointersize
+        blink.InMemoryOrderModuleList['Blink'] = ldr_table_entry.base + 2 * self.ql.arch.pointersize
+        blink.InInitializationOrderModuleList['Blink'] = ldr_table_entry.base + 4 * self.ql.arch.pointersize
 
         self.ql.mem.write(flink.base, flink.bytes())
         self.ql.mem.write(blink.base, blink.bytes())
@@ -613,9 +613,9 @@ class QlLoaderPE(QlLoader, Process):
                 # setup IMAGE_LOAD_CONFIG_DIRECTORY
                 if self.pe.OPTIONAL_HEADER.DATA_DIRECTORY[pefile.DIRECTORY_ENTRY['IMAGE_DIRECTORY_ENTRY_LOAD_CONFIG']].VirtualAddress != 0:
                     SecurityCookie_rva = self.pe.DIRECTORY_ENTRY_LOAD_CONFIG.struct.SecurityCookie - self.pe.OPTIONAL_HEADER.ImageBase
-                    SecurityCookie_value = default_security_cookie_value = self.ql.mem.read(self.pe_image_address+SecurityCookie_rva, self.ql.pointersize)
+                    SecurityCookie_value = default_security_cookie_value = self.ql.mem.read(self.pe_image_address+SecurityCookie_rva, self.ql.arch.pointersize)
                     while SecurityCookie_value == default_security_cookie_value:
-                        SecurityCookie_value = secrets.token_bytes(self.ql.pointersize)
+                        SecurityCookie_value = secrets.token_bytes(self.ql.arch.pointersize)
                         # rol     rcx, 10h (rcx: cookie)
                         # test    cx, 0FFFFh
                         SecurityCookie_value_array = bytearray(SecurityCookie_value)
