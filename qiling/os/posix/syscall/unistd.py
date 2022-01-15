@@ -432,8 +432,18 @@ def ql_syscall_execve(ql: Qiling, pathname: int, argv: int, envp: int):
     if ql.code:
         return
 
-    ql._uc = ql.arch.uc
-    QlCoreHooks.__init__(ql, ql._uc)
+    # recreate cached uc
+    del ql.arch.uc
+    uc = ql.arch.uc
+
+    # propagate new uc to arch internals
+    ql.arch.regs.uc = uc
+
+    if hasattr(ql.arch, 'msr'):
+        ql.arch.msr.uc = uc
+
+    ql.uc = uc
+    QlCoreHooks.__init__(ql, uc)
 
     ql.os.load()
     ql.loader.run()
