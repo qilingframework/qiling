@@ -18,7 +18,7 @@ from enum import Enum
 from unicorn import UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
 
 from .exception import *
-from .const import QL_VERBOSE, QL_ARCH, QL_ENDIAN, QL_OS, QL_DEBUGGER, QL_ARCH_1BIT, QL_ARCH_16BIT, QL_ARCH_32BIT, QL_ARCH_64BIT
+from .const import QL_VERBOSE, QL_ARCH, QL_ENDIAN, QL_OS, QL_DEBUGGER
 from .const import debugger_map, arch_map, os_map, arch_os_map, loader_map
 
 FMT_STR = "%(levelname)s\t%(message)s"
