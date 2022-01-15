@@ -81,18 +81,6 @@ class QlRegisterManager:
             self.write(reg, val)
 
 
-    # FIXME: this no longer works
-    # TODO: This needs to be implemented for all archs
-    def bit(self, reg: Union[str, int]) -> int:
-        """Get register size in bits.
-        """
-
-        if type(reg) is str:
-            reg = self.register_mapping[reg]
-
-        return self.ql.arch.get_reg_bit(reg)
-
-
     @property
     def arch_pc(self) -> int:
         """Get the value of the architectural program counter register.
