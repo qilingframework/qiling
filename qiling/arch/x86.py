@@ -12,6 +12,7 @@ from keystone import Ks, KS_ARCH_X86, KS_MODE_16, KS_MODE_32, KS_MODE_64
 
 from qiling import Qiling
 from qiling.arch.arch import QlArch
+from qiling.arch.msr import QlMsrManager
 from qiling.arch.register import QlRegisterManager
 from qiling.arch import x86_const
 from qiling.arch.x86_const import *
@@ -37,6 +38,13 @@ class QlArchIntel(QlArch):
         )
 
         return next((rsize for rmap, rsize in regmaps if register in rmap.values()), 0)
+
+    @cached_property
+    def msr(self) -> QlMsrManager:
+        """Model-Specific Registers.
+        """
+
+        return QlMsrManager(self.uc)
 
 class QlArchA8086(QlArchIntel):
     @cached_property

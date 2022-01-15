@@ -66,17 +66,6 @@ class QlRegisterManager:
         return self.uc.reg_write(register, value)
 
 
-    def msr(self, msr: int, value: int = None):
-        """Read or write a model-specific register (MSR) value.
-        Intel architecture only
-        """
-
-        if value is None:
-            return self.uc.msr_read(msr)
-
-        self.uc.msr_write(msr, value)
-
-
     def save(self) -> MutableMapping[str, Any]:
         """Save CPU context.
         """
