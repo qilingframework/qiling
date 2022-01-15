@@ -223,9 +223,9 @@ class QlGdb(QlDebugger, object):
                 elif self.ql.archtype== QL_ARCH.X8664:
                     for reg in self.tables[QL_ARCH.X8664][:24]:
                         r = self.ql.arch.regs.read(reg)
-                        if self.ql.arch.regs.bit(reg) == 64:
+                        if self.ql.arch.reg_bits(reg) == 64:
                             tmp = self.addr_to_str(r)
-                        elif self.ql.arch.regs.bit(reg) == 32:
+                        elif self.ql.arch.reg_bits(reg) == 32:
                             tmp = self.addr_to_str(r, short = True)
                         s += tmp
                 
