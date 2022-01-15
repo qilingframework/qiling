@@ -69,7 +69,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._ostype = ostype
         self._archtype = archtype
         self._archendian = QL_ENDIAN.EL
-        self._pointersize = None
         self._profile = profile
         self._console = console
         self._log_file = log_file
@@ -158,8 +157,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         ########################
         # Archbit & Endianness #
         ########################
-        self._pointersize = (self.arch.bits // 8)
- 
         if bigendian == True and self._archtype in QL_ARCH_ENDIAN:
             self._archendian = QL_ENDIAN.EB
 
@@ -398,14 +395,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             Example: Qiling(code=b"\x90", ostype="macos", archtype="x8664", bigendian=False)
         """
         return self._archendian
-
-    @property
-    def pointersize(self) -> int:
-        """ The pointer size of current architecture.
-
-            Type: int
-        """
-        return self._pointersize
 
     @property
     def code(self) -> bytes:
