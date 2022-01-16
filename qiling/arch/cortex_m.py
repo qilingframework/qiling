@@ -108,15 +108,15 @@ class QlArchCORTEX_M(QlArchARM):
             count -= 1    
 
     def is_handler_mode(self):
-        return self.ql.arch.regs.read('ipsr') > 1
+        return self.regs.read('ipsr') > 1
 
     def using_psp(self):
-        return not self.is_handler_mode() and (self.ql.arch.regs.read('control') & CONTROL.SPSEL) > 0
+        return not self.is_handler_mode() and (self.regs.read('control') & CONTROL.SPSEL) > 0
 
     def init_context(self):
-        self.ql.arch.regs.write('lr', 0xffffffff)
-        self.ql.arch.regs.write('msp', self.ql.mem.read_ptr(0x0))
-        self.ql.arch.regs.write('pc' , self.ql.mem.read_ptr(0x4))
+        self.regs.write('lr', 0xffffffff)
+        self.regs.write('msp', self.ql.mem.read_ptr(0x0))
+        self.regs.write('pc' , self.ql.mem.read_ptr(0x4))
 
     def soft_interrupt_handler(self, ql, intno):
         forward_mapper = {
@@ -150,7 +150,7 @@ class QlArchCORTEX_M(QlArchARM):
             raise QlErrorNotImplemented(f'Unhandled interrupt number ({intno})')
 
     def hard_interrupt_handler(self, ql, intno):
-        basepri = self.ql.arch.regs.read('basepri') & 0xf0
+        basepri = self.regs.read('basepri') & 0xf0
         if basepri and basepri <= ql.hw.nvic.get_priority(intno):
             return
 
@@ -168,10 +168,10 @@ class QlArchCORTEX_M(QlArchARM):
             offset = isr * 4
 
             entry = ql.mem.read_ptr(offset)
-            exc_return = 0xFFFFFFFD if self.ql.arch.using_psp() else 0xFFFFFFF9        
+            exc_return = 0xFFFFFFFD if self.using_psp() else 0xFFFFFFF9        
 
-            self.ql.arch.regs.write('ipsr', isr)
-            self.ql.arch.regs.write('pc', entry)
-            self.ql.arch.regs.write('lr', exc_return) 
+            self.regs.write('ipsr', isr)
+            self.regs.write('pc', entry)
+            self.regs.write('lr', exc_return) 
 
-            self.ql.emu_start(self.ql.arch.get_pc(), 0, count=0xffffff)
+            self.ql.emu_start(self.get_pc(), 0, count=0xffffff)
