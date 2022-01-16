@@ -14,7 +14,7 @@ from qiling.const import QL_VERBOSE
 from qiling.exception import QlErrorNotImplemented
 
 from qiling.arch.arm import QlArchARM
-from qiling.arch import arm_const, cortex_m_const
+from qiling.arch import cortex_m_const
 from qiling.arch.register import QlRegisterManager
 from qiling.arch.cortex_m_const import IRQ, EXC_RETURN, CONTROL, EXCP
 
@@ -69,11 +69,7 @@ class QlArchCORTEX_M(QlArchARM):
 
     @cached_property
     def regs(self) -> QlRegisterManager:
-        regs_map = dict(
-            **arm_const.reg_map,
-            **cortex_m_const.reg_map
-        )
-
+        regs_map = cortex_m_const.reg_map
         pc_reg = 'pc'
         sp_reg = 'sp'
 
