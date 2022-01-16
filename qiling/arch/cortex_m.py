@@ -83,8 +83,9 @@ class QlArchCORTEX_M(QlArchARM):
     def assembler(self) -> Ks:
         return Ks(KS_ARCH_ARM, KS_MODE_ARM + KS_MODE_THUMB)
 
-    def check_thumb(self):
-        return UC_MODE_THUMB
+    @property
+    def is_thumb(self) -> bool:
+        return True
 
     def step(self):
         self.ql.emu_start(self.get_pc(), 0, count=1)
