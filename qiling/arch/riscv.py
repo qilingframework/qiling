@@ -49,10 +49,10 @@ class QlArchRISCV(QlArch):
         raise QlErrorNotImplemented("Keystone does not yet support riscv")
 
     def enable_float(self):
-        self.ql.arch.regs.mstatus = self.ql.arch.regs.mstatus | MSTATUS.FS_DIRTY
+        self.regs.mstatus = self.regs.mstatus | MSTATUS.FS_DIRTY
 
     def init_context(self):
-        self.ql.arch.regs.pc = 0x08000000
+        self.regs.pc = 0x08000000
         
     def soft_interrupt_handler(self, ql, intno):
         if intno == 2:            
@@ -70,7 +70,7 @@ class QlArchRISCV(QlArch):
             raise QlErrorNotImplemented(f'Unhandled interrupt number ({intno})')
     
     def step(self):
-        self.ql.emu_start(self.ql.arch.regs.arch_pc, 0, count=1)
+        self.ql.emu_start(self.regs.arch_pc, 0, count=1)
         self.ql.hw.step()
 
     def stop(self):
@@ -80,7 +80,7 @@ class QlArchRISCV(QlArch):
         self.runable = True
 
         while self.runable and count != 0:
-            if self.ql.arch.regs.arch_pc == end:
+            if self.regs.arch_pc == end:
                 break
 
             self.step()

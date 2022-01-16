@@ -41,4 +41,4 @@ class QlArchARM64(QlArch):
         return Ks(KS_ARCH_ARM64, KS_MODE_LITTLE_ENDIAN)
 
     def enable_vfp(self):
-        self.ql.arch.regs.cpacr_el1 = self.ql.arch.regs.cpacr_el1 | 0x300000
+        self.regs.cpacr_el1 = self.regs.cpacr_el1 | 0x300000
