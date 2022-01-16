@@ -50,12 +50,8 @@ class QlArchARM(QlArch):
 
     # get PC
     def get_pc(self) -> int:
-        append = 1 if self.check_thumb() == UC_MODE_THUMB else 0
-
-        return self.regs.pc + append
-
-    def __is_thumb(self) -> bool:
-        return bool(self.regs.cpsr & (1 << 5))
+        # append 1 to pc if in thumb mode, or 0 otherwise
+        return self.regs.pc + int(self.is_thumb)
 
     @property
     def disassembler(self) -> Cs:
@@ -64,7 +60,7 @@ class QlArchARM(QlArch):
 
         if self.ql.archtype == QL_ARCH.ARM:
             # FIXME: mode should take endianess into account
-            mode = CS_MODE_THUMB if self.__is_thumb() else CS_MODE_ARM
+            mode = CS_MODE_THUMB if self.is_thumb else CS_MODE_ARM
 
         elif self.ql.archtype == QL_ARCH.ARM_THUMB:
             mode = CS_MODE_THUMB
@@ -74,7 +70,6 @@ class QlArchARM(QlArch):
 
         return Cs(CS_ARCH_ARM, mode)
 
-
     @property
     def assembler(self) -> Ks:
         # note: we do not cache the assembler instance; rather we refresh it
@@ -82,7 +77,7 @@ class QlArchARM(QlArch):
 
         if self.ql.archtype == QL_ARCH.ARM:
             # FIXME: mode should take endianess into account
-            mode = KS_MODE_THUMB if self.__is_thumb() else KS_MODE_ARM
+            mode = KS_MODE_THUMB if self.is_thumb else KS_MODE_ARM
 
         elif self.ql.archtype == QL_ARCH.ARM_THUMB:
             mode = KS_MODE_THUMB
@@ -98,8 +93,9 @@ class QlArchARM(QlArch):
 
         self.regs.fpexc = (1 << 30)
 
-    def check_thumb(self):
-        return UC_MODE_THUMB if self.__is_thumb() else UC_MODE_ARM
+    @property
+    def is_thumb(self) -> bool:
+        return bool(self.regs.cpsr & (1 << 5))
 
     """
     set_tls

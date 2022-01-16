@@ -45,10 +45,9 @@ class QlGdbUtils(object):
         Modified this function for qiling.gdbserver by kabeor from https://github.com/iGio90/uDdbg
         """
         try:
-            if self.ql.archtype == QL_ARCH.ARM:
-                mode = self.ql.arch.check_thumb()
-                if mode == UC_MODE_THUMB:
-                    address = address + 1
+            if ql.archtype == QL_ARCH.ARM:
+                if ql.arch.is_thumb:
+                    address += 1
 
             self.mapping.append([(hex(address))])
             self.current_address = address
@@ -102,8 +101,7 @@ class QlGdbUtils(object):
 
         if address is not None:
             if self.ql.archtype == QL_ARCH.ARM:
-                mode = self.ql.arch.check_thumb()
-                if mode == UC_MODE_THUMB:
+                if self.ql.arch.is_thumb:
                     address += 1
             self.current_address = address
 
