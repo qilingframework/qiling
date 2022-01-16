@@ -21,13 +21,15 @@ def force_call_dialog_func(ql: Qiling):
     # force EIP to DialogFunc
     ql.arch.regs.eip = lpDialogFunc
 
-def our_sandbox(path, rootfs):
-    ql = Qiling(path, rootfs, stdin=pipe.SimpleInStream(sys.stdin.fileno()))
+def our_sandbox(path: str, rootfs: str):
+    ql = Qiling([path], rootfs)
 
+    ql.os.stdin = pipe.SimpleInStream(sys.stdin.fileno())
     ql.os.stdin.write(b"Ea5yR3versing\n")
+
     ql.hook_address(force_call_dialog_func, 0x00401016)
     ql.run()
 
 if __name__ == "__main__":
     # Flag is : Ea5yR3versing
-    our_sandbox(["rootfs/x86_windows/bin/Easy_CrackMe.exe"], "rootfs/x86_windows")
+    our_sandbox(r"rootfs/x86_windows/bin/Easy_CrackMe.exe", r"rootfs/x86_windows")

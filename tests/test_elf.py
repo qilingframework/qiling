@@ -830,15 +830,18 @@ class ELFTest(unittest.TestCase):
             pass
 
         def run_one_round(payload):
-            mock_stdin = pipe.SimpleInStream(sys.stdin.fileno())
-            ql = Qiling(["../examples/rootfs/x86_linux/bin/crackme_linux"], "../examples/rootfs/x86_linux", console=False, stdin=mock_stdin)
+            ql = Qiling(["../examples/rootfs/x86_linux/bin/crackme_linux"], "../examples/rootfs/x86_linux", console=False)
+
             ins_count = [0]
             ql.hook_code(instruction_count, ins_count)
             ql.set_syscall("_llseek", my__llseek)
+
+            ql.os.stdin = pipe.SimpleInStream(sys.stdin.fileno())
             ql.os.stdin.write(payload)
+
             ql.run()
-            del mock_stdin
             del ql
+
             return ins_count[0]
 
 
@@ -979,19 +982,21 @@ class ELFTest(unittest.TestCase):
         del ql
 
     def test_x8664_absolute_path(self):
-        mock_stdout = pipe.SimpleOutStream(sys.stdout.fileno())
-        ql = Qiling(["../examples/rootfs/x8664_linux/bin/absolutepath"],  "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG, stdout=mock_stdout)
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/absolutepath"],  "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG)
 
+        ql.os.stdout = pipe.SimpleOutStream(sys.stdout.fileno())
         ql.run()
+
         self.assertEqual(ql.os.stdout.read(), b'test_complete\n\ntest_complete\n\n')
 
         del ql
 
     def test_x8664_getcwd(self):
-        mock_stdout = pipe.SimpleOutStream(sys.stdout.fileno())
-        ql = Qiling(["../examples/rootfs/x8664_linux/bin/testcwd"],  "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG, stdout=mock_stdout)
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/testcwd"],  "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG)
 
+        ql.os.stdout = pipe.SimpleOutStream(sys.stdout.fileno())
         ql.run()
+
         self.assertEqual(ql.os.stdout.read(), b'/\n/lib\n/bin\n/\n')
 
         del ql
@@ -1022,11 +1027,14 @@ class ELFTest(unittest.TestCase):
         del ql
 
     def test_elf_linux_x8664_getdents(self):
-        output = io.BytesIO()
-        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_getdents"], "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG, stdout=output)
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_getdents"], "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG)
+
+        ql.os.stdout = io.BytesIO()
         ql.run()
-        output.seek(0)
-        self.assertTrue("bin\n" in output.read().decode("utf-8"))
+
+        ql.os.stdout.seek(0)
+        self.assertTrue("bin\n" in ql.os.stdout.read().decode("utf-8"))
+
         del ql
 
     # TODO: Disable for now
@@ -1046,10 +1054,11 @@ class ELFTest(unittest.TestCase):
         del ql
 
     def test_elf_linux_x86_getdents64(self):
-        mock_stdout = pipe.SimpleOutStream(sys.stdout.fileno())
-        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_getdents64"], "../examples/rootfs/x86_linux", verbose=QL_VERBOSE.DEBUG, stdout=mock_stdout)
+        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_getdents64"], "../examples/rootfs/x86_linux", verbose=QL_VERBOSE.DEBUG)
 
+        ql.os.stdout = pipe.SimpleOutStream(sys.stdout.fileno())
         ql.run()
+
         self.assertTrue("bin\n" in ql.os.stdout.read().decode("utf-8"))
 
         del ql

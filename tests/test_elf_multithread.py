@@ -39,13 +39,13 @@ class ELFTest(unittest.TestCase):
         with open('../examples/rootfs/x8664_linux/testfile', 'wb') as f:
             f.write(b'0123456789')
 
-        err = ql_file.open('output.txt', os.O_RDWR | os.O_CREAT, 0o777)
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_cloexec_test"],  
                     "../examples/rootfs/x8664_linux", 
-                    verbose=QL_VERBOSE.DEBUG,         
-                    stderr=err,
+                    verbose=QL_VERBOSE.DEBUG,
                     multithread=True)
 
+        err = ql_file.open('output.txt', os.O_RDWR | os.O_CREAT, 0o777)
+        ql.os.stderr = err
         ql.run()
         os.close(err.fileno())
         with open('output.txt', 'rb') as f:

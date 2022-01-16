@@ -34,14 +34,12 @@ from qiling.const import QL_VERBOSE
 from qiling.extensions import pipe
 
 def main(input_file: str):
-    mock_stdin = pipe.SimpleInStream(sys.stdin.fileno())
-
     ql = Qiling(["./x8664_fuzz"], "../../rootfs/x8664_linux",
-            verbose=QL_VERBOSE.OFF, # keep qiling logging off
-            console=False,          # thwart program output
-            stdin=mock_stdin,       # redirect stdin to our mock to feed it with incoming fuzzed keystrokes
-            stdout=None,
-            stderr=None)
+        verbose=QL_VERBOSE.OFF, # keep qiling logging off
+        console=False)          # thwart program output
+
+    # redirect stdin to our mock to feed it with incoming fuzzed keystrokes
+    ql.os.stdin = pipe.SimpleInStream(sys.stdin.fileno())
 
     def place_input_callback(uc: UcAfl.Uc, input: bytes, persistent_round: int, data: Any) -> Optional[bool]:
         """Called with every newly generated input.
