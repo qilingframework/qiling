@@ -55,12 +55,7 @@ class QlArchARM(QlArch):
         return self.regs.pc + append
 
     def __is_thumb(self) -> bool:
-        cpsr_v = {
-            QL_ENDIAN.EL : 0b100000,
-            QL_ENDIAN.EB : 0b100000   # FIXME: should be: 0b000000
-        }[self.ql.archendian]
-
-        return bool(self.regs.cpsr & cpsr_v)
+        return bool(self.regs.cpsr & (1 << 5))
 
     @property
     def disassembler(self) -> Cs:
@@ -98,13 +93,10 @@ class QlArchARM(QlArch):
         return Ks(KS_ARCH_ARM, mode)
 
     def enable_vfp(self) -> None:
-        self.regs.c1_c0_2 = self.regs.c1_c0_2 | (0xf << 20)
+        # set full access to cp10 and cp11
+        self.regs.c1_c0_2 = self.regs.c1_c0_2 | (0xb11 << 20) | (0xb11 << 22)
 
-        if self.ql.archendian == QL_ENDIAN.EB:
-            self.regs.fpexc = 0x40000000
-            #self.regs.fpexc = 0x00000040
-        else:
-            self.regs.fpexc = 0x40000000
+        self.regs.fpexc = (1 << 30)
 
     def check_thumb(self):
         return UC_MODE_THUMB if self.__is_thumb() else UC_MODE_ARM
