@@ -48,9 +48,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             filter = None,
             stop_on_stackpointer = False,
             stop_on_exit_trap = False,
-            stdin=None,
-            stdout=None,
-            stderr=None,
     ):
         """ Create a Qiling instance.
 
@@ -198,18 +195,9 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         # Once we finish setting up arch layer, we can init QlCoreHooks.
         if not self.interpreter:
             QlCoreHooks.__init__(self, self.uc)
-        
+
             self.arch.utils.setup_output()
             self._os = os_setup(self.archtype, self.ostype, self)
-
-            if stdin is not None:
-                self._os.stdin = stdin
-
-            if stdout is not None:
-                self._os.stdout = stdout
-
-            if stderr is not None:
-                self._os.stderr = stderr
 
         # Run the loader
         self.loader.run()
