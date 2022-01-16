@@ -904,15 +904,12 @@ class QlEmuQiling:
         self.env = {}
 
     def start(self, *args, **kwargs):
-        if sys.platform != 'win32':
-            qlstdin = QlEmuMisc.QLStdIO('stdin', sys.__stdin__.fileno())
-            qlstdout = QlEmuMisc.QLStdIO('stdout', sys.__stdout__.fileno())
-            qlstderr = QlEmuMisc.QLStdIO('stderr', sys.__stderr__.fileno())
+        self.ql = Qiling(argv=self.path, rootfs=self.rootfs, verbose=QL_VERBOSE.DEBUG, env=self.env, log_plain=True, *args, **kwargs)
 
         if sys.platform != 'win32':
-            self.ql = Qiling(argv=self.path, rootfs=self.rootfs, verbose=QL_VERBOSE.DEBUG, env=self.env, stdin=qlstdin, stdout=qlstdout, stderr=qlstderr, log_plain=True, *args, **kwargs)
-        else:
-            self.ql = Qiling(argv=self.path, rootfs=self.rootfs, verbose=QL_VERBOSE.DEBUG, env=self.env, log_plain=True, *args, **kwargs)
+            self.ql.os.stdin = QlEmuMisc.QLStdIO('stdin', sys.__stdin__.fileno())
+            self.ql.os.stdout = QlEmuMisc.QLStdIO('stdout', sys.__stdout__.fileno())
+            self.ql.os.stderr = QlEmuMisc.QLStdIO('stderr', sys.__stderr__.fileno())
 
         self.exit_addr = self.ql.os.exit_point
         if self.ql.ostype == QL_OS.LINUX:
