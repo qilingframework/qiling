@@ -108,15 +108,15 @@ class QlArchCORTEX_M(QlArchARM):
             count -= 1    
 
     def is_handler_mode(self):
-        return self.regs.read('ipsr') > 1
+        return self.regs.ipsr > 1
 
     def using_psp(self):
-        return not self.is_handler_mode() and (self.regs.read('control') & CONTROL.SPSEL) > 0
+        return not self.is_handler_mode() and (self.regs.control & CONTROL.SPSEL) > 0
 
     def init_context(self):
-        self.regs.write('lr', 0xffffffff)
-        self.regs.write('msp', self.ql.mem.read_ptr(0x0))
-        self.regs.write('pc' , self.ql.mem.read_ptr(0x4))
+        self.regs.lr = 0xffffffff
+        self.regs.msp = self.ql.mem.read_ptr(0x0)
+        self.regs.pc = self.ql.mem.read_ptr(0x4)
 
     def soft_interrupt_handler(self, ql, intno):
         forward_mapper = {
@@ -150,19 +150,19 @@ class QlArchCORTEX_M(QlArchARM):
             raise QlErrorNotImplemented(f'Unhandled interrupt number ({intno})')
 
     def hard_interrupt_handler(self, ql, intno):
-        basepri = self.regs.read('basepri') & 0xf0
+        basepri = self.regs.basepri & 0xf0
         if basepri and basepri <= ql.hw.nvic.get_priority(intno):
             return
 
-        if intno > IRQ.HARD_FAULT and (ql.arch.regs.read('primask') & 0x1):
+        if intno > IRQ.HARD_FAULT and (self.regs.primask & 0x1):
             return
-                
-        if intno != IRQ.NMI and (ql.arch.regs.read('faultmask') & 0x1):
+
+        if intno != IRQ.NMI and (self.regs.faultmask & 0x1):
             return
 
         if ql.verbose >= QL_VERBOSE.DISASM:
             ql.log.debug(f'Handle the intno: {intno}')
-                
+
         with QlInterruptContext(ql):
             isr = intno + 16
             offset = isr * 4
