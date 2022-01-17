@@ -6,8 +6,8 @@
 from functools import cached_property
 
 from unicorn import Uc, UC_ARCH_ARM, UC_MODE_ARM, UC_MODE_THUMB, UC_MODE_BIG_ENDIAN
-from capstone import Cs, CS_ARCH_ARM, CS_MODE_ARM, CS_MODE_THUMB
-from keystone import Ks, KS_ARCH_ARM, KS_MODE_ARM, KS_MODE_THUMB
+from capstone import Cs, CS_ARCH_ARM, CS_MODE_ARM, CS_MODE_THUMB, CS_MODE_BIG_ENDIAN
+from keystone import Ks, KS_ARCH_ARM, KS_MODE_ARM, KS_MODE_THUMB, KS_MODE_BIG_ENDIAN
 
 from qiling import Qiling
 from qiling.const import QL_ARCH, QL_ENDIAN
@@ -56,34 +56,32 @@ class QlArchARM(QlArch):
     @property
     def disassembler(self) -> Cs:
         # note: we do not cache the disassembler instance; rather we refresh it
-        # each time to make sure thumb mode is taken into account
+        # each time to make sure current endianess and thumb mode are taken into
+        # account
 
-        if self.ql.archtype == QL_ARCH.ARM:
-            # FIXME: mode should take endianess into account
-            mode = CS_MODE_THUMB if self.is_thumb else CS_MODE_ARM
+        mode = CS_MODE_ARM
 
-        elif self.ql.archtype == QL_ARCH.ARM_THUMB:
-            mode = CS_MODE_THUMB
+        if self.endian == QL_ENDIAN.EB:
+            mode += CS_MODE_BIG_ENDIAN
 
-        else:
-            raise QlErrorArch(f'unexpected arch type {self.ql.archtype}')
+        if self.is_thumb:
+            mode += CS_MODE_THUMB
 
         return Cs(CS_ARCH_ARM, mode)
 
     @property
     def assembler(self) -> Ks:
         # note: we do not cache the assembler instance; rather we refresh it
-        # each time to make sure thumb mode is taken into account
+        # each time to make sure current endianess and thumb mode are taken into
+        # account
 
-        if self.ql.archtype == QL_ARCH.ARM:
-            # FIXME: mode should take endianess into account
-            mode = KS_MODE_THUMB if self.is_thumb else KS_MODE_ARM
+        mode = KS_MODE_ARM
 
-        elif self.ql.archtype == QL_ARCH.ARM_THUMB:
-            mode = KS_MODE_THUMB
+        if self.endian == QL_ENDIAN.EB:
+            mode += KS_MODE_BIG_ENDIAN
 
-        else:
-            raise QlErrorArch(f'unexpected arch type {self.ql.archtype}')
+        if self.is_thumb:
+            mode += KS_MODE_THUMB
 
         return Ks(KS_ARCH_ARM, mode)
 
