@@ -417,7 +417,7 @@ def debugger_setup(options, ql):
 
     return None
 
-def arch_setup(archtype, ql):
+def arch_setup(archtype, endian: QL_ENDIAN, thumb: bool, ql):
     if not ql_is_valid_arch(archtype):
         raise QlErrorArch("Invalid Arch")
 
@@ -425,11 +425,7 @@ def arch_setup(archtype, ql):
 
     # set endianess and thumb mode for arm-based archs
     if archtype == QL_ARCH.ARM:
-        args.extend((ql.archendian, False))
-
-    elif archtype == QL_ARCH.ARM_THUMB:
-        archtype = QL_ARCH.ARM
-        args.extend((ql.archendian, True))
+        args.extend((endian, thumb))
 
     archmanager = f'QlArch{arch_convert_str(archtype).upper()}'
 
