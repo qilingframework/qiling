@@ -54,8 +54,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         """ Create a Qiling instance.
 
             For each argument or property, please refer to its docstring. e.g. Qiling.multithread.__doc__
-
-            The only exception is "bigendian" parameter, see Qiling.archendian.__doc__ for details.
         """
 
         ##################################
@@ -67,7 +65,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._code = code
         self._ostype = ostype
         self._archtype = archtype
-        self._archendian = QL_ENDIAN.EL
         self._profile = profile
         self._console = console
         self._log_file = log_file
@@ -134,11 +131,13 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         if type(self._ostype) is str:
             self._ostype = ostype_convert(self._ostype)
 
+        archendian = None
+
         if self._archtype is None:
             guessed_archtype, guessed_ostype, guessed_archendian = ql_guess_emu_env(self._path)            
             self._archtype = guessed_archtype
-            self._archendian = guessed_archendian
-            
+            archendian = guessed_archendian
+
             if self._ostype is None:
                 self._ostype = guessed_ostype
 
@@ -151,10 +150,13 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         if not ql_is_valid_arch(self._archtype):
             raise QlErrorArch("Invalid ARCH: %s" % (self._archtype))
 
-        if bigendian == True and self._archtype in QL_ARCH_ENDIAN:
-            self._archendian = QL_ENDIAN.EB
+        if bigendian and self._archtype in QL_ARCH_ENDIAN:
+            archendian = QL_ENDIAN.EB
 
-        self._arch = arch_setup(self.archtype, self._archendian, kwargs.get('thumb', False), self)
+        if archendian is None:
+            archendian = QL_ENDIAN.EL
+
+        self._arch = arch_setup(self.archtype, archendian, kwargs.get('thumb', False), self)
 
         ########################
         # Archbit & Endianness #
@@ -373,18 +375,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             Example: Qiling(code=b"\x90", ostype="macos", archtype="x8664", bigendian=False)
         """
         return self._archtype
-
-    @property
-    def archendian(self) -> QL_ENDIAN:
-        """ The architecure endian.
-
-            Note: Please pass "bigendian=True" or "bingendian=False" to set this property.
-                  This option only takes effect for shellcode.
-
-            Type: int
-            Example: Qiling(code=b"\x90", ostype="macos", archtype="x8664", bigendian=False)
-        """
-        return self._archendian
 
     @property
     def code(self) -> bytes:

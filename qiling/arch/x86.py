@@ -17,9 +17,14 @@ from qiling.arch.msr import QlMsrManager
 from qiling.arch.register import QlRegisterManager
 from qiling.arch import x86_const
 from qiling.arch.x86_const import *
+from qiling.const import QL_ENDIAN
 from qiling.exception import QlGDTError
 
 class QlArchIntel(QlArch):
+    @property
+    def endian(self) -> QL_ENDIAN:
+        return QL_ENDIAN.EL
+
     @cached_property
     def msr(self) -> QlMsrManager:
         """Model-Specific Registers.

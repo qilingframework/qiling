@@ -11,6 +11,7 @@ from capstone import Cs
 from keystone import Ks
 
 from qiling import Qiling
+from qiling.const import QL_ENDIAN
 from .register import QlRegisterManager
 from .utils import QlArchUtils
 
@@ -128,6 +129,14 @@ class QlArch:
     @abstractmethod
     def assembler(self) -> Ks:
         """Get assembler instance bound to arch.
+        """
+
+        pass
+
+    @property
+    @abstractmethod
+    def endian(self) -> QL_ENDIAN:
+        """Get processor endianess.
         """
 
         pass
