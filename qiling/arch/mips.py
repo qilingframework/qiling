@@ -9,6 +9,7 @@ from unicorn import Uc, UC_ARCH_MIPS, UC_MODE_MIPS32, UC_MODE_BIG_ENDIAN, UC_MOD
 from capstone import Cs, CS_ARCH_MIPS, CS_MODE_MIPS32, CS_MODE_BIG_ENDIAN, CS_MODE_LITTLE_ENDIAN
 from keystone import Ks, KS_ARCH_MIPS, KS_MODE_MIPS32, KS_MODE_BIG_ENDIAN, KS_MODE_LITTLE_ENDIAN
 
+from qiling import Qiling
 from qiling.const import QL_ENDIAN
 from qiling.arch.arch import QlArch
 from qiling.arch import mips_const
@@ -17,12 +18,17 @@ from qiling.arch.register import QlRegisterManager
 class QlArchMIPS(QlArch):
     bits = 32
 
+    def __init__(self, ql: Qiling, endian: QL_ENDIAN):
+        super().__init__(ql)
+
+        self._init_endian = endian
+
     @cached_property
     def uc(self) -> Uc:
         endian = {
             QL_ENDIAN.EB: UC_MODE_BIG_ENDIAN,
             QL_ENDIAN.EL: UC_MODE_LITTLE_ENDIAN
-        }[self.ql.archendian]
+        }[self.endian]
 
         return Uc(UC_ARCH_MIPS, UC_MODE_MIPS32 + endian)
 
@@ -43,7 +49,7 @@ class QlArchMIPS(QlArch):
         endian = {
             QL_ENDIAN.EL : CS_MODE_LITTLE_ENDIAN,
             QL_ENDIAN.EB : CS_MODE_BIG_ENDIAN
-        }[self.ql.archendian]
+        }[self.endian]
 
         return Cs(CS_ARCH_MIPS, CS_MODE_MIPS32 + endian)
 
@@ -52,6 +58,10 @@ class QlArchMIPS(QlArch):
         endian = {
             QL_ENDIAN.EL : KS_MODE_LITTLE_ENDIAN,
             QL_ENDIAN.EB : KS_MODE_BIG_ENDIAN
-        }[self.ql.archendian]
+        }[self.endian]
 
         return Ks(KS_ARCH_MIPS, KS_MODE_MIPS32 + endian)
+
+    @property
+    def endian(self) -> QL_ENDIAN:
+        return self._init_endian
