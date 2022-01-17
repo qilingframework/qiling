@@ -33,3 +33,7 @@ class QlArchEVM(QlArch):
     @property
     def uc(self):
         return None
+
+    @property
+    def endian(self) -> QL_ENDIAN:
+        return QL_ENDIAN.EL
