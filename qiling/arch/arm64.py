@@ -12,6 +12,7 @@ from keystone import Ks, KS_ARCH_ARM64, KS_MODE_LITTLE_ENDIAN
 from qiling.arch.arch import QlArch
 from qiling.arch import arm64_const
 from qiling.arch.register import QlRegisterManager
+from qiling.const import QL_ENDIAN
 
 class QlArchARM64(QlArch):
     bits = 64
@@ -31,6 +32,10 @@ class QlArchARM64(QlArch):
         sp_reg = 'sp'
 
         return QlRegisterManager(self.uc, regs_map, pc_reg, sp_reg)
+
+    @property
+    def endian(self) -> QL_ENDIAN:
+        return QL_ENDIAN.EL
 
     @cached_property
     def disassembler(self) -> Cs:

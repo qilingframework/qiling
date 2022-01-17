@@ -13,6 +13,7 @@ from qiling.arch.arch import QlArch
 from qiling.arch.register import QlRegisterManager
 from qiling.arch import riscv_const
 from qiling.arch.riscv_const import *
+from qiling.const import QL_ENDIAN
 from qiling.exception import QlErrorNotImplemented
 
 class QlArchRISCV(QlArch):
@@ -34,6 +35,10 @@ class QlArchRISCV(QlArch):
         sp_reg = 'sp'
 
         return QlRegisterManager(self.uc, regs_map, pc_reg, sp_reg)
+
+    @property
+    def endian(self) -> QL_ENDIAN:
+        return QL_ENDIAN.EL
 
     @cached_property
     def disassembler(self) -> Cs:
