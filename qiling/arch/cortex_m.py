@@ -10,16 +10,16 @@ from unicorn import Uc, UC_ARCH_ARM, UC_MODE_ARM, UC_MODE_MCLASS, UC_MODE_THUMB
 from capstone import Cs, CS_ARCH_ARM, CS_MODE_ARM, CS_MODE_MCLASS, CS_MODE_THUMB
 from keystone import Ks, KS_ARCH_ARM, KS_MODE_ARM, KS_MODE_THUMB
 
-from qiling.const import QL_VERBOSE
-from qiling.exception import QlErrorNotImplemented
-
+from qiling import Qiling
 from qiling.arch.arm import QlArchARM
 from qiling.arch import cortex_m_const
 from qiling.arch.register import QlRegisterManager
 from qiling.arch.cortex_m_const import IRQ, EXC_RETURN, CONTROL, EXCP
+from qiling.const import QL_ENDIAN, QL_VERBOSE
+from qiling.exception import QlErrorNotImplemented
 
 class QlInterruptContext(ContextDecorator):
-    def __init__(self, ql):
+    def __init__(self, ql: Qiling):
         self.ql = ql
         self.reg_context = ['xpsr', 'pc', 'lr', 'r12', 'r3', 'r2', 'r1', 'r0']
 
@@ -62,6 +62,9 @@ class QlInterruptContext(ContextDecorator):
 
 class QlArchCORTEX_M(QlArchARM):
     bits = 32
+
+    def __init__(self, ql: Qiling):
+        super().__init__(ql, endian=QL_ENDIAN.EL, thumb=True)
 
     @cached_property
     def uc(self):

@@ -10,33 +10,31 @@ from capstone import Cs, CS_ARCH_ARM, CS_MODE_ARM, CS_MODE_THUMB, CS_MODE_BIG_EN
 from keystone import Ks, KS_ARCH_ARM, KS_MODE_ARM, KS_MODE_THUMB, KS_MODE_BIG_ENDIAN
 
 from qiling import Qiling
-from qiling.const import QL_ARCH, QL_ENDIAN
+from qiling.const import QL_ENDIAN
 from qiling.arch.arch import QlArch
 from qiling.arch import arm_const
 from qiling.arch.register import QlRegisterManager
-from qiling.exception import QlErrorArch
 
 class QlArchARM(QlArch):
     bits = 32
 
-    def __init__(self, ql: Qiling):
+    def __init__(self, ql: Qiling, endian: QL_ENDIAN, thumb: bool):
         super().__init__(ql)
+
+        self._init_endian = endian
+        self._init_thumb = thumb
 
         self.arm_get_tls_addr = 0xFFFF0FE0
 
     @cached_property
     def uc(self) -> Uc:
-        if self.ql.archendian == QL_ENDIAN.EB:
-            mode = UC_MODE_ARM + UC_MODE_BIG_ENDIAN
+        mode = UC_MODE_ARM
 
-        elif self.ql.archtype == QL_ARCH.ARM_THUMB:
-            mode = UC_MODE_THUMB
+        if self._init_endian == QL_ENDIAN.EB:
+            mode += UC_MODE_BIG_ENDIAN
 
-        elif self.ql.archtype == QL_ARCH.ARM:
-            mode = UC_MODE_ARM
-
-        else:
-            raise QlErrorArch(f'unsupported arch type {self.ql.archtype}')
+        if self._init_thumb:
+            mode += UC_MODE_THUMB
 
         return Uc(UC_ARCH_ARM, mode)
 
