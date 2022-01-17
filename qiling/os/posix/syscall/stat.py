@@ -966,12 +966,12 @@ def get_stat_struct(ql: Qiling):
             else:
                 return LinuxMips32Stat()
         elif ql.archtype == QL_ARCH.ARM:
-            if ql.archendian == QL_ENDIAN.EL:
+            if ql.arch.endian == QL_ENDIAN.EL:
                 return LinuxARMStat()
             else:
                 return LinuxARMEBStat()
         elif ql.archtype == QL_ARCH.ARM64:
-            if ql.archendian == QL_ENDIAN.EL:
+            if ql.arch.endian == QL_ENDIAN.EL:
                 return LinuxARM64Stat()
             else:
                 return LinuxARM64EBStat()
@@ -981,7 +981,7 @@ def get_stat_struct(ql: Qiling):
         if ql.archtype == QL_ARCH.ARM64:
             return QNXARM64Stat()
         elif ql.archtype == QL_ARCH.ARM:
-            if ql.archendian == QL_ENDIAN.EL:
+            if ql.arch.endian == QL_ENDIAN.EL:
                 return QNXARMStat()
             else:
                 return QNXARMEBStat()
