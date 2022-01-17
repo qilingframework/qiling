@@ -27,7 +27,7 @@ def dump_regs(ql: Qiling) -> Mapping[str, int]:
                 "ra", "k0", "k1", "pc",
                 )
 
-    elif ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB):
+    elif ql.archtype == QL_ARCH.ARM:
 
         _reg_order = (
                 "r0", "r1", "r2", "r3",
@@ -107,7 +107,6 @@ def handle_bnj(ql: Qiling, cur_addr: str) -> Callable[[Qiling, str], int]:
     return {
             QL_ARCH.MIPS     : handle_bnj_mips,
             QL_ARCH.ARM      : handle_bnj_arm,
-            QL_ARCH.ARM_THUMB: handle_bnj_arm,
             QL_ARCH.CORTEX_M : handle_bnj_arm,
             }.get(ql.archtype)(ql, cur_addr)
 
@@ -142,7 +141,7 @@ def _read_inst(ql: Qiling, addr: int) -> int:
 
     result = ql.mem.read(addr, 4)
 
-    if ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB, QL_ARCH.CORTEX_M):
+    if ql.archtype in (QL_ARCH.ARM, QL_ARCH.CORTEX_M):
         if is_thumb(ql.arch.regs.cpsr):
 
             first_two = ql.unpack16(ql.mem.read(addr, 2))

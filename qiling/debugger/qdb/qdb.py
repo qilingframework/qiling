@@ -130,7 +130,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
             return
 
-        if self.ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB, QL_ARCH.CORTEX_M) and is_thumb(self.ql.arch.regs.cpsr):
+        if self.ql.archtype in (QL_ARCH.ARM, QL_ARCH.CORTEX_M) and is_thumb(self.ql.arch.regs.cpsr):
             address |= 1
 
         self.ql.emu_start(begin=address, end=end, count=count)

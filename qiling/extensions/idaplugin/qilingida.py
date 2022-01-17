@@ -1636,7 +1636,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         if IDA.get_ql_arch_string() == "arm32":
             if self._thumb_detect(first_block.start_ea):
                 logging.info(f"Thumb detected, enable it.")
-                self.deflatqlemu.start(archtype=QL_ARCH.ARM_THUMB)
+                self.deflatqlemu.start(archtype=QL_ARCH.ARM, thumb=True)
                 self.deflatqlemu.ql.arch.regs.cpsr |= 0x20
                 self.append = 1
         else:

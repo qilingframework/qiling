@@ -559,7 +559,7 @@ class FunctionHook:
         self.endian = 0 if ql.archendian == QL_ENDIAN.EL else 1
 
         # ARM
-        if self.ql.archtype in [QL_ARCH.ARM, QL_ARCH.ARM_THUMB]:
+        if self.ql.archtype == QL_ARCH.ARM:
             self.GLOB_DAT = 21
             self.JMP_SLOT = 22
             # orr r1, r1, r1

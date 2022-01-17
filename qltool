@@ -69,7 +69,7 @@ def handle_code(options: argparse.Namespace):
             'big'   : QL_ENDIAN.EB
         }[options.endian]
 
-        assembler = arch_utils.assembler(archtype, archendian)
+        assembler = arch_utils.assembler(archtype, archendian, options.thumb)
         code, _ = assembler.asm(assembly)
         code = bytes(code)
 
@@ -184,6 +184,7 @@ if __name__ == '__main__':
     code_parser.add_argument('-f', '--filename', metavar="FILE", help="filename")
     code_parser.add_argument('-i', '--input', metavar="INPUT", dest="input", help='input hex value')
     code_parser.add_argument('--arch', required=True, choices=arch_map)
+    code_parser.add_argument('--thumb', action='store_true', help='specify thumb mode for ARM')
     code_parser.add_argument('--endian', choices=('little', 'big'), default='little')
     code_parser.add_argument('--os', required=True, choices=os_map)
     code_parser.add_argument('--rootfs', help='emulated root filesystem, that is where all libraries reside')
