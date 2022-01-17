@@ -14,7 +14,6 @@ class QL_ARCH(IntEnum):
     X86 = 101
     X8664 = 102
     ARM = 103
-    ARM_THUMB = 104
     ARM64 = 105
     MIPS = 106
     A8086 = 107

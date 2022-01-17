@@ -52,7 +52,7 @@ def ql_open_flag_mapping(ql: Qiling, flags):
     if ql.ostype == QL_OS.LINUX:
         if ql.archtype in (QL_ARCH.X86, QL_ARCH.X8664):
             f = linux_x86_open_flags
-        elif ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB, QL_ARCH.ARM64):
+        elif ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM64):
             f = linux_arm_open_flags
         elif ql.archtype == QL_ARCH.MIPS:
             f = linux_mips_open_flags
@@ -130,7 +130,6 @@ def socket_type_mapping(t, archtype, ostype):
             QL_ARCH.X86: linux_x86_socket_types,
             QL_ARCH.X8664: linux_x86_socket_types,
             QL_ARCH.ARM: linux_arm_socket_types,
-            QL_ARCH.ARM_THUMB: linux_arm_socket_types,
             QL_ARCH.ARM64: linux_arm_socket_types,
             QL_ARCH.MIPS: linux_mips_socket_types,
         }[archtype]
@@ -150,7 +149,6 @@ def socket_domain_mapping(p, archtype, ostype):
             QL_ARCH.X86: linux_x86_socket_domain,
             QL_ARCH.X8664: linux_x86_socket_domain,
             QL_ARCH.ARM: linux_arm_socket_domain,
-            QL_ARCH.ARM_THUMB: linux_arm_socket_domain,
             QL_ARCH.ARM64: linux_arm_socket_domain,
             QL_ARCH.MIPS: linux_mips_socket_domain,
         }[archtype]
@@ -167,7 +165,6 @@ def socket_level_mapping(t, archtype, ostype):
             QL_ARCH.X86: linux_x86_socket_level,
             QL_ARCH.X8664: linux_x86_socket_level,
             QL_ARCH.ARM: linux_arm_socket_level,
-            QL_ARCH.ARM_THUMB: linux_arm_socket_level,
             QL_ARCH.ARM64: linux_arm_socket_level,
             QL_ARCH.MIPS: linux_mips_socket_level,
         }[archtype]
@@ -185,7 +182,6 @@ def socket_ip_option_mapping(t, archtype, ostype):
             QL_ARCH.X86: linux_socket_ip_options,
             QL_ARCH.X8664: linux_socket_ip_options,
             QL_ARCH.ARM: linux_socket_ip_options,
-            QL_ARCH.ARM_THUMB: linux_socket_ip_options,
             QL_ARCH.ARM64: linux_socket_ip_options,
             QL_ARCH.MIPS: linux_socket_ip_options,
         }[archtype]
@@ -203,7 +199,6 @@ def socket_option_mapping(t, archtype, ostype):
             QL_ARCH.X86: linux_x86_socket_options,
             QL_ARCH.X8664: linux_x86_socket_options,
             QL_ARCH.ARM: linux_arm_socket_options,
-            QL_ARCH.ARM_THUMB: linux_arm_socket_options,
             QL_ARCH.ARM64: linux_arm_socket_options,
             QL_ARCH.MIPS: linux_mips_socket_options,
         }[archtype]

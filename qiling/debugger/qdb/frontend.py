@@ -56,7 +56,7 @@ def examine_mem(ql: Qiling, line: str) -> Union[bool, (str, int, int)]:
     else:
         rest = _args
 
-    if ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB):
+    if ql.archtype == QL_ARCH.ARM:
         rest = rest.replace("fp", "r11")
 
     elif ql.archtype == QL_ARCH.MIPS:
@@ -192,7 +192,7 @@ def context_reg(ql: Qiling, saved_states: Optional[Mapping[str, int]] = None, /,
 
             print(lines.format(*_cur_regs.values()))
 
-        elif ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB, QL_ARCH.CORTEX_M):
+        elif ql.archtype in (QL_ARCH.ARM, QL_ARCH.CORTEX_M):
 
 
             _cur_regs.update({"sl": _cur_regs.pop("r10")})
