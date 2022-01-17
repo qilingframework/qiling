@@ -7,7 +7,7 @@ from functools import cached_property
 
 from unicorn import Uc, UC_ARCH_ARM64, UC_MODE_ARM
 from capstone import Cs, CS_ARCH_ARM64, CS_MODE_ARM
-from keystone import Ks, KS_ARCH_ARM64, KS_MODE_LITTLE_ENDIAN
+from keystone import Ks, KS_ARCH_ARM64, KS_MODE_ARM
 
 from qiling.arch.arch import QlArch
 from qiling.arch import arm64_const
@@ -43,7 +43,7 @@ class QlArchARM64(QlArch):
 
     @cached_property
     def assembler(self) -> Ks:
-        return Ks(KS_ARCH_ARM64, KS_MODE_LITTLE_ENDIAN)
+        return Ks(KS_ARCH_ARM64, KS_MODE_ARM)
 
     def enable_vfp(self):
         self.regs.cpacr_el1 = self.regs.cpacr_el1 | 0x300000

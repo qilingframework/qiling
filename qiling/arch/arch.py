@@ -78,7 +78,7 @@ class QlArch:
         Args:
             offset: offset in bytes from the top of the stack, not necessarily aligned to the
                     native stack item size. the offset may be either positive or netagive, where
-                    a 0 value means overwriting the value at the top of the stack
+                    a 0 value means retrieving the value at the top of the stack
 
         Returns: the value at the specified address
         """

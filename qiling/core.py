@@ -143,10 +143,10 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         elif self._ostype == None:
             self._ostype = arch_os_convert(self._archtype)
         
-        if not ql_is_valid_ostype(self._ostype):
+        if self._ostype is None or not ql_is_valid_ostype(self._ostype):
             raise QlErrorOsType("Invalid OS: %s" % (self._ostype))
 
-        if not ql_is_valid_arch(self._archtype):
+        if self._archtype is None or not ql_is_valid_arch(self._archtype):
             raise QlErrorArch("Invalid ARCH: %s" % (self._archtype))
 
         if bigendian and self._archtype in QL_ARCH_ENDIAN:
@@ -368,7 +368,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
               - "x8664" : x86_64
               - "mips" : MIPS
               - "arm" : ARM
-              - "arm_thumb" : ARM with thumb mode.
               - "arm64" : ARM64
               - "a8086" : 8086
             Example: Qiling(code=b"\x90", ostype="macos", archtype="x8664", bigendian=False)

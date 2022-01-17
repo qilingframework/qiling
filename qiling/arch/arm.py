@@ -47,6 +47,10 @@ class QlArchARM(QlArch):
         return QlRegisterManager(self.uc, regs_map, pc_reg, sp_reg)
 
     @property
+    def is_thumb(self) -> bool:
+        return bool(self.regs.cpsr & (1 << 5))
+
+    @property
     def endian(self) -> QL_ENDIAN:
         # FIXME: ARM is a bi-endian architecture which allows flipping core endianess
         # while running. endianess is tested in runtime through CPSR[9], however unicorn
@@ -61,6 +65,9 @@ class QlArchARM(QlArch):
         return self._init_endian
 
     def get_pc(self) -> int:
+        """Get effective PC value, taking Thumb mode into account.
+        """
+
         # append 1 to pc if in thumb mode, or 0 otherwise
         return self.regs.pc + int(self.is_thumb)
 
@@ -101,10 +108,6 @@ class QlArchARM(QlArch):
         self.regs.c1_c0_2 = self.regs.c1_c0_2 | (0xb11 << 20) | (0xb11 << 22)
 
         self.regs.fpexc = (1 << 30)
-
-    @property
-    def is_thumb(self) -> bool:
-        return bool(self.regs.cpsr & (1 << 5))
 
     """
     set_tls
