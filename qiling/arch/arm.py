@@ -116,7 +116,7 @@ class QlArchARM(QlArch):
         """
         sc = b'\x04\x00\x8f\xe2\x00\x00\x90\xe5\x0e\xf0\xa0\xe1\x00\x00\x00\x00'
 
-        # if ql.archendian == QL_ENDIAN.EB:
+        # if self.endian == QL_ENDIAN.EB:
         #    sc = swap_endianess(sc)
 
         self.ql.mem.write(self.arm_get_tls_addr, sc)

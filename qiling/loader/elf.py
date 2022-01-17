@@ -348,7 +348,7 @@ class QlLoaderELF(QlLoader):
         elif self.ql.arch.bits == 32:
             elf_hwcap = 0x1fb8d7
 
-            if self.ql.archendian == QL_ENDIAN.EB:
+            if self.ql.arch.endian == QL_ENDIAN.EB:
                 # FIXME: considering this is a 32 bits value, it is not a big-endian version of the
                 # value above like it is meant to be, since the one above has an implied leading zero
                 # byte (i.e. 0x001fb8d7) which the EB value didn't take into account

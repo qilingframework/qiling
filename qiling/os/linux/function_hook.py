@@ -556,7 +556,7 @@ class FunctionHook:
         self.mips_gotsym = None
 
         self.rel_list = []
-        self.endian = 0 if ql.archendian == QL_ENDIAN.EL else 1
+        self.endian = 0 if ql.arch.endian == QL_ENDIAN.EL else 1
 
         # ARM
         if self.ql.archtype == QL_ARCH.ARM:

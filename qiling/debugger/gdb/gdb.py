@@ -185,7 +185,7 @@ class QlGdb(QlDebugger, object):
                 nullfill    = "0" * int(self.ql.arch.bits / 4)
 
                 if self.ql.archtype== QL_ARCH.MIPS:
-                    if self.ql.archendian == QL_ENDIAN.EB:
+                    if self.ql.arch.endian == QL_ENDIAN.EB:
                         sp = self.addr_to_str(self.ql.arch.regs.arch_sp, endian ="little")
                         pc = self.addr_to_str(self.ql.arch.regs.arch_pc, endian ="little")
                     self.send('T%.2x%.2x:%s;%.2x:%s;' %(GDB_SIGNAL_TRAP, idhex, sp, pcid, pc))
@@ -249,7 +249,7 @@ class QlGdb(QlDebugger, object):
                 elif self.ql.archtype == QL_ARCH.MIPS:
                     for reg in self.tables[QL_ARCH.MIPS][:38]:
                         r = self.ql.arch.regs.read(reg)
-                        if self.ql.archendian == QL_ENDIAN.EL:
+                        if self.ql.arch.endian == QL_ENDIAN.EL:
                             tmp = self.addr_to_str(r, endian ="little")
                         else:
                             tmp = self.addr_to_str(r)    
@@ -396,7 +396,7 @@ class QlGdb(QlDebugger, object):
                             reg_value = self.ql.arch.regs.read(self.tables[QL_ARCH.MIPS][reg_index - 1])
                         else:
                             reg_value = 0
-                        if self.ql.archendian == QL_ENDIAN.EL:
+                        if self.ql.arch.endian == QL_ENDIAN.EL:
                             reg_value = self.addr_to_str(reg_value, endian="little")
                         else:
                             reg_value = self.addr_to_str(reg_value)
@@ -447,7 +447,7 @@ class QlGdb(QlDebugger, object):
 
                 elif self.ql.archtype== QL_ARCH.MIPS:
                     reg_data = int(reg_data, 16)
-                    if self.ql.archendian == QL_ENDIAN.EL:
+                    if self.ql.arch.endian == QL_ENDIAN.EL:
                         reg_data = int.from_bytes(struct.pack('<I', reg_data), byteorder='little')
                     else:
                         reg_data = int.from_bytes(struct.pack('<I', reg_data), byteorder='big')

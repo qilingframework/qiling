@@ -162,8 +162,8 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         # Archbit & Endianness #
         ########################
         # Once we finish setting up archendian and arcbit, we can init QlCoreStructs.
-        QlCoreStructs.__init__(self, self._archendian, self.arch.bits)
-            
+        QlCoreStructs.__init__(self, self.arch.endian, self.arch.bits)
+
 
         #######################################
         # Loader and General Purpose OS check #
