@@ -17,6 +17,7 @@ Steps:
     $ rm -fr afl_outputs/default/
 """
 
+# This uses the new unicornafl, which no longer provides any Unicorn stuff so we have to import by our own.
 from unicornafl import *
 from unicorn import *
 
@@ -53,6 +54,7 @@ def main(input_file: str):
         # We start our AFL forkserver or run once if AFL is not available.
         # This will only return after the fuzzing stopped.
         try:
+            # _ql.uc.afl_fuzz shall also work, but just for compatibility with old unicornafl
             if not uc_afl_fuzz(_ql.uc, input_file=input_file, place_input_callback=place_input_callback, exits=[ql.os.exit_point]):
                 _ql.log.warning("Ran once without AFL attached")
                 os._exit(0)
