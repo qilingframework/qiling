@@ -427,6 +427,9 @@ def arch_setup(archtype, endian: QL_ENDIAN, thumb: bool, ql):
     if archtype == QL_ARCH.ARM:
         args.extend((endian, thumb))
 
+    elif archtype == QL_ARCH.MIPS:
+        args.append(endian)
+
     archmanager = f'QlArch{arch_convert_str(archtype).upper()}'
 
     if archtype in (QL_ARCH.X8664, QL_ARCH.A8086):
