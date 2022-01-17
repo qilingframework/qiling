@@ -420,9 +420,16 @@ def debugger_setup(options, ql):
 def arch_setup(archtype, ql):
     if not ql_is_valid_arch(archtype):
         raise QlErrorArch("Invalid Arch")
-    
-    if archtype == QL_ARCH.ARM_THUMB:
-        archtype =  QL_ARCH.ARM
+
+    args = [ql]
+
+    # set endianess and thumb mode for arm-based archs
+    if archtype == QL_ARCH.ARM:
+        args.extend((ql.archendian, False))
+
+    elif archtype == QL_ARCH.ARM_THUMB:
+        archtype = QL_ARCH.ARM
+        args.extend((ql.archendian, True))
 
     archmanager = f'QlArch{arch_convert_str(archtype).upper()}'
 
@@ -432,9 +439,9 @@ def arch_setup(archtype, ql):
         arch_str = arch_convert_str(archtype)
 
     if ql.interpreter:
-        return ql_get_module_function(f"qiling.arch.{arch_str.lower()}.{arch_str.lower()}", archmanager)(ql)
+        return ql_get_module_function(f"qiling.arch.{arch_str.lower()}.{arch_str.lower()}", archmanager)(*args)
     else:    
-        return ql_get_module_function(f"qiling.arch.{arch_str.lower()}", archmanager)(ql)
+        return ql_get_module_function(f"qiling.arch.{arch_str.lower()}", archmanager)(*args)
 
 
 # This function is extracted from os_setup so I put it here.

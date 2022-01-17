@@ -149,14 +149,14 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         if not ql_is_valid_arch(self._archtype):
             raise QlErrorArch("Invalid ARCH: %s" % (self._archtype))
 
+        if bigendian == True and self._archtype in QL_ARCH_ENDIAN:
+            self._archendian = QL_ENDIAN.EB
+
         self._arch = arch_setup(self.archtype, self)
 
         ########################
         # Archbit & Endianness #
         ########################
-        if bigendian == True and self._archtype in QL_ARCH_ENDIAN:
-            self._archendian = QL_ENDIAN.EB
-
         # Once we finish setting up archendian and arcbit, we can init QlCoreStructs.
         QlCoreStructs.__init__(self, self._archendian, self.arch.bits)
             
