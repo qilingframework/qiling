@@ -87,6 +87,10 @@ class QlArchCORTEX_M(QlArchARM):
     def is_thumb(self) -> bool:
         return True
 
+    @property
+    def endian(self) -> QL_ENDIAN:
+        return QL_ENDIAN.EL
+
     def step(self):
         self.ql.emu_start(self.get_pc(), 0, count=1)
         self.ql.hw.step()
