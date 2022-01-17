@@ -48,6 +48,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             filter = None,
             stop_on_stackpointer = False,
             stop_on_exit_trap = False,
+            **kwargs
     ):
         """ Create a Qiling instance.
 
@@ -152,7 +153,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         if bigendian == True and self._archtype in QL_ARCH_ENDIAN:
             self._archendian = QL_ENDIAN.EB
 
-        self._arch = arch_setup(self.archtype, self)
+        self._arch = arch_setup(self.archtype, self._archendian, kwargs.get('thumb', False), self)
 
         ########################
         # Archbit & Endianness #
