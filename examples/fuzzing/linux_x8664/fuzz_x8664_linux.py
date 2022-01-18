@@ -17,11 +17,9 @@ Steps:
     $ rm -fr afl_outputs/default/
 """
 
-# This is new. Instead of unicorn, we import unicornafl. It's the same Uc with some new `afl_` functions
-import unicornafl as UcAfl
-
-# Make sure Qiling uses our patched unicorn instead of it's own, second so without instrumentation!
-UcAfl.monkeypatch()
+# This uses the new unicornafl, which no longer provides any Unicorn stuff so we have to import by our own.
+from unicornafl import *
+from unicorn import *
 
 import os
 import sys
@@ -43,7 +41,7 @@ def main(input_file: str):
             stdout=None,
             stderr=None)
 
-    def place_input_callback(uc: UcAfl.Uc, input: bytes, persistent_round: int, data: Any) -> Optional[bool]:
+    def place_input_callback(uc: Uc, input: bytes, persistent_round: int, data: Any) -> Optional[bool]:
         """Called with every newly generated input.
         """
 
@@ -56,16 +54,17 @@ def main(input_file: str):
         # We start our AFL forkserver or run once if AFL is not available.
         # This will only return after the fuzzing stopped.
         try:
-            if not _ql.uc.afl_fuzz(input_file=input_file, place_input_callback=place_input_callback, exits=[ql.os.exit_point]):
+            # _ql.uc.afl_fuzz shall also work, but just for compatibility with old unicornafl
+            if not uc_afl_fuzz(_ql.uc, input_file=input_file, place_input_callback=place_input_callback, exits=[ql.os.exit_point]):
                 _ql.log.warning("Ran once without AFL attached")
                 os._exit(0)
 
-        except UcAfl.UcAflError as ex:
+        except UcAflError as ex:
             # This hook triggers more than once in this example.
             # If this is the exception cause, we don't care.
 
             # TODO: choose a better hook position :)
-            if ex.errno != UcAfl.UC_AFL_RET_CALLED_TWICE:
+            if ex.errno != UC_AFL_RET_CALLED_TWICE:
                 raise
 
     # get image base address
