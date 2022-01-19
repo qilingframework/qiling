@@ -10,11 +10,10 @@ Then, run this file using afl++ unicorn mode with
 afl-fuzz -i ./afl_inputs -o ./afl_outputs -m none -U -- python3 ./fuzz_x8664_linux.py @@
 """
 
-# This is new. Instead of unicorn, we import unicornafl. It's the same Uc with some new `afl_` functions
+# This is new. Instead of unicorn, we import unicornafl.
 import unicornafl
 
-# Make sure Qiling uses our patched unicorn instead of it's own, second so without instrumentation!
-unicornafl.monkeypatch()
+# No more monkey patch as unicornafl provides a standalone API.
 
 import sys, os
 from binascii import hexlify
@@ -46,9 +45,9 @@ def main(input_file, enable_trace=False):
         # This will only return after the fuzzing stopped.
         try:
             #print("Starting afl_fuzz().")
-            if not _ql.uc.afl_fuzz(input_file=input_file,
-                        place_input_callback=place_input_callback,
-                        exits=[ql.os.exit_point]):
+            if not unicornafl.uc_afl_fuzz(_ql.uc, input_file=input_file,
+                                          place_input_callback=place_input_callback,
+                                          exits=[ql.os.exit_point]):
                 print("Ran once without AFL attached.")
                 os._exit(0)  # that's a looot faster than tidying up.
         except unicornafl.UcAflError as ex:
