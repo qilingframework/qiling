@@ -2,12 +2,12 @@
 #
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
+import os
 
 from typing import TextIO
 
 from qiling.os.posix import stat
 
-import os
 class SimpleStringBuffer(TextIO):
     """Simple FIFO pipe.
     """
