@@ -61,7 +61,7 @@ def main(input_file, enable_trace=False):
     LIBC_BASE = int(ql.profile.get("OS32", "interp_address"), 16)
 
     # crash in case we reach SignalKill
-    ql.hook_address(callback=lambda x: os.abort(), address=LIBC_BASE + 0x456d4)
+    ql.hook_address(callback=lambda x: os.abort(), address=LIBC_BASE +0x38170)
 
     # Add hook at main() that will fork Unicorn and start instrumentation.
     main_addr = 0x08048aa0
