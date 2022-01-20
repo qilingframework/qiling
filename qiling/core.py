@@ -11,7 +11,10 @@ from typing import Callable, Dict, List, Union
 from typing import TYPE_CHECKING
 
 from unicorn.unicorn import Uc
-from unicornafl import uc_afl_fuzz, UcAflError, UC_AFL_RET_NO_AFL, UC_AFL_RET_CALLED_TWICE
+try:
+    from unicornafl import uc_afl_fuzz, UcAflError, UC_AFL_RET_CALLED_TWICE
+except ImportError:
+    pass
 
 if TYPE_CHECKING:
     from .arch.register import QlRegisterManager
@@ -889,6 +892,8 @@ class Qiling(QlCoreHooks, QlCoreStructs):
                         always_validate=always_validate, 
                         persistent_iters=persistent_iters,
                         data=data)
+        except NameError as ex:
+            raise QlErrorNotImplemented("unicornafl is not installed or AFL++ is not supported on this platform") from ex
         except UcAflError as ex:
             if ex.errno != UC_AFL_RET_CALLED_TWICE:
                 # This one is special. Many fuzzing scripts start fuzzing in a Unicorn UC_HOOK_CODE callback and 
