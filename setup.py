@@ -21,8 +21,7 @@ requirements = [
     "pyelftools>=0.26",
     "gevent>=20.9.0",
     "multiprocess>=0.70.12.2",
-    "pyyaml>=6.0",
-    "unicornafl>=2.0.0"
+    "pyyaml>=6.0"
 ]
 
 evm_extra = {
@@ -50,6 +49,9 @@ with open("README.md", "r", encoding="utf-8") as ld:
 
 if "win32" in sys.platform:
     requirements += ["windows-curses>=2.1.0"]
+
+if "win32" not in sys.platform:
+    requirements += ["unicornafl>=2.0.0"]
 
 setup(
     name='qiling',
