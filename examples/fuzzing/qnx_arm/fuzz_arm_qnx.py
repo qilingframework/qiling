@@ -10,10 +10,7 @@ Then, run this file using afl++ unicorn mode with
 afl-fuzz -i ./afl_inputs -o ./afl_outputs -m none -U -- python3 ./fuzz_x8664_linux.py @@
 """
 
-# This is new. Instead of unicorn, we import unicornafl.
-import unicornafl
-
-# No more monkey patch as unicornafl provides a standalone API.
+# No more need for importing unicornafl, try ql.afl_fuzz instead!
 
 import sys, os
 from binascii import hexlify
@@ -34,33 +31,17 @@ def main(input_file, enable_trace=False):
     # or this for output:
     # ... stdout=sys.stdout, stderr=sys.stderr)
 
-    def place_input_callback(uc, input, _, data):
+    def place_input_callback(ql: Qiling, input: bytes, _: int):
         ql.os.stdin.write(input)
+        return True
 
     def start_afl(_ql: Qiling):
-        """
-        Callback from inside
-        """
-        # We start our AFL forkserver or run once if AFL is not available.
-        # This will only return after the fuzzing stopped.
-        try:
-            #print("Starting afl_fuzz().")
-            if not unicornafl.uc_afl_fuzz(_ql.uc, input_file=input_file,
-                                          place_input_callback=place_input_callback,
-                                          exits=[ql.os.exit_point]):
-                print("Ran once without AFL attached.")
-                os._exit(0)  # that's a looot faster than tidying up.
-        except unicornafl.UcAflError as ex:
-            # This hook trigers more than once in this example.
-            # If this is the exception cause, we don't care.
-            # TODO: Chose a better hook position :)
-            if ex != unicornafl.UC_AFL_RET_CALLED_TWICE:
-                raise
+        _ql.afl_fuzz(input_file=input_file, place_input_callback=place_input_callback, exits=[ql.os.exit_point])
 
     LIBC_BASE = int(ql.profile.get("OS32", "interp_address"), 16)
 
     # crash in case we reach SignalKill
-    ql.hook_address(callback=lambda x: os.abort(), address=LIBC_BASE +0x38170)
+    ql.hook_address(callback=lambda x: os.abort(), address=LIBC_BASE + 0x38170)
 
     # Add hook at main() that will fork Unicorn and start instrumentation.
     main_addr = 0x08048aa0
