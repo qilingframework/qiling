@@ -13,9 +13,6 @@
 
 import os, pickle, socket, sys, threading
 
-import unicornafl
-unicornafl.monkeypatch()
-
 sys.path.append("../../../")
 from qiling import *
 from qiling.const import QL_VERBOSE
@@ -40,25 +37,10 @@ def main(input_file, enable_trace=False):
         ql.mem.write(target_address, input)
 
     def start_afl(_ql: Qiling):
-
         """
         Callback from inside
         """
-        # We start our AFL forkserver or run once if AFL is not available.
-        # This will only return after the fuzzing stopped.
-        try:
-            #print("Starting afl_fuzz().")
-            if not _ql.uc.afl_fuzz(input_file=input_file,
-                        place_input_callback=place_input_callback,
-                        exits=[ql.os.exit_point]):
-                print("Ran once without AFL attached.")
-                os._exit(0)  # that's a looot faster than tidying up.
-        except unicornafl.UcAflError as ex:
-            # This hook trigers more than once in this example.
-            # If this is the exception cause, we don't care.
-            # TODO: Chose a better hook position :)
-            if ex != unicornafl.UC_AFL_RET_CALLED_TWICE:
-                raise
+        _ql.afl_fuzz(input_file=input_file, place_input_callback=place_input_callback, exits=[ql.os.exit_point])
 
     ql.hook_address(callback=start_afl, address=0x10930+8)
     
