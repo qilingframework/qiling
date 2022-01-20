@@ -22,6 +22,7 @@ requirements = [
     "gevent>=20.9.0",
     "multiprocess>=0.70.12.2",
     "pyyaml>=6.0",
+    "unicornafl>=2.0.0"
 ]
 
 evm_extra = {
