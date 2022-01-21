@@ -101,11 +101,6 @@ class QlArch:
         self.ql.mem.write(self.regs.arch_sp + offset, self.ql.pack(value))
 
 
-    # get PC
-    def get_pc(self) -> int:
-        return self.regs.arch_pc
-
-
     # Unicorn's CPU state save
     def context_save(self) -> UcContext:
         return self.uc.context_save()
