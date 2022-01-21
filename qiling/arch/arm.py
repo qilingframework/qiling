@@ -64,7 +64,8 @@ class QlArchARM(QlArch):
 
         return self._init_endian
 
-    def get_pc(self) -> int:
+    @property
+    def effective_pc(self) -> int:
         """Get effective PC value, taking Thumb mode into account.
         """
 
