@@ -239,7 +239,7 @@ class QlLinuxThread(QlThread):
                 self.ql.log.warning(f"Nothing to do but still get scheduled!")
 
             # Run and log the run event
-            start_address = self.ql.arch.get_pc() # For arm thumb.
+            start_address = getattr(self.ql.arch, 'effective_pc', self.ql.arch.regs.arch_pc) # For arm thumb.
             self.sched_cb = QlLinuxThread._default_sched_cb
             
             self.ql.log.debug(f"Scheduled from {hex(start_address)}.")
