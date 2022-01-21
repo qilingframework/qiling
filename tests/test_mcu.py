@@ -213,7 +213,7 @@ class MCUTest(unittest.TestCase):
             
             ql.run(count=400000, end=0x8003225)
             
-            return ql.arch.get_pc() == 0x8003225
+            return ql.arch.effective_pc == 0x8003225
 
         self.assertTrue(crack('618618'))
         self.assertTrue(crack('778899'))

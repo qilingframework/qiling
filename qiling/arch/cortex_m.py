@@ -32,8 +32,7 @@ class QlInterruptContext(ContextDecorator):
             self.ql.log.info(f'Enter into interrupt')
 
     def __exit__(self, *exc):
-        retval = self.ql.arch.get_pc()
-        
+        retval = self.ql.arch.effective_pc
         if retval & EXC_RETURN.MASK != EXC_RETURN.MASK:
             self.ql.log.warning('Interrupt Crash')
             self.ql.stop()
@@ -95,7 +94,7 @@ class QlArchCORTEX_M(QlArchARM):
         return QL_ENDIAN.EL
 
     def step(self):
-        self.ql.emu_start(self.get_pc(), 0, count=1)
+        self.ql.emu_start(self.effective_pc, 0, count=1)
         self.ql.hw.step()
 
     def stop(self):
@@ -109,7 +108,7 @@ class QlArchCORTEX_M(QlArchARM):
             end |= 1        
         
         while self.runable and count != 0:
-            if self.get_pc() == end:
+            if self.effective_pc == end:
                 break
 
             self.step()
@@ -182,4 +181,4 @@ class QlArchCORTEX_M(QlArchARM):
             self.regs.write('pc', entry)
             self.regs.write('lr', exc_return) 
 
-            self.ql.emu_start(self.get_pc(), 0, count=0xffffff)
+            self.ql.emu_start(self.effective_pc, 0, count=0xffffff)

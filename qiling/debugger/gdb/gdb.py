@@ -235,7 +235,7 @@ class QlGdb(QlDebugger, object):
                     # r0-r12,sp,lr,pc,cpsr ,see https://sourceware.org/git/?p=binutils-gdb.git;a=blob;f=gdb/arch/arm.h;h=fa589fd0582c0add627a068e6f4947a909c45e86;hb=HEAD#l127
                     for reg in self.tables[QL_ARCH.ARM][:16] + [self.tables[QL_ARCH.ARM][25]]:
                         # if reg is pc, make sure to take thumb mode into account
-                        r = self.ql.arch.get_pc() if reg == "pc" else self.ql.arch.regs.read(reg)
+                        r = self.ql.arch.effective_pc if reg == "pc" else self.ql.arch.regs.read(reg)
 
                         tmp = self.addr_to_str(r)
                         s += tmp
