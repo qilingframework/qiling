@@ -127,9 +127,9 @@ class ELFTest(unittest.TestCase):
             return str_len + 1
 
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_args","1234test", "12345678", "bin/x8664_hello"],  "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG)
-        ql.set_syscall(1, write_onEnter, QL_INTERCEPT.ENTER)
+        ql.os.set_syscall(1, write_onEnter, QL_INTERCEPT.ENTER)
         ql.set_api('puts', my_puts)
-        ql.set_syscall(1, write_onexit, QL_INTERCEPT.EXIT)
+        ql.os.set_syscall(1, write_onexit, QL_INTERCEPT.EXIT)
         ql.mem.map(0x1000, 0x1000)
         ql.mem.write(0x1000, b"\xFF\xFE\xFD\xFC\xFB\xFA\xFB\xFC\xFC\xFE\xFD")
         ql.mem.map(0x2000, 0x1000)
@@ -332,12 +332,12 @@ class ELFTest(unittest.TestCase):
             return regreturn
 
         ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_posix_syscall"], "../examples/rootfs/x86_linux", verbose=QL_VERBOSE.DEBUG)
-        ql.set_syscall(0x3, test_syscall_read)
-        ql.set_syscall(0x4, test_syscall_write)
-        ql.set_syscall(0x127, test_syscall_openat)
-        ql.set_syscall(0xa, test_syscall_unlink)
-        ql.set_syscall(0x5c, test_syscall_truncate)
-        ql.set_syscall(0x5d, test_syscall_ftruncate)
+        ql.os.set_syscall(0x3, test_syscall_read)
+        ql.os.set_syscall(0x4, test_syscall_write)
+        ql.os.set_syscall(0x127, test_syscall_openat)
+        ql.os.set_syscall(0xa, test_syscall_unlink)
+        ql.os.set_syscall(0x5c, test_syscall_truncate)
+        ql.os.set_syscall(0x5d, test_syscall_ftruncate)
         ql.run()
         del ql
 
@@ -458,12 +458,12 @@ class ELFTest(unittest.TestCase):
                 # os.remove(real_path)
 
         # ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_posix_syscall"], "../examples/rootfs/arm_linux", verbose=QL_VERBOSE.DEBUG)
-        # ql.set_syscall(0x3, test_syscall_read)
-        # ql.set_syscall(0x4, test_syscall_write)
-        # ql.set_syscall(0x5, test_syscall_open)
-        # ql.set_syscall(0xa, test_syscall_unlink)
-        # ql.set_syscall(0x5c, test_syscall_truncate)
-        # ql.set_syscall(0x5d, test_syscall_ftruncate)
+        # ql.os.set_syscall(0x3, test_syscall_read)
+        # ql.os.set_syscall(0x4, test_syscall_write)
+        # ql.os.set_syscall(0x5, test_syscall_open)
+        # ql.os.set_syscall(0xa, test_syscall_unlink)
+        # ql.os.set_syscall(0x5c, test_syscall_truncate)
+        # ql.os.set_syscall(0x5d, test_syscall_ftruncate)
         # ql.run()
         # del ql
 
@@ -634,12 +634,12 @@ class ELFTest(unittest.TestCase):
             return regreturn
 
         ql = Qiling(["../examples/rootfs/arm64_linux/bin/arm64_posix_syscall"], "../examples/rootfs/arm64_linux", verbose=QL_VERBOSE.DEBUG)
-        ql.set_syscall(0x3f, test_syscall_read)
-        ql.set_syscall(0x40, test_syscall_write)
-        ql.set_syscall(0x38, test_syscall_openat)
-        ql.set_syscall(0x402, test_syscall_unlink)
-        ql.set_syscall(0x2d, test_syscall_truncate)
-        ql.set_syscall(0x2e, test_syscall_ftruncate)
+        ql.os.set_syscall(0x3f, test_syscall_read)
+        ql.os.set_syscall(0x40, test_syscall_write)
+        ql.os.set_syscall(0x38, test_syscall_openat)
+        ql.os.set_syscall(0x402, test_syscall_unlink)
+        ql.os.set_syscall(0x2d, test_syscall_truncate)
+        ql.os.set_syscall(0x2e, test_syscall_ftruncate)
         ql.run()
         del ql
 
@@ -777,12 +777,12 @@ class ELFTest(unittest.TestCase):
             return regreturn
 
         ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_posix_syscall"], "../examples/rootfs/mips32el_linux", verbose=QL_VERBOSE.DEBUG)
-        ql.set_syscall(4003, test_syscall_read)
-        ql.set_syscall(4004, test_syscall_write)
-        ql.set_syscall(4005, test_syscall_open)
-        ql.set_syscall(4010, test_syscall_unlink)
-        ql.set_syscall(4092, test_syscall_truncate)
-        ql.set_syscall(4093, test_syscall_ftruncate)
+        ql.os.set_syscall(4003, test_syscall_read)
+        ql.os.set_syscall(4004, test_syscall_write)
+        ql.os.set_syscall(4005, test_syscall_open)
+        ql.os.set_syscall(4010, test_syscall_unlink)
+        ql.os.set_syscall(4092, test_syscall_truncate)
+        ql.os.set_syscall(4093, test_syscall_ftruncate)
         ql.run()
         del ql
 
@@ -813,7 +813,7 @@ class ELFTest(unittest.TestCase):
             return regreturn
 
         ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello"], "../examples/rootfs/arm_linux")
-        ql.set_syscall(0x04, my_syscall_write)
+        ql.os.set_syscall(0x04, my_syscall_write)
         ql.run()
         
         self.assertEqual(1, self.set_syscall)
@@ -834,7 +834,7 @@ class ELFTest(unittest.TestCase):
 
             ins_count = [0]
             ql.hook_code(instruction_count, ins_count)
-            ql.set_syscall("_llseek", my__llseek)
+            ql.os.set_syscall("_llseek", my__llseek)
 
             ql.os.stdin = pipe.SimpleInStream(sys.stdin.fileno())
             ql.os.stdin.write(payload)
@@ -900,8 +900,8 @@ class ELFTest(unittest.TestCase):
         def check_exit_code(ql, exit_code, *args, **kw):
             ql.exit_code = exit_code            
 
-        ql.set_syscall("exit_group", check_exit_group_code, QL_INTERCEPT.ENTER)
-        ql.set_syscall("exit", check_exit_code, QL_INTERCEPT.ENTER)
+        ql.os.set_syscall("exit_group", check_exit_group_code, QL_INTERCEPT.ENTER)
+        ql.os.set_syscall("exit", check_exit_code, QL_INTERCEPT.ENTER)
 
         ql.run()
         self.assertEqual(0, ql.exit_code)
@@ -937,8 +937,8 @@ class ELFTest(unittest.TestCase):
         def check_exit_code(ql, exit_code, *args, **kw):
             ql.exit_code = exit_code            
 
-        ql.set_syscall("exit_group", check_exit_group_code, QL_INTERCEPT.ENTER)
-        ql.set_syscall("exit", check_exit_code, QL_INTERCEPT.ENTER)
+        ql.os.set_syscall("exit_group", check_exit_group_code, QL_INTERCEPT.ENTER)
+        ql.os.set_syscall("exit", check_exit_code, QL_INTERCEPT.ENTER)
 
         ql.run()
         self.assertEqual(0, ql.exit_code)
@@ -959,8 +959,8 @@ class ELFTest(unittest.TestCase):
         def check_exit_code(ql, exit_code, *args, **kw):
             ql.exit_code = exit_code            
 
-        ql.set_syscall("exit_group", check_exit_group_code, QL_INTERCEPT.ENTER)
-        ql.set_syscall("exit", check_exit_code, QL_INTERCEPT.ENTER)
+        ql.os.set_syscall("exit_group", check_exit_group_code, QL_INTERCEPT.ENTER)
+        ql.os.set_syscall("exit", check_exit_code, QL_INTERCEPT.ENTER)
 
         ql.run()
 
