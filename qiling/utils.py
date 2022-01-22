@@ -417,30 +417,40 @@ def debugger_setup(options, ql):
 
     return None
 
-def arch_setup(archtype, endian: QL_ENDIAN, thumb: bool, ql):
+def arch_setup(archtype: QL_ARCH, endian: QL_ENDIAN, thumb: bool, ql):
     if not ql_is_valid_arch(archtype):
-        raise QlErrorArch("Invalid Arch")
-
-    args = [ql]
+        raise QlErrorArch(f'Invalid architecture type')
 
     # set endianess and thumb mode for arm-based archs
     if archtype == QL_ARCH.ARM:
-        args.extend((endian, thumb))
+        args = [endian, thumb]
 
+    # set endianess for mips arch
     elif archtype == QL_ARCH.MIPS:
-        args.append(endian)
+        args = [endian]
 
-    archmanager = f'QlArch{arch_convert_str(archtype).upper()}'
-
-    if archtype in (QL_ARCH.X8664, QL_ARCH.A8086):
-        arch_str = "x86"
     else:
-        arch_str = arch_convert_str(archtype)
+        args = []
 
-    if ql.interpreter:
-        return ql_get_module_function(f"qiling.arch.{arch_str.lower()}.{arch_str.lower()}", archmanager)(*args)
-    else:    
-        return ql_get_module_function(f"qiling.arch.{arch_str.lower()}", archmanager)(*args)
+    module = {
+        QL_ARCH.A8086    : r'x86',
+        QL_ARCH.X86      : r'x86',
+        QL_ARCH.X8664    : r'x86',
+        QL_ARCH.ARM      : r'arm',
+        QL_ARCH.ARM64    : r'arm64',
+        QL_ARCH.MIPS     : r'mips',
+        QL_ARCH.EVM      : r'evm.evm',
+        QL_ARCH.CORTEX_M : r'cortex_m',
+        QL_ARCH.RISCV    : r'riscv',
+        QL_ARCH.RISCV64  : r'riscv64'
+    }[archtype]
+
+    qlarch_path = f'qiling.arch.{module}'
+    qlarch_class = f'QlArch{arch_convert_str(archtype).upper()}'
+
+    obj = ql_get_module_function(qlarch_path, qlarch_class)
+
+    return obj(ql, *args)
 
 
 # This function is extracted from os_setup so I put it here.
