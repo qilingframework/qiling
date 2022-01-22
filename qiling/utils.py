@@ -459,12 +459,9 @@ def ql_syscall_mapping_function(ostype):
     return ql_get_module_function(f"qiling.os.{ostype_str.lower()}.map_syscall", "map_syscall")
 
 
-def os_setup(archtype: QL_ARCH, ostype: QL_OS, ql):
+def os_setup(ostype: QL_OS, ql):
     if not ql_is_valid_ostype(ostype):
         raise QlErrorOsType("Invalid OSType")
-
-    if not ql_is_valid_arch(archtype):
-        raise QlErrorArch("Invalid Arch %s" % archtype)
 
     ostype_str = ostype_convert_str(ostype)
     ostype_str = ostype_str.capitalize()

@@ -201,7 +201,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             QlCoreHooks.__init__(self, self.uc)
 
             self.arch.utils.setup_output()
-            self._os = os_setup(self.archtype, self.ostype, self)
+            self._os = os_setup(self.ostype, self)
 
         # Run the loader
         self.loader.run()
