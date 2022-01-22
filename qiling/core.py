@@ -719,17 +719,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             self.loader.restore(saved_states["loader"])
 
 
-    # Either hook or replace syscall/api with custom api/syscall
-    #  - if intercept is None, replace syscall with custom function
-    #  - if intercept is ENTER/EXIT, hook syscall at enter/exit with custom function
-    # If replace function name is needed, first syscall must be available
-    # - ql.set_syscall(0x04, my_syscall_write)
-    # - ql.set_syscall("write", my_syscall_write)
-    # TODO: Add correspoinding API in ql.os!
-    def set_syscall(self, target_syscall, intercept_function, intercept = None):
-        self.os.set_syscall(target_syscall, intercept_function, intercept)
-
-
     # Either replace or hook API
     #  - if intercept is None, replace API with custom function
     #  - if intercept is ENTER/EXIT, hook API at enter/exit with custom function
