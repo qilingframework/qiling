@@ -46,9 +46,7 @@ class QlArchUtils:
                 if type(reg) is str:
                     ql.log.debug(f'{reg}\t: {ql.arch.regs.read(reg):#x}')
 
-    def setup_output(self):
-        def ql_hook_block_disasm(ql, address, size):
-            self.ql.log.info("\nTracing basic block at 0x%x" % (address))
+    def setup_output(self, verbosity: QL_VERBOSE):
 
         if self._disasm_hook:
             self._disasm_hook.remove()

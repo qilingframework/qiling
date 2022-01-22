@@ -474,7 +474,8 @@ def profile_setup(ql):
 
     if ql.profile != None:
         _profile = ql.profile
-    debugmsg = "Profile: %s" % _profile
+
+    ql.log.debug(f'Profile: {_profile}')
 
     if ql.baremetal:
         config = {}
@@ -489,7 +490,7 @@ def profile_setup(ql):
         config = ConfigParser()
         config.read(profiles)
 
-    return config, debugmsg
+    return config
 
 def ql_resolve_logger_level(verbose: QL_VERBOSE) -> int:
     return {

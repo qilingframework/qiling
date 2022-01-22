@@ -79,8 +79,6 @@ class QlOs:
         # let the user override default resolvers or add custom ones
         self.resolvers.update(resolvers)
 
-        self.ql.arch.utils.setup_output()
-
     def save(self) -> Mapping[str, Any]:
         return {}
 

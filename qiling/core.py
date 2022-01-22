@@ -166,17 +166,9 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         if not self.interpreter:
             QlCoreHooks.__init__(self, self.uc)
 
-        #######################################
-        # Loader and General Purpose OS check #
-        #######################################
-        self._loader = loader_setup(self._ostype, self)
-
-        #####################
-        # Profile & Logging #
-        #####################
-        self._profile, debugmsg = profile_setup(self)
-
-        # Log's configuration
+        ##########
+        # Logger #
+        ##########
         self._log_file_fd, self._log_filter = ql_setup_logger(self,
                                                               self._log_file,
                                                               self._console,
@@ -184,17 +176,23 @@ class Qiling(QlCoreHooks, QlCoreStructs):
                                                               self._log_override,
                                                               self._log_plain)
 
-        self.log.setLevel(ql_resolve_logger_level(self._verbose))
+        self.verbose = verbose
 
-        # Now that the logger is configured, we can log profile debug msg:
-        self.log.debug(debugmsg)
+        ##########
+        # Loader #
+        ##########
+        self._loader = loader_setup(self._ostype, self)
+
+        ###########
+        # Profile #
+        ###########
+        self._profile = profile_setup(self)
 
         ##############
         # Components #
         ##############
         if not self.interpreter:
             self._mem = component_setup("os", "memory", self)
-            self.arch.utils.setup_output()
             self._os = os_setup(self.ostype, self)
 
         # Run the loader
@@ -463,9 +461,9 @@ class Qiling(QlCoreHooks, QlCoreStructs):
     @verbose.setter
     def verbose(self, v):
         self._verbose = v
-        self.log.setLevel(ql_resolve_logger_level(self._verbose))
-        if self.interpreter:
-            self.arch.utils.setup_output()
+
+        self.log.setLevel(ql_resolve_logger_level(v))
+        self.arch.utils.setup_output(v)
 
     @property
     def patch_bin(self) -> list:
