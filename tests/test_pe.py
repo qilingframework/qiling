@@ -221,7 +221,7 @@ class PETest(unittest.TestCase):
                 return address, params
 
             ql = Qiling(["../examples/rootfs/x86_windows/bin/MultiThread.exe"], "../examples/rootfs/x86_windows")
-            ql.set_api("GetCurrentThreadId", ThreadId_onEnter, QL_INTERCEPT.ENTER)
+            ql.os.set_api("GetCurrentThreadId", ThreadId_onEnter, QL_INTERCEPT.ENTER)
             ql.run()
             
             if not ( 1<= thread_id < 255):
@@ -421,9 +421,9 @@ class PETest(unittest.TestCase):
             def my_sandbox(path, rootfs):
                 nonlocal set_api, set_api_onenter, set_api_onexit
                 ql = Qiling(path, rootfs, verbose=QL_VERBOSE.DEBUG)
-                ql.set_api("puts", my_onenter, QL_INTERCEPT.ENTER)
-                ql.set_api("puts", my_puts64, QL_INTERCEPT.CALL)
-                ql.set_api("puts", my_onexit, QL_INTERCEPT.EXIT)
+                ql.os.set_api("puts", my_onenter, QL_INTERCEPT.ENTER)
+                ql.os.set_api("puts", my_puts64, QL_INTERCEPT.CALL)
+                ql.os.set_api("puts", my_onexit, QL_INTERCEPT.EXIT)
                 ql.run()
 
                 if 12 != set_api_onenter:
@@ -474,7 +474,7 @@ class PETest(unittest.TestCase):
                 return address, params
 
             ql = Qiling(["../examples/rootfs/x86_windows/bin/argv.exe"], "../examples/rootfs/x86_windows")
-            ql.set_api('__stdio_common_vfprintf', check_print, QL_INTERCEPT.ENTER)
+            ql.os.set_api('__stdio_common_vfprintf', check_print, QL_INTERCEPT.ENTER)
             ql.run()
             
             if target_txt.find("argv.exe"):
