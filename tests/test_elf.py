@@ -128,7 +128,7 @@ class ELFTest(unittest.TestCase):
 
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_args","1234test", "12345678", "bin/x8664_hello"],  "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG)
         ql.os.set_syscall(1, write_onEnter, QL_INTERCEPT.ENTER)
-        ql.set_api('puts', my_puts)
+        ql.os.set_api('puts', my_puts)
         ql.os.set_syscall(1, write_onexit, QL_INTERCEPT.EXIT)
         ql.mem.map(0x1000, 0x1000)
         ql.mem.write(0x1000, b"\xFF\xFE\xFD\xFC\xFB\xFA\xFB\xFC\xFC\xFE\xFD")
@@ -156,8 +156,8 @@ class ELFTest(unittest.TestCase):
             self.test_exit_rdi = ql.arch.regs.rdi
 
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_puts"],  "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG)
-        ql.set_api('puts', my_puts_enter, QL_INTERCEPT.ENTER)
-        ql.set_api('puts', my_puts_exit, QL_INTERCEPT.EXIT)
+        ql.os.set_api('puts', my_puts_enter, QL_INTERCEPT.ENTER)
+        ql.os.set_api('puts', my_puts_exit, QL_INTERCEPT.EXIT)
 
         ql.run()
 
@@ -187,7 +187,7 @@ class ELFTest(unittest.TestCase):
 
         def hook_main(ql: Qiling):
             # set up fopen hook when reaching main
-            ql.set_api('fopen', onenter_fopen, QL_INTERCEPT.ENTER)
+            ql.os.set_api('fopen', onenter_fopen, QL_INTERCEPT.ENTER)
 
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_fetch_urandom"],  "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEFAULT)
 
@@ -351,7 +351,7 @@ class ELFTest(unittest.TestCase):
             ql.mem.restore(all_mem)
 
         ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello"], "../examples/rootfs/arm_linux", verbose=QL_VERBOSE.DEBUG, profile='profiles/append_test.ql')
-        ql.set_api('puts', my_puts)
+        ql.os.set_api('puts', my_puts)
         ql.run()
         del ql
 
@@ -507,7 +507,7 @@ class ELFTest(unittest.TestCase):
             return 2
 
         ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_double_hello"], "../examples/rootfs/mips32el_linux")
-        ql.set_api('puts', my_puts_onenter, QL_INTERCEPT.ENTER)
+        ql.os.set_api('puts', my_puts_onenter, QL_INTERCEPT.ENTER)
         ql.run()
 
         self.assertEqual(4196680, self.my_puts_onenter_addr)

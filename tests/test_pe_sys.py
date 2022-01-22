@@ -196,10 +196,10 @@ class PETest(unittest.TestCase):
         # for this module 
         ql.amsint32_driver = None
         # emulate some Windows API
-        ql.set_api("CreateThread", hook_CreateThread)
-        ql.set_api("CreateFileA", hook_CreateFileA)
-        ql.set_api("WriteFile", hook_WriteFile)
-        ql.set_api("StartServiceA", hook_StartServiceA)
+        ql.os.set_api("CreateThread", hook_CreateThread)
+        ql.os.set_api("CreateFileA", hook_CreateFileA)
+        ql.os.set_api("WriteFile", hook_WriteFile)
+        ql.os.set_api("StartServiceA", hook_StartServiceA)
         #init sality
         ql.hook_address(hook_first_stop_address, 0x40EFFB)
         ql.run()

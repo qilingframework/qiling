@@ -82,9 +82,9 @@ class MACHOTest(unittest.TestCase):
             return
 
         ql = Qiling(["../examples/rootfs/x8664_macos/kext/SuperRootkit.kext"], "../examples/rootfs/x8664_macos", verbose=QL_VERBOSE.DISASM)
-        ql.set_api("_ipf_addv4", my_onenter, QL_INTERCEPT.ENTER)
-        ql.set_api("_strncmp", my_onexit, QL_INTERCEPT.EXIT)
-        ql.set_api("_strlen", my__strlen) 
+        ql.os.set_api("_ipf_addv4", my_onenter, QL_INTERCEPT.ENTER)
+        ql.os.set_api("_strncmp", my_onexit, QL_INTERCEPT.EXIT)
+        ql.os.set_api("_strlen", my__strlen) 
         ql.hook_address(hook_stop, 0xffffff8000854800)
 
         try:
