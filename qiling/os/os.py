@@ -199,13 +199,20 @@ class QlOs:
         return retval
 
     # TODO: separate this method into os-specific functionalities, instead of 'if-else'
-    def set_api(self, api_name: str, intercept_function: Callable, intercept: QL_INTERCEPT):
+    def set_api(self, api_name: str, intercept_function: Callable, intercept: QL_INTERCEPT = QL_INTERCEPT.CALL):
+        """Either replace or hook OS API with a custom one.
+
+        Args:
+            api_name: target API name
+            intercept_function: function to call
+            intercept:
+                `QL_INTERCEPT.CALL` : run handler instead of the existing target implementation
+                `QL_INTERCEPT.ENTER`: run handler before the target API is called
+                `QL_INTERCEPT.EXIT` : run handler after the target API is called
+        """
+
         if self.ql.ostype == QL_OS.UEFI:
             api_name = f'hook_{api_name}'
-
-        # BUG: workaround missing arg
-        if intercept is None:
-            intercept = QL_INTERCEPT.CALL
 
         if (self.ql.ostype in (QL_OS.WINDOWS, QL_OS.UEFI, QL_OS.DOS)) or (self.ql.ostype in (QL_OS_POSIX) and self.ql.loader.is_driver):
             self.user_defined_api[intercept][api_name] = intercept_function
