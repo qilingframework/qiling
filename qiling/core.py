@@ -158,12 +158,13 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
         self._arch = arch_setup(self.archtype, archendian, kwargs.get('thumb', False), self)
 
-        ########################
-        # Archbit & Endianness #
-        ########################
-        # Once we finish setting up archendian and arcbit, we can init QlCoreStructs.
+        self.uc = self.arch.uc
+
+        # Once we finish setting up arch, we can init QlCoreStructs and QlCoreHooks
         QlCoreStructs.__init__(self, self.arch.endian, self.arch.bits)
 
+        if not self.interpreter:
+            QlCoreHooks.__init__(self, self.uc)
 
         #######################################
         # Loader and General Purpose OS check #
@@ -191,15 +192,8 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         ##############
         # Components #
         ##############
-        self.uc = self.arch.uc
-
         if not self.interpreter:
             self._mem = component_setup("os", "memory", self)
-
-        # Once we finish setting up arch layer, we can init QlCoreHooks.
-        if not self.interpreter:
-            QlCoreHooks.__init__(self, self.uc)
-
             self.arch.utils.setup_output()
             self._os = os_setup(self.ostype, self)
 
