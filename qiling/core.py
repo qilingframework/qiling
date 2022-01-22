@@ -719,13 +719,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             self.loader.restore(saved_states["loader"])
 
 
-    # Either replace or hook API
-    #  - if intercept is None, replace API with custom function
-    #  - if intercept is ENTER/EXIT, hook API at enter/exit with custom function
-    def set_api(self, api_name, intercept_function, intercept = None):
-        self.os.set_api(api_name, intercept_function, intercept)
- 
-
     # Map "ql_path" to any objects which implements QlFsMappedObject.
     def add_fs_mapper(self, ql_path, real_dest):
         self.os.fs_mapper.add_fs_mapping(ql_path, real_dest)
