@@ -46,7 +46,7 @@ def ql_open_flag_mapping(ql: Qiling, flags):
     f = {}
     t = {}
 
-    if ql.platform_os == None:
+    if ql.host.os == None:
         return flags
     
     if ql.ostype == QL_OS.LINUX:
@@ -69,13 +69,13 @@ def ql_open_flag_mapping(ql: Qiling, flags):
     elif ql.ostype == QL_OS.QNX:
         f = qnx_arm64_open_flags
 
-    if ql.platform_os == QL_OS.LINUX:
+    if ql.host.os == QL_OS.LINUX:
         t = linux_x86_open_flags
-    elif ql.platform_os == QL_OS.MACOS:
+    elif ql.host.os == QL_OS.MACOS:
         t = macos_x86_open_flags
-    elif ql.platform_os == QL_OS.FREEBSD:
+    elif ql.host.os == QL_OS.FREEBSD:
         t = freebsd_x86_open_flags
-    elif ql.platform_os == QL_OS.WINDOWS:
+    elif ql.host.os == QL_OS.WINDOWS:
         t = windows_x86_open_flags
 
     if f == t:

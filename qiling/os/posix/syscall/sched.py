@@ -49,7 +49,7 @@ def ql_syscall_clone(ql: Qiling, flags: int, child_stack: int, parent_tidptr: in
     # Shared virtual memory
     if not (flags & CLONE_VM):
         # FIXME: need a proper os.fork() for Windows
-        if ql.platform_os == QL_OS.WINDOWS:
+        if ql.host.os == QL_OS.WINDOWS:
             try:
                 pid = Process()
                 pid = 0

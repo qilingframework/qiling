@@ -365,7 +365,7 @@ def ql_syscall_getppid(ql: Qiling):
 
 
 def ql_syscall_vfork(ql: Qiling):
-    if ql.platform_os == QL_OS.WINDOWS:
+    if ql.host.os == QL_OS.WINDOWS:
         try:
             pid = Process()
             pid = 0
