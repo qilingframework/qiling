@@ -145,13 +145,20 @@ class QlOsPosix(QlOs):
     def syscall(self):
         return self.get_syscall()
 
-    def set_syscall(self, target: Union[int, str], handler: Callable, intercept: QL_INTERCEPT):
+    def set_syscall(self, target: Union[int, str], handler: Callable, intercept: QL_INTERCEPT=QL_INTERCEPT.CALL):
+        """Either hook or replace a system call with a custom one.
+
+        Args:
+            target: either syscall name or number. a name may be used only if target syscall is implemented
+            handler: function to call
+            intercept:
+                `QL_INTERCEPT.CALL` : run handler instead of the existing target implementation
+                `QL_INTERCEPT.ENTER`: run handler before the target syscall is called
+                `QL_INTERCEPT.EXIT` : run handler after the target syscall is called
+        """
+
         if type(target) is str:
             target = f'{SYSCALL_PREF}{target}'
-
-        # BUG: workaround missing arg
-        if intercept is None:
-            intercept = QL_INTERCEPT.CALL
 
         self.posix_syscall_hooks[intercept][target] = handler
 
