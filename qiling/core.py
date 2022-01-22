@@ -4,7 +4,7 @@
 #
 
 from configparser import ConfigParser
-import ntpath, os, pickle, platform
+import ntpath, os, pickle
 
 # See https://stackoverflow.com/questions/39740632/python-type-hinting-without-cyclic-imports
 from typing import Callable, Dict, List, Union
@@ -22,6 +22,7 @@ if TYPE_CHECKING:
 
 from .const import QL_ARCH_ENDIAN, QL_ENDIAN, QL_VERBOSE, QL_OS_INTERPRETER, QL_OS_BAREMETAL
 from .exception import QlErrorFileNotFound, QlErrorArch, QlErrorOsType
+from .host import QlHost
 from .utils import *
 from .core_struct import QlCoreStructs
 from .core_hooks import QlCoreHooks
@@ -74,8 +75,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._log_override = log_override
         self._log_plain = log_plain
         self._filter = filter
-        self._platform_os = ostype_convert(platform.system().lower())
-        self._platform_arch = arch_convert(platform.machine().lower())
         self._internal_exception = None
         self._uc = None
         self._stop_options = QlStopOptions(stackpointer=stop_on_stackpointer, exit_trap=stop_on_exit_trap)
@@ -126,6 +125,8 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         #################
         # arch os setup #
         #################
+        self._host = QlHost()
+
         if type(self._archtype) is str:
             self._archtype = arch_convert(self._archtype)
         if type(self._ostype) is str:
@@ -422,36 +423,11 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         return self.ostype in QL_OS_BAREMETAL
 
     @property
-    def platform_os(self):
-        """ Specify current platform os where Qiling runs on.
-
-            Type: int
-            Values: All possible values from platform.system()
+    def host(self) -> QlHost:
+        """Provide an interface to the hosting platform where Qiling runs on.
         """
-        return self._platform_os
 
-    @platform_os.setter
-    def platform_os(self, value):
-        if type(value) is str:
-            self._platform_os = ostype_convert(value.lower())
-        else:
-            self._platform_os = value
-
-    @property
-    def platform_arch(self):
-        """ Specify current platform arch where Qiling runs on.
-
-            Type: int
-            Values: All possible values from platform.system()
-        """
-        return self._platform_arch
-
-    @platform_arch.setter
-    def platform_arch(self, value):
-        if type(value) is str:
-            self._platform_arch = arch_convert(value.lower())
-        else:
-            self._platform_arch = value
+        return self._host
 
     @property
     def internal_exception(self) -> Exception:
