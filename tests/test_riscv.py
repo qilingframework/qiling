@@ -18,7 +18,7 @@ class RISCVTest(unittest.TestCase):
 
         def close(ql, fd):
             return 0
-        ql.set_syscall("close", close, QL_INTERCEPT.CALL)
+        ql.os.set_syscall("close", close, QL_INTERCEPT.CALL)
         ql.os.stdout = stdout
         ql.run()
         self.assertTrue(stdout.read() == b'Hello, World!\n')
@@ -32,7 +32,7 @@ class RISCVTest(unittest.TestCase):
 
         def close(ql, fd):
             return 0
-        ql.set_syscall("close", close, QL_INTERCEPT.CALL)
+        ql.os.set_syscall("close", close, QL_INTERCEPT.CALL)
         ql.os.stdout = stdout
         ql.run()
         self.assertTrue(stdout.read() == b'Hello, World!\n')
