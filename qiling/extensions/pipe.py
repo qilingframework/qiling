@@ -2,8 +2,6 @@
 #
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
-import os
-
 from typing import TextIO
 
 from qiling.os.posix import stat
@@ -48,6 +46,13 @@ class SimpleStringBuffer(TextIO):
 
     def readable(self) -> bool:
         return True
+
+    def seek(self, offset: int, origin: int) -> int:
+        # Imitate os.lseek
+        raise OSError("Illega Seek")
+
+    def lseek(self, offset: int, origin: int) -> int:
+        return self.seek(offset, origin)
 
     def seekable(self) -> bool:
         return False
@@ -127,7 +132,8 @@ class SimpleBufferedStream(TextIO):
 
     def read(self, n: int = -1) -> bytes:
         if n == -1:
-            ret = self.buff
+            ret = self.buff[self.cur:]
+            self.cur = len(self.buff)
         else:
             ret = self.buff[self.cur:self.cur + n]
 
@@ -147,7 +153,12 @@ class SimpleBufferedStream(TextIO):
         return bytes(ret)
 
     def write(self, s: bytes) -> int:
-        self.buff.extend(s)
+        if self.cur == 0:
+            self.buff.extend(s)
+        else:
+            self.buff[:self.cur].extend(s)
+        
+        self.cur += len(s)
 
         return len(s)
 
@@ -162,3 +173,9 @@ class SimpleBufferedStream(TextIO):
 
     def seekable(self) -> bool:
         return True
+    
+    # This method simply extends internal buffer with self.cur untouched.
+    def extend(self, s: bytes) -> int:
+        self.buff.extend(s)
+
+        return len(s)
