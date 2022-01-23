@@ -53,6 +53,9 @@ if "win32" in sys.platform:
 if "win32" not in sys.platform:
     requirements += ["unicornafl>=2.0.0"]
 
+if "linux" in sys.platform:
+    requirements += ["fuzzercorn>=0.0.1"]
+
 setup(
     name='qiling',
     version=VERSION,
