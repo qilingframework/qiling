@@ -24,7 +24,7 @@ requirements = [
     "pyyaml>=6.0"
 ]
 
-evm_extra = {
+extras = {
     "evm": [
         "blake2b-py>=0.1.2",
         "cached-property>=1.5.2;python_version<'3.8'",
@@ -41,7 +41,10 @@ evm_extra = {
         "numpy",
         "rich",
         "cmd2"
-     ] 
+    ],
+    "fuzz" : [
+
+    ]
 }
 
 with open("README.md", "r", encoding="utf-8") as ld:
@@ -51,10 +54,10 @@ if "win32" in sys.platform:
     requirements += ["windows-curses>=2.1.0"]
 
 if "win32" not in sys.platform:
-    requirements += ["unicornafl>=2.0.0"]
+    extras["fuzz"] += ["unicornafl>=2.0.0"]
 
 if "linux" in sys.platform:
-    requirements += ["fuzzercorn>=0.0.1"]
+    extras["fuzz"] += ["fuzzercorn>=0.0.1"]
 
 setup(
     name='qiling',
@@ -95,5 +98,5 @@ setup(
     scripts=['qltool'],
     include_package_data=True,
     install_requires=requirements,
-    extras_require=evm_extra,
+    extras_require=extras,
 )
