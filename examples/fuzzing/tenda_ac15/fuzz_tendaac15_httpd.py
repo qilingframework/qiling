@@ -16,6 +16,7 @@ import os, pickle, socket, sys, threading
 sys.path.append("../../../")
 from qiling import *
 from qiling.const import QL_VERBOSE
+from qiling.extensions.afl import ql_afl_fuzz
 
 def patcher(ql):
     br0_addr = ql.mem.search("br0".encode() + b'\x00')
@@ -40,7 +41,7 @@ def main(input_file, enable_trace=False):
         """
         Callback from inside
         """
-        _ql.afl_fuzz(input_file=input_file, place_input_callback=place_input_callback, exits=[ql.os.exit_point])
+        ql_afl_fuzz(_ql, input_file=input_file, place_input_callback=place_input_callback, exits=[ql.os.exit_point])
 
     ql.hook_address(callback=start_afl, address=0x10930+8)
     

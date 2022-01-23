@@ -28,6 +28,7 @@ sys.path.append("../../..")
 from qiling import Qiling
 from qiling.const import QL_VERBOSE
 from qiling.extensions import pipe
+from qiling.extensions.afl import ql_afl_fuzz
 
 def main(input_file: str):
     mock_stdin = pipe.SimpleInStream(sys.stdin.fileno())
@@ -50,7 +51,7 @@ def main(input_file: str):
     def start_afl(_ql: Qiling):
         """Callback from inside.
         """
-        _ql.afl_fuzz(input_file=input_file, place_input_callback=place_input_callback, exits=[ql.os.exit_point])
+        ql_afl_fuzz(_ql, input_file=input_file, place_input_callback=place_input_callback, exits=[ql.os.exit_point])
 
     # get image base address
     ba = ql.loader.images[0].base

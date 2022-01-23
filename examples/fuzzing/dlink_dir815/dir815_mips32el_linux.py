@@ -10,6 +10,7 @@ import os,sys
 sys.path.append("../../..")
 from qiling import *
 from qiling.const import QL_VERBOSE
+from qiling.extensions.afl import ql_afl_fuzz
 
 def main(input_file, enable_trace=False):
     
@@ -36,7 +37,7 @@ def main(input_file, enable_trace=False):
         """
         Callback from inside
         """
-        _ql.afl_fuzz(input_file=input_file, place_input_callback=place_input_callback, exits=[ql.os.exit_point])
+        ql_afl_fuzz(_ql, input_file=input_file, place_input_callback=place_input_callback, exits=[ql.os.exit_point])
 
     addr = ql.mem.search("HTTP_COOKIE=uid=1234&password=".encode())
     ql.target_addr = addr[0]

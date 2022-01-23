@@ -18,6 +18,7 @@ from binascii import hexlify
 sys.path.append("../../..")
 from qiling import *
 from qiling.extensions import pipe
+from qiling.extensions.afl import ql_afl_fuzz
 
 def main(input_file, enable_trace=False):
     mock_stdin = pipe.SimpleInStream(sys.stdin.fileno())
@@ -36,7 +37,7 @@ def main(input_file, enable_trace=False):
         return True
 
     def start_afl(_ql: Qiling):
-        _ql.afl_fuzz(input_file=input_file, place_input_callback=place_input_callback, exits=[ql.os.exit_point])
+        ql_afl_fuzz(_ql, input_file=input_file, place_input_callback=place_input_callback, exits=[ql.os.exit_point])
 
     LIBC_BASE = int(ql.profile.get("OS32", "interp_address"), 16)
 
