@@ -157,7 +157,8 @@ class SimpleBufferedStream(TextIO):
         if self.cur == 0:
             self.buff.extend(s)
         else:
-            self.buff[:self.cur].extend(s)
+            self.buff = self.buff[:self.cur]
+            self.buff.extend(s)
         
         self.cur += len(s)
 
