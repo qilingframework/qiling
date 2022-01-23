@@ -43,6 +43,9 @@ class ql_file:
     def fileno(self) -> int:
         return self.__fd
 
+    def seek(self, lseek_offset: int, lseek_origin: int = os.SEEK_SET) -> int:
+        return self.lseek(lseek_offset, lseek_origin)
+
     def lseek(self, lseek_offset: int, lseek_origin: int = os.SEEK_SET) -> int:
         return os.lseek(self.__fd, lseek_offset, lseek_origin)
 

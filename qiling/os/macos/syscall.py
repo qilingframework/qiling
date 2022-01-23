@@ -205,7 +205,7 @@ def ql_syscall_pread(ql, fd, buf, nbyte, offset, *args, **kw):
         fd, buf, nbyte, offset
     ))
     if fd >= 0 and fd <= MAX_FD_SIZE:
-        ql.os.fd[fd].lseek(offset)
+        ql.os.fd[fd].seek(offset)
         data = ql.os.fd[fd].read(nbyte)
         ql.mem.write(buf, data)
     set_eflags_cf(ql, 0x0)
@@ -390,7 +390,7 @@ def ql_syscall_shared_region_map_and_slide_np(ql, fd, count, mappings_addr, slid
     for i in range(count):
         mapping = SharedFileMappingNp(ql)
         mapping.read_mapping(mappings_addr)
-        ql.os.fd[fd].lseek(mapping.sfm_file_offset)
+        ql.os.fd[fd].seek(mapping.sfm_file_offset)
         content = ql.os.fd[fd].read(mapping.sfm_size)
         ql.mem.write(mapping.sfm_address, content)
         mappings_addr += mapping.size

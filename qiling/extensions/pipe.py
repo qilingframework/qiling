@@ -48,12 +48,9 @@ class SimpleStringBuffer(TextIO):
     def readable(self) -> bool:
         return True
 
-    def seek(self, offset: int, origin: int) -> int:
+    def seek(self, offset: int, origin: int = 0) -> int:
         # Imitate os.lseek
         raise OSError("Illega Seek")
-
-    def lseek(self, offset: int, origin: int) -> int:
-        return self.seek(offset, origin)
 
     def seekable(self) -> bool:
         return False
@@ -110,23 +107,22 @@ class SimpleBufferedStream(TextIO):
         self.buff = bytearray()
         self.cur = 0
 
-    def lseek(self, offset: int, origin: int) -> int:
+    def seek(self, offset: int, origin: int = 0) -> int:
         if origin == 0: # SEEK_SET
             base = 0
         elif origin == 1: # SEEK_CUR
             base = self.cur
         else: # SEEK_END
-            base = len(self.buff) - 1
+            base = len(self.buff)
 
         if base + offset >= len(self.buff):
-            self.cur = base + offset - 1
+            self.cur = len(self.buff)
+        elif base + offset <= 0:
+            self.cur = 0
         else:
             self.cur = base + offset
 
         return self.cur
-
-    def seek(self, offset: int, origin: int) -> int:
-        return self.lseek(offset, origin)
     
     def tell(self) -> int:
         return self.cur
@@ -138,7 +134,7 @@ class SimpleBufferedStream(TextIO):
         else:
             ret = self.buff[self.cur:self.cur + n]
 
-            if self.cur + n >= len(self.buff) - 1:
+            if self.cur + n >= len(self.buff):
                 self.cur = len(self.buff)
             else:
                 self.cur = self.cur + n
@@ -154,12 +150,9 @@ class SimpleBufferedStream(TextIO):
         return bytes(ret)
 
     def write(self, s: bytes) -> int:
-        if self.cur == 0:
-            self.buff.extend(s)
-        else:
-            self.buff = self.buff[:self.cur]
-            self.buff.extend(s)
-        
+        self.buff = self.buff[:self.cur]
+        self.buff.extend(s)
+
         self.cur += len(s)
 
         return len(s)
@@ -175,9 +168,3 @@ class SimpleBufferedStream(TextIO):
 
     def seekable(self) -> bool:
         return True
-    
-    # This method simply extends internal buffer with self.cur untouched.
-    def extend(self, s: bytes) -> int:
-        self.buff.extend(s)
-
-        return len(s)
