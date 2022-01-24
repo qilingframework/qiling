@@ -131,10 +131,10 @@ class QlPathManager:
         real_path = self.convert_path(self.ql.rootfs, self.cwd, path)
 
         if os.path.islink(real_path):
-            link_path = Path(os.readlink(real_path))
+            link_path = self.convert_path(self.ql.rootfs, self.cwd, Path(os.readlink(real_path)))
 
             if not link_path.is_absolute():
-                real_path = Path(os.path.join(os.path.dirname(real_path), link_path))
+                real_path = self.convert_path(self.ql.rootfs, real_path, link_path)
 
             # resolve multilevel symbolic link
             if not os.path.exists(real_path):
@@ -151,6 +151,8 @@ class QlPathManager:
 
                     if os.path.exists(real_path):
                         break
+            else:
+                real_path = link_path
 
         return str(real_path.absolute())
 
