@@ -106,6 +106,6 @@ class QlArchARM(QlArch):
 
     def enable_vfp(self) -> None:
         # set full access to cp10 and cp11
-        self.regs.c1_c0_2 = self.regs.c1_c0_2 | (0xb11 << 20) | (0xb11 << 22)
+        self.regs.c1_c0_2 = self.regs.c1_c0_2 | (0b11 << 20) | (0b11 << 22)
 
         self.regs.fpexc = (1 << 30)
