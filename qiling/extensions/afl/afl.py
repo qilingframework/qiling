@@ -13,6 +13,7 @@ def ql_afl_fuzz(ql: Qiling,
         """ Fuzz a range of code with afl++.
             This function wraps some common logic with unicornafl.uc_afl_fuzz.
             NOTE: If no afl-fuzz instance is found, this function is almost identical to ql.run.
+            :param Qiling ql: The Qiling instance.
             :param str input_file: This usually is the input file name provided by the command argument.
             :param Callable place_input_callback: This callback is triggered every time a new child is
             generated. It returns True if the input is accepted, or the input would be skipped.
