@@ -9,6 +9,7 @@ from unicorn import UcError
 from qiling import Qiling
 from qiling.arch.x86_const import UC_X86_INS_SYSCALL
 from qiling.arch.x86 import GDTManager, ql_x8664_set_gs, ql_x86_register_cs, ql_x86_register_ds_ss_es
+from qiling.arch import arm_utils
 from qiling.cc import QlCC, intel, arm, mips, riscv
 from qiling.const import QL_ARCH, QL_INTERCEPT
 from qiling.os.fcall import QlFunctionCall
@@ -55,7 +56,7 @@ class QlOsLinux(QlOsPosix):
             self.ql.arch.enable_vfp()
             self.ql.hook_intno(self.hook_syscall, 2)
             self.thread_class = thread.QlLinuxARMThread
-            self.ql.arch.init_get_tls()
+            arm_utils.init_get_tls(self.ql, self.ql.arch.arm_get_tls_addr)
 
         # MIPS32
         elif self.ql.archtype == QL_ARCH.MIPS:
