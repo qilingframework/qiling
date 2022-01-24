@@ -124,7 +124,7 @@ def syscall_mmap_impl(ql: Qiling, addr: int, mlen: int, prot: int, flags: int, f
         raise QlMemoryMappedError("Error: trying to zero memory")
 
     if ((flags & MAP_ANONYMOUS) == 0) and 0 <= fd < NR_OPEN and ql.os.fd[fd] != 0:
-        ql.os.fd[fd].lseek(pgoffset)
+        ql.os.fd[fd].seek(pgoffset)
         data = ql.os.fd[fd].read(mlen)
         mem_info = str(ql.os.fd[fd].name)
         ql.os.fd[fd]._is_map_shared = flags & MAP_SHARED

@@ -7,10 +7,11 @@ from configparser import ConfigParser
 import ntpath, os, pickle, platform
 
 # See https://stackoverflow.com/questions/39740632/python-type-hinting-without-cyclic-imports
-from typing import Dict, List, Union
+from typing import Callable, Dict, List, Union
 from typing import TYPE_CHECKING
 
 from unicorn.unicorn import Uc
+
 if TYPE_CHECKING:
     from .arch.register import QlRegisterManager
     from .arch.arch import QlArch
@@ -839,7 +840,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
     # NOTE: unlike stack_push(), this does not change stack register
     def stack_write(self, offset, data):
         return self.arch.stack_write(offset, data)
-
 
     # Assembler/Diassembler API
     @property
