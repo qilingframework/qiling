@@ -10,6 +10,7 @@ from typing import Callable
 from unicorn import UcError
 
 from qiling import Qiling
+from qiling.arch import arm_utils
 from qiling.os.posix.posix import QlOsPosix
 from qiling.os.qnx.const import NTO_SIDE_CHANNEL, SYSMGR_PID, SYSMGR_CHID, SYSMGR_COID
 from qiling.os.qnx.helpers import QnxConn
@@ -68,7 +69,7 @@ class QlOsQnx(QlOsPosix):
             self.ql.arch.enable_vfp()
             self.ql.hook_intno(self.hook_syscall, 2)
             #self.thread_class = thread.QlLinuxARMThread
-            self.ql.arch.init_get_tls()
+            arm_utils.init_get_tls(self.ql, self.ql.arch.arm_get_tls_addr)
 
     
     def hook_syscall(self, intno= None, int = None):
