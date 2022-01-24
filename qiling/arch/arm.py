@@ -109,24 +109,3 @@ class QlArchARM(QlArch):
         self.regs.c1_c0_2 = self.regs.c1_c0_2 | (0xb11 << 20) | (0xb11 << 22)
 
         self.regs.fpexc = (1 << 30)
-
-    """
-    set_tls
-    """
-    def init_get_tls(self):
-        self.ql.mem.map(0xFFFF0000, 0x1000, info="[arm_tls]")
-        """
-        'adr r0, data; ldr r0, [r0]; mov pc, lr; data:.ascii "\x00\x00"'
-        """
-        sc = b'\x04\x00\x8f\xe2\x00\x00\x90\xe5\x0e\xf0\xa0\xe1\x00\x00\x00\x00'
-
-        # if self.endian == QL_ENDIAN.EB:
-        #    sc = swap_endianess(sc)
-
-        self.ql.mem.write(self.arm_get_tls_addr, sc)
-        self.ql.log.debug("Set init_kernel_get_tls")    
-
-    def swap_endianess(self, s: bytes, blksize=4) -> bytes:
-        blocks = (s[i:i + blksize] for i in range(0, len(s), blksize))
-
-        return b''.join(bytes(reversed(b)) for b in blocks)
