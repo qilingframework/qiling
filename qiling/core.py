@@ -259,24 +259,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
     # If an option doesn't have a setter, it means that it can be only set during Qiling.__init__
 
     @property
-    def console(self) -> bool:
-        """ Specify whether enabling console output. 
-
-            Type: bool
-            Example: Qiling(console=True)
-        """
-        return self._console
-
-    @property
-    def log_file(self) -> str:
-        """ Log to a file.
-
-            Type: str
-            Example: Qiling(log_file="./ql.log")
-        """
-        return self._log_file
-
-    @property
     def multithread(self) -> bool:
         """ Specify whether multithread has been enabled.
 
