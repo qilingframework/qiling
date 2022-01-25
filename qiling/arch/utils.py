@@ -24,41 +24,45 @@ class QlArchUtils:
         self._disasm_hook = None
         self._block_hook = None
 
-    def get_offset_and_name(self, addr: int) -> Tuple[int, str]:
+    def get_base_and_name(self, addr: int) -> Tuple[int, str]:
         for begin, end, _, name, _ in self.ql.mem.map_info:
             if begin <= addr < end:
-                return addr - begin, basename(name)
+                return begin, basename(name)
 
         return addr, '-'
 
     def disassembler(self, ql: Qiling, address: int, size: int):
-        tmp = ql.mem.read(address, size)
-        qd = ql.arch.disassembler
+        data = ql.mem.read(address, size)
+        ba, name = self.get_base_and_name(address)
 
-        offset, name = self.get_offset_and_name(address)
-        log_data = f'{address:0{ql.arch.bits // 4}x} [{name:20s} + {offset:#08x}]  {tmp.hex(" "):30s}'
-        log_insn = '\n> '.join(f'{insn.mnemonic:20s} {insn.op_str}' for insn in qd.disasm(tmp, address))
+        anibbles = ql.arch.bits // 4
 
-        ql.log.info(log_data + log_insn)
+        for insn in ql.arch.disassembler.disasm(data, address):
+            offset = insn.address - ba
+
+            ql.log.info(f'{insn.address:0{anibbles}x} [{name:20s} + {offset:#08x}]  {insn.bytes.hex(" "):20s} {insn.mnemonic:20s} {insn.op_str}')
 
         if ql.verbose >= QL_VERBOSE.DUMP:
             for reg in ql.arch.regs.register_mapping:
-                if type(reg) is str:
-                    ql.log.debug(f'{reg}\t: {ql.arch.regs.read(reg):#x}')
+                ql.log.info(f'{reg:10s} : {ql.arch.regs.read(reg):#x}')
 
     def setup_output(self, verbosity: QL_VERBOSE):
+        def ql_hook_block_disasm(ql: Qiling, address: int, size: int):
+            self.ql.log.info(f'\nTracing basic block at {address:#x}')
 
         if self._disasm_hook:
             self._disasm_hook.remove()
             self._disasm_hook = None
+
         if self._block_hook:
             self._block_hook.remove()
             self._block_hook = None
 
-        if self.ql.verbose >= QL_VERBOSE.DISASM:
-            if self.ql.verbose >= QL_VERBOSE.DUMP:
-                self._block_hook = self.ql.hook_block(ql_hook_block_disasm)
+        if verbosity >= QL_VERBOSE.DISASM:
             self._disasm_hook = self.ql.hook_code(self.disassembler)
+
+            if verbosity >= QL_VERBOSE.DUMP:
+                self._block_hook = self.ql.hook_block(ql_hook_block_disasm)
 
 # used by qltool prior to ql instantiation. to get an assembler object
 # after ql instantiation, use the appropriate ql.arch method
