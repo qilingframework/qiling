@@ -67,13 +67,9 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._ostype = ostype
         self._archtype = archtype
         self._profile = profile
-        self._console = console
-        self._log_file = log_file
         self._multithread = multithread
         self._log_file_fd = None
         self._log_filter = None
-        self._log_override = log_override
-        self._log_plain = log_plain
         self._filter = filter
         self._internal_exception = None
         self._uc = None
@@ -171,11 +167,11 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         # Logger #
         ##########
         self._log_file_fd, self._log_filter = ql_setup_logger(self,
-                                                              self._log_file,
-                                                              self._console,
+                                                              log_file,
+                                                              console,
                                                               self._filter,
-                                                              self._log_override,
-                                                              self._log_plain)
+                                                              log_override,
+                                                              log_plain)
 
         self.verbose = verbose
 
