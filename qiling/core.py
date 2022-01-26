@@ -38,7 +38,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             code=None,
             ostype=None,
             archtype=None,
-            bigendian=False,
             verbose=QL_VERBOSE.DEFAULT,
             profile=None,
             console=True,
@@ -51,6 +50,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             stop_on_stackpointer = False,
             stop_on_exit_trap = False,
             *,
+            endian: QL_ENDIAN = None,
             thumb: bool = False
     ):
         """ Create a Qiling instance.
@@ -133,24 +133,26 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
         if self._archtype is None:
             guessed_archtype, guessed_ostype, guessed_archendian = ql_guess_emu_env(self._path)            
+
             self._archtype = guessed_archtype
-            archendian = guessed_archendian
 
             if self._ostype is None:
                 self._ostype = guessed_ostype
 
+            if endian is None:
+                archendian = guessed_archendian
+
         elif self._ostype == None:
             self._ostype = arch_os_convert(self._archtype)
-        
+
         if self._ostype is None or not ql_is_valid_ostype(self._ostype):
             raise QlErrorOsType("Invalid OS: %s" % (self._ostype))
 
         if self._archtype is None or not ql_is_valid_arch(self._archtype):
             raise QlErrorArch("Invalid ARCH: %s" % (self._archtype))
 
-        if bigendian and self._archtype in QL_ARCH_ENDIAN:
-            archendian = QL_ENDIAN.EB
-
+        # if endianess is still undetermined, set it to little-endian.
+        # this setting is ignored for architectures with predfined endianess
         if archendian is None:
             archendian = QL_ENDIAN.EL
 
