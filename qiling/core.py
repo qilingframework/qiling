@@ -7,13 +7,12 @@ from configparser import ConfigParser
 import ntpath, os, pickle
 
 # See https://stackoverflow.com/questions/39740632/python-type-hinting-without-cyclic-imports
-from typing import Callable, Dict, List, Union
+from typing import Dict, List, Union
 from typing import TYPE_CHECKING
 
 from unicorn.unicorn import Uc
 
 if TYPE_CHECKING:
-    from .arch.register import QlRegisterManager
     from .arch.arch import QlArch
     from .os.os import QlOs
     from .os.memory import QlMemoryManager
@@ -326,7 +325,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
               - "windows" : Windows
               - "uefi" : UEFI
               - "dos" : DOS
-            Example: Qiling(code=b"\x90", ostype="macos", archtype="x8664", bigendian=False)
+            Example: Qiling(code=b"\x90", ostype="macos", archtype="x8664")
         """
         return self._ostype
 
@@ -345,7 +344,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
               - "arm" : ARM
               - "arm64" : ARM64
               - "a8086" : 8086
-            Example: Qiling(code=b"\x90", ostype="macos", archtype="x8664", bigendian=False)
+            Example: Qiling(code=b"\x90", ostype="macos", archtype="x8664")
         """
         return self._archtype
 
@@ -356,7 +355,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             Note: It can't be used with "argv" parameter.
 
             Type: bytes
-            Example: Qiling(code=b"\x90", ostype="macos", archtype="x8664", bigendian=False)
+            Example: Qiling(code=b"\x90", ostype="macos", archtype="x8664")
         """
         return self._code
 
@@ -425,23 +424,20 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._libcache = lc
 
     @property
-    def verbose(self):
-        """ Set the verbose level.
+    def verbose(self) -> QL_VERBOSE:
+        """Set verbosity level.
 
-            Type: int
-            Values:
-              - 0  : logging.WARNING, almost no additional logs except the program output.
-              - >=1: logging.INFO, the default logging level.
-              - >=4: logging.DEBUG.
-              - >=10: Disasm each executed instruction.
-              - >=20: The most verbose output, dump registers and disasm the function blocks.
-            Example: - ql = Qiling(verbose=5)
-                     - ql.verbose = 0
+        Values:
+            `QL_VERBOSE.OFF`     : mask off anything below warnings, errors and critical severity
+            `QL_VERBOSE.DEFAULT` : info logging level: default verbosity
+            `QL_VERBOSE.DEBUG`   : debug logging level: higher verbosity
+            `QL_VERBOSE.DISASM`  : debug verbosity along with disassembly trace (slow!)
+            `QL_VERBOSE.DUMP`    : disassembly trace along with cpu context dump
         """
         return self._verbose
 
     @verbose.setter
-    def verbose(self, v):
+    def verbose(self, v: QL_VERBOSE):
         self._verbose = v
 
         self.log.setLevel(ql_resolve_logger_level(v))
