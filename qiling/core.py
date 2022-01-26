@@ -50,7 +50,8 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             filter = None,
             stop_on_stackpointer = False,
             stop_on_exit_trap = False,
-            **kwargs
+            *,
+            thumb: bool = False
     ):
         """ Create a Qiling instance.
 
@@ -153,7 +154,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         if archendian is None:
             archendian = QL_ENDIAN.EL
 
-        self._arch = arch_setup(self.archtype, archendian, kwargs.get('thumb', False), self)
+        self._arch = arch_setup(self.archtype, archendian, thumb, self)
 
         self.uc = self.arch.uc
 
