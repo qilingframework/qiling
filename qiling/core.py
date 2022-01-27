@@ -7,7 +7,7 @@ from configparser import ConfigParser
 import os, pickle
 
 # See https://stackoverflow.com/questions/39740632/python-type-hinting-without-cyclic-imports
-from typing import Dict, List, Union
+from typing import AnyStr, MutableMapping, Sequence, Union
 from typing import TYPE_CHECKING
 
 from unicorn.unicorn import Uc
@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from .hw.hw import QlHwManager
     from .loader.loader import QlLoader
 
-from .const import QL_ARCH_ENDIAN, QL_ENDIAN, QL_VERBOSE, QL_OS_INTERPRETER, QL_OS_BAREMETAL
+from .const import QL_ARCH, QL_ENDIAN, QL_OS, QL_VERBOSE, QL_OS_INTERPRETER, QL_OS_BAREMETAL
 from .exception import QlErrorFileNotFound, QlErrorArch, QlErrorOsType
 from .host import QlHost
 from .utils import *
@@ -28,17 +28,17 @@ from .core_hooks import QlCoreHooks
 from .__version__ import __version__
 
 # Mixin Pattern
-class Qiling(QlCoreHooks, QlCoreStructs):    
+class Qiling(QlCoreHooks, QlCoreStructs):
     def __init__(
             self,
-            argv=None,
-            rootfs=None,
-            env=None,
-            code=None,
-            ostype=None,
-            archtype=None,
-            verbose=QL_VERBOSE.DEFAULT,
-            profile=None,
+            argv: Sequence[str] = None,
+            rootfs: str = None,
+            env: MutableMapping[AnyStr, AnyStr] = {},
+            code: bytes = None,
+            ostype: Union[str, QL_OS] = None,
+            archtype: Union[str, QL_ARCH] = None,
+            verbose: QL_VERBOSE = QL_VERBOSE.DEFAULT,
+            profile: str = None,
             console=True,
             log_file=None,
             log_override=None,
@@ -283,10 +283,9 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         return self._profile
 
     @property
-    def argv(self) -> List[str]:
+    def argv(self) -> Sequence[str]:
         """ The program argv.
 
-            Type: List[str]
             Example: Qiling(argv=['/bin/ls', '-a'])
         """
         return self._argv
@@ -301,10 +300,9 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         return self._rootfs
 
     @property
-    def env(self) -> Dict[str, str]:
+    def env(self) -> MutableMapping[AnyStr, AnyStr]:
         """ The program environment variables.
 
-            Type: Dict[str, str]
             Example: Qiling(env={"LC_ALL" : "en_US.UTF-8"})
         """
         return self._env
