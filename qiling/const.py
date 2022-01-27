@@ -36,12 +36,12 @@ class QL_OS(IntEnum):
     BLOB = 210
 
 class QL_VERBOSE(IntEnum):
-    OFF = -1    # turn off all the output
-    MINIMUM = 0 # output only warnings 
-    DEFAULT = 1 # output warnings and Qiling execute process information
-    DEBUG = 4   # output all logs above and debug information, include syscall information
-    DISASM = 10 # output all assembly instructions during Qiling execution
-    DUMP = 20   # output any log Qiling can, include instructions and registers
+    DISABLED = -1 # turn off all the output
+    OFF = 0       # output only warnings 
+    DEFAULT = 1   # output warnings and Qiling execute process information
+    DEBUG = 4     # output all logs above and debug information, include syscall information
+    DISASM = 10   # output all assembly instructions during Qiling execution
+    DUMP = 20     # output any log Qiling can, include instructions and registers
 
 class QL_DEBUGGER(IntEnum):
     GDB = 1
