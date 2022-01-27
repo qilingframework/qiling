@@ -4,7 +4,7 @@
 #
 
 from configparser import ConfigParser
-import ntpath, os, pickle
+import os, pickle
 
 # See https://stackoverflow.com/questions/39740632/python-type-hinting-without-cyclic-imports
 from typing import Dict, List, Union
@@ -60,9 +60,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         ##################################
         # Definition during ql=Qiling()  #
         ##################################
-        self._argv = argv
-        self._rootfs = rootfs
-        self._env = env if env else {}
+        self._env = env
         self._code = code
         self._ostype = ostype
         self._archtype = archtype
@@ -77,7 +75,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         ##################################
         # Definition after ql=Qiling()   #
         ##################################
-        self._verbose = verbose
         self._libcache = libcache
         self._patch_bin = []
         self._patch_lib = []
@@ -99,23 +96,26 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         ##############
         # argv setup #
         ##############
-        if self._argv is None:
-            self._argv = ["qilingcode"]
+        if argv is None:
+            argv = ['qilingcode']
 
-        elif not os.path.exists(str(self._argv[0])):
-            raise QlErrorFileNotFound("Target binary not found: %s" % (self._argv[0]))
+        elif not os.path.exists(argv[0]):
+            raise QlErrorFileNotFound(f'Target binary not found: "{argv[0]}"')
+
+        self._argv = argv
+        self._path = self.argv[0]
+        self._targetname = os.path.basename(self.path)
 
         ################
         # rootfs setup #
         ################
-        if self._rootfs is None:
-            self._rootfs = "."
-            
-        elif not os.path.exists(self._rootfs):
-            raise QlErrorFileNotFound("Target rootfs not found: %s" % (self._rootfs))
-        
-        self._path = self._argv[0]
-        self._targetname = ntpath.basename(self.path)
+        if rootfs is None:
+            rootfs = '.'
+
+        elif not os.path.exists(rootfs):
+            raise QlErrorFileNotFound(f'Target rootfs not found: "{rootfs}"')
+
+        self._rootfs = rootfs
 
         #################
         # arch os setup #
