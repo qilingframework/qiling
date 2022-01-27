@@ -435,17 +435,13 @@ class Process():
 
 
 class QlLoaderPE(QlLoader, Process):
-    def __init__(self, ql: Qiling):
+    def __init__(self, ql: Qiling, libcache: bool):
         super().__init__(ql)
 
         self.ql         = ql
         self.path       = self.ql.path
         self.is_driver  = False
-
-        if ql.libcache is True:
-            self.libcache = QlPeCache()
-        else:
-            self.libcache = ql.libcache or None
+        self.libcache   = QlPeCache() if libcache else None
 
     def run(self):
         self.init_dlls = [b"ntdll.dll", b"kernel32.dll", b"user32.dll"]

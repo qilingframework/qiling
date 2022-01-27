@@ -43,14 +43,14 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             log_file=None,
             log_override=None,
             log_plain=False,
-            libcache = False,
             multithread = False,
             filter = None,
             stop_on_stackpointer = False,
             stop_on_exit_trap = False,
             *,
             endian: QL_ENDIAN = None,
-            thumb: bool = False
+            thumb: bool = False,
+            libcache: bool = False
     ):
         """ Create a Qiling instance.
 
@@ -179,7 +179,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         ##########
         # Loader #
         ##########
-        self._loader = loader_setup(self._ostype, self)
+        self._loader = loader_setup(self, self.ostype, libcache)
 
         ###########
         # Profile #

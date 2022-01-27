@@ -390,10 +390,16 @@ def ql_guess_emu_env(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], Opt
     return arch, ostype, endian
 
 
-def loader_setup(ostype: QL_OS, ql):
-    loadertype_str = loadertype_convert_str(ostype)
-    function_name = "QlLoader" + loadertype_str
-    return ql_get_module_function(f"qiling.loader.{loadertype_str.lower()}", function_name)(ql)
+def loader_setup(ql, ostype: QL_OS, libcache: bool):
+    args = [libcache] if ostype == QL_OS.WINDOWS else []
+
+    qlloader_name = loadertype_convert_str(ostype)
+    qlloader_path = f'qiling.loader.{qlloader_name.lower()}'
+    qlloader_class = f'QlLoader{qlloader_name.upper()}'
+
+    obj = ql_get_module_function(qlloader_path, qlloader_class)
+
+    return obj(ql, *args)
 
 
 def component_setup(component_type, component_name, ql):
