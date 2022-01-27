@@ -28,15 +28,13 @@ def read_file(fname: str):
 
 class __arg_env(argparse.Action):
     def __call__(self, parser, namespace, values, option_string):
-        env = {}
-
         if os.path.exists(values):
             with open(values, 'rb') as f:
                 env = pickle.load(f)
         else:
             env = ast.literal_eval(values)
 
-        setattr(namespace, self.dest, env)
+        setattr(namespace, self.dest, env or {})
 
 class __arg_verbose(argparse.Action):
     def __call__(self, parser, namespace, values, option_string):
@@ -200,7 +198,7 @@ if __name__ == '__main__':
 
     # set common options
     comm_parser.add_argument('-v', '--verbose', choices=verbose_map, default=QL_VERBOSE.DEFAULT, action=__arg_verbose, help='set verbosity level')
-    comm_parser.add_argument('--env', metavar="FILE", action=__arg_env, help="pickle file containing an environment dictionary")
+    comm_parser.add_argument('--env', metavar="FILE", action=__arg_env, default={}, help="pickle file containing an environment dictionary")
     comm_parser.add_argument('-g', '--gdb', nargs='?', metavar='SERVER:PORT', const='gdb', help='enable gdb server')
     comm_parser.add_argument('--qdb', action='store_true', help='attach Qdb at entry point, it\'s MIPS, ARM(THUMB) supported only for now')
     comm_parser.add_argument('--rr', action='store_true', help='switch on record and replay feature in qdb, only works with --qdb')
