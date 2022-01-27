@@ -66,7 +66,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._code = code
         self._ostype = ostype
         self._archtype = archtype
-        self._profile = profile
         self._multithread = multithread
         self._log_file_fd = None
         self._log_filter = None
@@ -185,7 +184,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         ###########
         # Profile #
         ###########
-        self._profile = profile_setup(self)
+        self._profile = profile_setup(self, self.ostype, profile)
 
         ##############
         # Components #

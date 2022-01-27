@@ -469,23 +469,24 @@ def os_setup(ostype: QL_OS, ql):
     return ql_get_module_function(f"qiling.os.{ostype_str.lower()}.{ostype_str.lower()}", function_name)(ql)
 
 
-def profile_setup(ql):
-    _profile = "Default"
-
-    if ql.profile != None:
-        _profile = ql.profile
-
-    ql.log.debug(f'Profile: {_profile}')
+def profile_setup(ql, ostype: QL_OS, filename: Optional[str]):
+    ql.log.debug(f'Profile: {filename or "default"}')
 
     if ql.baremetal:
-        config = {}
-        if ql.profile:
-            with open(ql.profile) as f: 
+        if filename:
+            with open(filename) as f: 
                 config = yaml.load(f, Loader=yaml.Loader)
+        else:
+            config = {}
 
     else:
-        profile_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", ostype_convert_str(ql.ostype).lower() + ".ql")
-        profiles = [profile_path, ql.profile] if ql.profile else [profile_path]
+        qiling_home = os.path.dirname(os.path.abspath(__file__))
+        os_profile = os.path.join(qiling_home, 'profiles', f'{ostype_convert_str(ostype).lower()}.ql')
+
+        profiles = [os_profile]
+
+        if filename:
+            profiles.append(filename)
 
         config = ConfigParser()
         config.read(profiles)
