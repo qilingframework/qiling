@@ -7,7 +7,7 @@ from configparser import ConfigParser
 import os, pickle
 
 # See https://stackoverflow.com/questions/39740632/python-type-hinting-without-cyclic-imports
-from typing import AnyStr, MutableMapping, Sequence, Union
+from typing import AnyStr, List, MutableMapping, Sequence, Union
 from typing import TYPE_CHECKING
 
 from unicorn.unicorn import Uc
@@ -426,7 +426,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self.arch.utils.setup_output(v)
 
     @property
-    def patch_bin(self) -> list:
+    def patch_bin(self) -> List[Tuple[int, bytes]]:
         """ Return the patches for binary.
 
             Type: list
@@ -434,7 +434,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         return self._patch_bin
 
     @property
-    def patch_lib(self) -> list:
+    def patch_lib(self) -> List[Tuple[int, bytes, str]]:
         """ Return the patches for library.
 
             Type: list
@@ -608,11 +608,20 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             
 
     # patch code to memory address
-    def patch(self, addr, code, file_name=b''):
-        if file_name == b'':
-            self.patch_bin.append((addr, code))
+    def patch(self, offset: int, data: bytes, target: str = None) -> None:
+        """Volatilely patch binary and libraries with arbitrary content.
+        Patching may be done prior to emulation start.
+
+        Args:
+            offset: offset in target to patch
+            data: patch data
+            target: target library name to patch (or `None` for the main executable binary)
+        """
+
+        if target is None:
+            self.patch_bin.append((offset, data))
         else:
-            self.patch_lib.append((addr, code, file_name.decode()))
+            self.patch_lib.append((offset, data, target))
 
 
     # save all qiling instance states
