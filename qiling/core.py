@@ -75,7 +75,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         ##################################
         # Definition after ql=Qiling()   #
         ##################################
-        self._libcache = libcache
         self._patch_bin = []
         self._patch_lib = []
         self._debug_stop = False
@@ -405,20 +404,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             Type: Exception
         """
         return self._internal_exception
-
-    @property
-    def libcache(self) -> bool:
-        """ Whether cache dll files. Only take effect in Windows emulation.
-
-            Type: bool
-            Example: - ql = Qiling(libcache=False)
-                     - ql.libcache = True
-        """
-        return self._libcache
-
-    @libcache.setter
-    def libcache(self, lc):
-        self._libcache = lc
 
     @property
     def verbose(self) -> QL_VERBOSE:

@@ -189,7 +189,6 @@ class PETest(unittest.TestCase):
 
 
         ql = Qiling(["../examples/rootfs/x86_windows/bin/sality.dll"], "../examples/rootfs/x86_windows", verbose=QL_VERBOSE.DEBUG)
-        ql.libcache = False
         ql.first_stop = False
         ql.second_stop = False
         self.third_stop = False
