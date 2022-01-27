@@ -188,6 +188,9 @@ class Qiling(QlCoreHooks, QlCoreStructs):
                                                               self._log_plain)
 
         self.log.setLevel(ql_resolve_logger_level(self._verbose))
+        
+        if self._verbose == -1:
+            self.log.disabled = True
 
         # Now that the logger is configured, we can log profile debug msg:
         self.log.debug(debugmsg)
@@ -534,6 +537,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
             Type: int
             Values:
+              - -1 : logging.NOTSET, turn off all the output.
               - 0  : logging.WARNING, almost no additional logs except the program output.
               - >=1: logging.INFO, the default logging level.
               - >=4: logging.DEBUG.
@@ -547,6 +551,8 @@ class Qiling(QlCoreHooks, QlCoreStructs):
     @verbose.setter
     def verbose(self, v):
         self._verbose = v
+        if self._verbose == -1:
+            self.log.disabled = True
         self.log.setLevel(ql_resolve_logger_level(self._verbose))
         if self.interpreter:
             self.arch.utils.setup_output()
