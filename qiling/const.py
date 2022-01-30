@@ -68,7 +68,7 @@ def __reverse_enum(e: Type[Enum]) -> Mapping[str, Any]:
     '''Create a reverse mapping for an enum.
     '''
 
-    return dict((v.name.lower(), v.value) for v in e.__members__.values())
+    return dict((v.name.lower(), v) for v in e.__members__.values())
 
 debugger_map: Mapping[str, QL_DEBUGGER] = __reverse_enum(QL_DEBUGGER)
 arch_map    : Mapping[str, QL_ARCH]     = __reverse_enum(QL_ARCH)
