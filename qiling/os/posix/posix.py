@@ -86,13 +86,13 @@ class QlOsPosix(QlOs):
             QL_ARCH.X86  : UC_X86_REG_EAX,
             QL_ARCH.X8664: UC_X86_REG_RAX,
             QL_ARCH.RISCV: UC_RISCV_REG_A7,
-            QL_ARCH.RISCV64: UC_RISCV_REG_A7,            
-        }[self.ql.archtype]
+            QL_ARCH.RISCV64: UC_RISCV_REG_A7
+        }[self.ql.arch.type]
 
         # handle a special case
-        if (self.ql.archtype == QL_ARCH.ARM64) and (self.ql.ostype == QL_OS.MACOS):
+        if (self.ql.arch.type == QL_ARCH.ARM64) and (self.ql.ostype == QL_OS.MACOS):
             self.__syscall_id_reg = UC_ARM64_REG_X16
-        if (self.ql.archtype == QL_ARCH.ARM) and (self.ql.ostype == QL_OS.QNX):
+        if (self.ql.arch.type == QL_ARCH.ARM) and (self.ql.ostype == QL_OS.QNX):
             self.__syscall_id_reg = UC_ARM_REG_R12
 
         # TODO: use abstract to access __syscall_cc and __syscall_id_reg by defining a system call class
@@ -104,7 +104,7 @@ class QlOsPosix(QlOs):
             QL_ARCH.X8664: intel64,
             QL_ARCH.RISCV: riscv32,
             QL_ARCH.RISCV64: riscv64,
-        }[self.ql.archtype](ql)
+        }[self.ql.arch.type](ql)
 
         self._fd = QlFileDes([0] * NR_OPEN)
 
@@ -278,7 +278,7 @@ class QlOsPosix(QlOs):
                 raise QlErrorSyscallNotFound(f'Syscall not found: {syscall_name}')
 
     def get_syscall(self) -> int:
-        if self.ql.archtype == QL_ARCH.ARM:
+        if self.ql.arch.type == QL_ARCH.ARM:
             # When ARM-OABI
             # svc_imm = 0x900000 + syscall_nr
             # syscall_nr = svc_imm - 0x900000

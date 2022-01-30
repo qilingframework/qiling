@@ -179,12 +179,12 @@ class QlGdb(QlDebugger, object):
                         }
                     return adapter.get(arch)
 
-                idhex, spid, pcid  = gdbqmark_converter(self.ql.archtype)  
+                idhex, spid, pcid  = gdbqmark_converter(self.ql.arch.type)  
                 sp          = self.addr_to_str(self.ql.arch.regs.arch_sp)
                 pc          = self.addr_to_str(self.ql.arch.regs.arch_pc)
                 nullfill    = "0" * int(self.ql.arch.bits / 4)
 
-                if self.ql.archtype== QL_ARCH.MIPS:
+                if self.ql.arch.type == QL_ARCH.MIPS:
                     if self.ql.arch.endian == QL_ENDIAN.EB:
                         sp = self.addr_to_str(self.ql.arch.regs.arch_sp, endian ="little")
                         pc = self.addr_to_str(self.ql.arch.regs.arch_pc, endian ="little")
@@ -208,19 +208,19 @@ class QlGdb(QlDebugger, object):
             def handle_g(subcmd):
                 s = ''
 
-                if self.ql.archtype== QL_ARCH.A8086:
+                if self.ql.arch.type == QL_ARCH.A8086:
                     for reg in self.tables[QL_ARCH.A8086][:16]:
                         r = self.ql.arch.regs.read(reg)
                         tmp = self.addr_to_str(r)
                         s += tmp
 
-                elif self.ql.archtype== QL_ARCH.X86:
+                elif self.ql.arch.type == QL_ARCH.X86:
                     for reg in self.tables[QL_ARCH.X86][:16]:
                         r = self.ql.arch.regs.read(reg)
                         tmp = self.addr_to_str(r)
                         s += tmp
 
-                elif self.ql.archtype== QL_ARCH.X8664:
+                elif self.ql.arch.type == QL_ARCH.X8664:
                     for reg in self.tables[QL_ARCH.X8664][:24]:
                         r = self.ql.arch.regs.read(reg)
                         if self.ql.arch.reg_bits(reg) == 64:
@@ -229,7 +229,7 @@ class QlGdb(QlDebugger, object):
                             tmp = self.addr_to_str(r, short = True)
                         s += tmp
                 
-                elif self.ql.archtype == QL_ARCH.ARM:
+                elif self.ql.arch.type == QL_ARCH.ARM:
                     
 
                     # r0-r12,sp,lr,pc,cpsr ,see https://sourceware.org/git/?p=binutils-gdb.git;a=blob;f=gdb/arch/arm.h;h=fa589fd0582c0add627a068e6f4947a909c45e86;hb=HEAD#l127
@@ -240,13 +240,13 @@ class QlGdb(QlDebugger, object):
                         tmp = self.addr_to_str(r)
                         s += tmp
 
-                elif self.ql.archtype == QL_ARCH.ARM64:
+                elif self.ql.arch.type == QL_ARCH.ARM64:
                     for reg in self.tables[QL_ARCH.ARM64][:33]:
                         r = self.ql.arch.regs.read(reg)
                         tmp = self.addr_to_str(r)
                         s += tmp
 
-                elif self.ql.archtype == QL_ARCH.MIPS:
+                elif self.ql.arch.type == QL_ARCH.MIPS:
                     for reg in self.tables[QL_ARCH.MIPS][:38]:
                         r = self.ql.arch.regs.read(reg)
                         if self.ql.arch.endian == QL_ENDIAN.EL:
@@ -261,14 +261,14 @@ class QlGdb(QlDebugger, object):
             def handle_G(subcmd):
                 count = 0
 
-                if self.ql.archtype == QL_ARCH.A8086:
+                if self.ql.arch.type == QL_ARCH.A8086:
                     for i in range(0, len(subcmd), 8):
                         reg_data = subcmd[i:i+7]
                         reg_data = int(reg_data, 16)
                         self.ql.arch.regs.write(self.tables[QL_ARCH.A8086][count], reg_data)
                         count += 1
 
-                elif self.ql.archtype == QL_ARCH.X86:
+                elif self.ql.arch.type == QL_ARCH.X86:
                     for i in range(0, len(subcmd), 8):
                         reg_data = subcmd[i:i+7]
                         reg_data = int(reg_data, 16)
@@ -276,7 +276,7 @@ class QlGdb(QlDebugger, object):
                         count += 1
                 
 
-                elif self.ql.archtype == QL_ARCH.X8664:
+                elif self.ql.arch.type == QL_ARCH.X8664:
                     for i in range(0, 17*16, 16):
                         reg_data = subcmd[i:i+15]
                         reg_data = int(reg_data, 16)
@@ -288,21 +288,21 @@ class QlGdb(QlDebugger, object):
                         self.ql.arch.regs.write(self.tables[QL_ARCH.X8664][count], reg_data)
                         count += 1
                 
-                elif self.ql.archtype == QL_ARCH.ARM:
+                elif self.ql.arch.type == QL_ARCH.ARM:
                     for i in range(0, len(subcmd), 8):
                         reg_data = subcmd[i:i + 7]
                         reg_data = int(reg_data, 16)
                         self.ql.arch.regs.write(self.tables[QL_ARCH.ARM][count], reg_data)
                         count += 1
 
-                elif self.ql.archtype == QL_ARCH.ARM64:
+                elif self.ql.arch.type == QL_ARCH.ARM64:
                     for i in range(0, len(subcmd), 16):
                         reg_data = subcmd[i:i+15]
                         reg_data = int(reg_data, 16)
                         self.ql.arch.regs.write(self.tables[QL_ARCH.ARM64][count], reg_data)
                         count += 1
 
-                elif self.ql.archtype == QL_ARCH.MIPS:
+                elif self.ql.arch.type == QL_ARCH.MIPS:
                     for i in range(0, len(subcmd), 8):
                         reg_data = subcmd[i:i+7]
                         reg_data = int(reg_data, 16)
@@ -353,21 +353,21 @@ class QlGdb(QlDebugger, object):
                 reg_index = int(subcmd, 16)
                 reg_value = None
                 try:
-                    if self.ql.archtype== QL_ARCH.A8086:
+                    if self.ql.arch.type == QL_ARCH.A8086:
                         if reg_index <= 9:
                             reg_value = self.ql.arch.regs.read(self.tables[QL_ARCH.A8086][reg_index-1])
                         else:
                             reg_value = 0
                         reg_value = self.addr_to_str(reg_value)
 
-                    elif self.ql.archtype== QL_ARCH.X86:
+                    elif self.ql.arch.type == QL_ARCH.X86:
                         if reg_index <= 24:
                             reg_value = self.ql.arch.regs.read(self.tables[QL_ARCH.X86][reg_index-1])
                         else:
                             reg_value = 0
                         reg_value = self.addr_to_str(reg_value)
                     
-                    elif self.ql.archtype== QL_ARCH.X8664:
+                    elif self.ql.arch.type == QL_ARCH.X8664:
                         if reg_index <= 32:
                             reg_value = self.ql.arch.regs.read(self.tables[QL_ARCH.X8664][reg_index-1])
                         else:
@@ -377,21 +377,21 @@ class QlGdb(QlDebugger, object):
                         elif 17 < reg_index:
                             reg_value = self.addr_to_str(reg_value, short = True)
                     
-                    elif self.ql.archtype== QL_ARCH.ARM:
+                    elif self.ql.arch.type == QL_ARCH.ARM:
                         if reg_index < 26:
                             reg_value = self.ql.arch.regs.read(self.tables[QL_ARCH.ARM][reg_index - 1])
                         else:
                             reg_value = 0
                         reg_value = self.addr_to_str(reg_value)
 
-                    elif self.ql.archtype== QL_ARCH.ARM64:
+                    elif self.ql.arch.type == QL_ARCH.ARM64:
                         if reg_index <= 32:
                             reg_value = self.ql.arch.regs.read(self.tables[QL_ARCH.ARM64][reg_index - 1])
                         else:
                             reg_value = 0
                             reg_value = self.addr_to_str(reg_value)
 
-                    elif self.ql.archtype== QL_ARCH.MIPS:
+                    elif self.ql.arch.type == QL_ARCH.MIPS:
                         if reg_index <= 37:
                             reg_value = self.ql.arch.regs.read(self.tables[QL_ARCH.MIPS][reg_index - 1])
                         else:
@@ -413,19 +413,19 @@ class QlGdb(QlDebugger, object):
             def handle_P(subcmd):
                 reg_index, reg_data = subcmd.split('=')
                 reg_index = int(reg_index, 16)
-                reg_name = self.tables[self.ql.archtype][reg_index]
+                reg_name = self.tables[self.ql.arch.type][reg_index]
                 
-                if self.ql.archtype== QL_ARCH.A8086:
+                if self.ql.arch.type == QL_ARCH.A8086:
                     reg_data = int(reg_data, 16)
                     reg_data = int.from_bytes(struct.pack('<I', reg_data), byteorder='big')
                     self.ql.arch.regs.write(reg_name, reg_data)
 
-                elif self.ql.archtype== QL_ARCH.X86:
+                elif self.ql.arch.type == QL_ARCH.X86:
                     reg_data = int(reg_data, 16)
                     reg_data = int.from_bytes(struct.pack('<I', reg_data), byteorder='big')
                     self.ql.arch.regs.write(reg_name, reg_data)
                 
-                elif self.ql.archtype== QL_ARCH.X8664:
+                elif self.ql.arch.type == QL_ARCH.X8664:
                     if reg_index <= 17:
                         reg_data = int(reg_data, 16)
                         reg_data = int.from_bytes(struct.pack('<Q', reg_data), byteorder='big')
@@ -435,17 +435,17 @@ class QlGdb(QlDebugger, object):
                         reg_data = int.from_bytes(struct.pack('<I', reg_data), byteorder='big')
                         self.ql.arch.regs.write(reg_name, reg_data)
                 
-                elif self.ql.archtype== QL_ARCH.ARM:
+                elif self.ql.arch.type == QL_ARCH.ARM:
                     reg_data = int(reg_data, 16)
                     reg_data = int.from_bytes(struct.pack('<I', reg_data), byteorder='big')
                     self.ql.arch.regs.write(reg_name, reg_data)
 
-                elif self.ql.archtype== QL_ARCH.ARM64:
+                elif self.ql.arch.type == QL_ARCH.ARM64:
                     reg_data = int(reg_data, 16)
                     reg_data = int.from_bytes(struct.pack('<Q', reg_data), byteorder='big')
                     self.ql.arch.regs.write(reg_name, reg_data)
 
-                elif self.ql.archtype== QL_ARCH.MIPS:
+                elif self.ql.arch.type == QL_ARCH.MIPS:
                     reg_data = int(reg_data, 16)
                     if self.ql.arch.endian == QL_ENDIAN.EL:
                         reg_data = int.from_bytes(struct.pack('<I', reg_data), byteorder='little')
@@ -456,7 +456,7 @@ class QlGdb(QlDebugger, object):
                 if reg_name == self.ql.arch.regs.arch_pc_name:
                     self.gdb.current_address = reg_data
 
-                self.ql.log.info("gdb> Write to register %s with %x\n" % (self.tables[self.ql.archtype][reg_index], reg_data))
+                self.ql.log.info("gdb> Write to register %s with %x\n" % (self.tables[self.ql.arch.type][reg_index], reg_data))
                 self.send('OK')
 
 
@@ -492,7 +492,7 @@ class QlGdb(QlDebugger, object):
                 elif subcmd.startswith('Xfer:features:read'):
                     xfercmd_file    = subcmd.split(':')[3]
                     xfercmd_abspath = os.path.dirname(os.path.abspath(__file__))
-                    xml_folder      = arch_convert_str(self.ql.archtype).lower()
+                    xml_folder      = arch_convert_str(self.ql.arch.type).lower()
                     xfercmd_file    = os.path.join(xfercmd_abspath,"xml",xml_folder, xfercmd_file)                        
 
                     if os.path.exists(xfercmd_file) and self.ql.ostype is not QL_OS.WINDOWS:

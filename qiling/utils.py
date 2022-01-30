@@ -578,7 +578,7 @@ def verify_ret(ql, err):
                 else:
                     raise
 
-        if ql.archtype == QL_ARCH.X8664: # Win64
+        if ql.arch.type == QL_ARCH.X8664: # Win64
             if ql.os.init_sp == ql.arch.regs.arch_sp or ql.os.init_sp + 8 == ql.arch.regs.arch_sp or ql.os.init_sp + 0x10 == ql.arch.regs.arch_sp:  # FIXME
                 # 0x11626	 c3	  	ret
                 # print("OK, stack balanced!")

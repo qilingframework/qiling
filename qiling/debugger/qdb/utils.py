@@ -7,6 +7,7 @@ from __future__ import annotations
 from typing import Callable, Optional, Mapping
 from functools import partial
 
+from qiling import Qiling
 from qiling.const import *
 
 CODE_END = True
@@ -14,7 +15,7 @@ CODE_END = True
 
 def dump_regs(ql: Qiling) -> Mapping[str, int]:
 
-    if ql.archtype == QL_ARCH.MIPS:
+    if ql.arch.type == QL_ARCH.MIPS:
 
         _reg_order = (
                 "gp", "at", "v0", "v1",
@@ -27,7 +28,7 @@ def dump_regs(ql: Qiling) -> Mapping[str, int]:
                 "ra", "k0", "k1", "pc",
                 )
 
-    elif ql.archtype == QL_ARCH.ARM:
+    elif ql.arch.type == QL_ARCH.ARM:
 
         _reg_order = (
                 "r0", "r1", "r2", "r3",
@@ -36,7 +37,7 @@ def dump_regs(ql: Qiling) -> Mapping[str, int]:
                 "r12", "sp", "lr", "pc",
                 )
 
-    elif ql.archtype == QL_ARCH.CORTEX_M:
+    elif ql.arch.type == QL_ARCH.CORTEX_M:
 
         _reg_order = (
                 "r0", "r1", "r2", "r3",
@@ -108,7 +109,7 @@ def handle_bnj(ql: Qiling, cur_addr: str) -> Callable[[Qiling, str], int]:
             QL_ARCH.MIPS     : handle_bnj_mips,
             QL_ARCH.ARM      : handle_bnj_arm,
             QL_ARCH.CORTEX_M : handle_bnj_arm,
-            }.get(ql.archtype)(ql, cur_addr)
+            }.get(ql.arch.type)(ql, cur_addr)
 
 
 def get_cpsr(bits: int) -> (bool, bool, bool, bool):
@@ -141,7 +142,7 @@ def _read_inst(ql: Qiling, addr: int) -> int:
 
     result = ql.mem.read(addr, 4)
 
-    if ql.archtype in (QL_ARCH.ARM, QL_ARCH.CORTEX_M):
+    if ql.arch.type in (QL_ARCH.ARM, QL_ARCH.CORTEX_M):
         if is_thumb(ql.arch.regs.cpsr):
 
             first_two = ql.unpack16(ql.mem.read(addr, 2))

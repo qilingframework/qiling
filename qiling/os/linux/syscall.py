@@ -21,7 +21,7 @@ class timespec(ctypes.Structure):
 
 
 # Temporary dirty fix.
-# TODO: Pack ctypes.Structure according to ql.archtype and ql.ostype?
+# TODO: Pack ctypes.Structure according to ql.arch.type and ql.ostype?
 class timespec32(ctypes.Structure):
     _fields_ = [
         ("tv_sec", ctypes.c_uint32),
@@ -31,7 +31,7 @@ class timespec32(ctypes.Structure):
     _pack_ = 4
 
 def ql_syscall_set_thread_area(ql: Qiling, u_info_addr, *args, **kw):
-    if ql.archtype == QL_ARCH.X86:
+    if ql.arch.type == QL_ARCH.X86:
         GDT_ENTRY_TLS_MIN = 12
         GDT_ENTRY_TLS_MAX = 14
 
@@ -53,7 +53,7 @@ def ql_syscall_set_thread_area(ql: Qiling, u_info_addr, *args, **kw):
             ql.mem.write(u_info_addr, ql.pack32(index))
             return 0
 
-    elif ql.archtype == QL_ARCH.MIPS:
+    elif ql.arch.type == QL_ARCH.MIPS:
         CONFIG3_ULR = (1 << 13)
         ql.arch.regs.cp0_config3 = CONFIG3_ULR
         ql.arch.regs.cp0_userlocal = u_info_addr
@@ -65,7 +65,7 @@ def ql_syscall_set_thread_area(ql: Qiling, u_info_addr, *args, **kw):
 
 
 def ql_syscall_set_tls(ql, address, *args, **kw):
-    if ql.archtype == QL_ARCH.ARM:
+    if ql.arch.type == QL_ARCH.ARM:
         ql.arch.regs.c13_c0_3 = address
         ql.mem.write(ql.arch.arm_get_tls_addr + 12, ql.pack32(address))
         ql.arch.regs.r0 = address
@@ -75,7 +75,7 @@ def ql_syscall_clock_gettime(ql, clock_gettime_clock_id, clock_gettime_timespec,
     now = datetime.now().timestamp()
     tv_sec = floor(now)
     tv_nsec = floor((now - floor(now)) * 1e6)
-    if ql.archtype == QL_ARCH.X8664:
+    if ql.arch.type == QL_ARCH.X8664:
         tp = timespec(tv_sec= tv_sec, tv_nsec=tv_nsec)
     else:
         tp = timespec32(tv_sec= tv_sec, tv_nsec=tv_nsec)
@@ -89,7 +89,7 @@ def ql_syscall_gettimeofday(ql, gettimeofday_tv, gettimeofday_tz, *args, **kw):
     now = datetime.now().timestamp()
     tv_sec = floor(now)
     tv_nsec = floor((now - floor(now)) * 1e6)
-    if ql.archtype == QL_ARCH.X8664:
+    if ql.arch.type == QL_ARCH.X8664:
         tp = timespec(tv_sec= tv_sec, tv_nsec=tv_nsec)
     else:
         tp = timespec32(tv_sec= tv_sec, tv_nsec=tv_nsec)

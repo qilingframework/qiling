@@ -56,10 +56,10 @@ def examine_mem(ql: Qiling, line: str) -> Union[bool, (str, int, int)]:
     else:
         rest = _args
 
-    if ql.archtype == QL_ARCH.ARM:
+    if ql.arch.type == QL_ARCH.ARM:
         rest = rest.replace("fp", "r11")
 
-    elif ql.archtype == QL_ARCH.MIPS:
+    elif ql.arch.type == QL_ARCH.MIPS:
         rest = rest.replace("fp", "s8")
 
     # for supporting addition of register with constant value
@@ -166,7 +166,7 @@ def context_reg(ql: Qiling, saved_states: Optional[Mapping[str, int]] = None, /,
 
         _colors = (color.DARKCYAN, color.BLUE, color.RED, color.YELLOW, color.GREEN, color.PURPLE, color.CYAN, color.WHITE)
 
-        if ql.archtype == QL_ARCH.MIPS:
+        if ql.arch.type == QL_ARCH.MIPS:
 
             _cur_regs.update({"fp": _cur_regs.pop("s8")})
 
@@ -192,7 +192,7 @@ def context_reg(ql: Qiling, saved_states: Optional[Mapping[str, int]] = None, /,
 
             print(lines.format(*_cur_regs.values()))
 
-        elif ql.archtype in (QL_ARCH.ARM, QL_ARCH.CORTEX_M):
+        elif ql.arch.type in (QL_ARCH.ARM, QL_ARCH.CORTEX_M):
 
 
             _cur_regs.update({"sl": _cur_regs.pop("r10")})
@@ -200,7 +200,7 @@ def context_reg(ql: Qiling, saved_states: Optional[Mapping[str, int]] = None, /,
             _cur_regs.update({"fp": _cur_regs.pop("r11")})
 
             regs_in_row = 4
-            if ql.archtype == QL_ARCH.CORTEX_M:
+            if ql.arch.type == QL_ARCH.CORTEX_M:
                 regs_in_row = 3
 
                 # for re-order
@@ -234,7 +234,7 @@ def context_reg(ql: Qiling, saved_states: Optional[Mapping[str, int]] = None, /,
             print(lines.format(*_cur_regs.values()))
             print(color.GREEN, "[{cpsr[mode]} mode], Thumb: {cpsr[thumb]}, FIQ: {cpsr[fiq]}, IRQ: {cpsr[irq]}, NEG: {cpsr[neg]}, ZERO: {cpsr[zero]}, Carry: {cpsr[carry]}, Overflow: {cpsr[overflow]}".format(cpsr=get_arm_flags(ql.arch.regs.cpsr)), color.END, sep="")
 
-    if ql.archtype != QL_ARCH.CORTEX_M:
+    if ql.arch.type != QL_ARCH.CORTEX_M:
     # context render for Stack, skip this for CORTEX_M
         with context_printer(ql, "[ STACK ]", ruler="─"):
 

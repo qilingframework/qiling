@@ -38,7 +38,7 @@ def ql_syscall_clone(ql: Qiling, flags: int, child_stack: int, parent_tidptr: in
     CLONE_IO             = 0x80000000
 
     # X8664 flags, child_stack, parent_tidptr, child_tidptr, newtls
-    if ql.archtype== QL_ARCH.X8664:
+    if ql.arch.type == QL_ARCH.X8664:
         ori_newtls = child_tidptr
         child_tidptr = newtls
         newtls = ori_newtls
@@ -104,7 +104,7 @@ def ql_syscall_clone(ql: Qiling, flags: int, child_stack: int, parent_tidptr: in
     ql.arch.regs.arch_sp = child_stack
 
     # We have to find next pc manually for some archs since the pc is current instruction (like `syscall`).
-    if ql.archtype in (QL_ARCH.X8664, ):
+    if ql.arch.type == QL_ARCH.X8664:
         ql.arch.regs.arch_pc += list(ql.arch.disassembler.disasm_lite(bytes(ql.mem.read(ql.arch.regs.arch_pc, 4)), ql.arch.regs.arch_pc))[0][1]
         ql.log.debug(f"Fix pc for child thread to {hex(ql.arch.regs.arch_pc)}")
 

@@ -7,7 +7,7 @@ from qiling.const import QL_ARCH
 from qiling.os.posix.posix import SYSCALL_PREF
 
 def map_syscall(ql, syscall_num):
-    if ql.archtype == QL_ARCH.ARM:
+    if ql.arch.type == QL_ARCH.ARM:
         return f'{SYSCALL_PREF}{arm_syscall_table[syscall_num]}'
 
 # Source: https://github.com/vocho/openqnx

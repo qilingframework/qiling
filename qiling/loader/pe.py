@@ -222,7 +222,7 @@ class Process():
         return cmdline_entry
 
     def init_tib(self):
-        if self.ql.archtype == QL_ARCH.X86:
+        if self.ql.arch.type == QL_ARCH.X86:
             teb_addr = self.structure_last_addr
         else:
             gs = self.structure_last_addr
@@ -243,7 +243,7 @@ class Process():
         self.ql.mem.write(teb_addr, teb_data.bytes())
 
         self.structure_last_addr += teb_size
-        if self.ql.archtype == QL_ARCH.X8664:
+        if self.ql.arch.type == QL_ARCH.X8664:
             # TEB
             self.ql.mem.write(gs + 0x30, self.ql.pack64(teb_addr))
             # PEB
@@ -370,9 +370,9 @@ class Process():
         driver_object_addr = self.structure_last_addr
         self.ql.log.info("Driver object addr is 0x%x" %driver_object_addr)
 
-        if self.ql.archtype == QL_ARCH.X86:
+        if self.ql.arch.type == QL_ARCH.X86:
             self.driver_object = DRIVER_OBJECT32(self.ql, driver_object_addr)
-        elif self.ql.archtype == QL_ARCH.X8664:
+        elif self.ql.arch.type == QL_ARCH.X8664:
             self.driver_object = DRIVER_OBJECT64(self.ql, driver_object_addr)
 
         driver_object_size = ctypes.sizeof(self.driver_object)
@@ -386,9 +386,9 @@ class Process():
         regitry_path_addr = self.structure_last_addr
         self.ql.log.info("Registry path addr is 0x%x" %regitry_path_addr)
 
-        if self.ql.archtype == QL_ARCH.X86:
+        if self.ql.arch.type == QL_ARCH.X86:
             regitry_path_data = UNICODE_STRING32(0, 0, regitry_path_addr)
-        elif self.ql.archtype == QL_ARCH.X8664:
+        elif self.ql.arch.type == QL_ARCH.X8664:
             regitry_path_data = UNICODE_STRING64(0, 0, regitry_path_addr)
 
         regitry_path_size = ctypes.sizeof(regitry_path_data)
@@ -402,9 +402,9 @@ class Process():
         self.ql.log.info("EPROCESS is is 0x%x" %addr)
 
 
-        if self.ql.archtype == QL_ARCH.X86:
+        if self.ql.arch.type == QL_ARCH.X86:
             self.eprocess_object = EPROCESS32(self.ql, addr)
-        elif self.ql.archtype == QL_ARCH.X8664:
+        elif self.ql.arch.type == QL_ARCH.X8664:
             self.eprocess_object = EPROCESS64(self.ql, addr)            
 
         size = ctypes.sizeof(self.eprocess_object)
@@ -420,9 +420,9 @@ class Process():
 		struct information:
 		https://doxygen.reactos.org/d8/dae/modules_2rostests_2winetests_2ntdll_2time_8c_source.html
         '''
-        if self.ql.archtype == QL_ARCH.X86:
+        if self.ql.arch.type == QL_ARCH.X86:
             KI_USER_SHARED_DATA = 0xFFDF0000
-        elif self.ql.archtype == QL_ARCH.X8664:
+        elif self.ql.arch.type == QL_ARCH.X8664:
             KI_USER_SHARED_DATA = 0xFFFFF78000000000
 
         self.ql.log.info("KI_USER_SHARED_DATA is 0x%x" %KI_USER_SHARED_DATA)
@@ -456,7 +456,7 @@ class QlLoaderPE(QlLoader, Process):
                 self.init_dlls.append(b"ntoskrnl.exe")
                 self.sys_dlls.append(b"ntoskrnl.exe")
             
-        if self.ql.archtype == QL_ARCH.X86:
+        if self.ql.arch.type == QL_ARCH.X86:
             self.stack_address = int(self.ql.os.profile.get("OS32", "stack_address"), 16)
             self.stack_size = int(self.ql.os.profile.get("OS32", "stack_size"), 16)
             self.image_address = int(self.ql.os.profile.get("OS32", "image_address"), 16)
@@ -465,7 +465,7 @@ class QlLoaderPE(QlLoader, Process):
             self.ql.os.heap_base_address = int(self.ql.os.profile.get("OS32", "heap_address"), 16)
             self.ql.os.heap_base_size = int(self.ql.os.profile.get("OS32", "heap_size"), 16)
             self.structure_last_addr = FS_SEGMENT_ADDR
-        elif self.ql.archtype == QL_ARCH.X8664:
+        elif self.ql.arch.type == QL_ARCH.X8664:
             self.stack_address = int(self.ql.os.profile.get("OS64", "stack_address"), 16)
             self.stack_size = int(self.ql.os.profile.get("OS64", "stack_size"), 16)
             self.image_address = int(self.ql.os.profile.get("OS64", "image_address"), 16)
@@ -531,7 +531,7 @@ class QlLoaderPE(QlLoader, Process):
             # Stack should not init at the very bottom. Will cause errors with Dlls
             sp = self.stack_address + self.stack_size - 0x1000
 
-            if self.ql.archtype == QL_ARCH.X86:
+            if self.ql.arch.type == QL_ARCH.X86:
                 self.ql.arch.regs.esp = sp
                 self.ql.arch.regs.ebp = sp
 
@@ -545,7 +545,7 @@ class QlLoaderPE(QlLoader, Process):
                     self.ql.log.debug('Writing 0x01 (DLL_PROCESS_ATTACH) to [ESP+8](0x%08X)' % (sp + 0x8))
                     self.ql.mem.write(sp + 0x8, int(1).to_bytes(length=4, byteorder='little'))
 
-            elif self.ql.archtype == QL_ARCH.X8664:
+            elif self.ql.arch.type == QL_ARCH.X8664:
                 self.ql.arch.regs.rsp = sp
                 self.ql.arch.regs.rbp = sp
 
@@ -578,7 +578,7 @@ class QlLoaderPE(QlLoader, Process):
                 self.ql.log.debug('Setting up DriverEntry args')
                 self.ql.stop_execution_pattern = 0xDEADC0DE
 
-                if self.ql.archtype == QL_ARCH.X86:  # Win32
+                if self.ql.arch.type == QL_ARCH.X86:  # Win32
                     if not self.ql.stop_options.any:
                         # We know that a driver will return,
                         # so if the user did not configure stop options, write a sentinel return value
@@ -586,7 +586,7 @@ class QlLoaderPE(QlLoader, Process):
 
                     self.ql.log.debug('Writing 0x%08X (PDRIVER_OBJECT) to [ESP+4](0x%08X)' % (self.ql.loader.driver_object_address, sp+0x4))
                     self.ql.log.debug('Writing 0x%08X (RegistryPath) to [ESP+8](0x%08X)' % (self.ql.loader.regitry_path_address, sp+0x8))
-                elif self.ql.archtype == QL_ARCH.X8664:  # Win64
+                elif self.ql.arch.type == QL_ARCH.X8664:  # Win64
                     if not self.ql.stop_options.any:
                         # We know that a driver will return,
                         # so if the user did not configure stop options, write a sentinel return value
@@ -649,7 +649,7 @@ class QlLoaderPE(QlLoader, Process):
                         else:
                             addr = self.import_address_table[dll_name][imp.ordinal]
 
-                        if self.ql.archtype == QL_ARCH.X86:
+                        if self.ql.arch.type == QL_ARCH.X86:
                             address = self.ql.pack32(addr)
                         else:
                             address = self.ql.pack64(addr)
@@ -661,10 +661,10 @@ class QlLoaderPE(QlLoader, Process):
 
         elif self.ql.code:
             self.filepath = b""
-            if self.ql.archtype == QL_ARCH.X86:
+            if self.ql.arch.type == QL_ARCH.X86:
                 self.ql.arch.regs.esp = self.stack_address + 0x3000
                 self.ql.arch.regs.ebp = self.ql.arch.regs.esp
-            elif self.ql.archtype == QL_ARCH.X8664:
+            elif self.ql.arch.type == QL_ARCH.X8664:
                 self.ql.arch.regs.rsp = self.stack_address + 0x3000
                 self.ql.arch.regs.rbp = self.ql.arch.regs.rsp
 

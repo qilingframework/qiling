@@ -68,12 +68,12 @@ def syscall_mmap_impl(ql: Qiling, addr: int, mlen: int, prot: int, flags: int, f
     if ql.arch.bits == 64:
         fd = ql.unpack64(ql.pack64(fd))
 
-    elif ql.archtype == QL_ARCH.MIPS:
+    elif ql.arch.type == QL_ARCH.MIPS:
         MAP_ANONYMOUS = 2048
         if ver == 2:
             pgoffset = pgoffset * pagesize
 
-    elif ql.archtype == QL_ARCH.ARM and ql.ostype== QL_OS.QNX:
+    elif ql.arch.type == QL_ARCH.ARM and ql.ostype == QL_OS.QNX:
         MAP_ANONYMOUS = 0x00080000
         fd = ql.unpack32s(ql.pack32s(fd))
 

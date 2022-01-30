@@ -930,62 +930,62 @@ class QNXARMStat64(ctypes.Structure):
 
 def get_stat64_struct(ql: Qiling):
     if ql.arch.bits == 64:
-        ql.log.warning(f"Trying to stat64 on a 64bit system with {ql.ostype} and {ql.archtype}!")
+        ql.log.warning(f"Trying to stat64 on a 64bit system with {ql.ostype} and {ql.arch.type}!")
     if ql.ostype == QL_OS.LINUX:
-        if ql.archtype == QL_ARCH.X86:
+        if ql.arch.type == QL_ARCH.X86:
             return LinuxX86Stat64()
-        elif ql.archtype == QL_ARCH.MIPS:
+        elif ql.arch.type == QL_ARCH.MIPS:
             return LinuxMips32Stat64()
-        elif ql.archtype == QL_ARCH.ARM:
+        elif ql.arch.type == QL_ARCH.ARM:
             return LinuxARMStat64()
-        elif ql.archtype in (QL_ARCH.RISCV, QL_ARCH.RISCV64):
+        elif ql.arch.type in (QL_ARCH.RISCV, QL_ARCH.RISCV64):
             return LinuxRISCVStat()
     elif ql.ostype == QL_OS.MACOS:
         return MacOSStat64()
     elif ql.ostype == QL_OS.QNX:
         return QNXARMStat64()
-    ql.log.warning(f"Unrecognized arch && os with {ql.archtype} and {ql.ostype} for stat64! Fallback to Linux x86.")
+    ql.log.warning(f"Unrecognized arch && os with {ql.arch.type} and {ql.ostype} for stat64! Fallback to Linux x86.")
     return LinuxX86Stat64()
 
 def get_stat_struct(ql: Qiling):
     if ql.ostype == QL_OS.FREEBSD:
-        if ql.archtype == QL_ARCH.X8664 or ql.arch.bits == 64:
+        if ql.arch.type == QL_ARCH.X8664 or ql.arch.bits == 64:
             return FreeBSDX8664Stat()
         else:
             return FreeBSDX86Stat()
     elif ql.ostype == QL_OS.MACOS:
         return MacOSStat()
     elif ql.ostype == QL_OS.LINUX:
-        if ql.archtype == QL_ARCH.X8664:
+        if ql.arch.type == QL_ARCH.X8664:
             return LinuxX8664Stat()
-        elif ql.archtype == QL_ARCH.X86:
+        elif ql.arch.type == QL_ARCH.X86:
             return LinuxX86Stat()
-        elif ql.archtype == QL_ARCH.MIPS:
+        elif ql.arch.type == QL_ARCH.MIPS:
             if ql.arch.bits == 64:
                 return LinuxMips64Stat()
             else:
                 return LinuxMips32Stat()
-        elif ql.archtype == QL_ARCH.ARM:
+        elif ql.arch.type == QL_ARCH.ARM:
             if ql.arch.endian == QL_ENDIAN.EL:
                 return LinuxARMStat()
             else:
                 return LinuxARMEBStat()
-        elif ql.archtype == QL_ARCH.ARM64:
+        elif ql.arch.type == QL_ARCH.ARM64:
             if ql.arch.endian == QL_ENDIAN.EL:
                 return LinuxARM64Stat()
             else:
                 return LinuxARM64EBStat()
-        elif ql.archtype in (QL_ARCH.RISCV, QL_ARCH.RISCV64):
+        elif ql.arch.type in (QL_ARCH.RISCV, QL_ARCH.RISCV64):
             return LinuxRISCVStat()
     elif ql.ostype == QL_OS.QNX:
-        if ql.archtype == QL_ARCH.ARM64:
+        if ql.arch.type == QL_ARCH.ARM64:
             return QNXARM64Stat()
-        elif ql.archtype == QL_ARCH.ARM:
+        elif ql.arch.type == QL_ARCH.ARM:
             if ql.arch.endian == QL_ENDIAN.EL:
                 return QNXARMStat()
             else:
                 return QNXARMEBStat()
-    ql.log.warning(f"Unrecognized arch && os with {ql.archtype} and {ql.ostype} for stat! Fallback to Linux x86.")
+    ql.log.warning(f"Unrecognized arch && os with {ql.arch.type} and {ql.ostype} for stat! Fallback to Linux x86.")
     return LinuxX86Stat()
 
 def __common_pack_stat_struct(stat, info) -> bytes:

@@ -164,7 +164,7 @@ def __IoCreateDevice(ql: Qiling, address: int, params):
     objcls = {
         QL_ARCH.X86   : DEVICE_OBJECT32,
         QL_ARCH.X8664 : DEVICE_OBJECT64
-    }[ql.archtype]
+    }[ql.arch.type]
 
     addr = ql.os.heap.alloc(ctypes.sizeof(objcls))
 
@@ -643,7 +643,7 @@ def hook_MmMapLockedPagesSpecifyCache(ql: Qiling, address: int, params):
     mdl_class: ctypes.Structure = {
         QL_ARCH.X8664 : MDL64,
         QL_ARCH.X86   : MDL32
-    }[ql.archtype]
+    }[ql.arch.type]
 
     mdl_buffer = ql.mem.read(MemoryDescriptorList, ctypes.sizeof(mdl_class))
     mdl = mdl_class.from_buffer(mdl_buffer)

@@ -367,7 +367,7 @@ def ql_syscall_open_nocancel(ql, filename, flags, mode, *args, **kw):
         regreturn = -1
     else:
         try:
-            if ql.archtype== QL_ARCH.ARM:
+            if ql.arch.type == QL_ARCH.ARM:
                 mode = 0
 
             ql.os.fd[idx] = ql.os.fs_mapper.open_ql_file(path, flags, mode)

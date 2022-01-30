@@ -216,7 +216,7 @@ class QlLoaderELF(QlLoader):
                     #
                     # this workaround unifies such "overlapping" segments, which may apply more permissive
                     # protection flags to that memory region.
-                    if self.ql.archtype == QL_ARCH.ARM64:
+                    if self.ql.arch.type == QL_ARCH.ARM64:
                         load_regions[-1] = (prev_lbound, ubound, prev_perms | perms)
                         continue
 
@@ -404,7 +404,7 @@ class QlLoaderELF(QlLoader):
         self.skip_exit_check = (self.elf_entry != self.entry_point)
 
         # map vsyscall section for some specific needs
-        if self.ql.archtype == QL_ARCH.X8664 and self.ql.ostype == QL_OS.LINUX:
+        if self.ql.arch.type == QL_ARCH.X8664 and self.ql.ostype == QL_OS.LINUX:
             _vsyscall_addr = int(self.profile.get('vsyscall_address'), 0)
             _vsyscall_size = int(self.profile.get('vsyscall_size'), 0)
 

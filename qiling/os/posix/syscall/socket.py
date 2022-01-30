@@ -80,7 +80,7 @@ def ql_syscall_socket(ql: Qiling, socket_domain, socket_type, socket_protocol):
             # ql_socket.open should use host platform based socket_type.
             try:
                 emu_socket_value = socket_type
-                emu_socket_type = socket_type_mapping(socket_type, ql.archtype, ql.ostype)
+                emu_socket_type = socket_type_mapping(socket_type, ql.arch.type, ql.ostype)
                 socket_type = getattr(socket, emu_socket_type)
                 ql.log.debug("Convert emu_socket_type {}:{} to host platform based socket_type {}:{}".format(
                     emu_socket_type, emu_socket_value, emu_socket_type, socket_type))
@@ -106,8 +106,8 @@ def ql_syscall_socket(ql: Qiling, socket_domain, socket_type, socket_protocol):
         ql.log.exception("")
         regreturn = -1
 
-    socket_type = socket_type_mapping(socket_type, ql.archtype, ql.ostype)
-    socket_domain = socket_domain_mapping(socket_domain, ql.archtype, ql.ostype)
+    socket_type = socket_type_mapping(socket_type, ql.arch.type, ql.ostype)
+    socket_domain = socket_domain_mapping(socket_domain, ql.arch.type, ql.ostype)
     ql.log.debug("socket(%s, %s, %s) = %d" % (socket_domain, socket_type, socket_protocol, regreturn))
 
     return regreturn
@@ -161,7 +161,7 @@ def ql_syscall_getsockopt(ql: Qiling, sockfd, level, optname, optval_addr, optle
 
         try:
             emu_level = level
-            emu_level_name = socket_level_mapping(emu_level,  ql.archtype, ql.ostype)
+            emu_level_name = socket_level_mapping(emu_level, ql.arch.type, ql.ostype)
             level = getattr(socket, emu_level_name)
             ql.log.debug("Convert emu_level {}:{} to host platform based level {}:{}".format(
                 emu_level_name, emu_level, emu_level_name, level))
@@ -178,15 +178,15 @@ def ql_syscall_getsockopt(ql: Qiling, sockfd, level, optname, optval_addr, optle
         try:
             emu_opt = optname
 
-            emu_level_name = socket_level_mapping(emu_level, ql.archtype, ql.ostype)
+            emu_level_name = socket_level_mapping(emu_level, ql.arch.type, ql.ostype)
             # emu_opt_name is based on level
             if emu_level_name == "IPPROTO_IP":
-                emu_opt_name = socket_ip_option_mapping(emu_opt, ql.archtype, ql.ostype)
+                emu_opt_name = socket_ip_option_mapping(emu_opt, ql.arch.type, ql.ostype)
             else:
-                emu_opt_name = socket_option_mapping(emu_opt, ql.archtype, ql.ostype)
+                emu_opt_name = socket_option_mapping(emu_opt, ql.arch.type, ql.ostype)
 
             # Fix for mips
-            if ql.archtype == QL_ARCH.MIPS:
+            if ql.arch.type == QL_ARCH.MIPS:
                 if emu_opt_name.endswith("_NEW") or emu_opt_name.endswith("_OLD"):
                     emu_opt_name = emu_opt_name[:-4]
 
@@ -223,7 +223,7 @@ def ql_syscall_setsockopt(ql: Qiling, sockfd, level, optname, optval_addr, optle
         try:
             try:
                 emu_level = level
-                emu_level_name = socket_level_mapping(emu_level, ql.archtype, ql.ostype)
+                emu_level_name = socket_level_mapping(emu_level, ql.arch.type, ql.ostype)
                 level = getattr(socket, emu_level_name)
                 ql.log.debug("Convert emu_level {}:{} to host platform based level {}:{}".format(
                     emu_level_name, emu_level, emu_level_name, level))
@@ -240,15 +240,15 @@ def ql_syscall_setsockopt(ql: Qiling, sockfd, level, optname, optval_addr, optle
             try:
                 emu_opt = optname
 
-                emu_level_name = socket_level_mapping(emu_level, ql.archtype, ql.ostype)
+                emu_level_name = socket_level_mapping(emu_level, ql.arch.type, ql.ostype)
                 # emu_opt_name is based on level
                 if emu_level_name == "IPPROTO_IP":
-                    emu_opt_name = socket_ip_option_mapping(emu_opt, ql.archtype, ql.ostype)
+                    emu_opt_name = socket_ip_option_mapping(emu_opt, ql.arch.type, ql.ostype)
                 else:
-                    emu_opt_name = socket_option_mapping(emu_opt, ql.archtype, ql.ostype)
+                    emu_opt_name = socket_option_mapping(emu_opt, ql.arch.type, ql.ostype)
 
                 # Fix for mips
-                if ql.archtype == QL_ARCH.MIPS:
+                if ql.arch.type == QL_ARCH.MIPS:
                     if emu_opt_name.endswith("_NEW") or emu_opt_name.endswith("_OLD"):
                         emu_opt_name = emu_opt_name[:-4]
 
@@ -293,7 +293,7 @@ def ql_syscall_shutdown(ql: Qiling, shutdown_fd, shutdown_how):
 def ql_syscall_bind(ql: Qiling, bind_fd, bind_addr, bind_addrlen):
     regreturn = 0
 
-    if ql.archtype == QL_ARCH.X8664:
+    if ql.arch.type == QL_ARCH.X8664:
         data = ql.mem.read(bind_addr, 8)
     else:
         data = ql.mem.read(bind_addr, bind_addrlen)
@@ -566,7 +566,7 @@ def ql_syscall_sendto(ql: Qiling, sendto_sockfd, sendto_buf, sendto_len, sendto_
                 ql.log.debug("debug sendto() start")
                 tmp_buf = ql.mem.read(sendto_buf, sendto_len)
 
-                if ql.archtype== QL_ARCH.X8664:
+                if ql.arch.type== QL_ARCH.X8664:
                     data = ql.mem.read(sendto_addr, 8)
                 else:
                     data = ql.mem.read(sendto_addr, sendto_addrlen)

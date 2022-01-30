@@ -7,7 +7,7 @@ from qiling.const import QL_ARCH
 from qiling.os.posix.posix import SYSCALL_PREF
 
 def map_syscall(ql, syscall_num):
-    if ql.archtype == QL_ARCH.X8664:
+    if ql.arch.type == QL_ARCH.X8664:
         return f'{SYSCALL_PREF}{x8664_syscall_table[syscall_num]}'
 
 x8664_syscall_table = {

@@ -45,7 +45,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         self.cur_addr = self.ql.loader.entry_point
 
-        if self.ql.archtype == QL_ARCH.CORTEX_M:
+        if self.ql.arch.type == QL_ARCH.CORTEX_M:
             self._run()
 
         else:
@@ -113,7 +113,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         if not address:
             address = self.cur_addr
 
-        if self.ql.archtype == QL_ARCH.CORTEX_M and self.ql.count != 0:
+        if self.ql.arch.type == QL_ARCH.CORTEX_M and self.ql.count != 0:
 
             while self.ql.count:
 
@@ -130,7 +130,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
             return
 
-        if self.ql.archtype in (QL_ARCH.ARM, QL_ARCH.CORTEX_M) and is_thumb(self.ql.arch.regs.cpsr):
+        if self.ql.arch.type in (QL_ARCH.ARM, QL_ARCH.CORTEX_M) and is_thumb(self.ql.arch.regs.cpsr):
             address |= 1
 
         self.ql.emu_start(begin=address, end=end, count=count)
@@ -227,7 +227,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
             if next_stop is CODE_END:
                 return True
 
-            if self.ql.archtype == QL_ARCH.CORTEX_M:
+            if self.ql.arch.type == QL_ARCH.CORTEX_M:
                 self.ql.arch.step()
                 self.ql.count -= 1
 
@@ -244,7 +244,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         bp = TempBreakpoint(address) if is_temp else Breakpoint(address)
 
-        if self.ql.archtype != QL_ARCH.CORTEX_M:
+        if self.ql.arch.type != QL_ARCH.CORTEX_M:
             # skip hook_address for cortex_m
             bp.hook = self.ql.hook_address(self._bp_handler, address)
 
@@ -263,7 +263,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         restore qiling instance context to initial state
         """
 
-        if self.ql.archtype != QL_ARCH.CORTEX_M:
+        if self.ql.arch.type != QL_ARCH.CORTEX_M:
 
             self.ql.restore(self._init_state)
             self.do_context()

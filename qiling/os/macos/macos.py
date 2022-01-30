@@ -141,12 +141,12 @@ class QlOsMacos(QlOsPosix):
         if self.ql.code:
             return
 
-        if self.ql.archtype== QL_ARCH.ARM64:
+        if self.ql.arch.type == QL_ARCH.ARM64:
             self.ql.arch.enable_vfp()
             self.ql.hook_intno(self.hook_syscall, 2)
             self.ql.hook_intno(self.hook_sigtrap, 7)
 
-        elif self.ql.archtype== QL_ARCH.X8664:
+        elif self.ql.arch.type == QL_ARCH.X8664:
             self.ql.hook_insn(self.hook_syscall, UC_X86_INS_SYSCALL)
             self.gdtm = GDTManager(self.ql)
             ql_x86_register_cs(self)

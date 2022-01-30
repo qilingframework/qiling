@@ -26,7 +26,7 @@ def ql_syscall_open(ql: Qiling, filename: int, flags: int, mode: int):
         regreturn = -EMFILE
     else:
         try:
-            if ql.archtype== QL_ARCH.ARM and ql.ostype!= QL_OS.QNX:
+            if ql.arch.type == QL_ARCH.ARM and ql.ostype != QL_OS.QNX:
                 mode = 0
 
             #flags = ql_open_flag_mapping(ql, flags)
@@ -62,7 +62,7 @@ def ql_syscall_creat(ql: Qiling, filename: int, mode: int):
         regreturn = -ENOMEM 
     else:
         try:
-            if ql.archtype== QL_ARCH.ARM:
+            if ql.arch.type == QL_ARCH.ARM:
                 mode = 0
 
             flags = ql_open_flag_mapping(ql, flags)
@@ -94,7 +94,7 @@ def ql_syscall_openat(ql: Qiling, fd: int, path: int, flags: int, mode: int):
         regreturn = -EMFILE
     else:
         try:
-            if ql.archtype== QL_ARCH.ARM:
+            if ql.arch.type == QL_ARCH.ARM:
                 mode = 0
 
             flags = ql_open_flag_mapping(ql, flags)

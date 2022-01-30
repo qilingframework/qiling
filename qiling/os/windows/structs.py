@@ -118,7 +118,7 @@ class PEB:
         self.AtlThunkSListPtr = alt_thunk_s_list_ptr
         self.IFEOKey = ifeo_key
         self.numberOfProcessors = number_processors
-        if self.ql.archtype == 32:
+        if self.ql.arch.type == 32:
             self.size = 0x0468
         else:
             self.size = 0x07B0
@@ -1600,12 +1600,12 @@ class LdrDataTableEntry:
         s += self.ql.pack(self.SizeOfImage)  # 0x20
         s += self.ql.pack16(self.FullDllName['Length'])  # 0x24
         s += self.ql.pack16(self.FullDllName['MaximumLength'])  # 0x26
-        if self.ql.archtype == QL_ARCH.X8664:
+        if self.ql.arch.type == QL_ARCH.X8664:
             s += self.ql.pack32(0)
         s += self.ql.pack(self.FullDllName['BufferPtr'])  # 0x28
         s += self.ql.pack16(self.BaseDllName['Length'])
         s += self.ql.pack16(self.BaseDllName['MaximumLength'])
-        if self.ql.archtype == QL_ARCH.X8664:
+        if self.ql.arch.type == QL_ARCH.X8664:
             s += self.ql.pack32(0)
         s += self.ql.pack(self.BaseDllName['BufferPtr'])
         s += self.ql.pack(self.Flags)
@@ -2281,7 +2281,7 @@ class UnicodeString(AlignedWindowsStruct):
         super().__init__(ql)
 
         # on x64, self.buffer is aligned to 8
-        if (ql.archtype == 32):
+        if ql.arch.bits == 32:
             self.size = self.USHORT_SIZE * 2 + self.POINTER_SIZE
         else:
             self.size = self.USHORT_SIZE * 2 + 4 + self.POINTER_SIZE

@@ -27,7 +27,7 @@ from qiling.os.macos.thread import QlMachoThreadManagement, QlMachoThread
 
 # commpage is a shared mem space which is in a static address
 def load_commpage(ql):
-    if ql.archtype == QL_ARCH.X8664:
+    if ql.arch.type == QL_ARCH.X8664:
         COMM_PAGE_START_ADDRESS = X8664_COMM_PAGE_START_ADDRESS
     else:    
         COMM_PAGE_START_ADDRESS = ARM64_COMM_PAGE_START_ADDRESS
@@ -420,7 +420,7 @@ class QlLoaderMACHO(QlLoader):
             self.load_address = self.macho_entry
 
         # load_commpage not wroking with ARM64, yet
-        if  self.ql.archtype== QL_ARCH.X8664:
+        if self.ql.arch.type == QL_ARCH.X8664:
             load_commpage(self.ql)
 
         return self.proc_entry

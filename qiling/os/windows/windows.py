@@ -56,7 +56,7 @@ class QlOsWindows(QlOs):
 
             return __selector[atype]
 
-        self.fcall_select = __make_fcall_selector(ql.archtype)
+        self.fcall_select = __make_fcall_selector(ql.arch.type)
         self.fcall = None
 
         self.PE_RUN = True
@@ -84,13 +84,13 @@ class QlOsWindows(QlOs):
 
     def setupGDT(self):
         # setup gdt
-        if self.ql.archtype == QL_ARCH.X86:
+        if self.ql.arch.type == QL_ARCH.X86:
             self.gdtm = GDTManager(self.ql)
             ql_x86_register_cs(self)
             ql_x86_register_ds_ss_es(self)
             ql_x86_register_fs(self)
             ql_x86_register_gs(self)
-        elif self.ql.archtype == QL_ARCH.X8664:
+        elif self.ql.arch.type == QL_ARCH.X8664:
             ql_x8664_set_gs(self.ql)
 
 

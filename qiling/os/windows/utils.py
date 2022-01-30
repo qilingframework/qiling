@@ -56,7 +56,7 @@ def io_Write(ql: Qiling, in_buffer: bytes):
 
     alloc_addr = []
     def build_mdl(buffer_size, data=None):
-        if ql.archtype == QL_ARCH.X8664:
+        if ql.arch.type == QL_ARCH.X8664:
             mdl = MDL64()
         else:
             mdl = MDL32()
@@ -73,7 +73,7 @@ def io_Write(ql: Qiling, in_buffer: bytes):
 
         return mdl
     # allocate memory regions for IRP and IO_STACK_LOCATION
-    if ql.archtype == QL_ARCH.X8664:
+    if ql.arch.type == QL_ARCH.X8664:
         irp_addr = heap.alloc(ctypes.sizeof(IRP64))
         alloc_addr.append(irp_addr)
         irpstack_addr = heap.alloc(ctypes.sizeof(IO_STACK_LOCATION64))
@@ -107,7 +107,7 @@ def io_Write(ql: Qiling, in_buffer: bytes):
     elif device_object.Flags & DO_DIRECT_IO:
         # DIRECT_IO
         mdl = build_mdl(len(in_buffer))
-        if ql.archtype == QL_ARCH.X8664:
+        if ql.arch.type == QL_ARCH.X8664:
             mdl_addr = heap.alloc(ctypes.sizeof(MDL64))
         else:
             mdl_addr = heap.alloc(ctypes.sizeof(MDL32))
@@ -139,7 +139,7 @@ def io_Write(ql: Qiling, in_buffer: bytes):
         verify_ret(ql, err)
 
     # read current IRP state
-    if ql.archtype == QL_ARCH.X8664:
+    if ql.arch.type == QL_ARCH.X8664:
         irp_buffer = ql.mem.read(irp_addr, ctypes.sizeof(IRP64))
         irp = IRP64.from_buffer(irp_buffer)
     else:
@@ -172,7 +172,7 @@ def ioctl(ql: Qiling, params: Tuple[Tuple, int, bytes]) -> Tuple:
 
     alloc_addr = []
     def build_mdl(buffer_size, data=None):
-        if ql.archtype == QL_ARCH.X8664:
+        if ql.arch.type == QL_ARCH.X8664:
             mdl = MDL64()
         else:
             mdl = MDL32()
@@ -211,7 +211,7 @@ def ioctl(ql: Qiling, params: Tuple[Tuple, int, bytes]) -> Tuple:
         alloc_addr.append(output_buffer_addr)
 
         # allocate memory regions for IRP and IO_STACK_LOCATION
-        if ql.archtype == QL_ARCH.X8664:
+        if ql.arch.type == QL_ARCH.X8664:
             irp_addr = heap.alloc(ctypes.sizeof(IRP64))
             alloc_addr.append(irp_addr)
             irpstack_addr = heap.alloc(ctypes.sizeof(IO_STACK_LOCATION64))
@@ -267,7 +267,7 @@ def ioctl(ql: Qiling, params: Tuple[Tuple, int, bytes]) -> Tuple:
             # Create MDL structure for output data
             # used by both IOCTL_METHOD_IN_DIRECT and IOCTL_METHOD_OUT_DIRECT
             mdl = build_mdl(output_buffer_size)
-            if ql.archtype == QL_ARCH.X8664:
+            if ql.arch.type == QL_ARCH.X8664:
                 mdl_addr = heap.alloc(ctypes.sizeof(MDL64))
             else:
                 mdl_addr = heap.alloc(ctypes.sizeof(MDL32))
@@ -293,7 +293,7 @@ def ioctl(ql: Qiling, params: Tuple[Tuple, int, bytes]) -> Tuple:
             verify_ret(ql, err)
 
         # read current IRP state
-        if ql.archtype == QL_ARCH.X8664:
+        if ql.arch.type == QL_ARCH.X8664:
             irp_buffer = ql.mem.read(irp_addr, ctypes.sizeof(IRP64))
             irp = IRP64.from_buffer(irp_buffer)
         else:

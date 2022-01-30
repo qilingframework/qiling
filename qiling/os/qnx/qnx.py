@@ -37,7 +37,7 @@ class QlOsQnx(QlOsPosix):
             QL_ARCH.MIPS  : mips.mipso32,
             QL_ARCH.RISCV : riscv.riscv,
             QL_ARCH.RISCV64: riscv.riscv,
-        }[ql.archtype](ql)
+        }[ql.arch.type](ql)
 
         self.fcall = QlFunctionCall(ql, cc)
 
@@ -65,7 +65,7 @@ class QlOsQnx(QlOsPosix):
             return
 
         # ARM
-        if self.ql.archtype == QL_ARCH.ARM:
+        if self.ql.arch.type == QL_ARCH.ARM:
             self.ql.arch.enable_vfp()
             self.ql.hook_intno(self.hook_syscall, 2)
             #self.thread_class = thread.QlLinuxARMThread
@@ -135,7 +135,7 @@ class QlOsQnx(QlOsPosix):
             else:
                 if self.ql.loader.elf_entry != self.ql.loader.entry_point:
                     entry_address = self.ql.loader.elf_entry
-                    if self.ql.archtype == QL_ARCH.ARM and entry_address & 1 == 1:
+                    if self.ql.arch.type == QL_ARCH.ARM and entry_address & 1 == 1:
                         entry_address -= 1
                     self.ql.emu_start(self.ql.loader.entry_point, entry_address, self.ql.timeout)
                     self.run_function_after_load()

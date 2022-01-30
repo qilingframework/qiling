@@ -321,11 +321,11 @@ class QlLoaderPE_UEFI(QlLoader):
         ql = self.ql
 
         # intel architecture uefi implementation only
-        if ql.archtype not in (QL_ARCH.X86, QL_ARCH.X8664):
+        if ql.arch.type not in (QL_ARCH.X86, QL_ARCH.X8664):
             raise QlErrorArch("Unsupported architecture")
 
         # x86-64 arch only
-        if ql.archtype != QL_ARCH.X8664:
+        if ql.arch.type != QL_ARCH.X8664:
             raise QlErrorArch("Only 64-bit modules are supported at the moment")
 
         self.loaded_image_protocol_guid = ql.os.profile["LOADED_IMAGE_PROTOCOL"]["Guid"]

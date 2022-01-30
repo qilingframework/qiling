@@ -51,7 +51,7 @@ class QlGdbUtils:
         """
 
         try:
-            if ql.archtype == QL_ARCH.ARM:
+            if ql.arch.type == QL_ARCH.ARM:
                 if ql.arch.is_thumb:
                     address += 1
 
@@ -106,7 +106,7 @@ class QlGdbUtils:
         """
 
         if address is not None:
-            if self.ql.archtype == QL_ARCH.ARM:
+            if self.ql.arch.type == QL_ARCH.ARM:
                 if self.ql.arch.is_thumb:
                     address += 1
 

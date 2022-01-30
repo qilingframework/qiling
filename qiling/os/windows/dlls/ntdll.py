@@ -125,7 +125,7 @@ def _QuerySystemInformation(ql: Qiling, address: int, params):
         max_uaddr = {
             QL_ARCH.X86  : 0x7FFEFFFF,
             QL_ARCH.X8664: 0x7FFFFFFEFFFF
-        }[ql.archtype]
+        }[ql.arch.type]
 
         sbi = structs.SystemBasicInforation(
             ql,

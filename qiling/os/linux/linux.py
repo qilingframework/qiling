@@ -34,7 +34,7 @@ class QlOsLinux(QlOsPosix):
             QL_ARCH.MIPS  : mips.mipso32,
             QL_ARCH.RISCV : riscv.riscv,
             QL_ARCH.RISCV64: riscv.riscv,
-        }[ql.archtype](ql)
+        }[ql.arch.type](ql)
 
         self.fcall = QlFunctionCall(ql, cc)
 
@@ -45,32 +45,32 @@ class QlOsLinux(QlOsPosix):
         self.elf_mem_start = 0x0
         self.load()
 
-        if self.ql.archtype == QL_ARCH.X8664:
+        if self.ql.arch.type == QL_ARCH.X8664:
             ql_x8664_set_gs(self.ql)
 
     def load(self):
         self.futexm = futex.QlLinuxFutexManagement()
 
         # ARM
-        if self.ql.archtype == QL_ARCH.ARM:
+        if self.ql.arch.type == QL_ARCH.ARM:
             self.ql.arch.enable_vfp()
             self.ql.hook_intno(self.hook_syscall, 2)
             self.thread_class = thread.QlLinuxARMThread
             arm_utils.init_get_tls(self.ql, self.ql.arch.arm_get_tls_addr)
 
         # MIPS32
-        elif self.ql.archtype == QL_ARCH.MIPS:
+        elif self.ql.arch.type == QL_ARCH.MIPS:
             self.ql.hook_intno(self.hook_syscall, 17)
             self.thread_class = thread.QlLinuxMIPS32Thread
 
         # ARM64
-        elif self.ql.archtype == QL_ARCH.ARM64:
+        elif self.ql.arch.type == QL_ARCH.ARM64:
             self.ql.arch.enable_vfp()
             self.ql.hook_intno(self.hook_syscall, 2)
             self.thread_class = thread.QlLinuxARM64Thread
 
         # X86
-        elif self.ql.archtype == QL_ARCH.X86:
+        elif self.ql.arch.type == QL_ARCH.X86:
             self.gdtm = GDTManager(self.ql)
             ql_x86_register_cs(self)
             ql_x86_register_ds_ss_es(self)
@@ -78,7 +78,7 @@ class QlOsLinux(QlOsPosix):
             self.thread_class = thread.QlLinuxX86Thread
 
         # X8664
-        elif self.ql.archtype == QL_ARCH.X8664:
+        elif self.ql.arch.type == QL_ARCH.X8664:
             self.gdtm = GDTManager(self.ql)
             ql_x86_register_cs(self)
             ql_x86_register_ds_ss_es(self)
@@ -87,12 +87,12 @@ class QlOsLinux(QlOsPosix):
             #self.ql.hook_insn(hook_posix_api, UC_X86_INS_SYSCALL)
             self.thread_class = thread.QlLinuxX8664Thread     
 
-        elif self.ql.archtype == QL_ARCH.RISCV:
+        elif self.ql.arch.type == QL_ARCH.RISCV:
             self.ql.arch.enable_float()
             self.ql.hook_intno(self.hook_syscall, 8)
             self.thread_class = None
 
-        elif self.ql.archtype == QL_ARCH.RISCV64:
+        elif self.ql.arch.type == QL_ARCH.RISCV64:
             self.ql.arch.enable_float()
             self.ql.hook_intno(self.hook_syscall, 8)
             self.thread_class = None
@@ -139,7 +139,7 @@ class QlOsLinux(QlOsPosix):
 
                     elif self.ql.loader.elf_entry != self.ql.loader.entry_point:
                         entry_address = self.ql.loader.elf_entry
-                        if self.ql.archtype == QL_ARCH.ARM and entry_address & 1 == 1:
+                        if self.ql.arch.type == QL_ARCH.ARM and entry_address & 1 == 1:
                             entry_address -= 1
                         self.ql.emu_start(self.ql.loader.entry_point, entry_address, self.ql.timeout)
                         self.ql.enable_lib_patch()

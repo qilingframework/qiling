@@ -487,10 +487,6 @@ class QlEmuRegView(simplecustviewer_t):
         return True
 
     def SetReg(self, addr, ql:Qiling):
-        arch = ql.archtype
-        if arch == "":
-            return
-
         #clear
         self.ClearLines()
 
@@ -550,10 +546,6 @@ class QlEmuStackView(simplecustviewer_t):
         self.AddLine('')
         self.AddLine(COLSTR('  Stack at 0x%X' % sp, SCOLOR_AUTOCMT))
         self.AddLine('')
-
-        arch = ql.archtype
-        if arch == "":
-            return
 
         reg_bit_size = ql.arch.bits
         reg_byte_size = reg_bit_size // 8
@@ -831,18 +823,7 @@ class QlEmuMisc:
             QL_ARCH.MIPS    : list({**mips_reg_map}.keys()),
         }
 
-        if ql.archtype == QL_ARCH.X86:
-            return tables[QL_ARCH.X86]
-        elif ql.archtype == QL_ARCH.X8664:
-            return tables[QL_ARCH.X8664]
-        elif ql.archtype == QL_ARCH.ARM:
-            return tables[QL_ARCH.ARM]
-        elif ql.archtype == QL_ARCH.ARM64:
-            return tables[QL_ARCH.ARM64]
-        elif ql.archtype == QL_ARCH.MIPS:
-            return tables[QL_ARCH.MIPS]
-        else:
-            return []
+        return tables.get(ql.arch.type, [])
 
     @staticmethod
     def url_download(url):
