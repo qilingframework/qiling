@@ -204,7 +204,7 @@ def arch_convert(arch: str) -> Optional[QL_ARCH]:
     return arch_map.get(alias_map.get(arch, arch))
 
 def arch_os_convert(arch: QL_ARCH) -> Optional[QL_OS]:
-    return arch_os_map.get(arch, QL_OS.MCU)
+    return arch_os_map.get(arch)
 
 def debugger_convert(debugger: str) -> Optional[QL_DEBUGGER]:
     return debugger_map.get(debugger)

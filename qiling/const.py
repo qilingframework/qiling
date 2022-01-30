@@ -89,5 +89,6 @@ loader_map = {
 }
 
 arch_os_map = {
-    QL_ARCH.EVM: QL_OS.EVM,
+    QL_ARCH.EVM      : QL_OS.EVM,
+    QL_ARCH.CORTEX_M : QL_OS.MCU
 }
