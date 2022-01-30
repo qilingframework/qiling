@@ -294,8 +294,8 @@ class MCUTest(unittest.TestCase):
 
 
     def test_mcu_blink_gd32vf103(self):
-        ql = Qiling(['../examples/rootfs/mcu/gd32vf103/blink.hex'], archtype="riscv64", 
-                    env=gd32vf103, verbose=QL_VERBOSE.DEFAULT)
+        ql = Qiling(['../examples/rootfs/mcu/gd32vf103/blink.hex'],
+            ostype="mcu", archtype="riscv64", env=gd32vf103, verbose=QL_VERBOSE.DEFAULT)
 
         ql.hw.create('rcu')
         ql.hw.create('gpioa')

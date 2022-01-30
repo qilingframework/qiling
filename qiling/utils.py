@@ -231,66 +231,105 @@ def ql_get_module_function(module_name: str, function_name: str):
     return module_function
 
 def ql_elf_parse_emu_env(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], Optional[QL_ENDIAN]]:
-    with open(path, "rb") as f:
-        size = os.fstat(f.fileno()).st_size
+    # instead of using full-blown elffile parsing, we perform a simple parsing to avoid
+    # external dependencies for target systems that do not need them.
+    #
+    # see: https://refspecs.linuxfoundation.org/elf/gabi4+/ch4.eheader.html
 
-        ident = f.read(512 if size >= 512 else 20)
+    # ei_class
+    ELFCLASS32 = 1    # 32-bit
+    ELFCLASS64 = 2    # 64-bit
 
-    arch = None
+    #ei_data
+    ELFDATA2LSB = 1   # little-endian
+    ELFDATA2MSB = 2   # big-endian
+
+    # ei_osabi
+    ELFOSABI_SYSV       = 0
+    ELFOSABI_LINUX      = 3
+    ELFOSABI_FREEBSD    = 9
+    ELFOSABI_ARM_AEABI  = 64
+    ELFOSABI_ARM        = 97
+    ELFOSABI_STANDALONE = 255
+
+    # e_machine
+    EM_386     = 3
+    EM_MIPS    = 8
+    EM_ARM     = 40
+    EM_X86_64  = 62
+    EM_AARCH64 = 183
+    EM_RISCV   = 243
+
+    endianess = {
+        ELFDATA2LSB : (QL_ENDIAN.EL, 'little'),
+        ELFDATA2MSB : (QL_ENDIAN.EB, 'big')
+    }
+
+    machines32 = {
+        EM_386   : QL_ARCH.X86,
+        EM_MIPS  : QL_ARCH.MIPS,
+        EM_ARM   : QL_ARCH.ARM,
+        EM_RISCV : QL_ARCH.RISCV
+    }
+
+    machines64 = {
+        EM_X86_64  : QL_ARCH.X8664,
+        EM_AARCH64 : QL_ARCH.ARM64,
+        EM_RISCV   : QL_ARCH.RISCV64
+    }
+
+    classes = {
+        ELFCLASS32 : machines32,
+        ELFCLASS64 : machines64
+    }
+
+    abis = {
+        ELFOSABI_SYSV       : QL_OS.LINUX,
+        ELFOSABI_LINUX      : QL_OS.LINUX,
+        ELFOSABI_FREEBSD    : QL_OS.FREEBSD,
+        ELFOSABI_ARM_AEABI  : QL_OS.LINUX,
+        ELFOSABI_ARM        : QL_OS.LINUX,
+        ELFOSABI_STANDALONE : QL_OS.BLOB
+    }
+
+    archtype = None
     ostype = None
     archendian = None
 
-    if ident[:4] == b'\x7fELF':
-        elfbit = ident[0x4]
-        endian = ident[0x5]
-        osabi = ident[0x7]
-        e_machine = ident[0x12:0x14]
+    with open(path, 'rb') as binfile:
+        e_ident = binfile.read(16)
+        e_type = binfile.read(2)
+        e_machine = binfile.read(2)
 
-        if osabi == 0x09:
-            ostype = QL_OS.FREEBSD
-        elif osabi in (0x0, 0x03) or osabi >= 0x11:
-            if b"ldqnx.so" in ident:
-                ostype = QL_OS.QNX
-            else:
-                ostype = QL_OS.LINUX
+        # qnx may be detected by the interpreter name: 'ldqnx.so'.
+        # instead of properly parsing the file to locate the pt_interp
+        # segment, we detect qnx fuzzily by looking for that string in
+        # the first portion of the file.
+        blob = binfile.read(0x200 - 20)
 
-        if e_machine == b"\x03\x00":
-            archendian = QL_ENDIAN.EL
-            arch = QL_ARCH.X86
+    if e_ident[:4] == b'\x7fELF':
+        ei_class = e_ident[4]   # arch bits
+        ei_data  = e_ident[5]   # arch endianess
+        ei_osabi = e_ident[7]
 
-        elif e_machine == b"\x08\x00" and endian == 1 and elfbit == 1:
-            archendian = QL_ENDIAN.EL
-            arch = QL_ARCH.MIPS
+        if ei_class in classes:
+            machines = classes[ei_class]
 
-        elif e_machine == b"\x00\x08" and endian == 2 and elfbit == 1:
-            archendian = QL_ENDIAN.EB
-            arch = QL_ARCH.MIPS
+            if ei_data in endianess:
+                archendian, endian = endianess[ei_data]
 
-        elif e_machine == b"\x28\x00" and endian == 1 and elfbit == 1:
-            archendian = QL_ENDIAN.EL
-            arch = QL_ARCH.ARM
+                machine = int.from_bytes(e_machine, endian)
 
-        elif e_machine == b"\x00\x28" and endian == 2 and elfbit == 1:
-            archendian = QL_ENDIAN.EB
-            arch = QL_ARCH.ARM
+                if machine in machines:
+                    archtype = machines[machine]
 
-        elif e_machine == b"\xB7\x00":
-            archendian = QL_ENDIAN.EL
-            arch = QL_ARCH.ARM64
+                if ei_osabi in abis:
+                    ostype = abis[ei_osabi]
 
-        elif e_machine == b"\x3E\x00":
-            archendian = QL_ENDIAN.EL
-            arch = QL_ARCH.X8664
-        
-        elif e_machine == b"\xf3\x00" and elfbit == 1:
-            archendian = QL_ENDIAN.EL
-            arch = QL_ARCH.RISCV
-        
-        elif e_machine == b"\xf3\x00" and elfbit == 2:
-            archendian = QL_ENDIAN.EL
-            arch = QL_ARCH.RISCV64
-    
-    return arch, ostype, archendian
+                    if blob and b'ldqnx.so' in blob:
+                        ostype = QL_OS.QNX
+
+    return archtype, ostype, archendian
 
 def ql_macho_parse_emu_env(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], Optional[QL_ENDIAN]]:
     macho_macos_sig64 = b'\xcf\xfa\xed\xfe'
