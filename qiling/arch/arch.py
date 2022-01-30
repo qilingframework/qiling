@@ -11,11 +11,12 @@ from capstone import Cs
 from keystone import Ks
 
 from qiling import Qiling
-from qiling.const import QL_ENDIAN
+from qiling.const import QL_ARCH, QL_ENDIAN
 from .register import QlRegisterManager
 from .utils import QlArchUtils
 
 class QlArch:
+    type: QL_ARCH
     bits: int
 
     def __init__(self, ql: Qiling):

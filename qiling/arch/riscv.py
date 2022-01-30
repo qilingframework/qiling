@@ -13,10 +13,11 @@ from qiling.arch.arch import QlArch
 from qiling.arch.register import QlRegisterManager
 from qiling.arch import riscv_const
 from qiling.arch.riscv_const import *
-from qiling.const import QL_ENDIAN
+from qiling.const import QL_ARCH, QL_ENDIAN
 from qiling.exception import QlErrorNotImplemented
 
 class QlArchRISCV(QlArch):
+    type = QL_ARCH.RISCV
     bits = 32
 
     @cached_property

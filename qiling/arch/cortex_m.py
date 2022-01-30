@@ -15,7 +15,7 @@ from qiling.arch.arm import QlArchARM
 from qiling.arch import cortex_m_const
 from qiling.arch.register import QlRegisterManager
 from qiling.arch.cortex_m_const import IRQ, EXC_RETURN, CONTROL, EXCP
-from qiling.const import QL_ENDIAN, QL_VERBOSE
+from qiling.const import QL_ARCH, QL_ENDIAN, QL_VERBOSE
 from qiling.exception import QlErrorNotImplemented
 
 class QlInterruptContext(ContextDecorator):
@@ -60,6 +60,7 @@ class QlInterruptContext(ContextDecorator):
             self.ql.log.info('Exit from interrupt')
 
 class QlArchCORTEX_M(QlArchARM):
+    type = QL_ARCH.ARM
     bits = 32
 
     def __init__(self, ql: Qiling):

@@ -12,9 +12,10 @@ from keystone import Ks, KS_ARCH_ARM64, KS_MODE_ARM
 from qiling.arch.arch import QlArch
 from qiling.arch import arm64_const
 from qiling.arch.register import QlRegisterManager
-from qiling.const import QL_ENDIAN
+from qiling.const import QL_ARCH, QL_ENDIAN
 
 class QlArchARM64(QlArch):
+    type = QL_ARCH.ARM64
     bits = 64
 
     @cached_property

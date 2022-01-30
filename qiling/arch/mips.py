@@ -10,12 +10,13 @@ from capstone import Cs, CS_ARCH_MIPS, CS_MODE_MIPS32, CS_MODE_BIG_ENDIAN, CS_MO
 from keystone import Ks, KS_ARCH_MIPS, KS_MODE_MIPS32, KS_MODE_BIG_ENDIAN, KS_MODE_LITTLE_ENDIAN
 
 from qiling import Qiling
-from qiling.const import QL_ENDIAN
 from qiling.arch.arch import QlArch
 from qiling.arch import mips_const
 from qiling.arch.register import QlRegisterManager
+from qiling.const import QL_ARCH, QL_ENDIAN
 
 class QlArchMIPS(QlArch):
+    type = QL_ARCH.MIPS
     bits = 32
 
     def __init__(self, ql: Qiling, endian: QL_ENDIAN):

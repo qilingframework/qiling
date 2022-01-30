@@ -10,11 +10,13 @@ from capstone import Cs
 from keystone import Ks
 
 from qiling.arch.riscv_const import *
+from qiling.const import QL_ARCH
 from qiling.exception import QlErrorNotImplemented
 
 from .riscv import QlArchRISCV
 
 class QlArchRISCV64(QlArchRISCV):
+    type = QL_ARCH.RISCV64
     bits = 64
 
     @cached_property

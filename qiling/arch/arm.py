@@ -10,12 +10,13 @@ from capstone import Cs, CS_ARCH_ARM, CS_MODE_ARM, CS_MODE_THUMB, CS_MODE_BIG_EN
 from keystone import Ks, KS_ARCH_ARM, KS_MODE_ARM, KS_MODE_THUMB, KS_MODE_BIG_ENDIAN
 
 from qiling import Qiling
-from qiling.const import QL_ENDIAN
 from qiling.arch.arch import QlArch
 from qiling.arch import arm_const
 from qiling.arch.register import QlRegisterManager
+from qiling.const import QL_ARCH, QL_ENDIAN
 
 class QlArchARM(QlArch):
+    type = QL_ARCH.ARM
     bits = 32
 
     def __init__(self, ql: Qiling, endian: QL_ENDIAN, thumb: bool):

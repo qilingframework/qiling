@@ -17,7 +17,7 @@ from qiling.arch.msr import QlMsrManager
 from qiling.arch.register import QlRegisterManager
 from qiling.arch import x86_const
 from qiling.arch.x86_const import *
-from qiling.const import QL_ENDIAN
+from qiling.const import QL_ARCH, QL_ENDIAN
 from qiling.exception import QlGDTError
 
 class QlArchIntel(QlArch):
@@ -33,6 +33,7 @@ class QlArchIntel(QlArch):
         return QlMsrManager(self.uc)
 
 class QlArchA8086(QlArchIntel):
+    type = QL_ARCH.A8086
     bits = 16
 
     @cached_property
@@ -61,6 +62,7 @@ class QlArchA8086(QlArchIntel):
         return Ks(KS_ARCH_X86, KS_MODE_16)
 
 class QlArchX86(QlArchIntel):
+    type = QL_ARCH.X86
     bits = 32
 
     @cached_property
@@ -92,6 +94,7 @@ class QlArchX86(QlArchIntel):
         return Ks(KS_ARCH_X86, KS_MODE_32)
 
 class QlArchX8664(QlArchIntel):
+    type = QL_ARCH.X8664
     bits = 64
 
     @cached_property
