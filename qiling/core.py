@@ -182,15 +182,15 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
         self.verbose = verbose
 
-        ##########
-        # Loader #
-        ##########
-        self._loader = loader_setup(self, self.ostype, libcache)
-
         ###########
         # Profile #
         ###########
         self._profile = profile_setup(self, self.ostype, profile)
+
+        ##########
+        # Loader #
+        ##########
+        self._loader = loader_setup(self, self.ostype, libcache)
 
         ##############
         # Components #
