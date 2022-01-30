@@ -336,9 +336,7 @@ def ql_pe_parse_emu_env(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], 
         pefile.MACHINE_TYPE['IMAGE_FILE_MACHINE_AMD64'] : QL_ARCH.X8664,
         pefile.MACHINE_TYPE['IMAGE_FILE_MACHINE_ARM']   : QL_ARCH.ARM,
         pefile.MACHINE_TYPE['IMAGE_FILE_MACHINE_THUMB'] : QL_ARCH.ARM,
-        # pefile.MACHINE_TYPE['IMAGE_FILE_MACHINE_ARM64'] :   QL_ARCH.ARM64       #pefile does not have the definition
-        # for IMAGE_FILE_MACHINE_ARM64
-        0xAA64: QL_ARCH.ARM64  # Temporary workaround for Issues #21 till pefile gets updated
+        pefile.MACHINE_TYPE['IMAGE_FILE_MACHINE_ARM64'] : QL_ARCH.ARM64
     }
 
     # get arch
