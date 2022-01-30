@@ -9,6 +9,7 @@ This module is intended for general purpose functions that are only used in qili
 
 from typing import Tuple
 from os.path import basename
+from functools import lru_cache
 
 from keystone import (Ks, KS_ARCH_ARM, KS_ARCH_ARM64, KS_ARCH_MIPS, KS_ARCH_X86,
     KS_MODE_ARM, KS_MODE_THUMB, KS_MODE_MIPS32, KS_MODE_16, KS_MODE_32, KS_MODE_64,
@@ -24,6 +25,7 @@ class QlArchUtils:
         self._disasm_hook = None
         self._block_hook = None
 
+    @lru_cache(maxsize=64)
     def get_base_and_name(self, addr: int) -> Tuple[int, str]:
         for begin, end, _, name, _ in self.ql.mem.map_info:
             if begin <= addr < end:
@@ -33,7 +35,19 @@ class QlArchUtils:
 
     def disassembler(self, ql: Qiling, address: int, size: int):
         data = ql.mem.read(address, size)
-        ba, name = self.get_base_and_name(address)
+
+        # knowing that all binary sections are aligned to page boundary allows
+        # us to 'cheat' and search for the containing image using the aligned
+        # address instead of the actual one.
+        #
+        # also, the locality property determines that consequent instructions
+        # are most likely to reside at the same page in memory, so the containing
+        # page of the current instruction is probably the same as the previous
+        # one.
+        #
+        # both assumptions make it possible to cache the search results and pull
+        # them off by lru, which provides about 20% speed-up in this case
+        ba, name = self.get_base_and_name(ql.mem.align(address))
 
         anibbles = ql.arch.bits // 4
 
