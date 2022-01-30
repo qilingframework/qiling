@@ -31,12 +31,16 @@ class QlOs:
 
         self.utils = QlOsUtils(ql)
         self.fcall: QlFunctionCall
-        self.fs_mapper = QlFsMapper(ql)
         self.child_processes = False
         self.thread_management = None
         self.profile = self.ql.profile
-        self.path = None if self.ql.baremetal else QlPathManager(ql, self.ql.profile.get("MISC", "current_path"))
         self.exit_code = 0
+
+        if not ql.baremetal:
+            cwd = self.profile.get("MISC", "current_path")
+
+            self.path = QlPathManager(ql, cwd)
+            self.fs_mapper = QlFsMapper(self.path)
 
         self.user_defined_api = {
             QL_INTERCEPT.CALL : {},
