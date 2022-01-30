@@ -62,8 +62,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         ##################################
         self._env = env
         self._code = code
-        self._ostype = ostype
-        self._archtype = archtype
         self._multithread = multithread
         self._log_file_fd = None
         self._log_filter = None
@@ -121,39 +119,49 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         #################
         self._host = QlHost()
 
-        if type(self._archtype) is str:
-            self._archtype = arch_convert(self._archtype)
-        if type(self._ostype) is str:
-            self._ostype = ostype_convert(self._ostype)
+        if type(archtype) is str:
+            archtype = arch_convert(archtype)
 
-        archendian = None
+        if type(ostype) is str:
+            ostype = ostype_convert(ostype)
 
-        if self._archtype is None:
-            guessed_archtype, guessed_ostype, guessed_archendian = ql_guess_emu_env(self._path)            
+        # if provided arch was invalid or not provided, guess arch and os
+        if archtype is None:
+            guessed_archtype, guessed_ostype, guessed_archendian = ql_guess_emu_env(self.path)
 
-            self._archtype = guessed_archtype
+            archtype = guessed_archtype
 
-            if self._ostype is None:
-                self._ostype = guessed_ostype
+            if ostype is None:
+                ostype = guessed_ostype
 
             if endian is None:
-                archendian = guessed_archendian
+                endian = guessed_archendian
 
-        elif self._ostype == None:
-            self._ostype = arch_os_convert(self._archtype)
+        # if arch was set but os was not, try to guess it by arch
+        elif ostype is None:
+            ostype = arch_os_convert(archtype)
 
-        if self._ostype is None or not ql_is_valid_ostype(self._ostype):
-            raise QlErrorOsType("Invalid OS: %s" % (self._ostype))
+        # arch should have been determined by now; fail if not
+        if archtype is None or not ql_is_valid_arch(archtype):
+            raise QlErrorArch(f'Uknown or unsupported architecture: "{archtype}"')
 
-        if self._archtype is None or not ql_is_valid_arch(self._archtype):
-            raise QlErrorArch("Invalid ARCH: %s" % (self._archtype))
+        # os should have been determined by now; fail if not
+        if ostype is None or not ql_is_valid_ostype(ostype):
+            raise QlErrorOsType(f'Unknown or unsupported operating system: "{ostype}"')
 
         # if endianess is still undetermined, set it to little-endian.
         # this setting is ignored for architectures with predfined endianess
-        if archendian is None:
-            archendian = QL_ENDIAN.EL
+        if endian is None:
+            endian = QL_ENDIAN.EL
 
-        self._arch = arch_setup(self.archtype, archendian, thumb, self)
+        # make sure args were canonicalized successfully
+        assert type(archtype) is QL_ARCH
+        assert type(ostype) is QL_OS
+        assert type(endian) is QL_ENDIAN
+
+        self._arch = arch_setup(archtype, endian, thumb, self)
+        self._archtype = archtype
+        self._ostype = ostype
 
         self.uc = self.arch.uc
 
