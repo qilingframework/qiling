@@ -160,7 +160,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         assert type(endian) is QL_ENDIAN
 
         self._arch = arch_setup(archtype, endian, thumb, self)
-        self._archtype = archtype
         self._ostype = ostype
 
         self.uc = self.arch.uc
@@ -332,25 +331,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             Example: Qiling(code=b"\x90", ostype="macos", archtype="x8664")
         """
         return self._ostype
-
-    @property
-    def archtype(self) -> QL_ARCH:
-        """ The emulated architecture type.
-
-            Note: Please pass None or one of the strings below to Qiling.__init__.
-                  If you use shellcode, you must specify ostype and archtype manually.
-
-            Type: int
-            Values:
-              - "x86" : x86_32
-              - "x8664" : x86_64
-              - "mips" : MIPS
-              - "arm" : ARM
-              - "arm64" : ARM64
-              - "a8086" : 8086
-            Example: Qiling(code=b"\x90", ostype="macos", archtype="x8664")
-        """
-        return self._archtype
 
     @property
     def code(self) -> bytes:
