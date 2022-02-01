@@ -13,7 +13,7 @@ from qiling.const import QL_ARCH, QL_VERBOSE
 from qiling.debugger import QlDebugger
 
 from .frontend import context_reg, context_asm, examine_mem
-from .utils import _parse_int, handle_bnj, is_thumb, CODE_END, parse_int
+from .utils import _parse_int, handle_bnj, CODE_END, parse_int
 from .utils import Breakpoint, TempBreakpoint
 from .const import *
 
@@ -130,7 +130,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
             return
 
-        if self.ql.arch.type in (QL_ARCH.ARM, QL_ARCH.CORTEX_M) and is_thumb(self.ql.arch.regs.cpsr):
+        if self.ql.arch.type in (QL_ARCH.ARM, QL_ARCH.CORTEX_M) and self.ql.arch.is_thumb:
             address |= 1
 
         self.ql.emu_start(begin=address, end=end, count=count)

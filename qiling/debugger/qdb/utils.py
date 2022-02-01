@@ -121,12 +121,7 @@ def get_cpsr(bits: int) -> (bool, bool, bool, bool):
             )
 
 
-def is_thumb(bits: int) -> bool:
-    return bits & 0x00000020 != 0
-
-
 def disasm(ql: Qiling, address: int, detail: bool = False) -> Optional[int]:
-
     md = ql.arch.disassembler
     md.detail = detail
     try:
@@ -143,8 +138,7 @@ def _read_inst(ql: Qiling, addr: int) -> int:
     result = ql.mem.read(addr, 4)
 
     if ql.arch.type in (QL_ARCH.ARM, QL_ARCH.CORTEX_M):
-        if is_thumb(ql.arch.regs.cpsr):
-
+        if ql.arch.is_thumb:
             first_two = ql.unpack16(ql.mem.read(addr, 2))
             result = ql.pack16(first_two)
 
