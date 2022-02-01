@@ -123,11 +123,6 @@ def examine_mem(ql: Qiling, line: str) -> Union[bool, (str, int, int)]:
     return True
 
 
-# get terminal window height and width
-def get_terminal_size() -> Iterable:
-    return map(int, os.popen('stty size', 'r').read().split())
-
-
 # try to read data from ql memory
 def _try_read(ql: Qiling, address: int, size: int) -> Optional[bytes]:
 
@@ -148,13 +143,15 @@ def _try_read(ql: Qiling, address: int, size: int) -> Optional[bytes]:
 
 # divider printer
 @contextmanager
-def context_printer(ql: Qiling, field_name: str, ruler: str = "─") -> None:
-    height, width = get_terminal_size()
-    bar = (width - len(field_name)) // 2 - 1
+def context_printer(ql: Qiling, field_name: str, ruler: str = "─"):
+    cols, _ = os.get_terminal_size()
+
+    bar = (cols - len(field_name)) // 2 - 1
     print(ruler * bar, field_name, ruler * bar)
     yield
+
     if "DISASM" in field_name:
-        print(ruler * width)
+        print(ruler * cols)
 
 
 def context_reg(ql: Qiling, saved_states: Optional[Mapping[str, int]] = None, /, *args, **kwargs) -> None:
