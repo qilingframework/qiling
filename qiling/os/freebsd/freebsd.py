@@ -4,9 +4,9 @@
 #
 
 from unicorn import UcError
+from unicorn.x86_const import UC_X86_INS_SYSCALL
 
-from qiling.arch.x86 import GDTManager, ql_x86_register_cs, ql_x86_register_ds_ss_es
-from qiling.arch.x86_const import UC_X86_INS_SYSCALL
+from qiling.arch.x86_utils import GDTManager, SegmentManager86
 from qiling.os.posix.posix import QlOsPosix
 
 class QlOsFreebsd(QlOsPosix):
@@ -18,10 +18,13 @@ class QlOsFreebsd(QlOsPosix):
 
 
     def load(self):
+        gdtm = GDTManager(self.ql)
+
+        # setup gdt and segments selectors
+        segm = SegmentManager86(self.ql.arch, gdtm)
+        segm.setup_cs_ds_ss_es(0, 4 << 30)
+
         self.ql.hook_insn(self.hook_syscall, UC_X86_INS_SYSCALL)
-        self.gdtm = GDTManager(self.ql)
-        ql_x86_register_cs(self)
-        ql_x86_register_ds_ss_es(self)
 
 
     def hook_syscall(self, intno= None):

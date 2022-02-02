@@ -30,11 +30,8 @@ class timespec32(ctypes.Structure):
 
     _pack_ = 4
 
-def ql_syscall_set_thread_area(ql: Qiling, u_info_addr, *args, **kw):
+def ql_syscall_set_thread_area(ql: Qiling, u_info_addr: int):
     if ql.arch.type == QL_ARCH.X86:
-        GDT_ENTRY_TLS_MIN = 12
-        GDT_ENTRY_TLS_MAX = 14
-
         u_info = ql.mem.read(u_info_addr, 4 * 4)
         index = ql.unpack32s(u_info[0 : 4])
         base = ql.unpack32(u_info[4 : 8])
@@ -45,13 +42,14 @@ def ql_syscall_set_thread_area(ql: Qiling, u_info_addr, *args, **kw):
         if index == -1:
             index = ql.os.gdtm.get_free_idx(12)
 
-        if index == -1 or index < GDT_ENTRY_TLS_MIN or index > GDT_ENTRY_TLS_MAX:
+        if index in (12, 13, 14):
+            access = QL_X86_A_PRESENT | QL_X86_A_DATA | QL_X86_A_DATA_WRITABLE | QL_X86_A_PRIV_3 | QL_X86_A_DIR_CON_BIT
+
+            ql.os.gdtm.register_gdt_segment(index, base, limit, access)
+            ql.mem.write(u_info_addr, ql.pack32(index))
+        else:
             ql.log.warning(f"Wrong index {index} from address {hex(u_info_addr)}")
             return -1
-        else:
-            ql.os.gdtm.register_gdt_segment(index, base, limit, QL_X86_A_PRESENT | QL_X86_A_DATA | QL_X86_A_DATA_WRITABLE | QL_X86_A_PRIV_3 | QL_X86_A_DIR_CON_BIT, QL_X86_S_GDT | QL_X86_S_PRIV_3)
-            ql.mem.write(u_info_addr, ql.pack32(index))
-            return 0
 
     elif ql.arch.type == QL_ARCH.MIPS:
         CONFIG3_ULR = (1 << 13)

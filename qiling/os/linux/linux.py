@@ -5,10 +5,11 @@
 
 from typing import Callable
 from unicorn import UcError
+from unicorn.x86_const import UC_X86_INS_SYSCALL
 
 from qiling import Qiling
-from qiling.arch.x86_const import UC_X86_INS_SYSCALL
-from qiling.arch.x86 import GDTManager, ql_x8664_set_gs, ql_x86_register_cs, ql_x86_register_ds_ss_es
+from qiling.arch.x86_const import GS_SEGMENT_ADDR, GS_SEGMENT_SIZE
+from qiling.arch.x86_utils import GDTManager, SegmentManager86, SegmentManager64
 from qiling.arch import arm_utils
 from qiling.cc import QlCC, intel, arm, mips, riscv
 from qiling.const import QL_ARCH, QL_INTERCEPT
@@ -45,8 +46,6 @@ class QlOsLinux(QlOsPosix):
         self.elf_mem_start = 0x0
         self.load()
 
-        if self.ql.arch.type == QL_ARCH.X8664:
-            ql_x8664_set_gs(self.ql)
 
     def load(self):
         self.futexm = futex.QlLinuxFutexManagement()
@@ -72,16 +71,23 @@ class QlOsLinux(QlOsPosix):
         # X86
         elif self.ql.arch.type == QL_ARCH.X86:
             self.gdtm = GDTManager(self.ql)
-            ql_x86_register_cs(self)
-            ql_x86_register_ds_ss_es(self)
+
+            # setup gdt and segments selectors
+            segm = SegmentManager86(self.ql.arch, self.gdtm)
+            segm.setup_cs_ds_ss_es(0, 4 << 30)
+
             self.ql.hook_intno(self.hook_syscall, 0x80)
             self.thread_class = thread.QlLinuxX86Thread
 
         # X8664
         elif self.ql.arch.type == QL_ARCH.X8664:
             self.gdtm = GDTManager(self.ql)
-            ql_x86_register_cs(self)
-            ql_x86_register_ds_ss_es(self)
+
+            # setup gdt and segments selectors
+            segm = SegmentManager64(self.ql.arch, self.gdtm)
+            segm.setup_cs_ds_ss_es(0, 4 << 30)
+            segm.setup_gs(GS_SEGMENT_ADDR, GS_SEGMENT_SIZE)
+
             self.ql.hook_insn(self.hook_syscall, UC_X86_INS_SYSCALL)
             # Keep test for _cc
             #self.ql.hook_insn(hook_posix_api, UC_X86_INS_SYSCALL)

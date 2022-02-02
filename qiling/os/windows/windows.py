@@ -9,7 +9,8 @@ from typing import Callable
 from unicorn import UcError
 
 from qiling import Qiling
-from qiling.arch.x86 import GDTManager, ql_x86_register_cs, ql_x86_register_ds_ss_es, ql_x86_register_fs, ql_x86_register_gs, ql_x8664_set_gs
+from qiling.arch.x86_const import GS_SEGMENT_ADDR, GS_SEGMENT_SIZE, FS_SEGMENT_ADDR, FS_SEGMENT_SIZE
+from qiling.arch.x86_utils import GDTManager, SegmentManager86, SegmentManager64
 from qiling.cc import intel
 from qiling.const import QL_ARCH, QL_INTERCEPT
 from qiling.exception import QlErrorSyscallError, QlErrorSyscallNotFound
@@ -83,15 +84,24 @@ class QlOsWindows(QlOs):
 
 
     def setupGDT(self):
-        # setup gdt
-        if self.ql.arch.type == QL_ARCH.X86:
-            self.gdtm = GDTManager(self.ql)
-            ql_x86_register_cs(self)
-            ql_x86_register_ds_ss_es(self)
-            ql_x86_register_fs(self)
-            ql_x86_register_gs(self)
-        elif self.ql.arch.type == QL_ARCH.X8664:
-            ql_x8664_set_gs(self.ql)
+        gdtm = GDTManager(self.ql)
+
+        segm_class = {
+            32 : SegmentManager86,
+            64 : SegmentManager64
+        }[self.ql.arch.bits]
+
+        # setup gdt and segments selectors
+        segm = segm_class(self.ql.arch, gdtm)
+        segm.setup_cs_ds_ss_es(0, 4 << 30)
+        segm.setup_fs(FS_SEGMENT_ADDR, FS_SEGMENT_SIZE)
+        segm.setup_gs(GS_SEGMENT_ADDR, GS_SEGMENT_SIZE)
+
+        if not self.ql.mem.is_mapped(FS_SEGMENT_ADDR, FS_SEGMENT_SIZE):
+            self.ql.mem.map(FS_SEGMENT_ADDR, FS_SEGMENT_SIZE, info='[FS]')
+
+        if not self.ql.mem.is_mapped(GS_SEGMENT_ADDR, GS_SEGMENT_SIZE):
+            self.ql.mem.map(GS_SEGMENT_ADDR, GS_SEGMENT_SIZE, info='[GS]')
 
 
     def setupComponents(self):

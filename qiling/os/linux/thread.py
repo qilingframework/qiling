@@ -5,7 +5,7 @@
 
 import gevent, os
 
-from typing import Callable
+from typing import Callable, Sequence
 from abc import abstractmethod
 
 from unicorn.unicorn import UcError
@@ -368,12 +368,18 @@ class QlLinuxX86Thread(QlLinuxThread):
     """docstring for X86Thread"""
     def __init__(self, ql, start_address, exit_point, context = None, set_child_tid_addr = None, thread_id = None):
         super(QlLinuxX86Thread, self).__init__(ql, start_address, exit_point, context, set_child_tid_addr, thread_id)
-        self.tls = bytes(b'\x00' * (8 * 3))
+        self.tls = [b'\x00' * 8] * 3
+
+    def __read_tls(self) -> Sequence[bytes]:
+        return [self.ql.os.gdtm.get_entry(i) for i in (12, 13, 14)]
+
+    def __write_tls(self, tls: Sequence[bytes]) -> None:
+        for i, entry in zip((12, 13, 14), tls):
+            self.ql.os.gdtm.set_entry(i, entry)
 
     def set_thread_tls(self, tls_addr):
-        old_tls = bytes(self.ql.os.gdtm.get_gdt_buf(12, 14 + 1))
-
-        self.ql.os.gdtm.set_gdt_buf(12, 14 + 1, self.tls)
+        old_tls = self.__read_tls()
+        self.__write_tls(self.tls)
 
         u_info = self.ql.mem.read(tls_addr, 4 * 4)
         index = self.ql.unpack32s(u_info[0 : 4])
@@ -383,25 +389,30 @@ class QlLinuxX86Thread(QlLinuxThread):
         if index == -1:
             index = self.ql.os.gdtm.get_free_idx(12)
 
-        if index == -1 or index < 12 or index > 14:
-            raise
-        else:
-            self.ql.os.gdtm.register_gdt_segment(index, base, limit, QL_X86_A_PRESENT | QL_X86_A_DATA | QL_X86_A_DATA_WRITABLE | QL_X86_A_PRIV_3 | QL_X86_A_DIR_CON_BIT, QL_X86_S_GDT | QL_X86_S_PRIV_3)
-            self.ql.mem.write(tls_addr, self.ql.pack32(index))
+        if index in (12, 13, 14):
+            access = QL_X86_A_PRESENT | QL_X86_A_DATA | QL_X86_A_DATA_WRITABLE | QL_X86_A_PRIV_3 | QL_X86_A_DIR_CON_BIT
 
-        self.tls = bytes(self.ql.os.gdtm.get_gdt_buf(12, 14 + 1))
-        self.ql.os.gdtm.set_gdt_buf(12, 14 + 1, old_tls)
-        self.ql.log.debug(f"Set tls to index={hex(index)} base={hex(base)} limit={hex(limit)} fs={hex(self.ql.arch.regs.fs)} gs={hex(self.ql.arch.regs.gs)} gdt_buf={self.tls}")
+            self.ql.os.gdtm.register_gdt_segment(index, base, limit, access)
+            self.ql.mem.write(tls_addr, self.ql.pack32(index))
+        else:
+            raise
+
+        self.tls = self.__read_tls()
+        self.__write_tls(old_tls)
+
+        self.ql.log.debug(f'Set TLS to index={index:d} base={base:#x} limit={limit:#x} fs={self.ql.arch.regs.fs:#06x} gs={self.ql.arch.regs.gs:#06x}')
 
     def save(self):
         self.save_context()
-        self.tls = bytes(self.ql.os.gdtm.get_gdt_buf(12, 14 + 1))
-        self.ql.log.debug(f"Saved context. fs={hex(self.ql.arch.regs.fs)} gs={hex(self.ql.arch.regs.gs)} gdt_buf={self.tls}")
+        self.tls = self.__read_tls()
+
+        self.ql.log.debug(f'Context saved (fs={self.ql.arch.regs.fs:#06x} gs={self.ql.arch.regs.gs:#06x} gdt_buf=[{" ".join(ent.hex() for ent in self.tls)}])')
 
     def restore(self):
         self.restore_context()
-        self.ql.os.gdtm.set_gdt_buf(12, 14 + 1, self.tls)
-        self.ql.log.debug(f"Restored context. fs={hex(self.ql.arch.regs.fs)} gs={hex(self.ql.arch.regs.gs)} gdt_buf={self.tls}")
+        self.__write_tls(self.tls)
+
+        self.ql.log.debug(f'Context restored (fs={self.ql.arch.regs.fs:#06x} gs={self.ql.arch.regs.gs:#06x} gdt_buf=[{" ".join(ent.hex() for ent in self.tls)}])')
 
     def clone(self):
         new_thread = super(QlLinuxX86Thread, self).clone()
