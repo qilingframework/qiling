@@ -45,9 +45,9 @@ class QlOsWindows(QlOs):
             """
 
             __fcall_objs = {
-                fncc.STDCALL: QlFunctionCall(ql, intel.stdcall(ql)),
-                fncc.CDECL  : QlFunctionCall(ql, intel.cdecl(ql)),
-                fncc.MS64   : QlFunctionCall(ql, intel.ms64(ql))
+                fncc.STDCALL: QlFunctionCall(ql, intel.stdcall(ql.arch)),
+                fncc.CDECL  : QlFunctionCall(ql, intel.cdecl(ql.arch)),
+                fncc.MS64   : QlFunctionCall(ql, intel.ms64(ql.arch))
             }
 
             __selector = {

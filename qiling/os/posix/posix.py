@@ -49,8 +49,8 @@ class mipso32(mips.mipso32):
         else:
             a3return = 0
 
-        self.ql.arch.regs.v0 = value
-        self.ql.arch.regs.a3 = a3return
+        self.arch.regs.v0 = value
+        self.arch.regs.a3 = a3return
 
 class riscv32(riscv.riscv):
     pass
