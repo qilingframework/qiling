@@ -7,25 +7,19 @@
 This module is intended for general purpose functions that are only used in qiling.os
 """
 
-from typing import Any, MutableMapping, Mapping, Union, Sequence, MutableSequence, Tuple
+from typing import Any, List, MutableMapping, Mapping, Set, Union, Sequence, MutableSequence, Tuple
 from uuid import UUID
 
 from qiling import Qiling
 from qiling.const import QL_VERBOSE
 
-class QlOsUtils:
-
-    ELLIPSIS_PREF = r'__qlva_'
-
-    def __init__(self, ql: Qiling):
-        self.ql = ql
-
-        # We can save every syscall called
-        self.syscalls = {}
+class QlOsStats:
+    def __init__(self):
+        self.syscalls: MutableMapping[str, List] = {}
         self.syscalls_counter = 0
-        self.appeared_strings = {}
+        self.appeared_strings: MutableMapping[str, Set] = {}
 
-    def clear_syscalls(self):
+    def clear(self):
         """Reset API and string appearance stats.
         """
 
@@ -33,7 +27,7 @@ class QlOsUtils:
         self.syscalls_counter = 0
         self.appeared_strings = {}
 
-    def _call_api(self, address: int, name: str, params: Mapping, retval: Any, retaddr: int) -> None:
+    def log_api_call(self, address: int, name: str, params: Mapping, retval: Any, retaddr: int) -> None:
         """Record API calls along with their details.
 
         Args:
@@ -48,16 +42,16 @@ class QlOsUtils:
             name = name[5:]
 
         self.syscalls.setdefault(name, []).append({
-            'params': params,
-            'retval': retval,
-            'address': address,
-            'retaddr': retaddr,
-            'position': self.syscalls_counter
+            'params'   : params,
+            'retval'   : retval,
+            'address'  : address,
+            'retaddr'  : retaddr,
+            'position' : self.syscalls_counter
         })
 
         self.syscalls_counter += 1
 
-    def string_appearance(self, s: str) -> None:
+    def log_string(self, s: str) -> None:
         """Record strings appearance as they are encountered during emulation.
 
         Args:
@@ -66,6 +60,13 @@ class QlOsUtils:
 
         for token in s.split(' '):
             self.appeared_strings.setdefault(token, set()).add(self.syscalls_counter)
+
+class QlOsUtils:
+
+    ELLIPSIS_PREF = r'__qlva_'
+
+    def __init__(self, ql: Qiling):
+        self.ql = ql
 
     @staticmethod
     def read_string(ql: Qiling, address: int, terminator: bytes) -> str:
