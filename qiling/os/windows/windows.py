@@ -157,7 +157,7 @@ class QlOsWindows(QlOs):
 
     def post_report(self):
         self.ql.log.debug("Syscalls called:")
-        for key, values in self.utils.syscalls.items():
+        for key, values in self.stats.syscalls.items():
             self.ql.log.debug(f'{key}:')
 
             for value in values:
@@ -171,7 +171,7 @@ class QlOsWindows(QlOs):
                 self.ql.log.debug(f'  {json.dumps(value):s}')
 
         self.ql.log.debug("Strings:")
-        for key, values in self.utils.appeared_strings.items():
+        for key, values in self.stats.appeared_strings.items():
             self.ql.log.debug(f'{key}: {" ".join(str(word) for word in values)}')
 
 

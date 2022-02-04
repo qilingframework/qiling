@@ -193,7 +193,7 @@ class PETest(unittest.TestCase):
             randomize_config_value(ql, "USER", "username")
             randomize_config_value(ql, "SYSTEM", "computername")
             randomize_config_value(ql, "VOLUME", "serial_number")
-            num_syscalls_admin = ql.os.utils.syscalls_counter
+            num_syscalls_admin = ql.os.stats.syscalls_counter
             ql.run()
             del ql
 
@@ -201,7 +201,7 @@ class PETest(unittest.TestCase):
             ql = Qiling(["../examples/rootfs/x86_windows/bin/GandCrab502.bin"], "../examples/rootfs/x86_windows", profile="profiles/windows_gandcrab_user.ql")
 
             ql.run()
-            num_syscalls_user = ql.os.utils.syscalls_counter
+            num_syscalls_user = ql.os.stats.syscalls_counter
 
             # let's check that gandcrab behave takes a different path if a different environment is found
             if num_syscalls_admin == num_syscalls_user:

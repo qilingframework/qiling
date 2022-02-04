@@ -89,7 +89,7 @@ def _WriteFile(ql: Qiling, address: int, params):
     if hFile == 0xfffffff5:
         s = ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
         ql.os.stdout.write(s)
-        ql.os.utils.string_appearance(s.decode())
+        ql.os.stats.log_string(s.decode())
         ql.mem.write(lpNumberOfBytesWritten, ql.pack(nNumberOfBytesToWrite))
     else:
         f = ql.os.handle_manager.get(hFile)

@@ -203,7 +203,7 @@ def hook_WriteFile(ql: Qiling, address: int, params):
     if hFile == STD_OUTPUT_HANDLE:
         s = ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
         ql.os.stdout.write(s)
-        ql.os.utils.string_appearance(s.decode())
+        ql.os.stats.log_string(s.decode())
         ql.mem.write(lpNumberOfBytesWritten, ql.pack32(nNumberOfBytesToWrite))
     else:
         f = ql.os.handle_manager.get(hFile)

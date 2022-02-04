@@ -15,7 +15,7 @@ from qiling.os.fcall import QlFunctionCall, TypedArg
 
 from .filestruct import ql_file
 from .mapper import QlFsMapper
-from .utils import QlOsUtils
+from .utils import QlOsStats, QlOsUtils
 from .path import QlPathManager
 
 class QlOs:
@@ -30,6 +30,7 @@ class QlOs:
         self._stderr: TextIO
 
         self.utils = QlOsUtils(ql)
+        self.stats = QlOsStats()
         self.fcall: QlFunctionCall
         self.child_processes = False
         self.thread_management = None
@@ -189,7 +190,7 @@ class QlOs:
         self.utils.print_function(pc, func.__name__, pargs, retval, passthru)
 
         # append syscall to list
-        self.utils._call_api(pc, func.__name__, args, retval, retaddr)
+        self.stats.log_api_call(pc, func.__name__, args, retval, retaddr)
 
         # [Windows and UEFI] if emulation has stopped, do not update the return address
         if hasattr(self, 'PE_RUN') and not self.PE_RUN:

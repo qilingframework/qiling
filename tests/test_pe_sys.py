@@ -98,7 +98,7 @@ class PETest(unittest.TestCase):
             if hFile == 0xfffffff5:
                 s = ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
                 ql.os.stdout.write(s)
-                ql.os.utils.string_appearance(s.decode())
+                ql.os.stats.log_string(s.decode())
                 ql.mem.write(lpNumberOfBytesWritten, ql.pack(nNumberOfBytesToWrite))
             else:
                 f = ql.os.handle_manager.get(hFile)
@@ -256,7 +256,7 @@ class PETest(unittest.TestCase):
         # And a DriverUnload
         self.assertNotEqual(driver_object.DriverUnload, 0)
 
-        ql.os.utils.clear_syscalls()
+        ql.os.stats.clear()
 
         IOCTL_SIOCTL_METHOD_OUT_DIRECT = (40000, 0x901, METHOD_OUT_DIRECT, FILE_ANY_ACCESS)
         output_buffer_size = 0x1000

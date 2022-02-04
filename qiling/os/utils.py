@@ -87,14 +87,14 @@ class QlOsUtils:
 
         # We need to remove \x00 inside the string. Compares do not work otherwise
         s = s.replace("\x00", "")
-        self.string_appearance(s)
+        self.ql.os.stats.log_string(s)
 
         return s
 
     def read_cstring(self, address: int) -> str:
         s = QlOsUtils.read_string(self.ql, address, b'\x00')
 
-        self.string_appearance(s)
+        self.ql.os.stats.log_string(s)
 
         return s
 
