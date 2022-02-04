@@ -131,7 +131,7 @@ def get_cpsr(bits: int) -> (bool, bool, bool, bool):
             )
 
 
-def get_x86_eflags(bits: int) -> (bool, bool, bool, bool, bool, bool):
+def get_x86_eflags(bits: int) -> Dict[str, bool]:
     return {
             "CF" : bits & 0x0001 != 0, # CF, carry flag
             "PF" : bits & 0x0004 != 0, # PF, parity flag
