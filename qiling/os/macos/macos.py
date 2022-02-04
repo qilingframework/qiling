@@ -24,7 +24,7 @@ class QlOsMacos(QlOsPosix):
         super(QlOsMacos, self).__init__(ql)
 
         self.ql = ql
-        self.fcall = QlFunctionCall(ql, intel.macosx64(ql))
+        self.fcall = QlFunctionCall(ql, intel.macosx64(ql.arch))
 
         self.ql.counter = 0
         self.ev_manager = QlMacOSEvManager(self.ql)
