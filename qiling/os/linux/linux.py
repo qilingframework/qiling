@@ -35,7 +35,7 @@ class QlOsLinux(QlOsPosix):
             QL_ARCH.MIPS  : mips.mipso32,
             QL_ARCH.RISCV : riscv.riscv,
             QL_ARCH.RISCV64: riscv.riscv,
-        }[ql.arch.type](ql)
+        }[ql.arch.type](ql.arch)
 
         self.fcall = QlFunctionCall(ql, cc)
 

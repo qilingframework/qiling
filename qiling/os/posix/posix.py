@@ -104,7 +104,7 @@ class QlOsPosix(QlOs):
             QL_ARCH.X8664: intel64,
             QL_ARCH.RISCV: riscv32,
             QL_ARCH.RISCV64: riscv64,
-        }[self.ql.arch.type](ql)
+        }[self.ql.arch.type](self.ql.arch)
 
         self._fd = QlFileDes([0] * NR_OPEN)
 

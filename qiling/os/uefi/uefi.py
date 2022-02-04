@@ -33,7 +33,7 @@ class QlOsUefi(QlOs):
 		cc: QlCC = {
 			32: intel.cdecl,
 			64: intel.ms64
-		}[ql.arch.bits](ql)
+		}[ql.arch.bits](ql.arch)
 
 		self.fcall = QlFunctionCall(ql, cc)
 

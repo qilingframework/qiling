@@ -28,7 +28,7 @@ class QlOsBlob(QlOs):
             QL_ARCH.ARM   : arm.aarch32,
             QL_ARCH.ARM64 : arm.aarch64,
             QL_ARCH.MIPS  : mips.mipso32
-        }[ql.arch.type](ql)
+        }[ql.arch.type](ql.arch)
 
         self.fcall = QlFunctionCall(ql, cc)
 
