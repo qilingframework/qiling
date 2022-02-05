@@ -99,12 +99,12 @@ def assembler(arch: QL_ARCH, endianess: QL_ENDIAN, is_thumb: bool) -> Ks:
     thumb = KS_MODE_THUMB if is_thumb else 0
 
     asm_map = {
-        QL_ARCH.ARM       : (KS_ARCH_ARM, KS_MODE_ARM + endian + thumb),
-        QL_ARCH.ARM64     : (KS_ARCH_ARM64, KS_MODE_LITTLE_ENDIAN),
-        QL_ARCH.MIPS      : (KS_ARCH_MIPS, KS_MODE_MIPS32 + endian),
-        QL_ARCH.A8086     : (KS_ARCH_X86, KS_MODE_16),
-        QL_ARCH.X86       : (KS_ARCH_X86, KS_MODE_32),
-        QL_ARCH.X8664     : (KS_ARCH_X86, KS_MODE_64)
+        QL_ARCH.ARM   : (KS_ARCH_ARM, KS_MODE_ARM + endian + thumb),
+        QL_ARCH.ARM64 : (KS_ARCH_ARM64, KS_MODE_ARM),
+        QL_ARCH.MIPS  : (KS_ARCH_MIPS, KS_MODE_MIPS32 + endian),
+        QL_ARCH.A8086 : (KS_ARCH_X86, KS_MODE_16),
+        QL_ARCH.X86   : (KS_ARCH_X86, KS_MODE_32),
+        QL_ARCH.X8664 : (KS_ARCH_X86, KS_MODE_64)
     }
 
     if arch in asm_map:
