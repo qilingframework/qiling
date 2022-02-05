@@ -3,6 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from .cm3_scb import CortexM3Scb
 from .cm4_scb import CortexM4Scb
 from .stm32f4xx_rcc import STM32F4xxRcc
 from .stm32f4xx_rcc_derive import (
