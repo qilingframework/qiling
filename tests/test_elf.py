@@ -74,7 +74,7 @@ class ELFTest(unittest.TestCase):
             nonlocal snapshot
             nonlocal reg
             nonlocal ctx
-            ql.save(reg=reg, cpu_context=ctx, os_context=True, loader=True, snapshot=snapshot)
+            ql.save(reg=reg, cpu_context=ctx, os=True, loader=True, snapshot=snapshot)
             ql.emu_stop()
         ql.hook_address(dump, hook_address)
 

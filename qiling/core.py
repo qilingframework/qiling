@@ -7,7 +7,7 @@ from configparser import ConfigParser
 import os, pickle
 
 # See https://stackoverflow.com/questions/39740632/python-type-hinting-without-cyclic-imports
-from typing import AnyStr, List, MutableMapping, Sequence, Union
+from typing import AnyStr, List, Mapping, MutableMapping, Sequence, Union
 from typing import TYPE_CHECKING
 
 from unicorn.unicorn import Uc
@@ -613,39 +613,39 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
 
     # save all qiling instance states
-    def save(self, reg=True, mem=True, fd=False, cpu_context=False, os_context=False, loader=False, snapshot=None):
+    def save(self, reg=True, mem=True, fd=False, cpu_context=False, os=False, loader=False, *, snapshot: str = None):
         saved_states = {}
 
-        if reg == True:
-            saved_states.update({"reg": self.arch.regs.save()})
+        if reg:
+            saved_states["reg"] = self.arch.regs.save()
 
-        if mem == True:
-            saved_states.update({"mem": self.mem.save()})
+        if mem:
+            saved_states["mem"] = self.mem.save()
 
-        if fd == True: 
-            saved_states.update({"fd": self.os.fd.save()})
+        if fd:
+            saved_states["fd"] = self.os.fd.save()
 
-        if cpu_context == True:
-            saved_states.update({"cpu_context": self.arch.save()})
+        if cpu_context:
+            saved_states["cpu_context"] = self.arch.save()
 
-        if os_context == True:
-            saved_states.update({"os_context": self.os.save()})
+        if os:
+            saved_states["os"] = self.os.save()
 
-        if loader == True:
-            saved_states.update({"loader": self.loader.save()})
+        if loader:
+            saved_states["loader"] = self.loader.save()
 
-        if snapshot != None:
+        if snapshot is not None:
             with open(snapshot, "wb") as save_state:
                 pickle.dump(saved_states, save_state)
-        else:
-            return saved_states
+
+        return saved_states
 
 
     # restore states qiling instance from saved_states
-    def restore(self, saved_states=None, snapshot=None):
+    def restore(self, saved_states: Mapping[str, Any] = {}, *, snapshot: str = None):
 
         # snapshot will be ignored if saved_states is set
-        if saved_states == None and snapshot != None:
+        if (not saved_states) and (snapshot is not None):
             with open(snapshot, "rb") as load_state:
                 saved_states = pickle.load(load_state)
 
