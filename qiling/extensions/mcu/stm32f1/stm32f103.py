@@ -59,7 +59,7 @@ stm32f103 = {
     "TIM2": {
         "type": "peripheral",
         "base": 0x40000000,
-        "class": "STM32F1xxTim",
+        "struct": "STM32F1xxTim",
         "kwargs": {
             "intn": 0x1c
         }
@@ -67,7 +67,7 @@ stm32f103 = {
     "TIM3": {
         "type": "peripheral",
         "base": 0x40000400,
-        "class": "STM32F1xxTim",
+        "struct": "STM32F1xxTim",
         "kwargs": {
             "intn": 0x1d
         }
@@ -75,7 +75,7 @@ stm32f103 = {
     "TIM4": {
         "type": "peripheral",
         "base": 0x40000800,
-        "class": "STM32F1xxTim",
+        "struct": "STM32F1xxTim",
         "kwargs": {
             "intn": 0x1e
         }
@@ -83,7 +83,7 @@ stm32f103 = {
     "RTC": {
         "type": "peripheral",
         "base": 0x40002800,
-        "class": "STM32F1xxRtc",
+        "struct": "STM32F1xxRtc",
         "kwargs": {
             "intn": 0x3,
             "alarm_intn": 0x29
@@ -92,7 +92,7 @@ stm32f103 = {
     "WWDG": {
         "type": "peripheral",
         "base": 0x40002c00,
-        "class": "STM32F1xxWwdg",
+        "struct": "STM32F1xxWwdg",
         "kwargs": {
             "intn": 0x0
         }
@@ -100,12 +100,12 @@ stm32f103 = {
     "IWDG": {
         "type": "peripheral",
         "base": 0x40003000,
-        "class": "STM32F1xxIwdg"
+        "struct": "STM32F1xxIwdg"
     },
     "SPI2": {
         "type": "peripheral",
         "base": 0x40003800,
-        "class": "STM32F1xxSpi",
+        "struct": "STM32F1xxSpi",
         "kwargs": {
             "intn": 0x24
         }
@@ -113,7 +113,7 @@ stm32f103 = {
     "USART2": {
         "type": "peripheral",
         "base": 0x40004400,
-        "class": "STM32F1xxUsart",
+        "struct": "STM32F1xxUsart",
         "kwargs": {
             "intn": 0x26
         }
@@ -121,7 +121,7 @@ stm32f103 = {
     "USART3": {
         "type": "peripheral",
         "base": 0x40004800,
-        "class": "STM32F1xxUsart",
+        "struct": "STM32F1xxUsart",
         "kwargs": {
             "intn": 0x27
         }
@@ -129,7 +129,7 @@ stm32f103 = {
     "I2C1": {
         "type": "peripheral",
         "base": 0x40005400,
-        "class": "STM32F1xxI2c",
+        "struct": "STM32F1xxI2c",
         "kwargs": {
             "ev_intn": 0x1f,
             "er_intn": 0x20
@@ -138,7 +138,7 @@ stm32f103 = {
     "I2C2": {
         "type": "peripheral",
         "base": 0x40005800,
-        "class": "STM32F1xxI2c",
+        "struct": "STM32F1xxI2c",
         "kwargs": {
             "ev_intn": 0x21,
             "er_intn": 0x22
@@ -147,7 +147,7 @@ stm32f103 = {
     "USB": {
         "type": "peripheral",
         "base": 0x40005c00,
-        "class": "STM32F1xxUsb",
+        "struct": "STM32F1xxUsb",
         "kwargs": {
             "hp_can1_tx_intn": 0x13,
             "lp_can1_rx0_intn": 0x14,
@@ -158,7 +158,7 @@ stm32f103 = {
     "CAN1": {
         "type": "peripheral",
         "base": 0x40006400,
-        "class": "STM32F1xxCan",
+        "struct": "STM32F1xxCan",
         "kwargs": {
             "rx1_intn": 0x15,
             "sce_intn": 0x16,
@@ -169,52 +169,52 @@ stm32f103 = {
     "BKP": {
         "type": "peripheral",
         "base": 0x40006c00,
-        "class": "STM32F1xxBkp"
+        "struct": "STM32F1xxBkp"
     },
     "PWR": {
         "type": "peripheral",
         "base": 0x40007000,
-        "class": "STM32F1xxPwr"
+        "struct": "STM32F1xxPwr"
     },
     "AFIO": {
         "type": "peripheral",
         "base": 0x40010000,
-        "class": "STM32F1xxAfio"
+        "struct": "STM32F1xxAfio"
     },
     "EXTI": {
         "type": "peripheral",
         "base": 0x40010400,
-        "class": "STM32F1xxExti"
+        "struct": "STM32F1xxExti"
     },
     "GPIOA": {
         "type": "peripheral",
         "base": 0x40010800,
-        "class": "STM32F1xxGpio"
+        "struct": "STM32F1xxGpio"
     },
     "GPIOB": {
         "type": "peripheral",
         "base": 0x40010c00,
-        "class": "STM32F1xxGpio"
+        "struct": "STM32F1xxGpio"
     },
     "GPIOC": {
         "type": "peripheral",
         "base": 0x40011000,
-        "class": "STM32F1xxGpio"
+        "struct": "STM32F1xxGpio"
     },
     "GPIOD": {
         "type": "peripheral",
         "base": 0x40011400,
-        "class": "STM32F1xxGpio"
+        "struct": "STM32F1xxGpio"
     },
     "GPIOE": {
         "type": "peripheral",
         "base": 0x40011800,
-        "class": "STM32F1xxGpio"
+        "struct": "STM32F1xxGpio"
     },
     "ADC1": {
         "type": "peripheral",
         "base": 0x40012400,
-        "class": "STM32F1xxAdc",
+        "struct": "STM32F1xxAdc",
         "kwargs": {
             "intn": 0x12
         }
@@ -222,12 +222,12 @@ stm32f103 = {
     "ADC2": {
         "type": "peripheral",
         "base": 0x40012800,
-        "class": "STM32F1xxAdc"
+        "struct": "STM32F1xxAdc"
     },
     "TIM1": {
         "type": "peripheral",
         "base": 0x40012c00,
-        "class": "STM32F1xxTim",
+        "struct": "STM32F1xxTim",
         "kwargs": {
             "brk_intn": 0x18,
             "up_intn": 0x19,
@@ -244,7 +244,7 @@ stm32f103 = {
     "SPI1": {
         "type": "peripheral",
         "base": 0x40013000,
-        "class": "STM32F1xxSpi",
+        "struct": "STM32F1xxSpi",
         "kwargs": {
             "intn": 0x23
         }
@@ -252,7 +252,7 @@ stm32f103 = {
     "USART1": {
         "type": "peripheral",
         "base": 0x40013800,
-        "class": "STM32F1xxUsart",
+        "struct": "STM32F1xxUsart",
         "kwargs": {
             "intn": 0x25
         }
@@ -260,12 +260,12 @@ stm32f103 = {
     "DMA1": {
         "type": "peripheral",
         "base": 0x40020000,
-        "class": "STM32F1xxDma"
+        "struct": "STM32F1xxDma"
     },
     "RCC": {
         "type": "peripheral",
         "base": 0x40021000,
-        "class": "STM32F1xxRcc",
+        "struct": "STM32F1xxRcc",
         "kwargs": {
             "intn": 0x5
         }
@@ -273,7 +273,7 @@ stm32f103 = {
     "FLASH INTERFACE": {
         "type": "peripheral",
         "base": 0x40022000,
-        "class": "STM32F1xxFlash",
+        "struct": "STM32F1xxFlash",
         "kwargs": {
             "intn": 0x4
         }
@@ -281,12 +281,12 @@ stm32f103 = {
     "CRC": {
         "type": "peripheral",
         "base": 0x40023000,
-        "class": "STM32F1xxCrc"
+        "struct": "STM32F1xxCrc"
     },
     "DBGMCU": {
         "type": "peripheral",
         "base": 0xe0042000,
-        "class": "STM32F1xxDbgmcu"
+        "struct": "STM32F1xxDbgmcu"
     },
     "CODE": {
         "base": 0x8000000,
