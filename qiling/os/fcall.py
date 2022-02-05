@@ -187,11 +187,11 @@ class QlFunctionCall:
 		nslots = self.__count_slots(atype for atype, _ in args)
 		self.cc.reserve(nslots)
 
-		# set arguments values
-		self.writeParams(args)
-
 		if ret is not None:
 			self.cc.setReturnAddress(ret)
+
+		# set arguments values
+		self.writeParams(args)
 
 		# call
 		self.ql.arch.regs.arch_pc = addr
