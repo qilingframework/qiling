@@ -279,16 +279,25 @@ class QlOsPosix(QlOs):
 
     def get_syscall(self) -> int:
         if self.ql.arch.type == QL_ARCH.ARM:
-            # When ARM-OABI
-            # svc_imm = 0x900000 + syscall_nr
-            # syscall_nr = svc_imm - 0x900000
-            # Ref1: https://marcin.juszkiewicz.com.pl/download/tables/syscalls.html
-            # Ref2: https://github.com/rootkiter/Reverse-bins/blob/master/syscall_header/armv4l_unistd.h
-            # Ref3: https://github.com/unicorn-engine/unicorn/issues/1137
-            code_val = self.ql.mem.read_ptr(self.ql.arch.regs.arch_pc-4, 4)
-            svc_imm  = code_val & 0x00ffffff
-            if (svc_imm >= 0x900000):
-                    return svc_imm - 0x900000
+            # support arm-oabi
+            #   @see: https://marcin.juszkiewicz.com.pl/download/tables/syscalls.html
+            #   @see: https://github.com/rootkiter/Reverse-bins/blob/master/syscall_header/armv4l_unistd.h
+            #   @see: https://github.com/unicorn-engine/unicorn/issues/1137
+
+            # read the instruction we have just emulated
+            isize = 2 if self.ql.arch.is_thumb else self.ql.arch.pointersize
+            ibytes = self.ql.mem.read_ptr(self.ql.arch.regs.arch_pc - isize, isize)
+
+            # mask off the opcode, which is the most significant byte
+            svc_imm = ibytes & ((1 << ((isize - 1) * 8)) - 1)
+
+            # arm-oabi
+            if svc_imm >= 0x900000:
+                return svc_imm - 0x900000
+
+            if svc_imm > 0:
+                return svc_imm
+
         return self.ql.arch.regs.read(self.__syscall_id_reg)
 
     def set_syscall_return(self, retval: int):
