@@ -331,6 +331,7 @@ class MCUTest(unittest.TestCase):
         ql.hw.create('gpiod')
         ql.hw.create('spi1')
         ql.hw.create('crc')
+        ql.hw.create('dbgmcu')
 
         flag = False
         def indicator(ql):

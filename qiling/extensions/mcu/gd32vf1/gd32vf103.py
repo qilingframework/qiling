@@ -101,7 +101,7 @@ gd32vf103 = {
     "ECLIC": {
         "base": 0xd2000000,
         "struct": "GD32VF1xxEclic",
-        "type": "core peripheral"
+        "type": "core"
     },
     "EXMC": {
         "base": 0xa0000000,

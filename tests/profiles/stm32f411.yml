@@ -15,7 +15,7 @@
         "kwargs": {
             "dev_id": 0x413,
         },
-        "type": "core peripheral"
+        "type": "peripheral"
     },
     "DMA1": {
         "base": 0x40026000,
@@ -143,7 +143,7 @@
     "NVIC": {
         "base": 0xe000e100,
         "struct": "CortexM4Nvic",
-        "type": "core peripheral"
+        "type": "core"
     },
     "PERIP": {
         "base": 0x40000000,
@@ -186,7 +186,7 @@
     "SCB": {
         "base": 0xe000ed00,
         "struct": "CortexM4Scb",
-        "type": "core peripheral"
+        "type": "core"
     },
     "SDIO": {
         "base": 0x40012c00,
@@ -260,7 +260,7 @@
     "SYSTICK": {
         "base": 0xe000e010,
         "struct": "CortexM4SysTick",
-        "type": "core peripheral"
+        "type": "core"
     },
     "TIM1": {
         "base": 0x40010000,
