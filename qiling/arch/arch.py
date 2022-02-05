@@ -103,12 +103,12 @@ class QlArch:
 
 
     # Unicorn's CPU state save
-    def context_save(self) -> UcContext:
+    def save(self) -> UcContext:
         return self.uc.context_save()
 
 
     # Unicorn's CPU state restore method
-    def context_restore(self, saved_context: UcContext):
+    def restore(self, saved_context: UcContext):
         self.uc.context_restore(saved_context)
 
 

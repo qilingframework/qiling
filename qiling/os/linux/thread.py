@@ -303,18 +303,18 @@ class QlLinuxThread(QlThread):
         return new_thread
 
     def save_context(self):
-        self.saved_context = self.ql.arch.context_save()
+        self.saved_context = self.ql.arch.save()
 
     def restore_context(self):
-        self.ql.arch.context_restore(self.saved_context)
+        self.ql.arch.restore(self.saved_context)
 
     def set_start_address(self, addr):
         # We can't modify UcContext directly.
-        old_context = self.ql.arch.context_save()
+        old_context = self.ql.arch.save()
         self.restore_context()
         self.ql.arch.regs.arch_pc = addr
         self.save_context()
-        self.ql.arch.context_restore(old_context)
+        self.ql.arch.restore(old_context)
 
     def set_clear_child_tid_addr(self, addr):
         self.clear_child_tid_address = addr

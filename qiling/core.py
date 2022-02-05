@@ -626,7 +626,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             saved_states.update({"fd": self.os.fd.save()})
 
         if cpu_context == True:
-            saved_states.update({"cpu_context": self.arch.context_save()})
+            saved_states.update({"cpu_context": self.arch.save()})
 
         if os_context == True:
             saved_states.update({"os_context": self.os.save()})
@@ -653,7 +653,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             self.mem.restore(saved_states["mem"])
 
         if "cpu_context" in saved_states:
-            self.arch.context_restore(saved_states["cpu_context"])
+            self.arch.restore(saved_states["cpu_context"])
 
         if "reg" in saved_states:
             self.arch.regs.restore(saved_states["reg"])
