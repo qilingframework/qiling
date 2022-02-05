@@ -9,6 +9,7 @@ import ctypes
 from qiling.hw.peripheral import QlPeripheral
 from qiling.arch.cortex_m_const import IRQ
 
+
 class CortexM4Scb(QlPeripheral):
     class Type(ctypes.Structure):
         _fields_ = [
