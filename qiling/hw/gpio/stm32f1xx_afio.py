@@ -27,7 +27,10 @@ class STM32F1xxAfio(QlPeripheral):
         _fields_ = [
             ("EVCR"     , ctypes.c_uint32),    
             ("MAPR"     , ctypes.c_uint32),    
-            ("EXTICR"   , ctypes.c_uint32 * 4),
+            ("EXTICR1"  , ctypes.c_uint32),
+            ("EXTICR2"  , ctypes.c_uint32),
+            ("EXTICR3"  , ctypes.c_uint32),
+            ("EXTICR4"  , ctypes.c_uint32),
             ("RESERVED0", ctypes.c_uint32),    
             ("MAPR2"    , ctypes.c_uint32),    
         ]
