@@ -184,7 +184,16 @@ stm32f103 = {
     "EXTI": {
         "type": "peripheral",
         "base": 0x40010400,
-        "struct": "STM32F1xxExti"
+        "struct": "STM32F1xxExti",
+        "kwargs": {
+            "exti0_intn": 6,
+            "exti1_intn": 7,
+            "exti2_intn": 8,
+            "exti3_intn": 9,
+            "exti4_intn": 10,
+            "exti9_5_intn": 23,
+            "exti15_10_intn": 40,
+        }
     },
     "GPIOA": {
         "type": "peripheral",
