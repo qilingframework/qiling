@@ -104,10 +104,7 @@ class STM32F4xxDma(QlPeripheral):
         super().__init__(ql, label)
         
         self.dma = self.struct()
-
-        self.stream_base = 0x10
-        self.stream_size = ctypes.sizeof(Stream)        
-
+        
         self.intn = [
             stream0_intn,
             stream1_intn,
@@ -120,7 +117,7 @@ class STM32F4xxDma(QlPeripheral):
         ]
 
     def stream_index(self, offset):
-        return (offset - self.stream_base) // self.stream_size
+        return (offset - self.struct.stream.offset) // ctypes.sizeof(Stream)
 
     @QlPeripheral.monitor(width=15)
     def read(self, offset: int, size: int) -> int:        
