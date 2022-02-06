@@ -27,10 +27,31 @@ class STM32F1xxAfio(QlPeripheral):
         _fields_ = [
             ("EVCR"     , ctypes.c_uint32),    
             ("MAPR"     , ctypes.c_uint32),    
-            ("EXTICR1"  , ctypes.c_uint32),
-            ("EXTICR2"  , ctypes.c_uint32),
-            ("EXTICR3"  , ctypes.c_uint32),
-            ("EXTICR4"  , ctypes.c_uint32),
+            ("EXTICR"   , ctypes.c_uint32 * 4),
             ("RESERVED0", ctypes.c_uint32),    
             ("MAPR2"    , ctypes.c_uint32),    
         ]
+
+    def __init__(self, ql, label):
+        super().__init__(ql, label)
+
+        self.afio = self.struct()
+
+    @QlPeripheral.monitor()
+    def read(self, offset: int, size: int) -> int:		
+        buf = ctypes.create_string_buffer(size)
+        ctypes.memmove(buf, ctypes.addressof(self.afio) + offset, size)
+        return int.from_bytes(buf.raw, byteorder='little')
+
+    @QlPeripheral.monitor()
+    def write(self, offset: int, size: int, value: int):
+        data = (value).to_bytes(size, 'little')
+        ctypes.memmove(ctypes.addressof(self.afio) + offset, data, size)
+
+    def exti(self, index):
+        """ Get EXTI{index} mapping information """
+        
+        port_index = self.afio.EXTICR[index // 4] >> ((index & 3) * 4)
+        port_name  = 'gpio' + 'abcdefg'[port_index]
+
+        return getattr(self.ql.hw, port_name, None)
