@@ -260,7 +260,17 @@ stm32f103 = {
     "DMA1": {
         "type": "peripheral",
         "base": 0x40020000,
-        "struct": "STM32F1xxDma"
+        "struct": "STM32F1xxDma",
+        "kwargs": {
+            "stream0_intn": 0xb,
+            "stream1_intn": 0xc,
+            "stream2_intn": 0xd,
+            "stream3_intn": 0xe,
+            "stream4_intn": 0xf,
+            "stream5_intn": 0x10,
+            "stream6_intn": 0x11,
+            "stream7_intn": 0x2f
+        },
     },
     "RCC": {
         "type": "peripheral",
