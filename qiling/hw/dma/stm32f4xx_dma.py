@@ -116,9 +116,6 @@ class STM32F4xxDma(QlPeripheral):
             stream7_intn,
         ]
 
-    def stream_index(self, offset):
-        return (offset - self.struct.stream.offset) // ctypes.sizeof(Stream)
-
     @QlPeripheral.monitor(width=15)
     def read(self, offset: int, size: int) -> int:        
         buf = ctypes.create_string_buffer(size)
@@ -134,8 +131,6 @@ class STM32F4xxDma(QlPeripheral):
             self.dma.HISR &= ~value
 
         elif offset > self.struct.HIFCR.offset:
-            stream_id = self.stream_index(offset)
-
             data = (value).to_bytes(size, byteorder='little')
             ctypes.memmove(ctypes.addressof(self.dma) + offset, data, size)
 
