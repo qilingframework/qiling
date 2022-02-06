@@ -123,8 +123,7 @@ class STM32F4xxDma(QlPeripheral):
     def read(self, offset: int, size: int) -> int:        
         buf = ctypes.create_string_buffer(size)
         ctypes.memmove(buf, ctypes.addressof(self.dma) + offset, size)
-        retval = int.from_bytes(buf.raw, byteorder='little')
-        return retval
+        return int.from_bytes(buf.raw, byteorder='little')
 
     @QlPeripheral.monitor(width=15)
     def write(self, offset: int, size: int, value: int):        
