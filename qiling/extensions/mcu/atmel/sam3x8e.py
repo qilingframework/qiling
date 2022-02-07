@@ -56,7 +56,7 @@ sam3x8e = {
         "size": 0x100000,
         "type": "mmio"
     },
-        "HSMCI": {
+    "HSMCI": {
         "base": 0x40000000,
         "struct": "SAM3xaHsmci",
         "type": "peripheral",
@@ -145,7 +145,7 @@ sam3x8e = {
     },
     "USART0": {
         "base": 0x40098000,
-        "struct": "SAM3xasart",
+        "struct": "SAM3xaUsart",
         "type": "peripheral",
         "kwargs": {
             "intn": 0x11
@@ -158,7 +158,7 @@ sam3x8e = {
     },
     "USART1": {
         "base": 0x4009c000,
-        "struct": "SAM3xasart",
+        "struct": "SAM3xaUsart",
         "type": "peripheral",
         "kwargs": {
             "intn": 0x12
@@ -171,7 +171,7 @@ sam3x8e = {
     },
     "USART2": {
         "base": 0x400a0000,
-        "struct": "SAM3xasart",
+        "struct": "SAM3xaUsart",
         "type": "peripheral",
         "kwargs": {
             "intn": 0x13
@@ -184,7 +184,7 @@ sam3x8e = {
     },
     "USART3": {
         "base": 0x400a4000,
-        "struct": "SAM3xasart",
+        "struct": "SAM3xaUsart",
         "type": "peripheral",
         "kwargs": {
             "intn": 0x14
@@ -197,7 +197,7 @@ sam3x8e = {
     },
     "UOTGHS": {
         "base": 0x400ac000,
-        "struct": "SAM3xaotghs",
+        "struct": "SAM3xaUotghs",
         "type": "peripheral",
         "kwargs": {
             "intn": 0x28
@@ -292,7 +292,7 @@ sam3x8e = {
     },
     "UART": {
         "base": 0x400e0800,
-        "struct": "SAM3xaart",
+        "struct": "SAM3xaUart",
         "type": "peripheral",
         "kwargs": {
             "intn": 0x8
