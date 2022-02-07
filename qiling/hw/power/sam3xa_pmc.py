@@ -10,6 +10,18 @@ from qiling.hw.peripheral import QlPeripheral
 
 
 class SAM3xaPmc(QlPeripheral):
+    """
+    The Power Management Controller (PMC) optimizes power consumption by controlling all system and user
+    peripheral clocks. The PMC enables/disables the clock inputs to many of the peripherals and the Cortex-M3
+    Processor.
+
+    The Supply Controller selects between the 32 kHz RC oscillator or the crystal oscillator. The unused oscillator is
+    disabled automatically so that power consumption is optimized.
+
+    By default, at startup the chip runs out of the Master Clock using the Fast RC oscillator running at 4 MHz.
+    The user can trim the 8 and 12 MHz RC Oscillator frequencies by software.
+    """
+
     class Type(ctypes.Structure):
         _fields_ = [
             ("SCER"      , ctypes.c_uint32),      # (Pmc Offset: 0x0000) System Clock Enable Register
