@@ -142,7 +142,7 @@ def ql_syscall_lseek(ql: Qiling, fd: int, offset: int, lseek_origin: int):
         offset = ql.unpacks(ql.pack(offset))
 
         try:
-            regreturn = ql.os.fd[fd].lseek(offset, lseek_origin)
+            regreturn = ql.os.fd[fd].seek(offset, lseek_origin)
         except OSError:
             regreturn = -1
     else:
@@ -159,7 +159,7 @@ def ql_syscall__llseek(ql: Qiling, fd: int, offset_high: int, offset_low: int, r
     origin = whence
 
     try:
-        ret = ql.os.fd[fd].lseek(offset, origin)
+        ret = ql.os.fd[fd].seek(offset, origin)
     except OSError:
         regreturn = -1
     else:
@@ -226,10 +226,10 @@ def ql_syscall_pread64(ql: Qiling, fd: int, buf: int, length: int, offt: int):
     if 0 <= fd < NR_OPEN and ql.os.fd[fd] != 0:
         try:
             pos = ql.os.fd[fd].tell()
-            ql.os.fd[fd].lseek(offt)
+            ql.os.fd[fd].seek(offt)
 
             data = ql.os.fd[fd].read(length)
-            ql.os.fd[fd].lseek(pos)
+            ql.os.fd[fd].seek(pos)
 
             ql.mem.write(buf, data)
             regreturn = len(data)
@@ -721,7 +721,7 @@ def __getdents_common(ql: Qiling, fd: int, dirp: int, count: int, *, is_64: bool
             _ent_count += 1
 
         regreturn = total_size
-        ql.os.fd[fd].lseek(0, os.SEEK_END) # mark as end of file for dir_fd
+        ql.os.fd[fd].seek(0, os.SEEK_END) # mark as end of file for dir_fd
     else:
         _ent_count = 0
         regreturn = 0

@@ -17,11 +17,7 @@ Steps:
     $ rm -fr afl_outputs/default/
 """
 
-# This is new. Instead of unicorn, we import unicornafl. It's the same Uc with some new `afl_` functions
-import unicornafl as UcAfl
-
-# Make sure Qiling uses our patched unicorn instead of it's own, second so without instrumentation!
-UcAfl.monkeypatch()
+# No more need for importing unicornafl, try ql.afl_fuzz instead!
 
 import os
 import sys
@@ -32,6 +28,7 @@ sys.path.append("../../..")
 from qiling import Qiling
 from qiling.const import QL_VERBOSE
 from qiling.extensions import pipe
+from qiling.extensions.afl import ql_afl_fuzz
 
 def main(input_file: str):
     mock_stdin = pipe.SimpleInStream(sys.stdin.fileno())
@@ -43,30 +40,18 @@ def main(input_file: str):
             stdout=None,
             stderr=None)
 
-    def place_input_callback(uc: UcAfl.Uc, input: bytes, persistent_round: int, data: Any) -> Optional[bool]:
+    def place_input_callback(ql: Qiling, input: bytes, persistent_round: int) -> Optional[bool]:
         """Called with every newly generated input.
         """
 
         ql.os.stdin.write(input)
 
+        return True
+
     def start_afl(_ql: Qiling):
         """Callback from inside.
         """
-
-        # We start our AFL forkserver or run once if AFL is not available.
-        # This will only return after the fuzzing stopped.
-        try:
-            if not _ql.uc.afl_fuzz(input_file=input_file, place_input_callback=place_input_callback, exits=[ql.os.exit_point]):
-                _ql.log.warning("Ran once without AFL attached")
-                os._exit(0)
-
-        except UcAfl.UcAflError as ex:
-            # This hook triggers more than once in this example.
-            # If this is the exception cause, we don't care.
-
-            # TODO: choose a better hook position :)
-            if ex.errno != UcAfl.UC_AFL_RET_CALLED_TWICE:
-                raise
+        ql_afl_fuzz(_ql, input_file=input_file, place_input_callback=place_input_callback, exits=[ql.os.exit_point])
 
     # get image base address
     ba = ql.loader.images[0].base
