@@ -13,7 +13,7 @@ from qiling.const import QL_ARCH, QL_VERBOSE
 from qiling.debugger import QlDebugger
 
 from .frontend import context_reg, context_asm, examine_mem
-from .utils import _parse_int, handle_bnj, is_thumb, CODE_END, parse_int
+from .utils import handle_bnj, is_thumb, CODE_END, parse_int
 from .utils import Breakpoint, TempBreakpoint
 from .const import *
 
@@ -39,6 +39,16 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         # self.ql.loader.entry_point  # ld.so
         # self.ql.loader.elf_entry    # .text of binary
+
+        if self.ql.archtype in (QL_ARCH.X86, QL_ARCH.X8664):
+            # def pause(ql, addr, size):
+                # data = ql.mem.read(addr, size)
+                # ql.disassembler.detail = True
+                # breakpoint()
+                # ret = next(ql.disassembler.disasm(data, addr))
+                # print(ret)
+
+            self.ql.hook_code(handle_bnj)
 
         if init_hook and self.ql.loader.entry_point != init_hook:
             self.do_breakpoint(init_hook)
@@ -222,10 +232,10 @@ class QlQdb(cmd.Cmd, QlDebugger):
             if self.rr:
                 self._save()
 
-            _, next_stop = handle_bnj(self.ql, self.cur_addr)
+            # _, next_stop = handle_bnj(self.ql, self.cur_addr)
 
-            if next_stop is CODE_END:
-                return True
+            # if next_stop is CODE_END:
+                # return True
 
             if self.ql.archtype == QL_ARCH.CORTEX_M:
                 self.ql.arch.step()

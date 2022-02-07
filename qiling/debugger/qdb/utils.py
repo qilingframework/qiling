@@ -103,13 +103,14 @@ def signed_val(val: int) -> int:
 
 
 # handle braches and jumps so we can set berakpoint properly
-def handle_bnj(ql: Qiling, cur_addr: str) -> Callable[[Qiling, str], int]:
+def handle_bnj(ql: Qiling, cur_addr: str, size: int) -> Callable[[Qiling, str], int]:
     return {
             QL_ARCH.MIPS     : handle_bnj_mips,
             QL_ARCH.ARM      : handle_bnj_arm,
             QL_ARCH.ARM_THUMB: handle_bnj_arm,
             QL_ARCH.CORTEX_M : handle_bnj_arm,
-            }.get(ql.archtype)(ql, cur_addr)
+            QL_ARCH.X86      : handle_bnj_x86,
+            }.get(ql.archtype)(ql, cur_addr, size)
 
 
 def get_cpsr(bits: int) -> (bool, bool, bool, bool):
@@ -118,6 +119,27 @@ def get_cpsr(bits: int) -> (bool, bool, bool, bool):
             bits & 0x20000000 != 0, # C, carry flag
             bits & 0x40000000 != 0, # Z, zero flag
             bits & 0x80000000 != 0, # N, sign flag
+            )
+
+
+def get_x86_eflags(bits: int) -> Dict[str, bool]:
+    return {
+            "CF" : bits & 0x0001 != 0, # CF, carry flag
+            "PF" : bits & 0x0004 != 0, # PF, parity flag
+            "AF" : bits & 0x0010 != 0, # AF, adjust flag
+            "ZF" : bits & 0x0040 != 0, # ZF, zero flag
+            "SF" : bits & 0x0080 != 0, # SF, sign flag
+            "OF" : bits & 0x0800 != 0, # OF, overflow flag
+            }
+
+def get_eflags(bits: int) -> (bool, bool, bool, bool, bool, bool):
+    return (
+            bits & 0x0001 != 0, # CF, carry flag
+            bits & 0x0004 != 0, # PF, parity flag
+            bits & 0x0010 != 0, # AF, adjust flag
+            bits & 0x0040 != 0, # ZF, zero flag
+            bits & 0x0080 != 0, # SF, sign flag
+            bits & 0x0800 != 0, # OF, overflow flag
             )
 
 
@@ -160,8 +182,77 @@ def _read_inst(ql: Qiling, addr: int) -> int:
 
     return result
 
+def handle_bnj_x86(ql: Qilng, cur_addr: str, size: int) -> (bool, int):
 
-def handle_bnj_arm(ql: Qiling, cur_addr: str) -> int:
+    # FIXME: NO HANDLE BRANCH AND JUMP FOR X86 FOR NOW
+
+    ret_addr = None
+
+    md = ql.disassembler
+    data = ql.mem.read(cur_addr, size)
+    line = next(md.disasm(data, cur_addr))
+
+    jump_table = {
+
+            # conditional jump
+            "jo"   : (lambda C, P, A, Z, S, O: O == 1),
+            "jno"  : (lambda C, P, A, Z, S, O: O == 0),
+
+            "js"   : (lambda C, P, A, Z, S, O: S == 1),
+            "jns"  : (lambda C, P, A, Z, S, O: S == 0),
+
+            "je"   : (lambda C, P, A, Z, S, O: Z == 1),
+            "jz"   : (lambda C, P, A, Z, S, O: Z == 1),
+
+            "jne"  : (lambda C, P, A, Z, S, O: Z == 0),
+            "jnz"  : (lambda C, P, A, Z, S, O: Z == 0),
+
+            "jb"   : (lambda C, P, A, Z, S, O: C == 1),
+            "jc"   : (lambda C, P, A, Z, S, O: C == 1),
+            "jnae" : (lambda C, P, A, Z, S, O: C == 1),
+
+            "jnb"  : (lambda C, P, A, Z, S, O: C == 0),
+            "jnc"  : (lambda C, P, A, Z, S, O: C == 0),
+            "jae"  : (lambda C, P, A, Z, S, O: C == 0),
+
+            "jbe"  : (lambda C, P, A, Z, S, O: C == 1 or Z == 1),
+            "jna"  : (lambda C, P, A, Z, S, O: C == 1 or Z == 1),
+
+            "ja"   : (lambda C, P, A, Z, S, O: C == 0 and Z == 0),
+            "jnbe" : (lambda C, P, A, Z, S, O: C == 0 and Z == 0),
+
+            "jl"   : (lambda C, P, A, Z, S, O: S != O),
+            "jnge" : (lambda C, P, A, Z, S, O: S != O),
+
+            "jge"  : (lambda C, P, A, Z, S, O: S == O),
+            "jnl"  : (lambda C, P, A, Z, S, O: S == O),
+
+            "jle"  : (lambda C, P, A, Z, S, O: Z == 1 or S != O),
+            "jng"  : (lambda C, P, A, Z, S, O: Z == 1 or S != O),
+
+            "jg"   : (lambda C, P, A, Z, S, O: Z == 0 or S == O),
+            "jnle" : (lambda C, P, A, Z, S, O: Z == 0 or S == O),
+
+            "jp"   : (lambda C, P, A, Z, S, O: P == 1),
+            "jpe"  : (lambda C, P, A, Z, S, O: P == 1),
+
+            "jnp"  : (lambda C, P, A, Z, S, O: P == 0),
+            "jpo"  : (lambda C, P, A, Z, S, O: P == 0),
+
+            # unconditional jump
+
+            "call" : (lambda *_: True),
+
+            }
+
+    to_jump = False
+    if line.mnemonic in jump_table:
+        to_jump = jump_table.get(line.mnemonic)(*get_eflags(ql.reg.ef))
+
+    return (to_jump, ret_addr)
+
+
+def handle_bnj_arm(ql: Qiling, cur_addr: str) -> (bool, int):
 
     def _read_reg_val(regs, _reg):
         return getattr(ql.reg, _reg.replace("ip", "r12").replace("fp", "r11"))
@@ -383,7 +474,7 @@ def handle_bnj_arm(ql: Qiling, cur_addr: str) -> int:
     return (to_jump, ret_addr)
 
 
-def handle_bnj_mips(ql: Qiling, cur_addr: str) -> int:
+def handle_bnj_mips(ql: Qiling, cur_addr: str) -> (bool, int):
     MIPS_INST_SIZE = 4
 
     def _read_reg(regs, _reg):
@@ -413,10 +504,10 @@ def handle_bnj_mips(ql: Qiling, cur_addr: str) -> int:
                 ]
 
         to_jump = {
-                "j"       : (lambda _: True),             # uncontitional jump
-                "jr"      : (lambda _: True),             # uncontitional jump
-                "jal"     : (lambda _: True),             # uncontitional jump
-                "jalr"    : (lambda _: True),             # uncontitional jump
+                "j"       : (lambda _: True),             # unconditional jump
+                "jr"      : (lambda _: True),             # unconditional jump
+                "jal"     : (lambda _: True),             # unconditional jump
+                "jalr"    : (lambda _: True),             # unconditional jump
                 "b"       : (lambda _: True),             # unconditional branch
                 "bl"      : (lambda _: True),             # unconditional branch
                 "bal"     : (lambda _: True),             # unconditional branch
