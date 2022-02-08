@@ -7,7 +7,7 @@ import ctypes
 
 from qiling.core import Qiling
 from qiling.hw.peripheral import QlPeripheral
-
+from qiling.hw.const.sam3xa_pmc import CKGR_MOR, SR, MCKR, CKGR_PLLAR, CKGR_UCKR
 
 class SAM3xaPmc(QlPeripheral):
     """
@@ -73,5 +73,23 @@ class SAM3xaPmc(QlPeripheral):
 
     @QlPeripheral.monitor()
     def write(self, offset: int, size: int, value: int):
+        if offset == self.struct.CKGR_MOR.offset:
+            if value & CKGR_MOR.MOSCXTEN:
+                self.pmc.SR |= SR.MOSCXTS
+            if value & CKGR_MOR.MOSCSEL:
+                self.pmc.SR |= SR.MOSCSELS
+
+        elif offset == self.struct.MCKR.offset:
+            if value & MCKR.CSS:
+                self.pmc.SR |= SR.MCKRDY
+
+        elif offset == self.struct.CKGR_PLLAR.offset:
+            if value & CKGR_PLLAR.ONE:
+                self.pmc.SR |= SR.LOCKA
+
+        elif offset == self.struct.CKGR_UCKR.offset:
+            if value & CKGR_UCKR.UPLLEN:
+                self.pmc.SR |= SR.LOCKU
+
         data = (value).to_bytes(size, 'little')
         ctypes.memmove(ctypes.addressof(self.pmc) + offset, data, size)
