@@ -23,7 +23,7 @@ class Stream(ctypes.Structure):
     def transfer_direction(self):
         return self.CR & DMA_SxCR.DIR
 
-    def transfer_size(self):
+    def transfer_peripheral_size(self):
         PSIZE = self.CR & DMA_SxCR.PSIZE
         if PSIZE == DMA.PDATAALIGN_BYTE:
             return 1
@@ -32,22 +32,35 @@ class Stream(ctypes.Structure):
         if PSIZE == DMA.PDATAALIGN_WORD:
             return 4
 
+    def transfer_memory_size(self):
+        MSIZE = self.CR & DMA_SxCR.MSIZE
+        if MSIZE == DMA.MDATAALIGN_BYTE:
+            return 1
+        if MSIZE == DMA.MDATAALIGN_HALFWORD:
+            return 2
+        if MSIZE == DMA.MDATAALIGN_WORD:
+            return 4
+
     def step(self, mem):
         if self.NDTR == 0:
             return
 
-        dir_flag = self.transfer_direction() == DMA.MEMORY_TO_PERIPH 
-        
-        size = self.transfer_size()        
-        src, dst = (self.M0AR, self.PAR) if dir_flag else (self.PAR, self.M0AR)
+        dir_flag = self.transfer_direction() == DMA.MEMORY_TO_PERIPH
 
-        mem.write(dst, bytes(mem.read(src, size)))
+        psize = self.transfer_peripheral_size()
+        msize = self.transfer_memory_size()
         
+        src, dst = (self.M0AR, self.PAR) if dir_flag else (self.PAR, self.M0AR)
+        src_size, dst_size = (msize, psize) if dir_flag else (psize, msize)
+
+        data = bytes(mem.read(src, src_size)).ljust(dst_size)[:dst_size]
+        mem.write(dst, data)
+
         self.NDTR -= 1
         if self.CR & DMA_SxCR.MINC:
-            self.M0AR += size
+            self.M0AR += msize
         if self.CR & DMA_SxCR.PINC:
-            self.PAR  += size
+            self.PAR  += psize
 
         if self.NDTR == 0:
             self.CR &= ~DMA_SxCR.EN
@@ -104,10 +117,7 @@ class STM32F4xxDma(QlPeripheral):
         super().__init__(ql, label)
         
         self.dma = self.struct()
-
-        self.stream_base = 0x10
-        self.stream_size = ctypes.sizeof(Stream)        
-
+        
         self.intn = [
             stream0_intn,
             stream1_intn,
@@ -119,15 +129,11 @@ class STM32F4xxDma(QlPeripheral):
             stream7_intn,
         ]
 
-    def stream_index(self, offset):
-        return (offset - self.stream_base) // self.stream_size
-
     @QlPeripheral.monitor(width=15)
     def read(self, offset: int, size: int) -> int:        
         buf = ctypes.create_string_buffer(size)
         ctypes.memmove(buf, ctypes.addressof(self.dma) + offset, size)
-        retval = int.from_bytes(buf.raw, byteorder='little')
-        return retval
+        return int.from_bytes(buf.raw, byteorder='little')
 
     @QlPeripheral.monitor(width=15)
     def write(self, offset: int, size: int, value: int):        
@@ -138,8 +144,6 @@ class STM32F4xxDma(QlPeripheral):
             self.dma.HISR &= ~value
 
         elif offset > self.struct.HIFCR.offset:
-            stream_id = self.stream_index(offset)
-
             data = (value).to_bytes(size, byteorder='little')
             ctypes.memmove(ctypes.addressof(self.dma) + offset, data, size)
 
