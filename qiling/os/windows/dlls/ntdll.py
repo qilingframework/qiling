@@ -367,7 +367,7 @@ def hook_LdrGetProcedureAddress(ql: Qiling, address: int, params):
 
     if identifier in ql.loader.import_address_table[dll_name]:
         addr = ql.loader.import_address_table[dll_name][identifier]
-        ql.mem.write(addr.to_bytes(length=ql.pointersize, byteorder='little'), FunctionAddress)
+        ql.mem.write(FunctionAddress, addr.to_bytes(length=ql.pointersize, byteorder='little'))
         return 0
 
     return 0xFFFFFFFF
