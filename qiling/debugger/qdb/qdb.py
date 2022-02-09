@@ -242,7 +242,11 @@ class QlQdb(cmd.Cmd, QlDebugger):
                 self.ql.count -= 1
 
             else:
-                count = 1 if next_stop == self.cur_addr + 4 else 2
+                if self.ql.archtype in (QL_ARCH.X86, QL_ARCH.X8664):
+                    count = 1
+                else:
+                    count = 1 if next_stop == self.cur_addr + 4 else 2
+
                 self._run(count=count)
 
             self.do_context()
@@ -333,7 +337,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         """
 
         try:
-            context_asm(self.ql, _parse_int(address), self.ql.pointersize)
+            context_asm(self.ql, address)
         except:
             print(f"{color.RED}[!] something went wrong ...{color.END}")
 

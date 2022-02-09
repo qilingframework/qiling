@@ -75,7 +75,7 @@ def hook_CreateFileA(ql: Qiling, address: int, params):
         else:
             return (-1)
     else:
-        ret = _CreateFile(ql, address, params, "CreateFileA")
+        ret = _CreateFile(ql, address, params)
     return ret
 
 def _WriteFile(ql: Qiling, address: int, params):

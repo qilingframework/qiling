@@ -36,6 +36,15 @@ def dump_regs(ql: Qiling) -> Mapping[str, int]:
                 "r12", "sp", "lr", "pc",
                 )
 
+    elif ql.archtype == QL_ARCH.X86:
+
+        _reg_order = (
+                "eax", "ebx", "ecx", "edx",
+                "esp", "ebp", "esi", "edi",
+                "eip", "ss", "cs", "ds", "es",
+                "fs", "gs", "ef",
+                )
+
     elif ql.archtype == QL_ARCH.CORTEX_M:
 
         _reg_order = (
@@ -83,7 +92,7 @@ def _parse_int(s: str) -> int:
 
 # function dectorator for parse argument as integer
 def parse_int(func: Callable) -> Callable:
-    def wrap(qdb, s: str) -> int:
+    def wrap(qdb, s: str = "") -> int:
         assert type(s) is str
         try:
             ret = _parse_int(s)
@@ -142,7 +151,6 @@ def get_eflags(bits: int) -> (bool, bool, bool, bool, bool, bool):
             bits & 0x0800 != 0, # OF, overflow flag
             )
 
-
 def is_thumb(bits: int) -> bool:
     return bits & 0x00000020 != 0
 
@@ -179,6 +187,12 @@ def _read_inst(ql: Qiling, addr: int) -> int:
 
                 latter_two = ql.unpack16(ql.mem.read(addr+2, 2))
                 result += ql.pack16(latter_two)
+
+    elif ql.archtype in (QL_ARCH.X86, QL_ARCH.X8664):
+        # due to the variadic lengh of x86 instructions ( 1~15 )
+        # always assume the maxium size for disassembler to tell
+        # what is it exactly.
+        result = ql.mem.read(addr, 15)
 
     return result
 

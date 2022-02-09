@@ -9,7 +9,7 @@ import ctypes
 from qiling.hw.misc.cm_scb import CortexMScb
 
 
-class CortexM4Scb(CortexMScb):
+class CortexM3Scb(CortexMScb):
     class Type(ctypes.Structure):
         _fields_ = [
             ('CPUID'    , ctypes.c_uint32),
@@ -25,14 +25,12 @@ class CortexM4Scb(CortexMScb):
             ('DFSR'     , ctypes.c_uint32),
             ('MMFAR'    , ctypes.c_uint32),
             ('BFSR'     , ctypes.c_uint32),
-            ('AFSR'     , ctypes.c_uint32),
         ]
 
     def __init__(self, ql, label):
         super().__init__(ql, label)
 
         self.scb = self.struct(
-            CPUID = 0x410FC241,
+            CPUID = 0x411FC231,
             AIRCR = 0xFA050000,
-            CCR   = 0x00000200,
         )

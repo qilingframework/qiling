@@ -13,7 +13,7 @@ from qiling.const import QL_ARCH
 
 import unicorn
 
-from .utils import dump_regs, get_arm_flags, disasm, _parse_int, handle_bnj
+from .utils import dump_regs, get_x86_eflags, get_arm_flags, disasm, _parse_int, handle_bnj
 from .const import *
 
 
@@ -192,8 +192,34 @@ def context_reg(ql: Qiling, saved_states: Optional[Mapping[str, int]] = None, /,
 
             print(lines.format(*_cur_regs.values()))
 
-        elif ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB, QL_ARCH.CORTEX_M):
+        elif ql.archtype == QL_ARCH.X86:
 
+            if saved_states is not None:
+                _saved_states = copy.deepcopy(saved_states)
+                _diff = [k for k in _cur_regs if _cur_regs[k] != _saved_states[k]]
+
+            else:
+                _diff = None
+
+            lines = ""
+            for idx, r in enumerate(_cur_regs, 1):
+                if len(r) == 2:
+                    line = "{}{}: 0x{{:08x}} {}\t\t".format(_colors[(idx-1) // 4], r, color.END)
+                else:
+                    line = "{}{}: 0x{{:08x}} {}\t".format(_colors[(idx-1) // 4], r, color.END)
+
+                if _diff and r in _diff:
+                    line = f"{color.UNDERLINE}{color.BOLD}{line}"
+
+                if idx % 4 == 0 and idx != 32:
+                    line += "\n"
+
+                lines += line
+
+            print(lines.format(*_cur_regs.values()))
+            print(color.GREEN, "EFLAGS: [CF: {flags[CF]}, PF: {flags[PF]}, AF: {flags[AF]}, ZF: {flags[ZF]}, SF: {flags[SF]}, OF: {flags[OF]}]".format(flags=get_x86_eflags(ql.reg.ef)), color.END, sep="")
+
+        elif ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB, QL_ARCH.CORTEX_M):
 
             _cur_regs.update({"sl": _cur_regs.pop("r10")})
             _cur_regs.update({"ip": _cur_regs.pop("r12")})
@@ -265,7 +291,10 @@ def context_reg(ql: Qiling, saved_states: Optional[Mapping[str, int]] = None, /,
 def print_asm(ql: Qiling, insn: CsInsn, to_jump: Optional[bool] = None, address: int = None) -> None:
 
     opcode = "".join(f"{b:02x}" for b in insn.bytes)
-    trace_line = f"0x{insn.address:08x} │ {opcode:10s} {insn.mnemonic:10} {insn.op_str:35s}"
+    if ql.archtype in (QL_ARCH.X86, QL_ARCH.X8664):
+        trace_line = f"0x{insn.address:08x} │ {opcode:20s} {insn.mnemonic:10} {insn.op_str:35s}"
+    else:
+        trace_line = f"0x{insn.address:08x} │ {opcode:10s} {insn.mnemonic:10} {insn.op_str:35s}"
 
     cursor = " "
     if ql.reg.arch_pc == insn.address:
@@ -282,39 +311,59 @@ def context_asm(ql: Qiling, address: int) -> None:
 
     with context_printer(ql, field_name="[ DISASM ]"):
 
-        # assembly before current location
+        if ql.archtype in (QL_ARCH.X86, QL_ARCH.X8664):
+            past_list = []
 
-        past_list = []
+            # assembly before current location
 
-        line = disasm(ql, address-0x10)
+            line = disasm(ql, address)
+            acc_size = line.size
 
-        while line:
-            if line.address == address:
-                break
+            while line and len(past_list) != 10:
+                past_list.append(line)
+                next_start = address + acc_size
+                line = disasm(ql, next_start)
+                acc_size += line.size
 
-            addr = line.address + line.size
-            line = disasm(ql, addr)
+            # print four insns before current location
+            for line in past_list[:-1]:
+                print_asm(ql, line)
 
-            if not line:
-                break
+        else:
 
-            past_list.append(line)
+            # assembly before current location
 
-        # print four insns before current location
-        for line in past_list[:-1][:4]:
-            print_asm(ql, line)
+            past_list = []
 
-        # assembly for current location
+            line = disasm(ql, address-0x10)
 
-        cur_ins = disasm(ql, address)
-        to_jump, next_stop = handle_bnj(ql, address)
-        print_asm(ql, cur_ins, to_jump=to_jump)
+            while line:
+                if line.address == address:
+                    break
 
-        # assembly after current location
+                addr = line.address + line.size
+                line = disasm(ql, addr)
 
-        forward_insn_size = cur_ins.size
-        for _ in range(5):
-            forward_insn = disasm(ql, address+forward_insn_size)
-            if forward_insn:
-                print_asm(ql, forward_insn)
-                forward_insn_size += forward_insn.size
+                if not line:
+                    break
+
+                past_list.append(line)
+
+            # print four insns before current location
+            for line in past_list[:-1][:4]:
+                print_asm(ql, line)
+
+            # assembly for current location
+
+            cur_ins = disasm(ql, address)
+            to_jump, next_stop = handle_bnj(ql, address)
+            print_asm(ql, cur_ins, to_jump=to_jump)
+
+            # assembly after current location
+
+            forward_insn_size = cur_ins.size
+            for _ in range(5):
+                forward_insn = disasm(ql, address+forward_insn_size)
+                if forward_insn:
+                    print_asm(ql, forward_insn)
+                    forward_insn_size += forward_insn.size
