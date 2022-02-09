@@ -112,14 +112,14 @@ def signed_val(val: int) -> int:
 
 
 # handle braches and jumps so we can set berakpoint properly
-def handle_bnj(ql: Qiling, cur_addr: str, size: int) -> Callable[[Qiling, str], int]:
+def handle_bnj(ql: Qiling, cur_addr: str) -> Callable[[Qiling, str], int]:
     return {
             QL_ARCH.MIPS     : handle_bnj_mips,
             QL_ARCH.ARM      : handle_bnj_arm,
             QL_ARCH.ARM_THUMB: handle_bnj_arm,
             QL_ARCH.CORTEX_M : handle_bnj_arm,
             QL_ARCH.X86      : handle_bnj_x86,
-            }.get(ql.archtype)(ql, cur_addr, size)
+            }.get(ql.archtype)(ql, cur_addr)
 
 
 def get_cpsr(bits: int) -> (bool, bool, bool, bool):
@@ -141,15 +141,6 @@ def get_x86_eflags(bits: int) -> Dict[str, bool]:
             "OF" : bits & 0x0800 != 0, # OF, overflow flag
             }
 
-def get_eflags(bits: int) -> (bool, bool, bool, bool, bool, bool):
-    return (
-            bits & 0x0001 != 0, # CF, carry flag
-            bits & 0x0004 != 0, # PF, parity flag
-            bits & 0x0010 != 0, # AF, adjust flag
-            bits & 0x0040 != 0, # ZF, zero flag
-            bits & 0x0080 != 0, # SF, sign flag
-            bits & 0x0800 != 0, # OF, overflow flag
-            )
 
 def is_thumb(bits: int) -> bool:
     return bits & 0x00000020 != 0
@@ -196,15 +187,14 @@ def _read_inst(ql: Qiling, addr: int) -> int:
 
     return result
 
-def handle_bnj_x86(ql: Qilng, cur_addr: str, size: int) -> (bool, int):
+
+def handle_bnj_x86(ql: Qilng, cur_addr: str) -> (bool, int):
 
     # FIXME: NO HANDLE BRANCH AND JUMP FOR X86 FOR NOW
 
     ret_addr = None
 
-    md = ql.disassembler
-    data = ql.mem.read(cur_addr, size)
-    line = next(md.disasm(data, cur_addr))
+    line = disasm(ql, cur_addr)
 
     jump_table = {
 
@@ -256,12 +246,14 @@ def handle_bnj_x86(ql: Qilng, cur_addr: str, size: int) -> (bool, int):
             # unconditional jump
 
             "call" : (lambda *_: True),
+            "jmp"  : (lambda *_: True),
 
             }
 
     to_jump = False
     if line.mnemonic in jump_table:
-        to_jump = jump_table.get(line.mnemonic)(*get_eflags(ql.reg.ef))
+        eflags = get_x86_eflags(ql.reg.ef).values()
+        to_jump = jump_table.get(line.mnemonic)(*eflags)
 
     return (to_jump, ret_addr)
 

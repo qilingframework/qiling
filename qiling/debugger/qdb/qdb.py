@@ -40,16 +40,6 @@ class QlQdb(cmd.Cmd, QlDebugger):
         # self.ql.loader.entry_point  # ld.so
         # self.ql.loader.elf_entry    # .text of binary
 
-        if self.ql.archtype in (QL_ARCH.X86, QL_ARCH.X8664):
-            # def pause(ql, addr, size):
-                # data = ql.mem.read(addr, size)
-                # ql.disassembler.detail = True
-                # breakpoint()
-                # ret = next(ql.disassembler.disasm(data, addr))
-                # print(ret)
-
-            self.ql.hook_code(handle_bnj)
-
         if init_hook and self.ql.loader.entry_point != init_hook:
             self.do_breakpoint(init_hook)
 
@@ -232,10 +222,10 @@ class QlQdb(cmd.Cmd, QlDebugger):
             if self.rr:
                 self._save()
 
-            # _, next_stop = handle_bnj(self.ql, self.cur_addr)
+            _, next_stop = handle_bnj(self.ql, self.cur_addr)
 
-            # if next_stop is CODE_END:
-                # return True
+            if next_stop is CODE_END:
+                return True
 
             if self.ql.archtype == QL_ARCH.CORTEX_M:
                 self.ql.arch.step()

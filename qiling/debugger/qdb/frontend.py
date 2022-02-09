@@ -301,7 +301,7 @@ def print_asm(ql: Qiling, insn: CsInsn, to_jump: Optional[bool] = None, address:
         cursor = "►"
 
     jump_sign = " "
-    if to_jump and address != ql.reg.arch_pc+4:
+    if to_jump:
         jump_sign = f"{color.RED}✓{color.END}"
 
     print(f"{jump_sign}  {cursor}   {color.DARKGRAY}{trace_line}{color.END}")
@@ -314,18 +314,22 @@ def context_asm(ql: Qiling, address: int) -> None:
         if ql.archtype in (QL_ARCH.X86, QL_ARCH.X8664):
             past_list = []
 
-            # assembly before current location
+            # assembly for current location
 
             line = disasm(ql, address)
+            to_jump, next_stop = handle_bnj(ql, address)
+            print_asm(ql, line, to_jump=to_jump)
+
+            # assembly after current location
+
             acc_size = line.size
 
             while line and len(past_list) != 10:
-                past_list.append(line)
                 next_start = address + acc_size
                 line = disasm(ql, next_start)
                 acc_size += line.size
+                past_list.append(line)
 
-            # print four insns before current location
             for line in past_list[:-1]:
                 print_asm(ql, line)
 
