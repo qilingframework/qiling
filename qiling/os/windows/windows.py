@@ -68,7 +68,6 @@ class QlOsWindows(QlOs):
         self.argv = self.ql.argv
         self.env = self.ql.env
         self.pid = self.profile.getint("KERNEL","pid")
-        self.ql.hook_mem_unmapped(utils.ql_x86_windows_hook_mem_error)
         self.automatize_input = self.profile.getboolean("MISC","automatize_input")
         self.username = self.profile["USER"]["username"]
         self.windir = self.profile["PATH"]["systemdrive"] + self.profile["PATH"]["windir"]
