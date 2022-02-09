@@ -137,7 +137,7 @@ class QlLoaderMCU(QlLoader):
                 base = args['base']
                 self.ql.hw.setup_mmio(base, size, info=f'[{name}]')
 
-            if memtype == 'core peripheral':
+            if memtype == 'core':
                 self.ql.hw.create(name.lower())
 
     def run(self):

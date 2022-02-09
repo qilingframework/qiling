@@ -37,6 +37,15 @@ def dump_regs(ql: Qiling) -> Mapping[str, int]:
                 "r12", "sp", "lr", "pc",
                 )
 
+    elif ql.arch.type == QL_ARCH.X86:
+
+        _reg_order = (
+                "eax", "ebx", "ecx", "edx",
+                "esp", "ebp", "esi", "edi",
+                "eip", "ss", "cs", "ds", "es",
+                "fs", "gs", "ef",
+                )
+
     elif ql.arch.type == QL_ARCH.CORTEX_M:
 
         _reg_order = (
@@ -84,7 +93,7 @@ def _parse_int(s: str) -> int:
 
 # function dectorator for parse argument as integer
 def parse_int(func: Callable) -> Callable:
-    def wrap(qdb, s: str) -> int:
+    def wrap(qdb, s: str = "") -> int:
         assert type(s) is str
         try:
             ret = _parse_int(s)
@@ -109,6 +118,7 @@ def handle_bnj(ql: Qiling, cur_addr: str) -> Callable[[Qiling, str], int]:
             QL_ARCH.MIPS     : handle_bnj_mips,
             QL_ARCH.ARM      : handle_bnj_arm,
             QL_ARCH.CORTEX_M : handle_bnj_arm,
+            QL_ARCH.X86      : handle_bnj_x86,
             }.get(ql.arch.type)(ql, cur_addr)
 
 
@@ -119,6 +129,17 @@ def get_cpsr(bits: int) -> (bool, bool, bool, bool):
             bits & 0x40000000 != 0, # Z, zero flag
             bits & 0x80000000 != 0, # N, sign flag
             )
+
+
+def get_x86_eflags(bits: int) -> Dict[str, bool]:
+    return {
+            "CF" : bits & 0x0001 != 0, # CF, carry flag
+            "PF" : bits & 0x0004 != 0, # PF, parity flag
+            "AF" : bits & 0x0010 != 0, # AF, adjust flag
+            "ZF" : bits & 0x0040 != 0, # ZF, zero flag
+            "SF" : bits & 0x0080 != 0, # SF, sign flag
+            "OF" : bits & 0x0800 != 0, # OF, overflow flag
+            }
 
 
 def disasm(ql: Qiling, address: int, detail: bool = False) -> Optional[int]:
@@ -152,7 +173,22 @@ def _read_inst(ql: Qiling, addr: int) -> int:
                 latter_two = ql.unpack16(ql.mem.read(addr+2, 2))
                 result += ql.pack16(latter_two)
 
+    elif ql.archtype in (QL_ARCH.X86, QL_ARCH.X8664):
+        # due to the variadic lengh of x86 instructions ( 1~15 )
+        # always assume the maxium size for disassembler to tell
+        # what is it exactly.
+        result = ql.mem.read(addr, 15)
+
     return result
+
+def handle_bnj_x86(ql: Qilng, cur_addr: str) -> int:
+
+    # FIXME: NO HANDLE BRANCH AND JUMP FOR X86 FOR NOW
+
+    to_jump = False
+    ret_addr = None
+
+    return (to_jump, ret_addr)
 
 
 def handle_bnj_arm(ql: Qiling, cur_addr: str) -> int:
