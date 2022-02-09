@@ -12,8 +12,9 @@ from qiling import Qiling
 from qiling.const import QL_ARCH, QL_VERBOSE
 from qiling.debugger import QlDebugger
 
-from .frontend import context_reg, context_asm, examine_mem
-from .utils import handle_bnj, is_thumb, CODE_END, parse_int
+# from .frontend import context_reg, context_asm, examine_mem
+from .frontend import examine_mem, setup_ctx_manager
+from .utils import _parse_int, is_thumb, parse_int
 from .utils import Breakpoint, TempBreakpoint
 from .const import *
 
@@ -30,6 +31,8 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         if self.rr:
             self._states_list = []
+
+        self.ctx = setup_ctx_manager(ql)
 
         super().__init__()
 
@@ -191,8 +194,9 @@ class QlQdb(cmd.Cmd, QlDebugger):
         show context information for current location
         """
 
-        context_reg(self.ql, self._saved_reg_dump)
-        context_asm(self.ql, self.cur_addr)
+        self.ctx.context_reg(self._saved_reg_dump)
+        self.ctx.context_stack()
+        self.ctx.context_asm()
 
     def do_backward(self: QlQdb, *args) -> None:
         """
@@ -222,22 +226,17 @@ class QlQdb(cmd.Cmd, QlDebugger):
             if self.rr:
                 self._save()
 
-            _, next_stop = handle_bnj(self.ql, self.cur_addr)
+            # next_stop = self.predictor.predict()
 
-            if next_stop is CODE_END:
-                return True
+            # if next_stop is True:
+                # return True
 
             if self.ql.archtype == QL_ARCH.CORTEX_M:
                 self.ql.arch.step()
                 self.ql.count -= 1
 
             else:
-                if self.ql.archtype in (QL_ARCH.X86, QL_ARCH.X8664):
-                    count = 1
-                else:
-                    count = 1 if next_stop == self.cur_addr + 4 else 2
-
-                self._run(count=count)
+                self._run(count=1)
 
             self.do_context()
 
