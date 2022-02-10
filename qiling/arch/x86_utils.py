@@ -181,7 +181,7 @@ class SegmentManager64(SegmentManager):
         # self.arch.regs.es = selector
 
     def setup_fs(self, base: int, size: int) -> None:
-        self.arch.msr.write(FSMSR, base)
+        self.arch.msr.write(IA32_FS_BASE_MSR, base)
 
     def setup_gs(self, base: int, size: int) -> None:
-        self.arch.msr.write(GSMSR, base)
+        self.arch.msr.write(IA32_GS_BASE_MSR, base)

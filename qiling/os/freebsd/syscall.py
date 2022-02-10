@@ -40,19 +40,14 @@ def ql_syscall_sysarch(ql, op, parms, *args, **kw):
     wild guess, of cause not working
     """
 
-    regreturn = 0
-    ql.GS_SEGMENT_ADDR = 0x6000
-    ql.GS_SEGMENT_SIZE = 0x8000
-
-
-    #ql.mem.map(ql.GS_SEGMENT_ADDR, ql.GS_SEGMENT_SIZE)
-    #ql.arch.msr.write(GSMSR, ql.GS_SEGMENT_ADDR)
-    ql.arch.msr.write(FSMSR, parms)
+    #ql.mem.map(GS_SEGMENT_ADDR, GS_SEGMENT_SIZE)
+    #ql.arch.msr.write(IA32_GS_BASE_MSR, GS_SEGMENT_ADDR)
+    ql.arch.msr.write(IA32_FS_BASE_MSR, parms)
 
     #op_buf = ql.pack32(op)
     #ql.mem.write(parms, op_buf)
 
-    return regreturn
+    return 0
 
 def ql_syscall_sigprocmask(ql, how, mask, omask, *args, **kw):
     ql.log.debug("sigprocmask(how: 0x%x, mask: 0x%x, omask: 0x%x)" % (how, mask, omask))

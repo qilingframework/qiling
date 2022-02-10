@@ -4,7 +4,7 @@
 #
 
 from qiling import Qiling
-from qiling.arch.x86_const import FSMSR, GSMSR
+from qiling.arch.x86_const import IA32_FS_BASE_MSR, IA32_GS_BASE_MSR
 
 def ql_syscall_arch_prctl(ql: Qiling, code: int, addr: int):
     ARCH_SET_GS = 0x1001
@@ -13,10 +13,10 @@ def ql_syscall_arch_prctl(ql: Qiling, code: int, addr: int):
     ARCH_GET_GS = 0x1004
 
     handlers = {
-        ARCH_SET_GS : lambda : ql.arch.msr.write(GSMSR, addr),
-        ARCH_SET_FS : lambda : ql.arch.msr.write(FSMSR, addr),
-        ARCH_GET_FS : lambda : ql.mem.write(addr, ql.pack64(ql.arch.msr.read(FSMSR))),
-        ARCH_GET_GS : lambda : ql.mem.write(addr, ql.pack64(ql.arch.msr.read(GSMSR)))
+        ARCH_SET_GS : lambda : ql.arch.msr.write(IA32_GS_BASE_MSR, addr),
+        ARCH_SET_FS : lambda : ql.arch.msr.write(IA32_FS_BASE_MSR, addr),
+        ARCH_GET_FS : lambda : ql.mem.write(addr, ql.pack64(ql.arch.msr.read(IA32_FS_BASE_MSR))),
+        ARCH_GET_GS : lambda : ql.mem.write(addr, ql.pack64(ql.arch.msr.read(IA32_GS_BASE_MSR)))
     }
 
     if code not in handlers:

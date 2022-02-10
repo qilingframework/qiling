@@ -428,7 +428,7 @@ class QlLinuxX8664Thread(QlLinuxThread):
 
     def set_thread_tls(self, tls_addr):
         self.tls = tls_addr
-        self.ql.arch.msr.write(FSMSR, self.tls)
+        self.ql.arch.msr.write(IA32_FS_BASE_MSR, self.tls)
         self.ql.log.debug(f"Set fsbase to {hex(tls_addr)} for {str(self)}")
 
     # Some notes:
@@ -436,7 +436,7 @@ class QlLinuxX8664Thread(QlLinuxThread):
     #     - https://stackoverflow.com/questions/11497563/detail-about-msr-gs-base-in-linux-x86-64
     def save(self):
         self.save_context()
-        self.tls = self.ql.arch.msr.read(FSMSR)
+        self.tls = self.ql.arch.msr.read(IA32_FS_BASE_MSR)
         self.ql.log.debug(f"Saved context: fs={hex(self.ql.arch.regs.fsbase)} tls={hex(self.tls)}")
 
     def restore(self):
