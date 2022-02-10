@@ -11,6 +11,7 @@ from qiling.os.windows.api import *
 from qiling.os.windows.const import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.structs import *
+from qiling.os.windows.wdk_const import DO_DEVICE_INITIALIZING, DO_EXCLUSIVE
 from qiling.utils import verify_ret
 
 # typedef struct _OSVERSIONINFOW {

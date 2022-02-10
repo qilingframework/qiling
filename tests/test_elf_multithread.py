@@ -5,15 +5,10 @@
 
 import platform, sys, unittest, os, threading, time
 
-from unicorn import UcError, UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
-
 sys.path.append("..")
-from qiling import *
+from qiling import Qiling
 from qiling.const import *
 from qiling.exception import *
-from qiling.os.posix import syscall
-from qiling.os.mapper import QlFsMappedObject
-from qiling.os.posix.stat import Fstat
 from qiling.os.filestruct import ql_file
 
 class ELFTest(unittest.TestCase):

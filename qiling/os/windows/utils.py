@@ -10,6 +10,7 @@ from typing import Tuple, TypeVar
 from unicorn import UcError
 
 from qiling import Qiling
+from qiling.const import QL_OS
 from qiling.os.const import POINTER
 from qiling.os.windows.fncc import STDCALL
 from qiling.os.windows.wdk_const import *
