@@ -262,15 +262,7 @@ class QlOsPosix(QlOs):
             self.utils.print_function(self.ql.arch.regs.arch_pc, syscall_basename, args, sret, False)
 
             # record syscall statistics
-            self.stats.syscalls.setdefault(syscall_name, []).append({
-                "params": dict(zip(param_names, params)),
-                "result": retval,
-                "address": self.ql.arch.regs.arch_pc,
-                "return_address": None,
-                "position": self.stats.syscalls_counter
-            })
-
-            self.stats.syscalls_counter += 1
+            self.stats.log_api_call(self.ql.arch.regs.arch_pc, syscall_name, dict(zip(param_names, params)), retval, None)
         else:
             self.ql.log.warning(f'{self.ql.arch.regs.arch_pc:#x}: syscall {syscall_name} number = {syscall_id:#x}({syscall_id:d}) not implemented')
 

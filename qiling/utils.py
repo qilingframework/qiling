@@ -439,9 +439,13 @@ def loader_setup(ql, ostype: QL_OS, libcache: bool):
     return obj(ql, *args)
 
 
-def component_setup(component_type, component_name, ql):
-    function_name = "Ql" + component_name.capitalize() + "Manager"
-    return ql_get_module_function(f"qiling.{component_type}.{component_name}", function_name)(ql)
+def component_setup(component_type: str, component_name: str, ql):
+    component_path = f'qiling.{component_type}.{component_name}'
+    component_class = f'Ql{component_name.capitalize()}Manager'
+
+    obj = ql_get_module_function(component_path, component_class)
+
+    return obj(ql)
 
 
 def debugger_setup(options, ql):
@@ -461,9 +465,6 @@ def debugger_setup(options, ql):
     return None
 
 def arch_setup(archtype: QL_ARCH, endian: QL_ENDIAN, thumb: bool, ql):
-    if not ql_is_valid_arch(archtype):
-        raise QlErrorArch(f'Invalid architecture type')
-
     # set endianess and thumb mode for arm-based archs
     if archtype == QL_ARCH.ARM:
         args = [endian, thumb]
@@ -496,20 +497,25 @@ def arch_setup(archtype: QL_ARCH, endian: QL_ENDIAN, thumb: bool, ql):
     return obj(ql, *args)
 
 
-# This function is extracted from os_setup so I put it here.
-def ql_syscall_mapping_function(ostype):
-    ostype_str = ostype_convert_str(ostype)
-    return ql_get_module_function(f"qiling.os.{ostype_str.lower()}.map_syscall", "map_syscall")
+# This function is extracted from os_setup (QlOsPosix) so I put it here.
+def ql_syscall_mapping_function(ostype: QL_OS):
+    qlos_name = ostype_convert_str(ostype)
+    qlos_path = f'qiling.os.{qlos_name.lower()}.map_syscall'
+    qlos_func = 'map_syscall'
+
+    func = ql_get_module_function(qlos_path, qlos_func)
+
+    return func
 
 
 def os_setup(ostype: QL_OS, ql):
-    if not ql_is_valid_ostype(ostype):
-        raise QlErrorOsType("Invalid OSType")
+    qlos_name = ostype_convert_str(ostype)
+    qlos_path = f'qiling.os.{qlos_name.lower()}.{qlos_name.lower()}'
+    qlos_class = f'QlOs{qlos_name.capitalize()}'
 
-    ostype_str = ostype_convert_str(ostype)
-    ostype_str = ostype_str.capitalize()
-    function_name = "QlOs" + ostype_str
-    return ql_get_module_function(f"qiling.os.{ostype_str.lower()}.{ostype_str.lower()}", function_name)(ql)
+    obj = ql_get_module_function(qlos_path, qlos_class)
+
+    return obj(ql)
 
 
 def profile_setup(ql, ostype: QL_OS, filename: Optional[str]):
@@ -590,10 +596,10 @@ def ql_setup_logger(ql, log_file: Optional[str], console: bool, filters: Optiona
     # If there aren't any filters, we do add the filters until users specify any.
     log_filter = None
 
-    if filters is not None and len(filters) != 0:
+    if filters:
         log_filter = RegexFilter(filters)
         log.addFilter(log_filter)
-    
+
     log.setLevel(logging.INFO)
 
     return log, log_filter

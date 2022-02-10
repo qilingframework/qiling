@@ -165,7 +165,7 @@ class QlOsUtils:
     def va_list(self, format: str, ptr: int) -> MutableSequence[int]:
         count = format.count("%")
 
-        return [self.ql.unpack(self.ql.mem.read(ptr + i * self.ql.arch.pointersize, self.ql.arch.pointersize)) for i in range(count)]
+        return [self.ql.mem.read_ptr(ptr + i * self.ql.arch.pointersize) for i in range(count)]
 
     def sprintf(self, buff: int, format: str, args: MutableSequence, wstring: bool = False) -> int:
         out = self.__common_printf(format, args, wstring)

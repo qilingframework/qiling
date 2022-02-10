@@ -173,12 +173,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         ##########
         # Logger #
         ##########
-        self._log_file_fd, self._log_filter = ql_setup_logger(self,
-                                                              log_file,
-                                                              console,
-                                                              self._filter,
-                                                              log_override,
-                                                              log_plain)
+        self._log_file_fd, self._log_filter = ql_setup_logger(self, log_file, console, self._filter, log_override, log_plain)
 
         self.verbose = verbose
 
@@ -386,7 +381,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         return self._host
 
     @property
-    def internal_exception(self) -> Exception:
+    def internal_exception(self) -> Optional[Exception]:
         """ Internal exception catched during Unicorn callback. Not intended for regular users.
 
             Type: Exception

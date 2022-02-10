@@ -10,6 +10,7 @@ from abc import abstractmethod
 
 from unicorn.unicorn import UcError
 
+from qiling import Qiling
 from qiling.os.thread import *
 from qiling.arch.x86_const import *
 from qiling.exception import QlErrorExecutionStop
@@ -25,7 +26,7 @@ THREAD_STATUS_STOPPED    = 4
 THREAD_STATUS_SUSPEND    = 5
 
 class QlLinuxThread(QlThread):
-    def __init__(self, ql, start_address, exit_point, context = None, set_child_tid_addr = None, thread_id = None):
+    def __init__(self, ql: Qiling, start_address: int, exit_point: int, context = None, set_child_tid_addr = None, thread_id: int = None):
         super(QlLinuxThread, self).__init__(ql)
         if not thread_id:
             self.new_thread_id()
