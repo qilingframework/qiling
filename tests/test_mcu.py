@@ -11,6 +11,7 @@ from qiling.core import Qiling
 from qiling.const import QL_VERBOSE
 from qiling.extensions.mcu.stm32f4 import stm32f407, stm32f411
 from qiling.extensions.mcu.stm32f1 import stm32f103
+from qiling.extensions.mcu.atmel   import sam3x8e
 from qiling.extensions.mcu.gd32vf1 import gd32vf103
 
 class MCUTest(unittest.TestCase):
@@ -374,6 +375,29 @@ class MCUTest(unittest.TestCase):
         self.assertTrue((''.join(data)).find('1442413') != -1)
         self.assertTrue(ql.hw.usart1.recv()[:23] == b'SCTF{that1s___r1ghtflag')
         
+        del ql
+
+    def test_mcu_serial_sam3x8e(self):
+        ql = Qiling(["../examples/rootfs/mcu/sam3x8e/Blink.ino.hex"],
+            archtype="cortex_m", env=sam3x8e, verbose=QL_VERBOSE.DEFAULT)
+
+        ql.hw.create('wdt')
+        ql.hw.create('efc0')
+        ql.hw.create('efc1')
+        ql.hw.create('pmc')
+        ql.hw.create('uotghs')
+        ql.hw.create('pioa')
+        ql.hw.create('piob')
+        ql.hw.create('pioc')
+        ql.hw.create('piod')
+        ql.hw.create('adc')
+        ql.hw.create('uart')
+        ql.hw.create('pdc_uart')
+
+        ql.hw.systick.ratio = 1000
+        ql.run(count=100000)
+        self.assertTrue(ql.hw.uart.recv().startswith(b'hello world\nhello world\n'))
+
         del ql
 
 
