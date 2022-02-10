@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from enum import Enum, IntEnum
+from enum import Enum, Flag, IntEnum
 from typing import Any, Mapping, Type
 
 class QL_ENDIAN(IntEnum):
@@ -50,6 +50,11 @@ class QL_INTERCEPT(IntEnum):
     CALL = 1
     ENTER = 2
     EXIT = 3
+
+class QL_STOP(Flag):
+    NONE = 0
+    STACK_POINTER = (1 << 0)
+    EXIT_TRAP     = (1 << 1)
 
 QL_OS_NONPID      = (QL_OS.DOS, QL_OS.UEFI)
 QL_OS_POSIX       = (QL_OS.LINUX, QL_OS.FREEBSD, QL_OS.MACOS, QL_OS.QNX)

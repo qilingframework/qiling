@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from .hw.hw import QlHwManager
     from .loader.loader import QlLoader
 
-from .const import QL_ARCH, QL_ENDIAN, QL_OS, QL_VERBOSE, QL_OS_INTERPRETER, QL_OS_BAREMETAL
+from .const import QL_ARCH, QL_ENDIAN, QL_OS, QL_STOP, QL_VERBOSE, QL_OS_INTERPRETER, QL_OS_BAREMETAL
 from .exception import QlErrorFileNotFound, QlErrorArch, QlErrorOsType
 from .host import QlHost
 from .utils import *
@@ -45,8 +45,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             log_plain=False,
             multithread = False,
             filter = None,
-            stop_on_stackpointer = False,
-            stop_on_exit_trap = False,
+            stop: QL_STOP = QL_STOP.NONE,
             *,
             endian: QL_ENDIAN = None,
             thumb: bool = False,
@@ -68,7 +67,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._filter = filter
         self._internal_exception = None
         self._uc = None
-        self._stop_options = QlStopOptions(stackpointer=stop_on_stackpointer, exit_trap=stop_on_exit_trap)
+        self._stop_options = stop
 
         ##################################
         # Definition after ql=Qiling()   #
@@ -490,14 +489,12 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._uc = u
 
     @property
-    def stop_options(self) -> "QlStopOptions":
-        """ The stop options configured:
-            - stackpointer: Stop execution on a negative stackpointer
-            - exit_trap: Stop execution when the ip enters a guarded region
-            - any: Is any of the options enabled?
+    def stop_options(self) -> QL_STOP:
+        """ The stop options configured (multiple options apply):
+            - `QL_STOP.STACK_POINTER` : Stop execution on a negative stackpointer
+            - `QL_STOP.EXIT_TRAP`     : Stop execution when the pc value enters a guarded region
 
-        Returns:
-            QlStopOptions: What stop options are configured
+        Returns: configured options
         """
         return self._stop_options
 
@@ -515,29 +512,28 @@ class Qiling(QlCoreHooks, QlCoreStructs):
                 raise RuntimeError("Fail to patch %s at address 0x%x" % (filename, addr))
 
     def _init_stop_guard(self):
-        if not self.stop_options.any:
+        if not self.stop_options:
             return
 
         # Allocate a guard page, we need this in both cases
         # On a negative stack pointer, we still need a return address (otherwise we end up at 0)
         # Make sure it is not close to the heap (PE), otherwise the heap cannot grow
         self._exit_trap_addr = self.mem.find_free_space(0x1000, minaddr=0x9000000, align=0x10)
-        self.mem.map(self._exit_trap_addr, 0x1000, info='[Stop guard]')
+        self.mem.map(self._exit_trap_addr, 0x1000, info='[Stop guard page]')
 
         # Stop on a negative stack pointer
-        if self.stop_options.stackpointer:
-            def _check_sp(ql, address, size):
+        if QL_STOP.STACK_POINTER in self.stop_options:
+            def _check_sp(ql: Qiling, address: int, size: int):
                 if not ql.loader.skip_exit_check:
-                    sp = ql._initial_sp - ql.arch.regs.arch_sp
-                    if sp < 0:
+                    if ql._initial_sp < ql.arch.regs.arch_sp:
                         self.log.info('Process returned from entrypoint (stackpointer)!')
                         ql.emu_stop()
 
             self.hook_code(_check_sp)
 
         # Stop when running to exit trap address
-        if self.stop_options.exit_trap:
-            def _exit_trap(ql):
+        if QL_STOP.EXIT_TRAP in self.stop_options:
+            def _exit_trap(ql: Qiling):
                 self.log.info('Process returned from entrypoint (exit_trap)!')
                 ql.emu_stop()
 
@@ -545,12 +541,14 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
     def write_exit_trap(self):
         self._initial_sp = self.arch.regs.arch_sp
-        if self.stop_options.any:
+
+        if self.stop_options:
             if not self.loader.skip_exit_check:
-                self.log.debug(f'Setting up exit trap at 0x{hex(self._exit_trap_addr)}')
+                self.log.debug(f'Setting up exit trap at {self._exit_trap_addr:#x}')
                 self.stack_write(0, self._exit_trap_addr)
-            elif self.stop_options.exit_trap:
-                self.log.debug(f'Loader {self.loader} requested to skip exit_trap!')
+
+            elif QL_STOP.EXIT_TRAP in self.stop_options:
+                self.log.debug(f'Loader requested to skip exit_trap!')
 
 
     ###############
