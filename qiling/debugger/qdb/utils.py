@@ -9,7 +9,7 @@ from qiling.const import *
 import ast, re
 
 # parse unsigned integer from string
-def _parse_int(s: str) -> int:
+def read_int(s: str) -> int:
     return int(s, 0)
 
 
@@ -18,7 +18,7 @@ def parse_int(func: Callable) -> Callable:
     def wrap(qdb, s: str = "") -> int:
         assert type(s) is str
         try:
-            ret = _parse_int(s)
+            ret = read_int(s)
         except:
             ret = None
         return func(qdb, ret)
@@ -107,18 +107,13 @@ def _read_inst(ql: Qiling, addr: int) -> int:
 """
 
 def setup_branch_predictor(ql: Qiling) -> BranchPredictor:
-
-    if ql.archtype == QL_ARCH.MIPS:
-        return BranchPredictor_MIPS(ql)
-
-    elif ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB):
-        return BranchPredictor_ARM(ql)
-
-    elif ql.archtype in (QL_ARCH.X86, QL_ARCH.X8664):
-        return BranchPredictor_X86(ql)
-
-    elif ql.archtype == QL_ARCH.CORTEX_M:
-        return BranchPredictor_CORTEX_M(ql)
+    return {
+            QL_ARCH.X86: BranchPredictor_X86,
+            QL_ARCH.ARM: BranchPredictor_ARM,
+            QL_ARCH.ARM_THUMB: BranchPredictor_ARM,
+            QL_ARCH.CORTEX_M: BranchPredictor_CORTEX_M,
+            QL_ARCH.MIPS: BranchPredictor_MIPS,
+            }.get(ql.archtype)(ql)
 
 class BranchPredictor(object):
     def __init__(self, ql):
@@ -127,7 +122,7 @@ class BranchPredictor(object):
     def read_reg(self, reg_name):
         return getattr(self.ql.reg, reg_name)
 
-    def resolve(self):
+    def predict(self):
         return NotImplementedError
 
 class BranchPredictor_ARM(BranchPredictor):
@@ -233,7 +228,7 @@ class BranchPredictor_ARM(BranchPredictor):
 
         if to_jump:
             if "#" in line.op_str:
-                ret_addr = _parse_int(line.op_str.split("#")[-1])
+                ret_addr = read_int(line.op_str.split("#")[-1])
             else:
                 ret_addr = read_reg_val(line.op_str)
 
@@ -280,7 +275,7 @@ class BranchPredictor_ARM(BranchPredictor):
                 r, _, imm = rn_offset.strip("[]!").partition(", #")
 
                 if "]" in rn_offset.split(", ")[1]: # pre-indexed immediate
-                    ret_addr = ql.unpack32(ql.mem.read(_parse_int(imm) + read_reg_val(r), self.INST_SIZE))
+                    ret_addr = ql.unpack32(ql.mem.read(read_int(imm) + read_reg_val(r), self.INST_SIZE))
 
                 else: # post-indexed immediate
                     # FIXME: weired behavior, immediate here does not apply
@@ -297,7 +292,7 @@ class BranchPredictor_ARM(BranchPredictor):
                 expr = imm[0].split()
                 # TODO: should support more bit shifting and rotating operation
                 if expr[0] == "lsl": # logical shift left
-                    n = _parse_int(expr[-1].strip("#")) * 2
+                    n = read_int(expr[-1].strip("#")) * 2
 
             if line.mnemonic == "addls" and (C == 0 or Z == 1):
                 ret_addr = extra + read_reg_val(r1) + read_reg_val(r2) * n
@@ -313,7 +308,7 @@ class BranchPredictor_ARM(BranchPredictor):
             if imm:
                 expr = imm[0].split()
                 if expr[0] == "lsl": # logical shift left
-                    n = _parse_int(expr[-1].strip("#")) * 2
+                    n = read_int(expr[-1].strip("#")) * 2
 
             if line.mnemonic == "tbh":
 
@@ -343,7 +338,7 @@ class BranchPredictor_ARM(BranchPredictor):
 
         elif line.mnemonic == "sub" and self.regdst_eq_pc(line.op_str):
             _, r, imm = line.op_str.split(", ")
-            ret_addr = read_reg_val(r) - _parse_int(imm.strip("#"))
+            ret_addr = read_reg_val(r) - read_int(imm.strip("#"))
 
         elif line.mnemonic == "mov" and self.regdst_eq_pc(line.op_str):
             _, r = line.op_str.split(", ")
@@ -382,7 +377,7 @@ class BranchPredictor_MIPS(BranchPredictor):
             # get registers or memory address from op_str
             targets = [
                     self.read_reg(each)
-                    if '$' in each else _parse_int(each)
+                    if '$' in each else read_int(each)
                     for each in line.op_str.split(", ")
                     ]
 
@@ -529,11 +524,11 @@ class BranchPredictor_X86(BranchPredictor):
                 ret_addr = getattr(self.ql.reg, line.op_str)
 
             else:
-                ret_addr = _parse_int(line.op_str)
+                ret_addr = read_int(line.op_str)
 
         return (to_jump, ret_addr)
 
-class BranchPredictor_CORTEXT_M(BranchPredictor_ARM):
+class BranchPredictor_CORTEX_M(BranchPredictor_ARM):
     def __init__(self, ql):
         super().__init__(ql)
 

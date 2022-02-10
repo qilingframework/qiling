@@ -12,11 +12,10 @@ from qiling import Qiling
 from qiling.const import QL_ARCH, QL_VERBOSE
 from qiling.debugger import QlDebugger
 
-# from .frontend import context_reg, context_asm, examine_mem
 from .frontend import examine_mem, setup_ctx_manager
-from .utils import _parse_int, is_thumb, parse_int
+from .utils import is_thumb, parse_int
 from .utils import Breakpoint, TempBreakpoint
-from .const import *
+from .const import color
 
 
 class QlQdb(cmd.Cmd, QlDebugger):
@@ -354,6 +353,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         """
         if input(f"{color.RED}[!] Are you sure about saying good bye ~ ? [Y/n]{color.END} ").strip() == "Y":
             self.do_quit()
+
 
     do_r = do_run
     do_s = do_step

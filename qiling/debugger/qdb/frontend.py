@@ -5,30 +5,15 @@
 
 from __future__ import annotations
 from typing import Optional, Mapping, Iterable, Union
-
 import copy, math, os
-from contextlib import contextmanager
-
-from qiling.const import QL_ARCH
 
 import unicorn
 
-from .const import *
+from qiling.const import QL_ARCH
+
 from .utils import disasm, get_x86_eflags, setup_branch_predictor
+from .const import color, SIZE_LETTER, FORMAT_LETTER
 
-def setup_ctx_manager(ql: Qiling) -> CtxManager:
-
-    if ql.archtype == QL_ARCH.MIPS:
-        return CtxManager_MIPS(ql)
-
-    elif ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB):
-        return CtxManager_ARM(ql)
-
-    elif ql.archtype in (QL_ARCH.X86, QL_ARCH.X8664):
-        return CtxManager_X86(ql)
-
-    elif ql.archtype == QL_ARCH.CORTEX_M:
-        return CtxManager_CORTEX_M(ql)
 
 # read data from memory of qiling instance
 def examine_mem(ql: Qiling, line: str) -> Union[bool, (str, int, int)]:
@@ -84,7 +69,7 @@ def examine_mem(ql: Qiling, line: str) -> Union[bool, (str, int, int)]:
         if elem in ql.reg.register_mapping.keys():
             items.append(getattr(ql.reg, elem, None))
         else:
-            items.append(_parse_int(elem))
+            items.append(read_int(elem))
 
     addr = sum(items)
 
@@ -167,7 +152,7 @@ def _try_read(ql: Qiling, address: int, size: int) -> Optional[bytes]:
 
 COLORS = (color.DARKCYAN, color.BLUE, color.RED, color.YELLOW, color.GREEN, color.PURPLE, color.CYAN, color.WHITE)
 
-# divider printer
+# decorator function for printing divider
 def context_printer(field_name, ruler="─"):
     def decorator(context_dumper):
         def wrapper(*args, **kwargs):
@@ -180,8 +165,18 @@ def context_printer(field_name, ruler="─"):
         return wrapper
     return decorator
 
-class CtxManager(object):
 
+def setup_ctx_manager(ql: Qiling) -> CtxManager:
+    return {
+            QL_ARCH.X86: CtxManager_X86,
+            QL_ARCH.ARM: CtxManager_ARM,
+            QL_ARCH.ARM_THUMB: CtxManager_ARM,
+            QL_ARCH.CORTEX_M: CtxManager_ARM,
+            QL_ARCH.MIPS: CtxManager_MIPS,
+            }.get(ql.archtype)(ql)
+
+
+class CtxManager(object):
     def __init__(self, ql):
         self.ql = ql
         self.predictor = setup_branch_predictor(ql)
@@ -274,6 +269,7 @@ class CtxManager(object):
             if forward_insn:
                 self.print_asm(forward_insn)
                 forward_insn_size += forward_insn.size
+
 
 class CtxManager_ARM(CtxManager):
     def __init__(self, ql):
@@ -389,6 +385,7 @@ class CtxManager_MIPS(CtxManager):
             lines += line
 
         print(lines.format(*cur_regs.values()))
+
 
 class CtxManager_X86(CtxManager):
     def __init__(self, ql):
