@@ -378,7 +378,7 @@ class MCUTest(unittest.TestCase):
         del ql
 
     def test_mcu_serial_sam3x8e(self):
-        ql = Qiling(["../examples/rootfs/mcu/sam3x8e/Blink.ino.hex"],
+        ql = Qiling(["../examples/rootfs/mcu/sam3x8e/serial.ino.hex"],
             archtype="cortex_m", env=sam3x8e, verbose=QL_VERBOSE.DEFAULT)
 
         ql.hw.create('wdt')
