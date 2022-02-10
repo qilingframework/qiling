@@ -579,7 +579,7 @@ class QlLoaderPE(QlLoader, Process):
                 self.ql.stop_execution_pattern = 0xDEADC0DE
 
                 if self.ql.arch.type == QL_ARCH.X86:  # Win32
-                    if not self.ql.stop_options.any:
+                    if not self.ql.stop_options:
                         # We know that a driver will return,
                         # so if the user did not configure stop options, write a sentinel return value
                         self.ql.mem.write(sp, self.ql.stop_execution_pattern.to_bytes(length=4, byteorder='little'))

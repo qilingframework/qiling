@@ -285,7 +285,7 @@ class PETest(unittest.TestCase):
 
     def test_pe_win_x86_return_from_main_stackpointer(self):
         def _t():
-            ql = Qiling(["../examples/rootfs/x86_windows/bin/return_main.exe"], "../examples/rootfs/x86_windows", libcache=True, stop_on_stackpointer=True)
+            ql = Qiling(["../examples/rootfs/x86_windows/bin/return_main.exe"], "../examples/rootfs/x86_windows", stop=QL_STOP.STACK_POINTER, libcache=True)
             ql.run()
             del ql
             return True
@@ -295,7 +295,7 @@ class PETest(unittest.TestCase):
 
     def test_pe_win_x86_return_from_main_exit_trap(self):
         def _t():
-            ql = Qiling(["../examples/rootfs/x86_windows/bin/return_main.exe"], "../examples/rootfs/x86_windows", libcache=True, stop_on_exit_trap=True)
+            ql = Qiling(["../examples/rootfs/x86_windows/bin/return_main.exe"], "../examples/rootfs/x86_windows", stop=QL_STOP.EXIT_TRAP, libcache=True)
             ql.run()
             del ql
             return True
@@ -305,7 +305,7 @@ class PETest(unittest.TestCase):
 
     def test_pe_win_x8664_return_from_main_stackpointer(self):
         def _t():
-            ql = Qiling(["../examples/rootfs/x8664_windows/bin/x8664_return_main.exe"], "../examples/rootfs/x8664_windows", libcache=True, stop_on_stackpointer=True)
+            ql = Qiling(["../examples/rootfs/x8664_windows/bin/x8664_return_main.exe"], "../examples/rootfs/x8664_windows", stop=QL_STOP.STACK_POINTER, libcache=True)
             ql.run()
             del ql
             return True
@@ -315,7 +315,7 @@ class PETest(unittest.TestCase):
 
     def test_pe_win_x8664_return_from_main_exit_trap(self):
         def _t():
-            ql = Qiling(["../examples/rootfs/x8664_windows/bin/x8664_return_main.exe"], "../examples/rootfs/x8664_windows", libcache=True, stop_on_exit_trap=True)
+            ql = Qiling(["../examples/rootfs/x8664_windows/bin/x8664_return_main.exe"], "../examples/rootfs/x8664_windows", stop=QL_STOP.EXIT_TRAP, libcache=True)
             ql.run()
             del ql
             return True

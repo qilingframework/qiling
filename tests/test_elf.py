@@ -7,7 +7,7 @@ import sys, unittest, string, random, os, io, re
 
 sys.path.append("..")
 from qiling import Qiling
-from qiling.const import QL_OS, QL_INTERCEPT, QL_VERBOSE
+from qiling.const import QL_OS, QL_INTERCEPT, QL_STOP, QL_VERBOSE
 from qiling.exception import *
 from qiling.extensions import pipe
 from qiling.os.const import STRING
@@ -1002,22 +1002,22 @@ class ELFTest(unittest.TestCase):
         del ql
 
     def test_elf_linux_x86_return_from_main_stackpointer(self):
-        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_return_main"],  "../examples/rootfs/x86_linux", stop_on_stackpointer=True)
+        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_return_main"],  "../examples/rootfs/x86_linux", stop=QL_STOP.STACK_POINTER)
         ql.run()
         del ql
 
     def test_elf_linux_x86_return_from_main_exit_trap(self):
-        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_return_main"],  "../examples/rootfs/x86_linux", stop_on_exit_trap=True)
+        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_return_main"],  "../examples/rootfs/x86_linux", stop=QL_STOP.EXIT_TRAP)
         ql.run()
         del ql
 
     def test_elf_linux_x8664_return_from_main_stackpointer(self):
-        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_return_main"],  "../examples/rootfs/x8664_linux", stop_on_stackpointer=True)
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_return_main"],  "../examples/rootfs/x8664_linux", stop=QL_STOP.STACK_POINTER)
         ql.run()
         del ql
 
     def test_elf_linux_x8664_return_from_main_exit_trap(self):
-        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_return_main"],  "../examples/rootfs/x8664_linux", stop_on_exit_trap=True)
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_return_main"],  "../examples/rootfs/x8664_linux", stop=QL_STOP.EXIT_TRAP)
         ql.run()
         del ql
 

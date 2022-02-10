@@ -9,7 +9,7 @@ from unicorn import UcError
 
 sys.path.append("..")
 from qiling import Qiling
-from qiling.const import QL_VERBOSE
+from qiling.const import QL_STOP, QL_VERBOSE
 from qiling.os.const import POINTER, DWORD, STRING, HANDLE
 from qiling.os.windows import utils
 from qiling.os.windows.wdk_const import *
@@ -233,7 +233,7 @@ class PETest(unittest.TestCase):
 
     def test_pe_win_x8664_driver(self):
         # Compiled sample from https://github.com/microsoft/Windows-driver-samples/tree/master/general/ioctl/wdm/sys
-        ql = Qiling(["../examples/rootfs/x8664_windows/bin/sioctl.sys"], "../examples/rootfs/x8664_windows", libcache=True, stop_on_stackpointer=True)
+        ql = Qiling(["../examples/rootfs/x8664_windows/bin/sioctl.sys"], "../examples/rootfs/x8664_windows", stop=QL_STOP.STACK_POINTER, libcache=True)
 
         driver_object = ql.loader.driver_object
 
