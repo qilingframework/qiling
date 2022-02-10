@@ -75,7 +75,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._patch_bin = []
         self._patch_lib = []
         self._debug_stop = False
-        self._debugger = None
+        self._debugger = False
 
         ###############################
         # Properties configured later #
@@ -439,23 +439,23 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._debug_stop = ds
 
     @property
-    def debugger(self) -> Union[str, bool]:
+    def debugger(self) -> bool:
+        return bool(self._debugger)
+
+    @debugger.setter
+    def debugger(self, dbger: Union[str, bool]):
         """ Enable debugger.
 
-            Type: debugger instance
             Values:
               - "gdb": enable gdb.
               - True : an alias to "gdb".
               - "gdb:0.0.0.0:1234" : gdb which listens on 0.0.0.0:1234
               - "qdb": enable qdb.
               - "qdb:rr": enable qdb with reverse debugging support.
+
             Example: ql.debugger = True
                      ql.debugger = "qdb"
         """
-        return self._debugger
-
-    @debugger.setter
-    def debugger(self, dbger):
         self._debugger = dbger
 
     @property
@@ -557,36 +557,36 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
     # Emulate the binary from begin until @end, with timeout in @timeout and
     # number of emulated instructions in @count
-    def run(self, begin=None, end=None, timeout=0, count=0, code = None):
+    def run(self, begin=None, end=None, timeout=0, count=0, code=None):
         # replace the original entry point, exit point, timeout and count
         self.entry_point = begin
         self.exit_point = end
         self.timeout = timeout
         self.count = count        
 
-        # init debugger
-        if self._debugger != False and self._debugger != None and not self.interpreter:
-            self._debugger = debugger_setup(self._debugger, self)
-
         if self.interpreter:
             return self.arch.run(code)
 
-        elif self.baremetal:
-            self.__enable_bin_patch()
+        # init debugger (if set)
+        debugger = debugger_setup(self._debugger, self)
+
+        # patch binary
+        self.__enable_bin_patch()
+
+        if self.baremetal:
             if self.count <= 0:
                 self.count = -1
+
             self.arch.run(count=self.count, end=self.exit_point)        
         else:
             self.write_exit_trap()
-            # patch binary
-            self.__enable_bin_patch()
             # emulate the binary
             self.os.run()
 
         # run debugger
-        if self._debugger != False and self._debugger != None:
-            self._debugger.run()
-            
+        if debugger and self.debugger:
+            debugger.run()
+
 
     # patch code to memory address
     def patch(self, offset: int, data: bytes, target: str = None) -> None:

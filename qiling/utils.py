@@ -12,7 +12,7 @@ import importlib, os, copy, re, pefile, logging, sys, yaml
 
 from configparser import ConfigParser
 from logging import LogRecord
-from typing import Any, Container, IO, List, Optional, Sequence, TextIO, Tuple, Type
+from typing import Any, Container, IO, List, Optional, Sequence, TextIO, Tuple, Type, Union
 from enum import Enum
 
 from unicorn import UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
@@ -433,7 +433,7 @@ def component_setup(component_type: str, component_name: str, ql):
     return obj(ql)
 
 
-def debugger_setup(options, ql):
+def debugger_setup(options: Union[str, bool], ql):
     if options is True:
         options = 'gdb'
 

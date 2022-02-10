@@ -446,7 +446,7 @@ def ql_syscall_execve(ql: Qiling, pathname: int, argv: int, envp: int):
     ql.clear_ql_hooks()
 
     # Clean debugger to prevent port conflicts
-    ql.debugger = None
+    # ql.debugger = None
 
     if ql.code:
         return
