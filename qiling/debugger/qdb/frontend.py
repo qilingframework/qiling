@@ -432,12 +432,16 @@ class CtxManager_X86(CtxManager):
         past_list = []
         cur_addr = self.ql.reg.arch_pc
 
+        cur_insn = disasm(self.ql, cur_addr)
+        to_jump, _ = self.predictor.predict()
+        self.print_asm(cur_insn, to_jump=to_jump)
+
         # assembly before current location
 
-        line = disasm(self.ql, cur_addr)
-        acc_size = line.size
+        line = disasm(self.ql, cur_addr+cur_insn.size)
+        acc_size = line.size + cur_insn.size
 
-        while line and len(past_list) != 10:
+        while line and len(past_list) != 8:
             past_list.append(line)
             next_start = cur_addr + acc_size
             line = disasm(self.ql, next_start)

@@ -5,8 +5,8 @@
 
 from __future__ import annotations
 from typing import Callable, Optional, Mapping
-
 from qiling.const import *
+import ast, re
 
 # parse unsigned integer from string
 def _parse_int(s: str) -> int:
@@ -125,7 +125,7 @@ class BranchPredictor(object):
         self.ql = ql
 
     def read_reg(self, reg_name):
-        return NotImplementedError
+        return getattr(self.ql.reg, reg_name)
 
     def resolve(self):
         return NotImplementedError
@@ -426,8 +426,8 @@ class BranchPredictor_X86(BranchPredictor):
         line = disasm(self.ql, cur_addr)
 
         jump_table = {
-
                 # conditional jump
+
                 "jo"   : (lambda C, P, A, Z, S, O: O == 1),
                 "jno"  : (lambda C, P, A, Z, S, O: O == 0),
 
@@ -479,13 +479,56 @@ class BranchPredictor_X86(BranchPredictor):
 
                 }
 
+        jump_reg_table = {
+                "jcxz"  : (lambda cx: cx == 0),
+                "jecxz" : (lambda ecx: ecx == 0),
+                "jrcxz" : (lambda rcx: rcx == 0),
+                }
+
         to_jump = False
-        ret_addr = None
         if line.mnemonic in jump_table:
             eflags = get_x86_eflags(self.ql.reg.ef).values()
             to_jump = jump_table.get(line.mnemonic)(*eflags)
 
-            if to_jump:
+        elif line.mnemonic in jump_reg_table:
+            to_jump = jump_reg_table.get(line.mnemonic)(self.ql.reg.ecx)
+
+        ret_addr = None
+
+        if to_jump:
+            takeaway_list = ["ptr", "dword", "[", "]"]
+            class AST_checker(ast.NodeVisitor):
+                def generic_visit(self, node):
+                    if type(node) in (ast.Module, ast.Expr, ast.BinOp, ast.Constant, ast.Add, ast.Mult, ast.Sub):
+                        ast.NodeVisitor.generic_visit(self, node)
+                    else:
+                        raise ParseError("malform or invalid ast node")
+
+            if len(line.op_str.split()) > 1:
+                new_line = line.op_str.replace(":", "+")
+                for each in takeaway_list:
+                    new_line = new_line.replace(each, " ")
+
+                new_line = " ".join(new_line.split())
+                for each_reg in filter(lambda r: len(r) == 3, self.ql.reg.register_mapping.keys()):
+                    if each_reg in new_line:
+                        new_line = re.sub(each_reg, hex(self.read_reg(each_reg)), new_line)
+                        
+                for each_reg in filter(lambda r: len(r) == 2, self.ql.reg.register_mapping.keys()):
+                    if each_reg in new_line:
+                        new_line = re.sub(each_reg, hex(self.read_reg(each_reg)), new_line)
+
+                checker = AST_checker()
+                ast_tree = ast.parse(new_line)
+
+                checker.visit(ast_tree)
+
+                ret_addr = eval(new_line)
+
+            elif line.op_str in self.ql.reg.register_mapping:
+                ret_addr = getattr(self.ql.reg, line.op_str)
+
+            else:
                 ret_addr = _parse_int(line.op_str)
 
         return (to_jump, ret_addr)
@@ -510,6 +553,8 @@ class TempBreakpoint(Breakpoint):
     def __init__(self, address):
         super().__init__(address)
 
+class ParseError(Exception):
+    pass
 
 
 if __name__ == "__main__":
