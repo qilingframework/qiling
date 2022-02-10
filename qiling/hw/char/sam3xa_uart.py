@@ -7,6 +7,7 @@ import ctypes
 
 from qiling.hw.peripheral import QlPeripheral
 from qiling.hw.connectivity import QlConnectivityPeripheral
+from qiling.hw.const.sam3xa_uart import SR
 
 
 class SAM3xaUart(QlConnectivityPeripheral):
@@ -37,5 +38,21 @@ class SAM3xaUart(QlConnectivityPeripheral):
     def __init__(self, ql, label, intn = None):
         super().__init__(ql, label)
 
-        self.uart = self.struct()
+        self.uart = self.struct(
+            SR = SR.TXRDY
+        )
         self.intn = intn
+
+    @QlPeripheral.monitor()
+    def read(self, offset: int, size: int) -> int:
+        buf = ctypes.create_string_buffer(size)
+        ctypes.memmove(buf, ctypes.addressof(self.uart) + offset, size)
+        return int.from_bytes(buf.raw, byteorder='little')
+
+    @QlPeripheral.monitor()
+    def write(self, offset: int, size: int, value: int):      
+        if offset == self.struct.THR.offset:
+            self.send_to_user(value)
+
+        data = (value).to_bytes(size, byteorder='little')
+        ctypes.memmove(ctypes.addressof(self.uart) + offset, data, size)
