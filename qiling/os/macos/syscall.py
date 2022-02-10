@@ -204,10 +204,12 @@ def ql_syscall_pread(ql, fd, buf, nbyte, offset, *args, **kw):
     ql.log.debug("pread(fd: 0x%x, buf: 0x%x, nbyte: 0x%x, offset: 0x%x)" % (
         fd, buf, nbyte, offset
     ))
-    if fd >= 0 and fd <= MAX_FD_SIZE:
+
+    if fd in range(MAX_FD_SIZE + 1):
         ql.os.fd[fd].seek(offset)
         data = ql.os.fd[fd].read(nbyte)
         ql.mem.write(buf, data)
+
     set_eflags_cf(ql, 0x0)
     return nbyte
 
@@ -358,10 +360,7 @@ def ql_syscall_open_nocancel(ql, filename, flags, mode, *args, **kw):
     flags = flags & 0xffffffff
     mode = mode & 0xffffffff
 
-    for i in range(256):
-        if ql.os.fd[i] == 0:
-            idx = i
-            break
+    idx = next((i for i in range(MAX_FD_SIZE + 1) if ql.os.fd[i] is None), -1)
 
     if idx == -1:
         regreturn = -1

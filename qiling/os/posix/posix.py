@@ -17,7 +17,7 @@ from qiling.cc import QlCC, intel, arm, mips, riscv
 from qiling.const import QL_ARCH, QL_OS, QL_INTERCEPT
 from qiling.exception import QlErrorSyscallNotFound
 from qiling.os.os import QlOs
-from qiling.os.posix.const import errors, NR_OPEN
+from qiling.os.posix.const import errors
 from qiling.utils import QlFileDes, ostype_convert_str, ql_get_module_function, ql_syscall_mapping_function
 
 from qiling.os.posix.syscall import *
@@ -106,7 +106,7 @@ class QlOsPosix(QlOs):
             QL_ARCH.RISCV64: riscv64,
         }[self.ql.arch.type](self.ql.arch)
 
-        self._fd = QlFileDes([0] * NR_OPEN)
+        self._fd = QlFileDes()
 
         # the QlOs constructor cannot assign the standard streams using their designated properties since
         # it runs before the _fd array is declared. instead, it assigns them to the private members and here

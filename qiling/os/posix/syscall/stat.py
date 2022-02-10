@@ -1064,7 +1064,7 @@ def ql_syscall_chmod(ql: Qiling, filename: int, mode: int):
     return 0
 
 def ql_syscall_fchmod(ql: Qiling, fd: int, mode: int):
-    if not (0 < fd < NR_OPEN) or ql.os.fd[fd] == 0:
+    if fd not in range(NR_OPEN) or ql.os.fd[fd] is None:
         return -EBADF
 
     return 0
@@ -1095,46 +1095,40 @@ def ql_syscall_newfstatat(ql: Qiling, dirfd: int, path: int, buf_ptr: int, flag:
 
     return regreturn
 
-def ql_syscall_fstat64(ql: Qiling, fd, buf_ptr):
-    if not hasattr(ql.os.fd[fd], "fstat"):
-        regreturn = -1
-    elif ql.os.fd[fd].fstat() == -1:
-        regreturn = 0
-    elif 0 <= fd < NR_OPEN and ql.os.fd[fd] != 0:
-        buf = pack_stat64_struct(ql, ql.os.fd[fd].fstat())
+def ql_syscall_fstat64(ql: Qiling, fd: int, buf_ptr: int):
+    if fd not in range(NR_OPEN):
+        return -1
+
+    f = ql.os.fd[fd]
+
+    if f is None or not hasattr(f, "fstat"):
+        return -1
+
+    fstat = f.fstat()
+
+    if fstat != -1:
+        buf = pack_stat64_struct(ql, fstat)
         ql.mem.write(buf_ptr, buf)
 
-        regreturn = 0
-    else:
-        regreturn = -1
-
-    if regreturn == 0:
-        ql.log.debug("fstat64 write completed")
-    else:
-        ql.log.debug("fstat64 read/write fail")
-
-    return regreturn
+    return 0
 
 
-def ql_syscall_fstat(ql: Qiling, fd, buf_ptr):
-    if not hasattr(ql.os.fd[fd], "fstat"):
-        regreturn = -1
-    # elif ql.os.fd[fd].fstat() == -1:
-    #     regreturn = 0
-    elif 0 <= fd < NR_OPEN and ql.os.fd[fd] != 0:
-        buf = pack_stat_struct(ql,  ql.os.fd[fd].fstat())
+def ql_syscall_fstat(ql: Qiling, fd: int, buf_ptr: int):
+    if fd not in range(NR_OPEN):
+        return -1
+
+    f = ql.os.fd[fd]
+
+    if f is None or not hasattr(f, "fstat"):
+        return -1
+
+    fstat = f.fstat()
+
+    if fstat != -1:
+        buf = pack_stat_struct(ql, fstat)
         ql.mem.write(buf_ptr, buf)
 
-        regreturn = 0
-    else:
-        regreturn = -1
-
-    if regreturn == 0:
-        ql.log.debug("fstat write completed")
-    else:
-        ql.log.debug("fstat read/write fail")
-
-    return regreturn
+    return 0
 
 
 # int stat(const char *path, struct stat *buf);

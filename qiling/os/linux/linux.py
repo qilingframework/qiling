@@ -102,10 +102,11 @@ class QlOsLinux(QlOsPosix):
             self.ql.arch.enable_float()
             self.ql.hook_intno(self.hook_syscall, 8)
             self.thread_class = None
-        
-        for i in range(NR_OPEN):
+
+        # on fork or execve, do not inherit opened files tagged as 'close on exec'
+        for i in range(len(self.fd)):
             if getattr(self.fd[i], 'close_on_exec', 0):
-                self.fd[i] = 0
+                self.fd[i] = None
 
     def hook_syscall(self, ql, intno = None):
         return self.load_syscall()

@@ -12,14 +12,15 @@ import importlib, os, copy, re, pefile, logging, sys, yaml
 
 from configparser import ConfigParser
 from logging import LogRecord
-from typing import Any, Container, Optional, Sequence, Tuple, Type
+from typing import Any, Container, IO, List, Optional, Sequence, TextIO, Tuple, Type
 from enum import Enum
 
 from unicorn import UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
 
-from .exception import *
-from .const import QL_VERBOSE, QL_ARCH, QL_ENDIAN, QL_OS, QL_DEBUGGER
-from .const import debugger_map, arch_map, os_map, arch_os_map, loader_map
+from qiling.exception import *
+from qiling.const import QL_VERBOSE, QL_ARCH, QL_ENDIAN, QL_OS, QL_DEBUGGER
+from qiling.const import debugger_map, arch_map, os_map, arch_os_map, loader_map
+from qiling.os.posix.const import NR_OPEN
 
 FMT_STR = "%(levelname)s\t%(message)s"
 
@@ -111,13 +112,16 @@ class RegexFilter(logging.Filter):
         return re.match(self._filter, msg) is not None
 
 class QlFileDes:
-    def __init__(self, init):
-        self.__fds = init
+    def __init__(self):
+        self.__fds: List[Optional[IO]] = [None] * NR_OPEN
 
-    def __getitem__(self, idx):
+    def __len__(self):
+        return len(self.__fds)
+
+    def __getitem__(self, idx: int):
         return self.__fds[idx]
 
-    def __setitem__(self, idx, val):
+    def __setitem__(self, idx: int, val: Optional[IO]):
         self.__fds[idx] = val
 
     def __iter__(self):
