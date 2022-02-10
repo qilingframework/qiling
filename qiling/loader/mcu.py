@@ -10,7 +10,7 @@ from elftools.elf.elffile import ELFFile
 from qiling.const import *
 from qiling.core import Qiling
 from qiling.utils import component_setup
-from qiling.loader import QlLoader
+from .loader import QlLoader
 
 
 class IhexParser:
