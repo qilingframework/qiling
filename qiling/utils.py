@@ -546,7 +546,7 @@ def __is_color_terminal(stream: TextIO) -> bool:
         ENABLE_VIRTUAL_TERMINAL_PROCESSING = 4
 
         kernel32 = ctypes.WinDLL('kernel32', use_last_error=True)
-        hstdout = msvcrt.get_osfhandle(handle=fd)
+        hstdout = msvcrt.get_osfhandle(fd)
         mode = ctypes.c_ulong()
 
         return kernel32.GetConsoleMode(hstdout, ctypes.byref(mode)) and (mode.value & ENABLE_VIRTUAL_TERMINAL_PROCESSING != 0)
@@ -554,9 +554,12 @@ def __is_color_terminal(stream: TextIO) -> bool:
     def __handle_posix(fd: int) -> bool:
         import curses
 
-        curses.setupterm(fd=fd)
-
-        return curses.tigetnum('colors') > 0
+        try:
+            curses.setupterm(fd=fd)
+        except curses.error:
+            return True
+        else:
+            return curses.tigetnum('colors') > 0
 
     def __default(_: int) -> bool:
         return True
