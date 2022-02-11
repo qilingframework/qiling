@@ -538,6 +538,43 @@ def ql_resolve_logger_level(verbose: QL_VERBOSE) -> int:
 
 QL_INSTANCE_ID = 114514
 
+def __is_color_terminal(stream: TextIO) -> bool:
+    """Determine whether standard output is attached to a color terminal.
+
+    see: https://stackoverflow.com/questions/53574442/how-to-reliably-test-color-capability-of-an-output-terminal-in-python3
+    """
+
+    def __handle_nt(fd: int) -> bool:
+        import ctypes
+        import msvcrt
+
+        ENABLE_VIRTUAL_TERMINAL_PROCESSING = 4
+
+        kernel32 = ctypes.WinDLL('kernel32', use_last_error=True)
+        hstdout = msvcrt.get_osfhandle(handle=fd)
+        mode = ctypes.c_ulong()
+
+        return kernel32.GetConsoleMode(hstdout, ctypes.byref(mode)) and (mode.value & ENABLE_VIRTUAL_TERMINAL_PROCESSING != 0)
+
+    def __handle_posix(fd: int) -> bool:
+        import curses
+
+        curses.setupterm(fd=fd)
+
+        return curses.tigetnum('colors') > 0
+
+    def __default(_: int) -> bool:
+        return True
+
+    handlers = {
+        'nt'    : __handle_nt,
+        'posix' : __handle_posix
+    }
+
+    handler = handlers.get(os.name, __default)
+
+    return handler(stream.fileno())
+
 # TODO: qltool compatibility
 def ql_setup_logger(ql, log_file: Optional[str], console: bool, filters: Optional[Sequence], log_override: Optional[logging.Logger], log_plain: bool):
     global QL_INSTANCE_ID
@@ -560,7 +597,7 @@ def ql_setup_logger(ql, log_file: Optional[str], console: bool, filters: Optiona
         if console:
             handler = logging.StreamHandler()
 
-            if not log_plain and not sys.platform == "win32":
+            if not log_plain and __is_color_terminal(handler.stream):
                 formatter = QilingColoredFormatter(ql, FMT_STR)
             else:
                 formatter = QilingPlainFormatter(ql, FMT_STR)
