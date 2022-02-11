@@ -8,7 +8,7 @@ This module is intended for general purpose functions that can be used
 thoughout the qiling framework
 """
 
-import importlib, os, copy, re, pefile, logging, sys, yaml
+import importlib, os, copy, re, pefile, logging, yaml
 
 from configparser import ConfigParser
 from logging import LogRecord
@@ -38,65 +38,60 @@ class COLOR_CODE:
     CYAN    = '\033[96m'
     ENDC    = '\033[0m'
 
-class QilingColoredFormatter(logging.Formatter):
+class QlBaseFormatter(logging.Formatter):
+    __level_tag = {
+        'WARNING'  : '[!]',
+        'INFO'     : '[=]',
+        'DEBUG'    : '[+]',
+        'CRITICAL' : '[x]',
+        'ERROR'    : '[x]'
+    }
+
     def __init__(self, ql, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.ql = ql
 
-    def get_colored_level(self, record: LogRecord) -> str:
-        LEVEL_NAME = {
-            'WARNING'  : f"{COLOR_CODE.YELLOW}[!]{COLOR_CODE.ENDC}",
-            'INFO'     : f"{COLOR_CODE.BLUE}[=]{COLOR_CODE.ENDC}",
-            'DEBUG'    : f"{COLOR_CODE.MAGENTA}[+]{COLOR_CODE.ENDC}",
-            'CRITICAL' : f"{COLOR_CODE.CRIMSON}[x]{COLOR_CODE.ENDC}",
-            'ERROR'    : f"{COLOR_CODE.RED}[x]{COLOR_CODE.ENDC}"
-        }
+    def get_level_tag(self, level: str) -> str:
+        return self.__level_tag[level]
 
-        return LEVEL_NAME[record.levelname]
+    def get_thread_tag(self, thread: str) -> str:
+        return thread
 
     def format(self, record: LogRecord):
         # In case we have multiple formatters, we have to keep a copy of the record.
         record = copy.copy(record)
-        record.levelname = self.get_colored_level(record)
 
         # early logging may access ql.os when it is not yet set
         try:
             cur_thread = self.ql.os.thread_management.cur_thread
         except AttributeError:
-            pass
+            tid = f''
         else:
-            record.levelname = f"{record.levelname} {COLOR_CODE.GREEN}{str(cur_thread)}{COLOR_CODE.ENDC}"
+            tid = self.get_thread_tag(str(cur_thread))
+
+        level = self.get_level_tag(record.levelname)
+        record.levelname = f'{level} {tid}'
 
         return super().format(record)
 
-class QilingPlainFormatter(logging.Formatter):
-    def __init__(self, ql, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.ql = ql
+class QlColoredFormatter(QlBaseFormatter):
+    __level_color = {
+        'WARNING'  : COLOR_CODE.YELLOW,
+        'INFO'     : COLOR_CODE.BLUE,
+        'DEBUG'    : COLOR_CODE.MAGENTA,
+        'CRITICAL' : COLOR_CODE.CRIMSON,
+        'ERROR'    : COLOR_CODE.RED
+    }
 
-    def get_level(self, record: LogRecord) -> str:
-        LEVEL_NAME = {
-            'WARNING'  : "[!]",
-            'INFO'     : "[=]",
-            'DEBUG'    : "[+]",
-            'CRITICAL' : "[x]",
-            'ERROR'    : "[x]"
-        }
+    def get_level_tag(self, level: str) -> str:
+        s = super().get_level_tag(level)
 
-        return LEVEL_NAME[record.levelname]
+        return f'{self.__level_color[level]}{s}{COLOR_CODE.ENDC}'
 
-    def format(self, record: LogRecord):
-        record.levelname = self.get_level(record)
+    def get_thread_tag(self, tid: str) -> str:
+        s = super().get_thread_tag(tid)
 
-        # early logging may access ql.os when it is not yet set
-        try:
-            cur_thread = self.ql.os.thread_management.cur_thread
-        except AttributeError:
-            pass
-        else:
-            record.levelname = f"{record.levelname} {str(cur_thread)}"
-
-        return super().format(record)
+        return f'{COLOR_CODE.GREEN}{s}{COLOR_CODE.ENDC}'
 
 class RegexFilter(logging.Filter):
     def __init__(self, regexp):
@@ -597,20 +592,21 @@ def ql_setup_logger(ql, log_file: Optional[str], console: bool, filters: Optiona
         if console:
             handler = logging.StreamHandler()
 
-            if not log_plain and __is_color_terminal(handler.stream):
-                formatter = QilingColoredFormatter(ql, FMT_STR)
+            if log_plain or not __is_color_terminal(handler.stream):
+                formatter = QlBaseFormatter(ql, FMT_STR)
             else:
-                formatter = QilingPlainFormatter(ql, FMT_STR)
+                formatter = QlColoredFormatter(ql, FMT_STR)
 
             handler.setFormatter(formatter)
             log.addHandler(handler)
         else:
-            log.setLevel(logging.CRITICAL)
+            handler = logging.NullHandler()
+            log.addHandler(handler)
 
         # Do we have to write log to a file?
         if log_file is not None:
             handler = logging.FileHandler(log_file)
-            formatter = QilingPlainFormatter(ql, FMT_STR)
+            formatter = QlBaseFormatter(ql, FMT_STR)
             handler.setFormatter(formatter)
             log.addHandler(handler)
 
