@@ -210,8 +210,8 @@ class CtxManager(object):
 
         for idx in range(10):
             addr = self.ql.reg.arch_sp + idx * self.ql.pointersize
-            val = self.ql.mem.read(addr, self.ql.pointersize)
-            print(f"$sp+0x{idx*self.ql.pointersize:02x}│ [0x{addr:08x}] —▸ 0x{self.ql.unpack(val):08x}", end="")
+            if (val := _try_read(self.ql, addr, self.ql.pointersize)[0]):
+                print(f"$sp+0x{idx*self.ql.pointersize:02x}│ [0x{addr:08x}] —▸ 0x{self.ql.unpack(val):08x}", end="")
 
             # try to dereference wether it's a pointer
             if (buf := _try_read(self.ql, addr, self.ql.pointersize))[0] is not None:
@@ -257,13 +257,13 @@ class CtxManager(object):
 
         # assembly for current location
 
-        cur_ins = disasm(self.ql, cur_addr)
-        to_jump, _ = self.predictor.predict()
-        self.print_asm(cur_ins, to_jump=to_jump)
+        cur_insn = disasm(self.ql, cur_addr)
+        prophecy = self.predictor.predict()
+        self.print_asm(cur_insn, to_jump=prophecy.going)
 
         # assembly after current location
 
-        forward_insn_size = cur_ins.size
+        forward_insn_size = cur_insn.size
         for _ in range(5):
             forward_insn = disasm(self.ql, cur_addr+forward_insn_size)
             if forward_insn:
@@ -430,8 +430,8 @@ class CtxManager_X86(CtxManager):
         cur_addr = self.ql.reg.arch_pc
 
         cur_insn = disasm(self.ql, cur_addr)
-        to_jump, _ = self.predictor.predict()
-        self.print_asm(cur_insn, to_jump=to_jump)
+        prophecy = self.predictor.predict()
+        self.print_asm(cur_insn, to_jump=prophecy.going)
 
         # assembly before current location
 

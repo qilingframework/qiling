@@ -6,6 +6,8 @@
 from __future__ import annotations
 from typing import Callable, Optional, Mapping
 from qiling.const import *
+
+from collections import namedtuple
 import ast, re
 
 # parse unsigned integer from string
@@ -67,7 +69,7 @@ def disasm(ql: Qiling, address: int, detail: bool = False) -> Optional[int]:
     md = ql.disassembler
     md.detail = detail
     try:
-        ret = next(md.disasm(_read_inst(ql, address), address))
+        ret = next(md.disasm(read_inst(ql, address), address))
 
     except StopIteration:
         ret = None
@@ -75,7 +77,7 @@ def disasm(ql: Qiling, address: int, detail: bool = False) -> Optional[int]:
     return ret
 
 
-def _read_inst(ql: Qiling, addr: int) -> int:
+def read_inst(ql: Qiling, addr: int) -> int:
     result = ql.mem.read(addr, 4)
 
     if ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB, QL_ARCH.CORTEX_M):
@@ -115,6 +117,14 @@ def setup_branch_predictor(ql: Qiling) -> BranchPredictor:
             QL_ARCH.MIPS: BranchPredictor_MIPS,
             }.get(ql.archtype)(ql)
 
+class Prophecy(object):
+    def __init__(self):
+        self.going = False
+        self.where = None
+
+    def __iter__(self):
+        return iter((self.going, self.where))
+
 class BranchPredictor(object):
     def __init__(self, ql):
         self.ql = ql
@@ -141,9 +151,10 @@ class BranchPredictor_ARM(BranchPredictor):
         return op_str.partition(", ")[0] == "pc"
 
     def predict(self):
+        prophecy = Prophecy()
         cur_addr = self.ql.reg.arch_pc
         line = disasm(self.ql, cur_addr)
-        ret_addr = cur_addr + line.size
+        prophecy.where = cur_addr + line.size
 
         if line.mnemonic == self.CODE_END: # indicates program exited
             return True
@@ -219,23 +230,22 @@ class BranchPredictor_ARM(BranchPredictor):
                 "cbnz": (lambda r: r != 0),
                 }
 
-        to_jump = False
         if line.mnemonic in jump_table:
-            to_jump = jump_table.get(line.mnemonic)(*get_cpsr(self.ql.reg.cpsr))
+            prophecy.going = jump_table.get(line.mnemonic)(*get_cpsr(self.ql.reg.cpsr))
 
         elif line.mnemonic in cb_table:
-            to_jump = cb_table.get(line.mnemonic)(self.read_reg(line.op_str.split(", ")[0]))
+            prophecy.going = cb_table.get(line.mnemonic)(self.read_reg(line.op_str.split(", ")[0]))
 
-        if to_jump:
+        if prophecy.going:
             if "#" in line.op_str:
-                ret_addr = read_int(line.op_str.split("#")[-1])
+                prophecy.where = read_int(line.op_str.split("#")[-1])
             else:
-                ret_addr = read_reg_val(line.op_str)
+                prophecy.where = read_reg_val(line.op_str)
 
                 if regdst_eq_pc(line.op_str):
                     next_addr = cur_addr + line.size
                     n2_addr = next_addr + len(read_inst(next_addr))
-                    ret_addr += len(read_inst(n2_addr)) + len(read_inst(next_addr))
+                    prophecy.where += len(read_inst(n2_addr)) + len(read_inst(next_addr))
 
         elif line.mnemonic.startswith("it"):
             # handle IT block here
@@ -266,7 +276,7 @@ class BranchPredictor_ARM(BranchPredictor):
 
                 next_addr += len(_inst)
 
-            ret_addr = next_addr
+            prophecy.where = next_addr
 
         elif line.mnemonic in ("ldr",):
 
@@ -275,11 +285,11 @@ class BranchPredictor_ARM(BranchPredictor):
                 r, _, imm = rn_offset.strip("[]!").partition(", #")
 
                 if "]" in rn_offset.split(", ")[1]: # pre-indexed immediate
-                    ret_addr = ql.unpack32(ql.mem.read(read_int(imm) + read_reg_val(r), self.INST_SIZE))
+                    prophecy.where = ql.unpack32(ql.mem.read(read_int(imm) + read_reg_val(r), self.INST_SIZE))
 
                 else: # post-indexed immediate
                     # FIXME: weired behavior, immediate here does not apply
-                    ret_addr = ql.unpack32(ql.mem.read(read_reg_val(r), self.INST_SIZE))
+                    prophecy.where = ql.unpack32(ql.mem.read(read_reg_val(r), self.INST_SIZE))
 
         elif line.mnemonic in ("addls", "addne", "add") and self.regdst_eq_pc(line.op_str):
             V, C, Z, N = get_cpsr(ql.reg.cpsr)
@@ -295,10 +305,10 @@ class BranchPredictor_ARM(BranchPredictor):
                     n = read_int(expr[-1].strip("#")) * 2
 
             if line.mnemonic == "addls" and (C == 0 or Z == 1):
-                ret_addr = extra + read_reg_val(r1) + read_reg_val(r2) * n
+                prophecy.where = extra + read_reg_val(r1) + read_reg_val(r2) * n
 
             elif line.mnemonic == "add" or (line.mnemonic == "addne" and Z == 0):
-                ret_addr = extra + read_reg_val(r1) + (read_reg_val(r2) * n if imm else read_reg_val(r2))
+                prophecy.where = extra + read_reg_val(r1) + (read_reg_val(r2) * n if imm else read_reg_val(r2))
 
         elif line.mnemonic in ("tbh", "tbb"):
 
@@ -319,11 +329,11 @@ class BranchPredictor_ARM(BranchPredictor):
                 r1 = read_reg_val(r1)
 
             to_add = int.from_bytes(ql.mem.read(cur_addr+r1, 2 if line.mnemonic == "tbh" else 1), byteorder="little") * n
-            ret_addr = cur_addr + to_add
+            prophecy.where = cur_addr + to_add
 
         elif line.mnemonic.startswith("pop") and "pc" in line.op_str:
 
-            ret_addr = ql.stack_read(line.op_str.strip("{}").split(", ").index("pc") * self.INST_SIZE)
+            prophecy.where = ql.stack_read(line.op_str.strip("{}").split(", ").index("pc") * self.INST_SIZE)
             if not { # step to next instruction if cond does not meet
                     "pop"  : lambda *_: True,
                     "pop.w": lambda *_: True,
@@ -334,45 +344,44 @@ class BranchPredictor_ARM(BranchPredictor):
                     "poplt": lambda V, C, Z, N: (N != V),
                     }.get(line.mnemonic)(*get_cpsr(ql.reg.cpsr)):
 
-                ret_addr = cur_addr + self.INST_SIZE
+                prophecy.where = cur_addr + self.INST_SIZE
 
         elif line.mnemonic == "sub" and self.regdst_eq_pc(line.op_str):
             _, r, imm = line.op_str.split(", ")
-            ret_addr = read_reg_val(r) - read_int(imm.strip("#"))
+            prophecy.where = read_reg_val(r) - read_int(imm.strip("#"))
 
         elif line.mnemonic == "mov" and self.regdst_eq_pc(line.op_str):
             _, r = line.op_str.split(", ")
-            ret_addr = read_reg_val(r)
+            prophecy.where = read_reg_val(r)
 
-        if ret_addr & 1:
-            ret_addr -= 1
+        if prophecy.where & 1:
+            prophecy.where -= 1
 
-        return (to_jump, ret_addr)
+        return prophecy
 
 class BranchPredictor_MIPS(BranchPredictor):
     def __init__(self, ql):
+        super().__init__(ql)
         self.CODE_END = "break"
         self.INST_SIZE = 4
-        self.ql = ql
 
     def read_reg(self, reg_name):
         reg_name = reg_name.strip("$").replace("fp", "s8")
         return signed_val(getattr(self.ql.reg, reg_name))
 
     def predict(self):
-
+        prophecy = Prophecy()
         cur_addr = self.ql.reg.arch_pc
         line = disasm(self.ql, cur_addr)
 
         if line.mnemonic == self.CODE_END: # indicates program extied
             return True
 
-        ret_addr = None
-        to_jump = False
+        prophecy.where = cur_addr + self.INST_SIZE
         if line.mnemonic.startswith('j') or line.mnemonic.startswith('b'):
 
             # make sure at least delay slot executed
-            ret_addr = cur_addr + self.INST_SIZE
+            prophecy.where += self.INST_SIZE
 
             # get registers or memory address from op_str
             targets = [
@@ -381,7 +390,7 @@ class BranchPredictor_MIPS(BranchPredictor):
                     for each in line.op_str.split(", ")
                     ]
 
-            to_jump = {
+            prophecy.going = {
                     "j"       : (lambda _: True),             # unconditional jump
                     "jr"      : (lambda _: True),             # unconditional jump
                     "jal"     : (lambda _: True),             # unconditional jump
@@ -405,18 +414,18 @@ class BranchPredictor_MIPS(BranchPredictor):
                     "bgezal"  : (lambda r, _: r >= 0),        # branch on greater than or equal to zero and link
                     }.get(line.mnemonic)(*targets)
 
-            if to_jump:
+            if prophecy.going:
                 # target address is always the rightmost one
-                ret_addr = targets[-1]
+                prophecy.where = targets[-1]
 
-        return (to_jump, ret_addr)
+        return prophecy
 
 class BranchPredictor_X86(BranchPredictor):
     def __init__(self, ql):
         super().__init__(ql)
 
     def predict(self):
-
+        prophecy = Prophecy()
         cur_addr = self.ql.reg.arch_pc
         line = disasm(self.ql, cur_addr)
 
@@ -480,17 +489,14 @@ class BranchPredictor_X86(BranchPredictor):
                 "jrcxz" : (lambda rcx: rcx == 0),
                 }
 
-        to_jump = False
         if line.mnemonic in jump_table:
             eflags = get_x86_eflags(self.ql.reg.ef).values()
-            to_jump = jump_table.get(line.mnemonic)(*eflags)
+            prophecy.going = jump_table.get(line.mnemonic)(*eflags)
 
         elif line.mnemonic in jump_reg_table:
-            to_jump = jump_reg_table.get(line.mnemonic)(self.ql.reg.ecx)
+            prophecy.going = jump_reg_table.get(line.mnemonic)(self.ql.reg.ecx)
 
-        ret_addr = None
-
-        if to_jump:
+        if prophecy.going:
             takeaway_list = ["ptr", "dword", "[", "]"]
             class AST_checker(ast.NodeVisitor):
                 def generic_visit(self, node):
@@ -518,15 +524,17 @@ class BranchPredictor_X86(BranchPredictor):
 
                 checker.visit(ast_tree)
 
-                ret_addr = eval(new_line)
+                prophecy.where = eval(new_line)
 
             elif line.op_str in self.ql.reg.register_mapping:
-                ret_addr = getattr(self.ql.reg, line.op_str)
+                prophecy.where = getattr(self.ql.reg, line.op_str)
 
             else:
-                ret_addr = read_int(line.op_str)
+                prophecy.where = read_int(line.op_str)
+        else:
+            prophecy.where = cur_addr + line.size
 
-        return (to_jump, ret_addr)
+        return prophecy
 
 class BranchPredictor_CORTEX_M(BranchPredictor_ARM):
     def __init__(self, ql):

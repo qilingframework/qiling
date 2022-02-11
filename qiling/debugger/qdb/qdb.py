@@ -13,8 +13,8 @@ from qiling.const import QL_ARCH, QL_VERBOSE
 from qiling.debugger import QlDebugger
 
 from .frontend import examine_mem, setup_ctx_manager
-from .utils import is_thumb, parse_int
-from .utils import Breakpoint, TempBreakpoint
+from .utils import is_thumb, parse_int, setup_branch_predictor, disasm
+from .utils import Breakpoint, TempBreakpoint, read_inst
 from .const import color
 
 
@@ -32,6 +32,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
             self._states_list = []
 
         self.ctx = setup_ctx_manager(ql)
+        self.predictor = setup_branch_predictor(ql)
 
         super().__init__()
 
@@ -42,7 +43,16 @@ class QlQdb(cmd.Cmd, QlDebugger):
         # self.ql.loader.entry_point  # ld.so
         # self.ql.loader.elf_entry    # .text of binary
 
+        def bp_handler(ql, address, size, bp_list):
+            if address in bp_list:
+                ql.emu_stop()
+                _ = bp_list.pop(address)
+                self.do_context()
+
+        self.ql.hook_code(bp_handler, self.bp_list)
+
         if init_hook and self.ql.loader.entry_point != init_hook:
+            breakpoint()
             self.do_breakpoint(init_hook)
 
         self.cur_addr = self.ql.loader.entry_point
@@ -210,9 +220,9 @@ class QlQdb(cmd.Cmd, QlDebugger):
             self._restore()
             self.do_context()
 
-    def do_step(self: QlQdb, *args) -> Optional[bool]:
+    def do_step_in(self: QlQdb, *args) -> Optional[bool]:
         """
-        execute one instruction at a time
+        execute one instruction at a time, will enter subroutine
         """
 
         if self.ql is None:
@@ -225,19 +235,39 @@ class QlQdb(cmd.Cmd, QlDebugger):
             if self.rr:
                 self._save()
 
-            # next_stop = self.predictor.predict()
+            prophecy = self.predictor.predict()
 
-            # if next_stop is True:
-                # return True
+            if prophecy.where is True:
+                return True
 
             if self.ql.archtype == QL_ARCH.CORTEX_M:
-                self.ql.arch.step()
                 self.ql.count -= 1
+                self.set_breakpoint(self.cur_addr, is_temp=True)
 
-            else:
-                self._run(count=1)
+            self._run(count=1)
 
             self.do_context()
+
+    def do_step_over(self: QlQdb, *args) -> Option[bool]:
+        """
+        execute one instruction at a time, but WON't enter subroutine
+        """
+
+        if self.ql is None:
+            print(f"{color.RED}[!] The program is not being run.{color.END}")
+
+        else:
+
+            prophecy = self.predictor.predict()
+
+            if prophecy.going:
+                cur_insn = disasm(self.ql, self.cur_addr)
+                self.set_breakpoint(self.cur_addr + cur_insn.size, is_temp=True)
+
+            else:
+                self.set_breakpoint(prophecy.where, is_temp=True)
+
+            self._run(self.cur_addr)
 
     def set_breakpoint(self: QlQdb, address: int, is_temp: bool = False) -> None:
         """
@@ -246,9 +276,9 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         bp = TempBreakpoint(address) if is_temp else Breakpoint(address)
 
-        if self.ql.archtype != QL_ARCH.CORTEX_M:
+        # if self.ql.archtype != QL_ARCH.CORTEX_M:
             # skip hook_address for cortex_m
-            bp.hook = self.ql.hook_address(self._bp_handler, address)
+            # bp.hook = self.ql.hook_address(self._bp_handler, address)
 
         self.bp_list.update({address: bp})
 
@@ -356,7 +386,8 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
 
     do_r = do_run
-    do_s = do_step
+    do_s = do_step_in
+    do_n = do_step_over
     do_q = do_quit
     do_x = do_examine
     do_p = do_backward
