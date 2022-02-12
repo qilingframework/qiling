@@ -44,15 +44,26 @@ class QlQdb(cmd.Cmd, QlDebugger):
         # self.ql.loader.elf_entry    # .text of binary
 
         def bp_handler(ql, address, size, bp_list):
-            if address in bp_list:
-                ql.emu_stop()
-                _ = bp_list.pop(address)
+
+            if (bp := self.bp_list.get(address, None)):
+
+                if isinstance(bp, TempBreakpoint):
+                    # remove TempBreakpoint once hitted
+                    self.del_breakpoint(bp)
+
+                else:
+                    if bp.hitted:
+                        return
+
+                    print(f"{color.CYAN}[+] hit breakpoint at 0x{self.cur_addr:08x}{color.END}")
+                    bp.hitted = True
+
+                ql.stop()
                 self.do_context()
 
         self.ql.hook_code(bp_handler, self.bp_list)
 
         if init_hook and self.ql.loader.entry_point != init_hook:
-            breakpoint()
             self.do_breakpoint(init_hook)
 
         self.cur_addr = self.ql.loader.entry_point
@@ -81,27 +92,6 @@ class QlQdb(cmd.Cmd, QlDebugger):
         """
 
         self.ql.reg.arch_pc = address
-
-    def _bp_handler(self: QlQdb, *args) -> None:
-        """
-        internal function for handling once breakpoint hitted
-        """
-
-        if (bp := self.bp_list.get(self.cur_addr, None)):
-
-            if isinstance(bp, TempBreakpoint):
-                # remove TempBreakpoint once hitted
-                self.del_breakpoint(bp)
-
-            else:
-                if bp.hitted:
-                    return
-
-                print(f"{color.CYAN}[+] hit breakpoint at 0x{self.cur_addr:08x}{color.END}")
-                bp.hitted = True
-
-            self.ql.stop()
-            self.do_context()
 
     def _save(self: QlQdb, *args) -> None:
         """
@@ -220,6 +210,12 @@ class QlQdb(cmd.Cmd, QlDebugger):
             self._restore()
             self.do_context()
 
+    def update_reg_dump(self: QlQdb) -> None:
+        """
+        internal function for updating registers dump
+        """
+        self._saved_reg_dump = dict(filter(lambda d: isinstance(d[0], str), self.ql.reg.save().items()))
+
     def do_step_in(self: QlQdb, *args) -> Optional[bool]:
         """
         execute one instruction at a time, will enter subroutine
@@ -229,8 +225,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
             print(f"{color.RED}[!] The program is not being run.{color.END}")
 
         else:
-            # save reg dump for data highlighting changes
-            self._saved_reg_dump = dict(filter(lambda d: isinstance(d[0], str), self.ql.reg.save().items()))
+            self.update_reg_dump()
 
             if self.rr:
                 self._save()
@@ -241,10 +236,9 @@ class QlQdb(cmd.Cmd, QlDebugger):
                 return True
 
             if self.ql.archtype == QL_ARCH.CORTEX_M:
-                self.ql.count -= 1
-                self.set_breakpoint(self.cur_addr, is_temp=True)
-
-            self._run(count=1)
+                self.ql.arch.step()
+            else:
+                self._run(count=1)
 
             self.do_context()
 
@@ -259,6 +253,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         else:
 
             prophecy = self.predictor.predict()
+            self.update_reg_dump()
 
             if prophecy.going:
                 cur_insn = disasm(self.ql, self.cur_addr)
@@ -267,7 +262,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
             else:
                 self.set_breakpoint(prophecy.where, is_temp=True)
 
-            self._run(self.cur_addr)
+            self._run()
 
     def set_breakpoint(self: QlQdb, address: int, is_temp: bool = False) -> None:
         """
@@ -276,19 +271,14 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         bp = TempBreakpoint(address) if is_temp else Breakpoint(address)
 
-        # if self.ql.archtype != QL_ARCH.CORTEX_M:
-            # skip hook_address for cortex_m
-            # bp.hook = self.ql.hook_address(self._bp_handler, address)
-
         self.bp_list.update({address: bp})
 
     def del_breakpoint(self: QlQdb, bp: Union[Breakpoint, TempBreakpoint]) -> None:
         """
-        internal function for removing breakpoints
+        internal function for removing breakpoint
         """
 
-        if self.bp_list.pop(bp.addr, None):
-            bp.hook.remove()
+        self.bp_list.pop(bp.addr, None)
 
     def do_start(self: QlQdb, *args) -> None:
         """

@@ -240,9 +240,9 @@ class BranchPredictor_ARM(BranchPredictor):
             if "#" in line.op_str:
                 prophecy.where = read_int(line.op_str.split("#")[-1])
             else:
-                prophecy.where = read_reg_val(line.op_str)
+                prophecy.where = self.read_reg(line.op_str)
 
-                if regdst_eq_pc(line.op_str):
+                if self.regdst_eq_pc(line.op_str):
                     next_addr = cur_addr + line.size
                     n2_addr = next_addr + len(read_inst(next_addr))
                     prophecy.where += len(read_inst(n2_addr)) + len(read_inst(next_addr))
@@ -285,11 +285,11 @@ class BranchPredictor_ARM(BranchPredictor):
                 r, _, imm = rn_offset.strip("[]!").partition(", #")
 
                 if "]" in rn_offset.split(", ")[1]: # pre-indexed immediate
-                    prophecy.where = ql.unpack32(ql.mem.read(read_int(imm) + read_reg_val(r), self.INST_SIZE))
+                    prophecy.where = ql.unpack32(ql.mem.read(read_int(imm) + self.read_reg(r), self.INST_SIZE))
 
                 else: # post-indexed immediate
                     # FIXME: weired behavior, immediate here does not apply
-                    prophecy.where = ql.unpack32(ql.mem.read(read_reg_val(r), self.INST_SIZE))
+                    prophecy.where = ql.unpack32(ql.mem.read(self.read_reg(r), self.INST_SIZE))
 
         elif line.mnemonic in ("addls", "addne", "add") and self.regdst_eq_pc(line.op_str):
             V, C, Z, N = get_cpsr(ql.reg.cpsr)
@@ -305,10 +305,10 @@ class BranchPredictor_ARM(BranchPredictor):
                     n = read_int(expr[-1].strip("#")) * 2
 
             if line.mnemonic == "addls" and (C == 0 or Z == 1):
-                prophecy.where = extra + read_reg_val(r1) + read_reg_val(r2) * n
+                prophecy.where = extra + self.read_reg(r1) + self.read_reg(r2) * n
 
             elif line.mnemonic == "add" or (line.mnemonic == "addne" and Z == 0):
-                prophecy.where = extra + read_reg_val(r1) + (read_reg_val(r2) * n if imm else read_reg_val(r2))
+                prophecy.where = extra + self.read_reg(r1) + (self.read_reg(r2) * n if imm else self.read_reg(r2))
 
         elif line.mnemonic in ("tbh", "tbb"):
 
@@ -322,11 +322,11 @@ class BranchPredictor_ARM(BranchPredictor):
 
             if line.mnemonic == "tbh":
 
-                r1 = read_reg_val(r1) * n
+                r1 = self.read_reg(r1) * n
 
             elif line.mnemonic == "tbb":
 
-                r1 = read_reg_val(r1)
+                r1 = self.read_reg(r1)
 
             to_add = int.from_bytes(ql.mem.read(cur_addr+r1, 2 if line.mnemonic == "tbh" else 1), byteorder="little") * n
             prophecy.where = cur_addr + to_add
@@ -348,11 +348,11 @@ class BranchPredictor_ARM(BranchPredictor):
 
         elif line.mnemonic == "sub" and self.regdst_eq_pc(line.op_str):
             _, r, imm = line.op_str.split(", ")
-            prophecy.where = read_reg_val(r) - read_int(imm.strip("#"))
+            prophecy.where = self.read_reg(r) - read_int(imm.strip("#"))
 
         elif line.mnemonic == "mov" and self.regdst_eq_pc(line.op_str):
             _, r = line.op_str.split(", ")
-            prophecy.where = read_reg_val(r)
+            prophecy.where = self.read_reg(r)
 
         if prophecy.where & 1:
             prophecy.where -= 1
@@ -544,17 +544,16 @@ class Breakpoint(object):
     """
     dummy class for breakpoint
     """
-    def __init__(self, address: int):
-        self.addr = address
+    def __init__(self, addr):
+        self.addr = addr
         self.hitted = False
-        self.hook = None
 
 class TempBreakpoint(Breakpoint):
     """
     dummy class for temporay breakpoint
     """
-    def __init__(self, address):
-        super().__init__(address)
+    def __init__(self, addr):
+        super().__init__(addr)
 
 class ParseError(Exception):
     pass

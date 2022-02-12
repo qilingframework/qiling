@@ -252,7 +252,7 @@ class CtxManager(object):
             past_list.append(line)
 
         # print four insns before current location
-        for line in past_list[:-1][:4]:
+        for line in past_list[:-1]:
             self.print_asm(line)
 
         # assembly for current location
