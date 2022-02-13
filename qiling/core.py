@@ -534,6 +534,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
             Type: int
             Values:
+              - -1 : logging.NOTSET, turn off all the output.
               - 0  : logging.WARNING, almost no additional logs except the program output.
               - >=1: logging.INFO, the default logging level.
               - >=4: logging.DEBUG.
