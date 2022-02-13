@@ -5,10 +5,10 @@
 
 from __future__ import annotations
 from typing import Callable, Optional, Mapping
+import ast, re
+
 from qiling.const import *
 
-from collections import namedtuple
-import ast, re
 
 # parse unsigned integer from string
 def read_int(s: str) -> int:
@@ -69,7 +69,7 @@ def disasm(ql: Qiling, address: int, detail: bool = False) -> Optional[int]:
     md = ql.disassembler
     md.detail = detail
     try:
-        ret = next(md.disasm(read_inst(ql, address), address))
+        ret = next(md.disasm(read_insn(ql, address), address))
 
     except StopIteration:
         ret = None
@@ -77,7 +77,7 @@ def disasm(ql: Qiling, address: int, detail: bool = False) -> Optional[int]:
     return ret
 
 
-def read_inst(ql: Qiling, addr: int) -> int:
+def read_insn(ql: Qiling, addr: int) -> int:
     result = ql.mem.read(addr, 4)
 
     if ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB, QL_ARCH.CORTEX_M):
@@ -117,6 +117,7 @@ def setup_branch_predictor(ql: Qiling) -> BranchPredictor:
             QL_ARCH.MIPS: BranchPredictor_MIPS,
             }.get(ql.archtype)(ql)
 
+
 class Prophecy(object):
     def __init__(self):
         self.going = False
@@ -124,6 +125,7 @@ class Prophecy(object):
 
     def __iter__(self):
         return iter((self.going, self.where))
+
 
 class BranchPredictor(object):
     def __init__(self, ql):
@@ -134,6 +136,7 @@ class BranchPredictor(object):
 
     def predict(self):
         return NotImplementedError
+
 
 class BranchPredictor_ARM(BranchPredictor):
     def __init__(self, ql):
@@ -244,8 +247,8 @@ class BranchPredictor_ARM(BranchPredictor):
 
                 if self.regdst_eq_pc(line.op_str):
                     next_addr = cur_addr + line.size
-                    n2_addr = next_addr + len(read_inst(next_addr))
-                    prophecy.where += len(read_inst(n2_addr)) + len(read_inst(next_addr))
+                    n2_addr = next_addr + len(read_insn(next_addr))
+                    prophecy.where += len(read_insn(n2_addr)) + len(read_insn(next_addr))
 
         elif line.mnemonic.startswith("it"):
             # handle IT block here
@@ -267,14 +270,14 @@ class BranchPredictor_ARM(BranchPredictor):
 
             next_addr = cur_addr + self.THUMB_INST_SIZE
             for each in it_block_range:
-                _inst = read_inst(next_addr)
+                _insn = read_insn(next_addr)
                 n2_addr = handle_bnj_arm(ql, next_addr)
 
                 if (cond_met and each == "t") or (not cond_met and each == "e"):
-                    if n2_addr != (next_addr+len(_inst)): # branch detected
+                    if n2_addr != (next_addr+len(_insn)): # branch detected
                         break
 
-                next_addr += len(_inst)
+                next_addr += len(_insn)
 
             prophecy.where = next_addr
 
@@ -558,6 +561,115 @@ class TempBreakpoint(Breakpoint):
 class ParseError(Exception):
     pass
 
+class SnapshotManager(object):
+    """
+    for functioning differential snapshot
+    """
+
+    class State(object):
+        """
+        internal container for storing snapshot state
+        """
+
+        def __init__(self, saved_state):
+            self.reg, self.ram = SnapshotManager.transform(saved_state)
+
+    @classmethod
+    def transform(cls, st):
+        reg = st["reg"] if "reg" in st else st[0]
+
+        if "mem" not in st:
+            return (reg, st[1])
+
+        ram = []
+        for mem_seg in st["mem"]["ram"]:
+            lbound, ubound, perms, label, raw_bytes = mem_seg
+            rb_set = {(idx, val) for idx, val in enumerate(raw_bytes)}
+            ram.append((lbound, ubound, perms, label, rb_set))
+
+        return (reg, ram)
+
+    def __init__(self, ql):
+        self.ql = ql
+        self.layers = []
+
+    def diff_reg(self, prev_reg, cur_reg):
+        diffed_reg = {}
+
+        for reg_name, reg_val in cur_reg.items():
+            if prev_reg[reg_name] != reg_val:
+                diffed_reg[reg_name] = prev_reg[reg_name]
+
+        return diffed_reg
+
+    def diff_ram(self, prev_ram, cur_ram):
+        if any((cur_ram is None, prev_ram is None, prev_ram == cur_ram)):
+            return
+
+        ram = []
+        paired = zip(prev_ram, cur_ram)
+        for each in paired:
+            # lbound, ubound, perm, label, data
+            *prev_others, prev_rb_set = each[0]
+            *cur_others, cur_rb_set = each[1]
+
+            if prev_others == cur_others and cur_rb_set != prev_rb_set:
+                diff_set = prev_rb_set - cur_rb_set
+            else:
+                continue
+
+            ram.append((*cur_others, diff_set))
+
+        return ram
+
+    def diff(self, cur_st):
+        last_st = self.layers.pop()
+        diffed_reg = self.diff_reg(last_st.reg, cur_st.reg)
+        diffed_ram = self.diff_ram(last_st.ram, cur_st.ram)
+        return self.State((diffed_reg, diffed_ram))
+
+    def _save(self) -> State:
+        return self.State(self.ql.save())
+
+    def save(self):
+        """
+        helper function for saving differential context
+        """
+
+        st = self._save()
+
+        if len(self.layers) != 0 and isinstance(self.layers[-1], dict):
+            st = self.diff(st)
+
+        self.layers.append(st)
+
+    def restore(self):
+        prev_st = self.layers.pop()
+        cur_st = self._save()
+
+        for reg_name, reg_value in prev_st.reg.items():
+            cur_st.reg[reg_name] = reg_value
+
+        to_be_restored = {"reg": cur_st.reg}
+
+        if getattr(prev_st, "ram", None) and prev_st.ram != cur_st.ram:
+
+            ram = []
+            # lbound, ubound, perm, label, data
+            for each in prev_st.ram:
+                *prev_others, prev_rb_set = each
+                for *cur_others, cur_rb_set in cur_st.ram:
+                    if prev_others == cur_others:
+                        cur_rb_dict = dict(cur_rb_set)
+                        for idx, val in prev_rb_set:
+                            cur_rb_dict[idx] = val
+
+                        bs = bytes(dict(sorted(cur_rb_dict.items())).values())
+                        ram.append((*cur_others, bs))
+
+            to_be_restored.update({"mem": {"ram": ram, "mmio": {}}})
+
+        self.ql.restore(to_be_restored)
 
 if __name__ == "__main__":
     pass

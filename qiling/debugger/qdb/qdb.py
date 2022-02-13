@@ -14,7 +14,7 @@ from qiling.debugger import QlDebugger
 
 from .frontend import examine_mem, setup_ctx_manager
 from .utils import is_thumb, parse_int, setup_branch_predictor, disasm
-from .utils import Breakpoint, TempBreakpoint, read_inst
+from .utils import Breakpoint, TempBreakpoint, SnapshotManager
 from .const import color
 
 
@@ -26,11 +26,8 @@ class QlQdb(cmd.Cmd, QlDebugger):
         self.prompt = f"{color.BOLD}{color.RED}Qdb> {color.END}"
         self._saved_reg_dump = None
         self.bp_list = {}
-        self.rr = rr
 
-        if self.rr:
-            self._states_list = []
-
+        self.rr = SnapshotManager(ql) if rr else None
         self.ctx = setup_ctx_manager(ql)
         self.predictor = setup_branch_predictor(ql)
 
@@ -68,11 +65,14 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         self.cur_addr = self.ql.loader.entry_point
 
+        if self.rr:
+            self.rr.save()
+
         if self.ql.archtype == QL_ARCH.CORTEX_M:
             self._run()
 
         else:
-            self._init_state = self.ql.save()
+            self.init_state = self.ql.save()
 
         self.do_context()
         self.interactive()
@@ -92,20 +92,6 @@ class QlQdb(cmd.Cmd, QlDebugger):
         """
 
         self.ql.reg.arch_pc = address
-
-    def _save(self: QlQdb, *args) -> None:
-        """
-        internal function for saving state of qiling instance
-        """
-
-        self._states_list.append(self.ql.save())
-
-    def _restore(self: QlQdb, *args) -> None:
-        """
-        internal function for restoring state of qiling instance
-        """
-
-        self.ql.restore(self._states_list.pop())
 
     def _run(self: Qldbg, address: int = 0, end: int = 0, count: int = 0) -> None:
         """
@@ -202,12 +188,12 @@ class QlQdb(cmd.Cmd, QlDebugger):
         step barkward if it's possible, option rr should be enabled and previous instruction must be executed before
         """
 
-        if getattr(self, "_states_list", None) is None or len(self._states_list) == 0:
+        if len(self.rr.layers) == 0:
             print(f"{color.RED}[!] there is no way back !!!{color.END}")
 
         else:
             print(f"{color.CYAN}[+] step backward ~{color.END}")
-            self._restore()
+            self.rr.restore()
             self.do_context()
 
     def update_reg_dump(self: QlQdb) -> None:
@@ -227,9 +213,6 @@ class QlQdb(cmd.Cmd, QlDebugger):
         else:
             self.update_reg_dump()
 
-            if self.rr:
-                self._save()
-
             prophecy = self.predictor.predict()
 
             if prophecy.where is True:
@@ -239,6 +222,9 @@ class QlQdb(cmd.Cmd, QlDebugger):
                 self.ql.arch.step()
             else:
                 self._run(count=1)
+
+                if self.rr:
+                    self.rr.save()
 
             self.do_context()
 
@@ -262,7 +248,10 @@ class QlQdb(cmd.Cmd, QlDebugger):
             else:
                 self.set_breakpoint(prophecy.where, is_temp=True)
 
-            self._run()
+                self._run()
+
+                if self.rr:
+                    self.rr.save()
 
     def set_breakpoint(self: QlQdb, address: int, is_temp: bool = False) -> None:
         """
@@ -287,7 +276,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         if self.ql.archtype != QL_ARCH.CORTEX_M:
 
-            self.ql.restore(self._init_state)
+            self.ql.restore(self.init_state)
             self.do_context()
 
     @parse_int
@@ -337,6 +326,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         self.ql.mem.show_mapinfo()
         print(f"Breakpoints: {[hex(addr) for addr in self.bp_list.keys()]}")
+        print(f"Snaptshots: {len(self.rr.layers)}")
 
     @parse_int
     def do_disassemble(self: QlQdb, address: Optional[int] = 0, *args) -> None:
