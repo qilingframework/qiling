@@ -1102,10 +1102,11 @@ class ELFTest(unittest.TestCase):
         del ql
     
     def test_elf_linux_x8664_path_traversion(self):
-        mock_stdout = pipe.SimpleOutStream(sys.stdout.fileno())
-        ql = Qiling(["../examples/rootfs/x8664_linux/bin/path_traverse_static"], "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG, stdout=mock_stdout)
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/path_traverse_static"], "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG)
 
+        ql.os.stdout = pipe.SimpleOutStream(sys.stdout.fileno())
         ql.run()
+
         self.assertTrue("root\n" not in ql.os.stdout.read().decode("utf-8"))
 
         del ql
