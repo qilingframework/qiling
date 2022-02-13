@@ -4,6 +4,7 @@
 #
 
 import os
+from pathlib import Path
 
 from qiling import Qiling
 from qiling.const import QL_OS, QL_ARCH
@@ -101,11 +102,13 @@ def ql_syscall_openat(ql: Qiling, fd: int, path: int, flags: int, mode: int):
             fd = ql.unpacks(ql.pack(fd))
 
             if 0 <= fd < NR_OPEN:
-                dir_fd = ql.os.fd[fd].fileno()
-            else:
-                dir_fd = None
+                fobj = ql.os.fd[fd]
+                # ql_file object or QlFsMappedObject
+                if hasattr(fobj, "fileno") and hasattr(fobj, "name"):
+                    if not Path.is_absolute(Path(file_path)):
+                        file_path = Path(fobj.name) / Path(file_path)
 
-            ql.os.fd[idx] = ql.os.fs_mapper.open_ql_file(file_path, flags, mode, dir_fd)
+            ql.os.fd[idx] = ql.os.fs_mapper.open_ql_file(file_path, flags, mode)
 
             regreturn = idx
         except QlSyscallError as e:
