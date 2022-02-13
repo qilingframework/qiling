@@ -133,7 +133,7 @@ class QlPathManager:
         if os.path.islink(real_path):
             link_path = Path(os.readlink(real_path))
 
-            real_path = self.convert_path(self.ql.rootfs, os.path.dirname(real_path), link_path)
+            real_path = self.convert_path(os.path.dirname(real_path), "/", link_path)
 
             if os.path.islink(real_path):
                 real_path = self.transform_to_real_path(real_path)
