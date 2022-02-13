@@ -3,8 +3,10 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from .adc import *
 from .char import *
 from .dma import *
+from .flash import *
 from .gpio import *
 from .i2c import *
 from .intc import *

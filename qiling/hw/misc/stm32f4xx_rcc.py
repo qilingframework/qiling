@@ -5,7 +5,7 @@
 
 import ctypes
 from qiling.hw.peripheral import QlPeripheral
-from qiling.hw.const.stm32f4xx_rcc import RCC_CR, RCC_CFGR, RCC_CSR
+from qiling.hw.const.stm32fxxx_rcc import RCC_CR, RCC_CFGR, RCC_CSR
 
 
 class STM32F4xxRcc(QlPeripheral):

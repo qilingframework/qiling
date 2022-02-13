@@ -1091,6 +1091,15 @@ class ELFTest(unittest.TestCase):
         self.assertEqual([0x1000 + 11, 0x2000 + 11, 0x3000 + 43], ql.mem.search(b"\x09\x53(\x0f|\x1a|\x04)[^\x0d]"))
 
         del ql
+    
+    def test_elf_linux_x8664_path_traversion(self):
+        mock_stdout = pipe.SimpleOutStream(sys.stdout.fileno())
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/path_traverse_static"], "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG, stdout=mock_stdout)
+
+        ql.run()
+        self.assertTrue("root\n" not in ql.os.stdout.read().decode("utf-8"))
+
+        del ql
 
 if __name__ == "__main__":
     unittest.main()
