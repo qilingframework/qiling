@@ -2,7 +2,7 @@ This file details the changelog of Qiling Framework.
 
 
 ------------------------------------
-[Version 1.4.2]: Jan 29th, 2022
+[Version 1.4.2]: Feb 13th, 2022
 
 New features:
 - Add stm32f103 support (#1087)
