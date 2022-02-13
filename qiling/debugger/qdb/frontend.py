@@ -11,7 +11,7 @@ import unicorn
 
 from qiling.const import QL_ARCH
 
-from .utils import disasm, get_x86_eflags, setup_branch_predictor
+from .utils import disasm, get_x86_eflags, setup_branch_predictor, read_int
 from .const import color, SIZE_LETTER, FORMAT_LETTER
 
 
@@ -60,14 +60,17 @@ def examine_mem(ql: Qiling, line: str) -> Union[bool, (str, int, int)]:
     elif ql.archtype == QL_ARCH.MIPS:
         rest = rest.replace("fp", "s8")
 
+
     # for supporting addition of register with constant value
     elems = rest.split("+")
     elems = [elem.strip("$") for elem in elems]
 
     items = []
+
     for elem in elems:
         if elem in ql.reg.register_mapping.keys():
-            items.append(getattr(ql.reg, elem, None))
+            if (value := getattr(ql.reg, elem, None)):
+                items.append(value)
         else:
             items.append(read_int(elem))
 
@@ -369,7 +372,7 @@ class CtxManager_MIPS(CtxManager):
         diff = None
         if saved_reg_dump is not None:
             reg_dump = copy.deepcopy(saved_reg_dump)
-            reg_dump.update({"fp": saved_reg_dump.pop("s8")})
+            reg_dump.update({"fp": reg_dump.pop("s8")})
             diff = [k for k in cur_regs if cur_regs[k] != reg_dump[k]]
 
         lines = ""
