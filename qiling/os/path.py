@@ -128,6 +128,7 @@ class QlPathManager:
         return str(real_path.absolute())
 
     def transform_to_real_path(self, path: str) -> str:
+        # TODO: We really need a virtual file system.
         real_path = self.convert_path(self.ql.rootfs, self.cwd, path)
 
         if os.path.islink(real_path):
