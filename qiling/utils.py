@@ -524,7 +524,8 @@ def profile_setup(ql, ostype: QL_OS, filename: Optional[str]):
 
 def ql_resolve_logger_level(verbose: QL_VERBOSE) -> int:
     return {
-        QL_VERBOSE.OFF     : logging.WARNING,
+        QL_VERBOSE.DISABLED: logging.CRITICAL,
+        QL_VERBOSE.OFF     : logging.WARNING, 
         QL_VERBOSE.DEFAULT : logging.INFO,
         QL_VERBOSE.DEBUG   : logging.DEBUG,
         QL_VERBOSE.DISASM  : logging.DEBUG,

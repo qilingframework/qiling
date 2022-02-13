@@ -128,13 +128,16 @@ class QlPathManager:
         return str(real_path.absolute())
 
     def transform_to_real_path(self, path: str) -> str:
+        # TODO: We really need a virtual file system.
         real_path = self.convert_path(self.ql.rootfs, self.cwd, path)
 
         if os.path.islink(real_path):
             link_path = Path(os.readlink(real_path))
 
-            if not link_path.is_absolute():
-                real_path = Path(os.path.join(os.path.dirname(real_path), link_path))
+            real_path = self.convert_path(os.path.dirname(real_path), "/", link_path)
+
+            if os.path.islink(real_path):
+                real_path = self.transform_to_real_path(real_path)
 
             # resolve multilevel symbolic link
             if not os.path.exists(real_path):

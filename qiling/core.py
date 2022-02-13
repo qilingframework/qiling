@@ -392,6 +392,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         """Set verbosity level.
 
         Values:
+            `QL_VERBOSE.DISABLED`: turn off logging
             `QL_VERBOSE.OFF`     : mask off anything below warnings, errors and critical severity
             `QL_VERBOSE.DEFAULT` : info logging level: default verbosity
             `QL_VERBOSE.DEBUG`   : debug logging level: higher verbosity
