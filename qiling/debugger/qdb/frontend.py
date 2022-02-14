@@ -7,8 +7,6 @@ from __future__ import annotations
 from typing import Optional, Mapping, Iterable, Union
 import copy
 
-import unicorn
-
 from qiling.const import QL_ARCH
 
 from .utils import setup_branch_predictor
@@ -18,13 +16,13 @@ from .const import color
 
 """
 
-    Context Manager for rendering UI
+    Context Render for rendering UI
 
 """
 
 COLORS = (color.DARKCYAN, color.BLUE, color.RED, color.YELLOW, color.GREEN, color.PURPLE, color.CYAN, color.WHITE)
 
-def context_printer(field_name, ruler="─"):
+def divider_printer(field_name, ruler="─"):
     """
     decorator function for printing divider
     """
@@ -41,23 +39,23 @@ def context_printer(field_name, ruler="─"):
     return decorator
 
 
-def setup_ctx_manager(ql: Qiling) -> CtxManager:
+def setup_context_render(ql: Qiling) -> ContextRender:
     """
-    setup context manager for corresponding archtype
+    setup context render for corresponding archtype
     """
 
     return {
-            QL_ARCH.X86: CtxManager_X86,
-            QL_ARCH.ARM: CtxManager_ARM,
-            QL_ARCH.ARM_THUMB: CtxManager_ARM,
-            QL_ARCH.CORTEX_M: CtxManager_ARM,
-            QL_ARCH.MIPS: CtxManager_MIPS,
+            QL_ARCH.X86: ContextRender_X86,
+            QL_ARCH.ARM: ContextRender_ARM,
+            QL_ARCH.ARM_THUMB: ContextRender_ARM,
+            QL_ARCH.CORTEX_M: ContextRender_ARM,
+            QL_ARCH.MIPS: ContextRender_MIPS,
             }.get(ql.archtype)(ql)
 
 
-class CtxManager(object):
+class ContextRender(object):
     """
-    base class for context manager
+    base class for context render
     """
 
     def __init__(self, ql):
@@ -100,7 +98,7 @@ class CtxManager(object):
 
         return NotImplementedError
 
-    @context_printer("[ STACK ]")
+    @divider_printer("[ STACK ]")
     def context_stack(self):
         """
         display context stack
@@ -129,7 +127,7 @@ class CtxManager(object):
                             print(f" ◂— 0x{self.ql.unpack(buf[0]):08x}", end="")
             print()
 
-    @context_printer("[ DISASM ]")
+    @divider_printer("[ DISASM ]")
     def context_asm(self):
         """
         display context assembly
@@ -173,9 +171,9 @@ class CtxManager(object):
                 forward_insn_size += forward_insn.size
 
 
-class CtxManager_ARM(CtxManager):
+class ContextRender_ARM(ContextRender):
     """
-    context manager for ARM
+    context render for ARM
     """
 
     def __init__(self, ql):
@@ -215,7 +213,7 @@ class CtxManager_ARM(CtxManager):
                 "overflow": bits & 0x10000000 != 0,
                 }
 
-    @context_printer("[ REGISTERS ]")
+    @divider_printer("[ REGISTERS ]")
     def context_reg(self, saved_reg_dump):
         cur_regs = self.dump_regs()
 
@@ -250,9 +248,9 @@ class CtxManager_ARM(CtxManager):
         print(color.GREEN, "[{cpsr[mode]} mode], Thumb: {cpsr[thumb]}, FIQ: {cpsr[fiq]}, IRQ: {cpsr[irq]}, NEG: {cpsr[neg]}, ZERO: {cpsr[zero]}, Carry: {cpsr[carry]}, Overflow: {cpsr[overflow]}".format(cpsr=self.get_flags(self.ql.reg.cpsr)), color.END, sep="")
 
 
-class CtxManager_MIPS(CtxManager):
+class ContextRender_MIPS(ContextRender):
     """
-    context manager for MIPS
+    context render for MIPS
     """
     def __init__(self, ql):
         super().__init__(ql)
@@ -268,7 +266,7 @@ class CtxManager_MIPS(CtxManager):
                 "ra", "k0", "k1", "pc",
                 )
 
-    @context_printer("[ REGISTERS ]")
+    @divider_printer("[ REGISTERS ]")
     def context_reg(self, saved_reg_dump):
 
         cur_regs = self.dump_regs()
@@ -296,9 +294,9 @@ class CtxManager_MIPS(CtxManager):
         print(lines.format(*cur_regs.values()))
 
 
-class CtxManager_X86(CtxManager):
+class ContextRender_X86(ContextRender):
     """
-    context manager for X86
+    context render for X86
     """
     def __init__(self, ql):
         super().__init__(ql)
@@ -310,7 +308,7 @@ class CtxManager_X86(CtxManager):
                 "fs", "gs", "ef",
                 )
 
-    @context_printer("[ REGISTERS ]")
+    @divider_printer("[ REGISTERS ]")
     def context_reg(self, saved_reg_dump):
         cur_regs = self.dump_regs()
 
@@ -337,7 +335,7 @@ class CtxManager_X86(CtxManager):
         print(lines.format(*cur_regs.values()))
         print(color.GREEN, "EFLAGS: [CF: {flags[CF]}, PF: {flags[PF]}, AF: {flags[AF]}, ZF: {flags[ZF]}, SF: {flags[SF]}, OF: {flags[OF]}]".format(flags=get_x86_eflags(self.ql.reg.ef)), color.END, sep="")
 
-    @context_printer("[ DISASM ]")
+    @divider_printer("[ DISASM ]")
     def context_asm(self):
         past_list = []
         cur_addr = self.ql.reg.arch_pc
@@ -362,9 +360,9 @@ class CtxManager_X86(CtxManager):
             self.print_asm(line)
 
 
-class CtxManager_CORTEX_M(CtxManager):
+class ContextRender_CORTEX_M(ContextRender):
     """
-    context manager for cortex_m
+    context render for cortex_m
     """
 
     def __init__(self, ql):
@@ -378,7 +376,7 @@ class CtxManager_CORTEX_M(CtxManager):
                 "xpsr", "control", "primask", "basepri", "faultmask"
                 )
 
-    @context_printer("[ REGISTERS ]")
+    @divider_printer("[ REGISTERS ]")
     def context_reg(self, saved_reg_dump):
 
         cur_regs.update({"sl": cur_regs.pop("r10")})

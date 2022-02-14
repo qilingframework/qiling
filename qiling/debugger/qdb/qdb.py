@@ -12,7 +12,7 @@ from qiling import Qiling
 from qiling.const import QL_ARCH, QL_VERBOSE
 from qiling.debugger import QlDebugger
 
-from .frontend import setup_ctx_manager
+from .frontend import setup_context_render
 from .utils import Breakpoint, TempBreakpoint
 from .utils import setup_branch_predictor, SnapshotManager, MemoryManager
 from .misc import disasm, parse_int, is_thumb
@@ -33,7 +33,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         self.rr = SnapshotManager(ql) if rr else None
         self.mm = MemoryManager(ql)
-        self.ctx = setup_ctx_manager(ql)
+        self.render = setup_context_render(ql)
         self.predictor = setup_branch_predictor(ql)
 
         super().__init__()
@@ -182,12 +182,12 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
     def do_context(self: QlQdb, *args) -> None:
         """
-        show context information for current location
+        display context information for current location
         """
 
-        self.ctx.context_reg(self._saved_reg_dump)
-        self.ctx.context_stack()
-        self.ctx.context_asm()
+        self.render.context_reg(self._saved_reg_dump)
+        self.render.context_stack()
+        self.render.context_asm()
 
     def do_backward(self: QlQdb, *args) -> None:
         """
