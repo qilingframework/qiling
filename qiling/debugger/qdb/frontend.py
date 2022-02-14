@@ -5,146 +5,15 @@
 
 from __future__ import annotations
 from typing import Optional, Mapping, Iterable, Union
-import copy, math, os
+import copy
 
 import unicorn
 
 from qiling.const import QL_ARCH
 
-from .utils import disasm, get_x86_eflags, setup_branch_predictor, read_int
-from .const import color, SIZE_LETTER, FORMAT_LETTER
-
-
-# read data from memory of qiling instance
-def examine_mem(ql: Qiling, line: str) -> Union[bool, (str, int, int)]:
-
-    _args = line.split()
-    DEFAULT_FMT = ('x', 4, 1)
-
-    if line.startswith("/"):  # followed by format letter and size letter
-
-        def get_fmt(text):
-            def extract_count(t):
-                return "".join([s for s in t if s.isdigit()])
-
-            f, s, c = DEFAULT_FMT
-            if extract_count(text):
-                c = int(extract_count(text))
-
-            for char in text.strip(str(c)):
-                if char in SIZE_LETTER.keys():
-                    s = SIZE_LETTER.get(char)
-
-                elif char in FORMAT_LETTER:
-                    f = char
-
-            return (f, s, c)
-
-
-        fmt, *rest = line.strip("/").split()
-
-        rest = "".join(rest)
-
-        fmt = get_fmt(fmt)
-
-    elif len(_args) == 1:  # only address
-        rest = _args[0]
-        fmt = DEFAULT_FMT
-
-    else:
-        rest = _args
-
-    if ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB):
-        rest = rest.replace("fp", "r11")
-
-    elif ql.archtype == QL_ARCH.MIPS:
-        rest = rest.replace("fp", "s8")
-
-
-    # for supporting addition of register with constant value
-    elems = rest.split("+")
-    elems = [elem.strip("$") for elem in elems]
-
-    items = []
-
-    for elem in elems:
-        if elem in ql.reg.register_mapping.keys():
-            if (value := getattr(ql.reg, elem, None)):
-                items.append(value)
-        else:
-            items.append(read_int(elem))
-
-    addr = sum(items)
-
-    def unpack(bs, sz):
-        return {
-                1: lambda x: x[0],
-                2: ql.unpack16,
-                4: ql.unpack32,
-                8: ql.unpack64,
-                }.get(sz)(bs)
-
-    ft, sz, ct = fmt
-
-    if ft == "i":
-
-        for offset in range(addr, addr+ct*4, 4):
-            line = disasm(ql, offset)
-            if line:
-                print(f"0x{line.address:x}: {line.mnemonic}\t{line.op_str}")
-
-        print()
-
-    else:
-        lines = 1 if ct <= 4 else math.ceil(ct / 4)
-
-        mem_read = []
-        for offset in range(ct):
-            # append data if read successfully, otherwise return error message
-            if (data := _try_read(ql, addr+(offset*sz), sz))[0] is not None:
-                mem_read.append(data[0])
-
-            else:
-                return data[1]
-
-        for line in range(lines):
-            offset = line * sz * 4
-            print(f"0x{addr+offset:x}:\t", end="")
-
-            idx = line * ql.pointersize
-            for each in mem_read[idx:idx+ql.pointersize]:
-                data = unpack(each, sz)
-                prefix = "0x" if ft in ("x", "a") else ""
-                pad = '0' + str(sz*2) if ft in ('x', 'a', 't') else ''
-                ft = ft.lower() if ft in ("x", "o", "b", "d") else ft.lower().replace("t", "b").replace("a", "x")
-                print(f"{prefix}{data:{pad}{ft}}\t", end="")
-
-            print()
-
-    return True
-
-
-# get terminal window height and width
-def get_terminal_size() -> Iterable:
-    return map(int, os.popen('stty size', 'r').read().split())
-
-
-# try to read data from ql memory
-def _try_read(ql: Qiling, address: int, size: int) -> Optional[bytes]:
-
-    result = None
-    err_msg = ""
-    try:
-        result = ql.mem.read(address, size)
-
-    except unicorn.unicorn.UcError as err:
-        if err.errno == 6: # Invalid memory read (UC_ERR_READ_UNMAPPED)
-            err_msg = f"Can not access memory at address 0x{address:08x}"
-
-    except:
-        pass
-
-    return (result, err_msg)
+from .utils import setup_branch_predictor
+from .misc import try_read, read_int, get_terminal_size, disasm, get_x86_eflags
+from .const import color
 
 
 """
@@ -155,8 +24,11 @@ def _try_read(ql: Qiling, address: int, size: int) -> Optional[bytes]:
 
 COLORS = (color.DARKCYAN, color.BLUE, color.RED, color.YELLOW, color.GREEN, color.PURPLE, color.CYAN, color.WHITE)
 
-# decorator function for printing divider
 def context_printer(field_name, ruler="─"):
+    """
+    decorator function for printing divider
+    """
+
     def decorator(context_dumper):
         def wrapper(*args, **kwargs):
             height, width = get_terminal_size()
@@ -170,6 +42,10 @@ def context_printer(field_name, ruler="─"):
 
 
 def setup_ctx_manager(ql: Qiling) -> CtxManager:
+    """
+    setup context manager for corresponding archtype
+    """
+
     return {
             QL_ARCH.X86: CtxManager_X86,
             QL_ARCH.ARM: CtxManager_ARM,
@@ -180,11 +56,19 @@ def setup_ctx_manager(ql: Qiling) -> CtxManager:
 
 
 class CtxManager(object):
+    """
+    base class for context manager
+    """
+
     def __init__(self, ql):
         self.ql = ql
         self.predictor = setup_branch_predictor(ql)
 
     def print_asm(self, insn: CsInsn, to_jump: Optional[bool] = None, address: int = None) -> None:
+        """
+        helper function for printing assembly instructions, indicates where we are and the branch prediction
+        provided by BranchPredictor
+        """
 
         opcode = "".join(f"{b:02x}" for b in insn.bytes)
         if self.ql.archtype in (QL_ARCH.X86, QL_ARCH.X8664):
@@ -203,26 +87,37 @@ class CtxManager(object):
         print(f"{jump_sign}  {cursor}   {color.DARKGRAY}{trace_line}{color.END}")
 
     def dump_regs(self):
+        """
+        dump all registers
+        """
+
         return {reg_name: getattr(self.ql.reg, reg_name) for reg_name in self.regs}
 
     def context_reg(self, saved_states):
+        """
+        display context registers
+        """
+
         return NotImplementedError
 
     @context_printer("[ STACK ]")
     def context_stack(self):
+        """
+        display context stack
+        """
 
         for idx in range(10):
             addr = self.ql.reg.arch_sp + idx * self.ql.pointersize
-            if (val := _try_read(self.ql, addr, self.ql.pointersize)[0]):
+            if (val := try_read(self.ql, addr, self.ql.pointersize)[0]):
                 print(f"$sp+0x{idx*self.ql.pointersize:02x}│ [0x{addr:08x}] —▸ 0x{self.ql.unpack(val):08x}", end="")
 
             # try to dereference wether it's a pointer
-            if (buf := _try_read(self.ql, addr, self.ql.pointersize))[0] is not None:
+            if (buf := try_read(self.ql, addr, self.ql.pointersize))[0] is not None:
 
                 if (addr := self.ql.unpack(buf[0])):
 
                     # try to dereference again
-                    if (buf := _try_read(self.ql, addr, self.ql.pointersize))[0] is not None:
+                    if (buf := try_read(self.ql, addr, self.ql.pointersize))[0] is not None:
                         try:
                             s = self.ql.mem.string(addr)
                         except:
@@ -236,6 +131,10 @@ class CtxManager(object):
 
     @context_printer("[ DISASM ]")
     def context_asm(self):
+        """
+        display context assembly
+        """
+
         # assembly before current location
         past_list = []
         cur_addr = self.ql.reg.arch_pc
@@ -275,6 +174,10 @@ class CtxManager(object):
 
 
 class CtxManager_ARM(CtxManager):
+    """
+    context manager for ARM
+    """
+
     def __init__(self, ql):
         super().__init__(ql)
 
@@ -348,6 +251,9 @@ class CtxManager_ARM(CtxManager):
 
 
 class CtxManager_MIPS(CtxManager):
+    """
+    context manager for MIPS
+    """
     def __init__(self, ql):
         super().__init__(ql)
 
@@ -391,6 +297,9 @@ class CtxManager_MIPS(CtxManager):
 
 
 class CtxManager_X86(CtxManager):
+    """
+    context manager for X86
+    """
     def __init__(self, ql):
         super().__init__(ql)
 
@@ -400,6 +309,7 @@ class CtxManager_X86(CtxManager):
                 "eip", "ss", "cs", "ds", "es",
                 "fs", "gs", "ef",
                 )
+
     @context_printer("[ REGISTERS ]")
     def context_reg(self, saved_reg_dump):
         cur_regs = self.dump_regs()
@@ -453,6 +363,10 @@ class CtxManager_X86(CtxManager):
 
 
 class CtxManager_CORTEX_M(CtxManager):
+    """
+    context manager for cortex_m
+    """
+
     def __init__(self, ql):
         super().__init__(ql)
 

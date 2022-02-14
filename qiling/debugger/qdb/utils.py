@@ -5,110 +5,25 @@
 
 from __future__ import annotations
 from typing import Callable, Optional, Mapping
-import ast, re
+import ast, re, math
 
-from qiling.const import *
+from qiling.const import QL_ARCH
 
-
-# parse unsigned integer from string
-def read_int(s: str) -> int:
-    return int(s, 0)
+from .misc import try_read, disasm, get_x86_eflags, read_int
 
 
-# function dectorator for parsing argument as integer
-def parse_int(func: Callable) -> Callable:
-    def wrap(qdb, s: str = "") -> int:
-        assert type(s) is str
-        try:
-            ret = read_int(s)
-        except:
-            ret = None
-        return func(qdb, ret)
-    return wrap
-
-
-# check wether negative value or not
-def is_negative(i: int) -> int:
-    return i & (1 << 31)
-
-
-# signed value convertion
-def signed_val(val: int) -> int:
-    return (val-1 << 32) if is_negative(val) else val
-
-
-def get_cpsr(bits: int) -> (bool, bool, bool, bool):
-    return (
-            bits & 0x10000000 != 0, # V, overflow flag
-            bits & 0x20000000 != 0, # C, carry flag
-            bits & 0x40000000 != 0, # Z, zero flag
-            bits & 0x80000000 != 0, # N, sign flag
-            )
-
-
-def get_x86_eflags(bits: int) -> Dict[str, bool]:
-    return {
-            "CF" : bits & 0x0001 != 0, # CF, carry flag
-            "PF" : bits & 0x0004 != 0, # PF, parity flag
-            "AF" : bits & 0x0010 != 0, # AF, adjust flag
-            "ZF" : bits & 0x0040 != 0, # ZF, zero flag
-            "SF" : bits & 0x0080 != 0, # SF, sign flag
-            "OF" : bits & 0x0800 != 0, # OF, overflow flag
-            }
-
-
-def is_thumb(bits: int) -> bool:
-    return bits & 0x00000020 != 0
-
-
-def disasm(ql: Qiling, address: int, detail: bool = False) -> Optional[int]:
-    """
-    helper function for disassembling
-    """
-
-    md = ql.disassembler
-    md.detail = detail
-    try:
-        ret = next(md.disasm(read_insn(ql, address), address))
-
-    except StopIteration:
-        ret = None
-
-    return ret
-
-
-def read_insn(ql: Qiling, addr: int) -> int:
-    result = ql.mem.read(addr, 4)
-
-    if ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB, QL_ARCH.CORTEX_M):
-        if is_thumb(ql.reg.cpsr):
-
-            first_two = ql.unpack16(ql.mem.read(addr, 2))
-            result = ql.pack16(first_two)
-
-            # to judge whether it's thumb mode or not
-            if any([
-                first_two & 0xf000 == 0xf000,
-                first_two & 0xf800 == 0xf800,
-                first_two & 0xe800 == 0xe800,
-                 ]):
-
-                latter_two = ql.unpack16(ql.mem.read(addr+2, 2))
-                result += ql.pack16(latter_two)
-
-    elif ql.archtype in (QL_ARCH.X86, QL_ARCH.X8664):
-        # due to the variadic lengh of x86 instructions ( 1~15 )
-        # always assume the maxium size for disassembler to tell
-        # what is it exactly.
-        result = ql.mem.read(addr, 15)
-
-    return result
 
 """
+
     Try to predict certian branch will be taken or not based on current context
+
 """
 
 def setup_branch_predictor(ql: Qiling) -> BranchPredictor:
+    """
+    setup BranchPredictor for corresponding archtype
+    """
+
     return {
             QL_ARCH.X86: BranchPredictor_X86,
             QL_ARCH.ARM: BranchPredictor_ARM,
@@ -117,8 +32,13 @@ def setup_branch_predictor(ql: Qiling) -> BranchPredictor:
             QL_ARCH.MIPS: BranchPredictor_MIPS,
             }.get(ql.archtype)(ql)
 
-
 class Prophecy(object):
+    """
+    container for storing result of the predictor
+    @going: indicate the certian branch will be taken or not
+    @where: where will it go if going is true
+    """
+
     def __init__(self):
         self.going = False
         self.where = None
@@ -126,19 +46,25 @@ class Prophecy(object):
     def __iter__(self):
         return iter((self.going, self.where))
 
-
 class BranchPredictor(object):
+    """
+    Base class for predictor
+    """
+
     def __init__(self, ql):
         self.ql = ql
 
     def read_reg(self, reg_name):
         return getattr(self.ql.reg, reg_name)
 
-    def predict(self):
+    def predict(self) -> Prophecy:
         return NotImplementedError
 
-
 class BranchPredictor_ARM(BranchPredictor):
+    """
+    predictor for ARM
+    """
+
     def __init__(self, ql):
         super().__init__(ql)
 
@@ -363,6 +289,10 @@ class BranchPredictor_ARM(BranchPredictor):
         return prophecy
 
 class BranchPredictor_MIPS(BranchPredictor):
+    """
+    predictor for MIPS
+    """
+
     def __init__(self, ql):
         super().__init__(ql)
         self.CODE_END = "break"
@@ -424,10 +354,20 @@ class BranchPredictor_MIPS(BranchPredictor):
         return prophecy
 
 class BranchPredictor_X86(BranchPredictor):
+    """
+    predictor for X86
+    """
+
+    class ParseError(Exception):
+        """
+        indicate parser error
+        """
+        pass
+
     def __init__(self, ql):
         super().__init__(ql)
 
-    def predict(self):
+    def predict(self) -> Prophecy:
         prophecy = Prophecy()
         cur_addr = self.ql.reg.arch_pc
         line = disasm(self.ql, cur_addr)
@@ -558,24 +498,48 @@ class TempBreakpoint(Breakpoint):
     def __init__(self, addr):
         super().__init__(addr)
 
-class ParseError(Exception):
-    pass
+"""
 
-class SnapshotManager(object):
+    For supporting Qdb features like:
+    1. record/replay debugging
+    2. memory access in gdb-style
+
+"""
+
+class Manager(object):
+    """
+    base class for Manager
+    """
+    def __init__(self, ql):
+        self.ql = ql
+
+class SnapshotManager(Manager):
     """
     for functioning differential snapshot
     """
 
     class State(object):
         """
-        internal container for storing snapshot state
+        internal container for storing raw state from qiling
         """
 
         def __init__(self, saved_state):
             self.reg, self.ram = SnapshotManager.transform(saved_state)
 
+    class DiffedState(object):
+        """
+        internal container for storing diffed state
+        """
+
+        def __init__(self, diffed_st):
+            self.reg, self.ram = diffed_st
+
     @classmethod
     def transform(cls, st):
+        """
+        transform saved context into binary set
+        """
+
         reg = st["reg"] if "reg" in st else st[0]
 
         if "mem" not in st:
@@ -590,19 +554,29 @@ class SnapshotManager(object):
         return (reg, ram)
 
     def __init__(self, ql):
-        self.ql = ql
+        super().__init__(ql)
         self.layers = []
 
+    def _save(self) -> State():
+        """
+        acquire current State by wrapping saved context from ql.save()
+        """
+
+        return self.State(self.ql.save())
+
     def diff_reg(self, prev_reg, cur_reg):
-        diffed_reg = {}
+        """
+        diff two register values
+        """
 
-        for reg_name, reg_val in cur_reg.items():
-            if prev_reg[reg_name] != reg_val:
-                diffed_reg[reg_name] = prev_reg[reg_name]
-
-        return diffed_reg
+        diffed = filter(lambda t: t[0] != t[1], zip(prev_reg.items(), cur_reg.items()))
+        return {prev[0]: prev[1] for prev, _ in diffed}
 
     def diff_ram(self, prev_ram, cur_ram):
+        """
+        diff two ram data if needed
+        """
+
         if any((cur_ram is None, prev_ram is None, prev_ram == cur_ram)):
             return
 
@@ -623,13 +597,14 @@ class SnapshotManager(object):
         return ram
 
     def diff(self, cur_st):
-        last_st = self.layers.pop()
-        diffed_reg = self.diff_reg(last_st.reg, cur_st.reg)
-        diffed_ram = self.diff_ram(last_st.ram, cur_st.ram)
-        return self.State((diffed_reg, diffed_ram))
+        """
+        diff between previous and current state
+        """
 
-    def _save(self) -> State:
-        return self.State(self.ql.save())
+        prev_st = self.layers.pop()
+        diffed_reg = self.diff_reg(prev_st.reg, cur_st.reg)
+        diffed_ram = self.diff_ram(prev_st.ram, cur_st.ram)
+        return self.DiffedState((diffed_reg, diffed_ram))
 
     def save(self):
         """
@@ -638,12 +613,17 @@ class SnapshotManager(object):
 
         st = self._save()
 
-        if len(self.layers) != 0 and isinstance(self.layers[-1], dict):
+        if len(self.layers) > 0 and isinstance(self.layers[-1], self.State):
+            # merge two context_save to be a diffed state
             st = self.diff(st)
 
         self.layers.append(st)
 
     def restore(self):
+        """
+        helper function for restoring running state from an existing incremental snapshot
+        """
+
         prev_st = self.layers.pop()
         cur_st = self._save()
 
@@ -670,6 +650,147 @@ class SnapshotManager(object):
             to_be_restored.update({"mem": {"ram": ram, "mmio": {}}})
 
         self.ql.restore(to_be_restored)
+
+class MemoryManager(Manager):
+    """
+    memory manager for handing memory access 
+    """
+
+    def __init__(self, ql):
+        super().__init__(ql)
+
+        self.DEFAULT_FMT = ('x', 4, 1)
+
+        self.FORMAT_LETTER = {
+                "o", # octal
+                "x", # hex
+                "d", # decimal
+                "u", # unsigned decimal
+                "t", # binary
+                "f", # float
+                "a", # address
+                "i", # instruction
+                "c", # char
+                "s", # string
+                "z", # hex, zero padded on the left
+                }
+
+        self.SIZE_LETTER = {
+            "b": 1, # 1-byte, byte
+            "h": 2, # 2-byte, halfword
+            "w": 4, # 4-byte, word
+            "g": 8, # 8-byte, giant
+            }
+
+    def extract_count(self, t):
+        return "".join([s for s in t if s.isdigit()])
+
+    def get_fmt(self, text):
+
+        f, s, c = self.DEFAULT_FMT
+        if self.extract_count(text):
+            c = int(self.extract_count(text))
+
+        for char in text.strip(str(c)):
+            if char in self.SIZE_LETTER.keys():
+                s = self.SIZE_LETTER.get(char)
+
+            elif char in self.FORMAT_LETTER:
+                f = char
+
+        return (f, s, c)
+
+    def unpack(self, bs: bytes, sz: int) -> int:
+        return {
+                1: lambda x: x[0],
+                2: self.ql.unpack16,
+                4: self.ql.unpack32,
+                8: self.ql.unpack64,
+                }.get(sz)(bs)
+
+    def parse(self, line: str):
+        args = line.split()
+
+        if line.startswith("/"):  # followed by format letter and size letter
+
+            fmt, *rest = line.strip("/").split()
+
+            rest = "".join(rest)
+
+            fmt = self.get_fmt(fmt)
+
+        elif len(args) == 1:  # only address
+            rest = args[0]
+            fmt = DEFAULT_FMT
+
+        else:
+            rest = args
+
+        if self.ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB):
+            rest = rest.replace("fp", "r11")
+
+        elif self.ql.archtype == QL_ARCH.MIPS:
+            rest = rest.replace("fp", "s8")
+
+
+        # for supporting addition of register with constant value
+        elems = rest.split("+")
+        elems = [elem.strip("$") for elem in elems]
+
+        items = []
+
+        for elem in elems:
+            if elem in self.ql.reg.register_mapping.keys():
+                if (value := getattr(self.ql.reg, elem, None)):
+                    items.append(value)
+            else:
+                items.append(read_int(elem))
+
+        addr = sum(items)
+
+        ft, sz, ct = fmt
+
+        if ft == "i":
+
+            for offset in range(addr, addr+ct*4, 4):
+                line = disasm(self.ql, offset)
+                if line:
+                    print(f"0x{line.address:x}: {line.mnemonic}\t{line.op_str}")
+
+            print()
+
+        else:
+            lines = 1 if ct <= 4 else math.ceil(ct / 4)
+
+            mem_read = []
+            for offset in range(ct):
+                # append data if read successfully, otherwise return error message
+                if (data := try_read(self.ql, addr+(offset*sz), sz))[0] is not None:
+                    mem_read.append(data[0])
+
+                else:
+                    return data[1]
+
+            for line in range(lines):
+                offset = line * sz * 4
+                print(f"0x{addr+offset:x}:\t", end="")
+
+                idx = line * self.ql.pointersize
+                for each in mem_read[idx:idx+self.ql.pointersize]:
+                    data = self.unpack(each, sz)
+                    prefix = "0x" if ft in ("x", "a") else ""
+                    pad = '0' + str(sz*2) if ft in ('x', 'a', 't') else ''
+                    ft = ft.lower() if ft in ("x", "o", "b", "d") else ft.lower().replace("t", "b").replace("a", "x")
+                    print(f"{prefix}{data:{pad}{ft}}\t", end="")
+
+                print()
+
+        return True
+
+    def read(self, address: int, size: int):
+        self.ql.read(address, size)
+
+
 
 if __name__ == "__main__":
     pass

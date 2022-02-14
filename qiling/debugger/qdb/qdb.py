@@ -12,13 +12,17 @@ from qiling import Qiling
 from qiling.const import QL_ARCH, QL_VERBOSE
 from qiling.debugger import QlDebugger
 
-from .frontend import examine_mem, setup_ctx_manager
-from .utils import is_thumb, parse_int, setup_branch_predictor, disasm
-from .utils import Breakpoint, TempBreakpoint, SnapshotManager
+from .frontend import setup_ctx_manager
+from .utils import Breakpoint, TempBreakpoint
+from .utils import setup_branch_predictor, SnapshotManager, MemoryManager
+from .misc import disasm, parse_int, is_thumb
 from .const import color
 
 
 class QlQdb(cmd.Cmd, QlDebugger):
+    """
+    The built-in debugger of Qiling Framework
+    """
 
     def __init__(self: QlQdb, ql: Qiling, init_hook: str = "", rr: bool = False) -> None:
 
@@ -28,6 +32,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         self.bp_list = {}
 
         self.rr = SnapshotManager(ql) if rr else None
+        self.mm = MemoryManager(ql)
         self.ctx = setup_ctx_manager(ql)
         self.predictor = setup_branch_predictor(ql)
 
@@ -66,6 +71,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         self.cur_addr = self.ql.loader.entry_point
 
         if self.rr:
+            # initial context save for diff snapshot
             self.rr.save()
 
         if self.ql.archtype == QL_ARCH.CORTEX_M:
@@ -188,13 +194,17 @@ class QlQdb(cmd.Cmd, QlDebugger):
         step barkward if it's possible, option rr should be enabled and previous instruction must be executed before
         """
 
-        if len(self.rr.layers) == 0:
-            print(f"{color.RED}[!] there is no way back !!!{color.END}")
+        if self.rr:
+            if len(self.rr.layers) == 0 or not isinstance(self.rr.layers[-1], self.rr.DiffedState):
+                print(f"{color.RED}[!] there is no way back !!!{color.END}")
 
+            else:
+                print(f"{color.CYAN}[+] step backward ~{color.END}")
+                self.rr.restore()
+                self.do_context()
         else:
-            print(f"{color.CYAN}[+] step backward ~{color.END}")
-            self.rr.restore()
-            self.do_context()
+            print(f"{color.RED}[!] the option rr not yet been set !!!{color.END}")
+
 
     def update_reg_dump(self: QlQdb) -> None:
         """
@@ -224,6 +234,8 @@ class QlQdb(cmd.Cmd, QlDebugger):
                 self._run(count=1)
 
                 if self.rr:
+                    # context save after execution, so we could do diff
+                    # on two states before and after.
                     self.rr.save()
 
             self.do_context()
@@ -248,10 +260,12 @@ class QlQdb(cmd.Cmd, QlDebugger):
             else:
                 self.set_breakpoint(prophecy.where, is_temp=True)
 
-                self._run()
+            self._run()
 
-                if self.rr:
-                    self.rr.save()
+            if self.rr:
+                # context save after execution, so we could do diff
+                # on two states before and after.
+                self.rr.save()
 
     def set_breakpoint(self: QlQdb, address: int, is_temp: bool = False) -> None:
         """
@@ -313,11 +327,11 @@ class QlQdb(cmd.Cmd, QlDebugger):
         e.g. x/4wx 0x41414141 , print 4 word size begin from address 0x41414141 in hex
         """
 
-        try:
-            if type(err_msg := examine_mem(self.ql, line)) is str:
-                print(f"{color.RED}[!] {err_msg} ...{color.END}")
-        except:
-            print(f"{color.RED}[!] something went wrong ...{color.END}")
+        # try:
+        if type(err_msg := self.mm.parse(line)) is str:
+            print(f"{color.RED}[!] {err_msg} ...{color.END}")
+        # except:
+            # print(f"{color.RED}[!] something went wrong ...{color.END}")
 
     def do_show(self: QlQdb, *args) -> None:
         """
@@ -326,7 +340,8 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         self.ql.mem.show_mapinfo()
         print(f"Breakpoints: {[hex(addr) for addr in self.bp_list.keys()]}")
-        print(f"Snaptshots: {len(self.rr.layers)}")
+        if self.rr:
+            print(f"Snapshots: {len([st for st in self.rr.layers if isinstance(st, self.rr.DiffedState)])}")
 
     @parse_int
     def do_disassemble(self: QlQdb, address: Optional[int] = 0, *args) -> None:
