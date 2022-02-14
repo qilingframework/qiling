@@ -288,6 +288,7 @@ class QlMemoryManager:
 
     def read_ptr(self, addr: int, size: int=None) -> int:
         """Read an integer value from a memory address.
+        Bytes read will be unpacked using emulated architecture properties.
 
         Args:
             addr: memory address to read
@@ -306,10 +307,10 @@ class QlMemoryManager:
             8 : self.ql.unpack64
         }.get(size)
 
-        if __unpack:
-            return __unpack(self.read(addr, size))
+        if __unpack is None:
+            raise QlErrorStructConversion(f"Unsupported pointer size: {size}")
 
-        raise QlErrorStructConversion(f"Unsupported pointer size: {size}")
+        return __unpack(self.read(addr, size))
 
     def write(self, addr: int, data: bytes) -> None:
         """Write bytes to a memory.

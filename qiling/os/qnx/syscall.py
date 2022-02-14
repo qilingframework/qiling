@@ -107,7 +107,7 @@ def ql_syscall_sys_cpupage_get(ql:Qiling, index, *args, **kw):
         return ql.os.cpupage_addr
     # CPUPAGE_PLS
     elif index == 1:
-        return ql.unpack32(ql.mem.read(ql.os.cpupage_addr + 4, 4))
+        return ql.mem.read_ptr(ql.os.cpupage_addr + 4, 4)
     # CPUPAGE_SYSPAGE
     elif index == 2:
         return ql.os.syspage_addr

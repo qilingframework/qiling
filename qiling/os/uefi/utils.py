@@ -67,7 +67,7 @@ def ptr_read8(ql: Qiling, addr: int) -> int:
 	"""Read BYTE data from a pointer
 	"""
 
-	return ql.unpack8(ql.mem.read(addr, 1))
+	return ql.mem.read_ptr(addr, 1)
 
 def ptr_write8(ql: Qiling, addr: int, val: int) -> None:
 	"""Write BYTE data to a pointer
@@ -79,7 +79,7 @@ def ptr_read16(ql: Qiling, addr: int) -> int:
 	"""Read WORD data from a pointer
 	"""
 
-	return ql.unpack16(ql.mem.read(addr, 2))
+	return ql.mem.read_ptr(addr, 2)
 
 def ptr_write16(ql: Qiling, addr: int, val: int) -> None:
 	"""Write WORD data to a pointer
@@ -91,7 +91,7 @@ def ptr_read32(ql: Qiling, addr: int) -> int:
 	"""Read DWORD data from a pointer
 	"""
 
-	return ql.unpack32(ql.mem.read(addr, 4))
+	return ql.mem.read_ptr(addr, 4)
 
 def ptr_write32(ql: Qiling, addr: int, val: int) -> None:
 	"""Write DWORD data to a pointer
@@ -103,7 +103,7 @@ def ptr_read64(ql: Qiling, addr: int) -> int:
 	"""Read QWORD data from a pointer
 	"""
 
-	return ql.unpack64(ql.mem.read(addr, 8))
+	return ql.mem.read_ptr(addr, 8)
 
 def ptr_write64(ql: Qiling, addr: int, val: int) -> None:
 	"""Write QWORD data to a pointer
