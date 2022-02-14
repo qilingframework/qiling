@@ -88,10 +88,10 @@ class QlWindowsThread(QlThread):
 
         # set return address, parameters
         if self.ql.arch.type == QL_ARCH.X86:
-            self.ql.mem.write(new_stack - 4, self.ql.pack32(self.ql.os.thread_manager.THREAD_RET_ADDR))
-            self.ql.mem.write(new_stack, self.ql.pack32(func_params))
+            self.ql.mem.write_ptr(new_stack - 4, self.ql.os.thread_manager.THREAD_RET_ADDR)
+            self.ql.mem.write_ptr(new_stack, func_params)
         elif self.ql.arch.type == QL_ARCH.X8664:
-            self.ql.mem.write(new_stack - 8, self.ql.pack64(self.ql.os.thread_manager.THREAD_RET_ADDR))
+            self.ql.mem.write_ptr(new_stack - 8, self.ql.os.thread_manager.THREAD_RET_ADDR)
             self.saved_context["rcx"] = func_params
 
         # set eip/rip, ebp/rbp, esp/rsp

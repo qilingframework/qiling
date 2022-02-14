@@ -513,7 +513,7 @@ class QlLoaderELF(QlLoader):
                                 # FIXME: this is for rootkit to scan for syscall table from page_offset_base
                                 # write address of syscall table to this slot, so syscall scanner can quickly find it
                                 if symbol_name == "page_offset_base":
-                                    ql.mem.write(self.ql.os.hook_addr, self.ql.pack(SYSCALL_MEM))
+                                    ql.mem.write_ptr(self.ql.os.hook_addr, SYSCALL_MEM)
 
                                 # we also need to do reverse lookup from symbol to address
                                 rev_reloc_symbols[symbol_name] = self.ql.os.hook_addr
@@ -539,48 +539,49 @@ class QlLoaderELF(QlLoader):
                         if rel['r_addend']:
                             val = sym_offset + rel['r_addend']
                             val += mem_start
-                            ql.mem.write(loc, ql.pack32(val & 0xFFFFFFFF))
                         else:
-                            ql.mem.write(loc, ql.pack32(rev_reloc_symbols[symbol_name] & 0xFFFFFFFF))
+                            val = rev_reloc_symbols[symbol_name]
+
+                        ql.mem.write_ptr(loc, (val & 0xFFFFFFFF), 4)
 
                     elif desc == 'R_X86_64_64':
                         val = sym_offset + rel['r_addend']
                         val += 0x2000000  # init_module position: FIXME
-                        ql.mem.write(loc, ql.pack64(val))
+                        ql.mem.write_ptr(loc, val, 8)
 
                     elif desc == 'R_X86_64_PC64':
                         val = rel['r_addend'] - loc
                         val += rev_reloc_symbols[symbol_name]
-                        ql.mem.write(loc, ql.pack64(val))
+                        ql.mem.write_ptr(loc, val, 8)
 
                     elif desc in ('R_X86_64_PC32', 'R_X86_64_PLT32'):
                         val = rel['r_addend'] - loc
                         val += rev_reloc_symbols[symbol_name]
-                        ql.mem.write(loc, ql.pack32(val & 0xFFFFFFFF))
+                        ql.mem.write_ptr(loc, (val & 0xFFFFFFFF), 4)
 
                     elif desc in ('R_386_PC32', 'R_386_PLT32'):
                         val = ql.mem.read_ptr(loc, 4)
                         val = rev_reloc_symbols[symbol_name] + val - loc
-                        ql.mem.write(loc, ql.pack32(val & 0xFFFFFFFF))
+                        ql.mem.write_ptr(loc, (val & 0xFFFFFFFF), 4)
 
                     elif desc in ('R_386_32', 'R_MIPS_32'):
                         val = ql.mem.read_ptr(loc, 4)
                         val = rev_reloc_symbols[symbol_name] + val
-                        ql.mem.write(loc, ql.pack32(val & 0xFFFFFFFF))
+                        ql.mem.write_ptr(loc, (val & 0xFFFFFFFF), 4)
 
                     elif desc == 'R_MIPS_HI16':
                         # actual relocation is done in R_MIPS_LO16
                         prev_mips_hi16_loc = loc
 
                     elif desc == 'R_MIPS_LO16':
-                        val = ql.unpack16(ql.mem.read(prev_mips_hi16_loc + 2, 2)) << 16 | ql.unpack16(ql.mem.read(loc + 2, 2))
+                        val = ql.mem.read_ptr(prev_mips_hi16_loc + 2, 2) << 16 | ql.mem.read_ptr(loc + 2, 2)
                         val = rev_reloc_symbols[symbol_name] + val
                         # *(word)(mips_lo16_loc + 2) is treated as signed
                         if (val & 0xFFFF) >= 0x8000:
                             val += (1 << 16)
 
-                        ql.mem.write(prev_mips_hi16_loc + 2, ql.pack16(val >> 16))
-                        ql.mem.write(loc + 2, ql.pack16(val & 0xFFFF))
+                        ql.mem.write_ptr(prev_mips_hi16_loc + 2, (val >> 16), 2)
+                        ql.mem.write_ptr(loc + 2, (val & 0xFFFF), 2)
 
                     else:
                         raise NotImplementedError(f'Relocation type {desc} not implemented')
@@ -651,12 +652,12 @@ class QlLoaderELF(QlLoader):
                     dest = SYSCALL_MEM + syscall_id * self.ql.arch.pointersize
 
                     self.ql.log.debug(f'Writing syscall {tmp_sc} to {dest:#x}')
-                    self.ql.mem.write(dest, self.ql.pack(addr))
+                    self.ql.mem.write_ptr(dest, addr)
 
         # write syscall addresses into syscall table
-        self.ql.mem.write(SYSCALL_MEM + 0 * self.ql.arch.pointersize, self.ql.pack(self.ql.os.hook_addr + 0 * self.ql.arch.pointersize))
-        self.ql.mem.write(SYSCALL_MEM + 1 * self.ql.arch.pointersize, self.ql.pack(self.ql.os.hook_addr + 1 * self.ql.arch.pointersize))
-        self.ql.mem.write(SYSCALL_MEM + 2 * self.ql.arch.pointersize, self.ql.pack(self.ql.os.hook_addr + 2 * self.ql.arch.pointersize))
+        self.ql.mem.write_ptr(SYSCALL_MEM + 0 * self.ql.arch.pointersize, self.ql.os.hook_addr + 0 * self.ql.arch.pointersize)
+        self.ql.mem.write_ptr(SYSCALL_MEM + 1 * self.ql.arch.pointersize, self.ql.os.hook_addr + 1 * self.ql.arch.pointersize)
+        self.ql.mem.write_ptr(SYSCALL_MEM + 2 * self.ql.arch.pointersize, self.ql.os.hook_addr + 2 * self.ql.arch.pointersize)
 
         # setup hooks for read/write/open syscalls
         self.import_symbols[self.ql.os.hook_addr + 0 * self.ql.arch.pointersize] = hook_sys_read

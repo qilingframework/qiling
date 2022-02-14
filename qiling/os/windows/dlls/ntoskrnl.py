@@ -68,7 +68,7 @@ def hook_ZwSetInformationThread(ql: Qiling, address: int, params):
             ql.log.debug("The target is checking debugger via SetInformationThread")
 
             if dst != 0:
-                ql.mem.write(dst, ql.pack8(0))
+                ql.mem.write_ptr(dst, 0, 1)
         else:
             raise QlErrorNotImplemented(f'API not implemented {information}')
 
@@ -187,7 +187,7 @@ def __IoCreateDevice(ql: Qiling, address: int, params):
     device_object.Characteristics = DeviceCharacteristics
 
     ql.mem.write(addr, bytes(device_object)[:])
-    ql.mem.write(DeviceObject, ql.pack(addr))
+    ql.mem.write_ptr(DeviceObject, addr)
 
     # update DriverObject.DeviceObject
     ql.loader.driver_object.DeviceObject = addr
@@ -765,7 +765,7 @@ def _NtQuerySystemInformation(ql: Qiling, address: int, params):
             size = 4 + ctypes.sizeof(RTL_PROCESS_MODULE_INFORMATION32) * NumberOfModules
 
         if params["ReturnLength"] != 0:
-            ql.mem.write(params["ReturnLength"], ql.pack(size))
+            ql.mem.write_ptr(params["ReturnLength"], size)
 
         if params["SystemInformationLength"] < size:
             return STATUS_INFO_LENGTH_MISMATCH
@@ -1079,7 +1079,7 @@ def hook_PsLookupProcessByProcessId(ql: Qiling, address: int, params):
         obj = EPROCESS32
 
     addr = ql.os.heap.alloc(ctypes.sizeof(obj))
-    ql.mem.write(Process, ql.pack(addr))
+    ql.mem.write_ptr(Process, addr)
     ql.log.info(f'PID = {ProcessId:#x}, addrof(EPROCESS) == {addr:#x}')
 
     return STATUS_SUCCESS
@@ -1160,12 +1160,12 @@ def hook_PsCreateSystemThread(ql: Qiling, address: int, params):
 
     # set lpThreadId
     if lpThreadId != 0:
-        ql.mem.write(lpThreadId, ql.pack(UniqueProcess))
-        ql.mem.write(lpThreadId + ql.arch.pointersize, ql.pack(thread_id))
+        ql.mem.write_ptr(lpThreadId, UniqueProcess)
+        ql.mem.write_ptr(lpThreadId + ql.arch.pointersize, thread_id)
 
     # set lpThreadId
     if ThreadHandle != 0:
-        ql.mem.write(ThreadHandle, ql.pack(handle_value))
+        ql.mem.write_ptr(ThreadHandle, handle_value)
 
     # set thread handle
     return STATUS_SUCCESS
@@ -1272,7 +1272,7 @@ def hook_ObOpenObjectByPointer(ql: Qiling, address: int, params):
 
     new_handle = Handle(name=f'p={Object:x}')
     ql.os.handle_manager.append(new_handle)
-    ql.mem.write(point_to_new_handle, ql.pack(new_handle.id))
+    ql.mem.write_ptr(point_to_new_handle, new_handle.id)
     ql.log.info(f'New handle of {Object:#x} is {new_handle.id:#x}')
 
     return STATUS_SUCCESS

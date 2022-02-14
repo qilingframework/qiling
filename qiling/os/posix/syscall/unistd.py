@@ -168,7 +168,7 @@ def ql_syscall__llseek(ql: Qiling, fd: int, offset_high: int, offset_low: int, r
     except OSError:
         regreturn = -1
     else:
-        ql.mem.write(result, ql.pack64(ret))
+        ql.mem.write_ptr(result, ret, 8)
         regreturn = 0
 
     # ql.log.debug("_llseek(%d, 0x%x, 0x%x, 0x%x) = %d" % (fd, offset_high, offset_low, origin, regreturn))
@@ -543,8 +543,8 @@ def ql_syscall_pipe(ql: Qiling, pipefd: int):
         ql.arch.regs.v1 = idx2
         regreturn = idx1
     else:
-        ql.mem.write(pipefd + 0, ql.pack32(idx1))
-        ql.mem.write(pipefd + 4, ql.pack32(idx2))
+        ql.mem.write_ptr(pipefd + 0, idx1, 4)
+        ql.mem.write_ptr(pipefd + 4, idx2, 4)
         regreturn = 0
 
     return regreturn

@@ -426,7 +426,7 @@ def ql_syscall_accept(ql: Qiling, accept_sockfd, accept_addr, accept_addrlen):
             tmp_buf += inet_addr(address[0])
             tmp_buf += b'\x00' * 8
             ql.mem.write(accept_addr, tmp_buf)
-            ql.mem.write(accept_addrlen, ql.pack32(16))
+            ql.mem.write_ptr(accept_addrlen, 16, 4)
     except:
         if ql.verbose >= QL_VERBOSE.DEBUG:
             raise

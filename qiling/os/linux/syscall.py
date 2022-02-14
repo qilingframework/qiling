@@ -46,7 +46,7 @@ def ql_syscall_set_thread_area(ql: Qiling, u_info_addr: int):
             access = QL_X86_A_PRESENT | QL_X86_A_DATA | QL_X86_A_DATA_WRITABLE | QL_X86_A_PRIV_3 | QL_X86_A_DIR_CON_BIT
 
             ql.os.gdtm.register_gdt_segment(index, base, limit, access)
-            ql.mem.write(u_info_addr, ql.pack32(index))
+            ql.mem.write_ptr(u_info_addr, index, 4)
         else:
             ql.log.warning(f"Wrong index {index} from address {hex(u_info_addr)}")
             return -1
@@ -65,7 +65,7 @@ def ql_syscall_set_thread_area(ql: Qiling, u_info_addr: int):
 def ql_syscall_set_tls(ql, address, *args, **kw):
     if ql.arch.type == QL_ARCH.ARM:
         ql.arch.regs.c13_c0_3 = address
-        ql.mem.write(ql.arch.arm_get_tls_addr + 12, ql.pack32(address))
+        ql.mem.write_ptr(ql.arch.arm_get_tls_addr + 12, address, 4)
         ql.arch.regs.r0 = address
         ql.log.debug("settls(0x%x)" % address)
 

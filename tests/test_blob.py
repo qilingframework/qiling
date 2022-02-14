@@ -40,8 +40,8 @@ class BlobTest(unittest.TestCase):
 
             ql.arch.regs.arch_sp -= 0x20
             argv_ptr = ql.arch.regs.arch_sp
-            ql.mem.write(argv_ptr, ql.pack(arg0_ptr))
-            ql.mem.write(argv_ptr + ql.arch.pointersize, ql.pack(arg1_ptr))
+            ql.mem.write_ptr(argv_ptr, arg0_ptr)
+            ql.mem.write_ptr(argv_ptr + ql.arch.pointersize, arg1_ptr)
 
             ql.arch.regs.r2 = 2
             ql.arch.regs.r3 = argv_ptr

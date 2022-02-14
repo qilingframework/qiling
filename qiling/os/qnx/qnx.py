@@ -115,7 +115,7 @@ class QlOsQnx(QlOsPosix):
             self.ql.mem.write(self.syspage_addr, sp.read())
 
         # Address of struct _thread_local_storage for our thread
-        self.ql.mem.write(self.cpupage_addr, self.ql.pack32(self.cpupage_tls_addr))
+        self.ql.mem.write_ptr(self.cpupage_addr, self.cpupage_tls_addr, 4)
         tls = _thread_local_storage(self.ql, self.cpupage_tls_addr)
 
         # Fill TLS structure with proper values
@@ -127,7 +127,7 @@ class QlOsQnx(QlOsPosix):
         tls.updateToMem()
 
         # Address of the system page
-        self.ql.mem.write(self.cpupage_addr + 8, self.ql.pack32(self.syspage_addr))
+        self.ql.mem.write_ptr(self.cpupage_addr + 8, self.syspage_addr, 4)
 
         try:
             if self.ql.code:

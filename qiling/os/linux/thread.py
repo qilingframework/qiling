@@ -85,7 +85,7 @@ class QlLinuxThread(QlThread):
         self._robust_list_head_len = None
 
         if self._set_child_tid_address != None:
-            self.ql.mem.write(self._set_child_tid_address, ql.pack32(self.id))
+            self.ql.mem.write_ptr(self._set_child_tid_address, self.id, 4)
 
     @property
     def ql(self):
@@ -333,7 +333,7 @@ class QlLinuxThread(QlThread):
 
         if self.clear_child_tid_address is not None:
             self.ql.log.debug(f"Perform CLONE_CHILD_CLEARTID at {hex(self.clear_child_tid_address)}")
-            self.ql.mem.write(self.clear_child_tid_address, self.ql.pack32(0))
+            self.ql.mem.write_ptr(self.clear_child_tid_address, 0, 4)
             wakes = self.ql.os.futexm.get_futex_wake_list(self.ql, self.clear_child_tid_address, 1)
             self.clear_child_tid_address = None
             # When the thread is to stop, we don't have chance for next sched_cb, so
@@ -394,7 +394,7 @@ class QlLinuxX86Thread(QlLinuxThread):
             access = QL_X86_A_PRESENT | QL_X86_A_DATA | QL_X86_A_DATA_WRITABLE | QL_X86_A_PRIV_3 | QL_X86_A_DIR_CON_BIT
 
             self.ql.os.gdtm.register_gdt_segment(index, base, limit, access)
-            self.ql.mem.write(tls_addr, self.ql.pack32(index))
+            self.ql.mem.write_ptr(tls_addr, index, 4)
         else:
             raise
 

@@ -87,7 +87,7 @@ class PETest(unittest.TestCase):
 
             return ret
 
-        def _WriteFile(ql, address, params):
+        def _WriteFile(ql: Qiling, address: int, params):
             ret = 1
             hFile = params["hFile"]
             lpBuffer = params["lpBuffer"]
@@ -99,18 +99,17 @@ class PETest(unittest.TestCase):
                 s = ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
                 ql.os.stdout.write(s)
                 ql.os.stats.log_string(s.decode())
-                ql.mem.write(lpNumberOfBytesWritten, ql.pack(nNumberOfBytesToWrite))
+                ql.mem.write_ptr(lpNumberOfBytesWritten, nNumberOfBytesToWrite)
             else:
                 f = ql.os.handle_manager.get(hFile)
                 if f is None:
                     # Invalid handle
                     ql.os.last_error = 0xffffffff
                     return 0
-                else:
-                    f = f.obj
+
                 buffer = ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
-                f.write(bytes(buffer))
-                ql.mem.write(lpNumberOfBytesWritten, ql.pack32(nNumberOfBytesToWrite))
+                f.obj.write(bytes(buffer))
+                ql.mem.write_ptr(lpNumberOfBytesWritten, nNumberOfBytesToWrite, 4)
             return ret
 
         @winsdkapi(cc=STDCALL, params={
@@ -130,7 +129,7 @@ class PETest(unittest.TestCase):
                 buffer = ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
                 try:
                     r, nNumberOfBytesToWrite = utils.io_Write(ql.amsint32_driver, buffer)
-                    ql.mem.write(lpNumberOfBytesWritten, ql.pack32(nNumberOfBytesToWrite))
+                    ql.mem.write_ptr(lpNumberOfBytesWritten, nNumberOfBytesToWrite, 4)
                 except Exception:
                     print("Error")
                     r = 1

@@ -32,7 +32,7 @@ def ql_syscall_sendfile(ql: Qiling, out_fd: int, in_fd: int, offset: int, count:
 
     if offset:
         current_offset = ifile.tell()
-        ql.mem.write(offset, ql.pack(current_offset))
+        ql.mem.write_ptr(offset, current_offset)
         ifile.lseek(ifile_pos)
 
     return ofile.write(buf)

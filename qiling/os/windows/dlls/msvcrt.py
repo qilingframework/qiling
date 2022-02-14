@@ -95,9 +95,8 @@ def hook___p__environ(ql: Qiling, address: int, params):
         ql.mem.write(p_entry, entry)
 
         pp_entry = ql.os.heap.alloc(ql.arch.pointersize)
-        ql.mem.write(pp_entry, ql.pack(p_entry))
-
-        ql.mem.write(ret + i * ql.arch.pointersize, ql.pack(pp_entry))
+        ql.mem.write_ptr(pp_entry, p_entry)
+        ql.mem.write_ptr(ret + i * ql.arch.pointersize, pp_entry)
 
     return ret
 
@@ -162,10 +161,10 @@ def hook___p___argv(ql: Qiling, address: int, params):
         p_entry = ql.os.heap.alloc(len(entry))
 
         ql.mem.write(p_entry, entry)
-        ql.mem.write(p_argv + i * ql.arch.pointersize, ql.pack(p_entry))
+        ql.mem.write_ptr(p_argv + i * ql.arch.pointersize, p_entry)
 
     ret = ql.os.heap.alloc(ql.arch.pointersize)
-    ql.mem.write(ret, ql.pack(p_argv))
+    ql.mem.write_ptr(ret, p_argv)
 
     return ret
 
@@ -174,7 +173,7 @@ def hook___p___argv(ql: Qiling, address: int, params):
 def hook___p___argc(ql: Qiling, address: int, params):
     ret = ql.os.heap.alloc(ql.arch.pointersize)
 
-    ql.mem.write(ret, ql.pack(len(ql.argv)))
+    ql.mem.write_ptr(ret, len(ql.argv))
 
     return ret
 
@@ -441,7 +440,7 @@ def hook__onexit(ql: Qiling, address: int, params):
     function = params['function']
 
     addr = ql.os.heap.alloc(ql.arch.pointersize)
-    ql.mem.write(addr, ql.pack(function))
+    ql.mem.write_ptr(addr, function)
 
     return addr
 
@@ -532,7 +531,7 @@ def hook__wfopen_s(ql: Qiling, address: int, params):
     f = ql.os.fs_mapper.open(filename, mode)
     new_handle = Handle(obj=f)
     ql.os.handle_manager.append(new_handle)
-    ql.mem.write(pFile, ql.pack(new_handle.id))
+    ql.mem.write_ptr(pFile, new_handle.id)
 
     return 1
 

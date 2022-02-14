@@ -123,15 +123,15 @@ class HookFunc:
 
         # ARM64
         elif self.ql.arch.type == QL_ARCH.ARM64:
-            self.ql.mem.write(self.ql.arch.regs.sp, self.ql.pack(addr))
+            self.ql.arch.stack_write(0, addr)
 
         # X86
         elif  self.ql.arch.type == QL_ARCH.X86:
-            self.ql.mem.write(self.ql.arch.regs.esp, self.ql.pack(addr))
+            self.ql.arch.stack_write(0, addr)
 
         # X8664
         elif  self.ql.arch.type == QL_ARCH.X8664:
-            self.ql.mem.write(self.ql.arch.regs.rsp, self.ql.pack(addr))
+            self.ql.arch.stack_write(0, addr)
         else:
             raise
 
@@ -244,7 +244,7 @@ class HookFuncRel(HookFunc):
         self.ori_data = self.ql.mem.read(self.ori_offest + self.load_base, self.ql.arch.pointersize)        
         
         self.ql.mem.write(self.rel.ptr, self.rel.pack())
-        self.ql.mem.write(self.ori_offest + self.load_base, self.ql.pack(self.hook_fuc_ptr))
+        self.ql.mem.write_ptr(self.ori_offest + self.load_base, self.hook_fuc_ptr)
         self.ql.mem.write(self.hook_data_ptr, bytes(self.ori_data))
 
 class HookFuncMips(HookFunc):
@@ -263,13 +263,13 @@ class HookFuncMips(HookFunc):
 
         tmp = self.ql.unpack(self.ql.mem.read(self.got + self.load_base + self.gotidx * self.ql.arch.pointersize, self.ql.arch.pointersize))
         if tmp != self.hook_fuc_ptr:
-            self.ql.mem.write(self.got + self.load_base + self.gotidx * self.ql.arch.pointersize, self.ql.pack(self.hook_fuc_ptr))
-            self.ql.mem.write(self.hook_data_ptr, self.ql.pack(tmp))
+            self.ql.mem.write_ptr(self.got + self.load_base + self.gotidx * self.ql.arch.pointersize, self.hook_fuc_ptr)
+            self.ql.mem.write_ptr(self.hook_data_ptr, tmp)
     
     def _hook_got(self):
         self.ori_data = self.ql.mem.read(self.got + self.load_base + self.gotidx * self.ql.arch.pointersize, self.ql.arch.pointersize) 
 
-        self.ql.mem.write(self.got + self.load_base + self.gotidx * self.ql.arch.pointersize, self.ql.pack(self.hook_fuc_ptr))
+        self.ql.mem.write_ptr(self.got + self.load_base + self.gotidx * self.ql.arch.pointersize, self.hook_fuc_ptr)
         self.ql.mem.write(self.hook_data_ptr, bytes(self.ori_data))
     
     def enable(self):

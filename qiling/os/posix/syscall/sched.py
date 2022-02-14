@@ -86,7 +86,7 @@ def ql_syscall_clone(ql: Qiling, flags: int, child_stack: int, parent_tidptr: in
     ql.log.debug(f'{str(th)} created')
 
     if flags & CLONE_PARENT_SETTID == CLONE_PARENT_SETTID:
-        ql.mem.write(parent_tidptr, ql.pack32(th.id))
+        ql.mem.write_ptr(parent_tidptr, th.id, 4)
 
     ctx = ql.save(reg=True, mem=False)
     # Whether to set a new tls

@@ -53,7 +53,7 @@ class QlArch:
         """
 
         self.regs.arch_sp -= self.pointersize
-        self.ql.mem.write(self.regs.arch_sp, self.ql.pack(value))
+        self.ql.mem.write_ptr(self.regs.arch_sp, value)
 
         return self.regs.arch_sp
 
@@ -64,7 +64,7 @@ class QlArch:
         Returns: the value at the top of stack
         """
 
-        data = self.ql.unpack(self.ql.mem.read(self.regs.arch_sp, self.pointersize))
+        data = self.ql.mem.read_ptr(self.regs.arch_sp)
         self.regs.arch_sp += self.pointersize
 
         return data
@@ -84,7 +84,7 @@ class QlArch:
         Returns: the value at the specified address
         """
 
-        return self.ql.unpack(self.ql.mem.read(self.regs.arch_sp + offset, self.pointersize))
+        return self.ql.mem.read_ptr(self.regs.arch_sp + offset)
 
 
     def stack_write(self, offset: int, value: int) -> None:
@@ -99,7 +99,7 @@ class QlArch:
                     a 0 value means overwriting the value at the top of the stack
         """
 
-        self.ql.mem.write(self.regs.arch_sp + offset, self.ql.pack(value))
+        self.ql.mem.write_ptr(self.regs.arch_sp + offset, value)
 
 
     # Unicorn's CPU state save

@@ -36,7 +36,7 @@ def __RegOpenKey(ql: Qiling, address: int, params):
     new_handle = Handle(obj=key)
     ql.os.handle_manager.append(new_handle)
     if phkResult != 0:
-        ql.mem.write(phkResult, ql.pack(new_handle.id))
+        ql.mem.write_ptr(phkResult, new_handle.id)
     return ERROR_SUCCESS
 
 def __RegQueryValue(ql: Qiling, address: int, params):
@@ -78,7 +78,7 @@ def __RegQueryValue(ql: Qiling, address: int, params):
         length = ql.os.registry_manager.write_reg_value_into_mem(value, reg_type, lpData)
         # set lpcbData
         max_size = int.from_bytes(ql.mem.read(lpcbData, 4), byteorder="little")
-        ql.mem.write(lpcbData, ql.pack(length))
+        ql.mem.write_ptr(lpcbData, length)
         if max_size < length:
             ret = ERROR_MORE_DATA
 
@@ -106,7 +106,7 @@ def __RegCreateKey(ql: Qiling, address: int, params):
         new_handle = Handle(obj=s_hKey + "\\" + lpSubKey)
         ql.os.handle_manager.append(new_handle)
         if phkResult != 0:
-            ql.mem.write(phkResult, ql.pack(new_handle.id))
+            ql.mem.write_ptr(phkResult, new_handle.id)
     else:
         # elicn: is this even reachable?
         new_handle = 0
@@ -672,7 +672,7 @@ def hook_AllocateAndInitializeSid(ql: Qiling, address: int, params):
     handle = Handle(obj=sid, id=sid_addr)
     ql.os.handle_manager.append(handle)
     dest = params["pSid"]
-    ql.mem.write(dest, ql.pack(sid_addr))
+    ql.mem.write_ptr(dest, sid_addr)
 
     return 1
 
@@ -744,7 +744,7 @@ def hook_CheckTokenMembership(ql: Qiling, address: int, params):
             assert False, 'unimplemented'
     else:
         assert False, 'unimplemented'
-    ql.mem.write(params['IsMember'], ql.pack(IsMember))
+    ql.mem.write_ptr(params['IsMember'], IsMember)
     return 1
 
 

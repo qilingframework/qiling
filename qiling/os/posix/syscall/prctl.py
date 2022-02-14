@@ -15,8 +15,8 @@ def ql_syscall_arch_prctl(ql: Qiling, code: int, addr: int):
     handlers = {
         ARCH_SET_GS : lambda : ql.arch.msr.write(IA32_GS_BASE_MSR, addr),
         ARCH_SET_FS : lambda : ql.arch.msr.write(IA32_FS_BASE_MSR, addr),
-        ARCH_GET_FS : lambda : ql.mem.write(addr, ql.pack64(ql.arch.msr.read(IA32_FS_BASE_MSR))),
-        ARCH_GET_GS : lambda : ql.mem.write(addr, ql.pack64(ql.arch.msr.read(IA32_GS_BASE_MSR)))
+        ARCH_GET_FS : lambda : ql.mem.write_ptr(addr, ql.arch.msr.read(IA32_FS_BASE_MSR), 8),
+        ARCH_GET_GS : lambda : ql.mem.write_ptr(addr, ql.arch.msr.read(IA32_GS_BASE_MSR), 8)
     }
 
     if code not in handlers:

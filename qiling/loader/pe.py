@@ -245,9 +245,9 @@ class Process():
         self.structure_last_addr += teb_size
         if self.ql.arch.type == QL_ARCH.X8664:
             # TEB
-            self.ql.mem.write(gs + 0x30, self.ql.pack64(teb_addr))
+            self.ql.mem.write_ptr(gs + 0x30, teb_addr)
             # PEB
-            self.ql.mem.write(gs + 0x60, self.ql.pack64(teb_addr + teb_size))
+            self.ql.mem.write_ptr(gs + 0x60, teb_addr + teb_size)
 
         self.TEB = self.ql.TEB = teb_data
 

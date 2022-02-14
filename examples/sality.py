@@ -90,7 +90,7 @@ def _WriteFile(ql: Qiling, address: int, params):
         s = ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
         ql.os.stdout.write(s)
         ql.os.stats.log_string(s.decode())
-        ql.mem.write(lpNumberOfBytesWritten, ql.pack(nNumberOfBytesToWrite))
+        ql.mem.write_ptr(lpNumberOfBytesWritten, nNumberOfBytesToWrite)
     else:
         f = ql.os.handle_manager.get(hFile)
         if f is None:
@@ -101,7 +101,7 @@ def _WriteFile(ql: Qiling, address: int, params):
             f = f.obj
         buffer = ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
         f.write(bytes(buffer))
-        ql.mem.write(lpNumberOfBytesWritten, ql.pack32(nNumberOfBytesToWrite))
+        ql.mem.write_ptr(lpNumberOfBytesWritten, nNumberOfBytesToWrite, 4)
     return ret
 
 @winsdkapi(cc=STDCALL, params={
@@ -120,7 +120,7 @@ def hook_WriteFile(ql: Qiling, address: int, params):
         buffer = ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
         try:
             r, nNumberOfBytesToWrite = utils.io_Write(ql.amsint32_driver, buffer)
-            ql.mem.write(lpNumberOfBytesWritten, ql.pack32(nNumberOfBytesToWrite))
+            ql.mem.write_ptr(lpNumberOfBytesWritten, nNumberOfBytesToWrite, 4)
         except Exception as e:
             ql.log.exception("")
             print("Exception = %s" % str(e))
