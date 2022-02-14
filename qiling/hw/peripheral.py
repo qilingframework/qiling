@@ -12,10 +12,28 @@ from qiling.hw.utils.access import Access, Op
 
 
 class QlPeripheralUtils:
+    def __init__(self):
+        self.verbose = False
+        
+        self.hook_read_list = []
+        self.hook_write_list = []
+
+    def watch(self):
+        self.verbose = True
+
+    def hook_read(self, callback, *args, **kwargs):
+        self.hook_read_list.append((callback, args, kwargs))
+
+    def hook_write(self, callback, *args, **kwargs):
+        self.hook_write_list.append((callback, args, kwargs))
+
     @staticmethod
     def monitor(width=4):
         def decorator(func):
             def read(self, offset: int, size: int) -> int:
+                for callback, args, kwargs in self.hook_read_list:
+                    callback(self, offset, size, *args, **kwargs)
+
                 retval = func(self, offset, size)
                 if self.verbose:
                     self.ql.log.info(f'[{self.label.upper()}] [{hex(self.ql.reg.pc)}] [R] {self.find_field(offset, size):{width}s} = {hex(retval)}')
@@ -23,6 +41,9 @@ class QlPeripheralUtils:
                 return retval
 
             def write(self, offset: int, size: int, value: int):
+                for callback, args, kwargs in self.hook_write_list:
+                    callback(self, offset, size, value, *args, **kwargs)
+
                 if self.verbose:
                     field, extra = self.find_field(offset, size), ''
                     if field.startswith('DR') and value <= 255:
@@ -88,20 +109,17 @@ class QlPeripheral(QlPeripheralUtils):
         _fields_ = []
     
     def __init__(self, ql: Qiling, label: str):
+        super().__init__()
+
         self.ql = ql
         self.label = label
         self.struct = type(self).Type
-
-        self.verbose = False
 
     def step(self):
         """ Update the state of the peripheral, 
             called after each instruction is executed
         """        
         pass
-
-    def watch(self):
-        self.verbose = True
     
     @QlPeripheralUtils.monitor()
     def read(self, offset: int, size: int) -> int:
