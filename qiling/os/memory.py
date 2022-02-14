@@ -321,6 +321,31 @@ class QlMemoryManager:
 
         self.ql.uc.mem_write(addr, data)
 
+    def write_ptr(self, addr: int, value: int, size: int=None) -> None:
+        """Write an integer value to a memory address.
+        Bytes written will be packed using emulated architecture properties.
+
+        Args:
+            addr: target memory address
+            value: integer value to write
+            size: pointer size (in bytes): either 1, 2, 4, 8, or None for arch native size
+        """
+
+        if not size:
+            size = self.ql.arch.pointersize
+
+        __pack = {
+            1 : self.ql.pack8,
+            2 : self.ql.pack16,
+            4 : self.ql.pack32,
+            8 : self.ql.pack64
+        }.get(size)
+
+        if __pack is None:
+            raise QlErrorStructConversion(f"Unsupported pointer size: {size}")
+
+        self.write(addr, __pack(value))
+
     def search(self, needle: bytes, begin: int = None, end: int = None) -> Sequence[int]:
         """Search for a sequence of bytes in memory.
 
