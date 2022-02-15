@@ -62,6 +62,7 @@ class TestOut:
         self.output[key] = value
         return len(string)
 
+IS_FAST_TEST = 'QL_FAST_TEST' in os.environ
 
 class PETest(unittest.TestCase):
 
@@ -111,8 +112,6 @@ class PETest(unittest.TestCase):
 
     def test_pe_win_x86_uselessdisk(self):
         def _t():
-            if 'QL_FAST_TEST' in os.environ:
-                return
             class Fake_Drive(QlFsMappedObject):
 
                 def read(self, size):
@@ -135,13 +134,11 @@ class PETest(unittest.TestCase):
             del ql
             return True
         
-        self.assertTrue(QLWinSingleTest(_t).run())
+        self.assertTrue(IS_FAST_TEST or QLWinSingleTest(_t).run())
 
 
     def test_pe_win_x86_gandcrab(self):
         def _t():
-            if 'QL_FAST_TEST' in os.environ:
-                return
             def stop(ql, default_values):
                 print("Ok for now")
                 ql.emu_stop()
@@ -210,7 +207,7 @@ class PETest(unittest.TestCase):
             del ql
             return True
         
-        self.assertTrue(QLWinSingleTest(_t).run())
+        self.assertTrue(IS_FAST_TEST or QLWinSingleTest(_t).run())
 
     def test_pe_win_x86_multithread(self):
         def _t():
@@ -325,8 +322,6 @@ class PETest(unittest.TestCase):
 
     def test_pe_win_x86_wannacry(self):
         def _t():
-            if 'QL_FAST_TEST' in os.environ:
-                return
             def stop(ql):
                 ql.log.info("killerswtichfound")
                 ql.log.setLevel(logging.CRITICAL)
@@ -339,7 +334,7 @@ class PETest(unittest.TestCase):
             del ql
             return True
         
-        self.assertTrue(QLWinSingleTest(_t).run())
+        self.assertTrue(IS_FAST_TEST or QLWinSingleTest(_t).run())
 
 
     def test_pe_win_x86_NtQueryInformationSystem(self):
@@ -356,8 +351,6 @@ class PETest(unittest.TestCase):
 
     def test_pe_win_al_khaser(self):
         def _t():
-            if 'QL_FAST_TEST' in os.environ:
-                return
             ql = Qiling(["../examples/rootfs/x86_windows/bin/al-khaser.bin"], "../examples/rootfs/x86_windows")
 
             # The hooks are to remove the prints to file. It crashes. will debug why in the future
@@ -384,7 +377,7 @@ class PETest(unittest.TestCase):
             del ql
             return True
 
-        self.assertTrue(QLWinSingleTest(_t).run())
+        self.assertTrue(IS_FAST_TEST or QLWinSingleTest(_t).run())
 
 
     def test_pe_win_x8664_customapi(self):
