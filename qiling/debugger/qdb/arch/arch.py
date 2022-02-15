@@ -5,7 +5,7 @@
 
 
 
-class Arch():
+class Arch:
     """
     base class for arch
     """

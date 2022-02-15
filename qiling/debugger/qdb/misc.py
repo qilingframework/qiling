@@ -6,7 +6,7 @@
 from typing import Callable, Optional
 
 
-class Breakpoint(object):
+class Breakpoint:
     """
     dummy class for breakpoint
     """

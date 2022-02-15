@@ -13,7 +13,7 @@ class BranchPredictor(Context):
     Base class for predictor
     """
 
-    class Prophecy():
+    class Prophecy:
         """
         container for storing result of the predictor
         @going: indicate the certian branch will be taken or not

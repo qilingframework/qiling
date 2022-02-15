@@ -66,12 +66,12 @@ def setup_context_render(ql, predictor):
 
 """
 
-class SnapshotManager():
+class SnapshotManager:
     """
     for functioning differential snapshot
     """
 
-    class State():
+    class State:
         """
         internal container for storing raw state from qiling
         """
@@ -79,7 +79,7 @@ class SnapshotManager():
         def __init__(self, saved_state):
             self.reg, self.ram = SnapshotManager.transform(saved_state)
 
-    class DiffedState():
+    class DiffedState:
         """
         internal container for storing diffed state
         """
