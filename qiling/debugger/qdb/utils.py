@@ -158,28 +158,37 @@ class SnapshotManager(Manager):
 
         return ram
 
-    def diff(self, cur_st):
+    def diff(self, before_st, after_st):
         """
         diff between previous and current state
         """
 
-        prev_st = self.layers.pop()
-        diffed_reg = self.diff_reg(prev_st.reg, cur_st.reg)
-        diffed_ram = self.diff_ram(prev_st.ram, cur_st.ram)
+        # prev_st = self.layers.pop()
+        diffed_reg = self.diff_reg(before_st.reg, after_st.reg)
+        diffed_ram = self.diff_ram(before_st.ram, after_st.ram)
+        # diffed_reg = self.diff_reg(prev_st.reg, cur_st.reg)
+        # diffed_ram = self.diff_ram(prev_st.ram, cur_st.ram)
         return self.DiffedState((diffed_reg, diffed_ram))
 
-    def save(self):
+    def snapshot(func):
         """
-        helper function for saving differential context
+        decorator function for saving differential context on certian qdb command
         """
+        def magic(self, *args, **kwargs):
+            # save State before execution
+            p_st = self.rr._save()
 
-        st = self._save()
+            # certian execution to be snapshot
+            func(self, *args, **kwargs)
 
-        if len(self.layers) > 0 and isinstance(self.layers[-1], self.State):
-            # merge two context_save to be a diffed state
-            st = self.diff(st)
+            # save State after execution
+            q_st = self.rr._save()
 
-        self.layers.append(st)
+            # merge two saved States into a DiffedState
+            st = self.rr.diff(p_st, q_st)
+            self.rr.layers.append(st)
+
+        return magic
 
     def restore(self):
         """

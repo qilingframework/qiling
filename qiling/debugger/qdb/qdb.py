@@ -23,6 +23,10 @@ class QlQdb(cmd.Cmd, QlDebugger):
     """
 
     def __init__(self: QlQdb, ql: Qiling, init_hook: str = "", rr: bool = False) -> None:
+        """
+        @init_hook: the entry to be paused at
+        @rr: record/replay debugging
+        """
 
         self.ql = ql
         self.prompt = f"{color.BOLD}{color.RED}Qdb> {color.END}"
@@ -39,6 +43,9 @@ class QlQdb(cmd.Cmd, QlDebugger):
         self.dbg_hook(init_hook)
 
     def dbg_hook(self: QlQdb, init_hook: str):
+        """
+        initial hook to prepare everything we need
+        """
 
         # self.ql.loader.entry_point  # ld.so
         # self.ql.loader.elf_entry    # .text of binary
@@ -67,10 +74,6 @@ class QlQdb(cmd.Cmd, QlDebugger):
             self.do_breakpoint(init_hook)
 
         self.cur_addr = self.ql.loader.entry_point
-
-        if self.rr:
-            # initial context save for diff snapshot
-            self.rr.save()
 
         if self.ql.archtype == QL_ARCH.CORTEX_M:
             self._run()
@@ -203,67 +206,67 @@ class QlQdb(cmd.Cmd, QlDebugger):
         else:
             print(f"{color.RED}[!] the option rr not yet been set !!!{color.END}")
 
-
-    def update_reg_dump(self: QlQdb) -> None:
+    def save_reg_dump(func) -> None:
         """
-        internal function for updating registers dump
+        decorator function for saving register dump
         """
-        self._saved_reg_dump = dict(filter(lambda d: isinstance(d[0], str), self.ql.reg.save().items()))
 
+        def inner(self, *args, **kwargs):
+            self._saved_reg_dump = dict(filter(lambda d: isinstance(d[0], str), self.ql.reg.save().items()))
+            func(self, *args, **kwargs)
+
+        return inner
+
+    def check_ql_alive(func) -> None:
+        """
+        decorator function for checking ql instance is alive
+        """
+
+        def inner(self, *args, **kwargs):
+            if self.ql is None:
+                print(f"{color.RED}[!] The program is not being run.{color.END}")
+            else:
+                func(self, *args, **kwargs)
+        return inner
+
+    @SnapshotManager.snapshot
+    @save_reg_dump
+    @check_ql_alive
     def do_step_in(self: QlQdb, *args) -> Optional[bool]:
         """
         execute one instruction at a time, will enter subroutine
         """
 
-        if self.ql is None:
-            print(f"{color.RED}[!] The program is not being run.{color.END}")
+        prophecy = self.predictor.predict()
 
+        if prophecy.where is True:
+            return True
+
+        if self.ql.archtype == QL_ARCH.CORTEX_M:
+            self.ql.arch.step()
         else:
-            self.update_reg_dump()
+            self._run(count=1)
 
-            prophecy = self.predictor.predict()
+        self.do_context()
 
-            if prophecy.where is True:
-                return True
-
-            if self.ql.archtype == QL_ARCH.CORTEX_M:
-                self.ql.arch.step()
-            else:
-                self._run(count=1)
-
-                if self.rr:
-                    # context save after execution, so we could do diff
-                    # on two states before and after.
-                    self.rr.save()
-
-            self.do_context()
-
+    @SnapshotManager.snapshot
+    @save_reg_dump
+    @check_ql_alive
     def do_step_over(self: QlQdb, *args) -> Option[bool]:
         """
         execute one instruction at a time, but WON't enter subroutine
         """
 
-        if self.ql is None:
-            print(f"{color.RED}[!] The program is not being run.{color.END}")
+        prophecy = self.predictor.predict()
+
+        if prophecy.going:
+            cur_insn = disasm(self.ql, self.cur_addr)
+            self.set_breakpoint(self.cur_addr + cur_insn.size, is_temp=True)
 
         else:
+            self.set_breakpoint(prophecy.where, is_temp=True)
 
-            prophecy = self.predictor.predict()
-            self.update_reg_dump()
-
-            if prophecy.going:
-                cur_insn = disasm(self.ql, self.cur_addr)
-                self.set_breakpoint(self.cur_addr + cur_insn.size, is_temp=True)
-
-            else:
-                self.set_breakpoint(prophecy.where, is_temp=True)
-
-            self._run()
-
-            if self.rr:
-                # context save after execution, so we could do diff
-                # on two states before and after.
-                self.rr.save()
+        self._run()
 
     def set_breakpoint(self: QlQdb, address: int, is_temp: bool = False) -> None:
         """
@@ -304,6 +307,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         print(f"{color.CYAN}[+] Breakpoint at 0x{address:08x}{color.END}")
 
+    @SnapshotManager.snapshot
     @parse_int
     def do_continue(self: QlQdb, address: Optional[int] = 0) -> None:
         """
