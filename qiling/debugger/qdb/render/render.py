@@ -27,7 +27,7 @@ def get_terminal_size() -> Iterable:
 
 COLORS = (color.DARKCYAN, color.BLUE, color.RED, color.YELLOW, color.GREEN, color.PURPLE, color.CYAN, color.WHITE)
 
-class Render(object):
+class Render():
     """
     base class for rendering related functions
     """

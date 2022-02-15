@@ -7,7 +7,7 @@ from typing import Optional
 
 import unicorn
 
-class Context(object):
+class Context():
     """
     base class for accessing context of running qiling instance
     """
