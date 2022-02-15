@@ -37,7 +37,7 @@ class BranchPredictor(Context):
 
         return getattr(self.ql.reg, reg_name)
 
-    def predict(self) -> Prophecy:
+    def predict(self):
         """
         Try to predict certian branch will be taken or not based on current context
         """

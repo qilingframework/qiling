@@ -8,7 +8,7 @@
 from .arch import Arch
 
 class ArchMIPS(Arch):
-    def __init__(self: ArchMIPS):
+    def __init__(self):
         self.regs = (
                 "gp", "at", "v0", "v1",
                 "a0", "a1", "a2", "a3",

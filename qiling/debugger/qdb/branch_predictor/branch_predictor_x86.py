@@ -25,7 +25,7 @@ class BranchPredictorX86(BranchPredictor, ArchX86):
         super().__init__(ql)
         ArchX86.__init__(self)
 
-    def predict(self) -> Prophecy:
+    def predict(self):
         prophecy = self.Prophecy()
         line = self.disasm(self.cur_addr)
 

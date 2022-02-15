@@ -31,7 +31,7 @@ from .branch_predictor import (
 
 """
 
-def setup_branch_predictor(ql: Qiling) -> BranchPredictor:
+def setup_branch_predictor(ql):
     """
     setup BranchPredictor correspondingly
     """
@@ -44,7 +44,7 @@ def setup_branch_predictor(ql: Qiling) -> BranchPredictor:
             QL_ARCH.MIPS: BranchPredictorMIPS,
             }.get(ql.archtype)(ql)
 
-def setup_context_render(ql: Qiling, predictor: BranchPredictor) -> ContextRender:
+def setup_context_render(ql, predictor):
     """
     setup context render correspondingly
     """
@@ -110,7 +110,7 @@ class SnapshotManager(object):
         super().__init__(ql)
         self.layers = []
 
-    def _save(self) -> State():
+    def _save(self) -> State:
         """
         acquire current State by wrapping saved context from ql.save()
         """

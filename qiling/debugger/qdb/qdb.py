@@ -21,7 +21,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
     The built-in debugger of Qiling Framework
     """
 
-    def __init__(self: QlQdb, ql: Qiling, init_hook: str = "", rr: bool = False) -> None:
+    def __init__(self, ql: Qiling, init_hook: str = "", rr: bool = False) -> None:
         """
         @init_hook: the entry to be paused at
         @rr: record/replay debugging
@@ -41,7 +41,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         self.dbg_hook(init_hook)
 
-    def dbg_hook(self: QlQdb, init_hook: str):
+    def dbg_hook(self, init_hook: str):
         """
         initial hook to prepare everything we need
         """
@@ -84,7 +84,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         self.interactive()
 
     @property
-    def cur_addr(self: QlQdb) -> int:
+    def cur_addr(self) -> int:
         """
         getter for current address of qiling instance
         """
@@ -92,14 +92,14 @@ class QlQdb(cmd.Cmd, QlDebugger):
         return self.ql.reg.arch_pc
 
     @cur_addr.setter
-    def cur_addr(self: QlQdb, address: int) -> None:
+    def cur_addr(self, address: int) -> None:
         """
         setter for current address of qiling instance
         """
 
         self.ql.reg.arch_pc = address
 
-    def _run(self: Qldbg, address: int = 0, end: int = 0, count: int = 0) -> None:
+    def _run(self, address: int = 0, end: int = 0, count: int = 0) -> None:
         """
         internal function for emulating instruction
         """
@@ -152,7 +152,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
                 func(self, *args, **kwargs)
         return inner
 
-    def parseline(self: QlQdb, line: str) -> Tuple[Optional[str], Optional[str], str]:
+    def parseline(self, line: str) -> Tuple[Optional[str], Optional[str], str]:
         """
         Parse the line into a command name and a string containing
         the arguments.  Returns a tuple containing (command, args, line).
@@ -174,21 +174,21 @@ class QlQdb(cmd.Cmd, QlDebugger):
         cmd, arg = line[:i], line[i:].strip()
         return cmd, arg, line
 
-    def interactive(self: QlQdb, *args) -> None:
+    def interactive(self, *args) -> None:
         """
         initial an interactive interface
         """
 
         return self.cmdloop()
 
-    def run(self: QlQdb, *args) -> None:
+    def run(self, *args) -> None:
         """
         internal command for running debugger
         """
 
         self._run()
 
-    def emptyline(self: QlQdb, *args) -> None:
+    def emptyline(self, *args) -> None:
         """
         repeat last command
         """
@@ -196,7 +196,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         if (lastcmd := getattr(self, "do_" + self.lastcmd, None)):
             return lastcmd()
 
-    def do_run(self: QlQdb, *args) -> None:
+    def do_run(self, *args) -> None:
         """
         launch qiling instance
         """
@@ -206,7 +206,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
     @SnapshotManager.snapshot
     @save_reg_dump
     @check_ql_alive
-    def do_step_in(self: QlQdb, *args) -> Optional[bool]:
+    def do_step_in(self, *args) -> Optional[bool]:
         """
         execute one instruction at a time, will enter subroutine
         """
@@ -226,7 +226,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
     @SnapshotManager.snapshot
     @save_reg_dump
     @check_ql_alive
-    def do_step_over(self: QlQdb, *args) -> Option[bool]:
+    def do_step_over(self, *args) -> Optional[bool]:
         """
         execute one instruction at a time, but WON't enter subroutine
         """
@@ -244,7 +244,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
     @SnapshotManager.snapshot
     @parse_int
-    def do_continue(self: QlQdb, address: Optional[int] = 0) -> None:
+    def do_continue(self, address: Optional[int] = 0) -> None:
         """
         continue execution from current address if not specified
         """
@@ -256,7 +256,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         self._run(address)
 
-    def do_backward(self: QlQdb, *args) -> None:
+    def do_backward(self, *args) -> None:
         """
         step barkward if it's possible, option rr should be enabled and previous instruction must be executed before
         """
@@ -272,7 +272,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         else:
             print(f"{color.RED}[!] the option rr yet been set !!!{color.END}")
 
-    def set_breakpoint(self: QlQdb, address: int, is_temp: bool = False) -> None:
+    def set_breakpoint(self, address: int, is_temp: bool = False) -> None:
         """
         internal function for placing breakpoint
         """
@@ -281,7 +281,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         self.bp_list.update({address: bp})
 
-    def del_breakpoint(self: QlQdb, bp: Union[Breakpoint, TempBreakpoint]) -> None:
+    def del_breakpoint(self, bp: Union[Breakpoint, TempBreakpoint]) -> None:
         """
         internal function for removing breakpoint
         """
@@ -289,7 +289,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         self.bp_list.pop(bp.addr, None)
 
     @parse_int
-    def do_breakpoint(self: QlQdb, address: Optional[int] = 0) -> None:
+    def do_breakpoint(self, address: Optional[int] = 0) -> None:
         """
         set breakpoint on specific address
         """
@@ -302,7 +302,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         print(f"{color.CYAN}[+] Breakpoint at 0x{address:08x}{color.END}")
 
     @parse_int
-    def do_disassemble(self: QlQdb, address: Optional[int] = 0, *args) -> None:
+    def do_disassemble(self, address: Optional[int] = 0, *args) -> None:
         """
         disassemble instructions from address specified
         """
@@ -312,7 +312,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         except:
             print(f"{color.RED}[!] something went wrong ...{color.END}")
 
-    def do_examine(self: QlQdb, line: str) -> None:
+    def do_examine(self, line: str) -> None:
         """
         Examine memory: x/FMT ADDRESS.
         format letter: o(octal), x(hex), d(decimal), u(unsigned decimal), t(binary), f(float), a(address), i(instruction), c(char), s(string) and z(hex, zero padded on the left)
@@ -326,7 +326,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         # except:
             # print(f"{color.RED}[!] something went wrong ...{color.END}")
 
-    def do_start(self: QlQdb, *args) -> None:
+    def do_start(self, *args) -> None:
         """
         restore qiling instance context to initial state
         """
@@ -336,7 +336,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
             self.ql.restore(self.init_state)
             self.do_context()
 
-    def do_context(self: QlQdb, *args) -> None:
+    def do_context(self, *args) -> None:
         """
         display context information for current location
         """
@@ -345,7 +345,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         self.render.context_stack()
         self.render.context_asm()
 
-    def do_show(self: QlQdb, *args) -> None:
+    def do_show(self, *args) -> None:
         """
         show some runtime information
         """
@@ -355,7 +355,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         if self.rr:
             print(f"Snapshots: {len([st for st in self.rr.layers if isinstance(st, self.rr.DiffedState)])}")
 
-    def do_shell(self: QlQdb, *command) -> None:
+    def do_shell(self, *command) -> None:
         """
         run python code
         """
@@ -365,7 +365,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         except:
             print("something went wrong ...")
 
-    def do_quit(self: QlQdb, *args) -> bool:
+    def do_quit(self, *args) -> bool:
         """
         exit Qdb and stop running qiling instance
         """
@@ -373,7 +373,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         self.ql.stop()
         exit()
 
-    def do_EOF(self: QlQdb, *args) -> None:
+    def do_EOF(self, *args) -> None:
         """
         handle Ctrl+D
         """

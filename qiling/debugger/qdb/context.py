@@ -12,7 +12,7 @@ class Context(object):
     base class for accessing context of running qiling instance
     """
 
-    def __init__(self, ql) -> Context:
+    def __init__(self, ql):
         self.ql = ql
         self.unpack = ql.unpack
         self.unpack16 = ql.unpack16

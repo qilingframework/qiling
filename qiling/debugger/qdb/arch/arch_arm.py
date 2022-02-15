@@ -8,7 +8,7 @@ from typing import Mapping
 from .arch import Arch
 
 class ArchARM(Arch):
-    def __init__(self: ArchARM):
+    def __init__(self):
         self.regs = (
                 "r0", "r1", "r2", "r3",
                 "r4", "r5", "r6", "r7",
@@ -56,7 +56,7 @@ class ArchARM(Arch):
                 }
 
     @property
-    def thumb_mode(self: ArchARM) -> bool:
+    def thumb_mode(self) -> bool:
         """
         helper function for checking thumb mode
         """
@@ -88,6 +88,6 @@ class ArchARM(Arch):
 
 
 class ArchCORTEX_M(ArchARM):
-    def __init__(self: ArchARM):
+    def __init__(self):
         super().__init__()
         self.regs += ("xpsr", "control", "primask", "basepri", "faultmask")

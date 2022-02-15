@@ -13,7 +13,7 @@ class ContextRenderX86(ContextRender, ArchX86):
     context render for X86
     """
 
-    def __init__(self, ql: Qiling, predictor: BranchPredictor):
+    def __init__(self, ql, predictor):
         super().__init__(ql, predictor)
         ArchX86.__init__(self)
 

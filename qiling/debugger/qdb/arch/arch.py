@@ -5,16 +5,16 @@
 
 
 
-class Arch(object):
+class Arch():
     """
     base class for arch
     """
-    def __init__(self: Arch):
+    def __init__(self):
         pass
 
     @property
-    def archtype(self: Arch):
+    def archtype(self):
         return self.ql.archtype
 
-    def read_insn(self: Arch, address: int , insn_size: int = 4):
+    def read_insn(self, address: int , insn_size: int = 4):
         return self.read_mem(address, insn_size)

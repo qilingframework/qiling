@@ -13,7 +13,7 @@ class ContextRenderARM(ContextRender, ArchARM):
     context render for ARM
     """
 
-    def __init__(self, ql: Qiling, predictor: BranchPredictor):
+    def __init__(self, ql, predictor):
         super().__init__(ql, predictor)
         ArchARM.__init__(self)
 
@@ -39,7 +39,7 @@ class ContextRenderCORTEX_M(ContextRenderARM, ArchCORTEX_M):
     context render for cortex_m
     """
 
-    def __init__(self, ql: Qiling, predictor: BranchPredictor):
+    def __init__(self, ql, predictor):
         super().__init__(ql, predictor)
         ArchCORTEX_M.__init__(self)
         self.regs_a_row = 3

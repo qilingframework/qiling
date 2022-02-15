@@ -48,7 +48,7 @@ class Render(object):
             return wrapper
         return decorator
 
-    def __init__(self) -> Render:
+    def __init__(self):
         self.regs_a_row = 4
         self.stack_num = 10
         self.color = color
@@ -141,7 +141,7 @@ class Render(object):
 
         return cur_regs 
 
-    def print_asm(self, insn: CsInsn, to_jump: bool = False) -> None:
+    def print_asm(self, insn, to_jump: bool = False) -> None:
         """
         helper function for printing assembly instructions, indicates where we are and the branch prediction
         provided by BranchPredictor
@@ -162,7 +162,7 @@ class ContextRender(Context, Render):
     base class for context render
     """
 
-    def __init__(self, ql: Qiling, predictor: BranchPredictor):
+    def __init__(self, ql, predictor):
         super().__init__(ql)
         Render.__init__(self)
         self.predictor = predictor

@@ -13,13 +13,13 @@ class ContextRenderMIPS(ContextRender, ArchMIPS):
     context render for MIPS
     """
 
-    def __init__(self, ql: Qiling, predictor: BranchPredictor):
+    def __init__(self, ql, predictor):
         super().__init__(ql, predictor)
         ArchMIPS.__init__(self)
 
     @Render.divider_printer("[ REGISTERS ]")
     def context_reg(self, saved_reg_dump):
-t       """
+        """
         redering context registers
         """
 

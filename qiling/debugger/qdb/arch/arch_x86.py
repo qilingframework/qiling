@@ -8,7 +8,7 @@ from typing import Mapping
 from .arch import Arch
 
 class ArchX86(Arch):
-    def __init__(self: ArchX86):
+    def __init__(self):
         self.regs = (
                 "eax", "ebx", "ecx", "edx",
                 "esp", "ebp", "esi", "edi",
