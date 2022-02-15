@@ -4,63 +4,12 @@
 #
 
 from __future__ import annotations
-from typing import Callable, Optional, Mapping
+from typing import Mapping
 
-from qiling.const import QL_ARCH
+from .arch import Arch
 
-
-class ArchX86():
-    def __init__(self):
-
-        self.archtype = QL_ARCH.X86
-
-        self.regs = (
-                "eax", "ebx", "ecx", "edx",
-                "esp", "ebp", "esi", "edi",
-                "eip", "ss", "cs", "ds", "es",
-                "fs", "gs", "ef",
-                )
-
-    @staticmethod
-    def get_flags(bits: int) -> Mapping[str, bool]:
-        """
-        get flags from ql.reg.ef
-        """
-
-        return {
-                "CF" : bits & 0x0001 != 0, # CF, carry flag
-                "PF" : bits & 0x0004 != 0, # PF, parity flag
-                "AF" : bits & 0x0010 != 0, # AF, adjust flag
-                "ZF" : bits & 0x0040 != 0, # ZF, zero flag
-                "SF" : bits & 0x0080 != 0, # SF, sign flag
-                "OF" : bits & 0x0800 != 0, # OF, overflow flag
-                }
-
-
-class ArchMIPS(object):
-    def __init__(self):
-
-        self.archtype = QL_ARCH.MIPS
-
-        self.regs = (
-                "gp", "at", "v0", "v1",
-                "a0", "a1", "a2", "a3",
-                "t0", "t1", "t2", "t3",
-                "t4", "t5", "t6", "t7",
-                "t8", "t9", "sp", "s8",
-                "s0", "s1", "s2", "s3",
-                "s4", "s5", "s6", "s7",
-                "ra", "k0", "k1", "pc",
-                )
-
-        self.regs_need_swaped = {
-                "fp": "s8",
-                }
-
-
-class ArchARM():
-    def __init__(self):
-        self.archtype = QL_ARCH.ARM
+class ArchARM(Arch):
+    def __init__(self: ArchARM):
         self.regs = (
                 "r0", "r1", "r2", "r3",
                 "r4", "r5", "r6", "r7",
@@ -75,12 +24,12 @@ class ArchARM():
                 }
 
     @staticmethod
-    def get_flags(bits: int) -> Mapping[str, int]:
+    def get_flags(bits: int) -> Mapping[str, bool]:
         """
         get flags for ARM
         """
 
-        def get_mode(bits):
+        def get_mode(bits: int) -> int:
             """
             get operating mode for ARM
             """
@@ -107,11 +56,41 @@ class ArchARM():
                 "overflow": bits & 0x10000000 != 0,
                 }
 
+    @property
+    def thumb_mode(self: ArchARM) -> bool:
+        """
+        helper function for checking thumb mode
+        """
+
+        return self.ql.reg.cpsr & 0x00000020 != 0
+
+    def read_insn(self, address: int) -> bytes:
+        """
+        read instruction depending on current operating mode
+        """
+
+        def thumb_read(address: int) -> bytes:
+            first_two = self.ql.unpack16(self.read_mem(address, 2))
+            result = self.ql.pack16(first_two)
+
+            # to judge it's thumb mode or not
+            if any([
+                first_two & 0xf000 == 0xf000,
+                first_two & 0xf800 == 0xf800,
+                first_two & 0xe800 == 0xe800,
+                 ]):
+
+                latter_two = self.ql.unpack16(self.read_mem(address+2, 2))
+                result += self.ql.pack16(latter_two)
+
+            return result
+
+        return super().read_insn(address) if not self.thumb_mode else thumb_read(address)
+
 
 class ArchCORTEX_M(ArchARM):
-    def __init__(self):
+    def __init__(self: ArchARM):
         super().__init__()
-        self.archtype = QL_ARCH.CORTEX_M
         self.regs += ("xpsr", "control", "primask", "basepri", "faultmask")
 
 if __name__ == "__main__":

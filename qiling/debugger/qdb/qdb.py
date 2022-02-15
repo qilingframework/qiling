@@ -13,7 +13,7 @@ from qiling.const import QL_ARCH, QL_VERBOSE
 from qiling.debugger import QlDebugger
 
 from .utils import setup_context_render, setup_branch_predictor, SnapshotManager, MemoryManager
-from .misc import disasm, parse_int, is_thumb, Breakpoint, TempBreakpoint
+from .misc import parse_int, Breakpoint, TempBreakpoint
 from .const import color
 
 
@@ -125,7 +125,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
             return
 
-        if self.ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB, QL_ARCH.CORTEX_M) and is_thumb(self.ql.reg.cpsr):
+        if self.ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB, QL_ARCH.CORTEX_M) and self.ql.reg.cpsr & 0x00000020:
             address |= 1
 
         self.ql.emu_start(begin=address, end=end, count=count)

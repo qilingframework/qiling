@@ -9,9 +9,9 @@ import math
 
 from qiling.const import QL_ARCH
 
-from .misc import try_read
+from .context import Context
 
-from .frontend import (
+from .render import (
         ContextRenderX86,
         ContextRenderARM,
         ContextRenderCORTEX_M,
@@ -59,7 +59,6 @@ def setup_context_render(ql: Qiling, predictor: BranchPredictor) -> ContextRende
             }.get(ql.archtype)(ql, predictor)
 
 
-
 """
 
     For supporting Qdb features like:
@@ -68,14 +67,7 @@ def setup_context_render(ql: Qiling, predictor: BranchPredictor) -> ContextRende
 
 """
 
-class Manager(object):
-    """
-    base class for Manager
-    """
-    def __init__(self, ql):
-        self.ql = ql
-
-class SnapshotManager(Manager):
+class SnapshotManager(object):
     """
     for functioning differential snapshot
     """
@@ -226,7 +218,7 @@ class SnapshotManager(Manager):
 
         self.ql.restore(to_be_restored)
 
-class MemoryManager(Manager):
+class MemoryManager(Context):
     """
     memory manager for handing memory access 
     """
@@ -261,7 +253,6 @@ class MemoryManager(Manager):
         return "".join([s for s in t if s.isdigit()])
 
     def get_fmt(self, text):
-
         f, s, c = self.DEFAULT_FMT
         if self.extract_count(text):
             c = int(self.extract_count(text))
@@ -275,7 +266,7 @@ class MemoryManager(Manager):
 
         return (f, s, c)
 
-    def unpack(self, bs: bytes, sz: int) -> int:
+    def fmt_unpack(self, bs: bytes, sz: int) -> int:
         return {
                 1: lambda x: x[0],
                 2: self.ql.unpack16,
@@ -296,7 +287,7 @@ class MemoryManager(Manager):
 
         elif len(args) == 1:  # only address
             rest = args[0]
-            fmt = DEFAULT_FMT
+            fmt = self.DEFAULT_FMT
 
         else:
             rest = args
@@ -306,7 +297,6 @@ class MemoryManager(Manager):
 
         elif self.ql.archtype == QL_ARCH.MIPS:
             rest = rest.replace("fp", "s8")
-
 
         # for supporting addition of register with constant value
         elems = rest.split("+")
@@ -340,7 +330,7 @@ class MemoryManager(Manager):
             mem_read = []
             for offset in range(ct):
                 # append data if read successfully, otherwise return error message
-                if (data := try_read(self.ql, addr+(offset*sz), sz))[0] is not None:
+                if (data := self.try_read(addr+(offset*sz), sz))[0] is not None:
                     mem_read.append(data[0])
 
                 else:
@@ -352,7 +342,7 @@ class MemoryManager(Manager):
 
                 idx = line * self.ql.pointersize
                 for each in mem_read[idx:idx+self.ql.pointersize]:
-                    data = self.unpack(each, sz)
+                    data = self.fmt_unpack(each, sz)
                     prefix = "0x" if ft in ("x", "a") else ""
                     pad = '0' + str(sz*2) if ft in ('x', 'a', 't') else ''
                     ft = ft.lower() if ft in ("x", "o", "b", "d") else ft.lower().replace("t", "b").replace("a", "x")
