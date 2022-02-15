@@ -22,22 +22,6 @@ from .const import color
 
 COLORS = (color.DARKCYAN, color.BLUE, color.RED, color.YELLOW, color.GREEN, color.PURPLE, color.CYAN, color.WHITE)
 
-def divider_printer(field_name, ruler="─"):
-    """
-    decorator function for printing divider
-    """
-
-    def decorator(context_dumper):
-        def wrapper(*args, **kwargs):
-            height, width = get_terminal_size()
-            bar = (width - len(field_name)) // 2 - 1
-            print(ruler * bar, field_name, ruler * bar)
-            context_dumper(*args, **kwargs)
-            if "DISASM" in field_name:
-                print(ruler * width)
-        return wrapper
-    return decorator
-
 
 def setup_context_render(ql: Qiling) -> ContextRender:
     """
@@ -45,53 +29,96 @@ def setup_context_render(ql: Qiling) -> ContextRender:
     """
 
     return {
-            QL_ARCH.X86: ContextRender_X86,
-            QL_ARCH.ARM: ContextRender_ARM,
-            QL_ARCH.ARM_THUMB: ContextRender_ARM,
-            QL_ARCH.CORTEX_M: ContextRender_ARM,
-            QL_ARCH.MIPS: ContextRender_MIPS,
+            QL_ARCH.X86: ContextRenderX86,
+            QL_ARCH.ARM: ContextRenderARM,
+            QL_ARCH.ARM_THUMB: ContextRenderARM,
+            QL_ARCH.CORTEX_M: ContextRenderCORTEX_M,
+            QL_ARCH.MIPS: ContextRenderMIPS,
             }.get(ql.archtype)(ql)
 
 
-class ContextRender(object):
+class Render(object):
     """
-    base class for context render
+    base class for rendering related functions
     """
 
-    def __init__(self, ql):
-        self.ql = ql
-        self.predictor = setup_branch_predictor(ql)
+    def divider_printer(field_name, ruler="─"):
+        """
+        decorator function for printing divider and field name
+        """
 
-    def print_asm(self, insn: CsInsn, to_jump: Optional[bool] = None, address: int = None) -> None:
+        def decorator(context_dumper):
+            def wrapper(*args, **kwargs):
+                height, width = get_terminal_size()
+                bar = (width - len(field_name)) // 2 - 1
+                print(ruler * bar, field_name, ruler * bar)
+                context_dumper(*args, **kwargs)
+                if "DISASM" in field_name:
+                    print(ruler * width)
+            return wrapper
+        return decorator
+
+    def __init__(self):
+        self.regs_a_row = 4
+
+    def reg_diff(self, cur_regs, saved_reg_dump):
+        """
+        helper function for highlighting register changed during execution
+        """
+
+        if saved_reg_dump:
+            reg_dump = copy.deepcopy(saved_reg_dump)
+            if getattr(self, "regs_need_swaped", None):
+                reg_dump = self.swap_reg_name(reg_dump)
+            return [k for k in cur_regs if cur_regs[k] != reg_dump[k]]
+
+    def render_regs_dump(self, regs, diff_reg=None):
+        """
+        helper function for redering registers dump
+        """
+
+        lines = ""
+        for idx, r in enumerate(regs, 1):
+            line = "{}{}: 0x{{:08x}} {}\t".format(COLORS[(idx-1) // self.regs_a_row], r, color.END)
+
+            if diff_reg and r in diff_reg:
+                line = f"{color.UNDERLINE}{color.BOLD}{line}"
+
+            if idx % self.regs_a_row == 0 and idx != 32:
+                line += "\n"
+
+            lines += line
+
+        print(lines.format(*regs.values()))
+
+    def swap_reg_name(self, cur_regs: Mapping["str", int], extra_dict=None):
+        """
+        swap register name with more readable register name
+        """
+
+        target_items = extra_dict.items() if extra_dict else self.regs_need_swaped.items()
+
+        for old_reg, new_reg in target_items:
+            cur_regs.update({old_reg: cur_regs.pop(new_reg)})
+
+        return cur_regs 
+
+    def print_asm(self, insn: CsInsn, to_jump: bool = False) -> None:
         """
         helper function for printing assembly instructions, indicates where we are and the branch prediction
         provided by BranchPredictor
         """
 
         opcode = "".join(f"{b:02x}" for b in insn.bytes)
-        if self.ql.archtype in (QL_ARCH.X86, QL_ARCH.X8664):
-            trace_line = f"0x{insn.address:08x} │ {opcode:20s} {insn.mnemonic:10} {insn.op_str:35s}"
-        else:
-            trace_line = f"0x{insn.address:08x} │ {opcode:10s} {insn.mnemonic:10} {insn.op_str:35s}"
+        trace_line = f"0x{insn.address:08x} │ {opcode:15s} {insn.mnemonic:10} {insn.op_str:35s}"
 
-        cursor = " "
-        if self.ql.reg.arch_pc == insn.address:
-            cursor = "►"
+        cursor = "►" if self.ql.reg.arch_pc == insn.address else " "
 
-        jump_sign = " "
-        if to_jump:
-            jump_sign = f"{color.RED}✓{color.END}"
+        jump_sign = f"{color.RED}✓{color.END}" if to_jump else " "
 
         print(f"{jump_sign}  {cursor}   {color.DARKGRAY}{trace_line}{color.END}")
 
-    def dump_regs(self):
-        """
-        dump all registers
-        """
-
-        return {reg_name: getattr(self.ql.reg, reg_name) for reg_name in self.regs}
-
-    def context_reg(self, saved_states):
+    def context_reg(self, saved_states) -> None:
         """
         display context registers
         """
@@ -99,7 +126,7 @@ class ContextRender(object):
         return NotImplementedError
 
     @divider_printer("[ STACK ]")
-    def context_stack(self):
+    def context_stack(self) -> None:
         """
         display context stack
         """
@@ -128,7 +155,7 @@ class ContextRender(object):
             print()
 
     @divider_printer("[ DISASM ]")
-    def context_asm(self):
+    def context_asm(self) -> None:
         """
         display context assembly
         """
@@ -170,15 +197,29 @@ class ContextRender(object):
                 self.print_asm(forward_insn)
                 forward_insn_size += forward_insn.size
 
+class ArchMIPS(object):
+    def __init__(self):
 
-class ContextRender_ARM(ContextRender):
-    """
-    context render for ARM
-    """
+        self.archtype = QL_ARCH.MIPS
 
-    def __init__(self, ql):
-        super().__init__(ql)
+        self.regs = (
+                "gp", "at", "v0", "v1",
+                "a0", "a1", "a2", "a3",
+                "t0", "t1", "t2", "t3",
+                "t4", "t5", "t6", "t7",
+                "t8", "t9", "sp", "s8",
+                "s0", "s1", "s2", "s3",
+                "s4", "s5", "s6", "s7",
+                "ra", "k0", "k1", "pc",
+                )
 
+        self.regs_need_swaped = {
+                "fp": "s8",
+                }
+
+class ArchARM():
+    def __init__(self):
+        self.archtype = QL_ARCH.ARM
         self.regs = (
                 "r0", "r1", "r2", "r3",
                 "r4", "r5", "r6", "r7",
@@ -186,10 +227,22 @@ class ContextRender_ARM(ContextRender):
                 "r12", "sp", "lr", "pc",
                 )
 
+        self.regs_need_swaped = {
+                "sl": "r10",
+                "ip": "r12",
+                "fp": "r11",
+                }
+
     @staticmethod
     def get_flags(bits: int) -> Mapping[str, int]:
+        """
+        get flags for ARM
+        """
 
-        def _get_mode(bits):
+        def get_mode(bits):
+            """
+            get operating mode for ARM
+            """
             return {
                     0b10000: "User",
                     0b10001: "FIQ",
@@ -203,7 +256,7 @@ class ContextRender_ARM(ContextRender):
                     }.get(bits & 0x00001f)
 
         return {
-                "mode":     _get_mode(bits),
+                "mode":     get_mode(bits),
                 "thumb":    bits & 0x00000020 != 0,
                 "fiq":      bits & 0x00000040 != 0,
                 "irq":      bits & 0x00000080 != 0,
@@ -213,94 +266,18 @@ class ContextRender_ARM(ContextRender):
                 "overflow": bits & 0x10000000 != 0,
                 }
 
-    @divider_printer("[ REGISTERS ]")
-    def context_reg(self, saved_reg_dump):
-        cur_regs = self.dump_regs()
+    @staticmethod
+    def print_mode_info(bits):
+        print(color.GREEN, "[{cpsr[mode]} mode], Thumb: {cpsr[thumb]}, FIQ: {cpsr[fiq]}, IRQ: {cpsr[irq]}, NEG: {cpsr[neg]}, ZERO: {cpsr[zero]}, Carry: {cpsr[carry]}, Overflow: {cpsr[overflow]}".format(cpsr=ArchARM.get_flags(bits)), color.END, sep="")
 
-        cur_regs.update({"sl": cur_regs.pop("r10")})
-        cur_regs.update({"ip": cur_regs.pop("r12")})
-        cur_regs.update({"fp": cur_regs.pop("r11")})
+class ArchCORTEX_M(ArchARM):
+    def __init__(self):
+        super().__init__()
+        self.archtype = QL_ARCH.CORTEX_M
+        self.regs += ("xpsr", "control", "primask", "basepri", "faultmask")
 
-        regs_in_row = 4
-
-        diff = None
-        if saved_reg_dump is not None:
-            reg_dump = copy.deepcopy(saved_reg_dump)
-            reg_dump.update({"sl": reg_dump.pop("r10")})
-            reg_dump.update({"ip": reg_dump.pop("r12")})
-            reg_dump.update({"fp": reg_dump.pop("r11")})
-            diff = [k for k in cur_regs if cur_regs[k] != reg_dump[k]]
-
-        lines = ""
-        for idx, r in enumerate(cur_regs, 1):
-
-            line = "{}{:}: 0x{{:08x}} {}  ".format(COLORS[(idx-1) // regs_in_row], r, color.END)
-
-            if diff and r in diff:
-                line = f"{color.UNDERLINE}{color.BOLD}{line}"
-
-            if idx % regs_in_row == 0:
-                line += "\n"
-
-            lines += line
-
-        print(lines.format(*cur_regs.values()))
-        print(color.GREEN, "[{cpsr[mode]} mode], Thumb: {cpsr[thumb]}, FIQ: {cpsr[fiq]}, IRQ: {cpsr[irq]}, NEG: {cpsr[neg]}, ZERO: {cpsr[zero]}, Carry: {cpsr[carry]}, Overflow: {cpsr[overflow]}".format(cpsr=self.get_flags(self.ql.reg.cpsr)), color.END, sep="")
-
-
-class ContextRender_MIPS(ContextRender):
-    """
-    context render for MIPS
-    """
-    def __init__(self, ql):
-        super().__init__(ql)
-
-        self.regs = (
-                "gp", "at", "v0", "v1",
-                "a0", "a1", "a2", "a3",
-                "t0", "t1", "t2", "t3",
-                "t4", "t5", "t6", "t7",
-                "t8", "t9", "sp", "s8",
-                "s0", "s1", "s2", "s3",
-                "s4", "s5", "s6", "s7",
-                "ra", "k0", "k1", "pc",
-                )
-
-    @divider_printer("[ REGISTERS ]")
-    def context_reg(self, saved_reg_dump):
-
-        cur_regs = self.dump_regs()
-
-        cur_regs.update({"fp": cur_regs.pop("s8")})
-
-        diff = None
-        if saved_reg_dump is not None:
-            reg_dump = copy.deepcopy(saved_reg_dump)
-            reg_dump.update({"fp": reg_dump.pop("s8")})
-            diff = [k for k in cur_regs if cur_regs[k] != reg_dump[k]]
-
-        lines = ""
-        for idx, r in enumerate(cur_regs, 1):
-            line = "{}{}: 0x{{:08x}} {}\t".format(COLORS[(idx-1) // 4], r, color.END)
-
-            if diff and r in diff:
-                line = f"{color.UNDERLINE}{color.BOLD}{line}"
-
-            if idx % 4 == 0 and idx != 32:
-                line += "\n"
-
-            lines += line
-
-        print(lines.format(*cur_regs.values()))
-
-
-class ContextRender_X86(ContextRender):
-    """
-    context render for X86
-    """
-    def __init__(self, ql):
-        super().__init__(ql)
-
+class ArchX86():
+    def __init__(self):
         self.regs = (
                 "eax", "ebx", "ecx", "edx",
                 "esp", "ebp", "esi", "edi",
@@ -308,34 +285,91 @@ class ContextRender_X86(ContextRender):
                 "fs", "gs", "ef",
                 )
 
-    @divider_printer("[ REGISTERS ]")
+
+class Context(object):
+    """
+    base class for accessing context of running qiling instance
+    """
+
+    def __init__(self, ql):
+        self.ql = ql
+
+    def dump_regs(self) -> Mapping[str, int]:
+        """
+        dump all registers
+        """
+
+        return {reg_name: getattr(self.ql.reg, reg_name) for reg_name in self.regs}
+
+
+class ContextRender(Context, Render):
+    def __init__(self, ql: Qiling):
+        super().__init__(ql)
+        Render.__init__(self)
+        self.predictor = setup_branch_predictor(ql)
+
+
+class ContextRenderARM(ContextRender, ArchARM):
+    """
+    context render for ARM
+    """
+
+    def __init__(self, ql: Qiling):
+        super().__init__(ql)
+        ArchARM.__init__(self)
+
+    @Render.divider_printer("[ REGISTERS ]")
+    def context_reg(self, saved_reg_dump):
+        """
+        redering context registers
+        """
+
+        cur_regs = self.dump_regs()
+        cur_regs = self.swap_reg_name(cur_regs)
+        diff_reg = self.reg_diff(cur_regs, saved_reg_dump)
+        self.render_regs_dump(cur_regs, diff_reg=diff_reg)
+        self.print_mode_info(self.ql.reg.cpsr)
+
+
+class ContextRenderMIPS(ContextRender, ArchMIPS):
+    """
+    context render for MIPS
+    """
+
+    def __init__(self, ql):
+        super().__init__(ql)
+        ArchMIPS.__init__(self)
+
+    @Render.divider_printer("[ REGISTERS ]")
+    def context_reg(self, saved_reg_dump):
+        """
+        redering context registers
+        """
+
+        cur_regs = self.dump_regs()
+        cur_regs = self.swap_reg_name(cur_regs)
+        diff_reg = self.reg_diff(cur_regs, saved_reg_dump)
+        self.render_regs_dump(cur_regs, diff_reg=diff_reg)
+
+
+class ContextRenderX86(ContextRender, ArchX86):
+    """
+    context render for X86
+    """
+
+    def __init__(self, ql):
+        super().__init__(ql)
+        ArchX86.__init__(self)
+
+
+    @Render.divider_printer("[ REGISTERS ]")
     def context_reg(self, saved_reg_dump):
         cur_regs = self.dump_regs()
-
-        diff = None
-        if saved_reg_dump is not None:
-            reg_dump = copy.deepcopy(saved_reg_dump)
-            diff = [k for k in cur_regs if cur_regs[k] != saved_reg_dump[k]]
-
-        lines = ""
-        for idx, r in enumerate(cur_regs, 1):
-            if len(r) == 2:
-                line = "{}{}: 0x{{:08x}} {}\t\t".format(COLORS[(idx-1) // 4], r, color.END)
-            else:
-                line = "{}{}: 0x{{:08x}} {}\t".format(COLORS[(idx-1) // 4], r, color.END)
-
-            if diff and r in diff:
-                line = f"{color.UNDERLINE}{color.BOLD}{line}"
-
-            if idx % 4 == 0 and idx != 32:
-                line += "\n"
-
-            lines += line
-
-        print(lines.format(*cur_regs.values()))
+        diff_reg = self.reg_diff(cur_regs, saved_reg_dump)
+        self.render_regs_dump(cur_regs, diff_reg=diff_reg)
         print(color.GREEN, "EFLAGS: [CF: {flags[CF]}, PF: {flags[PF]}, AF: {flags[AF]}, ZF: {flags[ZF]}, SF: {flags[SF]}, OF: {flags[OF]}]".format(flags=get_x86_eflags(self.ql.reg.ef)), color.END, sep="")
 
-    @divider_printer("[ DISASM ]")
+    @Render.divider_printer("[ DISASM ]")
     def context_asm(self):
         past_list = []
         cur_addr = self.ql.reg.arch_pc
@@ -360,61 +394,35 @@ class ContextRender_X86(ContextRender):
             self.print_asm(line)
 
 
-class ContextRender_CORTEX_M(ContextRender):
+class ContextRenderCORTEX_M(ContextRender, ArchCORTEX_M):
     """
     context render for cortex_m
     """
 
     def __init__(self, ql):
         super().__init__(ql)
+        ArchCORTEX_M.__init__(self)
+        self.regs_a_row = 3
 
-        self.regs = (
-                "r0", "r1", "r2", "r3",
-                "r4", "r5", "r6", "r7",
-                "r8", "r9", "r10", "r11",
-                "r12", "sp", "lr", "pc",
-                "xpsr", "control", "primask", "basepri", "faultmask"
-                )
-
-    @divider_printer("[ REGISTERS ]")
+    @Render.divider_printer("[ REGISTERS ]")
     def context_reg(self, saved_reg_dump):
-
-        cur_regs.update({"sl": cur_regs.pop("r10")})
-        cur_regs.update({"ip": cur_regs.pop("r12")})
-        cur_regs.update({"fp": cur_regs.pop("r11")})
-
-        regs_in_row = 3
+        cur_regs = self.dump_regs()
+        cur_regs = self.swap_reg_name(cur_regs)
 
         # for re-order
-        cur_regs.update({"xpsr": cur_regs.pop("xpsr")})
-        cur_regs.update({"control": cur_regs.pop("control")})
-        cur_regs.update({"primask": cur_regs.pop("primask")})
-        cur_regs.update({"faultmask": cur_regs.pop("faultmask")})
-        cur_regs.update({"basepri": cur_regs.pop("basepri")})
+        extra_dict = {
+                "xpsr": "xpsr",
+                "control": "control",
+                "primask": "primask",
+                "faultmask": "faultmask",
+                "basepri": "basepri",
+                }
 
-        diff = None
-        if saved_reg_dump is not None:
-            reg_dump = copy.deepcopy(saved_reg_dump)
-            reg_dump.update({"sl": reg_dump.pop("r10")})
-            reg_dump.update({"ip": reg_dump.pop("r12")})
-            reg_dump.update({"fp": reg_dump.pop("r11")})
-            diff = [k for k in cur_regs if cur_regs[k] != reg_dump[k]]
+        cur_regs = self.swap_reg_name(cur_regs, extra_dict=extra_dict)
+        diff_reg = self.reg_diff(cur_regs, saved_reg_dump)
+        self.render_regs_dump(cur_regs, diff_reg=diff_reg)
+        self.print_mode_info(self.ql.reg.cpsr)
 
-        lines = ""
-        for idx, r in enumerate(_cur_regs, 1):
-
-            line = "{}{:}: 0x{{:08x}} {}  ".format(_colors[(idx-1) // regs_in_row], r, color.END)
-
-            if _diff and r in _diff:
-                line = "{}{}".format(color.UNDERLINE, color.BOLD) + line
-
-            if idx % regs_in_row == 0:
-                line += "\n"
-
-            lines += line
-
-        print(lines.format(cur_regs.values()))
-        print(color.GREEN, "[{cpsr[mode]} mode], Thumb: {cpsr[thumb]}, FIQ: {cpsr[fiq]}, IRQ: {cpsr[irq]}, NEG: {cpsr[neg]}, ZERO: {cpsr[zero]}, Carry: {cpsr[carry]}, Overflow: {cpsr[overflow]}".format(cpsr=get_arm_flags(self.ql.reg.cpsr)), color.END, sep="")
 
 
 if __name__ == "__main__":

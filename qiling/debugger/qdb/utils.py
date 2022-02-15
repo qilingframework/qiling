@@ -9,7 +9,7 @@ import ast, re, math
 
 from qiling.const import QL_ARCH
 
-from .misc import try_read, disasm, get_x86_eflags, read_int
+from .misc import try_read, disasm, get_x86_eflags, read_int, signed_val, get_cpsr
 
 
 
