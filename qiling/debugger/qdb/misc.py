@@ -3,7 +3,6 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from __future__ import annotations
 from typing import Callable, Optional
 
 

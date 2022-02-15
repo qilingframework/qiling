@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from __future__ import annotations
+
 
 import ast, re
 
@@ -135,6 +135,3 @@ class BranchPredictorX86(BranchPredictor, ArchX86):
             prophecy.where = self.cur_addr + line.size
 
         return prophecy
-
-if __name__ == "__main__":
-    pass

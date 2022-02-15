@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from __future__ import annotations
+
 
 from .render import *
 from ..arch import ArchX86
@@ -56,6 +56,3 @@ class ContextRenderX86(ContextRender, ArchX86):
             })
 
         self.render_assembly(lines)
-
-if __name__ == "__main__":
-    pass

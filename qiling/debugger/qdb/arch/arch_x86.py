@@ -3,7 +3,6 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from __future__ import annotations
 from typing import Mapping
 
 from .arch import Arch
@@ -38,6 +37,3 @@ class ArchX86(Arch):
                 "SF" : bits & 0x0080 != 0, # SF, sign flag
                 "OF" : bits & 0x0800 != 0, # OF, overflow flag
                 }
-
-if __name__ == "__main__":
-    pass

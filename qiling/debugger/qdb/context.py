@@ -3,7 +3,6 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from __future__ import annotations
 from typing import Optional
 
 import unicorn
@@ -93,3 +92,6 @@ class Context(object):
             s = self.read_string(address)
         except:
             pass
+
+if __name__ == "__main__":
+    pass

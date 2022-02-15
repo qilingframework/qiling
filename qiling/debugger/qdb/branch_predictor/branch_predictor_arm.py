@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from __future__ import annotations
+
 
 from .branch_predictor import *
 from ..arch import ArchARM, ArchCORTEX_M
@@ -252,6 +252,3 @@ class BranchPredictorARM(BranchPredictor, ArchARM):
 class BranchPredictorCORTEX_M(BranchPredictorARM):
     def __init__(self, ql):
         super().__init__(ql)
-
-if __name__ == "__main__":
-    pass

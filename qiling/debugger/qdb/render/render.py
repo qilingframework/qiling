@@ -3,7 +3,8 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from __future__ import annotations
+
+
 from typing import Mapping, Iterable
 import os, copy
 
@@ -226,8 +227,3 @@ class ContextRender(Context, Render):
             })
 
         self.render_assembly(lines)
-
-
-
-if __name__ == "__main__":
-    pass

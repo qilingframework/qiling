@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from __future__ import annotations
+
 
 from ..context import Context
 from ..misc import read_int
@@ -43,6 +43,3 @@ class BranchPredictor(Context):
         """
 
         return NotImplementedError
-
-if __name__ == "__main__":
-    pass

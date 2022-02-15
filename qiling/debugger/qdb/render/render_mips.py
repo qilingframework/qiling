@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from __future__ import annotations
+
 
 from .render import *
 from ..arch import ArchMIPS
@@ -19,7 +19,7 @@ class ContextRenderMIPS(ContextRender, ArchMIPS):
 
     @Render.divider_printer("[ REGISTERS ]")
     def context_reg(self, saved_reg_dump):
-        """
+t       """
         redering context registers
         """
 
@@ -27,6 +27,3 @@ class ContextRenderMIPS(ContextRender, ArchMIPS):
         cur_regs = self.swap_reg_name(cur_regs)
         diff_reg = self.reg_diff(cur_regs, saved_reg_dump)
         self.render_regs_dump(cur_regs, diff_reg=diff_reg)
-
-if __name__ == "__main__":
-    pass

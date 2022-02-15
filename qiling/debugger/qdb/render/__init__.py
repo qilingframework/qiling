@@ -6,6 +6,3 @@
 from .render_x86 import ContextRenderX86
 from .render_mips import ContextRenderMIPS
 from .render_arm import ContextRenderARM, ContextRenderCORTEX_M
-
-if __name__ == "__main__":
-    pass

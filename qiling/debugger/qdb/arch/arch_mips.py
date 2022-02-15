@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from __future__ import annotations
+
 
 from .arch import Arch
 
@@ -23,6 +23,3 @@ class ArchMIPS(Arch):
         self.regs_need_swaped = {
                 "fp": "s8",
                 }
-
-if __name__ == "__main__":
-    pass

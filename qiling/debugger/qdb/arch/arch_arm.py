@@ -3,7 +3,6 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from __future__ import annotations
 from typing import Mapping
 
 from .arch import Arch
@@ -92,6 +91,3 @@ class ArchCORTEX_M(ArchARM):
     def __init__(self: ArchARM):
         super().__init__()
         self.regs += ("xpsr", "control", "primask", "basepri", "faultmask")
-
-if __name__ == "__main__":
-    pass

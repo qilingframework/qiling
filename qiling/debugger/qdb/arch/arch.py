@@ -3,7 +3,6 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from __future__ import annotations
 
 
 class Arch(object):
@@ -19,6 +18,3 @@ class Arch(object):
 
     def read_insn(self: Arch, address: int , insn_size: int = 4):
         return self.read_mem(address, insn_size)
-
-if __name__ == "__main__":
-    pass

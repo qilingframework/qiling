@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from __future__ import annotations
+
 
 from .branch_predictor import *
 from ..arch import ArchMIPS
@@ -86,6 +86,3 @@ class BranchPredictorMIPS(BranchPredictor, ArchMIPS):
                 prophecy.where = targets[-1]
 
         return prophecy
-
-if __name__ == "__main__":
-    pass

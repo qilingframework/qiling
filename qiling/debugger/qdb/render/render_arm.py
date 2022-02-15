@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from __future__ import annotations
+
 
 from .render import *
 from ..arch import ArchARM, ArchCORTEX_M
@@ -62,6 +62,3 @@ class ContextRenderCORTEX_M(ContextRenderARM, ArchCORTEX_M):
         diff_reg = self.reg_diff(cur_regs, saved_reg_dump)
         self.render_regs_dump(cur_regs, diff_reg=diff_reg)
         self.print_mode_info(self.ql.reg.cpsr)
-
-if __name__ == "__main__":
-    pass
