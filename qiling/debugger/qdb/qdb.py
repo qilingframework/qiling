@@ -130,6 +130,29 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         self.ql.emu_start(begin=address, end=end, count=count)
 
+    def save_reg_dump(func) -> None:
+        """
+        decorator function for saving register dump
+        """
+
+        def inner(self, *args, **kwargs):
+            self._saved_reg_dump = dict(filter(lambda d: isinstance(d[0], str), self.ql.reg.save().items()))
+            func(self, *args, **kwargs)
+
+        return inner
+
+    def check_ql_alive(func) -> None:
+        """
+        decorator function for checking ql instance is alive
+        """
+
+        def inner(self, *args, **kwargs):
+            if self.ql is None:
+                print(f"{color.RED}[!] The program is not being run.{color.END}")
+            else:
+                func(self, *args, **kwargs)
+        return inner
+
     def parseline(self: QlQdb, line: str) -> Tuple[Optional[str], Optional[str], str]:
         """
         Parse the line into a command name and a string containing
@@ -181,54 +204,6 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         self._run()
 
-    def do_context(self: QlQdb, *args) -> None:
-        """
-        display context information for current location
-        """
-
-        self.render.context_reg(self._saved_reg_dump)
-        self.render.context_stack()
-        self.render.context_asm()
-
-    def do_backward(self: QlQdb, *args) -> None:
-        """
-        step barkward if it's possible, option rr should be enabled and previous instruction must be executed before
-        """
-
-        if self.rr:
-            if len(self.rr.layers) == 0 or not isinstance(self.rr.layers[-1], self.rr.DiffedState):
-                print(f"{color.RED}[!] there is no way back !!!{color.END}")
-
-            else:
-                print(f"{color.CYAN}[+] step backward ~{color.END}")
-                self.rr.restore()
-                self.do_context()
-        else:
-            print(f"{color.RED}[!] the option rr not yet been set !!!{color.END}")
-
-    def save_reg_dump(func) -> None:
-        """
-        decorator function for saving register dump
-        """
-
-        def inner(self, *args, **kwargs):
-            self._saved_reg_dump = dict(filter(lambda d: isinstance(d[0], str), self.ql.reg.save().items()))
-            func(self, *args, **kwargs)
-
-        return inner
-
-    def check_ql_alive(func) -> None:
-        """
-        decorator function for checking ql instance is alive
-        """
-
-        def inner(self, *args, **kwargs):
-            if self.ql is None:
-                print(f"{color.RED}[!] The program is not being run.{color.END}")
-            else:
-                func(self, *args, **kwargs)
-        return inner
-
     @SnapshotManager.snapshot
     @save_reg_dump
     @check_ql_alive
@@ -268,6 +243,36 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         self._run()
 
+    @SnapshotManager.snapshot
+    @parse_int
+    def do_continue(self: QlQdb, address: Optional[int] = 0) -> None:
+        """
+        continue execution from current address if not specified
+        """
+
+        if address is None:
+            address = self.cur_addr
+
+        print(f"{color.CYAN}continued from 0x{address:08x}{color.END}")
+
+        self._run(address)
+
+    def do_backward(self: QlQdb, *args) -> None:
+        """
+        step barkward if it's possible, option rr should be enabled and previous instruction must be executed before
+        """
+
+        if self.rr:
+            if len(self.rr.layers) == 0 or not isinstance(self.rr.layers[-1], self.rr.DiffedState):
+                print(f"{color.RED}[!] there is no way back !!!{color.END}")
+
+            else:
+                print(f"{color.CYAN}[+] step backward ~{color.END}")
+                self.rr.restore()
+                self.do_context()
+        else:
+            print(f"{color.RED}[!] the option rr yet been set !!!{color.END}")
+
     def set_breakpoint(self: QlQdb, address: int, is_temp: bool = False) -> None:
         """
         internal function for placing breakpoint
@@ -284,16 +289,6 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         self.bp_list.pop(bp.addr, None)
 
-    def do_start(self: QlQdb, *args) -> None:
-        """
-        restore qiling instance context to initial state
-        """
-
-        if self.ql.archtype != QL_ARCH.CORTEX_M:
-
-            self.ql.restore(self.init_state)
-            self.do_context()
-
     @parse_int
     def do_breakpoint(self: QlQdb, address: Optional[int] = 0) -> None:
         """
@@ -307,19 +302,16 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         print(f"{color.CYAN}[+] Breakpoint at 0x{address:08x}{color.END}")
 
-    @SnapshotManager.snapshot
     @parse_int
-    def do_continue(self: QlQdb, address: Optional[int] = 0) -> None:
+    def do_disassemble(self: QlQdb, address: Optional[int] = 0, *args) -> None:
         """
-        continue execution from current address if not specified
+        disassemble instructions from address specified
         """
 
-        if address is None:
-            address = self.cur_addr
-
-        print(f"{color.CYAN}continued from 0x{address:08x}{color.END}")
-
-        self._run(address)
+        try:
+            context_asm(self.ql, address)
+        except:
+            print(f"{color.RED}[!] something went wrong ...{color.END}")
 
     def do_examine(self: QlQdb, line: str) -> None:
         """
@@ -335,6 +327,25 @@ class QlQdb(cmd.Cmd, QlDebugger):
         # except:
             # print(f"{color.RED}[!] something went wrong ...{color.END}")
 
+    def do_start(self: QlQdb, *args) -> None:
+        """
+        restore qiling instance context to initial state
+        """
+
+        if self.ql.archtype != QL_ARCH.CORTEX_M:
+
+            self.ql.restore(self.init_state)
+            self.do_context()
+
+    def do_context(self: QlQdb, *args) -> None:
+        """
+        display context information for current location
+        """
+
+        self.render.context_reg(self._saved_reg_dump)
+        self.render.context_stack()
+        self.render.context_asm()
+
     def do_show(self: QlQdb, *args) -> None:
         """
         show some runtime information
@@ -344,17 +355,6 @@ class QlQdb(cmd.Cmd, QlDebugger):
         print(f"Breakpoints: {[hex(addr) for addr in self.bp_list.keys()]}")
         if self.rr:
             print(f"Snapshots: {len([st for st in self.rr.layers if isinstance(st, self.rr.DiffedState)])}")
-
-    @parse_int
-    def do_disassemble(self: QlQdb, address: Optional[int] = 0, *args) -> None:
-        """
-        disassemble instructions from address specified
-        """
-
-        try:
-            context_asm(self.ql, address)
-        except:
-            print(f"{color.RED}[!] something went wrong ...{color.END}")
 
     def do_shell(self: QlQdb, *command) -> None:
         """

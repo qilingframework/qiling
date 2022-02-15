@@ -96,8 +96,8 @@ class SnapshotManager(Manager):
         def __init__(self, diffed_st):
             self.reg, self.ram = diffed_st
 
-    @classmethod
-    def transform(cls, st):
+    @staticmethod
+    def transform(st):
         """
         transform saved context into binary set
         """
@@ -174,19 +174,23 @@ class SnapshotManager(Manager):
         """
         decorator function for saving differential context on certian qdb command
         """
+
         def magic(self, *args, **kwargs):
-            # save State before execution
-            p_st = self.rr._save()
+            if self.rr:
+                # save State before execution
+                p_st = self.rr._save()
 
-            # certian execution to be snapshot
-            func(self, *args, **kwargs)
+                # certian execution to be snapshot
+                func(self, *args, **kwargs)
 
-            # save State after execution
-            q_st = self.rr._save()
+                # save State after execution
+                q_st = self.rr._save()
 
-            # merge two saved States into a DiffedState
-            st = self.rr.diff(p_st, q_st)
-            self.rr.layers.append(st)
+                # merge two saved States into a DiffedState
+                st = self.rr.diff(p_st, q_st)
+                self.rr.layers.append(st)
+            else:
+                func(self, *args, **kwargs)
 
         return magic
 
