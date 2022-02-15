@@ -12,10 +12,8 @@ from qiling import Qiling
 from qiling.const import QL_ARCH, QL_VERBOSE
 from qiling.debugger import QlDebugger
 
-from .frontend import setup_context_render
-from .utils import Breakpoint, TempBreakpoint
-from .utils import setup_branch_predictor, SnapshotManager, MemoryManager
-from .misc import disasm, parse_int, is_thumb
+from .utils import setup_context_render, setup_branch_predictor, SnapshotManager, MemoryManager
+from .misc import disasm, parse_int, is_thumb, Breakpoint, TempBreakpoint
 from .const import color
 
 
@@ -33,8 +31,8 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         self.rr = SnapshotManager(ql) if rr else None
         self.mm = MemoryManager(ql)
-        self.render = setup_context_render(ql)
         self.predictor = setup_branch_predictor(ql)
+        self.render = setup_context_render(ql, self.predictor)
 
         super().__init__()
 

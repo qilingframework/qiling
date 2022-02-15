@@ -7,10 +7,8 @@ from __future__ import annotations
 from typing import Optional, Mapping, Iterable, Union
 import copy
 
-from qiling.const import QL_ARCH
-
-from .utils import setup_branch_predictor
-from .misc import try_read, read_int, get_terminal_size, disasm, get_x86_eflags
+from .misc import try_read, get_terminal_size, disasm
+from .arch import ArchARM, ArchMIPS, ArchCORTEX_M, ArchX86
 from .const import color
 
 
@@ -21,21 +19,6 @@ from .const import color
 """
 
 COLORS = (color.DARKCYAN, color.BLUE, color.RED, color.YELLOW, color.GREEN, color.PURPLE, color.CYAN, color.WHITE)
-
-
-def setup_context_render(ql: Qiling) -> ContextRender:
-    """
-    setup context render for corresponding archtype
-    """
-
-    return {
-            QL_ARCH.X86: ContextRenderX86,
-            QL_ARCH.ARM: ContextRenderARM,
-            QL_ARCH.ARM_THUMB: ContextRenderARM,
-            QL_ARCH.CORTEX_M: ContextRenderCORTEX_M,
-            QL_ARCH.MIPS: ContextRenderMIPS,
-            }.get(ql.archtype)(ql)
-
 
 class Render(object):
     """
@@ -58,7 +41,7 @@ class Render(object):
             return wrapper
         return decorator
 
-    def __init__(self):
+    def __init__(self) -> Render:
         self.regs_a_row = 4
 
     def reg_diff(self, cur_regs, saved_reg_dump):
@@ -79,7 +62,7 @@ class Render(object):
 
         lines = ""
         for idx, r in enumerate(regs, 1):
-            line = "{}{}: 0x{{:08x}} {}\t".format(COLORS[(idx-1) // self.regs_a_row], r, color.END)
+            line = "{}{}: 0x{{:08x}}  {}\t".format(COLORS[(idx-1) // self.regs_a_row], r, color.END)
 
             if diff_reg and r in diff_reg:
                 line = f"{color.UNDERLINE}{color.BOLD}{line}"
@@ -197,101 +180,13 @@ class Render(object):
                 self.print_asm(forward_insn)
                 forward_insn_size += forward_insn.size
 
-class ArchMIPS(object):
-    def __init__(self):
-
-        self.archtype = QL_ARCH.MIPS
-
-        self.regs = (
-                "gp", "at", "v0", "v1",
-                "a0", "a1", "a2", "a3",
-                "t0", "t1", "t2", "t3",
-                "t4", "t5", "t6", "t7",
-                "t8", "t9", "sp", "s8",
-                "s0", "s1", "s2", "s3",
-                "s4", "s5", "s6", "s7",
-                "ra", "k0", "k1", "pc",
-                )
-
-        self.regs_need_swaped = {
-                "fp": "s8",
-                }
-
-class ArchARM():
-    def __init__(self):
-        self.archtype = QL_ARCH.ARM
-        self.regs = (
-                "r0", "r1", "r2", "r3",
-                "r4", "r5", "r6", "r7",
-                "r8", "r9", "r10", "r11",
-                "r12", "sp", "lr", "pc",
-                )
-
-        self.regs_need_swaped = {
-                "sl": "r10",
-                "ip": "r12",
-                "fp": "r11",
-                }
-
-    @staticmethod
-    def get_flags(bits: int) -> Mapping[str, int]:
-        """
-        get flags for ARM
-        """
-
-        def get_mode(bits):
-            """
-            get operating mode for ARM
-            """
-            return {
-                    0b10000: "User",
-                    0b10001: "FIQ",
-                    0b10010: "IRQ",
-                    0b10011: "Supervisor",
-                    0b10110: "Monitor",
-                    0b10111: "Abort",
-                    0b11010: "Hypervisor",
-                    0b11011: "Undefined",
-                    0b11111: "System",
-                    }.get(bits & 0x00001f)
-
-        return {
-                "mode":     get_mode(bits),
-                "thumb":    bits & 0x00000020 != 0,
-                "fiq":      bits & 0x00000040 != 0,
-                "irq":      bits & 0x00000080 != 0,
-                "neg":      bits & 0x80000000 != 0,
-                "zero":     bits & 0x40000000 != 0,
-                "carry":    bits & 0x20000000 != 0,
-                "overflow": bits & 0x10000000 != 0,
-                }
-
-    @staticmethod
-    def print_mode_info(bits):
-        print(color.GREEN, "[{cpsr[mode]} mode], Thumb: {cpsr[thumb]}, FIQ: {cpsr[fiq]}, IRQ: {cpsr[irq]}, NEG: {cpsr[neg]}, ZERO: {cpsr[zero]}, Carry: {cpsr[carry]}, Overflow: {cpsr[overflow]}".format(cpsr=ArchARM.get_flags(bits)), color.END, sep="")
-
-class ArchCORTEX_M(ArchARM):
-    def __init__(self):
-        super().__init__()
-        self.archtype = QL_ARCH.CORTEX_M
-        self.regs += ("xpsr", "control", "primask", "basepri", "faultmask")
-
-class ArchX86():
-    def __init__(self):
-        self.regs = (
-                "eax", "ebx", "ecx", "edx",
-                "esp", "ebp", "esi", "edi",
-                "eip", "ss", "cs", "ds", "es",
-                "fs", "gs", "ef",
-                )
-
 
 class Context(object):
     """
     base class for accessing context of running qiling instance
     """
 
-    def __init__(self, ql):
+    def __init__(self, ql) -> Context:
         self.ql = ql
 
     def dump_regs(self) -> Mapping[str, int]:
@@ -303,10 +198,14 @@ class Context(object):
 
 
 class ContextRender(Context, Render):
-    def __init__(self, ql: Qiling):
+    """
+    base class for context render
+    """
+
+    def __init__(self, ql: Qiling, predictor: BranchPredictor):
         super().__init__(ql)
         Render.__init__(self)
-        self.predictor = setup_branch_predictor(ql)
+        self.predictor = predictor
 
 
 class ContextRenderARM(ContextRender, ArchARM):
@@ -314,9 +213,13 @@ class ContextRenderARM(ContextRender, ArchARM):
     context render for ARM
     """
 
-    def __init__(self, ql: Qiling):
-        super().__init__(ql)
+    def __init__(self, ql: Qiling, predictor: BranchPredictor):
+        super().__init__(ql, predictor)
         ArchARM.__init__(self)
+
+    @staticmethod
+    def print_mode_info(bits):
+        print(color.GREEN, "[{cpsr[mode]} mode], Thumb: {cpsr[thumb]}, FIQ: {cpsr[fiq]}, IRQ: {cpsr[irq]}, NEG: {cpsr[neg]}, ZERO: {cpsr[zero]}, Carry: {cpsr[carry]}, Overflow: {cpsr[overflow]}".format(cpsr=ArchARM.get_flags(bits)), color.END, sep="")
 
     @Render.divider_printer("[ REGISTERS ]")
     def context_reg(self, saved_reg_dump):
@@ -336,8 +239,8 @@ class ContextRenderMIPS(ContextRender, ArchMIPS):
     context render for MIPS
     """
 
-    def __init__(self, ql):
-        super().__init__(ql)
+    def __init__(self, ql: Qiling, predictor: BranchPredictor):
+        super().__init__(ql, predictor)
         ArchMIPS.__init__(self)
 
     @Render.divider_printer("[ REGISTERS ]")
@@ -357,8 +260,8 @@ class ContextRenderX86(ContextRender, ArchX86):
     context render for X86
     """
 
-    def __init__(self, ql):
-        super().__init__(ql)
+    def __init__(self, ql: Qiling, predictor: BranchPredictor):
+        super().__init__(ql, predictor)
         ArchX86.__init__(self)
 
 
@@ -367,7 +270,7 @@ class ContextRenderX86(ContextRender, ArchX86):
         cur_regs = self.dump_regs()
         diff_reg = self.reg_diff(cur_regs, saved_reg_dump)
         self.render_regs_dump(cur_regs, diff_reg=diff_reg)
-        print(color.GREEN, "EFLAGS: [CF: {flags[CF]}, PF: {flags[PF]}, AF: {flags[AF]}, ZF: {flags[ZF]}, SF: {flags[SF]}, OF: {flags[OF]}]".format(flags=get_x86_eflags(self.ql.reg.ef)), color.END, sep="")
+        print(color.GREEN, "EFLAGS: [CF: {flags[CF]}, PF: {flags[PF]}, AF: {flags[AF]}, ZF: {flags[ZF]}, SF: {flags[SF]}, OF: {flags[OF]}]".format(flags=self.get_flags(self.ql.reg.ef)), color.END, sep="")
 
     @Render.divider_printer("[ DISASM ]")
     def context_asm(self):
@@ -394,13 +297,13 @@ class ContextRenderX86(ContextRender, ArchX86):
             self.print_asm(line)
 
 
-class ContextRenderCORTEX_M(ContextRender, ArchCORTEX_M):
+class ContextRenderCORTEX_M(ContextRenderARM, ArchCORTEX_M):
     """
     context render for cortex_m
     """
 
-    def __init__(self, ql):
-        super().__init__(ql)
+    def __init__(self, ql: Qiling, predictor: BranchPredictor):
+        super().__init__(ql, predictor)
         ArchCORTEX_M.__init__(self)
         self.regs_a_row = 3
 
@@ -427,4 +330,3 @@ class ContextRenderCORTEX_M(ContextRender, ArchCORTEX_M):
 
 if __name__ == "__main__":
     pass
-

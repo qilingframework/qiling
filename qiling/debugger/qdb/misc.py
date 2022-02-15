@@ -11,6 +11,21 @@ from qiling.const import QL_ARCH
 import unicorn
 
 
+class Breakpoint(object):
+    """
+    dummy class for breakpoint
+    """
+    def __init__(self, addr):
+        self.addr = addr
+        self.hitted = False
+
+class TempBreakpoint(Breakpoint):
+    """
+    dummy class for temporay breakpoint
+    """
+    def __init__(self, addr):
+        super().__init__(addr)
+
 
 def get_terminal_size() -> Iterable:
     """
@@ -60,53 +75,12 @@ def parse_int(func: Callable) -> Callable:
     return wrap
 
 
-def is_negative(i: int) -> int:
-    """
-    check wether negative value or not
-    """
-    return i & (1 << 31)
-
-
-def signed_val(val: int) -> int:
-    """
-    signed value convertion
-    """
-    return (val-1 << 32) if is_negative(val) else val
-
-
-def get_cpsr(bits: int) -> (bool, bool, bool, bool):
-    """
-    get flags from ql.reg.cpsr
-    """
-    return (
-            bits & 0x10000000 != 0, # V, overflow flag
-            bits & 0x20000000 != 0, # C, carry flag
-            bits & 0x40000000 != 0, # Z, zero flag
-            bits & 0x80000000 != 0, # N, sign flag
-            )
-
-
 def is_thumb(bits: int) -> bool:
     """
     helper function for checking thumb mode
     """
 
     return bits & 0x00000020 != 0
-
-
-def get_x86_eflags(bits: int) -> Dict[str, bool]:
-    """
-    get flags from ql.reg.ef
-    """
-
-    return {
-            "CF" : bits & 0x0001 != 0, # CF, carry flag
-            "PF" : bits & 0x0004 != 0, # PF, parity flag
-            "AF" : bits & 0x0010 != 0, # AF, adjust flag
-            "ZF" : bits & 0x0040 != 0, # ZF, zero flag
-            "SF" : bits & 0x0080 != 0, # SF, sign flag
-            "OF" : bits & 0x0800 != 0, # OF, overflow flag
-            }
 
 
 def disasm(ql: Qiling, address: int, detail: bool = False) -> Optional[int]:
@@ -154,3 +128,6 @@ def read_insn(ql: Qiling, addr: int) -> int:
         result = ql.mem.read(addr, 15)
 
     return result
+
+if __name__ == "__main__":
+    pass
