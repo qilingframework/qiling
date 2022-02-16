@@ -124,7 +124,7 @@ class Render:
             for line in forward:
                 self.print_asm(line)
 
-    def swap_reg_name(self, cur_regs: Mapping["str", int], extra_dict=None):
+    def swap_reg_name(self, cur_regs: Mapping[str, int], extra_dict=None):
         """
         swap register name with more readable register name
         """
