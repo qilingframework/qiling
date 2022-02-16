@@ -12,12 +12,6 @@ from ..context import Context
 from ..const import color
 
 
-def get_terminal_size() -> Iterable:
-    """
-    get terminal window height and width
-    """
-
-    return map(int, os.popen('stty size', 'r').read().split())
 
 """
 
@@ -39,12 +33,13 @@ class Render:
 
         def decorator(context_dumper):
             def wrapper(*args, **kwargs):
-                height, width = get_terminal_size()
+                width, height = os.get_terminal_size()
                 bar = (width - len(field_name)) // 2 - 1
                 print(ruler * bar, field_name, ruler * bar)
                 context_dumper(*args, **kwargs)
                 if "DISASM" in field_name:
                     print(ruler * width)
+
             return wrapper
         return decorator
 
