@@ -6,6 +6,7 @@
 from typing import Optional
 
 import unicorn
+from unicorn import UC_ERR_READ_UNMAPPED
 
 class Context:
     """
@@ -41,13 +42,8 @@ class Context:
         md = self.ql.disassembler
         md.detail = detail
 
-        try:
-            ret = next(md.disasm(self.read_insn(address), address))
+        return next(md.disasm(self.read_insn(address), address), None)
 
-        except StopIteration:
-            ret = None
-
-        return ret
 
     def try_read(self, address: int, size: int) -> Optional[bytes]:
         """
@@ -60,7 +56,7 @@ class Context:
             result = self.read_mem(address, size)
 
         except unicorn.unicorn.UcError as err:
-            if err.errno == 6: # Invalid memory read (UC_ERR_READ_UNMAPPED)
+            if err.errno == UC_ERR_READ_UNMAPPED: # Invalid memory read (UC_ERR_READ_UNMAPPED)
                 err_msg = f"Can not access memory at address 0x{address:08x}"
 
         except:
