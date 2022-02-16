@@ -244,7 +244,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
     @SnapshotManager.snapshot
     @parse_int
-    def do_continue(self, address: Optional[int] = 0) -> None:
+    def do_continue(self, address: Optional[int] = None) -> None:
         """
         continue execution from current address if not specified
         """
@@ -289,7 +289,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         self.bp_list.pop(bp.addr, None)
 
     @parse_int
-    def do_breakpoint(self, address: Optional[int] = 0) -> None:
+    def do_breakpoint(self, address: Optional[int] = None) -> None:
         """
         set breakpoint on specific address
         """
@@ -302,7 +302,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         print(f"{color.CYAN}[+] Breakpoint at 0x{address:08x}{color.END}")
 
     @parse_int
-    def do_disassemble(self, address: Optional[int] = 0, *args) -> None:
+    def do_disassemble(self, address: Optional[int] = None) -> None:
         """
         disassemble instructions from address specified
         """
