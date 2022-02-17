@@ -241,7 +241,7 @@ class QlOs:
             pc_info = ' (unreachable)'
         else:
             self.ql.log.error('Hexdump:')
-            self.ql.log.error(data.hex(' '))
+            self.ql.log.error(' '.join([f'{b:02X}' for b in data or []]))
 
             self.ql.log.error('Disassembly:')
             self.ql.arch.utils.disassembler(self.ql, pc, 64)

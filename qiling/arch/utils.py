@@ -36,8 +36,10 @@ class QlArchUtils:
         qd = ql.arch.create_disassembler()
 
         offset, name = self.get_offset_and_name(address)
-        log_data = f'{address:0{ql.archbit // 4}x} [{name:20s} + {offset:#08x}]  {tmp.hex(" "):30s}'
+        tmp_formated = ' '.join([f'{b:02X}' for b in tmp])
+        log_data = f'{address:0{ql.archbit // 4}x} [{name:20s} + {offset:#08x}]  {tmp_formated:30s}'
         log_insn = '\n> '.join(f'{insn.mnemonic:20s} {insn.op_str}' for insn in qd.disasm(tmp, address))
+        log_insn = '\n> ' + log_insn
 
         ql.log.info(log_data + log_insn)
 
