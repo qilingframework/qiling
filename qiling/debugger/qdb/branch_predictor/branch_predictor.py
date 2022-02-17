@@ -35,7 +35,7 @@ class BranchPredictor(Context):
         read specific register value
         """
 
-        return getattr(self.ql.reg, reg_name)
+        return self.ql.reg.read(reg_name)
 
     def predict(self):
         """
