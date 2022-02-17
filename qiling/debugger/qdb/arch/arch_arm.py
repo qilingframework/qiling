@@ -9,6 +9,7 @@ from .arch import Arch
 
 class ArchARM(Arch):
     def __init__(self):
+        super().__init__()
         self.regs = (
                 "r0", "r1", "r2", "r3",
                 "r4", "r5", "r6", "r7",
@@ -69,6 +70,7 @@ class ArchARM(Arch):
         """
 
         def thumb_read(address: int) -> bytes:
+
             first_two = self.ql.unpack16(self.read_mem(address, 2))
             result = self.ql.pack16(first_two)
 
@@ -85,6 +87,7 @@ class ArchARM(Arch):
             return result
 
         return super().read_insn(address) if not self.thumb_mode else thumb_read(address)
+
 
 
 class ArchCORTEX_M(ArchARM):

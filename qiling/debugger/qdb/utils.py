@@ -9,6 +9,7 @@ import math
 from qiling.const import QL_ARCH
 
 from .context import Context
+from .misc import read_int
 
 from .render import (
         ContextRenderX86,
@@ -317,7 +318,7 @@ class MemoryManager(Context):
         if ft == "i":
 
             for offset in range(addr, addr+ct*4, 4):
-                line = disasm(self.ql, offset)
+                line = self.disasm(offset)
                 if line:
                     print(f"0x{line.address:x}: {line.mnemonic}\t{line.op_str}")
 

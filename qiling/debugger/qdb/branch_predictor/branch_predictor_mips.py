@@ -15,6 +15,7 @@ class BranchPredictorMIPS(BranchPredictor, ArchMIPS):
 
     def __init__(self, ql):
         super().__init__(ql)
+        ArchMIPS.__init__(self)
         self.CODE_END = "break"
         self.INST_SIZE = 4
 
@@ -42,7 +43,8 @@ class BranchPredictorMIPS(BranchPredictor, ArchMIPS):
         line = self.disasm(self.cur_addr)
 
         if line.mnemonic == self.CODE_END: # indicates program extied
-            return True
+            prophecy.where = True
+            return prophecy
 
         prophecy.where = self.cur_addr + self.INST_SIZE
         if line.mnemonic.startswith('j') or line.mnemonic.startswith('b'):

@@ -44,7 +44,6 @@ class Context:
 
         return next(md.disasm(self.read_insn(address), address), None)
 
-
     def try_read(self, address: int, size: int) -> Optional[bytes]:
         """
         try to read data from ql.mem

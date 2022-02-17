@@ -9,6 +9,7 @@ from .arch import Arch
 
 class ArchX86(Arch):
     def __init__(self):
+        super().__init__()
         self.regs = (
                 "eax", "ebx", "ecx", "edx",
                 "esp", "ebp", "esi", "edi",

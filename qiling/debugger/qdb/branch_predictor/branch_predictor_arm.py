@@ -15,6 +15,7 @@ class BranchPredictorARM(BranchPredictor, ArchARM):
 
     def __init__(self, ql):
         super().__init__(ql)
+        ArchARM.__init__(self)
 
         self.INST_SIZE = 4
         self.THUMB_INST_SIZE = 2
@@ -47,7 +48,8 @@ class BranchPredictorARM(BranchPredictor, ArchARM):
         prophecy.where = cur_addr + line.size
 
         if line.mnemonic == self.CODE_END: # indicates program exited
-            return True
+            prophecy.where = True
+            return prophecy
 
         jump_table = {
                 # unconditional branch
@@ -182,7 +184,7 @@ class BranchPredictorARM(BranchPredictor, ArchARM):
                     prophecy.where = self.unpack32(self.read_mem(self.read_reg(r), self.INST_SIZE))
 
         elif line.mnemonic in ("addls", "addne", "add") and self.regdst_eq_pc(line.op_str):
-            V, C, Z, N = self.get_cpsr(ql.reg.cpsr)
+            V, C, Z, N = self.get_cpsr(self.ql.reg.cpsr)
             r0, r1, r2, *imm = line.op_str.split(", ")
 
             # program counter is awalys 8 bytes ahead when it comes with pc, need to add extra 8 bytes
@@ -232,7 +234,7 @@ class BranchPredictorARM(BranchPredictor, ArchARM):
                     "pophi": lambda V, C, Z, N: (C == 1),
                     "popge": lambda V, C, Z, N: (N == V),
                     "poplt": lambda V, C, Z, N: (N != V),
-                    }.get(line.mnemonic)(*get_cpsr(self.ql.reg.cpsr)):
+                    }.get(line.mnemonic)(*self.get_cpsr(self.ql.reg.cpsr)):
 
                 prophecy.where = cur_addr + self.INST_SIZE
 
