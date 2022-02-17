@@ -81,7 +81,7 @@ class ArchARM(Arch):
                 first_two & 0xe800 == 0xe800,
                  ]):
 
-                latter_two = self.ql.mem.read_ptr(address+2, 2))
+                latter_two = self.ql.mem.read_ptr(address+2, 2)
                 result += self.ql.pack16(latter_two)
 
             return result
