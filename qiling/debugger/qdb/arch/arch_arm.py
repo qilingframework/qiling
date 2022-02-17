@@ -71,7 +71,7 @@ class ArchARM(Arch):
 
         def thumb_read(address: int) -> bytes:
 
-            first_two = self.ql.unpack16(self.read_mem(address, 2))
+            first_two = self.ql.mem.read_ptr(address, 2)
             result = self.ql.pack16(first_two)
 
             # to judge it's thumb mode or not
@@ -81,7 +81,7 @@ class ArchARM(Arch):
                 first_two & 0xe800 == 0xe800,
                  ]):
 
-                latter_two = self.ql.unpack16(self.read_mem(address+2, 2))
+                latter_two = self.ql.mem.read_ptr(address+2, 2))
                 result += self.ql.pack16(latter_two)
 
             return result
