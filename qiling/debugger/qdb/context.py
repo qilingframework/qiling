@@ -5,8 +5,10 @@
 
 from typing import Optional
 
-import unicorn
 from unicorn import UC_ERR_READ_UNMAPPED
+import unicorn
+
+from capstone import CsInsn
 
 class Context:
     """
@@ -34,7 +36,7 @@ class Context:
 
         return self.ql.mem.read(address, size)
 
-    def disasm(self, address: int, detail: bool = False) -> Optional[int]:
+    def disasm(self, address: int, detail: bool = False) -> Optional[CsInsn]:
         """
         helper function for disassembling
         """
