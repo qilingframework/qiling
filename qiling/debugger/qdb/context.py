@@ -17,6 +17,7 @@ class Context:
 
     def __init__(self, ql):
         self.ql = ql
+        self.pointersize = self.ql.pointersize
         self.unpack = ql.unpack
         self.unpack16 = ql.unpack16
         self.unpack32 = ql.unpack32
@@ -70,7 +71,7 @@ class Context:
         try to read pointer size of data from ql.mem
         """
 
-        return self.try_read(address, self.ql.pointersize)
+        return self.try_read(address, self.pointersize)
 
     def read_string(self, address: int) -> Optional[str]:
         """

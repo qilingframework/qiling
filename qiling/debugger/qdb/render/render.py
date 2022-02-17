@@ -5,7 +5,8 @@
 
 
 
-from typing import Mapping, Iterable
+from capstone import CsInsn
+from typing import Mapping
 import os, copy
 
 from ..context import Context
@@ -79,20 +80,20 @@ class Render:
 
         print(lines.format(*regs.values()))
 
-    def render_stack_dump(self, arch_sp: int, pointer_size: int = 4) -> None:
+    def render_stack_dump(self, arch_sp: int) -> None:
         """
         helper function for redering stack dump
         """
 
         for idx in range(self.stack_num):
-            addr = arch_sp + idx * pointer_size
+            addr = arch_sp + idx * self.pointersize
             if (val := self.try_read_pointer(addr)[0]):
-                print(f"$sp+0x{idx*pointer_size:02x}│ [0x{addr:08x}] —▸ 0x{self.unpack(val):08x}", end="")
+                print(f"$sp+0x{idx*self.pointersize:02x}│ [0x{addr:08x}] —▸ 0x{self.unpack(val):08x}", end="")
 
             # try to dereference wether it's a pointer
             if (buf := self.try_read_pointer(addr))[0] is not None:
 
-                if (addr := self.ql.unpack(buf[0])):
+                if (addr := self.unpack(buf[0])):
 
                     # try to dereference again
                     if (buf := self.try_read_pointer(addr))[0] is not None:
@@ -124,7 +125,7 @@ class Render:
             for line in forward:
                 self.print_asm(line)
 
-    def swap_reg_name(self, cur_regs: Mapping[str, int], extra_dict=None):
+    def swap_reg_name(self, cur_regs: Mapping[str, int], extra_dict=None) -> Mapping[str, int]:
         """
         swap register name with more readable register name
         """
@@ -136,7 +137,7 @@ class Render:
 
         return cur_regs 
 
-    def print_asm(self, insn, to_jump: bool = False) -> None:
+    def print_asm(self, insn: CsInsn, to_jump: bool = False) -> None:
         """
         helper function for printing assembly instructions, indicates where we are and the branch prediction
         provided by BranchPredictor
