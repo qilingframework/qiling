@@ -15,6 +15,7 @@ from .utils import setup_context_render, setup_branch_predictor, SnapshotManager
 from .misc import parse_int, Breakpoint, TempBreakpoint
 from .const import color
 
+from .utils import QDB_MSG, qdb_print
 
 class QlQdb(cmd.Cmd, QlDebugger):
     """
@@ -61,7 +62,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
                     if bp.hitted:
                         return
 
-                    print(f"{color.CYAN}[+] hit breakpoint at 0x{self.cur_addr:08x}{color.END}")
+                    qdb_print(QDB_MSG.INFO, f"hit breakpoint at 0x{self.cur_addr:08x}")
                     bp.hitted = True
 
                 ql.stop()
@@ -115,7 +116,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
                     if isinstance(bp, TempBreakpoint):
                         self.del_breakpoint(bp)
                     else:
-                        print(f"{color.CYAN}[+] hit breakpoint at 0x{self.cur_addr:08x}{color.END}")
+                        qdb_print(QDB_MSG.INFO, f"hit breakpoint at 0x{self.cur_addr:08x}")
 
                     break
 
@@ -147,7 +148,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         def inner(self, *args, **kwargs):
             if self.ql is None:
-                print(f"{color.RED}[!] The program is not being run.{color.END}")
+                qdb_print(QDB_MSG.ERROR, "The program is not being run.")
             else:
                 func(self, *args, **kwargs)
         return inner
@@ -252,7 +253,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         if address is None:
             address = self.cur_addr
 
-        print(f"{color.CYAN}continued from 0x{address:08x}{color.END}")
+        qdb_print(QDB_MSG.INFO, f"continued from 0x{address:08x}")
 
         self._run(address)
 
@@ -263,14 +264,14 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         if self.rr:
             if len(self.rr.layers) == 0 or not isinstance(self.rr.layers[-1], self.rr.DiffedState):
-                print(f"{color.RED}[!] there is no way back !!!{color.END}")
+                qdb_print(QDB_MSG.ERROR, "there is no way back !!!")
 
             else:
-                print(f"{color.CYAN}[+] step backward ~{color.END}")
+                qdb_print(QDB_MSG.INFO, "step backward ~")
                 self.rr.restore()
                 self.do_context()
         else:
-            print(f"{color.RED}[!] the option rr yet been set !!!{color.END}")
+            qdb_print(QDB_MSG.ERROR, f"the option rr yet been set !!!")
 
     def set_breakpoint(self, address: int, is_temp: bool = False) -> None:
         """
@@ -299,7 +300,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         self.set_breakpoint(address)
 
-        print(f"{color.CYAN}[+] Breakpoint at 0x{address:08x}{color.END}")
+        qdb_print(QDB_MSG.INFO, f"Breakpoint at 0x{address:08x}")
 
     @parse_int
     def do_disassemble(self, address: Optional[int] = None) -> None:
@@ -310,7 +311,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         try:
             context_asm(self.ql, address)
         except:
-            print(f"{color.RED}[!] something went wrong ...{color.END}")
+            qdb_print(QDB_MSG.ERROR)
 
     def do_examine(self, line: str) -> None:
         """
@@ -322,9 +323,9 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         # try:
         if type(err_msg := self.mm.parse(line)) is str:
-            print(f"{color.RED}[!] {err_msg} ...{color.END}")
+            qdb_print(QDB_MSG.ERROR, err_msg)
         # except:
-            # print(f"{color.RED}[!] something went wrong ...{color.END}")
+            # qdb_print(QDB_MSG.ERROR, "something went wrong ...")
 
     def do_start(self, *args) -> None:
         """
@@ -351,9 +352,9 @@ class QlQdb(cmd.Cmd, QlDebugger):
         """
 
         self.ql.mem.show_mapinfo()
-        print(f"Breakpoints: {[hex(addr) for addr in self.bp_list.keys()]}")
+        qdb_print(QDB_MSG.INFO, f"Breakpoints: {[hex(addr) for addr in self.bp_list.keys()]}")
         if self.rr:
-            print(f"Snapshots: {len([st for st in self.rr.layers if isinstance(st, self.rr.DiffedState)])}")
+            qdb_print(QDB_MSG.INFO, f"Snapshots: {len([st for st in self.rr.layers if isinstance(st, self.rr.DiffedState)])}")
 
     def do_shell(self, *command) -> None:
         """
@@ -363,7 +364,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         try:
             print(eval(*command))
         except:
-            print("something went wrong ...")
+            qdb_print(QDB_MSG.ERROR, "something went wrong ...")
 
     def do_quit(self, *args) -> bool:
         """

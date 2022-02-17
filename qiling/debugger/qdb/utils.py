@@ -25,6 +25,27 @@ from .branch_predictor import (
         BranchPredictorMIPS,
         )
 
+from .const import color, QDB_MSG
+    
+
+def qdb_print(msgtype: QDB_MSG, msg: str) -> None:
+    """
+    color printing
+    """
+
+    def print_error(msg):
+        return f"{color.RED}[!] {msg}{color.END}"
+
+    def print_info(msg):
+        return f"{color.CYAN}[+] {msg}{color.END}"
+
+    color_coated = {
+            QDB_MSG.ERROR: print_error,
+            QDB_MSG.INFO : print_info,
+            }.get(msgtype)(msg)
+
+    print(color_coated)
+
 
 """
 
