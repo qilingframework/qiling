@@ -21,11 +21,11 @@ class QlOsMcu(QlOs):
         self.ql.emu_stop()
         self.runable = False
 
-    def run(self, count=None, end=None):
+    def run(self):
         self.runable = True
         
-        if end   is None: end   = -1            
-        if count is None: count = -1
+        count = self.ql.count
+        end = self.ql.exit_point if self.ql.exit_point is not None else -1
 
         if isinstance(self.ql.arch, QlArchARM):
             end |= self.ql.arch.thumb
