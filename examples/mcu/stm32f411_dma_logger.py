@@ -12,7 +12,7 @@ from qiling.extensions.mcu.stm32f4 import stm32f411
 
 def stm32f411_dma():
     ql = Qiling(["../rootfs/mcu/stm32f411/dma-clock.hex"],                    
-        archtype="cortex_m", env=stm32f411, verbose=QL_VERBOSE.DEBUG)
+        archtype="cortex_m", ostype="mcu", env=stm32f411, verbose=QL_VERBOSE.DEBUG)
 
     ql.hw.create('usart2').watch()
     ql.hw.create('dma1').watch()
