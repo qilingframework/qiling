@@ -46,9 +46,7 @@ class QlGdbUtils(object):
         """
         try:
             if self.ql.archtype == QL_ARCH.ARM:
-                mode = self.ql.arch.check_thumb()
-                if mode == UC_MODE_THUMB:
-                    address = address + 1
+                address = address | self.arch.thumb
 
             self.mapping.append([(hex(address))])
             self.current_address = address
@@ -102,9 +100,7 @@ class QlGdbUtils(object):
 
         if address is not None:
             if self.ql.archtype == QL_ARCH.ARM:
-                mode = self.ql.arch.check_thumb()
-                if mode == UC_MODE_THUMB:
-                    address += 1
+                address |= self.ql.arch.thumb
             self.current_address = address
 
         self.skip_bp_count = skip_bp
