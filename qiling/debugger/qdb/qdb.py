@@ -11,7 +11,8 @@ from qiling import Qiling
 from qiling.const import QL_ARCH, QL_VERBOSE
 from qiling.debugger import QlDebugger
 
-from .utils import setup_context_render, setup_branch_predictor, SnapshotManager, MemoryManager
+from .utils import setup_context_render, setup_branch_predictor, SnapshotManager
+from .memory import MemoryManager
 from .misc import parse_int, Breakpoint, TempBreakpoint
 from .const import color
 

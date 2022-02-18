@@ -10,6 +10,8 @@ import unicorn
 
 from capstone import CsInsn
 
+from .misc import read_int
+
 class Context:
     """
     base class for accessing context of running qiling instance
@@ -90,6 +92,10 @@ class Context:
             s = self.read_string(address)
         except:
             pass
+
+    @staticmethod
+    def read_int(s: str) -> int:
+        return read_int(s)
 
 if __name__ == "__main__":
     pass
