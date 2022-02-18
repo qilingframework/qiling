@@ -127,7 +127,7 @@ class BranchPredictorX86(BranchPredictor, ArchX86):
                 prophecy.where = eval(new_line)
 
             elif line.op_str in self.ql.reg.register_mapping:
-                prophecy.where = getattr(self.ql.reg, line.op_str)
+                prophecy.where = self.ql.reg.read(line.op_str)
 
             else:
                 prophecy.where = read_int(line.op_str)

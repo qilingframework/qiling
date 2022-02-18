@@ -23,6 +23,7 @@ class Context:
         self.unpack = ql.unpack
         self.unpack16 = ql.unpack16
         self.unpack32 = ql.unpack32
+        self.unpack64 = ql.unpack64
 
     @property
     def cur_addr(self):

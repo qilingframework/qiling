@@ -4,7 +4,6 @@
 #
 
 from qiling.utils import ql_get_module_function
-from qiling.const import QL_ARCH
 
 from .context import Context
 from .arch import ArchCORTEX_M, ArchARM, ArchMIPS, ArchX86
@@ -66,36 +65,43 @@ class MemoryManager(Context, ArchX86, ArchCORTEX_M, ArchARM, ArchMIPS):
     def fmt_unpack(self, bs: bytes, sz: int) -> int:
         return {
                 1: lambda x: x[0],
-                2: self.ql.unpack16,
-                4: self.ql.unpack32,
-                8: self.ql.unpack64,
+                2: self.unpack16,
+                4: self.unpack32,
+                8: self.unpack64,
                 }.get(sz)(bs)
 
     def parse(self, line: str):
-        args = line.split()
+
+        # test case
+        # x/wx address
+        # x/i address
+        # x $sp
+        # x $sp +0xc
+        # x $sp+0xc
+        # x $sp + 0xc
 
         if line.startswith("/"):  # followed by format letter and size letter
 
             fmt, *rest = line.strip("/").split()
 
-            rest = "".join(rest)
-
             fmt = self.get_fmt(fmt)
 
-        elif len(args) == 1:  # only address
-            rest = args[0]
+        else:
+            args = line.split()
+            rest = args[0] if  len(args) == 1 else args
             fmt = self.DEFAULT_FMT
 
-        else:
-            rest = args
-
         if (regs_dict := getattr(self, "regs_need_swapped", None)):
-            for old_reg, new_reg in regs_dict.items():
-                rest = rest.replace(old_reg, new_reg)
+            for each in rest:
+                if each in regs_dict:
 
-        # for supporting addition of register with constant value
-        elems = rest.split("+")
-        elems = [elem.strip("$") for elem in elems]
+        # for simple calculation with register and address 
+        new_line = rest
+
+        # substitue register name with real value  
+        for each_reg in filter(lambda r: len(r) == 3, self.ql.reg.register_mapping.keys()):
+            if each_reg in new_line:
+                new_line = re.sub(each_reg, hex(self.read_reg(each_reg)), new_line)
 
         items = []
 
@@ -117,7 +123,6 @@ class MemoryManager(Context, ArchX86, ArchCORTEX_M, ArchARM, ArchMIPS):
                 if line:
                     print(f"0x{line.address:x}: {line.mnemonic}\t{line.op_str}")
 
-            print()
 
         else:
             lines = 1 if ct <= 4 else math.ceil(ct / 4)
@@ -143,6 +148,6 @@ class MemoryManager(Context, ArchX86, ArchCORTEX_M, ArchARM, ArchMIPS):
                     ft = ft.lower() if ft in ("x", "o", "b", "d") else ft.lower().replace("t", "b").replace("a", "x")
                     print(f"{prefix}{data:{pad}{ft}}\t", end="")
 
-                print()
+        print()
 
         return True
