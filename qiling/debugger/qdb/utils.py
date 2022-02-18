@@ -5,121 +5,36 @@
 
 from __future__ import annotations
 from typing import Callable, Optional, Mapping
-from functools import partial
-
 from qiling.const import *
 
-CODE_END = True
-
-
-def dump_regs(ql: Qiling) -> Mapping[str, int]:
-
-    if ql.archtype == QL_ARCH.MIPS:
-
-        _reg_order = (
-                "gp", "at", "v0", "v1",
-                "a0", "a1", "a2", "a3",
-                "t0", "t1", "t2", "t3",
-                "t4", "t5", "t6", "t7",
-                "t8", "t9", "sp", "s8",
-                "s0", "s1", "s2", "s3",
-                "s4", "s5", "s6", "s7",
-                "ra", "k0", "k1", "pc",
-                )
-
-    elif ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB):
-
-        _reg_order = (
-                "r0", "r1", "r2", "r3",
-                "r4", "r5", "r6", "r7",
-                "r8", "r9", "r10", "r11",
-                "r12", "sp", "lr", "pc",
-                )
-
-    elif ql.archtype == QL_ARCH.X86:
-
-        _reg_order = (
-                "eax", "ebx", "ecx", "edx",
-                "esp", "ebp", "esi", "edi",
-                "eip", "ss", "cs", "ds", "es",
-                "fs", "gs", "ef",
-                )
-
-    elif ql.archtype == QL_ARCH.CORTEX_M:
-
-        _reg_order = (
-                "r0", "r1", "r2", "r3",
-                "r4", "r5", "r6", "r7",
-                "r8", "r9", "r10", "r11",
-                "r12", "sp", "lr", "pc",
-                "xpsr", "control", "primask", "basepri", "faultmask"
-                )
-
-    return {reg_name: getattr(ql.reg, reg_name) for reg_name in _reg_order}
-
-
-def get_arm_flags(bits: int) -> Mapping[str, int]:
-
-    def _get_mode(bits):
-        return {
-                0b10000: "User",
-                0b10001: "FIQ",
-                0b10010: "IRQ",
-                0b10011: "Supervisor",
-                0b10110: "Monitor",
-                0b10111: "Abort",
-                0b11010: "Hypervisor",
-                0b11011: "Undefined",
-                0b11111: "System",
-                }.get(bits & 0x00001f)
-
-    return {
-            "mode":     _get_mode(bits),
-            "thumb":    bits & 0x00000020 != 0,
-            "fiq":      bits & 0x00000040 != 0,
-            "irq":      bits & 0x00000080 != 0,
-            "neg":      bits & 0x80000000 != 0,
-            "zero":     bits & 0x40000000 != 0,
-            "carry":    bits & 0x20000000 != 0,
-            "overflow": bits & 0x10000000 != 0,
-            }
-
+from collections import namedtuple
+import ast, re
 
 # parse unsigned integer from string
-def _parse_int(s: str) -> int:
+def read_int(s: str) -> int:
     return int(s, 0)
 
 
-# function dectorator for parse argument as integer
+# function dectorator for parsing argument as integer
 def parse_int(func: Callable) -> Callable:
     def wrap(qdb, s: str = "") -> int:
         assert type(s) is str
         try:
-            ret = _parse_int(s)
+            ret = read_int(s)
         except:
             ret = None
         return func(qdb, ret)
     return wrap
+
 
 # check wether negative value or not
 def is_negative(i: int) -> int:
     return i & (1 << 31)
 
 
-# convert valu to signed
+# signed value convertion
 def signed_val(val: int) -> int:
     return (val-1 << 32) if is_negative(val) else val
-
-
-# handle braches and jumps so we can set berakpoint properly
-def handle_bnj(ql: Qiling, cur_addr: str) -> Callable[[Qiling, str], int]:
-    return {
-            QL_ARCH.MIPS     : handle_bnj_mips,
-            QL_ARCH.ARM      : handle_bnj_arm,
-            QL_ARCH.ARM_THUMB: handle_bnj_arm,
-            QL_ARCH.CORTEX_M : handle_bnj_arm,
-            QL_ARCH.X86      : handle_bnj_x86,
-            }.get(ql.archtype)(ql, cur_addr)
 
 
 def get_cpsr(bits: int) -> (bool, bool, bool, bool):
@@ -147,11 +62,14 @@ def is_thumb(bits: int) -> bool:
 
 
 def disasm(ql: Qiling, address: int, detail: bool = False) -> Optional[int]:
+    """
+    helper function for disassembling
+    """
 
     md = ql.disassembler
     md.detail = detail
     try:
-        ret = next(md.disasm(_read_inst(ql, address), address))
+        ret = next(md.disasm(read_inst(ql, address), address))
 
     except StopIteration:
         ret = None
@@ -159,8 +77,7 @@ def disasm(ql: Qiling, address: int, detail: bool = False) -> Optional[int]:
     return ret
 
 
-def _read_inst(ql: Qiling, addr: int) -> int:
-
+def read_inst(ql: Qiling, addr: int) -> int:
     result = ql.mem.read(addr, 4)
 
     if ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB, QL_ARCH.CORTEX_M):
@@ -187,312 +104,459 @@ def _read_inst(ql: Qiling, addr: int) -> int:
 
     return result
 
-def handle_bnj_x86(ql: Qilng, cur_addr: str) -> int:
+"""
+    Try to predict certian branch will be taken or not based on current context
+"""
 
-    # FIXME: NO HANDLE BRANCH AND JUMP FOR X86 FOR NOW
+def setup_branch_predictor(ql: Qiling) -> BranchPredictor:
+    return {
+            QL_ARCH.X86: BranchPredictor_X86,
+            QL_ARCH.ARM: BranchPredictor_ARM,
+            QL_ARCH.ARM_THUMB: BranchPredictor_ARM,
+            QL_ARCH.CORTEX_M: BranchPredictor_CORTEX_M,
+            QL_ARCH.MIPS: BranchPredictor_MIPS,
+            }.get(ql.archtype)(ql)
 
-    to_jump = False
-    ret_addr = None
+class Prophecy(object):
+    def __init__(self):
+        self.going = False
+        self.where = None
 
-    return (to_jump, ret_addr)
+    def __iter__(self):
+        return iter((self.going, self.where))
 
+class BranchPredictor(object):
+    def __init__(self, ql):
+        self.ql = ql
 
-def handle_bnj_arm(ql: Qiling, cur_addr: str) -> int:
+    def read_reg(self, reg_name):
+        return getattr(self.ql.reg, reg_name)
 
-    def _read_reg_val(regs, _reg):
-        return getattr(ql.reg, _reg.replace("ip", "r12").replace("fp", "r11"))
+    def predict(self):
+        return NotImplementedError
 
-    def regdst_eq_pc(op_str):
+class BranchPredictor_ARM(BranchPredictor):
+    def __init__(self, ql):
+        super().__init__(ql)
+
+        self.INST_SIZE = 4
+        self.THUMB_INST_SIZE = 2
+        self.CODE_END = "udf"
+
+    def read_reg(self, reg_name):
+        reg_name = reg_name.replace("ip", "r12").replace("fp", "r11")
+        return getattr(self.ql.reg, reg_name)
+
+    def regdst_eq_pc(self, op_str):
         return op_str.partition(", ")[0] == "pc"
 
-    read_inst = partial(_read_inst, ql)
-    read_reg_val = partial(_read_reg_val, ql.reg)
+    def predict(self):
+        prophecy = Prophecy()
+        cur_addr = self.ql.reg.arch_pc
+        line = disasm(self.ql, cur_addr)
+        prophecy.where = cur_addr + line.size
 
-    ARM_INST_SIZE = 4
-    ARM_THUMB_INST_SIZE = 2
+        if line.mnemonic == self.CODE_END: # indicates program exited
+            return True
 
-    line = disasm(ql, cur_addr)
-    ret_addr = cur_addr + line.size
+        jump_table = {
+                # unconditional branch
+                "b"    : (lambda *_: True),
+                "bl"   : (lambda *_: True),
+                "bx"   : (lambda *_: True),
+                "blx"  : (lambda *_: True),
+                "b.w"  : (lambda *_: True),
 
-    if line.mnemonic == "udf": # indicates program exited
-        return CODE_END
+                # branch on equal, Z == 1
+                "beq"  : (lambda V, C, Z, N: Z == 1),
+                "bxeq" : (lambda V, C, Z, N: Z == 1),
+                "beq.w": (lambda V, C, Z, N: Z == 1),
 
-    jump_table = {
-            # unconditional branch
-            "b"    : (lambda *_: True),
-            "bl"   : (lambda *_: True),
-            "bx"   : (lambda *_: True),
-            "blx"  : (lambda *_: True),
-            "b.w"  : (lambda *_: True),
+                # branch on not equal, Z == 0
+                "bne"  : (lambda V, C, Z, N: Z == 0),
+                "bxne" : (lambda V, C, Z, N: Z == 0),
+                "bne.w": (lambda V, C, Z, N: Z == 0),
 
-            # branch on equal, Z == 1
-            "beq"  : (lambda V, C, Z, N: Z == 1),
-            "bxeq" : (lambda V, C, Z, N: Z == 1),
-            "beq.w": (lambda V, C, Z, N: Z == 1),
+                # branch on signed greater than, Z == 0 and N == V
+                "bgt"  : (lambda V, C, Z, N: (Z == 0 and N == V)),
+                "bgt.w": (lambda V, C, Z, N: (Z == 0 and N == V)),
 
-            # branch on not equal, Z == 0
-            "bne"  : (lambda V, C, Z, N: Z == 0),
-            "bxne" : (lambda V, C, Z, N: Z == 0),
-            "bne.w": (lambda V, C, Z, N: Z == 0),
+                # branch on signed less than, N != V
+                "blt"  : (lambda V, C, Z, N: N != V),
 
-            # branch on signed greater than, Z == 0 and N == V
-            "bgt"  : (lambda V, C, Z, N: (Z == 0 and N == V)),
-            "bgt.w": (lambda V, C, Z, N: (Z == 0 and N == V)),
+                # branch on signed greater than or equal, N == V
+                "bge"  : (lambda V, C, Z, N: N == V),
 
-            # branch on signed less than, N != V
-            "blt"  : (lambda V, C, Z, N: N != V),
+                # branch on signed less than or queal
+                "ble"  : (lambda V, C, Z, N: Z == 1 or N != V),
 
-            # branch on signed greater than or equal, N == V
-            "bge"  : (lambda V, C, Z, N: N == V),
+                # branch on unsigned higher or same (or carry set), C == 1
+                "bhs"  : (lambda V, C, Z, N: C == 1),
+                "bcs"  : (lambda V, C, Z, N: C == 1),
 
-            # branch on signed less than or queal
-            "ble"  : (lambda V, C, Z, N: Z == 1 or N != V),
+                # branch on unsigned lower (or carry clear), C == 0
+                "bcc"  : (lambda V, C, Z, N: C == 0),
+                "blo"  : (lambda V, C, Z, N: C == 0),
+                "bxlo" : (lambda V, C, Z, N: C == 0),
+                "blo.w": (lambda V, C, Z, N: C == 0),
 
-            # branch on unsigned higher or same (or carry set), C == 1
-            "bhs"  : (lambda V, C, Z, N: C == 1),
-            "bcs"  : (lambda V, C, Z, N: C == 1),
+                # branch on negative or minus, N == 1
+                "bmi"  : (lambda V, C, Z, N: N == 1),
 
-            # branch on unsigned lower (or carry clear), C == 0
-            "bcc"  : (lambda V, C, Z, N: C == 0),
-            "blo"  : (lambda V, C, Z, N: C == 0),
-            "bxlo" : (lambda V, C, Z, N: C == 0),
-            "blo.w": (lambda V, C, Z, N: C == 0),
+                # branch on positive or plus, N == 0
+                "bpl"  : (lambda V, C, Z, N: N == 0),
 
-            # branch on negative or minus, N == 1
-            "bmi"  : (lambda V, C, Z, N: N == 1),
+                # branch on signed overflow
+                "bvs"  : (lambda V, C, Z, N: V == 1),
 
-            # branch on positive or plus, N == 0
-            "bpl"  : (lambda V, C, Z, N: N == 0),
+                # branch on no signed overflow
+                "bvc"  : (lambda V, C, Z, N: V == 0),
 
-            # branch on signed overflow
-            "bvs"  : (lambda V, C, Z, N: V == 1),
+                # branch on unsigned higher
+                "bhi"  : (lambda V, C, Z, N: (Z == 0 and C == 1)),
+                "bxhi" : (lambda V, C, Z, N: (Z == 0 and C == 1)),
+                "bhi.w": (lambda V, C, Z, N: (Z == 0 and C == 1)),
 
-            # branch on no signed overflow
-            "bvc"  : (lambda V, C, Z, N: V == 0),
+                # branch on unsigned lower
+                "bls"  : (lambda V, C, Z, N: (C == 0 or Z == 1)),
+                "bls.w": (lambda V, C, Z, N: (C == 0 or Z == 1)),
+                }
 
-            # branch on unsigned higher
-            "bhi"  : (lambda V, C, Z, N: (Z == 0 and C == 1)),
-            "bxhi" : (lambda V, C, Z, N: (Z == 0 and C == 1)),
-            "bhi.w": (lambda V, C, Z, N: (Z == 0 and C == 1)),
+        cb_table = {
+                # branch on equal to zero
+                "cbz" : (lambda r: r == 0),
 
-            # branch on unsigned lower
-            "bls"  : (lambda V, C, Z, N: (C == 0 or Z == 1)),
-            "bls.w": (lambda V, C, Z, N: (C == 0 or Z == 1)),
-            }
+                # branch on not equal to zero
+                "cbnz": (lambda r: r != 0),
+                }
 
-    cb_table = {
-            # branch on equal to zero
-            "cbz" : (lambda r: r == 0),
+        if line.mnemonic in jump_table:
+            prophecy.going = jump_table.get(line.mnemonic)(*get_cpsr(self.ql.reg.cpsr))
 
-            # branch on not equal to zero
-            "cbnz": (lambda r: r != 0),
-            }
+        elif line.mnemonic in cb_table:
+            prophecy.going = cb_table.get(line.mnemonic)(self.read_reg(line.op_str.split(", ")[0]))
 
-    to_jump = False
-    if line.mnemonic in jump_table:
-        to_jump = jump_table.get(line.mnemonic)(*get_cpsr(ql.reg.cpsr))
+        if prophecy.going:
+            if "#" in line.op_str:
+                prophecy.where = read_int(line.op_str.split("#")[-1])
+            else:
+                prophecy.where = self.read_reg(line.op_str)
 
-    elif line.mnemonic in cb_table:
-        to_jump = cb_table.get(line.mnemonic)(read_reg_val(line.op_str.split(", ")[0]))
+                if self.regdst_eq_pc(line.op_str):
+                    next_addr = cur_addr + line.size
+                    n2_addr = next_addr + len(read_inst(next_addr))
+                    prophecy.where += len(read_inst(n2_addr)) + len(read_inst(next_addr))
 
-    if to_jump:
-        if "#" in line.op_str:
-            ret_addr = _parse_int(line.op_str.split("#")[-1])
+        elif line.mnemonic.startswith("it"):
+            # handle IT block here
+
+            cond_met = {
+                    "eq": lambda V, C, Z, N: (Z == 1),
+                    "ne": lambda V, C, Z, N: (Z == 0),
+                    "ge": lambda V, C, Z, N: (N == V),
+                    "hs": lambda V, C, Z, N: (C == 1),
+                    "lo": lambda V, C, Z, N: (C == 0),
+                    "mi": lambda V, C, Z, N: (N == 1),
+                    "pl": lambda V, C, Z, N: (N == 0),
+                    "ls": lambda V, C, Z, N: (C == 0 or Z == 1),
+                    "le": lambda V, C, Z, N: (Z == 1 or N != V),
+                    "hi": lambda V, C, Z, N: (Z == 0 and C == 1),
+                    }.get(line.op_str)(*get_cpsr(ql.reg.cpsr))
+
+            it_block_range = [each_char for each_char in line.mnemonic[1:]]
+
+            next_addr = cur_addr + self.THUMB_INST_SIZE
+            for each in it_block_range:
+                _inst = read_inst(next_addr)
+                n2_addr = handle_bnj_arm(ql, next_addr)
+
+                if (cond_met and each == "t") or (not cond_met and each == "e"):
+                    if n2_addr != (next_addr+len(_inst)): # branch detected
+                        break
+
+                next_addr += len(_inst)
+
+            prophecy.where = next_addr
+
+        elif line.mnemonic in ("ldr",):
+
+            if self.regdst_eq_pc(line.op_str):
+                _, _, rn_offset = line.op_str.partition(", ")
+                r, _, imm = rn_offset.strip("[]!").partition(", #")
+
+                if "]" in rn_offset.split(", ")[1]: # pre-indexed immediate
+                    prophecy.where = ql.unpack32(ql.mem.read(read_int(imm) + self.read_reg(r), self.INST_SIZE))
+
+                else: # post-indexed immediate
+                    # FIXME: weired behavior, immediate here does not apply
+                    prophecy.where = ql.unpack32(ql.mem.read(self.read_reg(r), self.INST_SIZE))
+
+        elif line.mnemonic in ("addls", "addne", "add") and self.regdst_eq_pc(line.op_str):
+            V, C, Z, N = get_cpsr(ql.reg.cpsr)
+            r0, r1, r2, *imm = line.op_str.split(", ")
+
+            # program counter is awalys 8 bytes ahead when it comes with pc, need to add extra 8 bytes
+            extra = 8 if 'pc' in (r0, r1, r2) else 0
+
+            if imm:
+                expr = imm[0].split()
+                # TODO: should support more bit shifting and rotating operation
+                if expr[0] == "lsl": # logical shift left
+                    n = read_int(expr[-1].strip("#")) * 2
+
+            if line.mnemonic == "addls" and (C == 0 or Z == 1):
+                prophecy.where = extra + self.read_reg(r1) + self.read_reg(r2) * n
+
+            elif line.mnemonic == "add" or (line.mnemonic == "addne" and Z == 0):
+                prophecy.where = extra + self.read_reg(r1) + (self.read_reg(r2) * n if imm else self.read_reg(r2))
+
+        elif line.mnemonic in ("tbh", "tbb"):
+
+            cur_addr += self.INST_SIZE
+            r0, r1, *imm = line.op_str.strip("[]").split(", ")
+
+            if imm:
+                expr = imm[0].split()
+                if expr[0] == "lsl": # logical shift left
+                    n = read_int(expr[-1].strip("#")) * 2
+
+            if line.mnemonic == "tbh":
+
+                r1 = self.read_reg(r1) * n
+
+            elif line.mnemonic == "tbb":
+
+                r1 = self.read_reg(r1)
+
+            to_add = int.from_bytes(ql.mem.read(cur_addr+r1, 2 if line.mnemonic == "tbh" else 1), byteorder="little") * n
+            prophecy.where = cur_addr + to_add
+
+        elif line.mnemonic.startswith("pop") and "pc" in line.op_str:
+
+            prophecy.where = ql.stack_read(line.op_str.strip("{}").split(", ").index("pc") * self.INST_SIZE)
+            if not { # step to next instruction if cond does not meet
+                    "pop"  : lambda *_: True,
+                    "pop.w": lambda *_: True,
+                    "popeq": lambda V, C, Z, N: (Z == 1),
+                    "popne": lambda V, C, Z, N: (Z == 0),
+                    "pophi": lambda V, C, Z, N: (C == 1),
+                    "popge": lambda V, C, Z, N: (N == V),
+                    "poplt": lambda V, C, Z, N: (N != V),
+                    }.get(line.mnemonic)(*get_cpsr(ql.reg.cpsr)):
+
+                prophecy.where = cur_addr + self.INST_SIZE
+
+        elif line.mnemonic == "sub" and self.regdst_eq_pc(line.op_str):
+            _, r, imm = line.op_str.split(", ")
+            prophecy.where = self.read_reg(r) - read_int(imm.strip("#"))
+
+        elif line.mnemonic == "mov" and self.regdst_eq_pc(line.op_str):
+            _, r = line.op_str.split(", ")
+            prophecy.where = self.read_reg(r)
+
+        if prophecy.where & 1:
+            prophecy.where -= 1
+
+        return prophecy
+
+class BranchPredictor_MIPS(BranchPredictor):
+    def __init__(self, ql):
+        super().__init__(ql)
+        self.CODE_END = "break"
+        self.INST_SIZE = 4
+
+    def read_reg(self, reg_name):
+        reg_name = reg_name.strip("$").replace("fp", "s8")
+        return signed_val(getattr(self.ql.reg, reg_name))
+
+    def predict(self):
+        prophecy = Prophecy()
+        cur_addr = self.ql.reg.arch_pc
+        line = disasm(self.ql, cur_addr)
+
+        if line.mnemonic == self.CODE_END: # indicates program extied
+            return True
+
+        prophecy.where = cur_addr + self.INST_SIZE
+        if line.mnemonic.startswith('j') or line.mnemonic.startswith('b'):
+
+            # make sure at least delay slot executed
+            prophecy.where += self.INST_SIZE
+
+            # get registers or memory address from op_str
+            targets = [
+                    self.read_reg(each)
+                    if '$' in each else read_int(each)
+                    for each in line.op_str.split(", ")
+                    ]
+
+            prophecy.going = {
+                    "j"       : (lambda _: True),             # unconditional jump
+                    "jr"      : (lambda _: True),             # unconditional jump
+                    "jal"     : (lambda _: True),             # unconditional jump
+                    "jalr"    : (lambda _: True),             # unconditional jump
+                    "b"       : (lambda _: True),             # unconditional branch
+                    "bl"      : (lambda _: True),             # unconditional branch
+                    "bal"     : (lambda _: True),             # unconditional branch
+                    "beq"     : (lambda r0, r1, _: r0 == r1), # branch on equal
+                    "bne"     : (lambda r0, r1, _: r0 != r1), # branch on not equal
+                    "blt"     : (lambda r0, r1, _: r0 < r1),  # branch on r0 less than r1
+                    "bgt"     : (lambda r0, r1, _: r0 > r1),  # branch on r0 greater than r1
+                    "ble"     : (lambda r0, r1, _: r0 <= r1), # brach on r0 less than or equal to r1
+                    "bge"     : (lambda r0, r1, _: r0 >= r1), # branch on r0 greater than or equal to r1
+                    "beqz"    : (lambda r, _: r == 0),        # branch on equal to zero
+                    "bnez"    : (lambda r, _: r != 0),        # branch on not equal to zero
+                    "bgtz"    : (lambda r, _: r > 0),         # branch on greater than zero
+                    "bltz"    : (lambda r, _: r < 0),         # branch on less than zero
+                    "bltzal"  : (lambda r, _: r < 0),         # branch on less than zero and link
+                    "blez"    : (lambda r, _: r <= 0),        # branch on less than or equal to zero
+                    "bgez"    : (lambda r, _: r >= 0),        # branch on greater than or equal to zero
+                    "bgezal"  : (lambda r, _: r >= 0),        # branch on greater than or equal to zero and link
+                    }.get(line.mnemonic)(*targets)
+
+            if prophecy.going:
+                # target address is always the rightmost one
+                prophecy.where = targets[-1]
+
+        return prophecy
+
+class BranchPredictor_X86(BranchPredictor):
+    def __init__(self, ql):
+        super().__init__(ql)
+
+    def predict(self):
+        prophecy = Prophecy()
+        cur_addr = self.ql.reg.arch_pc
+        line = disasm(self.ql, cur_addr)
+
+        jump_table = {
+                # conditional jump
+
+                "jo"   : (lambda C, P, A, Z, S, O: O == 1),
+                "jno"  : (lambda C, P, A, Z, S, O: O == 0),
+
+                "js"   : (lambda C, P, A, Z, S, O: S == 1),
+                "jns"  : (lambda C, P, A, Z, S, O: S == 0),
+
+                "je"   : (lambda C, P, A, Z, S, O: Z == 1),
+                "jz"   : (lambda C, P, A, Z, S, O: Z == 1),
+
+                "jne"  : (lambda C, P, A, Z, S, O: Z == 0),
+                "jnz"  : (lambda C, P, A, Z, S, O: Z == 0),
+
+                "jb"   : (lambda C, P, A, Z, S, O: C == 1),
+                "jc"   : (lambda C, P, A, Z, S, O: C == 1),
+                "jnae" : (lambda C, P, A, Z, S, O: C == 1),
+
+                "jnb"  : (lambda C, P, A, Z, S, O: C == 0),
+                "jnc"  : (lambda C, P, A, Z, S, O: C == 0),
+                "jae"  : (lambda C, P, A, Z, S, O: C == 0),
+
+                "jbe"  : (lambda C, P, A, Z, S, O: C == 1 or Z == 1),
+                "jna"  : (lambda C, P, A, Z, S, O: C == 1 or Z == 1),
+
+                "ja"   : (lambda C, P, A, Z, S, O: C == 0 and Z == 0),
+                "jnbe" : (lambda C, P, A, Z, S, O: C == 0 and Z == 0),
+
+                "jl"   : (lambda C, P, A, Z, S, O: S != O),
+                "jnge" : (lambda C, P, A, Z, S, O: S != O),
+
+                "jge"  : (lambda C, P, A, Z, S, O: S == O),
+                "jnl"  : (lambda C, P, A, Z, S, O: S == O),
+
+                "jle"  : (lambda C, P, A, Z, S, O: Z == 1 or S != O),
+                "jng"  : (lambda C, P, A, Z, S, O: Z == 1 or S != O),
+
+                "jg"   : (lambda C, P, A, Z, S, O: Z == 0 or S == O),
+                "jnle" : (lambda C, P, A, Z, S, O: Z == 0 or S == O),
+
+                "jp"   : (lambda C, P, A, Z, S, O: P == 1),
+                "jpe"  : (lambda C, P, A, Z, S, O: P == 1),
+
+                "jnp"  : (lambda C, P, A, Z, S, O: P == 0),
+                "jpo"  : (lambda C, P, A, Z, S, O: P == 0),
+
+                # unconditional jump
+
+                "call" : (lambda *_: True),
+                "jmp"  : (lambda *_: True),
+
+                }
+
+        jump_reg_table = {
+                "jcxz"  : (lambda cx: cx == 0),
+                "jecxz" : (lambda ecx: ecx == 0),
+                "jrcxz" : (lambda rcx: rcx == 0),
+                }
+
+        if line.mnemonic in jump_table:
+            eflags = get_x86_eflags(self.ql.reg.ef).values()
+            prophecy.going = jump_table.get(line.mnemonic)(*eflags)
+
+        elif line.mnemonic in jump_reg_table:
+            prophecy.going = jump_reg_table.get(line.mnemonic)(self.ql.reg.ecx)
+
+        if prophecy.going:
+            takeaway_list = ["ptr", "dword", "[", "]"]
+            class AST_checker(ast.NodeVisitor):
+                def generic_visit(self, node):
+                    if type(node) in (ast.Module, ast.Expr, ast.BinOp, ast.Constant, ast.Add, ast.Mult, ast.Sub):
+                        ast.NodeVisitor.generic_visit(self, node)
+                    else:
+                        raise ParseError("malform or invalid ast node")
+
+            if len(line.op_str.split()) > 1:
+                new_line = line.op_str.replace(":", "+")
+                for each in takeaway_list:
+                    new_line = new_line.replace(each, " ")
+
+                new_line = " ".join(new_line.split())
+                for each_reg in filter(lambda r: len(r) == 3, self.ql.reg.register_mapping.keys()):
+                    if each_reg in new_line:
+                        new_line = re.sub(each_reg, hex(self.read_reg(each_reg)), new_line)
+                        
+                for each_reg in filter(lambda r: len(r) == 2, self.ql.reg.register_mapping.keys()):
+                    if each_reg in new_line:
+                        new_line = re.sub(each_reg, hex(self.read_reg(each_reg)), new_line)
+
+                checker = AST_checker()
+                ast_tree = ast.parse(new_line)
+
+                checker.visit(ast_tree)
+
+                prophecy.where = eval(new_line)
+
+            elif line.op_str in self.ql.reg.register_mapping:
+                prophecy.where = getattr(self.ql.reg, line.op_str)
+
+            else:
+                prophecy.where = read_int(line.op_str)
         else:
-            ret_addr = read_reg_val(line.op_str)
+            prophecy.where = cur_addr + line.size
 
-            if regdst_eq_pc(line.op_str):
-                next_addr = cur_addr + line.size
-                n2_addr = next_addr + len(read_inst(next_addr))
-                ret_addr += len(read_inst(n2_addr)) + len(read_inst(next_addr))
+        return prophecy
 
-    elif line.mnemonic.startswith("it"):
-        # handle IT block here
-
-        cond_met = {
-                "eq": lambda V, C, Z, N: (Z == 1),
-                "ne": lambda V, C, Z, N: (Z == 0),
-                "ge": lambda V, C, Z, N: (N == V),
-                "hs": lambda V, C, Z, N: (C == 1),
-                "lo": lambda V, C, Z, N: (C == 0),
-                "mi": lambda V, C, Z, N: (N == 1),
-                "pl": lambda V, C, Z, N: (N == 0),
-                "ls": lambda V, C, Z, N: (C == 0 or Z == 1),
-                "le": lambda V, C, Z, N: (Z == 1 or N != V),
-                "hi": lambda V, C, Z, N: (Z == 0 and C == 1),
-                }.get(line.op_str)(*get_cpsr(ql.reg.cpsr))
-
-        it_block_range = [each_char for each_char in line.mnemonic[1:]]
-
-        next_addr = cur_addr + ARM_THUMB_INST_SIZE
-        for each in it_block_range:
-            _inst = read_inst(next_addr)
-            n2_addr = handle_bnj_arm(ql, next_addr)
-
-            if (cond_met and each == "t") or (not cond_met and each == "e"):
-                if n2_addr != (next_addr+len(_inst)): # branch detected
-                    break
-
-            next_addr += len(_inst)
-
-        ret_addr = next_addr
-
-    elif line.mnemonic in ("ldr",):
-
-        if regdst_eq_pc(line.op_str):
-            _, _, rn_offset = line.op_str.partition(", ")
-            r, _, imm = rn_offset.strip("[]!").partition(", #")
-
-            if "]" in rn_offset.split(", ")[1]: # pre-indexed immediate
-                ret_addr = ql.unpack32(ql.mem.read(_parse_int(imm) + read_reg_val(r), ARM_INST_SIZE))
-
-            else: # post-indexed immediate
-                # FIXME: weired behavior, immediate here does not apply
-                ret_addr = ql.unpack32(ql.mem.read(read_reg_val(r), ARM_INST_SIZE))
-
-    elif line.mnemonic in ("addls", "addne", "add") and regdst_eq_pc(line.op_str):
-        V, C, Z, N = get_cpsr(ql.reg.cpsr)
-        r0, r1, r2, *imm = line.op_str.split(", ")
-
-        # program counter is awalys 8 bytes ahead when it comes with pc, need to add extra 8 bytes
-        extra = 8 if 'pc' in (r0, r1, r2) else 0
-
-        if imm:
-            expr = imm[0].split()
-            # TODO: should support more bit shifting and rotating operation
-            if expr[0] == "lsl": # logical shift left
-                n = _parse_int(expr[-1].strip("#")) * 2
-
-        if line.mnemonic == "addls" and (C == 0 or Z == 1):
-            ret_addr = extra + read_reg_val(r1) + read_reg_val(r2) * n
-
-        elif line.mnemonic == "add" or (line.mnemonic == "addne" and Z == 0):
-            ret_addr = extra + read_reg_val(r1) + (read_reg_val(r2) * n if imm else read_reg_val(r2))
-
-    elif line.mnemonic in ("tbh", "tbb"):
-
-        cur_addr += ARM_INST_SIZE
-        r0, r1, *imm = line.op_str.strip("[]").split(", ")
-
-        if imm:
-            expr = imm[0].split()
-            if expr[0] == "lsl": # logical shift left
-                n = _parse_int(expr[-1].strip("#")) * 2
-
-        if line.mnemonic == "tbh":
-
-            r1 = read_reg_val(r1) * n
-
-        elif line.mnemonic == "tbb":
-
-            r1 = read_reg_val(r1)
-
-        to_add = int.from_bytes(ql.mem.read(cur_addr+r1, 2 if line.mnemonic == "tbh" else 1), byteorder="little") * n
-        ret_addr = cur_addr + to_add
-
-    elif line.mnemonic.startswith("pop") and "pc" in line.op_str:
-
-        ret_addr = ql.stack_read(line.op_str.strip("{}").split(", ").index("pc") * ARM_INST_SIZE)
-        if not { # step to next instruction if cond does not meet
-                "pop"  : lambda *_: True,
-                "pop.w": lambda *_: True,
-                "popeq": lambda V, C, Z, N: (Z == 1),
-                "popne": lambda V, C, Z, N: (Z == 0),
-                "pophi": lambda V, C, Z, N: (C == 1),
-                "popge": lambda V, C, Z, N: (N == V),
-                "poplt": lambda V, C, Z, N: (N != V),
-                }.get(line.mnemonic)(*get_cpsr(ql.reg.cpsr)):
-
-            ret_addr = cur_addr + ARM_INST_SIZE
-
-    elif line.mnemonic == "sub" and regdst_eq_pc(line.op_str):
-        _, r, imm = line.op_str.split(", ")
-        ret_addr = read_reg_val(r) - _parse_int(imm.strip("#"))
-
-    elif line.mnemonic == "mov" and regdst_eq_pc(line.op_str):
-        _, r = line.op_str.split(", ")
-        ret_addr = read_reg_val(r)
-
-    if ret_addr & 1:
-        ret_addr -= 1
-
-    return (to_jump, ret_addr)
-
-
-def handle_bnj_mips(ql: Qiling, cur_addr: str) -> int:
-    MIPS_INST_SIZE = 4
-
-    def _read_reg(regs, _reg):
-        return signed_val(getattr(regs, _reg.strip('$').replace("fp", "s8")))
-
-    read_reg_val = partial(_read_reg, ql.reg)
-
-    line = disasm(ql, cur_addr)
-
-    if line.mnemonic == "break": # indicates program extied
-        return CODE_END
-
-    # default breakpoint address if no jumps and branches here
-    ret_addr = cur_addr + MIPS_INST_SIZE
-
-    to_jump = False
-    if line.mnemonic.startswith('j') or line.mnemonic.startswith('b'):
-
-        # make sure at least delay slot executed
-        ret_addr += MIPS_INST_SIZE
-
-        # get registers or memory address from op_str
-        targets = [
-                read_reg_val(each)
-                if '$' in each else _parse_int(each)
-                for each in line.op_str.split(", ")
-                ]
-
-        to_jump = {
-                "j"       : (lambda _: True),             # uncontitional jump
-                "jr"      : (lambda _: True),             # uncontitional jump
-                "jal"     : (lambda _: True),             # uncontitional jump
-                "jalr"    : (lambda _: True),             # uncontitional jump
-                "b"       : (lambda _: True),             # unconditional branch
-                "bl"      : (lambda _: True),             # unconditional branch
-                "bal"     : (lambda _: True),             # unconditional branch
-                "beq"     : (lambda r0, r1, _: r0 == r1), # branch on equal
-                "bne"     : (lambda r0, r1, _: r0 != r1), # branch on not equal
-                "blt"     : (lambda r0, r1, _: r0 < r1),  # branch on r0 less than r1
-                "bgt"     : (lambda r0, r1, _: r0 > r1),  # branch on r0 greater than r1
-                "ble"     : (lambda r0, r1, _: r0 <= r1), # brach on r0 less than or equal to r1
-                "bge"     : (lambda r0, r1, _: r0 >= r1), # branch on r0 greater than or equal to r1
-                "beqz"    : (lambda r, _: r == 0),        # branch on equal to zero
-                "bnez"    : (lambda r, _: r != 0),        # branch on not equal to zero
-                "bgtz"    : (lambda r, _: r > 0),         # branch on greater than zero
-                "bltz"    : (lambda r, _: r < 0),         # branch on less than zero
-                "bltzal"  : (lambda r, _: r < 0),         # branch on less than zero and link
-                "blez"    : (lambda r, _: r <= 0),        # branch on less than or equal to zero
-                "bgez"    : (lambda r, _: r >= 0),        # branch on greater than or equal to zero
-                "bgezal"  : (lambda r, _: r >= 0),        # branch on greater than or equal to zero and link
-                }.get(line.mnemonic)(*targets)
-
-        if to_jump:
-            # target address is always the rightmost one
-            ret_addr = targets[-1]
-
-    return (to_jump, ret_addr)
+class BranchPredictor_CORTEX_M(BranchPredictor_ARM):
+    def __init__(self, ql):
+        super().__init__(ql)
 
 class Breakpoint(object):
     """
     dummy class for breakpoint
     """
-    def __init__(self, address: int):
-        self.addr = address
+    def __init__(self, addr):
+        self.addr = addr
         self.hitted = False
-        self.hook = None
 
 class TempBreakpoint(Breakpoint):
     """
     dummy class for temporay breakpoint
     """
-    def __init__(self, address):
-        super().__init__(address)
+    def __init__(self, addr):
+        super().__init__(addr)
+
+class ParseError(Exception):
+    pass
 
 
 if __name__ == "__main__":

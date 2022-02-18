@@ -2,19 +2,34 @@ This file details the changelog of Qiling Framework.
 
 
 ------------------------------------
-[Version 1.4.2]: Jan 29th, 2022
+[Version 1.4.2]: Feb 13th, 2022
 
 New features:
--
--
+- Add stm32f103 support (#1087)
+- Add Arduino Due (SAM3X8E) Support (#1090)
 
 Improvements:
--
--
+- ARM exception handler improvements (#1056)
+- UEFI improvements (#1061)
+- Qdb improvements (#1058)
+- Update rich api in evm dbgcui (#1062)
+- Add security coockies back into PE loader for kernel driver (#1063)
+- Fix ql_open_flag_mapping for Linux binary emulation on Windows (#1064)
+- Minor changes and fixes to the tracing module (#1065)
+- Fix unicornafl for linux_x8664 fuzzing example (#1068)
+- Fuzzing improvements (#1075)
+- Add fix and example for openat path traversion (#1076)
+- Fix _CreateFileA params issue (#1079)
 
 Contributors:
--
--
+- nmantani
+- hardik05
+- cla7aye15I4nd
+- ucgJhe
+- elicn
+- wtdcode
+- kabeor
+- xwings
 
 
 ------------------------------------
