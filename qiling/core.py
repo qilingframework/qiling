@@ -717,10 +717,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         if self.interpreter:
             return self.arch.run(code)
 
-        elif self.baremetal:
-            self.__enable_bin_patch()
-            self.os.run(count=self.count, end=self.exit_point)
-
         else:
             self.write_exit_trap()
             # patch binary
