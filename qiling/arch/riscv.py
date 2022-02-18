@@ -48,7 +48,7 @@ class QlArchRISCV(QlArch):
     def init_context(self):
         self.ql.reg.pc = 0x08000000
         
-    def soft_interrupt_handler(self, ql, intno):
+    def unicorn_exception_handler(self, ql, intno):
         if intno == 2:            
             ql.log.warning(f'[{hex(self.get_pc())}] Illegal instruction')
             

@@ -142,6 +142,6 @@ class QlLoaderMCU(QlLoader):
         self.load_env()
         
         ## Handle interrupt from instruction execution
-        self.ql.hook_intr(self.ql.arch.soft_interrupt_handler)
+        self.ql.hook_intr(self.ql.arch.unicorn_exception_handler)
                 
         self.reset()

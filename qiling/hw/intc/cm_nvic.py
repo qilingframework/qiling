@@ -51,7 +51,7 @@ class CortexMNvic(QlPeripheral):
         ]
 
         self.intrs = []       
-        self.interrupt_handler = self.ql.arch.hard_interrupt_handler 
+        self.interrupt_handler = self.ql.arch.interrupt_handler 
 
     def enable(self, IRQn):
         if IRQn >= 0:
