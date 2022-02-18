@@ -24,17 +24,17 @@ class QlOsMcu(QlOs):
     def run(self, count=None, end=None):
         self.runable = True
         
-        if end   is None: end = -1            
+        if end   is None: end   = -1            
         if count is None: count = -1
 
         if isinstance(self.ql.arch, QlArchARM):
             end |= self.ql.arch.thumb
         
-        while self.runable:
-            if count == 0: 
-                break
-            if self.ql.arch.get_pc() == end: 
-                break
+        while self.runable and \
+                self.ql.arch.get_pc() != end: 
 
             self.step()
             count -= 1
+            
+            if count == 0:
+                break
