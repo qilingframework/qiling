@@ -48,17 +48,13 @@ class QlArchARM(QlArch):
 
     # get PC
     def get_pc(self) -> int:
-        append = 1 if self.check_thumb() == UC_MODE_THUMB else 0
+        return self.ql.reg.pc | self.thumb
 
-        return self.ql.reg.pc + append
-
-    def __is_thumb(self) -> bool:
-        cpsr_v = {
-            QL_ENDIAN.EL : 0b100000,
-            QL_ENDIAN.EB : 0b100000   # FIXME: should be: 0b000000
-        }[self.ql.archendian]
-
-        return bool(self.ql.reg.cpsr & cpsr_v)
+    @property
+    def thumb(self) -> int:
+        """ Thumb execution state bit """
+        
+        return (self.ql.reg.cpsr >> 5) & 1
 
     def create_disassembler(self) -> Cs:
         # note: we do not cache the disassembler instance; rather we refresh it
@@ -66,7 +62,7 @@ class QlArchARM(QlArch):
 
         if self.ql.archtype == QL_ARCH.ARM:
             # FIXME: mode should take endianess into account
-            mode = CS_MODE_THUMB if self.__is_thumb() else CS_MODE_ARM
+            mode = CS_MODE_THUMB if self.thumb else CS_MODE_ARM
 
         elif self.ql.archtype == QL_ARCH.ARM_THUMB:
             mode = CS_MODE_THUMB
@@ -83,7 +79,7 @@ class QlArchARM(QlArch):
 
         if self.ql.archtype == QL_ARCH.ARM:
             # FIXME: mode should take endianess into account
-            mode = KS_MODE_THUMB if self.__is_thumb() else KS_MODE_ARM
+            mode = KS_MODE_THUMB if self.thumb else KS_MODE_ARM
 
         elif self.ql.archtype == QL_ARCH.ARM_THUMB:
             mode = KS_MODE_THUMB
@@ -101,10 +97,7 @@ class QlArchARM(QlArch):
             #self.ql.reg.fpexc = 0x00000040
         else:
             self.ql.reg.fpexc = 0x40000000
-
-    def check_thumb(self):
-        return UC_MODE_THUMB if self.__is_thumb() else UC_MODE_ARM
-
+    
     """
     set_tls
     """
