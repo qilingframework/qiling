@@ -50,32 +50,7 @@ class QlArchRISCV(QlArch):
         
     def soft_interrupt_handler(self, ql, intno):
         if intno == 2:            
-            try:
-                address, size = ql.reg.pc - 4, 4
-                tmp = ql.mem.read(address, size)
-                qd = ql.arch.create_disassembler()
-
-                insn = '\n> '.join(f'{insn.mnemonic} {insn.op_str}' for insn in qd.disasm(tmp, address))
-            except QlErrorNotImplemented:
-                insn = ''
-                
-            ql.log.warning(f'[{hex(address)}] Illegal instruction ({insn})')
+            ql.log.warning(f'[{hex(self.get_pc())}] Illegal instruction')
+            
         else:
             raise QlErrorNotImplemented(f'Unhandled interrupt number ({intno})')
-    
-    def step(self):
-        self.ql.emu_start(self.get_pc(), 0, count=1)
-        self.ql.hw.step()
-
-    def stop(self):
-        self.runable = False
-
-    def run(self, count=-1, end=None):
-        self.runable = True
-
-        while self.runable and count != 0:
-            if self.get_pc() == end:
-                break
-
-            self.step()
-            count -= 1
