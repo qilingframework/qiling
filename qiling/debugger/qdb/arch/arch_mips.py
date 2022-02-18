@@ -21,6 +21,6 @@ class ArchMIPS(Arch):
                 "ra", "k0", "k1", "pc",
                 )
 
-        self.regs_need_swaped = {
+        self.regs_need_swapped = {
                 "fp": "s8",
                 }

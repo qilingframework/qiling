@@ -56,7 +56,7 @@ class Render:
 
         if saved_reg_dump:
             reg_dump = copy.deepcopy(saved_reg_dump)
-            if getattr(self, "regs_need_swaped", None):
+            if getattr(self, "regs_need_swapped", None):
                 reg_dump = self.swap_reg_name(reg_dump)
 
             return [k for k in cur_regs if cur_regs[k] != reg_dump[k]]
@@ -130,7 +130,7 @@ class Render:
         swap register name with more readable register name
         """
 
-        target_items = extra_dict.items() if extra_dict else self.regs_need_swaped.items()
+        target_items = extra_dict.items() if extra_dict else self.regs_need_swapped.items()
 
         for old_reg, new_reg in target_items:
             cur_regs.update({old_reg: cur_regs.pop(new_reg)})

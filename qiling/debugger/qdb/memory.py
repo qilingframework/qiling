@@ -89,11 +89,9 @@ class MemoryManager(Context, ArchX86, ArchCORTEX_M, ArchARM, ArchMIPS):
         else:
             rest = args
 
-        if self.ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB):
-            rest = rest.replace("fp", "r11")
-
-        elif self.ql.archtype == QL_ARCH.MIPS:
-            rest = rest.replace("fp", "s8")
+        if (regs_dict := getattr(self, "regs_need_swapped", None)):
+            for old_reg, new_reg in regs_dict.items():
+                rest = rest.replace(old_reg, new_reg)
 
         # for supporting addition of register with constant value
         elems = rest.split("+")

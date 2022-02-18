@@ -17,7 +17,7 @@ class ArchARM(Arch):
                 "r12", "sp", "lr", "pc",
                 )
 
-        self.regs_need_swaped = {
+        self.regs_need_swapped = {
                 "sl": "r10",
                 "ip": "r12",
                 "fp": "r11",
