@@ -10,7 +10,14 @@ from .arch import Arch
 class ArchX86(Arch):
     def __init__(self):
         super().__init__()
-        self.regs = (
+
+    @property
+    def arch_insn_size(self):
+        return 15
+
+    @property
+    def regs(self):
+        return (
                 "eax", "ebx", "ecx", "edx",
                 "esp", "ebp", "esi", "edi",
                 "eip", "ss", "cs", "ds", "es",
@@ -22,7 +29,7 @@ class ArchX86(Arch):
         # always assume the maxium size for disassembler to tell
         # what is it exactly.
 
-        return self.read_mem(address, 15)
+        return self.read_mem(address, self.arch_insn_size)
 
     @staticmethod
     def get_flags(bits: int) -> Mapping[str, bool]:

@@ -10,7 +10,10 @@ from .arch import Arch
 class ArchMIPS(Arch):
     def __init__(self):
         super().__init__()
-        self.regs = (
+
+    @property
+    def regs(self):
+        return (
                 "gp", "at", "v0", "v1",
                 "a0", "a1", "a2", "a3",
                 "t0", "t1", "t2", "t3",
@@ -21,6 +24,8 @@ class ArchMIPS(Arch):
                 "ra", "k0", "k1", "pc",
                 )
 
-        self.regs_need_swapped = {
+    @property
+    def regs_need_swapped(self):
+        return {
                 "fp": "s8",
                 }

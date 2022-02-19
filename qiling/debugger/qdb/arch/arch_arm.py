@@ -10,14 +10,19 @@ from .arch import Arch
 class ArchARM(Arch):
     def __init__(self):
         super().__init__()
-        self.regs = (
+
+    @property
+    def regs(self):
+        return (
                 "r0", "r1", "r2", "r3",
                 "r4", "r5", "r6", "r7",
                 "r8", "r9", "r10", "r11",
                 "r12", "sp", "lr", "pc",
                 )
 
-        self.regs_need_swapped = {
+    @property
+    def regs_need_swapped(self):
+        return {
                 "sl": "r10",
                 "ip": "r12",
                 "fp": "r11",
