@@ -132,7 +132,6 @@ def setup_memory_Manager(ql):
                 reg = f"${each_reg}"
                 if reg in line:
                     line = re.sub(f"\{reg}", hex(self.ql.reg.read(each_reg)), line)
-            breakpoint()
 
             class AST_checker(ast.NodeVisitor):
                 def generic_visit(self, node):
