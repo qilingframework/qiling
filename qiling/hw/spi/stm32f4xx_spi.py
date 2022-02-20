@@ -68,7 +68,7 @@ class STM32F4xxSpi(QlConnectivityPeripheral):
 
     @QlPeripheral.monitor()
     def read(self, offset: int, size: int) -> int:
-        if self.in_field(self.struct.DR, offset, size):
+        if self.contain(self.struct.DR, offset, size):
             self.spi.SR &= ~SPI_SR.RXNE
 
         buf = ctypes.create_string_buffer(size)
@@ -100,7 +100,7 @@ class STM32F4xxSpi(QlConnectivityPeripheral):
         data = (value).to_bytes(size, 'little')
         ctypes.memmove(ctypes.addressof(self.spi) + offset, data, size)   
 
-        if self.in_field(self.struct.DR, offset, size):
+        if self.contain(self.struct.DR, offset, size):
             self.spi.SR |= SPI_SR.RXNE
             self.send_to_user(self.spi.DR)
 

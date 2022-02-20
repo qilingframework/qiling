@@ -129,7 +129,7 @@ class QlPeripheral(QlPeripheralUtils):
     def write(self, offset: int, size: int, value: int):
         pass
 
-    def in_field(self, field, offset: int, size: int) -> bool:
+    def contain(self, field, offset: int, size: int) -> bool:
         return field.offset <= offset and offset + size <= field.offset + field.size
 
     def find_field(self, offset: int, size: int) -> str:
