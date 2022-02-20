@@ -411,6 +411,17 @@ def hook_strncmp(ql: Qiling, address: int, params):
 
     return result
 
+def __malloc(ql: Qiling, address: int, params):
+    size = params['size']
+
+    return ql.os.heap.alloc(size)
+
+@winsdkapi(cc=CDECL, params={
+    'size' : UINT
+})
+def hook__malloc_base(ql: Qiling, address: int, params):
+    return __malloc(ql, address, params)
+
 # void* malloc（unsigned int size)
 @winsdkapi(cc=CDECL, params={
     'size' : UINT
