@@ -152,11 +152,21 @@ class QlPeripheral(QlPeripheralUtils):
 
             for i in range(struct._length_):
                 offset = inner_struct_size * i
-                if left < offset + inner_struct_size or right >= offset:
-                    parse_struct(inner_struct, left - offset, right - offset, f'{prefix}[{i}].')
+                
+                lower = max(0, left - offset)
+                upper = min(right - offset, inner_struct_size)
+
+                if lower < upper:
+                    parse_struct(inner_struct, lower, upper, f'{prefix}[{i}]')
 
         def parse_struct(struct, left, right, prefix=''):
-            if hasattr(struct, '_fields_'):
+            if   hasattr(struct, '_length_'):
+                parse_array(struct, left, right, prefix)
+
+            elif hasattr(struct, '_fields_'):
+                if prefix.endswith(']'):
+                    prefix += '.'
+
                 for name, vtype in struct._fields_:
                     field = getattr(struct, name)
 
@@ -164,15 +174,13 @@ class QlPeripheral(QlPeripheralUtils):
                     upper = min(right - field.offset, field.size)
 
                     if lower < upper:
-                        if hasattr(vtype, '_length_'):
-                            parse_array(vtype, lower, upper, prefix + name)
-                        else:
-                            parse_struct(vtype, lower, upper, prefix + name)
+                        parse_struct(vtype, lower, upper, prefix + name)
+
             else:
                 if left == 0 and right == ctypes.sizeof(struct):
                     result.append(prefix)
                 else:
-                    result.append(f'{prefix}{name}[{left}:{right}]')
+                    result.append(f'{prefix}[{left}:{right}]')
 
         parse_struct(self.struct, offset, offset + size)
         return ','.join(result)
