@@ -549,8 +549,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
     def verbose(self, v):
         self._verbose = v
         self.log.setLevel(ql_resolve_logger_level(self._verbose))
-        if self.interpreter:
-            self.arch.utils.setup_output()
+        self.arch.utils.setup_output()
 
     @property
     def patch_bin(self) -> list:
