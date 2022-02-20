@@ -36,7 +36,7 @@ class QlPeripheralUtils:
 
                 retval = func(self, offset, size)
                 if self.verbose:
-                    self.ql.log.info(f'[{self.label.upper()}] [{hex(self.ql.reg.pc)}] [R] {self.find_field(offset, size):{width}s} = {hex(retval)}')
+                    self.ql.log.info(f'[{self.label.upper()}] [{hex(self.ql.reg.pc)}] [R] {self.field_description(offset, size):{width}s} = {hex(retval)}')
                 
                 return retval
 
@@ -45,7 +45,7 @@ class QlPeripheralUtils:
                     callback(self, offset, size, value, *args, **kwargs)
 
                 if self.verbose:
-                    field, extra = self.find_field(offset, size), ''
+                    field, extra = self.field_description(offset, size), ''
                     if field.startswith('DR') and value <= 255:
                         extra = f'({repr(chr(value))})'
 
@@ -130,29 +130,52 @@ class QlPeripheral(QlPeripheralUtils):
         pass
 
     def contain(self, field, offset: int, size: int) -> bool:
+        """ 
+        Returns:
+            bool: Whether the range [offset: offset+size] is in this field
+        """
         return field.offset <= offset and offset + size <= field.offset + field.size
 
-    def find_field(self, offset: int, size: int) -> str:
-        """ Return field names in interval [offset: offset + size],
+    def field_description(self, offset: int, size: int) -> str:
+        """ Return field description in interval [offset: offset + size],
             the function is designed for logging and debugging.
 
         Returns:
-            str: Field name
+            str: Field description
         """
 
-        field_list = []
-        for name, _ in self.struct._fields_:
-            field = getattr(self.struct, name)
-            
-            lbound = max(0, offset - field.offset)
-            ubound = min(offset + size  - field.offset, field.size)
-            if lbound < ubound:
-                if lbound == 0 and ubound == field.size:
-                    field_list.append(name)
+        result = []
+
+        def parse_array(struct, left, right, prefix):
+            inner_struct = struct._type_
+            inner_struct_size = ctypes.sizeof(inner_struct)
+
+            for i in range(struct._length_):
+                offset = inner_struct_size * i
+                if left < offset + inner_struct_size or right >= offset:
+                    parse_struct(inner_struct, left - offset, right - offset, f'{prefix}[{i}].')
+
+        def parse_struct(struct, left, right, prefix=''):
+            if hasattr(struct, '_fields_'):
+                for name, vtype in struct._fields_:
+                    field = getattr(struct, name)
+
+                    lower = max(0, left - field.offset)
+                    upper = min(right - field.offset, field.size)
+
+                    if lower < upper:
+                        if hasattr(vtype, '_length_'):
+                            parse_array(vtype, lower, upper, prefix + name)
+                        else:
+                            parse_struct(vtype, lower, upper, prefix + name)
+            else:
+                if left == 0 and right == ctypes.sizeof(struct):
+                    result.append(prefix)
                 else:
-                    field_list.append(f'{name}[{lbound}:{ubound}]')
-                
-        return ','.join(field_list)
+                    result.append(f'{prefix}{name}[{left}:{right}]')
+
+        parse_struct(self.struct, offset, offset + size)
+        return ','.join(result)
 
     @property
     def region(self) -> List[Tuple]:
