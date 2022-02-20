@@ -65,7 +65,7 @@ class QlHwManager:
         
         for label in self.entity.keys():
             for lbound, rbound in self.region[label]:
-                if lbound <= address <= rbound:
+                if lbound <= address < rbound:
                     return self.entity[label]
 
     def step(self):
