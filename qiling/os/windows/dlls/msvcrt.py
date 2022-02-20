@@ -431,15 +431,23 @@ def hook_malloc(ql: Qiling, address: int, params):
 
     return ql.os.heap.alloc(size)
 
+def __free(ql: Qiling, address: int, params):
+    address = params['address']
 
-# void* void* free（void *address)
+    return ql.os.heap.free(address)
+
+@winsdkapi(cc=CDECL, params={
+    'address': POINTER
+})
+def hook__free_base(ql: Qiling, address: int, params):
+    return __free(ql, address, params)
+
+# void* free（void *address)
 @winsdkapi(cc=CDECL, params={
     'address': POINTER
 })
 def hook_free(ql: Qiling, address: int, params):
-    address = params['address']
-    
-    return ql.os.heap.free(address)
+    return __free(ql, address, params)
 
 # _onexit_t _onexit(
 #    _onexit_t function
