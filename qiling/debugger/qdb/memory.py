@@ -7,7 +7,8 @@ from qiling.const import QL_ARCH
 
 from .context import Context
 from .arch import ArchCORTEX_M, ArchARM, ArchMIPS, ArchX86
-import re, ast, math
+from .misc import check_and_eval
+import re, math
 
 
 
@@ -122,7 +123,12 @@ def setup_memory_Manager(ql):
             if (regs_dict := getattr(self, "regs_need_swapped", None)):
                 for each in rest:
                     for reg in regs_dict:
-                        line.append(regs_dict[each] if each in regs_dict else each)
+                        if each in regs_dict:
+                            line.append(regs_dict[each])
+                    else:
+                        line.append(each)
+            else:
+                line = rest
 
             # for simple calculation with register and address
 
@@ -133,20 +139,13 @@ def setup_memory_Manager(ql):
                 if reg in line:
                     line = re.sub(f"\{reg}", hex(self.ql.reg.read(each_reg)), line)
 
-            class AST_checker(ast.NodeVisitor):
-                def generic_visit(self, node):
-                    if type(node) in (ast.Module, ast.Expr, ast.BinOp, ast.Constant, ast.Add, ast.Mult, ast.Sub):
-                        ast.NodeVisitor.generic_visit(self, node)
-                    else:
-                        raise ParseError("malform or invalid ast node")
 
             ft, sz, ct = fmt
 
-            checker = AST_checker()
-            ast_tree = ast.parse(line)
-            checker.visit(ast_tree)
-
-            addr = eval(line)
+            try:
+                addr = check_and_eval(line)
+            except:
+                return "something went wrong ..."
 
             if ft == "i":
                 output = self.handle_i(addr, ct)

@@ -9,6 +9,7 @@ import ast, re
 
 from .branch_predictor import *
 from ..arch import ArchX86
+from ..misc import check_and_eval
 
 class BranchPredictorX86(BranchPredictor, ArchX86):
     """
@@ -98,12 +99,6 @@ class BranchPredictorX86(BranchPredictor, ArchX86):
 
         if prophecy.going:
             takeaway_list = ["ptr", "dword", "[", "]"]
-            class AST_checker(ast.NodeVisitor):
-                def generic_visit(self, node):
-                    if type(node) in (ast.Module, ast.Expr, ast.BinOp, ast.Constant, ast.Add, ast.Mult, ast.Sub):
-                        ast.NodeVisitor.generic_visit(self, node)
-                    else:
-                        raise ParseError("malform or invalid ast node")
 
             if len(line.op_str.split()) > 1:
                 new_line = line.op_str.replace(":", "+")
@@ -119,12 +114,8 @@ class BranchPredictorX86(BranchPredictor, ArchX86):
                     if each_reg in new_line:
                         new_line = re.sub(each_reg, hex(self.read_reg(each_reg)), new_line)
 
-                checker = AST_checker()
-                ast_tree = ast.parse(new_line)
 
-                checker.visit(ast_tree)
-
-                prophecy.where = eval(new_line)
+                prophecy.where = check_and_eval(new_line)
 
             elif line.op_str in self.ql.reg.register_mapping:
                 prophecy.where = self.ql.reg.read(line.op_str)

@@ -26,6 +26,7 @@ from .branch_predictor import (
         )
 
 from .const import color, QDB_MSG
+
     
 
 def qdb_print(msgtype: QDB_MSG, msg: str) -> None:

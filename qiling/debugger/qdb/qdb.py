@@ -322,11 +322,8 @@ class QlQdb(cmd.Cmd, QlDebugger):
         e.g. x/4wx 0x41414141 , print 4 word size begin from address 0x41414141 in hex
         """
 
-        # try:
         if type(err_msg := self.mm.parse(line)) is str:
             qdb_print(QDB_MSG.ERROR, err_msg)
-        # except:
-            # qdb_print(QDB_MSG.ERROR, "something went wrong ...")
 
     def do_start(self, *args) -> None:
         """

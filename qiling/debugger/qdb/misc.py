@@ -5,6 +5,26 @@
 
 from typing import Callable, Optional
 
+import ast
+
+def check_and_eval(line: str):
+    """
+    This function will valid all type of nodes and evaluate it if nothing went wrong
+    """
+
+    class AST_checker(ast.NodeVisitor):
+        def generic_visit(self, node):
+            if type(node) in (ast.Module, ast.Expr, ast.BinOp, ast.Constant, ast.Add, ast.Mult, ast.Sub):
+                ast.NodeVisitor.generic_visit(self, node)
+            else:
+                raise ParseError("malform or invalid ast node")
+
+    checker = AST_checker()
+    ast_tree = ast.parse(line)
+    checker.visit(ast_tree)
+
+    return eval(line)
+
 
 class Breakpoint:
     """
