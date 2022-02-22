@@ -18,16 +18,15 @@ class QlHwManager:
         self.entity = {}
         self.region = {}        
 
-    def create(self, label: str, struct: "QlPeripheral"=None, base: int=None) -> "QlPeripheral":
+    def create(self, label: str, struct: str=None, base: int=None, kwargs: dict={}) -> "QlPeripheral":
         """ Create the peripheral accroding the label and envs.
 
             struct: Structure of the peripheral. Use defualt ql structure if not provide.
             base: Base address. Use defualt address if not provide.
         """
-        env_struct, env_base, kwargs = self.load_env(label.upper())
 
-        struct = env_struct if struct is None else struct
-        base = env_base if base is None else base        
+        if struct is None:
+            struct, base, kwargs = self.load_env(label.upper())
 
         try:
             
