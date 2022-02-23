@@ -8,6 +8,7 @@ This module is intended for general purpose functions that can be used
 thoughout the qiling framework
 """
 
+from functools import partial
 import importlib, os, copy, re, pefile, logging, yaml
 
 from configparser import ConfigParser
@@ -517,7 +518,10 @@ def profile_setup(ql, ostype: QL_OS, filename: Optional[str]):
         if filename:
             profiles.append(filename)
 
-        config = ConfigParser()
+        # patch 'getint' to convert integers of all bases
+        int_converter = partial(int, base=0)
+
+        config = ConfigParser(converters={'int': int_converter})
         config.read(profiles)
 
     return config
