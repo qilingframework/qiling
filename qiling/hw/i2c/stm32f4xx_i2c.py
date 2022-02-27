@@ -180,7 +180,7 @@ class STM32F4xxI2c(QlConnectivityPeripheral):
 			
 			# TODO: send ACK
 			self.i2c.SR1 &= ~I2C_SR1.SB
-			self.i2c.SR1 |= I2C_SR1.ADDR | I2C_SR1.TXE
+			self.i2c.SR1 |= I2C_SR1.ADDR | I2C_SR1.TXE | I2C_SR1.AF
 			self.i2c.SR2 |= I2C_SR2.TRA
 
 	def send_data(self):
