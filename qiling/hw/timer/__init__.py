@@ -12,3 +12,6 @@ from .stm32f4xx_tim import STM32F4xxTim
 from .gd32vf1xx_rtc import GD32VF1xxRtc
 from .gd32vf1xx_timer import GD32VF1xxTimer
 from .sam3xa_wdt import SAM3xaWdt
+from .mk64f12_mcg import MK64F12Mcg
+from .mk64f12_wdog import MK64F12Wdog
+from .mk64f12_osc import MK64F12Osc
