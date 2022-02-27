@@ -69,7 +69,7 @@ class STM32F4xxTim(QlTimerPeripheral):
             brk_tim9_intn: Optional[int] = None, 
             cc_intn: Optional[int] = None,
             trg_com_tim11_intn: Optional[int] = None,
-            up_tim10_intn: Optional[int] = None):
+            up_tim10_intn: Optional[int] = None, **kwargs):
 
         super().__init__(ql, label)
 
@@ -77,6 +77,10 @@ class STM32F4xxTim(QlTimerPeripheral):
         self.cc_intn = cc_intn
         self.trg_com_tim11_intn = trg_com_tim11_intn
         self.up_tim10_intn = up_tim10_intn
+
+        if kwargs:
+            for key, value in kwargs.items():
+                self.ql.log.warning(f'[{self.label.upper()}] Unused keyword {key} : {value}')
         
         self.prescale_count = 0
         self.tim = self.struct()
