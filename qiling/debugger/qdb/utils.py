@@ -80,6 +80,21 @@ def setup_context_render(ql, predictor):
             QL_ARCH.MIPS: ContextRenderMIPS,
             }.get(ql.archtype)(ql, predictor)
 
+def run_qdb_script(qdb, filename: str) -> None:
+    with open(filename) as fd:
+        for line in iter(fd.readline, ""):
+
+            # skip commented and empty line 
+            if line.startswith("#") or line == "\n":
+                continue
+
+            cmd, arg, _ = qdb.parseline(line)
+            func = getattr(qdb, f"do_{cmd}")
+            if arg:
+                func(arg)
+            else:
+                func()
+
 
 """
 

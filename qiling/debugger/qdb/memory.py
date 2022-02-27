@@ -112,7 +112,7 @@ def setup_memory_Manager(ql):
             else:
                 args = line.split()
 
-                rest = args[0] if  len(args) == 1 else args
+                rest = [args[0]] if len(args) == 1 else args
 
                 fmt = self.get_default_fmt
 
@@ -134,10 +134,15 @@ def setup_memory_Manager(ql):
 
             line = " ".join(line)
             # substitue register name with real value
+            for each_reg in filter(lambda r: len(r) == 3, self.ql.reg.register_mapping):
+                reg = f"${each_reg}"
+                if reg in line:
+                    line = re.sub(f"\\{reg}", hex(self.ql.reg.read(each_reg)), line)
+
             for each_reg in filter(lambda r: len(r) == 2, self.ql.reg.register_mapping):
                 reg = f"${each_reg}"
                 if reg in line:
-                    line = re.sub(f"\{reg}", hex(self.ql.reg.read(each_reg)), line)
+                    line = re.sub(f"\\{reg}", hex(self.ql.reg.read(each_reg)), line)
 
 
             ft, sz, ct = fmt

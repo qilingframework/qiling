@@ -18,5 +18,9 @@ class Arch:
     def arch_insn_size(self):
         return 4
 
+    @property
+    def archbit(self):
+        return 4
+
     def read_insn(self, address: int):
         return self.read_mem(address, self.arch_insn_size)

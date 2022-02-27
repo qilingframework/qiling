@@ -74,7 +74,7 @@ class Context:
         try to read pointer size of data from ql.mem
         """
 
-        return self.try_read(address, self.arch_insn_size)
+        return self.try_read(address, self.archbit)
 
     def read_string(self, address: int) -> Optional[str]:
         """

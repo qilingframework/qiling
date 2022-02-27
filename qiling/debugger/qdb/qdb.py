@@ -11,7 +11,7 @@ from qiling import Qiling
 from qiling.const import QL_ARCH, QL_VERBOSE
 from qiling.debugger import QlDebugger
 
-from .utils import setup_context_render, setup_branch_predictor, SnapshotManager
+from .utils import setup_context_render, setup_branch_predictor, SnapshotManager, run_qdb_script
 from .memory import setup_memory_Manager
 from .misc import parse_int, Breakpoint, TempBreakpoint
 from .const import color
@@ -23,7 +23,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
     The built-in debugger of Qiling Framework
     """
 
-    def __init__(self, ql: Qiling, init_hook: str = "", rr: bool = False) -> None:
+    def __init__(self, ql: Qiling, init_hook: str = "", rr: bool = False, script: str = "") -> None:
         """
         @init_hook: the entry to be paused at
         @rr: record/replay debugging
@@ -32,6 +32,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         self.ql = ql
         self.prompt = f"{color.BOLD}{color.RED}Qdb> {color.END}"
         self._saved_reg_dump = None
+        self._script = script
         self.bp_list = {}
 
         self.rr = SnapshotManager(ql) if rr else None
@@ -82,8 +83,11 @@ class QlQdb(cmd.Cmd, QlDebugger):
         else:
             self.init_state = self.ql.save()
 
-        self.do_context()
-        self.interactive()
+        if self._script:
+            run_qdb_script(self, self._script)
+        else:
+            self.do_context()
+            self.interactive()
 
     @property
     def cur_addr(self) -> int:
@@ -354,6 +358,17 @@ class QlQdb(cmd.Cmd, QlDebugger):
         if self.rr:
             qdb_print(QDB_MSG.INFO, f"Snapshots: {len([st for st in self.rr.layers if isinstance(st, self.rr.DiffedState)])}")
 
+    def do_script(self, filename: str) -> None:
+        """
+        usage: script [filename]
+        load a script for automate qdb funcitonality, execute qdb command line by line basically
+        """
+
+        if filename:
+            run_qdb_script(self, filename)
+        else:
+            qdb_print(QDB_MSG.ERROR, "parameter filename must be specified")
+
     def do_shell(self, *command) -> None:
         """
         run python code
@@ -370,12 +385,15 @@ class QlQdb(cmd.Cmd, QlDebugger):
         """
 
         self.ql.stop()
+        if self._script:
+            return True
         exit()
 
     def do_EOF(self, *args) -> None:
         """
         handle Ctrl+D
         """
+
         if input(f"{color.RED}[!] Are you sure about saying good bye ~ ? [Y/n]{color.END} ").strip() == "Y":
             self.do_quit()
 
