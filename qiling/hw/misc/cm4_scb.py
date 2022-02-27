@@ -24,8 +24,15 @@ class CortexM4Scb(CortexMScb):
             ('HFSR'     , ctypes.c_uint32),
             ('DFSR'     , ctypes.c_uint32),
             ('MMFAR'    , ctypes.c_uint32),
-            ('BFSR'     , ctypes.c_uint32),
+            ('BFAR'     , ctypes.c_uint32),
             ('AFSR'     , ctypes.c_uint32),
+            ('PFR'      , ctypes.c_uint32 * 4),
+            ('DFR'      , ctypes.c_uint32),
+            ('ADR'      , ctypes.c_uint32),
+            ('MMFR'     , ctypes.c_uint32 * 4),
+            ('ISAR'     , ctypes.c_uint32 * 5),
+            ('RESERVED0', ctypes.c_uint32 * 5),
+            ('CPACR'    , ctypes.c_uint32),
         ]
 
     def __init__(self, ql, label):
