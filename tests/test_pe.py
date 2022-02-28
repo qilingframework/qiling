@@ -62,6 +62,7 @@ class TestOut:
         self.output[key] = value
         return len(string)
 
+IS_FAST_TEST = 'QL_FAST_TEST' in os.environ
 
 class PETest(unittest.TestCase):
 
@@ -111,8 +112,6 @@ class PETest(unittest.TestCase):
 
     def test_pe_win_x86_uselessdisk(self):
         def _t():
-            if 'QL_FAST_TEST' in os.environ:
-                return
             class Fake_Drive(QlFsMappedObject):
 
                 def read(self, size):
@@ -135,13 +134,11 @@ class PETest(unittest.TestCase):
             del ql
             return True
         
-        self.assertTrue(QLWinSingleTest(_t).run())
+        self.assertTrue(IS_FAST_TEST or QLWinSingleTest(_t).run())
 
 
     def test_pe_win_x86_gandcrab(self):
         def _t():
-            if 'QL_FAST_TEST' in os.environ:
-                return
             def stop(ql, default_values):
                 print("Ok for now")
                 ql.emu_stop()
@@ -193,7 +190,7 @@ class PETest(unittest.TestCase):
             randomize_config_value(ql, "USER", "username")
             randomize_config_value(ql, "SYSTEM", "computername")
             randomize_config_value(ql, "VOLUME", "serial_number")
-            num_syscalls_admin = ql.os.utils.syscalls_counter
+            num_syscalls_admin = ql.os.stats.syscalls_counter
             ql.run()
             del ql
 
@@ -201,7 +198,7 @@ class PETest(unittest.TestCase):
             ql = Qiling(["../examples/rootfs/x86_windows/bin/GandCrab502.bin"], "../examples/rootfs/x86_windows", profile="profiles/windows_gandcrab_user.ql")
 
             ql.run()
-            num_syscalls_user = ql.os.utils.syscalls_counter
+            num_syscalls_user = ql.os.stats.syscalls_counter
 
             # let's check that gandcrab behave takes a different path if a different environment is found
             if num_syscalls_admin == num_syscalls_user:
@@ -210,7 +207,7 @@ class PETest(unittest.TestCase):
             del ql
             return True
         
-        self.assertTrue(QLWinSingleTest(_t).run())
+        self.assertTrue(IS_FAST_TEST or QLWinSingleTest(_t).run())
 
     def test_pe_win_x86_multithread(self):
         def _t():
@@ -221,7 +218,7 @@ class PETest(unittest.TestCase):
                 return address, params
 
             ql = Qiling(["../examples/rootfs/x86_windows/bin/MultiThread.exe"], "../examples/rootfs/x86_windows")
-            ql.set_api("GetCurrentThreadId", ThreadId_onEnter, QL_INTERCEPT.ENTER)
+            ql.os.set_api("GetCurrentThreadId", ThreadId_onEnter, QL_INTERCEPT.ENTER)
             ql.run()
             
             if not ( 1<= thread_id < 255):
@@ -285,7 +282,7 @@ class PETest(unittest.TestCase):
 
     def test_pe_win_x86_return_from_main_stackpointer(self):
         def _t():
-            ql = Qiling(["../examples/rootfs/x86_windows/bin/return_main.exe"], "../examples/rootfs/x86_windows", libcache=True, stop_on_stackpointer=True)
+            ql = Qiling(["../examples/rootfs/x86_windows/bin/return_main.exe"], "../examples/rootfs/x86_windows", stop=QL_STOP.STACK_POINTER, libcache=True)
             ql.run()
             del ql
             return True
@@ -295,7 +292,7 @@ class PETest(unittest.TestCase):
 
     def test_pe_win_x86_return_from_main_exit_trap(self):
         def _t():
-            ql = Qiling(["../examples/rootfs/x86_windows/bin/return_main.exe"], "../examples/rootfs/x86_windows", libcache=True, stop_on_exit_trap=True)
+            ql = Qiling(["../examples/rootfs/x86_windows/bin/return_main.exe"], "../examples/rootfs/x86_windows", stop=QL_STOP.EXIT_TRAP, libcache=True)
             ql.run()
             del ql
             return True
@@ -305,7 +302,7 @@ class PETest(unittest.TestCase):
 
     def test_pe_win_x8664_return_from_main_stackpointer(self):
         def _t():
-            ql = Qiling(["../examples/rootfs/x8664_windows/bin/x8664_return_main.exe"], "../examples/rootfs/x8664_windows", libcache=True, stop_on_stackpointer=True)
+            ql = Qiling(["../examples/rootfs/x8664_windows/bin/x8664_return_main.exe"], "../examples/rootfs/x8664_windows", stop=QL_STOP.STACK_POINTER, libcache=True)
             ql.run()
             del ql
             return True
@@ -315,7 +312,7 @@ class PETest(unittest.TestCase):
 
     def test_pe_win_x8664_return_from_main_exit_trap(self):
         def _t():
-            ql = Qiling(["../examples/rootfs/x8664_windows/bin/x8664_return_main.exe"], "../examples/rootfs/x8664_windows", libcache=True, stop_on_exit_trap=True)
+            ql = Qiling(["../examples/rootfs/x8664_windows/bin/x8664_return_main.exe"], "../examples/rootfs/x8664_windows", stop=QL_STOP.EXIT_TRAP, libcache=True)
             ql.run()
             del ql
             return True
@@ -325,8 +322,6 @@ class PETest(unittest.TestCase):
 
     def test_pe_win_x86_wannacry(self):
         def _t():
-            if 'QL_FAST_TEST' in os.environ:
-                return
             def stop(ql):
                 ql.log.info("killerswtichfound")
                 ql.log.setLevel(logging.CRITICAL)
@@ -339,7 +334,7 @@ class PETest(unittest.TestCase):
             del ql
             return True
         
-        self.assertTrue(QLWinSingleTest(_t).run())
+        self.assertTrue(IS_FAST_TEST or QLWinSingleTest(_t).run())
 
 
     def test_pe_win_x86_NtQueryInformationSystem(self):
@@ -356,18 +351,16 @@ class PETest(unittest.TestCase):
 
     def test_pe_win_al_khaser(self):
         def _t():
-            if 'QL_FAST_TEST' in os.environ:
-                return
             ql = Qiling(["../examples/rootfs/x86_windows/bin/al-khaser.bin"], "../examples/rootfs/x86_windows")
 
             # The hooks are to remove the prints to file. It crashes. will debug why in the future
             def results(ql):
 
-                if ql.reg.ebx == 1:
+                if ql.arch.regs.ebx == 1:
                     print("BAD")
                 else:
                     print("GOOD ")
-                ql.reg.eip = 0x402ee4
+                ql.arch.regs.eip = 0x402ee4
 
             #ql.hook_address(results, 0x00402e66)
             # the program alloc 4 bytes and then tries to write 0x2cc bytes.
@@ -384,7 +377,7 @@ class PETest(unittest.TestCase):
             del ql
             return True
 
-        self.assertTrue(QLWinSingleTest(_t).run())
+        self.assertTrue(IS_FAST_TEST or QLWinSingleTest(_t).run())
 
 
     def test_pe_win_x8664_customapi(self):
@@ -421,9 +414,9 @@ class PETest(unittest.TestCase):
             def my_sandbox(path, rootfs):
                 nonlocal set_api, set_api_onenter, set_api_onexit
                 ql = Qiling(path, rootfs, verbose=QL_VERBOSE.DEBUG)
-                ql.set_api("puts", my_onenter, QL_INTERCEPT.ENTER)
-                ql.set_api("puts", my_puts64, QL_INTERCEPT.CALL)
-                ql.set_api("puts", my_onexit, QL_INTERCEPT.EXIT)
+                ql.os.set_api("puts", my_onenter, QL_INTERCEPT.ENTER)
+                ql.os.set_api("puts", my_puts64, QL_INTERCEPT.CALL)
+                ql.os.set_api("puts", my_onexit, QL_INTERCEPT.EXIT)
                 ql.run()
 
                 if 12 != set_api_onenter:
@@ -462,7 +455,7 @@ class PETest(unittest.TestCase):
                 arglist = params['_ArgList']
 
                 count = format.count("%")
-                fargs = [ql.unpack(ql.mem.read(arglist + i * ql.pointersize, ql.pointersize)) for i in range(count)]
+                fargs = [ql.unpack(ql.mem.read(arglist + i * ql.arch.pointersize, ql.arch.pointersize)) for i in range(count)]
 
                 target_txt = ""
 
@@ -474,7 +467,7 @@ class PETest(unittest.TestCase):
                 return address, params
 
             ql = Qiling(["../examples/rootfs/x86_windows/bin/argv.exe"], "../examples/rootfs/x86_windows")
-            ql.set_api('__stdio_common_vfprintf', check_print, QL_INTERCEPT.ENTER)
+            ql.os.set_api('__stdio_common_vfprintf', check_print, QL_INTERCEPT.ENTER)
             ql.run()
             
             if target_txt.find("argv.exe"):
@@ -493,7 +486,7 @@ class PETest(unittest.TestCase):
         def _t():
             def force_call_dialog_func(ql):
                 # get DialogFunc address
-                lpDialogFunc = ql.unpack32(ql.mem.read(ql.reg.esp - 0x8, 4))
+                lpDialogFunc = ql.unpack32(ql.mem.read(ql.arch.regs.esp - 0x8, 4))
                 # setup stack for DialogFunc
                 ql.stack_push(0)
                 ql.stack_push(1001)
@@ -501,7 +494,7 @@ class PETest(unittest.TestCase):
                 ql.stack_push(0)
                 ql.stack_push(0x0401018)
                 # force EIP to DialogFunc
-                ql.reg.eip = lpDialogFunc
+                ql.arch.regs.eip = lpDialogFunc
 
             def our_sandbox(path, rootfs):
                 ql = Qiling(path, rootfs)

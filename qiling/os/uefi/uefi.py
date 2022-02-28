@@ -33,7 +33,7 @@ class QlOsUefi(QlOs):
 		cc: QlCC = {
 			32: intel.cdecl,
 			64: intel.ms64
-		}[ql.archbit](ql)
+		}[ql.arch.bits](ql.arch)
 
 		self.fcall = QlFunctionCall(ql, cc)
 
@@ -116,7 +116,7 @@ class QlOsUefi(QlOs):
 		p = re.compile(r'^((?:00)+)')
 
 		def __emit_reg(size: int, reg: str):
-			val = f'{self.ql.reg.read(reg):0{size * 2}x}'
+			val = f'{self.ql.arch.regs.read(reg):0{size * 2}x}'
 			padded = p.sub("\x1b[90m\\1\x1b[39m", val, 1)
 
 			return f'{reg:3s} = {padded}'
@@ -146,7 +146,7 @@ class QlOsUefi(QlOs):
 
 
 	def emit_disasm(self, address: int, data: bytearray, num_insns: int = 8):
-		md = self.ql.create_disassembler()
+		md = self.ql.arch.disassembler
 
 		self.ql.log.error('Disassembly:')
 
@@ -160,21 +160,21 @@ class QlOsUefi(QlOs):
 		self.ql.log.error('Stack:')
 
 		for i in range(-nitems, nitems + 1):
-			offset = i * self.ql.pointersize
+			offset = i * self.ql.arch.pointersize
 
 			try:
 				item = self.ql.arch.stack_read(offset)
 			except UcError:
 				data = '(unavailable)'
 			else:
-				data = f'{item:0{self.ql.pointersize * 2}x}'
+				data = f'{item:0{self.ql.arch.pointersize * 2}x}'
 
-			self.ql.log.error(f'{self.ql.reg.arch_sp + offset:08x} : {data}{" <=" if i == 0 else ""}')
+			self.ql.log.error(f'{self.ql.arch.regs.arch_sp + offset:08x} : {data}{" <=" if i == 0 else ""}')
 
 		self.ql.log.error('')
 
 	def emu_error(self):
-		pc = self.ql.reg.arch_pc
+		pc = self.ql.arch.regs.arch_pc
 
 		try:
 			data = self.ql.mem.read(pc, size=64)

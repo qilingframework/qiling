@@ -4,7 +4,11 @@
 #
 
 from __future__ import annotations
-from typing import Callable, Optional, Mapping
+from typing import Callable, Optional, Mapping, Tuple
+
+from capstone import CsInsn
+
+from qiling import Qiling
 from qiling.const import *
 
 from collections import namedtuple
@@ -37,7 +41,7 @@ def signed_val(val: int) -> int:
     return (val-1 << 32) if is_negative(val) else val
 
 
-def get_cpsr(bits: int) -> (bool, bool, bool, bool):
+def get_cpsr(bits: int) -> Tuple[bool, bool, bool, bool]:
     return (
             bits & 0x10000000 != 0, # V, overflow flag
             bits & 0x20000000 != 0, # C, carry flag
@@ -57,32 +61,22 @@ def get_x86_eflags(bits: int) -> Dict[str, bool]:
             }
 
 
-def is_thumb(bits: int) -> bool:
-    return bits & 0x00000020 != 0
-
-
-def disasm(ql: Qiling, address: int, detail: bool = False) -> Optional[int]:
+def disasm(ql: Qiling, address: int, detail: bool = False) -> Optional[CsInsn]:
     """
     helper function for disassembling
     """
 
-    md = ql.disassembler
+    md = ql.arch.disassembler
     md.detail = detail
-    try:
-        ret = next(md.disasm(read_inst(ql, address), address))
 
-    except StopIteration:
-        ret = None
-
-    return ret
+    return next(md.disasm(read_inst(ql, address), address), None)
 
 
 def read_inst(ql: Qiling, addr: int) -> int:
     result = ql.mem.read(addr, 4)
 
-    if ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB, QL_ARCH.CORTEX_M):
-        if is_thumb(ql.reg.cpsr):
-
+    if ql.arch.type in (QL_ARCH.ARM, QL_ARCH.CORTEX_M):
+        if ql.arch.is_thumb:
             first_two = ql.unpack16(ql.mem.read(addr, 2))
             result = ql.pack16(first_two)
 
@@ -96,7 +90,7 @@ def read_inst(ql: Qiling, addr: int) -> int:
                 latter_two = ql.unpack16(ql.mem.read(addr+2, 2))
                 result += ql.pack16(latter_two)
 
-    elif ql.archtype in (QL_ARCH.X86, QL_ARCH.X8664):
+    elif ql.arch.type in (QL_ARCH.X86, QL_ARCH.X8664):
         # due to the variadic lengh of x86 instructions ( 1~15 )
         # always assume the maxium size for disassembler to tell
         # what is it exactly.
@@ -115,7 +109,7 @@ def setup_branch_predictor(ql: Qiling) -> BranchPredictor:
             QL_ARCH.ARM_THUMB: BranchPredictor_ARM,
             QL_ARCH.CORTEX_M: BranchPredictor_CORTEX_M,
             QL_ARCH.MIPS: BranchPredictor_MIPS,
-            }.get(ql.archtype)(ql)
+            }.get(ql.arch.type)(ql)
 
 class Prophecy(object):
     def __init__(self):

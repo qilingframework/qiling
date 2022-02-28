@@ -49,7 +49,7 @@ def ql_syscall_clock_time(ql:Qiling, id, new, old, *args, **kw):
     if old != 0:
         clock_old = ql.unpack64(ql.mem.read(old, 8))
         ql.log.debug(f'syscall_clock_time(id = {clock_types[id]}, old = {clock_old})')
-        ql.mem.write(old, ql.pack64(time_ns()))
+        ql.mem.write_ptr(old, time_ns(), 8)
     
     return 0
 
@@ -107,7 +107,7 @@ def ql_syscall_sys_cpupage_get(ql:Qiling, index, *args, **kw):
         return ql.os.cpupage_addr
     # CPUPAGE_PLS
     elif index == 1:
-        return ql.unpack32(ql.mem.read(ql.os.cpupage_addr + 4, 4))
+        return ql.mem.read_ptr(ql.os.cpupage_addr + 4, 4)
     # CPUPAGE_SYSPAGE
     elif index == 2:
         return ql.os.syspage_addr
@@ -118,7 +118,7 @@ def ql_syscall_sys_cpupage_set(ql:Qiling, index, value, *args, **kw):
     # CPUPAGE_PLS
     
     if index == 1:
-        ql.mem.write(ql.os.cpupage_addr + 4, ql.pack32(value))
+        ql.mem.write_ptr(ql.os.cpupage_addr + 4, value, 4)
         return EOK
 
     ql.log.warning(f'ql_syscall_sys_cpupage_get (index {index:d}) not implemented')    

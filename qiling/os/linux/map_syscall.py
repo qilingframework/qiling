@@ -20,8 +20,8 @@ def map_syscall(ql, syscall_num):
         QL_ARCH.MIPS:    mips_syscall_table,
 		QL_ARCH.RISCV:   riscv32_syscall_table,
         QL_ARCH.RISCV64: riscv64_syscall_table,
-    }[ql.archtype]
-    
+    }[ql.arch.type]
+
     return f'{SYSCALL_PREF}{syscall_table[syscall_num]}'
 
 arm_syscall_table = {

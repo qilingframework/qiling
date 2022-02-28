@@ -68,46 +68,35 @@ def ql_bin_to_ip(ip):
 
 
 def ql_syscall_socket(ql: Qiling, socket_domain, socket_type, socket_protocol):
-    idx = -1
-    for i in range(NR_OPEN):
-        if ql.os.fd[i] == 0:
-            idx = i
-            break
-    try:
-        if idx == -1:
-            regreturn = -1
-        else:
-            # ql_socket.open should use host platform based socket_type.
-            try:
-                emu_socket_value = socket_type
-                emu_socket_type = socket_type_mapping(socket_type, ql.archtype, ql.ostype)
-                socket_type = getattr(socket, emu_socket_type)
-                ql.log.debug("Convert emu_socket_type {}:{} to host platform based socket_type {}:{}".format(
-                    emu_socket_type, emu_socket_value, emu_socket_type, socket_type))
+    idx = next((i for i in range(NR_OPEN) if ql.os.fd[i] is None), -1)
 
-            except AttributeError:
-                ql.log.error("Can't convert emu_socket_type {}:{} to host platform based socket_type".format(
-                    emu_socket_type, emu_socket_value))
-                raise
-
-            except Exception:
-                ql.log.error("Can't convert emu_socket_type {} to host platform based socket_type".format(
-                    emu_socket_value))
-                raise
-
-            if ql.verbose >= QL_VERBOSE.DEBUG:  # set REUSEADDR options under debug mode
-                ql.os.fd[idx] = ql_socket.open(socket_domain, socket_type, socket_protocol, (socket.SOL_SOCKET, socket.SO_REUSEADDR, 1))
-            else:
-                ql.os.fd[idx] = ql_socket.open(socket_domain, socket_type, socket_protocol)
-
-            regreturn = (idx)
-
-    except Exception:
-        ql.log.exception("")
+    if idx == -1:
         regreturn = -1
+    else:
+        # ql_socket.open should use host platform based socket_type.
+        try:
+            emu_socket_value = socket_type
+            emu_socket_type = socket_type_mapping(socket_type, ql.arch.type, ql.ostype)
+            socket_type = getattr(socket, emu_socket_type)
+            ql.log.debug(f'Convert emu_socket_type {emu_socket_type}:{emu_socket_value} to host platform based socket_type {emu_socket_type}:{socket_type}')
 
-    socket_type = socket_type_mapping(socket_type, ql.archtype, ql.ostype)
-    socket_domain = socket_domain_mapping(socket_domain, ql.archtype, ql.ostype)
+        except AttributeError:
+            ql.log.error(f'Cannot convert emu_socket_type {emu_socket_type}:{emu_socket_value} to host platform based socket_type')
+            raise
+
+        except Exception:
+            ql.log.error(f'Cannot convert emu_socket_type {emu_socket_value} to host platform based socket_type')
+            raise
+
+        if ql.verbose >= QL_VERBOSE.DEBUG:  # set REUSEADDR options under debug mode
+            ql.os.fd[idx] = ql_socket.open(socket_domain, socket_type, socket_protocol, (socket.SOL_SOCKET, socket.SO_REUSEADDR, 1))
+        else:
+            ql.os.fd[idx] = ql_socket.open(socket_domain, socket_type, socket_protocol)
+
+        regreturn = idx
+
+    socket_type = socket_type_mapping(socket_type, ql.arch.type, ql.ostype)
+    socket_domain = socket_domain_mapping(socket_domain, ql.arch.type, ql.ostype)
     ql.log.debug("socket(%s, %s, %s) = %d" % (socket_domain, socket_type, socket_protocol, regreturn))
 
     return regreturn
@@ -151,7 +140,7 @@ def ql_syscall_connect(ql: Qiling, connect_sockfd, connect_addr, connect_addrlen
 
 
 def ql_syscall_getsockopt(ql: Qiling, sockfd, level, optname, optval_addr, optlen_addr):
-    if not (0 <= sockfd < NR_OPEN) or ql.os.fd[sockfd] == 0:
+    if sockfd not in range(NR_OPEN) or ql.os.fd[sockfd] is None:
         return -EBADF
 
     try:
@@ -161,7 +150,7 @@ def ql_syscall_getsockopt(ql: Qiling, sockfd, level, optname, optval_addr, optle
 
         try:
             emu_level = level
-            emu_level_name = socket_level_mapping(emu_level,  ql.archtype, ql.ostype)
+            emu_level_name = socket_level_mapping(emu_level, ql.arch.type, ql.ostype)
             level = getattr(socket, emu_level_name)
             ql.log.debug("Convert emu_level {}:{} to host platform based level {}:{}".format(
                 emu_level_name, emu_level, emu_level_name, level))
@@ -178,15 +167,15 @@ def ql_syscall_getsockopt(ql: Qiling, sockfd, level, optname, optval_addr, optle
         try:
             emu_opt = optname
 
-            emu_level_name = socket_level_mapping(emu_level, ql.archtype, ql.ostype)
+            emu_level_name = socket_level_mapping(emu_level, ql.arch.type, ql.ostype)
             # emu_opt_name is based on level
             if emu_level_name == "IPPROTO_IP":
-                emu_opt_name = socket_ip_option_mapping(emu_opt, ql.archtype, ql.ostype)
+                emu_opt_name = socket_ip_option_mapping(emu_opt, ql.arch.type, ql.ostype)
             else:
-                emu_opt_name = socket_option_mapping(emu_opt, ql.archtype, ql.ostype)
+                emu_opt_name = socket_option_mapping(emu_opt, ql.arch.type, ql.ostype)
 
             # Fix for mips
-            if ql.archtype == QL_ARCH.MIPS:
+            if ql.arch.type == QL_ARCH.MIPS:
                 if emu_opt_name.endswith("_NEW") or emu_opt_name.endswith("_OLD"):
                     emu_opt_name = emu_opt_name[:-4]
 
@@ -212,8 +201,7 @@ def ql_syscall_getsockopt(ql: Qiling, sockfd, level, optname, optval_addr, optle
 
 
 def ql_syscall_setsockopt(ql: Qiling, sockfd, level, optname, optval_addr, optlen):
-    if not (0 <= sockfd < NR_OPEN) or\
-            ql.os.fd[sockfd] == 0:
+    if sockfd not in range(NR_OPEN) or ql.os.fd[sockfd] is None:
         return -EBADF
 
     regreturn = 0
@@ -223,7 +211,7 @@ def ql_syscall_setsockopt(ql: Qiling, sockfd, level, optname, optval_addr, optle
         try:
             try:
                 emu_level = level
-                emu_level_name = socket_level_mapping(emu_level, ql.archtype, ql.ostype)
+                emu_level_name = socket_level_mapping(emu_level, ql.arch.type, ql.ostype)
                 level = getattr(socket, emu_level_name)
                 ql.log.debug("Convert emu_level {}:{} to host platform based level {}:{}".format(
                     emu_level_name, emu_level, emu_level_name, level))
@@ -240,15 +228,15 @@ def ql_syscall_setsockopt(ql: Qiling, sockfd, level, optname, optval_addr, optle
             try:
                 emu_opt = optname
 
-                emu_level_name = socket_level_mapping(emu_level, ql.archtype, ql.ostype)
+                emu_level_name = socket_level_mapping(emu_level, ql.arch.type, ql.ostype)
                 # emu_opt_name is based on level
                 if emu_level_name == "IPPROTO_IP":
-                    emu_opt_name = socket_ip_option_mapping(emu_opt, ql.archtype, ql.ostype)
+                    emu_opt_name = socket_ip_option_mapping(emu_opt, ql.arch.type, ql.ostype)
                 else:
-                    emu_opt_name = socket_option_mapping(emu_opt, ql.archtype, ql.ostype)
+                    emu_opt_name = socket_option_mapping(emu_opt, ql.arch.type, ql.ostype)
 
                 # Fix for mips
-                if ql.archtype == QL_ARCH.MIPS:
+                if ql.arch.type == QL_ARCH.MIPS:
                     if emu_opt_name.endswith("_NEW") or emu_opt_name.endswith("_OLD"):
                         emu_opt_name = emu_opt_name[:-4]
 
@@ -277,15 +265,17 @@ def ql_syscall_setsockopt(ql: Qiling, sockfd, level, optname, optval_addr, optle
     return regreturn
 
 
-def ql_syscall_shutdown(ql: Qiling, shutdown_fd, shutdown_how):
-    
+def ql_syscall_shutdown(ql: Qiling, fd: int, how: int):
     regreturn = 0
-    
-    if 0 <= shutdown_fd < NR_OPEN and ql.os.fd[shutdown_fd] != 0:
-        try:
-            ql.os.fd[shutdown_fd].shutdown(shutdown_how)
-        except:
-            regreturn = -1
+
+    if fd in range(NR_OPEN):
+        sock = ql.os.fd[fd]
+
+        if sock is not None:
+            try:
+                sock.shutdown(how)
+            except:
+                regreturn = -1
 
     return regreturn
 
@@ -293,7 +283,7 @@ def ql_syscall_shutdown(ql: Qiling, shutdown_fd, shutdown_how):
 def ql_syscall_bind(ql: Qiling, bind_fd, bind_addr, bind_addrlen):
     regreturn = 0
 
-    if ql.archtype == QL_ARCH.X8664:
+    if ql.arch.type == QL_ARCH.X8664:
         data = ql.mem.read(bind_addr, 8)
     else:
         data = ql.mem.read(bind_addr, bind_addrlen)
@@ -387,18 +377,24 @@ def ql_syscall_getpeername(ql: Qiling, sockfd: int, addr: int, addrlenptr: int):
     return regreturn
 
 
-def ql_syscall_listen(ql: Qiling, listen_sockfd, listen_backlog):
-    if 0 <= listen_sockfd < NR_OPEN and ql.os.fd[listen_sockfd] != 0:
-        try:
-            ql.os.fd[listen_sockfd].listen(listen_backlog)
-            regreturn = 0
-        except:
-            if ql.verbose >= QL_VERBOSE.DEBUG:
-                raise
-            regreturn = -1
-    else:
-        regreturn = -1
-    return regreturn
+def ql_syscall_listen(ql: Qiling, sockfd: int, backlog: int):
+    if sockfd not in range(NR_OPEN):
+        return -1
+
+    sock = ql.os.fd[sockfd]
+
+    if sock is None:
+        return -1
+
+    try:
+        sock.listen(backlog)
+    except:
+        if ql.verbose >= QL_VERBOSE.DEBUG:
+            raise
+
+        return -1
+
+    return 0
 
 
 def ql_syscall_accept(ql: Qiling, accept_sockfd, accept_addr, accept_addrlen):
@@ -412,14 +408,12 @@ def ql_syscall_accept(ql: Qiling, accept_sockfd, accept_addr, accept_addrlen):
         return ret
     try:
         conn, address = ql.os.fd[accept_sockfd].accept()
-        if conn == None:
+
+        if conn is None:
             return -1
 
-        idx = -1
-        for i in range(NR_OPEN):
-            if ql.os.fd[i] == 0:
-                idx = i
-                break
+        idx = next((i for i in range(NR_OPEN) if ql.os.fd[i] is None), -1)
+
         if idx == -1:
             regreturn = -1
         else:
@@ -432,7 +426,7 @@ def ql_syscall_accept(ql: Qiling, accept_sockfd, accept_addr, accept_addrlen):
             tmp_buf += inet_addr(address[0])
             tmp_buf += b'\x00' * 8
             ql.mem.write(accept_addr, tmp_buf)
-            ql.mem.write(accept_addrlen, ql.pack32(16))
+            ql.mem.write_ptr(accept_addrlen, 16, 4)
     except:
         if ql.verbose >= QL_VERBOSE.DEBUG:
             raise
@@ -441,44 +435,51 @@ def ql_syscall_accept(ql: Qiling, accept_sockfd, accept_addr, accept_addrlen):
     return regreturn
 
 
-def ql_syscall_recv(ql: Qiling, recv_sockfd, recv_buf, recv_len, recv_flags):
-    if 0 <= recv_sockfd < NR_OPEN and ql.os.fd[recv_sockfd] != 0:
-        tmp_buf = ql.os.fd[recv_sockfd].recv(recv_len, recv_flags)
-        if tmp_buf:
-            ql.log.debug("recv() CONTENT:")
-            ql.log.debug("%s" % tmp_buf)
-        ql.mem.write(recv_buf, tmp_buf)
-        regreturn = len(tmp_buf)
-    else:
-        regreturn = -1
+def ql_syscall_recv(ql: Qiling, sockfd: int, buf: int, length: int, flags: int):
+    if sockfd not in range(NR_OPEN):
+        return -1
+
+    sock = ql.os.fd[sockfd]
+
+    if sock is None:
+        return -1
+
+    content = sock.recv(length, flags)
+
+    if content:
+        ql.log.debug("recv() CONTENT:")
+        ql.log.debug("%s" % content)
+
+    ql.mem.write(buf, content)
+
+    return len(content)
+
+
+def ql_syscall_send(ql: Qiling, sockfd: int, buf: int, length: int, flags: int):
+    if sockfd not in range(NR_OPEN):
+        return -1
+
+    sock = ql.os.fd[sockfd]
+
+    if sock is None:
+        return -1
+
+    try:
+        content = bytes(ql.mem.read(buf, length))
+        regreturn = sock.send(content, flags)
+    except:
+        regreturn = 0
+        ql.log.info(sys.exc_info()[0])
+
+        if ql.verbose >= QL_VERBOSE.DEBUG:
+            raise
+
     return regreturn
 
 
-def ql_syscall_send(ql: Qiling, send_sockfd, send_buf, send_len, send_flags):
+def ql_syscall_recvmsg(ql: Qiling, sockfd: int, msg_addr: int, flags: int):
     regreturn = 0
-    if 0 <= send_sockfd < NR_OPEN and ql.os.fd[send_sockfd] != 0:
-        try:
-            ql.log.debug("debug send() start")
-            tmp_buf = ql.mem.read(send_buf, send_len)
-            ql.log.debug("fd is " + str(send_sockfd))
-            ql.log.debug("send() CONTENT:")
-            ql.log.debug("%s" % str(tmp_buf))
-            ql.log.debug("send() flag is " + str(send_flags))
-            ql.log.debug("send() len is " + str(send_len))
-            regreturn = ql.os.fd[send_sockfd].send(bytes(tmp_buf), send_flags)
-            ql.log.debug("debug send end")
-        except:
-            ql.log.info(sys.exc_info()[0])
-            if ql.verbose >= QL_VERBOSE.DEBUG:
-                raise
-    else:
-        regreturn = -1
-    return regreturn
-
-
-def ql_syscall_recvmsg(ql: Qiling, sockfd, msg_addr, flags):
-    regreturn = 0
-    if  0 <= sockfd < NR_OPEN and ql.os.fd[sockfd] != 0:
+    if sockfd not in range(NR_OPEN) and ql.os.fd[sockfd] is not None:
         msg = msghdr.load(ql, msg_addr)
 
         try:
@@ -521,81 +522,96 @@ def ql_syscall_recvmsg(ql: Qiling, sockfd, msg_addr, flags):
 
     return regreturn
 
-def ql_syscall_recvfrom(ql: Qiling, recvfrom_sockfd, recvfrom_buf, recvfrom_len, recvfrom_flags, recvfrom_addr, recvfrom_addrlen):
+def ql_syscall_recvfrom(ql: Qiling, sockfd: int, buf: int, length: int, flags: int, addr: int, addrlen: int):
+    if sockfd not in range(NR_OPEN):
+        return -1
+
+    sock = ql.os.fd[sockfd]
+
+    if sock is None:
+        return -1
+
+    SOCK_STREAM = 1
+
     # For x8664, recvfrom() is called finally when calling recv() in TCP communications
-    SOCK_STREAM = 1
-    if ql.os.fd[recvfrom_sockfd].socktype == SOCK_STREAM:
-        return ql_syscall_recv(ql, recvfrom_sockfd, recvfrom_buf, recvfrom_len, recvfrom_flags)
+    if sock.socktype == SOCK_STREAM:
+        return ql_syscall_recv(ql, sockfd, buf, length, flags)
+
+    tmp_buf, tmp_addr = sock.recvfrom(length, flags)
+
+    if tmp_buf:
+        ql.log.debug("recvfrom() CONTENT:")
+        ql.log.debug("%s" % tmp_buf)
+
+    sin_family = int(sock.family)
+    data = struct.pack("<h", sin_family)
+
+    if sin_family == 1:
+        ql.log.debug("recvfrom() path is " + tmp_addr)
+        data += tmp_addr.encode()
     else:
-        if 0 <= recvfrom_sockfd < NR_OPEN and ql.os.fd[recvfrom_sockfd] != 0:
-            tmp_buf, tmp_addr = ql.os.fd[recvfrom_sockfd].recvfrom(recvfrom_len, recvfrom_flags)
-            if tmp_buf:
-                ql.log.debug("recvfrom() CONTENT:")
-                ql.log.debug("%s" % tmp_buf)
+        ql.log.debug("recvfrom() addr is %s:%d" % (tmp_addr[0], tmp_addr[1]))
+        data += struct.pack(">H", tmp_addr[1])
+        data += ipaddress.ip_address(tmp_addr[0]).packed
+        addrlen = ql.mem.read_ptr(addrlen)
+        data = data[:addrlen]
 
-            sin_family = int(ql.os.fd[recvfrom_sockfd].family)
-            data = struct.pack("<h", sin_family)
-            if sin_family == 1:
-                ql.log.debug("recvfrom() path is " + tmp_addr)
-                data += tmp_addr.encode()
-            else:
-                ql.log.debug("recvfrom() addr is %s:%d" % (tmp_addr[0], tmp_addr[1]))
-                data += struct.pack(">H", tmp_addr[1])
-                data += ipaddress.ip_address(tmp_addr[0]).packed
-                addrlen = ql.unpack(ql.mem.read(recvfrom_addrlen, ql.pointersize))
-                data = data[:addrlen]
-            ql.mem.write(recvfrom_addr, data)
+    ql.mem.write(addr, data)
+    ql.mem.write(buf, tmp_buf)
 
-            ql.mem.write(recvfrom_buf, tmp_buf)
-            regreturn = len(tmp_buf)
-        else:
-            regreturn = -1
-
-        return regreturn
+    return len(tmp_buf)
 
 
-def ql_syscall_sendto(ql: Qiling, sendto_sockfd, sendto_buf, sendto_len, sendto_flags, sendto_addr, sendto_addrlen):
+def ql_syscall_sendto(ql: Qiling, sockfd: int, sendto_buf, sendto_len, sendto_flags, sendto_addr, sendto_addrlen):
+    if sockfd not in range(NR_OPEN):
+        return -1
+
+    sock = ql.os.fd[sockfd]
+
+    if sock is None:
+        return -1
+
+    SOCK_STREAM = 1
+
     # For x8664, sendto() is called finally when calling send() in TCP communications
-    SOCK_STREAM = 1
-    if ql.os.fd[sendto_sockfd].socktype == SOCK_STREAM:
-        return ql_syscall_send(ql, sendto_sockfd, sendto_buf, sendto_len, sendto_flags)
-    else:
-        regreturn = 0
-        if 0 <= sendto_sockfd < NR_OPEN and ql.os.fd[sendto_sockfd] != 0:
-            try:
-                ql.log.debug("debug sendto() start")
-                tmp_buf = ql.mem.read(sendto_buf, sendto_len)
+    if sock.socktype == SOCK_STREAM:
+        return ql_syscall_send(ql, sockfd, sendto_buf, sendto_len, sendto_flags)
 
-                if ql.archtype== QL_ARCH.X8664:
-                    data = ql.mem.read(sendto_addr, 8)
-                else:
-                    data = ql.mem.read(sendto_addr, sendto_addrlen)
+    regreturn = 0
 
-                sin_family, = struct.unpack("<h", data[:2])
-                port, host = struct.unpack(">HI", data[2:8])
-                host = ql_bin_to_ip(host)
+    try:
+        ql.log.debug("debug sendto() start")
+        tmp_buf = ql.mem.read(sendto_buf, sendto_len)
 
-                if sin_family == 1:
-                    path = data[2 : ].split(b'\x00')[0]
-                    path = ql.os.path.transform_to_real_path(path.decode())
-
-                ql.log.debug("fd is " + str(sendto_sockfd))
-                ql.log.debug("sendto() CONTENT:")
-                ql.log.debug("%s" % tmp_buf)
-                ql.log.debug("sendto() flag is " + str(sendto_flags))
-                ql.log.debug("sendto() len is " + str(sendto_len))
-                if sin_family == 1:
-                    ql.log.debug("sendto() path is " + str(path))
-                    regreturn = ql.os.fd[sendto_sockfd].sendto(bytes(tmp_buf), sendto_flags, path)
-                else:
-                    ql.log.debug("sendto() addr is %s:%d" % (host, port))
-                    regreturn = ql.os.fd[sendto_sockfd].sendto(bytes(tmp_buf), sendto_flags, (host, port))
-                ql.log.debug("debug sendto end")
-            except:
-                ql.log.debug(sys.exc_info()[0])
-                if ql.verbose >= QL_VERBOSE.DEBUG:
-                    raise
+        if ql.arch.type== QL_ARCH.X8664:
+            data = ql.mem.read(sendto_addr, 8)
         else:
-            regreturn = -1
+            data = ql.mem.read(sendto_addr, sendto_addrlen)
 
-        return regreturn
+        sin_family, = struct.unpack("<h", data[:2])
+        port, host = struct.unpack(">HI", data[2:8])
+        host = ql_bin_to_ip(host)
+
+        ql.log.debug("fd is " + str(sockfd))
+        ql.log.debug("sendto() CONTENT:")
+        ql.log.debug("%s" % tmp_buf)
+        ql.log.debug("sendto() flag is " + str(sendto_flags))
+        ql.log.debug("sendto() len is " + str(sendto_len))
+
+        if sin_family == 1:
+            path = data[2 : ].split(b'\x00')[0]
+            path = ql.os.path.transform_to_real_path(path.decode())
+
+            ql.log.debug("sendto() path is " + str(path))
+            regreturn = sock.sendto(bytes(tmp_buf), sendto_flags, path)
+        else:
+            ql.log.debug("sendto() addr is %s:%d" % (host, port))
+            regreturn = sock.sendto(bytes(tmp_buf), sendto_flags, (host, port))
+        ql.log.debug("debug sendto end")
+    except:
+        ql.log.debug(sys.exc_info()[0])
+
+        if ql.verbose >= QL_VERBOSE.DEBUG:
+            raise
+
+    return regreturn

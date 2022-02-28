@@ -63,7 +63,7 @@ def hook_GetModuleHandleExW(ql: Qiling, address: int, params):
     res = _GetModuleHandle(ql, address, params)
     dst = params["phModule"]
 
-    ql.mem.write(dst, ql.pack(res))
+    ql.mem.write_ptr(dst, res)
 
     return res
 

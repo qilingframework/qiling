@@ -32,7 +32,7 @@ class ELF_KO_Test(unittest.TestCase):
         try:
             procfile_read_func_begin = ql.loader.load_address + 0x11e0
             procfile_read_func_end = ql.loader.load_address + 0x11fa
-            ql.set_api("printk", my_printk)
+            ql.os.set_api("printk", my_printk)
             ql.run(begin=procfile_read_func_begin, end=procfile_read_func_end)
         except UcError as e:
             print(e)
@@ -55,7 +55,7 @@ class ELF_KO_Test(unittest.TestCase):
         try:
             procfile_read_func_begin = ql.loader.load_address + 0x1064
             procfile_read_func_end = ql.loader.load_address + 0x107e
-            ql.set_api("printk", my_onenter, QL_INTERCEPT.ENTER)
+            ql.os.set_api("printk", my_onenter, QL_INTERCEPT.ENTER)
             ql.run(begin=procfile_read_func_begin, end=procfile_read_func_end)
         except UcError as e:
             print(e)
@@ -76,7 +76,7 @@ class ELF_KO_Test(unittest.TestCase):
         ql = Qiling(["../examples/rootfs/mips32_linux/kernel/hello.ko"],  "../examples/rootfs/mips32_linux", verbose=QL_VERBOSE.DEBUG)
         begin = ql.loader.load_address + 0x1060
         end = ql.loader.load_address + 0x1084
-        ql.set_api("printk", my_onexit, QL_INTERCEPT.EXIT)
+        ql.os.set_api("printk", my_onexit, QL_INTERCEPT.EXIT)
         ql.run(begin=begin, end=end)
 
         self.assertEqual("\x016Hello, World!\n", self.set_api_onexit)

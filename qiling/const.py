@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from enum import Enum, IntEnum
+from enum import Enum, Flag, IntEnum
 from typing import Any, Mapping, Type
 
 class QL_ENDIAN(IntEnum):
@@ -14,7 +14,6 @@ class QL_ARCH(IntEnum):
     X86 = 101
     X8664 = 102
     ARM = 103
-    ARM_THUMB = 104
     ARM64 = 105
     MIPS = 106
     A8086 = 107
@@ -53,17 +52,13 @@ class QL_INTERCEPT(IntEnum):
     ENTER = 2
     EXIT = 3
 
-QL_DEBUGGER_ALL = (QL_DEBUGGER.IDAPRO, QL_DEBUGGER.GDB, QL_DEBUGGER.QDB)
+class QL_STOP(Flag):
+    NONE = 0
+    STACK_POINTER = (1 << 0)
+    EXIT_TRAP     = (1 << 1)
 
-QL_ARCH_ENDIAN = (QL_ARCH.MIPS, QL_ARCH.ARM)
-QL_ARCH_1BIT   = (QL_ARCH.EVM,)
-QL_ARCH_16BIT  = (QL_ARCH.A8086,)
-QL_ARCH_32BIT  = (QL_ARCH.ARM, QL_ARCH.ARM_THUMB, QL_ARCH.MIPS, QL_ARCH.X86, QL_ARCH.CORTEX_M, QL_ARCH.RISCV)
-QL_ARCH_64BIT  = (QL_ARCH.ARM64, QL_ARCH.X8664, QL_ARCH.RISCV64)
-
-QL_OS_NONPID            = (QL_OS.DOS, QL_OS.UEFI)
-QL_OS_POSIX             = (QL_OS.LINUX, QL_OS.FREEBSD, QL_OS.MACOS, QL_OS.QNX)
-
+QL_OS_NONPID      = (QL_OS.DOS, QL_OS.UEFI)
+QL_OS_POSIX       = (QL_OS.LINUX, QL_OS.FREEBSD, QL_OS.MACOS, QL_OS.QNX)
 QL_OS_BAREMETAL   = (QL_OS.MCU,)
 QL_OS_INTERPRETER = (QL_OS.EVM,)
 
@@ -74,7 +69,7 @@ def __reverse_enum(e: Type[Enum]) -> Mapping[str, Any]:
     '''Create a reverse mapping for an enum.
     '''
 
-    return dict((v.name.lower(), v.value) for v in e.__members__.values())
+    return dict((v.name.lower(), v) for v in e.__members__.values())
 
 debugger_map: Mapping[str, QL_DEBUGGER] = __reverse_enum(QL_DEBUGGER)
 arch_map    : Mapping[str, QL_ARCH]     = __reverse_enum(QL_ARCH)
@@ -95,5 +90,6 @@ loader_map = {
 }
 
 arch_os_map = {
-    QL_ARCH.EVM: QL_OS.EVM,
+    QL_ARCH.EVM      : QL_OS.EVM,
+    QL_ARCH.CORTEX_M : QL_OS.MCU
 }
