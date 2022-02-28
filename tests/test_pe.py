@@ -230,9 +230,9 @@ class PETest(unittest.TestCase):
         self.assertTrue(QLWinSingleTest(_t).run())
 
 
-    def test_pe_win_x86_clipboard(self):
+    def test_pe_win_x8664_clipboard(self):
         def _t():
-            ql = Qiling(["../examples/rootfs/x8664_windows/bin//x8664_clipboard_test.exe"], "../examples/rootfs/x8664_windows")
+            ql = Qiling(["../examples/rootfs/x8664_windows/bin/x8664_clipboard_test.exe"], "../examples/rootfs/x8664_windows")
             ql.run()
             del ql
             return True
@@ -240,7 +240,7 @@ class PETest(unittest.TestCase):
         self.assertTrue(QLWinSingleTest(_t).run())
 
 
-    def test_pe_win_x86_tls(self):
+    def test_pe_win_x8664_tls(self):
         def _t():
             ql = Qiling(["../examples/rootfs/x8664_windows/bin/x8664_tls.exe"], "../examples/rootfs/x8664_windows")
             ql.run()
@@ -455,14 +455,12 @@ class PETest(unittest.TestCase):
                 arglist = params['_ArgList']
 
                 count = format.count("%")
-                fargs = [ql.unpack(ql.mem.read(arglist + i * ql.arch.pointersize, ql.arch.pointersize)) for i in range(count)]
-
-                target_txt = ""
+                fargs = [ql.mem.read_ptr(arglist + i * ql.arch.pointersize) for i in range(count)]
 
                 try:
                     target_txt = ql.mem.string(fargs[1])
                 except:
-                    pass
+                    target_txt = ""
 
                 return address, params
 
