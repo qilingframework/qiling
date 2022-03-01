@@ -34,9 +34,4 @@ def indicator(ql):
 ql.hw.gpioa.hook_set(7, indicator, ql)
 ql.hw.systick.ratio = 1000
 
-def callback(ql, address, size):
-    print(hex(ql.reg.pc), hex(address))
-
-ql.hook_mem_write_invalid(callback)
-
 ql.run(count=800000)
