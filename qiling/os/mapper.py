@@ -4,11 +4,11 @@
 #
 
 import inspect
+import os
+from typing import Any, MutableMapping, Union
 
-
+from .path import QlPathManager
 from .filestruct import ql_file
-from .utils import QlOsUtils
-
 
 # All mapped objects should inherit this class.
 # Note this object is compatible with ql_file.
@@ -58,73 +58,83 @@ class QlFsMappedObject:
         raise NotImplementedError("QlFsMappedObject property not implemented: name")
 
 class QlFsMapper:
-    
-    def __init__(self, ql):
-        self._mapping = {}
-        self._ql = ql
-    
-    @property
-    def ql(self):
-        return self._ql
 
-    def _open_mapping_ql_file(self, ql_path, openflags, openmode):
-        real_dest = self._mapping[ql_path]
-        if isinstance(real_dest, str):
-            qlfile = ql_file.open(real_dest, openflags, openmode)
-            return qlfile
-        elif inspect.isclass(real_dest):
-            new_instance = real_dest()
-            return new_instance
-        else:
-            return real_dest
-    
-    def _open_mapping(self, ql_path, openmode):
-        real_dest = self._mapping[ql_path]
-        if isinstance(real_dest, str):
-            f = open(real_dest, openmode)
-            return f
-        elif inspect.isclass(real_dest):
-            new_instance = real_dest()
-            return new_instance
-        else:
-            return real_dest
+    def __init__(self, path: QlPathManager):
+        self._mapping: MutableMapping[str, Any] = {}
+        self.path = path
 
-    def has_mapping(self, fm):
+    def _open_mapping_ql_file(self, ql_path: str, openflags: int, openmode: int):
+        real_dest = self._mapping[ql_path]
+
+        if isinstance(real_dest, str):
+            obj = ql_file.open(real_dest, openflags, openmode)
+
+        elif inspect.isclass(real_dest):
+            obj = real_dest()
+
+        else:
+            obj = real_dest
+
+        return obj
+
+    def _open_mapping(self, ql_path: str, openmode: str):
+        real_dest = self._mapping[ql_path]
+
+        if isinstance(real_dest, str):
+            obj = open(real_dest, openmode)
+
+        elif inspect.isclass(real_dest):
+            obj = real_dest()
+
+        else:
+            obj = real_dest
+
+        return obj
+
+    def has_mapping(self, fm: str) -> bool:
         return fm in self._mapping
 
-    def mapping_count(self):
+    def mapping_count(self) -> int:
         return len(self._mapping)
 
-    def open_ql_file(self, path, openflags, openmode):
+    def open_ql_file(self, path: str, openflags: int, openmode: int):
         if self.has_mapping(path):
-            self.ql.log.info(f"mapping {path}")
             return self._open_mapping_ql_file(path, openflags, openmode)
-        else:
-            real_path = self.ql.os.path.transform_to_real_path(path)
-            return ql_file.open(real_path, openflags, openmode)
 
-    def open(self, path, openmode):
+        real_path = self.path.transform_to_real_path(path)
+        return ql_file.open(real_path, openflags, openmode)
+
+    def open(self, path: str, openmode: str):
         if self.has_mapping(path):
-            self.ql.log.info(f"mapping {path}")
             return self._open_mapping(path, openmode)
-        else:
-            real_path = self.ql.os.path.transform_to_real_path(path)
-            return open(real_path, openmode)
 
-    def _parse_path(self, p):
-        if "__fspath__" in dir(p): # p is a os.PathLike object.
-            p = p.__fspath__()
+        real_path = self.path.transform_to_real_path(path)
+        return open(real_path, openmode)
+
+    def _parse_path(self, p: Union[os.PathLike, str]) -> str:
+        fspath = getattr(p, '__fspath__', None)
+
+        # p is an `os.PathLike` object
+        if fspath is not None:
+            p = fspath()
+
             if isinstance(p, bytes): # os.PathLike.__fspath__ may return bytes.
                 p = p.decode("utf-8")
+
         return p
 
-    # ql_path:   Emulated path which should be convertable to a string or a hashable object. e.g. pathlib.Path
-    # real_dest: Mapped object, can be a string, an object or a class.
-    #            string: mapped path in the host machine, e.g. `/dev/urandom` -> `/dev/urandom`.
-    #            object: mapped object, will be returned each time the emulated path has been opened.
-    #            class:  mapped class, will be used to create a new instance each time the emulated path has been opened.
-    def add_fs_mapping(self, ql_path, real_dest):
+    def add_fs_mapping(self, ql_path: Union[os.PathLike, str], real_dest: Any) -> None:
+        """Map an object to Qiling emulated file system.
+
+        Args:
+            ql_path: Emulated path which should be convertable to a string or a hashable object. e.g. pathlib.Path
+            real_dest: Mapped object, can be a string, an object or a class.
+                string: mapped path in the host machine, e.g. '/dev/urandom' -> '/dev/urandom'
+                object: mapped object, will be returned each time the emulated path has been opened
+                class:  mapped class, will be used to create a new instance each time the emulated path has been opened
+        """
+
         ql_path = self._parse_path(ql_path)
         real_dest = self._parse_path(real_dest)
+
         self._mapping[ql_path] = real_dest
-        

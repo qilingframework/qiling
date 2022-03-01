@@ -28,21 +28,24 @@ def read_file(fname: str):
 
 class __arg_env(argparse.Action):
     def __call__(self, parser, namespace, values, option_string):
-        env = {}
-
         if os.path.exists(values):
             with open(values, 'rb') as f:
                 env = pickle.load(f)
         else:
             env = ast.literal_eval(values)
 
-        setattr(namespace, self.dest, env)
+        setattr(namespace, self.dest, env or {})
 
 class __arg_verbose(argparse.Action):
     def __call__(self, parser, namespace, values, option_string):
         setattr(namespace, self.dest, verbose_map[values])
 
 def handle_code(options: argparse.Namespace):
+    archendian = {
+        'little': QL_ENDIAN.EL,
+        'big'   : QL_ENDIAN.EB
+    }[options.endian]
+
     if options.format == 'hex':
         if options.input is not None:
             print ("Load HEX from ARGV")
@@ -64,12 +67,7 @@ def handle_code(options: argparse.Namespace):
         assembly = read_file(options.filename)
         archtype = arch_convert(options.arch)
 
-        archendian = {
-            'little': QL_ENDIAN.EL,
-            'big'   : QL_ENDIAN.EB
-        }[options.endian]
-
-        assembler = arch_utils.assembler(archtype, archendian)
+        assembler = arch_utils.assembler(archtype, archendian, options.thumb)
         code, _ = assembler.asm(assembly)
         code = bytes(code)
 
@@ -87,10 +85,10 @@ def handle_code(options: argparse.Namespace):
         code=code,
         ostype=options.os,
         archtype=options.arch,
-        bigendian=(options.endian == 'big'),
         verbose=options.verbose,
         profile=options.profile,
-        filter=options.filter
+        filter=options.filter,
+        endian=archendian,
     )
 
     return ql
@@ -184,7 +182,8 @@ if __name__ == '__main__':
     code_parser.add_argument('-f', '--filename', metavar="FILE", help="filename")
     code_parser.add_argument('-i', '--input', metavar="INPUT", dest="input", help='input hex value')
     code_parser.add_argument('--arch', required=True, choices=arch_map)
-    code_parser.add_argument('--endian', choices=('little', 'big'), default='little')
+    code_parser.add_argument('--thumb', action='store_true', help='specify thumb mode for ARM')
+    code_parser.add_argument('--endian', choices=('little', 'big'), default='little', help='specify endianess for bi-endian archs')
     code_parser.add_argument('--os', required=True, choices=os_map)
     code_parser.add_argument('--rootfs', help='emulated root filesystem, that is where all libraries reside')
     code_parser.add_argument('--format', choices=('asm', 'hex', 'bin'), default='bin', help='input file format')
@@ -199,7 +198,7 @@ if __name__ == '__main__':
 
     # set common options
     comm_parser.add_argument('-v', '--verbose', choices=verbose_map, default=QL_VERBOSE.DEFAULT, action=__arg_verbose, help='set verbosity level')
-    comm_parser.add_argument('--env', metavar="FILE", action=__arg_env, help="pickle file containing an environment dictionary")
+    comm_parser.add_argument('--env', metavar="FILE", action=__arg_env, default={}, help="pickle file containing an environment dictionary")
     comm_parser.add_argument('-g', '--gdb', nargs='?', metavar='SERVER:PORT', const='gdb', help='enable gdb server')
     comm_parser.add_argument('--qdb', action='store_true', help='attach Qdb at entry point, it\'s MIPS, ARM(THUMB) supported only for now')
     comm_parser.add_argument('--rr', action='store_true', help='switch on record and replay feature in qdb, only works with --qdb')

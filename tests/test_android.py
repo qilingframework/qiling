@@ -6,7 +6,7 @@
 import os, platform, sys, unittest
 
 sys.path.append("..")
-from qiling import *
+from qiling import Qiling
 from qiling.const import QL_VERBOSE
 
 

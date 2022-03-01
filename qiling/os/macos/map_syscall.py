@@ -9,15 +9,13 @@ from qiling.const import QL_ARCH
 from qiling.os.posix.posix import SYSCALL_PREF
 
 def map_syscall(ql, syscall_num):
-    if ql.archtype == QL_ARCH.X8664:
+    if ql.arch.type == QL_ARCH.X8664:
         if syscall_num >= 0x2000000 and syscall_num <= 0x3000000:
             syscall_num = syscall_num - 0x2000000
 
-        print("")
-        print(syscall_num)
         return f'{SYSCALL_PREF}{x8664_syscall_table[syscall_num]}'
 
-    elif ql.archtype == QL_ARCH.ARM64:
+    elif ql.arch.type == QL_ARCH.ARM64:
         if syscall_num >= 0xffffffffffffff00:
             syscall_num = syscall_num - 0xffffffffffffff00
 

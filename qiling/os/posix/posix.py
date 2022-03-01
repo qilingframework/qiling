@@ -17,7 +17,7 @@ from qiling.cc import QlCC, intel, arm, mips, riscv
 from qiling.const import QL_ARCH, QL_OS, QL_INTERCEPT
 from qiling.exception import QlErrorSyscallNotFound
 from qiling.os.os import QlOs
-from qiling.os.posix.const import errors, NR_OPEN
+from qiling.os.posix.const import errors
 from qiling.utils import QlFileDes, ostype_convert_str, ql_get_module_function, ql_syscall_mapping_function
 
 from qiling.os.posix.syscall import *
@@ -49,8 +49,8 @@ class mipso32(mips.mipso32):
         else:
             a3return = 0
 
-        self.ql.reg.v0 = value
-        self.ql.reg.a3 = a3return
+        self.arch.regs.v0 = value
+        self.arch.regs.a3 = a3return
 
 class riscv32(riscv.riscv):
     pass
@@ -86,13 +86,13 @@ class QlOsPosix(QlOs):
             QL_ARCH.X86  : UC_X86_REG_EAX,
             QL_ARCH.X8664: UC_X86_REG_RAX,
             QL_ARCH.RISCV: UC_RISCV_REG_A7,
-            QL_ARCH.RISCV64: UC_RISCV_REG_A7,            
-        }[self.ql.archtype]
+            QL_ARCH.RISCV64: UC_RISCV_REG_A7
+        }[self.ql.arch.type]
 
         # handle a special case
-        if (self.ql.archtype == QL_ARCH.ARM64) and (self.ql.ostype == QL_OS.MACOS):
+        if (self.ql.arch.type == QL_ARCH.ARM64) and (self.ql.ostype == QL_OS.MACOS):
             self.__syscall_id_reg = UC_ARM64_REG_X16
-        if (self.ql.archtype == QL_ARCH.ARM) and (self.ql.ostype == QL_OS.QNX):
+        if (self.ql.arch.type == QL_ARCH.ARM) and (self.ql.ostype == QL_OS.QNX):
             self.__syscall_id_reg = UC_ARM_REG_R12
 
         # TODO: use abstract to access __syscall_cc and __syscall_id_reg by defining a system call class
@@ -104,9 +104,9 @@ class QlOsPosix(QlOs):
             QL_ARCH.X8664: intel64,
             QL_ARCH.RISCV: riscv32,
             QL_ARCH.RISCV64: riscv64,
-        }[self.ql.archtype](ql)
+        }[self.ql.arch.type](self.ql.arch)
 
-        self._fd = QlFileDes([0] * NR_OPEN)
+        self._fd = QlFileDes()
 
         # the QlOs constructor cannot assign the standard streams using their designated properties since
         # it runs before the _fd array is declared. instead, it assigns them to the private members and here
@@ -145,13 +145,20 @@ class QlOsPosix(QlOs):
     def syscall(self):
         return self.get_syscall()
 
-    def set_syscall(self, target: Union[int, str], handler: Callable, intercept: QL_INTERCEPT):
+    def set_syscall(self, target: Union[int, str], handler: Callable, intercept: QL_INTERCEPT=QL_INTERCEPT.CALL):
+        """Either hook or replace a system call with a custom one.
+
+        Args:
+            target: either syscall name or number. a name may be used only if target syscall is implemented
+            handler: function to call
+            intercept:
+                `QL_INTERCEPT.CALL` : run handler instead of the existing target implementation
+                `QL_INTERCEPT.ENTER`: run handler before the target syscall is called
+                `QL_INTERCEPT.EXIT` : run handler after the target syscall is called
+        """
+
         if type(target) is str:
             target = f'{SYSCALL_PREF}{target}'
-
-        # BUG: workaround missing arg
-        if intercept is None:
-            intercept = QL_INTERCEPT.CALL
 
         self.posix_syscall_hooks[intercept][target] = handler
 
@@ -195,7 +202,7 @@ class QlOsPosix(QlOs):
 
             # look in os-specific and posix syscall hooks
             if syscall_name:
-                self.ql.log.debug("syscall hooked 0x%x: %s()" % (self.ql.reg.arch_pc, syscall_name))
+                self.ql.log.debug("syscall hooked 0x%x: %s()" % (self.ql.arch.regs.arch_pc, syscall_name))
                 syscall_hook = getattr(os_syscalls, syscall_name, None) or getattr(posix_syscalls, syscall_name, None)
 
         if syscall_hook:
@@ -252,37 +259,38 @@ class QlOsPosix(QlOs):
                 args.append((name, f'{value:#x}'))
 
             sret = QlOsPosix.getNameFromErrorCode(retval)
-            self.utils.print_function(self.ql.reg.arch_pc, syscall_basename, args, sret, False)
+            self.utils.print_function(self.ql.arch.regs.arch_pc, syscall_basename, args, sret, False)
 
             # record syscall statistics
-            self.utils.syscalls.setdefault(syscall_name, []).append({
-                "params": dict(zip(param_names, params)),
-                "result": retval,
-                "address": self.ql.reg.arch_pc,
-                "return_address": None,
-                "position": self.utils.syscalls_counter
-            })
-
-            self.utils.syscalls_counter += 1
+            self.stats.log_api_call(self.ql.arch.regs.arch_pc, syscall_name, dict(zip(param_names, params)), retval, None)
         else:
-            self.ql.log.warning(f'{self.ql.reg.arch_pc:#x}: syscall {syscall_name} number = {syscall_id:#x}({syscall_id:d}) not implemented')
+            self.ql.log.warning(f'{self.ql.arch.regs.arch_pc:#x}: syscall {syscall_name} number = {syscall_id:#x}({syscall_id:d}) not implemented')
 
             if self.ql.debug_stop:
                 raise QlErrorSyscallNotFound(f'Syscall not found: {syscall_name}')
 
     def get_syscall(self) -> int:
-        if self.ql.archtype == QL_ARCH.ARM:
-            # When ARM-OABI
-            # svc_imm = 0x900000 + syscall_nr
-            # syscall_nr = svc_imm - 0x900000
-            # Ref1: https://marcin.juszkiewicz.com.pl/download/tables/syscalls.html
-            # Ref2: https://github.com/rootkiter/Reverse-bins/blob/master/syscall_header/armv4l_unistd.h
-            # Ref3: https://github.com/unicorn-engine/unicorn/issues/1137
-            code_val = self.ql.mem.read_ptr(self.ql.reg.arch_pc-4, 4)
-            svc_imm  = code_val & 0x00ffffff
-            if (svc_imm >= 0x900000):
-                    return svc_imm - 0x900000
-        return self.ql.reg.read(self.__syscall_id_reg)
+        if self.ql.arch.type == QL_ARCH.ARM:
+            # support arm-oabi
+            #   @see: https://marcin.juszkiewicz.com.pl/download/tables/syscalls.html
+            #   @see: https://github.com/rootkiter/Reverse-bins/blob/master/syscall_header/armv4l_unistd.h
+            #   @see: https://github.com/unicorn-engine/unicorn/issues/1137
+
+            # read the instruction we have just emulated
+            isize = 2 if self.ql.arch.is_thumb else self.ql.arch.pointersize
+            ibytes = self.ql.mem.read_ptr(self.ql.arch.regs.arch_pc - isize, isize)
+
+            # mask off the opcode, which is the most significant byte
+            svc_imm = ibytes & ((1 << ((isize - 1) * 8)) - 1)
+
+            # arm-oabi
+            if svc_imm >= 0x900000:
+                return svc_imm - 0x900000
+
+            if svc_imm > 0:
+                return svc_imm
+
+        return self.ql.arch.regs.read(self.__syscall_id_reg)
 
     def set_syscall_return(self, retval: int):
         self.__syscall_cc.setReturnValue(retval)

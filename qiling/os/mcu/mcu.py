@@ -13,10 +13,6 @@ class QlOsMcu(QlOs):
 
         self.runable = True
 
-    def step(self):
-        self.ql.emu_start(self.ql.arch.get_pc(), 0, count=1)
-        self.ql.hw.step()
-
     def stop(self):
         self.ql.emu_stop()
         self.runable = False
@@ -27,13 +23,17 @@ class QlOsMcu(QlOs):
         count = self.ql.count
         end = self.ql.exit_point if self.ql.exit_point is not None else -1
 
-        if isinstance(self.ql.arch, QlArchARM):
-            end |= self.ql.arch.thumb
-        
-        while self.runable and \
-                self.ql.arch.get_pc() != end: 
+        while self.runable:
+            current_address = self.ql.arch.regs.arch_pc
+            if isinstance(self.ql.arch, QlArchARM):
+                current_address |= int(self.ql.arch.is_thumb)
 
-            self.step()
+            if current_address == end:
+                break
+            
+            self.ql.emu_start(current_address, 0, count=1)
+            self.ql.hw.step()
+
             count -= 1
             
             if count == 0:

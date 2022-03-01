@@ -38,14 +38,14 @@ class colors:
 
 def dump_regs(ql: Qiling):
     regs = {
-        'eax': ql.reg.eax,
-        'ebx': ql.reg.ebx,
-        'ecx': ql.reg.ecx,
-        'edx': ql.reg.edx,
-        'edi': ql.reg.edi,
-        'esi': ql.reg.esi,
-        'ebp': ql.reg.ebp,
-        'esp': ql.reg.esp
+        'eax': ql.arch.regs.eax,
+        'ebx': ql.arch.regs.ebx,
+        'ecx': ql.arch.regs.ecx,
+        'edx': ql.arch.regs.edx,
+        'edi': ql.arch.regs.edi,
+        'esi': ql.arch.regs.esi,
+        'ebp': ql.arch.regs.ebp,
+        'esp': ql.arch.regs.esp
     }
 
     if not hasattr(dump_regs, 'regs'):

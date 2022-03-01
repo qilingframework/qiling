@@ -36,7 +36,7 @@ class QlPeripheralUtils:
 
                 retval = func(self, offset, size)
                 if self.verbose:
-                    self.ql.log.info(f'[{self.label.upper()}] [{hex(self.ql.reg.pc)}] [R] {self.field_description(offset, size):{width}s} = {hex(retval)}')
+                    self.ql.log.info(f'[{self.label.upper()}] [{hex(self.ql.arch.regs.arch_pc)}] [R] {self.field_description(offset, size):{width}s} = {hex(retval)}')
                 
                 return retval
 
@@ -49,7 +49,7 @@ class QlPeripheralUtils:
                     if field.startswith('DR') and value <= 255:
                         extra = f'({repr(chr(value))})'
 
-                    self.ql.log.info(f'[{self.label.upper()}] [{hex(self.ql.reg.pc)}] [W] {field:{width}s} = {hex(value)} {extra}')
+                    self.ql.log.info(f'[{self.label.upper()}] [{hex(self.ql.arch.regs.pc)}] [W] {field:{width}s} = {hex(value)} {extra}')
                 
                 return func(self, offset, size, value)
 

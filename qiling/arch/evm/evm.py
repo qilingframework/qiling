@@ -9,6 +9,9 @@ from .vm.evm import QlArchEVMEmulator
 
 
 class QlArchEVM(QlArch):
+    type = QL_ARCH.EVM
+    bits = 1
+
     def __init__(self, ql) -> None:
         super(QlArchEVM, self).__init__(ql)
         self.evm = QlArchEVMEmulator(self.ql)
@@ -28,5 +31,10 @@ class QlArchEVM(QlArch):
     def stack_write(self, offset, data):
         return None
 
-    def get_init_uc(self):
+    @property
+    def uc(self):
         return None
+
+    @property
+    def endian(self) -> QL_ENDIAN:
+        return QL_ENDIAN.EL

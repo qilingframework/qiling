@@ -146,7 +146,7 @@ def ql_qnx_msg_io_lseek(ql:Qiling, coid, smsg, sparts, rmsg, rparts, *args, **kw
     ql.log.debug(f'msg_io_lseek(coid = {coid} => fd = {fd}, offset = {offset}, whence = {lseek_whence[whence]})')
     # lseek file
     regreturn = ql_syscall_lseek(ql, fd, offset, whence)
-    ql.mem.write(rmsg, ql.pack64(regreturn))
+    ql.mem.write_ptr(rmsg, regreturn, 8)
     return 0
 
 # lib/c/1/fstat.c

@@ -9,7 +9,7 @@ from unicorn import UcError
 
 sys.path.append("..")
 from qiling import Qiling
-from qiling.const import QL_VERBOSE
+from qiling.const import QL_STOP, QL_VERBOSE
 from qiling.os.const import POINTER, DWORD, STRING, HANDLE
 from qiling.os.windows import utils
 from qiling.os.windows.wdk_const import *
@@ -23,7 +23,7 @@ if platform.system() == "Darwin" and platform.machine() == "arm64":
 class PETest(unittest.TestCase):
 
     def hook_third_stop_address(self, ql):
-        print(" >>>> Third Stop address: 0x%08x" % ql.reg.arch_pc)
+        print(" >>>> Third Stop address: 0x%08x" % ql.arch.regs.arch_pc)
         self.third_stop = True
         ql.emu_stop()
 
@@ -87,7 +87,7 @@ class PETest(unittest.TestCase):
 
             return ret
 
-        def _WriteFile(ql, address, params):
+        def _WriteFile(ql: Qiling, address: int, params):
             ret = 1
             hFile = params["hFile"]
             lpBuffer = params["lpBuffer"]
@@ -98,19 +98,18 @@ class PETest(unittest.TestCase):
             if hFile == 0xfffffff5:
                 s = ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
                 ql.os.stdout.write(s)
-                ql.os.utils.string_appearance(s.decode())
-                ql.mem.write(lpNumberOfBytesWritten, ql.pack(nNumberOfBytesToWrite))
+                ql.os.stats.log_string(s.decode())
+                ql.mem.write_ptr(lpNumberOfBytesWritten, nNumberOfBytesToWrite)
             else:
                 f = ql.os.handle_manager.get(hFile)
                 if f is None:
                     # Invalid handle
                     ql.os.last_error = 0xffffffff
                     return 0
-                else:
-                    f = f.obj
+
                 buffer = ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
-                f.write(bytes(buffer))
-                ql.mem.write(lpNumberOfBytesWritten, ql.pack32(nNumberOfBytesToWrite))
+                f.obj.write(bytes(buffer))
+                ql.mem.write_ptr(lpNumberOfBytesWritten, nNumberOfBytesToWrite, 4)
             return ret
 
         @winsdkapi(cc=STDCALL, params={
@@ -130,7 +129,7 @@ class PETest(unittest.TestCase):
                 buffer = ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
                 try:
                     r, nNumberOfBytesToWrite = utils.io_Write(ql.amsint32_driver, buffer)
-                    ql.mem.write(lpNumberOfBytesWritten, ql.pack32(nNumberOfBytesToWrite))
+                    ql.mem.write_ptr(lpNumberOfBytesWritten, nNumberOfBytesToWrite, 4)
                 except Exception:
                     print("Error")
                     r = 1
@@ -177,29 +176,28 @@ class PETest(unittest.TestCase):
 
 
         def hook_first_stop_address(ql):
-            print(" >>>> First Stop address: 0x%08x" % ql.reg.arch_pc)
+            print(" >>>> First Stop address: 0x%08x" % ql.arch.regs.arch_pc)
             ql.first_stop = True    
             ql.emu_stop()
 
 
         def hook_second_stop_address(ql):
-            print(" >>>> Second Stop address: 0x%08x" % ql.reg.arch_pc)
+            print(" >>>> Second Stop address: 0x%08x" % ql.arch.regs.arch_pc)
             ql.second_stop = True
             ql.emu_stop()
 
 
         ql = Qiling(["../examples/rootfs/x86_windows/bin/sality.dll"], "../examples/rootfs/x86_windows", verbose=QL_VERBOSE.DEBUG)
-        ql.libcache = False
         ql.first_stop = False
         ql.second_stop = False
         self.third_stop = False
         # for this module 
         ql.amsint32_driver = None
         # emulate some Windows API
-        ql.set_api("CreateThread", hook_CreateThread)
-        ql.set_api("CreateFileA", hook_CreateFileA)
-        ql.set_api("WriteFile", hook_WriteFile)
-        ql.set_api("StartServiceA", hook_StartServiceA)
+        ql.os.set_api("CreateThread", hook_CreateThread)
+        ql.os.set_api("CreateFileA", hook_CreateFileA)
+        ql.os.set_api("WriteFile", hook_WriteFile)
+        ql.os.set_api("StartServiceA", hook_StartServiceA)
         #init sality
         ql.hook_address(hook_first_stop_address, 0x40EFFB)
         ql.run()
@@ -234,7 +232,7 @@ class PETest(unittest.TestCase):
 
     def test_pe_win_x8664_driver(self):
         # Compiled sample from https://github.com/microsoft/Windows-driver-samples/tree/master/general/ioctl/wdm/sys
-        ql = Qiling(["../examples/rootfs/x8664_windows/bin/sioctl.sys"], "../examples/rootfs/x8664_windows", libcache=True, stop_on_stackpointer=True)
+        ql = Qiling(["../examples/rootfs/x8664_windows/bin/sioctl.sys"], "../examples/rootfs/x8664_windows", stop=QL_STOP.STACK_POINTER, libcache=True)
 
         driver_object = ql.loader.driver_object
 
@@ -257,7 +255,7 @@ class PETest(unittest.TestCase):
         # And a DriverUnload
         self.assertNotEqual(driver_object.DriverUnload, 0)
 
-        ql.os.utils.clear_syscalls()
+        ql.os.stats.clear()
 
         IOCTL_SIOCTL_METHOD_OUT_DIRECT = (40000, 0x901, METHOD_OUT_DIRECT, FILE_ANY_ACCESS)
         output_buffer_size = 0x1000

@@ -5,15 +5,10 @@
 
 import platform, sys, unittest, os, threading, time
 
-from unicorn import UcError, UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
-
 sys.path.append("..")
-from qiling import *
+from qiling import Qiling
 from qiling.const import *
 from qiling.exception import *
-from qiling.os.posix import syscall
-from qiling.os.mapper import QlFsMappedObject
-from qiling.os.posix.stat import Fstat
 from qiling.os.filestruct import ql_file
 
 class ELFTest(unittest.TestCase):
@@ -39,13 +34,13 @@ class ELFTest(unittest.TestCase):
         with open('../examples/rootfs/x8664_linux/testfile', 'wb') as f:
             f.write(b'0123456789')
 
-        err = ql_file.open('output.txt', os.O_RDWR | os.O_CREAT, 0o777)
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_cloexec_test"],  
                     "../examples/rootfs/x8664_linux", 
-                    verbose=QL_VERBOSE.DEBUG,         
-                    stderr=err,
+                    verbose=QL_VERBOSE.DEBUG,
                     multithread=True)
 
+        err = ql_file.open('output.txt', os.O_RDWR | os.O_CREAT, 0o777)
+        ql.os.stderr = err
         ql.run()
         os.close(err.fileno())
         with open('output.txt', 'rb') as f:
@@ -65,7 +60,7 @@ class ELFTest(unittest.TestCase):
                 pass
         buf_out = None
         ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_multithreading"], "../examples/rootfs/x86_linux", multithread=True, verbose=QL_VERBOSE.DEBUG)
-        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
+        ql.os.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
         ql.run()
 
         self.assertTrue("thread 2 ret val is" in buf_out)
@@ -84,7 +79,7 @@ class ELFTest(unittest.TestCase):
                 pass
         buf_out = None
         ql = Qiling(["../examples/rootfs/arm64_linux/bin/arm64_multithreading"], "../examples/rootfs/arm64_linux", multithread=True, verbose=QL_VERBOSE.DEBUG)
-        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
+        ql.os.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
         ql.run()
 
         self.assertTrue("thread 2 ret val is" in buf_out)
@@ -103,7 +98,7 @@ class ELFTest(unittest.TestCase):
                 pass
         buf_out = None
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_multithreading"], "../examples/rootfs/x8664_linux", multithread=True, profile= "profiles/append_test.ql")
-        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
+        ql.os.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
         ql.run()
 
         self.assertTrue("thread 2 ret val is" in buf_out)
@@ -122,7 +117,7 @@ class ELFTest(unittest.TestCase):
                 pass
         buf_out = None
         ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_multithreading"], "../examples/rootfs/mips32el_linux", multithread=True, verbose=QL_VERBOSE.DEBUG)
-        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
+        ql.os.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
         ql.run()
 
         self.assertTrue("thread 2 ret val is" in buf_out)
@@ -141,7 +136,7 @@ class ELFTest(unittest.TestCase):
                 pass
         buf_out = None
         ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_multithreading"], "../examples/rootfs/arm_linux", multithread=True, verbose=QL_VERBOSE.DEBUG)
-        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
+        ql.os.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
         ql.run()
 
         self.assertTrue("thread 2 ret val is" in buf_out)
@@ -159,7 +154,7 @@ class ELFTest(unittest.TestCase):
             except:
                 pass
         ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_tcp_test","20001"], "../examples/rootfs/x86_linux", multithread=True)
-        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
+        ql.os.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
         ql.run()
 
         self.assertEqual("server send() 14 return 14.\n", ql.buf_out)
@@ -177,7 +172,7 @@ class ELFTest(unittest.TestCase):
             except:
                 pass
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_tcp_test","20002"], "../examples/rootfs/x8664_linux", multithread=True)
-        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
+        ql.os.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
         ql.run()
 
         self.assertEqual("server send() 14 return 14.\n", ql.buf_out)
@@ -195,7 +190,7 @@ class ELFTest(unittest.TestCase):
             except:
                 pass
         ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_tcp_test","20003"], "../examples/rootfs/arm_linux", multithread=True)
-        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
+        ql.os.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
         ql.run()
 
         self.assertEqual("server write() 14 return 14.\n", ql.buf_out)
@@ -213,7 +208,7 @@ class ELFTest(unittest.TestCase):
             except:
                 pass
         ql = Qiling(["../examples/rootfs/arm64_linux/bin/arm64_tcp_test","20004"], "../examples/rootfs/arm64_linux", multithread=True)
-        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
+        ql.os.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
         ql.run()
 
         self.assertEqual("server send() 14 return 14.\n", ql.buf_out)
@@ -238,7 +233,7 @@ class ELFTest(unittest.TestCase):
                 pass
 
         ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_udp_test","20007"], "../examples/rootfs/x86_linux", multithread=True)
-        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
+        ql.os.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
         ql.run()
 
         self.assertEqual("server sendto() 14 return 14.\n", ql.buf_out)
@@ -257,7 +252,7 @@ class ELFTest(unittest.TestCase):
                 pass
 
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_udp_test","20008"], "../examples/rootfs/x8664_linux", multithread=True)
-        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
+        ql.os.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
         ql.run()
 
         self.assertEqual("server sendto() 14 return 14.\n", ql.buf_out)
@@ -275,7 +270,7 @@ class ELFTest(unittest.TestCase):
                 pass
 
         ql = Qiling(["../examples/rootfs/arm64_linux/bin/arm64_udp_test","20009"], "../examples/rootfs/arm64_linux", multithread=True)
-        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
+        ql.os.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
         ql.run()
 
         self.assertEqual("server sendto() 14 return 14.\n", ql.buf_out)

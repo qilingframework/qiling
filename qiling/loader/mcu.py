@@ -104,7 +104,7 @@ class QlLoaderMCU(QlLoader):
 
         
         self.ql.arch.init_context()
-        self.entry_point = self.ql.reg.read('pc')
+        self.entry_point = self.ql.arch.regs.read('pc')
 
     def load_profile(self):
         self.ql.env.update(self.ql.profile)

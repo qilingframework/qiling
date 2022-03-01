@@ -30,9 +30,9 @@ if __name__ == "__main__":
     # Known issue: If the syscall func is not be implemented in qiling, qiling does
     # not know which func should be replaced.
     # In that case, you must specify syscall by its number.
-    ql.set_syscall(0x04, my_syscall_write)
+    ql.os.set_syscall(0x04, my_syscall_write)
 
     # set syscall by syscall name
-    #ql.set_syscall("write", my_syscall_write)
+    #ql.os.set_syscall("write", my_syscall_write)
 
     ql.run()

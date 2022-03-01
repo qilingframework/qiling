@@ -14,13 +14,10 @@ def instruction_count(ql: Qiling, address: int, size: int, user_data):
     user_data[0] += 1
 
 def get_count(flag):
-    mock_stdin = pipe.SimpleStringBuffer()
-    mock_stdout = pipe.SimpleStringBuffer()
+    ql = Qiling(["rootfs/x86_windows/bin/crackme.exe"], "rootfs/x86_windows", verbose=QL_VERBOSE.OFF)
 
-    ql = Qiling(["rootfs/x86_windows/bin/crackme.exe"], "rootfs/x86_windows",
-        verbose=QL_VERBOSE.OFF,
-        stdin=mock_stdin,
-        stdout=mock_stdout)
+    ql.os.stdin = pipe.SimpleStringBuffer()
+    ql.os.stdout = pipe.SimpleStringBuffer()
 
     ql.os.stdin.write(bytes("".join(flag) + "\n", 'utf-8'))
     count = [0]
