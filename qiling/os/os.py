@@ -69,10 +69,10 @@ class QlOs:
         }.get(self.ql.arch.bits, None)
 
         if self.ql.code:
-            self.code_ram_size = int(self.profile.get("CODE", "ram_size"), 16)
             # this shellcode entrypoint does not work for windows
             # windows shellcode entry point will comes from pe loader
-            self.entry_point = int(self.profile.get("CODE", "entry_point"), 16)
+            self.entry_point = self.profile.getint('CODE', 'entry_point')
+            self.code_ram_size = self.profile.getint('CODE', 'ram_size')
 
         # default fcall paramters resolving methods
         self.resolvers = {
