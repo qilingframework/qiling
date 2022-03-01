@@ -705,17 +705,17 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             self.uc.emu_stop()    
 
     # start emulation
-    def emu_start(self, begin: int, end: int, timeout: int = 0, icount: int = 0):
+    def emu_start(self, begin: int, end: int, timeout: int = 0, count: int = 0):
         """Start emulation.
 
         Args:
             begin   : emulation starting address
             end     : emulation ending address
             timeout : max emulation time (in microseconds); unlimited by default
-            icount  : max emulation steps (instructions count); unlimited by default
+            count  : max emulation steps (instructions count); unlimited by default
         """
 
-        self.uc.emu_start(begin, end, timeout, icount)
+        self.uc.emu_start(begin, end, timeout, count)
 
         if self._internal_exception is not None:
             raise self._internal_exception
