@@ -10,6 +10,8 @@ from unicorn import UcError
 sys.path.append("..")
 from qiling import Qiling
 from qiling.const import QL_INTERCEPT, QL_VERBOSE
+from qiling.os.const import STRING
+from qiling.os.linux.fncc import linux_kernel_api
 
 IS_FAST_TEST = 'QL_FAST_TEST' in os.environ
 
@@ -21,6 +23,9 @@ class ELF_KO_Test(unittest.TestCase):
 
         checklist = {}
 
+        @linux_kernel_api(params={
+            "format": STRING
+        })
         def my_printk(ql: Qiling, address: int, params):
             ql.log.info(f'oncall printk: params = {params}')
 
