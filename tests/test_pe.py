@@ -133,8 +133,11 @@ class PETest(unittest.TestCase):
             ql.run()
             del ql
             return True
-        
-        self.assertTrue(IS_FAST_TEST or QLWinSingleTest(_t).run())
+
+        if IS_FAST_TEST:
+            self.skipTest('QL_FAST_TEST')
+
+        self.assertTrue(QLWinSingleTest(_t).run())
 
 
     def test_pe_win_x86_gandcrab(self):
@@ -206,8 +209,11 @@ class PETest(unittest.TestCase):
 
             del ql
             return True
-        
-        self.assertTrue(IS_FAST_TEST or QLWinSingleTest(_t).run())
+
+        if IS_FAST_TEST:
+            self.skipTest('QL_FAST_TEST')
+
+        self.assertTrue(QLWinSingleTest(_t).run())
 
     def test_pe_win_x86_multithread(self):
         def _t():
@@ -333,8 +339,11 @@ class PETest(unittest.TestCase):
             ql.run()
             del ql
             return True
-        
-        self.assertTrue(IS_FAST_TEST or QLWinSingleTest(_t).run())
+
+        if IS_FAST_TEST:
+            self.skipTest('QL_FAST_TEST')
+
+        self.assertTrue(QLWinSingleTest(_t).run())
 
 
     def test_pe_win_x86_NtQueryInformationSystem(self):
@@ -354,15 +363,16 @@ class PETest(unittest.TestCase):
             ql = Qiling(["../examples/rootfs/x86_windows/bin/al-khaser.bin"], "../examples/rootfs/x86_windows")
 
             # The hooks are to remove the prints to file. It crashes. will debug why in the future
-            def results(ql):
-
-                if ql.arch.regs.ebx == 1:
-                    print("BAD")
-                else:
-                    print("GOOD ")
-                ql.arch.regs.eip = 0x402ee4
-
+            # def results(ql):
+            #
+            #     if ql.arch.regs.ebx == 1:
+            #         print("BAD")
+            #     else:
+            #         print("GOOD ")
+            #     ql.arch.regs.eip = 0x402ee4
+            #
             #ql.hook_address(results, 0x00402e66)
+
             # the program alloc 4 bytes and then tries to write 0x2cc bytes.
             # I have no idea of why this code should work without this patch
             ql.patch(0x00401984, b'\xb8\x04\x00\x00\x00')
@@ -377,7 +387,10 @@ class PETest(unittest.TestCase):
             del ql
             return True
 
-        self.assertTrue(IS_FAST_TEST or QLWinSingleTest(_t).run())
+        if IS_FAST_TEST:
+            self.skipTest('QL_FAST_TEST')
+
+        self.assertTrue(QLWinSingleTest(_t).run())
 
 
     def test_pe_win_x8664_customapi(self):
