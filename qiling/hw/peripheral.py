@@ -34,17 +34,17 @@ class QlPeripheralUtils:
     def hook_read(self, callback, user_data=None, flag=QL_INTERCEPT.ENTER):
         hook_function = (callback, user_data)
         self.user_read[flag].append(hook_function)
-        return (0, hook_function)
+        return (0, flag, hook_function)
 
     def hook_write(self, callback, user_data=None, flag=QL_INTERCEPT.ENTER):
         hook_function = (callback, user_data)
         self.user_write[flag].append(hook_function)
-        return (1, hook_function)
+        return (1, flag, hook_function)
 
-    def hook_del(self, pair):
-        hook_type, hook_function = pair
+    def hook_del(self, hook_struct):
+        hook_type, hook_flag, hook_function = hook_struct
         mapper = self.user_read if hook_type else self.user_write
-        mapper.remove(hook_function)
+        mapper[hook_flag].remove(hook_function)
 
     def _hook_call(self, hook_list, *args):
         retval = None
