@@ -7,6 +7,7 @@ import ctypes
 from typing import List, Tuple
 
 from qiling.core import Qiling
+from qiling.const import QL_INTERCEPT
 from qiling.exception import QlErrorBase
 from qiling.hw.utils.access import Access, Op
 
@@ -15,34 +16,66 @@ class QlPeripheralUtils:
     def __init__(self):
         self.verbose = False
         
-        self.hook_read_list = []
-        self.hook_write_list = []
+        self.user_read = {
+            QL_INTERCEPT.ENTER: [],
+            QL_INTERCEPT.CALL: [],           
+            QL_INTERCEPT.EXIT: [],
+        }
+
+        self.user_write = {
+            QL_INTERCEPT.ENTER: [],
+            QL_INTERCEPT.CALL: [],           
+            QL_INTERCEPT.EXIT: [],
+        }
 
     def watch(self):
         self.verbose = True
 
-    def hook_read(self, callback, *args, **kwargs):
-        self.hook_read_list.append((callback, args, kwargs))
+    def hook_read(self, callback, user_data=None, flag=QL_INTERCEPT.ENTER):
+        hook_function = (callback, user_data)
+        self.user_read[flag].append(hook_function)
+        return (0, hook_function)
 
-    def hook_write(self, callback, *args, **kwargs):
-        self.hook_write_list.append((callback, args, kwargs))
+    def hook_write(self, callback, user_data=None, flag=QL_INTERCEPT.ENTER):
+        hook_function = (callback, user_data)
+        self.user_write[flag].append(hook_function)
+        return (1, hook_function)
+
+    def hook_del(self, pair):
+        hook_type, hook_function = pair
+        mapper = self.user_read if hook_type else self.user_write
+        mapper.remove(hook_function)
+
+    def _hook_call(self, hook_list, *args):
+        retval = None
+        for callback, user_data in hook_list:
+            if user_data is None:
+                retval = callback(self, *args)
+            else:
+                retval = callback(self, *args, user_data)
+                
+        return retval
 
     @staticmethod
     def monitor(width=4):
         def decorator(func):
             def read(self, offset: int, size: int) -> int:
-                for callback, args, kwargs in self.hook_read_list:
-                    callback(self, offset, size, *args, **kwargs)
+                self._hook_call(self.user_read[QL_INTERCEPT.ENTER], offset, size)
 
-                retval = func(self, offset, size)
+                if self.user_read[QL_INTERCEPT.CALL]:
+                    retval = self._hook_call(self.user_read[QL_INTERCEPT.CALL], offset, size)
+                else:
+                    retval = func(self, offset, size)
+
                 if self.verbose:
                     self.ql.log.info(f'[{self.label.upper()}] [{hex(self.ql.arch.regs.arch_pc)}] [R] {self.field_description(offset, size):{width}s} = {hex(retval)}')
                 
+                self._hook_call(self.user_read[QL_INTERCEPT.EXIT], offset, size)
+
                 return retval
 
             def write(self, offset: int, size: int, value: int):
-                for callback, args, kwargs in self.hook_write_list:
-                    callback(self, offset, size, value, *args, **kwargs)
+                self._hook_call(self.user_write[QL_INTERCEPT.ENTER], offset, size, value)
 
                 if self.verbose:
                     field, extra = self.field_description(offset, size), ''
@@ -51,7 +84,12 @@ class QlPeripheralUtils:
 
                     self.ql.log.info(f'[{self.label.upper()}] [{hex(self.ql.arch.regs.pc)}] [W] {field:{width}s} = {hex(value)} {extra}')
                 
-                return func(self, offset, size, value)
+                if self.user_write[QL_INTERCEPT.CALL]:
+                    self._hook_call(self.user_write[QL_INTERCEPT.CALL], offset, size, value)
+                else:
+                    func(self, offset, size, value)
+
+                self._hook_call(self.user_write[QL_INTERCEPT.EXIT], offset, size, value)
 
             funcmap = {
                 'read' : read,
