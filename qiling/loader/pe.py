@@ -457,10 +457,10 @@ class QlLoaderPE(QlLoader, Process):
                 self.sys_dlls.append(b"ntoskrnl.exe")
             
 
-        if self.ql.archtype == QL_ARCH.X86:
+        if self.ql.arch.type == QL_ARCH.X86:
             WINOSARCH = "OS32"
             self.structure_last_addr = FS_SEGMENT_ADDR
-        elif self.ql.archtype == QL_ARCH.X8664:
+        elif self.ql.arch.type == QL_ARCH.X8664:
             WINOSARCH = "OS64"
             self.structure_last_addr = GS_SEGMENT_ADDR
 
