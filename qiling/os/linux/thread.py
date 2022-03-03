@@ -5,11 +5,12 @@
 
 import gevent, os
 
-from typing import Callable
+from typing import Callable, Sequence
 from abc import abstractmethod
 
 from unicorn.unicorn import UcError
 
+from qiling import Qiling
 from qiling.os.thread import *
 from qiling.arch.x86_const import *
 from qiling.exception import QlErrorExecutionStop
@@ -25,7 +26,7 @@ THREAD_STATUS_STOPPED    = 4
 THREAD_STATUS_SUSPEND    = 5
 
 class QlLinuxThread(QlThread):
-    def __init__(self, ql, start_address, exit_point, context = None, set_child_tid_addr = None, thread_id = None):
+    def __init__(self, ql: Qiling, start_address: int, exit_point: int, context = None, set_child_tid_addr = None, thread_id: int = None):
         super(QlLinuxThread, self).__init__(ql)
         if not thread_id:
             self.new_thread_id()
@@ -84,7 +85,7 @@ class QlLinuxThread(QlThread):
         self._robust_list_head_len = None
 
         if self._set_child_tid_address != None:
-            self.ql.mem.write(self._set_child_tid_address, ql.pack32(self.id))
+            self.ql.mem.write_ptr(self._set_child_tid_address, self.id, 4)
 
     @property
     def ql(self):
@@ -222,7 +223,7 @@ class QlLinuxThread(QlThread):
         #    In this context, we do:
         #        - Call gevent functions to switch threads.
         #        - Forward blocking syscalls to gevent.
-        self.ql.reg.arch_pc = self.start_address
+        self.ql.arch.regs.arch_pc = self.start_address
         if not self._saved_context:
             self.save()
         
@@ -235,11 +236,11 @@ class QlLinuxThread(QlThread):
             self.restore()
 
             # Sanity check
-            if self.ql.reg.arch_pc == self.exit_point:
+            if self.ql.arch.regs.arch_pc == self.exit_point:
                 self.ql.log.warning(f"Nothing to do but still get scheduled!")
 
             # Run and log the run event
-            start_address = self.ql.arch.get_pc() # For arm thumb.
+            start_address = getattr(self.ql.arch, 'effective_pc', self.ql.arch.regs.arch_pc) # For arm thumb.
             self.sched_cb = QlLinuxThread._default_sched_cb
             
             self.ql.log.debug(f"Scheduled from {hex(start_address)}.")
@@ -250,7 +251,7 @@ class QlLinuxThread(QlThread):
                 self.ql.os.emu_error()
                 self.ql.log.exception("")
                 raise e
-            self.ql.log.debug(f"Suspended at {hex(self.ql.reg.arch_pc)}")
+            self.ql.log.debug(f"Suspended at {hex(self.ql.arch.regs.arch_pc)}")
             self.save()
             
             # Note that this callback may be set by UC callbacks.
@@ -261,7 +262,7 @@ class QlLinuxThread(QlThread):
             self.ql.log.debug(f"Call sched_cb: {self.sched_cb}")
             self.sched_cb(self)
 
-            if self.status == THREAD_STATUS_TERMINATED or self.ql.reg.arch_pc == self.exit_point:
+            if self.status == THREAD_STATUS_TERMINATED or self.ql.arch.regs.arch_pc == self.exit_point:
                 break
 
         self._on_stop()
@@ -303,18 +304,18 @@ class QlLinuxThread(QlThread):
         return new_thread
 
     def save_context(self):
-        self.saved_context = self.ql.arch.context_save()
+        self.saved_context = self.ql.arch.save()
 
     def restore_context(self):
-        self.ql.arch.context_restore(self.saved_context)
+        self.ql.arch.restore(self.saved_context)
 
     def set_start_address(self, addr):
         # We can't modify UcContext directly.
-        old_context = self.ql.arch.context_save()
+        old_context = self.ql.arch.save()
         self.restore_context()
-        self.ql.reg.arch_pc = addr
+        self.ql.arch.regs.arch_pc = addr
         self.save_context()
-        self.ql.arch.context_restore(old_context)
+        self.ql.arch.restore(old_context)
 
     def set_clear_child_tid_addr(self, addr):
         self.clear_child_tid_address = addr
@@ -332,7 +333,7 @@ class QlLinuxThread(QlThread):
 
         if self.clear_child_tid_address is not None:
             self.ql.log.debug(f"Perform CLONE_CHILD_CLEARTID at {hex(self.clear_child_tid_address)}")
-            self.ql.mem.write(self.clear_child_tid_address, self.ql.pack32(0))
+            self.ql.mem.write_ptr(self.clear_child_tid_address, 0, 4)
             wakes = self.ql.os.futexm.get_futex_wake_list(self.ql, self.clear_child_tid_address, 1)
             self.clear_child_tid_address = None
             # When the thread is to stop, we don't have chance for next sched_cb, so
@@ -368,12 +369,18 @@ class QlLinuxX86Thread(QlLinuxThread):
     """docstring for X86Thread"""
     def __init__(self, ql, start_address, exit_point, context = None, set_child_tid_addr = None, thread_id = None):
         super(QlLinuxX86Thread, self).__init__(ql, start_address, exit_point, context, set_child_tid_addr, thread_id)
-        self.tls = bytes(b'\x00' * (8 * 3))
+        self.tls = [b'\x00' * 8] * 3
+
+    def __read_tls(self) -> Sequence[bytes]:
+        return [self.ql.os.gdtm.get_entry(i) for i in (12, 13, 14)]
+
+    def __write_tls(self, tls: Sequence[bytes]) -> None:
+        for i, entry in zip((12, 13, 14), tls):
+            self.ql.os.gdtm.set_entry(i, entry)
 
     def set_thread_tls(self, tls_addr):
-        old_tls = bytes(self.ql.os.gdtm.get_gdt_buf(12, 14 + 1))
-
-        self.ql.os.gdtm.set_gdt_buf(12, 14 + 1, self.tls)
+        old_tls = self.__read_tls()
+        self.__write_tls(self.tls)
 
         u_info = self.ql.mem.read(tls_addr, 4 * 4)
         index = self.ql.unpack32s(u_info[0 : 4])
@@ -383,25 +390,30 @@ class QlLinuxX86Thread(QlLinuxThread):
         if index == -1:
             index = self.ql.os.gdtm.get_free_idx(12)
 
-        if index == -1 or index < 12 or index > 14:
-            raise
-        else:
-            self.ql.os.gdtm.register_gdt_segment(index, base, limit, QL_X86_A_PRESENT | QL_X86_A_DATA | QL_X86_A_DATA_WRITABLE | QL_X86_A_PRIV_3 | QL_X86_A_DIR_CON_BIT, QL_X86_S_GDT | QL_X86_S_PRIV_3)
-            self.ql.mem.write(tls_addr, self.ql.pack32(index))
+        if index in (12, 13, 14):
+            access = QL_X86_A_PRESENT | QL_X86_A_DATA | QL_X86_A_DATA_WRITABLE | QL_X86_A_PRIV_3 | QL_X86_A_DIR_CON_BIT
 
-        self.tls = bytes(self.ql.os.gdtm.get_gdt_buf(12, 14 + 1))
-        self.ql.os.gdtm.set_gdt_buf(12, 14 + 1, old_tls)
-        self.ql.log.debug(f"Set tls to index={hex(index)} base={hex(base)} limit={hex(limit)} fs={hex(self.ql.reg.fs)} gs={hex(self.ql.reg.gs)} gdt_buf={self.tls}")
+            self.ql.os.gdtm.register_gdt_segment(index, base, limit, access)
+            self.ql.mem.write_ptr(tls_addr, index, 4)
+        else:
+            raise
+
+        self.tls = self.__read_tls()
+        self.__write_tls(old_tls)
+
+        self.ql.log.debug(f'Set TLS to index={index:d} base={base:#x} limit={limit:#x} fs={self.ql.arch.regs.fs:#06x} gs={self.ql.arch.regs.gs:#06x}')
 
     def save(self):
         self.save_context()
-        self.tls = bytes(self.ql.os.gdtm.get_gdt_buf(12, 14 + 1))
-        self.ql.log.debug(f"Saved context. fs={hex(self.ql.reg.fs)} gs={hex(self.ql.reg.gs)} gdt_buf={self.tls}")
+        self.tls = self.__read_tls()
+
+        self.ql.log.debug(f'Context saved (fs={self.ql.arch.regs.fs:#06x} gs={self.ql.arch.regs.gs:#06x} gdt_buf=[{" ".join(ent.hex() for ent in self.tls)}])')
 
     def restore(self):
         self.restore_context()
-        self.ql.os.gdtm.set_gdt_buf(12, 14 + 1, self.tls)
-        self.ql.log.debug(f"Restored context. fs={hex(self.ql.reg.fs)} gs={hex(self.ql.reg.gs)} gdt_buf={self.tls}")
+        self.__write_tls(self.tls)
+
+        self.ql.log.debug(f'Context restored (fs={self.ql.arch.regs.fs:#06x} gs={self.ql.arch.regs.gs:#06x} gdt_buf=[{" ".join(ent.hex() for ent in self.tls)}])')
 
     def clone(self):
         new_thread = super(QlLinuxX86Thread, self).clone()
@@ -416,7 +428,7 @@ class QlLinuxX8664Thread(QlLinuxThread):
 
     def set_thread_tls(self, tls_addr):
         self.tls = tls_addr
-        self.ql.reg.msr(FSMSR, self.tls)
+        self.ql.arch.msr.write(IA32_FS_BASE_MSR, self.tls)
         self.ql.log.debug(f"Set fsbase to {hex(tls_addr)} for {str(self)}")
 
     # Some notes:
@@ -424,13 +436,13 @@ class QlLinuxX8664Thread(QlLinuxThread):
     #     - https://stackoverflow.com/questions/11497563/detail-about-msr-gs-base-in-linux-x86-64
     def save(self):
         self.save_context()
-        self.tls = self.ql.reg.msr(FSMSR)
-        self.ql.log.debug(f"Saved context: fs={hex(self.ql.reg.fsbase)} tls={hex(self.tls)}")
+        self.tls = self.ql.arch.msr.read(IA32_FS_BASE_MSR)
+        self.ql.log.debug(f"Saved context: fs={hex(self.ql.arch.regs.fsbase)} tls={hex(self.tls)}")
 
     def restore(self):
         self.restore_context()
         self.set_thread_tls(self.tls)
-        self.ql.log.debug(f"Restored context: fs={hex(self.ql.reg.fsbase)} tls={hex(self.tls)}")
+        self.ql.log.debug(f"Restored context: fs={hex(self.ql.arch.regs.fsbase)} tls={hex(self.tls)}")
     
     def clone(self):
         new_thread = super(QlLinuxX8664Thread, self).clone()
@@ -447,19 +459,19 @@ class QlLinuxMIPS32Thread(QlLinuxThread):
     def set_thread_tls(self, tls_addr):
         self.tls = tls_addr
         CONFIG3_ULR = (1 << 13)
-        self.ql.reg.cp0_config3 = CONFIG3_ULR
-        self.ql.reg.cp0_userlocal = self.tls
-        self.ql.log.debug(f"Set cp0 to {hex(self.ql.reg.cp0_userlocal)}")
+        self.ql.arch.regs.cp0_config3 = CONFIG3_ULR
+        self.ql.arch.regs.cp0_userlocal = self.tls
+        self.ql.log.debug(f"Set cp0 to {hex(self.ql.arch.regs.cp0_userlocal)}")
 
     def save(self):
         self.save_context()
-        self.tls = self.ql.reg.cp0_userlocal
-        self.ql.log.debug(f"Saved context. cp0={hex(self.ql.reg.cp0_userlocal)}") 
+        self.tls = self.ql.arch.regs.cp0_userlocal
+        self.ql.log.debug(f"Saved context. cp0={hex(self.ql.arch.regs.cp0_userlocal)}") 
 
     def restore(self):
         self.restore_context()
         self.set_thread_tls(self.tls)
-        self.ql.log.debug(f"Restored context. cp0={hex(self.ql.reg.cp0_userlocal)}")
+        self.ql.log.debug(f"Restored context. cp0={hex(self.ql.arch.regs.cp0_userlocal)}")
 
     def clone(self):
         new_thread = super(QlLinuxMIPS32Thread, self).clone()
@@ -475,19 +487,19 @@ class QlLinuxARMThread(QlLinuxThread):
 
     def set_thread_tls(self, tls_addr):
         self.tls = tls_addr
-        self.ql.reg.c13_c0_3 = self.tls
-        self.ql.log.debug(f"Set c13_c0_3 to {hex(self.ql.reg.c13_c0_3)}")
+        self.ql.arch.regs.c13_c0_3 = self.tls
+        self.ql.log.debug(f"Set c13_c0_3 to {hex(self.ql.arch.regs.c13_c0_3)}")
 
     def save(self):
         self.save_context()
-        self.tls = self.ql.reg.c13_c0_3
-        self.ql.log.debug(f"Saved context. c13_c0_3={hex(self.ql.reg.c13_c0_3)}")
+        self.tls = self.ql.arch.regs.c13_c0_3
+        self.ql.log.debug(f"Saved context. c13_c0_3={hex(self.ql.arch.regs.c13_c0_3)}")
 
 
     def restore(self):
         self.restore_context()
         self.set_thread_tls(self.tls)
-        self.ql.log.debug(f"Restored context. c13_c0_3={hex(self.ql.reg.c13_c0_3)}")
+        self.ql.log.debug(f"Restored context. c13_c0_3={hex(self.ql.arch.regs.c13_c0_3)}")
     
     def clone(self):
         new_thread = super(QlLinuxARMThread, self).clone()
@@ -503,18 +515,18 @@ class QlLinuxARM64Thread(QlLinuxThread):
 
     def set_thread_tls(self, tls_addr):
         self.tls = tls_addr
-        self.ql.reg.tpidr_el0 = self.tls
-        self.ql.log.debug(f"Set tpidr_el0 to {hex(self.ql.reg.tpidr_el0)}")
+        self.ql.arch.regs.tpidr_el0 = self.tls
+        self.ql.log.debug(f"Set tpidr_el0 to {hex(self.ql.arch.regs.tpidr_el0)}")
 
     def save(self):
         self.save_context()
-        self.tls = self.ql.reg.tpidr_el0
-        self.ql.log.debug(f"Saved context. tpidr_el0={hex(self.ql.reg.tpidr_el0)}")
+        self.tls = self.ql.arch.regs.tpidr_el0
+        self.ql.log.debug(f"Saved context. tpidr_el0={hex(self.ql.arch.regs.tpidr_el0)}")
 
     def restore(self):
         self.restore_context()
         self.set_thread_tls(self.tls)
-        self.ql.log.debug(f"Restored context. tpidr_el0={hex(self.ql.reg.tpidr_el0)}")
+        self.ql.log.debug(f"Restored context. tpidr_el0={hex(self.ql.arch.regs.tpidr_el0)}")
     
     def clone(self):
         new_thread = super(QlLinuxARM64Thread, self).clone()
@@ -565,14 +577,14 @@ class QlLinuxThreadManagement:
     def _prepare_lib_patch(self):
         if self.ql.loader.elf_entry != self.ql.loader.entry_point:
             entry_address = self.ql.loader.elf_entry
-            if self.ql.archtype == QL_ARCH.ARM and entry_address & 1 == 1:
+            if self.ql.arch.type == QL_ARCH.ARM and entry_address & 1 == 1:
                 entry_address -= 1
             self.main_thread = self.ql.os.thread_class.spawn(self.ql, self.ql.loader.entry_point, entry_address)
             self.cur_thread = self.main_thread
             self._clear_queued_msg()
             gevent.joinall([self.main_thread], raise_error=True)
-            if self.ql.reg.arch_pc != entry_address:
-                self.ql.log.error(f"{self.cur_thread} Expect {hex(self.ql.loader.elf_entry)} but get {hex(self.ql.reg.arch_pc)} when running loader.")
+            if self.ql.arch.regs.arch_pc != entry_address:
+                self.ql.log.error(f"{self.cur_thread} Expect {hex(self.ql.loader.elf_entry)} but get {hex(self.ql.arch.regs.arch_pc)} when running loader.")
                 raise QlErrorExecutionStop('Dynamic library .init() failed!')
             self.ql.enable_lib_patch()
             self.ql.os.run_function_after_load()

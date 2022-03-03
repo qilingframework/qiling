@@ -82,14 +82,14 @@ def IOConnectCallMethod(ql, selector,
     ql.log.debug("Initialized IOExternalMethodArguments object")
     ql.os.savedrip=0xffffff8000a106ba
     ql.run(begin=ql.loader.user_alloc)
-    ql.os.user_object = ql.reg.rax
+    ql.os.user_object = ql.arch.regs.rax
     ql.log.debug("Created user object at 0x%x" % ql.os.user_object)
 
-    ql.reg.rdi = ql.os.user_object
-    ql.reg.rsi = 0x1337 # owningTask
-    ql.reg.rdx = 0 # securityID
-    ql.reg.rcx = 0 # type
-    ql.reg.r8 = 0 # properties
+    ql.arch.regs.rdi = ql.os.user_object
+    ql.arch.regs.rsi = 0x1337 # owningTask
+    ql.arch.regs.rdx = 0 # securityID
+    ql.arch.regs.rcx = 0 # type
+    ql.arch.regs.r8 = 0 # properties
     ql.stack_push(0)
     ql.os.savedrip=0xffffff8000a10728
     ql.run(begin=ql.loader.user_initWithTask)
@@ -97,12 +97,12 @@ def IOConnectCallMethod(ql, selector,
 
     # TODO: Add some extra methods with correct order
 
-    ql.reg.rdi = ql.os.user_object
-    ql.reg.rsi = selector
-    ql.reg.rdx = args_addr
-    ql.reg.rcx = dispatch_addr
-    ql.reg.r8 = ql.os.kext_object
-    ql.reg.r9 = 0
+    ql.arch.regs.rdi = ql.os.user_object
+    ql.arch.regs.rsi = selector
+    ql.arch.regs.rdx = args_addr
+    ql.arch.regs.rcx = dispatch_addr
+    ql.arch.regs.r8 = ql.os.kext_object
+    ql.arch.regs.r9 = 0
     ql.os.savedrip=0xffffff8000a6e9c7
     ql.run(begin=ql.loader.user_externalMethod)
 
@@ -188,5 +188,5 @@ def page_align_end(addr, page_size):
 
 
 def set_eflags_cf(ql, target_cf):
-    ql.reg.ef = ( ql.reg.ef & 0xfffffffe ) | target_cf
-    return ql.reg.ef
+    ql.arch.regs.ef = ( ql.arch.regs.ef & 0xfffffffe ) | target_cf
+    return ql.arch.regs.ef

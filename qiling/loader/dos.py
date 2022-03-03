@@ -87,16 +87,16 @@ class QlLoaderDOS(QlLoader):
                 self.ql.os.fs_mapper.add_fs_mapping(0x80, QlDisk(path, 0x80))
 
             # 0x80 -> first drive
-            self.ql.reg.dx = 0x80
+            self.ql.arch.regs.dx = 0x80
         else:
             raise NotImplementedError()
 
-        self.ql.reg.cs = cs
-        self.ql.reg.ds = cs
-        self.ql.reg.es = cs
-        self.ql.reg.ss = ss
-        self.ql.reg.ip = ip
-        self.ql.reg.sp = sp
+        self.ql.arch.regs.cs = cs
+        self.ql.arch.regs.ds = cs
+        self.ql.arch.regs.es = cs
+        self.ql.arch.regs.ss = ss
+        self.ql.arch.regs.ip = ip
+        self.ql.arch.regs.sp = sp
 
         self.stack_address = (ss << 4) + sp
         self.start_address = (cs << 4) + ip

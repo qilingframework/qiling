@@ -65,15 +65,15 @@ def syscall_mmap_impl(ql: Qiling, addr: int, mlen: int, prot: int, flags: int, f
         2 : 'mmap2'
     }[ver]
 
-    if ql.archbit == 64:
+    if ql.arch.bits == 64:
         fd = ql.unpack64(ql.pack64(fd))
 
-    elif ql.archtype == QL_ARCH.MIPS:
+    elif ql.arch.type == QL_ARCH.MIPS:
         MAP_ANONYMOUS = 2048
         if ver == 2:
             pgoffset = pgoffset * pagesize
 
-    elif ql.archtype == QL_ARCH.ARM and ql.ostype== QL_OS.QNX:
+    elif ql.arch.type == QL_ARCH.ARM and ql.ostype == QL_OS.QNX:
         MAP_ANONYMOUS = 0x00080000
         fd = ql.unpack32s(ql.pack32s(fd))
 
@@ -123,21 +123,24 @@ def syscall_mmap_impl(ql: Qiling, addr: int, mlen: int, prot: int, flags: int, f
     except Exception as e:
         raise QlMemoryMappedError("Error: trying to zero memory")
 
-    if ((flags & MAP_ANONYMOUS) == 0) and 0 <= fd < NR_OPEN and ql.os.fd[fd] != 0:
-        ql.os.fd[fd].seek(pgoffset)
-        data = ql.os.fd[fd].read(mlen)
-        mem_info = str(ql.os.fd[fd].name)
-        ql.os.fd[fd]._is_map_shared = flags & MAP_SHARED
-        ql.os.fd[fd]._mapped_offset = pgoffset
-        ql.log.debug("mem write : " + hex(len(data)))
-        ql.log.debug("mem mmap  : " + mem_info)
+    if ((flags & MAP_ANONYMOUS) == 0) and fd in range(NR_OPEN):
+        f = ql.os.fd[fd]
 
-        ql.mem.change_mapinfo(mmap_base, mmap_base + mmap_size, mem_info=("[%s] " % api_name) + mem_info)
-        try:
-            ql.mem.write(mmap_base, data)
-        except Exception as e:
-            ql.log.debug(e)
-            raise QlMemoryMappedError("Error: trying to write memory: ")
+        if f is not None:
+            f.seek(pgoffset)
+            data = f.read(mlen)
+            mem_info = str(f.name)
+            f._is_map_shared = flags & MAP_SHARED
+            f._mapped_offset = pgoffset
+            ql.log.debug("mem write : " + hex(len(data)))
+            ql.log.debug("mem mmap  : " + mem_info)
+
+            ql.mem.change_mapinfo(mmap_base, mmap_base + mmap_size, mem_info=("[%s] " % api_name) + mem_info)
+            try:
+                ql.mem.write(mmap_base, data)
+            except Exception as e:
+                ql.log.debug(e)
+                raise QlMemoryMappedError("Error: trying to write memory: ")
 
     return mmap_base
 

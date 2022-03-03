@@ -28,7 +28,7 @@ def my_puts_onexit(ql: Qiling):
 
 if __name__ == "__main__":
     ql = Qiling(["rootfs/arm_qnx/bin/hello_static"], "rootfs/arm_qnx")
-    ql.set_api('puts', my_puts_onenter, QL_INTERCEPT.ENTER)
-    ql.set_api('printf', my_printf_onenter, QL_INTERCEPT.ENTER)
-    ql.set_api('puts', my_puts_onexit, QL_INTERCEPT.EXIT)
+    ql.os.set_api('puts', my_puts_onenter, QL_INTERCEPT.ENTER)
+    ql.os.set_api('printf', my_printf_onenter, QL_INTERCEPT.ENTER)
+    ql.os.set_api('puts', my_puts_onexit, QL_INTERCEPT.EXIT)
     ql.run()

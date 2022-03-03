@@ -8,29 +8,29 @@ from unicorn.x86_const import (
 	UC_X86_REG_R9,	UC_X86_REG_R10
 )
 
-from qiling import Qiling
-from . import QlCommonBaseCC
+from qiling.arch.arch import QlArch
+from qiling.cc import QlCommonBaseCC
 
 class QlIntelBaseCC(QlCommonBaseCC):
 	"""Calling convention base class for Intel-based systems.
 	Supports arguments passing over registers and stack.
 	"""
 
-	def __init__(self, ql: Qiling):
+	def __init__(self, arch: QlArch):
 		retreg = {
 			16: UC_X86_REG_AX,
 			32: UC_X86_REG_EAX,
 			64: UC_X86_REG_RAX
-		}[ql.archbit]
+		}[arch.bits]
 
-		super().__init__(ql, retreg)
+		super().__init__(arch, retreg)
 
 	def setReturnAddress(self, addr: int) -> None:
-		self.ql.arch.stack_push(addr)
+		self.arch.stack_push(addr)
 
 	def unwind(self, nslots: int) -> int:
 		# no cleanup; just pop out the return address
-		return self.ql.arch.stack_pop()
+		return self.arch.stack_pop()
 
 class QlIntel64(QlIntelBaseCC):
 	"""Calling convention base class for Intel-based 64-bit systems.
@@ -107,6 +107,6 @@ class stdcall(QlIntel32):
 	def unwind(self, nslots: int) -> int:
 		retaddr = super().unwind(nslots)
 
-		self.ql.reg.arch_sp += (nslots * self._asize)
+		self.arch.regs.arch_sp += (nslots * self._asize)
 
 		return retaddr

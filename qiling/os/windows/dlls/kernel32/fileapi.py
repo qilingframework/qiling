@@ -171,12 +171,12 @@ def hook_ReadFile(ql: Qiling, address: int, params):
             read_len = nNumberOfBytesToRead
 
         ql.mem.write(lpBuffer, s)
-        ql.mem.write(lpNumberOfBytesRead, ql.pack32(read_len))
+        ql.mem.write_ptr(lpNumberOfBytesRead, read_len, 4)
     else:
         f = ql.os.handle_manager.get(hFile).obj
         data = f.read(nNumberOfBytesToRead)
         ql.mem.write(lpBuffer, data)
-        ql.mem.write(lpNumberOfBytesRead, ql.pack32(len(data)))
+        ql.mem.write_ptr(lpNumberOfBytesRead, len(data), 4)
 
     return 1
 
@@ -203,8 +203,8 @@ def hook_WriteFile(ql: Qiling, address: int, params):
     if hFile == STD_OUTPUT_HANDLE:
         s = ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
         ql.os.stdout.write(s)
-        ql.os.utils.string_appearance(s.decode())
-        ql.mem.write(lpNumberOfBytesWritten, ql.pack32(nNumberOfBytesToWrite))
+        ql.os.stats.log_string(s.decode())
+        ql.mem.write_ptr(lpNumberOfBytesWritten, nNumberOfBytesToWrite, 4)
     else:
         f = ql.os.handle_manager.get(hFile)
 
@@ -217,7 +217,7 @@ def hook_WriteFile(ql: Qiling, address: int, params):
 
         buffer = ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
         nNumberOfBytesWritten = f.write(bytes(buffer))
-        ql.mem.write(lpNumberOfBytesWritten, ql.pack32(nNumberOfBytesWritten))
+        ql.mem.write_ptr(lpNumberOfBytesWritten, nNumberOfBytesWritten, 4)
 
     return 1
 
@@ -402,7 +402,7 @@ def hook_GetVolumeInformationW(ql: Qiling, address: int, params):
 
     lpMaximumComponentLength = params["lpMaximumComponentLength"]
     if lpMaximumComponentLength != 0:
-        ql.mem.write(lpMaximumComponentLength, ql.pack16(255))
+        ql.mem.write_ptr(lpMaximumComponentLength, 255, 2)
 
     pt_serial_number = params["lpVolumeSerialNumber"]
     if pt_serial_number != 0:
@@ -415,7 +415,7 @@ def hook_GetVolumeInformationW(ql: Qiling, address: int, params):
 
     if pt_flag != 0:
         # TODO implement
-        ql.mem.write(pt_flag, ql.pack32(0x00020000))
+        ql.mem.write_ptr(pt_flag, 0x00020000, 4)
 
     if pt_system_type != 0:
         system_type = (ql.os.profile["VOLUME"]["type"] + "\x00").encode("utf-16le")

@@ -11,7 +11,6 @@ from qiling.const import QL_ARCH
 from qiling.exception import *
 from qiling.os.const import *
 from qiling.os.windows.const import *
-from qiling.os.windows.utils import *
 from qiling.os.windows.handle import *
 from qiling.os.windows import structs
 
@@ -63,7 +62,7 @@ def _QueryInformationProcess(ql: Qiling, address: int, params):
 
         addr = ql.os.heap.alloc(pbi.size)
         pbi.write(addr)
-        value = addr.to_bytes(ql.pointersize, "little")
+        value = addr.to_bytes(ql.arch.pointersize, "little")
     else:
         ql.log.debug(str(flag))
         raise QlErrorNotImplemented("API not implemented")
@@ -125,7 +124,7 @@ def _QuerySystemInformation(ql: Qiling, address: int, params):
         max_uaddr = {
             QL_ARCH.X86  : 0x7FFEFFFF,
             QL_ARCH.X8664: 0x7FFFFFFEFFFF
-        }[ql.archtype]
+        }[ql.arch.type]
 
         sbi = structs.SystemBasicInforation(
             ql,
@@ -314,13 +313,13 @@ def _SetInformationProcess(ql: Qiling, address: int, params):
             pebBaseAddress=ql.os.heap_base_address, affinityMask=0,
             basePriority=0,
             uniqueId=ql.os.profile.getint("KERNEL", "pid"),
-            parentPid=ql.os.profile.geting("KERNEL", "parent_pid")
+            parentPid=ql.os.profile.getint("KERNEL", "parent_pid")
         )
 
         ql.log.debug("The target may be attempting to modify the PEB debug flag")
         addr = ql.os.heap.alloc(pbi.size)
         pbi.write(addr)
-        value = addr.to_bytes(ql.pointersize, "little")
+        value = addr.to_bytes(ql.arch.pointersize, "little")
     else:
         ql.log.debug(str(flag))
         raise QlErrorNotImplemented("API not implemented")
@@ -367,7 +366,7 @@ def hook_LdrGetProcedureAddress(ql: Qiling, address: int, params):
 
     if identifier in ql.loader.import_address_table[dll_name]:
         addr = ql.loader.import_address_table[dll_name][identifier]
-        ql.mem.write(addr.to_bytes(length=ql.pointersize, byteorder='little'), FunctionAddress)
+        ql.mem.write(addr.to_bytes(length=ql.arch.pointersize, byteorder='little'), FunctionAddress)
         return 0
 
     return 0xFFFFFFFF

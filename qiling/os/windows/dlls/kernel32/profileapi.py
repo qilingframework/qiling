@@ -25,6 +25,6 @@ def hook_QueryPerformanceCounter(ql: Qiling, address: int, params):
 def hook_QueryPerformanceFrequency(ql: Qiling, address: int, params):
     lpFrequency = params['lpFrequency']
 
-    ql.mem.write(lpFrequency, ql.pack64(10000000))
+    ql.mem.write_ptr(lpFrequency, 10000000, 8)
 
     return 1

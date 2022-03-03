@@ -35,10 +35,10 @@ class QlMemoryManager:
             16 : (1 << 20) - 1   # 20bit address line
         }
 
-        if ql.archbit not in bit_stuff:
+        if ql.arch.bits not in bit_stuff:
             raise QlErrorStructConversion("Unsupported Qiling archtecture for memory manager")
 
-        max_addr = bit_stuff[ql.archbit]
+        max_addr = bit_stuff[ql.arch.bits]
 
         self.max_addr = max_addr
         self.max_mem_addr = max_addr
@@ -288,6 +288,7 @@ class QlMemoryManager:
 
     def read_ptr(self, addr: int, size: int=None) -> int:
         """Read an integer value from a memory address.
+        Bytes read will be unpacked using emulated architecture properties.
 
         Args:
             addr: memory address to read
@@ -297,7 +298,7 @@ class QlMemoryManager:
         """
 
         if not size:
-            size = self.ql.pointersize
+            size = self.ql.arch.pointersize
 
         __unpack = {
             1 : self.ql.unpack8,
@@ -306,10 +307,10 @@ class QlMemoryManager:
             8 : self.ql.unpack64
         }.get(size)
 
-        if __unpack:
-            return __unpack(self.read(addr, size))
+        if __unpack is None:
+            raise QlErrorStructConversion(f"Unsupported pointer size: {size}")
 
-        raise QlErrorStructConversion(f"Unsupported pointer size: {size}")
+        return __unpack(self.read(addr, size))
 
     def write(self, addr: int, data: bytes) -> None:
         """Write bytes to a memory.
@@ -320,6 +321,31 @@ class QlMemoryManager:
         """
 
         self.ql.uc.mem_write(addr, data)
+
+    def write_ptr(self, addr: int, value: int, size: int=None) -> None:
+        """Write an integer value to a memory address.
+        Bytes written will be packed using emulated architecture properties.
+
+        Args:
+            addr: target memory address
+            value: integer value to write
+            size: pointer size (in bytes): either 1, 2, 4, 8, or None for arch native size
+        """
+
+        if not size:
+            size = self.ql.arch.pointersize
+
+        __pack = {
+            1 : self.ql.pack8,
+            2 : self.ql.pack16,
+            4 : self.ql.pack32,
+            8 : self.ql.pack64
+        }.get(size)
+
+        if __pack is None:
+            raise QlErrorStructConversion(f"Unsupported pointer size: {size}")
+
+        self.write(addr, __pack(value))
 
     def search(self, needle: bytes, begin: int = None, end: int = None) -> Sequence[int]:
         """Search for a sequence of bytes in memory.
