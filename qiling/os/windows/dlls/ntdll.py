@@ -11,7 +11,6 @@ from qiling.const import QL_ARCH
 from qiling.exception import *
 from qiling.os.const import *
 from qiling.os.windows.const import *
-from qiling.os.windows.utils import *
 from qiling.os.windows.handle import *
 from qiling.os.windows import structs
 
@@ -314,7 +313,7 @@ def _SetInformationProcess(ql: Qiling, address: int, params):
             pebBaseAddress=ql.os.heap_base_address, affinityMask=0,
             basePriority=0,
             uniqueId=ql.os.profile.getint("KERNEL", "pid"),
-            parentPid=ql.os.profile.geting("KERNEL", "parent_pid")
+            parentPid=ql.os.profile.getint("KERNEL", "parent_pid")
         )
 
         ql.log.debug("The target may be attempting to modify the PEB debug flag")

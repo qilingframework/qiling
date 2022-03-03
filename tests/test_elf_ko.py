@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import sys, unittest
+import os, sys, unittest
 
 from unicorn import UcError
 
@@ -13,74 +13,69 @@ from qiling.const import QL_INTERCEPT, QL_VERBOSE
 from qiling.os.const import STRING
 from qiling.os.linux.fncc import linux_kernel_api
 
+IS_FAST_TEST = 'QL_FAST_TEST' in os.environ
+
 class ELF_KO_Test(unittest.TestCase):
 
     def test_demigod_m0hamed_x86(self):
+        if IS_FAST_TEST:
+            self.skipTest('QL_FAST_TEST')
+
+        checklist = {}
+
         @linux_kernel_api(params={
             "format": STRING
         })
-        def my_printk(ql, address, params):
-            print("\n")
-            print("=" * 40)
-            print(" Enter into my_printk mode")
-            print("=" * 40)
-            print("\n")
-            self.set_api_myprintk = params["format"]
+        def my_printk(ql: Qiling, address: int, params):
+            ql.log.info(f'oncall printk: params = {params}')
+
+            checklist['oncall'] = params['format']
+
             return 0
 
-        ql = Qiling(["../examples/rootfs/x86_linux/kernel/m0hamed_rootkit.ko"],  "../examples/rootfs/x86_linux", verbose=QL_VERBOSE.DISASM)
+        ql = Qiling(["../examples/rootfs/x86_linux/kernel/m0hamed_rootkit.ko"],  "../examples/rootfs/x86_linux", verbose=QL_VERBOSE.DEBUG)
+        ql.os.set_api("printk", my_printk)
+
+        ba = ql.loader.load_address
+
         try:
-            procfile_read_func_begin = ql.loader.load_address + 0x11e0
-            procfile_read_func_end = ql.loader.load_address + 0x11fa
-            ql.os.set_api("printk", my_printk)
-            ql.run(begin=procfile_read_func_begin, end=procfile_read_func_end)
+            ql.run(ba + 0x11e0, ba + 0x11fa)
         except UcError as e:
-            print(e)
-            sys.exit(-1)
-        self.assertEqual("DONT YOU EVER TRY TO READ THIS FILE OR I AM GOING TO DESTROY YOUR MOST SECRET DREAMS", self.set_api_myprintk)            
-        del ql
+            self.fail(e)
+        else:
+            self.assertEqual("DONT YOU EVER TRY TO READ THIS FILE OR I AM GOING TO DESTROY YOUR MOST SECRET DREAMS", checklist['oncall'])
 
     def test_demigod_hello_x8664(self):
-        def my_onenter(ql, address, params):
-            print("\n")
-            print("=" * 40)
-            print(" Enter into my_onenter mode")
-            print("params: %s" % params)
-            print("=" * 40)
-            print("\n")
-            self.set_api_onenter = params["format"]
-            return address, params
+        checklist = {}
 
-        ql = Qiling(["../examples/rootfs/x8664_linux/kernel/hello.ko"],  "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DISASM)
-        try:
-            procfile_read_func_begin = ql.loader.load_address + 0x1064
-            procfile_read_func_end = ql.loader.load_address + 0x107e
-            ql.os.set_api("printk", my_onenter, QL_INTERCEPT.ENTER)
-            ql.run(begin=procfile_read_func_begin, end=procfile_read_func_end)
-        except UcError as e:
-            print(e)
-            sys.exit(-1)
-        self.assertEqual("\x016Hello, World: %p!\n", self.set_api_onenter)            
-        del ql
+        def my_onenter(ql: Qiling, address: int, params):
+            ql.log.info(f'onenter printk: params = {params}')
+
+            checklist['onenter'] = params['format']
+
+        ql = Qiling(["../examples/rootfs/x8664_linux/kernel/hello.ko"],  "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG)
+        ql.os.set_api("printk", my_onenter, QL_INTERCEPT.ENTER)
+
+        ba = ql.loader.load_address
+        ql.run(ba + 0x1064, ba + 0x107e)
+
+        self.assertEqual("\x016Hello, World: %p!\n", checklist['onenter'])
 
     def test_demigod_hello_mips32(self):
-        def my_onexit(ql, address, params, retval):
-            print("\n")
-            print("=" * 40)
-            print(" Enter into my_exit mode")
-            print("params: %s" % params)
-            print("=" * 40)
-            print("\n")
-            self.set_api_onexit = params["format"]
+        checklist = {}
+
+        def my_onexit(ql: Qiling, address: int, params, retval: int):
+            ql.log.info(f'onexit printk: params = {params}')
+
+            checklist['onexit'] = params['format']
 
         ql = Qiling(["../examples/rootfs/mips32_linux/kernel/hello.ko"],  "../examples/rootfs/mips32_linux", verbose=QL_VERBOSE.DEBUG)
-        begin = ql.loader.load_address + 0x1060
-        end = ql.loader.load_address + 0x1084
         ql.os.set_api("printk", my_onexit, QL_INTERCEPT.EXIT)
-        ql.run(begin=begin, end=end)
 
-        self.assertEqual("\x016Hello, World!\n", self.set_api_onexit)
-        del ql
+        ba = ql.loader.load_address
+        ql.run(ba + 0x1060, ba + 0x1084)
+
+        self.assertEqual("\x016Hello, World!\n", checklist['onexit'])
 
 if __name__ == "__main__":
     unittest.main()

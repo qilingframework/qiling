@@ -8,6 +8,7 @@ This module is intended for general purpose functions that can be used
 thoughout the qiling framework
 """
 
+from functools import partial
 import importlib, os, copy, re, pefile, logging, yaml
 
 from configparser import ConfigParser
@@ -478,14 +479,14 @@ def arch_setup(archtype: QL_ARCH, endian: QL_ENDIAN, thumb: bool, ql):
 
 
 # This function is extracted from os_setup (QlOsPosix) so I put it here.
-def ql_syscall_mapping_function(ostype: QL_OS):
+def ql_syscall_mapping_function(ostype: QL_OS, archtype: QL_ARCH):
     qlos_name = ostype_convert_str(ostype)
     qlos_path = f'qiling.os.{qlos_name.lower()}.map_syscall'
-    qlos_func = 'map_syscall'
+    qlos_func = 'get_syscall_mapper'
 
     func = ql_get_module_function(qlos_path, qlos_func)
 
-    return func
+    return func(archtype)
 
 
 def os_setup(ostype: QL_OS, ql):
@@ -517,7 +518,10 @@ def profile_setup(ql, ostype: QL_OS, filename: Optional[str]):
         if filename:
             profiles.append(filename)
 
-        config = ConfigParser()
+        # patch 'getint' to convert integers of all bases
+        int_converter = partial(int, base=0)
+
+        config = ConfigParser(converters={'int': int_converter})
         config.read(profiles)
 
     return config
