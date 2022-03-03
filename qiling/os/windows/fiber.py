@@ -32,21 +32,21 @@ class FiberManager:
                 self.ql.log.debug(f'Skipping emulation of callback function {fiber.cb:#x} for fiber {fiber.idx:#x}')
 
                 """
-                ret_addr = self.ql.reg.read(UC_X86_REG_RIP + 6 ) #FIXME, use capstone to get addr of next instr?
+                ret_addr = self.ql.arch.regs.read(UC_X86_REG_RIP + 6 ) #FIXME, use capstone to get addr of next instr?
 
                 # Write Fls data to memory to be accessed by cb
-                addr = self.ql.os.heap.alloc(self.ql.pointersize)
-                data = fiber.data.to_bytes(self.ql.pointersize, byteorder='little')
+                addr = self.ql.os.heap.alloc(self.ql.arch.pointersize)
+                data = fiber.data.to_bytes(self.ql.arch.pointersize, byteorder='little')
                 self.ql.mem.write(addr, data)
 
                 # set up params and return address then jump to callback
-                if self.ql.pointersize == 8:
-                    self.ql.reg.write(UC_X86_REG_RCX, addr)
+                if self.ql.arch.pointersize == 8:
+                    self.ql.arch.regs.write(UC_X86_REG_RCX, addr)
                 else:
                     self.ql.stack_push(ret_addr)
                 self.ql.stack_push(ret_addr)
                 self.ql.log.debug("Jumping to callback @ 0x%X" % fiber.cb)
-                self.ql.reg.write(UC_X86_REG_RIP, fiber.cb)
+                self.ql.arch.regs.write(UC_X86_REG_RIP, fiber.cb)
                 # All of this gets overwritten by the rest of the code in fncc.py
                 # Not sure how to actually make unicorn emulate the callback function due to that
                 """

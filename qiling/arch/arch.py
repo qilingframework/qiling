@@ -3,8 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from abc import ABC
-from typing import Optional
+from abc import abstractmethod
 
 from unicorn import Uc
 from unicorn.unicorn import UcContext
@@ -12,21 +11,37 @@ from capstone import Cs
 from keystone import Ks
 
 from qiling import Qiling
+from qiling.const import QL_ARCH, QL_ENDIAN
+from .register import QlRegisterManager
 from .utils import QlArchUtils
 
-class QlArch(ABC):
+class QlArch:
+    type: QL_ARCH
+    bits: int
+
     def __init__(self, ql: Qiling):
         self.ql = ql
         self.utils = QlArchUtils(ql)
 
-        self._disasm: Optional[Cs] = None
-        self._asm: Optional[Ks] = None
-
-    # ql.init_Uc - initialized unicorn engine
     @property
-    def init_uc(self) -> Uc:
-        return self.get_init_uc()
+    @abstractmethod
+    def uc(self) -> Uc:
+        """Get unicorn instance bound to arch.
+        """
 
+        pass
+
+    @property
+    @abstractmethod
+    def regs(self) -> QlRegisterManager:
+        """Architectural registers.
+        """
+
+        pass
+
+    @property
+    def pointersize(self) -> int:
+        return self.bits // 8
 
     def stack_push(self, value: int) -> int:
         """Push a value onto the architectural stack.
@@ -37,10 +52,10 @@ class QlArch(ABC):
         Returns: the top of stack after pushing the value
         """
 
-        self.ql.reg.arch_sp -= self.ql.pointersize
-        self.ql.mem.write(self.ql.reg.arch_sp, self.ql.pack(value))
+        self.regs.arch_sp -= self.pointersize
+        self.ql.mem.write_ptr(self.regs.arch_sp, value)
 
-        return self.ql.reg.arch_sp
+        return self.regs.arch_sp
 
 
     def stack_pop(self) -> int:
@@ -49,8 +64,8 @@ class QlArch(ABC):
         Returns: the value at the top of stack
         """
 
-        data = self.ql.unpack(self.ql.mem.read(self.ql.reg.arch_sp, self.ql.pointersize))
-        self.ql.reg.arch_sp += self.ql.pointersize
+        data = self.ql.mem.read_ptr(self.regs.arch_sp)
+        self.regs.arch_sp += self.pointersize
 
         return data
 
@@ -64,12 +79,12 @@ class QlArch(ABC):
         Args:
             offset: offset in bytes from the top of the stack, not necessarily aligned to the
                     native stack item size. the offset may be either positive or netagive, where
-                    a 0 value means overwriting the value at the top of the stack
+                    a 0 value means retrieving the value at the top of the stack
 
         Returns: the value at the specified address
         """
 
-        return self.ql.unpack(self.ql.mem.read(self.ql.reg.arch_sp + offset, self.ql.pointersize))
+        return self.ql.mem.read_ptr(self.regs.arch_sp + offset)
 
 
     def stack_write(self, offset: int, value: int) -> None:
@@ -84,48 +99,40 @@ class QlArch(ABC):
                     a 0 value means overwriting the value at the top of the stack
         """
 
-        self.ql.mem.write(self.ql.reg.arch_sp + offset, self.ql.pack(value))
-
-
-    # set PC
-    def set_pc(self, address: int) -> None:
-        self.ql.reg.arch_pc = address
-
-
-    # get PC
-    def get_pc(self) -> int:
-        return self.ql.reg.arch_pc
-
-
-    # set stack pointer
-    def set_sp(self, address: int) -> None:
-        self.ql.reg.arch_sp = address
-
-
-    # get stack pointer
-    def get_sp(self) -> int:
-        return self.ql.reg.arch_sp 
+        self.ql.mem.write_ptr(self.regs.arch_sp + offset, value)
 
 
     # Unicorn's CPU state save
-    def context_save(self) -> UcContext:
-        return self.ql.uc.context_save()
+    def save(self) -> UcContext:
+        return self.uc.context_save()
 
 
     # Unicorn's CPU state restore method
-    def context_restore(self, saved_context: UcContext):
-        self.ql.uc.context_restore(saved_context)
+    def restore(self, saved_context: UcContext):
+        self.uc.context_restore(saved_context)
 
 
-    def create_disassembler(self) -> Cs:
-        """Get disassembler insatnce bound to arch.
+    @property
+    @abstractmethod
+    def disassembler(self) -> Cs:
+        """Get disassembler instance bound to arch.
         """
 
-        raise NotImplementedError(self.__class__.__name__)
+        pass
 
 
-    def create_assembler(self) -> Ks:
-        """Get assembler insatnce bound to arch.
+    @property
+    @abstractmethod
+    def assembler(self) -> Ks:
+        """Get assembler instance bound to arch.
         """
 
-        raise NotImplementedError(self.__class__.__name__)
+        pass
+
+    @property
+    @abstractmethod
+    def endian(self) -> QL_ENDIAN:
+        """Get processor endianess.
+        """
+
+        pass

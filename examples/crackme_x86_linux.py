@@ -16,14 +16,11 @@ ROOTFS = r"rootfs/x86_linux"
 
 class Solver:
     def __init__(self, invalid: bytes):
-        mock_stdin = pipe.SimpleInStream(sys.stdin.fileno())
-        mock_stdout = pipe.NullOutStream(sys.stdout.fileno())
-
         # create a silent qiling instance
-        self.ql = Qiling([rf"{ROOTFS}/bin/crackme_linux"], ROOTFS,
-            verbose=QL_VERBOSE.OFF, # thwart qiling logger output
-            stdin=mock_stdin,       # take over the input to the program using a fake stdin
-            stdout=mock_stdout)     # disregard program output
+        self.ql = Qiling([rf"{ROOTFS}/bin/crackme_linux"], ROOTFS, verbose=QL_VERBOSE.OFF)
+
+        self.ql.os.stdin = pipe.SimpleInStream(sys.stdin.fileno())  # take over the input to the program using a fake stdin
+        self.ql.os.stdout = pipe.NullOutStream(sys.stdout.fileno()) # disregard program output
 
         # execute program until it reaches the 'main' function
         self.ql.run(end=0x0804851b)
@@ -32,7 +29,7 @@ class Solver:
         #
         # since the emulation halted upon entering 'main', its return address is there on
         # the stack. we use it to limit the emulation till function returns
-        self.replay_starts = self.ql.reg.arch_pc
+        self.replay_starts = self.ql.arch.regs.arch_pc
         self.replay_ends = self.ql.stack_read(0)
 
         # instead of restarting the whole program every time a new flag character is guessed,

@@ -3,9 +3,12 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from typing import Callable, Optional, Mapping
-import math
+from __future__ import annotations
+from typing import Callable, Optional, Mapping, Tuple
 
+from capstone import CsInsn
+
+from qiling import Qiling
 from qiling.const import QL_ARCH
 
 from .context import Context

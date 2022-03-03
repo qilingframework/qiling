@@ -4,11 +4,12 @@
 #
 
 from ctypes import sizeof
+
 from unicorn import UcError
+from unicorn.x86_const import UC_X86_INS_SYSCALL
 
 from qiling import Qiling
-from qiling.arch.x86 import GDTManager, ql_x86_register_cs, ql_x86_register_ds_ss_es
-from qiling.arch.x86_const import UC_X86_INS_SYSCALL
+from qiling.arch.x86_utils import GDTManager, SegmentManager64
 from qiling.cc import intel
 from qiling.const import QL_ARCH, QL_VERBOSE
 from qiling.os.fcall import QlFunctionCall
@@ -23,7 +24,7 @@ class QlOsMacos(QlOsPosix):
         super(QlOsMacos, self).__init__(ql)
 
         self.ql = ql
-        self.fcall = QlFunctionCall(ql, intel.macosx64(ql))
+        self.fcall = QlFunctionCall(ql, intel.macosx64(ql.arch))
 
         self.ql.counter = 0
         self.ev_manager = QlMacOSEvManager(self.ql)
@@ -54,59 +55,59 @@ class QlOsMacos(QlOsPosix):
             self.ql.stack_push(0)
             self.savedrip=0xffffff8000a163bd
             self.ql.run(begin=self.ql.loader.kext_alloc)
-            self.kext_object = self.ql.reg.rax
+            self.kext_object = self.ql.arch.regs.rax
             self.ql.log.debug("Created kext object at 0x%x" % self.kext_object)
 
-            self.ql.reg.rdi = self.kext_object
-            self.ql.reg.rsi = 0 # NULL option
+            self.ql.arch.regs.rdi = self.kext_object
+            self.ql.arch.regs.rsi = 0 # NULL option
             self.savedrip=0xffffff8000a16020
             self.ql.run(begin=self.ql.loader.kext_init)
-            if self.ql.reg.rax == 0:
+            if self.ql.arch.regs.rax == 0:
                 self.ql.log.debug("Failed to initialize kext object")
                 return
             self.ql.log.debug("Initialized kext object")
 
-            self.ql.reg.rdi = self.kext_object
+            self.ql.arch.regs.rdi = self.kext_object
             # FIXME Determine provider for kext
-            self.ql.reg.rsi = 0 # ?
+            self.ql.arch.regs.rsi = 0 # ?
             self.savedrip=0xffffff8000a16102
             self.ql.run(begin=self.ql.loader.kext_attach)
-            if self.ql.reg.rax == 0:
+            if self.ql.arch.regs.rax == 0:
                 self.ql.log.debug("Failed to attach kext object")
                 return
             self.ql.log.debug("Attached kext object 1st time")
 
-            self.ql.reg.rdi = self.kext_object
-            self.ql.reg.rdi = 0
+            self.ql.arch.regs.rdi = self.kext_object
+            self.ql.arch.regs.rdi = 0
             # FIXME Determine provider for kext
-            self.ql.reg.rsi = 0 # ?
+            self.ql.arch.regs.rsi = 0 # ?
             tmp = self.heap.alloc(8)
-            self.ql.reg.rdx = tmp
+            self.ql.arch.regs.rdx = tmp
             self.savedrip=0xffffff8000a16184
             self.ql.run(begin=self.ql.loader.kext_probe)
             self.heap.free(tmp)
             self.ql.log.debug("Probed kext object")
 
-            self.ql.reg.rdi = self.kext_object
+            self.ql.arch.regs.rdi = self.kext_object
             # FIXME Determine provider for kext
-            self.ql.reg.rsi = 0 # ?
+            self.ql.arch.regs.rsi = 0 # ?
             self.savedrip=0xffffff8000a16198
             self.ql.run(begin=self.ql.loader.kext_detach)
             self.ql.log.debug("Detached kext object")
 
-            self.ql.reg.rdi = self.kext_object
+            self.ql.arch.regs.rdi = self.kext_object
             # FIXME Determine provider for kext
-            self.ql.reg.rsi = 0 # ?
+            self.ql.arch.regs.rsi = 0 # ?
             self.savedrip=0xffffff8000a168a3
             self.ql.run(begin=self.ql.loader.kext_attach)
-            if self.ql.reg.rax == 0:
+            if self.ql.arch.regs.rax == 0:
                 self.ql.log.debug("Failed to attach kext object")
                 return
             self.ql.log.debug("Attached kext object 2nd time")
 
-            self.ql.reg.rdi = self.kext_object
+            self.ql.arch.regs.rdi = self.kext_object
             # FIXME Determine provider for kext
-            self.ql.reg.rsi = 0 # ?
+            self.ql.arch.regs.rsi = 0 # ?
             self.savedrip=0xffffff8000a168ed
             self.ql.run(begin=self.ql.loader.kext_start)
         else:
@@ -131,8 +132,8 @@ class QlOsMacos(QlOsPosix):
             kmod_info.updateToMem()
             self.ql.log.debug("Initialized kmod_info")
 
-            self.ql.reg.rdi = kmod_info_addr
-            self.ql.reg.rsi = 0
+            self.ql.arch.regs.rdi = kmod_info_addr
+            self.ql.arch.regs.rsi = 0
             self.savedrip=0xffffff80009c2c16
             self.ql.run(begin=self.ql.loader.kext_start)
 
@@ -141,16 +142,19 @@ class QlOsMacos(QlOsPosix):
         if self.ql.code:
             return
 
-        if self.ql.archtype== QL_ARCH.ARM64:
+        if self.ql.arch.type == QL_ARCH.ARM64:
             self.ql.arch.enable_vfp()
             self.ql.hook_intno(self.hook_syscall, 2)
             self.ql.hook_intno(self.hook_sigtrap, 7)
 
-        elif self.ql.archtype== QL_ARCH.X8664:
+        elif self.ql.arch.type == QL_ARCH.X8664:
+            gdtm = GDTManager(self.ql)
+
+            # setup gdt and segments selectors
+            segm = SegmentManager64(self.ql.arch, gdtm)
+            segm.setup_cs_ds_ss_es(0, 4 << 30)
+
             self.ql.hook_insn(self.hook_syscall, UC_X86_INS_SYSCALL)
-            self.gdtm = GDTManager(self.ql)
-            ql_x86_register_cs(self)
-            ql_x86_register_ds_ss_es(self)
 
     
     def hook_syscall(self, intno= None, int = None):
@@ -179,7 +183,7 @@ class QlOsMacos(QlOsPosix):
             """
             self.ql.stack_push(self.savedrip)
             def callback_ret(ql):
-                ql.reg.arch_pc = 0
+                ql.arch.regs.arch_pc = 0
                 
             if self.savedrip not in self.hook_ret:
                 tmp = self.ql.hook_address(callback_ret, self.savedrip)

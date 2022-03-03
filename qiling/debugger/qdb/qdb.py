@@ -77,7 +77,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         self.cur_addr = self.ql.loader.entry_point
 
-        if self.ql.archtype == QL_ARCH.CORTEX_M:
+        if self.ql.arch.type == QL_ARCH.CORTEX_M:
             self._run()
 
         else:
@@ -95,7 +95,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         getter for current address of qiling instance
         """
 
-        return self.ql.reg.arch_pc
+        return self.ql.arch.regs.arch_pc
 
     @cur_addr.setter
     def cur_addr(self, address: int) -> None:
@@ -103,7 +103,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         setter for current address of qiling instance
         """
 
-        self.ql.reg.arch_pc = address
+        self.ql.arch.regs.arch_pc = address
 
     def _run(self, address: int = 0, end: int = 0, count: int = 0) -> None:
         """
@@ -113,7 +113,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         if not address:
             address = self.cur_addr
 
-        if self.ql.archtype == QL_ARCH.CORTEX_M and self.ql.count != 0:
+        if self.ql.arch.type == QL_ARCH.CORTEX_M and self.ql.count != 0:
 
             while self.ql.count:
 
@@ -130,7 +130,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
             return
 
-        if self.ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB, QL_ARCH.CORTEX_M) and self.ql.reg.cpsr & 0x00000020:
+        if self.ql.arch.type in (QL_ARCH.ARM, QL_ARCH.CORTEX_M) and self.ql.arch.is_thumb:
             address |= 1
 
         self.ql.emu_start(begin=address, end=end, count=count)

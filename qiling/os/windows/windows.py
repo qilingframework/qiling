@@ -9,7 +9,8 @@ from typing import Callable
 from unicorn import UcError
 
 from qiling import Qiling
-from qiling.arch.x86 import GDTManager, ql_x86_register_cs, ql_x86_register_ds_ss_es, ql_x86_register_fs, ql_x86_register_gs, ql_x8664_set_gs
+from qiling.arch.x86_const import GS_SEGMENT_ADDR, GS_SEGMENT_SIZE, FS_SEGMENT_ADDR, FS_SEGMENT_SIZE
+from qiling.arch.x86_utils import GDTManager, SegmentManager86, SegmentManager64
 from qiling.cc import intel
 from qiling.const import QL_ARCH, QL_INTERCEPT
 from qiling.exception import QlErrorSyscallError, QlErrorSyscallNotFound
@@ -44,9 +45,9 @@ class QlOsWindows(QlOs):
             """
 
             __fcall_objs = {
-                fncc.STDCALL: QlFunctionCall(ql, intel.stdcall(ql)),
-                fncc.CDECL  : QlFunctionCall(ql, intel.cdecl(ql)),
-                fncc.MS64   : QlFunctionCall(ql, intel.ms64(ql))
+                fncc.STDCALL: QlFunctionCall(ql, intel.stdcall(ql.arch)),
+                fncc.CDECL  : QlFunctionCall(ql, intel.cdecl(ql.arch)),
+                fncc.MS64   : QlFunctionCall(ql, intel.ms64(ql.arch))
             }
 
             __selector = {
@@ -56,7 +57,7 @@ class QlOsWindows(QlOs):
 
             return __selector[atype]
 
-        self.fcall_select = __make_fcall_selector(ql.archtype)
+        self.fcall_select = __make_fcall_selector(ql.arch.type)
         self.fcall = None
 
         self.PE_RUN = True
@@ -67,7 +68,6 @@ class QlOsWindows(QlOs):
         self.argv = self.ql.argv
         self.env = self.ql.env
         self.pid = self.profile.getint("KERNEL","pid")
-        self.ql.hook_mem_unmapped(utils.ql_x86_windows_hook_mem_error)
         self.automatize_input = self.profile.getboolean("MISC","automatize_input")
         self.username = self.profile["USER"]["username"]
         self.windir = self.profile["PATH"]["systemdrive"] + self.profile["PATH"]["windir"]
@@ -83,15 +83,24 @@ class QlOsWindows(QlOs):
 
 
     def setupGDT(self):
-        # setup gdt
-        if self.ql.archtype == QL_ARCH.X86:
-            self.gdtm = GDTManager(self.ql)
-            ql_x86_register_cs(self)
-            ql_x86_register_ds_ss_es(self)
-            ql_x86_register_fs(self)
-            ql_x86_register_gs(self)
-        elif self.ql.archtype == QL_ARCH.X8664:
-            ql_x8664_set_gs(self.ql)
+        gdtm = GDTManager(self.ql)
+
+        segm_class = {
+            32 : SegmentManager86,
+            64 : SegmentManager64
+        }[self.ql.arch.bits]
+
+        # setup gdt and segments selectors
+        segm = segm_class(self.ql.arch, gdtm)
+        segm.setup_cs_ds_ss_es(0, 4 << 30)
+        segm.setup_fs(FS_SEGMENT_ADDR, FS_SEGMENT_SIZE)
+        segm.setup_gs(GS_SEGMENT_ADDR, GS_SEGMENT_SIZE)
+
+        if not self.ql.mem.is_mapped(FS_SEGMENT_ADDR, FS_SEGMENT_SIZE):
+            self.ql.mem.map(FS_SEGMENT_ADDR, FS_SEGMENT_SIZE, info='[FS]')
+
+        if not self.ql.mem.is_mapped(GS_SEGMENT_ADDR, GS_SEGMENT_SIZE):
+            self.ql.mem.map(GS_SEGMENT_ADDR, GS_SEGMENT_SIZE, info='[GS]')
 
 
     def setupComponents(self):
@@ -147,7 +156,7 @@ class QlOsWindows(QlOs):
 
     def post_report(self):
         self.ql.log.debug("Syscalls called:")
-        for key, values in self.utils.syscalls.items():
+        for key, values in self.stats.syscalls.items():
             self.ql.log.debug(f'{key}:')
 
             for value in values:
@@ -161,7 +170,7 @@ class QlOsWindows(QlOs):
                 self.ql.log.debug(f'  {json.dumps(value):s}')
 
         self.ql.log.debug("Strings:")
-        for key, values in self.utils.appeared_strings.items():
+        for key, values in self.stats.appeared_strings.items():
             self.ql.log.debug(f'{key}: {" ".join(str(word) for word in values)}')
 
 

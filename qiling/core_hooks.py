@@ -67,7 +67,7 @@ class QlCoreHooks:
             hooks_list = self._insn_hook[hook_type]
 
             for hook in hooks_list:
-                if hook.bound_check(ql.reg.arch_pc):
+                if hook.bound_check(ql.arch.regs.arch_pc):
                     ret = hook.call(ql, *args[:-1])
 
                     if type(ret) is tuple:
@@ -87,7 +87,7 @@ class QlCoreHooks:
             hooks_list = self._hook[hook_type]
 
             for hook in hooks_list:
-                if hook.bound_check(ql.reg.arch_pc):
+                if hook.bound_check(ql.arch.regs.arch_pc):
                     ret = hook.call(ql, addr, size)
 
                     if type(ret) is int and ret & QL_HOOK_BLOCK:

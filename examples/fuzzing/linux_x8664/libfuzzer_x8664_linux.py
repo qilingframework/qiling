@@ -10,11 +10,7 @@ import sys, os, ctypes
 class SimpleFuzzer:
 
     def run(self):
-        ql = Qiling(["./x8664_fuzz"], "../../rootfs/x8664_linux",
-            console=False, # No output
-            stdin=None,
-            stdout=None,
-            stderr=None)
+        ql = Qiling(["./x8664_fuzz"], "../../rootfs/x8664_linux", console=False)
         ba = ql.loader.images[0].base
         try:
             # Only instrument the function `fun`, so we don't need to instrument libc and ld

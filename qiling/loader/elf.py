@@ -68,15 +68,20 @@ class QlLoaderELF(QlLoader):
     def run(self):
         if self.ql.code:
             self.ql.mem.map(self.ql.os.entry_point, self.ql.os.code_ram_size, info="[shellcode_stack]")
-            self.ql.os.entry_point = (self.ql.os.entry_point + 0x200000 - 0x1000)
-            self.ql.mem.write(self.ql.os.entry_point, self.ql.code)
-            self.ql.reg.arch_sp = self.ql.os.entry_point
+
+            shellcode_base = self.ql.os.entry_point + 0x200000 - 0x1000
+            self.ql.mem.write(shellcode_base, self.ql.code)
+
+            self.ql.arch.regs.arch_sp = shellcode_base
+            self.ql.os.entry_point = shellcode_base
+            self.load_address = shellcode_base
+
             return
 
         section = {
             32 : 'OS32',
             64 : 'OS64'
-        }[self.ql.archbit]
+        }[self.ql.arch.bits]
 
         self.profile = self.ql.os.profile[section]
 
@@ -115,13 +120,13 @@ class QlLoaderELF(QlLoader):
 
         self.is_driver = (elftype == 'ET_REL')
 
-        self.ql.reg.arch_sp = self.stack_address
+        self.ql.arch.regs.arch_sp = self.stack_address
 
         # No idea why.
         if self.ql.ostype == QL_OS.FREEBSD:
-            # self.ql.reg.rbp = self.stack_address + 0x40
-            self.ql.reg.rdi = self.stack_address
-            self.ql.reg.r14 = self.stack_address
+            # self.ql.arch.regs.rbp = self.stack_address + 0x40
+            self.ql.arch.regs.rdi = self.stack_address
+            self.ql.arch.regs.r14 = self.stack_address
 
     @staticmethod
     def seg_perm_to_uc_prot(perm: int) -> int:
@@ -216,7 +221,7 @@ class QlLoaderELF(QlLoader):
                     #
                     # this workaround unifies such "overlapping" segments, which may apply more permissive
                     # protection flags to that memory region.
-                    if self.ql.archtype == QL_ARCH.ARM64:
+                    if self.ql.arch.type == QL_ARCH.ARM64:
                         load_regions[-1] = (prev_lbound, ubound, prev_perms | perms)
                         continue
 
@@ -309,7 +314,7 @@ class QlLoaderELF(QlLoader):
             """
 
             data = (s if isinstance(s, bytes) else s.encode("utf-8")) + b'\x00'
-            top = QlLoaderELF.align(top - len(data), self.ql.pointersize)
+            top = QlLoaderELF.align(top - len(data), self.ql.arch.pointersize)
             self.ql.mem.write(top, data)
 
             return top
@@ -343,12 +348,12 @@ class QlLoaderELF(QlLoader):
         elf_phnum = elffile['e_phnum']
         elf_entry = load_address + elffile['e_entry']
 
-        if self.ql.archbit == 64:
+        if self.ql.arch.bits == 64:
             elf_hwcap = 0x078bfbfd
-        elif self.ql.archbit == 32:
+        elif self.ql.arch.bits == 32:
             elf_hwcap = 0x1fb8d7
 
-            if self.ql.archendian == QL_ENDIAN.EB:
+            if self.ql.arch.endian == QL_ENDIAN.EB:
                 # FIXME: considering this is a 32 bits value, it is not a big-endian version of the
                 # value above like it is meant to be, since the one above has an implied leading zero
                 # byte (i.e. 0x001fb8d7) which the EB value didn't take into account
@@ -393,7 +398,7 @@ class QlLoaderELF(QlLoader):
         self.stack_address = new_stack
         self.load_address = load_address
         self.images.append(Image(load_address, load_address + mem_end, self.path))
-        self.init_sp = self.ql.reg.arch_sp
+        self.init_sp = self.ql.arch.regs.arch_sp
 
         self.ql.os.entry_point = self.entry_point = entry_point
         self.ql.os.elf_mem_start = mem_start
@@ -404,7 +409,7 @@ class QlLoaderELF(QlLoader):
         self.skip_exit_check = (self.elf_entry != self.entry_point)
 
         # map vsyscall section for some specific needs
-        if self.ql.archtype == QL_ARCH.X8664 and self.ql.ostype == QL_OS.LINUX:
+        if self.ql.arch.type == QL_ARCH.X8664 and self.ql.ostype == QL_OS.LINUX:
             _vsyscall_addr = int(self.profile.get('vsyscall_address'), 0)
             _vsyscall_size = int(self.profile.get('vsyscall_size'), 0)
 
@@ -413,7 +418,7 @@ class QlLoaderELF(QlLoader):
                 # each syscall should be 1KiB away
                 self.ql.mem.map(_vsyscall_addr, _vsyscall_size, info="[vsyscall]")
                 self.ql.mem.write(_vsyscall_addr, _vsyscall_size * b'\xcc')
-                assembler = self.ql.create_assembler()
+                assembler = self.ql.arch.assembler
 
                 def __assemble(asm: str) -> bytes:
                     bs, _ = assembler.asm(asm)
@@ -506,19 +511,19 @@ class QlLoaderELF(QlLoader):
                                 # we need to lookup from address to symbol, so we can find the right callback
                                 # for sys_xxx handler for syscall, the address must be aligned to pointer size
                                 if symbol_name.startswith('sys_'):
-                                    self.ql.os.hook_addr = QlLoaderELF.align_up(self.ql.os.hook_addr, self.ql.pointersize)
+                                    self.ql.os.hook_addr = QlLoaderELF.align_up(self.ql.os.hook_addr, self.ql.arch.pointersize)
 
                                 self.import_symbols[self.ql.os.hook_addr] = symbol_name
 
                                 # FIXME: this is for rootkit to scan for syscall table from page_offset_base
                                 # write address of syscall table to this slot, so syscall scanner can quickly find it
                                 if symbol_name == "page_offset_base":
-                                    ql.mem.write(self.ql.os.hook_addr, self.ql.pack(SYSCALL_MEM))
+                                    ql.mem.write_ptr(self.ql.os.hook_addr, SYSCALL_MEM)
 
                                 # we also need to do reverse lookup from symbol to address
                                 rev_reloc_symbols[symbol_name] = self.ql.os.hook_addr
                                 sym_offset = self.ql.os.hook_addr - mem_start
-                                self.ql.os.hook_addr += self.ql.pointersize
+                                self.ql.os.hook_addr += self.ql.arch.pointersize
                             else:
                                 # local symbol
                                 _section = elffile.get_section(_symbol['st_shndx'])
@@ -539,48 +544,49 @@ class QlLoaderELF(QlLoader):
                         if rel['r_addend']:
                             val = sym_offset + rel['r_addend']
                             val += mem_start
-                            ql.mem.write(loc, ql.pack32(val & 0xFFFFFFFF))
                         else:
-                            ql.mem.write(loc, ql.pack32(rev_reloc_symbols[symbol_name] & 0xFFFFFFFF))
+                            val = rev_reloc_symbols[symbol_name]
+
+                        ql.mem.write_ptr(loc, (val & 0xFFFFFFFF), 4)
 
                     elif desc == 'R_X86_64_64':
                         val = sym_offset + rel['r_addend']
                         val += 0x2000000  # init_module position: FIXME
-                        ql.mem.write(loc, ql.pack64(val))
+                        ql.mem.write_ptr(loc, val, 8)
 
                     elif desc == 'R_X86_64_PC64':
                         val = rel['r_addend'] - loc
                         val += rev_reloc_symbols[symbol_name]
-                        ql.mem.write(loc, ql.pack64(val))
+                        ql.mem.write_ptr(loc, val, 8)
 
                     elif desc in ('R_X86_64_PC32', 'R_X86_64_PLT32'):
                         val = rel['r_addend'] - loc
                         val += rev_reloc_symbols[symbol_name]
-                        ql.mem.write(loc, ql.pack32(val & 0xFFFFFFFF))
+                        ql.mem.write_ptr(loc, (val & 0xFFFFFFFF), 4)
 
                     elif desc in ('R_386_PC32', 'R_386_PLT32'):
                         val = ql.mem.read_ptr(loc, 4)
                         val = rev_reloc_symbols[symbol_name] + val - loc
-                        ql.mem.write(loc, ql.pack32(val & 0xFFFFFFFF))
+                        ql.mem.write_ptr(loc, (val & 0xFFFFFFFF), 4)
 
                     elif desc in ('R_386_32', 'R_MIPS_32'):
                         val = ql.mem.read_ptr(loc, 4)
                         val = rev_reloc_symbols[symbol_name] + val
-                        ql.mem.write(loc, ql.pack32(val & 0xFFFFFFFF))
+                        ql.mem.write_ptr(loc, (val & 0xFFFFFFFF), 4)
 
                     elif desc == 'R_MIPS_HI16':
                         # actual relocation is done in R_MIPS_LO16
                         prev_mips_hi16_loc = loc
 
                     elif desc == 'R_MIPS_LO16':
-                        val = ql.unpack16(ql.mem.read(prev_mips_hi16_loc + 2, 2)) << 16 | ql.unpack16(ql.mem.read(loc + 2, 2))
+                        val = ql.mem.read_ptr(prev_mips_hi16_loc + 2, 2) << 16 | ql.mem.read_ptr(loc + 2, 2)
                         val = rev_reloc_symbols[symbol_name] + val
                         # *(word)(mips_lo16_loc + 2) is treated as signed
                         if (val & 0xFFFF) >= 0x8000:
                             val += (1 << 16)
 
-                        ql.mem.write(prev_mips_hi16_loc + 2, ql.pack16(val >> 16))
-                        ql.mem.write(loc + 2, ql.pack16(val & 0xFFFF))
+                        ql.mem.write_ptr(prev_mips_hi16_loc + 2, (val >> 16), 2)
+                        ql.mem.write_ptr(loc + 2, (val & 0xFFFF), 2)
 
                     else:
                         raise NotImplementedError(f'Relocation type {desc} not implemented')
@@ -629,7 +635,7 @@ class QlLoaderELF(QlLoader):
         self.ql.os.entry_point = self.entry_point = entry_point
         self.elf_entry = self.ql.os.elf_entry = self.ql.os.entry_point
 
-        self.stack_address = QlLoaderELF.align(stack_addr, self.ql.pointersize)
+        self.stack_address = QlLoaderELF.align(stack_addr, self.ql.arch.pointersize)
         self.load_address = loadbase
 
         # remember address of syscall table, so external tools can access to it
@@ -648,20 +654,20 @@ class QlLoaderELF(QlLoader):
 
                 if hasattr(SYSCALL_NR, tmp_sc):
                     syscall_id = getattr(SYSCALL_NR, tmp_sc).value
-                    dest = SYSCALL_MEM + syscall_id * self.ql.pointersize
+                    dest = SYSCALL_MEM + syscall_id * self.ql.arch.pointersize
 
                     self.ql.log.debug(f'Writing syscall {tmp_sc} to {dest:#x}')
-                    self.ql.mem.write(dest, self.ql.pack(addr))
+                    self.ql.mem.write_ptr(dest, addr)
 
         # write syscall addresses into syscall table
-        self.ql.mem.write(SYSCALL_MEM + 0 * self.ql.pointersize, self.ql.pack(self.ql.os.hook_addr + 0 * self.ql.pointersize))
-        self.ql.mem.write(SYSCALL_MEM + 1 * self.ql.pointersize, self.ql.pack(self.ql.os.hook_addr + 1 * self.ql.pointersize))
-        self.ql.mem.write(SYSCALL_MEM + 2 * self.ql.pointersize, self.ql.pack(self.ql.os.hook_addr + 2 * self.ql.pointersize))
+        self.ql.mem.write_ptr(SYSCALL_MEM + 0 * self.ql.arch.pointersize, self.ql.os.hook_addr + 0 * self.ql.arch.pointersize)
+        self.ql.mem.write_ptr(SYSCALL_MEM + 1 * self.ql.arch.pointersize, self.ql.os.hook_addr + 1 * self.ql.arch.pointersize)
+        self.ql.mem.write_ptr(SYSCALL_MEM + 2 * self.ql.arch.pointersize, self.ql.os.hook_addr + 2 * self.ql.arch.pointersize)
 
         # setup hooks for read/write/open syscalls
-        self.import_symbols[self.ql.os.hook_addr + 0 * self.ql.pointersize] = hook_sys_read
-        self.import_symbols[self.ql.os.hook_addr + 1 * self.ql.pointersize] = hook_sys_write
-        self.import_symbols[self.ql.os.hook_addr + 2 * self.ql.pointersize] = hook_sys_open
+        self.import_symbols[self.ql.os.hook_addr + 0 * self.ql.arch.pointersize] = hook_sys_read
+        self.import_symbols[self.ql.os.hook_addr + 1 * self.ql.arch.pointersize] = hook_sys_write
+        self.import_symbols[self.ql.os.hook_addr + 2 * self.ql.arch.pointersize] = hook_sys_open
 
     def get_elfdata_mapping(self, elffile: ELFFile) -> bytes:
         elfdata_mapping = bytearray()

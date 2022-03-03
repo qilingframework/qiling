@@ -3,125 +3,110 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from functools import cached_property
+
 from unicorn import Uc, UC_ARCH_ARM, UC_MODE_ARM, UC_MODE_THUMB, UC_MODE_BIG_ENDIAN
-from capstone import Cs, CS_ARCH_ARM, CS_MODE_ARM, CS_MODE_THUMB
-from keystone import Ks, KS_ARCH_ARM, KS_MODE_ARM, KS_MODE_THUMB
+from capstone import Cs, CS_ARCH_ARM, CS_MODE_ARM, CS_MODE_THUMB, CS_MODE_BIG_ENDIAN
+from keystone import Ks, KS_ARCH_ARM, KS_MODE_ARM, KS_MODE_THUMB, KS_MODE_BIG_ENDIAN
 
 from qiling import Qiling
-from qiling.const import QL_ARCH, QL_ENDIAN
 from qiling.arch.arch import QlArch
-from qiling.arch.arm_const import *
-from qiling.exception import QlErrorArch
+from qiling.arch import arm_const
+from qiling.arch.register import QlRegisterManager
+from qiling.const import QL_ARCH, QL_ENDIAN
 
 class QlArchARM(QlArch):
-    def __init__(self, ql: Qiling):
+    type = QL_ARCH.ARM
+    bits = 32
+
+    def __init__(self, ql: Qiling, endian: QL_ENDIAN, thumb: bool):
         super().__init__(ql)
 
-        reg_maps = (
-            reg_map,
-        )
-
-        for reg_maper in reg_maps:
-            self.ql.reg.expand_mapping(reg_maper)
-
-        self.ql.reg.register_sp(reg_map["sp"])
-        self.ql.reg.register_pc(reg_map["pc"])
+        self._init_endian = endian
+        self._init_thumb = thumb
 
         self.arm_get_tls_addr = 0xFFFF0FE0
 
-    # get initialized unicorn engine
-    def get_init_uc(self) -> Uc:
-        if self.ql.archendian == QL_ENDIAN.EB:
-            mode = UC_MODE_ARM + UC_MODE_BIG_ENDIAN
+    @cached_property
+    def uc(self) -> Uc:
+        mode = UC_MODE_ARM
 
-        elif self.ql.archtype == QL_ARCH.ARM_THUMB:
-            mode = UC_MODE_THUMB
+        if self._init_endian == QL_ENDIAN.EB:
+            mode += UC_MODE_BIG_ENDIAN
 
-        elif self.ql.archtype == QL_ARCH.ARM:
-            mode = UC_MODE_ARM
-
-        else:
-            raise QlErrorArch(f'unsupported arch type {self.ql.archtype}')
+        if self._init_thumb:
+            mode += UC_MODE_THUMB
 
         return Uc(UC_ARCH_ARM, mode)
 
+    @cached_property
+    def regs(self) -> QlRegisterManager:
+        regs_map = arm_const.reg_map
+        pc_reg = 'pc'
+        sp_reg = 'sp'
 
-    # get PC
-    def get_pc(self) -> int:
-        append = 1 if self.check_thumb() == UC_MODE_THUMB else 0
+        return QlRegisterManager(self.uc, regs_map, pc_reg, sp_reg)
 
-        return self.ql.reg.pc + append
+    @property
+    def is_thumb(self) -> bool:
+        return bool(self.regs.cpsr & (1 << 5))
 
-    def __is_thumb(self) -> bool:
-        cpsr_v = {
-            QL_ENDIAN.EL : 0b100000,
-            QL_ENDIAN.EB : 0b100000   # FIXME: should be: 0b000000
-        }[self.ql.archendian]
+    @property
+    def endian(self) -> QL_ENDIAN:
+        # FIXME: ARM is a bi-endian architecture which allows flipping core endianess
+        # while running. endianess is tested in runtime through CPSR[9], however unicorn
+        # doesn't reflect the endianess correctly through that bit.
+        # @see: https://github.com/unicorn-engine/unicorn/issues/1542
+        #
+        # we work around this by using the initial endianess configuration, even though
+        # it might have been changed since.
+        #
+        # return QL_ENDIAN.EB if self.regs.cpsr & (1 << 9) else QL_ENDIAN.EL
 
-        return bool(self.ql.reg.cpsr & cpsr_v)
+        return self._init_endian
 
-    def create_disassembler(self) -> Cs:
+    @property
+    def effective_pc(self) -> int:
+        """Get effective PC value, taking Thumb mode into account.
+        """
+
+        # append 1 to pc if in thumb mode, or 0 otherwise
+        return self.regs.pc + int(self.is_thumb)
+
+    @property
+    def disassembler(self) -> Cs:
         # note: we do not cache the disassembler instance; rather we refresh it
-        # each time to make sure thumb mode is taken into account
+        # each time to make sure current endianess and thumb mode are taken into
+        # account
 
-        if self.ql.archtype == QL_ARCH.ARM:
-            # FIXME: mode should take endianess into account
-            mode = CS_MODE_THUMB if self.__is_thumb() else CS_MODE_ARM
+        mode = CS_MODE_ARM
 
-        elif self.ql.archtype == QL_ARCH.ARM_THUMB:
-            mode = CS_MODE_THUMB
+        if self.endian == QL_ENDIAN.EB:
+            mode += CS_MODE_BIG_ENDIAN
 
-        else:
-            raise QlErrorArch(f'unexpected arch type {self.ql.archtype}')
+        if self.is_thumb:
+            mode += CS_MODE_THUMB
 
         return Cs(CS_ARCH_ARM, mode)
 
-
-    def create_assembler(self) -> Ks:
+    @property
+    def assembler(self) -> Ks:
         # note: we do not cache the assembler instance; rather we refresh it
-        # each time to make sure thumb mode is taken into account
+        # each time to make sure current endianess and thumb mode are taken into
+        # account
 
-        if self.ql.archtype == QL_ARCH.ARM:
-            # FIXME: mode should take endianess into account
-            mode = KS_MODE_THUMB if self.__is_thumb() else KS_MODE_ARM
+        mode = KS_MODE_ARM
 
-        elif self.ql.archtype == QL_ARCH.ARM_THUMB:
-            mode = KS_MODE_THUMB
+        if self.endian == QL_ENDIAN.EB:
+            mode += KS_MODE_BIG_ENDIAN
 
-        else:
-            raise QlErrorArch(f'unexpected arch type {self.ql.archtype}')
+        if self.is_thumb:
+            mode += KS_MODE_THUMB
 
         return Ks(KS_ARCH_ARM, mode)
 
     def enable_vfp(self) -> None:
-        self.ql.reg.c1_c0_2 = self.ql.reg.c1_c0_2 | (0xf << 20)
+        # set full access to cp10 and cp11
+        self.regs.c1_c0_2 = self.regs.c1_c0_2 | (0b11 << 20) | (0b11 << 22)
 
-        if self.ql.archendian == QL_ENDIAN.EB:
-            self.ql.reg.fpexc = 0x40000000
-            #self.ql.reg.fpexc = 0x00000040
-        else:
-            self.ql.reg.fpexc = 0x40000000
-
-    def check_thumb(self):
-        return UC_MODE_THUMB if self.__is_thumb() else UC_MODE_ARM
-
-    """
-    set_tls
-    """
-    def init_get_tls(self):
-        self.ql.mem.map(0xFFFF0000, 0x1000, info="[arm_tls]")
-        """
-        'adr r0, data; ldr r0, [r0]; mov pc, lr; data:.ascii "\x00\x00"'
-        """
-        sc = b'\x04\x00\x8f\xe2\x00\x00\x90\xe5\x0e\xf0\xa0\xe1\x00\x00\x00\x00'
-
-        # if ql.archendian == QL_ENDIAN.EB:
-        #    sc = swap_endianess(sc)
-
-        self.ql.mem.write(self.ql.arch.arm_get_tls_addr, sc)
-        self.ql.log.debug("Set init_kernel_get_tls")    
-
-    def swap_endianess(self, s: bytes, blksize=4) -> bytes:
-        blocks = (s[i:i + blksize] for i in range(0, len(s), blksize))
-
-        return b''.join(bytes(reversed(b)) for b in blocks)
+        self.regs.fpexc = (1 << 30)
