@@ -67,7 +67,8 @@ class ArchARM(Arch):
         helper function for checking thumb mode
         """
 
-        return self.ql.arch.regs.cpsr & 0x00000020 != 0
+        return self.ql.arch.is_thumb
+
 
     def read_insn(self, address: int) -> bytes:
         """
