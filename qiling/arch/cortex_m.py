@@ -6,7 +6,7 @@
 from functools import cached_property
 from contextlib import ContextDecorator
 
-from unicorn import Uc, UC_ARCH_ARM, UC_MODE_ARM, UC_MODE_MCLASS, UC_MODE_THUMB
+from unicorn import Uc, UcError, UC_ARCH_ARM, UC_MODE_ARM, UC_MODE_MCLASS, UC_MODE_THUMB, UC_ERR_OK
 from capstone import Cs, CS_ARCH_ARM, CS_MODE_ARM, CS_MODE_MCLASS, CS_MODE_THUMB
 from keystone import Ks, KS_ARCH_ARM, KS_MODE_ARM, KS_MODE_THUMB
 
@@ -17,6 +17,8 @@ from qiling.arch.register import QlRegisterManager
 from qiling.arch.cortex_m_const import IRQ, EXC_RETURN, CONTROL, EXCP
 from qiling.const import QL_ARCH, QL_ENDIAN, QL_VERBOSE
 from qiling.exception import QlErrorNotImplemented
+
+from qiling.extensions.multitask import MultiTaskUnicorn, UnicornTask
 
 class QlInterruptContext(ContextDecorator):
     def __init__(self, ql: Qiling):
@@ -59,6 +61,25 @@ class QlInterruptContext(ContextDecorator):
         if self.ql.verbose >= QL_VERBOSE.DISASM:
             self.ql.log.info('Exit from interrupt')
 
+
+# This class exits to emulate clock interrupt.
+class QlArchCORTEX_MThread(UnicornTask):
+
+    def __init__(self, ql: "Qiling", begin: int, end: int, task_id=None):
+        super().__init__(ql.uc, begin, end, task_id)
+        self.ql = ql
+    
+    def on_start(self):
+        # Don't save anything.
+        return None
+    
+    def on_interrupted(self, ucerr: int):
+        # And don't restore anything.
+        if ucerr != UC_ERR_OK:
+            raise UcError(ucerr)
+
+        self.ql.hw.step()
+
 class QlArchCORTEX_M(QlArchARM):
     type = QL_ARCH.ARM
     bits = 32
@@ -94,10 +115,6 @@ class QlArchCORTEX_M(QlArchARM):
     def endian(self) -> QL_ENDIAN:
         return QL_ENDIAN.EL
 
-    def step(self):
-        self.ql.emu_start(self.effective_pc, 0, count=1)
-        self.ql.hw.step()
-
     def stop(self):
         self.ql.emu_stop()
         self.runable = False
@@ -108,12 +125,13 @@ class QlArchCORTEX_M(QlArchARM):
         if type(end) is int:
             end |= 1        
         
-        while self.runable and count != 0:
-            if self.effective_pc == end:
-                break
+        if end is None:
+            end = 0
 
-            self.step()
-            count -= 1    
+        self.mtuc = MultiTaskUnicorn(self.uc)
+        utk = QlArchCORTEX_MThread(self.ql, self.effective_pc, end)
+        self.mtuc.task_create(utk)
+        self.mtuc.start()
 
     def is_handler_mode(self):
         return self.regs.ipsr > 1
