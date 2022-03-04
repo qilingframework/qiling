@@ -36,7 +36,7 @@ class BranchPredictorMIPS(BranchPredictor, ArchMIPS):
 
     def read_reg(self, reg_name):
         reg_name = reg_name.strip("$").replace("fp", "s8")
-        return self.signed_val(getattr(self.ql.reg, reg_name))
+        return self.signed_val(getattr(self.ql.arch.regs, reg_name))
 
     def predict(self):
         prophecy = self.Prophecy()

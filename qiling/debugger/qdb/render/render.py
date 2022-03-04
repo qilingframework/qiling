@@ -168,7 +168,7 @@ class ContextRender(Context, Render):
         dump all registers
         """
 
-        return {reg_name: getattr(self.ql.reg, reg_name) for reg_name in self.regs}
+        return {reg_name: self.ql.arch.regs.read(reg_name) for reg_name in self.regs}
 
     @Render.divider_printer("[ STACK ]")
     def context_stack(self) -> None:
@@ -176,7 +176,7 @@ class ContextRender(Context, Render):
         display context stack dump
         """
 
-        self.render_stack_dump(self.ql.reg.arch_sp)
+        self.render_stack_dump(self.ql.arch.regs.arch_sp)
 
     @Render.divider_printer("[ REGISTERS ]")
     def context_reg(self, saved_states: Mapping["str", int]) -> None:

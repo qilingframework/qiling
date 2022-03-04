@@ -23,7 +23,7 @@ class BranchPredictorARM(BranchPredictor, ArchARM):
 
     def read_reg(self, reg_name):
         reg_name = reg_name.replace("ip", "r12").replace("fp", "r11")
-        return getattr(self.ql.reg, reg_name)
+        return getattr(self.ql.arch.regs, reg_name)
 
     def regdst_eq_pc(self, op_str):
         return op_str.partition(", ")[0] == "pc"
@@ -123,7 +123,7 @@ class BranchPredictorARM(BranchPredictor, ArchARM):
                 }
 
         if line.mnemonic in jump_table:
-            prophecy.going = jump_table.get(line.mnemonic)(*self.get_cpsr(self.ql.reg.cpsr))
+            prophecy.going = jump_table.get(line.mnemonic)(*self.get_cpsr(self.ql.arch.regs.cpsr))
 
         elif line.mnemonic in cb_table:
             prophecy.going = cb_table.get(line.mnemonic)(self.read_reg(line.op_str.split(", ")[0]))
@@ -153,7 +153,7 @@ class BranchPredictorARM(BranchPredictor, ArchARM):
                     "ls": lambda V, C, Z, N: (C == 0 or Z == 1),
                     "le": lambda V, C, Z, N: (Z == 1 or N != V),
                     "hi": lambda V, C, Z, N: (Z == 0 and C == 1),
-                    }.get(line.op_str)(*self.get_cpsr(self.ql.reg.cpsr))
+                    }.get(line.op_str)(*self.get_cpsr(self.ql.arch.regs.cpsr))
 
             it_block_range = [each_char for each_char in line.mnemonic[1:]]
 
@@ -184,7 +184,7 @@ class BranchPredictorARM(BranchPredictor, ArchARM):
                     prophecy.where = self.unpack32(self.read_mem(self.read_reg(r), self.INST_SIZE))
 
         elif line.mnemonic in ("addls", "addne", "add") and self.regdst_eq_pc(line.op_str):
-            V, C, Z, N = self.get_cpsr(self.ql.reg.cpsr)
+            V, C, Z, N = self.get_cpsr(self.ql.arch.regs.cpsr)
             r0, r1, r2, *imm = line.op_str.split(", ")
 
             # program counter is awalys 8 bytes ahead when it comes with pc, need to add extra 8 bytes
@@ -234,7 +234,7 @@ class BranchPredictorARM(BranchPredictor, ArchARM):
                     "pophi": lambda V, C, Z, N: (C == 1),
                     "popge": lambda V, C, Z, N: (N == V),
                     "poplt": lambda V, C, Z, N: (N != V),
-                    }.get(line.mnemonic)(*self.get_cpsr(self.ql.reg.cpsr)):
+                    }.get(line.mnemonic)(*self.get_cpsr(self.ql.arch.regs.cpsr)):
 
                 prophecy.where = cur_addr + self.INST_SIZE
 

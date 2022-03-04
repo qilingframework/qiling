@@ -141,7 +141,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         """
 
         def inner(self, *args, **kwargs):
-            self._saved_reg_dump = dict(filter(lambda d: isinstance(d[0], str), self.ql.reg.save().items()))
+            self._saved_reg_dump = dict(filter(lambda d: isinstance(d[0], str), self.ql.arch.regs.save().items()))
             func(self, *args, **kwargs)
 
         return inner
@@ -222,7 +222,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         if prophecy.where is True:
             return True
 
-        if self.ql.archtype == QL_ARCH.CORTEX_M:
+        if self.ql.arch == QL_ARCH.CORTEX_M:
             self.ql.arch.step()
         else:
             self._run(count=1)
@@ -334,7 +334,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         restore qiling instance context to initial state
         """
 
-        if self.ql.archtype != QL_ARCH.CORTEX_M:
+        if self.ql.arch != QL_ARCH.CORTEX_M:
 
             self.ql.restore(self.init_state)
             self.do_context()

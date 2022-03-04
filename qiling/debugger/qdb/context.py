@@ -19,7 +19,7 @@ class Context:
 
     def __init__(self, ql):
         self.ql = ql
-        self.pointersize = self.ql.pointersize
+        self.pointersize = self.ql.arch.pointersize
         self.unpack = ql.unpack
         self.unpack16 = ql.unpack16
         self.unpack32 = ql.unpack32
@@ -31,7 +31,7 @@ class Context:
         program counter of qiling instance
         """
 
-        return self.ql.reg.arch_pc
+        return self.ql.arch.regs.arch_pc
 
     def read_mem(self, address: int, size: int):
         """
@@ -45,7 +45,7 @@ class Context:
         helper function for disassembling
         """
 
-        md = self.ql.disassembler
+        md = self.ql.arch.disassembler
         md.detail = detail
 
         return next(md.disasm(self.read_insn(address), address), None)

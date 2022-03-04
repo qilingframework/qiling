@@ -91,11 +91,11 @@ class BranchPredictorX86(BranchPredictor, ArchX86):
                 }
 
         if line.mnemonic in jump_table:
-            eflags = self.get_flags(self.ql.reg.ef).values()
+            eflags = self.get_flags(self.ql.arch.regs.ef).values()
             prophecy.going = jump_table.get(line.mnemonic)(*eflags)
 
         elif line.mnemonic in jump_reg_table:
-            prophecy.going = jump_reg_table.get(line.mnemonic)(self.ql.reg.ecx)
+            prophecy.going = jump_reg_table.get(line.mnemonic)(self.ql.arch.regs.ecx)
 
         if prophecy.going:
             takeaway_list = ["ptr", "dword", "[", "]"]
@@ -106,19 +106,19 @@ class BranchPredictorX86(BranchPredictor, ArchX86):
                     new_line = new_line.replace(each, " ")
 
                 new_line = " ".join(new_line.split())
-                for each_reg in filter(lambda r: len(r) == 3, self.ql.reg.register_mapping.keys()):
+                for each_reg in filter(lambda r: len(r) == 3, self.ql.arch.regs.register_mapping.keys()):
                     if each_reg in new_line:
                         new_line = re.sub(each_reg, hex(self.read_reg(each_reg)), new_line)
                         
-                for each_reg in filter(lambda r: len(r) == 2, self.ql.reg.register_mapping.keys()):
+                for each_reg in filter(lambda r: len(r) == 2, self.ql.arch.regs.register_mapping.keys()):
                     if each_reg in new_line:
                         new_line = re.sub(each_reg, hex(self.read_reg(each_reg)), new_line)
 
 
                 prophecy.where = check_and_eval(new_line)
 
-            elif line.op_str in self.ql.reg.register_mapping:
-                prophecy.where = self.ql.reg.read(line.op_str)
+            elif line.op_str in self.ql.arch.regs.register_mapping:
+                prophecy.where = self.ql.arch.regs.read(line.op_str)
 
             else:
                 prophecy.where = read_int(line.op_str)

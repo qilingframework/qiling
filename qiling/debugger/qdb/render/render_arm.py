@@ -31,7 +31,7 @@ class ContextRenderARM(ContextRender, ArchARM):
         cur_regs = self.swap_reg_name(cur_regs)
         diff_reg = self.reg_diff(cur_regs, saved_reg_dump)
         self.render_regs_dump(cur_regs, diff_reg=diff_reg)
-        self.print_mode_info(self.ql.reg.cpsr)
+        self.print_mode_info(self.ql.arch.regs.cpsr)
 
 
 
@@ -62,4 +62,4 @@ class ContextRenderCORTEX_M(ContextRenderARM, ArchCORTEX_M):
         cur_regs = self.swap_reg_name(cur_regs, extra_dict=extra_dict)
         diff_reg = self.reg_diff(cur_regs, saved_reg_dump)
         self.render_regs_dump(cur_regs, diff_reg=diff_reg)
-        self.print_mode_info(self.ql.reg.cpsr)
+        self.print_mode_info(self.ql.arch.regs.cpsr)

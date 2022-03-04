@@ -65,10 +65,9 @@ def setup_branch_predictor(ql):
     return {
             QL_ARCH.X86: BranchPredictorX86,
             QL_ARCH.ARM: BranchPredictorARM,
-            QL_ARCH.ARM_THUMB: BranchPredictorARM,
             QL_ARCH.CORTEX_M: BranchPredictorCORTEX_M,
             QL_ARCH.MIPS: BranchPredictorMIPS,
-            }.get(ql.archtype)(ql)
+            }.get(ql.arch.type)(ql)
 
 def setup_context_render(ql, predictor):
     """
@@ -78,10 +77,9 @@ def setup_context_render(ql, predictor):
     return {
             QL_ARCH.X86: ContextRenderX86,
             QL_ARCH.ARM: ContextRenderARM,
-            QL_ARCH.ARM_THUMB: ContextRenderARM,
             QL_ARCH.CORTEX_M: ContextRenderCORTEX_M,
             QL_ARCH.MIPS: ContextRenderMIPS,
-            }.get(ql.archtype)(ql, predictor)
+            }.get(ql.arch.type)(ql, predictor)
 
 def run_qdb_script(qdb, filename: str) -> None:
     with open(filename) as fd:

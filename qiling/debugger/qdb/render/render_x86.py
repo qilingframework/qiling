@@ -22,7 +22,7 @@ class ContextRenderX86(ContextRender, ArchX86):
         cur_regs = self.dump_regs()
         diff_reg = self.reg_diff(cur_regs, saved_reg_dump)
         self.render_regs_dump(cur_regs, diff_reg=diff_reg)
-        print(color.GREEN, "EFLAGS: [CF: {flags[CF]}, PF: {flags[PF]}, AF: {flags[AF]}, ZF: {flags[ZF]}, SF: {flags[SF]}, OF: {flags[OF]}]".format(flags=self.get_flags(self.ql.reg.ef)), color.END, sep="")
+        print(color.GREEN, "EFLAGS: [CF: {flags[CF]}, PF: {flags[PF]}, AF: {flags[AF]}, ZF: {flags[ZF]}, SF: {flags[SF]}, OF: {flags[OF]}]".format(flags=self.get_flags(self.ql.arch.regs.ef)), color.END, sep="")
 
     @Render.divider_printer("[ DISASM ]")
     def context_asm(self):
