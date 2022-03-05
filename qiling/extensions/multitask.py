@@ -247,6 +247,11 @@ class MultiTaskUnicorn:
         task = pool.spawn(_once, begin, end, timeout, count)
         return task.get()
 
+    def emu_stop(self):
+        # Interrupt the emulation
+        if self._running:
+            self._uc.emu_stop()
+
     def stop(self):
         """ This will stop all running tasks.
         """

@@ -74,6 +74,8 @@ class QlArchCORTEX_MThread(UnicornTask):
         return None
     
     def on_interrupted(self, ucerr: int):
+        self._begin = self.pc
+
         # And don't restore anything.
         if ucerr != UC_ERR_OK:
             raise UcError(ucerr)
@@ -128,7 +130,8 @@ class QlArchCORTEX_M(QlArchARM):
         if end is None:
             end = 0
 
-        self.mtuc = MultiTaskUnicorn(self.uc)
+        self.mtuc = MultiTaskUnicorn(self.uc, 0.1)
+        self.ql.hook_code(lambda x, y, z: 0)
         utk = QlArchCORTEX_MThread(self.ql, self.effective_pc, end)
         self.mtuc.task_create(utk)
         self.mtuc.start()
@@ -200,4 +203,4 @@ class QlArchCORTEX_M(QlArchARM):
             self.regs.write('pc', entry)
             self.regs.write('lr', exc_return) 
 
-            self.ql.emu_start(self.effective_pc, 0)
+            self.mtuc.emu_once(self.effective_pc, 0, 0, 0)
