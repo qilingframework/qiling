@@ -131,7 +131,6 @@ class QlArchCORTEX_M(QlArchARM):
             end = 0
 
         self.mtuc = MultiTaskUnicorn(self.uc, 0.01)
-        self.ql.hook_code(lambda x, y, z: 0)
         utk = QlArchCORTEX_MThread(self.ql, self.effective_pc, end)
         self.mtuc.task_create(utk)
         self.mtuc.start()
