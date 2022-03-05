@@ -1,6 +1,6 @@
 # Ziqiao Kong (mio@lazym.io)
 
-from typing import Dict
+from typing import Dict, List
 from unicorn import *
 from unicorn.x86_const import UC_X86_REG_EIP, UC_X86_REG_RIP
 from unicorn.arm64_const import UC_ARM64_REG_PC
@@ -112,7 +112,12 @@ class UnicornTask:
 # the same time.
 class MultiTaskUnicorn(Uc):
 
-    def __init__(self, arch, mode, interval=0.1):
+    def __init__(self, arch, mode, interval: int = 100):
+        """ Create a MultiTaskUnicorn object.
+
+            Interval: Sceduling interval in **ms**. The longger interval, the better
+            performance but less interrupts.
+        """
         super().__init__(arch, mode)
         self._interval = interval
         self._tasks = {} # type: Dict[int, UnicornTask]
@@ -122,6 +127,7 @@ class MultiTaskUnicorn(Uc):
         self._running = False
         self._run_lock = threading.RLock()
         self._multitask_enabled = False
+        self._count = 0
 
     @property
     def current_thread(self):
@@ -151,20 +157,27 @@ class MultiTaskUnicorn(Uc):
     def _emu_start_utk_locked(self, utk: UnicornTask):
         return self._emu_start_locked(utk._begin, utk._end, 0, 0)
 
+    def _tmieout_main(self, timeout: int):
+
+        gevent.sleep(timeout / 1000)
+
+        self.tasks_stop()
+
     def _task_main(self, utk_id: int):
 
         utk = self._tasks[utk_id]
+        use_count = (self._count > 0)
 
         while True:
             # utk may be stopped before running once, check it.
             if utk._stop_request:
-                break
+                return # If we have to stop due to a tasks_stop, we preserve all threads so that we may resume.
             
             self._cur_utk_id = utk_id
 
             utk.on_start()
 
-            with gevent.Timeout(self._interval, False):
+            with gevent.Timeout(self._interval / 1000, False):
                 try:
                     pool = gevent.get_hub().threadpool # type: gevent.threadpool.ThreadPool
                     task = pool.spawn(self._emu_start_utk_locked, utk) # Run unicorn in a separate thread.
@@ -177,6 +190,13 @@ class MultiTaskUnicorn(Uc):
                     # Wait until we get the result.
                     ucerr = task.get()
 
+            if use_count:
+                self._count -= 1
+            
+                if self._count <= 0:
+                    self.tasks_stop()
+                    return
+
             if utk._stop_request:
                 utk.on_exit()
                 break
@@ -184,7 +204,7 @@ class MultiTaskUnicorn(Uc):
                 utk.on_interrupted(ucerr)
 
             if self._to_stop:
-                break
+                return
             
             # on_interrupted callback may have asked us to stop.
             if utk._stop_request:
@@ -273,22 +293,34 @@ class MultiTaskUnicorn(Uc):
             if self._running:
                 super().emu_stop()
 
-    def tasks_start(self):
+    def tasks_start(self, count: int = 0, timeout: int = 0):
         """ This will start emulation until all tasks get done.
+
+            count: Stop after sceduling *count* times. <=0 disables this check.
+            timeout: Stop after *timeout* ms. <=0 disables this check.
         """
-        workset = {} # type: Dict[int, gevent.Greenlet]
+        workset = [] # type: List[gevent.Greenlet]
         self._to_stop = False
+        self._count = count
+
+        if self._count <= 0:
+            self._count = 0
 
         if self._multitask_enabled:
-            while len(self._tasks) != 0:
+
+            if timeout > 0:
+                workset.append(gevent.spawn(self._tmieout_main, timeout))
+    
+            while len(self._tasks) != 0 and not self._to_stop:
                 
-                new_workset = { k: v for k, v in workset.items() if not v.dead}
+                new_workset = [ v for v in workset if not v.dead]
 
                 for utk_id in self._tasks:
-                    new_workset[utk_id] = gevent.spawn(self._task_main, utk_id)
+                    new_workset.append(gevent.spawn(self._task_main, utk_id))
 
                 workset = new_workset
 
-                gevent.joinall(list(workset.values()), raise_error=True)
-            
-            self._multitask_enabled = False
+                gevent.joinall(workset, raise_error=True)
+
+            if len(self._tasks) == 0:
+                self._multitask_enabled = False
