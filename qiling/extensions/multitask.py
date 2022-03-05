@@ -30,40 +30,50 @@ class UnicornTask:
         self._stop_request = False
         self._ctx = None
         self._task_id = None
+        self._arch = self._uc._arch
+        self._mode = self._uc._mode
 
     @property
     def pc(self):
-        arch = self._uc.ctl_get_arch()
-        mode = self._uc.ctl_get_mode()
+        """ Get current PC of the thread. This property should only be accessed when
+            the task is running.
+        """
+        raw_pc = self._raw_pc()
+        if (self._uc.reg_read(UC_ARM_REG_CPSR) & (1 << 5)):
+            return raw_pc | 1
+        else:
+            return raw_pc
 
+    def _raw_pc(self):
         # This extension is designed to be independent of Qiling, so let's
         # do this manually...
-        if arch == UC_ARCH_X86:
-            if (mode & UC_MODE_32) != 0:
+        if self._arch == UC_ARCH_X86:
+            if (self._mode & UC_MODE_32) != 0:
                 return self._uc.reg_read(UC_X86_REG_EIP)
-            elif (mode & UC_MODE_64) != 0:
+            elif (self._mode & UC_MODE_64) != 0:
                 return self._uc.reg_read(UC_X86_REG_RIP)
-        elif arch == UC_ARCH_MIPS:
+        elif self._arch == UC_ARCH_MIPS:
             return self._uc.reg_read(UC_MIPS_REG_PC)
-        elif arch == UC_ARCH_ARM:
-            pc = self._uc.reg_read(UC_ARM_REG_PC)
-            if (self._uc.reg_read(UC_ARM_REG_CPSR) & (1 << 5)):
-                return pc | 1
-            else:
-                return pc
-        elif arch == UC_ARCH_ARM64:
+        elif self._arch == UC_ARCH_ARM:
+            return self._uc.reg_read(UC_ARM_REG_PC)
+            
+        elif self._arch == UC_ARCH_ARM64:
             return self._uc.reg_read(UC_ARM64_REG_PC)
-        elif arch == UC_ARCH_PPC:
+        elif self._arch == UC_ARCH_PPC:
             return self._uc.reg_read(UC_PPC_REG_PC)
-        elif arch == UC_ARCH_M68K:
+        elif self._arch == UC_ARCH_M68K:
             return self._uc.reg_read(UC_M68K_REG_PC)
-        elif arch == UC_ARCH_SPARC:
+        elif self._arch == UC_ARCH_SPARC:
             return self._uc.reg_read(UC_SPARC_REG_PC)
-        elif arch == UC_ARCH_RISCV:
+        elif self._arch == UC_ARCH_RISCV:
             return self._uc.reg_read(UC_RISCV_REG_PC)
         
         # Really?
         return 0
+
+    def _reach_end(self):
+        # We may stop due to the scheduler asks us to, so check it manually.
+        return self._raw_pc() == self._end
 
     def save(self):
         """ This method is used to save the task context.
@@ -189,6 +199,9 @@ class MultiTaskUnicorn(Uc):
                     
                     # Wait until we get the result.
                     ucerr = task.get()
+
+            if utk._reach_end():
+                utk._stop_request = True
 
             if use_count:
                 self._count -= 1
