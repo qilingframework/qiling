@@ -76,15 +76,6 @@ class UnicornTask:
         self._uc.context_restore(context)
         self._begin = self.pc
 
-    def _run(self):
-        # This method is not intended to be overwritten!
-        try:
-            self._uc.emu_start(self._begin, self._end, 0, 0)
-        except UcError as err:
-            return err.errno
-        
-        return UC_ERR_OK
-
     def on_start(self):
         """ This callback is triggered when a task gets scheduled.
         """
@@ -114,11 +105,10 @@ class UnicornTask:
 #
 # Bear in mind that only one task can be picked to emulate at
 # the same time.
-class MultiTaskUnicorn:
+class MultiTaskUnicorn(Uc):
 
-    def __init__(self, uc: Uc, interval: float = 0.5):
-        # This takes over the ownershtip of uc instance
-        self._uc = uc
+    def __init__(self, arch, mode, interval=0.1):
+        super().__init__(arch, mode)
         self._interval = interval
         self._tasks = {} # type: Dict[int, UnicornTask]
         self._task_id_counter = 2000
@@ -126,6 +116,7 @@ class MultiTaskUnicorn:
         self._cur_utk_id = None
         self._running = False
         self._run_lock = threading.RLock()
+        self._multitask_enabled = False
 
     @property
     def current_thread(self):
@@ -134,21 +125,26 @@ class MultiTaskUnicorn:
     @property
     def running(self):
         return self._running
-    
+
     def _next_task_id(self):
         while self._task_id_counter in self._tasks:
             self._task_id_counter += 1
         
         return self._task_id_counter
 
-    def _utk_run(self, utk: UnicornTask):
-        # Only one thread can start emulation at the same time, but
-        # some other greenlets may do other async work.
+    def _emu_start_locked(self, begin: int, end: int, timeout: int, count: int):
         with self._run_lock:
-            self._running = True
-            result = utk._run()
-            self._running = False
-        return result
+            try:
+                self._running = True
+                super().emu_start(begin, end, timeout, count)
+                self._running = False
+            except UcError as err:
+                return err.errno
+        
+        return UC_ERR_OK
+
+    def _emu_start_utk_locked(self, utk: UnicornTask):
+        return self._emu_start_locked(utk._begin, utk._end, 0, 0)
 
     def _task_main(self, utk_id: int):
 
@@ -166,12 +162,12 @@ class MultiTaskUnicorn:
             with gevent.Timeout(self._interval, False):
                 try:
                     pool = gevent.get_hub().threadpool # type: gevent.threadpool.ThreadPool
-                    task = pool.spawn(self._utk_run, utk) # Run unicorn in a separate thread.
+                    task = pool.spawn(self._emu_start_utk_locked, utk) # Run unicorn in a separate thread.
                     task.wait()
                 finally:
                     if not task.done():
                         # Interrupted by timeout, in this case we call uc_emu_stop.
-                        self._uc.emu_stop()
+                        self.emu_stop()
                     
                     # Wait until we get the result.
                     ucerr = task.get()
@@ -194,11 +190,11 @@ class MultiTaskUnicorn:
 
         del self._tasks[utk_id]
 
-    def save(self):
+    def tasks_save(self):
         return { k: v.save() for k, v in self._tasks.items() }
 
-    def restore(self, threads_context: dict):
-        for task_id, context in threads_context:
+    def tasks_restore(self, tasks_context: dict):
+        for task_id, context in tasks_context:
             if task_id in self._tasks:
                 self._tasks[task_id].restore(context)
 
@@ -210,6 +206,7 @@ class MultiTaskUnicorn:
         """
         if not isinstance(utk, UnicornTask):
             raise TypeError("Expect a UnicornTask or derived class")
+        self._multitask_enabled = True
         if utk._task_id is None:
             utk._task_id = self._next_task_id()
         self._tasks[utk._task_id] = utk
@@ -224,54 +221,62 @@ class MultiTaskUnicorn:
             return
         
         if utk_id == self._cur_utk_id and self._running:
-            self._uc.emu_stop()
+            self.emu_stop()
         
         self._tasks[utk_id]._stop_request = True
 
-    def emu_once(self, begin: int, end: int, timeout: int, count: int):
+    def emu_start(self, begin: int, end: int, timeout: int, count: int):
         """ Emulate an area of code just once. This is equivalent to uc_emu_start but is gevent-aware.
             NOTE: Calling this method may cause current greenlet to be switched out.
 
             begin, end, timeout, count: refer to uc_emu_start
         """
-        def _once(begin: int, end: int, timeout: int, count: int):
-            with self._run_lock:
-                try:
-                    self._uc.emu_start(begin, end, timeout, count)
-                except UcError as err:
-                    return err.errno
-            
-            return UC_ERR_OK
 
-        pool = gevent.get_hub().threadpool # type: gevent.threadpool.ThreadPool
-        task = pool.spawn(_once, begin, end, timeout, count)
-        return task.get()
+        if self._multitask_enabled:
+            pool = gevent.get_hub().threadpool # type: gevent.threadpool.ThreadPool
+            task = pool.spawn(self._emu_start_locked, begin, end, timeout, count)
+            ucerr = task.get()
+
+            if ucerr != UC_ERR_OK:
+                raise UcError(ucerr)
+            
+            return ucerr
+        else:
+            return super().emu_start(begin, end, timeout, count)
 
     def emu_stop(self):
-        # Interrupt the emulation
-        if self._running:
-            self._uc.emu_stop()
+        """ Interrupt the emulation. This method mimic the standard Uc object.
+        """
+        if self._multitask_enabled:
+            if self._running:
+                super().emu_stop()
+        else:
+            super().emu_stop()
 
-    def stop(self):
+    def tasks_stop(self):
         """ This will stop all running tasks.
         """
-        self._to_stop = True
-        if self._running:
-            self._uc.emu_stop()
+        if self._multitask_enabled:
+            self._to_stop = True
+            if self._running:
+                super().emu_stop()
 
-    def start(self):
+    def tasks_start(self):
         """ This will start emulation until all tasks get done.
         """
         workset = {} # type: Dict[int, gevent.Greenlet]
         self._to_stop = False
 
-        while len(self._tasks) != 0:
+        if self._multitask_enabled:
+            while len(self._tasks) != 0:
+                
+                new_workset = { k: v for k, v in workset.items() if not v.dead}
+
+                for utk_id in self._tasks:
+                    new_workset[utk_id] = gevent.spawn(self._task_main, utk_id)
+
+                workset = new_workset
+
+                gevent.joinall(list(workset.values()), raise_error=True)
             
-            new_workset = { k: v for k, v in workset.items() if not v.dead}
-
-            for utk_id in self._tasks:
-                new_workset[utk_id] = gevent.spawn(self._task_main, utk_id)
-
-            workset = new_workset
-
-            gevent.joinall(list(workset.values()), raise_error=True)
+            self._multitask_enabled = False

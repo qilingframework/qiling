@@ -91,7 +91,7 @@ class QlArchCORTEX_M(QlArchARM):
 
     @cached_property
     def uc(self):
-        return Uc(UC_ARCH_ARM, UC_MODE_ARM + UC_MODE_MCLASS + UC_MODE_THUMB)
+        return MultiTaskUnicorn(UC_ARCH_ARM, UC_MODE_ARM + UC_MODE_MCLASS + UC_MODE_THUMB, 0.01)
 
     @cached_property
     def regs(self) -> QlRegisterManager:
@@ -130,10 +130,9 @@ class QlArchCORTEX_M(QlArchARM):
         if end is None:
             end = 0
 
-        self.mtuc = MultiTaskUnicorn(self.uc, 0.01)
         utk = QlArchCORTEX_MThread(self.ql, self.effective_pc, end)
-        self.mtuc.task_create(utk)
-        self.mtuc.start()
+        self.uc.task_create(utk)
+        self.uc.tasks_start()
 
     def is_handler_mode(self):
         return self.regs.ipsr > 1
@@ -202,4 +201,4 @@ class QlArchCORTEX_M(QlArchARM):
             self.regs.write('pc', entry)
             self.regs.write('lr', exc_return) 
 
-            self.mtuc.emu_once(self.effective_pc, 0, 0, 0)
+            self.uc.emu_start(self.effective_pc, 0, 0, 0)
