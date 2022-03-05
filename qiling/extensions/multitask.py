@@ -19,12 +19,14 @@ import threading
 # This class is named UnicornTask be design since it's not a
 # real thread. The expected usage is to inherit this class
 # and overwrite specific methods.
+#
+# This class is a friend class of MultiTaskUnicorn
 class UnicornTask:
 
     def __init__(self, uc: Uc, begin: int, end: int, task_id = None):
         self._uc = uc
         self._begin = begin
-        self._end = end
+        self._end = end 
         self._stop_request = False
         self._ctx = None
         self._task_id = None
@@ -93,8 +95,11 @@ class UnicornTask:
         """
         pass
 
-# This is the core scheduler of a multi task unicorn.
-# To implement a non-block syscall:
+# This mimic a Unicorn object by maintaining the same interface.
+# If no task is registered, the behavior is exactly the same as
+# a normal unicorn.
+#
+# Note: To implement a non-block syscall:
 #    1. Record the syscall in the hook, but **do nothing**
 #    2. Stop emulation.
 #    3. Handle the syscall in the on_interruped callback with
@@ -191,9 +196,13 @@ class MultiTaskUnicorn(Uc):
         del self._tasks[utk_id]
 
     def tasks_save(self):
+        """ Save all tasks' contexts.
+        """
         return { k: v.save() for k, v in self._tasks.items() }
 
     def tasks_restore(self, tasks_context: dict):
+        """ Restore the contexts of all tasks.
+        """
         for task_id, context in tasks_context:
             if task_id in self._tasks:
                 self._tasks[task_id].restore(context)
@@ -226,10 +235,13 @@ class MultiTaskUnicorn(Uc):
         self._tasks[utk_id]._stop_request = True
 
     def emu_start(self, begin: int, end: int, timeout: int, count: int):
-        """ Emulate an area of code just once. This is equivalent to uc_emu_start but is gevent-aware.
+        """ Emulate an area of code just once. This overwrites the original emu_start interface and
+            provides extra cares when multitask is enabled. If no task is registerd, this call bahaves
+            like the original emu_start.
+
             NOTE: Calling this method may cause current greenlet to be switched out.
 
-            begin, end, timeout, count: refer to uc_emu_start
+            begin, end, timeout, count: refer to Uc.emu_start
         """
 
         if self._multitask_enabled:
@@ -245,7 +257,7 @@ class MultiTaskUnicorn(Uc):
             return super().emu_start(begin, end, timeout, count)
 
     def emu_stop(self):
-        """ Interrupt the emulation. This method mimic the standard Uc object.
+        """ Stop the emulation. If no task is registerd, this call bahaves like the original emu_stop.
         """
         if self._multitask_enabled:
             if self._running:
@@ -254,7 +266,7 @@ class MultiTaskUnicorn(Uc):
             super().emu_stop()
 
     def tasks_stop(self):
-        """ This will stop all running tasks.
+        """ This will stop all running tasks. If no task is registered, this call does nothing.
         """
         if self._multitask_enabled:
             self._to_stop = True
