@@ -43,16 +43,16 @@ def ql_afl_fuzz(ql: Qiling,
             
             return UC_ERR_OK
         
-        return ql_afl_fuzz_ext(ql, input_file, place_input_callback, _dummy_fuzz_callback, 
-                               validate_crash_callback, always_validate, persistent_iters)
+        return ql_afl_fuzz_custom(ql, input_file, place_input_callback, _dummy_fuzz_callback, 
+                                  validate_crash_callback, always_validate, persistent_iters)
 
-def ql_afl_fuzz_ext(ql: Qiling,
-                    input_file: str,
-                    place_input_callback: Callable[["Qiling", bytes, int], bool],
-                    fuzzing_callback: Callable[["Qiling"], int],
-                    validate_crash_callback: Callable[["Qiling", bytes, int], bool] = None,
-                    always_validate: bool = False,
-                    persistent_iters: int = 1):
+def ql_afl_fuzz_custom(ql: Qiling,
+                       input_file: str,
+                       place_input_callback: Callable[["Qiling", bytes, int], bool],
+                       fuzzing_callback: Callable[["Qiling"], int],
+                       validate_crash_callback: Callable[["Qiling", bytes, int], bool] = None,
+                       always_validate: bool = False,
+                       persistent_iters: int = 1):
 
         def _ql_afl_place_input_wrapper(uc, input_bytes, iters, data):
             (ql, cb, _, _) = data
@@ -78,14 +78,14 @@ def ql_afl_fuzz_ext(ql: Qiling,
         data = (ql, place_input_callback, validate_crash_callback, fuzzing_callback)
         try:
             # uc_afl_fuzz will never return non-zero value.
-            uc_afl_fuzz_ext(ql.uc, 
-                            input_file=input_file, 
-                            place_input_callback=_ql_afl_place_input_wrapper,
-                            fuzzing_callback=_ql_afl_fuzzing_callback_wrapper,
-                            validate_crash_callback=_ql_afl_validate_wrapper, 
-                            always_validate=always_validate, 
-                            persistent_iters=persistent_iters,
-                            data=data)
+            uc_afl_fuzz_custom(ql.uc, 
+                               input_file=input_file, 
+                               place_input_callback=_ql_afl_place_input_wrapper,
+                               fuzzing_callback=_ql_afl_fuzzing_callback_wrapper,
+                               validate_crash_callback=_ql_afl_validate_wrapper, 
+                               always_validate=always_validate, 
+                               persistent_iters=persistent_iters,
+                               data=data)
         except NameError as ex:
             raise QlErrorNotImplemented("unicornafl is not installed or AFL++ is not supported on this platform") from ex
         except UcAflError as ex:
