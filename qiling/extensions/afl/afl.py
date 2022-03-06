@@ -1,6 +1,8 @@
 from typing import List, Callable
+from qiling.arch.arm import QlArchARM
 from qiling.core import Qiling
 from unicornafl import *
+from unicorn import UcError
 from qiling.exception import QlErrorNotImplemented
 
 def ql_afl_fuzz(ql: Qiling,
@@ -26,27 +28,64 @@ def ql_afl_fuzz(ql: Qiling,
             :raises UcAflError: If something wrong happens with the fuzzer.
         """
 
+        ql.uc.ctl_exits_enabled(True)
+        ql.uc.ctl_set_exits(exits)
+
+        def _dummy_fuzz_callback(_ql: "Qiling"):
+            if isinstance(_ql.arch, QlArchARM):
+                pc = _ql.arch.effective_pc
+            else:
+                pc = _ql.arch.regs.arch_pc
+            try:
+                _ql.uc.emu_start(pc, 0, 0, 0)
+            except UcError as e:
+                return e.errno
+            
+            return UC_ERR_OK
+        
+        return ql_afl_fuzz_ext(ql, input_file, place_input_callback, _dummy_fuzz_callback, 
+                               validate_crash_callback, always_validate, persistent_iters)
+
+def ql_afl_fuzz_ext(ql: Qiling,
+                    input_file: str,
+                    place_input_callback: Callable[["Qiling", bytes, int], bool],
+                    fuzzing_callback: Callable[["Qiling"], int],
+                    validate_crash_callback: Callable[["Qiling", bytes, int], bool] = None,
+                    always_validate: bool = False,
+                    persistent_iters: int = 1):
+
         def _ql_afl_place_input_wrapper(uc, input_bytes, iters, data):
-            (ql, cb, _) = data
+            (ql, cb, _, _) = data
 
-            return cb(ql, input_bytes, iters)
+            if cb:
+                return cb(ql, input_bytes, iters)
+            else:
+                return False
 
-        def _ql_afl_validate_wrapper(uc, input_bytes, iters, data):
-            (ql, _, cb) = data
+        def _ql_afl_validate_wrapper(uc, result, input_bytes, iters, data):
+            (ql, _, cb, _) = data
 
-            return cb(ql, input_bytes, iters)
+            if cb:
+                return cb(ql, result, input_bytes, iters)
+            else:
+                return False
 
-        data = (ql, place_input_callback, validate_crash_callback)
+        def _ql_afl_fuzzing_callback_wrapper(uc, data):
+            (ql, _, _, cb) = data
+
+            return cb(ql)
+
+        data = (ql, place_input_callback, validate_crash_callback, fuzzing_callback)
         try:
             # uc_afl_fuzz will never return non-zero value.
-            uc_afl_fuzz(ql.uc, 
-                        input_file=input_file, 
-                        place_input_callback=_ql_afl_place_input_wrapper, 
-                        exits=exits, 
-                        validate_crash_callback=_ql_afl_validate_wrapper, 
-                        always_validate=always_validate, 
-                        persistent_iters=persistent_iters,
-                        data=data)
+            uc_afl_fuzz_ext(ql.uc, 
+                            input_file=input_file, 
+                            place_input_callback=_ql_afl_place_input_wrapper,
+                            fuzzing_callback=_ql_afl_fuzzing_callback_wrapper,
+                            validate_crash_callback=_ql_afl_validate_wrapper, 
+                            always_validate=always_validate, 
+                            persistent_iters=persistent_iters,
+                            data=data)
         except NameError as ex:
             raise QlErrorNotImplemented("unicornafl is not installed or AFL++ is not supported on this platform") from ex
         except UcAflError as ex:
