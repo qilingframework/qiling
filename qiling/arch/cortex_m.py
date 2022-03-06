@@ -124,9 +124,6 @@ class QlArchCORTEX_M(QlArchARM):
     def run(self, count=-1, end=None):
         self.runable = True
 
-        if type(end) is int:
-            end |= 1        
-        
         if end is None:
             end = 0
 
