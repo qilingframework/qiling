@@ -192,8 +192,8 @@ class QlMemoryManager:
             self.ql.log.info(f'{lbound:08x} - {ubound:08x}   {perms:5s}   {label:12s}   {container or ""}')
 
     # TODO: relying on the label string is risky; find a more reliable method
-    def get_lib_base(self, filename: str) -> int:
-        return next((s for s, _, _, info, _ in self.map_info if os.path.split(info)[1] == filename), -1)
+    def get_lib_base(self, filename: str) -> Optional[int]:
+        return next((s for s, _, _, info, _ in self.map_info if os.path.basename(info) == filename), None)
 
     def align(self, value: int, alignment: int = None) -> int:
         """Align a value down to the specified alignment boundary.

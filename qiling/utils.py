@@ -502,9 +502,10 @@ def os_setup(ostype: QL_OS, ql):
 def profile_setup(ql, ostype: QL_OS, filename: Optional[str]):
     ql.log.debug(f'Profile: {filename or "default"}')
 
-    if ql.baremetal:
+    # mcu uses a yaml-based config
+    if ostype == QL_OS.MCU:
         if filename:
-            with open(filename) as f: 
+            with open(filename) as f:
                 config = yaml.load(f, Loader=yaml.Loader)
         else:
             config = {}
