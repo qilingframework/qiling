@@ -1,4 +1,4 @@
-# Ziqiao Kong (mio@lazym.io)
+# Lazymio (mio@lazym.io)
 
 from typing import Dict, List
 from unicorn import *
@@ -56,7 +56,7 @@ class UnicornTask:
             return self._uc.reg_read(UC_MIPS_REG_PC)
         elif self._arch == UC_ARCH_ARM:
             return self._uc.reg_read(UC_ARM_REG_PC)
-            
+
         elif self._arch == UC_ARCH_ARM64:
             return self._uc.reg_read(UC_ARM64_REG_PC)
         elif self._arch == UC_ARCH_PPC:
@@ -67,12 +67,13 @@ class UnicornTask:
             return self._uc.reg_read(UC_SPARC_REG_PC)
         elif self._arch == UC_ARCH_RISCV:
             return self._uc.reg_read(UC_RISCV_REG_PC)
-        
+
         # Really?
         return 0
 
     def _reach_end(self):
         # We may stop due to the scheduler asks us to, so check it manually.
+        #print(f"{hex(self._raw_pc())} {hex(self._end)}")
         return self._raw_pc() == self._end
 
     def save(self):
@@ -80,7 +81,7 @@ class UnicornTask:
             Overwrite this method to implement specifc logic.
         """
         return self._uc.context_save()
-    
+
     def restore(self, context):
         """ This method is used to restore the task context.
             Overwrite this method to implement specific logic.
@@ -105,6 +106,20 @@ class UnicornTask:
         """
         pass
 
+# This manages nested uc_emu_start calls and is designed as a friend
+# class of MultiTaskUnicorn.
+class NestedCounter:
+
+    def __init__(self, mtuc: "MultiTaskUnicorn"):
+        self._mtuc = mtuc
+    
+    def __enter__(self, *args, **kwargs):
+        self._mtuc._nested_started += 1
+        return self
+
+    def __exit__(self, *args, **kwargs):
+        self._mtuc._nested_started -= 1
+
 # This mimic a Unicorn object by maintaining the same interface.
 # If no task is registered, the behavior is exactly the same as
 # a normal unicorn.
@@ -124,7 +139,6 @@ class MultiTaskUnicorn(Uc):
 
     def __init__(self, arch, mode, interval: int = 100):
         """ Create a MultiTaskUnicorn object.
-
             Interval: Sceduling interval in **ms**. The longger interval, the better
             performance but less interrupts.
         """
@@ -138,6 +152,7 @@ class MultiTaskUnicorn(Uc):
         self._run_lock = threading.RLock()
         self._multitask_enabled = False
         self._count = 0
+        self._nested_started = 0
 
     @property
     def current_thread(self):
@@ -150,7 +165,7 @@ class MultiTaskUnicorn(Uc):
     def _next_task_id(self):
         while self._task_id_counter in self._tasks:
             self._task_id_counter += 1
-        
+
         return self._task_id_counter
 
     def _emu_start_locked(self, begin: int, end: int, timeout: int, count: int):
@@ -161,13 +176,13 @@ class MultiTaskUnicorn(Uc):
                 self._running = False
             except UcError as err:
                 return err.errno
-        
+
         return UC_ERR_OK
 
     def _emu_start_utk_locked(self, utk: UnicornTask):
         return self._emu_start_locked(utk._begin, utk._end, 0, 0)
 
-    def _tmieout_main(self, timeout: int):
+    def _timeout_main(self, timeout: int):
 
         gevent.sleep(timeout / 1000)
 
@@ -182,7 +197,7 @@ class MultiTaskUnicorn(Uc):
             # utk may be stopped before running once, check it.
             if utk._stop_request:
                 return # If we have to stop due to a tasks_stop, we preserve all threads so that we may resume.
-            
+
             self._cur_utk_id = utk_id
 
             utk.on_start()
@@ -195,8 +210,8 @@ class MultiTaskUnicorn(Uc):
                 finally:
                     if not task.done():
                         # Interrupted by timeout, in this case we call uc_emu_stop.
-                        self.emu_stop()
-                    
+                        super().emu_stop()
+
                     # Wait until we get the result.
                     ucerr = task.get()
 
@@ -205,7 +220,7 @@ class MultiTaskUnicorn(Uc):
 
             if use_count:
                 self._count -= 1
-            
+
                 if self._count <= 0:
                     self.tasks_stop()
                     return
@@ -218,9 +233,10 @@ class MultiTaskUnicorn(Uc):
 
             if self._to_stop:
                 return
-            
+
             # on_interrupted callback may have asked us to stop.
             if utk._stop_request:
+                utk.on_exit()
                 break
 
             # Give up control at once.
@@ -243,7 +259,6 @@ class MultiTaskUnicorn(Uc):
     def task_create(self, utk: UnicornTask):
         """ Create a unicorn task. utk should be a initialized UnicornTask object.
             If the task_id is not set, we generate one.
-
             utk: The task to add.
         """
         if not isinstance(utk, UnicornTask):
@@ -261,31 +276,41 @@ class MultiTaskUnicorn(Uc):
         """
         if utk_id not in self._tasks:
             return
-        
+
         if utk_id == self._cur_utk_id and self._running:
             self.emu_stop()
-        
+
         self._tasks[utk_id]._stop_request = True
 
     def emu_start(self, begin: int, end: int, timeout: int, count: int):
         """ Emulate an area of code just once. This overwrites the original emu_start interface and
             provides extra cares when multitask is enabled. If no task is registerd, this call bahaves
             like the original emu_start.
-
             NOTE: Calling this method may cause current greenlet to be switched out.
-
             begin, end, timeout, count: refer to Uc.emu_start
         """
-
         if self._multitask_enabled:
-            pool = gevent.get_hub().threadpool # type: gevent.threadpool.ThreadPool
-            task = pool.spawn(self._emu_start_locked, begin, end, timeout, count)
-            ucerr = task.get()
+            if self._nested_started > 0:
+                with NestedCounter(self):
+                    pool = gevent.get_hub().threadpool # type: gevent.threadpool.ThreadPool
+                    task = pool.spawn(self._emu_start_locked, begin, end, timeout, count)
+                    ucerr = task.get()
 
-            if ucerr != UC_ERR_OK:
-                raise UcError(ucerr)
-            
-            return ucerr
+                    if ucerr != UC_ERR_OK:
+                        raise UcError(ucerr)
+
+                    return ucerr
+            else:
+
+                # Assume users resume on the last thread (and that should be the case)
+                if self._cur_utk_id in self._tasks:
+                    self._tasks[self._cur_utk_id]._begin = begin
+                    self._tasks[self._cur_utk_id]._end = end
+                else:
+                    print(f"Warning: Can't found last thread we scheduled")
+
+                # This translation is not accurate, though.
+                self.tasks_start(count, timeout)
         else:
             return super().emu_start(begin, end, timeout, count)
 
@@ -295,6 +320,9 @@ class MultiTaskUnicorn(Uc):
         if self._multitask_enabled:
             if self._running:
                 super().emu_stop()
+            # Stop the world as original uc_emu_stop does
+            if self._nested_started == 1:
+                self.tasks_stop()
         else:
             super().emu_stop()
 
@@ -308,7 +336,6 @@ class MultiTaskUnicorn(Uc):
 
     def tasks_start(self, count: int = 0, timeout: int = 0):
         """ This will start emulation until all tasks get done.
-
             count: Stop after sceduling *count* times. <=0 disables this check.
             timeout: Stop after *timeout* ms. <=0 disables this check.
         """
@@ -316,24 +343,30 @@ class MultiTaskUnicorn(Uc):
         self._to_stop = False
         self._count = count
 
-        if self._count <= 0:
-            self._count = 0
+        if self._nested_started != 0:
+            print("Warning: tasks_start is called inside an uc_emu_start!")
+            return
 
-        if self._multitask_enabled:
+        with NestedCounter(self):
 
-            if timeout > 0:
-                workset.append(gevent.spawn(self._tmieout_main, timeout))
-    
-            while len(self._tasks) != 0 and not self._to_stop:
-                
-                new_workset = [ v for v in workset if not v.dead]
+            if self._count <= 0:
+                self._count = 0
 
-                for utk_id in self._tasks:
-                    new_workset.append(gevent.spawn(self._task_main, utk_id))
+            if self._multitask_enabled:
 
-                workset = new_workset
+                if timeout > 0:
+                    workset.append(gevent.spawn(self._timeout_main, timeout))
 
-                gevent.joinall(workset, raise_error=True)
+                while len(self._tasks) != 0 and not self._to_stop:
 
-            if len(self._tasks) == 0:
-                self._multitask_enabled = False
+                    new_workset = [ v for v in workset if not v.dead]
+
+                    for utk_id in self._tasks:
+                        new_workset.append(gevent.spawn(self._task_main, utk_id))
+
+                    workset = new_workset
+
+                    gevent.joinall(workset, raise_error=True)
+
+                if len(self._tasks) == 0:
+                    self._multitask_enabled = False
