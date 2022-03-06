@@ -149,7 +149,7 @@ class QlOsLinux(QlOsPosix):
                         if self.ql.arch.type == QL_ARCH.ARM and entry_address & 1 == 1:
                             entry_address -= 1
                         self.ql.emu_start(self.ql.loader.entry_point, entry_address, self.ql.timeout)
-                        self.ql.enable_lib_patch()
+                        self.ql.do_lib_patch()
                         self.run_function_after_load()
                         self.ql.loader.skip_exit_check = False
                         self.ql.write_exit_trap()
