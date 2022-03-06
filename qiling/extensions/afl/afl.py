@@ -9,7 +9,7 @@ def ql_afl_fuzz(ql: Qiling,
                 input_file: str,
                 place_input_callback: Callable[["Qiling", bytes, int], bool],
                 exits: List[int],
-                validate_crash_callback: Callable[["Qiling", bytes, int], bool] = None,
+                validate_crash_callback: Callable[["Qiling", int, bytes, int], bool] = None,
                 always_validate: bool = False,
                 persistent_iters: int = 1):
         """ Fuzz a range of code with afl++.
