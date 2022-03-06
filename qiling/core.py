@@ -574,7 +574,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         debugger = debugger_setup(self._debugger, self)
 
         # patch binary
-        self.__enable_bin_patch()
+        self.do_bin_patch()
 
         if self.baremetal:
             if self.count <= 0:

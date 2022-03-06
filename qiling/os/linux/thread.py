@@ -586,7 +586,7 @@ class QlLinuxThreadManagement:
             if self.ql.arch.regs.arch_pc != entry_address:
                 self.ql.log.error(f"{self.cur_thread} Expect {hex(self.ql.loader.elf_entry)} but get {hex(self.ql.arch.regs.arch_pc)} when running loader.")
                 raise QlErrorExecutionStop('Dynamic library .init() failed!')
-            self.ql.enable_lib_patch()
+            self.ql.do_lib_patch()
             self.ql.os.run_function_after_load()
             self.ql.loader.skip_exit_check = False
             self.ql.write_exit_trap()
