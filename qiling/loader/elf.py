@@ -147,8 +147,6 @@ class QlLoaderELF(QlLoader):
         return prot
 
     def load_with_ld(self, elffile: ELFFile, stack_addr: int, load_address: int, argv: Sequence[str] = [], env: Mapping[str, str] = {}):
-        pagesize = 0x1000
-
         # get list of loadable segments; these segments will be loaded to memory
         seg_pt_load = tuple(seg for seg in elffile.iter_segments() if seg['p_type'] == 'PT_LOAD')
 
@@ -332,7 +330,7 @@ class QlLoaderELF(QlLoader):
             (AUX.AT_PHDR, elf_phdr + mem_start),
             (AUX.AT_PHENT, elf_phent),
             (AUX.AT_PHNUM, elf_phnum),
-            (AUX.AT_PAGESZ, pagesize),
+            (AUX.AT_PAGESZ, self.ql.mem.pagesize),
             (AUX.AT_BASE, interp_address),
             (AUX.AT_FLAGS, 0),
             (AUX.AT_ENTRY, elf_entry),
