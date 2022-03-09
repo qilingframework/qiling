@@ -146,38 +146,6 @@ class QlLoaderELF(QlLoader):
 
         return prot
 
-    @staticmethod
-    def align(value: int, alignment: int) -> int:
-        """Align a value down to the specified alignment boundary. If `value` is already
-        aligned, the same value is returned. Commonly used to determine the base address
-        of the enclosing page.
-
-        Args:
-            value: numberic value to align
-            alignment: alignment boundary; must be a power of 2
-
-        Returns:
-            Value aligned down to boundary
-        """
-
-        return value & ~(alignment - 1)
-
-    @staticmethod
-    def align_up(value: int, alignment: int) -> int:
-        """Align a value up to the specified alignment boundary. If `value` is already
-        aligned, the same value is returned. Commonly used to determine the end address
-        of the enlosing page.
-
-        Args:
-            value: numberic value to align
-            alignment: alignment boundary; must be a power of 2
-
-        Returns:
-            Value aligned up to boundary
-        """
-
-        return (value + alignment - 1) & ~(alignment - 1)
-
     def load_with_ld(self, elffile: ELFFile, stack_addr: int, load_address: int, argv: Sequence[str] = [], env: Mapping[str, str] = {}):
         pagesize = 0x1000
 
@@ -192,8 +160,8 @@ class QlLoaderELF(QlLoader):
 
         # iterate over loadable segments by vaddr
         for seg in sorted(seg_pt_load, key=lambda s: s['p_vaddr']):
-            lbound = QlLoaderELF.align(load_address + seg['p_vaddr'], pagesize)
-            ubound = QlLoaderELF.align_up(load_address + seg['p_vaddr'] + seg['p_memsz'], pagesize)
+            lbound = self.ql.mem.align(load_address + seg['p_vaddr'])
+            ubound = self.ql.mem.align_up(load_address + seg['p_vaddr'] + seg['p_memsz'])
             perms = QlLoaderELF.seg_perm_to_uc_prot(seg['p_flags'])
 
             if load_regions:
@@ -249,8 +217,8 @@ class QlLoaderELF(QlLoader):
         mem_start = min(seg['p_vaddr'] for seg in seg_pt_load)
         mem_end = max(seg['p_vaddr'] + seg['p_memsz'] for seg in seg_pt_load)
 
-        mem_start = QlLoaderELF.align(mem_start, pagesize)
-        mem_end = QlLoaderELF.align_up(mem_end, pagesize)
+        mem_start = self.ql.mem.align(mem_start)
+        mem_end = self.ql.mem.align_up(mem_end)
 
         self.ql.log.debug(f'mem_start : {mem_start:#x}')
         self.ql.log.debug(f'mem_end   : {mem_end:#x}')
@@ -280,7 +248,7 @@ class QlLoaderELF(QlLoader):
 
                 # determine memory size needed for interpreter
                 interp_mem_size = max((seg['p_vaddr'] + seg['p_memsz']) for seg in interp_seg_pt_load)
-                interp_mem_size = QlLoaderELF.align_up(interp_mem_size, pagesize)
+                interp_mem_size = self.ql.mem.align_up(interp_mem_size)
                 self.ql.log.debug(f'Interpreter size: {interp_mem_size:#x}')
 
                 # map memory for interpreter
@@ -314,7 +282,7 @@ class QlLoaderELF(QlLoader):
             """
 
             data = (s if isinstance(s, bytes) else s.encode("utf-8")) + b'\x00'
-            top = QlLoaderELF.align(top - len(data), self.ql.arch.pointersize)
+            top = self.ql.mem.align(top - len(data), self.ql.arch.pointersize)
             self.ql.mem.write(top, data)
 
             return top
@@ -386,7 +354,7 @@ class QlLoaderELF(QlLoader):
         for key, val in aux_entries:
             elf_table.extend(self.ql.pack(key) + self.ql.pack(val))
 
-        new_stack = QlLoaderELF.align(new_stack - len(elf_table), 0x10)
+        new_stack = self.ql.mem.align(new_stack - len(elf_table), 0x10)
         self.ql.mem.write(new_stack, bytes(elf_table))
 
         # if enabled, gdb would need to retrieve aux vector data.
@@ -511,7 +479,7 @@ class QlLoaderELF(QlLoader):
                                 # we need to lookup from address to symbol, so we can find the right callback
                                 # for sys_xxx handler for syscall, the address must be aligned to pointer size
                                 if symbol_name.startswith('sys_'):
-                                    self.ql.os.hook_addr = QlLoaderELF.align_up(self.ql.os.hook_addr, self.ql.arch.pointersize)
+                                    self.ql.os.hook_addr = self.ql.mem.align_up(self.ql.os.hook_addr, self.ql.arch.pointersize)
 
                                 self.import_symbols[self.ql.os.hook_addr] = symbol_name
 
@@ -635,7 +603,7 @@ class QlLoaderELF(QlLoader):
         self.ql.os.entry_point = self.entry_point = entry_point
         self.elf_entry = self.ql.os.elf_entry = self.ql.os.entry_point
 
-        self.stack_address = QlLoaderELF.align(stack_addr, self.ql.arch.pointersize)
+        self.stack_address = self.ql.mem.align(stack_addr, self.ql.arch.pointersize)
         self.load_address = loadbase
 
         # remember address of syscall table, so external tools can access to it
