@@ -184,12 +184,21 @@ class QlMemoryManager:
         """Emit memory map info in a nicely formatted table.
         """
 
+        mapinfo = self.get_mapinfo()
+
+        # determine columns sizes based on the longest value for each field
+        lengths = ((len(f'{ubound:#x}'), len(label)) for _, ubound, _, label, _ in mapinfo)
+        grouped = tuple(zip(*lengths))
+
+        len_addr  = max(grouped[0])
+        len_label = max(grouped[1])
+
         # emit title row
-        self.ql.log.info(f'{"Start":8s}   {"End":8s}   {"Perm":5s}   {"Label":12s}   {"Image"}')
+        self.ql.log.info(f'{"Start":{len_addr}s}   {"End":{len_addr}s}   {"Perm":5s}   {"Label":{len_label}s}   {"Image"}')
 
         # emit table rows
-        for lbound, ubound, perms, label, container in self.get_mapinfo():
-            self.ql.log.info(f'{lbound:08x} - {ubound:08x}   {perms:5s}   {label:12s}   {container or ""}')
+        for lbound, ubound, perms, label, container in mapinfo:
+            self.ql.log.info(f'{lbound:0{len_addr}x} - {ubound:0{len_addr}x}   {perms:5s}   {label:{len_label}s}   {container or ""}')
 
     # TODO: relying on the label string is risky; find a more reliable method
     def get_lib_base(self, filename: str) -> Optional[int]:
