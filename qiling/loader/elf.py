@@ -221,6 +221,9 @@ class QlLoaderELF(QlLoader):
         self.ql.log.debug(f'mem_start : {mem_start:#x}')
         self.ql.log.debug(f'mem_end   : {mem_end:#x}')
 
+        # by convention the loaded binary is first on the list
+        self.images.append(Image(load_address + mem_start, load_address + mem_end, os.path.abspath(self.path)))
+
         # note: 0x2000 is the size of [hook_mem]
         self.brk_address = load_address + mem_end + 0x2000
 
@@ -250,7 +253,10 @@ class QlLoaderELF(QlLoader):
                 self.ql.log.debug(f'Interpreter size: {interp_mem_size:#x}')
 
                 # map memory for interpreter
-                self.ql.mem.map(interp_address, interp_mem_size, info=os.path.abspath(interp_local_path))
+                self.ql.mem.map(interp_address, interp_mem_size, info=os.path.basename(interp_local_path))
+
+                # add interpreter to the loaded images list
+                self.images.append(Image(interp_address, interp_address + interp_mem_size, os.path.abspath(interp_local_path)))
 
                 # load interpterter segments data to memory
                 for seg in interp_seg_pt_load:
@@ -363,7 +369,6 @@ class QlLoaderELF(QlLoader):
         self.elf_entry = elf_entry
         self.stack_address = new_stack
         self.load_address = load_address
-        self.images.append(Image(load_address, load_address + mem_end, self.path))
         self.init_sp = self.ql.arch.regs.arch_sp
 
         self.ql.os.entry_point = self.entry_point = entry_point
