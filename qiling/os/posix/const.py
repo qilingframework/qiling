@@ -582,6 +582,7 @@ F_SETLKW	= 7
 FD_CLOEXEC = 1
 
 AT_FDCWD = -100
+AT_EMPTY_PATH = 0x1000
 
 # error code
 EPERM           = 1
