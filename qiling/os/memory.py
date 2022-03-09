@@ -196,14 +196,16 @@ class QlMemoryManager:
         return next((s for s, _, _, info, _ in self.map_info if os.path.basename(info) == filename), None)
 
     def align(self, value: int, alignment: int = None) -> int:
-        """Align a value down to the specified alignment boundary.
+        """Align a value down to the specified alignment boundary. If `value` is already
+        aligned, the same value is returned. Commonly used to determine the base address
+        of the enclosing page.
 
         Args:
             value: a value to align
-            alignment: alignment boundary; must be a power of 2. if not specified
-            value will be aligned to page size
+            alignment: alignment boundary; must be a power of 2. if not specified value
+            will be aligned to page size
 
-        Returns: aligned value
+        Returns: value aligned down to boundary
         """
 
         if alignment is None:
@@ -216,14 +218,16 @@ class QlMemoryManager:
         return value & ~(alignment - 1)
 
     def align_up(self, value: int, alignment: int = None) -> int:
-        """Align a value up to the specified alignment boundary.
+        """Align a value up to the specified alignment boundary. If `value` is already
+        aligned, the same value is returned. Commonly used to determine the end address
+        of the enlosing page.
 
         Args:
             value: value to align
-            alignment: alignment boundary; must be a power of 2. if not specified
-            value will be aligned to page size
+            alignment: alignment boundary; must be a power of 2. if not specified value
+            will be aligned to page size
 
-        Returns: aligned value
+        Returns: value aligned up to boundary
         """
 
         if alignment is None:
