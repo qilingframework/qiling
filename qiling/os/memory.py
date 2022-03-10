@@ -202,7 +202,14 @@ class QlMemoryManager:
 
     # TODO: relying on the label string is risky; find a more reliable method
     def get_lib_base(self, filename: str) -> Optional[int]:
-        return next((s for s, _, _, info, _ in self.map_info if os.path.basename(info) == filename), None)
+        # regex pattern to capture boxed labels prefixes
+        p = re.compile(r'^\[.+\]\s*')
+
+        # some info labels may be prefixed by boxed label which breaks the search by basename.
+        # iterate through all info labels and remove all boxed prefixes, if any
+        stripped = ((lbound, p.sub('', info)) for lbound, _, _, info, _ in self.map_info)
+
+        return next((lbound for lbound, info in stripped if os.path.basename(info) == filename), None)
 
     def align(self, value: int, alignment: int = None) -> int:
         """Align a value down to the specified alignment boundary. If `value` is already
