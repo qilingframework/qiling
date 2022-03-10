@@ -199,7 +199,7 @@ class QlLoaderELF(QlLoader):
         # map the memory regions
         for lbound, ubound, perms in load_regions:
             try:
-                self.ql.mem.map(lbound, ubound - lbound, perms, info=self.path)
+                self.ql.mem.map(lbound, ubound - lbound, perms, info=os.path.basename(self.path))
             except QlMemoryMappedError:
                 self.ql.log.exception(f'Failed to map {lbound:#x}-{ubound:#x}')
             else:
