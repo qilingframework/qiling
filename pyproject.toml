@@ -63,6 +63,6 @@ changelog = "github.com/qilingframework/qiling/blob/master/ChangeLog"
 qltool = "qltool:main"
 
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools>=40.9.0", "wheel"]
 build-backend = "setuptools.build_meta"
 

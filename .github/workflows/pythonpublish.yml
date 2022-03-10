@@ -13,11 +13,10 @@ jobs:
         python-version: '3.x'
     - name: Install dependencies
       run: |
-        pip install setuptools wheel
+        pip install setuptools wheel build
     - name: Build distribution 📦
       run: |
-        pip install .
-        python setup.py sdist bdist_wheel
+        python -m build
     - uses: actions/upload-artifact@v2
       with:
          path: ${{ github.workspace }}/dist/*
