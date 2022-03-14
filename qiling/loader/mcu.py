@@ -18,6 +18,7 @@ class IhexParser:
         self.mem  = []
         self.segments = []
 
+        self.base = 0
         with open(path, 'r') as f:
             for line in f.read().splitlines():
                 self.parse_line(line.strip())
