@@ -48,7 +48,12 @@ stm32f429 = {
     },
     "SRAM": {
         "base": 0x20000000,
-        "size": 0x20000,
+        "size": 0x30000,
+        "type": "memory"
+    },
+    "CCMRAM": {
+        "base": 0x10000000,
+        "size": 0x10000,
         "type": "memory"
     },
     "PERIP": {
