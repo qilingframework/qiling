@@ -12,6 +12,7 @@ from .i2c import *
 from .intc import *
 from .math import *
 from .misc import *
+from .net import *
 from .power import *
 from .sd import *
 from .spi import *
