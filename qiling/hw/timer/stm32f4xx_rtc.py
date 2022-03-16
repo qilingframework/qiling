@@ -113,16 +113,16 @@ class STM32F4xxRtc(QlPeripheral):
                 RTC_ISR.RSF
             ]:
                 if value & bitmask == 0:
-                    self.rtc.ISR &= ~bitmask
+                    self.instance.ISR &= ~bitmask
 
-            self.rtc.ISR = (self.rtc.ISR & ~RTC_ISR.INIT) | (value & RTC_ISR.INIT)            
+            self.instance.ISR = (self.instance.ISR & ~RTC_ISR.INIT) | (value & RTC_ISR.INIT)            
             return
 
         data = (value).to_bytes(size, 'little')
         ctypes.memmove(ctypes.addressof(self.rtc) + offset, data, size)    
 
     def step(self):
-        if self.rtc.ISR & RTC_ISR.INIT:
-            self.rtc.ISR |= RTC_ISR.INITF
+        if self.instance.ISR & RTC_ISR.INIT:
+            self.instance.ISR |= RTC_ISR.INITF
 
-        self.rtc.ISR |= RTC_ISR.RSF
+        self.instance.ISR |= RTC_ISR.RSF
