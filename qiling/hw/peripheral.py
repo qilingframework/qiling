@@ -9,7 +9,7 @@ from typing import List, Tuple
 from qiling.core import Qiling
 from qiling.const import QL_INTERCEPT
 from qiling.exception import QlErrorBase
-from qiling.hw.utils.access import Access, Op
+from qiling.hw.utils.access import Access, Action
 
 
 class QlPeripheralUtils:
@@ -108,11 +108,11 @@ class QlPeripheralUtils:
     def recorder():
         def decorator(func):
             def read(self, offset: int, size: int) -> int:
-                self.history.add(Access(Op.READ, offset))
+                self.history.add(Access(Action.READ, offset))
                 return func(self, offset, size)
 
             def write(self, offset: int, size: int, value: int):
-                self.history.add(Access(Op.WRITE, offset, value))
+                self.history.add(Access(Action.WRITE, offset, value))
                 return func(self, offset, size, value)
 
             funcmap = {

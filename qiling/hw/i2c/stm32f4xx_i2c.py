@@ -9,7 +9,7 @@ from enum import IntEnum
 from qiling.hw.peripheral import QlPeripheral
 from qiling.hw.connectivity import QlConnectivityPeripheral
 from qiling.hw.const.stm32f4xx_i2c import I2C_CR1, I2C_CR2, I2C_SR1, I2C_SR2, I2C_DR, I2C_OAR1, I2C_OAR2
-from qiling.hw.utils.access import Access, AccessSequence, Op
+from qiling.hw.utils.access import Access, AccessSequence, Action
 
 
 class STM32F4xxI2c(QlConnectivityPeripheral):
@@ -71,8 +71,8 @@ class STM32F4xxI2c(QlConnectivityPeripheral):
 		ctypes.memmove(buf, ctypes.addressof(self.instance) + offset, size)
 
 		if self.history.match([
-			Access(Op.READ, self.struct.SR1.offset),
-			Access(Op.READ, self.struct.SR2.offset)
+			Access(Action.READ, self.struct.SR1.offset),
+			Access(Action.READ, self.struct.SR2.offset)
 		]):				
 			self.instance.SR1 &= ~I2C_SR1.ADDR
 
