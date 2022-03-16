@@ -33,13 +33,13 @@ class CortexMNvic(QlPeripheral):
         # https://www.youtube.com/watch?v=uFBNf7F3l60
         # https://developer.arm.com/documentation/ddi0439/b/Nested-Vectored-Interrupt-Controller 
         
-        self.nvic = self.struct()
+        self.instance = self.struct()
 
         ## The max number of interrupt request
         self.IRQN_MAX = self.struct.ISER.size * 8
 
         ## The ISER unit size
-        self.MASK     = self.IRQN_MAX // len(self.nvic.ISER) - 1
+        self.MASK     = self.IRQN_MAX // len(self.instance.ISER) - 1
         self.OFFSET   = self.MASK.bit_length()
 
         ## special write behavior
@@ -55,28 +55,28 @@ class CortexMNvic(QlPeripheral):
 
     def enable(self, IRQn):
         if IRQn >= 0:
-            self.nvic.ISER[IRQn >> self.OFFSET] |= 1 << (IRQn & self.MASK)
-            self.nvic.ICER[IRQn >> self.OFFSET] |= 1 << (IRQn & self.MASK)
+            self.instance.ISER[IRQn >> self.OFFSET] |= 1 << (IRQn & self.MASK)
+            self.instance.ICER[IRQn >> self.OFFSET] |= 1 << (IRQn & self.MASK)
         else:
             self.ql.hw.scb.enable(IRQn)
 
     def disable(self, IRQn):
         if IRQn >= 0:
-            self.nvic.ISER[IRQn >> self.OFFSET] &= self.MASK ^ (1 << (IRQn & self.MASK))
-            self.nvic.ICER[IRQn >> self.OFFSET] &= self.MASK ^ (1 << (IRQn & self.MASK))
+            self.instance.ISER[IRQn >> self.OFFSET] &= self.MASK ^ (1 << (IRQn & self.MASK))
+            self.instance.ICER[IRQn >> self.OFFSET] &= self.MASK ^ (1 << (IRQn & self.MASK))
         else:
             self.ql.hw.scb.disable(IRQn)
 
     def get_enable(self, IRQn):
         if IRQn >= 0:
-            return (self.nvic.ISER[IRQn >> self.OFFSET] >> (IRQn & self.MASK)) & 1
+            return (self.instance.ISER[IRQn >> self.OFFSET] >> (IRQn & self.MASK)) & 1
         else:
             return self.ql.hw.scb.get_enable(IRQn)
 
     def set_pending(self, IRQn):
         if IRQn >= 0:
-            self.nvic.ISPR[IRQn >> self.OFFSET] |= 1 << (IRQn & self.MASK)
-            self.nvic.ICPR[IRQn >> self.OFFSET] |= 1 << (IRQn & self.MASK)
+            self.instance.ISPR[IRQn >> self.OFFSET] |= 1 << (IRQn & self.MASK)
+            self.instance.ICPR[IRQn >> self.OFFSET] |= 1 << (IRQn & self.MASK)
         else:
             self.ql.hw.scb.set_pending(IRQn)
         
@@ -85,20 +85,20 @@ class CortexMNvic(QlPeripheral):
 
     def clear_pending(self, IRQn):
         if IRQn >= 0:
-            self.nvic.ISPR[IRQn >> self.OFFSET] &= self.MASK ^ (1 << (IRQn & self.MASK))
-            self.nvic.ICPR[IRQn >> self.OFFSET] &= self.MASK ^ (1 << (IRQn & self.MASK))
+            self.instance.ISPR[IRQn >> self.OFFSET] &= self.MASK ^ (1 << (IRQn & self.MASK))
+            self.instance.ICPR[IRQn >> self.OFFSET] &= self.MASK ^ (1 << (IRQn & self.MASK))
         else:
             self.ql.hw.scb.clear_pending(IRQn)
 
     def get_pending(self, IRQn):
         if IRQn >= 0:
-            return (self.nvic.ISER[IRQn >> self.OFFSET] >> (IRQn & self.MASK)) & 1
+            return (self.instance.ISER[IRQn >> self.OFFSET] >> (IRQn & self.MASK)) & 1
         else:
             return self.ql.hw.scb.get_pending(IRQn)
 
     def get_priority(self, IRQn):
         if IRQn >= 0:
-            return self.nvic.IPR[IRQn]
+            return self.instance.IPR[IRQn]
         else:
             return self.ql.hw.scb.get_priority(IRQn)    
         
@@ -116,7 +116,7 @@ class CortexMNvic(QlPeripheral):
     @QlPeripheral.monitor()
     def read(self, offset: int, size: int) -> int:
         buf = ctypes.create_string_buffer(size)
-        ctypes.memmove(buf, ctypes.addressof(self.nvic) + offset, size)
+        ctypes.memmove(buf, ctypes.addressof(self.instance) + offset, size)
         return int.from_bytes(buf.raw, byteorder='little')
 
     @QlPeripheral.monitor()
@@ -133,7 +133,7 @@ class CortexMNvic(QlPeripheral):
                 if ipr.offset <= ofs < ipr.offset + ipr.size:
                     byte &= 0xf0 # IPR[3: 0] reserved
                 
-                ctypes.memmove(ctypes.addressof(self.nvic) + ofs, bytes([byte]), 1)                
+                ctypes.memmove(ctypes.addressof(self.instance) + ofs, bytes([byte]), 1)                
 
         for ofs in range(offset, offset + size):
             write_byte(ofs, value & 0xff)

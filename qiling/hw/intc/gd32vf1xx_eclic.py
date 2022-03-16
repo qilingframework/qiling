@@ -370,7 +370,7 @@ class GD32VF1xxEclic(QlPeripheral):
     def __init__(self, ql, label):
         super().__init__(ql, label)
 
-        self.eclic = self.struct(
+        self.instance = self.struct(
             CLICCFG        =  0x00000000,
             CLICINFO       =  0x00000000,
             MTH            =  0x00000000,

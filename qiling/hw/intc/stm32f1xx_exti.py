@@ -44,7 +44,7 @@ class STM32F1xxExti(QlPeripheral):
     ):
         super().__init__(ql, label)
 
-        self.exti = self.struct()
+        self.instance = self.struct()
         self.intn = [
             exti0_intn    , exti1_intn    , exti2_intn    , exti3_intn,
             exti4_intn    , exti9_5_intn  , exti9_5_intn  , exti9_5_intn,
@@ -55,31 +55,31 @@ class STM32F1xxExti(QlPeripheral):
     @QlPeripheral.monitor()
     def read(self, offset: int, size: int) -> int:		
         buf = ctypes.create_string_buffer(size)
-        ctypes.memmove(buf, ctypes.addressof(self.exti) + offset, size)
+        ctypes.memmove(buf, ctypes.addressof(self.instance) + offset, size)
         return int.from_bytes(buf.raw, byteorder='little')
 
     @QlPeripheral.monitor()
     def write(self, offset: int, size: int, value: int):
         if offset == self.struct.SWIER.offset:
-            value = value & self.exti.IMR & 0x7ffff
+            value = value & self.instance.IMR & 0x7ffff
             for i in range(20):
-                if ((self.exti.SWIER >> i) & 1) == 0 and ((value >> i) & 1) == 1:
+                if ((self.instance.SWIER >> i) & 1) == 0 and ((value >> i) & 1) == 1:
                     self.send_interrupt(i)
         
         elif offset == self.struct.PR.offset:
             for i in range(20):
                 if (value >> i) & 1:
-                    self.exti.PR &= ~(1 << i)
-                    self.exti.SWIER &= ~(1 << i)
+                    self.instance.PR &= ~(1 << i)
+                    self.instance.SWIER &= ~(1 << i)
 
             return
 
         data = (value).to_bytes(size, 'little')
-        ctypes.memmove(ctypes.addressof(self.exti) + offset, data, size)
+        ctypes.memmove(ctypes.addressof(self.instance) + offset, data, size)
 
     def send_interrupt(self, index):
-        if 0 <= index < 20 and (self.exti.IMR >> index) & 1:
-            self.exti.PR |= 1 << index
+        if 0 <= index < 20 and (self.instance.IMR >> index) & 1:
+            self.instance.PR |= 1 << index
 
             if index < 16:
                 self.ql.hw.afio.exti(index).set_pin(index)
