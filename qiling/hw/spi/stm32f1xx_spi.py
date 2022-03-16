@@ -51,7 +51,7 @@ class STM32F1xxSpi(QlConnectivityPeripheral):
         data = int.from_bytes(buf.raw, byteorder='little')
 
         if self.contain(self.struct.DR, offset, size):
-            self.spi.SR &= ~SPI_SR.RXNE
+            self.instance.SR &= ~SPI_SR.RXNE
 
         return data
 
@@ -69,11 +69,11 @@ class STM32F1xxSpi(QlConnectivityPeripheral):
             receive data from user buffer into DR
         """        
 
-        if not (self.spi.SR & SPI_SR.RXNE): 
+        if not (self.instance.SR & SPI_SR.RXNE): 
             # TXE bit must had been cleared
             if self.has_input():
-                self.spi.SR |= SPI_SR.RXNE                
-                self.spi.DR = self.recv_from_user()
+                self.instance.SR |= SPI_SR.RXNE                
+                self.instance.DR = self.recv_from_user()
 
     def send_interrupt(self):
         self.ql.hw.nvic.set_pending(self.intn)

@@ -69,7 +69,7 @@ class STM32F4xxSpi(QlConnectivityPeripheral):
     @QlPeripheral.monitor()
     def read(self, offset: int, size: int) -> int:
         if self.contain(self.struct.DR, offset, size):
-            self.spi.SR &= ~SPI_SR.RXNE
+            self.instance.SR &= ~SPI_SR.RXNE
 
         buf = ctypes.create_string_buffer(size)
         ctypes.memmove(buf, ctypes.addressof(self.spi) + offset, size)
@@ -101,8 +101,8 @@ class STM32F4xxSpi(QlConnectivityPeripheral):
         ctypes.memmove(ctypes.addressof(self.spi) + offset, data, size)   
 
         if self.contain(self.struct.DR, offset, size):
-            self.spi.SR |= SPI_SR.RXNE
-            self.send_to_user(self.spi.DR)
+            self.instance.SR |= SPI_SR.RXNE
+            self.send_to_user(self.instance.DR)
 
     def send_interrupt(self):
         self.ql.hw.nvic.set_pending(self.intn)
