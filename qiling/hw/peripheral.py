@@ -249,3 +249,9 @@ class QlPeripheral(QlPeripheralUtils):
             int: Peripheral's base address
         """        
         return self.ql.hw.region[self.label][0][0]
+    
+    def save(self):
+        return None
+
+    def restore(self, data):
+        return None

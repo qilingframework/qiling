@@ -601,7 +601,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
 
     # save all qiling instance states
-    def save(self, reg=True, mem=True, fd=False, cpu_context=False, os=False, loader=False, *, snapshot: str = None):
+    def save(self, reg=True, mem=True, hw=False, fd=False, cpu_context=False, os=False, loader=False, *, snapshot: str = None):
         saved_states = {}
 
         if reg:
@@ -609,6 +609,9 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
         if mem:
             saved_states["mem"] = self.mem.save()
+
+        if hw:
+            saved_states["hw"] = self.hw.save()
 
         if fd:
             saved_states["fd"] = self.os.fd.save()
@@ -645,6 +648,9 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
         if "reg" in saved_states:
             self.arch.regs.restore(saved_states["reg"])
+
+        if "hw" in saved_states:
+            self.hw.restore(saved_states['hw'])
 
         if "fd" in saved_states:
             self.os.fd.restore(saved_states["fd"])

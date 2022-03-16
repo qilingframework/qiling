@@ -160,3 +160,10 @@ class QlHwManager:
 
     def __setitem__(self, key, value):
         self.entity[key] = value
+
+    def save(self):
+        return {label : entity.save() for label, entity in self.entity.items()}
+
+    def restore(self, saved_state):
+        for label, data in saved_state.items():
+            self.entity[label].restore(data)
