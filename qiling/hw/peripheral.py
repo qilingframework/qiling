@@ -252,7 +252,8 @@ class QlPeripheral(QlPeripheralUtils):
         return self.ql.hw.region[self.label][0][0]
     
     def save(self):
-        return None
+        return self.instance
+
 
     def restore(self, data):
-        return None
+        self.instance = data
