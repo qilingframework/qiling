@@ -116,7 +116,7 @@ class STM32F4xxDma(QlPeripheral):
 
         super().__init__(ql, label)
         
-        self.dma = self.struct()
+        self.instance = self.struct()
         
         self.intn = [
             stream0_intn,
@@ -132,33 +132,33 @@ class STM32F4xxDma(QlPeripheral):
     @QlPeripheral.monitor(width=15)
     def read(self, offset: int, size: int) -> int:        
         buf = ctypes.create_string_buffer(size)
-        ctypes.memmove(buf, ctypes.addressof(self.dma) + offset, size)
+        ctypes.memmove(buf, ctypes.addressof(self.instance) + offset, size)
         return int.from_bytes(buf.raw, byteorder='little')
 
     @QlPeripheral.monitor(width=15)
     def write(self, offset: int, size: int, value: int):        
         if offset == self.struct.LIFCR.offset:
-            self.dma.LISR &= ~value
+            self.instance.LISR &= ~value
 
         elif offset == self.struct.HIFCR.offset:
-            self.dma.HISR &= ~value
+            self.instance.HISR &= ~value
 
         elif offset > self.struct.HIFCR.offset:
             data = (value).to_bytes(size, byteorder='little')
-            ctypes.memmove(ctypes.addressof(self.dma) + offset, data, size)
+            ctypes.memmove(ctypes.addressof(self.instance) + offset, data, size)
 
     def transfer_complete(self, id):
         tc_bits = [5, 11, 21, 27]
         if id > 4:
-            self.dma.HISR |= 1 << tc_bits[id - 4]
+            self.instance.HISR |= 1 << tc_bits[id - 4]
         else:
-            self.dma.LISR |= 1 << tc_bits[id]
+            self.instance.LISR |= 1 << tc_bits[id]
 
         if self.intn[id] is not None:
             self.ql.hw.nvic.set_pending(self.intn[id])
 
     def step(self):
-        for id, stream in enumerate(self.dma.stream):
+        for id, stream in enumerate(self.instance.stream):
             if not stream.enable():
                 continue
                                     

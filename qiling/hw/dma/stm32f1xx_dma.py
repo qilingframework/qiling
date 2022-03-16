@@ -102,7 +102,7 @@ class STM32F1xxDma(QlPeripheral):
     ):
         super().__init__(ql, label)
         
-        self.dma = self.struct()
+        self.instance = self.struct()
         
         self.intn = [
             stream0_intn,
@@ -118,7 +118,7 @@ class STM32F1xxDma(QlPeripheral):
     @QlPeripheral.monitor(width=15)
     def read(self, offset: int, size: int) -> int:        
         buf = ctypes.create_string_buffer(size)
-        ctypes.memmove(buf, ctypes.addressof(self.dma) + offset, size)
+        ctypes.memmove(buf, ctypes.addressof(self.instance) + offset, size)
         return int.from_bytes(buf.raw, byteorder='little')
 
     @QlPeripheral.monitor(width=15)
@@ -127,21 +127,21 @@ class STM32F1xxDma(QlPeripheral):
             return
 
         elif offset == self.struct.IFCR.offset:
-            self.dma.ISR &= ~value
+            self.instance.ISR &= ~value
 
         else:
             data = (value).to_bytes(size, byteorder='little')
-            ctypes.memmove(ctypes.addressof(self.dma) + offset, data, size)
+            ctypes.memmove(ctypes.addressof(self.instance) + offset, data, size)
 
     def transfer_complete(self, id):
         tc_bits = [1, 5, 9, 13, 17, 21, 25]
-        self.dma.ISR |= 1 << tc_bits[id]
+        self.instance.ISR |= 1 << tc_bits[id]
 
         if self.intn[id] is not None:
             self.ql.hw.nvic.set_pending(self.intn[id])
 
     def step(self):
-        for id, stream in enumerate(self.dma.stream):
+        for id, stream in enumerate(self.instance.stream):
             if not stream.enable():
                 continue
                                     
