@@ -83,18 +83,18 @@ class STM32F4xxTim(QlTimerPeripheral):
                 self.ql.log.warning(f'[{self.label.upper()}] Unused keyword {key} : {value}')
         
         self.prescale_count = 0
-        self.tim = self.struct()
+        self.instance = self.struct()
 
     @QlPeripheral.monitor()
     def read(self, offset: int, size: int) -> int:
         buf = ctypes.create_string_buffer(size)
-        ctypes.memmove(buf, ctypes.addressof(self.tim) + offset, size)
+        ctypes.memmove(buf, ctypes.addressof(self.instance) + offset, size)
         return int.from_bytes(buf.raw, byteorder='little')
 
     @QlPeripheral.monitor()
     def write(self, offset: int, size: int, value: int):
         data = (value).to_bytes(size, 'little')
-        ctypes.memmove(ctypes.addressof(self.tim) + offset, data, size)
+        ctypes.memmove(ctypes.addressof(self.instance) + offset, data, size)
 
     def send_update_interrupt(self):
         if self.up_tim10_intn is None:
