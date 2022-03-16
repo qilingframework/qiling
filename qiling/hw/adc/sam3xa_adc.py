@@ -51,20 +51,20 @@ class SAM3xaAdc(QlPeripheral):
     def __init__(self, ql, label, intn = None):
         super().__init__(ql, label)
 
-        self.adc = self.struct()
+        self.instance = self.struct()
         self.intn = intn
 
     @QlPeripheral.monitor()
     def read(self, offset: int, size: int) -> int:
         buf = ctypes.create_string_buffer(size)
-        ctypes.memmove(buf, ctypes.addressof(self.adc) + offset, size)
+        ctypes.memmove(buf, ctypes.addressof(self.instance) + offset, size)
         return int.from_bytes(buf.raw, byteorder='little')
 
     @QlPeripheral.monitor()
     def write(self, offset: int, size: int, value: int):      
         if offset == self.struct.CR.offset:
             if value & CR.START:
-                self.adc.ISR |= ISR.DRDY
+                self.instance.ISR |= ISR.DRDY
 
         data = (value).to_bytes(size, 'little')
-        ctypes.memmove(ctypes.addressof(self.adc) + offset, data, size)
+        ctypes.memmove(ctypes.addressof(self.instance) + offset, data, size)
