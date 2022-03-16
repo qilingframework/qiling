@@ -58,14 +58,14 @@ class CortexMNvic(QlPeripheral):
             self.instance.ISER[IRQn >> self.OFFSET] |= 1 << (IRQn & self.MASK)
             self.instance.ICER[IRQn >> self.OFFSET] |= 1 << (IRQn & self.MASK)
         else:
-            self.ql.hw.instance.enable(IRQn)
+            self.ql.hw.scb.enable(IRQn)
 
     def disable(self, IRQn):
         if IRQn >= 0:
             self.instance.ISER[IRQn >> self.OFFSET] &= self.MASK ^ (1 << (IRQn & self.MASK))
             self.instance.ICER[IRQn >> self.OFFSET] &= self.MASK ^ (1 << (IRQn & self.MASK))
         else:
-            self.ql.hw.instance.disable(IRQn)
+            self.ql.hw.scb.disable(IRQn)
 
     def get_enable(self, IRQn):
         if IRQn >= 0:
@@ -94,7 +94,7 @@ class CortexMNvic(QlPeripheral):
         if IRQn >= 0:
             return (self.instance.ISER[IRQn >> self.OFFSET] >> (IRQn & self.MASK)) & 1
         else:
-            return self.ql.hw.instance.get_pending(IRQn)
+            return self.ql.hw.scb.get_pending(IRQn)
 
     def get_priority(self, IRQn):
         if IRQn >= 0:
