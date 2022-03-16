@@ -24,19 +24,33 @@ class MCUTest(unittest.TestCase):
 
         del ql
 
-    def test_mcu_usart_output_stm32f411(self):
-        ql = Qiling(["../examples/rootfs/mcu/stm32f411/hello_usart.hex"],                    
-                    archtype="cortex_m", ostype="mcu", env=stm32f411, verbose=QL_VERBOSE.DEFAULT)        
+    def test_mcu_snapshot_stm32f411(self):
+        def create_qiling():
+            ql = Qiling(["../examples/rootfs/mcu/stm32f411/hello_usart.hex"],                    
+                        archtype="cortex_m", ostype="mcu", env=stm32f411)
         
-        ql.hw.create('usart2')
-        ql.hw.create('rcc')
+            ql.hw.create('usart2')
+            ql.hw.create('rcc')
 
-        ql.run(count=2000)
-        buf = ql.hw.usart2.recv()
-        print('[1] Received from usart: ', buf)
-        self.assertEqual(buf, b'Hello USART\n')
+            return ql
 
-        del ql
+        ql1 = create_qiling()
+        ql1.run(count=1500)
+        buf1 = ql1.hw.usart2.recv()
+        print('[1] Received from usart: ', buf1)
+
+        snapshot = ql1.save(hw=True)
+
+        ql2 = create_qiling()
+        ql2.restore(snapshot)
+
+        ql2.run(count=500)
+        buf2 = ql2.hw.usart2.recv()
+        print('[2] Received from usart: ', buf2)
+        
+        self.assertEqual(buf1 + buf2, b'Hello USART\n')
+
+        del ql1, ql2
 
     def test_mcu_usart_input_stm32f411(self):
         ql = Qiling(["../examples/rootfs/mcu/stm32f411/md5_server.hex"],                    
