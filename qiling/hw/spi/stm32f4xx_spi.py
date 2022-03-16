@@ -52,7 +52,7 @@ class STM32F4xxSpi(QlConnectivityPeripheral):
 
     def __init__(self, ql, label, intn=None):
         super().__init__(ql, label)
-        self.spi = self.struct(
+        self.instance = self.struct(
             CR1     = 0x00000000,
             CR2     = 0x00000000,
             SR      = 0x0000000A,
@@ -72,7 +72,7 @@ class STM32F4xxSpi(QlConnectivityPeripheral):
             self.instance.SR &= ~SPI_SR.RXNE
 
         buf = ctypes.create_string_buffer(size)
-        ctypes.memmove(buf, ctypes.addressof(self.spi) + offset, size)
+        ctypes.memmove(buf, ctypes.addressof(self.instance) + offset, size)
         data = int.from_bytes(buf.raw, byteorder='little')
 
         return data
@@ -98,7 +98,7 @@ class STM32F4xxSpi(QlConnectivityPeripheral):
             value &= SPI_I2SPR.RW_MASK
 
         data = (value).to_bytes(size, 'little')
-        ctypes.memmove(ctypes.addressof(self.spi) + offset, data, size)   
+        ctypes.memmove(ctypes.addressof(self.instance) + offset, data, size)   
 
         if self.contain(self.struct.DR, offset, size):
             self.instance.SR |= SPI_SR.RXNE

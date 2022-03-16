@@ -31,7 +31,7 @@ class STM32F1xxSpi(QlConnectivityPeripheral):
 
     def __init__(self, ql, label, intn=None):
         super().__init__(ql, label)
-        self.spi = self.struct(
+        self.instance = self.struct(
             CR1     = 0x00000000,
             CR2     = 0x00000000,
             SR      = 0x0000000A,
@@ -47,7 +47,7 @@ class STM32F1xxSpi(QlConnectivityPeripheral):
     @QlPeripheral.monitor()
     def read(self, offset: int, size: int) -> int:        
         buf = ctypes.create_string_buffer(size)
-        ctypes.memmove(buf, ctypes.addressof(self.spi) + offset, size)
+        ctypes.memmove(buf, ctypes.addressof(self.instance) + offset, size)
         data = int.from_bytes(buf.raw, byteorder='little')
 
         if self.contain(self.struct.DR, offset, size):
@@ -62,7 +62,7 @@ class STM32F1xxSpi(QlConnectivityPeripheral):
 
         else:
             data = (value).to_bytes(size, 'little')
-            ctypes.memmove(ctypes.addressof(self.spi) + offset, data, size)           
+            ctypes.memmove(ctypes.addressof(self.instance) + offset, data, size)           
 
     def transfer(self):
         """ transfer data from DR to shift buffer and
