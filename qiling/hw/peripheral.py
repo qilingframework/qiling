@@ -31,15 +31,15 @@ class QlPeripheralUtils:
     def watch(self):
         self.verbose = True
 
-    def hook_read(self, callback, user_data=None, flag=QL_INTERCEPT.ENTER):
+    def hook_read(self, callback, user_data=None, intercept=QL_INTERCEPT.ENTER):
         hook_function = (callback, user_data)
-        self.user_read[flag].append(hook_function)
-        return (0, flag, hook_function)
+        self.user_read[intercept].append(hook_function)
+        return (0, intercept, hook_function)
 
-    def hook_write(self, callback, user_data=None, flag=QL_INTERCEPT.ENTER):
+    def hook_write(self, callback, user_data=None, intercept=QL_INTERCEPT.ENTER):
         hook_function = (callback, user_data)
-        self.user_write[flag].append(hook_function)
-        return (1, flag, hook_function)
+        self.user_write[intercept].append(hook_function)
+        return (1, intercept, hook_function)
 
     def hook_del(self, hook_struct):
         hook_type, hook_flag, hook_function = hook_struct
