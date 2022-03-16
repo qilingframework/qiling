@@ -58,27 +58,27 @@ class CortexMNvic(QlPeripheral):
             self.instance.ISER[IRQn >> self.OFFSET] |= 1 << (IRQn & self.MASK)
             self.instance.ICER[IRQn >> self.OFFSET] |= 1 << (IRQn & self.MASK)
         else:
-            self.ql.hw.scb.enable(IRQn)
+            self.ql.hw.instance.enable(IRQn)
 
     def disable(self, IRQn):
         if IRQn >= 0:
             self.instance.ISER[IRQn >> self.OFFSET] &= self.MASK ^ (1 << (IRQn & self.MASK))
             self.instance.ICER[IRQn >> self.OFFSET] &= self.MASK ^ (1 << (IRQn & self.MASK))
         else:
-            self.ql.hw.scb.disable(IRQn)
+            self.ql.hw.instance.disable(IRQn)
 
     def get_enable(self, IRQn):
         if IRQn >= 0:
             return (self.instance.ISER[IRQn >> self.OFFSET] >> (IRQn & self.MASK)) & 1
         else:
-            return self.ql.hw.scb.get_enable(IRQn)
+            return self.ql.hw.instance.get_enable(IRQn)
 
     def set_pending(self, IRQn):
         if IRQn >= 0:
             self.instance.ISPR[IRQn >> self.OFFSET] |= 1 << (IRQn & self.MASK)
             self.instance.ICPR[IRQn >> self.OFFSET] |= 1 << (IRQn & self.MASK)
         else:
-            self.ql.hw.scb.set_pending(IRQn)
+            self.ql.hw.instance.set_pending(IRQn)
         
         if self.get_enable(IRQn):
             self.intrs.append(IRQn)
@@ -88,19 +88,19 @@ class CortexMNvic(QlPeripheral):
             self.instance.ISPR[IRQn >> self.OFFSET] &= self.MASK ^ (1 << (IRQn & self.MASK))
             self.instance.ICPR[IRQn >> self.OFFSET] &= self.MASK ^ (1 << (IRQn & self.MASK))
         else:
-            self.ql.hw.scb.clear_pending(IRQn)
+            self.ql.hw.instance.clear_pending(IRQn)
 
     def get_pending(self, IRQn):
         if IRQn >= 0:
             return (self.instance.ISER[IRQn >> self.OFFSET] >> (IRQn & self.MASK)) & 1
         else:
-            return self.ql.hw.scb.get_pending(IRQn)
+            return self.ql.hw.instance.get_pending(IRQn)
 
     def get_priority(self, IRQn):
         if IRQn >= 0:
             return self.instance.IPR[IRQn]
         else:
-            return self.ql.hw.scb.get_priority(IRQn)    
+            return self.ql.hw.instance.get_priority(IRQn)    
         
     def step(self):
         if not self.intrs:

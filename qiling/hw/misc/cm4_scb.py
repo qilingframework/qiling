@@ -38,7 +38,7 @@ class CortexM4Scb(CortexMScb):
     def __init__(self, ql, label):
         super().__init__(ql, label)
 
-        self.scb = self.struct(
+        self.instance = self.struct(
             CPUID = 0x410FC241,
             AIRCR = 0xFA050000,
             CCR   = 0x00000200,

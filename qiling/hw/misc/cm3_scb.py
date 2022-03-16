@@ -30,7 +30,7 @@ class CortexM3Scb(CortexMScb):
     def __init__(self, ql, label):
         super().__init__(ql, label)
 
-        self.scb = self.struct(
+        self.instance = self.struct(
             CPUID = 0x411FC231,
             AIRCR = 0xFA050000,
         )
