@@ -44,5 +44,5 @@ class SAM3xaTc(QlPeripheral):
     def __init__(self, ql, label, intn):
         super().__init__(ql, label)
 
-        self.tc = self.struct()
+        self.instance = self.struct()
         self.intn = intn
