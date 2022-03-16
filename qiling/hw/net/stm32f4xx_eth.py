@@ -93,8 +93,11 @@ class STM32F4xxEth(QlPeripheral):
 
     def __init__(self, ql, label, intn=None, wkup_intn=None):
         super().__init__(ql, label)
-
+                
         self.eth = self.struct()
+
+        self.intn = intn
+        self.wkup_intn = wkup_intn
 
     @QlPeripheral.monitor()
     def read(self, offset: int, size: int) -> int:
