@@ -46,13 +46,13 @@ class QlPeripheralUtils:
         mapper = self.user_read if hook_type else self.user_write
         mapper[hook_flag].remove(hook_function)
 
-    def _hook_call(self, hook_list, *args):
+    def _hook_call(self, hook_list, access, offset, size, value=0):
         retval = None
         for callback, user_data in hook_list:
             if user_data is None:
-                retval = callback(self, *args)
+                retval = callback(self, access, offset, size, value)
             else:
-                retval = callback(self, *args, user_data)
+                retval = callback(self, access, offset, size, value, user_data)
                 
         return retval
 
@@ -60,22 +60,22 @@ class QlPeripheralUtils:
     def monitor(width=4):
         def decorator(func):
             def read(self, offset: int, size: int) -> int:
-                self._hook_call(self.user_read[QL_INTERCEPT.ENTER], offset, size)
+                self._hook_call(self.user_read[QL_INTERCEPT.ENTER], Action.READ, offset, size)
 
                 if self.user_read[QL_INTERCEPT.CALL]:
-                    retval = self._hook_call(self.user_read[QL_INTERCEPT.CALL], offset, size)
+                    retval = self._hook_call(self.user_read[QL_INTERCEPT.CALL], Action.READ, offset, size)
                 else:
                     retval = func(self, offset, size)
 
                 if self.verbose:
                     self.ql.log.info(f'[{self.label.upper()}] [{hex(self.ql.arch.regs.arch_pc)}] [R] {self.field_description(offset, size):{width}s} = {hex(retval)}')
                 
-                self._hook_call(self.user_read[QL_INTERCEPT.EXIT], offset, size)
+                self._hook_call(self.user_read[QL_INTERCEPT.EXIT], Action.READ, offset, size)
 
                 return retval
 
             def write(self, offset: int, size: int, value: int):
-                self._hook_call(self.user_write[QL_INTERCEPT.ENTER], offset, size, value)
+                self._hook_call(self.user_write[QL_INTERCEPT.ENTER], Action.WRITE, offset, size, value)
 
                 if self.verbose:
                     field, extra = self.field_description(offset, size), ''
@@ -85,11 +85,11 @@ class QlPeripheralUtils:
                     self.ql.log.info(f'[{self.label.upper()}] [{hex(self.ql.arch.regs.pc)}] [W] {field:{width}s} = {hex(value)} {extra}')
                 
                 if self.user_write[QL_INTERCEPT.CALL]:
-                    self._hook_call(self.user_write[QL_INTERCEPT.CALL], offset, size, value)
+                    self._hook_call(self.user_write[QL_INTERCEPT.CALL], Action.WRITE, offset, size, value)
                 else:
                     func(self, offset, size, value)
 
-                self._hook_call(self.user_write[QL_INTERCEPT.EXIT], offset, size, value)
+                self._hook_call(self.user_write[QL_INTERCEPT.EXIT], Action.WRITE, offset, size, value)
 
             funcmap = {
                 'read' : read,
