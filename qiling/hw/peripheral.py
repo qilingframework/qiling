@@ -152,6 +152,7 @@ class QlPeripheral(QlPeripheralUtils):
         self.ql = ql
         self.label = label
         self.struct = type(self).Type
+        self.instance = None
 
     def step(self):
         """ Update the state of the peripheral, 
