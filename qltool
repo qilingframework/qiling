@@ -226,9 +226,6 @@ if __name__ == '__main__':
     if options.subcommand == 'examples':
         handle_examples(parser)
 
-    if options.debug_stop and options.verbose not in (QL_VERBOSE.DEBUG, QL_VERBOSE.DUMP):
-        parser.error('the debug_stop option requires verbose to be set to either "debug" or "dump"')
-
     # ql file setup
     if options.subcommand == 'run':
         ql = handle_run(options)
@@ -247,6 +244,9 @@ if __name__ == '__main__':
         ql.debugger = argval
 
     if options.debug_stop:
+        if options.verbose not in (QL_VERBOSE.DEBUG, QL_VERBOSE.DUMP):
+            parser.error('the debug_stop option requires verbose to be set to either "debug" or "dump"')
+
         ql.debug_stop = True
 
     if options.root:

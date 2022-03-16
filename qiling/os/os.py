@@ -222,11 +222,6 @@ class QlOs:
         else:
             self.add_function_hook(api_name, intercept_function, intercept)
 
-    def find_containing_image(self, pc: int):
-        for image in self.ql.loader.images:
-            if image.base <= pc < image.end:
-                return image
-
     # os main method; derivatives must implement one of their own
     def run(self) -> None:
         raise NotImplementedError
@@ -256,7 +251,7 @@ class QlOs:
             self.ql.log.error('Disassembly:')
             self.ql.arch.utils.disassembler(self.ql, pc, 64)
 
-            containing_image = self.find_containing_image(pc)
+            containing_image = self.ql.loader.find_containing_image(pc)
             pc_info = f' ({containing_image.path} + {pc - containing_image.base:#x})' if containing_image else ''
         finally:
             self.ql.log.error(f'PC = {pc:#0{self.ql.arch.pointersize * 2 + 2}x}{pc_info}\n')
