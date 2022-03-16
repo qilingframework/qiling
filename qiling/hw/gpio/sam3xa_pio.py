@@ -72,19 +72,19 @@ class SAM3xaPio(QlPeripheral, GpioHooks):
         QlPeripheral.__init__(self, ql, label)
         GpioHooks.__init__(self, ql, 16)
 
-        self.pio = self.struct()
+        self.instance = self.struct()
         self.intn = intn
 
     @QlPeripheral.monitor()
     def read(self, offset: int, size: int) -> int:
         if offset == self.struct.PDSR.offset:
-            self.pio.PDSR ^= 0xffffffff
+            self.instance.PDSR ^= 0xffffffff
 
         buf = ctypes.create_string_buffer(size)
-        ctypes.memmove(buf, ctypes.addressof(self.pio) + offset, size)
+        ctypes.memmove(buf, ctypes.addressof(self.instance) + offset, size)
         return int.from_bytes(buf.raw, byteorder='little')
 
     @QlPeripheral.monitor()
     def write(self, offset: int, size: int, value: int):        
         data = (value).to_bytes(size, 'little')
-        ctypes.memmove(ctypes.addressof(self.pio) + offset, data, size)
+        ctypes.memmove(ctypes.addressof(self.instance) + offset, data, size)
