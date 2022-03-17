@@ -152,7 +152,7 @@ class QlPeripheral(QlPeripheralUtils):
         self.ql = ql
         self.label = label
         self.struct = type(self).Type
-        self.instance = None
+        self.instance = self.struct()
 
     def step(self):
         """ Update the state of the peripheral, 
@@ -252,8 +252,7 @@ class QlPeripheral(QlPeripheralUtils):
         return self.ql.hw.region[self.label][0][0]
     
     def save(self):
-        return self.instance
-
+        return bytes(self.instance)
 
     def restore(self, data):
-        self.instance = data
+        ctypes.memmove(ctypes.addressof(self.instance), data, len(data))
