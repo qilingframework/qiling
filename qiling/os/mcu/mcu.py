@@ -20,8 +20,8 @@ class QlOsMcu(QlOs):
     def run(self):
         self.runable = True
         
-        count = self.ql.count
-        end = self.ql.exit_point if self.ql.exit_point is not None else -1
+        count = self.ql.count or 0
+        end = self.ql.exit_point or -1
 
         while self.runable:
             current_address = self.ql.arch.regs.arch_pc
