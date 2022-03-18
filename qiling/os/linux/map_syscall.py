@@ -431,7 +431,7 @@ arm_syscall_table = {
 	445: "landlock_add_rule",
 	446: "landlock_restrict_self",
 	448: "process_mrelease",
-    983402: "cacheflush",
+    983042: "cacheflush",
     983045: "set_tls",
 }
 
