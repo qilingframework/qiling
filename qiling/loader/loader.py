@@ -3,6 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+import os
 from typing import Any, Mapping, MutableSequence, NamedTuple, Optional
 
 from qiling import Qiling
@@ -24,6 +25,14 @@ class QlLoader:
         """
 
         return next((image for image in self.images if image.base <= address < image.end), None)
+
+    def get_image_by_name(self, name: str) -> Optional[Image]:
+        """Retrieve an image by its basename.
+
+        Returns: image whose basename was, or `None` if not found
+        """
+
+        return next((image for image in self.images if os.path.basename(image.path) == name), None)
 
     def save(self) -> Mapping[str, Any]:
         saved_state = {
