@@ -3,6 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+import ntpath
 import os
 
 from shutil import copyfile
@@ -290,6 +291,27 @@ def hook_CreateFileA(ql: Qiling, address: int, params):
 def hook_CreateFileW(ql: Qiling, address: int, params):
     return  _CreateFile(ql, address, params)
 
+def _GetTempPath(ql: Qiling, address: int, params, wide: bool):
+    temp_path = ntpath.join(ql.rootfs, 'Windows', 'Temp')
+
+    if not os.path.exists(temp_path):
+        os.makedirs(temp_path, 0o755)
+
+    nBufferLength = params['nBufferLength']
+    lpBuffer = params['lpBuffer']
+
+    enc = 'utf-16le' if wide else 'utf-8'
+
+    # temp dir path has to end with a path separator
+    tmpdir = f'{ntpath.join(ql.os.windir, "Temp")}{ntpath.sep}'.encode(enc)
+    cstr = tmpdir + '\x00'.encode(enc)
+
+    if nBufferLength >= len(cstr):
+        ql.mem.write(lpBuffer, cstr)
+
+    # returned length does not include the null-terminator
+    return len(tmpdir)
+
 # DWORD GetTempPathW(
 #   DWORD  nBufferLength,
 #   LPWSTR lpBuffer
@@ -299,16 +321,7 @@ def hook_CreateFileW(ql: Qiling, address: int, params):
     'lpBuffer'      : LPWSTR
 })
 def hook_GetTempPathW(ql: Qiling, address: int, params):
-    temp_path = os.path.join(ql.rootfs, "Windows", "Temp")
-
-    if not os.path.exists(temp_path):
-        os.makedirs(temp_path, 0o755)
-
-    dest = params["lpBuffer"]
-    temp = (ql.os.windir + "Temp" + "\\\x00").encode('utf-16le')
-    ql.mem.write(dest, temp)
-
-    return len(temp)
+    return _GetTempPath(ql, address, params, wide=True)
 
 # DWORD GetTempPathA(
 #   DWORD  nBufferLength,
@@ -319,16 +332,7 @@ def hook_GetTempPathW(ql: Qiling, address: int, params):
     'lpBuffer'      : LPSTR
 })
 def hook_GetTempPathA(ql: Qiling, address: int, params):
-    temp_path = os.path.join(ql.rootfs, "Windows", "Temp")
-
-    if not os.path.exists(temp_path):
-        os.makedirs(temp_path, 0o755)
-
-    dest = params["lpBuffer"]
-    temp = (ql.os.windir + "Temp" + "\\\x00").encode('utf-8')
-    ql.mem.write(dest, temp)
-
-    return len(temp)
+    return _GetTempPath(ql, address, params, wide=False)
 
 # DWORD GetShortPathNameW(
 #   LPCWSTR lpszLongPath,
