@@ -356,7 +356,7 @@ def hook_LdrGetProcedureAddress(ql: Qiling, address: int, params):
     FunctionAddress = params['FunctionAddress']
 
     # Check if dll is loaded
-    dll_name = next((key for key, value in ql.loader.dlls.items() if value == ModuleHandle), None)
+    dll_name = next((os.path.basename(path) for base, _, path in ql.loader.images if base == ModuleHandle), None)
 
     if dll_name is None:
         ql.log.debug(f'Could not find specified handle {ModuleHandle} in loaded DLL')
