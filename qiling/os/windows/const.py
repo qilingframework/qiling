@@ -612,6 +612,7 @@ PF_XSAVE_ENABLED = 0x17
 
 
 # https://docs.microsoft.com/en-us/windows/win32/procthread/zwqueryinformationprocess
+# https://www.pinvoke.net/default.aspx/ntdll/PROCESSINFOCLASS.html
 ProcessBasicInformation = 0
 ProcessDebugPort = 7
 ProcessExecuteFlags = 0x22

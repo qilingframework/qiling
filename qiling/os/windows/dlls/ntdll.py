@@ -3,6 +3,8 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+import os
+
 from qiling import Qiling
 from qiling.os.windows.api import *
 from qiling.os.windows.fncc import *
@@ -54,7 +56,8 @@ def _QueryInformationProcess(ql: Qiling, address: int, params):
     elif flag == ProcessBasicInformation:
         pbi = structs.ProcessBasicInformation(ql,
             exitStatus=0,
-            pebBaseAddress=ql.os.heap_base_address, affinityMask=0,
+            pebBaseAddress=ql.loader.TEB.PebAddress,
+            affinityMask=0,
             basePriority=0,
             uniqueId=ql.os.profile.getint("KERNEL", "pid"),
             parentPid=ql.os.profile.getint("KERNEL", "parent_pid")
@@ -310,7 +313,8 @@ def _SetInformationProcess(ql: Qiling, address: int, params):
         pbi = structs.ProcessBasicInformation(
             ql,
             exitStatus=0,
-            pebBaseAddress=ql.os.heap_base_address, affinityMask=0,
+            pebBaseAddress=ql.loader.TEB.PebAddress,
+            affinityMask=0,
             basePriority=0,
             uniqueId=ql.os.profile.getint("KERNEL", "pid"),
             parentPid=ql.os.profile.getint("KERNEL", "parent_pid")

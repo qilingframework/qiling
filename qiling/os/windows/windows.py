@@ -4,6 +4,7 @@
 #
 
 import json
+import ntpath
 from typing import Callable
 
 from unicorn import UcError
@@ -15,6 +16,7 @@ from qiling.cc import intel
 from qiling.const import QL_ARCH, QL_INTERCEPT
 from qiling.exception import QlErrorSyscallError, QlErrorSyscallNotFound
 from qiling.os.fcall import QlFunctionCall
+from qiling.os.memory import QlMemoryHeap
 from qiling.os.os import QlOs
 
 from . import const
@@ -24,7 +26,6 @@ from . import thread
 from . import clipboard
 from . import fiber
 from . import registry
-from . import utils
 
 import qiling.os.windows.dlls as api
 
@@ -58,20 +59,32 @@ class QlOsWindows(QlOs):
             return __selector[atype]
 
         self.fcall_select = __make_fcall_selector(ql.arch.type)
-        self.fcall = None
+        self.fcall = self.fcall_select(fncc.CDECL)
 
-        self.PE_RUN = True
+        ossection = f'OS{self.ql.arch.bits}'
+        heap_base = self.profile.getint(ossection, 'heap_address')
+        heap_size = self.profile.getint(ossection, 'heap_size')
+
+        self.heap = QlMemoryHeap(self.ql, heap_base, heap_base + heap_size)
+
+        sysdrv = self.profile.get('PATH', 'systemdrive')
+        windir = self.profile.get('PATH', 'windir')
+        username = self.profile.get('USER', 'username')
+
+        self.windir = ntpath.join(sysdrv, windir)
+        self.userprofile = ntpath.join(sysdrv, 'Users', username)
+        self.username = username
+
+        self.PE_RUN = False
         self.last_error = 0
         # variables used inside hooks
         self.hooks_variables = {}
         self.syscall_count = {}
         self.argv = self.ql.argv
         self.env = self.ql.env
-        self.pid = self.profile.getint("KERNEL","pid")
+        self.pid = self.profile.getint('KERNEL', 'pid')
         self.automatize_input = self.profile.getboolean("MISC","automatize_input")
-        self.username = self.profile["USER"]["username"]
-        self.windir = self.profile["PATH"]["systemdrive"] + self.profile["PATH"]["windir"]
-        self.userprofile = self.profile["PATH"]["systemdrive"] + "Users\\" + self.profile["USER"]["username"] + "\\"
+
         self.services = {}
         self.load()
 
@@ -148,7 +161,7 @@ class QlOsWindows(QlOs):
 
                     raise QlErrorSyscallError("Windows API Implementation Error")
             else:
-                ql.log.warning(f'api {api_name} is not implemented')
+                ql.log.warning(f'api {api_name} ({entry["dll"]}) is not implemented')
 
                 if ql.debug_stop:
                     raise QlErrorSyscallNotFound("Windows API implementation not found")
@@ -180,6 +193,8 @@ class QlOsWindows(QlOs):
 
         if  self.ql.entry_point is not None:
             self.ql.loader.entry_point = self.ql.entry_point
+
+        self.PE_RUN = True
 
         try:
             if self.ql.code:
