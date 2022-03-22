@@ -82,8 +82,10 @@ class Process():
             return 0
 
         # If the dll is already loaded
-        if dll_name in self.dlls:
-            return self.dlls[dll_name]
+        image = self.get_image_by_name(dll_name)
+
+        if image is not None:
+            return image.base
 
         self.ql.log.info(f'Loading {path} ...')
 
@@ -464,14 +466,7 @@ class QlLoaderPE(QlLoader, Process):
             WINOSARCH = "OS64"
             self.structure_last_addr = GS_SEGMENT_ADDR
 
-        self.stack_address = int(self.ql.os.profile.get(WINOSARCH, "stack_address"), 16)
-        self.stack_size = int(self.ql.os.profile.get(WINOSARCH, "stack_size"), 16)
-        self.image_address = int(self.ql.os.profile.get(WINOSARCH, "image_address"), 16)
-        self.dll_address = int(self.ql.os.profile.get(WINOSARCH, "dll_address"), 16)
-        self.entry_point = int(self.ql.os.profile.get(WINOSARCH, "entry_point"), 16)
-        self.ql.os.heap_base_address = int(self.ql.os.profile.get(WINOSARCH, "heap_address"), 16)
         self.ql.os.heap_base_size = int(self.ql.os.profile.get(WINOSARCH, "heap_size"), 16)
-        self.dlls = {}
         self.import_symbols = {}
         self.export_symbols = {}
         self.import_address_table = {}

@@ -476,9 +476,11 @@ def hook_MmGetSystemRoutineAddress(ql: Qiling, address: int, params):
         index = hook_only_routine_address.index(SystemRoutineName)
         # found!
         for dll_name in ('ntoskrnl.exe', 'ntkrnlpa.exe', 'hal.dll'):
-            if dll_name in ql.loader.dlls:
+            image = ql.loader.get_image_by_name(dll_name)
+
+            if image:
                 # create fake address
-                new_function_address = ql.loader.dlls[dll_name] + index + 1
+                new_function_address = image.base + index + 1
                 # update import address table
                 ql.loader.import_symbols[new_function_address] = {
                     'name': SystemRoutineName,
@@ -779,8 +781,11 @@ def _NtQuerySystemInformation(ql: Qiling, address: int, params):
             module.Section = 0
             module.MappedBase = 0
 
-            if ql.loader.is_driver == True:
-                module.ImageBase = ql.loader.dlls.get("ntoskrnl.exe")
+            if ql.loader.is_driver:
+                image = ql.loader.get_image_by_name("ntoskrnl.exe")
+                assert image, 'image is a driver, but ntoskrnl.exe was not loaded'
+
+                module.ImageBase = image.base
 
             module.ImageSize = 0xab000
             module.Flags = 0x8804000

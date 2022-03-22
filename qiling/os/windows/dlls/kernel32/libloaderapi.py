@@ -23,10 +23,12 @@ def _GetModuleHandle(ql: Qiling, address: int, params):
         if not is_file_library(lpModuleName):
             lpModuleName += ".dll"
 
-        if lpModuleName in ql.loader.dlls:
-            ret = ql.loader.dlls[lpModuleName]
+        image = ql.loader.get_image_by_name(lpModuleName)
+
+        if image:
+            ret = image.base
         else:
-            ql.log.debug("Library %s not imported" % lpModuleName)
+            ql.log.debug(f'Library "{lpModuleName}" not imported')
             ret = 0
 
     return ret
@@ -161,11 +163,13 @@ def hook_GetProcAddress(ql: Qiling, address: int, params):
         return 0
 
     # Check if dll is loaded
-    try:
-        dll_name = [key for key, value in ql.loader.dlls.items() if value == params['hModule']][0]
-    except IndexError as ie:
+    image = next((image for image in ql.loader.images if image.base == params['hModule']), None)
+
+    if image is None:
         ql.log.info('Failed to import function "%s" with handle 0x%X' % (lpProcName, params['hModule']))
         return 0
+
+    dll_name = os.path.basename(image.path)
 
     # Handle case where module is self
     if dll_name == os.path.basename(ql.loader.path):
