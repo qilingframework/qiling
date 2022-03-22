@@ -91,6 +91,8 @@ class QlOsWindows(QlOs):
 
     def load(self):
         self.setupGDT()
+        self.setupComponents()
+
         # hook win api
         self.ql.hook_code(self.hook_winapi)
 
@@ -122,12 +124,12 @@ class QlOsWindows(QlOs):
         # registry manger
         self.registry_manager = registry.RegistryManager(self.ql)
         # clipboard
-        self.clipboard = clipboard.Clipboard(self.ql.os)
+        self.clipboard = clipboard.Clipboard(self)
         # fibers
         self.fiber_manager = fiber.FiberManager(self.ql)
         # thread manager
         main_thread = thread.QlWindowsThread(self.ql)
-        self.thread_manager = thread.QlWindowsThreadManagement(self.ql, main_thread)
+        self.thread_manager = thread.QlWindowsThreadManagement(self.ql, self, main_thread)
 
         # more handle manager
         new_handle = handle.Handle(obj=main_thread)
