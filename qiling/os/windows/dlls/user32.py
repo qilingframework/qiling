@@ -140,12 +140,12 @@ def hook_GetDesktopWindow(ql: Qiling, address: int, params):
     'hWndNewOwner' : HWND
 })
 def hook_OpenClipboard(ql: Qiling, address: int, params):
-    return ql.os.clipboard.open(params['hWndNewOwner'])
+    return int(ql.os.clipboard.open(params['hWndNewOwner']))
 
 # BOOL CloseClipboard();
 @winsdkapi(cc=STDCALL, params={})
 def hook_CloseClipboard(ql: Qiling, address: int, params):
-    return ql.os.clipboard.close()
+    return int(ql.os.clipboard.close())
 
 # HANDLE SetClipboardData(
 #  UINT   uFormat,
@@ -190,7 +190,7 @@ def hook_GetClipboardData(ql: Qiling, address: int, params):
     'format' : UINT
 })
 def hook_IsClipboardFormatAvailable(ql: Qiling, address: int, params):
-    return ql.os.clipboard.format_available(params['uFormat'])
+    return int(ql.os.clipboard.format_available(params['uFormat']))
 
 # UINT MapVirtualKeyW(
 #   UINT uCode,
