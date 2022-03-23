@@ -167,3 +167,7 @@ class QlOsLinux(QlOsPosix):
 
             self.emu_error()
             raise
+
+        # display summary
+        for entry in self.stats.summary():
+            self.ql.log.debug(entry)

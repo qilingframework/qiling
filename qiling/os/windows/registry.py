@@ -214,16 +214,7 @@ class RegistryManager:
         return result
 
     def access(self, key: str, name: Optional[str] = None, type: Optional[int] = None, value: Any = None):
-        if key not in self.accessed:
-            self.accessed[key] = []
-
-        if name is not None:
-            self.accessed[key].append({
-                "value_name": name,
-                "value": value,
-                "type": type,
-                "position": self.ql.os.stats.syscalls_counter
-            })
+        self.ql.os.stats.log_reg_access(key, name, type, value)
 
     def create(self, key: str) -> None:
        self.regconf.create(key)
