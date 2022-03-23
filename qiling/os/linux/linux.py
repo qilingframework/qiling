@@ -161,10 +161,6 @@ class QlOsLinux(QlOsPosix):
                     self.ql.emu_start(self.ql.loader.elf_entry, self.exit_point, self.ql.timeout, self.ql.count)
 
         except UcError:
-            # TODO: this is bad We need a better approach for this
-            #if self.ql.output != QL_OUTPUT.DEBUG:
-            #    return
-
             self.emu_error()
             raise
 
