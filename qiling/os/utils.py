@@ -7,62 +7,11 @@
 This module is intended for general purpose functions that are only used in qiling.os
 """
 
-from typing import Any, List, MutableMapping, Mapping, Set, Union, Sequence, MutableSequence, Tuple
+from typing import MutableMapping, Union, Sequence, MutableSequence, Tuple
 from uuid import UUID
 
 from qiling import Qiling
 from qiling.const import QL_VERBOSE
-
-class QlOsStats:
-    """Record basic OS statistics, such as API calls and strings.
-    """
-
-    def __init__(self):
-        self.syscalls: MutableMapping[str, List] = {}
-        self.syscalls_counter = 0
-        self.appeared_strings: MutableMapping[str, Set] = {}
-
-    def clear(self):
-        """Reset API and string appearance stats.
-        """
-
-        self.syscalls = {}
-        self.syscalls_counter = 0
-        self.appeared_strings = {}
-
-    def log_api_call(self, address: int, name: str, params: Mapping, retval: Any, retaddr: int) -> None:
-        """Record API calls along with their details.
-
-        Args:
-            address : location of the calling instruction
-            name    : api function name
-            params  : mapping of the parameters name to their effective values
-            retval  : value returned by the api function
-            retaddr : address to which the api function returned
-        """
-
-        if name.startswith('hook_'):
-            name = name[5:]
-
-        self.syscalls.setdefault(name, []).append({
-            'params'   : params,
-            'retval'   : retval,
-            'address'  : address,
-            'retaddr'  : retaddr,
-            'position' : self.syscalls_counter
-        })
-
-        self.syscalls_counter += 1
-
-    def log_string(self, s: str) -> None:
-        """Record strings appearance as they are encountered during emulation.
-
-        Args:
-            s : string to record
-        """
-
-        for token in s.split(' '):
-            self.appeared_strings.setdefault(token, set()).add(self.syscalls_counter)
 
 class QlOsUtils:
 

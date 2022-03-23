@@ -15,7 +15,8 @@ from qiling.os.fcall import QlFunctionCall, TypedArg
 
 from .filestruct import ql_file
 from .mapper import QlFsMapper
-from .utils import QlOsStats, QlOsUtils
+from .stats import QlOsStats
+from .utils import QlOsUtils
 from .path import QlPathManager
 
 class QlOs:
