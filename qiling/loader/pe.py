@@ -133,8 +133,6 @@ class Process:
                 for warning in warnings:
                     self.ql.log.debug(f' - {warning}')
 
-            data = bytearray(dll.get_memory_mapped_image())
-
             image_base = dll.OPTIONAL_HEADER.ImageBase or self.dll_last_address
             image_size = self.ql.mem.align_up(dll.OPTIONAL_HEADER.SizeOfImage)
             relocate = False
@@ -154,9 +152,9 @@ class Process:
             if relocate:
                 with ShowProgress(0.1337):
                     dll.relocate_image(image_base)
-                    data = bytearray(dll.get_memory_mapped_image())
 
-                assert image_size >= len(data)
+            data = bytearray(dll.get_memory_mapped_image())
+            assert image_size >= len(data)
 
             cmdlines = []
 
