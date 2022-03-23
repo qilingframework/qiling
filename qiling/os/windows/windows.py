@@ -31,7 +31,7 @@ import qiling.os.windows.dlls as api
 
 class QlOsWindows(QlOs):
     def __init__(self, ql: Qiling):
-        super(QlOsWindows, self).__init__(ql)
+        super().__init__(ql)
 
         self.ql = ql
 
@@ -178,13 +178,13 @@ class QlOsWindows(QlOs):
         if  self.ql.entry_point is not None:
             self.ql.loader.entry_point = self.ql.entry_point
 
+        entry_point = self.ql.loader.entry_point
+        exit_point = (self.ql.loader.entry_point + len(self.ql.code)) if self.ql.code else self.exit_point
+
         self.PE_RUN = True
 
         try:
-            if self.ql.code:
-                self.ql.emu_start(self.ql.loader.entry_point, (self.ql.loader.entry_point + len(self.ql.code)), self.ql.timeout, self.ql.count)
-            else:
-                self.ql.emu_start(self.ql.loader.entry_point, self.exit_point, self.ql.timeout, self.ql.count)
+            self.ql.emu_start(entry_point, exit_point, self.ql.timeout, self.ql.count)
         except UcError:
             self.emu_error()
             raise
