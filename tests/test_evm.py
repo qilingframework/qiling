@@ -36,7 +36,7 @@ class EVMTest(unittest.TestCase):
         def hookinsn_test(ql, *argv):
             testcheck.visited_hookinsn = True
 
-        def hookaddr_test(ql):
+        def hookaddr_test(ql, *argv):
             testcheck.visited_hookaddr = True
 
         h0 = ql.hook_code(hookcode_test)
