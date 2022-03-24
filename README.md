@@ -5,7 +5,7 @@
 ---
 
 <p align="center">
-<img width="150" height="150" src="https://raw.githubusercontent.com/qilingframework/qiling/master/docs/qiling_small.png">
+<img width="150" height="150" src="https://raw.githubusercontent.com/qilingframework/qiling/master/docs/qiling2_logo_small.png">
 </p>
 
 Qiling is an advanced binary emulation framework, with the following features:
