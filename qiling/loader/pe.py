@@ -196,7 +196,7 @@ class Process:
             self.dll_last_address = self.ql.mem.align_up(self.dll_last_address + dll_len, 0x10000)
 
         # add DLL to coverage images
-        self.images.append(Image(dll_base, dll_base + dll_len, os.path.realpath(path)))
+        self.images.append(Image(dll_base, dll_base + dll_len, os.path.abspath(path)))
 
         # if this is NOT a driver, add dll to ldr data
         if not driver:
@@ -695,7 +695,7 @@ class QlLoaderPE(QlLoader, Process):
             self.ql.log.info(f'PE entry point at {self.entry_point:#x}')
 
             self.ql.mem.map(image_base, image_size, info=f'[{image_name}]')
-            self.images.append(Image(image_base, image_base + pe.NT_HEADERS.OPTIONAL_HEADER.SizeOfImage, os.path.realpath(self.path)))
+            self.images.append(Image(image_base, image_base + pe.NT_HEADERS.OPTIONAL_HEADER.SizeOfImage, os.path.abspath(self.path)))
 
             if self.is_driver:
                 self.init_driver_object()
