@@ -19,11 +19,13 @@ SET QL_REGDIR32="%QL_WINDIR32%\registry"
 SET QL_REGDIR64="%QL_WINDIR64%\registry"
 
 :: Create emulated Windows directory structure
-MKDIR %QL_SYSDIR32%
 MKDIR %QL_REGDIR32%
+MKDIR %QL_SYSDIR32%
+MKDIR "%QL_SYSDIR32%\drivers"
 
-MKDIR %QL_SYSDIR64%
 MKDIR %QL_REGDIR64%
+MKDIR %QL_SYSDIR64%
+MKDIR "%QL_SYSDIR64%\drivers"
 
 :: Generate emulated Windows registry (requires Administrator privileges)
 REG SAVE HKLM\SYSTEM %QL_REGDIR64%\SYSTEM /Y
