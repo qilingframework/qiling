@@ -122,6 +122,7 @@ EXIT /B 0
 :: Functions definitions
 :normpath
 SET %1=%~dpfn2
+EXIT /B
 
 :collect
 CALL :normpath SRC, %~1\%~2
