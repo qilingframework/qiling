@@ -162,11 +162,15 @@ class QlPeripheral(QlPeripheralUtils):
     
     @QlPeripheralUtils.monitor()
     def read(self, offset: int, size: int) -> int:
-        return 0
+        buf = ctypes.create_string_buffer(size)
+        ctypes.memmove(buf, ctypes.addressof(self.instance) + offset, size)
+
+        return int.from_bytes(buf.raw, byteorder='little')
 
     @QlPeripheralUtils.monitor()
     def write(self, offset: int, size: int, value: int):
-        pass
+        data = (value).to_bytes(size, 'little')
+        ctypes.memmove(ctypes.addressof(self.instance) + offset, data, size)   
 
     def contain(self, field, offset: int, size: int) -> bool:
         """ 
