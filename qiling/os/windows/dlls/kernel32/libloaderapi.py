@@ -189,12 +189,12 @@ def _LoadLibrary(ql: Qiling, address: int, params):
         # Loading self
         return ql.loader.pe_image_address
 
-    return ql.loader.load_dll(lpLibFileName.encode())
+    return ql.loader.load_dll(lpLibFileName)
 
 def _LoadLibraryEx(ql: Qiling, address: int, params):
     lpLibFileName = params["lpLibFileName"]
 
-    return ql.loader.load_dll(lpLibFileName.encode())
+    return ql.loader.load_dll(lpLibFileName)
 
 # HMODULE LoadLibraryA(
 #   LPCSTR lpLibFileName

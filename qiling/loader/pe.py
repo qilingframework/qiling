@@ -64,8 +64,8 @@ class Process:
     def __init__(self, ql: Qiling):
         self.ql = ql
 
-    def load_dll(self, name: bytes, driver: bool = False) -> int:
-        dll_name = name.decode().lower()
+    def load_dll(self, name: str, is_driver: bool = False) -> int:
+        dll_name = name.lower()
 
         if dll_name.startswith('c:\\'):
             path = self.ql.os.path.transform_to_real_path(dll_name)
@@ -200,13 +200,13 @@ class Process:
         self.images.append(Image(dll_base, dll_base + dll_len, os.path.abspath(path)))
 
         # if this is NOT a driver, add dll to ldr data
-        if not driver:
+        if not is_driver:
             self.add_ldr_data_table_entry(dll_name)
 
         if not cached or not loaded:
             # parse directory entry import
             self.ql.log.debug(f'Init imports for {dll_name}')
-            self.init_imports(dll, driver)
+            self.init_imports(dll, is_driver)
 
             # calling DllMain is essential for dlls to initialize properly. however
             # DllMain of system libraries may fail due to incomplete or inaccurate
@@ -497,7 +497,7 @@ class Process:
             if unbound_imports:
                 # Only load dll if encountered unbound symbol
                 if not redirected:
-                    dll_base = self.load_dll(entry.dll, is_driver)
+                    dll_base = self.load_dll(entry.dll.decode(), is_driver)
 
                     if not dll_base:
                         continue
@@ -618,17 +618,17 @@ class QlLoaderPE(QlLoader, Process):
         self.libcache  = QlPeCache() if libcache else None
 
     def run(self):
-        self.init_dlls = [
-            b'ntdll.dll',
-            b'kernel32.dll',
-            b'user32.dll'
-        ]
+        self.init_dlls = (
+            'ntdll.dll',
+            'kernel32.dll',
+            'user32.dll'
+        )
 
-        self.sys_dlls = [
-            b'ntdll.dll',
-            b'kernel32.dll',
-            b'ucrtbase.dll'
-        ]
+        self.sys_dlls = (
+            'ntdll.dll',
+            'kernel32.dll',
+            'ucrtbase.dll'
+        )
 
         if self.ql.code:
             pe = None
@@ -814,7 +814,7 @@ class QlLoaderPE(QlLoader, Process):
 
             # load dlls
             for each in self.init_dlls:
-                super().load_dll(each)
+                super().load_dll(each, self.is_driver)
 
             # load shellcode
             self.ql.mem.write(self.entry_point, self.ql.code)
