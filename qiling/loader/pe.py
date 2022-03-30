@@ -74,7 +74,8 @@ class Process:
             if not is_file_library(dll_name):
                 dll_name = f'{dll_name}.dll'
 
-            path = os.path.join(self.ql.rootfs, 'Windows', 'System32', dll_name)
+            path = os.path.join(self.ql.os.winsys, dll_name)
+            path = self.ql.os.path.transform_to_real_path(path)
 
         if dll_name.startswith('api-ms-win-'):
             # Usually we should not reach this point and instead imports from such DLLs should be redirected earlier
@@ -376,7 +377,7 @@ class Process:
         assert image, 'image should have been added to loader.images first'
 
         entry_obj.DllBase = image.base
-        populate_unistr(entry_obj.FullDllName, ntpath.join(self.ql.os.windir, 'System32', dll_name))
+        populate_unistr(entry_obj.FullDllName, ntpath.join(self.ql.os.winsys, dll_name))
         populate_unistr(entry_obj.BaseDllName, dll_name)
 
         # Flink
