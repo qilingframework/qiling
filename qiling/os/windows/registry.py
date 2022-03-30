@@ -159,30 +159,22 @@ class RegHive:
 
 
 class RegistryManager:
-    def __init__(self, ql: Qiling, hive: Optional[str] = None):
+    def __init__(self, ql: Qiling, hivedir: str):
         self.ql = ql
-
-        log_registry_dir = ql.rootfs or 'qlog'
-        self.regdiff = os.path.join(log_registry_dir, 'registry', f'{ql.targetname}_diff.json')
-
-        # hive dir
-        if hive is None:
-            hive = os.path.join(ql.rootfs, 'Windows', 'registry')
-
-            if not os.path.exists(hive) and not ql.code:
-                raise QlErrorFileNotFound(f'registry files not found in "{hive}"!')
-
-            ql.log.debug(f'Windows Registry PATH: {hive}')
+        self.regdiff = os.path.join(ql.rootfs, 'registry', f'{ql.targetname}_diff.json')
 
         # if conf file does not exist, create its directory to enable saving later on
         if not os.path.exists(self.regdiff):
-            try:
-                os.makedirs(os.path.dirname(self.regdiff), 0o755)
-            except:
-                pass
+            os.makedirs(os.path.dirname(self.regdiff), 0o755, exist_ok=True)
+
+        if not ql.code:
+            if not os.path.exists(hivedir):
+                raise QlErrorFileNotFound(f'Windows registry directory not found: "{hivedir}"!')
+
+        ql.log.debug(f'Loading Windows registry hive from {hivedir}')
 
         try:
-            self.reghive = RegHive(hive)
+            self.reghive = RegHive(hivedir)
         except FileNotFoundError:
             if not ql.code:
                 QlErrorFileNotFound("WARNING: Registry files not found!")

@@ -123,9 +123,10 @@ class QlOsWindows(QlOs):
 
     def setupComponents(self):
         # handle manager
+        reghive = self.path.transform_to_real_path(ntpath.join(self.windir, 'registry'))
         self.handle_manager = handle.HandleManager()
         # registry manger
-        self.registry_manager = registry.RegistryManager(self.ql)
+        self.registry_manager = registry.RegistryManager(self.ql, reghive)
         # clipboard
         self.clipboard = clipboard.Clipboard(self)
         # fibers
