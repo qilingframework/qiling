@@ -65,6 +65,7 @@ class Process:
         self.ql = ql
 
     def load_dll(self, name: str, is_driver: bool = False) -> int:
+        # BUG: that lowers the whole path, which may not be found on a Linux host where paths are case sensitive
         dll_name = name.lower()
 
         if dll_name.startswith('c:\\'):
@@ -614,7 +615,6 @@ class QlLoaderPE(QlLoader, Process):
 
         self.ql        = ql
         self.path      = self.ql.path
-        self.is_driver = False
         self.libcache  = QlPeCache() if libcache else None
 
     def run(self):
@@ -632,6 +632,7 @@ class QlLoaderPE(QlLoader, Process):
 
         if self.ql.code:
             pe = None
+            self.is_driver = False
         else:
             pe = pefile.PE(self.path, fast_load=True)
             self.is_driver = pe.is_driver()
@@ -661,7 +662,8 @@ class QlLoaderPE(QlLoader, Process):
         self.pe_image_size = 0
         self.dll_size = 0
         self.dll_last_address = self.dll_address
-        # compatible with ql.do_bin_patch()
+
+        # not used, but here to remain compatible with ql.do_bin_patch
         self.load_address = 0
         # self.ql.os.setupComponents()
 
@@ -798,6 +800,9 @@ class QlLoaderPE(QlLoader, Process):
             self.init_peb()
             self.init_ldr_data()
 
+            # write shellcode to memory
+            self.ql.mem.write(self.entry_point, self.ql.code)
+
             top_of_stack = self.stack_address + self.stack_size
 
             if self.ql.arch.type == QL_ARCH.X86:
@@ -815,9 +820,6 @@ class QlLoaderPE(QlLoader, Process):
             # load dlls
             for each in self.init_dlls:
                 super().load_dll(each, self.is_driver)
-
-            # load shellcode
-            self.ql.mem.write(self.entry_point, self.ql.code)
 
         # move entry_point to ql.os
         self.ql.os.entry_point = self.entry_point

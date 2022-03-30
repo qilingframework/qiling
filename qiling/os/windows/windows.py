@@ -94,7 +94,7 @@ class QlOsWindows(QlOs):
 
     def load(self):
         self.setupGDT()
-        self.setupComponents()
+        self.__setup_components()
 
         # hook win api
         self.ql.hook_code(self.hook_winapi)
@@ -121,17 +121,14 @@ class QlOsWindows(QlOs):
             self.ql.mem.map(GS_SEGMENT_ADDR, GS_SEGMENT_SIZE, info='[GS]')
 
 
-    def setupComponents(self):
-        # handle manager
+    def __setup_components(self):
         reghive = self.path.transform_to_real_path(ntpath.join(self.windir, 'registry'))
+
         self.handle_manager = handle.HandleManager()
-        # registry manger
         self.registry_manager = registry.RegistryManager(self.ql, reghive)
-        # clipboard
         self.clipboard = clipboard.Clipboard(self)
-        # fibers
         self.fiber_manager = fiber.FiberManager(self.ql)
-        # thread manager
+
         main_thread = thread.QlWindowsThread(self.ql)
         self.thread_manager = thread.QlWindowsThreadManagement(self.ql, self, main_thread)
 
