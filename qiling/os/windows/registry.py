@@ -177,16 +177,16 @@ class RegistryManager:
             self.reghive = RegHive(hivedir)
         except FileNotFoundError:
             if not ql.code:
-                QlErrorFileNotFound("WARNING: Registry files not found!")
+                QlErrorFileNotFound("Windows registry hive not found")
 
         except Exception:
             if not ql.code:
-                QlErrorFileNotFound("WARNING: Registry files format error")
+                QlErrorFileNotFound("Windows registry hive format error")
 
         try:
             self.regconf = RegConf(self.regdiff)
         except json.decoder.JSONDecodeError:
-            raise QlErrorJsonDecode("Windows Registry JSON decode error")
+            raise QlErrorJsonDecode("Windows registry JSON decode error")
 
         self.accessed = {}
 
