@@ -22,10 +22,12 @@ SET QL_REGDIR64="%QL_WINDIR64%\registry"
 MKDIR %QL_REGDIR32%
 MKDIR %QL_SYSDIR32%
 MKDIR "%QL_SYSDIR32%\drivers"
+MKDIR "%QL_WINDIR32%\Temp"
 
 MKDIR %QL_REGDIR64%
 MKDIR %QL_SYSDIR64%
 MKDIR "%QL_SYSDIR64%\drivers"
+MKDIR "%QL_WINDIR64%\Temp"
 
 :: Generate emulated Windows registry (requires Administrator privileges)
 REG SAVE HKLM\SYSTEM %QL_REGDIR64%\SYSTEM /Y
@@ -42,12 +44,16 @@ XCOPY /F /D /Y %QL_REGDIR64%\* %QL_REGDIR32%
 CALL :collect_dll32 advapi32.dll
 CALL :collect_dll32 bcrypt.dll
 CALL :collect_dll32 cfgmgr32.dll
+CALL :collect_dll32 ci.dll
 CALL :collect_dll32 combase.dll
 CALL :collect_dll32 comctl32.dll
 CALL :collect_dll32 comdlg32.dll
 CALL :collect_dll32 crypt32.dll
+CALL :collect_dll32 cryptbase.dll
 CALL :collect_dll32 gdi32.dll
+CALL :collect_dll32 hal.dll
 CALL :collect_dll32 iphlpapi.dll
+CALL :collect_dll32 kdcom.dll
 CALL :collect_dll32 kernel32.dll
 CALL :collect_dll32 KernelBase.dll
 CALL :collect_dll32 mpr.dll
