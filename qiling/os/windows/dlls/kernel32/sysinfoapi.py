@@ -104,7 +104,7 @@ def __GetSystemDirectory(ql: Qiling, address: int, params, wstring: bool):
     lpBuffer = params["lpBuffer"]
 
     enc = 'utf-16le' if wstring else 'utf-8'
-    res = ntpath.join(ql.os.windir, 'System32')
+    res = ql.os.winsys
 
     ql.mem.write(lpBuffer, f'{res}\x00'.encode(enc))
 

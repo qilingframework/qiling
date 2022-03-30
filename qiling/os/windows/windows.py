@@ -74,6 +74,7 @@ class QlOsWindows(QlOs):
         username = self.profile.get('USER', 'username')
 
         self.windir = ntpath.join(sysdrv, windir)
+        self.winsys = ntpath.join(sysdrv, windir, 'System32')
         self.userprofile = ntpath.join(sysdrv, 'Users', username)
         self.username = username
 
