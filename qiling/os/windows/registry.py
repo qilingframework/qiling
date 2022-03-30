@@ -25,11 +25,12 @@ from qiling.exception import *
 class RegConf:
     def __init__(self, fname: str):
         try:
-            with open(fname, 'rb') as infile:
+            with open(fname, 'r') as infile:
                 data = infile.read()
-                config = json.loads(data or '{}')
         except IOError:
             config = {}
+        else:
+            config = json.loads(data or '{}')
 
         self.conf: MutableMapping[str, dict[str, dict]] = config
 
@@ -187,8 +188,6 @@ class RegistryManager:
             self.regconf = RegConf(self.regdiff)
         except json.decoder.JSONDecodeError:
             raise QlErrorJsonDecode("Windows registry JSON decode error")
-
-        self.accessed = {}
 
     def exists(self, key: str) -> bool:
         self.access(key)
