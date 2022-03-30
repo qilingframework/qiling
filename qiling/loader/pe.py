@@ -75,7 +75,7 @@ class Process:
             if not is_file_library(dll_name):
                 dll_name = f'{dll_name}.dll'
 
-            path = os.path.join(self.ql.os.winsys, dll_name)
+            path = ntpath.join(self.ql.os.winsys, dll_name)
             path = self.ql.os.path.transform_to_real_path(path)
 
         if dll_name.startswith('api-ms-win-'):
@@ -262,8 +262,8 @@ class Process:
 
         regs_state = self.ql.arch.regs.save()
 
-        self.ql.os.fcall = self.ql.os.fcall_select(CDECL)
-        self.ql.os.fcall.call_native(entry_point, args, exit_point)
+        fcall = self.ql.os.fcall_select(CDECL)
+        fcall.call_native(entry_point, args, exit_point)
 
         # Execute the call to the entry point
         try:
@@ -273,7 +273,7 @@ class Process:
 
             self.ql.arch.regs.restore(regs_state)
         else:
-            self.ql.os.fcall.cc.unwind(len(args))
+            fcall.cc.unwind(len(args))
 
             self.ql.log.info(f'Returned from {dll_name} DllMain')
 
@@ -613,9 +613,9 @@ class QlLoaderPE(QlLoader, Process):
     def __init__(self, ql: Qiling, libcache: bool):
         super().__init__(ql)
 
-        self.ql        = ql
-        self.path      = self.ql.path
-        self.libcache  = QlPeCache() if libcache else None
+        self.ql       = ql
+        self.path     = self.ql.path
+        self.libcache = QlPeCache() if libcache else None
 
     def run(self):
         self.init_dlls = (
@@ -636,10 +636,6 @@ class QlLoaderPE(QlLoader, Process):
         else:
             pe = pefile.PE(self.path, fast_load=True)
             self.is_driver = pe.is_driver()
-
-            if self.is_driver:
-                self.init_dlls.append(b"ntoskrnl.exe")
-                self.sys_dlls.append(b"ntoskrnl.exe")
 
         ossection = f'OS{self.ql.arch.bits}'
 
@@ -665,7 +661,6 @@ class QlLoaderPE(QlLoader, Process):
 
         # not used, but here to remain compatible with ql.do_bin_patch
         self.load_address = 0
-        # self.ql.os.setupComponents()
 
         cmdline = ntpath.join(self.ql.os.userprofile, 'Desktop', self.ql.targetname)
         cmdargs = ' '.join(f'"{arg}"' if ' ' in arg else arg for arg in self.argv[1:])
