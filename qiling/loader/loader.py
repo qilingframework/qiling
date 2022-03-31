@@ -8,7 +8,10 @@ from typing import Any, Mapping, MutableSequence, NamedTuple, Optional
 
 from qiling import Qiling
 
-Image = NamedTuple('Image', (('base', int), ('end', int), ('path', str)))
+class Image(NamedTuple):
+    base: int
+    end: int
+    path: str
 
 class QlLoader:
     def __init__(self, ql: Qiling):
