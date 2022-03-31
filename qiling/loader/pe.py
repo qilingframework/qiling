@@ -83,8 +83,8 @@ class Process:
             self.ql.log.warning(f'Refusing to load virtual DLL {dll_name}')
             return 0
 
-        # If the dll is already loaded
-        image = self.get_image_by_name(dll_name)
+        # see if this dll was already loaded
+        image = self.get_image_by_name(dll_name, casefold=True)
 
         if image is not None:
             return image.base
@@ -374,7 +374,7 @@ class Process:
             obj.MaximumLength = ucslen + 2
             obj.Buffer = ucsbuf
 
-        image = self.get_image_by_name(dll_name)
+        image = self.get_image_by_name(dll_name, casefold=True)
         assert image, 'image should have been added to loader.images first'
 
         entry_obj.DllBase = image.base
