@@ -26,13 +26,19 @@ class QlLoader:
 
         return next((image for image in self.images if image.base <= address < image.end), None)
 
-    def get_image_by_name(self, name: str) -> Optional[Image]:
+    def get_image_by_name(self, name: str, *, casefold: bool = False) -> Optional[Image]:
         """Retrieve an image by its basename.
 
-        Returns: image whose basename was, or `None` if not found
+        Args:
+            name     : image base name
+            casefold : whether name matching should be case-insensitive (default is case-sensitive)
+
+        Returns: image object whose basename match to the one given, or `None` if not found
         """
 
-        return next((image for image in self.images if os.path.basename(image.path) == name), None)
+        cf = str.casefold if casefold else lambda s: s
+
+        return next((image for image in self.images if cf(os.path.basename(image.path)) == cf(name)), None)
 
     def save(self) -> Mapping[str, Any]:
         saved_state = {
