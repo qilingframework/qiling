@@ -80,31 +80,35 @@ class QlOsPosix(QlOs):
         }
 
         self.__syscall_id_reg = {
-            QL_ARCH.ARM64: UC_ARM64_REG_X8,
-            QL_ARCH.ARM  : UC_ARM_REG_R7,
-            QL_ARCH.MIPS : UC_MIPS_REG_V0,
-            QL_ARCH.X86  : UC_X86_REG_EAX,
-            QL_ARCH.X8664: UC_X86_REG_RAX,
-            QL_ARCH.RISCV: UC_RISCV_REG_A7,
-            QL_ARCH.RISCV64: UC_RISCV_REG_A7
+            QL_ARCH.ARM64   : UC_ARM64_REG_X8,
+            QL_ARCH.ARM     : UC_ARM_REG_R7,
+            QL_ARCH.MIPS    : UC_MIPS_REG_V0,
+            QL_ARCH.X86     : UC_X86_REG_EAX,
+            QL_ARCH.X8664   : UC_X86_REG_RAX,
+            QL_ARCH.RISCV   : UC_RISCV_REG_A7,
+            QL_ARCH.RISCV64 : UC_RISCV_REG_A7
         }[self.ql.arch.type]
 
-        # handle a special case
+        # handle some special cases
         if (self.ql.arch.type == QL_ARCH.ARM64) and (self.ql.ostype == QL_OS.MACOS):
             self.__syscall_id_reg = UC_ARM64_REG_X16
-        if (self.ql.arch.type == QL_ARCH.ARM) and (self.ql.ostype == QL_OS.QNX):
+
+        elif (self.ql.arch.type == QL_ARCH.ARM) and (self.ql.ostype == QL_OS.QNX):
             self.__syscall_id_reg = UC_ARM_REG_R12
 
         # TODO: use abstract to access __syscall_cc and __syscall_id_reg by defining a system call class
         self.__syscall_cc: QlCC = {
-            QL_ARCH.ARM64: aarch64,
-            QL_ARCH.ARM  : aarch32,
-            QL_ARCH.MIPS : mipso32,
-            QL_ARCH.X86  : intel32,
-            QL_ARCH.X8664: intel64,
-            QL_ARCH.RISCV: riscv32,
-            QL_ARCH.RISCV64: riscv64,
+            QL_ARCH.ARM64   : aarch64,
+            QL_ARCH.ARM     : aarch32,
+            QL_ARCH.MIPS    : mipso32,
+            QL_ARCH.X86     : intel32,
+            QL_ARCH.X8664   : intel64,
+            QL_ARCH.RISCV   : riscv32,
+            QL_ARCH.RISCV64 : riscv64
         }[self.ql.arch.type](self.ql.arch)
+
+        # select syscall mapping function based on emulated OS and architecture
+        self.syscall_mapper = ql_syscall_mapping_function(self.ql.ostype, self.ql.arch.type)
 
         self._fd = QlFileDes()
 
@@ -141,10 +145,6 @@ class QlOsPosix(QlOs):
         self.euid = 0 if enabled else self.uid
         self.egid = 0 if enabled else self.gid
 
-    @property
-    def syscall(self):
-        return self.get_syscall()
-
     def set_syscall(self, target: Union[int, str], handler: Callable, intercept: QL_INTERCEPT=QL_INTERCEPT.CALL):
         """Either hook or replace a system call with a custom one.
 
@@ -178,10 +178,8 @@ class QlOsPosix(QlOs):
         return f'{ret:#x}{f" ({errors[-ret]})" if -ret in errors else f""}'
 
     def load_syscall(self):
-        # import syscall mapping function
-        map_syscall = ql_syscall_mapping_function(self.ql.ostype)
-        syscall_id = self.syscall
-        syscall_name = map_syscall(self.ql, syscall_id)
+        syscall_id = self.get_syscall()
+        syscall_name = self.syscall_mapper(syscall_id)
 
         # get syscall on-enter hook (if any)
         hooks_dict = self.posix_syscall_hooks[QL_INTERCEPT.ENTER]
@@ -196,14 +194,14 @@ class QlOsPosix(QlOs):
         syscall_hook = hooks_dict.get(syscall_name) or hooks_dict.get(syscall_id)
 
         if not syscall_hook:
-            osname = ostype_convert_str(self.ql.ostype)
-            os_syscalls = ql_get_module_function(f"qiling.os.{osname.lower()}", "syscall")
-            posix_syscalls = ql_get_module_function(f"qiling.os.posix", "syscall")
+            def __get_os_module(osname: str):
+                return ql_get_module_function(f'qiling.os.{osname.lower()}', 'syscall')
+
+            os_syscalls = __get_os_module(ostype_convert_str(self.ql.ostype))
+            posix_syscalls = __get_os_module('posix')
 
             # look in os-specific and posix syscall hooks
-            if syscall_name:
-                self.ql.log.debug("syscall hooked 0x%x: %s()" % (self.ql.arch.regs.arch_pc, syscall_name))
-                syscall_hook = getattr(os_syscalls, syscall_name, None) or getattr(posix_syscalls, syscall_name, None)
+            syscall_hook = getattr(os_syscalls, syscall_name, None) or getattr(posix_syscalls, syscall_name, None)
 
         if syscall_hook:
             syscall_name = syscall_hook.__name__

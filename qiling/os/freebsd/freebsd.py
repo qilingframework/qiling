@@ -44,7 +44,7 @@ class QlOsFreebsd(QlOsPosix):
             else:
                 if self.ql.loader.elf_entry != self.ql.loader.entry_point:
                     self.ql.emu_start(self.ql.loader.entry_point, self.ql.loader.elf_entry, self.ql.timeout)
-                    self.ql.enable_lib_patch()
+                    self.ql.do_lib_patch()
 
                 self.ql.emu_start(self.ql.loader.elf_entry, self.exit_point, self.ql.timeout, self.ql.count)
 

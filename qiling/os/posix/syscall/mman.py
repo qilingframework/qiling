@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from unicorn import UC_PROT_ALL
+import os
 
 from qiling import Qiling
 from qiling.exception import QlMemoryMappedError
@@ -135,7 +135,7 @@ def syscall_mmap_impl(ql: Qiling, addr: int, mlen: int, prot: int, flags: int, f
             ql.log.debug("mem write : " + hex(len(data)))
             ql.log.debug("mem mmap  : " + mem_info)
 
-            ql.mem.change_mapinfo(mmap_base, mmap_base + mmap_size, mem_info=("[%s] " % api_name) + mem_info)
+            ql.mem.change_mapinfo(mmap_base, mmap_base + mmap_size, mem_info=f'[{api_name}] {os.path.basename(mem_info)}')
             try:
                 ql.mem.write(mmap_base, data)
             except Exception as e:

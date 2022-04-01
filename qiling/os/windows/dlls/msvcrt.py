@@ -411,6 +411,17 @@ def hook_strncmp(ql: Qiling, address: int, params):
 
     return result
 
+def __malloc(ql: Qiling, address: int, params):
+    size = params['size']
+
+    return ql.os.heap.alloc(size)
+
+@winsdkapi(cc=CDECL, params={
+    'size' : UINT
+})
+def hook__malloc_base(ql: Qiling, address: int, params):
+    return __malloc(ql, address, params)
+
 # void* malloc（unsigned int size)
 @winsdkapi(cc=CDECL, params={
     'size' : UINT
@@ -420,15 +431,23 @@ def hook_malloc(ql: Qiling, address: int, params):
 
     return ql.os.heap.alloc(size)
 
+def __free(ql: Qiling, address: int, params):
+    address = params['address']
 
-# void* void* free（void *address)
+    return ql.os.heap.free(address)
+
+@winsdkapi(cc=CDECL, params={
+    'address': POINTER
+})
+def hook__free_base(ql: Qiling, address: int, params):
+    return __free(ql, address, params)
+
+# void* free（void *address)
 @winsdkapi(cc=CDECL, params={
     'address': POINTER
 })
 def hook_free(ql: Qiling, address: int, params):
-    address = params['address']
-    
-    return ql.os.heap.free(address)
+    return __free(ql, address, params)
 
 # _onexit_t _onexit(
 #    _onexit_t function
@@ -463,6 +482,23 @@ def hook_memset(ql: Qiling, address: int, params):
 
     return dest
 
+def __calloc(ql: Qiling, address: int, params):
+    num = params['num']
+    size = params['size']
+
+    count = num * size
+    ret = ql.os.heap.alloc(count)
+    ql.mem.write(ret, bytes([0] * count))
+
+    return ret
+
+@winsdkapi(cc=CDECL, params={
+    'num'  : SIZE_T,
+    'size' : SIZE_T
+})
+def hook__calloc_base(ql: Qiling, address: int, params):
+    return __calloc(ql, address, params)
+
 # void *calloc(
 #    size_t num,
 #    size_t size
@@ -472,14 +508,7 @@ def hook_memset(ql: Qiling, address: int, params):
     'size' : SIZE_T
 })
 def hook_calloc(ql: Qiling, address: int, params):
-    num = params['num']
-    size = params['size']
-
-    count = num * size
-    ret = ql.os.heap.alloc(count)
-    ql.mem.write(ret, bytes([0] * count))
-
-    return ret
+    return __calloc(ql, address, params)
 
 # void * memmove(
 #   void *dest,

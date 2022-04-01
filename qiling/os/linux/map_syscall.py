@@ -11,18 +11,21 @@
 from qiling.const import QL_ARCH
 from qiling.os.posix.posix import SYSCALL_PREF
 
-def map_syscall(ql, syscall_num):
+def get_syscall_mapper(archtype: QL_ARCH):
     syscall_table = {
-        QL_ARCH.ARM64:   arm64_syscall_table,
-        QL_ARCH.ARM:     arm_syscall_table,
-        QL_ARCH.X8664:   x8664_syscall_table,
-        QL_ARCH.X86:     x86_syscall_table,
-        QL_ARCH.MIPS:    mips_syscall_table,
-		QL_ARCH.RISCV:   riscv32_syscall_table,
-        QL_ARCH.RISCV64: riscv64_syscall_table,
-    }[ql.arch.type]
+        QL_ARCH.ARM64   : arm64_syscall_table,
+        QL_ARCH.ARM     : arm_syscall_table,
+        QL_ARCH.X8664   : x8664_syscall_table,
+        QL_ARCH.X86     : x86_syscall_table,
+        QL_ARCH.MIPS    : mips_syscall_table,
+		QL_ARCH.RISCV   : riscv32_syscall_table,
+        QL_ARCH.RISCV64 : riscv64_syscall_table
+    }[archtype]
 
-    return f'{SYSCALL_PREF}{syscall_table[syscall_num]}'
+    def __mapper(syscall_num: int) -> str:
+        return f'{SYSCALL_PREF}{syscall_table[syscall_num]}'
+
+    return __mapper
 
 arm_syscall_table = {
     0: "restart_syscall",
@@ -428,7 +431,7 @@ arm_syscall_table = {
 	445: "landlock_add_rule",
 	446: "landlock_restrict_self",
 	448: "process_mrelease",
-    983402: "cacheflush",
+    983042: "cacheflush",
     983045: "set_tls",
 }
 

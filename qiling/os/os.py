@@ -69,10 +69,10 @@ class QlOs:
         }.get(self.ql.arch.bits, None)
 
         if self.ql.code:
-            self.code_ram_size = int(self.profile.get("CODE", "ram_size"), 16)
             # this shellcode entrypoint does not work for windows
             # windows shellcode entry point will comes from pe loader
-            self.entry_point = int(self.profile.get("CODE", "entry_point"), 16)
+            self.entry_point = self.profile.getint('CODE', 'entry_point')
+            self.code_ram_size = self.profile.getint('CODE', 'ram_size')
 
         # default fcall paramters resolving methods
         self.resolvers = {
@@ -222,11 +222,6 @@ class QlOs:
         else:
             self.add_function_hook(api_name, intercept_function, intercept)
 
-    def find_containing_image(self, pc: int):
-        for image in self.ql.loader.images:
-            if image.base <= pc < image.end:
-                return image
-
     # os main method; derivatives must implement one of their own
     def run(self) -> None:
         raise NotImplementedError
@@ -256,7 +251,7 @@ class QlOs:
             self.ql.log.error('Disassembly:')
             self.ql.arch.utils.disassembler(self.ql, pc, 64)
 
-            containing_image = self.find_containing_image(pc)
+            containing_image = self.ql.loader.find_containing_image(pc)
             pc_info = f' ({containing_image.path} + {pc - containing_image.base:#x})' if containing_image else ''
         finally:
             self.ql.log.error(f'PC = {pc:#0{self.ql.arch.pointersize * 2 + 2}x}{pc_info}\n')

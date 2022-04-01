@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from typing import Any, Mapping, MutableSequence, NamedTuple
+from typing import Any, Mapping, MutableSequence, NamedTuple, Optional
 
 from qiling import Qiling
 
@@ -16,6 +16,14 @@ class QlLoader:
         self.argv = self.ql.argv
         self.images: MutableSequence[Image] = []
         self.skip_exit_check = False
+
+    def find_containing_image(self, address: int) -> Optional[Image]:
+        """Retrieve the image object that contains the specified address.
+
+        Returns: image containing the specified address, or `None` if not found
+        """
+
+        return next((image for image in self.images if image.base <= address < image.end), None)
 
     def save(self) -> Mapping[str, Any]:
         saved_state = {

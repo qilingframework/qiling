@@ -456,25 +456,21 @@ class QlLoaderPE(QlLoader, Process):
                 self.init_dlls.append(b"ntoskrnl.exe")
                 self.sys_dlls.append(b"ntoskrnl.exe")
             
+
         if self.ql.arch.type == QL_ARCH.X86:
-            self.stack_address = int(self.ql.os.profile.get("OS32", "stack_address"), 16)
-            self.stack_size = int(self.ql.os.profile.get("OS32", "stack_size"), 16)
-            self.image_address = int(self.ql.os.profile.get("OS32", "image_address"), 16)
-            self.dll_address = int(self.ql.os.profile.get("OS32", "dll_address"), 16)
-            self.entry_point = int(self.ql.os.profile.get("OS32", "entry_point"), 16)
-            self.ql.os.heap_base_address = int(self.ql.os.profile.get("OS32", "heap_address"), 16)
-            self.ql.os.heap_base_size = int(self.ql.os.profile.get("OS32", "heap_size"), 16)
+            WINOSARCH = "OS32"
             self.structure_last_addr = FS_SEGMENT_ADDR
         elif self.ql.arch.type == QL_ARCH.X8664:
-            self.stack_address = int(self.ql.os.profile.get("OS64", "stack_address"), 16)
-            self.stack_size = int(self.ql.os.profile.get("OS64", "stack_size"), 16)
-            self.image_address = int(self.ql.os.profile.get("OS64", "image_address"), 16)
-            self.dll_address = int(self.ql.os.profile.get("OS64", "dll_address"), 16)
-            self.entry_point = int(self.ql.os.profile.get("OS64", "entry_point"), 16)
-            self.ql.os.heap_base_address = int(self.ql.os.profile.get("OS64", "heap_address"), 16)
-            self.ql.os.heap_base_size = int(self.ql.os.profile.get("OS64", "heap_size"), 16)
+            WINOSARCH = "OS64"
             self.structure_last_addr = GS_SEGMENT_ADDR
 
+        self.stack_address = int(self.ql.os.profile.get(WINOSARCH, "stack_address"), 16)
+        self.stack_size = int(self.ql.os.profile.get(WINOSARCH, "stack_size"), 16)
+        self.image_address = int(self.ql.os.profile.get(WINOSARCH, "image_address"), 16)
+        self.dll_address = int(self.ql.os.profile.get(WINOSARCH, "dll_address"), 16)
+        self.entry_point = int(self.ql.os.profile.get(WINOSARCH, "entry_point"), 16)
+        self.ql.os.heap_base_address = int(self.ql.os.profile.get(WINOSARCH, "heap_address"), 16)
+        self.ql.os.heap_base_size = int(self.ql.os.profile.get(WINOSARCH, "heap_size"), 16)
         self.dlls = {}
         self.import_symbols = {}
         self.export_symbols = {}

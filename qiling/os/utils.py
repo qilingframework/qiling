@@ -14,6 +14,9 @@ from qiling import Qiling
 from qiling.const import QL_VERBOSE
 
 class QlOsStats:
+    """Record basic OS statistics, such as API calls and strings.
+    """
+
     def __init__(self):
         self.syscalls: MutableMapping[str, List] = {}
         self.syscalls_counter = 0

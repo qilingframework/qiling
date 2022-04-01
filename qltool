@@ -117,7 +117,8 @@ def handle_run(options: argparse.Namespace):
         log_file=options.log_file,
         log_plain=options.log_plain,
         multithread=options.multithread,
-        filter=options.filter
+        filter=options.filter,
+        libcache=options.libcache
     )
 
     # attach Qdb at entry point
@@ -214,6 +215,7 @@ if __name__ == '__main__':
     comm_parser.add_argument('-c', '--coverage-file', default=None, help='code coverage file name')
     comm_parser.add_argument('--coverage-format', default='drcov', choices=cov_utils.factory.formats, help='code coverage file format')
     comm_parser.add_argument('--json', action='store_true', help='print a json report of the emulation')
+    comm_parser.add_argument('--libcache', action='store_true', help='enable dll caching for windows')
     options = parser.parse_args()
 
     # subparser argument required=True is not supported in python 3.6
@@ -223,9 +225,6 @@ if __name__ == '__main__':
 
     if options.subcommand == 'examples':
         handle_examples(parser)
-
-    if options.debug_stop and options.verbose not in (QL_VERBOSE.DEBUG, QL_VERBOSE.DUMP):
-        parser.error('the debug_stop option requires verbose to be set to either "debug" or "dump"')
 
     # ql file setup
     if options.subcommand == 'run':
@@ -245,6 +244,9 @@ if __name__ == '__main__':
         ql.debugger = argval
 
     if options.debug_stop:
+        if options.verbose not in (QL_VERBOSE.DEBUG, QL_VERBOSE.DUMP):
+            parser.error('the debug_stop option requires verbose to be set to either "debug" or "dump"')
+
         ql.debug_stop = True
 
     if options.root:

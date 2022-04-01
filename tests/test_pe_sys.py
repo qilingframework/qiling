@@ -4,6 +4,7 @@
 #
 
 import platform, sys, unittest
+from typing import List
 
 from unicorn import UcError
 
@@ -21,12 +22,6 @@ if platform.system() == "Darwin" and platform.machine() == "arm64":
     sys.exit(0)
 
 class PETest(unittest.TestCase):
-
-    def hook_third_stop_address(self, ql):
-        print(" >>>> Third Stop address: 0x%08x" % ql.arch.regs.arch_pc)
-        self.third_stop = True
-        ql.emu_stop()
-
 
     def test_pe_win_x86_sality(self):
 
@@ -159,7 +154,7 @@ class PETest(unittest.TestCase):
                 if service_handle.name in ql.os.services:
                     service_path = ql.os.services[service_handle.name]
                     service_path = ql.os.path.transform_to_real_path(service_path)
-                    ql.amsint32_driver = Qiling([service_path], ql.rootfs, verbose=QL_VERBOSE.DISASM)
+                    ql.amsint32_driver = Qiling([service_path], ql.rootfs, verbose=QL_VERBOSE.DEBUG)
                     init_unseen_symbols(ql.amsint32_driver, ql.amsint32_driver.loader.dlls["ntoskrnl.exe"]+0xb7695, b"NtTerminateProcess", 0, "ntoskrnl.exe")
                     print("load amsint32_driver")
 
@@ -174,23 +169,24 @@ class PETest(unittest.TestCase):
             else:
                 return 1
 
-
-        def hook_first_stop_address(ql):
-            print(" >>>> First Stop address: 0x%08x" % ql.arch.regs.arch_pc)
-            ql.first_stop = True    
+        def hook_first_stop_address(ql: Qiling, stops: List[bool]):
+            ql.log.info(f' >>>> First Stop address: {ql.arch.regs.arch_pc:#010x}')
+            stops[0] = True
             ql.emu_stop()
 
-
-        def hook_second_stop_address(ql):
-            print(" >>>> Second Stop address: 0x%08x" % ql.arch.regs.arch_pc)
-            ql.second_stop = True
+        def hook_second_stop_address(ql: Qiling, stops: List[bool]):
+            ql.log.info(f' >>>> Second Stop address: {ql.arch.regs.arch_pc:#010x}')
+            stops[1] = True
             ql.emu_stop()
 
+        def hook_third_stop_address(ql: Qiling, stops: List[bool]):
+            ql.log.info(f' >>>> Third Stop address: {ql.arch.regs.arch_pc:#010x}')
+            stops[2] = True
+            ql.emu_stop()
+
+        stops = [False, False, False]
 
         ql = Qiling(["../examples/rootfs/x86_windows/bin/sality.dll"], "../examples/rootfs/x86_windows", verbose=QL_VERBOSE.DEBUG)
-        ql.first_stop = False
-        ql.second_stop = False
-        self.third_stop = False
         # for this module 
         ql.amsint32_driver = None
         # emulate some Windows API
@@ -199,7 +195,7 @@ class PETest(unittest.TestCase):
         ql.os.set_api("WriteFile", hook_WriteFile)
         ql.os.set_api("StartServiceA", hook_StartServiceA)
         #init sality
-        ql.hook_address(hook_first_stop_address, 0x40EFFB)
+        ql.hook_address(hook_first_stop_address, 0x40EFFB, stops)
         ql.run()
         # run driver thread
 
@@ -208,7 +204,7 @@ class PETest(unittest.TestCase):
         ql.os.fcall = ql.os.fcall_select(STDCALL)
         ql.os.fcall.writeParams(((DWORD, 0),))
 
-        ql.hook_address(hook_second_stop_address, 0x4055FA)
+        ql.hook_address(hook_second_stop_address, 0x4055FA, stops)
         ql.run(begin=0x4053B2)
         print("test kill thread")
         if ql.amsint32_driver:
@@ -216,7 +212,7 @@ class PETest(unittest.TestCase):
 
             # TODO: Should stop at 0x10423, but for now just stop at 0x0001066a
             stop_addr = 0x0001066a
-            ql.amsint32_driver.hook_address(self.hook_third_stop_address, stop_addr)
+            ql.amsint32_driver.hook_address(hook_third_stop_address, stop_addr, stops)
 
             # TODO: not sure whether this one is really STDCALL
             ql.amsint32_driver.os.fcall = ql.amsint32_driver.os.fcall_select(STDCALL)
@@ -224,10 +220,10 @@ class PETest(unittest.TestCase):
 
             ql.amsint32_driver.run(begin=0x102D0)
 
-        self.assertEqual(True, ql.first_stop)    
-        self.assertEqual(True, ql.second_stop)
-        self.assertEqual(True, self.third_stop)
-        self.assertEqual(True, ql.test_set_api)
+        self.assertTrue(stops[0])
+        self.assertTrue(stops[1])
+        self.assertTrue(stops[2])
+        self.assertTrue(ql.test_set_api)
 
 
     def test_pe_win_x8664_driver(self):

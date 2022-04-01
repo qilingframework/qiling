@@ -53,7 +53,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
     ):
         """ Create a Qiling instance.
 
-            For each argument or property, please refer to its docstring. e.g. Qiling.multithread.__doc__
+            For each argument or property, please refer to its help. e.g. help(Qiling.multithread)
         """
 
         ##################################
@@ -499,18 +499,20 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         """
         return self._stop_options
 
-    def __enable_bin_patch(self):
-        
-        for addr, code in self.patch_bin:
-            self.mem.write(self.loader.load_address + addr, code)
+    def do_bin_patch(self):
+        ba = self.loader.load_address
 
+        for offset, code in self.patch_bin:
+            self.mem.write(ba + offset, code)
 
-    def enable_lib_patch(self):
-        for addr, code, filename in self.patch_lib:
-            try:
-                self.mem.write(self.mem.get_lib_base(filename) + addr, code)
-            except:
-                raise RuntimeError("Fail to patch %s at address 0x%x" % (filename, addr))
+    def do_lib_patch(self):
+        for offset, code, filename in self.patch_lib:
+            ba = self.mem.get_lib_base(filename)
+
+            if ba is None:
+                raise RuntimeError(f'Patch failed: there is no loaded library named "{filename}"')
+
+            self.mem.write(ba + offset, code)
 
     def _init_stop_guard(self):
         if not self.stop_options:
@@ -572,7 +574,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         debugger = debugger_setup(self._debugger, self)
 
         # patch binary
-        self.__enable_bin_patch()
+        self.do_bin_patch()
 
         self.write_exit_trap()
         # emulate the binary
@@ -705,8 +707,17 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             self.uc.emu_stop()    
 
     # start emulation
-    def emu_start(self, begin, end, timeout=0, count=0):
+    def emu_start(self, begin: int, end: int, timeout: int = 0, count: int = 0):
+        """Start emulation.
+
+        Args:
+            begin   : emulation starting address
+            end     : emulation ending address
+            timeout : max emulation time (in microseconds); unlimited by default
+            count  : max emulation steps (instructions count); unlimited by default
+        """
+
         self.uc.emu_start(begin, end, timeout, count)
 
-        if self._internal_exception != None:
+        if self._internal_exception is not None:
             raise self._internal_exception

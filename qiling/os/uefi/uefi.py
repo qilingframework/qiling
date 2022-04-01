@@ -185,7 +185,7 @@ class QlOsUefi(QlOs):
 			self.emit_hexdump(pc, data)
 			self.emit_disasm(pc, data)
 
-			containing_image = self.find_containing_image(pc)
+			containing_image = self.ql.loader.find_containing_image(pc)
 			pc_info = f' ({containing_image.path} + {pc - containing_image.base:#x})' if containing_image else ''
 		finally:
 			self.ql.log.error(f'PC = {pc:#010x}{pc_info}')

@@ -21,7 +21,7 @@ def ql_syscall__newselect(ql: Qiling, nfds: int, readfds: int, writefds: int, ex
 
             for i in range(max_fd):
                 if i % 32 == 0:
-                    tmp = ql.unpack32(ql.mem.read(struct_addr + i, 4))
+                    tmp = ql.mem.read_ptr(struct_addr + i, 4)
 
                 if tmp & 0x1:
                     fileno = ql.os.fd[i].fileno()
@@ -52,8 +52,8 @@ def ql_syscall__newselect(ql: Qiling, nfds: int, readfds: int, writefds: int, ex
     n = ql.arch.pointersize
 
     if timeout:
-        sec  = ql.unpack(ql.mem.read(timeout + n * 0, n))
-        usec = ql.unpack(ql.mem.read(timeout + n * 1, n))
+        sec  = ql.mem.read_ptr(timeout + n * 0)
+        usec = ql.mem.read_ptr(timeout + n * 1)
 
         timeout_total = sec + float(usec) / 1000000
     else:
