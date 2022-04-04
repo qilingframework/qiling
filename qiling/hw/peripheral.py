@@ -159,18 +159,24 @@ class QlPeripheral(QlPeripheralUtils):
             called after each instruction is executed
         """        
         pass
-    
-    @QlPeripheralUtils.monitor()
-    def read(self, offset: int, size: int) -> int:
+
+    def raw_read(self, offset: int, size: int) -> int:
         buf = ctypes.create_string_buffer(size)
         ctypes.memmove(buf, ctypes.addressof(self.instance) + offset, size)
 
         return int.from_bytes(buf.raw, byteorder='little')
 
+    def raw_write(self, offset: int, size: int, value: int):
+        data = (value).to_bytes(size, 'little')
+        ctypes.memmove(ctypes.addressof(self.instance) + offset, data, size)
+    
+    @QlPeripheralUtils.monitor()
+    def read(self, offset: int, size: int) -> int:
+        return self.raw_read(offset, size)
+
     @QlPeripheralUtils.monitor()
     def write(self, offset: int, size: int, value: int):
-        data = (value).to_bytes(size, 'little')
-        ctypes.memmove(ctypes.addressof(self.instance) + offset, data, size)   
+        self.raw_write(offset, size, value)
 
     def contain(self, field, offset: int, size: int) -> bool:
         """ 
