@@ -89,7 +89,7 @@ class SAM3xaPio(QlPeripheral, GpioHooks):
                     self.set_pin(i)
             return
         
-        if offset in [self.struct.PUER.offset, self.struct.CODR.offset]:
+        if offset in [self.struct.PUDR.offset, self.struct.CODR.offset]:
             for i in range(32):
                 if (value >> i) & 1:
                     self.reset_pin(i)
@@ -101,7 +101,7 @@ class SAM3xaPio(QlPeripheral, GpioHooks):
     def set_pin(self, i):
         self.ql.log.debug(f'[{self.label}] Set P{self.label[-1].upper()}{i}')
         
-        self.instance.PDSR |= 1 << i        
+        self.instance.PDSR |= 1 << i
         self.call_hook_set(i)
     
     def reset_pin(self, i):
@@ -111,4 +111,4 @@ class SAM3xaPio(QlPeripheral, GpioHooks):
         self.call_hook_reset(i)
         
     def pin(self, index):
-        return (self.instance.PSR >> index) & 1
+        return (self.instance.PDSR >> index) & 1
