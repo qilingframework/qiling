@@ -6,7 +6,7 @@
 import ctypes
 
 from qiling.hw.peripheral import QlPeripheral
-from qiling.hw.const.sam3xa_adc import CR, ISR
+from qiling.hw.const.sam3xa_adc import CR, ISR, LCDR
 
 
 class SAM3xaAdc(QlPeripheral):
@@ -51,7 +51,9 @@ class SAM3xaAdc(QlPeripheral):
     def __init__(self, ql, label, intn = None):
         super().__init__(ql, label)
 
-        self.instance = self.struct()
+        self.instance = self.struct(
+            LCDR = 0xfff,
+        )
         self.intn = intn
 
     @QlPeripheral.monitor()
@@ -61,10 +63,17 @@ class SAM3xaAdc(QlPeripheral):
         return int.from_bytes(buf.raw, byteorder='little')
 
     @QlPeripheral.monitor()
-    def write(self, offset: int, size: int, value: int):      
-        if offset == self.struct.CR.offset:
+    def write(self, offset: int, size: int, value: int):
+        if offset == self.struct.CHER.offset:
+            self.instance.CHER |= value
+        
+        elif offset == self.struct.CHDR.offset:
+            self.instance.CHER &= ~value
+        
+        elif offset == self.struct.CR.offset:
             if value & CR.START:
                 self.instance.ISR |= ISR.DRDY
 
-        data = (value).to_bytes(size, 'little')
-        ctypes.memmove(ctypes.addressof(self.instance) + offset, data, size)
+        else:
+            data = (value).to_bytes(size, 'little')
+            ctypes.memmove(ctypes.addressof(self.instance) + offset, data, size)
