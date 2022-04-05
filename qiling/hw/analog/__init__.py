@@ -4,5 +4,6 @@
 #
 
 from .sam3xa_adc import SAM3xaAdc
+from .sam3xa_dac import SAM3xaDac
 from .stm32f1xx_adc import STM32F1xxAdc
 from .mk64f12_adc import MK64F12Adc
