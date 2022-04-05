@@ -256,15 +256,15 @@ sam3x8e = {
             "intn": 0x27
         }
     },
-    "DACC": {
+    "DAC": {
         "base": 0x400c8000,
-        "struct": "SAM3xaDacc",
+        "struct": "SAM3xaDac",
         "type": "peripheral",
         "kwargs": {
             "intn": 0x26
         }
     },
-    "PDC_DACC": {
+    "PDC_DAC": {
         "base": 0x400c8100,
         "struct": "SAM3xaPdc",
         "type": "peripheral"
