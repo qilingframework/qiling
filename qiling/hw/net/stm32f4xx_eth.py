@@ -6,6 +6,7 @@
 import ctypes
 
 from qiling.hw.peripheral import QlPeripheral
+from qiling.hw.const.stm32f4xx_eth import ETH_DMABMR, ETH_MACMIIAR, ETH_MACMIIDR
 
 
 class STM32F4xxEth(QlPeripheral):
@@ -101,11 +102,18 @@ class STM32F4xxEth(QlPeripheral):
 
     @QlPeripheral.monitor()
     def read(self, offset: int, size: int) -> int:
-        buf = ctypes.create_string_buffer(size)
-        ctypes.memmove(buf, ctypes.addressof(self.instance) + offset, size)
-        return int.from_bytes(buf.raw, byteorder='little')
+        return self.raw_read(offset, size)
+
     
     @QlPeripheral.monitor()
     def write(self, offset: int, size: int, value: int):
-        data = (value).to_bytes(size, 'little')
-        ctypes.memmove(ctypes.addressof(self.instance) + offset, data, size)
+        self.raw_write(offset, size, value)
+
+        if offset == self.struct.DMABMR.offset:
+            if value & ETH_DMABMR.SR:
+                self.instance.DMABMR &= ~ETH_DMABMR.SR
+        
+        if offset == self.struct.MACMIIAR.offset:
+            if value & ETH_MACMIIAR.MB:
+                self.instance.MACMIIAR &= ~ETH_MACMIIAR.MB
+                self.instance.MACMIIDR = 0xffff
