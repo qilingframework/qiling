@@ -70,7 +70,7 @@ class SAM3xaPio(QlPeripheral, GpioHooks):
 
     def __init__(self, ql, label, intn = None):
         QlPeripheral.__init__(self, ql, label)
-        GpioHooks.__init__(self, ql, 16)
+        GpioHooks.__init__(self, ql, 32)
 
         self.instance = self.struct()
         self.intn = intn
@@ -85,6 +85,33 @@ class SAM3xaPio(QlPeripheral, GpioHooks):
         return int.from_bytes(buf.raw, byteorder='little')
 
     @QlPeripheral.monitor()
-    def write(self, offset: int, size: int, value: int):        
+    def write(self, offset: int, size: int, value: int): 
+        if offset == self.struct.PUER.offset:
+            for i in range(32):
+                if (value >> i) & 1:
+                    self.set_pin(i)
+            return
+        
+        if offset == self.struct.PUDR.offset:
+            for i in range(32):
+                if (value >> i) & 1:
+                    self.reset_pin(i)
+            return
+
         data = (value).to_bytes(size, 'little')
         ctypes.memmove(ctypes.addressof(self.instance) + offset, data, size)
+
+    def set_pin(self, i):
+        self.ql.log.debug(f'[{self.label}] Set P{self.label[-1].upper()}{i}')
+        
+        self.instance.PSR |= 1 << i        
+        self.call_hook_set(i)
+    
+    def reset_pin(self, i):
+        self.ql.log.debug(f'[{self.label}] Reset P{self.label[-1].upper()}{i}')
+        
+        self.instance.PSR &= ~(1 << i)
+        self.call_hook_reset(i)
+        
+    def pin(self, index):
+        return (self.instance.PSR >> index) & 1
