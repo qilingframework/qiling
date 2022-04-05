@@ -6,7 +6,7 @@
 import ctypes
 
 from qiling.hw.peripheral import QlPeripheral
-from qiling.hw.const.stm32f4xx_eth import ETH_DMABMR, ETH_MACMIIAR, ETH_MACMIIDR
+from qiling.hw.const.stm32f4xx_eth import ETH_DMABMR, ETH_MACMIIAR
 
 
 class STM32F4xxEth(QlPeripheral):
