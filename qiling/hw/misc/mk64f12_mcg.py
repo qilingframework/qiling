@@ -41,7 +41,7 @@ class MK64F12Mcg(QlPeripheral):
             self.instance.S |= (value & C1.IREFS) >> C1.IREFS_Pos << S.IREFST_Pos
             
             clock_source = value & C1.CLKS
-            if clock_source == 0:
+            if clock_source == 0 and self.instance.S & S.PLLST:
                 self.instance.S |= S.CLKST
             else:
                 self.instance.S |= clock_source >> C1.CLKS_Pos << S.CLKST_Pos            
@@ -53,6 +53,7 @@ class MK64F12Mcg(QlPeripheral):
         elif offset == self.struct.C6.offset:
             if value & C6.PLLS:
                 self.instance.S |= S.PLLST
+                self.instance.S |= S.LOCK0
 
         else:
             self.raw_write(offset, size, value)
