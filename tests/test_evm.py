@@ -111,5 +111,39 @@ class EVMTest(unittest.TestCase):
         result = check_balance(user2, c1)
         self.assertEqual(int(result.output.hex()[2:], 16), 452312848583266388373324160190187140051835877600158453279131187530910662654)
 
+    def test_abi_encoding(self):
+        ql = Qiling(code="0x608060405234801561001057600080fd5b506101a4806100206000396000f3fe608060405234801561001057600080fd5b506004361061002b5760003560e01c8063ead710c414610030575b600080fd5b6100e96004803603602081101561004657600080fd5b810190808035906020019064010000000081111561006357600080fd5b82018360208201111561007557600080fd5b8035906020019184600183028401116401000000008311171561009757600080fd5b91908080601f016020809104026020016040519081016040528093929190818152602001838380828437600081840152601f19601f820116905080830192505050505050509192919290505050610164565b6040518080602001828103825283818151815260200191508051906020019080838360005b8381101561012957808201518184015260208101905061010e565b50505050905090810190601f1680156101565780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b606081905091905056fea2646970667358221220cf43353b75256fc42aaffd9632e06963c5c2aad72a91004bfd2f98cd56ae1a0c64736f6c63430006000033",archtype="evm", verbose=4)
+
+        user1 = ql.arch.evm.create_account(balance=100*10**18)
+        c1 = ql.arch.evm.create_account()
+
+        # Deploy runtime code
+        msg0 = ql.arch.evm.create_message(user1, b'', contract_address=c1)
+        ql.run(code=msg0)
+
+        # # SMART CONTRACT DEPENDENT: transform from user1 to user2
+        call_param = ['Hello World']
+        call_data = ql.arch.evm.abi.encode_function_call('greet(string)', call_param)
+
+        function_abi = {
+            'name': 'greet',
+            'type': 'function',
+            'inputs': [{
+                'type': 'string',
+                'name': ''
+            }]
+        }
+        call_data2 = ql.arch.evm.abi.encode_function_call_abi(function_abi, call_param)
+        call_data3 = '0xead710c4'+ ql.arch.evm.abi.convert(['string'], call_param)
+
+        self.assertEqual(call_data, call_data2)
+        self.assertEqual(call_data, call_data3)
+
+        msg1 = ql.arch.evm.create_message(user1, c1, data=call_data)
+        result = ql.run(code=msg1)
+        
+        result_data = ql.arch.evm.abi.decode_params(['string'], result.output)
+        self.assertEqual(call_param[0], result_data[0])
+
 if __name__ == "__main__":
     unittest.main()
