@@ -106,15 +106,6 @@ class QlHwManager:
 
         self.ql.mem.map_mmio(begin, size, mmio_read_cb, mmio_write_cb, info=info)
 
-    def setup_remap(self, base, alias, size, info=""):
-        def remap_read_cb(ql, offset, size):
-            return int.from_bytes(ql.mem.read(alias + offset, size), 'little')
-
-        def remap_write_cb(ql, offset, size, value):
-            ql.mem.write(alias + offset, (value).to_bytes(size, 'little'))
-
-        self.ql.mem.map_mmio(base, size, remap_read_cb, remap_write_cb, info=info)
-
     def show_info(self):
         self.ql.log.info(f'{"Start":8s}   {"End":8s}   {"Label":8s} {"Class"}')
 
