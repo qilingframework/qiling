@@ -124,12 +124,6 @@ class QlLoaderMCU(QlLoader):
                 alias = args['alias']
                 self.ql.hw.setup_remap(alias, base, size, info=f'[{name}]')
 
-            if memtype == 'bitband':
-                size = args['size'] * 32
-                base = args['base']
-                alias = args['alias']
-                self.ql.hw.setup_bitband(base, alias, size, info=f'[{name}]')
-
             if memtype == 'mmio':
                 size = args['size']
                 base = args['base']
