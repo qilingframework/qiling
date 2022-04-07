@@ -7,6 +7,7 @@ import ctypes
 
 from qiling.hw.peripheral import QlPeripheral
 from qiling.hw.connectivity import QlConnectivityPeripheral
+from qiling.hw.const.mk64f12_uart import S1
 
 
 class MK64F12Uart(QlConnectivityPeripheral):
@@ -57,3 +58,26 @@ class MK64F12Uart(QlConnectivityPeripheral):
         self.lon_intn = lon_intn
         self.rx_tx_intn = rx_tx_intn
         self.err_intn = err_intn
+
+        self.instance = self.struct(
+            S1 = S1.TDRE | S1.TC
+        )
+
+    @QlPeripheral.monitor()
+    def write(self, offset, size, value):
+        if offset == self.struct.D.offset:
+            self.send_to_user(value)
+        else:
+            self.raw_write(offset, size, value)
+
+    @QlPeripheral.monitor()
+    def read(self, offset, size):
+        if offset == self.struct.D.offset:
+            self.instance.RCFIFO = 0
+            return self.recv_from_user()
+        
+        return self.raw_read(offset, size)
+
+    def step(self):
+        if self.has_input():
+            self.instance.RCFIFO = 1
