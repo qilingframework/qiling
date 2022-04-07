@@ -11,6 +11,7 @@ from .gpio import *
 from .i2c import *
 from .intc import *
 from .math import *
+from .mem import *
 from .misc import *
 from .net import *
 from .power import *
