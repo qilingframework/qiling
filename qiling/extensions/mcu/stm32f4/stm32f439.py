@@ -5,16 +5,22 @@
 
 stm32f439 = {
     "SRAM BB": {
-        "alias": 0x22000000,
-        "base": 0x20000000,
-        "size": 0x100000,
-        "type": "bitband"
+        "base": 0x22000000,
+        "struct": "CortexMBitband",
+        "type": "core",
+        "kwargs":  {
+            "base": 0x20000000,
+            "size": 0x100000,
+        }
     },
     "PERIP BB": {
-        "alias": 0x42000000,
-        "base": 0x40000000,
-        "size": 0x100000,
-        "type": "bitband"
+        "base": 0x42000000,
+        "struct": "CortexMBitband",
+        "type": "core",
+        "kwargs":  {
+            "base": 0x40000000,
+            "size": 0x100000,
+        }
     },
     "SYSTICK": {
         "base": 0xe000e010,
@@ -59,6 +65,16 @@ stm32f439 = {
     "PPB": {
         "base": 0xe0000000,
         "size": 0x100000,
+        "type": "mmio"
+    },
+    "SRAM BBR": {
+        "base": 0x22000000,
+        "size": 0x2000000,
+        "type": "mmio"
+    },
+    "PERIP BBR": {
+        "base": 0x42000000,
+        "size": 0x2000000,
         "type": "mmio"
     },
     "TIM2": {
