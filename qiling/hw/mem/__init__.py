@@ -4,3 +4,4 @@
 #
 
 from .cm_bitband import CortexMBitband
+from .remap import MemoryRemap
