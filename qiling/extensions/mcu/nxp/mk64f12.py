@@ -4,6 +4,15 @@
 #
 
 mk64f12 = {
+    "PERIP BB": {
+        "base": 0x42000000,
+        "struct": "CortexMBitband",
+        "type": "core",
+        "kwargs":  {
+            "base": 0x40000000,
+            "size": 0x100000,
+        }
+    },
     "SYSTICK": {
         "base": 0xe000e010,
         "struct": "CortexM4SysTick",
@@ -32,6 +41,11 @@ mk64f12 = {
     "PERIP": {
         "base": 0x40000000,
         "size": 0x100000,
+        "type": "mmio"
+    },
+    "PERIP BBR": {
+        "base": 0x42000000,
+        "size": 0x2000000,
         "type": "mmio"
     },
     "PPB": {
