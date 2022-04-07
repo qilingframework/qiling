@@ -69,10 +69,9 @@ def ql_bin_to_ip(ip):
 
 def ql_syscall_socket(ql: Qiling, socket_domain, socket_type, socket_protocol):
     idx = next((i for i in range(NR_OPEN) if ql.os.fd[i] is None), -1)
+    regreturn = idx
 
-    if idx == -1:
-        regreturn = -1
-    else:
+    if idx != -1:
         # ql_socket.open should use host platform based socket_type.
         try:
             emu_socket_value = socket_type
@@ -88,12 +87,14 @@ def ql_syscall_socket(ql: Qiling, socket_domain, socket_type, socket_protocol):
             ql.log.error(f'Cannot convert emu_socket_type {emu_socket_value} to host platform based socket_type')
             raise
 
-        if ql.verbose >= QL_VERBOSE.DEBUG:  # set REUSEADDR options under debug mode
-            ql.os.fd[idx] = ql_socket.open(socket_domain, socket_type, socket_protocol, (socket.SOL_SOCKET, socket.SO_REUSEADDR, 1))
-        else:
-            ql.os.fd[idx] = ql_socket.open(socket_domain, socket_type, socket_protocol)
-
-        regreturn = idx
+        try:
+            if ql.verbose >= QL_VERBOSE.DEBUG:  # set REUSEADDR options under debug mode
+                ql.os.fd[idx] = ql_socket.open(socket_domain, socket_type, socket_protocol, (socket.SOL_SOCKET, socket.SO_REUSEADDR, 1))
+            else:
+                ql.os.fd[idx] = ql_socket.open(socket_domain, socket_type, socket_protocol)
+        except OSError as e:  # May raise error: Protocol not supported
+            ql.log.debug(f'{e}: {socket_domain=}, {socket_type=}, {socket_protocol=}')
+            regreturn = -1
 
     socket_type = socket_type_mapping(socket_type, ql.arch.type, ql.ostype)
     socket_domain = socket_domain_mapping(socket_domain, ql.arch.type, ql.ostype)
