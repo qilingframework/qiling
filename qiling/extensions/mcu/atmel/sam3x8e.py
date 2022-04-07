@@ -16,6 +16,15 @@ sam3x8e = {
         "size": 0x100000,
         "type": "bitband"
     },
+    "REMAP": {
+        "base": 0x0,
+        "struct": "MemoryRemap",
+        "type": "core",
+        "kwargs":  {
+            "base": 0x80000,
+            "size": 0x80000,
+        }
+    },
     "SYSTICK": {
         "base": 0xe000e010,
         "struct": "CortexM3SysTick",
@@ -55,6 +64,11 @@ sam3x8e = {
         "base": 0xe0000000,
         "size": 0x100000,
         "type": "mmio"
+    },
+    "REMAP REGION": {
+        "base": 0x0,
+        "size": 0x80000,
+        "type": "mmio",
     },
     "HSMCI": {
         "base": 0x40000000,
@@ -401,10 +415,4 @@ sam3x8e = {
         "struct": "SAM3xaGpbr",
         "type": "peripheral"
     },
-    "CODE": {
-        "base": 0x80000,
-        "size": 0x80000,
-        "alias": 0x0,
-        "type": "remap"
-    }
 }
