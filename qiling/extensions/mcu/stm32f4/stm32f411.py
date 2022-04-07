@@ -22,6 +22,15 @@ stm32f411 = {
             "size": 0x100000,
         }
     },
+    "REMAP": {
+        "base": 0x0,
+        "struct": "MemoryRemap",
+        "type": "core",
+        "kwargs":  {
+            "base": 0x8000000,
+            "size": 0x80000,
+        }
+    },
     "SYSTICK": {
         "base": 0xe000e010,
         "struct": "CortexM4SysTick",
@@ -76,6 +85,11 @@ stm32f411 = {
         "base": 0x42000000,
         "size": 0x2000000,
         "type": "mmio"
+    },
+    "REMAP REGION": {
+        "base": 0x0,
+        "size": 0x80000,
+        "type": "mmio",
     },
     "TIM2": {
         "base": 0x40000000,
@@ -375,10 +389,4 @@ stm32f411 = {
         },
         "type": "peripheral"
     },
-    "CODE": {
-        "base": 0x8000000,
-        "size": 0x80000,
-        "alias": 0x0,
-        "type": "remap"
-    }
 }

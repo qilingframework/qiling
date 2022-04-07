@@ -323,10 +323,18 @@ stm32f103 = {
         "base": 0xe0042000,
         "struct": "STM32F1xxDbgmcu"
     },
-    "CODE": {
-        "base": 0x8000000,
+    "REMAP": {
+        "base": 0x0,
+        "struct": "MemoryRemap",
+        "type": "core",
+        "kwargs":  {
+            "base": 0x8000000,
+            "size": 0x80000,
+        }
+    },
+    "REMAP REGION": {
+        "base": 0x0,
         "size": 0x80000,
-        "alias": 0x0,
-        "type": "remap"
-    }
+        "type": "mmio",
+    },
 }
