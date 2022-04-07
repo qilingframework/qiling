@@ -5,3 +5,4 @@
 
 from .cm_bitband import CortexMBitband
 from .remap import MemoryRemap
+from .kinetis_bme import KinetisBME
