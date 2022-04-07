@@ -6,6 +6,7 @@
 import ctypes
 
 from qiling.hw.peripheral import QlPeripheral
+from qiling.hw.const.mk64f12_mcg import C1, C5, C6, S
 
 
 class MK64F12Mcg(QlPeripheral):
@@ -30,3 +31,28 @@ class MK64F12Mcg(QlPeripheral):
 
     def __init__(self, ql, label):
         super().__init__(ql, label)
+
+
+    @QlPeripheral.monitor()
+    def write(self, offset: int, size: int, value: int):
+        if offset == self.struct.C1.offset:
+            self.instance.S &= ~(S.IREFST | S.CLKST)            
+
+            self.instance.S |= (value & C1.IREFS) >> C1.IREFS_Pos << S.IREFST_Pos
+            
+            clock_source = value & C1.CLKS
+            if clock_source == 0:
+                self.instance.S |= S.CLKST
+            else:
+                self.instance.S |= clock_source >> C1.CLKS_Pos << S.CLKST_Pos            
+
+        elif offset == self.struct.C5.offset:
+            if value & C5.PLLCLKEN0:
+                self.instance.S |= S.LOCK0
+        
+        elif offset == self.struct.C6.offset:
+            if value & C6.PLLS:
+                self.instance.S |= S.PLLST
+
+        else:
+            self.raw_write(offset, size, value)
