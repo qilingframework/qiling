@@ -78,38 +78,6 @@ class QlHwManager:
         for _, entity in self.entity.items():
             entity.step()
 
-    def setup_bitband(self, base, alias, size, info=""):
-        """ reference: 
-                https://github.com/qemu/qemu/blob/453d9c61dd5681159051c6e4d07e7b2633de2e70/hw/arm/armv7m.c
-        """
-
-        def bitband_addr(offset):
-            return base |  (offset & 0x1ffffff) >> 5
-
-        def bitband_read_cb(ql, offset, size):
-            addr = bitband_addr(offset) & (-size)
-            buf = self.ql.mem.read(addr, size)
-                        
-            bitpos = (offset >> 2) & ((size * 8) - 1)            
-            bit = (buf[bitpos >> 3] >> (bitpos & 7)) & 1
-
-            return bit
-
-        def bitband_write_cb(ql, offset, size, value):
-            addr = bitband_addr(offset) & (-size)            
-            buf = self.ql.mem.read(addr, size)
-            
-            bitpos = (offset >> 2) & ((size * 8) - 1)
-            bit = 1 << (bitpos & 7)
-            if value & 1:
-                buf[bitpos >> 3] |= bit
-            else:
-                buf[bitpos >> 3] &= ~bit
-
-            self.ql.mem.write(addr, bytes(buf))            
-
-        self.ql.mem.map_mmio(alias, size, bitband_read_cb, bitband_write_cb, info=info)
-
     def setup_mmio(self, begin, size, info=""):
         mmio = ctypes.create_string_buffer(size)        
 
