@@ -277,16 +277,16 @@ class Process():
             self.ql,
             base=ldr_addr,
             in_load_order_module_list={
-                'Flink': ldr_addr + 2 * self.ql.arch.pointersize,
-                'Blink': ldr_addr + 2 * self.ql.arch.pointersize
+                'Flink': ldr_addr + 8 + self.ql.arch.pointersize,
+                'Blink': ldr_addr + 8 + self.ql.arch.pointersize
             },
             in_memory_order_module_list={
-                'Flink': ldr_addr + 4 * self.ql.arch.pointersize,
-                'Blink': ldr_addr + 4 * self.ql.arch.pointersize
+                'Flink': ldr_addr + 8 + 3 * self.ql.arch.pointersize,
+                'Blink': ldr_addr + 8 + 3 * self.ql.arch.pointersize
             },
             in_initialization_order_module_list={
-                'Flink': ldr_addr + 6 * self.ql.arch.pointersize,
-                'Blink': ldr_addr + 6 * self.ql.arch.pointersize
+                'Flink': ldr_addr + 8 + 5 * self.ql.arch.pointersize,
+                'Blink': ldr_addr + 8 + 5 * self.ql.arch.pointersize
             }
         )
         self.ql.mem.write(ldr_addr, ldr_data.bytes())
