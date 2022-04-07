@@ -174,7 +174,7 @@ class MCUTest(unittest.TestCase):
 
     def test_mcu_led_rust_stm32f411(self):
         ql = Qiling(["../examples/rootfs/mcu/stm32f411/led-rust.hex"],
-                    archtype="cortex_m", ostype="mcu", env=gd32vf103, profile="profiles/stm32f411.yml", verbose=QL_VERBOSE.DEFAULT)
+                    archtype="cortex_m", ostype="mcu", env=stm32f411, verbose=QL_VERBOSE.DEFAULT)
 
         count = 0
         def counter():
