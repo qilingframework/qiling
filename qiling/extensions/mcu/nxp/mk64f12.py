@@ -4,6 +4,15 @@
 #
 
 mk64f12 = {
+    "BME": {
+        "base": 0x44000000,
+        "struct": "KinetisBME",
+        "type": "core",
+        "kwargs": {
+            "base": 0x40000000,
+            "size": 0x70000,
+        }
+    },
     "PERIP BB": {
         "base": 0x42000000,
         "struct": "CortexMBitband",
@@ -51,6 +60,16 @@ mk64f12 = {
     "PPB": {
         "base": 0xe0000000,
         "size": 0x100000,
+        "type": "mmio"
+    },
+    "BME AND REGION": {
+        "base": 0x44000000,
+        "size": 0x70000,
+        "type": "mmio"
+    },
+    "BME OR REGION": {
+        "base": 0x48000000,
+        "size": 0x70000,
         "type": "mmio"
     },
     "FTFE": {
