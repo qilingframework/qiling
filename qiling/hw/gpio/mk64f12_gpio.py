@@ -50,6 +50,8 @@ class MK64F12Gpio(QlPeripheral, GpioHooks):
     def set_pin(self, i):
         self.ql.log.debug(f'[{self.label}] Set P{self.label[-1].upper()}{i}')
         
+        self.port.send_interrupt(i, self.pin(i), 1)
+
         if self.instance.PDDR:
             self.instance.PDOR |= 1 << i
         else:
@@ -59,6 +61,8 @@ class MK64F12Gpio(QlPeripheral, GpioHooks):
     def reset_pin(self, i):
         self.ql.log.debug(f'[{self.label}] Reset P{self.label[-1].upper()}{i}')
         
+        self.port.send_interrupt(i, self.pin(i), 0)
+
         if self.instance.PDDR:
             self.instance.PDOR &= ~(1 << i)
         else:
@@ -70,3 +74,7 @@ class MK64F12Gpio(QlPeripheral, GpioHooks):
             return (self.instance.PDOR >> index) & 1
         else:
             return (self.instance.PDIR >> index) & 1
+
+    @property
+    def port(self):
+        return getattr(self.ql.hw, 'port' + self.label[-1])
