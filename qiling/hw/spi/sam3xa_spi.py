@@ -34,5 +34,21 @@ class SAM3xaSpi(QlConnectivityPeripheral):
 
         self.intn = intn
         self.instance = self.struct(
-            SR = SR.TDRE | SR.RDRF
+            SR = SR.TDRE | SR.RDRF,
+            RDR = 0xff,
         )
+
+    @QlPeripheral.monitor()
+    def read(self, offset, size):
+        if offset == self.struct.RDR.offset:
+            if self.has_input():
+                return self.recv_from_user()
+        
+        return self.raw_read(offset, size)
+
+    @QlPeripheral.monitor()
+    def write(self, offset, size, value):
+        if offset == self.struct.TDR.offset:
+            self.send_to_user(value)
+        
+        self.raw_write(offset, size, value)
