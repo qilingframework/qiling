@@ -567,7 +567,7 @@ mk64f12 = {
         "base": 0x400ff000,
         "struct": "MK64F12Gpio",
         "kwargs": {
-            "porta_intn": 0x3b
+            "intn": 0x3b
         }
     },
     "GPIOB": {
@@ -575,7 +575,7 @@ mk64f12 = {
         "base": 0x400ff040,
         "struct": "MK64F12Gpio",
         "kwargs": {
-            "portb_intn": 0x3c
+            "intn": 0x3c
         }
     },
     "GPIOC": {
@@ -583,7 +583,7 @@ mk64f12 = {
         "base": 0x400ff080,
         "struct": "MK64F12Gpio",
         "kwargs": {
-            "portc_intn": 0x3d
+            "intn": 0x3d
         }
     },
     "GPIOD": {
@@ -591,7 +591,7 @@ mk64f12 = {
         "base": 0x400ff0c0,
         "struct": "MK64F12Gpio",
         "kwargs": {
-            "portd_intn": 0x3e
+            "intn": 0x3e
         }
     },
     "GPIOE": {
@@ -599,7 +599,7 @@ mk64f12 = {
         "base": 0x400ff100,
         "struct": "MK64F12Gpio",
         "kwargs": {
-            "porte_intn": 0x3f
+            "intn": 0x3f
         }
     },
     "CAU": {
