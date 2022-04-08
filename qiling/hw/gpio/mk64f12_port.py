@@ -15,7 +15,7 @@ class MK64F12Port(QlPeripheral):
             ("PCR" , ctypes.c_uint32 * 32), # Pin Control Register n
             ("GPCLR", ctypes.c_uint32), # Global Pin Control Low Register
             ("GPCHR", ctypes.c_uint32), # Global Pin Control High Register
-            ("RESERVED0", ctypes.c_uint8 * 28),
+            ("RESERVED0", ctypes.c_uint8 * 24),
             ("ISFR" , ctypes.c_uint32), # Interrupt Status Flag Register
             ("RESERVED1", ctypes.c_uint8 * 28),
             ("DFER" , ctypes.c_uint32), # Digital Filter Enable Register
