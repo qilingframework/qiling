@@ -17,5 +17,6 @@ from .stm32f4xx_syscfg import STM32F4xxSyscfg
 from .stm32f4xx_dbg import STM32F4xxDbgmcu
 from .gd32vf1xx_rcu import GD32VF1xxRcu
 from .mk64f12_sim import MK64F12Sim
+from .mk64f12_smc import MK64F12Smc
 from .mk64f12_mcg import MK64F12Mcg
 from .mk64f12_wdog import MK64F12Wdog
