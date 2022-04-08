@@ -7,7 +7,7 @@ import ctypes
 
 from qiling.hw.peripheral import QlPeripheral
 from qiling.hw.connectivity import QlConnectivityPeripheral
-from qiling.hw.const.mk64f12_uart import S1
+from qiling.hw.const.mk64f12_uart import S1, C2, PFIFO
 
 
 class MK64F12Uart(QlConnectivityPeripheral):
@@ -73,11 +73,20 @@ class MK64F12Uart(QlConnectivityPeripheral):
     @QlPeripheral.monitor()
     def read(self, offset, size):
         if offset == self.struct.D.offset:
-            self.instance.RCFIFO = 0
+            if self.instance.PFIFO & PFIFO.RXFE:
+                self.instance.RCFIFO = 0
+            else:
+                self.instance.S1 &= ~S1.RDRF
             return self.recv_from_user()
         
         return self.raw_read(offset, size)
 
     def step(self):
         if self.has_input():
-            self.instance.RCFIFO = 1
+            if self.instance.PFIFO & PFIFO.RXFE:
+                self.instance.RCFIFO = 1
+            else:
+                self.instance.S1 |= S1.RDRF
+            
+            if self.instance.C2 & C2.RIE:
+                self.ql.hw.nvic.set_pending(self.rx_tx_intn)
