@@ -6,6 +6,7 @@
 import ctypes
 
 from qiling.hw.peripheral import QlPeripheral
+from qiling.hw.const.mk64f12_port import PCR, InterruptMode
 
 
 class MK64F12Port(QlPeripheral):
@@ -25,3 +26,19 @@ class MK64F12Port(QlPeripheral):
 
     def __init__(self, ql, label, intn=None):
         super().__init__(ql, label)
+
+        self.intn = intn
+
+    def pin_interrupt_config(self, index):
+        return (self.instance.PCR[index] & PCR.IRQC) >> 16
+
+    def send_interrupt(self, index, prev, curr): 
+        config = self.pin_interrupt_config(index)       
+        if (
+            (config == InterruptMode.InterruptLogicZero   and curr == 0) or
+            (config == InterruptMode.InterruptLogicOne    and curr == 1) or
+            (config == InterruptMode.InterruptRisingEdge  and curr == 1 and prev == 0) or
+            (config == InterruptMode.InterruptFallingEdge and curr == 0 and prev == 1) or
+            (config == InterruptMode.InterruptEitherEdge  and curr != prev)
+        ):
+            self.ql.hw.nvic.set_pending(self.intn)
