@@ -7,7 +7,7 @@ import ctypes
 
 from qiling.hw.peripheral import QlPeripheral
 from qiling.hw.connectivity import QlConnectivityPeripheral
-from qiling.hw.const.sam3xa_spi import SR
+from qiling.hw.const.sam3xa_spi import SR, TDR
 
 
 class SAM3xaSpi(QlConnectivityPeripheral):
@@ -49,6 +49,6 @@ class SAM3xaSpi(QlConnectivityPeripheral):
     @QlPeripheral.monitor()
     def write(self, offset, size, value):
         if offset == self.struct.TDR.offset:
-            self.send_to_user(value)
-        
+            self.send_to_user(value & TDR.TD)
+
         self.raw_write(offset, size, value)
