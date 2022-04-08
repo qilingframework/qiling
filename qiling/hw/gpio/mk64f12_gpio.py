@@ -36,6 +36,13 @@ class MK64F12Gpio(QlPeripheral, GpioHooks):
         elif offset == self.struct.PCOR.offset:            
             for i in range(32):
                 self.reset_pin(i)
+        
+        elif offset == self.struct.PTOR.offset:            
+            for i in range(32):
+                if self.pin(i):
+                    self.reset_pin(i)
+                else:
+                    self.set_pin(i)
 
         else:
             self.raw_write(offset, size, value)
