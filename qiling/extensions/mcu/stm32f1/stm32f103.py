@@ -255,15 +255,9 @@ stm32f103 = {
         "struct": "STM32F1xxTim",
         "kwargs": {
             "brk_intn": 0x18,
-            "up_intn": 0x19,
-            "trg_com_intn": 0x1a,
             "cc_intn": 0x1b,
-            "brk_tim15_intn": 0x18,
-            "brk_tim9_intn": 0x18,
-            "trg_com_tim17_intn": 0x1a,
-            "trg_com_tim11_intn": 0x1a,
-            "up_tim16_intn": 0x19,
-            "up_tim10_intn": 0x19
+            "trg_com_intn": 0x1a,
+            "up_intn": 0x19,   
         }
     },
     "SPI1": {

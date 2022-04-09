@@ -215,10 +215,10 @@ stm32f411 = {
         "base": 0x40010000,
         "struct": "STM32F4xxTim",
         "kwargs": {
-            "brk_tim9_intn": 0x18,
+            "brk_intn": 0x18,
             "cc_intn": 0x1b,
-            "trg_com_tim11_intn": 0x1a,
-            "up_tim10_intn": 0x19
+            "trg_com_intn": 0x1a,
+            "up_intn": 0x19
         },
         "type": "peripheral"
     },

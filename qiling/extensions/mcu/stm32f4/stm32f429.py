@@ -318,10 +318,10 @@ stm32f429 = {
         "base": 0x40010000,
         "struct": "STM32F4xxTim",
         "kwargs": {
-            "brk_tim9_intn": 0x18,
+            "brk_intn": 0x18,
             "cc_intn": 0x1b,
-            "trg_com_tim11_intn": 0x1a,
-            "up_tim10_intn": 0x19
+            "trg_com_intn": 0x1a,
+            "up_intn": 0x19
         },
         "type": "peripheral"
     },
@@ -329,10 +329,10 @@ stm32f429 = {
         "base": 0x40010400,
         "struct": "STM32F4xxTim",
         "kwargs": {
-            "brk_tim12_intn": 0x2b,
+            "brk_intn": 0x2b,
             "cc_intn": 0x2e,
-            "trg_com_tim14_intn": 0x2d,
-            "up_tim13_intn": 0x2c
+            "trg_com_intn": 0x2d,
+            "up_intn": 0x2c
         },
         "type": "peripheral"
     },
