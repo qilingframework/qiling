@@ -34,7 +34,7 @@ class STM32F1xxSpi(QlConnectivityPeripheral):
         self.instance = self.struct(
             CR1     = 0x00000000,
             CR2     = 0x00000000,
-            SR      = 0x0000000A,
+            SR      = 0x0000000B,
             DR      = 0x0000000C,
             CRCPR   = 0x00000007,
             RXCRCR  = 0x00000000,
@@ -46,12 +46,13 @@ class STM32F1xxSpi(QlConnectivityPeripheral):
 
     @QlPeripheral.monitor()
     def read(self, offset: int, size: int) -> int:        
+        if self.contain(self.struct.DR, offset, size):
+            if self.has_input():
+                return self.recv_from_user()
+
         buf = ctypes.create_string_buffer(size)
         ctypes.memmove(buf, ctypes.addressof(self.instance) + offset, size)
-        data = int.from_bytes(buf.raw, byteorder='little')
-
-        if self.contain(self.struct.DR, offset, size):
-            self.instance.SR &= ~SPI_SR.RXNE
+        data = int.from_bytes(buf.raw, byteorder='little')        
 
         return data
 
@@ -64,20 +65,5 @@ class STM32F1xxSpi(QlConnectivityPeripheral):
             data = (value).to_bytes(size, 'little')
             ctypes.memmove(ctypes.addressof(self.instance) + offset, data, size)           
 
-    def transfer(self):
-        """ transfer data from DR to shift buffer and
-            receive data from user buffer into DR
-        """        
-
-        if not (self.instance.SR & SPI_SR.RXNE): 
-            # TXE bit must had been cleared
-            if self.has_input():
-                self.instance.SR |= SPI_SR.RXNE                
-                self.instance.DR = self.recv_from_user()
-
     def send_interrupt(self):
         self.ql.hw.nvic.set_pending(self.intn)
-
-    @QlConnectivityPeripheral.device_handler
-    def step(self):
-        self.transfer()
