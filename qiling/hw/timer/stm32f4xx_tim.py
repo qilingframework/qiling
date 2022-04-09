@@ -74,10 +74,11 @@ class STM32F4xxTim(QlTimerPeripheral):
 
         super().__init__(ql, label)
 
-        self.brk_intn = brk_intn
-        self.cc_intn = cc_intn
-        self.trg_com_intn = trg_com_intn
-        self.up_intn = up_intn
+        self.intn = intn
+        self.brk_intn = brk_intn if brk_intn else intn
+        self.cc_intn = cc_intn if cc_intn else intn
+        self.trg_com_intn = trg_com_intn if trg_com_intn else intn
+        self.up_intn = up_intn if up_intn else intn
 
 
         self.prescale_count = 0
@@ -113,6 +114,10 @@ class STM32F4xxTim(QlTimerPeripheral):
     @property
     def ratio(self):
         return max(round(self._ratio / (self.instance.PSC + 1)), 1)
+
+    @ratio.setter
+    def ratio(self, value):
+        self.set_ratio(value)
 
     @property
     def prescale(self):
