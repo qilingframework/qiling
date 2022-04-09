@@ -59,12 +59,13 @@ class STM32F4xxUsart(QlConnectivityPeripheral):
 
     @QlPeripheral.monitor()
     def read(self, offset: int, size: int) -> int:
+        if offset == self.struct.DR.offset:
+            self.instance.SR &= ~USART_SR.RXNE  
+            return self.recv_from_user()
+            
         buf = ctypes.create_string_buffer(size)
         ctypes.memmove(buf, ctypes.addressof(self.instance) + offset, size)
-        retval = int.from_bytes(buf.raw, byteorder='little')
-
-        if offset == self.struct.DR.offset:
-            self.instance.SR &= ~USART_SR.RXNE        
+        retval = int.from_bytes(buf.raw, byteorder='little')              
 
         return retval
 
@@ -95,8 +96,7 @@ class STM32F4xxUsart(QlConnectivityPeripheral):
         if not (self.instance.SR & USART_SR.RXNE): 
             # TXE bit must had been cleared
             if self.has_input():
-                self.instance.SR |= USART_SR.RXNE
-                self.instance.DR = self.recv_from_user()
+                self.instance.SR |= USART_SR.RXNE                
 
     @QlConnectivityPeripheral.device_handler
     def step(self):
