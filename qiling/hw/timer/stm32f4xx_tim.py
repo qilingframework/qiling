@@ -66,22 +66,20 @@ class STM32F4xxTim(QlTimerPeripheral):
         ]
 
     def __init__(self, ql: Qiling, label: str, 
-            brk_tim9_intn: Optional[int] = None, 
+            intn: Optional[int] = None, 
+            brk_intn: Optional[int] = None, 
             cc_intn: Optional[int] = None,
-            trg_com_tim11_intn: Optional[int] = None,
-            up_tim10_intn: Optional[int] = None, **kwargs):
+            trg_com_intn: Optional[int] = None,
+            up_intn: Optional[int] = None):
 
         super().__init__(ql, label)
 
-        self.brk_tim9_intn = brk_tim9_intn
+        self.brk_intn = brk_intn
         self.cc_intn = cc_intn
-        self.trg_com_tim11_intn = trg_com_tim11_intn
-        self.up_tim10_intn = up_tim10_intn
+        self.trg_com_intn = trg_com_intn
+        self.up_intn = up_intn
 
-        if kwargs:
-            for key, value in kwargs.items():
-                self.ql.log.warning(f'[{self.label.upper()}] Unused keyword {key} : {value}')
-        
+
         self.prescale_count = 0
         self.instance = self.struct()
 
@@ -97,14 +95,14 @@ class STM32F4xxTim(QlTimerPeripheral):
         ctypes.memmove(ctypes.addressof(self.instance) + offset, data, size)
 
     def send_update_interrupt(self):
-        if self.up_tim10_intn is None:
+        if self.up_intn is None:
             return
 
         if not self.instance.DIER & TIM_DIER.UIE:
             return
 
         self.instance.SR |= TIM_SR.UIF
-        self.ql.hw.nvic.set_pending(self.up_tim10_intn)
+        self.ql.hw.nvic.set_pending(self.up_intn)
 
     def set_ratio(self, ratio):
         self.instance.CNT = 0
