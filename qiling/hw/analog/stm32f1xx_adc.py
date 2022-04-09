@@ -6,6 +6,7 @@
 import ctypes
 
 from qiling.hw.peripheral import QlPeripheral
+from qiling.hw.const.stm32f1xx_adc import ADC_CR2, ADC_SR
 
 
 class STM32F1xxAdc(QlPeripheral):
@@ -50,7 +51,9 @@ class STM32F1xxAdc(QlPeripheral):
     def __init__(self, ql, label, intn = None):
         super().__init__(ql, label)
 
-        self.instance = self.struct()
+        self.instance = self.struct(
+            DR = 0x7ff,
+        )
         self.intn = intn
 
     @QlPeripheral.monitor()
@@ -61,5 +64,13 @@ class STM32F1xxAdc(QlPeripheral):
 
     @QlPeripheral.monitor()
     def write(self, offset: int, size: int, value: int):      
-        data = (value).to_bytes(size, 'little')
-        ctypes.memmove(ctypes.addressof(self.instance) + offset, data, size)
+        self.raw_write(offset, size, value)
+
+        if offset == self.struct.CR2.offset:
+            if value & ADC_CR2.RSTCAL:
+                self.instance.CR2 = value & ~ADC_CR2.RSTCAL
+            if value & ADC_CR2.CAL:
+                self.instance.CR2 = value & ~ADC_CR2.CAL
+            if value & ADC_CR2.SWSTART:
+                self.instance.SR |= ADC_SR.EOS
+                self.instance.CR2 = value & ~ADC_CR2.SWSTART
