@@ -4,7 +4,7 @@
 #
 
 import os, pefile, pickle, secrets, ntpath
-from typing import Any, MutableMapping, Optional, Mapping, Sequence
+from typing import Any, MutableMapping, Optional, Mapping, Sequence, Tuple
 
 from unicorn import UcError
 from unicorn.x86_const import UC_X86_REG_CR4, UC_X86_REG_CR8
@@ -16,7 +16,7 @@ from qiling.exception import QlErrorArch
 from qiling.os.const import POINTER
 from qiling.os.windows.api import HINSTANCE, DWORD, LPVOID
 from qiling.os.windows.fncc import CDECL
-from qiling.os.windows.utils import path_leaf, is_file_library
+from qiling.os.windows.utils import has_lib_ext
 from qiling.os.windows.structs import *
 from .loader import QlLoader, Image
 
@@ -32,6 +32,11 @@ class QlPeCacheEntry:
 class QlPeCache:
     @staticmethod
     def cache_filename(path: str) -> str:
+        dirname, basename = ntpath.split(path)
+
+        # canonicalize basename while preserving the path
+        path = ntpath.join(dirname, basename.casefold())
+
         return f'{path}.cache2'
 
     def restore(self, path: str) -> Optional[QlPeCacheEntry]:
@@ -64,23 +69,36 @@ class Process:
     def __init__(self, ql: Qiling):
         self.ql = ql
 
+    def __get_path_elements(self, name: str) -> Tuple[str, str]:
+        """Translate DLL virtual path into host path.
+
+        Args:
+            name: dll virtual path; either absolute or relative
+
+        Returns: dll path on the host and dll basename in a canonicalized form
+        """
+
+        dirname, basename = ntpath.split(name)
+
+        if not has_lib_ext(basename):
+            basename = f'{basename}.dll'
+
+        # if only filename was specified assume it is located at the
+        # system32 folder to prevent potential dll hijacking
+        if not dirname:
+            dirname = self.ql.os.winsys
+
+        # reconstruct the dll virtual path
+        vpath = ntpath.join(dirname, basename)
+
+        return self.ql.os.path.virtual_to_host_path(vpath), basename.casefold()
+
     def load_dll(self, name: str, is_driver: bool = False) -> int:
-        # BUG: that lowers the whole path, which may not be found on a Linux host where paths are case sensitive
-        dll_name = name.lower()
-
-        if dll_name.startswith('c:\\'):
-            path = self.ql.os.path.transform_to_real_path(dll_name)
-            dll_name = path_leaf(dll_name)
-        else:
-            if not is_file_library(dll_name):
-                dll_name = f'{dll_name}.dll'
-
-            path = ntpath.join(self.ql.os.winsys, dll_name)
-            path = self.ql.os.path.transform_to_real_path(path)
+        dll_path, dll_name = self.__get_path_elements(name)
 
         if dll_name.startswith('api-ms-win-'):
             # Usually we should not reach this point and instead imports from such DLLs should be redirected earlier
-            self.ql.log.warning(f'Refusing to load virtual DLL {dll_name}')
+            self.ql.log.debug(f'Refusing to load virtual DLL {dll_name}')
             return 0
 
         # see if this dll was already loaded
@@ -89,9 +107,18 @@ class Process:
         if image is not None:
             return image.base
 
-        if not os.path.exists(path):
-            self.ql.log.error(f'Could not find DLL file: {path}')
-            return 0
+        if not os.path.exists(dll_path):
+            # posix hosts may not find the requested filename if it was saved under a different case.
+            # For example, 'KernelBase.dll' may not be found because it is stored as 'kernelbase.dll'.
+            #
+            # try to locate the requested file while ignoring the case of its path elements.
+            dll_casefold_path = self.ql.os.path.host_casefold_path(dll_path)
+
+            if dll_casefold_path is None:
+                self.ql.log.error(f'Could not find DLL file: {dll_path}')
+                return 0
+
+            dll_path = dll_casefold_path
 
         self.ql.log.info(f'Loading {dll_name} ...')
 
@@ -102,7 +129,7 @@ class Process:
         loaded = False
 
         if self.libcache:
-            cached = self.libcache.restore(path)
+            cached = self.libcache.restore(dll_path)
 
         if cached:
             data = cached.data
@@ -125,7 +152,7 @@ class Process:
 
         # either file was not cached, or could not be loaded to the same location in memory
         if not cached or not loaded:
-            dll = pefile.PE(path, fast_load=True)
+            dll = pefile.PE(dll_path, fast_load=True)
             dll.parse_data_directories()
             warnings = dll.get_warnings()
 
@@ -180,7 +207,7 @@ class Process:
 
             if self.libcache:
                 cached = QlPeCacheEntry(image_base, data, cmdlines, import_symbols, import_table)
-                self.libcache.save(path, cached)
+                self.libcache.save(dll_path, cached)
                 self.ql.log.info(f'Cached {dll_name}')
 
         # Add dll to IAT
@@ -198,7 +225,7 @@ class Process:
             self.dll_last_address = self.ql.mem.align_up(self.dll_last_address + dll_len, 0x10000)
 
         # add DLL to coverage images
-        self.images.append(Image(dll_base, dll_base + dll_len, os.path.abspath(path)))
+        self.images.append(Image(dll_base, dll_base + dll_len, dll_path))
 
         # if this is NOT a driver, add dll to ldr data
         if not is_driver:
