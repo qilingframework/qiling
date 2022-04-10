@@ -4,138 +4,183 @@
 #
 
 import sys, unittest
-from pathlib import PurePath, PurePosixPath, PureWindowsPath
+from pathlib import Path, PurePath, PurePosixPath, PureWindowsPath
 
-sys.path.append("..")
-from qiling import Qiling
-from qiling.const import QL_OS, QL_OS_POSIX, QL_VERBOSE
-from qiling.os.path import QlPathManager
+sys.path.append('..')
+from qiling.const import QL_OS
+from qiling.os.path import QlOsPath
 
-# define a few aliases
-nt_to_posix = QlPathManager.convert_win32_to_posix
-posix_to_nt = QlPathManager.convert_posix_to_win32
-to_native = QlPathManager.convert_for_native_os
+is_nt_host = PurePath() == PureWindowsPath()
+is_posix_host = PurePath() == PurePosixPath()
+
+def realpath(path: PurePath) -> Path:
+    return Path(path).resolve()
+
+def nt_to_native(rootfs: str, cwd: str, path: str) -> str:
+    p = QlOsPath(rootfs, cwd, QL_OS.WINDOWS)
+
+    return p.virtual_to_host_path(path)
+
+def posix_to_native(rootfs: str, cwd: str, path: str) -> str:
+    p = QlOsPath(rootfs, cwd, QL_OS.LINUX)
+
+    return p.virtual_to_host_path(path)
+
 
 class TestPathUtils(unittest.TestCase):
-    def test_convert_win32_to_posix(self):
-        rootfs = PurePosixPath(r'../examples/rootfs/x8664_windows')
+    def test_convert_nt_to_posix(self):
+        # test only on a POSIX host
+        if not is_posix_host:
+            self.skipTest('POSIX host only')
 
-        self.assertEqual(str(rootfs / "test"), str(nt_to_posix(rootfs, "/", "\\\\.\\PhysicalDrive0\\test")))
-        self.assertEqual(str(rootfs / "test"), str(nt_to_posix(rootfs, "/", "\\\\.\\PhysicalDrive0\\..\\test")))
-        self.assertEqual(str(rootfs / "test"), str(nt_to_posix(rootfs, "/", "\\\\.\\PhysicalDrive0\\..\\..\\test")))
-        self.assertEqual(str(rootfs / "test"), str(nt_to_posix(rootfs, "/", "\\\\.\\PhysicalDrive0\\..\\xxxx\\..\\test")))
+        rootfs = PurePosixPath(r'../examples/rootfs/x86_windows')
 
-        self.assertEqual(str(rootfs / "test"), str(nt_to_posix(rootfs, "/", "\\\\hostname\\share\\test")))
-        self.assertEqual(str(rootfs / "test"), str(nt_to_posix(rootfs, "/", "\\\\hostname\\share\\..\\test")))
-        self.assertEqual(str(rootfs / "test"), str(nt_to_posix(rootfs, "/", "\\\\hostname\\share\\..\\..\\test")))
-        self.assertEqual(str(rootfs / "test"), str(nt_to_posix(rootfs, "/", "\\\\hostname\\share\\..\\xxxx\\..\\test")))
+        expected = str(realpath(rootfs) / 'test')
 
-        self.assertEqual(str(rootfs / "test"), str(nt_to_posix(rootfs, "/", "\\\\.\\BootPartition\\test")))
-        self.assertEqual(str(rootfs / "test"), str(nt_to_posix(rootfs, "/", "\\\\.\\BootPartition\\..\\test")))
-        self.assertEqual(str(rootfs / "test"), str(nt_to_posix(rootfs, "/", "\\\\.\\BootPartition\\..\\..\\test")))
-        self.assertEqual(str(rootfs / "test"), str(nt_to_posix(rootfs, "/", "\\\\.\\BootPartition\\..\\xxxx\\..\\test")))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\\\.\\PhysicalDrive0\\test'))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\\\.\\PhysicalDrive0\\..\\test'))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\\\.\\PhysicalDrive0\\..\\..\\test'))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\\\.\\PhysicalDrive0\\..\\xxxx\\..\\test'))
 
-        self.assertEqual(str(rootfs / "test"), str(nt_to_posix(rootfs, "/", "C:\\test")))
-        self.assertEqual(str(rootfs / "test"), str(nt_to_posix(rootfs, "/", "C:\\..\\test")))
-        self.assertEqual(str(rootfs / "test"), str(nt_to_posix(rootfs, "/", "C:\\..\\..\\test")))
-        self.assertEqual(str(rootfs / "test"), str(nt_to_posix(rootfs, "/", "C:\\..\\xxxx\\..\\test")))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\\\hostname\\share\\test'))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\\\hostname\\share\\..\\test'))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\\\hostname\\share\\..\\..\\test'))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\\\hostname\\share\\..\\xxxx\\..\\test'))
 
-        self.assertEqual(str(rootfs / "test"), str(nt_to_posix(rootfs, "/", "\\test")))
-        self.assertEqual(str(rootfs / "test"), str(nt_to_posix(rootfs, "/", "\\..\\test")))
-        self.assertEqual(str(rootfs / "test"), str(nt_to_posix(rootfs, "/", "\\..\\..\\test")))
-        self.assertEqual(str(rootfs / "test"), str(nt_to_posix(rootfs, "/", "\\..\\xxxx\\..\\test")))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\\\.\\BootPartition\\test'))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\\\.\\BootPartition\\..\\test'))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\\\.\\BootPartition\\..\\..\\test'))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\\\.\\BootPartition\\..\\xxxx\\..\\test'))
 
-        self.assertEqual(str(rootfs / "test"), str(nt_to_posix(rootfs, "/", "test")))
-        self.assertEqual(str(rootfs / "test"), str(nt_to_posix(rootfs, "/", "..\\test")))
-        self.assertEqual(str(rootfs / "test"), str(nt_to_posix(rootfs, "/", "..\\..\\test")))
-        self.assertEqual(str(rootfs / "test"), str(nt_to_posix(rootfs, "/", "..\\xxxx\\..\\test")))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', 'C:\\test'))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', 'C:\\..\\test'))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', 'C:\\..\\..\\test'))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', 'C:\\..\\xxxx\\..\\test'))
 
-        self.assertEqual(str(rootfs / "xxxx" / "test"), str(nt_to_posix(rootfs, "/xxxx", "test")))
-        self.assertEqual(str(rootfs / "xxxx" / "test"), str(nt_to_posix(rootfs, "/xxxx/yyyy", "..\\test")))
-        self.assertEqual(str(rootfs / "xxxx" / "test"), str(nt_to_posix(rootfs, "/xxxx/yyyy/zzzz", "..\\..\\test")))
-        self.assertEqual(str(rootfs / "xxxx" / "test"), str(nt_to_posix(rootfs, "/xxxx/yyyy", "..\\xxxx\\..\\test")))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\test'))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\..\\test'))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\..\\..\\test'))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\..\\xxxx\\..\\test'))
 
-    def test_convert_posix_to_win32(self):
-        rootfs = PureWindowsPath(r'../examples/rootfs/x8664_linux')
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', 'test'))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '..\\test'))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '..\\..\\test'))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '..\\xxxx\\..\\test'))
 
-        self.assertEqual(str(rootfs / "test"), str(posix_to_nt(rootfs, "/", "/test")))
-        self.assertEqual(str(rootfs / "test"), str(posix_to_nt(rootfs, "/", "/../test")))
-        self.assertEqual(str(rootfs / "test"), str(posix_to_nt(rootfs, "/", "/../../test")))
-        self.assertEqual(str(rootfs / "test"), str(posix_to_nt(rootfs, "/", "/../xxxx/../test")))
+        expected = str(realpath(rootfs) / 'Windows' / 'test')
 
-        self.assertEqual(str(rootfs / "test"), str(posix_to_nt(rootfs, "/", "test")))
-        self.assertEqual(str(rootfs / "test"), str(posix_to_nt(rootfs, "/", "../test")))
-        self.assertEqual(str(rootfs / "test"), str(posix_to_nt(rootfs, "/", "../../test")))
-        self.assertEqual(str(rootfs / "test"), str(posix_to_nt(rootfs, "/", "../xxxx/../test")))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\Windows', 'test'))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\Windows\\System32', '..\\test'))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\Windows\\System32\\drivers', '..\\..\\test'))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\Windows\\System32', '..\\xxxx\\..\\test'))
 
-        self.assertEqual(str(rootfs / "xxxx" / "test"), str(posix_to_nt(rootfs, "/xxxx", "test")))
-        self.assertEqual(str(rootfs / "xxxx" / "test"), str(posix_to_nt(rootfs, "/xxxx/yyyy", "../test")))
-        self.assertEqual(str(rootfs / "xxxx" / "test"), str(posix_to_nt(rootfs, "/xxxx/yyyy/zzzz", "../../test")))
-        self.assertEqual(str(rootfs / "xxxx" / "test"), str(posix_to_nt(rootfs, "/xxxx/yyyy", "../xxxx/../test")))
+    def test_convert_posix_to_nt(self):
+        # test only on a Windows host
+        if not is_nt_host:
+            self.skipTest('NT host only')
+
+        rootfs = PureWindowsPath(r'../examples/rootfs/x86_linux')
+
+        expected = str(realpath(rootfs) / 'test')
+
+        self.assertEqual(expected, posix_to_native(str(rootfs), '/', '/test'))
+        self.assertEqual(expected, posix_to_native(str(rootfs), '/', '/../test'))
+        self.assertEqual(expected, posix_to_native(str(rootfs), '/', '/../../test'))
+        self.assertEqual(expected, posix_to_native(str(rootfs), '/', '/../xxxx/../test'))
+
+        self.assertEqual(expected, posix_to_native(str(rootfs), '/', 'test'))
+        self.assertEqual(expected, posix_to_native(str(rootfs), '/', '../test'))
+        self.assertEqual(expected, posix_to_native(str(rootfs), '/', '../../test'))
+        self.assertEqual(expected, posix_to_native(str(rootfs), '/', '../xxxx/../test'))
+
+        expected = str(realpath(rootfs) / 'proc' / 'test')
+
+        self.assertEqual(expected, posix_to_native(str(rootfs), '/proc', 'test'))
+        self.assertEqual(expected, posix_to_native(str(rootfs), '/proc/sys', '../test'))
+        self.assertEqual(expected, posix_to_native(str(rootfs), '/proc/sys/net', '../../test'))
+        self.assertEqual(expected, posix_to_native(str(rootfs), '/proc/sys', '../xxxx/../test'))
 
     def test_convert_for_native_os(self):
-        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_hello_static"], "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG)
 
-        if ql.host.os == QL_OS.WINDOWS:
-            rootfs = PurePath(r'../examples/rootfs/x8664_windows')
+        if is_nt_host:
+            rootfs = PureWindowsPath(r'../examples/rootfs/x86_windows')
 
-            self.assertEqual(str(rootfs / "test"), str(to_native(rootfs, "/", "\\\\.\\PhysicalDrive0\\test")))
-            self.assertEqual(str(rootfs / "test"), str(to_native(rootfs, "/", "\\\\.\\PhysicalDrive0\\..\\test")))
-            self.assertEqual(str(rootfs / "test"), str(to_native(rootfs, "/", "\\\\.\\PhysicalDrive0\\..\\..\\test")))
-            self.assertEqual(str(rootfs / "test"), str(to_native(rootfs, "/", "\\\\.\\PhysicalDrive0\\..\\xxxx\\..\\test")))
+            expected = str(realpath(rootfs) / 'test')
 
-            self.assertEqual(str(rootfs / "test"), str(to_native(rootfs, "/", "\\\\hostname\\share\\test")))
-            self.assertEqual(str(rootfs / "test"), str(to_native(rootfs, "/", "\\\\hostname\\share\\..\\test")))
-            self.assertEqual(str(rootfs / "test"), str(to_native(rootfs, "/", "\\\\hostname\\share\\..\\..\\test")))
-            self.assertEqual(str(rootfs / "test"), str(to_native(rootfs, "/", "\\\\hostname\\share\\..\\xxxx\\..\\test")))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\\\.\\PhysicalDrive0\\test'))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\\\.\\PhysicalDrive0\\..\\test'))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\\\.\\PhysicalDrive0\\..\\..\\test'))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\\\.\\PhysicalDrive0\\..\\xxxx\\..\\test'))
 
-            self.assertEqual(str(rootfs / "test"), str(to_native(rootfs, "/", "\\\\.\\BootPartition\\test")))
-            self.assertEqual(str(rootfs / "test"), str(to_native(rootfs, "/", "\\\\.\\BootPartition\\..\\test")))
-            self.assertEqual(str(rootfs / "test"), str(to_native(rootfs, "/", "\\\\.\\BootPartition\\..\\..\\test")))
-            self.assertEqual(str(rootfs / "test"), str(to_native(rootfs, "/", "\\\\.\\BootPartition\\..\\xxxx\\..\\test")))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\\\hostname\\share\\test'))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\\\hostname\\share\\..\\test'))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\\\hostname\\share\\..\\..\\test'))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\\\hostname\\share\\..\\xxxx\\..\\test'))
 
-            self.assertEqual(str(rootfs / "test"), str(to_native(rootfs, "/", "C:\\test")))
-            self.assertEqual(str(rootfs / "test"), str(to_native(rootfs, "/", "C:\\..\\test")))
-            self.assertEqual(str(rootfs / "test"), str(to_native(rootfs, "/", "C:\\..\\..\\test")))
-            self.assertEqual(str(rootfs / "test"), str(to_native(rootfs, "/", "C:\\..\\xxxx\\..\\test")))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\\\.\\BootPartition\\test'))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\\\.\\BootPartition\\..\\test'))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\\\.\\BootPartition\\..\\..\\test'))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\\\.\\BootPartition\\..\\xxxx\\..\\test'))
 
-            self.assertEqual(str(rootfs / "test"), str(to_native(rootfs, "/", "\\test")))
-            self.assertEqual(str(rootfs / "test"), str(to_native(rootfs, "/", "\\..\\test")))
-            self.assertEqual(str(rootfs / "test"), str(to_native(rootfs, "/", "\\..\\..\\test")))
-            self.assertEqual(str(rootfs / "test"), str(to_native(rootfs, "/", "\\..\\xxxx\\..\\test")))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', 'C:\\test'))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', 'C:\\..\\test'))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', 'C:\\..\\..\\test'))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', 'C:\\..\\xxxx\\..\\test'))
 
-            self.assertEqual(str(rootfs / "test"), str(to_native(rootfs, "/", "test")))
-            self.assertEqual(str(rootfs / "test"), str(to_native(rootfs, "/", "..\\test")))
-            self.assertEqual(str(rootfs / "test"), str(to_native(rootfs, "/", "..\\..\\test")))
-            self.assertEqual(str(rootfs / "test"), str(to_native(rootfs, "/", "..\\xxxx\\..\\test")))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\test'))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\..\\test'))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\..\\..\\test'))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\..\\xxxx\\..\\test'))
 
-            self.assertEqual(str(rootfs / "xxxx" / "test"), str(to_native(rootfs, "/xxxx", "test")))
-            self.assertEqual(str(rootfs / "xxxx" / "test"), str(to_native(rootfs, "/xxxx/yyyy", "..\\test")))
-            self.assertEqual(str(rootfs / "xxxx" / "test"), str(to_native(rootfs, "/xxxx/yyyy/zzzz", "..\\..\\test")))
-            self.assertEqual(str(rootfs / "xxxx" / "test"), str(to_native(rootfs, "/xxxx/yyyy", "..\\xxxx\\..\\test")))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', 'test'))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '..\\test'))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '..\\..\\test'))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '..\\xxxx\\..\\test'))
 
-        elif ql.host.os in QL_OS_POSIX:
-            rootfs = PurePath(r'../examples/rootfs/x8664_linux')
+            expected = str(realpath(rootfs) / 'Windows' / 'test')
 
-            self.assertEqual(str(rootfs / "test"), str(to_native(rootfs, "/", "/test")))
-            self.assertEqual(str(rootfs / "test"), str(to_native(rootfs, "/", "/../test")))
-            self.assertEqual(str(rootfs / "test"), str(to_native(rootfs, "/", "/../../test")))
-            self.assertEqual(str(rootfs / "test"), str(to_native(rootfs, "/", "/../xxxx/../test")))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\Windows', 'test'))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\Windows\\System32', '..\\test'))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\Windows\\System32\\drivers', '..\\..\\test'))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\Windows\\System32', '..\\xxxx\\..\\test'))
 
-            self.assertEqual(str(rootfs / "test"), str(to_native(rootfs, "/", "test")))
-            self.assertEqual(str(rootfs / "test"), str(to_native(rootfs, "/", "../test")))
-            self.assertEqual(str(rootfs / "test"), str(to_native(rootfs, "/", "../../test")))
-            self.assertEqual(str(rootfs / "test"), str(to_native(rootfs, "/", "../xxxx/../test")))
+        elif is_posix_host:
+            rootfs = PurePosixPath(r'../examples/rootfs/x86_linux')
 
-            self.assertEqual(str(rootfs / "xxxx" / "test"), str(to_native(rootfs, "/xxxx", "test")))
-            self.assertEqual(str(rootfs / "xxxx" / "test"), str(to_native(rootfs, "/xxxx/yyyy", "../test")))
-            self.assertEqual(str(rootfs / "xxxx" / "test"), str(to_native(rootfs, "/xxxx/yyyy/zzzz", "../../test")))
-            self.assertEqual(str(rootfs / "xxxx" / "test"), str(to_native(rootfs, "/xxxx/yyyy", "../xxxx/../test")))
+            expected = str(realpath(rootfs) / 'test')
+
+            self.assertEqual(expected, posix_to_native(str(rootfs), '/', '/test'))
+            self.assertEqual(expected, posix_to_native(str(rootfs), '/', '/../test'))
+            self.assertEqual(expected, posix_to_native(str(rootfs), '/', '/../../test'))
+            self.assertEqual(expected, posix_to_native(str(rootfs), '/', '/../xxxx/../test'))
+
+            self.assertEqual(expected, posix_to_native(str(rootfs), '/', 'test'))
+            self.assertEqual(expected, posix_to_native(str(rootfs), '/', '../test'))
+            self.assertEqual(expected, posix_to_native(str(rootfs), '/', '../../test'))
+            self.assertEqual(expected, posix_to_native(str(rootfs), '/', '../xxxx/../test'))
+
+            expected = str(realpath(rootfs) / 'proc' / 'test')
+
+            self.assertEqual(expected, posix_to_native(str(rootfs), '/proc', 'test'))
+            self.assertEqual(expected, posix_to_native(str(rootfs), '/proc/sys', '../test'))
+            self.assertEqual(expected, posix_to_native(str(rootfs), '/proc/sys/net', '../../test'))
+            self.assertEqual(expected, posix_to_native(str(rootfs), '/proc/sys', '../xxxx/../test'))
+
+            # test virtual symlink: absolute virtual path
+            rootfs = PurePosixPath(r'../examples/rootfs/arm_linux')
+            expected = str(realpath(rootfs) / 'tmp' / 'media' / 'nand' / 'symlink_test' / 'libsymlink_test.so')
+
+            self.assertEqual(expected, posix_to_native(str(rootfs), '/', '/lib/libsymlink_test.so'))
+
+            # test virtual symlink: relative virtual path
+            rootfs = PurePosixPath(r'../examples/rootfs/arm_qnx')
+            expected = str(realpath(rootfs) / 'lib' / 'libm.so.2')
+
+            self.assertEqual(expected, posix_to_native(str(rootfs), '/', '/usr/lib/libm.so.2'))
 
         else:
-            raise NotImplementedError('unexpected hosting os')
+            self.fail('unexpected host os')
 
-        del ql
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     unittest.main()
