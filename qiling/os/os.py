@@ -17,7 +17,7 @@ from .filestruct import ql_file
 from .mapper import QlFsMapper
 from .stats import QlOsStats
 from .utils import QlOsUtils
-from .path import QlPathManager
+from .path import QlOsPath
 
 class QlOs:
     Resolver = Callable[[int], Any]
@@ -38,10 +38,10 @@ class QlOs:
         self.profile = self.ql.profile
         self.exit_code = 0
 
-        if not ql.baremetal:
+        if ql.ostype in QL_OS_POSIX + (QL_OS.WINDOWS, QL_OS.DOS):
             cwd = self.profile.get("MISC", "current_path")
 
-            self.path = QlPathManager(ql, cwd)
+            self.path = QlOsPath(ql.rootfs, cwd, ql.ostype)
             self.fs_mapper = QlFsMapper(self.path)
 
         self.user_defined_api = {

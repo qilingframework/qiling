@@ -14,7 +14,7 @@ from qiling import Qiling
 from qiling.os.thread import *
 from qiling.arch.x86_const import *
 from qiling.exception import QlErrorExecutionStop
-from qiling.os.path import QlPathManager
+from qiling.os.path import QlOsPath
 
 LINUX_THREAD_ID = 2000
 
@@ -140,8 +140,8 @@ class QlLinuxThread(QlThread):
         return self._path
 
     @path.setter
-    def path(self, p):
-        self._path = QlPathManager(self._ql, p.cwd)
+    def path(self, p: QlOsPath):
+        self._path = QlOsPath(self.ql.rootfs, p.cwd, self.ql.ostype)
 
     @property
     def log_file_fd(self):
