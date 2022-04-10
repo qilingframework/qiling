@@ -41,7 +41,7 @@ split = False
 # usage: append = test1
 append =
 automatize_input = False
-current_path = /
+current_path = C:\
 
 [SYSTEM]
 # Major Minor ProductType
