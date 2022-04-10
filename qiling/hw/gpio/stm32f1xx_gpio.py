@@ -85,13 +85,15 @@ class STM32F1xxGpio(QlPeripheral, GpioHooks):
     def set_pin(self, i):
         self.ql.log.debug(f'[{self.label}] Set P{self.label[-1].upper()}{i}')
         
-        self.instance.ODR |= 1 << i        
+        self.instance.ODR |= 1 << i
+        self.instance.IDR |= 1 << i
         self.call_hook_set(i)
     
     def reset_pin(self, i):
         self.ql.log.debug(f'[{self.label}] Reset P{self.label[-1].upper()}{i}')
         
         self.instance.ODR &= ~(1 << i)
+        self.instance.IDR &= ~(1 << i)
         self.call_hook_reset(i)
         
     def pin(self, index):
