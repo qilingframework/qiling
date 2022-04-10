@@ -10,7 +10,7 @@ from qiling.exception import QlErrorNotImplemented
 from qiling.os.windows.api import *
 from qiling.os.windows.const import *
 from qiling.os.windows.fncc import *
-from qiling.os.windows.utils import *
+from qiling.os.windows.utils import has_lib_ext
 
 def _GetModuleHandle(ql: Qiling, address: int, params):
     lpModuleName = params["lpModuleName"]
@@ -20,8 +20,8 @@ def _GetModuleHandle(ql: Qiling, address: int, params):
     else:
         lpModuleName = lpModuleName.lower()
 
-        if not is_file_library(lpModuleName):
-            lpModuleName += ".dll"
+        if not has_lib_ext(lpModuleName):
+            lpModuleName = f'{lpModuleName}.dll'
 
         image = ql.loader.get_image_by_name(lpModuleName)
 

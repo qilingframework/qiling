@@ -4,7 +4,6 @@
 #
 
 import ctypes
-import ntpath
 from typing import Iterable, Tuple, TypeVar
 
 from unicorn import UcError
@@ -24,15 +23,10 @@ def cmp(a: Comparable, b: Comparable) -> int:
     return (a > b) - (a < b)
 
 
-def is_file_library(string: str) -> bool:
-    string = string.lower()
-    extension = string.rpartition('.')[-1]
-    return extension in ("dll", "exe", "sys", "drv")
+def has_lib_ext(name: str) -> bool:
+    ext = name.lower().rpartition('.')[-1]
 
-
-def path_leaf(path):
-    head, tail = ntpath.split(path)
-    return tail or ntpath.basename(head)
+    return ext in ("dll", "exe", "sys", "drv")
 
 
 def io_Write(ql: Qiling, in_buffer: bytes):
