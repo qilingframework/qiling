@@ -189,22 +189,6 @@ class MCUTest(unittest.TestCase):
 
         del ql
 
-    def test_mcu_uart_rust_stm32f411(self): 
-        ql = Qiling(["../examples/rootfs/mcu/stm32f411/uart-rust.hex"],
-                    archtype="cortex_m", ostype="mcu", env=stm32f411, verbose=QL_VERBOSE.DEFAULT)
-
-        ## cover env by profiles
-
-        ql.hw.create('rcc')
-        ql.hw.create('gpioa')
-        ql.hw.create('usart2')
-
-        ql.hw.usart2.send(b'123')
-        ql.run(count=10000)
-        self.assertTrue(ql.hw.usart2.recv() == b'1')
-
-        del ql
-
     def test_mcu_hacklock_stm32f407(self):
         def crack(passwd):
             ql = Qiling(["../examples/rootfs/mcu/stm32f407/backdoorlock.hex"],                    
