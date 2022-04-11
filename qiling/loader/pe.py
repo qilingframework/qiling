@@ -462,7 +462,7 @@ class Process:
         pe.full_load()
 
         for entry in pe.DIRECTORY_ENTRY_IMPORT:
-            dll_name = entry.dll.decode().lower()
+            dll_name = entry.dll.decode().casefold()
             self.ql.log.debug(f'Requesting imports from {dll_name}')
 
             orig_dll_name = dll_name
@@ -568,7 +568,7 @@ class Process:
             iat[entry.ordinal] = ea
 
         dll_name = os.path.basename(self.path)
-        self.import_address_table[dll_name] = iat
+        self.import_address_table[dll_name.casefold()] = iat
 
     def init_driver_object(self):
         drv_addr = self.structure_last_addr

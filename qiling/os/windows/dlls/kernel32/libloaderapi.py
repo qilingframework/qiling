@@ -150,35 +150,38 @@ def hook_GetModuleFileNameW(ql: Qiling, address: int, params):
     'lpProcName' : POINTER # LPCSTR
 })
 def hook_GetProcAddress(ql: Qiling, address: int, params):
-    if params["lpProcName"] > MAXUSHORT:
+    hModule = params['hModule']
+    lpProcName = params['lpProcName']
+
+    if lpProcName > MAXUSHORT:
         # Look up by name
-        params["lpProcName"] = ql.os.utils.read_cstring(params["lpProcName"])
+        params["lpProcName"] = ql.os.utils.read_cstring(lpProcName)
         lpProcName = bytes(params["lpProcName"], "ascii")
     else:
         # Look up by ordinal
         lpProcName = params["lpProcName"]
 
     # TODO fix for gandcrab
-    if params["lpProcName"] == "RtlComputeCrc32":
+    if lpProcName == "RtlComputeCrc32":
         return 0
 
     # Check if dll is loaded
-    image = next((image for image in ql.loader.images if image.base == params['hModule']), None)
+    dll_name = next((os.path.basename(image.path).casefold() for image in ql.loader.images if image.base == hModule), None)
 
-    if image is None:
-        ql.log.info('Failed to import function "%s" with handle 0x%X' % (lpProcName, params['hModule']))
+    if dll_name is None:
+        ql.log.info('Failed to import function "%s" with handle 0x%X' % (lpProcName, hModule))
         return 0
 
-    dll_name = os.path.basename(image.path)
-
     # Handle case where module is self
-    if dll_name == os.path.basename(ql.loader.path):
+    if dll_name == os.path.basename(ql.loader.path).casefold():
         for addr, export in ql.loader.export_symbols.items():
             if export['name'] == lpProcName:
                 return addr
 
-    if lpProcName in ql.loader.import_address_table[dll_name]:
-        return ql.loader.import_address_table[dll_name][lpProcName]
+    iat = ql.loader.import_address_table[dll_name]
+
+    if lpProcName in iat:
+        return iat[lpProcName]
 
     return 0
 
