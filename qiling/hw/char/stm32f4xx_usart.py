@@ -71,41 +71,28 @@ class STM32F4xxUsart(QlConnectivityPeripheral):
 
     @QlPeripheral.monitor()
     def write(self, offset: int, size: int, value: int):        
-        if offset == self.struct.SR.offset:
-            self.instance.SR &= value | USART_SR.CTS | USART_SR.LBD | USART_SR.TC | USART_SR.RXNE
-
-        elif offset == self.struct.DR.offset:
-            self.instance.SR &= ~USART_SR.TXE
-            self.instance.DR = value
+        if offset == self.struct.DR.offset:
+            self.send_to_user(value)
 
         else:
             data = (value).to_bytes(size, byteorder='little')
             ctypes.memmove(ctypes.addressof(self.instance) + offset, data, size)
 
     def transfer(self):
-        """ transfer data from DR to shift buffer and
-            receive data from user buffer into DR
-        """        
-
-        if not (self.instance.SR & USART_SR.TXE):
-            data = self.instance.DR
-
-            self.instance.SR |= USART_SR.TXE            
-            self.send_to_user(data)
-
         if not (self.instance.SR & USART_SR.RXNE): 
-            # TXE bit must had been cleared
             if self.has_input():
-                self.instance.SR |= USART_SR.RXNE                
+                self.instance.SR |= USART_SR.RXNE  
 
-    @QlConnectivityPeripheral.device_handler
-    def step(self):
-        self.transfer()
-
+    def check_interrupt(self):
         if self.intn is not None:
             if  (self.instance.CR1 & USART_CR1.PEIE   and self.instance.SR & USART_SR.PE)   or \
                 (self.instance.CR1 & USART_CR1.TXEIE  and self.instance.SR & USART_SR.TXE)  or \
                 (self.instance.CR1 & USART_CR1.TCIE   and self.instance.SR & USART_SR.TC)   or \
                 (self.instance.CR1 & USART_CR1.RXNEIE and self.instance.SR & USART_SR.RXNE) or \
                 (self.instance.CR1 & USART_CR1.IDLEIE and self.instance.SR & USART_SR.IDLE):
-                self.ql.hw.nvic.set_pending(self.intn)
+                self.ql.hw.nvic.set_pending(self.intn)              
+
+    @QlConnectivityPeripheral.device_handler
+    def step(self):
+        self.transfer()
+        self.check_interrupt()
