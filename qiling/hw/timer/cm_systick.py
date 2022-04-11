@@ -31,13 +31,15 @@ class CortexMSysTick(QlTimerPeripheral):
             return
 
         if self.instance.VAL <= 0:
-            self.instance.VAL = self.instance.LOAD
             self.instance.CTRL |= SYSTICK_CTRL.COUNTFLAG
-
-            if self.instance.CTRL & SYSTICK_CTRL.TICKINT:
-                self.ql.hw.nvic.set_pending(IRQ.SYSTICK)
+            self.instance.VAL = self.instance.LOAD
+            
         else:
             self.instance.VAL -= self.ratio
+
+            if self.instance.VAL <= 0:                
+                if self.instance.CTRL & SYSTICK_CTRL.TICKINT:
+                    self.ql.hw.nvic.set_pending(IRQ.SYSTICK)
 
     @QlPeripheral.monitor()
     def read(self, offset: int, size: int) -> int:
