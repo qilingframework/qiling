@@ -2,6 +2,7 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 
+import types
 
 from qiling.core_hooks_types import Hook, HookAddr, HookIntr, HookRet
 
@@ -69,3 +70,33 @@ def evm_hook_del(hook_type, h):
             evm_hooks_info.hook_code_list.remove(h)
         elif hook_type in ["HOOK_INSN"]:
             evm_hooks_info.hook_insn_list.remove(h)
+
+def monkeypath_core_hooks(ql):
+    """Monkeypath core hooks for evm
+    """
+
+    def __evm_hook_code(self, callback, user_data=None, begin=1, end=0):
+        return ql_evm_hooks(self, 'HOOK_CODE', callback, user_data, begin, end)
+
+    def __evm_hook_address(self, callback, address, user_data=None):
+        hook = HookAddr(callback, address, user_data)
+
+        return evm_hook_address(self, 'HOOK_ADDR', hook, address)
+
+    def __evm_hook_insn(self, callback, arg1, user_data=None, begin=1, end=0):
+        return evm_hook_insn(self, 'HOOK_INSN', callback, arg1, user_data, begin, end)
+
+    def __evm_hook_del(self, *args):
+        if len(args) != 1 and len(args) != 2:
+            return
+
+        if isinstance(args[0], HookRet):
+            args[0].remove()
+            return
+
+        return evm_hook_del(*args)
+
+    ql.hook_code    = types.MethodType(__evm_hook_code, ql)
+    ql.hook_address = types.MethodType(__evm_hook_address, ql)
+    ql.hook_insn    = types.MethodType(__evm_hook_insn, ql)
+    ql.hook_del     = types.MethodType(__evm_hook_del, ql)
