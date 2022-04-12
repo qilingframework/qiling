@@ -164,9 +164,8 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self.uc = self.arch.uc
 
         # Once we finish setting up arch, we can init QlCoreStructs and QlCoreHooks
-        QlCoreStructs.__init__(self, self.arch.endian, self.arch.bits)
-
         if not self.interpreter:
+            QlCoreStructs.__init__(self, self.arch.endian, self.arch.bits)
             QlCoreHooks.__init__(self, self.uc)
 
         ##########

@@ -10,6 +10,7 @@
 ##############################################
 
 import struct
+from _typeshed import ReadableBuffer
 
 from .const import QL_ENDIAN
 from .exception import QlErrorStructConversion
@@ -30,12 +31,11 @@ class QlCoreStructs:
 		self._fmt32s = f'{modifier}i'
 		self._fmt64  = f'{modifier}Q'
 		self._fmt64s = f'{modifier}q'
-		
+
 		handlers = {
 			64 : (self.pack64, self.pack64s, self.unpack64, self.unpack64s),
 			32 : (self.pack32, self.pack32s, self.unpack32, self.unpack32s),
 			16 : (self.pack16, self.pack16s, self.unpack16, self.unpack16s),
-			1  : (       None,         None,          None,           None)
 		}
 
 		if bit not in handlers:
@@ -48,50 +48,50 @@ class QlCoreStructs:
 		self.unpack  = up
 		self.unpacks = ups
 
-	def pack64(self, x):
+	def pack64(self, x: int, /) -> bytes:
 		return struct.pack(self._fmt64, x)
 
-	def pack64s(self, x):
+	def pack64s(self, x: int, /) -> bytes:
 		return struct.pack(self._fmt64s, x)
 
-	def unpack64(self, x):
+	def unpack64(self, x: ReadableBuffer, /) -> int:
 		return struct.unpack(self._fmt64, x)[0]
 
-	def unpack64s(self, x):
+	def unpack64s(self, x: ReadableBuffer, /) -> int:
 		return struct.unpack(self._fmt64s, x)[0]
 
-	def pack32(self, x):
+	def pack32(self, x: int, /) -> bytes:
 		return struct.pack(self._fmt32, x)
 
-	def pack32s(self, x):
+	def pack32s(self, x: int, /) -> bytes:
 		return struct.pack(self._fmt32s, x)
 
-	def unpack32(self, x):
+	def unpack32(self, x: ReadableBuffer, /) -> int:
 		return struct.unpack(self._fmt32, x)[0]
 
-	def unpack32s(self, x):
+	def unpack32s(self, x: ReadableBuffer, /) -> int:
 		return struct.unpack(self._fmt32s, x)[0]
 
-	def pack16(self, x):
+	def pack16(self, x: int, /) -> bytes:
 		return struct.pack(self._fmt16, x)
 
-	def pack16s(self, x):
+	def pack16s(self, x: int, /) -> bytes:
 		return struct.pack(self._fmt16s, x)
 
-	def unpack16(self, x):
+	def unpack16(self, x: ReadableBuffer, /) -> int:
 		return struct.unpack(self._fmt16, x)[0]
 
-	def unpack16s(self, x):
+	def unpack16s(self, x: ReadableBuffer, /) -> int:
 		return struct.unpack(self._fmt16s, x)[0]
 
-	def pack8(self, x):
+	def pack8(self, x: int, /) -> bytes:
 		return struct.pack(self._fmt8, x)
 
-	def pack8s(self, x):
+	def pack8s(self, x: int, /) -> bytes:
 		return struct.pack(self._fmt8s, x)
 
-	def unpack8(self, x):
+	def unpack8(self, x: ReadableBuffer, /) -> int:
 		return struct.unpack(self._fmt8, x)[0]
 
-	def unpack8s(self, x):
+	def unpack8s(self, x: ReadableBuffer, /) -> int:
 		return struct.unpack(self._fmt8s, x)[0]
