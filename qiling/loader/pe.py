@@ -4,7 +4,7 @@
 #
 
 import os, pefile, pickle, secrets, ntpath
-from typing import Any, MutableMapping, NamedTuple, Optional, Mapping, Sequence, Tuple, Union
+from typing import Any, Dict, MutableMapping, NamedTuple, Optional, Mapping, Sequence, Tuple, Union
 
 from unicorn import UcError
 from unicorn.x86_const import UC_X86_REG_CR4, UC_X86_REG_CR8
@@ -58,10 +58,15 @@ class QlPeCache:
 
 class Process:
     # let linter recognize mixin members
+    cmdline: bytes
+    pe_image_address: int
+    stack_address: int
+    stack_size: int
+
     dlls: MutableMapping[str, int]
     import_address_table: MutableMapping[str, Mapping]
-    import_symbols: MutableMapping[int, Any]
-    export_symbols: MutableMapping[int, Any]
+    import_symbols: MutableMapping[int, Dict[str, Any]]
+    export_symbols: MutableMapping[int, Dict[str, Any]]
     libcache: Optional[QlPeCache]
 
     def __init__(self, ql: Qiling):
