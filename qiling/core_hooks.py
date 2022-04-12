@@ -240,10 +240,6 @@ class QlCoreHooks:
 
 
     def hook_code(self, callback, user_data=None, begin=1, end=0):
-        if self.interpreter:
-            from .arch.evm.hooks import ql_evm_hooks
-            return ql_evm_hooks(self, 'HOOK_CODE', callback, user_data, begin, end)
-
         return self.ql_hook(UC_HOOK_CODE, callback, user_data, begin, end)
 
 
@@ -283,10 +279,6 @@ class QlCoreHooks:
     def hook_address(self, callback, address, user_data=None):
         hook = HookAddr(callback, address, user_data)
 
-        if self.interpreter:
-            from .arch.evm.hooks import evm_hook_address
-            return evm_hook_address(self, 'HOOK_ADDR', hook, address)
-
         if address not in self._addr_hook_fuc:
             self._addr_hook_fuc[address] = self._ql_hook_addr_internal(self._hook_addr_cb, address)
 
@@ -322,10 +314,6 @@ class QlCoreHooks:
 
 
     def hook_insn(self, callback, arg1, user_data=None, begin=1, end=0):
-        if self.interpreter:
-            from .arch.evm.hooks import evm_hook_insn
-            return evm_hook_insn(self, 'HOOK_INSN', callback, arg1, user_data, begin, end)
-
         return self.ql_hook(UC_HOOK_INSN, callback, user_data, begin, end, arg1)
 
 
@@ -338,10 +326,6 @@ class QlCoreHooks:
             return
 
         hook_type, h = args
-
-        if self.interpreter:
-            from .arch.evm.hooks import evm_hook_del
-            return evm_hook_del(hook_type, h)
 
         def __handle_common(t: int) -> None:
             if t in self._hook:
