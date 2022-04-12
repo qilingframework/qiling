@@ -10,10 +10,12 @@
 ##############################################
 
 import struct
-from _typeshed import ReadableBuffer
+from typing import Union
 
 from .const import QL_ENDIAN
 from .exception import QlErrorStructConversion
+
+ReadableBuffer = Union[bytes, bytearray, memoryview]
 
 # Don't assume self is Qiling.
 class QlCoreStructs:
