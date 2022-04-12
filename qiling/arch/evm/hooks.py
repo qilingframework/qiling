@@ -3,88 +3,70 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 
 import types
+from typing import MutableMapping, MutableSequence
 
 from qiling.core_hooks_types import Hook, HookAddr, HookIntr, HookRet
 
-
 class QlArchEVMHooks:
     def __init__(self) -> None:
-        super().__init__()
-        self.hook_code_list = []
-        self.hook_insn_list = []
-        self.hook_addr_dict = {}
+        self.hook_code_list: MutableSequence[Hook] = []
+        self.hook_insn_list: MutableSequence[HookIntr] = []
+        self.hook_addr_dict: MutableMapping[int, MutableSequence[HookAddr]] = {}
 
 evm_hooks_info = QlArchEVMHooks()
 
 
-def _ql_evm_hook(ql, hook_type, h, *args):
-    base_type = [
-        "HOOK_CODE",
-        "HOOK_INSN",
-        "HOOK_ADDR"
-    ]
-
-    if hook_type in base_type:
-        if hook_type in ["HOOK_CODE"]:
-            evm_hooks_info.hook_code_list.append(h)
-        elif hook_type in ["HOOK_INSN"]:
-            evm_hooks_info.hook_insn_list.append(h)
-        elif hook_type in ["HOOK_ADDR"]:
-            address = args[0]
-
-            if address not in evm_hooks_info.hook_addr_dict.keys():
-                evm_hooks_info.hook_addr_dict[address] = []
-            
-            evm_hooks_info.hook_addr_dict[address].append(h)
-
-def ql_evm_hooks(ql, hook_type, callback, user_data=None, begin=1, end=0, *args):
+def evm_hook_code(ql, callback, user_data=None, begin=1, end=0, *args):
     h = Hook(callback, user_data, begin, end)
-    _ql_evm_hook(ql, hook_type, h, *args)
-    return HookRet(ql, hook_type, h)
+    evm_hooks_info.hook_code_list.append(h)
 
-def evm_hook_insn(ql, hook_type, callback, intno, user_data=None, begin=1, end=0):
+    return HookRet(ql, 'HOOK_CODE', h)
+
+def evm_hook_insn(ql, callback, intno, user_data=None, begin=1, end=0):
     h = HookIntr(callback, intno, user_data)
-    _ql_evm_hook(ql, hook_type, h)
-    return HookRet(ql, hook_type, h)
+    evm_hooks_info.hook_insn_list.append(h)
 
-def evm_hook_address(ql, hook_type, h, address):
-    _ql_evm_hook(ql, hook_type, h, address)
-    return HookRet(ql, hook_type, h)
+    return HookRet(ql, 'HOOK_INSN', h)
+
+def evm_hook_address(ql, callback, address, user_data):
+    h = HookAddr(callback, address, user_data)
+
+    if address not in evm_hooks_info.hook_addr_dict:
+        evm_hooks_info.hook_addr_dict[address] = []
+
+    evm_hooks_info.hook_addr_dict[address].append(h)
+
+    return HookRet(ql, 'HOOK_ADDR', h)
 
 def evm_hook_del(hook_type, h):
-    base_type = [
-        "HOOK_CODE",
-        "HOOK_INSN",
-        "HOOK_ADDR"
-    ]
+    if hook_type == "HOOK_CODE":
+        evm_hooks_info.hook_code_list.remove(h)
 
-    if isinstance(h, HookAddr):
-        if h.addr in evm_hooks_info.hook_addr_dict.keys():
-            if h in evm_hooks_info.hook_addr_dict[h.addr]:
-                evm_hooks_info.hook_addr_dict[h.addr].remove(h)
-            if len(evm_hooks_info.hook_addr_dict[h.addr]) == 0:
-                del evm_hooks_info.hook_addr_dict[h.addr]
+    elif hook_type == "HOOK_INSN":
+        evm_hooks_info.hook_insn_list.remove(h)
 
-    if hook_type in base_type:
-        if hook_type in ["HOOK_CODE"]:
-            evm_hooks_info.hook_code_list.remove(h)
-        elif hook_type in ["HOOK_INSN"]:
-            evm_hooks_info.hook_insn_list.remove(h)
+    elif hook_type == 'HOOK_ADDR':
+        if h.addr in evm_hooks_info.hook_addr_dict:
+            hooks_list = evm_hooks_info.hook_addr_dict[h.addr]
+
+            if h in hooks_list:
+                hooks_list.remove(h)
+
+                if not hooks_list:
+                    del evm_hooks_info.hook_addr_dict[h.addr]
 
 def monkeypath_core_hooks(ql):
     """Monkeypath core hooks for evm
     """
 
     def __evm_hook_code(self, callback, user_data=None, begin=1, end=0):
-        return ql_evm_hooks(self, 'HOOK_CODE', callback, user_data, begin, end)
+        return evm_hook_code(self, callback, user_data, begin, end)
 
     def __evm_hook_address(self, callback, address, user_data=None):
-        hook = HookAddr(callback, address, user_data)
-
-        return evm_hook_address(self, 'HOOK_ADDR', hook, address)
+        return evm_hook_address(self, callback, address, user_data)
 
     def __evm_hook_insn(self, callback, arg1, user_data=None, begin=1, end=0):
-        return evm_hook_insn(self, 'HOOK_INSN', callback, arg1, user_data, begin, end)
+        return evm_hook_insn(self, callback, arg1, user_data, begin, end)
 
     def __evm_hook_del(self, *args):
         if len(args) != 1 and len(args) != 2:
