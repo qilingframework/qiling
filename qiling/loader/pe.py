@@ -4,7 +4,7 @@
 #
 
 import os, pefile, pickle, secrets, ntpath
-from typing import Any, MutableMapping, Optional, Mapping, Sequence, Tuple
+from typing import Any, MutableMapping, NamedTuple, Optional, Mapping, Sequence, Tuple, Union
 
 from unicorn import UcError
 from unicorn.x86_const import UC_X86_REG_CR4, UC_X86_REG_CR8
@@ -20,13 +20,12 @@ from qiling.os.windows.utils import has_lib_ext
 from qiling.os.windows.structs import *
 from .loader import QlLoader, Image
 
-class QlPeCacheEntry:
-    def __init__(self, ba: int, data: bytearray, cmdlines: Sequence, import_symbols: MutableMapping, import_table: MutableMapping):
-        self.ba = ba
-        self.data = data
-        self.cmdlines = cmdlines
-        self.import_symbols = import_symbols
-        self.import_table = import_table
+class QlPeCacheEntry(NamedTuple):
+    ba: int
+    data: bytearray
+    cmdlines: Sequence
+    import_symbols: MutableMapping[int, dict]
+    import_table: MutableMapping[Union[str, int], int]
 
 
 class QlPeCache:
@@ -52,10 +51,9 @@ class QlPeCache:
     def save(self, path: str, entry: QlPeCacheEntry) -> None:
         fcache = QlPeCache.cache_filename(path)
 
-        data = (entry.ba, entry.data, entry.cmdlines, entry.import_symbols, entry.import_table)
         # cache this dll file
         with open(fcache, "wb") as fcache_file:
-            pickle.dump(data, fcache_file)
+            pickle.dump(entry, fcache_file)
 
 
 class Process:
