@@ -34,7 +34,7 @@ def hook_memcpy(ql: Qiling, address: int, params):
     try:
         data = bytes(ql.mem.read(src, count))
         ql.mem.write(dest, data)
-    except Exception as e:
+    except Exception:
         ql.log.exception("")
 
     return dest
@@ -65,7 +65,7 @@ def _QueryInformationProcess(ql: Qiling, address: int, params):
 
         addr = ql.os.heap.alloc(pbi.size)
         pbi.write(addr)
-        value = addr.to_bytes(ql.arch.pointersize, "little")
+        value = ql.pack(addr)
     else:
         ql.log.debug(str(flag))
         raise QlErrorNotImplemented("API not implemented")
@@ -73,8 +73,8 @@ def _QueryInformationProcess(ql: Qiling, address: int, params):
     ql.log.debug("The target is checking the debugger via QueryInformationProcess ")
     ql.mem.write(dst, value)
 
-    if pt_res != 0:
-        ql.mem.write(pt_res, 0x8.to_bytes(1, byteorder="little"))
+    if pt_res:
+        ql.mem.write_ptr(pt_res, 8, 1)
 
     return STATUS_SUCCESS
 
@@ -147,11 +147,11 @@ def _QuerySystemInformation(ql: Qiling, address: int, params):
         if (bufferLength==sbi.size):
             sbi.write(dst)
 
-            if pt_res != 0:
-                ql.mem.write(pt_res, sbi.size.to_bytes(1, byteorder="little"))
+            if pt_res:
+                ql.mem.write_ptr(pt_res, sbi.size, 1)
         else:
-            if pt_res != 0:
-                ql.mem.write(pt_res, sbi.size.to_bytes(1, byteorder="little"))
+            if pt_res:
+                ql.mem.write_ptr(pt_res, sbi.size, 1)
 
             return STATUS_INFO_LENGTH_MISMATCH
     else:
@@ -253,11 +253,11 @@ def hook_ZwQueryObject(ql: Qiling, address: int, params):
     else:
         raise QlErrorNotImplemented("API not implemented")
 
-    if dest != 0 and params["Handle"] != 0:
+    if dest and params["Handle"]:
         res.write(dest)
 
-    if size_dest != 0:
-        ql.mem.write(size_dest, res.size.to_bytes(4, "little"))
+    if size_dest:
+        ql.mem.write_ptr(size_dest, res.size, 4)
 
     return STATUS_SUCCESS
 
@@ -303,11 +303,11 @@ def _SetInformationProcess(ql: Qiling, address: int, params):
     elif flag == ProcessBreakOnTermination:
             ql.log.debug("The target may be attempting modify a the 'critical' flag of the process")  
 
-    elif flag  == ProcessExecuteFlags:
+    elif flag == ProcessExecuteFlags:
         ql.log.debug("The target may be attempting to modify DEP for the process")
 
-        if dst != 0:
-            ql.mem.write(dst, 0x0.to_bytes(1, byteorder="little"))
+        if dst:
+            ql.mem.write_ptr(dst, 0, 1)
 
     elif flag == ProcessBasicInformation:
         pbi = structs.ProcessBasicInformation(
@@ -323,7 +323,7 @@ def _SetInformationProcess(ql: Qiling, address: int, params):
         ql.log.debug("The target may be attempting to modify the PEB debug flag")
         addr = ql.os.heap.alloc(pbi.size)
         pbi.write(addr)
-        value = addr.to_bytes(ql.arch.pointersize, "little")
+        value = ql.pack(addr)
     else:
         ql.log.debug(str(flag))
         raise QlErrorNotImplemented("API not implemented")

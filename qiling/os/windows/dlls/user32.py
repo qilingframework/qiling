@@ -866,8 +866,8 @@ def hook_GetWindowThreadProcessId(ql: Qiling, address: int, params):
 
     dst = params["lpdwProcessId"]
 
-    if dst != 0:
-        ql.mem.write(dst, pid.to_bytes(4, "little"))
+    if dst:
+        ql.mem.write_ptr(dst, pid, 4)
 
     return pid
 

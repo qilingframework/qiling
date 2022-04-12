@@ -460,8 +460,10 @@ def hook_GetTokenInformation(ql: Qiling, address: int, params):
 
     token = ql.os.handle_manager.get(TokenHandle).obj
     information_value = token.get(TokenInformationClass)
-    ql.mem.write(ReturnLength, len(information_value).to_bytes(4, byteorder="little"))
-    return_size = int.from_bytes(ql.mem.read(ReturnLength, 4), byteorder="little")
+
+    ql.mem.write_ptr(ReturnLength, len(information_value), 4)
+    return_size = ql.mem.read_ptr(ReturnLength, 4)
+
     ql.log.debug("The target is checking for its permissions")
 
     if return_size > TokenInformationLength:
@@ -662,13 +664,9 @@ def hook_StartServiceA(ql: Qiling, address: int, params):
 })
 def hook_AllocateAndInitializeSid(ql: Qiling, address: int, params):
     count = params["nSubAuthorityCount"]
-    subs = b""
+    subs = b''.join(ql.pack32(params[f'nSubAuthority{i}']) for i in range(count))
 
-    for i in range(count):
-        sub = params[f"nSubAuthority{i}"]
-        subs += sub.to_bytes(4, "little")
-
-    sid = Sid(ql, revision=1, identifier=5, subs=subs, subs_count=count)
+    sid = Sid(ql, revision=1, subs_count=count, identifier=5, subs=subs)
     sid_addr = ql.os.heap.alloc(sid.size)
     sid.write(sid_addr)
 
@@ -688,34 +686,46 @@ __poweruserssid = None # Power Users (S-1-5-32-547)
 
 def get_adminsid(ql):
     global __adminsid
-    if __adminsid == None:
-        # nSubAuthority0 = SECURITY_BUILTIN_DOMAIN_RID[0x20], nSubAuthority1 = DOMAIN_ALIAS_RID_ADMINS[0x220]
+
+    if __adminsid is None:
+        # nSubAuthority0 = SECURITY_BUILTIN_DOMAIN_RID[0x20]
+        # nSubAuthority1 = DOMAIN_ALIAS_RID_ADMINS[0x220]
         subs = b"\x20\x00\x00\x00\x20\x02\x00\x00"
         __adminsid = Sid(ql, revision=1, identifier=5, subs=subs, subs_count=2)
+
     return __adminsid
 
 def get_userssid(ql):
     global __userssid
-    if __userssid == None:
-        # nSubAuthority0 = SECURITY_BUILTIN_DOMAIN_RID[0x20], nSubAuthority1 = DOMAIN_ALIAS_RID_USERS[0x221]
+
+    if __userssid is None:
+        # nSubAuthority0 = SECURITY_BUILTIN_DOMAIN_RID[0x20]
+        # nSubAuthority1 = DOMAIN_ALIAS_RID_USERS[0x221]
         subs = b"\x20\x00\x00\x00\x21\x02\x00\x00"
         __userssid = Sid(ql, revision=1, identifier=5, subs=subs, subs_count=2)
+
     return __userssid
 
 def get_guestssid(ql):
     global __guestssid
-    if __guestssid == None:
-        # nSubAuthority0 = SECURITY_BUILTIN_DOMAIN_RID[0x20], nSubAuthority1 = DOMAIN_ALIAS_RID_GUESTS[0x222]
+
+    if __guestssid is None:
+        # nSubAuthority0 = SECURITY_BUILTIN_DOMAIN_RID[0x20]
+        # nSubAuthority1 = DOMAIN_ALIAS_RID_GUESTS[0x222]
         subs = b"\x20\x00\x00\x00\x22\x02\x00\x00"
         __guestssid = Sid(ql, revision=1, identifier=5, subs=subs, subs_count=2)
+
     return __guestssid
 
 def get_poweruserssid(ql):
     global __poweruserssid
-    if __poweruserssid == None:
-        # nSubAuthority0 = SECURITY_BUILTIN_DOMAIN_RID[0x20], nSubAuthority1 = DOMAIN_ALIAS_RID_POWER_USERS[0x223]
+
+    if __poweruserssid is None:
+        # nSubAuthority0 = SECURITY_BUILTIN_DOMAIN_RID[0x20]
+        # nSubAuthority1 = DOMAIN_ALIAS_RID_POWER_USERS[0x223]
         subs = b"\x20\x00\x00\x00\x23\x02\x00\x00"
         __poweruserssid = Sid(ql, revision=1, identifier=5, subs=subs, subs_count=2)
+
     return __poweruserssid
 
 

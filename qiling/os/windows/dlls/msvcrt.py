@@ -573,7 +573,7 @@ def hook__time64(ql: Qiling, address: int, params):
 
     time_wasted = int(time.time())
 
-    if dst != 0:
-        ql.mem.write(dst, time_wasted.to_bytes(8, "little"))
+    if dst:
+        ql.mem.write_ptr(dst, time_wasted, 8)
 
     return time_wasted
