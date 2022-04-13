@@ -9,6 +9,7 @@ from unicorn import UcError
 
 from qiling import Qiling
 from qiling.cc import QlCC, intel
+from qiling.const import QL_OS
 from qiling.os.const import *
 from qiling.os.memory import QlMemoryHeap
 from qiling.os.os import QlOs, QlOsUtils
@@ -18,6 +19,8 @@ from qiling.os.uefi import guids_db
 from qiling.os.uefi.smm import SmmEnv
 
 class QlOsUefi(QlOs):
+	type = QL_OS.UEFI
+
 	def __init__(self, ql: Qiling):
 		super().__init__(ql)
 

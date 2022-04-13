@@ -20,6 +20,8 @@ from .utils import QlOsUtils
 from .path import QlOsPath
 
 class QlOs:
+    type: QL_OS
+
     Resolver = Callable[[int], Any]
 
     def __init__(self, ql: Qiling, resolvers: Mapping[Any, Resolver] = {}):
