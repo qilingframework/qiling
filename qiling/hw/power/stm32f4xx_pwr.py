@@ -6,6 +6,7 @@
 import ctypes
 from qiling.core import Qiling
 from qiling.hw.peripheral import QlPeripheral
+from qiling.hw.const.stm32f4xx_pwr import PWR_CR, PWR_CSR
 
 
 class STM32F4xxPwr(QlPeripheral):
@@ -47,12 +48,11 @@ class STM32F4xxPwr(QlPeripheral):
 		self.instance = self.struct()
 
 	@QlPeripheral.monitor()
-	def read(self, offset: int, size: int) -> int:		
-		buf = ctypes.create_string_buffer(size)
-		ctypes.memmove(buf, ctypes.addressof(self.instance) + offset, size)
-		return int.from_bytes(buf.raw, byteorder='little')
-    
-	@QlPeripheral.monitor()
 	def write(self, offset: int, size: int, value: int):
-		data = (value).to_bytes(size, 'little')
-		ctypes.memmove(ctypes.addressof(self.instance) + offset, data, size)
+		if offset == self.struct.CR.offset:
+			if value & PWR_CR.ODEN:
+				self.instance.CSR |= PWR_CSR.ODRDY
+			if value & PWR_CR.ODSWEN:
+				self.instance.CSR |= PWR_CSR.ODSWRDY
+
+		self.raw_write(offset, size, value)
