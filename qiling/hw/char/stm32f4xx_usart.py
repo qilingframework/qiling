@@ -70,8 +70,11 @@ class STM32F4xxUsart(QlConnectivityPeripheral):
         return retval
 
     @QlPeripheral.monitor()
-    def write(self, offset: int, size: int, value: int):        
-        if offset == self.struct.DR.offset:
+    def write(self, offset: int, size: int, value: int):  
+        if offset == self.struct.SR.offset:
+            self.instance.SR &= value | USART_SR.CTS | USART_SR.LBD | USART_SR.TC | USART_SR.RXNE | USART_SR.TXE        
+        
+        elif offset == self.struct.DR.offset:
             self.send_to_user(value)
 
         else:
