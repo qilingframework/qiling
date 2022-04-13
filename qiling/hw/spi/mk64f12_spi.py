@@ -37,6 +37,8 @@ class MK64F12Spi(QlConnectivityPeripheral):
     def read(self, offset, size):
         if offset == self.struct.POPR.offset:
             if self.has_input():
+                self.instance.SR &= ~SR.RFDF
+                self.instance.SR &= ~SR.RXCTR
                 return self.recv_from_user()
 
         return self.raw_read(offset, size)
@@ -45,9 +47,13 @@ class MK64F12Spi(QlConnectivityPeripheral):
     def write(self, offset, size, value):
         if offset == self.struct.PUSHR.offset:
             self.send_to_user(value & PUSHR.TXDATA)
+        
+        elif offset == self.struct.CTAR.offset:
+            self.instance.SR |= SR.TFFF
 
         self.raw_write(offset, size, value)
 
     def step(self):
         if self.has_input():
             self.instance.SR |= SR.RFDF
+            self.instance.SR |= SR.RXCTR
