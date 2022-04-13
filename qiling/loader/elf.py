@@ -123,7 +123,7 @@ class QlLoaderELF(QlLoader):
         self.ql.arch.regs.arch_sp = self.stack_address
 
         # No idea why.
-        if self.ql.ostype == QL_OS.FREEBSD:
+        if self.ql.os.type == QL_OS.FREEBSD:
             # self.ql.arch.regs.rbp = self.stack_address + 0x40
             self.ql.arch.regs.rdi = self.stack_address
             self.ql.arch.regs.r14 = self.stack_address
@@ -361,7 +361,7 @@ class QlLoaderELF(QlLoader):
         self.skip_exit_check = (self.elf_entry != self.entry_point)
 
         # map vsyscall section for some specific needs
-        if self.ql.arch.type == QL_ARCH.X8664 and self.ql.ostype == QL_OS.LINUX:
+        if self.ql.arch.type == QL_ARCH.X8664 and self.ql.os.type == QL_OS.LINUX:
             _vsyscall_addr = int(self.profile.get('vsyscall_address'), 0)
             _vsyscall_size = int(self.profile.get('vsyscall_size'), 0)
 

@@ -640,7 +640,7 @@ def verify_ret(ql, err):
 
     # timeout is acceptable in this case
     if err.errno in (UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED):
-        if ql.ostype == QL_OS.MACOS:
+        if ql.os.type == QL_OS.MACOS:
             if ql.loader.kext_name:
                 # FIXME: Should I push saved RIP before every method callings of IOKit object?
                 if ql.os.init_sp == ql.arch.regs.arch_sp - 8:

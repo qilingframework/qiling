@@ -63,7 +63,7 @@ class QlGdb(QlDebugger, object):
 
         if self.ql.baremetal:
             self.entry_point = self.ql.loader.entry_point
-        elif self.ql.ostype in (QL_OS.LINUX, QL_OS.FREEBSD) and not self.ql.code:
+        elif self.ql.os.type in (QL_OS.LINUX, QL_OS.FREEBSD) and not self.ql.code:
             self.entry_point = self.ql.os.elf_entry
         else:
             self.entry_point = self.ql.os.entry_point
@@ -486,7 +486,7 @@ class QlGdb(QlDebugger, object):
                     xml_folder      = arch_convert_str(self.ql.arch.type).lower()
                     xfercmd_file    = os.path.join(xfercmd_abspath,"xml",xml_folder, xfercmd_file)                        
 
-                    if os.path.exists(xfercmd_file) and self.ql.ostype is not QL_OS.WINDOWS:
+                    if os.path.exists(xfercmd_file) and self.ql.os.type is not QL_OS.WINDOWS:
                         with open(xfercmd_file, 'r') as f:
                             file_contents = f.read()
                             self.send("l%s" % file_contents)
@@ -496,7 +496,7 @@ class QlGdb(QlDebugger, object):
 
 
                 elif subcmd.startswith('Xfer:threads:read::0,'):
-                    if self.ql.ostype in QL_OS_NONPID or self.ql.baremetal:
+                    if self.ql.os.type in QL_OS_NONPID or self.ql.baremetal:
                         self.send("l")
                     else:    
                         file_contents = ("<threads>\r\n<thread id=\""+ str(self.ql.os.pid) + "\" core=\"1\" name=\"" + self.ql.targetname + "\"/>\r\n</threads>")
@@ -506,7 +506,7 @@ class QlGdb(QlDebugger, object):
                     if self.ql.code:
                         return
 
-                    if self.ql.ostype in (QL_OS.LINUX, QL_OS.FREEBSD):
+                    if self.ql.os.type in (QL_OS.LINUX, QL_OS.FREEBSD):
                         def __read_auxv() -> Iterator[int]:
                             auxv_entries = (
                                 AUX.AT_HWCAP,
@@ -549,7 +549,7 @@ class QlGdb(QlDebugger, object):
 
 
                 elif subcmd.startswith('Xfer:libraries-svr4:read:'):
-                    if self.ql.ostype in (QL_OS.LINUX, QL_OS.FREEBSD):
+                    if self.ql.os.type in (QL_OS.LINUX, QL_OS.FREEBSD):
                         xml_addr_mapping=("<library-list-svr4 version=\"1.0\">")
                         """
                         FIXME: need to find out when do we need this
@@ -611,7 +611,7 @@ class QlGdb(QlDebugger, object):
                     self.send("")
 
                 elif subcmd.startswith('File:open'):
-                    if self.ql.ostype == QL_OS.UEFI or self.ql.baremetal:
+                    if self.ql.os.type == QL_OS.UEFI or self.ql.baremetal:
                         self.send("F-1")
                         return
 

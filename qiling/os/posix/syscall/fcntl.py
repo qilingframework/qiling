@@ -27,7 +27,7 @@ def ql_syscall_open(ql: Qiling, filename: int, flags: int, mode: int):
         regreturn = -EMFILE
     else:
         try:
-            if ql.arch.type == QL_ARCH.ARM and ql.ostype != QL_OS.QNX:
+            if ql.arch.type == QL_ARCH.ARM and ql.os.type != QL_OS.QNX:
                 mode = 0
 
             flags = ql_open_flag_mapping(ql, flags)

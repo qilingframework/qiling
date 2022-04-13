@@ -17,7 +17,7 @@ class QlDisassember():
     def disasm_all_lines(self):
         disasm_result = []
 
-        if self.ql.ostype == QL_OS.LINUX:
+        if self.ql.os.type == QL_OS.LINUX:
             disasm_result = self.disasm_elf()
 
         return disasm_result

@@ -893,7 +893,7 @@ class QlEmuQiling:
             self.ql.os.stderr = QlEmuMisc.QLStdIO('stderr', sys.__stderr__.fileno())
 
         self.exit_addr = self.ql.os.exit_point
-        if self.ql.ostype == QL_OS.LINUX:
+        if self.ql.os.type == QL_OS.LINUX:
             f = open(self.ql.path, 'rb')
             elffile = ELFFile(f)
             elf_header = elffile.header

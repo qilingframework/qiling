@@ -141,7 +141,7 @@ class QlLinuxThread(QlThread):
 
     @path.setter
     def path(self, p: QlOsPath):
-        self._path = QlOsPath(self.ql.rootfs, p.cwd, self.ql.ostype)
+        self._path = QlOsPath(self.ql.rootfs, p.cwd, self.ql.os.type)
 
     @property
     def log_file_fd(self):

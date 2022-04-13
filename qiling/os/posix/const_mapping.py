@@ -46,10 +46,13 @@ def ql_open_flag_mapping(ql: Qiling, flags):
     f = {}
     t = {}
 
-    if ql.host.os == None:
+    host_os = ql.host.os
+    virt_os = ql.os.type
+
+    if host_os is None:
         return flags
-    
-    if ql.ostype == QL_OS.LINUX:
+
+    if virt_os == QL_OS.LINUX:
         if ql.arch.type in (QL_ARCH.X86, QL_ARCH.X8664):
             f = linux_x86_open_flags
         elif ql.arch.type in (QL_ARCH.ARM, QL_ARCH.ARM64):
@@ -59,23 +62,23 @@ def ql_open_flag_mapping(ql: Qiling, flags):
         elif ql.arch.type in (QL_ARCH.RISCV, QL_ARCH.RISCV64):
             f = linux_riscv_open_flags
 
-    elif ql.ostype == QL_OS.MACOS:
+    elif virt_os == QL_OS.MACOS:
         if ql.arch.type in (QL_ARCH.X86, QL_ARCH.X8664):
             f = macos_x86_open_flags
-    elif ql.ostype == QL_OS.FREEBSD:
+    elif virt_os == QL_OS.FREEBSD:
         f = freebsd_x86_open_flags
-    elif ql.ostype == QL_OS.WINDOWS:
+    elif virt_os == QL_OS.WINDOWS:
         f = windows_x86_open_flags
-    elif ql.ostype == QL_OS.QNX:
+    elif virt_os == QL_OS.QNX:
         f = qnx_arm64_open_flags
 
-    if ql.host.os == QL_OS.LINUX:
+    if host_os == QL_OS.LINUX:
         t = linux_x86_open_flags
-    elif ql.host.os == QL_OS.MACOS:
+    elif host_os == QL_OS.MACOS:
         t = macos_x86_open_flags
-    elif ql.host.os == QL_OS.FREEBSD:
+    elif host_os == QL_OS.FREEBSD:
         t = freebsd_x86_open_flags
-    elif ql.host.os == QL_OS.WINDOWS:
+    elif host_os == QL_OS.WINDOWS:
         t = windows_x86_open_flags
 
     if f == t:

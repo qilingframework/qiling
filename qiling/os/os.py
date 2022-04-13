@@ -40,10 +40,10 @@ class QlOs:
         self.profile = self.ql.profile
         self.exit_code = 0
 
-        if ql.ostype in QL_OS_POSIX + (QL_OS.WINDOWS, QL_OS.DOS):
+        if self.type in QL_OS_POSIX + (QL_OS.WINDOWS, QL_OS.DOS):
             cwd = self.profile.get("MISC", "current_path")
 
-            self.path = QlOsPath(ql.rootfs, cwd, ql.ostype)
+            self.path = QlOsPath(ql.rootfs, cwd, self.type)
             self.fs_mapper = QlFsMapper(self.path)
 
         self.user_defined_api = {
@@ -217,10 +217,10 @@ class QlOs:
                 `QL_INTERCEPT.EXIT` : run handler after the target API is called
         """
 
-        if self.ql.ostype == QL_OS.UEFI:
+        if self.ql.os.type == QL_OS.UEFI:
             api_name = f'hook_{api_name}'
 
-        if (self.ql.ostype in (QL_OS.WINDOWS, QL_OS.UEFI, QL_OS.DOS)) or (self.ql.ostype in (QL_OS_POSIX) and self.ql.loader.is_driver):
+        if (self.ql.os.type in (QL_OS.WINDOWS, QL_OS.UEFI, QL_OS.DOS)) or (self.ql.os.type in (QL_OS_POSIX) and self.ql.loader.is_driver):
             self.user_defined_api[intercept][api_name] = intercept_function
         else:
             self.add_function_hook(api_name, intercept_function, intercept)
