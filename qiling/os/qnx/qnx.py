@@ -17,13 +17,15 @@ from qiling.os.qnx.helpers import QnxConn
 from qiling.os.qnx.structs import _thread_local_storage
 
 from qiling.cc import QlCC, intel, arm, mips, riscv
-from qiling.const import QL_ARCH, QL_INTERCEPT
+from qiling.const import QL_ARCH, QL_OS, QL_INTERCEPT
 from qiling.os.fcall import QlFunctionCall
 from qiling.os.const import *
 from qiling.os.posix.const import NR_OPEN
 from qiling.os.posix.posix import QlOsPosix
 
 class QlOsQnx(QlOsPosix):
+    type = QL_OS.QNX
+
     def __init__(self, ql: Qiling):
         super(QlOsQnx, self).__init__(ql)
 

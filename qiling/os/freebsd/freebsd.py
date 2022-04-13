@@ -7,9 +7,12 @@ from unicorn import UcError
 from unicorn.x86_const import UC_X86_INS_SYSCALL
 
 from qiling.arch.x86_utils import GDTManager, SegmentManager86
+from qiling.const import QL_OS
 from qiling.os.posix.posix import QlOsPosix
 
 class QlOsFreebsd(QlOsPosix):
+    type = QL_OS.FREEBSD
+
     def __init__(self, ql):
         super(QlOsFreebsd, self).__init__(ql)
 

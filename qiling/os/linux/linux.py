@@ -12,7 +12,7 @@ from qiling.arch.x86_const import GS_SEGMENT_ADDR, GS_SEGMENT_SIZE
 from qiling.arch.x86_utils import GDTManager, SegmentManager86, SegmentManager64
 from qiling.arch import arm_utils
 from qiling.cc import QlCC, intel, arm, mips, riscv
-from qiling.const import QL_ARCH, QL_INTERCEPT
+from qiling.const import QL_ARCH, QL_OS, QL_INTERCEPT
 from qiling.os.fcall import QlFunctionCall
 from qiling.os.const import *
 from qiling.os.posix.const import NR_OPEN
@@ -22,6 +22,8 @@ from . import futex
 from . import thread
 
 class QlOsLinux(QlOsPosix):
+    type = QL_OS.LINUX
+
     def __init__(self, ql: Qiling):
         super(QlOsLinux, self).__init__(ql)
 

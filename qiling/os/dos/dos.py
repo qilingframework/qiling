@@ -10,7 +10,7 @@ from datetime import datetime
 from unicorn import UcError
 
 from qiling import Qiling
-from qiling.const import QL_INTERCEPT
+from qiling.const import QL_OS, QL_INTERCEPT
 from qiling.os.os import QlOs
 
 from .interrupts import handlers
@@ -29,6 +29,8 @@ class Flags(IntEnum):
     IOPL = (3 << 12) # io privilege
 
 class QlOsDos(QlOs):
+    type = QL_OS.DOS
+
     def __init__(self, ql: Qiling):
         super(QlOsDos, self).__init__(ql)
 

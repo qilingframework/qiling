@@ -5,7 +5,7 @@
 
 from qiling import Qiling
 from qiling.cc import QlCC, intel, arm, mips
-from qiling.const import QL_ARCH
+from qiling.const import QL_ARCH, QL_OS
 from qiling.os.fcall import QlFunctionCall
 from qiling.os.os import QlOs
 
@@ -17,6 +17,9 @@ class QlOsBlob(QlOs):
     resolve_fcall_params(), heap or add_fs_mapper() are based on os. To keep the
     consistence of api usage, QlOsBlob is introduced and placed at its loader temporarily.
     """
+
+    type = QL_OS.BLOB
+
     def __init__(self, ql: Qiling):
         super(QlOsBlob, self).__init__(ql)
 

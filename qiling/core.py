@@ -307,25 +307,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         return self._env
 
     @property
-    def ostype(self) -> QL_OS:
-        """ The emulated os type.
-
-            Note: Please pass None or one of the strings below to Qiling.__init__.
-                  If you use shellcode, you must specify ostype and archtype manually.
-
-            Type: int.
-            Values:
-              - "macos" : macOS.
-              - "darwin" : an alias to "macos".
-              - "freebsd" : FreeBSD
-              - "windows" : Windows
-              - "uefi" : UEFI
-              - "dos" : DOS
-            Example: Qiling(code=b"\x90", ostype="macos", archtype="x8664")
-        """
-        return self._ostype
-
-    @property
     def code(self) -> bytes:
         """ The shellcode to execute.
 
