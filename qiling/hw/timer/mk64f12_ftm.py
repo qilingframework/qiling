@@ -10,6 +10,7 @@ from qiling.core import Qiling
 
 from qiling.hw.peripheral import QlPeripheral
 from qiling.hw.timer.timer import QlTimerPeripheral
+from qiling.hw.const.mk64f12_ftm import MODE, SC
 
 
 class Control(ctypes.Structure):
@@ -24,7 +25,7 @@ class MK64F12Ftm(QlTimerPeripheral):
         """ FlexTimer Module """  
         _fields_ = [
             ("SC"      , ctypes.c_uint32), # Status And Control
-            ("CNT"     , ctypes.c_uint32), # Counter
+            ("CNT"     , ctypes.c_int32),  # Counter
             ("MOD"     , ctypes.c_uint32), # Modulo
             ("CONTROLS", Control * 8),
             ("CNTIN"   , ctypes.c_uint32), # Counter Initial Value
@@ -53,3 +54,13 @@ class MK64F12Ftm(QlTimerPeripheral):
         super().__init__(ql, label)
 
         self.intn = intn
+
+    def step(self):
+        if self.instance.MODE & MODE.FTMEN and self.instance.SC & SC.CLKS:
+            if self.instance.CNT <= 0:
+                self.instance.CNT = 1000000 // ((self.instance.SC & SC.PS) + 1)
+            
+            else:
+                self.instance.CNT -= self.ratio
+                if self.instance.CNT <= 0:                    
+                    self.ql.hw.nvic.set_pending(self.intn)
