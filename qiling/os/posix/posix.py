@@ -90,10 +90,10 @@ class QlOsPosix(QlOs):
         }[self.ql.arch.type]
 
         # handle some special cases
-        if (self.ql.arch.type == QL_ARCH.ARM64) and (self.ql.ostype == QL_OS.MACOS):
+        if (self.ql.arch.type == QL_ARCH.ARM64) and (self.type == QL_OS.MACOS):
             self.__syscall_id_reg = UC_ARM64_REG_X16
 
-        elif (self.ql.arch.type == QL_ARCH.ARM) and (self.ql.ostype == QL_OS.QNX):
+        elif (self.ql.arch.type == QL_ARCH.ARM) and (self.type == QL_OS.QNX):
             self.__syscall_id_reg = UC_ARM_REG_R12
 
         # TODO: use abstract to access __syscall_cc and __syscall_id_reg by defining a system call class
@@ -108,7 +108,7 @@ class QlOsPosix(QlOs):
         }[self.ql.arch.type](self.ql.arch)
 
         # select syscall mapping function based on emulated OS and architecture
-        self.syscall_mapper = ql_syscall_mapping_function(self.ql.ostype, self.ql.arch.type)
+        self.syscall_mapper = ql_syscall_mapping_function(self.type, self.ql.arch.type)
 
         self._fd = QlFileDes()
 
@@ -197,7 +197,7 @@ class QlOsPosix(QlOs):
             def __get_os_module(osname: str):
                 return ql_get_module_function(f'qiling.os.{osname.lower()}', 'syscall')
 
-            os_syscalls = __get_os_module(ostype_convert_str(self.ql.ostype))
+            os_syscalls = __get_os_module(ostype_convert_str(self.type))
             posix_syscalls = __get_os_module('posix')
 
             # look in os-specific and posix syscall hooks

@@ -13,7 +13,7 @@ class Report:
         self.filename = ql.argv
         self.rootfs = ql.rootfs
         self.arch = list(arch_map.keys())[list(arch_map.values()).index(ql.arch.type)]
-        self.os = list(os_map.keys())[list(os_map.values()).index(ql.ostype)]
+        self.os = list(os_map.keys())[list(os_map.values()).index(ql.os.type)]
         self.env = ql.env
         self.strings = set()
         for string in ql.os.stats.strings:
@@ -54,7 +54,7 @@ class WindowsReport(Report):
 
 
 def generate_report(ql, pretty_print=False) -> dict:
-    if ql.ostype == QL_OS.WINDOWS:
+    if ql.os.type == QL_OS.WINDOWS:
         report = WindowsReport(ql)
     else:
         report = Report(ql)

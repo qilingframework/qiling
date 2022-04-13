@@ -159,12 +159,11 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         assert type(endian) is QL_ENDIAN
 
         self._arch = arch_setup(archtype, endian, thumb, self)
-        self._ostype = ostype
 
         self.uc = self.arch.uc
 
         # Once we finish setting up arch, we can init QlCoreStructs and QlCoreHooks
-        if not self.interpreter:
+        if ostype not in QL_OS_INTERPRETER:
             QlCoreStructs.__init__(self, self.arch.endian, self.arch.bits)
             QlCoreHooks.__init__(self, self.uc)
 
@@ -178,19 +177,19 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         ###########
         # Profile #
         ###########
-        self._profile = profile_setup(self, self.ostype, profile)
+        self._profile = profile_setup(self, ostype, profile)
 
         ##########
         # Loader #
         ##########
-        self._loader = loader_setup(self, self.ostype, libcache)
+        self._loader = loader_setup(self, ostype, libcache)
 
         ##############
         # Components #
         ##############
-        if not self.interpreter:
+        if ostype not in QL_OS_INTERPRETER:
             self._mem = component_setup("os", "memory", self)
-            self._os = os_setup(self.ostype, self)
+            self._os = os_setup(ostype, self)
 
         # Run the loader
         self.loader.run()
@@ -341,7 +340,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
             Type: bool
         """
-        return self.ostype in QL_OS_INTERPRETER
+        return self.os.type in QL_OS_INTERPRETER
 
     @property
     def baremetal(self) -> bool:
@@ -350,7 +349,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
             Type: bool
         """
-        return self.ostype in QL_OS_BAREMETAL
+        return self.os.type in QL_OS_BAREMETAL
 
     @property
     def host(self) -> QlHost:
