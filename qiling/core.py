@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from .hw.hw import QlHwManager
     from .loader.loader import QlLoader
 
-from .const import QL_ARCH, QL_ENDIAN, QL_OS, QL_STOP, QL_VERBOSE, QL_OS_INTERPRETER, QL_OS_BAREMETAL
+from .const import QL_ARCH, QL_ENDIAN, QL_OS, QL_STOP, QL_VERBOSE, QL_ARCH_INTERPRETER, QL_OS_BAREMETAL
 from .exception import QlErrorFileNotFound, QlErrorArch, QlErrorOsType
 from .host import QlHost
 from .utils import *
@@ -163,7 +163,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self.uc = self.arch.uc
 
         # Once we finish setting up arch, we can init QlCoreStructs and QlCoreHooks
-        if ostype not in QL_OS_INTERPRETER:
+        if not self.interpreter:
             QlCoreStructs.__init__(self, self.arch.endian, self.arch.bits)
             QlCoreHooks.__init__(self, self.uc)
 
@@ -187,7 +187,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         ##############
         # Components #
         ##############
-        if ostype not in QL_OS_INTERPRETER:
+        if not self.interpreter:
             self._mem = component_setup("os", "memory", self)
             self._os = os_setup(ostype, self)
 
@@ -340,7 +340,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
             Type: bool
         """
-        return self.os.type in QL_OS_INTERPRETER
+        return self.arch.type in QL_ARCH_INTERPRETER
 
     @property
     def baremetal(self) -> bool:
