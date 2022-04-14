@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING
 from unicorn.unicorn import Uc
 
 if TYPE_CHECKING:
+    from logging import Logger
     from .arch.arch import QlArch
     from .os.os import QlOs
     from .os.memory import QlMemoryManager
@@ -22,6 +23,7 @@ if TYPE_CHECKING:
 from .const import QL_ARCH, QL_ENDIAN, QL_OS, QL_STOP, QL_VERBOSE, QL_ARCH_INTERPRETER, QL_OS_BAREMETAL
 from .exception import QlErrorFileNotFound, QlErrorArch, QlErrorOsType
 from .host import QlHost
+from .log import *
 from .utils import *
 from .core_struct import QlCoreStructs
 from .core_hooks import QlCoreHooks
@@ -62,9 +64,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._env = env
         self._code = code
         self._multithread = multithread
-        self._log_file_fd = None
         self._log_filter = None
-        self._filter = filter
         self._internal_exception = None
         self._uc = None
         self._stop_options = stop
@@ -170,8 +170,9 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         ##########
         # Logger #
         ##########
-        self._log_file_fd, self._log_filter = ql_setup_logger(self, log_file, console, self._filter, log_override, log_plain)
+        self._log_file_fd = setup_logger(self, log_file, console, log_override, log_plain)
 
+        self.filter = filter
         self.verbose = verbose
 
         ###########
@@ -241,7 +242,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         return self._os
 
     @property
-    def log(self) -> logging.Logger:
+    def log(self) -> "Logger":
         """ Returns the logger this Qiling instance uses.
 
             You can override this log by passing `log_override=your_log` to Qiling.__init__
@@ -384,7 +385,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
     def verbose(self, v: QL_VERBOSE):
         self._verbose = v
 
-        self.log.setLevel(ql_resolve_logger_level(v))
+        self.log.setLevel(resolve_logger_level(v))
         self.arch.utils.setup_output(v)
 
     @property
@@ -445,16 +446,19 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             Example: - Qiling(filter=r'^exit')
                      - ql.filter = r'^open'
         """
-        return self._filter
+
+        lf = self._log_filter
+
+        return '' if lf is None else lf._filter.pattern
 
     @filter.setter
-    def filter(self, ft):
-        self._filter = ft
+    def filter(self, regex: str):
         if self._log_filter is None:
-            self._log_filter = RegexFilter(ft)
+            self._log_filter = RegexFilter(regex)
+
             self.log.addFilter(self._log_filter)
         else:
-            self._log_filter.update_filter(ft)
+            self._log_filter.update_filter(regex)
 
     @property
     def uc(self) -> Uc:
