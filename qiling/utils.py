@@ -12,7 +12,7 @@ from functools import partial
 import importlib, os, pefile, yaml
 
 from configparser import ConfigParser
-from typing import Any, Container, IO, List, Optional, Tuple, Type, Union
+from typing import Any, Container, Optional, Tuple, Type, Union
 from enum import Enum
 
 from unicorn import UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
@@ -20,33 +20,6 @@ from unicorn import UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
 from qiling.exception import *
 from qiling.const import QL_ARCH, QL_ENDIAN, QL_OS, QL_DEBUGGER
 from qiling.const import debugger_map, arch_map, os_map, arch_os_map
-from qiling.os.posix.const import NR_OPEN
-
-class QlFileDes:
-    def __init__(self):
-        self.__fds: List[Optional[IO]] = [None] * NR_OPEN
-
-    def __len__(self):
-        return len(self.__fds)
-
-    def __getitem__(self, idx: int):
-        return self.__fds[idx]
-
-    def __setitem__(self, idx: int, val: Optional[IO]):
-        self.__fds[idx] = val
-
-    def __iter__(self):
-        return iter(self.__fds)
-
-    def __repr__(self):
-        return repr(self.__fds)
-
-    def save(self):
-        return self.__fds
-
-    def restore(self, fds):
-        self.__fds = fds
-
 
 def catch_KeyboardInterrupt(ql):
     def decorator(func):
