@@ -9,6 +9,8 @@
      - uses: actions/checkout@v2
        with:
          fetch-depth: 0
+         run: |
+              git config --global --add safe.directory /github/workspace
      - uses: acefei/sync-repo-action@master
        with:
          run: git config --global --add safe.directory *
