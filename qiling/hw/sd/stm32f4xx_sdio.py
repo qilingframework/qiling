@@ -7,9 +7,11 @@ import ctypes
 
 from qiling.core import Qiling
 from qiling.hw.peripheral import QlPeripheral
+from qiling.hw.connectivity import QlConnectivityPeripheral
+from qiling.hw.const.stm32f4xx_sdio import SDIO_CMD, SDIO_STA
 
 
-class STM32F4xxSdio(QlPeripheral):
+class STM32F4xxSdio(QlConnectivityPeripheral):
     class Type(ctypes.Structure):
         """ the structure available in :
                 stm32f401xc
@@ -64,12 +66,23 @@ class STM32F4xxSdio(QlPeripheral):
         self.instance = self.struct()
 
     @QlPeripheral.monitor()
-    def read(self, offset: int, size: int) -> int:		
-        buf = ctypes.create_string_buffer(size)
-        ctypes.memmove(buf, ctypes.addressof(self.instance) + offset, size)
-        return int.from_bytes(buf.raw, byteorder='little')
+    def read(self, offset: int, size: int) -> int:
+        if offset == self.struct.RESP1.offset:            
+            if self.has_input():
+                return self.recv_from_user()
+
+        return self.raw_read(offset, size)
     
     @QlPeripheral.monitor()
     def write(self, offset: int, size: int, value: int):
-        data = (value).to_bytes(size, 'little')
-        ctypes.memmove(ctypes.addressof(self.instance) + offset, data, size)
+        if offset == self.struct.CMD.offset:            
+            if value & SDIO_CMD.CPSMEN:
+                waitresp = (value & SDIO_CMD.WAITRESP) >> 6
+                if waitresp in [0b00, 0b11]:
+                    self.instance.STA |= SDIO_STA.CMDSENT
+                else:
+                    self.instance.STA |= SDIO_STA.CMDREND
+                
+                self.instance.RESPCMD = value & SDIO_CMD.CMDINDEX
+
+        self.raw_write(offset, size, value)
