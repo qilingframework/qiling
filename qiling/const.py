@@ -77,19 +77,6 @@ arch_map    : Mapping[str, QL_ARCH]     = __reverse_enum(QL_ARCH)
 os_map      : Mapping[str, QL_OS]       = __reverse_enum(QL_OS)
 verbose_map : Mapping[str, QL_VERBOSE]  = __reverse_enum(QL_VERBOSE)
 
-loader_map = {
-    QL_OS.LINUX   : "ELF",
-    QL_OS.FREEBSD : "ELF",
-    QL_OS.QNX     : "ELF",
-    QL_OS.MACOS   : "MACHO",
-    QL_OS.WINDOWS : "PE",
-    QL_OS.UEFI    : "PE_UEFI",
-    QL_OS.DOS     : "DOS",
-    QL_OS.EVM     : "EVM",
-    QL_OS.MCU     : "MCU",
-    QL_OS.BLOB    : "BLOB"
-}
-
 arch_os_map = {
     QL_ARCH.EVM      : QL_OS.EVM,
     QL_ARCH.CORTEX_M : QL_OS.MCU
