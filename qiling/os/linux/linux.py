@@ -14,7 +14,6 @@ from qiling.cc import QlCC, intel, arm, mips, riscv
 from qiling.const import QL_ARCH, QL_OS
 from qiling.os.fcall import QlFunctionCall
 from qiling.os.const import *
-from qiling.os.posix.const import NR_OPEN
 from qiling.os.posix.posix import QlOsPosix
 
 from . import futex

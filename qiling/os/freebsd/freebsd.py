@@ -30,7 +30,7 @@ class QlOsFreebsd(QlOsPosix):
         self.ql.hook_insn(self.hook_syscall, UC_X86_INS_SYSCALL)
 
 
-    def hook_syscall(self, intno= None):
+    def hook_syscall(self, ql):
         return self.load_syscall()
 
 
