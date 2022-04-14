@@ -28,9 +28,10 @@ CHEN huitao (null) <null@qiling.io>
 YU tong (sp1ke) <spikeinhouse@gmail.com>
 
 
-Travis, Website and Documentations
+CI, Website， Documentations & Logo
 ==================================
 FOO Kevin (chfl4gs) <chfl4gs@qiling.io>
+SU muchen (Mirai Suu) <suu@qiling.io>
 
 
 Key Contributors (in no particular order)
