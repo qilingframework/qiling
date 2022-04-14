@@ -4,7 +4,7 @@
 #
 
 from inspect import signature, Parameter
-from typing import TextIO, Union, Callable
+from typing import TextIO, Union, Callable, IO, List, Optional
 
 from unicorn.arm64_const import UC_ARM64_REG_X8, UC_ARM64_REG_X16
 from unicorn.arm_const import UC_ARM_REG_R7
@@ -18,7 +18,7 @@ from qiling.const import QL_ARCH, QL_OS, QL_INTERCEPT
 from qiling.exception import QlErrorSyscallNotFound
 from qiling.os.os import QlOs
 from qiling.os.posix.const import errors
-from qiling.utils import QlFileDes, ostype_convert_str, ql_get_module_function, ql_syscall_mapping_function
+from qiling.utils import ostype_convert_str, ql_get_module_function, ql_syscall_mapping_function
 
 from qiling.os.posix.syscall import *
 from qiling.os.linux.syscall import *
@@ -57,6 +57,33 @@ class riscv32(riscv.riscv):
 
 class riscv64(riscv.riscv):
     pass
+
+
+class QlFileDes:
+    def __init__(self):
+        self.__fds: List[Optional[IO]] = [None] * NR_OPEN
+
+    def __len__(self):
+        return len(self.__fds)
+
+    def __getitem__(self, idx: int):
+        return self.__fds[idx]
+
+    def __setitem__(self, idx: int, val: Optional[IO]):
+        self.__fds[idx] = val
+
+    def __iter__(self):
+        return iter(self.__fds)
+
+    def __repr__(self):
+        return repr(self.__fds)
+
+    def save(self):
+        return self.__fds
+
+    def restore(self, fds):
+        self.__fds = fds
+
 
 class QlOsPosix(QlOs):
 
