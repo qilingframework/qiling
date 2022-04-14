@@ -28,8 +28,8 @@ CHEN huitao (null) <null@qiling.io>
 YU tong (sp1ke) <spikeinhouse@gmail.com>
 
 
-CI, Website， Documentations & Logo
-==================================
+CI, Website，Documentations, Logo & Swags
+=========================================
 FOO Kevin (chfl4gs) <chfl4gs@qiling.io>
 SU muchen (Mirai Suu) <suu@qiling.io>
 
