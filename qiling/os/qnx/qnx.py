@@ -3,10 +3,8 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from typing import Callable
 import os
 
-from typing import Callable
 from unicorn import UcError
 
 from qiling import Qiling
@@ -17,7 +15,7 @@ from qiling.os.qnx.helpers import QnxConn
 from qiling.os.qnx.structs import _thread_local_storage
 
 from qiling.cc import QlCC, intel, arm, mips, riscv
-from qiling.const import QL_ARCH, QL_OS, QL_INTERCEPT
+from qiling.const import QL_ARCH, QL_OS
 from qiling.os.fcall import QlFunctionCall
 from qiling.os.const import *
 from qiling.os.posix.const import NR_OPEN
@@ -80,10 +78,6 @@ class QlOsQnx(QlOsPosix):
     
     def hook_syscall(self, intno= None, int = None):
         return self.load_syscall()
-
-
-    def add_function_hook(self, fn: str, cb: Callable, intercept: QL_INTERCEPT):
-        self.ql.os.function_hook.add_function_hook(fn, cb, intercept)
 
 
     def register_function_after_load(self, function):

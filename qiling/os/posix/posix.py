@@ -162,6 +162,13 @@ class QlOsPosix(QlOs):
 
         self.posix_syscall_hooks[intercept][target] = handler
 
+    def set_api(self, target: str, handler: Callable, intercept: QL_INTERCEPT = QL_INTERCEPT.CALL):
+        if self.ql.loader.is_driver:
+            super().set_api(target, handler, intercept)
+        else:
+            self.function_hook.add_function_hook(target, handler, intercept)
+
+
     @staticmethod
     def getNameFromErrorCode(ret: int) -> str:
         """Return the hex representation of a return value and if possible
