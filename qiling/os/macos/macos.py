@@ -159,11 +159,11 @@ class QlOsMacos(QlOsPosix):
             self.ql.hook_insn(self.hook_syscall, UC_X86_INS_SYSCALL)
 
     
-    def hook_syscall(self, intno= None, int = None):
+    def hook_syscall(self, ql, intno = None):
         return self.load_syscall()
 
 
-    def hook_sigtrap(self, intno= None, int = None):
+    def hook_sigtrap(self, ql, intno):
         self.ql.log.info("Trap Found")
         self.emu_error()
         exit(1)

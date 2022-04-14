@@ -18,7 +18,6 @@ from qiling.cc import QlCC, intel, arm, mips, riscv
 from qiling.const import QL_ARCH, QL_OS
 from qiling.os.fcall import QlFunctionCall
 from qiling.os.const import *
-from qiling.os.posix.const import NR_OPEN
 from qiling.os.posix.posix import QlOsPosix
 
 class QlOsQnx(QlOsPosix):
@@ -75,8 +74,8 @@ class QlOsQnx(QlOsPosix):
                 'get_tls': 0xffff0fe0
             })
 
-    
-    def hook_syscall(self, intno= None, int = None):
+
+    def hook_syscall(self, ql, intno):
         return self.load_syscall()
 
 
@@ -88,12 +87,6 @@ class QlOsQnx(QlOsPosix):
     def run_function_after_load(self):
         for f in self.function_after_load_list:
             f()
-
-
-    def hook_sigtrap(self, intno= None, int = None):
-        self.ql.log.info("Trap Found")
-        self.emu_error()
-        exit(1)
 
 
     def run(self):
