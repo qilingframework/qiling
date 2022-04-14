@@ -13,3 +13,4 @@
        with:
          ssh_private_key: ${{ secrets.GITEE_KEY }}
          target_repo: ssh://git@gitee.com/qilingframework/qiling.git
+         allow_failure: true
