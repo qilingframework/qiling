@@ -4,7 +4,7 @@
 #
 
 import sys
-from typing import Any, Iterable, Optional, Callable, Mapping, Sequence, TextIO, Tuple
+from typing import Any, Hashable, Iterable, Optional, Callable, Mapping, Sequence, TextIO, Tuple
 
 from unicorn import UcError
 
@@ -204,26 +204,19 @@ class QlOs:
 
         return retval
 
-    # TODO: separate this method into os-specific functionalities, instead of 'if-else'
-    def set_api(self, api_name: str, intercept_function: Callable, intercept: QL_INTERCEPT = QL_INTERCEPT.CALL):
-        """Either replace or hook OS API with a custom one.
+    def set_api(self, target: Hashable, handler: Callable, intercept: QL_INTERCEPT = QL_INTERCEPT.CALL):
+        """Either hook or replace an OS API with a custom one.
 
         Args:
-            api_name: target API name
-            intercept_function: function to call
+            target: target API identifier
+            handler: function to call
             intercept:
                 `QL_INTERCEPT.CALL` : run handler instead of the existing target implementation
                 `QL_INTERCEPT.ENTER`: run handler before the target API is called
                 `QL_INTERCEPT.EXIT` : run handler after the target API is called
         """
 
-        if self.ql.os.type == QL_OS.UEFI:
-            api_name = f'hook_{api_name}'
-
-        if (self.ql.os.type in (QL_OS.WINDOWS, QL_OS.UEFI, QL_OS.DOS)) or (self.ql.os.type in (QL_OS_POSIX) and self.ql.loader.is_driver):
-            self.user_defined_api[intercept][api_name] = intercept_function
-        else:
-            self.add_function_hook(api_name, intercept_function, intercept)
+        self.user_defined_api[intercept][target] = handler
 
     # os main method; derivatives must implement one of their own
     def run(self) -> None:

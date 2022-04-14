@@ -9,7 +9,7 @@ from unicorn import UcError
 
 from qiling import Qiling
 from qiling.cc import QlCC, intel
-from qiling.const import QL_OS
+from qiling.const import QL_INTERCEPT, QL_OS
 from qiling.os.const import *
 from qiling.os.memory import QlMemoryHeap
 from qiling.os.os import QlOs, QlOsUtils
@@ -198,6 +198,9 @@ class QlOsUefi(QlOs):
 
 		self.ql.log.error(f'Memory map:')
 		self.ql.mem.show_mapinfo()
+
+	def set_api(self, target: str, handler: Callable, intercept: QL_INTERCEPT = QL_INTERCEPT.CALL):
+		super().set_api(f'hook_{target}', handler, intercept)
 
 	def run(self):
 		# TODO: this is not the right place for this

@@ -3,7 +3,6 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from typing import Callable
 from unicorn import UcError
 from unicorn.x86_const import UC_X86_INS_SYSCALL
 
@@ -12,7 +11,7 @@ from qiling.arch.x86_const import GS_SEGMENT_ADDR, GS_SEGMENT_SIZE
 from qiling.arch.x86_utils import GDTManager, SegmentManager86, SegmentManager64
 from qiling.arch import arm_utils
 from qiling.cc import QlCC, intel, arm, mips, riscv
-from qiling.const import QL_ARCH, QL_OS, QL_INTERCEPT
+from qiling.const import QL_ARCH, QL_OS
 from qiling.os.fcall import QlFunctionCall
 from qiling.os.const import *
 from qiling.os.posix.const import NR_OPEN
@@ -116,10 +115,6 @@ class QlOsLinux(QlOsPosix):
 
     def hook_syscall(self, ql, intno = None):
         return self.load_syscall()
-
-
-    def add_function_hook(self, fn: str, cb: Callable, intercept: QL_INTERCEPT):
-        self.ql.os.function_hook.add_function_hook(fn, cb, intercept)
 
 
     def register_function_after_load(self, function):
