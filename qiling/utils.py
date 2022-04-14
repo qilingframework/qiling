@@ -20,7 +20,7 @@ from unicorn import UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
 
 from qiling.exception import *
 from qiling.const import QL_VERBOSE, QL_ARCH, QL_ENDIAN, QL_OS, QL_DEBUGGER
-from qiling.const import debugger_map, arch_map, os_map, arch_os_map, loader_map
+from qiling.const import debugger_map, arch_map, os_map, arch_os_map
 from qiling.os.posix.const import NR_OPEN
 
 FMT_STR = "%(levelname)s\t%(message)s"
@@ -154,9 +154,6 @@ def ql_is_valid_ostype(ostype: QL_OS) -> bool:
 
 def ql_is_valid_arch(arch: QL_ARCH) -> bool:
     return arch in enum_values(QL_ARCH)
-
-def loadertype_convert_str(ostype: QL_OS) -> Optional[str]:
-    return loader_map.get(ostype)
 
 def __value_to_key(e: Type[Enum], val: Any) -> Optional[str]:
     key = e._value2member_map_[val]
@@ -411,9 +408,21 @@ def ql_guess_emu_env(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], Opt
 def loader_setup(ql, ostype: QL_OS, libcache: bool):
     args = [libcache] if ostype == QL_OS.WINDOWS else []
 
-    qlloader_name = loadertype_convert_str(ostype)
-    qlloader_path = f'qiling.loader.{qlloader_name.lower()}'
-    qlloader_class = f'QlLoader{qlloader_name.upper()}'
+    module = {
+        QL_OS.LINUX   : r'elf',
+        QL_OS.FREEBSD : r'elf',
+        QL_OS.QNX     : r'elf',
+        QL_OS.MACOS   : r'macho',
+        QL_OS.WINDOWS : r'pe',
+        QL_OS.UEFI    : r'pe_uefi',
+        QL_OS.DOS     : r'dos',
+        QL_OS.EVM     : r'evm',
+        QL_OS.MCU     : r'mcu',
+        QL_OS.BLOB    : r'blob'
+    }[ostype]
+
+    qlloader_path = f'qiling.loader.{module}'
+    qlloader_class = f'QlLoader{module.upper()}'
 
     obj = ql_get_module_function(qlloader_path, qlloader_class)
 
