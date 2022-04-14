@@ -9,9 +9,10 @@
      - uses: actions/checkout@v2
        with:
          fetch-depth: 0
+         run: |
+              git config --global --add safe.directory /github/workspace
      - uses: acefei/sync-repo-action@master
        with:
-         run: git config --global --add safe.directory /github/workspace
          ssh_private_key: ${{ secrets.GITEE_KEY }}
          target_repo: ssh://git@gitee.com/qilingframework/qiling.git
          
