@@ -149,14 +149,14 @@ class QlCoreHooks:
     # Class Hooks #
     ###############
     def _ql_hook_internal(self, hook_type, callback, user_data=None, *args) -> int:
-        _callback = (catch_KeyboardInterrupt(self))(callback)
+        _callback = catch_KeyboardInterrupt(self, callback)
         # pack user_data & callback for wrapper _callback
         return self._h_uc.hook_add(hook_type, _callback, (self, user_data), 1, 0, *args)
 
 
     def _ql_hook_addr_internal(self, callback: Callable, address: int) -> int:
-        _callback = (catch_KeyboardInterrupt(self))(callback)
-        # pack user_data & callback for wrapper _callback
+        _callback = catch_KeyboardInterrupt(self, callback)
+
         return self._h_uc.hook_add(UC_HOOK_CODE, _callback, self, address, address)
 
 

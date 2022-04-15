@@ -21,18 +21,15 @@ from qiling.exception import *
 from qiling.const import QL_ARCH, QL_ENDIAN, QL_OS, QL_DEBUGGER
 from qiling.const import debugger_map, arch_map, os_map, arch_os_map
 
-def catch_KeyboardInterrupt(ql):
-    def decorator(func):
-        def wrapper(*args, **kw):
-            try:
-                return func(*args, **kw)
-            except BaseException as e:
-                ql.stop()
-                ql._internal_exception = e
+def catch_KeyboardInterrupt(ql, func):
+    def wrapper(*args, **kw):
+        try:
+            return func(*args, **kw)
+        except BaseException as e:
+            ql.stop()
+            ql._internal_exception = e
 
-        return wrapper
-
-    return decorator
+    return wrapper
 
 def enum_values(e: Type[Enum]) -> Container:
     return e.__members__.values()
