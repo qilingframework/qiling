@@ -84,11 +84,6 @@ class QlColoredFormatter(QlBaseFormatter):
         return f'{COLOR.GREEN}{s}{COLOR.ENDC}'
 
 class RegexFilter(logging.Filter):
-    def __init__(self, regexp: str):
-        super().__init__()
-
-        self.update_filter(regexp)
-
     def update_filter(self, regexp: str):
         self._filter = re.compile(regexp)
 

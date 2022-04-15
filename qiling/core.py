@@ -452,12 +452,17 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         return '' if lf is None else lf._filter.pattern
 
     @filter.setter
-    def filter(self, regex: str):
-        if self._log_filter is None:
-            self._log_filter = RegexFilter(regex)
+    def filter(self, regex: Optional[str]):
+        if regex is None:
+            if self._log_filter is not None:
+                self.log.removeFilter(self._log_filter)
 
-            self.log.addFilter(self._log_filter)
         else:
+            if self._log_filter is None:
+                self._log_filter = RegexFilter(regex)
+
+                self.log.addFilter(self._log_filter)
+
             self._log_filter.update_filter(regex)
 
     @property
