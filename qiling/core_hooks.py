@@ -317,42 +317,25 @@ class QlCoreHooks:
         return self.ql_hook(UC_HOOK_INSN, callback, user_data, begin, end, arg1)
 
 
-    def hook_del(self, *args):
-        if len(args) != 1 and len(args) != 2:
-            return
+    def hook_del(self, hret: HookRet):
+        h = hret.obj
+        hook_type = hret.type
 
-        if isinstance(args[0], HookRet):
-            args[0].remove()
-            return
+        def __remove(hooks_map, handles_map, key: int) -> None:
+            if key in hooks_map:
+                hooks_list = hooks_map[key]
 
-        hook_type, h = args
+                if h in hooks_list:
+                    hooks_list.remove(h)
 
-        def __handle_common(t: int) -> None:
-            if t in self._hook:
-                if h in self._hook[t]:
-                    del self._hook[t][self._hook[t].index(h)]
+                    if not hooks_list:
+                        uc_handle = handles_map.pop(key)
 
-                    if len(self._hook[t]) == 0:
-                        self._h_uc.hook_del(self._hook_fuc[t])
-                        del self._hook_fuc[t]
+                        self._h_uc.hook_del(uc_handle)
 
-        def __handle_insn(t: int) -> None:
-            if t in self._insn_hook:
-                if h in self._insn_hook[t]:
-                    del self._insn_hook[t][self._insn_hook[t].index(h)]
-
-                    if len(self._insn_hook[t]) == 0:
-                        self._h_uc.hook_del(self._insn_hook_fuc[t])
-                        del self._insn_hook_fuc[t]
-
-        def __handle_addr(t: int) -> None:
-            if t in self._addr_hook:
-                if h in self._addr_hook[t]:
-                    del self._addr_hook[t][self._addr_hook[t].index(h)]
-
-                    if len(self._addr_hook[t]) == 0:
-                        self._h_uc.hook_del(self._addr_hook_fuc[t])
-                        del self._addr_hook_fuc[t]
+        __handle_common = lambda k: __remove(self._hook, self._hook_fuc, k)
+        __handle_insn   = lambda i: __remove(self._insn_hook, self._insn_hook_fuc, i)
+        __handle_addr   = lambda a: __remove(self._addr_hook, self._addr_hook_fuc, a)
 
         type_handlers = (
             (UC_HOOK_INTR,               __handle_common),
