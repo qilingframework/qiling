@@ -64,14 +64,6 @@ class STM32F4xxSdio(QlConnectivityPeripheral):
 
         self.intn = intn
         self.instance = self.struct()
-
-    @QlPeripheral.monitor()
-    def read(self, offset: int, size: int) -> int:
-        if offset == self.struct.RESP1.offset:            
-            if self.has_input():
-                return self.recv_from_user()
-
-        return self.raw_read(offset, size)
     
     @QlPeripheral.monitor()
     def write(self, offset: int, size: int, value: int):
