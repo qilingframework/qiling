@@ -93,7 +93,19 @@ def ql_get_module_function(module_name: str, function_name: str):
 
     return module_function
 
-def ql_elf_parse_emu_env(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], Optional[QL_ENDIAN]]:
+def __emu_env_from_pathname(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], Optional[QL_ENDIAN]]:
+    if os.path.isdir(path) and path.endswith('.kext'):
+        return QL_ARCH.X8664, QL_OS.MACOS, QL_ENDIAN.EL
+
+    if os.path.isfile(path):
+        _, ext = os.path.splitext(path)
+
+        if ext in ('.DOS_COM', '.DOS_MBR', '.DOS_EXE'):
+            return QL_ARCH.A8086, QL_OS.DOS, QL_ENDIAN.EL
+
+    return None, None, None
+
+def __emu_env_from_elf(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], Optional[QL_ENDIAN]]:
     # instead of using full-blown elffile parsing, we perform a simple parsing to avoid
     # external dependencies for target systems that do not need them.
     #
@@ -194,7 +206,7 @@ def ql_elf_parse_emu_env(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS],
 
     return archtype, ostype, archendian
 
-def ql_macho_parse_emu_env(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], Optional[QL_ENDIAN]]:
+def __emu_env_from_macho(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], Optional[QL_ENDIAN]]:
     macho_macos_sig64 = b'\xcf\xfa\xed\xfe'
     macho_macos_sig32 = b'\xce\xfa\xed\xfe'
     macho_macos_fat = b'\xca\xfe\xba\xbe'  # should be header for FAT
@@ -222,8 +234,9 @@ def ql_macho_parse_emu_env(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS
 
     return arch, ostype, endian
 
+def __emu_env_from_pe(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], Optional[QL_ENDIAN]]:
+    import pefile
 
-def ql_pe_parse_emu_env(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], Optional[QL_ENDIAN]]:
     try:
         pe = pefile.PE(path, fast_load=True)
     except:
@@ -261,31 +274,21 @@ def ql_pe_parse_emu_env(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], 
 
     return arch, ostype, archendian
 
-
 def ql_guess_emu_env(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], Optional[QL_ENDIAN]]:
-    arch = None
-    ostype = None
-    endian = None
+    guessing_methods = (
+        __emu_env_from_pathname,
+        __emu_env_from_elf,
+        __emu_env_from_macho,
+        __emu_env_from_pe
+    )
 
-    if os.path.isdir(path) and path.endswith('.kext'):
-        return QL_ARCH.X8664, QL_OS.MACOS, QL_ENDIAN.EL
+    for gm in guessing_methods:
+        arch, ostype, endian = gm(path)
 
-    if os.path.isfile(path) and path.endswith('.DOS_COM'):
-        return QL_ARCH.A8086, QL_OS.DOS, QL_ENDIAN.EL
-
-    if os.path.isfile(path) and path.endswith('.DOS_MBR'):
-        return QL_ARCH.A8086, QL_OS.DOS, QL_ENDIAN.EL
-
-    if os.path.isfile(path) and path.endswith('.DOS_EXE'):
-        return QL_ARCH.A8086, QL_OS.DOS, QL_ENDIAN.EL
-
-    arch, ostype, endian = ql_elf_parse_emu_env(path)
-
-    if arch is None or ostype is None or endian is None:
-        arch, ostype, endian = ql_macho_parse_emu_env(path)
-
-    if arch is None or ostype is None or endian is None:
-        arch, ostype, endian = ql_pe_parse_emu_env(path)
+        if None not in (arch, ostype, endian):
+            break
+    else:
+        arch, ostype, endian = (None, ) * 3
 
     return arch, ostype, endian
 
