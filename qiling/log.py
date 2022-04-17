@@ -8,7 +8,6 @@ import logging
 import os
 import re
 
-from enum import Enum
 from typing import Optional, TextIO
 
 from qiling.const import QL_VERBOSE
@@ -17,7 +16,7 @@ QL_INSTANCE_ID = 114514
 
 FMT_STR = '%(levelname)s\t%(message)s'
 
-class COLOR(Enum):
+class COLOR:
     WHITE   = '\033[37m'
     CRIMSON = '\033[31m'
     RED     = '\033[91m'
