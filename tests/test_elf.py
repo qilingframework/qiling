@@ -496,6 +496,39 @@ class ELFTest(unittest.TestCase):
         del ql
 
 
+    def test_mips32eb_fake_urandom(self):
+        class Fake_urandom(QlFsMappedObject):
+
+            def read(self, size):
+                return b"\x01"
+
+            def fstat(self):
+                return -1
+            
+            def close(self):
+                return 0
+
+        ql = Qiling(["../examples/rootfs/mips32_linux/bin/mips32_fetch_urandom"],  "../examples/rootfs/mips32_linux")
+        ql.add_fs_mapper("/dev/urandom", Fake_urandom())
+
+        ql.exit_code = 0
+        ql.exit_group_code = 0
+
+        def check_exit_group_code(ql, exit_code, *args, **kw):
+            ql.exit_group_code = exit_code
+
+        def check_exit_code(ql, exit_code, *args, **kw):
+            ql.exit_code = exit_code
+
+        ql.os.set_syscall("exit_group", check_exit_group_code, QL_INTERCEPT.ENTER)
+        ql.os.set_syscall("exit", check_exit_code, QL_INTERCEPT.ENTER)
+
+        ql.run()
+        self.assertEqual(0, ql.exit_code)
+        self.assertEqual(0, ql.exit_group_code)
+        del ql
+
+
     def test_elf_onEnter_mips32el(self):
         def my_puts_onenter(ql: Qiling):
             params = ql.os.resolve_fcall_params(ELFTest.PARAMS_PUTS)
