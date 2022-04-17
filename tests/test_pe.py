@@ -110,6 +110,7 @@ class PETest(unittest.TestCase):
         self.assertTrue(QLWinSingleTest(_t).run())
 
 
+    @unittest.skipIf(IS_FAST_TEST, 'fast test')
     def test_pe_win_x86_uselessdisk(self):
         def _t():
             class Fake_Drive(QlFsMappedObject):
@@ -134,12 +135,10 @@ class PETest(unittest.TestCase):
             del ql
             return True
 
-        if IS_FAST_TEST:
-            self.skipTest('QL_FAST_TEST')
-
         self.assertTrue(QLWinSingleTest(_t).run())
 
 
+    @unittest.skipIf(IS_FAST_TEST, 'fast test')
     def test_pe_win_x86_gandcrab(self):
         def _t():
             def stop(ql: Qiling):
@@ -214,9 +213,6 @@ class PETest(unittest.TestCase):
 
             # let's check that gandcrab behave takes a different path if a different environment is found
             return num_syscalls_admin != num_syscalls_user
-
-        if IS_FAST_TEST:
-            self.skipTest('QL_FAST_TEST')
 
         self.assertTrue(QLWinSingleTest(_t).run())
 
@@ -331,6 +327,7 @@ class PETest(unittest.TestCase):
         self.assertTrue(QLWinSingleTest(_t).run())
 
 
+    @unittest.skipIf(IS_FAST_TEST, 'fast test')
     def test_pe_win_x86_wannacry(self):
         def _t():
             def stop(ql):
@@ -344,9 +341,6 @@ class PETest(unittest.TestCase):
             ql.run()
             del ql
             return True
-
-        if IS_FAST_TEST:
-            self.skipTest('QL_FAST_TEST')
 
         self.assertTrue(QLWinSingleTest(_t).run())
 
@@ -363,6 +357,7 @@ class PETest(unittest.TestCase):
         self.assertTrue(QLWinSingleTest(_t).run())
 
 
+    @unittest.skipIf(IS_FAST_TEST, 'fast test')
     def test_pe_win_al_khaser(self):
         def _t():
             ql = Qiling(["../examples/rootfs/x86_windows/bin/al-khaser.bin"], "../examples/rootfs/x86_windows")
@@ -391,9 +386,6 @@ class PETest(unittest.TestCase):
             ql.run()
             del ql
             return True
-
-        if IS_FAST_TEST:
-            self.skipTest('QL_FAST_TEST')
 
         self.assertTrue(QLWinSingleTest(_t).run())
 

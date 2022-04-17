@@ -13,10 +13,8 @@ from qiling.os.filestruct import ql_file
 
 class ELFTest(unittest.TestCase):
 
+    @unittest.skipIf(platform.system() == "Darwin" and platform.machine() == "arm64", 'darwin host')
     def test_elf_linux_execve_x8664(self):
-        if platform.system() == "Darwin" and platform.machine() == "arm64":
-            return
-        
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/posix_syscall_execve"],  "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG)   
         ql.run()
 
