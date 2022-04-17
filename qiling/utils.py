@@ -30,7 +30,7 @@ if TYPE_CHECKING:
 T = TypeVar('T')
 QlClassInit = Callable[['Qiling'], T]
 
-def catch_KeyboardInterrupt(ql, func):
+def catch_KeyboardInterrupt(ql: 'Qiling', func: Callable):
     def wrapper(*args, **kw):
         try:
             return func(*args, **kw)
@@ -83,6 +83,16 @@ def ql_get_module_function(module_name: str, function_name: str):
         raise QlErrorModuleFunctionNotFound(f'Unable to import {function_name} from {imp_module}')
 
     return module_function
+
+# This function is extracted from os_setup (QlOsPosix) so I put it here.
+def ql_syscall_mapping_function(ostype: QL_OS, archtype: QL_ARCH):
+    qlos_name = ostype.name
+    qlos_path = f'qiling.os.{qlos_name.lower()}.map_syscall'
+    qlos_func = 'get_syscall_mapper'
+
+    func = ql_get_module_function(qlos_path, qlos_func)
+
+    return func(archtype)
 
 def __emu_env_from_pathname(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], Optional[QL_ENDIAN]]:
     if os.path.isdir(path) and path.endswith('.kext'):
@@ -379,16 +389,6 @@ def select_arch(archtype: QL_ARCH, endian: QL_ENDIAN, thumb: bool) -> QlClassIni
     obj = ql_get_module_function(qlarch_path, qlarch_class)
 
     return partial(obj, **kwargs)
-
-# This function is extracted from os_setup (QlOsPosix) so I put it here.
-def ql_syscall_mapping_function(ostype: QL_OS, archtype: QL_ARCH):
-    qlos_name = ostype.name
-    qlos_path = f'qiling.os.{qlos_name.lower()}.map_syscall'
-    qlos_func = 'get_syscall_mapper'
-
-    func = ql_get_module_function(qlos_path, qlos_func)
-
-    return func(archtype)
 
 def select_os(ostype: QL_OS) -> QlClassInit['QlOs']:
     qlos_name = ostype.name
