@@ -10,7 +10,7 @@ from typing import Callable
 
 from qiling import Qiling
 from qiling.const import QL_OS, QL_ARCH, QL_ENDIAN
-from qiling.os.posix.const import NR_OPEN, EBADF, AT_FDCWD
+from qiling.os.posix.const import NR_OPEN, EBADF, ENOENT, AT_FDCWD, AT_EMPTY_PATH
 from qiling.os.posix.stat import Stat, Lstat
 
 # Caveat: Never use types like ctypes.c_long whose size differs across platforms.
@@ -1083,7 +1083,7 @@ def statFamily(ql: Qiling, path: int, ptr: int, name: str, stat_func, struct_fun
         ql.log.debug(f'{name}("{file_path}", {ptr:#x}) write completed')
         return regreturn
 
-def transform_path(ql: Qiling, dirfd: int, path: int):
+def transform_path(ql: Qiling, dirfd: int, path: int, flags: int = 0):
     """
     An absolute pathname
         If pathname begins with a slash, then it is an absolute pathname that identifies the target file.  
@@ -1111,9 +1111,12 @@ def transform_path(ql: Qiling, dirfd: int, path: int):
     if dirfd == AT_FDCWD:
         return None, ql.os.path.transform_to_real_path(path)
 
+    if len(path) == 0 and flags & AT_EMPTY_PATH:
+        return None, ql.os.fd[dirfd].name
+
     if 0 < dirfd < NR_OPEN:
         return ql.os.fd[dirfd].fileno(), path
-    
+
 
 def ql_syscall_chmod(ql: Qiling, filename: int, mode: int):
     ql.log.debug(f'chmod("{ql.os.utils.read_cstring(filename)}", {mode:d}) = 0')
@@ -1126,28 +1129,28 @@ def ql_syscall_fchmod(ql: Qiling, fd: int, mode: int):
 
     return 0
 
-def ql_syscall_fstatat64(ql: Qiling, dirfd: int, path: int, buf_ptr: int, flag: int):
-    dirfd, real_path = transform_path(ql, dirfd, path)
+def ql_syscall_fstatat64(ql: Qiling, dirfd: int, path: int, buf_ptr: int, flags: int):
+    dirfd, real_path = transform_path(ql, dirfd, path, flags)
 
-    if os.path.exists(real_path):
+    try:
         buf = pack_stat64_struct(ql, Stat(real_path, dirfd))
         ql.mem.write(buf_ptr, buf)
 
         regreturn = 0
-    else:
+    except:
         regreturn = -1
 
     return regreturn
 
-def ql_syscall_newfstatat(ql: Qiling, dirfd: int, path: int, buf_ptr: int, flag: int):
-    dirfd, real_path = transform_path(ql, dirfd, path)
-    
-    if os.path.exists(real_path):
+def ql_syscall_newfstatat(ql: Qiling, dirfd: int, path: int, buf_ptr: int, flags: int):
+    dirfd, real_path = transform_path(ql, dirfd, path, flags)
+
+    try:
         buf = pack_stat_struct(ql, Stat(real_path, dirfd))
         ql.mem.write(buf_ptr, buf)
 
         regreturn = 0
-    else:
+    except:
         regreturn = -1
 
     return regreturn
@@ -1296,13 +1299,10 @@ def ql_syscall_statx(ql: Qiling, dirfd: int, path: int, flags: int, mask: int, b
     def minor(dev):
         return (dev & 0xff) | ((dev >> 12) & ~0xff)
 
-    fd, real_path = transform_path(ql, dirfd, path)
+    fd, real_path = transform_path(ql, dirfd, path, flags)
     
     try:
-        if len(real_path) == 0:
-            st = ql.os.fd[dirfd].fstat()
-        else:
-            st = Stat(real_path, fd)
+        st = Stat(real_path, fd)
         
         if ql.arch.bits == 32:
             Statx = Statx32
@@ -1346,7 +1346,7 @@ def ql_syscall_lstat64(ql: Qiling, path: int, buf_ptr: int):
 
 
 def ql_syscall_mknodat(ql: Qiling, dirfd: int, path: int, mode: int, dev: int):
-    dirfd, real_path = transform_path(ql, dirfd, path)    
+    dirfd, real_path = transform_path(ql, dirfd, path)
 
     try:
         os.mknod(real_path, mode, dev, dir_fd=dirfd)
