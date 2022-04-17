@@ -1037,6 +1037,16 @@ class ELFTest(unittest.TestCase):
 
         del ql
 
+    def test_elf_linux_armeb(self):     
+        ql = Qiling(["../examples/rootfs/armeb_linux/bin/armeb_hello"], "../examples/rootfs/armeb_linux", verbose=QL_VERBOSE.DEBUG, profile='profiles/append_test.ql')
+        ql.run()
+        del ql
+
+    def test_elf_linux_armeb_static(self):     
+        ql = Qiling(["../examples/rootfs/armeb_linux/bin/armeb_hello_static"], "../examples/rootfs/armeb_linux", verbose=QL_VERBOSE.DEFAULT)
+        ql.run()
+        del ql
+
     # TODO: Disable for now
     # def test_armoabi_eb_linux_syscall_elf_static(self):
     #     # src: https://github.com/qilingframework/qiling/blob/1f1e9bc756e59a0bfc112d32735f8882b1afc165/examples/src/linux/posix_syscall.c
