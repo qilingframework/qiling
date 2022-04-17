@@ -153,7 +153,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         if endian is None:
             endian = QL_ENDIAN.EL
 
-        self._arch = arch_setup(archtype, endian, thumb, self)
+        self._arch = select_arch(archtype, endian, thumb)(self)
 
         self.uc = self.arch.uc
 
@@ -173,19 +173,23 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         ###########
         # Profile #
         ###########
-        self._profile = profile_setup(self, ostype, profile)
+        self.log.debug(f'Profile: {profile or "default"}')
+        self._profile = profile_setup(ostype, profile)
 
         ##########
         # Loader #
         ##########
-        self._loader = loader_setup(self, ostype, libcache)
+        self._loader = select_loader(ostype, libcache)(self)
 
         ##############
         # Components #
         ##############
         if not self.interpreter:
-            self._mem = component_setup("os", "memory", self)
-            self._os = os_setup(ostype, self)
+            self._mem = select_component('os', 'memory')(self)
+            self._os = select_os(ostype)(self)
+
+        if self.baremetal:
+            self._hw = select_component('hw', 'hw')(self)
 
         # Run the loader
         self.loader.run()
@@ -554,7 +558,10 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             return self.arch.run(code)
 
         # init debugger (if set)
-        debugger = debugger_setup(self._debugger, self)
+        debugger = select_debugger(self._debugger)
+
+        if debugger:
+            debugger = debugger(self)
 
         # patch binary
         self.do_bin_patch()
