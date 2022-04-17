@@ -3,16 +3,15 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from configparser import ConfigParser
 import os, pickle
 
 # See https://stackoverflow.com/questions/39740632/python-type-hinting-without-cyclic-imports
 from typing import AnyStr, List, Mapping, MutableMapping, Sequence, Union
 from typing import TYPE_CHECKING
-
-from unicorn.unicorn import Uc
+from configparser import ConfigParser
 
 if TYPE_CHECKING:
+    from unicorn.unicorn import Uc
     from logging import Logger
     from .arch.arch import QlArch
     from .os.os import QlOs
@@ -142,14 +141,14 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
         # arch should have been determined by now; fail if not
         if type(archtype) is not QL_ARCH:
-            raise QlErrorArch(f'Uknown or unsupported architecture: "{archtype}"')
+            raise QlErrorArch(f'Unknown or unsupported architecture: "{archtype}"')
 
         # os should have been determined by now; fail if not
         if type(ostype) is not QL_OS:
             raise QlErrorOsType(f'Unknown or unsupported operating system: "{ostype}"')
 
         # if endianess is still undetermined, set it to little-endian.
-        # this setting is ignored for architectures with predfined endianess
+        # this setting is ignored for architectures with predefined endianess
         if endian is None:
             endian = QL_ENDIAN.EL
 
@@ -193,7 +192,8 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
         # Run the loader
         self.loader.run()
-        self._init_stop_guard()    
+
+        self._init_stop_guard()
 
     #####################
     # Qiling Components #
@@ -373,8 +373,8 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         Values:
             `QL_VERBOSE.DISABLED`: turn off logging
             `QL_VERBOSE.OFF`     : mask off anything below warnings, errors and critical severity
-            `QL_VERBOSE.DEFAULT` : info logging level: default verbosity
-            `QL_VERBOSE.DEBUG`   : debug logging level: higher verbosity
+            `QL_VERBOSE.DEFAULT` : info logging level; default verbosity
+            `QL_VERBOSE.DEBUG`   : debug logging level; higher verbosity
             `QL_VERBOSE.DISASM`  : debug verbosity along with disassembly trace (slow!)
             `QL_VERBOSE.DUMP`    : disassembly trace along with cpu context dump
         """
@@ -465,15 +465,15 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             self._log_filter.update_filter(regex)
 
     @property
-    def uc(self) -> Uc:
+    def uc(self) -> 'Uc':
         """ Raw uc instance.
 
-            Type: Ucgit
+            Type: Uc
         """
         return self._uc
 
     @uc.setter
-    def uc(self, u):
+    def uc(self, u: 'Uc'):
         self._uc = u
 
     @property
