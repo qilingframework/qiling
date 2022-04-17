@@ -12,13 +12,23 @@ from functools import partial
 import importlib, os
 
 from configparser import ConfigParser
-from typing import Any, Mapping, Optional, Tuple, Type, Union
+from typing import TYPE_CHECKING, Any, Callable, Mapping, Optional, Tuple, TypeVar, Union
 
 from unicorn import UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
 
 from qiling.exception import *
 from qiling.const import QL_ARCH, QL_ENDIAN, QL_OS, QL_DEBUGGER
 from qiling.const import debugger_map, arch_map, os_map, arch_os_map
+
+if TYPE_CHECKING:
+    from qiling import Qiling
+    from qiling.arch.arch import QlArch
+    from qiling.debugger.debugger import QlDebugger
+    from qiling.loader.loader import QlLoader
+    from qiling.os.os import QlOs
+
+T = TypeVar('T')
+QlClassInit = Callable[['Qiling'], T]
 
 def catch_KeyboardInterrupt(ql, func):
     def wrapper(*args, **kw):
@@ -273,9 +283,12 @@ def ql_guess_emu_env(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], Opt
 
     return arch, ostype, endian
 
+def select_loader(ostype: QL_OS, libcache: bool) -> QlClassInit['QlLoader']:
+    if ostype == QL_OS.WINDOWS:
+        kwargs = {'libcache' : libcache}
 
-def loader_setup(ql, ostype: QL_OS, libcache: bool):
-    args = [libcache] if ostype == QL_OS.WINDOWS else []
+    else:
+        kwargs = {}
 
     module = {
         QL_OS.LINUX   : r'elf',
@@ -295,45 +308,57 @@ def loader_setup(ql, ostype: QL_OS, libcache: bool):
 
     obj = ql_get_module_function(qlloader_path, qlloader_class)
 
-    return obj(ql, *args)
+    return partial(obj, **kwargs)
 
-
-def component_setup(component_type: str, component_name: str, ql):
+def select_component(component_type: str, component_name: str, **kwargs) -> QlClassInit[Any]:
     component_path = f'qiling.{component_type}.{component_name}'
     component_class = f'Ql{component_name.capitalize()}Manager'
 
     obj = ql_get_module_function(component_path, component_class)
 
-    return obj(ql)
+    return partial(obj, **kwargs)
 
-
-def debugger_setup(options: Union[str, bool], ql):
+def select_debugger(options: Union[str, bool]) -> Optional[QlClassInit['QlDebugger']]:
     if options is True:
         options = 'gdb'
 
     if type(options) is str:
         objname, *args = options.split(':')
+        dbgtype = debugger_convert(objname)
 
-        if debugger_convert(objname) not in enum_values(QL_DEBUGGER):
+        if dbgtype == QL_DEBUGGER.GDB:
+            kwargs = dict(zip(('ip', 'port'), args))
+
+        elif dbgtype == QL_DEBUGGER.QDB:
+            kwargs = {}
+
+            if 'rr' in args:
+                kwargs['rr'] = True
+                args.remove('rr')
+
+            if args:
+                kwargs['init_hook'] = args[0]
+
+        else:
             raise QlErrorOutput('Debugger not supported')
 
         obj = ql_get_module_function(f'qiling.debugger.{objname}.{objname}', f'Ql{str.capitalize(objname)}')
 
-        return obj(ql, *args)
+        return partial(obj, **kwargs)
 
     return None
 
-def arch_setup(archtype: QL_ARCH, endian: QL_ENDIAN, thumb: bool, ql):
+def select_arch(archtype: QL_ARCH, endian: QL_ENDIAN, thumb: bool) -> QlClassInit['QlArch']:
     # set endianess and thumb mode for arm-based archs
     if archtype == QL_ARCH.ARM:
-        args = [endian, thumb]
+        kwargs = {'endian' : endian, 'thumb' : thumb}
 
     # set endianess for mips arch
     elif archtype == QL_ARCH.MIPS:
-        args = [endian]
+        kwargs = {'endian' : endian}
 
     else:
-        args = []
+        kwargs = {}
 
     module = {
         QL_ARCH.A8086    : r'x86',
@@ -353,8 +378,7 @@ def arch_setup(archtype: QL_ARCH, endian: QL_ENDIAN, thumb: bool, ql):
 
     obj = ql_get_module_function(qlarch_path, qlarch_class)
 
-    return obj(ql, *args)
-
+    return partial(obj, **kwargs)
 
 # This function is extracted from os_setup (QlOsPosix) so I put it here.
 def ql_syscall_mapping_function(ostype: QL_OS, archtype: QL_ARCH):
@@ -366,20 +390,16 @@ def ql_syscall_mapping_function(ostype: QL_OS, archtype: QL_ARCH):
 
     return func(archtype)
 
-
-def os_setup(ostype: QL_OS, ql):
-    qlos_name = ostype_convert_str(ostype)
+def select_os(ostype: QL_OS) -> QlClassInit['QlOs']:
+    qlos_name = ostype.name
     qlos_path = f'qiling.os.{qlos_name.lower()}.{qlos_name.lower()}'
     qlos_class = f'QlOs{qlos_name.capitalize()}'
 
     obj = ql_get_module_function(qlos_path, qlos_class)
 
-    return obj(ql)
+    return partial(obj)
 
-
-def profile_setup(ql, ostype: QL_OS, filename: Optional[str]):
-    ql.log.debug(f'Profile: {filename or "default"}')
-
+def profile_setup(ostype: QL_OS, filename: Optional[str]):
     # mcu uses a yaml-based config
     if ostype == QL_OS.MCU:
         import yaml

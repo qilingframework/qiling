@@ -9,7 +9,6 @@ from elftools.elf.elffile import ELFFile
 
 from qiling.const import *
 from qiling.core import Qiling
-from qiling.utils import component_setup
 from .loader import QlLoader
 
 
@@ -62,8 +61,6 @@ class QlLoaderMCU(QlLoader):
         self.load_address = 0
         self.filetype = self.guess_filetype()
         
-        self.ql._hw = component_setup("hw", "hw", self.ql)
-
         if self.filetype == 'elf':
             with open(self.ql.path, 'rb') as infile:
                 self.elf = ELFFile(io.BytesIO(infile.read()))
