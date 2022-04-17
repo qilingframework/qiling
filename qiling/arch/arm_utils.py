@@ -6,7 +6,7 @@
 from qiling import Qiling
 from qiling.const import QL_ENDIAN
 
-def init_linux_traps(ql: Qiling, address_map: dict[str, int]) -> None:
+def init_linux_traps(ql: Qiling, address_map) -> None:
     # If the compiler for the target does not provides some primitives for some
     # reasons (e.g. target limitations), the kernel is responsible to assist
     # with these operations.
