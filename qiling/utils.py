@@ -9,7 +9,7 @@ thoughout the qiling framework
 """
 
 from functools import partial
-import importlib, os, pefile, yaml
+import importlib, os
 
 from configparser import ConfigParser
 from typing import Any, Mapping, Optional, Tuple, Type, Union
@@ -382,6 +382,8 @@ def profile_setup(ql, ostype: QL_OS, filename: Optional[str]):
 
     # mcu uses a yaml-based config
     if ostype == QL_OS.MCU:
+        import yaml
+
         if filename:
             with open(filename) as f:
                 config = yaml.load(f, Loader=yaml.Loader)
