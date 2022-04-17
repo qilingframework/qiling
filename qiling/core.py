@@ -122,7 +122,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             archtype = arch_convert(archtype)
 
         if type(ostype) is str:
-            ostype = ostype_convert(ostype)
+            ostype = os_convert(ostype)
 
         # if provided arch was invalid or not provided, guess arch and os
         if archtype is None:
@@ -141,22 +141,17 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             ostype = arch_os_convert(archtype)
 
         # arch should have been determined by now; fail if not
-        if archtype is None or not ql_is_valid_arch(archtype):
+        if type(archtype) is not QL_ARCH:
             raise QlErrorArch(f'Uknown or unsupported architecture: "{archtype}"')
 
         # os should have been determined by now; fail if not
-        if ostype is None or not ql_is_valid_ostype(ostype):
+        if type(ostype) is not QL_OS:
             raise QlErrorOsType(f'Unknown or unsupported operating system: "{ostype}"')
 
         # if endianess is still undetermined, set it to little-endian.
         # this setting is ignored for architectures with predfined endianess
         if endian is None:
             endian = QL_ENDIAN.EL
-
-        # make sure args were canonicalized successfully
-        assert type(archtype) is QL_ARCH
-        assert type(ostype) is QL_OS
-        assert type(endian) is QL_ENDIAN
 
         self._arch = arch_setup(archtype, endian, thumb, self)
 
