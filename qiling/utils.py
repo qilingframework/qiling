@@ -12,8 +12,7 @@ from functools import partial
 import importlib, os, pefile, yaml
 
 from configparser import ConfigParser
-from typing import Any, Container, Optional, Tuple, Type, Union
-from enum import Enum
+from typing import Any, Mapping, Optional, Tuple, Type, Union
 
 from unicorn import UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
 
@@ -31,49 +30,31 @@ def catch_KeyboardInterrupt(ql, func):
 
     return wrapper
 
-def enum_values(e: Type[Enum]) -> Container:
-    return e.__members__.values()
+def __name_to_enum(name: str, mapping: Mapping[str, T], aliases: Mapping[str, str] = {}) -> Optional[T]:
+    key = name.casefold()
 
-def ql_is_valid_ostype(ostype: QL_OS) -> bool:
-    return ostype in enum_values(QL_OS)
+    return mapping.get(aliases.get(key) or key)
 
-def ql_is_valid_arch(arch: QL_ARCH) -> bool:
-    return arch in enum_values(QL_ARCH)
-
-def __value_to_key(e: Type[Enum], val: Any) -> Optional[str]:
-    key = e._value2member_map_[val]
-
-    return None if key is None else key.name
-
-def ostype_convert_str(ostype: QL_OS) -> Optional[str]:
-    return __value_to_key(QL_OS, ostype)
-
-def ostype_convert(ostype: str) -> Optional[QL_OS]:
+def os_convert(os: str) -> Optional[QL_OS]:
     alias_map = {
-        "darwin": "macos",
+        'darwin' : 'macos'
     }
 
-    return os_map.get(alias_map.get(ostype, ostype))
-
-def arch_convert_str(arch: QL_ARCH) -> Optional[str]:
-    return __value_to_key(QL_ARCH, arch)
+    return __name_to_enum(os, os_map, alias_map)
 
 def arch_convert(arch: str) -> Optional[QL_ARCH]:
     alias_map = {
-        "x86_64": "x8664",
-        "riscv32": "riscv",
+        'x86_64'  : 'x8664',
+        'riscv32' : 'riscv'
     }
-    
-    return arch_map.get(alias_map.get(arch, arch))
+
+    return __name_to_enum(arch, arch_map, alias_map)
+
+def debugger_convert(debugger: str) -> Optional[QL_DEBUGGER]:
+    return __name_to_enum(debugger, debugger_map)
 
 def arch_os_convert(arch: QL_ARCH) -> Optional[QL_OS]:
     return arch_os_map.get(arch)
-
-def debugger_convert(debugger: str) -> Optional[QL_DEBUGGER]:
-    return debugger_map.get(debugger)
-
-def debugger_convert_str(debugger_id: QL_DEBUGGER) -> Optional[str]:
-    return __value_to_key(QL_DEBUGGER, debugger_id)
 
 # Call `function_name` in `module_name`.
 # e.g. map_syscall in qiling.os.linux.map_syscall
@@ -368,7 +349,7 @@ def arch_setup(archtype: QL_ARCH, endian: QL_ENDIAN, thumb: bool, ql):
     }[archtype]
 
     qlarch_path = f'qiling.arch.{module}'
-    qlarch_class = f'QlArch{arch_convert_str(archtype).upper()}'
+    qlarch_class = f'QlArch{archtype.name.upper()}'
 
     obj = ql_get_module_function(qlarch_path, qlarch_class)
 
@@ -377,7 +358,7 @@ def arch_setup(archtype: QL_ARCH, endian: QL_ENDIAN, thumb: bool, ql):
 
 # This function is extracted from os_setup (QlOsPosix) so I put it here.
 def ql_syscall_mapping_function(ostype: QL_OS, archtype: QL_ARCH):
-    qlos_name = ostype_convert_str(ostype)
+    qlos_name = ostype.name
     qlos_path = f'qiling.os.{qlos_name.lower()}.map_syscall'
     qlos_func = 'get_syscall_mapper'
 
@@ -409,7 +390,7 @@ def profile_setup(ql, ostype: QL_OS, filename: Optional[str]):
 
     else:
         qiling_home = os.path.dirname(os.path.abspath(__file__))
-        os_profile = os.path.join(qiling_home, 'profiles', f'{ostype_convert_str(ostype).lower()}.ql')
+        os_profile = os.path.join(qiling_home, 'profiles', f'{ostype.name.lower()}.ql')
 
         profiles = [os_profile]
 

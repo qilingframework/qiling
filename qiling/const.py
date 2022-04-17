@@ -4,7 +4,7 @@
 #
 
 from enum import Enum, Flag, IntEnum
-from typing import Any, Mapping, Type
+from typing import Mapping, Type, TypeVar
 
 class QL_ENDIAN(IntEnum):
     EL = 1
@@ -66,16 +66,17 @@ QL_OS_BAREMETAL   = (QL_OS.MCU,)
 QL_HOOK_BLOCK = 0b0001
 QL_CALL_BLOCK = 0b0010
 
-def __reverse_enum(e: Type[Enum]) -> Mapping[str, Any]:
-    '''Create a reverse mapping for an enum.
+T = TypeVar('T', bound=Enum)
+def __casefold_enum(e: Type[T]) -> Mapping[str, T]:
+    '''Create a casefolded mapping of an enum to allow case-insensitive lookup.
     '''
 
-    return dict((v.name.lower(), v) for v in e.__members__.values())
+    return dict((k.casefold(), v) for k, v in e._member_map_.items())
 
-debugger_map: Mapping[str, QL_DEBUGGER] = __reverse_enum(QL_DEBUGGER)
-arch_map    : Mapping[str, QL_ARCH]     = __reverse_enum(QL_ARCH)
-os_map      : Mapping[str, QL_OS]       = __reverse_enum(QL_OS)
-verbose_map : Mapping[str, QL_VERBOSE]  = __reverse_enum(QL_VERBOSE)
+debugger_map = __casefold_enum(QL_DEBUGGER)
+arch_map     = __casefold_enum(QL_ARCH)
+os_map       = __casefold_enum(QL_OS)
+verbose_map  = __casefold_enum(QL_VERBOSE)
 
 arch_os_map = {
     QL_ARCH.EVM      : QL_OS.EVM,

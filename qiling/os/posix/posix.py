@@ -18,7 +18,7 @@ from qiling.const import QL_ARCH, QL_OS, QL_INTERCEPT
 from qiling.exception import QlErrorSyscallNotFound
 from qiling.os.os import QlOs
 from qiling.os.posix.const import errors
-from qiling.utils import ostype_convert_str, ql_get_module_function, ql_syscall_mapping_function
+from qiling.utils import ql_get_module_function, ql_syscall_mapping_function
 
 from qiling.os.posix.syscall import *
 from qiling.os.linux.syscall import *
@@ -231,7 +231,7 @@ class QlOsPosix(QlOs):
             def __get_os_module(osname: str):
                 return ql_get_module_function(f'qiling.os.{osname.lower()}', 'syscall')
 
-            os_syscalls = __get_os_module(ostype_convert_str(self.type))
+            os_syscalls = __get_os_module(self.type.name)
             posix_syscalls = __get_os_module('posix')
 
             # look in os-specific and posix syscall hooks

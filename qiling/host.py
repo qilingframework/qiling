@@ -21,7 +21,7 @@ class QlHost:
 
         system = platform.system()
 
-        return utils.ostype_convert(system.lower())
+        return utils.os_convert(system)
 
     @cached_property
     def arch(self) -> Optional[QL_ARCH]:
@@ -30,4 +30,4 @@ class QlHost:
 
         machine = platform.machine()
 
-        return utils.arch_convert(machine.lower())
+        return utils.arch_convert(machine)
