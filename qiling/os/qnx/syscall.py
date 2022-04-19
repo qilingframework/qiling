@@ -198,7 +198,7 @@ def _msg_sendv(ql:Qiling, coid, smsg, sparts, rmsg, rparts, *args, **kw):
         type_ = ql.unpack16(sbody[:2])
 
         msg_name = map_msgtype(ql, type_)
-        _msg_handler = ql_get_module_function(f"qiling.os.qnx", "message")
+        _msg_handler = ql_get_module_function(f".os.qnx", "message")
 
         if msg_name in dir(_msg_handler):
             msg_hook = eval(msg_name)

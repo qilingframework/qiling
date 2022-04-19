@@ -71,7 +71,7 @@ def arch_os_convert(arch: QL_ARCH) -> Optional[QL_OS]:
 def ql_get_module_function(module_name: str, function_name: str):
 
     try:
-        imp_module = importlib.import_module(module_name)
+        imp_module = importlib.import_module(module_name, 'qiling')
     except ModuleNotFoundError:
         raise QlErrorModuleNotFound(f'Unable to import module {module_name}')
     except KeyError:
@@ -313,7 +313,7 @@ def select_loader(ostype: QL_OS, libcache: bool) -> QlClassInit['QlLoader']:
         QL_OS.BLOB    : r'blob'
     }[ostype]
 
-    qlloader_path = f'qiling.loader.{module}'
+    qlloader_path = f'.loader.{module}'
     qlloader_class = f'QlLoader{module.upper()}'
 
     obj = ql_get_module_function(qlloader_path, qlloader_class)
@@ -321,7 +321,7 @@ def select_loader(ostype: QL_OS, libcache: bool) -> QlClassInit['QlLoader']:
     return partial(obj, **kwargs)
 
 def select_component(component_type: str, component_name: str, **kwargs) -> QlClassInit[Any]:
-    component_path = f'qiling.{component_type}.{component_name}'
+    component_path = f'.{component_type}.{component_name}'
     component_class = f'Ql{component_name.capitalize()}Manager'
 
     obj = ql_get_module_function(component_path, component_class)
@@ -352,7 +352,7 @@ def select_debugger(options: Union[str, bool]) -> Optional[QlClassInit['QlDebugg
         else:
             raise QlErrorOutput('Debugger not supported')
 
-        obj = ql_get_module_function(f'qiling.debugger.{objname}.{objname}', f'Ql{str.capitalize(objname)}')
+        obj = ql_get_module_function(f'.debugger.{objname}.{objname}', f'Ql{str.capitalize(objname)}')
 
         return partial(obj, **kwargs)
 
@@ -383,7 +383,7 @@ def select_arch(archtype: QL_ARCH, endian: QL_ENDIAN, thumb: bool) -> QlClassIni
         QL_ARCH.RISCV64  : r'riscv64'
     }[archtype]
 
-    qlarch_path = f'qiling.arch.{module}'
+    qlarch_path = f'.arch.{module}'
     qlarch_class = f'QlArch{archtype.name.upper()}'
 
     obj = ql_get_module_function(qlarch_path, qlarch_class)
@@ -392,7 +392,7 @@ def select_arch(archtype: QL_ARCH, endian: QL_ENDIAN, thumb: bool) -> QlClassIni
 
 def select_os(ostype: QL_OS) -> QlClassInit['QlOs']:
     qlos_name = ostype.name
-    qlos_path = f'qiling.os.{qlos_name.lower()}.{qlos_name.lower()}'
+    qlos_path = f'.os.{qlos_name.lower()}.{qlos_name.lower()}'
     qlos_class = f'QlOs{qlos_name.capitalize()}'
 
     obj = ql_get_module_function(qlos_path, qlos_class)
