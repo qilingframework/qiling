@@ -42,7 +42,7 @@ class QlIntel32(QlIntelBaseCC):
 	def getNumSlots(argbits: int) -> int:
 		return max(argbits, 32) // 32
 
-	def getRawParam(self, slot: int, nbits: int = None) -> int:
+	def getRawParam(self, slot: int, nbits: int = 0) -> int:
 		__super_getparam = super().getRawParam
 
 		if nbits == 64:
