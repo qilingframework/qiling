@@ -7,9 +7,17 @@ from inspect import signature, Parameter
 from typing import TextIO, Union, Callable, IO, List, Optional
 
 from unicorn.arm64_const import UC_ARM64_REG_X8, UC_ARM64_REG_X16
-from unicorn.arm_const import UC_ARM_REG_R7
+from unicorn.arm_const import (
+    UC_ARM_REG_R0, UC_ARM_REG_R1, UC_ARM_REG_R2, UC_ARM_REG_R3,
+    UC_ARM_REG_R4, UC_ARM_REG_R5, UC_ARM_REG_R7, UC_ARM_REG_R12
+)
 from unicorn.mips_const import UC_MIPS_REG_V0
-from unicorn.x86_const import UC_X86_REG_EAX, UC_X86_REG_RAX
+from unicorn.x86_const import (
+    UC_X86_REG_EAX, UC_X86_REG_EBX, UC_X86_REG_ECX, UC_X86_REG_EDX,
+    UC_X86_REG_ESI, UC_X86_REG_EDI, UC_X86_REG_EBP, UC_X86_REG_RDI,
+    UC_X86_REG_RSI, UC_X86_REG_RDX, UC_X86_REG_R10, UC_X86_REG_R8,
+    UC_X86_REG_R9, UC_X86_REG_RAX
+)
 from unicorn.riscv_const import UC_RISCV_REG_A7
 
 from qiling import Qiling
@@ -17,14 +25,8 @@ from qiling.cc import QlCC, intel, arm, mips, riscv
 from qiling.const import QL_ARCH, QL_OS, QL_INTERCEPT
 from qiling.exception import QlErrorSyscallNotFound
 from qiling.os.os import QlOs
-from qiling.os.posix.const import errors
+from qiling.os.posix.const import NR_OPEN, errors
 from qiling.utils import ql_get_module_function, ql_syscall_mapping_function
-
-from qiling.os.posix.syscall import *
-from qiling.os.linux.syscall import *
-from qiling.os.macos.syscall import *
-from qiling.os.freebsd.syscall import *
-from qiling.os.qnx.syscall import *
 
 SYSCALL_PREF: str = f'ql_syscall_'
 
