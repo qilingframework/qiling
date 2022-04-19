@@ -26,7 +26,7 @@ from qiling.const import QL_ARCH, QL_OS, QL_INTERCEPT
 from qiling.exception import QlErrorSyscallNotFound
 from qiling.os.os import QlOs
 from qiling.os.posix.const import NR_OPEN, errors
-from qiling.utils import ql_get_module_function, ql_syscall_mapping_function
+from qiling.utils import ql_get_module_function
 
 SYSCALL_PREF: str = f'ql_syscall_'
 
@@ -137,7 +137,7 @@ class QlOsPosix(QlOs):
         }[self.ql.arch.type](self.ql.arch)
 
         # select syscall mapping function based on emulated OS and architecture
-        self.syscall_mapper = ql_syscall_mapping_function(self.type, self.ql.arch.type)
+        self.syscall_mapper = self.__get_syscall_mapper(self.ql.arch.type)
 
         self._fd = QlFileDes()
 
@@ -149,6 +149,14 @@ class QlOsPosix(QlOs):
         self.stderr = self._stderr
 
         self._shms = {}
+
+    def __get_syscall_mapper(self, archtype: QL_ARCH):
+        qlos_path = f'.os.{self.type.name.lower()}.map_syscall'
+        qlos_func = 'get_syscall_mapper'
+
+        func = ql_get_module_function(qlos_path, qlos_func)
+
+        return func(archtype)
 
     @QlOs.stdin.setter
     def stdin(self, stream: TextIO) -> None:

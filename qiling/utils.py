@@ -84,15 +84,6 @@ def ql_get_module_function(module_name: str, function_name: str):
 
     return module_function
 
-# This function is extracted from os_setup (QlOsPosix) so I put it here.
-def ql_syscall_mapping_function(ostype: QL_OS, archtype: QL_ARCH):
-    qlos_name = ostype.name
-    qlos_path = f'qiling.os.{qlos_name.lower()}.map_syscall'
-    qlos_func = 'get_syscall_mapper'
-
-    func = ql_get_module_function(qlos_path, qlos_func)
-
-    return func(archtype)
 
 def __emu_env_from_pathname(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], Optional[QL_ENDIAN]]:
     if os.path.isdir(path) and path.endswith('.kext'):
