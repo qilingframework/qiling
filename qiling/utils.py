@@ -12,6 +12,7 @@ from functools import partial
 import importlib, os
 
 from configparser import ConfigParser
+from types import ModuleType
 from typing import TYPE_CHECKING, Any, Callable, Mapping, Optional, Tuple, TypeVar, Union
 
 from unicorn import UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
@@ -66,24 +67,23 @@ def debugger_convert(debugger: str) -> Optional[QL_DEBUGGER]:
 def arch_os_convert(arch: QL_ARCH) -> Optional[QL_OS]:
     return arch_os_map.get(arch)
 
-# Call `function_name` in `module_name`.
-# e.g. map_syscall in qiling.os.linux.map_syscall
-def ql_get_module_function(module_name: str, function_name: str):
-
+def ql_get_module(module_name: str) -> ModuleType:
     try:
-        imp_module = importlib.import_module(module_name, 'qiling')
-    except ModuleNotFoundError:
-        raise QlErrorModuleNotFound(f'Unable to import module {module_name}')
-    except KeyError:
+        module = importlib.import_module(module_name, 'qiling')
+    except (ModuleNotFoundError, KeyError):
         raise QlErrorModuleNotFound(f'Unable to import module {module_name}')
 
+    return module
+
+def ql_get_module_function(module_name: str, member_name: str):
+    module = ql_get_module(module_name)
+
     try:
-        module_function = getattr(imp_module, function_name)
+        member = getattr(module, member_name)
     except AttributeError:
-        raise QlErrorModuleFunctionNotFound(f'Unable to import {function_name} from {imp_module}')
+        raise QlErrorModuleFunctionNotFound(f'Unable to import {member_name} from {module_name}')
 
-    return module_function
-
+    return member
 
 def __emu_env_from_pathname(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], Optional[QL_ENDIAN]]:
     if os.path.isdir(path) and path.endswith('.kext'):
