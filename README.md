@@ -8,7 +8,7 @@
 <img width="150" height="150" src="https://raw.githubusercontent.com/qilingframework/qiling/master/docs/qiling2_logo_small.png">
 </p>
 
-[Collection of works, presentations, blogpost, etc](https://github.com/qilingframework/qiling/issues/134)
+[Usecase, Blog and related work](https://github.com/qilingframework/qiling/issues/134)
 
 Qiling is an advanced binary emulation framework, with the following features:
 
