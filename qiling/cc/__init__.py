@@ -26,7 +26,7 @@ class QlCC:
 
 		raise NotImplementedError
 
-	def getRawParam(self, slot: int, argbits: int = None) -> int:
+	def getRawParam(self, slot: int, argbits: int = 0) -> int:
 		"""Read a value of native size from the specified argument slot.
 
 		Note that argument slots and argument indexes are not the same. Though they often correlate
@@ -41,7 +41,7 @@ class QlCC:
 
 		raise NotImplementedError
 
-	def setRawParam(self, slot: int, value: int, argbits: int = None) -> None:
+	def setRawParam(self, slot: int, value: int, argbits: int = 0) -> None:
 		"""Replace the value in the specified argument slot.
 
 		Note that argument slots and argument indexes are not the same. Though they often correlate
@@ -148,17 +148,17 @@ class QlCommonBaseCC(QlCC):
 		else:
 			return reg_access, reg
 
-	def getRawParam(self, index: int, argbits: int = None) -> int:
+	def getRawParam(self, index: int, argbits: int = 0) -> int:
 		read, loc = self.__access_param(index, self.arch.stack_read, self.arch.regs.read)
 
-		mask = (0 if argbits is None else (1 << argbits)) - 1
+		mask = (argbits and (1 << argbits)) - 1
 
 		return read(loc) & mask
 
-	def setRawParam(self, index: int, value: int, argbits: int = None) -> None:
+	def setRawParam(self, index: int, value: int, argbits: int = 0) -> None:
 		write, loc = self.__access_param(index, self.arch.stack_write, self.arch.regs.write)
 
-		mask = (0 if argbits is None else (1 << argbits)) - 1
+		mask = (argbits and (1 << argbits)) - 1
 
 		write(loc, value & mask)
 

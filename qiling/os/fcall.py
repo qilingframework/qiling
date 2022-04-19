@@ -32,8 +32,8 @@ class QlFunctionCall:
 		self.cc = cc
 
 		def __make_accessor(nbits: int) -> Accessor:
-			reader = lambda si: cc.getRawParam(si, nbits or None)
-			writer = lambda si, val: cc.setRawParam(si, val, nbits or None)
+			reader = lambda si: cc.getRawParam(si, nbits)
+			writer = lambda si, val: cc.setRawParam(si, val, nbits)
 			nslots = cc.getNumSlots(nbits)
 
 			return (reader, writer, nslots)
