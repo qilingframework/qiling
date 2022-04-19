@@ -231,7 +231,7 @@ class QlOsPosix(QlOs):
 
         if not syscall_hook:
             def __get_os_module(osname: str):
-                return ql_get_module_function(f'qiling.os.{osname.lower()}', 'syscall')
+                return ql_get_module(f'.os.{osname.lower()}.syscall')
 
             os_syscalls = __get_os_module(self.type.name)
             posix_syscalls = __get_os_module('posix')
