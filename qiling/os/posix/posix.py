@@ -26,7 +26,7 @@ from qiling.const import QL_ARCH, QL_OS, QL_INTERCEPT
 from qiling.exception import QlErrorSyscallNotFound
 from qiling.os.os import QlOs
 from qiling.os.posix.const import NR_OPEN, errors
-from qiling.utils import ql_get_module_function
+from qiling.utils import ql_get_module, ql_get_module_function
 
 SYSCALL_PREF: str = f'ql_syscall_'
 
