@@ -349,6 +349,11 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
             Type: bool
         """
+
+        # os is not initialized for interpreter archs
+        if self.interpreter:
+            return False
+
         return self.os.type in QL_OS_BAREMETAL
 
     @property
