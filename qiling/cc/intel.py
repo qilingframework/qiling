@@ -3,27 +3,17 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 
 from unicorn.x86_const import (
-	UC_X86_REG_AX,	UC_X86_REG_EAX,	UC_X86_REG_RAX, UC_X86_REG_RCX,
-	UC_X86_REG_RDI,	UC_X86_REG_RDX,	UC_X86_REG_RSI,	UC_X86_REG_R8,
-	UC_X86_REG_R9,	UC_X86_REG_R10
+	UC_X86_REG_EAX,	UC_X86_REG_RAX, UC_X86_REG_RCX, UC_X86_REG_RDI,
+	UC_X86_REG_RDX,	UC_X86_REG_RSI,	UC_X86_REG_R8, UC_X86_REG_R9,
+	UC_X86_REG_R10
 )
 
-from qiling.arch.arch import QlArch
 from qiling.cc import QlCommonBaseCC
 
 class QlIntelBaseCC(QlCommonBaseCC):
 	"""Calling convention base class for Intel-based systems.
 	Supports arguments passing over registers and stack.
 	"""
-
-	def __init__(self, arch: QlArch):
-		retreg = {
-			16: UC_X86_REG_AX,
-			32: UC_X86_REG_EAX,
-			64: UC_X86_REG_RAX
-		}[arch.bits]
-
-		super().__init__(arch, retreg)
 
 	def setReturnAddress(self, addr: int) -> None:
 		self.arch.stack_push(addr)
@@ -36,6 +26,8 @@ class QlIntel64(QlIntelBaseCC):
 	"""Calling convention base class for Intel-based 64-bit systems.
 	"""
 
+	_retreg = UC_X86_REG_RAX
+
 	@staticmethod
 	def getNumSlots(argbits: int) -> int:
 		return max(argbits, 64) // 64
@@ -43,6 +35,8 @@ class QlIntel64(QlIntelBaseCC):
 class QlIntel32(QlIntelBaseCC):
 	"""Calling convention base class for Intel-based 32-bit systems.
 	"""
+
+	_retreg = UC_X86_REG_EAX
 
 	@staticmethod
 	def getNumSlots(argbits: int) -> int:

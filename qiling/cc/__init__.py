@@ -2,7 +2,7 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 
-from typing import Callable, Tuple
+from typing import Callable, Sequence, Tuple
 
 from qiling.arch.arch import QlArch
 
@@ -107,18 +107,16 @@ class QlCommonBaseCC(QlCC):
 	of the QlCC interface.
 	"""
 
-	_argregs = ()
+	_retreg: int
+	_argregs: Sequence
 	_shadow = 0
 	_retaddr_on_stack = True
 
-	def __init__(self, arch: QlArch, retreg: int):
+	def __init__(self, arch: QlArch):
 		super().__init__(arch)
 
 		# native address size in bytes
 		self._asize = self.arch.pointersize
-
-		# return value register
-		self._retreg = retreg
 
 	def __access_param(self, index: int, stack_access: Callable, reg_access: Callable) -> Tuple[Callable, int]:
 		"""[private] Generic accessor to function call parameters by their index.
