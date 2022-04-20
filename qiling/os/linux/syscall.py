@@ -65,7 +65,7 @@ def ql_syscall_set_thread_area(ql: Qiling, u_info_addr: int):
 def ql_syscall_set_tls(ql, address, *args, **kw):
     if ql.arch.type == QL_ARCH.ARM:
         ql.arch.regs.c13_c0_3 = address
-        ql.mem.write_ptr(ql.arch.arm_get_tls_addr + 12, address, 4)
+        ql.mem.write_ptr(ql.arch.arm_get_tls_addr + 16, address, 4)
         ql.arch.regs.r0 = address
         ql.log.debug("settls(0x%x)" % address)
 

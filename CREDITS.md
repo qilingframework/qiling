@@ -52,6 +52,7 @@
 - bambu
 - madprogrammer
 - danielmoos
+- sigeryang
 
 
 #### Legacy Core Developers
