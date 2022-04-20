@@ -34,6 +34,7 @@ class QlInterruptContext(ContextDecorator):
     def __exit__(self, *exc):
         retval = self.ql.arch.effective_pc
         if retval & EXC_RETURN.MASK != EXC_RETURN.MASK:
+            print('Crash', hex(retval))
             self.ql.log.warning('Interrupt Crash')
             self.ql.stop()
 
@@ -157,4 +158,4 @@ class QlArchCORTEX_M(QlArchARM):
             self.regs.write('pc', entry)
             self.regs.write('lr', exc_return) 
 
-            self.ql.emu_start(self.effective_pc, 0, count=0xffffff)
+            self.ql.emu_start(self.effective_pc, 0)

@@ -88,7 +88,7 @@ class MCUTest(unittest.TestCase):
 
     def test_mcu_freertos_stm32f411(self):
         ql = Qiling(["../examples/rootfs/mcu/stm32f411/os-demo.elf"],
-            archtype="cortex_m", ostype="mcu", env=stm32f411, verbose=QL_VERBOSE.DEBUG)
+            archtype="cortex_m", ostype="mcu", env=stm32f411, verbose=QL_VERBOSE.DISABLED)
 
         ql.hw.create('usart2')
         ql.hw.create('rcc')
@@ -101,7 +101,8 @@ class MCUTest(unittest.TestCase):
 
         ql.hw.gpioa.hook_set(5, counter)
 
-        ql.run(count=200000)
+        ql.hw.systick.ratio = 0xff
+        ql.run(count=100000)
 
         self.assertTrue(count >= 5)
         self.assertTrue(ql.hw.usart2.recv().startswith(b'Free RTOS\n' * 5))
