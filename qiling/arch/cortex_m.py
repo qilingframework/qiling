@@ -34,7 +34,6 @@ class QlInterruptContext(ContextDecorator):
     def __exit__(self, *exc):
         retval = self.ql.arch.effective_pc
         if retval & EXC_RETURN.MASK != EXC_RETURN.MASK:
-            print('Crash', hex(retval))
             self.ql.log.warning('Interrupt Crash')
             self.ql.stop()
 
