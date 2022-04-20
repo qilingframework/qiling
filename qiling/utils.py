@@ -333,12 +333,22 @@ def select_debugger(options: Union[str, bool]) -> Optional[QlClassInit['QlDebugg
         elif dbgtype == QL_DEBUGGER.QDB:
             kwargs = {}
 
-            if 'rr' in args:
-                kwargs['rr'] = True
-                args.remove('rr')
+            def __int_nothrow(v: str, /) -> Optional[int]:
+                try:
+                    return int(v, 0)
+                except ValueError:
+                    return None
 
-            if args:
-                kwargs['init_hook'] = args[0]
+            # qdb init args are independent and may include any combination of: rr enable, init hook and script
+            for a in args:
+                if a == 'rr':
+                    kwargs['rr'] = True
+
+                elif __int_nothrow(a) is not None:
+                    kwargs['init_hook'] = a
+
+                else:
+                    kwargs['script'] = a
 
         else:
             raise QlErrorOutput('Debugger not supported')
