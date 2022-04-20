@@ -51,7 +51,8 @@ class QlHwManager:
         if label in self.entity:
             self.entity.pop(label)
             self.region.pop(label)
-            self.stepable.pop(label)            
+            if label in self.stepable:
+                self.stepable.pop(label)            
 
     def load_env(self, label: str):
         """ Get peripheral information (structure, base address, initialization list) from env.
