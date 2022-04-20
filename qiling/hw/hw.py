@@ -33,7 +33,7 @@ class QlHwManager:
         try:
             
             entity = ql_get_module_function('qiling.hw', struct)(self.ql, label, **kwargs)
-            setattr(self, label, entity)
+            
             self.entity[label] = entity
             if hasattr(entity, 'step'):
                 self.stepable[label] = entity            
@@ -51,8 +51,7 @@ class QlHwManager:
         if label in self.entity:
             self.entity.pop(label)
             self.region.pop(label)
-            self.stepable.pop(label)
-            delattr(self, label)
+            self.stepable.pop(label)            
 
     def load_env(self, label: str):
         """ Get peripheral information (structure, base address, initialization list) from env.
@@ -126,6 +125,9 @@ class QlHwManager:
 
     def __setitem__(self, key, value):
         self.entity[key] = value
+
+    def __getattr__(self, key):
+        return self.entity.get(key)
 
     def save(self):
         return {label : entity.save() for label, entity in self.entity.items()}
