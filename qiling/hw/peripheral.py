@@ -154,12 +154,6 @@ class QlPeripheral(QlPeripheralUtils):
         self.struct = type(self).Type
         self.instance = self.struct()
 
-    def step(self):
-        """ Update the state of the peripheral, 
-            called after each instruction is executed
-        """        
-        pass
-
     def raw_read(self, offset: int, size: int) -> int:
         buf = ctypes.create_string_buffer(size)
         ctypes.memmove(buf, ctypes.addressof(self.instance) + offset, size)

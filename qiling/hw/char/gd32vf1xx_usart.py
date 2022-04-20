@@ -36,7 +36,3 @@ class GD32VF1xxUsart(QlConnectivityPeripheral):
             CTL2 =  0x00000000,
             GP   =  0x00000000,
         )
-
-    @QlConnectivityPeripheral.device_handler
-    def step(self):
-        pass

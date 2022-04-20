@@ -16,7 +16,9 @@ class QlHwManager:
         self.ql = ql
 
         self.entity = {}
-        self.region = {}        
+        self.region = {}    
+
+        self.stepable = {}    
 
     def create(self, label: str, struct: str=None, base: int=None, kwargs: dict={}) -> "QlPeripheral":
         """ Create the peripheral accroding the label and envs.
@@ -33,7 +35,11 @@ class QlHwManager:
             entity = ql_get_module_function('qiling.hw', struct)(self.ql, label, **kwargs)
             setattr(self, label, entity)
             self.entity[label] = entity
+            if hasattr(entity, 'step'):
+                self.stepable[label] = entity            
+
             self.region[label] = [(lbound + base, rbound + base) for (lbound, rbound) in entity.region]
+
 
             return entity
         except QlErrorModuleFunctionNotFound:
@@ -45,6 +51,7 @@ class QlHwManager:
         if label in self.entity:
             self.entity.pop(label)
             self.region.pop(label)
+            self.stepable.pop(label)
             delattr(self, label)
 
     def load_env(self, label: str):
@@ -75,7 +82,7 @@ class QlHwManager:
     def step(self):
         """ Update all peripheral's state 
         """
-        for _, entity in self.entity.items():
+        for entity in self.stepable.values():
             entity.step()
 
     def setup_mmio(self, begin, size, info=""):
