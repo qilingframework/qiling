@@ -69,7 +69,11 @@ class QlOsQnx(QlOsPosix):
             self.ql.arch.enable_vfp()
             self.ql.hook_intno(self.hook_syscall, 2)
             #self.thread_class = thread.QlLinuxARMThread
-            arm_utils.init_get_tls(self.ql, self.ql.arch.arm_get_tls_addr)
+            arm_utils.init_linux_traps(self.ql, {
+                'memory_barrier': 0xffff0fa0,
+                'cmpxchg': 0xffff0fc0,
+                'get_tls': 0xffff0fe0
+            })
 
     
     def hook_syscall(self, intno= None, int = None):

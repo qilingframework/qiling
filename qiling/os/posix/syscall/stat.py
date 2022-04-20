@@ -319,6 +319,57 @@ class LinuxMips64Stat(ctypes.Structure):
 
     _pack_ = 8
 
+class LinuxMips32EBStat(ctypes.BigEndianStructure):
+    _fields_ = [
+        ("st_dev", ctypes.c_uint32),
+        ("st_pad1", ctypes.c_int32 * 3),
+        ("st_ino", ctypes.c_uint32),
+        ("st_mode", ctypes.c_uint32),
+        ("st_nlink", ctypes.c_uint32),
+        ("st_uid", ctypes.c_uint32),
+        ("st_gid", ctypes.c_uint32),
+        ("st_rdev", ctypes.c_uint32),
+        ("st_pad2", ctypes.c_uint32 * 2),
+        ("st_size", ctypes.c_uint32),
+        ("st_pad3", ctypes.c_uint32),
+        ("st_atime", ctypes.c_uint32),
+        ("st_atime_ns", ctypes.c_uint32),
+        ("st_mtime", ctypes.c_uint32),
+        ("st_mtime_ns", ctypes.c_uint32),
+        ("st_ctime", ctypes.c_uint32),
+        ("st_ctime_ns", ctypes.c_uint32),
+        ("st_blksize", ctypes.c_uint32),
+        ("st_blocks", ctypes.c_uint32),
+        ("st_pad4", ctypes.c_uint32 * 14)
+    ]
+
+    _pack_ = 4
+
+class LinuxMips64EBStat(ctypes.BigEndianStructure):
+    _fields_ = [
+        ("st_dev", ctypes.c_uint32),
+        ("st_pad0", ctypes.c_uint32 * 3),
+        ("st_ino", ctypes.c_uint64),
+        ("st_mode", ctypes.c_uint32),
+        ("st_nlink", ctypes.c_uint32),
+        ("st_uid", ctypes.c_uint32),
+        ("st_gid", ctypes.c_uint32),
+        ("st_rdev", ctypes.c_uint32),
+        ("st_pad1", ctypes.c_uint32 * 3),
+        ("st_size", ctypes.c_uint64),
+        ("st_atime", ctypes.c_uint32),
+        ("st_atime_ns", ctypes.c_uint32),
+        ("st_mtime", ctypes.c_uint32),
+        ("st_mtime_ns", ctypes.c_uint32),
+        ("st_ctime", ctypes.c_uint32),
+        ("st_ctime_ns", ctypes.c_uint32),
+        ("st_blksize", ctypes.c_uint32),
+        ("st_pad2", ctypes.c_uint32),
+        ("st_blocks", ctypes.c_uint64)
+    ]
+
+    _pack_ = 8
+
 class LinuxMips32Stat64(ctypes.Structure):
     _fields_ = [
         ("st_dev", ctypes.c_uint32),
@@ -962,9 +1013,15 @@ def get_stat_struct(ql: Qiling):
             return LinuxX86Stat()
         elif ql.arch.type == QL_ARCH.MIPS:
             if ql.arch.bits == 64:
-                return LinuxMips64Stat()
+                if ql.arch.endian == QL_ENDIAN.EL:
+                    return LinuxMips64Stat()
+                else:
+                    return LinuxMips64EBStat()
             else:
-                return LinuxMips32Stat()
+                if ql.arch.endian == QL_ENDIAN.EL:
+                    return LinuxMips32Stat()
+                else:
+                    return LinuxMips32EBStat()
         elif ql.arch.type == QL_ARCH.ARM:
             if ql.arch.endian == QL_ENDIAN.EL:
                 return LinuxARMStat()
