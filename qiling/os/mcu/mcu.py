@@ -12,6 +12,7 @@ class QlOsMcu(QlOs):
         super(QlOsMcu, self).__init__(ql)
 
         self.runable = True
+        self.grain_size = 1
 
     def stop(self):
         self.ql.emu_stop()
@@ -31,10 +32,11 @@ class QlOsMcu(QlOs):
             if current_address == end:
                 break
             
-            self.ql.emu_start(current_address, 0, count=1)
+            inst_num = min(self.grain_size, count)
+            self.ql.emu_start(current_address, 0, count=inst_num)
             self.ql.hw.step()
 
-            count -= 1
+            count -= inst_num
             
             if count == 0:
                 break
