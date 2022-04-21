@@ -28,7 +28,7 @@ def main(input_file: str):
     ql.hw.create('usart2')
     ql.hw.create('usart3')
     
-    ql.os.grain_size = 100
+    ql.fast_mode = True 
     ql.hook_code(lambda _x, _y, _z: ...)
 
     def place_input_callback(ql: Qiling, input_bytes: bytes, persistent_round: int) -> Optional[bool]:
@@ -39,11 +39,8 @@ def main(input_file: str):
         return True
 
     def fuzzing_callback(ql: Qiling):
-        try:
-            ql.run(count=40000)
-        except:
-            os.abort()
-
+        ql.run(end=0x80006d9)            
+        
         return UC_ERR_OK
 
     ql.uc.ctl_exits_enabled(True)
