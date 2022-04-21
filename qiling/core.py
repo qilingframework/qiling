@@ -62,7 +62,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._multithread = multithread
         self._log_filter = None
         self._internal_exception = None
-        self._uc = None
         self._stop_options = stop
 
         ##################################
@@ -150,8 +149,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             endian = QL_ENDIAN.EL
 
         self._arch = select_arch(archtype, endian, thumb)(self)
-
-        self.uc = self.arch.uc
 
         # Once we finish setting up arch, we can init QlCoreStructs and QlCoreHooks
         if not self.interpreter:
@@ -472,11 +469,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
             Type: Uc
         """
-        return self._uc
-
-    @uc.setter
-    def uc(self, u: 'Uc'):
-        self._uc = u
+        return self.arch.uc
 
     @property
     def stop_options(self) -> QL_STOP:
