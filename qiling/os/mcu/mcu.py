@@ -12,31 +12,37 @@ class QlOsMcu(QlOs):
         super(QlOsMcu, self).__init__(ql)
 
         self.runable = True
-        self.grain_size = 1
+        self.fast_mode = False
 
     def stop(self):
-        self.ql.emu_stop()
-        self.runable = False
-
-    def run(self):
-        self.runable = True
+        if self.fast_mode:
+            pass
         
+        else:
+            self.ql.emu_stop()
+            self.runable = False
+
+    def run(self):        
         count = self.ql.count or 0
         end = self.ql.exit_point or -1
 
-        while self.runable:
-            current_address = self.ql.arch.regs.arch_pc
-            if isinstance(self.ql.arch, QlArchARM):
-                current_address |= int(self.ql.arch.is_thumb)
+        if self.fast_mode:
+            pass
+        
+        else:
+            self.runable = True
+            while self.runable:
+                current_address = self.ql.arch.regs.arch_pc
+                if isinstance(self.ql.arch, QlArchARM):
+                    current_address |= int(self.ql.arch.is_thumb)
 
-            if current_address == end:
-                break
-            
-            inst_num = min(self.grain_size, count)
-            self.ql.emu_start(current_address, 0, count=inst_num)
-            self.ql.hw.step()
+                if current_address == end:
+                    break
+                
+                self.ql.emu_start(current_address, 0, count=1)
+                self.ql.hw.step()
 
-            count -= inst_num
-            
-            if count == 0:
-                break
+                count -= 1
+                
+                if count == 0:
+                    break
