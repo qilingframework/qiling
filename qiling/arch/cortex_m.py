@@ -17,8 +17,8 @@ from qiling.arch.register import QlRegisterManager
 from qiling.arch.cortex_m_const import IRQ, EXC_RETURN, CONTROL, EXCP
 from qiling.const import QL_ARCH, QL_ENDIAN, QL_VERBOSE
 from qiling.exception import QlErrorNotImplemented
+from qiling.extensions.multitask import MultiTaskUnicorn
 
-from qiling.extensions.multitask import MultiTaskUnicorn, UnicornTask
 
 class QlInterruptContext(ContextDecorator):
     def __init__(self, ql: Qiling):
@@ -61,27 +61,6 @@ class QlInterruptContext(ContextDecorator):
         if self.ql.verbose >= QL_VERBOSE.DISASM:
             self.ql.log.info('Exit from interrupt')
 
-
-# This class exits to emulate clock interrupt.
-class QlArchCORTEX_MThread(UnicornTask):
-
-    def __init__(self, ql: "Qiling", begin: int, end: int, task_id=None):
-        super().__init__(ql.uc, begin, end, task_id)
-        self.ql = ql
-    
-    def on_start(self):
-        # Don't save anything.
-        return None
-    
-    def on_interrupted(self, ucerr: int):
-        self._begin = self.pc
-
-        # And don't restore anything.
-        if ucerr != UC_ERR_OK:
-            raise UcError(ucerr)
-
-        self.ql.hw.step()
-
 class QlArchCORTEX_M(QlArchARM):
     type = QL_ARCH.ARM
     bits = 32
@@ -116,20 +95,6 @@ class QlArchCORTEX_M(QlArchARM):
     @property
     def endian(self) -> QL_ENDIAN:
         return QL_ENDIAN.EL
-
-    def stop(self):
-        self.ql.emu_stop()
-        self.runable = False
-
-    def run(self, count=-1, end=None):
-        self.runable = True
-
-        if end is None:
-            end = 0
-
-        utk = QlArchCORTEX_MThread(self.ql, self.effective_pc, end)
-        self.uc.task_create(utk)
-        self.uc.tasks_start(count=count)
 
     def is_handler_mode(self):
         return self.regs.ipsr > 1
