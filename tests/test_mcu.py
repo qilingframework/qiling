@@ -422,6 +422,22 @@ class MCUTest(unittest.TestCase):
 
         self.assertEqual(ql.hw.usart2.recv(), b'Nice Hack!\n')
         self.assertEqual(ql.hw.usart3.recv(), b'Welcome to the world of Hacking!\naaaaaaaaaaaaaaaaaaaa\xa9\x05\n')
+    
+    def test_mcu_fastmode_stm32f429(self):
+        ql = Qiling(["../examples/rootfs/mcu/stm32f429/bof.elf"], 
+            archtype="cortex_m", env=stm32f429, ostype='mcu', verbose=QL_VERBOSE.DEFAULT)
+
+        ql.hw.create('rcc')
+        ql.hw.create('usart2')
+        ql.hw.create('usart3')
+
+        ql.hw.usart3.send(b'hackme\naaaaaaaaaaaaaaaaaaaa\xa9\x05\n')
+
+        ql.os.fast_mode = True
+        ql.run(timeout=400)
+
+        self.assertEqual(ql.hw.usart2.recv(), b'Nice Hack!\n')
+        self.assertEqual(ql.hw.usart3.recv(), b'Welcome to the world of Hacking!\naaaaaaaaaaaaaaaaaaaa\xa9\x05\n')
 
 
 if __name__ == "__main__":
