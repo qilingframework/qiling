@@ -4,14 +4,12 @@
 #
 
 import os, pickle
+from typing import TYPE_CHECKING, Any, AnyStr, List, Mapping, MutableMapping, Optional, Sequence, Tuple, Union
 
 # See https://stackoverflow.com/questions/39740632/python-type-hinting-without-cyclic-imports
-from typing import AnyStr, List, Mapping, MutableMapping, Sequence, Union
-from typing import TYPE_CHECKING
-from configparser import ConfigParser
-
 if TYPE_CHECKING:
     from unicorn.unicorn import Uc
+    from configparser import ConfigParser
     from logging import Logger
     from .arch.arch import QlArch
     from .os.os import QlOs
@@ -26,7 +24,6 @@ from .log import *
 from .utils import *
 from .core_struct import QlCoreStructs
 from .core_hooks import QlCoreHooks
-from .__version__ import __version__
 
 # Mixin Pattern
 class Qiling(QlCoreHooks, QlCoreStructs):
@@ -269,7 +266,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         return self._multithread
 
     @property
-    def profile(self) -> ConfigParser:
+    def profile(self) -> "ConfigParser":
         """ Program profile. See qiling/profiles/*.ql for details.
 
             Note: Please pass None or the path string to Qiling.__init__.
