@@ -9,7 +9,7 @@ sys.path.append("..")
 
 from qiling.core import Qiling
 from qiling.const import QL_VERBOSE
-from qiling.extensions.mcu.stm32f4 import stm32f407, stm32f411
+from qiling.extensions.mcu.stm32f4 import stm32f407, stm32f411, stm32f429
 from qiling.extensions.mcu.stm32f1 import stm32f103
 from qiling.extensions.mcu.atmel   import sam3x8e
 from qiling.extensions.mcu.gd32vf1 import gd32vf103
@@ -398,6 +398,31 @@ class MCUTest(unittest.TestCase):
         self.assertTrue(ql.hw.uart.recv().startswith(b'hello world\nhello world\n'))
 
         del ql
+
+    def test_mcu_hackme_stm32f429(self):
+        ql = Qiling(["../examples/rootfs/mcu/stm32f429/bof.elf"], 
+            archtype="cortex_m", env=stm32f429, ostype='mcu', verbose=QL_VERBOSE.DISABLED)
+
+        ql.hw.create('rcc')
+        ql.hw.create('usart2')
+        ql.hw.create('usart3')
+        ql.os.grain_size = 100
+
+        snapshot = ql.save(hw=True)
+
+        ql.restore(snapshot)
+        ql.hw.usart3.send(b'hbckme\nabc\n')
+        ql.run(count=20000)
+
+        self.assertEqual(ql.hw.usart2.recv(), b'')
+        self.assertEqual(ql.hw.usart3.recv(), b'Wrong password!\n')
+
+        ql.restore(snapshot)
+        ql.hw.usart3.send(b'hackme\naaaaaaaaaaaaaaaaaaaa\xa9\x05\n')
+        ql.run(count=40000)
+
+        self.assertEqual(ql.hw.usart2.recv(), b'Nice Hack!\n')
+        self.assertEqual(ql.hw.usart3.recv(), b'Welcome to the world of Hacking!\naaaaaaaaaaaaaaaaaaaa\xa9\x05\n')
 
 
 if __name__ == "__main__":
