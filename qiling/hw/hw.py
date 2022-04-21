@@ -95,7 +95,7 @@ class QlHwManager:
             if hardware:
                 return hardware.read(address - hardware.base, size)
             else:
-                ql.log.warning('%s Read non-mapped hardware [0x%08x]' % (info, address))                
+                ql.log.debug('%s Read non-mapped hardware [0x%08x]' % (info, address))                
                 
                 buf = ctypes.create_string_buffer(size)
                 ctypes.memmove(buf, ctypes.addressof(mmio) + offset, size)
@@ -108,7 +108,7 @@ class QlHwManager:
             if hardware:
                 hardware.write(address - hardware.base, size, value)
             else:
-                ql.log.warning('%s Write non-mapped hardware [0x%08x] = 0x%08x' % (info, address, value))
+                ql.log.debug('%s Write non-mapped hardware [0x%08x] = 0x%08x' % (info, address, value))
                 ctypes.memmove(ctypes.addressof(mmio) + offset, (value).to_bytes(size, 'little'), size)
 
         self.ql.mem.map_mmio(begin, size, mmio_read_cb, mmio_write_cb, info=info)
