@@ -170,7 +170,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--version', action='version', version=f'qltool for Qiling {ql_ver}, using Unicorn {uc_ver}')
 
-    commands = parser.add_subparsers(title='sub commands', description='select execution mode', dest='subcommand')
+    commands = parser.add_subparsers(title='sub commands', description='select execution mode', dest='subcommand', required=True)
 
     # set "run" subcommand options
     run_parser = commands.add_parser('run', help='run a program')
@@ -218,11 +218,6 @@ if __name__ == '__main__':
     comm_parser.add_argument('--json', action='store_true', help='print a json report of the emulation')
     comm_parser.add_argument('--libcache', action='store_true', help='enable dll caching for windows')
     options = parser.parse_args()
-
-    # subparser argument required=True is not supported in python 3.6
-    # manually check whether the user did not specify a subcommand (execution mode)
-    if not options.subcommand:
-        parser.error('please select execution mode')
 
     if options.subcommand == 'examples':
         handle_examples(parser)
