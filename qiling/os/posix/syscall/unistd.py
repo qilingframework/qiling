@@ -461,7 +461,6 @@ def ql_syscall_execve(ql: Qiling, pathname: int, argv: int, envp: int):
     if hasattr(ql.arch, 'msr'):
         ql.arch.msr.uc = uc
 
-    ql.uc = uc
     QlCoreHooks.__init__(ql, uc)
 
     ql.os.load()
