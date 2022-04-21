@@ -11,24 +11,29 @@ from datetime import datetime
 from math import floor
 import ctypes
 
-class timespec(ctypes.Structure):
-    _fields_ = [
-        ("tv_sec", ctypes.c_uint64),
-        ("tv_nsec", ctypes.c_int64)
-    ]
+def __get_timespec_struct(archbits: int):
+    long  = getattr(ctypes, f'c_int{archbits}')
+    ulong = getattr(ctypes, f'c_uint{archbits}')
 
-    _pack_ = 8
+    class timespec(ctypes.Structure):
+        _pack_ = archbits // 8
 
+        _fields_ = (
+            ('tv_sec', ulong),
+            ('tv_nsec', long)
+        )
 
-# Temporary dirty fix.
-# TODO: Pack ctypes.Structure according to ql.arch.type and ql.ostype?
-class timespec32(ctypes.Structure):
-    _fields_ = [
-        ("tv_sec", ctypes.c_uint32),
-        ("tv_nsec", ctypes.c_int32)
-    ]
+    return timespec
 
-    _pack_ = 4
+def __get_timespec_obj(archbits: int):
+    now = datetime.now().timestamp()
+
+    tv_sec = floor(now)
+    tv_nsec = floor((now - floor(now)) * 1e6)
+    ts_cls = __get_timespec_struct(archbits)
+
+    return ts_cls(tv_sec=tv_sec, tv_nsec=tv_nsec)
+
 
 def ql_syscall_set_thread_area(ql: Qiling, u_info_addr: int):
     if ql.arch.type == QL_ARCH.X86:
@@ -62,39 +67,25 @@ def ql_syscall_set_thread_area(ql: Qiling, u_info_addr: int):
     return 0
 
 
-def ql_syscall_set_tls(ql, address, *args, **kw):
+def ql_syscall_set_tls(ql: Qiling, address: int):
     if ql.arch.type == QL_ARCH.ARM:
         ql.arch.regs.c13_c0_3 = address
         ql.mem.write_ptr(ql.arch.arm_get_tls_addr + 16, address, 4)
         ql.arch.regs.r0 = address
         ql.log.debug("settls(0x%x)" % address)
 
-def ql_syscall_clock_gettime(ql, clock_gettime_clock_id, clock_gettime_timespec, *args, **kw):    
-    now = datetime.now().timestamp()
-    tv_sec = floor(now)
-    tv_nsec = floor((now - floor(now)) * 1e6)
-    if ql.arch.type == QL_ARCH.X8664:
-        tp = timespec(tv_sec= tv_sec, tv_nsec=tv_nsec)
-    else:
-        tp = timespec32(tv_sec= tv_sec, tv_nsec=tv_nsec)
-    ql.mem.write(clock_gettime_timespec, bytes(tp))
+def ql_syscall_clock_gettime(ql: Qiling, clock_id: int, tp: int):
+    ts_obj = __get_timespec_obj(ql.arch.bits)
+    ql.mem.write(tp, bytes(ts_obj))
 
-    ql.log.debug("clock_gettime(clock_id = %d, timespec = 0x%x)" % (clock_gettime_clock_id, clock_gettime_timespec))
-    
     return 0
 
-def ql_syscall_gettimeofday(ql, gettimeofday_tv, gettimeofday_tz, *args, **kw):
-    now = datetime.now().timestamp()
-    tv_sec = floor(now)
-    tv_nsec = floor((now - floor(now)) * 1e6)
-    if ql.arch.type == QL_ARCH.X8664:
-        tp = timespec(tv_sec= tv_sec, tv_nsec=tv_nsec)
-    else:
-        tp = timespec32(tv_sec= tv_sec, tv_nsec=tv_nsec)
+def ql_syscall_gettimeofday(ql: Qiling, tv: int, tz: int):
+    if tv:
+        ts_obj = __get_timespec_obj(ql.arch.bits)
+        ql.mem.write(tv, bytes(ts_obj))
 
-    if gettimeofday_tv != 0:
-        ql.mem.write(gettimeofday_tv, bytes(tp))
-    if gettimeofday_tz != 0:
-        ql.mem.write(gettimeofday_tz, b'\x00' * 8)
-    regreturn = 0
-    return regreturn
+    if tz:
+        ql.mem.write(tz, b'\x00' * 8)
+
+    return 0
