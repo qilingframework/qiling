@@ -61,12 +61,12 @@ class STM32F4xxUsart(QlConnectivityPeripheral):
     def read(self, offset: int, size: int) -> int:
         if offset == self.struct.DR.offset:
             self.instance.SR &= ~USART_SR.RXNE  
-            return self.recv_from_user()
-            
-        buf = ctypes.create_string_buffer(size)
-        ctypes.memmove(buf, ctypes.addressof(self.instance) + offset, size)
-        retval = int.from_bytes(buf.raw, byteorder='little')              
+            retval = self.recv_from_user()
+            self.transfer()
 
+        else:        
+            retval = self.raw_read(offset, size)
+        
         return retval
 
     @QlPeripheral.monitor()
