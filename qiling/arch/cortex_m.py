@@ -91,7 +91,14 @@ class QlArchCORTEX_M(QlArchARM):
 
     @cached_property
     def uc(self):
-        return MultiTaskUnicorn(UC_ARCH_ARM, UC_MODE_ARM + UC_MODE_MCLASS + UC_MODE_THUMB, 10)
+        # XXX:
+        #   The `multithread` argument is reused here to decide if multitask is enabled, though, the exact meaning
+        #   here is not accurate enough. This switch could be safely removed once current MCU code is aware of the
+        #   multitask unicorn.
+        if self.ql.multithread:
+            return MultiTaskUnicorn(UC_ARCH_ARM, UC_MODE_ARM + UC_MODE_MCLASS + UC_MODE_THUMB, 10)
+        else:
+            return Uc(UC_ARCH_ARM, UC_MODE_ARM + UC_MODE_MCLASS + UC_MODE_THUMB)
 
     @cached_property
     def regs(self) -> QlRegisterManager:
@@ -117,6 +124,10 @@ class QlArchCORTEX_M(QlArchARM):
     def endian(self) -> QL_ENDIAN:
         return QL_ENDIAN.EL
 
+    def step(self):
+        self.ql.emu_start(self.effective_pc, 0, count=1)
+        self.ql.hw.step()
+
     def stop(self):
         self.ql.emu_stop()
         self.runable = False
@@ -124,12 +135,23 @@ class QlArchCORTEX_M(QlArchARM):
     def run(self, count=-1, end=None):
         self.runable = True
 
-        if end is None:
-            end = 0
+        if not self.ql.multithread:
+            if type(end) is int:
+                end |= 1        
 
-        utk = QlArchCORTEX_MThread(self.ql, self.effective_pc, end)
-        self.uc.task_create(utk)
-        self.uc.tasks_start(count=count)
+            while self.runable and count != 0:
+                if self.effective_pc == end:
+                    break
+
+                self.step()
+                count -= 1
+        else:
+            if end is None:
+                end = 0
+
+            utk = QlArchCORTEX_MThread(self.ql, self.effective_pc, end)
+            self.uc.task_create(utk)
+            self.uc.tasks_start(count=count)
 
     def is_handler_mode(self):
         return self.regs.ipsr > 1
@@ -198,4 +220,7 @@ class QlArchCORTEX_M(QlArchARM):
             self.regs.write('pc', entry)
             self.regs.write('lr', exc_return) 
 
-            self.uc.emu_start(self.effective_pc, 0, 0, 0)
+            if not self.ql.multithread:
+                self.ql.emu_start(self.effective_pc, 0, count=0xffffff)
+            else:
+                self.uc.emu_start(self.effective_pc, 0, 0, 0)
