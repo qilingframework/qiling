@@ -819,6 +819,108 @@ class LinuxRISCVStat(ctypes.Structure):
 
     _pack_ = 8
 
+# Srouce: https://elixir.bootlin.com/linux/latest/source/arch/powerpc/include/uapi/asm/stat.h#L30
+# struct stat {
+# 	unsigned long	st_dev;
+# 	ino_t		st_ino;
+# #ifdef __powerpc64__
+# 	unsigned long	st_nlink;
+# 	mode_t		st_mode;
+# #else
+# 	mode_t		st_mode;
+# 	unsigned short	st_nlink;
+# #endif
+# 	uid_t		st_uid;
+# 	gid_t		st_gid;
+# 	unsigned long	st_rdev;
+# 	long		st_size;
+# 	unsigned long	st_blksize;
+# 	unsigned long	st_blocks;
+# 	unsigned long	st_atime;
+# 	unsigned long	st_atime_nsec;
+# 	unsigned long	st_mtime;
+# 	unsigned long	st_mtime_nsec;
+# 	unsigned long	st_ctime;
+# 	unsigned long	st_ctime_nsec;
+# 	unsigned long	__unused4;
+# 	unsigned long	__unused5;
+# #ifdef __powerpc64__
+# 	unsigned long	__unused6;
+# #endif
+# };
+
+class LinuxPPCStat(ctypes.BigEndianStructure):
+    _fields_ = [
+        ("st_dev", ctypes.c_uint32),
+        ("st_ino", ctypes.c_uint32),
+        ("st_mode", ctypes.c_uint32),
+        ("st_nlink", ctypes.c_uint16),
+        ("st_uid", ctypes.c_uint32),
+        ("st_gid", ctypes.c_uint32),
+        ("st_rdev", ctypes.c_uint32),
+        ("st_size", ctypes.c_uint32),
+        ("st_blksize", ctypes.c_uint32),
+        ("st_blocks", ctypes.c_uint32),
+        ("st_atime", ctypes.c_uint32),
+        ("st_atime_ns", ctypes.c_uint32),
+        ("st_mtime", ctypes.c_uint32),
+        ("st_mtime_ns", ctypes.c_uint32),
+        ("st_ctime", ctypes.c_uint32),
+        ("st_ctime_ns", ctypes.c_uint32),
+        ("__unused4", ctypes.c_uint32),
+        ("__unused5", ctypes.c_uint32)
+    ]
+
+    _pack_ = 8
+
+# Srouce: https://elixir.bootlin.com/linux/latest/source/arch/powerpc/include/uapi/asm/stat.h#L60
+# struct stat64 {
+# 	unsigned long long st_dev;		/* Device.  */
+# 	unsigned long long st_ino;		/* File serial number.  */
+# 	unsigned int	st_mode;	/* File mode.  */
+# 	unsigned int	st_nlink;	/* Link count.  */
+# 	unsigned int	st_uid;		/* User ID of the file's owner.  */
+# 	unsigned int	st_gid;		/* Group ID of the file's group. */
+# 	unsigned long long st_rdev;	/* Device number, if device.  */
+# 	unsigned short	__pad2;
+# 	long long	st_size;	/* Size of file, in bytes.  */
+# 	int		st_blksize;	/* Optimal block size for I/O.  */
+# 	long long	st_blocks;	/* Number 512-byte blocks allocated. */
+# 	int		st_atime;	/* Time of last access.  */
+# 	unsigned int	st_atime_nsec;
+# 	int		st_mtime;	/* Time of last modification.  */
+# 	unsigned int	st_mtime_nsec;
+# 	int		st_ctime;	/* Time of last status change.  */
+# 	unsigned int	st_ctime_nsec;
+# 	unsigned int	__unused4;
+# 	unsigned int	__unused5;
+# };
+
+class LinuxPPCStat64(ctypes.BigEndianStructure):
+    _fields_ = [
+        ("st_dev", ctypes.c_uint64),
+        ("st_ino", ctypes.c_uint64),
+        ("st_mode", ctypes.c_uint32),
+        ("st_nlink", ctypes.c_uint32),
+        ("st_uid", ctypes.c_uint32),
+        ("st_gid", ctypes.c_uint32),
+        ("st_rdev", ctypes.c_uint64),
+        ("__pad2", ctypes.c_uint16),
+        ("st_size", ctypes.c_uint64),
+        ("st_blksize", ctypes.c_uint32),
+        ("st_blocks", ctypes.c_uint64),
+        ("st_atime", ctypes.c_uint32),
+        ("st_atime_ns", ctypes.c_uint32),
+        ("st_mtime", ctypes.c_uint32),
+        ("st_mtime_ns", ctypes.c_uint32),
+        ("st_ctime", ctypes.c_uint32),
+        ("st_ctime_ns", ctypes.c_uint32),
+        ("__unused4", ctypes.c_uint32),
+        ("__unused5", ctypes.c_uint32)
+    ]
+
+    _pack_ = 8
+
 # Source: openqnx lib/c/public/sys/stat.h
 #
 # struct stat {
@@ -991,6 +1093,8 @@ def get_stat64_struct(ql: Qiling):
             return LinuxARMStat64()
         elif ql.arch.type in (QL_ARCH.RISCV, QL_ARCH.RISCV64):
             return LinuxRISCVStat()
+        elif ql.arch.type == QL_ARCH.PPC:
+            return LinuxPPCStat64()
     elif ql.os.type == QL_OS.MACOS:
         return MacOSStat64()
     elif ql.os.type == QL_OS.QNX:
@@ -1034,6 +1138,8 @@ def get_stat_struct(ql: Qiling):
                 return LinuxARM64EBStat()
         elif ql.arch.type in (QL_ARCH.RISCV, QL_ARCH.RISCV64):
             return LinuxRISCVStat()
+        elif ql.archtype == QL_ARCH.PPC:
+            return LinuxPPCStat()
     elif ql.os.type == QL_OS.QNX:
         if ql.arch.type == QL_ARCH.ARM64:
             return QNXARM64Stat()

@@ -11,8 +11,8 @@ from typing import Tuple
 from os.path import basename
 from functools import lru_cache
 
-from keystone import (Ks, KS_ARCH_ARM, KS_ARCH_ARM64, KS_ARCH_MIPS, KS_ARCH_X86,
-    KS_MODE_ARM, KS_MODE_THUMB, KS_MODE_MIPS32, KS_MODE_16, KS_MODE_32, KS_MODE_64,
+from keystone import (Ks, KS_ARCH_ARM, KS_ARCH_ARM64, KS_ARCH_MIPS, KS_ARCH_X86, KS_ARCH_PPC,
+    KS_MODE_ARM, KS_MODE_THUMB, KS_MODE_MIPS32, KS_MODE_PPC32, KS_MODE_16, KS_MODE_32, KS_MODE_64,
     KS_MODE_LITTLE_ENDIAN, KS_MODE_BIG_ENDIAN)
 
 from qiling import Qiling
@@ -104,7 +104,8 @@ def assembler(arch: QL_ARCH, endianess: QL_ENDIAN, is_thumb: bool) -> Ks:
         QL_ARCH.MIPS  : (KS_ARCH_MIPS, KS_MODE_MIPS32 + endian),
         QL_ARCH.A8086 : (KS_ARCH_X86, KS_MODE_16),
         QL_ARCH.X86   : (KS_ARCH_X86, KS_MODE_32),
-        QL_ARCH.X8664 : (KS_ARCH_X86, KS_MODE_64)
+        QL_ARCH.X8664 : (KS_ARCH_X86, KS_MODE_64),
+        QL_ARCH.PPC   : (KS_ARCH_PPC, KS_MODE_PPC32 + KS_MODE_BIG_ENDIAN)
     }
 
     if arch in asm_map:
