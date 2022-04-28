@@ -21,6 +21,7 @@ class QL_ARCH(IntEnum):
     CORTEX_M = 109
     RISCV = 110
     RISCV64 = 111
+    PPC = 112
 
 class QL_OS(IntEnum):
     LINUX = 201

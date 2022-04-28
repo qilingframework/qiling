@@ -19,9 +19,10 @@ from unicorn.x86_const import (
     UC_X86_REG_R9, UC_X86_REG_RAX
 )
 from unicorn.riscv_const import UC_RISCV_REG_A7
+from unicorn.ppc_const import UC_PPC_REG_0
 
 from qiling import Qiling
-from qiling.cc import QlCC, intel, arm, mips, riscv
+from qiling.cc import QlCC, intel, arm, mips, riscv, ppc
 from qiling.const import QL_ARCH, QL_OS, QL_INTERCEPT
 from qiling.exception import QlErrorSyscallNotFound
 from qiling.os.os import QlOs
@@ -58,6 +59,9 @@ class riscv32(riscv.riscv):
     pass
 
 class riscv64(riscv.riscv):
+    pass
+
+class ppc(ppc.ppc):
     pass
 
 
@@ -115,7 +119,8 @@ class QlOsPosix(QlOs):
             QL_ARCH.X86     : UC_X86_REG_EAX,
             QL_ARCH.X8664   : UC_X86_REG_RAX,
             QL_ARCH.RISCV   : UC_RISCV_REG_A7,
-            QL_ARCH.RISCV64 : UC_RISCV_REG_A7
+            QL_ARCH.RISCV64 : UC_RISCV_REG_A7,
+            QL_ARCH.PPC     : UC_PPC_REG_0
         }[self.ql.arch.type]
 
         # handle some special cases
@@ -133,7 +138,8 @@ class QlOsPosix(QlOs):
             QL_ARCH.X86     : intel32,
             QL_ARCH.X8664   : intel64,
             QL_ARCH.RISCV   : riscv32,
-            QL_ARCH.RISCV64 : riscv64
+            QL_ARCH.RISCV64 : riscv64,
+            QL_ARCH.PPC     : ppc
         }[self.ql.arch.type](self.ql.arch)
 
         # select syscall mapping function based on emulated OS and architecture

@@ -53,6 +53,7 @@
 - madprogrammer
 - danielmoos
 - sigeryang
+- bet4it
 
 
 #### Legacy Core Developers

@@ -126,6 +126,7 @@ def __emu_env_from_elf(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], O
     EM_X86_64  = 62
     EM_AARCH64 = 183
     EM_RISCV   = 243
+    EM_PPC     = 20
 
     endianess = {
         ELFDATA2LSB : (QL_ENDIAN.EL, 'little'),
@@ -136,7 +137,8 @@ def __emu_env_from_elf(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], O
         EM_386   : QL_ARCH.X86,
         EM_MIPS  : QL_ARCH.MIPS,
         EM_ARM   : QL_ARCH.ARM,
-        EM_RISCV : QL_ARCH.RISCV
+        EM_RISCV : QL_ARCH.RISCV,
+        EM_PPC   : QL_ARCH.PPC
     }
 
     machines64 = {
@@ -381,7 +383,8 @@ def select_arch(archtype: QL_ARCH, endian: QL_ENDIAN, thumb: bool) -> QlClassIni
         QL_ARCH.EVM      : r'evm.evm',
         QL_ARCH.CORTEX_M : r'cortex_m',
         QL_ARCH.RISCV    : r'riscv',
-        QL_ARCH.RISCV64  : r'riscv64'
+        QL_ARCH.RISCV64  : r'riscv64',
+        QL_ARCH.PPC      : r'ppc'
     }[archtype]
 
     qlarch_path = f'.arch.{module}'

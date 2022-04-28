@@ -10,7 +10,7 @@ from qiling import Qiling
 from qiling.arch.x86_const import GS_SEGMENT_ADDR, GS_SEGMENT_SIZE
 from qiling.arch.x86_utils import GDTManager, SegmentManager86, SegmentManager64
 from qiling.arch import arm_utils
-from qiling.cc import QlCC, intel, arm, mips, riscv
+from qiling.cc import QlCC, intel, arm, mips, riscv, ppc
 from qiling.const import QL_ARCH, QL_OS
 from qiling.os.fcall import QlFunctionCall
 from qiling.os.const import *
@@ -28,13 +28,14 @@ class QlOsLinux(QlOsPosix):
         self.ql = ql
 
         cc: QlCC = {
-            QL_ARCH.X86   : intel.cdecl,
-            QL_ARCH.X8664 : intel.amd64,
-            QL_ARCH.ARM   : arm.aarch32,
-            QL_ARCH.ARM64 : arm.aarch64,
-            QL_ARCH.MIPS  : mips.mipso32,
-            QL_ARCH.RISCV : riscv.riscv,
-            QL_ARCH.RISCV64: riscv.riscv,
+            QL_ARCH.X86     : intel.cdecl,
+            QL_ARCH.X8664   : intel.amd64,
+            QL_ARCH.ARM     : arm.aarch32,
+            QL_ARCH.ARM64   : arm.aarch64,
+            QL_ARCH.MIPS    : mips.mipso32,
+            QL_ARCH.RISCV   : riscv.riscv,
+            QL_ARCH.RISCV64 : riscv.riscv,
+            QL_ARCH.PPC     : ppc.ppc,
         }[ql.arch.type](ql.arch)
 
         self.fcall = QlFunctionCall(ql, cc)
@@ -103,6 +104,11 @@ class QlOsLinux(QlOsPosix):
             self.thread_class = None
 
         elif self.ql.arch.type == QL_ARCH.RISCV64:
+            self.ql.arch.enable_float()
+            self.ql.hook_intno(self.hook_syscall, 8)
+            self.thread_class = None
+
+        elif self.ql.arch.type == QL_ARCH.PPC:
             self.ql.arch.enable_float()
             self.ql.hook_intno(self.hook_syscall, 8)
             self.thread_class = None

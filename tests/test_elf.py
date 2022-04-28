@@ -820,6 +820,12 @@ class ELFTest(unittest.TestCase):
         del ql
 
 
+    def test_elf_linux_powerpc(self):
+        ql = Qiling(["../examples/rootfs/powerpc_linux/bin/powerpc_hello"], "../examples/rootfs/powerpc_linux", verbose=QL_VERBOSE.DEBUG)
+        ql.run()
+        del ql
+
+
     def test_elf_linux_arm_custom_syscall(self):
         def my_syscall_write(ql, write_fd, write_buf, write_count, *args, **kw):
             regreturn = 0
