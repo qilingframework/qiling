@@ -34,13 +34,15 @@ def _constant_mapping(bits: int, d_map: Mapping[str, int], ret: MutableSequence[
 
 
 def ql_open_flag_mapping(ql: Qiling, flags):
-    def flag_mapping(flags, mapping_name, mapping_from, mapping_to):
+    def flag_mapping(flags, mapping_name, mapping_from, mapping_to, host_os, virt_os):
         ret = 0
         for n in mapping_name:
             if mapping_from[n] is None or mapping_to[n] is None:
                 continue
             if (flags & mapping_from[n]) == mapping_from[n]:
                 ret = ret | mapping_to[n]
+            if (host_os == QL_OS.WINDOWS and virt_os != QL_OS.WINDOWS):
+                ret = ret | mapping_to['O_BINARY']
         return ret
 
     f = {}
@@ -86,7 +88,7 @@ def ql_open_flag_mapping(ql: Qiling, flags):
     if f == t:
         return flags
 
-    return flag_mapping(flags, open_flags_name, f, t)
+    return flag_mapping(flags, open_flags_name, f, t, host_os, virt_os)
 
 
 def mmap_flag_mapping(flags):
