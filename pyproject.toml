@@ -54,10 +54,10 @@ fuzz = [
 ]
 
 [project.urls]
-homepage = "qiling.io"
-documentation = "docs.qiling.io"
-epository = "github.com/qilingframework/qiling"
-changelog = "github.com/qilingframework/qiling/blob/master/ChangeLog"
+homepage = "https://qiling.io"
+documentation = "https://docs.qiling.io"
+epository = "https://github.com/qilingframework/qiling"
+changelog = "https://github.com/qilingframework/qiling/blob/master/ChangeLog"
 
 [project.scripts]
 qltool = "qltool:main"
