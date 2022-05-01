@@ -419,8 +419,7 @@ class QlMemoryManager:
         """
 
         for begin, end, _ in self.ql.uc.mem_regions():
-            if begin and end:
-                self.unmap(begin, end - begin + 1)
+            self.unmap(begin, end - begin + 1)
 
     def is_available(self, addr: int, size: int) -> bool:
         """Query whether the memory range starting at `addr` and is of length of `size` bytes
