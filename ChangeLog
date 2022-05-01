@@ -1,5 +1,31 @@
 This file details the changelog of Qiling Framework.
 
+------------------------------------
+[Version 1.4.3]: April 7th, 2022
+
+Improvements:
+- Fix fuzzing for tendaac15 (#1096)
+- Update unicorn version to 2.0-rc6 (#1100)
+- Implemented a few more Windows msvcrt functions (#1102)
+- Minor PE Loader fix (#1104)
+- Minor quality changes (#1106)
+- Fix cacheflush syscall typo (#1115)
+- Add vm_context to EVM hooks (#1119)
+- Load interpreter segments with correct perms and vaddr (#1120)
+- Fix mistakes in fuzz_x8664_linux binary (#1121)
+- Add EVM ABI helpers, fix EVM DBG stack view (#1123)
+- Fix regression caused by missing exception handling when opening socket (#1124)
+
+Contributors:
+- wtdcode
+- aquynh
+- elicn
+- xwings
+- cq674350529
+- TheZ3ro
+- bet4it
+- chinggg
+
 
 ------------------------------------
 [Version 1.4.2]: Feb 13th, 2022

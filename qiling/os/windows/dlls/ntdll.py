@@ -3,6 +3,8 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+import os
+
 from qiling import Qiling
 from qiling.os.windows.api import *
 from qiling.os.windows.fncc import *
@@ -32,7 +34,7 @@ def hook_memcpy(ql: Qiling, address: int, params):
     try:
         data = bytes(ql.mem.read(src, count))
         ql.mem.write(dest, data)
-    except Exception as e:
+    except Exception:
         ql.log.exception("")
 
     return dest
@@ -54,7 +56,8 @@ def _QueryInformationProcess(ql: Qiling, address: int, params):
     elif flag == ProcessBasicInformation:
         pbi = structs.ProcessBasicInformation(ql,
             exitStatus=0,
-            pebBaseAddress=ql.os.heap_base_address, affinityMask=0,
+            pebBaseAddress=ql.loader.TEB.PebAddress,
+            affinityMask=0,
             basePriority=0,
             uniqueId=ql.os.profile.getint("KERNEL", "pid"),
             parentPid=ql.os.profile.getint("KERNEL", "parent_pid")
@@ -62,7 +65,7 @@ def _QueryInformationProcess(ql: Qiling, address: int, params):
 
         addr = ql.os.heap.alloc(pbi.size)
         pbi.write(addr)
-        value = addr.to_bytes(ql.arch.pointersize, "little")
+        value = ql.pack(addr)
     else:
         ql.log.debug(str(flag))
         raise QlErrorNotImplemented("API not implemented")
@@ -70,8 +73,8 @@ def _QueryInformationProcess(ql: Qiling, address: int, params):
     ql.log.debug("The target is checking the debugger via QueryInformationProcess ")
     ql.mem.write(dst, value)
 
-    if pt_res != 0:
-        ql.mem.write(pt_res, 0x8.to_bytes(1, byteorder="little"))
+    if pt_res:
+        ql.mem.write_ptr(pt_res, 8, 1)
 
     return STATUS_SUCCESS
 
@@ -144,11 +147,11 @@ def _QuerySystemInformation(ql: Qiling, address: int, params):
         if (bufferLength==sbi.size):
             sbi.write(dst)
 
-            if pt_res != 0:
-                ql.mem.write(pt_res, sbi.size.to_bytes(1, byteorder="little"))
+            if pt_res:
+                ql.mem.write_ptr(pt_res, sbi.size, 1)
         else:
-            if pt_res != 0:
-                ql.mem.write(pt_res, sbi.size.to_bytes(1, byteorder="little"))
+            if pt_res:
+                ql.mem.write_ptr(pt_res, sbi.size, 1)
 
             return STATUS_INFO_LENGTH_MISMATCH
     else:
@@ -250,11 +253,11 @@ def hook_ZwQueryObject(ql: Qiling, address: int, params):
     else:
         raise QlErrorNotImplemented("API not implemented")
 
-    if dest != 0 and params["Handle"] != 0:
+    if dest and params["Handle"]:
         res.write(dest)
 
-    if size_dest != 0:
-        ql.mem.write(size_dest, res.size.to_bytes(4, "little"))
+    if size_dest:
+        ql.mem.write_ptr(size_dest, res.size, 4)
 
     return STATUS_SUCCESS
 
@@ -300,17 +303,18 @@ def _SetInformationProcess(ql: Qiling, address: int, params):
     elif flag == ProcessBreakOnTermination:
             ql.log.debug("The target may be attempting modify a the 'critical' flag of the process")  
 
-    elif flag  == ProcessExecuteFlags:
+    elif flag == ProcessExecuteFlags:
         ql.log.debug("The target may be attempting to modify DEP for the process")
 
-        if dst != 0:
-            ql.mem.write(dst, 0x0.to_bytes(1, byteorder="little"))
+        if dst:
+            ql.mem.write_ptr(dst, 0, 1)
 
     elif flag == ProcessBasicInformation:
         pbi = structs.ProcessBasicInformation(
             ql,
             exitStatus=0,
-            pebBaseAddress=ql.os.heap_base_address, affinityMask=0,
+            pebBaseAddress=ql.loader.TEB.PebAddress,
+            affinityMask=0,
             basePriority=0,
             uniqueId=ql.os.profile.getint("KERNEL", "pid"),
             parentPid=ql.os.profile.getint("KERNEL", "parent_pid")
@@ -319,7 +323,7 @@ def _SetInformationProcess(ql: Qiling, address: int, params):
         ql.log.debug("The target may be attempting to modify the PEB debug flag")
         addr = ql.os.heap.alloc(pbi.size)
         pbi.write(addr)
-        value = addr.to_bytes(ql.arch.pointersize, "little")
+        value = ql.pack(addr)
     else:
         ql.log.debug(str(flag))
         raise QlErrorNotImplemented("API not implemented")
@@ -356,17 +360,17 @@ def hook_LdrGetProcedureAddress(ql: Qiling, address: int, params):
     FunctionAddress = params['FunctionAddress']
 
     # Check if dll is loaded
-    dll_name = next((key for key, value in ql.loader.dlls.items() if value == ModuleHandle), None)
+    dll_name = next((os.path.basename(path).casefold() for base, _, path in ql.loader.images if base == ModuleHandle), None)
 
     if dll_name is None:
         ql.log.debug(f'Could not find specified handle {ModuleHandle} in loaded DLL')
         return 0
 
     identifier = bytes(FunctionName, 'ascii') if FunctionName else Ordinal
+    iat = ql.loader.import_address_table[dll_name]
 
-    if identifier in ql.loader.import_address_table[dll_name]:
-        addr = ql.loader.import_address_table[dll_name][identifier]
-        ql.mem.write(addr.to_bytes(length=ql.arch.pointersize, byteorder='little'), FunctionAddress)
+    if identifier in iat:
+        ql.mem.write_ptr(FunctionAddress, iat[identifier])
         return 0
 
     return 0xFFFFFFFF

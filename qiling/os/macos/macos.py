@@ -11,7 +11,7 @@ from unicorn.x86_const import UC_X86_INS_SYSCALL
 from qiling import Qiling
 from qiling.arch.x86_utils import GDTManager, SegmentManager64
 from qiling.cc import intel
-from qiling.const import QL_ARCH, QL_VERBOSE
+from qiling.const import QL_ARCH, QL_OS, QL_VERBOSE
 from qiling.os.fcall import QlFunctionCall
 from qiling.os.posix.posix import QlOsPosix
 from qiling.os.macos.events.macos import QlMacOSEvManager
@@ -20,6 +20,8 @@ from qiling.os.macos.events.macos_structs import mac_policy_list_t
 from qiling.os.macos.structs import kmod_info_t, POINTER64
 
 class QlOsMacos(QlOsPosix):
+    type = QL_OS.MACOS
+
     def __init__(self, ql: Qiling):
         super(QlOsMacos, self).__init__(ql)
 
@@ -157,11 +159,11 @@ class QlOsMacos(QlOsPosix):
             self.ql.hook_insn(self.hook_syscall, UC_X86_INS_SYSCALL)
 
     
-    def hook_syscall(self, intno= None, int = None):
+    def hook_syscall(self, ql, intno = None):
         return self.load_syscall()
 
 
-    def hook_sigtrap(self, intno= None, int = None):
+    def hook_sigtrap(self, ql, intno):
         self.ql.log.info("Trap Found")
         self.emu_error()
         exit(1)

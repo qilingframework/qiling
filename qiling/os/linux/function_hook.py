@@ -79,6 +79,10 @@ class HookFunc:
         elif self.ql.arch.type == QL_ARCH.ARM64:
             return self.ql.arch.regs.x30
 
+        # PPC
+        elif self.ql.arch.type== QL_ARCH.PPC:
+            return self.ql.arch.regs.lr
+
         # X86
         elif  self.ql.arch.type == QL_ARCH.X86:
             return self.ql.unpack(self.ql.mem.read(self.ql.arch.regs.esp, self.ql.arch.pointersize))
@@ -96,6 +100,10 @@ class HookFunc:
 
         # MIPS32
         elif self.ql.arch.type == QL_ARCH.MIPS:
+            pass
+
+        # PPC
+        elif self.ql.arch.type== QL_ARCH.PPC:
             pass
 
         # ARM64
@@ -120,6 +128,10 @@ class HookFunc:
         # MIPS32
         elif self.ql.arch.type == QL_ARCH.MIPS:
             self.ql.arch.regs.ra = addr
+
+        # PPC
+        elif self.ql.arch.type== QL_ARCH.PPC:
+            self.ql.arch.regs.lr = addr
 
         # ARM64
         elif self.ql.arch.type == QL_ARCH.ARM64:
@@ -173,29 +185,6 @@ class HookFunc:
         else:
             self.context_fixup()
     
-    def ret(self):
-        # ARM
-        if self.ql.arch.type == QL_ARCH.ARM:
-            self.ql.arch.regs.arch_pc = self.ret_pc
-
-        # MIPS32
-        elif self.ql.arch.type == QL_ARCH.MIPS:
-            self.ql.arch.regs.arch_pc = self.ret_pc
-
-        # ARM64
-        elif self.ql.arch.type == QL_ARCH.ARM64:
-            self.ql.arch.regs.arch_pc = self.ret_pc
-
-        # X86
-        elif  self.ql.arch.type == QL_ARCH.X86:
-            self.ql.arch.regs.arch_pc = self.ret_pc
-
-        # X8664
-        elif  self.ql.arch.type == QL_ARCH.X8664:
-            self.ql.arch.regs.arch_pc = self.ret_pc
-        else:
-            raise
-
     def call_exit(self):
         # if self.ql.arch.type == QL_ARCH.ARM or self.ql.arch.type == QL_ARCH.ARM64:
         #     self.ql.arch.regs.arch_pc = self.ql.arch.regs.arch_pc + 4
@@ -211,7 +200,7 @@ class HookFunc:
             else:
                 onexit_cb(self.ql, onexit_userdata)
 
-        self.ret()
+        self.ql.arch.regs.arch_pc = self.ret_pc
 
 
 class HookFuncRel(HookFunc):
@@ -612,6 +601,14 @@ class FunctionHook:
             
             # ADDI x0, x0, 0
             ins = b'\x00\x01'
+            self.add_function_hook = self.add_function_hook_relocation
+
+        # PowerPC
+        elif  self.ql.arch.type== QL_ARCH.PPC:
+            self.GLOB_DAT = 21
+            self.JMP_SLOT = 22
+            # nop
+            ins = b'\x60\x00\x00\x00'
             self.add_function_hook = self.add_function_hook_relocation
 
         self._parse()

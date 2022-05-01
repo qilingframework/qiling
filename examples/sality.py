@@ -151,8 +151,12 @@ def hook_StartServiceA(ql: Qiling, address: int, params):
             if service_handle.name in ql.os.services:
                 service_path = ql.os.services[service_handle.name]
                 service_path = ql.os.path.transform_to_real_path(service_path)
+
                 ql.amsint32_driver = Qiling([service_path], ql.rootfs, verbose=QL_VERBOSE.DEBUG)
-                init_unseen_symbols(ql.amsint32_driver, ql.amsint32_driver.loader.dlls["ntoskrnl.exe"]+0xb7695, b"NtTerminateProcess", 0, "ntoskrnl.exe")
+                ntoskrnl = ql.amsint32_driver.loader.get_image_by_name("ntoskrnl.exe")
+                assert ntoskrnl, 'ntoskernl.exe was not loaded'
+
+                init_unseen_symbols(ql.amsint32_driver, ntoskrnl.base+0xb7695, b"NtTerminateProcess", 0, "ntoskrnl.exe")
                 #ql.amsint32_driver.debugger= ":9999"
                 try:
                     ql.amsint32_driver.load()

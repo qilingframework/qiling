@@ -8,14 +8,15 @@ import os
 import sys
 import ast
 import pickle
-import unicorn
+
+from unicorn import __version__ as uc_ver
+from qiling import __version__ as ql_ver
 
 from qiling import Qiling
 from qiling.arch import utils as arch_utils
 from qiling.debugger.qdb import QlQdb
 from qiling.utils import arch_convert
 from qiling.const import QL_VERBOSE, QL_ENDIAN, os_map, arch_map, verbose_map
-from qiling.__version__ import __version__ as ql_version
 from qiling.extensions.coverage import utils as cov_utils
 from qiling.extensions import report
 
@@ -167,9 +168,9 @@ def handle_examples(parser: argparse.ArgumentParser):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--version', action='version', version=f'qltool for Qiling {ql_version}, using Unicorn {unicorn.__version__}')
+    parser.add_argument('--version', action='version', version=f'qltool for Qiling {ql_ver}, using Unicorn {uc_ver}')
 
-    commands = parser.add_subparsers(title='sub commands', description='select execution mode', dest='subcommand')
+    commands = parser.add_subparsers(title='sub commands', description='select execution mode', dest='subcommand', required=True)
 
     # set "run" subcommand options
     run_parser = commands.add_parser('run', help='run a program')
@@ -218,16 +219,8 @@ def main():
     comm_parser.add_argument('--libcache', action='store_true', help='enable dll caching for windows')
     options = parser.parse_args()
 
-    # subparser argument required=True is not supported in python 3.6
-    # manually check whether the user did not specify a subcommand (execution mode)
-    if not options.subcommand:
-        parser.error('please select execution mode')
-
     if options.subcommand == 'examples':
         handle_examples(parser)
-
-    if options.debug_stop and options.verbose not in (QL_VERBOSE.DEBUG, QL_VERBOSE.DUMP):
-        parser.error('the debug_stop option requires verbose to be set to either "debug" or "dump"')
 
     # ql file setup
     if options.subcommand == 'run':
@@ -247,6 +240,9 @@ def main():
         ql.debugger = argval
 
     if options.debug_stop:
+        if options.verbose not in (QL_VERBOSE.DEBUG, QL_VERBOSE.DUMP):
+            parser.error('the debug_stop option requires verbose to be set to either "debug" or "dump"')
+
         ql.debug_stop = True
 
     if options.root:

@@ -5,13 +5,15 @@
 ---
 
 <p align="center">
-<img width="150" height="150" src="https://raw.githubusercontent.com/qilingframework/qiling/master/docs/qiling_small.png">
+<img width="150" height="150" src="https://raw.githubusercontent.com/qilingframework/qiling/master/docs/qiling2_logo_small.png">
 </p>
+
+[Qiling's usecase, blog and related work](https://github.com/qilingframework/qiling/issues/134)
 
 Qiling is an advanced binary emulation framework, with the following features:
 
 - Emulate multi-platforms: Windows, MacOS, Linux, BSD, UEFI, DOS, MBR, Ethereum Virtual Machine
-- Emulate multi-architectures: X86, X86_64, Arm, Arm64, MIPS, 8086
+- Emulate multi-architectures: 8086, X86, X86_64, ARM, ARM64, MIPS, RISCV, PowerPC
 - Support multiple file formats: PE, MachO, ELF, COM, MBR
 - Support Windows Driver (.sys), Linux Kernel Module (.ko) & MacOS Kernel (.kext) via [Demigod](https://groundx.io/demigod/)
 - Emulates & sandbox code in an isolated environment
@@ -219,7 +221,8 @@ Contact us at email info@qiling.io, or via Twitter [@qiling_io](https://twitter.
 
 #### Core developers, Key Contributors and etc
 
-Please refer to [CREDITS.TXT](https://github.com/qilingframework/qiling/blob/master/CREDITS.TXT)
+Please refer to [CREDITS.md](https://github.com/qilingframework/qiling/blob/dev/CREDITS.md)
+
 
 ---
 

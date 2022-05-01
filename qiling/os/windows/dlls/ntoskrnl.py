@@ -162,14 +162,7 @@ def __IoCreateDevice(ql: Qiling, address: int, params):
     DeviceCharacteristics = params['DeviceCharacteristics']
     DeviceObject = params['DeviceObject']
 
-    objcls = {
-        QL_ARCH.X86   : DEVICE_OBJECT32,
-        QL_ARCH.X8664 : DEVICE_OBJECT64
-    }[ql.arch.type]
-
-    addr = ql.os.heap.alloc(ctypes.sizeof(objcls))
-
-    device_object = objcls()
+    device_object = make_device_object(ql.arch.bits)
     device_object.Type = 3 # FILE_DEVICE_CD_ROM_FILE_SYSTEM ?
     device_object.DeviceExtension = ql.os.heap.alloc(DeviceExtensionSize)
     device_object.Size = ctypes.sizeof(device_object) + DeviceExtensionSize
@@ -186,7 +179,9 @@ def __IoCreateDevice(ql: Qiling, address: int, params):
 
     device_object.Characteristics = DeviceCharacteristics
 
-    ql.mem.write(addr, bytes(device_object)[:])
+    addr = ql.os.heap.alloc(ctypes.sizeof(device_object))
+
+    ql.mem.write(addr, bytes(device_object))
     ql.mem.write_ptr(DeviceObject, addr)
 
     # update DriverObject.DeviceObject
@@ -476,9 +471,11 @@ def hook_MmGetSystemRoutineAddress(ql: Qiling, address: int, params):
         index = hook_only_routine_address.index(SystemRoutineName)
         # found!
         for dll_name in ('ntoskrnl.exe', 'ntkrnlpa.exe', 'hal.dll'):
-            if dll_name in ql.loader.dlls:
+            image = ql.loader.get_image_by_name(dll_name)
+
+            if image:
                 # create fake address
-                new_function_address = ql.loader.dlls[dll_name] + index + 1
+                new_function_address = image.base + index + 1
                 # update import address table
                 ql.loader.import_symbols[new_function_address] = {
                     'name': SystemRoutineName,
@@ -641,10 +638,7 @@ def hook_KeLeaveCriticalRegion(ql: Qiling, address: int, params):
 def hook_MmMapLockedPagesSpecifyCache(ql: Qiling, address: int, params):
     MemoryDescriptorList = params['MemoryDescriptorList']
 
-    mdl_class: ctypes.Structure = {
-        QL_ARCH.X8664 : MDL64,
-        QL_ARCH.X86   : MDL32
-    }[ql.arch.type]
+    mdl_class = make_mdl(ql.arch.bits).__class__
 
     mdl_buffer = ql.mem.read(MemoryDescriptorList, ctypes.sizeof(mdl_class))
     mdl = mdl_class.from_buffer(mdl_buffer)
@@ -757,12 +751,11 @@ def _NtQuerySystemInformation(ql: Qiling, address: int, params):
         # if SystemInformationLength = 0, we return the total size in ReturnLength
         NumberOfModules = 1
 
-        if ql.arch.bits == 64:
-            # only 1 module for ntoskrnl.exe
-            # FIXME: let users customize this?
-            size = 4 + ctypes.sizeof(RTL_PROCESS_MODULE_INFORMATION64) * NumberOfModules
-        else:
-            size = 4 + ctypes.sizeof(RTL_PROCESS_MODULE_INFORMATION32) * NumberOfModules
+        rpmi_class = make_rtl_process_module_info(ql.arch.bits).__class__
+
+        # only 1 module for ntoskrnl.exe
+        # FIXME: let users customize this?
+        size = 4 + ctypes.sizeof(rpmi_class) * NumberOfModules
 
         if params["ReturnLength"] != 0:
             ql.mem.write_ptr(params["ReturnLength"], size)
@@ -771,16 +764,15 @@ def _NtQuerySystemInformation(ql: Qiling, address: int, params):
             return STATUS_INFO_LENGTH_MISMATCH
 
         else:  # return all the loaded modules
-            if ql.arch.bits == 64:
-                module = RTL_PROCESS_MODULE_INFORMATION64()
-            else:
-                module = RTL_PROCESS_MODULE_INFORMATION32()
- 
+            module = make_rtl_process_module_info(ql.arch.bits)
             module.Section = 0
             module.MappedBase = 0
 
-            if ql.loader.is_driver == True:
-                module.ImageBase = ql.loader.dlls.get("ntoskrnl.exe")
+            if ql.loader.is_driver:
+                image = ql.loader.get_image_by_name("ntoskrnl.exe")
+                assert image, 'image is a driver, but ntoskrnl.exe was not loaded'
+
+                module.ImageBase = image.base
 
             module.ImageSize = 0xab000
             module.Flags = 0x8804000
@@ -874,7 +866,7 @@ def hook_IoAcquireCancelSpinLock(ql: Qiling, address: int, params):
 # PEPROCESS PsGetCurrentProcess();
 @winsdkapi(cc=STDCALL, params={})
 def hook_PsGetCurrentProcess(ql: Qiling, address: int, params):
-    return ql.eprocess_address
+    return ql.loader.eprocess_address
 
 # HANDLE PsGetCurrentProcessId();
 @winsdkapi(cc=STDCALL, params={})
@@ -1073,12 +1065,9 @@ def hook_PsLookupProcessByProcessId(ql: Qiling, address: int, params):
     ProcessId = params["ProcessId"]
     Process = params["Process"]
 
-    if ql.arch.bits == 64:
-        obj = EPROCESS64
-    else:
-        obj = EPROCESS32
+    eprocess_obj = make_eprocess(ql.arch.bits)
+    addr = ql.os.heap.alloc(ctypes.sizeof(eprocess_obj))
 
-    addr = ql.os.heap.alloc(ctypes.sizeof(obj))
     ql.mem.write_ptr(Process, addr)
     ql.log.info(f'PID = {ProcessId:#x}, addrof(EPROCESS) == {addr:#x}')
 

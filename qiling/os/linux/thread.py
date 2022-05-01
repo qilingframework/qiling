@@ -14,7 +14,7 @@ from qiling import Qiling
 from qiling.os.thread import *
 from qiling.arch.x86_const import *
 from qiling.exception import QlErrorExecutionStop
-from qiling.os.path import QlPathManager
+from qiling.os.path import QlOsPath
 
 LINUX_THREAD_ID = 2000
 
@@ -140,8 +140,8 @@ class QlLinuxThread(QlThread):
         return self._path
 
     @path.setter
-    def path(self, p):
-        self._path = QlPathManager(self._ql, p.cwd)
+    def path(self, p: QlOsPath):
+        self._path = QlOsPath(self.ql.rootfs, p.cwd, self.ql.os.type)
 
     @property
     def log_file_fd(self):
@@ -586,7 +586,7 @@ class QlLinuxThreadManagement:
             if self.ql.arch.regs.arch_pc != entry_address:
                 self.ql.log.error(f"{self.cur_thread} Expect {hex(self.ql.loader.elf_entry)} but get {hex(self.ql.arch.regs.arch_pc)} when running loader.")
                 raise QlErrorExecutionStop('Dynamic library .init() failed!')
-            self.ql.enable_lib_patch()
+            self.ql.do_lib_patch()
             self.ql.os.run_function_after_load()
             self.ql.loader.skip_exit_check = False
             self.ql.write_exit_trap()

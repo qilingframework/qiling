@@ -4,27 +4,30 @@
 #
 
 from inspect import signature, Parameter
-from typing import TextIO, Union, Callable
+from typing import TextIO, Union, Callable, IO, List, Optional
 
 from unicorn.arm64_const import UC_ARM64_REG_X8, UC_ARM64_REG_X16
-from unicorn.arm_const import UC_ARM_REG_R7
+from unicorn.arm_const import (
+    UC_ARM_REG_R0, UC_ARM_REG_R1, UC_ARM_REG_R2, UC_ARM_REG_R3,
+    UC_ARM_REG_R4, UC_ARM_REG_R5, UC_ARM_REG_R7, UC_ARM_REG_R12
+)
 from unicorn.mips_const import UC_MIPS_REG_V0
-from unicorn.x86_const import UC_X86_REG_EAX, UC_X86_REG_RAX
+from unicorn.x86_const import (
+    UC_X86_REG_EAX, UC_X86_REG_EBX, UC_X86_REG_ECX, UC_X86_REG_EDX,
+    UC_X86_REG_ESI, UC_X86_REG_EDI, UC_X86_REG_EBP, UC_X86_REG_RDI,
+    UC_X86_REG_RSI, UC_X86_REG_RDX, UC_X86_REG_R10, UC_X86_REG_R8,
+    UC_X86_REG_R9, UC_X86_REG_RAX
+)
 from unicorn.riscv_const import UC_RISCV_REG_A7
+from unicorn.ppc_const import UC_PPC_REG_0
 
 from qiling import Qiling
-from qiling.cc import QlCC, intel, arm, mips, riscv
+from qiling.cc import QlCC, intel, arm, mips, riscv, ppc
 from qiling.const import QL_ARCH, QL_OS, QL_INTERCEPT
 from qiling.exception import QlErrorSyscallNotFound
 from qiling.os.os import QlOs
-from qiling.os.posix.const import errors
-from qiling.utils import QlFileDes, ostype_convert_str, ql_get_module_function, ql_syscall_mapping_function
-
-from qiling.os.posix.syscall import *
-from qiling.os.linux.syscall import *
-from qiling.os.macos.syscall import *
-from qiling.os.freebsd.syscall import *
-from qiling.os.qnx.syscall import *
+from qiling.os.posix.const import NR_OPEN, errors
+from qiling.utils import ql_get_module, ql_get_module_function
 
 SYSCALL_PREF: str = f'ql_syscall_'
 
@@ -58,6 +61,36 @@ class riscv32(riscv.riscv):
 class riscv64(riscv.riscv):
     pass
 
+class ppc(ppc.ppc):
+    pass
+
+
+class QlFileDes:
+    def __init__(self):
+        self.__fds: List[Optional[IO]] = [None] * NR_OPEN
+
+    def __len__(self):
+        return len(self.__fds)
+
+    def __getitem__(self, idx: int):
+        return self.__fds[idx]
+
+    def __setitem__(self, idx: int, val: Optional[IO]):
+        self.__fds[idx] = val
+
+    def __iter__(self):
+        return iter(self.__fds)
+
+    def __repr__(self):
+        return repr(self.__fds)
+
+    def save(self):
+        return self.__fds
+
+    def restore(self, fds):
+        self.__fds = fds
+
+
 class QlOsPosix(QlOs):
 
     def __init__(self, ql: Qiling):
@@ -86,14 +119,15 @@ class QlOsPosix(QlOs):
             QL_ARCH.X86     : UC_X86_REG_EAX,
             QL_ARCH.X8664   : UC_X86_REG_RAX,
             QL_ARCH.RISCV   : UC_RISCV_REG_A7,
-            QL_ARCH.RISCV64 : UC_RISCV_REG_A7
+            QL_ARCH.RISCV64 : UC_RISCV_REG_A7,
+            QL_ARCH.PPC     : UC_PPC_REG_0
         }[self.ql.arch.type]
 
         # handle some special cases
-        if (self.ql.arch.type == QL_ARCH.ARM64) and (self.ql.ostype == QL_OS.MACOS):
+        if (self.ql.arch.type == QL_ARCH.ARM64) and (self.type == QL_OS.MACOS):
             self.__syscall_id_reg = UC_ARM64_REG_X16
 
-        elif (self.ql.arch.type == QL_ARCH.ARM) and (self.ql.ostype == QL_OS.QNX):
+        elif (self.ql.arch.type == QL_ARCH.ARM) and (self.type == QL_OS.QNX):
             self.__syscall_id_reg = UC_ARM_REG_R12
 
         # TODO: use abstract to access __syscall_cc and __syscall_id_reg by defining a system call class
@@ -104,11 +138,12 @@ class QlOsPosix(QlOs):
             QL_ARCH.X86     : intel32,
             QL_ARCH.X8664   : intel64,
             QL_ARCH.RISCV   : riscv32,
-            QL_ARCH.RISCV64 : riscv64
+            QL_ARCH.RISCV64 : riscv64,
+            QL_ARCH.PPC     : ppc
         }[self.ql.arch.type](self.ql.arch)
 
         # select syscall mapping function based on emulated OS and architecture
-        self.syscall_mapper = ql_syscall_mapping_function(self.ql.ostype, self.ql.arch.type)
+        self.syscall_mapper = self.__get_syscall_mapper(self.ql.arch.type)
 
         self._fd = QlFileDes()
 
@@ -120,6 +155,14 @@ class QlOsPosix(QlOs):
         self.stderr = self._stderr
 
         self._shms = {}
+
+    def __get_syscall_mapper(self, archtype: QL_ARCH):
+        qlos_path = f'.os.{self.type.name.lower()}.map_syscall'
+        qlos_func = 'get_syscall_mapper'
+
+        func = ql_get_module_function(qlos_path, qlos_func)
+
+        return func(archtype)
 
     @QlOs.stdin.setter
     def stdin(self, stream: TextIO) -> None:
@@ -162,6 +205,13 @@ class QlOsPosix(QlOs):
 
         self.posix_syscall_hooks[intercept][target] = handler
 
+    def set_api(self, target: str, handler: Callable, intercept: QL_INTERCEPT = QL_INTERCEPT.CALL):
+        if self.ql.loader.is_driver:
+            super().set_api(target, handler, intercept)
+        else:
+            self.function_hook.add_function_hook(target, handler, intercept)
+
+
     @staticmethod
     def getNameFromErrorCode(ret: int) -> str:
         """Return the hex representation of a return value and if possible
@@ -195,9 +245,9 @@ class QlOsPosix(QlOs):
 
         if not syscall_hook:
             def __get_os_module(osname: str):
-                return ql_get_module_function(f'qiling.os.{osname.lower()}', 'syscall')
+                return ql_get_module(f'.os.{osname.lower()}.syscall')
 
-            os_syscalls = __get_os_module(ostype_convert_str(self.ql.ostype))
+            os_syscalls = __get_os_module(self.type.name)
             posix_syscalls = __get_os_module('posix')
 
             # look in os-specific and posix syscall hooks

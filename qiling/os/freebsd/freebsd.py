@@ -7,9 +7,12 @@ from unicorn import UcError
 from unicorn.x86_const import UC_X86_INS_SYSCALL
 
 from qiling.arch.x86_utils import GDTManager, SegmentManager86
+from qiling.const import QL_OS
 from qiling.os.posix.posix import QlOsPosix
 
 class QlOsFreebsd(QlOsPosix):
+    type = QL_OS.FREEBSD
+
     def __init__(self, ql):
         super(QlOsFreebsd, self).__init__(ql)
 
@@ -27,7 +30,7 @@ class QlOsFreebsd(QlOsPosix):
         self.ql.hook_insn(self.hook_syscall, UC_X86_INS_SYSCALL)
 
 
-    def hook_syscall(self, intno= None):
+    def hook_syscall(self, ql):
         return self.load_syscall()
 
 
@@ -44,7 +47,7 @@ class QlOsFreebsd(QlOsPosix):
             else:
                 if self.ql.loader.elf_entry != self.ql.loader.entry_point:
                     self.ql.emu_start(self.ql.loader.entry_point, self.ql.loader.elf_entry, self.ql.timeout)
-                    self.ql.enable_lib_patch()
+                    self.ql.do_lib_patch()
 
                 self.ql.emu_start(self.ql.loader.elf_entry, self.exit_point, self.ql.timeout, self.ql.count)
 
