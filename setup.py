@@ -2,15 +2,10 @@
 #
 # Python setup for Qiling framework
 
-import sys, os
 from setuptools import setup, find_packages
 
-here = os.path.abspath(os.path.dirname(__file__))
-gb = {}
-with open(os.path.join(here, "qiling", "__version__.py"), "r+") as f:
-    exec(f.read(), gb)
-
-VERSION = gb['__version__']
+# NOTE: use "-dev" for dev branch
+VERSION = "1.4.3" + "-dev"
 
 requirements = [
     "capstone>=4.0.1",
