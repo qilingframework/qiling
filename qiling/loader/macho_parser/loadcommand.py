@@ -39,6 +39,7 @@ class LoadCommand:
             LC_LOAD_DYLINKER        :   LoadDylinker,
             LC_MAIN                 :   LoadMain,
             LC_LOAD_DYLIB           :   LoadDyLib,
+            LC_LOAD_WEAK_DYLIB      :   LoadWeakDyLib,
             LC_ENCRYPTION_INFO_64   :   LoadEncryptionInfo64,
             LC_DYLD_EXPORTS_TRIE    :   LoadDyldExportTrie,
             LC_DYLD_CHAINED_FIXUPS  :   LoadDyldChainedFixups,
@@ -253,6 +254,11 @@ class LoadDyLib(LoadCommand):
 
     def get_complete(self):
         pass
+
+
+class LoadWeakDyLib(LoadDyLib):
+    def __init__(self, data):
+        super().__init__(data)
 
 
 class LoadUnixThread(LoadCommand):
