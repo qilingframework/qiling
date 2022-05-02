@@ -4,12 +4,15 @@
 #
 
 from unicorn import UcError
+from unicorn.x86_const import UC_X86_INS_SYSCALL
 
-from qiling.arch.x86 import GDTManager, ql_x86_register_cs, ql_x86_register_ds_ss_es
-from qiling.arch.x86_const import UC_X86_INS_SYSCALL
+from qiling.arch.x86_utils import GDTManager, SegmentManager86
+from qiling.const import QL_OS
 from qiling.os.posix.posix import QlOsPosix
 
 class QlOsFreebsd(QlOsPosix):
+    type = QL_OS.FREEBSD
+
     def __init__(self, ql):
         super(QlOsFreebsd, self).__init__(ql)
 
@@ -18,13 +21,16 @@ class QlOsFreebsd(QlOsPosix):
 
 
     def load(self):
+        gdtm = GDTManager(self.ql)
+
+        # setup gdt and segments selectors
+        segm = SegmentManager86(self.ql.arch, gdtm)
+        segm.setup_cs_ds_ss_es(0, 4 << 30)
+
         self.ql.hook_insn(self.hook_syscall, UC_X86_INS_SYSCALL)
-        self.gdtm = GDTManager(self.ql)
-        ql_x86_register_cs(self)
-        ql_x86_register_ds_ss_es(self)
 
 
-    def hook_syscall(self, intno= None):
+    def hook_syscall(self, ql):
         return self.load_syscall()
 
 
@@ -41,7 +47,7 @@ class QlOsFreebsd(QlOsPosix):
             else:
                 if self.ql.loader.elf_entry != self.ql.loader.entry_point:
                     self.ql.emu_start(self.ql.loader.entry_point, self.ql.loader.elf_entry, self.ql.timeout)
-                    self.ql.enable_lib_patch()
+                    self.ql.do_lib_patch()
 
                 self.ql.emu_start(self.ql.loader.elf_entry, self.exit_point, self.ql.timeout, self.ql.count)
 

@@ -32,8 +32,8 @@ class QlFunctionCall:
 		self.cc = cc
 
 		def __make_accessor(nbits: int) -> Accessor:
-			reader = lambda si: cc.getRawParam(si, nbits or None)
-			writer = lambda si, val: cc.setRawParam(si, val, nbits or None)
+			reader = lambda si: cc.getRawParam(si, nbits)
+			writer = lambda si, val: cc.setRawParam(si, val, nbits)
 			nslots = cc.getNumSlots(nbits)
 
 			return (reader, writer, nslots)
@@ -131,7 +131,7 @@ class QlFunctionCall:
 		"""
 
 		ql = self.ql
-		pc = ql.reg.arch_pc
+		pc = ql.arch.regs.arch_pc
 
 		# if set, fire up the on-enter hook and let it override original args set
 		if hook_onenter:
@@ -187,11 +187,11 @@ class QlFunctionCall:
 		nslots = self.__count_slots(atype for atype, _ in args)
 		self.cc.reserve(nslots)
 
-		# set arguments values
-		self.writeParams(args)
-
 		if ret is not None:
 			self.cc.setReturnAddress(ret)
 
+		# set arguments values
+		self.writeParams(args)
+
 		# call
-		self.ql.reg.arch_pc = addr
+		self.ql.arch.regs.arch_pc = addr

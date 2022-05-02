@@ -6,15 +6,13 @@
 import os, platform, sys, unittest
 
 sys.path.append("..")
-from qiling import *
+from qiling import Qiling
 from qiling.const import QL_VERBOSE
 
 
 class TestAndroid(unittest.TestCase):
+    @unittest.skipUnless(platform.system() == 'Linux', 'run only on Linux')
     def test_android_arm64(self):
-        if platform.system() != "Linux":
-            return
-
         test_binary = "../examples/rootfs/arm64_android/bin/arm64_android_hello"
         rootfs = "../examples/rootfs/arm64_android"
 

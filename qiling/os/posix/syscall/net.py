@@ -54,6 +54,6 @@ def ql_syscall_socketcall(ql: Qiling, call: int, args: int):
     handler, nargs = handlers[call]
 
     # read 'nargs' arguments from the specified base pointer 'args'
-    params = (ql.unpack(ql.mem.read(args + i * ql.pointersize, ql.pointersize)) for i in range(nargs))
+    params = (ql.unpack(ql.mem.read(args + i * ql.arch.pointersize, ql.arch.pointersize)) for i in range(nargs))
 
     return handler(ql, *params)

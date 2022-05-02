@@ -9,7 +9,7 @@ def __leaf_13(self):
 	pass
 
 def handler(ql: Qiling):
-	ah = ql.reg.ah
+	ah = ql.arch.regs.ah
 
 	leaffunc = {
 		0x13 : __leaf_13

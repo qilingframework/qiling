@@ -35,10 +35,10 @@ class QlMemoryManager:
             16 : (1 << 20) - 1   # 20bit address line
         }
 
-        if ql.archbit not in bit_stuff:
+        if ql.arch.bits not in bit_stuff:
             raise QlErrorStructConversion("Unsupported Qiling archtecture for memory manager")
 
-        max_addr = bit_stuff[ql.archbit]
+        max_addr = bit_stuff[ql.arch.bits]
 
         self.max_addr = max_addr
         self.max_mem_addr = max_addr
@@ -170,8 +170,8 @@ class QlMemoryManager:
         def __process(lbound: int, ubound: int, perms: int, label: str, is_mmio: bool) -> Tuple[int, int, str, str, Optional[str]]:
             perms_str = __perms_mapping(perms)
 
-            if hasattr(self.ql, 'os'):
-                image = self.ql.os.find_containing_image(lbound)
+            if hasattr(self.ql, 'loader'):
+                image = self.ql.loader.find_containing_image(lbound)
                 container = image.path if image and not is_mmio else None
             else:
                 container = None
@@ -184,26 +184,44 @@ class QlMemoryManager:
         """Emit memory map info in a nicely formatted table.
         """
 
+        mapinfo = self.get_mapinfo()
+
+        # determine columns sizes based on the longest value for each field
+        lengths = ((len(f'{ubound:#x}'), len(label)) for _, ubound, _, label, _ in mapinfo)
+        grouped = tuple(zip(*lengths))
+
+        len_addr  = max(grouped[0])
+        len_label = max(grouped[1])
+
         # emit title row
-        self.ql.log.info(f'{"Start":8s}   {"End":8s}   {"Perm":5s}   {"Label":12s}   {"Image"}')
+        self.ql.log.info(f'{"Start":{len_addr}s}   {"End":{len_addr}s}   {"Perm":5s}   {"Label":{len_label}s}   {"Image"}')
 
         # emit table rows
-        for lbound, ubound, perms, label, container in self.get_mapinfo():
-            self.ql.log.info(f'{lbound:08x} - {ubound:08x}   {perms:5s}   {label:12s}   {container or ""}')
+        for lbound, ubound, perms, label, container in mapinfo:
+            self.ql.log.info(f'{lbound:0{len_addr}x} - {ubound:0{len_addr}x}   {perms:5s}   {label:{len_label}s}   {container or ""}')
 
     # TODO: relying on the label string is risky; find a more reliable method
-    def get_lib_base(self, filename: str) -> int:
-        return next((s for s, _, _, info, _ in self.map_info if os.path.split(info)[1] == filename), -1)
+    def get_lib_base(self, filename: str) -> Optional[int]:
+        # regex pattern to capture boxed labels prefixes
+        p = re.compile(r'^\[.+\]\s*')
+
+        # some info labels may be prefixed by boxed label which breaks the search by basename.
+        # iterate through all info labels and remove all boxed prefixes, if any
+        stripped = ((lbound, p.sub('', info)) for lbound, _, _, info, _ in self.map_info)
+
+        return next((lbound for lbound, info in stripped if os.path.basename(info) == filename), None)
 
     def align(self, value: int, alignment: int = None) -> int:
-        """Align a value down to the specified alignment boundary.
+        """Align a value down to the specified alignment boundary. If `value` is already
+        aligned, the same value is returned. Commonly used to determine the base address
+        of the enclosing page.
 
         Args:
             value: a value to align
-            alignment: alignment boundary; must be a power of 2. if not specified
-            value will be aligned to page size
+            alignment: alignment boundary; must be a power of 2. if not specified value
+            will be aligned to page size
 
-        Returns: aligned value
+        Returns: value aligned down to boundary
         """
 
         if alignment is None:
@@ -216,14 +234,16 @@ class QlMemoryManager:
         return value & ~(alignment - 1)
 
     def align_up(self, value: int, alignment: int = None) -> int:
-        """Align a value up to the specified alignment boundary.
+        """Align a value up to the specified alignment boundary. If `value` is already
+        aligned, the same value is returned. Commonly used to determine the end address
+        of the enlosing page.
 
         Args:
             value: value to align
-            alignment: alignment boundary; must be a power of 2. if not specified
-            value will be aligned to page size
+            alignment: alignment boundary; must be a power of 2. if not specified value
+            will be aligned to page size
 
-        Returns: aligned value
+        Returns: value aligned up to boundary
         """
 
         if alignment is None:
@@ -288,6 +308,7 @@ class QlMemoryManager:
 
     def read_ptr(self, addr: int, size: int=None) -> int:
         """Read an integer value from a memory address.
+        Bytes read will be unpacked using emulated architecture properties.
 
         Args:
             addr: memory address to read
@@ -297,7 +318,7 @@ class QlMemoryManager:
         """
 
         if not size:
-            size = self.ql.pointersize
+            size = self.ql.arch.pointersize
 
         __unpack = {
             1 : self.ql.unpack8,
@@ -306,10 +327,10 @@ class QlMemoryManager:
             8 : self.ql.unpack64
         }.get(size)
 
-        if __unpack:
-            return __unpack(self.read(addr, size))
+        if __unpack is None:
+            raise QlErrorStructConversion(f"Unsupported pointer size: {size}")
 
-        raise QlErrorStructConversion(f"Unsupported pointer size: {size}")
+        return __unpack(self.read(addr, size))
 
     def write(self, addr: int, data: bytes) -> None:
         """Write bytes to a memory.
@@ -320,6 +341,31 @@ class QlMemoryManager:
         """
 
         self.ql.uc.mem_write(addr, data)
+
+    def write_ptr(self, addr: int, value: int, size: int=None) -> None:
+        """Write an integer value to a memory address.
+        Bytes written will be packed using emulated architecture properties.
+
+        Args:
+            addr: target memory address
+            value: integer value to write
+            size: pointer size (in bytes): either 1, 2, 4, 8, or None for arch native size
+        """
+
+        if not size:
+            size = self.ql.arch.pointersize
+
+        __pack = {
+            1 : self.ql.pack8,
+            2 : self.ql.pack16,
+            4 : self.ql.pack32,
+            8 : self.ql.pack64
+        }.get(size)
+
+        if __pack is None:
+            raise QlErrorStructConversion(f"Unsupported pointer size: {size}")
+
+        self.write(addr, __pack(value))
 
     def search(self, needle: bytes, begin: int = None, end: int = None) -> Sequence[int]:
         """Search for a sequence of bytes in memory.
@@ -373,8 +419,7 @@ class QlMemoryManager:
         """
 
         for begin, end, _ in self.ql.uc.mem_regions():
-            if begin and end:
-                self.unmap(begin, end - begin + 1)
+            self.unmap(begin, end - begin + 1)
 
     def is_available(self, addr: int, size: int) -> bool:
         """Query whether the memory range starting at `addr` and is of length of `size` bytes

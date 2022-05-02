@@ -7,7 +7,7 @@ from qiling import Qiling
 
 def handler(ql: Qiling):
 	# Note: Memory is not cleaned.
-	dl = ql.reg.dl
+	dl = ql.arch.regs.dl
 
 	if ql.os.fs_mapper.has_mapping(dl):
 		disk = ql.os.fs_mapper.open(dl, None)
@@ -19,5 +19,5 @@ def handler(ql: Qiling):
 
 	ql.mem.write(0x7C00, mbr)
 
-	ql.reg.cs = 0x07C0
-	ql.reg.ip = 0x0000
+	ql.arch.regs.cs = 0x07C0
+	ql.arch.regs.ip = 0x0000

@@ -61,7 +61,7 @@ def hook_Register(ql: Qiling, address: int, params):
 
 	# a value of -1 indicates that the swsmi index for this handler is flexible and
 	# should be assigned by the protocol
-	if idx == ((1 << ql.archbit) - 1):
+	if idx == ((1 << ql.arch.bits) - 1):
 		idx = next((i for i in range(1, MAXIMUM_SWI_VALUE) if i not in handlers), None)
 
 		if idx is None:
@@ -80,7 +80,7 @@ def hook_Register(ql: Qiling, address: int, params):
 			return EFI_INVALID_PARAMETER
 
 	# allocate handle and return it through out parameter
-	Handle = ql.loader.smm_context.heap.alloc(ql.pointersize)
+	Handle = ql.loader.smm_context.heap.alloc(ql.arch.pointersize)
 	utils.write_int64(ql, DispatchHandle, Handle)
 
 	args = {

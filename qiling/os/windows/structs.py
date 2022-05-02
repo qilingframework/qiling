@@ -3,486 +3,266 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import ctypes, struct
+import ctypes
 
 from enum import IntEnum
 
-from unicorn.x86_const import *
+from qiling import Qiling
+from qiling.os.windows.handle import Handle
+from qiling.exception import QlErrorNotImplemented
+from .wdk_const import IRP_MJ_MAXIMUM_FUNCTION, PROCESSOR_FEATURE_MAX
+
+def __make_struct(archbits: int):
+    """Provide a ctypes Structure base class based on the underlying
+    architecture properties.
+    """
+
+    class Struct(ctypes.LittleEndianStructure):
+        _pack_ = archbits // 8
+
+    return Struct
 
 
-from qiling.const import *
-from qiling.os.windows.handle import *
-from qiling.exception import *
-from .wdk_const import *
+def __select_native_type(archbits: int):
+    """Select a ctypes integer type with the underlying architecture
+    native size.
+    """
+
+    __type = {
+        32 : ctypes.c_uint32,
+        64 : ctypes.c_uint64
+    }
+
+    return __type[archbits]
 
 
-class POINTER32(ctypes.Structure):
-    _fields_ = [('value', ctypes.c_uint32)]
+def __select_pointer_type(archbits: int):
+    """Provide a pointer base class based on the underlying
+    architecture properties.
+    """
+
+    native_type = __select_native_type(archbits)
+    Struct = __make_struct(archbits)
+
+    class Pointer(Struct):
+        _fields_ = (
+            ('value', native_type),
+        )
+
+    return Pointer
 
 
-class POINTER64(ctypes.Structure):
-    _fields_ = [('value', ctypes.c_uint64)]
+def make_teb(archbits: int, *args, **kwargs):
+    """Initialize a TEB structure.
+
+    Additional arguments may be used to initialize specific TEB fields.
+    """
+
+    native_type = __select_native_type(archbits)
+    Struct = __make_struct(archbits)
+
+    class TEB(Struct):
+        _fields_ = (
+            ('CurrentSEH',             native_type),
+            ('StackBase',              native_type),
+            ('StackLimit',             native_type),
+            ('SubSystemTib',           native_type),
+            ('FiberData',              native_type),
+            ('ArbitraryDataSlot',      native_type),
+            ('TebAddress',             native_type),
+            ('EnvironmentPointer',     native_type),
+            ('ProcessID',              native_type),
+            ('ThreadID',               native_type),
+            ('RpcHandle',              native_type),
+            ('TlsAddress',             native_type),
+            ('PebAddress',             native_type),
+            ('LastError',              ctypes.c_int32),
+            ('CriticalSectionsCount',  ctypes.c_int32),
+            ('CsrClientThreadAddress', native_type),
+            ('Win32ThreadInfo',        native_type),
+            ('Win32ClientInfo',        ctypes.c_byte * 124),
+            ('ReservedWow64',          native_type),
+            ('CurrentLocale',          ctypes.c_int32),
+            ('FpSwStatusReg',          ctypes.c_int32),
+            ('ReservedOS',             ctypes.c_byte * 216)
+        )
+
+    return TEB(*args, **kwargs)
 
 
-class TEB:
-    def __init__(self,
-                 ql,
-                 base=0,
-                 exception_list=0,
-                 stack_base=0,
-                 stack_limit=0,
-                 sub_system_tib=0,
-                 fiber_data=0,
-                 arbitrary_user_pointer=0,
-                 Self=0,
-                 environment_pointer=0,
-                 client_id_unique_process=0,
-                 client_id_unique_thread=0,
-                 rpc_handle=0,
-                 tls_storage=0,
-                 peb_address=0,
-                 last_error_value=0,
-                 last_status_value=0,
-                 count_owned_locks=0,
-                 hard_error_mode=0):
-        self.ql = ql
-        self.base = base
-        self.ExceptionList = exception_list
-        self.StackBase = stack_base
-        self.StackLimit = stack_limit
-        self.SubSystemTib = sub_system_tib
-        self.FiberData = fiber_data
-        self.ArbitraryUserPointer = arbitrary_user_pointer
-        self.Self = Self
-        self.EnvironmentPointer = environment_pointer
-        self.ClientIdUniqueProcess = client_id_unique_process
-        self.ClientIdUniqueThread = client_id_unique_thread
-        self.RpcHandle = rpc_handle
-        self.Tls_Storage = tls_storage
-        self.PEB_Address = peb_address
-        self.LastErrorValue = last_error_value
-        self.LastStatusValue = last_status_value
-        self.Count_Owned_Locks = count_owned_locks
-        self.HardErrorMode = hard_error_mode
+def make_peb(archbits: int, *args, **kwargs):
+    """Initialize a PEB structure.
 
-    def bytes(self):
-        s = b''
-        s += self.ql.pack(self.ExceptionList)  # 0x00
-        s += self.ql.pack(self.StackBase)  # 0x04
-        s += self.ql.pack(self.StackLimit)  # 0x08
-        s += self.ql.pack(self.SubSystemTib)  # 0x0c
-        s += self.ql.pack(self.FiberData)  # 0x10
-        s += self.ql.pack(self.ArbitraryUserPointer)  # 0x14
-        s += self.ql.pack(self.Self)  # 0x18
-        s += self.ql.pack(self.EnvironmentPointer)  # 0x1c
-        s += self.ql.pack(self.ClientIdUniqueProcess)  # 0x20
-        s += self.ql.pack(self.ClientIdUniqueThread)  # 0x24
-        s += self.ql.pack(self.RpcHandle)  # 0x28
-        s += self.ql.pack(self.Tls_Storage)  # 0x2c
-        s += self.ql.pack(self.PEB_Address)  # 0x30
-        s += self.ql.pack(self.LastErrorValue)  # 0x34
-        s += self.ql.pack(self.LastStatusValue)  # 0x38
-        s += self.ql.pack(self.Count_Owned_Locks)  # 0x3c
-        s += self.ql.pack(self.HardErrorMode)  # 0x40
-        return s
+    Additional arguments may be used to initialize specific PEB fields.
+    """
+
+    native_type = __select_native_type(archbits)
+    Struct = __make_struct(archbits)
+
+    # https://www.geoffchappell.com/studies/windows/win32/ntdll/structs/peb/index.htm
+    class PEB(Struct):
+        _fields_ = (
+            ('InheritedAddressSpace',    ctypes.c_int8),
+            ('ReadImageFileExecOptions', ctypes.c_int8),
+            ('BeingDebugged',            ctypes.c_int8),
+            ('BitField',                 ctypes.c_int8),
+            ('Mutant',                   native_type),
+            ('ImageBaseAddress',         native_type),
+            ('LdrAddress',               native_type),
+            ('ProcessParameters',        native_type),
+            ('SubSystemData',            native_type),
+            ('ProcessHeap',              native_type),
+            ('FastPebLock',              native_type),
+            ('AtlThunkSListPtr',         native_type),
+            ('IFEOKey',                  native_type),
+            ('CrossProcessFlags',        ctypes.c_int32),
+            ('KernelCallbackTable',      native_type),
+            ('SystemReserved',           ctypes.c_int32),
+            ('AtlThunkSListPtr32',       ctypes.c_int32),
+            ('ApiSetMap',                native_type),
+            ('TlsExpansionCounter',      ctypes.c_int32),
+            ('TlsBitmap',                native_type),
+            ('TlsBitmapBits',            ctypes.c_int32 * 2),
+            ('ReadOnlySharedMemoryBase', native_type),
+            ('SharedData',               native_type),
+            ('ReadOnlyStaticServerData', native_type),
+            ('AnsiCodePageData',         native_type),
+            ('OemCodePageData',          native_type),
+            ('UnicodeCaseTableData',     native_type),
+            ('NumberOfProcessors',       ctypes.c_int32),
+            ('NtGlobalFlag',             ctypes.c_int32),
+            ('CriticalSectionTimeout',   native_type)
+            # ... more
+        )
+
+    obj_size = {
+        32: 0x047c,
+        64: 0x07c8
+    }[archbits]
+
+    obj = PEB(*args, **kwargs)
+    ctypes.resize(obj, obj_size)
+
+    return obj
 
 
-# https://www.geoffchappell.com/studies/windows/win32/ntdll/structs/peb/index.htm
+# https://docs.microsoft.com/en-us/windows/win32/api/subauth/ns-subauth-unicode_string
+#
+# typedef struct _UNICODE_STRING {
+#     USHORT Length;
+#     USHORT MaximumLength;
+#     PWSTR  Buffer;
+# } UNICODE_STRING, *PUNICODE_STRING;
 
+def make_unicode_string(archbits: int, *args, **kwargs):
+    """Initialize a Unicode String structure.
 
-class PEB:
-    def __init__(self,
-                 ql,
-                 base=0,
-                 flag=0,
-                 mutant=0,
-                 image_base_address=0,
-                 ldr_address=0,
-                 process_parameters=0,
-                 sub_system_data=0,
-                 process_heap=0,
-                 fast_peb_lock=0,
-                 alt_thunk_s_list_ptr=0,
-                 ifeo_key=0,
-                 number_processors=0):
-        self.ql = ql
-        self.base = base
-        self.flag = flag
-        self.ImageBaseAddress = image_base_address
-        self.Mutant = mutant
-        self.LdrAddress = ldr_address
-        self.ProcessParameters = process_parameters
-        self.SubSystemData = sub_system_data
-        self.ProcessHeap = process_heap
-        self.FastPebLock = fast_peb_lock
-        self.AtlThunkSListPtr = alt_thunk_s_list_ptr
-        self.IFEOKey = ifeo_key
-        self.numberOfProcessors = number_processors
-        if self.ql.archtype == 32:
-            self.size = 0x0468
-        else:
-            self.size = 0x07B0
+    Additional arguments may be used to initialize specific structure fields.
+    """
 
-    def write(self, addr):
-        s = b''
-        s += self.ql.pack(self.flag)  # 0x0 / 0x0
-        s += self.ql.pack(self.Mutant)  # 0x4 / 0x8
-        s += self.ql.pack(self.ImageBaseAddress)  # 0x8 / 0x10
-        s += self.ql.pack(self.LdrAddress)  # 0xc / 0x18
-        s += self.ql.pack(self.ProcessParameters)  # 0x10 / 0x20
-        s += self.ql.pack(self.SubSystemData)  # 0x14 / 0x28
-        s += self.ql.pack(self.ProcessHeap)  # 0x18 / 0x30
-        s += self.ql.pack(self.FastPebLock)  # 0x1c / 0x38
-        s += self.ql.pack(self.AtlThunkSListPtr)  # 0x20 / 0x40
-        s += self.ql.pack(self.IFEOKey)  # 0x24 / 0x48
-        self.ql.mem.write(addr, s)
-        # FIXME: understand how each attribute of the PEB works before adding it
-        self.ql.mem.write(addr + 0x64, self.ql.pack(self.numberOfProcessors))
+    native_type = __select_native_type(archbits)
+    Struct = __make_struct(archbits)
 
+    class UNICODE_STRING(Struct):
+        _fields_ = (
+            ('Length',        ctypes.c_uint16),
+            ('MaximumLength', ctypes.c_uint16),
+            ('Buffer',        native_type)
+        )
 
-class LDR_DATA:
-    def __init__(self,
-                 ql,
-                 base=0,
-                 Length=0,
-                 Initialized=0,
-                 SsHandle=0,
-                 InLoadOrderModuleList={
-                     'Flink': 0,
-                     'Blink': 0
-                 },
-                 InMemoryOrderModuleList={
-                     'Flink': 0,
-                     'Blink': 0
-                 },
-                 InInitializationOrderModuleList={
-                     'Flink': 0,
-                     'Blink': 0
-                 },
-                 EntryInProgress=0,
-                 ShutdownInProgress=0,
-                 ShutdownThreadId=0):
-        self.ql = ql
-        self.base = base
-        self.Length = Length
-        self.Initialized = Initialized
-        self.SsHandle = SsHandle
-        self.InLoadOrderModuleList = InLoadOrderModuleList
-        self.InMemoryOrderModuleList = InMemoryOrderModuleList
-        self.InInitializationOrderModuleList = InInitializationOrderModuleList
-        self.EntryInProgress = EntryInProgress
-        self.ShutdownInProgress = ShutdownInProgress
-        self.selfShutdownThreadId = ShutdownThreadId
+    return UNICODE_STRING(*args, **kwargs)
 
-    def bytes(self):
-        s = b''
-        s += self.ql.pack32(self.Length)  # 0x0
-        s += self.ql.pack32(self.Initialized)  # 0x4
-        s += self.ql.pack(self.SsHandle)  # 0x8
-        s += self.ql.pack(self.InLoadOrderModuleList['Flink'])  # 0x0c
-        s += self.ql.pack(self.InLoadOrderModuleList['Blink'])
-        s += self.ql.pack(self.InMemoryOrderModuleList['Flink'])  # 0x14
-        s += self.ql.pack(self.InMemoryOrderModuleList['Blink'])
-        s += self.ql.pack(
-            self.InInitializationOrderModuleList['Flink'])  # 0x1C
-        s += self.ql.pack(self.InInitializationOrderModuleList['Blink'])
-        s += self.ql.pack(self.EntryInProgress)
-        s += self.ql.pack(self.ShutdownInProgress)
-        s += self.ql.pack(self.selfShutdownThreadId)
+# https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/ns-wdm-_driver_object
+#
+# typedef struct _DRIVER_OBJECT {
+#     CSHORT             Type;
+#     CSHORT             Size;
+#     PDEVICE_OBJECT     DeviceObject;
+#     ULONG              Flags;
+#     PVOID              DriverStart;
+#     ULONG              DriverSize;
+#     PVOID              DriverSection;
+#     PDRIVER_EXTENSION  DriverExtension;
+#     UNICODE_STRING     DriverName;
+#     PUNICODE_STRING    HardwareDatabase;
+#     PFAST_IO_DISPATCH  FastIoDispatch;
+#     PDRIVER_INITIALIZE DriverInit;
+#     PDRIVER_STARTIO    DriverStartIo;
+#     PDRIVER_UNLOAD     DriverUnload;
+#     PDRIVER_DISPATCH   MajorFunction[IRP_MJ_MAXIMUM_FUNCTION + 1];
+# } DRIVER_OBJECT, *PDRIVER_OBJECT;
 
-        return s
+def make_driver_object(ql: Qiling, base: int, archbits: int):
+    native_type = __select_native_type(archbits)
+    pointer_type = __select_pointer_type(archbits)
+    Struct = __make_struct(archbits)
 
+    ucstrtype = make_unicode_string(archbits).__class__
 
-class LDR_DATA_TABLE_ENTRY:
-    def __init__(self,
-                 ql,
-                 base=0,
-                 InLoadOrderLinks={
-                     'Flink': 0,
-                     'Blink': 0
-                 },
-                 InMemoryOrderLinks={
-                     'Flink': 0,
-                     'Blink': 0
-                 },
-                 InInitializationOrderLinks={
-                     'Flink': 0,
-                     'Blink': 0
-                 },
-                 DllBase=0,
-                 EntryPoint=0,
-                 SizeOfImage=0,
-                 FullDllName='',
-                 BaseDllName='',
-                 Flags=0,
-                 LoadCount=0,
-                 TlsIndex=0,
-                 HashLinks=0,
-                 SectionPointer=0,
-                 CheckSum=0,
-                 TimeDateStamp=0,
-                 LoadedImports=0,
-                 EntryPointActivationContext=0,
-                 PatchInformation=0,
-                 ForwarderLinks=0,
-                 ServiceTagLinks=0,
-                 StaticLinks=0,
-                 ContextInformation=0,
-                 OriginalBase=0,
-                 LoadTime=0):
-        self.ql = ql
-        self.base = base
-        self.InLoadOrderLinks = InLoadOrderLinks
-        self.InMemoryOrderLinks = InMemoryOrderLinks
-        self.InInitializationOrderLinks = InInitializationOrderLinks
-        self.DllBase = DllBase
-        self.EntryPoint = EntryPoint
-        self.SizeOfImage = SizeOfImage
+    class DRIVER_OBJECT(Struct):
+        _fields_ = (
+            ('_Type',             ctypes.c_uint16),
+            ('_Size',             ctypes.c_uint16),
+            ('_DeviceObject',     pointer_type),
+            ('_Flags',            ctypes.c_uint32),
+            ('_DriverStart',      pointer_type),
+            ('_DriverSize',       ctypes.c_uint32),
+            ('_DriverSection',    pointer_type),
+            ('_DriverExtension',  pointer_type),
+            ('_DriverName',       ucstrtype),
+            ('_HardwareDatabase', pointer_type),
+            ('_FastIoDispatch',   pointer_type),
+            ('_DriverInit',       pointer_type),
+            ('_DriverStartIo',    pointer_type),
+            ('_DriverUnload',     pointer_type),
+            ('_MajorFunction',    native_type * (IRP_MJ_MAXIMUM_FUNCTION + 1))
+        )
 
-        FullDllName = FullDllName.encode("utf-16le")
-        self.FullDllName = {}
-        self.FullDllName['Length'] = len(FullDllName)
-        self.FullDllName['MaximumLength'] = len(FullDllName) + 2
-        self.FullDllName['BufferPtr'] = ql.heap.alloc(
-            self.FullDllName['MaximumLength'])
-        ql.mem.write(self.FullDllName['BufferPtr'], FullDllName + b"\x00\x00")
+        def __read_obj(self) -> 'DRIVER_OBJECT':
+            data = ql.mem.read(base, ctypes.sizeof(self))
 
-        BaseDllName = BaseDllName.encode("utf-16le")
-        self.BaseDllName = {}
-        self.BaseDllName['Length'] = len(BaseDllName)
-        self.BaseDllName['MaximumLength'] = len(BaseDllName) + 2
-        self.BaseDllName['BufferPtr'] = ql.heap.alloc(
-            self.BaseDllName['MaximumLength'])
-        ql.mem.write(self.BaseDllName['BufferPtr'], BaseDllName + b"\x00\x00")
+            return self.__class__.from_buffer(data)
 
-        self.Flags = Flags
-        self.LoadCount = LoadCount
-        self.TlsIndex = TlsIndex
-        self.HashLinks = HashLinks
-        self.SectionPointer = SectionPointer
-        self.CheckSum = CheckSum
-        self.TimeDateStamp = TimeDateStamp
-        self.LoadedImports = LoadedImports
-        self.EntryPointActivationContext = EntryPointActivationContext
-        self.PatchInformation = PatchInformation
-        self.ForwarderLinks = ForwarderLinks
-        self.ServiceTagLinks = ServiceTagLinks
-        self.StaticLinks = StaticLinks
-        self.ContextInformation = ContextInformation
-        self.OriginalBase = OriginalBase
-        self.LoadTime = LoadTime
+        def __write_obj(self) -> None:
+            ql.mem.write(base, bytes(self))
 
-    def attrs(self):
-        return ", ".join("{}={}".format(k, getattr(self, k))
-                         for k in self.__dict__.keys())
+        # get MajorFunction
+        @property
+        def MajorFunction(self):
+            obj = self.__read_obj()
 
-    def print(self):
-        return "[{}:{}]".format(self.__class__.__name__, self.attrs())
+            return getattr(obj, '_MajorFunction')
 
-    def bytes(self):
-        s = b''
-        s += self.ql.pack(self.InLoadOrderLinks['Flink'])  # 0x0
-        s += self.ql.pack(self.InLoadOrderLinks['Blink'])
-        s += self.ql.pack(self.InMemoryOrderLinks['Flink'])  # 0x8
-        s += self.ql.pack(self.InMemoryOrderLinks['Blink'])
-        s += self.ql.pack(self.InInitializationOrderLinks['Flink'])  # 0x10
-        s += self.ql.pack(self.InInitializationOrderLinks['Blink'])
-        s += self.ql.pack(self.DllBase)  # 0x18
-        s += self.ql.pack(self.EntryPoint)  # 0x1c
-        s += self.ql.pack(self.SizeOfImage)  # 0x20
-        s += self.ql.pack16(self.FullDllName['Length'])  # 0x24
-        s += self.ql.pack16(self.FullDllName['MaximumLength'])  # 0x26
+        @property
+        def DeviceObject(self):
+            obj = self.__read_obj()
 
-        if self.ql.arch == QL_ARCH.X8664:
-            s += self.ql.pack32(0)
+            return getattr(obj, '_DeviceObject').value
 
-        s += self.ql.pack(self.FullDllName['BufferPtr'])  # 0x28
-        s += self.ql.pack16(self.BaseDllName['Length'])
-        s += self.ql.pack16(self.BaseDllName['MaximumLength'])
+        @DeviceObject.setter
+        def DeviceObject(self, value):
+            obj = self.__read_obj()
+            getattr(obj, '_DeviceObject').value = value
 
-        if self.ql.arch == QL_ARCH.X8664:
-            s += self.ql.pack32(0)
+            obj.__write_obj()
 
-        s += self.ql.pack(self.BaseDllName['BufferPtr'])
-        s += self.ql.pack(self.Flags)
-        s += self.ql.pack(self.LoadCount)
-        s += self.ql.pack(self.TlsIndex)
-        s += self.ql.pack(self.HashLinks)
-        s += self.ql.pack(self.SectionPointer)
-        s += self.ql.pack(self.CheckSum)
-        s += self.ql.pack(self.TimeDateStamp)
-        s += self.ql.pack(self.LoadedImports)
-        s += self.ql.pack(self.EntryPointActivationContext)
-        s += self.ql.pack(self.PatchInformation)
-        s += self.ql.pack(self.ForwarderLinks)
-        s += self.ql.pack(self.ServiceTagLinks)
-        s += self.ql.pack(self.StaticLinks)
-        s += self.ql.pack(self.ContextInformation)
-        s += self.ql.pack(self.OriginalBase)
-        s += self.ql.pack(self.LoadTime)
+        @property
+        def DriverUnload(self):
+            obj = self.__read_obj()
 
-        return s
+            return getattr(obj, '_DriverUnload').value
 
-
-'''
-https://docs.microsoft.com/en-us/windows/win32/api/subauth/ns-subauth-unicode_string
-
-typedef struct _UNICODE_STRING {
-  USHORT Length;
-  USHORT MaximumLength;
-  PWSTR  Buffer;
-} UNICODE_STRING, *PUNICODE_STRING;
-'''
-
-
-class UNICODE_STRING64(ctypes.Structure):
-    _pack_ = 8
-    _fields_ = (('Length', ctypes.c_uint16), ('MaximumLength', ctypes.c_int16),
-                ('Buffer', ctypes.c_uint64))
-
-
-class UNICODE_STRING32(ctypes.Structure):
-    _pack_ = 4
-    _fields_ = (('Length', ctypes.c_uint16), ('MaximumLength', ctypes.c_int16),
-                ('Buffer', ctypes.c_uint32))
-
-
-'''
-https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/ns-wdm-_driver_object
-
-typedef struct _DRIVER_OBJECT {
-  CSHORT             Type;
-  CSHORT             Size;
-  PDEVICE_OBJECT     DeviceObject;
-  ULONG              Flags;
-  PVOID              DriverStart;
-  ULONG              DriverSize;
-  PVOID              DriverSection;
-  PDRIVER_EXTENSION  DriverExtension;
-  UNICODE_STRING     DriverName;
-  PUNICODE_STRING    HardwareDatabase;
-  PFAST_IO_DISPATCH  FastIoDispatch;
-  PDRIVER_INITIALIZE DriverInit;
-  PDRIVER_STARTIO    DriverStartIo;
-  PDRIVER_UNLOAD     DriverUnload;
-  PDRIVER_DISPATCH   MajorFunction[IRP_MJ_MAXIMUM_FUNCTION + 1];
-} DRIVER_OBJECT, *PDRIVER_OBJECT;
-'''
-
-
-class DRIVER_OBJECT64(ctypes.Structure):
-    _pack_ = 8
-    _fields_ = (
-        ("_Type", ctypes.c_uint16),
-        ("_Size", ctypes.c_uint16),
-        ("_DeviceObject", POINTER64),
-        ("_Flags", ctypes.c_uint32),
-        ("_DriverStart", POINTER64),
-        ("_DriverSize", ctypes.c_uint32),
-        ("_DriverSection", POINTER64),
-        ("_DriverExtension", POINTER64),
-        ("_DriverName", UNICODE_STRING64),
-        ("_HardwareDatabase", POINTER64),
-        ("_FastIoDispatch", POINTER64),
-        ("_DriverInit", POINTER64),
-        ("_DriverStartIo", POINTER64),
-        ("_DriverUnload", POINTER64),
-        ("_MajorFunction", ctypes.c_uint64 * (IRP_MJ_MAXIMUM_FUNCTION + 1)))
-
-    def __init__(self, ql, base):
-        self.ql = ql
-        self.base = base
-
-    # get MajorFunction
-    @property
-    def MajorFunction(self):
-        data = self.ql.mem.read(self.base, ctypes.sizeof(self))
-        obj = type(self).from_buffer(data)
-        return obj._MajorFunction
-
-    @property
-    def DeviceObject(self):
-        # TODO: improve this code to avoid reading the whole object
-        data = self.ql.mem.read(self.base, ctypes.sizeof(self))
-        obj = type(self).from_buffer(data)
-        return obj._DeviceObject.value
-
-    @DeviceObject.setter
-    def DeviceObject(self, value):
-        # TODO: improve this code to avoid reading/writing the whole object
-        data = self.ql.mem.read(self.base, ctypes.sizeof(self))
-        obj = type(self).from_buffer(data)
-        obj._DeviceObject.value = value
-        # update back to memory.
-        self.ql.mem.write(self.base, bytes(obj))
-
-    @property
-    def DriverUnload(self):
-        data = self.ql.mem.read(self.base, ctypes.sizeof(self))
-        obj = type(self).from_buffer(data)
-        return obj._DriverUnload.value
-
-
-class DRIVER_OBJECT32(ctypes.Structure):
-    _pack_ = 4
-    _fields_ = (
-        ("_Type", ctypes.c_uint16),
-        ("_Size", ctypes.c_uint16),
-        ("_DeviceObject", POINTER32),
-        ("_Flags", ctypes.c_uint32),
-        ("_DriverStart", POINTER32),
-        ("_DriverSize", ctypes.c_uint32),
-        ("_DriverSection", POINTER32),
-        ("_DriverExtension", POINTER32),
-        ("_DriverName", UNICODE_STRING32),
-        ("_HardwareDatabase", POINTER32),
-        ("_FastIoDispatch", POINTER32),
-        ("_DriverInit", POINTER32),
-        ("_DriverStartIo", POINTER32),
-        ("_DriverUnload", POINTER32),
-        ("_MajorFunction", ctypes.c_uint32 * (IRP_MJ_MAXIMUM_FUNCTION + 1)))
-
-    def __init__(self, ql, base):
-        self.ql = ql
-        self.base = base
-
-    # get MajorFunction
-    @property
-    def MajorFunction(self):
-        data = self.ql.mem.read(self.base, ctypes.sizeof(self))
-        obj = type(self).from_buffer(data)
-        return obj._MajorFunction
-
-    @property
-    def DeviceObject(self):
-        # TODO: improve this code to avoid reading the whole object
-        data = self.ql.mem.read(self.base, ctypes.sizeof(self))
-        obj = type(self).from_buffer(data)
-        return obj._DeviceObject.value
-
-    @DeviceObject.setter
-    def DeviceObject(self, value):
-        # TODO: improve this code to avoid reading/writing the whole object
-        data = self.ql.mem.read(self.base, ctypes.sizeof(self))
-        obj = type(self).from_buffer(data)
-        obj._DeviceObject.value = value
-        # update back to memory.
-        self.ql.mem.write(self.base, bytes(obj))
-
-    @property
-    def DriverUnload(self):
-        data = self.ql.mem.read(self.base, ctypes.sizeof(self))
-        obj = type(self).from_buffer(data)
-        return obj._DriverUnload.value
-
-
+    return DRIVER_OBJECT()
 
 class KSYSTEM_TIME(ctypes.Structure):
-    _fields_ = (('LowPart', ctypes.c_uint32), ('High1Time', ctypes.c_int32),
-                ('High2Time', ctypes.c_int32))
+    _fields_ = (
+        ('LowPart', ctypes.c_uint32),
+        ('High1Time', ctypes.c_int32),
+        ('High2Time', ctypes.c_int32)
+    )
 
 
-class LARGE_INTEGER_DUMMYSTRUCTNAME(ctypes.Structure):
+class LARGE_INTEGER_DUMMYSTRUCTNAME(ctypes.LittleEndianStructure):
     _fields_ = (
         ('LowPart', ctypes.c_uint32),
         ('HighPart', ctypes.c_int32),
@@ -495,8 +275,12 @@ class LARGE_INTEGER(ctypes.Union):
         ('QuadPart', ctypes.c_int64),
     )
 
+# https://www.geoffchappell.com/studies/windows/km/ntoskrnl/structs/kuser_shared_data/index.htm
+#
+# struct information:
+# https://doxygen.reactos.org/d8/dae/modules_2rostests_2winetests_2ntdll_2time_8c_source.html
 
-class KUSER_SHARED_DATA(ctypes.Structure):
+class KUSER_SHARED_DATA(ctypes.LittleEndianStructure):
     _fields_ = (
         ('TickCountLowDeprecated', ctypes.c_uint32),
         ('TickCountMultiplier', ctypes.c_uint32),
@@ -539,216 +323,123 @@ class KUSER_SHARED_DATA(ctypes.Structure):
         ('TestRetInstruction', ctypes.c_uint8),
         ('_padding0', ctypes.c_uint8 * 0x2F8))
 
+def make_list_entry(archbits: int):
+    native_type = __select_native_type(archbits)
+    Struct = __make_struct(archbits)
 
-class LIST_ENTRY32(ctypes.Structure):
-    _pack_ = 4
-    _fields_ = (
-        ('Flink', ctypes.c_uint32),
-        ('Blink', ctypes.c_uint32),
-    )
-
-
-class KDEVICE_QUEUE_ENTRY32(ctypes.Structure):
-    _pack_ = 4
-    _fields_ = (
-        ('DeviceListEntry', LIST_ENTRY32),
-        ('SortKey', ctypes.c_uint32),
-        ('Inserted', ctypes.c_uint8)
+    class LIST_ENTRY(Struct):
+        _fields_ = (
+            ('Flink', native_type),
+            ('Blink', native_type)
         )
 
+    return LIST_ENTRY
 
-class WAIT_ENTRY32(ctypes.Structure):
-    _pack_ = 4
-    _fields_ = (
-        ('DmaWaitEntry', LIST_ENTRY32),
-        ('NumberOfChannels', ctypes.c_uint32),
-        ('DmaContext', ctypes.c_uint32)
+def make_device_object(archbits: int):
+    native_type = __select_native_type(archbits)
+    pointer_type = __select_pointer_type(archbits)
+    Struct = __make_struct(archbits)
+
+    LIST_ENTRY = make_list_entry(archbits)
+
+    class KDEVICE_QUEUE_ENTRY(Struct):
+        _fields_ = (
+            ('DeviceListEntry', LIST_ENTRY),
+            ('SortKey', ctypes.c_uint32),
+            ('Inserted', ctypes.c_uint8)
         )
 
+    class WAIT_ENTRY(Struct):
+        _fields_ = (
+            ('DmaWaitEntry', LIST_ENTRY),
+            ('NumberOfChannels', ctypes.c_uint32),
+            ('DmaContext', ctypes.c_uint32)
+        )
 
-class WAIT_QUEUE_UNION32(ctypes.Union):
-    _pack_ = 4
-    _fields_ = ("WaitQueueEntry", KDEVICE_QUEUE_ENTRY32), ("Dma", WAIT_ENTRY32)
+    class WAIT_QUEUE_UNION(ctypes.Union):
+        _pack_ = archbits // 8
+        _fields_ = (
+            ("WaitQueueEntry", KDEVICE_QUEUE_ENTRY),
+            ("Dma", WAIT_ENTRY)
+        )
 
+    class WAIT_CONTEXT_BLOCK(Struct):
+        _fields_ = (
+            ('WaitQueue', WAIT_QUEUE_UNION),
+            ('DeviceRoutine', pointer_type),
+            ('DeviceContext', pointer_type),
+            ('NumberOfMapRegisters', ctypes.c_uint32),
+            ('DeviceObject', pointer_type),
+            ('CurrentIrp', pointer_type),
+            ('BufferChainingDpc', pointer_type)
+        )
 
-class WAIT_CONTEXT_BLOCK32(ctypes.Structure):
-    _pack_ = 4
-    _fields_ = (('WaitQueue', WAIT_QUEUE_UNION32),
-                ('DeviceRoutine', POINTER32),
-                ('DeviceContext', POINTER32),
-                ('NumberOfMapRegisters', ctypes.c_uint32),
-                ('DeviceObject', POINTER32),
-                ('CurrentIrp', POINTER32),
-                ('BufferChainingDpc', POINTER32))
+    class KDEVICE_QUEUE(Struct):
+        _fields_ = (
+            ('Type', ctypes.c_int16),
+            ('Size', ctypes.c_int16),
+            ('DeviceListHead', LIST_ENTRY),
+            ('Lock', ctypes.c_uint32),
+            ('Busy', ctypes.c_uint8)
+        )
 
+    # class SINGLE_LIST_ENTRY(Struct):
+    #     _fields_ = (
+    #         ('Next', native_type),
+    #     )
 
-class KDEVICE_QUEUE32(ctypes.Structure):
-    _pack_ = 4
-    _fields_ = (('Type', ctypes.c_int16), ('Size', ctypes.c_int16),
-                ('DeviceListHead', LIST_ENTRY32), ('Lock', ctypes.c_uint32),
-                ('Busy', ctypes.c_uint8))
+    # https://github.com/ntdiff/headers/blob/master/Win10_1507_TS1/x64/System32/hal.dll/Standalone/_KDPC.h
+    class KDPC(Struct):
+        _fields_ = (
+            ('Type', ctypes.c_uint8),
+            ('Importance', ctypes.c_uint8),
+            ('Number', ctypes.c_uint16),
+            ('DpcListEntry', LIST_ENTRY),
+            ('DeferredRoutine', pointer_type),
+            ('DeferredContext', pointer_type),
+            ('SystemArgument1', pointer_type),
+            ('SystemArgument2', pointer_type),
+            ('DpcData', pointer_type)
+        )
 
+    class DISPATCHER_HEADER(Struct):
+        _fields_ = (
+            ('Lock', ctypes.c_int32),
+            ('SignalState', ctypes.c_int32),
+            ('WaitListHead', LIST_ENTRY)
+        )
 
-class SINGLE_LIST_ENTRY32(ctypes.Structure):
-    _fields_ = [(('Next', ctypes.c_uint32))]
+    # https://docs.microsoft.com/vi-vn/windows-hardware/drivers/ddi/wdm/ns-wdm-_device_object
+    class DEVICE_OBJECT(Struct):
+        _fields_ = (
+            ('Type', ctypes.c_int16),
+            ('Size', ctypes.c_uint16),
+            ('ReferenceCount', ctypes.c_int32),
+            ('DriverObject', pointer_type),
+            ('NextDevice', pointer_type),
+            ('AttachedDevice', pointer_type),
+            ('CurrentIrp', pointer_type),
+            ('Timer', pointer_type),
+            ('Flags', ctypes.c_uint32),
+            ('Characteristics', ctypes.c_uint32),
+            ('Vpb', pointer_type),
+            ('DeviceExtension', native_type),
+            ('DeviceType', ctypes.c_uint32),
+            ('StackSize', ctypes.c_int16),
+            ('Queue', WAIT_CONTEXT_BLOCK),
+            ('AlignmentRequirement', ctypes.c_uint32),
+            ('DeviceQueue', KDEVICE_QUEUE),
+            ('Dpc', KDPC),
+            ('ActiveThreadCount', ctypes.c_uint32),
+            ('SecurityDescriptor', pointer_type),
+            ('DeviceLock', DISPATCHER_HEADER),
+            ('SectorSize', ctypes.c_uint16),
+            ('Spare1', ctypes.c_uint16),
+            ('DeviceObjectExtension', pointer_type),
+            ('Reserved', pointer_type)
+        )
 
-
-# https://github.com/ntdiff/headers/blob/master/Win10_1507_TS1/x64/System32/hal.dll/Standalone/_KDPC.h
-class KDPC32(ctypes.Structure):
-    _pack_ = 4
-    _fields_ = (
-        ('Type', ctypes.c_uint8),
-        ('Importance', ctypes.c_uint8),
-        ('Number', ctypes.c_uint16),
-        ('DpcListEntry', LIST_ENTRY32),
-        ('DeferredRoutine', POINTER32),
-        ('DeferredContext', POINTER32),
-        ('SystemArgument1', POINTER32),
-        ('SystemArgument2', POINTER32),
-        ('DpcData', POINTER32),
-    )
-
-
-class DISPATCHER_HEADER32(ctypes.Structure):
-    _fields_ = (
-        ('Lock', ctypes.c_int32),
-        ('SignalState', ctypes.c_int32),
-        ('WaitListHead', LIST_ENTRY32),
-    )
-
-
-# https://docs.microsoft.com/vi-vn/windows-hardware/drivers/ddi/wdm/ns-wdm-_device_object
-class DEVICE_OBJECT32(ctypes.Structure):
-    _pack_ = 4
-    _fields_ = (
-        ('Type', ctypes.c_int16),
-        ('Size', ctypes.c_uint16),
-        ('ReferenceCount', ctypes.c_int32),
-        ('DriverObject', POINTER32),
-        ('NextDevice', POINTER32),
-        ('AttachedDevice', POINTER32),
-        ('CurrentIrp', POINTER32),
-        ('Timer', POINTER32),
-        ('Flags', ctypes.c_uint32),
-        ('Characteristics', ctypes.c_uint32),
-        ('Vpb', POINTER32),
-        ('DeviceExtension', ctypes.c_uint32),
-        ('DeviceType', ctypes.c_uint32),
-        ('StackSize', ctypes.c_int16),
-        ('Queue', WAIT_CONTEXT_BLOCK32),
-        ('AlignmentRequirement', ctypes.c_uint32),
-        ('DeviceQueue', KDEVICE_QUEUE32),
-        ('Dpc', KDPC32),
-        ('ActiveThreadCount', ctypes.c_uint32),
-        ('SecurityDescriptor', POINTER32),
-        ('DeviceLock', DISPATCHER_HEADER32),
-        ('SectorSize', ctypes.c_uint16),
-        ('Spare1', ctypes.c_uint16),
-        ('DeviceObjectExtension', POINTER32),
-        ('Reserved', POINTER32),
-    )
-
-
-## 64bit structures
-class LIST_ENTRY64(ctypes.Structure):
-    _pack_ = 8
-    _fields_ = (
-        ('Flink', ctypes.c_uint64),
-        ('Blink', ctypes.c_uint64),
-    )
-
-
-class KDEVICE_QUEUE_ENTRY64(ctypes.Structure):
-    _pack_ = 8
-    _fields_ = (('DeviceListEntry', LIST_ENTRY64),
-                ('SortKey', ctypes.c_uint32), ('Inserted', ctypes.c_uint8))
-
-
-class WAIT_ENTRY64(ctypes.Structure):
-    _pack_ = 8
-    _fields_ = (('DmaWaitEntry', LIST_ENTRY64),
-                ('NumberOfChannels', ctypes.c_uint32), ('DmaContext',
-                                                        ctypes.c_uint32))
-
-
-class WAIT_QUEUE_UNION64(ctypes.Union):
-    _fields_ = ("WaitQueueEntry", KDEVICE_QUEUE_ENTRY64), ("Dma", WAIT_ENTRY64)
-
-
-class WAIT_CONTEXT_BLOCK64(ctypes.Structure):
-    _pack_ = 8
-    _fields_ = (('WaitQueue', WAIT_QUEUE_UNION64),
-                ('DeviceRoutine', POINTER64), ('DeviceContext', POINTER64),
-                ('NumberOfMapRegisters', ctypes.c_uint32), ('DeviceObject',
-                                                            POINTER64),
-                ('CurrentIrp', POINTER64), ('BufferChainingDpc', POINTER64))
-
-
-class KDEVICE_QUEUE64(ctypes.Structure):
-    _pack_ = 8
-    _fields_ = (('Type', ctypes.c_int16), ('Size', ctypes.c_int16),
-                ('DeviceListHead', LIST_ENTRY64), ('Lock', ctypes.c_uint32),
-                ('Busy', ctypes.c_uint8))
-
-
-class SINGLE_LIST_ENTRY64(ctypes.Structure):
-    _pack_ = 8
-    _fields_ = [(('Next', ctypes.c_uint64))]
-
-
-class KDPC64(ctypes.Structure):
-    _pack_ = 8
-    _fields_ = (
-        ('Type', ctypes.c_uint8),
-        ('Importance', ctypes.c_uint8),
-        ('Number', ctypes.c_uint16),
-        ('DpcListEntry', LIST_ENTRY64),
-        ('DeferredRoutine', POINTER64),
-        ('DeferredContext', POINTER64),
-        ('SystemArgument1', POINTER64),
-        ('SystemArgument2', POINTER64),
-        ('DpcData', POINTER64),
-    )
-
-
-class DISPATCHER_HEADER64(ctypes.Structure):
-    _pack_ = 8
-    _fields_ = (
-        ('Lock', ctypes.c_int32),
-        ('SignalState', ctypes.c_int32),
-        ('WaitListHead', LIST_ENTRY64),
-    )
-
-
-class DEVICE_OBJECT64(ctypes.Structure):
-    _pack_ = 8
-    _fields_ = (
-        ('Type', ctypes.c_int16),
-        ('Size', ctypes.c_uint16),
-        ('ReferenceCount', ctypes.c_int32),
-        ('DriverObject', POINTER64),
-        ('NextDevice', POINTER64),
-        ('AttachedDevice', POINTER64),
-        ('CurrentIrp', POINTER64),
-        ('Timer', POINTER64),
-        ('Flags', ctypes.c_uint32),
-        ('Characteristics', ctypes.c_uint32),
-        ('Vpb', POINTER64),
-        ('DeviceExtension', ctypes.c_uint64),
-        ('DeviceType', ctypes.c_uint32),
-        ('StackSize', ctypes.c_int16),
-        ('Queue', WAIT_CONTEXT_BLOCK64),
-        ('AlignmentRequirement', ctypes.c_uint32),
-        ('DeviceQueue', KDEVICE_QUEUE64),
-        ('Dpc', KDPC64),
-        ('ActiveThreadCount', ctypes.c_uint32),
-        ('SecurityDescriptor', POINTER64),
-        ('DeviceLock', DISPATCHER_HEADER64),
-        ('SectorSize', ctypes.c_uint16),
-        ('Spare1', ctypes.c_uint16),
-        ('DeviceObjectExtension', POINTER64),
-        ('Reserved', POINTER64),
-    )
+    return DEVICE_OBJECT()
 
 
 # struct IO_STATUS_BLOCK {
@@ -759,234 +450,102 @@ class DEVICE_OBJECT64(ctypes.Structure):
 #   ULONG_PTR Information;
 # };
 
+def make_irp(archbits: int):
+    pointer_type = __select_pointer_type(archbits)
+    native_type = __select_native_type(archbits)
+    Struct = __make_struct(archbits)
 
-class IO_STATUS_BLOCK_DUMMY64(ctypes.Union):
-    _pack_ = 8
-    _fields_ = (
-        ('Status', ctypes.c_int32),
-        ('Pointer', POINTER64),
-    )
+    LIST_ENTRY = make_list_entry(archbits)
 
-
-class IO_STATUS_BLOCK64(ctypes.Structure):
-    _pack_ = 8
-    _fields_ = (('Status', IO_STATUS_BLOCK_DUMMY64), ('Information',
-                                                      POINTER64))
-
-
-class IO_STATUS_BLOCK_DUMMY32(ctypes.Union):
-    _fields_ = (
-        ('Status', ctypes.c_int32),
-        ('Pointer', POINTER32),
-    )
-
-
-class IO_STATUS_BLOCK32(ctypes.Structure):
-    _pack_ = 4
-    _fields_ = (('Status', IO_STATUS_BLOCK_DUMMY32), ('Information',
-                                                      POINTER32))
-
-
-# struct IO_STACK_LOCATION {
-#     UCHAR                  MajorFunction;
-#     UCHAR                  MinorFunction;
-#     UCHAR                  Flags;
-#     UCHAR                  Control;
-#     union {
-#         struct {
-#             char  _padding1[4];
-#             ULONG                   OutputBufferLength;
-#             char  _padding2[4];
-#             ULONG POINTER_ALIGNMENT InputBufferLength;
-#             char  _padding3[4];
-#             ULONG POINTER_ALIGNMENT FsControlCode;
-#             char  _padding4[4];
-#             PVOID                   Type3InputBuffer;
-#         } FileSystemControl;
-#         struct {
-#             char  _padding5[4];
-#             ULONG                   OutputBufferLength;
-#             ULONG POINTER_ALIGNMENT InputBufferLength;  // 10
-#             char  _padding7[4];
-#             ULONG POINTER_ALIGNMENT IoControlCode;      // 18
-#             char  _padding8[4];
-#             PVOID                   Type3InputBuffer;   // 20
-#         } DeviceIoControl;
-#     } Parameters;
-# };
-class IO_STACK_LOCATION_FILESYSTEMCONTROL64(ctypes.Structure):
-    _pack_ = 8
-    _fields_ = (('OutputBufferLength', ctypes.c_uint32), ('_padding1',
-                                                          ctypes.c_uint32),
-                ('InputBufferLength', ctypes.c_uint32), ('_padding2',
-                                                         ctypes.c_uint32),
-                ('FsControlCode', ctypes.c_uint32), ('Type3InputBuffer',
-                                                     POINTER64))
-
-
-class IO_STACK_LOCATION_FILESYSTEMCONTROL32(ctypes.Structure):
-    _pack_ = 4
-    _fields_ = (
-        ('OutputBufferLength', ctypes.c_uint32),
-        ('InputBufferLength', ctypes.c_uint32),
-        ('FsControlCode', ctypes.c_uint32),
-        ('Type3InputBuffer', POINTER32))
-
-
-class IO_STACK_LOCATION_DEVICEIOCONTROL64(ctypes.Structure):
-    _pack_ = 8
-    _fields_ = (
-        ('OutputBufferLength', ctypes.c_uint32),
-        ('_padding1', ctypes.c_uint32),
-        ('InputBufferLength', ctypes.c_uint32),
-        ('_padding2', ctypes.c_uint32),
-        ('IoControlCode', ctypes.c_uint32),
-        ('Type3InputBuffer', POINTER64))
-
-
-class IO_STACK_LOCATION_DEVICEIOCONTROL32(ctypes.Structure):
-    _pack_ = 4
-    _fields_ = (
-        ('OutputBufferLength', ctypes.c_uint32),
-        ('InputBufferLength', ctypes.c_uint32),
-        ('IoControlCode', ctypes.c_uint32),
-        ('Type3InputBuffer', POINTER32)
+    class IO_STATUS_BLOCK_DUMMY(ctypes.Union):
+        _pack_ = archbits // 8
+        _fields_ = (
+            ('Status', ctypes.c_int32),
+            ('Pointer', pointer_type)
         )
 
-class IO_STACK_LOCATION_WRITE64(ctypes.Structure):
-    _pack_ = 8
-    _fields_ = (
-        ('Length', ctypes.c_uint32),
-        ('_padding1', ctypes.c_uint32),
-        ('Key', ctypes.c_uint32),
-        ('Flags', ctypes.c_uint32),
-        ('ByteOffset', LARGE_INTEGER)
-    )
+    class IO_STATUS_BLOCK(Struct):
+        _fields_ = (
+            ('Status', IO_STATUS_BLOCK_DUMMY),
+            ('Information', pointer_type)
+        )
 
-class IO_STACK_LOCATION_WRITE32(ctypes.Structure):
-    _pack_ = 4
-    _fields_ = (
-        ('Length', ctypes.c_uint32),
-        ('Key', ctypes.c_uint32),
-        ('Flags', ctypes.c_uint32),
-        ('ByteOffset', LARGE_INTEGER)
-    )
+    class IO_STACK_LOCATION_FILESYSTEMCONTROL(Struct):
+        _fields_ = (
+            ('OutputBufferLength', native_type),  # c_uint32 padded to native size
+            ('InputBufferLength', native_type),   # c_uint32 padded to native size
+            ('FsControlCode', ctypes.c_uint32),
+            ('Type3InputBuffer', pointer_type)
+        )
 
-class IO_STACK_LOCATION_PARAM64(ctypes.Union):
-    _pack_ = 8
-    _fields_ = (('FileSystemControl', IO_STACK_LOCATION_FILESYSTEMCONTROL64),
-                ('DeviceIoControl', IO_STACK_LOCATION_DEVICEIOCONTROL64),
-                ('Write', IO_STACK_LOCATION_WRITE64))
+    class IO_STACK_LOCATION_DEVICEIOCONTROL(Struct):
+        _fields_ = (
+            ('OutputBufferLength',native_type),  # c_uint32 padded to native size
+            ('InputBufferLength', native_type),  # c_uint32 padded to native size
+            ('IoControlCode', ctypes.c_uint32),
+            ('Type3InputBuffer', pointer_type)
+        )
 
+    class IO_STACK_LOCATION_WRITE(Struct):
+        _fields_ = (
+            ('Length', native_type),             # c_uint32 padded to native size
+            ('Key', ctypes.c_uint32),
+            ('Flags', ctypes.c_uint32),
+            ('ByteOffset', LARGE_INTEGER)
+        )
 
-class IO_STACK_LOCATION_PARAM32(ctypes.Union):
-    _pack_ = 4
-    _fields_ = (('FileSystemControl', IO_STACK_LOCATION_FILESYSTEMCONTROL32),
-                ('DeviceIoControl', IO_STACK_LOCATION_DEVICEIOCONTROL32),
-                ('Write', IO_STACK_LOCATION_WRITE32))
+    class IO_STACK_LOCATION_PARAM(ctypes.Union):
+        _pack_ = archbits // 8
+        _fields_ = (
+            ('FileSystemControl', IO_STACK_LOCATION_FILESYSTEMCONTROL),
+            ('DeviceIoControl', IO_STACK_LOCATION_DEVICEIOCONTROL),
+            ('Write', IO_STACK_LOCATION_WRITE)
+        )
 
+    class IO_STACK_LOCATION(Struct):
+        _fields_ = (
+            ('MajorFunction', ctypes.c_byte),
+            ('MinorFunction', ctypes.c_byte),
+            ('Flags', ctypes.c_byte),
+            ('Control', ctypes.c_byte),
+            ('Parameters', IO_STACK_LOCATION_PARAM),
+            ('DeviceObject', pointer_type),
+            ('FileObject', pointer_type),
+            ('CompletionRoutine', pointer_type),
+            ('Context', pointer_type),
+        )
 
-class IO_STACK_LOCATION64(ctypes.Structure):
-    _pack_ = 8
-    _fields_ = (
-        ('MajorFunction', ctypes.c_byte),
-        ('MinorFunction', ctypes.c_byte),
-        ('Flags', ctypes.c_byte),
-        ('Control', ctypes.c_byte),
-        ('_padding1', ctypes.c_byte * 0x4),
-        ('Parameters', IO_STACK_LOCATION_PARAM64),
-        ('DeviceObject', POINTER64),
-        ('FileObject', POINTER64),
-        ('CompletionRoutine', POINTER64),
-        ('Context', POINTER64),
-    )
+    class AssociatedIrp(ctypes.Union):
+        _pack_ = archbits // 8
+        _fields_ = (
+            ('MasterIrp', pointer_type),
+            ('IrpCount', ctypes.c_uint32),
+            ('SystemBuffer', pointer_type)
+        )
 
+    sz_factor = archbits // 32
 
-class IO_STACK_LOCATION32(ctypes.Structure):
-    _pack_ = 4
-    _fields_ = (
-        ('MajorFunction', ctypes.c_byte),
-        ('MinorFunction', ctypes.c_byte),
-        ('Flags', ctypes.c_byte),
-        ('Control', ctypes.c_byte),
-        ('Parameters', IO_STACK_LOCATION_PARAM32),
-        ('DeviceObject', POINTER32),
-        ('FileObject', POINTER32),
-        ('CompletionRoutine', POINTER32),
-        ('Context', POINTER32),
-    )
+    class IRP(Struct):
+        _fields_ = (
+            ('Type', ctypes.c_uint16),
+            ('Size', ctypes.c_uint16),
+            ('MdlAddress', pointer_type),
+            ('Flags', ctypes.c_uint32),
+            ('AssociatedIrp', AssociatedIrp),
+            ('ThreadListEntry', LIST_ENTRY),
+            ('IoStatus', IO_STATUS_BLOCK),
+            ('_padding1', ctypes.c_char * 8),
+            ('UserIosb', pointer_type),
+            ('UserEvent', pointer_type),
+            ('Overlay', ctypes.c_char * (8 * sz_factor)),
+            ('CancelRoutine', pointer_type),
+            ('UserBuffer', pointer_type),
+            ('_padding1', ctypes.c_char * (32 * sz_factor)),
+            ('irpstack', ctypes.POINTER(IO_STACK_LOCATION)),
+            ('_padding2', ctypes.c_char * (8 * sz_factor))
+        )
 
-
-# union {
-#   struct _IRP     *MasterIrp;
-#   __volatile LONG IrpCount;
-#   PVOID           SystemBuffer;
-# } AssociatedIrp;
-
-
-class AssociatedIrp64(ctypes.Union):
-    _fields_ = (
-        ('MasterIrp', POINTER64),  # ('MasterIrp', ctypes.POINTER(IRP64)),
-        ('IrpCount', ctypes.c_uint32),
-        ('SystemBuffer', POINTER64))
-
-
-class AssociatedIrp32(ctypes.Union):
-    _fields_ = (
-        ('MasterIrp', POINTER32),  # ('MasterIrp', ctypes.POINTER(IRP32)),
-        ('IrpCount', ctypes.c_uint32),
-        ('SystemBuffer', POINTER32))
-
-
-# struct _IRP {
-#     char                _padding1[0x30];
-#     IO_STATUS_BLOCK     IoStatus;   // distance is 0x30??
-#     char                _padding2[0x70 - 0x30 - sizeof(io_status_block)];
-#     PVOID               UserBuffer; // distance is 0x70 from _IRP
-#     char                _padding3[0xB8 - 0x70 - sizeof(PVOID)];
-#     IO_STACK_LOCATION   *irpstack;
-# };
-class IRP64(ctypes.Structure):
-    _pack_ = 8
-    _fields_ = (
-        ('Type', ctypes.c_uint16),
-        ('Size', ctypes.c_uint16),
-        ('MdlAddress', POINTER64),
-        ('Flags', ctypes.c_uint32),
-        ('AssociatedIrp', AssociatedIrp64),
-        ('ThreadListEntry', LIST_ENTRY64),
-        ('IoStatus', IO_STATUS_BLOCK64),
-        ('_padding1', ctypes.c_char * 0x8),
-        ('UserIosb', POINTER64),
-        ('UserEvent', POINTER64),
-        ('Overlay', ctypes.c_char * 0x10),
-        ('CancelRoutine', POINTER64),
-        ('UserBuffer', POINTER64),
-        ('_padding1', ctypes.c_char * 0x40),
-        ('irpstack', ctypes.POINTER(IO_STACK_LOCATION64)),
-        ('_padding2', ctypes.c_char * 0x10),
-    )
-
-
-class IRP32(ctypes.Structure):
-    _fields_ = (
-        ('Type', ctypes.c_uint16),
-        ('Size', ctypes.c_uint16),
-        ('MdlAddress', POINTER32),
-        ('Flags', ctypes.c_uint32),
-        ('AssociatedIrp', AssociatedIrp32),
-        ('ThreadListEntry', LIST_ENTRY32),
-        ('IoStatus', IO_STATUS_BLOCK32),
-        ('_padding1', ctypes.c_char * 0x8),
-        ('UserIosb', POINTER32),  # 0x28
-        ('UserEvent', POINTER32),
-        ('Overlay', ctypes.c_char * 8),
-        ('CancelRoutine', POINTER32),
-        ('UserBuffer', POINTER32),
-        ('_padding1', ctypes.c_char * 0x20),
-        ('irpstack', ctypes.POINTER(IO_STACK_LOCATION32)),
-        ('_padding2', ctypes.c_char * 8),
-    )
+    return IRP()
 
 
 # typedef struct _MDL {
@@ -1001,24 +560,26 @@ class IRP32(ctypes.Structure):
 # } MDL, *PMDL;
 
 
-class MDL64(ctypes.Structure):
-    _pack_ = 8
-    _fields_ = (('Next', POINTER64), ('Size', ctypes.c_uint16),
-                ('MdlFlags', ctypes.c_uint16), ('Process', POINTER64),
-                ('MappedSystemVa', POINTER64), ('StartVa', POINTER64),
-                ('ByteCount', ctypes.c_uint32), ('ByteOffset',
-                                                 ctypes.c_uint32))
+def make_mdl(archbits: int):
+    pointer_type = __select_pointer_type(archbits)
+    Struct = __make_struct(archbits)
 
+    class MDL(Struct):
+        _fields_ = (
+            ('Next', pointer_type),
+            ('Size', ctypes.c_uint16),
+            ('MdlFlags', ctypes.c_uint16),
+            ('Process', pointer_type),
+            ('MappedSystemVa', pointer_type),
+            ('StartVa', pointer_type),
+            ('ByteCount', ctypes.c_uint32),
+            ('ByteOffset', ctypes.c_uint32)
+        )
 
-class MDL32(ctypes.Structure):
-    _fields_ = (('Next', POINTER32), ('Size', ctypes.c_uint16),
-                ('MdlFlags', ctypes.c_uint16), ('Process', POINTER32),
-                ('MappedSystemVa', POINTER32), ('StartVa', POINTER32),
-                ('ByteCount', ctypes.c_uint32), ('ByteOffset',
-                                                 ctypes.c_uint32))
+    return MDL()
 
-#TODO: Repeated and might not be needed
-
+# NOTE: the following classes are currently not needed
+#
 # class DISPATCHER_HEADER64(ctypes.Structure):
 #     _fields_ = (
 #         ('Lock', ctypes.c_int32),
@@ -1029,8 +590,8 @@ class MDL32(ctypes.Structure):
 #         ('SignalState', ctypes.c_int32),
 #         ('WaitListHead', LIST_ENTRY64),
 #     )
-
-
+#
+#
 # class DISPATCHER_HEADER32(ctypes.Structure):
 #     _fields_ = (
 #         ('Lock', ctypes.c_int32),
@@ -1041,198 +602,198 @@ class MDL32(ctypes.Structure):
 #         ('ThreadControlFlags', ctypes.c_uint8),
 #         ('TimerMiscFlags', ctypes.c_uint8),
 #     )
-
-
-class KAPC_STATE64(ctypes.Structure):
-    _fields_ = (
-        ('ApcListHead', LIST_ENTRY64 * 2),
-        ('Process', POINTER64),
-        ('KernelApcInProgress', ctypes.c_uint8),
-        ('KernelApcPending', ctypes.c_uint8),
-        ('UserApcPending', ctypes.c_uint8),
-    )
-
-
-class KAPC_STATE32(ctypes.Structure):
-    _fields_ = (
-        ('ApcListHead', LIST_ENTRY32 * 2),
-        ('Process', POINTER32),
-        ('KernelApcInProgress', ctypes.c_uint8),
-        ('KernelApcPending', ctypes.c_uint8),
-        ('UserApcPending', ctypes.c_uint8),
-    )
-
-
-class KTIMER64(ctypes.Structure):
-    _fields_ = (
-        ('Header', DISPATCHER_HEADER64),
-        ('DueTime', LARGE_INTEGER),
-        ('TimerListEntry', LIST_ENTRY64),
-        ('Dpc', POINTER64),
-        ('Period', ctypes.c_uint32),
-    )
-
-
-class KTIMER32(ctypes.Structure):
-    _fields_ = (
-        ('Header', DISPATCHER_HEADER32),
-        ('DueTime', LARGE_INTEGER),
-        ('TimerListEntry', LIST_ENTRY32),
-        ('Dpc', POINTER32),
-        ('Period', ctypes.c_uint32),
-    )
-
-
-class KWAIT_BLOCK64(ctypes.Structure):
-    _fields_ = (
-        ('WaitListEntry', LIST_ENTRY64),
-        ('Thread', POINTER64),
-        ('Object', POINTER64),
-        ('NextWaitBlock', POINTER64),
-        ('WaitKey', ctypes.c_uint16),
-        ('WaitType', ctypes.c_uint8),
-        ('BlockState', ctypes.c_uint8),
-    )
-
-
-class KWAIT_BLOCK32(ctypes.Structure):
-    _fields_ = (
-        ('WaitListEntry', LIST_ENTRY32),
-        ('Thread', POINTER32),
-        ('Object', POINTER32),
-        ('NextWaitBlock', POINTER32),
-        ('WaitKey', ctypes.c_uint16),
-        ('WaitType', ctypes.c_uint8),
-        ('BlockState', ctypes.c_uint8),
-    )
-
-
-class GROUP_AFFINITY64(ctypes.Structure):
-    _fields_ = (('Mask', ctypes.c_uint64), ('Group', ctypes.c_uint16),
-                ('Reserved', ctypes.c_uint16 * 3))
-
-
-class GROUP_AFFINITY32(ctypes.Structure):
-    _fields_ = (('Mask', ctypes.c_uint32), ('Group', ctypes.c_uint16),
-                ('Reserved', ctypes.c_uint16 * 3))
-
-
-class KAPC64(ctypes.Structure):
-    _pack_ = 8
-    _fields_ = (
-        ('Type', ctypes.c_uint8),
-        ('SpareByte0', ctypes.c_uint8),
-        ('Size', ctypes.c_uint8),
-        ('SpareByte1', ctypes.c_uint8),
-        ('SpareLong0', ctypes.c_uint32),
-        ('Thread', POINTER64),
-        ('ApcListEntry', LIST_ENTRY64),
-        ('KernelRoutine', POINTER64),
-        ('RundownRoutine', POINTER64),
-        ('NormalRoutine', POINTER64),
-        ('NormalContext', POINTER64),
-        ('SystemArgument1', POINTER64),
-        ('SystemArgument2', POINTER64),
-        ('ApcStateIndex', ctypes.c_uint8),
-        ('ApcMode', ctypes.c_uint8),
-        ('Inserted', ctypes.c_uint8),
-    )
-
-
-class KAPC32(ctypes.Structure):
-    _fields_ = ()
-
-
-class KSEMAPHORE64(ctypes.Structure):
-    _pack_ = 8
-    _fields_ = (("Header", DISPATCHER_HEADER64), ("Limit", ctypes.c_int32))
-
-
-class COUNTER_READING64(ctypes.Structure):
-    _pack_ = 8
-    _fields_ = (
-        ("Type", ctypes.c_uint32),
-        ("Index", ctypes.c_uint32),
-        ("Start", ctypes.c_uint64),
-        ("Total", ctypes.c_uint64),
-    )
-
-
-class KTHREAD_COUNTERS64(ctypes.Structure):
-    _pack_ = 8
-    _fields_ = (
-        ("WaitReasonBitMap", ctypes.c_int64),
-        ("UserData", POINTER64),
-        ("Flags", ctypes.c_uint32),
-        ("ContextSwitches", ctypes.c_uint32),
-        ("CycleTimeBias", ctypes.c_uint64),
-        ("HardwareCounters", ctypes.c_uint64),
-        ("HwCounter", COUNTER_READING64 * 16),
-    )
-
-
-class KTHREAD64(ctypes.Structure):
-    _pack_ = 8
-    _fields_ = (
-        ('Header', DISPATCHER_HEADER64),
-        ('CycleTime', ctypes.c_uint64),
-        ('QuantumTarget', ctypes.c_uint64),
-        ('InitialStack', POINTER64),
-        ('StackLimit', POINTER64),
-        ('KernelStack', POINTER64),
-        ('ThreadLock', ctypes.c_uint64),
-        ('WaitRegister', ctypes.c_uint8),  # _KWAIT_STATUS_REGISTER
-        ('Running', ctypes.c_uint8),
-        ('Alerted', ctypes.c_uint8 * 2),
-        ('MiscFlags', ctypes.c_uint32),
-        ('ApcState', KAPC_STATE64),
-        ('DeferredProcessor', ctypes.c_uint32),
-        ('ApcQueueLock', ctypes.c_uint64),
-        ('WaitStatus', ctypes.c_int64),
-        ('WaitBlockList', POINTER64),
-        ('WaitListEntry', LIST_ENTRY64),
-        ('Queue', POINTER64),
-        ('Teb', POINTER64),
-        ('Timer', KTIMER64),
-        ('ThreadFlags', ctypes.c_int32),
-        ('Spare0', ctypes.c_uint32),
-        ('WaitBlock', KWAIT_BLOCK64 * 4),
-        ('QueueListEntry', LIST_ENTRY64),
-        ('TrapFrame', POINTER64),
-        ('FirstArgument', POINTER64),
-        ('CallbackStack', POINTER64),
-        ('ApcStateIndex', ctypes.c_uint8),
-        ('BasePriority', ctypes.c_char),
-        ('PriorityDecrement', ctypes.c_char),
-        ('Preempted', ctypes.c_uint8),
-        ('AdjustReason', ctypes.c_uint8),
-        ('AdjustIncrement', ctypes.c_char),
-        ('PreviousMode', ctypes.c_char),
-        ('Saturation', ctypes.c_char),
-        ('SystemCallNumber', ctypes.c_uint32),
-        ('FreezeCount', ctypes.c_uint32),
-        ('UserAffinity', GROUP_AFFINITY64),
-        ('Process', POINTER64),
-        ('Affinity', GROUP_AFFINITY64),
-        ('IdealProcessor', ctypes.c_uint32),
-        ('UserIdealProcessor', ctypes.c_uint32),
-        ('ApcStatePointer', POINTER64 * 2),
-        ('SavedApcState', KAPC_STATE64),
-        ('Win32Thread', POINTER64),
-        ('StackBase', POINTER64),
-        ('SuspendApc', KAPC64),
-        ('SuspendSemaphore', KSEMAPHORE64),
-        ('ThreadListEntry', LIST_ENTRY64),
-        ('MutantListHead', LIST_ENTRY64),
-        ('SListFaultAddress', POINTER64),
-        ('ReadOperationCount', ctypes.c_int64),
-        ('WriteOperationCount', ctypes.c_int64),
-        ('OtherOperationCount', ctypes.c_int64),
-        ('ReadTransferCount', ctypes.c_int64),
-        ('WriteTransferCount', ctypes.c_int64),
-        ('OtherTransferCount', ctypes.c_int64),
-        ('ThreadCounters', POINTER64),
-        ('XStateSave', POINTER64))
+#
+#
+# class KAPC_STATE64(ctypes.Structure):
+#     _fields_ = (
+#         ('ApcListHead', LIST_ENTRY64 * 2),
+#         ('Process', POINTER64),
+#         ('KernelApcInProgress', ctypes.c_uint8),
+#         ('KernelApcPending', ctypes.c_uint8),
+#         ('UserApcPending', ctypes.c_uint8),
+#     )
+#
+#
+# class KAPC_STATE32(ctypes.Structure):
+#     _fields_ = (
+#         ('ApcListHead', LIST_ENTRY32 * 2),
+#         ('Process', POINTER32),
+#         ('KernelApcInProgress', ctypes.c_uint8),
+#         ('KernelApcPending', ctypes.c_uint8),
+#         ('UserApcPending', ctypes.c_uint8),
+#     )
+#
+#
+# class KTIMER64(ctypes.Structure):
+#     _fields_ = (
+#         ('Header', DISPATCHER_HEADER64),
+#         ('DueTime', LARGE_INTEGER),
+#         ('TimerListEntry', LIST_ENTRY64),
+#         ('Dpc', POINTER64),
+#         ('Period', ctypes.c_uint32),
+#     )
+#
+#
+# class KTIMER32(ctypes.Structure):
+#     _fields_ = (
+#         ('Header', DISPATCHER_HEADER32),
+#         ('DueTime', LARGE_INTEGER),
+#         ('TimerListEntry', LIST_ENTRY32),
+#         ('Dpc', POINTER32),
+#         ('Period', ctypes.c_uint32),
+#     )
+#
+#
+# class KWAIT_BLOCK64(ctypes.Structure):
+#     _fields_ = (
+#         ('WaitListEntry', LIST_ENTRY64),
+#         ('Thread', POINTER64),
+#         ('Object', POINTER64),
+#         ('NextWaitBlock', POINTER64),
+#         ('WaitKey', ctypes.c_uint16),
+#         ('WaitType', ctypes.c_uint8),
+#         ('BlockState', ctypes.c_uint8),
+#     )
+#
+#
+# class KWAIT_BLOCK32(ctypes.Structure):
+#     _fields_ = (
+#         ('WaitListEntry', LIST_ENTRY32),
+#         ('Thread', POINTER32),
+#         ('Object', POINTER32),
+#         ('NextWaitBlock', POINTER32),
+#         ('WaitKey', ctypes.c_uint16),
+#         ('WaitType', ctypes.c_uint8),
+#         ('BlockState', ctypes.c_uint8),
+#     )
+#
+#
+# class GROUP_AFFINITY64(ctypes.Structure):
+#     _fields_ = (('Mask', ctypes.c_uint64), ('Group', ctypes.c_uint16),
+#                 ('Reserved', ctypes.c_uint16 * 3))
+#
+#
+# class GROUP_AFFINITY32(ctypes.Structure):
+#     _fields_ = (('Mask', ctypes.c_uint32), ('Group', ctypes.c_uint16),
+#                 ('Reserved', ctypes.c_uint16 * 3))
+#
+#
+# class KAPC64(ctypes.Structure):
+#     _pack_ = 8
+#     _fields_ = (
+#         ('Type', ctypes.c_uint8),
+#         ('SpareByte0', ctypes.c_uint8),
+#         ('Size', ctypes.c_uint8),
+#         ('SpareByte1', ctypes.c_uint8),
+#         ('SpareLong0', ctypes.c_uint32),
+#         ('Thread', POINTER64),
+#         ('ApcListEntry', LIST_ENTRY64),
+#         ('KernelRoutine', POINTER64),
+#         ('RundownRoutine', POINTER64),
+#         ('NormalRoutine', POINTER64),
+#         ('NormalContext', POINTER64),
+#         ('SystemArgument1', POINTER64),
+#         ('SystemArgument2', POINTER64),
+#         ('ApcStateIndex', ctypes.c_uint8),
+#         ('ApcMode', ctypes.c_uint8),
+#         ('Inserted', ctypes.c_uint8),
+#     )
+#
+#
+# class KAPC32(ctypes.Structure):
+#     _fields_ = ()
+#
+#
+# class KSEMAPHORE64(ctypes.Structure):
+#     _pack_ = 8
+#     _fields_ = (("Header", DISPATCHER_HEADER64), ("Limit", ctypes.c_int32))
+#
+#
+# class COUNTER_READING64(ctypes.Structure):
+#     _pack_ = 8
+#     _fields_ = (
+#         ("Type", ctypes.c_uint32),
+#         ("Index", ctypes.c_uint32),
+#         ("Start", ctypes.c_uint64),
+#         ("Total", ctypes.c_uint64),
+#     )
+#
+#
+# class KTHREAD_COUNTERS64(ctypes.Structure):
+#     _pack_ = 8
+#     _fields_ = (
+#         ("WaitReasonBitMap", ctypes.c_int64),
+#         ("UserData", POINTER64),
+#         ("Flags", ctypes.c_uint32),
+#         ("ContextSwitches", ctypes.c_uint32),
+#         ("CycleTimeBias", ctypes.c_uint64),
+#         ("HardwareCounters", ctypes.c_uint64),
+#         ("HwCounter", COUNTER_READING64 * 16),
+#     )
+#
+#
+# class KTHREAD64(ctypes.Structure):
+#     _pack_ = 8
+#     _fields_ = (
+#         ('Header', DISPATCHER_HEADER64),
+#         ('CycleTime', ctypes.c_uint64),
+#         ('QuantumTarget', ctypes.c_uint64),
+#         ('InitialStack', POINTER64),
+#         ('StackLimit', POINTER64),
+#         ('KernelStack', POINTER64),
+#         ('ThreadLock', ctypes.c_uint64),
+#         ('WaitRegister', ctypes.c_uint8),  # _KWAIT_STATUS_REGISTER
+#         ('Running', ctypes.c_uint8),
+#         ('Alerted', ctypes.c_uint8 * 2),
+#         ('MiscFlags', ctypes.c_uint32),
+#         ('ApcState', KAPC_STATE64),
+#         ('DeferredProcessor', ctypes.c_uint32),
+#         ('ApcQueueLock', ctypes.c_uint64),
+#         ('WaitStatus', ctypes.c_int64),
+#         ('WaitBlockList', POINTER64),
+#         ('WaitListEntry', LIST_ENTRY64),
+#         ('Queue', POINTER64),
+#         ('Teb', POINTER64),
+#         ('Timer', KTIMER64),
+#         ('ThreadFlags', ctypes.c_int32),
+#         ('Spare0', ctypes.c_uint32),
+#         ('WaitBlock', KWAIT_BLOCK64 * 4),
+#         ('QueueListEntry', LIST_ENTRY64),
+#         ('TrapFrame', POINTER64),
+#         ('FirstArgument', POINTER64),
+#         ('CallbackStack', POINTER64),
+#         ('ApcStateIndex', ctypes.c_uint8),
+#         ('BasePriority', ctypes.c_char),
+#         ('PriorityDecrement', ctypes.c_char),
+#         ('Preempted', ctypes.c_uint8),
+#         ('AdjustReason', ctypes.c_uint8),
+#         ('AdjustIncrement', ctypes.c_char),
+#         ('PreviousMode', ctypes.c_char),
+#         ('Saturation', ctypes.c_char),
+#         ('SystemCallNumber', ctypes.c_uint32),
+#         ('FreezeCount', ctypes.c_uint32),
+#         ('UserAffinity', GROUP_AFFINITY64),
+#         ('Process', POINTER64),
+#         ('Affinity', GROUP_AFFINITY64),
+#         ('IdealProcessor', ctypes.c_uint32),
+#         ('UserIdealProcessor', ctypes.c_uint32),
+#         ('ApcStatePointer', POINTER64 * 2),
+#         ('SavedApcState', KAPC_STATE64),
+#         ('Win32Thread', POINTER64),
+#         ('StackBase', POINTER64),
+#         ('SuspendApc', KAPC64),
+#         ('SuspendSemaphore', KSEMAPHORE64),
+#         ('ThreadListEntry', LIST_ENTRY64),
+#         ('MutantListHead', LIST_ENTRY64),
+#         ('SListFaultAddress', POINTER64),
+#         ('ReadOperationCount', ctypes.c_int64),
+#         ('WriteOperationCount', ctypes.c_int64),
+#         ('OtherOperationCount', ctypes.c_int64),
+#         ('ReadTransferCount', ctypes.c_int64),
+#         ('WriteTransferCount', ctypes.c_int64),
+#         ('OtherTransferCount', ctypes.c_int64),
+#         ('ThreadCounters', POINTER64),
+#         ('XStateSave', POINTER64))
 
 
 # struct _RTL_PROCESS_MODULE_INFORMATION {
@@ -1247,36 +808,25 @@ class KTHREAD64(ctypes.Structure):
 #     USHORT OffsetToFileName;
 #     UCHAR FullPathName[256];
 # } RTL_PROCESS_MODULE_INFORMATION,
-class RTL_PROCESS_MODULE_INFORMATION64(ctypes.Structure):
-    _pack_ = 8
-    _fields_ = (
-        ('Section', ctypes.c_uint64),
-        ('MappedBase', ctypes.c_uint64),
-        ('ImageBase', ctypes.c_uint64),
-        ('ImageSize', ctypes.c_uint32),
-        ('Flags', ctypes.c_uint32),
-        ('LoadOrderIndex', ctypes.c_uint16),
-        ('InitOrderIndex', ctypes.c_uint16),
-        ('LoadCount', ctypes.c_uint16),
-        ('OffsetToFileName', ctypes.c_uint16),
-        ('FullPathName', ctypes.c_char * 256)
-    )
+def make_rtl_process_module_info(archbits: int):
+    native_type = __select_native_type(archbits)
+    Struct = __make_struct(archbits)
 
+    class RTL_PROCESS_MODULE_INFORMATION(Struct):
+        _fields_ = (
+            ('Section', native_type),
+            ('MappedBase', native_type),
+            ('ImageBase', native_type),
+            ('ImageSize', ctypes.c_uint32),
+            ('Flags', ctypes.c_uint32),
+            ('LoadOrderIndex', ctypes.c_uint16),
+            ('InitOrderIndex', ctypes.c_uint16),
+            ('LoadCount', ctypes.c_uint16),
+            ('OffsetToFileName', ctypes.c_uint16),
+            ('FullPathName', ctypes.c_char * 256)
+        )
 
-class RTL_PROCESS_MODULE_INFORMATION32(ctypes.Structure):
-    _fields_ = (
-        ('Section', ctypes.c_uint32),
-        ('MappedBase', ctypes.c_uint32),
-        ('ImageBase', ctypes.c_uint32),
-        ('ImageSize', ctypes.c_uint32),
-        ('Flags', ctypes.c_uint32),
-        ('LoadOrderIndex', ctypes.c_uint16),
-        ('InitOrderIndex', ctypes.c_uint16),
-        ('LoadCount', ctypes.c_uint16),
-        ('OffsetToFileName', ctypes.c_uint16),
-        ('FullPathName', ctypes.c_char * 256)
-    )
-
+    return RTL_PROCESS_MODULE_INFORMATION()
 
 # struct _EPROCESS {
 #     struct _KPROCESS Pcb;                                               //0x0
@@ -1427,205 +977,99 @@ class RTL_PROCESS_MODULE_INFORMATION32(ctypes.Structure):
 #     ULONG SmallestTimerResolution;                                      //0x4c0
 #     struct _PO_DIAG_STACK_RECORD* TimerResolutionStackRecord;           //0x4c8
 # };
-class EPROCESS64(ctypes.Structure):
-    _pack_ = 8
-    _fields_ = (('dummy', ctypes.c_char * 0x4d0), )
 
-    def __init__(self, ql, base):
-        self.ql = ql
-        self.base = base
+def make_eprocess(archbits: int):
+    Struct = __make_struct(archbits)
 
+    class EPROCESS(Struct):
+        _fields_ = (
+            ('dummy', ctypes.c_uint8),
+        )
 
-class EPROCESS32(ctypes.Structure):
-    _fields_ = (('dummy', ctypes.c_char * 0x2c0), )
+    obj_size = {
+        32: 0x2c0,
+        64: 0x4d0
+    }[archbits]
 
-    def __init__(self, ql, base):
-        self.ql = ql
-        self.base = base
+    obj = EPROCESS()
+    ctypes.resize(obj, obj_size)
 
-
-# FIXME: duplicate class
-class LdrData:
-    def __init__(self,
-                 ql,
-                 base=0,
-                 length=0,
-                 initialized=0,
-                 ss_handle=0,
-                 in_load_order_module_list={
-                     'Flink': 0,
-                     'Blink': 0
-                 },
-                 in_memory_order_module_list={
-                     'Flink': 0,
-                     'Blink': 0
-                 },
-                 in_initialization_order_module_list={
-                     'Flink': 0,
-                     'Blink': 0
-                 },
-                 entry_in_progress=0,
-                 shutdown_in_progress=0,
-                 shutdown_thread_id=0):
-        self.ql = ql
-        self.base = base
-        self.Length = length
-        self.Initialized = initialized
-        self.SsHandle = ss_handle
-        self.InLoadOrderModuleList = in_load_order_module_list
-        self.InMemoryOrderModuleList = in_memory_order_module_list
-        self.InInitializationOrderModuleList = in_initialization_order_module_list
-        self.EntryInProgress = entry_in_progress
-        self.ShutdownInProgress = shutdown_in_progress
-        self.selfShutdownThreadId = shutdown_thread_id
-
-    def bytes(self):
-        s = b''
-        s += self.ql.pack32(self.Length)  # 0x0
-        s += self.ql.pack32(self.Initialized)  # 0x4
-        s += self.ql.pack(self.SsHandle)  # 0x8
-        s += self.ql.pack(self.InLoadOrderModuleList['Flink'])  # 0x0c
-        s += self.ql.pack(self.InLoadOrderModuleList['Blink'])
-        s += self.ql.pack(self.InMemoryOrderModuleList['Flink'])  # 0x14
-        s += self.ql.pack(self.InMemoryOrderModuleList['Blink'])
-        s += self.ql.pack(
-            self.InInitializationOrderModuleList['Flink'])  # 0x1C
-        s += self.ql.pack(self.InInitializationOrderModuleList['Blink'])
-        s += self.ql.pack(self.EntryInProgress)
-        s += self.ql.pack(self.ShutdownInProgress)
-        s += self.ql.pack(self.selfShutdownThreadId)
-        return s
+    return obj
 
 
-class LdrDataTableEntry:
-    def __init__(self,
-                 ql,
-                 base=0,
-                 in_load_order_links={
-                     'Flink': 0,
-                     'Blink': 0
-                 },
-                 in_memory_order_links={
-                     'Flink': 0,
-                     'Blink': 0
-                 },
-                 in_initialization_order_links={
-                     'Flink': 0,
-                     'Blink': 0
-                 },
-                 dll_base=0,
-                 entry_point=0,
-                 size_of_image=0,
-                 full_dll_name='',
-                 base_dll_name='',
-                 flags=0,
-                 load_count=0,
-                 tls_index=0,
-                 hash_links=0,
-                 section_pointer=0,
-                 check_sum=0,
-                 time_date_stamp=0,
-                 loaded_imports=0,
-                 entry_point_activation_context=0,
-                 patch_information=0,
-                 forwarder_links=0,
-                 service_tag_links=0,
-                 static_links=0,
-                 context_information=0,
-                 original_base=0,
-                 load_time=0):
-        self.ql = ql
-        self.base = base
-        self.InLoadOrderLinks = in_load_order_links
-        self.InMemoryOrderLinks = in_memory_order_links
-        self.InInitializationOrderLinks = in_initialization_order_links
-        self.DllBase = dll_base
-        self.EntryPoint = entry_point
-        self.SizeOfImage = size_of_image
+def make_ldr_data(archbits: int):
+    native_type = __select_native_type(archbits)
+    Struct = __make_struct(archbits)
 
-        full_dll_name = full_dll_name.encode("utf-16le")
-        self.FullDllName = {
-            'Length': len(full_dll_name),
-            'MaximumLength': len(full_dll_name) + 2
-        }
-        self.FullDllName['BufferPtr'] = self.ql.os.heap.alloc(
-            self.FullDllName['MaximumLength'])
-        ql.mem.write(self.FullDllName['BufferPtr'],
-                     full_dll_name + b"\x00\x00")
+    ListEntry = make_list_entry(archbits)
 
-        base_dll_name = base_dll_name.encode("utf-16le")
-        self.BaseDllName = {
-            'Length': len(base_dll_name),
-            'MaximumLength': len(base_dll_name) + 2
-        }
-        self.BaseDllName['BufferPtr'] = self.ql.os.heap.alloc(
-            self.BaseDllName['MaximumLength'])
-        ql.mem.write(self.BaseDllName['BufferPtr'],
-                     base_dll_name + b"\x00\x00")
+    class PEB_LDR_DATA(Struct):
+        _fields_ = (
+            ('Length', ctypes.c_uint32),
+            ('Initialized', ctypes.c_uint32),
+            ('SsHandle', native_type),
+            ('InLoadOrderModuleList', ListEntry),
+            ('InMemoryOrderModuleList', ListEntry),
+            ('InInitializationOrderModuleList', ListEntry),
+            ('EntryInProgress', native_type),
+            ('ShutdownInProgress', native_type),
+            ('selfShutdownThreadId', native_type)
+        )
 
-        self.Flags = flags
-        self.LoadCount = load_count
-        self.TlsIndex = tls_index
-        self.HashLinks = hash_links
-        self.SectionPointer = section_pointer
-        self.CheckSum = check_sum
-        self.TimeDateStamp = time_date_stamp
-        self.LoadedImports = loaded_imports
-        self.EntryPointActivationContext = entry_point_activation_context
-        self.PatchInformation = patch_information
-        self.ForwarderLinks = forwarder_links
-        self.ServiceTagLinks = service_tag_links
-        self.StaticLinks = static_links
-        self.ContextInformation = context_information
-        self.OriginalBase = original_base
-        self.LoadTime = load_time
+    return PEB_LDR_DATA()
 
-    def attrs(self):
-        return ", ".join("{}={}".format(k, getattr(self, k))
-                         for k in self.__dict__.keys())
 
-    def print(self):
-        return "[{}:{}]".format(self.__class__.__name__, self.attrs())
+def make_ldr_data_table_entry(archbits: int):
+    pointer_type = __select_pointer_type(archbits)
+    native_type = __select_native_type(archbits)
+    Struct = __make_struct(archbits)
 
-    def bytes(self):
-        s = b''
-        s += self.ql.pack(self.InLoadOrderLinks['Flink'])  # 0x0
-        s += self.ql.pack(self.InLoadOrderLinks['Blink'])
-        s += self.ql.pack(self.InMemoryOrderLinks['Flink'])  # 0x8
-        s += self.ql.pack(self.InMemoryOrderLinks['Blink'])
-        s += self.ql.pack(self.InInitializationOrderLinks['Flink'])  # 0x10
-        s += self.ql.pack(self.InInitializationOrderLinks['Blink'])
-        s += self.ql.pack(self.DllBase)  # 0x18
-        s += self.ql.pack(self.EntryPoint)  # 0x1c
-        s += self.ql.pack(self.SizeOfImage)  # 0x20
-        s += self.ql.pack16(self.FullDllName['Length'])  # 0x24
-        s += self.ql.pack16(self.FullDllName['MaximumLength'])  # 0x26
-        if self.ql.archtype == QL_ARCH.X8664:
-            s += self.ql.pack32(0)
-        s += self.ql.pack(self.FullDllName['BufferPtr'])  # 0x28
-        s += self.ql.pack16(self.BaseDllName['Length'])
-        s += self.ql.pack16(self.BaseDllName['MaximumLength'])
-        if self.ql.archtype == QL_ARCH.X8664:
-            s += self.ql.pack32(0)
-        s += self.ql.pack(self.BaseDllName['BufferPtr'])
-        s += self.ql.pack(self.Flags)
-        s += self.ql.pack(self.LoadCount)
-        s += self.ql.pack(self.TlsIndex)
-        s += self.ql.pack(self.HashLinks)
-        s += self.ql.pack(self.SectionPointer)
-        s += self.ql.pack(self.CheckSum)
-        s += self.ql.pack(self.TimeDateStamp)
-        s += self.ql.pack(self.LoadedImports)
-        s += self.ql.pack(self.EntryPointActivationContext)
-        s += self.ql.pack(self.PatchInformation)
-        s += self.ql.pack(self.ForwarderLinks)
-        s += self.ql.pack(self.ServiceTagLinks)
-        s += self.ql.pack(self.StaticLinks)
-        s += self.ql.pack(self.ContextInformation)
-        s += self.ql.pack(self.OriginalBase)
-        s += self.ql.pack(self.LoadTime)
+    ListEntry = make_list_entry(archbits)
+    UniString = make_unicode_string(archbits).__class__
 
-        return s
+    class RTL_BALANCED_NODE(Struct):
+        _fields_ = (
+            ('Left', pointer_type),
+            ('Right', pointer_type),
+        )
+
+    class LdrDataTableEntry(Struct):
+        _fields_ = (
+            ('InLoadOrderLinks', ListEntry),
+            ('InMemoryOrderLinks', ListEntry),
+            ('InInitializationOrderLinks', ListEntry),
+            ('DllBase', native_type),
+            ('EntryPoint', native_type),
+            ('SizeOfImage', native_type),
+            ('FullDllName', UniString),
+            ('BaseDllName', UniString),
+            ('Flags', native_type),
+            ('ObsoleteLoadCount', ctypes.c_uint16),
+            ('TlsIndex', ctypes.c_uint16),
+            ('HashLinks', ListEntry),
+            ('TimedateStamp', native_type),
+            ('EntryPointActivationContext', native_type),
+            ('Lock', native_type),
+            ('DdagNode', pointer_type),
+            ('NodeModuleLink', ListEntry),
+            ('LoadContext', native_type),
+            ('ParentDllBase', native_type),
+            ('SwitchBackContext', native_type),
+            ('BaseAddressIndexNode', RTL_BALANCED_NODE),
+            ('MappingInfoIndexNode', RTL_BALANCED_NODE),
+            ('OriginalBase', native_type),
+            ('LoadTime', LARGE_INTEGER),
+            ('BaseNameHashValue', native_type),
+            ('LoadReason', ctypes.c_uint32),
+            ('ImplicitPathOptions', native_type),
+            ('ReferenceCount', native_type),
+        	# 1607+
+            ('DependentLoadFlags', native_type),
+            # 1703+
+            ('SigningLevel', ctypes.c_uint8)
+        )
+
+    return LdrDataTableEntry()
 
 
 class WindowsStruct:
@@ -1635,7 +1079,7 @@ class WindowsStruct:
         self.addr = None
         self.ULONG_SIZE = 8
         self.LONG_SIZE = 4
-        self.POINTER_SIZE = self.ql.pointersize
+        self.POINTER_SIZE = self.ql.arch.pointersize
         self.INT_SIZE = 2
         self.DWORD_SIZE = 4
         self.WORD_SIZE = 2
@@ -1855,43 +1299,44 @@ class Sid(WindowsStruct):
 
 
 class Mutex:
-    def __init__(self, name, type):
+    def __init__(self, name: str, type: str):
         self.name = name
         self.locked = False
         self.type = type
 
-    def lock(self):
+    def lock(self) -> None:
         self.locked = True
 
-    def unlock(self):
+    def unlock(self) -> None:
         self.locked = False
 
-    def isFree(self):
+    def isFree(self) -> bool:
         return not self.locked
 
 
-class IMAGE_IMPORT_DESCRIPTOR(ctypes.Structure):
-    _fields_ = (
-        ('OriginalFirstThunk', ctypes.c_uint32),
-        ('TimeDateStamp', ctypes.c_uint32),
-        ('ForwarderChain', ctypes.c_uint32), 
-        ('Name', ctypes.c_uint32),
-        ('FirstThunk', ctypes.c_uint32)
-    )
+# class IMAGE_IMPORT_DESCRIPTOR(ctypes.Structure):
+#     _fields_ = (
+#         ('OriginalFirstThunk', ctypes.c_uint32),
+#         ('TimeDateStamp', ctypes.c_uint32),
+#         ('ForwarderChain', ctypes.c_uint32), 
+#         ('Name', ctypes.c_uint32),
+#         ('FirstThunk', ctypes.c_uint32)
+#     )
+#
+#
+# class CLIENT_ID32(ctypes.Structure):
+#     _fields_ = (
+#         ('UniqueProcess', ctypes.c_uint32),
+#         ('UniqueThread', ctypes.c_uint32)
+#     )
+#
+#
+# class CLIENT_ID64(ctypes.Structure):
+#     _fields_ = (
+#         ('UniqueProcess', ctypes.c_uint64),
+#         ('UniqueThread', ctypes.c_uint64)
+#     )
 
-
-class CLIENT_ID32(ctypes.Structure):
-    _fields_ = (
-        ('UniqueProcess', ctypes.c_uint32),
-        ('UniqueThread', ctypes.c_uint32)
-    )
-
-
-class CLIENT_ID64(ctypes.Structure):
-    _fields_ = (
-        ('UniqueProcess', ctypes.c_uint64),
-        ('UniqueThread', ctypes.c_uint64)
-    )
 # typedef struct tagPOINT {
 #   LONG x;
 #   LONG y;
@@ -2145,7 +1590,7 @@ class StartupInfo(WindowsStruct):
     def __init__(self, ql, desktop=None, title=None, x=None, y=None, x_size=None, y_size=None, x_chars=None,
                  y_chars=None, fill_attribute=None, flags=None, show=None, std_input=None, output=None, error=None):
         super().__init__(ql)
-        self.size = 53 + 3 * self.ql.pointersize
+        self.size = 53 + 3 * self.ql.arch.pointersize
         self.cb = [self.size, self.DWORD_SIZE, "little", int]
         self.reserved = [0, self.POINTER_SIZE, "little", int]
         self.desktop = [desktop, self.POINTER_SIZE, "little", int]
@@ -2281,7 +1726,7 @@ class UnicodeString(AlignedWindowsStruct):
         super().__init__(ql)
 
         # on x64, self.buffer is aligned to 8
-        if (ql.archtype == 32):
+        if ql.arch.bits == 32:
             self.size = self.USHORT_SIZE * 2 + self.POINTER_SIZE
         else:
             self.size = self.USHORT_SIZE * 2 + 4 + self.POINTER_SIZE

@@ -8,10 +8,12 @@
 <img width="150" height="150" src="https://raw.githubusercontent.com/qilingframework/qiling/master/docs/qiling2_logo_small.png">
 </p>
 
+[Qiling's usecase, blog and related work](https://github.com/qilingframework/qiling/issues/134)
+
 Qiling is an advanced binary emulation framework, with the following features:
 
 - Emulate multi-platforms: Windows, MacOS, Linux, BSD, UEFI, DOS, MBR, Ethereum Virtual Machine
-- Emulate multi-architectures: X86, X86_64, Arm, Arm64, MIPS, 8086
+- Emulate multi-architectures: 8086, X86, X86_64, ARM, ARM64, MIPS, RISCV, PowerPC
 - Support multiple file formats: PE, MachO, ELF, COM, MBR
 - Support Windows Driver (.sys), Linux Kernel Module (.ko) & MacOS Kernel (.kext) via [Demigod](https://groundx.io/demigod/)
 - Emulates & sandbox code in an isolated environment
@@ -88,55 +90,55 @@ Please see [setup guide](https://docs.qiling.io/en/latest/install/) file for how
 
 #### Examples
 
-- Below example shows how to use Qiling framework to emulate a Windows EXE on a Linux machine
+- The example below shows how to use Qiling framework in the most striaghtforward way to emulate a Windows executable.
 
 ```python
-from qiling import *
-
-# sandbox to emulate the EXE
-def my_sandbox(path, rootfs):
-    # setup Qiling engine
-    ql = Qiling(path, rootfs)
-    # now emulate the EXE
-    ql.run()
+from qiling import Qiling
 
 if __name__ == "__main__":
-    # execute Windows EXE under our rootfs
-    my_sandbox(["examples/rootfs/x86_windows/bin/x86_hello.exe"], "examples/rootfs/x86_windows")
+    # initialize Qiling instance, specifying the executable to emulate and the emulated system root.
+    # note that the current working directory is assumed to be Qiling home
+    ql = Qiling([r'examples/rootfs/x86_windows/bin/x86_hello.exe'], r'examples/rootfs/x86_windows')
+
+    # start emulation
+    ql.run()
 ```
 
-- Below example shows how to use Qiling framework to dynamically patch a Windows crackme, make it always display "Congratulation" dialog
+- The following example shows how a Windows crackme may be patched dynamically to make it always display the "Congratulation" dialog.
 
 ```python
-from qiling import *
+from qiling import Qiling
 
-def force_call_dialog_func(ql):
-    # get DialogFunc address
-    lpDialogFunc = ql.unpack32(ql.mem.read(ql.reg.esp - 0x8, 4))
+def force_call_dialog_func(ql: Qiling):
+    # get DialogFunc address from current stack frame
+    lpDialogFunc = ql.stack_read(-8)
+
     # setup stack memory for DialogFunc
     ql.stack_push(0)
-    ql.stack_push(1001)
-    ql.stack_push(273)
+    ql.stack_push(1001)     # IDS_APPNAME
+    ql.stack_push(0x111)    # WM_COMMAND
     ql.stack_push(0)
+
+    # push return address
     ql.stack_push(0x0401018)
-    # force EIP to DialogFunc
-    ql.reg.eip = lpDialogFunc
+
+    # resume emulation from DialogFunc address
+    ql.arch.regs.eip = lpDialogFunc
 
 
-def my_sandbox(path, rootfs):
-    ql = Qiling(path, rootfs)
+if __name__ == "__main__":
+    # initialize Qiling instance
+    ql = Qiling([r'rootfs/x86_windows/bin/Easy_CrackMe.exe'], r'rootfs/x86_windows')
+
     # NOP out some code
     ql.patch(0x004010B5, b'\x90\x90')
     ql.patch(0x004010CD, b'\x90\x90')
     ql.patch(0x0040110B, b'\x90\x90')
     ql.patch(0x00401112, b'\x90\x90')
+
     # hook at an address with a callback
     ql.hook_address(force_call_dialog_func, 0x00401016)
     ql.run()
-
-
-if __name__ == "__main__":
-    my_sandbox(["rootfs/x86_windows/bin/Easy_CrackMe.exe"], "rootfs/x86_windows")
 ```
 
 The below Youtube video shows how the above example works.
@@ -220,6 +222,7 @@ Contact us at email info@qiling.io, or via Twitter [@qiling_io](https://twitter.
 #### Core developers, Key Contributors and etc
 
 Please refer to [CREDITS.md](https://github.com/qilingframework/qiling/blob/dev/CREDITS.md)
+
 
 ---
 

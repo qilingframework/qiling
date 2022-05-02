@@ -67,7 +67,7 @@ class QlCoreHooks:
             hooks_list = self._insn_hook[hook_type]
 
             for hook in hooks_list:
-                if hook.bound_check(ql.reg.arch_pc):
+                if hook.bound_check(ql.arch.regs.arch_pc):
                     ret = hook.call(ql, *args[:-1])
 
                     if type(ret) is tuple:
@@ -87,7 +87,7 @@ class QlCoreHooks:
             hooks_list = self._hook[hook_type]
 
             for hook in hooks_list:
-                if hook.bound_check(ql.reg.arch_pc):
+                if hook.bound_check(ql.arch.regs.arch_pc):
                     ret = hook.call(ql, addr, size)
 
                     if type(ret) is int and ret & QL_HOOK_BLOCK:
@@ -149,14 +149,14 @@ class QlCoreHooks:
     # Class Hooks #
     ###############
     def _ql_hook_internal(self, hook_type, callback, user_data=None, *args) -> int:
-        _callback = (catch_KeyboardInterrupt(self))(callback)
+        _callback = catch_KeyboardInterrupt(self, callback)
         # pack user_data & callback for wrapper _callback
         return self._h_uc.hook_add(hook_type, _callback, (self, user_data), 1, 0, *args)
 
 
     def _ql_hook_addr_internal(self, callback: Callable, address: int) -> int:
-        _callback = (catch_KeyboardInterrupt(self))(callback)
-        # pack user_data & callback for wrapper _callback
+        _callback = catch_KeyboardInterrupt(self, callback)
+
         return self._h_uc.hook_add(UC_HOOK_CODE, _callback, self, address, address)
 
 
@@ -240,10 +240,6 @@ class QlCoreHooks:
 
 
     def hook_code(self, callback, user_data=None, begin=1, end=0):
-        if self.interpreter:
-            from .arch.evm.hooks import ql_evm_hooks
-            return ql_evm_hooks(self, 'HOOK_CODE', callback, user_data, begin, end)
-
         return self.ql_hook(UC_HOOK_CODE, callback, user_data, begin, end)
 
 
@@ -283,10 +279,6 @@ class QlCoreHooks:
     def hook_address(self, callback, address, user_data=None):
         hook = HookAddr(callback, address, user_data)
 
-        if self.interpreter:
-            from .arch.evm.hooks import evm_hook_address
-            return evm_hook_address(self, 'HOOK_ADDR', hook, address)
-
         if address not in self._addr_hook_fuc:
             self._addr_hook_fuc[address] = self._ql_hook_addr_internal(self._hook_addr_cb, address)
 
@@ -322,53 +314,28 @@ class QlCoreHooks:
 
 
     def hook_insn(self, callback, arg1, user_data=None, begin=1, end=0):
-        if self.interpreter:
-            from .arch.evm.hooks import evm_hook_insn
-            return evm_hook_insn(self, 'HOOK_INSN', callback, arg1, user_data, begin, end)
-
         return self.ql_hook(UC_HOOK_INSN, callback, user_data, begin, end, arg1)
 
 
-    def hook_del(self, *args):
-        if len(args) != 1 and len(args) != 2:
-            return
+    def hook_del(self, hret: HookRet):
+        h = hret.obj
+        hook_type = hret.type
 
-        if isinstance(args[0], HookRet):
-            args[0].remove()
-            return
+        def __remove(hooks_map, handles_map, key: int) -> None:
+            if key in hooks_map:
+                hooks_list = hooks_map[key]
 
-        hook_type, h = args
+                if h in hooks_list:
+                    hooks_list.remove(h)
 
-        if self.interpreter:
-            from .arch.evm.hooks import evm_hook_del
-            return evm_hook_del(hook_type, h)
+                    if not hooks_list:
+                        uc_handle = handles_map.pop(key)
 
-        def __handle_common(t: int) -> None:
-            if t in self._hook:
-                if h in self._hook[t]:
-                    del self._hook[t][self._hook[t].index(h)]
+                        self._h_uc.hook_del(uc_handle)
 
-                    if len(self._hook[t]) == 0:
-                        self._h_uc.hook_del(self._hook_fuc[t])
-                        del self._hook_fuc[t]
-
-        def __handle_insn(t: int) -> None:
-            if t in self._insn_hook:
-                if h in self._insn_hook[t]:
-                    del self._insn_hook[t][self._insn_hook[t].index(h)]
-
-                    if len(self._insn_hook[t]) == 0:
-                        self._h_uc.hook_del(self._insn_hook_fuc[t])
-                        del self._insn_hook_fuc[t]
-
-        def __handle_addr(t: int) -> None:
-            if t in self._addr_hook:
-                if h in self._addr_hook[t]:
-                    del self._addr_hook[t][self._addr_hook[t].index(h)]
-
-                    if len(self._addr_hook[t]) == 0:
-                        self._h_uc.hook_del(self._addr_hook_fuc[t])
-                        del self._addr_hook_fuc[t]
+        __handle_common = lambda k: __remove(self._hook, self._hook_fuc, k)
+        __handle_insn   = lambda i: __remove(self._insn_hook, self._insn_hook_fuc, i)
+        __handle_addr   = lambda a: __remove(self._addr_hook, self._addr_hook_fuc, a)
 
         type_handlers = (
             (UC_HOOK_INTR,               __handle_common),

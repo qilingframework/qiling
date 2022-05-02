@@ -45,43 +45,43 @@ def __leaf_00(ql: Qiling):
 	ql.os.clear_cf()
 
 def __leaf_02(ql: Qiling):
-	idx = ql.reg.dl
+	idx = ql.arch.regs.dl
 
 	if not ql.os.fs_mapper.has_mapping(idx):
 		ql.log.warning(f'Warning: No such disk: {idx:#x}')
-		ql.reg.ah = DiskError.BadCommand.value
+		ql.arch.regs.ah = DiskError.BadCommand.value
 		ql.os.set_cf()
 		return
 
-	cylinder = ((ql.reg.cx & 0xff00) >> 8) | ((ql.reg.cx & 0xC0) << 2)
-	head = ql.reg.dh
-	sector = ql.reg.cx & 63
-	cnt = ql.reg.al
+	cylinder = ((ql.arch.regs.cx & 0xff00) >> 8) | ((ql.arch.regs.cx & 0xC0) << 2)
+	head = ql.arch.regs.dh
+	sector = ql.arch.regs.cx & 63
+	cnt = ql.arch.regs.al
 
 	disk = ql.os.fs_mapper.open(idx, None)
 	content = disk.read_chs(cylinder, head, sector, cnt)
 
-	ql.mem.write(utils.linaddr(ql.reg.es, ql.reg.bx), content)
+	ql.mem.write(utils.linaddr(ql.arch.regs.es, ql.arch.regs.bx), content)
 	ql.os.clear_cf()
-	ql.reg.ah = 0
-	ql.reg.al = sector
+	ql.arch.regs.ah = 0
+	ql.arch.regs.al = sector
 
 # @see: https://stanislavs.org/helppc/int_13-8.html
 def __leaf_08(ql: Qiling):
-	idx = ql.reg.dl
+	idx = ql.arch.regs.dl
 
 	if not ql.os.fs_mapper.has_mapping(idx):
 		ql.log.warning(f'Warning: No such disk: {idx:#x}')
-		ql.reg.ah = DiskError.BadCommand.value
+		ql.arch.regs.ah = DiskError.BadCommand.value
 		ql.os.set_cf()
 		return
 
 	disk = ql.os.fs_mapper.open(idx, None)
-	ql.reg.dl = ql.os.fs_mapper.mapping_count()
-	ql.reg.dh = disk.n_heads - 1
-	ql.reg.bl = 0x4
-	ql.reg.di = 0
-	ql.reg.ds = 0
+	ql.arch.regs.dl = ql.os.fs_mapper.mapping_count()
+	ql.arch.regs.dh = disk.n_heads - 1
+	ql.arch.regs.bl = 0x4
+	ql.arch.regs.di = 0
+	ql.arch.regs.ds = 0
 
 	n_sectors = min(disk.n_sectors, 63)
 	n_cylinders = min(disk.n_cylinders, 1023)
@@ -90,28 +90,28 @@ def __leaf_08(ql: Qiling):
 	cx |= ((n_cylinders & 0b11) << 6)
 	cx |= (((n_cylinders & 0b1111111100) >> 2) << 8)
 
-	ql.reg.cx = cx
-	ql.reg.ah = 0
+	ql.arch.regs.cx = cx
+	ql.arch.regs.ah = 0
 	ql.os.clear_cf()
 
 def __leaf_41(ql: Qiling):
-	ql.reg.ah = 0
+	ql.arch.regs.ah = 0
 	# 1 -> Device Access using the packet structure.
 	# 2 -> Drive locking and ejecting.
 	# 4 -> Enhanced Disk Drive Support.
-	ql.reg.bx = 0xaa55
-	ql.reg.cx = 7
+	ql.arch.regs.bx = 0xaa55
+	ql.arch.regs.cx = 7
 
 def __leaf_42(ql: Qiling):
-	idx = ql.reg.dl
+	idx = ql.arch.regs.dl
 
 	if not ql.os.fs_mapper.has_mapping(idx):
 		ql.log.warning(f'Warning: No such disk: {idx:#x}')
-		ql.reg.ah = DiskError.BadCommand.value
+		ql.arch.regs.ah = DiskError.BadCommand.value
 		ql.os.set_cf()
 		return
 
-	dapbs = ql.mem.read(utils.linaddr(ql.reg.ds, ql.reg.si), 16)
+	dapbs = ql.mem.read(utils.linaddr(ql.arch.regs.ds, ql.arch.regs.si), 16)
 	_, _, cnt, offset, segment, lba = parse_dap(dapbs)
 	ql.log.info(f'Reading {cnt} sectors from disk {idx:#x} with LBA {lba}')
 
@@ -120,18 +120,18 @@ def __leaf_42(ql: Qiling):
 	ql.mem.write(utils.linaddr(segment, offset), content)
 
 	ql.os.clear_cf()
-	ql.reg.ah = 0
+	ql.arch.regs.ah = 0
 
 def __leaf_43(ql: Qiling):
-	idx = ql.reg.dl
+	idx = ql.arch.regs.dl
 
 	if not ql.os.fs_mapper.has_mapping(idx):
 		ql.log.info(f"Warning: No such disk: {hex(idx)}")
-		ql.reg.ah = DiskError.BadCommand.value
+		ql.arch.regs.ah = DiskError.BadCommand.value
 		ql.os.set_cf()
 		return
 
-	dapbs = ql.mem.read(utils.linaddr(ql.reg.ds, ql.reg.si), 16)
+	dapbs = ql.mem.read(utils.linaddr(ql.arch.regs.ds, ql.arch.regs.si), 16)
 	_, _, cnt, offset, segment, lba = parse_dap(dapbs)
 	ql.log.info(f'Writing {cnt} sectors to disk {idx:#x} with LBA {lba}')
 
@@ -140,11 +140,11 @@ def __leaf_43(ql: Qiling):
 	disk.write_sectors(lba, cnt, buffer)
 
 	ql.os.clear_cf()
-	ql.reg.ah = 0
+	ql.arch.regs.ah = 0
 
 # @see: https://en.wikipedia.org/wiki/INT_13H
 def handler(ql: Qiling):
-	ah = ql.reg.ah
+	ah = ql.arch.regs.ah
 
 	leaffunc = {
 		0x00 : __leaf_00,

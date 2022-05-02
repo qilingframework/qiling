@@ -4,12 +4,13 @@
 #
 
 import platform, sys, unittest
+from typing import List
 
 from unicorn import UcError
 
 sys.path.append("..")
 from qiling import Qiling
-from qiling.const import QL_VERBOSE
+from qiling.const import QL_STOP, QL_VERBOSE
 from qiling.os.const import POINTER, DWORD, STRING, HANDLE
 from qiling.os.windows import utils
 from qiling.os.windows.wdk_const import *
@@ -21,12 +22,6 @@ if platform.system() == "Darwin" and platform.machine() == "arm64":
     sys.exit(0)
 
 class PETest(unittest.TestCase):
-
-    def hook_third_stop_address(self, ql):
-        print(" >>>> Third Stop address: 0x%08x" % ql.reg.arch_pc)
-        self.third_stop = True
-        ql.emu_stop()
-
 
     def test_pe_win_x86_sality(self):
 
@@ -77,41 +72,14 @@ class PETest(unittest.TestCase):
         })
         def hook_CreateFileA(ql: Qiling, address: int, params):
             lpFileName = params["lpFileName"]
+
             if lpFileName.startswith("\\\\.\\"):
-                if ql.amsint32_driver:
+                if hasattr(ql, 'amsint32_driver'):
                     return 0x13371337
-                else:
-                    return (-1)
-            else:
-                ret = _CreateFile(ql, address, params)
 
-            return ret
+                return -1
 
-        def _WriteFile(ql, address, params):
-            ret = 1
-            hFile = params["hFile"]
-            lpBuffer = params["lpBuffer"]
-            nNumberOfBytesToWrite = params["nNumberOfBytesToWrite"]
-            lpNumberOfBytesWritten = params["lpNumberOfBytesWritten"]
-            #lpOverlapped = params["lpOverlapped"]
-
-            if hFile == 0xfffffff5:
-                s = ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
-                ql.os.stdout.write(s)
-                ql.os.utils.string_appearance(s.decode())
-                ql.mem.write(lpNumberOfBytesWritten, ql.pack(nNumberOfBytesToWrite))
-            else:
-                f = ql.os.handle_manager.get(hFile)
-                if f is None:
-                    # Invalid handle
-                    ql.os.last_error = 0xffffffff
-                    return 0
-                else:
-                    f = f.obj
-                buffer = ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
-                f.write(bytes(buffer))
-                ql.mem.write(lpNumberOfBytesWritten, ql.pack32(nNumberOfBytesToWrite))
-            return ret
+            return _CreateFile(ql, address, params)
 
         @winsdkapi(cc=STDCALL, params={
             'hFile'                  : HANDLE,
@@ -126,21 +94,31 @@ class PETest(unittest.TestCase):
             nNumberOfBytesToWrite = params["nNumberOfBytesToWrite"]
             lpNumberOfBytesWritten = params["lpNumberOfBytesWritten"]
 
-            if hFile == 0x13371337:
-                buffer = ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
-                try:
-                    r, nNumberOfBytesToWrite = utils.io_Write(ql.amsint32_driver, buffer)
-                    ql.mem.write(lpNumberOfBytesWritten, ql.pack32(nNumberOfBytesToWrite))
-                except Exception:
-                    print("Error")
-                    r = 1
-                if r:
-                    return 1
-                else:
-                    return 0
-            else:
-                return _WriteFile(ql, address, params)
+            r = 1
+            buffer = ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
 
+            if hFile == 0x13371337:
+                success, nNumberOfBytesToWrite = utils.io_Write(ql.amsint32_driver, buffer)
+                r = int(success)
+
+            elif hFile == 0xfffffff5:
+                s = buffer.decode()
+
+                ql.os.stdout.write(s)
+                ql.os.stats.log_string(s)
+
+            else:
+                f = ql.os.handle_manager.get(hFile)
+
+                if f is None:
+                    ql.os.last_error = 0xffffffff
+                    return 0
+
+                f.obj.write(bytes(buffer))
+
+            ql.mem.write_ptr(lpNumberOfBytesWritten, nNumberOfBytesToWrite, 4)
+
+            return r
 
         # BOOL StartServiceA(
         #   SC_HANDLE hService,
@@ -153,88 +131,98 @@ class PETest(unittest.TestCase):
             'lpServiceArgVectors' : POINTER
         })
         def hook_StartServiceA(ql: Qiling, address: int, params):
+            ql.test_set_api = True
+
             hService = params["hService"]
             service_handle = ql.os.handle_manager.get(hService)
-            ql.test_set_api = True
-            if service_handle.name == "amsint32":
-                if service_handle.name in ql.os.services:
-                    service_path = ql.os.services[service_handle.name]
-                    service_path = ql.os.path.transform_to_real_path(service_path)
-                    ql.amsint32_driver = Qiling([service_path], ql.rootfs, verbose=QL_VERBOSE.DISASM)
-                    init_unseen_symbols(ql.amsint32_driver, ql.amsint32_driver.loader.dlls["ntoskrnl.exe"]+0xb7695, b"NtTerminateProcess", 0, "ntoskrnl.exe")
-                    print("load amsint32_driver")
 
-                    try:
-                        ql.amsint32_driver.run()
-                        return 1
-                    except UcError as e:
-                        print("Load driver error: ", e)
-                        return 0
-                else:
-                    return 0
+            if service_handle.name != "amsint32":
+                return 1
+
+            if service_handle.name not in ql.os.services:
+                return 0
+
+            service_path = ql.os.services[service_handle.name]
+            service_path = ql.os.path.transform_to_real_path(service_path)
+
+            amsint32 = Qiling([service_path], ql.rootfs, verbose=QL_VERBOSE.DEBUG)
+            ntoskrnl = amsint32.loader.get_image_by_name("ntoskrnl.exe")
+            self.assertIsNotNone(ntoskrnl)
+
+            init_unseen_symbols(amsint32, ntoskrnl.base + 0xb7695, b"NtTerminateProcess", 0, "ntoskrnl.exe")
+            amsint32.log.info('Loading amsint32 driver')
+
+            setattr(ql, 'amsint32_driver', amsint32)
+
+            try:
+                amsint32.run()
+            except UcError as e:
+                print("Load driver error: ", e)
+                return 0
             else:
                 return 1
 
-
-        def hook_first_stop_address(ql):
-            print(" >>>> First Stop address: 0x%08x" % ql.reg.arch_pc)
-            ql.first_stop = True    
+        def hook_first_stop_address(ql: Qiling, stops: List[bool]):
+            ql.log.info(f' >>>> First stop address: {ql.arch.regs.arch_pc:#010x}')
+            stops[0] = True
             ql.emu_stop()
 
-
-        def hook_second_stop_address(ql):
-            print(" >>>> Second Stop address: 0x%08x" % ql.reg.arch_pc)
-            ql.second_stop = True
+        def hook_second_stop_address(ql: Qiling, stops: List[bool]):
+            ql.log.info(f' >>>> Second stop address: {ql.arch.regs.arch_pc:#010x}')
+            stops[1] = True
             ql.emu_stop()
 
+        def hook_third_stop_address(ql: Qiling, stops: List[bool]):
+            ql.log.info(f' >>>> Third stop address: {ql.arch.regs.arch_pc:#010x}')
+            stops[2] = True
+            ql.emu_stop()
+
+        stops = [False, False, False]
 
         ql = Qiling(["../examples/rootfs/x86_windows/bin/sality.dll"], "../examples/rootfs/x86_windows", verbose=QL_VERBOSE.DEBUG)
-        ql.libcache = False
-        ql.first_stop = False
-        ql.second_stop = False
-        self.third_stop = False
-        # for this module 
-        ql.amsint32_driver = None
+
         # emulate some Windows API
-        ql.set_api("CreateThread", hook_CreateThread)
-        ql.set_api("CreateFileA", hook_CreateFileA)
-        ql.set_api("WriteFile", hook_WriteFile)
-        ql.set_api("StartServiceA", hook_StartServiceA)
-        #init sality
-        ql.hook_address(hook_first_stop_address, 0x40EFFB)
+        ql.os.set_api("CreateThread", hook_CreateThread)
+        ql.os.set_api("CreateFileA", hook_CreateFileA)
+        ql.os.set_api("WriteFile", hook_WriteFile)
+        ql.os.set_api("StartServiceA", hook_StartServiceA)
+
+        # run until first stop
+        ql.hook_address(hook_first_stop_address, 0x40EFFB, stops)
         ql.run()
-        # run driver thread
 
         # execution is about to resume from 0x4053B2, which essentially jumps to ExitThread (kernel32.dll).
         # Set ExitThread exit code to 0
-        ql.os.fcall = ql.os.fcall_select(STDCALL)
-        ql.os.fcall.writeParams(((DWORD, 0),))
+        fcall = ql.os.fcall_select(STDCALL)
+        fcall.writeParams(((DWORD, 0),))
 
-        ql.hook_address(hook_second_stop_address, 0x4055FA)
+        # run until second stop
+        ql.hook_address(hook_second_stop_address, 0x4055FA, stops)
         ql.run(begin=0x4053B2)
-        print("test kill thread")
-        if ql.amsint32_driver:
-            utils.io_Write(ql.amsint32_driver, ql.pack32(0xdeadbeef))
 
-            # TODO: Should stop at 0x10423, but for now just stop at 0x0001066a
-            stop_addr = 0x0001066a
-            ql.amsint32_driver.hook_address(self.hook_third_stop_address, stop_addr)
+        # asmint32 driver should have been initialized by now. otherwise we get an exception
+        amsint32: Qiling = getattr(ql, 'amsint32_driver')
 
-            # TODO: not sure whether this one is really STDCALL
-            ql.amsint32_driver.os.fcall = ql.amsint32_driver.os.fcall_select(STDCALL)
-            ql.amsint32_driver.os.fcall.writeParams(((DWORD, 0),))
+        utils.io_Write(amsint32, ql.pack32(0xdeadbeef))
 
-            ql.amsint32_driver.run(begin=0x102D0)
+        # TODO: not sure whether this one is really STDCALL
+        fcall = amsint32.os.fcall_select(STDCALL)
+        fcall.writeParams(((DWORD, 0),))
 
-        self.assertEqual(True, ql.first_stop)    
-        self.assertEqual(True, ql.second_stop)
-        self.assertEqual(True, self.third_stop)
-        self.assertEqual(True, ql.test_set_api)
+        # run until third stop
+        # TODO: Should stop at 0x10423, but for now just stop at 0x0001066a
+        amsint32.hook_address(hook_third_stop_address, 0x0001066a, stops)
+        amsint32.run(begin=0x102D0)
+
+        self.assertTrue(stops[0])
+        self.assertTrue(stops[1])
+        self.assertTrue(stops[2])
+        self.assertTrue(ql.test_set_api)
 
 
     def test_pe_win_x8664_driver(self):
         # Compiled sample from https://github.com/microsoft/Windows-driver-samples/tree/master/general/ioctl/wdm/sys
-        ql = Qiling(["../examples/rootfs/x8664_windows/bin/sioctl.sys"], "../examples/rootfs/x8664_windows", libcache=True, stop_on_stackpointer=True)
+        ql = Qiling(["../examples/rootfs/x8664_windows/bin/sioctl.sys"], "../examples/rootfs/x8664_windows", stop=QL_STOP.STACK_POINTER, libcache=True)
 
         driver_object = ql.loader.driver_object
 
@@ -257,7 +245,7 @@ class PETest(unittest.TestCase):
         # And a DriverUnload
         self.assertNotEqual(driver_object.DriverUnload, 0)
 
-        ql.os.utils.clear_syscalls()
+        ql.os.stats.clear()
 
         IOCTL_SIOCTL_METHOD_OUT_DIRECT = (40000, 0x901, METHOD_OUT_DIRECT, FILE_ANY_ACCESS)
         output_buffer_size = 0x1000

@@ -50,13 +50,13 @@ class EVMExecutor:
 
             if dis_insn.is_hook_code:
                 for h in dis_insn.callback_list.hook_code_list:
-                    h.call(self.vm_context.state.ql)
+                    h.call(self.vm_context.state.ql, self.vm_context)
             if dis_insn.is_hook_insn:
                 for h in dis_insn.callback_list.hook_insn_list:
-                    h.call(self.vm_context.state.ql)
+                    h.call(self.vm_context.state.ql, self.vm_context)
             if dis_insn.is_hook_addr:
                 for h in dis_insn.callback_list.hook_addr_dict[pc]:
-                    h.call(self.vm_context.state.ql)
+                    h.call(self.vm_context.state.ql, self.vm_context)
 
         except KeyError:
             opcode_fn = InvalidOpcode(opcode)

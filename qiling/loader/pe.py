@@ -3,95 +3,136 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import os, pefile, pickle, secrets, traceback
-from typing import Any, MutableMapping, Optional, Mapping, Sequence
+import os, pefile, pickle, secrets, ntpath
+from typing import Any, Dict, MutableMapping, NamedTuple, Optional, Mapping, Sequence, Tuple, Union
+
+from unicorn import UcError
+from unicorn.x86_const import UC_X86_REG_CR4, UC_X86_REG_CR8
 
 from qiling import Qiling
-from qiling.arch.x86_const import *
-from qiling.const import *
+from qiling.arch.x86_const import FS_SEGMENT_ADDR, GS_SEGMENT_ADDR
+from qiling.const import QL_ARCH
+from qiling.exception import QlErrorArch
 from qiling.os.const import POINTER
-from qiling.os.memory import QlMemoryHeap
+from qiling.os.windows.api import HINSTANCE, DWORD, LPVOID
 from qiling.os.windows.fncc import CDECL
-from qiling.os.windows.utils import *
+from qiling.os.windows.utils import has_lib_ext
 from qiling.os.windows.structs import *
 from .loader import QlLoader, Image
 
-class QlPeCacheEntry:
-    def __init__(self, ba: int, data: bytearray, cmdlines: Sequence, import_symbols: Mapping, import_table: Mapping):
-        self. ba = ba
-        self.data = data
-        self.cmdlines = cmdlines
-        self.import_symbols = import_symbols
-        self.import_table = import_table
+class QlPeCacheEntry(NamedTuple):
+    ba: int
+    data: bytearray
+    cmdlines: Sequence
+    import_symbols: MutableMapping[int, dict]
+    import_table: MutableMapping[Union[str, int], int]
 
-# A default simple cache implementation
+
 class QlPeCache:
-    def create_filename(self, path: str) -> str:
+    @staticmethod
+    def cache_filename(path: str) -> str:
+        dirname, basename = ntpath.split(path)
+
+        # canonicalize basename while preserving the path
+        path = ntpath.join(dirname, basename.casefold())
+
         return f'{path}.cache2'
 
     def restore(self, path: str) -> Optional[QlPeCacheEntry]:
-        fcache = self.create_filename(path)
+        fcache = QlPeCache.cache_filename(path)
 
-        # pickle file cannot be outdated
+        # check whether cache file exists and it is not older than the cached file itself
         if os.path.exists(fcache) and os.stat(fcache).st_mtime > os.stat(path).st_mtime:
             with open(fcache, "rb") as fcache_file:
                 return QlPeCacheEntry(*pickle.load(fcache_file))
 
         return None
 
-    def save(self, path: str, entry: QlPeCacheEntry):
-        fcache = self.create_filename(path)
+    def save(self, path: str, entry: QlPeCacheEntry) -> None:
+        fcache = QlPeCache.cache_filename(path)
 
-        data = (entry.ba, entry.data, entry.cmdlines, entry.import_symbols, entry.import_table)
         # cache this dll file
         with open(fcache, "wb") as fcache_file:
-            pickle.dump(data, fcache_file)
+            pickle.dump(entry, fcache_file)
 
-class Process():
+
+class Process:
     # let linter recognize mixin members
+    cmdline: bytes
+    pe_image_address: int
+    stack_address: int
+    stack_size: int
+
     dlls: MutableMapping[str, int]
-    import_address_table: MutableMapping[str, Any]
-    import_symbols: MutableMapping[int, Any]
-    export_symbols: MutableMapping[int, Any]
+    import_address_table: MutableMapping[str, Mapping]
+    import_symbols: MutableMapping[int, Dict[str, Any]]
+    export_symbols: MutableMapping[int, Dict[str, Any]]
     libcache: Optional[QlPeCache]
 
     def __init__(self, ql: Qiling):
         self.ql = ql
 
-    def align(self, size: int, unit: int) -> int:
-        return (size // unit + (1 if size % unit else 0)) * unit
+    def __get_path_elements(self, name: str) -> Tuple[str, str]:
+        """Translate DLL virtual path into host path.
 
-    def load_dll(self, name: bytes, driver: bool = False) -> int:
-        dll_name = name.decode()
+        Args:
+            name: dll virtual path; either absolute or relative
 
-        self.ql.dlls = os.path.join("Windows", "System32")
+        Returns: dll path on the host and dll basename in a canonicalized form
+        """
 
-        if dll_name.upper().startswith('C:\\'):
-            path = self.ql.os.path.transform_to_real_path(dll_name)
-            dll_name = path_leaf(dll_name)
-        else:
-            dll_name = dll_name.lower()
+        dirname, basename = ntpath.split(name)
 
-            if not is_file_library(dll_name):
-                dll_name = dll_name + ".dll"
+        if not has_lib_ext(basename):
+            basename = f'{basename}.dll'
 
-            path = os.path.join(self.ql.rootfs, self.ql.dlls, dll_name)
+        # if only filename was specified assume it is located at the
+        # system32 folder to prevent potential dll hijacking
+        if not dirname:
+            dirname = self.ql.os.winsys
 
-        if not os.path.exists(path):
-            self.ql.log.error("Cannot find dll in %s" % path)
+        # reconstruct the dll virtual path
+        vpath = ntpath.join(dirname, basename)
+
+        return self.ql.os.path.virtual_to_host_path(vpath), basename.casefold()
+
+    def load_dll(self, name: str, is_driver: bool = False) -> int:
+        dll_path, dll_name = self.__get_path_elements(name)
+
+        if dll_name.startswith('api-ms-win-'):
+            # Usually we should not reach this point and instead imports from such DLLs should be redirected earlier
+            self.ql.log.debug(f'Refusing to load virtual DLL {dll_name}')
             return 0
 
-        # If the dll is already loaded
-        if dll_name in self.dlls:
-            return self.dlls[dll_name]
+        # see if this dll was already loaded
+        image = self.get_image_by_name(dll_name, casefold=True)
 
-        self.ql.log.info(f'Loading {path} ...')
+        if image is not None:
+            return image.base
+
+        if not os.path.exists(dll_path):
+            # posix hosts may not find the requested filename if it was saved under a different case.
+            # For example, 'KernelBase.dll' may not be found because it is stored as 'kernelbase.dll'.
+            #
+            # try to locate the requested file while ignoring the case of its path elements.
+            dll_casefold_path = self.ql.os.path.host_casefold_path(dll_path)
+
+            if dll_casefold_path is None:
+                self.ql.log.error(f'Could not find DLL file: {dll_path}')
+                return 0
+
+            dll_path = dll_casefold_path
+
+        self.ql.log.info(f'Loading {dll_name} ...')
+
+        import_symbols = {}
+        import_table = {}
 
         cached = None
         loaded = False
 
         if self.libcache:
-            cached = self.libcache.restore(path)
+            cached = self.libcache.restore(dll_path)
 
         if cached:
             data = cached.data
@@ -109,72 +150,72 @@ class Process():
                 for entry in cached.cmdlines:
                     self.set_cmdline(entry['name'], entry['address'], data)
 
-                self.ql.log.info(f'Loaded {path} from cache')
+                self.ql.log.info(f'Loaded {dll_name} from cache')
                 loaded = True
 
         # either file was not cached, or could not be loaded to the same location in memory
         if not cached or not loaded:
-            dll = pefile.PE(path, fast_load=True)
+            dll = pefile.PE(dll_path, fast_load=True)
             dll.parse_data_directories()
             warnings = dll.get_warnings()
 
             if warnings:
-                self.ql.log.warning(f'Warnings while loading {path}:')
+                self.ql.log.debug(f'Warnings while loading {dll_name}:')
 
                 for warning in warnings:
-                    self.ql.log.warning(f' - {warning}')
-
-            data = bytearray(dll.get_memory_mapped_image())
+                    self.ql.log.debug(f' - {warning}')
 
             image_base = dll.OPTIONAL_HEADER.ImageBase or self.dll_last_address
-            image_size = self.ql.mem.align_up(len(data))
+            image_size = self.ql.mem.align_up(dll.OPTIONAL_HEADER.SizeOfImage)
+            relocate = False
 
             self.ql.log.debug(f'DLL preferred base address: {image_base:#x}')
 
             if (image_base + image_size) > self.ql.mem.max_mem_addr:
                 image_base = self.dll_last_address
                 self.ql.log.debug(f'DLL preferred base address exceeds memory upper bound, loading to: {image_base:#x}')
+                relocate = True
 
             if not self.ql.mem.is_available(image_base, image_size):
                 image_base = self.ql.mem.find_free_space(image_size, minaddr=image_base, align=0x10000)
                 self.ql.log.debug(f'DLL preferred base address is taken, loading to: {image_base:#x}')
+                relocate = True
+
+            if relocate:
+                with ShowProgress(0.1337):
+                    dll.relocate_image(image_base)
+
+            data = bytearray(dll.get_memory_mapped_image())
+            assert image_size >= len(data)
 
             cmdlines = []
-            import_symbols = {}
-            import_table = {}
 
-            dll_symbols = getattr(getattr(dll, 'DIRECTORY_ENTRY_EXPORT', None), 'symbols', [])
-            for entry in dll_symbols:
-                import_symbols[image_base + entry.address] = {
-                    "name": entry.name,
-                    "ordinal": entry.ordinal,
-                    "dll": dll_name.split('.')[0]
+            for sym in dll.DIRECTORY_ENTRY_EXPORT.symbols:
+                ea = image_base + sym.address
+
+                import_symbols[ea] = {
+                    'name'    : sym.name,
+                    'ordinal' : sym.ordinal,
+                    'dll'     : dll_name.split('.')[0]
                 }
 
-                if entry.name:
-                    import_table[entry.name] = image_base + entry.address
+                if sym.name:
+                    import_table[sym.name] = ea
 
-                import_table[entry.ordinal] = image_base + entry.address
-                cmdline_entry = self.set_cmdline(entry.name, entry.address, data)
+                import_table[sym.ordinal] = ea
+                cmdline_entry = self.set_cmdline(sym.name, sym.address, data)
 
                 if cmdline_entry:
                     cmdlines.append(cmdline_entry)
 
             if self.libcache:
                 cached = QlPeCacheEntry(image_base, data, cmdlines, import_symbols, import_table)
-                self.libcache.save(path, cached)
-                self.ql.log.info("Cached %s" % path)
+                self.libcache.save(dll_path, cached)
+                self.ql.log.info(f'Cached {dll_name}')
 
         # Add dll to IAT
-        try:
-            self.import_address_table[dll_name] = import_table
-        except Exception as ex:
-            self.ql.log.exception(f'Unable to add {dll_name} to IAT')
-
-        try:
-            self.import_symbols.update(import_symbols)
-        except Exception as ex:
-            self.ql.log.exception(f'Unable to add {dll_name} import symbols')
+        self.import_address_table[dll_name] = import_table
+        self.import_symbols.update(import_symbols)
 
         dll_base = image_base
         dll_len = image_size
@@ -183,508 +224,671 @@ class Process():
         self.ql.mem.map(dll_base, dll_len, info=dll_name)
         self.ql.mem.write(dll_base, bytes(data))
 
-        self.dlls[dll_name] = dll_base
-
         if dll_base == self.dll_last_address:
-            self.dll_last_address += dll_len
-
-        # if this is NOT a driver, add dll to ldr data
-        if not driver:
-            self.add_ldr_data_table_entry(dll_name)
+            self.dll_last_address = self.ql.mem.align_up(self.dll_last_address + dll_len, 0x10000)
 
         # add DLL to coverage images
-        self.images.append(Image(dll_base, dll_base + dll_len, path))
+        self.images.append(Image(dll_base, dll_base + dll_len, dll_path))
 
-        self.ql.log.info(f'Done with loading {path}')
+        # if this is NOT a driver, add dll to ldr data
+        if not is_driver:
+            self.add_ldr_data_table_entry(dll_name)
+
+        if not cached or not loaded:
+            # parse directory entry import
+            self.ql.log.debug(f'Init imports for {dll_name}')
+            self.init_imports(dll, is_driver)
+
+            # calling DllMain is essential for dlls to initialize properly. however
+            # DllMain of system libraries may fail due to incomplete or inaccurate
+            # mock implementation. due to unicorn limitations, recovering from such
+            # errors may be possible only if the function was not invoked from within
+            # a hook.
+            #
+            # in case of a dll loaded from a hooked API call, failures would not be
+            # recoverable and we have to give up its DllMain.
+            if not self.ql.os.PE_RUN:
+                self.call_dll_entrypoint(dll, dll_base, dll_len, dll_name)
+
+        self.ql.log.info(f'Done loading {dll_name}')
 
         return dll_base
 
+    def call_dll_entrypoint(self, dll: pefile.PE, dll_base: int, dll_len: int, dll_name: str):
+        entry_address = dll.OPTIONAL_HEADER.AddressOfEntryPoint
 
-    def _alloc_cmdline(self, wide):
-        addr = self.ql.os.heap.alloc(len(self.cmdline) * (2 if wide else 1))
-        packed_addr = self.ql.pack(addr)
-        return addr, packed_addr
+        if dll.get_section_by_rva(entry_address) is None:
+            return
 
-    def set_cmdline(self, name, address, memory):
-        cmdline_entry = None
-        if name == b"_acmdln":
-            addr, packed_addr = self._alloc_cmdline(wide=False)
-            cmdline_entry = {"name": name, "address": address}
-            memory[address:address + self.ql.pointersize] = packed_addr
-            self.ql.mem.write(addr, self.cmdline)
-        elif name == b"_wcmdln":
-            addr, packed_addr = self._alloc_cmdline(wide=True)
-            cmdline_entry = {"name": name, "address": address}
-            memory[address:address + self.ql.pointersize] = packed_addr
-            encoded = self.cmdline.decode('ascii').encode('UTF-16LE')
-            self.ql.mem.write(addr, encoded)
+        if dll_name in ('kernelbase.dll', 'kernel32.dll'):
+            self.ql.log.debug(f'Ignoring {dll_name} entry point')
+            return
 
-        return cmdline_entry
+        # DllMain functions often call many APIs that may crash the program if they
+        # are not implemented correctly (if at all). here we blacklist the problematic
+        # DLLs whose DllMain functions are known to be crashing.
+        #
+        # the blacklist may be revisited from time to time to see if any of the file
+        # can be safely unlisted.
+        blacklist = {
+            32 : ('gdi32.dll',),
+            64 : ('gdi32.dll',)
+        }[self.ql.arch.bits]
 
-    def init_tib(self):
-        if self.ql.archtype == QL_ARCH.X86:
-            teb_addr = self.structure_last_addr
+        if dll_name in blacklist:
+            self.ql.log.debug(f'Ignoring {dll_name} entry point (blacklisted)')
+            return
+
+        entry_point = dll_base + entry_address
+        exit_point = dll_base + dll_len - 16
+
+        args = (
+            (HINSTANCE, dll_base),  # hinstDLL = base address of DLL
+            (DWORD, 1),             # fdwReason = DLL_PROCESS_ATTACH
+            (LPVOID, 0)             # lpReserved = 0
+        )
+
+        self.ql.log.info(f'Calling {dll_name} DllMain at {entry_point:#x}')
+
+        regs_state = self.ql.arch.regs.save()
+
+        fcall = self.ql.os.fcall_select(CDECL)
+        fcall.call_native(entry_point, args, exit_point)
+
+        # Execute the call to the entry point
+        try:
+            self.ql.emu_start(entry_point, exit_point)
+        except UcError:
+            self.ql.log.error(f'Error encountered while running {dll_name} DllMain, bailing')
+
+            self.ql.arch.regs.restore(regs_state)
         else:
-            gs = self.structure_last_addr
-            self.structure_last_addr += 0x30
-            teb_addr = self.structure_last_addr
+            fcall.cc.unwind(len(args))
 
-        self.ql.log.info("TEB addr is 0x%x" %teb_addr)
+            self.ql.log.info(f'Returned from {dll_name} DllMain')
 
-        teb_size = len(TEB(self.ql).bytes())
-        teb_data = TEB(
-            self.ql,
-            base=teb_addr,
-            peb_address=teb_addr + teb_size,
-            stack_base=self.stack_address + self.stack_size,
-            stack_limit=self.stack_size,
-            Self=teb_addr)
+    def set_cmdline(self, name: bytes, address: int, memory: bytearray):
+        cmdln = {
+            b'_acmdln' : 1,
+            b'_wcmdln' : 2
+        }
 
-        self.ql.mem.write(teb_addr, teb_data.bytes())
+        clen = cmdln.get(name, None)
 
-        self.structure_last_addr += teb_size
-        if self.ql.archtype == QL_ARCH.X8664:
-            # TEB
-            self.ql.mem.write(gs + 0x30, self.ql.pack64(teb_addr))
-            # PEB
-            self.ql.mem.write(gs + 0x60, self.ql.pack64(teb_addr + teb_size))
+        if clen is None:
+            return None
 
-        self.TEB = self.ql.TEB = teb_data
+        addr = self.ql.os.heap.alloc(len(self.cmdline) * clen)
+        memory[address:address + self.ql.arch.pointersize] = self.ql.pack(addr)
+        data = self.cmdline
+
+        if clen == 2:
+            data = data.decode('ascii').encode('UTF-16LE')
+
+        self.ql.mem.write(addr, data)
+
+        return {"name": name, "address": address}
+
+    def init_teb(self):
+        teb_obj = make_teb(self.ql.arch.bits)
+
+        teb_addr = self.structure_last_addr
+        peb_addr = self.ql.mem.align_up(teb_addr + ctypes.sizeof(teb_obj), 0x10)
+
+        teb_obj.StackBase  = self.stack_address + self.stack_size
+        teb_obj.StackLimit = self.stack_address
+        teb_obj.TebAddress = teb_addr
+        teb_obj.PebAddress = peb_addr
+
+        self.ql.log.info(f'TEB is at {teb_addr:#x}')
+        self.ql.mem.write(teb_addr, bytes(teb_obj))
+
+        self.structure_last_addr = peb_addr
+        self.TEB = teb_obj
 
     def init_peb(self):
-        peb_addr = self.structure_last_addr
+        peb_obj = make_peb(self.ql.arch.bits)
 
-        self.ql.log.info("PEB addr is 0x%x" % peb_addr)
+        peb_addr = self.structure_last_addr
+        ldr_addr = self.ql.mem.align_up(peb_addr + ctypes.sizeof(peb_obj), 0x10)
 
         # we must set an heap, will try to retrieve this value. Is ok to be all \x00
-        process_heap = self.ql.os.heap.alloc(0x100)
-        process_parameters = self.ql.os.heap.alloc(0x100)
-        peb_data = PEB(
-            self.ql,
-            base=peb_addr,
-            process_heap=process_heap,
-            process_parameters=process_parameters,
-            number_processors=self.ql.os.profile.getint("HARDWARE", "number_processors"))
-        peb_data.LdrAddress = peb_addr + peb_data.size
-        peb_data.write(peb_addr)
-        self.structure_last_addr += peb_data.size
-        self.PEB = self.ql.PEB = peb_data
+        peb_obj.LdrAddress         = ldr_addr
+        peb_obj.ProcessParameters  = self.ql.os.heap.alloc(0x100)
+        peb_obj.ProcessHeap        = self.ql.os.heap.alloc(0x100)
+        peb_obj.NumberOfProcessors = self.ql.os.profile.getint('HARDWARE', 'number_processors')
+
+        self.ql.log.info(f'PEB is at {peb_addr:#x}')
+        self.ql.mem.write(peb_addr, bytes(peb_obj))
+
+        self.structure_last_addr = ldr_addr
+        self.PEB = peb_obj
 
     def init_ldr_data(self):
-        ldr_addr = self.structure_last_addr
-        ldr_size = len(LdrData(self.ql).bytes())
-        ldr_data = LdrData(
-            self.ql,
-            base=ldr_addr,
-            in_load_order_module_list={
-                'Flink': ldr_addr + 2 * self.ql.pointersize,
-                'Blink': ldr_addr + 2 * self.ql.pointersize
-            },
-            in_memory_order_module_list={
-                'Flink': ldr_addr + 4 * self.ql.pointersize,
-                'Blink': ldr_addr + 4 * self.ql.pointersize
-            },
-            in_initialization_order_module_list={
-                'Flink': ldr_addr + 6 * self.ql.pointersize,
-                'Blink': ldr_addr + 6 * self.ql.pointersize
-            }
-        )
-        self.ql.mem.write(ldr_addr, ldr_data.bytes())
-        self.structure_last_addr += ldr_size
-        self.LDR = self.ql.LDR = ldr_data
+        ldr_obj = make_ldr_data(self.ql.arch.bits)
+        ldr_cls = ldr_obj.__class__
 
-    def add_ldr_data_table_entry(self, dll_name):
-        dll_base = self.dlls[dll_name]
-        path = "C:\\Windows\\System32\\" + dll_name
-        ldr_table_entry_size = len(LdrDataTableEntry(self.ql).bytes())
-        base = self.ql.os.heap.alloc(ldr_table_entry_size)
-        ldr_table_entry = LdrDataTableEntry(self.ql,
-                                            base=base,
-                                            in_load_order_links={'Flink': 0, 'Blink': 0},
-                                            in_memory_order_links={'Flink': 0, 'Blink': 0},
-                                            in_initialization_order_links={'Flink': 0, 'Blink': 0},
-                                            dll_base=dll_base,
-                                            entry_point=0,
-                                            full_dll_name=path,
-                                            base_dll_name=dll_name)
+        ldr_addr = self.structure_last_addr
+        nobj_addr = self.ql.mem.align_up(ldr_addr + ctypes.sizeof(ldr_obj), 0x10)
+
+        ldr_obj.InLoadOrderModuleList.Flink = ldr_addr + ldr_cls.InLoadOrderModuleList.offset
+        ldr_obj.InLoadOrderModuleList.Blink = ldr_addr + ldr_cls.InLoadOrderModuleList.offset
+
+        ldr_obj.InMemoryOrderModuleList.Flink = ldr_addr + ldr_cls.InMemoryOrderModuleList.offset
+        ldr_obj.InMemoryOrderModuleList.Blink = ldr_addr + ldr_cls.InMemoryOrderModuleList.offset
+
+        ldr_obj.InInitializationOrderModuleList.Flink = ldr_addr + ldr_cls.InInitializationOrderModuleList.offset
+        ldr_obj.InInitializationOrderModuleList.Blink = ldr_addr + ldr_cls.InInitializationOrderModuleList.offset
+
+        self.ql.log.info(f'LDR is at {ldr_addr:#x}')
+        self.ql.mem.write(ldr_addr, bytes(ldr_obj))
+
+        self.structure_last_addr = nobj_addr
+        self.LDR = ldr_obj
+
+    def add_ldr_data_table_entry(self, dll_name: str):
+        entry_obj = make_ldr_data_table_entry(self.ql.arch.bits)
+        entry_cls = entry_obj.__class__
+
+        entry_size = ctypes.sizeof(entry_obj)
+        entry_addr = self.ql.os.heap.alloc(entry_size)
+
+        def populate_unistr(obj, s: str) -> None:
+            encoded = s.encode('utf-16le')
+            ucslen = len(encoded)
+            ucsbuf = self.ql.os.heap.alloc(ucslen + 2)
+
+            self.ql.mem.write(ucsbuf, encoded + b'\x00\x00')
+
+            obj.Length = ucslen
+            obj.MaximumLength = ucslen + 2
+            obj.Buffer = ucsbuf
+
+        image = self.get_image_by_name(dll_name, casefold=True)
+        assert image, 'image should have been added to loader.images first'
+
+        entry_obj.DllBase = image.base
+        populate_unistr(entry_obj.FullDllName, ntpath.join(self.ql.os.winsys, dll_name))
+        populate_unistr(entry_obj.BaseDllName, dll_name)
 
         # Flink
-        if len(self.ldr_list) == 0:
-            flink = self.LDR
-            ldr_table_entry.InLoadOrderLinks['Flink'] = flink.InLoadOrderModuleList['Flink']
-            ldr_table_entry.InMemoryOrderLinks['Flink'] = flink.InMemoryOrderModuleList['Flink']
-            ldr_table_entry.InInitializationOrderLinks['Flink'] = flink.InInitializationOrderModuleList['Flink']
+        if self.ldr_list:
+            flink_base, flink = self.ldr_list[-1]
 
-            flink.InLoadOrderModuleList['Flink'] = ldr_table_entry.base
-            flink.InMemoryOrderModuleList['Flink'] = ldr_table_entry.base + 2 * self.ql.pointersize
-            flink.InInitializationOrderModuleList['Flink'] = ldr_table_entry.base + 4 * self.ql.pointersize
+            entry_obj.InLoadOrderLinks.Flink = flink.InLoadOrderLinks.Flink
+            entry_obj.InMemoryOrderLinks.Flink = flink.InMemoryOrderLinks.Flink
+            entry_obj.InInitializationOrderLinks.Flink = flink.InInitializationOrderLinks.Flink
+
+            flink.InLoadOrderLinks.Flink = entry_addr + entry_cls.InLoadOrderLinks.offset
+            flink.InMemoryOrderLinks.Flink = entry_addr + entry_cls.InMemoryOrderLinks.offset
+            flink.InInitializationOrderLinks.Flink = entry_addr + entry_cls.InInitializationOrderLinks.offset
 
         else:
-            flink = self.ldr_list[-1]
-            ldr_table_entry.InLoadOrderLinks['Flink'] = flink.InLoadOrderLinks['Flink']
-            ldr_table_entry.InMemoryOrderLinks['Flink'] = flink.InMemoryOrderLinks['Flink']
-            ldr_table_entry.InInitializationOrderLinks['Flink'] = flink.InInitializationOrderLinks['Flink']
+            flink_base, flink = (self.PEB.LdrAddress, self.LDR)
 
-            flink.InLoadOrderLinks['Flink'] = ldr_table_entry.base
-            flink.InMemoryOrderLinks['Flink'] = ldr_table_entry.base + 2 * self.ql.pointersize
-            flink.InInitializationOrderLinks['Flink'] = ldr_table_entry.base + 4 * self.ql.pointersize
+            entry_obj.InLoadOrderLinks.Flink = flink.InLoadOrderModuleList.Flink
+            entry_obj.InMemoryOrderLinks.Flink = flink.InMemoryOrderModuleList.Flink
+            entry_obj.InInitializationOrderLinks.Flink = flink.InInitializationOrderModuleList.Flink
+
+            flink.InLoadOrderModuleList.Flink = entry_addr + entry_cls.InLoadOrderLinks.offset
+            flink.InMemoryOrderModuleList.Flink = entry_addr + entry_cls.InMemoryOrderLinks.offset
+            flink.InInitializationOrderModuleList.Flink = entry_addr + entry_cls.InInitializationOrderLinks.offset
 
         # Blink
+        blink_base = self.PEB.LdrAddress
         blink = self.LDR
-        ldr_table_entry.InLoadOrderLinks['Blink'] = blink.InLoadOrderModuleList['Blink']
-        ldr_table_entry.InMemoryOrderLinks['Blink'] = blink.InMemoryOrderModuleList['Blink']
-        ldr_table_entry.InInitializationOrderLinks['Blink'] = blink.InInitializationOrderModuleList['Blink']
 
-        blink.InLoadOrderModuleList['Blink'] = ldr_table_entry.base
-        blink.InMemoryOrderModuleList['Blink'] = ldr_table_entry.base + 2 * self.ql.pointersize
-        blink.InInitializationOrderModuleList['Blink'] = ldr_table_entry.base + 4 * self.ql.pointersize
+        entry_obj.InLoadOrderLinks.Blink = blink.InLoadOrderModuleList.Blink
+        entry_obj.InMemoryOrderLinks.Blink = blink.InMemoryOrderModuleList.Blink
+        entry_obj.InInitializationOrderLinks.Blink = blink.InInitializationOrderModuleList.Blink
 
-        self.ql.mem.write(flink.base, flink.bytes())
-        self.ql.mem.write(blink.base, blink.bytes())
-        self.ql.mem.write(ldr_table_entry.base, ldr_table_entry.bytes())
+        blink.InLoadOrderModuleList.Blink = entry_addr + entry_cls.InLoadOrderLinks.offset
+        blink.InMemoryOrderModuleList.Blink = entry_addr + entry_cls.InMemoryOrderLinks.offset
+        blink.InInitializationOrderModuleList.Blink = entry_addr + entry_cls.InInitializationOrderLinks.offset
 
-        self.ldr_list.append(ldr_table_entry)
+        self.ql.mem.write(flink_base, bytes(flink))
+        self.ql.mem.write(blink_base, bytes(blink))
+        self.ql.mem.write(entry_addr, bytes(entry_obj))
 
-    def init_exports(self):
-        if self.ql.code:
+        self.ldr_list.append((entry_addr, entry_obj))
+
+    @staticmethod
+    def directory_exists(pe: pefile.PE, entry: str) -> bool:
+        ent = pefile.DIRECTORY_ENTRY[entry]
+
+        return pe.OPTIONAL_HEADER.DATA_DIRECTORY[ent].VirtualAddress != 0
+
+    def init_imports(self, pe: pefile.PE, is_driver: bool):
+        if not Process.directory_exists(pe, 'IMAGE_DIRECTORY_ENTRY_IMPORT'):
             return
-        if self.pe.OPTIONAL_HEADER.DATA_DIRECTORY[pefile.DIRECTORY_ENTRY['IMAGE_DIRECTORY_ENTRY_EXPORT']].VirtualAddress != 0:
-            # Do a full load if IMAGE_DIRECTORY_ENTRY_EXPORT is present so we can load the exports
-            self.pe.full_load()
-        else:
+
+        pe.full_load()
+
+        for entry in pe.DIRECTORY_ENTRY_IMPORT:
+            dll_name = entry.dll.decode().casefold()
+            self.ql.log.debug(f'Requesting imports from {dll_name}')
+
+            orig_dll_name = dll_name
+            redirected = False
+
+            if dll_name.startswith('api-ms-win-'):
+                # DLLs starting with this prefix contain no actual code. Instead, the windows loader loads the actual
+                # code from one of the main windows dlls.
+                # see https://github.com/lucasg/Dependencies for correct replacement dlls
+                #
+                # The correct way to find the dll that replaces all symbols from this dll involves using the hashmap
+                # inside of apisetschema.dll (see https://lucasg.github.io/2017/10/15/Api-set-resolution/ ).
+                #
+                # Currently, we use a simpler, more hacky approach, that seems to work in a lot of cases: we just scan
+                # through some key dlls and hope that we find the requested symbols there. some symbols may appear on
+                # more than one dll though; in that case we proceed to the next symbol to see which key dll includes it.
+                #
+                # Note: You might be tempted to load the actual dll (dll_name), because they also contain a reference to
+                # the replacement dll. However, chances are, that these dlls do not exist in the rootfs and maybe they
+                # don't even exist on windows. Therefore this approach is a bad idea.
+
+                # DLLs that seem to contain most of the requested symbols
+                key_dlls = (
+                    'ntdll.dll',
+                    'kernelbase.dll',
+                    'ucrtbase.dll'
+                )
+
+                imports = iter(entry.imports)
+                failed = False
+                fallback = None
+
+                while not redirected and not failed:
+                    # find all possible redirection options by scanning key dlls for the current imported symbol
+                    imp = next(imports, None)
+                    redirection_options = [fallback] if imp is None else [filename for filename in key_dlls if filename in self.import_address_table and imp.name in self.import_address_table[filename]]
+
+                    # no redirection options: failed to redirect dll
+                    if not redirection_options:
+                        failed = True
+
+                    # exactly one redirection options: use it
+                    elif len(redirection_options) == 1:
+                        key_dll = redirection_options[0]
+                        redirected = True
+
+                    # more than one redirection options: remember one of them and proceed to next symbol
+                    else:
+                        fallback = redirection_options[-1]
+
+                if not redirected:
+                    self.ql.log.warning(f'Failed to resolve {dll_name}')
+                    continue
+
+                self.ql.log.debug(f'Redirecting {dll_name} to {key_dll}')
+                dll_name = key_dll
+
+            unbound_imports = [imp for imp in entry.imports if not imp.bound]
+
+            if unbound_imports:
+                # Only load dll if encountered unbound symbol
+                if not redirected:
+                    dll_base = self.load_dll(entry.dll.decode(), is_driver)
+
+                    if not dll_base:
+                        continue
+
+                for imp in unbound_imports:
+                    iat = self.import_address_table[dll_name]
+
+                    if imp.name:
+                        if imp.name not in iat:
+                            self.ql.log.debug(f'Error in loading function {imp.name.decode()} ({orig_dll_name}){", probably misdirected" if redirected else ""}')
+                            continue
+
+                        addr = iat[imp.name]
+                    else:
+                        addr = iat[imp.ordinal]
+
+                    self.ql.mem.write_ptr(imp.address, addr)
+
+    def init_exports(self, pe: pefile.PE):
+        if not Process.directory_exists(pe, 'IMAGE_DIRECTORY_ENTRY_EXPORT'):
             return
 
-        try:
-            # parse directory entry export
-            dll_name = os.path.basename(self.path)
-            self.import_address_table[dll_name] = {} 
-            for entry in self.pe.DIRECTORY_ENTRY_EXPORT.symbols:
-                self.export_symbols[self.pe_image_address + entry.address] = {'name': entry.name, 'ordinal': entry.ordinal}
-                self.import_address_table[dll_name][entry.name] = self.pe_image_address + entry.address
-                self.import_address_table[dll_name][entry.ordinal] = self.pe_image_address + entry.address
-        except:
-            self.ql.log.info('Failed to load exports for %s:\n%s' % (self.ql.argv, traceback.format_exc()))
+        # Do a full load if IMAGE_DIRECTORY_ENTRY_EXPORT is present so we can load the exports
+        pe.full_load()
+
+        iat = {}
+
+        # parse directory entry export
+        for entry in pe.DIRECTORY_ENTRY_EXPORT.symbols:
+            ea = self.pe_image_address + entry.address
+
+            self.export_symbols[ea] = {
+                'name'    : entry.name,
+                'ordinal' : entry.ordinal
+            }
+
+            if entry.name:
+                iat[entry.name] = ea
+
+            iat[entry.ordinal] = ea
+
+        dll_name = os.path.basename(self.path)
+        self.import_address_table[dll_name.casefold()] = iat
 
     def init_driver_object(self):
+        drv_addr = self.structure_last_addr
+
         # PDRIVER_OBJECT DriverObject
-        driver_object_addr = self.structure_last_addr
-        self.ql.log.info("Driver object addr is 0x%x" %driver_object_addr)
+        drv_obj = make_driver_object(self.ql, drv_addr, self.ql.arch.bits)
+        nobj_addr = self.ql.mem.align_up(drv_addr + ctypes.sizeof(drv_obj), 0x10)
 
-        if self.ql.archtype == QL_ARCH.X86:
-            self.driver_object = DRIVER_OBJECT32(self.ql, driver_object_addr)
-        elif self.ql.archtype == QL_ARCH.X8664:
-            self.driver_object = DRIVER_OBJECT64(self.ql, driver_object_addr)
+        self.ql.log.info(f'DriverObject is at {drv_addr:#x}')
+        self.ql.mem.write(drv_addr, bytes(drv_obj))
 
-        driver_object_size = ctypes.sizeof(self.driver_object)
-        self.ql.mem.write(driver_object_addr, bytes(self.driver_object))
-        self.structure_last_addr += driver_object_size
-        self.driver_object_address = driver_object_addr
-
+        self.structure_last_addr = nobj_addr
+        self.driver_object_address = drv_addr
+        self.driver_object = drv_obj
 
     def init_registry_path(self):
+        regpath_addr = self.structure_last_addr
+
         # PUNICODE_STRING RegistryPath
-        regitry_path_addr = self.structure_last_addr
-        self.ql.log.info("Registry path addr is 0x%x" %regitry_path_addr)
+        regpath_obj = make_unicode_string(self.ql.arch.bits,
+                Length=0,
+                MaximumLength=0,
+                Buffer=regpath_addr
+        )
 
-        if self.ql.archtype == QL_ARCH.X86:
-            regitry_path_data = UNICODE_STRING32(0, 0, regitry_path_addr)
-        elif self.ql.archtype == QL_ARCH.X8664:
-            regitry_path_data = UNICODE_STRING64(0, 0, regitry_path_addr)
+        nobj_addr = self.ql.mem.align_up(regpath_addr + ctypes.sizeof(regpath_obj), 0x10)
 
-        regitry_path_size = ctypes.sizeof(regitry_path_data)
-        self.ql.mem.write(regitry_path_addr, bytes(regitry_path_data))
-        self.structure_last_addr += regitry_path_size
-        self.regitry_path_address = regitry_path_addr
+        self.ql.log.info(f'RegistryPath is at {regpath_addr:#x}')
+        self.ql.mem.write(regpath_addr, bytes(regpath_obj))
 
+        self.structure_last_addr = nobj_addr
+        self.regitry_path_address = regpath_addr
 
     def init_eprocess(self):
-        addr = self.structure_last_addr
-        self.ql.log.info("EPROCESS is is 0x%x" %addr)
+        eproc_obj = make_eprocess(self.ql.arch.bits)
 
+        eproc_addr = self.structure_last_addr
+        nobj_addr = self.ql.mem.align_up(eproc_addr + ctypes.sizeof(eproc_obj), 0x10)
 
-        if self.ql.archtype == QL_ARCH.X86:
-            self.eprocess_object = EPROCESS32(self.ql, addr)
-        elif self.ql.archtype == QL_ARCH.X8664:
-            self.eprocess_object = EPROCESS64(self.ql, addr)            
+        self.ql.mem.write(eproc_addr, bytes(eproc_obj))
 
-        size = ctypes.sizeof(self.eprocess_object)
-        self.ql.mem.write(addr, bytes(self.driver_object))
-        self.structure_last_addr += size
-        self.ql.eprocess_address = addr
-
+        self.structure_last_addr = nobj_addr
+        self.eprocess_address = eproc_addr
 
     def init_ki_user_shared_data(self):
-        '''
-        https://www.geoffchappell.com/studies/windows/km/ntoskrnl/structs/kuser_shared_data/index.htm
+        addr = self.ql.os.profile.getint(f'OS{self.ql.arch.bits}', 'KI_USER_SHARED_DATA')
 
-		struct information:
-		https://doxygen.reactos.org/d8/dae/modules_2rostests_2winetests_2ntdll_2time_8c_source.html
-        '''
-        if self.ql.archtype == QL_ARCH.X86:
-            KI_USER_SHARED_DATA = 0xFFDF0000
-        elif self.ql.archtype == QL_ARCH.X8664:
-            KI_USER_SHARED_DATA = 0xFFFFF78000000000
+        user_shared_data_obj = KUSER_SHARED_DATA()
+        user_shared_data_size = ctypes.sizeof(KUSER_SHARED_DATA)
 
-        self.ql.log.info("KI_USER_SHARED_DATA is 0x%x" %KI_USER_SHARED_DATA)
+        self.ql.mem.map(addr, self.ql.mem.align_up(user_shared_data_size))
+        self.ql.mem.write(addr, bytes(user_shared_data_obj))
 
-        shared_user_data = KUSER_SHARED_DATA()
+    def init_security_cookie(self, pe: pefile.PE, image_base: int):
+        if not Process.directory_exists(pe, 'IMAGE_DIRECTORY_ENTRY_LOAD_CONFIG'):
+            return
 
-        shared_user_data_len = self.align(ctypes.sizeof(KUSER_SHARED_DATA), 0x1000)
-        self.ql.mem.map(KI_USER_SHARED_DATA, shared_user_data_len)
-        self.ql.mem.write(KI_USER_SHARED_DATA, bytes(shared_user_data))
+        cookie_rva = pe.DIRECTORY_ENTRY_LOAD_CONFIG.struct.SecurityCookie - pe.OPTIONAL_HEADER.ImageBase
 
+        # get a random cookie value but keep the two most significant bytes zeroes
+        #
+        #   rol   rcx, 10h    ; rcx = cookie
+        #   test  cx, 0FFFFh
+        cookie = secrets.randbits(self.ql.arch.bits - 16)
+
+        self.ql.mem.write_ptr(cookie_rva + image_base, cookie)
 
 class QlLoaderPE(QlLoader, Process):
-    def __init__(self, ql: Qiling):
+    def __init__(self, ql: Qiling, libcache: bool):
         super().__init__(ql)
 
-        self.ql         = ql
-        self.path       = self.ql.path
-        self.is_driver  = False
-
-        if ql.libcache is True:
-            self.libcache = QlPeCache()
-        else:
-            self.libcache = ql.libcache or None
+        self.ql       = ql
+        self.path     = self.ql.path
+        self.libcache = QlPeCache() if libcache else None
 
     def run(self):
-        self.init_dlls = [b"ntdll.dll", b"kernel32.dll", b"user32.dll"]
-        self.sys_dlls = [b"ntdll.dll", b"kernel32.dll"]
-        self.pe_entry_point = 0
-        self.sizeOfStackReserve = 0        
+        self.init_dlls = (
+            'ntdll.dll',
+            'kernel32.dll',
+            'user32.dll'
+        )
 
-        if not self.ql.code:
-            self.pe = pefile.PE(self.path, fast_load=True)
-            self.is_driver = self.pe.is_driver()
-            if self.is_driver == True:
-                self.init_dlls.append(b"ntoskrnl.exe")
-                self.sys_dlls.append(b"ntoskrnl.exe")
-            
-        if self.ql.archtype == QL_ARCH.X86:
-            self.stack_address = int(self.ql.os.profile.get("OS32", "stack_address"), 16)
-            self.stack_size = int(self.ql.os.profile.get("OS32", "stack_size"), 16)
-            self.image_address = int(self.ql.os.profile.get("OS32", "image_address"), 16)
-            self.dll_address = int(self.ql.os.profile.get("OS32", "dll_address"), 16)
-            self.entry_point = int(self.ql.os.profile.get("OS32", "entry_point"), 16)
-            self.ql.os.heap_base_address = int(self.ql.os.profile.get("OS32", "heap_address"), 16)
-            self.ql.os.heap_base_size = int(self.ql.os.profile.get("OS32", "heap_size"), 16)
-            self.structure_last_addr = FS_SEGMENT_ADDR
-        elif self.ql.archtype == QL_ARCH.X8664:
-            self.stack_address = int(self.ql.os.profile.get("OS64", "stack_address"), 16)
-            self.stack_size = int(self.ql.os.profile.get("OS64", "stack_size"), 16)
-            self.image_address = int(self.ql.os.profile.get("OS64", "image_address"), 16)
-            self.dll_address = int(self.ql.os.profile.get("OS64", "dll_address"), 16)
-            self.entry_point = int(self.ql.os.profile.get("OS64", "entry_point"), 16)
-            self.ql.os.heap_base_address = int(self.ql.os.profile.get("OS64", "heap_address"), 16)
-            self.ql.os.heap_base_size = int(self.ql.os.profile.get("OS64", "heap_size"), 16)
-            self.structure_last_addr = GS_SEGMENT_ADDR
+        self.sys_dlls = (
+            'ntdll.dll',
+            'kernel32.dll',
+            'ucrtbase.dll'
+        )
 
-        self.dlls = {}
+        if self.ql.code:
+            pe = None
+            self.is_driver = False
+        else:
+            pe = pefile.PE(self.path, fast_load=True)
+            self.is_driver = pe.is_driver()
+
+        ossection = f'OS{self.ql.arch.bits}'
+
+        self.stack_address = self.ql.os.profile.getint(ossection, 'stack_address')
+        self.stack_size    = self.ql.os.profile.getint(ossection, 'stack_size')
+        self.image_address = self.ql.os.profile.getint(ossection, 'image_address')
+        self.dll_address   = self.ql.os.profile.getint(ossection, 'dll_address')
+        self.entry_point   = self.ql.os.profile.getint(ossection, 'entry_point')
+
+        self.structure_last_addr = {
+            32 : FS_SEGMENT_ADDR,
+            64 : GS_SEGMENT_ADDR
+        }[self.ql.arch.bits]
+
         self.import_symbols = {}
         self.export_symbols = {}
         self.import_address_table = {}
         self.ldr_list = []
         self.pe_image_address = 0
-        self.pe_image_address_size = 0
+        self.pe_image_size = 0
         self.dll_size = 0
         self.dll_last_address = self.dll_address
-        # compatible with ql.__enable_bin_patch()
+
+        # not used, but here to remain compatible with ql.do_bin_patch
         self.load_address = 0
-        self.ql.os.heap = QlMemoryHeap(self.ql, self.ql.os.heap_base_address, self.ql.os.heap_base_address + self.ql.os.heap_base_size)
-        self.ql.os.setupComponents()
-        self.ql.os.entry_point = self.entry_point
-        cmdline = (str(self.ql.os.userprofile)) + "Desktop\\" + self.ql.targetname
-        self.filepath = bytes(cmdline + "\x00", "utf-8")
-        for arg in self.argv[1:]:
-            if ' ' in arg:
-                cmdline += f' "{arg}"'
-            else:
-                cmdline += f' {arg}'
-        cmdline += "\x00"
-        self.cmdline = bytes(cmdline, "utf-8")
 
-        self.load()
+        cmdline = ntpath.join(self.ql.os.userprofile, 'Desktop', self.ql.targetname)
+        cmdargs = ' '.join(f'"{arg}"' if ' ' in arg else arg for arg in self.argv[1:])
 
-    def init_thread_information_block(self):
-        super().init_tib()
-        super().init_peb()
-        super().init_ldr_data()
-        super().init_exports()
+        self.filepath = bytes(f'{cmdline}\x00', "utf-8")
+        self.cmdline = bytes(f'{cmdline} {cmdargs}\x00', "utf-8")
 
-    def load(self):
+        self.load(pe)
+
+    def load(self, pe: Optional[pefile.PE]):
         # set stack pointer
         self.ql.log.info("Initiate stack address at 0x%x " % self.stack_address)
         self.ql.mem.map(self.stack_address, self.stack_size, info="[stack]")
 
-        if self.path and not self.ql.code:
-            # for simplicity, no image base relocation
-            self.pe_image_address = self.pe.OPTIONAL_HEADER.ImageBase
-            self.pe_image_address_size = self.ql.mem.align_up(self.pe.OPTIONAL_HEADER.SizeOfImage)
+        if pe is not None:
+            image_name = os.path.basename(self.path)
+            image_base = pe.OPTIONAL_HEADER.ImageBase
+            image_size = self.ql.mem.align_up(pe.OPTIONAL_HEADER.SizeOfImage)
 
-            if self.pe_image_address + self.pe_image_address_size > self.ql.os.heap_base_address:
-                # pe reloc
-                self.pe_image_address = self.image_address
-                self.pe.relocate_image(self.image_address)
+            # if default base address is taken, use the one specified in profile
+            if not self.ql.mem.is_available(image_base, image_size):
+                image_base = self.image_address
+                pe.relocate_image(image_base)
 
-            self.entry_point = self.pe_entry_point = self.pe_image_address + self.pe.OPTIONAL_HEADER.AddressOfEntryPoint
-            self.sizeOfStackReserve = self.pe.OPTIONAL_HEADER.SizeOfStackReserve
-            self.ql.log.info("Loading %s to 0x%x" % (self.path, self.pe_image_address))
-            self.ql.log.info("PE entry point at 0x%x" % self.entry_point)
-            self.images.append(Image(self.pe_image_address, self.pe_image_address + self.pe.NT_HEADERS.OPTIONAL_HEADER.SizeOfImage, self.path))
+            self.entry_point = image_base + pe.OPTIONAL_HEADER.AddressOfEntryPoint
+            self.pe_image_address = image_base
+            self.pe_image_size = image_size
+
+            self.ql.log.info(f'Loading {self.path} to {image_base:#x}')
+            self.ql.log.info(f'PE entry point at {self.entry_point:#x}')
+
+            self.ql.mem.map(image_base, image_size, info=f'[{image_name}]')
+            self.images.append(Image(image_base, image_base + pe.NT_HEADERS.OPTIONAL_HEADER.SizeOfImage, os.path.abspath(self.path)))
+
+            if self.is_driver:
+                self.init_driver_object()
+                self.init_registry_path()
+                self.init_eprocess()
+                self.init_ki_user_shared_data()
+
+                # set IRQ Level in CR8 to PASSIVE_LEVEL
+                self.ql.arch.regs.write(UC_X86_REG_CR8, 0)
+
+                # setup CR4, enabling: DE, PSE, PAE, MCE, PGE, OSFXSR and OSXMMEXCPT.
+                # some drivers may check this at initialized
+                self.ql.arch.regs.write(UC_X86_REG_CR4, 0b0000011011111000)
+
+            else:
+                # initialize thread information block
+                self.init_teb()
+                self.init_peb()
+                self.init_ldr_data()
+                self.init_exports(pe)
+
+                # add image to ldr table
+                self.add_ldr_data_table_entry(image_name)
+
+            pe.parse_data_directories()
+
+            # done manipulating pe file; write its contents into memory
+            self.ql.mem.write(image_base, bytes(pe.get_memory_mapped_image()))
+
+            if self.is_driver:
+                # security cookie can be written only after image has been loaded to memory
+                self.init_security_cookie(pe, image_base)
 
             # Stack should not init at the very bottom. Will cause errors with Dlls
-            sp = self.stack_address + self.stack_size - 0x1000
+            top_of_stack = self.stack_address + self.stack_size - 0x1000
 
-            if self.ql.archtype == QL_ARCH.X86:
-                self.ql.reg.esp = sp
-                self.ql.reg.ebp = sp
-
-                if self.pe.is_dll():
-                    self.ql.log.debug('Setting up DllMain args')
-                    load_addr_bytes = self.pe_image_address.to_bytes(length=4, byteorder='little')
-
-                    self.ql.log.debug('Writing 0x%08X (IMAGE_BASE) to [ESP+4](0x%08X)' % (self.pe_image_address, sp + 0x4))
-                    self.ql.mem.write(sp + 0x4, load_addr_bytes)
-
-                    self.ql.log.debug('Writing 0x01 (DLL_PROCESS_ATTACH) to [ESP+8](0x%08X)' % (sp + 0x8))
-                    self.ql.mem.write(sp + 0x8, int(1).to_bytes(length=4, byteorder='little'))
-
-            elif self.ql.archtype == QL_ARCH.X8664:
-                self.ql.reg.rsp = sp
-                self.ql.reg.rbp = sp
-
-                if self.pe.is_dll():
-                    self.ql.log.debug('Setting up DllMain args')
-
-                    self.ql.log.debug('Setting RCX (arg1) to %16X (IMAGE_BASE)' % (self.pe_image_address))
-                    self.ql.reg.rcx = self.pe_image_address
-
-                    self.ql.log.debug('Setting RDX (arg2) to 1 (DLL_PROCESS_ATTACH)')
-                    self.ql.reg.rdx = 1
+            if self.ql.arch.type == QL_ARCH.X86:
+                bp_reg = 'ebp'
+                sp_reg = 'esp'
+            elif self.ql.arch.type == QL_ARCH.X8664:
+                bp_reg = 'rbp'
+                sp_reg = 'rsp'
             else:
-                raise QlErrorArch("Unknown ql.arch")
+                raise QlErrorArch(f'unexpected arch type: {self.ql.arch.type}')
 
-            # if this is NOT a driver, init tib/peb/ldr
-            if not self.is_driver:  # userland program
-                self.init_thread_information_block()
-            else:   # Windows kernel driver
-                super().init_driver_object()
-                super().init_registry_path()
-                super().init_eprocess()
-                super().init_ki_user_shared_data()
-
-                # setup IRQ Level in CR8 to PASSIVE_LEVEL (0)
-                self.ql.reg.write(UC_X86_REG_CR8, 0)
-
-                # setup CR4, some drivers may check this at initialized time
-                self.ql.reg.write(UC_X86_REG_CR4, 0x6f8)
-
-                self.ql.log.debug('Setting up DriverEntry args')
-                self.ql.stop_execution_pattern = 0xDEADC0DE
-
-                if self.ql.archtype == QL_ARCH.X86:  # Win32
-                    if not self.ql.stop_options.any:
-                        # We know that a driver will return,
-                        # so if the user did not configure stop options, write a sentinel return value
-                        self.ql.mem.write(sp, self.ql.stop_execution_pattern.to_bytes(length=4, byteorder='little'))
-
-                    self.ql.log.debug('Writing 0x%08X (PDRIVER_OBJECT) to [ESP+4](0x%08X)' % (self.ql.loader.driver_object_address, sp+0x4))
-                    self.ql.log.debug('Writing 0x%08X (RegistryPath) to [ESP+8](0x%08X)' % (self.ql.loader.regitry_path_address, sp+0x8))
-                elif self.ql.archtype == QL_ARCH.X8664:  # Win64
-                    if not self.ql.stop_options.any:
-                        # We know that a driver will return,
-                        # so if the user did not configure stop options, write a sentinel return value
-                        self.ql.mem.write(sp, self.ql.stop_execution_pattern.to_bytes(length=8, byteorder='little'))
-
-                    self.ql.log.debug('Setting RCX (arg1) to %16X (PDRIVER_OBJECT)' % (self.ql.loader.driver_object_address))
-                    self.ql.log.debug('Setting RDX (arg2) to %16X (PUNICODE_STRING)' % (self.ql.loader.regitry_path_address))
-
-                # setup args for DriverEntry()
-                self.ql.os.fcall = self.ql.os.fcall_select(CDECL)
-                self.ql.os.fcall.writeParams(((POINTER, self.ql.loader.driver_object_address), (POINTER, self.ql.loader.regitry_path_address)))
-
-            # mmap PE file into memory
-            self.ql.mem.map(self.pe_image_address, self.ql.mem.align_up(self.pe_image_address_size), info="[PE]")
-            self.pe.parse_data_directories()
-            data = bytearray(self.pe.get_memory_mapped_image())
-            self.ql.mem.write(self.pe_image_address, bytes(data))
-            
-            if self.is_driver:
-                # setup IMAGE_LOAD_CONFIG_DIRECTORY
-                if self.pe.OPTIONAL_HEADER.DATA_DIRECTORY[pefile.DIRECTORY_ENTRY['IMAGE_DIRECTORY_ENTRY_LOAD_CONFIG']].VirtualAddress != 0:
-                    SecurityCookie_rva = self.pe.DIRECTORY_ENTRY_LOAD_CONFIG.struct.SecurityCookie - self.pe.OPTIONAL_HEADER.ImageBase
-                    SecurityCookie_value = default_security_cookie_value = self.ql.mem.read(self.pe_image_address+SecurityCookie_rva, self.ql.pointersize)
-                    while SecurityCookie_value == default_security_cookie_value:
-                        SecurityCookie_value = secrets.token_bytes(self.ql.pointersize)
-                        # rol     rcx, 10h (rcx: cookie)
-                        # test    cx, 0FFFFh
-                        SecurityCookie_value_array = bytearray(SecurityCookie_value)
-                        # Sanity question: We are always little endian, right?
-                        SecurityCookie_value_array[-2:] = b'\x00\x00'
-                        SecurityCookie_value = bytes(SecurityCookie_value_array)
-                    self.ql.mem.write(self.pe_image_address+SecurityCookie_rva, SecurityCookie_value)
-
-            # Add main PE to ldr_data_table
-            mod_name = os.path.basename(self.path)
-            self.dlls[mod_name] = self.pe_image_address
-            # only userland code need LDR table
-            if not self.is_driver:
-                super().add_ldr_data_table_entry(mod_name)
+            # we are about to load some dlls and call their DllMain functions.
+            # the stack should be set first
+            self.ql.arch.regs.write(bp_reg, top_of_stack)
+            self.ql.arch.regs.write(sp_reg, top_of_stack)
 
             # load system dlls
-            sys_dlls = self.sys_dlls
-            for each in sys_dlls:
+            for each in self.sys_dlls:
                 super().load_dll(each, self.is_driver)
+
             # parse directory entry import
-            if self.pe.OPTIONAL_HEADER.DATA_DIRECTORY[pefile.DIRECTORY_ENTRY['IMAGE_DIRECTORY_ENTRY_IMPORT']].VirtualAddress != 0:
-                for entry in self.pe.DIRECTORY_ENTRY_IMPORT:
-                    dll_name = str(entry.dll.lower(), 'utf-8', 'ignore')
-                    super().load_dll(entry.dll, self.is_driver)
-                    for imp in entry.imports:
-                        # fix IAT
-                        # ql.log.info(imp.name)
-                        # ql.log.info(self.import_address_table[imp.name])
-                        if imp.name:
-                            try:
-                                addr = self.import_address_table[dll_name][imp.name]
-                            except KeyError:
-                                self.ql.log.debug("Error in loading function %s" % imp.name.decode())
-                                continue
-                        else:
-                            addr = self.import_address_table[dll_name][imp.ordinal]
+            self.ql.log.debug(f'Init imports for {self.path}')
+            super().init_imports(pe, self.is_driver)
 
-                        if self.ql.archtype == QL_ARCH.X86:
-                            address = self.ql.pack32(addr)
-                        else:
-                            address = self.ql.pack64(addr)
-                        self.ql.mem.write(imp.address, address)
+            self.ql.log.debug(f'Done loading {self.path}')
 
-            self.ql.log.debug("Done with loading %s" % self.path)
-            self.ql.os.entry_point = self.entry_point
-            self.ql.os.pid = 101
+            if pe.is_driver():
+                args = (
+                    (POINTER, self.driver_object_address),
+                    (POINTER, self.regitry_path_address)
+                )
 
-        elif self.ql.code:
+                self.ql.log.debug('Setting up call frame for DriverEntry:')
+                self.ql.log.debug(f'  PDRIVER_OBJECT   DriverObject : {args[0][1]:#010x}')
+                self.ql.log.debug(f'  PUNICODE_STRING  RegistryPath : {args[1][1]:#010x}')
+
+                # We know that a driver will return, so if the user did not configure stop
+                # options, write a sentinel return value
+                ret = None if self.ql.stop_options else self.ql.stack_write(0, 0xdeadc0de)
+
+                # set up call frame for DriverEntry
+                self.ql.os.fcall.call_native(self.entry_point, args, ret)
+
+            elif pe.is_dll():
+                args = (
+                    (POINTER, image_base),
+                    (DWORD, 1),    # DLL_PROCESS_ATTACH
+                    (POINTER, 0)
+                )
+
+                self.ql.log.debug('Setting up call frame for DllMain:')
+                self.ql.log.debug(f'  HINSTANCE hinstDLL   : {args[0][1]:#010x}')
+                self.ql.log.debug(f'  DWORD     fdwReason  : {args[1][1]:#010x}')
+                self.ql.log.debug(f'  LPVOID    lpReserved : {args[2][1]:#010x}')
+
+                # set up call frame for DllMain
+                self.ql.os.fcall.call_native(self.entry_point, args, None)
+
+        elif pe is None:
             self.filepath = b""
-            if self.ql.archtype == QL_ARCH.X86:
-                self.ql.reg.esp = self.stack_address + 0x3000
-                self.ql.reg.ebp = self.ql.reg.esp
-            elif self.ql.archtype == QL_ARCH.X8664:
-                self.ql.reg.rsp = self.stack_address + 0x3000
-                self.ql.reg.rbp = self.ql.reg.rsp
 
-            # load shellcode in
-            self.ql.mem.map(self.entry_point, self.ql.os.code_ram_size, info="[shellcode_base]")
-            # rewrite entrypoint for windows shellcode
-            self.ql.os.entry_point = self.entry_point
-            self.ql.os.pid = 101
+            self.ql.mem.map(self.entry_point, self.ql.os.code_ram_size, info="[shellcode]")
 
+            self.init_teb()
+            self.init_peb()
+            self.init_ldr_data()
+
+            # write shellcode to memory
             self.ql.mem.write(self.entry_point, self.ql.code)
-            
-            self.init_thread_information_block()
+
+            top_of_stack = self.stack_address + self.stack_size
+
+            if self.ql.arch.type == QL_ARCH.X86:
+                bp_reg = 'ebp'
+                sp_reg = 'esp'
+            elif self.ql.arch.type == QL_ARCH.X8664:
+                bp_reg = 'rbp'
+                sp_reg = 'rsp'
+            else:
+                raise QlErrorArch(f'unexpected arch type: {self.ql.arch.type}')
+
+            self.ql.arch.regs.write(bp_reg, top_of_stack)
+            self.ql.arch.regs.write(sp_reg, top_of_stack)
+
             # load dlls
             for each in self.init_dlls:
-                super().load_dll(each)
+                super().load_dll(each, self.is_driver)
 
         # move entry_point to ql.os
         self.ql.os.entry_point = self.entry_point
-        self.init_sp = self.ql.reg.arch_sp
+        self.init_sp = self.ql.arch.regs.arch_sp
+
+class ShowProgress:
+    """Display a progress animation while performing a time
+    consuming task.
+
+    Example:
+        >>> with ShowProgress(0.1):
+        ...     do_some_time_consuming_task()
+    """
+
+    def __init__(self, interval: float) -> None:
+        import sys
+        from threading import Thread, Event
+
+        # animation frames; any sequence of chars or strings may be used, as long
+        # as they are of the same length. e.g. ['>   ', '>>  ', ' >> ', '  >>', '   >', '    ']
+        frames = r'/-\|'
+        stream = sys.stderr
+
+        def show_animation():
+            i = 0
+
+            while not self.stopped.wait(interval):
+                # TODO: find a proper way to use the logger for that
+                print(f'[{frames[i % len(frames)]}]', end='\r', flush=True, file=stream)
+                i += 1
+
+        def show_nothing():
+            pass
+
+        # avoid flooding log files with animation frames
+        action = show_animation if stream.isatty() else show_nothing
+
+        self.stopped = Event()
+        self.thread = Thread(target=action)
+
+    def __enter__(self):
+        self.thread.start()
+
+        return self
+
+    def __exit__(self, *args) -> None:
+        self.stopped.set()

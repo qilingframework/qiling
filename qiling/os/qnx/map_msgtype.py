@@ -6,7 +6,7 @@
 from qiling.const import QL_ARCH
 
 def map_msgtype(ql, msgtype):
-    if ql.archtype == QL_ARCH.ARM:
+    if ql.arch.type == QL_ARCH.ARM:
         for k, v in msgtype_table.items():
             if v == msgtype:
                 return f'ql_qnx_msg_{k}'

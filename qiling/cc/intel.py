@@ -3,38 +3,30 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 
 from unicorn.x86_const import (
-	UC_X86_REG_AX,	UC_X86_REG_EAX,	UC_X86_REG_RAX, UC_X86_REG_RCX,
-	UC_X86_REG_RDI,	UC_X86_REG_RDX,	UC_X86_REG_RSI,	UC_X86_REG_R8,
-	UC_X86_REG_R9,	UC_X86_REG_R10
+	UC_X86_REG_EAX,	UC_X86_REG_RAX, UC_X86_REG_RCX, UC_X86_REG_RDI,
+	UC_X86_REG_RDX,	UC_X86_REG_RSI,	UC_X86_REG_R8, UC_X86_REG_R9,
+	UC_X86_REG_R10
 )
 
-from qiling import Qiling
-from . import QlCommonBaseCC
+from qiling.cc import QlCommonBaseCC
 
 class QlIntelBaseCC(QlCommonBaseCC):
 	"""Calling convention base class for Intel-based systems.
 	Supports arguments passing over registers and stack.
 	"""
 
-	def __init__(self, ql: Qiling):
-		retreg = {
-			16: UC_X86_REG_AX,
-			32: UC_X86_REG_EAX,
-			64: UC_X86_REG_RAX
-		}[ql.archbit]
-
-		super().__init__(ql, retreg)
-
 	def setReturnAddress(self, addr: int) -> None:
-		self.ql.arch.stack_push(addr)
+		self.arch.stack_push(addr)
 
 	def unwind(self, nslots: int) -> int:
 		# no cleanup; just pop out the return address
-		return self.ql.arch.stack_pop()
+		return self.arch.stack_pop()
 
 class QlIntel64(QlIntelBaseCC):
 	"""Calling convention base class for Intel-based 64-bit systems.
 	"""
+
+	_retreg = UC_X86_REG_RAX
 
 	@staticmethod
 	def getNumSlots(argbits: int) -> int:
@@ -44,11 +36,13 @@ class QlIntel32(QlIntelBaseCC):
 	"""Calling convention base class for Intel-based 32-bit systems.
 	"""
 
+	_retreg = UC_X86_REG_EAX
+
 	@staticmethod
 	def getNumSlots(argbits: int) -> int:
 		return max(argbits, 32) // 32
 
-	def getRawParam(self, slot: int, nbits: int = None) -> int:
+	def getRawParam(self, slot: int, nbits: int = 0) -> int:
 		__super_getparam = super().getRawParam
 
 		if nbits == 64:
@@ -107,6 +101,6 @@ class stdcall(QlIntel32):
 	def unwind(self, nslots: int) -> int:
 		retaddr = super().unwind(nslots)
 
-		self.ql.reg.arch_sp += (nslots * self._asize)
+		self.arch.regs.arch_sp += (nslots * self._asize)
 
 		return retaddr

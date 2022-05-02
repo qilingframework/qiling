@@ -3,25 +3,24 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-# cols = ("arm64", "x8664")
-
 from qiling.const import QL_ARCH
 from qiling.os.posix.posix import SYSCALL_PREF
 
-def map_syscall(ql, syscall_num):
-    if ql.archtype == QL_ARCH.X8664:
-        if syscall_num >= 0x2000000 and syscall_num <= 0x3000000:
-            syscall_num = syscall_num - 0x2000000
+def get_syscall_mapper(archtype: QL_ARCH):
+    syscall_table = {
+        QL_ARCH.X8664 : x8664_syscall_table,
+        QL_ARCH.ARM64 : arm64_syscall_table
+    }[archtype]
 
-        print("")
-        print(syscall_num)
-        return f'{SYSCALL_PREF}{x8664_syscall_table[syscall_num]}'
+    syscall_fixup = {
+        QL_ARCH.X8664 : lambda n: (n - 0x2000000) if 0x2000000 <= n <= 0x3000000 else n,
+        QL_ARCH.ARM64 : lambda n: (n - 0xffffffffffffff00) if n >= 0xffffffffffffff00 else n
+    }[archtype]
 
-    elif ql.archtype == QL_ARCH.ARM64:
-        if syscall_num >= 0xffffffffffffff00:
-            syscall_num = syscall_num - 0xffffffffffffff00
+    def __mapper(syscall_num: int) -> str:
+        return f'{SYSCALL_PREF}{syscall_table[syscall_fixup(syscall_num)]}'
 
-        return f'{SYSCALL_PREF}{arm64_syscall_table[syscall_num]}'
+    return __mapper
 
 
 arm64_syscall_table = {

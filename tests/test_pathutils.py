@@ -3,127 +3,184 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import pathlib, sys, unittest
+import sys, unittest
+from pathlib import Path, PurePath, PurePosixPath, PureWindowsPath
 
-sys.path.append("..")
-from qiling import Qiling
-from qiling.const import QL_OS, QL_VERBOSE
-from qiling.os.path import QlPathManager
+sys.path.append('..')
+from qiling.const import QL_OS
+from qiling.os.path import QlOsPath
+
+is_nt_host = PurePath() == PureWindowsPath()
+is_posix_host = PurePath() == PurePosixPath()
+
+def realpath(path: PurePath) -> Path:
+    return Path(path).resolve()
+
+def nt_to_native(rootfs: str, cwd: str, path: str) -> str:
+    p = QlOsPath(rootfs, cwd, QL_OS.WINDOWS)
+
+    return p.virtual_to_host_path(path)
+
+def posix_to_native(rootfs: str, cwd: str, path: str) -> str:
+    p = QlOsPath(rootfs, cwd, QL_OS.LINUX)
+
+    return p.virtual_to_host_path(path)
+
 
 class TestPathUtils(unittest.TestCase):
-    def test_convert_win32_to_posix(self):
-        rootfs = pathlib.Path("../examples/rootfs/x8664_windows").resolve()
+    def test_convert_nt_to_posix(self):
+        # test only on a POSIX host
+        if not is_posix_host:
+            self.skipTest('POSIX host only')
 
-        self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_win32_to_posix(rootfs, "/", "\\\\.\\PhysicalDrive0\\test")))
-        self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_win32_to_posix(rootfs, "/", "\\\\.\\PhysicalDrive0\\..\\test")))
-        self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_win32_to_posix(rootfs, "/", "\\\\.\\PhysicalDrive0\\..\\..\\test")))
-        self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_win32_to_posix(rootfs, "/", "\\\\.\\PhysicalDrive0\\..\\xxxx\\..\\test")))
+        rootfs = PurePosixPath(r'../examples/rootfs/x86_windows')
 
-        self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_win32_to_posix(rootfs, "/", "\\\\hostname\\share\\test")))
-        self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_win32_to_posix(rootfs, "/", "\\\\hostname\\share\\..\\test")))
-        self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_win32_to_posix(rootfs, "/", "\\\\hostname\\share\\..\\..\\test")))
-        self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_win32_to_posix(rootfs, "/", "\\\\hostname\\share\\..\\xxxx\\..\\test")))
+        expected = str(realpath(rootfs) / 'test')
 
-        self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_win32_to_posix(rootfs, "/", "\\\\.\\BootPartition\\test")))
-        self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_win32_to_posix(rootfs, "/", "\\\\.\\BootPartition\\..\\test")))
-        self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_win32_to_posix(rootfs, "/", "\\\\.\\BootPartition\\..\\..\\test")))
-        self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_win32_to_posix(rootfs, "/", "\\\\.\\BootPartition\\..\\xxxx\\..\\test")))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\\\.\\PhysicalDrive0\\test'))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\\\.\\PhysicalDrive0\\..\\test'))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\\\.\\PhysicalDrive0\\..\\..\\test'))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\\\.\\PhysicalDrive0\\..\\xxxx\\..\\test'))
 
-        self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_win32_to_posix(rootfs, "/", "C:\\test")))
-        self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_win32_to_posix(rootfs, "/", "C:\\..\\test")))
-        self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_win32_to_posix(rootfs, "/", "C:\\..\\..\\test")))
-        self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_win32_to_posix(rootfs, "/", "C:\\..\\xxxx\\..\\test")))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\\\hostname\\share\\test'))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\\\hostname\\share\\..\\test'))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\\\hostname\\share\\..\\..\\test'))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\\\hostname\\share\\..\\xxxx\\..\\test'))
 
-        self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_win32_to_posix(rootfs, "/", "\\test")))
-        self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_win32_to_posix(rootfs, "/", "\\..\\test")))
-        self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_win32_to_posix(rootfs, "/", "\\..\\..\\test")))
-        self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_win32_to_posix(rootfs, "/", "\\..\\xxxx\\..\\test")))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\\\.\\BootPartition\\test'))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\\\.\\BootPartition\\..\\test'))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\\\.\\BootPartition\\..\\..\\test'))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\\\.\\BootPartition\\..\\xxxx\\..\\test'))
 
-        self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_win32_to_posix(rootfs, "/", "test")))
-        self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_win32_to_posix(rootfs, "/", "..\\test")))
-        self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_win32_to_posix(rootfs, "/", "..\\..\\test")))
-        self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_win32_to_posix(rootfs, "/", "..\\xxxx\\..\\test")))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', 'C:\\test'))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', 'C:\\..\\test'))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', 'C:\\..\\..\\test'))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', 'C:\\..\\xxxx\\..\\test'))
 
-        self.assertEqual(str(rootfs / "xxxx" / "test"), str(QlPathManager.convert_win32_to_posix(rootfs, "/xxxx", "test")))
-        self.assertEqual(str(rootfs / "xxxx" / "test"), str(QlPathManager.convert_win32_to_posix(rootfs, "/xxxx/yyyy", "..\\test")))
-        self.assertEqual(str(rootfs / "xxxx" / "test"), str(QlPathManager.convert_win32_to_posix(rootfs, "/xxxx/yyyy/zzzz", "..\\..\\test")))
-        self.assertEqual(str(rootfs / "xxxx" / "test"), str(QlPathManager.convert_win32_to_posix(rootfs, "/xxxx/yyyy", "..\\xxxx\\..\\test")))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\test'))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\..\\test'))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\..\\..\\test'))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\..\\xxxx\\..\\test'))
 
-    def test_convert_posix_to_win32(self):
-        rootfs = pathlib.Path("../examples/rootfs/x8664_linux").resolve()
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', 'test'))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '..\\test'))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '..\\..\\test'))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '..\\xxxx\\..\\test'))
 
-        self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_posix_to_win32(rootfs, "/", "/test")))
-        self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_posix_to_win32(rootfs, "/", "/../test")))
-        self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_posix_to_win32(rootfs, "/", "/../../test")))
-        self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_posix_to_win32(rootfs, "/", "/../xxxx/../test")))
+        expected = str(realpath(rootfs) / 'Windows' / 'test')
 
-        self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_posix_to_win32(rootfs, "/", "test")))
-        self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_posix_to_win32(rootfs, "/", "../test")))
-        self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_posix_to_win32(rootfs, "/", "../../test")))
-        self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_posix_to_win32(rootfs, "/", "../xxxx/../test")))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\Windows', 'test'))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\Windows\\System32', '..\\test'))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\Windows\\System32\\drivers', '..\\..\\test'))
+        self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\Windows\\System32', '..\\xxxx\\..\\test'))
 
-        self.assertEqual(str(rootfs / "xxxx" / "test"), str(QlPathManager.convert_posix_to_win32(rootfs, "/xxxx", "test")))
-        self.assertEqual(str(rootfs / "xxxx" / "test"), str(QlPathManager.convert_posix_to_win32(rootfs, "/xxxx/yyyy", "../test")))
-        self.assertEqual(str(rootfs / "xxxx" / "test"), str(QlPathManager.convert_posix_to_win32(rootfs, "/xxxx/yyyy/zzzz", "../../test")))
-        self.assertEqual(str(rootfs / "xxxx" / "test"), str(QlPathManager.convert_posix_to_win32(rootfs, "/xxxx/yyyy", "../xxxx/../test")))
+    def test_convert_posix_to_nt(self):
+        # test only on a Windows host
+        if not is_nt_host:
+            self.skipTest('NT host only')
+
+        rootfs = PureWindowsPath(r'../examples/rootfs/x86_linux')
+
+        expected = str(realpath(rootfs) / 'test')
+
+        self.assertEqual(expected, posix_to_native(str(rootfs), '/', '/test'))
+        self.assertEqual(expected, posix_to_native(str(rootfs), '/', '/../test'))
+        self.assertEqual(expected, posix_to_native(str(rootfs), '/', '/../../test'))
+        self.assertEqual(expected, posix_to_native(str(rootfs), '/', '/../xxxx/../test'))
+
+        self.assertEqual(expected, posix_to_native(str(rootfs), '/', 'test'))
+        self.assertEqual(expected, posix_to_native(str(rootfs), '/', '../test'))
+        self.assertEqual(expected, posix_to_native(str(rootfs), '/', '../../test'))
+        self.assertEqual(expected, posix_to_native(str(rootfs), '/', '../xxxx/../test'))
+
+        expected = str(realpath(rootfs) / 'proc' / 'test')
+
+        self.assertEqual(expected, posix_to_native(str(rootfs), '/proc', 'test'))
+        self.assertEqual(expected, posix_to_native(str(rootfs), '/proc/sys', '../test'))
+        self.assertEqual(expected, posix_to_native(str(rootfs), '/proc/sys/net', '../../test'))
+        self.assertEqual(expected, posix_to_native(str(rootfs), '/proc/sys', '../xxxx/../test'))
 
     def test_convert_for_native_os(self):
-        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_hello_static"], "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG)
 
-        if ql.platform_os == QL_OS.WINDOWS:
-            rootfs = pathlib.Path("../examples/rootfs/x8664_windows").resolve()
-            self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_for_native_os(rootfs, "/", "\\\\.\\PhysicalDrive0\\test")))
-            self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_for_native_os(rootfs, "/", "\\\\.\\PhysicalDrive0\\..\\test")))
-            self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_for_native_os(rootfs, "/", "\\\\.\\PhysicalDrive0\\..\\..\\test")))
-            self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_for_native_os(rootfs, "/", "\\\\.\\PhysicalDrive0\\..\\xxxx\\..\\test")))
+        if is_nt_host:
+            rootfs = PureWindowsPath(r'../examples/rootfs/x86_windows')
 
-            self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_for_native_os(rootfs, "/", "\\\\hostname\\share\\test")))
-            self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_for_native_os(rootfs, "/", "\\\\hostname\\share\\..\\test")))
-            self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_for_native_os(rootfs, "/", "\\\\hostname\\share\\..\\..\\test")))
-            self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_for_native_os(rootfs, "/", "\\\\hostname\\share\\..\\xxxx\\..\\test")))
+            expected = str(realpath(rootfs) / 'test')
 
-            self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_for_native_os(rootfs, "/", "\\\\.\\BootPartition\\test")))
-            self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_for_native_os(rootfs, "/", "\\\\.\\BootPartition\\..\\test")))
-            self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_for_native_os(rootfs, "/", "\\\\.\\BootPartition\\..\\..\\test")))
-            self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_for_native_os(rootfs, "/", "\\\\.\\BootPartition\\..\\xxxx\\..\\test")))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\\\.\\PhysicalDrive0\\test'))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\\\.\\PhysicalDrive0\\..\\test'))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\\\.\\PhysicalDrive0\\..\\..\\test'))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\\\.\\PhysicalDrive0\\..\\xxxx\\..\\test'))
 
-            self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_for_native_os(rootfs, "/", "C:\\test")))
-            self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_for_native_os(rootfs, "/", "C:\\..\\test")))
-            self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_for_native_os(rootfs, "/", "C:\\..\\..\\test")))
-            self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_for_native_os(rootfs, "/", "C:\\..\\xxxx\\..\\test")))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\\\hostname\\share\\test'))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\\\hostname\\share\\..\\test'))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\\\hostname\\share\\..\\..\\test'))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\\\hostname\\share\\..\\xxxx\\..\\test'))
 
-            self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_for_native_os(rootfs, "/", "\\test")))
-            self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_for_native_os(rootfs, "/", "\\..\\test")))
-            self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_for_native_os(rootfs, "/", "\\..\\..\\test")))
-            self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_for_native_os(rootfs, "/", "\\..\\xxxx\\..\\test")))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\\\.\\BootPartition\\test'))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\\\.\\BootPartition\\..\\test'))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\\\.\\BootPartition\\..\\..\\test'))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\\\.\\BootPartition\\..\\xxxx\\..\\test'))
 
-            self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_for_native_os(rootfs, "/", "test")))
-            self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_for_native_os(rootfs, "/", "..\\test")))
-            self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_for_native_os(rootfs, "/", "..\\..\\test")))
-            self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_for_native_os(rootfs, "/", "..\\xxxx\\..\\test")))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', 'C:\\test'))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', 'C:\\..\\test'))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', 'C:\\..\\..\\test'))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', 'C:\\..\\xxxx\\..\\test'))
 
-            self.assertEqual(str(rootfs / "xxxx" / "test"), str(QlPathManager.convert_for_native_os(rootfs, "/xxxx", "test")))
-            self.assertEqual(str(rootfs / "xxxx" / "test"), str(QlPathManager.convert_for_native_os(rootfs, "/xxxx/yyyy", "..\\test")))
-            self.assertEqual(str(rootfs / "xxxx" / "test"), str(QlPathManager.convert_for_native_os(rootfs, "/xxxx/yyyy/zzzz", "..\\..\\test")))
-            self.assertEqual(str(rootfs / "xxxx" / "test"), str(QlPathManager.convert_for_native_os(rootfs, "/xxxx/yyyy", "..\\xxxx\\..\\test")))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\test'))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\..\\test'))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\..\\..\\test'))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '\\..\\xxxx\\..\\test'))
+
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', 'test'))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '..\\test'))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '..\\..\\test'))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\', '..\\xxxx\\..\\test'))
+
+            expected = str(realpath(rootfs) / 'Windows' / 'test')
+
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\Windows', 'test'))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\Windows\\System32', '..\\test'))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\Windows\\System32\\drivers', '..\\..\\test'))
+            self.assertEqual(expected, nt_to_native(str(rootfs), 'C:\\Windows\\System32', '..\\xxxx\\..\\test'))
+
+        elif is_posix_host:
+            rootfs = PurePosixPath(r'../examples/rootfs/x86_linux')
+
+            expected = str(realpath(rootfs) / 'test')
+
+            self.assertEqual(expected, posix_to_native(str(rootfs), '/', '/test'))
+            self.assertEqual(expected, posix_to_native(str(rootfs), '/', '/../test'))
+            self.assertEqual(expected, posix_to_native(str(rootfs), '/', '/../../test'))
+            self.assertEqual(expected, posix_to_native(str(rootfs), '/', '/../xxxx/../test'))
+
+            self.assertEqual(expected, posix_to_native(str(rootfs), '/', 'test'))
+            self.assertEqual(expected, posix_to_native(str(rootfs), '/', '../test'))
+            self.assertEqual(expected, posix_to_native(str(rootfs), '/', '../../test'))
+            self.assertEqual(expected, posix_to_native(str(rootfs), '/', '../xxxx/../test'))
+
+            expected = str(realpath(rootfs) / 'proc' / 'test')
+
+            self.assertEqual(expected, posix_to_native(str(rootfs), '/proc', 'test'))
+            self.assertEqual(expected, posix_to_native(str(rootfs), '/proc/sys', '../test'))
+            self.assertEqual(expected, posix_to_native(str(rootfs), '/proc/sys/net', '../../test'))
+            self.assertEqual(expected, posix_to_native(str(rootfs), '/proc/sys', '../xxxx/../test'))
+
+            # test virtual symlink: absolute virtual path
+            rootfs = PurePosixPath(r'../examples/rootfs/arm_linux')
+            expected = str(realpath(rootfs) / 'tmp' / 'media' / 'nand' / 'symlink_test' / 'libsymlink_test.so')
+
+            self.assertEqual(expected, posix_to_native(str(rootfs), '/', '/lib/libsymlink_test.so'))
+
+            # test virtual symlink: relative virtual path
+            rootfs = PurePosixPath(r'../examples/rootfs/arm_qnx')
+            expected = str(realpath(rootfs) / 'lib' / 'libm.so.2')
+
+            self.assertEqual(expected, posix_to_native(str(rootfs), '/', '/usr/lib/libm.so.2'))
+
         else:
-            rootfs = pathlib.Path("../examples/rootfs/x8664_linux").resolve()
-            self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_for_native_os(rootfs, "/", "/test")))
-            self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_for_native_os(rootfs, "/", "/../test")))
-            self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_for_native_os(rootfs, "/", "/../../test")))
-            self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_for_native_os(rootfs, "/", "/../xxxx/../test")))
+            self.fail('unexpected host os')
 
-            self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_for_native_os(rootfs, "/", "test")))
-            self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_for_native_os(rootfs, "/", "../test")))
-            self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_for_native_os(rootfs, "/", "../../test")))
-            self.assertEqual(str(rootfs / "test"), str(QlPathManager.convert_for_native_os(rootfs, "/", "../xxxx/../test")))
 
-            self.assertEqual(str(rootfs / "xxxx" / "test"), str(QlPathManager.convert_for_native_os(rootfs, "/xxxx", "test")))
-            self.assertEqual(str(rootfs / "xxxx" / "test"), str(QlPathManager.convert_for_native_os(rootfs, "/xxxx/yyyy", "../test")))
-            self.assertEqual(str(rootfs / "xxxx" / "test"), str(QlPathManager.convert_for_native_os(rootfs, "/xxxx/yyyy/zzzz", "../../test")))
-            self.assertEqual(str(rootfs / "xxxx" / "test"), str(QlPathManager.convert_for_native_os(rootfs, "/xxxx/yyyy", "../xxxx/../test")))
-
-        del ql
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     unittest.main()

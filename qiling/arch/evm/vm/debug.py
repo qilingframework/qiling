@@ -6,7 +6,7 @@
 import os, time
 import cmd2
 from rich import print as rprint
-from ..hooks import evm_hook_insn
+from ..hooks import evm_hooks_info
 from .disassembler import EVMDisasm
 from ..analysis.signatures import analysis_func_sign
 from .utils import analysis_bytecode, bytecode_to_bytes
@@ -38,7 +38,7 @@ class EVMDebugger(cmd2.Cmd):
 
         load_bytecode, runtime_code, aux_data, constructor_args = analysis_bytecode(self.executor.vm_context.msg.code)
 
-        insns = EVMDisasm().disasm(bytecode_to_bytes(runtime_code), evm_hook_insn)
+        insns = EVMDisasm().disasm(bytecode_to_bytes(runtime_code), evm_hooks_info)
         self.func_sign = analysis_func_sign(insns, engine_num=2)
 
         self.cli_output()

@@ -34,54 +34,61 @@ def _constant_mapping(bits: int, d_map: Mapping[str, int], ret: MutableSequence[
 
 
 def ql_open_flag_mapping(ql: Qiling, flags):
-    def flag_mapping(flags, mapping_name, mapping_from, mapping_to):
+    def flag_mapping(flags, mapping_name, mapping_from, mapping_to, host_os, virt_os):
         ret = 0
         for n in mapping_name:
             if mapping_from[n] is None or mapping_to[n] is None:
                 continue
             if (flags & mapping_from[n]) == mapping_from[n]:
                 ret = ret | mapping_to[n]
+            if (host_os == QL_OS.WINDOWS and virt_os != QL_OS.WINDOWS):
+                ret = ret | mapping_to['O_BINARY']
         return ret
 
     f = {}
     t = {}
 
-    if ql.platform_os == None:
-        return flags
-    
-    if ql.ostype == QL_OS.LINUX:
-        if ql.archtype in (QL_ARCH.X86, QL_ARCH.X8664):
-            f = linux_x86_open_flags
-        elif ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB, QL_ARCH.ARM64):
-            f = linux_arm_open_flags
-        elif ql.archtype == QL_ARCH.MIPS:
-            f = linux_mips_open_flags
-        elif ql.archtype in (QL_ARCH.RISCV, QL_ARCH.RISCV64):
-            f = linux_riscv_open_flags
+    host_os = ql.host.os
+    virt_os = ql.os.type
 
-    elif ql.ostype == QL_OS.MACOS:
-        if ql.archtype in (QL_ARCH.X86, QL_ARCH.X8664):
+    if host_os is None:
+        return flags
+
+    if virt_os == QL_OS.LINUX:
+        if ql.arch.type in (QL_ARCH.X86, QL_ARCH.X8664):
+            f = linux_x86_open_flags
+        elif ql.arch.type in (QL_ARCH.ARM, QL_ARCH.ARM64):
+            f = linux_arm_open_flags
+        elif ql.arch.type == QL_ARCH.MIPS:
+            f = linux_mips_open_flags
+        elif ql.arch.type in (QL_ARCH.RISCV, QL_ARCH.RISCV64):
+            f = linux_riscv_open_flags
+        elif ql.arch.type == QL_ARCH.PPC:
+            f = linux_ppc_open_flags
+
+    elif virt_os == QL_OS.MACOS:
+        if ql.arch.type in (QL_ARCH.X86, QL_ARCH.X8664):
             f = macos_x86_open_flags
-    elif ql.ostype == QL_OS.FREEBSD:
+    elif virt_os == QL_OS.FREEBSD:
         f = freebsd_x86_open_flags
-    elif ql.ostype == QL_OS.WINDOWS:
+    elif virt_os == QL_OS.WINDOWS:
         f = windows_x86_open_flags
-    elif ql.ostype == QL_OS.QNX:
+    elif virt_os == QL_OS.QNX:
         f = qnx_arm64_open_flags
 
-    if ql.platform_os == QL_OS.LINUX:
+    if host_os == QL_OS.LINUX:
         t = linux_x86_open_flags
-    elif ql.platform_os == QL_OS.MACOS:
+    elif host_os == QL_OS.MACOS:
         t = macos_x86_open_flags
-    elif ql.platform_os == QL_OS.FREEBSD:
+    elif host_os == QL_OS.FREEBSD:
         t = freebsd_x86_open_flags
-    elif ql.platform_os == QL_OS.WINDOWS:
+    elif host_os == QL_OS.WINDOWS:
         t = windows_x86_open_flags
 
     if f == t:
         return flags
 
-    return flag_mapping(flags, open_flags_name, f, t)
+    return flag_mapping(flags, open_flags_name, f, t, host_os, virt_os)
 
 
 def mmap_flag_mapping(flags):
@@ -130,7 +137,6 @@ def socket_type_mapping(t, archtype, ostype):
             QL_ARCH.X86: linux_x86_socket_types,
             QL_ARCH.X8664: linux_x86_socket_types,
             QL_ARCH.ARM: linux_arm_socket_types,
-            QL_ARCH.ARM_THUMB: linux_arm_socket_types,
             QL_ARCH.ARM64: linux_arm_socket_types,
             QL_ARCH.MIPS: linux_mips_socket_types,
         }[archtype]
@@ -150,7 +156,6 @@ def socket_domain_mapping(p, archtype, ostype):
             QL_ARCH.X86: linux_x86_socket_domain,
             QL_ARCH.X8664: linux_x86_socket_domain,
             QL_ARCH.ARM: linux_arm_socket_domain,
-            QL_ARCH.ARM_THUMB: linux_arm_socket_domain,
             QL_ARCH.ARM64: linux_arm_socket_domain,
             QL_ARCH.MIPS: linux_mips_socket_domain,
         }[archtype]
@@ -167,7 +172,6 @@ def socket_level_mapping(t, archtype, ostype):
             QL_ARCH.X86: linux_x86_socket_level,
             QL_ARCH.X8664: linux_x86_socket_level,
             QL_ARCH.ARM: linux_arm_socket_level,
-            QL_ARCH.ARM_THUMB: linux_arm_socket_level,
             QL_ARCH.ARM64: linux_arm_socket_level,
             QL_ARCH.MIPS: linux_mips_socket_level,
         }[archtype]
@@ -185,7 +189,6 @@ def socket_ip_option_mapping(t, archtype, ostype):
             QL_ARCH.X86: linux_socket_ip_options,
             QL_ARCH.X8664: linux_socket_ip_options,
             QL_ARCH.ARM: linux_socket_ip_options,
-            QL_ARCH.ARM_THUMB: linux_socket_ip_options,
             QL_ARCH.ARM64: linux_socket_ip_options,
             QL_ARCH.MIPS: linux_socket_ip_options,
         }[archtype]
@@ -203,7 +206,6 @@ def socket_option_mapping(t, archtype, ostype):
             QL_ARCH.X86: linux_x86_socket_options,
             QL_ARCH.X8664: linux_x86_socket_options,
             QL_ARCH.ARM: linux_arm_socket_options,
-            QL_ARCH.ARM_THUMB: linux_arm_socket_options,
             QL_ARCH.ARM64: linux_arm_socket_options,
             QL_ARCH.MIPS: linux_mips_socket_options,
         }[archtype]

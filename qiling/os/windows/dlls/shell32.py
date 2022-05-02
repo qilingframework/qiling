@@ -3,6 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+import ntpath
 import os
 from typing import Sequence
 
@@ -146,7 +147,7 @@ def hook_SHGetSpecialFolderPathW(ql: Qiling, address: int, params):
     dst = params["pszPath"]
 
     if directory_id == CSIDL_COMMON_APPDATA:
-        path = str(ql.os.userprofile + "AppData\\")
+        path = ntpath.join(ql.os.userprofile, "AppData\\")
         # We always create the directory
         appdata_dir = path.split("C:\\")[1].replace("\\", "/")
         ql.log.debug("dir path: %s" % path)
@@ -160,9 +161,10 @@ def hook_SHGetSpecialFolderPathW(ql: Qiling, address: int, params):
         if not os.path.exists(path_emulated):
             try:
                 os.makedirs(path_emulated, 0o755)
-                ql.log.debug("os.makedirs completed")
             except OSError:
                 ql.log.debug("os.makedirs failed")
+            else:
+                ql.log.debug("os.makedirs completed")
     else:
         raise QlErrorNotImplemented("API not implemented")
 
