@@ -13,8 +13,8 @@ from qiling.const import QL_VERBOSE
 class TestAndroid(unittest.TestCase):
     @unittest.skipUnless(platform.system() == 'Linux', 'run only on Linux')
     def test_android_arm64(self):
-        test_binary = "../examples/rootfs/arm64_android/bin/arm64_android_hello"
-        rootfs = "../examples/rootfs/arm64_android"
+        test_binary = "../examples/rootfs/arm64_android6.0/bin/arm64_android_hello"
+        rootfs = "../examples/rootfs/arm64_android6.0"
 
         # FUTURE FIX: at this stage, need a file called /proc/self/exe in the rootfs - Android linker calls stat against /proc/self/exe and bails if it can't find it
         # qiling handles readlink against /proc/self/exe, but doesn't handle it in stat
