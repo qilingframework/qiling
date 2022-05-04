@@ -4,7 +4,6 @@
 #
 
 from unicorn.arm_const import *
-from enum import IntEnum
 
 reg_map = {
             "r0": UC_ARM_REG_R0,
