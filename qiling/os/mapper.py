@@ -7,7 +7,7 @@ import inspect
 import os
 from typing import Any, MutableMapping, Union
 
-from .path import QlPathManager
+from .path import QlOsPath
 from .filestruct import ql_file
 
 # All mapped objects should inherit this class.
@@ -59,7 +59,7 @@ class QlFsMappedObject:
 
 class QlFsMapper:
 
-    def __init__(self, path: QlPathManager):
+    def __init__(self, path: QlOsPath):
         self._mapping: MutableMapping[str, Any] = {}
         self.path = path
 

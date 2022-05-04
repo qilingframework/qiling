@@ -496,6 +496,39 @@ class ELFTest(unittest.TestCase):
         del ql
 
 
+    def test_mips32eb_fake_urandom(self):
+        class Fake_urandom(QlFsMappedObject):
+
+            def read(self, size):
+                return b"\x01"
+
+            def fstat(self):
+                return -1
+            
+            def close(self):
+                return 0
+
+        ql = Qiling(["../examples/rootfs/mips32_linux/bin/mips32_fetch_urandom"],  "../examples/rootfs/mips32_linux")
+        ql.add_fs_mapper("/dev/urandom", Fake_urandom())
+
+        ql.exit_code = 0
+        ql.exit_group_code = 0
+
+        def check_exit_group_code(ql, exit_code, *args, **kw):
+            ql.exit_group_code = exit_code
+
+        def check_exit_code(ql, exit_code, *args, **kw):
+            ql.exit_code = exit_code
+
+        ql.os.set_syscall("exit_group", check_exit_group_code, QL_INTERCEPT.ENTER)
+        ql.os.set_syscall("exit", check_exit_code, QL_INTERCEPT.ENTER)
+
+        ql.run()
+        self.assertEqual(0, ql.exit_code)
+        self.assertEqual(0, ql.exit_group_code)
+        del ql
+
+
     def test_elf_onEnter_mips32el(self):
         def my_puts_onenter(ql: Qiling):
             params = ql.os.resolve_fcall_params(ELFTest.PARAMS_PUTS)
@@ -787,6 +820,12 @@ class ELFTest(unittest.TestCase):
         del ql
 
 
+    def test_elf_linux_powerpc(self):
+        ql = Qiling(["../examples/rootfs/powerpc_linux/bin/powerpc_hello"], "../examples/rootfs/powerpc_linux", verbose=QL_VERBOSE.DEBUG)
+        ql.run()
+        del ql
+
+
     def test_elf_linux_arm_custom_syscall(self):
         def my_syscall_write(ql, write_fd, write_buf, write_count, *args, **kw):
             regreturn = 0
@@ -975,12 +1014,6 @@ class ELFTest(unittest.TestCase):
         ql.run()
         del ql
 
-    def test_arm_directory_symlink(self):
-        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello"], "../examples/rootfs/arm_linux", verbose=QL_VERBOSE.DEBUG)
-        real_path = ql.os.path.transform_to_real_path("/lib/libsymlink_test.so")
-        self.assertTrue(real_path.endswith("/examples/rootfs/arm_linux/tmp/media/nand/symlink_test/libsymlink_test.so"))
-        del ql
-
     def test_x8664_absolute_path(self):
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/absolutepath"],  "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG)
 
@@ -1035,6 +1068,16 @@ class ELFTest(unittest.TestCase):
         ql.os.stdout.seek(0)
         self.assertTrue("bin\n" in ql.os.stdout.read().decode("utf-8"))
 
+        del ql
+
+    def test_elf_linux_armeb(self):     
+        ql = Qiling(["../examples/rootfs/armeb_linux/bin/armeb_hello"], "../examples/rootfs/armeb_linux", verbose=QL_VERBOSE.DEBUG, profile='profiles/append_test.ql')
+        ql.run()
+        del ql
+
+    def test_elf_linux_armeb_static(self):     
+        ql = Qiling(["../examples/rootfs/armeb_linux/bin/armeb_hello_static"], "../examples/rootfs/armeb_linux", verbose=QL_VERBOSE.DEFAULT)
+        ql.run()
         del ql
 
     # TODO: Disable for now

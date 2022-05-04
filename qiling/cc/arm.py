@@ -8,7 +8,6 @@ from unicorn.arm64_const import (
 	UC_ARM64_REG_X4, UC_ARM64_REG_X5, UC_ARM64_REG_X6, UC_ARM64_REG_X7
 )
 
-from qiling.arch.arch import QlArch
 from qiling.cc import QlCommonBaseCC
 
 class QlArmBaseCC(QlCommonBaseCC):
@@ -29,13 +28,9 @@ class QlArmBaseCC(QlCommonBaseCC):
 		return self.arch.stack_pop()
 
 class aarch64(QlArmBaseCC):
+	_retreg = UC_ARM64_REG_X0
 	_argregs = (UC_ARM64_REG_X0, UC_ARM64_REG_X1, UC_ARM64_REG_X2, UC_ARM64_REG_X3, UC_ARM64_REG_X4, UC_ARM64_REG_X5, UC_ARM64_REG_X6, UC_ARM64_REG_X7) + (None, ) * 8
 
-	def __init__(self, arch: QlArch) -> None:
-		super().__init__(arch, UC_ARM64_REG_X0)
-
 class aarch32(QlArmBaseCC):
+	_retreg = UC_ARM_REG_R0
 	_argregs = (UC_ARM_REG_R0, UC_ARM_REG_R1, UC_ARM_REG_R2, UC_ARM_REG_R3) + (None, ) * 12
-
-	def __init__(self, arch: QlArch) -> None:
-		super().__init__(arch, UC_ARM_REG_R0)

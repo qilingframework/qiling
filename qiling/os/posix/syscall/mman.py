@@ -73,7 +73,7 @@ def syscall_mmap_impl(ql: Qiling, addr: int, mlen: int, prot: int, flags: int, f
         if ver == 2:
             pgoffset = pgoffset * pagesize
 
-    elif ql.arch.type == QL_ARCH.ARM and ql.ostype == QL_OS.QNX:
+    elif ql.arch.type == QL_ARCH.ARM and ql.os.type == QL_OS.QNX:
         MAP_ANONYMOUS = 0x00080000
         fd = ql.unpack32s(ql.pack32s(fd))
 
@@ -86,7 +86,7 @@ def syscall_mmap_impl(ql: Qiling, addr: int, mlen: int, prot: int, flags: int, f
     mmap_base = addr
     mmap_size = ql.mem.align_up(mlen - (addr & (pagesize - 1)))
 
-    if ql.ostype != QL_OS.QNX:
+    if ql.os.type != QL_OS.QNX:
         mmap_base = ql.mem.align(mmap_base)
 
         if (flags & MAP_FIXED) and mmap_base != addr:

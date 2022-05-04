@@ -333,7 +333,7 @@ class IDA:
     @staticmethod
     def get_ql_arch_string():
         info = IDA.get_info_structure()
-        proc = info.get_procName().lower()
+        proc = info.procname.lower()
         result = None
         if proc == "metapc":
             result = "x86"
@@ -805,7 +805,7 @@ class QlEmuMisc:
             self.action_type = action
 
         def activate(self, ctx):
-            if ctx.form_type == BWN_DISASM:
+            if ctx.widget_type == BWN_DISASM:
                 self.action_handler.ql_handle_menu_action(self.action_type)
             return 1
 
@@ -893,7 +893,7 @@ class QlEmuQiling:
             self.ql.os.stderr = QlEmuMisc.QLStdIO('stderr', sys.__stderr__.fileno())
 
         self.exit_addr = self.ql.os.exit_point
-        if self.ql.ostype == QL_OS.LINUX:
+        if self.ql.os.type == QL_OS.LINUX:
             f = open(self.ql.path, 'rb')
             elffile = ELFFile(f)
             elf_header = elffile.header

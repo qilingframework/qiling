@@ -17,10 +17,8 @@ IS_FAST_TEST = 'QL_FAST_TEST' in os.environ
 
 class ELF_KO_Test(unittest.TestCase):
 
+    @unittest.skipIf(IS_FAST_TEST, 'fast test')
     def test_demigod_m0hamed_x86(self):
-        if IS_FAST_TEST:
-            self.skipTest('QL_FAST_TEST')
-
         checklist = {}
 
         @linux_kernel_api(params={

@@ -12,7 +12,7 @@ from typing import Iterator
 from multiprocessing import Process
 
 from qiling import Qiling
-from qiling.const import QL_ARCH, QL_OS, QL_VERBOSE
+from qiling.const import QL_ARCH, QL_OS
 from qiling.os.posix.filestruct import ql_pipe
 from qiling.os.posix.const import *
 from qiling.os.posix.stat import Stat
@@ -159,12 +159,20 @@ def ql_syscall_lseek(ql: Qiling, fd: int, offset: int, origin: int):
 
 
 def ql_syscall__llseek(ql: Qiling, fd: int, offset_high: int, offset_low: int, result: int, whence: int):
+    if fd not in range(NR_OPEN):
+        return -EBADF
+
+    f = ql.os.fd[fd]
+
+    if f is None:
+        return -EBADF
+
     # treat offset as a signed value
     offset = ql.unpack64s(ql.pack64((offset_high << 32) | offset_low))
     origin = whence
 
     try:
-        ret = ql.os.fd[fd].seek(offset, origin)
+        ret = f.seek(offset, origin)
     except OSError:
         regreturn = -1
     else:
@@ -278,6 +286,14 @@ def ql_syscall_read(ql: Qiling, fd, buf: int, length: int):
 
 
 def ql_syscall_write(ql: Qiling, fd: int, buf: int, count: int):
+    if fd not in range(NR_OPEN):
+        return -EBADF
+
+    f = ql.os.fd[fd]
+
+    if f is None:
+        return -EBADF
+
     try:
         data = ql.mem.read(buf, count)
     except:
@@ -285,12 +301,14 @@ def ql_syscall_write(ql: Qiling, fd: int, buf: int, count: int):
     else:
         ql.log.debug(f'write() CONTENT: {bytes(data)}')
 
-        if hasattr(ql.os.fd[fd], 'write'):
-            ql.os.fd[fd].write(data)
+        if hasattr(f, 'write'):
+            f.write(data)
+
+            regreturn = count
         else:
             ql.log.warning(f'write failed since fd {fd:d} does not have a write method')
+            regreturn = -1
 
-        regreturn = count
 
     return regreturn
 
@@ -461,7 +479,6 @@ def ql_syscall_execve(ql: Qiling, pathname: int, argv: int, envp: int):
     if hasattr(ql.arch, 'msr'):
         ql.arch.msr.uc = uc
 
-    ql.uc = uc
     QlCoreHooks.__init__(ql, uc)
 
     ql.os.load()

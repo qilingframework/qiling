@@ -165,7 +165,6 @@ def setup_ctx_manager(ql: Qiling) -> CtxManager:
     return {
             QL_ARCH.X86: CtxManager_X86,
             QL_ARCH.ARM: CtxManager_ARM,
-            QL_ARCH.ARM_THUMB: CtxManager_ARM,
             QL_ARCH.CORTEX_M: CtxManager_ARM,
             QL_ARCH.MIPS: CtxManager_MIPS,
             }.get(ql.arch.type)(ql)
@@ -185,7 +184,7 @@ class CtxManager(object):
             trace_line = f"0x{insn.address:08x} │ {opcode:10s} {insn.mnemonic:10} {insn.op_str:35s}"
 
         cursor = " "
-        if self.ql.reg.arch_pc == insn.address:
+        if self.ql.arch.regs.arch_pc == insn.address:
             cursor = "►"
 
         jump_sign = " "
@@ -195,7 +194,7 @@ class CtxManager(object):
         print(f"{jump_sign}  {cursor}   {color.DARKGRAY}{trace_line}{color.END}")
 
     def dump_regs(self):
-        return {reg_name: getattr(self.ql.reg, reg_name) for reg_name in self.regs}
+        return {reg_name: getattr(self.ql.arch.regs, reg_name) for reg_name in self.regs}
 
     def context_reg(self, saved_states):
         return NotImplementedError
@@ -204,12 +203,12 @@ class CtxManager(object):
     def context_stack(self):
 
         for idx in range(10):
-            addr = self.ql.reg.arch_sp + idx * self.ql.pointersize
-            if (val := _try_read(self.ql, addr, self.ql.pointersize)[0]):
-                print(f"$sp+0x{idx*self.ql.pointersize:02x}│ [0x{addr:08x}] —▸ 0x{self.ql.unpack(val):08x}", end="")
+            addr = self.ql.arch.regs.arch_sp + idx * self.ql.arch.pointersize
+            if (val := _try_read(self.ql, addr, self.ql.arch.pointersize)[0]):
+                print(f"$sp+0x{idx*self.ql.arch.pointersize:02x}│ [0x{addr:08x}] —▸ 0x{self.ql.unpack(val):08x}", end="")
 
             # try to dereference wether it's a pointer
-            if (buf := _try_read(self.ql, addr, self.ql.pointersize))[0] is not None:
+            if (buf := _try_read(self.ql, addr, self.ql.arch.pointersize))[0] is not None:
 
                 if (addr := self.ql.unpack(buf[0])):
 
@@ -230,7 +229,7 @@ class CtxManager(object):
     def context_asm(self):
         # assembly before current location
         past_list = []
-        cur_addr = self.ql.reg.arch_pc
+        cur_addr = self.ql.arch.regs.arch_pc
 
         line = disasm(self.ql, cur_addr-0x10)
 
@@ -336,7 +335,7 @@ class CtxManager_ARM(CtxManager):
             lines += line
 
         print(lines.format(*cur_regs.values()))
-        print(color.GREEN, "[{cpsr[mode]} mode], Thumb: {cpsr[thumb]}, FIQ: {cpsr[fiq]}, IRQ: {cpsr[irq]}, NEG: {cpsr[neg]}, ZERO: {cpsr[zero]}, Carry: {cpsr[carry]}, Overflow: {cpsr[overflow]}".format(cpsr=self.get_flags(self.ql.reg.cpsr)), color.END, sep="")
+        print(color.GREEN, "[{cpsr[mode]} mode], Thumb: {cpsr[thumb]}, FIQ: {cpsr[fiq]}, IRQ: {cpsr[irq]}, NEG: {cpsr[neg]}, ZERO: {cpsr[zero]}, Carry: {cpsr[carry]}, Overflow: {cpsr[overflow]}".format(cpsr=self.get_flags(self.ql.arch.regs.cpsr)), color.END, sep="")
 
 
 class CtxManager_MIPS(CtxManager):
@@ -417,12 +416,12 @@ class CtxManager_X86(CtxManager):
             lines += line
 
         print(lines.format(*cur_regs.values()))
-        print(color.GREEN, "EFLAGS: [CF: {flags[CF]}, PF: {flags[PF]}, AF: {flags[AF]}, ZF: {flags[ZF]}, SF: {flags[SF]}, OF: {flags[OF]}]".format(flags=get_x86_eflags(self.ql.reg.ef)), color.END, sep="")
+        print(color.GREEN, "EFLAGS: [CF: {flags[CF]}, PF: {flags[PF]}, AF: {flags[AF]}, ZF: {flags[ZF]}, SF: {flags[SF]}, OF: {flags[OF]}]".format(flags=get_x86_eflags(self.ql.arch.regs.ef)), color.END, sep="")
 
     @context_printer("[ DISASM ]", footer=True)
     def context_asm(self):
         past_list = []
-        cur_addr = self.ql.reg.arch_pc
+        cur_addr = self.ql.arch.regs.arch_pc
 
         cur_insn = disasm(self.ql, cur_addr)
         prophecy = self.predictor.predict()
@@ -494,7 +493,7 @@ class CtxManager_CORTEX_M(CtxManager):
             lines += line
 
         print(lines.format(cur_regs.values()))
-        print(color.GREEN, "[{cpsr[mode]} mode], Thumb: {cpsr[thumb]}, FIQ: {cpsr[fiq]}, IRQ: {cpsr[irq]}, NEG: {cpsr[neg]}, ZERO: {cpsr[zero]}, Carry: {cpsr[carry]}, Overflow: {cpsr[overflow]}".format(cpsr=get_arm_flags(self.ql.reg.cpsr)), color.END, sep="")
+        print(color.GREEN, "[{cpsr[mode]} mode], Thumb: {cpsr[thumb]}, FIQ: {cpsr[fiq]}, IRQ: {cpsr[irq]}, NEG: {cpsr[neg]}, ZERO: {cpsr[zero]}, Carry: {cpsr[carry]}, Overflow: {cpsr[overflow]}".format(cpsr=get_arm_flags(self.ql.arch.regs.cpsr)), color.END, sep="")
 
 
 if __name__ == "__main__":

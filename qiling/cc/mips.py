@@ -4,16 +4,13 @@
 
 from unicorn.mips_const import UC_MIPS_REG_V0, UC_MIPS_REG_A0, UC_MIPS_REG_A1, UC_MIPS_REG_A2, UC_MIPS_REG_A3
 
-from qiling.arch.arch import QlArch
 from qiling.cc import QlCommonBaseCC
 
 class mipso32(QlCommonBaseCC):
+	_retreg = UC_MIPS_REG_V0
 	_argregs = (UC_MIPS_REG_A0, UC_MIPS_REG_A1, UC_MIPS_REG_A2, UC_MIPS_REG_A3) + (None, ) * 12
 	_shadow = 4
 	_retaddr_on_stack = False
-
-	def __init__(self, arch: QlArch):
-		super().__init__(arch, UC_MIPS_REG_V0)
 
 	@staticmethod
 	def getNumSlots(argbits: int):
