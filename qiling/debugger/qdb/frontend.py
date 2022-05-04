@@ -389,7 +389,7 @@ class CtxManager_X86(CtxManager):
                 "eax", "ebx", "ecx", "edx",
                 "esp", "ebp", "esi", "edi",
                 "eip", "ss", "cs", "ds", "es",
-                "fs", "gs", "ef",
+                "fs", "gs", "eflags",
                 )
     @context_printer("[ REGISTERS ]")
     def context_reg(self, saved_reg_dump):
@@ -416,7 +416,7 @@ class CtxManager_X86(CtxManager):
             lines += line
 
         print(lines.format(*cur_regs.values()))
-        print(color.GREEN, "EFLAGS: [CF: {flags[CF]}, PF: {flags[PF]}, AF: {flags[AF]}, ZF: {flags[ZF]}, SF: {flags[SF]}, OF: {flags[OF]}]".format(flags=get_x86_eflags(self.ql.arch.regs.ef)), color.END, sep="")
+        print(color.GREEN, "EFLAGS: [CF: {flags[CF]}, PF: {flags[PF]}, AF: {flags[AF]}, ZF: {flags[ZF]}, SF: {flags[SF]}, OF: {flags[OF]}]".format(flags=get_x86_eflags(self.ql.arch.regs.eflags)), color.END, sep="")
 
     @context_printer("[ DISASM ]", footer=True)
     def context_asm(self):
