@@ -339,14 +339,17 @@ class QlLoaderELF(QlLoader):
             (AUXV.AT_NULL, 0)
         )
 
-        # add all aux entries
-        for key, val in aux_entries:
-            elf_table.extend(self.ql.pack(key) + self.ql.pack(val))
+        bytes_before_auxv = len(elf_table)
+
+        # add all auxv entries
+        for key, val in auxv_entries:
+            elf_table.extend(self.ql.pack(key))
+            elf_table.extend(self.ql.pack(val))
 
         new_stack = self.ql.mem.align(new_stack - len(elf_table), 0x10)
         self.ql.mem.write(new_stack, bytes(elf_table))
 
-        self.aux_vec = dict(aux_entries)
+        self.auxv = new_stack + bytes_before_auxv
 
         self.stack_address = new_stack
         self.load_address = load_address
