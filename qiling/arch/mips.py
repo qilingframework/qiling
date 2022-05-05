@@ -37,7 +37,8 @@ class QlArchMIPS(QlArch):
     def regs(self) -> QlRegisterManager:
         regs_map = dict(
             **mips_const.reg_map,
-            **mips_const.reg_map_afpr128
+            **mips_const.reg_map_afpr128,
+            **mips_const.reg_map_fpu
         )
 
         pc_reg = 'pc'
