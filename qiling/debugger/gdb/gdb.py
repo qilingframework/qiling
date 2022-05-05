@@ -29,8 +29,7 @@ from qiling import Qiling
 from qiling.const import QL_ARCH, QL_ENDIAN, QL_OS
 from qiling.debugger import QlDebugger
 from qiling.debugger.gdb import xmlregs
-
-from .utils import QlGdbUtils
+from qiling.debugger.gdb.utils import QlGdbUtils
 
 # gdb logging prompt
 PROMPT = r'gdb>'
