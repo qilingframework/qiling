@@ -236,9 +236,7 @@ class QlGdb(QlDebugger):
             # see: ./xml/arm/arm-fpa.xml
             # see: https://sourceware.org/git/?p=binutils-gdb.git;a=blob;f=gdb/arch/arm.h;h=fa589fd0582c0add627a068e6f4947a909c45e86;hb=HEAD#l127
 
-            data = ''.join(__get_reg_value(*entry) for entry in self.regsmap)
-
-            return data
+            return ''.join(__get_reg_value(*entry) for entry in self.regsmap)
 
 
         def handle_G(subcmd: str) -> Reply:
@@ -349,6 +347,7 @@ class QlGdb(QlDebugger):
 
             if feature == 'StartNoAckMode':
                 server.ack_mode = False
+                server.log.debug('[noack mode enabled]')
 
             return REPLY_OK if feature in supported else REPLY_EMPTY
 
@@ -735,6 +734,7 @@ class QlGdb(QlDebugger):
         for packet in server.readpackets():
             if server.ack_mode:
                 server.send(REPLY_ACK, raw=True)
+                server.log.debug('[sent ack]')
 
             cmd, subcmd = packet[0], packet[1:]
             handler = handlers.get(f'{cmd:c}')
@@ -949,7 +949,7 @@ class GdbSerialConn:
         def __repl(m: 're.Match[bytes]') -> bytes:
             ch, _, times = m[0]
 
-            return bytes([ch] * times)
+            return bytes([ch] * (1 + times - 29))
 
         return re.sub(br'.\*.', __repl, data, flags=re.DOTALL)
 
