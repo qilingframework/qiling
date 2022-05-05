@@ -8,7 +8,8 @@ from pathlib import PurePath
 
 from qiling.arch.arm_const import reg_map as arm_regs
 from qiling.arch.arm64_const import reg_map as arm64_regs
-from qiling.arch.mips_const import reg_map as mips_regs
+from qiling.arch.mips_const import reg_map as mips_regs_gpr
+from qiling.arch.mips_const import reg_map_fpu as mips_regs_fpu
 from qiling.arch.x86_const import reg_map_16 as x86_regs_16
 from qiling.arch.x86_const import reg_map_32 as x86_regs_32
 from qiling.arch.x86_const import reg_map_64 as x86_regs_64
@@ -83,7 +84,7 @@ def load_regsmap(archtype: QL_ARCH) -> Sequence[RegEntry]:
         QL_ARCH.ARM      : arm_regs,
         QL_ARCH.CORTEX_M : arm_regs,
         QL_ARCH.ARM64    : arm64_regs,
-        QL_ARCH.MIPS     : mips_regs
+        QL_ARCH.MIPS     : dict(**mips_regs_gpr, **mips_regs_fpu)
     }[archtype]
 
     regmap = []
