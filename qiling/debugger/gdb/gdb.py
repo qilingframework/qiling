@@ -146,28 +146,49 @@ class QlGdb(QlDebugger):
 
 
         def handle_qmark(subcmd: str) -> Reply:
-            # MIPS32_EL : $T051d:00e7ff7f;25:40ccfc77;#65
-            # MIPS32_EB : $T051d:7fff6dc0;25:77fc4880;thread:28fa;core:0;
-            # ARM64     : $T051d:0*,;1f:80f6f*"ff0* ;20:c02cfdb7f* 0* ;thread:p1f9.1f9;core:0;#56
-            # ARM       : $T050b:0*"00;0d:e0f6ffbe;0f:8079fdb6;#ae
+            from unicorn.x86_const import UC_X86_REG_EIP, UC_X86_REG_ESP
+            from unicorn.x86_const import UC_X86_REG_RIP, UC_X86_REG_RSP
+            from unicorn.arm_const import UC_ARM_REG_PC, UC_ARM_REG_SP
+            from unicorn.arm64_const import UC_ARM64_REG_PC, UC_ARM64_REG_SP
+            from unicorn.mips_const import UC_MIPS_REG_PC, UC_MIPS_REG_SP
+
+            # X86       : T0505:00000000;04:c0d3ffff;08:2021fdf7;thread:p15c6.15c6;core:6
+            # X8664     : T0506:0000000000000000;07:b0e2ffffff7f0000;10:0001fdf7ff7f0000;thread:p15a2.15a2;core:6;
+            # MIPS32_EL : T051d:00e7ff7f;25:40ccfc77;
+            # MIPS32_EB : T051d:7fff6dc0;25:77fc4880;thread:28fa;core:0;
+            # ARM64     : T051d:0000000000000000;1f:80f6ffffffff0000;20:c02cfdb7ffff0000;thread:p1f9.1f9;core:0;
+            # ARM       : T050b:00000000;0d:e0f6ffbe;0f:8079fdb6;
 
             response = {
-                QL_ARCH.X86      : ( 0x05, 0x04, 0x08 ),
-                QL_ARCH.X8664    : ( 0x06, 0x07, 0x10 ),
-                QL_ARCH.ARM      : ( 0x0b, 0x0d, 0x0f ),
-                QL_ARCH.ARM64    : ( 0x1d, 0xf1, 0x20 ),
-                QL_ARCH.MIPS     : ( 0x1d, 0x00, 0x25 ),
-                QL_ARCH.A8086    : ( 0x05, 0x04, 0x08 ),
-                QL_ARCH.CORTEX_M : ( 0x0b, 0x0d, 0x0f )
+                QL_ARCH.X86      : ( 0x05, UC_X86_REG_ESP,  UC_X86_REG_EIP  ),
+                QL_ARCH.X8664    : ( 0x06, UC_X86_REG_RSP,  UC_X86_REG_RIP  ),
+                QL_ARCH.ARM      : ( 0x0b, UC_ARM_REG_SP,   UC_ARM_REG_PC   ),
+                QL_ARCH.ARM64    : ( 0x1d, UC_ARM64_REG_SP, UC_ARM64_REG_PC ),
+                QL_ARCH.MIPS     : ( 0x1d, UC_MIPS_REG_SP,  UC_MIPS_REG_PC  ),
+                QL_ARCH.A8086    : ( 0x05, UC_X86_REG_ESP,  UC_X86_REG_EIP  ),
+                QL_ARCH.CORTEX_M : ( 0x0b, UC_ARM_REG_SP,   UC_ARM_REG_PC   )
             }
 
-            idhex, spid, pcid = response[self.ql.arch.type]
-            sp    = __hexstr(self.ql.arch.regs.arch_sp)
-            pc    = __hexstr(self.ql.arch.regs.arch_pc)
+            idhex, sp_reg, pc_reg = response[self.ql.arch.type]
+
+            def __get_reg_idx(ucreg: int) -> int:
+                """Get the index of a uc reg whithin the regsmap array.
+
+                Returns: array index where this reg's info is stored, or -1 if not found
+                """
+
+                return next((i for i, (regnum, _, _) in enumerate(self.regsmap) if regnum == ucreg), -1)
+
+            sp_idx = __get_reg_idx(sp_reg)
+            pc_idx = __get_reg_idx(pc_reg)
+
+            sp_val = __get_reg_value(*self.regsmap[sp_idx])
+            pc_val = __get_reg_value(*self.regsmap[pc_idx])
+
             zfill = __hexstr(0)
 
-            info = '' if self.ql.arch.type == QL_ARCH.MIPS else f':{zfill};{spid:02x}'
-            return f'T{SIGTRAP:02x}{idhex:02x}{info}:{sp};{pcid:02x}:{pc};'
+            info = '' if self.ql.arch.type == QL_ARCH.MIPS else f':{zfill};{sp_idx:02x}'
+            return f'T{SIGTRAP:02x}{idhex:02x}{info}:{sp_val};{pc_idx:02x}:{pc_val};'
 
 
         def handle_c(subcmd: str) -> Reply:
