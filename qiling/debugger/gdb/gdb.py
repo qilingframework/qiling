@@ -110,6 +110,12 @@ class QlGdb(QlDebugger):
 
             return value.to_bytes(length, byteorder).hex()
 
+        def __unkown_reg_value(nibbles: int) -> str:
+            """Encode the hex string for unknown regsiter value.
+            """
+
+            return 'x' * nibbles
+
         def __get_reg_value(reg: Optional[int], pos: int, nibbles: int) -> str:
             # reg is either None or uc reg invalid
             if reg:
@@ -118,13 +124,13 @@ class QlGdb(QlDebugger):
 
                 hexstr = __hexstr(value, nibbles)
             else:
-                hexstr = 'x' * nibbles
+                hexstr = __unkown_reg_value(nibbles)
 
             return hexstr
 
         def __set_reg_value(reg: Optional[int], pos: int, nibbles: int, hexval: str) -> None:
             # reg is neither None nor uc reg invalid
-            if reg:
+            if reg and hexval != __unkown_reg_value(nibbles):
                 assert len(hexval) == nibbles
 
                 val = int(hexval, 16)
@@ -243,14 +249,9 @@ class QlGdb(QlDebugger):
             data = subcmd
 
             for reg, pos, nibbles in self.regsmap:
-                if reg:
-                    hexval = data[pos : pos + nibbles]
+                hexval = data[pos : pos + nibbles]
 
-                    if hexval != 'x' * nibbles:
-                        val = int(hexval, 16)
-
-                        # TODO: should we swap val's endianess for big-endian targets?
-                        self.ql.arch.regs.write(reg, val)
+                __set_reg_value(reg, pos, nibbles, hexval)
 
             return REPLY_OK
 
