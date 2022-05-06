@@ -87,17 +87,16 @@ def load_regsmap(archtype: QL_ARCH) -> Sequence[RegEntry]:
         QL_ARCH.MIPS     : dict(**mips_regs_gpr, **mips_regs_fpu)
     }[archtype]
 
-    regmap = []
+    xmlpath = __get_xml_path(archtype)
+    regsinfo = sorted(__walk_xml_regs(*xmlpath))
+
+    # pre-allocate regmap and occupy it with null entries
+    last_regnum = regsinfo[-1][0]
+    regmap: Sequence[RegEntry] = [(None, 0, 0)] * (last_regnum + 1)
+
     pos = 0
 
-    xmlpath = __get_xml_path(archtype)
-
-    for regnum, name, bitsize in __walk_xml_regs(*xmlpath):
-        # regs indices might not be consecutive.
-        # extend regmap with null entries if needed
-        if len(regmap) < regnum + 1:
-            regmap.extend([(None, 0, 0)] * (regnum + 1 - len(regmap)))
-
+    for regnum, name, bitsize in sorted(regsinfo):
         # reg value size in nibbles
         nibbles = bitsize // 4
 
