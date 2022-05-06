@@ -105,6 +105,9 @@ class QlGdb(QlDebugger):
         killed = False
 
         def __hexstr(value: int, nibbles: int = 0) -> str:
+            """Encode a value into a hex string.
+            """
+
             length = (nibbles or self.ql.arch.bits // 4) // 2
             byteorder = 'little' if self.ql.arch.endian == QL_ENDIAN.EL else 'big'
 
@@ -233,14 +236,16 @@ class QlGdb(QlDebugger):
 
 
         def handle_g(subcmd: str) -> Reply:
-            # TODO: several obsolete regs cause arm to have a gap just before cpsr. the nonexistant regs
-            # are represented as None entries just to make sure cpsr stays at index 25. however, it is
-            # not clear whether its value should follow a series of 'x' (for the non-existant regs) or
-            # not. the original code suggests not (perhaps because fpa is not specified as an xml feature..?)
+            # NOTE: in the past the 'g' reply packet for arm included the f0-f7 and fps registers between pc
+            # and cpsr, which placed cpsr at index (regnum) 25. as the f-registers became obsolete the cpsr
+            # index decreased. in order to maintain backward compatibility with older gdb versions, the gap
+            # between pc and cpsr that used to represent the f-registers (96 bits each + 32 bits for fps) is
+            # filled with unknown reg values.
             #
-            # non-existant regs are f0-f7 (96 bits each) and fps (32 bits).
+            # gdb clients that follow the xml definitions no longer need these placeholders, as registers
+            # indices are flexible and may be defined arbitrarily though xml.
+            #
             # see: ./xml/arm/arm-fpa.xml
-            # see: https://sourceware.org/git/?p=binutils-gdb.git;a=blob;f=gdb/arch/arm.h;h=fa589fd0582c0add627a068e6f4947a909c45e86;hb=HEAD#l127
 
             return ''.join(__get_reg_value(*entry) for entry in self.regsmap)
 
