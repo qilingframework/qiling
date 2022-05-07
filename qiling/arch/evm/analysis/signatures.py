@@ -1,4 +1,4 @@
-import os
+import pkgutil
 import re
 import logging
 import json
@@ -92,9 +92,8 @@ def analysis_func_sign(insns:list, engine_num=1):
 class signatures_engine_1:
     @staticmethod
     def find_signature(sign):
-        path = os.path.split(os.path.realpath(__file__))[0] + '/signatures.json'
-        with open(path) as data_file:
-            data = json.load(data_file)
+        data = pkgutil.get_data(__package__, 'signatures.json').decode()
+        data = json.load(data)
 
         list_name = [name for name, hexa in data.items() if hexa == sign]
 
