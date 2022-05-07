@@ -155,30 +155,21 @@ class QlGdb(QlDebugger):
 
 
         def handle_qmark(subcmd: str) -> Reply:
-            from unicorn.x86_const import UC_X86_REG_EIP, UC_X86_REG_ESP
-            from unicorn.x86_const import UC_X86_REG_RIP, UC_X86_REG_RSP
-            from unicorn.arm_const import UC_ARM_REG_PC, UC_ARM_REG_SP
-            from unicorn.arm64_const import UC_ARM64_REG_PC, UC_ARM64_REG_SP
-            from unicorn.mips_const import UC_MIPS_REG_PC, UC_MIPS_REG_SP
+            from unicorn.x86_const import UC_X86_REG_EBP
+            from unicorn.x86_const import UC_X86_REG_RBP
+            from unicorn.arm_const import UC_ARM_REG_R11
+            from unicorn.arm64_const import UC_ARM64_REG_X29
+            from unicorn.mips_const import UC_MIPS_REG_29
 
-            # X86       : T0505:00000000;04:c0d3ffff;08:2021fdf7;thread:p15c6.15c6;core:6
-            # X8664     : T0506:0000000000000000;07:b0e2ffffff7f0000;10:0001fdf7ff7f0000;thread:p15a2.15a2;core:6;
-            # MIPS32_EL : T051d:00e7ff7f;25:40ccfc77;
-            # MIPS32_EB : T051d:7fff6dc0;25:77fc4880;thread:28fa;core:0;
-            # ARM64     : T051d:0000000000000000;1f:80f6ffffffff0000;20:c02cfdb7ffff0000;thread:p1f9.1f9;core:0;
-            # ARM       : T050b:00000000;0d:e0f6ffbe;0f:8079fdb6;
-
-            response = {
-                QL_ARCH.X86      : ( 0x05, UC_X86_REG_ESP,  UC_X86_REG_EIP  ),
-                QL_ARCH.X8664    : ( 0x06, UC_X86_REG_RSP,  UC_X86_REG_RIP  ),
-                QL_ARCH.ARM      : ( 0x0b, UC_ARM_REG_SP,   UC_ARM_REG_PC   ),
-                QL_ARCH.ARM64    : ( 0x1d, UC_ARM64_REG_SP, UC_ARM64_REG_PC ),
-                QL_ARCH.MIPS     : ( 0x1d, UC_MIPS_REG_SP,  UC_MIPS_REG_PC  ),
-                QL_ARCH.A8086    : ( 0x05, UC_X86_REG_ESP,  UC_X86_REG_EIP  ),
-                QL_ARCH.CORTEX_M : ( 0x0b, UC_ARM_REG_SP,   UC_ARM_REG_PC   )
-            }
-
-            idhex, sp_reg, pc_reg = response[self.ql.arch.type]
+            arch_uc_bp = {
+                QL_ARCH.X86      : UC_X86_REG_EBP,
+                QL_ARCH.X8664    : UC_X86_REG_RBP,
+                QL_ARCH.ARM      : UC_ARM_REG_R11,
+                QL_ARCH.ARM64    : UC_ARM64_REG_X29,
+                QL_ARCH.MIPS     : UC_MIPS_REG_29,
+                QL_ARCH.A8086    : UC_X86_REG_EBP,
+                QL_ARCH.CORTEX_M : UC_ARM_REG_R11
+            }[self.ql.arch.type]
 
             def __get_reg_idx(ucreg: int) -> int:
                 """Get the index of a uc reg whithin the regsmap array.
@@ -188,16 +179,20 @@ class QlGdb(QlDebugger):
 
                 return next((i for i, (regnum, _, _) in enumerate(self.regsmap) if regnum == ucreg), -1)
 
-            sp_idx = __get_reg_idx(sp_reg)
-            pc_idx = __get_reg_idx(pc_reg)
+            # FIXME: a8086 should use 'esp' and 'eip' here instead of 'sp' and 'ip' set by its arch instance
+            bp_idx = __get_reg_idx(arch_uc_bp)
+            sp_idx = __get_reg_idx(self.ql.arch.regs.uc_sp)
+            pc_idx = __get_reg_idx(self.ql.arch.regs.uc_pc)
 
+            bp_val = __get_reg_value(*self.regsmap[bp_idx])
             sp_val = __get_reg_value(*self.regsmap[sp_idx])
             pc_val = __get_reg_value(*self.regsmap[pc_idx])
 
-            zfill = __hexstr(0)
+            bp_info = f'{bp_idx:02x}:{bp_val};'
+            sp_info = f'{sp_idx:02x}:{sp_val};'
+            pc_info = f'{pc_idx:02x}:{pc_val};'
 
-            info = '' if self.ql.arch.type == QL_ARCH.MIPS else f':{zfill};{sp_idx:02x}'
-            return f'T{SIGTRAP:02x}{idhex:02x}{info}:{sp_val};{pc_idx:02x}:{pc_val};'
+            return f'T{SIGTRAP:02x}{"" if self.ql.arch.type == QL_ARCH.MIPS else bp_info}{sp_info}{pc_info}'
 
 
         def handle_c(subcmd: str) -> Reply:
