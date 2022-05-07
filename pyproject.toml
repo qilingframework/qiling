@@ -56,13 +56,13 @@ fuzz = [
 [project.urls]
 homepage = "https://qiling.io"
 documentation = "https://docs.qiling.io"
-epository = "https://github.com/qilingframework/qiling"
+repository = "https://github.com/qilingframework/qiling"
 changelog = "https://github.com/qilingframework/qiling/blob/master/ChangeLog"
 
 [project.scripts]
 qltool = "qltool:main"
 
 [build-system]
-requires = ["setuptools>=40.9.0", "wheel"]
+requires = ["setuptools>=61.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
