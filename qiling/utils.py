@@ -420,8 +420,11 @@ def profile_setup(ostype: QL_OS, filename: Optional[str]):
 
         config = ConfigParser(converters={'int': int_converter})
 
-        os_profile = pkgutil.get_data(__package__, f'profiles/{ostype.name.lower()}.ql').decode()
-        config.read_string(os_profile)
+        try:
+            os_profile = pkgutil.get_data(__package__, f'profiles/{ostype.name.lower()}.ql').decode()
+            config.read_string(os_profile)
+        except FileNotFoundError as e:
+            pass
 
         if filename:
             config.read(filename)
