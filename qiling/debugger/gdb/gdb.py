@@ -460,7 +460,7 @@ class QlGdb(QlDebugger):
                             f.seek(offset, os.SEEK_SET)
                             content = f.read(length)
 
-                    return f'l{content}'
+                    return f'{"l" if len(content) < length else "m"}{content}'
 
                 elif feature == 'threads' and op == 'read':
                     if not self.ql.baremetal and hasattr(self.ql.os, 'pid'):
