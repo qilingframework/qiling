@@ -84,7 +84,12 @@ setup(
 
     packages=find_packages(),
     scripts=['qltool'],
-    include_package_data=True,
+    package_data={
+        'qiling': ['profiles/*.ql'],
+        'qiling.debugger.gdb': ['xml/*/*'],
+        'qiling.os.uefi': ['guids.csv'],
+        'qiling.arch.evm.analysis': ['signatures.json']
+    },
     install_requires=requirements,
     extras_require=extras,
 )
