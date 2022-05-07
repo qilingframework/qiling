@@ -80,7 +80,7 @@ def load_regsmap(archtype: QL_ARCH) -> Sequence[RegEntry]:
     # retreive the relevant set of registers; their order of appearance is not
     # important as it is determined by the info read from the xml files
     ucregs: Mapping[str, int] = {
-        QL_ARCH.A8086    : dict(**x86_regs_16, **x86_regs_misc, **x86_regs_cr, **x86_regs_st),
+        QL_ARCH.A8086    : dict(**x86_regs_32, **x86_regs_misc, **x86_regs_cr, **x86_regs_st),
         QL_ARCH.X86      : dict(**x86_regs_32, **x86_regs_misc, **x86_regs_cr, **x86_regs_st, **x86_regs_xmm),
         QL_ARCH.X8664    : dict(**x86_regs_64, **x86_regs_misc, **x86_regs_cr, **x86_regs_st, **x86_regs_xmm, **x86_regs_ymm),
         QL_ARCH.ARM      : dict(**arm_regs, **arm_regs_vfp),
