@@ -116,6 +116,27 @@ def ql_syscall_capset(ql: Qiling, hdrp: int, datap: int):
 def ql_syscall_kill(ql: Qiling, pid: int, sig: int):
     return 0
 
+
+def ql_syscall_fsync(ql: Qiling, fd: int):
+    try:
+        os.fsync(ql.os.fd[fd].fileno())
+        regreturn = 0
+    except:
+        regreturn = -1
+    ql.log.debug("fsync(%d) = %d" % (fd, regreturn))
+    return regreturn
+
+
+def ql_syscall_fdatasync(ql: Qiling, fd: int):
+    try:
+        os.fdatasync(ql.os.fd[fd].fileno())
+        regreturn = 0
+    except:
+        regreturn = -1
+    ql.log.debug("fdatasync(%d) = %d" % (fd, regreturn))
+    return regreturn
+
+
 def ql_syscall_faccessat(ql: Qiling, dfd: int, filename: int, mode: int):
     access_path = ql.os.utils.read_cstring(filename)
     real_path = ql.os.path.transform_to_real_path(access_path)
@@ -534,8 +555,6 @@ def ql_syscall_dup3(ql: Qiling, fd: int, newfd: int, flags: int):
 
 def ql_syscall_set_tid_address(ql: Qiling, tidptr: int):
     if ql.os.thread_management:
-        ql.os.thread_management.cur_thread.set_clear_child_tid_addr(tidptr)
-
         regreturn = ql.os.thread_management.cur_thread.id
     else:
         regreturn = os.getpid()
