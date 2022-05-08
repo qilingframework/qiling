@@ -541,13 +541,15 @@ class QlGdb(QlDebugger):
                 return 'l'
 
             elif query == 'TStatus':
+                tsize = __hexstr(0x500000)
+
                 fields = (
                     'T0',
                     'tnotrun:0',
                     'tframes:0',
                     'tcreated:0',
-                    'tfree:500000',
-                    'tsize:500000',
+                    f'tfree:{tsize}',
+                    f'tsize:{tsize}',
                     'circular:0',
                     'disconn:0',
                     'starttime:0',
