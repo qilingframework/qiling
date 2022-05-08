@@ -69,7 +69,7 @@ class QlMemoryManager:
             stop = key.stop
             step = key.step
 
-            if step and step != 1:
+            if step is not None and step != 1:
                 # step != 1 means we have to do copy, don't allow it.
                 raise IndexError("Only support slicing continous memory")
 
