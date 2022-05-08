@@ -155,18 +155,23 @@ class QlGdb(QlDebugger):
 
 
         def handle_qmark(subcmd: str) -> Reply:
+            """Request status.
+
+            @see: https://sourceware.org/gdb/current/onlinedocs/gdb/Stop-Reply-Packets.html
+            """
+
             from unicorn.x86_const import UC_X86_REG_EBP
             from unicorn.x86_const import UC_X86_REG_RBP
             from unicorn.arm_const import UC_ARM_REG_R11
             from unicorn.arm64_const import UC_ARM64_REG_X29
-            from unicorn.mips_const import UC_MIPS_REG_29
+            from unicorn.mips_const import UC_MIPS_REG_INVALID
 
             arch_uc_bp = {
                 QL_ARCH.X86      : UC_X86_REG_EBP,
                 QL_ARCH.X8664    : UC_X86_REG_RBP,
                 QL_ARCH.ARM      : UC_ARM_REG_R11,
                 QL_ARCH.ARM64    : UC_ARM64_REG_X29,
-                QL_ARCH.MIPS     : UC_MIPS_REG_29,
+                QL_ARCH.MIPS     : UC_MIPS_REG_INVALID, # skipped
                 QL_ARCH.A8086    : UC_X86_REG_EBP,
                 QL_ARCH.CORTEX_M : UC_ARM_REG_R11
             }[self.ql.arch.type]
@@ -179,20 +184,23 @@ class QlGdb(QlDebugger):
 
                 return next((i for i, (regnum, _, _) in enumerate(self.regsmap) if regnum == ucreg), -1)
 
+            def __get_reg_info(ucreg: int) -> str:
+                """Retrieve register info and pack it as a pair.
+                """
+
+                regnum = __get_reg_idx(ucreg)
+                hexval = __get_reg_value(*self.regsmap[regnum])
+
+                return f'{regnum:02x}:{hexval};'
+
+            # mips targets skip this reg info pair
+            bp_info = '' if self.ql.arch.type == QL_ARCH.MIPS else __get_reg_info(arch_uc_bp)
+
             # FIXME: a8086 should use 'esp' and 'eip' here instead of 'sp' and 'ip' set by its arch instance
-            bp_idx = __get_reg_idx(arch_uc_bp)
-            sp_idx = __get_reg_idx(self.ql.arch.regs.uc_sp)
-            pc_idx = __get_reg_idx(self.ql.arch.regs.uc_pc)
+            sp_info = __get_reg_info(self.ql.arch.regs.uc_sp)
+            pc_info = __get_reg_info(self.ql.arch.regs.uc_pc)
 
-            bp_val = __get_reg_value(*self.regsmap[bp_idx])
-            sp_val = __get_reg_value(*self.regsmap[sp_idx])
-            pc_val = __get_reg_value(*self.regsmap[pc_idx])
-
-            bp_info = f'{bp_idx:02x}:{bp_val};'
-            sp_info = f'{sp_idx:02x}:{sp_val};'
-            pc_info = f'{pc_idx:02x}:{pc_val};'
-
-            return f'T{SIGTRAP:02x}{"" if self.ql.arch.type == QL_ARCH.MIPS else bp_info}{sp_info}{pc_info}'
+            return f'T{SIGTRAP:02x}{bp_info}{sp_info}{pc_info}'
 
 
         def handle_c(subcmd: str) -> Reply:
