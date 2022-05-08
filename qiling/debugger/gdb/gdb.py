@@ -656,6 +656,12 @@ class QlGdb(QlDebugger):
             """Perform a single step.
             """
 
+            # BUG: a known unicorn caching issue causes it to emulate more
+            # steps than requestes. until that issue is fixed, single stepping
+            # is essentially broken.
+            #
+            # @see: https://github.com/unicorn-engine/unicorn/issues/1606
+
             self.gdb.resume_emu(steps=1)
 
             return f'S{SIGTRAP:02x}'
