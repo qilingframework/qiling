@@ -7,7 +7,8 @@
 # documentation: according to https://sourceware.org/gdb/current/onlinedocs/gdb/Remote-Protocol.html#Remote-Protocol
 
 import struct, os, socket
-import pkgutil
+import inspect
+from pathlib import Path
 from binascii import unhexlify
 from typing import Iterator, Literal
 
@@ -482,15 +483,14 @@ class QlGdb(QlDebugger, object):
                     else:    
                         self.send("PacketSize=47ff;QPassSignals+;QProgramSignals+;QStartupWithShell+;QEnvironmentHexEncoded+;QEnvironmentReset+;QEnvironmentUnset+;QSetWorkingDir+;QCatchSyscalls+;qXfer:libraries-svr4:read+;augmented-libraries-svr4-read+;qXfer:auxv:read+;qXfer:siginfo:read+;qXfer:siginfo:write+;qXfer:features:read+;QStartNoAckMode+;qXfer:osdata:read+;multiprocess+;fork-events+;vfork-events+;exec-events+;QNonStop+;QDisableRandomization+;qXfer:threads:read+;ConditionalTracepoints+;TraceStateVariables+;TracepointSource+;DisconnectedTracing+;FastTracepoints+;StaticTracepoints+;InstallInTrace+;qXfer:statictrace:read+;qXfer:traceframe-info:read+;EnableDisableTracepoints+;QTBuffer:size+;tracenz+;ConditionalBreakpoints+;BreakpointCommands+;QAgent+;Qbtrace:bts+;Qbtrace-conf:bts:size+;Qbtrace:pt+;Qbtrace-conf:pt:size+;Qbtrace:off+;qXfer:btrace:read+;qXfer:btrace-conf:read+;swbreak+;hwbreak+;qXfer:exec-file:read+;vContSupported+;QThreadEvents+;no-resumed+")
                 elif subcmd.startswith('Xfer:features:read'):
-                    if self.ql.os.type is not QL_OS.WINDOWS:
-                        try:
-                            xfercmd_file     = subcmd.split(':')[3]
-                            xml_folder       = self.ql.arch.type.name.lower()
-                            file_contents    = pkgutil.get_data(__package__, f"xml/{xml_folder}/{xfercmd_file}").decode()
-                            self.send("l%s" % file_contents)
-                        except:
-                            self.ql.log.info("gdb> Platform is not supported by xml or xml file not found: %s\n" % (xfercmd_file))
-                            self.send("l")
+                    xfercmd_file    = subcmd.split(':')[3]
+                    xfercmd_abspath = Path(inspect.getfile(inspect.currentframe())).parent
+                    xml_folder      = self.ql.arch.type.name.lower()
+                    xfercmd_file    = xfercmd_abspath / 'xml' / xml_folder / xfercmd_file
+
+                    if xfercmd_file.exists() and self.ql.os.type is not QL_OS.WINDOWS:
+                        with xfercmd_file.open('r') as f:
+                            file_contents = f.read()
                     else:
                         self.ql.log.info("gdb> Platform is not supported by xml or xml file not found: %s\n" % (xfercmd_file))
                         self.send("l")

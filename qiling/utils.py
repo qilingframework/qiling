@@ -9,7 +9,8 @@ thoughout the qiling framework
 """
 
 from functools import partial
-import importlib, pkgutil, os
+from pathlib import Path
+import importlib, inspect, os
 
 from configparser import ConfigParser
 from types import ModuleType
@@ -415,19 +416,19 @@ def profile_setup(ostype: QL_OS, filename: Optional[str]):
             config = {}
 
     else:
+        qiling_home = Path(inspect.getfile(inspect.currentframe())).parent
+        os_profile = qiling_home / 'profiles' / f'{ostype.name.lower()}.ql'
+
+        profiles = [os_profile]
+
+        if filename:
+            profiles.append(filename)
+
         # patch 'getint' to convert integers of all bases
         int_converter = partial(int, base=0)
 
         config = ConfigParser(converters={'int': int_converter})
-
-        try:
-            os_profile = pkgutil.get_data(__package__, f'profiles/{ostype.name.lower()}.ql').decode()
-            config.read_string(os_profile)
-        except FileNotFoundError as e:
-            pass
-
-        if filename:
-            config.read(filename)
+        config.read(profiles)
 
     return config
 

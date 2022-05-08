@@ -1,14 +1,17 @@
 import csv
 from typing import Mapping
-import pkgutil
+import inspect
+from pathlib import Path
 
 def __init_guids_db() -> Mapping[str, str]:
     """Initialize GUIDs dictionary from a local database.
     """
 
-    guids_file = pkgutil.get_data(__package__, 'guids.csv').decode()
-    guids_reader = csv.reader(guids_file.splitlines())
+    csv_path = Path(inspect.getfile(inspect.currentframe())).parent / 'guids.csv'
 
-    return dict(tuple(entry) for entry in guids_reader)
+    with csv_path.open('r') as guids_file:
+        guids_reader = csv.reader(guids_file)
+
+        return dict(tuple(entry) for entry in guids_reader)
 
 guids_db = __init_guids_db()
