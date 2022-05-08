@@ -3,6 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from ctypes import Union
 import os, re
 from typing import Any, Callable, List, MutableSequence, Optional, Sequence, Tuple
 
@@ -62,6 +63,29 @@ class QlMemoryManager:
 
     def __write_string(self, addr: int, s: str, encoding: str):
         self.write(addr, bytes(s, encoding) + b'\x00')
+
+    def __getitem__(self, key: Union[slice, int]) -> bytearray:
+        if isinstance(key, slice):
+            start = key.start
+            stop = key.stop
+            step = key.step
+
+            if step and step != 1:
+                # step != 1 means we have to do copy, don't allow it.
+                raise IndexError("Only support slicing continous memory")
+
+            return self.ql.mem.read(start, stop - start)
+        elif isinstance(key, int):
+            return self.ql.mem.read(key, 1)
+        else:
+            raise KeyError("Wrong type of key")
+    
+    def __setitem__(self, key: Union[slice, int], value: Union[bytes, bytearray]):
+        if isinstance(key, int):
+            self.ql.mem.write(key, value)
+        else:
+            # Slicing doesn't make sense in writing.
+            raise KeyError("Wrong type of key")
 
     # TODO: this is an obsolete utility method that should not be used anymore
     # and here for backward compatibility. use QlOsUtils.read_cstring instead
