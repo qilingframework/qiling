@@ -73,17 +73,31 @@ class QlMemoryManager:
                 # step != 1 means we have to do copy, don't allow it.
                 raise IndexError("Only support slicing continous memory")
 
-            return self.ql.mem.read(start, stop - start)
+            return self.ql.mem.read(start, max(0, stop - start))
         elif isinstance(key, int):
-            return self.ql.mem.read(key, 1)
+            return self.ql.mem.read(key, 1)[0]
         else:
             raise KeyError("Wrong type of key")
     
-    def __setitem__(self, key: Union[slice, int], value: Union[bytes, bytearray]):
+    def __setitem__(self, key: Union[slice, int], value: bytes):
         if isinstance(key, int):
-            self.ql.mem.write(key, value)
+            self.ql.mem.write(key, bytes([value]))
+        elif isinstance(key, slice):
+            start = key.start
+            stop = key.stop
+            step = key.step
+
+            if step is not None and step != 1:
+                raise IndexError("Only support slicing continous memory")
+            
+            if start is None:
+                raise IndexError("The start of memory is not supplied")
+            
+            if len(value) > stop - start:
+                raise IndexError("Bytes to write are more than sliced memory")
+            
+            self.ql.mem.write(start, value)
         else:
-            # Slicing doesn't make sense in writing.
             raise KeyError("Wrong type of key")
 
     # TODO: this is an obsolete utility method that should not be used anymore
