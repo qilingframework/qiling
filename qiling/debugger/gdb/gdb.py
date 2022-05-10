@@ -8,6 +8,7 @@
 
 import struct, os, socket
 from binascii import unhexlify
+from sys import argv
 from typing import Iterator, Literal
 
 from qiling import Qiling
@@ -41,7 +42,7 @@ class QlGdb(QlDebugger, object):
 
         self.ql             = ql
         self.last_pkt       = None
-        self.exe_abspath    = os.path.abspath(self.ql.argv[0])
+        self.exe_abspath    = os.path.abspath(self.ql.argv[0] if len(self.ql.argv) else "shellcode")
         self.rootfs_abspath = os.path.abspath(self.ql.rootfs)
         self.gdb            = QlGdbUtils()
 
