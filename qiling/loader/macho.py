@@ -90,6 +90,11 @@ class QlLoaderMACHO(QlLoader):
             self.kext_name = None        
     
     def run(self):
+
+        # Shellcode case.
+        if len(self.ql.argv) == 0:
+            return
+
         self.profile        = self.ql.profile
         stack_address      = int(self.profile.get("OS64", "stack_address"), 16)
         stack_size         = int(self.profile.get("OS64", "stack_size"), 16)

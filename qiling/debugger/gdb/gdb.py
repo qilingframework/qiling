@@ -10,6 +10,7 @@ import struct, os, socket
 import inspect
 from pathlib import Path
 from binascii import unhexlify
+from sys import argv
 from typing import Iterator, Literal
 
 from qiling import Qiling
@@ -43,7 +44,7 @@ class QlGdb(QlDebugger, object):
 
         self.ql             = ql
         self.last_pkt       = None
-        self.exe_abspath    = os.path.abspath(self.ql.argv[0])
+        self.exe_abspath    = os.path.abspath(self.ql.argv[0] if len(self.ql.argv) else "shellcode")
         self.rootfs_abspath = os.path.abspath(self.ql.rootfs)
         self.gdb            = QlGdbUtils()
 
@@ -56,7 +57,7 @@ class QlGdb(QlDebugger, object):
         if self.ql.baremetal:
             load_address = self.ql.loader.load_address
             exit_point = load_address + os.path.getsize(ql.path)
-        elif self.ql.code:
+        elif self.ql.code or len(self.ql.argv) == 0:
             load_address = self.ql.os.entry_point
             exit_point = load_address + len(ql.code)
         else:
@@ -504,7 +505,7 @@ class QlGdb(QlDebugger, object):
                         self.send("l" + file_contents)
 
                 elif subcmd.startswith('Xfer:auxv:read::'):
-                    if self.ql.code:
+                    if self.ql.code or len(self.ql.argv) == 0:
                         return
 
                     if self.ql.os.type in (QL_OS.LINUX, QL_OS.FREEBSD):

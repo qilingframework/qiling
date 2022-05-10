@@ -134,6 +134,11 @@ class QlLoaderMCU(QlLoader):
                 self.ql.hw.create(name.lower())
 
     def run(self):
+
+        # Shellcode case.
+        if len(self.ql.argv) == 0:
+            return
+
         self.load_profile()
         self.load_env()
         

@@ -141,7 +141,7 @@ class QlOsMacos(QlOsPosix):
 
 
     def load(self):
-        if self.ql.code:
+        if self.ql.code or len(self.ql.argv) == 0:
             return
 
         if self.ql.arch.type == QL_ARCH.ARM64:
@@ -202,7 +202,8 @@ class QlOsMacos(QlOsPosix):
         try:
             if self.ql.code:
                 self.ql.emu_start(self.entry_point, (self.entry_point + len(self.ql.code)), self.ql.timeout, self.ql.count)
-            
+            elif len(self.ql.argv) == 0:
+                self.ql.emu_start(self.ql.entry_point, self.ql.exit_point, self.ql.timeout, self.ql.count)
             else:
                 self.ql.emu_start(self.ql.loader.entry_point, self.exit_point, self.ql.timeout, self.ql.count)
         except UcError:

@@ -25,6 +25,14 @@ if __name__ == "__main__":
     ql = Qiling(code=ARM64_LIN, archtype="arm64", ostype="linux", verbose=QL_VERBOSE.DEBUG)
     ql.run()
 
+    print("\nCreate shellcode after creating Qiling instance")
+    ql = Qiling(archtype="arm64", ostype="linux", verbose=QL_VERBOSE.DEBUG)
+    addr = ql.mem.map_anywhere(0x1000)
+    ql.mem[addr:] = ARM64_LIN
+    stack = ql.mem.map_anywhere(0x1000)
+    ql.arch.regs.arch_sp = stack
+    ql.run(begin=addr, end=addr + len(ARM64_LIN))
+
     print("\nLinux ARM 32bit Shellcode")
     ql = Qiling(code=ARM_LIN, archtype="arm", ostype="linux", verbose=QL_VERBOSE.DEBUG)
     ql.run()

@@ -318,6 +318,11 @@ class QlLoaderPE_UEFI(QlLoader):
         return context
 
     def run(self):
+
+        # Shellcode case.
+        if len(self.ql.argv) == 0:
+            return
+
         ql = self.ql
 
         # intel architecture uefi implementation only
