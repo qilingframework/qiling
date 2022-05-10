@@ -126,7 +126,7 @@ class QlOsQnx(QlOsPosix):
         try:
             if self.ql.code:
                 self.ql.emu_start(self.entry_point, (self.entry_point + len(self.ql.code)), self.ql.timeout, self.ql.count)
-            elif len(self.ql.argv == 0):
+            elif len(self.ql.argv) == 0:
                 self.ql.emu_start(self.ql.entry_point, self.ql.exit_point, self.ql.timeout, self.ql.count)
             else:
                 if self.ql.loader.elf_entry != self.ql.loader.entry_point:
