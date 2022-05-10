@@ -41,6 +41,11 @@ class QlLoaderDOS(QlLoader):
         self.old_excepthook(tp, value, tb)
 
     def run(self):
+
+        # Shellcode case.
+        if len(self.ql.argv) == 0:
+            return
+
         path = self.ql.path
         profile = self.ql.profile
 

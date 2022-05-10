@@ -660,7 +660,7 @@ class QlLoaderPE(QlLoader, Process):
             'ucrtbase.dll'
         )
 
-        if self.ql.code:
+        if self.ql.code or len(self.ql.argv) == 0:
             pe = None
             self.is_driver = False
         else:

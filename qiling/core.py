@@ -88,14 +88,14 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         # argv setup #
         ##############
         if argv is None:
-            argv = ['qilingcode']
+            argv = []
 
         elif not os.path.exists(argv[0]):
             raise QlErrorFileNotFound(f'Target binary not found: "{argv[0]}"')
 
         self._argv = argv
-        self._path = self.argv[0]
-        self._targetname = os.path.basename(self.path)
+        self._path = self.argv[0] if len(self.argv) != 0 else ""
+        self._targetname = os.path.basename(self.path) if self.path is not None else ""
 
         ################
         # rootfs setup #

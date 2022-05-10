@@ -487,7 +487,7 @@ def ql_syscall_execve(ql: Qiling, pathname: int, argv: int, envp: int):
     # Clean debugger to prevent port conflicts
     # ql.debugger = None
 
-    if ql.code:
+    if ql.code or len(ql.argv) == 0:
         return
 
     # recreate cached uc

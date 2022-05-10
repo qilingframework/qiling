@@ -14,7 +14,7 @@ class QlLoaderEVM(QlLoader):
         super(QlLoaderEVM, self).__init__(ql)
         self.ql = ql
         
-        if self.ql.code is None:
+        if len(self.ql.argv) == 0:
             with open(self.ql.path) as f:
                 self.code = f.read()
         else:

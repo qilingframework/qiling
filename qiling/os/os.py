@@ -71,7 +71,7 @@ class QlOs:
             64: 0xffffffffffffffff
         }.get(self.ql.arch.bits, None)
 
-        if self.ql.code:
+        if self.ql.code or len(self.ql.argv) == 0:
             # this shellcode entrypoint does not work for windows
             # windows shellcode entry point will comes from pe loader
             self.entry_point = self.profile.getint('CODE', 'entry_point')

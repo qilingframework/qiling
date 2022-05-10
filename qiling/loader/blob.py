@@ -14,6 +14,11 @@ class QlLoaderBLOB(QlLoader):
         self.load_address = 0
 
     def run(self):
+
+        # Shellcode case.
+        if len(self.ql.argv) == 0:
+            return
+
         self.load_address = self.ql.os.entry_point      # for consistency
 
         self.ql.mem.map(self.ql.os.entry_point, self.ql.os.code_ram_size, info="[code]")
