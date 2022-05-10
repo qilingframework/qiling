@@ -9,7 +9,8 @@ thoughout the qiling framework
 """
 
 from functools import partial
-import importlib, os
+from pathlib import Path
+import importlib, inspect, os
 
 from configparser import ConfigParser
 from types import ModuleType
@@ -415,8 +416,8 @@ def profile_setup(ostype: QL_OS, filename: Optional[str]):
             config = {}
 
     else:
-        qiling_home = os.path.dirname(os.path.abspath(__file__))
-        os_profile = os.path.join(qiling_home, 'profiles', f'{ostype.name.lower()}.ql')
+        qiling_home = Path(inspect.getfile(inspect.currentframe())).parent
+        os_profile = qiling_home / 'profiles' / f'{ostype.name.lower()}.ql'
 
         profiles = [os_profile]
 
