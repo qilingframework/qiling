@@ -4,12 +4,11 @@
 #
 
 import os, re
-from typing import Any, Callable, List, MutableSequence, Optional, Sequence, Tuple
+from typing import Any, Callable, List, Mapping, MutableSequence, Optional, Sequence, Tuple
 
 from unicorn import UC_PROT_NONE, UC_PROT_READ, UC_PROT_WRITE, UC_PROT_EXEC, UC_PROT_ALL
 
 from qiling import Qiling
-from qiling.const import *
 from qiling.exception import *
 
 # tuple: range start, range end, permissions mask, range label, is mmio?

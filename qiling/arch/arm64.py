@@ -26,7 +26,13 @@ class QlArchARM64(QlArch):
     def regs(self) -> QlRegisterManager:
         regs_map = dict(
             **arm64_const.reg_map,
-            **arm64_const.reg_map_w
+            **arm64_const.reg_map_b,
+            **arm64_const.reg_map_d,
+            **arm64_const.reg_map_h,
+            **arm64_const.reg_map_q,
+            **arm64_const.reg_map_s,
+            **arm64_const.reg_map_w,
+            **arm64_const.reg_map_v
         )
 
         pc_reg = 'pc'

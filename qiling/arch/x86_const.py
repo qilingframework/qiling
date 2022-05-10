@@ -177,7 +177,7 @@ reg_map_st = {
 }
 
 reg_map_misc = {
-    "ef": UC_X86_REG_EFLAGS, 
+    "eflags": UC_X86_REG_EFLAGS, 
     "cs": UC_X86_REG_CS, 
     "ss": UC_X86_REG_SS,
     "ds": UC_X86_REG_DS, 
