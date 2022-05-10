@@ -93,7 +93,7 @@ class QlMemoryManager:
             if start is None:
                 raise IndexError("The start of memory is not supplied")
             
-            if len(value) > stop - start:
+            if stop is not None and len(value) > stop - start:
                 raise IndexError("Bytes to write are more than sliced memory")
             
             self.ql.mem.write(start, value)
