@@ -4,7 +4,7 @@
 #
 
 import os, re
-from typing import Any, Callable, List, MutableSequence, Optional, Sequence, Tuple
+from typing import Any, Callable, List, MutableSequence, Optional, Sequence, Tuple, Union
 
 from unicorn import UC_PROT_NONE, UC_PROT_READ, UC_PROT_WRITE, UC_PROT_EXEC, UC_PROT_ALL
 
@@ -62,6 +62,43 @@ class QlMemoryManager:
 
     def __write_string(self, addr: int, s: str, encoding: str):
         self.write(addr, bytes(s, encoding) + b'\x00')
+
+    def __getitem__(self, key: Union[slice, int]) -> bytearray:
+        if isinstance(key, slice):
+            start = key.start
+            stop = key.stop
+            step = key.step
+
+            if step is not None and step != 1:
+                # step != 1 means we have to do copy, don't allow it.
+                raise IndexError("Only support slicing continous memory")
+
+            return self.ql.mem.read(start, max(0, stop - start))
+        elif isinstance(key, int):
+            return self.ql.mem.read(key, 1)[0]
+        else:
+            raise KeyError("Wrong type of key")
+    
+    def __setitem__(self, key: Union[slice, int], value: bytes):
+        if isinstance(key, int):
+            self.ql.mem.write(key, bytes([value]))
+        elif isinstance(key, slice):
+            start = key.start
+            stop = key.stop
+            step = key.step
+
+            if step is not None and step != 1:
+                raise IndexError("Only support slicing continous memory")
+            
+            if start is None:
+                raise IndexError("The start of memory is not supplied")
+            
+            if stop is not None and len(value) > stop - start:
+                raise IndexError("Bytes to write are more than sliced memory")
+            
+            self.ql.mem.write(start, value)
+        else:
+            raise KeyError("Wrong type of key")
 
     # TODO: this is an obsolete utility method that should not be used anymore
     # and here for backward compatibility. use QlOsUtils.read_cstring instead
