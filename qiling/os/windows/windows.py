@@ -13,7 +13,7 @@ from qiling.arch.x86_const import GS_SEGMENT_ADDR, GS_SEGMENT_SIZE, FS_SEGMENT_A
 from qiling.arch.x86_utils import GDTManager, SegmentManager86, SegmentManager64
 from qiling.cc import intel
 from qiling.const import QL_ARCH, QL_OS, QL_INTERCEPT
-from qiling.exception import QlErrorSyscallError, QlErrorSyscallNotFound
+from qiling.exception import QlErrorSyscallError, QlErrorSyscallNotFound, QlMemoryMappedError
 from qiling.os.fcall import QlFunctionCall
 from qiling.os.memory import QlMemoryHeap
 from qiling.os.os import QlOs
@@ -116,11 +116,15 @@ class QlOsWindows(QlOs):
         segm.setup_fs(FS_SEGMENT_ADDR, FS_SEGMENT_SIZE)
         segm.setup_gs(GS_SEGMENT_ADDR, GS_SEGMENT_SIZE)
 
-        if not self.ql.mem.is_mapped(FS_SEGMENT_ADDR, FS_SEGMENT_SIZE):
-            self.ql.mem.map(FS_SEGMENT_ADDR, FS_SEGMENT_SIZE, info='[FS]')
+        if not self.ql.mem.is_available(FS_SEGMENT_ADDR, FS_SEGMENT_SIZE):
+            raise QlMemoryMappedError('cannot map FS segment, memory location is taken')
 
-        if not self.ql.mem.is_mapped(GS_SEGMENT_ADDR, GS_SEGMENT_SIZE):
-            self.ql.mem.map(GS_SEGMENT_ADDR, GS_SEGMENT_SIZE, info='[GS]')
+        self.ql.mem.map(FS_SEGMENT_ADDR, FS_SEGMENT_SIZE, info='[FS]')
+
+        if not self.ql.mem.is_available(GS_SEGMENT_ADDR, GS_SEGMENT_SIZE):
+            raise QlMemoryMappedError('cannot map GS segment, memory location is taken')
+
+        self.ql.mem.map(GS_SEGMENT_ADDR, GS_SEGMENT_SIZE, info='[GS]')
 
 
     def __setup_components(self):

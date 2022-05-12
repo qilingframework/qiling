@@ -368,7 +368,7 @@ class QlLoaderELF(QlLoader):
             _vsyscall_addr = int(self.profile.get('vsyscall_address'), 0)
             _vsyscall_size = int(self.profile.get('vsyscall_size'), 0)
 
-            if not self.ql.mem.is_mapped(_vsyscall_addr, _vsyscall_size):
+            if self.ql.mem.is_available(_vsyscall_addr, _vsyscall_size):
                 # initialize with int3 instructions then insert syscall entry
                 # each syscall should be 1KiB away
                 self.ql.mem.map(_vsyscall_addr, _vsyscall_size, info="[vsyscall]")

@@ -280,7 +280,7 @@ class QlMemoryManager:
             self.ql.log.debug(f'restoring memory range: {lbound:#08x} {ubound:#08x} {label}')
 
             size = ubound - lbound
-            if not self.is_mapped(lbound, size):
+            if self.is_available(lbound, size):
                 self.ql.log.debug(f'mapping {lbound:#08x} {ubound:#08x}, mapsize = {size:#x}')
                 self.map(lbound, size, perms, label)
 
@@ -420,9 +420,34 @@ class QlMemoryManager:
         for begin, end, _ in self.ql.uc.mem_regions():
             self.unmap(begin, end - begin + 1)
 
+    def __mapped_regions(self) -> Iterator[Tuple[int, int]]:
+        """Iterate through all mapped memory regions, consolidating adjacent regions
+        together to a continuous one. Protection bits and labels are ignored.
+        """
+
+        if not self.map_info:
+            return
+
+        iter_memmap = iter(self.map_info)
+
+        p_lbound, p_ubound, _, _, _ = next(iter_memmap)
+
+        # map_info is assumed to contain non-overlapping regions sorted by lbound
+        for lbound, ubound, _, _, _ in iter_memmap:
+            if lbound == p_ubound:
+                p_ubound = ubound
+            else:
+                yield (p_lbound, p_ubound)
+
+                p_lbound = lbound
+                p_ubound = ubound
+
+        yield (p_lbound, p_ubound)
+
+
     def is_available(self, addr: int, size: int) -> bool:
         """Query whether the memory range starting at `addr` and is of length of `size` bytes
-        can be allocated.
+        is available for allocation.
 
         Returns: True if it can be allocated, False otherwise
         """
@@ -433,16 +458,21 @@ class QlMemoryManager:
         end = addr + size
 
         # make sure neither begin nor end are enclosed within a mapped range, or entirely enclosing one
-        return not any((lbound <= begin < ubound) or (lbound < end <= ubound) or (begin <= lbound < ubound <= end) for lbound, ubound, _, _, _ in self.map_info)
+        return not any((lbound <= begin < ubound) or (lbound < end <= ubound) or (begin <= lbound < ubound <= end) for lbound, ubound in self.__mapped_regions())
 
     def is_mapped(self, addr: int, size: int) -> bool:
         """Query whether the memory range starting at `addr` and is of length of `size` bytes
-        is mapped, either partially or entirely.
+        is fully mapped.
 
-        Returns: True if any part of the specified memory range is taken, False otherwise
+        Returns: True if the specified memory range is taken fully, False otherwise
         """
 
-        return not self.is_available(addr, size)
+        assert size > 0, 'expected a positive size value'
+
+        begin = addr
+        end = addr + size
+
+        return any((lbound <= begin < end <= ubound) for lbound, ubound in self.__mapped_regions())
 
     def find_free_space(self, size: int, minaddr: int = None, maxaddr: int = None, align: int = None) -> int:
         """Locate an unallocated memory that is large enough to contain a range in size of
