@@ -127,8 +127,8 @@ class QlMemoryManager:
 
         self.map_info = tmp_map_info
 
-    def change_mapinfo(self, mem_s: int, mem_e: int, mem_p: int = None, mem_info: str = None):
-        tmp_map_info: MapInfoEntry = None
+    def change_mapinfo(self, mem_s: int, mem_e: int, mem_p: Optional[int] = None, mem_info: Optional[str] = None):
+        tmp_map_info: Optional[MapInfoEntry] = None
         info_idx: int = None
 
         for idx, map_info in enumerate(self.map_info):
@@ -215,7 +215,7 @@ class QlMemoryManager:
 
         return next((lbound for lbound, info in stripped if os.path.basename(info) == filename), None)
 
-    def align(self, value: int, alignment: int = None) -> int:
+    def align(self, value: int, alignment: Optional[int] = None) -> int:
         """Align a value down to the specified alignment boundary. If `value` is already
         aligned, the same value is returned. Commonly used to determine the base address
         of the enclosing page.
@@ -237,7 +237,7 @@ class QlMemoryManager:
         # round down to nearest alignment
         return value & ~(alignment - 1)
 
-    def align_up(self, value: int, alignment: int = None) -> int:
+    def align_up(self, value: int, alignment: Optional[int] = None) -> int:
         """Align a value up to the specified alignment boundary. If `value` is already
         aligned, the same value is returned. Commonly used to determine the end address
         of the enlosing page.
@@ -310,13 +310,13 @@ class QlMemoryManager:
 
         return self.ql.uc.mem_read(addr, size)
 
-    def read_ptr(self, addr: int, size: int=None) -> int:
+    def read_ptr(self, addr: int, size: int = 0) -> int:
         """Read an integer value from a memory address.
         Bytes read will be unpacked using emulated architecture properties.
 
         Args:
             addr: memory address to read
-            size: pointer size (in bytes): either 1, 2, 4, 8, or None for arch native size
+            size: pointer size (in bytes): either 1, 2, 4, 8, or 0 for arch native size
 
         Returns: integer value stored at the specified memory address
         """
@@ -346,14 +346,14 @@ class QlMemoryManager:
 
         self.ql.uc.mem_write(addr, data)
 
-    def write_ptr(self, addr: int, value: int, size: int=None) -> None:
+    def write_ptr(self, addr: int, value: int, size: int = 0) -> None:
         """Write an integer value to a memory address.
         Bytes written will be packed using emulated architecture properties.
 
         Args:
             addr: target memory address
             value: integer value to write
-            size: pointer size (in bytes): either 1, 2, 4, 8, or None for arch native size
+            size: pointer size (in bytes): either 1, 2, 4, 8, or 0 for arch native size
         """
 
         if not size:
@@ -371,7 +371,7 @@ class QlMemoryManager:
 
         self.write(addr, __pack(value))
 
-    def search(self, needle: Union[bytes, Pattern[bytes]], begin: int = None, end: int = None) -> Sequence[int]:
+    def search(self, needle: Union[bytes, Pattern[bytes]], begin: Optional[int] = None, end: Optional[int] = None) -> Sequence[int]:
         """Search for a sequence of bytes in memory.
 
         Args:
@@ -422,7 +422,7 @@ class QlMemoryManager:
         if (addr, addr + size) in self.mmio_cbs:
             del self.mmio_cbs[(addr, addr+size)]
 
-    def unmap_all(self):
+    def unmap_all(self) -> None:
         """Reclaim the entire memory space.
         """
 
@@ -483,7 +483,7 @@ class QlMemoryManager:
 
         return any((lbound <= begin < end <= ubound) for lbound, ubound in self.__mapped_regions())
 
-    def find_free_space(self, size: int, minaddr: int = None, maxaddr: int = None, align: int = None) -> int:
+    def find_free_space(self, size: int, minaddr: Optional[int] = None, maxaddr: Optional[int] = None, align: Optional[int] = None) -> int:
         """Locate an unallocated memory that is large enough to contain a range in size of
         `size` and based at `minaddr`.
 
@@ -528,7 +528,7 @@ class QlMemoryManager:
 
         raise QlOutOfMemory('Out Of Memory')
 
-    def map_anywhere(self, size: int, minaddr: int = None, maxaddr: int = None, align: int = None, perms: int = UC_PROT_ALL, info: str = None) -> int:
+    def map_anywhere(self, size: int, minaddr: Optional[int] = None, maxaddr: Optional[int] = None, align: Optional[int] = None, perms: int = UC_PROT_ALL, info: Optional[str] = None) -> int:
         """Map a region anywhere in memory.
 
         Args:
@@ -563,7 +563,7 @@ class QlMemoryManager:
         self.change_mapinfo(aligned_address, aligned_address + aligned_size, mem_p = perms)
 
 
-    def map(self, addr: int, size: int, perms: int = UC_PROT_ALL, info: str = None):
+    def map(self, addr: int, size: int, perms: int = UC_PROT_ALL, info: Optional[str] = None):
         """Map a new memory range.
 
         Args:
@@ -742,7 +742,7 @@ class QlMemoryHeap:
         self.current_alloc = 0
         self.current_use = 0
 
-    def _find(self, addr: int, inuse: bool = None) -> Optional[Chunk]:
+    def _find(self, addr: int, inuse: Optional[bool] = None) -> Optional[Chunk]:
         """Find a chunk starting at a specified address.
 
         Args:

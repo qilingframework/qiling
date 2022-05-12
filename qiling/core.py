@@ -45,7 +45,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             filter = None,
             stop: QL_STOP = QL_STOP.NONE,
             *,
-            endian: QL_ENDIAN = None,
+            endian: Optional[QL_ENDIAN] = None,
             thumb: bool = False,
             libcache: bool = False
     ):
@@ -414,8 +414,8 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         return self._debug_stop
 
     @debug_stop.setter
-    def debug_stop(self, ds):
-        self._debug_stop = ds
+    def debug_stop(self, enabled: bool):
+        self._debug_stop = enabled
 
     @property
     def debugger(self) -> bool:
