@@ -444,25 +444,6 @@ class QlMemoryManager:
 
         return not self.is_available(addr, size)
 
-    def is_free(self, address, size):
-        '''
-        The main function of is_free first must fufull is_mapped condition.
-        then, check for is the mapped range empty, either fill with 0xFF or 0x00
-        Returns true if mapped range is empty else return Flase
-        If not not mapped, map it and return true
-        '''
-        if self.is_mapped(address, size) == True:
-            address_end = (address + size)
-            while address < address_end:
-                mem_read = self.ql.mem.read(address, 0x1)
-                if (mem_read[0] != 0x00) and (mem_read[0] != 0xFF):
-                    return False
-                address += 1
-            return True
-        else:
-            return True
-
-
     def find_free_space(self, size: int, minaddr: int = None, maxaddr: int = None, align: int = None) -> int:
         """Locate an unallocated memory that is large enough to contain a range in size of
         `size` and based at `minaddr`.
