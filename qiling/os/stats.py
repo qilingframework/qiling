@@ -45,12 +45,6 @@ class QlOsStats:
         for key, values in self.strings.items():
             ret.append(f'{key}: {", ".join(str(word) for word in values)}')
 
-        ret.extend(QlOsStats._banner('registry keys accessed'))
-
-        for key, values in self.syscalls.items():
-            ret.append(f'{key}:')
-            ret.extend(f'  {json.dumps(value):s}' for value in values)
-
         return ret
 
     def log_api_call(self, address: int, name: str, params: Mapping, retval: Any, retaddr: int) -> None:
@@ -107,7 +101,7 @@ class QlWinStats(QlOsStats):
 
         ret.extend(QlOsStats._banner('registry keys accessed'))
 
-        for key, values in self.syscalls.items():
+        for key, values in self.registry.items():
             ret.append(f'{key}:')
             ret.extend(f'  {json.dumps(value):s}' for value in values)
 
