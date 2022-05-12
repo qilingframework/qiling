@@ -149,12 +149,12 @@ class QlMemoryManager:
         if mem_info is not None:
             self.map_info[info_idx] = (tmp_map_info[0], tmp_map_info[1], tmp_map_info[2], mem_info, tmp_map_info[4])
 
-    def get_mapinfo(self) -> Sequence[Tuple[int, int, str, str, Optional[str]]]:
+    def get_mapinfo(self) -> Sequence[Tuple[int, int, str, str, str]]:
         """Get memory map info.
 
         Returns: A sequence of 5-tuples representing the memory map entries. Each
         tuple contains range start, range end, permissions, range label and path of
-        containing image (or None if not contained by any image)
+        containing image (or an empty string if not contained by any image)
         """
 
         def __perms_mapping(ps: int) -> str:
@@ -166,21 +166,21 @@ class QlMemoryManager:
 
             return ''.join(val if idx & ps else '-' for idx, val in perms_d.items())
 
-        def __process(lbound: int, ubound: int, perms: int, label: str, is_mmio: bool) -> Tuple[int, int, str, str, Optional[str]]:
+        def __process(lbound: int, ubound: int, perms: int, label: str, is_mmio: bool) -> Tuple[int, int, str, str, str]:
             perms_str = __perms_mapping(perms)
 
             if hasattr(self.ql, 'loader'):
                 image = self.ql.loader.find_containing_image(lbound)
-                container = image.path if image and not is_mmio else None
+                container = image.path if image and not is_mmio else ''
             else:
-                container = None
+                container = ''
 
             return (lbound, ubound, perms_str, label, container)
 
         return tuple(__process(*entry) for entry in self.map_info)
 
-    def show_mapinfo(self):
-        """Emit memory map info in a nicely formatted table.
+    def get_formatted_mapinfo(self) -> Sequence[str]:
+        """Get memory map info in a nicely formatted table.
         """
 
         mapinfo = self.get_mapinfo()
@@ -192,12 +192,17 @@ class QlMemoryManager:
         len_addr  = max(grouped[0])
         len_label = max(grouped[1])
 
-        # emit title row
-        self.ql.log.info(f'{"Start":{len_addr}s}   {"End":{len_addr}s}   {"Perm":5s}   {"Label":{len_label}s}   {"Image"}')
+        # pre-allocate table
+        table = [''] * (len(mapinfo) + 1)
 
-        # emit table rows
-        for lbound, ubound, perms, label, container in mapinfo:
-            self.ql.log.info(f'{lbound:0{len_addr}x} - {ubound:0{len_addr}x}   {perms:5s}   {label:{len_label}s}   {container or ""}')
+        # add title row
+        table[0] = f'{"Start":{len_addr}s}   {"End":{len_addr}s}   {"Perm":5s}   {"Label":{len_label}s}   {"Image"}'
+
+        # add table rows
+        for i, (lbound, ubound, perms, label, container) in enumerate(mapinfo, 1):
+            table[i] = f'{lbound:0{len_addr}x} - {ubound:0{len_addr}x}   {perms:5s}   {label:{len_label}s}   {container}'
+
+        return table
 
     # TODO: relying on the label string is risky; find a more reliable method
     def get_lib_base(self, filename: str) -> Optional[int]:
