@@ -4,7 +4,7 @@
 #
 
 import os, re
-from typing import Any, Callable, List, Mapping, MutableSequence, Optional, Sequence, Tuple
+from typing import Any, Callable, Iterator, List, Mapping, MutableSequence, Optional, Pattern, Sequence, Tuple, Union
 
 from unicorn import UC_PROT_NONE, UC_PROT_READ, UC_PROT_WRITE, UC_PROT_EXEC, UC_PROT_ALL
 
@@ -371,18 +371,18 @@ class QlMemoryManager:
 
         self.write(addr, __pack(value))
 
-    def search(self, needle: bytes, begin: int = None, end: int = None) -> Sequence[int]:
+    def search(self, needle: Union[bytes, Pattern[bytes]], begin: int = None, end: int = None) -> Sequence[int]:
         """Search for a sequence of bytes in memory.
 
         Args:
-            needle: bytes sequence to look for
+            needle: bytes sequence or regex pattern to look for
             begin: search starting address (or None to start at lowest avaiable address)
             end: search ending address (or None to end at highest avaiable address)
 
         Returns: addresses of all matches
         """
 
-        # if starting point not set, search from the first mapped region 
+        # if starting point not set, search from the first mapped region
         if begin is None:
             begin = self.map_info[0][0]
 
@@ -395,6 +395,10 @@ class QlMemoryManager:
         # narrow the search down to relevant ranges; mmio ranges are excluded due to potential read size effects
         ranges = [(max(begin, lbound), min(ubound, end)) for lbound, ubound, _, _, is_mmio in self.map_info if not (end < lbound or ubound < begin or is_mmio)]
         results = []
+
+        # if needle is a bytes sequence use it verbatim, not as a pattern
+        if type(needle) is bytes:
+            needle = re.escape(needle)
 
         for lbound, ubound in ranges:
             haystack = self.read(lbound, ubound - lbound)
