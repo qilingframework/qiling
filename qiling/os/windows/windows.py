@@ -4,7 +4,7 @@
 #
 
 import ntpath
-from typing import Callable
+from typing import Callable, TextIO
 
 from unicorn import UcError
 
@@ -92,6 +92,39 @@ class QlOsWindows(QlOs):
 
         self.services = {}
         self.load()
+
+        # only after handle manager has been set up we can assign the standard streams
+        self.stdin  = self._stdin
+        self.stdout = self._stdout
+        self.stderr = self._stderr
+
+
+    @QlOs.stdin.setter
+    def stdin(self, stream: TextIO) -> None:
+        self._stdin = stream
+
+        handle = self.handle_manager.get(const.STD_INPUT_HANDLE)
+        assert handle is not None
+
+        handle.obj = stream
+
+    @QlOs.stdout.setter
+    def stdout(self, stream: TextIO) -> None:
+        self._stdout = stream
+
+        handle = self.handle_manager.get(const.STD_OUTPUT_HANDLE)
+        assert handle is not None
+
+        handle.obj = stream
+
+    @QlOs.stderr.setter
+    def stderr(self, stream: TextIO) -> None:
+        self._stderr = stream
+
+        handle = self.handle_manager.get(const.STD_ERROR_HANDLE)
+        assert handle is not None
+
+        handle.obj = stream
 
 
     def load(self):
