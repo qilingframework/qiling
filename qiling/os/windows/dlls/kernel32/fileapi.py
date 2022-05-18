@@ -26,18 +26,13 @@ from qiling.os.windows.structs import Win32FindData
 def hook_GetFileType(ql: Qiling, address: int, params):
     hFile = params["hFile"]
 
-    if hFile in (STD_INPUT_HANDLE, STD_OUTPUT_HANDLE, STD_ERROR_HANDLE):
-        ret = FILE_TYPE_CHAR
-    else:
-        obj = ql.os.handle_manager.get(hFile)
+    handle = ql.os.handle_manager.get(hFile)
 
-        if obj is None:
-            raise QlErrorNotImplemented("API not implemented")
-        else:
-            # technically is not always a type_char but.. almost
-            ret = FILE_TYPE_CHAR
+    if handle is None:
+        raise QlErrorNotImplemented("API not implemented")
 
-    return ret
+    # technically is not always a type_char but.. almost
+    return FILE_TYPE_CHAR
 
 # HANDLE FindFirstFileA(
 #  LPCSTR             lpFileName,
@@ -156,28 +151,16 @@ def hook_ReadFile(ql: Qiling, address: int, params):
     nNumberOfBytesToRead = params["nNumberOfBytesToRead"]
     lpNumberOfBytesRead = params["lpNumberOfBytesRead"]
 
-    if hFile == STD_INPUT_HANDLE:
-        if ql.os.automatize_input:
-            # TODO maybe insert a good random generation input
-            s = (b"A" * (nNumberOfBytesToRead - 1)) + b"\x00"
-        else:
-            ql.log.debug("Insert input")
-            s = ql.os.stdin.read(nNumberOfBytesToRead)
+    handle = ql.os.handle_manager.get(hFile)
 
-        slen = len(s)
-        read_len = slen
+    if handle is None:
+        ql.os.last_error = ERROR_INVALID_HANDLE
+        return 0
 
-        if slen > nNumberOfBytesToRead:
-            s = s[:nNumberOfBytesToRead]
-            read_len = nNumberOfBytesToRead
+    data = handle.obj.read(nNumberOfBytesToRead)
 
-        ql.mem.write(lpBuffer, s)
-        ql.mem.write_ptr(lpNumberOfBytesRead, read_len, 4)
-    else:
-        f = ql.os.handle_manager.get(hFile).obj
-        data = f.read(nNumberOfBytesToRead)
-        ql.mem.write(lpBuffer, data)
-        ql.mem.write_ptr(lpNumberOfBytesRead, len(data), 4)
+    ql.mem.write(lpBuffer, data)
+    ql.mem.write_ptr(lpNumberOfBytesRead, len(data), 4)
 
     return 1
 
@@ -201,24 +184,20 @@ def hook_WriteFile(ql: Qiling, address: int, params):
     nNumberOfBytesToWrite = params["nNumberOfBytesToWrite"]
     lpNumberOfBytesWritten = params["lpNumberOfBytesWritten"]
 
+    handle = ql.os.handle_manager.get(hFile)
+
+    if handle is None:
+        ql.os.last_error = ERROR_INVALID_HANDLE
+        return 0
+
+    fobj = handle.obj
+    data = ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
+
     if hFile == STD_OUTPUT_HANDLE:
-        s = ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
-        ql.os.stdout.write(s)
-        ql.os.stats.log_string(s.decode())
-        ql.mem.write_ptr(lpNumberOfBytesWritten, nNumberOfBytesToWrite, 4)
-    else:
-        f = ql.os.handle_manager.get(hFile)
+        ql.os.stats.log_string(data.decode())
 
-        if f is None:
-            # Invalid handle
-            ql.os.last_error = ERROR_INVALID_HANDLE
-            return 0
-        else:
-            f = f.obj
-
-        buffer = ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
-        nNumberOfBytesWritten = f.write(bytes(buffer))
-        ql.mem.write_ptr(lpNumberOfBytesWritten, nNumberOfBytesWritten, 4)
+    written = fobj.write(bytes(data))
+    ql.mem.write_ptr(lpNumberOfBytesWritten, written, 4)
 
     return 1
 
