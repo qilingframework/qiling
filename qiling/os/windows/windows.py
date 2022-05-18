@@ -88,7 +88,6 @@ class QlOsWindows(QlOs):
         self.argv = self.ql.argv
         self.env = self.ql.env
         self.pid = self.profile.getint('KERNEL', 'pid')
-        self.automatize_input = self.profile.getboolean("MISC","automatize_input")
 
         self.services = {}
         self.load()
