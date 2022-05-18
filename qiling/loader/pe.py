@@ -31,10 +31,10 @@ class QlPeCacheEntry(NamedTuple):
 class QlPeCache:
     @staticmethod
     def cache_filename(path: str) -> str:
-        dirname, basename = ntpath.split(path)
+        dirname, basename = os.path.split(path)
 
         # canonicalize basename while preserving the path
-        path = ntpath.join(dirname, basename.casefold())
+        path = os.path.join(dirname, basename.casefold())
 
         return f'{path}.cache2'
 
