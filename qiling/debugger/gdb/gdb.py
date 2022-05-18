@@ -595,7 +595,7 @@ class QlGdb(QlDebugger):
                         if os.path.exists(host_path) and not path.startswith(r'/proc'):
                             fd = os.open(host_path, flags, mode)
 
-                    return f'F{fd}'
+                    return f'F{fd:x}'
 
                 elif op == 'pread':
                     fd, count, offset = (int(p, 16) for p in params)
