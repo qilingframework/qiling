@@ -93,6 +93,8 @@ class ELFTest(unittest.TestCase):
         ql.run(begin=hook_address)
         del ql
 
+        os.remove(snapshot)
+
     def test_elf_linux_x86_snapshot_restore_reg(self):
         self._test_elf_linux_x86_snapshot_restore_common(reg=True, ctx=False)
 
