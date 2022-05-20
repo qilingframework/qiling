@@ -3,11 +3,12 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from typing import MutableSequence
-from .const import *
+from typing import Mapping, MutableSequence
 
 from qiling import Qiling
-from qiling.const import *
+from qiling.const import QL_ARCH, QL_OS
+
+from .const import *
 
 def _invert_dict(d: Mapping) -> Mapping:
     return { v:k for k, v in d.items()}
