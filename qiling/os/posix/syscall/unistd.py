@@ -210,13 +210,14 @@ def ql_syscall_brk(ql: Qiling, inp: int):
     # otherwise, just return current brk_address
 
     if inp:
-        new_brk_addr = ((inp + 0xfff) // 0x1000) * 0x1000
+        cur_brk_addr = ql.loader.brk_address
+        new_brk_addr = ql.mem.align_up(inp)
 
-        if inp > ql.loader.brk_address: # increase current brk_address if inp is greater
-            ql.mem.map(ql.loader.brk_address, new_brk_addr - ql.loader.brk_address, info="[brk]")
+        if inp > cur_brk_addr: # increase current brk_address if inp is greater
+            ql.mem.map(cur_brk_addr, new_brk_addr - cur_brk_addr, info="[brk]")
 
-        elif inp < ql.loader.brk_address: # shrink current bkr_address to inp if its smaller
-            ql.mem.unmap(new_brk_addr, ql.loader.brk_address - new_brk_addr)
+        elif inp < cur_brk_addr: # shrink current bkr_address to inp if its smaller
+            ql.mem.unmap(new_brk_addr, cur_brk_addr - new_brk_addr)
 
         ql.loader.brk_address = new_brk_addr
 
