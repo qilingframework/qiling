@@ -6,6 +6,8 @@
 
 from typing import Any, MutableMapping, Optional
 
+from qiling.os.windows.const import STD_ERROR_HANDLE, STD_INPUT_HANDLE, STD_OUTPUT_HANDLE
+
 class Handle:
     ID = 0xa0000000
 
@@ -26,9 +28,9 @@ class Handle:
 
 class HandleManager:
     # IO
-    STD_INPUT_HANDLE  = Handle(id=0xfffffff6)
-    STD_OUTPUT_HANDLE = Handle(id=0xfffffff5)
-    STD_ERROR_HANDLE  = Handle(id=0xfffffff4)
+    STDIN  = Handle(id=STD_INPUT_HANDLE)
+    STDOUT = Handle(id=STD_OUTPUT_HANDLE)
+    STDERR = Handle(id=STD_ERROR_HANDLE)
 
     # Register
     HKEY_CLASSES_ROOT        = Handle(id=0x80000000)
@@ -44,9 +46,9 @@ class HandleManager:
     def __init__(self):
         self.handles: MutableMapping[int, Handle] = {}
 
-        self.append(HandleManager.STD_INPUT_HANDLE)
-        self.append(HandleManager.STD_OUTPUT_HANDLE)
-        self.append(HandleManager.STD_ERROR_HANDLE)
+        self.append(HandleManager.STDIN)
+        self.append(HandleManager.STDOUT)
+        self.append(HandleManager.STDERR)
 
     def append(self, handle: Handle) -> None:
         self.handles[handle.id] = handle

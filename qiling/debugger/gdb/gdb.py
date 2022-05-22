@@ -28,7 +28,7 @@ from unicorn.unicorn_const import (
 from qiling import Qiling
 from qiling.const import QL_ARCH, QL_ENDIAN, QL_OS
 from qiling.debugger import QlDebugger
-from qiling.debugger.gdb import xmlregs
+from qiling.debugger.gdb.xmlregs import QlGdbFeatures
 from qiling.debugger.gdb.utils import QlGdbUtils
 
 # gdb logging prompt
@@ -98,7 +98,8 @@ class QlGdb(QlDebugger):
 
         self.gdb = QlGdbUtils(ql, entry_point, exit_point)
 
-        self.regsmap = xmlregs.load_regsmap(self.ql.arch.type)
+        self.features = QlGdbFeatures(self.ql.arch.type, self.ql.os.type)
+        self.regsmap = self.features.regsmap
 
     def run(self):
         server = GdbSerialConn(self.ip, self.port, self.ql.log)
@@ -451,22 +452,12 @@ class QlGdb(QlDebugger):
                 offset, length = (int(p, 16) for p in params.split(','))
 
                 if feature == 'features' and op == 'read':
-                    xfercmd_abspath = os.path.dirname(os.path.abspath(__file__))
-                    xml_folder      = self.ql.arch.type.name.lower()
-                    xfercmd_file    = os.path.join(xfercmd_abspath, 'xml', xml_folder, annex)
-
-                    if self.ql.os.type == QL_OS.WINDOWS:
-                        self.ql.log.info(f'{PROMPT} Qiling does not support XML for this platform yet')
-                        content = ''
-
-                    elif not os.path.exists(xfercmd_file):
-                        self.ql.log.info(f'{PROMPT} XML file not found: "{xfercmd_file}"')
-                        content = ''
+                    if annex == r'target.xml':
+                        content = self.features.tostring()[offset:offset + length]
 
                     else:
-                        with open(xfercmd_file, 'r') as f:
-                            f.seek(offset, os.SEEK_SET)
-                            content = f.read(length)
+                        self.ql.log.info(f'{PROMPT} did not expect "{annex}" here')
+                        content = ''
 
                     return f'{"l" if len(content) < length else "m"}{content}'
 
@@ -604,7 +595,7 @@ class QlGdb(QlDebugger):
                         if os.path.exists(host_path) and not path.startswith(r'/proc'):
                             fd = os.open(host_path, flags, mode)
 
-                    return f'F{fd}'
+                    return f'F{fd:x}'
 
                 elif op == 'pread':
                     fd, count, offset = (int(p, 16) for p in params)

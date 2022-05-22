@@ -29,9 +29,6 @@ class ELFTest(unittest.TestCase):
 
 
     def test_elf_linux_cloexec_x8664(self):
-        with open('../examples/rootfs/x8664_linux/testfile', 'wb') as f:
-            f.write(b'0123456789')
-
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_cloexec_test"],  
                     "../examples/rootfs/x8664_linux", 
                     verbose=QL_VERBOSE.DEBUG,
