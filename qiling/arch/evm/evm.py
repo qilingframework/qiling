@@ -6,7 +6,7 @@
 from qiling.const import *
 from ..arch import QlArch
 from .vm.evm import QlArchEVMEmulator
-from .hooks import monkeypath_core_hooks
+from .hooks import monkeypatch_core_hooks
 
 class QlArchEVM(QlArch):
     type = QL_ARCH.EVM
@@ -16,7 +16,7 @@ class QlArchEVM(QlArch):
         super(QlArchEVM, self).__init__(ql)
         self.evm = QlArchEVMEmulator(self.ql)
 
-        monkeypath_core_hooks(self.ql)
+        monkeypatch_core_hooks(self.ql)
 
     def run(self, msg):
         return self.evm.vm.execute_message(msg)

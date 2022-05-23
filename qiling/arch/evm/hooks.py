@@ -63,8 +63,8 @@ def __evm_hook_del(ql, hret):
                 if not hooks_list:
                     del evm_hooks_info.hook_addr_dict[h.addr]
 
-def monkeypath_core_hooks(ql):
-    """Monkeypath core hooks for evm
+def monkeypatch_core_hooks(ql):
+    """Monkeypatch core hooks for evm
     """
 
     ql.hook_code    = types.MethodType(__evm_hook_code, ql)
