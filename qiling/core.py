@@ -542,15 +542,12 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
     # Emulate the binary from begin until @end, with timeout in @timeout and
     # number of emulated instructions in @count
-    def run(self, begin=None, end=None, timeout=0, count=0, code=None):
+    def run(self, begin=None, end=None, timeout=0, count=0):
         # replace the original entry point, exit point, timeout and count
         self.entry_point = begin
         self.exit_point = end
         self.timeout = timeout
         self.count = count        
-
-        if self.interpreter:
-            return self.arch.run(code)
 
         # init debugger (if set)
         debugger = select_debugger(self._debugger)
