@@ -3,6 +3,9 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 
 
+import types
+
+from qiling.arch.evm.vm.message import Message
 from qiling.const import *
 from ..arch import QlArch
 from .vm.evm import QlArchEVMEmulator
@@ -17,6 +20,7 @@ class QlArchEVM(QlArch):
         self.evm = QlArchEVMEmulator(self.ql)
 
         monkeypatch_core_hooks(self.ql)
+        monkeypatch_core_methods(self.ql)
 
     def run(self, msg):
         return self.evm.vm.execute_message(msg)
@@ -40,3 +44,13 @@ class QlArchEVM(QlArch):
     @property
     def endian(self) -> QL_ENDIAN:
         return QL_ENDIAN.EL
+
+
+def __evm_run(self, code: Message):
+    return self.arch.run(code)
+
+def monkeypatch_core_methods(ql):
+    """Monkeypatch core methods for evm
+    """
+
+    ql.run = types.MethodType(__evm_run, ql)
