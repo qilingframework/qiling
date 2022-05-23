@@ -5,11 +5,11 @@
 
 import types
 
+from qiling.arch.arch import QlArch
+from qiling.arch.evm.hooks import monkeypatch_core_hooks
+from qiling.arch.evm.vm.evm import QlArchEVMEmulator
 from qiling.arch.evm.vm.message import Message
 from qiling.const import *
-from ..arch import QlArch
-from .vm.evm import QlArchEVMEmulator
-from .hooks import monkeypatch_core_hooks
 
 class QlArchEVM(QlArch):
     type = QL_ARCH.EVM

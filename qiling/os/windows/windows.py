@@ -4,13 +4,13 @@
 #
 
 import ntpath
-from typing import Callable, TextIO
+from typing import Callable, TextIO, Type
 
 from unicorn import UcError
 
 from qiling import Qiling
 from qiling.arch.x86_const import GS_SEGMENT_ADDR, GS_SEGMENT_SIZE, FS_SEGMENT_ADDR, FS_SEGMENT_SIZE
-from qiling.arch.x86_utils import GDTManager, SegmentManager86, SegmentManager64
+from qiling.arch.x86_utils import GDTManager, SegmentManager, SegmentManager86, SegmentManager64
 from qiling.cc import intel
 from qiling.const import QL_ARCH, QL_OS, QL_INTERCEPT
 from qiling.exception import QlErrorSyscallError, QlErrorSyscallNotFound, QlMemoryMappedError
@@ -137,7 +137,7 @@ class QlOsWindows(QlOs):
     def setupGDT(self):
         gdtm = GDTManager(self.ql)
 
-        segm_class = {
+        segm_class: Type[SegmentManager] = {
             32 : SegmentManager86,
             64 : SegmentManager64
         }[self.ql.arch.bits]
