@@ -42,6 +42,7 @@ reg_map = {
             "lr": UC_ARM64_REG_LR,
             "cpacr_el1": UC_ARM64_REG_CPACR_EL1,
             "tpidr_el0": UC_ARM64_REG_TPIDR_EL0,
+            "pstate": UC_ARM64_REG_PSTATE,
 }
 
 reg_map_w = {
