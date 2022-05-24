@@ -30,7 +30,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
     def __init__(
             self,
             argv: Sequence[str] = None,
-            rootfs: str = None,
+            rootfs: str = r'.',
             env: MutableMapping[AnyStr, AnyStr] = {},
             code: bytes = None,
             ostype: Union[str, QL_OS] = None,
@@ -100,10 +100,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         ################
         # rootfs setup #
         ################
-        if rootfs is None:
-            rootfs = '.'
-
-        elif not os.path.exists(rootfs):
+        if not os.path.exists(rootfs):
             raise QlErrorFileNotFound(f'Target rootfs not found: "{rootfs}"')
 
         self._rootfs = rootfs
