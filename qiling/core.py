@@ -537,21 +537,21 @@ class Qiling(QlCoreHooks, QlCoreStructs):
     # Qiling APIS #
     ###############
 
-    def run(self, begin: Optional[int] = None, end: Optional[int] = None, timeout: int = 0, icount: int = 0):
+    def run(self, begin: Optional[int] = None, end: Optional[int] = None, timeout: int = 0, count: int = 0):
         """Start binary emulation.
 
         Args:
             begin   : emulation starting address
             end     : emulation ending address
             timeout : limit emulation to a specific amount of time (microseconds); unlimited by default
-            icount  : limit emulation to a specific amount of instructions; unlimited by default
+            count   : limit emulation to a specific amount of instructions; unlimited by default
         """
 
         # replace the original entry point, exit point, timeout and count
         self.entry_point = begin
         self.exit_point = end
         self.timeout = timeout
-        self.count = icount
+        self.count = count
 
         # init debugger (if set)
         debugger = select_debugger(self._debugger)
