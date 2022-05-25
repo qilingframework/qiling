@@ -7,6 +7,7 @@ import copy
 import logging
 import os
 import re
+import weakref
 
 from typing import Optional, TextIO
 
@@ -38,7 +39,7 @@ class QlBaseFormatter(logging.Formatter):
 
     def __init__(self, ql, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.ql = ql
+        self.ql = weakref.ref(ql)
 
     def get_level_tag(self, level: str) -> str:
         return self.__level_tag[level]
