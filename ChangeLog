@@ -13,6 +13,7 @@ Improvements:
 - Minor PE Loader fix (#1104)
 - Minor quality changes (#1106)
 - Fix cacheflush syscall typo (#1115)
+- Improvements and fixes for Windows and PE (#1118)
 - Add vm_context to EVM hooks (#1119)
 - Load interpreter segments with correct perms and vaddr (#1120)
 - Fix mistakes in fuzz_x8664_linux binary (#1121)
@@ -35,6 +36,7 @@ Contributors:
 - elicn
 - xwings
 - cq674350529
+- elicn
 - TheZ3ro
 - bet4it
 - chinggg
