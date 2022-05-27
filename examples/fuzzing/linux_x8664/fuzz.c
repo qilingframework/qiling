@@ -10,13 +10,13 @@ int fun(int i)
     char *buf = malloc(SIZE);
     char buf2[SIZE];
 
-    while (*buf = getc(stdin) == 'A')
+    while ((*buf = getc(stdin)) == 'A')
     {
         buf[i++] = *buf;
     }
 
     strncpy(buf2, buf, i);
-    printf(buf2);
+    puts(buf2);
 
     return 0;
 }

@@ -1,1 +1,6 @@
-<?xml version="1.0"?><!DOCTYPE target SYSTEM "gdb-target.dtd"><target><architecture>i8086</architecture><xi:include href="i386-32bit.xml"/></target>
+<?xml version="1.0"?>
+<!DOCTYPE target SYSTEM "gdb-target.dtd">
+<target xmlns:xi="http://www.w3.org/2001/XInclude">
+    <architecture>i8086</architecture>
+    <xi:include href="i386-32bit.xml"/>
+</target>

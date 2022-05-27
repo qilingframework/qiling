@@ -14,7 +14,7 @@ from qiling.os.windows.fncc import *
     'dwFlsIndex' : DWORD
 })
 def hook_FlsFree(ql: Qiling, address: int, params):
-    return ql.os.fiber_manager.free(params['dwFlsIndex'])
+    return int(ql.os.fiber_manager.free(params['dwFlsIndex']))
 
 # LPVOID FlsGetValue(
 #  DWORD dwFlsIndex
@@ -25,7 +25,7 @@ def hook_FlsFree(ql: Qiling, address: int, params):
 def hook_FlsGetValue(ql: Qiling, address: int, params):
     return ql.os.fiber_manager.get(params['dwFlsIndex'])
 
-# LPVOID FlsSetValue(
+# BOOL FlsSetValue(
 #  DWORD dwFlsIndex
 #  PVOID lpFlsData
 # );
@@ -34,7 +34,7 @@ def hook_FlsGetValue(ql: Qiling, address: int, params):
     'lpFlsData'  : PVOID
 })
 def hook_FlsSetValue(ql: Qiling, address: int, params):
-    return ql.os.fiber_manager.set(params['dwFlsIndex'], params['lpFlsData'])
+    return int(ql.os.fiber_manager.set(params['dwFlsIndex'], params['lpFlsData']))
 
 # DWORD FlsAlloc(
 #  PFLS_CALLBACK_FUNCTION lpCallback
@@ -43,10 +43,6 @@ def hook_FlsSetValue(ql: Qiling, address: int, params):
     'lpCallback' : PFLS_CALLBACK_FUNCTION
 })
 def hook_FlsAlloc(ql: Qiling, address: int, params):
-    # global cb = params['lpCallback']
     cb = params['lpCallback']
 
-    if cb:
-        return ql.os.fiber_manager.alloc(cb)
-    else:
-        return ql.os.fiber_manager.alloc()
+    return ql.os.fiber_manager.alloc(cb or None)

@@ -4,12 +4,11 @@
 #
 
 import os, re
-from typing import Any, Callable, List, MutableSequence, Optional, Sequence, Tuple
+from typing import Any, Callable, Iterator, List, Mapping, MutableSequence, Optional, Pattern, Sequence, Tuple, Union
 
 from unicorn import UC_PROT_NONE, UC_PROT_READ, UC_PROT_WRITE, UC_PROT_EXEC, UC_PROT_ALL
 
 from qiling import Qiling
-from qiling.const import *
 from qiling.exception import *
 
 # tuple: range start, range end, permissions mask, range label, is mmio?
@@ -35,10 +34,10 @@ class QlMemoryManager:
             16 : (1 << 20) - 1   # 20bit address line
         }
 
-        if ql.archbit not in bit_stuff:
+        if ql.arch.bits not in bit_stuff:
             raise QlErrorStructConversion("Unsupported Qiling archtecture for memory manager")
 
-        max_addr = bit_stuff[ql.archbit]
+        max_addr = bit_stuff[ql.arch.bits]
 
         self.max_addr = max_addr
         self.max_mem_addr = max_addr
@@ -128,8 +127,8 @@ class QlMemoryManager:
 
         self.map_info = tmp_map_info
 
-    def change_mapinfo(self, mem_s: int, mem_e: int, mem_p: int = None, mem_info: str = None):
-        tmp_map_info: MapInfoEntry = None
+    def change_mapinfo(self, mem_s: int, mem_e: int, mem_p: Optional[int] = None, mem_info: Optional[str] = None):
+        tmp_map_info: Optional[MapInfoEntry] = None
         info_idx: int = None
 
         for idx, map_info in enumerate(self.map_info):
@@ -150,12 +149,12 @@ class QlMemoryManager:
         if mem_info is not None:
             self.map_info[info_idx] = (tmp_map_info[0], tmp_map_info[1], tmp_map_info[2], mem_info, tmp_map_info[4])
 
-    def get_mapinfo(self) -> Sequence[Tuple[int, int, str, str, Optional[str]]]:
+    def get_mapinfo(self) -> Sequence[Tuple[int, int, str, str, str]]:
         """Get memory map info.
 
         Returns: A sequence of 5-tuples representing the memory map entries. Each
         tuple contains range start, range end, permissions, range label and path of
-        containing image (or None if not contained by any image)
+        containing image (or an empty string if not contained by any image)
         """
 
         def __perms_mapping(ps: int) -> str:
@@ -167,43 +166,66 @@ class QlMemoryManager:
 
             return ''.join(val if idx & ps else '-' for idx, val in perms_d.items())
 
-        def __process(lbound: int, ubound: int, perms: int, label: str, is_mmio: bool) -> Tuple[int, int, str, str, Optional[str]]:
+        def __process(lbound: int, ubound: int, perms: int, label: str, is_mmio: bool) -> Tuple[int, int, str, str, str]:
             perms_str = __perms_mapping(perms)
 
-            if hasattr(self.ql, 'os'):
-                image = self.ql.os.find_containing_image(lbound)
-                container = image.path if image and not is_mmio else None
+            if hasattr(self.ql, 'loader'):
+                image = self.ql.loader.find_containing_image(lbound)
+                container = image.path if image and not is_mmio else ''
             else:
-                container = None
+                container = ''
 
             return (lbound, ubound, perms_str, label, container)
 
         return tuple(__process(*entry) for entry in self.map_info)
 
-    def show_mapinfo(self):
-        """Emit memory map info in a nicely formatted table.
+    def get_formatted_mapinfo(self) -> Sequence[str]:
+        """Get memory map info in a nicely formatted table.
         """
 
-        # emit title row
-        self.ql.log.info(f'{"Start":8s}   {"End":8s}   {"Perm":5s}   {"Label":12s}   {"Image"}')
+        mapinfo = self.get_mapinfo()
 
-        # emit table rows
-        for lbound, ubound, perms, label, container in self.get_mapinfo():
-            self.ql.log.info(f'{lbound:08x} - {ubound:08x}   {perms:5s}   {label:12s}   {container or ""}')
+        # determine columns sizes based on the longest value for each field
+        lengths = ((len(f'{ubound:#x}'), len(label)) for _, ubound, _, label, _ in mapinfo)
+        grouped = tuple(zip(*lengths))
+
+        len_addr  = max(grouped[0])
+        len_label = max(grouped[1])
+
+        # pre-allocate table
+        table = [''] * (len(mapinfo) + 1)
+
+        # add title row
+        table[0] = f'{"Start":{len_addr}s}   {"End":{len_addr}s}   {"Perm":5s}   {"Label":{len_label}s}   {"Image"}'
+
+        # add table rows
+        for i, (lbound, ubound, perms, label, container) in enumerate(mapinfo, 1):
+            table[i] = f'{lbound:0{len_addr}x} - {ubound:0{len_addr}x}   {perms:5s}   {label:{len_label}s}   {container}'
+
+        return table
 
     # TODO: relying on the label string is risky; find a more reliable method
-    def get_lib_base(self, filename: str) -> int:
-        return next((s for s, _, _, info, _ in self.map_info if os.path.split(info)[1] == filename), -1)
+    def get_lib_base(self, filename: str) -> Optional[int]:
+        # regex pattern to capture boxed labels prefixes
+        p = re.compile(r'^\[.+\]\s*')
 
-    def align(self, value: int, alignment: int = None) -> int:
-        """Align a value down to the specified alignment boundary.
+        # some info labels may be prefixed by boxed label which breaks the search by basename.
+        # iterate through all info labels and remove all boxed prefixes, if any
+        stripped = ((lbound, p.sub('', info)) for lbound, _, _, info, _ in self.map_info)
+
+        return next((lbound for lbound, info in stripped if os.path.basename(info) == filename), None)
+
+    def align(self, value: int, alignment: Optional[int] = None) -> int:
+        """Align a value down to the specified alignment boundary. If `value` is already
+        aligned, the same value is returned. Commonly used to determine the base address
+        of the enclosing page.
 
         Args:
             value: a value to align
-            alignment: alignment boundary; must be a power of 2. if not specified
-            value will be aligned to page size
+            alignment: alignment boundary; must be a power of 2. if not specified value
+            will be aligned to page size
 
-        Returns: aligned value
+        Returns: value aligned down to boundary
         """
 
         if alignment is None:
@@ -215,15 +237,17 @@ class QlMemoryManager:
         # round down to nearest alignment
         return value & ~(alignment - 1)
 
-    def align_up(self, value: int, alignment: int = None) -> int:
-        """Align a value up to the specified alignment boundary.
+    def align_up(self, value: int, alignment: Optional[int] = None) -> int:
+        """Align a value up to the specified alignment boundary. If `value` is already
+        aligned, the same value is returned. Commonly used to determine the end address
+        of the enlosing page.
 
         Args:
             value: value to align
-            alignment: alignment boundary; must be a power of 2. if not specified
-            value will be aligned to page size
+            alignment: alignment boundary; must be a power of 2. if not specified value
+            will be aligned to page size
 
-        Returns: aligned value
+        Returns: value aligned up to boundary
         """
 
         if alignment is None:
@@ -261,7 +285,7 @@ class QlMemoryManager:
             self.ql.log.debug(f'restoring memory range: {lbound:#08x} {ubound:#08x} {label}')
 
             size = ubound - lbound
-            if not self.is_mapped(lbound, size):
+            if self.is_available(lbound, size):
                 self.ql.log.debug(f'mapping {lbound:#08x} {ubound:#08x}, mapsize = {size:#x}')
                 self.map(lbound, size, perms, label)
 
@@ -286,18 +310,19 @@ class QlMemoryManager:
 
         return self.ql.uc.mem_read(addr, size)
 
-    def read_ptr(self, addr: int, size: int=None) -> int:
+    def read_ptr(self, addr: int, size: int = 0) -> int:
         """Read an integer value from a memory address.
+        Bytes read will be unpacked using emulated architecture properties.
 
         Args:
             addr: memory address to read
-            size: pointer size (in bytes): either 1, 2, 4, 8, or None for arch native size
+            size: pointer size (in bytes): either 1, 2, 4, 8, or 0 for arch native size
 
         Returns: integer value stored at the specified memory address
         """
 
         if not size:
-            size = self.ql.pointersize
+            size = self.ql.arch.pointersize
 
         __unpack = {
             1 : self.ql.unpack8,
@@ -306,10 +331,10 @@ class QlMemoryManager:
             8 : self.ql.unpack64
         }.get(size)
 
-        if __unpack:
-            return __unpack(self.read(addr, size))
+        if __unpack is None:
+            raise QlErrorStructConversion(f"Unsupported pointer size: {size}")
 
-        raise QlErrorStructConversion(f"Unsupported pointer size: {size}")
+        return __unpack(self.read(addr, size))
 
     def write(self, addr: int, data: bytes) -> None:
         """Write bytes to a memory.
@@ -321,18 +346,43 @@ class QlMemoryManager:
 
         self.ql.uc.mem_write(addr, data)
 
-    def search(self, needle: bytes, begin: int = None, end: int = None) -> Sequence[int]:
+    def write_ptr(self, addr: int, value: int, size: int = 0) -> None:
+        """Write an integer value to a memory address.
+        Bytes written will be packed using emulated architecture properties.
+
+        Args:
+            addr: target memory address
+            value: integer value to write
+            size: pointer size (in bytes): either 1, 2, 4, 8, or 0 for arch native size
+        """
+
+        if not size:
+            size = self.ql.arch.pointersize
+
+        __pack = {
+            1 : self.ql.pack8,
+            2 : self.ql.pack16,
+            4 : self.ql.pack32,
+            8 : self.ql.pack64
+        }.get(size)
+
+        if __pack is None:
+            raise QlErrorStructConversion(f"Unsupported pointer size: {size}")
+
+        self.write(addr, __pack(value))
+
+    def search(self, needle: Union[bytes, Pattern[bytes]], begin: Optional[int] = None, end: Optional[int] = None) -> Sequence[int]:
         """Search for a sequence of bytes in memory.
 
         Args:
-            needle: bytes sequence to look for
+            needle: bytes sequence or regex pattern to look for
             begin: search starting address (or None to start at lowest avaiable address)
             end: search ending address (or None to end at highest avaiable address)
 
         Returns: addresses of all matches
         """
 
-        # if starting point not set, search from the first mapped region 
+        # if starting point not set, search from the first mapped region
         if begin is None:
             begin = self.map_info[0][0]
 
@@ -345,6 +395,10 @@ class QlMemoryManager:
         # narrow the search down to relevant ranges; mmio ranges are excluded due to potential read size effects
         ranges = [(max(begin, lbound), min(ubound, end)) for lbound, ubound, _, _, is_mmio in self.map_info if not (end < lbound or ubound < begin or is_mmio)]
         results = []
+
+        # if needle is a bytes sequence use it verbatim, not as a pattern
+        if type(needle) is bytes:
+            needle = re.escape(needle)
 
         for lbound, ubound in ranges:
             haystack = self.read(lbound, ubound - lbound)
@@ -368,17 +422,41 @@ class QlMemoryManager:
         if (addr, addr + size) in self.mmio_cbs:
             del self.mmio_cbs[(addr, addr+size)]
 
-    def unmap_all(self):
+    def unmap_all(self) -> None:
         """Reclaim the entire memory space.
         """
 
         for begin, end, _ in self.ql.uc.mem_regions():
-            if begin and end:
-                self.unmap(begin, end - begin + 1)
+            self.unmap(begin, end - begin + 1)
+
+    def __mapped_regions(self) -> Iterator[Tuple[int, int]]:
+        """Iterate through all mapped memory regions, consolidating adjacent regions
+        together to a continuous one. Protection bits and labels are ignored.
+        """
+
+        if not self.map_info:
+            return
+
+        iter_memmap = iter(self.map_info)
+
+        p_lbound, p_ubound, _, _, _ = next(iter_memmap)
+
+        # map_info is assumed to contain non-overlapping regions sorted by lbound
+        for lbound, ubound, _, _, _ in iter_memmap:
+            if lbound == p_ubound:
+                p_ubound = ubound
+            else:
+                yield (p_lbound, p_ubound)
+
+                p_lbound = lbound
+                p_ubound = ubound
+
+        yield (p_lbound, p_ubound)
+
 
     def is_available(self, addr: int, size: int) -> bool:
         """Query whether the memory range starting at `addr` and is of length of `size` bytes
-        can be allocated.
+        is available for allocation.
 
         Returns: True if it can be allocated, False otherwise
         """
@@ -389,37 +467,23 @@ class QlMemoryManager:
         end = addr + size
 
         # make sure neither begin nor end are enclosed within a mapped range, or entirely enclosing one
-        return not any((lbound <= begin < ubound) or (lbound < end <= ubound) or (begin <= lbound < ubound <= end) for lbound, ubound, _, _, _ in self.map_info)
+        return not any((lbound <= begin < ubound) or (lbound < end <= ubound) or (begin <= lbound < ubound <= end) for lbound, ubound in self.__mapped_regions())
 
     def is_mapped(self, addr: int, size: int) -> bool:
         """Query whether the memory range starting at `addr` and is of length of `size` bytes
-        is mapped, either partially or entirely.
+        is fully mapped.
 
-        Returns: True if any part of the specified memory range is taken, False otherwise
+        Returns: True if the specified memory range is taken fully, False otherwise
         """
 
-        return not self.is_available(addr, size)
+        assert size > 0, 'expected a positive size value'
 
-    def is_free(self, address, size):
-        '''
-        The main function of is_free first must fufull is_mapped condition.
-        then, check for is the mapped range empty, either fill with 0xFF or 0x00
-        Returns true if mapped range is empty else return Flase
-        If not not mapped, map it and return true
-        '''
-        if self.is_mapped(address, size) == True:
-            address_end = (address + size)
-            while address < address_end:
-                mem_read = self.ql.mem.read(address, 0x1)
-                if (mem_read[0] != 0x00) and (mem_read[0] != 0xFF):
-                    return False
-                address += 1
-            return True
-        else:
-            return True
+        begin = addr
+        end = addr + size
 
+        return any((lbound <= begin < end <= ubound) for lbound, ubound in self.__mapped_regions())
 
-    def find_free_space(self, size: int, minaddr: int = None, maxaddr: int = None, align: int = None) -> int:
+    def find_free_space(self, size: int, minaddr: Optional[int] = None, maxaddr: Optional[int] = None, align: Optional[int] = None) -> int:
         """Locate an unallocated memory that is large enough to contain a range in size of
         `size` and based at `minaddr`.
 
@@ -464,7 +528,7 @@ class QlMemoryManager:
 
         raise QlOutOfMemory('Out Of Memory')
 
-    def map_anywhere(self, size: int, minaddr: int = None, maxaddr: int = None, align: int = None, perms: int = UC_PROT_ALL, info: str = None) -> int:
+    def map_anywhere(self, size: int, minaddr: Optional[int] = None, maxaddr: Optional[int] = None, align: Optional[int] = None, perms: int = UC_PROT_ALL, info: Optional[str] = None) -> int:
         """Map a region anywhere in memory.
 
         Args:
@@ -499,7 +563,7 @@ class QlMemoryManager:
         self.change_mapinfo(aligned_address, aligned_address + aligned_size, mem_p = perms)
 
 
-    def map(self, addr: int, size: int, perms: int = UC_PROT_ALL, info: str = None):
+    def map(self, addr: int, size: int, perms: int = UC_PROT_ALL, info: Optional[str] = None):
         """Map a new memory range.
 
         Args:
@@ -678,7 +742,7 @@ class QlMemoryHeap:
         self.current_alloc = 0
         self.current_use = 0
 
-    def _find(self, addr: int, inuse: bool = None) -> Optional[Chunk]:
+    def _find(self, addr: int, inuse: Optional[bool] = None) -> Optional[Chunk]:
         """Find a chunk starting at a specified address.
 
         Args:

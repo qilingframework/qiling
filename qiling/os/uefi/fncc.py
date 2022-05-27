@@ -11,7 +11,7 @@ from qiling.const import QL_INTERCEPT
 def dxeapi(params: Mapping[str, Any] = {}):
     def decorator(func):
         def wrapper(ql: Qiling):
-            pc = ql.reg.arch_pc
+            pc = ql.arch.regs.arch_pc
             fname = func.__name__
 
             f = ql.os.user_defined_api[QL_INTERCEPT.CALL].get(fname) or func

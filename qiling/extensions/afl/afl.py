@@ -7,7 +7,7 @@ def ql_afl_fuzz(ql: Qiling,
                 input_file: str,
                 place_input_callback: Callable[["Qiling", bytes, int], bool],
                 exits: List[int],
-                validate_crash_callback: Callable[["Qiling", bytes, int], bool] = None,
+                validate_crash_callback: Callable[["Qiling", int, bytes, int], bool] = None,
                 always_validate: bool = False,
                 persistent_iters: int = 1):
         """ Fuzz a range of code with afl++.
@@ -28,13 +28,18 @@ def ql_afl_fuzz(ql: Qiling,
 
         def _ql_afl_place_input_wrapper(uc, input_bytes, iters, data):
             (ql, cb, _) = data
+            if cb:
+                return cb(ql, input_bytes, iters)
+            else:
+                return False
 
-            return cb(ql, input_bytes, iters)
-
-        def _ql_afl_validate_wrapper(uc, input_bytes, iters, data):
+        def _ql_afl_validate_wrapper(uc, result, input_bytes, iters, data):
             (ql, _, cb) = data
 
-            return cb(ql, input_bytes, iters)
+            if cb:
+                return cb(ql, result, input_bytes, iters)
+            else:
+                return False
 
         data = (ql, place_input_callback, validate_crash_callback)
         try:

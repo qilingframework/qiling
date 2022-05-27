@@ -155,7 +155,7 @@ class SmmEnv:
 		# write cpu state to ssa (partially)
 		# that can take place only after smram ranges have been unlocked
 		for ucreg, (width, regidx) in SmmEnv.SSA_REG_MAP.items():
-			val = self.ql.reg.read(ucreg)
+			val = self.ql.arch.regs.read(ucreg)
 
 			pack = {
 				8 : self.ql.pack64,
@@ -189,7 +189,7 @@ class SmmEnv:
 				1 : self.ql.unpack8
 			}[width]
 
-			self.ql.reg.write(ucreg, unpack(data))
+			self.ql.arch.regs.write(ucreg, unpack(data))
 
 		# lock smram ranges for access
 		for lbound, ubound in self.__mapped_smram_ranges():
@@ -217,7 +217,7 @@ class SmmEnv:
 		DispatchHandle	= args['DispatchHandle']
 		Context			= heap.alloc(EFI_SMM_SW_REGISTER_CONTEXT.sizeof())
 		CommBuffer		= heap.alloc(EFI_SMM_SW_CONTEXT.sizeof())
-		CommBufferSize	= heap.alloc(ql.pointersize)
+		CommBufferSize	= heap.alloc(ql.arch.pointersize)
 
 		# setup Context
 		args['RegisterContext'].saveTo(ql, Context)
@@ -237,7 +237,7 @@ class SmmEnv:
 			ql.log.info(f'Leaving SWSMI handler {idx:#04x}')
 
 			# unwind ms64 shadow space
-			ql.reg.arch_sp += (4 * ql.pointersize)
+			ql.arch.regs.arch_sp += (4 * ql.arch.pointersize)
 
 			# release handler resources
 			heap.free(DispatchHandle)
@@ -256,7 +256,7 @@ class SmmEnv:
 				onexit(ql)
 
 		# hook returning from swsmi handler
-		cleanup_trap = heap.alloc(ql.pointersize)
+		cleanup_trap = heap.alloc(ql.arch.pointersize)
 		hret = ql.hook_address(__cleanup, cleanup_trap)
 
 		ql.log.info(f'Entering SWSMI handler {idx:#04x}')

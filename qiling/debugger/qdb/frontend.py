@@ -54,10 +54,10 @@ def examine_mem(ql: Qiling, line: str) -> Union[bool, (str, int, int)]:
     else:
         rest = _args
 
-    if ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB):
+    if ql.arch.type == QL_ARCH.ARM:
         rest = rest.replace("fp", "r11")
 
-    elif ql.archtype == QL_ARCH.MIPS:
+    elif ql.arch.type == QL_ARCH.MIPS:
         rest = rest.replace("fp", "s8")
 
     # for supporting addition of register with constant value
@@ -66,8 +66,8 @@ def examine_mem(ql: Qiling, line: str) -> Union[bool, (str, int, int)]:
 
     items = []
     for elem in elems:
-        if elem in ql.reg.register_mapping.keys():
-            items.append(getattr(ql.reg, elem, None))
+        if elem in ql.arch.regs.register_mapping.keys():
+            items.append(getattr(ql.arch.regs, elem, None))
         else:
             items.append(read_int(elem))
 
@@ -108,8 +108,8 @@ def examine_mem(ql: Qiling, line: str) -> Union[bool, (str, int, int)]:
             offset = line * sz * 4
             print(f"0x{addr+offset:x}:\t", end="")
 
-            idx = line * ql.pointersize
-            for each in mem_read[idx:idx+ql.pointersize]:
+            idx = line * ql.arch.pointersize
+            for each in mem_read[idx:idx+ql.arch.pointersize]:
                 data = unpack(each, sz)
                 prefix = "0x" if ft in ("x", "a") else ""
                 pad = '0' + str(sz*2) if ft in ('x', 'a', 't') else ''
@@ -119,11 +119,6 @@ def examine_mem(ql: Qiling, line: str) -> Union[bool, (str, int, int)]:
             print()
 
     return True
-
-
-# get terminal window height and width
-def get_terminal_size() -> Iterable:
-    return map(int, os.popen('stty size', 'r').read().split())
 
 
 # try to read data from ql memory
@@ -145,23 +140,23 @@ def _try_read(ql: Qiling, address: int, size: int) -> Optional[bytes]:
 
 
 """
-
     Context Manager for rendering UI
-
 """
 
 COLORS = (color.DARKCYAN, color.BLUE, color.RED, color.YELLOW, color.GREEN, color.PURPLE, color.CYAN, color.WHITE)
 
 # decorator function for printing divider
-def context_printer(field_name, ruler="─"):
+def context_printer(title: str, *, footer: bool = False, ruler="─"):
     def decorator(context_dumper):
         def wrapper(*args, **kwargs):
-            height, width = get_terminal_size()
-            bar = (width - len(field_name)) // 2 - 1
-            print(ruler * bar, field_name, ruler * bar)
+            cols, _ = os.get_terminal_size()
+
+            print(title.center(cols, ruler))
             context_dumper(*args, **kwargs)
-            if "DISASM" in field_name:
-                print(ruler * width)
+
+            if footer:
+                print(ruler * cols)
+
         return wrapper
     return decorator
 
@@ -170,10 +165,9 @@ def setup_ctx_manager(ql: Qiling) -> CtxManager:
     return {
             QL_ARCH.X86: CtxManager_X86,
             QL_ARCH.ARM: CtxManager_ARM,
-            QL_ARCH.ARM_THUMB: CtxManager_ARM,
             QL_ARCH.CORTEX_M: CtxManager_ARM,
             QL_ARCH.MIPS: CtxManager_MIPS,
-            }.get(ql.archtype)(ql)
+            }.get(ql.arch.type)(ql)
 
 
 class CtxManager(object):
@@ -184,13 +178,13 @@ class CtxManager(object):
     def print_asm(self, insn: CsInsn, to_jump: Optional[bool] = None, address: int = None) -> None:
 
         opcode = "".join(f"{b:02x}" for b in insn.bytes)
-        if self.ql.archtype in (QL_ARCH.X86, QL_ARCH.X8664):
+        if self.ql.arch.type in (QL_ARCH.X86, QL_ARCH.X8664):
             trace_line = f"0x{insn.address:08x} │ {opcode:20s} {insn.mnemonic:10} {insn.op_str:35s}"
         else:
             trace_line = f"0x{insn.address:08x} │ {opcode:10s} {insn.mnemonic:10} {insn.op_str:35s}"
 
         cursor = " "
-        if self.ql.reg.arch_pc == insn.address:
+        if self.ql.arch.regs.arch_pc == insn.address:
             cursor = "►"
 
         jump_sign = " "
@@ -200,7 +194,7 @@ class CtxManager(object):
         print(f"{jump_sign}  {cursor}   {color.DARKGRAY}{trace_line}{color.END}")
 
     def dump_regs(self):
-        return {reg_name: getattr(self.ql.reg, reg_name) for reg_name in self.regs}
+        return {reg_name: getattr(self.ql.arch.regs, reg_name) for reg_name in self.regs}
 
     def context_reg(self, saved_states):
         return NotImplementedError
@@ -209,12 +203,12 @@ class CtxManager(object):
     def context_stack(self):
 
         for idx in range(10):
-            addr = self.ql.reg.arch_sp + idx * self.ql.pointersize
-            if (val := _try_read(self.ql, addr, self.ql.pointersize)[0]):
-                print(f"$sp+0x{idx*self.ql.pointersize:02x}│ [0x{addr:08x}] —▸ 0x{self.ql.unpack(val):08x}", end="")
+            addr = self.ql.arch.regs.arch_sp + idx * self.ql.arch.pointersize
+            if (val := _try_read(self.ql, addr, self.ql.arch.pointersize)[0]):
+                print(f"$sp+0x{idx*self.ql.arch.pointersize:02x}│ [0x{addr:08x}] —▸ 0x{self.ql.unpack(val):08x}", end="")
 
             # try to dereference wether it's a pointer
-            if (buf := _try_read(self.ql, addr, self.ql.pointersize))[0] is not None:
+            if (buf := _try_read(self.ql, addr, self.ql.arch.pointersize))[0] is not None:
 
                 if (addr := self.ql.unpack(buf[0])):
 
@@ -231,11 +225,11 @@ class CtxManager(object):
                             print(f" ◂— 0x{self.ql.unpack(buf[0]):08x}", end="")
             print()
 
-    @context_printer("[ DISASM ]")
+    @context_printer("[ DISASM ]", footer=True)
     def context_asm(self):
         # assembly before current location
         past_list = []
-        cur_addr = self.ql.reg.arch_pc
+        cur_addr = self.ql.arch.regs.arch_pc
 
         line = disasm(self.ql, cur_addr-0x10)
 
@@ -341,7 +335,7 @@ class CtxManager_ARM(CtxManager):
             lines += line
 
         print(lines.format(*cur_regs.values()))
-        print(color.GREEN, "[{cpsr[mode]} mode], Thumb: {cpsr[thumb]}, FIQ: {cpsr[fiq]}, IRQ: {cpsr[irq]}, NEG: {cpsr[neg]}, ZERO: {cpsr[zero]}, Carry: {cpsr[carry]}, Overflow: {cpsr[overflow]}".format(cpsr=self.get_flags(self.ql.reg.cpsr)), color.END, sep="")
+        print(color.GREEN, "[{cpsr[mode]} mode], Thumb: {cpsr[thumb]}, FIQ: {cpsr[fiq]}, IRQ: {cpsr[irq]}, NEG: {cpsr[neg]}, ZERO: {cpsr[zero]}, Carry: {cpsr[carry]}, Overflow: {cpsr[overflow]}".format(cpsr=self.get_flags(self.ql.arch.regs.cpsr)), color.END, sep="")
 
 
 class CtxManager_MIPS(CtxManager):
@@ -395,7 +389,7 @@ class CtxManager_X86(CtxManager):
                 "eax", "ebx", "ecx", "edx",
                 "esp", "ebp", "esi", "edi",
                 "eip", "ss", "cs", "ds", "es",
-                "fs", "gs", "ef",
+                "fs", "gs", "eflags",
                 )
     @context_printer("[ REGISTERS ]")
     def context_reg(self, saved_reg_dump):
@@ -422,12 +416,12 @@ class CtxManager_X86(CtxManager):
             lines += line
 
         print(lines.format(*cur_regs.values()))
-        print(color.GREEN, "EFLAGS: [CF: {flags[CF]}, PF: {flags[PF]}, AF: {flags[AF]}, ZF: {flags[ZF]}, SF: {flags[SF]}, OF: {flags[OF]}]".format(flags=get_x86_eflags(self.ql.reg.ef)), color.END, sep="")
+        print(color.GREEN, "EFLAGS: [CF: {flags[CF]}, PF: {flags[PF]}, AF: {flags[AF]}, ZF: {flags[ZF]}, SF: {flags[SF]}, OF: {flags[OF]}]".format(flags=get_x86_eflags(self.ql.arch.regs.eflags)), color.END, sep="")
 
-    @context_printer("[ DISASM ]")
+    @context_printer("[ DISASM ]", footer=True)
     def context_asm(self):
         past_list = []
-        cur_addr = self.ql.reg.arch_pc
+        cur_addr = self.ql.arch.regs.arch_pc
 
         cur_insn = disasm(self.ql, cur_addr)
         prophecy = self.predictor.predict()
@@ -499,9 +493,8 @@ class CtxManager_CORTEX_M(CtxManager):
             lines += line
 
         print(lines.format(cur_regs.values()))
-        print(color.GREEN, "[{cpsr[mode]} mode], Thumb: {cpsr[thumb]}, FIQ: {cpsr[fiq]}, IRQ: {cpsr[irq]}, NEG: {cpsr[neg]}, ZERO: {cpsr[zero]}, Carry: {cpsr[carry]}, Overflow: {cpsr[overflow]}".format(cpsr=get_arm_flags(self.ql.reg.cpsr)), color.END, sep="")
+        print(color.GREEN, "[{cpsr[mode]} mode], Thumb: {cpsr[thumb]}, FIQ: {cpsr[fiq]}, IRQ: {cpsr[irq]}, NEG: {cpsr[neg]}, ZERO: {cpsr[zero]}, Carry: {cpsr[carry]}, Overflow: {cpsr[overflow]}".format(cpsr=get_arm_flags(self.ql.arch.regs.cpsr)), color.END, sep="")
 
 
 if __name__ == "__main__":
     pass
-

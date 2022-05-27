@@ -16,14 +16,11 @@ ROOTFS = r"rootfs/x86_linux"
 
 class Solver:
     def __init__(self, invalid: bytes):
-        mock_stdin = pipe.SimpleInStream(sys.stdin.fileno())
-        mock_stdout = pipe.NullOutStream(sys.stdout.fileno())
-
         # create a silent qiling instance
-        self.ql = Qiling([rf"{ROOTFS}/bin/crackme_linux"], ROOTFS,
-            verbose=QL_VERBOSE.OFF, # thwart qiling logger output
-            stdin=mock_stdin,       # take over the input to the program using a fake stdin
-            stdout=mock_stdout)     # disregard program output
+        self.ql = Qiling([rf"{ROOTFS}/bin/crackme_linux"], ROOTFS, verbose=QL_VERBOSE.OFF)
+
+        self.ql.os.stdin = pipe.SimpleInStream(sys.stdin.fileno())  # take over the input to the program using a fake stdin
+        self.ql.os.stdout = pipe.NullOutStream(sys.stdout.fileno()) # disregard program output
 
         # execute program until it reaches the 'main' function
         self.ql.run(end=0x0804851b)
@@ -32,7 +29,7 @@ class Solver:
         #
         # since the emulation halted upon entering 'main', its return address is there on
         # the stack. we use it to limit the emulation till function returns
-        self.replay_starts = self.ql.reg.arch_pc
+        self.replay_starts = self.ql.arch.regs.arch_pc
         self.replay_ends = self.ql.stack_read(0)
 
         # instead of restarting the whole program every time a new flag character is guessed,
@@ -92,21 +89,26 @@ class Solver:
 
         return False
 
+def progress(msg: str) -> None:
+    print(msg, end='\r', file=sys.stderr, flush=True)
+
 def main():
-    idx_list = (1, 4, 2, 0, 3)
-    flag = [0] * len(idx_list)
+    flag = bytearray(b'*****')
+    indices = (1, 4, 2, 0, 3)
 
-    solver = Solver(bytes(flag))
+    # all possible flag characters (may be reduced to uppercase and digits to save time)
+    charset = string.printable
 
-    for idx in idx_list:
+    progress('Initializing...')
+    solver = Solver(flag)
 
-        # bruteforce all possible flag characters
-        for ch in string.printable:
-            flag[idx] = ord(ch)
+    for i in indices:
+        for ch in charset:
+            flag[i] = ord(ch)
 
-            print(f'Guessing... [{"".join(chr(ch) if ch else "_" for ch in flag)}]', end='\r', file=sys.stderr, flush=True)
+            progress(f'Guessing... {flag.decode()}')
 
-            if solver.replay(bytes(flag)):
+            if solver.replay(flag):
                 break
 
         else:
@@ -116,3 +118,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+# expected flag: L1NUX

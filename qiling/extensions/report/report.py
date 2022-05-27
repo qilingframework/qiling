@@ -12,11 +12,11 @@ class Report:
     def __init__(self, ql):
         self.filename = ql.argv
         self.rootfs = ql.rootfs
-        self.arch = list(arch_map.keys())[list(arch_map.values()).index(ql.archtype)]
-        self.os = list(os_map.keys())[list(os_map.values()).index(ql.ostype)]
+        self.arch = ql.arch.type.name
+        self.os = ql.os.type.name
         self.env = ql.env
         self.strings = set()
-        for string in ql.os.utils.appeared_strings:
+        for string in ql.os.stats.strings:
             strings = string.split(" ")
             self.strings |= set(strings)
         self.profile = {}
@@ -31,7 +31,7 @@ class Report:
 class WindowsReport(Report):
     def __init__(self, ql):
         super().__init__(ql)
-        self.dlls = ql.loader.dlls
+
         self.teb_address = ql.loader.TEB.base
         self.peb_address = ql.loader.PEB.base
         self.ldr_address = ql.loader.LDR.base
@@ -54,7 +54,7 @@ class WindowsReport(Report):
 
 
 def generate_report(ql, pretty_print=False) -> dict:
-    if ql.ostype == QL_OS.WINDOWS:
+    if ql.os.type == QL_OS.WINDOWS:
         report = WindowsReport(ql)
     else:
         report = Report(ql)
