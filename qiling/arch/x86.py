@@ -109,7 +109,10 @@ class QlArchX8664(QlArchIntel):
             **x86_const.reg_map_64_b,
             **x86_const.reg_map_64_w,
             **x86_const.reg_map_64_d,
-            **x86_const.reg_map_seg_base
+            **x86_const.reg_map_seg_base,
+            **x86_const.reg_map_xmm,
+            **x86_const.reg_map_ymm,
+            **x86_const.reg_map_zmm
         )
 
         pc_reg = 'rip'
