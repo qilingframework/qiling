@@ -41,7 +41,11 @@ class QlArchARM(QlArch):
 
     @cached_property
     def regs(self) -> QlRegisterManager:
-        regs_map = arm_const.reg_map
+        regs_map = dict(
+            **arm_const.reg_map,
+            **arm_const.reg_vfp
+        )
+
         pc_reg = 'pc'
         sp_reg = 'sp'
 
