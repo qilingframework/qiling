@@ -10,7 +10,7 @@ VERSION = "1.4.3" + "-dev"
 requirements = [
     "capstone>=4.0.1",
     "unicorn>=2.0.0-rc7",
-    "pefile @ https://github.com/erocarrera/pefile/archive/refs/heads/master.zip",
+    "pefile>=2022.5.30",
     "python-registry>=1.3.1",
     "keystone-engine>=0.9.2",
     "pyelftools>=0.28",
