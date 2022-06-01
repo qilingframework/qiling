@@ -5,7 +5,8 @@
 from setuptools import setup, find_packages
 
 # NOTE: use "-dev" for dev branch
-VERSION = "1.4.3" + "-dev"
+#VERSION = "1.4.3" + "-dev"
+VERSION = "1.4.3"
 
 requirements = [
     "capstone>=4.0.1",
@@ -65,8 +66,8 @@ setup(
         # How mature is this project? Common values are
         #   3 - Alpha
         #   5 - Production/Stable
-        #'Development Status :: 5 - Production/Stable',
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 5 - Production/Stable',
+        #'Development Status :: 3 - Alpha',
 
         # Indicate who your project is intended for
         'Intended Audience :: Developers',
