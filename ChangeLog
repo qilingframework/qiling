@@ -1,7 +1,11 @@
 This file details the changelog of Qiling Framework.
 
 ------------------------------------
-[Version 1.4.3]: May 27th, 2022
+[Version 1.4.4]: July XX, 2022
+
+
+------------------------------------
+[Version 1.4.3]: June 1st, 2022
 
 New features:
 - Introduce PowerPC architecture support (#1140)
