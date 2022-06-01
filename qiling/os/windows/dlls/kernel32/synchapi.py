@@ -136,7 +136,7 @@ def hook_WaitForMultipleObjects(ql: Qiling, address: int, params):
     lpHandles = params["lpHandles"]
 
     for i in range(nCount):
-        handle_value = ql.unpack(ql.mem.read(lpHandles + i * ql.pointersize, ql.pointersize))
+        handle_value = ql.unpack(ql.mem.read(lpHandles + i * ql.arch.pointersize, ql.arch.pointersize))
 
         if handle_value:
             thread = ql.os.handle_manager.get(handle_value).obj

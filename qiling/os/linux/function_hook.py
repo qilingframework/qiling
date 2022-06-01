@@ -68,78 +68,90 @@ class HookFunc:
 
     def get_ret_pc(self):
         # ARM
-        if self.ql.archtype== QL_ARCH.ARM:
-            return self.ql.reg.lr
+        if self.ql.arch.type == QL_ARCH.ARM:
+            return self.ql.arch.regs.lr
 
         # MIPS32
-        elif self.ql.archtype== QL_ARCH.MIPS:
-            return self.ql.reg.ra
+        elif self.ql.arch.type == QL_ARCH.MIPS:
+            return self.ql.arch.regs.ra
 
         # ARM64
-        elif self.ql.archtype== QL_ARCH.ARM64:
-            return self.ql.reg.x30
+        elif self.ql.arch.type == QL_ARCH.ARM64:
+            return self.ql.arch.regs.x30
+
+        # PPC
+        elif self.ql.arch.type== QL_ARCH.PPC:
+            return self.ql.arch.regs.lr
 
         # X86
-        elif  self.ql.archtype== QL_ARCH.X86:
-            return self.ql.unpack(self.ql.mem.read(self.ql.reg.esp, self.ql.pointersize))
+        elif  self.ql.arch.type == QL_ARCH.X86:
+            return self.ql.unpack(self.ql.mem.read(self.ql.arch.regs.esp, self.ql.arch.pointersize))
 
         # X8664
-        elif  self.ql.archtype== QL_ARCH.X8664:
-            return self.ql.unpack(self.ql.mem.read(self.ql.reg.rsp, self.ql.pointersize))
+        elif  self.ql.arch.type == QL_ARCH.X8664:
+            return self.ql.unpack(self.ql.mem.read(self.ql.arch.regs.rsp, self.ql.arch.pointersize))
         else:
             raise
 
     def context_fixup(self):
         # ARM
-        if self.ql.archtype== QL_ARCH.ARM:
+        if self.ql.arch.type == QL_ARCH.ARM:
             pass
 
         # MIPS32
-        elif self.ql.archtype== QL_ARCH.MIPS:
+        elif self.ql.arch.type == QL_ARCH.MIPS:
+            pass
+
+        # PPC
+        elif self.ql.arch.type== QL_ARCH.PPC:
             pass
 
         # ARM64
-        elif self.ql.archtype== QL_ARCH.ARM64:
+        elif self.ql.arch.type == QL_ARCH.ARM64:
             pass
 
         # X86
-        elif  self.ql.archtype== QL_ARCH.X86:
-            self.ql.reg.esp = self.ql.reg.esp + self.ql.pointersize
+        elif  self.ql.arch.type == QL_ARCH.X86:
+            self.ql.arch.regs.esp = self.ql.arch.regs.esp + self.ql.arch.pointersize
 
         # X8664
-        elif  self.ql.archtype== QL_ARCH.X8664:
-            self.ql.reg.rsp = self.ql.reg.rsp + self.ql.pointersize
+        elif  self.ql.arch.type == QL_ARCH.X8664:
+            self.ql.arch.regs.rsp = self.ql.arch.regs.rsp + self.ql.arch.pointersize
         else:
             raise
 
     def set_ret(self, addr):
         # ARM
-        if self.ql.archtype== QL_ARCH.ARM:
-            self.ql.reg.lr = addr
+        if self.ql.arch.type == QL_ARCH.ARM:
+            self.ql.arch.regs.lr = addr
 
         # MIPS32
-        elif self.ql.archtype== QL_ARCH.MIPS:
-            self.ql.reg.ra = addr
+        elif self.ql.arch.type == QL_ARCH.MIPS:
+            self.ql.arch.regs.ra = addr
+
+        # PPC
+        elif self.ql.arch.type== QL_ARCH.PPC:
+            self.ql.arch.regs.lr = addr
 
         # ARM64
-        elif self.ql.archtype== QL_ARCH.ARM64:
-            self.ql.mem.write(self.ql.reg.sp, self.ql.pack(addr))
+        elif self.ql.arch.type == QL_ARCH.ARM64:
+            self.ql.arch.stack_write(0, addr)
 
         # X86
-        elif  self.ql.archtype== QL_ARCH.X86:
-            self.ql.mem.write(self.ql.reg.esp, self.ql.pack(addr))
+        elif  self.ql.arch.type == QL_ARCH.X86:
+            self.ql.arch.stack_write(0, addr)
 
         # X8664
-        elif  self.ql.archtype== QL_ARCH.X8664:
-            self.ql.mem.write(self.ql.reg.rsp, self.ql.pack(addr))
+        elif  self.ql.arch.type == QL_ARCH.X8664:
+            self.ql.arch.stack_write(0, addr)
         else:
             raise
 
     def call_enter(self):
-        # if self.ql.archtype == QL_ARCH.ARM or self.ql.archtype == QL_ARCH.ARM64:
-        #     self.ql.reg.arch_pc = self.ql.reg.arch_pc + 4
+        # if self.ql.arch.type == QL_ARCH.ARM or self.ql.arch.type == QL_ARCH.ARM64:
+        #     self.ql.arch.regs.arch_pc = self.ql.arch.regs.arch_pc + 4
 
-        next_pc = self.ql.unpack(self.ql.mem.read(self.hook_data_ptr, self.ql.pointersize))
+        next_pc = self.ql.unpack(self.ql.mem.read(self.hook_data_ptr, self.ql.arch.pointersize))
         self.ret_pc = self.get_ret_pc()
         onenter_cb = None
         onenter_userdata = None
@@ -168,37 +180,14 @@ class HookFunc:
                     cb(self.ql, userdata)
             else:
                 self.set_ret(self.exit_addr)
-                self.ql.reg.arch_pc = next_pc
+                self.ql.arch.regs.arch_pc = next_pc
 
         else:
             self.context_fixup()
     
-    def ret(self):
-        # ARM
-        if self.ql.archtype== QL_ARCH.ARM:
-            self.ql.reg.arch_pc = self.ret_pc
-
-        # MIPS32
-        elif self.ql.archtype== QL_ARCH.MIPS:
-            self.ql.reg.arch_pc = self.ret_pc
-
-        # ARM64
-        elif self.ql.archtype== QL_ARCH.ARM64:
-            self.ql.reg.arch_pc = self.ret_pc
-
-        # X86
-        elif  self.ql.archtype== QL_ARCH.X86:
-            self.ql.reg.arch_pc = self.ret_pc
-
-        # X8664
-        elif  self.ql.archtype== QL_ARCH.X8664:
-            self.ql.reg.arch_pc = self.ret_pc
-        else:
-            raise
-
     def call_exit(self):
-        # if self.ql.archtype == QL_ARCH.ARM or self.ql.archtype == QL_ARCH.ARM64:
-        #     self.ql.reg.arch_pc = self.ql.reg.arch_pc + 4
+        # if self.ql.arch.type == QL_ARCH.ARM or self.ql.arch.type == QL_ARCH.ARM64:
+        #     self.ql.arch.regs.arch_pc = self.ql.arch.regs.arch_pc + 4
         onexit_cb = None
         onexit_userdata = None
 
@@ -211,7 +200,7 @@ class HookFunc:
             else:
                 onexit_cb(self.ql, onexit_userdata)
 
-        self.ret()
+        self.ql.arch.regs.arch_pc = self.ret_pc
 
 
 class HookFuncRel(HookFunc):
@@ -241,10 +230,10 @@ class HookFuncRel(HookFunc):
         
         self.ori_offest = self.rel.r_offset
         self.rel.r_offset = self.hook_data_ptr - self.load_base
-        self.ori_data = self.ql.mem.read(self.ori_offest + self.load_base, self.ql.pointersize)        
+        self.ori_data = self.ql.mem.read(self.ori_offest + self.load_base, self.ql.arch.pointersize)        
         
         self.ql.mem.write(self.rel.ptr, self.rel.pack())
-        self.ql.mem.write(self.ori_offest + self.load_base, self.ql.pack(self.hook_fuc_ptr))
+        self.ql.mem.write_ptr(self.ori_offest + self.load_base, self.hook_fuc_ptr)
         self.ql.mem.write(self.hook_data_ptr, bytes(self.ori_data))
 
 class HookFuncMips(HookFunc):
@@ -255,21 +244,21 @@ class HookFuncMips(HookFunc):
         self.gotidx = gotidx
     
     def _hook_fuc_enter(self, ql):
-        self.ql.reg.t9 = self.ql.unpack(self.ql.mem.read(self.hook_data_ptr, self.ql.pointersize))
+        self.ql.arch.regs.t9 = self.ql.unpack(self.ql.mem.read(self.hook_data_ptr, self.ql.arch.pointersize))
         self.call_enter()
     
     def _hook_fuc_exit(self, ql):
         self.call_exit()
 
-        tmp = self.ql.unpack(self.ql.mem.read(self.got + self.load_base + self.gotidx * self.ql.pointersize, self.ql.pointersize))
+        tmp = self.ql.unpack(self.ql.mem.read(self.got + self.load_base + self.gotidx * self.ql.arch.pointersize, self.ql.arch.pointersize))
         if tmp != self.hook_fuc_ptr:
-            self.ql.mem.write(self.got + self.load_base + self.gotidx * self.ql.pointersize, self.ql.pack(self.hook_fuc_ptr))
-            self.ql.mem.write(self.hook_data_ptr, self.ql.pack(tmp))
+            self.ql.mem.write_ptr(self.got + self.load_base + self.gotidx * self.ql.arch.pointersize, self.hook_fuc_ptr)
+            self.ql.mem.write_ptr(self.hook_data_ptr, tmp)
     
     def _hook_got(self):
-        self.ori_data = self.ql.mem.read(self.got + self.load_base + self.gotidx * self.ql.pointersize, self.ql.pointersize) 
+        self.ori_data = self.ql.mem.read(self.got + self.load_base + self.gotidx * self.ql.arch.pointersize, self.ql.arch.pointersize) 
 
-        self.ql.mem.write(self.got + self.load_base + self.gotidx * self.ql.pointersize, self.ql.pack(self.hook_fuc_ptr))
+        self.ql.mem.write_ptr(self.got + self.load_base + self.gotidx * self.ql.arch.pointersize, self.hook_fuc_ptr)
         self.ql.mem.write(self.hook_data_ptr, bytes(self.ori_data))
     
     def enable(self):
@@ -491,7 +480,7 @@ class ELF_Symtab:
         self.symtab = symtab
         self.endian = endian
 
-        self.symclass = ELF32_Sym if self.ql.archbit == 32 else ELF64_Sym
+        self.symclass = ELF32_Sym if self.ql.arch.bits == 32 else ELF64_Sym
     
     def __getitem__(self, idx):
         buf = self.ql.mem.read(self.symtab + idx * self.symclass.Sym_SIZE, self.symclass.Sym_SIZE)
@@ -536,19 +525,19 @@ class FunctionHook:
         self.strtab_size = None
 
         self.symtab = None
-        self.syment = ELF32_Sym.Sym_SIZE if ql.archbit == 32 else ELF64_Sym.Sym_SIZE
+        self.syment = ELF32_Sym.Sym_SIZE if ql.arch.bits == 32 else ELF64_Sym.Sym_SIZE
 
         self.plt_rel_size = None
         self.plt_rel = None
-        self.plt_rel_type = DT_REL if ql.archbit == 32 else DT_RELA
+        self.plt_rel_type = DT_REL if ql.arch.bits == 32 else DT_RELA
 
         self.rela = None
         self.rela_size = None
-        self.relaent = ELF32_Rela.Rela_SIZE if ql.archbit == 32 else ELF64_Rela.Rela_SIZE
+        self.relaent = ELF32_Rela.Rela_SIZE if ql.arch.bits == 32 else ELF64_Rela.Rela_SIZE
 
         self.rel = None
         self.rel_size = None
-        self.relent = ELF32_Rel.Rel_SIZE if ql.archbit == 32 else ELF64_Rel.Rel_SIZE
+        self.relent = ELF32_Rel.Rel_SIZE if ql.arch.bits == 32 else ELF64_Rel.Rel_SIZE
 
         self.plt_got = None
         self.mips_local_gotno = None
@@ -556,10 +545,10 @@ class FunctionHook:
         self.mips_gotsym = None
 
         self.rel_list = []
-        self.endian = 0 if ql.archendian == QL_ENDIAN.EL else 1
+        self.endian = 0 if ql.arch.endian == QL_ENDIAN.EL else 1
 
         # ARM
-        if self.ql.archtype in [QL_ARCH.ARM, QL_ARCH.ARM_THUMB]:
+        if self.ql.arch.type == QL_ARCH.ARM:
             self.GLOB_DAT = 21
             self.JMP_SLOT = 22
             # orr r1, r1, r1
@@ -567,7 +556,7 @@ class FunctionHook:
             self.add_function_hook = self.add_function_hook_relocation
 
         # MIPS32
-        elif self.ql.archtype== QL_ARCH.MIPS:
+        elif self.ql.arch.type == QL_ARCH.MIPS:
             self.GLOB_DAT = 21
             self.JMP_SLOT = 22
             # add $t9, $t9, $zero
@@ -575,7 +564,7 @@ class FunctionHook:
             self.add_function_hook = self.add_function_hook_mips
 
         # ARM64
-        elif self.ql.archtype== QL_ARCH.ARM64:
+        elif self.ql.arch.type == QL_ARCH.ARM64:
             self.GLOB_DAT = 1025
             self.JMP_SLOT = 1026
             # orr x1,x1,x1
@@ -583,7 +572,7 @@ class FunctionHook:
             self.add_function_hook = self.add_function_hook_relocation
 
         # X86
-        elif  self.ql.archtype== QL_ARCH.X86:
+        elif  self.ql.arch.type == QL_ARCH.X86:
             self.GLOB_DAT = 6
             self.JMP_SLOT = 7
             # nop
@@ -591,14 +580,14 @@ class FunctionHook:
             self.add_function_hook = self.add_function_hook_relocation
 
         # X8664
-        elif  self.ql.archtype== QL_ARCH.X8664:
+        elif  self.ql.arch.type == QL_ARCH.X8664:
             self.GLOB_DAT = 6
             self.JMP_SLOT = 7
             # nop
             ins = b'\x90'
             self.add_function_hook = self.add_function_hook_relocation
 
-        elif  self.ql.archtype== QL_ARCH.RISCV:
+        elif  self.ql.arch.type == QL_ARCH.RISCV:
             self.GLOB_DAT = 21
             self.JMP_SLOT = 22
             
@@ -606,12 +595,20 @@ class FunctionHook:
             ins = b'\x00\x01'
             self.add_function_hook = self.add_function_hook_relocation
 
-        elif  self.ql.archtype== QL_ARCH.RISCV64:
+        elif  self.ql.arch.type == QL_ARCH.RISCV64:
             self.GLOB_DAT = 21
             self.JMP_SLOT = 22
             
             # ADDI x0, x0, 0
             ins = b'\x00\x01'
+            self.add_function_hook = self.add_function_hook_relocation
+
+        # PowerPC
+        elif  self.ql.arch.type== QL_ARCH.PPC:
+            self.GLOB_DAT = 21
+            self.JMP_SLOT = 22
+            # nop
+            ins = b'\x60\x00\x00\x00'
             self.add_function_hook = self.add_function_hook_relocation
 
         self._parse()
@@ -626,7 +623,7 @@ class FunctionHook:
             self.rel_list += self.plt_rel
             self.show_relocation(self.plt_rel)
         
-        if self.ql.archtype == QL_ARCH.MIPS and self.plt_got != None and self.mips_gotsym != None and self.mips_local_gotno != None and self.mips_symtabno != None:
+        if self.ql.arch.type == QL_ARCH.MIPS and self.plt_got != None and self.mips_gotsym != None and self.mips_local_gotno != None and self.mips_symtabno != None:
             self.show_dynsym_name(self.mips_gotsym, self.mips_symtabno)
 
         self.ql.mem.map(hook_mem, 0x2000, perms=7, info="[hook_mem]")
@@ -700,9 +697,9 @@ class FunctionHook:
         return
 
     def parse_program_header(self):
-        if self.ql.archbit == 64:
+        if self.ql.arch.bits == 64:
             return self.parse_program_header64()
-        elif self.ql.archbit == 32:
+        elif self.ql.arch.bits == 32:
             return self.parse_program_header32()
 
     def parse_dynamic64(self):
@@ -768,9 +765,9 @@ class FunctionHook:
         return
 
     def parse_dynamic(self):
-        if self.ql.archbit == 64:
+        if self.ql.arch.bits == 64:
             return self.parse_dynamic64()
-        elif self.ql.archbit == 32:
+        elif self.ql.arch.bits == 32:
             return self.parse_dynamic32()
 
     def _parse(self):
@@ -786,19 +783,19 @@ class FunctionHook:
             if d.d_tag == DT_NULL:
                 break
             elif d.d_tag == DT_HASH:
-                # self.hash_nbucket = self.ql.unpack(self.ql.mem.read(self.load_base + d.d_un, self.ql.pointersize))
-                # self.hash_nchain = self.ql.unpack(self.ql.mem.read(self.load_base + d.d_un + self.ql.pointersize, self.ql.pointersize))
-                # self.hash_bucket = self.ql.mem.read(self.load_base + d.d_un + self.ql.pointersize * 2, self.ql.pointersize * self.hash_nbucket)
-                # self.hash_chain = self.ql.unpack(self.ql.mem.read(self.load_base + d.d_un + self.ql.pointersize * 2 + self.ql.pointersize * self.hash_nbucket, self.ql.pointersize))
+                # self.hash_nbucket = self.ql.unpack(self.ql.mem.read(self.load_base + d.d_un, self.ql.arch.pointersize))
+                # self.hash_nchain = self.ql.unpack(self.ql.mem.read(self.load_base + d.d_un + self.ql.arch.pointersize, self.ql.arch.pointersize))
+                # self.hash_bucket = self.ql.mem.read(self.load_base + d.d_un + self.ql.arch.pointersize * 2, self.ql.arch.pointersize * self.hash_nbucket)
+                # self.hash_chain = self.ql.unpack(self.ql.mem.read(self.load_base + d.d_un + self.ql.arch.pointersize * 2 + self.ql.arch.pointersize * self.hash_nbucket, self.ql.arch.pointersize))
                 pass
             elif d.d_tag == DT_GNU_HASH:
-                # self.gnu_nbucket = self.ql.unpack(self.ql.mem.read(self.load_base + d.d_un, self.ql.pointersize))
-                # self.gnu_symbias = self.ql.unpack(self.ql.mem.read(self.load_base + d.d_un + self.ql.pointersize, self.ql.pointersize))))
-                # self.gnu_maskwords = self.ql.unpack(self.ql.mem.read(self.load_base + d.d_un + self.ql.pointersize * 2, self.ql.pointersize))
-                # self.gnu_shift2 = self.ql.unpack(self.ql.mem.read(self.load_base + d.d_un + self.ql.pointersize * 3, self.ql.pointersize))
-                # self.gnu_bloom_filter = self.ql.mem.read(self.load_base + d.d_un + self.ql.pointersize * 4, self.gnu_maskwords)
-                # self.gnu_bucket = self.ql.mem.read(self.load_base + d.d_un + self.ql.pointersize * 4 + self.gnu_maskwords, self.ql.pointersize * self.gnu_nbucket)
-                # self.gnu_chain = self.load_base + d.d_un + self.ql.pointersize * 4 + self.gnu_maskwords + self.ql.pointersize * self.gnu_nbucket - self.ql.pointersize * self.gnu_symbias
+                # self.gnu_nbucket = self.ql.unpack(self.ql.mem.read(self.load_base + d.d_un, self.ql.arch.pointersize))
+                # self.gnu_symbias = self.ql.unpack(self.ql.mem.read(self.load_base + d.d_un + self.ql.arch.pointersize, self.ql.arch.pointersize))))
+                # self.gnu_maskwords = self.ql.unpack(self.ql.mem.read(self.load_base + d.d_un + self.ql.arch.pointersize * 2, self.ql.arch.pointersize))
+                # self.gnu_shift2 = self.ql.unpack(self.ql.mem.read(self.load_base + d.d_un + self.ql.arch.pointersize * 3, self.ql.arch.pointersize))
+                # self.gnu_bloom_filter = self.ql.mem.read(self.load_base + d.d_un + self.ql.arch.pointersize * 4, self.gnu_maskwords)
+                # self.gnu_bucket = self.ql.mem.read(self.load_base + d.d_un + self.ql.arch.pointersize * 4 + self.gnu_maskwords, self.ql.arch.pointersize * self.gnu_nbucket)
+                # self.gnu_chain = self.load_base + d.d_un + self.ql.arch.pointersize * 4 + self.gnu_maskwords + self.ql.arch.pointersize * self.gnu_nbucket - self.ql.arch.pointersize * self.gnu_symbias
                 pass
 
             elif d.d_tag == DT_STRTAB:
@@ -859,31 +856,31 @@ class FunctionHook:
         if self.rela != None and self.rela_size != None:
             rela_buf = self.ql.mem.read(self.rela, self.rela_size)
             rela_ptr = self.rela
-            if self.ql.archbit == 32:
+            if self.ql.arch.bits == 32:
                 self.rela = [ELF32_Rela(rela_buf[_ * self.relaent : (_ + 1) * self.relaent], self.endian, rela_ptr + _ * self.relaent) for _ in range(self.rela_size // self.relaent)]
-            elif self.ql.archbit == 64:
+            elif self.ql.arch.bits == 64:
                 self.rela = [ELF64_Rela(rela_buf[_ * self.relaent : (_ + 1) * self.relaent], self.endian, rela_ptr + _ * self.relaent) for _ in range(self.rela_size // self.relaent)]
         
         if self.rel != None and self.rel_size != None:
             rel_buf = self.ql.mem.read(self.rel, self.rel_size)
             rel_ptr = self.rel
-            if self.ql.archbit == 32:
+            if self.ql.arch.bits == 32:
                 self.rel = [ELF32_Rel(rel_buf[_ * self.relent : (_ + 1) * self.relent], self.endian, rel_ptr + _ * self.relent) for _ in range(self.rel_size // self.relent)]
-            elif self.ql.archbit == 64:
+            elif self.ql.arch.bits == 64:
                 self.rel = [ELF64_Rel(rel_buf[_ * self.relent : (_ + 1) * self.relent], self.endian, rel_ptr + _ * self.relent) for _ in range(self.rel_size // self.relent)]
 
         if self.plt_rel != None and self.plt_rel_size != None:
             plt_rel_buf = self.ql.mem.read(self.plt_rel, self.plt_rel_size)
             plt_rel_ptr = self.plt_rel
             if self.plt_rel_type == DT_REL:
-                if self.ql.archbit == 32:
+                if self.ql.arch.bits == 32:
                     self.plt_rel = [ELF32_Rel(plt_rel_buf[_ * self.relent : (_ + 1) * self.relent], self.endian, plt_rel_ptr + _ * self.relent) for _ in range(self.plt_rel_size // self.relent)]
-                elif self.ql.archbit == 64:
+                elif self.ql.arch.bits == 64:
                     self.plt_rel = [ELF64_Rel(plt_rel_buf[_ * self.relent : (_ + 1) * self.relent], self.endian, plt_rel_ptr + _ * self.relent) for _ in range(self.plt_rel_size // self.relent)]
             else:
-                if self.ql.archbit == 32:
+                if self.ql.arch.bits == 32:
                     self.plt_rel = [ELF32_Rela(plt_rel_buf[_ * self.relaent : (_ + 1) * self.relaent], self.endian, plt_rel_ptr + _ * self.relaent) for _ in range(self.plt_rel_size // self.relaent)]
-                elif self.ql.archbit == 64:
+                elif self.ql.arch.bits == 64:
                     self.plt_rel = [ELF64_Rela(plt_rel_buf[_ * self.relaent : (_ + 1) * self.relaent], self.endian, plt_rel_ptr + _ * self.relaent) for _ in range(self.plt_rel_size // self.relaent)]
         
         if self.symtab != None:
@@ -902,7 +899,7 @@ class FunctionHook:
             self.ql.log.debug('dynsym name ' + str(rel_name))
 
     def _hook_int(self, ql, intno):
-        idx = (self.ql.reg.arch_pc - self.hook_mem) // 0x10
+        idx = (self.ql.arch.regs.arch_pc - self.hook_mem) // 0x10
 
         if idx not in self.use_list.keys():
             raise
@@ -932,9 +929,9 @@ class FunctionHook:
         hf.enable()
 
         # if self.hook_int == False:
-        #     if self.ql.archtype == QL_ARCH.X86 or self.ql.archtype == QL_ARCH.X8664:
+        #     if self.ql.arch.type == QL_ARCH.X86 or self.ql.arch.type == QL_ARCH.X8664:
         #         self.ql.hook_intno(self._hook_int, 0xa0)
-        #     elif self.ql.archtype == QL_ARCH.ARM or self.ql.archtype == QL_ARCH.ARM64:
+        #     elif self.ql.arch.type == QL_ARCH.ARM or self.ql.arch.type == QL_ARCH.ARM64:
         #         self.ql.hook_intno(self._hook_int, 7)
         #     self.hook_int = True
 

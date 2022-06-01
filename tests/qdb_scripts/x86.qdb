@@ -1,0 +1,11 @@
+# This line is demonstrate comment in qdb script
+
+x/4wx 0x7ff3cee0
+x $esp
+x $esp + 0x4
+x/5i 0x047bac70
+s
+n
+p
+p
+q

@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import os
+import ntpath
 from datetime import datetime
 
 from qiling import Qiling
@@ -94,7 +94,7 @@ def __GetWindowsDirectory(ql: Qiling, address: int, params, wstring: bool):
     lpBuffer = params["lpBuffer"]
 
     enc = 'utf-16le' if wstring else 'utf-8'
-    res = os.path.normpath(ql.os.windir)
+    res = ntpath.normpath(ql.os.windir)
 
     ql.mem.write(lpBuffer, f'{res}\x00'.encode(enc))
 
@@ -104,7 +104,7 @@ def __GetSystemDirectory(ql: Qiling, address: int, params, wstring: bool):
     lpBuffer = params["lpBuffer"]
 
     enc = 'utf-16le' if wstring else 'utf-8'
-    res = os.path.join(ql.os.windir, 'System32')
+    res = ql.os.winsys
 
     ql.mem.write(lpBuffer, f'{res}\x00'.encode(enc))
 
@@ -119,14 +119,14 @@ def __GetSystemDirectory(ql: Qiling, address: int, params, wstring: bool):
     'uSize'    : UINT
 })
 def hook_GetWindowsDirectoryW(ql: Qiling, address: int, params):
-    return __GetWindowsDirectory(ql, address, params, True)
+    return __GetWindowsDirectory(ql, address, params, wstring=True)
 
 @winsdkapi(cc=STDCALL, params={
     'lpBuffer' : LPSTR,
     'uSize'    : UINT
 })
 def hook_GetWindowsDirectoryA(ql: Qiling, address: int, params):
-    return __GetWindowsDirectory(ql, address, params, False)
+    return __GetWindowsDirectory(ql, address, params, wstring=False)
 
 # UINT GetSystemWindowsDirectoryW(
 #   LPWSTR lpBuffer,

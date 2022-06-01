@@ -3,112 +3,76 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from unicorn import *
-from qiling.const import *
+from typing import Optional
 
+from qiling import Qiling
+from qiling.const import QL_ARCH
 
-class QlGdbUtils(object):
-    def __init__(self):
-        self.current_address = 0x0
-        self.current_address_size = 0x0
-        self.last_bp = 0x0
-        self.ql = None
-        self.entry_point = None
-        self.exit_point = None
-        self.soft_bp = False
-        self.has_soft_bp = False
-        self.bp_list = []
-        self.mapping = []
-        self.breakpoint_count = 0x0
-        self.skip_bp_count = 0x0
-        self._tmp_hook = None
+# this code is partially based on uDbg
+# @see: https://github.com/iGio90/uDdbg
 
+PROMPT = r'gdb>'
 
-    def initialize(self, ql, hook_address, exit_point=None, mappings=None):
+class QlGdbUtils:
+    def __init__(self, ql: Qiling, entry_point: int, exit_point: int):
         self.ql = ql
-        if self.ql.baremetal:
-            self.current_address = self.entry_point
-        else:
-            self.current_address = self.entry_point = self.ql.os.entry_point   
+
         self.exit_point = exit_point
-        self.mapping = mappings
-        self._tmp_hook = self.ql.hook_address(self.entry_point_hook, hook_address)
+        self.bp_list = []
+        self.last_bp = None
 
-    def entry_point_hook(self, ql, *args, **kwargs):
-        self.ql.hook_del(self._tmp_hook)
-        self.ql.hook_code(self.dbg_hook)
-        self.ql.stop()
-        self.ql.log.info("gdb> Stop at entry point: %#x" % self.ql.reg.arch_pc)
+        def __entry_point_hook(ql: Qiling):
+            ql.hook_del(ep_hret)
+            ql.hook_code(self.dbg_hook)
 
-    def dbg_hook(self, ql, address, size):
-        """
-        Modified this function for qiling.gdbserver by kabeor from https://github.com/iGio90/uDdbg
-        """
-        try:
-            if self.ql.archtype == QL_ARCH.ARM:
-                mode = self.ql.arch.check_thumb()
-                if mode == UC_MODE_THUMB:
-                    address = address + 1
+            ql.log.info(f'{PROMPT} stopped at entry point: {ql.arch.regs.arch_pc:#x}')
+            ql.stop()
 
-            self.mapping.append([(hex(address))])
-            self.current_address = address
-            hit_soft_bp = False
-
-            if self.soft_bp == True:
-                self.soft_bp = False
-                hit_soft_bp = True
-
-            # Breakpoints are always added without the LSB, even in Thumb, so they should be checked like this as well
-            if ((address & ~1) in self.bp_list and (address & ~1) != self.last_bp) or self.has_soft_bp == True:
-                if self.skip_bp_count > 0:
-                    self.skip_bp_count -= 1
-                else:
-                    self.breakpoint_count += 1
-                    self.ql.stop()
-                    self.last_bp = address
-                    ql.log.info("gdb> Breakpoint found, stop at address: 0x%x" % address)
-                          
-            elif address == self.last_bp:
-                self.last_bp = 0x0
-
-            self.has_soft_bp = hit_soft_bp
-            
-            if self.current_address + size == self.exit_point:
-                ql.log.debug("gdb> emulation entrypoint at 0x%x" % (self.entry_point))
-                ql.log.debug("gdb> emulation exitpoint at 0x%x" % (self.exit_point))
-        
-        except KeyboardInterrupt as ex:
-            ql.log.info("gdb> Paused at 0x%x, instruction size = %u" % (address, size))
-            self.ql.stop()
-        except:
-            raise    
+        # set a one-time hook to be dispatched upon reaching program entry point.
+        # that hook will be used to set up the breakpoint handling hook
+        ep_hret = ql.hook_address(__entry_point_hook, entry_point)
 
 
-    def bp_insert(self, addr):
+    def dbg_hook(self, ql: Qiling, address: int, size: int):
+        if ql.arch.type == QL_ARCH.ARM and ql.arch.is_thumb:
+            address += 1
+
+        # resuming emulation after hitting a breakpoint will re-enter this hook.
+        # avoid an endless hooking loop by detecting and skipping this case
+        if address == self.last_bp:
+            self.last_bp = None
+
+        elif address in self.bp_list:
+            self.last_bp = address
+
+            ql.log.info(f'{PROMPT} breakpoint hit, stopped at {address:#x}')
+            ql.stop()
+
+        # # TODO: not sure what this is about
+        # if address + size == self.exit_point:
+        #     ql.log.debug(f'{PROMPT} emulation entrypoint at {self.entry_point:#x}')
+        #     ql.log.debug(f'{PROMPT} emulation exitpoint at {self.exit_point:#x}')
+
+
+    def bp_insert(self, addr: int):
         if addr not in self.bp_list:
             self.bp_list.append(addr)
-            self.ql.log.info('gdb> Breakpoint added at: 0x%x' % addr)
+            self.ql.log.info(f'{PROMPT} breakpoint added at {addr:#x}')
 
 
-    def bp_remove(self, addr, type = None, len = None):
+    def bp_remove(self, addr: int):
         self.bp_list.remove(addr)
-        self.ql.log.info('gdb> Breakpoint removed at: 0x%x' % addr)
+        self.ql.log.info(f'{PROMPT} breakpoint removed from {addr:#x}')
 
 
-    def resume_emu(self, address=None, skip_bp=0):
-        """
-        Modified this function for qiling.gdbserver by kabeor from https://github.com/iGio90/uDdbg
-        """
+    def resume_emu(self, address: Optional[int] = None, steps: int = 0):
+        if address is None:
+            address = self.ql.arch.regs.arch_pc
 
-        if address is not None:
-            if self.ql.archtype == QL_ARCH.ARM:
-                mode = self.ql.arch.check_thumb()
-                if mode == UC_MODE_THUMB:
-                    address += 1
-            self.current_address = address
+        if self.ql.arch.type == QL_ARCH.ARM and self.ql.arch.is_thumb:
+            address += 1
 
-        self.skip_bp_count = skip_bp
-        if self.exit_point is not None:
-            self.ql.log.info('gdb> Resume at: 0x%x' % self.current_address)
-            self.ql.emu_start(self.current_address, self.exit_point)
-            
+        op = f'stepping {steps} instructions' if steps else 'resuming'
+        self.ql.log.info(f'{PROMPT} {op} from {address:#x}')
+
+        self.ql.emu_start(address, self.exit_point, count=steps)

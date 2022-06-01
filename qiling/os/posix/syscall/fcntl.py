@@ -21,16 +21,15 @@ def ql_syscall_open(ql: Qiling, filename: int, flags: int, mode: int):
     flags &= 0xffffffff
     mode &= 0xffffffff
 
-    idx = next((i for i in range(NR_OPEN) if ql.os.fd[i] == 0), -1)
+    idx = next((i for i in range(NR_OPEN) if ql.os.fd[i] is None), -1)
 
     if idx == -1:
         regreturn = -EMFILE
     else:
         try:
-            if ql.archtype== QL_ARCH.ARM and ql.ostype!= QL_OS.QNX:
+            if ql.arch.type == QL_ARCH.ARM and ql.os.type != QL_OS.QNX:
                 mode = 0
 
-            #flags = ql_open_flag_mapping(ql, flags)
             flags = ql_open_flag_mapping(ql, flags)
             ql.os.fd[idx] = ql.os.fs_mapper.open_ql_file(path, flags, mode)
             regreturn = idx
@@ -57,13 +56,13 @@ def ql_syscall_creat(ql: Qiling, filename: int, mode: int):
     flags &= 0xffffffff
     mode &= 0xffffffff
 
-    idx = next((i for i in range(NR_OPEN) if ql.os.fd[i] == 0), -1)
+    idx = next((i for i in range(NR_OPEN) if ql.os.fd[i] is None), -1)
 
     if idx == -1:
         regreturn = -ENOMEM 
     else:
         try:
-            if ql.archtype== QL_ARCH.ARM:
+            if ql.arch.type == QL_ARCH.ARM:
                 mode = 0
 
             flags = ql_open_flag_mapping(ql, flags)
@@ -89,13 +88,13 @@ def ql_syscall_openat(ql: Qiling, fd: int, path: int, flags: int, mode: int):
     flags &= 0xffffffff
     mode &= 0xffffffff
 
-    idx = next((i for i in range(NR_OPEN) if ql.os.fd[i] == 0), -1)
+    idx = next((i for i in range(NR_OPEN) if ql.os.fd[i] is None), -1)
 
     if idx == -1:
         regreturn = -EMFILE
     else:
         try:
-            if ql.archtype== QL_ARCH.ARM:
+            if ql.arch.type == QL_ARCH.ARM:
                 mode = 0
 
             flags = ql_open_flag_mapping(ql, flags)
@@ -120,23 +119,25 @@ def ql_syscall_openat(ql: Qiling, fd: int, path: int, flags: int, mode: int):
 
 
 def ql_syscall_fcntl(ql: Qiling, fd: int, cmd: int, arg: int):
-    if not (0 <= fd < NR_OPEN) or ql.os.fd[fd] == 0:
+    if fd not in range(NR_OPEN):
         return -EBADF
 
     f = ql.os.fd[fd]
 
+    if f is None:
+        return -EBADF
+
     if cmd == F_DUPFD:
-        if 0 <= arg < NR_OPEN:
-            for idx, val in enumerate(ql.os.fd):
-                if val == 0 and idx >= arg:
-                    new_fd = ql.os.fd[fd].dup()
-                    ql.os.fd[idx] = new_fd
-                    regreturn = idx
-                    break
-            else:
-                regreturn = -EMFILE
-        else:
+        if arg not in range(NR_OPEN):
             regreturn = -EINVAL
+
+        for idx in range(arg, len(ql.os.fd)):
+            if ql.os.fd[idx] is None:
+                ql.os.fd[idx] = f.dup()
+                regreturn = idx
+                break
+        else:
+            regreturn = -EMFILE
 
     elif cmd == F_GETFD:
         regreturn = getattr(f, "close_on_exec", 0)
@@ -146,10 +147,10 @@ def ql_syscall_fcntl(ql: Qiling, fd: int, cmd: int, arg: int):
         regreturn = 0
 
     elif cmd == F_GETFL:
-        regreturn = ql.os.fd[fd].fcntl(cmd, arg)
+        regreturn = f.fcntl(cmd, arg)
 
     elif cmd == F_SETFL:
-        ql.os.fd[fd].fcntl(cmd, arg)
+        f.fcntl(cmd, arg)
         regreturn = 0
 
     else:
@@ -159,19 +160,24 @@ def ql_syscall_fcntl(ql: Qiling, fd: int, cmd: int, arg: int):
 
 
 def ql_syscall_fcntl64(ql: Qiling, fd: int, cmd: int, arg: int):
+    if fd not in range(NR_OPEN):
+        return -1
+
+    f = ql.os.fd[fd]
+
+    if f is None:
+        return -1
 
     # https://linux.die.net/man/2/fcntl64
     if cmd == F_DUPFD:
-        if 0 <= arg < NR_OPEN and 0 <= fd < NR_OPEN:
-            if ql.os.fd[fd] != 0:
-                new_fd = ql.os.fd[fd].dup()
-                for idx, val in enumerate(ql.os.fd):
-                    if val == 0 and idx >= arg:
-                        ql.os.fd[idx] = new_fd
-                        regreturn = idx
-                        break
-            else:
-                regreturn = -1
+        if arg not in range(NR_OPEN):
+            regreturn = -1
+
+        for idx in range(arg, len(ql.os.fd)):
+            if ql.os.fd[idx] is None:
+                ql.os.fd[idx] = f.dup()
+                regreturn = idx
+                break
         else:
             regreturn = -1
 
@@ -179,8 +185,8 @@ def ql_syscall_fcntl64(ql: Qiling, fd: int, cmd: int, arg: int):
         regreturn = 2
 
     elif cmd == F_SETFL:
-        if isinstance(ql.os.fd[fd], ql_socket):
-            ql.os.fd[fd].fcntl(cmd, arg)
+        if isinstance(f, ql_socket):
+            f.fcntl(cmd, arg)
         regreturn = 0
 
     elif cmd == F_GETFD:

@@ -69,7 +69,7 @@ def hook_SysReAllocStringLen(ql: Qiling, address: int, params):
     addr = ql.os.heap.alloc(size + 1)
 
     ql.mem.write(addr, content[:size].encode("utf-16le"))
-    ql.mem.write(params["pbstr"], ql.pack(addr))
+    ql.mem.write_ptr(params["pbstr"], addr)
 
     return 1
 

@@ -2,22 +2,22 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 
-from typing import Callable, Tuple
+from typing import Callable, Sequence, Tuple
 
-from qiling import Qiling
+from qiling.arch.arch import QlArch
 
 class QlCC:
 	"""Calling convention base class.
 	"""
 
-	def __init__(self, ql: Qiling) -> None:
+	def __init__(self, arch: QlArch) -> None:
 		"""Initialize a calling convention instance.
 
 		Args:
-			ql: qiling instance
+			arch: underlying architecture instance
 		"""
 
-		self.ql = ql
+		self.arch = arch
 
 	@staticmethod
 	def getNumSlots(argbits: int) -> int:
@@ -26,7 +26,7 @@ class QlCC:
 
 		raise NotImplementedError
 
-	def getRawParam(self, slot: int, argbits: int = None) -> int:
+	def getRawParam(self, slot: int, argbits: int = 0) -> int:
 		"""Read a value of native size from the specified argument slot.
 
 		Note that argument slots and argument indexes are not the same. Though they often correlate
@@ -41,7 +41,7 @@ class QlCC:
 
 		raise NotImplementedError
 
-	def setRawParam(self, slot: int, value: int, argbits: int = None) -> None:
+	def setRawParam(self, slot: int, value: int, argbits: int = 0) -> None:
 		"""Replace the value in the specified argument slot.
 
 		Note that argument slots and argument indexes are not the same. Though they often correlate
@@ -107,18 +107,16 @@ class QlCommonBaseCC(QlCC):
 	of the QlCC interface.
 	"""
 
-	_argregs = ()
+	_retreg: int
+	_argregs: Sequence
 	_shadow = 0
 	_retaddr_on_stack = True
 
-	def __init__(self, ql: Qiling, retreg: int):
-		super().__init__(ql)
+	def __init__(self, arch: QlArch):
+		super().__init__(arch)
 
 		# native address size in bytes
-		self._asize = self.ql.pointersize
-
-		# return value register
-		self._retreg = retreg
+		self._asize = self.arch.pointersize
 
 	def __access_param(self, index: int, stack_access: Callable, reg_access: Callable) -> Tuple[Callable, int]:
 		"""[private] Generic accessor to function call parameters by their index.
@@ -150,25 +148,25 @@ class QlCommonBaseCC(QlCC):
 		else:
 			return reg_access, reg
 
-	def getRawParam(self, index: int, argbits: int = None) -> int:
-		read, loc = self.__access_param(index, self.ql.stack_read, self.ql.reg.read)
+	def getRawParam(self, index: int, argbits: int = 0) -> int:
+		read, loc = self.__access_param(index, self.arch.stack_read, self.arch.regs.read)
 
-		mask = (0 if argbits is None else (1 << argbits)) - 1
+		mask = (argbits and (1 << argbits)) - 1
 
 		return read(loc) & mask
 
-	def setRawParam(self, index: int, value: int, argbits: int = None) -> None:
-		write, loc = self.__access_param(index, self.ql.stack_write, self.ql.reg.write)
+	def setRawParam(self, index: int, value: int, argbits: int = 0) -> None:
+		write, loc = self.__access_param(index, self.arch.stack_write, self.arch.regs.write)
 
-		mask = (0 if argbits is None else (1 << argbits)) - 1
+		mask = (argbits and (1 << argbits)) - 1
 
 		write(loc, value & mask)
 
 	def getReturnValue(self) -> int:
-		return self.ql.reg.read(self._retreg)
+		return self.arch.regs.read(self._retreg)
 
 	def setReturnValue(self, value: int) -> None:
-		self.ql.reg.write(self._retreg, value)
+		self.arch.regs.write(self._retreg, value)
 
 	def reserve(self, nslots: int) -> None:
 		assert nslots < len(self._argregs), 'too many slots'
@@ -176,4 +174,4 @@ class QlCommonBaseCC(QlCC):
 		# count how many slots should be reserved on the stack
 		si = self._argregs[:nslots].count(None)
 
-		self.ql.reg.arch_sp -= (self._shadow + si) * self._asize
+		self.arch.regs.arch_sp -= (self._shadow + si) * self._asize

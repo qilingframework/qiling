@@ -189,7 +189,7 @@ def hook_CreateThread(ql: Qiling, address: int, params):
     # set lpThreadId
     # FIXME: Temporary fix for the crash
     # if lpThreadId != 0:
-    # ql.mem.write(lpThreadId, ql.pack(thread_id))
+    # ql.mem.write_ptr(lpThreadId, thread_id)
 
     # set thread handle
     return new_handle.id
@@ -279,7 +279,7 @@ def hook_OpenProcessToken(ql: Qiling, address: int, params):
     new_handle = Handle(obj=token)
 
     ql.os.handle_manager.append(new_handle)
-    ql.mem.write(token_pointer, ql.pack(new_handle.id))
+    ql.mem.write_ptr(token_pointer, new_handle.id)
 
     return 1
 
@@ -313,7 +313,7 @@ def hook_OpenThreadToken(ql: Qiling, address: int, params):
     new_handle = Handle(obj=token)
 
     ql.os.handle_manager.append(new_handle)
-    ql.mem.write(token_pointer, ql.pack(new_handle.id))
+    ql.mem.write_ptr(token_pointer, new_handle.id)
 
     return 1
 

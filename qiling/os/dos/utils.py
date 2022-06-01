@@ -53,6 +53,6 @@ def read_dos_string(ql: Qiling, address: int):
     return ba.decode('ascii')
 
 def read_dos_string_from_ds_dx(ql: Qiling):
-    address = linaddr(ql.reg.ds, ql.reg.dx)
+    address = linaddr(ql.arch.regs.ds, ql.arch.regs.dx)
 
     return read_dos_string(ql, address)

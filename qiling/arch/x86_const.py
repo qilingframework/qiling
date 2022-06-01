@@ -39,8 +39,9 @@ QL_X86_GDT_LIMIT = 0x1000
 QL_X86_GDT_ENTRY_SIZE = 0x8
 
 # These msr registers are x86 specific
-FSMSR = 0xC0000100
-GSMSR = 0xC0000101
+IA32_FS_BASE_MSR = 0xC0000100
+IA32_GS_BASE_MSR = 0xC0000101
+IA32_APIC_BASE_MSR = 0x1B
 
 # WINDOWS SETUP VALUE
 # Linux also needs these
@@ -176,7 +177,7 @@ reg_map_st = {
 }
 
 reg_map_misc = {
-    "ef": UC_X86_REG_EFLAGS, 
+    "eflags": UC_X86_REG_EFLAGS, 
     "cs": UC_X86_REG_CS, 
     "ss": UC_X86_REG_SS,
     "ds": UC_X86_REG_DS, 

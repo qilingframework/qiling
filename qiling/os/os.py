@@ -4,7 +4,7 @@
 #
 
 import sys
-from typing import Any, Iterable, Optional, Callable, Mapping, Sequence, TextIO, Tuple
+from typing import Any, Hashable, Iterable, Optional, Callable, Mapping, Sequence, TextIO, Tuple
 
 from unicorn import UcError
 
@@ -15,10 +15,13 @@ from qiling.os.fcall import QlFunctionCall, TypedArg
 
 from .filestruct import ql_file
 from .mapper import QlFsMapper
+from .stats import QlOsStats
 from .utils import QlOsUtils
-from .path import QlPathManager
+from .path import QlOsPath
 
 class QlOs:
+    type: QL_OS
+
     Resolver = Callable[[int], Any]
 
     def __init__(self, ql: Qiling, resolvers: Mapping[Any, Resolver] = {}):
@@ -30,13 +33,18 @@ class QlOs:
         self._stderr: TextIO
 
         self.utils = QlOsUtils(ql)
+        self.stats = QlOsStats()
         self.fcall: QlFunctionCall
-        self.fs_mapper = QlFsMapper(ql)
         self.child_processes = False
         self.thread_management = None
         self.profile = self.ql.profile
-        self.path = None if self.ql.baremetal else QlPathManager(ql, self.ql.profile.get("MISC", "current_path"))
         self.exit_code = 0
+
+        if self.type in QL_OS_POSIX + (QL_OS.WINDOWS, QL_OS.DOS):
+            cwd = self.profile.get("MISC", "current_path")
+
+            self.path = QlOsPath(ql.rootfs, cwd, self.type)
+            self.fs_mapper = QlFsMapper(self.path)
 
         self.user_defined_api = {
             QL_INTERCEPT.CALL : {},
@@ -61,13 +69,13 @@ class QlOs:
             16: 0xfffff,            # 20bit address lane
             32: 0x8fffffff,
             64: 0xffffffffffffffff
-        }.get(self.ql.archbit, None)
+        }.get(self.ql.arch.bits, None)
 
         if self.ql.code:
-            self.code_ram_size = int(self.profile.get("CODE", "ram_size"), 16)
             # this shellcode entrypoint does not work for windows
             # windows shellcode entry point will comes from pe loader
-            self.entry_point = int(self.profile.get("CODE", "entry_point"), 16)
+            self.entry_point = self.profile.getint('CODE', 'entry_point')
+            self.code_ram_size = self.profile.getint('CODE', 'ram_size')
 
         # default fcall paramters resolving methods
         self.resolvers = {
@@ -78,8 +86,6 @@ class QlOs:
 
         # let the user override default resolvers or add custom ones
         self.resolvers.update(resolvers)
-
-        self.ql.arch.utils.setup_output()
 
     def save(self) -> Mapping[str, Any]:
         return {}
@@ -187,35 +193,30 @@ class QlOs:
         self.utils.print_function(pc, func.__name__, pargs, retval, passthru)
 
         # append syscall to list
-        self.utils._call_api(pc, func.__name__, args, retval, retaddr)
+        self.stats.log_api_call(pc, func.__name__, args, retval, retaddr)
 
         # [Windows and UEFI] if emulation has stopped, do not update the return address
         if hasattr(self, 'PE_RUN') and not self.PE_RUN:
             passthru = True
 
         if not passthru:
-            self.ql.reg.arch_pc = retaddr
+            self.ql.arch.regs.arch_pc = retaddr
 
         return retval
 
-    # TODO: separate this method into os-specific functionalities, instead of 'if-else'
-    def set_api(self, api_name: str, intercept_function: Callable, intercept: QL_INTERCEPT):
-        if self.ql.ostype == QL_OS.UEFI:
-            api_name = f'hook_{api_name}'
+    def set_api(self, target: Hashable, handler: Callable, intercept: QL_INTERCEPT = QL_INTERCEPT.CALL):
+        """Either hook or replace an OS API with a custom one.
 
-        # BUG: workaround missing arg
-        if intercept is None:
-            intercept = QL_INTERCEPT.CALL
+        Args:
+            target: target API identifier
+            handler: function to call
+            intercept:
+                `QL_INTERCEPT.CALL` : run handler instead of the existing target implementation
+                `QL_INTERCEPT.ENTER`: run handler before the target API is called
+                `QL_INTERCEPT.EXIT` : run handler after the target API is called
+        """
 
-        if (self.ql.ostype in (QL_OS.WINDOWS, QL_OS.UEFI, QL_OS.DOS)) or (self.ql.ostype in (QL_OS_POSIX) and self.ql.loader.is_driver):
-            self.user_defined_api[intercept][api_name] = intercept_function
-        else:
-            self.add_function_hook(api_name, intercept_function, intercept)
-
-    def find_containing_image(self, pc: int):
-        for image in self.ql.loader.images:
-            if image.base <= pc < image.end:
-                return image
+        self.user_defined_api[intercept][target] = handler
 
     # os main method; derivatives must implement one of their own
     def run(self) -> None:
@@ -229,11 +230,11 @@ class QlOs:
 
     def emu_error(self):
         self.ql.log.error(f'CPU Context:')
-        for reg in self.ql.reg.register_mapping:
+        for reg in self.ql.arch.regs.register_mapping:
             if isinstance(reg, str):
-                self.ql.log.error(f'{reg}\t: {self.ql.reg.read(reg):#x}')
+                self.ql.log.error(f'{reg}\t: {self.ql.arch.regs.read(reg):#x}')
 
-        pc = self.ql.reg.arch_pc
+        pc = self.ql.arch.regs.arch_pc
 
         try:
             data = self.ql.mem.read(pc, size=8)
@@ -246,10 +247,11 @@ class QlOs:
             self.ql.log.error('Disassembly:')
             self.ql.arch.utils.disassembler(self.ql, pc, 64)
 
-            containing_image = self.find_containing_image(pc)
+            containing_image = self.ql.loader.find_containing_image(pc)
             pc_info = f' ({containing_image.path} + {pc - containing_image.base:#x})' if containing_image else ''
         finally:
-            self.ql.log.error(f'PC = {pc:#0{self.ql.pointersize * 2 + 2}x}{pc_info}\n')
+            self.ql.log.error(f'PC = {pc:#0{self.ql.arch.pointersize * 2 + 2}x}{pc_info}\n')
 
-            self.ql.log.info(f'Memory map:')
-            self.ql.mem.show_mapinfo()
+            self.ql.log.error(f'Memory map:')
+            for info_line in self.ql.mem.get_formatted_mapinfo():
+                self.ql.log.error(info_line)

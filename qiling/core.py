@@ -3,99 +3,74 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from configparser import ConfigParser
-import ntpath, os, pickle, platform
+import os, pickle
+from typing import TYPE_CHECKING, Any, AnyStr, List, Mapping, MutableMapping, Optional, Sequence, Tuple, Union
 
 # See https://stackoverflow.com/questions/39740632/python-type-hinting-without-cyclic-imports
-from typing import Callable, Dict, List, Union
-from typing import TYPE_CHECKING
-
-from unicorn.unicorn import Uc
-
 if TYPE_CHECKING:
-    from .arch.register import QlRegisterManager
+    from unicorn.unicorn import Uc
+    from configparser import ConfigParser
+    from logging import Logger
     from .arch.arch import QlArch
     from .os.os import QlOs
     from .os.memory import QlMemoryManager
     from .hw.hw import QlHwManager
     from .loader.loader import QlLoader
 
-from .const import QL_ARCH_ENDIAN, QL_ENDIAN, QL_VERBOSE, QL_OS_INTERPRETER, QL_OS_BAREMETAL
+from .const import QL_ARCH, QL_ENDIAN, QL_OS, QL_STOP, QL_VERBOSE, QL_ARCH_INTERPRETER, QL_OS_BAREMETAL
 from .exception import QlErrorFileNotFound, QlErrorArch, QlErrorOsType
+from .host import QlHost
+from .log import *
 from .utils import *
 from .core_struct import QlCoreStructs
 from .core_hooks import QlCoreHooks
-from .__version__ import __version__
 
 # Mixin Pattern
-class Qiling(QlCoreHooks, QlCoreStructs):    
+class Qiling(QlCoreHooks, QlCoreStructs):
     def __init__(
             self,
-            argv=None,
-            rootfs=None,
-            env=None,
-            code=None,
-            ostype=None,
-            archtype=None,
-            bigendian=False,
-            verbose=QL_VERBOSE.DEFAULT,
-            profile=None,
-            console=True,
+            argv: Sequence[str] = None,
+            rootfs: str = r'.',
+            env: MutableMapping[AnyStr, AnyStr] = {},
+            code: bytes = None,
+            ostype: Union[str, QL_OS] = None,
+            archtype: Union[str, QL_ARCH] = None,
+            verbose: QL_VERBOSE = QL_VERBOSE.DEFAULT,
+            profile: str = None,
+            console: bool = True,
             log_file=None,
             log_override=None,
-            log_plain=False,
-            libcache = False,
-            multithread = False,
+            log_plain: bool = False,
+            multithread: bool = False,
             filter = None,
-            stop_on_stackpointer = False,
-            stop_on_exit_trap = False,
-            stdin=None,
-            stdout=None,
-            stderr=None,
+            stop: QL_STOP = QL_STOP.NONE,
+            *,
+            endian: Optional[QL_ENDIAN] = None,
+            thumb: bool = False,
+            libcache: bool = False
     ):
         """ Create a Qiling instance.
 
-            For each argument or property, please refer to its docstring. e.g. Qiling.multithread.__doc__
-
-            The only exception is "bigendian" parameter, see Qiling.archendian.__doc__ for details.
+            For each argument or property, please refer to its help. e.g. help(Qiling.multithread)
         """
 
         ##################################
         # Definition during ql=Qiling()  #
         ##################################
-        self._argv = argv
-        self._rootfs = rootfs
-        self._env = env if env else {}
+        self._env = env
         self._code = code
-        self._ostype = ostype
-        self._archtype = archtype
-        self._archendian = QL_ENDIAN.EL
-        self._archbit = None
-        self._pointersize = None
-        self._profile = profile
-        self._console = console
-        self._log_file = log_file
         self._multithread = multithread
-        self._log_file_fd = None
         self._log_filter = None
-        self._log_override = log_override
-        self._log_plain = log_plain
-        self._filter = filter
-        self._platform_os = ostype_convert(platform.system().lower())
-        self._platform_arch = arch_convert(platform.machine().lower())
         self._internal_exception = None
-        self._uc = None
-        self._stop_options = QlStopOptions(stackpointer=stop_on_stackpointer, exit_trap=stop_on_exit_trap)
+        self._stop_options = stop
 
         ##################################
         # Definition after ql=Qiling()   #
         ##################################
-        self._verbose = verbose
-        self._libcache = libcache
         self._patch_bin = []
         self._patch_lib = []
         self._debug_stop = False
-        self._debugger = None
+        self._debugger = False
 
         ###############################
         # Properties configured later #
@@ -112,116 +87,104 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         ##############
         # argv setup #
         ##############
-        if self._argv is None:
-            self._argv = ["qilingcode"]
+        if argv is None:
+            argv = ['qilingcode']
 
-        elif not os.path.exists(str(self._argv[0])):
-            raise QlErrorFileNotFound("Target binary not found: %s" % (self._argv[0]))
+        elif not os.path.exists(argv[0]):
+            raise QlErrorFileNotFound(f'Target binary not found: "{argv[0]}"')
+
+        self._argv = argv
+        self._path = self.argv[0]
+        self._targetname = os.path.basename(self.path)
 
         ################
         # rootfs setup #
         ################
-        if self._rootfs is None:
-            self._rootfs = "."
-            
-        elif not os.path.exists(self._rootfs):
-            raise QlErrorFileNotFound("Target rootfs not found: %s" % (self._rootfs))
-        
-        self._path = self._argv[0]
-        self._targetname = ntpath.basename(self.path)
+        if not os.path.exists(rootfs):
+            raise QlErrorFileNotFound(f'Target rootfs not found: "{rootfs}"')
+
+        self._rootfs = rootfs
 
         #################
         # arch os setup #
         #################
-        if type(self._archtype) is str:
-            self._archtype = arch_convert(self._archtype)
-        if type(self._ostype) is str:
-            self._ostype = ostype_convert(self._ostype)
+        self._host = QlHost()
 
-        if self._archtype is None:
-            guessed_archtype, guessed_ostype, guessed_archendian = ql_guess_emu_env(self._path)            
-            self._archtype = guessed_archtype
-            self._archendian = guessed_archendian
-            
-            if self._ostype is None:
-                self._ostype = guessed_ostype
+        if type(archtype) is str:
+            archtype = arch_convert(archtype)
 
-        elif self._ostype == None:
-            self._ostype = arch_os_convert(self._archtype)
-        
-        if not ql_is_valid_ostype(self._ostype):
-            raise QlErrorOsType("Invalid OS: %s" % (self._ostype))
+        if type(ostype) is str:
+            ostype = os_convert(ostype)
 
-        if not ql_is_valid_arch(self._archtype):
-            raise QlErrorArch("Invalid ARCH: %s" % (self._archtype))
+        # if provided arch was invalid or not provided, guess arch and os
+        if archtype is None:
+            guessed_archtype, guessed_ostype, guessed_archendian = ql_guess_emu_env(self.path)
 
+            archtype = guessed_archtype
 
-        ########################
-        # Archbit & Endianness #
-        ########################
-        self._archbit = ql_get_arch_bits(self._archtype)
-        self._pointersize = (self.archbit // 8)
- 
-        if bigendian == True and self._archtype in QL_ARCH_ENDIAN:
-            self._archendian = QL_ENDIAN.EB
+            if ostype is None:
+                ostype = guessed_ostype
 
-        # Once we finish setting up archendian and arcbit, we can init QlCoreStructs.
-        QlCoreStructs.__init__(self, self._archendian, self._archbit)
-            
+            if endian is None:
+                endian = guessed_archendian
 
-        #######################################
-        # Loader and General Purpose OS check #
-        #######################################
-        self._loader = loader_setup(self._ostype, self)
+        # if arch was set but os was not, try to guess it by arch
+        elif ostype is None:
+            ostype = arch_os_convert(archtype)
 
-        #####################
-        # Profile & Logging #
-        #####################
-        self._profile, debugmsg = profile_setup(self)
+        # arch should have been determined by now; fail if not
+        if type(archtype) is not QL_ARCH:
+            raise QlErrorArch(f'Unknown or unsupported architecture: "{archtype}"')
 
-        # Log's configuration
-        self._log_file_fd, self._log_filter = ql_setup_logger(self,
-                                                              self._log_file,
-                                                              self._console,
-                                                              self._filter,
-                                                              self._log_override,
-                                                              self._log_plain)
+        # os should have been determined by now; fail if not
+        if type(ostype) is not QL_OS:
+            raise QlErrorOsType(f'Unknown or unsupported operating system: "{ostype}"')
 
-        self.log.setLevel(ql_resolve_logger_level(self._verbose))
+        # if endianess is still undetermined, set it to little-endian.
+        # this setting is ignored for architectures with predefined endianess
+        if endian is None:
+            endian = QL_ENDIAN.EL
 
-        # Now that the logger is configured, we can log profile debug msg:
-        self.log.debug(debugmsg)
+        self._arch = select_arch(archtype, endian, thumb)(self)
+
+        # Once we finish setting up arch, we can init QlCoreStructs and QlCoreHooks
+        if not self.interpreter:
+            QlCoreStructs.__init__(self, self.arch.endian, self.arch.bits)
+            QlCoreHooks.__init__(self, self.uc)
+
+        ##########
+        # Logger #
+        ##########
+        self._log_file_fd = setup_logger(self, log_file, console, log_override, log_plain)
+
+        self.filter = filter
+        self.verbose = verbose
+
+        ###########
+        # Profile #
+        ###########
+        self.log.debug(f'Profile: {profile or "default"}')
+        self._profile = profile_setup(ostype, profile)
+
+        ##########
+        # Loader #
+        ##########
+        self._loader = select_loader(ostype, libcache)(self)
 
         ##############
         # Components #
         ##############
         if not self.interpreter:
-            self._mem = component_setup("os", "memory", self)
-            self._reg = component_setup("arch", "register", self)
-              
+            self._mem = select_component('os', 'memory')(self)
+            self._os = select_os(ostype)(self)
 
-        self._arch = arch_setup(self.archtype, self)
-        
-        # Once we finish setting up arch layer, we can init QlCoreHooks.
-        if not self.interpreter:
-            self.uc = self.arch.init_uc
-            QlCoreHooks.__init__(self, self.uc)
-        
-            self.arch.utils.setup_output()
-            self._os = os_setup(self.archtype, self.ostype, self)
-
-            if stdin is not None:
-                self._os.stdin = stdin
-
-            if stdout is not None:
-                self._os.stdout = stdout
-
-            if stderr is not None:
-                self._os.stderr = stderr
+        if self.baremetal:
+            self._hw = select_component('hw', 'hw')(self)
 
         # Run the loader
         self.loader.run()
-        self._init_stop_guard()    
+
+        self._init_stop_guard()
 
     #####################
     # Qiling Components #
@@ -234,14 +197,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             Example: ql.mem.read(0xdeadbeaf, 4)
         """
         return self._mem
-
-    @property
-    def reg(self) -> "QlRegisterManager":
-        """ Qiling register manager.
-
-            Example: ql.reg.eax = 1
-        """
-        return self._reg
 
     @property
     def hw(self) -> "QlHwManager":
@@ -277,7 +232,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         return self._os
 
     @property
-    def log(self) -> logging.Logger:
+    def log(self) -> "Logger":
         """ Returns the logger this Qiling instance uses.
 
             You can override this log by passing `log_override=your_log` to Qiling.__init__
@@ -294,24 +249,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
     # If an option doesn't have a setter, it means that it can be only set during Qiling.__init__
 
     @property
-    def console(self) -> bool:
-        """ Specify whether enabling console output. 
-
-            Type: bool
-            Example: Qiling(console=True)
-        """
-        return self._console
-
-    @property
-    def log_file(self) -> str:
-        """ Log to a file.
-
-            Type: str
-            Example: Qiling(log_file="./ql.log")
-        """
-        return self._log_file
-
-    @property
     def multithread(self) -> bool:
         """ Specify whether multithread has been enabled.
 
@@ -323,7 +260,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         return self._multithread
 
     @property
-    def profile(self) -> ConfigParser:
+    def profile(self) -> "ConfigParser":
         """ Program profile. See qiling/profiles/*.ql for details.
 
             Note: Please pass None or the path string to Qiling.__init__.
@@ -335,10 +272,9 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         return self._profile
 
     @property
-    def argv(self) -> List[str]:
+    def argv(self) -> Sequence[str]:
         """ The program argv.
 
-            Type: List[str]
             Example: Qiling(argv=['/bin/ls', '-a'])
         """
         return self._argv
@@ -353,80 +289,12 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         return self._rootfs
 
     @property
-    def env(self) -> Dict[str, str]:
+    def env(self) -> MutableMapping[AnyStr, AnyStr]:
         """ The program environment variables.
 
-            Type: Dict[str, str]
             Example: Qiling(env={"LC_ALL" : "en_US.UTF-8"})
         """
         return self._env
-
-    @property
-    def ostype(self) -> QL_OS:
-        """ The emulated os type.
-
-            Note: Please pass None or one of the strings below to Qiling.__init__.
-                  If you use shellcode, you must specify ostype and archtype manually.
-
-            Type: int.
-            Values:
-              - "macos" : macOS.
-              - "darwin" : an alias to "macos".
-              - "freebsd" : FreeBSD
-              - "windows" : Windows
-              - "uefi" : UEFI
-              - "dos" : DOS
-            Example: Qiling(code=b"\x90", ostype="macos", archtype="x8664", bigendian=False)
-        """
-        return self._ostype
-
-    @property
-    def archtype(self) -> QL_ARCH:
-        """ The emulated architecture type.
-
-            Note: Please pass None or one of the strings below to Qiling.__init__.
-                  If you use shellcode, you must specify ostype and archtype manually.
-
-            Type: int
-            Values:
-              - "x86" : x86_32
-              - "x8664" : x86_64
-              - "mips" : MIPS
-              - "arm" : ARM
-              - "arm_thumb" : ARM with thumb mode.
-              - "arm64" : ARM64
-              - "a8086" : 8086
-            Example: Qiling(code=b"\x90", ostype="macos", archtype="x8664", bigendian=False)
-        """
-        return self._archtype
-
-    @property
-    def archendian(self) -> QL_ENDIAN:
-        """ The architecure endian.
-
-            Note: Please pass "bigendian=True" or "bingendian=False" to set this property.
-                  This option only takes effect for shellcode.
-
-            Type: int
-            Example: Qiling(code=b"\x90", ostype="macos", archtype="x8664", bigendian=False)
-        """
-        return self._archendian
-
-    @property
-    def archbit(self) -> int:
-        """ The bits of the current architecutre.
-
-            Type: int
-        """
-        return self._archbit
-
-    @property
-    def pointersize(self) -> int:
-        """ The pointer size of current architecture.
-
-            Type: int
-        """
-        return self._pointersize
 
     @property
     def code(self) -> bytes:
@@ -435,7 +303,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             Note: It can't be used with "argv" parameter.
 
             Type: bytes
-            Example: Qiling(code=b"\x90", ostype="macos", archtype="x8664", bigendian=False)
+            Example: Qiling(code=b"\x90", ostype="macos", archtype="x8664")
         """
         return self._code
 
@@ -463,7 +331,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
             Type: bool
         """
-        return self.ostype in QL_OS_INTERPRETER
+        return self.arch.type in QL_ARCH_INTERPRETER
 
     @property
     def baremetal(self) -> bool:
@@ -472,42 +340,22 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
             Type: bool
         """
-        return self.ostype in QL_OS_BAREMETAL
+
+        # os is not initialized for interpreter archs
+        if self.interpreter:
+            return False
+
+        return self.os.type in QL_OS_BAREMETAL
 
     @property
-    def platform_os(self):
-        """ Specify current platform os where Qiling runs on.
-
-            Type: int
-            Values: All possible values from platform.system()
+    def host(self) -> QlHost:
+        """Provide an interface to the hosting platform where Qiling runs on.
         """
-        return self._platform_os
 
-    @platform_os.setter
-    def platform_os(self, value):
-        if type(value) is str:
-            self._platform_os = ostype_convert(value.lower())
-        else:
-            self._platform_os = value
+        return self._host
 
     @property
-    def platform_arch(self):
-        """ Specify current platform arch where Qiling runs on.
-
-            Type: int
-            Values: All possible values from platform.system()
-        """
-        return self._platform_arch
-
-    @platform_arch.setter
-    def platform_arch(self, value):
-        if type(value) is str:
-            self._platform_arch = arch_convert(value.lower())
-        else:
-            self._platform_arch = value
-
-    @property
-    def internal_exception(self) -> Exception:
+    def internal_exception(self) -> Optional[Exception]:
         """ Internal exception catched during Unicorn callback. Not intended for regular users.
 
             Type: Exception
@@ -515,45 +363,28 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         return self._internal_exception
 
     @property
-    def libcache(self) -> bool:
-        """ Whether cache dll files. Only take effect in Windows emulation.
+    def verbose(self) -> QL_VERBOSE:
+        """Set verbosity level.
 
-            Type: bool
-            Example: - ql = Qiling(libcache=False)
-                     - ql.libcache = True
-        """
-        return self._libcache
-
-    @libcache.setter
-    def libcache(self, lc):
-        self._libcache = lc
-
-    @property
-    def verbose(self):
-        """ Set the verbose level.
-
-            Type: int
-            Values:
-              - -1 : logging.NOTSET, turn off all the output.
-              - 0  : logging.WARNING, almost no additional logs except the program output.
-              - >=1: logging.INFO, the default logging level.
-              - >=4: logging.DEBUG.
-              - >=10: Disasm each executed instruction.
-              - >=20: The most verbose output, dump registers and disasm the function blocks.
-            Example: - ql = Qiling(verbose=5)
-                     - ql.verbose = 0
+        Values:
+            `QL_VERBOSE.DISABLED`: turn off logging
+            `QL_VERBOSE.OFF`     : mask off anything below warnings, errors and critical severity
+            `QL_VERBOSE.DEFAULT` : info logging level; default verbosity
+            `QL_VERBOSE.DEBUG`   : debug logging level; higher verbosity
+            `QL_VERBOSE.DISASM`  : debug verbosity along with disassembly trace (slow!)
+            `QL_VERBOSE.DUMP`    : disassembly trace along with cpu context dump
         """
         return self._verbose
 
     @verbose.setter
-    def verbose(self, v):
+    def verbose(self, v: QL_VERBOSE):
         self._verbose = v
-        self.log.setLevel(ql_resolve_logger_level(self._verbose))
-        if self.interpreter:
-            self.arch.utils.setup_output()
+
+        self.log.setLevel(resolve_logger_level(v))
+        self.arch.utils.setup_output(v)
 
     @property
-    def patch_bin(self) -> list:
+    def patch_bin(self) -> List[Tuple[int, bytes]]:
         """ Return the patches for binary.
 
             Type: list
@@ -561,7 +392,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         return self._patch_bin
 
     @property
-    def patch_lib(self) -> list:
+    def patch_lib(self) -> List[Tuple[int, bytes, str]]:
         """ Return the patches for library.
 
             Type: list
@@ -580,27 +411,27 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         return self._debug_stop
 
     @debug_stop.setter
-    def debug_stop(self, ds):
-        self._debug_stop = ds
+    def debug_stop(self, enabled: bool):
+        self._debug_stop = enabled
 
     @property
-    def debugger(self) -> Union[str, bool]:
+    def debugger(self) -> bool:
+        return bool(self._debugger)
+
+    @debugger.setter
+    def debugger(self, dbger: Union[str, bool]):
         """ Enable debugger.
 
-            Type: debugger instance
             Values:
               - "gdb": enable gdb.
               - True : an alias to "gdb".
               - "gdb:0.0.0.0:1234" : gdb which listens on 0.0.0.0:1234
               - "qdb": enable qdb.
               - "qdb:rr": enable qdb with reverse debugging support.
+
             Example: ql.debugger = True
                      ql.debugger = "qdb"
         """
-        return self._debugger
-
-    @debugger.setter
-    def debugger(self, dbger):
         self._debugger = dbger
 
     @property
@@ -610,172 +441,193 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             Example: - Qiling(filter=r'^exit')
                      - ql.filter = r'^open'
         """
-        return self._filter
+
+        lf = self._log_filter
+
+        return '' if lf is None else lf._filter.pattern
 
     @filter.setter
-    def filter(self, ft):
-        self._filter = ft
-        if self._log_filter is None:
-            self._log_filter = RegexFilter(ft)
-            self.log.addFilter(self._log_filter)
+    def filter(self, regex: Optional[str]):
+        if regex is None:
+            if self._log_filter is not None:
+                self.log.removeFilter(self._log_filter)
+
         else:
-            self._log_filter.update_filter(ft)
+            if self._log_filter is None:
+                self._log_filter = RegexFilter(regex)
+
+                self.log.addFilter(self._log_filter)
+
+            self._log_filter.update_filter(regex)
 
     @property
-    def uc(self) -> Uc:
+    def uc(self) -> 'Uc':
         """ Raw uc instance.
 
-            Type: Ucgit
+            Type: Uc
         """
-        return self._uc
-
-    @uc.setter
-    def uc(self, u):
-        self._uc = u
+        return self.arch.uc
 
     @property
-    def stop_options(self) -> "QlStopOptions":
-        """ The stop options configured:
-            - stackpointer: Stop execution on a negative stackpointer
-            - exit_trap: Stop execution when the ip enters a guarded region
-            - any: Is any of the options enabled?
+    def stop_options(self) -> QL_STOP:
+        """ The stop options configured (multiple options apply):
+            - `QL_STOP.STACK_POINTER` : Stop execution on a negative stackpointer
+            - `QL_STOP.EXIT_TRAP`     : Stop execution when the pc value enters a guarded region
 
-        Returns:
-            QlStopOptions: What stop options are configured
+        Returns: configured options
         """
         return self._stop_options
 
-    def __enable_bin_patch(self):
-        
-        for addr, code in self.patch_bin:
-            self.mem.write(self.loader.load_address + addr, code)
+    def do_bin_patch(self):
+        ba = self.loader.load_address
 
+        for offset, code in self.patch_bin:
+            self.mem.write(ba + offset, code)
 
-    def enable_lib_patch(self):
-        for addr, code, filename in self.patch_lib:
-            try:
-                self.mem.write(self.mem.get_lib_base(filename) + addr, code)
-            except:
-                raise RuntimeError("Fail to patch %s at address 0x%x" % (filename, addr))
+    def do_lib_patch(self):
+        for offset, code, filename in self.patch_lib:
+            ba = self.mem.get_lib_base(filename)
+
+            if ba is None:
+                raise RuntimeError(f'Patch failed: there is no loaded library named "{filename}"')
+
+            self.mem.write(ba + offset, code)
 
     def _init_stop_guard(self):
-        if not self.stop_options.any:
+        if not self.stop_options:
             return
 
         # Allocate a guard page, we need this in both cases
         # On a negative stack pointer, we still need a return address (otherwise we end up at 0)
         # Make sure it is not close to the heap (PE), otherwise the heap cannot grow
         self._exit_trap_addr = self.mem.find_free_space(0x1000, minaddr=0x9000000, align=0x10)
-        self.mem.map(self._exit_trap_addr, 0x1000, info='[Stop guard]')
+        self.mem.map(self._exit_trap_addr, 0x1000, info='[Stop guard page]')
 
         # Stop on a negative stack pointer
-        if self.stop_options.stackpointer:
-            def _check_sp(ql, address, size):
+        if QL_STOP.STACK_POINTER in self.stop_options:
+            def _check_sp(ql: Qiling, address: int, size: int):
                 if not ql.loader.skip_exit_check:
-                    sp = ql._initial_sp - ql.reg.arch_sp
-                    if sp < 0:
+                    if ql._initial_sp < ql.arch.regs.arch_sp:
                         self.log.info('Process returned from entrypoint (stackpointer)!')
                         ql.emu_stop()
 
             self.hook_code(_check_sp)
 
         # Stop when running to exit trap address
-        if self.stop_options.exit_trap:
-            def _exit_trap(ql):
+        if QL_STOP.EXIT_TRAP in self.stop_options:
+            def _exit_trap(ql: Qiling):
                 self.log.info('Process returned from entrypoint (exit_trap)!')
                 ql.emu_stop()
 
             self.hook_address(_exit_trap, self._exit_trap_addr)
 
     def write_exit_trap(self):
-        self._initial_sp = self.reg.arch_sp
-        if self.stop_options.any:
+        self._initial_sp = self.arch.regs.arch_sp
+
+        if self.stop_options:
             if not self.loader.skip_exit_check:
-                self.log.debug(f'Setting up exit trap at 0x{hex(self._exit_trap_addr)}')
+                self.log.debug(f'Setting up exit trap at {self._exit_trap_addr:#x}')
                 self.stack_write(0, self._exit_trap_addr)
-            elif self.stop_options.exit_trap:
-                self.log.debug(f'Loader {self.loader} requested to skip exit_trap!')
+
+            elif QL_STOP.EXIT_TRAP in self.stop_options:
+                self.log.debug(f'Loader requested to skip exit_trap!')
 
 
     ###############
     # Qiling APIS #
     ###############
 
-    # Emulate the binary from begin until @end, with timeout in @timeout and
-    # number of emulated instructions in @count
-    def run(self, begin=None, end=None, timeout=0, count=0, code = None):
+    def run(self, begin: Optional[int] = None, end: Optional[int] = None, timeout: int = 0, count: int = 0):
+        """Start binary emulation.
+
+        Args:
+            begin   : emulation starting address
+            end     : emulation ending address
+            timeout : limit emulation to a specific amount of time (microseconds); unlimited by default
+            count   : limit emulation to a specific amount of instructions; unlimited by default
+        """
+
         # replace the original entry point, exit point, timeout and count
         self.entry_point = begin
         self.exit_point = end
         self.timeout = timeout
-        self.count = count        
+        self.count = count
 
-        # init debugger
-        if self._debugger != False and self._debugger != None and not self.interpreter:
-            self._debugger = debugger_setup(self._debugger, self)
+        # init debugger (if set)
+        debugger = select_debugger(self._debugger)
 
-        if self.interpreter:
-            return self.arch.run(code)
+        if debugger:
+            debugger = debugger(self)
 
-        elif self.baremetal:
-            self.__enable_bin_patch()
+        # patch binary
+        self.do_bin_patch()
+
+        if self.baremetal:
             if self.count <= 0:
                 self.count = -1
-            self.arch.run(count=self.count, end=self.exit_point)        
+
+            self.arch.run(count=self.count, end=self.exit_point)
         else:
             self.write_exit_trap()
-            # patch binary
-            self.__enable_bin_patch()
             # emulate the binary
             self.os.run()
 
         # run debugger
-        if self._debugger != False and self._debugger != None:
-            self._debugger.run()
-            
+        if debugger and self.debugger:
+            debugger.run()
+
 
     # patch code to memory address
-    def patch(self, addr, code, file_name=b''):
-        if file_name == b'':
-            self.patch_bin.append((addr, code))
+    def patch(self, offset: int, data: bytes, target: str = None) -> None:
+        """Volatilely patch binary and libraries with arbitrary content.
+        Patching may be done prior to emulation start.
+
+        Args:
+            offset: offset in target to patch
+            data: patch data
+            target: target library name to patch (or `None` for the main executable binary)
+        """
+
+        if target is None:
+            self.patch_bin.append((offset, data))
         else:
-            self.patch_lib.append((addr, code, file_name.decode()))
+            self.patch_lib.append((offset, data, target))
 
 
     # save all qiling instance states
-    def save(self, reg=True, mem=True, fd=False, cpu_context=False, os_context=False, loader=False, snapshot=None):
+    def save(self, reg=True, mem=True, fd=False, cpu_context=False, os=False, loader=False, *, snapshot: str = None):
         saved_states = {}
 
-        if reg == True:
-            saved_states.update({"reg": self.reg.save()})
+        if reg:
+            saved_states["reg"] = self.arch.regs.save()
 
-        if mem == True:
-            saved_states.update({"mem": self.mem.save()})
+        if mem:
+            saved_states["mem"] = self.mem.save()
 
-        if fd == True: 
-            saved_states.update({"fd": self.os.fd.save()})
+        if fd:
+            saved_states["fd"] = self.os.fd.save()
 
-        if cpu_context == True:
-            saved_states.update({"cpu_context": self.arch.context_save()})
+        if cpu_context:
+            saved_states["cpu_context"] = self.arch.save()
 
-        if os_context == True:
-            saved_states.update({"os_context": self.os.save()})
+        if os:
+            saved_states["os"] = self.os.save()
 
-        if loader == True:
-            saved_states.update({"loader": self.loader.save()})
+        if loader:
+            saved_states["loader"] = self.loader.save()
 
-        if snapshot != None:
+        if snapshot is not None:
             with open(snapshot, "wb") as save_state:
                 pickle.dump(saved_states, save_state)
-        else:
-            return saved_states
+
+        return saved_states
 
 
     # restore states qiling instance from saved_states
-    def restore(self, saved_states=None, snapshot=None):
+    def restore(self, saved_states: Mapping[str, Any] = {}, *, snapshot: str = None):
 
         # snapshot will be ignored if saved_states is set
-        if saved_states == None and snapshot != None:
+        if (not saved_states) and (snapshot is not None):
             with open(snapshot, "rb") as load_state:
                 saved_states = pickle.load(load_state)
 
@@ -783,10 +635,10 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             self.mem.restore(saved_states["mem"])
 
         if "cpu_context" in saved_states:
-            self.arch.context_restore(saved_states["cpu_context"])
+            self.arch.restore(saved_states["cpu_context"])
 
         if "reg" in saved_states:
-            self.reg.restore(saved_states["reg"])
+            self.arch.regs.restore(saved_states["reg"])
 
         if "fd" in saved_states:
             self.os.fd.restore(saved_states["fd"])
@@ -797,24 +649,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         if "loader" in saved_states:
             self.loader.restore(saved_states["loader"])
 
-
-    # Either hook or replace syscall/api with custom api/syscall
-    #  - if intercept is None, replace syscall with custom function
-    #  - if intercept is ENTER/EXIT, hook syscall at enter/exit with custom function
-    # If replace function name is needed, first syscall must be available
-    # - ql.set_syscall(0x04, my_syscall_write)
-    # - ql.set_syscall("write", my_syscall_write)
-    # TODO: Add correspoinding API in ql.os!
-    def set_syscall(self, target_syscall, intercept_function, intercept = None):
-        self.os.set_syscall(target_syscall, intercept_function, intercept)
-
-
-    # Either replace or hook API
-    #  - if intercept is None, replace API with custom function
-    #  - if intercept is ENTER/EXIT, hook API at enter/exit with custom function
-    def set_api(self, api_name, intercept_function, intercept = None):
-        self.os.set_api(api_name, intercept_function, intercept)
- 
 
     # Map "ql_path" to any objects which implements QlFsMappedObject.
     def add_fs_mapper(self, ql_path, real_dest):
@@ -842,23 +676,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
     def stack_write(self, offset, data):
         return self.arch.stack_write(offset, data)
 
-    # Assembler/Diassembler API
-    @property
-    def assembler(self):
-        return self.create_assembler()
-
-
-    @property
-    def disassembler(self):
-        return self.create_disassembler()
-
-
-    def create_disassembler(self):
-        return self.arch.create_disassembler()
-
-
-    def create_assembler(self):
-        return self.arch.create_assembler()
 
     # stop emulation
     def emu_stop(self):
@@ -876,8 +693,17 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             self.uc.emu_stop()    
 
     # start emulation
-    def emu_start(self, begin, end, timeout=0, count=0):
+    def emu_start(self, begin: int, end: int, timeout: int = 0, count: int = 0):
+        """Start emulation.
+
+        Args:
+            begin   : emulation starting address
+            end     : emulation ending address
+            timeout : max emulation time (in microseconds); unlimited by default
+            count  : max emulation steps (instructions count); unlimited by default
+        """
+
         self.uc.emu_start(begin, end, timeout, count)
 
-        if self._internal_exception != None:
+        if self._internal_exception is not None:
             raise self._internal_exception

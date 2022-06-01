@@ -8,14 +8,15 @@ import os
 import sys
 import ast
 import pickle
-import unicorn
+
+from unicorn import __version__ as uc_ver
+from qiling import __version__ as ql_ver
 
 from qiling import Qiling
 from qiling.arch import utils as arch_utils
 from qiling.debugger.qdb import QlQdb
 from qiling.utils import arch_convert
 from qiling.const import QL_VERBOSE, QL_ENDIAN, os_map, arch_map, verbose_map
-from qiling.__version__ import __version__ as ql_version
 from qiling.extensions.coverage import utils as cov_utils
 from qiling.extensions import report
 
@@ -28,21 +29,24 @@ def read_file(fname: str):
 
 class __arg_env(argparse.Action):
     def __call__(self, parser, namespace, values, option_string):
-        env = {}
-
         if os.path.exists(values):
             with open(values, 'rb') as f:
                 env = pickle.load(f)
         else:
             env = ast.literal_eval(values)
 
-        setattr(namespace, self.dest, env)
+        setattr(namespace, self.dest, env or {})
 
 class __arg_verbose(argparse.Action):
     def __call__(self, parser, namespace, values, option_string):
         setattr(namespace, self.dest, verbose_map[values])
 
 def handle_code(options: argparse.Namespace):
+    archendian = {
+        'little': QL_ENDIAN.EL,
+        'big'   : QL_ENDIAN.EB
+    }[options.endian]
+
     if options.format == 'hex':
         if options.input is not None:
             print ("Load HEX from ARGV")
@@ -64,12 +68,7 @@ def handle_code(options: argparse.Namespace):
         assembly = read_file(options.filename)
         archtype = arch_convert(options.arch)
 
-        archendian = {
-            'little': QL_ENDIAN.EL,
-            'big'   : QL_ENDIAN.EB
-        }[options.endian]
-
-        assembler = arch_utils.assembler(archtype, archendian)
+        assembler = arch_utils.assembler(archtype, archendian, options.thumb)
         code, _ = assembler.asm(assembly)
         code = bytes(code)
 
@@ -87,10 +86,10 @@ def handle_code(options: argparse.Namespace):
         code=code,
         ostype=options.os,
         archtype=options.arch,
-        bigendian=(options.endian == 'big'),
         verbose=options.verbose,
         profile=options.profile,
-        filter=options.filter
+        filter=options.filter,
+        endian=archendian,
     )
 
     return ql
@@ -119,7 +118,8 @@ def handle_run(options: argparse.Namespace):
         log_file=options.log_file,
         log_plain=options.log_plain,
         multithread=options.multithread,
-        filter=options.filter
+        filter=options.filter,
+        libcache=options.libcache
     )
 
     # attach Qdb at entry point
@@ -168,9 +168,9 @@ def handle_examples(parser: argparse.ArgumentParser):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--version', action='version', version=f'qltool for Qiling {ql_version}, using Unicorn {unicorn.__version__}')
+    parser.add_argument('--version', action='version', version=f'qltool for Qiling {ql_ver}, using Unicorn {uc_ver}')
 
-    commands = parser.add_subparsers(title='sub commands', description='select execution mode', dest='subcommand')
+    commands = parser.add_subparsers(title='sub commands', description='select execution mode', dest='subcommand', required=True)
 
     # set "run" subcommand options
     run_parser = commands.add_parser('run', help='run a program')
@@ -184,9 +184,10 @@ if __name__ == '__main__':
     code_parser.add_argument('-f', '--filename', metavar="FILE", help="filename")
     code_parser.add_argument('-i', '--input', metavar="INPUT", dest="input", help='input hex value')
     code_parser.add_argument('--arch', required=True, choices=arch_map)
-    code_parser.add_argument('--endian', choices=('little', 'big'), default='little')
+    code_parser.add_argument('--thumb', action='store_true', help='specify thumb mode for ARM')
+    code_parser.add_argument('--endian', choices=('little', 'big'), default='little', help='specify endianess for bi-endian archs')
     code_parser.add_argument('--os', required=True, choices=os_map)
-    code_parser.add_argument('--rootfs', help='emulated root filesystem, that is where all libraries reside')
+    code_parser.add_argument('--rootfs', default='.', help='emulated root filesystem, that is where all libraries reside')
     code_parser.add_argument('--format', choices=('asm', 'hex', 'bin'), default='bin', help='input file format')
 
     # set "examples" subcommand
@@ -199,7 +200,7 @@ if __name__ == '__main__':
 
     # set common options
     comm_parser.add_argument('-v', '--verbose', choices=verbose_map, default=QL_VERBOSE.DEFAULT, action=__arg_verbose, help='set verbosity level')
-    comm_parser.add_argument('--env', metavar="FILE", action=__arg_env, help="pickle file containing an environment dictionary")
+    comm_parser.add_argument('--env', metavar="FILE", action=__arg_env, default={}, help="pickle file containing an environment dictionary")
     comm_parser.add_argument('-g', '--gdb', nargs='?', metavar='SERVER:PORT', const='gdb', help='enable gdb server')
     comm_parser.add_argument('--qdb', action='store_true', help='attach Qdb at entry point, it\'s MIPS, ARM(THUMB) supported only for now')
     comm_parser.add_argument('--rr', action='store_true', help='switch on record and replay feature in qdb, only works with --qdb')
@@ -215,21 +216,14 @@ if __name__ == '__main__':
     comm_parser.add_argument('-c', '--coverage-file', default=None, help='code coverage file name')
     comm_parser.add_argument('--coverage-format', default='drcov', choices=cov_utils.factory.formats, help='code coverage file format')
     comm_parser.add_argument('--json', action='store_true', help='print a json report of the emulation')
+    comm_parser.add_argument('--libcache', action='store_true', help='enable dll caching for windows')
     options = parser.parse_args()
-
-    # subparser argument required=True is not supported in python 3.6
-    # manually check whether the user did not specify a subcommand (execution mode)
-    if not options.subcommand:
-        parser.error('please select execution mode')
 
     if options.subcommand == 'examples':
         handle_examples(parser)
 
-    if options.debug_stop and options.verbose not in (QL_VERBOSE.DEBUG, QL_VERBOSE.DUMP):
-        parser.error('the debug_stop option requires verbose to be set to either "debug" or "dump"')
-
     # ql file setup
-    if options.subcommand == 'run':
+    elif options.subcommand == 'run':
         ql = handle_run(options)
 
     # ql code setup
@@ -246,6 +240,9 @@ if __name__ == '__main__':
         ql.debugger = argval
 
     if options.debug_stop:
+        if options.verbose not in (QL_VERBOSE.DEBUG, QL_VERBOSE.DUMP):
+            parser.error('the debug_stop option requires verbose to be set to either "debug" or "dump"')
+
         ql.debug_stop = True
 
     if options.root:

@@ -26,11 +26,11 @@ def execute_protocol_notifications(ql: Qiling, from_hook: bool = False) -> bool:
 	if not ql.loader.notify_list:
 		return False
 
-	next_hook = ql.loader.context.heap.alloc(ql.pointersize)
+	next_hook = ql.loader.context.heap.alloc(ql.arch.pointersize)
 
 	def __notify_next(ql: Qiling):
 		# discard previous callback's shadow space
-		ql.reg.arch_sp += (4 * ql.pointersize)
+		ql.arch.regs.arch_sp += (4 * ql.arch.pointersize)
 
 		if ql.loader.notify_list:
 			event_id, notify_func, callback_args = ql.loader.notify_list.pop(0)
@@ -44,22 +44,22 @@ def execute_protocol_notifications(ql: Qiling, from_hook: bool = False) -> bool:
 			ql.loader.context.heap.free(next_hook)
 			hret.remove()
 
-			ql.reg.rax = EFI_SUCCESS
-			ql.reg.arch_pc = ql.stack_pop()
+			ql.arch.regs.rax = EFI_SUCCESS
+			ql.arch.regs.arch_pc = ql.stack_pop()
 
 	hret = ql.hook_address(__notify_next, next_hook)
 
 	# __notify_next unwinds the previous callback shadow space allocated by call_function. however, on its first invocation
 	# there is no such shadow space. to maintain stack consistency we set here a bogus shadow space that may be discarded
 	# safely
-	ql.reg.arch_sp -= (4 * ql.pointersize)
+	ql.arch.regs.arch_sp -= (4 * ql.arch.pointersize)
 
 	# To avoid having two versions of the code the first notify function will also be called from the __notify_next hook.
 	if from_hook:
 		ql.stack_push(next_hook)
 	else:
 		ql.stack_push(ql.loader.context.end_of_execution_ptr)
-		ql.reg.arch_pc = next_hook
+		ql.arch.regs.arch_pc = next_hook
 
 	return True
 
@@ -67,49 +67,49 @@ def ptr_read8(ql: Qiling, addr: int) -> int:
 	"""Read BYTE data from a pointer
 	"""
 
-	return ql.unpack8(ql.mem.read(addr, 1))
+	return ql.mem.read_ptr(addr, 1)
 
 def ptr_write8(ql: Qiling, addr: int, val: int) -> None:
 	"""Write BYTE data to a pointer
 	"""
 
-	ql.mem.write(addr, ql.pack8(val))
+	ql.mem.write_ptr(addr, val, 1)
 
 def ptr_read16(ql: Qiling, addr: int) -> int:
 	"""Read WORD data from a pointer
 	"""
 
-	return ql.unpack16(ql.mem.read(addr, 2))
+	return ql.mem.read_ptr(addr, 2)
 
 def ptr_write16(ql: Qiling, addr: int, val: int) -> None:
 	"""Write WORD data to a pointer
 	"""
 
-	ql.mem.write(addr, ql.pack16(val))
+	ql.mem.write_ptr(addr, val, 2)
 
 def ptr_read32(ql: Qiling, addr: int) -> int:
 	"""Read DWORD data from a pointer
 	"""
 
-	return ql.unpack32(ql.mem.read(addr, 4))
+	return ql.mem.read_ptr(addr, 4)
 
 def ptr_write32(ql: Qiling, addr: int, val: int) -> None:
 	"""Write DWORD data to a pointer
 	"""
 
-	ql.mem.write(addr, ql.pack32(val))
+	ql.mem.write_ptr(addr, val, 4)
 
 def ptr_read64(ql: Qiling, addr: int) -> int:
 	"""Read QWORD data from a pointer
 	"""
 
-	return ql.unpack64(ql.mem.read(addr, 8))
+	return ql.mem.read_ptr(addr, 8)
 
 def ptr_write64(ql: Qiling, addr: int, val: int) -> None:
 	"""Write QWORD data to a pointer
 	"""
 
-	ql.mem.write(addr, ql.pack64(val))
+	ql.mem.write_ptr(addr, val, 8)
 
 # backward comptability
 read_int8   = ptr_read8
