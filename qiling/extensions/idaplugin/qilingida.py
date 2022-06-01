@@ -878,7 +878,7 @@ class QlEmuQiling:
     def __init__(self):
         self.path = None
         self.rootfs = None
-        self.ql: Qiling
+        self.ql: Qiling = None
         self.status = None
         self.exit_addr = None
         self.baseaddr = None
