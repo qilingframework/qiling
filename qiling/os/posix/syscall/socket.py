@@ -609,8 +609,7 @@ def ql_syscall_sendto(ql: Qiling, sockfd: int, sendto_buf, sendto_len, sendto_fl
         ql.log.debug("sendto() len is " + str(sendto_len))
 
         if sin_family == 1:
-            path = data[2 : ].split(b'\x00')[0]
-            path = ql.os.path.transform_to_real_path(path.decode())
+            path = ql_unix_socket_path(ql, data[2:])
 
             ql.log.debug("sendto() path is " + str(path))
             regreturn = sock.sendto(bytes(tmp_buf), sendto_flags, path)
