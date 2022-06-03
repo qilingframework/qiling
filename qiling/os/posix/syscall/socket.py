@@ -68,14 +68,14 @@ def ql_bin_to_ip(ip):
 
 
 def ql_unix_socket_path(ql: Qiling, sun_path: bytearray) -> str:
-    sun_path_str = sun_path.decode()
     if sun_path[0] == 0:
         # Abstract Unix namespace
         # TODO: isolate from host namespace
         # TODO: Windows
         ql.log.warning(f'Beware! Usage of hosts abstract socket namespace {bytes(sun_path)}')
-        return sun_path_str
-    return ql.os.path.transform_to_real_path(sun_path_str)
+        return sun_path.decode()
+    sun_path = sun_path.split(b'\0')[0].decode()
+    return ql.os.path.transform_to_real_path(sun_path)
 
 
 def ql_syscall_socket(ql: Qiling, socket_domain, socket_type, socket_protocol):
