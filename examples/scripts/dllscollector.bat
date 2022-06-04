@@ -83,7 +83,6 @@ CALL :collect_dll32 version.dll
 CALL :collect_dll32 win32u.dll
 CALL :collect_dll32 winhttp.dll
 CALL :collect_dll32 wininet.dll
-CALL :collect_dll32 wininet.dll
 CALL :collect_dll32 winmm.dll
 CALL :collect_dll32 ws2_32.dll
 CALL :collect_dll32 wsock32.dll
@@ -106,13 +105,20 @@ CALL :collect_dll64 KernelBase.dll
 CALL :collect_dll64 msvcrt.dll
 CALL :collect_dll64 ntdll.dll
 CALL :collect_dll64 ntoskrnl.exe
+CALL :collect_dll64 msvcp_win.dll
 CALL :collect_dll64 ucrtbase.dll
 CALL :collect_dll64 ucrtbased.dll
 CALL :collect_dll64 urlmon.dll
+CALL :collect_dll64 rpcrt4.dll
+CALL :collect_dll64 sechost.dll
+CALL :collect_dll64 shell32.dll
+CALL :collect_dll64 shlwapi.dll
 CALL :collect_dll64 user32.dll
 CALL :collect_dll64 vcruntime140.dll
 CALL :collect_dll64 vcruntime140d.dll
 CALL :collect_dll64 win32u.dll
+CALL :collect_dll64 winhttp.dll
+CALL :collect_dll64 wininet.dll
 CALL :collect_dll64 ws2_32.dll
 
 CALL :collect_dll64 downlevel\api-ms-win-crt-heap-l1-1-0.dll
