@@ -554,19 +554,22 @@ def ql_syscall_recvfrom(ql: Qiling, sockfd: int, buf: int, length: int, flags: i
         ql.log.debug("%s" % tmp_buf)
 
     sin_family = int(sock.family)
-    data = struct.pack("<h", sin_family)
+    sockaddr_out = struct.pack("<h", sin_family)
 
     if sin_family == 1:
-        ql.log.debug("recvfrom() path is " + tmp_addr)
-        data += tmp_addr.encode()
+        # Abstract Unix socket path is not filled in recvfrom
+        ql.log.debug(f"recvfrom() path is '{tmp_addr or 'UNIX ABSTRACT NAMESPACE'}'")
+        if tmp_addr:
+            sockaddr_out += tmp_addr.encode()
     else:
         ql.log.debug("recvfrom() addr is %s:%d" % (tmp_addr[0], tmp_addr[1]))
-        data += struct.pack(">H", tmp_addr[1])
-        data += ipaddress.ip_address(tmp_addr[0]).packed
+        sockaddr_out += struct.pack(">H", tmp_addr[1])
+        sockaddr_out += ipaddress.ip_address(tmp_addr[0]).packed
         addrlen = ql.mem.read_ptr(addrlen)
-        data = data[:addrlen]
+        sockaddr_out = sockaddr_out[:addrlen]
 
-    ql.mem.write(addr, data)
+    if addr:
+        ql.mem.write(addr, sockaddr_out)
     ql.mem.write(buf, tmp_buf)
 
     return len(tmp_buf)
