@@ -475,23 +475,15 @@ class QlGdb(QlDebugger):
                     return f'l{content}'
 
                 elif feature == 'auxv' and op == 'read':
-                    auxv_data = bytearray()
+                    try:
+                        with self.ql.os.fs_mapper.open('/proc/self/auxv', 'rb') as infile:
+                            infile.seek(offset, 0) # SEEK_SET
+                            auxv_data = infile.read(length)
 
-                    if hasattr(self.ql.loader, 'auxv'):
-                        nbytes = self.ql.arch.bits // 8
+                    except FileNotFoundError:
+                        auxv_data = b''
 
-                        auxv_addr = self.ql.loader.auxv + offset
-                        null_entry = bytes(nbytes * 2)
-
-                        # keep reading until AUXV.AT_NULL is reached
-                        while not auxv_data.endswith(null_entry):
-                            auxv_data.extend(self.ql.mem.read(auxv_addr, nbytes))
-                            auxv_addr += nbytes
-
-                            auxv_data.extend(self.ql.mem.read(auxv_addr, nbytes))
-                            auxv_addr += nbytes
-
-                    return b'l' + auxv_data[:length]
+                    return b'l' + auxv_data
 
                 elif feature == 'exec-file' and op == 'read':
                     return f'l{os.path.abspath(self.ql.path)}'
