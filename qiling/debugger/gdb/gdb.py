@@ -494,7 +494,7 @@ class QlGdb(QlDebugger):
                     return b'l' + auxv_data[:length]
 
                 elif feature == 'exec-file' and op == 'read':
-                    return f'l{os.path.abspath(self.ql.path)}'
+                    return f'l{self.ql.os.path.host_to_virtual_path(self.ql.path)}'
 
                 elif feature == 'libraries-svr4' and op == 'read':
                     # TODO: this one requires information of loaded libraries which currently not provided
@@ -584,16 +584,20 @@ class QlGdb(QlDebugger):
                         flags = int(flags, 16)
                         mode = int(mode, 16)
 
-                        # try to guess whether this is an emulated path or real one
-                        if path.startswith(os.path.abspath(self.ql.rootfs)):
-                            host_path = path
+                        virtpath = self.ql.os.path.virtual_abspath(path)
+
+                        if virtpath.startswith(r'/proc'):
+                            # TODO: we really need a centralized virtual filesystem to open
+                            # both emulated (like procfs) and real files, and manage their
+                            # file descriptors seamlessly
+                            fd = -1
                         else:
                             host_path = self.ql.os.path.virtual_to_host_path(path)
 
-                        self.ql.log.debug(f'{PROMPT} target file: {host_path}')
+                            self.ql.log.debug(f'{PROMPT} target host path: {host_path}')
 
-                        if os.path.exists(host_path) and not path.startswith(r'/proc'):
-                            fd = os.open(host_path, flags, mode)
+                            if os.path.exists(host_path):
+                                fd = os.open(host_path, flags, mode)
 
                     return f'F{fd:x}'
 
