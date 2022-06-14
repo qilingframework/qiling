@@ -42,6 +42,9 @@ extras = {
     "fuzz" : [
         "unicornafl>=2.0.0;platform_system=='Windows'",
         "fuzzercorn>=0.0.1;platform_system=='Linux'"
+    ],
+    "SCA" : [
+        "r2libr"
     ]
 }
 
