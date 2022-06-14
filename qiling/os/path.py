@@ -42,9 +42,9 @@ class QlOsPath:
         self.cwd = cwd
 
         # <TEMPORARY>
+        # temporary aliases for backward compatibility
         self.transform_to_relative_path = self.virtual_abspath
         self.transform_to_real_path = self.virtual_to_host_path
-        self.transform_to_link_path = self.virtual_to_host_path
         # </TEMPORARY>
 
     @staticmethod
@@ -257,6 +257,23 @@ class QlOsPath:
 
         else:
             return True
+
+    def host_to_virtual_path(self, hostpath: str) -> str:
+        """Convert a host path to its corresponding virtual path relative to rootfs.
+
+        Args:
+            hostpath : host path
+
+        Returns: the corresponding virtual path
+
+        Raises: `ValueError` in case the host path does not map to a rootfs location
+        """
+
+        resolved = Path(hostpath).resolve(strict=False)
+        virtpath = self._cwd_anchor / resolved.relative_to(self._rootfs_path)
+
+        return str(virtpath)
+
 
     def virtual_abspath(self, virtpath: str) -> str:
         """Convert a relative virtual path to an absolute virtual path based

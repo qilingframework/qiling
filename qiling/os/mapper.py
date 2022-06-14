@@ -101,15 +101,17 @@ class QlFsMapper:
         if self.has_mapping(path):
             return self._open_mapping_ql_file(path, openflags, openmode)
 
-        real_path = self.path.transform_to_real_path(path)
-        return ql_file.open(real_path, openflags, openmode)
+        host_path = self.path.virtual_to_host_path(path)
+
+        return ql_file.open(host_path, openflags, openmode)
 
     def open(self, path: str, openmode: str):
         if self.has_mapping(path):
             return self._open_mapping(path, openmode)
 
-        real_path = self.path.transform_to_real_path(path)
-        return open(real_path, openmode)
+        host_path = self.path.virtual_to_host_path(path)
+
+        return open(host_path, openmode)
 
     def _parse_path(self, p: Union[os.PathLike, str]) -> str:
         fspath = getattr(p, '__fspath__', None)
