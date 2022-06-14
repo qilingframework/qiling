@@ -1,5 +1,6 @@
 
 from abc import abstractmethod
+from typing import Optional
 
 from qiling import Qiling
 from qiling.arch.x86 import QlArchIntel
@@ -32,7 +33,7 @@ class GDTArray:
 
         self.mem.write(self.base + (index * self.entsize), data)
 
-    def get_next_free(self, start: int = None, end: int = None) -> int:
+    def get_next_free(self, start: Optional[int] = None, end: Optional[int] = None) -> int:
         # The Linux kernel determines whether the segment is empty by judging whether the content in the current GDT segment is 0.
         null_entry = b'\x00' * self.entsize
 
@@ -112,7 +113,7 @@ class GDTManager:
     def set_entry(self, index: int, data: bytes) -> None:
         self.array[index] = data
 
-    def get_free_idx(self, start: int = None, end: int = None) -> int:
+    def get_free_idx(self, start: Optional[int] = None, end: Optional[int] = None) -> int:
         return self.array.get_next_free(start, end)
 
 

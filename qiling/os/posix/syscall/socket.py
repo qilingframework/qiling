@@ -69,38 +69,44 @@ def ql_bin_to_ip(ip):
 
 def ql_syscall_socket(ql: Qiling, socket_domain, socket_type, socket_protocol):
     idx = next((i for i in range(NR_OPEN) if ql.os.fd[i] is None), -1)
-    regreturn = idx
 
     if idx != -1:
+        emu_socket_value = socket_type
+
         # ql_socket.open should use host platform based socket_type.
         try:
-            emu_socket_value = socket_type
             emu_socket_type = socket_type_mapping(socket_type, ql.arch.type, ql.os.type)
-            socket_type = getattr(socket, emu_socket_type)
-            ql.log.debug(f'Convert emu_socket_type {emu_socket_type}:{emu_socket_value} to host platform based socket_type {emu_socket_type}:{socket_type}')
-
-        except AttributeError:
-            ql.log.error(f'Cannot convert emu_socket_type {emu_socket_type}:{emu_socket_value} to host platform based socket_type')
-            raise
-
-        except Exception:
+        except KeyError:
             ql.log.error(f'Cannot convert emu_socket_type {emu_socket_value} to host platform based socket_type')
             raise
 
         try:
-            if ql.verbose >= QL_VERBOSE.DEBUG:  # set REUSEADDR options under debug mode
-                ql.os.fd[idx] = ql_socket.open(socket_domain, socket_type, socket_protocol, (socket.SOL_SOCKET, socket.SO_REUSEADDR, 1))
-            else:
-                ql.os.fd[idx] = ql_socket.open(socket_domain, socket_type, socket_protocol)
-        except OSError as e:  # May raise error: Protocol not supported
+            socket_type = getattr(socket, emu_socket_type)
+        except AttributeError:
+            ql.log.error(f'Cannot convert emu_socket_type {emu_socket_type}:{emu_socket_value} to host platform based socket_type')
+            raise
+
+        ql.log.debug(f'Convert emu_socket_type {emu_socket_type}:{emu_socket_value} to host platform based socket_type {emu_socket_type}:{socket_type}')
+
+        try:
+            sock = ql_socket.open(socket_domain, socket_type, socket_protocol)
+
+            # set REUSEADDR options under debug mode
+            if ql.verbose >= QL_VERBOSE.DEBUG:
+                sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+            ql.os.fd[idx] = sock
+
+        # May raise error: Protocol not supported
+        except OSError as e:
             ql.log.debug(f'{e}: {socket_domain=}, {socket_type=}, {socket_protocol=}')
-            regreturn = -1
+            idx = -1
 
     socket_type = socket_type_mapping(socket_type, ql.arch.type, ql.os.type)
     socket_domain = socket_domain_mapping(socket_domain, ql.arch.type, ql.os.type)
-    ql.log.debug("socket(%s, %s, %s) = %d" % (socket_domain, socket_type, socket_protocol, regreturn))
+    ql.log.debug("socket(%s, %s, %s) = %d" % (socket_domain, socket_type, socket_protocol, idx))
 
-    return regreturn
+    return idx
 
 
 def ql_syscall_connect(ql: Qiling, connect_sockfd, connect_addr, connect_addrlen):
@@ -146,29 +152,31 @@ def ql_syscall_getsockopt(ql: Qiling, sockfd, level, optname, optval_addr, optle
 
     try:
         optlen = min(ql.unpack32s(ql.mem.read(optlen_addr, 4)), 1024)
+
         if optlen < 0:
             return -EINVAL
 
+        emu_level = level
+
         try:
-            emu_level = level
             emu_level_name = socket_level_mapping(emu_level, ql.arch.type, ql.os.type)
+        except KeyError:
+            ql.log.error(f"Can't convert emu_level {emu_level} to host platform based level")
+            raise
+
+        try:
             level = getattr(socket, emu_level_name)
-            ql.log.debug("Convert emu_level {}:{} to host platform based level {}:{}".format(
-                emu_level_name, emu_level, emu_level_name, level))
-
         except AttributeError:
-            ql.log.error("Can't convert emu_level {}:{} to host platform based emu_level".format(
-                emu_level_name, emu_level))
+            ql.log.error(f"Can't convert emu_level {emu_level_name}:{emu_level} to host platform based emu_level")
             raise
 
-        except Exception:
-            ql.log.error("Can't convert emu_level {} to host platform based level".format(emu_level))
-            raise
+        ql.log.debug(f"Convert emu_level {emu_level_name}:{emu_level} to host platform based level {emu_level_name}:{level}")
+
+        emu_opt = optname
 
         try:
-            emu_opt = optname
-
             emu_level_name = socket_level_mapping(emu_level, ql.arch.type, ql.os.type)
+
             # emu_opt_name is based on level
             if emu_level_name == "IPPROTO_IP":
                 emu_opt_name = socket_ip_option_mapping(emu_opt, ql.arch.type, ql.os.type)
@@ -180,18 +188,17 @@ def ql_syscall_getsockopt(ql: Qiling, sockfd, level, optname, optval_addr, optle
                 if emu_opt_name.endswith("_NEW") or emu_opt_name.endswith("_OLD"):
                     emu_opt_name = emu_opt_name[:-4]
 
+        except KeyError:
+            ql.log.error(f"Can't convert emu_optname {emu_opt} to host platform based optname")
+            raise
+
+        try:
             optname = getattr(socket, emu_opt_name)
-            ql.log.debug("Convert emu_optname {}:{} to host platform based optname {}:{}".format(
-                emu_opt_name, emu_opt, emu_opt_name, optname))
-
         except AttributeError:
-            ql.log.error("Can't convert emu_optname {}:{} to host platform based emu_optname".format(
-                emu_opt_name, emu_opt))
+            ql.log.error(f"Can't convert emu_optname {emu_opt_name}:{emu_opt} to host platform based emu_optname")
             raise
 
-        except Exception:
-            ql.log.error("Can't convert emu_optname {} to host platform based optname".format(emu_opt))
-            raise
+        ql.log.debug(f"Convert emu_optname {emu_opt_name}:{emu_opt} to host platform based optname {emu_opt_name}:{optname}")
 
         optval = ql.os.fd[sockfd].getsockopt(level, optname, optlen)
         ql.mem.write(optval_addr, optval)
@@ -210,26 +217,27 @@ def ql_syscall_setsockopt(ql: Qiling, sockfd, level, optname, optval_addr, optle
         ql.os.fd[sockfd].setsockopt(level, optname, None, optlen)
     else:
         try:
+            emu_level = level
+
             try:
-                emu_level = level
                 emu_level_name = socket_level_mapping(emu_level, ql.arch.type, ql.os.type)
+            except KeyError:
+                ql.log.error(f"Can't convert emu_level {emu_level} to host platform based level")
+                raise
+
+            try:
                 level = getattr(socket, emu_level_name)
-                ql.log.debug("Convert emu_level {}:{} to host platform based level {}:{}".format(
-                    emu_level_name, emu_level, emu_level_name, level))
-
             except AttributeError:
-                ql.log.error("Can't convert emu_level {}:{} to host platform based emu_level".format(
-                    emu_level_name, emu_level))
+                ql.log.error(f"Can't convert emu_level {emu_level_name}:{emu_level} to host platform based emu_level")
                 raise
 
-            except Exception:
-                ql.log.error("Can't convert emu_level {} to host platform based level".format(emu_level))
-                raise
+            ql.log.debug(f"Convert emu_level {emu_level_name}:{emu_level} to host platform based level {emu_level_name}:{level}")
+
+            emu_opt = optname
 
             try:
-                emu_opt = optname
-
                 emu_level_name = socket_level_mapping(emu_level, ql.arch.type, ql.os.type)
+
                 # emu_opt_name is based on level
                 if emu_level_name == "IPPROTO_IP":
                     emu_opt_name = socket_ip_option_mapping(emu_opt, ql.arch.type, ql.os.type)
@@ -241,18 +249,17 @@ def ql_syscall_setsockopt(ql: Qiling, sockfd, level, optname, optval_addr, optle
                     if emu_opt_name.endswith("_NEW") or emu_opt_name.endswith("_OLD"):
                         emu_opt_name = emu_opt_name[:-4]
 
+            except KeyError:
+                ql.log.error(f"Can't convert emu_optname {emu_opt} to host platform based optname")
+                raise
+
+            try:
                 optname = getattr(socket, emu_opt_name)
-                ql.log.debug("Convert emu_optname {}:{} to host platform based optname {}:{}".format(
-                    emu_opt_name, emu_opt, emu_opt_name, optname))
-
             except AttributeError:
-                ql.log.error("Can't convert emu_optname {}:{} to host platform based emu_optname".format(
-                    emu_opt_name, emu_opt))
+                ql.log.error(f"Can't convert emu_optname {emu_opt_name}:{emu_opt} to host platform based emu_optname")
                 raise
 
-            except Exception:
-                ql.log.error("Can't convert emu_optname {} to host platform based optname".format(emu_opt))
-                raise
+            ql.log.debug(f"Convert emu_optname {emu_opt_name}:{emu_opt} to host platform based optname {emu_opt_name}:{optname}")
 
             optval = ql.mem.read(optval_addr, optlen)
             ql.os.fd[sockfd].setsockopt(level, optname, optval, None)
@@ -304,13 +311,13 @@ def ql_syscall_bind(ql: Qiling, bind_fd, bind_addr, bind_addrlen):
 
     # need a proper fix, for now ipv4 comes first
     elif sin_family == 2 and ql.os.bindtolocalhost == True:
-        ql.os.fd[bind_fd].bind(('127.0.0.1', port))
         host = "127.0.0.1"
+        ql.os.fd[bind_fd].bind((host, port))
 
     # IPv4 should comes first
     elif ql.os.ipv6 == True and sin_family == 10 and ql.os.bindtolocalhost == True:
-        ql.os.fd[bind_fd].bind(('::1', port))
         host = "::1"
+        ql.os.fd[bind_fd].bind((host, port))
 
     elif ql.os.bindtolocalhost == False:
         ql.os.fd[bind_fd].bind((host, port))
