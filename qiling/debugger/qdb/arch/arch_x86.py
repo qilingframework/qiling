@@ -21,7 +21,7 @@ class ArchX86(Arch):
                 "eax", "ebx", "ecx", "edx",
                 "esp", "ebp", "esi", "edi",
                 "eip", "ss", "cs", "ds", "es",
-                "fs", "gs", "ef",
+                "fs", "gs", "eflags",
                 )
 
     def read_insn(self, address: int) -> bytes:
@@ -34,7 +34,7 @@ class ArchX86(Arch):
     @staticmethod
     def get_flags(bits: int) -> Mapping[str, bool]:
         """
-        get flags from ql.reg.ef
+        get flags from ql.reg.eflags
         """
 
         return {

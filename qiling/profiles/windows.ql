@@ -40,7 +40,6 @@ split = False
 # maily for multiple times Ql run with one file
 # usage: append = test1
 append =
-automatize_input = False
 current_path = C:\
 
 [SYSTEM]
