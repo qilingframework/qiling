@@ -53,6 +53,8 @@
 - madprogrammer
 - danielmoos
 - sigeryang
+- bet4it
+- nullableVoidPtr
 
 
 #### Legacy Core Developers

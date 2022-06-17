@@ -4,7 +4,7 @@ from abc import abstractmethod
 from qiling import Qiling
 from qiling.arch.x86 import QlArchIntel
 from qiling.arch.x86_const import *
-from qiling.exception import QlGDTError
+from qiling.exception import QlGDTError, QlMemoryMappedError
 from qiling.os.memory import QlMemoryManager
 
 class GDTArray:
@@ -50,8 +50,10 @@ class GDTManager:
     def __init__(self, ql: Qiling, base = QL_X86_GDT_ADDR, limit = QL_X86_GDT_LIMIT, num_entries = 16):
         ql.log.debug(f'Mapping GDT at {base:#x} with limit {limit:#x}')
 
-        if not ql.mem.is_mapped(base, limit):
-            ql.mem.map(base, limit, info="[GDT]")
+        if not ql.mem.is_available(base, limit):
+            raise QlMemoryMappedError('cannot map GDT, memory location is taken')
+
+        ql.mem.map(base, limit, info="[GDT]")
 
         # setup GDT by writing to GDTR
         ql.arch.regs.write(UC_X86_REG_GDTR, (0, base, limit, 0x0))

@@ -13,13 +13,11 @@ def __RegOpenKey(ql: Qiling, address: int, params):
     hKey = params["hKey"]
     lpSubKey = params["lpSubKey"]
     phkResult = params["phkResult"]
-    ql.log.debug("Key %s %s" % (hKey, lpSubKey))
 
     if hKey not in REG_KEYS:
-        ql.log.debug("Key %s %s not present" % (hKey, lpSubKey))
         return ERROR_FILE_NOT_FOUND
-    else:
-        s_hKey = REG_KEYS[hKey]
+
+    s_hKey = REG_KEYS[hKey]
     key = s_hKey + "\\" + lpSubKey
 
     # Keys in the profile are saved as KEY\PARAM = VALUE, so i just want to check that the key is the same
@@ -39,48 +37,49 @@ def __RegOpenKey(ql: Qiling, address: int, params):
         ql.mem.write_ptr(phkResult, new_handle.id)
     return ERROR_SUCCESS
 
-def __RegQueryValue(ql: Qiling, address: int, params):
+def __RegQueryValue(ql: Qiling, address: int, params, wstring: bool):
     ret = ERROR_SUCCESS
 
     hKey = params["hKey"]
-    s_lpValueName = params["lpValueName"]
+    lpValueName = params["lpValueName"]
     lpType = params["lpType"]
     lpData = params["lpData"]
     lpcbData = params["lpcbData"]
     s_hKey = ql.os.handle_manager.get(hKey).obj
     params["hKey"] = s_hKey
     # read reg_type
-    reg_type = Registry.RegNone if lpType == 0 else ql.unpack32(ql.mem.read(lpType, 4))
+    reg_type = Registry.RegNone if lpType == 0 else ql.mem.read_ptr(lpType, 4)
 
-    try:
-        # Keys in the profile are saved as KEY\PARAM = VALUE, so i just want to check that the key is the same
-        value = ql.os.profile["REGISTRY"][s_hKey + "\\" + s_lpValueName]
-        ql.log.debug("Using profile for value of key %s" % (s_hKey + "\\" + s_lpValueName,))
+    # try reading the registry key value from profile first.
+    # if the key is not specified in profile, proceed to registry manager
 
-        # TODO i have no fucking idea on how to set a None value, fucking configparser
-        if value == "None":
-            return ERROR_FILE_NOT_FOUND
+    keyname = f'{s_hKey}\\{lpValueName}'
+    value = ql.os.profile["REGISTRY"].get(keyname)
+
+    if value is None:
+        reg_type, value = ql.os.registry_manager.read(s_hKey, lpValueName, reg_type)
+
+    else:
+        ql.log.debug(f'Value for {keyname} was read from profile')
 
         reg_type = Registry.RegSZ
         # set that the registry has been accessed
-        ql.os.registry_manager.access(s_hKey, s_lpValueName, value, reg_type)
-
-    except KeyError:
-        # Read the registry
-        reg_type, value = ql.os.registry_manager.read(s_hKey, s_lpValueName, reg_type)
+        ql.os.registry_manager.access(s_hKey, lpValueName, reg_type, value)
 
     # error key
     if reg_type is None or value is None:
         ql.log.debug("Key value not found")
         return ERROR_FILE_NOT_FOUND
-    else:
-        # set lpData
-        length = ql.os.registry_manager.write_reg_value_into_mem(value, reg_type, lpData)
-        # set lpcbData
-        max_size = int.from_bytes(ql.mem.read(lpcbData, 4), byteorder="little")
-        ql.mem.write_ptr(lpcbData, length)
-        if max_size < length:
-            ret = ERROR_MORE_DATA
+
+    # set lpData
+    length = ql.os.registry_manager.write_reg_value_into_mem(reg_type, lpData, value, wstring)
+
+    # set lpcbData
+    max_size = ql.mem.read_ptr(lpcbData, 4)
+    ql.mem.write_ptr(lpcbData, length, 4)
+
+    if max_size < length:
+        ret = ERROR_MORE_DATA
 
     return ret
 
@@ -91,19 +90,21 @@ def __RegCreateKey(ql: Qiling, address: int, params):
     lpSubKey = params["lpSubKey"]
     phkResult = params["phkResult"]
 
-    if not (hKey in REG_KEYS):
+    if hKey not in REG_KEYS:
         return ERROR_FILE_NOT_FOUND
-    else:
-        s_hKey = REG_KEYS[hKey]
-        params["hKey"] = s_hKey
 
-        if not ql.os.registry_manager.exists(s_hKey + "\\" + lpSubKey):
-            ql.os.registry_manager.create(s_hKey + "\\" + lpSubKey)
-            ret = ERROR_SUCCESS
+    s_hKey = REG_KEYS[hKey]
+    params["hKey"] = s_hKey
+
+    keyname = f'{s_hKey}\\{lpSubKey}'
+
+    if not ql.os.registry_manager.exists(keyname):
+        ql.os.registry_manager.create(keyname)
+        ret = ERROR_SUCCESS
 
     # new handle
     if ret == ERROR_SUCCESS:
-        new_handle = Handle(obj=s_hKey + "\\" + lpSubKey)
+        new_handle = Handle(obj=keyname)
         ql.os.handle_manager.append(new_handle)
         if phkResult != 0:
             ql.mem.write_ptr(phkResult, new_handle.id)
@@ -113,31 +114,33 @@ def __RegCreateKey(ql: Qiling, address: int, params):
 
     return ret
 
-def __RegSetValue(ql: Qiling, address: int, params):
+def __RegSetValue(ql: Qiling, address: int, params, wstring: bool):
     hKey = params["hKey"]
     lpSubKey = params["lpSubKey"]
     dwType = params["dwType"]
     lpData = params["lpData"]
+    cbData = params["cbData"]
 
     s_hKey = ql.os.handle_manager.get(hKey).obj
     # this is done so the print_function would print the correct value
     params["hKey"] = s_hKey
 
-    ql.os.registry_manager.write(s_hKey, lpSubKey, dwType, lpData)
+    # dwType is expected to be REG_SZ and lpData to point to a null-terminated string
+    ql.os.registry_manager.write(s_hKey, lpSubKey, dwType, lpData, cbData, wstring)
 
     return ERROR_SUCCESS
 
-def __RegSetValueEx(ql: Qiling, address: int, params):
+def __RegSetValueEx(ql: Qiling, address: int, params, wstring: bool):
     hKey = params["hKey"]
     lpValueName = params["lpValueName"]
     dwType = params["dwType"]
     lpData = params["lpData"]
+    cbData = params["cbData"]
 
     s_hKey = ql.os.handle_manager.get(hKey).obj
     params["hKey"] = s_hKey
 
-    # BUG: lpData should be handled according to the value in dwType
-    ql.os.registry_manager.write(s_hKey, lpValueName, dwType, lpData)
+    ql.os.registry_manager.write(s_hKey, lpValueName, dwType, lpData, cbData, wstring)
 
     return ERROR_SUCCESS
 
@@ -240,7 +243,7 @@ def hook_RegOpenKeyA(ql: Qiling, address: int, params):
     'lpcbData'    : LPDWORD
 })
 def hook_RegQueryValueExA(ql: Qiling, address: int, params):
-    return __RegQueryValue(ql, address, params)
+    return __RegQueryValue(ql, address, params, wstring=False)
 
 # LSTATUS RegQueryValueExW(
 #   HKEY    hKey,
@@ -259,7 +262,7 @@ def hook_RegQueryValueExA(ql: Qiling, address: int, params):
     'lpcbData'    : LPDWORD
 })
 def hook_RegQueryValueExW(ql: Qiling, address: int, params):
-    return __RegQueryValue(ql, address, params)
+    return __RegQueryValue(ql, address, params, wstring=True)
 
 # LSTATUS RegCloseKey(
 #   HKEY hKey
@@ -340,7 +343,7 @@ def hook_RegCreateKeyExW(ql: Qiling, address: int, params):
     'cbData'   : DWORD
 })
 def hook_RegSetValueA(ql: Qiling, address: int, params):
-    return __RegSetValue(ql, address, params)
+    return __RegSetValue(ql, address, params, wstring=False)
 
 @winsdkapi(cc=STDCALL, params={
     'hKey'     : HKEY,
@@ -350,7 +353,7 @@ def hook_RegSetValueA(ql: Qiling, address: int, params):
     'cbData'   : DWORD
 })
 def hook_RegSetValueW(ql: Qiling, address: int, params):
-    return __RegSetValue(ql, address, params)
+    return __RegSetValue(ql, address, params, wstring=False)
 
 # LSTATUS RegSetValueExA(
 #   HKEY       hKey,
@@ -369,7 +372,7 @@ def hook_RegSetValueW(ql: Qiling, address: int, params):
     'cbData'      : DWORD
 })
 def hook_RegSetValueExA(ql: Qiling, address: int, params):
-    return __RegSetValueEx(ql, address, params)
+    return __RegSetValueEx(ql, address, params, wstring=False)
 
 # LSTATUS RegSetValueExW(
 #   HKEY       hKey,
@@ -388,7 +391,7 @@ def hook_RegSetValueExA(ql: Qiling, address: int, params):
     'cbData'      : DWORD
 })
 def hook_RegSetValueExW(ql: Qiling, address: int, params):
-    return __RegSetValueEx(ql, address, params)
+    return __RegSetValueEx(ql, address, params, wstring=True)
 
 # LSTATUS RegDeleteKeyA(
 #   HKEY   hKey,
@@ -457,8 +460,10 @@ def hook_GetTokenInformation(ql: Qiling, address: int, params):
 
     token = ql.os.handle_manager.get(TokenHandle).obj
     information_value = token.get(TokenInformationClass)
-    ql.mem.write(ReturnLength, len(information_value).to_bytes(4, byteorder="little"))
-    return_size = int.from_bytes(ql.mem.read(ReturnLength, 4), byteorder="little")
+
+    ql.mem.write_ptr(ReturnLength, len(information_value), 4)
+    return_size = ql.mem.read_ptr(ReturnLength, 4)
+
     ql.log.debug("The target is checking for its permissions")
 
     if return_size > TokenInformationLength:
@@ -659,13 +664,9 @@ def hook_StartServiceA(ql: Qiling, address: int, params):
 })
 def hook_AllocateAndInitializeSid(ql: Qiling, address: int, params):
     count = params["nSubAuthorityCount"]
-    subs = b""
+    subs = b''.join(ql.pack32(params[f'nSubAuthority{i}']) for i in range(count))
 
-    for i in range(count):
-        sub = params[f"nSubAuthority{i}"]
-        subs += sub.to_bytes(4, "little")
-
-    sid = Sid(ql, revision=1, identifier=5, subs=subs, subs_count=count)
+    sid = Sid(ql, revision=1, subs_count=count, identifier=5, subs=subs)
     sid_addr = ql.os.heap.alloc(sid.size)
     sid.write(sid_addr)
 
@@ -685,34 +686,46 @@ __poweruserssid = None # Power Users (S-1-5-32-547)
 
 def get_adminsid(ql):
     global __adminsid
-    if __adminsid == None:
-        # nSubAuthority0 = SECURITY_BUILTIN_DOMAIN_RID[0x20], nSubAuthority1 = DOMAIN_ALIAS_RID_ADMINS[0x220]
+
+    if __adminsid is None:
+        # nSubAuthority0 = SECURITY_BUILTIN_DOMAIN_RID[0x20]
+        # nSubAuthority1 = DOMAIN_ALIAS_RID_ADMINS[0x220]
         subs = b"\x20\x00\x00\x00\x20\x02\x00\x00"
         __adminsid = Sid(ql, revision=1, identifier=5, subs=subs, subs_count=2)
+
     return __adminsid
 
 def get_userssid(ql):
     global __userssid
-    if __userssid == None:
-        # nSubAuthority0 = SECURITY_BUILTIN_DOMAIN_RID[0x20], nSubAuthority1 = DOMAIN_ALIAS_RID_USERS[0x221]
+
+    if __userssid is None:
+        # nSubAuthority0 = SECURITY_BUILTIN_DOMAIN_RID[0x20]
+        # nSubAuthority1 = DOMAIN_ALIAS_RID_USERS[0x221]
         subs = b"\x20\x00\x00\x00\x21\x02\x00\x00"
         __userssid = Sid(ql, revision=1, identifier=5, subs=subs, subs_count=2)
+
     return __userssid
 
 def get_guestssid(ql):
     global __guestssid
-    if __guestssid == None:
-        # nSubAuthority0 = SECURITY_BUILTIN_DOMAIN_RID[0x20], nSubAuthority1 = DOMAIN_ALIAS_RID_GUESTS[0x222]
+
+    if __guestssid is None:
+        # nSubAuthority0 = SECURITY_BUILTIN_DOMAIN_RID[0x20]
+        # nSubAuthority1 = DOMAIN_ALIAS_RID_GUESTS[0x222]
         subs = b"\x20\x00\x00\x00\x22\x02\x00\x00"
         __guestssid = Sid(ql, revision=1, identifier=5, subs=subs, subs_count=2)
+
     return __guestssid
 
 def get_poweruserssid(ql):
     global __poweruserssid
-    if __poweruserssid == None:
-        # nSubAuthority0 = SECURITY_BUILTIN_DOMAIN_RID[0x20], nSubAuthority1 = DOMAIN_ALIAS_RID_POWER_USERS[0x223]
+
+    if __poweruserssid is None:
+        # nSubAuthority0 = SECURITY_BUILTIN_DOMAIN_RID[0x20]
+        # nSubAuthority1 = DOMAIN_ALIAS_RID_POWER_USERS[0x223]
         subs = b"\x20\x00\x00\x00\x23\x02\x00\x00"
         __poweruserssid = Sid(ql, revision=1, identifier=5, subs=subs, subs_count=2)
+
     return __poweruserssid
 
 

@@ -9,209 +9,96 @@ thoughout the qiling framework
 """
 
 from functools import partial
-import importlib, os, copy, re, pefile, logging, yaml
+from pathlib import Path
+import importlib, inspect, os
 
 from configparser import ConfigParser
-from logging import LogRecord
-from typing import Any, Container, IO, List, Optional, Sequence, TextIO, Tuple, Type, Union
-from enum import Enum
+from types import ModuleType
+from typing import TYPE_CHECKING, Any, Callable, Mapping, Optional, Tuple, TypeVar, Union
 
 from unicorn import UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
 
 from qiling.exception import *
-from qiling.const import QL_VERBOSE, QL_ARCH, QL_ENDIAN, QL_OS, QL_DEBUGGER
-from qiling.const import debugger_map, arch_map, os_map, arch_os_map, loader_map
-from qiling.os.posix.const import NR_OPEN
+from qiling.const import QL_ARCH, QL_ENDIAN, QL_OS, QL_DEBUGGER
+from qiling.const import debugger_map, arch_map, os_map, arch_os_map
 
-FMT_STR = "%(levelname)s\t%(message)s"
+if TYPE_CHECKING:
+    from qiling import Qiling
+    from qiling.arch.arch import QlArch
+    from qiling.debugger.debugger import QlDebugger
+    from qiling.loader.loader import QlLoader
+    from qiling.os.os import QlOs
 
-# \033 -> ESC
-# ESC [ -> CSI
-# CSI %d;%d;... m -> SGR
-class COLOR_CODE:
-    WHITE   = '\033[37m'
-    CRIMSON = '\033[31m'
-    RED     = '\033[91m'
-    GREEN   = '\033[92m'
-    YELLOW  = '\033[93m'
-    BLUE    = '\033[94m'
-    MAGENTA = '\033[95m'
-    CYAN    = '\033[96m'
-    ENDC    = '\033[0m'
+T = TypeVar('T')
+QlClassInit = Callable[['Qiling'], T]
 
-class QlBaseFormatter(logging.Formatter):
-    __level_tag = {
-        'WARNING'  : '[!]',
-        'INFO'     : '[=]',
-        'DEBUG'    : '[+]',
-        'CRITICAL' : '[x]',
-        'ERROR'    : '[x]'
-    }
-
-    def __init__(self, ql, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.ql = ql
-
-    def get_level_tag(self, level: str) -> str:
-        return self.__level_tag[level]
-
-    def get_thread_tag(self, thread: str) -> str:
-        return thread
-
-    def format(self, record: LogRecord):
-        # In case we have multiple formatters, we have to keep a copy of the record.
-        record = copy.copy(record)
-
-        # early logging may access ql.os when it is not yet set
+def catch_KeyboardInterrupt(ql: 'Qiling', func: Callable):
+    def wrapper(*args, **kw):
         try:
-            cur_thread = self.ql.os.thread_management.cur_thread
-        except AttributeError:
-            tid = f''
-        else:
-            tid = self.get_thread_tag(str(cur_thread))
+            return func(*args, **kw)
+        except BaseException as e:
+            ql.stop()
+            ql._internal_exception = e
 
-        level = self.get_level_tag(record.levelname)
-        record.levelname = f'{level} {tid}'
+    return wrapper
 
-        return super().format(record)
+def __name_to_enum(name: str, mapping: Mapping[str, T], aliases: Mapping[str, str] = {}) -> Optional[T]:
+    key = name.casefold()
 
-class QlColoredFormatter(QlBaseFormatter):
-    __level_color = {
-        'WARNING'  : COLOR_CODE.YELLOW,
-        'INFO'     : COLOR_CODE.BLUE,
-        'DEBUG'    : COLOR_CODE.MAGENTA,
-        'CRITICAL' : COLOR_CODE.CRIMSON,
-        'ERROR'    : COLOR_CODE.RED
-    }
+    return mapping.get(aliases.get(key) or key)
 
-    def get_level_tag(self, level: str) -> str:
-        s = super().get_level_tag(level)
-
-        return f'{self.__level_color[level]}{s}{COLOR_CODE.ENDC}'
-
-    def get_thread_tag(self, tid: str) -> str:
-        s = super().get_thread_tag(tid)
-
-        return f'{COLOR_CODE.GREEN}{s}{COLOR_CODE.ENDC}'
-
-class RegexFilter(logging.Filter):
-    def __init__(self, regexp):
-        super(RegexFilter, self).__init__()
-        self.update_filter(regexp)
-    
-    def update_filter(self, regexp):
-        self._filter = re.compile(regexp)
-
-    def filter(self, record: LogRecord):
-        msg = record.getMessage()
-
-        return re.match(self._filter, msg) is not None
-
-class QlFileDes:
-    def __init__(self):
-        self.__fds: List[Optional[IO]] = [None] * NR_OPEN
-
-    def __len__(self):
-        return len(self.__fds)
-
-    def __getitem__(self, idx: int):
-        return self.__fds[idx]
-
-    def __setitem__(self, idx: int, val: Optional[IO]):
-        self.__fds[idx] = val
-
-    def __iter__(self):
-        return iter(self.__fds)
-
-    def __repr__(self):
-        return repr(self.__fds)
-
-    def save(self):
-        return self.__fds
-
-    def restore(self, fds):
-        self.__fds = fds
-
-
-def catch_KeyboardInterrupt(ql):
-    def decorator(func):
-        def wrapper(*args, **kw):
-            try:
-                return func(*args, **kw)
-            except BaseException as e:
-                ql.stop()
-                ql._internal_exception = e
-
-        return wrapper
-
-    return decorator
-
-def enum_values(e: Type[Enum]) -> Container:
-    return e.__members__.values()
-
-def ql_is_valid_ostype(ostype: QL_OS) -> bool:
-    return ostype in enum_values(QL_OS)
-
-def ql_is_valid_arch(arch: QL_ARCH) -> bool:
-    return arch in enum_values(QL_ARCH)
-
-def loadertype_convert_str(ostype: QL_OS) -> Optional[str]:
-    return loader_map.get(ostype)
-
-def __value_to_key(e: Type[Enum], val: Any) -> Optional[str]:
-    key = e._value2member_map_[val]
-
-    return None if key is None else key.name
-
-def ostype_convert_str(ostype: QL_OS) -> Optional[str]:
-    return __value_to_key(QL_OS, ostype)
-
-def ostype_convert(ostype: str) -> Optional[QL_OS]:
+def os_convert(os: str) -> Optional[QL_OS]:
     alias_map = {
-        "darwin": "macos",
+        'darwin' : 'macos'
     }
 
-    return os_map.get(alias_map.get(ostype, ostype))
-
-def arch_convert_str(arch: QL_ARCH) -> Optional[str]:
-    return __value_to_key(QL_ARCH, arch)
+    return __name_to_enum(os, os_map, alias_map)
 
 def arch_convert(arch: str) -> Optional[QL_ARCH]:
     alias_map = {
-        "x86_64": "x8664",
-        "riscv32": "riscv",
+        'x86_64'  : 'x8664',
+        'riscv32' : 'riscv'
     }
-    
-    return arch_map.get(alias_map.get(arch, arch))
+
+    return __name_to_enum(arch, arch_map, alias_map)
+
+def debugger_convert(debugger: str) -> Optional[QL_DEBUGGER]:
+    return __name_to_enum(debugger, debugger_map)
 
 def arch_os_convert(arch: QL_ARCH) -> Optional[QL_OS]:
     return arch_os_map.get(arch)
 
-def debugger_convert(debugger: str) -> Optional[QL_DEBUGGER]:
-    return debugger_map.get(debugger)
-
-def debugger_convert_str(debugger_id: QL_DEBUGGER) -> Optional[str]:
-    return __value_to_key(QL_DEBUGGER, debugger_id)
-
-# Call `function_name` in `module_name`.
-# e.g. map_syscall in qiling.os.linux.map_syscall
-def ql_get_module_function(module_name: str, function_name: str):
-
+def ql_get_module(module_name: str) -> ModuleType:
     try:
-        imp_module = importlib.import_module(module_name)
-    except ModuleNotFoundError:
-        raise QlErrorModuleNotFound(f'Unable to import module {module_name}')
-    except KeyError:
+        module = importlib.import_module(module_name, 'qiling')
+    except (ModuleNotFoundError, KeyError):
         raise QlErrorModuleNotFound(f'Unable to import module {module_name}')
 
+    return module
+
+def ql_get_module_function(module_name: str, member_name: str):
+    module = ql_get_module(module_name)
+
     try:
-        module_function = getattr(imp_module, function_name)
+        member = getattr(module, member_name)
     except AttributeError:
-        raise QlErrorModuleFunctionNotFound(f'Unable to import {function_name} from {imp_module}')
+        raise QlErrorModuleFunctionNotFound(f'Unable to import {member_name} from {module_name}')
 
-    return module_function
+    return member
 
-def ql_elf_parse_emu_env(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], Optional[QL_ENDIAN]]:
+def __emu_env_from_pathname(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], Optional[QL_ENDIAN]]:
+    if os.path.isdir(path) and path.endswith('.kext'):
+        return QL_ARCH.X8664, QL_OS.MACOS, QL_ENDIAN.EL
+
+    if os.path.isfile(path):
+        _, ext = os.path.splitext(path)
+
+        if ext in ('.DOS_COM', '.DOS_MBR', '.DOS_EXE'):
+            return QL_ARCH.A8086, QL_OS.DOS, QL_ENDIAN.EL
+
+    return None, None, None
+
+def __emu_env_from_elf(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], Optional[QL_ENDIAN]]:
     # instead of using full-blown elffile parsing, we perform a simple parsing to avoid
     # external dependencies for target systems that do not need them.
     #
@@ -240,6 +127,7 @@ def ql_elf_parse_emu_env(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS],
     EM_X86_64  = 62
     EM_AARCH64 = 183
     EM_RISCV   = 243
+    EM_PPC     = 20
 
     endianess = {
         ELFDATA2LSB : (QL_ENDIAN.EL, 'little'),
@@ -250,7 +138,8 @@ def ql_elf_parse_emu_env(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS],
         EM_386   : QL_ARCH.X86,
         EM_MIPS  : QL_ARCH.MIPS,
         EM_ARM   : QL_ARCH.ARM,
-        EM_RISCV : QL_ARCH.RISCV
+        EM_RISCV : QL_ARCH.RISCV,
+        EM_PPC   : QL_ARCH.PPC
     }
 
     machines64 = {
@@ -312,7 +201,7 @@ def ql_elf_parse_emu_env(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS],
 
     return archtype, ostype, archendian
 
-def ql_macho_parse_emu_env(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], Optional[QL_ENDIAN]]:
+def __emu_env_from_macho(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], Optional[QL_ENDIAN]]:
     macho_macos_sig64 = b'\xcf\xfa\xed\xfe'
     macho_macos_sig32 = b'\xce\xfa\xed\xfe'
     macho_macos_fat = b'\xca\xfe\xba\xbe'  # should be header for FAT
@@ -340,8 +229,9 @@ def ql_macho_parse_emu_env(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS
 
     return arch, ostype, endian
 
+def __emu_env_from_pe(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], Optional[QL_ENDIAN]]:
+    import pefile
 
-def ql_pe_parse_emu_env(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], Optional[QL_ENDIAN]]:
     try:
         pe = pefile.PE(path, fast_load=True)
     except:
@@ -379,83 +269,110 @@ def ql_pe_parse_emu_env(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], 
 
     return arch, ostype, archendian
 
-
 def ql_guess_emu_env(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], Optional[QL_ENDIAN]]:
-    arch = None
-    ostype = None
-    endian = None
+    guessing_methods = (
+        __emu_env_from_pathname,
+        __emu_env_from_elf,
+        __emu_env_from_macho,
+        __emu_env_from_pe
+    )
 
-    if os.path.isdir(path) and path.endswith('.kext'):
-        return QL_ARCH.X8664, QL_OS.MACOS, QL_ENDIAN.EL
+    for gm in guessing_methods:
+        arch, ostype, endian = gm(path)
 
-    if os.path.isfile(path) and path.endswith('.DOS_COM'):
-        return QL_ARCH.A8086, QL_OS.DOS, QL_ENDIAN.EL
-
-    if os.path.isfile(path) and path.endswith('.DOS_MBR'):
-        return QL_ARCH.A8086, QL_OS.DOS, QL_ENDIAN.EL
-
-    if os.path.isfile(path) and path.endswith('.DOS_EXE'):
-        return QL_ARCH.A8086, QL_OS.DOS, QL_ENDIAN.EL
-
-    arch, ostype, endian = ql_elf_parse_emu_env(path)
-
-    if arch is None or ostype is None or endian is None:
-        arch, ostype, endian = ql_macho_parse_emu_env(path)
-
-    if arch is None or ostype is None or endian is None:
-        arch, ostype, endian = ql_pe_parse_emu_env(path)
+        if None not in (arch, ostype, endian):
+            break
+    else:
+        arch, ostype, endian = (None, ) * 3
 
     return arch, ostype, endian
 
+def select_loader(ostype: QL_OS, libcache: bool) -> QlClassInit['QlLoader']:
+    if ostype == QL_OS.WINDOWS:
+        kwargs = {'libcache' : libcache}
 
-def loader_setup(ql, ostype: QL_OS, libcache: bool):
-    args = [libcache] if ostype == QL_OS.WINDOWS else []
+    else:
+        kwargs = {}
 
-    qlloader_name = loadertype_convert_str(ostype)
-    qlloader_path = f'qiling.loader.{qlloader_name.lower()}'
-    qlloader_class = f'QlLoader{qlloader_name.upper()}'
+    module = {
+        QL_OS.LINUX   : r'elf',
+        QL_OS.FREEBSD : r'elf',
+        QL_OS.QNX     : r'elf',
+        QL_OS.MACOS   : r'macho',
+        QL_OS.WINDOWS : r'pe',
+        QL_OS.UEFI    : r'pe_uefi',
+        QL_OS.DOS     : r'dos',
+        QL_OS.EVM     : r'evm',
+        QL_OS.MCU     : r'mcu',
+        QL_OS.BLOB    : r'blob'
+    }[ostype]
+
+    qlloader_path = f'.loader.{module}'
+    qlloader_class = f'QlLoader{module.upper()}'
 
     obj = ql_get_module_function(qlloader_path, qlloader_class)
 
-    return obj(ql, *args)
+    return partial(obj, **kwargs)
 
-
-def component_setup(component_type: str, component_name: str, ql):
-    component_path = f'qiling.{component_type}.{component_name}'
+def select_component(component_type: str, component_name: str, **kwargs) -> QlClassInit[Any]:
+    component_path = f'.{component_type}.{component_name}'
     component_class = f'Ql{component_name.capitalize()}Manager'
 
     obj = ql_get_module_function(component_path, component_class)
 
-    return obj(ql)
+    return partial(obj, **kwargs)
 
-
-def debugger_setup(options: Union[str, bool], ql):
+def select_debugger(options: Union[str, bool]) -> Optional[QlClassInit['QlDebugger']]:
     if options is True:
         options = 'gdb'
 
     if type(options) is str:
         objname, *args = options.split(':')
+        dbgtype = debugger_convert(objname)
 
-        if debugger_convert(objname) not in enum_values(QL_DEBUGGER):
+        if dbgtype == QL_DEBUGGER.GDB:
+            kwargs = dict(zip(('ip', 'port'), args))
+
+        elif dbgtype == QL_DEBUGGER.QDB:
+            kwargs = {}
+
+            def __int_nothrow(v: str, /) -> Optional[int]:
+                try:
+                    return int(v, 0)
+                except ValueError:
+                    return None
+
+            # qdb init args are independent and may include any combination of: rr enable, init hook and script
+            for a in args:
+                if a == 'rr':
+                    kwargs['rr'] = True
+
+                elif __int_nothrow(a) is not None:
+                    kwargs['init_hook'] = a
+
+                else:
+                    kwargs['script'] = a
+
+        else:
             raise QlErrorOutput('Debugger not supported')
 
-        obj = ql_get_module_function(f'qiling.debugger.{objname}.{objname}', f'Ql{str.capitalize(objname)}')
+        obj = ql_get_module_function(f'.debugger.{objname}.{objname}', f'Ql{str.capitalize(objname)}')
 
-        return obj(ql, *args)
+        return partial(obj, **kwargs)
 
     return None
 
-def arch_setup(archtype: QL_ARCH, endian: QL_ENDIAN, thumb: bool, ql):
+def select_arch(archtype: QL_ARCH, endian: QL_ENDIAN, thumb: bool) -> QlClassInit['QlArch']:
     # set endianess and thumb mode for arm-based archs
     if archtype == QL_ARCH.ARM:
-        args = [endian, thumb]
+        kwargs = {'endian' : endian, 'thumb' : thumb}
 
     # set endianess for mips arch
     elif archtype == QL_ARCH.MIPS:
-        args = [endian]
+        kwargs = {'endian' : endian}
 
     else:
-        args = []
+        kwargs = {}
 
     module = {
         QL_ARCH.A8086    : r'x86',
@@ -467,43 +384,31 @@ def arch_setup(archtype: QL_ARCH, endian: QL_ENDIAN, thumb: bool, ql):
         QL_ARCH.EVM      : r'evm.evm',
         QL_ARCH.CORTEX_M : r'cortex_m',
         QL_ARCH.RISCV    : r'riscv',
-        QL_ARCH.RISCV64  : r'riscv64'
+        QL_ARCH.RISCV64  : r'riscv64',
+        QL_ARCH.PPC      : r'ppc'
     }[archtype]
 
-    qlarch_path = f'qiling.arch.{module}'
-    qlarch_class = f'QlArch{arch_convert_str(archtype).upper()}'
+    qlarch_path = f'.arch.{module}'
+    qlarch_class = f'QlArch{archtype.name.upper()}'
 
     obj = ql_get_module_function(qlarch_path, qlarch_class)
 
-    return obj(ql, *args)
+    return partial(obj, **kwargs)
 
-
-# This function is extracted from os_setup (QlOsPosix) so I put it here.
-def ql_syscall_mapping_function(ostype: QL_OS, archtype: QL_ARCH):
-    qlos_name = ostype_convert_str(ostype)
-    qlos_path = f'qiling.os.{qlos_name.lower()}.map_syscall'
-    qlos_func = 'get_syscall_mapper'
-
-    func = ql_get_module_function(qlos_path, qlos_func)
-
-    return func(archtype)
-
-
-def os_setup(ostype: QL_OS, ql):
-    qlos_name = ostype_convert_str(ostype)
-    qlos_path = f'qiling.os.{qlos_name.lower()}.{qlos_name.lower()}'
+def select_os(ostype: QL_OS) -> QlClassInit['QlOs']:
+    qlos_name = ostype.name
+    qlos_path = f'.os.{qlos_name.lower()}.{qlos_name.lower()}'
     qlos_class = f'QlOs{qlos_name.capitalize()}'
 
     obj = ql_get_module_function(qlos_path, qlos_class)
 
-    return obj(ql)
+    return partial(obj)
 
-
-def profile_setup(ql, ostype: QL_OS, filename: Optional[str]):
-    ql.log.debug(f'Profile: {filename or "default"}')
-
+def profile_setup(ostype: QL_OS, filename: Optional[str]):
     # mcu uses a yaml-based config
     if ostype == QL_OS.MCU:
+        import yaml
+
         if filename:
             with open(filename) as f:
                 config = yaml.load(f, Loader=yaml.Loader)
@@ -511,8 +416,8 @@ def profile_setup(ql, ostype: QL_OS, filename: Optional[str]):
             config = {}
 
     else:
-        qiling_home = os.path.dirname(os.path.abspath(__file__))
-        os_profile = os.path.join(qiling_home, 'profiles', f'{ostype_convert_str(ostype).lower()}.ql')
+        qiling_home = Path(inspect.getfile(inspect.currentframe())).parent
+        os_profile = qiling_home / 'profiles' / f'{ostype.name.lower()}.ql'
 
         profiles = [os_profile]
 
@@ -527,111 +432,6 @@ def profile_setup(ql, ostype: QL_OS, filename: Optional[str]):
 
     return config
 
-def ql_resolve_logger_level(verbose: QL_VERBOSE) -> int:
-    return {
-        QL_VERBOSE.DISABLED: logging.CRITICAL,
-        QL_VERBOSE.OFF     : logging.WARNING, 
-        QL_VERBOSE.DEFAULT : logging.INFO,
-        QL_VERBOSE.DEBUG   : logging.DEBUG,
-        QL_VERBOSE.DISASM  : logging.DEBUG,
-        QL_VERBOSE.DUMP    : logging.DEBUG
-    }[verbose]
-
-QL_INSTANCE_ID = 114514
-
-def __is_color_terminal(stream: TextIO) -> bool:
-    """Determine whether standard output is attached to a color terminal.
-
-    see: https://stackoverflow.com/questions/53574442/how-to-reliably-test-color-capability-of-an-output-terminal-in-python3
-    """
-
-    def __handle_nt(fd: int) -> bool:
-        import ctypes
-        import msvcrt
-
-        ENABLE_VIRTUAL_TERMINAL_PROCESSING = 4
-
-        kernel32 = ctypes.WinDLL('kernel32', use_last_error=True)
-        hstdout = msvcrt.get_osfhandle(fd)
-        mode = ctypes.c_ulong()
-
-        return kernel32.GetConsoleMode(hstdout, ctypes.byref(mode)) and (mode.value & ENABLE_VIRTUAL_TERMINAL_PROCESSING != 0)
-
-    def __handle_posix(fd: int) -> bool:
-        import curses
-
-        try:
-            curses.setupterm(fd=fd)
-        except curses.error:
-            return True
-        else:
-            return curses.tigetnum('colors') > 0
-
-    def __default(_: int) -> bool:
-        return True
-
-    handlers = {
-        'nt'    : __handle_nt,
-        'posix' : __handle_posix
-    }
-
-    handler = handlers.get(os.name, __default)
-
-    return handler(stream.fileno())
-
-# TODO: qltool compatibility
-def ql_setup_logger(ql, log_file: Optional[str], console: bool, filters: Optional[Sequence], log_override: Optional[logging.Logger], log_plain: bool):
-    global QL_INSTANCE_ID
-
-    # If there is an override for our logger, then use it.
-    if log_override is not None:
-        log = log_override
-    else:
-        # We should leave the root logger untouched.
-        log = logging.getLogger(f"qiling{QL_INSTANCE_ID}")
-        QL_INSTANCE_ID += 1
-
-        # Disable propagation to avoid duplicate output.
-        log.propagate = False
-        # Clear all handlers and filters.
-        log.handlers = []
-        log.filters = []
-
-        # Do we have console output?
-        if console:
-            handler = logging.StreamHandler()
-
-            if log_plain or not __is_color_terminal(handler.stream):
-                formatter = QlBaseFormatter(ql, FMT_STR)
-            else:
-                formatter = QlColoredFormatter(ql, FMT_STR)
-
-            handler.setFormatter(formatter)
-            log.addHandler(handler)
-        else:
-            handler = logging.NullHandler()
-            log.addHandler(handler)
-
-        # Do we have to write log to a file?
-        if log_file is not None:
-            handler = logging.FileHandler(log_file)
-            formatter = QlBaseFormatter(ql, FMT_STR)
-            handler.setFormatter(formatter)
-            log.addHandler(handler)
-
-    # Remeber to add filters if necessary.
-    # If there aren't any filters, we do add the filters until users specify any.
-    log_filter = None
-
-    if filters:
-        log_filter = RegexFilter(filters)
-        log.addFilter(log_filter)
-
-    log.setLevel(logging.INFO)
-
-    return log, log_filter
-
-
 # verify if emulator returns properly
 def verify_ret(ql, err):
     ql.log.debug("Got exception %u: init SP = %x, current SP = %x, PC = %x" %(err.errno, ql.os.init_sp, ql.arch.regs.arch_sp, ql.arch.regs.arch_pc))
@@ -640,7 +440,7 @@ def verify_ret(ql, err):
 
     # timeout is acceptable in this case
     if err.errno in (UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED):
-        if ql.ostype == QL_OS.MACOS:
+        if ql.os.type == QL_OS.MACOS:
             if ql.loader.kext_name:
                 # FIXME: Should I push saved RIP before every method callings of IOKit object?
                 if ql.os.init_sp == ql.arch.regs.arch_sp - 8:
@@ -663,3 +463,21 @@ def verify_ret(ql, err):
                 raise
     else:
         raise
+
+__all__ = [
+    'catch_KeyboardInterrupt',
+    'os_convert',
+    'arch_convert',
+    'debugger_convert',
+    'arch_os_convert',
+    'ql_get_module',
+    'ql_get_module_function',
+    'ql_guess_emu_env',
+    'select_os',
+    'select_arch',
+    'select_loader',
+    'select_debugger',
+    'select_component',
+    'profile_setup',
+    'verify_ret'
+]

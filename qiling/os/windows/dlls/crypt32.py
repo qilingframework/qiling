@@ -19,9 +19,11 @@ def _CryptStringToBinary(ql: Qiling, address: int, params) -> int:
     string_dst = params["pbBinary"]
     flag_dst = params["pdwFlags"]
 
-    size_dst = int.from_bytes(ql.mem.read(size_dst_pointer, 4), byteorder="little")
-    if size_dst != 0 and size_dst < size_src:
+    size_dst = ql.mem.read_ptr(size_dst_pointer, 4)
+
+    if size_dst and size_dst < size_src:
         raise QlErrorNotImplemented("API not implemented")
+
     if flag_src == CRYPT_STRING_BASE64:
         # Had a padding error, hope this always works
         add_pad = 4 - (len(string_src) % 4)
@@ -37,11 +39,13 @@ def _CryptStringToBinary(ql: Qiling, address: int, params) -> int:
         # Only wants the length
         return len(output)
     else:
-        if flag_dst != 0:
+        if flag_dst:
             # Is optional
-            ql.mem.write(flag_dst, flag_src.to_bytes(length=4, byteorder='little'))
+            ql.mem.write_ptr(flag_dst, flag_src, 4)
+
         # Write size
-        ql.mem.write(size_dst_pointer, len(output).to_bytes(length=4, byteorder='little'))
+        ql.mem.write_ptr(size_dst_pointer, len(output), 4)
+
         # Write result
         ql.mem.write(string_dst, bytes(output, encoding="utf-16le"))
     return 1

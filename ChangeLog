@@ -1,7 +1,14 @@
 This file details the changelog of Qiling Framework.
 
 ------------------------------------
-[Version 1.4.3]: April 7th, 2022
+[Version 1.4.4]: July XX, 2022
+
+
+------------------------------------
+[Version 1.4.3]: June 1st, 2022
+
+New features:
+- Introduce PowerPC architecture support (#1140)
 
 Improvements:
 - Fix fuzzing for tendaac15 (#1096)
@@ -10,11 +17,22 @@ Improvements:
 - Minor PE Loader fix (#1104)
 - Minor quality changes (#1106)
 - Fix cacheflush syscall typo (#1115)
+- Improvements and fixes for Windows and PE (#1118)
 - Add vm_context to EVM hooks (#1119)
 - Load interpreter segments with correct perms and vaddr (#1120)
 - Fix mistakes in fuzz_x8664_linux binary (#1121)
 - Add EVM ABI helpers, fix EVM DBG stack view (#1123)
 - Fix regression caused by missing exception handling when opening socket (#1124)
+- CI improvement (#1128 #1134)
+- Add macho load command 'LC_LOAD_WEAK_DYLIB' support (#1133)
+- Fix breakage of non-Windows binary emulation on Windows host (#1143)
+- Remove misused region bound check of unmap_all (#1144)
+- Change deprecated interfaces of IDA (#1145)
+- Use importlib to retrieve package version (#1146)
+- New and improved gdbserver (#1148)
+- Rewrite package data reading (#1150)
+- Misc improvements (#1154)
+- Fix memory exhaustion problem caused by the logger (#1161)
 
 Contributors:
 - wtdcode
@@ -22,9 +40,18 @@ Contributors:
 - elicn
 - xwings
 - cq674350529
+- elicn
 - TheZ3ro
 - bet4it
 - chinggg
+- kabeor
+- chfl4gs
+- profiles
+- OlfillasOdikno
+- nmantan
+- machinewu
+- nullableVoidPtr
+- Phat3
 
 
 ------------------------------------

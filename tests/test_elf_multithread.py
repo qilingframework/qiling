@@ -13,10 +13,8 @@ from qiling.os.filestruct import ql_file
 
 class ELFTest(unittest.TestCase):
 
+    @unittest.skipIf(platform.system() == "Darwin" and platform.machine() == "arm64", 'darwin host')
     def test_elf_linux_execve_x8664(self):
-        if platform.system() == "Darwin" and platform.machine() == "arm64":
-            return
-        
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/posix_syscall_execve"],  "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG)   
         ql.run()
 
@@ -31,9 +29,6 @@ class ELFTest(unittest.TestCase):
 
 
     def test_elf_linux_cloexec_x8664(self):
-        with open('../examples/rootfs/x8664_linux/testfile', 'wb') as f:
-            f.write(b'0123456789')
-
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_cloexec_test"],  
                     "../examples/rootfs/x8664_linux", 
                     verbose=QL_VERBOSE.DEBUG,

@@ -4,7 +4,7 @@
 #
 
 
-import sys, unittest
+import os, sys, unittest
 from pathlib import Path
 
 from unicorn import UcError
@@ -16,7 +16,10 @@ from qiling.os.const import STRING
 from qiling.os.macos.structs import *
 from qiling.os.macos.fncc import macos_kernel_api
 
+IS_FAST_TEST = 'QL_FAST_TEST' in os.environ
+
 class MACHOTest(unittest.TestCase):
+    @unittest.skipIf(IS_FAST_TEST, 'fast test')
     def test_macho_macos_superrootkit(self):
         # https://developer.apple.com/download/more
         # to download kernel.developmment

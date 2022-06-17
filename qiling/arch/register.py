@@ -102,12 +102,6 @@ class QlRegisterManager:
 
         return self.uc.reg_write(self.uc_pc, value)
 
-    @property
-    def arch_pc_name(self) -> str:
-        """Get the architectural program counter register name.
-        """
-
-        return next(k for k, v in self.register_mapping.items() if v == self.uc_pc)
 
     @property
     def arch_sp(self) -> int:

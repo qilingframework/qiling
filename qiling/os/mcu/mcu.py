@@ -3,8 +3,9 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from qiling.os.os import QlOs
+from qiling.const import QL_OS
 from qiling.const import QL_ARCH
+from qiling.os.os import QlOs
 from qiling.extensions.multitask import MultiTaskUnicorn, UnicornTask
 
 from unicorn import UC_ERR_OK
@@ -31,9 +32,10 @@ class MCUTask(UnicornTask):
 
 
 class QlOsMcu(QlOs):
+    type = QL_OS.MCU
+    
     def __init__(self, ql):
-        super(QlOsMcu, self).__init__(ql)
-
+        self.ql = ql
         self.runable = True
         self.fast_mode = False
 

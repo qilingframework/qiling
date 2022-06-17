@@ -4,7 +4,7 @@
 #
 
 from enum import Enum, Flag, IntEnum
-from typing import Any, Mapping, Type
+from typing import Mapping, Type, TypeVar
 
 class QL_ENDIAN(IntEnum):
     EL = 1
@@ -21,6 +21,7 @@ class QL_ARCH(IntEnum):
     CORTEX_M = 109
     RISCV = 110
     RISCV64 = 111
+    PPC = 112
 
 class QL_OS(IntEnum):
     LINUX = 201
@@ -57,39 +58,32 @@ class QL_STOP(Flag):
     STACK_POINTER = (1 << 0)
     EXIT_TRAP     = (1 << 1)
 
-QL_OS_NONPID      = (QL_OS.DOS, QL_OS.UEFI)
-QL_OS_POSIX       = (QL_OS.LINUX, QL_OS.FREEBSD, QL_OS.MACOS, QL_OS.QNX)
-QL_OS_BAREMETAL   = (QL_OS.MCU,)
-QL_OS_INTERPRETER = (QL_OS.EVM,)
+QL_ARCH_INTERPRETER = (QL_ARCH.EVM,)
+
+QL_OS_POSIX     = (QL_OS.LINUX, QL_OS.FREEBSD, QL_OS.MACOS, QL_OS.QNX)
+QL_OS_BAREMETAL = (QL_OS.MCU,)
 
 QL_HOOK_BLOCK = 0b0001
 QL_CALL_BLOCK = 0b0010
 
-def __reverse_enum(e: Type[Enum]) -> Mapping[str, Any]:
-    '''Create a reverse mapping for an enum.
+T = TypeVar('T', bound=Enum)
+def __casefold_enum(e: Type[T]) -> Mapping[str, T]:
+    '''Create a casefolded mapping of an enum to allow case-insensitive lookup.
     '''
 
-    return dict((v.name.lower(), v) for v in e.__members__.values())
+    return dict((k.casefold(), v) for k, v in e._member_map_.items())
 
-debugger_map: Mapping[str, QL_DEBUGGER] = __reverse_enum(QL_DEBUGGER)
-arch_map    : Mapping[str, QL_ARCH]     = __reverse_enum(QL_ARCH)
-os_map      : Mapping[str, QL_OS]       = __reverse_enum(QL_OS)
-verbose_map : Mapping[str, QL_VERBOSE]  = __reverse_enum(QL_VERBOSE)
-
-loader_map = {
-    QL_OS.LINUX   : "ELF",
-    QL_OS.FREEBSD : "ELF",
-    QL_OS.QNX     : "ELF",
-    QL_OS.MACOS   : "MACHO",
-    QL_OS.WINDOWS : "PE",
-    QL_OS.UEFI    : "PE_UEFI",
-    QL_OS.DOS     : "DOS",
-    QL_OS.EVM     : "EVM",
-    QL_OS.MCU     : "MCU",
-    QL_OS.BLOB    : "BLOB"
-}
+debugger_map = __casefold_enum(QL_DEBUGGER)
+arch_map     = __casefold_enum(QL_ARCH)
+os_map       = __casefold_enum(QL_OS)
+verbose_map  = __casefold_enum(QL_VERBOSE)
 
 arch_os_map = {
     QL_ARCH.EVM      : QL_OS.EVM,
     QL_ARCH.CORTEX_M : QL_OS.MCU
 }
+
+__all__ = [
+    'QL_ENDIAN', 'QL_ARCH', 'QL_OS', 'QL_VERBOSE', 'QL_DEBUGGER', 'QL_INTERCEPT', 'QL_STOP',
+    'QL_ARCH_INTERPRETER', 'QL_OS_POSIX', 'QL_OS_BAREMETAL', 'QL_HOOK_BLOCK', 'QL_CALL_BLOCK'
+]

@@ -3,7 +3,6 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from typing import Callable
 from unicorn import UcError
 from unicorn.x86_const import UC_X86_INS_SYSCALL
 
@@ -11,30 +10,32 @@ from qiling import Qiling
 from qiling.arch.x86_const import GS_SEGMENT_ADDR, GS_SEGMENT_SIZE
 from qiling.arch.x86_utils import GDTManager, SegmentManager86, SegmentManager64
 from qiling.arch import arm_utils
-from qiling.cc import QlCC, intel, arm, mips, riscv
-from qiling.const import QL_ARCH, QL_INTERCEPT
+from qiling.cc import QlCC, intel, arm, mips, riscv, ppc
+from qiling.const import QL_ARCH, QL_OS
 from qiling.os.fcall import QlFunctionCall
 from qiling.os.const import *
-from qiling.os.posix.const import NR_OPEN
 from qiling.os.posix.posix import QlOsPosix
 
 from . import futex
 from . import thread
 
 class QlOsLinux(QlOsPosix):
+    type = QL_OS.LINUX
+
     def __init__(self, ql: Qiling):
         super(QlOsLinux, self).__init__(ql)
 
         self.ql = ql
 
         cc: QlCC = {
-            QL_ARCH.X86   : intel.cdecl,
-            QL_ARCH.X8664 : intel.amd64,
-            QL_ARCH.ARM   : arm.aarch32,
-            QL_ARCH.ARM64 : arm.aarch64,
-            QL_ARCH.MIPS  : mips.mipso32,
-            QL_ARCH.RISCV : riscv.riscv,
-            QL_ARCH.RISCV64: riscv.riscv,
+            QL_ARCH.X86     : intel.cdecl,
+            QL_ARCH.X8664   : intel.amd64,
+            QL_ARCH.ARM     : arm.aarch32,
+            QL_ARCH.ARM64   : arm.aarch64,
+            QL_ARCH.MIPS    : mips.mipso32,
+            QL_ARCH.RISCV   : riscv.riscv,
+            QL_ARCH.RISCV64 : riscv.riscv,
+            QL_ARCH.PPC     : ppc.ppc,
         }[ql.arch.type](ql.arch)
 
         self.fcall = QlFunctionCall(ql, cc)
@@ -107,6 +108,11 @@ class QlOsLinux(QlOsPosix):
             self.ql.hook_intno(self.hook_syscall, 8)
             self.thread_class = None
 
+        elif self.ql.arch.type == QL_ARCH.PPC:
+            self.ql.arch.enable_float()
+            self.ql.hook_intno(self.hook_syscall, 8)
+            self.thread_class = None
+
         # on fork or execve, do not inherit opened files tagged as 'close on exec'
         for i in range(len(self.fd)):
             if getattr(self.fd[i], 'close_on_exec', 0):
@@ -114,10 +120,6 @@ class QlOsLinux(QlOsPosix):
 
     def hook_syscall(self, ql, intno = None):
         return self.load_syscall()
-
-
-    def add_function_hook(self, fn: str, cb: Callable, intercept: QL_INTERCEPT):
-        self.ql.os.function_hook.add_function_hook(fn, cb, intercept)
 
 
     def register_function_after_load(self, function):
@@ -161,9 +163,9 @@ class QlOsLinux(QlOsPosix):
                     self.ql.emu_start(self.ql.loader.elf_entry, self.exit_point, self.ql.timeout, self.ql.count)
 
         except UcError:
-            # TODO: this is bad We need a better approach for this
-            #if self.ql.output != QL_OUTPUT.DEBUG:
-            #    return
-
             self.emu_error()
             raise
+
+        # display summary
+        for entry in self.stats.summary():
+            self.ql.log.debug(entry)

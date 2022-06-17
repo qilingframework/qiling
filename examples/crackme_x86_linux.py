@@ -89,21 +89,26 @@ class Solver:
 
         return False
 
+def progress(msg: str) -> None:
+    print(msg, end='\r', file=sys.stderr, flush=True)
+
 def main():
-    idx_list = (1, 4, 2, 0, 3)
-    flag = [0] * len(idx_list)
+    flag = bytearray(b'*****')
+    indices = (1, 4, 2, 0, 3)
 
-    solver = Solver(bytes(flag))
+    # all possible flag characters (may be reduced to uppercase and digits to save time)
+    charset = string.printable
 
-    for idx in idx_list:
+    progress('Initializing...')
+    solver = Solver(flag)
 
-        # bruteforce all possible flag characters
-        for ch in string.printable:
-            flag[idx] = ord(ch)
+    for i in indices:
+        for ch in charset:
+            flag[i] = ord(ch)
 
-            print(f'Guessing... [{"".join(chr(ch) if ch else "_" for ch in flag)}]', end='\r', file=sys.stderr, flush=True)
+            progress(f'Guessing... {flag.decode()}')
 
-            if solver.replay(bytes(flag)):
+            if solver.replay(flag):
                 break
 
         else:
@@ -113,3 +118,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+# expected flag: L1NUX

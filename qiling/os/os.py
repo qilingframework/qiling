@@ -4,7 +4,7 @@
 #
 
 import sys
-from typing import Any, Iterable, Optional, Callable, Mapping, Sequence, TextIO, Tuple
+from typing import Any, Hashable, Iterable, Optional, Callable, Mapping, Sequence, TextIO, Tuple
 
 from unicorn import UcError
 
@@ -15,10 +15,13 @@ from qiling.os.fcall import QlFunctionCall, TypedArg
 
 from .filestruct import ql_file
 from .mapper import QlFsMapper
-from .utils import QlOsStats, QlOsUtils
-from .path import QlPathManager
+from .stats import QlOsStats
+from .utils import QlOsUtils
+from .path import QlOsPath
 
 class QlOs:
+    type: QL_OS
+
     Resolver = Callable[[int], Any]
 
     def __init__(self, ql: Qiling, resolvers: Mapping[Any, Resolver] = {}):
@@ -37,10 +40,10 @@ class QlOs:
         self.profile = self.ql.profile
         self.exit_code = 0
 
-        if not ql.baremetal:
+        if self.type in QL_OS_POSIX + (QL_OS.WINDOWS, QL_OS.DOS):
             cwd = self.profile.get("MISC", "current_path")
 
-            self.path = QlPathManager(ql, cwd)
+            self.path = QlOsPath(ql.rootfs, cwd, self.type)
             self.fs_mapper = QlFsMapper(self.path)
 
         self.user_defined_api = {
@@ -201,26 +204,19 @@ class QlOs:
 
         return retval
 
-    # TODO: separate this method into os-specific functionalities, instead of 'if-else'
-    def set_api(self, api_name: str, intercept_function: Callable, intercept: QL_INTERCEPT = QL_INTERCEPT.CALL):
-        """Either replace or hook OS API with a custom one.
+    def set_api(self, target: Hashable, handler: Callable, intercept: QL_INTERCEPT = QL_INTERCEPT.CALL):
+        """Either hook or replace an OS API with a custom one.
 
         Args:
-            api_name: target API name
-            intercept_function: function to call
+            target: target API identifier
+            handler: function to call
             intercept:
                 `QL_INTERCEPT.CALL` : run handler instead of the existing target implementation
                 `QL_INTERCEPT.ENTER`: run handler before the target API is called
                 `QL_INTERCEPT.EXIT` : run handler after the target API is called
         """
 
-        if self.ql.ostype == QL_OS.UEFI:
-            api_name = f'hook_{api_name}'
-
-        if (self.ql.ostype in (QL_OS.WINDOWS, QL_OS.UEFI, QL_OS.DOS)) or (self.ql.ostype in (QL_OS_POSIX) and self.ql.loader.is_driver):
-            self.user_defined_api[intercept][api_name] = intercept_function
-        else:
-            self.add_function_hook(api_name, intercept_function, intercept)
+        self.user_defined_api[intercept][target] = handler
 
     # os main method; derivatives must implement one of their own
     def run(self) -> None:
@@ -256,5 +252,6 @@ class QlOs:
         finally:
             self.ql.log.error(f'PC = {pc:#0{self.ql.arch.pointersize * 2 + 2}x}{pc_info}\n')
 
-            self.ql.log.info(f'Memory map:')
-            self.ql.mem.show_mapinfo()
+            self.ql.log.error(f'Memory map:')
+            for info_line in self.ql.mem.get_formatted_mapinfo():
+                self.ql.log.error(info_line)

@@ -434,7 +434,7 @@ def hook_malloc(ql: Qiling, address: int, params):
 def __free(ql: Qiling, address: int, params):
     address = params['address']
 
-    return ql.os.heap.free(address)
+    ql.os.heap.free(address)
 
 @winsdkapi(cc=CDECL, params={
     'address': POINTER
@@ -573,7 +573,7 @@ def hook__time64(ql: Qiling, address: int, params):
 
     time_wasted = int(time.time())
 
-    if dst != 0:
-        ql.mem.write(dst, time_wasted.to_bytes(8, "little"))
+    if dst:
+        ql.mem.write_ptr(dst, time_wasted, 8)
 
     return time_wasted

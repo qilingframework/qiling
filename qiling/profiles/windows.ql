@@ -3,18 +3,20 @@ heap_address = 0x500000000
 heap_size = 0x5000000
 stack_address = 0x7ffffffde000
 stack_size = 0x40000
-image_address  = 0x400000
+image_address = 0x400000
 dll_address = 0x7ffff0000000
 entry_point = 0x140000000
+KI_USER_SHARED_DATA = 0xfffff78000000000
 
 [OS32]
 heap_address = 0x5000000
 heap_size = 0x5000000
 stack_address = 0xfffdd000
 stack_size = 0x21000
-image_address  = 0x400000
-dll_address  = 0x10000000
-entry_point = 0x40000  
+image_address = 0x400000
+dll_address = 0x10000000
+entry_point = 0x40000
+KI_USER_SHARED_DATA = 0xffdf0000
 
 [CODE]
 # ram_size 0xa00000 is 10MB
@@ -38,8 +40,7 @@ split = False
 # maily for multiple times Ql run with one file
 # usage: append = test1
 append =
-automatize_input = False
-current_path = /
+current_path = C:\
 
 [SYSTEM]
 # Major Minor ProductType
@@ -61,7 +62,7 @@ language = 1093
 
 [PATH]
 systemdrive = C:\
-windir = Windows\
+windir = Windows
 
 [REGISTRY]
 registry_diff = registry_diff.json

@@ -9,6 +9,7 @@ from unicorn import UcError
 
 from qiling import Qiling
 from qiling.cc import QlCC, intel
+from qiling.const import QL_INTERCEPT, QL_OS
 from qiling.os.const import *
 from qiling.os.memory import QlMemoryHeap
 from qiling.os.os import QlOs, QlOsUtils
@@ -18,6 +19,8 @@ from qiling.os.uefi import guids_db
 from qiling.os.uefi.smm import SmmEnv
 
 class QlOsUefi(QlOs):
+	type = QL_OS.UEFI
+
 	def __init__(self, ql: Qiling):
 		super().__init__(ql)
 
@@ -194,7 +197,12 @@ class QlOsUefi(QlOs):
 		self.emit_stack()
 
 		self.ql.log.error(f'Memory map:')
-		self.ql.mem.show_mapinfo()
+		for info_line in self.ql.mem.get_formatted_mapinfo():
+			self.ql.log.error(info_line)
+
+
+	def set_api(self, target: str, handler: Callable, intercept: QL_INTERCEPT = QL_INTERCEPT.CALL):
+		super().set_api(f'hook_{target}', handler, intercept)
 
 	def run(self):
 		# TODO: this is not the right place for this
