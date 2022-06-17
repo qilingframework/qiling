@@ -29,7 +29,6 @@ def main(input_file: str):
     ql.hw.create('usart3')
     
     ql.fast_mode = True 
-    ql.hook_code(lambda _x, _y, _z: ...)
 
     def place_input_callback(ql: Qiling, input_bytes: bytes, persistent_round: int) -> Optional[bool]:
         """Called with every newly generated input."""
