@@ -14,7 +14,6 @@ from qiling import Qiling
 from qiling.os.thread import *
 from qiling.arch.x86_const import *
 from qiling.exception import QlErrorExecutionStop
-from qiling.os.path import QlOsPath
 
 LINUX_THREAD_ID = 2000
 
@@ -38,7 +37,6 @@ class QlLinuxThread(QlThread):
         self._start_address = start_address
         self._status = THREAD_STATUS_RUNNING
         self._return_val = 0
-        self.path = self.ql.os.path
         self._log_file_fd = None
         self._sched_cb = None
 
@@ -134,14 +132,6 @@ class QlLinuxThread(QlThread):
     @return_val.setter
     def return_val(self, rv):
         self._return_val = rv
-
-    @property
-    def path(self):
-        return self._path
-
-    @path.setter
-    def path(self, p: QlOsPath):
-        self._path = QlOsPath(self.ql.rootfs, p.cwd, self.ql.os.type)
 
     @property
     def log_file_fd(self):
@@ -295,7 +285,6 @@ class QlLinuxThread(QlThread):
         # Caveat:
         #     Don't use thread id to identify the thread object.
         new_thread = self.ql.os.thread_class.spawn(self._ql, self._start_address, self._exit_point, self._saved_context, set_child_tid_addr = None, thread_id = self._thread_id)
-        new_thread._path = self._path
         new_thread._return_val = self._return_val
         new_thread._robust_list_head_len = self._robust_list_head_len
         new_thread._robust_list_head_ptr = self._robust_list_head_ptr
