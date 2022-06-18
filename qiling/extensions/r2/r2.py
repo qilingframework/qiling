@@ -12,12 +12,7 @@ from enum import Enum
 from qiling.core import Qiling
 
 @dataclass(unsafe_hash=True)
-class Function:
-    name: str
-    offset: int
-    size: int
-    signature: str
-
+class R2Data:
     def __init__(self, **kwargs):
         names = set([f.name for f in fields(self)])
         for k, v in kwargs.items():
@@ -26,7 +21,18 @@ class Function:
 
 
 @dataclass(unsafe_hash=True)
-class Section:
+class Function(R2Data):
+    name: str
+    offset: int
+    size: int
+    signature: str
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+
+@dataclass(unsafe_hash=True)
+class Section(R2Data):
     name: str
     size: int
     vsize: int
@@ -35,14 +41,10 @@ class Section:
     perm: str  # TODO: use int or enum
 
     def __init__(self, **kwargs):
-        names = set([f.name for f in fields(self)])
-        for k, v in kwargs.items():
-            if k in names:
-                setattr(self, k, v)
-
+        super().__init__(**kwargs)
 
 @dataclass(unsafe_hash=True)
-class String:
+class String(R2Data):
     string: str
     vaddr: int
     paddr: int
@@ -51,14 +53,11 @@ class String:
     section: str = None
 
     def __init__(self, **kwargs):
-        names = set([f.name for f in fields(self)])
-        for k, v in kwargs.items():
-            if k in names:
-                setattr(self, k, v)
+        super().__init__(**kwargs)
 
 
 @dataclass(unsafe_hash=True)
-class Symbol:
+class Symbol(R2Data):
     # see https://github.com/rizinorg/rizin/blob/dev/librz/include/rz_bin.h
     class SymbolType(str, Enum):
         NOTYPE = "NOTYPE"
@@ -100,12 +99,6 @@ class Symbol:
     vaddr: int
     paddr: int
     is_imported: bool
-
-    def __init__(self, **kwargs):
-        names = set([f.name for f in fields(self)])
-        for k, v in kwargs.items():
-            if k in names:
-                setattr(self, k, v)
 
 
 class R2:
