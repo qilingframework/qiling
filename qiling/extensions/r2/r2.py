@@ -3,13 +3,14 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+import ctypes
 import functools
 import json
-import ctypes
 import libr
 from dataclasses import dataclass, fields
 from enum import Enum
 from qiling.core import Qiling
+from unicorn import UC_PROT_READ, UC_PROT_EXEC, UC_PROT_ALL
 
 @dataclass(unsafe_hash=True)
 class R2Data:
@@ -102,14 +103,35 @@ class Symbol(R2Data):
 
 
 class R2:
-    def __init__(self, ql: Qiling):
+    def __init__(self, ql: Qiling, baseaddr=(1 << 64) - 1, loadaddr=0):
         super().__init__()
-        path = ql.path.encode()
-        self._r2c = libr.r_core.r_core_new()
-        fh = libr.r_core.r_core_file_open(self._r2c, path, 0b101, 0)
-        libr.r_core.r_core_bin_load(self._r2c, path, (1 << 64) - 1)
+        self.ql = ql
+        self.baseaddr = baseaddr  # r2 -B [baddr]   set base address for PIE binaries
+        self.loadaddr = loadaddr  # r2 -m [addr]    map file at given address
 
-    def _cmd(self, cmd: str):
+        self._r2c = libr.r_core.r_core_new()
+        if ql.code:
+            self._setup_code()
+        else:
+            self._setup_file()
+
+        # set architecture and bits for r2 asm
+        self._cmd(f"e,asm.arch={ql.arch.type.name.lower().removesuffix('64')},asm.bits={ql.arch.bits}")
+
+    def _setup_code(self):
+        sz = len(self.ql.code)
+        path = f'malloc://{sz}'.encode()
+        fh = libr.r_core.r_core_file_open(self._r2c, path, UC_PROT_ALL, self.loadaddr)
+        libr.r_core.r_core_bin_load(self._r2c, path, self.baseaddr)
+        cmd = f'wx {self.ql.code.hex()}'
+        self._cmd(cmd)
+
+    def _setup_file(self):
+        path = self.ql.path.encode()
+        fh = libr.r_core.r_core_file_open(self._r2c, path, UC_PROT_READ | UC_PROT_EXEC, self.loadaddr)
+        libr.r_core.r_core_bin_load(self._r2c, path, self.baseaddr)
+
+    def _cmd(self, cmd: str) -> str:
         r = libr.r_core.r_core_cmd_str(
             self._r2c, ctypes.create_string_buffer(cmd.encode("utf-8")))
         return ctypes.string_at(r).decode('utf-8')
