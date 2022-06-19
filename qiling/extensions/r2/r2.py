@@ -4,15 +4,15 @@
 #
 
 import ctypes
-import functools
 import json
 import libr
 from dataclasses import dataclass, fields
 from enum import Enum
+from functools import cached_property
 from qiling.core import Qiling
 from unicorn import UC_PROT_READ, UC_PROT_EXEC, UC_PROT_ALL
 
-@dataclass(unsafe_hash=True)
+
 class R2Data:
     def __init__(self, **kwargs):
         names = set([f.name for f in fields(self)])
@@ -21,18 +21,15 @@ class R2Data:
                 setattr(self, k, v)
 
 
-@dataclass(unsafe_hash=True)
+@dataclass(unsafe_hash=True, init=False)
 class Function(R2Data):
     name: str
     offset: int
     size: int
     signature: str
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
 
-
-@dataclass(unsafe_hash=True)
+@dataclass(unsafe_hash=True, init=False)
 class Section(R2Data):
     name: str
     size: int
@@ -41,10 +38,8 @@ class Section(R2Data):
     vaddr: int
     perm: str  # TODO: use int or enum
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
 
-@dataclass(unsafe_hash=True)
+@dataclass(unsafe_hash=True, init=False)
 class String(R2Data):
     string: str
     vaddr: int
@@ -53,11 +48,8 @@ class String(R2Data):
     length: int
     section: str = None
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
 
-
-@dataclass(unsafe_hash=True)
+@dataclass(unsafe_hash=True, init=False)
 class Symbol(R2Data):
     # see https://github.com/rizinorg/rizin/blob/dev/librz/include/rz_bin.h
     class SymbolType(str, Enum):
@@ -136,32 +128,31 @@ class R2:
             self._r2c, ctypes.create_string_buffer(cmd.encode("utf-8")))
         return ctypes.string_at(r).decode('utf-8')
 
-    @functools.cached_property
+    def _cmdj(self, cmd: str) -> list[dict]:
+        return json.loads(self._cmd(cmd))
+
+    @cached_property
     def sections(self) -> dict[str, Section]:
-        res = self._cmd("iSj")
-        sec_lst = json.loads(res)
+        sec_lst = self._cmdj("iSj")
         return {dic['name']: Section(**dic) for dic in sec_lst}
 
-    @functools.cached_property
+    @cached_property
     def strings(self) -> dict[str, String]:
-        res = self._cmd("izzj")
-        str_lst = json.loads(res)
+        str_lst = self._cmdj("izzj")
         return {dic['string']: String(**dic) for dic in str_lst}
 
-    @functools.cached_property
+    @cached_property
     def symbols(self) -> dict[str, Symbol]:
-        res = self._cmd("isj")
-        sym_lst = json.loads(res)
+        sym_lst = self._cmdj("isj")
         return {dic['name']: Symbol(**dic).vaddr for dic in sym_lst}
 
-    @functools.cached_property
+    @cached_property
     def functions(self) -> dict[str, Function]:
         self._cmd("aaa")
-        res = self._cmd("aflj")
-        fcn_lst = json.loads(res)
+        fcn_lst = self._cmdj("aflj")
         return {dic['name']: Function(**dic) for dic in fcn_lst}
 
-    @functools.cached_property
+    @cached_property
     def baddr(self) -> int:
         _bin = ctypes.cast(self._r2c.contents.bin,
                            ctypes.POINTER(libr.r_bin.RBin))
