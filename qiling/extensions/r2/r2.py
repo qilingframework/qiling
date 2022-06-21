@@ -9,6 +9,7 @@ import libr
 from dataclasses import dataclass, fields
 from enum import Enum
 from functools import cached_property
+from typing import Dict, List, Literal
 from qiling.core import Qiling
 from unicorn import UC_PROT_READ, UC_PROT_EXEC, UC_PROT_ALL
 
@@ -36,7 +37,7 @@ class Section(R2Data):
     vsize: int
     paddr: int
     vaddr: int
-    perm: str  # TODO: use int or enum
+    perm: str  # TODO: use enum or literal
 
 
 @dataclass(unsafe_hash=True, init=False)
@@ -52,41 +53,14 @@ class String(R2Data):
 @dataclass(unsafe_hash=True, init=False)
 class Symbol(R2Data):
     # see https://github.com/rizinorg/rizin/blob/dev/librz/include/rz_bin.h
-    class SymbolType(str, Enum):
-        NOTYPE = "NOTYPE"
-        OBJ = "OBJ"
-        FUNC = "FUNC"
-        FIELD = "FIELD"
-        IFACE = "IFACE"
-        METH = "METH"
-        STATIC = "STATIC"
-        SECT = "SECT"
-        FILE = "FILE"
-        COMMON = "COMMON"
-        TLS = "TLS"
-        NUM = "NUM"
-        LOOS = "LOOS"
-        HIOS = "HIOS"
-        LOPROC = "LOPROC"
-        HIPROC = "HIPROC"
-        SPCL = "SPCL"
-        UNK = "UNK"
+    SymbolType = Literal["NOTYPE", "OBJ", "FUNC", "FIELD", "IFACE", "METH", "STATIC", "SECT",
+                         "FILE", "COMMON", "TLS", "NUM", "LOOS", "HIOS", "LOPROC", "HIPROC", "SPCL", "UNK"]
 
-    class SymbolBind(str, Enum):
-        LOCAL = "LOCAL"
-        GLOBAL = "GLOBAL"
-        WEAK = "WEAK"
-        NUM = "NUM"
-        LOOS = "LOOS"
-        HIOS = "HIOS"
-        LOPROC = "LOPROC"
-        HIPROC = "HIPROC"
-        IMPORT = "IMPORT"
-        UNKNOWN = "UNKNOWN"
+    SymbolBind = Literal["LOCAL", "GLOBAL", "WEAK", "NUM", "LOOS", "HIOS", "LOPROC", "HIPROC", "IMPORT", "UNKNOWN"]
 
     name: str
     realname: str
-    bind: str
+    bind: SymbolBind
     size: int
     type: SymbolType
     vaddr: int
@@ -128,26 +102,26 @@ class R2:
             self._r2c, ctypes.create_string_buffer(cmd.encode("utf-8")))
         return ctypes.string_at(r).decode('utf-8')
 
-    def _cmdj(self, cmd: str) -> list[dict]:
+    def _cmdj(self, cmd: str) -> List[Dict]:
         return json.loads(self._cmd(cmd))
 
     @cached_property
-    def sections(self) -> dict[str, Section]:
+    def sections(self) -> Dict[str, Section]:
         sec_lst = self._cmdj("iSj")
         return {dic['name']: Section(**dic) for dic in sec_lst}
 
     @cached_property
-    def strings(self) -> dict[str, String]:
+    def strings(self) -> Dict[str, String]:
         str_lst = self._cmdj("izzj")
         return {dic['string']: String(**dic) for dic in str_lst}
 
     @cached_property
-    def symbols(self) -> dict[str, Symbol]:
+    def symbols(self) -> Dict[str, Symbol]:
         sym_lst = self._cmdj("isj")
         return {dic['name']: Symbol(**dic).vaddr for dic in sym_lst}
 
     @cached_property
-    def functions(self) -> dict[str, Function]:
+    def functions(self) -> Dict[str, Function]:
         self._cmd("aaa")
         fcn_lst = self._cmdj("aflj")
         return {dic['name']: Function(**dic) for dic in fcn_lst}
