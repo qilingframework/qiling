@@ -85,6 +85,8 @@ class QlLinuxThread(QlThread):
         if self._set_child_tid_address != None:
             self.ql.mem.write_ptr(self._set_child_tid_address, self.id, 4)
 
+        self.ql.os.thread_management.add_thread(self)
+
     @property
     def ql(self):
         return self._ql
@@ -551,9 +553,14 @@ class QlLinuxThreadManagement:
         t.stop()
         if t in self.threads:
             self.threads.remove(t)
+            self.ql.log.debug(f"[Thread Manager] Thread IDs: { {t.id for t in self.threads} }")
         # Exit the world.
         if t == self.main_thread:
             self.stop()
+
+    def add_thread(self, t):
+        self.threads.add(t)
+        self.ql.log.debug(f"[Thread Manager] Thread IDs: { {t.id for t in self.threads} }")
 
     def _clear_queued_msg(self):
         try:
@@ -586,8 +593,9 @@ class QlLinuxThreadManagement:
     def stop(self):
         self.ql.log.debug("[Thread Manager] Stop the world.")
         self.ql.emu_stop()
-        for t in self.threads:
-            gevent.kill(t)
+        while len(self.threads) != 0:
+            t = self.threads.pop()
+            self.stop_thread(t)
 
     def run(self):
         previous_thread = self._prepare_lib_patch()

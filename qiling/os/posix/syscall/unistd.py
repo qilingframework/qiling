@@ -25,7 +25,7 @@ def ql_syscall_exit(ql: Qiling, code: int):
     if ql.multithread:
         def _sched_cb_exit(cur_thread):
             ql.log.debug(f"[Thread {cur_thread.get_id()}] Terminated")
-            cur_thread.stop()
+            ql.os.thread_management.stop_thread(cur_thread)
             cur_thread.exit_code = code
 
         td = ql.os.thread_management.cur_thread
@@ -43,7 +43,7 @@ def ql_syscall_exit_group(ql: Qiling, code: int):
     if ql.multithread:
         def _sched_cb_exit(cur_thread):
             ql.log.debug(f"[Thread {cur_thread.get_id()}] Terminated")
-            cur_thread.stop()
+            ql.os.thread_management.stop_thread(cur_thread)
             cur_thread.exit_code = code
 
         td = ql.os.thread_management.cur_thread
