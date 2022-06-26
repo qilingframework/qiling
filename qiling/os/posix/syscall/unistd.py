@@ -382,10 +382,7 @@ def ql_syscall_chdir(ql: Qiling, path_name: int):
     virt_path = ql.os.path.virtual_abspath(pathname)
 
     if os.path.exists(host_path) and os.path.isdir(host_path):
-        if ql.os.thread_management:
-            ql.os.thread_management.cur_thread.path.cwd = virt_path
-        else:
-            ql.os.path.cwd = virt_path
+        ql.os.path.cwd = virt_path
 
         regreturn = 0
         ql.log.debug("chdir(%s) = %d"% (virt_path, regreturn))
