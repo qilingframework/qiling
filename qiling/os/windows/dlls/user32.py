@@ -798,17 +798,27 @@ def hook_wsprintfA(ql: Qiling, address: int, params):
     'uType'     : UINT
 })
 def hook_MessageBoxW(ql: Qiling, address: int, params):
-    # We always return a positive result
-    type_box = params["uType"]
+    uType = params["uType"]
 
-    if type_box in (MB_OK, MB_OKCANCEL):
-        return IDOK
+    buttons = uType & 0x0000000f
+    # icon    = uType & 0x000000f0
+    # default = uType & 0x00000f00
+    # modal   = uType & 0x0000f000
+    # order   = uType & 0x00ff0000
 
-    if type_box in (MB_YESNO, MB_YESNOCANCEL):
-        return IDYES
+    # we strive to return a positive result when possible.
+    # if there is an "ok", "yes" or "continue" button, press it
+    press = {
+        MB_OK                : IDOK,
+        MB_OKCANCEL          : IDOK,
+        MB_ABORTRETRYIGNORE  : IDABORT,
+        MB_YESNOCANCEL       : IDYES,
+        MB_YESNO             : IDYES,
+        MB_RETRYCANCEL       : IDCANCEL,
+        MB_CANCELTRYCONTINUE : IDCONTINUE
+    }
 
-    ql.log.debug(type_box)
-    raise QlErrorNotImplemented("API not implemented")
+    return press[buttons]
 
 # int MessageBoxA(
 #   HWND    hWnd,
