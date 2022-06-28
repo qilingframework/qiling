@@ -18,12 +18,10 @@ def _GetModuleHandle(ql: Qiling, address: int, params):
     if lpModuleName == 0:
         ret = ql.loader.pe_image_address
     else:
-        lpModuleName = lpModuleName.lower()
-
         if not has_lib_ext(lpModuleName):
             lpModuleName = f'{lpModuleName}.dll'
 
-        image = ql.loader.get_image_by_name(lpModuleName)
+        image = ql.loader.get_image_by_name(lpModuleName, casefold=True)
 
         if image:
             ret = image.base
