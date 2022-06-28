@@ -382,11 +382,7 @@ def ql_syscall_chdir(ql: Qiling, path_name: int):
     relative_path = ql.os.path.transform_to_relative_path(pathname)
 
     if os.path.exists(real_path) and os.path.isdir(real_path):
-        if ql.os.thread_management:
-            ql.os.thread_management.cur_thread.path.cwd = relative_path
-        else:
-            ql.os.path.cwd = relative_path
-
+        ql.os.path.cwd = relative_path
         regreturn = 0
         ql.log.debug("chdir(%s) = %d"% (relative_path, regreturn))
     else:
