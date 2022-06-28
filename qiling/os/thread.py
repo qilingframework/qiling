@@ -3,20 +3,20 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from abc import ABCMeta, abstractmethod
+from abc import abstractmethod
 from gevent import Greenlet
-from qiling.const import *
-from .const import *
+
+from qiling import Qiling
 
 class QlThread(Greenlet):
-    __metaclass__=ABCMeta
 
-    def __init__(self, ql):
-        super(QlThread, self).__init__()
+    def __init__(self, ql: Qiling):
+        super().__init__()
+
         self.ql = ql
         self.log_file_fd = None
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"QlThread {self.get_id()}"
 
 # the common functions which are used in qiling core.

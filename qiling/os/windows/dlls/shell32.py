@@ -13,7 +13,7 @@ from qiling.os.windows.const import *
 from qiling.os.windows.fncc import *
 
 from qiling.os.windows.handle import Handle
-from qiling.os.windows.thread import QlWindowsThread
+from qiling.os.windows.thread import QlWindowsThread, THREAD_STATUS
 from qiling.exception import QlErrorNotImplemented
 from qiling.os.windows.structs import ShellExecuteInfoA
 
@@ -74,7 +74,7 @@ def _ShellExecute(ql: Qiling, obj: ShellExecuteInfoA):
     if obj.show[0] == SW_HIDE:
         ql.log.debug(" | With an hidden window")
 
-    process = QlWindowsThread(ql, status=0, isFake=True)
+    process = QlWindowsThread(ql, status=THREAD_STATUS.READY)
     handle = Handle(obj=process)
     ql.os.handle_manager.append(handle)
 
