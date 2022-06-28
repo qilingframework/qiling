@@ -248,7 +248,12 @@ class Process:
             # in case of a dll loaded from a hooked API call, failures would not be
             # recoverable and we have to give up its DllMain.
             if not self.ql.os.PE_RUN:
+
+                # temporarily set PE_RUN to allow proper fcall unwinding during
+                # execution of DllMain
+                self.ql.os.PE_RUN = True
                 self.call_dll_entrypoint(dll, dll_base, dll_len, dll_name)
+                self.ql.os.PE_RUN = False
 
         self.ql.log.info(f'Done loading {dll_name}')
 
