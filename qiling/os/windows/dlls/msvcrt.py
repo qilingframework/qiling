@@ -429,6 +429,19 @@ def hook___stdio_common_vswprintf_s(ql: Qiling, address: int, params):
 def hook___lconv_init(ql: Qiling, address: int, params):
     return 0
 
+@winsdkapi(cc=CDECL, params={
+    'str'     : POINTER,
+    'maxsize' : SIZE_T
+})
+def hook___strncnt(ql: Qiling, address: int, params):
+    s = params["str"]
+    maxsize = params["maxsize"]
+
+    data = ql.mem.read(s, maxsize)
+
+    # a simple hack to make sure a null terminator is found at most at 'maxsize'
+    return (data + b'\x00').find(b'\00')
+
 # size_t strlen(
 #    const char *str
 # );
