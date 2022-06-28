@@ -730,7 +730,7 @@ class QlLoaderPE(QlLoader, Process):
             self.ql.log.info(f'Loading {self.path} to {image_base:#x}')
             self.ql.log.info(f'PE entry point at {self.entry_point:#x}')
 
-            self.ql.mem.map(image_base, image_size, info=f'[{image_name}]')
+            self.ql.mem.map(image_base, image_size, info=f'{image_name}')
             self.images.append(Image(image_base, image_base + pe.NT_HEADERS.OPTIONAL_HEADER.SizeOfImage, os.path.abspath(self.path)))
 
             if self.is_driver:
