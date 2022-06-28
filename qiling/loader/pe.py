@@ -622,7 +622,9 @@ class Process:
         user_shared_data_obj = KUSER_SHARED_DATA()
         user_shared_data_size = ctypes.sizeof(KUSER_SHARED_DATA)
 
-        self.ql.mem.map(addr, self.ql.mem.align_up(user_shared_data_size))
+        # TODO: initialize key fields in this structure
+
+        self.ql.mem.map(addr, self.ql.mem.align_up(user_shared_data_size), info='[kuser shared]')
         self.ql.mem.write(addr, bytes(user_shared_data_obj))
 
     def init_security_cookie(self, pe: pefile.PE, image_base: int):
@@ -729,7 +731,6 @@ class QlLoaderPE(QlLoader, Process):
                 self.init_driver_object()
                 self.init_registry_path()
                 self.init_eprocess()
-                self.init_ki_user_shared_data()
 
                 # set IRQ Level in CR8 to PASSIVE_LEVEL
                 self.ql.arch.regs.write(UC_X86_REG_CR8, 0)
@@ -747,6 +748,8 @@ class QlLoaderPE(QlLoader, Process):
 
                 # add image to ldr table
                 self.add_ldr_data_table_entry(image_name)
+
+            self.init_ki_user_shared_data()
 
             pe.parse_data_directories()
 
