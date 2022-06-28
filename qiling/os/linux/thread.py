@@ -11,6 +11,7 @@ from abc import abstractmethod
 from unicorn.unicorn import UcError
 
 from qiling import Qiling
+from qiling.const import QL_ARCH
 from qiling.os.thread import *
 from qiling.arch.x86_const import *
 from qiling.exception import QlErrorExecutionStop
