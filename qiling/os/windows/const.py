@@ -611,17 +611,23 @@ PF_XSAVE_ENABLED = 0x17
 # ...
 
 
+# documented PROCESSINFOCLASS values
 # https://docs.microsoft.com/en-us/windows/win32/procthread/zwqueryinformationprocess
-# https://www.pinvoke.net/default.aspx/ntdll/PROCESSINFOCLASS.html
 ProcessBasicInformation = 0
 ProcessDebugPort = 7
-ProcessExecuteFlags = 0x22
 ProcessWow64Information = 26
 ProcessImageFileName = 27
 ProcessBreakOnTermination = 29
 ProcessProtectionInformation = 61
-ProcessDebugObjectHandle = 0x1E
-ProcessDebugFlags = 0x1F
+
+# more PROCESSINFOCLASS values
+# https://www.pinvoke.net/default.aspx/ntdll/PROCESSINFOCLASS.html
+ProcessDebugObjectHandle = 30
+ProcessDebugFlags = 31
+ProcessExecuteFlags = 34
+ProcessImageInformation = 37
+ProcessMitigationPolicy = 52
+ProcessFaultInformation = 63
 
 # https://www.geoffchappell.com/studies/windows/km/ntoskrnl/api/ps/psquery/class.htm
 ThreadBasicInformation = 0x0
