@@ -67,6 +67,17 @@ def ql_bin_to_ip(ip):
     return ipaddress.ip_address(ip).compressed
 
 
+def ql_unix_socket_path(ql: Qiling, sun_path: bytearray) -> str:
+    if sun_path[0] == 0:
+        # Abstract Unix namespace
+        # TODO: isolate from host namespace
+        # TODO: Windows
+        ql.log.warning(f'Beware! Usage of hosts abstract socket namespace {bytes(sun_path)}')
+        return sun_path.decode()
+    sun_path = sun_path.split(b'\0')[0].decode()
+    return ql.os.path.transform_to_real_path(sun_path)
+
+
 def ql_syscall_socket(ql: Qiling, socket_domain, socket_type, socket_protocol):
     idx = next((i for i in range(NR_OPEN) if ql.os.fd[i] is None), -1)
     regreturn = idx
@@ -115,8 +126,7 @@ def ql_syscall_connect(ql: Qiling, connect_sockfd, connect_addr, connect_addrlen
     try:
         if s.family == family:
             if s.family == AF_UNIX:
-                sun_path = sock_addr[2 : ].split(b"\x00")[0]
-                sun_path = ql.os.path.transform_to_real_path(sun_path.decode())
+                sun_path = ql_unix_socket_path(ql, sock_addr[2:])
                 s.connect(sun_path)
                 regreturn = 0
             elif s.family == AF_INET:
@@ -297,8 +307,7 @@ def ql_syscall_bind(ql: Qiling, bind_fd, bind_addr, bind_addrlen):
         port = port + 8000
 
     if sin_family == 1:
-        path = data[2 : ].split(b'\x00')[0]
-        path = ql.os.path.transform_to_real_path(path.decode())
+        path = ql_unix_socket_path(ql, data[2:])
         ql.log.info(path)
         ql.os.fd[bind_fd].bind(path)
 
@@ -545,19 +554,22 @@ def ql_syscall_recvfrom(ql: Qiling, sockfd: int, buf: int, length: int, flags: i
         ql.log.debug("%s" % tmp_buf)
 
     sin_family = int(sock.family)
-    data = struct.pack("<h", sin_family)
+    sockaddr_out = struct.pack("<h", sin_family)
 
     if sin_family == 1:
-        ql.log.debug("recvfrom() path is " + tmp_addr)
-        data += tmp_addr.encode()
+        # Abstract Unix socket path is not filled in recvfrom
+        ql.log.debug(f"recvfrom() path is '{tmp_addr or 'UNIX ABSTRACT NAMESPACE'}'")
+        if tmp_addr:
+            sockaddr_out += tmp_addr.encode()
     else:
         ql.log.debug("recvfrom() addr is %s:%d" % (tmp_addr[0], tmp_addr[1]))
-        data += struct.pack(">H", tmp_addr[1])
-        data += ipaddress.ip_address(tmp_addr[0]).packed
+        sockaddr_out += struct.pack(">H", tmp_addr[1])
+        sockaddr_out += ipaddress.ip_address(tmp_addr[0]).packed
         addrlen = ql.mem.read_ptr(addrlen)
-        data = data[:addrlen]
+        sockaddr_out = sockaddr_out[:addrlen]
 
-    ql.mem.write(addr, data)
+    if addr:
+        ql.mem.write(addr, sockaddr_out)
     ql.mem.write(buf, tmp_buf)
 
     return len(tmp_buf)
@@ -600,8 +612,7 @@ def ql_syscall_sendto(ql: Qiling, sockfd: int, sendto_buf, sendto_len, sendto_fl
         ql.log.debug("sendto() len is " + str(sendto_len))
 
         if sin_family == 1:
-            path = data[2 : ].split(b'\x00')[0]
-            path = ql.os.path.transform_to_real_path(path.decode())
+            path = ql_unix_socket_path(ql, data[2:])
 
             ql.log.debug("sendto() path is " + str(path))
             regreturn = sock.sendto(bytes(tmp_buf), sendto_flags, path)

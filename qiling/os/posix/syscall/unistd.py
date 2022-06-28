@@ -143,12 +143,14 @@ def ql_syscall_faccessat(ql: Qiling, dfd: int, filename: int, mode: int):
 
     if not os.path.exists(real_path):
         regreturn = -1
-
-    elif stat.S_ISFIFO(Stat(real_path).st_mode):
-        regreturn = 0
-
     else:
-        regreturn = -1
+        regreturn = 0
+    # TODO: according to real implementation, idk why here was a FIFO check
+    # elif stat.S_ISFIFO(Stat(real_path).st_mode):
+    #     regreturn = 0
+
+    # else: 
+    #     regreturn = -1
 
     if regreturn == -1:
         ql.log.debug(f'File not found or skipped: {access_path}')
@@ -736,7 +738,7 @@ def __getdents_common(ql: Qiling, fd: int, dirp: int, count: int, *, is_64: bool
         return bytes([t])
 
     if ql.os.fd[fd].tell() == 0:
-        n = ql.arch.pointersize
+        large_field_size = 8 if is_64 else 4
         total_size = 0
         results = os.scandir(ql.os.fd[fd].name)
         _ent_count = 0
@@ -746,27 +748,20 @@ def __getdents_common(ql: Qiling, fd: int, dirp: int, count: int, *, is_64: bool
             d_off = 0
             d_name = (result.name if isinstance(result, os.DirEntry) else result._str).encode() + b'\x00'
             d_type = _type_mapping(result)
-            d_reclen = n + n + 2 + len(d_name) + 1
-
-            # TODO: Dirty fix for X8664 MACOS 11.6 APFS
-            # For some reason MACOS return int value is 64bit
-            try:
-                packed_d_ino = (ql.pack(d_ino), n)
-            except: 
-                packed_d_ino = (ql.pack64(d_ino), n)
+            d_reclen = large_field_size + large_field_size + 2 + len(d_name) + 1
 
             if is_64:
                 fields = (
-                    (ql.pack(d_ino), n),
-                    (ql.pack(d_off), n),
+                    (ql.pack64(d_ino), large_field_size),
+                    (ql.pack64(d_off), large_field_size),
                     (ql.pack16(d_reclen), 2),
                     (d_type, 1),
                     (d_name, len(d_name))
                 )
             else:
                 fields = (
-                    packed_d_ino,
-                    (ql.pack(d_off), n),
+                    (ql.pack(d_ino), large_field_size),
+                    (ql.pack(d_off), large_field_size),
                     (ql.pack16(d_reclen), 2),
                     (d_name, len(d_name)),
                     (d_type, 1)
