@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 # A Simple Windows Clipboard Simulation
 
 from typing import TYPE_CHECKING, Optional
+
+from qiling.os.windows.const import *
 
 if TYPE_CHECKING:
     from qiling.os.windows.windows import QlOsWindows
@@ -19,9 +21,12 @@ class Clipboard:
         self.data = b"Default Clipboard Data"
         self.os = os
 
-        # Valid formats taken from https://doxygen.reactos.org/d8/dd6/base_
-        # 2applications_2mstsc_2constants_8h_source.html
-        self.formats = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 128, 129, 130, 131, 142, 512, 767, 768, 1023]
+        self.formats = [
+            CF_TEXT, CF_BITMAP, CF_METAFILEPICT, CF_SYLK, CF_DIF, CF_TIFF, CF_OEMTEXT, CF_DIB,
+            CF_PALETTE, CF_PENDATA, CF_RIFF, CF_WAVE, CF_UNICODETEXT, CF_ENHMETAFILE, CF_HDROP,
+            CF_LOCALE, CF_MAX, CF_OWNERDISPLAY, CF_DSPTEXT, CF_DSPBITMAP, CF_DSPMETAFILEPICT,
+            CF_DSPENHMETAFILE, CF_PRIVATEFIRST, CF_PRIVATELAST, CF_GDIOBJFIRST, CF_GDIOBJLAST
+        ]
 
     def open(self, h_wnd: int) -> bool:
         """Lock clipboard to hWnd if not already locked.
@@ -50,23 +55,35 @@ class Clipboard:
     def format_available(self, fmt: int) -> bool:
         return fmt in self.formats
 
-    def set_data(self, fmt: int, data: bytes) -> int:
-        if fmt not in self.formats:
-            return 0
-
+    def set_data(self, format: int, address: int) -> int:
         hWnd = self.os.thread_manager.cur_thread.id
 
         if self.locked_by != hWnd:
             self.os.last_error = ERROR_CLIPBOARD_NOT_OPEN
             return 0
 
-        self.data = data
+        def __handle_text(a: int) -> bytes:
+            return self.os.utils.read_cstring(a).encode()
 
-        # BUG: this should be the handle of the clipboard object
-        return 1
+        def __handle_uctext(a: int) -> bytes:
+            return self.os.utils.read_wstring(a).encode()
 
-    def get_data(self, fmt: int) -> Optional[bytes]:
-        if fmt not in self.formats:
+        # TODO: support more clipboard formats
+        format_handlers = {
+            CF_TEXT        : __handle_text,
+            CF_UNICODETEXT : __handle_uctext
+        }
+
+        if format not in format_handlers:
+            return 0
+
+        self.data = format_handlers[format](address)
+
+        # TODO: should create a handle for the clipboard object?
+        return address
+
+    def get_data(self, format: int) -> Optional[bytes]:
+        if format not in self.formats:
             return None
 
         hWnd = self.os.thread_manager.cur_thread.id

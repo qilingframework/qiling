@@ -156,13 +156,15 @@ def hook_CloseClipboard(ql: Qiling, address: int, params):
     'hMem'    : HANDLE
 })
 def hook_SetClipboardData(ql: Qiling, address: int, params):
-    try:
-        data = bytes(params['hMem'], 'ascii', 'ignore')
-    except (UnicodeEncodeError, TypeError):
-        data = b""
-        ql.log.debug('Failed to set clipboard data')
+    uFormat = params['uFormat']
+    hMem = params['hMem']
 
-    return ql.os.clipboard.set_data(params['uFormat'], data)
+    handle = ql.os.clipboard.set_data(uFormat, hMem)
+
+    if not handle:
+        ql.log.debug(f'Failed to set clipboard data (format = {uFormat})')
+
+    return handle
 
 
 # HANDLE GetClipboardData(
@@ -172,14 +174,17 @@ def hook_SetClipboardData(ql: Qiling, address: int, params):
     'uFormat' : UINT
 })
 def hook_GetClipboardData(ql: Qiling, address: int, params):
-    data = ql.os.clipboard.get_data(params['uFormat'])
+    uFormat = params['uFormat']
+
+    data = ql.os.clipboard.get_data(uFormat)
 
     if data:
         addr = ql.os.heap.alloc(len(data))
         ql.mem.write(addr, data)
+
     else:
+        ql.log.debug(f'Failed to get clipboard data (format = {uFormat})')
         addr = 0
-        ql.log.debug('Failed to get clipboard data')
 
     return addr
 
