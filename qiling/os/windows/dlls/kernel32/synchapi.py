@@ -175,11 +175,13 @@ def __OpenMutex(ql: Qiling, address: int, params):
         raise QlErrorNotImplemented("API not implemented")
 
 def __CreateMutex(ql: Qiling, address: int, params):
-    try:
-        _type, name = params["lpName"].split("\\")
-    except ValueError:
-        name = params["lpName"]
-        _type = ""
+    lpName = params["lpName"]
+    owning = params["bInitialOwner"]
+
+    if not lpName:
+        return 0
+
+    _type, name = lpName.split("\\") if '\\' in lpName else ('', lpName)
 
     handle = ql.os.handle_manager.search(name)
 
@@ -187,7 +189,6 @@ def __CreateMutex(ql: Qiling, address: int, params):
         # ql.os.last_error = ERROR_ALREADY_EXISTS
         return 0
 
-    owning = params["bInitialOwner"]
     mutex = Mutex(name, _type)
 
     if owning:
