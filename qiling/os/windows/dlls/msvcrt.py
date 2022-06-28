@@ -4,6 +4,7 @@
 #
 
 import time
+from typing import Sequence
 
 from qiling import Qiling
 from qiling.exception import QlErrorNotImplemented
@@ -21,6 +22,49 @@ from qiling.os.windows.handle import Handle
 def hook___set_app_type(ql: Qiling, address: int, params):
     pass
 
+def __alloc_strings_array(ql: Qiling, items: Sequence[str], *, wide: bool) -> int:
+    '''Allocate and populate an array of strings and return its address.
+    '''
+
+    enc = 'utf-16le' if wide else 'utf-8'
+
+    nitems = len(items)
+
+    # allocate room for pointers to items and a trailing null pointer
+    p_array = ql.os.heap.alloc((nitems + 1) * ql.arch.pointersize)
+
+    # encode all arguments into bytes
+    items_bytes = [f'{item}\x00'.encode(enc) for item in items]
+
+    # allocate room for the items
+    p_items_bytes = ql.os.heap.alloc(sum(len(a) for a in items_bytes))
+
+    for i, item in enumerate(items_bytes):
+        # write argument data
+        ql.mem.write(p_items_bytes, item)
+
+        # write pointer to argument data into the argv array
+        ql.mem.write_ptr(p_array + (i * ql.arch.pointersize), p_items_bytes)
+
+        p_items_bytes += len(item)
+
+    # write trailing null pointer
+    ql.mem.write_ptr(p_array + (nitems * ql.arch.pointersize), 0)
+
+    return p_array
+
+def __getmainargs(ql: Qiling, params, wide: bool) -> int:
+    argc = len(ql.argv)
+    argv = __alloc_strings_array(ql, ql.argv, wide=wide)
+    env = __alloc_strings_array(ql, [f'{k}={v}' for k, v in ql.env], wide=wide)
+
+    # write out paramters
+    ql.mem.write_ptr(params['_Argc'], argc, 4)
+    ql.mem.write_ptr(params['_Argv'], argv)
+    ql.mem.write_ptr(params['_Env'], env)
+
+    return 0
+
 # int __getmainargs(
 #    int * _Argc,
 #    char *** _Argv,
@@ -36,7 +80,17 @@ def hook___set_app_type(ql: Qiling, address: int, params):
     '_StartInfo'  : POINTER
 })
 def hook___getmainargs(ql: Qiling, address: int, params):
-    return 0
+    return __getmainargs(ql, params, wide=False)
+
+@winsdkapi(cc=CDECL, params={
+    '_Argc'       : POINTER,
+    '_Argv'       : POINTER,
+    '_Env'        : POINTER,
+    '_DoWildCard' : INT,
+    '_StartInfo'  : POINTER
+})
+def hook___wgetmainargs(ql: Qiling, address: int, params):
+    return __getmainargs(ql, params, wide=True)
 
 # int* __p__fmode();
 @winsdkapi(cc=CDECL, params={})
@@ -53,12 +107,14 @@ def hook___p__commode(ql: Qiling, address: int, params):
 # char** __p__acmdln();
 @winsdkapi(cc=CDECL, params={})
 def hook___p__acmdln(ql: Qiling, address: int, params):
+    # TODO: use values calculated at __getmainargs
     addr = ql.loader.import_address_table['msvcrt.dll'][b'_acmdln']
     return addr
 
 # wchar_t ** __p__wcmdln();
 @winsdkapi(cc=CDECL, params={})
 def hook___p__wcmdln(ql: Qiling, address: int, params):
+    # TODO: use values calculated at __getmainargs
     addr = ql.loader.import_address_table['msvcrt.dll'][b'_wcmdln']
     return addr
 
