@@ -57,6 +57,7 @@ CALL :collect_dll32 kdcom.dll
 CALL :collect_dll32 kernel32.dll
 CALL :collect_dll32 KernelBase.dll
 CALL :collect_dll32 mpr.dll
+CALL :collect_dll32 mscoree.dll
 CALL :collect_dll32 msvcp_win.dll
 CALL :collect_dll32 msvcp60.dll
 CALL :collect_dll32 msvcr120_clr0400.dll, msvcr110.dll
@@ -102,6 +103,7 @@ CALL :collect_dll64 advapi32.dll
 CALL :collect_dll64 gdi32.dll
 CALL :collect_dll64 kernel32.dll
 CALL :collect_dll64 KernelBase.dll
+CALL :collect_dll64 mscoree.dll
 CALL :collect_dll64 msvcrt.dll
 CALL :collect_dll64 ntdll.dll
 CALL :collect_dll64 ntoskrnl.exe

@@ -659,6 +659,7 @@ class QlLoaderPE(QlLoader, Process):
         self.sys_dlls = (
             'ntdll.dll',
             'kernel32.dll',
+            'mscoree.dll',
             'ucrtbase.dll'
         )
 
