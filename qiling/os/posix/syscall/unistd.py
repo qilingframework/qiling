@@ -145,12 +145,6 @@ def ql_syscall_faccessat(ql: Qiling, dfd: int, filename: int, mode: int):
         regreturn = -1
     else:
         regreturn = 0
-    # TODO: according to real implementation, idk why here was a FIFO check
-    # elif stat.S_ISFIFO(Stat(real_path).st_mode):
-    #     regreturn = 0
-
-    # else: 
-    #     regreturn = -1
 
     if regreturn == -1:
         ql.log.debug(f'File not found or skipped: {access_path}')
