@@ -43,7 +43,7 @@ class QlHwManager:
 
             return entity
         except QlErrorModuleFunctionNotFound:
-            self.ql.log.warning(f'The {struct}({label}) has not been implemented')
+            self.ql.log.debug(f'The {struct}({label}) has not been implemented')
 
     def delete(self, label: str):
         """ Remove the peripheral
