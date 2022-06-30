@@ -36,6 +36,7 @@
 - Mark Jansen (learn-more)
 - cq674350529
 - bkerler (viperbjk)
+- bet4it
 
 
 #### Contributors (in no particular order)
@@ -53,7 +54,6 @@
 - madprogrammer
 - danielmoos
 - sigeryang
-- bet4it
 - nullableVoidPtr
 
 
