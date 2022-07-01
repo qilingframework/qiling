@@ -263,9 +263,10 @@ def hook_sprintf(ql: Qiling, address: int, params):
     if format == 0:
         format = "(null)"
 
-    args = ql.os.utils.va_list(format, arglist)
-    count = ql.os.utils.sprintf(buff, format, args, wstring=False)
-    ql.os.utils.update_ellipsis(params, args)
+    args = ql.os.utils.va_list(arglist)
+
+    count, upd_args = ql.os.utils.sprintf(buff, format, args, wstring=False)
+    upd_args(params)
 
     return count
 
@@ -279,12 +280,10 @@ def hook_printf(ql: Qiling, address: int, params):
     if format == 0:
         format = "(null)"
 
-    nargs = format.count("%")
-    ptypes = (POINTER, ) + (PARAM_INTN, ) * nargs
-    args = ql.os.fcall.readParams(ptypes)[1:]
+    args = ql.os.fcall.readEllipsis(params.values())
 
-    count = ql.os.utils.printf(format, args, wstring=False)
-    ql.os.utils.update_ellipsis(params, args)
+    count, upd_args = ql.os.utils.printf(format, args, wstring=False)
+    upd_args(params)
 
     return count
 
@@ -298,12 +297,10 @@ def hook_wprintf(ql: Qiling, address: int, params):
     if format == 0:
         format = "(null)"
 
-    nargs = format.count("%")
-    ptypes = (POINTER, ) + (PARAM_INTN, ) * nargs
-    args = ql.os.fcall.readParams(ptypes)[1:]
+    args = ql.os.fcall.readEllipsis(params.values())
 
-    count = ql.os.utils.printf(format, args, wstring=True)
-    ql.os.utils.update_ellipsis(params, args)
+    count, upd_args = ql.os.utils.printf(format, args, wstring=True)
+    upd_args(params)
 
     return count
 
@@ -320,9 +317,10 @@ def __stdio_common_vfprintf(ql: Qiling, address: int, params, wstring: bool):
 
     # TODO: take _Stream into account
 
-    args = ql.os.utils.va_list(format, arglist)
-    count = ql.os.utils.printf(format, args, wstring)
-    ql.os.utils.update_ellipsis(params, args)
+    args = ql.os.utils.va_list(arglist)
+
+    count, upd_args = ql.os.utils.printf(format, args, wstring)
+    upd_args(params)
 
     return count
 
@@ -353,9 +351,10 @@ def __stdio_common_vsprintf(ql: Qiling, address: int, params, wstring: bool):
 
     # TODO: take _BufferCount into account
 
-    args = ql.os.utils.va_list(format, arglist)
-    count = ql.os.utils.sprintf(buff, format, args, wstring)
-    ql.os.utils.update_ellipsis(params, args)
+    args = ql.os.utils.va_list(arglist)
+
+    count, upd_args = ql.os.utils.sprintf(buff, format, args, wstring)
+    upd_args(params)
 
     return count
 
