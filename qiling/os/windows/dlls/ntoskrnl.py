@@ -124,12 +124,10 @@ def hook_DbgPrintEx(ql: Qiling, address: int, params):
     if Format == 0:
         Format = "(null)"
 
-    nargs = Format.count("%")
-    ptypes = (ULONG, ULONG, POINTER) + (PARAM_INTN, ) * nargs
-    args = ql.os.fcall.readParams(ptypes)[3:]
+    args = ql.os.fcall.readEllipsis(params.values())
 
-    count = ql.os.utils.printf(Format, args, wstring=False)
-    ql.os.utils.update_ellipsis(params, args)
+    count, upd_args = ql.os.utils.printf(Format, args, wstring=False)
+    upd_args(params)
 
     return count
 
@@ -147,12 +145,10 @@ def hook_DbgPrint(ql: Qiling, address: int, params):
     if Format == 0:
         Format = "(null)"
 
-    nargs = Format.count("%")
-    ptypes = (POINTER, ) + (PARAM_INTN, ) * nargs
-    args = ql.os.fcall.readParams(ptypes)[1:]
+    args = ql.os.fcall.readEllipsis(params.values())
 
-    count = ql.os.utils.printf(Format, args, wstring=False)
-    ql.os.utils.update_ellipsis(params, args)
+    count, upd_args = ql.os.utils.printf(Format, args, wstring=False)
+    upd_args(params)
 
     return count
 
