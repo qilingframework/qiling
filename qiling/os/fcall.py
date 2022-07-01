@@ -2,7 +2,7 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 
-from typing import Any, Callable, Iterable, MutableMapping, Optional, Mapping, Tuple, Sequence
+from typing import Any, Callable, Iterable, Iterator, MutableMapping, Optional, Mapping, Tuple, Sequence
 
 from qiling import Qiling
 from qiling.cc import QlCC
@@ -49,6 +49,21 @@ class QlFunctionCall:
 
 		# let the user override default accessors or add custom ones
 		self.accessors.update(accessors)
+
+	def readEllipsis(self, ptypes: Sequence[Any]) -> Iterator[int]:
+		"""
+		"""
+
+		default = self.accessors[PARAM_INTN]
+
+		# count skipped slots
+		si = sum(self.accessors.get(typ, default)[2] for typ in ptypes)
+
+		while True:
+			read, _, nslots = default
+
+			yield read(si)
+			si += nslots
 
 	def readParams(self, ptypes: Sequence[Any]) -> Sequence[int]:
 		"""Walk the function parameters list and get their values.
