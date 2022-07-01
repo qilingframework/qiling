@@ -67,6 +67,7 @@ class QlOsMcu(QlOs):
                 self.ql.log.warning("Timeout is not supported in non-fast mode.")
 
             self.runable = True
+            self.counter = 0
             while self.runable:
                 current_address = current_pc()
 
@@ -76,7 +77,7 @@ class QlOsMcu(QlOs):
                 self.ql.emu_start(current_address, 0, count=1)
                 self.ql.hw.step()
 
-                count -= 1
+                self.counter += 1
                 
-                if count == 0:
+                if count == self.counter:
                     break
