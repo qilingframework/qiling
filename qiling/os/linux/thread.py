@@ -593,6 +593,8 @@ class QlLinuxThreadManagement:
     def stop(self):
         self.ql.log.debug("[Thread Manager] Stop the world.")
         self.ql.emu_stop()
+        global LINUX_THREAD_ID
+        LINUX_THREAD_ID = 2000
         while len(self.threads) != 0:
             t = self.threads.pop()
             self.ql.log.debug(f"[Thread Manager] Thread IDs: { {t.id for t in self.threads} }")
