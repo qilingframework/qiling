@@ -11,7 +11,7 @@ from enum import Enum
 from functools import cached_property
 from typing import Dict, List, Literal
 from qiling.core import Qiling
-from unicorn import UC_PROT_READ, UC_PROT_EXEC, UC_PROT_ALL
+from unicorn import UC_PROT_NONE, UC_PROT_READ, UC_PROT_WRITE, UC_PROT_EXEC, UC_PROT_ALL
 
 
 class R2Data:
@@ -37,7 +37,24 @@ class Section(R2Data):
     vsize: int
     paddr: int
     vaddr: int
-    perm: str  # TODO: use enum or literal
+    perm: int
+
+    @staticmethod
+    def perm2uc(permstr: str) -> int:
+        '''convert "-rwx" to unicorn const'''
+        perm = UC_PROT_NONE
+        dic = {
+            "r": UC_PROT_READ,
+            "w": UC_PROT_WRITE,
+            "x": UC_PROT_EXEC,
+        }
+        for ch in permstr:
+            perm += dic.get(ch, 0)
+        return perm
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.perm = Section.perm2uc(self.perm)
 
 
 @dataclass(unsafe_hash=True, init=False)
