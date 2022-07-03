@@ -14,27 +14,35 @@ def __RegOpenKey(ql: Qiling, address: int, params):
     lpSubKey = params["lpSubKey"]
     phkResult = params["phkResult"]
 
-    if hKey not in REG_KEYS:
+    handle = ql.os.handle_manager.get(hKey)
+
+    if handle is None or not handle.name.startswith('HKEY'):
         return ERROR_FILE_NOT_FOUND
 
-    s_hKey = REG_KEYS[hKey]
-    key = s_hKey + "\\" + lpSubKey
+    params["hKey"] = handle.name
 
-    # Keys in the profile are saved as KEY\PARAM = VALUE, so i just want to check that the key is the same
-    keys_profile = [key.rsplit("\\", 1)[0] for key in ql.os.profile["REGISTRY"].keys()]
-    if key.lower() in keys_profile:
-        ql.log.debug("Using profile for key of  %s" % key)
-        ql.os.registry_manager.access(key)
-    else:
-        if not ql.os.registry_manager.exists(key):
-            ql.log.debug("Value key %s not present" % key)
-            return ERROR_FILE_NOT_FOUND
+    if lpSubKey:
+        key = f'{handle.name}\\{lpSubKey}'
 
-    # new handle
-    new_handle = Handle(obj=key)
-    ql.os.handle_manager.append(new_handle)
-    if phkResult != 0:
-        ql.mem.write_ptr(phkResult, new_handle.id)
+        # Keys in the profile are saved as KEY\PARAM = VALUE, so i just want to check that the key is the same
+        keys_profile = [entry.casefold() for entry in ql.os.profile["REGISTRY"].keys()]
+
+        if key.casefold() in keys_profile:
+            ql.log.debug("Using profile for key of  %s" % key)
+            ql.os.registry_manager.access(key)
+
+        else:
+            if not ql.os.registry_manager.exists(key):
+                ql.log.debug("Value key %s not present" % key)
+                return ERROR_FILE_NOT_FOUND
+
+        # new handle
+        handle = Handle(obj=key)
+        ql.os.handle_manager.append(handle)
+
+    if phkResult:
+        ql.mem.write_ptr(phkResult, handle.id)
+
     return ERROR_SUCCESS
 
 def __RegQueryValue(ql: Qiling, address: int, params, wstring: bool):
@@ -84,35 +92,34 @@ def __RegQueryValue(ql: Qiling, address: int, params, wstring: bool):
     return ret
 
 def __RegCreateKey(ql: Qiling, address: int, params):
-    ret = ERROR_SUCCESS
-
     hKey = params["hKey"]
     lpSubKey = params["lpSubKey"]
     phkResult = params["phkResult"]
 
-    if hKey not in REG_KEYS:
+    handle = ql.os.handle_manager.get(hKey)
+
+    if handle is None or not handle.name.startswith('HKEY'):
         return ERROR_FILE_NOT_FOUND
 
-    s_hKey = REG_KEYS[hKey]
-    params["hKey"] = s_hKey
+    params["hKey"] = handle.name
 
-    keyname = f'{s_hKey}\\{lpSubKey}'
+    if lpSubKey:
+        keyname = f'{handle.name}\\{lpSubKey}'
 
-    if not ql.os.registry_manager.exists(keyname):
-        ql.os.registry_manager.create(keyname)
-        ret = ERROR_SUCCESS
+        if not ql.os.registry_manager.exists(keyname):
+            ql.os.registry_manager.create(keyname)
 
-    # new handle
-    if ret == ERROR_SUCCESS:
-        new_handle = Handle(obj=keyname)
-        ql.os.handle_manager.append(new_handle)
-        if phkResult != 0:
-            ql.mem.write_ptr(phkResult, new_handle.id)
-    else:
-        # elicn: is this even reachable?
-        new_handle = 0
+        handle = ql.os.handle_manager.search_by_obj(keyname)
 
-    return ret
+        # make sure we have a handle for this keyname
+        if handle is None:
+            handle = Handle(obj=keyname)
+            ql.os.handle_manager.append(handle)
+
+    if phkResult:
+        ql.mem.write_ptr(phkResult, handle.id)
+
+    return ERROR_SUCCESS
 
 def __RegSetValue(ql: Qiling, address: int, params, wstring: bool):
     hKey = params["hKey"]
