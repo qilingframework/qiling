@@ -282,30 +282,30 @@ def hook_ReleaseMutex(ql: Qiling, address: int, params):
 
 def __CreateEvent(ql: Qiling, address: int, params):
     # Implementation seems similar enough to Mutex to just use it
+    lpName = params["lpName"]
 
-    try:
-        namespace, name = params["lpName"].split("\\")
-    except ValueError:
-        name = params["lpName"]
-        namespace = ""
+    if lpName:
+        namespace, name = lpName.split('\\') if '\\' in lpName else ('', lpName)
+        handle = ql.os.handle_manager.search(name)
 
-    handle = ql.os.handle_manager.search(name)
+        if handle is not None:
+            ql.os.last_error = ERROR_ALREADY_EXISTS
+            return handle.id
 
-    if handle is not None:
-        ql.os.last_error = ERROR_ALREADY_EXISTS
-        # FIXME: fail with a nullptr?
-        # return 0
     else:
-        mutex = Mutex(name, namespace)
+        # TODO: should be None instead of empty strings?
+        namespace = ''
+        name = ''
 
-        if params['bInitialState']:
-            mutex.lock()
+    mutex = Mutex(name, namespace)
 
-        handle = Handle(obj=mutex, name=name)
-        ql.os.handle_manager.append(handle)
+    if params['bInitialState']:
+        mutex.lock()
 
-    # FIXME: shouldn't it be 'id' instead of 'ID'?
-    return handle.ID
+    handle = Handle(obj=mutex, name=name)
+    ql.os.handle_manager.append(handle)
+
+    return handle.id
 
 # HANDLE CreateEventA(
 #  LPSECURITY_ATTRIBUTES lpEventAttributes,
