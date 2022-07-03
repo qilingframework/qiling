@@ -145,15 +145,17 @@ def hook_WaitForMultipleObjects(ql: Qiling, address: int, params):
     return 0
 
 def __OpenMutex(ql: Qiling, address: int, params):
+    lpName = params["lpName"]
+
+    if not lpName:
+        return 0
+
     # The name can have a "Global" or "Local" prefix to explicitly open an object in the global or session namespace.
     # It can also have no prefix
-    try:
-        _type, name = params["lpName"].split("\\")
-    except ValueError:
-        name = params["lpName"]
-        _type = ""
+    _type, name = lpName.split("\\") if '\\' in lpName else ('', lpName)
 
     handle = ql.os.handle_manager.search(name)
+
     if _type == "Global":
         # if is global is a Windows lock. We always return a valid handle because we have no way to emulate them
         # example sample: Gandcrab e42431d37561cc695de03b85e8e99c9e31321742
