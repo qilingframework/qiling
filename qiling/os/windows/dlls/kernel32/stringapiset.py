@@ -7,7 +7,7 @@ from qiling import Qiling
 from qiling.os.windows.api import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import cmp
-from qiling.os.windows.const import CP_ACP, CP_OEMCP, CP_THREAD_ACP, CP_UTF16, CP_UTF16BE, CP_ASCII, CP_UTF7, CP_UTF8
+from qiling.os.windows.const import *
 
 # BOOL GetStringTypeW(
 #   DWORD                         dwInfoType,
@@ -102,9 +102,10 @@ def __encoding_name(codepage: int) -> str:
 })
 def hook_WideCharToMultiByte(ql: Qiling, address: int, params):
     CodePage = params['CodePage']
-    lpWideCharStr = params["lpWideCharStr"]
+    dwFlags = params['dwFlags']
+    lpWideCharStr = params['lpWideCharStr']
     cchWideChar = params['cchWideChar']
-    lpMultiByteStr = params["lpMultiByteStr"]
+    lpMultiByteStr = params['lpMultiByteStr']
     cbMultiByte = params["cbMultiByte"]
 
     if not cchWideChar:
@@ -131,7 +132,13 @@ def hook_WideCharToMultiByte(ql: Qiling, address: int, params):
     decoded = wcstr.decode('utf-16le')
 
     encname = __encoding_name(CodePage)
-    encoded = decoded.encode(encname)
+    errors = 'strict' if dwFlags & WC_ERR_INVALID_CHARS else 'replace'
+
+    try:
+        encoded = decoded.encode(encname, errors)
+    except UnicodeEncodeError:
+        ql.os.last_error = ERROR_NO_UNICODE_TRANSLATION
+        return 0
 
     if not cbMultiByte:
         return len(encoded)

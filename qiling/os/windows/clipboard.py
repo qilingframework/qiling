@@ -12,7 +12,6 @@ if TYPE_CHECKING:
     from qiling.os.windows.windows import QlOsWindows
 
 NOT_LOCKED = -1
-ERROR_CLIPBOARD_NOT_OPEN = 0x58a
 
 class Clipboard:
 
