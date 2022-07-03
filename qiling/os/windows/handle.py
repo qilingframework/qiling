@@ -32,23 +32,24 @@ class HandleManager:
     STDOUT = Handle(id=STD_OUTPUT_HANDLE)
     STDERR = Handle(id=STD_ERROR_HANDLE)
 
-    # Register
-    HKEY_CLASSES_ROOT        = Handle(id=0x80000000)
-    HKEY_CURRENT_CONFIG      = Handle(id=0x80000005)
-    HKEY_CURRENT_USER        = Handle(id=0x80000001)
-    HKEY_CURRENT_USER_LOCAL_SETTINGS = Handle(id=0x80000007)
-    HKEY_LOCAL_MACHINE       = Handle(id=0x80000002)
-    HKEY_PERFORMANCE_DATA    = Handle(id=0x80000004)
-    HKEY_PERFORMANCE_NLSTEXT = Handle(id=0x80000060)
-    HKEY_PERFORMANCE_TEXT    = Handle(id=0x80000050)
-    HKEY_USERS               = Handle(id=0x80000003)
-
     def __init__(self):
         self.handles: MutableMapping[int, Handle] = {}
 
+        # standard io streams
         self.append(HandleManager.STDIN)
         self.append(HandleManager.STDOUT)
         self.append(HandleManager.STDERR)
+
+        # registry hives
+        self.append(Handle(id=0x80000000, name='HKEY_CLASSES_ROOT'))
+        self.append(Handle(id=0x80000001, name='HKEY_CURRENT_USER'))
+        self.append(Handle(id=0x80000002, name='HKEY_LOCAL_MACHINE'))
+        self.append(Handle(id=0x80000003, name='HKEY_USERS'))
+        self.append(Handle(id=0x80000004, name='HKEY_PERFORMANCE_DATA'))
+        self.append(Handle(id=0x80000005, name='HKEY_CURRENT_CONFIG'))
+        self.append(Handle(id=0x80000007, name='HKEY_CURRENT_USER_LOCAL_SETTINGS'))
+        self.append(Handle(id=0x80000060, name='HKEY_PERFORMANCE_NLSTEXT'))
+        self.append(Handle(id=0x80000050, name='HKEY_PERFORMANCE_TEXT'))
 
     def append(self, handle: Handle) -> None:
         self.handles[handle.id] = handle
