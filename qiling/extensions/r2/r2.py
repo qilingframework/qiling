@@ -121,6 +121,11 @@ class R2:
 
     def _cmdj(self, cmd: str) -> List[Dict]:
         return json.loads(self._cmd(cmd))
+    
+    def read(self, addr: int, size: int) -> bytes:
+        self._cmd(f"s {addr}")
+        hexstr = self._cmd(f"p8 {size}")
+        return bytes.fromhex(hexstr)
 
     @cached_property
     def sections(self) -> Dict[str, Section]:
