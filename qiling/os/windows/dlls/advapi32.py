@@ -458,11 +458,17 @@ def hook_GetTokenInformation(ql: Qiling, address: int, params):
     TokenInformationLength = params["TokenInformationLength"]
     ReturnLength = params["ReturnLength"]
 
-    token = ql.os.handle_manager.get(TokenHandle).obj
+    handle = ql.os.handle_manager.get(TokenHandle)
+
+    if handle is None:
+        ql.os.last_error = ERROR_INVALID_HANDLE
+        return 0
+
+    token = handle.obj
     information_value = token.get(TokenInformationClass)
 
-    ql.mem.write_ptr(ReturnLength, len(information_value), 4)
-    return_size = ql.mem.read_ptr(ReturnLength, 4)
+    return_size = len(information_value)
+    ql.mem.write_ptr(ReturnLength, return_size, 4)
 
     ql.log.debug("The target is checking for its permissions")
 
