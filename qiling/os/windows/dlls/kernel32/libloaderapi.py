@@ -186,9 +186,11 @@ def hook_GetProcAddress(ql: Qiling, address: int, params):
 def _LoadLibrary(ql: Qiling, address: int, params):
     lpLibFileName = params["lpLibFileName"]
 
-    if not ql.code and lpLibFileName == ql.loader.filepath.decode():
-        # Loading self
-        return ql.loader.pe_image_address
+    # TODO: this searches only by basename; do we need to search by full path as well?
+    dll = ql.loader.get_image_by_name(lpLibFileName, casefold=True)
+
+    if dll is not None:
+        return dll.base
 
     return ql.loader.load_dll(lpLibFileName)
 
