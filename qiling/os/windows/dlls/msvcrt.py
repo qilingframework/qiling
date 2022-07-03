@@ -183,7 +183,7 @@ def hook__cexit(ql: Qiling, address: int, params):
     'pfend'   : POINTER
 })
 def hook__initterm(ql: Qiling, address: int, params):
-    pass
+    return 0
 
 # void exit(
 #    int const status
