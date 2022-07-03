@@ -703,7 +703,6 @@ class QlLoaderPE(QlLoader, Process):
         cmdline = ntpath.join(self.ql.os.userprofile, 'Desktop', self.ql.targetname)
         cmdargs = ' '.join(f'"{arg}"' if ' ' in arg else arg for arg in self.argv[1:])
 
-        self.filepath = bytes(f'{cmdline}\x00', "utf-8")
         self.cmdline = bytes(f'{cmdline} {cmdargs}\x00', "utf-8")
 
         self.load(pe)
@@ -826,8 +825,6 @@ class QlLoaderPE(QlLoader, Process):
                 self.ql.os.fcall.call_native(self.entry_point, args, None)
 
         elif pe is None:
-            self.filepath = b""
-
             self.ql.mem.map(self.entry_point, self.ql.os.code_ram_size, info="[shellcode]")
 
             self.init_teb()
