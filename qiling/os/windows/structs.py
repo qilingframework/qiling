@@ -1738,9 +1738,9 @@ class UnicodeString(AlignedWindowsStruct):
         else:
             self.size = self.USHORT_SIZE * 2 + 4 + self.POINTER_SIZE
 
-        self.length = [length, self.USHORT_SIZE, "little", int, self.USHORT_SIZE]
-        self.maxLength = [maxLength, self.USHORT_SIZE, "little", int, self.USHORT_SIZE]
-        self.buffer = [buffer, self.POINTER_SIZE, "little", int, self.POINTER_SIZE]
+        self.length = [length, self.USHORT_SIZE, "little", int]
+        self.maxLength = [maxLength, self.USHORT_SIZE, "little", int]
+        self.buffer = [buffer, self.POINTER_SIZE, "little", int]
 
 
 # typedef struct _OBJECT_TYPE_INFORMATION {
