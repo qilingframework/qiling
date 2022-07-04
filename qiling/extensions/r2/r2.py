@@ -9,7 +9,7 @@ import libr
 from dataclasses import dataclass, fields
 from enum import Enum
 from functools import cached_property
-from typing import Dict, List, Literal
+from typing import Dict, List, Literal, Union
 from qiling.core import Qiling
 from unicorn import UC_PROT_NONE, UC_PROT_READ, UC_PROT_WRITE, UC_PROT_EXEC, UC_PROT_ALL
 
@@ -119,7 +119,7 @@ class R2:
             self._r2c, ctypes.create_string_buffer(cmd.encode("utf-8")))
         return ctypes.string_at(r).decode('utf-8')
 
-    def _cmdj(self, cmd: str) -> List[Dict]:
+    def _cmdj(self, cmd: str) -> Union[Dict, List[Dict]]:
         return json.loads(self._cmd(cmd))
     
     def read(self, addr: int, size: int) -> bytes:
@@ -149,10 +149,16 @@ class R2:
         return {dic['name']: Function(**dic) for dic in fcn_lst}
 
     @cached_property
+    def binfo(self) -> Dict[str, str]:
+        return self._cmdj("iIj")
+
+    @cached_property
     def baddr(self) -> int:
-        _bin = ctypes.cast(self._r2c.contents.bin,
-                           ctypes.POINTER(libr.r_bin.RBin))
-        return libr.r_bin.r_bin_get_baddr(_bin)
+        return self.binfo["baddr"]
+
+    @cached_property
+    def bintype(self) -> str:
+        return self.binfo["bintype"]
 
     def __del__(self):
         libr.r_core.r_core_free(self._r2c)
