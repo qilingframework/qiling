@@ -3,6 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+import bisect
 import ctypes
 import json
 import libr
@@ -84,6 +85,14 @@ class Symbol(R2Data):
     paddr: int
     is_imported: bool
 
+@dataclass(unsafe_hash=True, init=False)
+class Flag(R2Data):
+    offset: int
+    name: str = ''
+    size: int = 0
+
+    def __lt__(self, other):
+        return self.offset < other.offset
 
 class R2:
     def __init__(self, ql: Qiling, baseaddr=(1 << 64) - 1, loadaddr=0):
@@ -147,6 +156,17 @@ class R2:
         self._cmd("aaa")
         fcn_lst = self._cmdj("aflj")
         return {dic['name']: Function(**dic) for dic in fcn_lst}
+
+    @cached_property
+    def flags(self) -> List[Flag]:
+        return [Flag(**dic) for dic in self._cmdj("fj")]
+
+    def at(self, addr: int) -> Flag:
+        # the most suitable flag should have address <= addr
+        # bisect_right find the insertion point, right side if value exists
+        idx = bisect.bisect_right(self.flags, Flag(offset=addr))
+        # minus 1 to find the corresponding flag
+        return self.flags[idx - 1]
 
     @cached_property
     def binfo(self) -> Dict[str, str]:
