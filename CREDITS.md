@@ -23,7 +23,7 @@
 #### CI, Website，Documentations, Logo & Swags
 
 - FOO Kevin (chfl4gs) <chfl4gs_at_qiling_io>
-- SU muchen (miraisuu) <suu_at_iling_io>
+- SU muchen (miraisuu) <suu_at_qiling_io>
 
 
 #### Key Contributors (in no particular order)
