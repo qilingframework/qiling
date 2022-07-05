@@ -132,8 +132,7 @@ class R2:
         return json.loads(self._cmd(cmd))
     
     def read(self, addr: int, size: int) -> bytes:
-        self._cmd(f"s {addr}")
-        hexstr = self._cmd(f"p8 {size}")
+        hexstr = self._cmd(f"p8 {size} @ {addr}")
         return bytes.fromhex(hexstr)
 
     @cached_property
