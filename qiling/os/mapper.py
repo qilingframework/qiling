@@ -116,6 +116,9 @@ class QlFsMapper:
 
         host_path = self.path.virtual_to_host_path(path)
 
+        if not self.path.is_safe_host_path(host_path):
+            raise PermissionError(f'unsafe path: {host_path}')
+
         return ql_file.open(host_path, openflags, openmode)
 
     def open(self, path: str, openmode: str):
@@ -123,6 +126,9 @@ class QlFsMapper:
             return self._open_mapping(path, openmode)
 
         host_path = self.path.virtual_to_host_path(path)
+
+        if not self.path.is_safe_host_path(host_path):
+            raise PermissionError(f'unsafe path: {host_path}')
 
         return open(host_path, openmode)
 

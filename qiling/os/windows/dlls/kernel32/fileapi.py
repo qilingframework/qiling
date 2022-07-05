@@ -270,11 +270,13 @@ def hook_CreateFileA(ql: Qiling, address: int, params):
 def hook_CreateFileW(ql: Qiling, address: int, params):
     return  _CreateFile(ql, address, params)
 
-def _GetTempPath(ql: Qiling, address: int, params, wide: bool):
-    temp_path = ntpath.join(ql.rootfs, 'Windows', 'Temp')
+def _GetTempPath(ql: Qiling, address: int, params, *, wide: bool):
+    vtmpdir = ntpath.join(ql.os.windir, 'Temp')
+    htmpdir = ql.os.path.virtual_to_host_path(vtmpdir)
 
-    if not os.path.exists(temp_path):
-        os.makedirs(temp_path, 0o755)
+    if ql.os.path.is_safe_host_path(htmpdir):
+        if not os.path.exists(htmpdir):
+            os.makedirs(htmpdir, 0o755)
 
     nBufferLength = params['nBufferLength']
     lpBuffer = params['lpBuffer']
@@ -282,7 +284,7 @@ def _GetTempPath(ql: Qiling, address: int, params, wide: bool):
     enc = 'utf-16le' if wide else 'utf-8'
 
     # temp dir path has to end with a path separator
-    tmpdir = f'{ntpath.join(ql.os.windir, "Temp")}{ntpath.sep}'.encode(enc)
+    tmpdir = f'{vtmpdir}{ntpath.sep}'.encode(enc)
     cstr = tmpdir + '\x00'.encode(enc)
 
     if nBufferLength >= len(cstr):
@@ -471,18 +473,20 @@ def hook_GetDiskFreeSpaceW(ql: Qiling, address: int, params):
     'lpSecurityAttributes' : LPSECURITY_ATTRIBUTES
 })
 def hook_CreateDirectoryA(ql: Qiling, address: int, params):
-    path_name = params["lpPathName"]
-    target_dir = os.path.join(ql.rootfs, path_name.replace("\\", os.sep))
-    ql.log.info('TARGET_DIR = %s' % target_dir)
+    lpPathName = params['lpPathName']
 
-    # Verify the directory is in ql.rootfs to ensure no path traversal has taken place
-    real_path = ql.os.path.transform_to_real_path(path_name)
+    dst = ql.os.path.virtual_to_host_path(lpPathName)
 
-    if os.path.exists(real_path):
+    if not ql.os.path.is_safe_host_path(dst):
+        ql.os.last_error = ERROR_GEN_FAILURE
+        return 0
+
+    if os.path.exists(dst):
         ql.os.last_error = ERROR_ALREADY_EXISTS
         return 0
 
-    os.mkdir(real_path)
+    os.mkdir(dst, 0o755)
+
     return 1
 
 # DWORD GetFileSize(
@@ -619,14 +623,23 @@ def hook_UnmapViewOfFile(ql: Qiling, address: int, params):
     'bFailIfExists'      : BOOL
 })
 def hook_CopyFileA(ql: Qiling, address: int, params):
-    lpExistingFileName = ql.os.path.transform_to_real_path(params["lpExistingFileName"])
-    lpNewFileName = ql.os.path.transform_to_real_path(params["lpNewFileName"])
-    bFailIfExists = params["bFailIfExists"]
+    lpExistingFileName = params['lpExistingFileName']
+    lpNewFileName = params['lpNewFileName']
+    bFailIfExists = params['bFailIfExists']
 
-    if bFailIfExists and os.path.exists(lpNewFileName):
+    src = ql.os.path.virtual_to_host_path(lpExistingFileName)
+    dst = ql.os.path.virtual_to_host_path(lpNewFileName)
+
+    if not ql.os.path.is_safe_host_path(src) or not ql.os.path.is_safe_host_path(dst):
+        ql.os.last_error = ERROR_GEN_FAILURE
         return 0
 
-    copyfile(lpExistingFileName, lpNewFileName)
+    if bFailIfExists and os.path.exists(dst):
+        ql.os.last_error = ERROR_FILE_EXISTS
+        return 0
+
+    copyfile(src, dst)
+
     return 1
 
 # BOOL SetFileAttributesA(
@@ -663,6 +676,22 @@ def hook_SetFileApisToANSI(ql: Qiling, address: int, params):
 def hook_SetFileApisToOEM(ql: Qiling, address: int, params):
     pass
 
+def _DeleteFile(ql: Qiling, address: int, params):
+    lpFileName = params["lpFileName"]
+
+    dst = ql.os.path.virtual_to_host_path(lpFileName)
+
+    if not ql.os.path.is_safe_host_path(dst):
+        ql.os.last_error = ERROR_GEN_FAILURE
+        return 0
+
+    try:
+        os.remove(dst)
+    except OSError:
+        return 0
+
+    return 1
+
 # BOOL DeleteFileA(
 #   LPCSTR lpFileName
 # );
@@ -670,12 +699,7 @@ def hook_SetFileApisToOEM(ql: Qiling, address: int, params):
     'lpFileName' : LPCSTR
 })
 def hook_DeleteFileA(ql: Qiling, address: int, params):
-    lpFileName = ql.os.path.transform_to_real_path(params["lpFileName"])
-    try:
-        os.remove(lpFileName)
-        return 1
-    except:
-        return 0
+    return _DeleteFile(ql, address, params)
 
 # BOOL DeleteFileW(
 #   LPCWSTR lpFileName
@@ -684,9 +708,4 @@ def hook_DeleteFileA(ql: Qiling, address: int, params):
     'lpFileName' : LPCWSTR
 })
 def hook_DeleteFileW(ql: Qiling, address: int, params):
-    lpFileName = ql.os.path.transform_to_real_path(params["lpFileName"])
-    try:
-        os.remove(lpFileName)
-        return 1
-    except:
-        return 0
+    return _DeleteFile(ql, address, params)
