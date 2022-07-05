@@ -378,7 +378,7 @@ class QlGdb(QlDebugger):
 
             if query == 'Supported':
                 # list of supported features excluding the multithreading-related ones
-                common = (
+                features = [
                     'BreakpointCommands+',
                     'ConditionalBreakpoints+',
                     'ConditionalTracepoints+',
@@ -408,23 +408,21 @@ class QlGdb(QlDebugger):
                     'multiprocess+',
                     'no-resumed+',
                     'qXfer:auxv:read+',
-                    'qXfer:exec-file:read+',
                     'qXfer:features:read+',
                     # 'qXfer:libraries-svr4:read+',
                     # 'qXfer:osdata:read+',
                     'qXfer:siginfo:read+',
                     'qXfer:siginfo:write+',
                     'qXfer:statictrace:read+',
-                    'qXfer:threads:read+',
                     'qXfer:traceframe-info:read+',
                     'swbreak+',
                     'tracenz+',
                     'vfork-events+'
-                )
+                ]
 
                 # might or might not need for multi thread
                 if self.ql.multithread:
-                    features = (
+                    features += [
                         'PacketSize=47ff',
                         'FastTracepoints+',
                         'QThreadEvents+',
@@ -436,16 +434,26 @@ class QlGdb(QlDebugger):
                         'qXfer:btrace-conf:read+',
                         'qXfer:btrace:read+',
                         'vContSupported+'
-                    )
+                    ]
 
                 else:
-                    features = (
+                    features += [
                         'PacketSize=3fff',
                         'qXfer:spu:read+',
                         'qXfer:spu:write+'
-                    )
+                    ]
 
-                return ';'.join(common + features)
+                # os dependent features
+                if not self.ql.interpreter:
+                    # filesystem dependent features
+                    if hasattr(self.ql.os, 'path'):
+                        features.append('qXfer:exec-file:read+')
+
+                    # process dependent features
+                    if hasattr(self.ql.os, 'pid'):
+                        features.append('qXfer:threads:read+')
+
+                return ';'.join(features)
 
             elif query == 'Xfer':
                 feature, op, annex, params = data
@@ -462,15 +470,11 @@ class QlGdb(QlDebugger):
                     return f'{"l" if len(content) < length else "m"}{content}'
 
                 elif feature == 'threads' and op == 'read':
-                    if not self.ql.baremetal and hasattr(self.ql.os, 'pid'):
-                        content = '\r\n'.join((
-                            '<threads>',
-                            f'<thread id="{self.ql.os.pid}" core="1" name="{self.ql.targetname}"/>',
-                            '</threads>'
-                        ))
-
-                    else:
-                        content = ''
+                    content = '\r\n'.join((
+                        '<threads>',
+                        f'<thread id="{self.ql.os.pid}" core="1" name="{self.ql.targetname}"/>',
+                        '</threads>'
+                    ))
 
                     return f'l{content}'
 
