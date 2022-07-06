@@ -32,6 +32,8 @@ def my_sandbox(path, rootfs):
     ql.hook_address(func, r2.functions['main'].offset)
     # enable trace powered by r2 symsmap
     r2.enable_trace()
+    # print xref to string "Hello world!"
+    print(r2.refto(addr))
     ql.run()
 
 if __name__ == "__main__":

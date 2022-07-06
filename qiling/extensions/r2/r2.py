@@ -10,7 +10,7 @@ import libr
 from dataclasses import dataclass, fields
 from enum import Enum
 from functools import cached_property
-from typing import Dict, List, Literal, Tuple, Union
+from typing import Dict, List, Literal, Optional, Tuple, Union
 from qiling.core import Qiling
 from qiling.extensions import trace
 from unicorn import UC_PROT_NONE, UC_PROT_READ, UC_PROT_WRITE, UC_PROT_EXEC, UC_PROT_ALL
@@ -95,6 +95,21 @@ class Flag(R2Data):
     def __lt__(self, other):
         return self.offset < other.offset
 
+@dataclass(unsafe_hash=True, init=False)
+class Xref(R2Data):
+    name: str
+    fromaddr: int  # from is reserved word in Python
+    refname: str
+    addr: int
+    type: str
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.fromaddr = kwargs["from"]
+
+    def __lt__(self, other):
+        return self.fromaddr < other.fromaddr
+
 class R2:
     def __init__(self, ql: Qiling, baseaddr=(1 << 64) - 1, loadaddr=0):
         super().__init__()
@@ -158,6 +173,10 @@ class R2:
     def flags(self) -> List[Flag]:
         return [Flag(**dic) for dic in self._cmdj("fj")]
 
+    @cached_property
+    def xrefs(self) -> Dict[int, Xref]:
+        return {dic['from']: Xref(**dic) for dic in self._cmdj("axj")}
+
     def at(self, addr: int) -> Tuple[Flag, int]:
         # the most suitable flag should have address <= addr
         # bisect_right find the insertion point, right side if value exists
@@ -165,6 +184,12 @@ class R2:
         # minus 1 to find the corresponding flag
         flag = self.flags[idx - 1]
         return flag, addr - flag.offset
+
+    def refrom(self, addr: int) -> Optional[Xref]:
+        return self.xrefs.get(addr)
+
+    def refto(self, addr: int) -> List[Xref]:
+        return [xref for xref in self.xrefs.values() if xref.addr == addr]
 
     def enable_trace(self, mode='full'):
         # simple map from addr to flag name, cannot resolve addresses in the middle
