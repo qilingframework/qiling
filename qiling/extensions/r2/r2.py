@@ -9,7 +9,7 @@ import json
 import libr
 from dataclasses import dataclass, fields
 from enum import Enum
-from functools import cached_property
+from functools import cached_property, wraps
 from typing import Dict, List, Literal, Optional, Tuple, Union
 from qiling.core import Qiling
 from qiling.extensions import trace
@@ -116,7 +116,7 @@ class R2:
         self.ql = ql
         self.baseaddr = baseaddr  # r2 -B [baddr]   set base address for PIE binaries
         self.loadaddr = loadaddr  # r2 -m [addr]    map file at given address
-
+        self.analyzed = False
         self._r2c = libr.r_core.r_core_new()
         if ql.code:
             self._setup_code(ql.code)
@@ -141,6 +141,16 @@ class R2:
             self._r2c, ctypes.create_string_buffer(cmd.encode("utf-8")))
         return ctypes.string_at(r).decode('utf-8')
 
+    @staticmethod
+    def aaa(fun):
+        @wraps(fun)
+        def wrapper(self):
+            if self.analyzed is False:
+                self._cmd("aaa")
+                self.analyzed = True
+            return fun(self)
+        return wrapper
+
     def _cmdj(self, cmd: str) -> Union[Dict, List[Dict]]:
         return json.loads(self._cmd(cmd))
     
@@ -164,16 +174,18 @@ class R2:
         return {dic['name']: Symbol(**dic).vaddr for dic in sym_lst}
 
     @cached_property
+    @aaa
     def functions(self) -> Dict[str, Function]:
-        self._cmd("aaa")
         fcn_lst = self._cmdj("aflj")
         return {dic['name']: Function(**dic) for dic in fcn_lst}
 
     @cached_property
+    @aaa
     def flags(self) -> List[Flag]:
         return [Flag(**dic) for dic in self._cmdj("fj")]
 
     @cached_property
+    @aaa
     def xrefs(self) -> Dict[int, Xref]:
         return {dic['from']: Xref(**dic) for dic in self._cmdj("axj")}
 

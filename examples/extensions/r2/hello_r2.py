@@ -25,6 +25,8 @@ def my_sandbox(path, rootfs):
     # search string using r2
     addr = r2.strings['Hello world!'].vaddr  # key must be exactly same
     print(addrs[0], addr)
+    # print xref to string "Hello world!"
+    print(r2.refto(addr))
     # write to string using ql.mem.write
     ql.mem.write(addr, b"No hello, Bye!\x00")
 
@@ -32,8 +34,6 @@ def my_sandbox(path, rootfs):
     ql.hook_address(func, r2.functions['main'].offset)
     # enable trace powered by r2 symsmap
     r2.enable_trace()
-    # print xref to string "Hello world!"
-    print(r2.refto(addr))
     ql.run()
 
 if __name__ == "__main__":
