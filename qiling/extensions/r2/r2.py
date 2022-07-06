@@ -10,7 +10,7 @@ import libr
 from dataclasses import dataclass, fields
 from enum import Enum
 from functools import cached_property
-from typing import Dict, List, Literal, Union
+from typing import Dict, List, Literal, Tuple, Union
 from qiling.core import Qiling
 from unicorn import UC_PROT_NONE, UC_PROT_READ, UC_PROT_WRITE, UC_PROT_EXEC, UC_PROT_ALL
 
@@ -157,12 +157,13 @@ class R2:
     def flags(self) -> List[Flag]:
         return [Flag(**dic) for dic in self._cmdj("fj")]
 
-    def at(self, addr: int) -> Flag:
+    def at(self, addr: int) -> Tuple[Flag, int]:
         # the most suitable flag should have address <= addr
         # bisect_right find the insertion point, right side if value exists
         idx = bisect.bisect_right(self.flags, Flag(offset=addr))
         # minus 1 to find the corresponding flag
-        return self.flags[idx - 1]
+        flag = self.flags[idx - 1]
+        return flag, addr - flag.offset
 
     @cached_property
     def binfo(self) -> Dict[str, str]:

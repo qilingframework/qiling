@@ -21,7 +21,7 @@ def my_sandbox(path, rootfs):
 
     # search bytes sequence using ql.mem.search
     addrs = ql.mem.search(b'Hello worl')  # return all matching results
-    print(r2.at(addrs[0]))  # find the corresponding flag at the address
+    print(r2.at(addrs[0]))  # find corresponding flag at the address and the offset to the flag
     # search string using r2
     addr = r2.strings['Hello world!'].vaddr  # key must be exactly same
     print(addrs[0], addr)
