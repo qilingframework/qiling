@@ -12,6 +12,7 @@ from enum import Enum
 from functools import cached_property
 from typing import Dict, List, Literal, Tuple, Union
 from qiling.core import Qiling
+from qiling.extensions import trace
 from unicorn import UC_PROT_NONE, UC_PROT_READ, UC_PROT_WRITE, UC_PROT_EXEC, UC_PROT_ALL
 
 
@@ -164,6 +165,14 @@ class R2:
         # minus 1 to find the corresponding flag
         flag = self.flags[idx - 1]
         return flag, addr - flag.offset
+
+    def enable_trace(self, mode='full'):
+        # simple map from addr to flag name, cannot resolve addresses in the middle
+        self.ql.loader.symsmap = {flag.offset: flag.name for flag in self.flags}
+        if mode == 'full':
+            trace.enable_full_trace(self.ql)
+        elif mode == 'history':
+            trace.enable_history_trace(self.ql)
 
     @cached_property
     def binfo(self) -> Dict[str, str]:

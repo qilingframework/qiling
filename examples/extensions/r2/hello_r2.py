@@ -16,11 +16,11 @@ def func(ql: Qiling, *args, **kwargs):
     return
 
 def my_sandbox(path, rootfs):
-    ql = Qiling(path, rootfs, verbose=QL_VERBOSE.DEFAULT)
+    ql = Qiling(path, rootfs, verbose=QL_VERBOSE.DEBUG)
     r2 = R2(ql)
 
     # search bytes sequence using ql.mem.search
-    addrs = ql.mem.search(b'Hello worl')  # return all matching results
+    addrs = ql.mem.search(b'llo worl')  # return all matching results
     print(r2.at(addrs[0]))  # find corresponding flag at the address and the offset to the flag
     # search string using r2
     addr = r2.strings['Hello world!'].vaddr  # key must be exactly same
@@ -30,6 +30,8 @@ def my_sandbox(path, rootfs):
 
     # get function address and hook it
     ql.hook_address(func, r2.functions['main'].offset)
+    # enable trace powered by r2 symsmap
+    r2.enable_trace()
     ql.run()
 
 if __name__ == "__main__":
