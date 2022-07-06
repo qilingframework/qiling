@@ -103,23 +103,20 @@ class R2:
 
         self._r2c = libr.r_core.r_core_new()
         if ql.code:
-            self._setup_code()
+            self._setup_code(ql.code)
         else:
-            self._setup_file()
+            self._setup_file(ql.path)
 
-        # set architecture and bits for r2 asm
-        self._cmd(f"e,asm.arch={ql.arch.type.name.lower().removesuffix('64')},asm.bits={ql.arch.bits}")
-
-    def _setup_code(self):
-        sz = len(self.ql.code)
-        path = f'malloc://{sz}'.encode()
+    def _setup_code(self, code: bytes):
+        path = f'malloc://{len(code)}'.encode()
         fh = libr.r_core.r_core_file_open(self._r2c, path, UC_PROT_ALL, self.loadaddr)
         libr.r_core.r_core_bin_load(self._r2c, path, self.baseaddr)
-        cmd = f'wx {self.ql.code.hex()}'
-        self._cmd(cmd)
+        self._cmd(f'wx {code.hex()}')
+        # set architecture and bits for r2 asm
+        self._cmd(f"e,asm.arch={self.ql.arch.type.name.lower().removesuffix('64')},asm.bits={self.ql.arch.bits}")
 
-    def _setup_file(self):
-        path = self.ql.path.encode()
+    def _setup_file(self, path: str):
+        path = path.encode()
         fh = libr.r_core.r_core_file_open(self._r2c, path, UC_PROT_READ | UC_PROT_EXEC, self.loadaddr)
         libr.r_core.r_core_bin_load(self._r2c, path, self.baseaddr)
 
