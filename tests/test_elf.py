@@ -93,6 +93,8 @@ class ELFTest(unittest.TestCase):
         ql.run(begin=hook_address)
         del ql
 
+        os.remove(snapshot)
+
     def test_elf_linux_x86_snapshot_restore_reg(self):
         self._test_elf_linux_x86_snapshot_restore_common(reg=True, ctx=False)
 
@@ -1119,28 +1121,28 @@ class ELFTest(unittest.TestCase):
         ql.mem.write(0x1FFB, b"\x1f\x00\x07\x53\x03\x06\x07\x1f\x1b")
 
         # Needle not in haystack
-        self.assertEqual([], ql.mem.search(re.escape(b"\x3a\x01\x0b\x03\x53\x29\x1b\x1c\x04\x0d\x11")))
+        self.assertEqual([], ql.mem.search(b"\x3a\x01\x0b\x03\x53\x29\x1b\x1c\x04\x0d\x11"))
 
         # Needle appears several times in haystack
-        self.assertEqual([0x1000 + 24, 0x2000 + 38, 0x3000 + 24], ql.mem.search(re.escape(b"\x4f\x53\x06\x0d\x1e\x0d\x1a")))
+        self.assertEqual([0x1000 + 24, 0x2000 + 38, 0x3000 + 24], ql.mem.search(b"\x4f\x53\x06\x0d\x1e\x0d\x1a"))
 
         # Needle inside haystack
-        self.assertEqual([0x1000 + 13], ql.mem.search(re.escape(b"\x0f\x01\x1e\x0d\x53\x11\x07\x1d\x53\x1d\x18"), begin=0x1000 + 10, end=0x1000 + 30))
+        self.assertEqual([0x1000 + 13], ql.mem.search(b"\x0f\x01\x1e\x0d\x53\x11\x07\x1d\x53\x1d\x18", begin=0x1000 + 10, end=0x1000 + 30))
 
         # Needle before haystack
-        self.assertEqual([], ql.mem.search(re.escape(b"\x04\x0d\x1c\x53\x11\x07\x1d\x53\x0c\x07\x1f\x06"), begin=0x1337))
+        self.assertEqual([], ql.mem.search(b"\x04\x0d\x1c\x53\x11\x07\x1d\x53\x0c\x07\x1f\x06", begin=0x1337))
 
         # Needle after haystack
-        self.assertEqual([], ql.mem.search(re.escape(b"\x1b\x09\x11\x53\x0f\x07\x07\x0c\x0a\x11\x0d"), end=0x3000 + 13))
+        self.assertEqual([], ql.mem.search(b"\x1b\x09\x11\x53\x0f\x07\x07\x0c\x0a\x11\x0d", end=0x3000 + 13))
 
         # Needle exactly inside haystack
-        self.assertEqual([0x2000 + 13], ql.mem.search(re.escape(b"\x1a\x1d\x06\x53\x09\x1a\x07\x1d\x06\x0c"), begin=0x2000 + 13, end=0x2000 + 23))
+        self.assertEqual([0x2000 + 13], ql.mem.search(b"\x1a\x1d\x06\x53\x09\x1a\x07\x1d\x06\x0c", begin=0x2000 + 13, end=0x2000 + 23))
 
         # Needle 'tears' two mapped regions
-        self.assertEqual([], ql.mem.search(re.escape(b"\x1f\x00\x07\x53\x03\x06\x07\x1f\x1b"), begin=0x1F00, end=0x200F))
+        self.assertEqual([], ql.mem.search(b"\x1f\x00\x07\x53\x03\x06\x07\x1f\x1b", begin=0x1F00, end=0x200F))
 
         # Needle is a regex
-        self.assertEqual([0x1000 + 11, 0x2000 + 11, 0x3000 + 43], ql.mem.search(b"\x09\x53(\x0f|\x1a|\x04)[^\x0d]"))
+        self.assertEqual([0x1000 + 11, 0x2000 + 11, 0x3000 + 43], ql.mem.search(re.compile(b"\x09\x53(\x0f|\x1a|\x04)[^\x0d]")))
 
         del ql
     

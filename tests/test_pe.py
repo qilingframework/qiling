@@ -218,22 +218,21 @@ class PETest(unittest.TestCase):
 
     def test_pe_win_x86_multithread(self):
         def _t():
-            thread_id = None
-            def ThreadId_onEnter(ql, address, params):
+            thread_id = -1
+
+            def ThreadId_onEnter(ql: Qiling, address: int, params):
                 nonlocal thread_id
+
                 thread_id = ql.os.thread_manager.cur_thread.id
-                return address, params
 
             ql = Qiling(["../examples/rootfs/x86_windows/bin/MultiThread.exe"], "../examples/rootfs/x86_windows")
             ql.os.set_api("GetCurrentThreadId", ThreadId_onEnter, QL_INTERCEPT.ENTER)
             ql.run()
-            
-            if not ( 1<= thread_id < 255):
-                return False
-            
+
             del ql
-            return True
-        
+
+            return (1 <= thread_id < 255)
+
         self.assertTrue(QLWinSingleTest(_t).run())
 
 

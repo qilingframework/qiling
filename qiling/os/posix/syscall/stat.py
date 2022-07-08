@@ -1208,11 +1208,11 @@ def transform_path(ql: Qiling, dirfd: int, path: int, flags: int = 0):
         then the target file is the one referred to by the file descriptor dirfd.
     """
 
-    dirfd = ql.unpacks(ql.pack(dirfd))
+    dirfd = ql.unpack32s(ql.pack32(dirfd & (1<<32)-1))
     path = ql.os.utils.read_cstring(path)
 
     if path.startswith('/'):
-        return None, os.path.join(ql.rootfs, path)
+        return None, os.path.join(ql.rootfs, path.lstrip('/'))
 
     if dirfd == AT_FDCWD:
         return None, ql.os.path.transform_to_real_path(path)
@@ -1225,15 +1225,26 @@ def transform_path(ql: Qiling, dirfd: int, path: int, flags: int = 0):
 
 
 def ql_syscall_chmod(ql: Qiling, filename: int, mode: int):
+    file_path = ql.os.utils.read_cstring(filename)
+    real_path = ql.os.path.transform_to_real_path(file_path)
+    try:
+        os.chmod(real_path, mode)
+        regreturn = 0
+    except:
+        regreturn = -1
     ql.log.debug(f'chmod("{ql.os.utils.read_cstring(filename)}", {mode:d}) = 0')
-
-    return 0
+    return regreturn
 
 def ql_syscall_fchmod(ql: Qiling, fd: int, mode: int):
     if fd not in range(NR_OPEN) or ql.os.fd[fd] is None:
         return -EBADF
-
-    return 0
+    try:
+        os.fchmod(ql.os.fd[fd].fileno(), mode)
+        regreturn = 0
+    except:
+        regreturn = -1
+    ql.log.debug("fchmod(%d, %d) = %d" % (fd, mode, regreturn))
+    return regreturn
 
 def ql_syscall_fstatat64(ql: Qiling, dirfd: int, path: int, buf_ptr: int, flags: int):
     dirfd, real_path = transform_path(ql, dirfd, path, flags)
@@ -1460,6 +1471,7 @@ def ql_syscall_mknodat(ql: Qiling, dirfd: int, path: int, mode: int, dev: int):
     except:
         regreturn = -1
 
+    ql.log.debug("mknodat(%d, %s, 0%o, %d) = %d" % (dirfd, real_path, mode, dev, regreturn))
     return regreturn
 
 
@@ -1474,6 +1486,7 @@ def ql_syscall_mkdir(ql: Qiling, pathname: int, mode: int):
     except:
         regreturn = -1
 
+    ql.log.debug("mkdir(%s, 0%o) = %d" % (real_path, mode, regreturn))
     return regreturn
 
 def ql_syscall_rmdir(ql: Qiling, pathname: int):

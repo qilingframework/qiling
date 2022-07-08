@@ -74,7 +74,7 @@ class RegConf:
     def save(self, fname: str):
         if self.conf:
             with open(fname, 'wb') as ofile:
-                data = json.dumps(self.conf)
+                data = json.dumps(self.conf, indent=4)
 
                 ofile.write(data.encode('utf-8'))
 

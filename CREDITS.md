@@ -23,7 +23,7 @@
 #### CI, Website，Documentations, Logo & Swags
 
 - FOO Kevin (chfl4gs) <chfl4gs_at_qiling_io>
-- SU muchen (miraisuu) <suu_at_iling_io>
+- SU muchen (miraisuu) <suu_at_qiling_io>
 
 
 #### Key Contributors (in no particular order)
@@ -36,6 +36,7 @@
 - Mark Jansen (learn-more)
 - cq674350529
 - bkerler (viperbjk)
+- bet4it
 
 
 #### Contributors (in no particular order)
@@ -53,7 +54,7 @@
 - madprogrammer
 - danielmoos
 - sigeryang
-- bet4it
+- nullableVoidPtr
 
 
 #### Legacy Core Developers

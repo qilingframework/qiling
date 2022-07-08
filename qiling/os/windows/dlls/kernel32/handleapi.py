@@ -48,12 +48,12 @@ def hook_CloseHandle(ql: Qiling, address: int, params):
     if handle is None:
         ql.os.last_error = ERROR_INVALID_HANDLE
         return 0
-    else:
-        if handle.permissions is not None and handle.permissions & HANDLE_FLAG_PROTECT_FROM_CLOSE >= 1:
-            # FIXME: add error
-            return 0
-        else:
-            ql.os.handle_manager.delete(value)
+
+    if handle.permissions is not None and handle.permissions & HANDLE_FLAG_PROTECT_FROM_CLOSE:
+        # FIXME: add error
+        return 0
+
+    ql.os.handle_manager.delete(value)
 
     return 1
 

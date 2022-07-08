@@ -188,7 +188,7 @@ if __name__ == '__main__':
     code_parser.add_argument('--thumb', action='store_true', default=False, help='specify thumb mode for ARM')
     code_parser.add_argument('--endian', choices=('little', 'big'), default='little', help='specify endianess for bi-endian archs')
     code_parser.add_argument('--os', required=True, choices=os_map)
-    code_parser.add_argument('--rootfs', help='emulated root filesystem, that is where all libraries reside')
+    code_parser.add_argument('--rootfs', default='.', help='emulated root filesystem, that is where all libraries reside')
     code_parser.add_argument('--format', choices=('asm', 'hex', 'bin'), default='bin', help='input file format')
 
     # set "examples" subcommand
@@ -224,7 +224,7 @@ if __name__ == '__main__':
         handle_examples(parser)
 
     # ql file setup
-    if options.subcommand == 'run':
+    elif options.subcommand == 'run':
         ql = handle_run(options)
 
     # ql code setup

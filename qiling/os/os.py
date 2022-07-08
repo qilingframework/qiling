@@ -252,5 +252,6 @@ class QlOs:
         finally:
             self.ql.log.error(f'PC = {pc:#0{self.ql.arch.pointersize * 2 + 2}x}{pc_info}\n')
 
-            self.ql.log.info(f'Memory map:')
-            self.ql.mem.show_mapinfo()
+            self.ql.log.error(f'Memory map:')
+            for info_line in self.ql.mem.get_formatted_mapinfo():
+                self.ql.log.error(info_line)

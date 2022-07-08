@@ -29,7 +29,7 @@ from qiling.os.linux.kernel_api.kernel_api import hook_sys_open, hook_sys_read, 
 
 # auxiliary vector types
 # see: https://man7.org/linux/man-pages/man3/getauxval.3.html
-class AUX(IntEnum):
+class AUXV(IntEnum):
     AT_NULL     = 0
     AT_IGNORE   = 1
     AT_EXECFD   = 2
@@ -317,36 +317,39 @@ class QlLoaderELF(QlLoader):
                 elf_hwcap = 0xd7b81f
 
         # setup aux vector
-        aux_entries = (
-            (AUX.AT_PHDR, elf_phdr),
-            (AUX.AT_PHENT, elf_phent),
-            (AUX.AT_PHNUM, elf_phnum),
-            (AUX.AT_PAGESZ, self.ql.mem.pagesize),
-            (AUX.AT_BASE, interp_address),
-            (AUX.AT_FLAGS, 0),
-            (AUX.AT_ENTRY, self.elf_entry),
-            (AUX.AT_UID, self.ql.os.uid),
-            (AUX.AT_EUID, self.ql.os.euid),
-            (AUX.AT_GID, self.ql.os.gid),
-            (AUX.AT_EGID, self.ql.os.egid),
-            (AUX.AT_HWCAP, elf_hwcap),
-            (AUX.AT_CLKTCK, 100),
-            (AUX.AT_RANDOM, randstraddr),
-            (AUX.AT_HWCAP2, 0),
-            (AUX.AT_EXECFN, execfn),
-            (AUX.AT_PLATFORM, cpustraddr),
-            (AUX.AT_SECURE, 0),
-            (AUX.AT_NULL, 0)
+        auxv_entries = (
+            (AUXV.AT_HWCAP, elf_hwcap),
+            (AUXV.AT_PAGESZ, self.ql.mem.pagesize),
+            (AUXV.AT_CLKTCK, 100),
+            (AUXV.AT_PHDR, elf_phdr),
+            (AUXV.AT_PHENT, elf_phent),
+            (AUXV.AT_PHNUM, elf_phnum),
+            (AUXV.AT_BASE, interp_address),
+            (AUXV.AT_FLAGS, 0),
+            (AUXV.AT_ENTRY, self.elf_entry),
+            (AUXV.AT_UID, self.ql.os.uid),
+            (AUXV.AT_EUID, self.ql.os.euid),
+            (AUXV.AT_GID, self.ql.os.gid),
+            (AUXV.AT_EGID, self.ql.os.egid),
+            (AUXV.AT_SECURE, 0),
+            (AUXV.AT_RANDOM, randstraddr),
+            (AUXV.AT_HWCAP2, 0),
+            (AUXV.AT_EXECFN, execfn),
+            (AUXV.AT_PLATFORM, cpustraddr),
+            (AUXV.AT_NULL, 0)
         )
 
-        # add all aux entries
-        for key, val in aux_entries:
-            elf_table.extend(self.ql.pack(key) + self.ql.pack(val))
+        bytes_before_auxv = len(elf_table)
+
+        # add all auxv entries
+        for key, val in auxv_entries:
+            elf_table.extend(self.ql.pack(key))
+            elf_table.extend(self.ql.pack(val))
 
         new_stack = self.ql.mem.align(new_stack - len(elf_table), 0x10)
         self.ql.mem.write(new_stack, bytes(elf_table))
 
-        self.aux_vec = dict(aux_entries)
+        self.auxv = new_stack + bytes_before_auxv
 
         self.stack_address = new_stack
         self.load_address = load_address
@@ -365,7 +368,7 @@ class QlLoaderELF(QlLoader):
             _vsyscall_addr = int(self.profile.get('vsyscall_address'), 0)
             _vsyscall_size = int(self.profile.get('vsyscall_size'), 0)
 
-            if not self.ql.mem.is_mapped(_vsyscall_addr, _vsyscall_size):
+            if self.ql.mem.is_available(_vsyscall_addr, _vsyscall_size):
                 # initialize with int3 instructions then insert syscall entry
                 # each syscall should be 1KiB away
                 self.ql.mem.map(_vsyscall_addr, _vsyscall_size, info="[vsyscall]")

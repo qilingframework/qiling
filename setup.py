@@ -2,20 +2,16 @@
 #
 # Python setup for Qiling framework
 
-import sys, os
 from setuptools import setup, find_packages
 
-here = os.path.abspath(os.path.dirname(__file__))
-gb = {}
-with open(os.path.join(here, "qiling", "__version__.py"), "r+") as f:
-    exec(f.read(), gb)
-
-VERSION = gb['__version__']
+# NOTE: use "-dev" for dev branch
+VERSION = "1.4.4" + "-dev"
+#VERSION = "1.4.3"
 
 requirements = [
     "capstone>=4.0.1",
     "unicorn>=2.0.0-rc7",
-    "pefile @ https://github.com/erocarrera/pefile/archive/refs/heads/master.zip",
+    "pefile>=2022.5.30",
     "python-registry>=1.3.1",
     "keystone-engine>=0.9.2",
     "pyelftools>=0.28",
@@ -44,7 +40,7 @@ extras = {
         "cmd2"
     ],
     "fuzz" : [
-        "unicornafl>=2.0.0;platform_system=='Windows'",
+        "unicornafl>=2.0.0;platform_system!='Windows'",
         "fuzzercorn>=0.0.1;platform_system=='Linux'"
     ]
 }
@@ -89,7 +85,12 @@ setup(
 
     packages=find_packages(),
     scripts=['qltool'],
-    include_package_data=True,
+    package_data={
+        'qiling': ['profiles/*.ql'],
+        'qiling.debugger.gdb': ['xml/*/*'],
+        'qiling.os.uefi': ['guids.csv'],
+        'qiling.arch.evm.analysis': ['signatures.json']
+    },
     install_requires=requirements,
     extras_require=extras,
 )

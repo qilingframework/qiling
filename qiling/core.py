@@ -30,22 +30,22 @@ class Qiling(QlCoreHooks, QlCoreStructs):
     def __init__(
             self,
             argv: Sequence[str] = None,
-            rootfs: str = None,
+            rootfs: str = r'.',
             env: MutableMapping[AnyStr, AnyStr] = {},
             code: bytes = None,
             ostype: Union[str, QL_OS] = None,
             archtype: Union[str, QL_ARCH] = None,
             verbose: QL_VERBOSE = QL_VERBOSE.DEFAULT,
             profile: str = None,
-            console=True,
+            console: bool = True,
             log_file=None,
             log_override=None,
-            log_plain=False,
-            multithread = False,
+            log_plain: bool = False,
+            multithread: bool = False,
             filter = None,
             stop: QL_STOP = QL_STOP.NONE,
             *,
-            endian: QL_ENDIAN = None,
+            endian: Optional[QL_ENDIAN] = None,
             thumb: bool = False,
             libcache: bool = False
     ):
@@ -100,10 +100,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         ################
         # rootfs setup #
         ################
-        if rootfs is None:
-            rootfs = '.'
-
-        elif not os.path.exists(rootfs):
+        if not os.path.exists(rootfs):
             raise QlErrorFileNotFound(f'Target rootfs not found: "{rootfs}"')
 
         self._rootfs = rootfs
@@ -414,8 +411,8 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         return self._debug_stop
 
     @debug_stop.setter
-    def debug_stop(self, ds):
-        self._debug_stop = ds
+    def debug_stop(self, enabled: bool):
+        self._debug_stop = enabled
 
     @property
     def debugger(self) -> bool:
@@ -540,17 +537,21 @@ class Qiling(QlCoreHooks, QlCoreStructs):
     # Qiling APIS #
     ###############
 
-    # Emulate the binary from begin until @end, with timeout in @timeout and
-    # number of emulated instructions in @count
-    def run(self, begin=None, end=None, timeout=0, count=0, code=None):
+    def run(self, begin: Optional[int] = None, end: Optional[int] = None, timeout: int = 0, count: int = 0):
+        """Start binary emulation.
+
+        Args:
+            begin   : emulation starting address
+            end     : emulation ending address
+            timeout : limit emulation to a specific amount of time (microseconds); unlimited by default
+            count   : limit emulation to a specific amount of instructions; unlimited by default
+        """
+
         # replace the original entry point, exit point, timeout and count
         self.entry_point = begin
         self.exit_point = end
         self.timeout = timeout
-        self.count = count        
-
-        if self.interpreter:
-            return self.arch.run(code)
+        self.count = count
 
         # init debugger (if set)
         debugger = select_debugger(self._debugger)
@@ -565,7 +566,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             if self.count <= 0:
                 self.count = -1
 
-            self.arch.run(count=self.count, end=self.exit_point)        
+            self.arch.run(count=self.count, end=self.exit_point)
         else:
             self.write_exit_trap()
             # emulate the binary

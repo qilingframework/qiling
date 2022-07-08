@@ -58,10 +58,10 @@ class QlOsDos(QlOs):
             curses.endwin()
 
     def set_flag_value(self, fl: Flags, val: int) -> None:
-        self.ql.arch.regs.ef = self.ql.arch.regs.ef & (~fl) | (fl * val)
+        self.ql.arch.regs.eflags = self.ql.arch.regs.eflags & (~fl) | (fl * val)
 
     def test_flags(self, fl):
-        return self.ql.arch.regs.ef & fl == fl
+        return self.ql.arch.regs.eflags & fl == fl
 
     def set_cf(self):
         self.set_flag_value(Flags.CF, 0b1)
