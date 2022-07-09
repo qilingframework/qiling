@@ -703,6 +703,9 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             count  : max emulation steps (instructions count); unlimited by default
         """
 
+        if self._arch.type in (QL_ARCH.ARM, QL_ARCH.CORTEX_M) and self._arch._init_thumb:
+            begin |= 1
+
         self.uc.emu_start(begin, end, timeout, count)
 
         if self._internal_exception is not None:
