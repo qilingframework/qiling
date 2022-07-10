@@ -190,13 +190,12 @@ def hook_WriteFile(ql: Qiling, address: int, params):
         ql.os.last_error = ERROR_INVALID_HANDLE
         return 0
 
-    fobj = handle.obj
     data = ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
 
-    if hFile == STD_OUTPUT_HANDLE:
+    if hFile in (STD_OUTPUT_HANDLE, STD_ERROR_HANDLE):
         ql.os.stats.log_string(data.decode())
 
-    written = fobj.write(bytes(data))
+    written = handle.obj.write(bytes(data))
     ql.mem.write_ptr(lpNumberOfBytesWritten, written, 4)
 
     return 1
@@ -211,11 +210,10 @@ def _CreateFile(ql: Qiling, address: int, params):
     # hTemplateFile = params["hTemplateFile"]
 
     # access mask DesiredAccess
-    mode = ""
     if dwDesiredAccess & GENERIC_WRITE:
-        mode += "wb"
+        mode = "wb"
     else:
-        mode += "rb"
+        mode = "rb"
 
     try:
         f = ql.os.fs_mapper.open(s_lpFileName, mode)
@@ -326,29 +324,26 @@ def hook_GetTempPathA(ql: Qiling, address: int, params):
     'cchBuffer'     : DWORD
 })
 def hook_GetShortPathNameW(ql: Qiling, address: int, params):
-    paths = params["lpszLongPath"].split("\\")
-    dst = params["lpszShortPath"]
-    max_size = params["cchBuffer"]
-    res = paths[0]
+    lpszLongPath = params['lpszLongPath']
+    lpszShortPath = params['lpszShortPath']
+    cchBuffer = params['cchBuffer']
 
-    for path in paths[1:]:
-        nameAndExt = path.split(".")
-        name = nameAndExt[0]
-        ext = "" if len(nameAndExt) == 1 else "." + nameAndExt[1]
+    def __shorten(p: str) -> str:
+        name, ext = ntpath.splitext(p)
 
-        if len(name) > 8:
-            name = name[:6] + "~1"
+        return f'{(name[:6] + "~1") if len(name) > 8 else name}{ext}'
 
-        res += "\\" + name + ext
+    shortpath = ntpath.join(*(__shorten(elem) for elem in lpszLongPath.split(ntpath.sep)))
+    encoded = f'{shortpath}\x00'.encode('utf-16le')
 
-    res += "\x00"
-    res = res.encode("utf-16le")
+    if len(shortpath) > cchBuffer:
+        return len(shortpath) + 1
 
-    if max_size < len(res):
-        return len(res)
+    if lpszShortPath:
+        ql.mem.write(lpszShortPath, encoded)
 
-    ql.mem.write(dst, res)
-    return len(res) - 1
+    # on succes, return chars count excluding null-term
+    return len(shortpath)
 
 
 # BOOL GetVolumeInformationW(
@@ -498,13 +493,20 @@ def hook_CreateDirectoryA(ql: Qiling, address: int, params):
     'lpFileSizeHigh' : LPDWORD
 })
 def hook_GetFileSize(ql: Qiling, address: int, params):
+    hFile = params["hFile"]
+
+    handle = ql.os.handle_manager.get(hFile)
+
+    if handle is None:
+        ql.os.last_error = ERROR_INVALID_HANDLE
+        return -1 # INVALID_FILE_SIZE
+
     try:
-        handle = ql.os.handle_manager.get(params['hFile'])
 
         return os.path.getsize(handle.obj.name)
     except:
         ql.os.last_error = ERROR_INVALID_HANDLE
-        return 0xFFFFFFFF #INVALID_FILE_SIZE
+        return -1 # INVALID_FILE_SIZE
 
 def _CreateFileMapping(ql: Qiling, address: int, params):
     hFile = params['hFile']
