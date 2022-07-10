@@ -15,6 +15,7 @@ from qiling.const import QL_ARCH, QL_OS
 from qiling.os.fcall import QlFunctionCall
 from qiling.os.const import *
 from qiling.os.linux.procfs import QlProcFS
+from qiling.os.mapper import QlFsMappedCallable
 from qiling.os.posix.posix import QlOsPosix
 
 from . import futex
@@ -121,11 +122,11 @@ class QlOsLinux(QlOsPosix):
 
 
     def setup_procfs(self):
-        self.fs_mapper.add_fs_mapping(r'/proc/self/auxv',    QlProcFS.self_auxv(self))
-        self.fs_mapper.add_fs_mapping(r'/proc/self/cmdline', QlProcFS.self_cmdline(self))
-        self.fs_mapper.add_fs_mapping(r'/proc/self/environ', QlProcFS.self_environ(self))
-        self.fs_mapper.add_fs_mapping(r'/proc/self/exe',     QlProcFS.self_exe(self))
-
+        self.fs_mapper.add_fs_mapping(r'/proc/self/auxv',    QlFsMappedCallable(QlProcFS.self_auxv, self))
+        self.fs_mapper.add_fs_mapping(r'/proc/self/cmdline', QlFsMappedCallable(QlProcFS.self_cmdline, self))
+        self.fs_mapper.add_fs_mapping(r'/proc/self/environ', QlFsMappedCallable(QlProcFS.self_environ, self))
+        self.fs_mapper.add_fs_mapping(r'/proc/self/exe',     QlFsMappedCallable(QlProcFS.self_exe, self))
+        self.fs_mapper.add_fs_mapping(r'/proc/self/maps',    QlFsMappedCallable(QlProcFS.self_map, self.ql.mem))
 
     def hook_syscall(self, ql, intno = None):
         return self.load_syscall()
