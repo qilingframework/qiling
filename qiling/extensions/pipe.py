@@ -30,6 +30,11 @@ class SimpleStringBuffer(io.BytesIO):
         ret = super().write(buf)
         super().seek(pos)
         return ret
+    
+    # Compatible with previous TextIO
+    @property
+    def name(self):
+        return None
 
 class SimpleStreamBase:
     def __init__(self, fd: int):
