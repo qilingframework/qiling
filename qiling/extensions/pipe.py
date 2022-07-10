@@ -3,6 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 import io
+import os
 from typing import TextIO
 
 from qiling.os.posix import stat
@@ -13,7 +14,7 @@ class SimpleStringBuffer(io.BytesIO):
 
     def __init__(self):
         super().__init__()
-
+    
     # Compatible with old implementation
     def seek(self, offset: int, origin: int = 0) -> int:
         # Imitate os.lseek
@@ -21,6 +22,14 @@ class SimpleStringBuffer(io.BytesIO):
 
     def seekable(self) -> bool:
         return False
+
+    def write(self, buf: bytes) -> int:
+        # For the FIFO stream, the write doesn't change pos.
+        pos = super().tell()
+        super().seek(0, os.SEEK_END)
+        ret = super().write(buf)
+        super().seek(pos)
+        return ret
 
 class SimpleStreamBase:
     def __init__(self, fd: int):
