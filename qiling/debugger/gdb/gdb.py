@@ -13,9 +13,10 @@
 # gdb remote protocol:
 #   https://sourceware.org/gdb/current/onlinedocs/gdb/Remote-Protocol.html
 
-import os, socket, re
+import os, socket, re, tempfile
 from logging import Logger
-from typing import Iterator, Optional, Union
+from typing import Iterator, Mapping, Optional, Union
+import typing
 
 from unicorn import UcError
 from unicorn.unicorn_const import (
@@ -30,6 +31,8 @@ from qiling.const import QL_ARCH, QL_ENDIAN, QL_OS
 from qiling.debugger import QlDebugger
 from qiling.debugger.gdb.xmlregs import QlGdbFeatures
 from qiling.debugger.gdb.utils import QlGdbUtils
+from qiling.os.linux.procfs import QlProcFS
+from qiling.os.mapper import QlFsMappedCallable, QlFsMappedObject
 
 # gdb logging prompt
 PROMPT = r'gdb>'
@@ -100,6 +103,11 @@ class QlGdb(QlDebugger):
 
         self.features = QlGdbFeatures(self.ql.arch.type, self.ql.os.type)
         self.regsmap = self.features.regsmap
+
+        # https://sourceware.org/bugzilla/show_bug.cgi?id=17760
+        # 42000 is the magic pid to indicate the remote process.
+        self.ql.add_fs_mapper(r'/proc/42000/maps',  QlFsMappedCallable(QlProcFS.self_map, self.ql.mem))
+        self.fake_procfs: Mapping[int, typing.IO] = {}
 
     def run(self):
         server = GdbSerialConn(self.ip, self.port, self.ql.log)
@@ -582,11 +590,15 @@ class QlGdb(QlDebugger):
 
                         virtpath = self.ql.os.path.virtual_abspath(path)
 
-                        if virtpath.startswith(r'/proc'):
-                            # TODO: we really need a centralized virtual filesystem to open
-                            # both emulated (like procfs) and real files, and manage their
-                            # file descriptors seamlessly
-                            fd = -1
+                        if virtpath.startswith(r'/proc') and self.ql.os.fs_mapper.has_mapping(virtpath):
+                            # Mapped object by itself is not backed with a host fd and thus a tempfile can
+                            # 1. Make pread easy to implement and avoid duplicate code like seek, fd etc.
+                            # 2. Avoid fd clash if we assign a generated fd.
+                            tfile = tempfile.TemporaryFile("rb+")
+                            tfile.write(self.ql.os.fs_mapper.open(virtpath, "rb+").read())
+                            tfile.seek(0, os.SEEK_SET)
+                            fd = tfile.fileno()
+                            self.fake_procfs[fd] = tfile
                         else:
                             host_path = self.ql.os.path.virtual_to_host_path(path)
 
@@ -609,6 +621,10 @@ class QlGdb(QlDebugger):
                     fd = int(fd, 16)
 
                     os.close(fd)
+                    
+                    if fd in self.fake_procfs:
+                        del self.fake_procfs[fd]
+                    
                     return 'F0'
 
                 return REPLY_EMPTY
