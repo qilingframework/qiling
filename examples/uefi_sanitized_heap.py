@@ -16,12 +16,17 @@ def my_abort(msg):
     os.abort()
 
 def enable_sanitized_heap(ql, fault_rate=0):
-    ql.os.heap = QlSanitizedMemoryHeap(ql, ql.os.heap, fault_rate=fault_rate)
+    heap = QlSanitizedMemoryHeap(ql, ql.os.heap, fault_rate=fault_rate)
 
-    ql.os.heap.oob_handler      = lambda *args: my_abort("Out-of-bounds read detected")
-    ql.os.heap.bo_handler       = lambda *args: my_abort("Buffer overflow/underflow detected")
-    ql.os.heap.bad_free_handler = lambda *args: my_abort("Double free or bad free detected")
-    ql.os.heap.uaf_handler      = lambda *args: my_abort("Use-after-free detected")
+    heap.oob_handler      = lambda *args: my_abort(f'Out-of-bounds read detected')
+    heap.bo_handler       = lambda *args: my_abort(f'Buffer overflow/underflow detected')
+    heap.bad_free_handler = lambda *args: my_abort(f'Double free or bad free detected')
+    heap.uaf_handler      = lambda *args: my_abort(f'Use-after-free detected')
+
+    # make sure future allocated buffers are not too close to UEFI data
+    heap.alloc(0x1000)
+
+    ql.os.heap = heap
 
 def sanitized_emulate(path, rootfs, fault_type, verbose=QL_VERBOSE.DEBUG):
     env = {'FaultType': fault_type}
@@ -39,7 +44,7 @@ Usage: ./uefi_santizied_heap.py <fault-type>
 Valid fault types:
 0 - POOL_OVERFLOW_MEMCPY
 1 - POOL_UNDERFLOW_MEMCPY
-2 - POOL_OVERFLOW_USER,
+2 - POOL_OVERFLOW_USER
 3 - POOL_UNDERFLOW_USER
 4 - POOL_OOB_READ_AHEAD
 5 - POOL_OOB_READ_BEHIND
