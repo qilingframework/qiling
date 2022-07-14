@@ -25,14 +25,6 @@ class R2Data:
 
 
 @dataclass(unsafe_hash=True, init=False)
-class Function(R2Data):
-    name: str
-    offset: int
-    size: int
-    signature: str
-
-
-@dataclass(unsafe_hash=True, init=False)
 class Section(R2Data):
     name: str
     size: int
@@ -86,6 +78,15 @@ class Symbol(R2Data):
     paddr: int
     is_imported: bool
 
+
+@dataclass(unsafe_hash=True, init=False)
+class Function(R2Data):
+    name: str
+    offset: int
+    size: int
+    signature: str
+
+
 @dataclass(unsafe_hash=True, init=False)
 class Flag(R2Data):
     offset: int
@@ -94,6 +95,7 @@ class Flag(R2Data):
 
     def __lt__(self, other):
         return self.offset < other.offset
+
 
 @dataclass(unsafe_hash=True, init=False)
 class Xref(R2Data):
@@ -110,11 +112,13 @@ class Xref(R2Data):
     def __lt__(self, other):
         return self.fromaddr < other.fromaddr
 
+
 class R2:
     def __init__(self, ql: Qiling, baseaddr=(1 << 64) - 1, loadaddr=0):
         super().__init__()
         self.ql = ql
-        self.baseaddr = baseaddr  # r2 -B [baddr]   set base address for PIE binaries
+        # r2 -B [baddr]   set base address for PIE binaries
+        self.baseaddr = baseaddr
         self.loadaddr = loadaddr  # r2 -m [addr]    map file at given address
         self.analyzed = False
         self._r2c = libr.r_core.r_core_new()
@@ -154,9 +158,17 @@ class R2:
     def _cmdj(self, cmd: str) -> Union[Dict, List[Dict]]:
         return json.loads(self._cmd(cmd))
     
-    def read(self, addr: int, size: int) -> bytes:
-        hexstr = self._cmd(f"p8 {size} @ {addr}")
-        return bytes.fromhex(hexstr)
+    @cached_property
+    def binfo(self) -> Dict[str, str]:
+        return self._cmdj("iIj")
+
+    @cached_property
+    def baddr(self) -> int:
+        return self.binfo["baddr"]
+
+    @cached_property
+    def bintype(self) -> str:
+        return self.binfo["bintype"]
 
     @cached_property
     def sections(self) -> Dict[str, Section]:
@@ -203,6 +215,10 @@ class R2:
     def refto(self, addr: int) -> List[Xref]:
         return [xref for xref in self.xrefs.values() if xref.addr == addr]
 
+    def read(self, addr: int, size: int) -> bytes:
+        hexstr = self._cmd(f"p8 {size} @ {addr}")
+        return bytes.fromhex(hexstr)
+
     def enable_trace(self, mode='full'):
         # simple map from addr to flag name, cannot resolve addresses in the middle
         self.ql.loader.symsmap = {flag.offset: flag.name for flag in self.flags}
@@ -210,18 +226,6 @@ class R2:
             trace.enable_full_trace(self.ql)
         elif mode == 'history':
             trace.enable_history_trace(self.ql)
-
-    @cached_property
-    def binfo(self) -> Dict[str, str]:
-        return self._cmdj("iIj")
-
-    @cached_property
-    def baddr(self) -> int:
-        return self.binfo["baddr"]
-
-    @cached_property
-    def bintype(self) -> str:
-        return self.binfo["bintype"]
 
     def __del__(self):
         libr.r_core.r_core_free(self._r2c)
