@@ -1072,6 +1072,13 @@ def make_ldr_data_table_entry(archbits: int):
     return LdrDataTableEntry()
 
 
+class FILETIME(ctypes.LittleEndianStructure):
+    _fields_ = (
+        ('dwLowDateTime',  ctypes.c_uint32),
+        ('dwHighDateTime', ctypes.c_int32)
+    )
+
+
 class WindowsStruct:
 
     def __init__(self, ql):
@@ -1102,14 +1109,14 @@ class WindowsStruct:
             (val, size, endianness, typ) = elem
             if typ == int:
                 value = val.to_bytes(size, endianness)
-                self.ql.log.debug("Writing to %d with value %s" % (addr + already_written, value))
+                self.ql.log.debug("Writing to %#x with value %s" % (addr + already_written, value))
                 self.ql.mem.write(addr + already_written, value)
             elif typ == bytes:
                 if isinstance(val, bytearray):
                     value = bytes(val)
                 else:
                     value = val
-                self.ql.log.debug("Writing at addr %d value %s" % (addr + already_written, value))
+                self.ql.log.debug("Writing at addr %#x value %s" % (addr + already_written, value))
 
                 self.ql.mem.write(addr + already_written, value)
             elif issubclass(typ, WindowsStruct):
@@ -1126,7 +1133,7 @@ class WindowsStruct:
         for elem in attributes:
             (val, size, endianness, type) = elem
             value = self.ql.mem.read(addr + already_read, size)
-            self.ql.log.debug("Reading from %d value %s" % (addr + already_read, value))
+            self.ql.log.debug("Reading from %#x value %s" % (addr + already_read, value))
             if type == int:
                 elem[0] = int.from_bytes(value, endianness)
             elif type == bytes:
@@ -1731,9 +1738,9 @@ class UnicodeString(AlignedWindowsStruct):
         else:
             self.size = self.USHORT_SIZE * 2 + 4 + self.POINTER_SIZE
 
-        self.length = [length, self.USHORT_SIZE, "little", int, self.USHORT_SIZE]
-        self.maxLength = [maxLength, self.USHORT_SIZE, "little", int, self.USHORT_SIZE]
-        self.buffer = [buffer, self.POINTER_SIZE, "little", int, self.POINTER_SIZE]
+        self.length = [length, self.USHORT_SIZE, "little", int]
+        self.maxLength = [maxLength, self.USHORT_SIZE, "little", int]
+        self.buffer = [buffer, self.POINTER_SIZE, "little", int]
 
 
 # typedef struct _OBJECT_TYPE_INFORMATION {

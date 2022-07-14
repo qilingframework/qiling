@@ -156,13 +156,15 @@ def hook_CloseClipboard(ql: Qiling, address: int, params):
     'hMem'    : HANDLE
 })
 def hook_SetClipboardData(ql: Qiling, address: int, params):
-    try:
-        data = bytes(params['hMem'], 'ascii', 'ignore')
-    except (UnicodeEncodeError, TypeError):
-        data = b""
-        ql.log.debug('Failed to set clipboard data')
+    uFormat = params['uFormat']
+    hMem = params['hMem']
 
-    return ql.os.clipboard.set_data(params['uFormat'], data)
+    handle = ql.os.clipboard.set_data(uFormat, hMem)
+
+    if not handle:
+        ql.log.debug(f'Failed to set clipboard data (format = {uFormat})')
+
+    return handle
 
 
 # HANDLE GetClipboardData(
@@ -172,14 +174,17 @@ def hook_SetClipboardData(ql: Qiling, address: int, params):
     'uFormat' : UINT
 })
 def hook_GetClipboardData(ql: Qiling, address: int, params):
-    data = ql.os.clipboard.get_data(params['uFormat'])
+    uFormat = params['uFormat']
+
+    data = ql.os.clipboard.get_data(uFormat)
 
     if data:
         addr = ql.os.heap.alloc(len(data))
         ql.mem.write(addr, data)
+
     else:
+        ql.log.debug(f'Failed to get clipboard data (format = {uFormat})')
         addr = 0
-        ql.log.debug('Failed to get clipboard data')
 
     return addr
 
@@ -690,12 +695,10 @@ def hook_wsprintfW(ql: Qiling, address: int, params):
     if Format == 0:
         Format = "(null)"
 
-    nargs = Format.count("%")
-    ptypes = (POINTER, POINTER) + (PARAM_INTN, ) * nargs
-    args = ql.os.fcall.readParams(ptypes)[2:]
+    args = ql.os.fcall.readEllipsis(params.values())
 
-    count = ql.os.utils.sprintf(Buffer, Format, args, wstring=True)
-    ql.os.utils.update_ellipsis(params, args)
+    count, upd_args = ql.os.utils.sprintf(Buffer, Format, args, wstring=True)
+    upd_args(params)
 
     return count
 
@@ -771,12 +774,10 @@ def hook_wsprintfA(ql: Qiling, address: int, params):
     if Format == 0:
         Format = "(null)"
 
-    nargs = Format.count("%")
-    ptypes = (POINTER, POINTER) + (PARAM_INTN, ) * nargs
-    args = ql.os.fcall.readParams(ptypes)[2:]
+    args = ql.os.fcall.readEllipsis(params.values())
 
-    count = ql.os.utils.sprintf(Buffer, Format, args, wstring=False)
-    ql.os.utils.update_ellipsis(params, args)
+    count, upd_args = ql.os.utils.sprintf(Buffer, Format, args, wstring=False)
+    upd_args(params)
 
     return count
 
@@ -793,17 +794,27 @@ def hook_wsprintfA(ql: Qiling, address: int, params):
     'uType'     : UINT
 })
 def hook_MessageBoxW(ql: Qiling, address: int, params):
-    # We always return a positive result
-    type_box = params["uType"]
+    uType = params["uType"]
 
-    if type_box in (MB_OK, MB_OKCANCEL):
-        return IDOK
+    buttons = uType & 0x0000000f
+    # icon    = uType & 0x000000f0
+    # default = uType & 0x00000f00
+    # modal   = uType & 0x0000f000
+    # order   = uType & 0x00ff0000
 
-    if type_box in (MB_YESNO, MB_YESNOCANCEL):
-        return IDYES
+    # we strive to return a positive result when possible.
+    # if there is an "ok", "yes" or "continue" button, press it
+    press = {
+        MB_OK                : IDOK,
+        MB_OKCANCEL          : IDOK,
+        MB_ABORTRETRYIGNORE  : IDABORT,
+        MB_YESNOCANCEL       : IDYES,
+        MB_YESNO             : IDYES,
+        MB_RETRYCANCEL       : IDCANCEL,
+        MB_CANCELTRYCONTINUE : IDCONTINUE
+    }
 
-    ql.log.debug(type_box)
-    raise QlErrorNotImplemented("API not implemented")
+    return press[buttons]
 
 # int MessageBoxA(
 #   HWND    hWnd,

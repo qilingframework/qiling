@@ -10,7 +10,7 @@ from qiling import Qiling
 from qiling.os.windows.api import *
 from qiling.os.windows.const import *
 from qiling.os.windows.fncc import *
-from qiling.os.windows.structs import SystemInfo, SystemTime
+from qiling.os.windows.structs import FILETIME, SystemInfo, SystemTime
 
 # NOT_BUILD_WINDOWS_DEPRECATE DWORD GetVersion(
 # );
@@ -81,8 +81,20 @@ def hook_GetLocalTime(ql: Qiling, address: int, params):
     'lpSystemTimeAsFileTime' : LPFILETIME
 })
 def hook_GetSystemTimeAsFileTime(ql: Qiling, address: int, params):
-    # TODO
-    pass
+    ptr = params['lpSystemTimeAsFileTime']
+
+    epoch = datetime(1601, 1, 1)
+    elapsed = datetime.now() - epoch
+
+    # number of 100-nanosecond intervals since Jan 1, 1601 utc
+    # where: (10 ** 9) / 100 -> (10 ** 7)
+    hnano = int(elapsed.total_seconds() * (10 ** 7))
+
+    mask = (1 << 32) - 1
+    hi = (hnano >> 32) & mask
+    lo = (hnano >>  0) & mask
+
+    ql.mem.write(ptr, bytes(FILETIME(lo, hi)))
 
 # DWORD GetTickCount(
 # );

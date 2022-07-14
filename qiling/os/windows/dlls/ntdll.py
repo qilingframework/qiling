@@ -66,9 +66,12 @@ def _QueryInformationProcess(ql: Qiling, address: int, params):
         addr = ql.os.heap.alloc(pbi.size)
         pbi.write(addr)
         value = ql.pack(addr)
+
     else:
-        ql.log.debug(str(flag))
-        raise QlErrorNotImplemented("API not implemented")
+        # TODO: support more info class ("flag") values
+        ql.log.info(f'SetInformationProcess: no implementation for info class {flag:#04x}')
+
+        return STATUS_UNSUCCESSFUL
 
     ql.log.debug("The target is checking the debugger via QueryInformationProcess ")
     ql.mem.write(dst, value)
@@ -289,7 +292,7 @@ def _SetInformationProcess(ql: Qiling, address: int, params):
     process = params["ProcessHandle"]
     flag = params["ProcessInformationClass"]
     dst = params["ProcessInformation"]
-    pt_res = params["ReturnLength"]
+    dst_size = params["ProcessInformationLength"]
 
     if flag == ProcessDebugFlags:
         value = b"\x01" * 0x4
@@ -324,9 +327,12 @@ def _SetInformationProcess(ql: Qiling, address: int, params):
         addr = ql.os.heap.alloc(pbi.size)
         pbi.write(addr)
         value = ql.pack(addr)
+
     else:
-        ql.log.debug(str(flag))
-        raise QlErrorNotImplemented("API not implemented")
+        # TODO: support more info class ("flag") values
+        ql.log.info(f'SetInformationProcess: no implementation for info class {flag:#04x}')
+
+        return STATUS_UNSUCCESSFUL
 
     # TODO: value is never used after assignment
 

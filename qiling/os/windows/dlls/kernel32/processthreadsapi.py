@@ -8,7 +8,7 @@ from qiling.os.windows.api import *
 from qiling.os.windows.const import *
 from qiling.os.windows.fncc import *
 
-from qiling.os.windows.thread import QlWindowsThread
+from qiling.os.windows.thread import QlWindowsThread, THREAD_STATUS
 from qiling.os.windows.handle import Handle
 from qiling.os.windows.structs import Token, StartupInfo
 
@@ -164,20 +164,13 @@ def hook_CreateThread(ql: Qiling, address: int, params):
     dwCreationFlags = params["dwCreationFlags"]
     lpThreadId = params["lpThreadId"]
 
-    # new thread obj
-    new_thread = QlWindowsThread(ql)
-
-    if dwCreationFlags & CREATE_SUSPENDED == CREATE_SUSPENDED:
-        thread_status = QlWindowsThread.READY
+    if dwCreationFlags & CREATE_SUSPENDED:
+        thread_status = THREAD_STATUS.READY
     else:
-        thread_status = QlWindowsThread.RUNNING
+        thread_status = THREAD_STATUS.RUNNING
 
     # create new thread
-    thread_id = new_thread.create(
-        lpStartAddress,
-        lpParameter,
-        thread_status
-    )
+    new_thread = QlWindowsThread.create(ql, dwStackSize, lpStartAddress, lpParameter, thread_status)
 
     # append the new thread to ThreadManager
     ql.os.thread_manager.append(new_thread)

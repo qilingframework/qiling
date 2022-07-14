@@ -248,7 +248,12 @@ class Process:
             # in case of a dll loaded from a hooked API call, failures would not be
             # recoverable and we have to give up its DllMain.
             if not self.ql.os.PE_RUN:
+
+                # temporarily set PE_RUN to allow proper fcall unwinding during
+                # execution of DllMain
+                self.ql.os.PE_RUN = True
                 self.call_dll_entrypoint(dll, dll_base, dll_len, dll_name)
+                self.ql.os.PE_RUN = False
 
         self.ql.log.info(f'Done loading {dll_name}')
 
@@ -622,7 +627,9 @@ class Process:
         user_shared_data_obj = KUSER_SHARED_DATA()
         user_shared_data_size = ctypes.sizeof(KUSER_SHARED_DATA)
 
-        self.ql.mem.map(addr, self.ql.mem.align_up(user_shared_data_size))
+        # TODO: initialize key fields in this structure
+
+        self.ql.mem.map(addr, self.ql.mem.align_up(user_shared_data_size), info='[kuser shared]')
         self.ql.mem.write(addr, bytes(user_shared_data_obj))
 
     def init_security_cookie(self, pe: pefile.PE, image_base: int):
@@ -657,6 +664,7 @@ class QlLoaderPE(QlLoader, Process):
         self.sys_dlls = (
             'ntdll.dll',
             'kernel32.dll',
+            'mscoree.dll',
             'ucrtbase.dll'
         )
 
@@ -695,7 +703,6 @@ class QlLoaderPE(QlLoader, Process):
         cmdline = ntpath.join(self.ql.os.userprofile, 'Desktop', self.ql.targetname)
         cmdargs = ' '.join(f'"{arg}"' if ' ' in arg else arg for arg in self.argv[1:])
 
-        self.filepath = bytes(f'{cmdline}\x00', "utf-8")
         self.cmdline = bytes(f'{cmdline} {cmdargs}\x00', "utf-8")
 
         self.load(pe)
@@ -722,14 +729,13 @@ class QlLoaderPE(QlLoader, Process):
             self.ql.log.info(f'Loading {self.path} to {image_base:#x}')
             self.ql.log.info(f'PE entry point at {self.entry_point:#x}')
 
-            self.ql.mem.map(image_base, image_size, info=f'[{image_name}]')
+            self.ql.mem.map(image_base, image_size, info=f'{image_name}')
             self.images.append(Image(image_base, image_base + pe.NT_HEADERS.OPTIONAL_HEADER.SizeOfImage, os.path.abspath(self.path)))
 
             if self.is_driver:
                 self.init_driver_object()
                 self.init_registry_path()
                 self.init_eprocess()
-                self.init_ki_user_shared_data()
 
                 # set IRQ Level in CR8 to PASSIVE_LEVEL
                 self.ql.arch.regs.write(UC_X86_REG_CR8, 0)
@@ -747,6 +753,8 @@ class QlLoaderPE(QlLoader, Process):
 
                 # add image to ldr table
                 self.add_ldr_data_table_entry(image_name)
+
+            self.init_ki_user_shared_data()
 
             pe.parse_data_directories()
 
@@ -817,8 +825,6 @@ class QlLoaderPE(QlLoader, Process):
                 self.ql.os.fcall.call_native(self.entry_point, args, None)
 
         elif pe is None:
-            self.filepath = b""
-
             self.ql.mem.map(self.entry_point, self.ql.os.code_ram_size, info="[shellcode]")
 
             self.init_teb()
