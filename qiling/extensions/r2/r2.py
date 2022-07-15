@@ -131,13 +131,19 @@ class R2:
         else:
             self._setup_file(ql.path)
 
+    def _qlarch2r(self, archname: str) -> str:
+        archname = archname.lower()
+        # str.removesuffix() is not available until Python 3.9
+        return archname[:-2] if archname.endswith('64') else archname
+
     def _setup_code(self, code: bytes):
         path = f'malloc://{len(code)}'.encode()
         fh = libr.r_core.r_core_file_open(self._r2c, path, UC_PROT_ALL, self.loadaddr)
         libr.r_core.r_core_bin_load(self._r2c, path, self.baseaddr)
         self._cmd(f'wx {code.hex()}')
         # set architecture and bits for r2 asm
-        self._cmd(f"e,asm.arch={self.ql.arch.type.name.lower().rstrip('64')},asm.bits={self.ql.arch.bits}")
+        arch = self._qlarch2r(self.ql.arch.type.name)
+        self._cmd(f"e,asm.arch={arch},asm.bits={self.ql.arch.bits}")
 
     def _setup_file(self, path: str):
         path = path.encode()
