@@ -16,6 +16,19 @@ from qiling.extensions import trace
 from unicorn import UC_PROT_NONE, UC_PROT_READ, UC_PROT_WRITE, UC_PROT_EXEC, UC_PROT_ALL
 
 
+def perm2uc(permstr: str) -> int:
+    '''convert "-rwx" to unicorn const'''
+    perm = UC_PROT_NONE
+    dic = {
+        "r": UC_PROT_READ,
+        "w": UC_PROT_WRITE,
+        "x": UC_PROT_EXEC,
+    }
+    for ch in permstr:
+        perm += dic.get(ch, 0)
+    return perm
+
+
 class R2Data:
     def __init__(self, **kwargs):
         names = set([f.name for f in fields(self)])
@@ -33,22 +46,9 @@ class Section(R2Data):
     vaddr: int
     perm: int
 
-    @staticmethod
-    def perm2uc(permstr: str) -> int:
-        '''convert "-rwx" to unicorn const'''
-        perm = UC_PROT_NONE
-        dic = {
-            "r": UC_PROT_READ,
-            "w": UC_PROT_WRITE,
-            "x": UC_PROT_EXEC,
-        }
-        for ch in permstr:
-            perm += dic.get(ch, 0)
-        return perm
-
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.perm = Section.perm2uc(self.perm)
+        self.perm = perm2uc(self.perm)
 
 
 @dataclass(unsafe_hash=True, init=False)
@@ -99,15 +99,19 @@ class Flag(R2Data):
 
 @dataclass(unsafe_hash=True, init=False)
 class Xref(R2Data):
+    XrefType = Literal["NULL", "CODE", "CALL", "DATA", "STRN", "UNKN"]
+
     name: str
     fromaddr: int  # from is reserved word in Python
-    refname: str
+    type: XrefType
+    perm: int
     addr: int
-    type: str
+    refname: str
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.fromaddr = kwargs["from"]
+        self.perm = perm2uc(self.perm)
 
     def __lt__(self, other):
         return self.fromaddr < other.fromaddr
@@ -133,7 +137,7 @@ class R2:
         libr.r_core.r_core_bin_load(self._r2c, path, self.baseaddr)
         self._cmd(f'wx {code.hex()}')
         # set architecture and bits for r2 asm
-        self._cmd(f"e,asm.arch={self.ql.arch.type.name.lower().removesuffix('64')},asm.bits={self.ql.arch.bits}")
+        self._cmd(f"e,asm.arch={self.ql.arch.type.name.lower().rstrip('64')},asm.bits={self.ql.arch.bits}")
 
     def _setup_file(self, path: str):
         path = path.encode()
@@ -198,8 +202,8 @@ class R2:
 
     @cached_property
     @aaa
-    def xrefs(self) -> Dict[int, Xref]:
-        return {dic['from']: Xref(**dic) for dic in self._cmdj("axj")}
+    def xrefs(self) -> List[Xref]:
+        return [Xref(**dic) for dic in self._cmdj("axj")]
 
     def at(self, addr: int) -> Tuple[Flag, int]:
         # the most suitable flag should have address <= addr
@@ -209,11 +213,11 @@ class R2:
         flag = self.flags[idx - 1]
         return flag, addr - flag.offset
 
-    def refrom(self, addr: int) -> Optional[Xref]:
-        return self.xrefs.get(addr)
+    def refrom(self, addr: int) -> List[Xref]:
+        return [x for x in self.xrefs if x.fromaddr == addr]
 
     def refto(self, addr: int) -> List[Xref]:
-        return [xref for xref in self.xrefs.values() if xref.addr == addr]
+        return [x for x in self.xrefs if x.addr == addr]
 
     def read(self, addr: int, size: int) -> bytes:
         hexstr = self._cmd(f"p8 {size} @ {addr}")
