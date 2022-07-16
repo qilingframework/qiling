@@ -11,6 +11,7 @@ from dataclasses import dataclass, fields
 from enum import Enum
 from functools import cached_property, wraps
 from typing import Dict, List, Literal, Optional, Tuple, Union
+from qiling.const import QL_ARCH
 from qiling.core import Qiling
 from qiling.extensions import trace
 from unicorn import UC_PROT_NONE, UC_PROT_READ, UC_PROT_WRITE, UC_PROT_EXEC, UC_PROT_ALL
@@ -131,10 +132,20 @@ class R2:
         else:
             self._setup_file(ql.path)
 
-    def _qlarch2r(self, archname: str) -> str:
-        archname = archname.lower()
-        # str.removesuffix() is not available until Python 3.9
-        return archname[:-2] if archname.endswith('64') else archname
+    def _qlarch2r(self, archtype: QL_ARCH) -> str:
+        return {
+            QL_ARCH.X86: "x86",
+            QL_ARCH.X8664: "x86",
+            QL_ARCH.ARM: "arm",
+            QL_ARCH.ARM64: "arm",
+            QL_ARCH.A8086: "x86",
+            QL_ARCH.EVM: "evm.cs",
+            QL_ARCH.CORTEX_M: "arm",
+            QL_ARCH.MIPS: "mips",
+            QL_ARCH.RISCV: "riscv",
+            QL_ARCH.RISCV64: "riscv",
+            QL_ARCH.PPC: "ppc",
+        }[archtype]
 
     def _setup_code(self, code: bytes):
         path = f'malloc://{len(code)}'.encode()
@@ -142,7 +153,7 @@ class R2:
         libr.r_core.r_core_bin_load(self._r2c, path, self.baseaddr)
         self._cmd(f'wx {code.hex()}')
         # set architecture and bits for r2 asm
-        arch = self._qlarch2r(self.ql.arch.type.name)
+        arch = self._qlarch2r(self.ql.arch.type)
         self._cmd(f"e,asm.arch={arch},asm.bits={self.ql.arch.bits}")
 
     def _setup_file(self, path: str):
