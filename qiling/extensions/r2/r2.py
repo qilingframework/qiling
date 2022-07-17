@@ -8,14 +8,14 @@ import ctypes
 import json
 import libr
 from dataclasses import dataclass, fields
-from enum import Enum
 from functools import cached_property, wraps
-from typing import Dict, List, Literal, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Dict, List, Literal, Tuple, Union
 from qiling.const import QL_ARCH
-from qiling.core import Qiling
 from qiling.extensions import trace
 from unicorn import UC_PROT_NONE, UC_PROT_READ, UC_PROT_WRITE, UC_PROT_EXEC, UC_PROT_ALL
 
+if TYPE_CHECKING:
+    from qiling.core import Qiling
 
 def perm2uc(permstr: str) -> int:
     '''convert "-rwx" to unicorn const'''
@@ -119,7 +119,7 @@ class Xref(R2Data):
 
 
 class R2:
-    def __init__(self, ql: Qiling, baseaddr=(1 << 64) - 1, loadaddr=0):
+    def __init__(self, ql: "Qiling", baseaddr=(1 << 64) - 1, loadaddr=0):
         super().__init__()
         self.ql = ql
         # r2 -B [baddr]   set base address for PIE binaries
