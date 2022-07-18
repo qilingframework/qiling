@@ -479,6 +479,10 @@ class QlLoaderELF(QlLoader):
                                 rev_reloc_symbols[symbol_name] = self.ql.os.hook_addr
                                 sym_offset = self.ql.os.hook_addr - mem_start
                                 self.ql.os.hook_addr += self.ql.arch.pointersize
+
+                            elif _symbol['st_shndx'] == 'SHN_ABS':
+                                rev_reloc_symbols[symbol_name] = _symbol['st_value']
+
                             else:
                                 # local symbol
                                 _section = elffile.get_section(_symbol['st_shndx'])
@@ -566,8 +570,8 @@ class QlLoaderELF(QlLoader):
         # mem_end = int(mem_end // 0x1000 + 1) * 0x1000
 
         # FIXME
-        mem_start = 0x1000
-        mem_end = mem_start + (len(elfdata_mapping) // 0x1000 + 1) * 0x1000
+        mem_start = 0x8000000
+        mem_end = mem_start + self.ql.mem.align_up(len(elfdata_mapping), 0x1000)
 
         # map some memory to intercept external functions of Linux kernel
         self.ql.mem.map(API_HOOK_MEM, 0x1000, info="[api_mem]")
