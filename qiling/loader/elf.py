@@ -365,28 +365,31 @@ class QlLoaderELF(QlLoader):
 
         # map vsyscall section for some specific needs
         if self.ql.arch.type == QL_ARCH.X8664 and self.ql.os.type == QL_OS.LINUX:
-            _vsyscall_addr = int(self.profile.get('vsyscall_address'), 0)
-            _vsyscall_size = int(self.profile.get('vsyscall_size'), 0)
+            vsyscall_addr = self.profile.getint('vsyscall_address')
 
-            if self.ql.mem.is_available(_vsyscall_addr, _vsyscall_size):
+            vsyscall_ids = (
+                SYSCALL_NR.gettimeofday,
+                SYSCALL_NR.time,
+                SYSCALL_NR.getcpu
+            )
+
+            # each syscall should be 1KiB away
+            entry_size = 1024
+            vsyscall_size = self.ql.mem.align_up(len(vsyscall_ids) * entry_size)
+
+            if self.ql.mem.is_available(vsyscall_addr, vsyscall_size):
                 # initialize with int3 instructions then insert syscall entry
-                # each syscall should be 1KiB away
-                self.ql.mem.map(_vsyscall_addr, _vsyscall_size, info="[vsyscall]")
-                self.ql.mem.write(_vsyscall_addr, _vsyscall_size * b'\xcc')
+                self.ql.mem.map(vsyscall_addr, vsyscall_size, info="[vsyscall]")
                 assembler = self.ql.arch.assembler
 
                 def __assemble(asm: str) -> bytes:
                     bs, _ = assembler.asm(asm)
                     return bytes(bs)
 
-                _vsyscall_ids = (
-                    SYSCALL_NR.gettimeofday,
-                    SYSCALL_NR.time,
-                    SYSCALL_NR.getcpu
-                )
+                for i, scid in enumerate(vsyscall_ids):
+                    entry = __assemble(f'mov rax, {scid:#x}; syscall; ret')
 
-                for i, scid in enumerate(_vsyscall_ids):
-                    self.ql.mem.write(_vsyscall_addr + i * 1024, __assemble(f'mov rax, {scid:#x}; syscall; ret'))
+                    self.ql.mem.write(vsyscall_addr + i * entry_size, entry.ljust(entry_size, b'\xcc'))
 
     def lkm_get_init(self, elffile: ELFFile) -> int:
         """Get file offset of the init_module function.
