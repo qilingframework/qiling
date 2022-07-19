@@ -100,7 +100,7 @@ class ELFTest(unittest.TestCase):
             except:
                 pass
         buf_out = None
-        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_multithreading"], "../examples/rootfs/x8664_linux", multithread=True, profile= "profiles/append_test.ql")
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_multithreading"], "../examples/rootfs/x8664_linux", multithread=True)
         ql.os.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
         ql.run()
 

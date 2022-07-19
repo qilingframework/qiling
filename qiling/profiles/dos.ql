@@ -1,10 +1,3 @@
-[LOG]
-# log directory output
-# usage: dir = qlog
-dir =
-# split log file, use with multithread
-split = False
-
 [KERNEL]
 version = 7
 ticks_per_second = 18.206

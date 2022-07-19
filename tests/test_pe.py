@@ -68,8 +68,7 @@ class PETest(unittest.TestCase):
 
     def test_pe_win_x8664_hello(self):
         def _t():
-            ql = Qiling(["../examples/rootfs/x8664_windows/bin/x8664_hello.exe"], "../examples/rootfs/x8664_windows",
-                        verbose=QL_VERBOSE.DEFAULT)
+            ql = Qiling(["../examples/rootfs/x8664_windows/bin/x8664_hello.exe"], "../examples/rootfs/x8664_windows")
             ql.run()
             del ql
             return True
@@ -79,8 +78,7 @@ class PETest(unittest.TestCase):
 
     def test_pe_win_x86_hello(self):
         def _t():
-            ql = Qiling(["../examples/rootfs/x86_windows/bin/x86_hello.exe"], "../examples/rootfs/x86_windows",
-                        verbose=QL_VERBOSE.DEFAULT, profile="profiles/append_test.ql")
+            ql = Qiling(["../examples/rootfs/x86_windows/bin/x86_hello.exe"], "../examples/rootfs/x86_windows")
             ql.run()
             del ql
             return True
@@ -90,8 +88,7 @@ class PETest(unittest.TestCase):
 
     def test_pe_win_x8664_file_upx(self):
         def _t():
-            ql = Qiling(["../examples/rootfs/x8664_windows/bin/x8664_file_upx.exe"], "../examples/rootfs/x8664_windows",
-                        verbose=QL_VERBOSE.DEFAULT)
+            ql = Qiling(["../examples/rootfs/x8664_windows/bin/x8664_file_upx.exe"], "../examples/rootfs/x8664_windows")
             ql.run()
             del ql
             return True
@@ -101,8 +98,7 @@ class PETest(unittest.TestCase):
 
     def test_pe_win_x86_file_upx(self):
         def _t():
-            ql = Qiling(["../examples/rootfs/x86_windows/bin/x86_file_upx.exe"], "../examples/rootfs/x86_windows",
-                        verbose=QL_VERBOSE.DEFAULT)
+            ql = Qiling(["../examples/rootfs/x86_windows/bin/x86_file_upx.exe"], "../examples/rootfs/x86_windows")
             ql.run()
             del ql
             return True

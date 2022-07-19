@@ -15,22 +15,16 @@ cpupage_address = 0xfc4048d8
 cpupage_tls_address = 0xfc405000
 tls_data_address = 0xfc406000
 
+
 [KERNEL]
 uid = 1000
 gid = 1000
 pid = 1996
 
 
-[LOG]
-# log directory output
-# usage: dir = qlog
-dir =
-# split log file, use with multithread
-split = False
-
-
 [MISC]
 current_path = /
+
 
 [NETWORK]
 # To use IPv6 or not, to avoid binary double bind. ipv6 and ipv4 bind the same port at the same time

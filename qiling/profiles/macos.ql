@@ -24,14 +24,6 @@ gid = 1000
 pid = 1996
 
 
-[LOG]
-# log directory output
-# usage: dir = qlog
-dir =
-# split log file, use with multithread
-split = False
-
-
 [MISC]
 current_path = /
 
