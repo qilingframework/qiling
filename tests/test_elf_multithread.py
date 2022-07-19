@@ -34,12 +34,20 @@ class ELFTest(unittest.TestCase):
                     verbose=QL_VERBOSE.DEBUG,
                     multithread=True)
 
-        err = ql_file.open('output.txt', os.O_RDWR | os.O_CREAT, 0o777)
+        filename = 'output.txt'
+        err = ql_file.open(filename, os.O_RDWR | os.O_CREAT, 0o777)
+
         ql.os.stderr = err
         ql.run()
-        os.close(err.fileno())
-        with open('output.txt', 'rb') as f:
-            self.assertTrue(b'fail' in f.read())            
+        err.close()
+
+        with open(filename, 'rb') as f:
+            content = f.read()
+
+        # cleanup
+        os.remove(filename)
+
+        self.assertIn(b'fail', content)
 
         del ql
 
