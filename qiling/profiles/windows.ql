@@ -30,13 +30,6 @@ pid = 1996
 parent_pid = 0
 shell_pid = 10
 
-[LOG]
-# log directory output
-# usage: dir = qlog
-dir =
-# split log file, use with multithread
-split = False
-
 [MISC]
 current_path = C:\
 
