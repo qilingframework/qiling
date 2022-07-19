@@ -11,8 +11,12 @@ from qiling.const import QL_VERBOSE
 from qiling.os.const import STRING
 
 def get_kaimendaji_password():
-    def my_getenv(ql, *args, **kwargs):
-        env = {"ID": b"000000000000000", "ethaddr": b"11:22:33:44:55:66"}
+    def my_getenv(ql: Qiling):
+        env = {
+            "ID"      : b"000000000000000",
+            "ethaddr" : b"11:22:33:44:55:66"
+        }
+
         params = ql.os.resolve_fcall_params({'key': STRING})
         value = env.get(params["key"], b"")
 
@@ -22,7 +26,7 @@ def get_kaimendaji_password():
         ql.arch.regs.r0 = value_addr
         ql.arch.regs.arch_pc = ql.arch.regs.lr
 
-    def get_password(ql, *args, **kwargs):
+    def get_password(ql: Qiling):
         password_raw = ql.mem.read(ql.arch.regs.r0, ql.arch.regs.r2)
 
         password = ''
@@ -34,7 +38,7 @@ def get_kaimendaji_password():
 
         print("The password is: %s" % password)
 
-    def partial_run_init(ql):
+    def partial_run_init(ql: Qiling):
         # argv prepare
         ql.arch.regs.arch_sp -= 0x30
         arg0_ptr = ql.arch.regs.arch_sp

@@ -27,6 +27,7 @@ def enable_sanitized_heap(ql, fault_rate=0):
     heap.alloc(0x1000)
 
     ql.os.heap = heap
+    ql.loader.dxe_context.heap = heap
 
 def sanitized_emulate(path, rootfs, fault_type, verbose=QL_VERBOSE.DEBUG):
     env = {'FaultType': fault_type}

@@ -15,7 +15,7 @@ ROOTFS = r"rootfs/x86_windows"
 class Solver:
     def __init__(self, invalid: bytes):
         # create a silent qiling instance
-        self.ql = Qiling([rf"{ROOTFS}/bin/crackme.exe"], ROOTFS, verbose=QL_VERBOSE.OFF)
+        self.ql = Qiling([rf"{ROOTFS}/bin/crackme.exe"], ROOTFS, verbose=QL_VERBOSE.DISABLED)
 
         self.ql.os.stdin = pipe.SimpleInStream(sys.stdin.fileno())  # take over the input to the program using a fake stdin
         self.ql.os.stdout = pipe.NullOutStream(sys.stdout.fileno()) # disregard program output
