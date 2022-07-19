@@ -100,7 +100,7 @@ class QlLoaderELF(QlLoader):
 
         # is it a driver?
         if elftype == 'ET_REL':
-            self.load_driver(elffile, stack_address + stack_size)
+            self.load_driver(elffile, stack_address + stack_size, loadbase=0x8000000)
             self.ql.hook_code(hook_kernel_api)
 
         # is it an executable?
@@ -570,7 +570,7 @@ class QlLoaderELF(QlLoader):
         # mem_end = int(mem_end // 0x1000 + 1) * 0x1000
 
         # FIXME
-        mem_start = 0x8000000
+        mem_start = 0
         mem_end = mem_start + self.ql.mem.align_up(len(elfdata_mapping), 0x1000)
 
         # map some memory to intercept external functions of Linux kernel
