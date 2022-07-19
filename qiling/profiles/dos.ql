@@ -17,9 +17,5 @@ stack_size = 0x4000
 base_address = 0x7000 
 
 [MISC]
-# append string into different logs
-# maily for multiple times Ql run with one file
-# usage: append = test1
-append =
 automatize_input = False
 current_path = A:\

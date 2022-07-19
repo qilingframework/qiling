@@ -38,10 +38,6 @@ dir =
 split = False
 
 [MISC]
-# append string into different logs
-# maily for multiple times Ql run with one file
-# usage: append = test1
-append =
 current_path = C:\
 
 [SYSTEM]
