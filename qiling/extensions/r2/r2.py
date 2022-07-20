@@ -7,7 +7,7 @@ import bisect
 import ctypes
 import json
 import libr
-from dataclasses import dataclass, fields
+from dataclasses import dataclass, field, fields
 from functools import cached_property, wraps
 from typing import TYPE_CHECKING, Dict, List, Literal, Tuple, Union
 from qiling.const import QL_ARCH
@@ -78,6 +78,19 @@ class Symbol(R2Data):
     vaddr: int
     paddr: int
     is_imported: bool
+
+
+@dataclass(unsafe_hash=True, init=False)
+class Instruction(R2Data):
+    offset: int
+    size: int
+    opcode: str  # raw opcode
+    disasm: str = ''  # flag resolved opcode
+    bytes: bytes
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.bytes = bytes.fromhex(kwargs["bytes"])
 
 
 @dataclass(unsafe_hash=True, init=False)
@@ -239,6 +252,19 @@ class R2:
     def read(self, addr: int, size: int) -> bytes:
         hexstr = self._cmd(f"p8 {size} @ {addr}")
         return bytes.fromhex(hexstr)
+
+    def dis_nbytes(self, addr: int, size: int) -> List[Instruction]:
+        insts = [Instruction(**dic) for dic in self._cmdj(f"pDj {size} @ {addr}")]
+        return insts
+
+    def disassembler(self, ql: 'Qiling', addr: int, size: int):
+        anibbles = ql.arch.bits // 4
+        for inst in self.dis_nbytes(addr, size):
+            flag, offset = self.at(inst.offset)
+            ql.log.info(f'{inst.offset:0{anibbles}x} [{flag.name:20s} + {offset:#08x}] {inst.bytes.hex(" "):20s} {inst.disasm}')
+
+    def enable_disasm(self):
+        self.ql.hook_code(self.disassembler)
 
     def enable_trace(self, mode='full'):
         # simple map from addr to flag name, cannot resolve addresses in the middle
