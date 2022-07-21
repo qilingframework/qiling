@@ -3,11 +3,25 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import argparse
 import os
-import sys
 import ast
 import pickle
+import re
+import click
+import six
+import json
+
+from PyInquirer import (Token, ValidationError, Validator, print_json,
+                        prompt, style_from_dict)
+from pyfiglet import figlet_format
+from rich import print
+from rich.console import Console
+from rich.table import Table
+from rich import box
+try:
+    from termcolor import colored
+except ImportError:
+    colored = None
 
 from unicorn import __version__ as uc_ver
 from qiling import __version__ as ql_ver
@@ -20,120 +34,29 @@ from qiling.const import QL_VERBOSE, QL_ENDIAN, os_map, arch_map, verbose_map
 from qiling.extensions.coverage import utils as cov_utils
 from qiling.extensions import report
 
-# read code from file
-def read_file(fname: str):
-    with open(fname, "rb") as f:
-        content = f.read()
+CONSOLE = Console()
 
-    return content
+ERROR_COLOR = "red"
 
-class __arg_env(argparse.Action):
-    def __call__(self, parser, namespace, values, option_string):
-        if os.path.exists(values):
-            with open(values, 'rb') as f:
-                env = pickle.load(f)
-        else:
-            env = ast.literal_eval(values)
+HEADING_COLOR = "green"
 
-        setattr(namespace, self.dest, env or {})
+OUTPUT_COLOR = "blue"
 
-class __arg_verbose(argparse.Action):
-    def __call__(self, parser, namespace, values, option_string):
-        setattr(namespace, self.dest, verbose_map[values])
+TITLE_COLOR = "blue"
 
-def handle_code(options: argparse.Namespace):
-    archendian = {
-        'little': QL_ENDIAN.EL,
-        'big'   : QL_ENDIAN.EB
-    }[options.endian]
+style = style_from_dict({
+    Token.QuestionMark: '#fac731 bold',
+    Token.Answer: '#4688f1 bold',
+    Token.Instruction: '',
+    Token.Separator: '#cc5454',
+    Token.Selected: '#0abf5b',
+    Token.Pointer: '#673ab7 bold',
+    Token.Question: '',
+})
 
-    if options.format == 'hex':
-        if options.input is not None:
-            print ("Load HEX from ARGV")
-            code = str(options.input).strip("\\\\x").split("x")
-            code = "".join(code).strip()
-            code =  bytes.fromhex(code)
-        elif options.filename is not None:
-            print ("Load HEX from FILE")
-            code = str(read_file(options.filename)).strip('b\'').strip('\\n')
-            code = code.strip('x').split("\\\\x")
-            code = "".join(code).strip()
-            code = bytes.fromhex(code)
-        else:
-            print("ERROR: File not found")
-            exit(1)
+prog = os.path.basename(__file__)
 
-    elif options.format == 'asm':
-        print ("Load ASM from FILE")
-        assembly = read_file(options.filename)
-        archtype = arch_convert(options.arch)
-
-        assembler = arch_utils.assembler(archtype, archendian, options.thumb)
-        code, _ = assembler.asm(assembly)
-        code = bytes(code)
-
-    elif options.format == 'bin':
-        print ("Load BIN from FILE")
-        if options.filename is not None:
-            code = read_file(options.filename)
-        else:
-            print("ERROR: File not found")
-            exit(1)
-
-    ql = Qiling(
-        rootfs=options.rootfs,
-        env=options.env,
-        code=code,
-        ostype=options.os,
-        archtype=options.arch,
-        verbose=options.verbose,
-        profile=options.profile,
-        filter=options.filter,
-        endian=archendian,
-        thumb=options.thumb,
-    )
-
-    return ql
-
-def handle_run(options: argparse.Namespace):
-    effective_argv = []
-
-    # with argv
-    if options.filename is not None and options.run_args == []:
-        effective_argv = [options.filename] + options.args
-
-    # Without argv
-    elif options.filename is None and options.args == [] and options.run_args != []:
-        effective_argv = options.run_args
-
-    else:
-        print("ERROR: Command error!")
-
-    ql = Qiling(
-        argv=effective_argv,
-        rootfs=options.rootfs,
-        env=options.env,
-        verbose=options.verbose,
-        profile=options.profile,
-        console=options.console,
-        log_file=options.log_file,
-        log_plain=options.log_plain,
-        multithread=options.multithread,
-        filter=options.filter,
-        libcache=options.libcache
-    )
-
-    # attach Qdb at entry point
-    if options.qdb is True:
-        QlQdb(ql, rr=options.rr).run()
-        exit()
-
-    return ql
-
-def handle_examples(parser: argparse.ArgumentParser):
-    prog = os.path.basename(__file__)
-
-    __ql_examples = f"""Examples:
+ql_examples = f"""Examples:
 
     With code:
         {prog} code --os linux --arch arm --format hex -f examples/shellcodes/linarm32_tcp_reverse_shell.hex
@@ -165,95 +88,602 @@ def handle_examples(parser: argparse.ArgumentParser):
 
 """
 
-    parser.exit(0, __ql_examples)
+
+def get_oad_table_columns(table):
+    table.add_column("Option Name", justify="left", no_wrap=True, header_style="bold", style="red")
+    table.add_column("Arguments", justify="left", header_style="bold")
+    table.add_column("Description", justify="left", header_style="bold")
+
+    return table
+
+
+def run_help():
+    table = Table(title="Run Help", show_lines=True, box=box.ROUNDED, title_style="bold", caption_justify="left", caption="Notes: - If filename is not specified, the last argument will be considered as program binary - If args is not speified, all trailing arguments will be considered as program command line arguments")
+
+    table = get_oad_table_columns(table)
+
+    table.add_row("filename", "filename", "Binary filename to emulate")
+    table.add_row("rootfs", "dirname", "Emulation root directory; this is where all libraries reside")
+    table.add_row("args", "...", "Emulated program command line arguments")
+    table.add_row("run_args", "...", "run_args")
+
+    return table
+
+
+def code_help():
+    table = Table(title="Code Help", show_lines=True, box=box.ROUNDED, title_style="bold", caption_justify="left", caption="Notes: - When format is set to hex, qltool will first look for data in input. If no input string specified, it will refer to the file specified in filename")
+
+    table = get_oad_table_columns(table)
+
+    table.add_row("filename", "filename", "Input filename")
+    table.add_row("input", "hex", "Input hex string; only relevant when format is set to hex")
+    table.add_row("format", "asm,  hex,  bin", "Specify file or input format: either an assembly, hex string or binary file")
+    table.add_row("arch", "x86,  x8664,  arm,  arm_thumb,  arm64,  mips,  a8086,  evm", "Target architecture")
+    table.add_row("endian", "little,  big", "Target endianess (default: little)")
+    table.add_row("os", "linux,  freebsd,  macos,  windows,  uefi,  dos,  evm", "Target operating system")
+    table.add_row("rootfs", "dirname", "Emulated root filesystem, that is where all libraries reside")
+    table.add_row("thumb", "Boolean", "Specify thumb mode for ARM")
+
+    return table
+
+
+def additional_options_help():
+    table = Table(title="Additional Options Help", show_lines=True, box=box.ROUNDED, title_style="bold")
+
+    table = get_oad_table_columns(table)
+
+    table.add_row("verbose", "off,  default,  debug,  disasm,  dump", "Set logging verbosity level")
+    table.add_row("env", "filename", "Path of a Pickle file containing an environment dictionary, or a Python string that evaluates to a dictionary")
+    table.add_row("gdb", "[server:port]", "Enable gdb server")
+    table.add_row("qdb", "", "Attach qdb at entry point. Currently supporting only MIPS and ARM (thumb mode)")
+    table.add_row("rr", "", "Enable qdb record and replay feature; requires `qdb`")
+    table.add_row("profile", "filename", "Specify a profile file")
+    table.add_row("no-console", "", "Do not emit program output to stdout")
+    table.add_row("filter", "regexp", "Apply a filtering regexp on log output")
+    table.add_row("log-file", "filename", "Emit log to file")
+    table.add_row("log-plain", "", "Do not use colors in log output; useful when emitting log to a file")
+    table.add_row("root", "", "Enable sudo required mode")
+    table.add_row("debug-stop", "", "Stop emulation on first error; requires verbose to be set to either debug or dump")
+    table.add_row("multithread", "", "Execute program in multithread mode")
+    table.add_row("timeout", "microseconds", "Set emulation timeout in microseconds (1000000μs = 1s)")
+    table.add_row("coverage-file", "filename", "Code coverage output file")
+    table.add_row("coverage-format", "drcov,  drcov_exact", "Code coverage file format")
+    table.add_row("json", "", "Emit an emulation report in JSON format")
+    table.add_row("libcache", "boolean", "Enable dll caching for windows")
+
+    return table
+
+
+def env_arg(value):
+    if value == "{}":
+        return {}
+    else:
+        if os.path.exists(value):
+            with open(value, 'rb') as f:
+                env = pickle.load(f)
+        else:
+            env = ast.literal_eval(value)
+        return env
+
+
+def verbose_arg(value):
+    return verbose_map[value]
+
+
+# read code from file
+def read_file(fname: str):
+    with open(fname, "rb") as f:
+        content = f.read()
+
+    return content
+
+def log(string, color, font="slant", figlet=False):
+    if colored:
+        if not figlet:
+            six.print_(colored(string, color))
+        else:
+            six.print_(colored(figlet_format(
+                string, font=font), color))
+    else:
+        six.print_(string)
+
+
+class IntValidator(Validator):
+    def validate(self, value):
+        try:
+            int(value.text)
+            return True
+        except:
+            raise ValidationError(
+                message="Integer required",
+                cursor_position=len(value.text))
+
+
+class DirectoryPathValidator(Validator):
+    def validate(self, value):
+        if len(value.text):
+            if os.path.isdir(value.text):
+                return True
+            else:
+                raise ValidationError(
+                    message="File not found",
+                    cursor_position=len(value.text))
+        else:
+            return True
+
+
+class RequiredDirectoryPathValidator(Validator):
+    def validate(self, value):
+        if len(value.text):
+            if os.path.isdir(value.text):
+                return True
+            else:
+                raise ValidationError(
+                    message="File not found",
+                    cursor_position=len(value.text))
+        else:
+            raise ValidationError(
+                message="You can't leave this blank",
+                cursor_position=len(value.text))
+
+
+class FilePathValidator(Validator):
+    def validate(self, value):
+        if len(value.text):
+            if os.path.isfile(value.text):
+                return True
+            else:
+                raise ValidationError(
+                    message="File not found",
+                    cursor_position=len(value.text))
+        else:
+            return True
+
+
+class ENVFilePathValidator(Validator):
+    def validate(self, value):
+        if value.text == "{}":
+            return True
+        if len(value.text):
+            if os.path.isfile(value.text):
+                return True
+            else:
+                raise ValidationError(
+                    message="File not found",
+                    cursor_position=len(value.text))
+        else:
+            return True
+
+
+def handle_code(options, additional_options):
+    archendian = {
+        'little': QL_ENDIAN.EL,
+        'big'   : QL_ENDIAN.EB
+    }[options.get("endian")]
+
+    if options.get("format") == 'hex':
+        if options.get("input"):
+            log("Load HEX from ARGV", OUTPUT_COLOR)
+            code = str(options.get("input")).strip("\\\\x").split("x")
+            code = "".join(code).strip()
+            code =  bytes.fromhex(code)
+        elif options.get("filename"):
+            print ("Load HEX from FILE")
+            code = str(read_file(options.get("filename"))).strip('b\'').strip('\\n')
+            code = code.strip('x').split("\\\\x")
+            code = "".join(code).strip()
+            code = bytes.fromhex(code)
+        else:
+            print("ERROR: File not found")
+            exit(1)
+
+    elif options.get("format") == 'asm':
+        print ("Load ASM from FILE")
+        assembly = read_file(options.get("filename"))
+        archtype = arch_convert(options.get("arch"))
+
+        assembler = arch_utils.assembler(archtype, archendian, options.get("thumb", False))
+        code, _ = assembler.asm(assembly)
+        code = bytes(code)
+
+    elif options.get("format") == 'bin':
+        log("Load BIN from FILE", OUTPUT_COLOR)
+        if options.get("filename"):
+            code = read_file(options.get("filename"))
+        else:
+            print("ERROR: File not found")
+            exit(1)
+
+    ql = Qiling(
+        rootfs=options.get("rootfs"),
+        env=additional_options.get("env") if additional_options.get("env") != "{}" else json.loads(additional_options.get("env")),
+        code=code,
+        ostype=options.get("os"),
+        archtype=options.get("arch"),
+        verbose=additional_options.get("verbose"),
+        profile=additional_options.get("profile") if additional_options.get("profile") else None,
+        filter=additional_options.get("filter") if additional_options.get("filter") else None,
+        endian=archendian,
+        thumb=options.get("thumb", False),
+    )
+
+    return ql
+
+
+def handle_run(options, additional_options):
+    effective_argv = []
+
+    # with argv
+    run_args = options.get("run_args").split(",") if options.get("run_args") else []
+    args = options.get("args").split(",") if options.get("args") else []
+    if options.get("filename") and run_args == []:
+        effective_argv = [options.get("filename")] + run_args
+
+    # Without argv
+    elif not options.get("filename") and args == [] and run_args != []:
+        effective_argv = run_args
+
+    else:
+        print("ERROR: Command error!")
+
+    ql = Qiling(
+        argv=effective_argv,
+        rootfs=options.get("rootfs"),
+        env=additional_options.get("env") if additional_options.get("env") != "{}" else json.loads(additional_options.get("env")),
+        verbose=additional_options.get("verbose"),
+        profile=additional_options.get("profile") if additional_options.get("profile") else None,
+        console=additional_options.get("console", True),
+        log_file=additional_options.get("log-file") if additional_options.get("log-file") else None,
+        log_plain=additional_options.get("log-plain", False),
+        multithread=additional_options.get("multithread", False),
+        filter=additional_options.get("filter") if additional_options.get("filter") else None,
+        libcache=additional_options.get("libcache", False)
+    )
+
+    # attach Qdb at entry point
+    if additional_options.get("qdb", False) is True:
+        QlQdb(ql, rr=additional_options.get("rr", False)).run()
+        exit()
+
+    return ql
+
+
+def ask_option():
+    questions = [
+        {
+            'type': 'list',
+            'name': 'option',
+            'message': 'Select an Option:',
+            'choices': ['Version', 'Examples', 'Help', 'Run', 'Code'],
+            'filter': lambda val: val.lower()
+        }
+    ]
+
+    answers = prompt(questions, style=style)
+    return answers
+
+
+def ask_help_option():
+    questions = [
+        {
+            'type': 'list',
+            'name': 'option',
+            'message': 'Get help regarding:',
+            'choices': ['Run', 'Code', 'Additional Options'],
+            'filter': lambda val: val.lower()
+        }
+    ]
+
+    answers = prompt(questions, style=style)
+    return answers
+
+
+def ask_run_options():
+    questions = [
+        {
+            'type': 'input',
+            'name': 'filename',
+            'message': 'filename:',
+            'validate': FilePathValidator
+        },
+        {
+            'type': 'input',
+            'name': 'rootfs',
+            'message': 'rootfs:',
+            'validate': RequiredDirectoryPathValidator
+        },
+        {
+            'type': 'input',
+            'name': 'args',
+            'message': 'args:'
+        },
+        {
+            'type': 'input',
+            'name': 'run_args',
+            'message': 'run_args:'
+        }
+    ]
+
+    answers = prompt(questions, style=style)
+    return answers
+
+
+def ask_code_options():
+    questions = [
+        {
+            'type': 'input',
+            'name': 'filename',
+            'message': 'filename:',
+            'validate': FilePathValidator
+        },
+        {
+            'type': 'input',
+            'name': 'input',
+            'message': 'input:'
+        },
+        {
+            'type': 'list',
+            'name': 'format',
+            'message': 'format:',
+            'choices': ['bin', 'asm', 'hex']
+        },
+        {
+            'type': 'list',
+            'name': 'arch',
+            'message': 'arch:',
+            'choices': arch_map
+        },
+        {
+            'type': 'list',
+            'name': 'endian',
+            'message': 'endian:',
+            'choices': ['little', 'big']
+        },
+        {
+            'type': 'list',
+            'name': 'os',
+            'message': 'os:',
+            'choices': os_map
+        },
+        {
+            'type': 'input',
+            'name': 'rootfs',
+            'message': 'rootfs:',
+            'default': '.',
+            'validate': DirectoryPathValidator
+        },
+        {
+            'type': 'confirm',
+            'name': 'thumb',
+            'message': "thumb:",
+            'default': False
+        }
+    ]
+
+    answers = prompt(questions, style=style)
+    return answers
+
+
+def ask_additional_options():
+    questions = [
+        {
+            'type': 'list',
+            'name': 'verbose',
+            'message': 'verbose:',
+            'choices': list(verbose_map.keys())[list(verbose_map.keys()).index('default'):]+list(verbose_map.keys())[:list(verbose_map.keys()).index('default')],
+            'filter': verbose_arg
+        },
+        {
+            'type': 'input',
+            'name': 'env',
+            'message': 'env:',
+            'validate': ENVFilePathValidator,
+            'default': "{}",
+            'filter': env_arg
+        },
+        {
+            'type': 'input',
+            'name': 'gdb',
+            'message': 'gdb:'
+        },
+        {
+            'type': 'confirm',
+            'name': 'qdb',
+            'message': "qdb:",
+            'default': False
+        },
+        {
+            'type': 'confirm',
+            'name': 'rr',
+            'message': "rr:",
+            'default': False
+        },
+        {
+            'type': 'input',
+            'name': 'profile',
+            'message': "profile:"
+        },
+        {
+            'type': 'confirm',
+            'name': 'console',
+            'message': "console:",
+            'default': True
+        },
+        {
+            'type': 'input',
+            'name': 'filter',
+            'message': "filter:"
+        },
+        {
+            'type': 'input',
+            'name': 'log-file',
+            'message': "log-file:",
+            'validate': FilePathValidator
+        },
+        {
+            'type': 'confirm',
+            'name': 'log-plain',
+            'message': "log-plain:",
+            'default': False
+        },
+        {
+            'type': 'confirm',
+            'name': 'root',
+            'message': "root:",
+            'default': False
+        },
+        {
+            'type': 'confirm',
+            'name': 'debug-stop',
+            'message': 'debug-stop:',
+            'default': False
+        },
+        {
+            'type': 'confirm',
+            'name': 'multithread',
+            'message': 'multithread:',
+            'default': False
+        },
+        {
+            'type': 'input',
+            'name': 'timeout',
+            'message': 'timeout:',
+            'default': '0',
+            'validate': IntValidator
+        },
+        {
+            'type': 'input',
+            'name': 'coverage-file',
+            'message': "coverage-file:",
+            'validate': FilePathValidator
+        },
+        {
+            'type': 'list',
+            'name': 'coverage-format',
+            'message': 'coverage-format:',
+            'choices': list(cov_utils.factory.formats)[list(cov_utils.factory.formats).index('drcov'):]+list(cov_utils.factory.formats)[:list(cov_utils.factory.formats).index('drcov')],
+        },
+        {
+            'type': 'confirm',
+            'name': 'json',
+            'message': 'json:',
+            'default': False
+        },
+        {
+            'type': 'confirm',
+            'name': 'libcache',
+            'message': 'libcache:',
+            'default': False
+        },
+    ]
+
+    answers = prompt(questions, style=style)
+    return answers
+
+
+def ask_continue():
+    questions = [
+        {
+            'type': 'confirm',
+            'name': 'continue',
+            'message': 'Do you want to continue:',
+            'default': False
+        }
+    ]
+
+    answers = prompt(questions, style=style)
+    return answers
+
+
+@click.command()
+def main():
+    log("Qiling", TITLE_COLOR, font="cyberlarge", figlet=True)
+    log("Welcome to Qiling", HEADING_COLOR)
+    log("Cross Platform and Multi Architecture Advanced Binary Emulation Framework", HEADING_COLOR)
+
+    while True:
+        command = ask_option()
+        if command.get("option") == 'version':
+            log(f'{prog} for Qiling {ql_ver}, using Unicorn {uc_ver}', OUTPUT_COLOR)
+
+            want_to_continue = ask_continue()
+            if not want_to_continue.get("continue", False):
+                break
+
+        elif command.get("option") == 'examples':
+            log(ql_examples, OUTPUT_COLOR)
+
+            want_to_continue = ask_continue()
+            if not want_to_continue.get("continue", False):
+                break
+
+        elif command.get("option") == 'help':
+            help_option = ask_help_option()
+
+            if help_option.get("option") == "run":
+                table = run_help()
+                CONSOLE.print(table)
+            elif help_option.get("option") == "code":
+                table = code_help()
+                CONSOLE.print(table)
+            elif help_option.get("option") == "additional options":
+                table = additional_options_help()
+                CONSOLE.print(table)
+
+            want_to_continue = ask_continue()
+            if not want_to_continue.get("continue", False):
+                break
+
+        elif command.get("option") == 'run':
+            log("Select Run Options", OUTPUT_COLOR)
+            run_options = ask_run_options()
+
+            log("Select Additional Options", OUTPUT_COLOR)
+            additional_options = ask_additional_options()
+
+            ql = handle_run(run_options, additional_options)
+
+        elif command.get("option") == 'code':
+            log("Select Code Options", OUTPUT_COLOR)
+            code_options = ask_code_options()
+
+            log("Select Additional Options", OUTPUT_COLOR)
+            additional_options = ask_additional_options()
+
+            ql = handle_code(code_options, additional_options)
+
+        else:
+            log("Error", ERROR_COLOR)
+
+        if command.get("option") in ['run', 'code']:
+            if additional_options.get("gdb"):
+                argval = additional_options.get("gdb")
+
+                if argval != 'gdb':
+                    argval = f'gdb:{argval}'
+
+                ql.debugger = argval
+
+            if additional_options.get("debug-stop", False):
+                if additional_options.get("verbose") not in (QL_VERBOSE.DEBUG, QL_VERBOSE.DUMP):
+                    raise Exception('The debug_stop option requires verbose to be set to either "debug" or "dump"')
+
+                ql.debug_stop = True
+
+            if additional_options.get("root", False):
+                ql.root = True
+
+            with cov_utils.collect_coverage(ql,
+                additional_options.get("coverage-format"),
+                (additional_options.get("coverage-file") if additional_options.get("coverage-file") else None)):
+                ql.run(timeout=int(additional_options.get("timeout")))
+
+            if additional_options.get("json", False):
+                print(report.generate_report(ql, pretty_print=True))
+
+            want_to_continue = ask_continue()
+            if not want_to_continue.get("continue", False):
+                break
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--version', action='version', version=f'qltool for Qiling {ql_ver}, using Unicorn {uc_ver}')
-
-    commands = parser.add_subparsers(title='sub commands', description='select execution mode', dest='subcommand', required=True)
-
-    # set "run" subcommand options
-    run_parser = commands.add_parser('run', help='run a program')
-    run_parser.add_argument('-f', '--filename', default=None, metavar="FILE", help="filename")
-    run_parser.add_argument('--rootfs', required=True, help='emulated rootfs')
-    run_parser.add_argument('--args', default=[], nargs=argparse.REMAINDER, dest="args", help="args")
-    run_parser.add_argument('run_args', default=[], nargs=argparse.REMAINDER)
-
-    # set "code" subcommand options
-    code_parser = commands.add_parser('code', help='execute a shellcode')
-    code_parser.add_argument('-f', '--filename', metavar="FILE", help="filename")
-    code_parser.add_argument('-i', '--input', metavar="INPUT", dest="input", help='input hex value')
-    code_parser.add_argument('--arch', required=True, choices=arch_map)
-    code_parser.add_argument('--thumb', action='store_true', default=False, help='specify thumb mode for ARM')
-    code_parser.add_argument('--endian', choices=('little', 'big'), default='little', help='specify endianess for bi-endian archs')
-    code_parser.add_argument('--os', required=True, choices=os_map)
-    code_parser.add_argument('--rootfs', default='.', help='emulated root filesystem, that is where all libraries reside')
-    code_parser.add_argument('--format', choices=('asm', 'hex', 'bin'), default='bin', help='input file format')
-
-    # set "examples" subcommand
-    expl_parser = commands.add_parser('examples', help='show examples and exit', add_help=False)
-
-    comm_parser = run_parser
-
-    if len(sys.argv) > 1 and sys.argv[1] == 'code':
-        comm_parser = code_parser
-
-    # set common options
-    comm_parser.add_argument('-v', '--verbose', choices=verbose_map, default=QL_VERBOSE.DEFAULT, action=__arg_verbose, help='set verbosity level')
-    comm_parser.add_argument('--env', metavar="FILE", action=__arg_env, default={}, help="pickle file containing an environment dictionary")
-    comm_parser.add_argument('-g', '--gdb', nargs='?', metavar='SERVER:PORT', const='gdb', help='enable gdb server')
-    comm_parser.add_argument('--qdb', action='store_true', help='attach Qdb at entry point, it\'s MIPS, ARM(THUMB) supported only for now')
-    comm_parser.add_argument('--rr', action='store_true', help='switch on record and replay feature in qdb, only works with --qdb')
-    comm_parser.add_argument('--profile', help="define a customized profile")
-    comm_parser.add_argument('--no-console', action='store_false', dest='console', help='do not emit output to console')
-    comm_parser.add_argument('-e', '--filter', metavar='REGEXP', default=None, help="apply a filtering regexp on log output")
-    comm_parser.add_argument('--log-file', help="write log to a file")
-    comm_parser.add_argument('--log-plain', action='store_true', help="do not use colors in log output")
-    comm_parser.add_argument('--root', action='store_true', help='enable sudo required mode')
-    comm_parser.add_argument('--debug-stop', action='store_true', help='stop running on error; requires verbose to be set to either "debug" or "dump"')
-    comm_parser.add_argument('-m', '--multithread',action='store_true', help='run in multithread mode')
-    comm_parser.add_argument('--timeout', type=int, default=0, help='set emulation timeout')
-    comm_parser.add_argument('-c', '--coverage-file', default=None, help='code coverage file name')
-    comm_parser.add_argument('--coverage-format', default='drcov', choices=cov_utils.factory.formats, help='code coverage file format')
-    comm_parser.add_argument('--json', action='store_true', help='print a json report of the emulation')
-    comm_parser.add_argument('--libcache', action='store_true', help='enable dll caching for windows')
-    options = parser.parse_args()
-
-    if options.subcommand == 'examples':
-        handle_examples(parser)
-
-    # ql file setup
-    elif options.subcommand == 'run':
-        ql = handle_run(options)
-
-    # ql code setup
-    elif options.subcommand == 'code':
-        ql = handle_code(options)
-
-    # ql execute additional options
-    if options.gdb:
-        argval = options.gdb
-
-        if argval != 'gdb':
-            argval = f'gdb:{argval}'
-
-        ql.debugger = argval
-
-    if options.debug_stop:
-        if options.verbose not in (QL_VERBOSE.DEBUG, QL_VERBOSE.DUMP):
-            parser.error('the debug_stop option requires verbose to be set to either "debug" or "dump"')
-
-        ql.debug_stop = True
-
-    if options.root:
-        ql.root = True
-
-    # ql run
-    with cov_utils.collect_coverage(ql, options.coverage_format, options.coverage_file):
-        ql.run(timeout=options.timeout)
-
-    if options.json:
-        print(report.generate_report(ql, pretty_print=True))
-
-    exit(ql.os.exit_code)
+    main()
