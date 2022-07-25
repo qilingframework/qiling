@@ -6,10 +6,11 @@
 import bisect
 import ctypes
 import json
+import re
 import libr
 from dataclasses import dataclass, field, fields
 from functools import cached_property, wraps
-from typing import TYPE_CHECKING, Dict, List, Literal, Tuple, Union
+from typing import TYPE_CHECKING, Dict, List, Literal, Pattern, Tuple, Union
 from qiling.const import QL_ARCH
 from qiling.extensions import trace
 from unicorn import UC_PROT_NONE, UC_PROT_READ, UC_PROT_WRITE, UC_PROT_EXEC, UC_PROT_ALL
@@ -257,14 +258,16 @@ class R2:
         insts = [Instruction(**dic) for dic in self._cmdj(f"pDj {size} @ {addr}")]
         return insts
 
-    def disassembler(self, ql: 'Qiling', addr: int, size: int):
+    def disassembler(self, ql: 'Qiling', addr: int, size: int, filt: Pattern[str]) -> None:
         anibbles = ql.arch.bits // 4
         for inst in self.dis_nbytes(addr, size):
             flag, offset = self.at(inst.offset)
-            ql.log.info(f'{inst.offset:0{anibbles}x} [{flag.name:20s} + {offset:#08x}] {inst.bytes.hex(" "):20s} {inst.disasm}')
+            if filt.search(flag.name):
+                ql.log.info(f'{inst.offset:0{anibbles}x} [{flag.name:20s} + {offset:#08x}] {inst.bytes.hex(" "):20s} {inst.disasm}')
 
-    def enable_disasm(self):
-        self.ql.hook_code(self.disassembler)
+    def enable_disasm(self, filt_str: str):
+        filt = re.compile(filt_str)
+        self.ql.hook_code(self.disassembler, filt)
 
     def enable_trace(self, mode='full'):
         # simple map from addr to flag name, cannot resolve addresses in the middle
