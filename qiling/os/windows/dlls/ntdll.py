@@ -31,11 +31,8 @@ def hook_memcpy(ql: Qiling, address: int, params):
     src = params['src']
     count = params['count']
 
-    try:
-        data = bytes(ql.mem.read(src, count))
-        ql.mem.write(dest, data)
-    except Exception:
-        ql.log.exception("")
+    data = bytes(ql.mem.read(src, count))
+    ql.mem.write(dest, data)
 
     return dest
 
