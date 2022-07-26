@@ -289,7 +289,7 @@ class KUSER_SHARED_DATA(ctypes.LittleEndianStructure):
         ('TimeZoneBias', KSYSTEM_TIME),
         ('ImageNumberLow', ctypes.c_uint16),
         ('ImageNumberHigh', ctypes.c_uint16),
-        ('NtSystemRoot', ctypes.c_uint16 * 260),
+        ('NtSystemRoot', ctypes.c_wchar * 260),
         ('MaxStackTraceDepth', ctypes.c_uint32),
         ('CryptoExponent', ctypes.c_uint32),
         ('TimeZoneId', ctypes.c_uint32),
