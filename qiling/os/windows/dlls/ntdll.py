@@ -132,6 +132,7 @@ def _QuerySystemInformation(ql: Qiling, address: int, params):
             QL_ARCH.X8664: 0x7FFFFFFEFFFF
         }[ql.arch.type]
 
+        # FIXME: retrieve the necessary info from KUSER_SHARED_DATA
         sbi = structs.SystemBasicInforation(
             ql,
             Reserved=0,

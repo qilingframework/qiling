@@ -14,15 +14,6 @@ from qiling.os.windows.structs import *
 from qiling.os.windows.wdk_const import DO_DEVICE_INITIALIZING, DO_EXCLUSIVE
 from qiling.utils import verify_ret
 
-# typedef struct _OSVERSIONINFOW {
-#   ULONG dwOSVersionInfoSize;
-#   ULONG dwMajorVersion;
-#   ULONG dwMinorVersion;
-#   ULONG dwBuildNumber;
-#   ULONG dwPlatformId;
-#   WCHAR szCSDVersion[128];
-# }
-
 # NTSYSAPI NTSTATUS RtlGetVersion(
 #   PRTL_OSVERSIONINFOW lpVersionInformation
 # );
@@ -32,11 +23,18 @@ from qiling.utils import verify_ret
 def hook_RtlGetVersion(ql: Qiling, address: int, params):
     pointer = params["lpVersionInformation"]
 
-    os = OsVersionInfoW(ql)
-    os.read(pointer)
-    os.major[0] = ql.os.profile.getint("SYSTEM", "majorVersion")
-    os.minor[0] = ql.os.profile.getint("SYSTEM", "minorVersion")
-    os.write(pointer)
+    # read the necessary information from KUSER_SHARED_DATA
+    kusd_data = ql.mem.read(ql.os.kusd_addr, ctypes.sizeof(KUSER_SHARED_DATA))
+    kusd_obj = KUSER_SHARED_DATA.from_buffer_copy(kusd_data)
+
+    osverinfo_obj = make_os_version_info(wide=True,
+        dwMajorVersion=kusd_obj.NtMajorVersion,
+        dwMinorVersion=kusd_obj.NtMinorVersion,
+    )
+
+    osverinfo_obj.dwOSVersionInfoSize = ctypes.sizeof(osverinfo_obj)
+
+    ql.mem.write(pointer, bytes(osverinfo_obj))
 
     ql.log.debug("The target is checking the windows Version!")
 
