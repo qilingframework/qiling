@@ -622,14 +622,24 @@ class Process:
         self.eprocess_address = eproc_addr
 
     def init_ki_user_shared_data(self):
-        addr = self.ql.os.profile.getint(f'OS{self.ql.arch.bits}', 'KI_USER_SHARED_DATA')
+        sysconf = self.ql.os.profile['SYSTEM']
 
-        user_shared_data_obj = KUSER_SHARED_DATA()
-        user_shared_data_size = ctypes.sizeof(KUSER_SHARED_DATA)
+        # initialize an instance with a few key fields
+        user_shared_data_obj = KUSER_SHARED_DATA(
+            ImageNumberLow=0x014c,  # IMAGE_FILE_MACHINE_I386
+            ImageNumberHigh=0x8664, # IMAGE_FILE_MACHINE_AMD64
+            NtSystemRoot=self.ql.os.windir,
+            NtProductType=sysconf.getint('productType'),
+            NtMajorVersion=sysconf.getint('majorVersion'),
+            NtMinorVersion=sysconf.getint('minorVersion'),
+            KdDebuggerEnabled=0,
+            NXSupportPolicy=0       # NX_SUPPORT_POLICY_ALWAYSOFF
+        )
 
-        # TODO: initialize key fields in this structure
+        user_shared_data_size = ctypes.sizeof(user_shared_data_obj)
 
-        self.ql.mem.map(addr, self.ql.mem.align_up(user_shared_data_size), info='[kuser shared]')
+        addr = self.ql.os.kusd_addr
+        self.ql.mem.map(addr, self.ql.mem.align_up(user_shared_data_size), info='[kuser shared data]')
         self.ql.mem.write(addr, bytes(user_shared_data_obj))
 
     def init_security_cookie(self, pe: pefile.PE, image_base: int):
