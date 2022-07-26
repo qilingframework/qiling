@@ -41,31 +41,32 @@ def hook_memcpy(ql: Qiling, address: int, params):
 
 def _QueryInformationProcess(ql: Qiling, address: int, params):
     flag = params["ProcessInformationClass"]
-    dst = params["ProcessInformation"]
-    pt_res = params["ReturnLength"]
+    obuf_ptr = params["ProcessInformation"]
+    obuf_len = params['ProcessInformationLength']
+    res_size_ptr = params["ReturnLength"]
 
     if flag == ProcessDebugFlags:
-        value = b"\x01" * 0x4
+        res_data = ql.pack32(0)     # was 0x01010101, no idea why
 
     elif flag == ProcessDebugPort:
-        value = b"\x00" * 0x4
+        res_data = ql.pack32(0)
 
     elif flag == ProcessDebugObjectHandle:
         return STATUS_PORT_NOT_SET
 
     elif flag == ProcessBasicInformation:
-        pbi = structs.ProcessBasicInformation(ql,
-            exitStatus=0,
-            pebBaseAddress=ql.loader.TEB.PebAddress,
-            affinityMask=0,
-            basePriority=0,
-            uniqueId=ql.os.profile.getint("KERNEL", "pid"),
-            parentPid=ql.os.profile.getint("KERNEL", "parent_pid")
+        kconf = ql.os.profile['KERNEL']
+
+        pbi = structs.make_process_basic_info(ql.arch.bits,
+            ExitStatus=0,
+            PebBaseAddress=ql.loader.TEB.PebAddress,
+            AffinityMask=0,
+            BasePriority=0,
+            UniqueProcessId=kconf.getint('pid'),
+            InheritedFromUniqueProcessId=kconf.getint('parent_pid')
         )
 
-        addr = ql.os.heap.alloc(pbi.size)
-        pbi.write(addr)
-        value = ql.pack(addr)
+        res_data = bytes(pbi)
 
     else:
         # TODO: support more info class ("flag") values
@@ -73,11 +74,13 @@ def _QueryInformationProcess(ql: Qiling, address: int, params):
 
         return STATUS_UNSUCCESSFUL
 
-    ql.log.debug("The target is checking the debugger via QueryInformationProcess ")
-    ql.mem.write(dst, value)
+    res_size = len(res_data)
 
-    if pt_res:
-        ql.mem.write_ptr(pt_res, 8, 1)
+    if obuf_len >= res_size:
+        ql.mem.write(obuf_ptr, res_data)
+
+    if res_size_ptr:
+        ql.mem.write_ptr(res_size_ptr, res_size)
 
     return STATUS_SUCCESS
 
@@ -313,20 +316,19 @@ def _SetInformationProcess(ql: Qiling, address: int, params):
             ql.mem.write_ptr(dst, 0, 1)
 
     elif flag == ProcessBasicInformation:
-        pbi = structs.ProcessBasicInformation(
-            ql,
-            exitStatus=0,
-            pebBaseAddress=ql.loader.TEB.PebAddress,
-            affinityMask=0,
-            basePriority=0,
-            uniqueId=ql.os.profile.getint("KERNEL", "pid"),
-            parentPid=ql.os.profile.getint("KERNEL", "parent_pid")
+        kconf = ql.os.profile['KERNEL']
+
+        pbi = structs.make_process_basic_info(ql.arch.bits,
+            ExitStatus=0,
+            PebBaseAddress=ql.loader.TEB.PebAddress,
+            AffinityMask=0,
+            BasePriority=0,
+            UniqueProcessId=kconf.getint('pid'),
+            InheritedFromUniqueProcessId=kconf.getint('parent_pid')
         )
 
         ql.log.debug("The target may be attempting to modify the PEB debug flag")
-        addr = ql.os.heap.alloc(pbi.size)
-        pbi.write(addr)
-        value = ql.pack(addr)
+        value = bytes(pbi)
 
     else:
         # TODO: support more info class ("flag") values
