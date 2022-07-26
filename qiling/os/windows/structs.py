@@ -1104,6 +1104,23 @@ class CONSOLE_SCREEN_BUFFER_INFO(ctypes.LittleEndianStructure):
         ('dwMaximumWindowSize', COORD)
     )
 
+# https://docs.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntqueryinformationprocess
+def make_process_basic_info(archbits: int, *args, **kwargs):
+    pointer_type = __select_pointer_type(archbits)
+    Struct = __make_struct(archbits)
+
+    class PROCESS_BASIC_INFORMATION(Struct):
+        _fields_ = (
+            ('ExitStatus', ctypes.c_uint32),
+            ('PebBaseAddress', pointer_type),
+            ('AffinityMask', pointer_type),
+            ('BasePriority', ctypes.c_uint32),
+            ('UniqueProcessId', pointer_type),
+            ('InheritedFromUniqueProcessId', pointer_type)
+        )
+
+    return PROCESS_BASIC_INFORMATION(*args, **kwargs)
+
 
 class WindowsStruct:
 
@@ -1709,38 +1726,6 @@ class ShellExecuteInfoA(WindowsStruct):
                                     self.show, self.instApp, self.id_list, self.class_name, self.class_key,
                                     self.hot_key, self.dummy, self.process])
         self.size = self.cb
-
-
-# private struct PROCESS_BASIC_INFORMATION
-# {
-#   public NtStatus ExitStatus;
-#   public IntPtr PebBaseAddress;
-#   public UIntPtr AffinityMask;
-#   public int BasePriority;
-#   public UIntPtr UniqueProcessId;
-#   public UIntPtr InheritedFromUniqueProcessId;
-# }
-class ProcessBasicInformation(WindowsStruct):
-    def __init__(self, ql, exitStatus=None, pebBaseAddress=None, affinityMask=None, basePriority=None, uniqueId=None,
-                 parentPid=None):
-        super().__init__(ql)
-        self.size = self.DWORD_SIZE + self.POINTER_SIZE * 4 + self.INT_SIZE
-        self.exitStatus = [exitStatus, self.DWORD_SIZE, "little", int]
-        self.pebBaseAddress = [pebBaseAddress, self.POINTER_SIZE, "little", int]
-        self.affinityMask = [affinityMask, self.INT_SIZE, "little", int]
-        self.basePriority = [basePriority, self.POINTER_SIZE, "little", int]
-        self.pid = [uniqueId, self.POINTER_SIZE, "little", int]
-        self.parentPid = [parentPid, self.POINTER_SIZE, "little", int]
-
-    def write(self, addr):
-        super().generic_write(addr,
-                              [self.exitStatus, self.pebBaseAddress, self.affinityMask, self.basePriority, self.pid,
-                               self.parentPid])
-
-    def read(self, addr):
-        super().generic_read(addr,
-                             [self.exitStatus, self.pebBaseAddress, self.affinityMask, self.basePriority, self.pid,
-                              self.parentPid])
 
 
 # typedef struct _UNICODE_STRING {
