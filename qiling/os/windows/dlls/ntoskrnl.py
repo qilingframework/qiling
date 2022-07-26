@@ -75,6 +75,16 @@ def hook_ZwSetInformationThread(ql: Qiling, address: int, params):
 
     return STATUS_SUCCESS
 
+def __Close(ql: Qiling, address: int, params):
+    value = params["Handle"]
+
+    handle = ql.os.handle_manager.get(value)
+
+    if handle is None:
+        return STATUS_INVALID_HANDLE
+
+    return STATUS_SUCCESS
+
 # NTSYSAPI NTSTATUS ZwClose(
 #   HANDLE Handle
 # );
@@ -82,27 +92,13 @@ def hook_ZwSetInformationThread(ql: Qiling, address: int, params):
     'Handle' : HANDLE
 })
 def hook_ZwClose(ql: Qiling, address: int, params):
-    value = params["Handle"]
-
-    handle = ql.os.handle_manager.get(value)
-
-    if handle is None:
-        return STATUS_INVALID_HANDLE
-
-    return STATUS_SUCCESS
+    return __Close(ql, address, params)
 
 @winsdkapi(cc=STDCALL, params={
     'Handle' : HANDLE
 })
 def hook_NtClose(ql: Qiling, address: int, params):
-    value = params["Handle"]
-
-    handle = ql.os.handle_manager.get(value)
-
-    if handle is None:
-        return STATUS_INVALID_HANDLE
-
-    return STATUS_SUCCESS
+    return __Close(ql, address, params)
 
 # NTSYSAPI ULONG DbgPrintEx(
 #   ULONG ComponentId,
