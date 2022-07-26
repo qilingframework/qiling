@@ -1121,6 +1121,22 @@ def make_process_basic_info(archbits: int, *args, **kwargs):
 
     return PROCESS_BASIC_INFORMATION(*args, **kwargs)
 
+# https://docs.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-osversioninfoa
+def make_os_version_info(wide: bool, *args, **kwargs):
+    char_type = (ctypes.c_wchar if wide else ctypes.c_char)
+
+    class OSVERSIONINFO(ctypes.LittleEndianStructure):
+        _fields_ = (
+            ('dwOSVersionInfoSize', ctypes.c_uint32),
+            ('dwMajorVersion',      ctypes.c_uint32),
+            ('dwMinorVersion',      ctypes.c_uint32),
+            ('dwBuildNumber',       ctypes.c_uint32),
+            ('dwPlatformId',        ctypes.c_uint32),
+            ('szCSDVersion',        char_type * 128)
+        )
+
+    return OSVERSIONINFO(*args, **kwargs)
+
 
 class WindowsStruct:
 
@@ -1509,31 +1525,6 @@ class OsVersionInfoExA(WindowsStruct):
     def read(self, addr):
         super().generic_read(addr, [self.size, self.major, self.minor, self.build, self.platform_os, self.version,
                                     self.service_major, self.service_minor, self.suite, self.product, self.reserved])
-
-
-# typedef struct _OSVERSIONINFOW {
-#   ULONG dwOSVersionInfoSize;
-#   ULONG dwMajorVersion;
-#   ULONG dwMinorVersion;
-#   ULONG dwBuildNumber;
-#   ULONG dwPlatformId;
-#   WCHAR szCSDVersion[128];
-# }
-class OsVersionInfoW(WindowsStruct):
-    def __init__(self, ql, size=None, major=None, minor=None, build=None, platform=None, version=None):
-        super().__init__(ql)
-        self.size = [size, self.ULONG_SIZE, "little", int]
-        self.major = [major, self.ULONG_SIZE, "little", int]
-        self.minor = [minor, self.ULONG_SIZE, "little", int]
-        self.build = [build, self.ULONG_SIZE, "little", int]
-        self.platform_os = [platform, self.ULONG_SIZE, "little", int]
-        self.version = [version, 128, "little", bytes]
-
-    def write(self, addr):
-        self.generic_write(addr, [self.size, self.major, self.minor, self.build, self.platform_os, self.version])
-
-    def read(self, addr):
-        self.generic_read(addr, [self.size, self.major, self.minor, self.build, self.platform_os, self.version])
 
 
 # typedef struct _SYSTEM_INFO {

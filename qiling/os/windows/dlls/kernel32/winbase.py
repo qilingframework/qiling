@@ -604,6 +604,7 @@ def hook_VerifyVersionInfoW(ql: Qiling, address: int, params):
 
                 ql.log.debug(f'The target asks for version {opstr[value]} {version_asked}')
 
+            # FIXME: read the necessary information from KUSER_SHARED_DATA
             qiling_os = \
                 f'{ql.os.profile.get("SYSTEM", "majorVersion")}' + \
                 f'{ql.os.profile.get("SYSTEM", "minorVersion")}' + \
