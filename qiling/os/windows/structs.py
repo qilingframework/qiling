@@ -1078,6 +1078,32 @@ class FILETIME(ctypes.LittleEndianStructure):
         ('dwHighDateTime', ctypes.c_int32)
     )
 
+# https://docs.microsoft.com/en-us/windows/console/coord-str
+class COORD(ctypes.LittleEndianStructure):
+    _fields_ = (
+        ('X', ctypes.c_uint16),
+        ('Y', ctypes.c_uint16)
+    )
+
+# https://docs.microsoft.com/en-us/windows/console/small-rect-str
+class SMALL_RECT(ctypes.LittleEndianStructure):
+    _fields_ = (
+        ('Left',   ctypes.c_uint16),
+        ('Top',    ctypes.c_uint16),
+        ('Right',  ctypes.c_uint16),
+        ('Bottom', ctypes.c_uint16)
+    )
+
+# https://docs.microsoft.com/en-us/windows/console/console-screen-buffer-info-str
+class CONSOLE_SCREEN_BUFFER_INFO(ctypes.LittleEndianStructure):
+    _fields_ = (
+        ('dwSize', COORD),
+        ('dwCursorPosition', COORD),
+        ('wAttributes', ctypes.c_uint16),
+        ('srWindow', SMALL_RECT),
+        ('dwMaximumWindowSize', COORD)
+    )
+
 
 class WindowsStruct:
 
