@@ -10,7 +10,7 @@ import re
 import libr
 from dataclasses import dataclass, field, fields
 from functools import cached_property, wraps
-from typing import TYPE_CHECKING, Dict, List, Literal, Pattern, Tuple, Union
+from typing import TYPE_CHECKING, Dict, List, Literal, Optional, Pattern, Tuple, Union
 from qiling.const import QL_ARCH
 from qiling.extensions import trace
 from unicorn import UC_PROT_NONE, UC_PROT_READ, UC_PROT_WRITE, UC_PROT_EXEC, UC_PROT_ALL
@@ -243,6 +243,18 @@ class R2:
         # minus 1 to find the corresponding flag
         flag = self.flags[idx - 1]
         return flag, addr - flag.offset
+
+    def where(self, name: str, offset: int=0) -> Optional[int]:
+        '''Given a name (+ offset), return its address or None'''
+        if '+' in name:  # func_name + offset
+            name, offset = name.split('+')
+            name = name.strip()
+            try:
+               offset = int(offset.strip(), 0)
+            except ValueError:
+                pass
+        func = self.functions.get(name)
+        return func.offset + offset if func else None
 
     def refrom(self, addr: int) -> List[Xref]:
         return [x for x in self.xrefs if x.fromaddr == addr]
