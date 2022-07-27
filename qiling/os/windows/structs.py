@@ -1106,17 +1106,17 @@ class CONSOLE_SCREEN_BUFFER_INFO(ctypes.LittleEndianStructure):
 
 # https://docs.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntqueryinformationprocess
 def make_process_basic_info(archbits: int, *args, **kwargs):
-    pointer_type = __select_pointer_type(archbits)
+    native_type = __select_native_type(archbits)
     Struct = __make_struct(archbits)
 
     class PROCESS_BASIC_INFORMATION(Struct):
         _fields_ = (
             ('ExitStatus', ctypes.c_uint32),
-            ('PebBaseAddress', pointer_type),
-            ('AffinityMask', pointer_type),
+            ('PebBaseAddress', native_type),
+            ('AffinityMask', native_type),
             ('BasePriority', ctypes.c_uint32),
-            ('UniqueProcessId', pointer_type),
-            ('InheritedFromUniqueProcessId', pointer_type)
+            ('UniqueProcessId', native_type),
+            ('InheritedFromUniqueProcessId', native_type)
         )
 
     return PROCESS_BASIC_INFORMATION(*args, **kwargs)
