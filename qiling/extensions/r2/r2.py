@@ -180,7 +180,9 @@ class R2:
             self._r2c, ctypes.create_string_buffer(cmd.encode("utf-8")))
         return ctypes.string_at(r).decode('utf-8')
 
-    @staticmethod
+    def _cmdj(self, cmd: str) -> Union[Dict, List[Dict]]:
+        return json.loads(self._cmd(cmd))
+
     def aaa(fun):
         @wraps(fun)
         def wrapper(self):
@@ -190,9 +192,6 @@ class R2:
             return fun(self)
         return wrapper
 
-    def _cmdj(self, cmd: str) -> Union[Dict, List[Dict]]:
-        return json.loads(self._cmd(cmd))
-    
     @cached_property
     def binfo(self) -> Dict[str, str]:
         return self._cmdj("iIj")
