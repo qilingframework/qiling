@@ -277,7 +277,7 @@ class R2:
             if filt.search(flag.name):
                 ql.log.info(f'{inst.offset:0{anibbles}x} [{flag.name:20s} + {offset:#08x}] {inst.bytes.hex(" "):20s} {inst.disasm}')
 
-    def enable_disasm(self, filt_str: str):
+    def enable_disasm(self, filt_str: str=''):
         filt = re.compile(filt_str)
         self.ql.hook_code(self.disassembler, filt)
 
