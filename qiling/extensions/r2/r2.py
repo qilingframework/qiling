@@ -271,7 +271,7 @@ class R2:
         return insts
 
     def disassembler(self, ql: 'Qiling', addr: int, size: int, filt: Pattern[str]=None) -> int:
-        '''A human-friendly disassembler powered by r2, can be used for hook_code
+        '''A human-friendly monkey patch of QlArchUtils.disassembler powered by r2, can be used for hook_code
             :param ql: Qiling instance
             :param addr: start address for disassembly
             :param size: size in bytes
@@ -279,13 +279,17 @@ class R2:
             :return: progress of dissembler, should be equal to size if success
         '''
         anibbles = ql.arch.bits // 4
+        progress = 0
         for inst in self.dis_nbytes(addr, size):
             if inst.type.lower() == 'invalid':
-                return inst.offset - addr # stop disasm and return address progress
+                break  # stop disasm
             flag, offset = self.at(inst.offset)
             if filt is None or filt.search(flag.name):
                 ql.log.info(f'{inst.offset:0{anibbles}x} [{flag.name:20s} + {offset:#08x}] {inst.bytes.hex(" "):20s} {inst.disasm}')
-        return size
+            progress = inst.offset + inst.size - addr
+        if progress < size:
+            ql.arch.utils.disassembler(ql, addr + progress, size - progress)
+        return progress
 
     def enable_disasm(self, filt_str: str=''):
         filt = re.compile(filt_str)

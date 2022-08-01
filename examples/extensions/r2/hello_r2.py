@@ -34,8 +34,7 @@ def my_sandbox(path, rootfs):
     ql.hook_address(func, r2.functions['main'].offset)
     # enable trace powered by r2 symsmap
     # r2.enable_trace()
-    # selectively disasm by regex searching flag name
-    r2.enable_disasm('main')
+    r2.enable_disasm()  # monky-patched disasm powered by r2
     ql.run()
 
 if __name__ == "__main__":
