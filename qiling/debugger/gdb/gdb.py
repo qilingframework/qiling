@@ -644,7 +644,7 @@ class QlGdb(QlDebugger):
                     groups = subcmd.split(';')[1:]
 
                     for grp in groups:
-                        cmd, tid = grp.split(':', maxsplit=1)
+                        cmd, *tid = grp.split(':', maxsplit=1)
 
                         if cmd in ('c', f'C{SIGTRAP:02x}'):
                             return handle_c('')
