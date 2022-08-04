@@ -544,20 +544,6 @@ def hook_IsBadWritePtr(ql: Qiling, address: int, params):
     # Check write permission for size of memory
     return 0 # ACCESS_TRUE
 
-def compare(p1: int, operator: int, p2: int) -> bool:
-    op = {
-        VER_EQUAL         : lambda a, b: a == b,
-        VER_GREATER       : lambda a, b: a > b,
-        VER_GREATER_EQUAL : lambda a, b: a >= b,
-        VER_LESS          : lambda a, b: a < b,
-        VER_LESS_EQUAL    : lambda a, b: a <= b
-    }.get(operator)
-
-    if not op:
-        raise QlErrorNotImplemented('')
-
-    return op(p1, p2)
-
 # BOOL VerifyVersionInfoW(
 #   LPOSVERSIONINFOEXW lpVersionInformation,
 #   DWORD              dwTypeMask,
@@ -569,65 +555,81 @@ def compare(p1: int, operator: int, p2: int) -> bool:
     'dwlConditionMask'     : DWORDLONG
 })
 def hook_VerifyVersionInfoW(ql: Qiling, address: int, params):
-    # https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-verifyversioninfow2
-    pointer = params["lpVersionInformation"]
+    # see: https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-verifyversioninfow
 
-    os_asked = OsVersionInfoExA(ql)
-    os_asked.read(pointer)
+    lpVersionInformation = params['lpVersionInformation']
+    dwTypeMask = params['dwTypeMask']
+    dwlConditionMask = params['dwlConditionMask']
 
-    ConditionMask: dict = ql.os.hooks_variables["ConditionMask"]
+    askedOsVersionInfo = OsVersionInfoExA(ql)
+    askedOsVersionInfo.read(lpVersionInformation)
+
+    # reading emulated os version info from profile
+    # FIXME: read the necessary information from KUSER_SHARED_DATA instead
+    osconfig = ql.os.profile['SYSTEM']
+
+    emulOsVersionInfo = OsVersionInfoExA(ql,
+        major=osconfig.getint('majorVersion'),
+        minor=osconfig.getint('minorVersion'),
+        build=0,
+        platform=0,
+        service_major=osconfig.getint('VER_SERVICEPACKMAJOR'),
+        service_minor=0,
+        suite=0,
+        product=osconfig.getint('productType')
+    )
+
+    # check criteria by the order they should be evaluated. the online microsoft
+    # documentation only specify the first five, so not sure about the other three.
+    #
+    # each criteria is associated with the OSVERSIONINFOEX[A|W] it corresponds to.
+    checks = (
+        (1, 'major'),         # VER_MAJORVERSION
+        (0, 'minor'),         # VER_MINORVERSION
+        (2, 'build'),         # VER_BUILDNUMBER
+        (5, 'service_major'), # VER_SERVICEPACKMAJOR
+        (4, 'service_minor'), # VER_SERVICEPACKMINOR
+        (3, 'platform_os'),   # VER_PLATFORMID
+        (6, 'suite'),         # VER_SUITENAME
+        (7, 'product')        # VER_PRODUCT_TYPE
+    )
+
     res = True
 
-    opstr = {
-        VER_EQUAL         : '==',
-        VER_GREATER       : '>',
-        VER_GREATER_EQUAL : '>=',
-        VER_LESS          : '<',
-        VER_LESS_EQUAL    : '<='
-    }
+    for bit, field in checks:
+        if dwTypeMask & (1 << bit):
+            asked = getattr(askedOsVersionInfo, field)
+            emuld = getattr(emulOsVersionInfo, field)
 
-    for key, value in ConditionMask.items():
-        if value not in opstr:
-            raise QlErrorNotImplemented(f'API not implemented with operator {value}')
+            # extract the condition code for the required field
+            cond = (dwlConditionMask >> (bit * VER_NUM_BITS_PER_CONDITION_MASK)) & VER_CONDITION_MASK
 
-        # Versions should be compared together
-        if key in (VER_MAJORVERSION, VER_MINORVERSION, VER_PRODUCT_TYPE):
-            concat = f'{os_asked.major[0]}{os_asked.minor[0]}{os_asked.product[0]}'
+            # special case for VER_SUITENAME
+            if bit == 6:
+                cond_op = {
+                    VER_AND : lambda a, b: (a & b) == b,  # all members of b must be present
+                    VER_OR  : lambda a, b: (a & b) != 0   # at least one member of b must be present
+                }[cond]
 
-            # Just a print for analysts, will remove it from here in the future
-            if key == VER_MAJORVERSION:
-                ql.log.debug("The Target is checking the windows Version!")
-                version_asked = SYSTEMS_VERSION.get(concat, None)
+                res &= cond_op(emuld, asked)
 
-                if version_asked is None:
-                    raise QlErrorNotImplemented(f'API not implemented for version {concat}')
+            else:
+                # cond operates as a bitmask, so multiple 'if' statements are appropriately
+                # used here. do not turn this into an 'elif' construct.
 
-                ql.log.debug(f'The target asks for version {opstr[value]} {version_asked}')
+                if (cond & VER_GREATER) and (emuld > asked):
+                    return 1
 
-            # FIXME: read the necessary information from KUSER_SHARED_DATA
-            qiling_os = \
-                f'{ql.os.profile.get("SYSTEM", "majorVersion")}' + \
-                f'{ql.os.profile.get("SYSTEM", "minorVersion")}' + \
-                f'{ql.os.profile.get("SYSTEM", "productType")}'
+                if (cond & VER_LESS) and (emuld < asked):
+                    return 1
 
-            # We can finally compare
-            res = compare(int(qiling_os), value, int(concat))
+                if (cond & VER_EQUAL):
+                    res &= (emuld == asked)
 
-        elif key == VER_SERVICEPACKMAJOR:
-            res = compare(ql.os.profile.getint("SYSTEM", "VER_SERVICEPACKMAJOR"), value, os_asked.service_major[0])
+    if not res:
+        ql.os.last_error = ERROR_OLD_WIN_VERSION
 
-        else:
-            raise QlErrorNotImplemented("API not implemented for key %s" % key)
-
-        # The result is a AND between every value, so if we find a False we just exit from the loop
-        if not res:
-            ql.os.last_error = ERROR_OLD_WIN_VERSION
-            return 0
-
-    # reset mask
-    ql.os.hooks_variables["ConditionMask"] = {}
-
-    return res
+    return int(res)
 
 def __GetUserName(ql: Qiling, address: int, params, wstring: bool):
     lpBuffer = params["lpBuffer"]
