@@ -84,8 +84,7 @@ class QlOsWindows(QlOs):
 
         self.PE_RUN = False
         self.last_error = 0
-        # variables used inside hooks
-        self.syscall_count = {}
+
         self.argv = self.ql.argv
         self.env = self.ql.env
         self.pid = self.profile.getint('KERNEL', 'pid')
@@ -192,9 +191,6 @@ class QlOsWindows(QlOs):
                 api_func = getattr(api, f'hook_{api_name}', None)
 
             if api_func:
-                self.syscall_count.setdefault(api_name, 0)
-                self.syscall_count[api_name] += 1
-
                 try:
                     api_func(ql, address, api_name)
                 except Exception as ex:
