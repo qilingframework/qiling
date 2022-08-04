@@ -85,7 +85,6 @@ class QlOsWindows(QlOs):
         self.PE_RUN = False
         self.last_error = 0
         # variables used inside hooks
-        self.hooks_variables = {}
         self.syscall_count = {}
         self.argv = self.ql.argv
         self.env = self.ql.env
