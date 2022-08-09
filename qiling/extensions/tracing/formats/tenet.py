@@ -54,7 +54,11 @@ class QlDrTrace(QlBaseTrace):
                 endian = 'little'
             else:
                 endian = 'big'
-            value = int.to_bytes(value, size, endian)
+            if value < 0:
+                sign = True
+            else:
+                sign = False
+            value = int.to_bytes(value, size, endian, signed=sign)
             delta = f"{access_type}={hex(address)}:{value.hex()}"
         else:
             print("Invalid access type")
