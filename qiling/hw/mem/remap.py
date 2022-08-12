@@ -21,4 +21,4 @@ class MemoryRemap(QlPeripheral):
         return int.from_bytes(self.ql.mem.read(self.remap_base + offset, size), 'little')
 
     def write(self, offset, size, value):
-        return self.ql.mem.write(remap_base + offset, (value).to_bytes(size, 'little'))
+        return self.ql.mem.write(self.remap_base + offset, (value).to_bytes(size, 'little'))
