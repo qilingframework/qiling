@@ -66,7 +66,7 @@ class QlGdb(QlDebugger):
     """A simple gdbserver implementation.
     """
 
-    def __init__(self, ql: Qiling, ip: str = '127.0.01', port: int = 9999):
+    def __init__(self, ql: Qiling, ip: str = '127.0.0.1', port: int = 9999):
         super().__init__(ql)
 
         if type(port) is str:
