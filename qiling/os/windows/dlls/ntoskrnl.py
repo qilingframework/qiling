@@ -754,30 +754,27 @@ def _NtQuerySystemInformation(ql: Qiling, address: int, params):
         with rpm_struct.ref(ql.mem, SystemInformation) as rpm_obj:
             rpm_obj.NumberOfModules = num_modules
 
-            rpmi_struct = rpm_obj.Modules._type_
-            arr_base = SystemInformation + rpm_struct.offsetof('Modules')
-
             # cycle through all the loaded modules
             for i in range(num_modules):
+                rpmi_obj = rpm_obj.Modules[i]
 
                 # FIXME: load real values instead of bogus ones
-                with rpmi_struct.ref(ql.mem, arr_base + i * rpmi_struct.sizeof()) as rpmi_obj:
-                    rpmi_obj.Section = 0
-                    rpmi_obj.MappedBase = 0
+                rpmi_obj.Section = 0
+                rpmi_obj.MappedBase = 0
 
-                    if ql.loader.is_driver:
-                        image = ql.loader.get_image_by_name("ntoskrnl.exe")
-                        assert image, 'image is a driver, but ntoskrnl.exe was not loaded'
+                if ql.loader.is_driver:
+                    image = ql.loader.get_image_by_name("ntoskrnl.exe")
+                    assert image, 'image is a driver, but ntoskrnl.exe was not loaded'
 
-                        rpmi_obj.ImageBase = image.base
+                    rpmi_obj.ImageBase = image.base
 
-                    rpmi_obj.ImageSize = 0xab000
-                    rpmi_obj.Flags = 0x8804000
-                    rpmi_obj.LoadOrderIndex = 0  # order of this module
-                    rpmi_obj.InitOrderIndex = 0
-                    rpmi_obj.LoadCount = 1
-                    rpmi_obj.OffsetToFileName = len(b"\\SystemRoot\\system32\\")
-                    rpmi_obj.FullPathName = b"\\SystemRoot\\system32\\ntoskrnl.exe"
+                rpmi_obj.ImageSize = 0xab000
+                rpmi_obj.Flags = 0x8804000
+                rpmi_obj.LoadOrderIndex = 0  # order of this module
+                rpmi_obj.InitOrderIndex = 0
+                rpmi_obj.LoadCount = 1
+                rpmi_obj.OffsetToFileName = len(b"\\SystemRoot\\system32\\")
+                rpmi_obj.FullPathName = b"\\SystemRoot\\system32\\ntoskrnl.exe"
 
     return STATUS_SUCCESS
 
@@ -865,8 +862,6 @@ def hook_PsGetCurrentProcess(ql: Qiling, address: int, params):
 # HANDLE PsGetCurrentProcessId();
 @winsdkapi(cc=STDCALL, params={})
 def hook_PsGetCurrentProcessId(ql: Qiling, address: int, params):
-    # current process ID is 101
-    # TODO: let user customize this?
     return ql.os.pid
 
 # NTSTATUS
