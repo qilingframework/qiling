@@ -908,7 +908,7 @@ def make_eprocess(archbits: int):
     class EPROCESS(Struct):
         # FIXME: define meaningful fields
         _fields_ = (
-            ('dummy', ctypes.c_char * obj_size)
+            ('dummy', ctypes.c_char * obj_size),
         )
 
     return EPROCESS
