@@ -91,10 +91,13 @@ def hook_GetSystemTimeAsFileTime(ql: Qiling, address: int, params):
     hnano = int(elapsed.total_seconds() * (10 ** 7))
 
     mask = (1 << 32) - 1
-    hi = (hnano >> 32) & mask
-    lo = (hnano >>  0) & mask
 
-    ql.mem.write(ptr, bytes(FILETIME(lo, hi)))
+    ftime = FILETIME(
+        (hnano >>  0) & mask,
+        (hnano >> 32) & mask
+    )
+
+    ftime.save_to(ql.mem, ptr)
 
 # DWORD GetTickCount(
 # );

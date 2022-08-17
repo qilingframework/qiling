@@ -53,8 +53,9 @@ def _QueryInformationProcess(ql: Qiling, address: int, params):
 
     elif flag == ProcessBasicInformation:
         kconf = ql.os.profile['KERNEL']
+        pbi_struct = structs.make_process_basic_info(ql.arch.bits)
 
-        pbi = structs.make_process_basic_info(ql.arch.bits,
+        pci_obj = pbi_struct(
             ExitStatus=0,
             PebBaseAddress=ql.loader.TEB.PebAddress,
             AffinityMask=0,
@@ -63,7 +64,7 @@ def _QueryInformationProcess(ql: Qiling, address: int, params):
             InheritedFromUniqueProcessId=kconf.getint('parent_pid')
         )
 
-        res_data = bytes(pbi)
+        res_data = bytes(pci_obj)
 
     else:
         # TODO: support more info class ("flag") values
@@ -315,8 +316,9 @@ def _SetInformationProcess(ql: Qiling, address: int, params):
 
     elif flag == ProcessBasicInformation:
         kconf = ql.os.profile['KERNEL']
+        pbi_struct = structs.make_process_basic_info(ql.arch.bits)
 
-        pbi = structs.make_process_basic_info(ql.arch.bits,
+        pci_obj = pbi_struct(
             ExitStatus=0,
             PebBaseAddress=ql.loader.TEB.PebAddress,
             AffinityMask=0,
@@ -326,7 +328,7 @@ def _SetInformationProcess(ql: Qiling, address: int, params):
         )
 
         ql.log.debug("The target may be attempting to modify the PEB debug flag")
-        value = bytes(pbi)
+        value = bytes(pbi_obj)
 
     else:
         # TODO: support more info class ("flag") values

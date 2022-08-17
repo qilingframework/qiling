@@ -7,7 +7,6 @@
 This module is intended for general purpose functions that are only used in qiling.os
 """
 
-import ctypes
 from typing import Callable, Iterable, Iterator, List, MutableMapping, Sequence, Tuple, TypeVar, Union
 from uuid import UUID
 
@@ -175,12 +174,11 @@ class QlOsUtils:
 
                 elif typ == 'Z':
                     # note: ANSI_STRING and UNICODE_STRING have identical layout
-                    strcls = make_unicode_string(self.ql.arch.bits).__class__
-                    data = self.ql.mem.read(arg, ctypes.sizeof(strcls))
-                    strobj = strcls.from_buffer_copy(data)
+                    ucstr_struct = make_unicode_string(self.ql.arch.bits)
 
-                    typ = 's'
-                    arg = read_string(strobj.Buffer)
+                    with ucstr_struct.ref(self.ql.mem, arg) as ucstr_obj:
+                        typ = 's'
+                        arg = read_string(ucstr_obj.Buffer)
 
                 elif typ == 'p':
                     pound = '#'
