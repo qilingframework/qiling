@@ -433,10 +433,15 @@ def profile_setup(ostype: QL_OS, filename: Optional[str]):
     return config
 
 # verify if emulator returns properly
-def verify_ret(ql, err):
+def verify_ret(ql: 'Qiling', err):
+    # init_sp location is not consistent; this is here to work around that
+    if not hasattr(ql.os, 'init_sp'):
+        ql.os.init_sp = ql.loader.init_sp
+
     ql.log.debug("Got exception %u: init SP = %x, current SP = %x, PC = %x" %(err.errno, ql.os.init_sp, ql.arch.regs.arch_sp, ql.arch.regs.arch_pc))
 
-    ql.os.RUN = False
+    if hasattr(ql.os, 'RUN'):
+        ql.os.RUN = False
 
     # timeout is acceptable in this case
     if err.errno in (UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED):
