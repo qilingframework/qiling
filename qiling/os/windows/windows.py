@@ -68,10 +68,8 @@ class QlOsWindows(QlOs):
         ossection = self.profile[f'OS{self.ql.arch.bits}']
         heap_base = ossection.getint('heap_address')
         heap_size = ossection.getint('heap_size')
-        kusd_addr = ossection.getint('KI_USER_SHARED_DATA')
 
         self.heap = QlMemoryHeap(self.ql, heap_base, heap_base + heap_size)
-        self.kusd_addr = kusd_addr
 
         sysdrv = self.profile.get('PATH', 'systemdrive')
         windir = self.profile.get('PATH', 'windir')
