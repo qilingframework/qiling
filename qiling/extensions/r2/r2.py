@@ -3,7 +3,6 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import bisect
 import ctypes
 import json
 import re
@@ -105,7 +104,7 @@ class Function(R2Data):
 
 @dataclass(unsafe_hash=True, init=False)
 class Flag(R2Data):
-    offset: int
+    offset: int  # should be addr but r2 calls it offset
     name: str = ''
     size: int = 0
 
@@ -236,25 +235,24 @@ class R2:
     def xrefs(self) -> List[Xref]:
         return [Xref(**dic) for dic in self._cmdj("axj")]
 
-    def at(self, addr: int) -> Tuple[Flag, int]:
-        # the most suitable flag should have address <= addr
-        # bisect_right find the insertion point, right side if value exists
-        idx = bisect.bisect_right(self.flags, Flag(offset=addr))
-        # minus 1 to find the corresponding flag
-        flag = self.flags[idx - 1]
-        return flag, addr - flag.offset
-
-    def where(self, name: str, offset: int=0) -> Optional[int]:
-        '''Given a name (+ offset), return its address or None'''
-        if '+' in name:  # func_name + offset
-            name, offset = name.split('+')
-            name = name.strip()
+    def at(self, addr: int, parse=False) -> Union[str, Tuple[str, int]]:
+        '''Given an address, return [name, offset] or "name + offset"'''
+        name = self._cmd(f'fd {addr}').strip()
+        if parse:
             try:
-               offset = int(offset.strip(), 0)
-            except ValueError:
-                pass
-        func = self.functions.get(name)
-        return func.offset + offset if func else None
+                name, offset = name.split(' + ')
+                offset = int(offset)
+            except ValueError:  # split fail when offset=0
+                offset = 0
+            return name, offset
+        return name
+
+    def where(self, name: str, offset: int=0) -> int:
+        '''Given a name (+ offset), return its address (0 when not found)'''
+        if offset != 0:  # name can already have offset, multiple + is allowd
+            name += f' + {offset}'
+        addr = self._cmd(f'?v {name}').strip()  # 0x0 when name is not found
+        return int(addr, 16)
 
     def refrom(self, addr: int) -> List[Xref]:
         return [x for x in self.xrefs if x.fromaddr == addr]
@@ -283,9 +281,9 @@ class R2:
         for inst in self.dis_nbytes(addr, size):
             if inst.type.lower() == 'invalid':
                 break  # stop disasm
-            flag, offset = self.at(inst.offset)
-            if filt is None or filt.search(flag.name):
-                ql.log.info(f'{inst.offset:0{anibbles}x} [{flag.name:20s} + {offset:#08x}] {inst.bytes.hex(" "):20s} {inst.disasm}')
+            name, offset = self.at(inst.offset, parse=True)
+            if filt is None or filt.search(name):
+                ql.log.info(f'{inst.offset:0{anibbles}x} [{name:20s} + {offset:#08x}] {inst.bytes.hex(" "):20s} {inst.disasm}')
             progress = inst.offset + inst.size - addr
         if progress < size:
             ql.arch.utils.disassembler(ql, addr + progress, size - progress)
