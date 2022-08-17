@@ -7,59 +7,19 @@ import ctypes
 
 from enum import IntEnum
 
-from qiling import Qiling
+from qiling.os import struct
+from qiling.os.windows.const import MAX_PATH
 from qiling.os.windows.handle import Handle
 from qiling.exception import QlErrorNotImplemented
 from .wdk_const import IRP_MJ_MAXIMUM_FUNCTION, PROCESSOR_FEATURE_MAX
 
-def __make_struct(archbits: int):
-    """Provide a ctypes Structure base class based on the underlying
-    architecture properties.
+
+def make_teb(archbits: int):
+    """Generate a TEB structure class.
     """
 
-    class Struct(ctypes.LittleEndianStructure):
-        _pack_ = archbits // 8
-
-    return Struct
-
-
-def __select_native_type(archbits: int):
-    """Select a ctypes integer type with the underlying architecture
-    native size.
-    """
-
-    __type = {
-        32 : ctypes.c_uint32,
-        64 : ctypes.c_uint64
-    }
-
-    return __type[archbits]
-
-
-def __select_pointer_type(archbits: int):
-    """Provide a pointer base class based on the underlying
-    architecture properties.
-    """
-
-    native_type = __select_native_type(archbits)
-    Struct = __make_struct(archbits)
-
-    class Pointer(Struct):
-        _fields_ = (
-            ('value', native_type),
-        )
-
-    return Pointer
-
-
-def make_teb(archbits: int, *args, **kwargs):
-    """Initialize a TEB structure.
-
-    Additional arguments may be used to initialize specific TEB fields.
-    """
-
-    native_type = __select_native_type(archbits)
-    Struct = __make_struct(archbits)
+    native_type = struct.get_native_type(archbits)
+    Struct = struct.get_aligned_struct(archbits)
 
     class TEB(Struct):
         _fields_ = (
@@ -87,17 +47,28 @@ def make_teb(archbits: int, *args, **kwargs):
             ('ReservedOS',             ctypes.c_byte * 216)
         )
 
-    return TEB(*args, **kwargs)
+    return TEB
 
 
-def make_peb(archbits: int, *args, **kwargs):
-    """Initialize a PEB structure.
-
-    Additional arguments may be used to initialize specific PEB fields.
+def make_peb(archbits: int):
+    """Generate a PEB structure class.
     """
 
-    native_type = __select_native_type(archbits)
-    Struct = __make_struct(archbits)
+    native_type = struct.get_native_type(archbits)
+    Struct = struct.get_aligned_struct(archbits)
+
+    # expected peb structure size
+    expected_size = {
+        32: 0x47c,
+        64: 0x7c8
+    }[archbits]
+
+    # pad to expected size based on currently defined set of fields.
+    # this is not very elegant, but ctypes.resize does not work on classes
+    padding_size = expected_size - {
+        32: 0x70,
+        64: 0xc8
+    }[archbits]
 
     # https://www.geoffchappell.com/studies/windows/win32/ntdll/structs/peb/index.htm
     class PEB(Struct):
@@ -131,37 +102,26 @@ def make_peb(archbits: int, *args, **kwargs):
             ('UnicodeCaseTableData',     native_type),
             ('NumberOfProcessors',       ctypes.c_int32),
             ('NtGlobalFlag',             ctypes.c_int32),
-            ('CriticalSectionTimeout',   native_type)
-            # ... more
+            ('CriticalSectionTimeout',   native_type),
+
+            # more fields to be added here. in the meantime, pad the
+            # structure to the size it is expected to be
+            ('_padding', ctypes.c_char * padding_size)
         )
 
-    obj_size = {
-        32: 0x047c,
-        64: 0x07c8
-    }[archbits]
+    # make sure mismatches in peb size are not overlooked
+    assert PEB.sizeof() == expected_size
 
-    obj = PEB(*args, **kwargs)
-    ctypes.resize(obj, obj_size)
-
-    return obj
+    return PEB
 
 
 # https://docs.microsoft.com/en-us/windows/win32/api/subauth/ns-subauth-unicode_string
-#
-# typedef struct _UNICODE_STRING {
-#     USHORT Length;
-#     USHORT MaximumLength;
-#     PWSTR  Buffer;
-# } UNICODE_STRING, *PUNICODE_STRING;
-
-def make_unicode_string(archbits: int, *args, **kwargs):
-    """Initialize a Unicode String structure.
-
-    Additional arguments may be used to initialize specific structure fields.
+def make_unicode_string(archbits: int):
+    """Generate a UNICODE_STRING structure class.
     """
 
-    native_type = __select_native_type(archbits)
-    Struct = __make_struct(archbits)
+    native_type = struct.get_native_type(archbits)
+    Struct = struct.get_aligned_struct(archbits)
 
     class UNICODE_STRING(Struct):
         _fields_ = (
@@ -170,162 +130,116 @@ def make_unicode_string(archbits: int, *args, **kwargs):
             ('Buffer',        native_type)
         )
 
-    return UNICODE_STRING(*args, **kwargs)
+    return UNICODE_STRING
+
 
 # https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/ns-wdm-_driver_object
-#
-# typedef struct _DRIVER_OBJECT {
-#     CSHORT             Type;
-#     CSHORT             Size;
-#     PDEVICE_OBJECT     DeviceObject;
-#     ULONG              Flags;
-#     PVOID              DriverStart;
-#     ULONG              DriverSize;
-#     PVOID              DriverSection;
-#     PDRIVER_EXTENSION  DriverExtension;
-#     UNICODE_STRING     DriverName;
-#     PUNICODE_STRING    HardwareDatabase;
-#     PFAST_IO_DISPATCH  FastIoDispatch;
-#     PDRIVER_INITIALIZE DriverInit;
-#     PDRIVER_STARTIO    DriverStartIo;
-#     PDRIVER_UNLOAD     DriverUnload;
-#     PDRIVER_DISPATCH   MajorFunction[IRP_MJ_MAXIMUM_FUNCTION + 1];
-# } DRIVER_OBJECT, *PDRIVER_OBJECT;
+def make_driver_object(archbits: int):
+    """Generate a DRIVER_OBJECT structure class.
+    """
 
-def make_driver_object(ql: Qiling, base: int, archbits: int):
-    native_type = __select_native_type(archbits)
-    pointer_type = __select_pointer_type(archbits)
-    Struct = __make_struct(archbits)
+    native_type = struct.get_native_type(archbits)
+    Struct = struct.get_aligned_struct(archbits)
 
-    ucstrtype = make_unicode_string(archbits).__class__
+    ucstr_struct = make_unicode_string(archbits)
 
     class DRIVER_OBJECT(Struct):
         _fields_ = (
-            ('_Type',             ctypes.c_uint16),
-            ('_Size',             ctypes.c_uint16),
-            ('_DeviceObject',     pointer_type),
-            ('_Flags',            ctypes.c_uint32),
-            ('_DriverStart',      pointer_type),
-            ('_DriverSize',       ctypes.c_uint32),
-            ('_DriverSection',    pointer_type),
-            ('_DriverExtension',  pointer_type),
-            ('_DriverName',       ucstrtype),
-            ('_HardwareDatabase', pointer_type),
-            ('_FastIoDispatch',   pointer_type),
-            ('_DriverInit',       pointer_type),
-            ('_DriverStartIo',    pointer_type),
-            ('_DriverUnload',     pointer_type),
-            ('_MajorFunction',    native_type * (IRP_MJ_MAXIMUM_FUNCTION + 1))
+            ('Type',             ctypes.c_uint16),
+            ('Size',             ctypes.c_uint16),
+            ('DeviceObject',     native_type),
+            ('Flags',            ctypes.c_uint32),
+            ('DriverStart',      native_type),
+            ('DriverSize',       ctypes.c_uint32),
+            ('DriverSection',    native_type),
+            ('DriverExtension',  native_type),
+            ('DriverName',       ucstr_struct),
+            ('HardwareDatabase', native_type),
+            ('FastIoDispatch',   native_type),
+            ('DriverInit',       native_type),
+            ('DriverStartIo',    native_type),
+            ('DriverUnload',     native_type),
+            ('MajorFunction',    native_type * (IRP_MJ_MAXIMUM_FUNCTION + 1))
         )
 
-        def __read_obj(self) -> 'DRIVER_OBJECT':
-            data = ql.mem.read(base, ctypes.sizeof(self))
+    return DRIVER_OBJECT
 
-            return self.__class__.from_buffer(data)
 
-        def __write_obj(self) -> None:
-            ql.mem.write(base, bytes(self))
-
-        # get MajorFunction
-        @property
-        def MajorFunction(self):
-            obj = self.__read_obj()
-
-            return getattr(obj, '_MajorFunction')
-
-        @property
-        def DeviceObject(self):
-            obj = self.__read_obj()
-
-            return getattr(obj, '_DeviceObject').value
-
-        @DeviceObject.setter
-        def DeviceObject(self, value):
-            obj = self.__read_obj()
-            getattr(obj, '_DeviceObject').value = value
-
-            obj.__write_obj()
-
-        @property
-        def DriverUnload(self):
-            obj = self.__read_obj()
-
-            return getattr(obj, '_DriverUnload').value
-
-    return DRIVER_OBJECT()
-
-class KSYSTEM_TIME(ctypes.Structure):
+class KSYSTEM_TIME(struct.BaseStruct):
     _fields_ = (
-        ('LowPart', ctypes.c_uint32),
+        ('LowPart',   ctypes.c_uint32),
         ('High1Time', ctypes.c_int32),
         ('High2Time', ctypes.c_int32)
     )
 
 
-class LARGE_INTEGER_DUMMYSTRUCTNAME(ctypes.LittleEndianStructure):
+class _LARGE_INTEGER(struct.BaseStruct):
     _fields_ = (
-        ('LowPart', ctypes.c_uint32),
-        ('HighPart', ctypes.c_int32),
+        ('LowPart',  ctypes.c_uint32),
+        ('HighPart', ctypes.c_int32)
     )
 
 
 class LARGE_INTEGER(ctypes.Union):
     _fields_ = (
-        ('u', LARGE_INTEGER_DUMMYSTRUCTNAME),
-        ('QuadPart', ctypes.c_int64),
+        ('u', _LARGE_INTEGER),
+        ('QuadPart', ctypes.c_int64)
     )
 
+# see:
 # https://www.geoffchappell.com/studies/windows/km/ntoskrnl/structs/kuser_shared_data/index.htm
-#
-# struct information:
-# https://doxygen.reactos.org/d8/dae/modules_2rostests_2winetests_2ntdll_2time_8c_source.html
+# https://doxygen.reactos.org/d7/deb/xdk_2ketypes_8h_source.html#l01155
 
-class KUSER_SHARED_DATA(ctypes.LittleEndianStructure):
+class KUSER_SHARED_DATA(struct.BaseStruct):
     _fields_ = (
-        ('TickCountLowDeprecated', ctypes.c_uint32),
-        ('TickCountMultiplier', ctypes.c_uint32),
-        ('InterruptTime', KSYSTEM_TIME),
-        ('SystemTime', KSYSTEM_TIME),
-        ('TimeZoneBias', KSYSTEM_TIME),
-        ('ImageNumberLow', ctypes.c_uint16),
-        ('ImageNumberHigh', ctypes.c_uint16),
-        ('NtSystemRoot', ctypes.c_wchar * 260),
-        ('MaxStackTraceDepth', ctypes.c_uint32),
-        ('CryptoExponent', ctypes.c_uint32),
-        ('TimeZoneId', ctypes.c_uint32),
-        ('LargePageMinimum', ctypes.c_uint32),
-        ('Reserved2', ctypes.c_uint32 * 7),
-        ('NtProductType', ctypes.c_uint32),
-        ('ProductTypeIsValid', ctypes.c_uint32),
-        ('NtMajorVersion', ctypes.c_uint32),
-        ('NtMinorVersion', ctypes.c_uint32),
-        ('ProcessorFeatures', ctypes.c_uint8 * PROCESSOR_FEATURE_MAX),
-        ('Reserved1', ctypes.c_uint32),
-        ('Reserved3', ctypes.c_uint32),
-        ('TimeSlip', ctypes.c_uint32),
-        ('AlternativeArchitecture', ctypes.c_uint32),
-        ('AltArchitecturePad', ctypes.c_uint32),
-        ('SystemExpirationDate', LARGE_INTEGER),
-        ('SuiteMask', ctypes.c_uint32),
-        ('KdDebuggerEnabled', ctypes.c_uint8),
-        ('NXSupportPolicy', ctypes.c_uint8),
-        ('ActiveConsoleId', ctypes.c_uint32),
-        ('DismountCount', ctypes.c_uint32),
-        ('ComPlusPackage', ctypes.c_uint32),
+        ('TickCountLowDeprecated',      ctypes.c_uint32),
+        ('TickCountMultiplier',         ctypes.c_uint32),
+        ('InterruptTime',               KSYSTEM_TIME),
+        ('SystemTime',                  KSYSTEM_TIME),
+        ('TimeZoneBias',                KSYSTEM_TIME),
+        ('ImageNumberLow',              ctypes.c_uint16),
+        ('ImageNumberHigh',             ctypes.c_uint16),
+        ('NtSystemRoot',                ctypes.c_wchar * MAX_PATH),
+        ('MaxStackTraceDepth',          ctypes.c_uint32),
+        ('CryptoExponent',              ctypes.c_uint32),
+        ('TimeZoneId',                  ctypes.c_uint32),
+        ('LargePageMinimum',            ctypes.c_uint32),
+        ('Reserved2',                   ctypes.c_uint32 * 7),
+        ('NtProductType',               ctypes.c_uint32),
+        ('ProductTypeIsValid',          ctypes.c_uint32),
+        ('NtMajorVersion',              ctypes.c_uint32),
+        ('NtMinorVersion',              ctypes.c_uint32),
+        ('ProcessorFeatures',           ctypes.c_uint8 * PROCESSOR_FEATURE_MAX),
+        ('Reserved1',                   ctypes.c_uint32),
+        ('Reserved3',                   ctypes.c_uint32),
+        ('TimeSlip',                    ctypes.c_uint32),
+        ('AlternativeArchitecture',     ctypes.c_uint32),
+        ('AltArchitecturePad',          ctypes.c_uint32),
+        ('SystemExpirationDate',        LARGE_INTEGER),
+        ('SuiteMask',                   ctypes.c_uint32),
+        ('KdDebuggerEnabled',           ctypes.c_uint8),
+        ('NXSupportPolicy',             ctypes.c_uint8),
+        ('ActiveConsoleId',             ctypes.c_uint32),
+        ('DismountCount',               ctypes.c_uint32),
+        ('ComPlusPackage',              ctypes.c_uint32),
         ('LastSystemRITEventTickCount', ctypes.c_uint32),
-        ('NumberOfPhysicalPages', ctypes.c_uint32),
-        ('SafeBootMode', ctypes.c_uint8),
-        ('TscQpcData', ctypes.c_uint8),
-        ('TscQpcFlags', ctypes.c_uint8),
-        ('TscQpcPad', ctypes.c_uint8 * 3),
-        ('SharedDataFlags', ctypes.c_uint8),
-        ('DataFlagsPad', ctypes.c_uint8 * 3),
-        ('TestRetInstruction', ctypes.c_uint8),
-        ('_padding0', ctypes.c_uint8 * 0x2F8))
+        ('NumberOfPhysicalPages',       ctypes.c_uint32),
+        ('SafeBootMode',                ctypes.c_uint8),
+        ('TscQpcData',                  ctypes.c_uint8),    # also: VirtualizationFlags
+        ('TscQpcFlags',                 ctypes.c_uint8),
+        ('TscQpcPad',                   ctypes.c_uint8 * 3),
+        ('SharedDataFlags',             ctypes.c_uint8),
+        ('DataFlagsPad',                ctypes.c_uint8 * 3),
+        ('TestRetInstruction',          ctypes.c_uint8),
+
+        # pad structure to expected structure size
+        ('_padding0', ctypes.c_uint8 * 0x2F8)
+    )
+
 
 def make_list_entry(archbits: int):
-    native_type = __select_native_type(archbits)
-    Struct = __make_struct(archbits)
+    native_type = struct.get_native_type(archbits)
+    Struct = struct.get_aligned_struct(archbits)
 
     class LIST_ENTRY(Struct):
         _fields_ = (
@@ -335,29 +249,30 @@ def make_list_entry(archbits: int):
 
     return LIST_ENTRY
 
-def make_device_object(archbits: int):
-    native_type = __select_native_type(archbits)
-    pointer_type = __select_pointer_type(archbits)
-    Struct = __make_struct(archbits)
 
-    LIST_ENTRY = make_list_entry(archbits)
+def make_device_object(archbits: int):
+    native_type = struct.get_native_type(archbits)
+    Struct = struct.get_aligned_struct(archbits)
+    Union = struct.get_aligned_union(archbits)
+
+    pointer_type = native_type
+    ListEntry = make_list_entry(archbits)
 
     class KDEVICE_QUEUE_ENTRY(Struct):
         _fields_ = (
-            ('DeviceListEntry', LIST_ENTRY),
+            ('DeviceListEntry', ListEntry),
             ('SortKey', ctypes.c_uint32),
             ('Inserted', ctypes.c_uint8)
         )
 
     class WAIT_ENTRY(Struct):
         _fields_ = (
-            ('DmaWaitEntry', LIST_ENTRY),
+            ('DmaWaitEntry', ListEntry),
             ('NumberOfChannels', ctypes.c_uint32),
             ('DmaContext', ctypes.c_uint32)
         )
 
-    class WAIT_QUEUE_UNION(ctypes.Union):
-        _pack_ = archbits // 8
+    class WAIT_QUEUE_UNION(Union):
         _fields_ = (
             ("WaitQueueEntry", KDEVICE_QUEUE_ENTRY),
             ("Dma", WAIT_ENTRY)
@@ -378,15 +293,10 @@ def make_device_object(archbits: int):
         _fields_ = (
             ('Type', ctypes.c_int16),
             ('Size', ctypes.c_int16),
-            ('DeviceListHead', LIST_ENTRY),
+            ('DeviceListHead', ListEntry),
             ('Lock', ctypes.c_uint32),
             ('Busy', ctypes.c_uint8)
         )
-
-    # class SINGLE_LIST_ENTRY(Struct):
-    #     _fields_ = (
-    #         ('Next', native_type),
-    #     )
 
     # https://github.com/ntdiff/headers/blob/master/Win10_1507_TS1/x64/System32/hal.dll/Standalone/_KDPC.h
     class KDPC(Struct):
@@ -394,7 +304,7 @@ def make_device_object(archbits: int):
             ('Type', ctypes.c_uint8),
             ('Importance', ctypes.c_uint8),
             ('Number', ctypes.c_uint16),
-            ('DpcListEntry', LIST_ENTRY),
+            ('DpcListEntry', ListEntry),
             ('DeferredRoutine', pointer_type),
             ('DeferredContext', pointer_type),
             ('SystemArgument1', pointer_type),
@@ -406,7 +316,7 @@ def make_device_object(archbits: int):
         _fields_ = (
             ('Lock', ctypes.c_int32),
             ('SignalState', ctypes.c_int32),
-            ('WaitListHead', LIST_ENTRY)
+            ('WaitListHead', ListEntry)
         )
 
     # https://docs.microsoft.com/vi-vn/windows-hardware/drivers/ddi/wdm/ns-wdm-_device_object
@@ -439,36 +349,15 @@ def make_device_object(archbits: int):
             ('Reserved', pointer_type)
         )
 
-    return DEVICE_OBJECT()
+    return DEVICE_OBJECT
 
 
-# struct IO_STATUS_BLOCK {
-#   union {
-#     NTSTATUS Status;
-#     PVOID    Pointer;
-#   } DUMMYUNIONNAME;
-#   ULONG_PTR Information;
-# };
+def make_io_stack_location(archbits: int):
+    native_type = struct.get_native_type(archbits)
+    Struct = struct.get_aligned_struct(archbits)
+    Union = struct.get_aligned_union(archbits)
 
-def make_irp(archbits: int):
-    pointer_type = __select_pointer_type(archbits)
-    native_type = __select_native_type(archbits)
-    Struct = __make_struct(archbits)
-
-    LIST_ENTRY = make_list_entry(archbits)
-
-    class IO_STATUS_BLOCK_DUMMY(ctypes.Union):
-        _pack_ = archbits // 8
-        _fields_ = (
-            ('Status', ctypes.c_int32),
-            ('Pointer', pointer_type)
-        )
-
-    class IO_STATUS_BLOCK(Struct):
-        _fields_ = (
-            ('Status', IO_STATUS_BLOCK_DUMMY),
-            ('Information', pointer_type)
-        )
+    pointer_type = native_type
 
     class IO_STACK_LOCATION_FILESYSTEMCONTROL(Struct):
         _fields_ = (
@@ -494,8 +383,7 @@ def make_irp(archbits: int):
             ('ByteOffset', LARGE_INTEGER)
         )
 
-    class IO_STACK_LOCATION_PARAM(ctypes.Union):
-        _pack_ = archbits // 8
+    class IO_STACK_LOCATION_PARAM(Union):
         _fields_ = (
             ('FileSystemControl', IO_STACK_LOCATION_FILESYSTEMCONTROL),
             ('DeviceIoControl', IO_STACK_LOCATION_DEVICEIOCONTROL),
@@ -512,11 +400,33 @@ def make_irp(archbits: int):
             ('DeviceObject', pointer_type),
             ('FileObject', pointer_type),
             ('CompletionRoutine', pointer_type),
-            ('Context', pointer_type),
+            ('Context', pointer_type)
         )
 
-    class AssociatedIrp(ctypes.Union):
-        _pack_ = archbits // 8
+    return IO_STACK_LOCATION
+
+
+def make_irp(archbits: int):
+    native_type = struct.get_native_type(archbits)
+    Struct = struct.get_aligned_struct(archbits)
+    Union = struct.get_aligned_union(archbits)
+
+    pointer_type = native_type
+    ListEntry = make_list_entry(archbits)
+
+    class IO_STATUS_BLOCK_DUMMY(Union):
+        _fields_ = (
+            ('Status', ctypes.c_int32),
+            ('Pointer', pointer_type)
+        )
+
+    class IO_STATUS_BLOCK(Struct):
+        _fields_ = (
+            ('Status', IO_STATUS_BLOCK_DUMMY),
+            ('Information', pointer_type)
+        )
+
+    class AssociatedIrp(Union):
         _fields_ = (
             ('MasterIrp', pointer_type),
             ('IrpCount', ctypes.c_uint32),
@@ -532,20 +442,20 @@ def make_irp(archbits: int):
             ('MdlAddress', pointer_type),
             ('Flags', ctypes.c_uint32),
             ('AssociatedIrp', AssociatedIrp),
-            ('ThreadListEntry', LIST_ENTRY),
+            ('ThreadListEntry', ListEntry),
             ('IoStatus', IO_STATUS_BLOCK),
-            ('_padding1', ctypes.c_char * 8),
+            ('_padding3', ctypes.c_char * 8),
             ('UserIosb', pointer_type),
             ('UserEvent', pointer_type),
             ('Overlay', ctypes.c_char * (8 * sz_factor)),
             ('CancelRoutine', pointer_type),
             ('UserBuffer', pointer_type),
             ('_padding1', ctypes.c_char * (32 * sz_factor)),
-            ('irpstack', ctypes.POINTER(IO_STACK_LOCATION)),
+            ('irpstack', pointer_type),     # points to a IO_STACK_LOCATION structure
             ('_padding2', ctypes.c_char * (8 * sz_factor))
         )
 
-    return IRP()
+    return IRP
 
 
 # typedef struct _MDL {
@@ -559,10 +469,11 @@ def make_irp(archbits: int):
 #   ULONG            ByteOffset;
 # } MDL, *PMDL;
 
-
 def make_mdl(archbits: int):
-    pointer_type = __select_pointer_type(archbits)
-    Struct = __make_struct(archbits)
+    native_type = struct.get_native_type(archbits)
+    Struct = struct.get_aligned_struct(archbits)
+
+    pointer_type = native_type
 
     class MDL(Struct):
         _fields_ = (
@@ -576,7 +487,7 @@ def make_mdl(archbits: int):
             ('ByteOffset', ctypes.c_uint32)
         )
 
-    return MDL()
+    return MDL
 
 # NOTE: the following classes are currently not needed
 #
@@ -808,25 +719,33 @@ def make_mdl(archbits: int):
 #     USHORT OffsetToFileName;
 #     UCHAR FullPathName[256];
 # } RTL_PROCESS_MODULE_INFORMATION,
-def make_rtl_process_module_info(archbits: int):
-    native_type = __select_native_type(archbits)
-    Struct = __make_struct(archbits)
+
+def make_rtl_process_modules(archbits: int, num_modules: int):
+    native_type = struct.get_native_type(archbits)
+    Struct = struct.get_aligned_struct(archbits)
 
     class RTL_PROCESS_MODULE_INFORMATION(Struct):
         _fields_ = (
-            ('Section', native_type),
-            ('MappedBase', native_type),
-            ('ImageBase', native_type),
-            ('ImageSize', ctypes.c_uint32),
-            ('Flags', ctypes.c_uint32),
-            ('LoadOrderIndex', ctypes.c_uint16),
-            ('InitOrderIndex', ctypes.c_uint16),
-            ('LoadCount', ctypes.c_uint16),
+            ('Section',          native_type),
+            ('MappedBase',       native_type),
+            ('ImageBase',        native_type),
+            ('ImageSize',        ctypes.c_uint32),
+            ('Flags',            ctypes.c_uint32),
+            ('LoadOrderIndex',   ctypes.c_uint16),
+            ('InitOrderIndex',   ctypes.c_uint16),
+            ('LoadCount',        ctypes.c_uint16),
             ('OffsetToFileName', ctypes.c_uint16),
-            ('FullPathName', ctypes.c_char * 256)
+            ('FullPathName',     ctypes.c_char * 256)
         )
 
-    return RTL_PROCESS_MODULE_INFORMATION()
+    class RTL_PROCESS_MODULES(Struct):
+        _fields_ = (
+            ('NumberOfModules', ctypes.c_uint32),
+            ('Modules', RTL_PROCESS_MODULE_INFORMATION * num_modules)
+        )
+
+    return RTL_PROCESS_MODULES
+
 
 # struct _EPROCESS {
 #     struct _KPROCESS Pcb;                                               //0x0
@@ -979,58 +898,56 @@ def make_rtl_process_module_info(archbits: int):
 # };
 
 def make_eprocess(archbits: int):
-    Struct = __make_struct(archbits)
-
-    class EPROCESS(Struct):
-        _fields_ = (
-            ('dummy', ctypes.c_uint8),
-        )
+    Struct = struct.get_aligned_struct(archbits)
 
     obj_size = {
         32: 0x2c0,
         64: 0x4d0
     }[archbits]
 
-    obj = EPROCESS()
-    ctypes.resize(obj, obj_size)
+    class EPROCESS(Struct):
+        # FIXME: define meaningful fields
+        _fields_ = (
+            ('dummy', ctypes.c_char * obj_size)
+        )
 
-    return obj
+    return EPROCESS
 
 
 def make_ldr_data(archbits: int):
-    native_type = __select_native_type(archbits)
-    Struct = __make_struct(archbits)
+    native_type = struct.get_native_type(archbits)
+    Struct = struct.get_aligned_struct(archbits)
 
     ListEntry = make_list_entry(archbits)
 
     class PEB_LDR_DATA(Struct):
         _fields_ = (
-            ('Length', ctypes.c_uint32),
-            ('Initialized', ctypes.c_uint32),
-            ('SsHandle', native_type),
-            ('InLoadOrderModuleList', ListEntry),
+            ('Length',                  ctypes.c_uint32),
+            ('Initialized',             ctypes.c_uint32),
+            ('SsHandle',                native_type),
+            ('InLoadOrderModuleList',   ListEntry),
             ('InMemoryOrderModuleList', ListEntry),
             ('InInitializationOrderModuleList', ListEntry),
-            ('EntryInProgress', native_type),
-            ('ShutdownInProgress', native_type),
-            ('selfShutdownThreadId', native_type)
+            ('EntryInProgress',         native_type),
+            ('ShutdownInProgress',      native_type),
+            ('selfShutdownThreadId',    native_type)
         )
 
-    return PEB_LDR_DATA()
+    return PEB_LDR_DATA
 
 
 def make_ldr_data_table_entry(archbits: int):
-    pointer_type = __select_pointer_type(archbits)
-    native_type = __select_native_type(archbits)
-    Struct = __make_struct(archbits)
+    native_type = struct.get_native_type(archbits)
+    Struct = struct.get_aligned_struct(archbits)
 
+    pointer_type = native_type
     ListEntry = make_list_entry(archbits)
-    UniString = make_unicode_string(archbits).__class__
+    UniString = make_unicode_string(archbits)
 
     class RTL_BALANCED_NODE(Struct):
         _fields_ = (
-            ('Left', pointer_type),
-            ('Right', pointer_type),
+            ('Left',  pointer_type),
+            ('Right', pointer_type)
         )
 
     class LdrDataTableEntry(Struct):
@@ -1069,24 +986,24 @@ def make_ldr_data_table_entry(archbits: int):
             ('SigningLevel', ctypes.c_uint8)
         )
 
-    return LdrDataTableEntry()
+    return LdrDataTableEntry
 
 
-class FILETIME(ctypes.LittleEndianStructure):
+class FILETIME(struct.BaseStruct):
     _fields_ = (
         ('dwLowDateTime',  ctypes.c_uint32),
         ('dwHighDateTime', ctypes.c_int32)
     )
 
 # https://docs.microsoft.com/en-us/windows/console/coord-str
-class COORD(ctypes.LittleEndianStructure):
+class COORD(struct.BaseStruct):
     _fields_ = (
         ('X', ctypes.c_uint16),
         ('Y', ctypes.c_uint16)
     )
 
 # https://docs.microsoft.com/en-us/windows/console/small-rect-str
-class SMALL_RECT(ctypes.LittleEndianStructure):
+class SMALL_RECT(struct.BaseStruct):
     _fields_ = (
         ('Left',   ctypes.c_uint16),
         ('Top',    ctypes.c_uint16),
@@ -1095,19 +1012,19 @@ class SMALL_RECT(ctypes.LittleEndianStructure):
     )
 
 # https://docs.microsoft.com/en-us/windows/console/console-screen-buffer-info-str
-class CONSOLE_SCREEN_BUFFER_INFO(ctypes.LittleEndianStructure):
+class CONSOLE_SCREEN_BUFFER_INFO(struct.BaseStruct):
     _fields_ = (
-        ('dwSize', COORD),
-        ('dwCursorPosition', COORD),
-        ('wAttributes', ctypes.c_uint16),
-        ('srWindow', SMALL_RECT),
+        ('dwSize',              COORD),
+        ('dwCursorPosition',    COORD),
+        ('wAttributes',         ctypes.c_uint16),
+        ('srWindow',            SMALL_RECT),
         ('dwMaximumWindowSize', COORD)
     )
 
 # https://docs.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntqueryinformationprocess
-def make_process_basic_info(archbits: int, *args, **kwargs):
-    native_type = __select_native_type(archbits)
-    Struct = __make_struct(archbits)
+def make_process_basic_info(archbits: int):
+    native_type = struct.get_native_type(archbits)
+    Struct = struct.get_aligned_struct(archbits)
 
     class PROCESS_BASIC_INFORMATION(Struct):
         _fields_ = (
@@ -1119,13 +1036,15 @@ def make_process_basic_info(archbits: int, *args, **kwargs):
             ('InheritedFromUniqueProcessId', native_type)
         )
 
-    return PROCESS_BASIC_INFORMATION(*args, **kwargs)
+    return PROCESS_BASIC_INFORMATION
 
 # https://docs.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-osversioninfoa
-def make_os_version_info(wide: bool, *args, **kwargs):
+def make_os_version_info(archbits: int, *, wide: bool):
+    Struct = struct.get_aligned_struct(archbits)
+
     char_type = (ctypes.c_wchar if wide else ctypes.c_char)
 
-    class OSVERSIONINFO(ctypes.LittleEndianStructure):
+    class OSVERSIONINFO(Struct):
         _fields_ = (
             ('dwOSVersionInfoSize', ctypes.c_uint32),
             ('dwMajorVersion',      ctypes.c_uint32),
@@ -1135,7 +1054,7 @@ def make_os_version_info(wide: bool, *args, **kwargs):
             ('szCSDVersion',        char_type * 128)
         )
 
-    return OSVERSIONINFO(*args, **kwargs)
+    return OSVERSIONINFO
 
 
 class WindowsStruct:
