@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING, Dict, List, Literal, Optional, Pattern, Tuple,
 from qiling.const import QL_ARCH
 from qiling.extensions import trace
 from unicorn import UC_PROT_NONE, UC_PROT_READ, UC_PROT_WRITE, UC_PROT_EXEC, UC_PROT_ALL
+from .callstack import CallStack
 
 if TYPE_CHECKING:
     from qiling.core import Qiling
@@ -267,6 +268,40 @@ class R2:
     def dis_nbytes(self, addr: int, size: int) -> List[Instruction]:
         insts = [Instruction(**dic) for dic in self._cmdj(f"pDj {size} @ {addr}")]
         return insts
+
+    def dis_ninsts(self, addr: int, n: int=1) -> List[Instruction]:
+        insts = [Instruction(**dic) for dic in self._cmdj(f"pdj {n} @ {addr}")]
+        return insts
+
+    def _backtrace_fuzzy(self, at: int = None, depth: int = 128) -> Optional[CallStack]:
+        '''Fuzzy backtrace, see https://github.com/radareorg/radare2/blob/master/libr/debug/p/native/bt/fuzzy_all.c#L38
+        Args:
+            at: address to start walking stack, default to current SP
+            depth: limit of stack walking
+        Returns:
+            List of Frame
+        '''
+        sp = at or self.ql.arch.regs.arch_sp
+        wordsize = self.ql.arch.bits // 8
+        frame = None
+        cursp = oldsp = sp
+        for i in range(depth):
+            addr = self.ql.stack_read(i * wordsize)
+            inst = self.dis_ninsts(addr)[0]
+            if inst.type.lower() == 'call':
+                newframe = CallStack(addr=addr, sp=cursp, bp=oldsp, name=self.at(addr), next=frame)
+                frame = newframe
+                oldsp = cursp
+            cursp += wordsize
+        return frame
+
+    def set_backtrace(self, target: Union[int, str]):
+        '''Set backtrace at target address before executing'''
+        if isinstance(target, str):
+            target = self.where(target)
+        def bt_hook(__ql: "Qiling", *args):
+            print(self._backtrace_fuzzy())
+        self.ql.hook_address(bt_hook, target)
 
     def disassembler(self, ql: 'Qiling', addr: int, size: int, filt: Pattern[str]=None) -> int:
         '''A human-friendly monkey patch of QlArchUtils.disassembler powered by r2, can be used for hook_code
