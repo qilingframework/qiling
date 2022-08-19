@@ -1510,39 +1510,17 @@ class SystemInfo(WindowsStruct):
                                     self.processor_revision])
 
 
-# typedef struct _SYSTEMTIME {
-#   WORD wYear;
-#   WORD wMonth;
-#   WORD wDayOfWeek;
-#   WORD wDay;
-#   WORD wHour;
-#   WORD wMinute;
-#   WORD wSecond;
-#   WORD wMilliseconds;
-# } SYSTEMTIME, *PSYSTEMTIME, *LPSYSTEMTIME;
-
-
-class SystemTime(WindowsStruct):
-    def __init__(self, ql, year=None, month=None, day_week=None, day=None, hour=None, minute=None, seconds=None,
-                 milliseconds=None):
-        super().__init__(ql)
-        self.year = [year, self.WORD_SIZE, "little", int]
-        self.month = [month, self.WORD_SIZE, "little", int]
-        self.day_week = [day_week, self.WORD_SIZE, "little", int]
-        self.day = [day, self.WORD_SIZE, "little", int]
-        self.hour = [hour, self.WORD_SIZE, "little", int]
-        self.minute = [minute, self.WORD_SIZE, "little", int]
-        self.seconds = [seconds, self.WORD_SIZE, "little", int]
-        self.milliseconds = [milliseconds, self.WORD_SIZE, "little", int]
-        self.size = self.WORD_SIZE * 8
-
-    def write(self, addr):
-        super().generic_write(addr, [self.year, self.month, self.day_week, self.day, self.hour,
-                                     self.minute, self.seconds, self.milliseconds])
-
-    def read(self, addr):
-        super().generic_read(addr, [self.year, self.month, self.day_week, self.day, self.hour,
-                                    self.minute, self.seconds, self.milliseconds])
+class SYSTEMTIME(struct.BaseStruct):
+    _fields_ = (
+        ('wYear',         ctypes.c_uint16),
+        ('wMonth',        ctypes.c_uint16),
+        ('wDayOfWeek',    ctypes.c_uint16),
+        ('wDay',          ctypes.c_uint16),
+        ('wHour',         ctypes.c_uint16),
+        ('wMinute',       ctypes.c_uint16),
+        ('wSecond',       ctypes.c_uint16),
+        ('wMilliseconds', ctypes.c_uint16)
+    )
 
 
 # typedef struct _STARTUPINFO {
