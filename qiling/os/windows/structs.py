@@ -1525,61 +1525,36 @@ class SYSTEMTIME(struct.BaseStruct):
     )
 
 
-# typedef struct _STARTUPINFO {
-#   DWORD  cb;
-#   LPTSTR lpReserved;
-#   LPTSTR lpDesktop;
-#   LPTSTR lpTitle;
-#   DWORD  dwX;
-#   DWORD  dwY;
-#   DWORD  dwXSize;
-#   DWORD  dwYSize;
-#   DWORD  dwXCountChars;
-#   DWORD  dwYCountChars;
-#   DWORD  dwFillAttribute;
-#   DWORD  dwFlags;
-#   WORD   wShowWindow;
-#   WORD   cbReserved2;
-#   LPBYTE lpReserved2;
-#   HANDLE hStdInput;
-#   HANDLE hStdOutput;
-#   HANDLE hStdError;
-# } STARTUPINFO, *LPSTARTUPINFO;
-class StartupInfo(WindowsStruct):
-    def __init__(self, ql, desktop=None, title=None, x=None, y=None, x_size=None, y_size=None, x_chars=None,
-                 y_chars=None, fill_attribute=None, flags=None, show=None, std_input=None, output=None, error=None):
-        super().__init__(ql)
-        self.size = 53 + 3 * self.ql.arch.pointersize
-        self.cb = [self.size, self.DWORD_SIZE, "little", int]
-        self.reserved = [0, self.POINTER_SIZE, "little", int]
-        self.desktop = [desktop, self.POINTER_SIZE, "little", int]
-        self.title = [title, self.POINTER_SIZE, "little", int]
-        self.x = [x, self.DWORD_SIZE, "little", int]
-        self.y = [y, self.DWORD_SIZE, "little", int]
-        self.x_size = [x_size, self.DWORD_SIZE, "little", int]
-        self.y_size = [y_size, self.DWORD_SIZE, "little", int]
-        self.x_chars = [x_chars, self.DWORD_SIZE, "little", int]
-        self.y_chars = [y_chars, self.DWORD_SIZE, "little", int]
-        self.fill_attribute = [fill_attribute, self.DWORD_SIZE, "little", int]
-        self.flags = [flags, self.DWORD_SIZE, "little", int]
-        self.show = [show, self.WORD_SIZE, "little", int]
-        self.reserved2 = [0, self.WORD_SIZE, "little", int]
-        self.reserved3 = [0, self.POINTER_SIZE, "little", int]
-        self.input = [std_input, self.POINTER_SIZE, "little", int]
-        self.output = [output, self.POINTER_SIZE, "little", int]
-        self.error = [error, self.POINTER_SIZE, "little", int]
+# https://docs.microsoft.com/en-us/windows/win32/api/processthreadsapi/ns-processthreadsapi-startupinfoa
+def make_startup_info(archbits: int):
+    native_type = struct.get_native_type(archbits)
+    Struct = struct.get_aligned_struct(archbits)
 
-    def read(self, addr):
-        super().generic_read(addr, [self.cb, self.reserved, self.desktop, self.title, self.x, self.y, self.x_size,
-                                    self.y_size, self.x_chars, self.y_chars, self.fill_attribute, self.flags, self.show,
-                                    self.reserved2, self.reserved3, self.input, self.output, self.error])
-        self.size = self.cb
+    pointer_type = native_type
 
-    def write(self, addr):
-        super().generic_write(addr, [self.cb, self.reserved, self.desktop, self.title, self.x, self.y, self.x_size,
-                                     self.y_size, self.x_chars, self.y_chars, self.fill_attribute, self.flags,
-                                     self.show,
-                                     self.reserved2, self.reserved3, self.input, self.output, self.error])
+    class STARTUPINFO(Struct):
+        _fields_ = (
+            ('cb',              ctypes.c_uint32),
+            ('lpReserved',      pointer_type),
+            ('lpDesktop',       pointer_type),
+            ('lpTitle',         pointer_type),
+            ('dwX',             ctypes.c_uint32),
+            ('dwY',             ctypes.c_uint32),
+            ('dwXSize',         ctypes.c_uint32),
+            ('dwYSize',         ctypes.c_uint32),
+            ('dwXCountChars',   ctypes.c_uint32),
+            ('dwYCountChars',   ctypes.c_uint32),
+            ('dwFillAttribute', ctypes.c_uint32),
+            ('dwFlags',         ctypes.c_uint32),
+            ('wShowWindow',     ctypes.c_uint16),
+            ('cbReserved2',     ctypes.c_uint16),
+            ('lpReserved2',     pointer_type),
+            ('hStdInput',       pointer_type),
+            ('hStdOutput',      pointer_type),
+            ('hStdError',       pointer_type)
+        )
+
+    return STARTUPINFO
 
 
 # https://docs.microsoft.com/en-us/windows/win32/api/shellapi/ns-shellapi-shellexecuteinfoa
