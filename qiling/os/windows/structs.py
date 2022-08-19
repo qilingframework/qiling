@@ -1365,22 +1365,12 @@ class Mutex:
 #         ('UniqueThread', ctypes.c_uint64)
 #     )
 
-# typedef struct tagPOINT {
-#   LONG x;
-#   LONG y;
-# } POINT, *PPOINT;
-class Point(WindowsStruct):
-    def __init__(self, ql, x=None, y=None):
-        super().__init__(ql)
-        self.x = [x, self.LONG_SIZE, "little", int]
-        self.y = [y, self.LONG_SIZE, "little", int]
-        self.size = self.LONG_SIZE * 2
 
-    def write(self, addr):
-        super().generic_write(addr, [self.x, self.y])
-
-    def read(self, addr):
-        super().generic_read(addr, [self.x, self.y])
+class Point(struct.BaseStruct):
+    _fields_ = (
+        ('x', ctypes.c_int32),
+        ('y', ctypes.c_int32)
+    )
 
 
 # https://www.geoffchappell.com/studies/windows/km/ntoskrnl/api/ex/sysinfo/basic.htm
