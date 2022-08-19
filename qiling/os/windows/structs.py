@@ -1382,50 +1382,29 @@ class Point(WindowsStruct):
     def read(self, addr):
         super().generic_read(addr, [self.x, self.y])
 
-# typedef struct _SYSTEM_BASIC_INFORMATION
-# {
-# 	ULONG Reserved;
-# 	ULONG TimerResolution;
-# 	ULONG PageSize;
-# 	ULONG NumberOfPhysicalPages;
-# 	ULONG LowestPhysicalPageNumber;
-# 	ULONG HighestPhysicalPageNumber;
-# 	ULONG AllocationGranularity;
-# 	ULONG_PTR c;
-# 	ULONG_PTR MaximumUserModeAddress;
-# 	ULONG_PTR ActiveProcessorsAffinityMask;
-# 	CCHAR NumberOfProcessors;
-# } SYSTEM_BASIC_INFORMATION, * PSYSTEM_BASIC_INFORMATION;
 
-class SystemBasicInforation(WindowsStruct):
-    def __init__(self,ql, Reserved,TimerResolution,PageSize=None, NumberOfPhysicalPages=None, LowestPhysicalPageNumber=None,
-                 HighestPhysicalPageNumber=None, AllocationGranularity=None,MinimumUserModeAddress=None,
-                 MaximumUserModeAddress=None,ActiveProcessorsAffinityMask=None,NumberOfProcessors=None):
-        super().__init__(ql)
-        self.size=self.BYTE_SIZE * 24 + 5*self.POINTER_SIZE
-        self.Reserved =[Reserved, self.DWORD_SIZE, "little", int]
-        self.TimerResolution=[TimerResolution, self.DWORD_SIZE, "little", int]
-        self.PageSize=[PageSize, self.DWORD_SIZE, "little", int]
-        self.NumberOfPhysicalPages = [NumberOfPhysicalPages, self.DWORD_SIZE, "little", int]
-        self.LowestPhysicalPageNumber = [LowestPhysicalPageNumber, self.DWORD_SIZE, "little", int]
-        self.HighestPhysicalPageNumber = [HighestPhysicalPageNumber, self.DWORD_SIZE, "little", int]
-        self.AllocationGranularity = [AllocationGranularity, self.DWORD_SIZE, "little", int]
-        self.MinimumUserModeAddress = [MinimumUserModeAddress, self.POINTER_SIZE, "little", int]
-        self.MaximumUserModeAddress = [MaximumUserModeAddress, self.POINTER_SIZE, "little", int]
-        self.ActiveProcessorsAffinityMask = [ActiveProcessorsAffinityMask, self.POINTER_SIZE, "little", int]
-        self.NumberOfProcessors = [NumberOfProcessors, self.POINTER_SIZE, "little", int]
-    def write(self, addr):
+# https://www.geoffchappell.com/studies/windows/km/ntoskrnl/api/ex/sysinfo/basic.htm
+def make_system_basic_info(archbits: int):
+    native_type = struct.get_native_type(archbits)
+    Struct = struct.get_aligned_struct(archbits)
 
-        super().generic_write(addr, [self.Reserved, self.TimerResolution, self.PageSize, self.NumberOfPhysicalPages,
-               self.LowestPhysicalPageNumber, self.HighestPhysicalPageNumber ,self.AllocationGranularity,
-               self.MinimumUserModeAddress,self.MaximumUserModeAddress,self.ActiveProcessorsAffinityMask,
-               self.NumberOfProcessors])
+    pointer_type = native_type
 
-    def read(self, addr):
-        super().generic_read(addr, [self.Reserved, self.TimerResolution, self.PageSize, self.NumberOfPhysicalPages,
-               self.LowestPhysicalPageNumber, self.HighestPhysicalPageNumber ,self.AllocationGranularity,
-               self.MinimumUserModeAddress,self.MaximumUserModeAddress,self.ActiveProcessorsAffinityMask,
-               self.NumberOfProcessors])
+    class SYSTEM_BASIC_INFORMATION(Struct):
+        ('Reserved',                     ctypes.c_uint32),
+        ('TimerResolution',              ctypes.c_uint32),
+        ('PageSize',                     ctypes.c_uint32),
+        ('NumberOfPhysicalPages',        ctypes.c_uint32),
+        ('LowestPhysicalPageNumber',     ctypes.c_uint32),
+        ('HighestPhysicalPageNumber',    ctypes.c_uint32),
+        ('AllocationGranularity',        ctypes.c_uint32),
+        ('MinimumUserModeAddress',       pointer_type),
+        ('MaximumUserModeAddress',       pointer_type),
+        ('ActiveProcessorsAffinityMask', pointer_type),
+        ('NumberOfProcessors',           ctypes.c_uint8)
+
+    return SYSTEM_BASIC_INFORMATION
+
 
 # typedef struct hostent {
 #  char  *h_name;
