@@ -10,7 +10,7 @@ from qiling import Qiling
 from qiling.os.windows.api import *
 from qiling.os.windows.const import *
 from qiling.os.windows.fncc import *
-from qiling.os.windows.structs import FILETIME, SystemInfo, SystemTime
+from qiling.os.windows.structs import FILETIME, SystemInfo, SYSTEMTIME
 
 # NOT_BUILD_WINDOWS_DEPRECATE DWORD GetVersion(
 # );
@@ -66,11 +66,18 @@ def hook_GetSystemInfo(ql: Qiling, address: int, params):
     'lpSystemTime' : LPSYSTEMTIME
 })
 def hook_GetLocalTime(ql: Qiling, address: int, params):
-    ptr = params['lpSystemTime']
-    d = datetime.now()
+    lpSystemTime = params['lpSystemTime']
+    now = datetime.now()
 
-    system_time = SystemTime(ql, d.year, d.month, d.isoweekday(), d.day, d.hour, d.minute, d.second, d.microsecond // 1000)
-    system_time.write(ptr)
+    with SYSTEMTIME.ref(ql.mem, lpSystemTime) as st:
+        st.wYear = now.year
+        st.wMonth = now.month
+        st.wDayOfWeek = now.isoweekday()
+        st.wDay = now.day
+        st.wHour = now.hour
+        st.wMinute = now.minute
+        st.wSecond = now.second
+        st.wMilliseconds = now.microsecond // 1000
 
     return 0
 
