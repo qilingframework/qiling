@@ -1582,59 +1582,42 @@ class StartupInfo(WindowsStruct):
                                      self.reserved2, self.reserved3, self.input, self.output, self.error])
 
 
-# typedef struct _SHELLEXECUTEINFOA {
-#   DWORD     cbSize;
-#   ULONG     fMask;
-#   HWND      hwnd;
-#   LPCSTR    lpVerb;
-#   LPCSTR    lpFile;
-#   LPCSTR    lpParameters;
-#   LPCSTR    lpDirectory;
-#   int       nShow;
-#   HINSTANCE hInstApp;
-#   void      *lpIDList;
-#   LPCSTR    lpClass;
-#   HKEY      hkeyClass;
-#   DWORD     dwHotKey;
-#   union {
-#     HANDLE hIcon;
-#     HANDLE hMonitor;
-#   } DUMMYUNIONNAME;
-#   HANDLE    hProcess;
-# } SHELLEXECUTEINFOA, *LPSHELLEXECUTEINFOA;
-class ShellExecuteInfoA(WindowsStruct):
-    def __init__(self, ql, fMask=None, hwnd=None, lpVerb=None, lpFile=None, lpParams=None, lpDir=None, show=None,
-                 instApp=None, lpIDList=None, lpClass=None, hkeyClass=None,
-                 dwHotKey=None, dummy=None, hProcess=None):
-        super().__init__(ql)
-        self.size = self.DWORD_SIZE + self.ULONG_SIZE + self.INT_SIZE * 2 + self.POINTER_SIZE * 11
-        self.cb = [self.size, self.DWORD_SIZE, "little", int]
-        # FIXME: check how longs behave, is strange that i have to put big here
-        self.mask = [fMask, self.ULONG_SIZE, "big", int]
-        self.hwnd = [hwnd, self.POINTER_SIZE, "little", int]
-        self.verb = [lpVerb, self.POINTER_SIZE, "little", int]
-        self.file = [lpFile, self.POINTER_SIZE, "little", int]
-        self.params = [lpParams, self.POINTER_SIZE, "little", int]
-        self.dir = [lpDir, self.POINTER_SIZE, "little", int]
-        self.show = [show, self.INT_SIZE, "little", int]
-        self.instApp = [instApp, self.POINTER_SIZE, "little", int]
-        self.id_list = [lpIDList, self.POINTER_SIZE, "little", int]
-        self.class_name = [lpClass, self.POINTER_SIZE, "little", int]
-        self.class_key = [hkeyClass, self.POINTER_SIZE, "little", int]
-        self.hot_key = [dwHotKey, self.INT_SIZE, "little", int]
-        self.dummy = [dummy, self.POINTER_SIZE, "little", int]
-        self.process = [hProcess, self.POINTER_SIZE, "little", int]
+# https://docs.microsoft.com/en-us/windows/win32/api/shellapi/ns-shellapi-shellexecuteinfoa
+def make_shellex_info(archbits: int):
+    native_type = struct.get_native_type(archbits)
+    Struct = struct.get_aligned_struct(archbits)
+    Union = struct.get_aligned_union(archbits)
 
-    def write(self, addr):
-        super().generic_write(addr, [self.cb, self.mask, self.hwnd, self.verb, self.file, self.params, self.dir,
-                                     self.show, self.instApp, self.id_list, self.class_name, self.class_key,
-                                     self.hot_key, self.dummy, self.process])
+    pointer_type = native_type
 
-    def read(self, addr):
-        super().generic_read(addr, [self.cb, self.mask, self.hwnd, self.verb, self.file, self.params, self.dir,
-                                    self.show, self.instApp, self.id_list, self.class_name, self.class_key,
-                                    self.hot_key, self.dummy, self.process])
-        self.size = self.cb
+    class DUMMYUNIONNAME(Union):
+        _fields_ = (
+            ('hIcon',    pointer_type),
+            ('hMonitor', pointer_type)
+        )
+
+    class SHELLEXECUTEINFO(Struct):
+        _anonymous_ = ('_anon_0',)
+
+        _fields_ = (
+            ('cbSize',       ctypes.c_uint32),
+            ('fMask',        ctypes.c_uint32),
+            ('hwnd',         pointer_type),
+            ('lpVerb',       pointer_type),
+            ('lpFile',       pointer_type),
+            ('lpParameters', pointer_type),
+            ('lpDirectory',  pointer_type),
+            ('nShow',        ctypes.c_int32),
+            ('hInstApp',     pointer_type),
+            ('lpIDList',     pointer_type),
+            ('lpClass',      pointer_type),
+            ('hkeyClass',    pointer_type),
+            ('dwHotKey',     ctypes.c_uint32),
+            ('_anon_0',      DUMMYUNIONNAME),
+            ('hProcess',     pointer_type)
+        )
+
+    return SHELLEXECUTEINFO
 
 
 # typedef struct _UNICODE_STRING {
