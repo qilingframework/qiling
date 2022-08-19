@@ -1057,6 +1057,30 @@ def make_os_version_info(archbits: int, *, wide: bool):
     return OSVERSIONINFO
 
 
+# https://docs.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-osversioninfoexa
+def make_os_version_info_ex(archbits: int, *, wide: bool):
+    Struct = struct.get_aligned_struct(archbits)
+
+    char_type = (ctypes.c_wchar if wide else ctypes.c_char)
+
+    class OSVERSIONINFOEX(Struct):
+        _fields_ = (
+            ('dwOSVersionInfoSize', ctypes.c_uint32),
+            ('dwMajorVersion',      ctypes.c_uint32),
+            ('dwMinorVersion',      ctypes.c_uint32),
+            ('dwBuildNumber',       ctypes.c_uint32),
+            ('dwPlatformId',        ctypes.c_uint32),
+            ('szCSDVersion',        char_type * 128),
+            ('wServicePackMajor',   ctypes.c_uint16),
+            ('wServicePackMinor',   ctypes.c_uint16),
+            ('wSuiteMask',          ctypes.c_uint16),
+            ('wProductType',        ctypes.c_uint8),
+            ('wReserved',           ctypes.c_uint8)
+        )
+
+    return OSVERSIONINFOEX
+
+
 class WindowsStruct:
 
     def __init__(self, ql):
@@ -1425,44 +1449,6 @@ class Hostent(WindowsStruct):
 
     def read(self, addr):
         super().generic_read(addr, [self.name, self.aliases, self.addr_type, self.length, self.addr_list])
-
-
-# typedef struct _OSVERSIONINFOEXA {
-#   DWORD dwOSVersionInfoSize;
-#   DWORD dwMajorVersion;
-#   DWORD dwMinorVersion;
-#   DWORD dwBuildNumber;
-#   DWORD dwPlatformId;
-#   CHAR  szCSDVersion[128];
-#   WORD  wServicePackMajor;
-#   WORD  wServicePackMinor;
-#   WORD  wSuiteMask;
-#   BYTE  wProductType;
-#   BYTE  wReserved;
-# } OSVERSIONINFOEXA, *POSVERSIONINFOEXA, *LPOSVERSIONINFOEXA;
-class OsVersionInfoExA(WindowsStruct):
-    def __init__(self, ql, size=None, major=None, minor=None, build=None, platform=None, version=None,
-                 service_major=None, service_minor=None, suite=None, product=None):
-        super().__init__(ql)
-        self.size = [size, self.DWORD_SIZE, "little", int]
-        self.major = [major, self.DWORD_SIZE, "little", int]
-        self.minor = [minor, self.DWORD_SIZE, "little", int]
-        self.build = [build, self.DWORD_SIZE, "little", int]
-        self.platform_os = [platform, self.DWORD_SIZE, "little", int]
-        self.version = [version, 128, "little", bytes]
-        self.service_major = [service_major, self.WORD_SIZE, "little", int]
-        self.service_minor = [service_minor, self.WORD_SIZE, "little", int]
-        self.suite = [suite, self.WORD_SIZE, "little", int]
-        self.product = [product, self.BYTE_SIZE, "little", int]
-        self.reserved = [0, self.BYTE_SIZE, "little", int]
-
-    def write(self, addr):
-        super().generic_write(addr, [self.size, self.major, self.minor, self.build, self.platform_os, self.version,
-                                     self.service_major, self.service_minor, self.suite, self.product, self.reserved])
-
-    def read(self, addr):
-        super().generic_read(addr, [self.size, self.major, self.minor, self.build, self.platform_os, self.version,
-                                    self.service_major, self.service_minor, self.suite, self.product, self.reserved])
 
 
 # typedef struct _SYSTEM_INFO {
