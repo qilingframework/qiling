@@ -1484,7 +1484,7 @@ def make_system_info(archbits: int):
         )
 
     class DUMMYUNIONNAME(Union):
-        _anonymous_ = ('_anon_0')
+        _anonymous_ = ('_anon_0',)
 
         _fields_ = (
             ('dwOemId', ctypes.c_uint32),
@@ -1494,7 +1494,7 @@ def make_system_info(archbits: int):
     assert ctypes.sizeof(DUMMYUNIONNAME) == 4
 
     class SYSTEM_INFO(Struct):
-        _anonymous_ = ('_anon_1')
+        _anonymous_ = ('_anon_1',)
 
         _fields_ = (
             ('_anon_1',                     DUMMYUNIONNAME),
