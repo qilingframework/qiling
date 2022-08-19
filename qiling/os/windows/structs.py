@@ -1218,69 +1218,88 @@ class Token:
     def __init__(self, ql):
         # We will create them when we need it. There are too many structs
         self.struct = {}
-        self.ql = ql
+
         # TODO find a GOOD reference paper for the values
-        self.struct[Token.TokenInformationClass.TokenUIAccess.value] = self.ql.pack(0x1)
-        self.struct[Token.TokenInformationClass.TokenGroups.value] = self.ql.pack(0x1)
+        self.struct[Token.TokenInformationClass.TokenUIAccess.value] = ql.pack(0x1)
+        self.struct[Token.TokenInformationClass.TokenGroups.value] = ql.pack(0x1)
+
         # still not sure why 0x1234 executes gandcrab as admin, but 544 no. No idea (see sid refs for the values)
-        sub = 0x1234 if ql.os.profile["SYSTEM"]["permission"] == "root" else 545
-        sub = sub.to_bytes(4, "little")
-        sid = Sid(self.ql, identifier=1, revision=1, subs_count=1, subs=sub)
-        sid_addr = self.ql.os.heap.alloc(sid.size)
-        sid.write(sid_addr)
-        handle = Handle(obj=sid, id=sid_addr)
-        self.ql.os.handle_manager.append(handle)
-        self.struct[Token.TokenInformationClass.TokenIntegrityLevel] = self.ql.pack(sid_addr)
+        subauths = (0x1234 if ql.os.profile["SYSTEM"]["permission"] == "root" else 545,)
+
+        sid_struct = make_sid(auth_count=len(subauths))
+        sid_addr = ql.os.heap.alloc(sid_struct.sizeof())
+
+        sid_obj = sid_struct(
+            Revision = 1,
+            SubAuthorityCount = len(subauths),
+            IdentifierAuthority = (1,),
+            SubAuthority = tuple(ql.pack32(v) for v in subauths)
+        )
+
+        sid_obj.save_to(ql.mem, sid_addr)
+
+        handle = Handle(obj=sid_obj, id=sid_addr)
+        ql.os.handle_manager.append(handle)
+        self.struct[Token.TokenInformationClass.TokenIntegrityLevel] = ql.pack(sid_addr)
 
     def get(self, value):
         res = self.struct[value]
+
         if res is None:
             raise QlErrorNotImplemented("API not implemented")
-        else:
-            return res
+
+        return res
 
 
-# typedef struct _SID {
-#   BYTE                     Revision;
-#   BYTE                     SubAuthorityCount;
-#   SID_IDENTIFIER_AUTHORITY IdentifierAuthority;
-# #if ...
-#   DWORD                    *SubAuthority[];
-# #else
-#   DWORD                    SubAuthority[ANYSIZE_ARRAY];
-# #endif
-# } SID, *PISID;
-class Sid(WindowsStruct):
-    # General Struct
-    # https://docs.microsoft.com/it-it/windows/win32/api/winnt/ns-winnt-sid
-    # https://en.wikipedia.org/wiki/Security_Identifier
+# Identf Authority
+# https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/c6ce4275-3d90-4890-ab3a-514745e4637e
+# https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/81d92bba-d22b-4a8c-908a-554ab29148ab
+def make_sid(auth_count: int):
 
-    # Identf Authority
-    # https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/c6ce4275-3d90-4890-ab3a-514745e4637e
-    # https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/81d92bba-d22b-4a8c-908a-554ab29148ab
+    # this structure should be a 6-bytes big endian integer. this is an attempt
+    # to approximate that, knowing that in practice only the most significant
+    # byte is actually used.
+    #
+    # see: https://docs.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-sid_identifier_authority
+    class SID_IDENTIFIER_AUTHORITY(ctypes.BigEndianStructure):
+        _pack_ = 1
+        _fields_ = (
+            ('Value', ctypes.c_uint32),
+            ('_pad', ctypes.c_byte * 2)
+        )
 
-    def __init__(self, ql, revision=None, subs_count=None, identifier=None, subs=None):
-        # TODO find better documentation
-        super().__init__(ql)
-        self.revision = [revision, self.BYTE_SIZE, "little", int]
-        self.subs_count = [subs_count, self.BYTE_SIZE, "little", int]
-        # FIXME: understand if is correct to set them as big
-        self.identifier = [identifier, 6, "big", int]
-        self.subs = [subs, self.subs_count[0] * self.DWORD_SIZE, "little", bytes]
-        self.size = 2 + 6 + self.subs_count[0] * 4
+    assert ctypes.sizeof(SID_IDENTIFIER_AUTHORITY) == 6
 
-    def write(self, addr):
-        super().generic_write(addr, [self.revision, self.subs_count, self.identifier, self.subs])
+    # https://geoffchappell.com/studies/windows/km/ntoskrnl/api/rtl/sertl/sid.htm
+    class SID(struct.BaseStruct):
+        _fields_ = (
+            ('Revision', ctypes.c_uint8),
+            ('SubAuthorityCount', ctypes.c_uint8),
+            ('IdentifierAuthority', SID_IDENTIFIER_AUTHORITY),
 
-    def read(self, addr):
-        super().generic_read(addr, [self.revision, self.subs_count, self.identifier, self.subs])
-        self.size = 2 + 6 + self.subs_count[0] * 4
+            # note that ctypes does not have a way to define an array whose size is unknown
+            # or flexible. although the number of items should be reflected in SubAuthorityCount,
+            # this cannot be implemented. any change to that field will result in an inconsistency
+            # and should be avoided
 
-    def __eq__(self, other):
-        # FIXME
-        if not isinstance(other, Sid):
-            return False
-        return self.subs == other.subs and self.identifier[0] == other.identifier[0]
+            ('SubAuthority', ctypes.c_uint32 * auth_count)
+        )
+
+        # the need of a big-endian structure forces us to define a non-BaseStruct structure field
+        # which breaks the 'volatile_ref' mechanism. we here prevent the user from doing that
+        @classmethod
+        def volatile_ref(cls, *args):
+            raise NotImplementedError(f'{cls.__name__} is not capable of volatile references')
+
+        # let SID structures be comparable
+        def __eq__(self, other):
+            if not isinstance(other, SID):
+                return False
+
+            # since SID structure is not padded, we can simply memcmp the instances
+            return memoryview(self).cast('B') == memoryview(other).cast('B')
+
+    return SID
 
 
 class Mutex:
