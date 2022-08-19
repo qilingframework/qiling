@@ -121,47 +121,43 @@ def hook_NtQueryInformationProcess(ql: Qiling, address: int, params):
     return _QueryInformationProcess(ql, address, params)
 
 def _QuerySystemInformation(ql: Qiling, address: int, params):
-    siClass = params["SystemInformationClass"]
-    pt_res = params["ReturnLength"]
-    dst = params["SystemInformation"]
+    SystemInformationClass = params['SystemInformationClass']
+    SystemInformation = params['SystemInformation']
+    SystemInformationLength = params['SystemInformationLength']
+    ReturnLength = params['ReturnLength']
 
-    if (siClass == SystemBasicInformation):
-        bufferLength = params["SystemInformationLength"]
-
+    if SystemInformationClass == SystemBasicInformation:
         max_uaddr = {
             QL_ARCH.X86  : 0x7FFEFFFF,
             QL_ARCH.X8664: 0x7FFFFFFEFFFF
         }[ql.arch.type]
 
+        sbi_struct = structs.make_system_basic_info(ql.arch.bits)
+
         # FIXME: retrieve the necessary info from KUSER_SHARED_DATA
-        sbi = structs.SystemBasicInforation(
-            ql,
-            Reserved=0,
-            TimerResolution=156250,
-            PageSize=ql.mem.pagesize,
-            NumberOfPhysicalPages=0x003FC38A,
-            LowestPhysicalPageNumber=1,
-            HighestPhysicalPageNumber=0x0046DFFF,
-            AllocationGranularity=1,
-            MinimumUserModeAddress=0x10000,
-            MaximumUserModeAddress=max_uaddr,
-            ActiveProcessorsAffinityMask=0x3F,
-            NumberOfProcessors=0x6
+        sbi_obj = sbi_struct(
+            TimerResolution              = 156250,
+            PageSize                     = ql.mem.pagesize,
+            NumberOfPhysicalPages        = 0x003FC38A,
+            LowestPhysicalPageNumber     = 1,
+            HighestPhysicalPageNumber    = 0x0046DFFF,
+            AllocationGranularity        = 1,
+            MinimumUserModeAddress       = 0x10000,
+            MaximumUserModeAddress       = max_uaddr,
+            ActiveProcessorsAffinityMask = 0x3F,
+            NumberOfProcessors           = 6
         )
 
-        if (bufferLength==sbi.size):
-            sbi.write(dst)
+        if ReturnLength:
+            ql.mem.write_ptr(ReturnLength, sbi_struct.sizeof(), 4)
 
-            if pt_res:
-                ql.mem.write_ptr(pt_res, sbi.size, 1)
-        else:
-            if pt_res:
-                ql.mem.write_ptr(pt_res, sbi.size, 1)
-
+        if SystemInformationLength < sbi_struct.sizeof():
             return STATUS_INFO_LENGTH_MISMATCH
+
+        sbi_obj.save_to(ql.mem, SystemInformation)
+
     else:
-        ql.log.debug(str(siClass))
-        raise QlErrorNotImplemented("API not implemented")
+        raise QlErrorNotImplemented(f'not implemented for {SystemInformationClass=}')
 
     return STATUS_SUCCESS
 
