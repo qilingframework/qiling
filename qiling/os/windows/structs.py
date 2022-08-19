@@ -1396,29 +1396,64 @@ def make_system_basic_info(archbits: int):
     return SYSTEM_BASIC_INFORMATION
 
 
-# typedef struct hostent {
-#  char  *h_name;
-#  char  **h_aliases;
-#  short h_addrtype;
-#  short h_length;
-#  char  **h_addr_list;
-# } HOSTENT, *PHOSTENT, *LPHOSTENT;
-class Hostent(WindowsStruct):
-    def __init__(self, ql, name=None, aliases=None, addr_type=None, length=None, addr_list=None):
-        super().__init__(ql)
-        self.name = [name, self.POINTER_SIZE, "little", int]
-        self.aliases = [aliases, self.POINTER_SIZE, "little", int]
-        self.addr_type = [addr_type, self.SHORT_SIZE, "little", int]
-        self.length = [length, self.SHORT_SIZE, "little", int]
-        self.addr_list = [addr_list, len(addr_list), "little", bytes]
-        self.size = self.POINTER_SIZE * 2 + self.SHORT_SIZE * 2 + len(addr_list)
+# https://docs.microsoft.com/en-us/windows/win32/api/winsock/ns-winsock-hostent
+def make_hostent(archbits: int):
+    native_type = struct.get_native_type(archbits)
+    Struct = struct.get_aligned_struct(archbits)
 
-    def write(self, addr):
-        super().generic_write(addr, [self.name, self.aliases, self.addr_type, self.length, self.addr_list])
+    pointer_type = native_type
 
-    def read(self, addr):
-        super().generic_read(addr, [self.name, self.aliases, self.addr_type, self.length, self.addr_list])
+    class HOSTENT(Struct):
+        ('h_name',      pointer_type),
+        ('h_aliases',   pointer_type),
+        ('h_addrtype',  ctypes.c_int16),
+        ('h_length',    ctypes.c_int16),
+        ('h_addr_list', pointer_type),
 
+    return HOSTENT
+
+
+# https://docs.microsoft.com/en-us/windows/win32/winsock/sockaddr-2
+def make_sockaddr_in():
+
+    # https://docs.microsoft.com/en-us/windows/win32/api/winsock2/ns-winsock2-in_addr
+    class in_addr(ctypes.BigEndianStructure):
+        _fields_ = (
+            ('s_b1', ctypes.c_uint8),
+            ('s_b2', ctypes.c_uint8),
+            ('s_b3', ctypes.c_uint8),
+            ('s_b4', ctypes.c_uint8)
+        )
+
+    class sockaddr_in(ctypes.BigEndianStructure):
+        _fields_ = (
+            ('sin_family', ctypes.c_int16),
+            ('sin_port',   ctypes.c_uint16),
+            ('sin_addr',   in_addr),
+            ('sin_zero',   ctypes.c_byte * 8)
+        )
+
+    return sockaddr_in
+
+# https://docs.microsoft.com/en-us/windows/win32/winsock/sockaddr-2
+def make_sockaddr_in6():
+
+    # https://docs.microsoft.com/en-us/windows/win32/api/in6addr/ns-in6addr-in6_addr
+    class in6_addr(ctypes.BigEndianStructure):
+        _fields_ = (
+            ('Byte', ctypes.c_uint8 * 16)
+        )
+
+    class sockaddr_in6(ctypes.BigEndianStructure):
+        _fields_ = (
+            ('sin6_family',   ctypes.c_int16),
+            ('sin6_port',     ctypes.c_uint16),
+            ('sin6_flowinfo', ctypes.c_uint32),
+            ('sin6_addr',     in6_addr),
+            ('sin6_scope_id', ctypes.c_uint32)
+        )
+
+    return sockaddr_in6
 
 # typedef struct _SYSTEM_INFO {
 #   union {
