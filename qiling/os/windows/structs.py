@@ -1483,31 +1483,47 @@ class OsVersionInfoExA(WindowsStruct):
 #   WORD      wProcessorLevel;
 #   WORD      wProcessorRevision;
 # } SYSTEM_INFO, *LPSYSTEM_INFO;
-class SystemInfo(WindowsStruct):
-    def __init__(self, ql, dummy=None, page_size=None, min_address=None, max_address=None, mask=None, processors=None,
-                 processor_type=None, allocation=None, processor_level=None, processor_revision=None):
-        super().__init__(ql)
-        self.dummy = [dummy, self.DWORD_SIZE, "little", int]
-        self.page_size = [page_size, self.DWORD_SIZE, "little", int]
-        self.min_address = [min_address, self.POINTER_SIZE, "little", int]
-        self.max_address = [max_address, self.POINTER_SIZE, "little", int]
-        self.mask = [mask, self.POINTER_SIZE, "little", int]
-        self.processors = [processors, self.DWORD_SIZE, "little", int]
-        self.processor_type = [processor_type, self.DWORD_SIZE, "little", int]
-        self.allocation = [allocation, self.DWORD_SIZE, "little", int]
-        self.processor_level = [processor_level, self.WORD_SIZE, "little", int]
-        self.processor_revision = [processor_revision, self.WORD_SIZE, "little", int]
-        self.size = self.DWORD_SIZE * 5 + self.WORD_SIZE * 2 + self.POINTER_SIZE * 3
 
-    def write(self, addr):
-        super().generic_write(addr, [self.dummy, self.page_size, self.min_address, self.max_address, self.mask,
-                                     self.processors, self.processor_type, self.allocation, self.processor_level,
-                                     self.processor_revision])
+def make_system_info(archbits: int):
+    native_type = struct.get_native_type(archbits)
+    Struct = struct.get_aligned_struct(archbits)
+    Union = struct.get_aligned_union(archbits)
 
-    def read(self, addr):
-        super().generic_read(addr, [self.dummy, self.page_size, self.min_address, self.max_address, self.mask,
-                                    self.processors, self.processor_type, self.allocation, self.processor_level,
-                                    self.processor_revision])
+    pointer_type = native_type
+
+    class DUMMYSTRUCTNAME(Struct):
+        _fields_ = (
+            ('wProcessorArchitecture', ctypes.c_uint16),
+            ('wReserved',              ctypes.c_uint16)
+        )
+
+    class DUMMYUNIONNAME(Union):
+        _anonymous_ = ('_anon_0')
+
+        _fields_ = (
+            ('dwOemId', ctypes.c_uint32),
+            ('_anon_0', DUMMYSTRUCTNAME)
+        )
+
+    assert ctypes.sizeof(DUMMYUNIONNAME) == 4
+
+    class SYSTEM_INFO(Struct):
+        _anonymous_ = ('_anon_1')
+
+        _fields_ = (
+            ('_anon_1',                     DUMMYUNIONNAME),
+            ('dwPageSize',                  ctypes.c_uint32),
+            ('lpMinimumApplicationAddress', pointer_type),
+            ('lpMaximumApplicationAddress', pointer_type),
+            ('dwActiveProcessorMask',       pointer_type),
+            ('dwNumberOfProcessors',        ctypes.c_uint32),
+            ('dwProcessorType',             ctypes.c_uint32),
+            ('dwAllocationGranularity',     ctypes.c_uint32),
+            ('wProcessorLevel',             ctypes.c_uint16),
+            ('wProcessorRevision',          ctypes.c_uint16)
+        )
+
+    return SYSTEM_INFO
 
 
 class SYSTEMTIME(struct.BaseStruct):

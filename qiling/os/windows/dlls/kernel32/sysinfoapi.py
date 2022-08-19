@@ -10,7 +10,7 @@ from qiling import Qiling
 from qiling.os.windows.api import *
 from qiling.os.windows.const import *
 from qiling.os.windows.fncc import *
-from qiling.os.windows.structs import FILETIME, SystemInfo, SYSTEMTIME
+from qiling.os.windows.structs import FILETIME, SYSTEMTIME, make_system_info
 
 # NOT_BUILD_WINDOWS_DEPRECATE DWORD GetVersion(
 # );
@@ -40,13 +40,24 @@ def hook_GetVersionExW(ql: Qiling, address: int, params):
     return __GetVersionEx(ql, address, params)
 
 def __GetSystemInfo(ql: Qiling, address: int, params):
-    pointer = params["lpSystemInfo"]
+    lpSystemInfo = params['lpSystemInfo']
 
-    # FIXME: dll_size no longer reflects the upper bound of used memory; should find a better way to specify max_address
-    system_info = SystemInfo(ql, 0, ql.mem.pagesize, ql.loader.pe_image_address,
-                             ql.loader.dll_address + ql.loader.dll_size, 0x3, 0x4, 0x24a, ql.mem.pagesize * 10,
-                             0x6, 0x4601)
-    system_info.write(pointer)
+    sysinfo_struct = make_system_info(ql.arch.bits)
+
+    # FIXME:
+    #  - load configurable values rather than fixed / bogus ones
+    #  - loader.dll_size no longer reflects the upper bound of used memory; should find a better way to specify max_address
+    with sysinfo_struct.ref(ql.mem, lpSystemInfo) as si:
+        si.dwOemId = 0
+        si.dwPageSize = ql.mem.pagesize
+        si.lpMinimumApplicationAddress = ql.loader.pe_image_address
+        si.lpMaximumApplicationAddress = ql.loader.dll_address + ql.loader.dll_size
+        si.dwActiveProcessorMask = 0x3
+        si.dwNumberOfProcessors = 0x4
+        si.dwProcessorType = 0x24a
+        si.dwAllocationGranularity = ql.mem.pagesize * 10
+        si.wProcessorLevel = 0x6
+        si.wProcessorRevision = 0x4601
 
     return 0
 
