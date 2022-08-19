@@ -11,7 +11,7 @@ from qiling.exception import QlErrorNotImplemented
 from qiling.os.windows.api import *
 from qiling.os.windows.const import *
 from qiling.os.windows.fncc import *
-from qiling.os.windows.structs import OsVersionInfoExA
+from qiling.os.windows.structs import make_os_version_info_ex
 from qiling.os.windows.utils import cmp
 
 # HFILE _lclose(
@@ -555,28 +555,45 @@ def hook_IsBadWritePtr(ql: Qiling, address: int, params):
     'dwlConditionMask'     : DWORDLONG
 })
 def hook_VerifyVersionInfoW(ql: Qiling, address: int, params):
+    return __VerifyVersionInfo(ql, address, params, wide=True)
+
+# BOOL VerifyVersionInfoA(
+#   LPOSVERSIONINFOEXA lpVersionInformation,
+#   DWORD              dwTypeMask,
+#   DWORDLONG          dwlConditionMask
+# );
+@winsdkapi(cc=STDCALL, params={
+    'lpVersionInformation' : LPOSVERSIONINFOEXA,
+    'dwTypeMask'           : DWORD,
+    'dwlConditionMask'     : DWORDLONG
+})
+def hook_VerifyVersionInfoA(ql: Qiling, address: int, params):
+    return __VerifyVersionInfo(ql, address, params, wide=False)
+
+def __VerifyVersionInfo(ql: Qiling, address: int, params, *, wide: bool):
     # see: https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-verifyversioninfow
 
     lpVersionInformation = params['lpVersionInformation']
     dwTypeMask = params['dwTypeMask']
     dwlConditionMask = params['dwlConditionMask']
 
-    askedOsVersionInfo = OsVersionInfoExA(ql)
-    askedOsVersionInfo.read(lpVersionInformation)
+    oviex_struct = make_os_version_info_ex(ql.arch.bits, wide=wide)
+
+    askedOsVersionInfo = oviex_struct.load_from(ql.mem, lpVersionInformation)
 
     # reading emulated os version info from profile
     # FIXME: read the necessary information from KUSER_SHARED_DATA instead
     osconfig = ql.os.profile['SYSTEM']
 
-    emulOsVersionInfo = OsVersionInfoExA(ql,
-        major=osconfig.getint('majorVersion'),
-        minor=osconfig.getint('minorVersion'),
-        build=0,
-        platform=0,
-        service_major=osconfig.getint('VER_SERVICEPACKMAJOR'),
-        service_minor=0,
-        suite=0,
-        product=osconfig.getint('productType')
+    emulOsVersionInfo = oviex_struct(
+        dwMajorVersion      = osconfig.getint('majorVersion'),
+        dwMinorVersion      = osconfig.getint('minorVersion'),
+        dwBuildNumber       = 0,
+        dwPlatformId        = 0,
+        wServicePackMajor   = osconfig.getint('VER_SERVICEPACKMAJOR'),
+        wServicePackMinor   = 0,
+        wSuiteMask          = 0,
+        wProductType        = osconfig.getint('productType')
     )
 
     # check criteria by the order they should be evaluated. the online microsoft
