@@ -89,7 +89,7 @@ def _QueryInformationProcess(ql: Qiling, address: int, params):
 #   _In_      ULONG            ProcessInformationLength,
 #   _Out_opt_ PULONG           ReturnLength
 # );
-@winsdkapi(cc=CDECL, params={
+@winsdkapi(cc=STDCALL, params={
     'ProcessHandle'            : HANDLE,
     'ProcessInformationClass'  : PROCESSINFOCLASS,
     'ProcessInformation'       : PVOID,
