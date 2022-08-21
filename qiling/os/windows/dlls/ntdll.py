@@ -230,35 +230,61 @@ def hook_ZwCreateDebugObject(ql: Qiling, address: int, params):
     'ReturnLength'            : PULONG
 })
 def hook_ZwQueryObject(ql: Qiling, address: int, params):
-    infoClass = params["ObjectInformationClass"]
-    dest = params["ObjectInformation"]
-    size_dest = params["ReturnLength"]
-    string = "DebugObject".encode("utf-16le")
+    handle = params['Handle']
+    ObjectInformationClass = params['ObjectInformationClass']
+    ObjectInformation = params['ObjectInformation']
+    ObjectInformationLength = params['ObjectInformationLength']
+    ReturnLength = params['ReturnLength']
 
-    string_addr = ql.os.heap.alloc(len(string))
-    ql.log.debug(str(string_addr))
-    ql.log.debug(str(string))
-    ql.mem.write(string_addr, string)
-    us = structs.UnicodeString(ql, len(string), len(string), string_addr)
+    s = 'DebugObject'.encode('utf-16le')
+    addr = ql.os.heap.alloc(len(s))
+    ql.mem.write(addr, s)
 
-    if infoClass == ObjectTypeInformation:
-        res = structs.ObjectTypeInformation(ql, us, 1, 1)
+    unistr_struct = structs.make_unicode_string(ql.arch.bits)
 
-    elif infoClass == ObjectAllTypesInformation:
+    unistr_obj = unistr_struct(
+        Length        = len(s),
+        MaximumLength = len(s),
+        Buffer        = addr
+    )
+
+    oti_struct = structs.make_object_type_info(ql.arch.bits)
+
+    oti_obj = oti_struct(
+        TypeName             = unistr_obj,
+        TotalNumberOfObjects = 1,
+        TotalNumberOfHandles = 1
+    )
+
+    oati_struct = structs.make_object_all_types_info(ql.arch.bits, 1)   # elicn: was 2 (why?)
+
+    if ObjectInformationClass == ObjectTypeInformation:
+        out = oti_obj
+
+    elif ObjectInformationClass == ObjectAllTypesInformation:
+        oati_obj = oati_struct(
+            NumberOfObjectTypes   = 1,
+            ObjectTypeInformation = (oti_obj,)
+        )
+
+        out = oati_obj
+
+        # elicn: remove?
         # FIXME: there is an error in how these structs are read by al-khaser. Have no idea on where, so we are
         #  bypassing it
-        # oti = structs.ObjectTypeInformation(ql, us, 1, 1)
-        # res = structs.ObjectAllTypesInformation(ql, 2, oti)
-        return 1
+        # return 1
 
     else:
-        raise QlErrorNotImplemented("API not implemented")
+        raise QlErrorNotImplemented(f'API not implemented ({ObjectInformationClass=})')
 
-    if dest and params["Handle"]:
-        res.write(dest)
+    if ReturnLength:
+        ql.mem.write_ptr(ReturnLength, out.sizeof(), 4)
 
-    if size_dest:
-        ql.mem.write_ptr(size_dest, res.size, 4)
+    if ObjectInformationLength < out.sizeof():
+        return STATUS_INFO_LENGTH_MISMATCH
+
+    if ObjectInformation and handle:
+        out.save_to(ql.mem, ObjectInformation)
 
     return STATUS_SUCCESS
 
