@@ -1599,71 +1599,33 @@ def make_shellex_info(archbits: int):
     return SHELLEXECUTEINFO
 
 
-# typedef struct _UNICODE_STRING {
-#   USHORT Length;
-#   USHORT MaximumLength;
-#   PWSTR  Buffer;
-# } UNICODE_STRING
-class UnicodeString(AlignedWindowsStruct):
-    def write(self, addr):
-        super().generic_write(addr, [self.length, self.maxLength, self.buffer])
+def make_object_type_info(archbits: int):
+    Struct = struct.get_aligned_struct(archbits)
 
-    def read(self, addr):
-        super().generic_read(addr, [self.length, self.maxLength, self.buffer])
+    UniStr = make_unicode_string(archbits)
 
-    def __init__(self, ql, length=None, maxLength=None, buffer=None):
-        super().__init__(ql)
+    class OBJECT_TYPE_INFORMATION(Struct):
+        _fields_ = (
+            ('TypeName',             UniStr),
+            ('TotalNumberOfObjects', ctypes.c_uint32),
+            ('TotalNumberOfHandles', ctypes.c_uint32)
+        )
 
-        # on x64, self.buffer is aligned to 8
-        if ql.arch.bits == 32:
-            self.size = self.USHORT_SIZE * 2 + self.POINTER_SIZE
-        else:
-            self.size = self.USHORT_SIZE * 2 + 4 + self.POINTER_SIZE
-
-        self.length = [length, self.USHORT_SIZE, "little", int]
-        self.maxLength = [maxLength, self.USHORT_SIZE, "little", int]
-        self.buffer = [buffer, self.POINTER_SIZE, "little", int]
+    return OBJECT_TYPE_INFORMATION
 
 
-# typedef struct _OBJECT_TYPE_INFORMATION {
-# 	UNICODE_STRING TypeName;
-# 	ULONG TotalNumberOfObjects;
-# 	ULONG TotalNumberOfHandles;
-# } OBJECT_TYPE_INFORMATION, *POBJECT_TYPE_INFORMATION;
-class ObjectTypeInformation(WindowsStruct):
-    def write(self, addr):
-        super().generic_write(addr, [self.us, self.handles, self.objects])
+def make_object_all_types_info(archbits: int, nobjs: int):
+    Struct = struct.get_aligned_struct(archbits)
 
-    def read(self, addr):
-        super().generic_read(addr, [self.us, self.handles, self.objects])
+    ObjTypeInfo = make_object_type_info(archbits)
 
-    def __init__(self, ql, typeName: UnicodeString = None, handles=None, objects=None):
-        super().__init__(ql)
-        self.size = self.ULONG_SIZE * 2 + (self.USHORT_SIZE * 2 + self.POINTER_SIZE)
-        self.us = [typeName, self.USHORT_SIZE * 2 + self.POINTER_SIZE, "little", UnicodeString]
-        # FIXME: understand if is correct to set them as big
-        self.handles = [handles, self.ULONG_SIZE, "big", int]
-        self.objects = [objects, self.ULONG_SIZE, "big", int]
+    class OBJECT_ALL_TYPES_INFORMATION(Struct):
+        _fields_ = (
+            ('NumberOfObjectTypes',   ctypes.c_uint32),
+            ('ObjectTypeInformation', ObjTypeInfo * nobjs)
+        )
 
-
-# typedef struct _OBJECT_ALL_TYPES_INFORMATION {
-# 	ULONG NumberOfObjectTypes;
-# 	OBJECT_TYPE_INFORMATION ObjectTypeInformation[1];
-# } OBJECT_ALL_TYPES_INFORMATION, *POBJECT_ALL_TYPES_INFORMATION;
-class ObjectAllTypesInformation(WindowsStruct):
-    def write(self, addr):
-        super().generic_write(addr, [self.number, self.typeInfo])
-
-    def read(self, addr):
-        super().generic_read(addr, [self.number, self.typeInfo])
-
-    def __init__(self, ql, objects=None, objectTypeInfo: ObjectTypeInformation = None):
-        super().__init__(ql)
-        self.size = self.ULONG_SIZE + (self.ULONG_SIZE * 2 + (self.USHORT_SIZE * 2 + self.POINTER_SIZE))
-        # FIXME: understand if is correct to set them as big
-        self.number = [objects, self.ULONG_SIZE, "big", int]
-        self.typeInfo = [objectTypeInfo, self.ULONG_SIZE * 2 + (self.USHORT_SIZE * 2 + self.POINTER_SIZE), "little",
-                         ObjectTypeInformation]
+    return OBJECT_ALL_TYPES_INFORMATION
 
 
 # typedef struct _WIN32_FIND_DATAA {
