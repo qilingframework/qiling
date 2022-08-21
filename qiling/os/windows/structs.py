@@ -1083,111 +1083,6 @@ def make_os_version_info_ex(archbits: int, *, wide: bool):
     return OSVERSIONINFOEX
 
 
-class WindowsStruct:
-
-    def __init__(self, ql):
-        self.ql = ql
-        self.addr = None
-        self.ULONG_SIZE = 8
-        self.LONG_SIZE = 4
-        self.POINTER_SIZE = self.ql.arch.pointersize
-        self.INT_SIZE = 2
-        self.DWORD_SIZE = 4
-        self.WORD_SIZE = 2
-        self.SHORT_SIZE = 2
-        self.BYTE_SIZE = 1
-        self.USHORT_SIZE = 2
-
-    def write(self, addr):
-        # I want to force the subclasses to implement it
-        raise NotImplementedError
-
-    def read(self, addr):
-        # I want to force the subclasses to implement it
-        raise NotImplementedError
-
-    def generic_write(self, addr: int, attributes: list):
-        self.ql.log.debug("Writing Windows object " + self.__class__.__name__)
-        already_written = 0
-        for elem in attributes:
-            (val, size, endianness, typ) = elem
-            if typ == int:
-                value = val.to_bytes(size, endianness)
-                self.ql.log.debug("Writing to %#x with value %s" % (addr + already_written, value))
-                self.ql.mem.write(addr + already_written, value)
-            elif typ == bytes:
-                if isinstance(val, bytearray):
-                    value = bytes(val)
-                else:
-                    value = val
-                self.ql.log.debug("Writing at addr %#x value %s" % (addr + already_written, value))
-
-                self.ql.mem.write(addr + already_written, value)
-            elif issubclass(typ, WindowsStruct):
-                val.write(addr)
-            else:
-                raise QlErrorNotImplemented("API not implemented")
-
-            already_written += size
-        self.addr = addr
-
-    def generic_read(self, addr: int, attributes: list):
-        self.ql.log.debug("Reading Windows object " + self.__class__.__name__)
-        already_read = 0
-        for elem in attributes:
-            (val, size, endianness, type) = elem
-            value = self.ql.mem.read(addr + already_read, size)
-            self.ql.log.debug("Reading from %#x value %s" % (addr + already_read, value))
-            if type == int:
-                elem[0] = int.from_bytes(value, endianness)
-            elif type == bytes:
-                elem[0] = value
-            elif issubclass(type, WindowsStruct):
-                obj = type(self.ql)
-                obj.read(addr)
-                elem[0] = obj
-            else:
-                raise QlErrorNotImplemented("API not implemented")
-            already_read += size
-        self.addr = addr
-
-class AlignedWindowsStruct(WindowsStruct):
-    def __init__(self, ql):
-        super().__init__(ql)
-
-    def write(self, addr):
-        super().write(addr)
-
-    def read(self, addr):
-        super().read(addr)
-
-    def generic_write(self, addr: int, attributes: list):
-        super().generic_write(addr, attributes)
-
-    def generic_read(self, addr: int, attributes: list):
-        self.ql.log.debug("Reading unpacked Windows object aligned " + self.__class__.__name__)
-        already_read = 0
-        for elem in attributes:
-            (val, size, endianness, type, alignment) = elem
-            if already_read != 0:
-                modulo = already_read % alignment
-                already_read = already_read + modulo
-
-            value = self.ql.mem.read(addr + already_read, size)
-            self.ql.log.debug("Reading from %x value %s" % (addr + already_read, value))
-            if type == int:
-                elem[0] = int.from_bytes(value, endianness)
-            elif type == bytes:
-                elem[0] = value
-            elif issubclass(type, WindowsStruct):
-                obj = type(self.ql)
-                obj.read(addr)
-                elem[0] = obj
-            else:
-                raise QlErrorNotImplemented("API not implemented")
-            already_read += size
-        self.addr = addr
-
 class Token:
     class TokenInformationClass(IntEnum):
         # https://docs.microsoft.com/it-it/windows/win32/api/winnt/ne-winnt-token_information_class
@@ -1461,25 +1356,8 @@ def make_sockaddr_in6():
 
     return sockaddr_in6
 
-# typedef struct _SYSTEM_INFO {
-#   union {
-#     DWORD dwOemId;
-#     struct {
-#       WORD wProcessorArchitecture;
-#       WORD wReserved;
-#     } DUMMYSTRUCTNAME;
-#   } DUMMYUNIONNAME;
-#   DWORD     dwPageSize;
-#   LPVOID    lpMinimumApplicationAddress;
-#   LPVOID    lpMaximumApplicationAddress;
-#   DWORD_PTR dwActiveProcessorMask;
-#   DWORD     dwNumberOfProcessors;
-#   DWORD     dwProcessorType;
-#   DWORD     dwAllocationGranularity;
-#   WORD      wProcessorLevel;
-#   WORD      wProcessorRevision;
-# } SYSTEM_INFO, *LPSYSTEM_INFO;
 
+# https://docs.microsoft.com/en-us/windows/win32/api/sysinfoapi/ns-sysinfoapi-system_info
 def make_system_info(archbits: int):
     native_type = struct.get_native_type(archbits)
     Struct = struct.get_aligned_struct(archbits)
