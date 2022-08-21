@@ -1259,7 +1259,7 @@ class Token:
             Revision = 1,
             SubAuthorityCount = len(subauths),
             IdentifierAuthority = (1,),
-            SubAuthority = tuple(ql.pack32(v) for v in subauths)
+            SubAuthority = subauths
         )
 
         sid_obj.save_to(ql.mem, sid_addr)

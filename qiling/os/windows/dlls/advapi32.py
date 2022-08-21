@@ -683,7 +683,7 @@ def hook_StartServiceA(ql: Qiling, address: int, params):
 })
 def hook_AllocateAndInitializeSid(ql: Qiling, address: int, params):
     count = params["nSubAuthorityCount"]
-    subauths = tuple(ql.pack32(params[f'nSubAuthority{i}']) for i in range(count))
+    subauths = tuple(params[f'nSubAuthority{i}'] for i in range(count))
 
     sid_struct = make_sid(auth_count=len(subauths))
     sid_addr = ql.os.heap.alloc(sid_struct.sizeof())
@@ -712,7 +712,7 @@ def __create_default_sid(ql: Qiling, subauths: Tuple[int, ...]):
         Revision = 1,
         SubAuthorityCount = len(subauths),
         IdentifierAuthority = (5,),
-        SubAuthority = tuple(ql.pack32(v) for v in subauths)
+        SubAuthority = tuple(subauths)
     )
 
     return sid_obj
