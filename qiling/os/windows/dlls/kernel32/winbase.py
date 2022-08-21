@@ -601,14 +601,14 @@ def __VerifyVersionInfo(ql: Qiling, address: int, params, *, wide: bool):
     #
     # each criteria is associated with the OSVERSIONINFOEX[A|W] it corresponds to.
     checks = (
-        (1, 'major'),         # VER_MAJORVERSION
-        (0, 'minor'),         # VER_MINORVERSION
-        (2, 'build'),         # VER_BUILDNUMBER
-        (5, 'service_major'), # VER_SERVICEPACKMAJOR
-        (4, 'service_minor'), # VER_SERVICEPACKMINOR
-        (3, 'platform_os'),   # VER_PLATFORMID
-        (6, 'suite'),         # VER_SUITENAME
-        (7, 'product')        # VER_PRODUCT_TYPE
+        (1, 'dwMajorVersion'),      # VER_MAJORVERSION
+        (0, 'dwMinorVersion'),      # VER_MINORVERSION
+        (2, 'dwBuildNumber'),       # VER_BUILDNUMBER
+        (5, 'wServicePackMajor'),   # VER_SERVICEPACKMAJOR
+        (4, 'wServicePackMinor'),   # VER_SERVICEPACKMINOR
+        (3, 'dwPlatformId'),        # VER_PLATFORMID
+        (6, 'wSuiteMask'),          # VER_SUITENAME
+        (7, 'wProductType')         # VER_PRODUCT_TYPE
     )
 
     res = True
