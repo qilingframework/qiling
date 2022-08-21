@@ -1383,17 +1383,19 @@ def make_system_basic_info(archbits: int):
     pointer_type = native_type
 
     class SYSTEM_BASIC_INFORMATION(Struct):
-        ('Reserved',                     ctypes.c_uint32),
-        ('TimerResolution',              ctypes.c_uint32),
-        ('PageSize',                     ctypes.c_uint32),
-        ('NumberOfPhysicalPages',        ctypes.c_uint32),
-        ('LowestPhysicalPageNumber',     ctypes.c_uint32),
-        ('HighestPhysicalPageNumber',    ctypes.c_uint32),
-        ('AllocationGranularity',        ctypes.c_uint32),
-        ('MinimumUserModeAddress',       pointer_type),
-        ('MaximumUserModeAddress',       pointer_type),
-        ('ActiveProcessorsAffinityMask', pointer_type),
-        ('NumberOfProcessors',           ctypes.c_uint8)
+        _fields_ = (
+            ('Reserved',                     ctypes.c_uint32),
+            ('TimerResolution',              ctypes.c_uint32),
+            ('PageSize',                     ctypes.c_uint32),
+            ('NumberOfPhysicalPages',        ctypes.c_uint32),
+            ('LowestPhysicalPageNumber',     ctypes.c_uint32),
+            ('HighestPhysicalPageNumber',    ctypes.c_uint32),
+            ('AllocationGranularity',        ctypes.c_uint32),
+            ('MinimumUserModeAddress',       pointer_type),
+            ('MaximumUserModeAddress',       pointer_type),
+            ('ActiveProcessorsAffinityMask', pointer_type),
+            ('NumberOfProcessors',           ctypes.c_uint8)
+        )
 
     return SYSTEM_BASIC_INFORMATION
 
@@ -1406,11 +1408,13 @@ def make_hostent(archbits: int):
     pointer_type = native_type
 
     class HOSTENT(Struct):
-        ('h_name',      pointer_type),
-        ('h_aliases',   pointer_type),
-        ('h_addrtype',  ctypes.c_int16),
-        ('h_length',    ctypes.c_int16),
-        ('h_addr_list', pointer_type),
+        _fields_ = (
+            ('h_name',      pointer_type),
+            ('h_aliases',   pointer_type),
+            ('h_addrtype',  ctypes.c_int16),
+            ('h_length',    ctypes.c_int16),
+            ('h_addr_list', pointer_type),
+        )
 
     return HOSTENT
 
