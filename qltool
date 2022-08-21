@@ -8,6 +8,7 @@ import os
 import sys
 import ast
 import pickle
+import qltui
 
 from unicorn import __version__ as uc_ver
 from qiling import __version__ as ql_ver
@@ -194,6 +195,9 @@ if __name__ == '__main__':
     # set "examples" subcommand
     expl_parser = commands.add_parser('examples', help='show examples and exit', add_help=False)
 
+    # set "qltui" subcommand
+    qltui_parser = commands.add_parser('qltui', help='show qiling Terminal User Interface', add_help=False)
+
     comm_parser = run_parser
 
     if len(sys.argv) > 1 and sys.argv[1] == 'code':
@@ -223,12 +227,15 @@ if __name__ == '__main__':
     if options.subcommand == 'examples':
         handle_examples(parser)
 
+    if options.subcommand == 'qltui':
+        options = qltui.get_data()
+
     # ql file setup
-    elif options.subcommand == 'run':
+    if options.subcommand == 'run':
         ql = handle_run(options)
 
     # ql code setup
-    elif options.subcommand == 'code':
+    if options.subcommand == 'code':
         ql = handle_code(options)
 
     # ql execute additional options
@@ -254,6 +261,7 @@ if __name__ == '__main__':
         ql.run(timeout=options.timeout)
 
     if options.json:
-        print(report.generate_report(ql, pretty_print=True))
+        qltui.show_report(report.generate_report(ql))
+        # print(report.generate_report(ql, pretty_print=True))
 
     exit(ql.os.exit_code)
