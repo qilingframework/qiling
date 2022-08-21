@@ -43,11 +43,13 @@ def _GetStartupInfo(ql: Qiling, address: int, params, *, wide: bool):
         sui_obj.dwFillAttribute = 0xff
         sui_obj.dwFlags         = 0x40
         sui_obj.wShowWindow     = 1
+        sui_obj.cbReserved2     = 0
+        sui_obj.lpReserved2     = 0
         sui_obj.hStdInput       = STD_INPUT_HANDLE
         sui_obj.hStdOutput      = STD_OUTPUT_HANDLE
         sui_obj.hStdError       = STD_ERROR_HANDLE
 
-    return 0
+    return STATUS_SUCCESS
 
 # VOID WINAPI GetStartupInfoA(
 #   _Out_ LPSTARTUPINFO lpStartupInfo
