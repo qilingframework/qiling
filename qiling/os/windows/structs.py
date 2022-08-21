@@ -6,6 +6,7 @@
 import ctypes
 
 from enum import IntEnum
+from functools import lru_cache
 
 from qiling.os import struct
 from qiling.os.windows.const import MAX_PATH
@@ -116,6 +117,7 @@ def make_peb(archbits: int):
 
 
 # https://docs.microsoft.com/en-us/windows/win32/api/subauth/ns-subauth-unicode_string
+@lru_cache(maxsize=2)
 def make_unicode_string(archbits: int):
     """Generate a UNICODE_STRING structure class.
     """
@@ -1599,11 +1601,15 @@ def make_shellex_info(archbits: int):
     return SHELLEXECUTEINFO
 
 
+# https://www.geoffchappell.com/studies/windows/km/ntoskrnl/api/ob/obquery/type.htm
+@lru_cache(maxsize=2)
 def make_object_type_info(archbits: int):
     Struct = struct.get_aligned_struct(archbits)
 
     UniStr = make_unicode_string(archbits)
 
+    # this is only a pratial definition of the structure.
+    # for some reason, the last two fields are swapped in al-khaser
     class OBJECT_TYPE_INFORMATION(Struct):
         _fields_ = (
             ('TypeName',             UniStr),
