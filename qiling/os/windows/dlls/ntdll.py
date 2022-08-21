@@ -43,7 +43,7 @@ def _QueryInformationProcess(ql: Qiling, address: int, params):
     res_size_ptr = params["ReturnLength"]
 
     if flag == ProcessDebugFlags:
-        res_data = ql.pack32(0)     # was 0x01010101, no idea why
+        res_data = ql.pack32(1)
 
     elif flag == ProcessDebugPort:
         res_data = ql.pack32(0)
@@ -256,23 +256,26 @@ def hook_ZwQueryObject(ql: Qiling, address: int, params):
         TotalNumberOfHandles = 1
     )
 
-    oati_struct = structs.make_object_all_types_info(ql.arch.bits, 1)   # elicn: was 2 (why?)
+    oati_struct = structs.make_object_all_types_info(ql.arch.bits, 1)
 
     if ObjectInformationClass == ObjectTypeInformation:
         out = oti_obj
 
     elif ObjectInformationClass == ObjectAllTypesInformation:
+        # FIXME: al-khaser refers the object named 'DebugObject' twice: the first time it creates a handle
+        # for it (so number of handles is expected to be higher than 0) and then closes it. the next time
+        # it accesses it (here), it expects the number of handles to be 0.
+        #
+        # ideally we would track the handles for each object, but since we do not - this is a hack to let
+        # it pass.
+        oti_obj.TotalNumberOfHandles = 0
+
         oati_obj = oati_struct(
             NumberOfObjectTypes   = 1,
             ObjectTypeInformation = (oti_obj,)
         )
 
         out = oati_obj
-
-        # elicn: remove?
-        # FIXME: there is an error in how these structs are read by al-khaser. Have no idea on where, so we are
-        #  bypassing it
-        # return 1
 
     else:
         raise QlErrorNotImplemented(f'API not implemented ({ObjectInformationClass=})')
