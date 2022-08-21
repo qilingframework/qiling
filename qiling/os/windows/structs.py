@@ -1634,85 +1634,27 @@ def make_object_all_types_info(archbits: int, nobjs: int):
     return OBJECT_ALL_TYPES_INFORMATION
 
 
-# typedef struct _WIN32_FIND_DATAA {
-#   DWORD    dwFileAttributes;
-#   FILETIME ftCreationTime;
-#   FILETIME ftLastAccessTime;
-#   FILETIME ftLastWriteTime;
-#   DWORD    nFileSizeHigh;
-#   DWORD    nFileSizeLow;
-#   DWORD    dwReserved0;
-#   DWORD    dwReserved1;
-#   CHAR     cFileName[MAX_PATH];
-#   CHAR     cAlternateFileName[14];
-#   DWORD    dwFileType;
-#   DWORD    dwCreatorType;
-#   WORD     wFinderFlags;
-# } WIN32_FIND_DATAA, *PWIN32_FIND_DATAA, *LPWIN32_FIND_DATAA;
-class Win32FindData(WindowsStruct):
-    def write(self, addr):
-        super().generic_write(addr, 
-            [
-                self.file_attributes, self.creation_time,
-                self.last_acces_time, self.last_write_time, 
-                self.file_size_high, self.file_size_low, 
-                self.reserved_0, self.reserved_1, self.file_name,
-                self.alternate_file_name, self.file_type, 
-                self.creator_type, self.finder_flags
-            ])
-    
-    def read(self, addr):
-        super().generic_read(addr, 
-            [
-                self.file_attributes, self.creation_time,
-                self.last_acces_time, self.last_write_time, 
-                self.file_size_high, self.file_size_low, 
-                self.reserved_0, self.reserved_1, self.file_name,
-                self.alternate_file_name, self.file_type, 
-                self.creator_type, self.finder_flags
-            ])
+# https://docs.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-win32_find_dataw
+def make_win32_find_data(archbits: int, *, wide: bool):
+    Struct = struct.get_aligned_struct(archbits)
 
-    def __init__(self, 
-                ql, 
-                file_attributes=None, 
-                creation_time=None, 
-                last_acces_time=None,
-                last_write_time=None, 
-                file_size_high=None,
-                file_size_low=None,
-                reserved_0=None, 
-                reserved_1=None, 
-                file_name=None,
-                alternate_filename=None,
-                file_type=None, 
-                creator_type=None, 
-                finder_flags=None):
-        super().__init__(ql)
-        
-        # Size of FileTime == 2*(DWORD)
-        self.size = (
-            self.DWORD_SIZE               # dwFileAttributes
-            + (3 * (2 * self.DWORD_SIZE)) # ftCreationTime, ftLastAccessTime, ftLastWriteTime
-            + self.DWORD_SIZE             # nFileSizeHigh
-            + self.DWORD_SIZE             # nFileSizeLow
-            + self.DWORD_SIZE             # dwReservered0
-            + self.DWORD_SIZE             # dwReservered1
-            + (self.BYTE_SIZE * 260)      # cFileName[MAX_PATH]
-            + (self.BYTE_SIZE * 14)       # cAlternateFileName[14]
-            + self.DWORD_SIZE             # dwFileType
-            + self.DWORD_SIZE             # dwCreatorType
-            + self.WORD_SIZE)             # wFinderFlags
-        
-        self.file_attributes = file_attributes
-        self.creation_time = creation_time
-        self.last_acces_time = last_acces_time
-        self.last_write_time = last_write_time
-        self.file_size_high = file_size_high
-        self.file_size_low = file_size_low
-        self.reserved_0 = reserved_0
-        self.reserved_1 = reserved_1
-        self.file_name = file_name
-        self.alternate_file_name = alternate_filename
-        self.file_type = file_type
-        self.creator_type = creator_type
-        self.finder_flags = finder_flags
+    char_type = (ctypes.c_wchar if wide else ctypes.c_char)
+
+    class WIN32_FIND_DATA(Struct):
+        _fields_ = (
+            ('dwFileAttributes',   ctypes.c_uint32),
+            ('ftCreationTime',     FILETIME),
+            ('ftLastAccessTime',   FILETIME),
+            ('ftLastWriteTime',    FILETIME),
+            ('nFileSizeHigh',      ctypes.c_uint32),
+            ('nFileSizeLow',       ctypes.c_uint32),
+            ('dwReserved0',        ctypes.c_uint32),
+            ('dwReserved1',        ctypes.c_uint32),
+            ('cFileName',          char_type * MAX_PATH),
+            ('cAlternateFileName', char_type * 14),
+            ('dwFileType',         ctypes.c_uint32),
+            ('dwCreatorType',      ctypes.c_uint32),
+            ('wFinderFlags',       ctypes.c_uint16)
+        )
+
+    return WIN32_FIND_DATA
