@@ -13,7 +13,7 @@ def __is_debugger_present(ql: Qiling) -> int:
     is present or not.
     """
 
-    return ql.os.PEB.BeingDebugged
+    return ql.loader.PEB.BeingDebugged
 
 # BOOL IsDebuggerPresent();
 @winsdkapi(cc=STDCALL, params={})
