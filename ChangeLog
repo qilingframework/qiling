@@ -1,7 +1,45 @@
 This file details the changelog of Qiling Framework.
 
 ------------------------------------
-[Version 1.4.4]: July XX, 2022
+[Version 1.4.4]: August 22th, 2022
+
+New features:
+- Add r2 extension (#1172)
+- Introduce procfs to Linux OS (#1174)
+- Add a tracer for IDAPro's Tenet plugin (#1205)
+
+Improvements:
+- Collect a few additional DLLs for x8664 (#1167)
+- Use global cwd in thread (#1170)
+- Fix QlLinuxThreadManagement.threads to be updated appropriately (#1180)
+- Fix Unix socket subsystem (#1181)
+- Maintenance PR for security and code quality (#1182 #1195)
+- Enable android 32bit test (#1184)
+- Fix wrong platform_system for unicornafl (#1185)
+- Fix arm thumb mode shellcode emulation (#1187)
+- Pump unicorn version to 2.0.0 (#1189)
+- Procfs improve & pwndbg compatiblity (#1190)
+- Fix example script issues (#1193 #1194)
+- Introduce a human-friendly disassembler (#1196)
+- Fix gdb step/continue handling (#1200)
+- Fix README.md (#1203)
+- Fix typo of default ip 127.0.0.1 (#1205)
+- Temporarily mask Python versions that are not supported by the EVM module (#1208)
+
+Contributors:
+- jasperla
+- bet4it
+- chinggg
+- elicn
+- vhertz
+- cgfandia-tii
+- wtdcode
+- ucgJhe
+- aquynh
+- kabeor
+- oscardagrach
+- hamarituc
+- EtchProject
 
 
 ------------------------------------
