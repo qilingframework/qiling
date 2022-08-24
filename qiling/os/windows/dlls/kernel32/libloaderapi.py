@@ -18,12 +18,10 @@ def _GetModuleHandle(ql: Qiling, address: int, params):
     if lpModuleName == 0:
         ret = ql.loader.pe_image_address
     else:
-        lpModuleName = lpModuleName.lower()
-
         if not has_lib_ext(lpModuleName):
             lpModuleName = f'{lpModuleName}.dll'
 
-        image = ql.loader.get_image_by_name(lpModuleName)
+        image = ql.loader.get_image_by_name(lpModuleName, casefold=True)
 
         if image:
             ret = image.base
@@ -69,6 +67,35 @@ def hook_GetModuleHandleExW(ql: Qiling, address: int, params):
 
     return res
 
+def __GetModuleFileName(ql: Qiling, address: int, params, *, wide: bool):
+    hModule = params["hModule"]
+    lpFilename = params["lpFilename"]
+    nSize = params["nSize"]
+
+    if not hModule:
+        if ql.code:
+            raise QlErrorNotImplemented('cannot retrieve module file name in shellcode mode')
+
+        hModule = ql.loader.pe_image_address
+
+    hpath = next((image.path for image in ql.loader.images if image.base == hModule), None)
+
+    if hpath is None:
+        ql.os.last_error = ERROR_INVALID_HANDLE
+        return 0
+
+    encname = 'utf-16le' if wide else 'latin'
+    vpath = ql.os.path.host_to_virtual_path(hpath)
+    truncated = vpath[:nSize - 1] + '\x00'
+    encoded = truncated.encode(encname)
+
+    if len(vpath) + 1 > nSize:
+        ql.os.last_error = ERROR_INSUFFICIENT_BUFFER
+
+    ql.mem.write(lpFilename, encoded)
+
+    return min(len(vpath), nSize)
+
 # DWORD GetModuleFileNameA(
 #   HMODULE hModule,
 #   LPSTR   lpFilename,
@@ -80,30 +107,7 @@ def hook_GetModuleHandleExW(ql: Qiling, address: int, params):
     'nSize'      : DWORD
 })
 def hook_GetModuleFileNameA(ql: Qiling, address: int, params):
-    hModule = params["hModule"]
-    lpFilename = params["lpFilename"]
-    nSize = params["nSize"]
-    ret = 0
-
-    # GetModuleHandle can return pe_image_address as handle, and GetModuleFileName will try to retrieve it.
-    # Pretty much 0 and pe_image_address value should do the same operations
-    if not ql.code and (hModule == 0 or hModule == ql.loader.pe_image_address):
-        filename = ql.loader.filepath
-        filename_len = len(filename)
-
-        if filename_len > nSize - 1:
-            filename = ql.loader.filepath[:nSize - 1]
-            ret = nSize
-        else:
-            ret = filename_len
-
-        ql.mem.write(lpFilename, filename + b"\x00")
-
-    else:
-        ql.log.debug("hModule %x" % hModule)
-        raise QlErrorNotImplemented("API not implemented")
-
-    return ret
+    return __GetModuleFileName(ql, address, params, wide=False)
 
 # DWORD GetModuleFileNameW(
 #   HMODULE hModule,
@@ -116,30 +120,7 @@ def hook_GetModuleFileNameA(ql: Qiling, address: int, params):
     'nSize'      : DWORD
 })
 def hook_GetModuleFileNameW(ql: Qiling, address: int, params):
-    hModule = params["hModule"]
-    lpFilename = params["lpFilename"]
-    nSize = params["nSize"]
-    ret = 0
-
-    # GetModuleHandle can return pe_image_address as handle, and GetModuleFileName will try to retrieve it.
-    # Pretty much 0 and pe_image_address value should do the same operations
-    if not ql.code and (hModule == 0 or hModule == ql.loader.pe_image_address):
-        filename = ql.loader.filepath.decode('ascii').encode('utf-16le')
-        filename_len = len(filename)
-
-        if filename_len > nSize - 1:
-            filename = ql.loader.filepath[:nSize - 1]
-            ret = nSize
-        else:
-            ret = filename_len
-
-        ql.mem.write(lpFilename, filename + b"\x00")
-
-    else:
-        ql.log.debug("hModule %x" % hModule)
-        raise QlErrorNotImplemented("API not implemented")
-
-    return ret
+    return __GetModuleFileName(ql, address, params, wide=True)
 
 # FARPROC GetProcAddress(
 #   HMODULE hModule,
@@ -188,9 +169,11 @@ def hook_GetProcAddress(ql: Qiling, address: int, params):
 def _LoadLibrary(ql: Qiling, address: int, params):
     lpLibFileName = params["lpLibFileName"]
 
-    if not ql.code and lpLibFileName == ql.loader.filepath.decode():
-        # Loading self
-        return ql.loader.pe_image_address
+    # TODO: this searches only by basename; do we need to search by full path as well?
+    dll = ql.loader.get_image_by_name(lpLibFileName, casefold=True)
+
+    if dll is not None:
+        return dll.base
 
     return ql.loader.load_dll(lpLibFileName)
 

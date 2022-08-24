@@ -7,11 +7,14 @@
 This module is intended for general purpose functions that are only used in qiling.os
 """
 
-from typing import MutableMapping, Union, Sequence, MutableSequence, Tuple
+from typing import Callable, Iterable, Iterator, List, MutableMapping, Sequence, Tuple, TypeVar, Union
 from uuid import UUID
 
 from qiling import Qiling
 from qiling.const import QL_VERBOSE
+
+# TODO: separate windows-specific implementation
+from qiling.os.windows.structs import make_unicode_string
 
 class QlOsUtils:
 
@@ -101,39 +104,118 @@ class QlOsUtils:
         else:
             self.ql.log.info(log)
 
-    def __common_printf(self, format: str, args: MutableSequence, wstring: bool):
-        fmtstr = format.split("%")[1:]
+    def __common_printf(self, format: str, va_args: Iterator[int], wstring: bool) -> Tuple[str, Sequence[int]]:
+        import re
+
+        # https://docs.microsoft.com/en-us/cpp/c-runtime-library/format-specification-syntax-printf-and-wprintf-functions
+        # %[flags][width][.precision][size]type
+        fmtstr = re.compile(r'''%
+            (?P<follows>%|
+                (?P<flags>[-+0 #]+)?
+                (?P<width>[*]|[0-9]+)?
+                (?:.(?P<precision>[*]|[0-9]+))?
+                (?P<size>hh|ll|I32|I64|[hjltwzIL])?
+                (?P<type>[diopuaAcCeEfFgGsSxXZ])
+            )
+        ''', re.VERBOSE)
+
+        T = TypeVar('T')
+
+        def __dup(iterator: Iterator[T], out: List[T]) -> Iterator[T]:
+            """A wrapper iterator to record iterator elements as they are being yielded.
+            """
+
+            for elem in iterator:
+                out.append(elem)
+                yield elem
+
+        repl_args = []  # processed arguments
+        orig_args = []  # original arguments
+
+        va_list = __dup(va_args, orig_args)
+
         read_string = self.read_wstring if wstring else self.read_cstring
 
-        for i, f in enumerate(fmtstr):
-            if f.startswith("s"):
-                args[i] = read_string(args[i])
+        def __repl(m: re.Match) -> str:
+            """Convert printf format string tokens into Python's.
+            """
 
-        out = format.replace(r'%llx', r'%x')
-        out = out.replace(r'%p', r'%#x')
+            if m['follows'] == '%':
+                return '%%'
 
-        return out % tuple(args)
+            else:
+                flags = m['flags'] or ''
 
-    def va_list(self, format: str, ptr: int) -> MutableSequence[int]:
-        count = format.count("%")
+                fill  = ' ' if ' ' in flags else ''
+                align = '<' if '-' in flags else ''
+                sign  = '+' if '+' in flags else ''
+                pound = '#' if '#' in flags else ''
+                zeros = '0' if '0' in flags else ''
 
-        return [self.ql.mem.read_ptr(ptr + i * self.ql.arch.pointersize) for i in range(count)]
+                width = m['width'] or ''
 
-    def sprintf(self, buff: int, format: str, args: MutableSequence, wstring: bool = False) -> int:
-        out = self.__common_printf(format, args, wstring)
+                if width == '*':
+                    width = f'{next(va_list)}'
+
+                prec = m['precision'] or ''
+
+                if prec == '*':
+                    prec = f'{next(va_list)}'
+
+                if prec:
+                    prec = f'.{prec}'
+
+                typ = m['type']
+                arg = next(va_list)
+
+                if typ in 'sS':
+                    typ = 's'
+                    arg = read_string(arg)
+
+                elif typ == 'Z':
+                    # note: ANSI_STRING and UNICODE_STRING have identical layout
+                    ucstr_struct = make_unicode_string(self.ql.arch.bits)
+
+                    with ucstr_struct.ref(self.ql.mem, arg) as ucstr_obj:
+                        typ = 's'
+                        arg = read_string(ucstr_obj.Buffer)
+
+                elif typ == 'p':
+                    pound = '#'
+                    typ = 'x'
+
+                repl_args.append(arg)
+
+                return f'%{fill}{align}{sign}{pound}{zeros}{width}{prec}{typ}'
+
+        out = fmtstr.sub(__repl, format)
+
+        return out % tuple(repl_args), orig_args
+
+    def va_list(self, ptr: int) -> Iterator[int]:
+        while True:
+            yield self.ql.mem.read_ptr(ptr)
+
+            ptr += self.ql.arch.pointersize
+
+    def sprintf(self, buff: int, format: str, va_args: Iterator[int], wstring: bool = False) -> Tuple[int, Callable]:
+        out, args = self.__common_printf(format, va_args, wstring)
         enc = 'utf-16le' if wstring else 'utf-8'
 
         self.ql.mem.write(buff, (out + '\x00').encode(enc))
 
-        return len(out)
+        return len(out), self.__update_ellipsis(args)
 
-    def printf(self, format: str, args: MutableSequence, wstring: bool = False) -> int:
-        out = self.__common_printf(format, args, wstring)
+    def printf(self, format: str, va_args: Iterator[int], wstring: bool = False) -> Tuple[int, Callable]:
+        out, args = self.__common_printf(format, va_args, wstring)
         enc = 'utf-8'
 
         self.ql.os.stdout.write(out.encode(enc))
 
-        return len(out)
+        return len(out), self.__update_ellipsis(args)
 
-    def update_ellipsis(self, params: MutableMapping, args: Sequence) -> None:
-        params.update((f'{QlOsUtils.ELLIPSIS_PREF}{i}', a) for i, a in enumerate(args))
+    def __update_ellipsis(self, args: Iterable[int]) -> Callable[[MutableMapping], None]:
+        def __do_update(params: MutableMapping) -> None:
+            params.update((f'{QlOsUtils.ELLIPSIS_PREF}{i}', a) for i, a in enumerate(args))
+
+        return __do_update

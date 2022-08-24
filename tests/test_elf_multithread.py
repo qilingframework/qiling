@@ -34,12 +34,20 @@ class ELFTest(unittest.TestCase):
                     verbose=QL_VERBOSE.DEBUG,
                     multithread=True)
 
-        err = ql_file.open('output.txt', os.O_RDWR | os.O_CREAT, 0o777)
+        filename = 'output.txt'
+        err = ql_file.open(filename, os.O_RDWR | os.O_CREAT, 0o777)
+
         ql.os.stderr = err
         ql.run()
-        os.close(err.fileno())
-        with open('output.txt', 'rb') as f:
-            self.assertTrue(b'fail' in f.read())            
+        err.close()
+
+        with open(filename, 'rb') as f:
+            content = f.read()
+
+        # cleanup
+        os.remove(filename)
+
+        self.assertIn(b'fail', content)
 
         del ql
 
@@ -92,7 +100,7 @@ class ELFTest(unittest.TestCase):
             except:
                 pass
         buf_out = None
-        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_multithreading"], "../examples/rootfs/x8664_linux", multithread=True, profile= "profiles/append_test.ql")
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_multithreading"], "../examples/rootfs/x8664_linux", multithread=True)
         ql.os.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
         ql.run()
 

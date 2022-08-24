@@ -119,16 +119,16 @@ def hook_WriteFile(ql: Qiling, address: int, params):
     if hFile == 0x13371337:
         buffer = ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
         try:
-            r, nNumberOfBytesToWrite = utils.io_Write(ql.amsint32_driver, buffer)
+            nNumberOfBytesToWrite = utils.io_Write(ql.amsint32_driver, buffer)
             ql.mem.write_ptr(lpNumberOfBytesWritten, nNumberOfBytesToWrite, 4)
-        except Exception as e:
+        except Exception:
             ql.log.exception("")
-            print("Exception = %s" % str(e))
-            r = 1
-        if r:
-            return 1
+            r = False
         else:
-            return 0
+            r = True
+
+        return int(r)
+
     else:
         return _WriteFile(ql, address, params)
 

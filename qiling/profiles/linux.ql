@@ -11,7 +11,6 @@ load_address = 0x555555554000
 interp_address = 0x7ffff7dd5000
 mmap_address = 0x7fffb7dd6000
 vsyscall_address = 0xffffffffff600000
-vsyscall_size = 0x1000
 
 
 [OS32]
@@ -28,19 +27,7 @@ gid = 1000
 pid = 1996
 
 
-[LOG]
-# log directory output
-# usage: dir = qlog
-dir =
-# split log file, use with multithread
-split = False
-
-
 [MISC]
-# append string into different logs
-# maily for multiple times Ql run with one file
-# usage: append = test1
-append =
 current_path = /
 
 

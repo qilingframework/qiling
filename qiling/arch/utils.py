@@ -73,7 +73,12 @@ class QlArchUtils:
             self._block_hook = None
 
         if verbosity >= QL_VERBOSE.DISASM:
-            self._disasm_hook = self.ql.hook_code(self.disassembler)
+            try:  # monkey patch disassembler
+                from qiling.extensions.r2 import R2
+                r2 = R2(self.ql)
+                self._disasm_hook = self.ql.hook_code(r2.disassembler)
+            except (ImportError, ModuleNotFoundError):
+                self._disasm_hook = self.ql.hook_code(self.disassembler)
 
             if verbosity >= QL_VERBOSE.DUMP:
                 self._block_hook = self.ql.hook_block(ql_hook_block_disasm)
