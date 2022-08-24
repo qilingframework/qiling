@@ -89,7 +89,7 @@ class QlArchCORTEX_M(QlArchARM):
         return Ks(KS_ARCH_ARM, KS_MODE_ARM + KS_MODE_THUMB)
     
     @property
-    def is_thumb(self):
+    def is_thumb(self) -> bool:
         return True
 
     @property
