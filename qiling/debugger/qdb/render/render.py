@@ -99,7 +99,8 @@ class Render:
             '''
             if (val := self.try_read_pointer(addr)[0]): # defined to be try_read_pointer(addr)[0] - dereferneces pointer
 
-                print(f"$sp+0x{idx*self.pointersize:02x}│ [0x{addr:08x}] —▸ 0x{self.unpack(val):08x}", end="")
+                # @TODO: Bug here where the values on the stack are being displayed in 32-bit format
+                print(f"RSP + 0x{idx*self.pointersize:02x}│ [0x{addr:08x}] —▸ 0x{self.unpack(val):08x}", end="")
 
             # try to dereference wether it's a pointer
             if (buf := self.try_read_pointer(addr))[0] is not None:

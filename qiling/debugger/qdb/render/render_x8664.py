@@ -10,7 +10,7 @@ from ..arch import ArchX8664
 
 class ContextRenderX8664(ContextRender, ArchX8664):
     """
-    context render for X86
+    Context render for X86_64
     """
 
     def __init__(self, ql, predictor):

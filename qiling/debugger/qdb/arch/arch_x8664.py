@@ -8,11 +8,21 @@ from typing import Mapping
 from .arch import Arch
 
 class ArchX8664(Arch):
+    '''
+    This is currently mostly just a copy of x86 - other than the size of archbits. Some of this may be wrong.
+    '''
+
     def __init__(self):
         super().__init__()
     
     @property
     def arch_insn_size(self):
+        '''
+        Architecture maximum instruction size. x86_64 instructions are a maximum size of 15 bytes.
+
+        @returns bytes
+        '''
+
         return 15
     
     @property
@@ -28,6 +38,12 @@ class ArchX8664(Arch):
     
     @property
     def archbit(self):
+        '''
+        Architecture maximum register size. x86 is a maximum of 4 bytes.
+
+        @returns bytes
+        '''
+        
         return 8
 
     def read_insn(self, address: int) -> bytes:
