@@ -8,7 +8,7 @@ from qiling.os.const import *
 # See: https://docs.microsoft.com/en-us/windows/win32/winprog/windows-data-types
 
 LONG   = PARAM_INTN
-ULONG  = PARAM_INTN
+ULONG  = PARAM_INT32
 CHAR   = PARAM_INT8
 UCHAR  = PARAM_INT16
 SHORT  = PARAM_INT16
