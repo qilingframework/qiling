@@ -267,6 +267,86 @@ class KUSER_SHARED_DATA(struct.BaseStruct):
         ('_padding0', ctypes.c_uint8 * 0x2F8)
     )
 
+class KTHREAD(struct.BaseStruct):
+    '''
+    Definition for 64-bit KTHREAD structure
+    '''
+
+    _fields_ = (
+        ('Header',              ctypes.c_void_p),   # Supposed to be DISPATCHER_HEADER64
+        ('CycleTime',           ctypes.c_uint64),
+        ('QuantumTarget',       ctypes.c_uint64),
+        ('InitialStack',        ctypes.c_void_p),   # Supposed to be POINTER64
+        ('StackLimit',          ctypes.c_void_p),   # Supposed to be POINTER64
+        ('KernelStack',         ctypes.c_void_p),   # Supposed to be POINTER64
+        ('ThreadLock',          ctypes.c_uint64),
+        ('WaitRegister',        ctypes.c_uint8),
+        ('Running',             ctypes.c_uint8),
+        ('Alerted',             ctypes.c_uint8),
+        ('MiscFlags',           ctypes.c_uint32),
+        ('ApcState',            ctypes.c_void_p),   # Supposed to be KAPC_STATE64
+        ('DeferredProcessor',   ctypes.c_uint32),
+        ('ApcQueueLock',        ctypes.c_uint64),
+        ('WaitStatus',          ctypes.c_int64),
+        ('WaitBlockList',       ctypes.c_void_p),   # Supposed to be POINTER64
+        ('WaitListEntry',       ctypes.c_void_p),   # Supposed to be LIST_ENTRY64
+        ('Queue',               ctypes.c_void_p),   # Supposed to be POINTER64
+        ('Teb',                 ctypes.c_void_p),   # Supposed to be POINTER64
+        ('Timer',               ctypes.c_void_p),   # Supposed to be KTIMER64
+        ('ThreadFlags',         ctypes.c_int32),
+        ('Spare0',              ctypes.c_uint32),
+        ('WaitBlock',           ctypes.c_void_p),   # Supposed to be KWAIT_BLOCK64 * 4
+        ('QueueListEntry',      ctypes.c_void_p),   # Supposed to be LIST_ENTRY64
+        ('TrapFrame',           ctypes.c_void_p),   # Supposed to be POINTER64
+        ('FirstArgument',       ctypes.c_void_p),   # Supposed to be POINTER64
+        ('CallbackStack',       ctypes.c_void_p),   # Supposed to be POINTER64
+        ('ApcStateIndex',       ctypes.c_uint8),
+        ('BasePriority',        ctypes.c_char),
+        ('PriorityDecrement',   ctypes.c_char),
+        ('Preempted',           ctypes.c_uint8),
+        ('AdjustReason',        ctypes.c_uint8),
+        ('AdjustIncrement',     ctypes.c_char),
+        ('PreviousMode',        ctypes.c_char),
+        ('Saturation',          ctypes.c_char),
+        ('SystemCallNumber',    ctypes.c_uint32),
+        ('FreezeCount',         ctypes.c_uint32),
+        ('UserAffinity',        ctypes.c_void_p),   # Supposed to be GROUP_AFFINITY64
+        ('Process',             ctypes.c_void_p),   # Supposed to be POINTER64
+        ('Affinity',            ctypes.c_void_p),   # Supposed to be GROUP_AFFINITY64
+        ('IdealProcessor',      ctypes.c_uint32),
+        ('UserIdealProcessor',  ctypes.c_uint32),
+        ('ApcStatePointer',     ctypes.c_void_p),   # Supposed to be POINTER 64 * 2
+        ('SavedApcState',       ctypes.c_void_p),   # Supposed to be KAPC_STATE64
+        ('Win32Thread',         ctypes.c_void_p),   # Supposed to be POINTER64
+        ('StackBase',           ctypes.c_void_p),   # Supposed to be POINTER64
+        ('SuspendApc',          ctypes.c_void_p),   # Supposed to be KAPC64
+        ('SuspendSemaphore',    ctypes.c_void_p),   # Supposed to be KSEMAPHORE64
+        ('ThreadListEntry',     ctypes.c_void_p),   # Supposed to be LIST_ENTRY64
+        ('MutantListHead',      ctypes.c_void_p),   # Supposed to be LIST_ENTRY64
+        ('SListFaultAddress',   ctypes.c_void_p),   # Supposed to be POINTER64
+        ('ReadOperationCount',  ctypes.c_int64),
+        ('WriteOperationCount', ctypes.c_int64),
+        ('OtherOperationCount', ctypes.c_int64),
+        ('ReadTransferCount',   ctypes.c_int64),
+        ('WriteTransferCount',  ctypes.c_int64),
+        ('OtherTransferCount',  ctypes.c_int64),
+        ('ThreadCounters',      ctypes.c_void_p),   # Supposed to be POINTER64
+        ('XStateSave',          ctypes.c_void_p)
+    )   # Supposed to be POINTER64
+
+
+class KPRCB(struct.BaseStruct):
+    _fields_ = (
+        ('MxCsr',               ctypes.c_ulong),
+        ('Number',              ctypes.c_ushort),
+        ('LegacyNumber',        ctypes.c_char),
+        ('ReservedMustBeZero',  ctypes.c_char),
+        ('InterruptRequest',    ctypes.c_bool),
+        ('IdleHalt',            ctypes.c_bool),
+        ('CurrentThread',       KTHREAD),
+        ('NextThread',          KTHREAD),
+        ('IdleThread',          KTHREAD)
+    )
 
 class KPCR(struct.BaseStruct):
     '''
@@ -328,7 +408,15 @@ class KPCR(struct.BaseStruct):
         ('KdVersionBlock',                  ctypes.c_void_p),
         ('Unused3',                         ctypes.c_void_p),
         ('PcrAlign1',                       ctypes.c_ulong),        # [0x18]
-        ('Prcb',                            ctypes.c_void_p))
+        ('Prcb',                            KPRCB))
+
+
+class KPROCESS(struct.BaseStruct):
+    _fields_ = (
+        ('')
+    )
+
+
 
 
 def make_list_entry(archbits: int):
