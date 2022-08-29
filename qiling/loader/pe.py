@@ -639,6 +639,24 @@ class Process:
         kusd_obj.NXSupportPolicy = 0        # NX_SUPPORT_POLICY_ALWAYSOFF
 
         self.ql.os.KUSER_SHARED_DATA = kusd_obj
+    
+    def init_kpcr(self):
+        sysconf = self.ql.os.profile['KPCR']
+        osconf  = self.ql.os.profile[f'OS{self.ql.arch.bits}']
+
+        kpcr_addr = osconf.getint('KPCR')
+        kpcr_struct = KPCR
+        self.ql.mem.map(kpcr_addr, self.ql.mem.align_up(kpcr_struct.sizeof()), info='[kpcr]')
+
+        # Initialize an instance with a few key fields
+        # @TODO: initialize StackBase & StackLimit
+        # @TODO: initialize kprcb
+        kpcr_obj = kpcr_struct.volatile_ref(self.ql.mem, kpcr_addr)
+        kpcr_obj.MajorVersion = sysconf.getint('majorVersion')
+        kpcr_obj.MinorVersion = sysconf.getint('minorVersion')
+
+        self.ql.os.KPCR = kpcr_obj
+
 
     def init_security_cookie(self, pe: pefile.PE, image_base: int):
         if not Process.directory_exists(pe, 'IMAGE_DIRECTORY_ENTRY_LOAD_CONFIG'):
