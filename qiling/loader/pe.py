@@ -641,6 +641,10 @@ class Process:
         self.ql.os.KUSER_SHARED_DATA = kusd_obj
     
     def init_kpcr(self):
+        '''
+        Initialisation function for KPCR structure. This structure's pointer should be at gs:[0x18]
+        '''
+
         sysconf = self.ql.os.profile['KPCR']
         osconf  = self.ql.os.profile[f'OS{self.ql.arch.bits}']
 
@@ -654,6 +658,10 @@ class Process:
         kpcr_obj = kpcr_struct.volatile_ref(self.ql.mem, kpcr_addr)
         kpcr_obj.MajorVersion = sysconf.getint('majorVersion')
         kpcr_obj.MinorVersion = sysconf.getint('minorVersion')
+
+        # Writes KPCR pointer into GS:[0x18]
+        # @TODO: write into the register + offset instead of directly to mapped address
+        self.ql.mem.write_ptr(0x6000018, kpcr_addr)
 
         self.ql.os.KPCR = kpcr_obj
 
