@@ -684,19 +684,6 @@ def make_mdl(archbits: int):
 #         ('WaitListHead', LIST_ENTRY64),
 #     )
 #
-#
-# class DISPATCHER_HEADER32(ctypes.Structure):
-#     _fields_ = (
-#         ('Lock', ctypes.c_int32),
-#         ('SignalState', ctypes.c_int32),
-#         ('WaitListHead', LIST_ENTRY32),
-#         ('Type', ctypes.c_uint8),
-#         ('TimerControlFlags', ctypes.c_uint8),
-#         ('ThreadControlFlags', ctypes.c_uint8),
-#         ('TimerMiscFlags', ctypes.c_uint8),
-#     )
-#
-#
 # class KAPC_STATE64(ctypes.Structure):
 #     _fields_ = (
 #         ('ApcListHead', LIST_ENTRY64 * 2),
@@ -706,17 +693,6 @@ def make_mdl(archbits: int):
 #         ('UserApcPending', ctypes.c_uint8),
 #     )
 #
-#
-# class KAPC_STATE32(ctypes.Structure):
-#     _fields_ = (
-#         ('ApcListHead', LIST_ENTRY32 * 2),
-#         ('Process', POINTER32),
-#         ('KernelApcInProgress', ctypes.c_uint8),
-#         ('KernelApcPending', ctypes.c_uint8),
-#         ('UserApcPending', ctypes.c_uint8),
-#     )
-#
-#
 # class KTIMER64(ctypes.Structure):
 #     _fields_ = (
 #         ('Header', DISPATCHER_HEADER64),
@@ -725,17 +701,6 @@ def make_mdl(archbits: int):
 #         ('Dpc', POINTER64),
 #         ('Period', ctypes.c_uint32),
 #     )
-#
-#
-# class KTIMER32(ctypes.Structure):
-#     _fields_ = (
-#         ('Header', DISPATCHER_HEADER32),
-#         ('DueTime', LARGE_INTEGER),
-#         ('TimerListEntry', LIST_ENTRY32),
-#         ('Dpc', POINTER32),
-#         ('Period', ctypes.c_uint32),
-#     )
-#
 #
 # class KWAIT_BLOCK64(ctypes.Structure):
 #     _fields_ = (
@@ -747,19 +712,6 @@ def make_mdl(archbits: int):
 #         ('WaitType', ctypes.c_uint8),
 #         ('BlockState', ctypes.c_uint8),
 #     )
-#
-#
-# class KWAIT_BLOCK32(ctypes.Structure):
-#     _fields_ = (
-#         ('WaitListEntry', LIST_ENTRY32),
-#         ('Thread', POINTER32),
-#         ('Object', POINTER32),
-#         ('NextWaitBlock', POINTER32),
-#         ('WaitKey', ctypes.c_uint16),
-#         ('WaitType', ctypes.c_uint8),
-#         ('BlockState', ctypes.c_uint8),
-#     )
-#
 #
 # class GROUP_AFFINITY64(ctypes.Structure):
 #     _fields_ = (('Mask', ctypes.c_uint64), ('Group', ctypes.c_uint16),
@@ -792,11 +744,6 @@ def make_mdl(archbits: int):
 #         ('Inserted', ctypes.c_uint8),
 #     )
 #
-#
-# class KAPC32(ctypes.Structure):
-#     _fields_ = ()
-#
-#
 # class KSEMAPHORE64(ctypes.Structure):
 #     _pack_ = 8
 #     _fields_ = (("Header", DISPATCHER_HEADER64), ("Limit", ctypes.c_int32))
@@ -825,70 +772,6 @@ def make_mdl(archbits: int):
 #     )
 #
 #
-# class KTHREAD64(ctypes.Structure):
-#     _pack_ = 8
-#     _fields_ = (
-#         ('Header', DISPATCHER_HEADER64),
-#         ('CycleTime', ctypes.c_uint64),
-#         ('QuantumTarget', ctypes.c_uint64),
-#         ('InitialStack', POINTER64),
-#         ('StackLimit', POINTER64),
-#         ('KernelStack', POINTER64),
-#         ('ThreadLock', ctypes.c_uint64),
-#         ('WaitRegister', ctypes.c_uint8),  # _KWAIT_STATUS_REGISTER
-#         ('Running', ctypes.c_uint8),
-#         ('Alerted', ctypes.c_uint8 * 2),
-#         ('MiscFlags', ctypes.c_uint32),
-#         ('ApcState', KAPC_STATE64),
-#         ('DeferredProcessor', ctypes.c_uint32),
-#         ('ApcQueueLock', ctypes.c_uint64),
-#         ('WaitStatus', ctypes.c_int64),
-#         ('WaitBlockList', POINTER64),
-#         ('WaitListEntry', LIST_ENTRY64),
-#         ('Queue', POINTER64),
-#         ('Teb', POINTER64),
-#         ('Timer', KTIMER64),
-#         ('ThreadFlags', ctypes.c_int32),
-#         ('Spare0', ctypes.c_uint32),
-#         ('WaitBlock', KWAIT_BLOCK64 * 4),
-#         ('QueueListEntry', LIST_ENTRY64),
-#         ('TrapFrame', POINTER64),
-#         ('FirstArgument', POINTER64),
-#         ('CallbackStack', POINTER64),
-#         ('ApcStateIndex', ctypes.c_uint8),
-#         ('BasePriority', ctypes.c_char),
-#         ('PriorityDecrement', ctypes.c_char),
-#         ('Preempted', ctypes.c_uint8),
-#         ('AdjustReason', ctypes.c_uint8),
-#         ('AdjustIncrement', ctypes.c_char),
-#         ('PreviousMode', ctypes.c_char),
-#         ('Saturation', ctypes.c_char),
-#         ('SystemCallNumber', ctypes.c_uint32),
-#         ('FreezeCount', ctypes.c_uint32),
-#         ('UserAffinity', GROUP_AFFINITY64),
-#         ('Process', POINTER64),
-#         ('Affinity', GROUP_AFFINITY64),
-#         ('IdealProcessor', ctypes.c_uint32),
-#         ('UserIdealProcessor', ctypes.c_uint32),
-#         ('ApcStatePointer', POINTER64 * 2),
-#         ('SavedApcState', KAPC_STATE64),
-#         ('Win32Thread', POINTER64),
-#         ('StackBase', POINTER64),
-#         ('SuspendApc', KAPC64),
-#         ('SuspendSemaphore', KSEMAPHORE64),
-#         ('ThreadListEntry', LIST_ENTRY64),
-#         ('MutantListHead', LIST_ENTRY64),
-#         ('SListFaultAddress', POINTER64),
-#         ('ReadOperationCount', ctypes.c_int64),
-#         ('WriteOperationCount', ctypes.c_int64),
-#         ('OtherOperationCount', ctypes.c_int64),
-#         ('ReadTransferCount', ctypes.c_int64),
-#         ('WriteTransferCount', ctypes.c_int64),
-#         ('OtherTransferCount', ctypes.c_int64),
-#         ('ThreadCounters', POINTER64),
-#         ('XStateSave', POINTER64))
-
-
 # struct _RTL_PROCESS_MODULE_INFORMATION {
 #     HANDLE Section;
 #     PVOID MappedBase;
