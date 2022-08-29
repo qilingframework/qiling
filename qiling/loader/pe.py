@@ -629,14 +629,14 @@ class Process:
 
         # initialize an instance with a few key fields
         kusd_obj = kust_struct.volatile_ref(self.ql.mem, kusd_addr)
-        kusd_obj.ImageNumberLow = 0x014c    # IMAGE_FILE_MACHINE_I386
-        kusd_obj.ImageNumberHigh = 0x8664   # IMAGE_FILE_MACHINE_AMD64
-        kusd_obj.NtSystemRoot = self.ql.os.windir
-        kusd_obj.NtProductType = sysconf.getint('productType')
-        kusd_obj.NtMajorVersion = sysconf.getint('majorVersion')
-        kusd_obj.NtMinorVersion = sysconf.getint('minorVersion')
-        kusd_obj.KdDebuggerEnabled = 0
-        kusd_obj.NXSupportPolicy = 0        # NX_SUPPORT_POLICY_ALWAYSOFF
+        kusd_obj.ImageNumberLow     = 0x014c                # IMAGE_FILE_MACHINE_I386
+        kusd_obj.ImageNumberHigh    = 0x8664                # IMAGE_FILE_MACHINE_AMD64
+        kusd_obj.NtSystemRoot       = self.ql.os.windir
+        kusd_obj.NtProductType      = sysconf.getint('productType')
+        kusd_obj.NtMajorVersion     = sysconf.getint('majorVersion')
+        kusd_obj.NtMinorVersion     = sysconf.getint('minorVersion')
+        kusd_obj.KdDebuggerEnabled  = 0
+        kusd_obj.NXSupportPolicy    = 0                     # NX_SUPPORT_POLICY_ALWAYSOFF
 
         self.ql.os.KUSER_SHARED_DATA = kusd_obj
     
@@ -657,10 +657,9 @@ class Process:
         kpcr_obj = kpcr_struct.volatile_ref(self.ql.mem, kpcr_addr)
         kpcr_obj.MajorVersion = sysconf.getint('majorVersion')
         kpcr_obj.MinorVersion = sysconf.getint('minorVersion')
-       #kpcr_obj.Prcb = osconf.getint('KPRCB')
+        #kpcr_obj.Prcb = osconf.getint('KPRCB')
 
         # Writes KPCR pointer into GS:[0x18]
-        # @TODO: write into the register + offset instead of directly to mapped address
         self.ql.mem.write_ptr(0x6000018, kpcr_addr)
 
         self.ql.os.KPCR = kpcr_obj
@@ -679,11 +678,12 @@ class Process:
 
         # Initialize an instance with key fields
         kthread_obj = kthread_struct.volatile_ref(self.ql.mem, kthread_addr)
-        kthread_obj.ThreadLock = 11
-        kthread_obj.PreviousMode = 0
-        kthread_obj.InitialStack = 0x1000
-        kthread_obj.StackBase = 0x1500
-        kthread_obj.StackLimit = 0x2000
+        kthread_obj.ThreadLock      = 11
+        kthread_obj.PreviousMode    = 0
+        kthread_obj.InitialStack    = 0x1000
+        kthread_obj.StackBase       = 0x1500
+        kthread_obj.StackLimit      = 0x2000
+        kthread_obj.MiscFlags       |= 0x400
 
         # Writes KTHREAD pointer into GS:[0x188]
         self.ql.mem.write_ptr(0x6000188, kthread_addr)
@@ -694,6 +694,18 @@ class Process:
         '''
         Initialisation function for KPROCESS structure.
         '''
+
+        sysconf = self.ql.os.profile['SYSTEM']
+        osconf  = self.ql.os.profile[f'OS{self.ql.arch.bits}']
+
+        kproc_addr = osconf.getint('KPROCESS')
+        kproc_struct = KPROCESS
+        self.ql.mem.map(kproc_addr, self.ql.mem.align_up(kproc_struct.sizeof()), info='[kprocess]')
+
+        # Initialize an instance with key fields
+        kproc_obj = kproc_struct.volatile_ref(self.ql.mem, kproc_addr)
+
+        self.ql.os.KPROCESS = kproc_obj
 
     def init_kprcb(self):
         '''
@@ -709,7 +721,7 @@ class Process:
 
         # Initialize and instance with a few key fields
         kprcb_obj = kprcb_struct.volatile_ref(self.ql.mem, kprcb_addr)
-        #kprcb_obj.CurrentThread = osconf.getint('KTHREAD')
+        #kprcb_obj.CurrentThread = 
         #kprcb_obj.IdleThread = osconf.getint('KTHREAD')
 
         # Writes KPRCB pointer into GS:[0x20]
