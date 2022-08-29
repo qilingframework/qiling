@@ -115,6 +115,35 @@ def make_peb(archbits: int):
 
     return PEB
 
+class NT_TIB(struct.BaseStruct):
+    '''
+    _NT_TIB structure
+
+    Below output is from Windows RS4
+    0: kd> dt _NT_TIB
+    nt!_NT_TIB
+        +0x000 ExceptionList    : Ptr64 _EXCEPTION_REGISTRATION_RECORD
+        +0x008 StackBase        : Ptr64 Void
+        +0x010 StackLimit       : Ptr64 Void
+        +0x018 SubSystemTib     : Ptr64 Void
+        +0x020 FiberData        : Ptr64 Void
+        +0x020 Version          : Uint4B
+        +0x028 ArbitraryUserPointer : Ptr64 Void
+        +0x030 Self             : Ptr64 _NT_TIB
+    '''
+
+    _fields_ = (
+        ('ExceptionList',           ctypes.c_void_p),
+        ('StackBase',               ctypes.c_void_p),
+        ('StackLimit',              ctypes.c_void_p),
+        ('SubSystemTib',            ctypes.c_void_p),
+        ('FiberData',               ctypes.c_void_p),
+        ('Version',                 ctypes.c_uint * 4),
+        ('ArbitraryUserPointer',    ctypes.c_void_p),
+        ('Self',                    ctypes.c_void_p),
+    )
+
+
 
 # https://docs.microsoft.com/en-us/windows/win32/api/subauth/ns-subauth-unicode_string
 @lru_cache(maxsize=2)
@@ -237,6 +266,69 @@ class KUSER_SHARED_DATA(struct.BaseStruct):
         # pad structure to expected structure size
         ('_padding0', ctypes.c_uint8 * 0x2F8)
     )
+
+
+class KPCR(struct.BaseStruct):
+    '''
+    Defintion for 64-bit KPCR structure.
+    Follows implementation of KPRCB64. Initialisation function in `pe.py` registers this structure.
+    Structure has a configuration item in `Windows.ql`.
+
+    Below output is from Windows RS4
+    0: kd> dt _KPCR
+    nt!_KPCR
+        +0x000 NtTib            : _NT_TIB
+        +0x000 GdtBase          : Ptr64 _KGDTENTRY64
+        +0x008 TssBase          : Ptr64 _KTSS64
+        +0x010 UserRsp          : Uint8B
+        +0x018 Self             : Ptr64 _KPCR
+        +0x020 CurrentPrcb      : Ptr64 _KPRCB
+        +0x028 LockArray        : Ptr64 _KSPIN_LOCK_QUEUE
+        +0x030 Used_Self        : Ptr64 Void
+        +0x038 IdtBase          : Ptr64 _KIDTENTRY64
+        +0x040 Unused           : [2] Uint8B
+        +0x050 Irql             : UChar
+        +0x051 SecondLevelCacheAssociativity : UChar
+        +0x052 ObsoleteNumber   : UChar
+        +0x053 Fill0            : UChar
+        +0x054 Unused0          : [3] Uint4B
+        +0x060 MajorVersion     : Uint2B
+        +0x062 MinorVersion     : Uint2B
+        +0x064 StallScaleFactor : Uint4B
+        +0x068 Unused1          : [3] Ptr64 Void
+        +0x080 KernelReserved   : [15] Uint4B
+        +0x0bc SecondLevelCacheSize : Uint4B
+        +0x0c0 HalReserved      : [16] Uint4B
+        +0x100 Unused2          : Uint4B
+        +0x108 KdVersionBlock   : Ptr64 Void
+        +0x110 Unused3          : Ptr64 Void
+        +0x118 PcrAlign1        : [24] Uint4B
+        +0x180 Prcb             : _KPRCB
+
+
+    '''
+
+    _fields_ = (
+        ('NtTib',                           NT_TIB),
+        ('IdtBase',                         ctypes.c_void_p),       # This is meant to be a KIDTENTRY64 pointer
+        ('Unused',                          ctypes.c_ulong),        # [0x2]
+        ('Irql',                            ctypes.c_void_p),       # This is meant to be a KIRQL structure
+        ('SecondLevelCacheAssociativity',   ctypes.c_char),
+        ('ObsoleteNumber',                  ctypes.c_char),
+        ('Fill0',                           ctypes.c_char),
+        ('Unused0',                         ctypes.c_ulong),        # [0x3]
+        ('MajorVersion',                    ctypes.c_ushort),
+        ('MinorVersion',                    ctypes.c_ushort),
+        ('StallScaleFactor',                ctypes.c_ulong),
+        ('Unused1',                         ctypes.c_void_p),       # [0x3]
+        ('KernelReserved',                  ctypes.c_ulong),        # [0x0F]
+        ('SecondLevelCacheSize',            ctypes.c_ulong),
+        ('HalReserved',                     ctypes.c_ulong),        # [0x10]
+        ('Unused2',                         ctypes.c_ulong),
+        ('KdVersionBlock',                  ctypes.c_void_p),
+        ('Unused3',                         ctypes.c_void_p),
+        ('PcrAlign1',                       ctypes.c_ulong),        # [0x18]
+        ('Prcb',                            ctypes.c_void_p))
 
 
 def make_list_entry(archbits: int):

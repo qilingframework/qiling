@@ -7,7 +7,7 @@ import os, pefile, pickle, secrets, ntpath
 from typing import Any, Dict, MutableMapping, NamedTuple, Optional, Mapping, Sequence, Tuple, Union
 
 from unicorn import UcError
-from unicorn.x86_const import UC_X86_REG_CR4, UC_X86_REG_CR8
+from unicorn.x86_const import UC_X86_REG_CR4, UC_X86_REG_CR8, UC_X86_REG_GS
 
 from qiling import Qiling
 from qiling.arch.x86_const import FS_SEGMENT_ADDR, GS_SEGMENT_ADDR
