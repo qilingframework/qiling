@@ -767,7 +767,7 @@ class Process:
 
         knode_addr = osconf.getint('KNODE')
         knode_struct = KNODE
-        self.ql.mem.map(knode_addr, self.ql.mem.aign_up(knode_struct.sizeof()), info='[knode]')
+        self.ql.mem.map(knode_addr, self.ql.mem.align_up(knode_struct.sizeof()), info='[knode]')
 
         # Initialize struct with a few key fields
         knode_obj = knode_struct.volatile_ref(self.ql.mem, knode_addr)
@@ -884,6 +884,8 @@ class QlLoaderPE(QlLoader, Process):
                 self.init_kprcb()
                 self.init_kpcr()
                 self.init_kthread()
+                self.init_kprocess()
+                self.init_knode()
 
                 # set IRQ Level in CR8 to PASSIVE_LEVEL
                 self.ql.arch.regs.write(UC_X86_REG_CR8, 0)
