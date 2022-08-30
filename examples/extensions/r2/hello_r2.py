@@ -16,7 +16,8 @@ def func(ql: Qiling, *args, **kwargs):
     return
 
 def my_sandbox(path, rootfs):
-    ql = Qiling(path, rootfs, verbose=QL_VERBOSE.DEBUG)
+    ql = Qiling(path, rootfs, verbose=QL_VERBOSE.DISASM)
+    # QL_VERBOSE.DISASM will be monkey-patched when r2 is available
     r2 = R2(ql)
 
     # search bytes sequence using ql.mem.search
@@ -33,7 +34,7 @@ def my_sandbox(path, rootfs):
     # get function address and hook it
     ql.hook_address(func, r2.functions['main'].offset)
     # enable trace powered by r2 symsmap
-    r2.enable_trace()
+    # r2.enable_trace()
     ql.run()
 
 if __name__ == "__main__":

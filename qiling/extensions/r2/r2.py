@@ -3,13 +3,13 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import bisect
 import ctypes
 import json
+import re
 import libr
-from dataclasses import dataclass, fields
+from dataclasses import dataclass, field, fields
 from functools import cached_property, wraps
-from typing import TYPE_CHECKING, Dict, List, Literal, Tuple, Union
+from typing import TYPE_CHECKING, Dict, List, Literal, Optional, Pattern, Tuple, Union
 from qiling.const import QL_ARCH
 from qiling.extensions import trace
 from unicorn import UC_PROT_NONE, UC_PROT_READ, UC_PROT_WRITE, UC_PROT_EXEC, UC_PROT_ALL
@@ -81,6 +81,20 @@ class Symbol(R2Data):
 
 
 @dataclass(unsafe_hash=True, init=False)
+class Instruction(R2Data):
+    offset: int
+    size: int
+    opcode: str  # raw opcode
+    disasm: str = ''  # flag resolved opcode
+    bytes: bytes
+    type: str
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.bytes = bytes.fromhex(kwargs["bytes"])
+
+
+@dataclass(unsafe_hash=True, init=False)
 class Function(R2Data):
     name: str
     offset: int
@@ -90,7 +104,7 @@ class Function(R2Data):
 
 @dataclass(unsafe_hash=True, init=False)
 class Flag(R2Data):
-    offset: int
+    offset: int  # should be addr but r2 calls it offset
     name: str = ''
     size: int = 0
 
@@ -166,7 +180,9 @@ class R2:
             self._r2c, ctypes.create_string_buffer(cmd.encode("utf-8")))
         return ctypes.string_at(r).decode('utf-8')
 
-    @staticmethod
+    def _cmdj(self, cmd: str) -> Union[Dict, List[Dict]]:
+        return json.loads(self._cmd(cmd))
+
     def aaa(fun):
         @wraps(fun)
         def wrapper(self):
@@ -176,9 +192,6 @@ class R2:
             return fun(self)
         return wrapper
 
-    def _cmdj(self, cmd: str) -> Union[Dict, List[Dict]]:
-        return json.loads(self._cmd(cmd))
-    
     @cached_property
     def binfo(self) -> Dict[str, str]:
         return self._cmdj("iIj")
@@ -222,13 +235,24 @@ class R2:
     def xrefs(self) -> List[Xref]:
         return [Xref(**dic) for dic in self._cmdj("axj")]
 
-    def at(self, addr: int) -> Tuple[Flag, int]:
-        # the most suitable flag should have address <= addr
-        # bisect_right find the insertion point, right side if value exists
-        idx = bisect.bisect_right(self.flags, Flag(offset=addr))
-        # minus 1 to find the corresponding flag
-        flag = self.flags[idx - 1]
-        return flag, addr - flag.offset
+    def at(self, addr: int, parse=False) -> Union[str, Tuple[str, int]]:
+        '''Given an address, return [name, offset] or "name + offset"'''
+        name = self._cmd(f'fd {addr}').strip()
+        if parse:
+            try:
+                name, offset = name.split(' + ')
+                offset = int(offset)
+            except ValueError:  # split fail when offset=0
+                offset = 0
+            return name, offset
+        return name
+
+    def where(self, name: str, offset: int=0) -> int:
+        '''Given a name (+ offset), return its address (0 when not found)'''
+        if offset != 0:  # name can already have offset, multiple + is allowd
+            name += f' + {offset}'
+        addr = self._cmd(f'?v {name}').strip()  # 0x0 when name is not found
+        return int(addr, 16)
 
     def refrom(self, addr: int) -> List[Xref]:
         return [x for x in self.xrefs if x.fromaddr == addr]
@@ -239,6 +263,35 @@ class R2:
     def read(self, addr: int, size: int) -> bytes:
         hexstr = self._cmd(f"p8 {size} @ {addr}")
         return bytes.fromhex(hexstr)
+
+    def dis_nbytes(self, addr: int, size: int) -> List[Instruction]:
+        insts = [Instruction(**dic) for dic in self._cmdj(f"pDj {size} @ {addr}")]
+        return insts
+
+    def disassembler(self, ql: 'Qiling', addr: int, size: int, filt: Pattern[str]=None) -> int:
+        '''A human-friendly monkey patch of QlArchUtils.disassembler powered by r2, can be used for hook_code
+            :param ql: Qiling instance
+            :param addr: start address for disassembly
+            :param size: size in bytes
+            :param filt: regex pattern to filter instructions
+            :return: progress of dissembler, should be equal to size if success
+        '''
+        anibbles = ql.arch.bits // 4
+        progress = 0
+        for inst in self.dis_nbytes(addr, size):
+            if inst.type.lower() == 'invalid':
+                break  # stop disasm
+            name, offset = self.at(inst.offset, parse=True)
+            if filt is None or filt.search(name):
+                ql.log.info(f'{inst.offset:0{anibbles}x} [{name:20s} + {offset:#08x}] {inst.bytes.hex(" "):20s} {inst.disasm}')
+            progress = inst.offset + inst.size - addr
+        if progress < size:
+            ql.arch.utils.disassembler(ql, addr + progress, size - progress)
+        return progress
+
+    def enable_disasm(self, filt_str: str=''):
+        filt = re.compile(filt_str)
+        self.ql.hook_code(self.disassembler, filt)
 
     def enable_trace(self, mode='full'):
         # simple map from addr to flag name, cannot resolve addresses in the middle

@@ -335,68 +335,66 @@ class Process:
         return {"name": name, "address": address}
 
     def init_teb(self):
-        teb_obj = make_teb(self.ql.arch.bits)
+        teb_struct = make_teb(self.ql.arch.bits)
 
         teb_addr = self.structure_last_addr
-        peb_addr = self.ql.mem.align_up(teb_addr + ctypes.sizeof(teb_obj), 0x10)
+        peb_addr = self.ql.mem.align_up(teb_addr + teb_struct.sizeof(), 0x10)
 
+        teb_obj = teb_struct.volatile_ref(self.ql.mem, teb_addr)
         teb_obj.StackBase  = self.stack_address + self.stack_size
         teb_obj.StackLimit = self.stack_address
         teb_obj.TebAddress = teb_addr
         teb_obj.PebAddress = peb_addr
 
         self.ql.log.info(f'TEB is at {teb_addr:#x}')
-        self.ql.mem.write(teb_addr, bytes(teb_obj))
 
         self.structure_last_addr = peb_addr
         self.TEB = teb_obj
 
     def init_peb(self):
-        peb_obj = make_peb(self.ql.arch.bits)
+        peb_struct = make_peb(self.ql.arch.bits)
 
         peb_addr = self.structure_last_addr
-        ldr_addr = self.ql.mem.align_up(peb_addr + ctypes.sizeof(peb_obj), 0x10)
+        ldr_addr = self.ql.mem.align_up(peb_addr + peb_struct.sizeof(), 0x10)
 
-        # we must set an heap, will try to retrieve this value. Is ok to be all \x00
+        # we must set a heap, will try to retrieve this value. Is ok to be all \x00
+        peb_obj = peb_struct.volatile_ref(self.ql.mem, peb_addr)
+        peb_obj.ImageBaseAddress   = self.pe_image_address
         peb_obj.LdrAddress         = ldr_addr
         peb_obj.ProcessParameters  = self.ql.os.heap.alloc(0x100)
         peb_obj.ProcessHeap        = self.ql.os.heap.alloc(0x100)
         peb_obj.NumberOfProcessors = self.ql.os.profile.getint('HARDWARE', 'number_processors')
 
         self.ql.log.info(f'PEB is at {peb_addr:#x}')
-        self.ql.mem.write(peb_addr, bytes(peb_obj))
 
         self.structure_last_addr = ldr_addr
         self.PEB = peb_obj
 
     def init_ldr_data(self):
-        ldr_obj = make_ldr_data(self.ql.arch.bits)
-        ldr_cls = ldr_obj.__class__
+        ldr_struct = make_ldr_data(self.ql.arch.bits)
 
         ldr_addr = self.structure_last_addr
-        nobj_addr = self.ql.mem.align_up(ldr_addr + ctypes.sizeof(ldr_obj), 0x10)
+        nobj_addr = self.ql.mem.align_up(ldr_addr + ldr_struct.sizeof(), 0x10)
 
-        ldr_obj.InLoadOrderModuleList.Flink = ldr_addr + ldr_cls.InLoadOrderModuleList.offset
-        ldr_obj.InLoadOrderModuleList.Blink = ldr_addr + ldr_cls.InLoadOrderModuleList.offset
+        ldr_obj = ldr_struct.volatile_ref(self.ql.mem, ldr_addr)
+        ldr_obj.InLoadOrderModuleList.Flink = ldr_addr + ldr_struct.InLoadOrderModuleList.offset
+        ldr_obj.InLoadOrderModuleList.Blink = ldr_addr + ldr_struct.InLoadOrderModuleList.offset
 
-        ldr_obj.InMemoryOrderModuleList.Flink = ldr_addr + ldr_cls.InMemoryOrderModuleList.offset
-        ldr_obj.InMemoryOrderModuleList.Blink = ldr_addr + ldr_cls.InMemoryOrderModuleList.offset
+        ldr_obj.InMemoryOrderModuleList.Flink = ldr_addr + ldr_struct.InMemoryOrderModuleList.offset
+        ldr_obj.InMemoryOrderModuleList.Blink = ldr_addr + ldr_struct.InMemoryOrderModuleList.offset
 
-        ldr_obj.InInitializationOrderModuleList.Flink = ldr_addr + ldr_cls.InInitializationOrderModuleList.offset
-        ldr_obj.InInitializationOrderModuleList.Blink = ldr_addr + ldr_cls.InInitializationOrderModuleList.offset
+        ldr_obj.InInitializationOrderModuleList.Flink = ldr_addr + ldr_struct.InInitializationOrderModuleList.offset
+        ldr_obj.InInitializationOrderModuleList.Blink = ldr_addr + ldr_struct.InInitializationOrderModuleList.offset
 
         self.ql.log.info(f'LDR is at {ldr_addr:#x}')
-        self.ql.mem.write(ldr_addr, bytes(ldr_obj))
 
         self.structure_last_addr = nobj_addr
         self.LDR = ldr_obj
 
     def add_ldr_data_table_entry(self, dll_name: str):
-        entry_obj = make_ldr_data_table_entry(self.ql.arch.bits)
-        entry_cls = entry_obj.__class__
+        entry_struct = make_ldr_data_table_entry(self.ql.arch.bits)
 
-        entry_size = ctypes.sizeof(entry_obj)
-        entry_addr = self.ql.os.heap.alloc(entry_size)
+        entry_addr = self.ql.os.heap.alloc(entry_struct.sizeof())
 
         def populate_unistr(obj, s: str) -> None:
             encoded = s.encode('utf-16le')
@@ -412,50 +410,47 @@ class Process:
         image = self.get_image_by_name(dll_name, casefold=True)
         assert image, 'image should have been added to loader.images first'
 
-        entry_obj.DllBase = image.base
-        populate_unistr(entry_obj.FullDllName, ntpath.join(self.ql.os.winsys, dll_name))
-        populate_unistr(entry_obj.BaseDllName, dll_name)
+        with entry_struct.ref(self.ql.mem, entry_addr) as entry_obj:
+            entry_obj.DllBase = image.base
+            populate_unistr(entry_obj.FullDllName, ntpath.join(self.ql.os.winsys, dll_name))
+            populate_unistr(entry_obj.BaseDllName, dll_name)
 
-        # Flink
-        if self.ldr_list:
-            flink_base, flink = self.ldr_list[-1]
+            # Flink
+            if self.ldr_list:
+                with entry_struct.ref(self.ql.mem, self.ldr_list[-1]) as flink:
+                    entry_obj.InLoadOrderLinks.Flink = flink.InLoadOrderLinks.Flink
+                    entry_obj.InMemoryOrderLinks.Flink = flink.InMemoryOrderLinks.Flink
+                    entry_obj.InInitializationOrderLinks.Flink = flink.InInitializationOrderLinks.Flink
 
-            entry_obj.InLoadOrderLinks.Flink = flink.InLoadOrderLinks.Flink
-            entry_obj.InMemoryOrderLinks.Flink = flink.InMemoryOrderLinks.Flink
-            entry_obj.InInitializationOrderLinks.Flink = flink.InInitializationOrderLinks.Flink
+                    flink.InLoadOrderLinks.Flink = entry_addr + entry_struct.InLoadOrderLinks.offset
+                    flink.InMemoryOrderLinks.Flink = entry_addr + entry_struct.InMemoryOrderLinks.offset
+                    flink.InInitializationOrderLinks.Flink = entry_addr + entry_struct.InInitializationOrderLinks.offset
 
-            flink.InLoadOrderLinks.Flink = entry_addr + entry_cls.InLoadOrderLinks.offset
-            flink.InMemoryOrderLinks.Flink = entry_addr + entry_cls.InMemoryOrderLinks.offset
-            flink.InInitializationOrderLinks.Flink = entry_addr + entry_cls.InInitializationOrderLinks.offset
+            else:
+                # a volatile ref to self.PEB.LdrAddress
+                flink = self.LDR
 
-        else:
-            flink_base, flink = (self.PEB.LdrAddress, self.LDR)
+                entry_obj.InLoadOrderLinks.Flink = flink.InLoadOrderModuleList.Flink
+                entry_obj.InMemoryOrderLinks.Flink = flink.InMemoryOrderModuleList.Flink
+                entry_obj.InInitializationOrderLinks.Flink = flink.InInitializationOrderModuleList.Flink
 
-            entry_obj.InLoadOrderLinks.Flink = flink.InLoadOrderModuleList.Flink
-            entry_obj.InMemoryOrderLinks.Flink = flink.InMemoryOrderModuleList.Flink
-            entry_obj.InInitializationOrderLinks.Flink = flink.InInitializationOrderModuleList.Flink
+                flink.InLoadOrderModuleList.Flink = entry_addr + entry_struct.InLoadOrderLinks.offset
+                flink.InMemoryOrderModuleList.Flink = entry_addr + entry_struct.InMemoryOrderLinks.offset
+                flink.InInitializationOrderModuleList.Flink = entry_addr + entry_struct.InInitializationOrderLinks.offset
 
-            flink.InLoadOrderModuleList.Flink = entry_addr + entry_cls.InLoadOrderLinks.offset
-            flink.InMemoryOrderModuleList.Flink = entry_addr + entry_cls.InMemoryOrderLinks.offset
-            flink.InInitializationOrderModuleList.Flink = entry_addr + entry_cls.InInitializationOrderLinks.offset
+            # Blink
+            blink = self.LDR
 
-        # Blink
-        blink_base = self.PEB.LdrAddress
-        blink = self.LDR
+            entry_obj.InLoadOrderLinks.Blink = blink.InLoadOrderModuleList.Blink
+            entry_obj.InMemoryOrderLinks.Blink = blink.InMemoryOrderModuleList.Blink
+            entry_obj.InInitializationOrderLinks.Blink = blink.InInitializationOrderModuleList.Blink
 
-        entry_obj.InLoadOrderLinks.Blink = blink.InLoadOrderModuleList.Blink
-        entry_obj.InMemoryOrderLinks.Blink = blink.InMemoryOrderModuleList.Blink
-        entry_obj.InInitializationOrderLinks.Blink = blink.InInitializationOrderModuleList.Blink
+            blink.InLoadOrderModuleList.Blink = entry_addr + entry_struct.InLoadOrderLinks.offset
+            blink.InMemoryOrderModuleList.Blink = entry_addr + entry_struct.InMemoryOrderLinks.offset
+            blink.InInitializationOrderModuleList.Blink = entry_addr + entry_struct.InInitializationOrderLinks.offset
 
-        blink.InLoadOrderModuleList.Blink = entry_addr + entry_cls.InLoadOrderLinks.offset
-        blink.InMemoryOrderModuleList.Blink = entry_addr + entry_cls.InMemoryOrderLinks.offset
-        blink.InInitializationOrderModuleList.Blink = entry_addr + entry_cls.InInitializationOrderLinks.offset
 
-        self.ql.mem.write(flink_base, bytes(flink))
-        self.ql.mem.write(blink_base, bytes(blink))
-        self.ql.mem.write(entry_addr, bytes(entry_obj))
-
-        self.ldr_list.append((entry_addr, entry_obj))
+        self.ldr_list.append(entry_addr)
 
     @staticmethod
     def directory_exists(pe: pefile.PE, entry: str) -> bool:
@@ -582,55 +577,68 @@ class Process:
         drv_addr = self.structure_last_addr
 
         # PDRIVER_OBJECT DriverObject
-        drv_obj = make_driver_object(self.ql, drv_addr, self.ql.arch.bits)
-        nobj_addr = self.ql.mem.align_up(drv_addr + ctypes.sizeof(drv_obj), 0x10)
+        drvobj_cls = make_driver_object(self.ql.arch.bits)
+        nobj_addr = self.ql.mem.align_up(drv_addr + drvobj_cls.sizeof(), 0x10)
 
         self.ql.log.info(f'DriverObject is at {drv_addr:#x}')
-        self.ql.mem.write(drv_addr, bytes(drv_obj))
+        # note: driver object is volatile; no need to flush its contents to mem
 
         self.structure_last_addr = nobj_addr
         self.driver_object_address = drv_addr
-        self.driver_object = drv_obj
+        self.driver_object = drvobj_cls.volatile_ref(self.ql.mem, drv_addr)
 
     def init_registry_path(self):
         regpath_addr = self.structure_last_addr
 
         # PUNICODE_STRING RegistryPath
-        regpath_obj = make_unicode_string(self.ql.arch.bits,
+        ucstrtype = make_unicode_string(self.ql.arch.bits)
+
+        regpath_obj = ucstrtype(
                 Length=0,
                 MaximumLength=0,
-                Buffer=regpath_addr
+                Buffer=regpath_addr     # FIXME: pointing to self? this does not seem right
         )
 
-        nobj_addr = self.ql.mem.align_up(regpath_addr + ctypes.sizeof(regpath_obj), 0x10)
+        nobj_addr = self.ql.mem.align_up(regpath_addr + ucstrtype.sizeof(), 0x10)
 
         self.ql.log.info(f'RegistryPath is at {regpath_addr:#x}')
-        self.ql.mem.write(regpath_addr, bytes(regpath_obj))
+        regpath_obj.save_to(self.ql.mem, regpath_addr)
 
         self.structure_last_addr = nobj_addr
         self.regitry_path_address = regpath_addr
 
     def init_eprocess(self):
-        eproc_obj = make_eprocess(self.ql.arch.bits)
-
         eproc_addr = self.structure_last_addr
-        nobj_addr = self.ql.mem.align_up(eproc_addr + ctypes.sizeof(eproc_obj), 0x10)
 
-        self.ql.mem.write(eproc_addr, bytes(eproc_obj))
+        eproc_struct = make_eprocess(self.ql.arch.bits)
+        nobj_addr = self.ql.mem.align_up(eproc_addr + eproc_struct.sizeof(), 0x10)
+
+        with eproc_struct.ref(self.ql.mem, eproc_addr) as eproc_obj:
+            eproc_obj.dummy = b''
 
         self.structure_last_addr = nobj_addr
         self.eprocess_address = eproc_addr
 
     def init_ki_user_shared_data(self):
-        addr = self.ql.os.profile.getint(f'OS{self.ql.arch.bits}', 'KI_USER_SHARED_DATA')
+        sysconf = self.ql.os.profile['SYSTEM']
+        osconf  = self.ql.os.profile[f'OS{self.ql.arch.bits}']
 
-        user_shared_data_obj = KUSER_SHARED_DATA()
-        user_shared_data_size = ctypes.sizeof(KUSER_SHARED_DATA)
+        kusd_addr = osconf.getint('KI_USER_SHARED_DATA')
+        kust_struct = KUSER_SHARED_DATA
+        self.ql.mem.map(kusd_addr, self.ql.mem.align_up(kust_struct.sizeof()), info='[kuser shared data]')
 
-        # TODO: initialize key fields in this structure
+        # initialize an instance with a few key fields
+        kusd_obj = kust_struct.volatile_ref(self.ql.mem, kusd_addr)
+        kusd_obj.ImageNumberLow = 0x014c    # IMAGE_FILE_MACHINE_I386
+        kusd_obj.ImageNumberHigh = 0x8664   # IMAGE_FILE_MACHINE_AMD64
+        kusd_obj.NtSystemRoot = self.ql.os.windir
+        kusd_obj.NtProductType = sysconf.getint('productType')
+        kusd_obj.NtMajorVersion = sysconf.getint('majorVersion')
+        kusd_obj.NtMinorVersion = sysconf.getint('minorVersion')
+        kusd_obj.KdDebuggerEnabled = 0
+        kusd_obj.NXSupportPolicy = 0        # NX_SUPPORT_POLICY_ALWAYSOFF
 
-        self.ql.mem.map(addr, self.ql.mem.align_up(user_shared_data_size), info='[kuser shared]')
-        self.ql.mem.write(addr, bytes(user_shared_data_obj))
+        self.ql.os.KUSER_SHARED_DATA = kusd_obj
 
     def init_security_cookie(self, pe: pefile.PE, image_base: int):
         if not Process.directory_exists(pe, 'IMAGE_DIRECTORY_ENTRY_LOAD_CONFIG'):

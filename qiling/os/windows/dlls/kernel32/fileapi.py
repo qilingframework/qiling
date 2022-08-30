@@ -15,7 +15,7 @@ from qiling.os.windows.api import *
 from qiling.os.windows.const import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.handle import Handle
-from qiling.os.windows.structs import Win32FindData
+from qiling.os.windows.structs import FILETIME, make_win32_find_data
 
 # DWORD GetFileType(
 #   HANDLE hFile
@@ -46,50 +46,67 @@ def hook_FindFirstFileA(ql: Qiling, address: int, params):
     filename = params['lpFileName']
     pointer = params['lpFindFileData']
 
-    if filename == 0:
+    if not filename:
         return INVALID_HANDLE_VALUE
-    elif len(filename) >= MAX_PATH:
+
+    if len(filename) >= MAX_PATH:
         return ERROR_INVALID_PARAMETER
 
-    target_dir = os.path.join(ql.rootfs, filename.replace("\\", os.sep))
-    ql.log.info('TARGET_DIR = %s' % target_dir)
-    real_path = ql.os.path.transform_to_real_path(filename)
+    host_path = ql.os.path.virtual_to_host_path(filename)
 
     # Verify the directory is in ql.rootfs to ensure no path traversal has taken place
-    if not os.path.exists(real_path):
+    if not ql.os.path.is_safe_host_path(host_path):
         ql.os.last_error = ERROR_FILE_NOT_FOUND
+
         return INVALID_HANDLE_VALUE
 
     # Check if path exists
     filesize = 0
+
     try:
-        f = ql.os.fs_mapper.open(real_path, "r")
-        filesize = os.path.getsize(real_path)
+        f = ql.os.fs_mapper.open(host_path, "r")
+
+        filesize = os.path.getsize(host_path)
     except FileNotFoundError:
         ql.os.last_error = ERROR_FILE_NOT_FOUND
-        return INVALID_HANDLE_VALUE
 
-    # Get size of the file
-    file_size_low = filesize & 0xffffff
-    file_size_high = filesize >> 32
+        return INVALID_HANDLE_VALUE
 
     # Create a handle for the path
     new_handle = Handle(obj=f)
     ql.os.handle_manager.append(new_handle)
 
-    # Spoof filetime values
-    filetime = ql.pack64(datetime.now().microsecond)
+    # calculate file time
+    epoch = datetime(1601, 1, 1)
+    elapsed = datetime.now() - epoch
 
-    find_data = Win32FindData(
-                ql,
-                FILE_ATTRIBUTE_NORMAL,
-                filetime, filetime, filetime,
-                file_size_high, file_size_low,
-                0, 0,
-                filename,
-                0, 0, 0, 0,)
+    # number of 100-nanosecond intervals since Jan 1, 1601 utc
+    # where: (10 ** 9) / 100 -> (10 ** 7)
+    hnano = int(elapsed.total_seconds() * (10 ** 7))
 
-    find_data.write(pointer)
+    mask = (1 << 32) - 1
+
+    ftime = FILETIME(
+        (hnano >>  0) & mask,
+        (hnano >> 32) & mask
+    )
+
+    fdata_struct = make_win32_find_data(ql.arch.bits, wide=False)
+
+    with fdata_struct.ref(ql.mem, pointer) as fdata_obj:
+        fdata_obj.dwFileAttributes   = FILE_ATTRIBUTE_NORMAL
+        fdata_obj.ftCreationTime     = ftime
+        fdata_obj.ftLastAccessTime   = ftime
+        fdata_obj.ftLastWriteTime    = ftime
+        fdata_obj.nFileSizeHigh      = (filesize >> 32) & mask
+        fdata_obj.nFileSizeLow       = (filesize >>  0) & mask
+        fdata_obj.dwReserved0        = 0
+        fdata_obj.dwReserved1        = 0
+        fdata_obj.cFileName          = filename
+        fdata_obj.cAlternateFileName = 0
+        fdata_obj.dwFileType         = 0
+        fdata_obj.dwCreatorType      = 0
+        fdata_obj.wFinderFlags       = 0
 
     return new_handle.id
 

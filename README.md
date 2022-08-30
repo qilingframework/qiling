@@ -182,7 +182,7 @@ With qltool, easy execution can be performed:
 With shellcode:
 
 ```
-$ ./qltool shellcode --os linux --arch arm --hex -f examples/shellcodes/linarm32_tcp_reverse_shell.hex
+$ ./qltool code --os linux --arch arm --format hex -f examples/shellcodes/linarm32_tcp_reverse_shell.hex
 ```
 
 With binary file:
