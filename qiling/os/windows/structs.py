@@ -787,13 +787,17 @@ class KPCR(struct.BaseStruct):
         +0x180 Prcb             : _KPRCB
     '''
 
+    # Get 64-bit native_type
+    native_type = struct.get_native_type(64)
+    pointer_type = native_type
+
     _fields_ = (
         ('NtTib',                           NT_TIB),
         ('GdtBase',                         ctypes.c_void_p),       # _KGDTENTRY64
         ('TssBase',                         ctypes.c_void_p),       # _KTSS64
         ('UserRsp',                         ctypes.c_uint8),
-        ('Self',                            ctypes.c_void_p),       # _KPCR
-        ('CurrentPrcb',                     ctypes.c_void_p),       # _KPRCB
+        ('Self',                            pointer_type),          # _KPCR
+        ('CurrentPrcb',                     pointer_type),          # _KPRCB
         ('LockArray',                       ctypes.c_void_p),       # _KSPIN_LOCK_QUEUE
         ('UsedSelf',                        ctypes.c_void_p),       
         ('IdtBase',                         ctypes.c_void_p),       # This is meant to be a KIDTENTRY64 pointer
@@ -814,7 +818,7 @@ class KPCR(struct.BaseStruct):
         ('KdVersionBlock',                  ctypes.c_void_p),
         ('Unused3',                         ctypes.c_void_p),
         ('PcrAlign1',                       ctypes.c_ulong),        # [0x18]
-        ('Prcb',                            KPRCB))
+        ('Prcb',                            pointer_type))          # _KPRCB
 
 
 class KPROCESS(struct.BaseStruct):

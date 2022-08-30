@@ -642,7 +642,9 @@ class Process:
     
     def init_kpcr(self):
         '''
-        Initialisation function for KPCR structure. This structure's pointer should be at gs:[0x18]
+        Initialisation function for KPCR structure. 
+        
+        This structure's pointer should always be at gs:[0x18]
         '''
 
         sysconf = self.ql.os.profile['SYSTEM']
@@ -652,21 +654,34 @@ class Process:
         kpcr_struct = KPCR
         self.ql.mem.map(kpcr_addr, self.ql.mem.align_up(kpcr_struct.sizeof()), info='[kpcr]')
 
+        # Get address for KPRCB structure
+        kprcb_addr = osconf.getint('KPRCB')
+
         # Initialize an instance with a few key fields
         # @TODO: initialize StackBase & StackLimit
         kpcr_obj = kpcr_struct.volatile_ref(self.ql.mem, kpcr_addr)
         kpcr_obj.MajorVersion = sysconf.getint('majorVersion')
         kpcr_obj.MinorVersion = sysconf.getint('minorVersion')
-        #kpcr_obj.Prcb = osconf.getint('KPRCB')
+        kpcr_obj.CurrentPrcb = kprcb_addr   # Writes _KPRCB pointer to CurrentPrcb field
+        kpcr_obj.Self = kpcr_addr           # Writes _KPCR pointer to Self field
+        kpcr_obj.Prcb = kprcb_addr          # Writes _KPRCB pointer to Prcb field
 
         # Writes KPCR pointer into GS:[0x18]
         self.ql.mem.write_ptr(0x6000018, kpcr_addr)
+        
+        # @NOTE: Tests for writing structure pointers.
+        # Please don't remove.
+        self.ql.log.warn(f"KPCR CurrentPrcb: {kpcr_obj.CurrentPrcb:x}")
+        self.ql.log.warn(f"KPCR Self: {kpcr_obj.Self:x}")
+        self.ql.log.warn(f"KPCR Prcb: {kpcr_obj.Prcb:x}")
 
         self.ql.os.KPCR = kpcr_obj
 
     def init_kthread(self):
         '''
-        Initialisation function for KTHREAD structure. This structures pointer should be at gs:[0x188]
+        Initialisation function for KTHREAD structure. 
+        
+        This structures pointer should always be at gs:[0x188]
         '''
 
         sysconf = self.ql.os.profile['SYSTEM']
@@ -709,7 +724,9 @@ class Process:
 
     def init_kprcb(self):
         '''
-        Initialisation function for KPCRB structure. This structures pointer should be at gs:[0x20]
+        Initialisation function for KPCRB structure. 
+        
+        This structures pointer should always be at gs:[0x20]
         '''
 
         sysconf = self.ql.os.profile['SYSTEM']
