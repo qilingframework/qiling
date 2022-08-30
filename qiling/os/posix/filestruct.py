@@ -59,10 +59,8 @@ class ql_socket:
             pass
 
     def ioctl(self, cmd, arg):
-        try:
-            return fcntl.ioctl(self.__fd, cmd, arg)
-        except Exception:
-            pass
+        # might throw an OSError
+        return fcntl.ioctl(self.__fd, cmd, arg)
 
     def dup(self) -> 'ql_socket':
         new_s = self.__socket.dup()

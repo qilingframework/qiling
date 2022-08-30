@@ -79,12 +79,15 @@ def ql_syscall_ioctl(ql: Qiling, fd: int, cmd: int, arg: int):
             return None
 
     if isinstance(ql.os.fd[fd], ql_socket) and cmd in (SIOCGIFADDR, SIOCGIFNETMASK):
+        data = ql.mem.read(arg, 64)
+
         try:
-            data = ql.os.fd[fd].ioctl(cmd, bytes(ql.mem.read(arg, 64)))
-            ql.mem.write(arg, data)
-        except:
+            data = ql.os.fd[fd].ioctl(cmd, bytes(data))
+        except OSError as ex:
+            ql.log.debug(f'the underlying ioctl raised an exception: {ex.strerror}')
             regreturn = -1
         else:
+            ql.mem.write(arg, data)
             regreturn = 0
 
     else:
