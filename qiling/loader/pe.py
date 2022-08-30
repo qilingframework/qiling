@@ -719,15 +719,43 @@ class Process:
         kprcb_struct = KPRCB
         self.ql.mem.map(kprcb_addr, self.ql.mem.align_up(kprcb_struct.sizeof()), info='[kprcb]')
 
+        # Get address for KTHREAD & KNODE structures
+        kthread_addr = osconf.getint('KTHREAD')
+        knode_addr   = osconf.getint('KNODE')
+
         # Initialize and instance with a few key fields
         kprcb_obj = kprcb_struct.volatile_ref(self.ql.mem, kprcb_addr)
-        #kprcb_obj.CurrentThread = 
-        #kprcb_obj.IdleThread = osconf.getint('KTHREAD')
+        kprcb_obj.CurrentThread = kthread_addr      # Writes _KTHREAD pointer to CurrentThread field
+        kprcb_obj.IdleThread = kthread_addr         # Writes _KTHREAD pointer to IdleThread field
+        kprcb_obj.ParentNode = knode_addr           # Writes _KNODE pointer to ParentNode field
 
         # Writes KPRCB pointer into GS:[0x20]
         self.ql.mem.write_ptr(0x6000020, kprcb_addr)
 
+        # @NOTE: Tests for writing structure pointers.
+        # please don't remove.
+        self.ql.log.warn(f"KPRCB IdleThread: {kprcb_obj.IdleThread:x}")
+        self.ql.log.warn(f"KPRCB CurrentThread: {kprcb_obj.CurrentThread:x}")
+        self.ql.log.warn(f"KPRCB ParentNode: {kprcb_obj.ParentNode:x}")
+
         self.ql.os.KPRCB = kprcb_obj
+
+    def init_knode(self):
+        '''
+        Initialisation function for KNODE structure.
+        '''
+
+        sysconf = self.ql.os.profile['SYSTEM']
+        osconf  = self.ql.os.profile[f'OS{self.ql.arch.bits}']
+
+        knode_addr = osconf.getint('KNODE')
+        knode_struct = KNODE
+        self.ql.mem.map(knode_addr, self.ql.mem.aign_up(knode_struct.sizeof()), info='[knode]')
+
+        # Initialize struct with a few key fields
+        knode_obj = knode_struct.volatile_ref(self.ql.mem, knode_addr)
+
+        self.ql.os.KNODE = knode_obj
 
 
 

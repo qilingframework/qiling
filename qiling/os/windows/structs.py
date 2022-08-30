@@ -711,6 +711,10 @@ class KPRCB(struct.BaseStruct):
    +0x7e80 RequestMailbox   : [1] _REQUEST_MAILBOX
     '''
 
+    # We need a native pointer so that we can write the address of _KTREAD structure
+    native_type = struct.get_native_type(64)
+    pointer_type = native_type
+
     _fields_ = (
         ('MxCsr',                       ctypes.c_ulong),
         ('Number',                      ctypes.c_ushort),
@@ -718,9 +722,9 @@ class KPRCB(struct.BaseStruct):
         ('ReservedMustBeZero',          ctypes.c_char),
         ('InterruptRequest',            ctypes.c_bool),
         ('IdleHalt',                    ctypes.c_bool),
-        ('CurrentThread',               KTHREAD),
-        ('NextThread',                  KTHREAD),
-        ('IdleThread',                  KTHREAD),
+        ('CurrentThread',               pointer_type),          # _KTHREAD
+        ('NextThread',                  pointer_type),          # _KTHREAD
+        ('IdleThread',                  pointer_type),          # _KTHREAD
         ('NestingLevel',                ctypes.c_char),
         ('ClockOwner',                  ctypes.c_char),
         ('PendingTickFlags',            ctypes.c_char),
@@ -744,7 +748,7 @@ class KPRCB(struct.BaseStruct):
         ('CoresPerPhysicalProcessor',   ctypes.c_char),
         ('LogicalProcessorPerCore',     ctypes.c_char),
         ('PrcbPad04',                   ctypes.c_uint8 * 6),
-        ('ParentNode',                  KNODE),
+        ('ParentNode',                  pointer_type),            # _KNODE
         ('_padding0',                   ctypes.c_uint8 * 0x7DC0)    # 0x7E80 (request mailbox) - 0xC0 (parent node)
     )
 
