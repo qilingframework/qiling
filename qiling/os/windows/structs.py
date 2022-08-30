@@ -8,6 +8,7 @@ import ctypes
 
 from enum import IntEnum
 from functools import lru_cache
+from pickletools import uint1
 
 from qiling.os import struct
 from qiling.os.windows.const import MAX_PATH
@@ -885,6 +886,40 @@ class KPROCESS(struct.BaseStruct):
         ('ReadyListHead',       ctypes.c_void_p),
         ('SwapListEntry',       ctypes.c_void_p),
         ('ActiveProcessors',    ctypes.c_void_p),
+        ('AutoAlignment',       ctypes.c_int, 1),
+        ('DisableBoost',        ctypes.c_int, 1),
+        ('DisableQuantum',      ctypes.c_int, 1),
+        ('DeepFreeze',          ctypes.c_int, 1),
+        ('TimerVirtualization', ctypes.c_int, 1),
+        ('CheckStackExtentns',  ctypes.c_int, 1),
+        ('CacheIsolationEnabled', ctypes.c_int, 1),
+        ('PpmPolicy',           ctypes.c_int, 3),
+        ('ActiveGroupsMask',    ctypes.c_int, 20),
+        ('VaSpaceDeleted',      ctypes.c_int, 1),
+        ('ReservedFlags',       ctypes.c_int, 1),
+        ('ProcessFlags',        ctypes.c_int),
+        ('BasePriority',        ctypes.c_char),
+        ('QuantumReset',        ctypes.c_char),
+        ('Visited',             ctypes.c_char),
+        ('Flags',               ctypes.c_void_p),
+        ('ThreadSeed',          ctypes.c_uint * 20),
+        ('IdealNode',           ctypes.c_uint * 20),
+        ('IdealGlobalNode',     ctypes.c_uint),
+        ('Spare1',              ctypes.c_uint),
+        ('StackCount',          ctypes.c_void_p),
+        ('ProcessListEntry',    ctypes.c_void_p),
+        ('CycleTime',           ctypes.c_uint8),
+        ('ContextSwitches',     ctypes.c_uint8),
+        ('SchedulingGroup',     ctypes.c_void_p),
+        ('FreezeCount',         ctypes.c_uint),
+        ('KernelTime',          ctypes.c_uint),
+        ('UserTime',            ctypes.c_uint),
+        ('ReadyTime',           ctypes.c_uint),
+        ('UserDirectoryTableBase', ctypes.c_uint8),
+        ('AddressPolicy',       ctypes.c_char),
+        ('Spare2',              ctypes.c_char * 71),
+        ('InstrumentationCallback', ctypes.c_void_p),
+        ('SecureState',         ctypes.c_void_p)
     )
 
 
