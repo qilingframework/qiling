@@ -125,39 +125,44 @@ def ql_syscall_socket(ql: Qiling, socket_domain, socket_type, socket_protocol):
     return idx
 
 
-def ql_syscall_connect(ql: Qiling, connect_sockfd, connect_addr, connect_addrlen):
+def ql_syscall_connect(ql: Qiling, sockfd: int, addr: int, addrlen: int):
     AF_UNIX = 1
     AF_INET = 2
-    sock_addr = ql.mem.read(connect_addr, connect_addrlen)
-    family = ql.unpack16(sock_addr[ : 2])
-    s = ql.os.fd[connect_sockfd]
-    ip = b''
-    sun_path = b''
-    port = 0
+
+    sock_addr = ql.mem.read(addr, addrlen)
+    family = ql.unpack16(sock_addr[:2])
+
+    sock = ql.os.fd[sockfd]
+    assert isinstance(sock, ql_socket)
+
+    dest = None
+
+    if sock.family != family:
+        return -1
+
+    if sock.family == AF_UNIX:
+        hpath, vpath = ql_unix_socket_path(ql, sock_addr[2:])
+
+        ql.log.debug(f'connecting to "{vpath}"')
+        dest = hpath
+
+    elif sock.family == AF_INET:
+        port, host = struct.unpack(">HI", sock_addr[2:8])
+        ip = ql_bin_to_ip(host)
+
+        ql.log.debug(f'connecting to {ip}:{port}')
+        dest = (ip, port)
+
+    else:
+        return -1
+
     try:
-        if s.family == family:
-            if s.family == AF_UNIX:
-                sun_path = ql_unix_socket_path(ql, sock_addr[2:])
-                s.connect(sun_path)
-                regreturn = 0
-            elif s.family == AF_INET:
-                port, host = struct.unpack(">HI", sock_addr[2:8])
-                ip = ql_bin_to_ip(host)
-                s.connect((ip, port))
-                regreturn = 0
-            else:
-                regreturn = -1
-        else:
-            regreturn = -1
+        sock.connect(dest)
     except:
         regreturn = -1
-
-    if s.family == AF_UNIX:
-        ql.log.debug("connect(%s) = %d" % (sun_path, regreturn))
-    elif s.family == AF_INET:
-        ql.log.debug("connect(%s, %d) = %d" % (ip, port, regreturn))
     else:
-        ql.log.debug("connect() = %d" % (regreturn))
+        regreturn = 0
+
     return regreturn
 
 
