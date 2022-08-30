@@ -32,6 +32,11 @@ current_path = /
 
 
 [NETWORK]
+# override the ifr_name field in ifreq structures to match the hosts network interface name.
+# that fixes certain socket ioctl errors where the requested interface name does not match the
+# one on the host. comment out to avoid override
+ifrname_override = eth0
+
 # To use IPv6 or not, to avoid binary double bind. ipv6 and ipv4 bind the same port at the same time
 bindtolocalhost = True
 # Bind to localhost
