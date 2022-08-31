@@ -7,7 +7,7 @@ import os, pefile, pickle, secrets, ntpath
 from typing import Any, Dict, MutableMapping, NamedTuple, Optional, Mapping, Sequence, Tuple, Union
 
 from unicorn import UcError
-from unicorn.x86_const import UC_X86_REG_CR4, UC_X86_REG_CR8
+from unicorn.x86_const import UC_X86_REG_CR4, UC_X86_REG_CR8, UC_X86_REG_GS
 
 from qiling import Qiling
 from qiling.arch.x86_const import FS_SEGMENT_ADDR, GS_SEGMENT_ADDR
@@ -629,16 +629,152 @@ class Process:
 
         # initialize an instance with a few key fields
         kusd_obj = kust_struct.volatile_ref(self.ql.mem, kusd_addr)
-        kusd_obj.ImageNumberLow = 0x014c    # IMAGE_FILE_MACHINE_I386
-        kusd_obj.ImageNumberHigh = 0x8664   # IMAGE_FILE_MACHINE_AMD64
-        kusd_obj.NtSystemRoot = self.ql.os.windir
-        kusd_obj.NtProductType = sysconf.getint('productType')
-        kusd_obj.NtMajorVersion = sysconf.getint('majorVersion')
-        kusd_obj.NtMinorVersion = sysconf.getint('minorVersion')
-        kusd_obj.KdDebuggerEnabled = 0
-        kusd_obj.NXSupportPolicy = 0        # NX_SUPPORT_POLICY_ALWAYSOFF
+        kusd_obj.ImageNumberLow     = 0x014c                # IMAGE_FILE_MACHINE_I386
+        kusd_obj.ImageNumberHigh    = 0x8664                # IMAGE_FILE_MACHINE_AMD64
+        kusd_obj.NtSystemRoot       = self.ql.os.windir
+        kusd_obj.NtProductType      = sysconf.getint('productType')
+        kusd_obj.NtMajorVersion     = sysconf.getint('majorVersion')
+        kusd_obj.NtMinorVersion     = sysconf.getint('minorVersion')
+        kusd_obj.KdDebuggerEnabled  = 0
+        kusd_obj.NXSupportPolicy    = 0                     # NX_SUPPORT_POLICY_ALWAYSOFF
 
         self.ql.os.KUSER_SHARED_DATA = kusd_obj
+    
+    def init_kpcr(self):
+        '''
+        Initialisation function for KPCR structure. 
+        
+        This structure's pointer should always be at gs:[0x18]
+        '''
+
+        sysconf = self.ql.os.profile['SYSTEM']
+        osconf  = self.ql.os.profile[f'OS{self.ql.arch.bits}']
+
+        kpcr_addr = osconf.getint('KPCR')
+        kpcr_struct = KPCR
+        self.ql.mem.map(kpcr_addr, self.ql.mem.align_up(kpcr_struct.sizeof()), info='[kpcr]')
+
+        # Get address for KPRCB structure
+        kprcb_addr = osconf.getint('KPRCB')
+
+        # Initialize an instance with a few key fields
+        # @TODO: initialize StackBase & StackLimit
+        kpcr_obj = kpcr_struct.volatile_ref(self.ql.mem, kpcr_addr)
+        kpcr_obj.MajorVersion = sysconf.getint('majorVersion')
+        kpcr_obj.MinorVersion = sysconf.getint('minorVersion')
+        kpcr_obj.CurrentPrcb = kprcb_addr   # Writes _KPRCB pointer to CurrentPrcb field
+        kpcr_obj.Self = kpcr_addr           # Writes _KPCR pointer to Self field
+        kpcr_obj.Prcb = kprcb_addr          # Writes _KPRCB pointer to Prcb field
+
+        # Writes KPCR pointer into GS:[0x18]
+        self.ql.mem.write_ptr(0x6000018, kpcr_addr)
+        
+        # @NOTE: Tests for writing structure pointers.
+        # Please don't remove.
+        self.ql.log.warn(f"KPCR CurrentPrcb: {kpcr_obj.CurrentPrcb:x}")
+        self.ql.log.warn(f"KPCR Self: {kpcr_obj.Self:x}")
+        self.ql.log.warn(f"KPCR Prcb: {kpcr_obj.Prcb:x}")
+
+        self.ql.os.KPCR = kpcr_obj
+
+    def init_kthread(self):
+        '''
+        Initialisation function for KTHREAD structure. 
+        
+        This structures pointer should always be at gs:[0x188]
+        '''
+
+        sysconf = self.ql.os.profile['SYSTEM']
+        osconf  = self.ql.os.profile[f'OS{self.ql.arch.bits}']
+
+        kthread_addr = osconf.getint('KTHREAD')
+        kthread_struct = KTHREAD
+        self.ql.mem.map(kthread_addr, self.ql.mem.align_up(kthread_struct.sizeof()), info='[kthread]')
+
+        # Initialize an instance with key fields
+        kthread_obj = kthread_struct.volatile_ref(self.ql.mem, kthread_addr)
+        kthread_obj.ThreadLock      = 11
+        kthread_obj.PreviousMode    = 0
+        kthread_obj.InitialStack    = 0x1000
+        kthread_obj.StackBase       = 0x1500
+        kthread_obj.StackLimit      = 0x2000
+        kthread_obj.MiscFlags       |= 0x400
+
+        # Writes KTHREAD pointer into GS:[0x188]
+        self.ql.mem.write_ptr(0x6000188, kthread_addr)
+
+        self.ql.os.KTHREAD = kthread_obj
+    
+    def init_kprocess(self):
+        '''
+        Initialisation function for KPROCESS structure.
+        '''
+
+        sysconf = self.ql.os.profile['SYSTEM']
+        osconf  = self.ql.os.profile[f'OS{self.ql.arch.bits}']
+
+        kproc_addr = osconf.getint('KPROCESS')
+        kproc_struct = KPROCESS
+        self.ql.mem.map(kproc_addr, self.ql.mem.align_up(kproc_struct.sizeof()), info='[kprocess]')
+
+        # Initialize an instance with key fields
+        kproc_obj = kproc_struct.volatile_ref(self.ql.mem, kproc_addr)
+
+        self.ql.os.KPROCESS = kproc_obj
+
+    def init_kprcb(self):
+        '''
+        Initialisation function for KPCRB structure. 
+        
+        This structures pointer should always be at gs:[0x20]
+        '''
+
+        sysconf = self.ql.os.profile['SYSTEM']
+        osconf  = self.ql.os.profile[f'OS{self.ql.arch.bits}']
+
+        kprcb_addr = osconf.getint('KPRCB')
+        kprcb_struct = KPRCB
+        self.ql.mem.map(kprcb_addr, self.ql.mem.align_up(kprcb_struct.sizeof()), info='[kprcb]')
+
+        # Get address for KTHREAD & KNODE structures
+        kthread_addr = osconf.getint('KTHREAD')
+        knode_addr   = osconf.getint('KNODE')
+
+        # Initialize and instance with a few key fields
+        kprcb_obj = kprcb_struct.volatile_ref(self.ql.mem, kprcb_addr)
+        kprcb_obj.CurrentThread = kthread_addr      # Writes _KTHREAD pointer to CurrentThread field
+        kprcb_obj.IdleThread = kthread_addr         # Writes _KTHREAD pointer to IdleThread field
+        kprcb_obj.ParentNode = knode_addr           # Writes _KNODE pointer to ParentNode field
+
+        # Writes KPRCB pointer into GS:[0x20]
+        self.ql.mem.write_ptr(0x6000020, kprcb_addr)
+
+        # @NOTE: Tests for writing structure pointers.
+        # please don't remove.
+        self.ql.log.warn(f"KPRCB IdleThread: {kprcb_obj.IdleThread:x}")
+        self.ql.log.warn(f"KPRCB CurrentThread: {kprcb_obj.CurrentThread:x}")
+        self.ql.log.warn(f"KPRCB ParentNode: {kprcb_obj.ParentNode:x}")
+
+        self.ql.os.KPRCB = kprcb_obj
+
+    def init_knode(self):
+        '''
+        Initialisation function for KNODE structure.
+        '''
+
+        sysconf = self.ql.os.profile['SYSTEM']
+        osconf  = self.ql.os.profile[f'OS{self.ql.arch.bits}']
+
+        knode_addr = osconf.getint('KNODE')
+        knode_struct = KNODE
+        self.ql.mem.map(knode_addr, self.ql.mem.align_up(knode_struct.sizeof()), info='[knode]')
+
+        # Initialize struct with a few key fields
+        knode_obj = knode_struct.volatile_ref(self.ql.mem, knode_addr)
+
+        self.ql.os.KNODE = knode_obj
+
+
 
     def init_security_cookie(self, pe: pefile.PE, image_base: int):
         if not Process.directory_exists(pe, 'IMAGE_DIRECTORY_ENTRY_LOAD_CONFIG'):
@@ -744,6 +880,12 @@ class QlLoaderPE(QlLoader, Process):
                 self.init_driver_object()
                 self.init_registry_path()
                 self.init_eprocess()
+
+                self.init_kprcb()
+                self.init_kpcr()
+                self.init_kthread()
+                self.init_kprocess()
+                self.init_knode()
 
                 # set IRQ Level in CR8 to PASSIVE_LEVEL
                 self.ql.arch.regs.write(UC_X86_REG_CR8, 0)

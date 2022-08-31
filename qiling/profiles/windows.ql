@@ -1,13 +1,17 @@
 [OS64]
-heap_address = 0x500000000
+heap_address = 0xfffff76000000000
 heap_size = 0x5000000
-stack_address = 0x7ffffffde000
+stack_address = 0xfffff77000000000
 stack_size = 0x40000
 image_address = 0x400000
 dll_address = 0x7ffff0000000
 entry_point = 0x140000000
-# KI_USER_SHARED_DATA = 0xfffff78000000000
-KI_USER_SHARED_DATA = 0x7ffe0000
+KI_USER_SHARED_DATA = 0xfffff78000000000
+KPCR = 0xfffff78100000000
+KPRCB = 0xfffff78200000000
+KTHREAD = 0xfffff78300000000
+KPROCESS = 0xfffff78400000000
+KNODE = 0xfffff78500000000
 
 [OS32]
 heap_address = 0x5000000
@@ -17,8 +21,12 @@ stack_size = 0x21000
 image_address = 0x400000
 dll_address = 0x10000000
 entry_point = 0x40000
-# KI_USER_SHARED_DATA = 0xffdf0000
-KI_USER_SHARED_DATA = 0x7ffe0000
+KI_USER_SHARED_DATA = 0xffdf0000
+KPCR = 0xffdf1000
+KPRCB = 0xffdf2000
+KTHREAD = 0xffdf3000
+KPROCESS = 0xffdf4000
+KNODE = 0xffdf5000
 
 [CODE]
 # ram_size 0xa00000 is 10MB
