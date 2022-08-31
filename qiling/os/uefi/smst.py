@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -92,7 +92,7 @@ def hook_SmmAllocatePages(ql: Qiling, address: int, params):
     alloc_size = params["Pages"] * PAGE_SIZE
 
     if params['type'] == EFI_ALLOCATE_TYPE.AllocateAddress:
-        address = read_int64(ql, params["Memory"])
+        address = ql.mem.read_ptr(params["Memory"])
 
         # TODO: check the range [address, address + alloc_size] is available first
         ql.mem.map(address, alloc_size)
@@ -103,7 +103,7 @@ def hook_SmmAllocatePages(ql: Qiling, address: int, params):
         if address == 0:
             return EFI_OUT_OF_RESOURCES
 
-        write_int64(ql, params["Memory"], address)
+        ql.mem.write_ptr(params["Memory"], address)
 
     return EFI_SUCCESS
 
@@ -126,7 +126,7 @@ def hook_SmmFreePages(ql: Qiling, address: int, params):
 def hook_SmmAllocatePool(ql: Qiling, address: int, params):
     # TODO: allocate memory acording to "PoolType"
     address = ql.loader.smm_context.heap.alloc(params["Size"])
-    write_int64(ql, params["Buffer"], address)
+    ql.mem.write_ptr(params["Buffer"], address)
 
     return EFI_SUCCESS if address else EFI_OUT_OF_RESOURCES
 
@@ -181,12 +181,14 @@ def hook_SmmRegisterProtocolNotify(ql: Qiling, address: int, params):
     event_id = len(ql.loader.events)
     event_dic = {
         "NotifyFunction": params["Function"],
-        "CallbackArgs"    : None,
-        "Guid"            : params["Protocol"],
-        "Set"            : False
+        "CallbackArgs"	: None,
+        "Guid"			: params["Protocol"],
+        "Set"			: False
     }
+
     ql.loader.events[event_id] = event_dic
-    ptr_write64(ql, params["Registration"], event_id)
+    ql.mem.write_ptr(params["Registration"], event_id, 8)
+
     return EFI_SUCCESS
 
 @dxeapi(params = {

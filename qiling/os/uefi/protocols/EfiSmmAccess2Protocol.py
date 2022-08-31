@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -10,15 +10,14 @@ from ..fncc import *
 from ..ProcessorBind import *
 from ..UefiBaseType import *
 from ..PiMultiPhase import *
-from .. import utils
 
 # @see: MdePkg\Include\Pi\PiMultiPhase.h
 class EFI_MMRAM_DESCRIPTOR(STRUCT):
     _fields_ = [
-        ('PhysicalStart',    EFI_PHYSICAL_ADDRESS),
-        ('CpuStart',        EFI_PHYSICAL_ADDRESS),
-        ('PhysicalSize',    UINT64),
-        ('RegionState',        UINT64)
+        ('PhysicalStart', EFI_PHYSICAL_ADDRESS),
+        ('CpuStart',      EFI_PHYSICAL_ADDRESS),
+        ('PhysicalSize',  UINT64),
+        ('RegionState',   UINT64)
     ]
 
 # @see: MdePkg\Include\Protocol\MmAccess.h
@@ -28,11 +27,11 @@ class EFI_SMM_ACCESS2_PROTOCOL(STRUCT):
 
     _fields_ = [
         ('Open',            FUNCPTR(EFI_STATUS, PTR(EFI_SMM_ACCESS2_PROTOCOL))),
-        ('Close',            FUNCPTR(EFI_STATUS, PTR(EFI_SMM_ACCESS2_PROTOCOL))),
+        ('Close',           FUNCPTR(EFI_STATUS, PTR(EFI_SMM_ACCESS2_PROTOCOL))),
         ('Lock',            FUNCPTR(EFI_STATUS, PTR(EFI_SMM_ACCESS2_PROTOCOL))),
-        ('GetCapabilities',    FUNCPTR(EFI_STATUS, PTR(EFI_SMM_ACCESS2_PROTOCOL), PTR(UINTN), PTR(EFI_MMRAM_DESCRIPTOR))),
-        ('LockState',        BOOLEAN),
-        ('OpenState',        BOOLEAN)
+        ('GetCapabilities', FUNCPTR(EFI_STATUS, PTR(EFI_SMM_ACCESS2_PROTOCOL), PTR(UINTN), PTR(EFI_MMRAM_DESCRIPTOR))),
+        ('LockState',       BOOLEAN),
+        ('OpenState',       BOOLEAN)
     ]
 
 @dxeapi(params = {
@@ -108,7 +107,7 @@ def hook_GetCapabilities(ql: Qiling, address: int, params):
     size = len(chunks) * EFI_SMRAM_DESCRIPTOR.sizeof()
     MmramMapSize = params["MmramMapSize"]
 
-    if utils.read_int64(ql, MmramMapSize) < size:
+    if ql.mem.read_ptr(MmramMapSize) < size:
         # since the caller cannot predict how much memory would be required for storing
         # the memory map, this method is normally called twice. the first one passes a
         # zero size only to determine the expected size, then the caller allocates the
@@ -124,7 +123,7 @@ def hook_GetCapabilities(ql: Qiling, address: int, params):
         # have, to compensate on the coming allocation.
         extra = 2 * EFI_SMRAM_DESCRIPTOR.sizeof()
 
-        utils.write_int64(ql, MmramMapSize, size + extra)
+        ql.mem.write_ptr(MmramMapSize, size + extra)
         return EFI_BUFFER_TOO_SMALL
 
     MmramMap = params["MmramMap"]

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -40,7 +40,7 @@ def hook_AllocatePages(ql: Qiling, address: int, params):
     alloc_size = params["Pages"] * PAGE_SIZE
 
     if params['type'] == EFI_ALLOCATE_TYPE.AllocateAddress:
-        address = read_int64(ql, params["Memory"])
+        address = ql.mem.read_ptr(params["Memory"])
 
         # TODO: check the range [address, address + alloc_size] is available first
         ql.mem.map(address, alloc_size)
@@ -51,7 +51,7 @@ def hook_AllocatePages(ql: Qiling, address: int, params):
         if address == 0:
             return EFI_OUT_OF_RESOURCES
 
-        write_int64(ql, params["Memory"], address)
+        ql.mem.write_ptr(params["Memory"], address)
 
     return EFI_SUCCESS
 
@@ -87,7 +87,7 @@ def hook_AllocatePool(ql: Qiling, address: int, params):
     Buffer = params["Buffer"]
 
     address = ql.loader.dxe_context.heap.alloc(Size)
-    write_int64(ql, Buffer, address)
+    ql.mem.write_ptr(Buffer, address)
 
     return EFI_SUCCESS if address else EFI_OUT_OF_RESOURCES
 
@@ -304,7 +304,7 @@ def hook_GetNextMonotonicCount(ql: Qiling, address: int, params):
     out = params["Count"]
 
     ql.os.monotonic_count += 1
-    write_int64(ql, out, ql.os.monotonic_count)
+    ql.mem.write_ptr(out, ql.os.monotonic_count, 8)
 
     return EFI_SUCCESS
 
@@ -386,19 +386,19 @@ def hook_ProtocolsPerHandle(ql: Qiling, address: int, params):
 })
 def hook_LocateHandleBuffer(ql: Qiling, address: int, params):
     buffer_size, handles = common.LocateHandles(ql.loader.dxe_context, params)
-    write_int64(ql, params["NoHandles"], len(handles))
+    ql.mem.write_ptr(params["NoHandles"], len(handles))
 
     if len(handles) == 0:
         return EFI_NOT_FOUND
 
     address = ql.loader.dxe_context.heap.alloc(buffer_size)
-    write_int64(ql, params["Buffer"], address)
+    ql.mem.write_ptr(params["Buffer"], address)
 
     if address == 0:
         return EFI_OUT_OF_RESOURCES
 
     for handle in handles:
-        write_int64(ql, address, handle)
+        ql.mem.write_ptr(address, handle)
         address += ql.arch.pointersize
 
     return EFI_SUCCESS
@@ -416,7 +416,7 @@ def hook_LocateProtocol(ql: Qiling, address: int, params):
     # ...
 })
 def hook_InstallMultipleProtocolInterfaces(ql: Qiling, address: int, params):
-    handle = read_int64(ql, params["Handle"])
+    handle = ql.mem.read_ptr(params["Handle"])
 
     if handle == 0:
         handle = ql.loader.dxe_context.heap.alloc(ql.arch.pointersize)
@@ -437,7 +437,7 @@ def hook_InstallMultipleProtocolInterfaces(ql: Qiling, address: int, params):
 
     ql.loader.dxe_context.protocols[handle] = dic
     execute_protocol_notifications(ql, True)
-    write_int64(ql, params["Handle"], handle)
+    ql.mem.write_ptr(params["Handle"], handle)
 
     return EFI_SUCCESS
 
@@ -477,8 +477,8 @@ def hook_UninstallMultipleProtocolInterfaces(ql: Qiling, address: int, params):
     "Crc32"        : POINTER        # PTR(UINT32)
 })
 def hook_CalculateCrc32(ql: Qiling, address: int, params):
-    data = bytes(ql.mem.read(params['Data'], params['DataSize']))
-    write_int32(ql, params['Crc32'], crc32(data))
+    data = ql.mem.read(params['Data'], params['DataSize'])
+    ql.mem.write_ptr(params['Crc32'], crc32(data), 4)
 
     return EFI_SUCCESS
 
@@ -530,7 +530,7 @@ def CreateEvent(ql: Qiling, params):
         event_dic["EventGroup"] = params["EventGroup"]
 
     ql.loader.events[event_id] = event_dic
-    write_int64(ql, params["Event"], event_id)
+    ql.mem.write_ptr(params["Event"], event_id)
 
     return EFI_SUCCESS
 

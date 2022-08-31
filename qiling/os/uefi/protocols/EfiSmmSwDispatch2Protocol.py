@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -9,7 +9,6 @@ from ..const import *
 from ..fncc import *
 from ..ProcessorBind import *
 from ..UefiBaseType import *
-from .. import utils
 
 MAXIMUM_SWI_VALUE = 0xff
 
@@ -81,7 +80,7 @@ def hook_Register(ql: Qiling, address: int, params):
 
     # allocate handle and return it through out parameter
     Handle = ql.loader.smm_context.heap.alloc(ql.arch.pointersize)
-    utils.write_int64(ql, DispatchHandle, Handle)
+    ql.mem.write_ptr(DispatchHandle, Handle)
 
     args = {
         'DispatchHandle'  : Handle,

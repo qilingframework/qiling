@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
 from qiling.os.uefi.const import EFI_SUCCESS, EFI_NOT_FOUND, EFI_UNSUPPORTED, EFI_BUFFER_TOO_SMALL, EFI_INVALID_PARAMETER
-from qiling.os.uefi.utils import read_int64, write_int64
 from qiling.os.uefi.UefiSpec import EFI_LOCATE_SEARCH_TYPE
 
 def LocateHandles(context, params):
@@ -25,7 +24,7 @@ def LocateHandles(context, params):
     return len(handles) * context.ql.arch.pointersize, handles
 
 def InstallProtocolInterface(context, params):
-    handle = read_int64(context.ql, params["Handle"])
+    handle = context.ql.mem.read_ptr(params["Handle"])
 
     if handle == 0:
         handle = context.heap.alloc(1)
@@ -35,7 +34,7 @@ def InstallProtocolInterface(context, params):
     dic[params["Protocol"]] = params["Interface"]
     context.protocols[handle] = dic
 
-    write_int64(context.ql, params["Handle"], handle)
+    context.ql.mem.write_ptr(params["Handle"], handle)
     context.notify_protocol(params['Handle'], params['Protocol'], params['Interface'], True)
 
     return EFI_SUCCESS
@@ -81,7 +80,7 @@ def HandleProtocol(context, params):
         supported = context.protocols[handle]
 
         if protocol in supported:
-            write_int64(context.ql, interface, supported[protocol])
+            context.ql.mem.write_ptr(interface, supported[protocol])
 
             return EFI_SUCCESS
 
@@ -95,16 +94,16 @@ def LocateHandle(context, params):
 
     ret = EFI_BUFFER_TOO_SMALL
 
-    if read_int64(context.ql, params["BufferSize"]) >= buffer_size:
+    if context.ql.mem.read_ptr(params["BufferSize"]) >= buffer_size:
         ptr = params["Buffer"]
 
         for handle in handles:
-            write_int64(context.ql, ptr, handle)
+            context.ql.mem.write_ptr(ptr, handle)
             ptr += context.ql.arch.pointersize
 
         ret = EFI_SUCCESS
 
-    write_int64(context.ql, params["BufferSize"], buffer_size)
+    context.ql.mem.write_ptr(params["BufferSize"], buffer_size)
 
     return ret
 
@@ -117,7 +116,7 @@ def LocateProtocol(context, params):
 
         if protocol in guid_dic:
             # write protocol address to out variable Interface
-            write_int64(context.ql, params['Interface'], guid_dic[protocol])
+            context.ql.mem.write_ptr(params['Interface'], guid_dic[protocol])
             return EFI_SUCCESS
 
     return EFI_NOT_FOUND

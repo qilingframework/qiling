@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -93,12 +93,12 @@ def hook_GetVariable(ql: Qiling, address: int, params):
 
     if name in ql.env:
         var = ql.env[name]
-        read_len = read_int64(ql, params['DataSize'])
+        read_len = ql.mem.read_ptr(params['DataSize'])
 
         if params['Attributes'] != 0:
-            write_int64(ql, params['Attributes'], 0)
+            ql.mem.write_ptr(params['Attributes'], 0, 4)
 
-        write_int64(ql, params['DataSize'], len(var))
+        ql.mem.write_ptr(params['DataSize'], len(var))
 
         if read_len < len(var):
             return EFI_BUFFER_TOO_SMALL
@@ -124,7 +124,7 @@ def hook_GetNextVariableName(ql: Qiling, address: int, params):
     if (var_name_size == 0) or (var_name == 0):
         return EFI_INVALID_PARAMETER
 
-    name_size = read_int64(ql, var_name_size)
+    name_size = ql.mem.read_ptr(var_name_size)
     last_name = ql.os.utils.read_wstring(var_name)
 
     vars = ql.env['Names'] # This is a list of variable names in correct order.
@@ -145,7 +145,7 @@ def hook_GetNextVariableName(ql: Qiling, address: int, params):
     new_name = ''.join(f'{c}\x00' for c in new_name)
 
     if len(new_name) > name_size:
-        write_int64(ql, var_name_size, len(new_name))
+        ql.mem.write_ptr(var_name_size, len(new_name))
         return EFI_BUFFER_TOO_SMALL
 
     ql.mem.write(var_name, new_name.encode('ascii'))
@@ -170,7 +170,9 @@ def hook_GetNextHighMonotonicCount(ql: Qiling, address: int, params):
     ql.os.monotonic_count += 0x0000000100000000
     hmc = ql.os.monotonic_count
     hmc = (hmc >> 32) & 0xffffffff
-    write_int32(ql, params["HighCount"], hmc)
+
+    ql.mem.write_ptr(params["HighCount"], hmc, 4)
+
     return EFI_SUCCESS
 
 @dxeapi(params={

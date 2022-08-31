@@ -8,7 +8,6 @@ from unicorn.x86_const import *
 from qiling import Qiling
 from qiling.os.const import POINTER
 from qiling.os.memory import QlMemoryHeap
-from qiling.os.uefi import utils
 from qiling.os.uefi.context import SmmContext
 from qiling.os.uefi.protocols.EfiSmmCpuProtocol import EFI_SMM_SAVE_STATE_REGISTER
 from qiling.os.uefi.protocols.EfiSmmSwDispatch2Protocol import EFI_SMM_SW_REGISTER_CONTEXT, EFI_SMM_SW_CONTEXT
@@ -230,7 +229,7 @@ class SmmEnv:
         SmmSwContext.saveTo(ql, CommBuffer)
 
         # setup CommBufferSize
-        utils.ptr_write64(ql, CommBufferSize, SmmSwContext.sizeof())
+        ql.mem.write_ptr(CommBufferSize, SmmSwContext.sizeof(), 8)
 
         # clean up handler resources
         def __cleanup(ql: Qiling):

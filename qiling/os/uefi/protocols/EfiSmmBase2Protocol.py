@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -8,7 +8,6 @@ from qiling.os.const import *
 
 from ..const import EFI_SUCCESS, EFI_INVALID_PARAMETER
 from ..fncc import *
-from ..utils import *
 from ..ProcessorBind import *
 from ..UefiBaseType import *
 from ..smst import *
@@ -29,7 +28,7 @@ class EFI_SMM_BASE2_PROTOCOL(STRUCT):
 def hook_InSmm(ql: Qiling, address: int, params):
     ql.log.debug(f'InSmram = {ql.os.smm.active}')
 
-    write_int8(ql, params["InSmram"], int(ql.os.smm.active))
+    ql.mem.write_ptr(params["InSmram"], int(ql.os.smm.active), 1)
 
     return EFI_SUCCESS
 
@@ -43,7 +42,7 @@ def hook_GetSmstLocation(ql: Qiling, address: int, params):
     if Smst == 0:
         return EFI_INVALID_PARAMETER
 
-    write_int64(ql, Smst, ql.loader.gSmst)
+    ql.mem.write_ptr(Smst, ql.loader.gSmst)
 
     return EFI_SUCCESS
 

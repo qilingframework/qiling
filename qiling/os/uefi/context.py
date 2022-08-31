@@ -62,7 +62,7 @@ class UefiContext(ABC):
         for (event_id, event_dic) in self.ql.loader.events.items():
             if event_dic['Guid'] == protocol:
                 if event_dic['CallbackArgs'] == None:
-                    # To support smm notification, we use None for CallbackArgs on SmmRegisterProtocolNotify 
+                    # To support smm notification, we use None for CallbackArgs on SmmRegisterProtocolNotify
                     # and updare it here.
                     guid = utils.str_to_guid(protocol)
                     guid_ptr = self.heap.alloc(guid.sizeof())
@@ -119,19 +119,19 @@ class UefiConfTable:
     def baseptr(self) -> int:
         addr = self.system_table + self.__arrptr_off
 
-        return utils.read_int64(self.ql, addr)
+        return self.ql.mem.read_ptr(addr)
 
     @property
     def nitems(self) -> int:
         addr = self.system_table + self.__nitems_off
 
-        return utils.read_int64(self.ql, addr)    # UINTN
+        return self.ql.mem.read_ptr(addr)	# UINTN
 
     @nitems.setter
     def nitems(self, value: int):
         addr = self.system_table + self.__nitems_off
 
-        utils.write_int64(self.ql, addr, value)
+        self.ql.mem.write_ptr(addr, value)
 
     def install(self, guid: str, table: int):
         ptr = self.find(guid)
