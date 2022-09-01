@@ -1,8 +1,20 @@
 #include "httpd.h"
 
-int main(int c, char** v, int argc, const char **argv)
+#define PORT_DEFAULT "12913"
+
+int main(int argc, const char **argv)
 {
-    serve_forever("12913");
+    const char *PORT;
+
+    if (argc < 2) {
+        PORT = PORT_DEFAULT;
+    } else {
+        PORT = argv[1];
+    }
+
+    fprintf(stderr, "port is %s.\n", PORT);
+    
+    serve_forever(PORT);
     return 0;
 }
 
