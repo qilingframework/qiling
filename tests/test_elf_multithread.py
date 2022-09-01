@@ -352,7 +352,7 @@ class ELFTest(unittest.TestCase):
             except:
                 pass
 
-        ql = Qiling(["../examples/rootfs/armeb_linux/bin/armeb_udp_test","20009"], "../examples/rootfs/armeb_linux", multithread=True)
+        ql = Qiling(["../examples/rootfs/armeb_linux/bin/armeb_udp_test","20010"], "../examples/rootfs/armeb_linux", multithread=True)
         ql.os.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
         ql.run()
 
@@ -362,7 +362,7 @@ class ELFTest(unittest.TestCase):
 
     def test_http_elf_linux_x8664(self):
         def picohttpd():
-            ql = Qiling(["../examples/rootfs/x8664_linux/bin/picohttpd"], "../examples/rootfs/x8664_linux", multithread=True, verbose=QL_VERBOSE.DEBUG)    
+            ql = Qiling(["../examples/rootfs/x8664_linux/bin/picohttpd","12911"], "../examples/rootfs/x8664_linux", multithread=True, verbose=QL_VERBOSE.DEBUG)    
             ql.run()
 
 
@@ -371,12 +371,12 @@ class ELFTest(unittest.TestCase):
 
         time.sleep(1)
 
-        f = os.popen("curl http://127.0.0.1:12913")
+        f = os.popen("curl http://127.0.0.1:12911")
         self.assertEqual("httpd_test_successful", f.read())
 
     def test_http_elf_linux_arm(self):
         def picohttpd():
-            ql = Qiling(["../examples/rootfs/arm_linux/bin/picohttpd"], "../examples/rootfs/arm_linux", multithread=True, verbose=QL_VERBOSE.DEBUG)    
+            ql = Qiling(["../examples/rootfs/arm_linux/bin/picohttpd","12912"], "../examples/rootfs/arm_linux", multithread=True, verbose=QL_VERBOSE.DEBUG)    
             ql.run()
 
 
@@ -385,7 +385,7 @@ class ELFTest(unittest.TestCase):
 
         time.sleep(1)
 
-        f = os.popen("curl http://127.0.0.1:12913")
+        f = os.popen("curl http://127.0.0.1:12912")
         self.assertEqual("httpd_test_successful", f.read())
 
     def test_http_elf_linux_armeb(self):
