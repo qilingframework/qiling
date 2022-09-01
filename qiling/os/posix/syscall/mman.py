@@ -16,7 +16,7 @@ def ql_syscall_munmap(ql: Qiling, addr: int, length: int):
     mapped_fd = [fd for fd in ql.os.fd if fd != 0 and isinstance(fd, ql_file) and fd._is_map_shared and not (fd.name.endswith(".so") or fd.name.endswith(".dylib"))]
 
     if mapped_fd:
-        all_mem_info = [_mem_info for _, _, _, _mem_info in ql.mem.map_info if _mem_info not in ("[mapped]", "[stack]", "[hook_mem]")]
+        all_mem_info = [_mem_info for _, _, _, _mem_info, _mmio, _data in ql.mem.map_info if _mem_info not in ("[mapped]", "[stack]", "[hook_mem]")]
 
         for _fd in mapped_fd:
             if _fd.name in [each.split()[-1] for each in all_mem_info]:
@@ -110,7 +110,7 @@ def syscall_mmap_impl(ql: Qiling, addr: int, mlen: int, prot: int, flags: int, f
         if mmap_base == 0:
             mmap_base = ql.loader.mmap_address
             ql.loader.mmap_address = mmap_base + mmap_size
-        ql.log.debug("%s - mapping needed for 0x%x" % (api_name, mmap_base))
+        ql.log.debug("%s - mapping needed at 0x%x with size 0x%x" % (api_name, mmap_base, mmap_size))
         try:
             ql.mem.map(mmap_base, mmap_size, prot, "[syscall_%s]" % api_name)
         except Exception as e:

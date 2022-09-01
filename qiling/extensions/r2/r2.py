@@ -142,10 +142,8 @@ class R2:
         self.loadaddr = loadaddr  # r2 -m [addr]    map file at given address
         self.analyzed = False
         self._r2c = libr.r_core.r_core_new()
-        if ql.code:
-            self._setup_code(ql.code)
-        else:
-            self._setup_file(ql.path)
+        self._r2i = ctypes.cast(self._r2c.contents.io, ctypes.POINTER(libr.r_io.struct_r_io_t))
+        self._setup_mem(ql)
 
     def _qlarch2r(self, archtype: QL_ARCH) -> str:
         return {
@@ -162,20 +160,21 @@ class R2:
             QL_ARCH.PPC: "ppc",
         }[archtype]
 
-    def _setup_code(self, code: bytes):
-        path = f'malloc://{len(code)}'.encode()
-        fh = libr.r_core.r_core_file_open(self._r2c, path, UC_PROT_ALL, self.loadaddr)
-        libr.r_core.r_core_bin_load(self._r2c, path, self.baseaddr)
-        self._cmd(f'wx {code.hex()}')
+    def _rbuf_map(self, buf: bytearray, perm: int = UC_PROT_ALL, addr: int = 0, delta: int = 0):
+        rbuf = libr.r_buf_new_with_pointers(ctypes.c_ubyte.from_buffer(buf), len(buf), False)
+        rbuf = ctypes.cast(rbuf, ctypes.POINTER(libr.r_io.struct_r_buf_t))
+        desc = libr.r_io_open_buffer(self._r2i, rbuf, perm, 0)  # last arg `mode` is always 0 in r2 code
+        libr.r_io.r_io_map_add(self._r2i, desc.contents.fd, desc.contents.perm, delta, addr, len(buf))
+
+    def _setup_mem(self, ql: 'Qiling'):
+        if not hasattr(ql, '_mem'):
+            return
+        for start, end, perms, _label, _mmio, buf in ql.mem.map_info:
+            self._rbuf_map(buf, perms, start)
         # set architecture and bits for r2 asm
-        arch = self._qlarch2r(self.ql.arch.type)
-        self._cmd(f"e,asm.arch={arch},asm.bits={self.ql.arch.bits}")
-
-    def _setup_file(self, path: str):
-        path = path.encode()
-        fh = libr.r_core.r_core_file_open(self._r2c, path, UC_PROT_READ | UC_PROT_EXEC, self.loadaddr)
-        libr.r_core.r_core_bin_load(self._r2c, path, self.baseaddr)
-
+        arch = self._qlarch2r(ql.arch.type)
+        self._cmd(f"e,asm.arch={arch},asm.bits={ql.arch.bits}")
+    
     def _cmd(self, cmd: str) -> str:
         r = libr.r_core.r_core_cmd_str(
             self._r2c, ctypes.create_string_buffer(cmd.encode("utf-8")))

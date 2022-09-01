@@ -17,4 +17,5 @@ python3 ./test_mcu.py &&
 python3 ./test_evm.py &&
 python3 ./test_blob.py &&
 python3 ./test_qdb.py &&
+python3 ./test_mem.py &&
 echo "Done Test"

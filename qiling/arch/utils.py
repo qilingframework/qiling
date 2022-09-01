@@ -27,7 +27,7 @@ class QlArchUtils:
 
     @lru_cache(maxsize=64)
     def get_base_and_name(self, addr: int) -> Tuple[int, str]:
-        for begin, end, _, name, _ in self.ql.mem.map_info:
+        for begin, end, _, name, _, _ in self.ql.mem.map_info:
             if begin <= addr < end:
                 return begin, basename(name)
 
