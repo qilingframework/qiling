@@ -336,5 +336,14 @@ class R2:
         elif mode == 'history':
             trace.enable_history_trace(self.ql)
 
+    def shell(self):
+        while True:
+            offset = self._r2c.contents.offset
+            print(f"[{offset:#x}]> ", end="")
+            cmd = input()
+            if cmd.strip() == "q":
+                break
+            print(self._cmd(cmd))
+
     def __del__(self):
         libr.r_core.r_core_free(self._r2c)
