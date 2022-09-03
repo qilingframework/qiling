@@ -314,7 +314,7 @@ class R2:
         anibbles = ql.arch.bits // 4
         progress = 0
         for inst in self.dis_nbytes(addr, size):
-            if inst.type.lower() == 'invalid':
+            if inst.type.lower() in ('invalid', 'ill'):
                 break  # stop disasm
             name, offset = self.at(inst.offset, parse=True)
             if filt is None or filt.search(name):
