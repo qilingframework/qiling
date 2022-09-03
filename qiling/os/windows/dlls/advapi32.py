@@ -3,6 +3,8 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from typing import Callable, Tuple
+
 from qiling import Qiling
 from qiling.os.windows.api import *
 from qiling.os.windows.const import *
@@ -496,10 +498,12 @@ def hook_GetTokenInformation(ql: Qiling, address: int, params):
     'pSid' : PSID
 })
 def hook_GetSidSubAuthorityCount(ql: Qiling, address: int, params):
-    sid = ql.os.handle_manager.get(params["pSid"]).obj
-    addr_authority_count = sid.addr + 1  # +1 because the first byte is revision
+    pSid = params['pSid']
 
-    return addr_authority_count
+    # SID address is used as its handle id
+    sid = ql.os.handle_manager.get(pSid).obj
+
+    return pSid + sid.offsetof('SubAuthorityCount')
 
 # PDWORD GetSidSubAuthority(
 #   PSID  pSid,
@@ -510,11 +514,13 @@ def hook_GetSidSubAuthorityCount(ql: Qiling, address: int, params):
     'nSubAuthority' : DWORD
 })
 def hook_GetSidSubAuthority(ql: Qiling, address: int, params):
-    num = params["nSubAuthority"]
-    sid = ql.os.handle_manager.get(params["pSid"]).obj
-    addr_authority = sid.addr + 8 + (ql.arch.pointersize * num)
+    pSid = params['pSid']
+    nSubAuthority = params['nSubAuthority']
 
-    return addr_authority
+    # SID address is used as its handle id
+    sid = ql.os.handle_manager.get(pSid).obj
+
+    return pSid + sid.offsetof('SubAuthority') + (4 * nSubAuthority)
 
 # LSTATUS RegEnumValueA(
 #   HKEY    hKey,
@@ -677,69 +683,91 @@ def hook_StartServiceA(ql: Qiling, address: int, params):
 })
 def hook_AllocateAndInitializeSid(ql: Qiling, address: int, params):
     count = params["nSubAuthorityCount"]
-    subs = b''.join(ql.pack32(params[f'nSubAuthority{i}']) for i in range(count))
+    subauths = tuple(params[f'nSubAuthority{i}'] for i in range(count))
 
-    sid = Sid(ql, revision=1, subs_count=count, identifier=5, subs=subs)
-    sid_addr = ql.os.heap.alloc(sid.size)
-    sid.write(sid_addr)
+    sid_struct = make_sid(auth_count=len(subauths))
+    sid_addr = ql.os.heap.alloc(sid_struct.sizeof())
 
-    handle = Handle(obj=sid, id=sid_addr)
+    sid_obj = sid_struct(
+        Revision = 1,
+        SubAuthorityCount = len(subauths),
+        IdentifierAuthority = (5,),
+        SubAuthority = subauths
+    )
+
+    sid_obj.save_to(ql.mem, sid_addr)
+
+    handle = Handle(obj=sid_obj, id=sid_addr)
     ql.os.handle_manager.append(handle)
+
     dest = params["pSid"]
     ql.mem.write_ptr(dest, sid_addr)
 
     return 1
 
-# Some default Sids:
-__adminsid = None # Administrators (S-1-5-32-544)
-__userssid = None # All Users (S-1-5-32-545)
-__guestssid = None # All Users (S-1-5-32-546)
-__poweruserssid = None # Power Users (S-1-5-32-547)
+def __create_default_sid(ql: Qiling, subauths: Tuple[int, ...]):
+    sid_struct = make_sid(auth_count=len(subauths))
 
+    sid_obj = sid_struct(
+        Revision = 1,
+        SubAuthorityCount = len(subauths),
+        IdentifierAuthority = (5,),
+        SubAuthority = tuple(subauths)
+    )
 
-def get_adminsid(ql):
-    global __adminsid
+    return sid_obj
 
-    if __adminsid is None:
-        # nSubAuthority0 = SECURITY_BUILTIN_DOMAIN_RID[0x20]
-        # nSubAuthority1 = DOMAIN_ALIAS_RID_ADMINS[0x220]
-        subs = b"\x20\x00\x00\x00\x20\x02\x00\x00"
-        __adminsid = Sid(ql, revision=1, identifier=5, subs=subs, subs_count=2)
+def singleton(func: Callable):
+    """A decorator for functions that produce singleton objects.
 
-    return __adminsid
+    When a decorated function is called for the first time, its
+    singleton object will be created. The same object will be returned
+    on all consequent calls regardless of the passed arguments (if any).
+    """
 
-def get_userssid(ql):
-    global __userssid
+    __singleton = None
 
-    if __userssid is None:
-        # nSubAuthority0 = SECURITY_BUILTIN_DOMAIN_RID[0x20]
-        # nSubAuthority1 = DOMAIN_ALIAS_RID_USERS[0x221]
-        subs = b"\x20\x00\x00\x00\x21\x02\x00\x00"
-        __userssid = Sid(ql, revision=1, identifier=5, subs=subs, subs_count=2)
+    def wrapper(*args, **kwargs):
+        nonlocal __singleton
 
-    return __userssid
+        if __singleton is None:
+            __singleton = func(*args, **kwargs)
 
-def get_guestssid(ql):
-    global __guestssid
+        return __singleton
 
-    if __guestssid is None:
-        # nSubAuthority0 = SECURITY_BUILTIN_DOMAIN_RID[0x20]
-        # nSubAuthority1 = DOMAIN_ALIAS_RID_GUESTS[0x222]
-        subs = b"\x20\x00\x00\x00\x22\x02\x00\x00"
-        __guestssid = Sid(ql, revision=1, identifier=5, subs=subs, subs_count=2)
+    return wrapper
 
-    return __guestssid
+# Administrators (S-1-5-32-544)
+@singleton
+def __admin_sid(ql: Qiling):
+    # nSubAuthority0 = SECURITY_BUILTIN_DOMAIN_RID[0x20]
+    # nSubAuthority1 = DOMAIN_ALIAS_RID_ADMINS[0x220]
 
-def get_poweruserssid(ql):
-    global __poweruserssid
+    return __create_default_sid(ql, (0x20, 0x220))
 
-    if __poweruserssid is None:
-        # nSubAuthority0 = SECURITY_BUILTIN_DOMAIN_RID[0x20]
-        # nSubAuthority1 = DOMAIN_ALIAS_RID_POWER_USERS[0x223]
-        subs = b"\x20\x00\x00\x00\x23\x02\x00\x00"
-        __poweruserssid = Sid(ql, revision=1, identifier=5, subs=subs, subs_count=2)
+# All Users (S-1-5-32-545)
+@singleton
+def __users_sid(ql: Qiling):
+    # nSubAuthority0 = SECURITY_BUILTIN_DOMAIN_RID[0x20]
+    # nSubAuthority1 = DOMAIN_ALIAS_RID_USERS[0x221]
 
-    return __poweruserssid
+    return __create_default_sid(ql, (0x20, 0x221))
+
+# All Users (S-1-5-32-546)
+@singleton
+def __guests_sid(ql: Qiling):
+    # nSubAuthority0 = SECURITY_BUILTIN_DOMAIN_RID[0x20]
+    # nSubAuthority1 = DOMAIN_ALIAS_RID_GUESTS[0x222]
+
+    return __create_default_sid(ql, (0x20, 0x222))
+
+# Power Users (S-1-5-32-547)
+@singleton
+def __powerusers_sid(ql: Qiling):
+    # nSubAuthority0 = SECURITY_BUILTIN_DOMAIN_RID[0x20]
+    # nSubAuthority1 = DOMAIN_ALIAS_RID_POWER_USERS[0x223]
+
+    return __create_default_sid(ql, (0x20, 0x223))
 
 
 # BOOL WINAPI CheckTokenMembership(
@@ -753,24 +781,32 @@ def get_poweruserssid(ql):
     'IsMember'    : PBOOL
 })
 def hook_CheckTokenMembership(ql: Qiling, address: int, params):
-    token_handle = params["TokenHandle"]
-    sid = ql.os.handle_manager.get(params["SidToCheck"]).obj
+    TokenHandle = params['TokenHandle']
+    SidToCheck = params['SidToCheck']
+
+    sid = ql.os.handle_manager.get(SidToCheck).obj
+    IsMember = False
+
     # If TokenHandle is NULL, CheckTokenMembership uses the impersonation token of the calling thread.
-    IsMember = 0
-    if token_handle == 0:
+    if not TokenHandle:
         # For now, treat power users as admins
-        if get_adminsid(ql) == sid or get_poweruserssid(ql) == sid:
-            IsMember = 1 if ql.os.profile["SYSTEM"]["permission"] == "root" else 0
-        elif get_userssid(ql) == sid:
+        if __admin_sid(ql) == sid or __powerusers_sid(ql) == sid:
+            IsMember = ql.os.profile["SYSTEM"]["permission"] == "root"
+
+        elif __users_sid(ql) == sid:
             # FIXME: is this true for all tokens? probably not...
-            IsMember = 1
-        elif get_guestssid(ql) == sid:
-            IsMember = 0
+            IsMember = True
+
+        elif __guests_sid(ql) == sid:
+            IsMember = False
+
         else:
-            assert False, 'unimplemented'
+            raise NotImplementedError
     else:
-        assert False, 'unimplemented'
-    ql.mem.write_ptr(params['IsMember'], IsMember)
+        raise NotImplementedError
+
+    ql.mem.write_ptr(params['IsMember'], int(IsMember))
+
     return 1
 
 
@@ -781,6 +817,7 @@ def hook_CheckTokenMembership(ql: Qiling, address: int, params):
     'pSid' : PSID
 })
 def hook_FreeSid(ql: Qiling, address: int, params):
+    # TODO: should also remove from ql.os.handle_manager ?
     ql.os.heap.free(params["pSid"])
 
     return 0

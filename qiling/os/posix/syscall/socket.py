@@ -8,6 +8,7 @@ import ipaddress
 import sys
 import socket
 import struct
+from typing import Tuple
 
 from unicorn.unicorn import UcError
 
@@ -67,15 +68,19 @@ def ql_bin_to_ip(ip):
     return ipaddress.ip_address(ip).compressed
 
 
-def ql_unix_socket_path(ql: Qiling, sun_path: bytearray) -> str:
+def ql_unix_socket_path(ql: Qiling, sun_path: bytearray) -> Tuple[str, str]:
     if sun_path[0] == 0:
         # Abstract Unix namespace
         # TODO: isolate from host namespace
         # TODO: Windows
         ql.log.warning(f'Beware! Usage of hosts abstract socket namespace {bytes(sun_path)}')
-        return sun_path.decode()
-    sun_path = sun_path.split(b'\0')[0].decode()
-    return ql.os.path.transform_to_real_path(sun_path)
+
+        return (sun_path.decode(), '')
+
+    vpath = sun_path.split(b'\0', maxsplit=1)[0].decode()
+    hpath = ql.os.path.virtual_to_host_path(vpath)
+
+    return (hpath, vpath)
 
 
 def ql_syscall_socket(ql: Qiling, socket_domain, socket_type, socket_protocol):
@@ -120,39 +125,44 @@ def ql_syscall_socket(ql: Qiling, socket_domain, socket_type, socket_protocol):
     return idx
 
 
-def ql_syscall_connect(ql: Qiling, connect_sockfd, connect_addr, connect_addrlen):
+def ql_syscall_connect(ql: Qiling, sockfd: int, addr: int, addrlen: int):
     AF_UNIX = 1
     AF_INET = 2
-    sock_addr = ql.mem.read(connect_addr, connect_addrlen)
-    family = ql.unpack16(sock_addr[ : 2])
-    s = ql.os.fd[connect_sockfd]
-    ip = b''
-    sun_path = b''
-    port = 0
+
+    sock_addr = ql.mem.read(addr, addrlen)
+    family = ql.unpack16(sock_addr[:2])
+
+    sock = ql.os.fd[sockfd]
+    assert isinstance(sock, ql_socket)
+
+    dest = None
+
+    if sock.family != family:
+        return -1
+
+    if sock.family == AF_UNIX:
+        hpath, vpath = ql_unix_socket_path(ql, sock_addr[2:])
+
+        ql.log.debug(f'connecting to "{vpath}"')
+        dest = hpath
+
+    elif sock.family == AF_INET:
+        port, host = struct.unpack(">HI", sock_addr[2:8])
+        ip = ql_bin_to_ip(host)
+
+        ql.log.debug(f'connecting to {ip}:{port}')
+        dest = (ip, port)
+
+    else:
+        return -1
+
     try:
-        if s.family == family:
-            if s.family == AF_UNIX:
-                sun_path = ql_unix_socket_path(ql, sock_addr[2:])
-                s.connect(sun_path)
-                regreturn = 0
-            elif s.family == AF_INET:
-                port, host = struct.unpack(">HI", sock_addr[2:8])
-                ip = ql_bin_to_ip(host)
-                s.connect((ip, port))
-                regreturn = 0
-            else:
-                regreturn = -1
-        else:
-            regreturn = -1
+        sock.connect(dest)
     except:
         regreturn = -1
-
-    if s.family == AF_UNIX:
-        ql.log.debug("connect(%s) = %d" % (sun_path, regreturn))
-    elif s.family == AF_INET:
-        ql.log.debug("connect(%s, %d) = %d" % (ip, port, regreturn))
     else:
-        ql.log.debug("connect() = %d" % (regreturn))
+        regreturn = 0
+
     return regreturn
 
 
@@ -314,9 +324,9 @@ def ql_syscall_bind(ql: Qiling, bind_fd, bind_addr, bind_addrlen):
         port = port + 8000
 
     if sin_family == 1:
-        path = ql_unix_socket_path(ql, data[2:])
-        ql.log.info(path)
-        ql.os.fd[bind_fd].bind(path)
+        hpath, vpath = ql_unix_socket_path(ql, data[2:])
+        ql.log.debug(f'binding socket to "{vpath}"')
+        ql.os.fd[bind_fd].bind(hpath)
 
     # need a proper fix, for now ipv4 comes first
     elif sin_family == 2 and ql.os.bindtolocalhost == True:
@@ -338,7 +348,7 @@ def ql_syscall_bind(ql: Qiling, bind_fd, bind_addr, bind_addrlen):
         regreturn = 0
 
     if sin_family == 1:
-        ql.log.debug("bind(%d, %s, %d) = %d" % (bind_fd, path, bind_addrlen, regreturn))
+        ql.log.debug("bind(%d, %s, %d) = %d" % (bind_fd, vpath, bind_addrlen, regreturn))
     else:
         ql.log.debug("bind(%d,%s:%d,%d) = %d" % (bind_fd, host, port, bind_addrlen,regreturn))
         ql.log.debug("syscall bind host: %s and port: %i sin_family: %i" % (ql_bin_to_ip(host), port, sin_family))
@@ -619,10 +629,10 @@ def ql_syscall_sendto(ql: Qiling, sockfd: int, sendto_buf, sendto_len, sendto_fl
         ql.log.debug("sendto() len is " + str(sendto_len))
 
         if sin_family == 1:
-            path = ql_unix_socket_path(ql, data[2:])
+            hpath, vpath = ql_unix_socket_path(ql, data[2:])
 
-            ql.log.debug("sendto() path is " + str(path))
-            regreturn = sock.sendto(bytes(tmp_buf), sendto_flags, path)
+            ql.log.debug("sendto() path is " + str(vpath))
+            regreturn = sock.sendto(bytes(tmp_buf), sendto_flags, hpath)
         else:
             ql.log.debug("sendto() addr is %s:%d" % (host, port))
             regreturn = sock.sendto(bytes(tmp_buf), sendto_flags, (host, port))

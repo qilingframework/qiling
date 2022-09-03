@@ -13,10 +13,17 @@ EVM_CODE = bytes.fromhex("6060604052341561000f57600080fd5b60405160208061031c8339
 
 class R2Test(unittest.TestCase):
     def test_shellcode_disasm(self):
-        ql = Qiling(code=EVM_CODE, archtype="evm", verbose=QL_VERBOSE.DEBUG)
+        ql = Qiling(code=EVM_CODE, archtype="evm", verbose=QL_VERBOSE.DISABLED)
         r2 = R2(ql)
         pd = r2._cmd("pd 32")
-        self.assertTrue('invalid' not in pd)
+        self.assertTrue('callvalue' in pd)
+
+    def test_addr_flag(self):
+        ql = Qiling(["../examples/rootfs/x86_windows/bin/x86_hello.exe"], "../examples/rootfs/x86_windows",
+                    verbose=QL_VERBOSE.DISABLED)  # x8864_hello does not have 'main'
+        r2 = R2(ql)
+        print(r2.where('main'))
+        self.assertEqual(r2.at(r2.where('main')), 'main')
 
 
 if __name__ == "__main__":
