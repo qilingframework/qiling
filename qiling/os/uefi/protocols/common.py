@@ -22,7 +22,7 @@ def LocateHandles(context, params):
 	else:
 		handles = []
 
-	return len(handles) * context.ql.arch.pointersize, handles
+	return len(handles) * context.ql.pointersize, handles
 
 def InstallProtocolInterface(context, params):
 	handle = read_int64(context.ql, params["Handle"])
@@ -100,7 +100,7 @@ def LocateHandle(context, params):
 
 		for handle in handles:
 			write_int64(context.ql, ptr, handle)
-			ptr += context.ql.arch.pointersize
+			ptr += context.ql.pointersize
 
 		ret = EFI_SUCCESS
 

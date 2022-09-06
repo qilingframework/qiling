@@ -12,22 +12,11 @@ from qiling import Qiling
 def ql_syscall_time(ql: Qiling):
     return int(time.time())
 
-def __sleep_common(ql: Qiling, req: int, rem: int, force_timespec64: bool = False) -> int:
-    tv_sec_size = 8 if force_timespec64 else ql.arch.pointersize
-    tv_nsec_size = ql.arch.pointersize
+def __sleep_common(ql: Qiling, req: int, rem: int) -> int:
+    n = ql.pointersize
 
-    # struct timespec {
-    #     long      tv_sec;
-    #     long      tv_nsec;
-    # };
-    # struct timespec64 {
-    #     time64_t  tv_sec;
-    #     long      tv_nsec;
-    # };
-
-    tv_sec = ql.unpack64(ql.mem.read(req, tv_sec_size)) if force_timespec64 else ql.unpack(ql.mem.read(req, tv_sec_size))
-
-    tv_sec += ql.unpack(ql.mem.read(req + tv_sec_size, tv_nsec_size)) / 1000000000
+    tv_sec = ql.unpack(ql.mem.read(req, n))
+    tv_sec += ql.unpack(ql.mem.read(req + n, n)) / 1000000000
 
     if ql.os.thread_management:
         def _sched_sleep(cur_thread):
@@ -44,7 +33,7 @@ def __sleep_common(ql: Qiling, req: int, rem: int, force_timespec64: bool = Fals
     return 0
 
 def ql_syscall_clock_nanosleep_time64(ql: Qiling, clk_id: int, flags: int, req: int, rem: int):
-    return __sleep_common(ql, req, rem, True)
+    return __sleep_common(ql, req, rem)
 
 def ql_syscall_nanosleep(ql: Qiling, req: int, rem: int):
     return __sleep_common(ql, req, rem)

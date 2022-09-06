@@ -7,7 +7,7 @@ from qiling import Qiling
 
 def ql_syscall_writev(ql: Qiling, fd: int, vec: int, vlen: int):
     regreturn = 0
-    size_t_len = ql.arch.pointersize
+    size_t_len = ql.pointersize
     iov = ql.mem.read(vec, vlen * size_t_len * 2)
     ql.log.debug('writev() CONTENT:')
 
@@ -27,7 +27,7 @@ def ql_syscall_writev(ql: Qiling, fd: int, vec: int, vlen: int):
 
 def ql_syscall_readv(ql: Qiling, fd: int, vec: int, vlen: int):
     regreturn = 0
-    size_t_len = ql.arch.pointersize
+    size_t_len = ql.pointersize
     iov = ql.mem.read(vec, vlen * size_t_len * 2)
     ql.log.debug('readv() CONTENT:')
 

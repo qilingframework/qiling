@@ -20,7 +20,7 @@ class MachoParser:
         self.ql = ql
         self.binary_file = self.readFile(path)
         self.raw_data = self.binary_file
-        self.archtype = ql.arch.type
+        self.archtype = ql.archtype
         self.parseFile()
         self.page_zero_size = 0
         self.header_address = 0x0

@@ -10,7 +10,7 @@ from qiling import Qiling
 
 def force_call_dialog_func(ql: Qiling):
     # get DialogFunc address
-    lpDialogFunc = ql.unpack32(ql.mem.read(ql.arch.regs.esp - 0x8, 4))
+    lpDialogFunc = ql.unpack32(ql.mem.read(ql.reg.esp - 0x8, 4))
     # setup stack for DialogFunc
     ql.stack_push(0)
     ql.stack_push(1001)
@@ -18,7 +18,7 @@ def force_call_dialog_func(ql: Qiling):
     ql.stack_push(0)
     ql.stack_push(0x0401018)
     # force EIP to DialogFunc
-    ql.arch.regs.eip = lpDialogFunc
+    ql.reg.eip = lpDialogFunc
 
 def our_sandbox(path, rootfs):
     ql = Qiling(path, rootfs)

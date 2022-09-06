@@ -89,8 +89,8 @@ def _WriteFile(ql: Qiling, address: int, params):
     if hFile == 0xfffffff5:
         s = ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
         ql.os.stdout.write(s)
-        ql.os.stats.log_string(s.decode())
-        ql.mem.write_ptr(lpNumberOfBytesWritten, nNumberOfBytesToWrite)
+        ql.os.utils.string_appearance(s.decode())
+        ql.mem.write(lpNumberOfBytesWritten, ql.pack(nNumberOfBytesToWrite))
     else:
         f = ql.os.handle_manager.get(hFile)
         if f is None:
@@ -101,7 +101,7 @@ def _WriteFile(ql: Qiling, address: int, params):
             f = f.obj
         buffer = ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
         f.write(bytes(buffer))
-        ql.mem.write_ptr(lpNumberOfBytesWritten, nNumberOfBytesToWrite, 4)
+        ql.mem.write(lpNumberOfBytesWritten, ql.pack32(nNumberOfBytesToWrite))
     return ret
 
 @winsdkapi(cc=STDCALL, params={
@@ -120,7 +120,7 @@ def hook_WriteFile(ql: Qiling, address: int, params):
         buffer = ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
         try:
             r, nNumberOfBytesToWrite = utils.io_Write(ql.amsint32_driver, buffer)
-            ql.mem.write_ptr(lpNumberOfBytesWritten, nNumberOfBytesToWrite, 4)
+            ql.mem.write(lpNumberOfBytesWritten, ql.pack32(nNumberOfBytesToWrite))
         except Exception as e:
             ql.log.exception("")
             print("Exception = %s" % str(e))
@@ -151,12 +151,8 @@ def hook_StartServiceA(ql: Qiling, address: int, params):
             if service_handle.name in ql.os.services:
                 service_path = ql.os.services[service_handle.name]
                 service_path = ql.os.path.transform_to_real_path(service_path)
-
                 ql.amsint32_driver = Qiling([service_path], ql.rootfs, verbose=QL_VERBOSE.DEBUG)
-                ntoskrnl = ql.amsint32_driver.loader.get_image_by_name("ntoskrnl.exe")
-                assert ntoskrnl, 'ntoskernl.exe was not loaded'
-
-                init_unseen_symbols(ql.amsint32_driver, ntoskrnl.base+0xb7695, b"NtTerminateProcess", 0, "ntoskrnl.exe")
+                init_unseen_symbols(ql.amsint32_driver, ql.amsint32_driver.loader.dlls["ntoskrnl.exe"]+0xb7695, b"NtTerminateProcess", 0, "ntoskrnl.exe")
                 #ql.amsint32_driver.debugger= ":9999"
                 try:
                     ql.amsint32_driver.load()
@@ -174,7 +170,7 @@ def hook_StartServiceA(ql: Qiling, address: int, params):
 
 
 def hook_stop_address(ql):
-    print(" >>>> Stop address: 0x%08x" % ql.arch.regs.arch_pc)
+    print(" >>>> Stop address: 0x%08x" % ql.reg.arch_pc)
     ql.emu_stop()
 
 
@@ -185,10 +181,10 @@ if __name__ == "__main__":
     ql.amsint32_driver = None
 
     # emulate some Windows API
-    ql.os.set_api("CreateThread", hook_CreateThread)
-    ql.os.set_api("CreateFileA", hook_CreateFileA)
-    ql.os.set_api("WriteFile", hook_WriteFile)
-    ql.os.set_api("StartServiceA", hook_StartServiceA)
+    ql.set_api("CreateThread", hook_CreateThread)
+    ql.set_api("CreateFileA", hook_CreateFileA)
+    ql.set_api("WriteFile", hook_WriteFile)
+    ql.set_api("StartServiceA", hook_StartServiceA)
     #init sality
     ql.hook_address(hook_stop_address, 0x40EFFB)
     ql.run()

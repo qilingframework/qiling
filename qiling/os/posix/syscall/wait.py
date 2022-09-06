@@ -16,7 +16,7 @@ def ql_syscall_wait4(ql: Qiling, pid: int, wstatus: int, options: int, rusage: i
         spid, status, _ = os.wait4(pid, options)
 
         if wstatus:
-            ql.mem.write_ptr(wstatus, status, 4)
+            ql.mem.write(wstatus, ql.pack32(status))
 
         retval = spid
     except ChildProcessError:

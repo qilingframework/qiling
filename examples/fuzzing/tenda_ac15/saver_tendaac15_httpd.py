@@ -59,7 +59,7 @@ def patcher(ql):
 
 def check_pc(ql):
     print("=" * 50)
-    print("Hit fuzz point, stop at PC = 0x%x" % ql.arch.regs.arch_pc)
+    print("Hit fuzz point, stop at PC = 0x%x" % ql.reg.arch_pc)
     print("=" * 50)
     ql.emu_stop()
 

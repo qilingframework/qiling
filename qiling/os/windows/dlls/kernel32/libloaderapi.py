@@ -10,7 +10,7 @@ from qiling.exception import QlErrorNotImplemented
 from qiling.os.windows.api import *
 from qiling.os.windows.const import *
 from qiling.os.windows.fncc import *
-from qiling.os.windows.utils import has_lib_ext
+from qiling.os.windows.utils import *
 
 def _GetModuleHandle(ql: Qiling, address: int, params):
     lpModuleName = params["lpModuleName"]
@@ -20,15 +20,13 @@ def _GetModuleHandle(ql: Qiling, address: int, params):
     else:
         lpModuleName = lpModuleName.lower()
 
-        if not has_lib_ext(lpModuleName):
-            lpModuleName = f'{lpModuleName}.dll'
+        if not is_file_library(lpModuleName):
+            lpModuleName += ".dll"
 
-        image = ql.loader.get_image_by_name(lpModuleName)
-
-        if image:
-            ret = image.base
+        if lpModuleName in ql.loader.dlls:
+            ret = ql.loader.dlls[lpModuleName]
         else:
-            ql.log.debug(f'Library "{lpModuleName}" not imported')
+            ql.log.debug("Library %s not imported" % lpModuleName)
             ret = 0
 
     return ret
@@ -65,7 +63,7 @@ def hook_GetModuleHandleExW(ql: Qiling, address: int, params):
     res = _GetModuleHandle(ql, address, params)
     dst = params["phModule"]
 
-    ql.mem.write_ptr(dst, res)
+    ql.mem.write(dst, ql.pack(res))
 
     return res
 
@@ -150,38 +148,33 @@ def hook_GetModuleFileNameW(ql: Qiling, address: int, params):
     'lpProcName' : POINTER # LPCSTR
 })
 def hook_GetProcAddress(ql: Qiling, address: int, params):
-    hModule = params['hModule']
-    lpProcName = params['lpProcName']
-
-    if lpProcName > MAXUSHORT:
+    if params["lpProcName"] > MAXUSHORT:
         # Look up by name
-        params["lpProcName"] = ql.os.utils.read_cstring(lpProcName)
+        params["lpProcName"] = ql.os.utils.read_cstring(params["lpProcName"])
         lpProcName = bytes(params["lpProcName"], "ascii")
     else:
         # Look up by ordinal
         lpProcName = params["lpProcName"]
 
     # TODO fix for gandcrab
-    if lpProcName == "RtlComputeCrc32":
+    if params["lpProcName"] == "RtlComputeCrc32":
         return 0
 
     # Check if dll is loaded
-    dll_name = next((os.path.basename(image.path).casefold() for image in ql.loader.images if image.base == hModule), None)
-
-    if dll_name is None:
-        ql.log.info('Failed to import function "%s" with handle 0x%X' % (lpProcName, hModule))
+    try:
+        dll_name = [key for key, value in ql.loader.dlls.items() if value == params['hModule']][0]
+    except IndexError as ie:
+        ql.log.info('Failed to import function "%s" with handle 0x%X' % (lpProcName, params['hModule']))
         return 0
 
     # Handle case where module is self
-    if dll_name == os.path.basename(ql.loader.path).casefold():
+    if dll_name == os.path.basename(ql.loader.path):
         for addr, export in ql.loader.export_symbols.items():
             if export['name'] == lpProcName:
                 return addr
 
-    iat = ql.loader.import_address_table[dll_name]
-
-    if lpProcName in iat:
-        return iat[lpProcName]
+    if lpProcName in ql.loader.import_address_table[dll_name]:
+        return ql.loader.import_address_table[dll_name][lpProcName]
 
     return 0
 
@@ -192,12 +185,12 @@ def _LoadLibrary(ql: Qiling, address: int, params):
         # Loading self
         return ql.loader.pe_image_address
 
-    return ql.loader.load_dll(lpLibFileName)
+    return ql.loader.load_dll(lpLibFileName.encode())
 
 def _LoadLibraryEx(ql: Qiling, address: int, params):
     lpLibFileName = params["lpLibFileName"]
 
-    return ql.loader.load_dll(lpLibFileName)
+    return ql.loader.load_dll(lpLibFileName.encode())
 
 # HMODULE LoadLibraryA(
 #   LPCSTR lpLibFileName

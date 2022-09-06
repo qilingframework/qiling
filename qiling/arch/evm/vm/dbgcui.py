@@ -59,12 +59,10 @@ def hexdump(src, length=16, sep='.', minrows=8, start=0, prevsrc="", to_list=Fal
         return result
     return '\n'.join(result)
 
-def stackdump(src, minrows=8, to_list=False):
+def stackdump(src, length=16, minrows=8, start=0, to_list=False):
     result = []
 
-    # only the last N elements should be printed
-    start = len(src) - min(minrows, len(src))
-    for i in range(min(minrows, len(src)) + start - 1, start - 1, -1):
+    for i in range(start, min(minrows, len(src))):
         v_type = src[i][0]
         value = src[i][1]
         if v_type is bytes:

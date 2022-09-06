@@ -4,7 +4,7 @@
 #
 
 
-import os, sys, unittest
+import sys, unittest
 from pathlib import Path
 
 from unicorn import UcError
@@ -16,10 +16,7 @@ from qiling.os.const import STRING
 from qiling.os.macos.structs import *
 from qiling.os.macos.fncc import macos_kernel_api
 
-IS_FAST_TEST = 'QL_FAST_TEST' in os.environ
-
 class MACHOTest(unittest.TestCase):
-    @unittest.skipIf(IS_FAST_TEST, 'fast test')
     def test_macho_macos_superrootkit(self):
         # https://developer.apple.com/download/more
         # to download kernel.developmment
@@ -85,9 +82,9 @@ class MACHOTest(unittest.TestCase):
             return
 
         ql = Qiling(["../examples/rootfs/x8664_macos/kext/SuperRootkit.kext"], "../examples/rootfs/x8664_macos", verbose=QL_VERBOSE.DISASM)
-        ql.os.set_api("_ipf_addv4", my_onenter, QL_INTERCEPT.ENTER)
-        ql.os.set_api("_strncmp", my_onexit, QL_INTERCEPT.EXIT)
-        ql.os.set_api("_strlen", my__strlen) 
+        ql.set_api("_ipf_addv4", my_onenter, QL_INTERCEPT.ENTER)
+        ql.set_api("_strncmp", my_onexit, QL_INTERCEPT.EXIT)
+        ql.set_api("_strlen", my__strlen) 
         ql.hook_address(hook_stop, 0xffffff8000854800)
 
         try:

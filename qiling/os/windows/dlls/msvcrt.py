@@ -41,13 +41,13 @@ def hook___getmainargs(ql: Qiling, address: int, params):
 # int* __p__fmode();
 @winsdkapi(cc=CDECL, params={})
 def hook___p__fmode(ql: Qiling, address: int, params):
-    addr = ql.os.heap.alloc(ql.arch.pointersize)
+    addr = ql.os.heap.alloc(ql.pointersize)
     return addr
 
 # int* __p__commode();
 @winsdkapi(cc=CDECL, params={})
 def hook___p__commode(ql: Qiling, address: int, params):
-    addr = ql.os.heap.alloc(ql.arch.pointersize)
+    addr = ql.os.heap.alloc(ql.pointersize)
     return addr
 
 # char** __p__acmdln();
@@ -87,16 +87,17 @@ def hook_atexit(ql: Qiling, address: int, params):
 # char*** __p__environ(void)
 @winsdkapi(cc=CDECL, params={})
 def hook___p__environ(ql: Qiling, address: int, params):
-    ret = ql.os.heap.alloc(ql.arch.pointersize * len(ql.os.env))
+    ret = ql.os.heap.alloc(ql.pointersize * len(ql.os.env))
 
     for i, (k, v) in enumerate(ql.os.env.items()):
         entry = bytes(f'{k}={v}', 'ascii') + b'\x00'
         p_entry = ql.os.heap.alloc(len(entry))
         ql.mem.write(p_entry, entry)
 
-        pp_entry = ql.os.heap.alloc(ql.arch.pointersize)
-        ql.mem.write_ptr(pp_entry, p_entry)
-        ql.mem.write_ptr(ret + i * ql.arch.pointersize, pp_entry)
+        pp_entry = ql.os.heap.alloc(ql.pointersize)
+        ql.mem.write(pp_entry, ql.pack(p_entry))
+
+        ql.mem.write(ret + i * ql.pointersize, ql.pack(pp_entry))
 
     return ret
 
@@ -154,26 +155,26 @@ def hook__initterm_e(ql: Qiling, address: int, params):
 @winsdkapi(cc=CDECL, params={})
 def hook___p___argv(ql: Qiling, address: int, params):
     # allocate argv pointers array
-    p_argv = ql.os.heap.alloc(ql.arch.pointersize * len(ql.os.argv))
+    p_argv = ql.os.heap.alloc(ql.pointersize * len(ql.os.argv))
 
     for i, each in enumerate(ql.os.argv):
         entry = bytes(each, 'ascii') + b'\x00'
         p_entry = ql.os.heap.alloc(len(entry))
 
         ql.mem.write(p_entry, entry)
-        ql.mem.write_ptr(p_argv + i * ql.arch.pointersize, p_entry)
+        ql.mem.write(p_argv + i * ql.pointersize, ql.pack(p_entry))
 
-    ret = ql.os.heap.alloc(ql.arch.pointersize)
-    ql.mem.write_ptr(ret, p_argv)
+    ret = ql.os.heap.alloc(ql.pointersize)
+    ql.mem.write(ret, ql.pack(p_argv))
 
     return ret
 
 # int* __p___argc(void)
 @winsdkapi(cc=CDECL, params={})
 def hook___p___argc(ql: Qiling, address: int, params):
-    ret = ql.os.heap.alloc(ql.arch.pointersize)
+    ret = ql.os.heap.alloc(ql.pointersize)
 
-    ql.mem.write_ptr(ret, len(ql.argv))
+    ql.mem.write(ret, ql.pack(len(ql.argv)))
 
     return ret
 
@@ -411,17 +412,6 @@ def hook_strncmp(ql: Qiling, address: int, params):
 
     return result
 
-def __malloc(ql: Qiling, address: int, params):
-    size = params['size']
-
-    return ql.os.heap.alloc(size)
-
-@winsdkapi(cc=CDECL, params={
-    'size' : UINT
-})
-def hook__malloc_base(ql: Qiling, address: int, params):
-    return __malloc(ql, address, params)
-
 # void* malloc（unsigned int size)
 @winsdkapi(cc=CDECL, params={
     'size' : UINT
@@ -431,23 +421,15 @@ def hook_malloc(ql: Qiling, address: int, params):
 
     return ql.os.heap.alloc(size)
 
-def __free(ql: Qiling, address: int, params):
-    address = params['address']
 
-    ql.os.heap.free(address)
-
-@winsdkapi(cc=CDECL, params={
-    'address': POINTER
-})
-def hook__free_base(ql: Qiling, address: int, params):
-    return __free(ql, address, params)
-
-# void* free（void *address)
+# void* void* free（void *address)
 @winsdkapi(cc=CDECL, params={
     'address': POINTER
 })
 def hook_free(ql: Qiling, address: int, params):
-    return __free(ql, address, params)
+    address = params['address']
+    
+    return ql.os.heap.free(address)
 
 # _onexit_t _onexit(
 #    _onexit_t function
@@ -458,8 +440,8 @@ def hook_free(ql: Qiling, address: int, params):
 def hook__onexit(ql: Qiling, address: int, params):
     function = params['function']
 
-    addr = ql.os.heap.alloc(ql.arch.pointersize)
-    ql.mem.write_ptr(addr, function)
+    addr = ql.os.heap.alloc(ql.pointersize)
+    ql.mem.write(addr, ql.pack(function))
 
     return addr
 
@@ -482,23 +464,6 @@ def hook_memset(ql: Qiling, address: int, params):
 
     return dest
 
-def __calloc(ql: Qiling, address: int, params):
-    num = params['num']
-    size = params['size']
-
-    count = num * size
-    ret = ql.os.heap.alloc(count)
-    ql.mem.write(ret, bytes([0] * count))
-
-    return ret
-
-@winsdkapi(cc=CDECL, params={
-    'num'  : SIZE_T,
-    'size' : SIZE_T
-})
-def hook__calloc_base(ql: Qiling, address: int, params):
-    return __calloc(ql, address, params)
-
 # void *calloc(
 #    size_t num,
 #    size_t size
@@ -508,7 +473,14 @@ def hook__calloc_base(ql: Qiling, address: int, params):
     'size' : SIZE_T
 })
 def hook_calloc(ql: Qiling, address: int, params):
-    return __calloc(ql, address, params)
+    num = params['num']
+    size = params['size']
+
+    count = num * size
+    ret = ql.os.heap.alloc(count)
+    ql.mem.write(ret, bytes([0] * count))
+
+    return ret
 
 # void * memmove(
 #   void *dest,
@@ -560,7 +532,7 @@ def hook__wfopen_s(ql: Qiling, address: int, params):
     f = ql.os.fs_mapper.open(filename, mode)
     new_handle = Handle(obj=f)
     ql.os.handle_manager.append(new_handle)
-    ql.mem.write_ptr(pFile, new_handle.id)
+    ql.mem.write(pFile, ql.pack(new_handle.id))
 
     return 1
 
@@ -573,7 +545,7 @@ def hook__time64(ql: Qiling, address: int, params):
 
     time_wasted = int(time.time())
 
-    if dst:
-        ql.mem.write_ptr(dst, time_wasted, 8)
+    if dst != 0:
+        ql.mem.write(dst, time_wasted.to_bytes(8, "little"))
 
     return time_wasted

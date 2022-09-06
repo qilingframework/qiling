@@ -19,10 +19,10 @@ def vm_shared_region_enter(ql):
 
 
 def map_commpage(ql):
-    if ql.arch.type == QL_ARCH.X8664:
+    if ql.archtype== QL_ARCH.X8664:
         addr_base = X8664_COMM_PAGE_START_ADDRESS
         addr_size = 0x100000
-    elif ql.arch.type == QL_ARCH.ARM64:
+    elif ql.archtype== QL_ARCH.ARM64:
         addr_base = ARM64_COMM_PAGE_START_ADDRESS
         addr_size = 0x1000        
     ql.mem.map(addr_base, addr_size, info="[commpage]")

@@ -3,41 +3,40 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from typing import Callable
 import os
 
+from typing import Callable
 from unicorn import UcError
 
 from qiling import Qiling
-from qiling.arch import arm_utils
 from qiling.os.posix.posix import QlOsPosix
 from qiling.os.qnx.const import NTO_SIDE_CHANNEL, SYSMGR_PID, SYSMGR_CHID, SYSMGR_COID
 from qiling.os.qnx.helpers import QnxConn
 from qiling.os.qnx.structs import _thread_local_storage
 
-from qiling.cc import QlCC, intel, arm, mips, riscv, ppc
-from qiling.const import QL_ARCH, QL_OS
+from qiling.cc import QlCC, intel, arm, mips, riscv
+from qiling.const import QL_ARCH, QL_INTERCEPT
 from qiling.os.fcall import QlFunctionCall
 from qiling.os.const import *
+from qiling.os.posix.const import NR_OPEN
 from qiling.os.posix.posix import QlOsPosix
 
 class QlOsQnx(QlOsPosix):
-    type = QL_OS.QNX
-
     def __init__(self, ql: Qiling):
         super(QlOsQnx, self).__init__(ql)
 
         self.ql = ql
 
         cc: QlCC = {
-            QL_ARCH.X86     : intel.cdecl,
-            QL_ARCH.X8664   : intel.amd64,
-            QL_ARCH.ARM     : arm.aarch32,
-            QL_ARCH.ARM64   : arm.aarch64,
-            QL_ARCH.MIPS    : mips.mipso32,
-            QL_ARCH.RISCV   : riscv.riscv,
-            QL_ARCH.RISCV64 : riscv.riscv,
-            QL_ARCH.PPC     : ppc.ppc,
-        }[ql.arch.type](ql.arch)
+            QL_ARCH.X86   : intel.cdecl,
+            QL_ARCH.X8664 : intel.amd64,
+            QL_ARCH.ARM   : arm.aarch32,
+            QL_ARCH.ARM64 : arm.aarch64,
+            QL_ARCH.MIPS  : mips.mipso32,
+            QL_ARCH.RISCV : riscv.riscv,
+            QL_ARCH.RISCV64: riscv.riscv,
+        }[ql.archtype](ql)
 
         self.fcall = QlFunctionCall(ql, cc)
 
@@ -65,19 +64,19 @@ class QlOsQnx(QlOsPosix):
             return
 
         # ARM
-        if self.ql.arch.type == QL_ARCH.ARM:
+        if self.ql.archtype == QL_ARCH.ARM:
             self.ql.arch.enable_vfp()
             self.ql.hook_intno(self.hook_syscall, 2)
             #self.thread_class = thread.QlLinuxARMThread
-            arm_utils.init_linux_traps(self.ql, {
-                'memory_barrier': 0xffff0fa0,
-                'cmpxchg': 0xffff0fc0,
-                'get_tls': 0xffff0fe0
-            })
+            self.ql.arch.init_get_tls()
 
-
-    def hook_syscall(self, ql, intno):
+    
+    def hook_syscall(self, intno= None, int = None):
         return self.load_syscall()
+
+
+    def add_function_hook(self, fn: str, cb: Callable, intercept: QL_INTERCEPT):
+        self.ql.os.function_hook.add_function_hook(fn, cb, intercept)
 
 
     def register_function_after_load(self, function):
@@ -88,6 +87,12 @@ class QlOsQnx(QlOsPosix):
     def run_function_after_load(self):
         for f in self.function_after_load_list:
             f()
+
+
+    def hook_sigtrap(self, intno= None, int = None):
+        self.ql.log.info("Trap Found")
+        self.emu_error()
+        exit(1)
 
 
     def run(self):
@@ -109,7 +114,7 @@ class QlOsQnx(QlOsPosix):
             self.ql.mem.write(self.syspage_addr, sp.read())
 
         # Address of struct _thread_local_storage for our thread
-        self.ql.mem.write_ptr(self.cpupage_addr, self.cpupage_tls_addr, 4)
+        self.ql.mem.write(self.cpupage_addr, self.ql.pack32(self.cpupage_tls_addr))
         tls = _thread_local_storage(self.ql, self.cpupage_tls_addr)
 
         # Fill TLS structure with proper values
@@ -121,7 +126,7 @@ class QlOsQnx(QlOsPosix):
         tls.updateToMem()
 
         # Address of the system page
-        self.ql.mem.write_ptr(self.cpupage_addr + 8, self.syspage_addr, 4)
+        self.ql.mem.write(self.cpupage_addr + 8, self.ql.pack32(self.syspage_addr))
 
         try:
             if self.ql.code:
@@ -129,7 +134,7 @@ class QlOsQnx(QlOsPosix):
             else:
                 if self.ql.loader.elf_entry != self.ql.loader.entry_point:
                     entry_address = self.ql.loader.elf_entry
-                    if self.ql.arch.type == QL_ARCH.ARM and entry_address & 1 == 1:
+                    if self.ql.archtype == QL_ARCH.ARM and entry_address & 1 == 1:
                         entry_address -= 1
                     self.ql.emu_start(self.ql.loader.entry_point, entry_address, self.ql.timeout)
                     self.run_function_after_load()

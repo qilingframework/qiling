@@ -97,9 +97,9 @@ def hook_AddVectoredExceptionHandler(ql: Qiling, address: int, params):
         # https://github.com/LordNoteworthy/al-khaser/wiki/Anti-Debugging-Tricks#interrupt-0x2d
         pointer = ql.os.heap.alloc(0x4)
         # the value has just to be different from 0x80000003
-        ql.mem.write_ptr(pointer, 0, 4)
+        ql.mem.write(pointer, ql.pack32(0))
         double_pointer = ql.os.heap.alloc(0x4)
-        ql.mem.write_ptr(double_pointer, pointer, 4)
+        ql.mem.write(double_pointer, ql.pack32(pointer))
 
         # arg
         ql.stack_push(double_pointer)
@@ -112,12 +112,12 @@ def hook_AddVectoredExceptionHandler(ql: Qiling, address: int, params):
         # FIXME: probably this works only with al-khaser.
         pointer = ql.os.heap.alloc(0x4)
         # the value has just to be different from 0x80000003
-        ql.mem.write_ptr(pointer, 0, 4)
+        ql.mem.write(pointer, ql.pack32(0))
         double_pointer = ql.os.heap.alloc(0x4)
-        ql.mem.write_ptr(double_pointer, pointer, 4)
+        ql.mem.write(double_pointer, ql.pack32(pointer))
 
-        ql.arch.regs.eax = double_pointer
-        ql.arch.regs.esi = user_data
+        ql.reg.eax = double_pointer
+        ql.reg.esi = user_data
 
     addr = params["Handler"]
 

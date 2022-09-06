@@ -204,12 +204,10 @@ def ql_syscall_pread(ql, fd, buf, nbyte, offset, *args, **kw):
     ql.log.debug("pread(fd: 0x%x, buf: 0x%x, nbyte: 0x%x, offset: 0x%x)" % (
         fd, buf, nbyte, offset
     ))
-
-    if fd in range(MAX_FD_SIZE + 1):
+    if fd >= 0 and fd <= MAX_FD_SIZE:
         ql.os.fd[fd].seek(offset)
         data = ql.os.fd[fd].read(nbyte)
         ql.mem.write(buf, data)
-
     set_eflags_cf(ql, 0x0)
     return nbyte
 
@@ -301,7 +299,7 @@ def ql_syscall_shared_region_check_np(ql, p, uap, retvalp, *args, **kw):
 
 # 0x150
 def ql_syscall_proc_info(ql, callnum, pid, flavor, arg, buff, buffer_size):
-    retval = struct.unpack("<Q", ql.mem.read(ql.arch.regs.rsp, 8))[0]
+    retval = struct.unpack("<Q", ql.mem.read(ql.reg.rsp, 8))[0]
     ql.log.debug("proc_info(callnum: 0x%x, pid: %d, flavor:0x%x, arg: 0x%x, buffer: 0x%x, buffersize: 0x%x, retval: 0x%x)" % (
         callnum, pid, flavor, arg, buff, buffer_size, retval
     ))
@@ -360,13 +358,16 @@ def ql_syscall_open_nocancel(ql, filename, flags, mode, *args, **kw):
     flags = flags & 0xffffffff
     mode = mode & 0xffffffff
 
-    idx = next((i for i in range(MAX_FD_SIZE + 1) if ql.os.fd[i] is None), -1)
+    for i in range(256):
+        if ql.os.fd[i] == 0:
+            idx = i
+            break
 
     if idx == -1:
         regreturn = -1
     else:
         try:
-            if ql.arch.type == QL_ARCH.ARM:
+            if ql.archtype== QL_ARCH.ARM:
                 mode = 0
 
             ql.os.fd[idx] = ql.os.fs_mapper.open_ql_file(path, flags, mode)
@@ -430,5 +431,5 @@ def ql_syscall_abort_with_payload(ql, reason_namespace, reason_code, payload, pa
 # thread_set_tsd_base
 def ql_syscall_thread_fast_set_cthread_self64(ql, u_info_addr, *args, **kw):
     ql.log.debug("[mdep] thread fast set cthread self64(tsd_base:0x%x)" % (u_info_addr))
-    ql.arch.msr.write(IA32_GS_BASE_MSR, u_info_addr)
+    ql.reg.msr(GSMSR, u_info_addr)
     return KERN_SUCCESS

@@ -5,10 +5,10 @@ class QILING_IDA():
         pass
 
     def _show_context(self, ql:Qiling):
-        registers = [ k for k in ql.arch.regs.register_mapping.keys() if type(k) is str ]
+        registers = [ k for k in ql.reg.register_mapping.keys() if type(k) is str ]
         for idx in range(0, len(registers), 3):
             regs = registers[idx:idx+3]
-            s = "\t".join(map(lambda v: f"{v:4}: {ql.arch.regs.__getattr__(v):016x}", regs))
+            s = "\t".join(map(lambda v: f"{v:4}: {ql.reg.__getattr__(v):016x}", regs))
             ql.log.info(s)
 
     def custom_prepare(self, ql:Qiling):

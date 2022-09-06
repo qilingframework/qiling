@@ -1,0 +1,5 @@
+recursive-include qiling/debugger/gdb/xml *
+recursive-include qiling/extensions/windows_sdk/defs *
+recursive-include qiling/profiles *
+include qiling/os/uefi/guids.csv
+include qiling/os/qnx/syspage.bin

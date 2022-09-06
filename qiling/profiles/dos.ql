@@ -22,4 +22,4 @@ base_address = 0x7000
 # usage: append = test1
 append =
 automatize_input = False
-current_path = A:\
+current_path = /

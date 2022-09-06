@@ -34,8 +34,8 @@ def main(input_file, enable_trace=False):
     fuzz_mem=ql.mem.search(b"CCCCAAAA")
     target_address = fuzz_mem[0]
 
-    def place_input_callback(_ql: Qiling, input: bytes, _):
-        _ql.mem.write(target_address, input)
+    def place_input_callback(uc, input, _, data):
+        ql.mem.write(target_address, input)
 
     def start_afl(_ql: Qiling):
         """

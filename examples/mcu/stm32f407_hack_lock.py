@@ -48,7 +48,7 @@ def crack(passwd):
 
     ql.hw.systick.set_ratio(100)
     ql.run(count=1000000, end=0x8003225)
-    if ql.arch.effective_pc == 0x8003225:
+    if ql.arch.get_pc() == 0x8003225:
         print('Success, the passwd is', passwd)
     else:
         print('Fail, the passwd is not', passwd)

@@ -21,13 +21,16 @@ from qiling.extensions import pipe
 from qiling.extensions.afl import ql_afl_fuzz
 
 def main(input_file, enable_trace=False):
-    ql = Qiling(["./arm_fuzz"], "../../rootfs/arm_qnx", console=enable_trace)
+    mock_stdin = pipe.SimpleInStream(sys.stdin.fileno())
 
-    ql.os.stdin = pipe.SimpleInStream(sys.stdin.fileno())
+    ql = Qiling(["./arm_fuzz"], "../../rootfs/arm_qnx",
+                stdin=mock_stdin,
+                stdout=1 if enable_trace else None,
+                stderr=1 if enable_trace else None,
+                console = True if enable_trace else False)
 
-    if not enable_trace:
-        ql.os.stdout = pipe.NullOutStream(sys.stdout.fileno())
-        ql.os.stderr = pipe.NullOutStream(sys.stderr.fileno())
+    # or this for output:
+    # ... stdout=sys.stdout, stderr=sys.stderr)
 
     def place_input_callback(ql: Qiling, input: bytes, _: int):
         ql.os.stdin.write(input)
@@ -47,7 +50,7 @@ def main(input_file, enable_trace=False):
 
     if enable_trace:
         # The following lines are only for `-t` debug output
-        md = ql.arch.disassembler
+        md = ql.create_disassembler()
         count = [0]
 
         def spaced_hex(data):

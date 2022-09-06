@@ -21,7 +21,7 @@ delay_cycles_begin = 0x800015c
 delay_cycles_end = 0x800018c
 
 def skip_delay(ql):
-    ql.arch.regs.pc = delay_cycles_end
+    ql.reg.pc = delay_cycles_end
 
 ql.hook_address(skip_delay, delay_cycles_begin)
 ql.hw.gpioc.hook_set(13, lambda : print('Set PC13'))

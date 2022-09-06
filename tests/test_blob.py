@@ -20,31 +20,31 @@ class BlobTest(unittest.TestCase):
             value_addr = ql.os.heap.alloc(len(value))
             ql.mem.write(value_addr, value)
 
-            ql.arch.regs.r0 = value_addr
-            ql.arch.regs.arch_pc = ql.arch.regs.lr
+            ql.reg.r0 = value_addr
+            ql.reg.arch_pc = ql.reg.lr
 
         def check_password(ql, *args, **kwargs):
-            passwd_output = ql.mem.read(ql.arch.regs.r0, ql.arch.regs.r2)
-            passwd_input = ql.mem.read(ql.arch.regs.r1, ql.arch.regs.r2)
+            passwd_output = ql.mem.read(ql.reg.r0, ql.reg.r2)
+            passwd_input = ql.mem.read(ql.reg.r1, ql.reg.r2)
             self.assertEqual(passwd_output, passwd_input)
 
         def partial_run_init(ql):
             # argv prepare
-            ql.arch.regs.arch_sp -= 0x30
-            arg0_ptr = ql.arch.regs.arch_sp
+            ql.reg.arch_sp -= 0x30
+            arg0_ptr = ql.reg.arch_sp
             ql.mem.write(arg0_ptr, b"kaimendaji")
 
-            ql.arch.regs.arch_sp -= 0x10
-            arg1_ptr = ql.arch.regs.arch_sp
+            ql.reg.arch_sp -= 0x10
+            arg1_ptr = ql.reg.arch_sp
             ql.mem.write(arg1_ptr, b"013f1f")
 
-            ql.arch.regs.arch_sp -= 0x20
-            argv_ptr = ql.arch.regs.arch_sp
-            ql.mem.write_ptr(argv_ptr, arg0_ptr)
-            ql.mem.write_ptr(argv_ptr + ql.arch.pointersize, arg1_ptr)
+            ql.reg.arch_sp -= 0x20
+            argv_ptr = ql.reg.arch_sp
+            ql.mem.write(argv_ptr, ql.pack(arg0_ptr))
+            ql.mem.write(argv_ptr + ql.pointersize, ql.pack(arg1_ptr))
 
-            ql.arch.regs.r2 = 2
-            ql.arch.regs.r3 = argv_ptr
+            ql.reg.r2 = 2
+            ql.reg.r3 = argv_ptr
 
         print("ARM uboot bin")
 

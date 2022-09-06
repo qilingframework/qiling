@@ -635,8 +635,8 @@ def __GetUserName(ql: Qiling, address: int, params, wstring: bool):
     enc = "utf-16le" if wstring else "utf-8"
     username = f'{ql.os.profile["USER"]["username"]}\x00'.encode(enc)
 
-    max_size = ql.mem.read_ptr(pcbBuffer, 4)
-    ql.mem.write_ptr(pcbBuffer, len(username), 4)
+    max_size = ql.unpack32(ql.mem.read(pcbBuffer, 4))
+    ql.mem.write(pcbBuffer, ql.pack32(len(username)))
 
     if len(username) > max_size:
         ql.os.last_error = ERROR_INSUFFICIENT_BUFFER
@@ -674,8 +674,8 @@ def __GetComputerName(ql: Qiling, address: int, params, wstring: bool):
     enc = "utf-16le" if wstring else "utf-8"
     computer = f'{ql.os.profile["SYSTEM"]["computername"]}\x00'.encode(enc)
 
-    max_size = ql.mem.read_ptr(nSize, 4)
-    ql.mem.write_ptr(nSize, len(computer), 4)
+    max_size = ql.unpack32(ql.mem.read(nSize, 4))
+    ql.mem.write(nSize, ql.pack32(len(computer)))
 
     if len(computer) > max_size:
         ql.os.last_error = ERROR_BUFFER_OVERFLOW

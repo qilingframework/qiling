@@ -75,7 +75,7 @@ def my_sandbox(path, rootfs):
     ql.debugger = False
 
     if ql.debugger == True:
-        ql.os.set_syscall("vfork", myvfork)
+        ql.set_syscall("vfork", myvfork)
 
     ql.run()
 

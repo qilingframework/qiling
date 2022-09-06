@@ -23,6 +23,6 @@ class QlLoaderBLOB(QlLoader):
         heap_size = int(self.ql.os.profile.get("CODE", "heap_size"), 16)
         self.ql.os.heap = QlMemoryHeap(self.ql, heap_address, heap_address + heap_size)
 
-        self.ql.arch.regs.arch_sp = heap_address - 0x1000
+        self.ql.reg.arch_sp = heap_address - 0x1000
 
         return

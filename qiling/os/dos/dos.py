@@ -10,7 +10,7 @@ from datetime import datetime
 from unicorn import UcError
 
 from qiling import Qiling
-from qiling.const import QL_OS, QL_INTERCEPT
+from qiling.const import QL_INTERCEPT
 from qiling.os.os import QlOs
 
 from .interrupts import handlers
@@ -29,8 +29,6 @@ class Flags(IntEnum):
     IOPL = (3 << 12) # io privilege
 
 class QlOsDos(QlOs):
-    type = QL_OS.DOS
-
     def __init__(self, ql: Qiling):
         super(QlOsDos, self).__init__(ql)
 
@@ -58,10 +56,10 @@ class QlOsDos(QlOs):
             curses.endwin()
 
     def set_flag_value(self, fl: Flags, val: int) -> None:
-        self.ql.arch.regs.eflags = self.ql.arch.regs.eflags & (~fl) | (fl * val)
+        self.ql.reg.ef = self.ql.reg.ef & (~fl) | (fl * val)
 
     def test_flags(self, fl):
-        return self.ql.arch.regs.eflags & fl == fl
+        return self.ql.reg.ef & fl == fl
 
     def set_cf(self):
         self.set_flag_value(Flags.CF, 0b1)
@@ -78,7 +76,7 @@ class QlOsDos(QlOs):
     def hook_syscall(self):
 
         def cb(ql: Qiling, intno: int):
-            ah = ql.arch.regs.ah
+            ah = ql.reg.ah
             intinfo = (intno, ah)
 
             func = self.user_defined_api[QL_INTERCEPT.CALL].get(intinfo) or handlers.get(intno)

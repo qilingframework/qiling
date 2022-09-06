@@ -39,9 +39,9 @@ def my_onexit(ql: Qiling, address: int, params, retval: int):
 def my_sandbox(path, rootfs):
     ql = Qiling(path, rootfs, verbose=QL_VERBOSE.DEBUG)
 
-    ql.os.set_api("_cexit", my_onenter, QL_INTERCEPT.ENTER)
-    ql.os.set_api("puts", my_puts, QL_INTERCEPT.CALL)
-    ql.os.set_api("atexit", my_onexit, QL_INTERCEPT.EXIT)
+    ql.set_api("_cexit", my_onenter, QL_INTERCEPT.ENTER)
+    ql.set_api("puts", my_puts, QL_INTERCEPT.CALL)
+    ql.set_api("atexit", my_onexit, QL_INTERCEPT.EXIT)
 
     ql.run()
 

@@ -136,10 +136,10 @@ def __leaf_00(ql: Qiling):
 	key = parse_key(ql.os.stdscr.getch())
 	ql.log.debug(f"Get key: {hex(key)}")
 	if curses.ascii.isascii(key):
-		ql.arch.regs.al = key
+		ql.reg.al = key
 	else:
-		ql.arch.regs.al = 0
-	ql.arch.regs.ah = get_scan_code(key)
+		ql.reg.al = 0
+	ql.reg.ah = get_scan_code(key)
 	curses.nl()
 
 def __leaf_01(ql: Qiling):
@@ -150,11 +150,11 @@ def __leaf_01(ql: Qiling):
 
 	if key == -1:
 		ql.os.set_zf()
-		ql.arch.regs.ax = 0
+		ql.reg.ax = 0
 	else:
 		ql.log.debug(f"Has key: {hex(key)} ({curses.ascii.unctrl(key)})")
-		ql.arch.regs.al = key
-		ql.arch.regs.ah = get_scan_code(key)
+		ql.reg.al = key
+		ql.reg.ah = get_scan_code(key)
 		ql.os.clear_zf()
 		# Buffer shouldn't be removed in this interrupt.
 		curses.ungetch(key)
@@ -163,7 +163,7 @@ def __leaf_01(ql: Qiling):
 	curses.nl()
 
 def handler(ql: Qiling):
-	ah = ql.arch.regs.ah
+	ah = ql.reg.ah
 
 	leaffunc = {
 		0x00 : __leaf_00,

@@ -6,15 +6,14 @@
  *!notice and this notice are preserved.  -->
 
 <!DOCTYPE target SYSTEM "gdb-target.dtd">
-<target xmlns:xi="http://www.w3.org/2001/XInclude">
-    <architecture>mips</architecture>
-    <osabi>GNU/Linux</osabi>
+<target>
+  <architecture>mips</architecture>
+  <osabi>GNU/Linux</osabi>
+  <xi:include href="mips-cpu.xml"/>
+  <xi:include href="mips-cp0.xml"/>
+  <xi:include href="mips-fpu.xml"/>
 
-    <xi:include href="mips-cpu.xml"/>
-    <xi:include href="mips-cp0.xml"/>
-    <xi:include href="mips-fpu.xml"/>
-
-    <feature name="org.gnu.gdb.mips.linux">
-        <reg name="restart" bitsize="32" group="system"/>
-    </feature>
+  <feature name="org.gnu.gdb.mips.linux">
+ * <reg name="restart" bitsize="32" group="system"/>
+  </feature>
 </target>

@@ -7,11 +7,9 @@ from .futex import *
 from .ioctl import *
 from .mman import *
 from .net import *
-from .personality import *
 from .poll import *
 from .prctl import *
 from .ptrace import *
-from .random import *
 from .resource import *
 from .sched import *
 from .select import *
@@ -27,3 +25,4 @@ from .uio import *
 from .unistd import *
 from .utsname import *
 from .wait import *
+from .random import *

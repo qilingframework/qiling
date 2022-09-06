@@ -101,9 +101,9 @@ class Test_UEFI(unittest.TestCase):
             ql = Qiling([f'{ROOTFS_UEFI}/bin/TcgPlatformSetupPolicy'], ROOTFS_UEFI, env=env, verbose=QL_VERBOSE.DEBUG)
             self.ck = Checklist()
 
-            ql.os.set_api("RegisterProtocolNotify", force_notify_RegisterProtocolNotify)
-            ql.os.set_api("CopyMem", my_onenter, QL_INTERCEPT.ENTER)
-            ql.os.set_api("LocateProtocol", my_onexit, QL_INTERCEPT.EXIT)
+            ql.set_api("RegisterProtocolNotify", force_notify_RegisterProtocolNotify)
+            ql.set_api("CopyMem", my_onenter, QL_INTERCEPT.ENTER)
+            ql.set_api("LocateProtocol", my_onexit, QL_INTERCEPT.EXIT)
 
             ql.run()
 

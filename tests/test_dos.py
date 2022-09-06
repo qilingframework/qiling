@@ -26,8 +26,8 @@ class DOSTest(unittest.TestCase):
         def onexit(ql: Qiling):
             ck.visited_onexit = True
 
-        ql.os.set_api((0x21, 0x09), onexit, QL_INTERCEPT.EXIT)
-        ql.os.set_api((0x21, 0x4c), onenter, QL_INTERCEPT.ENTER)
+        ql.set_api((0x21, 0x09), onexit, QL_INTERCEPT.EXIT)
+        ql.set_api((0x21, 0x4c), onenter, QL_INTERCEPT.ENTER)
 
         ql.run()
 

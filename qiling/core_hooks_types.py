@@ -46,11 +46,11 @@ class HookIntr(Hook):
 
 
 class HookRet:
-    def __init__(self, ql, hook_type: int, hook_obj: Hook):
-        self.type = hook_type
-        self.obj = hook_obj
+    def __init__(self, ql, t, h):
+        self._ql = ql
+        self._t = t
+        self._h = h
 
-        self.__remove = ql.hook_del
 
-    def remove(self) -> None:
-        self.__remove(self)
+    def remove(self):
+        self._ql.hook_del(self._t, self._h)

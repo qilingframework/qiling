@@ -58,11 +58,11 @@ class QNXTest(unittest.TestCase):
             return QL_CALL_BLOCK
 
         ql = Qiling(["../examples/rootfs/arm_qnx/bin/hello_sqrt"], "../examples/rootfs/arm_qnx", verbose=QL_VERBOSE.DEBUG)
-        ql.os.set_api('puts', my_puts_onenter, QL_INTERCEPT.ENTER)
-        ql.os.set_api('printf', my_printf_onenter, QL_INTERCEPT.ENTER)
-
-        # ql.os.set_api('puts', my_puts_onexit, QL_INTERCEPT.EXIT)
-        ql.os.set_api('printf', my_printf_onexit, QL_INTERCEPT.EXIT)
+        ql.set_api('puts', my_puts_onenter, QL_INTERCEPT.ENTER)
+        ql.set_api('printf', my_printf_onenter, QL_INTERCEPT.ENTER)
+        
+        # ql.set_api('puts', my_puts_onexit, QL_INTERCEPT.EXIT)
+        ql.set_api('printf', my_printf_onexit, QL_INTERCEPT.EXIT)
 
         ql.run()
 

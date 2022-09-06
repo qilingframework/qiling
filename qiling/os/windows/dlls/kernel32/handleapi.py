@@ -31,7 +31,7 @@ def hook_DuplicateHandle(ql: Qiling, address: int, params):
     content = params["hSourceHandle"]
     dst = params["lpTargetHandle"]
 
-    ql.mem.write_ptr(dst, content)
+    ql.mem.write(dst, ql.pack(content))
 
     return 1
 

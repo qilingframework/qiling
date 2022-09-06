@@ -12,7 +12,7 @@ from typing import Iterator
 from multiprocessing import Process
 
 from qiling import Qiling
-from qiling.const import QL_ARCH, QL_OS
+from qiling.const import QL_ARCH, QL_OS, QL_VERBOSE
 from qiling.os.posix.filestruct import ql_pipe
 from qiling.os.posix.const import *
 from qiling.os.posix.stat import Stat
@@ -116,27 +116,6 @@ def ql_syscall_capset(ql: Qiling, hdrp: int, datap: int):
 def ql_syscall_kill(ql: Qiling, pid: int, sig: int):
     return 0
 
-
-def ql_syscall_fsync(ql: Qiling, fd: int):
-    try:
-        os.fsync(ql.os.fd[fd].fileno())
-        regreturn = 0
-    except:
-        regreturn = -1
-    ql.log.debug("fsync(%d) = %d" % (fd, regreturn))
-    return regreturn
-
-
-def ql_syscall_fdatasync(ql: Qiling, fd: int):
-    try:
-        os.fdatasync(ql.os.fd[fd].fileno())
-        regreturn = 0
-    except:
-        regreturn = -1
-    ql.log.debug("fdatasync(%d) = %d" % (fd, regreturn))
-    return regreturn
-
-
 def ql_syscall_faccessat(ql: Qiling, dfd: int, filename: int, mode: int):
     access_path = ql.os.utils.read_cstring(filename)
     real_path = ql.os.path.transform_to_real_path(access_path)
@@ -158,46 +137,33 @@ def ql_syscall_faccessat(ql: Qiling, dfd: int, filename: int, mode: int):
     return regreturn
 
 
-def ql_syscall_lseek(ql: Qiling, fd: int, offset: int, origin: int):
-    if fd not in range(NR_OPEN):
-        return -EBADF
+def ql_syscall_lseek(ql: Qiling, fd: int, offset: int, lseek_origin: int):
+    if 0 <= fd < NR_OPEN and ql.os.fd[fd] != 0:
+        offset = ql.unpacks(ql.pack(offset))
 
-    f = ql.os.fd[fd]
+        try:
+            regreturn = ql.os.fd[fd].seek(offset, lseek_origin)
+        except OSError:
+            regreturn = -1
+    else:
+        regreturn = -EBADF
 
-    if f is None:
-        return -EBADF
-
-    offset = ql.unpacks(ql.pack(offset))
-
-    try:
-        regreturn = f.seek(offset, origin)
-    except OSError:
-        regreturn = -1
-
-    # ql.log.debug("lseek(fd = %d, ofset = 0x%x, origin = 0x%x) = %d" % (fd, offset, origin, regreturn))
+    # ql.log.debug("lseek(fd = %d, ofset = 0x%x, origin = 0x%x) = %d" % (lseek_fd, lseek_ofset, lseek_origin, regreturn))
 
     return regreturn
 
 
 def ql_syscall__llseek(ql: Qiling, fd: int, offset_high: int, offset_low: int, result: int, whence: int):
-    if fd not in range(NR_OPEN):
-        return -EBADF
-
-    f = ql.os.fd[fd]
-
-    if f is None:
-        return -EBADF
-
     # treat offset as a signed value
     offset = ql.unpack64s(ql.pack64((offset_high << 32) | offset_low))
     origin = whence
 
     try:
-        ret = f.seek(offset, origin)
+        ret = ql.os.fd[fd].seek(offset, origin)
     except OSError:
         regreturn = -1
     else:
-        ql.mem.write_ptr(result, ret, 8)
+        ql.mem.write(result, ql.pack64(ret))
         regreturn = 0
 
     # ql.log.debug("_llseek(%d, 0x%x, 0x%x, 0x%x) = %d" % (fd, offset_high, offset_low, origin, regreturn))
@@ -210,14 +176,13 @@ def ql_syscall_brk(ql: Qiling, inp: int):
     # otherwise, just return current brk_address
 
     if inp:
-        cur_brk_addr = ql.loader.brk_address
-        new_brk_addr = ql.mem.align_up(inp)
+        new_brk_addr = ((inp + 0xfff) // 0x1000) * 0x1000
 
-        if inp > cur_brk_addr: # increase current brk_address if inp is greater
-            ql.mem.map(cur_brk_addr, new_brk_addr - cur_brk_addr, info="[brk]")
+        if inp > ql.loader.brk_address: # increase current brk_address if inp is greater
+            ql.mem.map(ql.loader.brk_address, new_brk_addr - ql.loader.brk_address, info="[brk]")
 
-        elif inp < cur_brk_addr: # shrink current bkr_address to inp if its smaller
-            ql.mem.unmap(new_brk_addr, cur_brk_addr - new_brk_addr)
+        elif inp < ql.loader.brk_address: # shrink current bkr_address to inp if its smaller
+            ql.mem.unmap(new_brk_addr, ql.loader.brk_address - new_brk_addr)
 
         ql.loader.brk_address = new_brk_addr
 
@@ -242,80 +207,58 @@ def ql_syscall_access(ql: Qiling, path: int, mode: int):
 
 
 def ql_syscall_close(ql: Qiling, fd: int):
-    if fd not in range(NR_OPEN):
-        return -1
+    if 0 <= fd < NR_OPEN and ql.os.fd[fd] != 0:
+        ql.os.fd[fd].close()
+        ql.os.fd[fd] = 0
+        regreturn = 0
+    else:
+        regreturn = -1
 
-    f = ql.os.fd[fd]
-
-    if f is None:
-        return -1
-
-    f.close()
-    ql.os.fd[fd] = None
-
-    return 0
+    return regreturn
 
 
 def ql_syscall_pread64(ql: Qiling, fd: int, buf: int, length: int, offt: int):
-    if fd not in range(NR_OPEN):
-        return -1
-
-    f = ql.os.fd[fd]
-
-    if f is None:
-        return -1
-
     # https://chromium.googlesource.com/linux-syscall-support/+/2c73abf02fd8af961e38024882b9ce0df6b4d19b
     # https://chromiumcodereview.appspot.com/10910222
-    if ql.arch.type == QL_ARCH.MIPS:
-        offt = ql.mem.read_ptr(ql.arch.regs.arch_sp + 0x10, 8)
+    if ql.archtype == QL_ARCH.MIPS:
+        offt = ql.unpack64(ql.mem.read(ql.reg.arch_sp + 0x10, 8))
 
-    try:
-        pos = f.tell()
-        f.seek(offt)
+    if 0 <= fd < NR_OPEN and ql.os.fd[fd] != 0:
+        try:
+            pos = ql.os.fd[fd].tell()
+            ql.os.fd[fd].seek(offt)
 
-        data = f.read(length)
-        f.seek(pos)
+            data = ql.os.fd[fd].read(length)
+            ql.os.fd[fd].seek(pos)
 
-        ql.mem.write(buf, data)
-    except:
-        regreturn = -1
+            ql.mem.write(buf, data)
+            regreturn = len(data)
+        except:
+            regreturn = -1
     else:
-        regreturn = len(data)
+        regreturn = -1
 
     return regreturn
 
 
 def ql_syscall_read(ql: Qiling, fd, buf: int, length: int):
-    if fd not in range(NR_OPEN):
-        return -EBADF
+    if 0 <= fd < NR_OPEN and ql.os.fd[fd] != 0:
+        try:
+            data = ql.os.fd[fd].read(length)
+            ql.mem.write(buf, data)
+        except:
+            regreturn = -EBADF
+        else:
+            ql.log.debug(f'read() CONTENT: {data!r}')
+            regreturn = len(data)
 
-    f = ql.os.fd[fd]
-
-    if f is None:
-        return -EBADF
-
-    try:
-        data = f.read(length)
-        ql.mem.write(buf, data)
-    except:
-        regreturn = -EBADF
     else:
-        ql.log.debug(f'read() CONTENT: {data!r}')
-        regreturn = len(data)
+        regreturn = -EBADF
 
     return regreturn
 
 
 def ql_syscall_write(ql: Qiling, fd: int, buf: int, count: int):
-    if fd not in range(NR_OPEN):
-        return -EBADF
-
-    f = ql.os.fd[fd]
-
-    if f is None:
-        return -EBADF
-
     try:
         data = ql.mem.read(buf, count)
     except:
@@ -323,14 +266,12 @@ def ql_syscall_write(ql: Qiling, fd: int, buf: int, count: int):
     else:
         ql.log.debug(f'write() CONTENT: {bytes(data)}')
 
-        if hasattr(f, 'write'):
-            f.write(data)
-
-            regreturn = count
+        if hasattr(ql.os.fd[fd], 'write'):
+            ql.os.fd[fd].write(data)
         else:
             ql.log.warning(f'write failed since fd {fd:d} does not have a write method')
-            regreturn = -1
 
+        regreturn = count
 
     return regreturn
 
@@ -424,7 +365,7 @@ def ql_syscall_getppid(ql: Qiling):
 
 
 def ql_syscall_vfork(ql: Qiling):
-    if ql.host.os == QL_OS.WINDOWS:
+    if ql.platform_os == QL_OS.WINDOWS:
         try:
             pid = Process()
             pid = 0
@@ -466,7 +407,7 @@ def ql_syscall_execve(ql: Qiling, pathname: int, argv: int, envp: int):
                     break
 
                 yield ql.os.utils.read_cstring(elem)
-                addr += ql.arch.pointersize
+                addr += ql.pointersize
 
     args = [s for s in __read_str_array(argv)]
 
@@ -486,22 +427,13 @@ def ql_syscall_execve(ql: Qiling, pathname: int, argv: int, envp: int):
     ql.clear_ql_hooks()
 
     # Clean debugger to prevent port conflicts
-    # ql.debugger = None
+    ql.debugger = None
 
     if ql.code:
         return
 
-    # recreate cached uc
-    del ql.arch.uc
-    uc = ql.arch.uc
-
-    # propagate new uc to arch internals
-    ql.arch.regs.uc = uc
-
-    if hasattr(ql.arch, 'msr'):
-        ql.arch.msr.uc = uc
-
-    QlCoreHooks.__init__(ql, uc)
+    ql._uc = ql.arch.init_uc
+    QlCoreHooks.__init__(ql, ql._uc)
 
     ql.os.load()
     ql.loader.run()
@@ -509,53 +441,44 @@ def ql_syscall_execve(ql: Qiling, pathname: int, argv: int, envp: int):
 
 
 def ql_syscall_dup(ql: Qiling, oldfd: int):
-    if oldfd not in range(NR_OPEN):
-        return -EBADF
+    regreturn = -EBADF
 
-    f = ql.os.fd[oldfd]
+    if oldfd in range(256):
+        if ql.os.fd[oldfd] != 0:
+            newfd = ql.os.fd[oldfd].dup()
 
-    if f is None:
-        return -EBADF
+            for i, val in enumerate(ql.os.fd):
+                if val == 0:
+                    ql.os.fd[i] = newfd
+                    regreturn = i
+                    break
+            else:
+                regreturn = -EMFILE
 
-    idx = next((i for i in range(NR_OPEN) if ql.os.fd[i] is None), -1)
-
-    if idx == -1:
-        return -EMFILE
-
-    ql.os.fd[idx] = f.dup()
-
-    return idx
+    return regreturn
 
 
 def ql_syscall_dup2(ql: Qiling, fd: int, newfd: int):
-    if fd not in range(NR_OPEN) or newfd not in range(NR_OPEN):
-        return -EBADF
+    if 0 <= fd < NR_OPEN and ql.os.fd[fd] != 0:
+        if 0 <= newfd < NR_OPEN:
+            ql.os.fd[newfd] = ql.os.fd[fd].dup()
+            return newfd
 
-    f = ql.os.fd[fd]
-
-    if f is None:
-        return -EBADF
-
-    ql.os.fd[newfd] = f.dup()
-
-    return newfd
+    return -EBADF
 
 
-def ql_syscall_dup3(ql: Qiling, fd: int, newfd: int, flags: int):
-    if fd not in range(NR_OPEN) or newfd not in range(NR_OPEN):
-        return -1
+def ql_syscall_dup3(ql: Qiling, fd, newfd: int, flags: int):
+    if 0 <= fd < NR_OPEN and ql.os.fd[fd] != 0:
+        if 0 <= newfd < NR_OPEN:
+            ql.os.fd[newfd] = ql.os.fd[fd].dup()
+            return newfd
 
-    f = ql.os.fd[fd]
-
-    if f is None:
-        return -1
-
-    ql.os.fd[newfd] = f.dup()
-
-    return newfd
+    return -1
 
 def ql_syscall_set_tid_address(ql: Qiling, tidptr: int):
     if ql.os.thread_management:
+        ql.os.thread_management.cur_thread.set_clear_child_tid_addr(tidptr)
+
         regreturn = ql.os.thread_management.cur_thread.id
     else:
         regreturn = os.getpid()
@@ -566,23 +489,37 @@ def ql_syscall_set_tid_address(ql: Qiling, tidptr: int):
 def ql_syscall_pipe(ql: Qiling, pipefd: int):
     rd, wd = ql_pipe.open()
 
-    unpopulated_fd = (i for i in range(NR_OPEN) if ql.os.fd[i] is None)
-    idx1 = next(unpopulated_fd, -1)
-    idx2 = next(unpopulated_fd, -1)
+    idx1 = -1
+    idx2 = -1
 
-    if (idx1 == -1) or (idx2 == -1):
-        return -1
+    for i in range(NR_OPEN):
+        if ql.os.fd[i] == 0:
+            idx1 = i
+            break
 
-    ql.os.fd[idx1] = rd
-    ql.os.fd[idx2] = wd
-
-    if ql.arch.type == QL_ARCH.MIPS:
-        ql.arch.regs.v1 = idx2
-        regreturn = idx1
+    if idx1 == -1:
+        regreturn = -1
     else:
-        ql.mem.write_ptr(pipefd + 0, idx1, 4)
-        ql.mem.write_ptr(pipefd + 4, idx2, 4)
-        regreturn = 0
+        for i in range(NR_OPEN):
+            if ql.os.fd[i] == 0 and i != idx1:
+                idx2 = i
+                break
+
+        if idx2 == -1:
+            regreturn = -1
+        else:
+            ql.os.fd[idx1] = rd
+            ql.os.fd[idx2] = wd
+
+            if ql.archtype== QL_ARCH.MIPS:
+                ql.reg.v1 = idx2
+                regreturn = idx1
+            else:
+                ql.mem.write(pipefd + 0, ql.pack32(idx1))
+                ql.mem.write(pipefd + 4, ql.pack32(idx2))
+                regreturn = 0
+
+    ql.log.debug("pipe(%x, [%d, %d]) = %d" % (pipefd, idx1, idx2, regreturn))
 
     return regreturn
 
@@ -642,7 +579,7 @@ def ql_syscall_unlink(ql: Qiling, pathname: int):
     file_path = ql.os.utils.read_cstring(pathname)
     real_path = ql.os.path.transform_to_real_path(file_path)
 
-    opened_fds = [getattr(ql.os.fd[i], 'name', None) for i in range(NR_OPEN) if ql.os.fd[i] is not None]
+    opened_fds = [getattr(ql.os.fd[i], 'name', None) for i in range(NR_OPEN) if ql.os.fd[i] != 0]
     path = pathlib.Path(real_path)
 
     if any((real_path not in opened_fds, path.is_block_device(), path.is_fifo(), path.is_socket(), path.is_symlink())):
@@ -736,7 +673,7 @@ def __getdents_common(ql: Qiling, fd: int, dirp: int, count: int, *, is_64: bool
         return bytes([t])
 
     if ql.os.fd[fd].tell() == 0:
-        n = ql.arch.pointersize
+        n = ql.pointersize
         total_size = 0
         results = os.scandir(ql.os.fd[fd].name)
         _ent_count = 0

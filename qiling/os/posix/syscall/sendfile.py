@@ -14,25 +14,26 @@ def ql_syscall_sendfile64(ql: Qiling, out_fd: int, in_fd: int, offset: int, coun
 
 def ql_syscall_sendfile(ql: Qiling, out_fd: int, in_fd: int, offset: int, count: int):
     # https://man7.org/linux/man-pages/man2/sendfile.2.html
+    if 0 <= out_fd < NR_OPEN and 0 <= in_fd < NR_OPEN \
+            and ql.os.fd[out_fd] != 0 and ql.os.fd[in_fd] != 0:
 
-    if in_fd not in range(NR_OPEN) or out_fd not in range(NR_OPEN):
-        return -1
+        in_fd_pos = ql.os.fd[in_fd].tell()
+        if offset:
+            # Handle sendfile64 and sendfile offset_ptr
+            offset = ql.unpack(ql.mem.read(offset, ql.pointersize))
+        else:
+            offset = in_fd_pos
 
-    ifile = ql.os.fd[in_fd]
-    ofile = ql.os.fd[out_fd]
+        ql.os.fd[in_fd].lseek(offset)
+        buf = ql.os.fd[in_fd].read(count)
+        if offset:
+            current_offset = ql.os.fd[in_fd].tell()
+            ql.mem.write(offset, ql.pack(current_offset))
+            ql.os.fd[in_fd].lseek(in_fd_pos)
 
-    if ifile is None or ofile is None:
-        return -1
+        regreturn = ql.os.fd[out_fd].write(buf)
 
-    ifile_pos = ifile.tell()
-    offset = ql.mem.read_ptr(offset) if offset else ifile_pos
+    else:
+        regreturn = -1
 
-    ifile.lseek(offset)
-    buf = ifile.read(count)
-
-    if offset:
-        current_offset = ifile.tell()
-        ql.mem.write_ptr(offset, current_offset)
-        ifile.lseek(ifile_pos)
-
-    return ofile.write(buf)
+    return regreturn

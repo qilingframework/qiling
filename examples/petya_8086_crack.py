@@ -28,7 +28,7 @@ def one_round(ql: Qiling, key: bytes, key_address):
     gkeys = generate_key(key)
     ql.mem.write(key_address, gkeys)
     ql.run(begin=verfication_start_ip, end=verfication_start_ip+6)
-    lba37 = ql.mem.read(ql.arch.regs.sp + 0x220, 0x200)
+    lba37 = ql.mem.read(ql.reg.sp + 0x220, 0x200)
     for ch in lba37:
         if ch != 0x37:
             return False
@@ -62,12 +62,12 @@ def second_stage(ql: Qiling):
     #nonce = get_nonce(disk)
     verfication_data = disk.read_sectors(0x37, 1)
     nonce_data = disk.read_sectors(0x36, 1)
-    ql.arch.regs.sp -= 0x200
-    verification_data_address = ql.arch.regs.sp
-    ql.arch.regs.sp -= 0x200
-    nonce_address = ql.arch.regs.sp + 0x21
-    ql.arch.regs.sp -= 0x20
-    key_address = ql.arch.regs.sp
+    ql.reg.sp -= 0x200
+    verification_data_address = ql.reg.sp
+    ql.reg.sp -= 0x200
+    nonce_address = ql.reg.sp + 0x21
+    ql.reg.sp -= 0x20
+    key_address = ql.reg.sp
     ql.mem.write(verification_data_address, verfication_data)
     ql.mem.write(nonce_address - 0x21, nonce_data)
     ql.arch.stack_push(0x200)

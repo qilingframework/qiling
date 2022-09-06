@@ -16,8 +16,8 @@ def __leaf_4c(ql: Qiling):
 
 # write a character to screen
 def __leaf_02(ql: Qiling):
-	ch = ql.arch.regs.dl
-	ql.arch.regs.al = ch
+	ch = ql.reg.dl
+	ql.reg.al = ch
 
 	print(f'{ch:c}', end='')
 
@@ -39,7 +39,7 @@ def __leaf_26(ql: Qiling):
 
 # get dos version
 def __leaf_30(ql: Qiling):
-	ql.arch.regs.ax = ql.os.dos_ver
+	ql.reg.ax = ql.os.dos_ver
 
 # get or set ctrl-break
 def __leaf_33(ql: Qiling):
@@ -56,7 +56,7 @@ def __leaf_3c(ql: Qiling):
 	fpath = ql.os.path.transform_to_real_path(fname)
 
 	ql.os.handles[ql.os.handle_next] = open(fpath, "wb")
-	ql.arch.regs.ax = ql.os.handle_next
+	ql.reg.ax = ql.os.handle_next
 	ql.os.handle_next += 1
 	ql.os.clear_cf()
 
@@ -66,13 +66,13 @@ def __leaf_3d(ql: Qiling):
 	fpath = ql.os.path.transform_to_real_path(fname)
 
 	ql.os.handles[ql.os.handle_next] = open(fpath, "rb")
-	ql.arch.regs.ax = ql.os.handle_next
+	ql.reg.ax = ql.os.handle_next
 	ql.os.handle_next += 1
 	ql.os.clear_cf()
 
 # close file
 def __leaf_3e(ql: Qiling):
-	hd = ql.arch.regs.bx
+	hd = ql.reg.bx
 
 	if hd in ql.os.handles:
 		f = ql.os.handles.pop(hd)
@@ -80,39 +80,39 @@ def __leaf_3e(ql: Qiling):
 
 		ql.os.clear_cf()
 	else:
-		ql.arch.regs.ax = 0x06
+		ql.reg.ax = 0x06
 		ql.os.set_cf()
 
 # read from file
 def __leaf_3f(ql: Qiling):
-	hd = ql.arch.regs.bx
+	hd = ql.reg.bx
 
 	if hd in ql.os.handles:
 		f = ql.os.handles[hd]
-		buffer = utils.linaddr(ql.arch.regs.ds, ql.arch.regs.dx)
-		sz = ql.arch.regs.cx
+		buffer = utils.linaddr(ql.reg.ds, ql.reg.dx)
+		sz = ql.reg.cx
 		rd = f.read(sz)
 		ql.mem.write(buffer, rd)
 		ql.os.clear_cf()
-		ql.arch.regs.ax = len(rd)
+		ql.reg.ax = len(rd)
 	else:
-		ql.arch.regs.ax = 0x06
+		ql.reg.ax = 0x06
 		ql.os.set_cf()
 
 # write to file
 def __leaf_40(ql: Qiling):
-	hd = ql.arch.regs.bx
+	hd = ql.reg.bx
 
 	if hd in ql.os.handles:
 		f = ql.os.handles[hd]
-		buffer = utils.linaddr(ql.arch.regs.ds, ql.arch.regs.dx)
-		sz = ql.arch.regs.cx
+		buffer = utils.linaddr(ql.reg.ds, ql.reg.dx)
+		sz = ql.reg.cx
 		rd = ql.mem.read(buffer, sz)
 		f.write(bytes(rd))
 		ql.os.clear_cf()
-		ql.arch.regs.ax = len(rd)
+		ql.reg.ax = len(rd)
 	else:
-		ql.arch.regs.ax = 0x06
+		ql.reg.ax = 0x06
 		ql.os.set_cf()
 
 # delete file
@@ -124,15 +124,15 @@ def __leaf_41(ql: Qiling):
 		os.remove(fpath)
 		ql.os.clear_cf()
 	except OSError:
-		ql.arch.regs.ax = 0x05
+		ql.reg.ax = 0x05
 		ql.os.set_cf()
 
 def __leaf_43(ql: Qiling):
-	ql.arch.regs.cx = 0xffff
+	ql.reg.cx = 0xffff
 	ql.os.clear_cf()
 
 def handler(ql: Qiling):
-	ah = ql.arch.regs.ah
+	ah = ql.reg.ah
 
 	leaffunc = {
 		0x02 : __leaf_02,

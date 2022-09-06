@@ -40,7 +40,7 @@ if __name__ == "__main__":
 
     ql = Qiling(["rootfs/x8664_efi/bin/TcgPlatformSetupPolicy"], "rootfs/x8664_efi", env=env, verbose=QL_VERBOSE.DEBUG)
 
-    ql.os.set_api("RegisterProtocolNotify", force_notify_RegisterProtocolNotify)
-    ql.os.set_api("CopyMem", my_onenter, QL_INTERCEPT.ENTER)
+    ql.set_api("RegisterProtocolNotify", force_notify_RegisterProtocolNotify)
+    ql.set_api("CopyMem", my_onenter, QL_INTERCEPT.ENTER)
 
     ql.run()

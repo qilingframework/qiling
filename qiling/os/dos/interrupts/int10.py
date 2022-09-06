@@ -63,7 +63,7 @@ def __leaf_00(ql: Qiling):
 	except:
 		pass
 
-	al = ql.arch.regs.al
+	al = ql.reg.al
 
 	resolution = {
 		0x00 : (25, 40),
@@ -128,31 +128,31 @@ def __leaf_00(ql: Qiling):
 
 def __leaf_01(ql: Qiling):
 	# limited support
-	ch = ql.arch.regs.ch
+	ch = ql.reg.ch
 
 	if (ch & 0x20):
 		curses.curs_set(0)
 
 def __leaf_02(ql: Qiling):
 	# page number ignored
-	dh = ql.arch.regs.dh	# row
-	dl = ql.arch.regs.dl	# column
+	dh = ql.reg.dh	# row
+	dl = ql.reg.dl	# column
 
 	ql.os.stdscr.move(dh, dl)
 
 def __leaf_05(ql: Qiling):
 	# No idea how to implement, do nothing here.
-	ql.arch.regs.al = 0
+	ql.reg.al = 0
 
 def __leaf_06(ql: Qiling):
 	stdscr = ql.os.stdscr
 
-	al = ql.arch.regs.al	# lines to scroll
-	ch = ql.arch.regs.ch	# row of upper-left cornner
-	cl = ql.arch.regs.cl	# column of upper-left corner
-	dh = ql.arch.regs.dh	# row of lower right corner
-	dl = ql.arch.regs.dl	# column of lower righ corner
-	bh = ql.arch.regs.bh	# color
+	al = ql.reg.al	# lines to scroll
+	ch = ql.reg.ch	# row of upper-left cornner
+	cl = ql.reg.cl	# column of upper-left corner
+	dh = ql.reg.dh	# row of lower right corner
+	dl = ql.reg.dl	# column of lower righ corner
+	bh = ql.reg.bh	# color
 
 	y, x = stdscr.getmaxyx()
 	cy, cx = stdscr.getyx()
@@ -193,13 +193,13 @@ def __leaf_08(ql: Qiling):
 	stdscr = ql.os.stdscr
 
 	if stdscr is None:
-		ql.arch.regs.ax = 0x0720
+		ql.reg.ax = 0x0720
 	else:
 		cy, cx = stdscr.getyx()
 		inch = stdscr.inch(cy, cx)
 		attr = inch & curses.A_COLOR
 		ch = inch & 0xFF
-		ql.arch.regs.al = ch
+		ql.reg.al = ch
 		pair_number = curses.pair_number(attr)
 
 		fg, bg = curses.pair_content(pair_number)
@@ -209,10 +209,10 @@ def __leaf_08(ql: Qiling):
 		if attr & curses.A_BLINK:
 			orig_bg |= 0b1000
 
-		ql.arch.regs.ah = ((orig_bg << 4) & orig_fg)
+		ql.reg.ah = ((orig_bg << 4) & orig_fg)
 
 def __leaf_0e(ql: Qiling):
-	al = ql.arch.regs.al
+	al = ql.reg.al
 
 	ql.log.debug(f'echo: {al:02x} -> {curses.ascii.unctrl(al)}')
 
@@ -247,7 +247,7 @@ def __leaf_0e(ql: Qiling):
 # https://stanislavs.org/helppc/idx_interrupt.html
 # implemented by curses
 def handler(ql: Qiling):
-	ah = ql.arch.regs.ah
+	ah = ql.reg.ah
 
 	leaffunc = {
 		0x00 : __leaf_00,

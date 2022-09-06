@@ -9,7 +9,6 @@ from unicorn import UcError
 
 from qiling import Qiling
 from qiling.cc import QlCC, intel
-from qiling.const import QL_INTERCEPT, QL_OS
 from qiling.os.const import *
 from qiling.os.memory import QlMemoryHeap
 from qiling.os.os import QlOs, QlOsUtils
@@ -19,8 +18,6 @@ from qiling.os.uefi import guids_db
 from qiling.os.uefi.smm import SmmEnv
 
 class QlOsUefi(QlOs):
-	type = QL_OS.UEFI
-
 	def __init__(self, ql: Qiling):
 		super().__init__(ql)
 
@@ -36,7 +33,7 @@ class QlOsUefi(QlOs):
 		cc: QlCC = {
 			32: intel.cdecl,
 			64: intel.ms64
-		}[ql.arch.bits](ql.arch)
+		}[ql.archbit](ql)
 
 		self.fcall = QlFunctionCall(ql, cc)
 
@@ -119,7 +116,7 @@ class QlOsUefi(QlOs):
 		p = re.compile(r'^((?:00)+)')
 
 		def __emit_reg(size: int, reg: str):
-			val = f'{self.ql.arch.regs.read(reg):0{size * 2}x}'
+			val = f'{self.ql.reg.read(reg):0{size * 2}x}'
 			padded = p.sub("\x1b[90m\\1\x1b[39m", val, 1)
 
 			return f'{reg:3s} = {padded}'
@@ -149,7 +146,7 @@ class QlOsUefi(QlOs):
 
 
 	def emit_disasm(self, address: int, data: bytearray, num_insns: int = 8):
-		md = self.ql.arch.disassembler
+		md = self.ql.create_disassembler()
 
 		self.ql.log.error('Disassembly:')
 
@@ -163,21 +160,21 @@ class QlOsUefi(QlOs):
 		self.ql.log.error('Stack:')
 
 		for i in range(-nitems, nitems + 1):
-			offset = i * self.ql.arch.pointersize
+			offset = i * self.ql.pointersize
 
 			try:
 				item = self.ql.arch.stack_read(offset)
 			except UcError:
 				data = '(unavailable)'
 			else:
-				data = f'{item:0{self.ql.arch.pointersize * 2}x}'
+				data = f'{item:0{self.ql.pointersize * 2}x}'
 
-			self.ql.log.error(f'{self.ql.arch.regs.arch_sp + offset:08x} : {data}{" <=" if i == 0 else ""}')
+			self.ql.log.error(f'{self.ql.reg.arch_sp + offset:08x} : {data}{" <=" if i == 0 else ""}')
 
 		self.ql.log.error('')
 
 	def emu_error(self):
-		pc = self.ql.arch.regs.arch_pc
+		pc = self.ql.reg.arch_pc
 
 		try:
 			data = self.ql.mem.read(pc, size=64)
@@ -188,7 +185,7 @@ class QlOsUefi(QlOs):
 			self.emit_hexdump(pc, data)
 			self.emit_disasm(pc, data)
 
-			containing_image = self.ql.loader.find_containing_image(pc)
+			containing_image = self.find_containing_image(pc)
 			pc_info = f' ({containing_image.path} + {pc - containing_image.base:#x})' if containing_image else ''
 		finally:
 			self.ql.log.error(f'PC = {pc:#010x}{pc_info}')
@@ -197,12 +194,7 @@ class QlOsUefi(QlOs):
 		self.emit_stack()
 
 		self.ql.log.error(f'Memory map:')
-		for info_line in self.ql.mem.get_formatted_mapinfo():
-			self.ql.log.error(info_line)
-
-
-	def set_api(self, target: str, handler: Callable, intercept: QL_INTERCEPT = QL_INTERCEPT.CALL):
-		super().set_api(f'hook_{target}', handler, intercept)
+		self.ql.mem.show_mapinfo()
 
 	def run(self):
 		# TODO: this is not the right place for this

@@ -62,7 +62,6 @@ class TestOut:
         self.output[key] = value
         return len(string)
 
-IS_FAST_TEST = 'QL_FAST_TEST' in os.environ
 
 class PETest(unittest.TestCase):
 
@@ -110,9 +109,10 @@ class PETest(unittest.TestCase):
         self.assertTrue(QLWinSingleTest(_t).run())
 
 
-    @unittest.skipIf(IS_FAST_TEST, 'fast test')
     def test_pe_win_x86_uselessdisk(self):
         def _t():
+            if 'QL_FAST_TEST' in os.environ:
+                return
             class Fake_Drive(QlFsMappedObject):
 
                 def read(self, size):
@@ -134,86 +134,82 @@ class PETest(unittest.TestCase):
             ql.run()
             del ql
             return True
-
+        
         self.assertTrue(QLWinSingleTest(_t).run())
 
 
-    @unittest.skipIf(IS_FAST_TEST, 'fast test')
     def test_pe_win_x86_gandcrab(self):
         def _t():
-            def stop(ql: Qiling):
-                ql.log.info("Ok for now")
-
+            if 'QL_FAST_TEST' in os.environ:
+                return
+            def stop(ql, default_values):
+                print("Ok for now")
                 ql.emu_stop()
 
-            def __rand_serialnum() -> str:
-                """
-                see: https://en.wikipedia.org/wiki/Volume_serial_number
-                see: https://www.digital-detective.net/documents/Volume%20Serial%20Numbers.pdf
-                """
-
-                mon = random.randint(1, 12)
-                day = random.randint(0, 30)
-                word1 = (mon << 8) + day
-
-                sec = random.randint(0, 59)
-                ms = random.randint(0, 99)
-                word2 = (sec << 8) + ms
-
-                unified1 = word1 + word2
-
-                hrs = random.randint(0, 23)
-                mins = random.randint(0, 59)
-                word1 = (hrs << 8) + mins
-
-                yr = random.randint(2000, 2020)
-                word2 = yr
-
-                unified2 = word1 + word2
-
-                return f'{unified1:04x}-{unified2:04x}'
-
-            def __rand_name(minlen: int, maxlen: int) -> str:
-                name_len = random.randint(minlen, maxlen)
-
-                return ''.join(random.choices(st.ascii_lowercase + st.ascii_uppercase, k=name_len))
-
+            def randomize_config_value(ql, key, subkey):
+                # https://en.wikipedia.org/wiki/Volume_serial_number
+                # https://www.digital-detective.net/documents/Volume%20Serial%20Numbers.pdf
+                if key == "VOLUME" and subkey == "serial_number":
+                    month = random.randint(0, 12)
+                    day = random.randint(0, 30)
+                    first = hex(month)[2:] + hex(day)[2:]
+                    seconds = random.randint(0, 60)
+                    milli = random.randint(0, 100)
+                    second = hex(seconds)[2:] + hex(milli)[2:]
+                    first_half = int(first, 16) + int(second, 16)
+                    hour = random.randint(0, 24)
+                    minute = random.randint(0, 60)
+                    third = hex(hour)[2:] + hex(minute)[2:]
+                    year = random.randint(2000, 2020)
+                    second_half = int(third, 16) + year
+                    result = int(hex(first_half)[2:] + hex(second_half)[2:], 16)
+                    ql.os.profile[key][subkey] = str(result)
+                elif key == "USER" and subkey == "username":
+                    length = random.randint(0, 15)
+                    new_name = ""
+                    for i in range(length):
+                        new_name += random.choice(st.ascii_lowercase + st.ascii_uppercase)
+                    old_name = ql.os.profile[key][subkey]
+                    # update paths
+                    ql.os.profile[key][subkey] = new_name
+                    for path in ql.os.profile["PATH"]:
+                        val = ql.os.profile["PATH"][path].replace(old_name, new_name)
+                        ql.os.profile["PATH"][path] = val
+                elif key == "SYSTEM" and subkey == "computername":
+                    length = random.randint(0, 15)
+                    new_name = ""
+                    for i in range(length):
+                        new_name += random.choice(st.ascii_lowercase + st.ascii_uppercase)
+                    ql.os.profile[key][subkey] = new_name
+                else:
+                    raise QlErrorNotImplemented("API not implemented")
 
             ql = Qiling(["../examples/rootfs/x86_windows/bin/GandCrab502.bin"], "../examples/rootfs/x86_windows",
                         verbose=QL_VERBOSE.DEBUG, profile="profiles/windows_gandcrab_admin.ql")
+            default_user = ql.os.profile["USER"]["username"]
+            default_computer = ql.os.profile["SYSTEM"]["computername"]
 
-            ql.hook_address(stop, 0x40860f)
-
-            # randomize username
-            old_uname = ql.os.profile['USER']['username']
-            new_uname = __rand_name(3, 10)
-
-            # update paths accordingly
-            path_key = ql.os.profile['PATH']
-
-            for p in path_key:
-                path_key[p] = path_key[p].replace(old_uname, new_uname)
-
-            ql.os.profile['USER']['username'] = new_uname
-
-            # randomize computer name and serial number
-            ql.os.profile['SYSTEM']['computername'] = __rand_name(5, 15)
-            ql.os.profile['VOLUME']['serial_number'] = __rand_serialnum()
-
+            ql.hook_address(stop, 0x40860f, user_data=(default_user, default_computer))
+            randomize_config_value(ql, "USER", "username")
+            randomize_config_value(ql, "SYSTEM", "computername")
+            randomize_config_value(ql, "VOLUME", "serial_number")
+            num_syscalls_admin = ql.os.utils.syscalls_counter
             ql.run()
-            num_syscalls_admin = ql.os.stats.position
             del ql
 
             # RUN AS USER
             ql = Qiling(["../examples/rootfs/x86_windows/bin/GandCrab502.bin"], "../examples/rootfs/x86_windows", profile="profiles/windows_gandcrab_user.ql")
 
             ql.run()
-            num_syscalls_user = ql.os.stats.position
-            del ql
+            num_syscalls_user = ql.os.utils.syscalls_counter
 
             # let's check that gandcrab behave takes a different path if a different environment is found
-            return num_syscalls_admin != num_syscalls_user
+            if num_syscalls_admin == num_syscalls_user:
+                return False
 
+            del ql
+            return True
+        
         self.assertTrue(QLWinSingleTest(_t).run())
 
     def test_pe_win_x86_multithread(self):
@@ -225,7 +221,7 @@ class PETest(unittest.TestCase):
                 return address, params
 
             ql = Qiling(["../examples/rootfs/x86_windows/bin/MultiThread.exe"], "../examples/rootfs/x86_windows")
-            ql.os.set_api("GetCurrentThreadId", ThreadId_onEnter, QL_INTERCEPT.ENTER)
+            ql.set_api("GetCurrentThreadId", ThreadId_onEnter, QL_INTERCEPT.ENTER)
             ql.run()
             
             if not ( 1<= thread_id < 255):
@@ -237,9 +233,9 @@ class PETest(unittest.TestCase):
         self.assertTrue(QLWinSingleTest(_t).run())
 
 
-    def test_pe_win_x8664_clipboard(self):
+    def test_pe_win_x86_clipboard(self):
         def _t():
-            ql = Qiling(["../examples/rootfs/x8664_windows/bin/x8664_clipboard_test.exe"], "../examples/rootfs/x8664_windows")
+            ql = Qiling(["../examples/rootfs/x8664_windows/bin//x8664_clipboard_test.exe"], "../examples/rootfs/x8664_windows")
             ql.run()
             del ql
             return True
@@ -247,7 +243,7 @@ class PETest(unittest.TestCase):
         self.assertTrue(QLWinSingleTest(_t).run())
 
 
-    def test_pe_win_x8664_tls(self):
+    def test_pe_win_x86_tls(self):
         def _t():
             ql = Qiling(["../examples/rootfs/x8664_windows/bin/x8664_tls.exe"], "../examples/rootfs/x8664_windows")
             ql.run()
@@ -289,7 +285,7 @@ class PETest(unittest.TestCase):
 
     def test_pe_win_x86_return_from_main_stackpointer(self):
         def _t():
-            ql = Qiling(["../examples/rootfs/x86_windows/bin/return_main.exe"], "../examples/rootfs/x86_windows", stop=QL_STOP.STACK_POINTER, libcache=True)
+            ql = Qiling(["../examples/rootfs/x86_windows/bin/return_main.exe"], "../examples/rootfs/x86_windows", libcache=True, stop_on_stackpointer=True)
             ql.run()
             del ql
             return True
@@ -299,7 +295,7 @@ class PETest(unittest.TestCase):
 
     def test_pe_win_x86_return_from_main_exit_trap(self):
         def _t():
-            ql = Qiling(["../examples/rootfs/x86_windows/bin/return_main.exe"], "../examples/rootfs/x86_windows", stop=QL_STOP.EXIT_TRAP, libcache=True)
+            ql = Qiling(["../examples/rootfs/x86_windows/bin/return_main.exe"], "../examples/rootfs/x86_windows", libcache=True, stop_on_exit_trap=True)
             ql.run()
             del ql
             return True
@@ -309,7 +305,7 @@ class PETest(unittest.TestCase):
 
     def test_pe_win_x8664_return_from_main_stackpointer(self):
         def _t():
-            ql = Qiling(["../examples/rootfs/x8664_windows/bin/x8664_return_main.exe"], "../examples/rootfs/x8664_windows", stop=QL_STOP.STACK_POINTER, libcache=True)
+            ql = Qiling(["../examples/rootfs/x8664_windows/bin/x8664_return_main.exe"], "../examples/rootfs/x8664_windows", libcache=True, stop_on_stackpointer=True)
             ql.run()
             del ql
             return True
@@ -319,7 +315,7 @@ class PETest(unittest.TestCase):
 
     def test_pe_win_x8664_return_from_main_exit_trap(self):
         def _t():
-            ql = Qiling(["../examples/rootfs/x8664_windows/bin/x8664_return_main.exe"], "../examples/rootfs/x8664_windows", stop=QL_STOP.EXIT_TRAP, libcache=True)
+            ql = Qiling(["../examples/rootfs/x8664_windows/bin/x8664_return_main.exe"], "../examples/rootfs/x8664_windows", libcache=True, stop_on_exit_trap=True)
             ql.run()
             del ql
             return True
@@ -327,9 +323,10 @@ class PETest(unittest.TestCase):
         self.assertTrue(QLWinSingleTest(_t).run())
 
 
-    @unittest.skipIf(IS_FAST_TEST, 'fast test')
     def test_pe_win_x86_wannacry(self):
         def _t():
+            if 'QL_FAST_TEST' in os.environ:
+                return
             def stop(ql):
                 ql.log.info("killerswtichfound")
                 ql.log.setLevel(logging.CRITICAL)
@@ -341,7 +338,7 @@ class PETest(unittest.TestCase):
             ql.run()
             del ql
             return True
-
+        
         self.assertTrue(QLWinSingleTest(_t).run())
 
 
@@ -357,22 +354,22 @@ class PETest(unittest.TestCase):
         self.assertTrue(QLWinSingleTest(_t).run())
 
 
-    @unittest.skipIf(IS_FAST_TEST, 'fast test')
     def test_pe_win_al_khaser(self):
         def _t():
+            if 'QL_FAST_TEST' in os.environ:
+                return
             ql = Qiling(["../examples/rootfs/x86_windows/bin/al-khaser.bin"], "../examples/rootfs/x86_windows")
 
             # The hooks are to remove the prints to file. It crashes. will debug why in the future
-            # def results(ql):
-            #
-            #     if ql.arch.regs.ebx == 1:
-            #         print("BAD")
-            #     else:
-            #         print("GOOD ")
-            #     ql.arch.regs.eip = 0x402ee4
-            #
-            #ql.hook_address(results, 0x00402e66)
+            def results(ql):
 
+                if ql.reg.ebx == 1:
+                    print("BAD")
+                else:
+                    print("GOOD ")
+                ql.reg.eip = 0x402ee4
+
+            #ql.hook_address(results, 0x00402e66)
             # the program alloc 4 bytes and then tries to write 0x2cc bytes.
             # I have no idea of why this code should work without this patch
             ql.patch(0x00401984, b'\xb8\x04\x00\x00\x00')
@@ -424,9 +421,9 @@ class PETest(unittest.TestCase):
             def my_sandbox(path, rootfs):
                 nonlocal set_api, set_api_onenter, set_api_onexit
                 ql = Qiling(path, rootfs, verbose=QL_VERBOSE.DEBUG)
-                ql.os.set_api("puts", my_onenter, QL_INTERCEPT.ENTER)
-                ql.os.set_api("puts", my_puts64, QL_INTERCEPT.CALL)
-                ql.os.set_api("puts", my_onexit, QL_INTERCEPT.EXIT)
+                ql.set_api("puts", my_onenter, QL_INTERCEPT.ENTER)
+                ql.set_api("puts", my_puts64, QL_INTERCEPT.CALL)
+                ql.set_api("puts", my_onexit, QL_INTERCEPT.EXIT)
                 ql.run()
 
                 if 12 != set_api_onenter:
@@ -465,17 +462,19 @@ class PETest(unittest.TestCase):
                 arglist = params['_ArgList']
 
                 count = format.count("%")
-                fargs = [ql.mem.read_ptr(arglist + i * ql.arch.pointersize) for i in range(count)]
+                fargs = [ql.unpack(ql.mem.read(arglist + i * ql.pointersize, ql.pointersize)) for i in range(count)]
+
+                target_txt = ""
 
                 try:
                     target_txt = ql.mem.string(fargs[1])
                 except:
-                    target_txt = ""
+                    pass
 
                 return address, params
 
             ql = Qiling(["../examples/rootfs/x86_windows/bin/argv.exe"], "../examples/rootfs/x86_windows")
-            ql.os.set_api('__stdio_common_vfprintf', check_print, QL_INTERCEPT.ENTER)
+            ql.set_api('__stdio_common_vfprintf', check_print, QL_INTERCEPT.ENTER)
             ql.run()
             
             if target_txt.find("argv.exe"):
@@ -494,7 +493,7 @@ class PETest(unittest.TestCase):
         def _t():
             def force_call_dialog_func(ql):
                 # get DialogFunc address
-                lpDialogFunc = ql.unpack32(ql.mem.read(ql.arch.regs.esp - 0x8, 4))
+                lpDialogFunc = ql.unpack32(ql.mem.read(ql.reg.esp - 0x8, 4))
                 # setup stack for DialogFunc
                 ql.stack_push(0)
                 ql.stack_push(1001)
@@ -502,7 +501,7 @@ class PETest(unittest.TestCase):
                 ql.stack_push(0)
                 ql.stack_push(0x0401018)
                 # force EIP to DialogFunc
-                ql.arch.regs.eip = lpDialogFunc
+                ql.reg.eip = lpDialogFunc
 
             def our_sandbox(path, rootfs):
                 ql = Qiling(path, rootfs)

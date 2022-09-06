@@ -119,7 +119,7 @@ class QlLoaderPE_UEFI(QlLoader):
 
         self.install_loaded_image_protocol(image_base, image_size)
 
-        # this would be used later be loader.find_containing_image
+        # this would be used later be os.find_containing_image
         self.images.append(Image(image_base, image_base + image_size, path))
 
         # update next memory slot to allow sequencial loading. its availability
@@ -192,8 +192,8 @@ class QlLoaderPE_UEFI(QlLoader):
         self.ql.os.heap = context.heap
 
         # set stack and frame pointers
-        self.ql.arch.regs.rsp = context.top_of_stack
-        self.ql.arch.regs.rbp = context.top_of_stack
+        self.ql.reg.rsp = context.top_of_stack
+        self.ql.reg.rbp = context.top_of_stack
 
         self.ql.os.fcall.call_native(entry_point, (
             (POINTER, ImageHandle),
@@ -321,11 +321,11 @@ class QlLoaderPE_UEFI(QlLoader):
         ql = self.ql
 
         # intel architecture uefi implementation only
-        if ql.arch.type not in (QL_ARCH.X86, QL_ARCH.X8664):
+        if ql.archtype not in (QL_ARCH.X86, QL_ARCH.X8664):
             raise QlErrorArch("Unsupported architecture")
 
         # x86-64 arch only
-        if ql.arch.type != QL_ARCH.X8664:
+        if ql.archtype != QL_ARCH.X8664:
             raise QlErrorArch("Only 64-bit modules are supported at the moment")
 
         self.loaded_image_protocol_guid = ql.os.profile["LOADED_IMAGE_PROTOCOL"]["Guid"]

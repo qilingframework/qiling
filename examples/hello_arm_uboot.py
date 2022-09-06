@@ -19,11 +19,11 @@ def get_kaimendaji_password():
         value_addr = ql.os.heap.alloc(len(value))
         ql.mem.write(value_addr, value)
 
-        ql.arch.regs.r0 = value_addr
-        ql.arch.regs.arch_pc = ql.arch.regs.lr
+        ql.reg.r0 = value_addr
+        ql.reg.arch_pc = ql.reg.lr
 
     def get_password(ql, *args, **kwargs):
-        password_raw = ql.mem.read(ql.arch.regs.r0, ql.arch.regs.r2)
+        password_raw = ql.mem.read(ql.reg.r0, ql.reg.r2)
 
         password = ''
         for item in password_raw:
@@ -36,21 +36,21 @@ def get_kaimendaji_password():
 
     def partial_run_init(ql):
         # argv prepare
-        ql.arch.regs.arch_sp -= 0x30
-        arg0_ptr = ql.arch.regs.arch_sp
+        ql.reg.arch_sp -= 0x30
+        arg0_ptr = ql.reg.arch_sp
         ql.mem.write(arg0_ptr, b"kaimendaji")
 
-        ql.arch.regs.arch_sp -= 0x10
-        arg1_ptr = ql.arch.regs.arch_sp
+        ql.reg.arch_sp -= 0x10
+        arg1_ptr = ql.reg.arch_sp
         ql.mem.write(arg1_ptr, b"000000")   # arbitrary password
 
-        ql.arch.regs.arch_sp -= 0x20
-        argv_ptr = ql.arch.regs.arch_sp
-        ql.mem.write_ptr(argv_ptr, arg0_ptr)
-        ql.mem.write_ptr(argv_ptr + ql.arch.pointersize, arg1_ptr)
+        ql.reg.arch_sp -= 0x20
+        argv_ptr = ql.reg.arch_sp
+        ql.mem.write(argv_ptr, ql.pack(arg0_ptr))
+        ql.mem.write(argv_ptr + ql.pointersize, ql.pack(arg1_ptr))
 
-        ql.arch.regs.r2 = 2
-        ql.arch.regs.r3 = argv_ptr
+        ql.reg.r2 = 2
+        ql.reg.r3 = argv_ptr
 
 
     with open("../examples/rootfs/blob/u-boot.bin.img", "rb") as f:

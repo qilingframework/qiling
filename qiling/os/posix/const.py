@@ -515,24 +515,6 @@ linux_riscv_open_flags = {
     'O_LARGEFILE': None,
 }
 
-linux_ppc_open_flags = {
-    'O_RDONLY': 0x0,
-    'O_WRONLY': 0x1,
-    'O_RDWR': 0x2,
-    'O_NONBLOCK': 0x800,
-    'O_APPEND': 0x400,
-    'O_ASYNC': 0x2000,
-    'O_SYNC': 0x101000,
-    'O_NOFOLLOW': 0x8000,
-    'O_CREAT': 0x40,
-    'O_TRUNC': 0x200,
-    'O_EXCL': 0x80,
-    'O_NOCTTY': 0x100,
-    'O_DIRECTORY': 0x4000,
-    'O_BINARY' : None,
-    'O_LARGEFILE': 0x10000,
-}
-
 freebsd_x86_open_flags = {
     'O_RDONLY': 0x0,
     'O_WRONLY': 0x1,
@@ -600,7 +582,6 @@ F_SETLKW	= 7
 FD_CLOEXEC = 1
 
 AT_FDCWD = -100
-AT_EMPTY_PATH = 0x1000
 
 # error code
 EPERM           = 1

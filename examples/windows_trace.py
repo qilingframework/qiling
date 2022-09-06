@@ -38,14 +38,14 @@ class colors:
 
 def dump_regs(ql: Qiling):
     regs = {
-        'eax': ql.arch.regs.eax,
-        'ebx': ql.arch.regs.ebx,
-        'ecx': ql.arch.regs.ecx,
-        'edx': ql.arch.regs.edx,
-        'edi': ql.arch.regs.edi,
-        'esi': ql.arch.regs.esi,
-        'ebp': ql.arch.regs.ebp,
-        'esp': ql.arch.regs.esp
+        'eax': ql.reg.eax,
+        'ebx': ql.reg.ebx,
+        'ecx': ql.reg.ecx,
+        'edx': ql.reg.edx,
+        'edi': ql.reg.edi,
+        'esi': ql.reg.esi,
+        'ebp': ql.reg.ebp,
+        'esp': ql.reg.esp
     }
 
     if not hasattr(dump_regs, 'regs'):
@@ -115,6 +115,7 @@ if __name__ == "__main__":
     parser.add_argument("-t", "--trace", help="Enable full trace", action='store_true', default=False)
     parser.add_argument("-R", "--root", help="rootfs", default=None)
     parser.add_argument("-d", "--dump", help="Directory to dump memory regions to", default="dump")
+    #parser.add_argument("-a", "--automatize_input", help="Automatize writes on standard input", default=False)
     parser.add_argument("-p ", "--profile", help="customized profile",
                         default="qiling/profiles/windows.ql")
     parser.add_argument('input', nargs='*')

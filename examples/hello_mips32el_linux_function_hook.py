@@ -23,7 +23,7 @@ def my_puts_onexit(ql: Qiling):
 if __name__ == "__main__":
     ql = Qiling(["rootfs/mips32el_linux/bin/mips32el_double_hello"], "rootfs/mips32el_linux", verbose=QL_VERBOSE.DEBUG)
 
-    ql.os.set_api('puts', my_puts_onenter, QL_INTERCEPT.ENTER)
-    ql.os.set_api('puts', my_puts_onexit, QL_INTERCEPT.EXIT)
+    ql.set_api('puts', my_puts_onenter, QL_INTERCEPT.ENTER)
+    ql.set_api('puts', my_puts_onexit, QL_INTERCEPT.EXIT)
 
     ql.run()

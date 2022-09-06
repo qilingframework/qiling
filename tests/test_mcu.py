@@ -215,7 +215,7 @@ class MCUTest(unittest.TestCase):
             
             ql.run(count=400000, end=0x8003225)
             
-            return ql.arch.effective_pc == 0x8003225
+            return ql.arch.get_pc() == 0x8003225
 
         self.assertTrue(crack('618618'))
         self.assertTrue(crack('778899'))
@@ -286,7 +286,7 @@ class MCUTest(unittest.TestCase):
         delay_start = 0x8002936
         delay_end = 0x8002955
         def skip_delay(ql):
-            ql.arch.regs.pc = delay_end
+            ql.reg.pc = delay_end
 
         ql.hook_address(skip_delay, delay_start)
 
@@ -296,8 +296,8 @@ class MCUTest(unittest.TestCase):
 
 
     def test_mcu_blink_gd32vf103(self):
-        ql = Qiling(['../examples/rootfs/mcu/gd32vf103/blink.hex'],
-            ostype="mcu", archtype="riscv64", env=gd32vf103, verbose=QL_VERBOSE.DEFAULT)
+        ql = Qiling(['../examples/rootfs/mcu/gd32vf103/blink.hex'], archtype="riscv64", 
+                    env=gd32vf103, verbose=QL_VERBOSE.DEFAULT)
 
         ql.hw.create('rcu')
         ql.hw.create('gpioa')
@@ -307,7 +307,7 @@ class MCUTest(unittest.TestCase):
         delay_cycles_end = 0x800018c
 
         def skip_delay(ql):
-            ql.arch.regs.pc = delay_cycles_end
+            ql.reg.pc = delay_cycles_end
 
         count = 0
         def counter():

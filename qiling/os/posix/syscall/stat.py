@@ -10,7 +10,7 @@ from typing import Callable
 
 from qiling import Qiling
 from qiling.const import QL_OS, QL_ARCH, QL_ENDIAN
-from qiling.os.posix.const import NR_OPEN, EBADF, ENOENT, AT_FDCWD, AT_EMPTY_PATH
+from qiling.os.posix.const import NR_OPEN, EBADF, AT_FDCWD
 from qiling.os.posix.stat import Stat, Lstat
 
 # Caveat: Never use types like ctypes.c_long whose size differs across platforms.
@@ -295,57 +295,6 @@ class LinuxMips32Stat(ctypes.Structure):
     _pack_ = 4
 
 class LinuxMips64Stat(ctypes.Structure):
-    _fields_ = [
-        ("st_dev", ctypes.c_uint32),
-        ("st_pad0", ctypes.c_uint32 * 3),
-        ("st_ino", ctypes.c_uint64),
-        ("st_mode", ctypes.c_uint32),
-        ("st_nlink", ctypes.c_uint32),
-        ("st_uid", ctypes.c_uint32),
-        ("st_gid", ctypes.c_uint32),
-        ("st_rdev", ctypes.c_uint32),
-        ("st_pad1", ctypes.c_uint32 * 3),
-        ("st_size", ctypes.c_uint64),
-        ("st_atime", ctypes.c_uint32),
-        ("st_atime_ns", ctypes.c_uint32),
-        ("st_mtime", ctypes.c_uint32),
-        ("st_mtime_ns", ctypes.c_uint32),
-        ("st_ctime", ctypes.c_uint32),
-        ("st_ctime_ns", ctypes.c_uint32),
-        ("st_blksize", ctypes.c_uint32),
-        ("st_pad2", ctypes.c_uint32),
-        ("st_blocks", ctypes.c_uint64)
-    ]
-
-    _pack_ = 8
-
-class LinuxMips32EBStat(ctypes.BigEndianStructure):
-    _fields_ = [
-        ("st_dev", ctypes.c_uint32),
-        ("st_pad1", ctypes.c_int32 * 3),
-        ("st_ino", ctypes.c_uint32),
-        ("st_mode", ctypes.c_uint32),
-        ("st_nlink", ctypes.c_uint32),
-        ("st_uid", ctypes.c_uint32),
-        ("st_gid", ctypes.c_uint32),
-        ("st_rdev", ctypes.c_uint32),
-        ("st_pad2", ctypes.c_uint32 * 2),
-        ("st_size", ctypes.c_uint32),
-        ("st_pad3", ctypes.c_uint32),
-        ("st_atime", ctypes.c_uint32),
-        ("st_atime_ns", ctypes.c_uint32),
-        ("st_mtime", ctypes.c_uint32),
-        ("st_mtime_ns", ctypes.c_uint32),
-        ("st_ctime", ctypes.c_uint32),
-        ("st_ctime_ns", ctypes.c_uint32),
-        ("st_blksize", ctypes.c_uint32),
-        ("st_blocks", ctypes.c_uint32),
-        ("st_pad4", ctypes.c_uint32 * 14)
-    ]
-
-    _pack_ = 4
-
-class LinuxMips64EBStat(ctypes.BigEndianStructure):
     _fields_ = [
         ("st_dev", ctypes.c_uint32),
         ("st_pad0", ctypes.c_uint32 * 3),
@@ -819,108 +768,6 @@ class LinuxRISCVStat(ctypes.Structure):
 
     _pack_ = 8
 
-# Srouce: https://elixir.bootlin.com/linux/latest/source/arch/powerpc/include/uapi/asm/stat.h#L30
-# struct stat {
-# 	unsigned long	st_dev;
-# 	ino_t		st_ino;
-# #ifdef __powerpc64__
-# 	unsigned long	st_nlink;
-# 	mode_t		st_mode;
-# #else
-# 	mode_t		st_mode;
-# 	unsigned short	st_nlink;
-# #endif
-# 	uid_t		st_uid;
-# 	gid_t		st_gid;
-# 	unsigned long	st_rdev;
-# 	long		st_size;
-# 	unsigned long	st_blksize;
-# 	unsigned long	st_blocks;
-# 	unsigned long	st_atime;
-# 	unsigned long	st_atime_nsec;
-# 	unsigned long	st_mtime;
-# 	unsigned long	st_mtime_nsec;
-# 	unsigned long	st_ctime;
-# 	unsigned long	st_ctime_nsec;
-# 	unsigned long	__unused4;
-# 	unsigned long	__unused5;
-# #ifdef __powerpc64__
-# 	unsigned long	__unused6;
-# #endif
-# };
-
-class LinuxPPCStat(ctypes.BigEndianStructure):
-    _fields_ = [
-        ("st_dev", ctypes.c_uint32),
-        ("st_ino", ctypes.c_uint32),
-        ("st_mode", ctypes.c_uint32),
-        ("st_nlink", ctypes.c_uint16),
-        ("st_uid", ctypes.c_uint32),
-        ("st_gid", ctypes.c_uint32),
-        ("st_rdev", ctypes.c_uint32),
-        ("st_size", ctypes.c_uint32),
-        ("st_blksize", ctypes.c_uint32),
-        ("st_blocks", ctypes.c_uint32),
-        ("st_atime", ctypes.c_uint32),
-        ("st_atime_ns", ctypes.c_uint32),
-        ("st_mtime", ctypes.c_uint32),
-        ("st_mtime_ns", ctypes.c_uint32),
-        ("st_ctime", ctypes.c_uint32),
-        ("st_ctime_ns", ctypes.c_uint32),
-        ("__unused4", ctypes.c_uint32),
-        ("__unused5", ctypes.c_uint32)
-    ]
-
-    _pack_ = 8
-
-# Srouce: https://elixir.bootlin.com/linux/latest/source/arch/powerpc/include/uapi/asm/stat.h#L60
-# struct stat64 {
-# 	unsigned long long st_dev;		/* Device.  */
-# 	unsigned long long st_ino;		/* File serial number.  */
-# 	unsigned int	st_mode;	/* File mode.  */
-# 	unsigned int	st_nlink;	/* Link count.  */
-# 	unsigned int	st_uid;		/* User ID of the file's owner.  */
-# 	unsigned int	st_gid;		/* Group ID of the file's group. */
-# 	unsigned long long st_rdev;	/* Device number, if device.  */
-# 	unsigned short	__pad2;
-# 	long long	st_size;	/* Size of file, in bytes.  */
-# 	int		st_blksize;	/* Optimal block size for I/O.  */
-# 	long long	st_blocks;	/* Number 512-byte blocks allocated. */
-# 	int		st_atime;	/* Time of last access.  */
-# 	unsigned int	st_atime_nsec;
-# 	int		st_mtime;	/* Time of last modification.  */
-# 	unsigned int	st_mtime_nsec;
-# 	int		st_ctime;	/* Time of last status change.  */
-# 	unsigned int	st_ctime_nsec;
-# 	unsigned int	__unused4;
-# 	unsigned int	__unused5;
-# };
-
-class LinuxPPCStat64(ctypes.BigEndianStructure):
-    _fields_ = [
-        ("st_dev", ctypes.c_uint64),
-        ("st_ino", ctypes.c_uint64),
-        ("st_mode", ctypes.c_uint32),
-        ("st_nlink", ctypes.c_uint32),
-        ("st_uid", ctypes.c_uint32),
-        ("st_gid", ctypes.c_uint32),
-        ("st_rdev", ctypes.c_uint64),
-        ("__pad2", ctypes.c_uint16),
-        ("st_size", ctypes.c_uint64),
-        ("st_blksize", ctypes.c_uint32),
-        ("st_blocks", ctypes.c_uint64),
-        ("st_atime", ctypes.c_uint32),
-        ("st_atime_ns", ctypes.c_uint32),
-        ("st_mtime", ctypes.c_uint32),
-        ("st_mtime_ns", ctypes.c_uint32),
-        ("st_ctime", ctypes.c_uint32),
-        ("st_ctime_ns", ctypes.c_uint32),
-        ("__unused4", ctypes.c_uint32),
-        ("__unused5", ctypes.c_uint32)
-    ]
-
-    _pack_ = 8
-
 # Source: openqnx lib/c/public/sys/stat.h
 #
 # struct stat {
@@ -1082,73 +929,63 @@ class QNXARMStat64(ctypes.Structure):
     _pack_ = 8
 
 def get_stat64_struct(ql: Qiling):
-    if ql.arch.bits == 64:
-        ql.log.warning(f"Trying to stat64 on a 64bit system with {ql.os.type} and {ql.arch.type}!")
-    if ql.os.type == QL_OS.LINUX:
-        if ql.arch.type == QL_ARCH.X86:
+    if ql.archbit == 64:
+        ql.log.warning(f"Trying to stat64 on a 64bit system with {ql.ostype} and {ql.archtype}!")
+    if ql.ostype == QL_OS.LINUX:
+        if ql.archtype == QL_ARCH.X86:
             return LinuxX86Stat64()
-        elif ql.arch.type == QL_ARCH.MIPS:
+        elif ql.archtype == QL_ARCH.MIPS:
             return LinuxMips32Stat64()
-        elif ql.arch.type == QL_ARCH.ARM:
+        elif ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB):
             return LinuxARMStat64()
-        elif ql.arch.type in (QL_ARCH.RISCV, QL_ARCH.RISCV64):
+        elif ql.archtype in (QL_ARCH.RISCV, QL_ARCH.RISCV64):
             return LinuxRISCVStat()
-        elif ql.arch.type == QL_ARCH.PPC:
-            return LinuxPPCStat64()
-    elif ql.os.type == QL_OS.MACOS:
+    elif ql.ostype == QL_OS.MACOS:
         return MacOSStat64()
-    elif ql.os.type == QL_OS.QNX:
+    elif ql.ostype == QL_OS.QNX:
         return QNXARMStat64()
-    ql.log.warning(f"Unrecognized arch && os with {ql.arch.type} and {ql.os.type} for stat64! Fallback to Linux x86.")
+    ql.log.warning(f"Unrecognized arch && os with {ql.archtype} and {ql.ostype} for stat64! Fallback to Linux x86.")
     return LinuxX86Stat64()
 
 def get_stat_struct(ql: Qiling):
-    if ql.os.type == QL_OS.FREEBSD:
-        if ql.arch.type == QL_ARCH.X8664 or ql.arch.bits == 64:
+    if ql.ostype == QL_OS.FREEBSD:
+        if ql.archtype == QL_ARCH.X8664 or ql.archbit == 64:
             return FreeBSDX8664Stat()
         else:
             return FreeBSDX86Stat()
-    elif ql.os.type == QL_OS.MACOS:
+    elif ql.ostype == QL_OS.MACOS:
         return MacOSStat()
-    elif ql.os.type == QL_OS.LINUX:
-        if ql.arch.type == QL_ARCH.X8664:
+    elif ql.ostype == QL_OS.LINUX:
+        if ql.archtype == QL_ARCH.X8664:
             return LinuxX8664Stat()
-        elif ql.arch.type == QL_ARCH.X86:
+        elif ql.archtype == QL_ARCH.X86:
             return LinuxX86Stat()
-        elif ql.arch.type == QL_ARCH.MIPS:
-            if ql.arch.bits == 64:
-                if ql.arch.endian == QL_ENDIAN.EL:
-                    return LinuxMips64Stat()
-                else:
-                    return LinuxMips64EBStat()
+        elif ql.archtype == QL_ARCH.MIPS:
+            if ql.archbit == 64:
+                return LinuxMips64Stat()
             else:
-                if ql.arch.endian == QL_ENDIAN.EL:
-                    return LinuxMips32Stat()
-                else:
-                    return LinuxMips32EBStat()
-        elif ql.arch.type == QL_ARCH.ARM:
-            if ql.arch.endian == QL_ENDIAN.EL:
+                return LinuxMips32Stat()
+        elif ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB):
+            if ql.archendian == QL_ENDIAN.EL:
                 return LinuxARMStat()
             else:
                 return LinuxARMEBStat()
-        elif ql.arch.type == QL_ARCH.ARM64:
-            if ql.arch.endian == QL_ENDIAN.EL:
+        elif ql.archtype == QL_ARCH.ARM64:
+            if ql.archendian == QL_ENDIAN.EL:
                 return LinuxARM64Stat()
             else:
                 return LinuxARM64EBStat()
-        elif ql.arch.type in (QL_ARCH.RISCV, QL_ARCH.RISCV64):
+        elif ql.archtype in (QL_ARCH.RISCV, QL_ARCH.RISCV64):
             return LinuxRISCVStat()
-        elif ql.archtype == QL_ARCH.PPC:
-            return LinuxPPCStat()
-    elif ql.os.type == QL_OS.QNX:
-        if ql.arch.type == QL_ARCH.ARM64:
+    elif ql.ostype == QL_OS.QNX:
+        if ql.archtype == QL_ARCH.ARM64:
             return QNXARM64Stat()
-        elif ql.arch.type == QL_ARCH.ARM:
-            if ql.arch.endian == QL_ENDIAN.EL:
+        elif ql.archtype == QL_ARCH.ARM:
+            if ql.archendian == QL_ENDIAN.EL:
                 return QNXARMStat()
             else:
                 return QNXARMEBStat()
-    ql.log.warning(f"Unrecognized arch && os with {ql.arch.type} and {ql.os.type} for stat! Fallback to Linux x86.")
+    ql.log.warning(f"Unrecognized arch && os with {ql.archtype} and {ql.ostype} for stat! Fallback to Linux x86.")
     return LinuxX86Stat()
 
 def __common_pack_stat_struct(stat, info) -> bytes:
@@ -1189,7 +1026,7 @@ def statFamily(ql: Qiling, path: int, ptr: int, name: str, stat_func, struct_fun
         ql.log.debug(f'{name}("{file_path}", {ptr:#x}) write completed')
         return regreturn
 
-def transform_path(ql: Qiling, dirfd: int, path: int, flags: int = 0):
+def transform_path(ql: Qiling, dirfd: int, path: int):
     """
     An absolute pathname
         If pathname begins with a slash, then it is an absolute pathname that identifies the target file.  
@@ -1208,104 +1045,96 @@ def transform_path(ql: Qiling, dirfd: int, path: int, flags: int = 0):
         then the target file is the one referred to by the file descriptor dirfd.
     """
 
-    dirfd = ql.unpack32s(ql.pack32(dirfd & (1<<32)-1))
+    dirfd = ql.unpacks(ql.pack(dirfd))
     path = ql.os.utils.read_cstring(path)
 
     if path.startswith('/'):
-        return None, os.path.join(ql.rootfs, path.lstrip('/'))
+        return None, os.path.join(ql.rootfs, path)
 
     if dirfd == AT_FDCWD:
         return None, ql.os.path.transform_to_real_path(path)
 
-    if len(path) == 0 and flags & AT_EMPTY_PATH:
-        return None, ql.os.fd[dirfd].name
-
     if 0 < dirfd < NR_OPEN:
         return ql.os.fd[dirfd].fileno(), path
-
+    
 
 def ql_syscall_chmod(ql: Qiling, filename: int, mode: int):
-    file_path = ql.os.utils.read_cstring(filename)
-    real_path = ql.os.path.transform_to_real_path(file_path)
-    try:
-        os.chmod(real_path, mode)
-        regreturn = 0
-    except:
-        regreturn = -1
     ql.log.debug(f'chmod("{ql.os.utils.read_cstring(filename)}", {mode:d}) = 0')
-    return regreturn
+
+    return 0
 
 def ql_syscall_fchmod(ql: Qiling, fd: int, mode: int):
-    if fd not in range(NR_OPEN) or ql.os.fd[fd] is None:
+    if not (0 < fd < NR_OPEN) or ql.os.fd[fd] == 0:
         return -EBADF
-    try:
-        os.fchmod(ql.os.fd[fd].fileno(), mode)
-        regreturn = 0
-    except:
-        regreturn = -1
-    ql.log.debug("fchmod(%d, %d) = %d" % (fd, mode, regreturn))
-    return regreturn
 
-def ql_syscall_fstatat64(ql: Qiling, dirfd: int, path: int, buf_ptr: int, flags: int):
-    dirfd, real_path = transform_path(ql, dirfd, path, flags)
+    return 0
 
-    try:
+def ql_syscall_fstatat64(ql: Qiling, dirfd: int, path: int, buf_ptr: int, flag: int):
+    dirfd, real_path = transform_path(ql, dirfd, path)
+
+    if os.path.exists(real_path):
         buf = pack_stat64_struct(ql, Stat(real_path, dirfd))
         ql.mem.write(buf_ptr, buf)
 
         regreturn = 0
-    except:
+    else:
         regreturn = -1
 
     return regreturn
 
-def ql_syscall_newfstatat(ql: Qiling, dirfd: int, path: int, buf_ptr: int, flags: int):
-    dirfd, real_path = transform_path(ql, dirfd, path, flags)
-
-    try:
+def ql_syscall_newfstatat(ql: Qiling, dirfd: int, path: int, buf_ptr: int, flag: int):
+    dirfd, real_path = transform_path(ql, dirfd, path)
+    
+    if os.path.exists(real_path):
         buf = pack_stat_struct(ql, Stat(real_path, dirfd))
         ql.mem.write(buf_ptr, buf)
 
         regreturn = 0
-    except:
+    else:
         regreturn = -1
 
     return regreturn
 
-def ql_syscall_fstat64(ql: Qiling, fd: int, buf_ptr: int):
-    if fd not in range(NR_OPEN):
-        return -1
-
-    f = ql.os.fd[fd]
-
-    if f is None or not hasattr(f, "fstat"):
-        return -1
-
-    fstat = f.fstat()
-
-    if fstat != -1:
-        buf = pack_stat64_struct(ql, fstat)
+def ql_syscall_fstat64(ql: Qiling, fd, buf_ptr):
+    if not hasattr(ql.os.fd[fd], "fstat"):
+        regreturn = -1
+    elif ql.os.fd[fd].fstat() == -1:
+        regreturn = 0
+    elif 0 <= fd < NR_OPEN and ql.os.fd[fd] != 0:
+        buf = pack_stat64_struct(ql, ql.os.fd[fd].fstat())
         ql.mem.write(buf_ptr, buf)
 
-    return 0
+        regreturn = 0
+    else:
+        regreturn = -1
+
+    if regreturn == 0:
+        ql.log.debug("fstat64 write completed")
+    else:
+        ql.log.debug("fstat64 read/write fail")
+
+    return regreturn
 
 
-def ql_syscall_fstat(ql: Qiling, fd: int, buf_ptr: int):
-    if fd not in range(NR_OPEN):
-        return -1
-
-    f = ql.os.fd[fd]
-
-    if f is None or not hasattr(f, "fstat"):
-        return -1
-
-    fstat = f.fstat()
-
-    if fstat != -1:
-        buf = pack_stat_struct(ql, fstat)
+def ql_syscall_fstat(ql: Qiling, fd, buf_ptr):
+    if not hasattr(ql.os.fd[fd], "fstat"):
+        regreturn = -1
+    # elif ql.os.fd[fd].fstat() == -1:
+    #     regreturn = 0
+    elif 0 <= fd < NR_OPEN and ql.os.fd[fd] != 0:
+        buf = pack_stat_struct(ql,  ql.os.fd[fd].fstat())
         ql.mem.write(buf_ptr, buf)
 
-    return 0
+        regreturn = 0
+    else:
+        regreturn = -1
+
+    if regreturn == 0:
+        ql.log.debug("fstat write completed")
+    else:
+        ql.log.debug("fstat read/write fail")
+
+    return regreturn
 
 
 # int stat(const char *path, struct stat *buf);
@@ -1404,7 +1233,7 @@ def ql_syscall_statx(ql: Qiling, dirfd: int, path: int, flags: int, mask: int, b
         tv_sec  = struct.unpack('i', struct.pack('f', tv_sec))[0]
         tv_nsec = struct.unpack('i', struct.pack('f', tv_nsec))[0]
 
-        if ql.arch.bits == 32:
+        if ql.archbit == 32:
             return StatxTimestamp32(tv_sec=tv_sec, tv_nsec=tv_nsec)
         else:
             return StatxTimestamp64(tv_sec=tv_sec, tv_nsec=tv_nsec)
@@ -1416,12 +1245,15 @@ def ql_syscall_statx(ql: Qiling, dirfd: int, path: int, flags: int, mask: int, b
     def minor(dev):
         return (dev & 0xff) | ((dev >> 12) & ~0xff)
 
-    fd, real_path = transform_path(ql, dirfd, path, flags)
+    fd, real_path = transform_path(ql, dirfd, path)
     
     try:
-        st = Stat(real_path, fd)
+        if len(real_path) == 0:
+            st = ql.os.fd[dirfd].fstat()
+        else:
+            st = Stat(real_path, fd)
         
-        if ql.arch.bits == 32:
+        if ql.archbit == 32:
             Statx = Statx32
         else:
             Statx = Statx64
@@ -1463,7 +1295,7 @@ def ql_syscall_lstat64(ql: Qiling, path: int, buf_ptr: int):
 
 
 def ql_syscall_mknodat(ql: Qiling, dirfd: int, path: int, mode: int, dev: int):
-    dirfd, real_path = transform_path(ql, dirfd, path)
+    dirfd, real_path = transform_path(ql, dirfd, path)    
 
     try:
         os.mknod(real_path, mode, dev, dir_fd=dirfd)
@@ -1471,7 +1303,6 @@ def ql_syscall_mknodat(ql: Qiling, dirfd: int, path: int, mode: int, dev: int):
     except:
         regreturn = -1
 
-    ql.log.debug("mknodat(%d, %s, 0%o, %d) = %d" % (dirfd, real_path, mode, dev, regreturn))
     return regreturn
 
 
@@ -1486,7 +1317,6 @@ def ql_syscall_mkdir(ql: Qiling, pathname: int, mode: int):
     except:
         regreturn = -1
 
-    ql.log.debug("mkdir(%s, 0%o) = %d" % (real_path, mode, regreturn))
     return regreturn
 
 def ql_syscall_rmdir(ql: Qiling, pathname: int):

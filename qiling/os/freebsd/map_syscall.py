@@ -6,15 +6,9 @@
 from qiling.const import QL_ARCH
 from qiling.os.posix.posix import SYSCALL_PREF
 
-def get_syscall_mapper(archtype: QL_ARCH):
-    syscall_table = {
-        QL_ARCH.X8664 : x8664_syscall_table
-    }[archtype]
-
-    def __mapper(syscall_num: int) -> str:
-        return f'{SYSCALL_PREF}{syscall_table[syscall_num]}'
-
-    return __mapper
+def map_syscall(ql, syscall_num):
+    if ql.archtype == QL_ARCH.X8664:
+        return f'{SYSCALL_PREF}{x8664_syscall_table[syscall_num]}'
 
 x8664_syscall_table = {
     0: 'syscall',

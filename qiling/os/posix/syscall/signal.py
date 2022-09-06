@@ -7,13 +7,15 @@ from qiling import Qiling
 
 def ql_syscall_rt_sigaction(ql: Qiling, signum: int, act: int, oldact: int):
     if oldact:
-        arr = ql.os.sigaction_act[signum] or [0] * 5
-        data = b''.join(ql.pack32(key) for key in arr)
+        if ql.os.sigaction_act[signum] == 0:
+            data = b'\x00' * 20
+        else:
+            data = b''.join(ql.pack32(key) for key in ql.os.sigaction_act[signum])
 
         ql.mem.write(oldact, data)
 
     if act:
-        ql.os.sigaction_act[signum] = [ql.mem.read_ptr(act + 4 * i, 4) for i in range(5)]
+        ql.os.sigaction_act[signum] = [ql.unpack32(ql.mem.read(act + 4 * key, 4)) for key in range(5)]
 
     return 0
 

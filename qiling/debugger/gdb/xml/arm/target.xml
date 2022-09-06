@@ -6,9 +6,9 @@
  *!notice and this notice are preserved.  -->
 
 <!DOCTYPE target SYSTEM "gdb-target.dtd">
-<target xmlns:xi="http://www.w3.org/2001/XInclude">
-    <architecture>arm</architecture>
-    <xi:include href="arm-core.xml"/>
-    <xi:include href="arm-vfpv3.xml"/>
-    <feature name="org.gnu.gdb.arm.neon"/>
+<target>
+  <architecture>arm</architecture>
+  <xi:include href="arm-core.xml"/>
+  <xi:include href="arm-vfpv3.xml"/>
+  <feature name="org.gnu.gdb.arm.neon"/>
 </target>

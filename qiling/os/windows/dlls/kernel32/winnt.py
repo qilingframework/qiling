@@ -21,7 +21,7 @@ def hook_InterlockedExchange(ql: Qiling, address: int, params):
     Value = params['Value']
 
     old = ql.mem.read_ptr(Target, 4)
-    ql.mem.write_ptr(Target, Value, 4)
+    ql.mem.write(Target, ql.pack32(Value))
 
     return old
 
@@ -35,8 +35,8 @@ def hook_InterlockedIncrement(ql: Qiling, address: int, params):
     Target = params['Target']
 
     Value = ql.mem.read_ptr(Target, 4)
-    Value = (Value + 1) % (1 << 32)     # increase and handle overflow
-    ql.mem.write_ptr(Target, Value, 4)
+    Value = (Value + 1) % (1 << 32)     # increment and handle overflow
+    ql.mem.write(Target, ql.pack32(Value))
 
     return Value
 
@@ -50,8 +50,9 @@ def hook_InterlockedDecrement(ql: Qiling, address: int, params):
     Target = params['Target']
 
     Value = ql.mem.read_ptr(Target, 4)
-    Value = (Value - 1) % (1 << 32)     # decrease and handle underflow
-    ql.mem.write_ptr(Target, Value, 4)
+    Value = (Value - 1) % (1 << 32)     # increment and handle underflow
+
+    ql.mem.write(Target, ql.pack32(Value))
 
     return Value
 

@@ -19,7 +19,7 @@ from qiling.os.windows.fncc import *
 def hook_IsWow64Process(ql: Qiling, address: int, params):
     Wow64Process = params["Wow64Process"]
 
-    if ql.arch.bits != 32:
+    if ql.archbit != 32:
         raise QlErrorNotImplemented("API not implemented")
 
     false = b'\x00'

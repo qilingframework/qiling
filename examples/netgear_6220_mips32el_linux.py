@@ -61,8 +61,8 @@ def my_netgear(path, rootfs):
     ql.os.root = False
 
     ql.add_fs_mapper('/proc', '/proc')
-    ql.os.set_syscall(4004, my_syscall_write)
-    ql.os.set_api('bind', my_bind, QL_INTERCEPT.ENTER)  # intercepting the bind call on enter
+    ql.set_syscall(4004, my_syscall_write)
+    ql.set_api('bind', my_bind, QL_INTERCEPT.ENTER)  # intercepting the bind call on enter
 
     ql.run()
 

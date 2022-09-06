@@ -119,7 +119,7 @@ def echo_key(ql: Qiling, key):
 
 def show_once(ql: Qiling, key):
     klen = len(key)
-    ql.arch.regs.ax = klen
+    ql.reg.ax = klen
     ql.mem.write(0x87F4, key)
     # Partial exectution to skip input reading
     ql.run(begin=0x801B, end=0x803d)
@@ -133,7 +133,7 @@ def third_stage(keys):
                  "rootfs/8086",
                  console=False)
     ql.add_fs_mapper(0x80, QlDisk("rootfs/8086/doogie/doogie.DOS_MBR", 0x80))
-    ql.os.set_api((0x1a, 4), set_required_datetime, QL_INTERCEPT.EXIT)
+    ql.set_api((0x1a, 4), set_required_datetime, QL_INTERCEPT.EXIT)
     hk = ql.hook_code(stop, begin=0x8018, end=0x8018)
     ql.run()
     ql.hook_del(hk)
@@ -172,10 +172,10 @@ def read_until_zero(ql: Qiling, addr):
 
 def set_required_datetime(ql: Qiling):
     ql.log.info("Setting Feburary 06, 1990")
-    ql.arch.regs.ch = BIN2BCD(19)
-    ql.arch.regs.cl = BIN2BCD(1990%100)
-    ql.arch.regs.dh = BIN2BCD(2)
-    ql.arch.regs.dl = BIN2BCD(6)
+    ql.reg.ch = BIN2BCD(19)
+    ql.reg.cl = BIN2BCD(1990%100)
+    ql.reg.dh = BIN2BCD(2)
+    ql.reg.dl = BIN2BCD(6)
 
 def stop(ql, addr, data):
     ql.emu_stop()
@@ -187,7 +187,7 @@ def first_stage():
                  console=False)
     ql.add_fs_mapper(0x80, QlDisk("rootfs/8086/doogie/doogie.DOS_MBR", 0x80))
     # Doogie suggests that the datetime should be 1990-02-06.
-    ql.os.set_api((0x1a, 4), set_required_datetime, QL_INTERCEPT.EXIT)
+    ql.set_api((0x1a, 4), set_required_datetime, QL_INTERCEPT.EXIT)
     # A workaround to stop the program.
     hk = ql.hook_code(stop, begin=0x8018, end=0x8018)
     ql.run()

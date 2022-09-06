@@ -1,9 +1,5 @@
-from enum import IntEnum
-
+# class for colorful prints
 class color:
-   """
-   class for colorful prints
-   """
    CYAN      = '\033[96m'
    PURPLE    = '\033[95m'
    BLUE      = '\033[94m'
@@ -19,6 +15,26 @@ class color:
    END       = '\033[0m'
    RESET     = '\x1b[39m'
 
-class QDB_MSG(IntEnum):
-    ERROR = 10
-    INFO  = 20
+
+
+FORMAT_LETTER = {
+        "o", # octal
+        "x", # hex
+        "d", # decimal
+        "u", # unsigned decimal
+        "t", # binary
+        "f", # float
+        "a", # address
+        "i", # instruction
+        "c", # char
+        "s", # string
+        "z", # hex, zero padded on the left
+        }
+
+
+SIZE_LETTER = {
+    "b": 1, # 1-byte, byte
+    "h": 2, # 2-byte, halfword
+    "w": 4, # 4-byte, word
+    "g": 8, # 8-byte, giant
+    }
