@@ -28,9 +28,11 @@ class QlArmBaseCC(QlCommonBaseCC):
 		return self.arch.stack_pop()
 
 class aarch64(QlArmBaseCC):
+    _retaddr_on_stack = False
 	_retreg = UC_ARM64_REG_X0
 	_argregs = (UC_ARM64_REG_X0, UC_ARM64_REG_X1, UC_ARM64_REG_X2, UC_ARM64_REG_X3, UC_ARM64_REG_X4, UC_ARM64_REG_X5, UC_ARM64_REG_X6, UC_ARM64_REG_X7) + (None, ) * 8
 
 class aarch32(QlArmBaseCC):
+    _retaddr_on_stack = False
 	_retreg = UC_ARM_REG_R0
 	_argregs = (UC_ARM_REG_R0, UC_ARM_REG_R1, UC_ARM_REG_R2, UC_ARM_REG_R3) + (None, ) * 12
