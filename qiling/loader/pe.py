@@ -7,7 +7,7 @@ import os, pefile, pickle, secrets, ntpath
 from typing import Any, Dict, MutableMapping, NamedTuple, Optional, Mapping, Sequence, Tuple, Union
 
 from unicorn import UcError
-from unicorn.x86_const import UC_X86_REG_CR4, UC_X86_REG_CR8, UC_X86_REG_GS
+from unicorn.x86_const import UC_X86_REG_CR4, UC_X86_REG_CR8
 
 from qiling import Qiling
 from qiling.arch.x86_const import FS_SEGMENT_ADDR, GS_SEGMENT_ADDR
@@ -698,7 +698,6 @@ class Process:
         kthread_obj.InitialStack    = 0x1000
         kthread_obj.StackBase       = 0x1500
         kthread_obj.StackLimit      = 0x2000
-        kthread_obj.MiscFlags       |= 0x400
 
         # Writes KTHREAD pointer into GS:[0x188]
         self.ql.mem.write_ptr(0x6000188, kthread_addr)
@@ -748,12 +747,6 @@ class Process:
 
         # Writes KPRCB pointer into GS:[0x20]
         self.ql.mem.write_ptr(0x6000020, kprcb_addr)
-
-        # @NOTE: Tests for writing structure pointers.
-        # please don't remove.
-        self.ql.log.warn(f"KPRCB IdleThread: {kprcb_obj.IdleThread:x}")
-        self.ql.log.warn(f"KPRCB CurrentThread: {kprcb_obj.CurrentThread:x}")
-        self.ql.log.warn(f"KPRCB ParentNode: {kprcb_obj.ParentNode:x}")
 
         self.ql.os.KPRCB = kprcb_obj
 
