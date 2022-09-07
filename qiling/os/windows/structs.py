@@ -3,12 +3,10 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from calendar import c
 import ctypes
 
 from enum import IntEnum
 from functools import lru_cache
-from pickletools import uint1
 
 from qiling.os import struct
 from qiling.os.windows.const import MAX_PATH
