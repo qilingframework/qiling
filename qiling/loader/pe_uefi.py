@@ -223,19 +223,19 @@ class QlLoaderPE_UEFI(QlLoader):
         context = DxeContext(ql)
 
         # initialize and locate heap
-        heap_base = int(profile['heap_address'], 0)
-        heap_size = int(profile['heap_size'], 0)
+        heap_base = profile.getint('heap_address')
+        heap_size = profile.getint('heap_size')
         context.init_heap(heap_base, heap_size)
         ql.log.info(f'DXE heap at {heap_base:#010x}')
 
         # initialize and locate stack
-        stack_base = int(profile['stack_address'], 0)
-        stack_size = int(profile['stack_size'], 0)
+        stack_base = profile.getint('stack_address')
+        stack_size = profile.getint('stack_size')
         context.init_stack(stack_base, stack_size)
         ql.log.info(f'DXE stack at {context.top_of_stack:#010x}')
 
         # base address for next image
-        context.next_image_base = int(profile['image_address'], 0)
+        context.next_image_base = profile.getint('image_address')
 
         # statically allocating 4 KiB for ST, RT, BS, DS and about 100 configuration table entries.
         # the actual size needed was rounded up to the nearest page boundary.
@@ -272,23 +272,23 @@ class QlLoaderPE_UEFI(QlLoader):
         context = SmmContext(ql)
 
         # set smram boundaries
-        context.smram_base = int(profile["smram_base"], 0)
-        context.smram_size = int(profile["smram_size"], 0)
+        context.smram_base = profile.getint('smram_base')
+        context.smram_size = profile.getint('smram_size')
 
         # initialize and locate heap
-        heap_base = int(profile["heap_address"], 0)
-        heap_size = int(profile["heap_size"], 0)
+        heap_base = profile.getint('heap_address')
+        heap_size = profile.getint('heap_size')
         context.init_heap(heap_base, heap_size)
         ql.log.info(f"SMM heap at {heap_base:#010x}")
 
         # initialize and locate stack
-        stack_base = int(profile['stack_address'], 0)
-        stack_size = int(profile['stack_size'], 0)
+        stack_base = profile.getint('stack_address')
+        stack_size = profile.getint('stack_size')
         context.init_stack(stack_base, stack_size)
         ql.log.info(f'SMM stack at {context.top_of_stack:#010x}')
 
         # base address for next image
-        context.next_image_base = int(profile['image_address'], 0)
+        context.next_image_base = profile.getint('image_address')
 
         # statically allocating 4 KiB for SMM ST and about 100 configuration table entries
         # the actual size needed was rounded up to the nearest page boundary.
