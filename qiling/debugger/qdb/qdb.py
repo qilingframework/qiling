@@ -349,7 +349,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
             if reg_val:
                 setattr(self.ql.arch.regs, reg_name, reg_val)
                 self.do_context()
-                qdb_print(QDB_MSG.INFO, f"set register {reg_name} to 0x{reg_val:08x}")
+                qdb_print(QDB_MSG.INFO, f"set register {reg_name} to 0x{(reg_val & 0xfffffff):08x}")
 
             else:
                 qdb_print(QDB_MSG.ERROR, f"error parsing input: {reg_val} as integer value")
