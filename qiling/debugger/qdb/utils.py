@@ -49,6 +49,11 @@ def qdb_print(msgtype: QDB_MSG, msg: str) -> None:
 
     print(color_coated)
 
+"""
+
+    class Marker provide the ability for marking an address as a more easier rememberable alias
+
+"""
 
 def setup_address_marker():
 
@@ -57,10 +62,18 @@ def setup_address_marker():
             self._mark_list = {}
 
         def get_symbol(self, sym):
+            """
+            get the mapped address to a symbol if it's in the mark_list
+            """
+
             return self._mark_list.get(sym, None)
 
         @property
         def mark_list(self):
+            """
+            get a list about what we marked
+            """
+
             return self._mark_list.items()
 
         def gen_sym_name(self):
