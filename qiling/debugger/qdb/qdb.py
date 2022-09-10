@@ -8,7 +8,7 @@ from typing import Callable, Optional, Mapping, Tuple, Union
 import cmd
 
 from qiling import Qiling
-from qiling.const import QL_ARCH, QL_VERBOSE
+from qiling.const import QL_OS, QL_ARCH, QL_VERBOSE
 from qiling.debugger import QlDebugger
 
 from .utils import setup_context_render, setup_branch_predictor, SnapshotManager, run_qdb_script
@@ -34,6 +34,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         self._saved_reg_dump = None
         self._script = script
         self.bp_list = {}
+        self.mark_list = {}
 
         self.rr = SnapshotManager(ql) if rr else None
         self.mm = setup_memory_Manager(ql)
@@ -72,7 +73,10 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         self.ql.hook_code(bp_handler, self.bp_list)
 
-        if init_hook and self.ql.loader.entry_point != init_hook:
+        if self.ql.os.type == QL_OS.BLOB:
+            self.ql.loader.entry_point = self.ql.loader.load_address
+
+        elif init_hook and self.ql.loader.entry_point != init_hook:
             self.do_breakpoint(init_hook)
 
         self.cur_addr = self.ql.loader.entry_point
@@ -348,6 +352,55 @@ class QlQdb(cmd.Cmd, QlDebugger):
         self.render.context_stack()
         self.render.context_asm()
 
+    def do_jump(self, address, *args) -> None:
+        """
+        seek to where ever valid location you want
+        """
+
+        symbol, addr = None, None
+        try:
+            addr = int(address, 0)
+        except:
+            symbol = address
+
+        if symbol:
+            addr = self.mark_list.get(symbol, None)
+
+        if self.ql.mem.is_mapped(addr, 4):
+            qdb_print(QDB_MSG.INFO, f"seek to 0x{addr:08x} ...")
+            self.cur_addr = addr
+            self.do_context()
+
+        else:
+            qdb_print(QDB_MSG.ERROR, f"the address to be seeked isn't mapped")
+
+    def do_mark(self, args):
+        """
+        mark a user specified address as a symbol
+        """
+
+        args = args.split()
+        if len(args) == 1:
+            try:
+                tmp = int(args[0], 0)
+            except:
+                tmp = args[0]
+
+            if type(tmp) is str:
+                symbol = tmp
+            else:
+                address = tmp
+
+        else:
+            symbol, address = args
+
+        if symbol:
+            addr = self.cur_addr if address is None else int(address, 0)
+            self.mark_list.update({symbol: addr})
+            qdb_print(QDB_MSG.INFO, f"mark symbol '{symbol}' at address: 0x{addr:08x} ...")
+        else:
+            qdb_print(QDB_MSG.ERROR, "symbol should not be empty ...")
+
     def do_show(self, *args) -> None:
         """
         show some runtime information
@@ -355,6 +408,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         self.ql.mem.show_mapinfo()
         qdb_print(QDB_MSG.INFO, f"Breakpoints: {[hex(addr) for addr in self.bp_list.keys()]}")
+        qdb_print(QDB_MSG.INFO, f"Marked symbol: {[{key:hex(val)} for key,val in self.mark_list.items()]}")
         if self.rr:
             qdb_print(QDB_MSG.INFO, f"Snapshots: {len([st for st in self.rr.layers if isinstance(st, self.rr.DiffedState)])}")
 
@@ -401,6 +455,8 @@ class QlQdb(cmd.Cmd, QlDebugger):
     do_r = do_run
     do_s = do_step_in
     do_n = do_step_over
+    do_j = do_jump
+    do_m = do_mark
     do_q = do_quit
     do_x = do_examine
     do_p = do_backward
