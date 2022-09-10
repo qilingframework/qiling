@@ -3,9 +3,10 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import unittest
-from qiling import Qiling
+import sys, unittest
 
+sys.path.append("..")
+from qiling import Qiling
 
 class DebuggerTest(unittest.TestCase):
 

@@ -11,10 +11,10 @@ from abc import abstractmethod
 from unicorn.unicorn import UcError
 
 from qiling import Qiling
+from qiling.const import QL_ARCH
 from qiling.os.thread import *
 from qiling.arch.x86_const import *
 from qiling.exception import QlErrorExecutionStop
-from qiling.os.path import QlPathManager
 
 LINUX_THREAD_ID = 2000
 
@@ -38,7 +38,6 @@ class QlLinuxThread(QlThread):
         self._start_address = start_address
         self._status = THREAD_STATUS_RUNNING
         self._return_val = 0
-        self.path = self.ql.os.path
         self._log_file_fd = None
         self._sched_cb = None
 
@@ -87,6 +86,8 @@ class QlLinuxThread(QlThread):
         if self._set_child_tid_address != None:
             self.ql.mem.write_ptr(self._set_child_tid_address, self.id, 4)
 
+        self.ql.os.thread_management.add_thread(self)
+
     @property
     def ql(self):
         return self._ql
@@ -134,14 +135,6 @@ class QlLinuxThread(QlThread):
     @return_val.setter
     def return_val(self, rv):
         self._return_val = rv
-
-    @property
-    def path(self):
-        return self._path
-
-    @path.setter
-    def path(self, p):
-        self._path = QlPathManager(self._ql, p.cwd)
 
     @property
     def log_file_fd(self):
@@ -295,7 +288,6 @@ class QlLinuxThread(QlThread):
         # Caveat:
         #     Don't use thread id to identify the thread object.
         new_thread = self.ql.os.thread_class.spawn(self._ql, self._start_address, self._exit_point, self._saved_context, set_child_tid_addr = None, thread_id = self._thread_id)
-        new_thread._path = self._path
         new_thread._return_val = self._return_val
         new_thread._robust_list_head_len = self._robust_list_head_len
         new_thread._robust_list_head_ptr = self._robust_list_head_ptr
@@ -562,9 +554,14 @@ class QlLinuxThreadManagement:
         t.stop()
         if t in self.threads:
             self.threads.remove(t)
+            self.ql.log.debug(f"[Thread Manager] Thread IDs: { {t.id for t in self.threads} }")
         # Exit the world.
         if t == self.main_thread:
             self.stop()
+
+    def add_thread(self, t):
+        self.threads.add(t)
+        self.ql.log.debug(f"[Thread Manager] Thread IDs: { {t.id for t in self.threads} }")
 
     def _clear_queued_msg(self):
         try:
@@ -586,7 +583,7 @@ class QlLinuxThreadManagement:
             if self.ql.arch.regs.arch_pc != entry_address:
                 self.ql.log.error(f"{self.cur_thread} Expect {hex(self.ql.loader.elf_entry)} but get {hex(self.ql.arch.regs.arch_pc)} when running loader.")
                 raise QlErrorExecutionStop('Dynamic library .init() failed!')
-            self.ql.enable_lib_patch()
+            self.ql.do_lib_patch()
             self.ql.os.run_function_after_load()
             self.ql.loader.skip_exit_check = False
             self.ql.write_exit_trap()
@@ -597,8 +594,12 @@ class QlLinuxThreadManagement:
     def stop(self):
         self.ql.log.debug("[Thread Manager] Stop the world.")
         self.ql.emu_stop()
-        for t in self.threads:
-            gevent.kill(t)
+        global LINUX_THREAD_ID
+        LINUX_THREAD_ID = 2000
+        while len(self.threads) != 0:
+            t = self.threads.pop()
+            self.ql.log.debug(f"[Thread Manager] Thread IDs: { {t.id for t in self.threads} }")
+            self.stop_thread(t)
 
     def run(self):
         previous_thread = self._prepare_lib_patch()

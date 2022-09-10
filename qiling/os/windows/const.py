@@ -12,14 +12,20 @@ ERROR_FILE_NOT_FOUND = 0x2
 ERROR_PATH_NOT_FOUND = 0x3
 ERROR_ACCESS_DENIED = 0x5
 ERROR_INVALID_HANDLE = 0x6
+ERROR_GEN_FAILURE = 0x1f
+ERROR_FILE_EXISTS = 0x50
 ERROR_INVALID_PARAMETER = 0x57
 ERROR_BUFFER_OVERFLOW = 0x6F
 ERROR_INSUFFICIENT_BUFFER = 0x7A
+ERROR_BAD_PATHNAME = 0xa1
 ERROR_ALREADY_EXISTS = 0xB7
 ERROR_MORE_DATA = 0xEA
 ERROR_NO_MORE_ITEMS = 0x103
+ERROR_DIRECTORY = 0x10b
 ERROR_NOT_OWNER = 0x120
-ERROR_OLD_WIN_VERSION = 0X47E
+ERROR_NO_UNICODE_TRANSLATION = 0x459
+ERROR_OLD_WIN_VERSION = 0x47E
+ERROR_CLIPBOARD_NOT_OPEN = 0x58a
 # ...
 
 # https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-erref/596a1078-e883-4972-9bbc-49e60bebca55
@@ -35,24 +41,11 @@ STATUS_NO_YIELD_PERFORMED = 0x40000024
 
 INVALID_HANDLE_VALUE = -1
 
-STD_INPUT_HANDLE = 0xfffffff6
-STD_OUTPUT_HANDLE = 0xfffffff5
-STD_ERROR_HANDLE = 0xfffffff4
+STD_INPUT_HANDLE  = 0xfffffff6  # -10
+STD_OUTPUT_HANDLE = 0xfffffff5  # -11
+STD_ERROR_HANDLE  = 0xfffffff4  # -12
 
 # Registry Type
-
-# Predefined Keys
-REG_KEYS = {
-    0x80000000: "HKEY_CLASSES_ROOT",
-    0x80000005: "HKEY_CURRENT_CONFIG",
-    0x80000001: "HKEY_CURRENT_USER",
-    0x80000007: "HKEY_CURRENT_USER_LOCAL_SETTINGS",
-    0x80000002: "HKEY_LOCAL_MACHINE",
-    0x80000004: "HKEY_PERFORMANCE_DATA",
-    0x80000060: "HKEY_PERFORMANCE_NLSTEXT",
-    0x80000050: "HKEY_PERFORMANCE_TEXT",
-    0x80000003: "HKEY_USERS"
-}
 
 REG_TYPES = {
     "REG_NONE": Registry.RegNone,
@@ -611,16 +604,23 @@ PF_XSAVE_ENABLED = 0x17
 # ...
 
 
+# documented PROCESSINFOCLASS values
 # https://docs.microsoft.com/en-us/windows/win32/procthread/zwqueryinformationprocess
 ProcessBasicInformation = 0
 ProcessDebugPort = 7
-ProcessExecuteFlags = 0x22
 ProcessWow64Information = 26
 ProcessImageFileName = 27
 ProcessBreakOnTermination = 29
 ProcessProtectionInformation = 61
-ProcessDebugObjectHandle = 0x1E
-ProcessDebugFlags = 0x1F
+
+# more PROCESSINFOCLASS values
+# https://www.pinvoke.net/default.aspx/ntdll/PROCESSINFOCLASS.html
+ProcessDebugObjectHandle = 30
+ProcessDebugFlags = 31
+ProcessExecuteFlags = 34
+ProcessImageInformation = 37
+ProcessMitigationPolicy = 52
+ProcessFaultInformation = 63
 
 # https://www.geoffchappell.com/studies/windows/km/ntoskrnl/api/ps/psquery/class.htm
 ThreadBasicInformation = 0x0
@@ -631,26 +631,79 @@ ThreadHideFromDebugger = 0x11
 # ...
 
 
+# message box types:
 # https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-messageboxw
 
-MB_ABORTRETRYIGNORE = 0x000000020
-MB_CANCELTRYCONTINUE = 0x000000060
-MB_HELP = 0x000040000
-MB_OK = 0x000000000
-MB_OKCANCEL = 0x000000010
-MB_RETRYCANCEL = 0x000000050
-MB_YESNO = 0x000000040
-MB_YESNOCANCEL = 0x000000030
+MB_OK                = 0x00000000
+MB_OKCANCEL          = 0x00000001
+MB_ABORTRETRYIGNORE  = 0x00000002
+MB_YESNOCANCEL       = 0x00000003
+MB_YESNO             = 0x00000004
+MB_RETRYCANCEL       = 0x00000005
+MB_CANCELTRYCONTINUE = 0x00000006
 
-IDABORT = 3
-IDCANCEL = 2
-IDCONTINUE = 11
-IDIGNORE = 5
-IDNO = 7
-IDOK = 1
-IDRETRY = 4
+MB_ICONERROR       = 0x00000010
+MB_ICONQUESTION    = 0x00000020
+MB_ICONWARNING     = 0x00000030
+MB_ICONINFORMATION = 0x00000040
+
+MB_DEFBUTTON1 = 0x00000000
+MB_DEFBUTTON2 = 0x00000100
+MB_DEFBUTTON3 = 0x00000200
+MB_DEFBUTTON4 = 0x00000300
+
+MB_APPLMODAL   = 0x00000000
+MB_SYSTEMMODAL = 0x00001000
+MB_TASKMODAL   = 0x00002000
+MB_HELP        = 0x00004000
+
+MB_SETFOREGROUND        = 0x00010000
+MB_DEFAULT_DESKTOP_ONLY = 0x00020000
+MB_TOPMOST              = 0x00040000
+MB_RIGHT                = 0x00080000
+MB_RTLREADING           = 0x00100000
+MB_SERVICE_NOTIFICATION = 0x00200000
+
+# message box responses:
+IDOK       = 1
+IDCANCEL   = 2
+IDABORT    = 3
+IDRETRY    = 4
+IDIGNORE   = 5
+IDYES      = 6
+IDNO       = 7
 IDTRYAGAIN = 10
-IDYES = 6
+IDCONTINUE = 11
+
+# clipboard data types
+# https://doxygen.reactos.org/d8/dd6/base_2applications_2mstsc_2constants_8h_source.html
+
+CF_TEXT            = 1
+CF_BITMAP          = 2
+CF_METAFILEPICT    = 3
+CF_SYLK            = 4
+CF_DIF             = 5
+CF_TIFF            = 6
+CF_OEMTEXT         = 7
+CF_DIB             = 8
+CF_PALETTE         = 9
+CF_PENDATA         = 10
+CF_RIFF            = 11
+CF_WAVE            = 12
+CF_UNICODETEXT     = 13
+CF_ENHMETAFILE     = 14
+CF_HDROP           = 15
+CF_LOCALE          = 16
+CF_MAX             = 17
+CF_OWNERDISPLAY    = 128
+CF_DSPTEXT         = 129
+CF_DSPBITMAP       = 130
+CF_DSPMETAFILEPICT = 131
+CF_DSPENHMETAFILE  = 142
+CF_PRIVATEFIRST    = 512
+CF_PRIVATELAST     = 767
+CF_GDIOBJFIRST     = 768
+CF_GDIOBJLAST      = 1023
 
 # https://docs.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-setdefaultdlldirectories
 
@@ -708,3 +761,26 @@ OF_SHARE_EXCLUSIVE  = 0x00000010
 OF_SHARE_DENY_WRITE = 0x00000020
 OF_SHARE_DENY_READ  = 0x00000030
 OF_SHARE_DENY_NONE  = 0x00000040
+
+# code pages identifiers
+CP_ACP = 0
+CP_OEMCP = 1
+CP_THREAD_ACP = 3
+CP_UTF16 = 1200
+CP_UTF16BE = 1201
+CP_ASCII = 20127
+CP_UTF7 = 65000
+CP_UTF8 = 65001
+
+# conversion types
+WC_DISCARDNS         = 0x0010
+WC_SEPCHARS          = 0x0020
+WC_DEFAULTCHAR       = 0x0040
+WC_ERR_INVALID_CHARS = 0x0080
+WC_COMPOSITECHECK    = 0x0200
+WC_NO_BEST_FIT_CHARS = 0x0400
+
+TIME_ZONE_ID_INVALID  = -1
+TIME_ZONE_ID_UNKNOWN  = 0
+TIME_ZONE_ID_STANDARD = 1
+TIME_ZONE_ID_DAYLIGHT = 2

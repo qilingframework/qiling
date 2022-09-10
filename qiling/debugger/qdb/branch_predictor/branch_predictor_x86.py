@@ -91,7 +91,7 @@ class BranchPredictorX86(BranchPredictor, ArchX86):
                 }
 
         if line.mnemonic in jump_table:
-            eflags = self.get_flags(self.ql.arch.regs.ef).values()
+            eflags = self.get_flags(self.ql.arch.regs.eflags).values()
             prophecy.going = jump_table.get(line.mnemonic)(*eflags)
 
         elif line.mnemonic in jump_reg_table:

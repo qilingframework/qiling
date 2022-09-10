@@ -61,10 +61,10 @@ def main(input_file: str):
 
     # make the process crash whenever __stack_chk_fail@plt is about to be called.
     # this way afl will count stack protection violations as crashes
-    ql.hook_address(callback=lambda x: os.abort(), address=ba + 0x1225)
+    ql.hook_address(callback=lambda x: os.abort(), address=ba + 0x126e)
 
     # set afl instrumentation [re]starting point. we set it to 'main'
-    ql.hook_address(callback=start_afl, address=ba + 0x122c)
+    ql.hook_address(callback=start_afl, address=ba + 0x1275)
 
     # okay, ready to roll
     ql.run()

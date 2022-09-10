@@ -8,9 +8,9 @@ from qiling.os.windows.api import *
 from qiling.os.windows.const import *
 from qiling.os.windows.fncc import *
 
-from qiling.os.windows.thread import QlWindowsThread
+from qiling.os.windows.thread import QlWindowsThread, THREAD_STATUS
 from qiling.os.windows.handle import Handle
-from qiling.os.windows.structs import Token, StartupInfo
+from qiling.os.windows.structs import Token, make_startup_info
 
 # void ExitProcess(
 #   UINT uExitCode
@@ -22,14 +22,34 @@ def hook_ExitProcess(ql: Qiling, address: int, params):
     ql.emu_stop()
     ql.os.PE_RUN = False
 
-def _GetStartupInfo(ql: Qiling, address: int, params):
-    startup_info = StartupInfo(ql, 0xc3c930, 0, 0, 0, 0x64, 0x64, 0x84, 0x80, 0xff, 0x40, 0x1, STD_INPUT_HANDLE,
-                               STD_OUTPUT_HANDLE, STD_ERROR_HANDLE)
+def _GetStartupInfo(ql: Qiling, address: int, params, *, wide: bool):
+    lpStartupInfo = params['lpStartupInfo']
+    sui_struct = make_startup_info(ql.arch.bits)
 
-    pointer = params["lpStartupInfo"]
-    startup_info.write(pointer)
+    enc = 'utf-16le' if wide else 'latin1'
+    desktop_title = f'QilingDesktop\x00'.encode(enc)
 
-    return 0
+    # TODO: fill out with real / configurable values rather than bogus / fixed ones
+    with sui_struct.ref(ql.mem, lpStartupInfo) as sui_obj:
+        sui_obj.cb              = sui_struct.sizeof()
+        sui_obj.lpDesktop       = ql.os.heap.alloc(len(desktop_title))
+        sui_obj.lpTitle         = 0
+        sui_obj.dwX             = 0
+        sui_obj.dwY             = 0
+        sui_obj.dwXSize         = 100
+        sui_obj.dwYSize         = 100
+        sui_obj.dwXCountChars   = 132
+        sui_obj.dwYCountChars   = 128
+        sui_obj.dwFillAttribute = 0xff
+        sui_obj.dwFlags         = 0x40
+        sui_obj.wShowWindow     = 1
+        sui_obj.cbReserved2     = 0
+        sui_obj.lpReserved2     = 0
+        sui_obj.hStdInput       = STD_INPUT_HANDLE
+        sui_obj.hStdOutput      = STD_OUTPUT_HANDLE
+        sui_obj.hStdError       = STD_ERROR_HANDLE
+
+    return STATUS_SUCCESS
 
 # VOID WINAPI GetStartupInfoA(
 #   _Out_ LPSTARTUPINFO lpStartupInfo
@@ -38,7 +58,7 @@ def _GetStartupInfo(ql: Qiling, address: int, params):
     'lpStartupInfo' : LPSTARTUPINFOA
 })
 def hook_GetStartupInfoA(ql: Qiling, address: int, params):
-    return _GetStartupInfo(ql, address, params)
+    return _GetStartupInfo(ql, address, params, wide=False)
 
 # VOID WINAPI GetStartupInfoW(
 #   _Out_ LPSTARTUPINFO lpStartupInfo
@@ -47,7 +67,7 @@ def hook_GetStartupInfoA(ql: Qiling, address: int, params):
     'lpStartupInfo' : LPSTARTUPINFOW
 })
 def hook_GetStartupInfoW(ql: Qiling, address: int, params):
-    return _GetStartupInfo(ql, address, params)
+    return _GetStartupInfo(ql, address, params, wide=True)
 
 # DWORD TlsAlloc();
 @winsdkapi(cc=STDCALL, params={})
@@ -164,20 +184,13 @@ def hook_CreateThread(ql: Qiling, address: int, params):
     dwCreationFlags = params["dwCreationFlags"]
     lpThreadId = params["lpThreadId"]
 
-    # new thread obj
-    new_thread = QlWindowsThread(ql)
-
-    if dwCreationFlags & CREATE_SUSPENDED == CREATE_SUSPENDED:
-        thread_status = QlWindowsThread.READY
+    if dwCreationFlags & CREATE_SUSPENDED:
+        thread_status = THREAD_STATUS.READY
     else:
-        thread_status = QlWindowsThread.RUNNING
+        thread_status = THREAD_STATUS.RUNNING
 
     # create new thread
-    thread_id = new_thread.create(
-        lpStartAddress,
-        lpParameter,
-        thread_status
-    )
+    new_thread = QlWindowsThread.create(ql, dwStackSize, lpStartAddress, lpParameter, thread_status)
 
     # append the new thread to ThreadManager
     ql.os.thread_manager.append(new_thread)

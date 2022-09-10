@@ -3,8 +3,8 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+import ntpath
 import os
-from typing import Sequence
 
 from qiling import Qiling
 from qiling.os.windows.api import *
@@ -12,9 +12,9 @@ from qiling.os.windows.const import *
 from qiling.os.windows.fncc import *
 
 from qiling.os.windows.handle import Handle
-from qiling.os.windows.thread import QlWindowsThread
+from qiling.os.windows.thread import QlWindowsThread, THREAD_STATUS
 from qiling.exception import QlErrorNotImplemented
-from qiling.os.windows.structs import ShellExecuteInfoA
+from qiling.os.windows.structs import make_shellex_info
 
 def _SHGetFileInfo(ql: Qiling, address: int, params) -> int:
     uFlags = params["uFlags"]
@@ -60,20 +60,22 @@ def hook_SHGetFileInfoA(ql: Qiling, address: int, params):
 def hook_SHGetFileInfoW(ql: Qiling, address: int, params):
     return _SHGetFileInfo(ql, address, params)
 
-def _ShellExecute(ql: Qiling, obj: ShellExecuteInfoA):
-    def __wstr(shellex: Sequence):
-        return ql.os.utils.read_wstring(shellex[0]) if shellex[0] else ''
+def _ShellExecute(ql: Qiling, shellex_obj, *, wide: bool):
+    read_str = ql.os.utils.read_wstring if wide else ql.os.utils.read_cstring
+
+    def __read_str(ptr: int):
+        return read_str(ptr) if ptr else ''
 
     ql.log.debug(f'Target executed a shell command!')
-    ql.log.debug(f' | Operation  : "{__wstr(obj.verb)}"')
-    ql.log.debug(f' | Parameters : "{__wstr(obj.params)}"')
-    ql.log.debug(f' | File       : "{__wstr(obj.file)}"')
-    ql.log.debug(f' | Directory  : "{__wstr(obj.dir)}"')
+    ql.log.debug(f' | Operation  : "{__read_str(shellex_obj.lpVerb)}"')
+    ql.log.debug(f' | File       : "{__read_str(shellex_obj.lpFile)}"')
+    ql.log.debug(f' | Parameters : "{__read_str(shellex_obj.lpParameters)}"')
+    ql.log.debug(f' | Directory  : "{__read_str(shellex_obj.lpDirectory)}"')
 
-    if obj.show[0] == SW_HIDE:
-        ql.log.debug(" | With an hidden window")
+    if shellex_obj.nShow == SW_HIDE:
+        ql.log.debug(' | With an hidden window')
 
-    process = QlWindowsThread(ql, status=0, isFake=True)
+    process = QlWindowsThread(ql, status=THREAD_STATUS.READY)
     handle = Handle(obj=process)
     ql.os.handle_manager.append(handle)
 
@@ -86,17 +88,16 @@ def _ShellExecute(ql: Qiling, obj: ShellExecuteInfoA):
     'pExecInfo' : POINTER
 })
 def hook_ShellExecuteExW(ql: Qiling, address: int, params):
-    pointer = params["pExecInfo"]
+    pExecInfo = params['pExecInfo']
 
-    shellInfo = ShellExecuteInfoA(ql)
-    shellInfo.read(pointer)
+    shellex_struct = make_shellex_info(ql.arch.bits)
 
-    handle = _ShellExecute(ql, shellInfo)
+    with shellex_struct.ref(ql.mem, pExecInfo) as shellex_obj:
+        handle = _ShellExecute(ql, shellex_obj, wide=True)
 
-    # Write results
-    shellInfo.instApp[0] = 0x21
-    shellInfo.process[0] = handle.id
-    shellInfo.write(pointer)
+        # Write results
+        shellex_obj.hInstApp = 33
+        shellex_obj.hProcess = handle.id
 
     return 1
 
@@ -117,15 +118,18 @@ def hook_ShellExecuteExW(ql: Qiling, address: int, params):
     'nShowCmd'     : INT
 })
 def hook_ShellExecuteW(ql: Qiling, address: int, params):
-    _ShellExecute(ql, ShellExecuteInfoA(
-        ql,
-        hwnd=params["hwnd"],
-        lpVerb=params["lpOperation"],
-        lpFile=params["lpFile"],
-        lpParams=params["lpParameters"],
-        lpDir=params["lpDirectory"],
-        show=params["nShowCmd"]
-    ))
+    shellex_struct = make_shellex_info(ql.arch.bits)
+
+    shellex_obj = shellex_struct(
+        hwnd         = params['hwnd'],
+        lpVerb       = params['lpOperation'],
+        lpFile       = params['lpFile'],
+        lpParameters = params['lpParameters'],
+        lpDirectory  = params['lpDirectory'],
+        nShow        = params['nShowCmd']
+    )
+
+    _ShellExecute(ql, shellex_obj, wide=True)
 
     return 33
 
@@ -146,7 +150,7 @@ def hook_SHGetSpecialFolderPathW(ql: Qiling, address: int, params):
     dst = params["pszPath"]
 
     if directory_id == CSIDL_COMMON_APPDATA:
-        path = str(ql.os.userprofile + "AppData\\")
+        path = ntpath.join(ql.os.userprofile, "AppData\\")
         # We always create the directory
         appdata_dir = path.split("C:\\")[1].replace("\\", "/")
         ql.log.debug("dir path: %s" % path)
@@ -160,9 +164,10 @@ def hook_SHGetSpecialFolderPathW(ql: Qiling, address: int, params):
         if not os.path.exists(path_emulated):
             try:
                 os.makedirs(path_emulated, 0o755)
-                ql.log.debug("os.makedirs completed")
             except OSError:
                 ql.log.debug("os.makedirs failed")
+            else:
+                ql.log.debug("os.makedirs completed")
     else:
         raise QlErrorNotImplemented("API not implemented")
 

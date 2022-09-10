@@ -34,7 +34,11 @@ class Render:
 
         def decorator(context_dumper):
             def wrapper(*args, **kwargs):
-                width, height = os.get_terminal_size()
+                try:
+                    width, _ = os.get_terminal_size()
+                except OSError:
+                    width = 130
+
                 bar = (width - len(field_name)) // 2 - 1
                 print(ruler * bar, field_name, ruler * bar)
                 context_dumper(*args, **kwargs)

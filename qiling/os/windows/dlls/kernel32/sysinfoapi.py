@@ -3,14 +3,14 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import os
+import ntpath
 from datetime import datetime
 
 from qiling import Qiling
 from qiling.os.windows.api import *
 from qiling.os.windows.const import *
 from qiling.os.windows.fncc import *
-from qiling.os.windows.structs import SystemInfo, SystemTime
+from qiling.os.windows.structs import FILETIME, SYSTEMTIME, make_system_info
 
 # NOT_BUILD_WINDOWS_DEPRECATE DWORD GetVersion(
 # );
@@ -40,13 +40,24 @@ def hook_GetVersionExW(ql: Qiling, address: int, params):
     return __GetVersionEx(ql, address, params)
 
 def __GetSystemInfo(ql: Qiling, address: int, params):
-    pointer = params["lpSystemInfo"]
+    lpSystemInfo = params['lpSystemInfo']
 
-    # FIXME: dll_size no longer reflects the upper bound of used memory; should find a better way to specify max_address
-    system_info = SystemInfo(ql, 0, ql.mem.pagesize, ql.loader.pe_image_address,
-                             ql.loader.dll_address + ql.loader.dll_size, 0x3, 0x4, 0x24a, ql.mem.pagesize * 10,
-                             0x6, 0x4601)
-    system_info.write(pointer)
+    sysinfo_struct = make_system_info(ql.arch.bits)
+
+    # FIXME:
+    #  - load configurable values rather than fixed / bogus ones
+    #  - loader.dll_size no longer reflects the upper bound of used memory; should find a better way to specify max_address
+    with sysinfo_struct.ref(ql.mem, lpSystemInfo) as si:
+        si.dwOemId = 0
+        si.dwPageSize = ql.mem.pagesize
+        si.lpMinimumApplicationAddress = ql.loader.pe_image_address
+        si.lpMaximumApplicationAddress = ql.loader.dll_address + ql.loader.dll_size
+        si.dwActiveProcessorMask = 0x3
+        si.dwNumberOfProcessors = 0x4
+        si.dwProcessorType = 0x24a
+        si.dwAllocationGranularity = ql.mem.pagesize * 10
+        si.wProcessorLevel = 0x6
+        si.wProcessorRevision = 0x4601
 
     return 0
 
@@ -66,11 +77,18 @@ def hook_GetSystemInfo(ql: Qiling, address: int, params):
     'lpSystemTime' : LPSYSTEMTIME
 })
 def hook_GetLocalTime(ql: Qiling, address: int, params):
-    ptr = params['lpSystemTime']
-    d = datetime.now()
+    lpSystemTime = params['lpSystemTime']
+    now = datetime.now()
 
-    system_time = SystemTime(ql, d.year, d.month, d.isoweekday(), d.day, d.hour, d.minute, d.second, d.microsecond // 1000)
-    system_time.write(ptr)
+    with SYSTEMTIME.ref(ql.mem, lpSystemTime) as st:
+        st.wYear = now.year
+        st.wMonth = now.month
+        st.wDayOfWeek = now.isoweekday()
+        st.wDay = now.day
+        st.wHour = now.hour
+        st.wMinute = now.minute
+        st.wSecond = now.second
+        st.wMilliseconds = now.microsecond // 1000
 
     return 0
 
@@ -81,8 +99,23 @@ def hook_GetLocalTime(ql: Qiling, address: int, params):
     'lpSystemTimeAsFileTime' : LPFILETIME
 })
 def hook_GetSystemTimeAsFileTime(ql: Qiling, address: int, params):
-    # TODO
-    pass
+    ptr = params['lpSystemTimeAsFileTime']
+
+    epoch = datetime(1601, 1, 1)
+    elapsed = datetime.now() - epoch
+
+    # number of 100-nanosecond intervals since Jan 1, 1601 utc
+    # where: (10 ** 9) / 100 -> (10 ** 7)
+    hnano = int(elapsed.total_seconds() * (10 ** 7))
+
+    mask = (1 << 32) - 1
+
+    ftime = FILETIME(
+        (hnano >>  0) & mask,
+        (hnano >> 32) & mask
+    )
+
+    ftime.save_to(ql.mem, ptr)
 
 # DWORD GetTickCount(
 # );
@@ -94,7 +127,7 @@ def __GetWindowsDirectory(ql: Qiling, address: int, params, wstring: bool):
     lpBuffer = params["lpBuffer"]
 
     enc = 'utf-16le' if wstring else 'utf-8'
-    res = os.path.normpath(ql.os.windir)
+    res = ntpath.normpath(ql.os.windir)
 
     ql.mem.write(lpBuffer, f'{res}\x00'.encode(enc))
 
@@ -104,7 +137,7 @@ def __GetSystemDirectory(ql: Qiling, address: int, params, wstring: bool):
     lpBuffer = params["lpBuffer"]
 
     enc = 'utf-16le' if wstring else 'utf-8'
-    res = os.path.join(ql.os.windir, 'System32')
+    res = ql.os.winsys
 
     ql.mem.write(lpBuffer, f'{res}\x00'.encode(enc))
 
@@ -119,14 +152,14 @@ def __GetSystemDirectory(ql: Qiling, address: int, params, wstring: bool):
     'uSize'    : UINT
 })
 def hook_GetWindowsDirectoryW(ql: Qiling, address: int, params):
-    return __GetWindowsDirectory(ql, address, params, True)
+    return __GetWindowsDirectory(ql, address, params, wstring=True)
 
 @winsdkapi(cc=STDCALL, params={
     'lpBuffer' : LPSTR,
     'uSize'    : UINT
 })
 def hook_GetWindowsDirectoryA(ql: Qiling, address: int, params):
-    return __GetWindowsDirectory(ql, address, params, False)
+    return __GetWindowsDirectory(ql, address, params, wstring=False)
 
 # UINT GetSystemWindowsDirectoryW(
 #   LPWSTR lpBuffer,

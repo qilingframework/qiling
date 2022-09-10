@@ -188,5 +188,5 @@ def page_align_end(addr, page_size):
 
 
 def set_eflags_cf(ql, target_cf):
-    ql.arch.regs.ef = ( ql.arch.regs.ef & 0xfffffffe ) | target_cf
-    return ql.arch.regs.ef
+    ql.arch.regs.eflags = ( ql.arch.regs.eflags & 0xfffffffe ) | target_cf
+    return ql.arch.regs.eflags

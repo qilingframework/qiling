@@ -12,7 +12,7 @@ from typing import Iterator
 from multiprocessing import Process
 
 from qiling import Qiling
-from qiling.const import QL_ARCH, QL_OS, QL_VERBOSE
+from qiling.const import QL_ARCH, QL_OS
 from qiling.os.posix.filestruct import ql_pipe
 from qiling.os.posix.const import *
 from qiling.os.posix.stat import Stat
@@ -25,7 +25,7 @@ def ql_syscall_exit(ql: Qiling, code: int):
     if ql.multithread:
         def _sched_cb_exit(cur_thread):
             ql.log.debug(f"[Thread {cur_thread.get_id()}] Terminated")
-            cur_thread.stop()
+            ql.os.thread_management.stop_thread(cur_thread)
             cur_thread.exit_code = code
 
         td = ql.os.thread_management.cur_thread
@@ -43,7 +43,7 @@ def ql_syscall_exit_group(ql: Qiling, code: int):
     if ql.multithread:
         def _sched_cb_exit(cur_thread):
             ql.log.debug(f"[Thread {cur_thread.get_id()}] Terminated")
-            cur_thread.stop()
+            ql.os.thread_management.stop_thread(cur_thread)
             cur_thread.exit_code = code
 
         td = ql.os.thread_management.cur_thread
@@ -116,18 +116,35 @@ def ql_syscall_capset(ql: Qiling, hdrp: int, datap: int):
 def ql_syscall_kill(ql: Qiling, pid: int, sig: int):
     return 0
 
+
+def ql_syscall_fsync(ql: Qiling, fd: int):
+    try:
+        os.fsync(ql.os.fd[fd].fileno())
+        regreturn = 0
+    except:
+        regreturn = -1
+    ql.log.debug("fsync(%d) = %d" % (fd, regreturn))
+    return regreturn
+
+
+def ql_syscall_fdatasync(ql: Qiling, fd: int):
+    try:
+        os.fdatasync(ql.os.fd[fd].fileno())
+        regreturn = 0
+    except:
+        regreturn = -1
+    ql.log.debug("fdatasync(%d) = %d" % (fd, regreturn))
+    return regreturn
+
+
 def ql_syscall_faccessat(ql: Qiling, dfd: int, filename: int, mode: int):
     access_path = ql.os.utils.read_cstring(filename)
     real_path = ql.os.path.transform_to_real_path(access_path)
 
     if not os.path.exists(real_path):
         regreturn = -1
-
-    elif stat.S_ISFIFO(Stat(real_path).st_mode):
-        regreturn = 0
-
     else:
-        regreturn = -1
+        regreturn = 0
 
     if regreturn == -1:
         ql.log.debug(f'File not found or skipped: {access_path}')
@@ -159,12 +176,20 @@ def ql_syscall_lseek(ql: Qiling, fd: int, offset: int, origin: int):
 
 
 def ql_syscall__llseek(ql: Qiling, fd: int, offset_high: int, offset_low: int, result: int, whence: int):
+    if fd not in range(NR_OPEN):
+        return -EBADF
+
+    f = ql.os.fd[fd]
+
+    if f is None:
+        return -EBADF
+
     # treat offset as a signed value
     offset = ql.unpack64s(ql.pack64((offset_high << 32) | offset_low))
     origin = whence
 
     try:
-        ret = ql.os.fd[fd].seek(offset, origin)
+        ret = f.seek(offset, origin)
     except OSError:
         regreturn = -1
     else:
@@ -181,13 +206,14 @@ def ql_syscall_brk(ql: Qiling, inp: int):
     # otherwise, just return current brk_address
 
     if inp:
-        new_brk_addr = ((inp + 0xfff) // 0x1000) * 0x1000
+        cur_brk_addr = ql.loader.brk_address
+        new_brk_addr = ql.mem.align_up(inp)
 
-        if inp > ql.loader.brk_address: # increase current brk_address if inp is greater
-            ql.mem.map(ql.loader.brk_address, new_brk_addr - ql.loader.brk_address, info="[brk]")
+        if inp > cur_brk_addr: # increase current brk_address if inp is greater
+            ql.mem.map(cur_brk_addr, new_brk_addr - cur_brk_addr, info="[brk]")
 
-        elif inp < ql.loader.brk_address: # shrink current bkr_address to inp if its smaller
-            ql.mem.unmap(new_brk_addr, ql.loader.brk_address - new_brk_addr)
+        elif inp < cur_brk_addr: # shrink current bkr_address to inp if its smaller
+            ql.mem.unmap(new_brk_addr, cur_brk_addr - new_brk_addr)
 
         ql.loader.brk_address = new_brk_addr
 
@@ -278,6 +304,14 @@ def ql_syscall_read(ql: Qiling, fd, buf: int, length: int):
 
 
 def ql_syscall_write(ql: Qiling, fd: int, buf: int, count: int):
+    if fd not in range(NR_OPEN):
+        return -EBADF
+
+    f = ql.os.fd[fd]
+
+    if f is None:
+        return -EBADF
+
     try:
         data = ql.mem.read(buf, count)
     except:
@@ -285,12 +319,14 @@ def ql_syscall_write(ql: Qiling, fd: int, buf: int, count: int):
     else:
         ql.log.debug(f'write() CONTENT: {bytes(data)}')
 
-        if hasattr(ql.os.fd[fd], 'write'):
-            ql.os.fd[fd].write(data)
+        if hasattr(f, 'write'):
+            f.write(data)
+
+            regreturn = count
         else:
             ql.log.warning(f'write failed since fd {fd:d} does not have a write method')
+            regreturn = -1
 
-        regreturn = count
 
     return regreturn
 
@@ -298,23 +334,25 @@ def ql_syscall_write(ql: Qiling, fd: int, buf: int, count: int):
 def ql_syscall_readlink(ql: Qiling, path_name: int, path_buff: int, path_buffsize: int):
     pathname = ql.os.utils.read_cstring(path_name)
     # pathname = str(pathname, 'utf-8', errors="ignore")
-    real_path = ql.os.path.transform_to_link_path(pathname)
-    relative_path = ql.os.path.transform_to_relative_path(pathname)
+    host_path = ql.os.path.virtual_to_host_path(pathname)
+    virt_path = ql.os.path.virtual_abspath(pathname)
 
-    if not os.path.exists(real_path):
-        regreturn = -1
+    # cover procfs psaudo files first
+    # TODO: /proc/self/root, /proc/self/cwd
+    if virt_path == r'/proc/self/exe':
+        p = ql.os.path.host_to_virtual_path(ql.path)
+        p = p.encode('utf-8')
 
-    elif relative_path == r'/proc/self/exe':
-        localpath = os.path.abspath(ql.path)
-        localpath = bytes(localpath, 'utf-8') + b'\x00'
+        ql.mem.write(path_buff, p + b'\x00')
+        regreturn = len(p)
 
-        ql.mem.write(path_buff, localpath)
-        regreturn = len(localpath) - 1
-
-    else:
+    elif os.path.exists(host_path):
         regreturn = 0
 
-    ql.log.debug("readlink(%s, 0x%x, 0x%x) = %d" % (relative_path, path_buff, path_buffsize, regreturn))
+    else:
+        regreturn = -1
+
+    ql.log.debug('readlink("%s", 0x%x, 0x%x) = %d' % (virt_path, path_buff, path_buffsize, regreturn))
 
     return regreturn
 
@@ -336,20 +374,17 @@ def ql_syscall_getcwd(ql: Qiling, path_buff: int, path_buffsize: int):
 
 def ql_syscall_chdir(ql: Qiling, path_name: int):
     pathname = ql.os.utils.read_cstring(path_name)
-    real_path = ql.os.path.transform_to_real_path(pathname)
-    relative_path = ql.os.path.transform_to_relative_path(pathname)
+    host_path = ql.os.path.virtual_to_host_path(pathname)
+    virt_path = ql.os.path.virtual_abspath(pathname)
 
-    if os.path.exists(real_path) and os.path.isdir(real_path):
-        if ql.os.thread_management:
-            ql.os.thread_management.cur_thread.path.cwd = relative_path
-        else:
-            ql.os.path.cwd = relative_path
+    if os.path.exists(host_path) and os.path.isdir(host_path):
+        ql.os.path.cwd = virt_path
 
         regreturn = 0
-        ql.log.debug("chdir(%s) = %d"% (relative_path, regreturn))
+        ql.log.debug("chdir(%s) = %d"% (virt_path, regreturn))
     else:
         regreturn = -1
-        ql.log.warning("chdir(%s) = %d : not found" % (relative_path, regreturn))
+        ql.log.warning("chdir(%s) = %d : not found" % (virt_path, regreturn))
 
     return regreturn
 
@@ -357,20 +392,25 @@ def ql_syscall_chdir(ql: Qiling, path_name: int):
 def ql_syscall_readlinkat(ql: Qiling, dfd: int, path: int, buf: int, bufsize: int):
     pathname = ql.os.utils.read_cstring(path)
     # pathname = str(pathname, 'utf-8', errors="ignore")
-    real_path = ql.os.path.transform_to_link_path(pathname)
-    relative_path = ql.os.path.transform_to_relative_path(pathname)
+    host_path = ql.os.path.virtual_to_host_path(pathname)
+    virt_path = ql.os.path.virtual_abspath(pathname)
 
-    if not os.path.exists(real_path):
+    # cover procfs psaudo files first
+    # TODO: /proc/self/root, /proc/self/cwd
+    if virt_path == r'/proc/self/exe':
+        p = ql.os.path.host_to_virtual_path(ql.path)
+        p = p.encode('utf-8')
+
+        ql.mem.write(buf, p + b'\x00')
+        regreturn = len(p)
+
+    elif os.path.exists(host_path):
+        regreturn = 0
+
+    else:
         regreturn = -1
 
-    elif relative_path == r'/proc/self/exe':
-        localpath = os.path.abspath(ql.path)
-        localpath = bytes(localpath, 'utf-8') + b'\x00'
-
-        ql.mem.write(buf, localpath)
-        regreturn = len(localpath) -1
-    else:
-        regreturn = 0
+    ql.log.debug('readlinkat(%d, "%s", 0x%x, 0x%x) = %d' % (dfd, virt_path, buf, bufsize, regreturn))
 
     return regreturn
 
@@ -461,7 +501,6 @@ def ql_syscall_execve(ql: Qiling, pathname: int, argv: int, envp: int):
     if hasattr(ql.arch, 'msr'):
         ql.arch.msr.uc = uc
 
-    ql.uc = uc
     QlCoreHooks.__init__(ql, uc)
 
     ql.os.load()
@@ -517,8 +556,6 @@ def ql_syscall_dup3(ql: Qiling, fd: int, newfd: int, flags: int):
 
 def ql_syscall_set_tid_address(ql: Qiling, tidptr: int):
     if ql.os.thread_management:
-        ql.os.thread_management.cur_thread.set_clear_child_tid_addr(tidptr)
-
         regreturn = ql.os.thread_management.cur_thread.id
     else:
         regreturn = os.getpid()

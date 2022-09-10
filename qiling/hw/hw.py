@@ -31,7 +31,7 @@ class QlHwManager:
 
         try:
             
-            entity = ql_get_module_function('qiling.hw', struct)(self.ql, label, **kwargs)
+            entity = ql_get_module_function('.hw', struct)(self.ql, label, **kwargs)
             setattr(self, label, entity)
             self.entity[label] = entity
             self.region[label] = [(lbound + base, rbound + base) for (lbound, rbound) in entity.region]

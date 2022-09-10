@@ -15,7 +15,6 @@ from elftools.elf.elffile import ELFFile
 from elftools.elf.relocation import RelocationHandler
 from elftools.elf.sections import Symbol, SymbolTableSection
 from elftools.elf.descriptions import describe_reloc_type
-from elftools.elf.segments import InterpSegment
 from unicorn.unicorn_const import UC_PROT_NONE, UC_PROT_READ, UC_PROT_WRITE, UC_PROT_EXEC
 
 from qiling import Qiling
@@ -29,7 +28,7 @@ from qiling.os.linux.kernel_api.kernel_api import hook_sys_open, hook_sys_read, 
 
 # auxiliary vector types
 # see: https://man7.org/linux/man-pages/man3/getauxval.3.html
-class AUX(IntEnum):
+class AUXV(IntEnum):
     AT_NULL     = 0
     AT_IGNORE   = 1
     AT_EXECFD   = 2
@@ -100,7 +99,7 @@ class QlLoaderELF(QlLoader):
 
         # is it a driver?
         if elftype == 'ET_REL':
-            self.load_driver(elffile, stack_address + stack_size)
+            self.load_driver(elffile, stack_address + stack_size, loadbase=0x8000000)
             self.ql.hook_code(hook_kernel_api)
 
         # is it an executable?
@@ -123,7 +122,7 @@ class QlLoaderELF(QlLoader):
         self.ql.arch.regs.arch_sp = self.stack_address
 
         # No idea why.
-        if self.ql.ostype == QL_OS.FREEBSD:
+        if self.ql.os.type == QL_OS.FREEBSD:
             # self.ql.arch.regs.rbp = self.stack_address + 0x40
             self.ql.arch.regs.rdi = self.stack_address
             self.ql.arch.regs.r14 = self.stack_address
@@ -146,120 +145,87 @@ class QlLoaderELF(QlLoader):
 
         return prot
 
-    @staticmethod
-    def align(value: int, alignment: int) -> int:
-        """Align a value down to the specified alignment boundary. If `value` is already
-        aligned, the same value is returned. Commonly used to determine the base address
-        of the enclosing page.
-
-        Args:
-            value: numberic value to align
-            alignment: alignment boundary; must be a power of 2
-
-        Returns:
-            Value aligned down to boundary
-        """
-
-        return value & ~(alignment - 1)
-
-    @staticmethod
-    def align_up(value: int, alignment: int) -> int:
-        """Align a value up to the specified alignment boundary. If `value` is already
-        aligned, the same value is returned. Commonly used to determine the end address
-        of the enlosing page.
-
-        Args:
-            value: numberic value to align
-            alignment: alignment boundary; must be a power of 2
-
-        Returns:
-            Value aligned up to boundary
-        """
-
-        return (value + alignment - 1) & ~(alignment - 1)
-
     def load_with_ld(self, elffile: ELFFile, stack_addr: int, load_address: int, argv: Sequence[str] = [], env: Mapping[str, str] = {}):
-        pagesize = 0x1000
 
-        # get list of loadable segments; these segments will be loaded to memory
-        seg_pt_load = tuple(seg for seg in elffile.iter_segments() if seg['p_type'] == 'PT_LOAD')
+        def load_elf_segments(elffile: ELFFile, load_address: int, info: str):
+            # get list of loadable segments; these segments will be loaded to memory
+            load_segments = sorted(elffile.iter_segments(type='PT_LOAD'), key=lambda s: s['p_vaddr'])
 
-        # determine the memory regions that need to be mapped in order to load the segments.
-        # note that region boundaries are aligned to page, which means they may be larger than
-        # the segment they contain. to reduce mapping clutter, adjacent regions with the same
-        # perms are consolidated into one contigous memory region
-        load_regions: Sequence[Tuple[int, int, int]] = []
+            # determine the memory regions that need to be mapped in order to load the segments.
+            # note that region boundaries are aligned to page, which means they may be larger than
+            # the segment they contain. to reduce mapping clutter, adjacent regions with the same
+            # perms are consolidated into one contigous memory region
+            load_regions: Sequence[Tuple[int, int, int]] = []
 
-        # iterate over loadable segments by vaddr
-        for seg in sorted(seg_pt_load, key=lambda s: s['p_vaddr']):
-            lbound = QlLoaderELF.align(load_address + seg['p_vaddr'], pagesize)
-            ubound = QlLoaderELF.align_up(load_address + seg['p_vaddr'] + seg['p_memsz'], pagesize)
-            perms = QlLoaderELF.seg_perm_to_uc_prot(seg['p_flags'])
+            # iterate over loadable segments
+            for seg in load_segments:
+                lbound = self.ql.mem.align(load_address + seg['p_vaddr'])
+                ubound = self.ql.mem.align_up(load_address + seg['p_vaddr'] + seg['p_memsz'])
+                perms = QlLoaderELF.seg_perm_to_uc_prot(seg['p_flags'])
 
-            if load_regions:
-                prev_lbound, prev_ubound, prev_perms = load_regions[-1]
+                if load_regions:
+                    prev_lbound, prev_ubound, prev_perms = load_regions[-1]
 
-                # new region starts where the previous one ended
-                if lbound == prev_ubound:
-                    # same perms? extend previous memory region
-                    if perms == prev_perms:
-                        load_regions[-1] = (prev_lbound, ubound, prev_perms)
+                    # new region starts where the previous one ended
+                    if lbound == prev_ubound:
+                        # same perms? extend previous memory region
+                        if perms == prev_perms:
+                            load_regions[-1] = (prev_lbound, ubound, prev_perms)
 
-                    # different perms? start a new one
-                    else:
+                        # different perms? start a new one
+                        else:
+                            load_regions.append((lbound, ubound, perms))
+
+                    # start a new memory region
+                    elif lbound > prev_ubound:
                         load_regions.append((lbound, ubound, perms))
 
-                # start a new memory region
-                elif lbound > prev_ubound:
+                    # overlapping segments? something probably went wrong
+                    elif lbound < prev_ubound:
+                        # EDL ELF files use 0x400 bytes pages, which might make some segments look as if they
+                        # start at the same segment as their predecessor. though that is fixable, unicorn
+                        # supports only 0x1000 bytes pages; this becomes problematic when using mem.protect
+                        #
+                        # this workaround unifies such "overlapping" segments, which may apply more permissive
+                        # protection flags to that memory region.
+                        if self.ql.arch.type == QL_ARCH.ARM64:
+                            load_regions[-1] = (prev_lbound, ubound, prev_perms | perms)
+                            continue
+
+                        raise RuntimeError
+
+                else:
                     load_regions.append((lbound, ubound, perms))
 
-                # overlapping segments? something probably went wrong
-                elif lbound < prev_ubound:
-                    # EDL ELF files use 0x400 bytes pages, which might make some segments look as if they
-                    # start at the same segment as their predecessor. though that is fixable, unicorn
-                    # supports only 0x1000 bytes pages; this becomes problematic when using mem.protect
-                    #
-                    # this workaround unifies such "overlapping" segments, which may apply more permissive
-                    # protection flags to that memory region.
-                    if self.ql.arch.type == QL_ARCH.ARM64:
-                        load_regions[-1] = (prev_lbound, ubound, prev_perms | perms)
-                        continue
+            # map the memory regions
+            for lbound, ubound, perms in load_regions:
+                try:
+                    self.ql.mem.map(lbound, ubound - lbound, perms, os.path.basename(info))
+                except QlMemoryMappedError:
+                    self.ql.log.exception(f'Failed to map {lbound:#x}-{ubound:#x}')
+                else:
+                    self.ql.log.debug(f'Mapped {lbound:#x}-{ubound:#x}')
 
-                    raise RuntimeError
+            # load loadable segments contents to memory
+            for seg in load_segments:
+                self.ql.mem.write(load_address + seg['p_vaddr'], seg.data())
 
-            else:
-                load_regions.append((lbound, ubound, perms))
+            return load_regions[0][0], load_regions[-1][1]
 
-        # map the memory regions
-        for lbound, ubound, perms in load_regions:
-            try:
-                self.ql.mem.map(lbound, ubound - lbound, perms, info=self.path)
-            except QlMemoryMappedError:
-                self.ql.log.exception(f'Failed to map {lbound:#x}-{ubound:#x}')
-            else:
-                self.ql.log.debug(f'Mapped {lbound:#x}-{ubound:#x}')
-
-        # load loadable segments contents to memory
-        for seg in seg_pt_load:
-            self.ql.mem.write(load_address + seg['p_vaddr'], seg.data())
-
-        entry_point = load_address + elffile['e_entry']
-
-        # the memory space on which the program spans
-        mem_start = min(seg['p_vaddr'] for seg in seg_pt_load)
-        mem_end = max(seg['p_vaddr'] + seg['p_memsz'] for seg in seg_pt_load)
-
-        mem_start = QlLoaderELF.align(mem_start, pagesize)
-        mem_end = QlLoaderELF.align_up(mem_end, pagesize)
+        mem_start, mem_end = load_elf_segments(elffile, load_address, self.path)
+        self.elf_entry = entry_point = load_address + elffile['e_entry']
 
         self.ql.log.debug(f'mem_start : {mem_start:#x}')
         self.ql.log.debug(f'mem_end   : {mem_end:#x}')
 
+        # by convention the loaded binary is first on the list
+        self.images.append(Image(mem_start, mem_end, os.path.abspath(self.path)))
+
         # note: 0x2000 is the size of [hook_mem]
-        self.brk_address = load_address + mem_end + 0x2000
+        self.brk_address = mem_end + 0x2000
 
         # determine interpreter path
-        interp_seg = next((seg for seg in elffile.iter_segments() if type(seg) is InterpSegment), None)
+        interp_seg = next(elffile.iter_segments(type='PT_INTERP'), None)
         interp_path = str(interp_seg.get_interp_name()) if interp_seg else ''
 
         interp_address = 0
@@ -271,27 +237,19 @@ class QlLoaderELF(QlLoader):
 
             with open(interp_local_path, 'rb') as infile:
                 interp = ELFFile(infile)
+                min_vaddr = min(seg['p_vaddr'] for seg in interp.iter_segments(type='PT_LOAD'))
 
                 # determine interpreter base address
-                interp_address = int(self.profile.get('interp_address'), 0)
+                # some old interpreters may not be PIE: p_vaddr of the first LOAD segment is not zero
+                # we should load interpreter at the address p_vaddr specified in such situation
+                interp_address = int(self.profile.get('interp_address'), 0) if min_vaddr == 0 else 0
                 self.ql.log.debug(f'Interpreter addr: {interp_address:#x}')
 
-                interp_seg_pt_load = tuple(seg for seg in interp.iter_segments() if seg['p_type'] == 'PT_LOAD')
+                # load interpreter segments data to memory
+                interp_start, interp_end = load_elf_segments(interp, interp_address, interp_local_path)
 
-                # determine memory size needed for interpreter
-                interp_mem_size = max((seg['p_vaddr'] + seg['p_memsz']) for seg in interp_seg_pt_load)
-                interp_mem_size = QlLoaderELF.align_up(interp_mem_size, pagesize)
-                self.ql.log.debug(f'Interpreter size: {interp_mem_size:#x}')
-
-                # map memory for interpreter
-                self.ql.mem.map(interp_address, interp_mem_size, info=os.path.abspath(interp_local_path))
-
-                # load interpterter segments data to memory
-                for seg in interp_seg_pt_load:
-                    addr = interp_address + seg['p_vaddr']
-                    data = seg.data()
-
-                    self.ql.mem.write(addr, data)
+                # add interpreter to the loaded images list
+                self.images.append(Image(interp_start, interp_end, os.path.abspath(interp_local_path)))
 
                 # determine entry point
                 entry_point = interp_address + interp['e_entry']
@@ -301,7 +259,6 @@ class QlLoaderELF(QlLoader):
         self.ql.log.debug(f'mmap_address is : {mmap_address:#x}')
 
         # set info to be used by gdb
-        self.interp_address = interp_address
         self.mmap_address = mmap_address
 
         # set elf table
@@ -313,8 +270,8 @@ class QlLoaderELF(QlLoader):
             Top of stack remains aligned to pointer size
             """
 
-            data = (s if isinstance(s, bytes) else s.encode("utf-8")) + b'\x00'
-            top = QlLoaderELF.align(top - len(data), self.ql.arch.pointersize)
+            data = s.encode('utf-8') + b'\x00'
+            top = self.ql.mem.align(top - len(data), self.ql.arch.pointersize)
             self.ql.mem.write(top, data)
 
             return top
@@ -343,10 +300,9 @@ class QlLoaderELF(QlLoader):
         new_stack = execfn      = __push_str(new_stack, argv[0])
 
         # store aux vector data for gdb use
-        elf_phdr = load_address + elffile['e_phoff']
+        elf_phdr = elffile['e_phoff'] + mem_start
         elf_phent = elffile['e_phentsize']
         elf_phnum = elffile['e_phnum']
-        elf_entry = load_address + elffile['e_entry']
 
         if self.ql.arch.bits == 64:
             elf_hwcap = 0x078bfbfd
@@ -360,78 +316,79 @@ class QlLoaderELF(QlLoader):
                 elf_hwcap = 0xd7b81f
 
         # setup aux vector
-        aux_entries = (
-            (AUX.AT_PHDR, elf_phdr + mem_start),
-            (AUX.AT_PHENT, elf_phent),
-            (AUX.AT_PHNUM, elf_phnum),
-            (AUX.AT_PAGESZ, pagesize),
-            (AUX.AT_BASE, interp_address),
-            (AUX.AT_FLAGS, 0),
-            (AUX.AT_ENTRY, elf_entry),
-            (AUX.AT_UID, self.ql.os.uid),
-            (AUX.AT_EUID, self.ql.os.euid),
-            (AUX.AT_GID, self.ql.os.gid),
-            (AUX.AT_EGID, self.ql.os.egid),
-            (AUX.AT_HWCAP, elf_hwcap),
-            (AUX.AT_CLKTCK, 100),
-            (AUX.AT_RANDOM, randstraddr),
-            (AUX.AT_HWCAP2, 0),
-            (AUX.AT_EXECFN, execfn),
-            (AUX.AT_PLATFORM, cpustraddr),
-            (AUX.AT_SECURE, 0),
-            (AUX.AT_NULL, 0)
+        auxv_entries = (
+            (AUXV.AT_HWCAP, elf_hwcap),
+            (AUXV.AT_PAGESZ, self.ql.mem.pagesize),
+            (AUXV.AT_CLKTCK, 100),
+            (AUXV.AT_PHDR, elf_phdr),
+            (AUXV.AT_PHENT, elf_phent),
+            (AUXV.AT_PHNUM, elf_phnum),
+            (AUXV.AT_BASE, interp_address),
+            (AUXV.AT_FLAGS, 0),
+            (AUXV.AT_ENTRY, self.elf_entry),
+            (AUXV.AT_UID, self.ql.os.uid),
+            (AUXV.AT_EUID, self.ql.os.euid),
+            (AUXV.AT_GID, self.ql.os.gid),
+            (AUXV.AT_EGID, self.ql.os.egid),
+            (AUXV.AT_SECURE, 0),
+            (AUXV.AT_RANDOM, randstraddr),
+            (AUXV.AT_HWCAP2, 0),
+            (AUXV.AT_EXECFN, execfn),
+            (AUXV.AT_PLATFORM, cpustraddr),
+            (AUXV.AT_NULL, 0)
         )
 
-        # add all aux entries
-        for key, val in aux_entries:
-            elf_table.extend(self.ql.pack(key) + self.ql.pack(val))
+        bytes_before_auxv = len(elf_table)
 
-        new_stack = QlLoaderELF.align(new_stack - len(elf_table), 0x10)
+        # add all auxv entries
+        for key, val in auxv_entries:
+            elf_table.extend(self.ql.pack(key))
+            elf_table.extend(self.ql.pack(val))
+
+        new_stack = self.ql.mem.align(new_stack - len(elf_table), 0x10)
         self.ql.mem.write(new_stack, bytes(elf_table))
 
-        # if enabled, gdb would need to retrieve aux vector data.
-        # note that gdb needs the AT_PHDR entry to hold the original elf_phdr value
-        self.aux_vec = dict(aux_entries)
-        self.aux_vec[AUX.AT_PHDR] = elf_phdr
+        self.auxv = new_stack + bytes_before_auxv
 
-        self.elf_entry = elf_entry
         self.stack_address = new_stack
         self.load_address = load_address
-        self.images.append(Image(load_address, load_address + mem_end, self.path))
         self.init_sp = self.ql.arch.regs.arch_sp
 
         self.ql.os.entry_point = self.entry_point = entry_point
         self.ql.os.elf_mem_start = mem_start
         self.ql.os.elf_entry = self.elf_entry
-        self.ql.os.function_hook = FunctionHook(self.ql, elf_phdr + mem_start, elf_phnum, elf_phent, load_address, load_address + mem_end)
+        self.ql.os.function_hook = FunctionHook(self.ql, elf_phdr, elf_phnum, elf_phent, load_address, mem_end)
 
         # If there is a loader, we ignore exit
         self.skip_exit_check = (self.elf_entry != self.entry_point)
 
         # map vsyscall section for some specific needs
-        if self.ql.arch.type == QL_ARCH.X8664 and self.ql.ostype == QL_OS.LINUX:
-            _vsyscall_addr = int(self.profile.get('vsyscall_address'), 0)
-            _vsyscall_size = int(self.profile.get('vsyscall_size'), 0)
+        if self.ql.arch.type == QL_ARCH.X8664 and self.ql.os.type == QL_OS.LINUX:
+            vsyscall_addr = self.profile.getint('vsyscall_address')
 
-            if not self.ql.mem.is_mapped(_vsyscall_addr, _vsyscall_size):
+            vsyscall_ids = (
+                SYSCALL_NR.gettimeofday,
+                SYSCALL_NR.time,
+                SYSCALL_NR.getcpu
+            )
+
+            # each syscall should be 1KiB away
+            entry_size = 1024
+            vsyscall_size = self.ql.mem.align_up(len(vsyscall_ids) * entry_size)
+
+            if self.ql.mem.is_available(vsyscall_addr, vsyscall_size):
                 # initialize with int3 instructions then insert syscall entry
-                # each syscall should be 1KiB away
-                self.ql.mem.map(_vsyscall_addr, _vsyscall_size, info="[vsyscall]")
-                self.ql.mem.write(_vsyscall_addr, _vsyscall_size * b'\xcc')
+                self.ql.mem.map(vsyscall_addr, vsyscall_size, info="[vsyscall]")
                 assembler = self.ql.arch.assembler
 
                 def __assemble(asm: str) -> bytes:
                     bs, _ = assembler.asm(asm)
                     return bytes(bs)
 
-                _vsyscall_ids = (
-                    SYSCALL_NR.gettimeofday,
-                    SYSCALL_NR.time,
-                    SYSCALL_NR.getcpu
-                )
+                for i, scid in enumerate(vsyscall_ids):
+                    entry = __assemble(f'mov rax, {scid:#x}; syscall; ret')
 
-                for i, scid in enumerate(_vsyscall_ids):
-                    self.ql.mem.write(_vsyscall_addr + i * 1024, __assemble(f'mov rax, {scid:#x}; syscall; ret'))
+                    self.ql.mem.write(vsyscall_addr + i * entry_size, entry.ljust(entry_size, b'\xcc'))
 
     def lkm_get_init(self, elffile: ELFFile) -> int:
         """Get file offset of the init_module function.
@@ -445,7 +402,7 @@ class QlLoaderELF(QlLoader):
             if syms:
                 sym = syms[0]
                 addr = sym['st_value'] + elffile.get_section(sym['st_shndx'])['sh_offset']
-                self.ql.log.info(f'init_module = {addr:#x}')
+
                 return addr
 
         raise QlErrorELFFormat('invalid module: symbol init_module not found')
@@ -511,7 +468,7 @@ class QlLoaderELF(QlLoader):
                                 # we need to lookup from address to symbol, so we can find the right callback
                                 # for sys_xxx handler for syscall, the address must be aligned to pointer size
                                 if symbol_name.startswith('sys_'):
-                                    self.ql.os.hook_addr = QlLoaderELF.align_up(self.ql.os.hook_addr, self.ql.arch.pointersize)
+                                    self.ql.os.hook_addr = self.ql.mem.align_up(self.ql.os.hook_addr, self.ql.arch.pointersize)
 
                                 self.import_symbols[self.ql.os.hook_addr] = symbol_name
 
@@ -524,6 +481,10 @@ class QlLoaderELF(QlLoader):
                                 rev_reloc_symbols[symbol_name] = self.ql.os.hook_addr
                                 sym_offset = self.ql.os.hook_addr - mem_start
                                 self.ql.os.hook_addr += self.ql.arch.pointersize
+
+                            elif _symbol['st_shndx'] == 'SHN_ABS':
+                                rev_reloc_symbols[symbol_name] = _symbol['st_value']
+
                             else:
                                 # local symbol
                                 _section = elffile.get_section(_symbol['st_shndx'])
@@ -566,12 +527,12 @@ class QlLoaderELF(QlLoader):
 
                     elif desc in ('R_386_PC32', 'R_386_PLT32'):
                         val = ql.mem.read_ptr(loc, 4)
-                        val = rev_reloc_symbols[symbol_name] + val - loc
+                        val += rev_reloc_symbols[symbol_name] - loc
                         ql.mem.write_ptr(loc, (val & 0xFFFFFFFF), 4)
 
                     elif desc in ('R_386_32', 'R_MIPS_32'):
                         val = ql.mem.read_ptr(loc, 4)
-                        val = rev_reloc_symbols[symbol_name] + val
+                        val += rev_reloc_symbols[symbol_name]
                         ql.mem.write_ptr(loc, (val & 0xFFFFFFFF), 4)
 
                     elif desc == 'R_MIPS_HI16':
@@ -596,23 +557,9 @@ class QlLoaderELF(QlLoader):
     def load_driver(self, elffile: ELFFile, stack_addr: int, loadbase: int = 0) -> None:
         elfdata_mapping = self.get_elfdata_mapping(elffile)
 
-        # Determine the range of memory space opened up
-        # mem_start = -1
-        # mem_end = -1
-        #
-        # for i in super().parse_program_header(ql):
-        #     if i['p_type'] == PT_LOAD:
-        #         if mem_start > i['p_vaddr'] or mem_start == -1:
-        #             mem_start = i['p_vaddr']
-        #         if mem_end < i['p_vaddr'] + i['p_memsz'] or mem_end == -1:
-        #             mem_end = i['p_vaddr'] + i['p_memsz']
-        #
-        # mem_start = int(mem_start // 0x1000) * 0x1000
-        # mem_end = int(mem_end // 0x1000 + 1) * 0x1000
-
-        # FIXME
-        mem_start = 0x1000
-        mem_end = mem_start + (len(elfdata_mapping) // 0x1000 + 1) * 0x1000
+        # FIXME: determine true memory boundaries, taking relocation into account (if requested)
+        mem_start = 0
+        mem_end = mem_start + self.ql.mem.align_up(len(elfdata_mapping), 0x1000)
 
         # map some memory to intercept external functions of Linux kernel
         self.ql.mem.map(API_HOOK_MEM, 0x1000, info="[api_mem]")
@@ -624,18 +571,20 @@ class QlLoaderELF(QlLoader):
         self.ql.mem.map(loadbase + mem_start, mem_end - mem_start, info=self.ql.path)
         self.ql.mem.write(loadbase + mem_start, elfdata_mapping)
 
-        entry_point = self.lkm_get_init(elffile) + loadbase + mem_start
+        init_module = self.lkm_get_init(elffile) + loadbase + mem_start
+        self.ql.log.debug(f'init_module : {init_module:#x}')
+
         self.brk_address = mem_end + loadbase
 
         # Set MMAP addr
-        mmap_address = int(self.profile.get('mmap_address'), 0)
+        mmap_address = self.profile.getint('mmap_address')
         self.ql.log.debug(f'mmap_address is : {mmap_address:#x}')
 
         # self.ql.os.elf_entry = self.elf_entry = loadbase + elfhead['e_entry']
-        self.ql.os.entry_point = self.entry_point = entry_point
+        self.ql.os.entry_point = self.entry_point = init_module
         self.elf_entry = self.ql.os.elf_entry = self.ql.os.entry_point
 
-        self.stack_address = QlLoaderELF.align(stack_addr, self.ql.arch.pointersize)
+        self.stack_address = self.ql.mem.align(stack_addr, self.ql.arch.pointersize)
         self.load_address = loadbase
 
         # remember address of syscall table, so external tools can access to it
@@ -670,6 +619,25 @@ class QlLoaderELF(QlLoader):
         self.import_symbols[self.ql.os.hook_addr + 2 * self.ql.arch.pointersize] = hook_sys_open
 
     def get_elfdata_mapping(self, elffile: ELFFile) -> bytes:
+        # from io import BytesIO
+        #
+        # rh = RelocationHandler(elffile)
+        #
+        # for sec in elffile.iter_sections():
+        #     rs = rh.find_relocations_for_section(sec)
+        #
+        #     if rs is not None:
+        #         ss = BytesIO(sec.data())
+        #         rh.apply_section_relocations(ss, rs)
+        #
+        #         # apply changes to stream
+        #         elffile.stream.seek(sec['sh_offset'])
+        #         elffile.stream.write(ss.getbuffer())
+        #
+        # TODO: need to patch hooked symbols with their hook targets
+        # (e.g. replace calls to 'printk' with the hooked address that
+        # was allocate for it)
+
         elfdata_mapping = bytearray()
 
         # pick up elf header
@@ -679,7 +647,15 @@ class QlLoaderELF(QlLoader):
 
         elfdata_mapping.extend(elf_header)
 
-        # pick up loadable sections and relocate them if needed
+        # FIXME: normally the address of a section would be determined by its 'sh_addr' value.
+        # in case of a relocatable object all its sections' sh_addr will be set to zero, so
+        # the value in 'sh_offset' should be used to determine the final address.
+        # see: https://refspecs.linuxbase.org/elf/gabi4+/ch4.sheader.html
+        #
+        # here we presume this a relocatable object and don't do any relocation (that is, it
+        # is relocated to 0)
+
+        # pick up loadable sections
         for sec in elffile.iter_sections():
             if sec['sh_flags'] & SH_FLAGS.SHF_ALLOC:
                 # pad aggregated elf data to the offset of the current section 

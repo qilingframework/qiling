@@ -2,26 +2,23 @@
 #
 # Python setup for Qiling framework
 
-import sys, os
 from setuptools import setup, find_packages
 
-here = os.path.abspath(os.path.dirname(__file__))
-gb = {}
-with open(os.path.join(here, "qiling", "__version__.py"), "r+") as f:
-    exec(f.read(), gb)
-
-VERSION = gb['__version__']
+# NOTE: use "-dev" for dev branch
+VERSION = "1.4.4" + "-dev"
+#VERSION = "1.4.3"
 
 requirements = [
     "capstone>=4.0.1",
-    "unicorn>=2.0.0-rc6",
-    "pefile>=2021.9.3",
+    "unicorn>=2.0.0",
+    "pefile>=2022.5.30",
     "python-registry>=1.3.1",
     "keystone-engine>=0.9.2",
-    "pyelftools>=0.26",
+    "pyelftools>=0.28",
     "gevent>=20.9.0",
     "multiprocess>=0.70.12.2",
-    "pyyaml>=6.0"
+    "windows-curses>=2.1.0;platform_system=='Windows'",
+    "pyyaml>=6.0",
 ]
 
 extras = {
@@ -43,21 +40,16 @@ extras = {
         "cmd2"
     ],
     "fuzz" : [
-
+        "unicornafl>=2.0.0;platform_system!='Windows'",
+        "fuzzercorn>=0.0.1;platform_system=='Linux'"
+    ],
+    "RE": [
+       "r2libr>=5.7.4",
     ]
 }
 
 with open("README.md", "r", encoding="utf-8") as ld:
     long_description = ld.read()
-
-if "win32" in sys.platform:
-    requirements += ["windows-curses>=2.1.0"]
-
-if "win32" not in sys.platform:
-    extras["fuzz"] += ["unicornafl>=2.0.0"]
-
-if "linux" in sys.platform:
-    extras["fuzz"] += ["fuzzercorn>=0.0.1"]
 
 setup(
     name='qiling',
@@ -96,7 +88,12 @@ setup(
 
     packages=find_packages(),
     scripts=['qltool'],
-    include_package_data=True,
+    package_data={
+        'qiling': ['profiles/*.ql'],
+        'qiling.debugger.gdb': ['xml/*/*'],
+        'qiling.os.uefi': ['guids.csv'],
+        'qiling.arch.evm.analysis': ['signatures.json']
+    },
     install_requires=requirements,
     extras_require=extras,
 )

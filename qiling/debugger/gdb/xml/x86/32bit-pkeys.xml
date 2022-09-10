@@ -7,7 +7,5 @@
 
 <!DOCTYPE feature SYSTEM "gdb-target.dtd">
 <feature name="org.gnu.gdb.i386.pkeys">
-
-  <reg name="pkru" bitsize="32" type="uint32"/>
-
+    <reg name="pkru" bitsize="32" type="uint32"/>
 </feature>

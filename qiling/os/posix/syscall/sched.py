@@ -82,7 +82,6 @@ def ql_syscall_clone(ql: Qiling, flags: int, child_stack: int, parent_tidptr: in
         set_child_tid_addr = child_tidptr
 
     th = ql.os.thread_class.spawn(ql, ql.arch.regs.arch_pc + 2, ql.os.exit_point, set_child_tid_addr = set_child_tid_addr)
-    th.path = f_th.path
     ql.log.debug(f'{str(th)} created')
 
     if flags & CLONE_PARENT_SETTID == CLONE_PARENT_SETTID:

@@ -119,16 +119,16 @@ def hook_WriteFile(ql: Qiling, address: int, params):
     if hFile == 0x13371337:
         buffer = ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
         try:
-            r, nNumberOfBytesToWrite = utils.io_Write(ql.amsint32_driver, buffer)
+            nNumberOfBytesToWrite = utils.io_Write(ql.amsint32_driver, buffer)
             ql.mem.write_ptr(lpNumberOfBytesWritten, nNumberOfBytesToWrite, 4)
-        except Exception as e:
+        except Exception:
             ql.log.exception("")
-            print("Exception = %s" % str(e))
-            r = 1
-        if r:
-            return 1
+            r = False
         else:
-            return 0
+            r = True
+
+        return int(r)
+
     else:
         return _WriteFile(ql, address, params)
 
@@ -151,8 +151,12 @@ def hook_StartServiceA(ql: Qiling, address: int, params):
             if service_handle.name in ql.os.services:
                 service_path = ql.os.services[service_handle.name]
                 service_path = ql.os.path.transform_to_real_path(service_path)
+
                 ql.amsint32_driver = Qiling([service_path], ql.rootfs, verbose=QL_VERBOSE.DEBUG)
-                init_unseen_symbols(ql.amsint32_driver, ql.amsint32_driver.loader.dlls["ntoskrnl.exe"]+0xb7695, b"NtTerminateProcess", 0, "ntoskrnl.exe")
+                ntoskrnl = ql.amsint32_driver.loader.get_image_by_name("ntoskrnl.exe")
+                assert ntoskrnl, 'ntoskernl.exe was not loaded'
+
+                init_unseen_symbols(ql.amsint32_driver, ntoskrnl.base+0xb7695, b"NtTerminateProcess", 0, "ntoskrnl.exe")
                 #ql.amsint32_driver.debugger= ":9999"
                 try:
                     ql.amsint32_driver.load()

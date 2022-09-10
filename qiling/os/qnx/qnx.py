@@ -3,10 +3,8 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from typing import Callable
 import os
 
-from typing import Callable
 from unicorn import UcError
 
 from qiling import Qiling
@@ -16,27 +14,29 @@ from qiling.os.qnx.const import NTO_SIDE_CHANNEL, SYSMGR_PID, SYSMGR_CHID, SYSMG
 from qiling.os.qnx.helpers import QnxConn
 from qiling.os.qnx.structs import _thread_local_storage
 
-from qiling.cc import QlCC, intel, arm, mips, riscv
-from qiling.const import QL_ARCH, QL_INTERCEPT
+from qiling.cc import QlCC, intel, arm, mips, riscv, ppc
+from qiling.const import QL_ARCH, QL_OS
 from qiling.os.fcall import QlFunctionCall
 from qiling.os.const import *
-from qiling.os.posix.const import NR_OPEN
 from qiling.os.posix.posix import QlOsPosix
 
 class QlOsQnx(QlOsPosix):
+    type = QL_OS.QNX
+
     def __init__(self, ql: Qiling):
         super(QlOsQnx, self).__init__(ql)
 
         self.ql = ql
 
         cc: QlCC = {
-            QL_ARCH.X86   : intel.cdecl,
-            QL_ARCH.X8664 : intel.amd64,
-            QL_ARCH.ARM   : arm.aarch32,
-            QL_ARCH.ARM64 : arm.aarch64,
-            QL_ARCH.MIPS  : mips.mipso32,
-            QL_ARCH.RISCV : riscv.riscv,
-            QL_ARCH.RISCV64: riscv.riscv,
+            QL_ARCH.X86     : intel.cdecl,
+            QL_ARCH.X8664   : intel.amd64,
+            QL_ARCH.ARM     : arm.aarch32,
+            QL_ARCH.ARM64   : arm.aarch64,
+            QL_ARCH.MIPS    : mips.mipso32,
+            QL_ARCH.RISCV   : riscv.riscv,
+            QL_ARCH.RISCV64 : riscv.riscv,
+            QL_ARCH.PPC     : ppc.ppc,
         }[ql.arch.type](ql.arch)
 
         self.fcall = QlFunctionCall(ql, cc)
@@ -69,15 +69,15 @@ class QlOsQnx(QlOsPosix):
             self.ql.arch.enable_vfp()
             self.ql.hook_intno(self.hook_syscall, 2)
             #self.thread_class = thread.QlLinuxARMThread
-            arm_utils.init_get_tls(self.ql, self.ql.arch.arm_get_tls_addr)
+            arm_utils.init_linux_traps(self.ql, {
+                'memory_barrier': 0xffff0fa0,
+                'cmpxchg': 0xffff0fc0,
+                'get_tls': 0xffff0fe0
+            })
 
-    
-    def hook_syscall(self, intno= None, int = None):
+
+    def hook_syscall(self, ql, intno):
         return self.load_syscall()
-
-
-    def add_function_hook(self, fn: str, cb: Callable, intercept: QL_INTERCEPT):
-        self.ql.os.function_hook.add_function_hook(fn, cb, intercept)
 
 
     def register_function_after_load(self, function):
@@ -88,12 +88,6 @@ class QlOsQnx(QlOsPosix):
     def run_function_after_load(self):
         for f in self.function_after_load_list:
             f()
-
-
-    def hook_sigtrap(self, intno= None, int = None):
-        self.ql.log.info("Trap Found")
-        self.emu_error()
-        exit(1)
 
 
     def run(self):

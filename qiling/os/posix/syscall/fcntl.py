@@ -27,7 +27,7 @@ def ql_syscall_open(ql: Qiling, filename: int, flags: int, mode: int):
         regreturn = -EMFILE
     else:
         try:
-            if ql.arch.type == QL_ARCH.ARM and ql.ostype != QL_OS.QNX:
+            if ql.arch.type == QL_ARCH.ARM and ql.os.type != QL_OS.QNX:
                 mode = 0
 
             flags = ql_open_flag_mapping(ql, flags)
@@ -131,8 +131,8 @@ def ql_syscall_fcntl(ql: Qiling, fd: int, cmd: int, arg: int):
         if arg not in range(NR_OPEN):
             regreturn = -EINVAL
 
-        for idx, val in enumerate(ql.os.fd, arg):
-            if val is None:
+        for idx in range(arg, len(ql.os.fd)):
+            if ql.os.fd[idx] is None:
                 ql.os.fd[idx] = f.dup()
                 regreturn = idx
                 break
@@ -173,11 +173,13 @@ def ql_syscall_fcntl64(ql: Qiling, fd: int, cmd: int, arg: int):
         if arg not in range(NR_OPEN):
             regreturn = -1
 
-        for idx, val in enumerate(ql.os.fd, arg):
-            if val is None:
+        for idx in range(arg, len(ql.os.fd)):
+            if ql.os.fd[idx] is None:
                 ql.os.fd[idx] = f.dup()
                 regreturn = idx
                 break
+        else:
+            regreturn = -1
 
     elif cmd == F_GETFL:
         regreturn = 2

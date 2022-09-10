@@ -68,8 +68,7 @@ class PETest(unittest.TestCase):
 
     def test_pe_win_x8664_hello(self):
         def _t():
-            ql = Qiling(["../examples/rootfs/x8664_windows/bin/x8664_hello.exe"], "../examples/rootfs/x8664_windows",
-                        verbose=QL_VERBOSE.DEFAULT)
+            ql = Qiling(["../examples/rootfs/x8664_windows/bin/x8664_hello.exe"], "../examples/rootfs/x8664_windows")
             ql.run()
             del ql
             return True
@@ -79,8 +78,7 @@ class PETest(unittest.TestCase):
 
     def test_pe_win_x86_hello(self):
         def _t():
-            ql = Qiling(["../examples/rootfs/x86_windows/bin/x86_hello.exe"], "../examples/rootfs/x86_windows",
-                        verbose=QL_VERBOSE.DEFAULT, profile="profiles/append_test.ql")
+            ql = Qiling(["../examples/rootfs/x86_windows/bin/x86_hello.exe"], "../examples/rootfs/x86_windows")
             ql.run()
             del ql
             return True
@@ -90,8 +88,7 @@ class PETest(unittest.TestCase):
 
     def test_pe_win_x8664_file_upx(self):
         def _t():
-            ql = Qiling(["../examples/rootfs/x8664_windows/bin/x8664_file_upx.exe"], "../examples/rootfs/x8664_windows",
-                        verbose=QL_VERBOSE.DEFAULT)
+            ql = Qiling(["../examples/rootfs/x8664_windows/bin/x8664_file_upx.exe"], "../examples/rootfs/x8664_windows")
             ql.run()
             del ql
             return True
@@ -101,8 +98,7 @@ class PETest(unittest.TestCase):
 
     def test_pe_win_x86_file_upx(self):
         def _t():
-            ql = Qiling(["../examples/rootfs/x86_windows/bin/x86_file_upx.exe"], "../examples/rootfs/x86_windows",
-                        verbose=QL_VERBOSE.DEFAULT)
+            ql = Qiling(["../examples/rootfs/x86_windows/bin/x86_file_upx.exe"], "../examples/rootfs/x86_windows")
             ql.run()
             del ql
             return True
@@ -110,6 +106,7 @@ class PETest(unittest.TestCase):
         self.assertTrue(QLWinSingleTest(_t).run())
 
 
+    @unittest.skipIf(IS_FAST_TEST, 'fast test')
     def test_pe_win_x86_uselessdisk(self):
         def _t():
             class Fake_Drive(QlFsMappedObject):
@@ -134,105 +131,104 @@ class PETest(unittest.TestCase):
             del ql
             return True
 
-        if IS_FAST_TEST:
-            self.skipTest('QL_FAST_TEST')
-
         self.assertTrue(QLWinSingleTest(_t).run())
 
 
+    @unittest.skipIf(IS_FAST_TEST, 'fast test')
     def test_pe_win_x86_gandcrab(self):
         def _t():
-            def stop(ql, default_values):
-                print("Ok for now")
+            def stop(ql: Qiling):
+                ql.log.info("Ok for now")
+
                 ql.emu_stop()
 
-            def randomize_config_value(ql, key, subkey):
-                # https://en.wikipedia.org/wiki/Volume_serial_number
-                # https://www.digital-detective.net/documents/Volume%20Serial%20Numbers.pdf
-                if key == "VOLUME" and subkey == "serial_number":
-                    month = random.randint(0, 12)
-                    day = random.randint(0, 30)
-                    first = hex(month)[2:] + hex(day)[2:]
-                    seconds = random.randint(0, 60)
-                    milli = random.randint(0, 100)
-                    second = hex(seconds)[2:] + hex(milli)[2:]
-                    first_half = int(first, 16) + int(second, 16)
-                    hour = random.randint(0, 24)
-                    minute = random.randint(0, 60)
-                    third = hex(hour)[2:] + hex(minute)[2:]
-                    year = random.randint(2000, 2020)
-                    second_half = int(third, 16) + year
-                    result = int(hex(first_half)[2:] + hex(second_half)[2:], 16)
-                    ql.os.profile[key][subkey] = str(result)
-                elif key == "USER" and subkey == "username":
-                    length = random.randint(0, 15)
-                    new_name = ""
-                    for i in range(length):
-                        new_name += random.choice(st.ascii_lowercase + st.ascii_uppercase)
-                    old_name = ql.os.profile[key][subkey]
-                    # update paths
-                    ql.os.profile[key][subkey] = new_name
-                    for path in ql.os.profile["PATH"]:
-                        val = ql.os.profile["PATH"][path].replace(old_name, new_name)
-                        ql.os.profile["PATH"][path] = val
-                elif key == "SYSTEM" and subkey == "computername":
-                    length = random.randint(0, 15)
-                    new_name = ""
-                    for i in range(length):
-                        new_name += random.choice(st.ascii_lowercase + st.ascii_uppercase)
-                    ql.os.profile[key][subkey] = new_name
-                else:
-                    raise QlErrorNotImplemented("API not implemented")
+            def __rand_serialnum() -> str:
+                """
+                see: https://en.wikipedia.org/wiki/Volume_serial_number
+                see: https://www.digital-detective.net/documents/Volume%20Serial%20Numbers.pdf
+                """
+
+                mon = random.randint(1, 12)
+                day = random.randint(0, 30)
+                word1 = (mon << 8) + day
+
+                sec = random.randint(0, 59)
+                ms = random.randint(0, 99)
+                word2 = (sec << 8) + ms
+
+                unified1 = word1 + word2
+
+                hrs = random.randint(0, 23)
+                mins = random.randint(0, 59)
+                word1 = (hrs << 8) + mins
+
+                yr = random.randint(2000, 2020)
+                word2 = yr
+
+                unified2 = word1 + word2
+
+                return f'{unified1:04x}-{unified2:04x}'
+
+            def __rand_name(minlen: int, maxlen: int) -> str:
+                name_len = random.randint(minlen, maxlen)
+
+                return ''.join(random.choices(st.ascii_lowercase + st.ascii_uppercase, k=name_len))
+
 
             ql = Qiling(["../examples/rootfs/x86_windows/bin/GandCrab502.bin"], "../examples/rootfs/x86_windows",
                         verbose=QL_VERBOSE.DEBUG, profile="profiles/windows_gandcrab_admin.ql")
-            default_user = ql.os.profile["USER"]["username"]
-            default_computer = ql.os.profile["SYSTEM"]["computername"]
 
-            ql.hook_address(stop, 0x40860f, user_data=(default_user, default_computer))
-            randomize_config_value(ql, "USER", "username")
-            randomize_config_value(ql, "SYSTEM", "computername")
-            randomize_config_value(ql, "VOLUME", "serial_number")
-            num_syscalls_admin = ql.os.stats.syscalls_counter
+            ql.hook_address(stop, 0x40860f)
+
+            # randomize username
+            old_uname = ql.os.profile['USER']['username']
+            new_uname = __rand_name(3, 10)
+
+            # update paths accordingly
+            path_key = ql.os.profile['PATH']
+
+            for p in path_key:
+                path_key[p] = path_key[p].replace(old_uname, new_uname)
+
+            ql.os.profile['USER']['username'] = new_uname
+
+            # randomize computer name and serial number
+            ql.os.profile['SYSTEM']['computername'] = __rand_name(5, 15)
+            ql.os.profile['VOLUME']['serial_number'] = __rand_serialnum()
+
             ql.run()
+            num_syscalls_admin = ql.os.stats.position
             del ql
 
             # RUN AS USER
             ql = Qiling(["../examples/rootfs/x86_windows/bin/GandCrab502.bin"], "../examples/rootfs/x86_windows", profile="profiles/windows_gandcrab_user.ql")
 
             ql.run()
-            num_syscalls_user = ql.os.stats.syscalls_counter
+            num_syscalls_user = ql.os.stats.position
+            del ql
 
             # let's check that gandcrab behave takes a different path if a different environment is found
-            if num_syscalls_admin == num_syscalls_user:
-                return False
-
-            del ql
-            return True
-
-        if IS_FAST_TEST:
-            self.skipTest('QL_FAST_TEST')
+            return num_syscalls_admin != num_syscalls_user
 
         self.assertTrue(QLWinSingleTest(_t).run())
 
     def test_pe_win_x86_multithread(self):
         def _t():
-            thread_id = None
-            def ThreadId_onEnter(ql, address, params):
+            thread_id = -1
+
+            def ThreadId_onEnter(ql: Qiling, address: int, params):
                 nonlocal thread_id
+
                 thread_id = ql.os.thread_manager.cur_thread.id
-                return address, params
 
             ql = Qiling(["../examples/rootfs/x86_windows/bin/MultiThread.exe"], "../examples/rootfs/x86_windows")
             ql.os.set_api("GetCurrentThreadId", ThreadId_onEnter, QL_INTERCEPT.ENTER)
             ql.run()
-            
-            if not ( 1<= thread_id < 255):
-                return False
-            
+
             del ql
-            return True
-        
+
+            return (1 <= thread_id < 255)
+
         self.assertTrue(QLWinSingleTest(_t).run())
 
 
@@ -326,6 +322,7 @@ class PETest(unittest.TestCase):
         self.assertTrue(QLWinSingleTest(_t).run())
 
 
+    @unittest.skipIf(IS_FAST_TEST, 'fast test')
     def test_pe_win_x86_wannacry(self):
         def _t():
             def stop(ql):
@@ -339,9 +336,6 @@ class PETest(unittest.TestCase):
             ql.run()
             del ql
             return True
-
-        if IS_FAST_TEST:
-            self.skipTest('QL_FAST_TEST')
 
         self.assertTrue(QLWinSingleTest(_t).run())
 
@@ -358,37 +352,17 @@ class PETest(unittest.TestCase):
         self.assertTrue(QLWinSingleTest(_t).run())
 
 
+    @unittest.skipIf(IS_FAST_TEST, 'fast test')
     def test_pe_win_al_khaser(self):
         def _t():
-            ql = Qiling(["../examples/rootfs/x86_windows/bin/al-khaser.bin"], "../examples/rootfs/x86_windows")
+            ql = Qiling(["../examples/rootfs/x86_windows/bin/al-khaser.bin"], "../examples/rootfs/x86_windows", verbose=QL_VERBOSE.OFF)
 
-            # The hooks are to remove the prints to file. It crashes. will debug why in the future
-            # def results(ql):
-            #
-            #     if ql.arch.regs.ebx == 1:
-            #         print("BAD")
-            #     else:
-            #         print("GOOD ")
-            #     ql.arch.regs.eip = 0x402ee4
-            #
-            #ql.hook_address(results, 0x00402e66)
+            # ole32 functions are not implemented yet; stop before the binary
+            # starts using them
+            ql.run(end=0x004016ae)
 
-            # the program alloc 4 bytes and then tries to write 0x2cc bytes.
-            # I have no idea of why this code should work without this patch
-            ql.patch(0x00401984, b'\xb8\x04\x00\x00\x00')
-
-            def end(ql):
-                print("We are finally done")
-                ql.emu_stop()
-
-            ql.hook_address(end, 0x004016ae)
-
-            ql.run()
             del ql
             return True
-
-        if IS_FAST_TEST:
-            self.skipTest('QL_FAST_TEST')
 
         self.assertTrue(QLWinSingleTest(_t).run())
 
