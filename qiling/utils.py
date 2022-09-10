@@ -424,7 +424,7 @@ def profile_setup(ostype: QL_OS, config_src: Optional[Union[str, dict]]):
         if isinstance(config_src, dict):
             config.read_dict(config_src)
 
-        elif isinstance(config_src, str):
+        else:
             qiling_home = Path(inspect.getfile(inspect.currentframe())).parent
             os_profile = qiling_home / 'profiles' / f'{ostype.name.lower()}.ql'
 
@@ -432,9 +432,9 @@ def profile_setup(ostype: QL_OS, config_src: Optional[Union[str, dict]]):
 
             if config_src:
                 profiles.append(config_src)
-
+        
             config.read(profiles)
-
+        
     return config
 
 # verify if emulator returns properly
