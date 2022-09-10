@@ -404,31 +404,36 @@ def select_os(ostype: QL_OS) -> QlClassInit['QlOs']:
 
     return partial(obj)
 
-def profile_setup(ostype: QL_OS, filename: Optional[str]):
+def profile_setup(ostype: QL_OS, config_src: Optional[str|dict]):
     # mcu uses a yaml-based config
     if ostype == QL_OS.MCU:
         import yaml
 
-        if filename:
-            with open(filename) as f:
+        if config_src:
+            with open(config_src) as f:
                 config = yaml.load(f, Loader=yaml.Loader)
         else:
             config = {}
 
     else:
-        qiling_home = Path(inspect.getfile(inspect.currentframe())).parent
-        os_profile = qiling_home / 'profiles' / f'{ostype.name.lower()}.ql'
-
-        profiles = [os_profile]
-
-        if filename:
-            profiles.append(filename)
-
         # patch 'getint' to convert integers of all bases
         int_converter = partial(int, base=0)
-
         config = ConfigParser(converters={'int': int_converter})
-        config.read(profiles)
+
+        # build config from dictionary, but not read from disk file
+        if isinstance(config_src, dict):
+            config.read_dict(config_src)
+
+        elif isinstance(config_src, str):
+            qiling_home = Path(inspect.getfile(inspect.currentframe())).parent
+            os_profile = qiling_home / 'profiles' / f'{ostype.name.lower()}.ql'
+
+            profiles = [os_profile]
+
+            if config_src:
+                profiles.append(config_src)
+
+            config.read(profiles)
 
     return config
 
