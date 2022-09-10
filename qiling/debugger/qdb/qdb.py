@@ -323,6 +323,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
             qdb_print(QDB_MSG.ERROR)
 
     def do_examine(self, line: str) -> None:
+
         """
         Examine memory: x/FMT ADDRESS.
         format letter: o(octal), x(hex), d(decimal), u(unsigned decimal), t(binary), f(float), a(address), i(instruction), c(char), s(string) and z(hex, zero padded on the left)
@@ -332,6 +333,29 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         if type(err_msg := self.mm.parse(line)) is str:
             qdb_print(QDB_MSG.ERROR, err_msg)
+    
+
+    def do_set(self, line: str) -> None:
+        """
+        set register value of current context
+        """
+        # set $a = b
+
+        reg, val = line.split("=")
+        reg_name = reg.strip().strip("$")
+        reg_val = try_read_int(val.strip())
+
+        if reg_name in self.ql.arch.regs.save().keys():
+            if reg_val:
+                setattr(self.ql.arch.regs, reg_name, reg_val)
+                self.do_context()
+                qdb_print(QDB_MSG.INFO, f"set register {reg_name} to 0x{reg_val:08x}")
+
+            else:
+                qdb_print(QDB_MSG.ERROR, f"error parsing input: {reg_val} as integer value")
+
+        else:
+            qdb_print(QDB_MSG.ERROR, f"invalid register: {reg_name}")
 
     def do_start(self, *args) -> None:
         """
