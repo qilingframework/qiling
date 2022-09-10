@@ -404,7 +404,7 @@ def select_os(ostype: QL_OS) -> QlClassInit['QlOs']:
 
     return partial(obj)
 
-def profile_setup(ostype: QL_OS, config_src: Optional[str|dict]):
+def profile_setup(ostype: QL_OS, config_src: Optional[Union[str, dict]]):
     # mcu uses a yaml-based config
     if ostype == QL_OS.MCU:
         import yaml
