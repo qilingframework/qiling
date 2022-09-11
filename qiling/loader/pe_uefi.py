@@ -3,6 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+import os
 from pefile import PE
 from typing import Any, Mapping, Optional, Sequence
 
@@ -105,7 +106,7 @@ class QlLoaderPE_UEFI(QlLoader):
         pe.parse_data_directories()
         data = bytes(pe.get_memory_mapped_image())
 
-        ql.mem.map(image_base, image_size, info="[module]")
+        ql.mem.map(image_base, image_size, info=os.path.basename(path))
         ql.mem.write(image_base, data)
         ql.log.info(f'Module {path} loaded to {image_base:#x}')
 
@@ -120,7 +121,7 @@ class QlLoaderPE_UEFI(QlLoader):
         self.install_loaded_image_protocol(image_base, image_size)
 
         # this would be used later be loader.find_containing_image
-        self.images.append(Image(image_base, image_base + image_size, path))
+        self.images.append(Image(image_base, image_base + image_size, os.path.abspath(path)))
 
         # update next memory slot to allow sequencial loading. its availability
         # is unknown though
