@@ -258,10 +258,10 @@ if __name__ == '__main__':
 
     # ql run
     with cov_utils.collect_coverage(ql, options.coverage_format, options.coverage_file):
+        hook_dictionary = qltui.hook(ql)
         ql.run(timeout=options.timeout)
 
     if options.json:
-        qltui.show_report(report.generate_report(ql))
-        # print(report.generate_report(ql, pretty_print=True))
+        qltui.show_report(ql, report, hook_dictionary)
 
     exit(ql.os.exit_code)
