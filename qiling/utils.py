@@ -46,7 +46,7 @@ def assert_mem_equal(ql: 'Qiling'):
     mem_regions = list(ql.uc.mem_regions())
     assert len(map_info) == len(mem_regions), f'len: map_info={len(map_info)} != mem_regions={len(mem_regions)}'
     for i, mem_region in enumerate(mem_regions):
-        s, e, p, _, _, data = map_info[i]
+        s, e, p, label, _, data = map_info[i]
         if (s, e - 1, p) != mem_region:
             ql.log.error('map_info:')
             print('\n'.join(ql.mem.get_formatted_mapinfo()))
@@ -55,7 +55,10 @@ def assert_mem_equal(ql: 'Qiling'):
             raise AssertionError(f'(start, end, perm): map_info={(s, e - 1, p)} != mem_region={mem_region}')
         uc_mem = ql.mem.read(mem_region[0], mem_region[1] - mem_region[0] + 1)
         assert len(data) == len(uc_mem), f'len of {i} mem: map_info={len(data)} != mem_region={len(uc_mem)}'
-        assert data == uc_mem, f'Memory region {i} {mem_region[0]:#x} - {mem_region[1]:#x} not equal to map_info[{i}]'
+        if data != uc_mem:
+            Path('/tmp/uc_mem.bin').write_bytes(uc_mem)
+            Path('/tmp/map_info.bin').write_bytes(data)
+            raise AssertionError(f'Memory region {i} {s:#x} - {e:#x} != map_info[{i}] {label}')
 
 def catch_KeyboardInterrupt(ql: 'Qiling', func: Callable):
     def wrapper(*args, **kw):
