@@ -1,13 +1,17 @@
 #!/usr/bin/env python3
 
-from test_shellcode import X8664_LIN, X86_LIN
-from qiling.exception import QlMemoryMappedError
-from qiling import Qiling
-from unicorn.x86_const import UC_X86_REG_EAX, UC_X86_REG_ESI
-from unicorn import UC_PROT_ALL, UC_PROT_READ, UC_PROT_WRITE, UC_PROT_EXEC, UC_PROT_NONE, UcError
 import sys
 import unittest
 sys.path.append("..")
+
+from qiling import Qiling
+from qiling.const import QL_VERBOSE
+from qiling.exception import QlMemoryMappedError
+from qiling.os.posix.syscall.mman import ql_syscall_mmap2
+from qiling.os.posix.syscall.unistd import ql_syscall_brk
+from unicorn.x86_const import UC_X86_REG_EAX, UC_X86_REG_ESI
+from unicorn import UC_PROT_ALL, UC_PROT_READ, UC_PROT_WRITE, UC_PROT_EXEC, UC_PROT_NONE, UcError
+from test_shellcode import MIPS32EL_LIN, X8664_LIN, X86_LIN
 
 
 class MemTest(unittest.TestCase):
@@ -103,6 +107,17 @@ class MemTest(unittest.TestCase):
         self.assertRaises(UcError, ql.mem.write, 0xffffffffffffff00, mem)
         self.assertRaises(UcError, ql.mem.write, 0, mem)
         self.assert_mem_equal(ql)
+
+    def test_mmap2(self):
+        ql = Qiling(code=X86_LIN, archtype="x86", ostype="linux", verbose=QL_VERBOSE.DEBUG)
+        ql.loader.mmap_address = int(ql.profile.get('OS32', 'mmap_address'), 0)
+        ql_syscall_mmap2(ql, 0, 8192, 3, 2050, 4294967295, 0)
+        del ql
+
+        ql = Qiling(code=MIPS32EL_LIN, archtype="mips", ostype="linux", verbose=QL_VERBOSE.DEBUG)
+        ql.loader.mmap_address = int(ql.profile.get('OS32', 'mmap_address'), 0)
+        ql_syscall_mmap2(ql, 0, 8192, 3, 2050, 4294967295, 0)
+        del ql
 
 
 if __name__ == "__main__":
