@@ -17,6 +17,7 @@ from qiling.os.posix.filestruct import ql_pipe
 from qiling.os.posix.const import *
 from qiling.os.posix.stat import Stat
 from qiling.core_hooks import QlCoreHooks
+from qiling.utils import assert_mem_equal
 
 def ql_syscall_exit(ql: Qiling, code: int):
     if ql.os.child_processes == True:
@@ -205,6 +206,7 @@ def ql_syscall_brk(ql: Qiling, inp: int):
     # current brk_address will be modified if inp is not NULL(zero)
     # otherwise, just return current brk_address
 
+    assert_mem_equal(ql)
     if inp:
         cur_brk_addr = ql.loader.brk_address
         new_brk_addr = ql.mem.align_up(inp)
@@ -217,6 +219,7 @@ def ql_syscall_brk(ql: Qiling, inp: int):
 
         ql.loader.brk_address = new_brk_addr
 
+    assert_mem_equal(ql)
     return ql.loader.brk_address
 
 

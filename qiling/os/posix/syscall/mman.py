@@ -9,6 +9,7 @@ from qiling import Qiling
 from qiling.exception import QlMemoryMappedError
 from qiling.os.filestruct import ql_file
 from qiling.os.posix.const_mapping import *
+from qiling.utils import assert_mem_equal
 
 def ql_syscall_munmap(ql: Qiling, addr: int, length: int):
 
@@ -42,6 +43,7 @@ def ql_syscall_madvise(ql: Qiling, addr: int, length: int, advice: int):
 
 
 def ql_syscall_mprotect(ql: Qiling, start: int, mlen: int, prot: int):
+    assert_mem_equal(ql)
     try:
         ql.mem.protect(start, mlen, prot)
     except Exception as e:
@@ -53,6 +55,7 @@ def ql_syscall_mprotect(ql: Qiling, start: int, mlen: int, prot: int):
 
 
 def syscall_mmap_impl(ql: Qiling, addr: int, mlen: int, prot: int, flags: int, fd: int, pgoffset: int, ver: int):
+    assert_mem_equal(ql)
     MAP_FAILED = -1
     MAP_SHARED = 0x01
     MAP_FIXED = 0x10
@@ -92,6 +95,7 @@ def syscall_mmap_impl(ql: Qiling, addr: int, mlen: int, prot: int, flags: int, f
         if (flags & MAP_FIXED) and mmap_base != addr:
             return MAP_FAILED
 
+    assert_mem_equal(ql)
     # initial ql.loader.mmap_address
     if mmap_base != 0 and ql.mem.is_mapped(mmap_base, mmap_size):
         if (flags & MAP_FIXED) > 0:
@@ -105,6 +109,7 @@ def syscall_mmap_impl(ql: Qiling, addr: int, mlen: int, prot: int, flags: int, f
         else:
             mmap_base = 0
 
+    assert_mem_equal(ql)
     # initialized mapping
     if need_mmap:
         if mmap_base == 0:
@@ -117,6 +122,7 @@ def syscall_mmap_impl(ql: Qiling, addr: int, mlen: int, prot: int, flags: int, f
             raise QlMemoryMappedError("Error: mapping needed but failed")
         ql.log.debug("%s - addr range  0x%x - 0x%x: " % (api_name, mmap_base, mmap_base + mmap_size - 1))
 
+    assert_mem_equal(ql)
     # FIXME: MIPS32 Big Endian
     try:
         ql.mem.write(mmap_base, b'\x00' * mmap_size)
@@ -142,6 +148,7 @@ def syscall_mmap_impl(ql: Qiling, addr: int, mlen: int, prot: int, flags: int, f
                 ql.log.debug(e)
                 raise QlMemoryMappedError("Error: trying to write memory: ")
 
+    assert_mem_equal(ql)
     return mmap_base
 
 
