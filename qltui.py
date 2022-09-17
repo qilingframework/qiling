@@ -535,8 +535,10 @@ def show_report(ql, report, hook_dictionary):
     os_name = os_map_reverse[ql.os.type]
     arch_name = arch_map_reverse[ql.arch.type]
 
-    report = report.generate_report(ql)
     if hook_dictionary:
+        for key in ['hook_target_address', 'address']:
+            if key in hook_dictionary:
+                hook_dictionary[key] = hex(hook_dictionary[key])
         report["hook"] = hook_dictionary
 
     while True:

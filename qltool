@@ -8,6 +8,7 @@ import os
 import sys
 import ast
 import pickle
+from pprint import pprint
 import qltui
 
 from unicorn import __version__ as uc_ver
@@ -258,10 +259,17 @@ if __name__ == '__main__':
 
     # ql run
     with cov_utils.collect_coverage(ql, options.coverage_format, options.coverage_file):
-        hook_dictionary = qltui.hook(ql)
+        if options.subcommand == 'qltui':
+            hook_dictionary = qltui.hook(ql)
         ql.run(timeout=options.timeout)
 
     if options.json:
-        qltui.show_report(ql, report, hook_dictionary)
+        report = report.generate_report(ql)
+        report["syscalls"] = ql.os.stats.syscalls
+        if options.subcommand == 'qltui':
+            qltui.show_report(ql, report, hook_dictionary)
+        else:
+            pprint(report)
+        
 
     exit(ql.os.exit_code)
