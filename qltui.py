@@ -56,114 +56,114 @@ class Callback_Functions():
     """
 
     @staticmethod
-    def read_mem_2(ql, user_data):
+    def read_mem_2_args(ql, user_data):
         buff = ql.mem.read(user_data["address"], user_data["bytes_size"])
         ql.log.info(f"Hook was triggered at -> {user_data['address']}")
         ql.log.info(buff)
 
     @staticmethod
-    def read_mem_4(ql, address=0, size=0, user_data=None):
+    def read_mem_4_args(ql, address=0, size=0, user_data=None):
         buff = ql.mem.read(user_data["address"], user_data["bytes_size"])
         ql.log.info(f"Hook was triggered at -> {user_data['address']}")
         ql.log.info(buff)
 
     @staticmethod
-    def read_mem_6(ql, address=0, size=0, access=1, value=0, user_data=None):
+    def read_mem_6_args(ql, address=0, size=0, access=1, value=0, user_data=None):
         buff = ql.mem.read(user_data["address"], user_data["bytes_size"])
         ql.log.info(f"Hook was triggered at -> {user_data['address']}")
         ql.log.info(buff)
 
     @staticmethod
-    def read_reg_2(ql,user_data):
+    def read_reg_2_args(ql,user_data):
         buff = ql.reg.read(user_data["register_name"])
         ql.log.info(f"Hook was triggered at -> {user_data['register_name']}")
         ql.log.info(buff)
 
     @staticmethod
-    def read_reg_4(ql, address=0, size=0, user_data=None):
+    def read_reg_4_args(ql, address=0, size=0, user_data=None):
         buff = ql.reg.read(user_data["register_name"])
         ql.log.info(f"Hook was triggered at -> {user_data['register_name']}")
         ql.log.info(buff)
 
     @staticmethod
-    def read_reg_6(ql, address=0, size=0, access=1, value=0, user_data=None):
+    def read_reg_6_args(ql, address=0, size=0, access=1, value=0, user_data=None):
         buff = ql.reg.read(user_data["register_name"])
         ql.log.info(f"Hook was triggered at -> {user_data['register_name']}")
         ql.log.info(buff)
 
     @staticmethod
-    def write_mem_2(ql, user_data):
+    def write_mem_2_args(ql, user_data):
         buff = ql.mem.write(user_data["address"], user_data["value"])
         ql.log.info(f"Hook was triggered at -> {user_data['address']}")
         ql.log.info(buff)
 
     @staticmethod
-    def write_mem_4(ql, address=0, size=0, user_data=None):
+    def write_mem_4_args(ql, address=0, size=0, user_data=None):
         buff = ql.mem.write(user_data["address"], user_data["value"])
         ql.log.info(f"Hook was triggered at -> {user_data['address']}")
         ql.log.info(buff)
 
     @staticmethod
-    def write_mem_6(ql, address=0, size=0, access=1, value=0, user_data=None):
+    def write_mem_6_args(ql, address=0, size=0, access=1, value=0, user_data=None):
         buff = ql.mem.write(user_data["address"], user_data["value"])
         ql.log.info(f"Hook was triggered at -> {user_data['address']}")
         ql.log.info(buff)
 
     @staticmethod
-    def write_reg_2(ql,user_data):
+    def write_reg_2_args(ql,user_data):
         buff = ql.reg.write(user_data["register_name"], user_data["value"])
         ql.log.info(f"Hook was triggered at -> {user_data['register_name']}")
         ql.log.info(buff)
 
     @staticmethod
-    def write_reg_4(ql, address=0, size=0, user_data=None):
+    def write_reg_4_args(ql, address=0, size=0, user_data=None):
         buff = ql.reg.write(user_data["register_name"], user_data["value"])
         ql.log.info(f"Hook was triggered at -> {user_data['register_name']}")
         ql.log.info(buff)
 
     @staticmethod
-    def write_reg_6(ql, address=0, size=0, access=1, value=0, user_data=None):
+    def write_reg_6_args(ql, address=0, size=0, access=1, value=0, user_data=None):
         buff = ql.reg.write(user_data["register_name"], user_data["value"])
         ql.log.info(f"Hook was triggered at -> {user_data['register_name']}")
         ql.log.info(buff)
 
     @staticmethod
-    def emu_start_2(ql, user_data):
+    def emu_start_2_args(ql, user_data):
         ql.emu_start(begin=user_data["start"], end=user_data["end"])
 
     @staticmethod
-    def emu_start_4(ql, address=0, size=0, user_data=None):
+    def emu_start_4_args(ql, address=0, size=0, user_data=None):
         ql.emu_start(begin=user_data["start"], end=user_data["end"])
 
     @staticmethod
-    def emu_start_6(ql, address=0, size=0, access=1, value=0, user_data=None):
+    def emu_start_6_args(ql, address=0, size=0, access=1, value=0, user_data=None):
         ql.emu_start(begin=user_data["start"], end=user_data["end"])
 
     @staticmethod
-    def emu_stop_2(ql, user_data=None):
+    def emu_stop_2_args(ql, user_data=None):
         ql.log.info('killer switch found, stopping')
         ql.emu_stop()
 
     @staticmethod
-    def emu_stop_4(ql, address=0, size=0, user_data=None):
+    def emu_stop_4_args(ql, address=0, size=0, user_data=None):
         ql.log.info('killer switch found, stopping')
         ql.emu_stop()
 
     @staticmethod
-    def emu_stop_6(ql, address=0, size=0, access=1, value=0, user_data=None):
+    def emu_stop_6_args(ql, address=0, size=0, access=1, value=0, user_data=None):
         ql.log.info('killer switch found, stopping')
         ql.emu_stop()
 
     @staticmethod
-    def save_2(ql, user_data=None):
+    def save_2_args(ql, user_data=None):
         ql.save()
 
     @staticmethod
-    def save_4(ql, address=0, size=0, user_data=None):
+    def save_4_args(ql, address=0, size=0, user_data=None):
         ql.save()
 
     @staticmethod
-    def save_6(ql, address=0, size=0, access=1, value=0, user_data=None):
+    def save_6_args(ql, address=0, size=0, access=1, value=0, user_data=None):
         ql.save()
 
 def env_arg(value):
@@ -728,13 +728,13 @@ def hook(ql):
             hook_dictionary["user_data"] = user_data
 
         if hook_type in ['hook_code', 'hook_block']:
-            operation += '_4'
+            operation += '_4_args'
 
         elif hook_type in ['hook_mem_read', 'hook_mem_write']:
-            operation += '_6'
+            operation += '_6_args'
 
         else:
-            operation += '_2'
+            operation += '_2_args'
 
         getattr(ql, hook_type)(getattr(Callback_Functions, operation), *args)
 
