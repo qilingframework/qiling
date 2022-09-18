@@ -168,14 +168,10 @@ class R2:
         libr.r_core.r_core_bin_load(self._r2c, path, self.baseaddr)
         self._cmd(f'wx {code.hex()}')
         # set architecture and bits for r2 asm
-        arch = self._qlarch2r(self.ql.arch.type)
-        self._cmd(f"e,asm.arch={arch},asm.bits={self.ql.arch.bits}")
-
-    def _setup_file(self, path: str):
-        path = path.encode()
-        fh = libr.r_core.r_core_file_open(self._r2c, path, UC_PROT_READ | UC_PROT_EXEC, self.loadaddr)
-        libr.r_core.r_core_bin_load(self._r2c, path, self.baseaddr)
-
+        arch = self._qlarch2r(ql.arch.type)
+        self._cmd(f"e,asm.arch={arch},asm.bits={ql.arch.bits}")
+        self._cmd("oba")  # load bininfo and update flags
+    
     def _cmd(self, cmd: str) -> str:
         r = libr.r_core.r_core_cmd_str(
             self._r2c, ctypes.create_string_buffer(cmd.encode("utf-8")))
