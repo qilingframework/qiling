@@ -175,6 +175,7 @@ class R2:
         # set architecture and bits for r2 asm
         arch = self._qlarch2r(ql.arch.type)
         self._cmd(f"e,asm.arch={arch},asm.bits={ql.arch.bits}")
+        self._cmd("oba")  # load bininfo and update flags
     
     def _cmd(self, cmd: str) -> str:
         r = libr.r_core.r_core_cmd_str(
