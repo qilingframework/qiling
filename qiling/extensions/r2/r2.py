@@ -160,17 +160,18 @@ class R2:
             QL_ARCH.PPC: "ppc",
         }[archtype]
 
-    def _rbuf_map(self, buf: bytearray, perm: int = UC_PROT_ALL, addr: int = 0, delta: int = 0):
-        rbuf = libr.r_buf_new_with_pointers(ctypes.c_ubyte.from_buffer(buf), len(buf), False)
+    def _rbuf_map(self, cbuf: ctypes.Array[ctypes.c_ubyte], perm: int = UC_PROT_ALL, addr: int = 0, delta: int = 0):
+        rbuf = libr.r_buf_new_with_pointers(cbuf, len(cbuf), False)  # last arg `steal` = False
         rbuf = ctypes.cast(rbuf, ctypes.POINTER(libr.r_io.struct_r_buf_t))
         desc = libr.r_io_open_buffer(self._r2i, rbuf, perm, 0)  # last arg `mode` is always 0 in r2 code
-        libr.r_io.r_io_map_add(self._r2i, desc.contents.fd, desc.contents.perm, delta, addr, len(buf))
+        libr.r_io.r_io_map_add(self._r2i, desc.contents.fd, desc.contents.perm, delta, addr, len(cbuf))
 
     def _setup_mem(self, ql: 'Qiling'):
         if not hasattr(ql, '_mem'):
             return
-        for start, end, perms, _label, _mmio, buf in ql.mem.map_info:
-            self._rbuf_map(buf, perms, start)
+        for start, _end, perms, _label, _mmio, _buf in ql.mem.map_info:
+            cbuf = ql.mem.cmap[start]
+            self._rbuf_map(cbuf, perms, start)
         # set architecture and bits for r2 asm
         arch = self._qlarch2r(ql.arch.type)
         self._cmd(f"e,asm.arch={arch},asm.bits={ql.arch.bits}")

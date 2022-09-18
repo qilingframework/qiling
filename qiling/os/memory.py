@@ -612,7 +612,7 @@ class QlMemoryManager:
             bytearray with size, should be added to map_info by caller
         """
         buf = buf or bytearray(size)
-        buf_type = ctypes.c_byte * size
+        buf_type = ctypes.c_ubyte * size
         cdata = buf_type.from_buffer(buf)
         self.cmap[addr] = cdata
         self.ql.uc.mem_map_ptr(addr, size, perms, cdata)
