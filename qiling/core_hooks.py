@@ -8,6 +8,7 @@
 # handling hooks                             #
 ##############################################
 
+import functools
 from typing import Any, Callable, MutableMapping, MutableSequence, Protocol
 from typing import TYPE_CHECKING
 
@@ -15,7 +16,6 @@ from unicorn import Uc
 from unicorn.unicorn_const import *
 
 from .core_hooks_types import Hook, HookAddr, HookIntr, HookRet
-from .utils import catch_KeyboardInterrupt
 from .const import QL_HOOK_BLOCK
 from .exception import QlErrorCoreHook
 
@@ -84,6 +84,19 @@ class InterruptHookCallback(Protocol):
             (if any) or `None`
         """
         pass
+
+
+def hookcallback(ql: 'Qiling', callback: Callable):
+
+    functools.wraps(callback)
+    def wrapper(*args, **kwargs):
+        try:
+            return callback(*args, **kwargs)
+        except (KeyboardInterrupt, Exception) as ex:
+            ql.stop()
+            ql._internal_exception = ex
+
+    return wrapper
 
 
 # Don't assume self is Qiling.
@@ -235,13 +248,13 @@ class QlCoreHooks:
     # Class Hooks #
     ###############
     def _ql_hook_internal(self, hook_type: int, callback: Callable, context: Any, *args) -> int:
-        _callback = catch_KeyboardInterrupt(self, callback)
+        _callback = hookcallback(self, callback)
 
         return self._h_uc.hook_add(hook_type, _callback, (self, context), 1, 0, *args)
 
 
     def _ql_hook_addr_internal(self, callback: Callable, address: int) -> int:
-        _callback = catch_KeyboardInterrupt(self, callback)
+        _callback = hookcallback(self, callback)
 
         return self._h_uc.hook_add(UC_HOOK_CODE, _callback, self, address, address)
 
