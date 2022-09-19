@@ -220,17 +220,12 @@ class QlOsUefi(QlOs):
 			self.PE_RUN = True
 
 			self.ql.emu_start(self.ql.loader.entry_point, self.exit_point, self.ql.timeout, self.ql.count)
-		except KeyboardInterrupt as ex:
+		except KeyboardInterrupt:
 			self.ql.log.critical(f'Execution interrupted by user')
 
-			if self.ql._internal_exception is ex:
-				self.ql._internal_exception = None
 		except UcError:
 			self.emu_error()
 			raise
-
-		if self.ql._internal_exception is not None:
-			raise self.ql._internal_exception
 
 	def stop(self) -> None:
 		self.ql.emu_stop()

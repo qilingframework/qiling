@@ -710,7 +710,11 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         if self._arch.type in (QL_ARCH.ARM, QL_ARCH.CORTEX_M) and self._arch._init_thumb:
             begin |= 1
 
+        # reset exception status before emulation starts
+        self._internal_exception = None
+
         self.uc.emu_start(begin, end, timeout, count)
 
-        if self._internal_exception is not None:
-            raise self._internal_exception
+        # if an exception was raised during emulation, propagate it up 
+        if self.internal_exception is not None:
+            raise self.internal_exception
