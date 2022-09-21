@@ -38,6 +38,34 @@ class R2Data:
             if k in names:
                 setattr(self, k, v)
 
+    def __str__(self):
+        kvs = []
+        for k, v in sorted(self.__dict__.items()):
+            if k.startswith("_") or not isinstance(v, (int, str)):
+                continue
+            v = hex(v) if isinstance(v, int) else v
+            kvs.append(f"{k}={v}")
+        return (f"{self.__class__.__name__}(" + ", ".join(kvs) + ")")
+    
+    __repr__ = __str__
+
+    @cached_property
+    def start_ea(self):
+        return getattr(self, 'addr', None) or getattr(self, 'offset', None) or getattr(self, 'vaddr', None)
+
+    @cached_property
+    def end_ea(self):
+        size = getattr(self, 'size', None) or getattr(self, 'length', None)
+        if (self.start_ea or size) is None:
+            return None
+        return self.start_ea + size
+
+    def __contains__(self, target):
+        if isinstance(target, int):
+            return self.start_ea <= target < (self.end_ea or 1<<32)
+        else:
+            return self.start_ea <= target.start_ea and ((target.end_ea or target.start_ea) <= (self.end_ea or 1<<32))
+    
 
 @dataclass(unsafe_hash=True, init=False)
 class Section(R2Data):
@@ -94,6 +122,31 @@ class Instruction(R2Data):
         super().__init__(**kwargs)
         self.bytes = bytes.fromhex(kwargs["bytes"])
 
+    def is_jcond(self):
+        return self.type in ("cjmp", "cmov")
+
+
+@dataclass(unsafe_hash=True, init=False)
+class Operand(R2Data):
+    type: str
+    value: str
+    size: int
+    rw: int
+
+
+@dataclass(unsafe_hash=True, init=False)
+class AnalOp(R2Data):
+    addr: int
+    size: int
+    type: str
+    mnemonic: str
+    opcode: str
+    operands: List[Operand]
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.operands = [Operand(**op) for op in kwargs["opex"]["operands"]]
+
 
 @dataclass(unsafe_hash=True, init=False)
 class Function(R2Data):
@@ -101,6 +154,7 @@ class Function(R2Data):
     offset: int
     size: int
     signature: str
+
 
 
 @dataclass(unsafe_hash=True, init=False)
@@ -133,6 +187,25 @@ class Xref(R2Data):
         return self.fromaddr < other.fromaddr
 
 
+@dataclass(unsafe_hash=True, init=False)
+class BasicBlock(R2Data):
+    addr: int
+    size: int
+    inputs: int
+    outputs: int
+    ninstr: int
+    jump: Optional[int] = None
+    fail: Optional[int] = None
+
+    @cached_property
+    def start(self):
+        return self.addr
+
+    @cached_property
+    def end(self):
+        return self.addr + self.size
+
+
 class R2:
     def __init__(self, ql: "Qiling", baseaddr=(1 << 64) - 1, loadaddr=0):
         super().__init__()
@@ -162,11 +235,18 @@ class R2:
             QL_ARCH.PPC: "ppc",
         }[archtype]
 
-    def _setup_code(self, code: bytes):
-        path = f'malloc://{len(code)}'.encode()
-        fh = libr.r_core.r_core_file_open(self._r2c, path, UC_PROT_ALL, self.loadaddr)
-        libr.r_core.r_core_bin_load(self._r2c, path, self.baseaddr)
-        self._cmd(f'wx {code.hex()}')
+    def _rbuf_map(self, cbuf: ctypes.Array, perm: int = UC_PROT_ALL, addr: int = 0, delta: int = 0):
+        rbuf = libr.r_buf_new_with_pointers(cbuf, len(cbuf), False)  # last arg `steal` = False
+        rbuf = ctypes.cast(rbuf, ctypes.POINTER(libr.r_io.struct_r_buf_t))
+        desc = libr.r_io_open_buffer(self._r2i, rbuf, UC_PROT_ALL, 0)  # last arg `mode` is always 0 in r2 code
+        libr.r_io.r_io_map_add(self._r2i, desc.contents.fd, desc.contents.perm, delta, addr, len(cbuf))
+
+    def _setup_mem(self, ql: 'Qiling'):
+        if not hasattr(ql, '_mem'):
+            return
+        for start, _end, perms, _label, _mmio, _buf in ql.mem.map_info:
+            cbuf = ql.mem.cmap[start]
+            self._rbuf_map(cbuf, perms, start)
         # set architecture and bits for r2 asm
         arch = self._qlarch2r(ql.arch.type)
         self._cmd(f"e,asm.arch={arch},asm.bits={ql.arch.bits}")
@@ -180,13 +260,17 @@ class R2:
     def _cmdj(self, cmd: str) -> Union[Dict, List[Dict]]:
         return json.loads(self._cmd(cmd))
 
+    @property
+    def offset(self) -> int:
+        return self._r2c.contents.offset
+
     def aaa(fun):
         @wraps(fun)
-        def wrapper(self):
+        def wrapper(self, *args, **kwargs):
             if self.analyzed is False:
                 self._cmd("aaa")
                 self.analyzed = True
-            return fun(self)
+            return fun(self, *args, **kwargs)
         return wrapper
 
     @cached_property
@@ -232,6 +316,34 @@ class R2:
     def xrefs(self) -> List[Xref]:
         return [Xref(**dic) for dic in self._cmdj("axj")]
 
+    @aaa
+    def get_fcn_bbs(self, addr: int):
+        '''list basic blocks of function'''
+        return [BasicBlock(**dic) for dic in self._cmdj(f"afbj @ {addr}")]
+
+    @aaa
+    def get_bb_at(self, addr: int):
+        '''get basic block at address'''
+        try:
+            dic = self._cmdj(f"afbj. {addr}")[0]
+            return BasicBlock(**dic)
+        except IndexError:
+            pass
+
+    @aaa
+    def get_fcn_at(self, addr: int):
+        try:
+            dic = self._cmdj(f"afij {addr}")[0]  # afi show function information
+            return Function(**dic)
+        except IndexError:
+            pass
+    
+    @aaa
+    def anal_op(self, target: Union[int, Instruction]):
+        addr = target.offset if isinstance(target, Instruction) else target
+        dic = self._cmdj(f"aoj @ {addr}")[0]
+        return AnalOp(**dic)
+
     def at(self, addr: int, parse=False) -> Union[str, Tuple[str, int]]:
         '''Given an address, return [name, offset] or "name + offset"'''
         name = self._cmd(f'fd {addr}').strip()
@@ -261,12 +373,21 @@ class R2:
         hexstr = self._cmd(f"p8 {size} @ {addr}")
         return bytes.fromhex(hexstr)
 
+    def write(self, addr: int, bs: bytes) -> None:
+        self._cmd(f"wx {bs.hex()} @ {addr}")
+
     def dis_nbytes(self, addr: int, size: int) -> List[Instruction]:
         insts = [Instruction(**dic) for dic in self._cmdj(f"pDj {size} @ {addr}")]
         return insts
 
     def dis_ninsts(self, addr: int, n: int=1) -> List[Instruction]:
         insts = [Instruction(**dic) for dic in self._cmdj(f"pdj {n} @ {addr}")]
+        return insts
+
+    def dis(self, target: Union[Function, BasicBlock]) -> List[Instruction]:
+        addr = target.start_ea
+        size = target.size
+        insts = [Instruction(**dic) for dic in self._cmdj(f"pDj {size} @ {addr}")]
         return insts
 
     def _backtrace_fuzzy(self, at: int = None, depth: int = 128) -> Optional[CallStack]:
@@ -334,8 +455,7 @@ class R2:
 
     def shell(self):
         while True:
-            offset = self._r2c.contents.offset
-            print(f"[{offset:#x}]> ", end="")
+            print(f"[{self.offset:#x}]> ", end="")
             cmd = input()
             if cmd.strip() == "q":
                 break
