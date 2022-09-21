@@ -6,7 +6,7 @@
 from functools import cached_property
 from contextlib import ContextDecorator
 
-from unicorn import Uc, UC_ARCH_ARM, UC_MODE_ARM, UC_MODE_MCLASS, UC_MODE_THUMB
+from unicorn import Uc, UcError, UC_ARCH_ARM, UC_MODE_ARM, UC_MODE_MCLASS, UC_MODE_THUMB, UC_ERR_OK
 from capstone import Cs, CS_ARCH_ARM, CS_MODE_ARM, CS_MODE_MCLASS, CS_MODE_THUMB
 from keystone import Ks, KS_ARCH_ARM, KS_MODE_ARM, KS_MODE_THUMB
 
@@ -17,6 +17,8 @@ from qiling.arch.register import QlRegisterManager
 from qiling.arch.cortex_m_const import IRQ, EXC_RETURN, CONTROL, EXCP
 from qiling.const import QL_ARCH, QL_ENDIAN, QL_VERBOSE
 from qiling.exception import QlErrorNotImplemented
+
+from qiling.extensions.multitask import MultiTaskUnicorn, UnicornTask
 
 class QlInterruptContext(ContextDecorator):
     def __init__(self, ql: Qiling):
@@ -59,6 +61,27 @@ class QlInterruptContext(ContextDecorator):
         if self.ql.verbose >= QL_VERBOSE.DISASM:
             self.ql.log.info('Exit from interrupt')
 
+
+# This class exits to emulate clock interrupt.
+class QlArchCORTEX_MThread(UnicornTask):
+
+    def __init__(self, ql: "Qiling", begin: int, end: int, task_id=None):
+        super().__init__(ql.uc, begin, end, task_id)
+        self.ql = ql
+    
+    def on_start(self):
+        # Don't save anything.
+        return None
+    
+    def on_interrupted(self, ucerr: int):
+        self._begin = self.pc
+
+        # And don't restore anything.
+        if ucerr != UC_ERR_OK:
+            raise UcError(ucerr)
+
+        self.ql.hw.step()
+
 class QlArchCORTEX_M(QlArchARM):
     type = QL_ARCH.ARM
     bits = 32
@@ -68,7 +91,14 @@ class QlArchCORTEX_M(QlArchARM):
 
     @cached_property
     def uc(self):
-        return Uc(UC_ARCH_ARM, UC_MODE_ARM + UC_MODE_MCLASS + UC_MODE_THUMB)
+        # XXX:
+        #   The `multithread` argument is reused here to decide if multitask is enabled, though, the exact meaning
+        #   here is not accurate enough. This switch could be safely removed once current MCU code is aware of the
+        #   multitask unicorn.
+        if self.ql.multithread:
+            return MultiTaskUnicorn(UC_ARCH_ARM, UC_MODE_ARM + UC_MODE_MCLASS + UC_MODE_THUMB, 10)
+        else:
+            return Uc(UC_ARCH_ARM, UC_MODE_ARM + UC_MODE_MCLASS + UC_MODE_THUMB)
 
     @cached_property
     def regs(self) -> QlRegisterManager:
@@ -105,15 +135,23 @@ class QlArchCORTEX_M(QlArchARM):
     def run(self, count=-1, end=None):
         self.runable = True
 
-        if type(end) is int:
-            end |= 1        
-        
-        while self.runable and count != 0:
-            if self.effective_pc == end:
-                break
+        if not self.ql.multithread:
+            if type(end) is int:
+                end |= 1        
 
-            self.step()
-            count -= 1    
+            while self.runable and count != 0:
+                if self.effective_pc == end:
+                    break
+
+                self.step()
+                count -= 1
+        else:
+            if end is None:
+                end = 0
+
+            utk = QlArchCORTEX_MThread(self.ql, self.effective_pc, end)
+            self.uc.task_create(utk)
+            self.uc.tasks_start(count=count)
 
     def is_handler_mode(self):
         return self.regs.ipsr > 1
@@ -182,4 +220,7 @@ class QlArchCORTEX_M(QlArchARM):
             self.regs.write('pc', entry)
             self.regs.write('lr', exc_return) 
 
-            self.ql.emu_start(self.effective_pc, 0, count=0xffffff)
+            if not self.ql.multithread:
+                self.ql.emu_start(self.effective_pc, 0, count=0xffffff)
+            else:
+                self.uc.emu_start(self.effective_pc, 0, 0, 0)
