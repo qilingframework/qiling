@@ -404,13 +404,13 @@ def select_os(ostype: QL_OS) -> QlClassInit['QlOs']:
 
     return partial(obj)
 
-def profile_setup(ostype: QL_OS, config_src: Optional[Union[str, dict]]):
+def profile_setup(ostype: QL_OS, user_config: Optional[Union[str, dict]]):
     # mcu uses a yaml-based config
     if ostype == QL_OS.MCU:
         import yaml
 
-        if config_src:
-            with open(config_src) as f:
+        if user_config:
+            with open(user_config) as f:
                 config = yaml.load(f, Loader=yaml.Loader)
         else:
             config = {}
@@ -420,20 +420,18 @@ def profile_setup(ostype: QL_OS, config_src: Optional[Union[str, dict]]):
         int_converter = partial(int, base=0)
         config = ConfigParser(converters={'int': int_converter})
 
-        # build config from dictionary, but not read from disk file
-        if isinstance(config_src, dict):
-            config.read_dict(config_src)
+        qiling_home = Path(inspect.getfile(inspect.currentframe())).parent
+        os_profile = qiling_home / 'profiles' / f'{ostype.name.lower()}.ql'
+
+        # read default profile first
+        config.read(os_profile)
+
+        # user-specified profile adds or overrides existing setting
+        if isinstance(user_config, dict):
+            config.read_dict(user_config)
 
         else:
-            qiling_home = Path(inspect.getfile(inspect.currentframe())).parent
-            os_profile = qiling_home / 'profiles' / f'{ostype.name.lower()}.ql'
-
-            profiles = [os_profile]
-
-            if config_src:
-                profiles.append(config_src)
-        
-            config.read(profiles)
+            config.read(user_config)
         
     return config
 
