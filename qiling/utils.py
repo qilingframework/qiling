@@ -430,7 +430,7 @@ def profile_setup(ostype: QL_OS, user_config: Optional[Union[str, dict]]):
         if isinstance(user_config, dict):
             config.read_dict(user_config)
 
-        else:
+        elif user_config:
             config.read(user_config)
         
     return config
