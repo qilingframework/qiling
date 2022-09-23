@@ -15,6 +15,7 @@ from .context import Context
 
 from .render import (
         ContextRenderX86,
+        ContextRenderX8664,
         ContextRenderARM,
         ContextRenderCORTEX_M,
         ContextRenderMIPS
@@ -22,6 +23,7 @@ from .render import (
 
 from .branch_predictor import (
         BranchPredictorX86,
+        BranchPredictorX8664,
         BranchPredictorARM,
         BranchPredictorCORTEX_M,
         BranchPredictorMIPS,
@@ -122,6 +124,7 @@ def setup_branch_predictor(ql):
 
     return {
             QL_ARCH.X86: BranchPredictorX86,
+            QL_ARCH.X8664: BranchPredictorX8664,
             QL_ARCH.ARM: BranchPredictorARM,
             QL_ARCH.CORTEX_M: BranchPredictorCORTEX_M,
             QL_ARCH.MIPS: BranchPredictorMIPS,
@@ -134,6 +137,7 @@ def setup_context_render(ql, predictor):
 
     return {
             QL_ARCH.X86: ContextRenderX86,
+            QL_ARCH.X8664: ContextRenderX8664,
             QL_ARCH.ARM: ContextRenderARM,
             QL_ARCH.CORTEX_M: ContextRenderCORTEX_M,
             QL_ARCH.MIPS: ContextRenderMIPS,
