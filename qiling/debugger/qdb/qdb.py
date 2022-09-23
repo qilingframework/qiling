@@ -8,12 +8,12 @@ from typing import Callable, Optional, Mapping, Tuple, Union
 import cmd
 
 from qiling import Qiling
-from qiling.const import QL_ARCH, QL_VERBOSE
+from qiling.const import QL_OS, QL_ARCH, QL_VERBOSE
 from qiling.debugger import QlDebugger
 
-from .utils import setup_context_render, setup_branch_predictor, SnapshotManager, run_qdb_script
+from .utils import setup_context_render, setup_branch_predictor, setup_address_marker, SnapshotManager, run_qdb_script
 from .memory import setup_memory_Manager
-from .misc import parse_int, Breakpoint, TempBreakpoint
+from .misc import parse_int, Breakpoint, TempBreakpoint, try_read_int
 from .const import color
 
 from .utils import QDB_MSG, qdb_print
@@ -34,6 +34,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         self._saved_reg_dump = None
         self._script = script
         self.bp_list = {}
+        self.marker = setup_address_marker()
 
         self.rr = SnapshotManager(ql) if rr else None
         self.mm = setup_memory_Manager(ql)
@@ -72,7 +73,10 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         self.ql.hook_code(bp_handler, self.bp_list)
 
-        if init_hook and self.ql.loader.entry_point != init_hook:
+        if self.ql.os.type == QL_OS.BLOB:
+            self.ql.loader.entry_point = self.ql.loader.load_address
+
+        elif init_hook and self.ql.loader.entry_point != init_hook:
             self.do_breakpoint(init_hook)
 
         self.cur_addr = self.ql.loader.entry_point
@@ -319,6 +323,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
             qdb_print(QDB_MSG.ERROR)
 
     def do_examine(self, line: str) -> None:
+
         """
         Examine memory: x/FMT ADDRESS.
         format letter: o(octal), x(hex), d(decimal), u(unsigned decimal), t(binary), f(float), a(address), i(instruction), c(char), s(string) and z(hex, zero padded on the left)
@@ -328,6 +333,29 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         if type(err_msg := self.mm.parse(line)) is str:
             qdb_print(QDB_MSG.ERROR, err_msg)
+    
+
+    def do_set(self, line: str) -> None:
+        """
+        set register value of current context
+        """
+        # set $a = b
+
+        reg, val = line.split("=")
+        reg_name = reg.strip().strip("$")
+        reg_val = try_read_int(val.strip())
+
+        if reg_name in self.ql.arch.regs.save().keys():
+            if reg_val:
+                setattr(self.ql.arch.regs, reg_name, reg_val)
+                self.do_context()
+                qdb_print(QDB_MSG.INFO, f"set register {reg_name} to 0x{(reg_val & 0xfffffff):08x}")
+
+            else:
+                qdb_print(QDB_MSG.ERROR, f"error parsing input: {reg_val} as integer value")
+
+        else:
+            qdb_print(QDB_MSG.ERROR, f"invalid register: {reg_name}")
 
     def do_start(self, *args) -> None:
         """
@@ -348,6 +376,61 @@ class QlQdb(cmd.Cmd, QlDebugger):
         self.render.context_stack()
         self.render.context_asm()
 
+    def do_jump(self, loc: str, *args) -> None:
+        """
+        seek to where ever valid location you want
+        """
+
+        sym = self.marker.get_symbol(loc)
+        addr = sym if sym is not None else try_read_int(loc)
+
+        # check validation of the address to be seeked
+        if self.ql.mem.is_mapped(addr, 4):
+            if sym:
+                qdb_print(QDB_MSG.INFO, f"seek to {loc} @ 0x{addr:08x} ...")
+            else:
+                qdb_print(QDB_MSG.INFO, f"seek to 0x{addr:08x} ...")
+
+            self.cur_addr = addr
+            self.do_context()
+
+        else:
+            qdb_print(QDB_MSG.ERROR, f"the address to be seeked isn't mapped")
+
+    def do_mark(self, args=""):
+        """
+        mark a user specified address as a symbol
+        """
+
+        args = args.split()
+        if len(args) == 0:
+            loc = self.cur_addr
+            sym_name = self.marker.mark_only_loc(loc)
+
+        elif len(args) == 1:
+            if (loc := try_read_int(args[0])):
+                sym_name = self.marker.mark_only_loc(loc)
+
+            else:
+                loc = self.cur_addr
+                sym_name = args[0]
+                if (err := self.marker.mark(sym_name, loc)):
+                    qdb_print(QDB_MSG.ERROR, err)
+                    return
+
+        elif len(args) == 2:
+            sym_name, addr = args
+            if (loc := try_read_int(addr)):
+                self.marker.mark(sym_name, loc)
+            else:
+                qdb_print(QDB_MSG.ERROR, f"unable to mark symbol at address: '{addr}'")
+                return
+        else:
+            qdb_print(QDB_MSG.ERROR, "symbol should not be empty ...")
+            return
+
+        qdb_print(QDB_MSG.INFO, f"mark symbol '{sym_name}' at address: 0x{loc:08x} ...")
+
     def do_show(self, *args) -> None:
         """
         show some runtime information
@@ -357,6 +440,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
             self.ql.log.info(info_line)
 
         qdb_print(QDB_MSG.INFO, f"Breakpoints: {[hex(addr) for addr in self.bp_list.keys()]}")
+        qdb_print(QDB_MSG.INFO, f"Marked symbol: {[{key:hex(val)} for key,val in self.marker.mark_list]}")
         if self.rr:
             qdb_print(QDB_MSG.INFO, f"Snapshots: {len([st for st in self.rr.layers if isinstance(st, self.rr.DiffedState)])}")
 
@@ -403,6 +487,8 @@ class QlQdb(cmd.Cmd, QlDebugger):
     do_r = do_run
     do_s = do_step_in
     do_n = do_step_over
+    do_j = do_jump
+    do_m = do_mark
     do_q = do_quit
     do_x = do_examine
     do_p = do_backward

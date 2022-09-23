@@ -12,7 +12,6 @@ from qiling import Qiling
 from qiling.const import QL_ARCH
 
 from .context import Context
-from .misc import read_int
 
 from .render import (
         ContextRenderX86,
@@ -50,6 +49,65 @@ def qdb_print(msgtype: QDB_MSG, msg: str) -> None:
 
     print(color_coated)
 
+"""
+
+    class Marker provide the ability for marking an address as a more easier rememberable alias
+
+"""
+
+def setup_address_marker():
+
+    class Marker:
+        def __init__(self):
+            self._mark_list = {}
+
+        def get_symbol(self, sym):
+            """
+            get the mapped address to a symbol if it's in the mark_list
+            """
+
+            return self._mark_list.get(sym, None)
+
+        @property
+        def mark_list(self):
+            """
+            get a list about what we marked
+            """
+
+            return self._mark_list.items()
+
+        def gen_sym_name(self):
+            """
+            generating symbol name automatically
+            """
+
+            sym_name, idx = "sym0", 0
+            while sym_name in self._mark_list:
+                idx += 1
+                sym_name = f"sym{idx}"
+
+            return sym_name
+
+        def mark_only_loc(self, loc):
+            """
+            mark when location provided only
+            """
+
+            sym_name = self.gen_sym_name()
+            self.mark(sym_name, loc)
+            return sym_name
+
+        def mark(self, sym: str, loc: int):
+            """
+            mark loc as sym
+            """
+
+            if sym not in self.mark_list:
+                self._mark_list.update({sym: loc})
+            else:
+                return f"dumplicated symbol name: {sym} at address: 0x{loc:08x}"
+
+    return Marker()
 
 """
 
