@@ -25,6 +25,13 @@ Improvements:
 - Fix README.md (#1203)
 - Fix typo of default ip 127.0.0.1 (#1205)
 - Temporarily mask Python versions that are not supported by the EVM module (#1208)
+- Windows Maintenance PR (#1210)
+- Improvements around POSIX sockets (#1216)
+- Add x86_64 debug support for Qdb (#1218)
+- Renew code for picohttpd (#1221)
+- Fix missing retaddr_on_stack in Qdb for arm (#1225)
+- Qdb improvments: Mark, Jump and modify register value in qdb (#1226)
+- Allow user to build config from dictionary other than disk file (#1227)
 
 Contributors:
 - jasperla
@@ -40,7 +47,8 @@ Contributors:
 - oscardagrach
 - hamarituc
 - EtchProject
-
+- HackingFrogWithSunglasses
+- xwings
 
 ------------------------------------
 [Version 1.4.3]: June 1st, 2022
