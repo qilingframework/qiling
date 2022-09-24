@@ -265,7 +265,7 @@ if __name__ == '__main__':
 
     if options.json:
         report = report.generate_report(ql)
-        report["syscalls"] = ql.os.stats.syscalls
+        report["syscalls"] = qltui.transform_syscalls(ql.os.stats.syscalls)
         if options.subcommand == 'qltui':
             qltui.show_report(ql, report, hook_dictionary)
         else:

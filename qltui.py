@@ -483,7 +483,7 @@ def show_report(ql, report, hook_dictionary):
         elif command == 'interactive report':
             Controller().run(DataSourceType.VARIABLE, report)
         elif command == 'report to pdf':
-            time = datetime.now().strftime("%d_%m_%Y_%H_%M_%S")
+            time = datetime.now().strftime("%Y_%m_%d_%H-%M-%S")
             report_name = f"report_{ql.targetname.replace('.', '_')}_{os_name}_{arch_name}_{time}.pdf"
             pdfc = PdfConverter()
             with open(report_name, "wb") as pdf_fl:
@@ -665,3 +665,22 @@ def hook(ql):
         getattr(ql, hook_type)(getattr(Callback_Functions, operation), *args, user_data=user_data)
 
     return hook_dictionary
+
+
+def transform_syscalls(syscalls, keys=["address"], func=lambda x: hex(x)):
+    for i in syscalls:
+        try:
+            if type(i) == type({}):
+                transform_syscalls(i, keys, func)
+            if isinstance(i, list):
+                transform_syscalls(i, keys, func)
+            elif isinstance(syscalls[i], list):
+                transform_syscalls(syscalls[i], keys, func)
+            elif type(syscalls[i]) == type({}):
+                transform_syscalls(syscalls[i], keys, func)
+            if i in keys and isinstance(syscalls[i], int):
+                syscalls[i] = func(syscalls[i])
+        except:
+            pass
+
+    return syscalls
