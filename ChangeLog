@@ -32,6 +32,7 @@ Improvements:
 - Fix missing retaddr_on_stack in Qdb for arm (#1225)
 - Qdb improvments: Mark, Jump and modify register value in qdb (#1226)
 - Allow user to build config from dictionary other than disk file (#1227)
+- fix(ida): replace __getattribute__ with __getattr__ (#1231)
 
 Contributors:
 - jasperla
