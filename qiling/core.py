@@ -563,15 +563,9 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         # patch binary
         self.do_bin_patch()
 
-        if self.baremetal:
-            if self.count <= 0:
-                self.count = -1
-
-            self.arch.run(count=self.count, end=self.exit_point)
-        else:
-            self.write_exit_trap()
-            # emulate the binary
-            self.os.run()
+        self.write_exit_trap()
+        # emulate the binary
+        self.os.run()
 
         # run debugger
         if debugger and self.debugger:
@@ -596,7 +590,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
 
     # save all qiling instance states
-    def save(self, reg=True, mem=True, fd=False, cpu_context=False, os=False, loader=False, *, snapshot: str = None):
+    def save(self, reg=True, mem=True, hw=False, fd=False, cpu_context=False, os=False, loader=False, *, snapshot: str = None):
         saved_states = {}
 
         if reg:
@@ -604,6 +598,9 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
         if mem:
             saved_states["mem"] = self.mem.save()
+
+        if hw:
+            saved_states["hw"] = self.hw.save()
 
         if fd:
             saved_states["fd"] = self.os.fd.save()
@@ -640,6 +637,9 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
         if "reg" in saved_states:
             self.arch.regs.restore(saved_states["reg"])
+
+        if "hw" in saved_states:
+            self.hw.restore(saved_states['hw'])
 
         if "fd" in saved_states:
             self.os.fd.restore(saved_states["fd"])
@@ -691,7 +691,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             self.os.thread_management.stop() 
 
         elif self.baremetal:
-            self.arch.stop()
+            self.os.stop()
 
         else:
             self.uc.emu_stop()    

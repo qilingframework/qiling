@@ -13,88 +13,88 @@ from qiling.arch.cortex_m_const import IRQ
 class CortexMScb(QlPeripheral):
     def enable(self, IRQn):
         if IRQn == IRQ.USAGE_FAULT:
-            self.scb.SHCSR |= 1 << 18
+            self.instance.SHCSR |= 1 << 18
         if IRQn == IRQ.BUS_FAULT:
-            self.scb.SHCSR |= 1 << 17
+            self.instance.SHCSR |= 1 << 17
         if IRQn == IRQ.MEMORY_MANAGEMENT_FAULT:
-            self.scb.SHCSR |= 1 << 16
+            self.instance.SHCSR |= 1 << 16
         
     def disable(self, IRQn):
         if IRQn == IRQ.USAGE_FAULT:
-            self.scb.SHCSR &= ~(1 << 18)
+            self.instance.SHCSR &= ~(1 << 18)
         if IRQn == IRQ.BUS_FAULT:
-            self.scb.SHCSR &= ~(1 << 17)
+            self.instance.SHCSR &= ~(1 << 17)
         if IRQn == IRQ.MEMORY_MANAGEMENT_FAULT:
-            self.scb.SHCSR &= ~(1 << 16)
+            self.instance.SHCSR &= ~(1 << 16)
 
     def get_enable(self, IRQn):
         if IRQn == IRQ.USAGE_FAULT:
-            return (self.scb.SHCSR >> 18) & 1
+            return (self.instance.SHCSR >> 18) & 1
         if IRQn == IRQ.BUS_FAULT:
-            return (self.scb.SHCSR >> 17) & 1
+            return (self.instance.SHCSR >> 17) & 1
         if IRQn == IRQ.MEMORY_MANAGEMENT_FAULT:
-            return (self.scb.SHCSR >> 16) & 1
+            return (self.instance.SHCSR >> 16) & 1
         return 1
 
     def set_pending(self, IRQn):
         if IRQn == IRQ.NMI:
-            self.scb.ICSR |= 1 << 31
+            self.instance.ICSR |= 1 << 31
         if IRQn == IRQ.PENDSV:
-            self.scb.ICSR |= 3 << 27 # set-bit and clear-bit
+            self.instance.ICSR |= 3 << 27 # set-bit and clear-bit
         if IRQn == IRQ.SYSTICK:
-            self.scb.ICSR |= 3 << 25 # set-bit and clear-bit
+            self.instance.ICSR |= 3 << 25 # set-bit and clear-bit
 
         if IRQn == IRQ.MEMORY_MANAGEMENT_FAULT:
-            self.scb.SHCSR |= 1 << 13
+            self.instance.SHCSR |= 1 << 13
         if IRQn == IRQ.BUS_FAULT:
-            self.scb.SHCSR |= 1 << 14        
+            self.instance.SHCSR |= 1 << 14        
         if IRQn == IRQ.USAGE_FAULT:
-            self.scb.SHCSR |= 1 << 12
+            self.instance.SHCSR |= 1 << 12
         if IRQn == IRQ.SVCALL:
-            self.scb.SHCSR |= 1 << 15
+            self.instance.SHCSR |= 1 << 15
 
     def clear_pending(self, IRQn):
         if IRQn == IRQ.NMI:
-            self.scb.ICSR &= ~(1 << 31)
+            self.instance.ICSR &= ~(1 << 31)
         if IRQn == IRQ.PENDSV:
-            self.scb.ICSR &= ~(3 << 27)
+            self.instance.ICSR &= ~(3 << 27)
         if IRQn == IRQ.SYSTICK:
-            self.scb.ICSR &= ~(3 << 25)
+            self.instance.ICSR &= ~(3 << 25)
 
         if IRQn == IRQ.MEMORY_MANAGEMENT_FAULT:
-            self.scb.SHCSR &= ~(1 << 13)
+            self.instance.SHCSR &= ~(1 << 13)
         if IRQn == IRQ.BUS_FAULT:
-            self.scb.SHCSR &= ~(1 << 14)        
+            self.instance.SHCSR &= ~(1 << 14)        
         if IRQn == IRQ.USAGE_FAULT:
-            self.scb.SHCSR &= ~(1 << 12)
+            self.instance.SHCSR &= ~(1 << 12)
         if IRQn == IRQ.SVCALL:
-            self.scb.SHCSR &= ~(1 << 15)
+            self.instance.SHCSR &= ~(1 << 15)
 
     def get_pending(self, IRQn):
         if IRQn == IRQ.NMI:
-            return (self.scb.ICSR >> 31) & 1
+            return (self.instance.ICSR >> 31) & 1
         if IRQn == IRQ.PENDSV:
-            return (self.scb.ICSR >> 28) & 1
+            return (self.instance.ICSR >> 28) & 1
         if IRQn == IRQ.SYSTICK:
-            return (self.scb.ICSR >> 26) & 1
+            return (self.instance.ICSR >> 26) & 1
 
         if IRQn == IRQ.MEMORY_MANAGEMENT_FAULT:
-            return (self.scb.SHCSR >> 13) & 1
+            return (self.instance.SHCSR >> 13) & 1
         if IRQn == IRQ.BUS_FAULT:
-            return (self.scb.SHCSR >> 14) & 1        
+            return (self.instance.SHCSR >> 14) & 1        
         if IRQn == IRQ.USAGE_FAULT:
-            return (self.scb.SHCSR >> 12) & 1
+            return (self.instance.SHCSR >> 12) & 1
         if IRQn == IRQ.SVCALL:
-            return (self.scb.SHCSR >> 15) & 1
+            return (self.instance.SHCSR >> 15) & 1
         return 0
 
     def get_priority(self, IRQn):
-        return self.scb.SHP[(IRQn & 0xf) - 4]
+        return self.instance.SHP[(IRQn & 0xf) - 4]
 
     @QlPeripheral.monitor()
     def read(self, offset: int, size: int) -> int:
         buf = ctypes.create_string_buffer(size)
-        ctypes.memmove(buf, ctypes.addressof(self.scb) + offset, size)
+        ctypes.memmove(buf, ctypes.addressof(self.instance) + offset, size)
         return int.from_bytes(buf.raw, byteorder='little')
 
     @QlPeripheral.monitor()
@@ -104,4 +104,4 @@ class CortexMScb(QlPeripheral):
                 self.ql.hw.nvic.set_pending(IRQ.PENDSV)                
 
         data = (value).to_bytes(size, 'little')
-        ctypes.memmove(ctypes.addressof(self.scb) + offset, data, size)
+        ctypes.memmove(ctypes.addressof(self.instance) + offset, data, size)

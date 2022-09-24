@@ -6,7 +6,7 @@
 from functools import cached_property
 from contextlib import ContextDecorator
 
-from unicorn import Uc, UC_ARCH_ARM, UC_MODE_ARM, UC_MODE_MCLASS, UC_MODE_THUMB
+from unicorn import Uc, UcError, UC_ARCH_ARM, UC_MODE_ARM, UC_MODE_MCLASS, UC_MODE_THUMB, UC_ERR_OK
 from capstone import Cs, CS_ARCH_ARM, CS_MODE_ARM, CS_MODE_MCLASS, CS_MODE_THUMB
 from keystone import Ks, KS_ARCH_ARM, KS_MODE_ARM, KS_MODE_THUMB
 
@@ -17,6 +17,8 @@ from qiling.arch.register import QlRegisterManager
 from qiling.arch.cortex_m_const import IRQ, EXC_RETURN, CONTROL, EXCP
 from qiling.const import QL_ARCH, QL_ENDIAN, QL_VERBOSE
 from qiling.exception import QlErrorNotImplemented
+from qiling.extensions.multitask import MultiTaskUnicorn
+
 
 class QlInterruptContext(ContextDecorator):
     def __init__(self, ql: Qiling):
@@ -68,7 +70,7 @@ class QlArchCORTEX_M(QlArchARM):
 
     @cached_property
     def uc(self):
-        return Uc(UC_ARCH_ARM, UC_MODE_ARM + UC_MODE_MCLASS + UC_MODE_THUMB)
+        return MultiTaskUnicorn(UC_ARCH_ARM, UC_MODE_ARM + UC_MODE_MCLASS + UC_MODE_THUMB, 10)
 
     @cached_property
     def regs(self) -> QlRegisterManager:
@@ -85,7 +87,7 @@ class QlArchCORTEX_M(QlArchARM):
     @cached_property
     def assembler(self) -> Ks:
         return Ks(KS_ARCH_ARM, KS_MODE_ARM + KS_MODE_THUMB)
-
+    
     @property
     def is_thumb(self) -> bool:
         return True
@@ -93,27 +95,6 @@ class QlArchCORTEX_M(QlArchARM):
     @property
     def endian(self) -> QL_ENDIAN:
         return QL_ENDIAN.EL
-
-    def step(self):
-        self.ql.emu_start(self.effective_pc, 0, count=1)
-        self.ql.hw.step()
-
-    def stop(self):
-        self.ql.emu_stop()
-        self.runable = False
-
-    def run(self, count=-1, end=None):
-        self.runable = True
-
-        if type(end) is int:
-            end |= 1        
-        
-        while self.runable and count != 0:
-            if self.effective_pc == end:
-                break
-
-            self.step()
-            count -= 1    
 
     def is_handler_mode(self):
         return self.regs.ipsr > 1
@@ -126,7 +107,7 @@ class QlArchCORTEX_M(QlArchARM):
         self.regs.msp = self.ql.mem.read_ptr(0x0)
         self.regs.pc = self.ql.mem.read_ptr(0x4)
 
-    def soft_interrupt_handler(self, ql, intno):
+    def unicorn_exception_handler(self, ql, intno):
         forward_mapper = {
             EXCP.UDEF           : IRQ.HARD_FAULT,    # undefined instruction
             EXCP.SWI            : IRQ.SVCALL,        # software interrupt
@@ -157,7 +138,7 @@ class QlArchCORTEX_M(QlArchARM):
         except IndexError:
             raise QlErrorNotImplemented(f'Unhandled interrupt number ({intno})')
 
-    def hard_interrupt_handler(self, ql, intno):
+    def interrupt_handler(self, ql, intno):
         basepri = self.regs.basepri & 0xf0
         if basepri and basepri <= ql.hw.nvic.get_priority(intno):
             return
@@ -182,4 +163,4 @@ class QlArchCORTEX_M(QlArchARM):
             self.regs.write('pc', entry)
             self.regs.write('lr', exc_return) 
 
-            self.ql.emu_start(self.effective_pc, 0, count=0xffffff)
+            self.uc.emu_start(self.effective_pc, 0, 0, 0)

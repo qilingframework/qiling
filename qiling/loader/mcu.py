@@ -17,6 +17,7 @@ class IhexParser:
         self.mem  = []
         self.segments = []
 
+        self.base = 0
         with open(path, 'r') as f:
             for line in f.read().splitlines():
                 self.parse_line(line.strip())
@@ -119,12 +120,6 @@ class QlLoaderMCU(QlLoader):
                 alias = args['alias']
                 self.ql.hw.setup_remap(alias, base, size, info=f'[{name}]')
 
-            if memtype == 'bitband':
-                size = args['size'] * 32
-                base = args['base']
-                alias = args['alias']
-                self.ql.hw.setup_bitband(base, alias, size, info=f'[{name}]')
-
             if memtype == 'mmio':
                 size = args['size']
                 base = args['base']
@@ -138,6 +133,6 @@ class QlLoaderMCU(QlLoader):
         self.load_env()
         
         ## Handle interrupt from instruction execution
-        self.ql.hook_intr(self.ql.arch.soft_interrupt_handler)
+        self.ql.hook_intr(self.ql.arch.unicorn_exception_handler)
                 
         self.reset()

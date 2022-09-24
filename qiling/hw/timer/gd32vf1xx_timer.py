@@ -42,7 +42,7 @@ class GD32VF1xxTimer(QlPeripheral):
     def __init__(self, ql, label):
         super().__init__(ql, label)
 
-        self.timer = self.struct(
+        self.instance = self.struct(
             CTL0          =  0x00000000,
             CTL1          =  0x00000000,
             SMCFG         =  0x00000000,
