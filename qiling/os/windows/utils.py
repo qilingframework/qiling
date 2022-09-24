@@ -3,13 +3,12 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import ctypes
 from typing import Iterable, Tuple, TypeVar
 
 from unicorn import UcError
 
 from qiling import Qiling
-from qiling.const import QL_OS
+from qiling.exception import QlErrorSyscallError
 from qiling.os.const import POINTER
 from qiling.os.windows.fncc import STDCALL
 from qiling.os.windows.wdk_const import *
@@ -29,76 +28,76 @@ def has_lib_ext(name: str) -> bool:
     return ext in ("dll", "exe", "sys", "drv")
 
 
-def io_Write(ql: Qiling, in_buffer: bytes):
-    heap = ql.os.heap
+def io_Write(ql: Qiling, in_buffer: bytes) -> int:
+    major_func = ql.loader.driver_object.MajorFunction[IRP_MJ_WRITE]
 
-    if ql.loader.driver_object.MajorFunction[IRP_MJ_WRITE] == 0:
-        # raise error?
-        return (False, None)
+    if not major_func:
+        raise QlErrorSyscallError('null MajorFunction field')
 
-    driver_object_cls = ql.loader.driver_object.__class__
-    buf = ql.mem.read(ql.loader.driver_object.DeviceObject, ctypes.sizeof(driver_object_cls))
-    device_object = driver_object_cls.from_buffer(buf)
+    # keep track of all heap allocation within this scope to be able
+    # to free them when done
+    allocations = []
 
-    alloc_addr = []
-    def build_mdl(buffer_size: int, data=None):
-        mdl = make_mdl(ql.arch.bits)
+    def __heap_alloc(size: int) -> int:
+        address = ql.os.heap.alloc(size)
+        allocations.append(address)
 
-        mapped_address = heap.alloc(buffer_size)
-        alloc_addr.append(mapped_address)
-        mdl.MappedSystemVa.value = mapped_address
-        mdl.StartVa.value = mapped_address
-        mdl.ByteOffset = 0
-        mdl.ByteCount = buffer_size
-        if data:
-            written = data if len(data) <= buffer_size else data[:buffer_size]
-            ql.mem.write(mapped_address, written)
+        return address
 
-        return mdl
+    def __free_all(allocations: Iterable[int]) -> None:
+        for address in allocations:
+            ql.os.heap.free(address)
 
-    # allocate memory regions for IRP and IO_STACK_LOCATION
-    irp = make_irp(ql.arch.bits)
-    irpstack_class = irp.irpstack._type_
+    # allocate memory for IRP
+    irp_struct = make_irp(ql.arch.bits)
+    irp_addr = __heap_alloc(irp_struct.sizeof())
+    ql.log.info(f'IRP is at {irp_addr:#x}')
 
-    irp_addr = heap.alloc(ctypes.sizeof(irp))
-    alloc_addr.append(irp_addr)
+    # populate the structure
+    with irp_struct.ref(ql.mem, irp_addr) as irp_obj:
 
-    irpstack_addr = heap.alloc(ctypes.sizeof(irpstack_class))
-    alloc_addr.append(irpstack_addr)
+        # allocate memory for IO_STACK_LOCATION
+        irpstack_struct = make_io_stack_location(ql.arch.bits)
+        irpstack_addr = __heap_alloc(irpstack_struct.sizeof())
+        ql.log.info(f'IO_STACK_LOCATION is at {irpstack_addr:#x}')
 
-    # setup irp stack parameters
-    irpstack = irpstack_class()
-    # setup IRP structure
-    irp.irpstack = ctypes.cast(irpstack_addr, ctypes.POINTER(irpstack_class))
+        # populate the structure
+        with irpstack_struct.ref(ql.mem, irpstack_addr) as irpstack_obj:
+            irpstack_obj.MajorFunction = IRP_MJ_WRITE
+            irpstack_obj.Parameters.Write.Length = len(in_buffer)
 
-    irpstack.MajorFunction = IRP_MJ_WRITE
-    irpstack.Parameters.Write.Length = len(in_buffer)
-    ql.mem.write(irpstack_addr, bytes(irpstack))
+        # load DeviceObject from memory
+        drvobj_struct = ql.loader.driver_object.__class__
+        devobj_obj = drvobj_struct.load_from(ql.loader.driver_object.DeviceObject)
 
-    if device_object.Flags & DO_BUFFERED_IO:
         # BUFFERED_IO
-        system_buffer_addr = heap.alloc(len(in_buffer))
-        alloc_addr.append(system_buffer_addr)
-        ql.mem.write(system_buffer_addr, bytes(in_buffer))
-        irp.AssociatedIrp.SystemBuffer.value = system_buffer_addr
-    elif device_object.Flags & DO_DIRECT_IO:
+        if devobj_obj.Flags & DO_BUFFERED_IO:
+            system_buffer_addr = __heap_alloc(len(in_buffer))
+
+            ql.mem.write(system_buffer_addr, bytes(in_buffer))
+            irp_obj.AssociatedIrp.SystemBuffer = system_buffer_addr
+
         # DIRECT_IO
-        mdl = build_mdl(len(in_buffer))
-        mdl_addr = heap.alloc(ctypes.sizeof(mdl))
-        alloc_addr.append(mdl_addr)
+        elif devobj_obj.Flags & DO_DIRECT_IO:
+            mdl_struct = make_mdl(ql.arch.bits)
+            mdl_addr = __heap_alloc(mdl_struct.sizeof())
 
-        ql.mem.write(mdl_addr, bytes(mdl))
-        irp.MdlAddress.value = mdl_addr
-    else:
+            with mdl_struct.ref(ql.mem, mdl_addr) as mdl_obj:
+                mapped_address = __heap_alloc(len(in_buffer))
+
+                mdl_obj.MappedSystemVa = mapped_address
+                mdl_obj.StartVa = mapped_address
+                mdl_obj.ByteOffset = 0
+                mdl_obj.ByteCount = len(in_buffer)
+
+            irp_obj.MdlAddress = mdl_addr
+
         # NEITHER_IO
-        input_buffer_size = len(in_buffer)
-        input_buffer_addr = heap.alloc(input_buffer_size)
-        alloc_addr.append(input_buffer_addr)
-        ql.mem.write(input_buffer_addr, bytes(in_buffer))
-        irp.UserBuffer.value = input_buffer_addr
+        else:
+            input_buffer_addr = __heap_alloc(len(in_buffer))
 
-    # everything is done! Write IRP to memory
-    ql.mem.write(irp_addr, bytes(irp))
+            ql.mem.write(input_buffer_addr, bytes(in_buffer))
+            irp_obj.UserBuffer = input_buffer_addr
 
     # set function args
     # TODO: make sure this is indeed STDCALL
@@ -108,23 +107,22 @@ def io_Write(ql: Qiling, in_buffer: bytes):
         (POINTER, irp_addr)
     ))
 
+    ql.log.info(f'Executing from {major_func:#x}')
+
     try:
         # now emulate 
-        ql.run(ql.loader.driver_object.MajorFunction[IRP_MJ_WRITE])
+        ql.run(major_func)
     except UcError as err:
         verify_ret(ql, err)
 
-    # read current IRP state
-    irp_buffer = ql.mem.read(irp_addr, ctypes.sizeof(irp))
-    irp = irp.from_buffer(irp_buffer)
+    # read updated IRP state before releasing resources
+    with irp_struct.ref(ql.mem, irp_addr) as irp_obj:
+        info = irp_obj.IoStatus.Information
 
-    io_status = irp.IoStatus
-    # now free all alloc memory
-    for addr in alloc_addr:
-        # print("freeing heap memory at 0x%x" %addr) # FIXME: the output is not deterministic??
-        heap.free(addr)
+    # free all allocated memory
+    __free_all(allocations)
 
-    return True, io_status.Information.value
+    return info
 
 # Emulate DeviceIoControl() of Windows
 # BOOL DeviceIoControl(
@@ -136,8 +134,14 @@ def io_Write(ql: Qiling, in_buffer: bytes):
 #      DWORD        nOutBufferSize,
 #      LPDWORD      lpBytesReturned,
 #      LPOVERLAPPED lpOverlapped);
-def ioctl(ql: Qiling, params: Tuple[Tuple, int, bytes]) -> Tuple:
+def ioctl(ql: Qiling, params: Tuple[Tuple, int, bytes]) -> Tuple[int, int, bytes]:
+    major_func = ql.loader.driver_object.MajorFunction[IRP_MJ_DEVICE_CONTROL]
 
+    if not major_func:
+        raise QlErrorSyscallError('null MajorFunction field')
+
+    # keep track of all heap allocation within this scope to be able
+    # to free them when done
     allocations = []
 
     def __heap_alloc(size: int) -> int:
@@ -153,27 +157,9 @@ def ioctl(ql: Qiling, params: Tuple[Tuple, int, bytes]) -> Tuple:
     def ioctl_code(DeviceType: int, Function: int, Method: int, Access: int) -> int:
         return (DeviceType << 16) | (Access << 14) | (Function << 2) | Method
 
-    def build_mdl(buffer_size, data=None):
-        mdl = make_mdl(ql.arch.bits)
-
-        mapped_address = __heap_alloc(buffer_size)
-        mdl.MappedSystemVa.value = mapped_address
-        mdl.StartVa.value = mapped_address
-        mdl.ByteOffset = 0
-        mdl.ByteCount = buffer_size
-
-        if data:
-            written = data if len(data) <= buffer_size else data[:buffer_size]
-            ql.mem.write(mapped_address, written)
-
-        return mdl
-
-    if ql.loader.driver_object.MajorFunction[IRP_MJ_DEVICE_CONTROL] == 0:
-        # raise error?
-        return (None, None, None)
-
     # create new memory region to store input data
     _ioctl_code, output_buffer_size, in_buffer = params
+
     # extract data transfer method
     devicetype, function, ctl_method, access = _ioctl_code
 
@@ -184,52 +170,57 @@ def ioctl(ql: Qiling, params: Tuple[Tuple, int, bytes]) -> Tuple:
     # create new memory region to store out data
     output_buffer_addr = __heap_alloc(output_buffer_size)
 
-    # allocate memory regions for IRP and IO_STACK_LOCATION
-    irp = make_irp(ql.arch.bits)
-    irpstack_class = irp.irpstack._type_
-
-    irp_addr = __heap_alloc(ctypes.sizeof(irp))
-    irpstack_addr = __heap_alloc(ctypes.sizeof(irpstack_class))
-
-    # setup irp stack parameters
-    irpstack = irpstack_class()
-    # setup IRP structure
-    irp.irpstack = ctypes.cast(irpstack_addr, ctypes.POINTER(irpstack_class))
-
-    ql.log.info("IRP is at 0x%x, IO_STACK_LOCATION is at 0x%x" %(irp_addr, irpstack_addr))
-
-    irpstack.Parameters.DeviceIoControl.IoControlCode = ioctl_code(devicetype, function, ctl_method, access)
-    irpstack.Parameters.DeviceIoControl.OutputBufferLength = output_buffer_size
-    irpstack.Parameters.DeviceIoControl.InputBufferLength = input_buffer_size
-    irpstack.Parameters.DeviceIoControl.Type3InputBuffer.value = input_buffer_addr # used by IOCTL_METHOD_NEITHER
-    ql.mem.write(irpstack_addr, bytes(irpstack))
-
-    if ctl_method == METHOD_NEITHER:
-        irp.UserBuffer.value = output_buffer_addr  # used by IOCTL_METHOD_NEITHER
-
     # allocate memory for AssociatedIrp.SystemBuffer
     # used by IOCTL_METHOD_IN_DIRECT, IOCTL_METHOD_OUT_DIRECT and IOCTL_METHOD_BUFFERED
     system_buffer_size = max(input_buffer_size, output_buffer_size)
     system_buffer_addr = __heap_alloc(system_buffer_size)
-
-    # init data from input buffer
     ql.mem.write(system_buffer_addr, bytes(in_buffer))
-    irp.AssociatedIrp.SystemBuffer.value = system_buffer_addr
 
-    if ctl_method in (METHOD_IN_DIRECT, METHOD_OUT_DIRECT):
-        # Create MDL structure for output data
-        # used by both IOCTL_METHOD_IN_DIRECT and IOCTL_METHOD_OUT_DIRECT
-        mdl = build_mdl(output_buffer_size)
-        mdl_addr = __heap_alloc(ctypes.sizeof(mdl))
+    # allocate memory for IRP
+    irp_struct = make_irp(ql.arch.bits)
+    irp_addr = __heap_alloc(irp_struct.sizeof())
+    ql.log.info(f'IRP is at {irp_addr:#x}')
 
-        ql.mem.write(mdl_addr, bytes(mdl))
-        irp.MdlAddress.value = mdl_addr
+    # populate the structure
+    with irp_struct.ref(ql.mem, irp_addr) as irp_obj:
 
-    # everything is done! Write IRP to memory
-    ql.mem.write(irp_addr, bytes(irp))
+        # allocate memory for IO_STACK_LOCATION
+        irpstack_struct = make_io_stack_location(ql.arch.bits)
+        irpstack_addr = __heap_alloc(irpstack_struct.sizeof())
+        ql.log.info(f'IO_STACK_LOCATION is at {irpstack_addr:#x}')
+
+        # populate the structure
+        with irpstack_struct.ref(ql.mem, irpstack_addr) as irpstack_obj:
+            irpstack_obj.Parameters.DeviceIoControl.IoControlCode = ioctl_code(devicetype, function, ctl_method, access)
+            irpstack_obj.Parameters.DeviceIoControl.OutputBufferLength = output_buffer_size
+            irpstack_obj.Parameters.DeviceIoControl.InputBufferLength = input_buffer_size
+            irpstack_obj.Parameters.DeviceIoControl.Type3InputBuffer = input_buffer_addr # used by IOCTL_METHOD_NEITHER
+
+        irp_obj.irpstack = irpstack_addr
+
+        if ctl_method in (METHOD_IN_DIRECT, METHOD_OUT_DIRECT):
+            mdl_struct = make_mdl(ql.arch.bits)
+            mdl_addr = __heap_alloc(mdl_struct.sizeof())
+
+            # Create MDL structure for output data
+            with mdl_struct.ref(ql.mem, mdl_addr) as mdl_obj:
+                mapped_address = __heap_alloc(output_buffer_size)
+
+                mdl_obj.MappedSystemVa = mapped_address
+                mdl_obj.StartVa = mapped_address
+                mdl_obj.ByteOffset = 0
+                mdl_obj.ByteCount = output_buffer_size
+
+            # used by both IOCTL_METHOD_IN_DIRECT and IOCTL_METHOD_OUT_DIRECT
+            irp_obj.MdlAddress = mdl_addr
+
+        elif ctl_method == METHOD_NEITHER:
+            # used by IOCTL_METHOD_NEITHER
+            irp_obj.UserBuffer = output_buffer_addr
+
+        irp_obj.AssociatedIrp.SystemBuffer = system_buffer_addr
 
     # set function args
-    ql.log.info("Executing IOCTL with DeviceObject = 0x%x, IRP = 0x%x" %(ql.loader.driver_object.DeviceObject, irp_addr))
     # TODO: make sure this is indeed STDCALL
     ql.os.fcall = ql.os.fcall_select(STDCALL)
     ql.os.fcall.writeParams((
@@ -237,30 +228,39 @@ def ioctl(ql: Qiling, params: Tuple[Tuple, int, bytes]) -> Tuple:
         (POINTER, irp_addr)
     ))
 
+    ql.log.info(f'Executing from {major_func:#x}')
+
     try:
-        ql.log.info(f"Executing from: {ql.loader.driver_object.MajorFunction[IRP_MJ_DEVICE_CONTROL]:#x}")
         # now emulate IOCTL's DeviceControl
-        ql.run(ql.loader.driver_object.MajorFunction[IRP_MJ_DEVICE_CONTROL])
+        ql.run(major_func)
     except UcError as err:
         verify_ret(ql, err)
 
-    # read current IRP state
-    irp_buffer = ql.mem.read(irp_addr, ctypes.sizeof(irp))
-    irp = irp.__class__.from_buffer(irp_buffer)
+    # read updated IRP state before releasing resources
+    with irp_struct.ref(ql.mem, irp_addr) as irp_obj:
+        io_status = irp_obj.IoStatus
+        mdl_addr = irp_obj.MdlAddress
 
-    io_status = irp.IoStatus
+        info = io_status.Information
+        status = io_status.Status.Status
 
     # read output data
     output_data = b''
-    if io_status.Status.Status >= 0:
+
+    if status >= 0:
         if ctl_method == METHOD_BUFFERED:
-            output_data = ql.mem.read(system_buffer_addr, io_status.Information.value)
-        if ctl_method in (METHOD_IN_DIRECT, METHOD_OUT_DIRECT):
-            output_data = ql.mem.read(mdl.MappedSystemVa.value, io_status.Information.value)
-        if ctl_method == METHOD_NEITHER:
-            output_data = ql.mem.read(output_buffer_addr, io_status.Information.value)
+            output_data = ql.mem.read(system_buffer_addr, info)
+
+        elif ctl_method in (METHOD_IN_DIRECT, METHOD_OUT_DIRECT):
+            with mdl_struct.ref(ql.mem, mdl_addr) as mdl_obj:
+                mapped_va = mdl_obj.MappedSystemVa
+
+            output_data = ql.mem.read(mapped_va, info)
+
+        elif ctl_method == METHOD_NEITHER:
+            output_data = ql.mem.read(output_buffer_addr, info)
 
     # now free all alloc memory
     __free_all(allocations)
 
-    return io_status.Status.Status, io_status.Information.value, output_data
+    return status, info, output_data

@@ -404,39 +404,47 @@ def select_os(ostype: QL_OS) -> QlClassInit['QlOs']:
 
     return partial(obj)
 
-def profile_setup(ostype: QL_OS, filename: Optional[str]):
+def profile_setup(ostype: QL_OS, user_config: Optional[Union[str, dict]]):
     # mcu uses a yaml-based config
     if ostype == QL_OS.MCU:
         import yaml
 
-        if filename:
-            with open(filename) as f:
+        if user_config:
+            with open(user_config) as f:
                 config = yaml.load(f, Loader=yaml.Loader)
         else:
             config = {}
 
     else:
+        # patch 'getint' to convert integers of all bases
+        int_converter = partial(int, base=0)
+        config = ConfigParser(converters={'int': int_converter})
+
         qiling_home = Path(inspect.getfile(inspect.currentframe())).parent
         os_profile = qiling_home / 'profiles' / f'{ostype.name.lower()}.ql'
 
-        profiles = [os_profile]
+        # read default profile first
+        config.read(os_profile)
 
-        if filename:
-            profiles.append(filename)
+        # user-specified profile adds or overrides existing setting
+        if isinstance(user_config, dict):
+            config.read_dict(user_config)
 
-        # patch 'getint' to convert integers of all bases
-        int_converter = partial(int, base=0)
-
-        config = ConfigParser(converters={'int': int_converter})
-        config.read(profiles)
-
+        elif user_config:
+            config.read(user_config)
+        
     return config
 
 # verify if emulator returns properly
-def verify_ret(ql, err):
+def verify_ret(ql: 'Qiling', err):
+    # init_sp location is not consistent; this is here to work around that
+    if not hasattr(ql.os, 'init_sp'):
+        ql.os.init_sp = ql.loader.init_sp
+
     ql.log.debug("Got exception %u: init SP = %x, current SP = %x, PC = %x" %(err.errno, ql.os.init_sp, ql.arch.regs.arch_sp, ql.arch.regs.arch_pc))
 
-    ql.os.RUN = False
+    if hasattr(ql.os, 'RUN'):
+        ql.os.RUN = False
 
     # timeout is acceptable in this case
     if err.errno in (UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED):

@@ -31,12 +31,10 @@ def hook_printk(ql: Qiling, address: int, params):
         return 0
 
     level = int(format[1]) if format[1].isdigit() else 4
-    nargs = format.count("%")
-    ptypes = (POINTER, ) + (PARAM_INTN, ) * nargs
-    args = ql.os.fcall.readParams(ptypes)[1:]
+    args = ql.os.fcall.readEllipsis(params.values())
 
-    count = ql.os.utils.printf(f'{PRINTK_LEVEL[level]} {format[2:]}', args, wstring=False)
-    ql.os.utils.update_ellipsis(params, args)
+    count, upd_args = ql.os.utils.printf(f'{PRINTK_LEVEL[level]} {format[2:]}', args, wstring=False)
+    upd_args(params)
 
     return count
 

@@ -11,7 +11,8 @@ from unicorn import UcError
 sys.path.append("..")
 from qiling import Qiling
 from qiling.const import QL_STOP, QL_VERBOSE
-from qiling.os.const import POINTER, DWORD, STRING, HANDLE
+from qiling.os.const import POINTER, DWORD, HANDLE
+from qiling.exception import QlErrorSyscallError
 from qiling.os.windows import utils
 from qiling.os.windows.wdk_const import *
 from qiling.os.windows.api import *
@@ -98,8 +99,7 @@ class PETest(unittest.TestCase):
             buffer = ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
 
             if hFile == 0x13371337:
-                success, nNumberOfBytesToWrite = utils.io_Write(ql.amsint32_driver, buffer)
-                r = int(success)
+                nNumberOfBytesToWrite = utils.io_Write(ql.amsint32_driver, buffer)
 
             elif hFile == 0xfffffff5:
                 s = buffer.decode()
@@ -203,7 +203,12 @@ class PETest(unittest.TestCase):
         # asmint32 driver should have been initialized by now. otherwise we get an exception
         amsint32: Qiling = getattr(ql, 'amsint32_driver')
 
-        utils.io_Write(amsint32, ql.pack32(0xdeadbeef))
+        # asmint32 driver init doesn't get to run far enough to initialize necessary data
+        # structures. it is expected to fail.
+        try:
+            utils.io_Write(amsint32, ql.pack32(0xdeadbeef))
+        except QlErrorSyscallError:
+            pass
 
         # TODO: not sure whether this one is really STDCALL
         fcall = amsint32.os.fcall_select(STDCALL)
@@ -264,6 +269,6 @@ class PETest(unittest.TestCase):
         # - Call DriverUnload
 
         del ql
-        
+
 if __name__ == "__main__":
     unittest.main()

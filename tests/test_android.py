@@ -44,17 +44,17 @@ class TestAndroid(unittest.TestCase):
         del ql
 
 
-    #@unittest.skipUnless(platform.system() == 'Linux', 'run only on Linux')
-    #def test_android_arm(self):
-    #    test_binary = "../examples/rootfs/arm64_android6.0/bin/arm_android_jniart"
-    #    rootfs = "../examples/rootfs/arm64_android6.0"
-    #    env = {"ANDROID_DATA":"/data", "ANDROID_ROOT":"/system"}
+    @unittest.skipUnless(platform.system() == 'Linux', 'run only on Linux')
+    def test_android_arm(self):
+        test_binary = "../examples/rootfs/arm64_android6.0/bin/arm_android_jniart"
+        rootfs = "../examples/rootfs/arm64_android6.0"
+        env = {"ANDROID_DATA":"/data", "ANDROID_ROOT":"/system"}
 
-    #    ql = Qiling([test_binary], rootfs, env, multithread=True)
-    #    ql.os.set_syscall("close", my_syscall_close)
-    #    ql.add_fs_mapper("/proc/self/task/2000/maps", Fake_maps(ql))
-    #    ql.run()
-    #    del ql
+        ql = Qiling([test_binary], rootfs, env, multithread=True)
+        ql.os.set_syscall("close", my_syscall_close)
+        ql.add_fs_mapper("/proc/self/task/2000/maps", Fake_maps(ql))
+        ql.run()
+        del ql
 
 
 if __name__ == "__main__":

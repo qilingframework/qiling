@@ -878,7 +878,7 @@ class QlEmuQiling:
     def __init__(self):
         self.path = None
         self.rootfs = None
-        self.ql: Qiling
+        self.ql: Qiling = None
         self.status = None
         self.exit_addr = None
         self.baseaddr = None
@@ -1466,7 +1466,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         if "x86" in IDA.get_ql_arch_string(): # cmovlg eax, ebx
             reg1 = IDA.print_operand(ida_addr, 0).lower()
             reg2 = IDA.print_operand(ida_addr, 1).lower()
-            reg2_val = ql.arch.regs.__getattribute__(reg2)
+            reg2_val = ql.arch.regs.__getattr__(reg2)
             logging.info(f"Force set {reg1} to {hex(reg2_val)}")
             ql.arch.regs.__setattr__(reg1, reg2_val)
             return True
@@ -1486,7 +1486,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             elif "csel" in instr: # csel dst, src1, src2, cond
                 dst = IDA.print_operand(ida_addr, 0).lower()
                 src = IDA.print_operand(ida_addr, 2).lower()
-                src_val = ql.arch.regs.__getattribute__(src)
+                src_val = ql.arch.regs.__getattr__(src)
                 logging.info(f"Force set {dst} to {hex(src_val)}")
                 ql.arch.regs.__setattr__(dst, src_val)
                 return True
@@ -1597,7 +1597,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         registers = [ k for k in ql.arch.regs.register_mapping.keys() if type(k) is str ]
         for idx in range(0, len(registers), 3):
             regs = registers[idx:idx+3]
-            s = "\t".join(map(lambda v: f"{v:4}: {ql.arch.regs.__getattribute__(v):016x}", regs))
+            s = "\t".join(map(lambda v: f"{v:4}: {ql.arch.regs.__getattr__(v):016x}", regs))
             logging.debug(s)
 
     # Q: Why we need emulation to help us find real control flow considering there are some

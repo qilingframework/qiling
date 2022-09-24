@@ -5,12 +5,12 @@
 from setuptools import setup, find_packages
 
 # NOTE: use "-dev" for dev branch
-#VERSION = "1.4.3" + "-dev"
-VERSION = "1.4.3"
+#VERSION = "1.4.5" + "-dev"
+VERSION = "1.4.4"
 
 requirements = [
     "capstone>=4.0.1",
-    "unicorn>=2.0.0-rc7",
+    "unicorn>=2.0.0",
     "pefile>=2022.5.30",
     "python-registry>=1.3.1",
     "keystone-engine>=0.9.2",
@@ -18,7 +18,7 @@ requirements = [
     "gevent>=20.9.0",
     "multiprocess>=0.70.12.2",
     "windows-curses>=2.1.0;platform_system=='Windows'",
-    "pyyaml>=6.0"
+    "pyyaml>=6.0",
 ]
 
 extras = {
@@ -40,8 +40,11 @@ extras = {
         "cmd2"
     ],
     "fuzz" : [
-        "unicornafl>=2.0.0;platform_system=='Windows'",
+        "unicornafl>=2.0.0;platform_system!='Windows'",
         "fuzzercorn>=0.0.1;platform_system=='Linux'"
+    ],
+    "RE": [
+       "r2libr>=5.7.4",
     ]
 }
 

@@ -1,0 +1,71 @@
+
+import io
+from typing import TYPE_CHECKING, AnyStr, Optional, Sized
+
+from qiling.os.mapper import QlFsMappedObject
+
+if TYPE_CHECKING:
+    from qiling.os.linux.linux import QlOsLinux
+    from qiling.os.memory import QlMemoryManager
+
+
+class QlProcFS:
+
+    @staticmethod
+    def self_auxv(os: 'QlOsLinux') -> QlFsMappedObject:
+        nbytes = os.ql.arch.bits // 8
+
+        auxv_addr = os.ql.loader.auxv
+        null_entry = bytes(nbytes * 2)
+
+        auxv_data = bytearray()
+
+        # keep reading until AUXV.AT_NULL is reached
+        while not auxv_data.endswith(null_entry):
+            auxv_data.extend(os.ql.mem.read(auxv_addr, nbytes))
+            auxv_addr += nbytes
+
+            auxv_data.extend(os.ql.mem.read(auxv_addr, nbytes))
+            auxv_addr += nbytes
+    
+        return io.BytesIO(bytes(auxv_data))
+
+
+    @staticmethod
+    def self_cmdline(os: 'QlOsLinux') -> QlFsMappedObject:
+        entries = (arg.encode('utf-8') for arg in os.ql.argv)
+        cmdline = b'\x00'.join(entries) + b'\x00'
+
+        return io.BytesIO(cmdline)
+
+
+    @staticmethod
+    def self_environ(os: 'QlOsLinux') -> QlFsMappedObject:
+        def __to_bytes(s: AnyStr) -> bytes:
+            if isinstance(s, str):
+                return s.encode('utf-8')
+
+            return s
+
+        entries = (b'='.join((__to_bytes(k), __to_bytes(v))) for k, v in os.ql.env.items())
+        environ = b'\x00'.join(entries) + b'\x00'
+
+        return io.BytesIO(environ)
+
+
+    @staticmethod
+    def self_exe(os: 'QlOsLinux') -> QlFsMappedObject:
+        with open(os.ql.path, 'rb') as exefile:
+            content = exefile.read()
+
+        return io.BytesIO(content)
+    
+    @staticmethod
+    def self_map(mem: 'QlMemoryManager') -> QlFsMappedObject:
+        content = b""
+        mapinfo = mem.get_mapinfo()
+
+        for lbound, ubound, perms, label, container in mapinfo:
+            content += f"{lbound:x}-{ubound:x}\t{perms}p\t0\t00:00\t0\t{container if container else label}\n".encode("utf-8")
+
+        return io.BytesIO(content)

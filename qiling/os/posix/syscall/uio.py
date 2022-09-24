@@ -17,7 +17,7 @@ def ql_syscall_writev(ql: Qiling, fd: int, vec: int, vlen: int):
         regreturn += l
 
         buf = ql.mem.read(addr, l)
-        ql.log.debug(f'{buf.decode()!r}')
+        ql.log.debug(f'{bytes(buf)}')
 
         if hasattr(ql.os.fd[fd], 'write'):
             ql.os.fd[fd].write(buf)

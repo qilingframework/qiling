@@ -48,5 +48,12 @@ def hook_Process32FirstW(ql: Qiling, address: int, params):
     'lppe'      : LPPROCESSENTRY32W
 })
 def hook_Process32NextW(ql: Qiling, address: int, params):
-    # Return True if more process, 0 else
-    return int(ql.os.syscall_count["Process32NextW"] < 3)  # I don' know how many process the sample want's to cycle
+    global __call_count
+
+    __call_count += 1
+
+    # FIXME: this is an undocumented workaround, probably to satisfy one of
+    # the samples. better implement that as an ad-hoc hook there
+    return int(__call_count < 3)
+
+__call_count = 0

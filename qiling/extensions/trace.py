@@ -97,7 +97,7 @@ def __to_trace_line(record: TraceRecord, symsmap: Mapping[int, str] = {}) -> str
 		"""
 
 		if op.type == CS_OP_REG:
-			return insn.reg_name(op.value.reg)
+			return insn.reg_name(op.value.reg) or '?'
 
 		elif op.type == CS_OP_IMM:
 			imm = op.value.imm
@@ -113,6 +113,7 @@ def __to_trace_line(record: TraceRecord, symsmap: Mapping[int, str] = {}) -> str
 			disp  = mem.disp
 
 			ea = base + index * scale + disp
+			seg = f'{insn.reg_name(mem.segment)}:' if mem.segment else ''
 
 			# we construct the string representation for each operand; denote memory
 			# dereferenes with the appropriate 'ptr' prefix. the 'lea' instruction is
@@ -131,7 +132,7 @@ def __to_trace_line(record: TraceRecord, symsmap: Mapping[int, str] = {}) -> str
 
 				qualifier = f'{ptr} ptr '
 
-			return f'{qualifier}[{__resolve(ea) or f"{ea:#x}"}]'
+			return f'{qualifier}{seg}[{__resolve(ea) or f"{ea:#x}"}]'
 
 		# unexpected op type
 		raise RuntimeError

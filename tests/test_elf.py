@@ -209,8 +209,12 @@ class ELFTest(unittest.TestCase):
 
 
     def test_elf_linux_x86(self):
-        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_hello"], "../examples/rootfs/x86_linux", verbose=QL_VERBOSE.DEBUG, log_file="test.qlog")     
+        filename = 'test.qlog'
+
+        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_hello"], "../examples/rootfs/x86_linux", verbose=QL_VERBOSE.DEBUG, log_file=filename)
         ql.run()
+
+        os.remove(filename)
         del ql
 
 
@@ -352,7 +356,7 @@ class ELFTest(unittest.TestCase):
             all_mem = ql.mem.save()
             ql.mem.restore(all_mem)
 
-        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello"], "../examples/rootfs/arm_linux", verbose=QL_VERBOSE.DEBUG, profile='profiles/append_test.ql')
+        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello"], "../examples/rootfs/arm_linux", verbose=QL_VERBOSE.DEBUG)
         ql.os.set_api('puts', my_puts)
         ql.run()
         del ql
@@ -1073,7 +1077,7 @@ class ELFTest(unittest.TestCase):
         del ql
 
     def test_elf_linux_armeb(self):     
-        ql = Qiling(["../examples/rootfs/armeb_linux/bin/armeb_hello"], "../examples/rootfs/armeb_linux", verbose=QL_VERBOSE.DEBUG, profile='profiles/append_test.ql')
+        ql = Qiling(["../examples/rootfs/armeb_linux/bin/armeb_hello"], "../examples/rootfs/armeb_linux", verbose=QL_VERBOSE.DEBUG)
         ql.run()
         del ql
 

@@ -3,23 +3,26 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from enum import Enum
 from typing import TYPE_CHECKING, cast
 
 from qiling import Qiling
-from qiling.const import QL_ARCH
+from qiling.const import QL_ARCH, QL_HOOK_BLOCK
 from qiling.os.thread import QlThread
 
 if TYPE_CHECKING:
     from qiling.os.windows.windows import QlOsWindows
 
-class QlWindowsThread(QlThread):
-    # static var
-    ID = 0
+class THREAD_STATUS(Enum):
     READY = 0
     RUNNING = 1
     TERMINATED = 2
 
-    def __init__(self, ql: Qiling, status: int = 1, isFake: bool = False):
+class QlWindowsThread(QlThread):
+    # static var
+    ID = 0
+
+    def __init__(self, ql: Qiling, status: THREAD_STATUS = THREAD_STATUS.RUNNING):
         super().__init__(ql)
 
         self.ql = ql
@@ -29,56 +32,56 @@ class QlWindowsThread(QlThread):
         self.waitforthreads = []
         self.tls = {}
         self.tls_index = 0
-        self.fake = isFake
 
-    # create new thread
-    def create(self, func_addr: int, func_params: int, status: int) -> int:
-        os = cast('QlOsWindows', self.ql.os)
+    # create a new thread with context
+    @classmethod
+    def create(cls, ql: Qiling, stack_size: int, func_addr: int, func_params: int, status: THREAD_STATUS) -> 'QlWindowsThread':
+        os = cast('QlOsWindows', ql.os)
+
+        thread = cls(ql, status)
 
         # create new stack
-        stack_size = 1024
         new_stack = os.heap.alloc(stack_size) + stack_size
 
-        asize = self.ql.arch.pointersize
-        context = self.ql.arch.regs.save()
+        asize = ql.arch.pointersize
+        context = ql.arch.regs.save()
 
         # set return address
-        self.ql.mem.write_ptr(new_stack - asize, os.thread_manager.thread_ret_addr)
+        ql.mem.write_ptr(new_stack - asize, os.thread_manager.thread_ret_addr)
 
         # set parameters
-        if self.ql.arch.type == QL_ARCH.X86:
-            self.ql.mem.write_ptr(new_stack, func_params)
-        elif self.ql.arch.type == QL_ARCH.X8664:
+        if ql.arch.type == QL_ARCH.X86:
+            ql.mem.write_ptr(new_stack, func_params)
+        elif ql.arch.type == QL_ARCH.X8664:
             context["rcx"] = func_params
 
         # set eip/rip, ebp/rbp, esp/rsp
-        if self.ql.arch.type == QL_ARCH.X86:
+        if ql.arch.type == QL_ARCH.X86:
             context["eip"] = func_addr
             context["ebp"] = new_stack - asize
             context["esp"] = new_stack - asize
 
-        elif self.ql.arch.type == QL_ARCH.X8664:
+        elif ql.arch.type == QL_ARCH.X8664:
             context["rip"] = func_addr
             context["rbp"] = new_stack - asize
             context["rsp"] = new_stack - asize
 
-        self.saved_context = context
-        self.status = status
+        thread.saved_context = context
 
-        return self.id
+        return thread
 
     def suspend(self) -> None:
         self.saved_context = self.ql.arch.regs.save()
 
     def resume(self) -> None:
         self.ql.arch.regs.restore(self.saved_context)
-        self.status = QlWindowsThread.RUNNING
+        self.status = THREAD_STATUS.RUNNING
 
     def stop(self) -> None:
-        self.status = QlWindowsThread.TERMINATED
+        self.status = THREAD_STATUS.TERMINATED
 
     def is_stop(self) -> bool:
-        return self.status == QlWindowsThread.TERMINATED
+        return self.status == THREAD_STATUS.TERMINATED
 
     def waitfor(self, thread: 'QlWindowsThread') -> None:
         self.waitforthreads.append(thread)
@@ -88,13 +91,12 @@ class QlWindowsThread(QlThread):
 
 
 # Simple Thread Manager
-class QlWindowsThreadManagement(QlThread):
+class QlWindowsThreadManagement:
     TIME_SLICE = 10
 
     def __init__(self, ql: Qiling, os: 'QlOsWindows', cur_thread: QlWindowsThread):
-        super().__init__(ql)
-
         self.ql = ql
+
         # main thread
         self.cur_thread = cur_thread
         self.threads = [self.cur_thread]
@@ -110,29 +112,37 @@ class QlWindowsThreadManagement(QlThread):
             else:
                 self.icount += 1
 
-            self.do_schedule()
+            switched = self.do_schedule()
+
+            # in case another thread was resumed, all remaining hooks should be skipped to prevent them
+            # from running with the new thread's context.
+
+            return QL_HOOK_BLOCK if switched else 0
 
         ql.hook_code(__thread_scheduler)
 
     def append(self, thread: QlWindowsThread):
         self.threads.append(thread)
 
-    def need_schedule(self):
-        return self.cur_thread.is_stop() or (self.icount % QlWindowsThreadManagement.TIME_SLICE) == 0
+    def do_schedule(self) -> bool:
+        need_schedule = self.cur_thread.is_stop() or (self.icount % QlWindowsThreadManagement.TIME_SLICE) == 0
+        switched = False
 
-    def do_schedule(self) -> None:
-        if self.need_schedule():
+        if need_schedule:
             # if there is less than one thread, this loop won't run
             for i in range(1, len(self.threads)):
                 next_id = (self.cur_thread.id + i) % len(self.threads)
                 next_thread = self.threads[next_id]
 
                 # find next thread
-                if next_thread.status == QlWindowsThread.RUNNING and not next_thread.has_waitfor():
+                if next_thread.status == THREAD_STATUS.RUNNING and not next_thread.has_waitfor():
                     if not self.cur_thread.is_stop():
                         self.cur_thread.suspend()
 
                     next_thread.resume()
                     self.cur_thread = next_thread
 
+                    switched = True
                     break
+
+        return switched

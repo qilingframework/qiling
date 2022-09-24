@@ -13,9 +13,10 @@
 # gdb remote protocol:
 #   https://sourceware.org/gdb/current/onlinedocs/gdb/Remote-Protocol.html
 
-import os, socket, re
+import os, socket, re, tempfile
 from logging import Logger
-from typing import Iterator, Optional, Union
+from typing import Iterator, Mapping, Optional, Union
+import typing
 
 from unicorn import UcError
 from unicorn.unicorn_const import (
@@ -30,6 +31,8 @@ from qiling.const import QL_ARCH, QL_ENDIAN, QL_OS
 from qiling.debugger import QlDebugger
 from qiling.debugger.gdb.xmlregs import QlGdbFeatures
 from qiling.debugger.gdb.utils import QlGdbUtils
+from qiling.os.linux.procfs import QlProcFS
+from qiling.os.mapper import QlFsMappedCallable, QlFsMappedObject
 
 # gdb logging prompt
 PROMPT = r'gdb>'
@@ -63,7 +66,7 @@ class QlGdb(QlDebugger):
     """A simple gdbserver implementation.
     """
 
-    def __init__(self, ql: Qiling, ip: str = '127.0.01', port: int = 9999):
+    def __init__(self, ql: Qiling, ip: str = '127.0.0.1', port: int = 9999):
         super().__init__(ql)
 
         if type(port) is str:
@@ -100,6 +103,11 @@ class QlGdb(QlDebugger):
 
         self.features = QlGdbFeatures(self.ql.arch.type, self.ql.os.type)
         self.regsmap = self.features.regsmap
+
+        # https://sourceware.org/bugzilla/show_bug.cgi?id=17760
+        # 42000 is the magic pid to indicate the remote process.
+        self.ql.add_fs_mapper(r'/proc/42000/maps',  QlFsMappedCallable(QlProcFS.self_map, self.ql.mem))
+        self.fake_procfs: Mapping[int, typing.IO] = {}
 
     def run(self):
         server = GdbSerialConn(self.ip, self.port, self.ql.log)
@@ -378,7 +386,7 @@ class QlGdb(QlDebugger):
 
             if query == 'Supported':
                 # list of supported features excluding the multithreading-related ones
-                common = (
+                features = [
                     'BreakpointCommands+',
                     'ConditionalBreakpoints+',
                     'ConditionalTracepoints+',
@@ -408,23 +416,21 @@ class QlGdb(QlDebugger):
                     'multiprocess+',
                     'no-resumed+',
                     'qXfer:auxv:read+',
-                    'qXfer:exec-file:read+',
                     'qXfer:features:read+',
                     # 'qXfer:libraries-svr4:read+',
                     # 'qXfer:osdata:read+',
                     'qXfer:siginfo:read+',
                     'qXfer:siginfo:write+',
                     'qXfer:statictrace:read+',
-                    'qXfer:threads:read+',
                     'qXfer:traceframe-info:read+',
                     'swbreak+',
                     'tracenz+',
                     'vfork-events+'
-                )
+                ]
 
                 # might or might not need for multi thread
                 if self.ql.multithread:
-                    features = (
+                    features += [
                         'PacketSize=47ff',
                         'FastTracepoints+',
                         'QThreadEvents+',
@@ -436,16 +442,26 @@ class QlGdb(QlDebugger):
                         'qXfer:btrace-conf:read+',
                         'qXfer:btrace:read+',
                         'vContSupported+'
-                    )
+                    ]
 
                 else:
-                    features = (
+                    features += [
                         'PacketSize=3fff',
                         'qXfer:spu:read+',
                         'qXfer:spu:write+'
-                    )
+                    ]
 
-                return ';'.join(common + features)
+                # os dependent features
+                if not self.ql.interpreter:
+                    # filesystem dependent features
+                    if hasattr(self.ql.os, 'path'):
+                        features.append('qXfer:exec-file:read+')
+
+                    # process dependent features
+                    if hasattr(self.ql.os, 'pid'):
+                        features.append('qXfer:threads:read+')
+
+                return ';'.join(features)
 
             elif query == 'Xfer':
                 feature, op, annex, params = data
@@ -462,39 +478,27 @@ class QlGdb(QlDebugger):
                     return f'{"l" if len(content) < length else "m"}{content}'
 
                 elif feature == 'threads' and op == 'read':
-                    if not self.ql.baremetal and hasattr(self.ql.os, 'pid'):
-                        content = '\r\n'.join((
-                            '<threads>',
-                            f'<thread id="{self.ql.os.pid}" core="1" name="{self.ql.targetname}"/>',
-                            '</threads>'
-                        ))
-
-                    else:
-                        content = ''
+                    content = '\r\n'.join((
+                        '<threads>',
+                        f'<thread id="{self.ql.os.pid}" core="1" name="{self.ql.targetname}"/>',
+                        '</threads>'
+                    ))
 
                     return f'l{content}'
 
                 elif feature == 'auxv' and op == 'read':
-                    auxv_data = bytearray()
+                    try:
+                        with self.ql.os.fs_mapper.open('/proc/self/auxv', 'rb') as infile:
+                            infile.seek(offset, 0) # SEEK_SET
+                            auxv_data = infile.read(length)
 
-                    if hasattr(self.ql.loader, 'auxv'):
-                        nbytes = self.ql.arch.bits // 8
+                    except FileNotFoundError:
+                        auxv_data = b''
 
-                        auxv_addr = self.ql.loader.auxv + offset
-                        null_entry = bytes(nbytes * 2)
-
-                        # keep reading until AUXV.AT_NULL is reached
-                        while not auxv_data.endswith(null_entry):
-                            auxv_data.extend(self.ql.mem.read(auxv_addr, nbytes))
-                            auxv_addr += nbytes
-
-                            auxv_data.extend(self.ql.mem.read(auxv_addr, nbytes))
-                            auxv_addr += nbytes
-
-                    return b'l' + auxv_data[:length]
+                    return b'l' + auxv_data
 
                 elif feature == 'exec-file' and op == 'read':
-                    return f'l{os.path.abspath(self.ql.path)}'
+                    return f'l{self.ql.os.path.host_to_virtual_path(self.ql.path)}'
 
                 elif feature == 'libraries-svr4' and op == 'read':
                     # TODO: this one requires information of loaded libraries which currently not provided
@@ -584,16 +588,24 @@ class QlGdb(QlDebugger):
                         flags = int(flags, 16)
                         mode = int(mode, 16)
 
-                        # try to guess whether this is an emulated path or real one
-                        if path.startswith(os.path.abspath(self.ql.rootfs)):
-                            host_path = path
+                        virtpath = self.ql.os.path.virtual_abspath(path)
+
+                        if virtpath.startswith(r'/proc') and self.ql.os.fs_mapper.has_mapping(virtpath):
+                            # Mapped object by itself is not backed with a host fd and thus a tempfile can
+                            # 1. Make pread easy to implement and avoid duplicate code like seek, fd etc.
+                            # 2. Avoid fd clash if we assign a generated fd.
+                            tfile = tempfile.TemporaryFile("rb+")
+                            tfile.write(self.ql.os.fs_mapper.open(virtpath, "rb+").read())
+                            tfile.seek(0, os.SEEK_SET)
+                            fd = tfile.fileno()
+                            self.fake_procfs[fd] = tfile
                         else:
                             host_path = self.ql.os.path.virtual_to_host_path(path)
 
-                        self.ql.log.debug(f'{PROMPT} target file: {host_path}')
+                            self.ql.log.debug(f'{PROMPT} target host path: {host_path}')
 
-                        if os.path.exists(host_path) and not path.startswith(r'/proc'):
-                            fd = os.open(host_path, flags, mode)
+                            if os.path.exists(host_path):
+                                fd = os.open(host_path, flags, mode)
 
                     return f'F{fd:x}'
 
@@ -609,6 +621,10 @@ class QlGdb(QlDebugger):
                     fd = int(fd, 16)
 
                     os.close(fd)
+                    
+                    if fd in self.fake_procfs:
+                        del self.fake_procfs[fd]
+                    
                     return 'F0'
 
                 return REPLY_EMPTY
@@ -628,7 +644,7 @@ class QlGdb(QlDebugger):
                     groups = subcmd.split(';')[1:]
 
                     for grp in groups:
-                        cmd, tid = grp.split(':', maxsplit=1)
+                        cmd, *tid = grp.split(':', maxsplit=1)
 
                         if cmd in ('c', f'C{SIGTRAP:02x}'):
                             return handle_c('')

@@ -99,12 +99,15 @@ class QlOsPosix(QlOs):
         self.ql = ql
         self.sigaction_act = [0] * 256
 
-        self.uid = self.euid = self.profile.getint("KERNEL","uid")
-        self.gid = self.egid = self.profile.getint("KERNEL","gid")
+        conf = self.profile['KERNEL']
+        self.uid = self.euid = conf.getint('uid')
+        self.gid = self.egid = conf.getint('gid')
+        self.pid = conf.getint('pid')
 
-        self.pid = self.profile.getint("KERNEL", "pid")
-        self.ipv6 = self.profile.getboolean("NETWORK", "ipv6")
-        self.bindtolocalhost = self.profile.getboolean("NETWORK", "bindtolocalhost")
+        conf = self.profile['NETWORK']
+        self.ipv6 = conf.getboolean('ipv6')
+        self.bindtolocalhost = conf.getboolean('bindtolocalhost')
+        self.ifrname_ovr = conf.get('ifrname_override')
 
         self.posix_syscall_hooks = {
             QL_INTERCEPT.CALL : {},

@@ -6,7 +6,7 @@
 from qiling.const import QL_ARCH
 
 from .context import Context
-from .arch import ArchCORTEX_M, ArchARM, ArchMIPS, ArchX86
+from .arch import ArchCORTEX_M, ArchARM, ArchMIPS, ArchX86, ArchX8664
 from .misc import check_and_eval
 import re, math
 
@@ -16,6 +16,7 @@ def setup_memory_Manager(ql):
 
     arch_type = {
             QL_ARCH.X86: ArchX86,
+            QL_ARCH.X8664: ArchX8664,
             QL_ARCH.MIPS: ArchMIPS,
             QL_ARCH.ARM: ArchARM,
             QL_ARCH.CORTEX_M: ArchCORTEX_M,
