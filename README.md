@@ -222,9 +222,3 @@ Contact us at email info@qiling.io, or via Twitter [@qiling_io](https://twitter.
 #### Core developers, Key Contributors and etc
 
 Please refer to [CREDITS.md](https://github.com/qilingframework/qiling/blob/dev/CREDITS.md)
-
-
----
-
-#### This is an awesome project! Can I donate?
-Yes, checkout [SWAG](https://www.qiling.io/swag/)
