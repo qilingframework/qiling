@@ -4,6 +4,7 @@
 #
 
 import os, pickle
+from functools import cached_property
 from typing import TYPE_CHECKING, Any, AnyStr, List, Mapping, MutableMapping, Optional, Sequence, Tuple, Union
 
 # See https://stackoverflow.com/questions/39740632/python-type-hinting-without-cyclic-imports
@@ -109,8 +110,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         #################
         # arch os setup #
         #################
-        self._host = QlHost()
-
         if type(archtype) is str:
             archtype = arch_convert(archtype)
 
@@ -348,12 +347,12 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
         return self.os.type in QL_OS_BAREMETAL
 
-    @property
+    @cached_property
     def host(self) -> QlHost:
         """Provide an interface to the hosting platform where Qiling runs on.
         """
 
-        return self._host
+        return QlHost()
 
     @property
     def internal_exception(self) -> Optional[Exception]:
