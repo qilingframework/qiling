@@ -134,37 +134,49 @@ def hook_GetProcAddress(ql: Qiling, address: int, params):
     hModule = params['hModule']
     lpProcName = params['lpProcName']
 
+    procname = None
+    ordinal = None
+
+    # if lpProcName is a short integer, it is an ordinal. otherwise, that is a function name.
     if lpProcName > MAXUSHORT:
-        # Look up by name
-        params["lpProcName"] = ql.os.utils.read_cstring(lpProcName)
-        lpProcName = bytes(params["lpProcName"], "ascii")
+        procname = ql.os.utils.read_cstring(lpProcName)
+
+        # let log output reflect a human-readable procname
+        params["lpProcName"] = procname
+
+        # WORKAROUND for gandcrab
+        if procname == "RtlComputeCrc32":
+            return 0
+
+        procname = procname.encode('latin1')
+
     else:
-        # Look up by ordinal
-        lpProcName = params["lpProcName"]
+        ordinal = lpProcName
 
-    # TODO fix for gandcrab
-    if lpProcName == "RtlComputeCrc32":
-        return 0
-
-    # Check if dll is loaded
+    # get dll name by handle (module base)
     dll_name = next((os.path.basename(image.path).casefold() for image in ql.loader.images if image.base == hModule), None)
 
     if dll_name is None:
-        ql.log.info('Failed to import function "%s" with handle 0x%X' % (lpProcName, hModule))
+        ql.log.info(f'Failed to import function "{lpProcName}" with handle {hModule:#x}')
         return 0
 
     # Handle case where module is self
     if dll_name == os.path.basename(ql.loader.path).casefold():
-        for addr, export in ql.loader.export_symbols.items():
-            if export['name'] == lpProcName:
-                return addr
+        if procname is not None:
+            search_func = lambda entry: entry['name'] == procname
 
+        elif ordinal is not None:
+            search_func = lambda entry: entry['ord'] == ordinal
+
+        else:
+            raise AssertionError
+
+        return next((addr for addr, entry in ql.loader.export_symbols.items() if search_func(entry)), 0)
+
+    # in any other case, look through the import address table for that dll
     iat = ql.loader.import_address_table[dll_name]
 
-    if lpProcName in iat:
-        return iat[lpProcName]
-
-    return 0
+    return iat.get(procname or ordinal, 0)
 
 def _LoadLibrary(ql: Qiling, address: int, params):
     lpLibFileName = params["lpLibFileName"]
