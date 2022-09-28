@@ -96,8 +96,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             raise QlErrorFileNotFound(f'Target binary not found: "{argv[0]}"')
 
         self._argv = argv
-        self._path = self.argv[0]
-        self._targetname = os.path.basename(self.path)
 
         ################
         # rootfs setup #
@@ -313,7 +311,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
             Type: str
         """
-        return self._path
+        return self.argv[0]
 
     @property
     def targetname(self) -> str:
@@ -321,7 +319,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
             Type: str
         """
-        return self._targetname
+        return os.path.basename(self.path)
 
     @property
     def interpreter(self) -> bool:
