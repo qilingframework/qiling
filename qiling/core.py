@@ -78,9 +78,9 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         ###############################
         self.entry_point = None
         self.exit_point = None
-        self.timeout = None
-        self.count = None
-        self._initial_sp = None
+        self.timeout = 0
+        self.count = 0
+        self._initial_sp = 0
 
         """
         Qiling Framework Core Engine
@@ -203,7 +203,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
     def hw(self) -> "QlHwManager":
         """ Qiling hardware manager.
 
-            Example: 
+            Example:
         """
         return self._hw
 
@@ -298,13 +298,13 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         return self._env
 
     @property
-    def code(self) -> bytes:
+    def code(self) -> Optional[bytes]:
         """ The shellcode to execute.
 
             Note: It can't be used with "argv" parameter.
 
             Type: bytes
-            Example: Qiling(code=b"\x90", ostype="macos", archtype="x8664")
+            Example: Qiling(code=b"\\x90", ostype="macos", archtype="x8664")
         """
         return self._code
 
@@ -318,7 +318,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
     @property
     def targetname(self) -> str:
-        """ The target name of the executable. e.g. "c.exe" in "a\b\c.exe"
+        """ The target name of the executable. e.g. "c.exe" in "a\\b\\c.exe"
 
             Type: str
         """
@@ -573,7 +573,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
 
     # patch code to memory address
-    def patch(self, offset: int, data: bytes, target: str = None) -> None:
+    def patch(self, offset: int, data: bytes, target: Optional[str] = None) -> None:
         """Volatilely patch binary and libraries with arbitrary content.
         Patching may be done prior to emulation start.
 
@@ -590,7 +590,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
 
     # save all qiling instance states
-    def save(self, reg=True, mem=True, hw=False, fd=False, cpu_context=False, os=False, loader=False, *, snapshot: str = None):
+    def save(self, reg=True, mem=True, hw=False, fd=False, cpu_context=False, os=False, loader=False, *, snapshot: Optional[str] = None):
         saved_states = {}
 
         if reg:
@@ -622,7 +622,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
 
     # restore states qiling instance from saved_states
-    def restore(self, saved_states: Mapping[str, Any] = {}, *, snapshot: str = None):
+    def restore(self, saved_states: Mapping[str, Any] = {}, *, snapshot: Optional[str] = None):
 
         # snapshot will be ignored if saved_states is set
         if (not saved_states) and (snapshot is not None):
@@ -658,7 +658,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
     # Remove "ql_path" mapping.
     def remove_fs_mapper(self, ql_path: Union["PathLike", str]):
         self.os.fs_mapper.remove_fs_mapping(ql_path)
-    
+
     # push to stack bottom, and update stack register
     def stack_push(self, data):
         return self.arch.stack_push(data)
@@ -684,17 +684,17 @@ class Qiling(QlCoreHooks, QlCoreStructs):
     # stop emulation
     def emu_stop(self):
         self.uc.emu_stop()
-    
+
     # stop emulation
     def stop(self):
         if self.multithread:
-            self.os.thread_management.stop() 
+            self.os.thread_management.stop()
 
         elif self.baremetal:
             self.os.stop()
 
         else:
-            self.uc.emu_stop()    
+            self.uc.emu_stop()
 
     # start emulation
     def emu_start(self, begin: int, end: int, timeout: int = 0, count: int = 0):
@@ -715,6 +715,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
         self.uc.emu_start(begin, end, timeout, count)
 
-        # if an exception was raised during emulation, propagate it up 
+        # if an exception was raised during emulation, propagate it up
         if self.internal_exception is not None:
             raise self.internal_exception
