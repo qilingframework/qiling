@@ -14,6 +14,7 @@ from qiling.const import QL_ARCH
 from qiling.extensions import trace
 from unicorn import UC_PROT_NONE, UC_PROT_READ, UC_PROT_WRITE, UC_PROT_EXEC, UC_PROT_ALL
 from .callstack import CallStack
+from .deflat import R2Deflator
 
 if TYPE_CHECKING:
     from qiling.core import Qiling
@@ -452,6 +453,14 @@ class R2:
             trace.enable_full_trace(self.ql)
         elif mode == 'history':
             trace.enable_history_trace(self.ql)
+
+    def deflat(self, target: int | R2Data):
+        '''Create deflator with self r2 instance, will patch ql code'''
+        addr = target if isinstance(target, int) else target.start_ea
+        deflator = R2Deflator(self)
+        deflator.parse_blocks_for_deobf(addr)
+        deflator._search_path()
+        deflator._patch_codes()
 
     def shell(self):
         while True:
