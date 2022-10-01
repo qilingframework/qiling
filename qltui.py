@@ -19,7 +19,7 @@ try:
 except ImportError:
     colored = None
 
-
+from qiling import Qiling
 from qiling.const import os_map, arch_map, verbose_map
 from qiling.extensions.coverage import utils as cov_utils
 
@@ -56,45 +56,45 @@ class Callback_Functions():
     """
 
     @staticmethod
-    def read_mem(ql, *args):
+    def read_mem(ql: Qiling, *args):
         user_data = args[-1]
         buff = ql.mem.read(user_data["address"], user_data["bytes_size"])
         ql.log.info(f"Hook was triggered at -> {user_data['address']}")
         ql.log.info(buff)
 
     @staticmethod
-    def read_reg(ql, *args):
+    def read_reg(ql: Qiling, *args):
         user_data = args[-1]
         buff = ql.reg.read(user_data["register_name"])
         ql.log.info(f"Hook was triggered at -> {user_data['register_name']}")
         ql.log.info(buff)
 
     @staticmethod
-    def write_mem(ql, *args):
+    def write_mem(ql: Qiling, *args):
         user_data = args[-1]
         buff = ql.mem.write(user_data["address"], user_data["value"])
         ql.log.info(f"Hook was triggered at -> {user_data['address']}")
         ql.log.info(buff)
 
     @staticmethod
-    def write_reg(ql, *args):
+    def write_reg(ql: Qiling, *args):
         user_data = args[-1]
         buff = ql.reg.write(user_data["register_name"], user_data["value"])
         ql.log.info(f"Hook was triggered at -> {user_data['register_name']}")
         ql.log.info(buff)
 
     @staticmethod
-    def emu_start(ql, *args):
+    def emu_start(ql: Qiling, *args):
         user_data = args[-1]
         ql.emu_start(begin=user_data["start"], end=user_data["end"])
 
     @staticmethod
-    def emu_stop(ql, *args):
+    def emu_stop(ql: Qiling, *args):
         ql.log.info('killer switch found, stopping')
         ql.emu_stop()
 
     @staticmethod
-    def save(ql, *args):
+    def save(ql: Qiling, *args):
         ql.save()
 
 def env_arg(value):
@@ -457,7 +457,7 @@ def ask_report():
     return answer.lower()
 
 
-def show_report(ql, report, hook_dictionary):
+def show_report(ql: Qiling, report, hook_dictionary):
     """
     Ask if user wants to see the report
     """
@@ -597,7 +597,7 @@ def ask_register_name():
     return answer
 
 
-def hook(ql):
+def hook(ql: Qiling):
     """
     Hook Function
     """
@@ -670,14 +670,11 @@ def hook(ql):
 def transform_syscalls(syscalls, keys=["address"], func=lambda x: hex(x)):
     for i in syscalls:
         try:
-            if type(i) == type({}):
+            if isinstance(i, list) or isinstance(i, dict):
                 transform_syscalls(i, keys, func)
-            if isinstance(i, list):
-                transform_syscalls(i, keys, func)
-            elif isinstance(syscalls[i], list):
+            elif isinstance(syscalls[i], Iterable):
                 transform_syscalls(syscalls[i], keys, func)
-            elif type(syscalls[i]) == type({}):
-                transform_syscalls(syscalls[i], keys, func)
+
             if i in keys and isinstance(syscalls[i], int):
                 syscalls[i] = func(syscalls[i])
         except:
