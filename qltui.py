@@ -672,7 +672,7 @@ def transform_syscalls(syscalls, keys=["address"], func=lambda x: hex(x)):
         try:
             if isinstance(i, list) or isinstance(i, dict):
                 transform_syscalls(i, keys, func)
-            elif isinstance(syscalls[i], Iterable):
+            elif isinstance(syscalls[i], list) or isinstance(syscalls[i], dict):
                 transform_syscalls(syscalls[i], keys, func)
 
             if i in keys and isinstance(syscalls[i], int):
