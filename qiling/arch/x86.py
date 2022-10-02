@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -71,6 +71,7 @@ class QlArchX86(QlArchIntel):
             **x86_const.reg_map_16,
             **x86_const.reg_map_32,
             **x86_const.reg_map_cr,
+            **x86_const.reg_map_dr,
             **x86_const.reg_map_st,
             **x86_const.reg_map_misc
         )
@@ -104,6 +105,7 @@ class QlArchX8664(QlArchIntel):
             **x86_const.reg_map_32,
             **x86_const.reg_map_64,
             **x86_const.reg_map_cr,
+            **x86_const.reg_map_dr,
             **x86_const.reg_map_st,
             **x86_const.reg_map_misc,
             **x86_const.reg_map_64_b,
