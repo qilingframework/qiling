@@ -49,7 +49,7 @@ extras = {
     "tui": [
         "json2html",
         "pdfkit",
-        "pyfx",
+        "python-fx",
         "questionary",
         "termcolor",
     ]
