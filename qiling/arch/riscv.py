@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -15,6 +15,7 @@ from qiling.arch import riscv_const
 from qiling.arch.riscv_const import *
 from qiling.const import QL_ARCH, QL_ENDIAN
 from qiling.exception import QlErrorNotImplemented
+
 
 class QlArchRISCV(QlArch):
     type = QL_ARCH.RISCV
@@ -59,10 +60,10 @@ class QlArchRISCV(QlArch):
 
     def init_context(self):
         self.regs.pc = 0x08000000
-        
+
     def unicorn_exception_handler(self, ql, intno):
-        if intno == 2:            
+        if intno == 2:
             ql.log.warning(f'[{hex(self.regs.arch_pc)}] Illegal instruction')
-            
+
         else:
             raise QlErrorNotImplemented(f'Unhandled interrupt number ({intno})')

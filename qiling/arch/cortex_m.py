@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -29,7 +29,7 @@ class QlInterruptContext(ContextDecorator):
         for reg in self.reg_context:
             val = self.ql.arch.regs.read(reg)
             self.ql.arch.stack_push(val)
-        
+
         if self.ql.verbose >= QL_VERBOSE.DISASM:
             self.ql.log.info(f'Enter into interrupt')
 
@@ -46,20 +46,21 @@ class QlInterruptContext(ContextDecorator):
             # switch the stack accroding exc_return
             old_ctrl = self.ql.arch.regs.read('control')
             if retval & EXC_RETURN.RETURN_SP:
-                self.ql.arch.regs.write('control', old_ctrl |  CONTROL.SPSEL)            
+                self.ql.arch.regs.write('control', old_ctrl | CONTROL.SPSEL)
             else:
                 self.ql.arch.regs.write('control', old_ctrl & ~CONTROL.SPSEL)
 
             # Restore stack
             for reg in reversed(self.reg_context):
                 val = self.ql.arch.stack_pop()
-                if reg == 'xpsr':                
+                if reg == 'xpsr':
                     self.ql.arch.regs.write('XPSR_NZCVQG', val)
                 else:
-                    self.ql.arch.regs.write(reg, val)        
+                    self.ql.arch.regs.write(reg, val)
 
         if self.ql.verbose >= QL_VERBOSE.DISASM:
             self.ql.log.info('Exit from interrupt')
+
 
 class QlArchCORTEX_M(QlArchARM):
     type = QL_ARCH.ARM
@@ -87,7 +88,7 @@ class QlArchCORTEX_M(QlArchARM):
     @cached_property
     def assembler(self) -> Ks:
         return Ks(KS_ARCH_ARM, KS_MODE_ARM + KS_MODE_THUMB)
-    
+
     @property
     def is_thumb(self) -> bool:
         return True
@@ -157,10 +158,10 @@ class QlArchCORTEX_M(QlArchARM):
             offset = isr * 4
 
             entry = ql.mem.read_ptr(offset)
-            exc_return = 0xFFFFFFFD if self.using_psp() else 0xFFFFFFF9        
+            exc_return = 0xFFFFFFFD if self.using_psp() else 0xFFFFFFF9
 
             self.regs.write('ipsr', isr)
             self.regs.write('pc', entry)
-            self.regs.write('lr', exc_return) 
+            self.regs.write('lr', exc_return)
 
             self.uc.emu_start(self.effective_pc, 0, 0, 0)

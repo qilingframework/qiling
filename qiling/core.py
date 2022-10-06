@@ -3,7 +3,8 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import os, pickle
+import os
+import pickle
 from functools import cached_property
 from typing import TYPE_CHECKING, Any, AnyStr, List, Mapping, MutableMapping, Optional, Sequence, Tuple, Union
 
@@ -27,7 +28,7 @@ from .utils import *
 from .core_struct import QlCoreStructs
 from .core_hooks import QlCoreHooks
 
-# Mixin Pattern
+
 class Qiling(QlCoreHooks, QlCoreStructs):
     def __init__(
             self,
@@ -203,7 +204,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             Example:
         """
         return self._hw
-
 
     @property
     def arch(self) -> "QlArch":
@@ -548,7 +548,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             elif QL_STOP.EXIT_TRAP in self.stop_options:
                 self.log.debug(f'Loader requested to skip exit_trap!')
 
-
     ###############
     # Qiling APIS #
     ###############
@@ -686,7 +685,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         if "loader" in saved_states:
             self.loader.restore(saved_states["loader"])
 
-
     # Map "ql_path" to any objects which implements QlFsMappedObject.
     def add_fs_mapper(self, ql_path: Union["PathLike", str], real_dest):
         self.os.fs_mapper.add_fs_mapping(ql_path, real_dest)
@@ -699,23 +697,19 @@ class Qiling(QlCoreHooks, QlCoreStructs):
     def stack_push(self, data):
         return self.arch.stack_push(data)
 
-
     # pop from stack bottom, and update stack register
     def stack_pop(self):
         return self.arch.stack_pop()
-
 
     # read from stack, at a given offset from stack bottom
     # NOTE: unlike stack_pop(), this does not change stack register
     def stack_read(self, offset):
         return self.arch.stack_read(offset)
 
-
     # write to stack, at a given offset from stack bottom
     # NOTE: unlike stack_push(), this does not change stack register
     def stack_write(self, offset, data):
         return self.arch.stack_write(offset, data)
-
 
     # stop emulation
     def emu_stop(self):
