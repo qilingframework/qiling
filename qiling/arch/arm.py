@@ -43,7 +43,9 @@ class QlArchARM(QlArch):
     def regs(self) -> QlRegisterManager:
         regs_map = dict(
             **arm_const.reg_map,
-            **arm_const.reg_vfp
+            **arm_const.reg_vfp,
+            **arm_const.reg_map_q,
+            **arm_const.reg_map_s
         )
 
         pc_reg = 'pc'

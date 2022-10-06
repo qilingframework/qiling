@@ -9,6 +9,8 @@ from xml.etree import ElementTree, ElementInclude
 
 from qiling.arch.arm_const import reg_map as arm_regs
 from qiling.arch.arm_const import reg_vfp as arm_regs_vfp
+from qiling.arch.arm_const import reg_map_q as arm_regs_q
+from qiling.arch.arm_const import reg_map_s as arm_regs_s
 from qiling.arch.arm64_const import reg_map as arm64_regs
 from qiling.arch.arm64_const import reg_map_v as arm64_regs_v
 from qiling.arch.mips_const import reg_map as mips_regs_gpr
@@ -121,7 +123,7 @@ class QlGdbFeatures:
             QL_ARCH.A8086    : dict(**x86_regs_32, **x86_regs_misc, **x86_regs_cr, **x86_regs_st),
             QL_ARCH.X86      : dict(**x86_regs_32, **x86_regs_misc, **x86_regs_cr, **x86_regs_st, **x86_regs_xmm),
             QL_ARCH.X8664    : dict(**x86_regs_64, **x86_regs_misc, **x86_regs_cr, **x86_regs_st, **x86_regs_xmm, **x86_regs_ymm),
-            QL_ARCH.ARM      : dict(**arm_regs, **arm_regs_vfp),
+            QL_ARCH.ARM      : dict(**arm_regs, **arm_regs_vfp, **arm_regs_q, **arm_regs_s),
             QL_ARCH.CORTEX_M : arm_regs,
             QL_ARCH.ARM64    : dict(**arm64_regs, **arm64_regs_v),
             QL_ARCH.MIPS     : dict(**mips_regs_gpr, **mips_regs_fpu)

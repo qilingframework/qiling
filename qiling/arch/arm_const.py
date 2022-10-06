@@ -64,3 +64,57 @@ reg_vfp = {
     "d31" : UC_ARM_REG_D31,
     "fpscr" : UC_ARM_REG_FPSCR
 }
+
+reg_map_q = {
+    "q0": UC_ARM_REG_Q0,
+    "q1": UC_ARM_REG_Q1,
+    "q2": UC_ARM_REG_Q2,
+    "q3": UC_ARM_REG_Q3,
+    "q4": UC_ARM_REG_Q4,
+    "q5": UC_ARM_REG_Q5,
+    "q6": UC_ARM_REG_Q6,
+    "q7": UC_ARM_REG_Q7,
+    "q8": UC_ARM_REG_Q8,
+    "q9": UC_ARM_REG_Q9,
+    "q10": UC_ARM_REG_Q10,
+    "q11": UC_ARM_REG_Q11,
+    "q12": UC_ARM_REG_Q12,
+    "q13": UC_ARM_REG_Q13,
+    "q14": UC_ARM_REG_Q14,
+    "q15": UC_ARM_REG_Q15
+}
+
+reg_map_s = {
+    "s0": UC_ARM_REG_S0,
+    "s1": UC_ARM_REG_S1,
+    "s2": UC_ARM_REG_S2,
+    "s3": UC_ARM_REG_S3,
+    "s4": UC_ARM_REG_S4,
+    "s5": UC_ARM_REG_S5,
+    "s6": UC_ARM_REG_S6,
+    "s7": UC_ARM_REG_S7,
+    "s8": UC_ARM_REG_S8,
+    "s9": UC_ARM_REG_S9,
+    "s10": UC_ARM_REG_S10,
+    "s11": UC_ARM_REG_S11,
+    "s12": UC_ARM_REG_S12,
+    "s13": UC_ARM_REG_S13,
+    "s14": UC_ARM_REG_S14,
+    "s15": UC_ARM_REG_S15,
+    "s16": UC_ARM_REG_S16,
+    "s17": UC_ARM_REG_S17,
+    "s18": UC_ARM_REG_S18,
+    "s19": UC_ARM_REG_S19,
+    "s20": UC_ARM_REG_S20,
+    "s21": UC_ARM_REG_S21,
+    "s22": UC_ARM_REG_S22,
+    "s23": UC_ARM_REG_S23,
+    "s24": UC_ARM_REG_S24,
+    "s25": UC_ARM_REG_S25,
+    "s26": UC_ARM_REG_S26,
+    "s27": UC_ARM_REG_S27,
+    "s28": UC_ARM_REG_S28,
+    "s29": UC_ARM_REG_S29,
+    "s30": UC_ARM_REG_S30,
+    "s31": UC_ARM_REG_S31
+}
