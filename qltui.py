@@ -6,10 +6,9 @@ import six
 import argparse
 from json2html import *
 import pdfkit
-from pyfx import Controller
+from pyfx import PyfxApp
 import json
 from pprint import pprint
-from pyfx.model import DataSourceType
 from datetime import datetime
 
 import questionary
@@ -481,7 +480,7 @@ def show_report(ql: Qiling, report, hook_dictionary):
         if command == 'report':
             pprint(report)
         elif command == 'interactive report':
-            Controller().run(DataSourceType.VARIABLE, report)
+            PyfxApp(data=report).run()
         elif command == 'report to pdf':
             time = datetime.now().strftime("%Y_%m_%d_%H-%M-%S")
             report_name = f"report_{ql.targetname.replace('.', '_')}_{os_name}_{arch_name}_{time}.pdf"
