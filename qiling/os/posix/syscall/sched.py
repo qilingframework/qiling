@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import os
+import os, gevent
 from multiprocessing import Process
 
 from qiling import Qiling
@@ -131,4 +131,8 @@ def ql_syscall_clone(ql: Qiling, flags: int, child_stack: int, parent_tidptr: in
     return regreturn
 
 def ql_syscall_sched_yield(ql: Qiling):
+    def _sched_yield(cur_thread):
+        gevent.sleep(0)
+    ql.emu_stop()
+    ql.os.thread_management.cur_thread.sched_cb = _sched_yield
     return 0
