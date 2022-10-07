@@ -1,1 +1,1 @@
-from .afl import ql_afl_fuzz
+from .afl import ql_afl_fuzz, ql_afl_fuzz_custom

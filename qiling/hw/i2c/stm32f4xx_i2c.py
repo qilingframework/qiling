@@ -9,7 +9,7 @@ from enum import IntEnum
 from qiling.hw.peripheral import QlPeripheral
 from qiling.hw.connectivity import QlConnectivityPeripheral
 from qiling.hw.const.stm32f4xx_i2c import I2C_CR1, I2C_CR2, I2C_SR1, I2C_SR2, I2C_DR, I2C_OAR1, I2C_OAR2
-from qiling.hw.utils.access import Access, AccessSequence, Op
+from qiling.hw.utils.access import Access, AccessSequence, Action
 
 
 class STM32F4xxI2c(QlConnectivityPeripheral):
@@ -60,7 +60,7 @@ class STM32F4xxI2c(QlConnectivityPeripheral):
 		self.reset()
 
 	def reset(self):
-		self.i2c = self.struct(
+		self.instance = self.struct(
 			TRISE = 0x0002
 		)
 
@@ -68,13 +68,13 @@ class STM32F4xxI2c(QlConnectivityPeripheral):
 	@QlPeripheral.monitor()
 	def read(self, offset: int, size: int) -> int:	
 		buf = ctypes.create_string_buffer(size)
-		ctypes.memmove(buf, ctypes.addressof(self.i2c) + offset, size)
+		ctypes.memmove(buf, ctypes.addressof(self.instance) + offset, size)
 
 		if self.history.match([
-			Access(Op.READ, self.struct.SR1.offset),
-			Access(Op.READ, self.struct.SR2.offset)
+			Access(Action.READ, self.struct.SR1.offset),
+			Access(Action.READ, self.struct.SR2.offset)
 		]):				
-			self.i2c.SR1 &= ~I2C_SR1.ADDR
+			self.instance.SR1 &= ~I2C_SR1.ADDR
 
 		return int.from_bytes(buf.raw, byteorder='little')
 
@@ -85,7 +85,7 @@ class STM32F4xxI2c(QlConnectivityPeripheral):
 			return		
 
 		if offset == self.struct.CR1.offset:
-			self.i2c.CR1 = value & I2C_CR1.RW_MASK
+			self.instance.CR1 = value & I2C_CR1.RW_MASK
 
 			if value & I2C_CR1.START:
 				self.generate_start()
@@ -96,12 +96,12 @@ class STM32F4xxI2c(QlConnectivityPeripheral):
 			return
 
 		if offset == self.struct.DR.offset:
-			self.i2c.DR = value & I2C_DR.DR
-			self.i2c.SR1 &= ~I2C_SR1.TXE
+			self.instance.DR = value & I2C_DR.DR
+			self.instance.SR1 &= ~I2C_SR1.TXE
 
 			if self.is_master_mode():
 				if self.is_7bit_mode():	
-					if self.i2c.SR2 & I2C_SR2.TRA:
+					if self.instance.SR2 & I2C_SR2.TRA:
 						self.send_data()
 
 					else:
@@ -112,7 +112,7 @@ class STM32F4xxI2c(QlConnectivityPeripheral):
 			return
 
 		data = (value).to_bytes(size, 'little')
-		ctypes.memmove(ctypes.addressof(self.i2c) + offset, data, size)
+		ctypes.memmove(ctypes.addressof(self.instance) + offset, data, size)
 
 	## I2C Control register 2 (I2C_CR2)
 	def send_event_interrupt(self):
@@ -136,16 +136,16 @@ class STM32F4xxI2c(QlConnectivityPeripheral):
 		if self.ev_intn is None:
 			return
 		
-		if not self.i2c.CR2 & I2C_CR2.ITEVTEN:
+		if not self.instance.CR2 & I2C_CR2.ITEVTEN:
 			return
 
 		BUF_IT = I2C_SR1.TXE|I2C_SR1.RXNE
 		SLAVE_IT = I2C_SR1.STOPF|I2C_SR1.ADDR|I2C_SR1.BTF
 		MASTER_IT = I2C_SR1.SB|I2C_SR1.ADDR|I2C_SR1.ADD10|I2C_SR1.BTF
 
-		if  (self.i2c.CR2 & I2C_CR2.ITBUFEN and self.i2c.SR1 & BUF_IT) or \
-			(self.is_slave_mode()           and self.i2c.SR1 & SLAVE_IT) or \
-			(self.is_master_mode()          and self.i2c.SR1 & MASTER_IT):
+		if  (self.instance.CR2 & I2C_CR2.ITBUFEN and self.instance.SR1 & BUF_IT) or \
+			(self.is_slave_mode()           and self.instance.SR1 & SLAVE_IT) or \
+			(self.is_master_mode()          and self.instance.SR1 & MASTER_IT):
 			self.ql.hw.nvic.set_pending(self.ev_intn)
 
 	## I2C Status register 1 (I2C_SR1)
@@ -160,33 +160,33 @@ class STM32F4xxI2c(QlConnectivityPeripheral):
 
 		# TODO: generate a start condition
 		self.fetch_device_address()
-		self.i2c.SR1 |= I2C_SR1.SB
-		self.i2c.CR1 &= ~I2C_CR1.START
+		self.instance.SR1 |= I2C_SR1.SB
+		self.instance.CR1 &= ~I2C_CR1.START
 
 		self.set_master_mode()
 
 	def generate_stop(self):
 		# TODO: generate a stop condition
-		self.i2c.CR1 &= ~I2C_CR1.STOP
+		self.instance.CR1 &= ~I2C_CR1.STOP
 		
-		self.i2c.SR1 |= I2C_SR1.STOPF
-		self.i2c.SR1 &= ~I2C_SR1.ADDR
+		self.instance.SR1 |= I2C_SR1.STOPF
+		self.instance.SR1 &= ~I2C_SR1.ADDR
 		
 		self.set_slave_mode()
-		self.i2c.SR2 &= ~I2C_SR2.TRA
+		self.instance.SR2 &= ~I2C_SR2.TRA
 	
 	def send_address(self):
-		if self.i2c.DR == self.i2c.OAR1 >> 1:
+		if self.instance.DR == self.instance.OAR1 >> 1:
 			
 			# TODO: send ACK
-			self.i2c.SR1 &= ~I2C_SR1.SB
-			self.i2c.SR1 |= I2C_SR1.ADDR | I2C_SR1.TXE
-			self.i2c.SR2 |= I2C_SR2.TRA
+			self.instance.SR1 &= ~I2C_SR1.SB
+			self.instance.SR1 |= I2C_SR1.ADDR | I2C_SR1.TXE | I2C_SR1.AF
+			self.instance.SR2 |= I2C_SR2.TRA
 
 	def send_data(self):
-		self.i2c.SR1 |= I2C_SR1.BTF | I2C_SR1.TXE
+		self.instance.SR1 |= I2C_SR1.BTF | I2C_SR1.TXE
 
-		self.send_to_user(self.i2c.DR)
+		self.send_to_user(self.instance.DR)
 
 	## I2C Status register 2 (I2C_SR2)
 	def is_master_mode(self):
@@ -195,7 +195,7 @@ class STM32F4xxI2c(QlConnectivityPeripheral):
 			0: Slave Mode
 			1: Master Mode
 		"""
-		return self.i2c.SR2 & I2C_SR2.MSL
+		return self.instance.SR2 & I2C_SR2.MSL
 
 	def is_slave_mode(self):
 		return not self.is_master_mode()
@@ -205,7 +205,7 @@ class STM32F4xxI2c(QlConnectivityPeripheral):
 			I2C Status register 2 (I2C_SR2) MSL bit
 			- Set by hardware as soon as the interface is in Master mode (SB=1)			
 		"""
-		self.i2c.SR2 |= I2C_SR2.MSL
+		self.instance.SR2 |= I2C_SR2.MSL
 	
 	def set_slave_mode(self):		
 		"""
@@ -213,25 +213,25 @@ class STM32F4xxI2c(QlConnectivityPeripheral):
 			- Cleared by hardware after detecting a Stop condition on the bus 
 			  or a loss of arbitration (ARLO=1), or by hardware when PE=0.
 		"""
-		self.i2c.SR2 &= ~I2C_SR2.MSL
+		self.instance.SR2 &= ~I2C_SR2.MSL
 
 	## I2C Own address register 1 (I2C_OAR1)
 	def is_7bit_mode(self):
-		return self.i2c.OAR2 & I2C_OAR2.ENDUAL or not self.i2c.OAR1 & I2C_OAR1.ADDMODE
+		return self.instance.OAR2 & I2C_OAR2.ENDUAL or not self.instance.OAR1 & I2C_OAR1.ADDMODE
 
 	def fetch_device_address(self):
 		# dual addressing mode
-		if self.i2c.OAR2 & I2C_OAR2.ENDUAL:
-			self.i2c.OAR1 = self.device_list[0].address << 1
-			self.i2c.OAR2 = I2C_OAR2.ENDUAL | (self.device_list[1].address << 1)
+		if self.instance.OAR2 & I2C_OAR2.ENDUAL:
+			self.instance.OAR1 = self.device_list[0].address << 1
+			self.instance.OAR2 = I2C_OAR2.ENDUAL | (self.device_list[1].address << 1)
 
 		# single device, 10-bit slave address
-		elif self.i2c.OAR1 & I2C_OAR1.ADDMODE: 
-			self.i2c.OAR1 = I2C_OAR1.ADDMODE | self.device_list[0].address
+		elif self.instance.OAR1 & I2C_OAR1.ADDMODE: 
+			self.instance.OAR1 = I2C_OAR1.ADDMODE | self.device_list[0].address
 		
 		# single device, 7-bit slave address
 		else:
-			self.i2c.OAR1 = self.device_list[0].address << 1
+			self.instance.OAR1 = self.device_list[0].address << 1
 
 	@QlConnectivityPeripheral.device_handler
 	def step(self):

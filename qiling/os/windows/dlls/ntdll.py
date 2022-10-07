@@ -31,50 +31,54 @@ def hook_memcpy(ql: Qiling, address: int, params):
     src = params['src']
     count = params['count']
 
-    try:
-        data = bytes(ql.mem.read(src, count))
-        ql.mem.write(dest, data)
-    except Exception:
-        ql.log.exception("")
+    data = bytes(ql.mem.read(src, count))
+    ql.mem.write(dest, data)
 
     return dest
 
 def _QueryInformationProcess(ql: Qiling, address: int, params):
     flag = params["ProcessInformationClass"]
-    dst = params["ProcessInformation"]
-    pt_res = params["ReturnLength"]
+    obuf_ptr = params["ProcessInformation"]
+    obuf_len = params['ProcessInformationLength']
+    res_size_ptr = params["ReturnLength"]
 
     if flag == ProcessDebugFlags:
-        value = b"\x01" * 0x4
+        res_data = ql.pack32(1)
 
     elif flag == ProcessDebugPort:
-        value = b"\x00" * 0x4
+        res_data = ql.pack32(0)
 
     elif flag == ProcessDebugObjectHandle:
         return STATUS_PORT_NOT_SET
 
     elif flag == ProcessBasicInformation:
-        pbi = structs.ProcessBasicInformation(ql,
-            exitStatus=0,
-            pebBaseAddress=ql.loader.TEB.PebAddress,
-            affinityMask=0,
-            basePriority=0,
-            uniqueId=ql.os.profile.getint("KERNEL", "pid"),
-            parentPid=ql.os.profile.getint("KERNEL", "parent_pid")
+        kconf = ql.os.profile['KERNEL']
+        pbi_struct = structs.make_process_basic_info(ql.arch.bits)
+
+        pci_obj = pbi_struct(
+            ExitStatus=0,
+            PebBaseAddress=ql.loader.TEB.PebAddress,
+            AffinityMask=0,
+            BasePriority=0,
+            UniqueProcessId=kconf.getint('pid'),
+            InheritedFromUniqueProcessId=kconf.getint('parent_pid')
         )
 
-        addr = ql.os.heap.alloc(pbi.size)
-        pbi.write(addr)
-        value = ql.pack(addr)
+        res_data = bytes(pci_obj)
+
     else:
-        ql.log.debug(str(flag))
-        raise QlErrorNotImplemented("API not implemented")
+        # TODO: support more info class ("flag") values
+        ql.log.info(f'SetInformationProcess: no implementation for info class {flag:#04x}')
 
-    ql.log.debug("The target is checking the debugger via QueryInformationProcess ")
-    ql.mem.write(dst, value)
+        return STATUS_UNSUCCESSFUL
 
-    if pt_res:
-        ql.mem.write_ptr(pt_res, 8, 1)
+    res_size = len(res_data)
+
+    if obuf_len >= res_size:
+        ql.mem.write(obuf_ptr, res_data)
+
+    if res_size_ptr:
+        ql.mem.write_ptr(res_size_ptr, res_size)
 
     return STATUS_SUCCESS
 
@@ -85,7 +89,7 @@ def _QueryInformationProcess(ql: Qiling, address: int, params):
 #   _In_      ULONG            ProcessInformationLength,
 #   _Out_opt_ PULONG           ReturnLength
 # );
-@winsdkapi(cc=CDECL, params={
+@winsdkapi(cc=STDCALL, params={
     'ProcessHandle'            : HANDLE,
     'ProcessInformationClass'  : PROCESSINFOCLASS,
     'ProcessInformation'       : PVOID,
@@ -117,46 +121,43 @@ def hook_NtQueryInformationProcess(ql: Qiling, address: int, params):
     return _QueryInformationProcess(ql, address, params)
 
 def _QuerySystemInformation(ql: Qiling, address: int, params):
-    siClass = params["SystemInformationClass"]
-    pt_res = params["ReturnLength"]
-    dst = params["SystemInformation"]
+    SystemInformationClass = params['SystemInformationClass']
+    SystemInformation = params['SystemInformation']
+    SystemInformationLength = params['SystemInformationLength']
+    ReturnLength = params['ReturnLength']
 
-    if (siClass == SystemBasicInformation):
-        bufferLength = params["SystemInformationLength"]
-
+    if SystemInformationClass == SystemBasicInformation:
         max_uaddr = {
             QL_ARCH.X86  : 0x7FFEFFFF,
             QL_ARCH.X8664: 0x7FFFFFFEFFFF
         }[ql.arch.type]
 
-        sbi = structs.SystemBasicInforation(
-            ql,
-            Reserved=0,
-            TimerResolution=156250,
-            PageSize=ql.mem.pagesize,
-            NumberOfPhysicalPages=0x003FC38A,
-            LowestPhysicalPageNumber=1,
-            HighestPhysicalPageNumber=0x0046DFFF,
-            AllocationGranularity=1,
-            MinimumUserModeAddress=0x10000,
-            MaximumUserModeAddress=max_uaddr,
-            ActiveProcessorsAffinityMask=0x3F,
-            NumberOfProcessors=0x6
+        sbi_struct = structs.make_system_basic_info(ql.arch.bits)
+
+        # FIXME: retrieve the necessary info from KUSER_SHARED_DATA
+        sbi_obj = sbi_struct(
+            TimerResolution              = 156250,
+            PageSize                     = ql.mem.pagesize,
+            NumberOfPhysicalPages        = 0x003FC38A,
+            LowestPhysicalPageNumber     = 1,
+            HighestPhysicalPageNumber    = 0x0046DFFF,
+            AllocationGranularity        = 1,
+            MinimumUserModeAddress       = 0x10000,
+            MaximumUserModeAddress       = max_uaddr,
+            ActiveProcessorsAffinityMask = 0x3F,
+            NumberOfProcessors           = 6
         )
 
-        if (bufferLength==sbi.size):
-            sbi.write(dst)
+        if ReturnLength:
+            ql.mem.write_ptr(ReturnLength, sbi_struct.sizeof(), 4)
 
-            if pt_res:
-                ql.mem.write_ptr(pt_res, sbi.size, 1)
-        else:
-            if pt_res:
-                ql.mem.write_ptr(pt_res, sbi.size, 1)
-
+        if SystemInformationLength < sbi_struct.sizeof():
             return STATUS_INFO_LENGTH_MISMATCH
+
+        sbi_obj.save_to(ql.mem, SystemInformation)
+
     else:
-        ql.log.debug(str(siClass))
-        raise QlErrorNotImplemented("API not implemented")
+        raise QlErrorNotImplemented(f'not implemented for {SystemInformationClass=}')
 
     return STATUS_SUCCESS
 
@@ -229,35 +230,64 @@ def hook_ZwCreateDebugObject(ql: Qiling, address: int, params):
     'ReturnLength'            : PULONG
 })
 def hook_ZwQueryObject(ql: Qiling, address: int, params):
-    infoClass = params["ObjectInformationClass"]
-    dest = params["ObjectInformation"]
-    size_dest = params["ReturnLength"]
-    string = "DebugObject".encode("utf-16le")
+    handle = params['Handle']
+    ObjectInformationClass = params['ObjectInformationClass']
+    ObjectInformation = params['ObjectInformation']
+    ObjectInformationLength = params['ObjectInformationLength']
+    ReturnLength = params['ReturnLength']
 
-    string_addr = ql.os.heap.alloc(len(string))
-    ql.log.debug(str(string_addr))
-    ql.log.debug(str(string))
-    ql.mem.write(string_addr, string)
-    us = structs.UnicodeString(ql, len(string), len(string), string_addr)
+    s = 'DebugObject'.encode('utf-16le')
+    addr = ql.os.heap.alloc(len(s))
+    ql.mem.write(addr, s)
 
-    if infoClass == ObjectTypeInformation:
-        res = structs.ObjectTypeInformation(ql, us, 1, 1)
+    unistr_struct = structs.make_unicode_string(ql.arch.bits)
 
-    elif infoClass == ObjectAllTypesInformation:
-        # FIXME: there is an error in how these structs are read by al-khaser. Have no idea on where, so we are
-        #  bypassing it
-        # oti = structs.ObjectTypeInformation(ql, us, 1, 1)
-        # res = structs.ObjectAllTypesInformation(ql, 2, oti)
-        return 1
+    unistr_obj = unistr_struct(
+        Length        = len(s),
+        MaximumLength = len(s),
+        Buffer        = addr
+    )
+
+    oti_struct = structs.make_object_type_info(ql.arch.bits)
+
+    oti_obj = oti_struct(
+        TypeName             = unistr_obj,
+        TotalNumberOfObjects = 1,
+        TotalNumberOfHandles = 1
+    )
+
+    oati_struct = structs.make_object_all_types_info(ql.arch.bits, 1)
+
+    if ObjectInformationClass == ObjectTypeInformation:
+        out = oti_obj
+
+    elif ObjectInformationClass == ObjectAllTypesInformation:
+        # FIXME: al-khaser refers the object named 'DebugObject' twice: the first time it creates a handle
+        # for it (so number of handles is expected to be higher than 0) and then closes it. the next time
+        # it accesses it (here), it expects the number of handles to be 0.
+        #
+        # ideally we would track the handles for each object, but since we do not - this is a hack to let
+        # it pass.
+        oti_obj.TotalNumberOfHandles = 0
+
+        oati_obj = oati_struct(
+            NumberOfObjectTypes   = 1,
+            ObjectTypeInformation = (oti_obj,)
+        )
+
+        out = oati_obj
 
     else:
-        raise QlErrorNotImplemented("API not implemented")
+        raise QlErrorNotImplemented(f'API not implemented ({ObjectInformationClass=})')
 
-    if dest and params["Handle"]:
-        res.write(dest)
+    if ReturnLength:
+        ql.mem.write_ptr(ReturnLength, out.sizeof(), 4)
 
-    if size_dest:
-        ql.mem.write_ptr(size_dest, res.size, 4)
+    if ObjectInformationLength < out.sizeof():
+        return STATUS_INFO_LENGTH_MISMATCH
+
+    if ObjectInformation and handle:
+        out.save_to(ql.mem, ObjectInformation)
 
     return STATUS_SUCCESS
 
@@ -289,7 +319,7 @@ def _SetInformationProcess(ql: Qiling, address: int, params):
     process = params["ProcessHandle"]
     flag = params["ProcessInformationClass"]
     dst = params["ProcessInformation"]
-    pt_res = params["ReturnLength"]
+    dst_size = params["ProcessInformationLength"]
 
     if flag == ProcessDebugFlags:
         value = b"\x01" * 0x4
@@ -310,23 +340,26 @@ def _SetInformationProcess(ql: Qiling, address: int, params):
             ql.mem.write_ptr(dst, 0, 1)
 
     elif flag == ProcessBasicInformation:
-        pbi = structs.ProcessBasicInformation(
-            ql,
-            exitStatus=0,
-            pebBaseAddress=ql.loader.TEB.PebAddress,
-            affinityMask=0,
-            basePriority=0,
-            uniqueId=ql.os.profile.getint("KERNEL", "pid"),
-            parentPid=ql.os.profile.getint("KERNEL", "parent_pid")
+        kconf = ql.os.profile['KERNEL']
+        pbi_struct = structs.make_process_basic_info(ql.arch.bits)
+
+        pci_obj = pbi_struct(
+            ExitStatus=0,
+            PebBaseAddress=ql.loader.TEB.PebAddress,
+            AffinityMask=0,
+            BasePriority=0,
+            UniqueProcessId=kconf.getint('pid'),
+            InheritedFromUniqueProcessId=kconf.getint('parent_pid')
         )
 
         ql.log.debug("The target may be attempting to modify the PEB debug flag")
-        addr = ql.os.heap.alloc(pbi.size)
-        pbi.write(addr)
-        value = ql.pack(addr)
+        value = bytes(pbi_obj)
+
     else:
-        ql.log.debug(str(flag))
-        raise QlErrorNotImplemented("API not implemented")
+        # TODO: support more info class ("flag") values
+        ql.log.info(f'SetInformationProcess: no implementation for info class {flag:#04x}')
+
+        return STATUS_UNSUCCESSFUL
 
     # TODO: value is never used after assignment
 

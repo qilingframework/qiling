@@ -54,7 +54,7 @@ class STM32F4xxRcc(QlPeripheral):
 	def __init__(self, ql, label, intn=None):
 		super().__init__(ql, label)
 
-		self.rcc = self.struct(
+		self.instance = self.struct(
 			CR         = 0x00000083,
 			PLLCFGR    = 0x24003010,
 			AHB1LPENR  = 0x0061900F,
@@ -86,25 +86,25 @@ class STM32F4xxRcc(QlPeripheral):
 	@QlPeripheral.monitor()
 	def read(self, offset: int, size: int) -> int:		
 		buf = ctypes.create_string_buffer(size)
-		ctypes.memmove(buf, ctypes.addressof(self.rcc) + offset, size)
+		ctypes.memmove(buf, ctypes.addressof(self.instance) + offset, size)
 		return int.from_bytes(buf.raw, byteorder='little')
 
 	@QlPeripheral.monitor()
 	def write(self, offset: int, size: int, value: int):
 		if offset == self.struct.CR.offset:
-			value = (self.rcc.CR & RCC_CR.RO_MASK) | (value & RCC_CR.RW_MASK)
+			value = (self.instance.CR & RCC_CR.RO_MASK) | (value & RCC_CR.RW_MASK)
 		elif offset == self.struct.CFGR.offset:
-			value = (self.rcc.CFGR & RCC_CFGR.RO_MASK) | (value & RCC_CFGR.RW_MASK)
+			value = (self.instance.CFGR & RCC_CFGR.RO_MASK) | (value & RCC_CFGR.RW_MASK)
 
 		data = (value).to_bytes(size, 'little')
-		ctypes.memmove(ctypes.addressof(self.rcc) + offset, data, size)
+		ctypes.memmove(ctypes.addressof(self.instance) + offset, data, size)
 
 	def step(self):
 		for reg, rdyon in self.rdyon.items():
-			value = getattr(self.rcc, reg)
+			value = getattr(self.instance, reg)
 			for rdy, on in rdyon:
 				if value & on:
 					value |= rdy
 				else:
 					value &= ~rdy
-			setattr(self.rcc, reg, value)
+			setattr(self.instance, reg, value)

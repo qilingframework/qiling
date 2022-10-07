@@ -20,5 +20,5 @@ class SAM3xaEfc(QlPeripheral):
     def __init__(self, ql, label, intn = None):
         super().__init__(ql, label)
 
-        self.efc = self.struct()
+        self.instance = self.struct()
         self.intn = intn

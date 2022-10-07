@@ -41,7 +41,11 @@ class QlArchARM(QlArch):
 
     @cached_property
     def regs(self) -> QlRegisterManager:
-        regs_map = arm_const.reg_map
+        regs_map = dict(
+            **arm_const.reg_map,
+            **arm_const.reg_vfp
+        )
+
         pc_reg = 'pc'
         sp_reg = 'sp'
 
@@ -53,17 +57,7 @@ class QlArchARM(QlArch):
 
     @property
     def endian(self) -> QL_ENDIAN:
-        # FIXME: ARM is a bi-endian architecture which allows flipping core endianess
-        # while running. endianess is tested in runtime through CPSR[9], however unicorn
-        # doesn't reflect the endianess correctly through that bit.
-        # @see: https://github.com/unicorn-engine/unicorn/issues/1542
-        #
-        # we work around this by using the initial endianess configuration, even though
-        # it might have been changed since.
-        #
-        # return QL_ENDIAN.EB if self.regs.cpsr & (1 << 9) else QL_ENDIAN.EL
-
-        return self._init_endian
+        return QL_ENDIAN.EB if self.regs.cpsr & (1 << 9) else QL_ENDIAN.EL
 
     @property
     def effective_pc(self) -> int:

@@ -25,7 +25,7 @@ def ql_syscall_exit(ql: Qiling, code: int):
     if ql.multithread:
         def _sched_cb_exit(cur_thread):
             ql.log.debug(f"[Thread {cur_thread.get_id()}] Terminated")
-            cur_thread.stop()
+            ql.os.thread_management.stop_thread(cur_thread)
             cur_thread.exit_code = code
 
         td = ql.os.thread_management.cur_thread
@@ -43,7 +43,7 @@ def ql_syscall_exit_group(ql: Qiling, code: int):
     if ql.multithread:
         def _sched_cb_exit(cur_thread):
             ql.log.debug(f"[Thread {cur_thread.get_id()}] Terminated")
-            cur_thread.stop()
+            ql.os.thread_management.stop_thread(cur_thread)
             cur_thread.exit_code = code
 
         td = ql.os.thread_management.cur_thread
@@ -143,12 +143,8 @@ def ql_syscall_faccessat(ql: Qiling, dfd: int, filename: int, mode: int):
 
     if not os.path.exists(real_path):
         regreturn = -1
-
-    elif stat.S_ISFIFO(Stat(real_path).st_mode):
-        regreturn = 0
-
     else:
-        regreturn = -1
+        regreturn = 0
 
     if regreturn == -1:
         ql.log.debug(f'File not found or skipped: {access_path}')
@@ -210,13 +206,14 @@ def ql_syscall_brk(ql: Qiling, inp: int):
     # otherwise, just return current brk_address
 
     if inp:
-        new_brk_addr = ((inp + 0xfff) // 0x1000) * 0x1000
+        cur_brk_addr = ql.loader.brk_address
+        new_brk_addr = ql.mem.align_up(inp)
 
-        if inp > ql.loader.brk_address: # increase current brk_address if inp is greater
-            ql.mem.map(ql.loader.brk_address, new_brk_addr - ql.loader.brk_address, info="[brk]")
+        if inp > cur_brk_addr: # increase current brk_address if inp is greater
+            ql.mem.map(cur_brk_addr, new_brk_addr - cur_brk_addr, info="[brk]")
 
-        elif inp < ql.loader.brk_address: # shrink current bkr_address to inp if its smaller
-            ql.mem.unmap(new_brk_addr, ql.loader.brk_address - new_brk_addr)
+        elif inp < cur_brk_addr: # shrink current bkr_address to inp if its smaller
+            ql.mem.unmap(new_brk_addr, cur_brk_addr - new_brk_addr)
 
         ql.loader.brk_address = new_brk_addr
 
@@ -337,23 +334,25 @@ def ql_syscall_write(ql: Qiling, fd: int, buf: int, count: int):
 def ql_syscall_readlink(ql: Qiling, path_name: int, path_buff: int, path_buffsize: int):
     pathname = ql.os.utils.read_cstring(path_name)
     # pathname = str(pathname, 'utf-8', errors="ignore")
-    real_path = ql.os.path.transform_to_link_path(pathname)
-    relative_path = ql.os.path.transform_to_relative_path(pathname)
+    host_path = ql.os.path.virtual_to_host_path(pathname)
+    virt_path = ql.os.path.virtual_abspath(pathname)
 
-    if not os.path.exists(real_path):
-        regreturn = -1
+    # cover procfs psaudo files first
+    # TODO: /proc/self/root, /proc/self/cwd
+    if virt_path == r'/proc/self/exe':
+        p = ql.os.path.host_to_virtual_path(ql.path)
+        p = p.encode('utf-8')
 
-    elif relative_path == r'/proc/self/exe':
-        localpath = os.path.abspath(ql.path)
-        localpath = bytes(localpath, 'utf-8') + b'\x00'
+        ql.mem.write(path_buff, p + b'\x00')
+        regreturn = len(p)
 
-        ql.mem.write(path_buff, localpath)
-        regreturn = len(localpath) - 1
-
-    else:
+    elif os.path.exists(host_path):
         regreturn = 0
 
-    ql.log.debug("readlink(%s, 0x%x, 0x%x) = %d" % (relative_path, path_buff, path_buffsize, regreturn))
+    else:
+        regreturn = -1
+
+    ql.log.debug('readlink("%s", 0x%x, 0x%x) = %d' % (virt_path, path_buff, path_buffsize, regreturn))
 
     return regreturn
 
@@ -375,20 +374,17 @@ def ql_syscall_getcwd(ql: Qiling, path_buff: int, path_buffsize: int):
 
 def ql_syscall_chdir(ql: Qiling, path_name: int):
     pathname = ql.os.utils.read_cstring(path_name)
-    real_path = ql.os.path.transform_to_real_path(pathname)
-    relative_path = ql.os.path.transform_to_relative_path(pathname)
+    host_path = ql.os.path.virtual_to_host_path(pathname)
+    virt_path = ql.os.path.virtual_abspath(pathname)
 
-    if os.path.exists(real_path) and os.path.isdir(real_path):
-        if ql.os.thread_management:
-            ql.os.thread_management.cur_thread.path.cwd = relative_path
-        else:
-            ql.os.path.cwd = relative_path
+    if os.path.exists(host_path) and os.path.isdir(host_path):
+        ql.os.path.cwd = virt_path
 
         regreturn = 0
-        ql.log.debug("chdir(%s) = %d"% (relative_path, regreturn))
+        ql.log.debug("chdir(%s) = %d"% (virt_path, regreturn))
     else:
         regreturn = -1
-        ql.log.warning("chdir(%s) = %d : not found" % (relative_path, regreturn))
+        ql.log.warning("chdir(%s) = %d : not found" % (virt_path, regreturn))
 
     return regreturn
 
@@ -396,20 +392,25 @@ def ql_syscall_chdir(ql: Qiling, path_name: int):
 def ql_syscall_readlinkat(ql: Qiling, dfd: int, path: int, buf: int, bufsize: int):
     pathname = ql.os.utils.read_cstring(path)
     # pathname = str(pathname, 'utf-8', errors="ignore")
-    real_path = ql.os.path.transform_to_link_path(pathname)
-    relative_path = ql.os.path.transform_to_relative_path(pathname)
+    host_path = ql.os.path.virtual_to_host_path(pathname)
+    virt_path = ql.os.path.virtual_abspath(pathname)
 
-    if not os.path.exists(real_path):
+    # cover procfs psaudo files first
+    # TODO: /proc/self/root, /proc/self/cwd
+    if virt_path == r'/proc/self/exe':
+        p = ql.os.path.host_to_virtual_path(ql.path)
+        p = p.encode('utf-8')
+
+        ql.mem.write(buf, p + b'\x00')
+        regreturn = len(p)
+
+    elif os.path.exists(host_path):
+        regreturn = 0
+
+    else:
         regreturn = -1
 
-    elif relative_path == r'/proc/self/exe':
-        localpath = os.path.abspath(ql.path)
-        localpath = bytes(localpath, 'utf-8') + b'\x00'
-
-        ql.mem.write(buf, localpath)
-        regreturn = len(localpath) -1
-    else:
-        regreturn = 0
+    ql.log.debug('readlinkat(%d, "%s", 0x%x, 0x%x) = %d' % (dfd, virt_path, buf, bufsize, regreturn))
 
     return regreturn
 

@@ -370,7 +370,7 @@ class GD32VF1xxEclic(QlPeripheral):
     def __init__(self, ql, label):
         super().__init__(ql, label)
 
-        self.eclic = self.struct(
+        self.instance = self.struct(
             CLICCFG        =  0x00000000,
             CLICINFO       =  0x00000000,
             MTH            =  0x00000000,
@@ -727,10 +727,10 @@ class GD32VF1xxEclic(QlPeripheral):
     @QlPeripheral.monitor()
     def read(self, offset: int, size: int) -> int:		
         buf = ctypes.create_string_buffer(size)
-        ctypes.memmove(buf, ctypes.addressof(self.gpio) + offset, size)
+        ctypes.memmove(buf, ctypes.addressof(self.instance) + offset, size)
         return int.from_bytes(buf.raw, byteorder='little')
     
     @QlPeripheral.monitor()
     def write(self, offset: int, size: int, value: int):
         data = (value).to_bytes(size, 'little')
-        ctypes.memmove(ctypes.addressof(self.gpio) + offset, data, size)
+        ctypes.memmove(ctypes.addressof(self.instance) + offset, data, size)

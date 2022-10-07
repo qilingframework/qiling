@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import os
+import os, gevent
 from multiprocessing import Process
 
 from qiling import Qiling
@@ -82,7 +82,6 @@ def ql_syscall_clone(ql: Qiling, flags: int, child_stack: int, parent_tidptr: in
         set_child_tid_addr = child_tidptr
 
     th = ql.os.thread_class.spawn(ql, ql.arch.regs.arch_pc + 2, ql.os.exit_point, set_child_tid_addr = set_child_tid_addr)
-    th.path = f_th.path
     ql.log.debug(f'{str(th)} created')
 
     if flags & CLONE_PARENT_SETTID == CLONE_PARENT_SETTID:
@@ -132,4 +131,8 @@ def ql_syscall_clone(ql: Qiling, flags: int, child_stack: int, parent_tidptr: in
     return regreturn
 
 def ql_syscall_sched_yield(ql: Qiling):
+    def _sched_yield(cur_thread):
+        gevent.sleep(0)
+    ql.emu_stop()
+    ql.os.thread_management.cur_thread.sched_cb = _sched_yield
     return 0

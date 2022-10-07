@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Any, AnyStr, List, Mapping, MutableMapping, Op
 
 # See https://stackoverflow.com/questions/39740632/python-type-hinting-without-cyclic-imports
 if TYPE_CHECKING:
+    from os import PathLike
     from unicorn.unicorn import Uc
     from configparser import ConfigParser
     from logging import Logger
@@ -30,22 +31,22 @@ class Qiling(QlCoreHooks, QlCoreStructs):
     def __init__(
             self,
             argv: Sequence[str] = None,
-            rootfs: str = None,
+            rootfs: str = r'.',
             env: MutableMapping[AnyStr, AnyStr] = {},
             code: bytes = None,
             ostype: Union[str, QL_OS] = None,
             archtype: Union[str, QL_ARCH] = None,
             verbose: QL_VERBOSE = QL_VERBOSE.DEFAULT,
             profile: str = None,
-            console=True,
+            console: bool = True,
             log_file=None,
             log_override=None,
-            log_plain=False,
-            multithread = False,
+            log_plain: bool = False,
+            multithread: bool = False,
             filter = None,
             stop: QL_STOP = QL_STOP.NONE,
             *,
-            endian: QL_ENDIAN = None,
+            endian: Optional[QL_ENDIAN] = None,
             thumb: bool = False,
             libcache: bool = False
     ):
@@ -100,10 +101,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         ################
         # rootfs setup #
         ################
-        if rootfs is None:
-            rootfs = '.'
-
-        elif not os.path.exists(rootfs):
+        if not os.path.exists(rootfs):
             raise QlErrorFileNotFound(f'Target rootfs not found: "{rootfs}"')
 
         self._rootfs = rootfs
@@ -414,8 +412,8 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         return self._debug_stop
 
     @debug_stop.setter
-    def debug_stop(self, ds):
-        self._debug_stop = ds
+    def debug_stop(self, enabled: bool):
+        self._debug_stop = enabled
 
     @property
     def debugger(self) -> bool:
@@ -540,17 +538,21 @@ class Qiling(QlCoreHooks, QlCoreStructs):
     # Qiling APIS #
     ###############
 
-    # Emulate the binary from begin until @end, with timeout in @timeout and
-    # number of emulated instructions in @count
-    def run(self, begin=None, end=None, timeout=0, count=0, code=None):
+    def run(self, begin: Optional[int] = None, end: Optional[int] = None, timeout: int = 0, count: int = 0):
+        """Start binary emulation.
+
+        Args:
+            begin   : emulation starting address
+            end     : emulation ending address
+            timeout : limit emulation to a specific amount of time (microseconds); unlimited by default
+            count   : limit emulation to a specific amount of instructions; unlimited by default
+        """
+
         # replace the original entry point, exit point, timeout and count
         self.entry_point = begin
         self.exit_point = end
         self.timeout = timeout
-        self.count = count        
-
-        if self.interpreter:
-            return self.arch.run(code)
+        self.count = count
 
         # init debugger (if set)
         debugger = select_debugger(self._debugger)
@@ -561,15 +563,9 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         # patch binary
         self.do_bin_patch()
 
-        if self.baremetal:
-            if self.count <= 0:
-                self.count = -1
-
-            self.arch.run(count=self.count, end=self.exit_point)        
-        else:
-            self.write_exit_trap()
-            # emulate the binary
-            self.os.run()
+        self.write_exit_trap()
+        # emulate the binary
+        self.os.run()
 
         # run debugger
         if debugger and self.debugger:
@@ -594,7 +590,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
 
     # save all qiling instance states
-    def save(self, reg=True, mem=True, fd=False, cpu_context=False, os=False, loader=False, *, snapshot: str = None):
+    def save(self, reg=True, mem=True, hw=False, fd=False, cpu_context=False, os=False, loader=False, *, snapshot: str = None):
         saved_states = {}
 
         if reg:
@@ -602,6 +598,9 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
         if mem:
             saved_states["mem"] = self.mem.save()
+
+        if hw:
+            saved_states["hw"] = self.hw.save()
 
         if fd:
             saved_states["fd"] = self.os.fd.save()
@@ -639,6 +638,9 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         if "reg" in saved_states:
             self.arch.regs.restore(saved_states["reg"])
 
+        if "hw" in saved_states:
+            self.hw.restore(saved_states['hw'])
+
         if "fd" in saved_states:
             self.os.fd.restore(saved_states["fd"])
 
@@ -650,10 +652,13 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
 
     # Map "ql_path" to any objects which implements QlFsMappedObject.
-    def add_fs_mapper(self, ql_path, real_dest):
+    def add_fs_mapper(self, ql_path: Union["PathLike", str], real_dest):
         self.os.fs_mapper.add_fs_mapping(ql_path, real_dest)
 
-
+    # Remove "ql_path" mapping.
+    def remove_fs_mapper(self, ql_path: Union["PathLike", str]):
+        self.os.fs_mapper.remove_fs_mapping(ql_path)
+    
     # push to stack bottom, and update stack register
     def stack_push(self, data):
         return self.arch.stack_push(data)
@@ -686,7 +691,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             self.os.thread_management.stop() 
 
         elif self.baremetal:
-            self.arch.stop()
+            self.os.stop()
 
         else:
             self.uc.emu_stop()    
@@ -701,6 +706,9 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             timeout : max emulation time (in microseconds); unlimited by default
             count  : max emulation steps (instructions count); unlimited by default
         """
+
+        if self._arch.type in (QL_ARCH.ARM, QL_ARCH.CORTEX_M) and self._arch._init_thumb:
+            begin |= 1
 
         self.uc.emu_start(begin, end, timeout, count)
 

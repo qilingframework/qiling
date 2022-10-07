@@ -13,7 +13,7 @@ from qiling.hw.external_device.oled.ssd1306 import PyGameSSD1306Spi
 
 
 ql = Qiling(["../rootfs/mcu/stm32f407/ai-sine-test.elf"],
-            archtype="cortex_m", env=stm32f407, verbose=QL_VERBOSE.DEFAULT)
+            archtype="cortex_m", ostype="mcu", env=stm32f407, verbose=QL_VERBOSE.DEFAULT)
 
 ql.hw.create('rcc')
 ql.hw.create('pwr')
@@ -23,6 +23,7 @@ ql.hw.create('gpiob')
 ql.hw.create('gpiod')
 ql.hw.create('spi1')
 ql.hw.create('crc')
+ql.hw.create('dbgmcu')
 
 oled = PyGameSSD1306Spi(dc=(ql.hw.gpiod, 5))
 ql.hw.spi1.connect(oled)

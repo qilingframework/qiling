@@ -6,6 +6,8 @@
 import random
 from enum import Enum
 
+from qiling import Qiling
+
 class CaneryType(Enum):
         underflow = 0
         overflow = 1
@@ -22,7 +24,9 @@ class QlSanitizedMemoryHeap():
     ql.os.heap.uaf_handler = my_uaf_handler
     """
 
-    def __init__(self, ql, heap, fault_rate=0, canary_byte=b'\xCD'):
+    CANARY_SIZE = 4
+
+    def __init__(self, ql: Qiling, heap, fault_rate=0, canary_byte=b'\xCD'):
         self.ql = ql
         self.heap = heap
         self.fault_rate = fault_rate
@@ -77,34 +81,39 @@ class QlSanitizedMemoryHeap():
         """
         pass
 
-    def alloc(self, size):
+    def alloc(self, size: int):
         chance = random.randint(1, 100)
         if chance <= self.fault_rate:
             # Fail the allocation.
             return 0
 
-        # Add 8 bytes to the requested size so as to accomodate the canaries.
-        addr = self.heap.alloc(size + 8)
-        self.ql.mem.write(addr, self.canary_byte * (size + 8))
+        addr = self.heap.alloc(size + self.CANARY_SIZE * 2)
 
-        # Install canary hooks for overflow/underflow detection.
-        underflow_canary = (addr, addr + 3, CaneryType.underflow)
-        self.ql.hook_mem_write(self.bo_handler, begin=underflow_canary[0], end=underflow_canary[1])
-        self.ql.hook_mem_read(self.oob_handler, begin=underflow_canary[0], end=underflow_canary[1])
-        self.canaries.append(underflow_canary)
+        canary_begins = addr
+        canary_ends = canary_begins + self.CANARY_SIZE - 1
 
-        overflow_canary = (addr + 4 + size, addr + 4 + size + 3, CaneryType.overflow)
-        self.ql.hook_mem_write(self.bo_handler, begin=overflow_canary[0], end=overflow_canary[1])
-        self.ql.hook_mem_read(self.oob_handler, begin=overflow_canary[0], end=overflow_canary[1])
-        self.canaries.append(overflow_canary)
+        # install underflow canary and detection hooks
+        self.ql.mem.write(canary_begins, self.canary_byte * self.CANARY_SIZE)
+        self.ql.hook_mem_write(self.bo_handler, begin=canary_begins, end=canary_ends)
+        self.ql.hook_mem_read(self.oob_handler, begin=canary_begins, end=canary_ends)
+        self.canaries.append((canary_begins, canary_ends, CaneryType.underflow))
 
-        return (addr + 4)
+        canary_begins = addr + self.CANARY_SIZE + size
+        canary_ends = canary_begins + self.CANARY_SIZE - 1
 
-    def size(self, addr):
-        return self.heap.size(addr - 4)
+        # install overflow canary and detection hooks
+        self.ql.mem.write(canary_begins, self.canary_byte * self.CANARY_SIZE)
+        self.ql.hook_mem_write(self.bo_handler, begin=canary_begins, end=canary_ends)
+        self.ql.hook_mem_read(self.oob_handler, begin=canary_begins, end=canary_ends)
+        self.canaries.append((canary_begins, canary_ends, CaneryType.overflow))
 
-    def free(self, addr):
-        chunk = self.heap._find(addr - 4)
+        return (addr + self.CANARY_SIZE)
+
+    def size(self, addr: int):
+        return self.heap.size(addr - self.CANARY_SIZE)
+
+    def free(self, addr: int) -> bool:
+        chunk = self.heap._find(addr - self.CANARY_SIZE)
 
         if not chunk:
             self.bad_free_handler(self.ql, addr)
@@ -118,13 +127,15 @@ class QlSanitizedMemoryHeap():
 
         # Make sure the chunk won't be re-used by the underlying heap.
         self.heap.chunks.remove(chunk)
+
         return True
 
-    def validate(self):
-        for (canary_begin, canary_end, canery_type) in self.canaries:
+    def validate(self) -> bool:
+        for canary_begin, canary_end, _ in self.canaries:
             size = canary_end - canary_begin + 1
             canary = self.ql.mem.read(canary_begin, size)
+
             if canary.count(self.canary_byte) != len(canary):
                 return False
+
         return True
-        

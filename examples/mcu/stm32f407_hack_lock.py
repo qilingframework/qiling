@@ -27,7 +27,7 @@ def dicts():
 # Cracking the passwd of lock
 def crack(passwd):
     ql = Qiling(["../../examples/rootfs/mcu/stm32f407/backdoorlock.hex"],                    
-                        archtype="cortex_m", env=stm32f407, verbose=QL_VERBOSE.OFF)
+                        archtype="cortex_m", ostype="mcu", env=stm32f407, verbose=QL_VERBOSE.DISABLED)
     
     ql.hw.create('spi2')
     ql.hw.create('gpioe')

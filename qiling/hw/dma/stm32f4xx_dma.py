@@ -116,7 +116,7 @@ class STM32F4xxDma(QlPeripheral):
 
         super().__init__(ql, label)
         
-        self.dma = self.struct()
+        self.instance = self.struct()
         
         self.intn = [
             stream0_intn,
@@ -132,57 +132,33 @@ class STM32F4xxDma(QlPeripheral):
     @QlPeripheral.monitor(width=15)
     def read(self, offset: int, size: int) -> int:        
         buf = ctypes.create_string_buffer(size)
-        ctypes.memmove(buf, ctypes.addressof(self.dma) + offset, size)
+        ctypes.memmove(buf, ctypes.addressof(self.instance) + offset, size)
         return int.from_bytes(buf.raw, byteorder='little')
 
     @QlPeripheral.monitor(width=15)
     def write(self, offset: int, size: int, value: int):        
         if offset == self.struct.LIFCR.offset:
-            self.dma.LISR &= ~value
+            self.instance.LISR &= ~value
 
         elif offset == self.struct.HIFCR.offset:
-            self.dma.HISR &= ~value
+            self.instance.HISR &= ~value
 
         elif offset > self.struct.HIFCR.offset:
             data = (value).to_bytes(size, byteorder='little')
-            ctypes.memmove(ctypes.addressof(self.dma) + offset, data, size)
-
-    def find_field(self, offset: int, size: int) -> str:
-        field_list = []
-        if offset < self.struct.stream.offset:
-            field_list.append(super().find_field(offset, min(size, self.struct.stream.offset - offset)))
-        
-        if offset >= self.struct.stream.offset:
-            for i in range(8):
-                prefix_offset = self.struct.stream.offset + ctypes.sizeof(Stream) * i
-                
-                for name, _ in Stream._fields_:
-                    field = getattr(Stream, name)
-                    field_offset = field.offset + prefix_offset
-
-                    lbound = max(0, offset - field_offset)
-                    ubound = min(offset + size  - field_offset, field.size)
-                    if lbound < ubound:
-                        if lbound == 0 and ubound == field.size:
-                            field_list.append(f'stream[{i}].{name}')
-                        else:
-                            field_list.append(f'stream[{i}].{name}[{lbound}:{ubound}]')
-                
-        return ','.join(field_list)
-
+            ctypes.memmove(ctypes.addressof(self.instance) + offset, data, size)
 
     def transfer_complete(self, id):
         tc_bits = [5, 11, 21, 27]
         if id > 4:
-            self.dma.HISR |= 1 << tc_bits[id - 4]
+            self.instance.HISR |= 1 << tc_bits[id - 4]
         else:
-            self.dma.LISR |= 1 << tc_bits[id]
+            self.instance.LISR |= 1 << tc_bits[id]
 
         if self.intn[id] is not None:
             self.ql.hw.nvic.set_pending(self.intn[id])
 
     def step(self):
-        for id, stream in enumerate(self.dma.stream):
+        for id, stream in enumerate(self.instance.stream):
             if not stream.enable():
                 continue
                                     

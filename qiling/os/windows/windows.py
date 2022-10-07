@@ -4,16 +4,16 @@
 #
 
 import ntpath
-from typing import Callable
+from typing import Callable, TextIO, Type
 
 from unicorn import UcError
 
 from qiling import Qiling
 from qiling.arch.x86_const import GS_SEGMENT_ADDR, GS_SEGMENT_SIZE, FS_SEGMENT_ADDR, FS_SEGMENT_SIZE
-from qiling.arch.x86_utils import GDTManager, SegmentManager86, SegmentManager64
+from qiling.arch.x86_utils import GDTManager, SegmentManager, SegmentManager86, SegmentManager64
 from qiling.cc import intel
 from qiling.const import QL_ARCH, QL_OS, QL_INTERCEPT
-from qiling.exception import QlErrorSyscallError, QlErrorSyscallNotFound
+from qiling.exception import QlErrorSyscallError, QlErrorSyscallNotFound, QlMemoryMappedError
 from qiling.os.fcall import QlFunctionCall
 from qiling.os.memory import QlMemoryHeap
 from qiling.os.os import QlOs
@@ -65,9 +65,9 @@ class QlOsWindows(QlOs):
 
         self.stats = QlWinStats()
 
-        ossection = f'OS{self.ql.arch.bits}'
-        heap_base = self.profile.getint(ossection, 'heap_address')
-        heap_size = self.profile.getint(ossection, 'heap_size')
+        ossection = self.profile[f'OS{self.ql.arch.bits}']
+        heap_base = ossection.getint('heap_address')
+        heap_size = ossection.getint('heap_size')
 
         self.heap = QlMemoryHeap(self.ql, heap_base, heap_base + heap_size)
 
@@ -82,16 +82,46 @@ class QlOsWindows(QlOs):
 
         self.PE_RUN = False
         self.last_error = 0
-        # variables used inside hooks
-        self.hooks_variables = {}
-        self.syscall_count = {}
+
         self.argv = self.ql.argv
         self.env = self.ql.env
         self.pid = self.profile.getint('KERNEL', 'pid')
-        self.automatize_input = self.profile.getboolean("MISC","automatize_input")
 
         self.services = {}
         self.load()
+
+        # only after handle manager has been set up we can assign the standard streams
+        self.stdin  = self._stdin
+        self.stdout = self._stdout
+        self.stderr = self._stderr
+
+
+    @QlOs.stdin.setter
+    def stdin(self, stream: TextIO) -> None:
+        self._stdin = stream
+
+        handle = self.handle_manager.get(const.STD_INPUT_HANDLE)
+        assert handle is not None
+
+        handle.obj = stream
+
+    @QlOs.stdout.setter
+    def stdout(self, stream: TextIO) -> None:
+        self._stdout = stream
+
+        handle = self.handle_manager.get(const.STD_OUTPUT_HANDLE)
+        assert handle is not None
+
+        handle.obj = stream
+
+    @QlOs.stderr.setter
+    def stderr(self, stream: TextIO) -> None:
+        self._stderr = stream
+
+        handle = self.handle_manager.get(const.STD_ERROR_HANDLE)
+        assert handle is not None
+
+        handle.obj = stream
 
 
     def load(self):
@@ -105,7 +135,7 @@ class QlOsWindows(QlOs):
     def setupGDT(self):
         gdtm = GDTManager(self.ql)
 
-        segm_class = {
+        segm_class: Type[SegmentManager] = {
             32 : SegmentManager86,
             64 : SegmentManager64
         }[self.ql.arch.bits]
@@ -116,11 +146,15 @@ class QlOsWindows(QlOs):
         segm.setup_fs(FS_SEGMENT_ADDR, FS_SEGMENT_SIZE)
         segm.setup_gs(GS_SEGMENT_ADDR, GS_SEGMENT_SIZE)
 
-        if not self.ql.mem.is_mapped(FS_SEGMENT_ADDR, FS_SEGMENT_SIZE):
-            self.ql.mem.map(FS_SEGMENT_ADDR, FS_SEGMENT_SIZE, info='[FS]')
+        if not self.ql.mem.is_available(FS_SEGMENT_ADDR, FS_SEGMENT_SIZE):
+            raise QlMemoryMappedError('cannot map FS segment, memory location is taken')
 
-        if not self.ql.mem.is_mapped(GS_SEGMENT_ADDR, GS_SEGMENT_SIZE):
-            self.ql.mem.map(GS_SEGMENT_ADDR, GS_SEGMENT_SIZE, info='[GS]')
+        self.ql.mem.map(FS_SEGMENT_ADDR, FS_SEGMENT_SIZE, info='[FS]')
+
+        if not self.ql.mem.is_available(GS_SEGMENT_ADDR, GS_SEGMENT_SIZE):
+            raise QlMemoryMappedError('cannot map GS segment, memory location is taken')
+
+        self.ql.mem.map(GS_SEGMENT_ADDR, GS_SEGMENT_SIZE, info='[GS]')
 
 
     def __setup_components(self):
@@ -155,9 +189,6 @@ class QlOsWindows(QlOs):
                 api_func = getattr(api, f'hook_{api_name}', None)
 
             if api_func:
-                self.syscall_count.setdefault(api_name, 0)
-                self.syscall_count[api_name] += 1
-
                 try:
                     api_func(ql, address, api_name)
                 except Exception as ex:

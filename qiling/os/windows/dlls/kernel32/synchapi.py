@@ -145,15 +145,17 @@ def hook_WaitForMultipleObjects(ql: Qiling, address: int, params):
     return 0
 
 def __OpenMutex(ql: Qiling, address: int, params):
+    lpName = params["lpName"]
+
+    if not lpName:
+        return 0
+
     # The name can have a "Global" or "Local" prefix to explicitly open an object in the global or session namespace.
     # It can also have no prefix
-    try:
-        _type, name = params["lpName"].split("\\")
-    except ValueError:
-        name = params["lpName"]
-        _type = ""
+    _type, name = lpName.split("\\") if '\\' in lpName else ('', lpName)
 
     handle = ql.os.handle_manager.search(name)
+
     if _type == "Global":
         # if is global is a Windows lock. We always return a valid handle because we have no way to emulate them
         # example sample: Gandcrab e42431d37561cc695de03b85e8e99c9e31321742
@@ -175,11 +177,13 @@ def __OpenMutex(ql: Qiling, address: int, params):
         raise QlErrorNotImplemented("API not implemented")
 
 def __CreateMutex(ql: Qiling, address: int, params):
-    try:
-        _type, name = params["lpName"].split("\\")
-    except ValueError:
-        name = params["lpName"]
-        _type = ""
+    lpName = params["lpName"]
+    owning = params["bInitialOwner"]
+
+    if not lpName:
+        return 0
+
+    _type, name = lpName.split("\\") if '\\' in lpName else ('', lpName)
 
     handle = ql.os.handle_manager.search(name)
 
@@ -187,7 +191,6 @@ def __CreateMutex(ql: Qiling, address: int, params):
         # ql.os.last_error = ERROR_ALREADY_EXISTS
         return 0
 
-    owning = params["bInitialOwner"]
     mutex = Mutex(name, _type)
 
     if owning:
@@ -279,30 +282,30 @@ def hook_ReleaseMutex(ql: Qiling, address: int, params):
 
 def __CreateEvent(ql: Qiling, address: int, params):
     # Implementation seems similar enough to Mutex to just use it
+    lpName = params["lpName"]
 
-    try:
-        namespace, name = params["lpName"].split("\\")
-    except ValueError:
-        name = params["lpName"]
-        namespace = ""
+    if lpName:
+        namespace, name = lpName.split('\\') if '\\' in lpName else ('', lpName)
+        handle = ql.os.handle_manager.search(name)
 
-    handle = ql.os.handle_manager.search(name)
+        if handle is not None:
+            ql.os.last_error = ERROR_ALREADY_EXISTS
+            return handle.id
 
-    if handle is not None:
-        ql.os.last_error = ERROR_ALREADY_EXISTS
-        # FIXME: fail with a nullptr?
-        # return 0
     else:
-        mutex = Mutex(name, namespace)
+        # TODO: should be None instead of empty strings?
+        namespace = ''
+        name = ''
 
-        if params['bInitialState']:
-            mutex.lock()
+    mutex = Mutex(name, namespace)
 
-        handle = Handle(obj=mutex, name=name)
-        ql.os.handle_manager.append(handle)
+    if params['bInitialState']:
+        mutex.lock()
 
-    # FIXME: shouldn't it be 'id' instead of 'ID'?
-    return handle.ID
+    handle = Handle(obj=mutex, name=name)
+    ql.os.handle_manager.append(handle)
+
+    return handle.id
 
 # HANDLE CreateEventA(
 #  LPSECURITY_ATTRIBUTES lpEventAttributes,

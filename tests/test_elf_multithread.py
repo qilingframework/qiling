@@ -29,20 +29,25 @@ class ELFTest(unittest.TestCase):
 
 
     def test_elf_linux_cloexec_x8664(self):
-        with open('../examples/rootfs/x8664_linux/testfile', 'wb') as f:
-            f.write(b'0123456789')
-
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_cloexec_test"],  
                     "../examples/rootfs/x8664_linux", 
                     verbose=QL_VERBOSE.DEBUG,
                     multithread=True)
 
-        err = ql_file.open('output.txt', os.O_RDWR | os.O_CREAT, 0o777)
+        filename = 'output.txt'
+        err = ql_file.open(filename, os.O_RDWR | os.O_CREAT, 0o777)
+
         ql.os.stderr = err
         ql.run()
-        os.close(err.fileno())
-        with open('output.txt', 'rb') as f:
-            self.assertTrue(b'fail' in f.read())            
+        err.close()
+
+        with open(filename, 'rb') as f:
+            content = f.read()
+
+        # cleanup
+        os.remove(filename)
+
+        self.assertIn(b'fail', content)
 
         del ql
 
@@ -95,7 +100,7 @@ class ELFTest(unittest.TestCase):
             except:
                 pass
         buf_out = None
-        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_multithreading"], "../examples/rootfs/x8664_linux", multithread=True, profile= "profiles/append_test.ql")
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_multithreading"], "../examples/rootfs/x8664_linux", multithread=True)
         ql.os.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
         ql.run()
 
@@ -347,7 +352,7 @@ class ELFTest(unittest.TestCase):
             except:
                 pass
 
-        ql = Qiling(["../examples/rootfs/armeb_linux/bin/armeb_udp_test","20009"], "../examples/rootfs/armeb_linux", multithread=True)
+        ql = Qiling(["../examples/rootfs/armeb_linux/bin/armeb_udp_test","20010"], "../examples/rootfs/armeb_linux", multithread=True)
         ql.os.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
         ql.run()
 
@@ -357,7 +362,7 @@ class ELFTest(unittest.TestCase):
 
     def test_http_elf_linux_x8664(self):
         def picohttpd():
-            ql = Qiling(["../examples/rootfs/x8664_linux/bin/picohttpd"], "../examples/rootfs/x8664_linux", multithread=True, verbose=QL_VERBOSE.DEBUG)    
+            ql = Qiling(["../examples/rootfs/x8664_linux/bin/picohttpd","12911"], "../examples/rootfs/x8664_linux", multithread=True, verbose=QL_VERBOSE.DEBUG)    
             ql.run()
 
 
@@ -366,12 +371,12 @@ class ELFTest(unittest.TestCase):
 
         time.sleep(1)
 
-        f = os.popen("curl http://127.0.0.1:12913")
+        f = os.popen("curl http://127.0.0.1:12911")
         self.assertEqual("httpd_test_successful", f.read())
 
     def test_http_elf_linux_arm(self):
         def picohttpd():
-            ql = Qiling(["../examples/rootfs/arm_linux/bin/picohttpd"], "../examples/rootfs/arm_linux", multithread=True, verbose=QL_VERBOSE.DEBUG)    
+            ql = Qiling(["../examples/rootfs/arm_linux/bin/picohttpd","12912"], "../examples/rootfs/arm_linux", multithread=True, verbose=QL_VERBOSE.DEBUG)    
             ql.run()
 
 
@@ -380,7 +385,7 @@ class ELFTest(unittest.TestCase):
 
         time.sleep(1)
 
-        f = os.popen("curl http://127.0.0.1:12913")
+        f = os.popen("curl http://127.0.0.1:12912")
         self.assertEqual("httpd_test_successful", f.read())
 
     def test_http_elf_linux_armeb(self):

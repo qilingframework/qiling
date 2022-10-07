@@ -30,7 +30,7 @@ class GD32VF1xxRtc(QlPeripheral):
     def __init__(self, ql, label):
         super().__init__(ql, label)
 
-        self.rtc = self.struct(
+        self.instance = self.struct(
             INTEN =  0x00000000,
             CTL   =  0x00000020,
             PSCH  =  0x00000000,

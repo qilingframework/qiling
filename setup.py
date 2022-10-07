@@ -5,19 +5,20 @@
 from setuptools import setup, find_packages
 
 # NOTE: use "-dev" for dev branch
-VERSION = "1.4.3" + "-dev"
+VERSION = "1.4.5" + "-dev"
+#VERSION = "1.4.4"
 
 requirements = [
     "capstone>=4.0.1",
-    "unicorn>=2.0.0-rc7",
-    "pefile @ https://github.com/erocarrera/pefile/archive/refs/heads/master.zip",
+    "unicorn>=2.0.0",
+    "pefile>=2022.5.30",
     "python-registry>=1.3.1",
     "keystone-engine>=0.9.2",
     "pyelftools>=0.28",
     "gevent>=20.9.0",
     "multiprocess>=0.70.12.2",
     "windows-curses>=2.1.0;platform_system=='Windows'",
-    "pyyaml>=6.0"
+    "pyyaml>=6.0",
 ]
 
 extras = {
@@ -41,6 +42,9 @@ extras = {
     "fuzz" : [
         "unicornafl>=2.0.0;platform_system!='Windows'",
         "fuzzercorn>=0.0.1;platform_system=='Linux'"
+    ],
+    "RE": [
+       "r2libr>=5.7.4",
     ]
 }
 
@@ -84,7 +88,12 @@ setup(
 
     packages=find_packages(),
     scripts=['qltool'],
-    include_package_data=True,
+    package_data={
+        'qiling': ['profiles/*.ql'],
+        'qiling.debugger.gdb': ['xml/*/*'],
+        'qiling.os.uefi': ['guids.csv'],
+        'qiling.arch.evm.analysis': ['signatures.json']
+    },
     install_requires=requirements,
     extras_require=extras,
 )

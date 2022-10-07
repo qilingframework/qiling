@@ -3,47 +3,71 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-# gdbserver --remote-debug 0.0.0.0:9999 /path/to binary
-# documentation: according to https://sourceware.org/gdb/current/onlinedocs/gdb/Remote-Protocol.html#Remote-Protocol
+# for watching actual protocol messages:
+#   server:     gdbserver --remote-debug 127.0.0.1:9999 /path/to/exec
+#   client:     gdb -q -ex "target remote 127.0.0.1:9999"
+#
+#   also, run this command on the gdb client:
+#       (gdb) set debug remote 1
+#
+# gdb remote protocol:
+#   https://sourceware.org/gdb/current/onlinedocs/gdb/Remote-Protocol.html
 
-import struct, os, socket
-from binascii import unhexlify
-from typing import Iterator, Literal
+import os, socket, re, tempfile
+from logging import Logger
+from typing import Iterator, Mapping, Optional, Union
+import typing
+
+from unicorn import UcError
+from unicorn.unicorn_const import (
+    UC_ERR_READ_UNMAPPED,  UC_ERR_WRITE_UNMAPPED,  UC_ERR_FETCH_UNMAPPED,
+    UC_ERR_READ_PROT,      UC_ERR_WRITE_PROT,      UC_ERR_FETCH_PROT,
+    UC_ERR_READ_UNALIGNED, UC_ERR_WRITE_UNALIGNED, UC_ERR_FETCH_UNALIGNED,
+    UC_ERR_INSN_INVALID
+)
 
 from qiling import Qiling
-from qiling.const import *
-from qiling.utils import *
+from qiling.const import QL_ARCH, QL_ENDIAN, QL_OS
 from qiling.debugger import QlDebugger
-from qiling.arch.x86_const import reg_map_16 as x86_reg_map_16
-from qiling.arch.x86_const import reg_map_32 as x86_reg_map_32
-from qiling.arch.x86_const import reg_map_64 as x86_reg_map_64
-from qiling.arch.x86_const import reg_map_misc as x86_reg_map_misc
-from qiling.arch.x86_const import reg_map_st as x86_reg_map_st
-from qiling.arch.arm_const import reg_map as arm_reg_map
-from qiling.arch.arm64_const import reg_map as arm64_reg_map
-from qiling.arch.mips_const import reg_map as mips_reg_map
-from qiling.loader.elf import AUX
+from qiling.debugger.gdb.xmlregs import QlGdbFeatures
+from qiling.debugger.gdb.utils import QlGdbUtils
+from qiling.os.linux.procfs import QlProcFS
+from qiling.os.mapper import QlFsMappedCallable, QlFsMappedObject
 
-from .utils import QlGdbUtils
+# gdb logging prompt
+PROMPT = r'gdb>'
 
-GDB_SIGNAL_INT  = 2
-GDB_SIGNAL_SEGV = 11
-GDB_SIGNAL_GILL = 4
-GDB_SIGNAL_STOP = 17
-GDB_SIGNAL_TRAP = 5
-GDB_SIGNAL_BUS  = 10
+# default string encoding
+ENCODING = 'latin'
 
+# define a few handy linux signals
+SIGINT  = 2
+SIGILL  = 4
+SIGTRAP = 5
+SIGABRT = 6
+SIGBUS  = 7
+SIGKILL = 9
+SIGSEGV = 11
+SIGALRM = 14
+SIGTERM = 15
+SIGCHLD = 16
+SIGCONT = 17
+SIGSTOP = 18
 
-class QlGdb(QlDebugger, object):
-    """docstring for Debugsession"""
-    def __init__(self, ql: Qiling, ip: str = '127.0.01', port: int = 9999):
-        super(QlGdb, self).__init__(ql)
+# common replies
+REPLY_ACK = b'+'
+REPLY_EMPTY = b''
+REPLY_OK = b'OK'
 
-        self.ql             = ql
-        self.last_pkt       = None
-        self.exe_abspath    = os.path.abspath(self.ql.argv[0])
-        self.rootfs_abspath = os.path.abspath(self.ql.rootfs)
-        self.gdb            = QlGdbUtils()
+# reply type
+Reply = Union[bytes, str]
+
+class QlGdb(QlDebugger):
+    """A simple gdbserver implementation.
+    """
+
+    def __init__(self, ql: Qiling, ip: str = '127.0.0.1', port: int = 9999):
+        super().__init__(ql)
 
         if type(port) is str:
             port = int(port, 0)
@@ -51,763 +75,908 @@ class QlGdb(QlDebugger, object):
         self.ip = ip
         self.port = port
 
-        if self.ql.baremetal:
-            load_address = self.ql.loader.load_address
+        if ql.baremetal:
+            load_address = ql.loader.load_address
             exit_point = load_address + os.path.getsize(ql.path)
-        elif self.ql.code:
-            load_address = self.ql.os.entry_point
+        elif ql.code:
+            load_address = ql.os.entry_point
             exit_point = load_address + len(ql.code)
         else:
             load_address = ql.loader.load_address
             exit_point = load_address + os.path.getsize(ql.path)
 
-        if self.ql.baremetal:
-            self.entry_point = self.ql.loader.entry_point
-        elif self.ql.os.type in (QL_OS.LINUX, QL_OS.FREEBSD) and not self.ql.code:
-            self.entry_point = self.ql.os.elf_entry
+        if ql.baremetal:
+            entry_point = ql.loader.entry_point
+        elif ql.os.type in (QL_OS.LINUX, QL_OS.FREEBSD) and not ql.code:
+            entry_point = ql.os.elf_entry
         else:
-            self.entry_point = self.ql.os.entry_point
+            entry_point = ql.os.entry_point
 
         # Only part of the binary file will be debugged.
-        if self.ql.entry_point is not None and self.ql.exit_point is not None:
-            self.entry_point = self.ql.entry_point
-            exit_point = self.ql.exit_point
+        if ql.entry_point is not None:
+            entry_point = ql.entry_point
 
-        self.gdb.initialize(self.ql, self.entry_point, exit_point=exit_point, mappings=[(hex(load_address))])
+        if ql.exit_point is not None:
+            exit_point = ql.exit_point
 
-        #Setup register tables, order of tables is important
-        self.tables = {
-            QL_ARCH.A8086       : list({**x86_reg_map_16, **x86_reg_map_misc}.keys()),
-            QL_ARCH.X86         : list({**x86_reg_map_32, **x86_reg_map_misc, **x86_reg_map_st}.keys()),
-            QL_ARCH.X8664       : list({**x86_reg_map_64, **x86_reg_map_misc, **x86_reg_map_st}.keys()),
-            QL_ARCH.ARM         : list({**arm_reg_map}.keys()),
-            QL_ARCH.CORTEX_M    : list({**arm_reg_map}.keys()),
-            QL_ARCH.ARM64       : list({**arm64_reg_map}.keys()),
-            QL_ARCH.MIPS        : list({**mips_reg_map}.keys()),
+        self.gdb = QlGdbUtils(ql, entry_point, exit_point)
+
+        self.features = QlGdbFeatures(self.ql.arch.type, self.ql.os.type)
+        self.regsmap = self.features.regsmap
+
+        # https://sourceware.org/bugzilla/show_bug.cgi?id=17760
+        # 42000 is the magic pid to indicate the remote process.
+        self.ql.add_fs_mapper(r'/proc/42000/maps',  QlFsMappedCallable(QlProcFS.self_map, self.ql.mem))
+        self.fake_procfs: Mapping[int, typing.IO] = {}
+
+    def run(self):
+        server = GdbSerialConn(self.ip, self.port, self.ql.log)
+        killed = False
+
+        def __hexstr(value: int, nibbles: int = 0) -> str:
+            """Encode a value into a hex string.
+            """
+
+            length = (nibbles or self.ql.arch.bits // 4) // 2
+            byteorder = 'little' if self.ql.arch.endian == QL_ENDIAN.EL else 'big'
+
+            return value.to_bytes(length, byteorder).hex()
+
+        def __unkown_reg_value(nibbles: int) -> str:
+            """Encode the hex string for unknown regsiter value.
+            """
+
+            return 'x' * nibbles
+
+        def __get_reg_value(reg: Optional[int], pos: int, nibbles: int) -> str:
+            # reg is either None or uc reg invalid
+            if reg:
+                value = self.ql.arch.regs.read(reg)
+                assert type(value) is int
+
+                hexstr = __hexstr(value, nibbles)
+            else:
+                hexstr = __unkown_reg_value(nibbles)
+
+            return hexstr
+
+        def __set_reg_value(reg: Optional[int], pos: int, nibbles: int, hexval: str) -> None:
+            # reg is neither None nor uc reg invalid
+            if reg and hexval != __unkown_reg_value(nibbles):
+                assert len(hexval) == nibbles
+
+                val = int(hexval, 16)
+
+                if self.ql.arch.endian == QL_ENDIAN.EL:
+                    val = __swap_endianess(val)
+
+                self.ql.arch.regs.write(reg, val)
+
+        def __swap_endianess(value: int) -> int:
+            length = (value.bit_length() + 7) // 8
+            raw = value.to_bytes(length, 'little')
+
+            return int.from_bytes(raw, 'big')
+
+
+        def handle_exclaim(subcmd: str) -> Reply:
+            return REPLY_OK
+
+
+        def handle_qmark(subcmd: str) -> Reply:
+            """Request status.
+
+            @see: https://sourceware.org/gdb/current/onlinedocs/gdb/Stop-Reply-Packets.html
+            """
+
+            from unicorn.x86_const import UC_X86_REG_EBP
+            from unicorn.x86_const import UC_X86_REG_RBP
+            from unicorn.arm_const import UC_ARM_REG_R11
+            from unicorn.arm64_const import UC_ARM64_REG_X29
+            from unicorn.mips_const import UC_MIPS_REG_INVALID
+
+            arch_uc_bp = {
+                QL_ARCH.X86      : UC_X86_REG_EBP,
+                QL_ARCH.X8664    : UC_X86_REG_RBP,
+                QL_ARCH.ARM      : UC_ARM_REG_R11,
+                QL_ARCH.ARM64    : UC_ARM64_REG_X29,
+                QL_ARCH.MIPS     : UC_MIPS_REG_INVALID, # skipped
+                QL_ARCH.A8086    : UC_X86_REG_EBP,
+                QL_ARCH.CORTEX_M : UC_ARM_REG_R11
+            }[self.ql.arch.type]
+
+            def __get_reg_idx(ucreg: int) -> int:
+                """Get the index of a uc reg whithin the regsmap array.
+
+                Returns: array index where this reg's info is stored, or -1 if not found
+                """
+
+                return next((i for i, (regnum, _, _) in enumerate(self.regsmap) if regnum == ucreg), -1)
+
+            def __get_reg_info(ucreg: int) -> str:
+                """Retrieve register info and pack it as a pair.
+                """
+
+                regnum = __get_reg_idx(ucreg)
+                hexval = __get_reg_value(*self.regsmap[regnum])
+
+                return f'{regnum:02x}:{hexval};'
+
+            # mips targets skip this reg info pair
+            bp_info = '' if self.ql.arch.type == QL_ARCH.MIPS else __get_reg_info(arch_uc_bp)
+
+            # FIXME: a8086 should use 'esp' and 'eip' here instead of 'sp' and 'ip' set by its arch instance
+            sp_info = __get_reg_info(self.ql.arch.regs.uc_sp)
+            pc_info = __get_reg_info(self.ql.arch.regs.uc_pc)
+
+            return f'T{SIGTRAP:02x}{bp_info}{sp_info}{pc_info}'
+
+
+        def handle_c(subcmd: str) -> Reply:
+            try:
+                self.gdb.resume_emu()
+            except UcError as err:
+                sigmap = {
+                    UC_ERR_READ_UNMAPPED   : SIGSEGV,
+                    UC_ERR_WRITE_UNMAPPED  : SIGSEGV,
+                    UC_ERR_FETCH_UNMAPPED  : SIGSEGV,
+                    UC_ERR_WRITE_PROT      : SIGSEGV,
+                    UC_ERR_READ_PROT       : SIGSEGV,
+                    UC_ERR_FETCH_PROT      : SIGSEGV,
+                    UC_ERR_READ_UNALIGNED  : SIGBUS,
+                    UC_ERR_WRITE_UNALIGNED : SIGBUS,
+                    UC_ERR_FETCH_UNALIGNED : SIGBUS,
+                    UC_ERR_INSN_INVALID    : SIGILL
+                }
+
+                # determine signal from uc error; default to SIGTERM
+                reply = f'S{sigmap.get(err.errno, SIGTERM):02x}'
+
+            except KeyboardInterrupt:
+                # emulation was interrupted with ctrl+c
+                reply = f'S{SIGINT:02x}'
+
+            else:
+                if self.ql.arch.regs.arch_pc == self.gdb.last_bp:
+                    # emulation stopped because it hit a breakpoint
+                    reply = f'S{SIGTRAP:02x}'
+                else:
+                    # emulation has completed successfully
+                    reply = f'W{self.ql.os.exit_code:02x}'
+
+            return reply
+
+
+        def handle_g(subcmd: str) -> Reply:
+            # NOTE: in the past the 'g' reply packet for arm included the f0-f7 and fps registers between pc
+            # and cpsr, which placed cpsr at index (regnum) 25. as the f-registers became obsolete the cpsr
+            # index decreased. in order to maintain backward compatibility with older gdb versions, the gap
+            # between pc and cpsr that used to represent the f-registers (96 bits each + 32 bits for fps) is
+            # filled with unknown reg values.
+            #
+            # gdb clients that follow the xml definitions no longer need these placeholders, as registers
+            # indices are flexible and may be defined arbitrarily though xml.
+            #
+            # see: ./xml/arm/arm-fpa.xml
+
+            return ''.join(__get_reg_value(*entry) for entry in self.regsmap)
+
+
+        def handle_G(subcmd: str) -> Reply:
+            data = subcmd
+
+            for reg, pos, nibbles in self.regsmap:
+                hexval = data[pos : pos + nibbles]
+
+                __set_reg_value(reg, pos, nibbles, hexval)
+
+            return REPLY_OK
+
+
+        def handle_H(subcmd: str) -> Reply:
+            op = subcmd[0]
+
+            if op in ('c', 'g'):
+                return REPLY_OK
+
+            return REPLY_EMPTY
+
+
+        def handle_k(subcmd: str) -> Reply:
+            global killed
+
+            killed = True
+            return REPLY_OK
+
+
+        def handle_m(subcmd: str) -> Reply:
+            """Read target memory.
+            """
+
+            addr, size = (int(p, 16) for p in subcmd.split(','))
+
+            try:
+                data = self.ql.mem.read(addr, size).hex()
+            except UcError:
+                return 'E14'
+            else:
+                return data
+
+
+        def handle_M(subcmd: str) -> Reply:
+            """Write target memory.
+            """
+
+            addr, data = subcmd.split(',')
+            size, data = data.split(':')
+
+            addr = int(addr, 16)
+            data = bytes.fromhex(data)
+
+            assert len(data) == size
+
+            try:
+                self.ql.mem.write(addr, data)
+            except UcError:
+                return 'E01'
+            else:
+                return REPLY_OK
+
+
+        def handle_p(subcmd: str) -> Reply:
+            """Read register value by index.
+            """
+
+            idx = int(subcmd, 16)
+
+            return __get_reg_value(*self.regsmap[idx])
+
+
+        def handle_P(subcmd: str) -> Reply:
+            """Write register value by index.
+            """
+
+            idx, data = subcmd.split('=')
+            idx = int(idx, 16)
+
+            if idx < len(self.regsmap):
+                __set_reg_value(*self.regsmap[idx], hexval=data)
+
+                return REPLY_OK
+
+            return 'E00'
+
+
+        def handle_Q(subcmd: str) -> Reply:
+            """General queries.
+
+            @see: https://sourceware.org/gdb/onlinedocs/gdb/General-Query-Packets.html
+            """
+
+            feature, *data = subcmd.split(':', maxsplit=1)
+
+            supported = (
+                'DisableRandomization',
+                'NonStop',
+                'PassSignals',
+                'ProgramSignals',
+                'StartNoAckMode'
+            )
+
+            if feature == 'StartNoAckMode':
+                server.ack_mode = False
+                server.log.debug('[noack mode enabled]')
+
+            return REPLY_OK if feature in supported else REPLY_EMPTY
+
+
+        def handle_D(subcmd: str) -> Reply:
+            """Detach.
+            """
+
+            return REPLY_OK
+
+
+        def handle_q(subcmd: str) -> Reply:
+            query, *data = subcmd.split(':')
+
+            # qSupported command
+            #
+            # @see: https://sourceware.org/gdb/onlinedocs/gdb/General-Query-Packets.html#qSupported
+
+            if query == 'Supported':
+                # list of supported features excluding the multithreading-related ones
+                features = [
+                    'BreakpointCommands+',
+                    'ConditionalBreakpoints+',
+                    'ConditionalTracepoints+',
+                    'DisconnectedTracing+',
+                    'EnableDisableTracepoints+',
+                    'InstallInTrace+',
+                    'QAgent+',
+                    'QCatchSyscalls+',
+                    'QDisableRandomization+',
+                    'QEnvironmentHexEncoded+',
+                    'QEnvironmentReset+',
+                    'QEnvironmentUnset+',
+                    'QNonStop+',
+                    'QPassSignals+',
+                    'QProgramSignals+',
+                    'QSetWorkingDir+',
+                    'QStartNoAckMode+',
+                    'QStartupWithShell+',
+                    'QTBuffer:size+',
+                    'StaticTracepoints+',
+                    'TraceStateVariables+',
+                    'TracepointSource+',
+                    # 'augmented-libraries-svr4-read+',
+                    'exec-events+',
+                    'fork-events+',
+                    'hwbreak+',
+                    'multiprocess+',
+                    'no-resumed+',
+                    'qXfer:auxv:read+',
+                    'qXfer:features:read+',
+                    # 'qXfer:libraries-svr4:read+',
+                    # 'qXfer:osdata:read+',
+                    'qXfer:siginfo:read+',
+                    'qXfer:siginfo:write+',
+                    'qXfer:statictrace:read+',
+                    'qXfer:traceframe-info:read+',
+                    'swbreak+',
+                    'tracenz+',
+                    'vfork-events+'
+                ]
+
+                # might or might not need for multi thread
+                if self.ql.multithread:
+                    features += [
+                        'PacketSize=47ff',
+                        'FastTracepoints+',
+                        'QThreadEvents+',
+                        'Qbtrace-conf:bts:size+',
+                        'Qbtrace-conf:pt:size+',
+                        'Qbtrace:bts+',
+                        'Qbtrace:off+',
+                        'Qbtrace:pt+',
+                        'qXfer:btrace-conf:read+',
+                        'qXfer:btrace:read+',
+                        'vContSupported+'
+                    ]
+
+                else:
+                    features += [
+                        'PacketSize=3fff',
+                        'qXfer:spu:read+',
+                        'qXfer:spu:write+'
+                    ]
+
+                # os dependent features
+                if not self.ql.interpreter:
+                    # filesystem dependent features
+                    if hasattr(self.ql.os, 'path'):
+                        features.append('qXfer:exec-file:read+')
+
+                    # process dependent features
+                    if hasattr(self.ql.os, 'pid'):
+                        features.append('qXfer:threads:read+')
+
+                return ';'.join(features)
+
+            elif query == 'Xfer':
+                feature, op, annex, params = data
+                offset, length = (int(p, 16) for p in params.split(','))
+
+                if feature == 'features' and op == 'read':
+                    if annex == r'target.xml':
+                        content = self.features.tostring()[offset:offset + length]
+
+                    else:
+                        self.ql.log.info(f'{PROMPT} did not expect "{annex}" here')
+                        content = ''
+
+                    return f'{"l" if len(content) < length else "m"}{content}'
+
+                elif feature == 'threads' and op == 'read':
+                    content = '\r\n'.join((
+                        '<threads>',
+                        f'<thread id="{self.ql.os.pid}" core="1" name="{self.ql.targetname}"/>',
+                        '</threads>'
+                    ))
+
+                    return f'l{content}'
+
+                elif feature == 'auxv' and op == 'read':
+                    try:
+                        with self.ql.os.fs_mapper.open('/proc/self/auxv', 'rb') as infile:
+                            infile.seek(offset, 0) # SEEK_SET
+                            auxv_data = infile.read(length)
+
+                    except FileNotFoundError:
+                        auxv_data = b''
+
+                    return b'l' + auxv_data
+
+                elif feature == 'exec-file' and op == 'read':
+                    return f'l{self.ql.os.path.host_to_virtual_path(self.ql.path)}'
+
+                elif feature == 'libraries-svr4' and op == 'read':
+                    # TODO: this one requires information of loaded libraries which currently not provided
+                    # by the ELF loader. until we gather that information, we cannot fulfill this request
+                    #
+                    # see: https://sourceware.org/gdb/current/onlinedocs/gdb/Library-List-Format-for-SVR4-Targets.html
+                    return REPLY_EMPTY
+
+                    # if self.ql.os.type in (QL_OS.LINUX, QL_OS.FREEBSD):
+                    #     tag = 'library-list-svr4'
+                    #     xml_lib_entries = (f'<library name="{path}" lm="{ubnd:#x}" l_addr="{lbnd:#x}" l_ld="" />' for lbnd, ubnd, _, _, path in self.ql.mem.get_mapinfo() if path)
+                    #
+                    #     xml = '\r\n'.join((f'<{tag} version="1.0">', *xml_lib_entries, f'</{tag}>'))
+                    #
+                    #     return f'l{xml}'
+                    # else:
+                    #     return f''
+
+                elif feature == 'btrace-conf' and op == 'read':
+                    return 'E.Btrace not enabled.'
+
+            elif query == 'Attached':
+                return REPLY_EMPTY
+
+            elif query == 'C':
+                return REPLY_EMPTY
+
+            elif query == 'L':
+                return 'M001'
+
+            elif query == 'fThreadInfo':
+                return 'm0'
+
+            elif query == 'sThreadInfo':
+                return 'l'
+
+            elif query == 'TStatus':
+                tsize = __hexstr(0x500000)
+
+                fields = (
+                    'T0',
+                    'tnotrun:0',
+                    'tframes:0',
+                    'tcreated:0',
+                    f'tfree:{tsize}',
+                    f'tsize:{tsize}',
+                    'circular:0',
+                    'disconn:0',
+                    'starttime:0',
+                    'stoptime:0',
+                    'username:',
+                    'notes::'
+                )
+
+                return ';'.join(fields)
+
+            elif query in ('TfV', 'TsV', 'TfP', 'TsP'):
+                return 'l'
+
+            elif query == 'Symbol':
+                return REPLY_OK
+
+            elif query == 'Offsets':
+                fields = ('Text=0', 'Data=0', 'Bss=0')
+
+                return ';'.join(fields)
+
+            return REPLY_EMPTY
+
+
+        def handle_v(subcmd: str) -> Reply:
+            if subcmd == 'MustReplyEmpty':
+                return REPLY_EMPTY
+
+            elif subcmd.startswith('File'):
+                _, op, data = subcmd.split(':', maxsplit=2)
+                params = data.split(',')
+
+                if op == 'open':
+                    fd = -1
+
+                    # files can be opened only where there is an os that supports filesystem
+                    if not self.ql.interpreter and hasattr(self.ql.os, 'path'):
+                        path, flags, mode = params
+
+                        path = bytes.fromhex(path).decode(encoding='utf-8')
+                        flags = int(flags, 16)
+                        mode = int(mode, 16)
+
+                        virtpath = self.ql.os.path.virtual_abspath(path)
+
+                        if virtpath.startswith(r'/proc') and self.ql.os.fs_mapper.has_mapping(virtpath):
+                            # Mapped object by itself is not backed with a host fd and thus a tempfile can
+                            # 1. Make pread easy to implement and avoid duplicate code like seek, fd etc.
+                            # 2. Avoid fd clash if we assign a generated fd.
+                            tfile = tempfile.TemporaryFile("rb+")
+                            tfile.write(self.ql.os.fs_mapper.open(virtpath, "rb+").read())
+                            tfile.seek(0, os.SEEK_SET)
+                            fd = tfile.fileno()
+                            self.fake_procfs[fd] = tfile
+                        else:
+                            host_path = self.ql.os.path.virtual_to_host_path(path)
+
+                            self.ql.log.debug(f'{PROMPT} target host path: {host_path}')
+
+                            if os.path.exists(host_path):
+                                fd = os.open(host_path, flags, mode)
+
+                    return f'F{fd:x}'
+
+                elif op == 'pread':
+                    fd, count, offset = (int(p, 16) for p in params)
+
+                    data = os.pread(fd, count, offset)
+
+                    return f'F{len(data):x};'.encode() + data
+
+                elif op == 'close':
+                    fd, *_ = params
+                    fd = int(fd, 16)
+
+                    os.close(fd)
+                    
+                    if fd in self.fake_procfs:
+                        del self.fake_procfs[fd]
+                    
+                    return 'F0'
+
+                return REPLY_EMPTY
+
+            elif subcmd.startswith('Kill'):
+                return handle_k('')
+
+            elif subcmd.startswith('Cont'):
+                # remove 'Cont' prefix
+                data = subcmd[len('Cont'):]
+
+                if data == '?':
+                    # note 't' and 'r' are currently not supported
+                    return ';'.join(('vCont', 'c', 'C', 's', 'S'))
+
+                elif data.startswith(';'):
+                    groups = subcmd.split(';')[1:]
+
+                    for grp in groups:
+                        cmd, *tid = grp.split(':', maxsplit=1)
+
+                        if cmd in ('c', f'C{SIGTRAP:02x}'):
+                            return handle_c('')
+
+                        elif cmd in ('s', f'S{SIGTRAP:02x}'):
+                            return handle_s('')
+
+                        # FIXME: not sure how to handle multiple command
+                        # groups, so handling just the first one
+                        break
+
+            return REPLY_EMPTY
+
+
+        def handle_s(subcmd: str) -> Reply:
+            """Perform a single step.
+            """
+
+            # BUG: a known unicorn caching issue causes it to emulate more
+            # steps than requestes. until that issue is fixed, single stepping
+            # is essentially broken.
+            #
+            # @see: https://github.com/unicorn-engine/unicorn/issues/1606
+
+            self.gdb.resume_emu(steps=1)
+
+            return f'S{SIGTRAP:02x}'
+
+
+        def handle_X(subcmd: str) -> Reply:
+            """Write data to memory.
+            """
+
+            params, data = subcmd.split(':', maxsplit=1)
+            addr, length = (int(p, 16) for p in params.split(','))
+
+            if length != len(data):
+                return 'E00'
+
+            try:
+                if data:
+                    self.ql.mem.write(addr, data.encode(ENCODING))
+            except UcError:
+                return 'E01'
+            else:
+                return REPLY_OK
+
+
+        def handle_Z(subcmd: str) -> Reply:
+            """Insert breakpoints or watchpoints.
+            """
+
+            params, *conds = subcmd.split(';')
+            type, addr, kind = (int(p, 16) for p in params.split(','))
+
+            # type values:
+            #   0 = sw breakpoint
+            #   1 = hw breakpoint
+            #   2 = write watchpoint
+            #   3 = read watchpoint
+            #   4 = access watchpoint
+
+            if type == 0:
+                self.gdb.bp_insert(addr)
+                return REPLY_OK
+
+            return REPLY_EMPTY
+
+
+        def handle_z(subcmd: str) -> Reply:
+            """Remove breakpoints or watchpoints.
+            """
+
+            type, addr, kind = (int(p, 16) for p in subcmd.split(','))
+
+            if type == 0:
+                try:
+                    self.gdb.bp_remove(addr)
+                except ValueError:
+                    return 'E22'
+                else:
+                    return REPLY_OK
+
+            return REPLY_EMPTY
+
+
+        handlers = {
+            '!': handle_exclaim,
+            '?': handle_qmark,
+            'c': handle_c,
+            'C': handle_c,  # this is intentional; not a typo
+            'D': handle_D,
+            'g': handle_g,
+            'G': handle_G,
+            'H': handle_H,
+            'k': handle_k,
+            'm': handle_m,
+            'M': handle_M,
+            'p': handle_p,
+            'P': handle_P,
+            'q': handle_q,
+            'Q': handle_Q,
+            's': handle_s,
+            'v': handle_v,
+            'X': handle_X,
+            'Z': handle_Z,
+            'z': handle_z
         }
 
-    def addr_to_str(self, addr: int, short: bool = False, endian: Literal['little', 'big'] = 'big') -> str:
-        # a hacky way to divide archbits by 2 if short, and leave it unchanged if not
-        nbits = self.ql.arch.bits // (int(short) + 1)
+        # main server loop
+        for packet in server.readpackets():
+            if server.ack_mode:
+                server.send(REPLY_ACK, raw=True)
+                server.log.debug('[sent ack]')
 
-        if nbits == 64:
-            s = f'{int.from_bytes(self.ql.pack64(addr), byteorder=endian):016x}'
+            cmd, subcmd = packet[0], packet[1:]
+            handler = handlers.get(f'{cmd:c}')
 
-        elif nbits == 32:
-            s = f'{int.from_bytes(self.ql.pack32(addr), byteorder=endian):08x}'
+            if handler:
+                reply = handler(subcmd.decode(ENCODING))
+                server.send(reply)
 
-        elif nbits == 16:
-            s = f'{int.from_bytes(self.ql.pack16(addr), byteorder=endian):04x}'
-
-        else:
-            raise RuntimeError
-
-        return s
-
-    def bin_to_escstr(self, rawbin):
-        rawbin_escape = ""
-
-        def incomplete_hex_check(hexchar):
-            if len(hexchar) == 1:
-                hexchar = "0" + hexchar
-            return hexchar
-
-        for a in rawbin:
-
-            # The binary data representation uses 7d (ASCII ‘}’) as an escape character. 
-            # Any escaped byte is transmitted as the escape character followed by the original character XORed with 0x20. 
-            # For example, the byte 0x7d would be transmitted as the two bytes 0x7d 0x5d. The bytes 0x23 (ASCII ‘#’), 0x24 (ASCII ‘$’), and 0x7d (ASCII ‘}’) 
-            # must always be escaped. Responses sent by the stub must also escape 0x2a (ASCII ‘*’), 
-            # so that it is not interpreted as the start of a run-length encoded sequence (described next).
-
-            if a in (42,35,36, 125):
-                a = a ^ 0x20
-                a = (str(hex(a)[2:]))
-                a = incomplete_hex_check(a)
-                a = str("7d%s" % a)
+                if killed:
+                    break
             else:
-                a = (str(hex(a)[2:]))
-                a = incomplete_hex_check(a)
+                self.ql.log.info(f'{PROMPT} command not supported')
+                server.send(REPLY_EMPTY)
 
-            rawbin_escape += a
+        server.close()
 
-        return unhexlify(rawbin_escape)
 
-    def setup_server(self):
-        self.ql.log.info("gdb> Listening on %s:%u" % (self.ip, self.port))
+class GdbSerialConn:
+    """Serial connection handler.
+    """
+
+    # default recieve buffer size
+    BUFSIZE = 4096
+
+    def __init__(self, ipaddr: str, port: int, logger: Logger) -> None:
+        """Create a new gdb serial connection handler.
+
+        Args:
+            ipaddr : ip address to bind the socket to
+            port   : port number to listen on
+            logger : logger instance to use
+        """
 
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        sock.bind((self.ip, self.port))
-        sock.listen(1)
-        clientsocket, addr = sock.accept()
+        sock.bind((ipaddr, port))
+        sock.listen()
 
-        self.sock           = sock
-        self.clientsocket   = clientsocket
-        self.netin          = clientsocket.makefile('r')
-        self.netout         = clientsocket.makefile('w')
+        self.log = logger
+        self.log.info(f'{PROMPT} listening on {ipaddr}:{port:d}')
+
+        client, _ = sock.accept()
+
+        self.sock = sock
+        self.client = client
+
+        # ack mode should be turend on by default
+        self.ack_mode = True
 
     def close(self):
-        self.netin.close()
-        self.netout.close()
-        self.clientsocket.close()
+        """Close the gdb serial connection handler and release its resources.
+        """
+
+        self.client.close()
         self.sock.close()
 
-    def run(self):
-        self.setup_server()
-
-        while self.receive() == 'Good':
-            pkt = self.last_pkt
-            self.send_raw('+')
-
-            def handle_qmark(subcmd):
-                def gdbqmark_converter(arch):
-                    """
-                    MIPS32_EL : gdbserver response ("$T051d:00e7ff7f;25:40ccfc77;#65")
-                    MIPS32_EB : gdbserver response ("$T051d:7fff6dc0;25:77fc4880;thread:28fa;core:0;");
-                    ARM64: gdbserver response "$T051d:0*,;1f:80f6f*"ff0* ;20:c02cfdb7f* 0* ;thread:p1f9.1f9;core:0;#56");
-                    ARM: gdbserver $T050b:0*"00;0d:e0f6ffbe;0f:8079fdb6;#ae"
-                    """
-                    adapter = {
-                        QL_ARCH.A8086        : [ 0x05, 0x04, 0x08 ],
-                        QL_ARCH.X86          : [ 0x05, 0x04, 0x08 ],
-                        QL_ARCH.X8664        : [ 0x06, 0x07, 0x10 ],
-                        QL_ARCH.MIPS         : [ 0x1d, 0x00, 0x25 ],        
-                        QL_ARCH.ARM          : [ 0x0b, 0x0d, 0x0f ],
-                        QL_ARCH.CORTEX_M     : [ 0x0b, 0x0d, 0x0f ],
-                        QL_ARCH.ARM64        : [ 0x1d, 0xf1, 0x20 ]
-                        }
-                    return adapter.get(arch)
-
-                idhex, spid, pcid  = gdbqmark_converter(self.ql.arch.type)  
-                sp          = self.addr_to_str(self.ql.arch.regs.arch_sp)
-                pc          = self.addr_to_str(self.ql.arch.regs.arch_pc)
-                nullfill    = "0" * int(self.ql.arch.bits / 4)
-
-                if self.ql.arch.type == QL_ARCH.MIPS:
-                    self.send('T%.2x%.2x:%s;%.2x:%s;' %(GDB_SIGNAL_TRAP, idhex, sp, pcid, pc))
-                else:    
-                    self.send('T%.2x%.2x:%s;%.2x:%s;%.2x:%s;' %(GDB_SIGNAL_TRAP, idhex, nullfill, spid, sp, pcid, pc))
-
-
-            def handle_c(subcmd):
-                self.gdb.resume_emu(self.ql.arch.regs.arch_pc)
-
-                if self.gdb.bp_list == [self.entry_point]:
-                    self.send("W00")
-                else:
-                    self.send(('S%.2x' % GDB_SIGNAL_TRAP))
-
-
-            handle_C = handle_c
-
-
-            def handle_g(subcmd):
-                s = ''
-
-                if self.ql.arch.type == QL_ARCH.A8086:
-                    for reg in self.tables[QL_ARCH.A8086][:16]:
-                        r = self.ql.arch.regs.read(reg)
-                        tmp = self.addr_to_str(r)
-                        s += tmp
-
-                elif self.ql.arch.type == QL_ARCH.X86:
-                    for reg in self.tables[QL_ARCH.X86][:16]:
-                        r = self.ql.arch.regs.read(reg)
-                        tmp = self.addr_to_str(r)
-                        s += tmp
-
-                elif self.ql.arch.type == QL_ARCH.X8664:
-                    for reg in self.tables[QL_ARCH.X8664][:24]:
-                        r = self.ql.arch.regs.read(reg)
-                        if self.ql.arch.reg_bits(reg) == 64:
-                            tmp = self.addr_to_str(r)
-                        elif self.ql.arch.reg_bits(reg) == 32:
-                            tmp = self.addr_to_str(r, short = True)
-                        s += tmp
-                
-                elif self.ql.arch.type == QL_ARCH.ARM:
-                    
-
-                    # r0-r12,sp,lr,pc,cpsr ,see https://sourceware.org/git/?p=binutils-gdb.git;a=blob;f=gdb/arch/arm.h;h=fa589fd0582c0add627a068e6f4947a909c45e86;hb=HEAD#l127
-                    for reg in self.tables[QL_ARCH.ARM][:16] + [self.tables[QL_ARCH.ARM][25]]:
-                        # if reg is pc, make sure to take thumb mode into account
-                        r = self.ql.arch.effective_pc if reg == "pc" else self.ql.arch.regs.read(reg)
-
-                        tmp = self.addr_to_str(r)
-                        s += tmp
-
-                elif self.ql.arch.type == QL_ARCH.ARM64:
-                    for reg in self.tables[QL_ARCH.ARM64][:33]:
-                        r = self.ql.arch.regs.read(reg)
-                        tmp = self.addr_to_str(r)
-                        s += tmp
-
-                elif self.ql.arch.type == QL_ARCH.MIPS:
-                    for reg in self.tables[QL_ARCH.MIPS][:38]:
-                        r = self.ql.arch.regs.read(reg)
-                        tmp = self.addr_to_str(r)
-                        s += tmp
-
-                self.send(s)
-
-
-            def handle_G(subcmd):
-                count = 0
-
-                if self.ql.arch.type == QL_ARCH.A8086:
-                    for i in range(0, len(subcmd), 8):
-                        reg_data = subcmd[i:i+7]
-                        reg_data = int(reg_data, 16)
-                        self.ql.arch.regs.write(self.tables[QL_ARCH.A8086][count], reg_data)
-                        count += 1
-
-                elif self.ql.arch.type == QL_ARCH.X86:
-                    for i in range(0, len(subcmd), 8):
-                        reg_data = subcmd[i:i+7]
-                        reg_data = int(reg_data, 16)
-                        self.ql.arch.regs.write(self.tables[QL_ARCH.X86][count], reg_data)
-                        count += 1
-                
-
-                elif self.ql.arch.type == QL_ARCH.X8664:
-                    for i in range(0, 17*16, 16):
-                        reg_data = subcmd[i:i+15]
-                        reg_data = int(reg_data, 16)
-                        self.ql.arch.regs.write(self.tables[QL_ARCH.X8664][count], reg_data)
-                        count += 1
-                    for j in range(17*16, 17*16+15*8, 8):
-                        reg_data = subcmd[j:j+7]
-                        reg_data = int(reg_data, 16)
-                        self.ql.arch.regs.write(self.tables[QL_ARCH.X8664][count], reg_data)
-                        count += 1
-                
-                elif self.ql.arch.type == QL_ARCH.ARM:
-                    for i in range(0, len(subcmd), 8):
-                        reg_data = subcmd[i:i + 7]
-                        reg_data = int(reg_data, 16)
-                        self.ql.arch.regs.write(self.tables[QL_ARCH.ARM][count], reg_data)
-                        count += 1
-
-                elif self.ql.arch.type == QL_ARCH.ARM64:
-                    for i in range(0, len(subcmd), 16):
-                        reg_data = subcmd[i:i+15]
-                        reg_data = int(reg_data, 16)
-                        self.ql.arch.regs.write(self.tables[QL_ARCH.ARM64][count], reg_data)
-                        count += 1
-
-                elif self.ql.arch.type == QL_ARCH.MIPS:
-                    for i in range(0, len(subcmd), 8):
-                        reg_data = subcmd[i:i+7]
-                        reg_data = int(reg_data, 16)
-                        self.ql.arch.regs.write(self.tables[QL_ARCH.MIPS][count], reg_data)
-                        count += 1
-
-                self.send('OK')
-
-
-            def handle_H(subcmd):
-                if subcmd.startswith('g'):
-                    self.send('OK')
-                if subcmd.startswith('c'):
-                    self.send('OK')
-
-
-            def handle_m(subcmd):
-                addr, size = subcmd.split(',')
-                addr = int(addr, 16)
-                size = int(size, 16)
-
-                try:
-                    tmp = ''
-                    for s in range(size):
-                        mem = self.ql.mem.read(addr + s, 1)
-                        mem = "".join(
-                            [str("{:02x}".format(ord(c))) for c in mem.decode('latin1')])
-                        tmp += mem
-                    self.send(tmp)
-
-                except:
-                    self.send('E14')
-
-
-            def handle_M(subcmd):
-                addr, data = subcmd.split(',')
-                size, data = data.split(':')
-                addr = int(addr, 16)
-                data = bytes.fromhex(data)
-                try:
-                    self.ql.mem.write(addr, data)
-                    self.send('OK')
-                except:
-                    self.send('E01')
-
-
-            def handle_p(subcmd):
-                reg_index = int(subcmd, 16)
-                reg_value = None
-                try:
-                    if self.ql.arch.type == QL_ARCH.A8086:
-                        if reg_index <= 9:
-                            reg_value = self.ql.arch.regs.read(self.tables[QL_ARCH.A8086][reg_index-1])
-                        else:
-                            reg_value = 0
-                        reg_value = self.addr_to_str(reg_value)
-
-                    elif self.ql.arch.type == QL_ARCH.X86:
-                        if reg_index <= 24:
-                            reg_value = self.ql.arch.regs.read(self.tables[QL_ARCH.X86][reg_index-1])
-                        else:
-                            reg_value = 0
-                        reg_value = self.addr_to_str(reg_value)
-                    
-                    elif self.ql.arch.type == QL_ARCH.X8664:
-                        if reg_index <= 32:
-                            reg_value = self.ql.arch.regs.read(self.tables[QL_ARCH.X8664][reg_index-1])
-                        else:
-                            reg_value = 0
-                        if reg_index <= 17:
-                            reg_value = self.addr_to_str(reg_value)
-                        elif 17 < reg_index:
-                            reg_value = self.addr_to_str(reg_value, short = True)
-                    
-                    elif self.ql.arch.type == QL_ARCH.ARM:
-                        if reg_index < 26:
-                            reg_value = self.ql.arch.regs.read(self.tables[QL_ARCH.ARM][reg_index - 1])
-                        else:
-                            reg_value = 0
-                        reg_value = self.addr_to_str(reg_value)
-
-                    elif self.ql.arch.type == QL_ARCH.ARM64:
-                        if reg_index <= 32:
-                            reg_value = self.ql.arch.regs.read(self.tables[QL_ARCH.ARM64][reg_index - 1])
-                        else:
-                            reg_value = 0
-                            reg_value = self.addr_to_str(reg_value)
-
-                    elif self.ql.arch.type == QL_ARCH.MIPS:
-                        if reg_index <= 37:
-                            reg_value = self.ql.arch.regs.read(self.tables[QL_ARCH.MIPS][reg_index - 1])
-                        else:
-                            reg_value = 0
-                        reg_value = self.addr_to_str(reg_value)
-                    
-                    if type(reg_value) is not str:
-                        reg_value = self.addr_to_str(reg_value)
-
-                    self.send(reg_value)
-                except:
-                    self.close()
-                    raise
-
-
-            def handle_P(subcmd):
-                reg_index, reg_data = subcmd.split('=')
-                reg_index = int(reg_index, 16)
-                reg_name = self.tables[self.ql.arch.type][reg_index]
-                
-                if self.ql.arch.type == QL_ARCH.A8086:
-                    reg_data = int(reg_data, 16)
-                    reg_data = int.from_bytes(struct.pack('<I', reg_data), byteorder='big')
-                    self.ql.arch.regs.write(reg_name, reg_data)
-
-                elif self.ql.arch.type == QL_ARCH.X86:
-                    reg_data = int(reg_data, 16)
-                    reg_data = int.from_bytes(struct.pack('<I', reg_data), byteorder='big')
-                    self.ql.arch.regs.write(reg_name, reg_data)
-                
-                elif self.ql.arch.type == QL_ARCH.X8664:
-                    if reg_index <= 17:
-                        reg_data = int(reg_data, 16)
-                        reg_data = int.from_bytes(struct.pack('<Q', reg_data), byteorder='big')
-                        self.ql.arch.regs.write(reg_name, reg_data)
-                    else:
-                        reg_data = int(reg_data[:8], 16)
-                        reg_data = int.from_bytes(struct.pack('<I', reg_data), byteorder='big')
-                        self.ql.arch.regs.write(reg_name, reg_data)
-                
-                elif self.ql.arch.type == QL_ARCH.ARM:
-                    reg_data = int(reg_data, 16)
-                    reg_data = int.from_bytes(struct.pack('<I', reg_data), byteorder='big')
-                    self.ql.arch.regs.write(reg_name, reg_data)
-
-                elif self.ql.arch.type == QL_ARCH.ARM64:
-                    reg_data = int(reg_data, 16)
-                    reg_data = int.from_bytes(struct.pack('<Q', reg_data), byteorder='big')
-                    self.ql.arch.regs.write(reg_name, reg_data)
-
-                elif self.ql.arch.type == QL_ARCH.MIPS:
-                    reg_data = int(reg_data, 16)
-                    if self.ql.arch.endian == QL_ENDIAN.EL:
-                        reg_data = int.from_bytes(struct.pack('<I', reg_data), byteorder='little')
-                    else:
-                        reg_data = int.from_bytes(struct.pack('<I', reg_data), byteorder='big')
-                    self.ql.arch.regs.write(reg_name, reg_data)
-
-                if reg_name == self.ql.arch.regs.arch_pc_name:
-                    self.gdb.current_address = reg_data
-
-                self.ql.log.info("gdb> Write to register %s with %x\n" % (self.tables[self.ql.arch.type][reg_index], reg_data))
-                self.send('OK')
-
-
-            def handle_Q(subcmd):
-                if subcmd.startswith('StartNoAckMode'):
-                    self.send('OK')
-
-                elif subcmd.startswith('DisableRandomization'):
-                    self.send('OK')
-
-                elif subcmd.startswith('ProgramSignals'):
-                    self.send('OK')
-
-                elif subcmd.startswith('NonStop'):
-                    self.send('OK')
-
-                elif subcmd.startswith('PassSignals'):
-                    self.send('OK')
-
-                elif subcmd.startswith('qemu'):
-                    self.send('')
-
-            def handle_D(subcmd):
-                self.send('OK')
-
-            def handle_q(subcmd):
-                if subcmd.startswith('Supported:'):
-                    # might or might not need for multi thread
-                    if self.ql.multithread == False:
-                        self.send("PacketSize=3fff;QPassSignals+;QProgramSignals+;QStartupWithShell+;QEnvironmentHexEncoded+;QEnvironmentReset+;QEnvironmentUnset+;QSetWorkingDir+;QCatchSyscalls+;qXfer:libraries-svr4:read+;augmented-libraries-svr4-read+;qXfer:auxv:read+;qXfer:spu:read+;qXfer:spu:write+;qXfer:siginfo:read+;qXfer:siginfo:write+;qXfer:features:read+;QStartNoAckMode+;qXfer:osdata:read+;multiprocess+;fork-events+;vfork-events+;exec-events+;QNonStop+;QDisableRandomization+;qXfer:threads:read+;ConditionalTracepoints+;TraceStateVariables+;TracepointSource+;DisconnectedTracing+;StaticTracepoints+;InstallInTrace+;qXfer:statictrace:read+;qXfer:traceframe-info:read+;EnableDisableTracepoints+;QTBuffer:size+;tracenz+;ConditionalBreakpoints+;BreakpointCommands+;QAgent+;swbreak+;hwbreak+;qXfer:exec-file:read+;no-resumed+")
-                    else:    
-                        self.send("PacketSize=47ff;QPassSignals+;QProgramSignals+;QStartupWithShell+;QEnvironmentHexEncoded+;QEnvironmentReset+;QEnvironmentUnset+;QSetWorkingDir+;QCatchSyscalls+;qXfer:libraries-svr4:read+;augmented-libraries-svr4-read+;qXfer:auxv:read+;qXfer:siginfo:read+;qXfer:siginfo:write+;qXfer:features:read+;QStartNoAckMode+;qXfer:osdata:read+;multiprocess+;fork-events+;vfork-events+;exec-events+;QNonStop+;QDisableRandomization+;qXfer:threads:read+;ConditionalTracepoints+;TraceStateVariables+;TracepointSource+;DisconnectedTracing+;FastTracepoints+;StaticTracepoints+;InstallInTrace+;qXfer:statictrace:read+;qXfer:traceframe-info:read+;EnableDisableTracepoints+;QTBuffer:size+;tracenz+;ConditionalBreakpoints+;BreakpointCommands+;QAgent+;Qbtrace:bts+;Qbtrace-conf:bts:size+;Qbtrace:pt+;Qbtrace-conf:pt:size+;Qbtrace:off+;qXfer:btrace:read+;qXfer:btrace-conf:read+;swbreak+;hwbreak+;qXfer:exec-file:read+;vContSupported+;QThreadEvents+;no-resumed+")
-                elif subcmd.startswith('Xfer:features:read'):
-                    xfercmd_file    = subcmd.split(':')[3]
-                    xfercmd_abspath = os.path.dirname(os.path.abspath(__file__))
-                    xml_folder      = self.ql.arch.type.name.lower()
-                    xfercmd_file    = os.path.join(xfercmd_abspath,"xml",xml_folder, xfercmd_file)                        
-
-                    if os.path.exists(xfercmd_file) and self.ql.os.type is not QL_OS.WINDOWS:
-                        with open(xfercmd_file, 'r') as f:
-                            file_contents = f.read()
-                            self.send("l%s" % file_contents)
-                    else:
-                        self.ql.log.info("gdb> Platform is not supported by xml or xml file not found: %s\n" % (xfercmd_file))
-                        self.send("l")
-
-
-                elif subcmd.startswith('Xfer:threads:read::0,'):
-                    if self.ql.os.type in QL_OS_NONPID or self.ql.baremetal:
-                        self.send("l")
-                    else:    
-                        file_contents = ("<threads>\r\n<thread id=\""+ str(self.ql.os.pid) + "\" core=\"1\" name=\"" + self.ql.targetname + "\"/>\r\n</threads>")
-                        self.send("l" + file_contents)
-
-                elif subcmd.startswith('Xfer:auxv:read::'):
-                    if self.ql.code:
-                        return
-
-                    if self.ql.os.type in (QL_OS.LINUX, QL_OS.FREEBSD):
-                        def __read_auxv() -> Iterator[int]:
-                            auxv_entries = (
-                                AUX.AT_HWCAP,
-                                AUX.AT_PAGESZ,
-                                AUX.AT_CLKTCK,
-                                AUX.AT_PHDR,
-                                AUX.AT_PHENT,
-                                AUX.AT_PHNUM,
-                                AUX.AT_BASE,
-                                AUX.AT_FLAGS,
-                                AUX.AT_ENTRY,
-                                AUX.AT_UID,
-                                AUX.AT_EUID,
-                                AUX.AT_GID,
-                                AUX.AT_EGID,
-                                AUX.AT_SECURE,
-                                AUX.AT_RANDOM,
-                                AUX.AT_HWCAP2,
-                                AUX.AT_EXECFN,
-                                AUX.AT_PLATFORM,
-                                AUX.AT_NULL
-                            )
-
-                            for e in auxv_entries:
-                                yield e.value
-                                yield self.ql.loader.aux_vec[e]
-
-                        annex = self.addr_to_str(0)[:-2]
-                        sysinfo_ehdr = self.addr_to_str(0)
-
-                        auxvdata_c = unhexlify(''.join([annex, sysinfo_ehdr] + [self.addr_to_str(val) for val in __read_auxv()]))
-                        auxvdata = self.bin_to_escstr(auxvdata_c)
-                    else:
-                        auxvdata = b""
-
-                    self.send(b'l!%s' % auxvdata)
-
-                elif subcmd.startswith('Xfer:exec-file:read:'):
-                    self.send("l%s" % str(self.exe_abspath))
-
-
-                elif subcmd.startswith('Xfer:libraries-svr4:read:'):
-                    if self.ql.os.type in (QL_OS.LINUX, QL_OS.FREEBSD):
-                        xml_addr_mapping=("<library-list-svr4 version=\"1.0\">")
-                        """
-                        FIXME: need to find out when do we need this
-                        """
-                        #for s, e, info in self.ql.map_info:
-                        #    addr_mapping += ("<library name=\"%s\" lm=\"0x%x\" l_addr=\"%x\" l_ld=\"\"/>" %(info, e, s)) 
-                        xml_addr_mapping += ("</library-list-svr4>")
-                        self.send("l%s" % xml_addr_mapping)
-                    else:     
-                        self.send("l<library-list-svr4 version=\"1.0\"></library-list-svr4>")
-
-                elif subcmd.startswith("Xfer:btrace-conf:read:"):
-                     self.send("E.Btrace not enabled.")
-
-                elif subcmd == "Attached":
-                    self.send("")
-
-                elif subcmd.startswith("C"):
-                    self.send("")
-
-                elif subcmd.startswith("L:"):
-                    self.send("M001")
-
-                elif subcmd == "fThreadInfo":
-                    self.send("m0")
-
-                elif subcmd == "sThreadInfo":
-                    self.send("l")
-
-                elif subcmd == ("TStatus"):
-                    self.send("T0;tnotrun:0;tframes:0;tcreated:0;tfree:50*!;tsize:50*!;circular:0;disconn:0;starttime:0;stoptime:0;username:;notes::")
-
-                elif subcmd == ("TfV"):
-                    self.send("l")
-
-                elif subcmd == ("TsV"):
-                    self.send("l")
-
-                elif subcmd == ("TfP"):
-                    self.send("l")
-
-                elif subcmd == ("TsP"):
-                    self.send("l")
-
-
-                elif subcmd.startswith("Symbol"):
-                    self.send("")
-
-                elif subcmd.startswith("Attached"):
-                    self.send("")
-
-                elif subcmd == "Offsets":
-                    self.send("Text=0;Data=0;Bss=0")
-
-
-            def handle_v(subcmd):
-
-                if subcmd == 'MustReplyEmpty':
-                    self.send("")
-
-                elif subcmd.startswith('File:open'):
-                    if self.ql.os.type == QL_OS.UEFI or self.ql.baremetal:
-                        self.send("F-1")
-                        return
-
-                    (file_path, flags, mode) = subcmd.split(':')[-1].split(',')
-                    file_path = unhexlify(file_path).decode(encoding='UTF-8')
-                    flags = int(flags, base=16)
-                    mode = int(mode, base=16)
-                    if file_path.startswith(self.rootfs_abspath):
-                        file_abspath = file_path
-                    else:
-                        file_abspath = self.ql.os.path.transform_to_real_path(file_path)
-                    
-                    self.ql.log.debug("gdb> target file: %s" % (file_abspath))
-                    if os.path.exists(file_abspath) and not (file_path).startswith("/proc"):
-                        fd = os.open(file_abspath, flags, mode)
-                        self.send("F%x" % fd)
-                    else:
-                        self.send("F-1")
-                        return                        
-
-                elif subcmd.startswith('File:pread:'):
-                    (fd, count, offset) = subcmd.split(':')[-1].split(',')
-
-                    fd = int(fd, base=16)
-                    offset = int(offset, base=16)
-                    count = int(count, base=16)
-
-                    data = os.pread(fd, count, offset)
-                    size = len(data)
-                    data = self.bin_to_escstr(data)
-
-                    if data:
-                        self.send(("F%x;" % size).encode() + (data))
-                    else:
-                        self.send("F0;")
-
-                elif subcmd.startswith('File:close'):
-                    fd = subcmd.split(':')[-1]
-                    fd = int(fd, base=16)
-                    os.close(fd)
-                    self.send("F0")
-
-                elif subcmd.startswith('Kill'):
-                    self.send('OK')
-
-                elif subcmd.startswith('Cont'):
-                    self.ql.log.debug("gdb> Cont command received: %s" % subcmd)
-                    if subcmd == 'Cont?':
-                        self.send('vCont;c;C;t;s;S;r')
-                    elif subcmd.startswith ("Cont;"):
-                        subcmd = subcmd.split(';')
-                        subcmd = subcmd[1].split(':')
-                        if subcmd[0] in ('c', 'C05'):
-                            handle_c(subcmd)
-                        elif subcmd[0] in ('S', 's', 'S05'):
-                            handle_s(subcmd)
-                else:
-                    self.send("")
-
-
-            def handle_s(subcmd):
-                current_address = self.gdb.current_address
-                if current_address is None:
-                    entry_point = self.gdb.entry_point
-                    if entry_point is not None:
-                        self.gdb.soft_bp = True
-                        self.gdb.resume_emu(entry_point)
-                else:
-                    self.gdb.soft_bp = True
-                    self.gdb.resume_emu()
-                self.send('S%.2x' % GDB_SIGNAL_TRAP)
-
-
-            def handle_X(subcmd):
-                self.send('')
-
-
-            def handle_Z(subcmd):
-                data = subcmd
-                ztype = data[data.find('Z') + 1:data.find(',')]
-                if ztype == '0':
-                    ztype, address, value = data.split(',')
-                    address = int(address, 16)
-                    try:
-                        self.gdb.bp_insert(address)
-                        self.send('OK')
-                    except:
-                        self.send('E22')
-                else:
-                    self.send('E22')
-
-
-            def handle_z(subcmd):
-                data = subcmd.split(',')
-                if len(data) != 3:
-                    self.send('E22')
-                try:
-                    type = data[0]
-                    addr = int(data[1], 16)
-                    length = data[2]
-                    self.gdb.bp_remove(addr, type, length)
-                    self.send('OK')
-                except:
-                    self.send('E22')
-
-
-            def handle_exclaim(subcmd):
-                self.send('OK')
-
-            commands = {
-                '!': handle_exclaim,
-                '?': handle_qmark,
-                'c': handle_c,
-                'C': handle_C,
-                'D': handle_D,
-                'g': handle_g,
-                'G': handle_G,
-                'H': handle_H,
-                'm': handle_m,
-                'M': handle_M,
-                'p': handle_p,
-                'P': handle_P,
-                'q': handle_q,
-                'Q': handle_Q,
-                's': handle_s,
-                'v': handle_v,
-                'X': handle_X,
-                'Z': handle_Z,
-                'z': handle_z
-            }
-
-            cmd, subcmd = pkt[0], pkt[1:]
-            if cmd == 'k':
+    def readpackets(self) -> Iterator[bytes]:
+        """Iterate through incoming packets in an active connection until
+        it is terminated.
+        """
+
+        pattern = re.compile(br'^\$(?P<data>[^#]*)#(?P<checksum>[0-9a-fA-F]{2})')
+        buffer = bytearray()
+
+        while True:
+            try:
+                incoming = self.client.recv(self.BUFSIZE)
+            except ConnectionError:
                 break
 
-            if cmd not in commands:
-                self.send('')
-                self.ql.log.info("gdb> Command not supported: %s\n" %(cmd))
+            # remote connection closed
+            if not incoming:
+                break
+
+            buffer += incoming
+
+            # discard incoming acks
+            if buffer[0:1] == REPLY_ACK:
+                del buffer[0]
+
+            packet = pattern.match(buffer)
+
+            # if there is no match, the rest of the packet might be missing
+            if not packet:
                 continue
-            self.ql.log.debug("gdb> received: %s%s" % (cmd, subcmd))
-            commands[cmd](subcmd)
 
-        self.close()
+            data = packet['data']
+            read_csum = int(packet['checksum'], 16)
+            calc_csum = GdbSerialConn.checksum(data)
 
+            if read_csum != calc_csum:
+                raise IOError(f'checksum error: expected {calc_csum:02x} but got {read_csum:02x}')
 
-    def receive(self):
-        '''Receive a packet from a GDB client'''
-        csum = 0
-        state = 'Finding SOP'
-        packet = ''
-        try:
-            while True:
-                c = self.netin.read(1)
-                if c == '\x03':
-                    return 'Error: CTRL+C'
+            # follow gdbserver debug output format
+            self.log.debug(f'getpkt ("{GdbSerialConn.__printable_prefix(data).decode(ENCODING)}");')
 
-                if len(c) != 1:
-                    return 'Error: EOF'
+            data = GdbSerialConn.rle_decode(data)
+            data = GdbSerialConn.unescape(data)
 
-                if state == 'Finding SOP':
-                    if c == '$':
-                        state = 'Finding EOP'
-                elif state == 'Finding EOP':
-                    if c == '#':
-                        if csum != int(self.netin.read(2), 16):
-                            raise Exception('invalid checksum')
-                        self.last_pkt = packet
-                        return 'Good'
-                    else:
-                        packet += c
-                        csum = (csum + ord(c)) & 0xff
-                else:
-                    raise Exception('should not be here')
-        except:
-            self.close()
-            raise
+            del buffer[:packet.endpos]
+            yield data
 
-    def checksum(self, data):
-        checksum = 0
-        for c in data:
-            if type(c) == str:
-                checksum += (ord(c))
-            else:
-                checksum += c
-        return checksum & 0xff
+    def send(self, data: Reply, raw: bool = False) -> None:
+        """Send out a packet.
 
-    def send(self, msg):
-        """Send a packet to the GDB client"""
-        if type(msg) == str:
-            self.send_raw('$%s#%.2x' % (msg, self.checksum(msg)))
+        Args:
+            data : data to send out
+            raw : whether to encapsulate the data with standard header and
+            checksum or leave it raw
+        """
+
+        if type(data) is str:
+            data = data.encode(ENCODING)
+
+        assert type(data) is bytes
+
+        if raw:
+            packet = data
         else:
-            self.clientsocket.send(b'$%s#%.2x' % (msg, self.checksum(msg)))
-            self.netout.flush()
+            data = GdbSerialConn.escape(data)
+            data = GdbSerialConn.rle_encode(data)
 
-        self.ql.log.debug("gdb> send: $%s#%.2x" % (msg, self.checksum(msg)))
+            packet = b'$' + data + b'#' + f'{GdbSerialConn.checksum(data):02x}'.encode()
 
-    def send_raw(self, r):
-        self.netout.write(r)
-        self.netout.flush()
+        # follow gdbserver debug output format
+        self.log.debug(f'putpkt ("{GdbSerialConn.__printable_prefix(data).decode(ENCODING)}");')
+
+        self.client.sendall(packet)
+
+    @staticmethod
+    def __printable_prefix(data: bytes) -> bytes:
+        """Follow the gnu gdbserver debug message format which emits only the
+        printable prefix of a packet (either incoming or outgoing). Note that
+        despite of its name, it includes non-printable characters as well.
+
+        Args:
+            data : packet data to scan
+
+        Returns: a prefix of the specified data buffer
+        """
+
+        def __isascii(ch: int) -> bool:
+            return 0 < ch < 0x80
+
+        if data.isascii():
+            return data
+
+        return data[:next((i for i, ch in enumerate(data) if not __isascii(ch)), len(data))]
+
+    @staticmethod
+    def escape(data: bytes) -> bytes:
+        """Escape data according to gdb protocol escaping rules.
+        """
+
+        def __repl(m: 're.Match[bytes]') -> bytes:
+            ch, *_ = m[0]
+
+            return bytes([ord('}'), ch ^ 0x20])
+
+        return re.sub(br'[*#$}]', __repl, data, flags=re.DOTALL)
+
+    @staticmethod
+    def unescape(data: bytes) -> bytes:
+        """Unescape data according to gdb protocol escaping rules.
+        """
+
+        def __repl(m: 're.Match[bytes]') -> bytes:
+            _, ch = m[0]
+
+            return bytes([ch ^ 0x20])
+
+        return re.sub(br'}.', __repl, data, flags=re.DOTALL)
+
+    @staticmethod
+    def rle_encode(data: bytes) -> bytes:
+        """Compact data using run-length encoding.
+        """
+
+        def __simple_rep(b: bytes, times: int) -> bytes:
+            return b * times
+
+        def __runlen_rep(b: bytes, times: int) -> bytes:
+            return b + b'*' + bytes([times - 1 + 29])
+
+        def __encode_rep(b: bytes, times: int) -> bytes:
+            assert times > 0, 'time should be a positive value'
+
+            if 0 < times < 4:
+                return __simple_rep(b, times)
+
+            elif times == 6+1 or times == 7+1:
+                return __runlen_rep(b, 6) + __encode_rep(b, times - 6)
+
+            else:
+                return __runlen_rep(b, times)
+
+        def __repl(m: 're.Match[bytes]') -> bytes:
+            repetition = m[0]
+
+            ch = repetition[0:1]
+            times = len(repetition)
+
+            return __encode_rep(ch, times)
+
+        return re.sub(br'(.)\1{3,96}', __repl, data, flags=re.DOTALL)
+
+    @staticmethod
+    def rle_decode(data: bytes) -> bytes:
+        """Expand run-length encoded data.
+        """
+
+        def __repl(m: 're.Match[bytes]') -> bytes:
+            ch, _, times = m[0]
+
+            return bytes([ch] * (1 + times - 29))
+
+        return re.sub(br'.\*.', __repl, data, flags=re.DOTALL)
+
+    @staticmethod
+    def checksum(data: bytes) -> int:
+        return sum(data) & 0xff

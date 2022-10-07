@@ -8,10 +8,17 @@ from qiling.os.windows.api import *
 from qiling.os.windows.const import *
 from qiling.os.windows.fncc import *
 
+def __is_debugger_present(ql: Qiling) -> int:
+    """Read PEB.BeingDebugger fied to determine whether debugger
+    is present or not.
+    """
+
+    return ql.loader.PEB.BeingDebugged
+
 # BOOL IsDebuggerPresent();
 @winsdkapi(cc=STDCALL, params={})
 def hook_IsDebuggerPresent(ql: Qiling, address: int, params):
-    return 0
+    return __is_debugger_present(ql)
 
 # BOOL CheckRemoteDebuggerPresent(
 #   HANDLE hProcess,
@@ -22,9 +29,10 @@ def hook_IsDebuggerPresent(ql: Qiling, address: int, params):
     'pbDebuggerPresent' : PBOOL
 })
 def hook_CheckRemoteDebuggerPresent(ql: Qiling, address: int, params):
-    pointer = params["pbDebuggerPresent"]
+    pbDebuggerPresent = params['pbDebuggerPresent']
 
-    ql.mem.write(pointer, b'\x00')
+    res = __is_debugger_present(ql)
+    ql.mem.write(pbDebuggerPresent, ql.pack8(res))
 
     return 1
 

@@ -80,7 +80,7 @@ jobs:
         cd ../qiling
         cd ../examples/rootfs/x86_linux/kernel && unzip -P infected m0hamed_rootkit.ko.zip
         cd ../../../../
-        pip3 install -e .[evm]
+        pip3 install -e .[evm,RE]
 
         if [ ${{ matrix.os }} == 'ubuntu-18.04' ] and [ ${{ matrix.python-version }} == '3.9' ]; then
           docker run -it --rm -v ${GITHUB_WORKSPACE}:/qiling qilingframework/qiling:dev bash -c "cd tests && ./test_onlinux.sh"

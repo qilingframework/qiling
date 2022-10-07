@@ -1,7 +1,61 @@
 This file details the changelog of Qiling Framework.
 
 ------------------------------------
-[Version 1.4.3]: April 7th, 2022
+[Version 1.4.4]: September 24th, 2022
+
+New features:
+- Add r2 extension (#1172)
+- Introduce procfs to Linux OS (#1174)
+- Add a tracer for IDAPro's Tenet plugin (#1205)
+
+Improvements:
+- Collect a few additional DLLs for x8664 (#1167)
+- Use global cwd in thread (#1170)
+- Fix QlLinuxThreadManagement.threads to be updated appropriately (#1180)
+- Fix Unix socket subsystem (#1181)
+- Maintenance PR for security and code quality (#1182 #1195)
+- Enable android 32bit test (#1184)
+- Fix wrong platform_system for unicornafl (#1185)
+- Fix arm thumb mode shellcode emulation (#1187)
+- Pump unicorn version to 2.0.0 (#1189)
+- Procfs improve & pwndbg compatiblity (#1190)
+- Fix example script issues (#1193 #1194)
+- Introduce a human-friendly disassembler (#1196)
+- Fix gdb step/continue handling (#1200)
+- Fix README.md (#1203)
+- Fix typo of default ip 127.0.0.1 (#1205)
+- Temporarily mask Python versions that are not supported by the EVM module (#1208)
+- Windows Maintenance PR (#1210)
+- Improvements around POSIX sockets (#1216)
+- Add x86_64 debug support for Qdb (#1218)
+- Renew code for picohttpd (#1221)
+- Fix missing retaddr_on_stack in Qdb for arm (#1225)
+- Qdb improvments: Mark, Jump and modify register value in qdb (#1226)
+- Allow user to build config from dictionary other than disk file (#1227)
+- fix(ida): replace __getattribute__ with __getattr__ (#1231)
+
+Contributors:
+- jasperla
+- bet4it
+- chinggg
+- elicn
+- vhertz
+- cgfandia-tii
+- wtdcode
+- ucgJhe
+- aquynh
+- kabeor
+- oscardagrach
+- hamarituc
+- EtchProject
+- HackingFrogWithSunglasses
+- xwings
+
+------------------------------------
+[Version 1.4.3]: June 1st, 2022
+
+New features:
+- Introduce PowerPC architecture support (#1140)
 
 Improvements:
 - Fix fuzzing for tendaac15 (#1096)
@@ -10,11 +64,22 @@ Improvements:
 - Minor PE Loader fix (#1104)
 - Minor quality changes (#1106)
 - Fix cacheflush syscall typo (#1115)
+- Improvements and fixes for Windows and PE (#1118)
 - Add vm_context to EVM hooks (#1119)
 - Load interpreter segments with correct perms and vaddr (#1120)
 - Fix mistakes in fuzz_x8664_linux binary (#1121)
 - Add EVM ABI helpers, fix EVM DBG stack view (#1123)
 - Fix regression caused by missing exception handling when opening socket (#1124)
+- CI improvement (#1128 #1134)
+- Add macho load command 'LC_LOAD_WEAK_DYLIB' support (#1133)
+- Fix breakage of non-Windows binary emulation on Windows host (#1143)
+- Remove misused region bound check of unmap_all (#1144)
+- Change deprecated interfaces of IDA (#1145)
+- Use importlib to retrieve package version (#1146)
+- New and improved gdbserver (#1148)
+- Rewrite package data reading (#1150)
+- Misc improvements (#1154)
+- Fix memory exhaustion problem caused by the logger (#1161)
 
 Contributors:
 - wtdcode
@@ -22,9 +87,18 @@ Contributors:
 - elicn
 - xwings
 - cq674350529
+- elicn
 - TheZ3ro
 - bet4it
 - chinggg
+- kabeor
+- chfl4gs
+- profiles
+- OlfillasOdikno
+- nmantan
+- machinewu
+- nullableVoidPtr
+- Phat3
 
 
 ------------------------------------
