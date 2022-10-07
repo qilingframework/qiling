@@ -163,4 +163,4 @@ class QlArchCORTEX_M(QlArchARM):
             self.regs.write('pc', entry)
             self.regs.write('lr', exc_return) 
 
-            self.uc.emu_start(self.effective_pc, 0, 0, 0)
+            self.uc.emu_start(self.effective_pc, 0, 0, 0xffffff)
