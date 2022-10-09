@@ -45,6 +45,13 @@ extras = {
     ],
     "RE": [
        "r2libr>=5.7.4",
+    ],
+    "tui": [
+        "json2html",
+        "pdfkit",
+        "python-fx",
+        "questionary",
+        "termcolor",
     ]
 }
 
