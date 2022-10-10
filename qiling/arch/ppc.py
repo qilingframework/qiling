@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -9,11 +9,11 @@ from unicorn import Uc, UC_ARCH_PPC, UC_MODE_PPC32, UC_MODE_BIG_ENDIAN
 from capstone import Cs, CS_ARCH_PPC, CS_MODE_32, CS_MODE_BIG_ENDIAN
 from keystone import Ks, KS_ARCH_PPC, KS_MODE_PPC32, KS_MODE_BIG_ENDIAN
 
-from qiling import Qiling
 from qiling.arch.arch import QlArch
 from qiling.arch import ppc_const
 from qiling.arch.register import QlRegisterManager
 from qiling.const import QL_ARCH, QL_ENDIAN
+
 
 class QlArchPPC(QlArch):
     type = QL_ARCH.PPC

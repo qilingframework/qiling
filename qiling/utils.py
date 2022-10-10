@@ -32,15 +32,6 @@ if TYPE_CHECKING:
 T = TypeVar('T')
 QlClassInit = Callable[['Qiling'], T]
 
-def catch_KeyboardInterrupt(ql: 'Qiling', func: Callable):
-    def wrapper(*args, **kw):
-        try:
-            return func(*args, **kw)
-        except BaseException as e:
-            ql.stop()
-            ql._internal_exception = e
-
-    return wrapper
 
 def __name_to_enum(name: str, mapping: Mapping[str, T], aliases: Mapping[str, str] = {}) -> Optional[T]:
     key = name.casefold()
@@ -473,7 +464,6 @@ def verify_ret(ql: 'Qiling', err):
         raise
 
 __all__ = [
-    'catch_KeyboardInterrupt',
     'os_convert',
     'arch_convert',
     'debugger_convert',

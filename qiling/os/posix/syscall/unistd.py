@@ -481,7 +481,7 @@ def ql_syscall_execve(ql: Qiling, pathname: int, argv: int, envp: int):
 
     ql.loader.argv = args
     ql.loader.env = env
-    ql._path = real_path
+    ql._argv = [real_path] + args
     ql.mem.map_info = []
     ql.clear_ql_hooks()
 

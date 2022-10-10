@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -14,6 +14,7 @@ from qiling.const import QL_ARCH
 from qiling.exception import QlErrorNotImplemented
 
 from .riscv import QlArchRISCV
+
 
 class QlArchRISCV64(QlArchRISCV):
     type = QL_ARCH.RISCV64

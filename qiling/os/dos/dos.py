@@ -117,6 +117,3 @@ class QlOsDos(QlOs):
             except UcError:
                 self.emu_error()
                 raise
-
-            if self.ql._internal_exception != None:
-                raise self.ql._internal_exception 

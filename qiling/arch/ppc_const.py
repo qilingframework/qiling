@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -7,16 +7,17 @@ from unicorn.ppc_const import *
 from enum import IntEnum
 
 reg_map = {
-    "r0": UC_PPC_REG_0,
-    "r1": UC_PPC_REG_1,
-    "r2": UC_PPC_REG_2,
-    "r3": UC_PPC_REG_3,
-    "r4": UC_PPC_REG_4,
-    "r5": UC_PPC_REG_5,
-    "r6": UC_PPC_REG_6,
-    "r7": UC_PPC_REG_7,
-    "r8": UC_PPC_REG_8,
-    "r9": UC_PPC_REG_9,
+    "pc":  UC_PPC_REG_PC,
+    "r0":  UC_PPC_REG_0,
+    "r1":  UC_PPC_REG_1,
+    "r2":  UC_PPC_REG_2,
+    "r3":  UC_PPC_REG_3,
+    "r4":  UC_PPC_REG_4,
+    "r5":  UC_PPC_REG_5,
+    "r6":  UC_PPC_REG_6,
+    "r7":  UC_PPC_REG_7,
+    "r8":  UC_PPC_REG_8,
+    "r9":  UC_PPC_REG_9,
     "r10": UC_PPC_REG_10,
     "r11": UC_PPC_REG_11,
     "r12": UC_PPC_REG_12,
@@ -39,25 +40,24 @@ reg_map = {
     "r29": UC_PPC_REG_29,
     "r30": UC_PPC_REG_30,
     "r31": UC_PPC_REG_31,
-    "pc": UC_PPC_REG_PC,
-    "msr": UC_PPC_REG_MSR,
-    "cr": UC_PPC_REG_CR0,
-    "lr": UC_PPC_REG_LR,
-    "ctr": UC_PPC_REG_CTR,
+    "cr":  UC_PPC_REG_CR0,
+    "lr":  UC_PPC_REG_LR,
     "xer": UC_PPC_REG_XER,
+    "ctr": UC_PPC_REG_CTR,
+    "msr": UC_PPC_REG_MSR
 }
 
 reg_float_map = {
-    "f0": UC_PPC_REG_FPR0,
-    "f1": UC_PPC_REG_FPR1,
-    "f2": UC_PPC_REG_FPR2,
-    "f3": UC_PPC_REG_FPR3,
-    "f4": UC_PPC_REG_FPR4,
-    "f5": UC_PPC_REG_FPR5,
-    "f6": UC_PPC_REG_FPR6,
-    "f7": UC_PPC_REG_FPR7,
-    "f8": UC_PPC_REG_FPR8,
-    "f9": UC_PPC_REG_FPR9,
+    "f0":  UC_PPC_REG_FPR0,
+    "f1":  UC_PPC_REG_FPR1,
+    "f2":  UC_PPC_REG_FPR2,
+    "f3":  UC_PPC_REG_FPR3,
+    "f4":  UC_PPC_REG_FPR4,
+    "f5":  UC_PPC_REG_FPR5,
+    "f6":  UC_PPC_REG_FPR6,
+    "f7":  UC_PPC_REG_FPR7,
+    "f8":  UC_PPC_REG_FPR8,
+    "f9":  UC_PPC_REG_FPR9,
     "f10": UC_PPC_REG_FPR10,
     "f11": UC_PPC_REG_FPR11,
     "f12": UC_PPC_REG_FPR12,
@@ -79,8 +79,9 @@ reg_float_map = {
     "f28": UC_PPC_REG_FPR28,
     "f29": UC_PPC_REG_FPR29,
     "f30": UC_PPC_REG_FPR30,
-    "f31": UC_PPC_REG_FPR31,
+    "f31": UC_PPC_REG_FPR31
 }
+
 
 class MSR(IntEnum):
     SF   = 1 << 63
