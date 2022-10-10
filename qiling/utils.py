@@ -16,7 +16,7 @@ from configparser import ConfigParser
 from types import ModuleType
 from typing import TYPE_CHECKING, Any, Callable, Mapping, Optional, Tuple, TypeVar, Union
 
-from unicorn import UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
+from unicorn import UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED, UC_PROT_READ, UC_PROT_WRITE, UC_PROT_EXEC
 
 from qiling.exception import *
 from qiling.const import QL_ARCH, QL_ENDIAN, QL_OS, QL_DEBUGGER
@@ -31,6 +31,34 @@ if TYPE_CHECKING:
 
 T = TypeVar('T')
 QlClassInit = Callable[['Qiling'], T]
+
+def uc2perm(ps: int) -> str:
+    perms_d = {
+        UC_PROT_READ  : 'r',
+        UC_PROT_WRITE : 'w',
+        UC_PROT_EXEC  : 'x'
+    }
+
+    return ''.join(val if idx & ps else '-' for idx, val in perms_d.items())
+
+def assert_mem_equal(ql: 'Qiling'):
+    map_info = ql.mem.map_info
+    mem_regions = list(ql.uc.mem_regions())
+    assert len(map_info) == len(mem_regions), f'len: map_info={len(map_info)} != mem_regions={len(mem_regions)}'
+    for i, mem_region in enumerate(mem_regions):
+        s, e, p, label, _, data = map_info[i]
+        if (s, e - 1, p) != mem_region:
+            ql.log.error('map_info:')
+            print('\n'.join(ql.mem.get_formatted_mapinfo()))
+            ql.log.error('uc.mem_regions:')
+            print('\n'.join(f'{s:010x} - {e:010x}   {uc2perm(p)}' for (s, e, p) in mem_regions))
+            raise AssertionError(f'(start, end, perm): map_info={(s, e - 1, p)} != mem_region={mem_region}')
+        uc_mem = ql.mem.read(mem_region[0], mem_region[1] - mem_region[0] + 1)
+        assert len(data) == len(uc_mem), f'len of {i} mem: map_info={len(data)} != mem_region={len(uc_mem)}'
+        if data != uc_mem:
+            Path('/tmp/uc_mem.bin').write_bytes(uc_mem)
+            Path('/tmp/map_info.bin').write_bytes(data)
+            raise AssertionError(f'Memory region {i} {s:#x} - {e:#x} != map_info[{i}] {label}')
 
 def catch_KeyboardInterrupt(ql: 'Qiling', func: Callable):
     def wrapper(*args, **kw):
@@ -473,6 +501,8 @@ def verify_ret(ql: 'Qiling', err):
         raise
 
 __all__ = [
+    'uc2perm',
+    'assert_mem_equal',
     'catch_KeyboardInterrupt',
     'os_convert',
     'arch_convert',

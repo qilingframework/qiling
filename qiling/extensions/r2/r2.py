@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING, Dict, List, Literal, Optional, Pattern, Tuple,
 from qiling.const import QL_ARCH
 from qiling.extensions import trace
 from unicorn import UC_PROT_NONE, UC_PROT_READ, UC_PROT_WRITE, UC_PROT_EXEC, UC_PROT_ALL
+from .callstack import CallStack
 
 if TYPE_CHECKING:
     from qiling.core import Qiling
@@ -141,10 +142,8 @@ class R2:
         self.loadaddr = loadaddr  # r2 -m [addr]    map file at given address
         self.analyzed = False
         self._r2c = libr.r_core.r_core_new()
-        if ql.code:
-            self._setup_code(ql.code)
-        else:
-            self._setup_file(ql.path)
+        self._r2i = ctypes.cast(self._r2c.contents.io, ctypes.POINTER(libr.r_io.struct_r_io_t))
+        self._setup_mem(ql)
 
     def _qlarch2r(self, archtype: QL_ARCH) -> str:
         return {
@@ -161,20 +160,23 @@ class R2:
             QL_ARCH.PPC: "ppc",
         }[archtype]
 
-    def _setup_code(self, code: bytes):
-        path = f'malloc://{len(code)}'.encode()
-        fh = libr.r_core.r_core_file_open(self._r2c, path, UC_PROT_ALL, self.loadaddr)
-        libr.r_core.r_core_bin_load(self._r2c, path, self.baseaddr)
-        self._cmd(f'wx {code.hex()}')
+    def _rbuf_map(self, cbuf: ctypes.Array[ctypes.c_ubyte], perm: int = UC_PROT_ALL, addr: int = 0, delta: int = 0):
+        rbuf = libr.r_buf_new_with_pointers(cbuf, len(cbuf), False)  # last arg `steal` = False
+        rbuf = ctypes.cast(rbuf, ctypes.POINTER(libr.r_io.struct_r_buf_t))
+        desc = libr.r_io_open_buffer(self._r2i, rbuf, perm, 0)  # last arg `mode` is always 0 in r2 code
+        libr.r_io.r_io_map_add(self._r2i, desc.contents.fd, desc.contents.perm, delta, addr, len(cbuf))
+
+    def _setup_mem(self, ql: 'Qiling'):
+        if not hasattr(ql, '_mem'):
+            return
+        for start, _end, perms, _label, _mmio, _buf in ql.mem.map_info:
+            cbuf = ql.mem.cmap[start]
+            self._rbuf_map(cbuf, perms, start)
         # set architecture and bits for r2 asm
-        arch = self._qlarch2r(self.ql.arch.type)
-        self._cmd(f"e,asm.arch={arch},asm.bits={self.ql.arch.bits}")
-
-    def _setup_file(self, path: str):
-        path = path.encode()
-        fh = libr.r_core.r_core_file_open(self._r2c, path, UC_PROT_READ | UC_PROT_EXEC, self.loadaddr)
-        libr.r_core.r_core_bin_load(self._r2c, path, self.baseaddr)
-
+        arch = self._qlarch2r(ql.arch.type)
+        self._cmd(f"e,asm.arch={arch},asm.bits={ql.arch.bits}")
+        self._cmd("oba")  # load bininfo and update flags
+    
     def _cmd(self, cmd: str) -> str:
         r = libr.r_core.r_core_cmd_str(
             self._r2c, ctypes.create_string_buffer(cmd.encode("utf-8")))
@@ -268,6 +270,40 @@ class R2:
         insts = [Instruction(**dic) for dic in self._cmdj(f"pDj {size} @ {addr}")]
         return insts
 
+    def dis_ninsts(self, addr: int, n: int=1) -> List[Instruction]:
+        insts = [Instruction(**dic) for dic in self._cmdj(f"pdj {n} @ {addr}")]
+        return insts
+
+    def _backtrace_fuzzy(self, at: int = None, depth: int = 128) -> Optional[CallStack]:
+        '''Fuzzy backtrace, see https://github.com/radareorg/radare2/blob/master/libr/debug/p/native/bt/fuzzy_all.c#L38
+        Args:
+            at: address to start walking stack, default to current SP
+            depth: limit of stack walking
+        Returns:
+            List of Frame
+        '''
+        sp = at or self.ql.arch.regs.arch_sp
+        wordsize = self.ql.arch.bits // 8
+        frame = None
+        cursp = oldsp = sp
+        for i in range(depth):
+            addr = self.ql.stack_read(i * wordsize)
+            inst = self.dis_ninsts(addr)[0]
+            if inst.type.lower() == 'call':
+                newframe = CallStack(addr=addr, sp=cursp, bp=oldsp, name=self.at(addr), next=frame)
+                frame = newframe
+                oldsp = cursp
+            cursp += wordsize
+        return frame
+
+    def set_backtrace(self, target: Union[int, str]):
+        '''Set backtrace at target address before executing'''
+        if isinstance(target, str):
+            target = self.where(target)
+        def bt_hook(__ql: "Qiling", *args):
+            print(self._backtrace_fuzzy())
+        self.ql.hook_address(bt_hook, target)
+
     def disassembler(self, ql: 'Qiling', addr: int, size: int, filt: Pattern[str]=None) -> int:
         '''A human-friendly monkey patch of QlArchUtils.disassembler powered by r2, can be used for hook_code
             :param ql: Qiling instance
@@ -279,7 +315,7 @@ class R2:
         anibbles = ql.arch.bits // 4
         progress = 0
         for inst in self.dis_nbytes(addr, size):
-            if inst.type.lower() == 'invalid':
+            if inst.type.lower() in ('invalid', 'ill'):
                 break  # stop disasm
             name, offset = self.at(inst.offset, parse=True)
             if filt is None or filt.search(name):
@@ -300,6 +336,15 @@ class R2:
             trace.enable_full_trace(self.ql)
         elif mode == 'history':
             trace.enable_history_trace(self.ql)
+
+    def shell(self):
+        while True:
+            offset = self._r2c.contents.offset
+            print(f"[{offset:#x}]> ", end="")
+            cmd = input()
+            if cmd.strip() == "q":
+                break
+            print(self._cmd(cmd))
 
     def __del__(self):
         libr.r_core.r_core_free(self._r2c)
