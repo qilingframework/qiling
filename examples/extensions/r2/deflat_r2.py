@@ -9,7 +9,7 @@ sys.path.append('..')
 
 from qiling import Qiling
 from qiling.const import QL_VERBOSE
-from qiling.extensions.r2 import R2, R2Deflator
+from qiling.extensions.r2 import R2Qiling
 
 
 

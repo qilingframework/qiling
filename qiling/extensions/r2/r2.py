@@ -17,7 +17,7 @@ from .callstack import CallStack
 from .deflat import R2Deflator
 
 if TYPE_CHECKING:
-    from qiling.core import Qiling
+    from qiling.extensions.r2 import R2Qiling
 
 def perm2uc(permstr: str) -> int:
     '''convert "-rwx" to unicorn const'''
@@ -208,7 +208,7 @@ class BasicBlock(R2Data):
 
 
 class R2:
-    def __init__(self, ql: "Qiling", baseaddr=(1 << 64) - 1, loadaddr=0):
+    def __init__(self, ql: 'R2Qiling', baseaddr=(1 << 64) - 1, loadaddr=0):
         super().__init__()
         self.ql = ql
         # r2 -B [baddr]   set base address for PIE binaries
@@ -242,7 +242,7 @@ class R2:
         desc = libr.r_io_open_buffer(self._r2i, rbuf, UC_PROT_ALL, 0)  # last arg `mode` is always 0 in r2 code
         libr.r_io.r_io_map_add(self._r2i, desc.contents.fd, desc.contents.perm, delta, addr, len(cbuf))
 
-    def _setup_mem(self, ql: 'Qiling'):
+    def _setup_mem(self, ql: 'R2Qiling'):
         if not hasattr(ql, '_mem'):
             return
         for start, _end, perms, _label, _mmio, _buf in ql.mem.map_info:
@@ -417,11 +417,11 @@ class R2:
         '''Set backtrace at target address before executing'''
         if isinstance(target, str):
             target = self.where(target)
-        def bt_hook(__ql: "Qiling", *args):
+        def bt_hook(__ql: 'R2Qiling', *args):
             print(self._backtrace_fuzzy())
         self.ql.hook_address(bt_hook, target)
 
-    def disassembler(self, ql: 'Qiling', addr: int, size: int, filt: Pattern[str]=None) -> int:
+    def disassembler(self, ql: 'R2Qiling', addr: int, size: int, filt: Pattern[str]=None) -> int:
         '''A human-friendly monkey patch of QlArchUtils.disassembler powered by r2, can be used for hook_code
             :param ql: Qiling instance
             :param addr: start address for disassembly
