@@ -454,7 +454,7 @@ class R2:
         elif mode == 'history':
             trace.enable_history_trace(self.ql)
 
-    def deflat(self, target: int | R2Data):
+    def deflat(self, target: Union[int, R2Data]):
         '''Create deflator with self r2 instance, will patch ql code'''
         addr = target if isinstance(target, int) else target.start_ea
         deflator = R2Deflator(self)
