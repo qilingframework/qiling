@@ -2,8 +2,8 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
-
-from inspect import signature, Parameter
+import importlib.util
+from inspect import signature, Parameter, getfile
 from typing import TextIO, Union, Callable, IO, List, Optional
 
 from unicorn.arm64_const import UC_ARM64_REG_X8, UC_ARM64_REG_X16
@@ -313,7 +313,21 @@ class QlOsPosix(QlOs):
             self.utils.print_function(self.ql.arch.regs.arch_pc, syscall_basename, args, sret, False)
 
             # record syscall statistics
-            self.stats.log_api_call(self.ql.arch.regs.arch_pc, syscall_name, dict(zip(param_names, params)), retval, None)
+            syscall_parser_name = f"{syscall_name}_parse"
+
+            #we want to resolve the syscall parser from wherever the syscall hook implmentation came from, so we gotta get that info from the syscall_hook
+            spec = importlib.util.spec_from_file_location("syscall_hook", getfile(syscall_hook))
+            spec_module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(spec_module)
+
+            syscall_parser = getattr(spec_module, syscall_parser_name, None)
+
+            syscall_params_dict = dict(zip(param_names, params))
+
+            if syscall_parser:
+                syscall_params_dict = syscall_parser(self.ql, *params)
+
+            self.stats.log_api_call(self.ql.arch.regs.arch_pc, syscall_name, syscall_params_dict, retval, None)
         else:
             self.ql.log.warning(f'{self.ql.arch.regs.arch_pc:#x}: syscall {syscall_name} number = {syscall_id:#x}({syscall_id:d}) not implemented')
 
