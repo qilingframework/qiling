@@ -80,6 +80,18 @@ def ql_syscall_creat(ql: Qiling, filename: int, mode: int):
 
     return regreturn
 
+def ql_syscall_openat_parse(ql: Qiling, fd: int, path: int, flags: int, mode: int) -> dict:
+    ql.log.warn(f"flag value is {flags}")
+    flags &= 0xffffffff
+    mode &= 0xffffffff
+    ql.log.warn(f"{fd}")
+    return {
+        'fd': ql.unpacks(ql.pack(fd)),
+        'path': ql.os.utils.read_cstring(path),
+        'flags': ql_open_flag_mapping(ql, flags),
+        'mode': mode
+    }
+
 def ql_syscall_openat(ql: Qiling, fd: int, path: int, flags: int, mode: int):
     file_path = ql.os.utils.read_cstring(path)
     # real_path = ql.os.path.transform_to_real_path(path)
