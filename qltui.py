@@ -398,7 +398,7 @@ def ask_additional_options():
             "log_plain": log_plain, "root": root, "debug_stop": debug_stop,
             "multithread": multithread, "timeout": timeout,
             "coverage_file": coverage_file, "coverage_format": coverage_format,
-            "json": json_, "libcache": libcache, "qltui": True}
+            "json": json_, "libcache": libcache}
 
     return options
     

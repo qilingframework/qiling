@@ -198,6 +198,7 @@ if __name__ == '__main__':
     # set "qltui" subcommand
     qltui_parser = commands.add_parser('qltui', help='show qiling Terminal User Interface', add_help=False)
 
+    qltui_enabled = False
     comm_parser = run_parser
 
     if len(sys.argv) > 1 and sys.argv[1] == 'code':
@@ -230,6 +231,7 @@ if __name__ == '__main__':
     if options.subcommand == 'qltui':
         import qltui
         options = qltui.get_data()
+        qltui_enabled = True
 
     # ql file setup
     if options.subcommand == 'run':
@@ -259,13 +261,13 @@ if __name__ == '__main__':
 
     # ql run
     with cov_utils.collect_coverage(ql, options.coverage_format, options.coverage_file):
-        if options.qltui:
+        if qltui_enabled:
             hook_dictionary = qltui.hook(ql)
         ql.run(timeout=options.timeout)
 
     if options.json:
         report = report.generate_report(ql)
-        if options.qltui:
+        if qltui_enabled:
             report["syscalls"] = qltui.transform_syscalls(ql.os.stats.syscalls)
             qltui.show_report(ql, report, hook_dictionary)
         else:
