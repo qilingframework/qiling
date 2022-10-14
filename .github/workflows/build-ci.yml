@@ -13,7 +13,7 @@ jobs:
         os: [windows-latest, ubuntu-20.04]
         python-version: [3.8, 3.9]              
         include:
-          - os: ubuntu-20.04
+          - os: ubuntu-18.04
             python-version: 3.9
             container: Docker
 
@@ -79,7 +79,7 @@ jobs:
         cd ../../../../
         pip3 install -e .[evm,RE]
 
-        if [ ${{ matrix.container }} == 'Docker' ]; then
+        if [ ${{ matrix.os }} == 'ubuntu-18.04' ] and [ ${{ matrix.python-version }} == '3.9' ]; then
           docker run -it --rm -v ${GITHUB_WORKSPACE}:/qiling qilingframework/qiling:dev bash -c "cd tests && ./test_onlinux.sh"
         else
           pip3 install setuptools wheel
