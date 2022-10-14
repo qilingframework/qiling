@@ -4,15 +4,14 @@ import pickle
 import re
 import six
 import argparse
-from json2html import *
-import pdfkit
-from pyfx import PyfxApp
 import json
+
+from pyfx import PyfxApp
 from pprint import pprint
 from datetime import datetime
 
 import questionary
-from questionary import Validator, ValidationError, prompt
+from questionary import Validator, ValidationError
 try:
     from termcolor import colored
 except ImportError:
@@ -139,21 +138,6 @@ else:
         Function to beautify terminal output
         """
         six.print_(string)
-
-
-class PdfConverter(object):
-    """
-    Pdf Converter object
-    """
-
-    def __init__(self):
-        pass
-
-    def to_html(self, json_doc):
-        return json2html.convert(json=json_doc)
-
-    def to_pdf(self, html_str):
-        return pdfkit.from_string(html_str, None)
 
 
 class IntValidator(Validator):
@@ -338,6 +322,8 @@ def ask_additional_options():
     """
     Ask additional options for run/code
     """
+    options = {}
+
     verbose = questionary.select(
      "verbose:",
      choices=list(verbose_map.keys()),
@@ -347,15 +333,18 @@ def ask_additional_options():
     env = questionary.path("env:", default="{}", validate=ENVFilePathValidator).ask()
     env = env_arg(env)
 
-    gdb = questionary.text("gdb:").ask()
-    if not gdb:
-        gdb = None
-
-    qdb = questionary.confirm("qdb:",
+    debug = questionary.confirm("debug:",
         default=False, auto_enter=True).ask()
+    gdb = None
+    qdb, rr = False, False
+    if debug:
+        gdb = questionary.text("\tgdb:").ask()
 
-    rr = questionary.confirm("rr:",
-        default=False, auto_enter=True).ask()
+        qdb = questionary.confirm("\tqdb:",
+            default=False, auto_enter=True).ask()
+
+        rr = questionary.confirm("\trr:",
+            default=False, auto_enter=True).ask()
 
     profile = questionary.text("profile:").ask()
     if not profile:
@@ -385,15 +374,18 @@ def ask_additional_options():
         default=False, auto_enter=True).ask()
     
     timeout = int(questionary.text("profile:", default="0", validate=IntValidator).ask())
-    
-    coverage_file = questionary.path("coverage-file:", validate=FilePathValidator).ask()
-    if not coverage_file:
-        coverage_file = None
-    
-    coverage_format = questionary.select(
-     "coverage-format:",
-     choices=list(cov_utils.factory.formats),
-     default="drcov").ask()
+
+    coverage = questionary.confirm("coverage:",
+        default=False, auto_enter=True).ask()
+    coverage_file = None
+    coverage_format = "drcov"
+    if coverage:
+        coverage_file = questionary.path("\tcoverage-file:", validate=FilePathValidator).ask()
+
+        coverage_format = questionary.select(
+        "\tcoverage-format:",
+        choices=list(cov_utils.factory.formats),
+        default="drcov").ask()
     
     json_ = questionary.confirm("json:",
         default=False, auto_enter=True).ask()
@@ -401,13 +393,14 @@ def ask_additional_options():
     libcache = questionary.confirm("libcache:",
         default=False, auto_enter=True).ask()
 
-    return {"verbose": verbose, "env": env, "gdb": gdb, "qdb": qdb,
-            "rr": rr, "profile": profile, "console": console,
+    options = {"verbose": verbose, "env": env, "gdb": gdb, "qdb": qdb, "rr": rr, "profile": profile, "console": console,
             "filter": filter_, "log_file": log_file,
             "log_plain": log_plain, "root": root, "debug_stop": debug_stop,
             "multithread": multithread, "timeout": timeout,
             "coverage_file": coverage_file, "coverage_format": coverage_format,
-            "json": json_, "libcache": libcache}
+            "json": json_, "libcache": libcache, "qltui": True}
+
+    return options
     
 
 def get_data():
@@ -437,7 +430,8 @@ def get_data():
     else:
         log("Error", ERROR_COLOR)
 
-    options = command_options | additional_options
+    command_options.update(additional_options)
+    options = command_options
     options['subcommand'] = command
 
     namespace = argparse.Namespace(**options)
@@ -451,7 +445,7 @@ def ask_report():
     """
     answer = questionary.select(
      "Select an Option:",
-     choices=['Report', 'Interactive Report', 'Report to PDF', 'Quit']).ask()
+     choices=['Report', 'Interactive Report', 'Save to Json', 'Quit']).ask()
 
     return answer.lower()
 
@@ -481,12 +475,11 @@ def show_report(ql: Qiling, report, hook_dictionary):
             pprint(report)
         elif command == 'interactive report':
             PyfxApp(data=report).run()
-        elif command == 'report to pdf':
+        elif command == 'save to json':
             time = datetime.now().strftime("%Y_%m_%d_%H-%M-%S")
-            report_name = f"report_{ql.targetname.replace('.', '_')}_{os_name}_{arch_name}_{time}.pdf"
-            pdfc = PdfConverter()
-            with open(report_name, "wb") as pdf_fl:
-               pdf_fl.write(pdfc.to_pdf(pdfc.to_html(json.dumps(report))))
+            report_name = f"report_{ql.targetname.replace('.', '_')}_{os_name}_{arch_name}_{time}.json"
+            with open(report_name, "w") as json_file:
+               json_file.write(json.dumps(report))
                print(f"The report was saved in your current directory as {report_name}")
         elif command == 'quit':
             break
