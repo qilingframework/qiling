@@ -19,6 +19,11 @@ requirements = [
     "multiprocess>=0.70.12.2",
     "windows-curses>=2.1.0;platform_system=='Windows'",
     "pyyaml>=6.0",
+    "json2html",
+    "pdfkit",
+    "python-fx",
+    "questionary",
+    "termcolor",
 ]
 
 extras = {
@@ -45,13 +50,6 @@ extras = {
     ],
     "RE": [
        "r2libr>=5.7.4",
-    ],
-    "tui": [
-        "json2html",
-        "pdfkit",
-        "python-fx",
-        "questionary",
-        "termcolor",
     ]
 }
 
