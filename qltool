@@ -9,7 +9,6 @@ import sys
 import ast
 import pickle
 from pprint import pprint
-import qltui
 
 from unicorn import __version__ as uc_ver
 from qiling import __version__ as ql_ver
@@ -199,6 +198,7 @@ if __name__ == '__main__':
     # set "qltui" subcommand
     qltui_parser = commands.add_parser('qltui', help='show qiling Terminal User Interface', add_help=False)
 
+    qltui_enabled = False
     comm_parser = run_parser
 
     if len(sys.argv) > 1 and sys.argv[1] == 'code':
@@ -229,7 +229,9 @@ if __name__ == '__main__':
         handle_examples(parser)
 
     if options.subcommand == 'qltui':
+        import qltui
         options = qltui.get_data()
+        qltui_enabled = True
 
     # ql file setup
     if options.subcommand == 'run':
@@ -259,17 +261,16 @@ if __name__ == '__main__':
 
     # ql run
     with cov_utils.collect_coverage(ql, options.coverage_format, options.coverage_file):
-        if options.subcommand == 'qltui':
+        if qltui_enabled:
             hook_dictionary = qltui.hook(ql)
         ql.run(timeout=options.timeout)
 
     if options.json:
         report = report.generate_report(ql)
-        report["syscalls"] = qltui.transform_syscalls(ql.os.stats.syscalls)
-        if options.subcommand == 'qltui':
+        if qltui_enabled:
+            report["syscalls"] = qltui.transform_syscalls(ql.os.stats.syscalls)
             qltui.show_report(ql, report, hook_dictionary)
         else:
             pprint(report)
-        
 
     exit(ql.os.exit_code)
