@@ -13,11 +13,17 @@ if SECRET_KEY:
 if platform.system() == "Darwin" and platform.machine() == "arm64":
     sys.exit(0)    
 
+# python 3.10 has not been supported yet in the latest blake2b-py release
+if sys.version_info >= (3,10):
+    sys.exit(0) 
+
+
 class Checklist:
     def __init__(self) -> None:
         self.visited_hookcode = False
         self.visited_hookinsn = False
         self.visited_hookaddr = False
+
 
 class EVMTest(unittest.TestCase):
     def test_underflow_code(self):
@@ -144,6 +150,7 @@ class EVMTest(unittest.TestCase):
         
         result_data = ql.arch.evm.abi.decode_params(['string'], result.output)
         self.assertEqual(call_param[0], result_data[0])
+
 
 if __name__ == "__main__":
     unittest.main()
