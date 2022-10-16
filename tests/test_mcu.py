@@ -434,7 +434,7 @@ class MCUTest(unittest.TestCase):
         ql.hw.usart3.send(b'hackme\naaaaaaaaaaaaaaaaaaaa\xa9\x05\n')
 
         ql.os.fast_mode = True
-        ql.run(timeout=90000)
+        ql.run(timeout=400)
 
         self.assertEqual(ql.hw.usart2.recv(), b'Nice Hack!\n')
         self.assertEqual(ql.hw.usart3.recv(), b'Welcome to the world of Hacking!\naaaaaaaaaaaaaaaaaaaa\xa9\x05\n')
