@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import platform, sys, unittest, os, threading, time
+import http.client, platform, sys, os, threading, time, unittest
 
 sys.path.append("..")
 from qiling import Qiling
@@ -365,42 +365,45 @@ class ELFTest(unittest.TestCase):
             ql = Qiling(["../examples/rootfs/x8664_linux/bin/picohttpd","12911"], "../examples/rootfs/x8664_linux", multithread=True, verbose=QL_VERBOSE.DEBUG)    
             ql.run()
 
-
         picohttpd_therad = threading.Thread(target=picohttpd, daemon=True)
         picohttpd_therad.start()
 
         time.sleep(1)
 
-        f = os.popen("curl http://127.0.0.1:12911")
-        self.assertEqual("httpd_test_successful", f.read())
+        f = http.client.HTTPConnection('localhost', 12911, timeout=10)
+        f.request("GET", "/")
+        response = f.getresponse()
+        self.assertEqual("httpd_test_successful", response.read().decode())
 
     def test_http_elf_linux_arm(self):
         def picohttpd():
             ql = Qiling(["../examples/rootfs/arm_linux/bin/picohttpd","12912"], "../examples/rootfs/arm_linux", multithread=True, verbose=QL_VERBOSE.DEBUG)    
             ql.run()
 
-
         picohttpd_therad = threading.Thread(target=picohttpd, daemon=True)
         picohttpd_therad.start()
 
         time.sleep(1)
 
-        f = os.popen("curl http://127.0.0.1:12912")
-        self.assertEqual("httpd_test_successful", f.read())
+        f = http.client.HTTPConnection('localhost', 12912, timeout=10)
+        f.request("GET", "/")
+        response = f.getresponse()
+        self.assertEqual("httpd_test_successful", response.read().decode())
 
     def test_http_elf_linux_armeb(self):
         def picohttpd():
             ql = Qiling(["../examples/rootfs/armeb_linux/bin/picohttpd"], "../examples/rootfs/armeb_linux", multithread=True, verbose=QL_VERBOSE.DEBUG)    
             ql.run()
 
-
         picohttpd_thread = threading.Thread(target=picohttpd, daemon=True)
         picohttpd_thread.start()
 
         time.sleep(1)
 
-        f = os.popen("curl http://127.0.0.1:12913")
-        self.assertEqual("httpd_test_successful", f.read())
+        f = http.client.HTTPConnection('localhost', 12913, timeout=10)
+        f.request("GET", "/")
+        response = f.getresponse()
+        self.assertEqual("httpd_test_successful", response.read().decode())
 
 
 if __name__ == "__main__":

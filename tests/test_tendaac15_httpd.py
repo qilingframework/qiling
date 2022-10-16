@@ -13,7 +13,7 @@
 # notes: we are using rootfs in this example, so rootfs = squashfs-root
 # 
 
-import os, socket, sys, threading, unittest
+import http.client, json, os, socket, sys, time, threading, unittest
 
 sys.path.append("..")
 from qiling import Qiling
@@ -57,24 +57,37 @@ class ELFTest(unittest.TestCase):
             for addr in br0_addr:
                 ql.mem.write(addr, b'lo\x00')
 
-
-        def check_pc(ql):
-            ql.emu_stop()
-
-
-        def my_sandbox(path, rootfs):
-            ql = Qiling(path, rootfs, verbose=QL_VERBOSE.DEBUG)
+        def my_tenda():
+            ql = Qiling(["../examples/rootfs/arm_tendaac15/bin/httpd"], "../examples/rootfs/arm_tendaac15", verbose=QL_VERBOSE.DEBUG)
             ql.add_fs_mapper("/dev/urandom","/dev/urandom")
             ql.hook_address(patcher, ql.loader.elf_entry)
-            ql.hook_address(check_pc, 0x901e24cc)
             ql.run()
             del ql
 
         if __name__ == "__main__":
+
+            threadLock = threading.Lock()
+            threads = []
+
             nvram_listener_therad =  threading.Thread(target=nvram_listener, daemon=True)
+            mytenda_therad = threading.Thread(target=my_tenda, daemon=True)
+
             nvram_listener_therad.start()
-            my_sandbox(["../examples/rootfs/arm_tendaac15/bin/httpd"], "../examples/rootfs/arm_tendaac15")
+            mytenda_therad.start()         
+              
+            threads.append(nvram_listener_therad)
+            threads.append(mytenda_therad)
+                        
+            time.sleep(5)
 
+            conn = http.client.HTTPConnection('localhost', 8080, timeout=10)
+            headers = {'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded'}
+            web_data = {'page': 'CCCCAAAA', 'entrys':'sync'}
+            json_data = json.dumps(web_data)
+            conn.request('POST', '/goform/addressNat', json_data, headers)
+            response = conn.getresponse()
+            self.assertIn("Please update your documents to reflect the new location.", response.read().decode())
 
+            
 if __name__ == "__main__":
     unittest.main()
