@@ -216,10 +216,10 @@ class R2:
         self.loadaddr = loadaddr  # r2 -m [addr]    map file at given address
         self.analyzed = False
         self._r2c = libr.r_core.r_core_new()
-        if ql.code:
-            self._setup_code(ql.code)
-        else:
-            self._setup_file(ql.path)
+        self._r2i = ctypes.cast(self._r2c.contents.io, ctypes.POINTER(libr.r_io.struct_r_io_t))
+        self._setup_mem(ql)
+        if ql.code is None:  # ql is initialized with file
+            self._load_symbol_from_file(ql.path)
 
     def _qlarch2r(self, archtype: QL_ARCH) -> str:
         return {
@@ -253,13 +253,27 @@ class R2:
         self._cmd(f"e,asm.arch={arch},asm.bits={ql.arch.bits}")
         self._cmd("oba")  # load bininfo and update flags
     
-    def _cmd(self, cmd: str) -> str:
+    def _load_symbol_from_file(self, path: str):
+        r2c = libr.r_core.r_core_new()
+        path = path.encode()
+        fh = libr.r_core.r_core_file_open(r2c, path, UC_PROT_READ | UC_PROT_EXEC, self.loadaddr)
+        libr.r_core.r_core_bin_load(r2c, path, self.baseaddr)
+        symbols = self._cmdj("isj", r2c)
+        for sym in symbols:
+            name = sym['name']  # name is shoter, but starting with . causes error
+            name = sym['flagname'] if name.startswith('.') else name
+            if name:  # add each symbol as flag if symbol name is not empty
+                self._cmd(f"f {name} {sym['size']} @ {sym['vaddr']}")
+        libr.r_core_free(r2c)
+    
+    def _cmd(self, cmd: str, r2c = None) -> str:
+        r2c = r2c or self._r2c
         r = libr.r_core.r_core_cmd_str(
-            self._r2c, ctypes.create_string_buffer(cmd.encode("utf-8")))
+            r2c, ctypes.create_string_buffer(cmd.encode("utf-8")))
         return ctypes.string_at(r).decode('utf-8')
 
-    def _cmdj(self, cmd: str) -> Union[Dict, List[Dict]]:
-        return json.loads(self._cmd(cmd))
+    def _cmdj(self, cmd: str, r2c = None) -> Union[Dict, List[Dict]]:
+        return json.loads(self._cmd(cmd, r2c))
 
     @property
     def offset(self) -> int:

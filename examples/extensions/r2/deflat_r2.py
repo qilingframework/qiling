@@ -18,8 +18,8 @@ if __name__ == "__main__":
     # see source code at examples/src/linux/fla_test.c
     ql = R2Qiling(['rootfs/x86_linux/bin/test_fla_argv', '1'], 'rootfs/x86_linux', verbose=QL_VERBOSE.DEFAULT)
     r2 = ql.r2
-    # now r2 has only rbuf but no symbol info
-    fcn = r2.get_fcn_at(0x08049190)
+    # now we can use r2 parsed symbol name instead of address
+    fcn = r2.get_fcn_at(r2.where('target_function'))
     print(fcn)
     r2.deflat(fcn)
     ql.run()
