@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import http.client, platform, sys, os, threading, time, unittest
+import http.client, platform, socket, sys, os, threading, time, unittest
 
 sys.path.append("..")
 from qiling import Qiling
@@ -176,7 +176,7 @@ class ELFTest(unittest.TestCase):
             except:
                 pass
         buf_out = None
-        ql = Qiling(["../examples/rootfs/armeb_linux/bin/armeb_multithreading"], "../examples/rootfs/armeb_linux", multithread=True, verbose=QL_VERBOSE.DEBUG)
+        ql = Qiling(["../examples/rootfs/armeb_linux_oldlibc/bin/armeb_multithreading"], "../examples/rootfs/armeb_linux_oldlibc", multithread=True, verbose=QL_VERBOSE.DEBUG)
         ql.os.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
         ql.run()
 
@@ -266,7 +266,7 @@ class ELFTest(unittest.TestCase):
                     ql.buf_out = buf
             except:
                 pass
-        ql = Qiling(["../examples/rootfs/armeb_linux/bin/armeb_tcp_test","20003"], "../examples/rootfs/armeb_linux", multithread=True)
+        ql = Qiling(["../examples/rootfs/armeb_linux_oldlibc/bin/armeb_tcp_test","20003"], "../examples/rootfs/armeb_linux_oldlibc", multithread=True)
         ql.os.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
         ql.run()
 
@@ -352,7 +352,7 @@ class ELFTest(unittest.TestCase):
             except:
                 pass
 
-        ql = Qiling(["../examples/rootfs/armeb_linux/bin/armeb_udp_test","20010"], "../examples/rootfs/armeb_linux", multithread=True)
+        ql = Qiling(["../examples/rootfs/armeb_linux_oldlibc/bin/armeb_udp_test","20010"], "../examples/rootfs/armeb_linux_oldlibc", multithread=True)
         ql.os.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
         ql.run()
 
@@ -392,18 +392,21 @@ class ELFTest(unittest.TestCase):
 
     def test_http_elf_linux_armeb(self):
         def picohttpd():
-            ql = Qiling(["../examples/rootfs/armeb_linux/bin/picohttpd"], "../examples/rootfs/armeb_linux", multithread=True, verbose=QL_VERBOSE.DEBUG)    
+            ql = Qiling(["../examples/rootfs/armeb_linux/bin/picohttpd","12913"], "../examples/rootfs/armeb_linux", multithread=True, verbose=QL_VERBOSE.DEBUG)
             ql.run()
 
         picohttpd_thread = threading.Thread(target=picohttpd, daemon=True)
         picohttpd_thread.start()
 
         time.sleep(1)
+        
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.connect(("localhost", 12913))
+            s.sendall(b"GET / HTTP/1.1\r\nHost: 127.0.0.1:12913\r\nUser-Agent: curl/7.74.0\r\nAccept: */*\r\n\r\n")
+            data = s.recv(1024)
 
-        f = http.client.HTTPConnection('localhost', 12913, timeout=10)
-        f.request("GET", "/")
-        response = f.getresponse()
-        self.assertEqual("httpd_test_successful", response.read().decode())
+        res = data.decode("UTF-8",'replace')
+        self.assertIn("httpd_test_successful", res)
 
 
 if __name__ == "__main__":
