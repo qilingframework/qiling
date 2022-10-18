@@ -1077,12 +1077,12 @@ class ELFTest(unittest.TestCase):
         del ql
 
     def test_elf_linux_armeb(self):     
-        ql = Qiling(["../examples/rootfs/armeb_linux/bin/armeb_hello"], "../examples/rootfs/armeb_linux", verbose=QL_VERBOSE.DEBUG)
+        ql = Qiling(["../examples/rootfs/armeb_linux_oldlibc/bin/armeb_hello"], "../examples/rootfs/armeb_linux", verbose=QL_VERBOSE.DEBUG)
         ql.run()
         del ql
 
     def test_elf_linux_armeb_static(self):     
-        ql = Qiling(["../examples/rootfs/armeb_linux/bin/armeb_hello_static"], "../examples/rootfs/armeb_linux", verbose=QL_VERBOSE.DEFAULT)
+        ql = Qiling(["../examples/rootfs/armeb_linux_oldlibc/bin/armeb_hello_static"], "../examples/rootfs/armeb_linux", verbose=QL_VERBOSE.DEFAULT)
         ql.run()
         del ql
 
