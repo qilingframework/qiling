@@ -13,7 +13,7 @@ jobs:
         os: [windows-latest, ubuntu-20.04]
         python-version: [3.8, 3.9]              
         include:
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             python-version: 3.9
             container: Docker
 
