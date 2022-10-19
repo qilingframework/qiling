@@ -122,7 +122,7 @@ class DebuggerTest(unittest.TestCase):
         del ql
 
     def test_gdbdebug_armeb(self):
-        ql = Qiling(["../examples/rootfs/armeb_linux_oldlibc/bin/armeb_hello"], "../examples/rootfs/armeb_linux_oldlibc", verbose=QL_VERBOSE.DEBUG)
+        ql = Qiling(["../examples/rootfs/armeb_linux/bin/armeb_hello"], "../examples/rootfs/armeb_linux", verbose=QL_VERBOSE.DEBUG)
         ql.debugger = True
 
         # some random command test just to make sure we covered most of the command
