@@ -446,7 +446,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         """
 
         for info_line in self.ql.mem.get_formatted_mapinfo():
-            self.ql.log.info(info_line)
+            qdb_print(QDB_MSG.INFO, info_line)
 
         qdb_print(QDB_MSG.INFO, f"Breakpoints: {[hex(addr) for addr in self.bp_list.keys()]}")
         qdb_print(QDB_MSG.INFO, f"Marked symbol: {[{key:hex(val)} for key,val in self.marker.mark_list]}")
