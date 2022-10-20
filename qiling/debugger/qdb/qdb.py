@@ -229,8 +229,12 @@ class QlQdb(cmd.Cmd, QlDebugger):
         if self.ql.arch == QL_ARCH.CORTEX_M:
             self.ql.arch.step()
         else:
-            self._run(count=1)
+            step = 1
+            # make sure follow branching
+            if prophecy.going is True and self.ql.arch.type == QL_ARCH.MIPS:
+                step += 1
 
+        self._run(count=step)
         self.do_context()
 
     @SnapshotManager.snapshot
@@ -245,7 +249,12 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         if prophecy.going:
             cur_insn = self.predictor.disasm(self.cur_addr)
-            self.set_breakpoint(self.cur_addr + cur_insn.size, is_temp=True)
+            bp_addr = self.cur_addr + cur_insn.size
+
+            if self.ql.arch.type == QL_ARCH.MIPS:
+                bp_addr += cur_insn.size
+
+            self.set_breakpoint(bp_addr, is_temp=True)
 
         else:
             self.set_breakpoint(prophecy.where, is_temp=True)
