@@ -266,12 +266,12 @@ def main():
         ql.run(timeout=options.timeout)
 
     if options.json:
-        report = report.generate_report(ql)
+        generated_report = report.generate_report(ql)
         if qltui_enabled:
-            report["syscalls"] = qltui.transform_syscalls(ql.os.stats.syscalls)
-            qltui.show_report(ql, report, hook_dictionary)
+            generated_report["syscalls"] = qltui.transform_syscalls(ql.os.stats.syscalls)
+            qltui.show_report(ql, generated_report, hook_dictionary)
         else:
-            pprint(report)
+            pprint(generated_report)
 
     exit(ql.os.exit_code)
 
