@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
 from unicorn import Uc
+
 
 class QlMsrManager:
     """Enables access to Intel MSR.

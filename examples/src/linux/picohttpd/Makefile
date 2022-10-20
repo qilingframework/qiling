@@ -4,7 +4,6 @@ clean:
 	@rm -rf *.o
 	@rm -rf x64_server
 	@rm -rf arm_server
-	@rm -rf armeb_server
 
 x64_server: main.o httpd.o
 	gcc -o x64_server $^

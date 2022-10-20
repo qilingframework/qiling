@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
 from typing import Any, Mapping, MutableMapping, Union
 
 from unicorn import Uc
+
 
 class QlRegisterManager:
     """This class exposes the ql.arch.regs features that allows you to directly access
@@ -40,7 +41,6 @@ class QlRegisterManager:
         else:
             return super().__getattribute__(name)
 
-
     def __setattr__(self, name: str, value: Any):
         name = name.lower()
 
@@ -50,34 +50,29 @@ class QlRegisterManager:
         else:
             super().__setattr__(name, value)
 
-
-    # read register
     def read(self, register: Union[str, int]):
         """Read a register value.
         """
 
-        if type(register) is str:
+        if isinstance(register, str):
             register = self.register_mapping[register.lower()]
 
         return self.uc.reg_read(register)
-
 
     def write(self, register: Union[str, int], value: int) -> None:
         """Write a register value.
         """
 
-        if type(register) is str:
+        if isinstance(register, str):
             register = self.register_mapping[register.lower()]
 
         return self.uc.reg_write(register, value)
-
 
     def save(self) -> MutableMapping[str, Any]:
         """Save CPU context.
         """
 
         return dict((reg, self.read(reg)) for reg in self.register_mapping)
-
 
     def restore(self, context: MutableMapping[str, Any] = {}) -> None:
         """Restore CPU context.
@@ -86,14 +81,12 @@ class QlRegisterManager:
         for reg, val in context.items():
             self.write(reg, val)
 
-
     @property
     def arch_pc(self) -> int:
         """Get the value of the architectural program counter register.
         """
 
         return self.uc.reg_read(self.uc_pc)
-
 
     @arch_pc.setter
     def arch_pc(self, value: int) -> None:
@@ -102,14 +95,12 @@ class QlRegisterManager:
 
         return self.uc.reg_write(self.uc_pc, value)
 
-
     @property
     def arch_sp(self) -> int:
         """Get the value of the architectural stack pointer register.
         """
 
         return self.uc.reg_read(self.uc_sp)
-
 
     @arch_sp.setter
     def arch_sp(self, value: int) -> None:

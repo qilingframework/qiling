@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -14,6 +14,7 @@ from qiling.arch.arch import QlArch
 from qiling.arch import mips_const
 from qiling.arch.register import QlRegisterManager
 from qiling.const import QL_ARCH, QL_ENDIAN
+
 
 class QlArchMIPS(QlArch):
     type = QL_ARCH.MIPS
@@ -49,8 +50,8 @@ class QlArchMIPS(QlArch):
     @cached_property
     def disassembler(self) -> Cs:
         endian = {
-            QL_ENDIAN.EL : CS_MODE_LITTLE_ENDIAN,
-            QL_ENDIAN.EB : CS_MODE_BIG_ENDIAN
+            QL_ENDIAN.EL: CS_MODE_LITTLE_ENDIAN,
+            QL_ENDIAN.EB: CS_MODE_BIG_ENDIAN
         }[self.endian]
 
         return Cs(CS_ARCH_MIPS, CS_MODE_MIPS32 + endian)
@@ -58,8 +59,8 @@ class QlArchMIPS(QlArch):
     @cached_property
     def assembler(self) -> Ks:
         endian = {
-            QL_ENDIAN.EL : KS_MODE_LITTLE_ENDIAN,
-            QL_ENDIAN.EB : KS_MODE_BIG_ENDIAN
+            QL_ENDIAN.EL: KS_MODE_LITTLE_ENDIAN,
+            QL_ENDIAN.EB: KS_MODE_BIG_ENDIAN
         }[self.endian]
 
         return Ks(KS_ARCH_MIPS, KS_MODE_MIPS32 + endian)
