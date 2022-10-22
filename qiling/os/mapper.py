@@ -3,9 +3,8 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import inspect
 import os
-from typing import Any, MutableMapping, Union
+from typing import Any, Callable, MutableMapping, Union
 
 from .path import QlOsPath
 from .filestruct import ql_file
@@ -57,19 +56,7 @@ class QlFsMappedObject:
     def name(self):
         raise NotImplementedError("QlFsMappedObject property not implemented: name")
 
-# This is a helper class to allow users to pass any class to add_fs_mapper
-#
-# Everytime open is called on the mapped path, cls(*args, **kwargs) will be called.
-class QlFsMappedCallable:
-    
-    def __init__(self, cls, *args, **kwargs) -> None:
-        self._args = args
-        self._kwargs = kwargs
-        self._cls = cls
-    
-    def __call__(self) -> QlFsMappedObject:
-        return self._cls(*self._args, **self._kwargs)
-    
+
 class QlFsMapper:
 
     def __init__(self, path: QlOsPath):
@@ -144,7 +131,7 @@ class QlFsMapper:
 
         return p
 
-    def add_fs_mapping(self, ql_path: Union[os.PathLike, str], real_dest: Union[str, QlFsMappedObject, QlFsMappedCallable]) -> None:
+    def add_fs_mapping(self, ql_path: Union[os.PathLike, str], real_dest: Union[str, QlFsMappedObject, Callable]) -> None:
         """Map an object to Qiling emulated file system.
 
         Args:
