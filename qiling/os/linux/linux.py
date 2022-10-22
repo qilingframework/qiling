@@ -22,6 +22,7 @@ from qiling.os.posix.posix import QlOsPosix
 from . import futex
 from . import thread
 
+
 class QlOsLinux(QlOsPosix):
     type = QL_OS.LINUX
 
@@ -49,7 +50,6 @@ class QlOsLinux(QlOsPosix):
         self.function_after_load_list = []
         self.elf_mem_start = 0x0
         self.load()
-
 
     def load(self):
         self.futexm = futex.QlLinuxFutexManagement()
@@ -99,7 +99,7 @@ class QlOsLinux(QlOsPosix):
             self.ql.hook_insn(self.hook_syscall, UC_X86_INS_SYSCALL)
             # Keep test for _cc
             #self.ql.hook_insn(hook_posix_api, UC_X86_INS_SYSCALL)
-            self.thread_class = thread.QlLinuxX8664Thread     
+            self.thread_class = thread.QlLinuxX8664Thread
 
         elif self.ql.arch.type == QL_ARCH.RISCV:
             self.ql.arch.enable_float()
@@ -121,7 +121,6 @@ class QlOsLinux(QlOsPosix):
             if getattr(self.fd[i], 'close_on_exec', 0):
                 self.fd[i] = None
 
-
     def setup_procfs(self):
         self.fs_mapper.add_fs_mapping(r'/proc/self/auxv',    partial(QlProcFS.self_auxv, self))
         self.fs_mapper.add_fs_mapping(r'/proc/self/cmdline', partial(QlProcFS.self_cmdline, self))
@@ -132,16 +131,13 @@ class QlOsLinux(QlOsPosix):
     def hook_syscall(self, ql, intno = None):
         return self.load_syscall()
 
-
     def register_function_after_load(self, function):
         if function not in self.function_after_load_list:
             self.function_after_load_list.append(function)
 
-
     def run_function_after_load(self):
         for f in self.function_after_load_list:
             f()
-
 
     def run(self):
         # do not set-up procfs for drivers and shellcode
@@ -155,14 +151,14 @@ class QlOsLinux(QlOsPosix):
             if self.ql.code:
                 self.ql.emu_start(self.entry_point, (self.entry_point + len(self.ql.code)), self.ql.timeout, self.ql.count)
             else:
-                if self.ql.multithread == True:
+                if self.ql.multithread:
                     # start multithreading
                     thread_management = thread.QlLinuxThreadManagement(self.ql)
                     self.ql.os.thread_management = thread_management
                     thread_management.run()
 
                 else:
-                    if  self.ql.entry_point is not None:
+                    if self.ql.entry_point is not None:
                         self.ql.loader.elf_entry = self.ql.entry_point
 
                     elif self.ql.loader.elf_entry != self.ql.loader.entry_point:

@@ -13,7 +13,10 @@
 # gdb remote protocol:
 #   https://sourceware.org/gdb/current/onlinedocs/gdb/Remote-Protocol.html
 
-import os, socket, re, tempfile
+import os
+import socket
+import re
+import tempfile
 from functools import partial
 from logging import Logger
 from typing import IO, Iterator, MutableMapping, Optional, Union
@@ -60,6 +63,7 @@ REPLY_OK = b'OK'
 
 # reply type
 Reply = Union[bytes, str]
+
 
 class QlGdb(QlDebugger):
     """A simple gdbserver implementation.
@@ -154,10 +158,8 @@ class QlGdb(QlDebugger):
 
             return int.from_bytes(raw, 'big')
 
-
         def handle_exclaim(subcmd: str) -> Reply:
             return REPLY_OK
-
 
         def handle_qmark(subcmd: str) -> Reply:
             """Request status.
@@ -207,7 +209,6 @@ class QlGdb(QlDebugger):
 
             return f'T{SIGTRAP:02x}{bp_info}{sp_info}{pc_info}'
 
-
         def handle_c(subcmd: str) -> Reply:
             try:
                 self.gdb.resume_emu()
@@ -242,7 +243,6 @@ class QlGdb(QlDebugger):
 
             return reply
 
-
         def handle_g(subcmd: str) -> Reply:
             # NOTE: in the past the 'g' reply packet for arm included the f0-f7 and fps registers between pc
             # and cpsr, which placed cpsr at index (regnum) 25. as the f-registers became obsolete the cpsr
@@ -257,7 +257,6 @@ class QlGdb(QlDebugger):
 
             return ''.join(__get_reg_value(*entry) for entry in self.regsmap)
 
-
         def handle_G(subcmd: str) -> Reply:
             data = subcmd
 
@@ -268,7 +267,6 @@ class QlGdb(QlDebugger):
 
             return REPLY_OK
 
-
         def handle_H(subcmd: str) -> Reply:
             op = subcmd[0]
 
@@ -277,13 +275,11 @@ class QlGdb(QlDebugger):
 
             return REPLY_EMPTY
 
-
         def handle_k(subcmd: str) -> Reply:
             global killed
 
             killed = True
             return REPLY_OK
-
 
         def handle_m(subcmd: str) -> Reply:
             """Read target memory.
@@ -297,7 +293,6 @@ class QlGdb(QlDebugger):
                 return 'E14'
             else:
                 return data
-
 
         def handle_M(subcmd: str) -> Reply:
             """Write target memory.
@@ -318,7 +313,6 @@ class QlGdb(QlDebugger):
             else:
                 return REPLY_OK
 
-
         def handle_p(subcmd: str) -> Reply:
             """Read register value by index.
             """
@@ -326,7 +320,6 @@ class QlGdb(QlDebugger):
             idx = int(subcmd, 16)
 
             return __get_reg_value(*self.regsmap[idx])
-
 
         def handle_P(subcmd: str) -> Reply:
             """Write register value by index.
@@ -341,7 +334,6 @@ class QlGdb(QlDebugger):
                 return REPLY_OK
 
             return 'E00'
-
 
         def handle_Q(subcmd: str) -> Reply:
             """General queries.
@@ -365,13 +357,11 @@ class QlGdb(QlDebugger):
 
             return REPLY_OK if feature in supported else REPLY_EMPTY
 
-
         def handle_D(subcmd: str) -> Reply:
             """Detach.
             """
 
             return REPLY_OK
-
 
         def handle_q(subcmd: str) -> Reply:
             query, *data = subcmd.split(':')
@@ -490,7 +480,7 @@ class QlGdb(QlDebugger):
                 elif feature == 'auxv' and op == 'read':
                     try:
                         with self.ql.os.fs_mapper.open('/proc/self/auxv', 'rb') as infile:
-                            infile.seek(offset, 0) # SEEK_SET
+                            infile.seek(offset, 0)  # SEEK_SET
                             auxv_data = infile.read(length)
 
                     except FileNotFoundError:
@@ -569,7 +559,6 @@ class QlGdb(QlDebugger):
 
             return REPLY_EMPTY
 
-
         def handle_v(subcmd: str) -> Reply:
             if subcmd == 'MustReplyEmpty':
                 return REPLY_EMPTY
@@ -636,10 +625,10 @@ class QlGdb(QlDebugger):
                     fd = int(fd, 16)
 
                     os.close(fd)
-                    
+
                     if fd in self.fake_procfs:
                         del self.fake_procfs[fd]
-                    
+
                     return 'F0'
 
                 return REPLY_EMPTY
@@ -673,7 +662,6 @@ class QlGdb(QlDebugger):
 
             return REPLY_EMPTY
 
-
         def handle_s(subcmd: str) -> Reply:
             """Perform a single step.
             """
@@ -687,7 +675,6 @@ class QlGdb(QlDebugger):
             self.gdb.resume_emu(steps=1)
 
             return f'S{SIGTRAP:02x}'
-
 
         def handle_X(subcmd: str) -> Reply:
             """Write data to memory.
@@ -706,7 +693,6 @@ class QlGdb(QlDebugger):
                 return 'E01'
             else:
                 return REPLY_OK
-
 
         def handle_Z(subcmd: str) -> Reply:
             """Insert breakpoints or watchpoints.
@@ -728,7 +714,6 @@ class QlGdb(QlDebugger):
 
             return REPLY_EMPTY
 
-
         def handle_z(subcmd: str) -> Reply:
             """Remove breakpoints or watchpoints.
             """
@@ -744,7 +729,6 @@ class QlGdb(QlDebugger):
                     return REPLY_OK
 
             return REPLY_EMPTY
-
 
         handlers = {
             '!': handle_exclaim,

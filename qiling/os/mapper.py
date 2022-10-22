@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -21,34 +21,34 @@ from .filestruct import ql_file
 class QlFsMappedObject:
     def __init__(self):
         pass
-    
+
     def read(self, expected_len):
         raise NotImplementedError("QlFsMappedObject method not implemented: read")
-    
+
     def write(self, buffer):
         raise NotImplementedError("QlFsMappedObject method not implemented: write")
-    
+
     def fileno(self):
         raise NotImplementedError("QlFsMappedObject method not implemented: fileno")
-    
+
     def lseek(self, lseek_offset, lseek_origin):
         raise NotImplementedError("QlFsMappedObject method not implemented: lseek")
-    
+
     def close(self):
         raise NotImplementedError("QlFsMappedObject method not implemented: close")
-    
+
     def fstat(self):
         raise NotImplementedError("QlFsMappedObject method not implemented: fstat")
-    
+
     def ioctl(self, ioctl_cmd, ioctl_arg):
         raise NotImplementedError("QlFsMappedObject method not implemented: ioctl")
 
     def tell(self):
         raise NotImplementedError("QlFsMappedObject method not implemented: tell")
-    
+
     def dup(self):
         raise NotImplementedError("QlFsMappedObject method not implemented: dup")
-    
+
     def readline(self, end = b'\n'):
         raise NotImplementedError("QlFsMappedObject method not implemented: readline")
 
@@ -146,7 +146,7 @@ class QlFsMapper:
         real_dest = self._parse_path(real_dest)
 
         self._mapping[ql_path] = real_dest
-        
+
     def remove_fs_mapping(self, ql_path: Union[os.PathLike, str]):
         """Remove a mapping from the fs mapper.
 
