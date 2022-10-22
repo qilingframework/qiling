@@ -392,13 +392,9 @@ class QlGdb(QlDebugger):
                     'QAgent+',
                     'QCatchSyscalls+',
                     'QDisableRandomization+',
-                    'QEnvironmentHexEncoded+',
-                    'QEnvironmentReset+',
-                    'QEnvironmentUnset+',
                     'QNonStop+',
                     'QPassSignals+',
                     'QProgramSignals+',
-                    'QSetWorkingDir+',
                     'QStartNoAckMode+',
                     'QStartupWithShell+',
                     'QTBuffer:size+',
@@ -411,7 +407,6 @@ class QlGdb(QlDebugger):
                     'hwbreak+',
                     'multiprocess+',
                     'no-resumed+',
-                    'qXfer:auxv:read+',
                     'qXfer:features:read+',
                     # 'qXfer:libraries-svr4:read+',
                     # 'qXfer:osdata:read+',
@@ -449,9 +444,19 @@ class QlGdb(QlDebugger):
 
                 # os dependent features
                 if not self.ql.interpreter:
+                    features += [
+                        'QEnvironmentHexEncoded+',
+                        'QEnvironmentReset+',
+                        'QEnvironmentUnset+'
+                    ]
+
                     # filesystem dependent features
                     if hasattr(self.ql.os, 'path'):
-                        features.append('qXfer:exec-file:read+')
+                        features += [
+                            'QSetWorkingDir+',
+                            'qXfer:auxv:read+',
+                            'qXfer:exec-file:read+'
+                        ]
 
                     # process dependent features
                     if hasattr(self.ql.os, 'pid'):
