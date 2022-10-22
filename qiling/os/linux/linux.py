@@ -3,6 +3,8 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from functools import partial
+
 from unicorn import UcError
 from unicorn.x86_const import UC_X86_INS_SYSCALL
 
@@ -15,7 +17,6 @@ from qiling.const import QL_ARCH, QL_OS
 from qiling.os.fcall import QlFunctionCall
 from qiling.os.const import *
 from qiling.os.linux.procfs import QlProcFS
-from qiling.os.mapper import QlFsMappedCallable
 from qiling.os.posix.posix import QlOsPosix
 
 from . import futex
@@ -122,11 +123,11 @@ class QlOsLinux(QlOsPosix):
 
 
     def setup_procfs(self):
-        self.fs_mapper.add_fs_mapping(r'/proc/self/auxv',    QlFsMappedCallable(QlProcFS.self_auxv, self))
-        self.fs_mapper.add_fs_mapping(r'/proc/self/cmdline', QlFsMappedCallable(QlProcFS.self_cmdline, self))
-        self.fs_mapper.add_fs_mapping(r'/proc/self/environ', QlFsMappedCallable(QlProcFS.self_environ, self))
-        self.fs_mapper.add_fs_mapping(r'/proc/self/exe',     QlFsMappedCallable(QlProcFS.self_exe, self))
-        self.fs_mapper.add_fs_mapping(r'/proc/self/maps',    QlFsMappedCallable(QlProcFS.self_map, self.ql.mem))
+        self.fs_mapper.add_fs_mapping(r'/proc/self/auxv',    partial(QlProcFS.self_auxv, self))
+        self.fs_mapper.add_fs_mapping(r'/proc/self/cmdline', partial(QlProcFS.self_cmdline, self))
+        self.fs_mapper.add_fs_mapping(r'/proc/self/environ', partial(QlProcFS.self_environ, self))
+        self.fs_mapper.add_fs_mapping(r'/proc/self/exe',     partial(QlProcFS.self_exe, self))
+        self.fs_mapper.add_fs_mapping(r'/proc/self/maps',    partial(QlProcFS.self_map, self.ql.mem))
 
     def hook_syscall(self, ql, intno = None):
         return self.load_syscall()
