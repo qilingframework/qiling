@@ -1,6 +1,6 @@
 
 import io
-from typing import TYPE_CHECKING, AnyStr, Optional, Sized
+from typing import TYPE_CHECKING, AnyStr
 
 from qiling.os.mapper import QlFsMappedObject
 
@@ -27,9 +27,8 @@ class QlProcFS:
 
             auxv_data.extend(os.ql.mem.read(auxv_addr, nbytes))
             auxv_addr += nbytes
-    
-        return io.BytesIO(bytes(auxv_data))
 
+        return io.BytesIO(bytes(auxv_data))
 
     @staticmethod
     def self_cmdline(os: 'QlOsLinux') -> QlFsMappedObject:
@@ -37,7 +36,6 @@ class QlProcFS:
         cmdline = b'\x00'.join(entries) + b'\x00'
 
         return io.BytesIO(cmdline)
-
 
     @staticmethod
     def self_environ(os: 'QlOsLinux') -> QlFsMappedObject:
@@ -52,20 +50,19 @@ class QlProcFS:
 
         return io.BytesIO(environ)
 
-
     @staticmethod
     def self_exe(os: 'QlOsLinux') -> QlFsMappedObject:
         with open(os.ql.path, 'rb') as exefile:
             content = exefile.read()
 
         return io.BytesIO(content)
-    
+
     @staticmethod
     def self_map(mem: 'QlMemoryManager') -> QlFsMappedObject:
-        content = b""
+        content = bytearray()
         mapinfo = mem.get_mapinfo()
 
         for lbound, ubound, perms, label, container in mapinfo:
             content += f"{lbound:x}-{ubound:x}\t{perms}p\t0\t00:00\t0\t{container if container else label}\n".encode("utf-8")
 
-        return io.BytesIO(content)
+        return io.BytesIO(bytes(content))
