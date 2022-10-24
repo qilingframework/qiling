@@ -8,13 +8,14 @@ import json
 import re
 import libr
 from dataclasses import dataclass, field, fields
-from functools import cached_property, wraps
+from functools import cached_property
 from typing import TYPE_CHECKING, Dict, List, Literal, Optional, Pattern, Tuple, Union
 from qiling.const import QL_ARCH
 from qiling.extensions import trace
 from unicorn import UC_PROT_NONE, UC_PROT_READ, UC_PROT_WRITE, UC_PROT_EXEC, UC_PROT_ALL
 from .callstack import CallStack
 from .deflat import R2Deflator
+from .utils import wrap_aaa, wrap_arg_addr
 
 if TYPE_CHECKING:
     from qiling.extensions.r2 import R2Qiling
@@ -279,15 +280,6 @@ class R2:
     def offset(self) -> int:
         return self._r2c.contents.offset
 
-    def aaa(fun):
-        @wraps(fun)
-        def wrapper(self, *args, **kwargs):
-            if self.analyzed is False:
-                self._cmd("aaa")
-                self.analyzed = True
-            return fun(self, *args, **kwargs)
-        return wrapper
-
     @cached_property
     def binfo(self) -> Dict[str, str]:
         return self._cmdj("iIj")
@@ -316,28 +308,30 @@ class R2:
         return {dic['name']: Symbol(**dic).vaddr for dic in sym_lst}
 
     @cached_property
-    @aaa
+    @wrap_aaa
     def functions(self) -> Dict[str, Function]:
         fcn_lst = self._cmdj("aflj")
         return {dic['name']: Function(**dic) for dic in fcn_lst}
 
     @cached_property
-    @aaa
+    @wrap_aaa
     def flags(self) -> List[Flag]:
         return [Flag(**dic) for dic in self._cmdj("fj")]
 
     @cached_property
-    @aaa
+    @wrap_aaa
     def xrefs(self) -> List[Xref]:
         return [Xref(**dic) for dic in self._cmdj("axj")]
 
-    @aaa
+    @wrap_aaa
+    @wrap_arg_addr
     def get_fcn_bbs(self, addr: int):
         '''list basic blocks of function'''
         return [BasicBlock(**dic) for dic in self._cmdj(f"afbj @ {addr}")]
 
-    @aaa
-    def get_bb_at(self, addr: int):
+    @wrap_aaa
+    @wrap_arg_addr
+    def get_bb(self, addr: int):
         '''get basic block at address'''
         try:
             dic = self._cmdj(f"afbj. {addr}")[0]
@@ -345,17 +339,19 @@ class R2:
         except IndexError:
             pass
 
-    @aaa
-    def get_fcn_at(self, addr: int):
+    @wrap_aaa
+    @wrap_arg_addr
+    def get_fcn(self, addr: int):
         try:
             dic = self._cmdj(f"afij {addr}")[0]  # afi show function information
             return Function(**dic)
         except IndexError:
             pass
     
-    @aaa
-    def anal_op(self, target: Union[int, Instruction]):
-        addr = target.offset if isinstance(target, Instruction) else target
+    @wrap_aaa
+    @wrap_arg_addr
+    def anal_op(self, addr: int):
+        '''r2 opcode analysis (detail about an instruction) at address'''
         dic = self._cmdj(f"aoj @ {addr}")[0]
         return AnalOp(**dic)
 
@@ -427,13 +423,12 @@ class R2:
             cursp += wordsize
         return frame
 
-    def set_backtrace(self, target: Union[int, str]):
+    @wrap_arg_addr
+    def set_backtrace(self, addr: int):
         '''Set backtrace at target address before executing'''
-        if isinstance(target, str):
-            target = self.where(target)
         def bt_hook(__ql: 'R2Qiling', *args):
             print(self._backtrace_fuzzy())
-        self.ql.hook_address(bt_hook, target)
+        self.ql.hook_address(bt_hook, addr)
 
     def disassembler(self, ql: 'R2Qiling', addr: int, size: int, filt: Pattern[str]=None) -> int:
         '''A human-friendly monkey patch of QlArchUtils.disassembler powered by r2, can be used for hook_code
@@ -468,9 +463,9 @@ class R2:
         elif mode == 'history':
             trace.enable_history_trace(self.ql)
 
-    def deflat(self, target: Union[int, R2Data]):
-        '''Create deflator with self r2 instance, will patch ql code'''
-        addr = target if isinstance(target, int) else target.start_ea
+    @wrap_arg_addr
+    def deflat(self, addr: int):
+        '''Deflat function at given address, will patch ql code'''
         deflator = R2Deflator(self)
         deflator.parse_blocks_for_deobf(addr)
         deflator._search_path()

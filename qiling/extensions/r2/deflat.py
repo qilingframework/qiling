@@ -93,7 +93,7 @@ class R2Deflator:
             ql.emu_stop()
             self.hook_data['result'] = False
             return
-        cur_bb = self.r2.get_bb_at(addr)
+        cur_bb = self.r2.get_bb(addr)
         if "force" in self.hook_data and addr in self.hook_data['force']:
             if self.hook_data['force'][addr]:  # is True
                 ql.log.info(f"Force execution at cond branch {hex(addr)}")
@@ -133,7 +133,7 @@ class R2Deflator:
             braddr = self._find_branch_in_block(bb)
             self.hook_data = {
                 "startbb": bb,
-                "func": self.r2.get_fcn_at(self.first_block.addr),
+                "func": self.r2.get_fcn(self.first_block),
                 "result": True,
             }
             ql_bb_start_ea = bb.addr

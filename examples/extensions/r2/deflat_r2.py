@@ -19,7 +19,7 @@ if __name__ == "__main__":
     ql = R2Qiling(['rootfs/x86_linux/bin/test_fla_argv', '1'], 'rootfs/x86_linux', verbose=QL_VERBOSE.DEFAULT)
     r2 = ql.r2
     # now we can use r2 parsed symbol name instead of address
-    fcn = r2.get_fcn_at(r2.where('target_function'))
+    fcn = r2.get_fcn('target_function')
     print(fcn)
     r2.deflat(fcn)
     ql.run()
