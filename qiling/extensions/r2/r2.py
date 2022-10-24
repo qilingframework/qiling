@@ -471,7 +471,12 @@ class R2:
         deflator._search_path()
         deflator._patch_codes()
 
-    def shell(self):
+    @wrap_arg_addr
+    def shell(self, addr: int = None):
+        '''Start a r2-like interative shell at given address
+        TODO: now it just a REPL, terminal graph UI is not supported
+        '''
+        self._cmd(f's {addr or self.ql.arch.regs.arch_pc or self.offset}')
         while True:
             print(f"[{self.offset:#x}]> ", end="")
             cmd = input()
