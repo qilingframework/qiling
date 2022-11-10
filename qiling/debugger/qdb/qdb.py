@@ -134,7 +134,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
             return
 
-        if self.ql.arch.type in (QL_ARCH.ARM, QL_ARCH.CORTEX_M) and self.ql.arch.is_thumb:
+        if getattr(self.ql.arch, 'is_thumb', False):
             address |= 1
 
         self.ql.emu_start(begin=address, end=end, count=count)

@@ -63,7 +63,7 @@ class QlInterruptContext(ContextDecorator):
 
 
 class QlArchCORTEX_M(QlArchARM):
-    type = QL_ARCH.ARM
+    type = QL_ARCH.CORTEX_M
     bits = 32
 
     def __init__(self, ql: Qiling):

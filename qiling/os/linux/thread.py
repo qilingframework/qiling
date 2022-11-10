@@ -574,8 +574,10 @@ class QlLinuxThreadManagement:
     def _prepare_lib_patch(self):
         if self.ql.loader.elf_entry != self.ql.loader.entry_point:
             entry_address = self.ql.loader.elf_entry
-            if self.ql.arch.type == QL_ARCH.ARM and entry_address & 1 == 1:
-                entry_address -= 1
+
+            if self.ql.arch.type == QL_ARCH.ARM:
+                entry_address &= ~1
+
             self.main_thread = self.ql.os.thread_class.spawn(self.ql, self.ql.loader.entry_point, entry_address)
             self.cur_thread = self.main_thread
             self._clear_queued_msg()

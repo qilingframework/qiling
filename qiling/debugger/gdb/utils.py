@@ -34,8 +34,8 @@ class QlGdbUtils:
 
 
     def dbg_hook(self, ql: Qiling, address: int, size: int):
-        if ql.arch.type == QL_ARCH.ARM and ql.arch.is_thumb:
-            address += 1
+        if getattr(ql.arch, 'is_thumb', False):
+            address |= 1
 
         # resuming emulation after hitting a breakpoint will re-enter this hook.
         # avoid an endless hooking loop by detecting and skipping this case
@@ -69,8 +69,8 @@ class QlGdbUtils:
         if address is None:
             address = self.ql.arch.regs.arch_pc
 
-        if self.ql.arch.type == QL_ARCH.ARM and self.ql.arch.is_thumb:
-            address += 1
+        if getattr(self.ql.arch, 'is_thumb', False):
+            address |= 1
 
         op = f'stepping {steps} instructions' if steps else 'resuming'
         self.ql.log.info(f'{PROMPT} {op} from {address:#x}')

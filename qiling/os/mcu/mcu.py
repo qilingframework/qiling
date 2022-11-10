@@ -45,10 +45,10 @@ class QlOsMcu(QlOs):
 
     def run(self):        
         def current_pc():
-            if self.ql.arch.type == QL_ARCH.ARM:
+            if hasattr(self.ql.arch, 'effective_pc'):
                 return self.ql.arch.effective_pc
-            else:
-                return self.ql.arch.regs.arch_pc
+
+            return self.ql.arch.regs.arch_pc
 
         count = self.ql.count or 0
         end = self.ql.exit_point or -1
