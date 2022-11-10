@@ -3,12 +3,12 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from typing import Callable, Optional, Mapping, Tuple, Union
-
 import cmd
 
+from typing import Optional, Tuple, Union
+
 from qiling import Qiling
-from qiling.const import QL_OS, QL_ARCH, QL_VERBOSE
+from qiling.const import QL_OS, QL_ARCH
 from qiling.debugger import QlDebugger
 
 from .utils import setup_context_render, setup_branch_predictor, setup_address_marker, SnapshotManager, run_qdb_script
@@ -17,6 +17,7 @@ from .misc import parse_int, Breakpoint, TempBreakpoint, try_read_int
 from .const import color
 
 from .utils import QDB_MSG, qdb_print
+
 
 class QlQdb(cmd.Cmd, QlDebugger):
     """
@@ -342,7 +343,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         if type(err_msg := self.mm.parse(line)) is str:
             qdb_print(QDB_MSG.ERROR, err_msg)
-    
+
 
     def do_set(self, line: str) -> None:
         """

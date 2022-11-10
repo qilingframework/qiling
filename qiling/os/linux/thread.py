@@ -91,7 +91,7 @@ class QlLinuxThread(QlThread):
     @property
     def ql(self):
         return self._ql
-    
+
     @ql.setter
     def ql(self, q):
         self._ql = q
@@ -107,15 +107,15 @@ class QlLinuxThread(QlThread):
     @property
     def exit_point(self):
         return self._exit_point
-    
+
     @exit_point.setter
     def exit_point(self, ep):
         self._exit_point = ep
-    
+
     @property
     def start_address(self):
         return self._start_address
-    
+
     @start_address.setter
     def start_address(self, sa):
         self._start_address = sa
@@ -123,7 +123,7 @@ class QlLinuxThread(QlThread):
     @property
     def status(self):
         return self._status
-    
+
     @status.setter
     def status(self, s):
         self._status = s
@@ -150,18 +150,18 @@ class QlLinuxThread(QlThread):
 
     def __hash__(self):
         return self.id
-    
+
     def __str__(self):
         return f"[Thread {self.id}]"
 
     @property
     def set_child_tid_address(self):
         return self._set_child_tid_address
-    
+
     @set_child_tid_address.setter
     def set_child_tid_address(self, addr):
         self._set_child_tid_address = addr
-    
+
     @property
     def clear_child_tid_address(self):
         return self._clear_child_tid_address
@@ -169,19 +169,19 @@ class QlLinuxThread(QlThread):
     @clear_child_tid_address.setter
     def clear_child_tid_address(self, addr):
         self._clear_child_tid_address = addr
-    
+
     @property
     def robust_list_head_ptr(self):
         return self._robust_list_head_ptr
-    
+
     @robust_list_head_ptr.setter
     def robust_list_head_ptr(self, p):
         self._robust_list_head_ptr = p
-    
+
     @property
     def robust_list_head_len(self):
         return self._robust_list_head_len
-    
+
     @robust_list_head_len.setter
     def robust_list_head_len(self, l):
         self._robust_list_head_len = l
@@ -189,7 +189,7 @@ class QlLinuxThread(QlThread):
     @property
     def sched_cb(self) -> Callable:
         return self._sched_cb
-    
+
     @sched_cb.setter
     def sched_cb(self, cb):
         self._sched_cb = cb
@@ -207,7 +207,7 @@ class QlLinuxThread(QlThread):
         #    Within both contexts, our program is single thread.
         #
         #    The only fail safe: **Never give up control in Unicorn context.**
-        #    
+        #
         #    In Unicorn context, in other words, in Unicorn callbacks, we do:
         #        - Implement non-blocking syscalls directly.
         #        - Prepare sched_cb for non-unicorn context.
@@ -219,7 +219,7 @@ class QlLinuxThread(QlThread):
         self.ql.arch.regs.arch_pc = self.start_address
         if not self._saved_context:
             self.save()
-        
+
         while self.status != THREAD_STATUS_TERMINATED:
             # Rewrite our status and the current thread.
             self.status = THREAD_STATUS_RUNNING
@@ -235,7 +235,7 @@ class QlLinuxThread(QlThread):
             # Run and log the run event
             start_address = getattr(self.ql.arch, 'effective_pc', self.ql.arch.regs.arch_pc) # For arm thumb.
             self.sched_cb = QlLinuxThread._default_sched_cb
-            
+
             self.ql.log.debug(f"Scheduled from {hex(start_address)}.")
             try:
                 # Known issue for timeout: https://github.com/unicorn-engine/unicorn/issues/1355
@@ -246,7 +246,7 @@ class QlLinuxThread(QlThread):
                 raise e
             self.ql.log.debug(f"Suspended at {hex(self.ql.arch.regs.arch_pc)}")
             self.save()
-            
+
             # Note that this callback may be set by UC callbacks.
             # Some thought on this design:
             #      1. Never give up control during a UC callback.
@@ -275,16 +275,16 @@ class QlLinuxThread(QlThread):
     @abstractmethod
     def set_thread_tls(self, tls_addr):
         pass
-    
+
     @abstractmethod
     def clone(self):
         # This is a workaround to implement our thread based on gevent greenlet.
         # Core idea:
         #     A gevent greenlet can't re-run if it has finished _run method but our framework requires threads to be resumed anytime. Therefore, a workaround is to
         #     use multiple greenlets to represent a single qiling thread.
-        #     
+        #
         #     Of course we can make the greenlet run forever and wait for notifications to resume but that would make the design much more complicated.
-        #     
+        #
         # Caveat:
         #     Don't use thread id to identify the thread object.
         new_thread = self.ql.os.thread_class.spawn(self._ql, self._start_address, self._exit_point, self._saved_context, set_child_tid_addr = None, thread_id = self._thread_id)
@@ -435,7 +435,7 @@ class QlLinuxX8664Thread(QlLinuxThread):
         self.restore_context()
         self.set_thread_tls(self.tls)
         self.ql.log.debug(f"Restored context: fs={hex(self.ql.arch.regs.fsbase)} tls={hex(self.tls)}")
-    
+
     def clone(self):
         new_thread = super(QlLinuxX8664Thread, self).clone()
         new_thread.tls = self.tls
@@ -458,7 +458,7 @@ class QlLinuxMIPS32Thread(QlLinuxThread):
     def save(self):
         self.save_context()
         self.tls = self.ql.arch.regs.cp0_userlocal
-        self.ql.log.debug(f"Saved context. cp0={hex(self.ql.arch.regs.cp0_userlocal)}") 
+        self.ql.log.debug(f"Saved context. cp0={hex(self.ql.arch.regs.cp0_userlocal)}")
 
     def restore(self):
         self.restore_context()
@@ -492,7 +492,7 @@ class QlLinuxARMThread(QlLinuxThread):
         self.restore_context()
         self.set_thread_tls(self.tls)
         self.ql.log.debug(f"Restored context. c13_c0_3={hex(self.ql.arch.regs.c13_c0_3)}")
-    
+
     def clone(self):
         new_thread = super(QlLinuxARMThread, self).clone()
         new_thread.tls = self.tls
@@ -519,7 +519,7 @@ class QlLinuxARM64Thread(QlLinuxThread):
         self.restore_context()
         self.set_thread_tls(self.tls)
         self.ql.log.debug(f"Restored context. tpidr_el0={hex(self.ql.arch.regs.tpidr_el0)}")
-    
+
     def clone(self):
         new_thread = super(QlLinuxARM64Thread, self).clone()
         new_thread.tls = self.tls
@@ -545,7 +545,7 @@ class QlLinuxThreadManagement:
     @property
     def main_thread(self):
         return self._main_thread
-    
+
     @main_thread.setter
     def main_thread(self, mt):
         self._main_thread = mt
@@ -570,7 +570,7 @@ class QlLinuxThreadManagement:
                 self.main_thread.log_file_fd.log(lvl, msg)
         except AttributeError:
             pass
-    
+
     def _prepare_lib_patch(self):
         if self.ql.loader.elf_entry != self.ql.loader.entry_point:
             entry_address = self.ql.loader.elf_entry
