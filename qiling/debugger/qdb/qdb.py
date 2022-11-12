@@ -82,11 +82,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         self.cur_addr = self.ql.loader.entry_point
 
-        if self.ql.arch.type == QL_ARCH.CORTEX_M:
-            self._run()
-
-        else:
-            self.init_state = self.ql.save()
+        self.init_state = self.ql.save()
 
         if self._script:
             run_qdb_script(self, self._script)
@@ -117,23 +113,6 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         if not address:
             address = self.cur_addr
-
-        if self.ql.arch.type == QL_ARCH.CORTEX_M and self.ql.count != 0:
-
-            while self.ql.count:
-
-                if (bp := self.bp_list.pop(self.cur_addr, None)):
-                    if isinstance(bp, TempBreakpoint):
-                        self.del_breakpoint(bp)
-                    else:
-                        qdb_print(QDB_MSG.INFO, f"hit breakpoint at 0x{self.cur_addr:08x}")
-
-                    break
-
-                self.ql.arch.step()
-                self.ql.count -= 1
-
-            return
 
         if getattr(self.ql.arch, 'is_thumb', False):
             address |= 1
@@ -227,13 +206,10 @@ class QlQdb(cmd.Cmd, QlDebugger):
         if prophecy.where is True:
             return True
 
-        if self.ql.arch == QL_ARCH.CORTEX_M:
-            self.ql.arch.step()
-        else:
-            step = 1
-            # make sure follow branching
-            if prophecy.going is True and self.ql.arch.type == QL_ARCH.MIPS:
-                step += 1
+        step = 1
+        # make sure follow branching
+        if prophecy.going is True and self.ql.arch.type == QL_ARCH.MIPS:
+            step += 1
 
         self._run(count=step)
         self.do_context()

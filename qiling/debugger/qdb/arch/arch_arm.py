@@ -10,15 +10,20 @@ from .arch import Arch
 class ArchARM(Arch):
     def __init__(self):
         super().__init__()
-
-    @property
-    def regs(self):
-        return (
+        self._regs = (
                 "r0", "r1", "r2", "r3",
                 "r4", "r5", "r6", "r7",
                 "r8", "r9", "r10", "r11",
                 "r12", "sp", "lr", "pc",
                 )
+
+    @property
+    def regs(self):
+        return self._regs
+
+    @regs.setter
+    def regs(self, regs):
+        self._regs += regs
 
     @property
     def regs_need_swapped(self):
