@@ -51,6 +51,7 @@ class Render:
     def __init__(self):
         self.regs_a_row = 4
         self.stack_num = 10
+        self.disasm_num = 0x10
         self.color = color
 
     def reg_diff(self, cur_regs, saved_reg_dump):
@@ -206,13 +207,14 @@ class ContextRender(Context, Render):
 
         lines = {}
         past_list = []
-        from_addr = self.cur_addr - 0x10
-        to_addr = self.cur_addr + 0x10
+        from_addr = self.cur_addr - self.disasm_num
+        to_addr = self.cur_addr + self.disasm_num
 
         cur_addr = from_addr
         while cur_addr != to_addr:
             insn = self.disasm(cur_addr)
-            cur_addr += self.arch_insn_size
+            # cur_addr += self.arch_insn_size
+            cur_addr += insn.size
             if not insn:
                 continue
             past_list.append(insn)
