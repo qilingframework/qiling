@@ -1,14 +1,7 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
-
-#!/usr/bin/env python3
-# 
-# Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-#
-
-from qiling.const import *
 
 # OS Threading Constants
 THREAD_EVENT_INIT_VAL         = 0
@@ -33,7 +26,7 @@ linux_x86_socket_types = {
     'SOCK_DCCP'      : 0x6,
     'SOCK_PACKET'    : 0xa,
     'SOCK_NONBLOCK'  : 0x800,
-    'SOCK_CLOEXEC'   : 0x80000,    
+    'SOCK_CLOEXEC'   : 0x80000,
 }
 
 linux_x86_socket_domain = {
@@ -178,7 +171,7 @@ linux_arm_socket_types = {
     'SOCK_DCCP'      : 0x6,
     'SOCK_PACKET'    : 0xa,
     'SOCK_NONBLOCK'  : 0x800,
-    'SOCK_CLOEXEC'   : 0x80000,    
+    'SOCK_CLOEXEC'   : 0x80000,
 }
 
 

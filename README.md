@@ -28,6 +28,10 @@ Qiling is an advanced binary emulation framework, with the following features:
 
 Qiling also made its way to various international conferences.
 
+2022:
+- [Black Hat, EU](https://www.blackhat.com/eu-22/arsenal/schedule/#reversing-mcu-with-firmware-emulation-29553)
+- [Black Hat, MEA](https://blackhatmea.com/node/724)
+
 2021:
 - [Black Hat, USA](https://www.blackhat.com/us-21/arsenal/schedule/index.html#bringing-the-x-complete-re-experience-to-smart-contract-24119)
 - [Hack In The Box, Amsterdam](https://conference.hitb.org/hitbsecconf2021ams/sessions/when-qiling-framework-meets-symbolic-execution/)
