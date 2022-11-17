@@ -226,6 +226,8 @@ def ql_syscall_getsockopt(ql: Qiling, sockfd, level, optname, optval_addr, optle
         ql.mem.write(optval_addr, optval)
     except UcError:
         return -EFAULT
+    except:
+        return -1
 
     return 0
 
