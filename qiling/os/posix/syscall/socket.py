@@ -14,7 +14,7 @@ from unicorn.unicorn import UcError
 
 from qiling import Qiling
 from qiling.const import QL_ARCH, QL_VERBOSE
-from qiling.os.posix.const_mapping import socket_type_mapping, socket_level_mapping, socket_domain_mapping, socket_ip_option_mapping, socket_option_mapping
+from qiling.os.posix.const_mapping import socket_type_mapping, socket_level_mapping, socket_domain_mapping, socket_ip_option_mapping, socket_tcp_option_mapping, socket_option_mapping
 from qiling.os.posix.const import *
 from qiling.os.posix.filestruct import ql_socket
 
@@ -200,6 +200,8 @@ def ql_syscall_getsockopt(ql: Qiling, sockfd, level, optname, optval_addr, optle
             # emu_opt_name is based on level
             if emu_level_name == "IPPROTO_IP":
                 emu_opt_name = socket_ip_option_mapping(emu_opt, ql.arch.type, ql.os.type)
+            elif emu_level_name == "IPPROTO_TCP":
+                emu_opt_name = socket_tcp_option_mapping(emu_opt, ql.arch.type, ql.os.type)
             else:
                 emu_opt_name = socket_option_mapping(emu_opt, ql.arch.type, ql.os.type)
 

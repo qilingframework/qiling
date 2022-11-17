@@ -195,6 +195,21 @@ def socket_ip_option_mapping(t, archtype, ostype):
         }[archtype]
     return _constant_mapping(t, socket_option_map, single_mapping=True)
 
+def socket_tcp_option_mapping(t, archtype, ostype):
+    if ostype == QL_OS.MACOS:
+        socket_option_map = {
+            QL_ARCH.X8664: linux_socket_tcp_options,
+            QL_ARCH.ARM64: linux_socket_tcp_options,
+        }[archtype]
+    else:
+        socket_option_map = {
+            QL_ARCH.X86: linux_socket_tcp_options,
+            QL_ARCH.X8664: linux_socket_tcp_options,
+            QL_ARCH.ARM: linux_socket_tcp_options,
+            QL_ARCH.ARM64: linux_socket_tcp_options,
+            QL_ARCH.MIPS: linux_socket_tcp_options,
+        }[archtype]
+    return _constant_mapping(t, socket_option_map, single_mapping=True)
 
 def socket_option_mapping(t, archtype, ostype):
     if ostype == QL_OS.MACOS:
