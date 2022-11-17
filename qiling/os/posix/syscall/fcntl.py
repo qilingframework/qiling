@@ -150,7 +150,8 @@ def ql_syscall_fcntl(ql: Qiling, fd: int, cmd: int, arg: int):
         regreturn = f.fcntl(cmd, arg)
 
     elif cmd == F_SETFL:
-        f.fcntl(cmd, arg)
+        flags = ql_open_flag_mapping(ql, arg)
+        f.fcntl(cmd, flags)
         regreturn = 0
 
     else:
