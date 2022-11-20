@@ -3,404 +3,492 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import ctypes
 import ipaddress
-import sys
 import socket
-import struct
-from typing import Tuple
-
-from unicorn.unicorn import UcError
+from typing import Optional, Tuple
 
 from qiling import Qiling
 from qiling.const import QL_ARCH, QL_VERBOSE
 from qiling.os.posix.const_mapping import socket_type_mapping, socket_level_mapping, socket_domain_mapping, socket_ip_option_mapping, socket_option_mapping
 from qiling.os.posix.const import *
 from qiling.os.posix.filestruct import ql_socket
-
-class msghdr(ctypes.Structure):
-    _fields_ = [
-        ('msg_name'      , ctypes.c_uint64),
-        ('msg_namelen'   , ctypes.c_int32 ),
-        ('msg_iov'       , ctypes.c_uint64),
-        ('msg_iovlen'    , ctypes.c_int32 ),
-        ('msg_control'   , ctypes.c_uint64),
-        ('msg_controllen', ctypes.c_int32 ),
-        ('msg_flags'     , ctypes.c_int32 )
-    ]
-
-    _pack_ = 8
-
-    @classmethod
-    def load(cls, ql: Qiling, addr: int):
-        data = ql.mem.read(addr, ctypes.sizeof(msghdr))
-        return msghdr.from_buffer(data)
-
-class cmsghdr(ctypes.Structure):
-    _fields_ = [
-        ('cmsg_len'  , ctypes.c_int32),
-        ('cmsg_level', ctypes.c_int32),
-        ('cmsg_type' , ctypes.c_int32),
-    ]
-
-    _pack_ = 8
-
-    @classmethod
-    def load(cls, ql: Qiling, addr: int):
-        data = ql.mem.read(addr, ctypes.sizeof(cmsghdr))
-        return cmsghdr.from_buffer(data)
-
-class iovec(ctypes.Structure):
-    _fields_ = [
-        ('iov_base', ctypes.c_uint64),
-        ('iov_len' , ctypes.c_uint64),
-    ]
-
-    _pack_ = 8
-
-    @classmethod
-    def load(cls, ql: Qiling, addr: int):
-        data = ql.mem.read(addr, ctypes.sizeof(iovec))
-        return iovec.from_buffer(data)
+from qiling.os.posix.structs import *
 
 
-def ql_bin_to_ip(ip):
-    return ipaddress.ip_address(ip).compressed
+AF_UNIX = 1
+AF_INET = 2
+AF_INET6 = 10
+
+
+def inet_aton(ipaddr: str) -> int:
+    # ipdata = bytes(int(a, 0) for a in ipaddr.split('.', 4))
+    ipdata = ipaddress.IPv4Address(ipaddr).packed
+
+    return int.from_bytes(ipdata, byteorder='big')
+
+
+def inet6_aton(ipaddr: str) -> int:
+    ipdata = ipaddress.IPv6Address(ipaddr).packed
+
+    return int.from_bytes(ipdata, byteorder='big')
+
+
+def inet_htoa(ql: Qiling, addr: int) -> str:
+    abytes = ql.pack32(addr)
+
+    return ipaddress.IPv4Address(abytes).compressed
+
+
+def inet_ntoa(addr: int) -> str:
+    abytes = addr.to_bytes(length=4, byteorder='big')
+
+    return ipaddress.IPv4Address(abytes).compressed
+
+
+def inet6_htoa(ql: Qiling, addr: bytes) -> str:
+    # TODO: swap addr bytes order according to ql.arch.endian?
+
+    return ipaddress.IPv6Address(addr).compressed
+
+
+def inet6_ntoa(addr: bytes) -> str:
+    return ipaddress.IPv6Address(addr).compressed
+
+
+def ntohs(ql: Qiling, nval: int) -> int:
+    ebdata = nval.to_bytes(length=2, byteorder='big')
+
+    return ql.unpack16(ebdata)
+
+
+def htons(ql: Qiling, hval: int) -> int:
+    ndata = ql.pack16(hval)
+
+    return int.from_bytes(ndata, byteorder='big')
 
 
 def ql_unix_socket_path(ql: Qiling, sun_path: bytearray) -> Tuple[str, str]:
-    if sun_path[0] == 0:
-        # Abstract Unix namespace
+    vpath, _, _ = sun_path.partition(b'\x00')
+
+    # an abstract Unix namespace?
+    if not vpath:
         # TODO: isolate from host namespace
         # TODO: Windows
         ql.log.warning(f'Beware! Usage of hosts abstract socket namespace {bytes(sun_path)}')
 
         return (sun_path.decode(), '')
 
-    vpath = sun_path.split(b'\0', maxsplit=1)[0].decode()
+    vpath = ql.os.path.virtual_abspath(vpath.decode())
     hpath = ql.os.path.virtual_to_host_path(vpath)
 
     return (hpath, vpath)
 
 
-def ql_syscall_socket(ql: Qiling, socket_domain, socket_type, socket_protocol):
+def ql_syscall_socket(ql: Qiling, domain: int, socktype: int, protocol: int):
     idx = next((i for i in range(NR_OPEN) if ql.os.fd[i] is None), -1)
 
     if idx != -1:
-        emu_socket_value = socket_type
+        vsock_type = socktype
 
         # ql_socket.open should use host platform based socket_type.
         try:
-            emu_socket_type = socket_type_mapping(socket_type, ql.arch.type, ql.os.type)
+            vsock_type_name = socket_type_mapping(vsock_type, ql.arch.type)
         except KeyError:
-            ql.log.error(f'Cannot convert emu_socket_type {emu_socket_value} to host platform based socket_type')
+            ql.log.error(f'Could not convert emulated socket type {vsock_type} to a socket type name')
             raise
 
         try:
-            socket_type = getattr(socket, emu_socket_type)
+            hsock_type = getattr(socket, vsock_type_name)
         except AttributeError:
-            ql.log.error(f'Cannot convert emu_socket_type {emu_socket_type}:{emu_socket_value} to host platform based socket_type')
+            ql.log.error(f'Could not convert emulated socket type name {vsock_type_name} to host socket type')
             raise
 
-        ql.log.debug(f'Convert emu_socket_type {emu_socket_type}:{emu_socket_value} to host platform based socket_type {emu_socket_type}:{socket_type}')
+        ql.log.debug(f'Converted emulated socket type {vsock_type_name} to host socket type {hsock_type}')
 
         try:
-            sock = ql_socket.open(socket_domain, socket_type, socket_protocol)
+            sock = ql_socket.open(domain, hsock_type, protocol)
 
             # set REUSEADDR options under debug mode
             if ql.verbose >= QL_VERBOSE.DEBUG:
                 sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-            ql.os.fd[idx] = sock
-
         # May raise error: Protocol not supported
         except OSError as e:
-            ql.log.debug(f'{e}: {socket_domain=}, {socket_type=}, {socket_protocol=}')
+            ql.log.debug(f'Error opening socket: {e}')
             idx = -1
+        else:
+            ql.os.fd[idx] = sock
 
-    socket_type = socket_type_mapping(socket_type, ql.arch.type, ql.os.type)
-    socket_domain = socket_domain_mapping(socket_domain, ql.arch.type, ql.os.type)
-    ql.log.debug("socket(%s, %s, %s) = %d" % (socket_domain, socket_type, socket_protocol, idx))
+    s_socktype = socket_type_mapping(socktype, ql.arch.type)
+    s_domain = socket_domain_mapping(domain, ql.arch.type, ql.os.type)
+    ql.log.debug("socket(%s, %s, %s) = %d" % (s_domain, s_socktype, protocol, idx))
 
     return idx
 
 
 def ql_syscall_connect(ql: Qiling, sockfd: int, addr: int, addrlen: int):
-    AF_UNIX = 1
-    AF_INET = 2
+    if sockfd not in range(NR_OPEN):
+        return -1
 
-    sock_addr = ql.mem.read(addr, addrlen)
-    family = ql.unpack16(sock_addr[:2])
+    sock: Optional[ql_socket] = ql.os.fd[sockfd]
 
-    sock = ql.os.fd[sockfd]
-    assert isinstance(sock, ql_socket)
+    if sock is None:
+        return -1
+
+    data = ql.mem.read(addr, addrlen)
+    print(f"data = {data.hex(' ')}")
+
+    abits = ql.arch.bits
+    endian = ql.arch.endian
+
+    sockaddr = make_sockaddr(abits, endian)
+    sockaddr_obj = sockaddr.from_buffer(data)
 
     dest = None
+    regreturn = -1
 
-    if sock.family != family:
+    if sock.family != sockaddr_obj.sa_family:
         return -1
 
     if sock.family == AF_UNIX:
-        hpath, vpath = ql_unix_socket_path(ql, sock_addr[2:])
+        hpath, vpath = ql_unix_socket_path(ql, data[2:])
 
-        ql.log.debug(f'connecting to "{vpath}"')
+        # TODO: support connecting to fs_mapped unix sockets
+        ql.log.debug(f'Connecting to "{vpath}"')
         dest = hpath
 
     elif sock.family == AF_INET:
-        port, host = struct.unpack(">HI", sock_addr[2:8])
-        ip = ql_bin_to_ip(host)
+        sockaddr_in = make_sockaddr_in(abits, endian)
+        sockaddr_obj = sockaddr_in.from_buffer(data)
 
-        ql.log.debug(f'connecting to {ip}:{port}')
-        dest = (ip, port)
+        port = ntohs(ql, sockaddr_obj.sin_port)
+        host = inet_htoa(ql, sockaddr_obj.sin_addr.s_addr)
 
-    else:
-        return -1
+        ql.log.debug(f'Connecting to {host}:{port}')
+        dest = (host, port)
 
-    try:
-        sock.connect(dest)
-    except:
-        regreturn = -1
-    else:
-        regreturn = 0
+    elif sock.family == AF_INET6 and ql.os.ipv6:
+        sockaddr_in6 = make_sockaddr_in(abits, endian)
+        sockaddr_obj = sockaddr_in6.from_buffer(data)
+
+        port = ntohs(ql, sockaddr_obj.sin_port)
+        host = inet6_htoa(ql, sockaddr_obj.sin6_addr.s6_addr)
+
+        ql.log.debug(f'Conecting to {host}:{port}')
+        dest = (host, port)
+
+    if dest is not None:
+        try:
+            sock.connect(dest)
+        except (ConnectionError, FileNotFoundError):
+            regreturn = -1
+        else:
+            regreturn = 0
 
     return regreturn
 
 
-def ql_syscall_getsockopt(ql: Qiling, sockfd, level, optname, optval_addr, optlen_addr):
-    if sockfd not in range(NR_OPEN) or ql.os.fd[sockfd] is None:
-        return -EBADF
+def ql_syscall_getsockopt(ql: Qiling, sockfd: int, level: int, optname: int, optval_addr: int, optlen_addr: int):
+    if sockfd not in range(NR_OPEN):
+        return -1
+
+    sock: Optional[ql_socket] = ql.os.fd[sockfd]
+
+    if sock is None:
+        return -1
+
+    vsock_level = level
 
     try:
-        optlen = min(ql.unpack32s(ql.mem.read(optlen_addr, 4)), 1024)
+        vsock_level_name = socket_level_mapping(vsock_level, ql.arch.type)
+    except KeyError:
+        ql.log.error(f'Could not convert emulated socket level {vsock_level} to a socket level name')
+        raise
 
-        if optlen < 0:
-            return -EINVAL
+    try:
+        hsock_level = getattr(socket, vsock_level_name)
+    except AttributeError:
+        ql.log.error(f'Could not convert emulated socket level name {vsock_level_name} to host socket level')
+        raise
 
-        emu_level = level
+    ql.log.debug(f'Converted emulated socket level {vsock_level_name} to host socket level {hsock_level}')
 
-        try:
-            emu_level_name = socket_level_mapping(emu_level, ql.arch.type, ql.os.type)
-        except KeyError:
-            ql.log.error(f"Can't convert emu_level {emu_level} to host platform based level")
-            raise
+    vsock_opt = optname
 
-        try:
-            level = getattr(socket, emu_level_name)
-        except AttributeError:
-            ql.log.error(f"Can't convert emu_level {emu_level_name}:{emu_level} to host platform based emu_level")
-            raise
+    try:
+        # emu_opt_name is based on level
+        if vsock_level_name == 'IPPROTO_IP':
+            vsock_opt_name = socket_ip_option_mapping(vsock_opt, ql.arch.type, ql.os.type)
+        else:
+            vsock_opt_name = socket_option_mapping(vsock_opt, ql.arch.type)
 
-        ql.log.debug(f"Convert emu_level {emu_level_name}:{emu_level} to host platform based level {emu_level_name}:{level}")
+        # Fix for mips
+        if ql.arch.type == QL_ARCH.MIPS:
+            if vsock_opt_name.endswith("_NEW") or vsock_opt_name.endswith("_OLD"):
+                vsock_opt_name = vsock_opt_name[:-4]
 
-        emu_opt = optname
+    except KeyError:
+        ql.log.error(f'Could not convert emulated socket option {vsock_opt} to socket option name')
+        raise
 
-        try:
-            emu_level_name = socket_level_mapping(emu_level, ql.arch.type, ql.os.type)
+    try:
+        hsock_opt = getattr(socket, vsock_opt_name)
+    except AttributeError:
+        ql.log.error(f'Could not convert emulated socket option name {vsock_opt_name} to host socket option')
+        raise
 
-            # emu_opt_name is based on level
-            if emu_level_name == "IPPROTO_IP":
-                emu_opt_name = socket_ip_option_mapping(emu_opt, ql.arch.type, ql.os.type)
-            else:
-                emu_opt_name = socket_option_mapping(emu_opt, ql.arch.type, ql.os.type)
+    ql.log.debug(f'Converted emulated socket option {vsock_opt_name} to host socket option {hsock_opt}')
 
-            # Fix for mips
-            if ql.arch.type == QL_ARCH.MIPS:
-                if emu_opt_name.endswith("_NEW") or emu_opt_name.endswith("_OLD"):
-                    emu_opt_name = emu_opt_name[:-4]
+    optlen = min(ql.unpack32s(ql.mem.read(optlen_addr, 4)), 1024)
 
-        except KeyError:
-            ql.log.error(f"Can't convert emu_optname {emu_opt} to host platform based optname")
-            raise
+    if optlen < 0:
+        return -1
 
-        try:
-            optname = getattr(socket, emu_opt_name)
-        except AttributeError:
-            ql.log.error(f"Can't convert emu_optname {emu_opt_name}:{emu_opt} to host platform based emu_optname")
-            raise
+    try:
+        optval = sock.getsockopt(hsock_level, hsock_opt, optlen)
+    except (ConnectionError, OSError):
+        return -1
 
-        ql.log.debug(f"Convert emu_optname {emu_opt_name}:{emu_opt} to host platform based optname {emu_opt_name}:{optname}")
-
-        optval = ql.os.fd[sockfd].getsockopt(level, optname, optlen)
-        ql.mem.write(optval_addr, optval)
-    except UcError:
-        return -EFAULT
+    ql.mem.write(optval_addr, optval)
 
     return 0
 
 
-def ql_syscall_setsockopt(ql: Qiling, sockfd, level, optname, optval_addr, optlen):
-    if sockfd not in range(NR_OPEN) or ql.os.fd[sockfd] is None:
-        return -EBADF
+def ql_syscall_setsockopt(ql: Qiling, sockfd: int, level: int, optname: int, optval_addr: int, optlen: int):
+    if sockfd not in range(NR_OPEN):
+        return -1
 
-    regreturn = 0
+    sock: Optional[ql_socket] = ql.os.fd[sockfd]
+
+    if sock is None:
+        return -1
+
     if optval_addr == 0:
-        ql.os.fd[sockfd].setsockopt(level, optname, None, optlen)
+        sock.setsockopt(level, optname, None, optlen)
+
     else:
+        vsock_level = level
+
         try:
-            emu_level = level
+            vsock_level_name = socket_level_mapping(vsock_level, ql.arch.type)
+        except KeyError:
+            ql.log.error(f'Could not convert emulated socket level {vsock_level} to a socket level name')
+            raise
 
-            try:
-                emu_level_name = socket_level_mapping(emu_level, ql.arch.type, ql.os.type)
-            except KeyError:
-                ql.log.error(f"Can't convert emu_level {emu_level} to host platform based level")
-                raise
+        try:
+            hsock_level = getattr(socket, vsock_level_name)
+        except AttributeError:
+            ql.log.error(f'Could not convert emulated socket level name {vsock_level_name} to host socket level')
+            raise
 
-            try:
-                level = getattr(socket, emu_level_name)
-            except AttributeError:
-                ql.log.error(f"Can't convert emu_level {emu_level_name}:{emu_level} to host platform based emu_level")
-                raise
+        ql.log.debug(f'Converted emulated socket level {vsock_level_name} to host socket level {hsock_level}')
 
-            ql.log.debug(f"Convert emu_level {emu_level_name}:{emu_level} to host platform based level {emu_level_name}:{level}")
+        vsock_opt = optname
 
-            emu_opt = optname
+        try:
+            # emu_opt_name is based on level
+            if vsock_level_name == 'IPPROTO_IP':
+                vsock_opt_name = socket_ip_option_mapping(vsock_opt, ql.arch.type, ql.os.type)
+            else:
+                vsock_opt_name = socket_option_mapping(vsock_opt, ql.arch.type)
 
-            try:
-                emu_level_name = socket_level_mapping(emu_level, ql.arch.type, ql.os.type)
+            # Fix for mips
+            if ql.arch.type == QL_ARCH.MIPS:
+                if vsock_opt_name.endswith("_NEW") or vsock_opt_name.endswith("_OLD"):
+                    vsock_opt_name = vsock_opt_name[:-4]
 
-                # emu_opt_name is based on level
-                if emu_level_name == "IPPROTO_IP":
-                    emu_opt_name = socket_ip_option_mapping(emu_opt, ql.arch.type, ql.os.type)
-                else:
-                    emu_opt_name = socket_option_mapping(emu_opt, ql.arch.type, ql.os.type)
+        except KeyError:
+            ql.log.error(f'Could not convert emulated socket option {vsock_opt} to socket option name')
+            raise
 
-                # Fix for mips
-                if ql.arch.type == QL_ARCH.MIPS:
-                    if emu_opt_name.endswith("_NEW") or emu_opt_name.endswith("_OLD"):
-                        emu_opt_name = emu_opt_name[:-4]
+        try:
+            hsock_opt = getattr(socket, vsock_opt_name)
+        except AttributeError:
+            ql.log.error(f'Could not convert emulated socket option name {vsock_opt_name} to host socket option')
+            raise
 
-            except KeyError:
-                ql.log.error(f"Can't convert emu_optname {emu_opt} to host platform based optname")
-                raise
+        ql.log.debug(f'Converted emulated socket option {vsock_opt_name} to host socket option {hsock_opt}')
 
-            try:
-                optname = getattr(socket, emu_opt_name)
-            except AttributeError:
-                ql.log.error(f"Can't convert emu_optname {emu_opt_name}:{emu_opt} to host platform based emu_optname")
-                raise
+        optval = ql.mem.read(optval_addr, optlen)
 
-            ql.log.debug(f"Convert emu_optname {emu_opt_name}:{emu_opt} to host platform based optname {emu_opt_name}:{optname}")
+        try:
+            sock.setsockopt(hsock_level, hsock_opt, optval)
+        except (ConnectionError, OSError):
+            return -1
 
-            optval = ql.mem.read(optval_addr, optlen)
-            ql.os.fd[sockfd].setsockopt(level, optname, optval, None)
-
-        except UcError:
-            regreturn = -EFAULT
-
-        except:
-            regreturn = -1
-
-    return regreturn
+    return 0
 
 
-def ql_syscall_shutdown(ql: Qiling, fd: int, how: int):
-    regreturn = 0
+def ql_syscall_shutdown(ql: Qiling, sockfd: int, how: int):
+    if sockfd not in range(NR_OPEN):
+        return -1
 
-    if fd in range(NR_OPEN):
-        sock = ql.os.fd[fd]
+    sock: Optional[ql_socket] = ql.os.fd[sockfd]
 
-        if sock is not None:
-            try:
-                sock.shutdown(how)
-            except:
-                regreturn = -1
+    if sock is None:
+        return -1
 
-    return regreturn
+    try:
+        sock.shutdown(how)
+    except ConnectionError:
+        return -1
+
+    return 0
 
 
-def ql_syscall_bind(ql: Qiling, bind_fd, bind_addr, bind_addrlen):
-    regreturn = 0
+def ql_syscall_bind(ql: Qiling, sockfd: int, addr: int, addrlen: int):
+    if sockfd not in range(NR_OPEN):
+        return -1
 
-    if ql.arch.type == QL_ARCH.X8664:
-        data = ql.mem.read(bind_addr, 8)
-    else:
-        data = ql.mem.read(bind_addr, bind_addrlen)
+    sock: Optional[ql_socket] = ql.os.fd[sockfd]
 
-    sin_family = ql.unpack16(data[:2]) or ql.os.fd[bind_fd].family
-    port, host = struct.unpack(">HI", data[2:8])
-    host = ql_bin_to_ip(host)
+    if sock is None:
+        return -1
 
-    if not ql.os.root and port <= 1024:
-        port = port + 8000
+    data = ql.mem.read(addr, addrlen)
+    print(f"data = {data.hex(' ')}")
 
-    if sin_family == 1:
+    abits = ql.arch.bits
+    endian = ql.arch.endian
+
+    sockaddr = make_sockaddr(abits, endian)
+    sockaddr_obj = sockaddr.from_buffer(data)
+
+    sa_family = sockaddr_obj.sa_family
+
+    dest = None
+    regreturn = -1
+
+    if sa_family == AF_UNIX:
         hpath, vpath = ql_unix_socket_path(ql, data[2:])
-        ql.log.debug(f'binding socket to "{vpath}"')
-        ql.os.fd[bind_fd].bind(hpath)
 
-    # need a proper fix, for now ipv4 comes first
-    elif sin_family == 2 and ql.os.bindtolocalhost == True:
-        host = "127.0.0.1"
-        ql.os.fd[bind_fd].bind((host, port))
+        ql.log.debug(f'Binding socket to "{vpath}"')
+        dest = hpath
 
-    # IPv4 should comes first
-    elif ql.os.ipv6 == True and sin_family == 10 and ql.os.bindtolocalhost == True:
-        host = "::1"
-        ql.os.fd[bind_fd].bind((host, port))
+    elif sa_family == AF_INET:
+        sockaddr = make_sockaddr_in(abits, endian)
+        sockaddr_obj = sockaddr.from_buffer(data)
 
-    elif ql.os.bindtolocalhost == False:
-        ql.os.fd[bind_fd].bind((host, port))
+        port = ntohs(ql, sockaddr_obj.sin_port)
+        host = inet_ntoa(sockaddr_obj.sin_addr.s_addr)
 
-    else:
-        regreturn = -1
+        if ql.os.bindtolocalhost:
+            host = '127.0.0.1'
 
-    if ql.code:
-        regreturn = 0
+        if not ql.os.root and port <= 1024:
+            port = port + 8000
 
-    if sin_family == 1:
-        ql.log.debug("bind(%d, %s, %d) = %d" % (bind_fd, vpath, bind_addrlen, regreturn))
-    else:
-        ql.log.debug("bind(%d,%s:%d,%d) = %d" % (bind_fd, host, port, bind_addrlen,regreturn))
-        ql.log.debug("syscall bind host: %s and port: %i sin_family: %i" % (ql_bin_to_ip(host), port, sin_family))
+        ql.log.debug(f'Binding socket to {host}:{port}')
+        dest = (host, port)
+
+    elif sa_family == AF_INET6 and ql.os.ipv6:
+        sockaddr_in6 = make_sockaddr_in(abits, endian)
+        sockaddr_obj = sockaddr_in6.from_buffer(data)
+
+        port = ntohs(ql, sockaddr_obj.sin_port)
+        host = inet6_ntoa(sockaddr_obj.sin6_addr.s6_addr)
+
+        if ql.os.bindtolocalhost:
+            host = '::1'
+
+        if not ql.os.root and port <= 1024:
+            port = port + 8000
+
+        ql.log.debug(f'Binding socket to {host}:{port}')
+        dest = (host, port)
+
+    if dest is not None:
+        try:
+            sock.bind(dest)
+        except (ConnectionError, FileNotFoundError):
+            regreturn = -1
+        else:
+            regreturn = 0
 
     return regreturn
 
 
 def ql_syscall_getsockname(ql: Qiling, sockfd: int, addr: int, addrlenptr: int):
     if 0 <= sockfd < NR_OPEN:
-        socket = ql.os.fd[sockfd]
+        sock: Optional[ql_socket] = ql.os.fd[sockfd]
 
-        if isinstance(socket, ql_socket):
-            host, port = socket.getpeername()
+        if isinstance(sock, ql_socket):
+            abits = ql.arch.bits
+            endian = ql.arch.endian
 
-            data = struct.pack("<h", int(socket.family))
-            data += struct.pack(">H", port)
-            data += ipaddress.ip_address(host).packed
+            host, port = sock.getsockname()
 
-            addrlen = ql.mem.read_ptr(addrlenptr)
+            if sock.family == AF_INET:
+                sockaddr_in = make_sockaddr_in(abits, endian)
 
-            ql.mem.write(addr, data[:addrlen])
+                with sockaddr_in.ref(ql.mem, addr) as obj:
+                    obj.sin_family = AF_INET
+                    obj.sin_port = htons(ql, port)
+                    obj.sin_addr.s_addr = inet_aton(str(host))
+
+            elif sock.family == AF_INET6 and ql.os.ipv6:
+                sockaddr_in6 = make_sockaddr_in6(abits, endian)
+
+                with sockaddr_in6.ref(ql.mem, addr) as obj:
+                    obj.sin6_family = AF_INET6
+                    obj.sin6_port = htons(ql, port)
+                    obj.sin6_addr.s6_addr = inet6_aton(str(host))
+
+            # FIXME: obj data should be written according to the value pointed by addrlenptr
+            #
+            # addrlen = ql.mem.read_ptr(addrlenptr)
+            # ql.mem.write(addr, data[:addrlen])
+
             regreturn = 0
         else:
-            regreturn = -EPERM
+            regreturn = -1
     else:
-        regreturn = -EPERM
+        regreturn = -1
 
-    ql.log.debug("getsockname(%d, 0x%x, 0x%x) = %d" % (sockfd, addr, addrlenptr, regreturn))
+    ql.log.debug("getsockname(%d, %#x, %#x) = %d" % (sockfd, addr, addrlenptr, regreturn))
+
     return regreturn
 
 
 def ql_syscall_getpeername(ql: Qiling, sockfd: int, addr: int, addrlenptr: int):
     if 0 <= sockfd < NR_OPEN:
-        socket = ql.os.fd[sockfd]
+        sock: Optional[ql_socket] = ql.os.fd[sockfd]
 
-        if isinstance(socket, ql_socket):
-            host, port = socket.getpeername()
+        if isinstance(sock, ql_socket):
+            abits = ql.arch.bits
+            endian = ql.arch.endian
 
-            data = struct.pack("<h", int(socket.family))
-            data += struct.pack(">H", port)
-            data += ipaddress.ip_address(host).packed
+            host, port = sock.getpeername()
 
-            addrlen = ql.mem.read_ptr(addrlenptr)
+            if sock.family == AF_INET:
+                sockaddr_in = make_sockaddr_in(abits, endian)
 
-            ql.mem.write(addr, data[:addrlen])
+                with sockaddr_in.ref(ql.mem, addr) as obj:
+                    obj.sin_family = int(sock.family)
+                    obj.sin_port = htons(ql, port)
+                    obj.sin_addr.s_addr = inet_aton(str(host))
+
+            elif sock.family == AF_INET6 and ql.os.ipv6:
+                sockaddr_in6 = make_sockaddr_in6(abits, endian)
+
+                with sockaddr_in6.ref(ql.mem, addr) as obj:
+                    obj.sin6_family = int(sock.family)
+                    obj.sin6_port = htons(ql, port)
+                    obj.sin6_addr.s6_addr = inet6_aton(str(host))
+
+            # FIXME: obj data should be written according to the value pointed by addrlenptr
+            #
+            # addrlen = ql.mem.read_ptr(addrlenptr)
+            # ql.mem.write(addr, data[:addrlen])
+
             regreturn = 0
         else:
-            regreturn = -EPERM
+            regreturn = -1
     else:
-        regreturn = -EPERM
+        regreturn = -1
 
-    ql.log.debug("getpeername(%d, 0x%x, 0x%x) = %d" % (sockfd, addr, addrlenptr, regreturn))
+    ql.log.debug("getpeername(%d, %#x, %#x) = %d" % (sockfd, addr, addrlenptr, regreturn))
+
     return regreturn
 
 
@@ -408,65 +496,82 @@ def ql_syscall_listen(ql: Qiling, sockfd: int, backlog: int):
     if sockfd not in range(NR_OPEN):
         return -1
 
-    sock = ql.os.fd[sockfd]
+    sock: Optional[ql_socket] = ql.os.fd[sockfd]
 
     if sock is None:
         return -1
 
     try:
         sock.listen(backlog)
-    except:
-        if ql.verbose >= QL_VERBOSE.DEBUG:
-            raise
-
+    except ConnectionError:
         return -1
 
     return 0
 
 
-def ql_syscall_accept(ql: Qiling, accept_sockfd, accept_addr, accept_addrlen):
-    def inet_addr(ip):
-        ret = b''
-        tmp = ip.split('.')
-        if len(tmp) != 4:
-            return ret
-        for i in tmp[ : : -1]:
-            ret += bytes([int(i)])
-        return ret
+def ql_syscall_accept(ql: Qiling, sockfd: int, addr: int, addrlen: int):
+    if sockfd not in range(NR_OPEN):
+        return -1
+
+    sock: Optional[ql_socket] = ql.os.fd[sockfd]
+
+    if sock is None:
+        return -1
+
     try:
-        conn, address = ql.os.fd[accept_sockfd].accept()
+        conn, address = sock.accept()
+    except ConnectionError:
+        return -1
 
-        if conn is None:
-            return -1
+    if (conn is None) or (address is None):
+        return -1
 
-        idx = next((i for i in range(NR_OPEN) if ql.os.fd[i] is None), -1)
+    idx = next((i for i in range(NR_OPEN) if ql.os.fd[i] is None), -1)
 
-        if idx == -1:
-            regreturn = -1
+    if idx == -1:
+        return -1
+
+    ql.os.fd[idx] = conn
+
+    if addr and addrlen:
+        abits = ql.arch.bits
+        endian = ql.arch.endian
+
+        if conn.family == AF_INET:
+            sockaddr_in = make_sockaddr_in(abits, endian)
+            host, port = address
+
+            with sockaddr_in.ref(ql.mem, addr) as obj:
+                obj.sin_family = AF_INET
+                obj.sin_port = htons(ql, port)
+                obj.sin_addr.s_addr = inet_aton(str(host))
+
+            objlen = sockaddr_in.sizeof()
+
+        elif conn.family == AF_INET6 and ql.os.ipv6:
+            sockaddr_in6 = make_sockaddr_in6(abits, endian)
+            host, port = address
+
+            with sockaddr_in6.ref(ql.mem, addr) as obj:
+                obj.sin6_family = AF_INET6
+                obj.sin6_port = htons(ql, port)
+                obj.sin6_addr.s6_addr = inet6_aton(str(host))
+
+            objlen = sockaddr_in6.sizeof()
+
         else:
-            ql.os.fd[idx] = conn
-            regreturn = idx
+            objlen = 0
 
-        if ql.code == None and accept_addr !=0 and accept_addrlen != 0:
-            tmp_buf = ql.pack16(conn.family)
-            tmp_buf += ql.pack16(address[1])
-            tmp_buf += inet_addr(address[0])
-            tmp_buf += b'\x00' * 8
-            ql.mem.write(accept_addr, tmp_buf)
-            ql.mem.write_ptr(accept_addrlen, 16, 4)
-    except:
-        if ql.verbose >= QL_VERBOSE.DEBUG:
-            raise
-        regreturn = -1
+        ql.mem.write_ptr(addrlen, objlen, 4)
 
-    return regreturn
+    return idx
 
 
 def ql_syscall_recv(ql: Qiling, sockfd: int, buf: int, length: int, flags: int):
     if sockfd not in range(NR_OPEN):
         return -1
 
-    sock = ql.os.fd[sockfd]
+    sock: Optional[ql_socket] = ql.os.fd[sockfd]
 
     if sock is None:
         return -1
@@ -486,74 +591,79 @@ def ql_syscall_send(ql: Qiling, sockfd: int, buf: int, length: int, flags: int):
     if sockfd not in range(NR_OPEN):
         return -1
 
-    sock = ql.os.fd[sockfd]
+    sock: Optional[ql_socket] = ql.os.fd[sockfd]
 
     if sock is None:
         return -1
 
-    try:
-        content = bytes(ql.mem.read(buf, length))
-        regreturn = sock.send(content, flags)
-    except:
-        regreturn = 0
-        ql.log.info(sys.exc_info()[0])
+    content = ql.mem.read(buf, length)
 
-        if ql.verbose >= QL_VERBOSE.DEBUG:
-            raise
+    try:
+        regreturn = sock.send(content, flags)
+    except IOError:
+        regreturn = 0
 
     return regreturn
 
 
 def ql_syscall_recvmsg(ql: Qiling, sockfd: int, msg_addr: int, flags: int):
-    regreturn = 0
-    if sockfd not in range(NR_OPEN) and ql.os.fd[sockfd] is not None:
-        msg = msghdr.load(ql, msg_addr)
+    if sockfd not in range(NR_OPEN):
+        return -1
 
-        try:
-            data, ancdata, mflags, addr = ql.os.fd[sockfd].recvmsg(msg.msg_namelen, msg.msg_controllen, flags)
+    sock: Optional[ql_socket] = ql.os.fd[sockfd]
 
-            # TODO: handle the addr
+    if sock is None:
+        return -1
 
-            iovec_addr  = msg.msg_iov
-            has_written = 0
-            for i in range(msg.msg_iovlen):
-                vec = iovec.load(ql, iovec_addr)
-                size = min(vec.iov_len, len(data) - has_written)
-                ql.mem.write(
-                    vec.iov_base,
-                    data[has_written: has_written + size]
-                )
-                iovec_addr += ctypes.sizeof(iovec)
+    abits = ql.arch.bits
+    endian = ql.arch.endian
 
-            cmsg_addr = msg.msg_control
-            for cmsg_level, cmsg_type, cmsg_data in ancdata:
-                cmsg = cmsghdr.load(ql, cmsg_addr)
-                cmsg.cmsg_len = len(cmsg_data)
-                cmsg.cmsg_level = cmsg_level
-                cmsg.cmsg_type = cmsg_type
-                cmsg_data_addr = cmsg_addr + ctypes.sizeof(cmsghdr)
+    msghdr = make_msghdr(abits, endian)
+    msg = msghdr.load_from(ql.mem, msg_addr)
 
-                ql.mem.write(cmsg_data_addr, cmsg_data)
-                ql.mem.write(cmsg_addr, bytes(cmsg))
+    try:
+        # TODO: handle the addr
+        data, ancdata, mflags, addr = sock.recvmsg(msg.msg_namelen, msg.msg_controllen, flags)
+    except ConnectionError:
+        return -1
 
-                cmsg_addr += cmsg.cmsg_len
+    iovec = make_iovec(abits, endian)
+    iovec_addr = msg.msg_iov
+    written = 0
 
-            msg.msg_flags = mflags
-            ql.mem.write(msg_addr, bytes(msg))
+    for _ in range(msg.msg_iovlen):
+        with iovec.ref(ql.mem, iovec_addr) as obj:
+            size = min(obj.iov_len, len(data) - written)
+            ql.mem.write(obj.iov_base, data[written:written + size])
 
-            regreturn = len(data)
-        except OSError as e:
-            regreturn = -e.errno
-    else:
-        regreturn = -EBADF
+        written += size
+        iovec_addr += iovec.sizeof()
 
-    return regreturn
+    cmsghdr = make_cmsghdr(abits, endian)
+    cmsg_addr = msg.msg_control
+
+    for cmsg_level, cmsg_type, cmsg_data in ancdata:
+        with cmsghdr.ref(ql.mem, cmsg_addr) as obj:
+            obj.cmsg_len = len(cmsg_data)
+            obj.cmsg_level = cmsg_level
+            obj.cmsg_type = cmsg_type
+
+        cmsg_addr += cmsghdr.sizeof()
+
+        ql.mem.write(cmsg_addr, cmsg_data)
+        cmsg_addr += len(cmsg_data)
+
+    msg.msg_flags = mflags
+    msg.save_to(ql.mem, msg_addr)
+
+    return len(data)
+
 
 def ql_syscall_recvfrom(ql: Qiling, sockfd: int, buf: int, length: int, flags: int, addr: int, addrlen: int):
     if sockfd not in range(NR_OPEN):
         return -1
 
-    sock = ql.os.fd[sockfd]
+    sock: Optional[ql_socket] = ql.os.fd[sockfd]
 
     if sock is None:
         return -1
@@ -564,39 +674,73 @@ def ql_syscall_recvfrom(ql: Qiling, sockfd: int, buf: int, length: int, flags: i
     if sock.socktype == SOCK_STREAM:
         return ql_syscall_recv(ql, sockfd, buf, length, flags)
 
-    tmp_buf, tmp_addr = sock.recvfrom(length, flags)
+    data_buf, address = sock.recvfrom(length, flags)
 
-    if tmp_buf:
+    if data_buf:
         ql.log.debug("recvfrom() CONTENT:")
-        ql.log.debug("%s" % tmp_buf)
+        ql.log.debug("%s" % data_buf)
 
     sin_family = int(sock.family)
-    sockaddr_out = struct.pack("<h", sin_family)
 
-    if sin_family == 1:
-        # Abstract Unix socket path is not filled in recvfrom
-        ql.log.debug(f"recvfrom() path is '{tmp_addr or 'UNIX ABSTRACT NAMESPACE'}'")
-        if tmp_addr:
-            sockaddr_out += tmp_addr.encode()
+    abits = ql.arch.bits
+    endian = ql.arch.endian
+
+    if sin_family == AF_UNIX:
+        sockaddr_un = make_sockaddr_un(abits, endian, len(address) + 1)
+
+        ql.log.debug(f'Recieve from {address or "UNIX ABSTRACT NAMESPACE"}')
+
+        with sockaddr_un.ref(ql.mem, addr) as obj:
+            obj.sun_family = AF_UNIX
+
+            # abstract Unix socket path is not filled in recvfrom
+            if address:
+                obj.sun_path = address.encode() + b'\x00'
+
+        objlen = sockaddr_un.sizeof()
+
+    elif sin_family == AF_INET:
+        sockaddr_in = make_sockaddr_in(abits, endian)
+        host, port = address
+
+        ql.log.debug(f'Recieve from {host}:{port}')
+
+        with sockaddr_in.ref(ql.mem, addr) as obj:
+            obj.sin_family = AF_INET
+            obj.sin_port = htons(ql, port)
+            obj.sin_addr.s_addr = inet_aton(str(host))
+
+        objlen = sockaddr_in.sizeof()
+
+    elif sin_family == AF_INET6 and ql.os.ipv6:
+        sockaddr_in6 = make_sockaddr_in6(abits, endian)
+        host, port = address
+
+        with sockaddr_in6.ref(ql.mem, addr) as obj:
+            obj.sin6_family = AF_INET6
+            obj.sin6_port = htons(ql, port)
+            obj.sin6_addr.s6_addr = inet6_aton(str(host))
+
+        objlen = sockaddr_in6.sizeof()
+
     else:
-        ql.log.debug("recvfrom() addr is %s:%d" % (tmp_addr[0], tmp_addr[1]))
-        sockaddr_out += struct.pack(">H", tmp_addr[1])
-        sockaddr_out += ipaddress.ip_address(tmp_addr[0]).packed
-        addrlen = ql.mem.read_ptr(addrlen)
-        sockaddr_out = sockaddr_out[:addrlen]
+        objlen = 0
 
-    if addr:
-        ql.mem.write(addr, sockaddr_out)
-    ql.mem.write(buf, tmp_buf)
+    # FIXME: only write up to sockaddr_out bytes of obj content?
+    #
+    # addrlen = ql.mem.read_ptr(addrlen)
+    # sockaddr_out = sockaddr_out[:addrlen]
 
-    return len(tmp_buf)
+    ql.mem.write(buf, data_buf)
+
+    return len(data_buf)
 
 
-def ql_syscall_sendto(ql: Qiling, sockfd: int, sendto_buf, sendto_len, sendto_flags, sendto_addr, sendto_addrlen):
+def ql_syscall_sendto(ql: Qiling, sockfd: int, buf: int, length: int, flags: int, addr: int, addrlen: int):
     if sockfd not in range(NR_OPEN):
         return -1
 
-    sock = ql.os.fd[sockfd]
+    sock: Optional[ql_socket] = ql.os.fd[sockfd]
 
     if sock is None:
         return -1
@@ -605,42 +749,57 @@ def ql_syscall_sendto(ql: Qiling, sockfd: int, sendto_buf, sendto_len, sendto_fl
 
     # For x8664, sendto() is called finally when calling send() in TCP communications
     if sock.socktype == SOCK_STREAM:
-        return ql_syscall_send(ql, sockfd, sendto_buf, sendto_len, sendto_flags)
+        return ql_syscall_send(ql, sockfd, buf, length, flags)
 
+    tmp_buf = ql.mem.read(buf, length)
+
+    ql.log.debug("sendto() CONTENT:")
+    ql.log.debug("%s" % tmp_buf)
+
+    data = ql.mem.read(addr, addrlen)
+    print(f"data = {data.hex(' ')}")
+
+    abits = ql.arch.bits
+    endian = ql.arch.endian
+
+    sockaddr = make_sockaddr(abits, endian)
+    sockaddr_obj = sockaddr.from_buffer(data)
+
+    sa_family = sockaddr_obj.sa_family
+
+    dest = None
     regreturn = 0
 
-    try:
-        ql.log.debug("debug sendto() start")
-        tmp_buf = ql.mem.read(sendto_buf, sendto_len)
+    if sa_family == AF_UNIX:
+        hpath, vpath = ql_unix_socket_path(ql, data[2:])
 
-        if ql.arch.type== QL_ARCH.X8664:
-            data = ql.mem.read(sendto_addr, 8)
-        else:
-            data = ql.mem.read(sendto_addr, sendto_addrlen)
+        ql.log.debug(f'Sending {len(tmp_buf):d} bytes to {vpath}')
+        dest = hpath
 
-        sin_family, = struct.unpack("<h", data[:2])
-        port, host = struct.unpack(">HI", data[2:8])
-        host = ql_bin_to_ip(host)
+    elif sa_family == AF_INET:
+        sockaddr = make_sockaddr_in(abits, endian)
+        sockaddr_obj = sockaddr.from_buffer(data)
 
-        ql.log.debug("fd is " + str(sockfd))
-        ql.log.debug("sendto() CONTENT:")
-        ql.log.debug("%s" % tmp_buf)
-        ql.log.debug("sendto() flag is " + str(sendto_flags))
-        ql.log.debug("sendto() len is " + str(sendto_len))
+        port = ntohs(ql, sockaddr_obj.sin_port)
+        host = inet_ntoa(sockaddr_obj.sin_addr.s_addr)
 
-        if sin_family == 1:
-            hpath, vpath = ql_unix_socket_path(ql, data[2:])
+        ql.log.debug(f'Sending {len(tmp_buf):d} bytes to {host}:{port}')
+        dest = (host, port)
 
-            ql.log.debug("sendto() path is " + str(vpath))
-            regreturn = sock.sendto(bytes(tmp_buf), sendto_flags, hpath)
-        else:
-            ql.log.debug("sendto() addr is %s:%d" % (host, port))
-            regreturn = sock.sendto(bytes(tmp_buf), sendto_flags, (host, port))
-        ql.log.debug("debug sendto end")
-    except:
-        ql.log.debug(sys.exc_info()[0])
+    elif sa_family == AF_INET6 and ql.os.ipv6:
+        sockaddr_in6 = make_sockaddr_in(abits, endian)
+        sockaddr_obj = sockaddr_in6.from_buffer(data)
 
-        if ql.verbose >= QL_VERBOSE.DEBUG:
-            raise
+        port = ntohs(ql, sockaddr_obj.sin_port)
+        host = inet6_ntoa(sockaddr_obj.sin6_addr.s6_addr)
+
+        ql.log.debug(f'Sending to {host}:{port}')
+        dest = (host, port)
+
+    if dest is not None:
+        try:
+            regreturn = sock.sendto(tmp_buf, flags, dest)
+        except (ConnectionError, FileNotFoundError):
+            regreturn = 0
 
     return regreturn
