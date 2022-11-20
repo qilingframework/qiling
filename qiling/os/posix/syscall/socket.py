@@ -136,7 +136,6 @@ def ql_syscall_connect(ql: Qiling, sockfd: int, addr: int, addrlen: int):
         return -1
 
     data = ql.mem.read(addr, addrlen)
-    print(f"data = {data.hex(' ')}")
 
     abits = ql.arch.bits
     endian = ql.arch.endian
@@ -346,7 +345,6 @@ def ql_syscall_bind(ql: Qiling, sockfd: int, addr: int, addrlen: int):
         return -1
 
     data = ql.mem.read(addr, addrlen)
-    print(f"data = {data.hex(' ')}")
 
     abits = ql.arch.bits
     endian = ql.arch.endian
@@ -757,7 +755,6 @@ def ql_syscall_sendto(ql: Qiling, sockfd: int, buf: int, length: int, flags: int
     ql.log.debug("%s" % tmp_buf)
 
     data = ql.mem.read(addr, addrlen)
-    print(f"data = {data.hex(' ')}")
 
     abits = ql.arch.bits
     endian = ql.arch.endian
