@@ -1,17 +1,31 @@
 from __future__ import annotations
 
 import ctypes
+import functools
+import sys
 
 from contextlib import contextmanager
-from functools import lru_cache
 from typing import TYPE_CHECKING, Any, Iterator, Type, TypeVar, Optional
+
+from qiling.const import QL_ENDIAN
 
 if TYPE_CHECKING:
     from qiling.os.memory import QlMemoryManager
 
 
-class BaseStruct(ctypes.LittleEndianStructure):
+# the cache decorator is needed here not only for performance purposes, but also to make sure
+# the *same* class type is returned every time rather than creating another one with the same
+# name and properties.
+#
+# TODO: work around the missing functools.cache decorator on Python versions earlier than 3.9
+cache = functools.cache if sys.version_info >= (3, 9) else functools.lru_cache(maxsize=2)
+
+
+class BaseStruct(ctypes.Structure):
     """An abstract class for C structures.
+
+    Refrain from subclassing it directly as it does not take the emulated architecture
+    properties into account. Subclass `BaseStructEL` or `BaseStructEB` instead.
     """
 
     T = TypeVar('T', bound='BaseStruct')
@@ -199,23 +213,41 @@ class BaseStruct(ctypes.LittleEndianStructure):
         return next((fname for fname, *_ in cls._fields_ if cls.offsetof(fname) == offset), None)
 
 
-# TODO: replace the lru_cache decorator with functools.cache when moving to Python 3.9
-@lru_cache(maxsize=2)
-def get_aligned_struct(archbits: int) -> Type[BaseStruct]:
-    """Provide an aligned version of BaseStruct based on the underlying
+class BaseStructEL(BaseStruct, ctypes.LittleEndianStructure):
+    """Little Endian structure base class.
+    """
+    pass
+
+
+class BaseStructEB(BaseStruct, ctypes.BigEndianStructure):
+    """Big Endian structure base class.
+    """
+    pass
+
+
+@cache
+def get_aligned_struct(archbits: int, endian: QL_ENDIAN = QL_ENDIAN.EL) -> Type[BaseStruct]:
+    """Provide an aligned version of BaseStruct based on the emulated
     architecture properties.
 
     Args:
         archbits: required alignment in bits
     """
 
-    class AlignedStruct(BaseStruct):
+    Struct = {
+        QL_ENDIAN.EL: BaseStructEL,
+        QL_ENDIAN.EB: BaseStructEB
+    }[endian]
+
+    class AlignedStruct(Struct):
         _pack_ = archbits // 8
 
     return AlignedStruct
 
+
+@cache
 def get_aligned_union(archbits: int):
-    """Provide an aligned union class based on the underlying architecture
+    """Provide an aligned union class based on the emulated architecture
     properties. This class does not inherit the special BaseStruct methods.
 
     FIXME: ctypes.Union endianess cannot be set arbitrarily, rather it depends
