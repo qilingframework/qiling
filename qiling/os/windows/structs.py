@@ -188,6 +188,7 @@ class LARGE_INTEGER(ctypes.Union):
         ('QuadPart', ctypes.c_int64)
     )
 
+
 # see:
 # https://www.geoffchappell.com/studies/windows/km/ntoskrnl/structs/kuser_shared_data/index.htm
 # https://doxygen.reactos.org/d7/deb/xdk_2ketypes_8h_source.html#l01155
@@ -997,12 +998,14 @@ class FILETIME(struct.BaseStructEL):
         ('dwHighDateTime', ctypes.c_int32)
     )
 
+
 # https://docs.microsoft.com/en-us/windows/console/coord-str
 class COORD(struct.BaseStructEL):
     _fields_ = (
         ('X', ctypes.c_uint16),
         ('Y', ctypes.c_uint16)
     )
+
 
 # https://docs.microsoft.com/en-us/windows/console/small-rect-str
 class SMALL_RECT(struct.BaseStructEL):
@@ -1013,6 +1016,7 @@ class SMALL_RECT(struct.BaseStructEL):
         ('Bottom', ctypes.c_uint16)
     )
 
+
 # https://docs.microsoft.com/en-us/windows/console/console-screen-buffer-info-str
 class CONSOLE_SCREEN_BUFFER_INFO(struct.BaseStructEL):
     _fields_ = (
@@ -1022,6 +1026,7 @@ class CONSOLE_SCREEN_BUFFER_INFO(struct.BaseStructEL):
         ('srWindow',            SMALL_RECT),
         ('dwMaximumWindowSize', COORD)
     )
+
 
 # https://docs.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntqueryinformationprocess
 def make_process_basic_info(archbits: int):
@@ -1039,6 +1044,7 @@ def make_process_basic_info(archbits: int):
         )
 
     return PROCESS_BASIC_INFORMATION
+
 
 # https://docs.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-osversioninfoa
 def make_os_version_info(archbits: int, *, wide: bool):
@@ -1237,7 +1243,7 @@ class Mutex:
 #     _fields_ = (
 #         ('OriginalFirstThunk', ctypes.c_uint32),
 #         ('TimeDateStamp', ctypes.c_uint32),
-#         ('ForwarderChain', ctypes.c_uint32), 
+#         ('ForwarderChain', ctypes.c_uint32),
 #         ('Name', ctypes.c_uint32),
 #         ('FirstThunk', ctypes.c_uint32)
 #     )
@@ -1330,13 +1336,14 @@ def make_sockaddr_in():
 
     return sockaddr_in
 
+
 # https://docs.microsoft.com/en-us/windows/win32/winsock/sockaddr-2
 def make_sockaddr_in6():
 
     # https://docs.microsoft.com/en-us/windows/win32/api/in6addr/ns-in6addr-in6_addr
     class in6_addr(ctypes.BigEndianStructure):
         _fields_ = (
-            ('Byte', ctypes.c_uint8 * 16)
+            ('Byte', ctypes.c_uint8 * 16),
         )
 
     class sockaddr_in6(ctypes.BigEndianStructure):

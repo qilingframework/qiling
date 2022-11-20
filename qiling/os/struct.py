@@ -5,7 +5,7 @@ import functools
 import sys
 
 from contextlib import contextmanager
-from typing import TYPE_CHECKING, Any, Iterator, Type, TypeVar, Optional
+from typing import TYPE_CHECKING, Any, Type, Optional
 
 from qiling.const import QL_ENDIAN
 
@@ -28,8 +28,6 @@ class BaseStruct(ctypes.Structure):
     properties into account. Subclass `BaseStructEL` or `BaseStructEB` instead.
     """
 
-    T = TypeVar('T', bound='BaseStruct')
-
     def save_to(self, mem: QlMemoryManager, address: int) -> None:
         """Store structure contents to a specified memory address.
 
@@ -43,7 +41,7 @@ class BaseStruct(ctypes.Structure):
         mem.write(address, data)
 
     @classmethod
-    def load_from(cls: Type[T], mem: QlMemoryManager, address: int) -> T:
+    def load_from(cls, mem: QlMemoryManager, address: int):
         """Construct and populate a structure from saved contents.
 
         Args:
@@ -58,7 +56,7 @@ class BaseStruct(ctypes.Structure):
         return cls.from_buffer(data)
 
     @classmethod
-    def volatile_ref(cls: Type[T], mem: QlMemoryManager, address: int) -> T:
+    def volatile_ref(cls, mem: QlMemoryManager, address: int):
         """Refer to a memory location as a volatile structure variable.
 
         Args:
@@ -77,7 +75,7 @@ class BaseStruct(ctypes.Structure):
             ... if p.x > 10:    # x value is read directly from memory
             ...     p.x = 10    # x value is written directly to memory
             ... # y value in memory remains unchanged
-            >>> 
+            >>>
         """
 
         # map all structure field names to their types
@@ -134,12 +132,11 @@ class BaseStruct(ctypes.Structure):
                 # set attribute value
                 super().__setattr__(name, value)
 
-
         return VolatileStructRef()
 
     @classmethod
     @contextmanager
-    def ref(cls: Type[T], mem: QlMemoryManager, address: int) -> Iterator[T]:
+    def ref(cls, mem: QlMemoryManager, address: int):
         """A structure context manager to facilitate updating structure contents.
 
         On context enter, a structure is created and populated from the specified memory
@@ -263,14 +260,15 @@ def get_aligned_union(archbits: int):
 
     return AlignedUnion
 
+
 def get_native_type(archbits: int) -> Type[ctypes._SimpleCData]:
     """Select a ctypes integer type whose size matches the emulated
     architecture native size.
     """
 
     __type = {
-        32 : ctypes.c_uint32,
-        64 : ctypes.c_uint64
+        32: ctypes.c_uint32,
+        64: ctypes.c_uint64
     }
 
     return __type[archbits]
