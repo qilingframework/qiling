@@ -167,7 +167,7 @@ def make_driver_object(archbits: int):
     return DRIVER_OBJECT
 
 
-class KSYSTEM_TIME(struct.BaseStruct):
+class KSYSTEM_TIME(struct.BaseStructEL):
     _fields_ = (
         ('LowPart',   ctypes.c_uint32),
         ('High1Time', ctypes.c_int32),
@@ -175,7 +175,7 @@ class KSYSTEM_TIME(struct.BaseStruct):
     )
 
 
-class _LARGE_INTEGER(struct.BaseStruct):
+class _LARGE_INTEGER(struct.BaseStructEL):
     _fields_ = (
         ('LowPart',  ctypes.c_uint32),
         ('HighPart', ctypes.c_int32)
@@ -192,7 +192,7 @@ class LARGE_INTEGER(ctypes.Union):
 # https://www.geoffchappell.com/studies/windows/km/ntoskrnl/structs/kuser_shared_data/index.htm
 # https://doxygen.reactos.org/d7/deb/xdk_2ketypes_8h_source.html#l01155
 
-class KUSER_SHARED_DATA(struct.BaseStruct):
+class KUSER_SHARED_DATA(struct.BaseStructEL):
     _fields_ = (
         ('TickCountLowDeprecated',      ctypes.c_uint32),
         ('TickCountMultiplier',         ctypes.c_uint32),
@@ -991,21 +991,21 @@ def make_ldr_data_table_entry(archbits: int):
     return LdrDataTableEntry
 
 
-class FILETIME(struct.BaseStruct):
+class FILETIME(struct.BaseStructEL):
     _fields_ = (
         ('dwLowDateTime',  ctypes.c_uint32),
         ('dwHighDateTime', ctypes.c_int32)
     )
 
 # https://docs.microsoft.com/en-us/windows/console/coord-str
-class COORD(struct.BaseStruct):
+class COORD(struct.BaseStructEL):
     _fields_ = (
         ('X', ctypes.c_uint16),
         ('Y', ctypes.c_uint16)
     )
 
 # https://docs.microsoft.com/en-us/windows/console/small-rect-str
-class SMALL_RECT(struct.BaseStruct):
+class SMALL_RECT(struct.BaseStructEL):
     _fields_ = (
         ('Left',   ctypes.c_uint16),
         ('Top',    ctypes.c_uint16),
@@ -1014,7 +1014,7 @@ class SMALL_RECT(struct.BaseStruct):
     )
 
 # https://docs.microsoft.com/en-us/windows/console/console-screen-buffer-info-str
-class CONSOLE_SCREEN_BUFFER_INFO(struct.BaseStruct):
+class CONSOLE_SCREEN_BUFFER_INFO(struct.BaseStructEL):
     _fields_ = (
         ('dwSize',              COORD),
         ('dwCursorPosition',    COORD),
@@ -1182,7 +1182,7 @@ def make_sid(auth_count: int):
     # byte is actually used.
     #
     # see: https://docs.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-sid_identifier_authority
-    class SID_IDENTIFIER_AUTHORITY(ctypes.BigEndianStructure):
+    class SID_IDENTIFIER_AUTHORITY(struct.BaseStructEB):
         _pack_ = 1
         _fields_ = (
             ('Value', ctypes.c_uint32),
@@ -1192,7 +1192,7 @@ def make_sid(auth_count: int):
     assert ctypes.sizeof(SID_IDENTIFIER_AUTHORITY) == 6
 
     # https://geoffchappell.com/studies/windows/km/ntoskrnl/api/rtl/sertl/sid.htm
-    class SID(struct.BaseStruct):
+    class SID(struct.BaseStructEL):
         _fields_ = (
             ('Revision', ctypes.c_uint8),
             ('SubAuthorityCount', ctypes.c_uint8),
@@ -1205,12 +1205,6 @@ def make_sid(auth_count: int):
 
             ('SubAuthority', ctypes.c_uint32 * auth_count)
         )
-
-        # the need of a big-endian structure forces us to define a non-BaseStruct structure field
-        # which breaks the 'volatile_ref' mechanism. we here prevent the user from doing that
-        @classmethod
-        def volatile_ref(cls, *args):
-            raise NotImplementedError(f'{cls.__name__} is not capable of volatile references')
 
         # let SID structures be comparable
         def __eq__(self, other):
@@ -1263,7 +1257,7 @@ class Mutex:
 #     )
 
 
-class Point(struct.BaseStruct):
+class Point(struct.BaseStructEL):
     _fields_ = (
         ('x', ctypes.c_int32),
         ('y', ctypes.c_int32)
@@ -1400,7 +1394,7 @@ def make_system_info(archbits: int):
     return SYSTEM_INFO
 
 
-class SYSTEMTIME(struct.BaseStruct):
+class SYSTEMTIME(struct.BaseStructEL):
     _fields_ = (
         ('wYear',         ctypes.c_uint16),
         ('wMonth',        ctypes.c_uint16),
