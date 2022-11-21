@@ -407,87 +407,133 @@ def ql_syscall_bind(ql: Qiling, sockfd: int, addr: int, addrlen: int):
 
 
 def ql_syscall_getsockname(ql: Qiling, sockfd: int, addr: int, addrlenptr: int):
-    if 0 <= sockfd < NR_OPEN:
-        sock: Optional[ql_socket] = ql.os.fd[sockfd]
+    if sockfd not in range(NR_OPEN):
+        return -1
 
-        if isinstance(sock, ql_socket):
-            abits = ql.arch.bits
-            endian = ql.arch.endian
+    sock: Optional[ql_socket] = ql.os.fd[sockfd]
 
-            host, port = sock.getsockname()
+    if sock is None:
+        return -1
 
-            if sock.family == AF_INET:
-                sockaddr_in = make_sockaddr_in(abits, endian)
+    addrlen = ql.mem.read_ptr(addrlenptr) if addrlenptr else 0
 
-                with sockaddr_in.ref(ql.mem, addr) as obj:
-                    obj.sin_family = AF_INET
-                    obj.sin_port = htons(ql, port)
-                    obj.sin_addr.s_addr = inet_aton(str(host))
+    abits = ql.arch.bits
+    endian = ql.arch.endian
 
-            elif sock.family == AF_INET6 and ql.os.ipv6:
-                sockaddr_in6 = make_sockaddr_in6(abits, endian)
+    sockname = sock.getsockname()
+    obj = None
 
-                with sockaddr_in6.ref(ql.mem, addr) as obj:
-                    obj.sin6_family = AF_INET6
-                    obj.sin6_port = htons(ql, port)
-                    obj.sin6_addr.s6_addr = inet6_aton(str(host))
+    if sock.family == AF_UNIX:
+        hpath = sockname
+        vpath = ql.os.path.host_to_virtual_path(hpath)
 
-            # FIXME: obj data should be written according to the value pointed by addrlenptr
-            #
-            # addrlen = ql.mem.read_ptr(addrlenptr)
-            # ql.mem.write(addr, data[:addrlen])
+        if addrlen:
+            # addrlen indicates the total obj size allowed to be written.
+            # that already includes the family field (2) and the path null
+            # terminator (1)
+            vpath = vpath[:addrlen - 2 - 1]
 
-            regreturn = 0
-        else:
-            regreturn = -1
-    else:
-        regreturn = -1
+        sockaddr_un = make_sockaddr_un(abits, endian, len(vpath) + 1)
 
-    ql.log.debug("getsockname(%d, %#x, %#x) = %d" % (sockfd, addr, addrlenptr, regreturn))
+        obj = sockaddr_un()
+        obj.sun_family = AF_UNIX
+        obj.sun_path = vpath.encode() + b'\x00'
 
-    return regreturn
+    elif sock.family == AF_INET:
+        sockaddr_in = make_sockaddr_in(abits, endian)
+        host, port = sockname
+
+        obj = sockaddr_in()
+        obj.sin_family = AF_INET
+        obj.sin_port = htons(ql, port)
+        obj.sin_addr.s_addr = inet_aton(str(host))
+
+    elif sock.family == AF_INET6 and ql.os.ipv6:
+        sockaddr_in6 = make_sockaddr_in6(abits, endian)
+        host, port = sockname
+
+        obj = sockaddr_in6()
+        obj.sin6_family = AF_INET6
+        obj.sin6_port = htons(ql, port)
+        obj.sin6_addr.s6_addr = inet6_aton(str(host))
+
+    if obj:
+        objsize = obj.sizeof()
+
+        if objsize <= addrlen:
+            obj.save_to(ql.mem, addr)
+
+        if addrlenptr:
+            ql.mem.write_ptr(addrlenptr, objsize)
+
+    ql.log.debug("getsockname(%d, %#x, %#x) = %d" % (sockfd, addr, addrlenptr, 0))
+
+    return 0
 
 
 def ql_syscall_getpeername(ql: Qiling, sockfd: int, addr: int, addrlenptr: int):
-    if 0 <= sockfd < NR_OPEN:
-        sock: Optional[ql_socket] = ql.os.fd[sockfd]
+    if sockfd not in range(NR_OPEN):
+        return -1
 
-        if isinstance(sock, ql_socket):
-            abits = ql.arch.bits
-            endian = ql.arch.endian
+    sock: Optional[ql_socket] = ql.os.fd[sockfd]
 
-            host, port = sock.getpeername()
+    if sock is None:
+        return -1
 
-            if sock.family == AF_INET:
-                sockaddr_in = make_sockaddr_in(abits, endian)
+    addrlen = ql.mem.read_ptr(addrlenptr) if addrlenptr else 0
 
-                with sockaddr_in.ref(ql.mem, addr) as obj:
-                    obj.sin_family = int(sock.family)
-                    obj.sin_port = htons(ql, port)
-                    obj.sin_addr.s_addr = inet_aton(str(host))
+    abits = ql.arch.bits
+    endian = ql.arch.endian
 
-            elif sock.family == AF_INET6 and ql.os.ipv6:
-                sockaddr_in6 = make_sockaddr_in6(abits, endian)
+    peername = sock.getpeername()
+    obj = None
 
-                with sockaddr_in6.ref(ql.mem, addr) as obj:
-                    obj.sin6_family = int(sock.family)
-                    obj.sin6_port = htons(ql, port)
-                    obj.sin6_addr.s6_addr = inet6_aton(str(host))
+    if sock.family == AF_UNIX:
+        hpath = peername
+        vpath = ql.os.path.host_to_virtual_path(hpath)
 
-            # FIXME: obj data should be written according to the value pointed by addrlenptr
-            #
-            # addrlen = ql.mem.read_ptr(addrlenptr)
-            # ql.mem.write(addr, data[:addrlen])
+        if addrlen:
+            # addrlen indicates the total obj size allowed to be written.
+            # that already includes the family field (2) and the path null
+            # terminator (1)
+            vpath = vpath[:addrlen - 2 - 1]
 
-            regreturn = 0
-        else:
-            regreturn = -1
-    else:
-        regreturn = -1
+        sockaddr_un = make_sockaddr_un(abits, endian, len(vpath) + 1)
 
-    ql.log.debug("getpeername(%d, %#x, %#x) = %d" % (sockfd, addr, addrlenptr, regreturn))
+        obj = sockaddr_un()
+        obj.sun_family = AF_UNIX
+        obj.sun_path = vpath.encode() + b'\x00'
 
-    return regreturn
+    elif sock.family == AF_INET:
+        sockaddr_in = make_sockaddr_in(abits, endian)
+        host, port = peername
+
+        obj = sockaddr_in()
+        obj.sin_family = AF_INET
+        obj.sin_port = htons(ql, port)
+        obj.sin_addr.s_addr = inet_aton(str(host))
+
+    elif sock.family == AF_INET6 and ql.os.ipv6:
+        sockaddr_in6 = make_sockaddr_in6(abits, endian)
+        host, port = peername
+
+        obj = sockaddr_in6()
+        obj.sin6_family = AF_INET6
+        obj.sin6_port = htons(ql, port)
+        obj.sin6_addr.s6_addr = inet6_aton(str(host))
+
+    if obj:
+        objsize = obj.sizeof()
+
+        if objsize <= addrlen:
+            obj.save_to(ql.mem, addr)
+
+        if addrlenptr:
+            ql.mem.write_ptr(addrlenptr, objsize)
+
+    ql.log.debug("getpeername(%d, %#x, %#x) = %d" % (sockfd, addr, addrlenptr, 0))
+
+    return 0
 
 
 def ql_syscall_listen(ql: Qiling, sockfd: int, backlog: int):
@@ -507,7 +553,7 @@ def ql_syscall_listen(ql: Qiling, sockfd: int, backlog: int):
     return 0
 
 
-def ql_syscall_accept(ql: Qiling, sockfd: int, addr: int, addrlen: int):
+def ql_syscall_accept(ql: Qiling, sockfd: int, addr: int, addrlenptr: int):
     if sockfd not in range(NR_OPEN):
         return -1
 
@@ -531,36 +577,56 @@ def ql_syscall_accept(ql: Qiling, sockfd: int, addr: int, addrlen: int):
 
     ql.os.fd[idx] = conn
 
-    if addr and addrlen:
+    if addr:
+        addrlen = ql.mem.read_ptr(addrlenptr) if addrlenptr else 0
+
         abits = ql.arch.bits
         endian = ql.arch.endian
 
-        if conn.family == AF_INET:
+        obj = None
+
+        if conn.family == AF_UNIX:
+            hpath = address
+            vpath = ql.os.path.host_to_virtual_path(hpath)
+
+            if addrlen:
+                # addrlen indicates the total obj size allowed to be written.
+                # that already includes the family field (2) and the path null
+                # terminator (1)
+                vpath = vpath[:addrlen - 2 - 1]
+
+            sockaddr_un = make_sockaddr_un(abits, endian, len(vpath) + 1)
+
+            obj = sockaddr_un()
+            obj.sun_family = AF_UNIX
+            obj.sun_path = vpath.encode() + b'\x00'
+
+        elif conn.family == AF_INET:
             sockaddr_in = make_sockaddr_in(abits, endian)
             host, port = address
 
-            with sockaddr_in.ref(ql.mem, addr) as obj:
-                obj.sin_family = AF_INET
-                obj.sin_port = htons(ql, port)
-                obj.sin_addr.s_addr = inet_aton(str(host))
-
-            objlen = sockaddr_in.sizeof()
+            obj = sockaddr_in()
+            obj.sin_family = AF_INET
+            obj.sin_port = htons(ql, port)
+            obj.sin_addr.s_addr = inet_aton(str(host))
 
         elif conn.family == AF_INET6 and ql.os.ipv6:
             sockaddr_in6 = make_sockaddr_in6(abits, endian)
             host, port = address
 
-            with sockaddr_in6.ref(ql.mem, addr) as obj:
-                obj.sin6_family = AF_INET6
-                obj.sin6_port = htons(ql, port)
-                obj.sin6_addr.s6_addr = inet6_aton(str(host))
+            obj = sockaddr_in6()
+            obj.sin6_family = AF_INET6
+            obj.sin6_port = htons(ql, port)
+            obj.sin6_addr.s6_addr = inet6_aton(str(host))
 
-            objlen = sockaddr_in6.sizeof()
+        if obj:
+            objsize = obj.sizeof()
 
-        else:
-            objlen = 0
+            if objsize <= addrlen:
+                obj.save_to(ql.mem, addr)
 
-        ql.mem.write_ptr(addrlen, objlen, 4)
+            if addrlenptr:
+                ql.mem.write_ptr(addrlenptr, objsize)
 
     return idx
 
