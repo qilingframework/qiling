@@ -10,13 +10,14 @@ from qiling.exception import QlMemoryMappedError
 from qiling.os.filestruct import ql_file
 from qiling.os.posix.const_mapping import *
 
+
 def ql_syscall_munmap(ql: Qiling, addr: int, length: int):
 
     # get all mapped fd with flag MAP_SHARED and we definitely dont want to wipe out share library
-    mapped_fd = [fd for fd in ql.os.fd if fd != 0 and isinstance(fd, ql_file) and fd._is_map_shared and not (fd.name.endswith(".so") or fd.name.endswith(".dylib"))]
+    mapped_fd = [fd for fd in ql.os.fd if isinstance(fd, ql_file) and fd._is_map_shared and not (fd.name.endswith(".so") or fd.name.endswith(".dylib"))]
 
     if mapped_fd:
-        all_mem_info = [_mem_info for _, _, _, _mem_info in ql.mem.map_info if _mem_info not in ("[mapped]", "[stack]", "[hook_mem]")]
+        all_mem_info = [_mem_info for _, _, _, _mem_info, _ in ql.mem.map_info if _mem_info not in ("[mapped]", "[stack]", "[hook_mem]")]
 
         for _fd in mapped_fd:
             if _fd.name in [each.split()[-1] for each in all_mem_info]:
@@ -26,7 +27,7 @@ def ql_syscall_munmap(ql: Qiling, addr: int, length: int):
                 _fd.lseek(_fd._mapped_offset)
                 _fd.write(_buff)
 
-    length = ((length + 0x1000 - 1) // 0x1000) * 0x1000
+    length = ql.mem.align_up(length)
     ql.mem.unmap(addr, length)
 
     return 0
@@ -148,15 +149,12 @@ def syscall_mmap_impl(ql: Qiling, addr: int, mlen: int, prot: int, flags: int, f
 def ql_syscall_old_mmap(ql: Qiling, struct_mmap_args: int):
     # according to the linux kernel this is only for the ia32 compatibility
 
-    def __read_int(address: int) -> int:
-        return ql.unpack32(ql.mem.read(address, 4))
-
-    addr   = __read_int(struct_mmap_args + 0 * 4)
-    length = __read_int(struct_mmap_args + 1 * 4)
-    prot   = __read_int(struct_mmap_args + 2 * 4)
-    flags  = __read_int(struct_mmap_args + 3 * 4)
-    fd     = __read_int(struct_mmap_args + 4 * 4)
-    offset = __read_int(struct_mmap_args + 5 * 4)
+    addr   = ql.mem.read_ptr(struct_mmap_args + 0 * 4, 4)
+    length = ql.mem.read_ptr(struct_mmap_args + 1 * 4, 4)
+    prot   = ql.mem.read_ptr(struct_mmap_args + 2 * 4, 4)
+    flags  = ql.mem.read_ptr(struct_mmap_args + 3 * 4, 4)
+    fd     = ql.mem.read_ptr(struct_mmap_args + 4 * 4, 4)
+    offset = ql.mem.read_ptr(struct_mmap_args + 5 * 4, 4)
 
     return syscall_mmap_impl(ql, addr, length, prot, flags, fd, offset, 0)
 
@@ -167,6 +165,7 @@ def ql_syscall_mmap(ql: Qiling, addr: int, length: int, prot: int, flags: int, f
 
 def ql_syscall_mmap2(ql: Qiling, addr: int, length: int, prot: int, flags: int, fd: int, pgoffset: int):
     return syscall_mmap_impl(ql, addr, length, prot, flags, fd, pgoffset, 2)
+
 
 def ql_syscall_shmget(ql: Qiling, key: int, size: int, shmflg: int):
     if shmflg & IPC_CREAT:
@@ -180,6 +179,7 @@ def ql_syscall_shmget(ql: Qiling, key: int, size: int, shmflg: int):
     else:
         if key not in ql.os._shms:
             return ENOENT
+
 
 def ql_syscall_shmat(ql: Qiling, shmid: int, shmaddr: int, shmflg: int):
     # shmid == key
