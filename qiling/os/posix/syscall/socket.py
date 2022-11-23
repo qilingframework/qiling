@@ -288,7 +288,7 @@ def ql_syscall_setsockopt(ql: Qiling, sockfd: int, level: int, optname: int, opt
             # emu_opt_name is based on level
             if vsock_level_name == 'IPPROTO_IP':
                 vsock_opt_name = socket_ip_option_mapping(vsock_opt, ql.arch.type, ql.os.type)
-            elif vsock_level_name == "IPPROTO_TCP":
+            elif vsock_level_name == 'IPPROTO_TCP':
                 vsock_opt_name = socket_tcp_option_mapping(vsock_opt, ql.arch.type, ql.os.type)
             else:
                 vsock_opt_name = socket_option_mapping(vsock_opt, ql.arch.type)
