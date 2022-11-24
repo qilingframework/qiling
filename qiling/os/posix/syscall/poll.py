@@ -4,34 +4,48 @@
 #
 
 from qiling import Qiling
+from qiling.const import QL_OS, QL_ENDIAN
+from qiling.os import struct
 import select
+import ctypes
+
 
 def ql_syscall_poll(ql: Qiling, fds: int, nfds: int, timeout: int):
-    fn_map = {}
-    try:
-        p = select.poll()
-        for i in range(nfds):
-            fd = ql.mem.read_ptr(fds + i*8, 4)
-            event = ql.mem.read_ptr(fds + i*8 + 4, 2)
-            # clear revent field
-            ql.mem.write_ptr(fds + i*8 + 6, 0, 2)
+    base = struct.BaseStructEL if ql.arch.endian == QL_ENDIAN.EL else struct.BaseStructEB
 
-            ql.log.debug(f"register poll fd {fd}, event {event}")
+    class Pollfd(base):
+        _fields_ = (
+            ('fd', ctypes.c_int32),
+            ('events', ctypes.c_int16),
+            ('revents', ctypes.c_int16)
+        )
 
-            fileno = ql.os.fd[fd].fileno()
-            fn_map[fileno] = {'idx': i, 'fd': fd}
-            p.register(fileno, event)
+    if ql.host.os == QL_OS.LINUX:
+        fn_map = {}
+        try:
+            p = select.poll()
+            for i in range(nfds):
+                with Pollfd.ref(ql.mem, fds + ctypes.sizeof(Pollfd) * i) as pollfd:
+                    # clear revents field
+                    pollfd.revents = 0
 
-        res_list = p.poll(timeout)
-        regreturn = len(res_list)
+                    ql.log.debug(f"register poll fd {pollfd.fd}, event {pollfd.events}")
+                    fileno = ql.os.fd[pollfd.fd].fileno()
+                    fn_map[fileno] = i
+                    p.register(fileno, pollfd.events)
 
-        for fd, revent in res_list:
-            ql.log.debug(f"receive event on fd {fn_map[fd]['fd']}, revent {revent}")
-            idx = fn_map[fd]['idx']
-            ql.mem.write_ptr(fds + idx*8 +6, revent, 2)
-        
-    except Exception as e:
-        ql.log.error(f'{e} {fds=}, {nfds=}, {timeout=}')
-        regreturn = -1
-            
-    return regreturn
+            res_list = p.poll(timeout)
+            regreturn = len(res_list)
+
+            for fn, revent in res_list:
+                with Pollfd.ref(ql.mem, fds + ctypes.sizeof(Pollfd) * fn_map[fn]) as pollfd:
+                    ql.log.debug(f"receive event on fd {pollfd.fd}, revent {revent}")
+                    pollfd.revents = revent
+        except Exception as e:
+            ql.log.error(f'{e} {fds=}, {nfds=}, {timeout=}')
+            regreturn = -1
+                
+        return regreturn
+    else:
+        ql.log.warning(f'syscall poll not implemented')
+        return 0
