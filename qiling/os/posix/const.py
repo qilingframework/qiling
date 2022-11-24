@@ -377,6 +377,7 @@ linux_mips_socket_options = {
     "SO_REUSEADDR"              : 0x0004,
     "SO_KEEPALIVE"              : 0x0008,
     "SO_DONTROUTE"              : 0x0010,
+    "SO_BINDTODEVICE"           : 0x0019,
     "SO_BROADCAST"              : 0x0020,
     "SO_LINGER"                 : 0x0080,
     "SO_OOBINLINE"              : 0x0100,

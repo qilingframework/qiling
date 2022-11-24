@@ -135,7 +135,7 @@ def ql_syscall_socketpair(ql: Qiling, socket_domain, socket_type, socket_protoco
 
         # ql_socket.open should use host platform based socket_type.
         try:
-            emu_socket_type = socket_type_mapping(socket_type, ql.arch.type, ql.os.type)
+            emu_socket_type = socket_type_mapping(socket_type, ql.arch.type)
         except KeyError:
             ql.log.error(f'Cannot convert emu_socket_type {emu_socket_value} to host platform based socket_type')
             raise
@@ -165,7 +165,7 @@ def ql_syscall_socketpair(ql: Qiling, socket_domain, socket_type, socket_protoco
             ql.log.debug(f'{e}: {socket_domain=}, {socket_type=}, {socket_protocol=}, {sv=}')
             regreturn = -1
 
-    socket_type = socket_type_mapping(socket_type, ql.arch.type, ql.os.type)
+    socket_type = socket_type_mapping(socket_type, ql.arch.type)
     socket_domain = socket_domain_mapping(socket_domain, ql.arch.type, ql.os.type)
     ql.log.debug("socketpair(%s, %s, %s, %d) = %d" % (socket_domain, socket_type, socket_protocol, sv, regreturn))
 
@@ -264,6 +264,8 @@ def ql_syscall_getsockopt(ql: Qiling, sockfd: int, level: int, optname: int, opt
         # emu_opt_name is based on level
         if vsock_level_name == 'IPPROTO_IP':
             vsock_opt_name = socket_ip_option_mapping(vsock_opt, ql.arch.type, ql.os.type)
+        elif vsock_level_name == 'IPPROTO_TCP':
+            vsock_opt_name = socket_tcp_option_mapping(vsock_opt, ql.arch.type)
         else:
             vsock_opt_name = socket_option_mapping(vsock_opt, ql.arch.type)
 
@@ -335,7 +337,7 @@ def ql_syscall_setsockopt(ql: Qiling, sockfd: int, level: int, optname: int, opt
             if vsock_level_name == 'IPPROTO_IP':
                 vsock_opt_name = socket_ip_option_mapping(vsock_opt, ql.arch.type, ql.os.type)
             elif vsock_level_name == 'IPPROTO_TCP':
-                vsock_opt_name = socket_tcp_option_mapping(vsock_opt, ql.arch.type, ql.os.type)
+                vsock_opt_name = socket_tcp_option_mapping(vsock_opt, ql.arch.type)
             else:
                 vsock_opt_name = socket_option_mapping(vsock_opt, ql.arch.type)
 
