@@ -31,7 +31,6 @@ reg_map = {
     "apsr":      UC_ARM_REG_APSR,
     "ipsr":      UC_ARM_REG_IPSR,
     "epsr":      UC_ARM_REG_EPSR,
-    "cpsr":      UC_ARM_REG_CPSR,
     "primask":   UC_ARM_REG_PRIMASK,
     "faultmask": UC_ARM_REG_FAULTMASK,
     "basepri":   UC_ARM_REG_BASEPRI,
