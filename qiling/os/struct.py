@@ -1,20 +1,32 @@
 from __future__ import annotations
 
 import ctypes
+import functools
+import sys
 
 from contextlib import contextmanager
-from functools import lru_cache
-from typing import TYPE_CHECKING, Any, Iterator, Type, TypeVar, Optional
+from typing import TYPE_CHECKING, Any, Type, Optional
+
+from qiling.const import QL_ENDIAN
 
 if TYPE_CHECKING:
     from qiling.os.memory import QlMemoryManager
 
 
-class BaseStruct(ctypes.LittleEndianStructure):
-    """An abstract class for C structures.
-    """
+# the cache decorator is needed here not only for performance purposes, but also to make sure
+# the *same* class type is returned every time rather than creating another one with the same
+# name and properties.
+#
+# TODO: work around the missing functools.cache decorator on Python versions earlier than 3.9
+cache = functools.cache if sys.version_info >= (3, 9) else functools.lru_cache(maxsize=2)
 
-    T = TypeVar('T', bound='BaseStruct')
+
+class BaseStruct(ctypes.Structure):
+    """An abstract class for C structures.
+
+    Refrain from subclassing it directly as it does not take the emulated architecture
+    properties into account. Subclass `BaseStructEL` or `BaseStructEB` instead.
+    """
 
     def save_to(self, mem: QlMemoryManager, address: int) -> None:
         """Store structure contents to a specified memory address.
@@ -29,7 +41,7 @@ class BaseStruct(ctypes.LittleEndianStructure):
         mem.write(address, data)
 
     @classmethod
-    def load_from(cls: Type[T], mem: QlMemoryManager, address: int) -> T:
+    def load_from(cls, mem: QlMemoryManager, address: int):
         """Construct and populate a structure from saved contents.
 
         Args:
@@ -44,7 +56,7 @@ class BaseStruct(ctypes.LittleEndianStructure):
         return cls.from_buffer(data)
 
     @classmethod
-    def volatile_ref(cls: Type[T], mem: QlMemoryManager, address: int) -> T:
+    def volatile_ref(cls, mem: QlMemoryManager, address: int):
         """Refer to a memory location as a volatile structure variable.
 
         Args:
@@ -63,7 +75,7 @@ class BaseStruct(ctypes.LittleEndianStructure):
             ... if p.x > 10:    # x value is read directly from memory
             ...     p.x = 10    # x value is written directly to memory
             ... # y value in memory remains unchanged
-            >>> 
+            >>>
         """
 
         # map all structure field names to their types
@@ -120,12 +132,11 @@ class BaseStruct(ctypes.LittleEndianStructure):
                 # set attribute value
                 super().__setattr__(name, value)
 
-
         return VolatileStructRef()
 
     @classmethod
     @contextmanager
-    def ref(cls: Type[T], mem: QlMemoryManager, address: int) -> Iterator[T]:
+    def ref(cls, mem: QlMemoryManager, address: int):
         """A structure context manager to facilitate updating structure contents.
 
         On context enter, a structure is created and populated from the specified memory
@@ -199,23 +210,41 @@ class BaseStruct(ctypes.LittleEndianStructure):
         return next((fname for fname, *_ in cls._fields_ if cls.offsetof(fname) == offset), None)
 
 
-# TODO: replace the lru_cache decorator with functools.cache when moving to Python 3.9
-@lru_cache(maxsize=2)
-def get_aligned_struct(archbits: int) -> Type[BaseStruct]:
-    """Provide an aligned version of BaseStruct based on the underlying
+class BaseStructEL(BaseStruct, ctypes.LittleEndianStructure):
+    """Little Endian structure base class.
+    """
+    pass
+
+
+class BaseStructEB(BaseStruct, ctypes.BigEndianStructure):
+    """Big Endian structure base class.
+    """
+    pass
+
+
+@cache
+def get_aligned_struct(archbits: int, endian: QL_ENDIAN = QL_ENDIAN.EL) -> Type[BaseStruct]:
+    """Provide an aligned version of BaseStruct based on the emulated
     architecture properties.
 
     Args:
         archbits: required alignment in bits
     """
 
-    class AlignedStruct(BaseStruct):
+    Struct = {
+        QL_ENDIAN.EL: BaseStructEL,
+        QL_ENDIAN.EB: BaseStructEB
+    }[endian]
+
+    class AlignedStruct(Struct):
         _pack_ = archbits // 8
 
     return AlignedStruct
 
+
+@cache
 def get_aligned_union(archbits: int):
-    """Provide an aligned union class based on the underlying architecture
+    """Provide an aligned union class based on the emulated architecture
     properties. This class does not inherit the special BaseStruct methods.
 
     FIXME: ctypes.Union endianess cannot be set arbitrarily, rather it depends
@@ -231,14 +260,15 @@ def get_aligned_union(archbits: int):
 
     return AlignedUnion
 
+
 def get_native_type(archbits: int) -> Type[ctypes._SimpleCData]:
     """Select a ctypes integer type whose size matches the emulated
     architecture native size.
     """
 
     __type = {
-        32 : ctypes.c_uint32,
-        64 : ctypes.c_uint64
+        32: ctypes.c_uint32,
+        64: ctypes.c_uint64
     }
 
     return __type[archbits]
