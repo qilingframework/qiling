@@ -9,7 +9,7 @@ from typing import Optional, Tuple
 
 from qiling import Qiling
 from qiling.const import QL_ARCH, QL_VERBOSE
-from qiling.os.posix.const_mapping import socket_type_mapping, socket_level_mapping, socket_domain_mapping, socket_ip_option_mapping, socket_option_mapping
+from qiling.os.posix.const_mapping import socket_type_mapping, socket_level_mapping, socket_domain_mapping, socket_ip_option_mapping, socket_tcp_option_mapping, socket_option_mapping
 from qiling.os.posix.const import *
 from qiling.os.posix.filestruct import ql_socket
 from qiling.os.posix.structs import *
@@ -126,6 +126,52 @@ def ql_syscall_socket(ql: Qiling, domain: int, socktype: int, protocol: int):
     return idx
 
 
+def ql_syscall_socketpair(ql: Qiling, socket_domain, socket_type, socket_protocol, sv: int):
+    idx_list = [i for i in range(NR_OPEN) if ql.os.fd[i] is None]
+    if len(idx_list) > 1:
+        idx1, idx2 = idx_list[:2]
+
+        emu_socket_value = socket_type
+
+        # ql_socket.open should use host platform based socket_type.
+        try:
+            emu_socket_type = socket_type_mapping(socket_type, ql.arch.type)
+        except KeyError:
+            ql.log.error(f'Cannot convert emu_socket_type {emu_socket_value} to host platform based socket_type')
+            raise
+
+        try:
+            socket_type = getattr(socket, emu_socket_type)
+        except AttributeError:
+            ql.log.error(f'Cannot convert emu_socket_type {emu_socket_type}:{emu_socket_value} to host platform based socket_type')
+            raise
+
+        ql.log.debug(f'Convert emu_socket_type {emu_socket_type}:{emu_socket_value} to host platform based socket_type {emu_socket_type}:{socket_type}')
+
+        try:
+            sock1, sock2 = ql_socket.socketpair(socket_domain, socket_type, socket_protocol)
+
+            # save sock to ql
+            ql.os.fd[idx1] = sock1
+            ql.os.fd[idx2] = sock2
+
+            # save fd to &sv
+            ql.mem.write(sv, ql.pack32(idx1))
+            ql.mem.write(sv+4, ql.pack32(idx2))
+            regreturn = 0
+
+        # May raise error: Protocol not supported
+        except OSError as e:
+            ql.log.debug(f'{e}: {socket_domain=}, {socket_type=}, {socket_protocol=}, {sv=}')
+            regreturn = -1
+
+    socket_type = socket_type_mapping(socket_type, ql.arch.type)
+    socket_domain = socket_domain_mapping(socket_domain, ql.arch.type, ql.os.type)
+    ql.log.debug("socketpair(%s, %s, %s, %d) = %d" % (socket_domain, socket_type, socket_protocol, sv, regreturn))
+
+    return regreturn
+
+
 def ql_syscall_connect(ql: Qiling, sockfd: int, addr: int, addrlen: int):
     if sockfd not in range(NR_OPEN):
         return -1
@@ -218,6 +264,8 @@ def ql_syscall_getsockopt(ql: Qiling, sockfd: int, level: int, optname: int, opt
         # emu_opt_name is based on level
         if vsock_level_name == 'IPPROTO_IP':
             vsock_opt_name = socket_ip_option_mapping(vsock_opt, ql.arch.type, ql.os.type)
+        elif vsock_level_name == 'IPPROTO_TCP':
+            vsock_opt_name = socket_tcp_option_mapping(vsock_opt, ql.arch.type)
         else:
             vsock_opt_name = socket_option_mapping(vsock_opt, ql.arch.type)
 
@@ -288,6 +336,8 @@ def ql_syscall_setsockopt(ql: Qiling, sockfd: int, level: int, optname: int, opt
             # emu_opt_name is based on level
             if vsock_level_name == 'IPPROTO_IP':
                 vsock_opt_name = socket_ip_option_mapping(vsock_opt, ql.arch.type, ql.os.type)
+            elif vsock_level_name == 'IPPROTO_TCP':
+                vsock_opt_name = socket_tcp_option_mapping(vsock_opt, ql.arch.type)
             else:
                 vsock_opt_name = socket_option_mapping(vsock_opt, ql.arch.type)
 
