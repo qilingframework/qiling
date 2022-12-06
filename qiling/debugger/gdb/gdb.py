@@ -95,6 +95,11 @@ class QlGdb(QlDebugger):
         else:
             entry_point = ql.os.entry_point
 
+        # though linkers set the entry point LSB to indicate arm thumb mode, the
+        # effective entry point address is aligned. make sure we have it aligned
+        if hasattr(ql.arch, 'is_thumb'):
+            entry_point &= ~0b1
+
         # Only part of the binary file will be debugged.
         if ql.entry_point is not None:
             entry_point = ql.entry_point
