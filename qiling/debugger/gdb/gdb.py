@@ -239,7 +239,7 @@ class QlGdb(QlDebugger):
                 reply = f'S{SIGINT:02x}'
 
             else:
-                if self.ql.arch.regs.arch_pc == self.gdb.last_bp:
+                if getattr(self.ql.arch, 'effective_pc', self.ql.arch.regs.arch_pc) == self.gdb.last_bp:
                     # emulation stopped because it hit a breakpoint
                     reply = f'S{SIGTRAP:02x}'
                 else:
