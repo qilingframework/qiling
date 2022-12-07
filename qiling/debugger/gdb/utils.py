@@ -18,7 +18,7 @@ class QlGdbUtils:
         self.ql = ql
 
         self.exit_point = exit_point
-        self.bp_list = []
+        self.swbp = set()
         self.last_bp = None
 
         def __entry_point_hook(ql: Qiling):
@@ -41,7 +41,7 @@ class QlGdbUtils:
         if address == self.last_bp:
             self.last_bp = None
 
-        elif address in self.bp_list:
+        elif address in self.swbp:
             self.last_bp = address
 
             ql.log.info(f'{PROMPT} breakpoint hit, stopped at {address:#x}')
@@ -52,14 +52,31 @@ class QlGdbUtils:
         #     ql.log.debug(f'{PROMPT} emulation entrypoint at {self.entry_point:#x}')
         #     ql.log.debug(f'{PROMPT} emulation exitpoint at {self.exit_point:#x}')
 
-    def bp_insert(self, addr: int):
-        if addr not in self.bp_list:
-            self.bp_list.append(addr)
-            self.ql.log.info(f'{PROMPT} breakpoint added at {addr:#x}')
+    def bp_insert(self, addr: int, size: int):
+        targets = set(addr + i for i in range(size or 1))
 
-    def bp_remove(self, addr: int):
-        self.bp_list.remove(addr)
+        if targets.intersection(self.swbp):
+            return False
+
+        for bp in targets:
+            self.swbp.add(bp)
+
+        self.ql.log.info(f'{PROMPT} breakpoint added at {addr:#x}')
+
+        return True
+
+    def bp_remove(self, addr: int, size: int) -> bool:
+        targets = set(addr + i for i in range(size or 1))
+
+        if not targets.issubset(self.swbp):
+            return False
+
+        for bp in targets:
+            self.swbp.remove(bp)
+
         self.ql.log.info(f'{PROMPT} breakpoint removed from {addr:#x}')
+
+        return True
 
     def resume_emu(self, address: Optional[int] = None, steps: int = 0):
         if address is None:

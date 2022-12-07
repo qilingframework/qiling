@@ -714,8 +714,9 @@ class QlGdb(QlDebugger):
             #   4 = access watchpoint
 
             if type == 0:
-                self.gdb.bp_insert(addr)
-                return REPLY_OK
+                success = self.gdb.bp_insert(addr, kind)
+
+                return REPLY_OK if success else 'E22'
 
             return REPLY_EMPTY
 
@@ -726,12 +727,9 @@ class QlGdb(QlDebugger):
             type, addr, kind = (int(p, 16) for p in subcmd.split(','))
 
             if type == 0:
-                try:
-                    self.gdb.bp_remove(addr)
-                except ValueError:
-                    return 'E22'
-                else:
-                    return REPLY_OK
+                success = self.gdb.bp_remove(addr, kind)
+
+                return REPLY_OK if success else 'E22'
 
             return REPLY_EMPTY
 
