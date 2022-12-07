@@ -47,11 +47,6 @@ class QlGdbUtils:
             ql.log.info(f'{PROMPT} breakpoint hit, stopped at {address:#x}')
             ql.stop()
 
-        # # TODO: not sure what this is about
-        # if address + size == self.exit_point:
-        #     ql.log.debug(f'{PROMPT} emulation entrypoint at {self.entry_point:#x}')
-        #     ql.log.debug(f'{PROMPT} emulation exitpoint at {self.exit_point:#x}')
-
     def bp_insert(self, addr: int, size: int):
         targets = set(addr + i for i in range(size or 1))
 
@@ -83,7 +78,7 @@ class QlGdbUtils:
             address = self.ql.arch.regs.arch_pc
 
         if getattr(self.ql.arch, 'is_thumb', False):
-            address |= 1
+            address |= 0b1
 
         op = f'stepping {steps} instructions' if steps else 'resuming'
         self.ql.log.info(f'{PROMPT} {op} from {address:#x}')
