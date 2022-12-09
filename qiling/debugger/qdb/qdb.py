@@ -449,9 +449,10 @@ class QlQdb(cmd.Cmd, QlDebugger):
         if argc == -1:
             reg_n, stk_n = 2, 0
         else:
-            reg_n, stk_n = 4, 0
             if argc > 4:
                 stk_n = argc - 4
+            elif argc <= 4:
+                reg_n, stk_n = argc, 0
 
         ptr_size = self.ql.arch.pointersize
 
@@ -482,11 +483,6 @@ class QlQdb(cmd.Cmd, QlDebugger):
                 reg_names = [f'r{d}'for d in range(reg_n)]
 
             elif arch_type == QL_ARCH.X8664:
-                if argc == -1:
-                    reg_n = 2
-                else:
-                    reg_n = argc
-
                 reg_names = ('rdi', 'rsi', 'rdx', 'rcx', 'r8', 'r9')[:reg_n]
 
             reg_args = [self.ql.arch.regs.read(reg_name) for reg_name in reg_names]
