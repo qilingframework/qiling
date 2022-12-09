@@ -154,6 +154,17 @@ def socket_domain_mapping(p: int, archtype: QL_ARCH, ostype: QL_OS) -> str:
     return _constant_mapping(p, socket_domain_map)
 
 
+def socket_tcp_option_mapping(t: int, archtype: QL_ARCH) -> str:
+    socket_option_map = {
+        QL_ARCH.X86: linux_socket_tcp_options,
+        QL_ARCH.X8664: linux_socket_tcp_options,
+        QL_ARCH.ARM: linux_socket_tcp_options,
+        QL_ARCH.ARM64: linux_socket_tcp_options,
+        QL_ARCH.MIPS: linux_socket_tcp_options,
+    }[archtype]
+    return _constant_mapping(t, socket_option_map)
+
+
 def socket_level_mapping(t: int, archtype: QL_ARCH) -> str:
     socket_level_map = {
         QL_ARCH.X86:   linux_x86_socket_level,

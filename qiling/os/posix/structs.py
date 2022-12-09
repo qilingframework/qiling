@@ -113,3 +113,16 @@ def make_iovec(archbits: int, endian: QL_ENDIAN):
         )
 
     return iovec
+
+
+def make_pollfd(archbits: int, endian: QL_ENDIAN):
+    Struct = struct.get_aligned_struct(archbits, endian)
+
+    class pollfd(Struct):
+        _fields_ = (
+            ('fd', ctypes.c_int32),
+            ('events', ctypes.c_int16),
+            ('revents', ctypes.c_int16)
+        )
+
+    return pollfd
