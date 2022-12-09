@@ -1,5 +1,5 @@
 @ECHO OFF
-
+MSHTA "javascript: var shell = new ActiveXObject('shell.application'); shell.ShellExecute('%~nx0', '', '', 'runas', 1);close();"
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 :: Create the emulated Windows directory structure and registry ::
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
