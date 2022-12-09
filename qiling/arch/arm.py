@@ -68,7 +68,7 @@ class QlArchARM(QlArch):
         """
 
         # append 1 to pc if in thumb mode, or 0 otherwise
-        return self.regs.pc + int(self.is_thumb)
+        return self.regs.pc | int(self.is_thumb)
 
     @property
     def disassembler(self) -> Cs:

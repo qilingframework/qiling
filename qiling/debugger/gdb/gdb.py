@@ -95,6 +95,11 @@ class QlGdb(QlDebugger):
         else:
             entry_point = ql.os.entry_point
 
+        # though linkers set the entry point LSB to indicate arm thumb mode, the
+        # effective entry point address is aligned. make sure we have it aligned
+        if hasattr(ql.arch, 'is_thumb'):
+            entry_point &= ~0b1
+
         # Only part of the binary file will be debugged.
         if ql.entry_point is not None:
             entry_point = ql.entry_point
@@ -234,7 +239,7 @@ class QlGdb(QlDebugger):
                 reply = f'S{SIGINT:02x}'
 
             else:
-                if self.ql.arch.regs.arch_pc == self.gdb.last_bp:
+                if getattr(self.ql.arch, 'effective_pc', self.ql.arch.regs.arch_pc) == self.gdb.last_bp:
                     # emulation stopped because it hit a breakpoint
                     reply = f'S{SIGTRAP:02x}'
                 else:
@@ -666,12 +671,6 @@ class QlGdb(QlDebugger):
             """Perform a single step.
             """
 
-            # BUG: a known unicorn caching issue causes it to emulate more
-            # steps than requestes. until that issue is fixed, single stepping
-            # is essentially broken.
-            #
-            # @see: https://github.com/unicorn-engine/unicorn/issues/1606
-
             self.gdb.resume_emu(steps=1)
 
             return f'S{SIGTRAP:02x}'
@@ -709,8 +708,9 @@ class QlGdb(QlDebugger):
             #   4 = access watchpoint
 
             if type == 0:
-                self.gdb.bp_insert(addr)
-                return REPLY_OK
+                success = self.gdb.bp_insert(addr, kind)
+
+                return REPLY_OK if success else 'E22'
 
             return REPLY_EMPTY
 
@@ -721,12 +721,9 @@ class QlGdb(QlDebugger):
             type, addr, kind = (int(p, 16) for p in subcmd.split(','))
 
             if type == 0:
-                try:
-                    self.gdb.bp_remove(addr)
-                except ValueError:
-                    return 'E22'
-                else:
-                    return REPLY_OK
+                success = self.gdb.bp_remove(addr, kind)
+
+                return REPLY_OK if success else 'E22'
 
             return REPLY_EMPTY
 
