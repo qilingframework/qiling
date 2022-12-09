@@ -475,6 +475,8 @@ class QlQdb(cmd.Cmd, QlDebugger):
                         real_val = self.ql.arch.regs.read(dst_reg)
 
                 reg_names = [f'a{d}'for d in range(reg_n)]
+                if reg_idx != None:
+                    reg_names.pop(reg_idx)
 
             elif arch_type in (QL_ARCH.ARM, QL_ARCH.CORTEX_M):
                 reg_names = [f'r{d}'for d in range(reg_n)]
@@ -488,8 +490,8 @@ class QlQdb(cmd.Cmd, QlDebugger):
                 reg_names = ('rdi', 'rsi', 'rdx', 'rcx', 'r8', 'r9')[:reg_n]
 
             reg_args = [self.ql.arch.regs.read(reg_name) for reg_name in reg_names]
-            if reg_idx:
-                regs_args.insert(reg_idx, real_val)
+            if reg_idx != None:
+                reg_args.insert(reg_idx, real_val)
 
             reg_args = list(map(hex, reg_args))
 
