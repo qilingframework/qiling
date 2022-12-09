@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 import os
-from socket import socket, AddressFamily, SocketKind
+from socket import socket, AddressFamily, SocketKind, socketpair
 from typing import Union
 
 try:
@@ -39,6 +39,12 @@ class ql_socket:
         s = socket(domain, socktype, protocol)
 
         return cls(s)
+
+    @classmethod
+    def socketpair(cls, domain: Union[AddressFamily, int], socktype: Union[SocketKind, int], protocol: int):
+        a, b = socketpair(domain, socktype, protocol)
+
+        return cls(a), cls(b)
 
     def read(self, length: int) -> bytes:
         return os.read(self.__fd, length)

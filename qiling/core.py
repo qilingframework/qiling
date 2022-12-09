@@ -737,8 +737,14 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             count   : max emulation steps (instructions count); unlimited by default
         """
 
-        if self._arch.type in (QL_ARCH.ARM, QL_ARCH.CORTEX_M) and self._arch._init_thumb:
-            begin |= 1
+        # FIXME: we cannot use arch.is_thumb to determine this because unicorn sets the coresponding bit in cpsr
+        # only when pc is set. unicorn sets or clears the thumb mode bit based on pc lsb, ignoring the mode it
+        # was initialized with.
+        #
+        # either unicorn is patched to reflect thumb mode in cpsr upon initialization, or we pursue the same logic
+        # by determining the endianess by address lsb. either way this condition should not be here
+        if getattr(self.arch, '_init_thumb', False):
+            begin |= 0b1
 
         # reset exception status before emulation starts
         self._internal_exception = None

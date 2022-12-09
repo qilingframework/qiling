@@ -16,6 +16,7 @@ class ContextRenderARM(ContextRender, ArchARM):
     def __init__(self, ql, predictor):
         super().__init__(ql, predictor)
         ArchARM.__init__(self)
+        self.disasm_num = 8
 
     @staticmethod
     def print_mode_info(bits):
