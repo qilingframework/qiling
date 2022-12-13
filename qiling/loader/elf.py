@@ -85,8 +85,8 @@ class QlLoaderELF(QlLoader):
         self.profile = self.ql.os.profile[section]
 
         # setup program stack
-        stack_address = int(self.profile.get('stack_address'), 0)
-        stack_size = int(self.profile.get('stack_size'), 0)
+        stack_address = self.profile.getint('stack_address')
+        stack_size = self.profile.getint('stack_size')
         self.ql.mem.map(stack_address, stack_size, info='[stack]')
 
         self.path = self.ql.path
@@ -110,7 +110,7 @@ class QlLoaderELF(QlLoader):
 
         # is it a shared object?
         elif elftype == 'ET_DYN':
-            load_address = int(self.profile.get('load_address'), 0)
+            load_address = self.profile.getint('load_address')
 
             self.load_with_ld(elffile, stack_address + stack_size, load_address, self.argv, self.env)
 
@@ -242,7 +242,7 @@ class QlLoaderELF(QlLoader):
                 # determine interpreter base address
                 # some old interpreters may not be PIE: p_vaddr of the first LOAD segment is not zero
                 # we should load interpreter at the address p_vaddr specified in such situation
-                interp_address = int(self.profile.get('interp_address'), 0) if min_vaddr == 0 else 0
+                interp_address = self.profile.getint('interp_address') if min_vaddr == 0 else 0
                 self.ql.log.debug(f'Interpreter addr: {interp_address:#x}')
 
                 # load interpreter segments data to memory
@@ -255,7 +255,7 @@ class QlLoaderELF(QlLoader):
                 entry_point = interp_address + interp['e_entry']
 
         # set mmap addr
-        mmap_address = int(self.profile.get('mmap_address'), 0)
+        mmap_address = self.profile.getint('mmap_address')
         self.ql.log.debug(f'mmap_address is : {mmap_address:#x}')
 
         # set info to be used by gdb
