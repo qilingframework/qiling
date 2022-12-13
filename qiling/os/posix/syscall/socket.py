@@ -8,7 +8,7 @@ import socket
 from typing import Optional, Tuple
 
 from qiling import Qiling
-from qiling.const import QL_ARCH, QL_VERBOSE
+from qiling.const import QL_ARCH, QL_OS, QL_VERBOSE
 from qiling.os.posix.const_mapping import socket_type_mapping, socket_level_mapping, socket_domain_mapping, socket_ip_option_mapping, socket_tcp_option_mapping, socket_option_mapping
 from qiling.os.posix.const import *
 from qiling.os.posix.filestruct import ql_socket
@@ -84,26 +84,79 @@ def ql_unix_socket_path(ql: Qiling, sun_path: bytearray) -> Tuple[str, str]:
     return (hpath, vpath)
 
 
+def __host_socket_type(vsock_type: int, arch_type: QL_ARCH) -> int:
+    """Convert emulated socket type value to a host socket type.
+    """
+
+    try:
+        vsock_type_name = socket_type_mapping(vsock_type, arch_type)
+    except KeyError:
+        raise NotImplementedError(f'Could not convert emulated socket type {vsock_type} to a socket type name')
+
+    try:
+        hsock_type = getattr(socket, vsock_type_name)
+    except AttributeError:
+        raise NotImplementedError(f'Could not convert emulated socket type name {vsock_type_name} to a host socket type')
+
+    return hsock_type
+
+
+def __host_socket_level(vsock_level: int, arch_type: QL_ARCH) -> int:
+    """Convert emulated socket level value to a host socket level.
+    """
+
+    try:
+        vsock_level_name = socket_level_mapping(vsock_level, arch_type)
+    except KeyError:
+        raise NotImplementedError(f'Could not convert emulated socket level {vsock_level} to a socket level name')
+
+    try:
+        hsock_level = getattr(socket, vsock_level_name)
+    except AttributeError:
+        raise NotImplementedError(f'Could not convert emulated socket level name {vsock_level_name} to a host socket level')
+
+    return hsock_level
+
+
+def __host_socket_option(vsock_level: int, vsock_opt: int, arch_type: QL_ARCH, os_type: QL_OS) -> int:
+    """Convert emulated socket option value to a host socket option.
+    """
+
+    try:
+        if vsock_level == 0x0000:  # IPPROTO_IP
+            vsock_opt_name = socket_ip_option_mapping(vsock_opt, arch_type, os_type)
+
+        elif vsock_level == 0x0006:  # IPPROTO_TCP
+            vsock_opt_name = socket_tcp_option_mapping(vsock_opt, arch_type)
+
+        else:
+            vsock_opt_name = socket_option_mapping(vsock_opt, arch_type)
+
+        # Fix for mips
+        if arch_type == QL_ARCH.MIPS:
+            if vsock_opt_name.endswith(('_NEW', '_OLD')):
+                vsock_opt_name = vsock_opt_name[:-4]
+
+    except KeyError:
+        raise NotImplementedError(f'Could not convert emulated socket option {vsock_opt} to a socket option name')
+
+    try:
+        hsock_opt = getattr(socket, vsock_opt_name)
+    except AttributeError:
+        raise NotImplementedError(f'Could not convert emulated socket option name {vsock_opt_name} to a host socket option')
+
+    return hsock_opt
+
+
 def ql_syscall_socket(ql: Qiling, domain: int, socktype: int, protocol: int):
     idx = next((i for i in range(NR_OPEN) if ql.os.fd[i] is None), -1)
 
     if idx != -1:
+        # ql_socket.open should use host platform based socket type
         vsock_type = socktype
+        hsock_type = __host_socket_type(vsock_type, ql.arch.type)
 
-        # ql_socket.open should use host platform based socket_type.
-        try:
-            vsock_type_name = socket_type_mapping(vsock_type, ql.arch.type)
-        except KeyError:
-            ql.log.error(f'Could not convert emulated socket type {vsock_type} to a socket type name')
-            raise
-
-        try:
-            hsock_type = getattr(socket, vsock_type_name)
-        except AttributeError:
-            ql.log.error(f'Could not convert emulated socket type name {vsock_type_name} to host socket type')
-            raise
-
-        ql.log.debug(f'Converted emulated socket type {vsock_type_name} to host socket type {hsock_type}')
+        ql.log.debug(f'Converted emulated socket type {vsock_type} to host socket type {hsock_type}')
 
         try:
             sock = ql_socket.open(domain, hsock_type, protocol)
@@ -119,55 +172,49 @@ def ql_syscall_socket(ql: Qiling, domain: int, socktype: int, protocol: int):
         else:
             ql.os.fd[idx] = sock
 
-    s_socktype = socket_type_mapping(socktype, ql.arch.type)
     s_domain = socket_domain_mapping(domain, ql.arch.type, ql.os.type)
+    s_socktype = socket_type_mapping(socktype, ql.arch.type)
     ql.log.debug("socket(%s, %s, %s) = %d" % (s_domain, s_socktype, protocol, idx))
 
     return idx
 
 
-def ql_syscall_socketpair(ql: Qiling, socket_domain, socket_type, socket_protocol, sv: int):
-    idx_list = [i for i in range(NR_OPEN) if ql.os.fd[i] is None]
-    if len(idx_list) > 1:
-        idx1, idx2 = idx_list[:2]
+def ql_syscall_socketpair(ql: Qiling, domain: int, socktype: int, protocol: int, sv: int):
+    unpopulated_fd = (i for i in range(NR_OPEN) if ql.os.fd[i] is None)
 
-        emu_socket_value = socket_type
+    idx1 = next(unpopulated_fd, -1)
+    idx2 = next(unpopulated_fd, -1)
 
-        # ql_socket.open should use host platform based socket_type.
-        try:
-            emu_socket_type = socket_type_mapping(socket_type, ql.arch.type)
-        except KeyError:
-            ql.log.error(f'Cannot convert emu_socket_type {emu_socket_value} to host platform based socket_type')
-            raise
+    regreturn = -1
 
-        try:
-            socket_type = getattr(socket, emu_socket_type)
-        except AttributeError:
-            ql.log.error(f'Cannot convert emu_socket_type {emu_socket_type}:{emu_socket_value} to host platform based socket_type')
-            raise
+    if (idx1 != -1) and (idx2 != -1):
+        # ql_socket.socketpair should use host platform based socket type
+        vsock_type = socktype
+        hsock_type = __host_socket_type(vsock_type, ql.arch.type)
 
-        ql.log.debug(f'Convert emu_socket_type {emu_socket_type}:{emu_socket_value} to host platform based socket_type {emu_socket_type}:{socket_type}')
+        ql.log.debug(f'Converted emulated socket type {vsock_type} to host socket type {hsock_type}')
 
         try:
-            sock1, sock2 = ql_socket.socketpair(socket_domain, socket_type, socket_protocol)
+            sock1, sock2 = ql_socket.socketpair(domain, hsock_type, protocol)
 
-            # save sock to ql
+        # May raise error: Protocol not supported
+        except OSError as e:
+            ql.log.debug(f'{e}: {domain=}, {socktype=}, {protocol=}, {sv=}')
+            regreturn = -1
+
+        else:
             ql.os.fd[idx1] = sock1
             ql.os.fd[idx2] = sock2
 
             # save fd to &sv
-            ql.mem.write(sv, ql.pack32(idx1))
-            ql.mem.write(sv+4, ql.pack32(idx2))
+            ql.mem.write_ptr(sv + 0, idx1)
+            ql.mem.write_ptr(sv + 4, idx2)
+
             regreturn = 0
 
-        # May raise error: Protocol not supported
-        except OSError as e:
-            ql.log.debug(f'{e}: {socket_domain=}, {socket_type=}, {socket_protocol=}, {sv=}')
-            regreturn = -1
-
-    socket_type = socket_type_mapping(socket_type, ql.arch.type)
-    socket_domain = socket_domain_mapping(socket_domain, ql.arch.type, ql.os.type)
-    ql.log.debug("socketpair(%s, %s, %s, %d) = %d" % (socket_domain, socket_type, socket_protocol, sv, regreturn))
+    s_domain = socket_domain_mapping(domain, ql.arch.type, ql.os.type)
+    s_type = socket_type_mapping(socktype, ql.arch.type)
+    ql.log.debug("socketpair(%s, %s, %d, %d) = %d" % (s_domain, s_type, protocol, sv, regreturn))
 
     return regreturn
 
@@ -243,48 +290,14 @@ def ql_syscall_getsockopt(ql: Qiling, sockfd: int, level: int, optname: int, opt
         return -1
 
     vsock_level = level
+    hsock_level = __host_socket_level(vsock_level, ql.arch.type)
 
-    try:
-        vsock_level_name = socket_level_mapping(vsock_level, ql.arch.type)
-    except KeyError:
-        ql.log.error(f'Could not convert emulated socket level {vsock_level} to a socket level name')
-        raise
-
-    try:
-        hsock_level = getattr(socket, vsock_level_name)
-    except AttributeError:
-        ql.log.error(f'Could not convert emulated socket level name {vsock_level_name} to host socket level')
-        raise
-
-    ql.log.debug(f'Converted emulated socket level {vsock_level_name} to host socket level {hsock_level}')
+    ql.log.debug(f'Converted emulated socket level {vsock_level} to host socket level {hsock_level}')
 
     vsock_opt = optname
+    hsock_opt = __host_socket_option(vsock_level, vsock_opt, ql.arch.type, ql.os.type)
 
-    try:
-        # emu_opt_name is based on level
-        if vsock_level_name == 'IPPROTO_IP':
-            vsock_opt_name = socket_ip_option_mapping(vsock_opt, ql.arch.type, ql.os.type)
-        elif vsock_level_name == 'IPPROTO_TCP':
-            vsock_opt_name = socket_tcp_option_mapping(vsock_opt, ql.arch.type)
-        else:
-            vsock_opt_name = socket_option_mapping(vsock_opt, ql.arch.type)
-
-        # Fix for mips
-        if ql.arch.type == QL_ARCH.MIPS:
-            if vsock_opt_name.endswith("_NEW") or vsock_opt_name.endswith("_OLD"):
-                vsock_opt_name = vsock_opt_name[:-4]
-
-    except KeyError:
-        ql.log.error(f'Could not convert emulated socket option {vsock_opt} to socket option name')
-        raise
-
-    try:
-        hsock_opt = getattr(socket, vsock_opt_name)
-    except AttributeError:
-        ql.log.error(f'Could not convert emulated socket option name {vsock_opt_name} to host socket option')
-        raise
-
-    ql.log.debug(f'Converted emulated socket option {vsock_opt_name} to host socket option {hsock_opt}')
+    ql.log.debug(f'Converted emulated socket option {vsock_opt} to host socket option {hsock_opt}')
 
     optlen = min(ql.unpack32s(ql.mem.read(optlen_addr, 4)), 1024)
 
@@ -315,48 +328,14 @@ def ql_syscall_setsockopt(ql: Qiling, sockfd: int, level: int, optname: int, opt
 
     else:
         vsock_level = level
+        hsock_level = __host_socket_level(vsock_level, ql.arch.type)
 
-        try:
-            vsock_level_name = socket_level_mapping(vsock_level, ql.arch.type)
-        except KeyError:
-            ql.log.error(f'Could not convert emulated socket level {vsock_level} to a socket level name')
-            raise
-
-        try:
-            hsock_level = getattr(socket, vsock_level_name)
-        except AttributeError:
-            ql.log.error(f'Could not convert emulated socket level name {vsock_level_name} to host socket level')
-            raise
-
-        ql.log.debug(f'Converted emulated socket level {vsock_level_name} to host socket level {hsock_level}')
+        ql.log.debug(f'Converted emulated socket level {vsock_level} to host socket level {hsock_level}')
 
         vsock_opt = optname
+        hsock_opt = __host_socket_option(vsock_level, vsock_opt, ql.arch.type, ql.os.type)
 
-        try:
-            # emu_opt_name is based on level
-            if vsock_level_name == 'IPPROTO_IP':
-                vsock_opt_name = socket_ip_option_mapping(vsock_opt, ql.arch.type, ql.os.type)
-            elif vsock_level_name == 'IPPROTO_TCP':
-                vsock_opt_name = socket_tcp_option_mapping(vsock_opt, ql.arch.type)
-            else:
-                vsock_opt_name = socket_option_mapping(vsock_opt, ql.arch.type)
-
-            # Fix for mips
-            if ql.arch.type == QL_ARCH.MIPS:
-                if vsock_opt_name.endswith("_NEW") or vsock_opt_name.endswith("_OLD"):
-                    vsock_opt_name = vsock_opt_name[:-4]
-
-        except KeyError:
-            ql.log.error(f'Could not convert emulated socket option {vsock_opt} to socket option name')
-            raise
-
-        try:
-            hsock_opt = getattr(socket, vsock_opt_name)
-        except AttributeError:
-            ql.log.error(f'Could not convert emulated socket option name {vsock_opt_name} to host socket option')
-            raise
-
-        ql.log.debug(f'Converted emulated socket option {vsock_opt_name} to host socket option {hsock_opt}')
+        ql.log.debug(f'Converted emulated socket option {vsock_opt} to host socket option {hsock_opt}')
 
         optval = ql.mem.read(optval_addr, optlen)
 
