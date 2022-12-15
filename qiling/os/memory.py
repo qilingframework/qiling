@@ -513,13 +513,16 @@ class QlMemoryManager:
 
         assert minaddr < maxaddr
 
+        if (maxaddr - minaddr) < size:
+            raise ValueError('search domain is too small')
+
         # get gap ranges between mapped ones and memory bounds
         gaps_ubounds = tuple(lbound for lbound, _, _, _, _ in self.map_info) + (mem_ubound,)
         gaps_lbounds = (mem_lbound,) + tuple(ubound for _, ubound, _, _, _ in self.map_info)
-        gaps = zip(gaps_lbounds, gaps_ubounds)
+        gaps = ((lbound, ubound) for lbound, ubound in zip(gaps_lbounds, gaps_ubounds) if lbound < maxaddr and minaddr < ubound)
 
         for lbound, ubound in gaps:
-            addr = self.align_up(lbound, align)
+            addr = self.align_up(max(minaddr, lbound), align)
             end = addr + size
 
             # is aligned range within gap and satisfying min / max requirements?
