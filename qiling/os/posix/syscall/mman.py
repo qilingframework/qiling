@@ -4,6 +4,7 @@
 #
 
 import os
+import re
 from enum import IntFlag
 from typing import Optional
 
@@ -15,23 +16,38 @@ from qiling.os.posix.const_mapping import *
 
 
 def ql_syscall_munmap(ql: Qiling, addr: int, length: int):
+    try:
+        # find addr's enclosing memory range
+        label = next(label for lbound, ubound, _, label, _ in ql.mem.get_mapinfo() if (lbound <= addr < ubound) and label.startswith(('[mmap]', '[mmap anonymous]')))
+    except StopIteration:
+        # nothing to do; cannot munmap what was not originally mmapped
+        ql.log.debug(f'munmap: enclosing area for {addr:#x} was not mmapped')
+    else:
+        # extract the filename from the label by removing the boxed prefix
+        fname = re.sub(r'^\[.+\]\s*', '', label)
 
-    # get all mapped fd with flag MAP_SHARED and we definitely dont want to wipe out share library
-    mapped_fd = [fd for fd in ql.os.fd if isinstance(fd, ql_file) and fd._is_map_shared and not (fd.name.endswith(".so") or fd.name.endswith(".dylib"))]
+        # if this is an anonymous mapping, there is no trailing file name
+        if fname:
+            try:
+                # find the file that was originally mmapped into this region, to flush the changes.
+                # if the fd was already closed, there is nothing left to do
+                fd = next(fd for fd in ql.os.fd if isinstance(fd, ql_file) and os.path.basename(fd.name) == fname)
+            except StopIteration:
+                ql.log.debug(f'munmap: could not find matching fd, it might have been closed')
+            else:
+                # flushing memory contents to file is required only if mapping is shared / not private
+                if fd._is_map_shared:
+                    ql.log.debug(f'munmap: flushing "{fname}"')
+                    content = ql.mem.read(addr, length)
 
-    if mapped_fd:
-        all_mem_info = [_mem_info for _, _, _, _mem_info, _ in ql.mem.map_info if _mem_info not in ("[mapped]", "[stack]", "[hook_mem]")]
+                    fd.lseek(fd._mapped_offset)
+                    fd.write(content)
 
-        for _fd in mapped_fd:
-            if _fd.name in [each.split()[-1] for each in all_mem_info]:
-                ql.log.debug("Flushing file: %s" % _fd.name)
-                # flushes changes to disk file
-                _buff = ql.mem.read(addr, length)
-                _fd.lseek(_fd._mapped_offset)
-                _fd.write(_buff)
+        # unmap the enclosing memory region
+        lbound = ql.mem.align(addr)
+        ubound = ql.mem.align_up(addr + length)
 
-    length = ql.mem.align_up(length)
-    ql.mem.unmap(addr, length)
+        ql.mem.unmap(lbound, ubound - lbound)
 
     return 0
 
