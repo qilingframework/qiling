@@ -202,17 +202,16 @@ def ql_syscall__llseek(ql: Qiling, fd: int, offset_high: int, offset_low: int, r
 
 
 def ql_syscall_brk(ql: Qiling, inp: int):
-    # current brk_address will be modified if inp is not NULL(zero)
-    # otherwise, just return current brk_address
-
     if inp:
         cur_brk_addr = ql.loader.brk_address
         new_brk_addr = ql.mem.align_up(inp)
 
-        if inp > cur_brk_addr: # increase current brk_address if inp is greater
+        if new_brk_addr > cur_brk_addr:
+            ql.log.debug(f'brk: increasing program break from {cur_brk_addr:#x} to {new_brk_addr:#x}')
             ql.mem.map(cur_brk_addr, new_brk_addr - cur_brk_addr, info="[brk]")
 
-        elif inp < cur_brk_addr: # shrink current bkr_address to inp if its smaller
+        elif new_brk_addr < cur_brk_addr:
+            ql.log.debug(f'brk: decreasing program break from {cur_brk_addr:#x} to {new_brk_addr:#x}')
             ql.mem.unmap(new_brk_addr, cur_brk_addr - new_brk_addr)
 
         ql.loader.brk_address = new_brk_addr
