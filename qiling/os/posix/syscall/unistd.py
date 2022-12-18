@@ -782,7 +782,7 @@ def __getdents_common(ql: Qiling, fd: int, dirp: int, count: int, *, is_64: bool
             # For some reason MACOS return int value is 64bit
             try:
                 packed_d_ino = (ql.pack(d_ino), n)
-            except: 
+            except:
                 packed_d_ino = (ql.pack64(d_ino), n)
 
             if is_64:

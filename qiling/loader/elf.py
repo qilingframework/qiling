@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -25,6 +25,7 @@ from qiling.os.linux.function_hook import FunctionHook
 from qiling.os.linux.syscall_nums import SYSCALL_NR
 from qiling.os.linux.kernel_api.hook import *
 from qiling.os.linux.kernel_api.kernel_api import hook_sys_open, hook_sys_read, hook_sys_write
+
 
 # auxiliary vector types
 # see: https://man7.org/linux/man-pages/man3/getauxval.3.html
@@ -53,12 +54,14 @@ class AUXV(IntEnum):
     AT_HWCAP2   = 26
     AT_EXECFN   = 31
 
+
 # start area memory for API hooking
 # we will reserve 0x1000 bytes for this (which contains multiple slots of 4/8 bytes, each for one api)
 API_HOOK_MEM = 0x1000000
 
 # memory for syscall table
 SYSCALL_MEM = API_HOOK_MEM + 0x1000
+
 
 class QlLoaderELF(QlLoader):
     def __init__(self, ql: Qiling):
@@ -77,12 +80,7 @@ class QlLoaderELF(QlLoader):
 
             return
 
-        section = {
-            32 : 'OS32',
-            64 : 'OS64'
-        }[self.ql.arch.bits]
-
-        self.profile = self.ql.os.profile[section]
+        self.profile = self.ql.os.profile[f'OS{self.ql.arch.bits}']
 
         # setup program stack
         stack_address = self.profile.getint('stack_address')
@@ -658,7 +656,7 @@ class QlLoaderELF(QlLoader):
         # pick up loadable sections
         for sec in elffile.iter_sections():
             if sec['sh_flags'] & SH_FLAGS.SHF_ALLOC:
-                # pad aggregated elf data to the offset of the current section 
+                # pad aggregated elf data to the offset of the current section
                 elfdata_mapping.extend(b'\x00' * (sec['sh_offset'] - len(elfdata_mapping)))
 
                 # aggregate section data

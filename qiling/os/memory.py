@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
 import bisect
-import os, re
+import os
+import re
 from typing import Any, Callable, Iterator, List, Mapping, Optional, Pattern, Sequence, Tuple, Union
 
 from unicorn import UC_PROT_NONE, UC_PROT_READ, UC_PROT_WRITE, UC_PROT_EXEC, UC_PROT_ALL
@@ -18,6 +19,7 @@ MapInfoEntry = Tuple[int, int, int, str, bool]
 MmioReadCallback  = Callable[[Qiling, int, int], int]
 MmioWriteCallback = Callable[[Qiling, int, int, int], None]
 
+
 class QlMemoryManager:
     """
     some ideas and code from:
@@ -30,9 +32,9 @@ class QlMemoryManager:
         self.mmio_cbs = {}
 
         bit_stuff = {
-            64 : (1 << 64) - 1,
-            32 : (1 << 32) - 1,
-            16 : (1 << 20) - 1   # 20bit address line
+            64: (1 << 64) - 1,
+            32: (1 << 32) - 1,
+            16: (1 << 20) - 1   # 20bit address line
         }
 
         if ql.arch.bits not in bit_stuff:
@@ -329,10 +331,10 @@ class QlMemoryManager:
             size = self.ql.arch.pointersize
 
         __unpack = {
-            1 : self.ql.unpack8,
-            2 : self.ql.unpack16,
-            4 : self.ql.unpack32,
-            8 : self.ql.unpack64
+            1: self.ql.unpack8,
+            2: self.ql.unpack16,
+            4: self.ql.unpack32,
+            8: self.ql.unpack64
         }.get(size)
 
         if __unpack is None:
@@ -364,10 +366,10 @@ class QlMemoryManager:
             size = self.ql.arch.pointersize
 
         __pack = {
-            1 : self.ql.pack8,
-            2 : self.ql.pack16,
-            4 : self.ql.pack32,
-            8 : self.ql.pack64
+            1: self.ql.pack8,
+            2: self.ql.pack16,
+            4: self.ql.pack32,
+            8: self.ql.pack64
         }.get(size)
 
         if __pack is None:
