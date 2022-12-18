@@ -62,44 +62,75 @@ def ql_syscall_issetugid(ql: Qiling):
     return 0
 
 
-def ql_syscall_getuid(ql: Qiling):
+def __getuid(ql: Qiling):
     return ql.os.uid
 
 
-def ql_syscall_getuid32(ql: Qiling):
+def __setuid(ql: Qiling, uid: int):
+    # TODO: security checks
+    ql.os.uid = uid
+
     return 0
+
+
+def __getgid(ql: Qiling):
+    return ql.os.gid
+
+
+def __setgid(ql: Qiling, gid: int):
+    # TODO: security checks
+    ql.os.gid = gid
+
+    return 0
+
+
+def ql_syscall_getuid(ql: Qiling):
+    return __getuid(ql)
+
+
+def ql_syscall_setuid(ql: Qiling, uid: int):
+    return __setuid(ql, uid)
+
+
+def ql_syscall_getuid32(ql: Qiling):
+    return __getuid(ql)
+
+
+def ql_syscall_setuid32(ql: Qiling, uid: int):
+    return __setuid(ql, uid)
+
+
+def ql_syscall_getgid(ql: Qiling):
+    return __getgid(ql)
+
+
+def ql_syscall_setgid(ql: Qiling, gid: int):
+    return __setgid(ql, gid)
 
 
 def ql_syscall_getgid32(ql: Qiling):
-    return 0
+    return __getgid(ql)
+
+
+def ql_syscall_setgid32(ql: Qiling, gid: int):
+    return __setgid(ql, gid)
 
 
 def ql_syscall_geteuid(ql: Qiling):
     return ql.os.euid
 
 
+def ql_syscall_seteuid(ql: Qiling):
+    return 0
+
+
 def ql_syscall_getegid(ql: Qiling):
     return ql.os.egid
-
-
-def ql_syscall_getgid(ql: Qiling):
-    return ql.os.gid
 
 
 def ql_syscall_setgroups(ql: Qiling, gidsetsize: int, grouplist: int):
     return 0
 
-
-def ql_syscall_setgid(ql: Qiling):
-    return 0
-
-
-def ql_syscall_setgid32(ql: Qiling):
-    return 0
-
-
-def ql_syscall_setuid(ql: Qiling):
-    return 0
 
 def ql_syscall_setresuid(ql: Qiling):
     return 0
