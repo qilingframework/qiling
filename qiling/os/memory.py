@@ -298,8 +298,9 @@ class QlMemoryManager:
         for lbound, ubound, perms, label, read_cb, write_cb in mem_dict['mmio']:
             self.ql.log.debug(f"restoring mmio range: {lbound:#08x} {ubound:#08x} {label}")
 
+            size = ubound - lbound
             if not self.is_mapped(lbound, size):
-                self.map_mmio(lbound, ubound - lbound, read_cb, write_cb, info=label)
+                self.map_mmio(lbound, size, read_cb, write_cb, info=label)
 
     def read(self, addr: int, size: int) -> bytearray:
         """Read bytes from memory.
