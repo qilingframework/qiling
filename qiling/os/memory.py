@@ -3,8 +3,9 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+import bisect
 import os, re
-from typing import Any, Callable, Iterator, List, Mapping, MutableSequence, Optional, Pattern, Sequence, Tuple, Union
+from typing import Any, Callable, Iterator, List, Mapping, Optional, Pattern, Sequence, Tuple, Union
 
 from unicorn import UC_PROT_NONE, UC_PROT_READ, UC_PROT_WRITE, UC_PROT_EXEC, UC_PROT_ALL
 
@@ -25,7 +26,7 @@ class QlMemoryManager:
 
     def __init__(self, ql: Qiling):
         self.ql = ql
-        self.map_info: MutableSequence[MapInfoEntry] = []
+        self.map_info: List[MapInfoEntry] = []
         self.mmio_cbs = {}
 
         bit_stuff = {
@@ -91,8 +92,7 @@ class QlMemoryManager:
             is_mmio: memory range is mmio
         """
 
-        self.map_info.append((mem_s, mem_e, mem_p, mem_info, is_mmio))
-        self.map_info = sorted(self.map_info, key=lambda tp: tp[0])
+        bisect.insort(self.map_info, (mem_s, mem_e, mem_p, mem_info, is_mmio))
 
     def del_mapinfo(self, mem_s: int, mem_e: int):
         """Subtract a memory range from map.
@@ -102,30 +102,33 @@ class QlMemoryManager:
             mem_e: memory range end
         """
 
-        tmp_map_info: MutableSequence[MapInfoEntry] = []
+        overlap_ranges = [idx for idx, (lbound, ubound, _, _, _) in enumerate(self.map_info) if (mem_s < ubound) and (mem_e > lbound)]
 
-        for s, e, p, info, mmio in self.map_info:
-            if e <= mem_s:
-                tmp_map_info.append((s, e, p, info, mmio))
-                continue
+        def __split_overlaps():
+            for idx in overlap_ranges:
+                lbound, ubound, perms, label, is_mmio = self.map_info[idx]
 
-            if s >= mem_e:
-                tmp_map_info.append((s, e, p, info, mmio))
-                continue
+                if lbound < mem_s:
+                    yield (lbound, mem_s, perms, label, is_mmio)
 
-            if s < mem_s:
-                tmp_map_info.append((s, mem_s, p, info, mmio))
+                if mem_e < ubound:
+                    yield (mem_e, ubound, perms, label, is_mmio)
 
-            if s == mem_s:
-                pass
+        # indices of first and last overlapping ranges. since map info is always
+        # sorted, we know that all overlapping rages are consecutive, so i1 > i0
+        i0 = overlap_ranges[0]
+        i1 = overlap_ranges[-1]
 
-            if e > mem_e:
-                tmp_map_info.append((mem_e, e, p, info, mmio))
+        # create new entries by splitting overlapping ranges.
+        # this has to be done before removing overlapping entries
+        new_entries = tuple(__split_overlaps())
 
-            if e == mem_e:
-                pass
+        # remove overlapping entries
+        del self.map_info[i0:i1 + 1]
 
-        self.map_info = tmp_map_info
+        # add new ones
+        for entry in new_entries:
+            bisect.insort(self.map_info, entry)
 
     def change_mapinfo(self, mem_s: int, mem_e: int, mem_p: Optional[int] = None, mem_info: Optional[str] = None):
         tmp_map_info: Optional[MapInfoEntry] = None
