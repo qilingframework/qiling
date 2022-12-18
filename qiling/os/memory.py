@@ -435,10 +435,13 @@ class QlMemoryManager:
 
         # map info is about to change during the unmapping loop, so we have to
         # determine the relevant ranges beforehand
-        mapped = [(lbound, ubound - lbound) for lbound, ubound, _, _, _ in self.map_info if (mem_s < ubound) and (mem_e > lbound)]
+        mapped = [(lbound, ubound) for lbound, ubound, _, _, _ in self.map_info if (mem_s < ubound) and (mem_e > lbound)]
 
-        for range in mapped:
-            self.unmap(*range)
+        for lbound, ubound in mapped:
+            lbound = max(mem_s, lbound)
+            ubound = min(mem_e, ubound)
+
+            self.unmap(lbound, ubound - lbound)
 
     def unmap_all(self) -> None:
         """Reclaim the entire memory space.
