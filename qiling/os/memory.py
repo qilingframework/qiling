@@ -425,6 +425,21 @@ class QlMemoryManager:
         if (addr, addr + size) in self.mmio_cbs:
             del self.mmio_cbs[(addr, addr+size)]
 
+    def unmap_between(self, mem_s: int, mem_e: int) -> None:
+        """Reclaim any allocated memory region within the specified range.
+
+        Args:
+            mem_s: range start
+            mem_s: range end (exclusive)
+        """
+
+        # map info is about to change during the unmapping loop, so we have to
+        # determine the relevant ranges beforehand
+        mapped = [(lbound, ubound - lbound) for lbound, ubound, _, _, _ in self.map_info if (mem_s < ubound) and (mem_e > lbound)]
+
+        for range in mapped:
+            self.unmap(*range)
+
     def unmap_all(self) -> None:
         """Reclaim the entire memory space.
         """

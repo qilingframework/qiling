@@ -133,11 +133,8 @@ def syscall_mmap_impl(ql: Qiling, addr: int, length: int, prot: int, flags: int,
             return -1   # errno: EEXIST
 
     elif flags & mmap_flags.MAP_FIXED:
-        for page in range(lbound, ubound, pagesize):
-            if ql.mem.is_mapped(page, pagesize):
-                ql.log.debug(f'{api_name}: unmapping page at {page:#x} to make room for fixed mapping')
-
-                ql.mem.unmap(page, pagesize)
+        ql.log.debug(f'{api_name}: unmapping memory between {lbound:#x}-{ubound:#x} to make room for fixed mapping')
+        ql.mem.unmap_between(lbound, ubound)
 
     #############################
     # determine mapping content #
@@ -145,7 +142,7 @@ def syscall_mmap_impl(ql: Qiling, addr: int, length: int, prot: int, flags: int,
 
     if flags & mmap_flags.MAP_ANONYMOUS:
         data = b'' if flags & mmap_flags.MAP_UNINITIALIZED else b'\x00' * length
-        label = '[anonymous mapping]'
+        label = '[mmap anonymous]'
 
     else:
         fd = ql.unpacks(ql.pack(fd))
@@ -170,17 +167,24 @@ def syscall_mmap_impl(ql: Qiling, addr: int, length: int, prot: int, flags: int,
         f.seek(pgoffset)
 
         data = f.read(length)
-        label = os.path.basename(fname)
+        label = f'[mmap] {os.path.basename(fname)}'
 
-    # finally, we have everything we need to map the memory
-    ql.mem.map(lbound, mapping_size, info=label)
+    try:
+        # finally, we have everything we need to map the memory.
+        #
+        # we have to map it first as writeable so we can write data in it.
+        # permissions are adjusted afterwards with protect.
+        ql.mem.map(lbound, mapping_size, info=label)
+    except QlMemoryMappedError:
+        ql.log.debug(f'{api_name}: out of memory')
+        return -1   # errono: ENOMEM
+    else:
+        if data:
+            ql.mem.write(addr, data)
 
-    if data:
-        ql.mem.write(addr, data)
+        ql.mem.protect(lbound, mapping_size, prot)
 
-    ql.mem.protect(lbound, mapping_size, prot)
-
-    return addr
+        return addr
 
 
 def ql_syscall_old_mmap(ql: Qiling, struct_mmap_args: int):
