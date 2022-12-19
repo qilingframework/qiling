@@ -647,6 +647,23 @@ class linux_mmap_flags(Flag):
     MAP_UNINITIALIZED   = 0x04000000
 
 
+# see: https://github.com/freebsd/freebsd-src/blob/master/sys/sys/mman.h
+class freebsd_mmap_flags(Flag):
+    MAP_FILE            = 0x00000000
+    MAP_SHARED          = 0x00000001
+    MAP_PRIVATE         = 0x00000002
+
+    MAP_FIXED           = 0x00000010
+    MAP_STACK           = 0x00000400
+    MAP_NOSYNC          = 0x00000800
+    MAP_ANONYMOUS       = 0x00001000
+    MAP_GUARD           = 0x00002000
+    MAP_EXCL            = 0x00004000
+    MAP_NOCORE          = 0x00020000
+
+    # define this alias for compatibility with other os flags
+    MAP_FIXED_NOREPLACE = MAP_EXCL
+
 # see: https://github.com/torvalds/linux/blob/master/arch/mips/include/uapi/asm/mman.h
 class mips_mmap_flags(Flag):
     MAP_FILE            = 0x00000000
