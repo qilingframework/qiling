@@ -94,10 +94,14 @@ if __name__ == "__main__":
     ql = Qiling(code=X8664_WIN, archtype=QL_ARCH.X8664, ostype=QL_OS.WINDOWS, rootfs=r'rootfs/x8664_windows')
     ql.run()
 
-    print("\nFreeBSD x86-64 Shellcode")
-    ql = Qiling(code=X8664_FBSD, archtype=QL_ARCH.X8664, ostype=QL_OS.FREEBSD, verbose=QL_VERBOSE.DEBUG)
-    ql.run()
+    # FIXME: freebsd sockets are currently broken.
+    #
+    # print("\nFreeBSD x86-64 Shellcode")
+    # ql = Qiling(code=X8664_FBSD, archtype=QL_ARCH.X8664, ostype=QL_OS.FREEBSD, verbose=QL_VERBOSE.DEBUG)
+    # ql.run()
 
-    print("\nMacOS x86-64 Shellcode")
-    ql = Qiling(code=X8664_MACOS, archtype=QL_ARCH.X8664, ostype=QL_OS.MACOS, verbose=QL_VERBOSE.DEBUG)
-    ql.run()
+    # FIXME: macos shellcode loader is currently broken
+    #
+    # print("\nMacOS x86-64 Shellcode")
+    # ql = Qiling(code=X8664_MACOS, archtype=QL_ARCH.X8664, ostype=QL_OS.MACOS, verbose=QL_VERBOSE.DEBUG)
+    # ql.run()
