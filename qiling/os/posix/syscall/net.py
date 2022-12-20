@@ -44,6 +44,7 @@ def ql_syscall_socketcall(ql: Qiling, call: int, args: int):
         SOCKETCALL.SYS_ACCEPT:      ql_syscall_accept,
         SOCKETCALL.SYS_GETSOCKNAME: ql_syscall_getsockname,
         SOCKETCALL.SYS_GETPEERNAME: ql_syscall_getpeername,
+        SOCKETCALL.SYS_SOCKETPAIR:  ql_syscall_socketpair,
         SOCKETCALL.SYS_SEND:        ql_syscall_send,
         SOCKETCALL.SYS_RECV:        ql_syscall_recv,
         SOCKETCALL.SYS_SENDTO:      ql_syscall_sendto,

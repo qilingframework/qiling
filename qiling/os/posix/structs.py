@@ -9,6 +9,22 @@ from qiling.const import QL_ENDIAN
 from qiling.os import struct
 
 
+# FIXME: freebsd socket structures differ from the unix ones by specifying the
+# sa_len and sa_family fields, one byte each, instead of using one short int
+# for sa_family.
+#
+# using the sturcutres as they defined here causes freebsd socket structures to
+# show high (hence unrecognized) values for sa_family. messing all sturctures
+# with "if ql.os.type == QL_OS.FREEBSD" is a cumbersome workaround and not
+# maintainable, let alone the code should also refer to sa_len and populate it
+# appropriately.
+#
+# unfortunately, until there is an elegant implemetation that takes freebsd
+# sockets into account freebsd sockets are broken.
+#
+# for more details: https://docs.freebsd.org/en/books/developers-handbook/sockets/
+
+
 def make_sockaddr(archbits: int, endian: QL_ENDIAN):
     Struct = struct.get_aligned_struct(archbits, endian)
 
