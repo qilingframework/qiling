@@ -118,7 +118,14 @@ class QlQdb(cmd.Cmd, QlDebugger):
         if getattr(self.ql.arch, 'is_thumb', False):
             address |= 1
 
-        self.ql.emu_start(begin=address, end=end, count=count)
+        # assume we're running PE if on Windows
+        if self.ql.os.type == QL_OS.WINDOWS:
+            self.ql.count = count
+            self.ql.entry_point = address
+            self.ql.os.run()
+
+        else:
+            self.ql.emu_start(begin=address, end=end, count=count)
 
     @contextmanager
     def _save(self, reg=True, mem=True, hw=False, fd=False, cpu_context=False, os=False, loader=False):
