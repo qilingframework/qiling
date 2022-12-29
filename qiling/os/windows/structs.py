@@ -6,60 +6,21 @@
 import ctypes
 
 from enum import IntEnum
+from functools import lru_cache
 
-from qiling import Qiling
+from qiling.os import struct
+from qiling.os.windows.const import MAX_PATH
 from qiling.os.windows.handle import Handle
 from qiling.exception import QlErrorNotImplemented
 from .wdk_const import IRP_MJ_MAXIMUM_FUNCTION, PROCESSOR_FEATURE_MAX
 
-def __make_struct(archbits: int):
-    """Provide a ctypes Structure base class based on the underlying
-    architecture properties.
+
+def make_teb(archbits: int):
+    """Generate a TEB structure class.
     """
 
-    class Struct(ctypes.LittleEndianStructure):
-        _pack_ = archbits // 8
-
-    return Struct
-
-
-def __select_native_type(archbits: int):
-    """Select a ctypes integer type with the underlying architecture
-    native size.
-    """
-
-    __type = {
-        32 : ctypes.c_uint32,
-        64 : ctypes.c_uint64
-    }
-
-    return __type[archbits]
-
-
-def __select_pointer_type(archbits: int):
-    """Provide a pointer base class based on the underlying
-    architecture properties.
-    """
-
-    native_type = __select_native_type(archbits)
-    Struct = __make_struct(archbits)
-
-    class Pointer(Struct):
-        _fields_ = (
-            ('value', native_type),
-        )
-
-    return Pointer
-
-
-def make_teb(archbits: int, *args, **kwargs):
-    """Initialize a TEB structure.
-
-    Additional arguments may be used to initialize specific TEB fields.
-    """
-
-    native_type = __select_native_type(archbits)
-    Struct = __make_struct(archbits)
+    native_type = struct.get_native_type(archbits)
+    Struct = struct.get_aligned_struct(archbits)
 
     class TEB(Struct):
         _fields_ = (
@@ -87,17 +48,28 @@ def make_teb(archbits: int, *args, **kwargs):
             ('ReservedOS',             ctypes.c_byte * 216)
         )
 
-    return TEB(*args, **kwargs)
+    return TEB
 
 
-def make_peb(archbits: int, *args, **kwargs):
-    """Initialize a PEB structure.
-
-    Additional arguments may be used to initialize specific PEB fields.
+def make_peb(archbits: int):
+    """Generate a PEB structure class.
     """
 
-    native_type = __select_native_type(archbits)
-    Struct = __make_struct(archbits)
+    native_type = struct.get_native_type(archbits)
+    Struct = struct.get_aligned_struct(archbits)
+
+    # expected peb structure size
+    expected_size = {
+        32: 0x47c,
+        64: 0x7c8
+    }[archbits]
+
+    # pad to expected size based on currently defined set of fields.
+    # this is not very elegant, but ctypes.resize does not work on classes
+    padding_size = expected_size - {
+        32: 0x70,
+        64: 0xc8
+    }[archbits]
 
     # https://www.geoffchappell.com/studies/windows/win32/ntdll/structs/peb/index.htm
     class PEB(Struct):
@@ -131,37 +103,27 @@ def make_peb(archbits: int, *args, **kwargs):
             ('UnicodeCaseTableData',     native_type),
             ('NumberOfProcessors',       ctypes.c_int32),
             ('NtGlobalFlag',             ctypes.c_int32),
-            ('CriticalSectionTimeout',   native_type)
-            # ... more
+            ('CriticalSectionTimeout',   native_type),
+
+            # more fields to be added here. in the meantime, pad the
+            # structure to the size it is expected to be
+            ('_padding', ctypes.c_char * padding_size)
         )
 
-    obj_size = {
-        32: 0x047c,
-        64: 0x07c8
-    }[archbits]
+    # make sure mismatches in peb size are not overlooked
+    assert PEB.sizeof() == expected_size
 
-    obj = PEB(*args, **kwargs)
-    ctypes.resize(obj, obj_size)
-
-    return obj
+    return PEB
 
 
 # https://docs.microsoft.com/en-us/windows/win32/api/subauth/ns-subauth-unicode_string
-#
-# typedef struct _UNICODE_STRING {
-#     USHORT Length;
-#     USHORT MaximumLength;
-#     PWSTR  Buffer;
-# } UNICODE_STRING, *PUNICODE_STRING;
-
-def make_unicode_string(archbits: int, *args, **kwargs):
-    """Initialize a Unicode String structure.
-
-    Additional arguments may be used to initialize specific structure fields.
+@lru_cache(maxsize=2)
+def make_unicode_string(archbits: int):
+    """Generate a UNICODE_STRING structure class.
     """
 
-    native_type = __select_native_type(archbits)
-    Struct = __make_struct(archbits)
+    native_type = struct.get_native_type(archbits)
+    Struct = struct.get_aligned_struct(archbits)
 
     class UNICODE_STRING(Struct):
         _fields_ = (
@@ -170,162 +132,117 @@ def make_unicode_string(archbits: int, *args, **kwargs):
             ('Buffer',        native_type)
         )
 
-    return UNICODE_STRING(*args, **kwargs)
+    return UNICODE_STRING
+
 
 # https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/ns-wdm-_driver_object
-#
-# typedef struct _DRIVER_OBJECT {
-#     CSHORT             Type;
-#     CSHORT             Size;
-#     PDEVICE_OBJECT     DeviceObject;
-#     ULONG              Flags;
-#     PVOID              DriverStart;
-#     ULONG              DriverSize;
-#     PVOID              DriverSection;
-#     PDRIVER_EXTENSION  DriverExtension;
-#     UNICODE_STRING     DriverName;
-#     PUNICODE_STRING    HardwareDatabase;
-#     PFAST_IO_DISPATCH  FastIoDispatch;
-#     PDRIVER_INITIALIZE DriverInit;
-#     PDRIVER_STARTIO    DriverStartIo;
-#     PDRIVER_UNLOAD     DriverUnload;
-#     PDRIVER_DISPATCH   MajorFunction[IRP_MJ_MAXIMUM_FUNCTION + 1];
-# } DRIVER_OBJECT, *PDRIVER_OBJECT;
+def make_driver_object(archbits: int):
+    """Generate a DRIVER_OBJECT structure class.
+    """
 
-def make_driver_object(ql: Qiling, base: int, archbits: int):
-    native_type = __select_native_type(archbits)
-    pointer_type = __select_pointer_type(archbits)
-    Struct = __make_struct(archbits)
+    native_type = struct.get_native_type(archbits)
+    Struct = struct.get_aligned_struct(archbits)
 
-    ucstrtype = make_unicode_string(archbits).__class__
+    ucstr_struct = make_unicode_string(archbits)
 
     class DRIVER_OBJECT(Struct):
         _fields_ = (
-            ('_Type',             ctypes.c_uint16),
-            ('_Size',             ctypes.c_uint16),
-            ('_DeviceObject',     pointer_type),
-            ('_Flags',            ctypes.c_uint32),
-            ('_DriverStart',      pointer_type),
-            ('_DriverSize',       ctypes.c_uint32),
-            ('_DriverSection',    pointer_type),
-            ('_DriverExtension',  pointer_type),
-            ('_DriverName',       ucstrtype),
-            ('_HardwareDatabase', pointer_type),
-            ('_FastIoDispatch',   pointer_type),
-            ('_DriverInit',       pointer_type),
-            ('_DriverStartIo',    pointer_type),
-            ('_DriverUnload',     pointer_type),
-            ('_MajorFunction',    native_type * (IRP_MJ_MAXIMUM_FUNCTION + 1))
+            ('Type',             ctypes.c_uint16),
+            ('Size',             ctypes.c_uint16),
+            ('DeviceObject',     native_type),
+            ('Flags',            ctypes.c_uint32),
+            ('DriverStart',      native_type),
+            ('DriverSize',       ctypes.c_uint32),
+            ('DriverSection',    native_type),
+            ('DriverExtension',  native_type),
+            ('DriverName',       ucstr_struct),
+            ('HardwareDatabase', native_type),
+            ('FastIoDispatch',   native_type),
+            ('DriverInit',       native_type),
+            ('DriverStartIo',    native_type),
+            ('DriverUnload',     native_type),
+            ('MajorFunction',    native_type * (IRP_MJ_MAXIMUM_FUNCTION + 1))
         )
 
-        def __read_obj(self) -> 'DRIVER_OBJECT':
-            data = ql.mem.read(base, ctypes.sizeof(self))
+    return DRIVER_OBJECT
 
-            return self.__class__.from_buffer(data)
 
-        def __write_obj(self) -> None:
-            ql.mem.write(base, bytes(self))
-
-        # get MajorFunction
-        @property
-        def MajorFunction(self):
-            obj = self.__read_obj()
-
-            return getattr(obj, '_MajorFunction')
-
-        @property
-        def DeviceObject(self):
-            obj = self.__read_obj()
-
-            return getattr(obj, '_DeviceObject').value
-
-        @DeviceObject.setter
-        def DeviceObject(self, value):
-            obj = self.__read_obj()
-            getattr(obj, '_DeviceObject').value = value
-
-            obj.__write_obj()
-
-        @property
-        def DriverUnload(self):
-            obj = self.__read_obj()
-
-            return getattr(obj, '_DriverUnload').value
-
-    return DRIVER_OBJECT()
-
-class KSYSTEM_TIME(ctypes.Structure):
+class KSYSTEM_TIME(struct.BaseStructEL):
     _fields_ = (
-        ('LowPart', ctypes.c_uint32),
+        ('LowPart',   ctypes.c_uint32),
         ('High1Time', ctypes.c_int32),
         ('High2Time', ctypes.c_int32)
     )
 
 
-class LARGE_INTEGER_DUMMYSTRUCTNAME(ctypes.LittleEndianStructure):
+class _LARGE_INTEGER(struct.BaseStructEL):
     _fields_ = (
-        ('LowPart', ctypes.c_uint32),
-        ('HighPart', ctypes.c_int32),
+        ('LowPart',  ctypes.c_uint32),
+        ('HighPart', ctypes.c_int32)
     )
 
 
 class LARGE_INTEGER(ctypes.Union):
     _fields_ = (
-        ('u', LARGE_INTEGER_DUMMYSTRUCTNAME),
-        ('QuadPart', ctypes.c_int64),
+        ('u', _LARGE_INTEGER),
+        ('QuadPart', ctypes.c_int64)
     )
 
-# https://www.geoffchappell.com/studies/windows/km/ntoskrnl/structs/kuser_shared_data/index.htm
-#
-# struct information:
-# https://doxygen.reactos.org/d8/dae/modules_2rostests_2winetests_2ntdll_2time_8c_source.html
 
-class KUSER_SHARED_DATA(ctypes.LittleEndianStructure):
+# see:
+# https://www.geoffchappell.com/studies/windows/km/ntoskrnl/structs/kuser_shared_data/index.htm
+# https://doxygen.reactos.org/d7/deb/xdk_2ketypes_8h_source.html#l01155
+
+class KUSER_SHARED_DATA(struct.BaseStructEL):
     _fields_ = (
-        ('TickCountLowDeprecated', ctypes.c_uint32),
-        ('TickCountMultiplier', ctypes.c_uint32),
-        ('InterruptTime', KSYSTEM_TIME),
-        ('SystemTime', KSYSTEM_TIME),
-        ('TimeZoneBias', KSYSTEM_TIME),
-        ('ImageNumberLow', ctypes.c_uint16),
-        ('ImageNumberHigh', ctypes.c_uint16),
-        ('NtSystemRoot', ctypes.c_uint16 * 260),
-        ('MaxStackTraceDepth', ctypes.c_uint32),
-        ('CryptoExponent', ctypes.c_uint32),
-        ('TimeZoneId', ctypes.c_uint32),
-        ('LargePageMinimum', ctypes.c_uint32),
-        ('Reserved2', ctypes.c_uint32 * 7),
-        ('NtProductType', ctypes.c_uint32),
-        ('ProductTypeIsValid', ctypes.c_uint32),
-        ('NtMajorVersion', ctypes.c_uint32),
-        ('NtMinorVersion', ctypes.c_uint32),
-        ('ProcessorFeatures', ctypes.c_uint8 * PROCESSOR_FEATURE_MAX),
-        ('Reserved1', ctypes.c_uint32),
-        ('Reserved3', ctypes.c_uint32),
-        ('TimeSlip', ctypes.c_uint32),
-        ('AlternativeArchitecture', ctypes.c_uint32),
-        ('AltArchitecturePad', ctypes.c_uint32),
-        ('SystemExpirationDate', LARGE_INTEGER),
-        ('SuiteMask', ctypes.c_uint32),
-        ('KdDebuggerEnabled', ctypes.c_uint8),
-        ('NXSupportPolicy', ctypes.c_uint8),
-        ('ActiveConsoleId', ctypes.c_uint32),
-        ('DismountCount', ctypes.c_uint32),
-        ('ComPlusPackage', ctypes.c_uint32),
+        ('TickCountLowDeprecated',      ctypes.c_uint32),
+        ('TickCountMultiplier',         ctypes.c_uint32),
+        ('InterruptTime',               KSYSTEM_TIME),
+        ('SystemTime',                  KSYSTEM_TIME),
+        ('TimeZoneBias',                KSYSTEM_TIME),
+        ('ImageNumberLow',              ctypes.c_uint16),
+        ('ImageNumberHigh',             ctypes.c_uint16),
+        ('NtSystemRoot',                ctypes.c_wchar * MAX_PATH),
+        ('MaxStackTraceDepth',          ctypes.c_uint32),
+        ('CryptoExponent',              ctypes.c_uint32),
+        ('TimeZoneId',                  ctypes.c_uint32),
+        ('LargePageMinimum',            ctypes.c_uint32),
+        ('Reserved2',                   ctypes.c_uint32 * 7),
+        ('NtProductType',               ctypes.c_uint32),
+        ('ProductTypeIsValid',          ctypes.c_uint32),
+        ('NtMajorVersion',              ctypes.c_uint32),
+        ('NtMinorVersion',              ctypes.c_uint32),
+        ('ProcessorFeatures',           ctypes.c_uint8 * PROCESSOR_FEATURE_MAX),
+        ('Reserved1',                   ctypes.c_uint32),
+        ('Reserved3',                   ctypes.c_uint32),
+        ('TimeSlip',                    ctypes.c_uint32),
+        ('AlternativeArchitecture',     ctypes.c_uint32),
+        ('AltArchitecturePad',          ctypes.c_uint32),
+        ('SystemExpirationDate',        LARGE_INTEGER),
+        ('SuiteMask',                   ctypes.c_uint32),
+        ('KdDebuggerEnabled',           ctypes.c_uint8),
+        ('NXSupportPolicy',             ctypes.c_uint8),
+        ('ActiveConsoleId',             ctypes.c_uint32),
+        ('DismountCount',               ctypes.c_uint32),
+        ('ComPlusPackage',              ctypes.c_uint32),
         ('LastSystemRITEventTickCount', ctypes.c_uint32),
-        ('NumberOfPhysicalPages', ctypes.c_uint32),
-        ('SafeBootMode', ctypes.c_uint8),
-        ('TscQpcData', ctypes.c_uint8),
-        ('TscQpcFlags', ctypes.c_uint8),
-        ('TscQpcPad', ctypes.c_uint8 * 3),
-        ('SharedDataFlags', ctypes.c_uint8),
-        ('DataFlagsPad', ctypes.c_uint8 * 3),
-        ('TestRetInstruction', ctypes.c_uint8),
-        ('_padding0', ctypes.c_uint8 * 0x2F8))
+        ('NumberOfPhysicalPages',       ctypes.c_uint32),
+        ('SafeBootMode',                ctypes.c_uint8),
+        ('TscQpcData',                  ctypes.c_uint8),    # also: VirtualizationFlags
+        ('TscQpcFlags',                 ctypes.c_uint8),
+        ('TscQpcPad',                   ctypes.c_uint8 * 3),
+        ('SharedDataFlags',             ctypes.c_uint8),
+        ('DataFlagsPad',                ctypes.c_uint8 * 3),
+        ('TestRetInstruction',          ctypes.c_uint8),
+
+        # pad structure to expected structure size
+        ('_padding0', ctypes.c_uint8 * 0x2F8)
+    )
+
 
 def make_list_entry(archbits: int):
-    native_type = __select_native_type(archbits)
-    Struct = __make_struct(archbits)
+    native_type = struct.get_native_type(archbits)
+    Struct = struct.get_aligned_struct(archbits)
 
     class LIST_ENTRY(Struct):
         _fields_ = (
@@ -335,29 +252,30 @@ def make_list_entry(archbits: int):
 
     return LIST_ENTRY
 
-def make_device_object(archbits: int):
-    native_type = __select_native_type(archbits)
-    pointer_type = __select_pointer_type(archbits)
-    Struct = __make_struct(archbits)
 
-    LIST_ENTRY = make_list_entry(archbits)
+def make_device_object(archbits: int):
+    native_type = struct.get_native_type(archbits)
+    Struct = struct.get_aligned_struct(archbits)
+    Union = struct.get_aligned_union(archbits)
+
+    pointer_type = native_type
+    ListEntry = make_list_entry(archbits)
 
     class KDEVICE_QUEUE_ENTRY(Struct):
         _fields_ = (
-            ('DeviceListEntry', LIST_ENTRY),
+            ('DeviceListEntry', ListEntry),
             ('SortKey', ctypes.c_uint32),
             ('Inserted', ctypes.c_uint8)
         )
 
     class WAIT_ENTRY(Struct):
         _fields_ = (
-            ('DmaWaitEntry', LIST_ENTRY),
+            ('DmaWaitEntry', ListEntry),
             ('NumberOfChannels', ctypes.c_uint32),
             ('DmaContext', ctypes.c_uint32)
         )
 
-    class WAIT_QUEUE_UNION(ctypes.Union):
-        _pack_ = archbits // 8
+    class WAIT_QUEUE_UNION(Union):
         _fields_ = (
             ("WaitQueueEntry", KDEVICE_QUEUE_ENTRY),
             ("Dma", WAIT_ENTRY)
@@ -378,15 +296,10 @@ def make_device_object(archbits: int):
         _fields_ = (
             ('Type', ctypes.c_int16),
             ('Size', ctypes.c_int16),
-            ('DeviceListHead', LIST_ENTRY),
+            ('DeviceListHead', ListEntry),
             ('Lock', ctypes.c_uint32),
             ('Busy', ctypes.c_uint8)
         )
-
-    # class SINGLE_LIST_ENTRY(Struct):
-    #     _fields_ = (
-    #         ('Next', native_type),
-    #     )
 
     # https://github.com/ntdiff/headers/blob/master/Win10_1507_TS1/x64/System32/hal.dll/Standalone/_KDPC.h
     class KDPC(Struct):
@@ -394,7 +307,7 @@ def make_device_object(archbits: int):
             ('Type', ctypes.c_uint8),
             ('Importance', ctypes.c_uint8),
             ('Number', ctypes.c_uint16),
-            ('DpcListEntry', LIST_ENTRY),
+            ('DpcListEntry', ListEntry),
             ('DeferredRoutine', pointer_type),
             ('DeferredContext', pointer_type),
             ('SystemArgument1', pointer_type),
@@ -406,7 +319,7 @@ def make_device_object(archbits: int):
         _fields_ = (
             ('Lock', ctypes.c_int32),
             ('SignalState', ctypes.c_int32),
-            ('WaitListHead', LIST_ENTRY)
+            ('WaitListHead', ListEntry)
         )
 
     # https://docs.microsoft.com/vi-vn/windows-hardware/drivers/ddi/wdm/ns-wdm-_device_object
@@ -439,36 +352,15 @@ def make_device_object(archbits: int):
             ('Reserved', pointer_type)
         )
 
-    return DEVICE_OBJECT()
+    return DEVICE_OBJECT
 
 
-# struct IO_STATUS_BLOCK {
-#   union {
-#     NTSTATUS Status;
-#     PVOID    Pointer;
-#   } DUMMYUNIONNAME;
-#   ULONG_PTR Information;
-# };
+def make_io_stack_location(archbits: int):
+    native_type = struct.get_native_type(archbits)
+    Struct = struct.get_aligned_struct(archbits)
+    Union = struct.get_aligned_union(archbits)
 
-def make_irp(archbits: int):
-    pointer_type = __select_pointer_type(archbits)
-    native_type = __select_native_type(archbits)
-    Struct = __make_struct(archbits)
-
-    LIST_ENTRY = make_list_entry(archbits)
-
-    class IO_STATUS_BLOCK_DUMMY(ctypes.Union):
-        _pack_ = archbits // 8
-        _fields_ = (
-            ('Status', ctypes.c_int32),
-            ('Pointer', pointer_type)
-        )
-
-    class IO_STATUS_BLOCK(Struct):
-        _fields_ = (
-            ('Status', IO_STATUS_BLOCK_DUMMY),
-            ('Information', pointer_type)
-        )
+    pointer_type = native_type
 
     class IO_STACK_LOCATION_FILESYSTEMCONTROL(Struct):
         _fields_ = (
@@ -494,8 +386,7 @@ def make_irp(archbits: int):
             ('ByteOffset', LARGE_INTEGER)
         )
 
-    class IO_STACK_LOCATION_PARAM(ctypes.Union):
-        _pack_ = archbits // 8
+    class IO_STACK_LOCATION_PARAM(Union):
         _fields_ = (
             ('FileSystemControl', IO_STACK_LOCATION_FILESYSTEMCONTROL),
             ('DeviceIoControl', IO_STACK_LOCATION_DEVICEIOCONTROL),
@@ -512,11 +403,33 @@ def make_irp(archbits: int):
             ('DeviceObject', pointer_type),
             ('FileObject', pointer_type),
             ('CompletionRoutine', pointer_type),
-            ('Context', pointer_type),
+            ('Context', pointer_type)
         )
 
-    class AssociatedIrp(ctypes.Union):
-        _pack_ = archbits // 8
+    return IO_STACK_LOCATION
+
+
+def make_irp(archbits: int):
+    native_type = struct.get_native_type(archbits)
+    Struct = struct.get_aligned_struct(archbits)
+    Union = struct.get_aligned_union(archbits)
+
+    pointer_type = native_type
+    ListEntry = make_list_entry(archbits)
+
+    class IO_STATUS_BLOCK_DUMMY(Union):
+        _fields_ = (
+            ('Status', ctypes.c_int32),
+            ('Pointer', pointer_type)
+        )
+
+    class IO_STATUS_BLOCK(Struct):
+        _fields_ = (
+            ('Status', IO_STATUS_BLOCK_DUMMY),
+            ('Information', pointer_type)
+        )
+
+    class AssociatedIrp(Union):
         _fields_ = (
             ('MasterIrp', pointer_type),
             ('IrpCount', ctypes.c_uint32),
@@ -532,20 +445,20 @@ def make_irp(archbits: int):
             ('MdlAddress', pointer_type),
             ('Flags', ctypes.c_uint32),
             ('AssociatedIrp', AssociatedIrp),
-            ('ThreadListEntry', LIST_ENTRY),
+            ('ThreadListEntry', ListEntry),
             ('IoStatus', IO_STATUS_BLOCK),
-            ('_padding1', ctypes.c_char * 8),
+            ('_padding3', ctypes.c_char * 8),
             ('UserIosb', pointer_type),
             ('UserEvent', pointer_type),
             ('Overlay', ctypes.c_char * (8 * sz_factor)),
             ('CancelRoutine', pointer_type),
             ('UserBuffer', pointer_type),
             ('_padding1', ctypes.c_char * (32 * sz_factor)),
-            ('irpstack', ctypes.POINTER(IO_STACK_LOCATION)),
+            ('irpstack', pointer_type),     # points to a IO_STACK_LOCATION structure
             ('_padding2', ctypes.c_char * (8 * sz_factor))
         )
 
-    return IRP()
+    return IRP
 
 
 # typedef struct _MDL {
@@ -559,10 +472,11 @@ def make_irp(archbits: int):
 #   ULONG            ByteOffset;
 # } MDL, *PMDL;
 
-
 def make_mdl(archbits: int):
-    pointer_type = __select_pointer_type(archbits)
-    Struct = __make_struct(archbits)
+    native_type = struct.get_native_type(archbits)
+    Struct = struct.get_aligned_struct(archbits)
+
+    pointer_type = native_type
 
     class MDL(Struct):
         _fields_ = (
@@ -576,7 +490,7 @@ def make_mdl(archbits: int):
             ('ByteOffset', ctypes.c_uint32)
         )
 
-    return MDL()
+    return MDL
 
 # NOTE: the following classes are currently not needed
 #
@@ -808,25 +722,33 @@ def make_mdl(archbits: int):
 #     USHORT OffsetToFileName;
 #     UCHAR FullPathName[256];
 # } RTL_PROCESS_MODULE_INFORMATION,
-def make_rtl_process_module_info(archbits: int):
-    native_type = __select_native_type(archbits)
-    Struct = __make_struct(archbits)
+
+def make_rtl_process_modules(archbits: int, num_modules: int):
+    native_type = struct.get_native_type(archbits)
+    Struct = struct.get_aligned_struct(archbits)
 
     class RTL_PROCESS_MODULE_INFORMATION(Struct):
         _fields_ = (
-            ('Section', native_type),
-            ('MappedBase', native_type),
-            ('ImageBase', native_type),
-            ('ImageSize', ctypes.c_uint32),
-            ('Flags', ctypes.c_uint32),
-            ('LoadOrderIndex', ctypes.c_uint16),
-            ('InitOrderIndex', ctypes.c_uint16),
-            ('LoadCount', ctypes.c_uint16),
+            ('Section',          native_type),
+            ('MappedBase',       native_type),
+            ('ImageBase',        native_type),
+            ('ImageSize',        ctypes.c_uint32),
+            ('Flags',            ctypes.c_uint32),
+            ('LoadOrderIndex',   ctypes.c_uint16),
+            ('InitOrderIndex',   ctypes.c_uint16),
+            ('LoadCount',        ctypes.c_uint16),
             ('OffsetToFileName', ctypes.c_uint16),
-            ('FullPathName', ctypes.c_char * 256)
+            ('FullPathName',     ctypes.c_char * 256)
         )
 
-    return RTL_PROCESS_MODULE_INFORMATION()
+    class RTL_PROCESS_MODULES(Struct):
+        _fields_ = (
+            ('NumberOfModules', ctypes.c_uint32),
+            ('Modules', RTL_PROCESS_MODULE_INFORMATION * num_modules)
+        )
+
+    return RTL_PROCESS_MODULES
+
 
 # struct _EPROCESS {
 #     struct _KPROCESS Pcb;                                               //0x0
@@ -979,58 +901,56 @@ def make_rtl_process_module_info(archbits: int):
 # };
 
 def make_eprocess(archbits: int):
-    Struct = __make_struct(archbits)
-
-    class EPROCESS(Struct):
-        _fields_ = (
-            ('dummy', ctypes.c_uint8),
-        )
+    Struct = struct.get_aligned_struct(archbits)
 
     obj_size = {
         32: 0x2c0,
         64: 0x4d0
     }[archbits]
 
-    obj = EPROCESS()
-    ctypes.resize(obj, obj_size)
+    class EPROCESS(Struct):
+        # FIXME: define meaningful fields
+        _fields_ = (
+            ('dummy', ctypes.c_char * obj_size),
+        )
 
-    return obj
+    return EPROCESS
 
 
 def make_ldr_data(archbits: int):
-    native_type = __select_native_type(archbits)
-    Struct = __make_struct(archbits)
+    native_type = struct.get_native_type(archbits)
+    Struct = struct.get_aligned_struct(archbits)
 
     ListEntry = make_list_entry(archbits)
 
     class PEB_LDR_DATA(Struct):
         _fields_ = (
-            ('Length', ctypes.c_uint32),
-            ('Initialized', ctypes.c_uint32),
-            ('SsHandle', native_type),
-            ('InLoadOrderModuleList', ListEntry),
+            ('Length',                  ctypes.c_uint32),
+            ('Initialized',             ctypes.c_uint32),
+            ('SsHandle',                native_type),
+            ('InLoadOrderModuleList',   ListEntry),
             ('InMemoryOrderModuleList', ListEntry),
             ('InInitializationOrderModuleList', ListEntry),
-            ('EntryInProgress', native_type),
-            ('ShutdownInProgress', native_type),
-            ('selfShutdownThreadId', native_type)
+            ('EntryInProgress',         native_type),
+            ('ShutdownInProgress',      native_type),
+            ('selfShutdownThreadId',    native_type)
         )
 
-    return PEB_LDR_DATA()
+    return PEB_LDR_DATA
 
 
 def make_ldr_data_table_entry(archbits: int):
-    pointer_type = __select_pointer_type(archbits)
-    native_type = __select_native_type(archbits)
-    Struct = __make_struct(archbits)
+    native_type = struct.get_native_type(archbits)
+    Struct = struct.get_aligned_struct(archbits)
 
+    pointer_type = native_type
     ListEntry = make_list_entry(archbits)
-    UniString = make_unicode_string(archbits).__class__
+    UniString = make_unicode_string(archbits)
 
     class RTL_BALANCED_NODE(Struct):
         _fields_ = (
-            ('Left', pointer_type),
-            ('Right', pointer_type),
+            ('Left',  pointer_type),
+            ('Right', pointer_type)
         )
 
     class LdrDataTableEntry(Struct):
@@ -1069,120 +989,105 @@ def make_ldr_data_table_entry(archbits: int):
             ('SigningLevel', ctypes.c_uint8)
         )
 
-    return LdrDataTableEntry()
+    return LdrDataTableEntry
 
 
-class FILETIME(ctypes.LittleEndianStructure):
+class FILETIME(struct.BaseStructEL):
     _fields_ = (
         ('dwLowDateTime',  ctypes.c_uint32),
         ('dwHighDateTime', ctypes.c_int32)
     )
 
 
-class WindowsStruct:
+# https://docs.microsoft.com/en-us/windows/console/coord-str
+class COORD(struct.BaseStructEL):
+    _fields_ = (
+        ('X', ctypes.c_uint16),
+        ('Y', ctypes.c_uint16)
+    )
 
-    def __init__(self, ql):
-        self.ql = ql
-        self.addr = None
-        self.ULONG_SIZE = 8
-        self.LONG_SIZE = 4
-        self.POINTER_SIZE = self.ql.arch.pointersize
-        self.INT_SIZE = 2
-        self.DWORD_SIZE = 4
-        self.WORD_SIZE = 2
-        self.SHORT_SIZE = 2
-        self.BYTE_SIZE = 1
-        self.USHORT_SIZE = 2
 
-    def write(self, addr):
-        # I want to force the subclasses to implement it
-        raise NotImplementedError
+# https://docs.microsoft.com/en-us/windows/console/small-rect-str
+class SMALL_RECT(struct.BaseStructEL):
+    _fields_ = (
+        ('Left',   ctypes.c_uint16),
+        ('Top',    ctypes.c_uint16),
+        ('Right',  ctypes.c_uint16),
+        ('Bottom', ctypes.c_uint16)
+    )
 
-    def read(self, addr):
-        # I want to force the subclasses to implement it
-        raise NotImplementedError
 
-    def generic_write(self, addr: int, attributes: list):
-        self.ql.log.debug("Writing Windows object " + self.__class__.__name__)
-        already_written = 0
-        for elem in attributes:
-            (val, size, endianness, typ) = elem
-            if typ == int:
-                value = val.to_bytes(size, endianness)
-                self.ql.log.debug("Writing to %#x with value %s" % (addr + already_written, value))
-                self.ql.mem.write(addr + already_written, value)
-            elif typ == bytes:
-                if isinstance(val, bytearray):
-                    value = bytes(val)
-                else:
-                    value = val
-                self.ql.log.debug("Writing at addr %#x value %s" % (addr + already_written, value))
+# https://docs.microsoft.com/en-us/windows/console/console-screen-buffer-info-str
+class CONSOLE_SCREEN_BUFFER_INFO(struct.BaseStructEL):
+    _fields_ = (
+        ('dwSize',              COORD),
+        ('dwCursorPosition',    COORD),
+        ('wAttributes',         ctypes.c_uint16),
+        ('srWindow',            SMALL_RECT),
+        ('dwMaximumWindowSize', COORD)
+    )
 
-                self.ql.mem.write(addr + already_written, value)
-            elif issubclass(typ, WindowsStruct):
-                val.write(addr)
-            else:
-                raise QlErrorNotImplemented("API not implemented")
 
-            already_written += size
-        self.addr = addr
+# https://docs.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntqueryinformationprocess
+def make_process_basic_info(archbits: int):
+    native_type = struct.get_native_type(archbits)
+    Struct = struct.get_aligned_struct(archbits)
 
-    def generic_read(self, addr: int, attributes: list):
-        self.ql.log.debug("Reading Windows object " + self.__class__.__name__)
-        already_read = 0
-        for elem in attributes:
-            (val, size, endianness, type) = elem
-            value = self.ql.mem.read(addr + already_read, size)
-            self.ql.log.debug("Reading from %#x value %s" % (addr + already_read, value))
-            if type == int:
-                elem[0] = int.from_bytes(value, endianness)
-            elif type == bytes:
-                elem[0] = value
-            elif issubclass(type, WindowsStruct):
-                obj = type(self.ql)
-                obj.read(addr)
-                elem[0] = obj
-            else:
-                raise QlErrorNotImplemented("API not implemented")
-            already_read += size
-        self.addr = addr
+    class PROCESS_BASIC_INFORMATION(Struct):
+        _fields_ = (
+            ('ExitStatus', ctypes.c_uint32),
+            ('PebBaseAddress', native_type),
+            ('AffinityMask', native_type),
+            ('BasePriority', ctypes.c_uint32),
+            ('UniqueProcessId', native_type),
+            ('InheritedFromUniqueProcessId', native_type)
+        )
 
-class AlignedWindowsStruct(WindowsStruct):
-    def __init__(self, ql):
-        super().__init__(ql)
+    return PROCESS_BASIC_INFORMATION
 
-    def write(self, addr):
-        super().write(addr)
 
-    def read(self, addr):
-        super().read(addr)
+# https://docs.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-osversioninfoa
+def make_os_version_info(archbits: int, *, wide: bool):
+    Struct = struct.get_aligned_struct(archbits)
 
-    def generic_write(self, addr: int, attributes: list):
-        super().generic_write(addr, attributes)
+    char_type = (ctypes.c_wchar if wide else ctypes.c_char)
 
-    def generic_read(self, addr: int, attributes: list):
-        self.ql.log.debug("Reading unpacked Windows object aligned " + self.__class__.__name__)
-        already_read = 0
-        for elem in attributes:
-            (val, size, endianness, type, alignment) = elem
-            if already_read != 0:
-                modulo = already_read % alignment
-                already_read = already_read + modulo
+    class OSVERSIONINFO(Struct):
+        _fields_ = (
+            ('dwOSVersionInfoSize', ctypes.c_uint32),
+            ('dwMajorVersion',      ctypes.c_uint32),
+            ('dwMinorVersion',      ctypes.c_uint32),
+            ('dwBuildNumber',       ctypes.c_uint32),
+            ('dwPlatformId',        ctypes.c_uint32),
+            ('szCSDVersion',        char_type * 128)
+        )
 
-            value = self.ql.mem.read(addr + already_read, size)
-            self.ql.log.debug("Reading from %x value %s" % (addr + already_read, value))
-            if type == int:
-                elem[0] = int.from_bytes(value, endianness)
-            elif type == bytes:
-                elem[0] = value
-            elif issubclass(type, WindowsStruct):
-                obj = type(self.ql)
-                obj.read(addr)
-                elem[0] = obj
-            else:
-                raise QlErrorNotImplemented("API not implemented")
-            already_read += size
-        self.addr = addr
+    return OSVERSIONINFO
+
+
+# https://docs.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-osversioninfoexa
+def make_os_version_info_ex(archbits: int, *, wide: bool):
+    Struct = struct.get_aligned_struct(archbits)
+
+    char_type = (ctypes.c_wchar if wide else ctypes.c_char)
+
+    class OSVERSIONINFOEX(Struct):
+        _fields_ = (
+            ('dwOSVersionInfoSize', ctypes.c_uint32),
+            ('dwMajorVersion',      ctypes.c_uint32),
+            ('dwMinorVersion',      ctypes.c_uint32),
+            ('dwBuildNumber',       ctypes.c_uint32),
+            ('dwPlatformId',        ctypes.c_uint32),
+            ('szCSDVersion',        char_type * 128),
+            ('wServicePackMajor',   ctypes.c_uint16),
+            ('wServicePackMinor',   ctypes.c_uint16),
+            ('wSuiteMask',          ctypes.c_uint16),
+            ('wProductType',        ctypes.c_uint8),
+            ('wReserved',           ctypes.c_uint8)
+        )
+
+    return OSVERSIONINFOEX
+
 
 class Token:
     class TokenInformationClass(IntEnum):
@@ -1240,69 +1145,82 @@ class Token:
     def __init__(self, ql):
         # We will create them when we need it. There are too many structs
         self.struct = {}
-        self.ql = ql
+
         # TODO find a GOOD reference paper for the values
-        self.struct[Token.TokenInformationClass.TokenUIAccess.value] = self.ql.pack(0x1)
-        self.struct[Token.TokenInformationClass.TokenGroups.value] = self.ql.pack(0x1)
+        self.struct[Token.TokenInformationClass.TokenUIAccess.value] = ql.pack(0x1)
+        self.struct[Token.TokenInformationClass.TokenGroups.value] = ql.pack(0x1)
+
         # still not sure why 0x1234 executes gandcrab as admin, but 544 no. No idea (see sid refs for the values)
-        sub = 0x1234 if ql.os.profile["SYSTEM"]["permission"] == "root" else 545
-        sub = sub.to_bytes(4, "little")
-        sid = Sid(self.ql, identifier=1, revision=1, subs_count=1, subs=sub)
-        sid_addr = self.ql.os.heap.alloc(sid.size)
-        sid.write(sid_addr)
-        handle = Handle(obj=sid, id=sid_addr)
-        self.ql.os.handle_manager.append(handle)
-        self.struct[Token.TokenInformationClass.TokenIntegrityLevel] = self.ql.pack(sid_addr)
+        subauths = (0x1234 if ql.os.profile["SYSTEM"]["permission"] == "root" else 545,)
+
+        sid_struct = make_sid(auth_count=len(subauths))
+        sid_addr = ql.os.heap.alloc(sid_struct.sizeof())
+
+        sid_obj = sid_struct(
+            Revision = 1,
+            SubAuthorityCount = len(subauths),
+            IdentifierAuthority = (1,),
+            SubAuthority = subauths
+        )
+
+        sid_obj.save_to(ql.mem, sid_addr)
+
+        handle = Handle(obj=sid_obj, id=sid_addr)
+        ql.os.handle_manager.append(handle)
+        self.struct[Token.TokenInformationClass.TokenIntegrityLevel] = ql.pack(sid_addr)
 
     def get(self, value):
         res = self.struct[value]
+
         if res is None:
             raise QlErrorNotImplemented("API not implemented")
-        else:
-            return res
+
+        return res
 
 
-# typedef struct _SID {
-#   BYTE                     Revision;
-#   BYTE                     SubAuthorityCount;
-#   SID_IDENTIFIER_AUTHORITY IdentifierAuthority;
-# #if ...
-#   DWORD                    *SubAuthority[];
-# #else
-#   DWORD                    SubAuthority[ANYSIZE_ARRAY];
-# #endif
-# } SID, *PISID;
-class Sid(WindowsStruct):
-    # General Struct
-    # https://docs.microsoft.com/it-it/windows/win32/api/winnt/ns-winnt-sid
-    # https://en.wikipedia.org/wiki/Security_Identifier
+# Identf Authority
+# https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/c6ce4275-3d90-4890-ab3a-514745e4637e
+# https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/81d92bba-d22b-4a8c-908a-554ab29148ab
+def make_sid(auth_count: int):
 
-    # Identf Authority
-    # https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/c6ce4275-3d90-4890-ab3a-514745e4637e
-    # https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/81d92bba-d22b-4a8c-908a-554ab29148ab
+    # this structure should be a 6-bytes big endian integer. this is an attempt
+    # to approximate that, knowing that in practice only the most significant
+    # byte is actually used.
+    #
+    # see: https://docs.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-sid_identifier_authority
+    class SID_IDENTIFIER_AUTHORITY(struct.BaseStructEB):
+        _pack_ = 1
+        _fields_ = (
+            ('Value', ctypes.c_uint32),
+            ('_pad', ctypes.c_byte * 2)
+        )
 
-    def __init__(self, ql, revision=None, subs_count=None, identifier=None, subs=None):
-        # TODO find better documentation
-        super().__init__(ql)
-        self.revision = [revision, self.BYTE_SIZE, "little", int]
-        self.subs_count = [subs_count, self.BYTE_SIZE, "little", int]
-        # FIXME: understand if is correct to set them as big
-        self.identifier = [identifier, 6, "big", int]
-        self.subs = [subs, self.subs_count[0] * self.DWORD_SIZE, "little", bytes]
-        self.size = 2 + 6 + self.subs_count[0] * 4
+    assert ctypes.sizeof(SID_IDENTIFIER_AUTHORITY) == 6
 
-    def write(self, addr):
-        super().generic_write(addr, [self.revision, self.subs_count, self.identifier, self.subs])
+    # https://geoffchappell.com/studies/windows/km/ntoskrnl/api/rtl/sertl/sid.htm
+    class SID(struct.BaseStructEL):
+        _fields_ = (
+            ('Revision', ctypes.c_uint8),
+            ('SubAuthorityCount', ctypes.c_uint8),
+            ('IdentifierAuthority', SID_IDENTIFIER_AUTHORITY),
 
-    def read(self, addr):
-        super().generic_read(addr, [self.revision, self.subs_count, self.identifier, self.subs])
-        self.size = 2 + 6 + self.subs_count[0] * 4
+            # note that ctypes does not have a way to define an array whose size is unknown
+            # or flexible. although the number of items should be reflected in SubAuthorityCount,
+            # this cannot be implemented. any change to that field will result in an inconsistency
+            # and should be avoided
 
-    def __eq__(self, other):
-        # FIXME
-        if not isinstance(other, Sid):
-            return False
-        return self.subs == other.subs and self.identifier[0] == other.identifier[0]
+            ('SubAuthority', ctypes.c_uint32 * auth_count)
+        )
+
+        # let SID structures be comparable
+        def __eq__(self, other):
+            if not isinstance(other, SID):
+                return False
+
+            # since SID structure is not padded, we can simply memcmp the instances
+            return memoryview(self).cast('B') == memoryview(other).cast('B')
+
+    return SID
 
 
 class Mutex:
@@ -1325,7 +1243,7 @@ class Mutex:
 #     _fields_ = (
 #         ('OriginalFirstThunk', ctypes.c_uint32),
 #         ('TimeDateStamp', ctypes.c_uint32),
-#         ('ForwarderChain', ctypes.c_uint32), 
+#         ('ForwarderChain', ctypes.c_uint32),
 #         ('Name', ctypes.c_uint32),
 #         ('FirstThunk', ctypes.c_uint32)
 #     )
@@ -1344,525 +1262,282 @@ class Mutex:
 #         ('UniqueThread', ctypes.c_uint64)
 #     )
 
-# typedef struct tagPOINT {
-#   LONG x;
-#   LONG y;
-# } POINT, *PPOINT;
-class Point(WindowsStruct):
-    def __init__(self, ql, x=None, y=None):
-        super().__init__(ql)
-        self.x = [x, self.LONG_SIZE, "little", int]
-        self.y = [y, self.LONG_SIZE, "little", int]
-        self.size = self.LONG_SIZE * 2
 
-    def write(self, addr):
-        super().generic_write(addr, [self.x, self.y])
-
-    def read(self, addr):
-        super().generic_read(addr, [self.x, self.y])
-
-# typedef struct _SYSTEM_BASIC_INFORMATION
-# {
-# 	ULONG Reserved;
-# 	ULONG TimerResolution;
-# 	ULONG PageSize;
-# 	ULONG NumberOfPhysicalPages;
-# 	ULONG LowestPhysicalPageNumber;
-# 	ULONG HighestPhysicalPageNumber;
-# 	ULONG AllocationGranularity;
-# 	ULONG_PTR c;
-# 	ULONG_PTR MaximumUserModeAddress;
-# 	ULONG_PTR ActiveProcessorsAffinityMask;
-# 	CCHAR NumberOfProcessors;
-# } SYSTEM_BASIC_INFORMATION, * PSYSTEM_BASIC_INFORMATION;
-
-class SystemBasicInforation(WindowsStruct):
-    def __init__(self,ql, Reserved,TimerResolution,PageSize=None, NumberOfPhysicalPages=None, LowestPhysicalPageNumber=None,
-                 HighestPhysicalPageNumber=None, AllocationGranularity=None,MinimumUserModeAddress=None,
-                 MaximumUserModeAddress=None,ActiveProcessorsAffinityMask=None,NumberOfProcessors=None):
-        super().__init__(ql)
-        self.size=self.BYTE_SIZE * 24 + 5*self.POINTER_SIZE
-        self.Reserved =[Reserved, self.DWORD_SIZE, "little", int]
-        self.TimerResolution=[TimerResolution, self.DWORD_SIZE, "little", int]
-        self.PageSize=[PageSize, self.DWORD_SIZE, "little", int]
-        self.NumberOfPhysicalPages = [NumberOfPhysicalPages, self.DWORD_SIZE, "little", int]
-        self.LowestPhysicalPageNumber = [LowestPhysicalPageNumber, self.DWORD_SIZE, "little", int]
-        self.HighestPhysicalPageNumber = [HighestPhysicalPageNumber, self.DWORD_SIZE, "little", int]
-        self.AllocationGranularity = [AllocationGranularity, self.DWORD_SIZE, "little", int]
-        self.MinimumUserModeAddress = [MinimumUserModeAddress, self.POINTER_SIZE, "little", int]
-        self.MaximumUserModeAddress = [MaximumUserModeAddress, self.POINTER_SIZE, "little", int]
-        self.ActiveProcessorsAffinityMask = [ActiveProcessorsAffinityMask, self.POINTER_SIZE, "little", int]
-        self.NumberOfProcessors = [NumberOfProcessors, self.POINTER_SIZE, "little", int]
-    def write(self, addr):
-
-        super().generic_write(addr, [self.Reserved, self.TimerResolution, self.PageSize, self.NumberOfPhysicalPages,
-               self.LowestPhysicalPageNumber, self.HighestPhysicalPageNumber ,self.AllocationGranularity,
-               self.MinimumUserModeAddress,self.MaximumUserModeAddress,self.ActiveProcessorsAffinityMask,
-               self.NumberOfProcessors])
-
-    def read(self, addr):
-        super().generic_read(addr, [self.Reserved, self.TimerResolution, self.PageSize, self.NumberOfPhysicalPages,
-               self.LowestPhysicalPageNumber, self.HighestPhysicalPageNumber ,self.AllocationGranularity,
-               self.MinimumUserModeAddress,self.MaximumUserModeAddress,self.ActiveProcessorsAffinityMask,
-               self.NumberOfProcessors])
-
-# typedef struct hostent {
-#  char  *h_name;
-#  char  **h_aliases;
-#  short h_addrtype;
-#  short h_length;
-#  char  **h_addr_list;
-# } HOSTENT, *PHOSTENT, *LPHOSTENT;
-class Hostent(WindowsStruct):
-    def __init__(self, ql, name=None, aliases=None, addr_type=None, length=None, addr_list=None):
-        super().__init__(ql)
-        self.name = [name, self.POINTER_SIZE, "little", int]
-        self.aliases = [aliases, self.POINTER_SIZE, "little", int]
-        self.addr_type = [addr_type, self.SHORT_SIZE, "little", int]
-        self.length = [length, self.SHORT_SIZE, "little", int]
-        self.addr_list = [addr_list, len(addr_list), "little", bytes]
-        self.size = self.POINTER_SIZE * 2 + self.SHORT_SIZE * 2 + len(addr_list)
-
-    def write(self, addr):
-        super().generic_write(addr, [self.name, self.aliases, self.addr_type, self.length, self.addr_list])
-
-    def read(self, addr):
-        super().generic_read(addr, [self.name, self.aliases, self.addr_type, self.length, self.addr_list])
+class Point(struct.BaseStructEL):
+    _fields_ = (
+        ('x', ctypes.c_int32),
+        ('y', ctypes.c_int32)
+    )
 
 
-# typedef struct _OSVERSIONINFOEXA {
-#   DWORD dwOSVersionInfoSize;
-#   DWORD dwMajorVersion;
-#   DWORD dwMinorVersion;
-#   DWORD dwBuildNumber;
-#   DWORD dwPlatformId;
-#   CHAR  szCSDVersion[128];
-#   WORD  wServicePackMajor;
-#   WORD  wServicePackMinor;
-#   WORD  wSuiteMask;
-#   BYTE  wProductType;
-#   BYTE  wReserved;
-# } OSVERSIONINFOEXA, *POSVERSIONINFOEXA, *LPOSVERSIONINFOEXA;
-class OsVersionInfoExA(WindowsStruct):
-    def __init__(self, ql, size=None, major=None, minor=None, build=None, platform=None, version=None,
-                 service_major=None, service_minor=None, suite=None, product=None):
-        super().__init__(ql)
-        self.size = [size, self.DWORD_SIZE, "little", int]
-        self.major = [major, self.DWORD_SIZE, "little", int]
-        self.minor = [minor, self.DWORD_SIZE, "little", int]
-        self.build = [build, self.DWORD_SIZE, "little", int]
-        self.platform_os = [platform, self.DWORD_SIZE, "little", int]
-        self.version = [version, 128, "little", bytes]
-        self.service_major = [service_major, self.WORD_SIZE, "little", int]
-        self.service_minor = [service_minor, self.WORD_SIZE, "little", int]
-        self.suite = [suite, self.WORD_SIZE, "little", int]
-        self.product = [product, self.BYTE_SIZE, "little", int]
-        self.reserved = [0, self.BYTE_SIZE, "little", int]
+# https://www.geoffchappell.com/studies/windows/km/ntoskrnl/api/ex/sysinfo/basic.htm
+def make_system_basic_info(archbits: int):
+    native_type = struct.get_native_type(archbits)
+    Struct = struct.get_aligned_struct(archbits)
 
-    def write(self, addr):
-        super().generic_write(addr, [self.size, self.major, self.minor, self.build, self.platform_os, self.version,
-                                     self.service_major, self.service_minor, self.suite, self.product, self.reserved])
+    pointer_type = native_type
 
-    def read(self, addr):
-        super().generic_read(addr, [self.size, self.major, self.minor, self.build, self.platform_os, self.version,
-                                    self.service_major, self.service_minor, self.suite, self.product, self.reserved])
+    class SYSTEM_BASIC_INFORMATION(Struct):
+        _fields_ = (
+            ('Reserved',                     ctypes.c_uint32),
+            ('TimerResolution',              ctypes.c_uint32),
+            ('PageSize',                     ctypes.c_uint32),
+            ('NumberOfPhysicalPages',        ctypes.c_uint32),
+            ('LowestPhysicalPageNumber',     ctypes.c_uint32),
+            ('HighestPhysicalPageNumber',    ctypes.c_uint32),
+            ('AllocationGranularity',        ctypes.c_uint32),
+            ('MinimumUserModeAddress',       pointer_type),
+            ('MaximumUserModeAddress',       pointer_type),
+            ('ActiveProcessorsAffinityMask', pointer_type),
+            ('NumberOfProcessors',           ctypes.c_uint8)
+        )
+
+    return SYSTEM_BASIC_INFORMATION
 
 
-# typedef struct _OSVERSIONINFOW {
-#   ULONG dwOSVersionInfoSize;
-#   ULONG dwMajorVersion;
-#   ULONG dwMinorVersion;
-#   ULONG dwBuildNumber;
-#   ULONG dwPlatformId;
-#   WCHAR szCSDVersion[128];
-# }
-class OsVersionInfoW(WindowsStruct):
-    def __init__(self, ql, size=None, major=None, minor=None, build=None, platform=None, version=None):
-        super().__init__(ql)
-        self.size = [size, self.ULONG_SIZE, "little", int]
-        self.major = [major, self.ULONG_SIZE, "little", int]
-        self.minor = [minor, self.ULONG_SIZE, "little", int]
-        self.build = [build, self.ULONG_SIZE, "little", int]
-        self.platform_os = [platform, self.ULONG_SIZE, "little", int]
-        self.version = [version, 128, "little", bytes]
+# https://docs.microsoft.com/en-us/windows/win32/api/winsock/ns-winsock-hostent
+def make_hostent(archbits: int):
+    native_type = struct.get_native_type(archbits)
+    Struct = struct.get_aligned_struct(archbits)
 
-    def write(self, addr):
-        self.generic_write(addr, [self.size, self.major, self.minor, self.build, self.platform_os, self.version])
+    pointer_type = native_type
 
-    def read(self, addr):
-        self.generic_read(addr, [self.size, self.major, self.minor, self.build, self.platform_os, self.version])
+    class HOSTENT(Struct):
+        _fields_ = (
+            ('h_name',      pointer_type),
+            ('h_aliases',   pointer_type),
+            ('h_addrtype',  ctypes.c_int16),
+            ('h_length',    ctypes.c_int16),
+            ('h_addr_list', pointer_type),
+        )
+
+    return HOSTENT
 
 
-# typedef struct _SYSTEM_INFO {
-#   union {
-#     DWORD dwOemId;
-#     struct {
-#       WORD wProcessorArchitecture;
-#       WORD wReserved;
-#     } DUMMYSTRUCTNAME;
-#   } DUMMYUNIONNAME;
-#   DWORD     dwPageSize;
-#   LPVOID    lpMinimumApplicationAddress;
-#   LPVOID    lpMaximumApplicationAddress;
-#   DWORD_PTR dwActiveProcessorMask;
-#   DWORD     dwNumberOfProcessors;
-#   DWORD     dwProcessorType;
-#   DWORD     dwAllocationGranularity;
-#   WORD      wProcessorLevel;
-#   WORD      wProcessorRevision;
-# } SYSTEM_INFO, *LPSYSTEM_INFO;
-class SystemInfo(WindowsStruct):
-    def __init__(self, ql, dummy=None, page_size=None, min_address=None, max_address=None, mask=None, processors=None,
-                 processor_type=None, allocation=None, processor_level=None, processor_revision=None):
-        super().__init__(ql)
-        self.dummy = [dummy, self.DWORD_SIZE, "little", int]
-        self.page_size = [page_size, self.DWORD_SIZE, "little", int]
-        self.min_address = [min_address, self.POINTER_SIZE, "little", int]
-        self.max_address = [max_address, self.POINTER_SIZE, "little", int]
-        self.mask = [mask, self.POINTER_SIZE, "little", int]
-        self.processors = [processors, self.DWORD_SIZE, "little", int]
-        self.processor_type = [processor_type, self.DWORD_SIZE, "little", int]
-        self.allocation = [allocation, self.DWORD_SIZE, "little", int]
-        self.processor_level = [processor_level, self.WORD_SIZE, "little", int]
-        self.processor_revision = [processor_revision, self.WORD_SIZE, "little", int]
-        self.size = self.DWORD_SIZE * 5 + self.WORD_SIZE * 2 + self.POINTER_SIZE * 3
+# https://docs.microsoft.com/en-us/windows/win32/winsock/sockaddr-2
+def make_sockaddr_in():
 
-    def write(self, addr):
-        super().generic_write(addr, [self.dummy, self.page_size, self.min_address, self.max_address, self.mask,
-                                     self.processors, self.processor_type, self.allocation, self.processor_level,
-                                     self.processor_revision])
+    # https://docs.microsoft.com/en-us/windows/win32/api/winsock2/ns-winsock2-in_addr
+    class in_addr(ctypes.BigEndianStructure):
+        _fields_ = (
+            ('s_b1', ctypes.c_uint8),
+            ('s_b2', ctypes.c_uint8),
+            ('s_b3', ctypes.c_uint8),
+            ('s_b4', ctypes.c_uint8)
+        )
 
-    def read(self, addr):
-        super().generic_read(addr, [self.dummy, self.page_size, self.min_address, self.max_address, self.mask,
-                                    self.processors, self.processor_type, self.allocation, self.processor_level,
-                                    self.processor_revision])
+    class sockaddr_in(ctypes.BigEndianStructure):
+        _fields_ = (
+            ('sin_family', ctypes.c_int16),
+            ('sin_port',   ctypes.c_uint16),
+            ('sin_addr',   in_addr),
+            ('sin_zero',   ctypes.c_byte * 8)
+        )
+
+    return sockaddr_in
 
 
-# typedef struct _SYSTEMTIME {
-#   WORD wYear;
-#   WORD wMonth;
-#   WORD wDayOfWeek;
-#   WORD wDay;
-#   WORD wHour;
-#   WORD wMinute;
-#   WORD wSecond;
-#   WORD wMilliseconds;
-# } SYSTEMTIME, *PSYSTEMTIME, *LPSYSTEMTIME;
+# https://docs.microsoft.com/en-us/windows/win32/winsock/sockaddr-2
+def make_sockaddr_in6():
+
+    # https://docs.microsoft.com/en-us/windows/win32/api/in6addr/ns-in6addr-in6_addr
+    class in6_addr(ctypes.BigEndianStructure):
+        _fields_ = (
+            ('Byte', ctypes.c_uint8 * 16),
+        )
+
+    class sockaddr_in6(ctypes.BigEndianStructure):
+        _fields_ = (
+            ('sin6_family',   ctypes.c_int16),
+            ('sin6_port',     ctypes.c_uint16),
+            ('sin6_flowinfo', ctypes.c_uint32),
+            ('sin6_addr',     in6_addr),
+            ('sin6_scope_id', ctypes.c_uint32)
+        )
+
+    return sockaddr_in6
 
 
-class SystemTime(WindowsStruct):
-    def __init__(self, ql, year=None, month=None, day_week=None, day=None, hour=None, minute=None, seconds=None,
-                 milliseconds=None):
-        super().__init__(ql)
-        self.year = [year, self.WORD_SIZE, "little", int]
-        self.month = [month, self.WORD_SIZE, "little", int]
-        self.day_week = [day_week, self.WORD_SIZE, "little", int]
-        self.day = [day, self.WORD_SIZE, "little", int]
-        self.hour = [hour, self.WORD_SIZE, "little", int]
-        self.minute = [minute, self.WORD_SIZE, "little", int]
-        self.seconds = [seconds, self.WORD_SIZE, "little", int]
-        self.milliseconds = [milliseconds, self.WORD_SIZE, "little", int]
-        self.size = self.WORD_SIZE * 8
+# https://docs.microsoft.com/en-us/windows/win32/api/sysinfoapi/ns-sysinfoapi-system_info
+def make_system_info(archbits: int):
+    native_type = struct.get_native_type(archbits)
+    Struct = struct.get_aligned_struct(archbits)
+    Union = struct.get_aligned_union(archbits)
 
-    def write(self, addr):
-        super().generic_write(addr, [self.year, self.month, self.day_week, self.day, self.hour,
-                                     self.minute, self.seconds, self.milliseconds])
+    pointer_type = native_type
 
-    def read(self, addr):
-        super().generic_read(addr, [self.year, self.month, self.day_week, self.day, self.hour,
-                                    self.minute, self.seconds, self.milliseconds])
+    class DUMMYSTRUCTNAME(Struct):
+        _fields_ = (
+            ('wProcessorArchitecture', ctypes.c_uint16),
+            ('wReserved',              ctypes.c_uint16)
+        )
 
+    class DUMMYUNIONNAME(Union):
+        _anonymous_ = ('_anon_0',)
 
-# typedef struct _STARTUPINFO {
-#   DWORD  cb;
-#   LPTSTR lpReserved;
-#   LPTSTR lpDesktop;
-#   LPTSTR lpTitle;
-#   DWORD  dwX;
-#   DWORD  dwY;
-#   DWORD  dwXSize;
-#   DWORD  dwYSize;
-#   DWORD  dwXCountChars;
-#   DWORD  dwYCountChars;
-#   DWORD  dwFillAttribute;
-#   DWORD  dwFlags;
-#   WORD   wShowWindow;
-#   WORD   cbReserved2;
-#   LPBYTE lpReserved2;
-#   HANDLE hStdInput;
-#   HANDLE hStdOutput;
-#   HANDLE hStdError;
-# } STARTUPINFO, *LPSTARTUPINFO;
-class StartupInfo(WindowsStruct):
-    def __init__(self, ql, desktop=None, title=None, x=None, y=None, x_size=None, y_size=None, x_chars=None,
-                 y_chars=None, fill_attribute=None, flags=None, show=None, std_input=None, output=None, error=None):
-        super().__init__(ql)
-        self.size = 53 + 3 * self.ql.arch.pointersize
-        self.cb = [self.size, self.DWORD_SIZE, "little", int]
-        self.reserved = [0, self.POINTER_SIZE, "little", int]
-        self.desktop = [desktop, self.POINTER_SIZE, "little", int]
-        self.title = [title, self.POINTER_SIZE, "little", int]
-        self.x = [x, self.DWORD_SIZE, "little", int]
-        self.y = [y, self.DWORD_SIZE, "little", int]
-        self.x_size = [x_size, self.DWORD_SIZE, "little", int]
-        self.y_size = [y_size, self.DWORD_SIZE, "little", int]
-        self.x_chars = [x_chars, self.DWORD_SIZE, "little", int]
-        self.y_chars = [y_chars, self.DWORD_SIZE, "little", int]
-        self.fill_attribute = [fill_attribute, self.DWORD_SIZE, "little", int]
-        self.flags = [flags, self.DWORD_SIZE, "little", int]
-        self.show = [show, self.WORD_SIZE, "little", int]
-        self.reserved2 = [0, self.WORD_SIZE, "little", int]
-        self.reserved3 = [0, self.POINTER_SIZE, "little", int]
-        self.input = [std_input, self.POINTER_SIZE, "little", int]
-        self.output = [output, self.POINTER_SIZE, "little", int]
-        self.error = [error, self.POINTER_SIZE, "little", int]
+        _fields_ = (
+            ('dwOemId', ctypes.c_uint32),
+            ('_anon_0', DUMMYSTRUCTNAME)
+        )
 
-    def read(self, addr):
-        super().generic_read(addr, [self.cb, self.reserved, self.desktop, self.title, self.x, self.y, self.x_size,
-                                    self.y_size, self.x_chars, self.y_chars, self.fill_attribute, self.flags, self.show,
-                                    self.reserved2, self.reserved3, self.input, self.output, self.error])
-        self.size = self.cb
+    assert ctypes.sizeof(DUMMYUNIONNAME) == 4
 
-    def write(self, addr):
-        super().generic_write(addr, [self.cb, self.reserved, self.desktop, self.title, self.x, self.y, self.x_size,
-                                     self.y_size, self.x_chars, self.y_chars, self.fill_attribute, self.flags,
-                                     self.show,
-                                     self.reserved2, self.reserved3, self.input, self.output, self.error])
+    class SYSTEM_INFO(Struct):
+        _anonymous_ = ('_anon_1',)
+
+        _fields_ = (
+            ('_anon_1',                     DUMMYUNIONNAME),
+            ('dwPageSize',                  ctypes.c_uint32),
+            ('lpMinimumApplicationAddress', pointer_type),
+            ('lpMaximumApplicationAddress', pointer_type),
+            ('dwActiveProcessorMask',       pointer_type),
+            ('dwNumberOfProcessors',        ctypes.c_uint32),
+            ('dwProcessorType',             ctypes.c_uint32),
+            ('dwAllocationGranularity',     ctypes.c_uint32),
+            ('wProcessorLevel',             ctypes.c_uint16),
+            ('wProcessorRevision',          ctypes.c_uint16)
+        )
+
+    return SYSTEM_INFO
 
 
-# typedef struct _SHELLEXECUTEINFOA {
-#   DWORD     cbSize;
-#   ULONG     fMask;
-#   HWND      hwnd;
-#   LPCSTR    lpVerb;
-#   LPCSTR    lpFile;
-#   LPCSTR    lpParameters;
-#   LPCSTR    lpDirectory;
-#   int       nShow;
-#   HINSTANCE hInstApp;
-#   void      *lpIDList;
-#   LPCSTR    lpClass;
-#   HKEY      hkeyClass;
-#   DWORD     dwHotKey;
-#   union {
-#     HANDLE hIcon;
-#     HANDLE hMonitor;
-#   } DUMMYUNIONNAME;
-#   HANDLE    hProcess;
-# } SHELLEXECUTEINFOA, *LPSHELLEXECUTEINFOA;
-class ShellExecuteInfoA(WindowsStruct):
-    def __init__(self, ql, fMask=None, hwnd=None, lpVerb=None, lpFile=None, lpParams=None, lpDir=None, show=None,
-                 instApp=None, lpIDList=None, lpClass=None, hkeyClass=None,
-                 dwHotKey=None, dummy=None, hProcess=None):
-        super().__init__(ql)
-        self.size = self.DWORD_SIZE + self.ULONG_SIZE + self.INT_SIZE * 2 + self.POINTER_SIZE * 11
-        self.cb = [self.size, self.DWORD_SIZE, "little", int]
-        # FIXME: check how longs behave, is strange that i have to put big here
-        self.mask = [fMask, self.ULONG_SIZE, "big", int]
-        self.hwnd = [hwnd, self.POINTER_SIZE, "little", int]
-        self.verb = [lpVerb, self.POINTER_SIZE, "little", int]
-        self.file = [lpFile, self.POINTER_SIZE, "little", int]
-        self.params = [lpParams, self.POINTER_SIZE, "little", int]
-        self.dir = [lpDir, self.POINTER_SIZE, "little", int]
-        self.show = [show, self.INT_SIZE, "little", int]
-        self.instApp = [instApp, self.POINTER_SIZE, "little", int]
-        self.id_list = [lpIDList, self.POINTER_SIZE, "little", int]
-        self.class_name = [lpClass, self.POINTER_SIZE, "little", int]
-        self.class_key = [hkeyClass, self.POINTER_SIZE, "little", int]
-        self.hot_key = [dwHotKey, self.INT_SIZE, "little", int]
-        self.dummy = [dummy, self.POINTER_SIZE, "little", int]
-        self.process = [hProcess, self.POINTER_SIZE, "little", int]
-
-    def write(self, addr):
-        super().generic_write(addr, [self.cb, self.mask, self.hwnd, self.verb, self.file, self.params, self.dir,
-                                     self.show, self.instApp, self.id_list, self.class_name, self.class_key,
-                                     self.hot_key, self.dummy, self.process])
-
-    def read(self, addr):
-        super().generic_read(addr, [self.cb, self.mask, self.hwnd, self.verb, self.file, self.params, self.dir,
-                                    self.show, self.instApp, self.id_list, self.class_name, self.class_key,
-                                    self.hot_key, self.dummy, self.process])
-        self.size = self.cb
+class SYSTEMTIME(struct.BaseStructEL):
+    _fields_ = (
+        ('wYear',         ctypes.c_uint16),
+        ('wMonth',        ctypes.c_uint16),
+        ('wDayOfWeek',    ctypes.c_uint16),
+        ('wDay',          ctypes.c_uint16),
+        ('wHour',         ctypes.c_uint16),
+        ('wMinute',       ctypes.c_uint16),
+        ('wSecond',       ctypes.c_uint16),
+        ('wMilliseconds', ctypes.c_uint16)
+    )
 
 
-# private struct PROCESS_BASIC_INFORMATION
-# {
-#   public NtStatus ExitStatus;
-#   public IntPtr PebBaseAddress;
-#   public UIntPtr AffinityMask;
-#   public int BasePriority;
-#   public UIntPtr UniqueProcessId;
-#   public UIntPtr InheritedFromUniqueProcessId;
-# }
-class ProcessBasicInformation(WindowsStruct):
-    def __init__(self, ql, exitStatus=None, pebBaseAddress=None, affinityMask=None, basePriority=None, uniqueId=None,
-                 parentPid=None):
-        super().__init__(ql)
-        self.size = self.DWORD_SIZE + self.POINTER_SIZE * 4 + self.INT_SIZE
-        self.exitStatus = [exitStatus, self.DWORD_SIZE, "little", int]
-        self.pebBaseAddress = [pebBaseAddress, self.POINTER_SIZE, "little", int]
-        self.affinityMask = [affinityMask, self.INT_SIZE, "little", int]
-        self.basePriority = [basePriority, self.POINTER_SIZE, "little", int]
-        self.pid = [uniqueId, self.POINTER_SIZE, "little", int]
-        self.parentPid = [parentPid, self.POINTER_SIZE, "little", int]
+# https://docs.microsoft.com/en-us/windows/win32/api/processthreadsapi/ns-processthreadsapi-startupinfoa
+def make_startup_info(archbits: int):
+    native_type = struct.get_native_type(archbits)
+    Struct = struct.get_aligned_struct(archbits)
 
-    def write(self, addr):
-        super().generic_write(addr,
-                              [self.exitStatus, self.pebBaseAddress, self.affinityMask, self.basePriority, self.pid,
-                               self.parentPid])
+    pointer_type = native_type
 
-    def read(self, addr):
-        super().generic_read(addr,
-                             [self.exitStatus, self.pebBaseAddress, self.affinityMask, self.basePriority, self.pid,
-                              self.parentPid])
+    class STARTUPINFO(Struct):
+        _fields_ = (
+            ('cb',              ctypes.c_uint32),
+            ('lpReserved',      pointer_type),
+            ('lpDesktop',       pointer_type),
+            ('lpTitle',         pointer_type),
+            ('dwX',             ctypes.c_uint32),
+            ('dwY',             ctypes.c_uint32),
+            ('dwXSize',         ctypes.c_uint32),
+            ('dwYSize',         ctypes.c_uint32),
+            ('dwXCountChars',   ctypes.c_uint32),
+            ('dwYCountChars',   ctypes.c_uint32),
+            ('dwFillAttribute', ctypes.c_uint32),
+            ('dwFlags',         ctypes.c_uint32),
+            ('wShowWindow',     ctypes.c_uint16),
+            ('cbReserved2',     ctypes.c_uint16),
+            ('lpReserved2',     pointer_type),
+            ('hStdInput',       pointer_type),
+            ('hStdOutput',      pointer_type),
+            ('hStdError',       pointer_type)
+        )
 
-
-# typedef struct _UNICODE_STRING {
-#   USHORT Length;
-#   USHORT MaximumLength;
-#   PWSTR  Buffer;
-# } UNICODE_STRING
-class UnicodeString(AlignedWindowsStruct):
-    def write(self, addr):
-        super().generic_write(addr, [self.length, self.maxLength, self.buffer])
-
-    def read(self, addr):
-        super().generic_read(addr, [self.length, self.maxLength, self.buffer])
-
-    def __init__(self, ql, length=None, maxLength=None, buffer=None):
-        super().__init__(ql)
-
-        # on x64, self.buffer is aligned to 8
-        if ql.arch.bits == 32:
-            self.size = self.USHORT_SIZE * 2 + self.POINTER_SIZE
-        else:
-            self.size = self.USHORT_SIZE * 2 + 4 + self.POINTER_SIZE
-
-        self.length = [length, self.USHORT_SIZE, "little", int]
-        self.maxLength = [maxLength, self.USHORT_SIZE, "little", int]
-        self.buffer = [buffer, self.POINTER_SIZE, "little", int]
+    return STARTUPINFO
 
 
-# typedef struct _OBJECT_TYPE_INFORMATION {
-# 	UNICODE_STRING TypeName;
-# 	ULONG TotalNumberOfObjects;
-# 	ULONG TotalNumberOfHandles;
-# } OBJECT_TYPE_INFORMATION, *POBJECT_TYPE_INFORMATION;
-class ObjectTypeInformation(WindowsStruct):
-    def write(self, addr):
-        super().generic_write(addr, [self.us, self.handles, self.objects])
+# https://docs.microsoft.com/en-us/windows/win32/api/shellapi/ns-shellapi-shellexecuteinfoa
+def make_shellex_info(archbits: int):
+    native_type = struct.get_native_type(archbits)
+    Struct = struct.get_aligned_struct(archbits)
+    Union = struct.get_aligned_union(archbits)
 
-    def read(self, addr):
-        super().generic_read(addr, [self.us, self.handles, self.objects])
+    pointer_type = native_type
 
-    def __init__(self, ql, typeName: UnicodeString = None, handles=None, objects=None):
-        super().__init__(ql)
-        self.size = self.ULONG_SIZE * 2 + (self.USHORT_SIZE * 2 + self.POINTER_SIZE)
-        self.us = [typeName, self.USHORT_SIZE * 2 + self.POINTER_SIZE, "little", UnicodeString]
-        # FIXME: understand if is correct to set them as big
-        self.handles = [handles, self.ULONG_SIZE, "big", int]
-        self.objects = [objects, self.ULONG_SIZE, "big", int]
+    class DUMMYUNIONNAME(Union):
+        _fields_ = (
+            ('hIcon',    pointer_type),
+            ('hMonitor', pointer_type)
+        )
 
+    class SHELLEXECUTEINFO(Struct):
+        _anonymous_ = ('_anon_0',)
 
-# typedef struct _OBJECT_ALL_TYPES_INFORMATION {
-# 	ULONG NumberOfObjectTypes;
-# 	OBJECT_TYPE_INFORMATION ObjectTypeInformation[1];
-# } OBJECT_ALL_TYPES_INFORMATION, *POBJECT_ALL_TYPES_INFORMATION;
-class ObjectAllTypesInformation(WindowsStruct):
-    def write(self, addr):
-        super().generic_write(addr, [self.number, self.typeInfo])
+        _fields_ = (
+            ('cbSize',       ctypes.c_uint32),
+            ('fMask',        ctypes.c_uint32),
+            ('hwnd',         pointer_type),
+            ('lpVerb',       pointer_type),
+            ('lpFile',       pointer_type),
+            ('lpParameters', pointer_type),
+            ('lpDirectory',  pointer_type),
+            ('nShow',        ctypes.c_int32),
+            ('hInstApp',     pointer_type),
+            ('lpIDList',     pointer_type),
+            ('lpClass',      pointer_type),
+            ('hkeyClass',    pointer_type),
+            ('dwHotKey',     ctypes.c_uint32),
+            ('_anon_0',      DUMMYUNIONNAME),
+            ('hProcess',     pointer_type)
+        )
 
-    def read(self, addr):
-        super().generic_read(addr, [self.number, self.typeInfo])
-
-    def __init__(self, ql, objects=None, objectTypeInfo: ObjectTypeInformation = None):
-        super().__init__(ql)
-        self.size = self.ULONG_SIZE + (self.ULONG_SIZE * 2 + (self.USHORT_SIZE * 2 + self.POINTER_SIZE))
-        # FIXME: understand if is correct to set them as big
-        self.number = [objects, self.ULONG_SIZE, "big", int]
-        self.typeInfo = [objectTypeInfo, self.ULONG_SIZE * 2 + (self.USHORT_SIZE * 2 + self.POINTER_SIZE), "little",
-                         ObjectTypeInformation]
+    return SHELLEXECUTEINFO
 
 
-# typedef struct _WIN32_FIND_DATAA {
-#   DWORD    dwFileAttributes;
-#   FILETIME ftCreationTime;
-#   FILETIME ftLastAccessTime;
-#   FILETIME ftLastWriteTime;
-#   DWORD    nFileSizeHigh;
-#   DWORD    nFileSizeLow;
-#   DWORD    dwReserved0;
-#   DWORD    dwReserved1;
-#   CHAR     cFileName[MAX_PATH];
-#   CHAR     cAlternateFileName[14];
-#   DWORD    dwFileType;
-#   DWORD    dwCreatorType;
-#   WORD     wFinderFlags;
-# } WIN32_FIND_DATAA, *PWIN32_FIND_DATAA, *LPWIN32_FIND_DATAA;
-class Win32FindData(WindowsStruct):
-    def write(self, addr):
-        super().generic_write(addr, 
-            [
-                self.file_attributes, self.creation_time,
-                self.last_acces_time, self.last_write_time, 
-                self.file_size_high, self.file_size_low, 
-                self.reserved_0, self.reserved_1, self.file_name,
-                self.alternate_file_name, self.file_type, 
-                self.creator_type, self.finder_flags
-            ])
-    
-    def read(self, addr):
-        super().generic_read(addr, 
-            [
-                self.file_attributes, self.creation_time,
-                self.last_acces_time, self.last_write_time, 
-                self.file_size_high, self.file_size_low, 
-                self.reserved_0, self.reserved_1, self.file_name,
-                self.alternate_file_name, self.file_type, 
-                self.creator_type, self.finder_flags
-            ])
+# https://www.geoffchappell.com/studies/windows/km/ntoskrnl/api/ob/obquery/type.htm
+@lru_cache(maxsize=2)
+def make_object_type_info(archbits: int):
+    Struct = struct.get_aligned_struct(archbits)
 
-    def __init__(self, 
-                ql, 
-                file_attributes=None, 
-                creation_time=None, 
-                last_acces_time=None,
-                last_write_time=None, 
-                file_size_high=None,
-                file_size_low=None,
-                reserved_0=None, 
-                reserved_1=None, 
-                file_name=None,
-                alternate_filename=None,
-                file_type=None, 
-                creator_type=None, 
-                finder_flags=None):
-        super().__init__(ql)
-        
-        # Size of FileTime == 2*(DWORD)
-        self.size = (
-            self.DWORD_SIZE               # dwFileAttributes
-            + (3 * (2 * self.DWORD_SIZE)) # ftCreationTime, ftLastAccessTime, ftLastWriteTime
-            + self.DWORD_SIZE             # nFileSizeHigh
-            + self.DWORD_SIZE             # nFileSizeLow
-            + self.DWORD_SIZE             # dwReservered0
-            + self.DWORD_SIZE             # dwReservered1
-            + (self.BYTE_SIZE * 260)      # cFileName[MAX_PATH]
-            + (self.BYTE_SIZE * 14)       # cAlternateFileName[14]
-            + self.DWORD_SIZE             # dwFileType
-            + self.DWORD_SIZE             # dwCreatorType
-            + self.WORD_SIZE)             # wFinderFlags
-        
-        self.file_attributes = file_attributes
-        self.creation_time = creation_time
-        self.last_acces_time = last_acces_time
-        self.last_write_time = last_write_time
-        self.file_size_high = file_size_high
-        self.file_size_low = file_size_low
-        self.reserved_0 = reserved_0
-        self.reserved_1 = reserved_1
-        self.file_name = file_name
-        self.alternate_file_name = alternate_filename
-        self.file_type = file_type
-        self.creator_type = creator_type
-        self.finder_flags = finder_flags
+    UniStr = make_unicode_string(archbits)
+
+    # this is only a pratial definition of the structure.
+    # for some reason, the last two fields are swapped in al-khaser
+    class OBJECT_TYPE_INFORMATION(Struct):
+        _fields_ = (
+            ('TypeName',             UniStr),
+            ('TotalNumberOfObjects', ctypes.c_uint32),
+            ('TotalNumberOfHandles', ctypes.c_uint32)
+        )
+
+    return OBJECT_TYPE_INFORMATION
+
+
+def make_object_all_types_info(archbits: int, nobjs: int):
+    Struct = struct.get_aligned_struct(archbits)
+
+    ObjTypeInfo = make_object_type_info(archbits)
+
+    class OBJECT_ALL_TYPES_INFORMATION(Struct):
+        _fields_ = (
+            ('NumberOfObjectTypes',   ctypes.c_uint32),
+            ('ObjectTypeInformation', ObjTypeInfo * nobjs)
+        )
+
+    return OBJECT_ALL_TYPES_INFORMATION
+
+
+# https://docs.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-win32_find_dataw
+def make_win32_find_data(archbits: int, *, wide: bool):
+    Struct = struct.get_aligned_struct(archbits)
+
+    char_type = (ctypes.c_wchar if wide else ctypes.c_char)
+
+    class WIN32_FIND_DATA(Struct):
+        _fields_ = (
+            ('dwFileAttributes',   ctypes.c_uint32),
+            ('ftCreationTime',     FILETIME),
+            ('ftLastAccessTime',   FILETIME),
+            ('ftLastWriteTime',    FILETIME),
+            ('nFileSizeHigh',      ctypes.c_uint32),
+            ('nFileSizeLow',       ctypes.c_uint32),
+            ('dwReserved0',        ctypes.c_uint32),
+            ('dwReserved1',        ctypes.c_uint32),
+            ('cFileName',          char_type * MAX_PATH),
+            ('cAlternateFileName', char_type * 14),
+            ('dwFileType',         ctypes.c_uint32),
+            ('dwCreatorType',      ctypes.c_uint32),
+            ('wFinderFlags',       ctypes.c_uint16)
+        )
+
+    return WIN32_FIND_DATA

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -17,6 +17,7 @@ from keystone import (Ks, KS_ARCH_ARM, KS_ARCH_ARM64, KS_ARCH_MIPS, KS_ARCH_X86,
 
 from qiling import Qiling
 from qiling.const import QL_ARCH, QL_ENDIAN, QL_VERBOSE
+
 
 class QlArchUtils:
     def __init__(self, ql: Qiling):
@@ -73,10 +74,16 @@ class QlArchUtils:
             self._block_hook = None
 
         if verbosity >= QL_VERBOSE.DISASM:
-            self._disasm_hook = self.ql.hook_code(self.disassembler)
+            try:  # monkey patch disassembler
+                from qiling.extensions.r2 import R2
+                r2 = R2(self.ql)
+                self._disasm_hook = self.ql.hook_code(r2.disassembler)
+            except (ImportError, ModuleNotFoundError):
+                self._disasm_hook = self.ql.hook_code(self.disassembler)
 
             if verbosity >= QL_VERBOSE.DUMP:
                 self._block_hook = self.ql.hook_block(ql_hook_block_disasm)
+
 
 # used by qltool prior to ql instantiation. to get an assembler object
 # after ql instantiation, use the appropriate ql.arch method
@@ -92,20 +99,21 @@ def assembler(arch: QL_ARCH, endianess: QL_ENDIAN, is_thumb: bool) -> Ks:
     """
 
     endian = {
-        QL_ENDIAN.EL : KS_MODE_LITTLE_ENDIAN,
-        QL_ENDIAN.EB : KS_MODE_BIG_ENDIAN
+        QL_ENDIAN.EL: KS_MODE_LITTLE_ENDIAN,
+        QL_ENDIAN.EB: KS_MODE_BIG_ENDIAN
     }[endianess]
 
     thumb = KS_MODE_THUMB if is_thumb else 0
 
     asm_map = {
-        QL_ARCH.ARM   : (KS_ARCH_ARM, KS_MODE_ARM + endian + thumb),
-        QL_ARCH.ARM64 : (KS_ARCH_ARM64, KS_MODE_ARM),
-        QL_ARCH.MIPS  : (KS_ARCH_MIPS, KS_MODE_MIPS32 + endian),
-        QL_ARCH.A8086 : (KS_ARCH_X86, KS_MODE_16),
-        QL_ARCH.X86   : (KS_ARCH_X86, KS_MODE_32),
-        QL_ARCH.X8664 : (KS_ARCH_X86, KS_MODE_64),
-        QL_ARCH.PPC   : (KS_ARCH_PPC, KS_MODE_PPC32 + KS_MODE_BIG_ENDIAN)
+        QL_ARCH.CORTEX_M: (KS_ARCH_ARM, KS_MODE_ARM + KS_MODE_LITTLE_ENDIAN + KS_MODE_THUMB),
+        QL_ARCH.ARM:      (KS_ARCH_ARM, KS_MODE_ARM + endian + thumb),
+        QL_ARCH.ARM64:    (KS_ARCH_ARM64, KS_MODE_ARM),
+        QL_ARCH.MIPS:     (KS_ARCH_MIPS, KS_MODE_MIPS32 + endian),
+        QL_ARCH.A8086:    (KS_ARCH_X86, KS_MODE_16),
+        QL_ARCH.X86:      (KS_ARCH_X86, KS_MODE_32),
+        QL_ARCH.X8664:    (KS_ARCH_X86, KS_MODE_64),
+        QL_ARCH.PPC:      (KS_ARCH_PPC, KS_MODE_PPC32 + KS_MODE_BIG_ENDIAN)
     }
 
     if arch in asm_map:

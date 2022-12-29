@@ -16,10 +16,20 @@ class ContextRenderARM(ContextRender, ArchARM):
     def __init__(self, ql, predictor):
         super().__init__(ql, predictor)
         ArchARM.__init__(self)
+        self.disasm_num = 8
 
     @staticmethod
     def print_mode_info(bits):
-        print(color.GREEN, "[{cpsr[mode]} mode], Thumb: {cpsr[thumb]}, FIQ: {cpsr[fiq]}, IRQ: {cpsr[irq]}, NEG: {cpsr[neg]}, ZERO: {cpsr[zero]}, Carry: {cpsr[carry]}, Overflow: {cpsr[overflow]}".format(cpsr=ArchARM.get_flags(bits)), color.END, sep="")
+        flags = ArchARM.get_flags(bits)
+
+        print(f"[{flags.pop('mode')} mode] ", end="")
+        for key, val in flags.items():
+            if val:
+                print(f"{color.BLUE}{key.upper()} ", end="")
+            else:
+                print(f"{color.GREEN}{key.lower()} ", end="")
+
+        print(color.END)
 
     @Render.divider_printer("[ REGISTERS ]")
     def context_reg(self, saved_reg_dump):

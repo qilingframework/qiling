@@ -216,6 +216,3 @@ class QlOsMacos(QlOsPosix):
             raise
 
         self.RUN = False
-
-        if self.ql._internal_exception != None:
-            raise self.ql._internal_exception

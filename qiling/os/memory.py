@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import os, re
-from typing import Any, Callable, Iterator, List, Mapping, MutableSequence, Optional, Pattern, Sequence, Tuple, Union
+import bisect
+import os
+import re
+from typing import Any, Callable, Iterator, List, Mapping, Optional, Pattern, Sequence, Tuple, Union
 
 from unicorn import UC_PROT_NONE, UC_PROT_READ, UC_PROT_WRITE, UC_PROT_EXEC, UC_PROT_ALL
 
@@ -17,6 +19,7 @@ MapInfoEntry = Tuple[int, int, int, str, bool]
 MmioReadCallback  = Callable[[Qiling, int, int], int]
 MmioWriteCallback = Callable[[Qiling, int, int, int], None]
 
+
 class QlMemoryManager:
     """
     some ideas and code from:
@@ -25,13 +28,13 @@ class QlMemoryManager:
 
     def __init__(self, ql: Qiling):
         self.ql = ql
-        self.map_info: MutableSequence[MapInfoEntry] = []
+        self.map_info: List[MapInfoEntry] = []
         self.mmio_cbs = {}
 
         bit_stuff = {
-            64 : (1 << 64) - 1,
-            32 : (1 << 32) - 1,
-            16 : (1 << 20) - 1   # 20bit address line
+            64: (1 << 64) - 1,
+            32: (1 << 32) - 1,
+            16: (1 << 20) - 1   # 20bit address line
         }
 
         if ql.arch.bits not in bit_stuff:
@@ -91,8 +94,7 @@ class QlMemoryManager:
             is_mmio: memory range is mmio
         """
 
-        self.map_info.append((mem_s, mem_e, mem_p, mem_info, is_mmio))
-        self.map_info = sorted(self.map_info, key=lambda tp: tp[0])
+        bisect.insort(self.map_info, (mem_s, mem_e, mem_p, mem_info, is_mmio))
 
     def del_mapinfo(self, mem_s: int, mem_e: int):
         """Subtract a memory range from map.
@@ -102,30 +104,33 @@ class QlMemoryManager:
             mem_e: memory range end
         """
 
-        tmp_map_info: MutableSequence[MapInfoEntry] = []
+        overlap_ranges = [idx for idx, (lbound, ubound, _, _, _) in enumerate(self.map_info) if (mem_s < ubound) and (mem_e > lbound)]
 
-        for s, e, p, info, mmio in self.map_info:
-            if e <= mem_s:
-                tmp_map_info.append((s, e, p, info, mmio))
-                continue
+        def __split_overlaps():
+            for idx in overlap_ranges:
+                lbound, ubound, perms, label, is_mmio = self.map_info[idx]
 
-            if s >= mem_e:
-                tmp_map_info.append((s, e, p, info, mmio))
-                continue
+                if lbound < mem_s:
+                    yield (lbound, mem_s, perms, label, is_mmio)
 
-            if s < mem_s:
-                tmp_map_info.append((s, mem_s, p, info, mmio))
+                if mem_e < ubound:
+                    yield (mem_e, ubound, perms, label, is_mmio)
 
-            if s == mem_s:
-                pass
+        # indices of first and last overlapping ranges. since map info is always
+        # sorted, we know that all overlapping rages are consecutive, so i1 > i0
+        i0 = overlap_ranges[0]
+        i1 = overlap_ranges[-1]
 
-            if e > mem_e:
-                tmp_map_info.append((mem_e, e, p, info, mmio))
+        # create new entries by splitting overlapping ranges.
+        # this has to be done before removing overlapping entries
+        new_entries = tuple(__split_overlaps())
 
-            if e == mem_e:
-                pass
+        # remove overlapping entries
+        del self.map_info[i0:i1 + 1]
 
-        self.map_info = tmp_map_info
+        # add new ones
+        for entry in new_entries:
+            bisect.insort(self.map_info, entry)
 
     def change_mapinfo(self, mem_s: int, mem_e: int, mem_p: Optional[int] = None, mem_info: Optional[str] = None):
         tmp_map_info: Optional[MapInfoEntry] = None
@@ -295,8 +300,9 @@ class QlMemoryManager:
         for lbound, ubound, perms, label, read_cb, write_cb in mem_dict['mmio']:
             self.ql.log.debug(f"restoring mmio range: {lbound:#08x} {ubound:#08x} {label}")
 
-            #TODO: Handle overlapped MMIO?
-            self.map_mmio(lbound, ubound - lbound, read_cb, write_cb, info=label)
+            size = ubound - lbound
+            if not self.is_mapped(lbound, size):
+                self.map_mmio(lbound, size, read_cb, write_cb, info=label)
 
     def read(self, addr: int, size: int) -> bytearray:
         """Read bytes from memory.
@@ -325,10 +331,10 @@ class QlMemoryManager:
             size = self.ql.arch.pointersize
 
         __unpack = {
-            1 : self.ql.unpack8,
-            2 : self.ql.unpack16,
-            4 : self.ql.unpack32,
-            8 : self.ql.unpack64
+            1: self.ql.unpack8,
+            2: self.ql.unpack16,
+            4: self.ql.unpack32,
+            8: self.ql.unpack64
         }.get(size)
 
         if __unpack is None:
@@ -360,10 +366,10 @@ class QlMemoryManager:
             size = self.ql.arch.pointersize
 
         __pack = {
-            1 : self.ql.pack8,
-            2 : self.ql.pack16,
-            4 : self.ql.pack32,
-            8 : self.ql.pack64
+            1: self.ql.pack8,
+            2: self.ql.pack16,
+            4: self.ql.pack32,
+            8: self.ql.pack64
         }.get(size)
 
         if __pack is None:
@@ -421,6 +427,24 @@ class QlMemoryManager:
 
         if (addr, addr + size) in self.mmio_cbs:
             del self.mmio_cbs[(addr, addr+size)]
+
+    def unmap_between(self, mem_s: int, mem_e: int) -> None:
+        """Reclaim any allocated memory region within the specified range.
+
+        Args:
+            mem_s: range start
+            mem_s: range end (exclusive)
+        """
+
+        # map info is about to change during the unmapping loop, so we have to
+        # determine the relevant ranges beforehand
+        mapped = [(lbound, ubound) for lbound, ubound, _, _, _ in self.map_info if (mem_s < ubound) and (mem_e > lbound)]
+
+        for lbound, ubound in mapped:
+            lbound = max(mem_s, lbound)
+            ubound = min(mem_e, ubound)
+
+            self.unmap(lbound, ubound - lbound)
 
     def unmap_all(self) -> None:
         """Reclaim the entire memory space.
@@ -513,13 +537,16 @@ class QlMemoryManager:
 
         assert minaddr < maxaddr
 
+        if (maxaddr - minaddr) < size:
+            raise ValueError('search domain is too small')
+
         # get gap ranges between mapped ones and memory bounds
         gaps_ubounds = tuple(lbound for lbound, _, _, _, _ in self.map_info) + (mem_ubound,)
         gaps_lbounds = (mem_lbound,) + tuple(ubound for _, ubound, _, _, _ in self.map_info)
-        gaps = zip(gaps_lbounds, gaps_ubounds)
+        gaps = ((lbound, ubound) for lbound, ubound in zip(gaps_lbounds, gaps_ubounds) if lbound < maxaddr and minaddr < ubound)
 
         for lbound, ubound in gaps:
-            addr = self.align_up(lbound, align)
+            addr = self.align_up(max(minaddr, lbound), align)
             end = addr + size
 
             # is aligned range within gap and satisfying min / max requirements?

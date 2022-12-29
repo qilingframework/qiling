@@ -1,8 +1,55 @@
 This file details the changelog of Qiling Framework.
 
 ------------------------------------
-[Version 1.4.4]: July XX, 2022
+[Version 1.4.4]: September 24th, 2022
 
+New features:
+- Add r2 extension (#1172)
+- Introduce procfs to Linux OS (#1174)
+- Add a tracer for IDAPro's Tenet plugin (#1205)
+
+Improvements:
+- Collect a few additional DLLs for x8664 (#1167)
+- Use global cwd in thread (#1170)
+- Fix QlLinuxThreadManagement.threads to be updated appropriately (#1180)
+- Fix Unix socket subsystem (#1181)
+- Maintenance PR for security and code quality (#1182 #1195)
+- Enable android 32bit test (#1184)
+- Fix wrong platform_system for unicornafl (#1185)
+- Fix arm thumb mode shellcode emulation (#1187)
+- Pump unicorn version to 2.0.0 (#1189)
+- Procfs improve & pwndbg compatiblity (#1190)
+- Fix example script issues (#1193 #1194)
+- Introduce a human-friendly disassembler (#1196)
+- Fix gdb step/continue handling (#1200)
+- Fix README.md (#1203)
+- Fix typo of default ip 127.0.0.1 (#1205)
+- Temporarily mask Python versions that are not supported by the EVM module (#1208)
+- Windows Maintenance PR (#1210)
+- Improvements around POSIX sockets (#1216)
+- Add x86_64 debug support for Qdb (#1218)
+- Renew code for picohttpd (#1221)
+- Fix missing retaddr_on_stack in Qdb for arm (#1225)
+- Qdb improvments: Mark, Jump and modify register value in qdb (#1226)
+- Allow user to build config from dictionary other than disk file (#1227)
+- fix(ida): replace __getattribute__ with __getattr__ (#1231)
+
+Contributors:
+- jasperla
+- bet4it
+- chinggg
+- elicn
+- vhertz
+- cgfandia-tii
+- wtdcode
+- ucgJhe
+- aquynh
+- kabeor
+- oscardagrach
+- hamarituc
+- EtchProject
+- HackingFrogWithSunglasses
+- xwings
 
 ------------------------------------
 [Version 1.4.3]: June 1st, 2022

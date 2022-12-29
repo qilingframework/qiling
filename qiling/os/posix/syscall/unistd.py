@@ -62,44 +62,75 @@ def ql_syscall_issetugid(ql: Qiling):
     return 0
 
 
-def ql_syscall_getuid(ql: Qiling):
+def __getuid(ql: Qiling):
     return ql.os.uid
 
 
-def ql_syscall_getuid32(ql: Qiling):
+def __setuid(ql: Qiling, uid: int):
+    # TODO: security checks
+    ql.os.uid = uid
+
     return 0
+
+
+def __getgid(ql: Qiling):
+    return ql.os.gid
+
+
+def __setgid(ql: Qiling, gid: int):
+    # TODO: security checks
+    ql.os.gid = gid
+
+    return 0
+
+
+def ql_syscall_getuid(ql: Qiling):
+    return __getuid(ql)
+
+
+def ql_syscall_setuid(ql: Qiling, uid: int):
+    return __setuid(ql, uid)
+
+
+def ql_syscall_getuid32(ql: Qiling):
+    return __getuid(ql)
+
+
+def ql_syscall_setuid32(ql: Qiling, uid: int):
+    return __setuid(ql, uid)
+
+
+def ql_syscall_getgid(ql: Qiling):
+    return __getgid(ql)
+
+
+def ql_syscall_setgid(ql: Qiling, gid: int):
+    return __setgid(ql, gid)
 
 
 def ql_syscall_getgid32(ql: Qiling):
-    return 0
+    return __getgid(ql)
+
+
+def ql_syscall_setgid32(ql: Qiling, gid: int):
+    return __setgid(ql, gid)
 
 
 def ql_syscall_geteuid(ql: Qiling):
     return ql.os.euid
 
 
+def ql_syscall_seteuid(ql: Qiling):
+    return 0
+
+
 def ql_syscall_getegid(ql: Qiling):
     return ql.os.egid
-
-
-def ql_syscall_getgid(ql: Qiling):
-    return ql.os.gid
 
 
 def ql_syscall_setgroups(ql: Qiling, gidsetsize: int, grouplist: int):
     return 0
 
-
-def ql_syscall_setgid(ql: Qiling):
-    return 0
-
-
-def ql_syscall_setgid32(ql: Qiling):
-    return 0
-
-
-def ql_syscall_setuid(ql: Qiling):
-    return 0
 
 def ql_syscall_setresuid(ql: Qiling):
     return 0
@@ -143,12 +174,8 @@ def ql_syscall_faccessat(ql: Qiling, dfd: int, filename: int, mode: int):
 
     if not os.path.exists(real_path):
         regreturn = -1
-
-    elif stat.S_ISFIFO(Stat(real_path).st_mode):
-        regreturn = 0
-
     else:
-        regreturn = -1
+        regreturn = 0
 
     if regreturn == -1:
         ql.log.debug(f'File not found or skipped: {access_path}')
@@ -206,17 +233,16 @@ def ql_syscall__llseek(ql: Qiling, fd: int, offset_high: int, offset_low: int, r
 
 
 def ql_syscall_brk(ql: Qiling, inp: int):
-    # current brk_address will be modified if inp is not NULL(zero)
-    # otherwise, just return current brk_address
-
     if inp:
         cur_brk_addr = ql.loader.brk_address
         new_brk_addr = ql.mem.align_up(inp)
 
-        if inp > cur_brk_addr: # increase current brk_address if inp is greater
+        if new_brk_addr > cur_brk_addr:
+            ql.log.debug(f'brk: increasing program break from {cur_brk_addr:#x} to {new_brk_addr:#x}')
             ql.mem.map(cur_brk_addr, new_brk_addr - cur_brk_addr, info="[brk]")
 
-        elif inp < cur_brk_addr: # shrink current bkr_address to inp if its smaller
+        elif new_brk_addr < cur_brk_addr:
+            ql.log.debug(f'brk: decreasing program break from {cur_brk_addr:#x} to {new_brk_addr:#x}')
             ql.mem.unmap(new_brk_addr, cur_brk_addr - new_brk_addr)
 
         ql.loader.brk_address = new_brk_addr
@@ -485,7 +511,7 @@ def ql_syscall_execve(ql: Qiling, pathname: int, argv: int, envp: int):
 
     ql.loader.argv = args
     ql.loader.env = env
-    ql._path = real_path
+    ql._argv = [real_path] + args
     ql.mem.map_info = []
     ql.clear_ql_hooks()
 
@@ -756,7 +782,7 @@ def __getdents_common(ql: Qiling, fd: int, dirp: int, count: int, *, is_64: bool
             # For some reason MACOS return int value is 64bit
             try:
                 packed_d_ino = (ql.pack(d_ino), n)
-            except: 
+            except:
                 packed_d_ino = (ql.pack64(d_ino), n)
 
             if is_64:

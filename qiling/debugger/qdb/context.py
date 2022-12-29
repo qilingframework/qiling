@@ -48,7 +48,9 @@ class Context:
         md = self.ql.arch.disassembler
         md.detail = detail
 
-        return next(md.disasm(self.read_insn(address), address), None)
+        if (addr := self.read_insn(address)):
+            return next(md.disasm(addr, address), None)
+        return None
 
     def try_read(self, address: int, size: int) -> Optional[bytes]:
         """

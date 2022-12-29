@@ -28,6 +28,10 @@ Qiling is an advanced binary emulation framework, with the following features:
 
 Qiling also made its way to various international conferences.
 
+2022:
+- [Black Hat, EU](https://www.blackhat.com/eu-22/arsenal/schedule/#reversing-mcu-with-firmware-emulation-29553)
+- [Black Hat, MEA](https://blackhatmea.com/node/724)
+
 2021:
 - [Black Hat, USA](https://www.blackhat.com/us-21/arsenal/schedule/index.html#bringing-the-x-complete-re-experience-to-smart-contract-24119)
 - [Hack In The Box, Amsterdam](https://conference.hitb.org/hitbsecconf2021ams/sessions/when-qiling-framework-meets-symbolic-execution/)
@@ -182,7 +186,7 @@ With qltool, easy execution can be performed:
 With shellcode:
 
 ```
-$ ./qltool shellcode --os linux --arch arm --hex -f examples/shellcodes/linarm32_tcp_reverse_shell.hex
+$ ./qltool code --os linux --arch arm --format hex -f examples/shellcodes/linarm32_tcp_reverse_shell.hex
 ```
 
 With binary file:
@@ -222,9 +226,3 @@ Contact us at email info@qiling.io, or via Twitter [@qiling_io](https://twitter.
 #### Core developers, Key Contributors and etc
 
 Please refer to [CREDITS.md](https://github.com/qilingframework/qiling/blob/dev/CREDITS.md)
-
-
----
-
-#### This is an awesome project! Can I donate?
-Yes, checkout [SWAG](https://www.qiling.io/swag/)

@@ -12,7 +12,7 @@ from qiling.extensions.mcu.stm32f4 import stm32f411
 
 def test_mcu_gpio_stm32f411():
     ql = Qiling(["../../examples/rootfs/mcu/stm32f411/hello_gpioA.hex"],                    
-                archtype="cortex_m", env=stm32f411, verbose=QL_VERBOSE.DEBUG)
+                archtype="cortex_m",  ostype="mcu", env=stm32f411, verbose=QL_VERBOSE.DEBUG)
 
     ql.hw.create('usart2').watch()
     ql.hw.create('rcc').watch()

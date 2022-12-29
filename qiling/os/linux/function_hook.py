@@ -557,8 +557,9 @@ class FunctionHook:
 
         # MIPS32
         elif self.ql.arch.type == QL_ARCH.MIPS:
-            self.GLOB_DAT = 21
-            self.JMP_SLOT = 22
+            # ref: https://sites.uclouvain.be/SystInfo/usr/include/elf.h.html
+            self.GLOB_DAT = 51
+            self.JMP_SLOT = 127
             # add $t9, $t9, $zero
             ins = b' \xc8 \x03'
             self.add_function_hook = self.add_function_hook_mips

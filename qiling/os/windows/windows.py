@@ -65,9 +65,9 @@ class QlOsWindows(QlOs):
 
         self.stats = QlWinStats()
 
-        ossection = f'OS{self.ql.arch.bits}'
-        heap_base = self.profile.getint(ossection, 'heap_address')
-        heap_size = self.profile.getint(ossection, 'heap_size')
+        ossection = self.profile[f'OS{self.ql.arch.bits}']
+        heap_base = ossection.getint('heap_address')
+        heap_size = ossection.getint('heap_size')
 
         self.heap = QlMemoryHeap(self.ql, heap_base, heap_base + heap_size)
 
@@ -82,9 +82,7 @@ class QlOsWindows(QlOs):
 
         self.PE_RUN = False
         self.last_error = 0
-        # variables used inside hooks
-        self.hooks_variables = {}
-        self.syscall_count = {}
+
         self.argv = self.ql.argv
         self.env = self.ql.env
         self.pid = self.profile.getint('KERNEL', 'pid')
@@ -191,9 +189,6 @@ class QlOsWindows(QlOs):
                 api_func = getattr(api, f'hook_{api_name}', None)
 
             if api_func:
-                self.syscall_count.setdefault(api_name, 0)
-                self.syscall_count[api_name] += 1
-
                 try:
                     api_func(ql, address, api_name)
                 except Exception as ex:

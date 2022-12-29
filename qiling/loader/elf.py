@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -15,7 +15,6 @@ from elftools.elf.elffile import ELFFile
 from elftools.elf.relocation import RelocationHandler
 from elftools.elf.sections import Symbol, SymbolTableSection
 from elftools.elf.descriptions import describe_reloc_type
-from elftools.elf.segments import InterpSegment
 from unicorn.unicorn_const import UC_PROT_NONE, UC_PROT_READ, UC_PROT_WRITE, UC_PROT_EXEC
 
 from qiling import Qiling
@@ -26,6 +25,7 @@ from qiling.os.linux.function_hook import FunctionHook
 from qiling.os.linux.syscall_nums import SYSCALL_NR
 from qiling.os.linux.kernel_api.hook import *
 from qiling.os.linux.kernel_api.kernel_api import hook_sys_open, hook_sys_read, hook_sys_write
+
 
 # auxiliary vector types
 # see: https://man7.org/linux/man-pages/man3/getauxval.3.html
@@ -54,12 +54,14 @@ class AUXV(IntEnum):
     AT_HWCAP2   = 26
     AT_EXECFN   = 31
 
+
 # start area memory for API hooking
 # we will reserve 0x1000 bytes for this (which contains multiple slots of 4/8 bytes, each for one api)
 API_HOOK_MEM = 0x1000000
 
 # memory for syscall table
 SYSCALL_MEM = API_HOOK_MEM + 0x1000
+
 
 class QlLoaderELF(QlLoader):
     def __init__(self, ql: Qiling):
@@ -78,16 +80,11 @@ class QlLoaderELF(QlLoader):
 
             return
 
-        section = {
-            32 : 'OS32',
-            64 : 'OS64'
-        }[self.ql.arch.bits]
-
-        self.profile = self.ql.os.profile[section]
+        self.profile = self.ql.os.profile[f'OS{self.ql.arch.bits}']
 
         # setup program stack
-        stack_address = int(self.profile.get('stack_address'), 0)
-        stack_size = int(self.profile.get('stack_size'), 0)
+        stack_address = self.profile.getint('stack_address')
+        stack_size = self.profile.getint('stack_size')
         self.ql.mem.map(stack_address, stack_size, info='[stack]')
 
         self.path = self.ql.path
@@ -100,7 +97,7 @@ class QlLoaderELF(QlLoader):
 
         # is it a driver?
         if elftype == 'ET_REL':
-            self.load_driver(elffile, stack_address + stack_size)
+            self.load_driver(elffile, stack_address + stack_size, loadbase=0x8000000)
             self.ql.hook_code(hook_kernel_api)
 
         # is it an executable?
@@ -111,7 +108,7 @@ class QlLoaderELF(QlLoader):
 
         # is it a shared object?
         elif elftype == 'ET_DYN':
-            load_address = int(self.profile.get('load_address'), 0)
+            load_address = self.profile.getint('load_address')
 
             self.load_with_ld(elffile, stack_address + stack_size, load_address, self.argv, self.env)
 
@@ -243,7 +240,7 @@ class QlLoaderELF(QlLoader):
                 # determine interpreter base address
                 # some old interpreters may not be PIE: p_vaddr of the first LOAD segment is not zero
                 # we should load interpreter at the address p_vaddr specified in such situation
-                interp_address = int(self.profile.get('interp_address'), 0) if min_vaddr == 0 else 0
+                interp_address = self.profile.getint('interp_address') if min_vaddr == 0 else 0
                 self.ql.log.debug(f'Interpreter addr: {interp_address:#x}')
 
                 # load interpreter segments data to memory
@@ -256,7 +253,7 @@ class QlLoaderELF(QlLoader):
                 entry_point = interp_address + interp['e_entry']
 
         # set mmap addr
-        mmap_address = int(self.profile.get('mmap_address'), 0)
+        mmap_address = self.profile.getint('mmap_address')
         self.ql.log.debug(f'mmap_address is : {mmap_address:#x}')
 
         # set info to be used by gdb
@@ -271,7 +268,7 @@ class QlLoaderELF(QlLoader):
             Top of stack remains aligned to pointer size
             """
 
-            data = (s if isinstance(s, bytes) else s.encode("utf-8")) + b'\x00'
+            data = s.encode('utf-8') + b'\x00'
             top = self.ql.mem.align(top - len(data), self.ql.arch.pointersize)
             self.ql.mem.write(top, data)
 
@@ -365,28 +362,31 @@ class QlLoaderELF(QlLoader):
 
         # map vsyscall section for some specific needs
         if self.ql.arch.type == QL_ARCH.X8664 and self.ql.os.type == QL_OS.LINUX:
-            _vsyscall_addr = int(self.profile.get('vsyscall_address'), 0)
-            _vsyscall_size = int(self.profile.get('vsyscall_size'), 0)
+            vsyscall_addr = self.profile.getint('vsyscall_address')
 
-            if self.ql.mem.is_available(_vsyscall_addr, _vsyscall_size):
+            vsyscall_ids = (
+                SYSCALL_NR.gettimeofday,
+                SYSCALL_NR.time,
+                SYSCALL_NR.getcpu
+            )
+
+            # each syscall should be 1KiB away
+            entry_size = 1024
+            vsyscall_size = self.ql.mem.align_up(len(vsyscall_ids) * entry_size)
+
+            if self.ql.mem.is_available(vsyscall_addr, vsyscall_size):
                 # initialize with int3 instructions then insert syscall entry
-                # each syscall should be 1KiB away
-                self.ql.mem.map(_vsyscall_addr, _vsyscall_size, info="[vsyscall]")
-                self.ql.mem.write(_vsyscall_addr, _vsyscall_size * b'\xcc')
+                self.ql.mem.map(vsyscall_addr, vsyscall_size, info="[vsyscall]")
                 assembler = self.ql.arch.assembler
 
                 def __assemble(asm: str) -> bytes:
                     bs, _ = assembler.asm(asm)
                     return bytes(bs)
 
-                _vsyscall_ids = (
-                    SYSCALL_NR.gettimeofday,
-                    SYSCALL_NR.time,
-                    SYSCALL_NR.getcpu
-                )
+                for i, scid in enumerate(vsyscall_ids):
+                    entry = __assemble(f'mov rax, {scid:#x}; syscall; ret')
 
-                for i, scid in enumerate(_vsyscall_ids):
-                    self.ql.mem.write(_vsyscall_addr + i * 1024, __assemble(f'mov rax, {scid:#x}; syscall; ret'))
+                    self.ql.mem.write(vsyscall_addr + i * entry_size, entry.ljust(entry_size, b'\xcc'))
 
     def lkm_get_init(self, elffile: ELFFile) -> int:
         """Get file offset of the init_module function.
@@ -400,7 +400,7 @@ class QlLoaderELF(QlLoader):
             if syms:
                 sym = syms[0]
                 addr = sym['st_value'] + elffile.get_section(sym['st_shndx'])['sh_offset']
-                self.ql.log.info(f'init_module = {addr:#x}')
+
                 return addr
 
         raise QlErrorELFFormat('invalid module: symbol init_module not found')
@@ -479,6 +479,10 @@ class QlLoaderELF(QlLoader):
                                 rev_reloc_symbols[symbol_name] = self.ql.os.hook_addr
                                 sym_offset = self.ql.os.hook_addr - mem_start
                                 self.ql.os.hook_addr += self.ql.arch.pointersize
+
+                            elif _symbol['st_shndx'] == 'SHN_ABS':
+                                rev_reloc_symbols[symbol_name] = _symbol['st_value']
+
                             else:
                                 # local symbol
                                 _section = elffile.get_section(_symbol['st_shndx'])
@@ -521,12 +525,12 @@ class QlLoaderELF(QlLoader):
 
                     elif desc in ('R_386_PC32', 'R_386_PLT32'):
                         val = ql.mem.read_ptr(loc, 4)
-                        val = rev_reloc_symbols[symbol_name] + val - loc
+                        val += rev_reloc_symbols[symbol_name] - loc
                         ql.mem.write_ptr(loc, (val & 0xFFFFFFFF), 4)
 
                     elif desc in ('R_386_32', 'R_MIPS_32'):
                         val = ql.mem.read_ptr(loc, 4)
-                        val = rev_reloc_symbols[symbol_name] + val
+                        val += rev_reloc_symbols[symbol_name]
                         ql.mem.write_ptr(loc, (val & 0xFFFFFFFF), 4)
 
                     elif desc == 'R_MIPS_HI16':
@@ -551,23 +555,9 @@ class QlLoaderELF(QlLoader):
     def load_driver(self, elffile: ELFFile, stack_addr: int, loadbase: int = 0) -> None:
         elfdata_mapping = self.get_elfdata_mapping(elffile)
 
-        # Determine the range of memory space opened up
-        # mem_start = -1
-        # mem_end = -1
-        #
-        # for i in super().parse_program_header(ql):
-        #     if i['p_type'] == PT_LOAD:
-        #         if mem_start > i['p_vaddr'] or mem_start == -1:
-        #             mem_start = i['p_vaddr']
-        #         if mem_end < i['p_vaddr'] + i['p_memsz'] or mem_end == -1:
-        #             mem_end = i['p_vaddr'] + i['p_memsz']
-        #
-        # mem_start = int(mem_start // 0x1000) * 0x1000
-        # mem_end = int(mem_end // 0x1000 + 1) * 0x1000
-
-        # FIXME
-        mem_start = 0x1000
-        mem_end = mem_start + (len(elfdata_mapping) // 0x1000 + 1) * 0x1000
+        # FIXME: determine true memory boundaries, taking relocation into account (if requested)
+        mem_start = 0
+        mem_end = mem_start + self.ql.mem.align_up(len(elfdata_mapping), 0x1000)
 
         # map some memory to intercept external functions of Linux kernel
         self.ql.mem.map(API_HOOK_MEM, 0x1000, info="[api_mem]")
@@ -579,15 +569,17 @@ class QlLoaderELF(QlLoader):
         self.ql.mem.map(loadbase + mem_start, mem_end - mem_start, info=self.ql.path)
         self.ql.mem.write(loadbase + mem_start, elfdata_mapping)
 
-        entry_point = self.lkm_get_init(elffile) + loadbase + mem_start
+        init_module = self.lkm_get_init(elffile) + loadbase + mem_start
+        self.ql.log.debug(f'init_module : {init_module:#x}')
+
         self.brk_address = mem_end + loadbase
 
         # Set MMAP addr
-        mmap_address = int(self.profile.get('mmap_address'), 0)
+        mmap_address = self.profile.getint('mmap_address')
         self.ql.log.debug(f'mmap_address is : {mmap_address:#x}')
 
         # self.ql.os.elf_entry = self.elf_entry = loadbase + elfhead['e_entry']
-        self.ql.os.entry_point = self.entry_point = entry_point
+        self.ql.os.entry_point = self.entry_point = init_module
         self.elf_entry = self.ql.os.elf_entry = self.ql.os.entry_point
 
         self.stack_address = self.ql.mem.align(stack_addr, self.ql.arch.pointersize)
@@ -625,6 +617,25 @@ class QlLoaderELF(QlLoader):
         self.import_symbols[self.ql.os.hook_addr + 2 * self.ql.arch.pointersize] = hook_sys_open
 
     def get_elfdata_mapping(self, elffile: ELFFile) -> bytes:
+        # from io import BytesIO
+        #
+        # rh = RelocationHandler(elffile)
+        #
+        # for sec in elffile.iter_sections():
+        #     rs = rh.find_relocations_for_section(sec)
+        #
+        #     if rs is not None:
+        #         ss = BytesIO(sec.data())
+        #         rh.apply_section_relocations(ss, rs)
+        #
+        #         # apply changes to stream
+        #         elffile.stream.seek(sec['sh_offset'])
+        #         elffile.stream.write(ss.getbuffer())
+        #
+        # TODO: need to patch hooked symbols with their hook targets
+        # (e.g. replace calls to 'printk' with the hooked address that
+        # was allocate for it)
+
         elfdata_mapping = bytearray()
 
         # pick up elf header
@@ -634,10 +645,18 @@ class QlLoaderELF(QlLoader):
 
         elfdata_mapping.extend(elf_header)
 
-        # pick up loadable sections and relocate them if needed
+        # FIXME: normally the address of a section would be determined by its 'sh_addr' value.
+        # in case of a relocatable object all its sections' sh_addr will be set to zero, so
+        # the value in 'sh_offset' should be used to determine the final address.
+        # see: https://refspecs.linuxbase.org/elf/gabi4+/ch4.sheader.html
+        #
+        # here we presume this a relocatable object and don't do any relocation (that is, it
+        # is relocated to 0)
+
+        # pick up loadable sections
         for sec in elffile.iter_sections():
             if sec['sh_flags'] & SH_FLAGS.SHF_ALLOC:
-                # pad aggregated elf data to the offset of the current section 
+                # pad aggregated elf data to the offset of the current section
                 elfdata_mapping.extend(b'\x00' * (sec['sh_offset'] - len(elfdata_mapping)))
 
                 # aggregate section data

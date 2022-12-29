@@ -838,11 +838,11 @@ def hook_MessageBoxA(ql: Qiling, address: int, params):
     'lpPoint' : LPPOINT
 })
 def hook_GetCursorPos(ql: Qiling, address: int, params):
-    dest = params["lpPoint"]
+    lpPoint = params['lpPoint']
 
     # TODO: maybe we can add it to the profile too
-    p = Point(ql, 50, 50)
-    p.write(dest)
+    p = Point(50, 50)
+    p.save_to(ql.mem, lpPoint)
 
     return 0
 

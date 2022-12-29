@@ -52,10 +52,10 @@ class STM32F4xxSpi(QlConnectivityPeripheral):
 
     def __init__(self, ql, label, intn=None):
         super().__init__(ql, label)
-        self.spi = self.struct(
+        self.instance = self.struct(
             CR1     = 0x00000000,
             CR2     = 0x00000000,
-            SR      = 0x0000000A,
+            SR      = 0x0000000B,
             DR      = 0x0000000C,
             CRCPR   = 0x00000007,
             RXCRCR  = 0x00000000,
@@ -68,11 +68,12 @@ class STM32F4xxSpi(QlConnectivityPeripheral):
 
     @QlPeripheral.monitor()
     def read(self, offset: int, size: int) -> int:
-        if self.in_field(self.struct.DR, offset, size):
-            self.spi.SR &= ~SPI_SR.RXNE
+        if self.contain(self.struct.DR, offset, size):
+            if self.has_input():
+                return self.recv_from_user()
 
         buf = ctypes.create_string_buffer(size)
-        ctypes.memmove(buf, ctypes.addressof(self.spi) + offset, size)
+        ctypes.memmove(buf, ctypes.addressof(self.instance) + offset, size)
         data = int.from_bytes(buf.raw, byteorder='little')
 
         return data
@@ -98,11 +99,10 @@ class STM32F4xxSpi(QlConnectivityPeripheral):
             value &= SPI_I2SPR.RW_MASK
 
         data = (value).to_bytes(size, 'little')
-        ctypes.memmove(ctypes.addressof(self.spi) + offset, data, size)   
+        ctypes.memmove(ctypes.addressof(self.instance) + offset, data, size)   
 
-        if self.in_field(self.struct.DR, offset, size):
-            self.spi.SR |= SPI_SR.RXNE
-            self.send_to_user(self.spi.DR)
+        if self.contain(self.struct.DR, offset, size):
+            self.send_to_user(self.instance.DR)
 
     def send_interrupt(self):
         self.ql.hw.nvic.set_pending(self.intn)

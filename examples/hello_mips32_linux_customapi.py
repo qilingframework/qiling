@@ -17,4 +17,5 @@ def my_puts(ql: Qiling):
 
 if __name__ == "__main__":
     ql = Qiling(["rootfs/mips32_linux/bin/mips32_hello"], "rootfs/mips32_linux", verbose=QL_VERBOSE.DEBUG)
+    ql.os.set_api("puts", my_puts)
     ql.run()

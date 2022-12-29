@@ -28,7 +28,9 @@ def __getrlimit_common(ql: Qiling, res: int, rlim: int) -> int:
         rlimit = (stack_size, -1)
     else:
         rlimit = resource.getrlimit(res)
-    ql.mem.write(rlim, ql.pack64s(rlimit[0]) + ql.pack64s(rlimit[1]))
+    
+    ql.mem.write(rlim, ql.packs(rlimit[0]) + ql.packs(rlimit[1]))
+
     return 0
 
 def ql_syscall_ugetrlimit(ql: Qiling, res: int, rlim: int):

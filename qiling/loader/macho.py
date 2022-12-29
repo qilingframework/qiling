@@ -80,7 +80,6 @@ class QlLoaderMACHO(QlLoader):
             self.kext_name = os.path.splitext(basename)[0]
             filename = self.ql.argv
             self.ql._argv = [self.ql.argv[0] + "/Contents/MacOS/" + self.kext_name]
-            self.ql._path = self.ql.argv[0]
             self.plist = plistlib.load(open(filename[0] + "/Contents/Info.plist", "rb"))
             if "IOKitPersonalities" in self.plist:
                 self.IOKit = True

@@ -10,21 +10,18 @@ jobs:
       fail-fast: false
       matrix:
         #os: [windows-2019, macos-10.15, ubuntu-18.04, ubuntu-20.04]
-        os: [windows-latest, ubuntu-18.04, ubuntu-20.04]
-        python-version: [3.8, 3.9]
-        exclude:
-          - os: ubuntu-18.04
-            python-version: 3.9                   
+        os: [windows-latest, ubuntu-20.04]
+        python-version: [3.8, 3.9]              
         include:
-          - os: ubuntu-18.04
+          - os: ubuntu-22.04
             python-version: 3.9
             container: Docker
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
 
@@ -80,7 +77,7 @@ jobs:
         cd ../qiling
         cd ../examples/rootfs/x86_linux/kernel && unzip -P infected m0hamed_rootkit.ko.zip
         cd ../../../../
-        pip3 install -e .[evm]
+        pip3 install -e .[evm,RE]
 
         if [ ${{ matrix.os }} == 'ubuntu-18.04' ] and [ ${{ matrix.python-version }} == '3.9' ]; then
           docker run -it --rm -v ${GITHUB_WORKSPACE}:/qiling qilingframework/qiling:dev bash -c "cd tests && ./test_onlinux.sh"

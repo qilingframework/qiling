@@ -1,32 +1,31 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 import os
 from struct import pack, unpack
 from ctypes import c_int32
-from binascii import hexlify
 
 from qiling import Qiling
-from qiling.os.filestruct import ql_file
-from qiling.os.mapper import QlFsMappedObject
 from qiling.os.qnx.const import IO_FLAG_MASK, PAGESIZE, S_IFMT
-from qiling.os.qnx.helpers import get_message_body, QnxConn
+from qiling.os.qnx.helpers import get_message_body
 from qiling.os.qnx.types import file_access, file_stats, file_types, file_open_flags, file_sharing_modes, io_connect_eflag, io_connect_ioflag, io_connect_subtypes, lseek_whence, mem_ctrl_subtypes, mmap_flags, pathconf_names, sysconf_conditions, sysconf_consts, sysconf_names, sysconf_subtypes
-from qiling.os.posix.const_mapping import _constant_mapping, mmap_prot_mapping, ql_open_flag_mapping
+from qiling.os.posix.const_mapping import _flags_mapping, mmap_prot_mapping
 from qiling.os.posix.syscall import ql_syscall_close, ql_syscall_fstat, ql_syscall_lseek, ql_syscall_mmap, ql_syscall_open, ql_syscall_read, ql_syscall_write
 
 # TODO: move this to qiling.os.qnx.const?
 _IO_COMBINE_FLAG = 0x8000
 
-def ql_qnx_msg_io_close(ql:Qiling, coid, smsg, sparts, rmsg, rparts, *args, **kw):
+
+def ql_qnx_msg_io_close(ql: Qiling, coid, smsg, sparts, rmsg, rparts, *args, **kw):
     fd = ql.os.connections[coid].fd
     ql.os.connections[coid].fd = None
     ql.log.debug(f'msg_io_close(coid = {coid} => fd = {fd})')
     return ql_syscall_close(ql, fd)
 
+
 # lib/c/support/_connect_ctrl.c::_connect_io()
-def ql_qnx_msg_io_connect(ql:Qiling, coid, smsg, sparts, rmsg, rparts, *args, **kw):
+def ql_qnx_msg_io_connect(ql: Qiling, coid, smsg, sparts, rmsg, rparts, *args, **kw):
     # first iov_t
     iov_base = ql.unpack32(ql.mem.read(smsg, 4))
     iov_len = ql.unpack32(ql.mem.read(smsg + 4, 4))
@@ -40,24 +39,24 @@ def ql_qnx_msg_io_connect(ql:Qiling, coid, smsg, sparts, rmsg, rparts, *args, **
     real_path = ql.os.path.transform_to_real_path(path)
     # check parameters
     assert (type, reply_max, entry_max, key, handle, zero, eflag, extra_type) == (0x100, 0xa18, 0x10, 0, 0, 0, 0, 0), "io_connect message is wrong"
-    
+
     if not subtype in io_connect_subtypes:
         raise NotImplementedError(f'msg_io_connect subtype {subtype} not implemented')
-    
+
     if not file_type in file_types:
         raise NotImplementedError(f'msg_io_connect file_type {file_type} not implemented')
-    
+
     if not sflag in file_sharing_modes:
         raise NotImplementedError(f'msg_io_connect sharing flag {sflag} not implemented')
-    
+
     if access != 0 and not access in file_access:
         raise NotImplementedError(f'msg_io_connect access {access} not implemented')
-        
+
     ioflag_lo = ioflag & IO_FLAG_MASK
     ioflag_hi = ioflag & (~IO_FLAG_MASK)
     real_mode = mode & (~S_IFMT)
     # ql.log.debug(f'msg_io_connect(subtype = {subtype}, file_type = {file_type}, ioflag = 0x{ioflag:x}, mode = 0x{mode:x}, sflag = 0x{sflag:x}, access = {access}, extra_len = {extra_len})')
-    ql.log.debug(f'msg_io_connect(subtype = {io_connect_subtypes[subtype]}, file_type = {file_types[file_type]}, ioflag = {_constant_mapping(ioflag_lo, io_connect_ioflag) + _constant_mapping(ioflag_hi, file_open_flags)}, mode = 0x{real_mode:x}, type = {_constant_mapping((mode & S_IFMT), file_stats)}, sflag = {file_sharing_modes[sflag]})')
+    ql.log.debug(f'msg_io_connect(subtype = {io_connect_subtypes[subtype]}, file_type = {file_types[file_type]}, ioflag = {_flags_mapping(ioflag_lo, io_connect_ioflag) + _flags_mapping(ioflag_hi, file_open_flags)}, mode = 0x{real_mode:x}, type = {_flags_mapping((mode & S_IFMT), file_stats)}, sflag = {file_sharing_modes[sflag]})')
     # convert _IO_FLAG_? to O_? flag and then to O_? flags of host system
     ioflag -= 1
     #ioflag = ql_open_flag_mapping(ql, ioflag)
@@ -133,8 +132,9 @@ def ql_qnx_msg_io_connect(ql:Qiling, coid, smsg, sparts, rmsg, rparts, *args, **
     ql.mem.write(iov_base, pack("<IIBBHIHH", 0, file_type, eflag, 0, 0, umask, 0, 0))
     return 0
 
+
 # lib/c/1/lseek.c
-def ql_qnx_msg_io_lseek(ql:Qiling, coid, smsg, sparts, rmsg, rparts, *args, **kw):
+def ql_qnx_msg_io_lseek(ql: Qiling, coid, smsg, sparts, rmsg, rparts, *args, **kw):
     # struct _io_lseek in lib/c/public/sys/iomsg.h
     (type, combine_len, whence, zero, offset) = unpack("<HHhHQ", ql.mem.read(smsg, 16))
     # check parameters
@@ -149,8 +149,9 @@ def ql_qnx_msg_io_lseek(ql:Qiling, coid, smsg, sparts, rmsg, rparts, *args, **kw
     ql.mem.write_ptr(rmsg, regreturn, 8)
     return 0
 
+
 # lib/c/1/fstat.c
-def ql_qnx_msg_io_stat(ql:Qiling, coid, smsg, sparts, rmsg, rparts, *args, **kw):
+def ql_qnx_msg_io_stat(ql: Qiling, coid, smsg, sparts, rmsg, rparts, *args, **kw):
     # struct _io_stat in lib/c/public/sys/iomsg.h
     (type, combine_len, zero) = unpack("<HHI", ql.mem.read(smsg, 8))
     # check parameters
@@ -161,7 +162,8 @@ def ql_qnx_msg_io_stat(ql:Qiling, coid, smsg, sparts, rmsg, rparts, *args, **kw)
     # fstat file
     return ql_syscall_fstat(ql, fd, rmsg)
 
-def ql_qnx_msg_io_write(ql:Qiling, coid, smsg, sparts, rmsg, rparts, *args, **kw):
+
+def ql_qnx_msg_io_write(ql: Qiling, coid, smsg, sparts, rmsg, rparts, *args, **kw):
     # struct _io_write in lib/c/public/sys/iomsg.h
     (type, combine_len, nbytes, xtype, zero) = unpack("<HHiII", get_message_body(ql, smsg, sparts))
 
@@ -170,7 +172,8 @@ def ql_qnx_msg_io_write(ql:Qiling, coid, smsg, sparts, rmsg, rparts, *args, **kw
 
     return ql_syscall_write(ql, ql.os.connections[coid].fd, ql.unpack32(ql.mem.read(smsg + 8, 4)), nbytes)
 
-def ql_qnx_msg_io_read(ql:Qiling, coid, smsg, sparts, rmsg, rparts, *args, **kw):
+
+def ql_qnx_msg_io_read(ql: Qiling, coid, smsg, sparts, rmsg, rparts, *args, **kw):
     (type_, combine_len, nbytes, xtype, zero) = unpack("<HHIII", get_message_body(ql, smsg, sparts))
 
     if combine_len & _IO_COMBINE_FLAG != 0 or xtype != 0:
@@ -180,7 +183,8 @@ def ql_qnx_msg_io_read(ql:Qiling, coid, smsg, sparts, rmsg, rparts, *args, **kw)
     assert nbytes == -rlen, "different sizes for io_read"
     return ql_syscall_read(ql, ql.os.connections[coid].fd, rmsg, nbytes)
 
-def ql_qnx_msg_mem_ctrl(ql:Qiling, coid, smsg, sparts, rmsg, rparts, *args, **kw):
+
+def ql_qnx_msg_mem_ctrl(ql: Qiling, coid, smsg, sparts, rmsg, rparts, *args, **kw):
     # struct _mem_ctrl in services/system/public/sys/memmsg.h
     (type, subtype, flags, addr, len) = unpack("<HHIQQ", ql.mem.read(smsg, 24))
     # check parameters
@@ -189,12 +193,13 @@ def ql_qnx_msg_mem_ctrl(ql:Qiling, coid, smsg, sparts, rmsg, rparts, *args, **kw
 
     if not subtype in mem_ctrl_subtypes:
         raise NotImplementedError(f'MEM_CTRL subtype {subtype} not implemented')
-    
+
     ql.log.warning(f'msg_mem_ctrl(subtype = {mem_ctrl_subtypes[subtype]}, flags = 0x{flags:x}, addr = 0x{addr:x}, len = 0x{len:x}) not implemented')
     # TODO: implement mem_ctrl
     return -1
 
-def ql_qnx_msg_mem_map(ql:Qiling, coid, smsg, sparts, rmsg, rparts, *args, **kw):
+
+def ql_qnx_msg_mem_map(ql: Qiling, coid, smsg, sparts, rmsg, rparts, *args, **kw):
     # struct _mem_map in services/system/public/sys/memmsg.h
     (type, zero, reserved1, addr, len, prot, flags, fd, preload, align, offset) = unpack("<HHIQQIIiIQq", ql.mem.read(smsg, 56))
     # map QNX protection flags to POSIX protection flags
@@ -203,22 +208,23 @@ def ql_qnx_msg_mem_map(ql:Qiling, coid, smsg, sparts, rmsg, rparts, *args, **kw)
 
     if c_int32(sparts).value > 0:
         raise NotImplementedError("mmap with IOV not implemented")
-    
+
     assert (c_int32(sparts).value, c_int32(rparts).value) == (-56, -24), "input/output sizes are wrong"
     assert (type, zero, reserved1) == (0x040, 0, 0), "mem_map message is wrong"
     # map message fd to underlying fd
-    
+
     if fd > 0:
         fd = ql.os.connections[fd].fd
-    
-    ql.log.debug(f'mem_map(addr = 0x{addr:x}, len = 0x{len:x}, prot = {mmap_prot_mapping(prot)}, flags = {_constant_mapping(flags, mmap_flags)}, fd = {fd}, preload = 0x{preload:x}, align = 0x{align:x}, offset = 0x{offset:x})')
+
+    ql.log.debug(f'mem_map(addr = 0x{addr:x}, len = 0x{len:x}, prot = {mmap_prot_mapping(prot)}, flags = {_flags_mapping(flags, mmap_flags)}, fd = {fd}, preload = 0x{preload:x}, align = 0x{align:x}, offset = 0x{offset:x})')
     # map memory
     ret = ql_syscall_mmap(ql, addr, len, prot, flags, fd, offset)
     # struct _mem_map_replay in services/system/public/sys/memmsg.h
     ql.mem.write(rmsg, pack("<QQQ", len, ret, ret))
     return 0
 
-def ql_qnx_msg_sys_conf(ql:Qiling, coid, smsg, sparts, rmsg, rparts, *args, **kw):
+
+def ql_qnx_msg_sys_conf(ql: Qiling, coid, smsg, sparts, rmsg, rparts, *args, **kw):
     # struct _sys_conf in services/system/public/sys/sysmsg.h
     (type, subtype, cmd, name, spare, value) = unpack("<HHiiiq", get_message_body(ql, smsg, sparts))
     # check parameters
@@ -227,10 +233,10 @@ def ql_qnx_msg_sys_conf(ql:Qiling, coid, smsg, sparts, rmsg, rparts, *args, **kw
 
     if not subtype in sysconf_subtypes:
         raise NotImplementedError(f'subtype {subtype} not implemented')
-    
+
     if not cmd in sysconf_conditions:
         raise NotImplementedError(f'cmd type {cmd} not implemented')
-    
+
     # sys_conf(_SYS_SUB_GET, _CONF_STR, *) in lib/c/1a/confstr.c
     if subtype == 0 and cmd == (1 << 20):
         # check parameters

@@ -51,6 +51,7 @@ class Render:
     def __init__(self):
         self.regs_a_row = 4
         self.stack_num = 10
+        self.disasm_num = 0x10
         self.color = color
 
     def reg_diff(self, cur_regs, saved_reg_dump):
@@ -89,10 +90,18 @@ class Render:
         helper function for redering stack dump
         """
 
+        # Loops over stack range (last 10 addresses)
         for idx in range(self.stack_num):
             addr = arch_sp + idx * self.pointersize
-            if (val := self.try_read_pointer(addr)[0]):
-                print(f"$sp+0x{idx*self.pointersize:02x}│ [0x{addr:08x}] —▸ 0x{self.unpack(val):08x}", end="")
+
+            '''
+            @NOTE: Implemented new class arch_x8664 in order to bugfix issue with only dereferencing 32-bit pointers
+            on 64-bit emulation passes.
+            '''
+            if (val := self.try_read_pointer(addr)[0]): # defined to be try_read_pointer(addr)[0] - dereferneces pointer
+
+                # @TODO: Bug here where the values on the stack are being displayed in 32-bit format
+                print(f"SP + 0x{idx*self.pointersize:02x}│ [0x{addr:08x}] —▸ 0x{self.unpack(val):08x}", end="")
 
             # try to dereference wether it's a pointer
             if (buf := self.try_read_pointer(addr))[0] is not None:
@@ -181,7 +190,7 @@ class ContextRender(Context, Render):
         """
 
         self.render_stack_dump(self.ql.arch.regs.arch_sp)
-
+        
     @Render.divider_printer("[ REGISTERS ]")
     def context_reg(self, saved_states: Mapping["str", int]) -> None:
         """
@@ -198,13 +207,14 @@ class ContextRender(Context, Render):
 
         lines = {}
         past_list = []
-        from_addr = self.cur_addr - 0x10
-        to_addr = self.cur_addr + 0x10
+        from_addr = self.cur_addr - self.disasm_num
+        to_addr = self.cur_addr + self.disasm_num
 
         cur_addr = from_addr
         while cur_addr != to_addr:
             insn = self.disasm(cur_addr)
-            cur_addr += self.arch_insn_size
+            # cur_addr += self.arch_insn_size
+            cur_addr += insn.size
             if not insn:
                 continue
             past_list.append(insn)

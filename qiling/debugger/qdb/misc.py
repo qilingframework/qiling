@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from typing import Callable, Optional
+from typing import AnyStr, Callable, Optional
 
 import ast
 
@@ -50,17 +50,27 @@ def read_int(s: str) -> int:
     return int(s, 0)
 
 
+def try_read_int(s: AnyStr) -> Optional[int]:
+    """
+    try to read string as integer is possible
+    """
+    try:
+        ret = read_int(s)
+    except:
+        ret = None
+
+    return ret
+
+
 def parse_int(func: Callable) -> Callable:
     """
     function dectorator for parsing argument as integer
     """
     def wrap(qdb, s: str = "") -> int:
         assert type(s) is str
-        try:
-            ret = read_int(s)
-        except:
-            ret = None
+        ret = try_read_int(s)
         return func(qdb, ret)
+
     return wrap
 
 

@@ -59,7 +59,7 @@ class STM32F4xxGpio(STM32F1xxGpio):
         QlPeripheral.__init__(self, ql, label)
         GpioHooks.__init__(self, ql, 16)
 
-        self.gpio = self.struct(
+        self.instance = self.struct(
             MODER   = moder_reset,
             OSPEEDR = ospeedr_reset,
             PUPDR   = pupdr_reset,

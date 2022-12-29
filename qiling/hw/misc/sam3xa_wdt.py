@@ -26,5 +26,5 @@ class SAM3xaWdt(QlPeripheral):
     def __init__(self, ql, label, intn = None):
         super().__init__(ql, label)
 
-        self.wdt = self.struct()
+        self.instance = self.struct()
         self.intn = intn

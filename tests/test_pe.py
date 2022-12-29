@@ -68,8 +68,7 @@ class PETest(unittest.TestCase):
 
     def test_pe_win_x8664_hello(self):
         def _t():
-            ql = Qiling(["../examples/rootfs/x8664_windows/bin/x8664_hello.exe"], "../examples/rootfs/x8664_windows",
-                        verbose=QL_VERBOSE.DEFAULT)
+            ql = Qiling(["../examples/rootfs/x8664_windows/bin/x8664_hello.exe"], "../examples/rootfs/x8664_windows")
             ql.run()
             del ql
             return True
@@ -79,8 +78,7 @@ class PETest(unittest.TestCase):
 
     def test_pe_win_x86_hello(self):
         def _t():
-            ql = Qiling(["../examples/rootfs/x86_windows/bin/x86_hello.exe"], "../examples/rootfs/x86_windows",
-                        verbose=QL_VERBOSE.DEFAULT, profile="profiles/append_test.ql")
+            ql = Qiling(["../examples/rootfs/x86_windows/bin/x86_hello.exe"], "../examples/rootfs/x86_windows")
             ql.run()
             del ql
             return True
@@ -90,8 +88,7 @@ class PETest(unittest.TestCase):
 
     def test_pe_win_x8664_file_upx(self):
         def _t():
-            ql = Qiling(["../examples/rootfs/x8664_windows/bin/x8664_file_upx.exe"], "../examples/rootfs/x8664_windows",
-                        verbose=QL_VERBOSE.DEFAULT)
+            ql = Qiling(["../examples/rootfs/x8664_windows/bin/x8664_file_upx.exe"], "../examples/rootfs/x8664_windows")
             ql.run()
             del ql
             return True
@@ -101,8 +98,7 @@ class PETest(unittest.TestCase):
 
     def test_pe_win_x86_file_upx(self):
         def _t():
-            ql = Qiling(["../examples/rootfs/x86_windows/bin/x86_file_upx.exe"], "../examples/rootfs/x86_windows",
-                        verbose=QL_VERBOSE.DEFAULT)
+            ql = Qiling(["../examples/rootfs/x86_windows/bin/x86_file_upx.exe"], "../examples/rootfs/x86_windows")
             ql.run()
             del ql
             return True
@@ -359,30 +355,12 @@ class PETest(unittest.TestCase):
     @unittest.skipIf(IS_FAST_TEST, 'fast test')
     def test_pe_win_al_khaser(self):
         def _t():
-            ql = Qiling(["../examples/rootfs/x86_windows/bin/al-khaser.bin"], "../examples/rootfs/x86_windows")
+            ql = Qiling(["../examples/rootfs/x86_windows/bin/al-khaser.bin"], "../examples/rootfs/x86_windows", verbose=QL_VERBOSE.OFF)
 
-            # The hooks are to remove the prints to file. It crashes. will debug why in the future
-            # def results(ql):
-            #
-            #     if ql.arch.regs.ebx == 1:
-            #         print("BAD")
-            #     else:
-            #         print("GOOD ")
-            #     ql.arch.regs.eip = 0x402ee4
-            #
-            #ql.hook_address(results, 0x00402e66)
+            # ole32 functions are not implemented yet; stop before the binary
+            # starts using them
+            ql.run(end=0x004016ae)
 
-            # the program alloc 4 bytes and then tries to write 0x2cc bytes.
-            # I have no idea of why this code should work without this patch
-            ql.patch(0x00401984, b'\xb8\x04\x00\x00\x00')
-
-            def end(ql):
-                print("We are finally done")
-                ql.emu_stop()
-
-            ql.hook_address(end, 0x004016ae)
-
-            ql.run()
             del ql
             return True
 

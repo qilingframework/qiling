@@ -5,6 +5,9 @@
 
 
 from qiling.const import QL_ARCH
+from unicorn import UC_ERR_READ_UNMAPPED
+import unicorn
+
 
 class Arch:
     """
@@ -23,4 +26,9 @@ class Arch:
         return 4
 
     def read_insn(self, address: int):
-        return self.read_mem(address, self.arch_insn_size)
+        try:
+            result = self.read_mem(address, self.arch_insn_size)
+        except unicorn.unicorn.UcError as err:
+            result = None
+
+        return result

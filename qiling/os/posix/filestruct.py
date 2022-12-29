@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 import os
-from socket import socket, AddressFamily, SocketKind
+from socket import socket, AddressFamily, SocketKind, socketpair
 from typing import Union
 
 try:
@@ -40,6 +40,12 @@ class ql_socket:
 
         return cls(s)
 
+    @classmethod
+    def socketpair(cls, domain: Union[AddressFamily, int], socktype: Union[SocketKind, int], protocol: int):
+        a, b = socketpair(domain, socktype, protocol)
+
+        return cls(a), cls(b)
+
     def read(self, length: int) -> bytes:
         return os.read(self.__fd, length)
 
@@ -59,10 +65,8 @@ class ql_socket:
             pass
 
     def ioctl(self, cmd, arg):
-        try:
-            return fcntl.ioctl(self.__fd, cmd, arg)
-        except Exception:
-            pass
+        # might throw an OSError
+        return fcntl.ioctl(self.__fd, cmd, arg)
 
     def dup(self) -> 'ql_socket':
         new_s = self.__socket.dup()

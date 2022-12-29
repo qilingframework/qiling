@@ -1,10 +1,3 @@
-[LOG]
-# log directory output
-# usage: dir = qlog
-dir =
-# split log file, use with multithread
-split = False
-
 [KERNEL]
 version = 7
 ticks_per_second = 18.206
@@ -17,9 +10,4 @@ stack_size = 0x4000
 base_address = 0x7000 
 
 [MISC]
-# append string into different logs
-# maily for multiple times Ql run with one file
-# usage: append = test1
-append =
-automatize_input = False
 current_path = A:\

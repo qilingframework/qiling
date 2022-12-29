@@ -3,27 +3,38 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from typing import Iterator, Mapping, Optional, Sequence, Tuple
+from typing import Iterator, List, Mapping, Optional, Sequence, Tuple
 from pathlib import PurePath
 from xml.etree import ElementTree, ElementInclude
 
-from qiling.arch.arm_const import reg_map as arm_regs
-from qiling.arch.arm_const import reg_vfp as arm_regs_vfp
-from qiling.arch.arm64_const import reg_map as arm64_regs
-from qiling.arch.arm64_const import reg_map_v as arm64_regs_v
-from qiling.arch.mips_const import reg_map as mips_regs_gpr
-from qiling.arch.mips_const import reg_map_fpu as mips_regs_fpu
-from qiling.arch.x86_const import reg_map_32 as x86_regs_32
-from qiling.arch.x86_const import reg_map_64 as x86_regs_64
-from qiling.arch.x86_const import reg_map_misc as x86_regs_misc
-from qiling.arch.x86_const import reg_map_cr as x86_regs_cr
-from qiling.arch.x86_const import reg_map_st as x86_regs_st
-from qiling.arch.x86_const import reg_map_xmm as x86_regs_xmm
-from qiling.arch.x86_const import reg_map_ymm as x86_regs_ymm
+from qiling.arch.arm_const import (
+    reg_map as arm_regs,
+    reg_vfp as arm_regs_vfp,
+    reg_map_q as arm_regs_q,
+    reg_map_s as arm_regs_s
+)
+from qiling.arch.arm64_const import (
+    reg_map as arm64_regs,
+    reg_map_v as arm64_regs_v
+)
+from qiling.arch.mips_const import (
+    reg_map as mips_regs_gpr,
+    reg_map_fpu as mips_regs_fpu
+)
+from qiling.arch.x86_const import (
+    reg_map_32 as x86_regs_32,
+    reg_map_64 as x86_regs_64,
+    reg_map_misc as x86_regs_misc,
+    reg_map_cr as x86_regs_cr,
+    reg_map_st as x86_regs_st,
+    reg_map_xmm as x86_regs_xmm,
+    reg_map_ymm as x86_regs_ymm
+)
 
 from qiling.const import QL_ARCH, QL_OS
 
 RegEntry = Tuple[Optional[int], int, int]
+
 
 class QlGdbFeatures:
     def __init__(self, archtype: QL_ARCH, ostype: QL_OS):
@@ -79,13 +90,13 @@ class QlGdbFeatures:
             # earlier gdb versions use 'Cygwin' instead
 
             abitag = {
-                QL_OS.LINUX   : 'GNU/Linux',
-                QL_OS.FREEBSD : 'FreeBSD',
-                QL_OS.MACOS   : 'Darwin',
-                QL_OS.WINDOWS : 'Windows',
-                QL_OS.UEFI    : 'Windows',
-                QL_OS.DOS     : 'Windows',
-                QL_OS.QNX     : 'QNX-Neutrino'
+                QL_OS.LINUX:   'GNU/Linux',
+                QL_OS.FREEBSD: 'FreeBSD',
+                QL_OS.MACOS:   'Darwin',
+                QL_OS.WINDOWS: 'Windows',
+                QL_OS.UEFI:    'Windows',
+                QL_OS.DOS:     'Windows',
+                QL_OS.QNX:     'QNX-Neutrino'
             }.get(ostype, 'unknown')
 
             osabi.text = abitag
@@ -118,20 +129,20 @@ class QlGdbFeatures:
         # retreive the relevant set of registers; their order of appearance is not
         # important as it is determined by the info read from the xml files
         ucregs: Mapping[str, int] = {
-            QL_ARCH.A8086    : dict(**x86_regs_32, **x86_regs_misc, **x86_regs_cr, **x86_regs_st),
-            QL_ARCH.X86      : dict(**x86_regs_32, **x86_regs_misc, **x86_regs_cr, **x86_regs_st, **x86_regs_xmm),
-            QL_ARCH.X8664    : dict(**x86_regs_64, **x86_regs_misc, **x86_regs_cr, **x86_regs_st, **x86_regs_xmm, **x86_regs_ymm),
-            QL_ARCH.ARM      : dict(**arm_regs, **arm_regs_vfp),
-            QL_ARCH.CORTEX_M : arm_regs,
-            QL_ARCH.ARM64    : dict(**arm64_regs, **arm64_regs_v),
-            QL_ARCH.MIPS     : dict(**mips_regs_gpr, **mips_regs_fpu)
+            QL_ARCH.A8086:    dict(**x86_regs_32, **x86_regs_misc, **x86_regs_cr, **x86_regs_st),
+            QL_ARCH.X86:      dict(**x86_regs_32, **x86_regs_misc, **x86_regs_cr, **x86_regs_st, **x86_regs_xmm),
+            QL_ARCH.X8664:    dict(**x86_regs_64, **x86_regs_misc, **x86_regs_cr, **x86_regs_st, **x86_regs_xmm, **x86_regs_ymm),
+            QL_ARCH.ARM:      dict(**arm_regs, **arm_regs_vfp, **arm_regs_q, **arm_regs_s),
+            QL_ARCH.CORTEX_M: arm_regs,
+            QL_ARCH.ARM64:    dict(**arm64_regs, **arm64_regs_v),
+            QL_ARCH.MIPS:     dict(**mips_regs_gpr, **mips_regs_fpu)
         }[archtype]
 
         regsinfo = sorted(QlGdbFeatures.__walk_xml_regs(xmltree))
 
         # pre-allocate regmap and occupy it with null entries
         last_regnum = regsinfo[-1][0]
-        regmap: Sequence[RegEntry] = [(None, 0, 0)] * (last_regnum + 1)
+        regmap: List[RegEntry] = [(None, 0, 0)] * (last_regnum + 1)
 
         pos = 0
 

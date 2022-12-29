@@ -28,7 +28,7 @@ class GD32VF1xxGpio(QlPeripheral, GpioHooks):
         QlPeripheral.__init__(self, ql, label)
         GpioHooks.__init__(self, ql, 16)
 
-        self.gpio = self.struct(
+        self.instance = self.struct(
             CTL0  =  0x44444444,
             CTL1  =  0x44444444,
             ISTAT =  0x00000000,
@@ -41,7 +41,7 @@ class GD32VF1xxGpio(QlPeripheral, GpioHooks):
     @QlPeripheral.monitor()
     def read(self, offset: int, size: int) -> int:		
         buf = ctypes.create_string_buffer(size)
-        ctypes.memmove(buf, ctypes.addressof(self.gpio) + offset, size)
+        ctypes.memmove(buf, ctypes.addressof(self.instance) + offset, size)
         return int.from_bytes(buf.raw, byteorder='little')
     
     @QlPeripheral.monitor()
@@ -49,7 +49,7 @@ class GD32VF1xxGpio(QlPeripheral, GpioHooks):
         if offset == self.struct.OCTL.offset: 
             for i in range(16):
                 new_bit = (value >> i) & 1
-                old_bit = (self.gpio.OCTL >> i) & 1                
+                old_bit = (self.instance.OCTL >> i) & 1                
 
                 if new_bit !=  old_bit:
                     if new_bit:
@@ -71,19 +71,19 @@ class GD32VF1xxGpio(QlPeripheral, GpioHooks):
             return
 
         data = (value).to_bytes(size, 'little')
-        ctypes.memmove(ctypes.addressof(self.gpio) + offset, data, size)
+        ctypes.memmove(ctypes.addressof(self.instance) + offset, data, size)
 
     def set_pin(self, i):
         self.ql.log.debug(f'[{self.label}] Set P{self.label[-1].upper()}{i}')
         
-        self.gpio.OCTL |= 1 << i        
+        self.instance.OCTL |= 1 << i        
         self.call_hook_set(i)
     
     def reset_pin(self, i):
         self.ql.log.debug(f'[{self.label}] Reset P{self.label[-1].upper()}{i}')
         
-        self.gpio.OCTL &= ~(1 << i)
+        self.instance.OCTL &= ~(1 << i)
         self.call_hook_reset(i)
         
     def pin(self, index):
-        return (self.gpio.OCTL >> index) & 1
+        return (self.instance.OCTL >> index) & 1

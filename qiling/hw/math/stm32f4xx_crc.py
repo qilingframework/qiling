@@ -46,30 +46,30 @@ class STM32F4xxCrc(QlPeripheral):
 	def __init__(self, ql, label):
 		super().__init__(ql, label)
 
-		self.crc = self.struct(
+		self.instance = self.struct(
             DR    =  0xffffffff,
         )
 
 	@QlPeripheral.monitor()
 	def read(self, offset: int, size: int) -> int:
 		buf = ctypes.create_string_buffer(size)
-		ctypes.memmove(buf, ctypes.addressof(self.crc) + offset, size)
+		ctypes.memmove(buf, ctypes.addressof(self.instance) + offset, size)
 		return int.from_bytes(buf.raw, byteorder='little')
     
 	@QlPeripheral.monitor()
 	def write(self, offset: int, size: int, value: int):
 		if offset == self.struct.CR.offset:
 			if value & 1: # RESET bit
-				self.crc.DR = 0xffffffff
+				self.instance.DR = 0xffffffff
 			return
 		
 		elif offset == self.struct.DR.offset:
 			for i in range(31, -1, -1):
-				if self.crc.DR & 0x80000000:
-					self.crc.DR <<= 1
-					self.crc.DR ^= 0x04c11db7
+				if self.instance.DR & 0x80000000:
+					self.instance.DR <<= 1
+					self.instance.DR ^= 0x04c11db7
 				else:
-					self.crc.DR <<= 1
+					self.instance.DR <<= 1
 
 				if value & (1 << i):
-					self.crc.DR ^= 0x04c11db7
+					self.instance.DR ^= 0x04c11db7

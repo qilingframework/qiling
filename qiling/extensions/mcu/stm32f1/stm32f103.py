@@ -5,16 +5,22 @@
 
 stm32f103 = {
     "SRAM BB": {
-        "alias": 0x22000000,
-        "base": 0x20000000,
-        "size": 0x100000,
-        "type": "bitband"
+        "base": 0x22000000,
+        "struct": "CortexMBitband",
+        "type": "core",
+        "kwargs":  {
+            "base": 0x20000000,
+            "size": 0x100000,
+        }
     },
     "PERIP BB": {
-        "alias": 0x42000000,
-        "base": 0x40000000,
-        "size": 0x100000,
-        "type": "bitband"
+        "base": 0x42000000,
+        "struct": "CortexMBitband",
+        "type": "core",
+        "kwargs":  {
+            "base": 0x40000000,
+            "size": 0x100000,
+        }
     },
     "SYSTICK": {
         "base": 0xe000e010,
@@ -54,6 +60,16 @@ stm32f103 = {
     "PPB": {
         "base": 0xe0000000,
         "size": 0x100000,
+        "type": "mmio"
+    },
+    "SRAM BBR": {
+        "base": 0x22000000,
+        "size": 0x2000000,
+        "type": "mmio"
+    },
+    "PERIP BBR": {
+        "base": 0x42000000,
+        "size": 0x2000000,
         "type": "mmio"
     },
     "TIM2": {
@@ -239,15 +255,9 @@ stm32f103 = {
         "struct": "STM32F1xxTim",
         "kwargs": {
             "brk_intn": 0x18,
-            "up_intn": 0x19,
-            "trg_com_intn": 0x1a,
             "cc_intn": 0x1b,
-            "brk_tim15_intn": 0x18,
-            "brk_tim9_intn": 0x18,
-            "trg_com_tim17_intn": 0x1a,
-            "trg_com_tim11_intn": 0x1a,
-            "up_tim16_intn": 0x19,
-            "up_tim10_intn": 0x19
+            "trg_com_intn": 0x1a,
+            "up_intn": 0x19,   
         }
     },
     "SPI1": {
@@ -307,10 +317,18 @@ stm32f103 = {
         "base": 0xe0042000,
         "struct": "STM32F1xxDbgmcu"
     },
-    "CODE": {
-        "base": 0x8000000,
+    "REMAP": {
+        "base": 0x0,
+        "struct": "MemoryRemap",
+        "type": "core",
+        "kwargs":  {
+            "base": 0x8000000,
+            "size": 0x80000,
+        }
+    },
+    "REMAP REGION": {
+        "base": 0x0,
         "size": 0x80000,
-        "alias": 0x0,
-        "type": "remap"
-    }
+        "type": "mmio",
+    },
 }

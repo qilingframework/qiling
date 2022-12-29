@@ -79,12 +79,24 @@ def ql_syscall_ioctl(ql: Qiling, fd: int, cmd: int, arg: int):
             return None
 
     if isinstance(ql.os.fd[fd], ql_socket) and cmd in (SIOCGIFADDR, SIOCGIFNETMASK):
+        data = ql.mem.read(arg, 64)
+
+        ifr_name_override = ql.os.ifrname_ovr
+
+        if ifr_name_override is not None:
+            # make sure the interface name does not exceed 16 characters.
+            # pad it with null bytes if shorter
+            ifr_name_override = ifr_name_override[:16].ljust(16, '\x00')
+
+            data[0:16] = ifr_name_override.encode()
+
         try:
-            data = ql.os.fd[fd].ioctl(cmd, bytes(ql.mem.read(arg, 64)))
-            ql.mem.write(arg, data)
-        except:
+            data = ql.os.fd[fd].ioctl(cmd, bytes(data))
+        except OSError as ex:
+            ql.log.debug(f'the underlying ioctl raised an exception: {ex.strerror}')
             regreturn = -1
         else:
+            ql.mem.write(arg, data)
             regreturn = 0
 
     else:
