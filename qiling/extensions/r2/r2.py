@@ -246,7 +246,7 @@ class R2:
     def _setup_mem(self, ql: 'R2Qiling'):
         if not hasattr(ql, '_mem'):
             return
-        for start, _end, perms, _label, _mmio, _buf in ql.mem.map_info:
+        for start, _end, perms, _label, _mmio in ql.mem.map_info:
             cbuf = ql.mem.cmap[start]
             self._rbuf_map(cbuf, perms, start)
         # set architecture and bits for r2 asm
