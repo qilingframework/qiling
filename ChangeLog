@@ -1,7 +1,7 @@
 This file details the changelog of Qiling Framework.
 
 ------------------------------------
-[Version 1.4.5]: December 29th, 2022
+[Version 1.4.5]: December 31st, 2022
 
 New features:
 - Qdb with PE (#1295)
@@ -41,7 +41,6 @@ Contributors:
 - ucgJhe
 - aquynh
 - owl129
-- 
 
 ------------------------------------
 [Version 1.4.4]: September 24th, 2022
