@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -14,6 +14,7 @@ from qiling.arch.arch import QlArch
 from qiling.arch import arm_const
 from qiling.arch.register import QlRegisterManager
 from qiling.const import QL_ARCH, QL_ENDIAN
+
 
 class QlArchARM(QlArch):
     type = QL_ARCH.ARM
@@ -43,7 +44,9 @@ class QlArchARM(QlArch):
     def regs(self) -> QlRegisterManager:
         regs_map = dict(
             **arm_const.reg_map,
-            **arm_const.reg_vfp
+            **arm_const.reg_vfp,
+            **arm_const.reg_map_q,
+            **arm_const.reg_map_s
         )
 
         pc_reg = 'pc'
@@ -65,7 +68,7 @@ class QlArchARM(QlArch):
         """
 
         # append 1 to pc if in thumb mode, or 0 otherwise
-        return self.regs.pc + int(self.is_thumb)
+        return self.regs.pc | int(self.is_thumb)
 
     @property
     def disassembler(self) -> Cs:

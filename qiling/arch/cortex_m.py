@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
 from functools import cached_property
 from contextlib import ContextDecorator
 
-from unicorn import Uc, UC_ARCH_ARM, UC_MODE_ARM, UC_MODE_MCLASS, UC_MODE_THUMB
+from unicorn import UC_ARCH_ARM, UC_MODE_ARM, UC_MODE_MCLASS, UC_MODE_THUMB
 from capstone import Cs, CS_ARCH_ARM, CS_MODE_ARM, CS_MODE_MCLASS, CS_MODE_THUMB
 from keystone import Ks, KS_ARCH_ARM, KS_MODE_ARM, KS_MODE_THUMB
 
@@ -17,6 +17,8 @@ from qiling.arch.register import QlRegisterManager
 from qiling.arch.cortex_m_const import IRQ, EXC_RETURN, CONTROL, EXCP
 from qiling.const import QL_ARCH, QL_ENDIAN, QL_VERBOSE
 from qiling.exception import QlErrorNotImplemented
+from qiling.extensions.multitask import MultiTaskUnicorn
+
 
 class QlInterruptContext(ContextDecorator):
     def __init__(self, ql: Qiling):
@@ -27,7 +29,7 @@ class QlInterruptContext(ContextDecorator):
         for reg in self.reg_context:
             val = self.ql.arch.regs.read(reg)
             self.ql.arch.stack_push(val)
-        
+
         if self.ql.verbose >= QL_VERBOSE.DISASM:
             self.ql.log.info(f'Enter into interrupt')
 
@@ -44,23 +46,24 @@ class QlInterruptContext(ContextDecorator):
             # switch the stack accroding exc_return
             old_ctrl = self.ql.arch.regs.read('control')
             if retval & EXC_RETURN.RETURN_SP:
-                self.ql.arch.regs.write('control', old_ctrl |  CONTROL.SPSEL)            
+                self.ql.arch.regs.write('control', old_ctrl | CONTROL.SPSEL)
             else:
                 self.ql.arch.regs.write('control', old_ctrl & ~CONTROL.SPSEL)
 
             # Restore stack
             for reg in reversed(self.reg_context):
                 val = self.ql.arch.stack_pop()
-                if reg == 'xpsr':                
+                if reg == 'xpsr':
                     self.ql.arch.regs.write('XPSR_NZCVQG', val)
                 else:
-                    self.ql.arch.regs.write(reg, val)        
+                    self.ql.arch.regs.write(reg, val)
 
         if self.ql.verbose >= QL_VERBOSE.DISASM:
             self.ql.log.info('Exit from interrupt')
 
+
 class QlArchCORTEX_M(QlArchARM):
-    type = QL_ARCH.ARM
+    type = QL_ARCH.CORTEX_M
     bits = 32
 
     def __init__(self, ql: Qiling):
@@ -68,7 +71,7 @@ class QlArchCORTEX_M(QlArchARM):
 
     @cached_property
     def uc(self):
-        return Uc(UC_ARCH_ARM, UC_MODE_ARM + UC_MODE_MCLASS + UC_MODE_THUMB)
+        return MultiTaskUnicorn(UC_ARCH_ARM, UC_MODE_ARM + UC_MODE_MCLASS + UC_MODE_THUMB, 10)
 
     @cached_property
     def regs(self) -> QlRegisterManager:
@@ -94,27 +97,6 @@ class QlArchCORTEX_M(QlArchARM):
     def endian(self) -> QL_ENDIAN:
         return QL_ENDIAN.EL
 
-    def step(self):
-        self.ql.emu_start(self.effective_pc, 0, count=1)
-        self.ql.hw.step()
-
-    def stop(self):
-        self.ql.emu_stop()
-        self.runable = False
-
-    def run(self, count=-1, end=None):
-        self.runable = True
-
-        if type(end) is int:
-            end |= 1        
-        
-        while self.runable and count != 0:
-            if self.effective_pc == end:
-                break
-
-            self.step()
-            count -= 1    
-
     def is_handler_mode(self):
         return self.regs.ipsr > 1
 
@@ -126,7 +108,7 @@ class QlArchCORTEX_M(QlArchARM):
         self.regs.msp = self.ql.mem.read_ptr(0x0)
         self.regs.pc = self.ql.mem.read_ptr(0x4)
 
-    def soft_interrupt_handler(self, ql, intno):
+    def unicorn_exception_handler(self, ql, intno):
         forward_mapper = {
             EXCP.UDEF           : IRQ.HARD_FAULT,    # undefined instruction
             EXCP.SWI            : IRQ.SVCALL,        # software interrupt
@@ -157,7 +139,7 @@ class QlArchCORTEX_M(QlArchARM):
         except IndexError:
             raise QlErrorNotImplemented(f'Unhandled interrupt number ({intno})')
 
-    def hard_interrupt_handler(self, ql, intno):
+    def interrupt_handler(self, ql, intno):
         basepri = self.regs.basepri & 0xf0
         if basepri and basepri <= ql.hw.nvic.get_priority(intno):
             return
@@ -176,10 +158,10 @@ class QlArchCORTEX_M(QlArchARM):
             offset = isr * 4
 
             entry = ql.mem.read_ptr(offset)
-            exc_return = 0xFFFFFFFD if self.using_psp() else 0xFFFFFFF9        
+            exc_return = 0xFFFFFFFD if self.using_psp() else 0xFFFFFFF9
 
             self.regs.write('ipsr', isr)
             self.regs.write('pc', entry)
-            self.regs.write('lr', exc_return) 
+            self.regs.write('lr', exc_return)
 
-            self.ql.emu_start(self.effective_pc, 0, count=0xffffff)
+            self.uc.emu_start(self.effective_pc, 0, 0, 0xffffff)

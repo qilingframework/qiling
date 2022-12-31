@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import inspect
 import os
-from typing import Any, MutableMapping, Union
+from typing import Any, Callable, MutableMapping, Union
 
 from .path import QlOsPath
 from .filestruct import ql_file
@@ -22,34 +21,34 @@ from .filestruct import ql_file
 class QlFsMappedObject:
     def __init__(self):
         pass
-    
+
     def read(self, expected_len):
         raise NotImplementedError("QlFsMappedObject method not implemented: read")
-    
+
     def write(self, buffer):
         raise NotImplementedError("QlFsMappedObject method not implemented: write")
-    
+
     def fileno(self):
         raise NotImplementedError("QlFsMappedObject method not implemented: fileno")
-    
+
     def lseek(self, lseek_offset, lseek_origin):
         raise NotImplementedError("QlFsMappedObject method not implemented: lseek")
-    
+
     def close(self):
         raise NotImplementedError("QlFsMappedObject method not implemented: close")
-    
+
     def fstat(self):
         raise NotImplementedError("QlFsMappedObject method not implemented: fstat")
-    
+
     def ioctl(self, ioctl_cmd, ioctl_arg):
         raise NotImplementedError("QlFsMappedObject method not implemented: ioctl")
 
     def tell(self):
         raise NotImplementedError("QlFsMappedObject method not implemented: tell")
-    
+
     def dup(self):
         raise NotImplementedError("QlFsMappedObject method not implemented: dup")
-    
+
     def readline(self, end = b'\n'):
         raise NotImplementedError("QlFsMappedObject method not implemented: readline")
 
@@ -57,19 +56,7 @@ class QlFsMappedObject:
     def name(self):
         raise NotImplementedError("QlFsMappedObject property not implemented: name")
 
-# This is a helper class to allow users to pass any class to add_fs_mapper
-#
-# Everytime open is called on the mapped path, cls(*args, **kwargs) will be called.
-class QlFsMappedCallable:
-    
-    def __init__(self, cls, *args, **kwargs) -> None:
-        self._args = args
-        self._kwargs = kwargs
-        self._cls = cls
-    
-    def __call__(self) -> QlFsMappedObject:
-        return self._cls(*self._args, **self._kwargs)
-    
+
 class QlFsMapper:
 
     def __init__(self, path: QlOsPath):
@@ -144,7 +131,7 @@ class QlFsMapper:
 
         return p
 
-    def add_fs_mapping(self, ql_path: Union[os.PathLike, str], real_dest: Union[str, QlFsMappedObject, QlFsMappedCallable]) -> None:
+    def add_fs_mapping(self, ql_path: Union[os.PathLike, str], real_dest: Union[str, QlFsMappedObject, Callable]) -> None:
         """Map an object to Qiling emulated file system.
 
         Args:
@@ -159,7 +146,7 @@ class QlFsMapper:
         real_dest = self._parse_path(real_dest)
 
         self._mapping[ql_path] = real_dest
-        
+
     def remove_fs_mapping(self, ql_path: Union[os.PathLike, str]):
         """Remove a mapping from the fs mapper.
 

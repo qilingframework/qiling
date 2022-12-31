@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -15,6 +15,7 @@ from qiling.arch.register import QlRegisterManager
 from qiling.arch import x86_const
 from qiling.const import QL_ARCH, QL_ENDIAN
 
+
 class QlArchIntel(QlArch):
     @property
     def endian(self) -> QL_ENDIAN:
@@ -26,6 +27,7 @@ class QlArchIntel(QlArch):
         """
 
         return QlMsrManager(self.uc)
+
 
 class QlArchA8086(QlArchIntel):
     type = QL_ARCH.A8086
@@ -56,6 +58,7 @@ class QlArchA8086(QlArchIntel):
     def assembler(self) -> Ks:
         return Ks(KS_ARCH_X86, KS_MODE_16)
 
+
 class QlArchX86(QlArchIntel):
     type = QL_ARCH.X86
     bits = 32
@@ -71,6 +74,7 @@ class QlArchX86(QlArchIntel):
             **x86_const.reg_map_16,
             **x86_const.reg_map_32,
             **x86_const.reg_map_cr,
+            **x86_const.reg_map_dr,
             **x86_const.reg_map_st,
             **x86_const.reg_map_misc
         )
@@ -88,6 +92,7 @@ class QlArchX86(QlArchIntel):
     def assembler(self) -> Ks:
         return Ks(KS_ARCH_X86, KS_MODE_32)
 
+
 class QlArchX8664(QlArchIntel):
     type = QL_ARCH.X8664
     bits = 64
@@ -104,6 +109,7 @@ class QlArchX8664(QlArchIntel):
             **x86_const.reg_map_32,
             **x86_const.reg_map_64,
             **x86_const.reg_map_cr,
+            **x86_const.reg_map_dr,
             **x86_const.reg_map_st,
             **x86_const.reg_map_misc,
             **x86_const.reg_map_64_b,
@@ -119,6 +125,7 @@ class QlArchX8664(QlArchIntel):
         sp_reg = 'rsp'
 
         return QlRegisterManager(self.uc, regs_map, pc_reg, sp_reg)
+
     @cached_property
     def disassembler(self) -> Cs:
         return Cs(CS_ARCH_X86, CS_MODE_64)

@@ -5,12 +5,12 @@
 from setuptools import setup, find_packages
 
 # NOTE: use "-dev" for dev branch
-#VERSION = "1.4.5" + "-dev"
-VERSION = "1.4.4"
+#VERSION = "1.4.6" + "-dev"
+VERSION = "1.4.5"
 
 requirements = [
     "capstone>=4.0.1",
-    "unicorn>=2.0.0",
+    "unicorn>=2.0.1",
     "pefile>=2022.5.30",
     "python-registry>=1.3.1",
     "keystone-engine>=0.9.2",
@@ -19,6 +19,9 @@ requirements = [
     "multiprocess>=0.70.12.2",
     "windows-curses>=2.1.0;platform_system=='Windows'",
     "pyyaml>=6.0",
+    "python-fx",
+    "questionary",
+    "termcolor",
 ]
 
 extras = {

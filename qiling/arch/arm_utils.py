@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
 from qiling import Qiling
 from qiling.const import QL_ENDIAN
+
 
 def init_linux_traps(ql: Qiling, address_map) -> None:
     # If the compiler for the target does not provides some primitives for some
@@ -83,6 +84,7 @@ def init_linux_traps(ql: Qiling, address_map) -> None:
                 ql.mem.write(address_map[trap_name], trap_code)
 
             ql.log.debug(f'Set kernel trap: {trap_name} at {address_map[trap_name]:#x}')
+
 
 def swap_endianness(s: bytes, blksize: int = 4) -> bytes:
     blocks = (s[i:i + blksize] for i in range(0, len(s), blksize))

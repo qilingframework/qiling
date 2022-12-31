@@ -66,66 +66,73 @@ class STM32F4xxTim(QlTimerPeripheral):
         ]
 
     def __init__(self, ql: Qiling, label: str, 
-            brk_tim9_intn: Optional[int] = None, 
+            intn: Optional[int] = None, 
+            brk_intn: Optional[int] = None, 
             cc_intn: Optional[int] = None,
-            trg_com_tim11_intn: Optional[int] = None,
-            up_tim10_intn: Optional[int] = None):
+            trg_com_intn: Optional[int] = None,
+            up_intn: Optional[int] = None):
 
         super().__init__(ql, label)
 
-        self.brk_tim9_intn = brk_tim9_intn
-        self.cc_intn = cc_intn
-        self.trg_com_tim11_intn = trg_com_tim11_intn
-        self.up_tim10_intn = up_tim10_intn
-        
+        self.intn = intn
+        self.brk_intn = brk_intn if brk_intn else intn
+        self.cc_intn = cc_intn if cc_intn else intn
+        self.trg_com_intn = trg_com_intn if trg_com_intn else intn
+        self.up_intn = up_intn if up_intn else intn
+
+
         self.prescale_count = 0
-        self.tim = self.struct()
+        self.instance = self.struct()
 
     @QlPeripheral.monitor()
     def read(self, offset: int, size: int) -> int:
         buf = ctypes.create_string_buffer(size)
-        ctypes.memmove(buf, ctypes.addressof(self.tim) + offset, size)
+        ctypes.memmove(buf, ctypes.addressof(self.instance) + offset, size)
         return int.from_bytes(buf.raw, byteorder='little')
 
     @QlPeripheral.monitor()
     def write(self, offset: int, size: int, value: int):
         data = (value).to_bytes(size, 'little')
-        ctypes.memmove(ctypes.addressof(self.tim) + offset, data, size)
+        ctypes.memmove(ctypes.addressof(self.instance) + offset, data, size)
 
     def send_update_interrupt(self):
-        if self.up_tim10_intn is None:
+        if self.up_intn is None:
             return
 
-        if not self.tim.DIER & TIM_DIER.UIE:
+        if not self.instance.DIER & TIM_DIER.UIE:
             return
 
-        self.tim.SR |= TIM_SR.UIF
-        self.ql.hw.nvic.set_pending(self.up_tim10_intn)
+        self.instance.SR |= TIM_SR.UIF
+        self.ql.hw.nvic.set_pending(self.up_intn)
 
     def set_ratio(self, ratio):
-        self.tim.CNT = 0
+        self.instance.CNT = 0
         self.prescale_count = 0
 
         self._ratio = ratio
 
     @property
     def ratio(self):
-        return max(round(self._ratio / (self.tim.PSC + 1)), 1)
+        return max(round(self._ratio / (self.instance.PSC + 1)), 1)
+
+    @ratio.setter
+    def ratio(self, value):
+        self.set_ratio(value)
 
     @property
     def prescale(self):
-        return max(round((self.tim.PSC + 1) / self._ratio) - 1, 0)
+        return max(round((self.instance.PSC + 1) / self._ratio) - 1, 0)
 
     def step(self):
-        if self.tim.CR1 & TIM_CR1.CEN:
-            if self.tim.CNT >= self.tim.ARR:
-                self.tim.CNT = 0
+        if self.instance.CR1 & TIM_CR1.CEN:
+            if self.instance.CNT >= self.instance.ARR:
+                self.instance.CNT = 0
                 self.prescale_count = 0
                 self.send_update_interrupt()
 
             elif self.prescale_count == self.prescale:
                 self.prescale_count = 0
-                self.tim.CNT += self.ratio
+                self.instance.CNT += self.ratio
 
             else:
                 self.prescale_count += 1

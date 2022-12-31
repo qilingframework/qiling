@@ -178,11 +178,11 @@ class RegistryManager:
             self.reghive = RegHive(hivedir)
         except FileNotFoundError:
             if not ql.code:
-                QlErrorFileNotFound("Windows registry hive not found")
+                raise QlErrorFileNotFound("Windows registry hive not found")
 
         except Exception:
             if not ql.code:
-                QlErrorFileNotFound("Windows registry hive format error")
+                raise QlErrorFileNotFound("Windows registry hive format error")
 
         try:
             self.regconf = RegConf(self.regdiff)

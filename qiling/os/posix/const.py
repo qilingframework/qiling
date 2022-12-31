@@ -1,14 +1,9 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-#!/usr/bin/env python3
-# 
-# Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-#
-
-from qiling.const import *
+from enum import Flag
 
 # OS Threading Constants
 THREAD_EVENT_INIT_VAL         = 0
@@ -33,7 +28,7 @@ linux_x86_socket_types = {
     'SOCK_DCCP'      : 0x6,
     'SOCK_PACKET'    : 0xa,
     'SOCK_NONBLOCK'  : 0x800,
-    'SOCK_CLOEXEC'   : 0x80000,    
+    'SOCK_CLOEXEC'   : 0x80000,
 }
 
 linux_x86_socket_domain = {
@@ -114,6 +109,45 @@ linux_socket_ip_options = {
     "IP_MULTICAST_ALL"          : 0x0031,
 }
 
+# https://github.com/torvalds/linux/blob/master/include/uapi/linux/tcp.h
+linux_socket_tcp_options = {
+    "TCP_NODELAY"				: 0x1,
+    "TCP_MAXSEG"				: 0x2,
+    "TCP_CORK"					: 0x3,
+    "TCP_KEEPIDLE"				: 0x4,
+    "TCP_KEEPINTVL"				: 0x5,
+    "TCP_KEEPCNT"				: 0x6,
+    "TCP_SYNCNT"				: 0x7,
+    "TCP_LINGER2"				: 0x8,
+    "TCP_DEFER_ACCEPT"			: 0x9,
+    "TCP_WINDOW_CLAMP"			: 0xa,
+    "TCP_INFO"					: 0xb,
+    "TCP_QUICKACK"				: 0xc,
+    "TCP_CONGESTION"			: 0xd,
+    "TCP_MD5SIG"				: 0xe,
+    "TCP_THIN_LINEAR_TIMEOUTS"	: 0x10,
+    "TCP_THIN_DUPACK"			: 0x11,
+    "TCP_USER_TIMEOUT"			: 0x12,
+    "TCP_REPAIR"				: 0x13,
+    "TCP_REPAIR_QUEUE"			: 0x14,
+    "TCP_QUEUE_SEQ"				: 0x15,
+    "TCP_REPAIR_OPTIONS"		: 0x16,
+    "TCP_FASTOPEN"				: 0x17,
+    "TCP_TIMESTAMP"				: 0x18,
+    "TCP_NOTSENT_LOWAT"			: 0x19,
+    "TCP_CC_INFO"				: 0x1a,
+    "TCP_SAVE_SYN"				: 0x1b,
+    "TCP_SAVED_SYN"				: 0x1c,
+    "TCP_REPAIR_WINDOW"			: 0x1d,
+    "TCP_FASTOPEN_CONNECT"		: 0x1e,
+    "TCP_ULP"					: 0x1f,
+    "TCP_MD5SIG_EXT"			: 0x20,
+    "TCP_FASTOPEN_KEY"			: 0x21,
+    "TCP_FASTOPEN_NO_COOKIE"	: 0x22,
+    "TCP_ZEROCOPY_RECEIVE"		: 0x23,
+    "TCP_INQ"					: 0x24,
+    "TCP_TX_DELAY"				: 0x25,
+}
 
 macos_socket_ip_options = {
     "IP_TOS"                   : 0x0003,
@@ -178,7 +212,7 @@ linux_arm_socket_types = {
     'SOCK_DCCP'      : 0x6,
     'SOCK_PACKET'    : 0xa,
     'SOCK_NONBLOCK'  : 0x800,
-    'SOCK_CLOEXEC'   : 0x80000,    
+    'SOCK_CLOEXEC'   : 0x80000,
 }
 
 
@@ -248,13 +282,15 @@ linux_arm_socket_level = {
 linux_arm_socket_options = {
     "SO_DEBUG"           : 0x0001,
     "SO_REUSEADDR"       : 0x0002,
-    "SO_KEEPALIVE"       : 0x0009,
+    "SO_TYPE"            : 0x0003,
+    "SO_ERROR"           : 0x0004,
     "SO_DONTROUTE"       : 0x0005,
     "SO_BROADCAST"       : 0x0006,
-    "SO_LINGER"          : 0x000d,
-    "SO_OOBINLINE"       : 0x000a,
     "SO_SNDBUF"          : 0x0007,
     "SO_RCVBUF"          : 0x0008,
+    "SO_KEEPALIVE"       : 0x0009,
+    "SO_OOBINLINE"       : 0x000a,
+    "SO_LINGER"          : 0x000d,
     "SO_REUSEPORT"       : 0x000f,
     "SO_SNDLOWAT"        : 0x0013,
     "SO_RCVLOWAT"        : 0x0012,
@@ -343,6 +379,7 @@ linux_mips_socket_options = {
     "SO_REUSEADDR"              : 0x0004,
     "SO_KEEPALIVE"              : 0x0008,
     "SO_DONTROUTE"              : 0x0010,
+    "SO_BINDTODEVICE"           : 0x0019,
     "SO_BROADCAST"              : 0x0020,
     "SO_LINGER"                 : 0x0080,
     "SO_OOBINLINE"              : 0x0100,
@@ -586,6 +623,104 @@ qnx_arm64_open_flags = {
     'O_DIRECTORY' : None,
     'O_BINARY'    : None
 }
+
+
+# see: https://github.com/torvalds/linux/blob/master/include/uapi/asm-generic/mman-common.h
+class linux_mmap_flags(Flag):
+    MAP_FILE            = 0x00000000
+    MAP_SHARED          = 0x00000001
+    MAP_PRIVATE         = 0x00000002
+
+    MAP_FIXED           = 0x00000010
+    MAP_ANONYMOUS       = 0x00000020
+    MAP_GROWSDOWN       = 0x00000100
+    MAP_DENYWRITE       = 0x00000800
+    MAP_EXECUTABLE      = 0x00001000
+    MAP_LOCKED          = 0x00002000
+    MAP_NORESERVE       = 0x00004000
+    MAP_POPULATE        = 0x00008000
+    MAP_NONBLOCK        = 0x00010000
+    MAP_STACK           = 0x00020000
+    MAP_HUGETLB         = 0x00040000
+    MAP_SYNC            = 0x00080000
+    MAP_FIXED_NOREPLACE = 0x00100000
+    MAP_UNINITIALIZED   = 0x04000000
+
+
+# see: https://github.com/freebsd/freebsd-src/blob/master/sys/sys/mman.h
+class freebsd_mmap_flags(Flag):
+    MAP_FILE            = 0x00000000
+    MAP_SHARED          = 0x00000001
+    MAP_PRIVATE         = 0x00000002
+
+    MAP_FIXED           = 0x00000010
+    MAP_STACK           = 0x00000400
+    MAP_NOSYNC          = 0x00000800
+    MAP_ANONYMOUS       = 0x00001000
+    MAP_GUARD           = 0x00002000
+    MAP_EXCL            = 0x00004000
+    MAP_NOCORE          = 0x00020000
+
+    # define this alias for compatibility with other os flags
+    MAP_FIXED_NOREPLACE = MAP_EXCL
+
+# see: https://github.com/torvalds/linux/blob/master/arch/mips/include/uapi/asm/mman.h
+class mips_mmap_flags(Flag):
+    MAP_FILE            = 0x00000000
+    MAP_SHARED          = 0x00000001
+    MAP_PRIVATE         = 0x00000002
+
+    MAP_FIXED           = 0x00000010
+    MAP_NORESERVE       = 0x00000400
+    MAP_ANONYMOUS       = 0x00000800
+    MAP_GROWSDOWN       = 0x00001000
+    MAP_DENYWRITE       = 0x00002000
+    MAP_EXECUTABLE      = 0x00004000
+    MAP_LOCKED          = 0x00008000
+    MAP_POPULATE        = 0x00010000
+    MAP_NONBLOCK        = 0x00020000
+    MAP_STACK           = 0x00040000
+    MAP_HUGETLB         = 0x00080000
+    MAP_FIXED_NOREPLACE = 0x00100000
+
+
+# see: https://github.com/apple/darwin-xnu/blob/main/bsd/sys/mman.h
+class macos_mmap_flags(Flag):
+    MAP_FILE         = 0x00000000
+    MAP_SHARED       = 0x00000001
+    MAP_PRIVATE      = 0x00000002
+
+    MAP_FIXED        = 0x00000010
+    MAP_RENAME       = 0x00000020
+    MAP_NORESERVE    = 0x00000040
+    MAP_NOEXTEND     = 0x00000100
+    MAP_HASSEMAPHORE = 0x00000200
+    MAP_NOCACHE      = 0x00000400
+    MAP_JIT          = 0x00000800
+    MAP_ANONYMOUS    = 0x00001000
+
+
+# see: https://github.com/vocho/openqnx/blob/master/trunk/lib/c/public/sys/mman.h
+class qnx_mmap_flags(Flag):
+    MAP_FILE       = 0x00000000
+    MAP_SHARED     = 0x00000001
+    MAP_PRIVATE    = 0x00000002
+
+    MAP_FIXED      = 0x00000010
+    MAP_ELF        = 0x00000020
+    MAP_NOSYNCFILE = 0x00000040
+    MAP_LAZY       = 0x00000080
+    MAP_STACK      = 0x00001000
+    MAP_BELOW      = 0x00002000
+    MAP_NOINIT     = 0x00004000
+    MAP_PHYS       = 0x00010000
+    MAP_NOX64K     = 0x00020000
+    MAP_BELOW16M   = 0x00040000
+    MAP_ANONYMOUS  = 0x00080000
+    MAP_SYSRAM     = 0x01000000
+
+    # define this alias for compatibility with other os flags
+    MAP_UNINITIALIZED = MAP_NOINIT
 
 # fcntl flags
 F_DUPFD		= 0

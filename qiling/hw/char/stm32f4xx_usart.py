@@ -51,7 +51,7 @@ class STM32F4xxUsart(QlConnectivityPeripheral):
     def __init__(self, ql, label, intn=None):
         super().__init__(ql, label)
         
-        self.usart = self.struct(
+        self.instance = self.struct(
             SR = USART_SR.RESET,
         )
         
@@ -59,53 +59,43 @@ class STM32F4xxUsart(QlConnectivityPeripheral):
 
     @QlPeripheral.monitor()
     def read(self, offset: int, size: int) -> int:
-        buf = ctypes.create_string_buffer(size)
-        ctypes.memmove(buf, ctypes.addressof(self.usart) + offset, size)
-        retval = int.from_bytes(buf.raw, byteorder='little')
-
         if offset == self.struct.DR.offset:
-            self.usart.SR &= ~USART_SR.RXNE        
+            self.instance.SR &= ~USART_SR.RXNE  
+            retval = self.recv_from_user()
+            self.transfer()
 
+        else:        
+            retval = self.raw_read(offset, size)
+        
         return retval
 
     @QlPeripheral.monitor()
-    def write(self, offset: int, size: int, value: int):        
+    def write(self, offset: int, size: int, value: int):  
         if offset == self.struct.SR.offset:
-            self.usart.SR &= value | USART_SR.CTS | USART_SR.LBD | USART_SR.TC | USART_SR.RXNE
-
+            self.instance.SR &= value | USART_SR.CTS | USART_SR.LBD | USART_SR.TC | USART_SR.RXNE | USART_SR.TXE        
+        
         elif offset == self.struct.DR.offset:
-            self.usart.SR &= ~USART_SR.TXE
-            self.usart.DR = value
+            self.send_to_user(value)
 
         else:
             data = (value).to_bytes(size, byteorder='little')
-            ctypes.memmove(ctypes.addressof(self.usart) + offset, data, size)
+            ctypes.memmove(ctypes.addressof(self.instance) + offset, data, size)
 
     def transfer(self):
-        """ transfer data from DR to shift buffer and
-            receive data from user buffer into DR
-        """        
-
-        if not (self.usart.SR & USART_SR.TXE):
-            data = self.usart.DR
-
-            self.usart.SR |= USART_SR.TXE            
-            self.send_to_user(data)
-
-        if not (self.usart.SR & USART_SR.RXNE): 
-            # TXE bit must had been cleared
+        if not (self.instance.SR & USART_SR.RXNE): 
             if self.has_input():
-                self.usart.SR |= USART_SR.RXNE
-                self.usart.DR = self.recv_from_user()
+                self.instance.SR |= USART_SR.RXNE  
+
+    def check_interrupt(self):
+        if self.intn is not None:
+            if  (self.instance.CR1 & USART_CR1.PEIE   and self.instance.SR & USART_SR.PE)   or \
+                (self.instance.CR1 & USART_CR1.TXEIE  and self.instance.SR & USART_SR.TXE)  or \
+                (self.instance.CR1 & USART_CR1.TCIE   and self.instance.SR & USART_SR.TC)   or \
+                (self.instance.CR1 & USART_CR1.RXNEIE and self.instance.SR & USART_SR.RXNE) or \
+                (self.instance.CR1 & USART_CR1.IDLEIE and self.instance.SR & USART_SR.IDLE):
+                self.ql.hw.nvic.set_pending(self.intn)              
 
     @QlConnectivityPeripheral.device_handler
     def step(self):
         self.transfer()
-
-        if self.intn is not None:
-            if  (self.usart.CR1 & USART_CR1.PEIE   and self.usart.SR & USART_SR.PE)   or \
-                (self.usart.CR1 & USART_CR1.TXEIE  and self.usart.SR & USART_SR.TXE)  or \
-                (self.usart.CR1 & USART_CR1.TCIE   and self.usart.SR & USART_SR.TC)   or \
-                (self.usart.CR1 & USART_CR1.RXNEIE and self.usart.SR & USART_SR.RXNE) or \
-                (self.usart.CR1 & USART_CR1.IDLEIE and self.usart.SR & USART_SR.IDLE):
-                self.ql.hw.nvic.set_pending(self.intn)
+        self.check_interrupt()

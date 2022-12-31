@@ -3,7 +3,9 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import os, pickle
+import os
+import pickle
+from functools import cached_property
 from typing import TYPE_CHECKING, Any, AnyStr, List, Mapping, MutableMapping, Optional, Sequence, Tuple, Union
 
 # See https://stackoverflow.com/questions/39740632/python-type-hinting-without-cyclic-imports
@@ -26,7 +28,7 @@ from .utils import *
 from .core_struct import QlCoreStructs
 from .core_hooks import QlCoreHooks
 
-# Mixin Pattern
+
 class Qiling(QlCoreHooks, QlCoreStructs):
     def __init__(
             self,
@@ -78,9 +80,9 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         ###############################
         self.entry_point = None
         self.exit_point = None
-        self.timeout = None
-        self.count = None
-        self._initial_sp = None
+        self.timeout = 0
+        self.count = 0
+        self._initial_sp = 0
 
         """
         Qiling Framework Core Engine
@@ -95,8 +97,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             raise QlErrorFileNotFound(f'Target binary not found: "{argv[0]}"')
 
         self._argv = argv
-        self._path = self.argv[0]
-        self._targetname = os.path.basename(self.path)
 
         ################
         # rootfs setup #
@@ -109,8 +109,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         #################
         # arch os setup #
         #################
-        self._host = QlHost()
-
         if type(archtype) is str:
             archtype = arch_convert(archtype)
 
@@ -203,10 +201,9 @@ class Qiling(QlCoreHooks, QlCoreStructs):
     def hw(self) -> "QlHwManager":
         """ Qiling hardware manager.
 
-            Example: 
+            Example:
         """
         return self._hw
-
 
     @property
     def arch(self) -> "QlArch":
@@ -251,12 +248,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
     @property
     def multithread(self) -> bool:
-        """ Specify whether multithread has been enabled.
-
-            WARNING: This property shouldn't be set after Qiling.__init__.
-
-            Type: bool
-            Example: Qiling(multithread=True)
+        """Detremine whether multi-threading has been enabled.
         """
         return self._multithread
 
@@ -274,18 +266,32 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
     @property
     def argv(self) -> Sequence[str]:
-        """ The program argv.
+        """Emulated program arguments.
+        Note that `code` and `argv` are mutually exclusive.
 
-            Example: Qiling(argv=['/bin/ls', '-a'])
+        Example:
+            >>> ql = Qiling([r'myrootfs/path/to/target.bin', 'arg1'], 'myrootfs')
+            >>> ql.argv
+            ['myrootfs/path/to/target.bin', 'arg1']
         """
         return self._argv
 
     @property
     def rootfs(self) -> str:
-        """ The program rootfs. For some common rootfs, see examples/rootfs/ for details.
+        """Path to emulated system root directory, to which the emulated program
+        will be confined to.
 
-            Type: str
-            Example: Qiling(argv=['/bin/ls', '-a'], rootfs='examples/rootfs/x8664_linux/')
+        Everything under rootfs is accessible by the emulated program. DO NOT USE
+        the hosting system root directory unless you ABSOLUTLEY TRUST the emulated
+        program.
+
+        For commonly used rootfs, see directories under examples/rootfs/
+
+        Example:
+            >>> ROOTFS = r'examples/rootfs/x8664_linux'
+            >>> ql = Qiling([rf'{ROOTFS}/bin/ping', '-n', '-4'], ROOTFS)
+            >>> ql.rootfs
+            'examples/rootfs/x8664_linux'
         """
         return self._rootfs
 
@@ -298,48 +304,57 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         return self._env
 
     @property
-    def code(self) -> bytes:
-        """ The shellcode to execute.
+    def code(self) -> Optional[bytes]:
+        """The shellcode that was set for execution, or `None` if not set.
+        Note that `code` and `argv` are mutually exclusive.
 
-            Note: It can't be used with "argv" parameter.
-
-            Type: bytes
-            Example: Qiling(code=b"\x90", ostype="macos", archtype="x8664")
+        Example:
+            >>> EXIT_SYSCALL = bytes.fromhex(
+                '''31 c0 '''  # xor  eax, eax
+                '''40    '''  # inc  eax
+                '''cd 80 '''  # int  0x80
+            )
+            >>> ql = Qiling(code=EXIT_SYSCALL, ostype=QL_OS.LINUX, archtype=QL_ARCH.X86)
+            >>> ql.code
+            b'1\\xc0@\\xcd\\x80'
         """
         return self._code
 
     @property
     def path(self) -> str:
-        """ The file path of the executable.
+        """Emulated binary path as specified in argv.
 
-            Type: str
+        Example:
+            >>> ql = Qiling([r'myrootfs/path/to/target.bin', 'arg1'], 'myrootfs')
+            >>> ql.targetname
+            'myrootfs/path/to/target.bin'
         """
-        return self._path
+        return self.argv[0]
 
     @property
     def targetname(self) -> str:
-        """ The target name of the executable. e.g. "c.exe" in "a\b\c.exe"
+        """Emulated binary base name.
 
-            Type: str
+        Example:
+            >>> ql = Qiling([r'myrootfs/path/to/target.bin', 'arg1'], 'myrootfs')
+            >>> ql.targetname
+            'target.bin'
         """
-        return self._targetname
+        return os.path.basename(self.path)
 
     @property
     def interpreter(self) -> bool:
-        """ Interpreter Engine
-            - Blockchain related
-            - Java engine?
+        """Indicate whether an interpreter engine is being emulated.
 
-            Type: bool
+        Currently supporting: EVM
         """
         return self.arch.type in QL_ARCH_INTERPRETER
 
     @property
     def baremetal(self) -> bool:
-        """ MCU / Bare Metal type
-            - STM32, RTOS
+        """Indicate whether a baremetal system is being emulated.
 
-            Type: bool
+        Currently supporting: MCU
         """
 
         # os is not initialized for interpreter archs
@@ -348,16 +363,16 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
         return self.os.type in QL_OS_BAREMETAL
 
-    @property
+    @cached_property
     def host(self) -> QlHost:
         """Provide an interface to the hosting platform where Qiling runs on.
         """
 
-        return self._host
+        return QlHost()
 
     @property
     def internal_exception(self) -> Optional[Exception]:
-        """ Internal exception catched during Unicorn callback. Not intended for regular users.
+        """Internal exception caught during Unicorn callback. Not intended for regular users.
 
             Type: Exception
         """
@@ -365,7 +380,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
     @property
     def verbose(self) -> QL_VERBOSE:
-        """Set verbosity level.
+        """Set logging verbosity level.
 
         Values:
             `QL_VERBOSE.DISABLED`: turn off logging
@@ -533,7 +548,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             elif QL_STOP.EXIT_TRAP in self.stop_options:
                 self.log.debug(f'Loader requested to skip exit_trap!')
 
-
     ###############
     # Qiling APIS #
     ###############
@@ -563,23 +577,15 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         # patch binary
         self.do_bin_patch()
 
-        if self.baremetal:
-            if self.count <= 0:
-                self.count = -1
-
-            self.arch.run(count=self.count, end=self.exit_point)
-        else:
-            self.write_exit_trap()
-            # emulate the binary
-            self.os.run()
+        self.write_exit_trap()
+        # emulate the binary
+        self.os.run()
 
         # run debugger
         if debugger and self.debugger:
             debugger.run()
 
-
-    # patch code to memory address
-    def patch(self, offset: int, data: bytes, target: str = None) -> None:
+    def patch(self, offset: int, data: bytes, target: Optional[str] = None) -> None:
         """Volatilely patch binary and libraries with arbitrary content.
         Patching may be done prior to emulation start.
 
@@ -594,9 +600,23 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         else:
             self.patch_lib.append((offset, data, target))
 
+    def save(self, reg=True, mem=True, hw=False, fd=False, cpu_context=False, os=False, loader=False, *, snapshot: Optional[str] = None):
+        """Pack Qiling's current state into an object and optionally dump it to a file.
+        Specific components may be included or excluded from the save state.
 
-    # save all qiling instance states
-    def save(self, reg=True, mem=True, fd=False, cpu_context=False, os=False, loader=False, *, snapshot: str = None):
+        Args:
+            reg         : include all registers values
+            mem         : include memory layout and content
+            hw          : include hardware entities state (baremetal only)
+            fd          : include OS file descriptors table, where supported
+            cpu_context : include underlying Unicorn state
+            os          : include OS-related state
+            loader      : include Loader-related state
+            snapshot    : specify a filename to dump the state into (optional)
+
+        Returns: a dictionary holding Qiling's current state
+        """
+
         saved_states = {}
 
         if reg:
@@ -604,6 +624,9 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
         if mem:
             saved_states["mem"] = self.mem.save()
+
+        if hw:
+            saved_states["hw"] = self.hw.save()
 
         if fd:
             saved_states["fd"] = self.os.fd.save()
@@ -623,9 +646,18 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
         return saved_states
 
+    def restore(self, saved_states: Mapping[str, Any] = {}, *, snapshot: Optional[str] = None):
+        """Unpack and apply a saved Qiling state.
+        Only saved components will be restored; the rest remains intact.
 
-    # restore states qiling instance from saved_states
-    def restore(self, saved_states: Mapping[str, Any] = {}, *, snapshot: str = None):
+        Args:
+            saved_states : a saved state dictionary originally created by the `save` method
+            snapshot     : path of a snapshot file containing a dumped saved state.
+
+        Notes:
+            Only restore a saved state provided by a trusted entity.
+            In case both arguments are provided, snapshot file will be ignored
+        """
 
         # snapshot will be ignored if saved_states is set
         if (not saved_states) and (snapshot is not None):
@@ -641,6 +673,9 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         if "reg" in saved_states:
             self.arch.regs.restore(saved_states["reg"])
 
+        if "hw" in saved_states:
+            self.hw.restore(saved_states['hw'])
+
         if "fd" in saved_states:
             self.os.fd.restore(saved_states["fd"])
 
@@ -650,7 +685,6 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         if "loader" in saved_states:
             self.loader.restore(saved_states["loader"])
 
-
     # Map "ql_path" to any objects which implements QlFsMappedObject.
     def add_fs_mapper(self, ql_path: Union["PathLike", str], real_dest):
         self.os.fs_mapper.add_fs_mapping(ql_path, real_dest)
@@ -658,43 +692,39 @@ class Qiling(QlCoreHooks, QlCoreStructs):
     # Remove "ql_path" mapping.
     def remove_fs_mapper(self, ql_path: Union["PathLike", str]):
         self.os.fs_mapper.remove_fs_mapping(ql_path)
-    
+
     # push to stack bottom, and update stack register
     def stack_push(self, data):
         return self.arch.stack_push(data)
 
-
     # pop from stack bottom, and update stack register
     def stack_pop(self):
         return self.arch.stack_pop()
-
 
     # read from stack, at a given offset from stack bottom
     # NOTE: unlike stack_pop(), this does not change stack register
     def stack_read(self, offset):
         return self.arch.stack_read(offset)
 
-
     # write to stack, at a given offset from stack bottom
     # NOTE: unlike stack_push(), this does not change stack register
     def stack_write(self, offset, data):
         return self.arch.stack_write(offset, data)
 
-
     # stop emulation
     def emu_stop(self):
         self.uc.emu_stop()
-    
+
     # stop emulation
     def stop(self):
         if self.multithread:
-            self.os.thread_management.stop() 
+            self.os.thread_management.stop()
 
         elif self.baremetal:
-            self.arch.stop()
+            self.os.stop()
 
         else:
-            self.uc.emu_stop()    
+            self.uc.emu_stop()
 
     # start emulation
     def emu_start(self, begin: int, end: int, timeout: int = 0, count: int = 0):
@@ -704,13 +734,24 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             begin   : emulation starting address
             end     : emulation ending address
             timeout : max emulation time (in microseconds); unlimited by default
-            count  : max emulation steps (instructions count); unlimited by default
+            count   : max emulation steps (instructions count); unlimited by default
         """
 
-        if self._arch.type in (QL_ARCH.ARM, QL_ARCH.CORTEX_M) and self._arch._init_thumb:
-            begin |= 1
+        # FIXME: we cannot use arch.is_thumb to determine this because unicorn sets the coresponding bit in cpsr
+        # only when pc is set. unicorn sets or clears the thumb mode bit based on pc lsb, ignoring the mode it
+        # was initialized with.
+        #
+        # either unicorn is patched to reflect thumb mode in cpsr upon initialization, or we pursue the same logic
+        # by determining the endianess by address lsb. either way this condition should not be here
+        if getattr(self.arch, '_init_thumb', False):
+            begin |= 0b1
 
+        # reset exception status before emulation starts
+        self._internal_exception = None
+
+        # effectively start the emulation. this returns only after uc.emu_stop is called
         self.uc.emu_start(begin, end, timeout, count)
 
-        if self._internal_exception is not None:
-            raise self._internal_exception
+        # if an exception was raised during emulation, propagate it up
+        if self.internal_exception is not None:
+            raise self.internal_exception

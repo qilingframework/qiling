@@ -50,7 +50,7 @@ class GD32VF1xxDma(QlPeripheral):
     def __init__(self, ql, label):
         super().__init__(ql, label)
 
-        self.dma = self.struct(
+        self.instance = self.struct(
             INTF     =  0x00000000,
             INTC     =  0x00000000,
             CH0CTL   =  0x00000000,

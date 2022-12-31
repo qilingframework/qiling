@@ -167,8 +167,19 @@ class MemoryManager(Context):
             for each in output:
                 print(f"0x{each.address:x}: {each.mnemonic}\t{each.op_str}")
 
+        elif ft == "s":
+            # handle read c-style string
+            try:
+                print(f"0x{addr:08x}: {self.ql.os.utils.read_cstring(addr)}")
+            except:
+                return f"error reading c-style string at 0x{addr:08x}"
+
         else:
             lines = 1 if ct <= 4 else math.ceil(ct / 4)
+            # parse command
+            prefix = "0x" if ft in ("x", "a") else ""
+            pad = '0' + str(sz*2) if ft in ('x', 'a', 't') else ''
+            ft = ft.lower() if ft in ("x", "o", "b", "d") else ft.lower().replace("t", "b").replace("a", "x")
 
             mem_read = []
             for offset in range(ct):
@@ -186,9 +197,6 @@ class MemoryManager(Context):
                 idx = line * self.ql.arch.pointersize
                 for each in mem_read[idx:idx+self.ql.arch.pointersize]:
                     data = self.fmt_unpack(each, sz)
-                    prefix = "0x" if ft in ("x", "a") else ""
-                    pad = '0' + str(sz*2) if ft in ('x', 'a', 't') else ''
-                    ft = ft.lower() if ft in ("x", "o", "b", "d") else ft.lower().replace("t", "b").replace("a", "x")
                     print(f"{prefix}{data:{pad}{ft}}\t", end="")
 
                 print()

@@ -29,7 +29,7 @@ class GD32VF1xxSpi(QlConnectivityPeripheral):
     def __init__(self, ql, label):
         super().__init__(ql, label)
 
-        self.spi = self.struct(
+        self.instance = self.struct(
             CTL0    =  0x00000000,
             CTL1    =  0x00000000,
             STAT    =  0x00000002,

@@ -62,34 +62,34 @@ class SAM3xaPmc(QlPeripheral):
     def __init__(self, ql: Qiling, label: str, intn = None):
         super().__init__(ql, label)
 
-        self.pmc = self.struct()
+        self.instance = self.struct()
         self.intn = intn
 
     @QlPeripheral.monitor()
     def read(self, offset: int, size: int) -> int:		
         buf = ctypes.create_string_buffer(size)
-        ctypes.memmove(buf, ctypes.addressof(self.pmc) + offset, size)
+        ctypes.memmove(buf, ctypes.addressof(self.instance) + offset, size)
         return int.from_bytes(buf.raw, byteorder='little')
 
     @QlPeripheral.monitor()
     def write(self, offset: int, size: int, value: int):
         if offset == self.struct.CKGR_MOR.offset:
             if value & CKGR_MOR.MOSCXTEN:
-                self.pmc.SR |= SR.MOSCXTS
+                self.instance.SR |= SR.MOSCXTS
             if value & CKGR_MOR.MOSCSEL:
-                self.pmc.SR |= SR.MOSCSELS
+                self.instance.SR |= SR.MOSCSELS
 
         elif offset == self.struct.MCKR.offset:
             if value & MCKR.CSS:
-                self.pmc.SR |= SR.MCKRDY
+                self.instance.SR |= SR.MCKRDY
 
         elif offset == self.struct.CKGR_PLLAR.offset:
             if value & CKGR_PLLAR.ONE:
-                self.pmc.SR |= SR.LOCKA
+                self.instance.SR |= SR.LOCKA
 
         elif offset == self.struct.CKGR_UCKR.offset:
             if value & CKGR_UCKR.UPLLEN:
-                self.pmc.SR |= SR.LOCKU
+                self.instance.SR |= SR.LOCKU
 
         data = (value).to_bytes(size, 'little')
-        ctypes.memmove(ctypes.addressof(self.pmc) + offset, data, size)
+        ctypes.memmove(ctypes.addressof(self.instance) + offset, data, size)
