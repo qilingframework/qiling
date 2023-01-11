@@ -9,6 +9,16 @@ if TYPE_CHECKING:
     from qiling.os.memory import QlMemoryManager
 
 
+class FsMappedStream(io.BytesIO):
+    """Wrap stream objects to make them look like a QlFsMappedObject.
+    """
+
+    def __init__(self, fname: str, *args) -> None:
+        super().__init__(*args)
+
+        self.name = fname
+
+
 class QlProcFS:
 
     @staticmethod
@@ -28,14 +38,14 @@ class QlProcFS:
             auxv_data.extend(os.ql.mem.read(auxv_addr, nbytes))
             auxv_addr += nbytes
 
-        return io.BytesIO(bytes(auxv_data))
+        return FsMappedStream(r'/proc/self/auxv', auxv_data)
 
     @staticmethod
     def self_cmdline(os: 'QlOsLinux') -> QlFsMappedObject:
         entries = (arg.encode('utf-8') for arg in os.ql.argv)
         cmdline = b'\x00'.join(entries) + b'\x00'
 
-        return io.BytesIO(cmdline)
+        return FsMappedStream(r'/proc/self/cmdline', cmdline)
 
     @staticmethod
     def self_environ(os: 'QlOsLinux') -> QlFsMappedObject:
@@ -48,14 +58,14 @@ class QlProcFS:
         entries = (b'='.join((__to_bytes(k), __to_bytes(v))) for k, v in os.ql.env.items())
         environ = b'\x00'.join(entries) + b'\x00'
 
-        return io.BytesIO(environ)
+        return FsMappedStream(r'/proc/self/environ', environ)
 
     @staticmethod
     def self_exe(os: 'QlOsLinux') -> QlFsMappedObject:
         with open(os.ql.path, 'rb') as exefile:
             content = exefile.read()
 
-        return io.BytesIO(content)
+        return FsMappedStream(r'/proc/self/exe', content)
 
     @staticmethod
     def self_map(mem: 'QlMemoryManager') -> QlFsMappedObject:
@@ -65,4 +75,4 @@ class QlProcFS:
         for lbound, ubound, perms, label, container in mapinfo:
             content += f"{lbound:x}-{ubound:x}\t{perms}p\t0\t00:00\t0\t{container if container else label}\n".encode("utf-8")
 
-        return io.BytesIO(bytes(content))
+        return FsMappedStream(r'/proc/self/map', content)

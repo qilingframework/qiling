@@ -5,8 +5,8 @@
 from setuptools import setup, find_packages
 
 # NOTE: use "-dev" for dev branch
-VERSION = "1.4.5" + "-dev"
-#VERSION = "1.4.4"
+VERSION = "1.4.6" + "-dev"
+#VERSION = "1.4.5"
 
 requirements = [
     "capstone>=4.0.1",

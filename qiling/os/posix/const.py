@@ -3,6 +3,8 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from enum import Flag
+
 # OS Threading Constants
 THREAD_EVENT_INIT_VAL         = 0
 THREAD_EVENT_EXIT_EVENT       = 1
@@ -621,6 +623,104 @@ qnx_arm64_open_flags = {
     'O_DIRECTORY' : None,
     'O_BINARY'    : None
 }
+
+
+# see: https://github.com/torvalds/linux/blob/master/include/uapi/asm-generic/mman-common.h
+class linux_mmap_flags(Flag):
+    MAP_FILE            = 0x00000000
+    MAP_SHARED          = 0x00000001
+    MAP_PRIVATE         = 0x00000002
+
+    MAP_FIXED           = 0x00000010
+    MAP_ANONYMOUS       = 0x00000020
+    MAP_GROWSDOWN       = 0x00000100
+    MAP_DENYWRITE       = 0x00000800
+    MAP_EXECUTABLE      = 0x00001000
+    MAP_LOCKED          = 0x00002000
+    MAP_NORESERVE       = 0x00004000
+    MAP_POPULATE        = 0x00008000
+    MAP_NONBLOCK        = 0x00010000
+    MAP_STACK           = 0x00020000
+    MAP_HUGETLB         = 0x00040000
+    MAP_SYNC            = 0x00080000
+    MAP_FIXED_NOREPLACE = 0x00100000
+    MAP_UNINITIALIZED   = 0x04000000
+
+
+# see: https://github.com/freebsd/freebsd-src/blob/master/sys/sys/mman.h
+class freebsd_mmap_flags(Flag):
+    MAP_FILE            = 0x00000000
+    MAP_SHARED          = 0x00000001
+    MAP_PRIVATE         = 0x00000002
+
+    MAP_FIXED           = 0x00000010
+    MAP_STACK           = 0x00000400
+    MAP_NOSYNC          = 0x00000800
+    MAP_ANONYMOUS       = 0x00001000
+    MAP_GUARD           = 0x00002000
+    MAP_EXCL            = 0x00004000
+    MAP_NOCORE          = 0x00020000
+
+    # define this alias for compatibility with other os flags
+    MAP_FIXED_NOREPLACE = MAP_EXCL
+
+# see: https://github.com/torvalds/linux/blob/master/arch/mips/include/uapi/asm/mman.h
+class mips_mmap_flags(Flag):
+    MAP_FILE            = 0x00000000
+    MAP_SHARED          = 0x00000001
+    MAP_PRIVATE         = 0x00000002
+
+    MAP_FIXED           = 0x00000010
+    MAP_NORESERVE       = 0x00000400
+    MAP_ANONYMOUS       = 0x00000800
+    MAP_GROWSDOWN       = 0x00001000
+    MAP_DENYWRITE       = 0x00002000
+    MAP_EXECUTABLE      = 0x00004000
+    MAP_LOCKED          = 0x00008000
+    MAP_POPULATE        = 0x00010000
+    MAP_NONBLOCK        = 0x00020000
+    MAP_STACK           = 0x00040000
+    MAP_HUGETLB         = 0x00080000
+    MAP_FIXED_NOREPLACE = 0x00100000
+
+
+# see: https://github.com/apple/darwin-xnu/blob/main/bsd/sys/mman.h
+class macos_mmap_flags(Flag):
+    MAP_FILE         = 0x00000000
+    MAP_SHARED       = 0x00000001
+    MAP_PRIVATE      = 0x00000002
+
+    MAP_FIXED        = 0x00000010
+    MAP_RENAME       = 0x00000020
+    MAP_NORESERVE    = 0x00000040
+    MAP_NOEXTEND     = 0x00000100
+    MAP_HASSEMAPHORE = 0x00000200
+    MAP_NOCACHE      = 0x00000400
+    MAP_JIT          = 0x00000800
+    MAP_ANONYMOUS    = 0x00001000
+
+
+# see: https://github.com/vocho/openqnx/blob/master/trunk/lib/c/public/sys/mman.h
+class qnx_mmap_flags(Flag):
+    MAP_FILE       = 0x00000000
+    MAP_SHARED     = 0x00000001
+    MAP_PRIVATE    = 0x00000002
+
+    MAP_FIXED      = 0x00000010
+    MAP_ELF        = 0x00000020
+    MAP_NOSYNCFILE = 0x00000040
+    MAP_LAZY       = 0x00000080
+    MAP_STACK      = 0x00001000
+    MAP_BELOW      = 0x00002000
+    MAP_NOINIT     = 0x00004000
+    MAP_PHYS       = 0x00010000
+    MAP_NOX64K     = 0x00020000
+    MAP_BELOW16M   = 0x00040000
+    MAP_ANONYMOUS  = 0x00080000
+    MAP_SYSRAM     = 0x01000000
+
+    # define this alias for compatibility with other os flags
+    MAP_UNINITIALIZED = MAP_NOINIT
 
 # fcntl flags
 F_DUPFD		= 0

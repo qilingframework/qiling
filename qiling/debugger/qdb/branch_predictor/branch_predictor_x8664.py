@@ -98,7 +98,7 @@ class BranchPredictorX8664(BranchPredictor, ArchX8664):
             prophecy.going = jump_reg_table.get(line.mnemonic)(self.ql.arch.regs.ecx)
 
         if prophecy.going:
-            takeaway_list = ["ptr", "dword", "[", "]"]
+            takeaway_list = ["ptr", "dword", "qword", "[", "]"]
 
             if len(line.op_str.split()) > 1:
                 new_line = line.op_str.replace(":", "+")
@@ -113,7 +113,6 @@ class BranchPredictorX8664(BranchPredictor, ArchX8664):
                 for each_reg in filter(lambda r: len(r) == 2, self.ql.arch.regs.register_mapping.keys()):
                     if each_reg in new_line:
                         new_line = re.sub(each_reg, hex(self.read_reg(each_reg)), new_line)
-
 
                 prophecy.where = check_and_eval(new_line)
 

@@ -1,6 +1,48 @@
 This file details the changelog of Qiling Framework.
 
 ------------------------------------
+[Version 1.4.5]: December 31st, 2022
+
+New features:
+- Qdb with PE (#1295)
+
+Improvements:
+- Add pstate in const_arm64.py (#1236)
+- Implement ql_syscall_sched_yield (#1237)
+- Periodic quality PR (#1238)
+- Speed up MCU interrupt handler (#1240)
+- Minor update for setup.py, mcu test and windows registry (#1246)
+- Optimize qltui (#1247)
+- Optimize evm dependency package version manage (#1248)
+- Fix getrlimit related syscall (aka tenda fix) (#1249)
+- Add new ci for arm firmware (#1250)
+- More detailed tenda CI test and cleanup elf multithrad http test (#1251)
+- Fix MIPS relocs (#1252)
+- Newly compiled picohttpd for armeb and new test script (#1254)
+- Update armeb test binary and testing docker (#1255)
+- Update rootfs (#1256)
+- Qdb bug fix and improvement (#1257)
+- Improve handling of gdb 42000 magic pid (#1259)
+- Fix mcu issue in qdb and show flags in uppercase (#1263)
+- Update setup.py (#1267)
+- Handle Cortex M as a specific arch (#1271)
+- Fix some error in syscall fcntl and getsockopt (#1272)
+- Periodic maintenance PR (#1274)
+- Fix gdb attach on ARM thumb mode (#1285)
+- Qdb: add command show_args (#1289)
+- Periodic maintenance PR (#1293)
+
+Contributors:
+- richor1042
+- vhertz
+- elicn
+- kabeor
+- xwings
+- ucgJhe
+- aquynh
+- owl129
+
+------------------------------------
 [Version 1.4.4]: September 24th, 2022
 
 New features:
@@ -87,7 +129,6 @@ Contributors:
 - elicn
 - xwings
 - cq674350529
-- elicn
 - TheZ3ro
 - bet4it
 - chinggg

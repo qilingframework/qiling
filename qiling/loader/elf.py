@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -25,6 +25,7 @@ from qiling.os.linux.function_hook import FunctionHook
 from qiling.os.linux.syscall_nums import SYSCALL_NR
 from qiling.os.linux.kernel_api.hook import *
 from qiling.os.linux.kernel_api.kernel_api import hook_sys_open, hook_sys_read, hook_sys_write
+
 
 # auxiliary vector types
 # see: https://man7.org/linux/man-pages/man3/getauxval.3.html
@@ -53,12 +54,14 @@ class AUXV(IntEnum):
     AT_HWCAP2   = 26
     AT_EXECFN   = 31
 
+
 # start area memory for API hooking
 # we will reserve 0x1000 bytes for this (which contains multiple slots of 4/8 bytes, each for one api)
 API_HOOK_MEM = 0x1000000
 
 # memory for syscall table
 SYSCALL_MEM = API_HOOK_MEM + 0x1000
+
 
 class QlLoaderELF(QlLoader):
     def __init__(self, ql: Qiling):
@@ -77,16 +80,11 @@ class QlLoaderELF(QlLoader):
 
             return
 
-        section = {
-            32 : 'OS32',
-            64 : 'OS64'
-        }[self.ql.arch.bits]
-
-        self.profile = self.ql.os.profile[section]
+        self.profile = self.ql.os.profile[f'OS{self.ql.arch.bits}']
 
         # setup program stack
-        stack_address = int(self.profile.get('stack_address'), 0)
-        stack_size = int(self.profile.get('stack_size'), 0)
+        stack_address = self.profile.getint('stack_address')
+        stack_size = self.profile.getint('stack_size')
         self.ql.mem.map(stack_address, stack_size, info='[stack]')
 
         self.path = self.ql.path
@@ -110,7 +108,7 @@ class QlLoaderELF(QlLoader):
 
         # is it a shared object?
         elif elftype == 'ET_DYN':
-            load_address = int(self.profile.get('load_address'), 0)
+            load_address = self.profile.getint('load_address')
 
             self.load_with_ld(elffile, stack_address + stack_size, load_address, self.argv, self.env)
 
@@ -242,7 +240,7 @@ class QlLoaderELF(QlLoader):
                 # determine interpreter base address
                 # some old interpreters may not be PIE: p_vaddr of the first LOAD segment is not zero
                 # we should load interpreter at the address p_vaddr specified in such situation
-                interp_address = int(self.profile.get('interp_address'), 0) if min_vaddr == 0 else 0
+                interp_address = self.profile.getint('interp_address') if min_vaddr == 0 else 0
                 self.ql.log.debug(f'Interpreter addr: {interp_address:#x}')
 
                 # load interpreter segments data to memory
@@ -255,7 +253,7 @@ class QlLoaderELF(QlLoader):
                 entry_point = interp_address + interp['e_entry']
 
         # set mmap addr
-        mmap_address = int(self.profile.get('mmap_address'), 0)
+        mmap_address = self.profile.getint('mmap_address')
         self.ql.log.debug(f'mmap_address is : {mmap_address:#x}')
 
         # set info to be used by gdb
@@ -658,7 +656,7 @@ class QlLoaderELF(QlLoader):
         # pick up loadable sections
         for sec in elffile.iter_sections():
             if sec['sh_flags'] & SH_FLAGS.SHF_ALLOC:
-                # pad aggregated elf data to the offset of the current section 
+                # pad aggregated elf data to the offset of the current section
                 elfdata_mapping.extend(b'\x00' * (sec['sh_offset'] - len(elfdata_mapping)))
 
                 # aggregate section data
