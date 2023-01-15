@@ -268,7 +268,7 @@ class QlLoaderELF(QlLoader):
             Top of stack remains aligned to pointer size
             """
 
-            data = s.encode('utf-8') + b'\x00'
+            data = s.encode('latin') + b'\x00'
             top = self.ql.mem.align(top - len(data), self.ql.arch.pointersize)
             self.ql.mem.write(top, data)
 
