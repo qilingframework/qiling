@@ -42,7 +42,7 @@ class QlProcFS:
 
     @staticmethod
     def self_cmdline(os: 'QlOsLinux') -> QlFsMappedObject:
-        entries = (arg.encode('utf-8') for arg in os.ql.argv)
+        entries = (arg.encode('latin') for arg in os.ql.argv)
         cmdline = b'\x00'.join(entries) + b'\x00'
 
         return FsMappedStream(r'/proc/self/cmdline', cmdline)
@@ -51,7 +51,7 @@ class QlProcFS:
     def self_environ(os: 'QlOsLinux') -> QlFsMappedObject:
         def __to_bytes(s: AnyStr) -> bytes:
             if isinstance(s, str):
-                return s.encode('utf-8')
+                return s.encode('latin')
 
             return s
 
@@ -73,6 +73,6 @@ class QlProcFS:
         mapinfo = mem.get_mapinfo()
 
         for lbound, ubound, perms, label, container in mapinfo:
-            content += f"{lbound:x}-{ubound:x}\t{perms}p\t0\t00:00\t0\t{container if container else label}\n".encode("utf-8")
+            content += f"{lbound:x}-{ubound:x}\t{perms}p\t0\t00:00\t0\t{container if container else label}\n".encode("latin")
 
         return FsMappedStream(r'/proc/self/map', content)
