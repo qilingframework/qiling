@@ -136,3 +136,9 @@ def ql_syscall_sched_yield(ql: Qiling):
     ql.emu_stop()
     ql.os.thread_management.cur_thread.sched_cb = _sched_yield
     return 0
+    
+def ql_syscall_sched_get_priority_max(ql: Qiling,intpolicy: int):
+    return 0
+    
+def ql_syscall_sched_get_priority_min(ql: Qiling,intpolicy: int):
+    return 0

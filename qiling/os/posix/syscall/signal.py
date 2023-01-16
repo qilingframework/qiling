@@ -24,6 +24,8 @@ def ql_syscall_rt_sigprocmask(ql: Qiling, how: int, nset: int, oset: int, sigset
 
     return 0
 
+def ql_syscall_rt_sigsuspend(ql: Qiling, mask: int):
+    return 0
 
 def ql_syscall_signal(ql: Qiling, sig: int, sighandler: int):
     return 0
