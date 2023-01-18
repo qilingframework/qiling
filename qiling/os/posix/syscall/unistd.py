@@ -145,6 +145,8 @@ def ql_syscall_capset(ql: Qiling, hdrp: int, datap: int):
     return 0
 
 def ql_syscall_kill(ql: Qiling, pid: int, sig: int):
+    if pid ==0x512:
+        ql.os.signal_list.append(sig)
     return 0
 
 

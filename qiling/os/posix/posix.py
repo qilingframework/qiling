@@ -98,6 +98,8 @@ class QlOsPosix(QlOs):
 
         self.ql = ql
         self.sigaction_act = [0] * 256
+        self.sigsetsize = 0
+        self.signal_list = []
 
         conf = self.profile['KERNEL']
         self.uid = self.euid = conf.getint('uid')
