@@ -89,9 +89,14 @@ class SimpleBufferedStream(io.BytesIO):
         super.__init__()
 
 class InteractiveInStream(io.BytesIO):
-    def read(self, size):
+    def read(self, size: int):
         '''
-        We want read to get user input if theres no data left in the buffer
+        Read from the BytesIO buffer. If theres no data left in the buffer, get additional user input
+        
+        Args:
+            size (int): The amount of bytes to read from the buffer
+        Returns:
+            bytes: The data read from the buffer
         '''
         
         #get the amount of bytes left in the buffer
