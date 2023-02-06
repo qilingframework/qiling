@@ -294,7 +294,8 @@ def _CreateFile(ql: Qiling, address: int, params):
     else:
         # This is probably an invalid access mask
         ql.log.warn(f"Invalid access mask provided: {dwDesiredAccess}")
-
+        # TODO: add error code 
+        return INVALID_HANDLE_VALUE
 
     try:
         # we should have exited by now if the file doesn't exist
