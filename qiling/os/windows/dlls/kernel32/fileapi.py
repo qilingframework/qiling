@@ -273,10 +273,14 @@ def _CreateFile(ql: Qiling, address: int, params):
     elif ( perm_write and (not perm_read)):
         # TODO: fopen modes do not allow for write only access
         # Likely need to use os.open instead. 
-        ql.log.warn("_CreateFile has been called with Write only access. This is not currently supported and the handle is still allows for read access!")
 
-        # read/write, do not create. do not truncatd
-        mode = "rb+"
+        if (truncate and (not open_existing)) or (truncate and open_existing and file_exists):
+            # create a new file or truncate an existing one
+            mode = "wb"
+        else:   
+            ql.log.warn("_CreateFile has been called with Write only access. This is not currently supported and the handle is still allows for read access!")
+            # read/write, do not create. do not truncatd
+            mode = "rb+"
     
     elif perm_read and perm_write:
         # Note that this ignores exec access mask 
@@ -294,7 +298,7 @@ def _CreateFile(ql: Qiling, address: int, params):
 
     try:
         # we should have exited by now if the file doesn't exist
-        if not file_exists:
+        if (not file_exists) and (mode != "wb"):
             status = ql.os.fs_mapper.create_empty_file(s_lpFileName)
             if not status:
                 # could not create a new file
@@ -302,12 +306,16 @@ def _CreateFile(ql: Qiling, address: int, params):
                 # TODO: set last_error
                 ql.log.warn(f"_CreateFile could not create new file {s_lpFileName}")
                 return INVALID_HANDLE_VALUE    
+
         f = ql.os.fs_mapper.open(s_lpFileName, mode)
-        if truncate:
+        if truncate and mode != "wb":
+            # redundant if mode is wb
             f.truncate(0)
+
         if dwCreationDisposition == CREATE_ALWAYS:
                 # we overwrote the file.
                 ql.os.last_error = ERROR_ALREADY_EXISTS
+                
         if dwCreationDisposition == OPEN_ALWAYS:
             ql.os.last_error = ERROR_ALREADY_EXISTS
             
