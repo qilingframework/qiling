@@ -5,6 +5,8 @@
 
 from typing import AnyStr, Callable, Optional
 
+from dataclasses import dataclass
+
 import ast
 
 def check_and_eval(line: str):
@@ -24,6 +26,19 @@ def check_and_eval(line: str):
     checker.visit(ast_tree)
 
     return eval(line)
+
+@dataclass
+class InvalidInsn:
+    """
+    class for displaying invalid instruction
+    """
+    bytes: bytes
+    address: bytes
+    mnemonic: str = 'invalid'
+    op_str: str = ''
+
+    def __post_init__(self):
+        self.size = len(self.bytes)
 
 
 class Breakpoint:

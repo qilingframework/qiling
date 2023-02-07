@@ -10,7 +10,7 @@ import unicorn
 
 from capstone import CsInsn
 
-from .misc import read_int
+from .misc import read_int, InvalidInsn
 
 class Context:
     """
@@ -48,9 +48,9 @@ class Context:
         md = self.ql.arch.disassembler
         md.detail = detail
 
-        if (addr := self.read_insn(address)):
-            return next(md.disasm(addr, address), None)
-        return None
+        if (bytes_read := self.read_insn(address)):
+            return next(md.disasm(bytes_read, address), InvalidInsn(bytes_read, address))
+        return InvalidInsn(bytes_read, address)
 
     def try_read(self, address: int, size: int) -> Optional[bytes]:
         """
