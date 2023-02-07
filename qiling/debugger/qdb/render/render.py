@@ -157,6 +157,7 @@ class Render:
         """
 
         opcode = "".join(f"{b:02x}" for b in insn.bytes)
+
         trace_line = f"0x{insn.address:08x} │ {opcode:15s} {insn.mnemonic:10} {insn.op_str:35s}"
 
         cursor = "►" if self.cur_addr == insn.address else " "
@@ -211,12 +212,9 @@ class ContextRender(Context, Render):
         to_addr = self.cur_addr + self.disasm_num
 
         cur_addr = from_addr
-        while cur_addr != to_addr:
+        while cur_addr <= to_addr:
             insn = self.disasm(cur_addr)
-            # cur_addr += self.arch_insn_size
             cur_addr += insn.size
-            if not insn:
-                continue
             past_list.append(insn)
 
         bk_list = []
