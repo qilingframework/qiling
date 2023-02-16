@@ -4,8 +4,6 @@ from qiling.const import QL_VERBOSE
 from qiling.extensions.coverage.formats.history import History
 from typing import List
 
-from IPython import embed
-
 class HistoryTest(unittest.TestCase):
 
     @staticmethod
@@ -24,12 +22,12 @@ class HistoryTest(unittest.TestCase):
         history = History(ql)
         ql.run()
 
-        self.assertEqual([(140736278126592, 140736280121344, 'r-x', '[mmap] libc.so.6', '')], history.get_regex_matching_exec_maps(".*libc.so.*"))
+        self.assertEqual([(0x7fffb7dd6000, 0x7fffb7fbd000, 'r-x', '[mmap] libc.so.6', '')], history.get_regex_matching_exec_maps(".*libc.so.*"))
 
         self.assertEqual(
             [
-                (140736278126592, 140736280121344, 'r-x', '[mmap] libc.so.6', ''),
-                (140737351864320, 140737352024064, 'r-x', 'ld-linux-x86-64.so.2', '')
+                (0x7fffb7dd6000, 0x7fffb7fbd000, 'r-x', '[mmap] libc.so.6', ''),
+                (0x7ffff7dd5000, 0x7ffff7dfc000, 'r-x', 'ld-linux-x86-64.so.2', '')
             ],
             self.sanitize_mmap_path(history.get_regex_matching_exec_maps([".*libc.so.*", "ld.*"]))
         )
