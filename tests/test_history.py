@@ -62,6 +62,17 @@ class HistoryTest(unittest.TestCase):
             map_for_ins = history.get_mem_map_from_addr(block)
             self.assertNotRegex(map_for_ins[3], ".*libc.so.*")
 
+        assert len(non_libc_blocks) > 0
+
+        non_libc_blocks_and_ld = history.get_ins_exclude_lib([".*libc.so.*", "ld-linux.*"])
+
+        for block in non_libc_blocks_and_ld:
+            map_for_ins = history.get_mem_map_from_addr(block)
+            self.assertNotRegex(map_for_ins[3], ".*libc.so.*|ld-linux.*")
+
+        assert len(non_libc_blocks_and_ld) > 0
+
+
     def test_get_ins_only_lib(self):
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_hello"], "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.OFF)
         history = History(ql)
@@ -74,6 +85,16 @@ class HistoryTest(unittest.TestCase):
         for block in non_libc_blocks:
             map_for_ins = history.get_mem_map_from_addr(block)
             self.assertRegex(map_for_ins[3], ".*libc.so.*")
+
+        assert len(non_libc_blocks) > 0
+
+        non_libc_blocks_and_ld = history.get_ins_only_lib([".*libc.so.*", "ld-linux.*"])
+
+        for block in non_libc_blocks_and_ld :
+            map_for_ins = history.get_mem_map_from_addr(block)
+            self.assertRegex(map_for_ins[3], ".*libc.so.*|.*ld-linux.*")
+
+        assert len(non_libc_blocks_and_ld) > 0
 
 if __name__ == "__main__":
     unittest.main()
