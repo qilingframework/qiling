@@ -65,10 +65,11 @@ class History:
             List[int]: A list of addresses that have been executed and in the memory maps that match the regex
 
         Examples:
-            >>> history.get_ins_only_lib(["libc.so", "libpthread.so"])
+            >>> history.get_ins_only_lib([".*libc.so.*", ".*libpthread.so.*"])
         """    
 
         executable_maps = self.get_regex_matching_exec_maps(libs)
+        
         return [x for x in self.history if any([x >= start and x <= end for start, end, _, _, _ in executable_maps])]
 
     def get_ins_exclude_lib(self, libs: list) -> List:
@@ -81,11 +82,22 @@ class History:
             List: A list of addresses that have been executed and are not in the memory maps that match the regex
 
         Examples:
-            >>> history.get_ins_exclude_lib(["libc.so", "libpthread.so"])
+            >>> history.get_ins_exclude_lib([".*libc.so.*", ".*libpthread.so.*"])
         '''
 
         executable_maps = self.get_regex_matching_exec_maps(libs)
-        return [x for x in self.history if any([x < start or x > end for start, end, _, _, _ in executable_maps])]
+        instructions = []
+        for h in self.history:
+            save = True
+            for start, end, _, _, _ in executable_maps:
+                if h >= start and h <= end:
+                    save = False
+                    break
+
+            if save:
+                instructions.append(h)
+        return instructions 
+
     
     def get_mem_map_from_addr(self, ins: int) -> tuple:
         '''Returns the memory map that contains the instruction
@@ -122,7 +134,7 @@ class History:
             List: A list of tuples that match the regex and are executable
 
         Examples:
-            >>> history.get_regex_matching_exec_maps(["libc.so", "libpthread.so"])
+            >>> history.get_regex_matching_exec_maps([".*libc.so.*", ".*libpthread.so.*"])
             >>> history.get_regex_matching_exec_maps(".*libc.*")
         '''
 
