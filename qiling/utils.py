@@ -449,14 +449,14 @@ def verify_ret(ql: 'Qiling', err):
 
         if ql.arch.type == QL_ARCH.X8664: # Win64
             if ql.os.init_sp == ql.arch.regs.arch_sp or ql.os.init_sp + 8 == ql.arch.regs.arch_sp or ql.os.init_sp + 0x10 == ql.arch.regs.arch_sp:  # FIXME
-                # 0x11626	 c3	  	ret
+                # 0x11626     c3          ret
                 # print("OK, stack balanced!")
                 pass
             else:
                 raise
         else:   # Win32
             if ql.os.init_sp + 12 == ql.arch.regs.arch_sp:   # 12 = 8 + 4
-                # 0x114dd	 c2 08 00	  	ret 	8
+                # 0x114dd     c2 08 00          ret     8
                 pass
             else:
                 raise
