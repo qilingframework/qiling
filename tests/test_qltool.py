@@ -17,9 +17,9 @@ class Qltool_Test(unittest.TestCase):
         p = subprocess.Popen(create, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         for line in iter(p.stdout.readline, b''):
             self.stdout = line
-	
+    
         self.assertEqual(b'arg        2 test3\n', self.stdout)
-		
+        
 
     def test_qltool_shellcode(self):
         create = [sys.executable, '../qltool', 'code', '--os','linux','--arch', 'x86', '--format', 'asm', '-f', '../examples/shellcodes/lin32_execve.asm']

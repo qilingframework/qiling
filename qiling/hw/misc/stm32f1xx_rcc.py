@@ -43,25 +43,25 @@ class STM32F1xxRcc(QlPeripheral):
         )
 
         self.rdyon = {
-			'CR': [
-				(RCC_CR.HSIRDY   , RCC_CR.HSION   ),
-				(RCC_CR.HSERDY   , RCC_CR.HSEON   ),
-				(RCC_CR.PLLRDY   , RCC_CR.PLLON   ),
-				(RCC_CR.PLLI2SRDY, RCC_CR.PLLI2SON),
-			],
-			'CFGR': [
-				(RCC_CFGR.SWS_0, RCC_CFGR.SW_0),
-				(RCC_CFGR.SWS_1, RCC_CFGR.SW_1),
-			],
-			'CSR': [
-				(RCC_CSR.LSIRDY, RCC_CSR.LSION)
-			]
-		}
+            'CR': [
+                (RCC_CR.HSIRDY   , RCC_CR.HSION   ),
+                (RCC_CR.HSERDY   , RCC_CR.HSEON   ),
+                (RCC_CR.PLLRDY   , RCC_CR.PLLON   ),
+                (RCC_CR.PLLI2SRDY, RCC_CR.PLLI2SON),
+            ],
+            'CFGR': [
+                (RCC_CFGR.SWS_0, RCC_CFGR.SW_0),
+                (RCC_CFGR.SWS_1, RCC_CFGR.SW_1),
+            ],
+            'CSR': [
+                (RCC_CSR.LSIRDY, RCC_CSR.LSION)
+            ]
+        }
 
         self.intn = intn
 
     @QlPeripheral.monitor()
-    def read(self, offset: int, size: int) -> int:		
+    def read(self, offset: int, size: int) -> int:        
         buf = ctypes.create_string_buffer(size)
         ctypes.memmove(buf, ctypes.addressof(self.instance) + offset, size)
         return int.from_bytes(buf.raw, byteorder='little')

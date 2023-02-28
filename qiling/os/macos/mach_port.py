@@ -11,12 +11,12 @@ from qiling.const import *
 
 # define in kernel osfmk/mach/message.h
 # mach_msg_header_t:
-#   mach_msg_bits_t	msgh_bits;                  unsigned int 
-#   mach_msg_size_t	msgh_size;                  4 bytes
-#   mach_port_t		msgh_remote_port;           4 bytes
-#   mach_port_t		msgh_local_port;            4 bytes
-#   mach_port_name_t	msgh_voucher_port;      4 bytes
-#   mach_msg_id_t		msgh_id;                4 bytes
+#   mach_msg_bits_t    msgh_bits;                  unsigned int 
+#   mach_msg_size_t    msgh_size;                  4 bytes
+#   mach_port_t        msgh_remote_port;           4 bytes
+#   mach_port_t        msgh_local_port;            4 bytes
+#   mach_port_name_t    msgh_voucher_port;      4 bytes
+#   mach_msg_id_t        msgh_id;                4 bytes
 class MachMsgHeader():
 
     def __init__(self, ql):
@@ -136,13 +136,13 @@ class MachPortManager():
 
 # XNU define struct :
 # struct mach_msg_overwrite_trap_args {
-# 	PAD_ARG_(user_addr_t, msg);                     addr length
-# 	PAD_ARG_(mach_msg_option_t, option);            int
-# 	PAD_ARG_(mach_msg_size_t, send_size);           unsigned int
-# 	PAD_ARG_(mach_msg_size_t, rcv_size);            unsigned int
-# 	PAD_ARG_(mach_port_name_t, rcv_name);           unsigned int 
-# 	PAD_ARG_(mach_msg_timeout_t, timeout);          unsigned int
-# 	PAD_ARG_(mach_msg_priority_t, override);        unsigned int
-# 	PAD_ARG_8
-# 	PAD_ARG_(user_addr_t, rcv_msg);  /* Unused on mach_msg_trap */  addr length
+#     PAD_ARG_(user_addr_t, msg);                     addr length
+#     PAD_ARG_(mach_msg_option_t, option);            int
+#     PAD_ARG_(mach_msg_size_t, send_size);           unsigned int
+#     PAD_ARG_(mach_msg_size_t, rcv_size);            unsigned int
+#     PAD_ARG_(mach_port_name_t, rcv_name);           unsigned int 
+#     PAD_ARG_(mach_msg_timeout_t, timeout);          unsigned int
+#     PAD_ARG_(mach_msg_priority_t, override);        unsigned int
+#     PAD_ARG_8
+#     PAD_ARG_(user_addr_t, rcv_msg);  /* Unused on mach_msg_trap */  addr length
 # };

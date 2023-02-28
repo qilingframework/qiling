@@ -983,7 +983,7 @@ def make_ldr_data_table_entry(archbits: int):
             ('LoadReason', ctypes.c_uint32),
             ('ImplicitPathOptions', native_type),
             ('ReferenceCount', native_type),
-        	# 1607+
+            # 1607+
             ('DependentLoadFlags', native_type),
             # 1703+
             ('SigningLevel', ctypes.c_uint8)

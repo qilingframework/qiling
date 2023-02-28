@@ -6,18 +6,18 @@
 from qiling import Qiling
 
 def handler(ql: Qiling):
-	# Note: Memory is not cleaned.
-	dl = ql.arch.regs.dl
+    # Note: Memory is not cleaned.
+    dl = ql.arch.regs.dl
 
-	if ql.os.fs_mapper.has_mapping(dl):
-		disk = ql.os.fs_mapper.open(dl, None)
-		disk.lseek(0, 0)
-		mbr = disk.read(512)
-	else:
-		with open(ql.path, "rb") as f:
-			mbr = f.read()
+    if ql.os.fs_mapper.has_mapping(dl):
+        disk = ql.os.fs_mapper.open(dl, None)
+        disk.lseek(0, 0)
+        mbr = disk.read(512)
+    else:
+        with open(ql.path, "rb") as f:
+            mbr = f.read()
 
-	ql.mem.write(0x7C00, mbr)
+    ql.mem.write(0x7C00, mbr)
 
-	ql.arch.regs.cs = 0x07C0
-	ql.arch.regs.ip = 0x0000
+    ql.arch.regs.cs = 0x07C0
+    ql.arch.regs.ip = 0x0000

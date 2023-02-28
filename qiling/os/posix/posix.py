@@ -269,14 +269,14 @@ class QlOsPosix(QlOs):
             params = [self.__syscall_cc.getRawParam(i) for i in range(len(param_names))]
 
             try:
-        		# if set, fire up the on-enter hook and let it override original args set
+                # if set, fire up the on-enter hook and let it override original args set
                 if onenter_hook:
                     overrides = onenter_hook(self.ql, *params)
 
                     if overrides is not None:
                         _, params = overrides
 
-        		# perform syscall
+                # perform syscall
                 retval = syscall_hook(self.ql, *params)
 
                 # if set, fire up the on-exit hook and let it override the return value

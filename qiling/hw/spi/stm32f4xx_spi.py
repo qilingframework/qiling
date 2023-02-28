@@ -90,7 +90,7 @@ class STM32F4xxSpi(QlConnectivityPeripheral):
             value &= SPI_CR2.RW_MASK
         
         elif offset == self.struct.CRCPR.offset:
-            value &= SPI_CRCPR.CRCPOLY		
+            value &= SPI_CRCPR.CRCPOLY        
 
         elif offset == self.struct.I2SCFGR.offset:
             value &= SPI_I2SCFGR.RW_MASK

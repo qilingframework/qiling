@@ -119,59 +119,59 @@ SCANCODES = {
 }
 
 def parse_key(ky):
-	# https://stackoverflow.com/questions/27200597/c-ncurses-key-backspace-not-working
-	# https://stackoverflow.com/questions/44943249/detecting-key-backspace-in-ncurses
+    # https://stackoverflow.com/questions/27200597/c-ncurses-key-backspace-not-working
+    # https://stackoverflow.com/questions/44943249/detecting-key-backspace-in-ncurses
 
-	# oh my curses...
-	if ky == curses.KEY_BACKSPACE or ky == 127:
-		ky = ord(b'\b')
+    # oh my curses...
+    if ky == curses.KEY_BACKSPACE or ky == 127:
+        ky = ord(b'\b')
 
-	return ky
+    return ky
 
 def get_scan_code(ch):
-	return SCANCODES.get(ch, 0)
+    return SCANCODES.get(ch, 0)
 
 def __leaf_00(ql: Qiling):
-	curses.nonl()
-	key = parse_key(ql.os.stdscr.getch())
-	ql.log.debug(f"Get key: {hex(key)}")
-	if curses.ascii.isascii(key):
-		ql.arch.regs.al = key
-	else:
-		ql.arch.regs.al = 0
-	ql.arch.regs.ah = get_scan_code(key)
-	curses.nl()
+    curses.nonl()
+    key = parse_key(ql.os.stdscr.getch())
+    ql.log.debug(f"Get key: {hex(key)}")
+    if curses.ascii.isascii(key):
+        ql.arch.regs.al = key
+    else:
+        ql.arch.regs.al = 0
+    ql.arch.regs.ah = get_scan_code(key)
+    curses.nl()
 
 def __leaf_01(ql: Qiling):
-	curses.nonl()
-	# set non-blocking
-	ql.os.stdscr.timeout(0)
-	key = parse_key(ql.os.stdscr.getch())
+    curses.nonl()
+    # set non-blocking
+    ql.os.stdscr.timeout(0)
+    key = parse_key(ql.os.stdscr.getch())
 
-	if key == -1:
-		ql.os.set_zf()
-		ql.arch.regs.ax = 0
-	else:
-		ql.log.debug(f"Has key: {hex(key)} ({curses.ascii.unctrl(key)})")
-		ql.arch.regs.al = key
-		ql.arch.regs.ah = get_scan_code(key)
-		ql.os.clear_zf()
-		# Buffer shouldn't be removed in this interrupt.
-		curses.ungetch(key)
+    if key == -1:
+        ql.os.set_zf()
+        ql.arch.regs.ax = 0
+    else:
+        ql.log.debug(f"Has key: {hex(key)} ({curses.ascii.unctrl(key)})")
+        ql.arch.regs.al = key
+        ql.arch.regs.ah = get_scan_code(key)
+        ql.os.clear_zf()
+        # Buffer shouldn't be removed in this interrupt.
+        curses.ungetch(key)
 
-	ql.os.stdscr.timeout(-1)
-	curses.nl()
+    ql.os.stdscr.timeout(-1)
+    curses.nl()
 
 def handler(ql: Qiling):
-	ah = ql.arch.regs.ah
+    ah = ql.arch.regs.ah
 
-	leaffunc = {
-		0x00 : __leaf_00,
-		0x01 : __leaf_01
-	}.get(ah)
+    leaffunc = {
+        0x00 : __leaf_00,
+        0x01 : __leaf_01
+    }.get(ah)
 
-	if leaffunc is None:
-		ql.log.exception(f'leaf {ah:02x}h of INT 16h is not implemented')
-		raise NotImplementedError()
+    if leaffunc is None:
+        ql.log.exception(f'leaf {ah:02x}h of INT 16h is not implemented')
+        raise NotImplementedError()
 
-	leaffunc(ql)
+    leaffunc(ql)

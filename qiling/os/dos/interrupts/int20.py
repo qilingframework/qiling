@@ -6,17 +6,17 @@
 from qiling import Qiling
 
 def __leaf_13(self):
-	pass
+    pass
 
 def handler(ql: Qiling):
-	ah = ql.arch.regs.ah
+    ah = ql.arch.regs.ah
 
-	leaffunc = {
-		0x13 : __leaf_13
-	}.get(ah)
+    leaffunc = {
+        0x13 : __leaf_13
+    }.get(ah)
 
-	if leaffunc is None:
-		ql.log.exception(f'leaf {ah:02x}h of INT 20h is not implemented')
-		raise NotImplementedError()
+    if leaffunc is None:
+        ql.log.exception(f'leaf {ah:02x}h of INT 20h is not implemented')
+        raise NotImplementedError()
 
-	leaffunc(ql)
+    leaffunc(ql)
