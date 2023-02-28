@@ -107,7 +107,28 @@ class QlFsMapper:
             raise PermissionError(f'unsafe path: {host_path}')
 
         return ql_file.open(host_path, openflags, openmode)
+    def file_exists(self, path:str) -> bool:
+        # check if file exists
+        if self.has_mapping(path):
+            return True
 
+        host_path = self.path.virtual_to_host_path(path)
+        if not self.path.is_safe_host_path(host_path):
+            raise PermissionError(f'unsafe path: {host_path}')
+        return os.path.isfile(host_path)
+    
+    def create_empty_file(self, path:str)->bool:
+        if not self.file_exists(path):
+            try:
+                f = self.open(path, "w+")
+                f.close()
+                return True
+
+            except Exception as e:
+                # for some reason, we could not create an empty file.
+                return False
+        return True
+        
     def open(self, path: str, openmode: str):
         if self.has_mapping(path):
             return self._open_mapping(path, openmode)
