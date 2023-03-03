@@ -11,7 +11,7 @@ from unicorn.x86_const import UC_X86_REG_CR4, UC_X86_REG_CR8
 
 from qiling import Qiling
 from qiling.arch.x86_const import FS_SEGMENT_ADDR, GS_SEGMENT_ADDR
-from qiling.const import QL_ARCH
+from qiling.const import QL_ARCH, QL_STATE
 from qiling.exception import QlErrorArch
 from qiling.os.const import POINTER
 from qiling.os.windows.api import HINSTANCE, DWORD, LPVOID
@@ -247,13 +247,8 @@ class Process:
             #
             # in case of a dll loaded from a hooked API call, failures would not be
             # recoverable and we have to give up its DllMain.
-            if not self.ql.os.PE_RUN:
-
-                # temporarily set PE_RUN to allow proper fcall unwinding during
-                # execution of DllMain
-                self.ql.os.PE_RUN = True
+            if self.ql.emu_state is not QL_STATE.STARTED:
                 self.call_dll_entrypoint(dll, dll_base, dll_len, dll_name)
-                self.ql.os.PE_RUN = False
 
         self.ql.log.info(f'Done loading {dll_name}')
 

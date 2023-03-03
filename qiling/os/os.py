@@ -9,7 +9,7 @@ from typing import Any, Hashable, Iterable, Optional, Callable, Mapping, Sequenc
 from unicorn import UcError
 
 from qiling import Qiling
-from qiling.const import QL_OS, QL_INTERCEPT, QL_OS_POSIX
+from qiling.const import QL_OS, QL_STATE, QL_INTERCEPT, QL_OS_POSIX
 from qiling.os.const import STRING, WSTRING, GUID
 from qiling.os.fcall import QlFunctionCall, TypedArg
 
@@ -195,12 +195,14 @@ class QlOs:
         # append syscall to list
         self.stats.log_api_call(pc, func.__name__, args, retval, retaddr)
 
-        # [Windows and UEFI] if emulation has stopped, do not update the return address
-        if hasattr(self, 'PE_RUN') and not self.PE_RUN:
-            passthru = True
-
         if not passthru:
-            self.ql.arch.regs.arch_pc = retaddr
+            # WORKAROUND: we avoid modifying the pc register in case the emulation has stopped.
+            # this is used to work around a unicorn issue in which emulation continues despite
+            # of calling emu_stop if the pc register is modified.
+            #
+            # see: https://github.com/unicorn-engine/unicorn/issues/1579
+            if self.ql.emu_state is not QL_STATE.STOPPED:
+                self.ql.arch.regs.arch_pc = retaddr
 
         return retval
 
