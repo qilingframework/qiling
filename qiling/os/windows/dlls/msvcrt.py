@@ -193,7 +193,6 @@ def hook__initterm(ql: Qiling, address: int, params):
 })
 def hook_exit(ql: Qiling, address: int, params):
     ql.emu_stop()
-    ql.os.PE_RUN = False
 
 # int __cdecl _initterm_e(
 #    PVFV *,

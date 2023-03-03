@@ -80,7 +80,6 @@ class QlOsWindows(QlOs):
         self.userprofile = ntpath.join(sysdrv, 'Users', username)
         self.username = username
 
-        self.PE_RUN = False
         self.last_error = 0
 
         self.argv = self.ql.argv
@@ -212,8 +211,6 @@ class QlOsWindows(QlOs):
 
         entry_point = self.ql.loader.entry_point
         exit_point = (self.ql.loader.entry_point + len(self.ql.code)) if self.ql.code else self.exit_point
-
-        self.PE_RUN = True
 
         try:
             self.ql.emu_start(entry_point, exit_point, self.ql.timeout, self.ql.count)
