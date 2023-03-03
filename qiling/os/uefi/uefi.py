@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -17,6 +17,7 @@ from qiling.os.fcall import QlFunctionCall, TypedArg
 
 from qiling.os.uefi import guids_db
 from qiling.os.uefi.smm import SmmEnv
+
 
 class QlOsUefi(QlOs):
     type = QL_OS.UEFI
@@ -44,11 +45,9 @@ class QlOsUefi(QlOs):
         saved_state['entry_point'] = self.entry_point
         return saved_state
 
-
     def restore(self, saved_state):
         super(QlOsUefi, self).restore(saved_state)
         self.entry_point = saved_state['entry_point']
-
 
     def process_fcall_params(self, targs: Iterable[TypedArg]) -> Sequence[Tuple[str, str]]:
         '''[override] Post-process function call arguments values to
@@ -64,7 +63,7 @@ class QlOsUefi(QlOs):
             '''Use original processing method for other types.
             '''
 
-            # the original method accepts a list and returns a list, so here we 
+            # the original method accepts a list and returns a list, so here we
             # craft a list containing one 3-tuple, and extracting the single element
             # the result list contains. that element is a 2-tuple, from which we
             # only need the value
@@ -101,7 +100,6 @@ class QlOsUefi(QlOs):
 
         return bool(sum(callback(module) for callback in self.on_module_enter))
 
-
     def emit_context(self):
         rgroups = (
             ((8, 'rax'), (8, 'r8'),  (4, 'cs')),
@@ -130,7 +128,6 @@ class QlOsUefi(QlOs):
 
         self.ql.log.error(f'')
 
-
     def emit_hexdump(self, address: int, data: bytearray, num_cols: int = 16):
         self.ql.log.error('Hexdump:')
 
@@ -146,7 +143,6 @@ class QlOsUefi(QlOs):
 
         self.ql.log.error(f'')
 
-
     def emit_disasm(self, address: int, data: bytearray, num_insns: int = 8):
         md = self.ql.arch.disassembler
 
@@ -156,7 +152,6 @@ class QlOsUefi(QlOs):
             self.ql.log.error(f'{insn.address:08x} : {insn.bytes.hex():28s}  {insn.mnemonic:10s} {insn.op_str:s}')
 
         self.ql.log.error(f'')
-
 
     def emit_stack(self, nitems: int = 4):
         self.ql.log.error('Stack:')
@@ -198,7 +193,6 @@ class QlOsUefi(QlOs):
         self.ql.log.error(f'Memory map:')
         for info_line in self.ql.mem.get_formatted_mapinfo():
             self.ql.log.error(info_line)
-
 
     def set_api(self, target: str, handler: Callable, intercept: QL_INTERCEPT = QL_INTERCEPT.CALL):
         super().set_api(f'hook_{target}', handler, intercept)

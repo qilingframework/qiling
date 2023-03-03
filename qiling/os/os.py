@@ -19,6 +19,7 @@ from .stats import QlOsStats
 from .utils import QlOsUtils
 from .path import QlOsPath
 
+
 class QlOs:
     type: QL_OS
 
@@ -226,7 +227,7 @@ class QlOs:
 
     def stop(self):
         if self.ql.multithread:
-            self.thread_management.stop() 
+            self.thread_management.stop()
         else:
             self.ql.emu_stop()
 
