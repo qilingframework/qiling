@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import List, Tuple, TYPE_CHECKING
+from typing import List, Tuple, TYPE_CHECKING, Union
 
 if TYPE_CHECKING:
     from qiling import Qiling
@@ -9,15 +9,19 @@ if TYPE_CHECKING:
 import re
 from functools import partial
 from capstone import CsInsn
+from qiling.const import QL_ARCH
 
 class History:
     history_hook_handle: HookRet = None
     history: List[CsInsn] = []
     ql: Qiling
     md: Cs
+    arm_is_thumb: bool
 
     def __init__(self, ql: Qiling) -> None:
         self.ql = ql
+        self.md = self.ql.arch.disassembler
+        self.arm_is_thumb = getattr(ql.arch, 'is_thumb', False)
         self.track_block_coverage()
 
     def clear_history(self) -> None:
@@ -36,11 +40,36 @@ class History:
         self.ql.hook_del(self.history_hook_handle)
 
     #a python function hook block to be used in both track_block_coverage and track_instruction_coverage
-    def __hook_block(self, ql, address, size):
+    def __hook_block(self, ql: Qiling, address: int, size: int):
+        '''
+        The unicorn block/instruction hook function for the track_block_coverage and track_instruction_coverage functions. This just give us a way to append capstone objects to the history list
+        
+        NOTE: this is not supposed to be used in arm architecture, use __hook_block_arm instead (if you use this, things are going to be hella slow)
+        '''
+        #0x10 is way more than enough bytes to grab a single instruction
+        ins_bytes = ql.mem.read(address, 0x10)
+        try:
+            self.history.append(next(self.md.disasm(ins_bytes, address)))
+        except StopIteration:
+            #if this ever happens, then the unicorn/qiling is going to crash because it tried to execute an instruction that it cant, so we are just not going to do anything
+            pass
+
+    # in arm we have to worry about thumb mode, so we have our own hook function
+    def __hook_block_arm(self, ql: Qiling, address: int, size: int):
+        '''
+        The unicorn block/instruction hook function for the track_block_coverage and track_instruction_coverage functions. This just give us a way to append capstone objects to the history list
+        '''
+
+        #get the current state of the thumb mode
+        if self.arm_is_thumb != ql.arch.is_thumb:
+            #the thumb mode has changed, so we need to update the disassembler
+            self.arm_is_thumb = ql.arch.is_thumb
+            self.md = self.ql.arch.disassembler
+
         #0x10 is way more than enough bytes to grab a single instruction
         ins_bytes = ql.mem.read(address, 0x10)
         try:                
-            self.history.append(next(ql.arch.disassembler.disasm(ins_bytes, address)))
+            self.history.append(next(self.md.disasm(ins_bytes, address)))
         except StopIteration: 
             #if this ever happens, then the unicorn/qiling is going to crash because it tried to execute an instruction that it cant, so we are just not going to do anything
             pass
@@ -53,8 +82,12 @@ class History:
         """
         if self.history_hook_handle:
             self.clear_hooks()
-        
-        self.history_hook_handle = self.ql.hook_block(self.__hook_block)
+
+        hook = self.__hook_block
+        if self.ql.arch.type == QL_ARCH.ARM:
+            hook = self.__hook_block_arm
+
+        self.history_hook_handle = self.ql.hook_block(hook)
 
     def track_instruction_coverage(self) -> None:
         """Configures the history plugin to track all of the instructions that are executed. Removes any existing hooks
@@ -65,7 +98,11 @@ class History:
         if self.history_hook_handle:
             self.clear_hooks()
 
-        self.history_hook_handle = self.ql.hook_code(self.__hook_block)
+        hook = self.__hook_block
+        if self.ql.arch.type == QL_ARCH.ARM:
+            hook = self.__hook_block_arm
+
+        self.history_hook_handle = self.ql.hook_code(hook)
 
     def get_ins_only_lib(self, libs: List[str]) -> List[CsInsn]:
         """Returns a list of addresses that have been executed that are only in mmaps for objects that match the regex of items in the list
@@ -101,11 +138,11 @@ class History:
         return [h for h in self.history if not any(start <= h.address <= end for start, end, _, _, _ in executable_maps)]
 
     
-    def get_mem_map_from_addr(self, ins) -> Tuple:
+    def get_mem_map_from_addr(self, ins: Union[int, CsInsn]) -> Tuple:
         '''Returns the memory map that contains the instruction
 
         Args:
-            ins: The instruction address to search for, can be either an int or a capstone.CsInsn
+            ins (Union[int, CsInsn]): The instruction address to search for, can be either an int or a capstone.CsInsn
 
         Returns:
             tuple: A tuple that contains the memory map that contains the instruction
