@@ -1,19 +1,23 @@
-from typing import List
-from qiling import Qiling
-from qiling.core_hooks_types import HookRet
+from typing import List, Tuple, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from qiling import Qiling
+    from qiling.core_hooks_types import HookRet
+    from capstone import Cs
+
 import re
-from capstone import CsInsn, Cs
+from functools import partial
+from capstone import CsInsn
 
 class History:
-    history_hook_handle: HookRet = None
-    history: List[CsInsn] = []
-    ql: Qiling
-    md: Cs
+    history_hook_handle: 'HookRet' = None
+    history: 'List[CsInsn]' = []
+    ql: 'Qiling'
+    md: 'Cs'
 
-    def __init__(self, ql: Qiling) -> None:
+    def __init__(self, ql: 'Qiling') -> None:
         self.ql = ql
         self.track_block_coverage()
-        self.md = ql.arch.disassembler
 
     def clear_history(self) -> None:
         """Clears the current state of the history 
@@ -30,6 +34,17 @@ class History:
 
         self.ql.hook_del(self.history_hook_handle)
 
+    #a python function hook block to be used in both track_block_coverage and track_instruction_coverage
+    @staticmethod
+    def __hook_block(history_obj, ql, address, size):
+        #0x10 is way more than enough bytes to grab a single instruction
+        ins_bytes = ql.mem.read(address, 0x10)
+        try:                
+            history_obj.history.append(next(ql.arch.disassembler.disasm(ins_bytes, address)))
+        except StopIteration: 
+            #if this ever happens, then the unicorn/qiling is going to crash because it tried to execute an instruction that it cant, so we are just not going to do anything
+            pass
+
     def track_block_coverage(self) -> None:
         """Configures the history plugin to track all of the basic blocks that are executed. Removes any existing hooks
         
@@ -39,16 +54,9 @@ class History:
         if self.history_hook_handle:
             self.clear_hooks()
         
-        def __hook_block(ql, address, size):
-            #0x10 is way more than enough bytes to grab a single instruction
-            ins_bytes = ql.mem.read(address, 0x10)
-            try:                
-                self.history.append(next(self.md.disasm(ins_bytes, address)))
-            except StopIteration: 
-                #if this ever happens, then the unicorn/qiling is going to crash because it tried to execute an instruction that it cant, so we are just not going to do anything
-                pass
+        partial_hook_block = partial(self.__hook_block, self) 
 
-        self.history_hook_handle = self.ql.hook_block(__hook_block)
+        self.history_hook_handle = self.ql.hook_block(partial_hook_block)
 
     def track_instruction_coverage(self) -> None:
         """Configures the history plugin to track all of the instructions that are executed. Removes any existing hooks
@@ -59,18 +67,11 @@ class History:
         if self.history_hook_handle:
             self.clear_hooks()
 
-        def __hook_block(ql, address, size):
-            #0x10 is way more than enough bytes to grab a single instruction
-            ins_bytes = ql.mem.read(address, 0x10)
-            try:                
-                self.history.append(next(self.md.disasm(ins_bytes, address)))
-            except StopIteration: 
-                #if this ever happens, then the unicorn/qiling is going to crash because it tried to execute an instruction that it cant, so we are just not going to do anything
-                pass
+        partial_hook_block = partial(self.__hook_block, self) 
 
-        self.history_hook_handle = self.ql.hook_code(__hook_block)
+        self.history_hook_handle = self.ql.hook_code(partial_hook_block)
 
-    def get_ins_only_lib(self, libs: List[str]) -> List[CsInsn]:
+    def get_ins_only_lib(self, libs: 'List[str]') -> 'List[CsInsn]':
         """Returns a list of addresses that have been executed that are only in mmaps for objects that match the regex of items in the list
         
         Args:
@@ -85,9 +86,9 @@ class History:
 
         executable_maps = self.get_regex_matching_exec_maps(libs)
         
-        return [x for x in self.history if any([x.address >= start and x.address <= end for start, end, _, _, _ in executable_maps])]
+        return [x for x in self.history if any(start <= x.address <= end for start, end, _, _, _ in executable_maps)]
 
-    def get_ins_exclude_lib(self, libs: List[str]) -> List[CsInsn]:
+    def get_ins_exclude_lib(self, libs: 'List[str]') -> 'List[CsInsn]':
         '''Returns a list of history instructions that are not in the libraries that match the regex in the libs list
         
         Args:
@@ -123,22 +124,15 @@ class History:
 
         assert isinstance(ins, int)
 
-        #get the memory map that contains the instruction
-        mem_map = [x for x in self.ql.mem.get_mapinfo() if x[0] <= ins and x[1] >= ins]
+        return next((x for x in self.ql.mem.get_mapinfo() if x[0] <= ins and x[1] >= ins), None)
 
-        if len(mem_map) == 0:
-            return None
-
-        # i sure hope theres not more than one map that contains the instruction lol
-        return mem_map[0]
-
-    def get_regex_matching_exec_maps(self, libs: List[str]) -> List:
+    def get_regex_matching_exec_maps(self, libs: 'List[str]') -> List:
         '''Returns a list of tuples for current mmaps whose names match the regex of libs in the list
         
         This is a wrapper around ql.mem.get_mapinfo() and just filters the results by the regex of the library names and also only returns maps that are executable
 
         Args:
-            libs (List[str]): A list of regex strings to match against the library names in the memory maps
+            libs (Union[str, Collection[str]]): A list of regex strings to match against the library names in the memory maps
 
         Returns:
             List: A list of tuples that match the regex and are executable
