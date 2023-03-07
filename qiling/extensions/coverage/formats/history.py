@@ -43,8 +43,9 @@ class History:
         The unicorn block/instruction hook function for the track_block_coverage and track_instruction_coverage functions. This just give us a way to append capstone objects to the history list
         '''
 
-        # get the current state of the thumb mode
-        
+        # get the current state of the thumb mode, only applys to arm
+        # originally we were going to access the ql.arch.disassembler directly for all architectures from in this callback, but in the
+        # implementation for arch.arm.disassembler, the capstone instance is recreated every time (to make sure THUMB mode is properly dealt with)
         if self.arm_is_thumb is not getattr(ql.arch, "is_thumb", False):
             # the thumb mode has changed, so we need to update the disassembler
             self.arm_is_thumb = not self.arm_is_thumb
