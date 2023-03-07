@@ -38,7 +38,7 @@ class History:
 
         self.ql.hook_del(self.history_hook_handle)
 
-    def __hook_block(self, ql: Qiling, address: int, size: int, *context: Any) -> Any:
+    def __hook_block(self, ql: Qiling, address: int, size: int) -> Any:
         '''
         The unicorn block/instruction hook function for the track_block_coverage and track_instruction_coverage functions. This just give us a way to append capstone objects to the history list
         '''
