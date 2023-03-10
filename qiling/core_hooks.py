@@ -8,22 +8,52 @@
 # handling hooks                             #
 ##############################################
 
+from __future__ import annotations
+
 from functools import wraps
 from typing import Any, Callable, MutableMapping, MutableSequence, Protocol
 from typing import TYPE_CHECKING
 
-from unicorn import Uc
-from unicorn.unicorn_const import *
+from unicorn.unicorn_const import (
+    UC_HOOK_INTR,
+    UC_HOOK_INSN,
+    UC_HOOK_CODE,
+    UC_HOOK_BLOCK,
+
+    UC_HOOK_MEM_READ_UNMAPPED,      # attempt to read from an unmapped memory location
+    UC_HOOK_MEM_WRITE_UNMAPPED,     # attempt to write to an unmapped memory location
+    UC_HOOK_MEM_FETCH_UNMAPPED,     # attempt to fetch from an unmapped memory location
+    UC_HOOK_MEM_UNMAPPED,           # any of the 3 above
+
+    UC_HOOK_MEM_READ_PROT,          # attempt to read from a non-readable memory location
+    UC_HOOK_MEM_WRITE_PROT,         # attempt to write to a write-protected memory location
+    UC_HOOK_MEM_FETCH_PROT,         # attempt to fetch from a non-executable memory location
+    UC_HOOK_MEM_PROT,               # any of the 3 above
+
+    UC_HOOK_MEM_READ_INVALID,       # UC_HOOK_MEM_READ_UNMAPPED | UC_HOOK_MEM_READ_PROT
+    UC_HOOK_MEM_WRITE_INVALID,      # UC_HOOK_MEM_WRITE_UNMAPPED | UC_HOOK_MEM_WRITE_INVALID
+    UC_HOOK_MEM_FETCH_INVALID,      # UC_HOOK_MEM_FETCH_UNMAPPED | UC_HOOK_MEM_FETCH_INVALID
+    UC_HOOK_MEM_INVALID,            # any of the 3 above
+
+    UC_HOOK_MEM_READ,               # valid memory read
+    UC_HOOK_MEM_WRITE,              # valid memory write
+    UC_HOOK_MEM_FETCH,              # valid instruction fetch
+    UC_HOOK_MEM_VALID,              # any of the 3 above
+
+    UC_HOOK_MEM_READ_AFTER,
+    UC_HOOK_INSN_INVALID
+)
 
 from .core_hooks_types import Hook, HookAddr, HookIntr, HookRet
 from .const import QL_HOOK_BLOCK
 from .exception import QlErrorCoreHook
 
 if TYPE_CHECKING:
+    from unicorn import Uc
     from qiling import Qiling
 
 class MemHookCallback(Protocol):
-    def __call__(self, __ql: 'Qiling', __access: int, __address: int, __size: int, __value: int, *__context: Any) -> Any:
+    def __call__(self, __ql: Qiling, __access: int, __address: int, __size: int, __value: int, *__context: Any) -> Any:
         """Memory access hook callback.
 
         Args:
@@ -41,7 +71,7 @@ class MemHookCallback(Protocol):
         pass
 
 class TraceHookCalback(Protocol):
-    def __call__(self, __ql: 'Qiling', __address: int, __size: int, *__context: Any) -> Any:
+    def __call__(self, __ql: Qiling, __address: int, __size: int, *__context: Any) -> Any:
         """Execution hook callback.
 
         Args:
@@ -57,7 +87,7 @@ class TraceHookCalback(Protocol):
         pass
 
 class AddressHookCallback(Protocol):
-    def __call__(self, __ql: 'Qiling', *__context: Any) -> Any:
+    def __call__(self, __ql: Qiling, *__context: Any) -> Any:
         """Address hook callback.
 
         Args:
@@ -71,7 +101,7 @@ class AddressHookCallback(Protocol):
         pass
 
 class InterruptHookCallback(Protocol):
-    def __call__(self, __ql: 'Qiling', intno: int, *__context: Any) -> Any:
+    def __call__(self, __ql: Qiling, intno: int, *__context: Any) -> Any:
         """Interrupt hook callback.
 
         Args:
@@ -86,7 +116,7 @@ class InterruptHookCallback(Protocol):
         pass
 
 
-def hookcallback(ql: 'Qiling', callback: Callable):
+def hookcallback(ql: Qiling, callback: Callable):
     @wraps(callback)
     def wrapper(*args, **kwargs):
         try:
