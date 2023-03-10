@@ -45,7 +45,6 @@ class QlOsQnx(QlOsPosix):
         self.futexm = None
         self.fh = None
         self.function_after_load_list = []
-        self.elf_mem_start = 0x0
         self.load()
         
         # use counters to get free Ids

@@ -353,7 +353,6 @@ class QlLoaderELF(QlLoader):
         self.init_sp = self.ql.arch.regs.arch_sp
 
         self.ql.os.entry_point = self.entry_point = entry_point
-        self.ql.os.elf_mem_start = mem_start
         self.ql.os.elf_entry = self.elf_entry
         self.ql.os.function_hook = FunctionHook(self.ql, elf_phdr, elf_phnum, elf_phent, load_address, mem_end)
 
