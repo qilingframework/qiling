@@ -230,10 +230,15 @@ class QlLoaderELF(QlLoader):
 
         # load the interpreter, if there is one
         if interp_path:
-            interp_local_path = os.path.normpath(self.ql.rootfs + interp_path)
-            self.ql.log.debug(f'Interpreter path: {interp_local_path}')
+            interp_vpath = self.ql.os.path.virtual_abspath(interp_path)
+            interp_hpath = self.ql.os.path.virtual_to_host_path(interp_path)
 
-            with open(interp_local_path, 'rb') as infile:
+            self.ql.log.debug(f'Interpreter path: {interp_vpath}')
+
+            if not self.ql.os.path.is_safe_host_path(interp_hpath):
+                raise PermissionError(f'unsafe path: {interp_hpath}')
+
+            with open(interp_hpath, 'rb') as infile:
                 interp = ELFFile(infile)
                 min_vaddr = min(seg['p_vaddr'] for seg in interp.iter_segments(type='PT_LOAD'))
 
@@ -244,10 +249,10 @@ class QlLoaderELF(QlLoader):
                 self.ql.log.debug(f'Interpreter addr: {interp_address:#x}')
 
                 # load interpreter segments data to memory
-                interp_start, interp_end = load_elf_segments(interp, interp_address, interp_local_path)
+                interp_start, interp_end = load_elf_segments(interp, interp_address, interp_vpath)
 
                 # add interpreter to the loaded images list
-                self.images.append(Image(interp_start, interp_end, os.path.abspath(interp_local_path)))
+                self.images.append(Image(interp_start, interp_end, interp_hpath))
 
                 # determine entry point
                 entry_point = interp_address + interp['e_entry']
