@@ -899,7 +899,7 @@ class QlEmuQiling:
             elffile = ELFFile(f)
             elf_header = elffile.header
             if elf_header['e_type'] == 'ET_EXEC':
-                self.baseaddr = self.ql.os.elf_mem_start
+                self.baseaddr = self.ql.loader.images[0].base
             elif elf_header['e_type'] == 'ET_DYN':
                 if self.ql.arch.bits == 32:
                     self.baseaddr = int(self.ql.os.profile.get("OS32", "load_address"), 16)
