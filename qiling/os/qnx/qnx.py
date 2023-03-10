@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -19,6 +19,7 @@ from qiling.const import QL_ARCH, QL_OS
 from qiling.os.fcall import QlFunctionCall
 from qiling.os.const import *
 from qiling.os.posix.posix import QlOsPosix
+
 
 class QlOsQnx(QlOsPosix):
     type = QL_OS.QNX
@@ -46,7 +47,7 @@ class QlOsQnx(QlOsPosix):
         self.fh = None
         self.function_after_load_list = []
         self.load()
-        
+
         # use counters to get free Ids
         self.channel_id = 1
         # TODO: replace 0x400 with NR_OPEN from Qiling 1.25
@@ -74,26 +75,22 @@ class QlOsQnx(QlOsPosix):
                 'get_tls': 0xffff0fe0
             })
 
-
     def hook_syscall(self, ql, intno):
         return self.load_syscall()
-
 
     def register_function_after_load(self, function):
         if function not in self.function_after_load_list:
             self.function_after_load_list.append(function)
 
-
     def run_function_after_load(self):
         for f in self.function_after_load_list:
             f()
-
 
     def run(self):
         if self.ql.exit_point is not None:
             self.exit_point = self.ql.exit_point
 
-        if  self.ql.entry_point is not None:
+        if self.ql.entry_point is not None:
             self.ql.loader.elf_entry = self.ql.entry_point
 
         self.cpupage_addr        = int(self.ql.os.profile.get("OS32", "cpupage_address"), 16)

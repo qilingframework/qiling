@@ -19,6 +19,7 @@ from .stats import QlOsStats
 from .utils import QlOsUtils
 from .path import QlOsPath
 
+
 class QlOs:
     type: QL_OS
 
@@ -47,9 +48,9 @@ class QlOs:
             self.fs_mapper = QlFsMapper(self.path)
 
         self.user_defined_api = {
-            QL_INTERCEPT.CALL : {},
+            QL_INTERCEPT.CALL:  {},
             QL_INTERCEPT.ENTER: {},
-            QL_INTERCEPT.EXIT : {}
+            QL_INTERCEPT.EXIT:  {}
         }
 
         # IDAPython has some hack on standard io streams and thus they don't have corresponding fds.
@@ -224,7 +225,7 @@ class QlOs:
 
     def stop(self):
         if self.ql.multithread:
-            self.thread_management.stop() 
+            self.thread_management.stop()
         else:
             self.ql.emu_stop()
 

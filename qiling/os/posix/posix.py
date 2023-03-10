@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -110,9 +110,9 @@ class QlOsPosix(QlOs):
         self.ifrname_ovr = conf.get('ifrname_override')
 
         self.posix_syscall_hooks = {
-            QL_INTERCEPT.CALL : {},
+            QL_INTERCEPT.CALL:  {},
             QL_INTERCEPT.ENTER: {},
-            QL_INTERCEPT.EXIT : {}
+            QL_INTERCEPT.EXIT:  {}
         }
 
         self.__syscall_id_reg = {
@@ -191,7 +191,7 @@ class QlOsPosix(QlOs):
         self.euid = 0 if enabled else self.uid
         self.egid = 0 if enabled else self.gid
 
-    def set_syscall(self, target: Union[int, str], handler: Callable, intercept: QL_INTERCEPT=QL_INTERCEPT.CALL):
+    def set_syscall(self, target: Union[int, str], handler: Callable, intercept: QL_INTERCEPT = QL_INTERCEPT.CALL):
         """Either hook or replace a system call with a custom one.
 
         Args:
@@ -298,7 +298,7 @@ class QlOsPosix(QlOs):
                 raise e
 
             # print out log entry
-            syscall_basename = syscall_name[len(SYSCALL_PREF) if syscall_name.startswith(SYSCALL_PREF) else 0:] 
+            syscall_basename = syscall_name[len(SYSCALL_PREF) if syscall_name.startswith(SYSCALL_PREF) else 0:]
 
             args = []
 
