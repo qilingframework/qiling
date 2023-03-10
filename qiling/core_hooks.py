@@ -8,7 +8,7 @@
 # handling hooks                             #
 ##############################################
 
-import functools
+from functools import wraps
 from typing import Any, Callable, MutableMapping, MutableSequence, Protocol
 from typing import TYPE_CHECKING
 
@@ -87,8 +87,7 @@ class InterruptHookCallback(Protocol):
 
 
 def hookcallback(ql: 'Qiling', callback: Callable):
-
-    functools.wraps(callback)
+    @wraps(callback)
     def wrapper(*args, **kwargs):
         try:
             return callback(*args, **kwargs)
