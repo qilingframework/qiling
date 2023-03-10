@@ -293,11 +293,11 @@ class QlGdb(QlDebugger):
             addr, size = (int(p, 16) for p in subcmd.split(','))
 
             try:
-                data = self.ql.mem.read(addr, size).hex()
-            except UcError:
-                return 'E14'
+                data = self.ql.mem.read(addr, size)
+            except UcError as ex:
+                return f'E{ex.errno:02d}'
             else:
-                return data
+                return data.hex()
 
         def handle_M(subcmd: str) -> Reply:
             """Write target memory.
@@ -313,8 +313,8 @@ class QlGdb(QlDebugger):
 
             try:
                 self.ql.mem.write(addr, data)
-            except UcError:
-                return 'E01'
+            except UcError as ex:
+                return f'E{ex.errno:02d}'
             else:
                 return REPLY_OK
 
@@ -688,8 +688,8 @@ class QlGdb(QlDebugger):
             try:
                 if data:
                     self.ql.mem.write(addr, data.encode(ENCODING))
-            except UcError:
-                return 'E01'
+            except UcError as ex:
+                return f'E{ex.errno:02d}'
             else:
                 return REPLY_OK
 
