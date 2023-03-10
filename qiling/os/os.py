@@ -48,9 +48,9 @@ class QlOs:
             self.fs_mapper = QlFsMapper(self.path)
 
         self.user_defined_api = {
-            QL_INTERCEPT.CALL : {},
+            QL_INTERCEPT.CALL:  {},
             QL_INTERCEPT.ENTER: {},
-            QL_INTERCEPT.EXIT : {}
+            QL_INTERCEPT.EXIT:  {}
         }
 
         # IDAPython has some hack on standard io streams and thus they don't have corresponding fds.
