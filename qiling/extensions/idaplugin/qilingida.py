@@ -501,6 +501,7 @@ class QlEmuRegView(simplecustviewer_t):
         line = ""
         cols = 3
         reglist = [reglist[i:i+cols] for i in range(0,len(reglist),cols)]
+        arch = ql.arch.type
         for regs in reglist:
             for reg in regs:
                 line += COLSTR(" %4s: " % str(reg), SCOLOR_REG)
