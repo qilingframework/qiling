@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     from .hw.hw import QlHwManager
     from .loader.loader import QlLoader
 
-from .const import QL_ARCH, QL_ENDIAN, QL_OS, QL_STOP, QL_VERBOSE, QL_ARCH_INTERPRETER, QL_OS_BAREMETAL
+from .const import QL_ARCH, QL_ENDIAN, QL_OS, QL_STATE, QL_STOP, QL_VERBOSE, QL_ARCH_INTERPRETER, QL_OS_BAREMETAL
 from .exception import QlErrorFileNotFound, QlErrorArch, QlErrorOsType
 from .host import QlHost
 from .log import *
@@ -150,6 +150,9 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         if not self.interpreter:
             QlCoreStructs.__init__(self, self.arch.endian, self.arch.bits)
             QlCoreHooks.__init__(self, self.uc)
+
+        # emulation has not been started yet
+        self._state = QL_STATE.NOT_SET
 
         ##########
         # Logger #
@@ -494,6 +497,13 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         """
         return self._stop_options
 
+    @property
+    def emu_state(self) -> QL_STATE:
+        """Query emulation state.
+        """
+
+        return self._state
+
     def do_bin_patch(self):
         ba = self.loader.load_address
 
@@ -714,6 +724,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
     # stop emulation
     def emu_stop(self):
         self.uc.emu_stop()
+        self._state = QL_STATE.STOPPED
 
     # stop emulation
     def stop(self):
@@ -724,7 +735,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             self.os.stop()
 
         else:
-            self.uc.emu_stop()
+            self.emu_stop()
 
     # start emulation
     def emu_start(self, begin: int, end: int, timeout: int = 0, count: int = 0):
@@ -745,6 +756,8 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         # by determining the endianess by address lsb. either way this condition should not be here
         if getattr(self.arch, '_init_thumb', False):
             begin |= 0b1
+
+        self._state = QL_STATE.STARTED
 
         # reset exception status before emulation starts
         self._internal_exception = None

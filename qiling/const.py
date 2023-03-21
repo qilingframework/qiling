@@ -66,6 +66,12 @@ class QL_STOP(Flag):
     EXIT_TRAP = (1 << 1)
 
 
+class QL_STATE(Enum):
+    NOT_SET = 0
+    STARTED = 1
+    STOPPED = 2
+
+
 QL_ARCH_INTERPRETER: Final = (QL_ARCH.EVM,)
 
 QL_OS_POSIX: Final = (QL_OS.LINUX, QL_OS.FREEBSD, QL_OS.MACOS, QL_OS.QNX)

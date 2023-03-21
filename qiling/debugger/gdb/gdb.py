@@ -30,7 +30,7 @@ from unicorn.unicorn_const import (
 )
 
 from qiling import Qiling
-from qiling.const import QL_ARCH, QL_ENDIAN, QL_OS
+from qiling.const import QL_ARCH, QL_ENDIAN, QL_OS, QL_STATE
 from qiling.debugger import QlDebugger
 from qiling.debugger.gdb.xmlregs import QlGdbFeatures
 from qiling.debugger.gdb.utils import QlGdbUtils
@@ -673,6 +673,11 @@ class QlGdb(QlDebugger):
 
             self.gdb.resume_emu(steps=1)
 
+            # if emulation has been stopped, signal program termination
+            if self.ql.emu_state is QL_STATE.STOPPED:
+                return f'S{SIGTERM:02x}'
+
+            # otherwise, this is just single stepping
             return f'S{SIGTRAP:02x}'
 
         def handle_X(subcmd: str) -> Reply:
