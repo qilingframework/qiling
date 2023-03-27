@@ -117,7 +117,7 @@ class QlOsLinux(QlOsPosix):
 
         # on fork or execve, do not inherit opened files tagged as 'close on exec'
         for i in range(len(self.fd)):
-            if getattr(self.fd[i], 'close_on_exec', 0):
+            if getattr(self.fd[i], 'close_on_exec', False):
                 self.fd[i] = None
 
     def setup_procfs(self):
