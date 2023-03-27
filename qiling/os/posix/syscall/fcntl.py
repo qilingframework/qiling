@@ -147,10 +147,10 @@ def ql_syscall_fcntl(ql: Qiling, fd: int, cmd: int, arg: int):
             regreturn = -EMFILE
 
     elif cmd == F_GETFD:
-        regreturn = getattr(f, "close_on_exec", 0)
+        regreturn = getattr(f, "close_on_exec", False)
 
     elif cmd == F_SETFD:
-        f.close_on_exec = 1 if arg & FD_CLOEXEC else 0
+        f.close_on_exec = bool(arg & FD_CLOEXEC)
         regreturn = 0
 
     elif cmd == F_GETFL:
