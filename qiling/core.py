@@ -687,11 +687,11 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
     # Map "ql_path" to any objects which implements QlFsMappedObject.
     def add_fs_mapper(self, ql_path: Union["PathLike", str], real_dest):
-        self.os.fs_mapper.add_fs_mapping(ql_path, real_dest)
+        self.os.fs_mapper.add_mapping(ql_path, real_dest)
 
     # Remove "ql_path" mapping.
     def remove_fs_mapper(self, ql_path: Union["PathLike", str]):
-        self.os.fs_mapper.remove_fs_mapping(ql_path)
+        self.os.fs_mapper.remove_mapping(ql_path)
 
     # push to stack bottom, and update stack register
     def stack_push(self, data):

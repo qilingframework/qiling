@@ -4,10 +4,14 @@
 #
 
 import os
+from os import PathLike
 from typing import Any, Callable, MutableMapping, Union
 
 from .path import QlOsPath
 from .filestruct import ql_file
+
+QlPath = Union['PathLike[str]', str, 'PathLike[bytes]', bytes]
+
 
 # All mapped objects should inherit this class.
 # Note this object is compatible with ql_file.
@@ -63,115 +67,193 @@ class QlFsMapper:
         self._mapping: MutableMapping[str, Any] = {}
         self.path = path
 
-    def _open_mapping_ql_file(self, ql_path: str, openflags: int, openmode: int):
-        real_dest = self._mapping[ql_path]
+    def __contains__(self, vpath: str) -> bool:
+        # canonicalize the path first
+        absvpath = self.path.virtual_abspath(vpath)
 
-        if isinstance(real_dest, str):
-            obj = ql_file.open(real_dest, openflags, openmode)
+        return absvpath in self._mapping
 
-        elif callable(real_dest):
-            obj = real_dest()
-
-        else:
-            obj = real_dest
-
-        return obj
-
-    def _open_mapping(self, ql_path: str, openmode: str):
-        real_dest = self._mapping[ql_path]
-
-        if isinstance(real_dest, str):
-            obj = open(real_dest, openmode)
-
-        elif callable(real_dest):
-            obj = real_dest()
-
-        else:
-            obj = real_dest
-
-        return obj
-
-    def has_mapping(self, fm: str) -> bool:
-        return fm in self._mapping
-
-    def mapping_count(self) -> int:
-        return len(self._mapping)
-
-    def open_ql_file(self, path: str, openflags: int, openmode: int):
-        if self.has_mapping(path):
-            return self._open_mapping_ql_file(path, openflags, openmode)
-
-        host_path = self.path.virtual_to_host_path(path)
-
-        if not self.path.is_safe_host_path(host_path):
-            raise PermissionError(f'unsafe path: {host_path}')
-
-        return ql_file.open(host_path, openflags, openmode)
-    def file_exists(self, path:str) -> bool:
-        # check if file exists
-        if self.has_mapping(path):
-            return True
-
-        host_path = self.path.virtual_to_host_path(path)
-        if not self.path.is_safe_host_path(host_path):
-            raise PermissionError(f'unsafe path: {host_path}')
-        return os.path.isfile(host_path)
-    
-    def create_empty_file(self, path:str)->bool:
-        if not self.file_exists(path):
-            try:
-                f = self.open(path, "w+")
-                f.close()
-                return True
-
-            except Exception as e:
-                # for some reason, we could not create an empty file.
-                return False
-        return True
-        
-    def open(self, path: str, openmode: str):
-        if self.has_mapping(path):
-            return self._open_mapping(path, openmode)
-
-        host_path = self.path.virtual_to_host_path(path)
-
-        if not self.path.is_safe_host_path(host_path):
-            raise PermissionError(f'unsafe path: {host_path}')
-
-        return open(host_path, openmode)
-
-    def _parse_path(self, p: Union[os.PathLike, str]) -> str:
-        fspath = getattr(p, '__fspath__', None)
-
-        # p is an `os.PathLike` object
-        if fspath is not None:
-            p = fspath()
-
-            if isinstance(p, bytes): # os.PathLike.__fspath__ may return bytes.
-                p = p.decode("utf-8")
-
-        return p
-
-    def add_fs_mapping(self, ql_path: Union[os.PathLike, str], real_dest: Union[str, QlFsMappedObject, Callable]) -> None:
-        """Map an object to Qiling emulated file system.
+    def has_mapping(self, vpath: str) -> bool:
+        """Check whether a specific virtrual path has a binding.
 
         Args:
-            ql_path: Emulated path which should be convertable to a string or a hashable object. e.g. pathlib.Path
-            real_dest: Mapped object, can be a string, an object or a callable(class).
-                string: mapped path in the host machine, e.g. '/dev/urandom' -> '/dev/urandom'
-                object: mapped object, will be returned each time the emulated path has been opened
-                class:  mapped callable, will be used to create a new instance each time the emulated path has been opened
+            vpath: virtual path name to check
+
+        Returns: `True` if the specified virtual path has been bound, `False` otherwise.
         """
 
-        ql_path = self._parse_path(ql_path)
-        real_dest = self._parse_path(real_dest)
+        return vpath in self
 
-        self._mapping[ql_path] = real_dest
+    def __len__(self) -> int:
+        return len(self._mapping)
 
-    def remove_fs_mapping(self, ql_path: Union[os.PathLike, str]):
+    def mapping_count(self) -> int:
+        """Count of currently existing bindings.
+        """
+
+        return len(self)
+
+    def __open_mapped(self, absvpath: str, opener: Callable, *args) -> Any:
+        """Internal method user for opening an existing mapped object.
+
+        Args:
+            absvpath: absolute virtual path name
+            opener: a method to use to open the target host path
+            *args: arguments to the opener method
+        """
+
+        mapped = self._mapping[absvpath]
+
+        # mapped to a file name on the host file system
+        if isinstance(mapped, str):
+            obj = opener(mapped, *args)
+
+        # mapped to a class or a method
+        elif callable(mapped):
+            obj = mapped()
+
+        # mapped to another kind of object
+        else:
+            obj = mapped
+
+        return obj
+
+    def __open_new(self, absvpath: str, opener: Callable, *args) -> Any:
+        hpath = self.path.virtual_to_host_path(absvpath)
+
+        if not self.path.is_safe_host_path(hpath):
+            raise PermissionError(f'unsafe path: {hpath}')
+
+        return opener(hpath, *args)
+
+    def open_ql_file(self, vpath: str, flags: int, mode: int):
+        absvpath = self.path.virtual_abspath(vpath)
+        opener = self.__open_mapped if self.has_mapping(absvpath) else self.__open_new
+
+        return opener(absvpath, ql_file.open, flags, mode)
+
+    def open(self, vpath: str, mode: str):
+        absvpath = self.path.virtual_abspath(vpath)
+        opener = self.__open_mapped if self.has_mapping(absvpath) else self.__open_new
+
+        return opener(absvpath, open, mode)
+
+    def file_exists(self, vpath: str) -> bool:
+        """Check whether a file exists on the virtual file system.
+
+        Args:
+            vpath: virtual path name to check
+
+        Returns: `True` if the specified virtual path has an existing mapping or
+        resolves to an existing file on the virtual file system. `False` otherwise.
+        """
+
+        if self.has_mapping(vpath):
+            return True
+
+        hpath = self.path.virtual_to_host_path(vpath)
+
+        if not self.path.is_safe_host_path(hpath):
+            raise PermissionError(f'unsafe path: {hpath}')
+
+        return os.path.isfile(hpath)
+
+    def create_empty_file(self, vpath: str) -> bool:
+        if not self.file_exists(vpath):
+            try:
+                f = self.open(vpath, "w+")
+            except OSError:
+                # for some reason, we could not create an empty file.
+                return False
+            else:
+                f.close()
+
+        return True
+
+    def __fspath(self, path: QlPath) -> str:
+        """Similar to os.fspath, this method takes a path-like object and returns
+        its string representation.
+        """
+
+        if isinstance(path, PathLike):
+            path = path.__fspath__()
+
+        if isinstance(path, str):
+            return path
+
+        elif isinstance(path, bytes):
+            return path.decode('utf-8')
+
+        raise TypeError(path)
+
+    def add_mapping(self, vpath: QlPath, binding: Union[QlPath, QlFsMappedObject, Callable], *, force: bool = False) -> None:
+        """Create a new mapping in the virtual filesystem.
+
+        Args:
+            vpath: a virtual path to bind
+
+            binding: a target to use whenever the bound virtual path is referenced. such a target can be
+            either a path on the host filesystem, an object instance or a class. the behavior of the mapping
+            is determined by the bound object type:
+                [*] a string: bind a path on the host filesystem (e.g. "/dev/urandom"). use with caution!
+                [*] an object: bind an object instance which will be returned each time the virtual path is opened
+                [*] a class: bind a class that will be instantiated each time the virtual path is opened
+
+            force: when set to `True`, re-mapping an existing vpath becomes possible. In such case, the
+            old mapping will be discarded
+
+        Raises:
+            `KeyError`: in case the specified vpath has already been mapped (default behavior).
+        """
+
+        vpath = self.__fspath(vpath)
+        absvpath = self.path.virtual_abspath(vpath)
+
+        if self.has_mapping(absvpath) and not force:
+            raise KeyError(f'mapping already exists: "{absvpath}"')
+
+        if isinstance(binding, (str, bytes, PathLike)):
+            binding = self.__fspath(binding)
+
+        self._mapping[absvpath] = binding
+
+    def remove_mapping(self, vpath: QlPath) -> None:
         """Remove a mapping from the fs mapper.
 
         Args:
-            ql_path (Union[os.PathLike, str]): The mapped path.
+            vpath: bound virtual path to remove
+
+        Raises:
+            `KeyError`: in case the specified vpath has no mapping
         """
-        del self._mapping[self._parse_path(ql_path)]
+
+        vpath = self.__fspath(vpath)
+        absvpath = self.path.virtual_abspath(vpath)
+
+        if not self.has_mapping(absvpath):
+            raise KeyError(absvpath)
+
+        del self._mapping[absvpath]
+
+    def rename_mapping(self, old_vpath: str, new_vpath: str) -> None:
+        old_absvpath = self.path.virtual_abspath(old_vpath)
+
+        # vpath to rename does not exist
+        if not self.has_mapping(old_absvpath):
+            raise KeyError(old_vpath)
+
+        new_absvpath = self.path.virtual_abspath(new_vpath)
+
+        # new vpath already exists
+        if self.has_mapping(new_absvpath):
+            raise KeyError(new_vpath)
+
+        # avoid renaming to the same vapth
+        if old_absvpath == new_absvpath:
+            return
+
+        binding = self._mapping[old_absvpath]
+
+        # remove old mapping and add a new one instead
+        self._mapping[new_absvpath] = binding
+        del self._mapping[old_absvpath]

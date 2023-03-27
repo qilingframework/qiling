@@ -84,7 +84,7 @@ class QlLoaderDOS(QlLoader):
 
             # https://en.wikipedia.org/wiki/Master_boot_record#BIOS_to_MBR_interface
             if not self.ql.os.fs_mapper.has_mapping(0x80):
-                self.ql.os.fs_mapper.add_fs_mapping(0x80, QlDisk(path, 0x80))
+                self.ql.os.fs_mapper.add_mapping(0x80, QlDisk(path, 0x80))
 
             # 0x80 -> first drive
             self.ql.arch.regs.dx = 0x80
