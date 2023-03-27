@@ -13,10 +13,9 @@ from qiling.os.posix.const import *
 from qiling.os.posix.const_mapping import ql_open_flag_mapping
 from qiling.os.posix.filestruct import ql_socket
 
+
 def ql_syscall_open(ql: Qiling, filename: int, flags: int, mode: int):
-    path = ql.os.utils.read_cstring(filename)
-    real_path = ql.os.path.transform_to_real_path(path)
-    relative_path = ql.os.path.transform_to_relative_path(path)
+    vpath = ql.os.utils.read_cstring(filename)
 
     flags &= 0xffffffff
     mode &= 0xffffffff
@@ -26,62 +25,68 @@ def ql_syscall_open(ql: Qiling, filename: int, flags: int, mode: int):
     if idx == -1:
         regreturn = -EMFILE
     else:
+        if ql.arch.type == QL_ARCH.ARM and ql.os.type != QL_OS.QNX:
+            mode = 0
+
         try:
-            if ql.arch.type == QL_ARCH.ARM and ql.os.type != QL_OS.QNX:
-                mode = 0
-
             flags = ql_open_flag_mapping(ql, flags)
-            ql.os.fd[idx] = ql.os.fs_mapper.open_ql_file(path, flags, mode)
-            regreturn = idx
+            ql.os.fd[idx] = ql.os.fs_mapper.open_ql_file(vpath, flags, mode)
         except QlSyscallError as e:
-            regreturn = - e.errno
+            regreturn = -e.errno
+        else:
+            regreturn = idx
 
+    hpath = ql.os.path.virtual_to_host_path(vpath)
+    absvpath = ql.os.path.virtual_abspath(vpath)
 
-    ql.log.debug("open(%s, 0o%o) = %d" % (relative_path, mode, regreturn))
+    ql.log.debug(f'open("{absvpath}", {mode:#o}) = {regreturn}')
 
     if regreturn >= 0 and regreturn != 2:
-        ql.log.debug(f'File found: {real_path:s}')
+        ql.log.debug(f'File found: {hpath:s}')
     else:
-        ql.log.debug(f'File not found {real_path:s}')
+        ql.log.debug(f'File not found {hpath:s}')
 
     return regreturn
 
+
 def ql_syscall_creat(ql: Qiling, filename: int, mode: int):
+    vpath = ql.os.utils.read_cstring(filename)
+
+    # FIXME: this is broken
     flags = posix_open_flags["O_WRONLY"] | posix_open_flags["O_CREAT"] | posix_open_flags["O_TRUNC"]
-
-    path = ql.os.utils.read_cstring(filename)
-    real_path = ql.os.path.transform_to_real_path(path)
-    relative_path = ql.os.path.transform_to_relative_path(path)
-
-    flags &= 0xffffffff
     mode &= 0xffffffff
 
     idx = next((i for i in range(NR_OPEN) if ql.os.fd[i] is None), -1)
 
     if idx == -1:
-        regreturn = -ENOMEM 
+        regreturn = -ENOMEM
     else:
-        try:
-            if ql.arch.type == QL_ARCH.ARM:
-                mode = 0
+        if ql.arch.type == QL_ARCH.ARM:
+            mode = 0
 
+        try:
             flags = ql_open_flag_mapping(ql, flags)
-            ql.os.fd[idx] = ql.os.fs_mapper.open_ql_file(path, flags, mode)
-            regreturn = idx
+            ql.os.fd[idx] = ql.os.fs_mapper.open_ql_file(vpath, flags, mode)
         except QlSyscallError as e:
             regreturn = -e.errno
+        else:
+            regreturn = idx
 
-    ql.log.debug("creat(%s, 0o%o) = %d" % (relative_path, mode, regreturn))
+    hpath = ql.os.path.virtual_to_host_path(vpath)
+    absvpath = ql.os.path.virtual_abspath(vpath)
+
+    ql.log.debug(f'creat("{absvpath}", {mode:#o}) = {regreturn}')
 
     if regreturn >= 0 and regreturn != 2:
-        ql.log.debug(f'File found: {real_path:s}')
+        ql.log.debug(f'File found: {hpath:s}')
     else:
-        ql.log.debug(f'File not found {real_path:s}')
+        ql.log.debug(f'File not found {hpath:s}')
 
     return regreturn
 
+
 def ql_syscall_openat(ql: Qiling, fd: int, path: int, flags: int, mode: int):
-    file_path = ql.os.utils.read_cstring(path)
+    vpath = ql.os.utils.read_cstring(path)
     # real_path = ql.os.path.transform_to_real_path(path)
     # relative_path = ql.os.path.transform_to_relative_path(path)
 
@@ -93,27 +98,29 @@ def ql_syscall_openat(ql: Qiling, fd: int, path: int, flags: int, mode: int):
     if idx == -1:
         regreturn = -EMFILE
     else:
-        try:
-            if ql.arch.type == QL_ARCH.ARM:
-                mode = 0
+        fd = ql.unpacks(ql.pack(fd))
 
+        if ql.arch.type == QL_ARCH.ARM:
+            mode = 0
+
+        try:
             flags = ql_open_flag_mapping(ql, flags)
-            fd = ql.unpacks(ql.pack(fd))
 
             if 0 <= fd < NR_OPEN:
                 fobj = ql.os.fd[fd]
+
                 # ql_file object or QlFsMappedObject
                 if hasattr(fobj, "fileno") and hasattr(fobj, "name"):
-                    if not Path.is_absolute(Path(file_path)):
-                        file_path = Path(fobj.name) / Path(file_path)
+                    if not Path.is_absolute(Path(vpath)):
+                        vpath = str(Path(fobj.name) / Path(vpath))
 
-            ql.os.fd[idx] = ql.os.fs_mapper.open_ql_file(file_path, flags, mode)
-
-            regreturn = idx
+            ql.os.fd[idx] = ql.os.fs_mapper.open_ql_file(vpath, flags, mode)
         except QlSyscallError as e:
             regreturn = -e.errno
-            
-    ql.log.debug(f'openat(fd = {fd:d}, path = {file_path}, mode = {mode:#o}) = {regreturn:d}')
+        else:
+            regreturn = idx
+
+    ql.log.debug(f'openat(fd = {fd:d}, path = {vpath}, mode = {mode:#o}) = {regreturn:d}')
 
     return regreturn
 
@@ -209,28 +216,36 @@ def ql_syscall_flock(ql: Qiling, fd: int, operation: int):
 
 
 def ql_syscall_rename(ql: Qiling, oldname_buf: int, newname_buf: int):
-    """
-    rename(const char *oldpath, const char *newpath)
-    description: change the name or location of a file
-    ret value: On success, zero is returned. On error, -1 is returned
-    """
-    regreturn = 0  # default value is success
-    oldpath = ql.os.utils.read_cstring(oldname_buf)
-    newpath = ql.os.utils.read_cstring(newname_buf)
+    old_vpath = ql.os.utils.read_cstring(oldname_buf)
+    new_vpath = ql.os.utils.read_cstring(newname_buf)
 
-    ql.log.debug(f"rename() path: {oldpath} -> {newpath}")
+    old_absvpath = ql.os.path.virtual_abspath(old_vpath)
 
-    old_realpath = ql.os.path.transform_to_real_path(oldpath)
-    new_realpath = ql.os.path.transform_to_real_path(newpath)
+    # if has a mapping, rename the mapped vpath
+    if ql.os.fs_mapper.has_mapping(old_absvpath):
+        try:
+            ql.os.fs_mapper.rename_mapping(old_vpath, new_vpath)
+        except KeyError:
+            regreturn = -1
+        else:
+            regreturn = 0
 
-    if old_realpath == new_realpath:
-        # do nothing, just return success
-        return regreturn
+    # otherwise, rename the actual files
+    else:
+        old_hpath = ql.os.path.virtual_to_host_path(old_vpath)
+        new_hpath = ql.os.path.virtual_to_host_path(new_vpath)
 
-    try:
-        os.rename(old_realpath, new_realpath)
-    except OSError:
-        ql.log.exception(f"rename(): {newpath} exists!")
-        regreturn = -1
+        # if source and target paths are identical, do nothing
+        if old_hpath == new_hpath:
+            return 0
+
+        try:
+            os.rename(old_hpath, new_hpath)
+        except OSError:
+            regreturn = -1
+        else:
+            regreturn = 0
+
+    ql.log.debug(f'rename("{old_vpath}", "{new_vpath}") = {regreturn}')
 
     return regreturn
