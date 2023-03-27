@@ -121,11 +121,11 @@ class QlOsLinux(QlOsPosix):
                 self.fd[i] = None
 
     def setup_procfs(self):
-        self.fs_mapper.add_fs_mapping(r'/proc/self/auxv',    partial(QlProcFS.self_auxv, self))
-        self.fs_mapper.add_fs_mapping(r'/proc/self/cmdline', partial(QlProcFS.self_cmdline, self))
-        self.fs_mapper.add_fs_mapping(r'/proc/self/environ', partial(QlProcFS.self_environ, self))
-        self.fs_mapper.add_fs_mapping(r'/proc/self/exe',     partial(QlProcFS.self_exe, self))
-        self.fs_mapper.add_fs_mapping(r'/proc/self/maps',    partial(QlProcFS.self_map, self.ql.mem))
+        self.fs_mapper.add_mapping(r'/proc/self/auxv',    partial(QlProcFS.self_auxv, self),       force=True)
+        self.fs_mapper.add_mapping(r'/proc/self/cmdline', partial(QlProcFS.self_cmdline, self),    force=True)
+        self.fs_mapper.add_mapping(r'/proc/self/environ', partial(QlProcFS.self_environ, self),    force=True)
+        self.fs_mapper.add_mapping(r'/proc/self/exe',     partial(QlProcFS.self_exe, self),        force=True)
+        self.fs_mapper.add_mapping(r'/proc/self/maps',    partial(QlProcFS.self_map, self.ql.mem), force=True)
 
     def hook_syscall(self, ql, intno = None):
         return self.load_syscall()
