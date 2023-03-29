@@ -28,9 +28,6 @@ def ql_afl_fuzz(ql: Qiling,
             :raises UcAflError: If something wrong happens with the fuzzer.
         """
 
-        ql.uc.ctl_exits_enabled(True)
-        ql.uc.ctl_set_exits(exits)
-
         def _dummy_fuzz_callback(_ql: "Qiling"):
             if isinstance(_ql.arch, QlArchARM):
                 pc = _ql.arch.effective_pc
@@ -43,16 +40,20 @@ def ql_afl_fuzz(ql: Qiling,
             
             return UC_ERR_OK
         
-        return ql_afl_fuzz_custom(ql, input_file, place_input_callback, _dummy_fuzz_callback, 
+        return ql_afl_fuzz_custom(ql, input_file, place_input_callback, _dummy_fuzz_callback, exits,
                                   validate_crash_callback, always_validate, persistent_iters)
 
 def ql_afl_fuzz_custom(ql: Qiling,
                        input_file: str,
                        place_input_callback: Callable[["Qiling", bytes, int], bool],
                        fuzzing_callback: Callable[["Qiling"], int],
+                       exits: List[int] = [],
                        validate_crash_callback: Callable[["Qiling", bytes, int], bool] = None,
                        always_validate: bool = False,
                        persistent_iters: int = 1):
+
+        ql.uc.ctl_exits_enabled(True)
+        ql.uc.ctl_set_exits(exits)
 
         def _ql_afl_place_input_wrapper(uc, input_bytes, iters, data):
             (ql, cb, _, _) = data
