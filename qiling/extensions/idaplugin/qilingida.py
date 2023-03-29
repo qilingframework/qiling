@@ -2026,6 +2026,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 module = importlib.import_module(scriptname)
 
                 if is_reload:
+                    del self.userobj
                     importlib.reload(module)
                 cls = getattr(module, classname)
                 return cls()
