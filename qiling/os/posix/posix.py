@@ -72,7 +72,7 @@ class QlFileDes:
     def __len__(self):
         return len(self.__fds)
 
-    def __getitem__(self, idx: Union[slice, int]):
+    def __getitem__(self, idx: int):
         return self.__fds[idx]
 
     def __setitem__(self, idx: int, val: Optional[IO]):

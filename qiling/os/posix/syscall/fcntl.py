@@ -4,7 +4,6 @@
 #
 
 import os
-from pathlib import Path
 
 from qiling import Qiling
 from qiling.const import QL_OS, QL_ARCH
@@ -13,38 +12,51 @@ from qiling.os.posix.const import *
 from qiling.os.posix.const_mapping import ql_open_flag_mapping
 from qiling.os.posix.filestruct import ql_socket
 
+from .unistd import virtual_abspath_at, get_opened_fd
 
-def ql_syscall_open(ql: Qiling, filename: int, flags: int, mode: int):
-    vpath = ql.os.utils.read_cstring(filename)
 
+def __do_open(ql: Qiling, absvpath: str, flags: int, mode: int) -> int:
     flags &= 0xffffffff
     mode &= 0xffffffff
 
+    # look for the next available fd slot
     idx = next((i for i in range(NR_OPEN) if ql.os.fd[i] is None), -1)
 
     if idx == -1:
-        regreturn = -EMFILE
-    else:
-        if ql.arch.type == QL_ARCH.ARM and ql.os.type != QL_OS.QNX:
-            mode = 0
+        return -EMFILE
 
-        try:
-            flags = ql_open_flag_mapping(ql, flags)
-            ql.os.fd[idx] = ql.os.fs_mapper.open_ql_file(vpath, flags, mode)
-        except QlSyscallError as e:
-            regreturn = -e.errno
-        else:
-            regreturn = idx
+    if ql.arch.type is QL_ARCH.ARM and ql.os.type is not QL_OS.QNX:
+        mode = 0
 
-    hpath = ql.os.path.virtual_to_host_path(vpath)
+    # translate emulated os open flags into host os open flags
+    flags = ql_open_flag_mapping(ql, flags)
+
+    try:
+        ql.os.fd[idx] = ql.os.fs_mapper.open_ql_file(absvpath, flags, mode)
+    except QlSyscallError:
+        return -1
+
+    return idx
+
+
+def ql_syscall_open(ql: Qiling, filename: int, flags: int, mode: int):
+    vpath = ql.os.utils.read_cstring(filename)
     absvpath = ql.os.path.virtual_abspath(vpath)
 
-    ql.log.debug(f'open("{absvpath}", {mode:#o}) = {regreturn}')
+    regreturn = __do_open(ql, absvpath, flags, mode)
 
-    if regreturn >= 0 and regreturn != 2:
-        ql.log.debug(f'File found: {hpath:s}')
-    else:
-        ql.log.debug(f'File not found {hpath:s}')
+    ql.log.debug(f'open("{absvpath}", {flags:#x}, 0{mode:o}) = {regreturn}')
+
+    return regreturn
+
+
+def ql_syscall_openat(ql: Qiling, fd: int, path: int, flags: int, mode: int):
+    vpath = ql.os.utils.read_cstring(path)
+    absvpath = virtual_abspath_at(ql, vpath, fd)
+
+    regreturn = -1 if absvpath is None else __do_open(ql, absvpath, flags, mode)
+
+    ql.log.debug(f'openat({fd:d}, "{vpath}", {flags:#x}, 0{mode:o}) = {regreturn:d}')
 
     return regreturn
 
@@ -85,54 +97,11 @@ def ql_syscall_creat(ql: Qiling, filename: int, mode: int):
     return regreturn
 
 
-def ql_syscall_openat(ql: Qiling, fd: int, path: int, flags: int, mode: int):
-    vpath = ql.os.utils.read_cstring(path)
-    # real_path = ql.os.path.transform_to_real_path(path)
-    # relative_path = ql.os.path.transform_to_relative_path(path)
-
-    flags &= 0xffffffff
-    mode &= 0xffffffff
-
-    idx = next((i for i in range(NR_OPEN) if ql.os.fd[i] is None), -1)
-
-    if idx == -1:
-        regreturn = -EMFILE
-    else:
-        fd = ql.unpacks(ql.pack(fd))
-
-        if ql.arch.type == QL_ARCH.ARM:
-            mode = 0
-
-        try:
-            flags = ql_open_flag_mapping(ql, flags)
-
-            if 0 <= fd < NR_OPEN:
-                fobj = ql.os.fd[fd]
-
-                # ql_file object or QlFsMappedObject
-                if hasattr(fobj, "fileno") and hasattr(fobj, "name"):
-                    if not Path.is_absolute(Path(vpath)):
-                        vpath = str(Path(fobj.name) / Path(vpath))
-
-            ql.os.fd[idx] = ql.os.fs_mapper.open_ql_file(vpath, flags, mode)
-        except QlSyscallError as e:
-            regreturn = -e.errno
-        else:
-            regreturn = idx
-
-    ql.log.debug(f'openat(fd = {fd:d}, path = {vpath}, mode = {mode:#o}) = {regreturn:d}')
-
-    return regreturn
-
-
 def ql_syscall_fcntl(ql: Qiling, fd: int, cmd: int, arg: int):
-    if fd not in range(NR_OPEN):
-        return -EBADF
-
-    f = ql.os.fd[fd]
+    f = get_opened_fd(ql.os, fd)
 
     if f is None:
-        return -EBADF
+        return -1
 
     if cmd == F_DUPFD:
         if arg not in range(NR_OPEN):
@@ -147,7 +116,7 @@ def ql_syscall_fcntl(ql: Qiling, fd: int, cmd: int, arg: int):
             regreturn = -EMFILE
 
     elif cmd == F_GETFD:
-        regreturn = getattr(f, "close_on_exec", False)
+        regreturn = int(getattr(f, "close_on_exec", False))
 
     elif cmd == F_SETFD:
         f.close_on_exec = bool(arg & FD_CLOEXEC)
