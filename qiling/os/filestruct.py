@@ -18,6 +18,8 @@ class ql_file:
     def __init__(self, path: AnyStr, fd: int):
         self.__path = path
         self.__fd = fd
+        self.__closed = False
+
         # information for syscall mmap
         self._is_map_shared = False
         self._mapped_offset = -1
@@ -51,6 +53,8 @@ class ql_file:
 
     def close(self) -> None:
         os.close(self.__fd)
+
+        self.__closed = True
 
     def fstat(self):
         return Fstat(self.__fd)
@@ -87,4 +91,6 @@ class ql_file:
     def name(self):
         return self.__path
 
-
+    @property
+    def closed(self) -> bool:
+        return self.__closed
