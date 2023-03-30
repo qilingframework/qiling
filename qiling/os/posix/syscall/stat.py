@@ -1225,26 +1225,44 @@ def transform_path(ql: Qiling, dirfd: int, path: int, flags: int = 0):
 
 
 def ql_syscall_chmod(ql: Qiling, filename: int, mode: int):
-    file_path = ql.os.utils.read_cstring(filename)
-    real_path = ql.os.path.transform_to_real_path(file_path)
+    vpath = ql.os.utils.read_cstring(filename)
+    hpath = ql.os.path.virtual_to_host_path(vpath)
+
+    if not ql.os.path.is_safe_host_path(hpath):
+        raise PermissionError(f'unsafe path: {hpath}')
+
     try:
-        os.chmod(real_path, mode)
-        regreturn = 0
-    except:
+        os.chmod(hpath, mode)
+    except OSError:
         regreturn = -1
-    ql.log.debug(f'chmod("{ql.os.utils.read_cstring(filename)}", {mode:d}) = 0')
+    else:
+        regreturn = 0
+
+    ql.log.debug(f'chmod("{vpath}", 0{mode:o}) = {regreturn}')
+
     return regreturn
 
+
 def ql_syscall_fchmod(ql: Qiling, fd: int, mode: int):
-    if fd not in range(NR_OPEN) or ql.os.fd[fd] is None:
-        return -EBADF
+    if fd not in range(NR_OPEN):
+        return -1
+
+    f = ql.os.fd[fd]
+
+    if f is None:
+        return -1
+
     try:
-        os.fchmod(ql.os.fd[fd].fileno(), mode)
-        regreturn = 0
-    except:
+        os.fchmod(f.fileno(), mode)
+    except OSError:
         regreturn = -1
-    ql.log.debug("fchmod(%d, %d) = %d" % (fd, mode, regreturn))
+    else:
+        regreturn = 0
+
+    ql.log.debug(f'fchmod({fd}, 0{mode:o}) = {regreturn}')
+
     return regreturn
+
 
 def ql_syscall_fstatat64(ql: Qiling, dirfd: int, path: int, buf_ptr: int, flags: int):
     dirfd, real_path = transform_path(ql, dirfd, path, flags)
@@ -1476,31 +1494,44 @@ def ql_syscall_mknodat(ql: Qiling, dirfd: int, path: int, mode: int, dev: int):
 
 
 def ql_syscall_mkdir(ql: Qiling, pathname: int, mode: int):
-    file_path = ql.os.utils.read_cstring(pathname)
-    real_path = ql.os.path.transform_to_real_path(file_path)
-    regreturn = 0
+    vpath = ql.os.utils.read_cstring(pathname)
+    hpath = ql.os.path.virtual_to_host_path(vpath)
+
+    if not ql.os.path.is_safe_host_path(hpath):
+        raise PermissionError(f'unsafe path: {hpath}')
 
     try:
-        if not os.path.exists(real_path):
-            os.mkdir(real_path, mode)
-    except:
+        if not os.path.exists(hpath):
+            os.mkdir(hpath, mode)
+    except OSError:
         regreturn = -1
+    else:
+        regreturn = 0
 
-    ql.log.debug("mkdir(%s, 0%o) = %d" % (real_path, mode, regreturn))
+    ql.log.debug(f'mkdir("{vpath}", 0{mode:o}) = {regreturn}')
+
     return regreturn
+
 
 def ql_syscall_rmdir(ql: Qiling, pathname: int):
-    file_path = ql.os.utils.read_cstring(pathname)
-    real_path = ql.os.path.transform_to_real_path(file_path)
-    regreturn = 0
+    vpath = ql.os.utils.read_cstring(pathname)
+    hpath = ql.os.path.virtual_to_host_path(vpath)
+
+    if not ql.os.path.is_safe_host_path(hpath):
+        raise PermissionError(f'unsafe path: {hpath}')
 
     try:
-        if os.path.exists(real_path):
-            os.rmdir(real_path)
-    except:
+        if os.path.exists(hpath):
+            os.rmdir(hpath)
+    except OSError:
         regreturn = -1
+    else:
+        regreturn = 0
+
+    ql.log.debug(f'rmdir("{vpath}") = {regreturn}')
 
     return regreturn
+
 
 def ql_syscall_fstatfs(ql: Qiling, fd: int, buf: int):
     data = b"0" * (12 * 8)  # for now, just return 0s
