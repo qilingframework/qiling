@@ -121,11 +121,18 @@ class QlOsLinux(QlOsPosix):
                 self.fd[i] = None
 
     def setup_procfs(self):
-        self.fs_mapper.add_mapping(r'/proc/self/auxv',    partial(QlProcFS.self_auxv, self),       force=True)
-        self.fs_mapper.add_mapping(r'/proc/self/cmdline', partial(QlProcFS.self_cmdline, self),    force=True)
-        self.fs_mapper.add_mapping(r'/proc/self/environ', partial(QlProcFS.self_environ, self),    force=True)
-        self.fs_mapper.add_mapping(r'/proc/self/exe',     partial(QlProcFS.self_exe, self),        force=True)
-        self.fs_mapper.add_mapping(r'/proc/self/maps',    partial(QlProcFS.self_map, self.ql.mem), force=True)
+        files = (
+            (r'/proc/self/auxv',    lambda: partial(QlProcFS.self_auxv, self)),
+            (r'/proc/self/cmdline', lambda: partial(QlProcFS.self_cmdline, self)),
+            (r'/proc/self/environ', lambda: partial(QlProcFS.self_environ, self)),
+            (r'/proc/self/exe',     lambda: partial(QlProcFS.self_exe, self)),
+            (r'/proc/self/maps',    lambda: partial(QlProcFS.self_map, self.ql.mem))
+        )
+
+        for filename, wrapper in files:
+            # add mapping only if the user has not already mapped it
+            if not self.fs_mapper.has_mapping(filename):
+                self.fs_mapper.add_mapping(filename, wrapper())
 
     def hook_syscall(self, ql, intno = None):
         return self.load_syscall()
