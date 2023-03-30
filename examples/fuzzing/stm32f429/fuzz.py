@@ -42,10 +42,7 @@ def main(input_file: str):
         
         return UC_ERR_OK
 
-    ql.uc.ctl_exits_enabled(True)
-    ql.uc.ctl_set_exits([0x80006d9])
-
-    ql_afl_fuzz_custom(ql, input_file, place_input_callback, fuzzing_callback=fuzzing_callback)
+    ql_afl_fuzz_custom(ql, input_file, place_input_callback, fuzzing_callback=fuzzing_callback, exits=[0x80006d9])
 
     os.exit(0)
 
