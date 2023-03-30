@@ -3,23 +3,26 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from __future__ import annotations
+
 import os
-import stat
 import itertools
 import pathlib
 
-from typing import Iterator
-from multiprocessing import Process
+from typing import TYPE_CHECKING, Iterator, Optional
 
 from qiling import Qiling
 from qiling.const import QL_ARCH, QL_OS
 from qiling.os.posix.filestruct import ql_pipe
 from qiling.os.posix.const import *
-from qiling.os.posix.stat import Stat
 from qiling.core_hooks import QlCoreHooks
 
+if TYPE_CHECKING:
+    from qiling.os.posix.posix import QlOsPosix
+
+
 def ql_syscall_exit(ql: Qiling, code: int):
-    if ql.os.child_processes == True:
+    if ql.os.child_processes:
         os._exit(0)
 
     if ql.multithread:
@@ -37,7 +40,7 @@ def ql_syscall_exit(ql: Qiling, code: int):
 
 
 def ql_syscall_exit_group(ql: Qiling, code: int):
-    if ql.os.child_processes == True:
+    if ql.os.child_processes:
         os._exit(0)
 
     if ql.multithread:
@@ -135,99 +138,163 @@ def ql_syscall_setgroups(ql: Qiling, gidsetsize: int, grouplist: int):
 def ql_syscall_setresuid(ql: Qiling):
     return 0
 
+
 def ql_syscall_setresgid(ql: Qiling):
     return 0
+
 
 def ql_syscall_capget(ql: Qiling, hdrp: int, datap: int):
     return 0
 
+
 def ql_syscall_capset(ql: Qiling, hdrp: int, datap: int):
     return 0
+
 
 def ql_syscall_kill(ql: Qiling, pid: int, sig: int):
     return 0
 
 
+def get_opened_fd(os: QlOsPosix, fd: int):
+    if fd not in range(NR_OPEN):
+        # TODO: set errno to EBADF
+        return None
+
+    f = os.fd[fd]
+
+    if f is None:
+        # TODO: set errno to EBADF
+        return None
+
+    return f
+
+
 def ql_syscall_fsync(ql: Qiling, fd: int):
-    try:
-        os.fsync(ql.os.fd[fd].fileno())
-        regreturn = 0
-    except:
+    f = get_opened_fd(ql.os, fd)
+
+    if f is None:
         regreturn = -1
-    ql.log.debug("fsync(%d) = %d" % (fd, regreturn))
+
+    else:
+        try:
+            os.fsync(f.fileno())
+        except OSError:
+            regreturn = -1
+        else:
+            regreturn = 0
+
+    ql.log.debug(f'fsync({fd:d}) = {regreturn}')
+
     return regreturn
 
 
 def ql_syscall_fdatasync(ql: Qiling, fd: int):
     try:
         os.fdatasync(ql.os.fd[fd].fileno())
-        regreturn = 0
-    except:
+    except OSError:
         regreturn = -1
-    ql.log.debug("fdatasync(%d) = %d" % (fd, regreturn))
+    else:
+        regreturn = 0
+
+    ql.log.debug(f'fdatasync({fd:d}) = {regreturn}')
+
     return regreturn
 
 
-def ql_syscall_faccessat(ql: Qiling, dfd: int, filename: int, mode: int):
-    access_path = ql.os.utils.read_cstring(filename)
-    real_path = ql.os.path.transform_to_real_path(access_path)
+def virtual_abspath_at(ql: Qiling, vpath: str, dirfd: int) -> Optional[str]:
+    if ql.os.path.is_virtual_abspath(vpath):
+        return vpath
 
-    if not os.path.exists(real_path):
+    # <WORKAROUND>
+    def __as_signed(value: int, nbits: int) -> int:
+        msb = (1 << (nbits - 1))
+
+        return -(((value & msb) << 1) - value)
+
+    # syscall params are read as unsigned int by default. until we fix that
+    # broadly, this is a workaround to turn fd into a signed value
+    dirfd = __as_signed(dirfd, ql.arch.bits)
+    # </WORKAROUND>
+
+    if dirfd == AT_FDCWD:
+        basedir = ql.os.path.cwd
+
+    else:
+        f = get_opened_fd(ql.os, dirfd)
+
+        if f is None or not hasattr(f, 'name'):
+            # EBADF
+            return None
+
+        hpath = f.name
+
+        if not os.path.isdir(hpath):
+            # ENOTDIR
+            return None
+
+        basedir = ql.os.path.host_to_virtual_path(hpath)
+
+    return str(ql.os.path.PureVirtualPath(basedir, vpath))
+
+
+def ql_syscall_faccessat(ql: Qiling, dirfd: int, filename: int, mode: int):
+    vpath = ql.os.utils.read_cstring(filename)
+    vpath_at = virtual_abspath_at(ql, vpath, dirfd)
+
+    if vpath_at is None:
         regreturn = -1
-    else:
-        regreturn = 0
 
-    if regreturn == -1:
-        ql.log.debug(f'File not found or skipped: {access_path}')
     else:
-        ql.log.debug(f'File found: {access_path}')
+        hpath = ql.os.path.virtual_to_host_path(vpath_at)
+
+        if not ql.os.path.is_safe_host_path(hpath):
+            raise PermissionError(f'unsafe path: {hpath}')
+
+        regreturn = 0 if os.path.exists(hpath) else -1
+
+    ql.log.debug(f'faccessat({dirfd:d}, "{vpath}", {mode:d}) = {regreturn}')
 
     return regreturn
 
 
 def ql_syscall_lseek(ql: Qiling, fd: int, offset: int, origin: int):
-    if fd not in range(NR_OPEN):
-        return -EBADF
-
-    f = ql.os.fd[fd]
-
-    if f is None:
-        return -EBADF
-
     offset = ql.unpacks(ql.pack(offset))
 
-    try:
-        regreturn = f.seek(offset, origin)
-    except OSError:
+    f = get_opened_fd(ql.os, fd)
+
+    if f is None:
         regreturn = -1
 
-    # ql.log.debug("lseek(fd = %d, ofset = 0x%x, origin = 0x%x) = %d" % (fd, offset, origin, regreturn))
+    else:
+        try:
+            regreturn = f.seek(offset, origin)
+        except OSError:
+            regreturn = -1
+
+    ql.log.debug(f'lseek({fd:d}, {offset:#x}, {origin}) = {regreturn}')
 
     return regreturn
 
 
 def ql_syscall__llseek(ql: Qiling, fd: int, offset_high: int, offset_low: int, result: int, whence: int):
-    if fd not in range(NR_OPEN):
-        return -EBADF
-
-    f = ql.os.fd[fd]
-
-    if f is None:
-        return -EBADF
-
     # treat offset as a signed value
     offset = ql.unpack64s(ql.pack64((offset_high << 32) | offset_low))
-    origin = whence
 
-    try:
-        ret = f.seek(offset, origin)
-    except OSError:
+    f = get_opened_fd(ql.os, fd)
+
+    if f is None:
         regreturn = -1
-    else:
-        ql.mem.write_ptr(result, ret, 8)
-        regreturn = 0
 
-    # ql.log.debug("_llseek(%d, 0x%x, 0x%x, 0x%x) = %d" % (fd, offset_high, offset_low, origin, regreturn))
+    else:
+        try:
+            ret = f.seek(offset, whence)
+        except OSError:
+            regreturn = -1
+        else:
+            ql.mem.write_ptr(result, ret, 8)
+            regreturn = 0
+
+    ql.log.debug(f'_llseek({fd:d}, {offset_high:#x}, {offset_low:#x}, {result:#x}, {whence}) = {regreturn}')
 
     return regreturn
 
@@ -251,75 +318,68 @@ def ql_syscall_brk(ql: Qiling, inp: int):
 
 
 def ql_syscall_access(ql: Qiling, path: int, mode: int):
-    file_path = ql.os.utils.read_cstring(path)
-    real_path = ql.os.path.transform_to_real_path(file_path)
-    relative_path = ql.os.path.transform_to_relative_path(file_path)
+    vpath = ql.os.utils.read_cstring(path)
+    hpath = ql.os.path.virtual_to_host_path(vpath)
 
-    regreturn = 0 if os.path.exists(real_path) else -1
+    if not ql.os.path.is_safe_host_path(hpath):
+        raise PermissionError(f'unsafe path: {hpath}')
 
-    # ql.log.debug("access(%s, 0x%x) = %d " % (relative_path, access_mode, regreturn))
+    regreturn = 0 if os.path.exists(hpath) else -1
 
-    if regreturn == 0:
-        ql.log.debug(f'File found: {relative_path}')
-    else:
-        ql.log.debug(f'No such file or directory: {relative_path}')
+    ql.log.debug(f'access("{vpath}", 0{mode:o}) = {regreturn}')
 
     return regreturn
 
 
 def ql_syscall_close(ql: Qiling, fd: int):
-    if fd not in range(NR_OPEN):
-        return -1
-
-    f = ql.os.fd[fd]
+    f = get_opened_fd(ql.os, fd)
 
     if f is None:
-        return -1
+        regreturn = -1
 
-    f.close()
-    ql.os.fd[fd] = None
+    else:
+        f.close()
+        ql.os.fd[fd] = None
+        regreturn = 0
 
-    return 0
+    ql.log.debug(f'close({fd:d}) = {regreturn}')
+
+    return regreturn
 
 
 def ql_syscall_pread64(ql: Qiling, fd: int, buf: int, length: int, offt: int):
-    if fd not in range(NR_OPEN):
-        return -1
-
-    f = ql.os.fd[fd]
+    f = get_opened_fd(ql.os, fd)
 
     if f is None:
-        return -1
-
-    # https://chromium.googlesource.com/linux-syscall-support/+/2c73abf02fd8af961e38024882b9ce0df6b4d19b
-    # https://chromiumcodereview.appspot.com/10910222
-    if ql.arch.type == QL_ARCH.MIPS:
-        offt = ql.mem.read_ptr(ql.arch.regs.arch_sp + 0x10, 8)
-
-    try:
-        pos = f.tell()
-        f.seek(offt)
-
-        data = f.read(length)
-        f.seek(pos)
-
-        ql.mem.write(buf, data)
-    except:
         regreturn = -1
+
     else:
-        regreturn = len(data)
+        # https://chromium.googlesource.com/linux-syscall-support/+/2c73abf02fd8af961e38024882b9ce0df6b4d19b
+        # https://chromiumcodereview.appspot.com/10910222
+        if ql.arch.type == QL_ARCH.MIPS:
+            offt = ql.mem.read_ptr(ql.arch.regs.arch_sp + 0x10, 8)
+
+        try:
+            pos = f.tell()
+            f.seek(offt)
+
+            data = f.read(length)
+            f.seek(pos)
+        except OSError:
+            regreturn = -1
+        else:
+            ql.mem.write(buf, data)
+
+            regreturn = len(data)
 
     return regreturn
 
 
 def ql_syscall_read(ql: Qiling, fd, buf: int, length: int):
-    if fd not in range(NR_OPEN):
-        return -EBADF
-
-    f = ql.os.fd[fd]
+    f = get_opened_fd(ql.os, fd)
 
     if f is None:
-        return -EBADF
+        return -1
 
     try:
         data = f.read(length)
@@ -334,13 +394,10 @@ def ql_syscall_read(ql: Qiling, fd, buf: int, length: int):
 
 
 def ql_syscall_write(ql: Qiling, fd: int, buf: int, count: int):
-    if fd not in range(NR_OPEN):
-        return -EBADF
-
-    f = ql.os.fd[fd]
+    f = get_opened_fd(ql.os, fd)
 
     if f is None:
-        return -EBADF
+        return -1
 
     try:
         data = ql.mem.read(buf, count)
@@ -357,90 +414,95 @@ def ql_syscall_write(ql: Qiling, fd: int, buf: int, count: int):
             ql.log.warning(f'write failed since fd {fd:d} does not have a write method')
             regreturn = -1
 
+    return regreturn
+
+
+def __do_readlink(ql: Qiling, absvpath: str, outbuf: int) -> int:
+    target = None
+
+    # cover a few procfs pseudo files first
+    if absvpath == r'/proc/self/exe':
+        # note this would raise an exception if the binary is not under rootfs
+        target = ql.os.path.host_to_virtual_path(ql.path)
+
+    elif absvpath == r'/proc/self/cwd':
+        target = ql.os.path.cwd
+
+    elif absvpath == r'/proc/self/root':
+        target = ql.os.path.root
+
+    else:
+        hpath = ql.os.path.virtual_to_host_path(absvpath)
+
+        if not ql.os.path.is_safe_host_path(hpath):
+            raise PermissionError(f'unsafe path: {hpath}')
+
+        # FIXME: we do not really know how to emulated links, so we do not read them
+        if os.path.exists(hpath):
+            target = ''
+
+    if target is None:
+        return -1
+
+    cstr = target.encode('utf-8')
+
+    if cstr:
+        ql.mem.write(outbuf, cstr + b'\x00')
+
+    return len(cstr)
+
+
+def ql_syscall_readlink(ql: Qiling, pathname: int, buf: int, bufsize: int):
+    vpath = ql.os.utils.read_cstring(pathname)
+    absvpath = ql.os.path.virtual_abspath(vpath)
+
+    regreturn = __do_readlink(ql, absvpath, buf)
+
+    ql.log.debug(f'readlink("{vpath}", {buf:#x}, {bufsize:#x}) = {regreturn}')
 
     return regreturn
 
 
-def ql_syscall_readlink(ql: Qiling, path_name: int, path_buff: int, path_buffsize: int):
-    pathname = ql.os.utils.read_cstring(path_name)
-    # pathname = str(pathname, 'utf-8', errors="ignore")
-    host_path = ql.os.path.virtual_to_host_path(pathname)
-    virt_path = ql.os.path.virtual_abspath(pathname)
+def ql_syscall_readlinkat(ql: Qiling, dirfd: int, pathname: int, buf: int, bufsize: int):
+    vpath = ql.os.utils.read_cstring(pathname)
+    absvpath = virtual_abspath_at(ql, vpath, dirfd)
 
-    # cover procfs psaudo files first
-    # TODO: /proc/self/root, /proc/self/cwd
-    if virt_path == r'/proc/self/exe':
-        p = ql.os.path.host_to_virtual_path(ql.path)
-        p = p.encode('utf-8')
+    regreturn = -1 if absvpath is None else __do_readlink(ql, absvpath, buf)
 
-        ql.mem.write(path_buff, p + b'\x00')
-        regreturn = len(p)
-
-    elif os.path.exists(host_path):
-        regreturn = 0
-
-    else:
-        regreturn = -1
-
-    ql.log.debug('readlink("%s", 0x%x, 0x%x) = %d' % (virt_path, path_buff, path_buffsize, regreturn))
+    ql.log.debug(f'readlinkat({dirfd:d}, "{vpath}", {buf:#x}, {bufsize:#x}) = {regreturn}')
 
     return regreturn
 
 
 def ql_syscall_getcwd(ql: Qiling, path_buff: int, path_buffsize: int):
-    localpath = ql.os.path.transform_to_relative_path('./')
-    localpath = bytes(localpath, 'utf-8') + b'\x00'
+    cwd = ql.os.path.cwd
 
-    ql.mem.write(path_buff, localpath)
-    regreturn = len(localpath)
+    cwd_bytes = cwd.encode('utf-8') + b'\x00'
+    ql.mem.write(path_buff, cwd_bytes)
+    regreturn = len(cwd_bytes)
 
-    pathname = ql.os.utils.read_cstring(path_buff)
-    # pathname = str(pathname, 'utf-8', errors="ignore")
-
-    ql.log.debug("getcwd(%s, 0x%x) = %d" % (pathname, path_buffsize, regreturn))
+    ql.log.debug(f'getcwd("{cwd}", {path_buffsize}) = {regreturn}')
 
     return regreturn
 
 
 def ql_syscall_chdir(ql: Qiling, path_name: int):
-    pathname = ql.os.utils.read_cstring(path_name)
-    host_path = ql.os.path.virtual_to_host_path(pathname)
-    virt_path = ql.os.path.virtual_abspath(pathname)
+    vpath = ql.os.utils.read_cstring(path_name)
+    hpath = ql.os.path.virtual_to_host_path(vpath)
 
-    if os.path.exists(host_path) and os.path.isdir(host_path):
-        ql.os.path.cwd = virt_path
+    if not ql.os.path.is_safe_host_path(hpath):
+        raise PermissionError(f'unsafe path: {hpath}')
+
+    absvpath = ql.os.path.virtual_abspath(vpath)
+
+    if os.path.isdir(hpath):
+        ql.os.path.cwd = absvpath
 
         regreturn = 0
-        ql.log.debug("chdir(%s) = %d"% (virt_path, regreturn))
-    else:
-        regreturn = -1
-        ql.log.warning("chdir(%s) = %d : not found" % (virt_path, regreturn))
-
-    return regreturn
-
-
-def ql_syscall_readlinkat(ql: Qiling, dfd: int, path: int, buf: int, bufsize: int):
-    pathname = ql.os.utils.read_cstring(path)
-    # pathname = str(pathname, 'utf-8', errors="ignore")
-    host_path = ql.os.path.virtual_to_host_path(pathname)
-    virt_path = ql.os.path.virtual_abspath(pathname)
-
-    # cover procfs psaudo files first
-    # TODO: /proc/self/root, /proc/self/cwd
-    if virt_path == r'/proc/self/exe':
-        p = ql.os.path.host_to_virtual_path(ql.path)
-        p = p.encode('utf-8')
-
-        ql.mem.write(buf, p + b'\x00')
-        regreturn = len(p)
-
-    elif os.path.exists(host_path):
-        regreturn = 0
-
     else:
         regreturn = -1
 
-    ql.log.debug('readlinkat(%d, "%s", 0x%x, 0x%x) = %d' % (dfd, virt_path, buf, bufsize, regreturn))
+    ql.log.debug(f'chdir("{absvpath}") = {regreturn}')
 
     return regreturn
 
@@ -455,6 +517,8 @@ def ql_syscall_getppid(ql: Qiling):
 
 def ql_syscall_vfork(ql: Qiling):
     if ql.host.os == QL_OS.WINDOWS:
+        from multiprocessing import Process
+
         try:
             pid = Process()
             pid = 0
@@ -478,6 +542,7 @@ def ql_syscall_vfork(ql: Qiling):
 
 def ql_syscall_fork(ql: Qiling):
     return ql_syscall_vfork(ql)
+
 
 def ql_syscall_setsid(ql: Qiling):
     return os.getpid()
@@ -539,50 +604,71 @@ def ql_syscall_execve(ql: Qiling, pathname: int, argv: int, envp: int):
 
 
 def ql_syscall_dup(ql: Qiling, oldfd: int):
-    if oldfd not in range(NR_OPEN):
-        return -EBADF
-
-    f = ql.os.fd[oldfd]
+    f = get_opened_fd(ql.os, oldfd)
 
     if f is None:
-        return -EBADF
+        return -1
 
-    idx = next((i for i in range(NR_OPEN) if ql.os.fd[i] is None), -1)
+    newfd = next((i for i in range(NR_OPEN) if ql.os.fd[i] is None), -1)
 
-    if idx == -1:
+    if newfd == -1:
         return -EMFILE
 
-    ql.os.fd[idx] = f.dup()
-
-    return idx
-
-
-def ql_syscall_dup2(ql: Qiling, fd: int, newfd: int):
-    if fd not in range(NR_OPEN) or newfd not in range(NR_OPEN):
-        return -EBADF
-
-    f = ql.os.fd[fd]
-
-    if f is None:
-        return -EBADF
-
     ql.os.fd[newfd] = f.dup()
+
+    ql.log.debug(f'dup({oldfd:d}) = {newfd:d}')
 
     return newfd
 
 
-def ql_syscall_dup3(ql: Qiling, fd: int, newfd: int, flags: int):
-    if fd not in range(NR_OPEN) or newfd not in range(NR_OPEN):
-        return -1
-
-    f = ql.os.fd[fd]
+def ql_syscall_dup2(ql: Qiling, oldfd: int, newfd: int):
+    f = get_opened_fd(ql.os, oldfd)
 
     if f is None:
         return -1
 
+    if newfd not in range(NR_OPEN):
+        return -1
+
+    newslot = ql.os.fd[newfd]
+
+    if newslot is not None:
+        newslot.close()
+
     ql.os.fd[newfd] = f.dup()
 
+    ql.log.debug(f'dup2({oldfd:d}, {newfd:d}) = {newfd:d}')
+
     return newfd
+
+
+def ql_syscall_dup3(ql: Qiling, oldfd: int, newfd: int, flags: int):
+    O_CLOEXEC = 0o2000000
+
+    f = get_opened_fd(ql.os, oldfd)
+
+    if f is None:
+        return -1
+
+    if newfd not in range(NR_OPEN):
+        return -1
+
+    newslot = ql.os.fd[newfd]
+
+    if newslot is not None:
+        newslot.close()
+
+    newf = f.dup()
+
+    if flags & O_CLOEXEC:
+        newf.close_on_exec = True
+
+    ql.os.fd[newfd] = newf
+
+    ql.log.debug(f'dup3({oldfd:d}, {newfd:d}, 0{flags:o}) = {newfd:d}')
+
+    return newfd
+
 
 def ql_syscall_set_tid_address(ql: Qiling, tidptr: int):
     if ql.os.thread_management:
@@ -621,101 +707,106 @@ def ql_syscall_nice(ql: Qiling, inc: int):
     return 0
 
 
-def ql_syscall_truncate(ql: Qiling, path: int, length: int):
-    file_path = ql.os.utils.read_cstring(path)
-    real_path = ql.os.path.transform_to_real_path(file_path)
-    st_size = Stat(real_path).st_size
+def __do_truncate(ql: Qiling, hpath: str, length: int) -> int:
+    if not ql.os.path.is_safe_host_path(hpath):
+        raise PermissionError(f'unsafe path: {hpath}')
 
     try:
-        if st_size >= length:
-            os.truncate(real_path, length)
+        st_size = os.path.getsize(hpath)
 
-        else:
+        if st_size > length:
+            os.truncate(hpath, length)
+
+        elif st_size < length:
             padding = length - st_size
 
-            with open(real_path, 'a+b') as ofile:
+            with open(hpath, 'a+b') as ofile:
                 ofile.write(b'\x00' * padding)
-    except:
-        regreturn = -1
+    except OSError:
+        return -1
     else:
-        regreturn = 0
+        return 0
 
-    ql.log.debug('truncate(%s, 0x%x) = %d' % (file_path, length, regreturn))
+
+def ql_syscall_truncate(ql: Qiling, path: int, length: int):
+    vpath = ql.os.utils.read_cstring(path)
+    hpath = ql.os.path.virtual_to_host_path(vpath)
+
+    regreturn = __do_truncate(ql, hpath, length)
+
+    ql.log.debug(f'truncate("{vpath}", {length:#x}) = {regreturn}')
 
     return regreturn
 
 
 def ql_syscall_ftruncate(ql: Qiling, fd: int, length: int):
-    real_path = ql.os.fd[fd].name
-    st_size = Stat(real_path).st_size
+    f = get_opened_fd(ql.os, fd)
 
-    try:
-        if st_size >= length:
-            os.truncate(real_path, length)
+    regreturn = -1 if f is None else __do_truncate(ql, f.name, length)
 
-        else:
-            padding = length - st_size
-
-            with open(real_path, 'a+b') as ofile:
-                ofile.write(b'\x00' * padding)
-    except:
-        regreturn = -1
-    else:
-        regreturn = 0
-
-    ql.log.debug("ftruncate(%d, 0x%x) = %d" % (fd, length, regreturn))
+    ql.log.debug(f'ftruncate({fd}, {length:#x}) = {regreturn}')
 
     return regreturn
+
+
+def __do_unlink(ql: Qiling, absvpath: str) -> int:
+
+    def __has_opened_fd(hpath: str) -> bool:
+        opened_fds = (ql.os.fd[i] for i in range(NR_OPEN) if ql.os.fd[i] is not None)
+        f = next((fd for fd in opened_fds if getattr(fd, 'name', '') == hpath), None)
+
+        return f is not None and f.closed
+
+    hpath = ql.os.path.virtual_to_host_path(absvpath)
+
+    if ql.os.fs_mapper.has_mapping(absvpath):
+        if __has_opened_fd(hpath):
+            return -1
+
+        ql.os.fs_mapper.remove_mapping(absvpath)
+
+    else:
+        if not ql.os.path.is_safe_host_path(hpath):
+            raise PermissionError(f'unsafe path: {hpath}')
+
+        # NOTE: no idea why these are always ok to remove
+        def __ok_to_remove(hpath: str) -> bool:
+            path = pathlib.Path(hpath)
+
+            return any((path.is_block_device(), path.is_fifo(), path.is_socket(), path.is_symlink()))
+
+        if __has_opened_fd(hpath) and not __ok_to_remove(hpath):
+            return -1
+
+        try:
+            os.unlink(hpath)
+        except OSError:
+            return -1
+
+    return 0
 
 
 def ql_syscall_unlink(ql: Qiling, pathname: int):
-    file_path = ql.os.utils.read_cstring(pathname)
-    real_path = ql.os.path.transform_to_real_path(file_path)
+    vpath = ql.os.utils.read_cstring(pathname)
+    absvpath = ql.os.path.virtual_abspath(vpath)
 
-    opened_fds = [getattr(ql.os.fd[i], 'name', None) for i in range(NR_OPEN) if ql.os.fd[i] is not None]
-    path = pathlib.Path(real_path)
+    regreturn = __do_unlink(ql, absvpath)
 
-    if any((real_path not in opened_fds, path.is_block_device(), path.is_fifo(), path.is_socket(), path.is_symlink())):
-        try:
-            os.unlink(real_path)
-        except FileNotFoundError:
-            ql.log.debug('No such file or directory')
-            regreturn = -1
-        except:
-            regreturn = -1
-        else:
-            regreturn = 0
-
-    else:
-        regreturn = -1
-
-    ql.log.debug("unlink(%s) = %d" % (file_path, regreturn))
+    ql.log.debug(f'unlink("{vpath}") = {regreturn}')
 
     return regreturn
 
 
-def ql_syscall_unlinkat(ql: Qiling, fd: int, pathname: int):
-    file_path = ql.os.utils.read_cstring(pathname)
-    real_path = ql.os.path.transform_to_real_path(file_path)
+def ql_syscall_unlinkat(ql: Qiling, dirfd: int, pathname: int, flags: int):
+    vpath = ql.os.utils.read_cstring(pathname)
+    absvpath = virtual_abspath_at(ql, vpath, dirfd)
 
-    try:
-        dir_fd = ql.os.fd[fd].fileno()
-    except:
-        dir_fd = None
+    regreturn = -1 if absvpath is None else __do_unlink(ql, absvpath)
 
-    try:
-        if dir_fd is None:
-            os.unlink(real_path)
-        else:
-            os.unlink(file_path, dir_fd=dir_fd)
-    except OSError as e:
-        regreturn = -e.errno
-    else:
-        regreturn = 0
-
-    ql.log.debug("unlinkat(fd = %d, path = '%s') = %d" % (fd, file_path, regreturn))
+    ql.log.debug(f'unlinkat({dirfd}, "{vpath}") = {regreturn}')
 
     return regreturn
+
 
 # https://man7.org/linux/man-pages/man2/getdents.2.html
 #    struct linux_dirent {
@@ -826,6 +917,7 @@ def __getdents_common(ql: Qiling, fd: int, dirp: int, count: int, *, is_64: bool
 
 def ql_syscall_getdents(ql: Qiling, fd: int, dirp: int, count: int):
     return __getdents_common(ql, fd, dirp, count, is_64=False)
+
 
 def ql_syscall_getdents64(ql: Qiling, fd: int, dirp: int, count: int):
     return __getdents_common(ql, fd, dirp, count, is_64=True)
