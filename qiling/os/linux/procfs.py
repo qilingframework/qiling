@@ -16,6 +16,10 @@ class FsMappedStream(io.BytesIO):
     def __init__(self, fname: str, *args) -> None:
         super().__init__(*args)
 
+        # note that the name property should reflect the actual file name
+        # on the host file system, and here we get a virtual file name
+        # instead. we should be fine, however, since there is no file
+        # backing this object anyway
         self.name = fname
 
 
