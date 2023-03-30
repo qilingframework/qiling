@@ -21,7 +21,7 @@ class ql_file:
         # information for syscall mmap
         self._is_map_shared = False
         self._mapped_offset = -1
-        self._close_on_exec = False
+        self.close_on_exec = False
 
     @classmethod
     def open(cls, open_path: AnyStr, open_flags: int, open_mode: int, dir_fd: int = None):
@@ -87,10 +87,4 @@ class ql_file:
     def name(self):
         return self.__path
 
-    @property
-    def close_on_exec(self) -> bool:
-        return self._close_on_exec
 
-    @close_on_exec.setter
-    def close_on_exec(self, value: bool) -> None:
-        self._close_on_exec = value
