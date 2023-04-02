@@ -225,33 +225,3 @@ def ql_syscall_mmap2(ql: Qiling, addr: int, length: int, prot: int, flags: int, 
         pgoffset *= ql.mem.pagesize
 
     return syscall_mmap_impl(ql, addr, length, prot, flags, fd, pgoffset, 2)
-
-
-def ql_syscall_shmget(ql: Qiling, key: int, size: int, shmflg: int):
-    if shmflg & IPC_CREAT:
-        if shmflg & IPC_EXCL:
-            if key in ql.os._shms:
-                return EEXIST
-        else:
-            #addr = ql.mem.map_anywhere(size)
-            ql.os._shms[key] = (key, size)
-            return key
-    else:
-        if key not in ql.os._shms:
-            return ENOENT
-
-
-def ql_syscall_shmat(ql: Qiling, shmid: int, shmaddr: int, shmflg: int):
-    # shmid == key
-    # dummy implementation
-    if shmid not in ql.os._shms:
-        return EINVAL
-
-    key, size = ql.os._shms[shmid]
-
-    if shmaddr == 0:
-        addr = ql.mem.map_anywhere(size)
-    else:
-        addr = ql.mem.map(shmaddr, size, info="[shm]")
-
-    return addr
