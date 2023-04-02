@@ -1024,3 +1024,17 @@ SHMMNI = 4096   # max num of segs system wide
 # see: https://elixir.bootlin.com/linux/v5.19.17/source/include/uapi/asm-generic/hugetlb_encode.h
 HUGETLB_FLAG_ENCODE_SHIFT = 26
 HUGETLB_FLAG_ENCODE_MASK  = 0x3f
+
+# ipc syscall
+SEMOP       = 1
+SEMGET      = 2
+SEMCTL      = 3
+SEMTIMEDOP  = 4
+MSGSND      = 11
+MSGRCV      = 12
+MSGGET      = 13
+MSGCTL      = 14
+SHMAT       = 21
+SHMDT       = 22
+SHMGET      = 23
+SHMCTL      = 24
