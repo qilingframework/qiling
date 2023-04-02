@@ -21,6 +21,7 @@ from .signal import *
 from .socket import *
 from .stat import *
 from .sysctl import *
+from .syscall import *
 from .sysinfo import *
 from .time import *
 from .types import *
