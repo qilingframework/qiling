@@ -1003,11 +1003,24 @@ errors = {
 }
 
 # shm syscall
-IPC_CREAT = 8**3
-IPC_EXCL = 2*(8**3)
-IPC_NOWAIT = 4*(8**3)
+IPC_PRIVATE = 0
 
-SHM_RDONLY = 8**4
-SHM_RND = 2*(8**4)
-SHM_REMAP= 4*(8**4)
-SHM_EXEC = 1*(8**5)
+# see: https://elixir.bootlin.com/linux/v5.19.17/source/include/uapi/linux/ipc.h
+IPC_CREAT  = 0o0001000  # create if key is nonexistent
+IPC_EXCL   = 0o0002000  # fail if key exists
+IPC_NOWAIT = 0o0004000  # return error on wait
+
+# see: https://elixir.bootlin.com/linux/v5.19.17/source/include/uapi/linux/shm.h
+SHM_W       = 0o000200
+SHM_R       = 0o000400
+SHM_HUGETLB = 0o004000  # segment will use huge TLB pages
+SHM_RDONLY	= 0o010000  # read-only access
+SHM_RND		= 0o020000	# round attach address to SHMLBA boundary
+SHM_REMAP	= 0o040000	# take-over region on attach
+SHM_EXEC	= 0o100000	# execution access
+
+SHMMNI = 4096   # max num of segs system wide
+
+# see: https://elixir.bootlin.com/linux/v5.19.17/source/include/uapi/asm-generic/hugetlb_encode.h
+HUGETLB_FLAG_ENCODE_SHIFT = 26
+HUGETLB_FLAG_ENCODE_MASK  = 0x3f

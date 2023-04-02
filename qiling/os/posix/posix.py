@@ -4,7 +4,7 @@
 #
 
 from inspect import signature, Parameter
-from typing import TextIO, Union, Callable, IO, List, Optional
+from typing import Dict, NamedTuple, TextIO, Union, Callable, IO, List, Optional
 
 from unicorn.arm64_const import UC_ARM64_REG_X8, UC_ARM64_REG_X16
 from unicorn.arm_const import (
@@ -91,6 +91,16 @@ class QlFileDes:
         self.__fds = fds
 
 
+# vaguely reflects a shmid_ds structure
+class QlShmId(NamedTuple):
+    segsz: int
+    uid: int
+    gid: int
+    # cuid: int
+    # cgid: int
+    mode: int
+
+
 class QlOsPosix(QlOs):
 
     def __init__(self, ql: Qiling):
@@ -157,7 +167,7 @@ class QlOsPosix(QlOs):
         self.stdout = self._stdout
         self.stderr = self._stderr
 
-        self._shms = {}
+        self._shm: Dict[int, QlShmId] = {}
 
     def __get_syscall_mapper(self, archtype: QL_ARCH):
         qlos_path = f'.os.{self.type.name.lower()}.map_syscall'
@@ -349,3 +359,7 @@ class QlOsPosix(QlOs):
     @property
     def fd(self):
         return self._fd
+
+    @property
+    def shm(self):
+        return self._shm
