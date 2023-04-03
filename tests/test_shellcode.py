@@ -8,7 +8,7 @@ import unittest
 
 sys.path.append("..")
 from qiling import Qiling
-from qiling.const import QL_VERBOSE
+from qiling.const import QL_INTERCEPT, QL_VERBOSE
 
 
 # test = bytes.fromhex('cccc')
@@ -70,6 +70,22 @@ X8664_MACOS = bytes.fromhex('''
 ''')
 
 
+# some shellcodes call execve, which under normal circumstences, does not return.
+# however, those shellcodes attempt to run a non-exsting '/bin/sh' binary and do
+# not bother to handle failures gracefully.
+#
+# the execution then continues to the next bytes, which are usually the '/bin/sh'
+# string and not valid code. that causes Qiling to raise an exception, and this is
+# why we need a way to thwart those execve failures and end the emulation gracefully
+def graceful_execve(ql: Qiling, pathname: int, argv: int, envp: int, retval: int):
+    assert retval != 0, f'execve is not expected to return on success'
+
+    vpath = ql.os.utils.read_cstring(pathname)
+
+    ql.log.debug(f'failed to call execve("{vpath}"), ending emulation gracefully')
+    ql.stop()
+
+
 class TestShellcode(unittest.TestCase):
     def test_linux_x86(self):
         print("Linux X86 32bit Shellcode")
@@ -84,6 +100,8 @@ class TestShellcode(unittest.TestCase):
     def test_linux_mips32(self):
         print("Linux MIPS 32bit EL Shellcode")
         ql = Qiling(code=MIPS32EL_LIN, archtype="mips", ostype="linux", verbose=QL_VERBOSE.OFF)
+
+        ql.os.set_syscall('execve', graceful_execve, QL_INTERCEPT.EXIT)
         ql.run()
 
     # This shellcode needs to be changed to something non-blocking
@@ -100,6 +118,8 @@ class TestShellcode(unittest.TestCase):
     def test_linux_arm64(self):
         print("Linux ARM 64bit Shellcode")
         ql = Qiling(code=ARM64_LIN, archtype="arm64", ostype="linux", verbose=QL_VERBOSE.OFF)
+
+        ql.os.set_syscall('execve', graceful_execve, QL_INTERCEPT.EXIT)
         ql.run()
 
     # #This shellcode needs to be changed to something simpler not requiring rootfs
