@@ -549,10 +549,18 @@ def ql_syscall_setsid(ql: Qiling):
 
 
 def ql_syscall_execve(ql: Qiling, pathname: int, argv: int, envp: int):
-    file_path = ql.os.utils.read_cstring(pathname)
-    real_path = ql.os.path.transform_to_real_path(file_path)
+    vpath = ql.os.utils.read_cstring(pathname)
+    hpath = ql.os.path.virtual_to_host_path(vpath)
 
-    def __read_str_array(addr: int) -> Iterator[str]:
+    # is it safe to run?
+    if not ql.os.path.is_safe_host_path(hpath):
+        return -1   # EACCES
+
+    # is it a file? does it exist?
+    if not os.path.isfile(hpath):
+        return -1   # EACCES
+
+    def __read_ptr_array(addr: int) -> Iterator[int]:
         if addr:
             while True:
                 elem = ql.mem.read_ptr(addr)
@@ -560,25 +568,28 @@ def ql_syscall_execve(ql: Qiling, pathname: int, argv: int, envp: int):
                 if elem == 0:
                     break
 
-                yield ql.os.utils.read_cstring(elem)
+                yield elem
                 addr += ql.arch.pointersize
 
-    args = [s for s in __read_str_array(argv)]
+    def __read_str_array(addr: int) -> Iterator[str]:
+        yield from (ql.os.utils.read_cstring(ptr) for ptr in __read_ptr_array(addr))
+
+    args = list(__read_str_array(argv))
 
     env = {}
     for s in __read_str_array(envp):
         k, _, v = s.partition('=')
         env[k] = v
 
-    ql.emu_stop()
+    ql.stop()
+    ql.clear_ql_hooks()
+    ql.mem.unmap_all()
 
-    ql.log.debug(f'execve({file_path}, [{", ".join(args)}], [{", ".join(f"{k}={v}" for k, v in env.items())}])')
+    ql.log.debug(f'execve("{vpath}", [{", ".join(args)}], [{", ".join(f"{k}={v}" for k, v in env.items())}])')
 
     ql.loader.argv = args
     ql.loader.env = env
-    ql._argv = [real_path] + args
-    ql.mem.map_info = []
-    ql.clear_ql_hooks()
+    ql._argv = [hpath] + args
 
     # Clean debugger to prevent port conflicts
     # ql.debugger = None
@@ -599,6 +610,15 @@ def ql_syscall_execve(ql: Qiling, pathname: int, argv: int, envp: int):
     QlCoreHooks.__init__(ql, uc)
 
     ql.os.load()
+
+    # close all open fd marked with 'close_on_exec'
+    for i in range(NR_OPEN):
+        f = ql.os.fd[i]
+
+        if f and f.close_on_exec and not f.closed:
+            f.close()
+            ql.os.fd[i] = None
+
     ql.loader.run()
     ql.run()
 
