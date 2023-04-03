@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
 import os
-from typing import AnyStr
+from typing import AnyStr, Optional
 
 from qiling.exception import *
 from qiling.os.posix.stat import *
@@ -13,6 +13,7 @@ try:
     import fcntl
 except ImportError:
     pass
+
 
 class ql_file:
     def __init__(self, path: AnyStr, fd: int):
@@ -26,15 +27,15 @@ class ql_file:
         self.close_on_exec = False
 
     @classmethod
-    def open(cls, open_path: AnyStr, open_flags: int, open_mode: int, dir_fd: int = None):
-        open_mode &= 0x7fffffff
+    def open(cls, path: AnyStr, flags: int, mode: int, dir_fd: Optional[int] = None):
+        mode &= 0x7fffffff
 
         try:
-            fd = os.open(open_path, open_flags, open_mode, dir_fd=dir_fd)
+            fd = os.open(path, flags, mode, dir_fd=dir_fd)
         except OSError as e:
             raise QlSyscallError(e.errno, e.args[1] + ' : ' + e.filename)
 
-        return cls(open_path, fd)
+        return cls(path, fd)
 
     def read(self, read_len: int) -> bytes:
         return os.read(self.__fd, read_len)

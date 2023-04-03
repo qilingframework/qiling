@@ -266,7 +266,7 @@ def ql_syscall_connect(ql: Qiling, sockfd: int, addr: int, addrlen: int):
         port = ntohs(ql, sockaddr_obj.sin_port)
         host = inet6_htoa(ql, sockaddr_obj.sin6_addr.s6_addr)
 
-        ql.log.debug(f'Conecting to {host}:{port}')
+        ql.log.debug(f'Connecting to {host}:{port}')
         dest = (host, port)
 
     if dest is not None:

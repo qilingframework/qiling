@@ -5,7 +5,7 @@
 
 import sys
 from io import UnsupportedOperation
-from typing import Any, Hashable, Iterable, Optional, Callable, Mapping, Sequence, TextIO, Tuple
+from typing import Any, Dict, Iterable, Optional, Callable, Mapping, Sequence, TextIO, Tuple, Union
 
 from unicorn import UcError
 
@@ -48,7 +48,7 @@ class QlOs:
             self.path = QlOsPath(ql.rootfs, cwd, self.type)
             self.fs_mapper = QlFsMapper(self.path)
 
-        self.user_defined_api = {
+        self.user_defined_api: Dict[QL_INTERCEPT, Dict[Union[int, str], Callable]] = {
             QL_INTERCEPT.CALL:  {},
             QL_INTERCEPT.ENTER: {},
             QL_INTERCEPT.EXIT:  {}
@@ -216,7 +216,7 @@ class QlOs:
 
         return retval
 
-    def set_api(self, target: Hashable, handler: Callable, intercept: QL_INTERCEPT = QL_INTERCEPT.CALL):
+    def set_api(self, target: Union[int, str], handler: Callable, intercept: QL_INTERCEPT = QL_INTERCEPT.CALL):
         """Either hook or replace an OS API with a custom one.
 
         Args:
