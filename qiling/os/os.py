@@ -4,6 +4,7 @@
 #
 
 import sys
+from io import UnsupportedOperation
 from typing import Any, Hashable, Iterable, Optional, Callable, Mapping, Sequence, TextIO, Tuple
 
 from unicorn import UcError
@@ -13,7 +14,7 @@ from qiling.const import QL_OS, QL_STATE, QL_INTERCEPT, QL_OS_POSIX
 from qiling.os.const import STRING, WSTRING, GUID
 from qiling.os.fcall import QlFunctionCall, TypedArg
 
-from .filestruct import ql_file
+from .filestruct import PersistentQlFile
 from .mapper import QlFsMapper
 from .stats import QlOsStats
 from .utils import QlOsUtils
@@ -53,17 +54,25 @@ class QlOs:
             QL_INTERCEPT.EXIT:  {}
         }
 
-        # IDAPython has some hack on standard io streams and thus they don't have corresponding fds.
         try:
-            import ida_idaapi
-        except ImportError:
-            self._stdin  = ql_file('stdin',  sys.stdin.fileno())
-            self._stdout = ql_file('stdout', sys.stdout.fileno())
-            self._stderr = ql_file('stderr', sys.stderr.fileno())
-        else:
+            # Qiling may be used on interactive shells (ex: IDLE) or embedded python
+            # interpreters (ex: IDA Python). such environments use their own version
+            # for the standard streams which usually do not support certain operations,
+            # such as fileno(). here we use this to determine how we are going to use
+            # the environment standard streams
+            sys.stdin.fileno()
+        except UnsupportedOperation:
+            # Qiling is used on an interactive shell or embedded python interpreter.
+            # if the internal stream buffer is accessible, we should use it
             self._stdin  = getattr(sys.stdin,  'buffer', sys.stdin)
             self._stdout = getattr(sys.stdout, 'buffer', sys.stdout)
             self._stderr = getattr(sys.stderr, 'buffer', sys.stderr)
+        else:
+            # Qiling is used in a script, or on an environment that supports ordinary
+            # stanard streams
+            self._stdin  = PersistentQlFile('stdin',  sys.stdin.fileno())
+            self._stdout = PersistentQlFile('stdout', sys.stdout.fileno())
+            self._stderr = PersistentQlFile('stderr', sys.stderr.fileno())
 
         # defult exit point
         self.exit_point = {

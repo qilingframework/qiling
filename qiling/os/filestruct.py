@@ -94,3 +94,19 @@ class ql_file:
     @property
     def closed(self) -> bool:
         return self.__closed
+
+
+class PersistentQlFile(ql_file):
+    """A persistent variation of the ql_file class, which silently drops
+    attempts to close its udnerlying file. This is useful when using host
+    environment resources, which should not be closed when their wrapping
+    ql_file gets closed.
+
+    For example, stdout and stderr might be closed by the emulated program
+    by calling POSIX dup2 or dup3 system calls, and then replaced by another
+    file or socket. this class prevents the emulated program from closing
+    shared resources on the hosting system.
+    """
+
+    def close(self):
+        pass
