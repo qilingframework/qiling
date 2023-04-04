@@ -402,7 +402,7 @@ def profile_setup(ostype: QL_OS, user_config: Optional[Union[str, dict]]):
 
         if user_config:
             with open(user_config) as f:
-                config = yaml.load(f, Loader=yaml.Loader)
+                config = yaml.load(f, Loader=yaml.SafeLoader)
         else:
             config = {}
 
