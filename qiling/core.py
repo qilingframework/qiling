@@ -757,13 +757,15 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         if getattr(self.arch, '_init_thumb', False):
             begin |= 0b1
 
-        self._state = QL_STATE.STARTED
-
         # reset exception status before emulation starts
         self._internal_exception = None
 
+        self._state = QL_STATE.STARTED
+
         # effectively start the emulation. this returns only after uc.emu_stop is called
         self.uc.emu_start(begin, end, timeout, count)
+
+        self._state = QL_STATE.STOPPED
 
         # if an exception was raised during emulation, propagate it up
         if self.internal_exception is not None:
