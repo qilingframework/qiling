@@ -31,20 +31,25 @@ def ql_syscall_shmget(ql: Qiling, key: int, size: int, shmflg: int):
         else:
             pagesize = ql.mem.pagesize
 
-        size = ql.mem.align_up(size, pagesize)
-
         if len(ql.os.shm) < SHMMNI:
+            shm_size = ql.mem.align_up(size, pagesize)
+
             try:
-                key = ql.mem.map_anywhere(size, perms=uc_perms, info='[shm]')
+                shm_addr = ql.mem.find_free_space(shm_size, ql.loader.mmap_address, align=pagesize)
             except QlOutOfMemory:
                 return -1   # ENOMEM
+            else:
+                ql.mem.map(shm_addr, shm_size, uc_perms, '[shm]')
 
-            ql.os.shm[key] = QlShmId(size, ql.os.uid, ql.os.gid, perms)
+            # for simplicity, the shm key is defined to be its base address
+            shm_key = shm_addr
+
+            ql.os.shm[shm_key] = QlShmId(shm_size, ql.os.uid, ql.os.gid, perms)
 
         else:
             return -1   # ENOSPC
 
-        return key
+        return shm_key
 
     # create new shared memory segment
     if key == IPC_PRIVATE:
@@ -52,7 +57,7 @@ def ql_syscall_shmget(ql: Qiling, key: int, size: int, shmflg: int):
 
     # a shm with the specified key exists
     elif key in ql.os.shm:
-        # ... but the user requested to create a new one
+        # user asked to create a new one?
         if shmflg & (IPC_CREAT | IPC_EXCL):
             return -1   # EEXIST
 
@@ -68,6 +73,7 @@ def ql_syscall_shmget(ql: Qiling, key: int, size: int, shmflg: int):
 
     # a shm with the specified key does not exist
     else:
+        # user asked to create a new one?
         if shmflg & IPC_CREAT:
             key = __create_shm(size, shmflg)
 
@@ -82,7 +88,9 @@ def ql_syscall_shmat(ql: Qiling, shmid: int, shmaddr: int, shmflg: int):
         return -1   # EINVAL
 
     if shmaddr == 0:
-        # system may choose any suitable page-aligned address, so just use the key
+        # system may choose any suitable page-aligned address. since existing segments are
+        # guaranteed to be aligned and key is defined to be shm base address, we can just
+        # use the key
         addr = shmid
 
     elif shmflg & SHM_RND:
