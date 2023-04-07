@@ -20,7 +20,7 @@ def ql_syscall_ipc(ql: Qiling, call: int, first: int, second: int, third: int, p
         if version == 1:
             return -1   # EINVAL
 
-        return ql_syscall_shmget(ql, args[0], args[3], args[1])
+        return ql_syscall_shmat(ql, args[0], args[3], args[1])
 
     def __call_shmget(*args: int) -> int:
         return ql_syscall_shmget(ql, args[0], args[1], args[2])
