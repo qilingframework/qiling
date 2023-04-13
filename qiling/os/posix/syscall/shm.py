@@ -139,7 +139,19 @@ def ql_syscall_shmat(ql: Qiling, shmid: int, shmaddr: int, shmflg: int):
     return attaddr
 
 
+def ql_syscall_shmdt(ql: Qiling, shmaddr: int):
+    shm = ql.os.shm.get_by_attaddr(shmaddr)
+
+    if shm is None:
+        return -1   # EINVAL
+
+    shm.attach.remove(shmaddr)
+
+    return 0
+
+
 __all__ = [
     'ql_syscall_shmget',
+    'ql_syscall_shmdt',
     'ql_syscall_shmat'
 ]

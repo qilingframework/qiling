@@ -22,11 +22,15 @@ def ql_syscall_ipc(ql: Qiling, call: int, first: int, second: int, third: int, p
 
         return ql_syscall_shmat(ql, args[0], args[3], args[1])
 
+    def __call_shmdt(*args: int) -> int:
+        return ql_syscall_shmdt(ql, args[3])
+
     def __call_shmget(*args: int) -> int:
         return ql_syscall_shmget(ql, args[0], args[1], args[2])
 
     ipc_call = {
         SHMAT:  __call_shmat,
+        SHMDT:  __call_shmdt,
         SHMGET: __call_shmget
     }
 
