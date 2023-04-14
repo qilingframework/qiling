@@ -32,10 +32,10 @@ from .core_hooks import QlCoreHooks
 class Qiling(QlCoreHooks, QlCoreStructs):
     def __init__(
             self,
-            argv: Sequence[str] = None,
+            argv: Sequence[str] = [],
             rootfs: str = r'.',
             env: MutableMapping[AnyStr, AnyStr] = {},
-            code: bytes = None,
+            code: Optional[bytes] = None,
             ostype: Union[str, QL_OS] = None,
             archtype: Union[str, QL_ARCH] = None,
             verbose: QL_VERBOSE = QL_VERBOSE.DEFAULT,
@@ -90,18 +90,26 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         ##############
         # argv setup #
         ##############
-        if argv is None:
-            argv = ['qilingcode']
+        if argv:
+            if code:
+                raise AttributeError('argv and code are mutually execlusive')
 
-        elif not os.path.exists(argv[0]):
-            raise QlErrorFileNotFound(f'Target binary not found: "{argv[0]}"')
+            target = argv[0]
+
+            if not os.path.isfile(target):
+                raise QlErrorFileNotFound(f'Target binary not found: "{target}"')
+        else:
+            # an empty argv list means we are going to execute a shellcode. to keep
+            # the 'path' api compatible, we insert a dummy placeholder
+
+            argv = ['']
 
         self._argv = argv
 
         ################
         # rootfs setup #
         ################
-        if not os.path.exists(rootfs):
+        if not os.path.isdir(rootfs):
             raise QlErrorFileNotFound(f'Target rootfs not found: "{rootfs}"')
 
         self._rootfs = rootfs
