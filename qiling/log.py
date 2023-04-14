@@ -3,19 +3,27 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from __future__ import annotations
+
 import copy
 import logging
 import os
 import re
 import weakref
 
-from typing import Optional, TextIO
+from typing import TYPE_CHECKING, Optional, TextIO
+from logging import Filter, Formatter, LogRecord, Logger, NullHandler, StreamHandler, FileHandler
 
 from qiling.const import QL_VERBOSE
+
+if TYPE_CHECKING:
+    from qiling import Qiling
+
 
 QL_INSTANCE_ID = 114514
 
 FMT_STR = '%(levelname)s\t%(message)s'
+
 
 class COLOR:
     WHITE   = '\033[37m'
@@ -28,7 +36,8 @@ class COLOR:
     CYAN    = '\033[96m'
     ENDC    = '\033[0m'
 
-class QlBaseFormatter(logging.Formatter):
+
+class QlBaseFormatter(Formatter):
     __level_tag = {
         'WARNING'  : '[!]',
         'INFO'     : '[=]',
@@ -37,7 +46,7 @@ class QlBaseFormatter(logging.Formatter):
         'ERROR'    : '[x]'
     }
 
-    def __init__(self, ql, *args, **kwargs):
+    def __init__(self, ql: Qiling, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.ql = weakref.proxy(ql)
 
@@ -47,7 +56,7 @@ class QlBaseFormatter(logging.Formatter):
     def get_thread_tag(self, thread: str) -> str:
         return thread
 
-    def format(self, record: logging.LogRecord):
+    def format(self, record: LogRecord):
         # In case we have multiple formatters, we have to keep a copy of the record.
         record = copy.copy(record)
 
@@ -63,6 +72,7 @@ class QlBaseFormatter(logging.Formatter):
         record.levelname = f'{level} {tid}'
 
         return super().format(record)
+
 
 class QlColoredFormatter(QlBaseFormatter):
     __level_color = {
@@ -83,14 +93,16 @@ class QlColoredFormatter(QlBaseFormatter):
 
         return f'{COLOR.GREEN}{s}{COLOR.ENDC}'
 
-class RegexFilter(logging.Filter):
+
+class RegexFilter(Filter):
     def update_filter(self, regexp: str):
         self._filter = re.compile(regexp)
 
-    def filter(self, record: logging.LogRecord):
+    def filter(self, record: LogRecord):
         msg = record.getMessage()
 
         return self._filter.match(msg) is not None
+
 
 def resolve_logger_level(verbose: QL_VERBOSE) -> int:
     return {
@@ -101,6 +113,7 @@ def resolve_logger_level(verbose: QL_VERBOSE) -> int:
         QL_VERBOSE.DISASM   : logging.DEBUG,
         QL_VERBOSE.DUMP     : logging.DEBUG
     }[verbose]
+
 
 def __is_color_terminal(stream: TextIO) -> bool:
     """Determine whether standard output is attached to a color terminal.
@@ -142,7 +155,8 @@ def __is_color_terminal(stream: TextIO) -> bool:
 
     return handler(stream.fileno())
 
-def setup_logger(ql, log_file: Optional[str], console: bool, log_override: Optional[logging.Logger], log_plain: bool):
+
+def setup_logger(ql: Qiling, log_file: Optional[str], console: bool, log_override: Optional[Logger], log_plain: bool):
     global QL_INSTANCE_ID
 
     # If there is an override for our logger, then use it.
@@ -155,13 +169,14 @@ def setup_logger(ql, log_file: Optional[str], console: bool, log_override: Optio
 
         # Disable propagation to avoid duplicate output.
         log.propagate = False
+
         # Clear all handlers and filters.
-        log.handlers = []
-        log.filters = []
+        log.handlers.clear()
+        log.filters.clear()
 
         # Do we have console output?
         if console:
-            handler = logging.StreamHandler()
+            handler = StreamHandler()
 
             if log_plain or not __is_color_terminal(handler.stream):
                 formatter = QlBaseFormatter(ql, FMT_STR)
@@ -171,12 +186,12 @@ def setup_logger(ql, log_file: Optional[str], console: bool, log_override: Optio
             handler.setFormatter(formatter)
             log.addHandler(handler)
         else:
-            handler = logging.NullHandler()
+            handler = NullHandler()
             log.addHandler(handler)
 
         # Do we have to write log to a file?
         if log_file is not None:
-            handler = logging.FileHandler(log_file)
+            handler = FileHandler(log_file)
             formatter = QlBaseFormatter(ql, FMT_STR)
             handler.setFormatter(formatter)
             log.addHandler(handler)
@@ -184,5 +199,6 @@ def setup_logger(ql, log_file: Optional[str], console: bool, log_override: Optio
     log.setLevel(logging.INFO)
 
     return log
+
 
 __all__ = ['RegexFilter', 'setup_logger', 'resolve_logger_level']
