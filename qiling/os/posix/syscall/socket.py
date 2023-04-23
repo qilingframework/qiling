@@ -27,10 +27,10 @@ def inet_aton(ipaddr: str) -> int:
     return int.from_bytes(ipdata, byteorder='big')
 
 
-def inet6_aton(ipaddr: str) -> int:
-    ipdata = ipaddress.IPv6Address(ipaddr).packed
+def inet6_aton(ipaddr: str) -> Tuple[int, ...]:
+    abytes = ipaddress.IPv6Address(ipaddr).packed
 
-    return int.from_bytes(ipdata, byteorder='big')
+    return tuple(abytes)
 
 
 def inet_htoa(ql: Qiling, addr: int) -> str:
@@ -52,6 +52,10 @@ def inet6_htoa(ql: Qiling, addr: bytes) -> str:
 
 
 def inet6_ntoa(addr: bytes) -> str:
+    # if addr arg is not strictly a bytes object, convert it to bytes
+    if not isinstance(addr, bytes):
+        addr = bytes(addr)
+
     return ipaddress.IPv6Address(addr).compressed
 
 
@@ -260,10 +264,10 @@ def ql_syscall_connect(ql: Qiling, sockfd: int, addr: int, addrlen: int):
         dest = (host, port)
 
     elif sock.family == AF_INET6 and ql.os.ipv6:
-        sockaddr_in6 = make_sockaddr_in(abits, endian)
+        sockaddr_in6 = make_sockaddr_in6(abits, endian)
         sockaddr_obj = sockaddr_in6.from_buffer(data)
 
-        port = ntohs(ql, sockaddr_obj.sin_port)
+        port = ntohs(ql, sockaddr_obj.sin6_port)
         host = inet6_htoa(ql, sockaddr_obj.sin6_addr.s6_addr)
 
         ql.log.debug(f'Connecting to {host}:{port}')
@@ -409,10 +413,10 @@ def ql_syscall_bind(ql: Qiling, sockfd: int, addr: int, addrlen: int):
         dest = (host, port)
 
     elif sa_family == AF_INET6 and ql.os.ipv6:
-        sockaddr_in6 = make_sockaddr_in(abits, endian)
+        sockaddr_in6 = make_sockaddr_in6(abits, endian)
         sockaddr_obj = sockaddr_in6.from_buffer(data)
 
-        port = ntohs(ql, sockaddr_obj.sin_port)
+        port = ntohs(ql, sockaddr_obj.sin6_port)
         host = inet6_ntoa(sockaddr_obj.sin6_addr.s6_addr)
 
         if ql.os.bindtolocalhost:
@@ -879,10 +883,10 @@ def ql_syscall_sendto(ql: Qiling, sockfd: int, buf: int, length: int, flags: int
         dest = (host, port)
 
     elif sa_family == AF_INET6 and ql.os.ipv6:
-        sockaddr_in6 = make_sockaddr_in(abits, endian)
+        sockaddr_in6 = make_sockaddr_in6(abits, endian)
         sockaddr_obj = sockaddr_in6.from_buffer(data)
 
-        port = ntohs(ql, sockaddr_obj.sin_port)
+        port = ntohs(ql, sockaddr_obj.sin6_port)
         host = inet6_ntoa(sockaddr_obj.sin6_addr.s6_addr)
 
         ql.log.debug(f'Sending to {host}:{port}')
