@@ -615,7 +615,7 @@ def ql_syscall_execve(ql: Qiling, pathname: int, argv: int, envp: int):
     for i in range(NR_OPEN):
         f = ql.os.fd[i]
 
-        if f and f.close_on_exec and not f.closed:
+        if f and getattr(f, 'close_on_exec', False) and not f.closed:
             f.close()
             ql.os.fd[i] = None
 
