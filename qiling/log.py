@@ -32,7 +32,7 @@ class COLOR:
     YELLOW  = '\033[93m'
     BLUE    = '\033[94m'
     MAGENTA = '\033[95m'
-    ENDC    = '\033[0m'
+    DEFAULT = '\033[39m'
 
 
 class QlBaseFormatter(Formatter):
@@ -85,12 +85,12 @@ class QlColoredFormatter(QlBaseFormatter):
     def get_level_tag(self, level: str) -> str:
         s = super().get_level_tag(level)
 
-        return f'{self.__level_color[level]}{s}{COLOR.ENDC}'
+        return f'{self.__level_color[level]}{s}{COLOR.DEFAULT}'
 
     def get_thread_tag(self, tid: str) -> str:
         s = super().get_thread_tag(tid)
 
-        return f'{COLOR.GREEN}{s}{COLOR.ENDC}'
+        return f'{COLOR.GREEN}{s}{COLOR.DEFAULT}'
 
 
 class RegexFilter(Filter):
