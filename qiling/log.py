@@ -177,7 +177,10 @@ def setup_logger(ql: Qiling, log_file: Optional[str], console: bool, log_overrid
         if console:
             handler = StreamHandler()
 
-            if log_plain or not __is_color_terminal(handler.stream):
+            # adhere to the NO_COLOR convention (see: https://no-color.org/)
+            no_color = os.getenv('NO_COLOR', False)
+
+            if no_color or log_plain or not __is_color_terminal(handler.stream):
                 formatter = QlBaseFormatter(ql, FMT_STR)
             else:
                 formatter = QlColoredFormatter(ql, FMT_STR)
