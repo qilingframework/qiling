@@ -26,14 +26,12 @@ FMT_STR = '%(levelname)s\t%(message)s'
 
 
 class COLOR:
-    WHITE   = '\033[37m'
     CRIMSON = '\033[31m'
     RED     = '\033[91m'
     GREEN   = '\033[92m'
     YELLOW  = '\033[93m'
     BLUE    = '\033[94m'
     MAGENTA = '\033[95m'
-    CYAN    = '\033[96m'
     ENDC    = '\033[0m'
 
 
@@ -48,7 +46,8 @@ class QlBaseFormatter(Formatter):
 
     def __init__(self, ql: Qiling, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.ql = weakref.proxy(ql)
+
+        self.ql: Qiling = weakref.proxy(ql)
 
     def get_level_tag(self, level: str) -> str:
         return self.__level_tag[level]
