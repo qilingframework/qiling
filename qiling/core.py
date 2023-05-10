@@ -32,10 +32,10 @@ from .core_hooks import QlCoreHooks
 class Qiling(QlCoreHooks, QlCoreStructs):
     def __init__(
             self,
-            argv: Sequence[str] = None,
+            argv: Sequence[str] = [],
             rootfs: str = r'.',
             env: MutableMapping[AnyStr, AnyStr] = {},
-            code: bytes = None,
+            code: Optional[bytes] = None,
             ostype: Union[str, QL_OS] = None,
             archtype: Union[str, QL_ARCH] = None,
             verbose: QL_VERBOSE = QL_VERBOSE.DEFAULT,
@@ -90,18 +90,26 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         ##############
         # argv setup #
         ##############
-        if argv is None:
-            argv = ['qilingcode']
+        if argv:
+            if code:
+                raise AttributeError('argv and code are mutually execlusive')
 
-        elif not os.path.exists(argv[0]):
-            raise QlErrorFileNotFound(f'Target binary not found: "{argv[0]}"')
+            target = argv[0]
+
+            if not os.path.isfile(target):
+                raise QlErrorFileNotFound(f'Target binary not found: "{target}"')
+        else:
+            # an empty argv list means we are going to execute a shellcode. to keep
+            # the 'path' api compatible, we insert a dummy placeholder
+
+            argv = ['']
 
         self._argv = argv
 
         ################
         # rootfs setup #
         ################
-        if not os.path.exists(rootfs):
+        if not os.path.isdir(rootfs):
             raise QlErrorFileNotFound(f'Target rootfs not found: "{rootfs}"')
 
         self._rootfs = rootfs
@@ -697,11 +705,11 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
     # Map "ql_path" to any objects which implements QlFsMappedObject.
     def add_fs_mapper(self, ql_path: Union["PathLike", str], real_dest):
-        self.os.fs_mapper.add_fs_mapping(ql_path, real_dest)
+        self.os.fs_mapper.add_mapping(ql_path, real_dest)
 
     # Remove "ql_path" mapping.
     def remove_fs_mapper(self, ql_path: Union["PathLike", str]):
-        self.os.fs_mapper.remove_fs_mapping(ql_path)
+        self.os.fs_mapper.remove_mapping(ql_path)
 
     # push to stack bottom, and update stack register
     def stack_push(self, data):
@@ -757,13 +765,15 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         if getattr(self.arch, '_init_thumb', False):
             begin |= 0b1
 
-        self._state = QL_STATE.STARTED
-
         # reset exception status before emulation starts
         self._internal_exception = None
 
+        self._state = QL_STATE.STARTED
+
         # effectively start the emulation. this returns only after uc.emu_stop is called
         self.uc.emu_start(begin, end, timeout, count)
+
+        self._state = QL_STATE.STOPPED
 
         # if an exception was raised during emulation, propagate it up
         if self.internal_exception is not None:

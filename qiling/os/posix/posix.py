@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
 from inspect import signature, Parameter
-from typing import TextIO, Union, Callable, IO, List, Optional
+from typing import Dict, TextIO, Tuple, Union, Callable, IO, List, Optional
 
 from unicorn.arm64_const import UC_ARM64_REG_X8, UC_ARM64_REG_X16
 from unicorn.arm_const import (
@@ -72,7 +72,7 @@ class QlFileDes:
     def __len__(self):
         return len(self.__fds)
 
-    def __getitem__(self, idx: Union[slice, int]):
+    def __getitem__(self, idx: int):
         return self.__fds[idx]
 
     def __setitem__(self, idx: int, val: Optional[IO]):
@@ -89,6 +89,51 @@ class QlFileDes:
 
     def restore(self, fds):
         self.__fds = fds
+
+
+# vaguely reflects a shmid64_ds structure
+class QlShmId:
+
+    def __init__(self, key: int, uid: int, gid: int, mode: int, segsz: int) -> None:
+        # ipc64_perm
+        self.key = key
+        self.uid = uid
+        self.gid = gid
+        self.mode = mode
+
+        self.segsz = segsz
+
+        # track the memory locations this segment is currently attached to
+        self.attach: List[int] = []
+
+
+class QlShm:
+    def __init__(self) -> None:
+        self.__shm: Dict[int, QlShmId] = {}
+        self.__id: int = 0x0F000000
+
+    def __len__(self) -> int:
+        return len(self.__shm)
+
+    def add(self, shm: QlShmId) -> int:
+        shmid = self.__id
+        self.__shm[shmid] = shm
+
+        self.__id += 0x1000
+
+        return shmid
+
+    def remove(self, shmid: int) -> None:
+        del self.__shm[shmid]
+
+    def get_by_key(self, key: int) -> Tuple[int, Optional[QlShmId]]:
+        return next(((shmid, shmobj) for shmid, shmobj in self.__shm.items() if shmobj.key == key), (-1, None))
+
+    def get_by_id(self, shmid: int) -> Optional[QlShmId]:
+        return self.__shm.get(shmid, None)
+
+    def get_by_attaddr(self, shmaddr: int) -> Optional[QlShmId]:
+        return next((shmobj for shmobj in self.__shm.values() if shmobj.attach.count(shmaddr) > 0), None)
 
 
 class QlOsPosix(QlOs):
@@ -110,9 +155,9 @@ class QlOsPosix(QlOs):
         self.ifrname_ovr = conf.get('ifrname_override')
 
         self.posix_syscall_hooks = {
-            QL_INTERCEPT.CALL : {},
+            QL_INTERCEPT.CALL:  {},
             QL_INTERCEPT.ENTER: {},
-            QL_INTERCEPT.EXIT : {}
+            QL_INTERCEPT.EXIT:  {}
         }
 
         self.__syscall_id_reg = {
@@ -157,7 +202,7 @@ class QlOsPosix(QlOs):
         self.stdout = self._stdout
         self.stderr = self._stderr
 
-        self._shms = {}
+        self._shm = QlShm()
 
     def __get_syscall_mapper(self, archtype: QL_ARCH):
         qlos_path = f'.os.{self.type.name.lower()}.map_syscall'
@@ -191,7 +236,7 @@ class QlOsPosix(QlOs):
         self.euid = 0 if enabled else self.uid
         self.egid = 0 if enabled else self.gid
 
-    def set_syscall(self, target: Union[int, str], handler: Callable, intercept: QL_INTERCEPT=QL_INTERCEPT.CALL):
+    def set_syscall(self, target: Union[int, str], handler: Callable, intercept: QL_INTERCEPT = QL_INTERCEPT.CALL):
         """Either hook or replace a system call with a custom one.
 
         Args:
@@ -298,7 +343,7 @@ class QlOsPosix(QlOs):
                 raise e
 
             # print out log entry
-            syscall_basename = syscall_name[len(SYSCALL_PREF) if syscall_name.startswith(SYSCALL_PREF) else 0:] 
+            syscall_basename = syscall_name[len(SYSCALL_PREF) if syscall_name.startswith(SYSCALL_PREF) else 0:]
 
             args = []
 
@@ -349,3 +394,7 @@ class QlOsPosix(QlOs):
     @property
     def fd(self):
         return self._fd
+
+    @property
+    def shm(self):
+        return self._shm

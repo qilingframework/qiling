@@ -3,13 +3,18 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import os, pefile, pickle, secrets, ntpath
-from typing import Any, Dict, MutableMapping, NamedTuple, Optional, Mapping, Sequence, Tuple, Union
+from __future__ import annotations
+
+import os
+import pefile
+import pickle
+import secrets
+import ntpath
+from typing import TYPE_CHECKING, Any, Dict, MutableMapping, NamedTuple, Optional, Mapping, Sequence, Tuple, Union
 
 from unicorn import UcError
 from unicorn.x86_const import UC_X86_REG_CR4, UC_X86_REG_CR8
 
-from qiling import Qiling
 from qiling.arch.x86_const import FS_SEGMENT_ADDR, GS_SEGMENT_ADDR
 from qiling.const import QL_ARCH, QL_STATE
 from qiling.exception import QlErrorArch
@@ -19,6 +24,10 @@ from qiling.os.windows.fncc import CDECL
 from qiling.os.windows.utils import has_lib_ext
 from qiling.os.windows.structs import *
 from .loader import QlLoader, Image
+
+if TYPE_CHECKING:
+    from qiling import Qiling
+
 
 class QlPeCacheEntry(NamedTuple):
     ba: int
@@ -858,6 +867,7 @@ class QlLoaderPE(QlLoader, Process):
         # move entry_point to ql.os
         self.ql.os.entry_point = self.entry_point
         self.init_sp = self.ql.arch.regs.arch_sp
+
 
 class ShowProgress:
     """Display a progress animation while performing a time

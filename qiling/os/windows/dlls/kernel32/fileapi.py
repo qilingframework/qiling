@@ -52,21 +52,13 @@ def hook_FindFirstFileA(ql: Qiling, address: int, params):
     if len(filename) >= MAX_PATH:
         return ERROR_INVALID_PARAMETER
 
-    host_path = ql.os.path.virtual_to_host_path(filename)
-
-    # Verify the directory is in ql.rootfs to ensure no path traversal has taken place
-    if not ql.os.path.is_safe_host_path(host_path):
-        ql.os.last_error = ERROR_FILE_NOT_FOUND
-
-        return INVALID_HANDLE_VALUE
-
     # Check if path exists
     filesize = 0
 
     try:
-        f = ql.os.fs_mapper.open(host_path, "r")
+        f = ql.os.fs_mapper.open(filename, "r")
 
-        filesize = os.path.getsize(host_path)
+        filesize = os.path.getsize(f.name)
     except FileNotFoundError:
         ql.os.last_error = ERROR_FILE_NOT_FOUND
 
