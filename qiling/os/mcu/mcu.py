@@ -38,6 +38,7 @@ class QlOsMcu(QlOs):
     type = QL_OS.MCU
 
     def __init__(self, ql: 'Qiling'):
+        super(QlOsMcu, self).__init__(ql)
         self.ql = ql
         self.runable = True
         self.fast_mode = False
