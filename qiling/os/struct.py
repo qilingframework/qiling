@@ -123,7 +123,14 @@ class BaseStruct(ctypes.Structure):
 
                     # transform value into field bytes and write them to memory
                     fvalue = ftype(*value) if hasattr(ftype, '_length_') else ftype(value)
-                    data = bytes(fvalue)
+                    
+                    # Decode wchar strings seperately to prevent double encoding
+                    if (hasattr(ftype, '_type_') and ftype._type_ == ctypes.c_wchar):
+                        data = b''
+                        for i in ftype(*value) if hasattr(ftype, '_length_') else ftype(value):
+                            data += bytes(i, 'utf-16')
+                    else:
+                        data = bytes(fvalue)
 
                     mem.write(address + field.offset, data)
 
