@@ -9,11 +9,25 @@ from enum import IntEnum
 from functools import lru_cache
 
 from qiling.os import struct
-from qiling.os.struct import c_wchar_14, c_wchar_128, c_wchar_max_path
 from qiling.os.windows.const import MAX_PATH
 from qiling.os.windows.handle import Handle
 from qiling.exception import QlErrorNotImplemented
 from .wdk_const import IRP_MJ_MAXIMUM_FUNCTION, PROCESSOR_FEATURE_MAX
+
+class c_wchar_14(ctypes.c_ubyte * 28):
+    is_wrapper = True
+    def __init__(self, string: str):
+        super().__init__(*[x for x in string.encode('utf-16le')])
+
+class c_wchar_128(ctypes.c_ubyte * 256):
+    is_wrapper = True
+    def __init__(self, string: str):
+        super().__init__(*[x for x in string.encode('utf-16le')])
+    
+class c_wchar_max_path(ctypes.c_ubyte * (MAX_PATH * 2)):
+    is_wrapper = True
+    def __init__(self, string: str):
+        super().__init__(*[x for x in string.encode('utf-16le')])
 
 def make_teb(archbits: int):
     """Generate a TEB structure class.

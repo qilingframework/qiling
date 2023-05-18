@@ -8,22 +8,9 @@ from contextlib import contextmanager
 from typing import TYPE_CHECKING, Any, Type, Optional
 
 from qiling.const import QL_ENDIAN
-from qiling.os.windows.const import MAX_PATH
 
 if TYPE_CHECKING:
     from qiling.os.memory import QlMemoryManager
-
-class c_wchar_14(ctypes.c_ubyte * 28):
-    def __init__(self, string: str):
-        super().__init__(*[x for x in string.encode('utf-16le')])
-
-class c_wchar_128(ctypes.c_ubyte * 256):
-    def __init__(self, string: str):
-        super().__init__(*[x for x in string.encode('utf-16le')])
-    
-class c_wchar_max_path(ctypes.c_ubyte * (MAX_PATH * 2)):
-    def __init__(self, string: str):
-        super().__init__(*[x for x in string.encode('utf-16le')])
 
 
 # the cache decorator is needed here not only for performance purposes, but also to make sure
@@ -144,7 +131,7 @@ class BaseStruct(ctypes.Structure):
                     # proceed to set the value to the structure in order to maintain consistency with ctypes.Structure
 
                 # set attribute value
-                if ftype == c_wchar_14 or ftype == c_wchar_128 or ftype == c_wchar_max_path:
+                if hasattr(ftype, 'is_wrapper'):
                     super().__setattr__(name, ftype(value))
                 else:
                     super().__setattr__(name, value)
