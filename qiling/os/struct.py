@@ -122,8 +122,7 @@ class BaseStruct(ctypes.Structure):
                     ftype = _fields[name]
 
                     # transform value into field bytes and write them to memory
-                    #fvalue = ftype(*value) if hasattr(ftype, '_length_') else ftype(value)
-                    fvalue = ftype(value)
+                    fvalue = ftype(*value) if hasattr(ftype, '_length_') and not hasattr(ftype, 'is_wrapper') else ftype(value)
                     data = bytes(fvalue)
 
                     mem.write(address + field.offset, data)
