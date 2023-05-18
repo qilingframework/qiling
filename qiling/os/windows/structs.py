@@ -14,20 +14,26 @@ from qiling.os.windows.handle import Handle
 from qiling.exception import QlErrorNotImplemented
 from .wdk_const import IRP_MJ_MAXIMUM_FUNCTION, PROCESSOR_FEATURE_MAX
 
-class c_wchar_14(ctypes.c_ubyte * 28):
+class c_wchar_14(ctypes.c_ubyte * 30):
     is_wrapper = True
     def __init__(self, string: str):
-        super().__init__(*[x for x in string.encode('utf-16le')])
+        null_terminated_bytes = [x for x in string.encode('utf-16le')]
+        null_terminated_bytes.extend([0, 0])
+        super().__init__(*null_terminated_bytes)
 
-class c_wchar_128(ctypes.c_ubyte * 256):
+class c_wchar_128(ctypes.c_ubyte * 258):
     is_wrapper = True
     def __init__(self, string: str):
-        super().__init__(*[x for x in string.encode('utf-16le')])
+        null_terminated_bytes = [x for x in string.encode('utf-16le')]
+        null_terminated_bytes.extend([0, 0])
+        super().__init__(*null_terminated_bytes)
     
-class c_wchar_max_path(ctypes.c_ubyte * (MAX_PATH * 2)):
+class c_wchar_max_path(ctypes.c_ubyte * (MAX_PATH * 2 + 2)):
     is_wrapper = True
     def __init__(self, string: str):
-        super().__init__(*[x for x in string.encode('utf-16le')])
+        null_terminated_bytes = [x for x in string.encode('utf-16le')]
+        null_terminated_bytes.extend([0, 0])
+        super().__init__(*null_terminated_bytes)
 
 def make_teb(archbits: int):
     """Generate a TEB structure class.
