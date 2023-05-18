@@ -9,16 +9,15 @@ from enum import IntEnum
 from functools import lru_cache
 
 from qiling.os import struct
+from qiling.os.struct import c_wchar_14, c_wchar_128, c_wchar_max_path
 from qiling.os.windows.const import MAX_PATH
 from qiling.os.windows.handle import Handle
 from qiling.exception import QlErrorNotImplemented
 from .wdk_const import IRP_MJ_MAXIMUM_FUNCTION, PROCESSOR_FEATURE_MAX
 
-
 def make_teb(archbits: int):
     """Generate a TEB structure class.
     """
-
     native_type = struct.get_native_type(archbits)
     Struct = struct.get_aligned_struct(archbits)
 
@@ -202,7 +201,7 @@ class KUSER_SHARED_DATA(struct.BaseStructEL):
         ('TimeZoneBias',                KSYSTEM_TIME),
         ('ImageNumberLow',              ctypes.c_uint16),
         ('ImageNumberHigh',             ctypes.c_uint16),
-        ('NtSystemRoot',                ctypes.c_wchar * MAX_PATH),
+        ('NtSystemRoot',                c_wchar_max_path),
         ('MaxStackTraceDepth',          ctypes.c_uint32),
         ('CryptoExponent',              ctypes.c_uint32),
         ('TimeZoneId',                  ctypes.c_uint32),
@@ -1050,7 +1049,7 @@ def make_process_basic_info(archbits: int):
 def make_os_version_info(archbits: int, *, wide: bool):
     Struct = struct.get_aligned_struct(archbits)
 
-    char_type = (ctypes.c_wchar if wide else ctypes.c_char)
+    char_type = (c_wchar_128 if wide else ctypes.c_char * 128)
 
     class OSVERSIONINFO(Struct):
         _fields_ = (
@@ -1059,7 +1058,7 @@ def make_os_version_info(archbits: int, *, wide: bool):
             ('dwMinorVersion',      ctypes.c_uint32),
             ('dwBuildNumber',       ctypes.c_uint32),
             ('dwPlatformId',        ctypes.c_uint32),
-            ('szCSDVersion',        char_type * 128)
+            ('szCSDVersion',        char_type)
         )
 
     return OSVERSIONINFO
@@ -1069,7 +1068,7 @@ def make_os_version_info(archbits: int, *, wide: bool):
 def make_os_version_info_ex(archbits: int, *, wide: bool):
     Struct = struct.get_aligned_struct(archbits)
 
-    char_type = (ctypes.c_wchar if wide else ctypes.c_char)
+    char_type = (c_wchar_128 if wide else ctypes.c_char * 128)
 
     class OSVERSIONINFOEX(Struct):
         _fields_ = (
@@ -1078,7 +1077,7 @@ def make_os_version_info_ex(archbits: int, *, wide: bool):
             ('dwMinorVersion',      ctypes.c_uint32),
             ('dwBuildNumber',       ctypes.c_uint32),
             ('dwPlatformId',        ctypes.c_uint32),
-            ('szCSDVersion',        char_type * 128),
+            ('szCSDVersion',        char_type),
             ('wServicePackMajor',   ctypes.c_uint16),
             ('wServicePackMinor',   ctypes.c_uint16),
             ('wSuiteMask',          ctypes.c_uint16),
@@ -1521,7 +1520,8 @@ def make_object_all_types_info(archbits: int, nobjs: int):
 def make_win32_find_data(archbits: int, *, wide: bool):
     Struct = struct.get_aligned_struct(archbits)
 
-    char_type = (ctypes.c_wchar if wide else ctypes.c_char)
+    filename = c_wchar_max_path if wide else ctypes.c_char * MAX_PATH
+    alternateFileName = c_wchar_14 if wide else ctypes.c_char * 14
 
     class WIN32_FIND_DATA(Struct):
         _fields_ = (
@@ -1533,8 +1533,8 @@ def make_win32_find_data(archbits: int, *, wide: bool):
             ('nFileSizeLow',       ctypes.c_uint32),
             ('dwReserved0',        ctypes.c_uint32),
             ('dwReserved1',        ctypes.c_uint32),
-            ('cFileName',          char_type * MAX_PATH),
-            ('cAlternateFileName', char_type * 14),
+            ('cFileName',          filename),
+            ('cAlternateFileName', alternateFileName),
             ('dwFileType',         ctypes.c_uint32),
             ('dwCreatorType',      ctypes.c_uint32),
             ('wFinderFlags',       ctypes.c_uint16)
