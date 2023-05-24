@@ -11,8 +11,10 @@ from qiling.os.windows.api import *
 from qiling.os.windows.const import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.structs import *
+from qiling.os.windows import utils
 from qiling.os.windows.wdk_const import DO_DEVICE_INITIALIZING, DO_EXCLUSIVE
 from qiling.utils import verify_ret
+
 
 # NTSYSAPI NTSTATUS RtlGetVersion(
 #   PRTL_OSVERSIONINFOW lpVersionInformation
@@ -431,7 +433,9 @@ def hook_ExFreePoolWithTag(ql: Qiling, address: int, params):
 
     ql.os.heap.free(addr)
 
-hook_only_routine_address = [b'IoCreateDeviceSecure']
+
+hook_only_routine_address = ['IoCreateDeviceSecure']
+
 
 # PVOID MmGetSystemRoutineAddress(
 #  PUNICODE_STRING SystemRoutineName
@@ -440,31 +444,35 @@ hook_only_routine_address = [b'IoCreateDeviceSecure']
     'SystemRoutineName' : PUNICODE_STRING
 })
 def hook_MmGetSystemRoutineAddress(ql: Qiling, address: int, params):
-    SystemRoutineName = bytes(params["SystemRoutineName"], 'ascii')
+    SystemRoutineName = params["SystemRoutineName"]
 
-    # check function name in import table
-    for dll_name in ('ntoskrnl.exe', 'ntkrnlpa.exe', 'hal.dll'):
-        if dll_name in ql.loader.import_address_table:
-            if SystemRoutineName in ql.loader.import_address_table[dll_name]:
-                return ql.loader.import_address_table[dll_name][SystemRoutineName]
+    routine_name = SystemRoutineName and utils.read_punicode_string(ql, SystemRoutineName)
 
-    # function not found!
-    # we check function name in `hook_only_routine_address`.
-    if SystemRoutineName in hook_only_routine_address:
-        index = hook_only_routine_address.index(SystemRoutineName)
-        # found!
+    if routine_name:
+        # check function name in import table
         for dll_name in ('ntoskrnl.exe', 'ntkrnlpa.exe', 'hal.dll'):
-            image = ql.loader.get_image_by_name(dll_name)
+            if dll_name in ql.loader.import_address_table:
+                if routine_name in ql.loader.import_address_table[dll_name]:
+                    return ql.loader.import_address_table[dll_name][routine_name]
 
-            if image:
-                # create fake address
-                new_function_address = image.base + index + 1
-                # update import address table
-                ql.loader.import_symbols[new_function_address] = {
-                    'name': SystemRoutineName,
-                    'ordinal': -1
-                }
-                return new_function_address
+        # function not found!
+        # we check function name in `hook_only_routine_address`.
+        if routine_name in hook_only_routine_address:
+            index = hook_only_routine_address.index(routine_name)
+            # found!
+            for dll_name in ('ntoskrnl.exe', 'ntkrnlpa.exe', 'hal.dll'):
+                image = ql.loader.get_image_by_name(dll_name)
+
+                if image:
+                    # create fake address
+                    new_function_address = image.base + index + 1
+                    # update import address table
+                    ql.loader.import_symbols[new_function_address] = {
+                        'name': SystemRoutineName.encode(),
+                        'ordinal': -1
+                    }
+                    return new_function_address
+
     return 0
 
 # int _wcsnicmp(

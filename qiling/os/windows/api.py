@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -56,8 +56,6 @@ SC_HANDLE                   = HANDLE
 
 LPCSTR                      = STRING
 LPOSVERSIONINFOA            = STRING
-PANSI_STRING                = STRING
-PCANSI_STRING               = STRING
 PCNZCH                      = STRING
 PCSTR                       = STRING
 PCSZ                        = STRING
@@ -68,9 +66,7 @@ LPCWSTR                     = WSTRING
 LPOSVERSIONINFOW            = WSTRING
 OLECHAR                     = WSTRING
 PCNZWCH                     = WSTRING
-PCUNICODE_STRING            = WSTRING
 PCWSTR                      = WSTRING
-PUNICODE_STRING             = WSTRING
 
 DLGPROC                     = POINTER
 DWORD_PTR                   = POINTER
@@ -123,6 +119,10 @@ LPWSADATA                   = POINTER
 LPWSAPROTOCOL_INFOA         = POINTER
 LPWSTR                      = POINTER
 MSIHANDLE                   = POINTER
+PANSI_STRING                = POINTER
+PUNICODE_STRING             = POINTER
+PCANSI_STRING               = POINTER
+PCUNICODE_STRING            = POINTER
 PACCESS_STATE               = POINTER
 PBOOL                       = POINTER
 PBYTE                       = POINTER

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -15,6 +15,8 @@ from qiling.os.const import *
 from qiling.os.windows.const import *
 from qiling.os.windows.handle import *
 from qiling.os.windows import structs
+from qiling.os.windows import utils
+
 
 # void *memcpy(
 #    void *dest,
@@ -397,16 +399,21 @@ def hook_LdrGetProcedureAddress(ql: Qiling, address: int, params):
 
     if dll_name is None:
         ql.log.debug(f'Could not find specified handle {ModuleHandle} in loaded DLL')
-        return 0
+        return STATUS_DLL_NOT_FOUND
 
-    identifier = bytes(FunctionName, 'ascii') if FunctionName else Ordinal
+    identifier = utils.read_pansi_string(ql, FunctionName) if FunctionName else Ordinal
     iat = ql.loader.import_address_table[dll_name]
 
-    if identifier in iat:
-        ql.mem.write_ptr(FunctionAddress, iat[identifier])
-        return 0
+    if not identifier:
+        return STATUS_INVALID_PARAMETER
 
-    return 0xFFFFFFFF
+    if identifier not in iat:
+        return STATUS_PROCEDURE_NOT_FOUND
+
+    ql.mem.write_ptr(FunctionAddress, iat[identifier])
+
+    return STATUS_SUCCESS
+
 
 # NTSYSAPI PVOID RtlAllocateHeap(
 #  PVOID  HeapHandle,
