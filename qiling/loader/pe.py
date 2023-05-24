@@ -623,6 +623,20 @@ class Process:
         self.structure_last_addr = nobj_addr
         self.eprocess_address = eproc_addr
 
+    def init_se_exports(self):
+        osconf  = self.ql.os.profile[f'OS{self.ql.arch.bits}']
+        SeExports = osconf.getint('SE_EXPORTS')
+        # Size determined by loading script with struct in c and printing sizeof
+        SeExports_size = 552
+        # Contents obtained by dumping it from memory using windbg (nt!SeExports)
+        SeExports_contents = bytes.fromhex("70dc121007f8ffff0000000000000000160000000000000060cc40b902e2ffff11000000000000000e00000000000000d8df121007f8ffff120000000000000070c541b902e2ffff000000015006020008000000000000000d000000000000000400000000000000020000000000000020000000000000000a00000000000000b01542b902e2ffff09000000000000000000000000000000d03a41b902e2ffff130000000000000090cc40b902e2fffff06e44b902e2ffff2802010000000000c03f46b902e2ffff0000000000000000a0c744b902e2ffff0000000000000000805f44b902e2ffff02000000000000000b0000000000000000000000040000000100000000000000000000000000000003000000000000000500000000000000503341b902e2ffff100000000000000050f14ab902e2ffff0c000000000000000000000000000000a0e1121007f8ffff20eb45b902e2ffffd09744b902e2ffff709a44b902e2ffffb05f44b902e2ffffd03041b902e2ffffd03941b902e2ffff1500000000000000502040b902e2ffff00000000000000008067096403a1ffff8067096403a1ffff220024000000000040bad80f07f8ffff09040000060c120050910f6403a1ffff1e00000000000000801542b902e2ffffd0f04ab902e2ffff70f24ab902e2ffffb0df42b902e2ffffb0f14ab902e2ffff90f34ab902e2ffff70f34ab902e2ffff70f04ab902e2ffff40e2121007f8ffff68e2121007f8ffffc09444b902e2ffff")
+        self.ql.mem.map(SeExports, self.ql.mem.align_up(KUSER_SHARED_DATA.sizeof()), info='[SeExports]')
+        self.ql.mem.write(SeExports, SeExports_contents)
+        iat = self.import_address_table['ntoskrnl.exe']
+        addr = iat[b'SeExports']
+        self.ql.mem.write_ptr(addr, SeExports, 8)
+
+
     def init_ki_user_shared_data(self):
         sysconf = self.ql.os.profile['SYSTEM']
         osconf  = self.ql.os.profile[f'OS{self.ql.arch.bits}']
@@ -801,6 +815,8 @@ class QlLoaderPE(QlLoader, Process):
             # parse directory entry import
             self.ql.log.debug(f'Init imports for {self.path}')
             super().init_imports(pe, self.is_driver)
+            if self.is_driver:
+                self.init_se_exports()
 
             self.ql.log.debug(f'Done loading {self.path}')
 

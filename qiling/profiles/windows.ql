@@ -8,6 +8,8 @@ dll_address = 0x7ffff0000000
 entry_point = 0x140000000
 # KI_USER_SHARED_DATA = 0xfffff78000000000
 KI_USER_SHARED_DATA = 0x7ffe0000
+# SE_EXPORTS = 0xfffff8071012d6b8 
+SE_EXPORTS = 0x8ffe0000
 
 [OS32]
 heap_address = 0x5000000
