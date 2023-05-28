@@ -320,42 +320,38 @@ def hook_NtSetInformationProcess(ql: Qiling, address: int, params):
 def _SetInformationProcess(ql: Qiling, address: int, params):
     process = params["ProcessHandle"]
     flag = params["ProcessInformationClass"]
-    dst = params["ProcessInformation"]
-    dst_size = params["ProcessInformationLength"]
+    ibuf_ptr = params["ProcessInformation"]
+    ibuf_len = params["ProcessInformationLength"]
 
     if flag == ProcessDebugFlags:
-        value = b"\x01" * 0x4
+        flag_name = 'ProcessDebugFlags'
+        comment = ''
+        read_len = 4
 
     elif flag == ProcessDebugPort:
-        value = b"\x00" * 0x4
+        flag_name = 'ProcessDebugPort'
+        comment = ''
+        read_len = 4
 
     elif flag == ProcessDebugObjectHandle:
         return STATUS_PORT_NOT_SET
 
     elif flag == ProcessBreakOnTermination:
-            ql.log.debug("The target may be attempting modify a the 'critical' flag of the process")  
+        flag_name = 'ProcessBreakOnTermination'
+        comment = 'the critical flag of the process'
+        read_len = 1    # FIXME: is it really a single-byte data?
 
     elif flag == ProcessExecuteFlags:
-        ql.log.debug("The target may be attempting to modify DEP for the process")
-
-        if dst:
-            ql.mem.write_ptr(dst, 0, 1)
+        flag_name = 'ProcessExecuteFlags'
+        comment = 'DEP for the process'
+        read_len = 1
 
     elif flag == ProcessBasicInformation:
-        kconf = ql.os.profile['KERNEL']
+        flag_name = 'ProcessBasicInformation'
+        comment = 'PEB debug flag for the process'
+
         pbi_struct = structs.make_process_basic_info(ql.arch.bits)
-
-        pci_obj = pbi_struct(
-            ExitStatus=0,
-            PebBaseAddress=ql.loader.TEB.PebAddress,
-            AffinityMask=0,
-            BasePriority=0,
-            UniqueProcessId=kconf.getint('pid'),
-            InheritedFromUniqueProcessId=kconf.getint('parent_pid')
-        )
-
-        ql.log.debug("The target may be attempting to modify the PEB debug flag")
-        value = bytes(pbi_obj)
+        read_len = pbi_struct.sizeof()
 
     else:
         # TODO: support more info class ("flag") values
@@ -363,7 +359,15 @@ def _SetInformationProcess(ql: Qiling, address: int, params):
 
         return STATUS_UNSUCCESSFUL
 
-    # TODO: value is never used after assignment
+    if ibuf_len >= read_len:
+        data = (ql.mem.read_ptr if read_len in (1, 2, 4, 8) else ql.mem.read)(ibuf_ptr, read_len)
+
+        ql.log.debug(f'SetInformationProcess: {flag_name} was set to {data}')
+
+        if comment:
+            ql.log.debug(f'The target may be attempting modify {comment}')
+
+        # NOTE: we don't actually change anything
 
     return STATUS_SUCCESS
 
