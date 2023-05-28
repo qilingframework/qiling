@@ -197,12 +197,16 @@ class QlLoaderELF(QlLoader):
 
             # map the memory regions
             for lbound, ubound, perms in load_regions:
-                try:
-                    self.ql.mem.map(lbound, ubound - lbound, perms, os.path.basename(info))
-                except QlMemoryMappedError:
-                    self.ql.log.exception(f'Failed to map {lbound:#x}-{ubound:#x}')
-                else:
-                    self.ql.log.debug(f'Mapped {lbound:#x}-{ubound:#x}')
+                size = ubound - lbound
+
+                # there might be a region with zero size. in this case, do not mmap it
+                if size:
+                    try:
+                        self.ql.mem.map(lbound, size, perms, os.path.basename(info))
+                    except QlMemoryMappedError:
+                        self.ql.log.exception(f'Failed to map {lbound:#x}-{ubound:#x}')
+                    else:
+                        self.ql.log.debug(f'Mapped {lbound:#x}-{ubound:#x}')
 
             # load loadable segments contents to memory
             for seg in load_segments:
