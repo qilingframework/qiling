@@ -90,7 +90,7 @@ setup(
     keywords='qiling binary emulator framework malware analysis UEFI IoT',
 
     packages=find_packages(),
-    scripts=['qltool'],
+    scripts=['qltool', 'qltui.py'],
     package_data={
         'qiling': ['profiles/*.ql'],
         'qiling.debugger.gdb': ['xml/*/*'],
