@@ -70,7 +70,7 @@ def _QueryInformationProcess(ql: Qiling, address: int, params):
 
     else:
         # TODO: support more info class ("flag") values
-        ql.log.info(f'SetInformationProcess: no implementation for info class {flag:#04x}')
+        ql.log.info(f'QueryInformationProcess: no implementation for info class {flag:#04x}')
 
         return STATUS_UNSUCCESSFUL
 
