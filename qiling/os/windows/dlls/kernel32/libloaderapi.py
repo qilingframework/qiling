@@ -144,10 +144,6 @@ def hook_GetProcAddress(ql: Qiling, address: int, params):
         # let log output reflect a human-readable procname
         params["lpProcName"] = procname
 
-        # WORKAROUND for gandcrab
-        if procname == "RtlComputeCrc32":
-            return 0
-
         procname = procname.encode('latin1')
 
     else:
