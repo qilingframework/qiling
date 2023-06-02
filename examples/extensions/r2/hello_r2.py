@@ -6,9 +6,8 @@
 import sys
 sys.path.append('..')
 
-from qiling import Qiling
 from qiling.const import QL_VERBOSE
-from qiling.extensions.r2 import R2
+from qiling.extensions.r2 import R2Qiling as Qiling
 
 
 def func(ql: Qiling, *args, **kwargs):
@@ -16,9 +15,9 @@ def func(ql: Qiling, *args, **kwargs):
     return
 
 def my_sandbox(path, rootfs):
-    ql = Qiling(path, rootfs, verbose=QL_VERBOSE.DISASM)
+    ql = Qiling(path, rootfs, verbose=QL_VERBOSE.DEFAULT)
     # QL_VERBOSE.DISASM will be monkey-patched when r2 is available
-    r2 = R2(ql)
+    r2 = ql.r2
 
     # search bytes sequence using ql.mem.search
     addrs = ql.mem.search(b'llo worl')  # return all matching results
@@ -35,6 +34,7 @@ def my_sandbox(path, rootfs):
     ql.hook_address(func, r2.functions['main'].offset)
     # enable trace powered by r2 symsmap
     # r2.enable_trace()
+    r2.bt(0x401906)
     ql.run()
 
 if __name__ == "__main__":
