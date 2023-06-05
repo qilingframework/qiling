@@ -554,8 +554,9 @@ class Process:
         # Do a full load if IMAGE_DIRECTORY_ENTRY_EXPORT is present so we can load the exports
         pe.full_load()
         
-        # check whether loading of export table succeeded
-        if not hasattr(pe, 'DIRECTORY_ENTRY_EXPORT'): return
+        # address corner case for malformed export tables where IMAGE_DIRECTORY_ENTRY_EXPORT exists, but DIRECTORY_ENTRY_EXPORT does not
+        if not hasattr(pe, 'DIRECTORY_ENTRY_EXPORT'): 
+            return
 
         iat = {}
 
