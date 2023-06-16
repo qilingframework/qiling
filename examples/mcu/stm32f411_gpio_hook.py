@@ -7,12 +7,12 @@ import sys
 sys.path.append("../..")
 
 from qiling.core import Qiling
-from qiling.const import QL_VERBOSE
+from qiling.const import QL_ARCH, QL_OS, QL_VERBOSE
 from qiling.extensions.mcu.stm32f4 import stm32f411
 
 def test_mcu_gpio_stm32f411():
-    ql = Qiling(["../../examples/rootfs/mcu/stm32f411/hello_gpioA.hex"],                    
-                archtype="cortex_m",  ostype="mcu", env=stm32f411, verbose=QL_VERBOSE.DEBUG)
+    ql = Qiling(["../../examples/rootfs/mcu/stm32f411/hello_gpioA.hex"],
+                archtype=QL_ARCH.CORTEX_M, ostype=QL_OS.MCU, env=stm32f411, verbose=QL_VERBOSE.DEBUG)
 
     ql.hw.create('usart2').watch()
     ql.hw.create('rcc').watch()

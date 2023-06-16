@@ -7,7 +7,7 @@ import sys, unittest, string, random, os, io, re
 
 sys.path.append("..")
 from qiling import Qiling
-from qiling.const import QL_OS, QL_INTERCEPT, QL_STOP, QL_VERBOSE
+from qiling.const import QL_ARCH, QL_OS, QL_INTERCEPT, QL_STOP, QL_VERBOSE
 from qiling.exception import *
 from qiling.extensions import pipe
 from qiling.os.const import STRING
@@ -1113,7 +1113,7 @@ class ELFTest(unittest.TestCase):
         del ql
     
     def test_memory_search(self):
-        ql = Qiling(code = b"\xCC", archtype = "x8664", ostype = "linux", verbose=QL_VERBOSE.DEBUG)
+        ql = Qiling(code=b"\xCC", archtype=QL_ARCH.X8664, ostype=QL_OS.LINUX, verbose=QL_VERBOSE.DEBUG)
         
         ql.mem.map(0x1000, 0x1000)
         ql.mem.map(0x2000, 0x1000)

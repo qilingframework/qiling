@@ -8,12 +8,12 @@ import sys
 sys.path.append("../..")
 
 from qiling.core import Qiling
-from qiling.const import QL_VERBOSE
+from qiling.const import QL_ARCH, QL_OS, QL_VERBOSE
 from qiling.hw.external_device.lcd.lcd1602 import PyGameLCD1602
 from qiling.extensions.mcu.stm32f4 import stm32f411
 
 def create(path, lcd):
-    ql = Qiling([path], archtype="cortex_m",  ostype="mcu", env=stm32f411, verbose=QL_VERBOSE.DEBUG)
+    ql = Qiling([path], archtype=QL_ARCH.CORTEX_M, ostype=QL_OS.MCU, env=stm32f411, verbose=QL_VERBOSE.DEBUG)
 
     ql.hw.create('i2c1')
     ql.hw.create('rcc')

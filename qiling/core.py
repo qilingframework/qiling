@@ -36,8 +36,8 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             rootfs: str = r'.',
             env: MutableMapping[AnyStr, AnyStr] = {},
             code: Optional[bytes] = None,
-            ostype: Union[str, QL_OS] = None,
-            archtype: Union[str, QL_ARCH] = None,
+            ostype: Optional[QL_OS] = None,
+            archtype: Optional[QL_ARCH] = None,
             verbose: QL_VERBOSE = QL_VERBOSE.DEFAULT,
             profile: str = None,
             console: bool = True,
@@ -117,13 +117,8 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         #################
         # arch os setup #
         #################
-        if type(archtype) is str:
-            archtype = arch_convert(archtype)
 
-        if type(ostype) is str:
-            ostype = os_convert(ostype)
-
-        # if provided arch was invalid or not provided, guess arch and os
+        # if arch was not provided, guess arch and os
         if archtype is None:
             guessed_archtype, guessed_ostype, guessed_archendian = ql_guess_emu_env(self.path)
 
@@ -140,12 +135,12 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             ostype = arch_os_convert(archtype)
 
         # arch should have been determined by now; fail if not
-        if type(archtype) is not QL_ARCH:
-            raise QlErrorArch(f'Unknown or unsupported architecture: "{archtype}"')
+        if archtype is None:
+            raise QlErrorArch(f'Unknown or unsupported architecture')
 
         # os should have been determined by now; fail if not
-        if type(ostype) is not QL_OS:
-            raise QlErrorOsType(f'Unknown or unsupported operating system: "{ostype}"')
+        if ostype is None:
+            raise QlErrorOsType(f'Unknown or unsupported operating system')
 
         # if endianess is still undetermined, set it to little-endian.
         # this setting is ignored for architectures with predefined endianess

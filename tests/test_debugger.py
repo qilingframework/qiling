@@ -7,7 +7,7 @@ import sys, threading, unittest, socket, time
 
 sys.path.append("..")
 from qiling import Qiling
-from qiling.const import QL_VERBOSE
+from qiling.const import QL_ARCH, QL_OS, QL_VERBOSE
 
 class SimpleGdbClient:
     DELAY = 0.6
@@ -165,7 +165,7 @@ class DebuggerTest(unittest.TestCase):
     def test_gdbdebug_shellcode_server(self):
         X8664_LIN = bytes.fromhex('31c048bbd19d9691d08c97ff48f7db53545f995257545eb03b0f05')
 
-        ql = Qiling(code=X8664_LIN, archtype='x8664', ostype='linux')
+        ql = Qiling(code=X8664_LIN, archtype=QL_ARCH.X8664, ostype=QL_OS.LINUX)
         ql.debugger = 'gdb:127.0.0.1:9998'
 
         def gdb_test_client():

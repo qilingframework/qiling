@@ -8,7 +8,7 @@ import unittest
 
 sys.path.append("..")
 from qiling import Qiling
-from qiling.const import QL_INTERCEPT, QL_VERBOSE
+from qiling.const import QL_ARCH, QL_OS, QL_INTERCEPT, QL_VERBOSE
 
 
 # test = bytes.fromhex('cccc')
@@ -89,17 +89,17 @@ def graceful_execve(ql: Qiling, pathname: int, argv: int, envp: int, retval: int
 class TestShellcode(unittest.TestCase):
     def test_linux_x86(self):
         print("Linux X86 32bit Shellcode")
-        ql = Qiling(code=X86_LIN, archtype="x86", ostype="linux", verbose=QL_VERBOSE.OFF)
+        ql = Qiling(code=X86_LIN, archtype=QL_ARCH.X86, ostype=QL_OS.LINUX, verbose=QL_VERBOSE.OFF)
         ql.run()
 
     def test_linux_x64(self):
         print("Linux X86 64bit Shellcode")
-        ql = Qiling(code=X8664_LIN, archtype="x8664", ostype="linux", verbose=QL_VERBOSE.OFF)
+        ql = Qiling(code=X8664_LIN, archtype=QL_ARCH.X8664, ostype=QL_OS.LINUX, verbose=QL_VERBOSE.OFF)
         ql.run()
 
     def test_linux_mips32(self):
         print("Linux MIPS 32bit EL Shellcode")
-        ql = Qiling(code=MIPS32EL_LIN, archtype="mips", ostype="linux", verbose=QL_VERBOSE.OFF)
+        ql = Qiling(code=MIPS32EL_LIN, archtype=QL_ARCH.MIPS, ostype=QL_OS.LINUX, verbose=QL_VERBOSE.OFF)
 
         ql.os.set_syscall('execve', graceful_execve, QL_INTERCEPT.EXIT)
         ql.run()
@@ -107,17 +107,17 @@ class TestShellcode(unittest.TestCase):
     # This shellcode needs to be changed to something non-blocking
     def test_linux_arm(self):
         print("Linux ARM 32bit Shellcode")
-        ql = Qiling(code=ARM_LIN, archtype="arm", ostype="linux", verbose=QL_VERBOSE.OFF)
+        ql = Qiling(code=ARM_LIN, archtype=QL_ARCH.ARM, ostype=QL_OS.LINUX, verbose=QL_VERBOSE.OFF)
         ql.run()
 
     def test_linux_arm_thumb(self):
         print("Linux ARM Thumb Shllcode")
-        ql = Qiling(code=ARM_THUMB, archtype="arm", ostype="linux", verbose=QL_VERBOSE.OFF, thumb=True)
+        ql = Qiling(code=ARM_THUMB, archtype=QL_ARCH.ARM, ostype=QL_OS.LINUX, verbose=QL_VERBOSE.OFF, thumb=True)
         ql.run()
 
     def test_linux_arm64(self):
         print("Linux ARM 64bit Shellcode")
-        ql = Qiling(code=ARM64_LIN, archtype="arm64", ostype="linux", verbose=QL_VERBOSE.OFF)
+        ql = Qiling(code=ARM64_LIN, archtype=QL_ARCH.ARM64, ostype=QL_OS.LINUX, verbose=QL_VERBOSE.OFF)
 
         ql.os.set_syscall('execve', graceful_execve, QL_INTERCEPT.EXIT)
         ql.run()
@@ -125,37 +125,29 @@ class TestShellcode(unittest.TestCase):
     # #This shellcode needs to be changed to something simpler not requiring rootfs
     # def test_windows_x86(self):
     #     print("Windows X86 32bit Shellcode")
-    #     ql = Qiling(code=X86_WIN, archtype="x86", ostype="windows", rootfs="../examples/rootfs/x86_reactos", verbose=QL_VERBOSE.OFF)
+    #     ql = Qiling(code=X86_WIN, archtype=QL_ARCH.X86, ostype=QL_OS.WINDOWS, rootfs="../examples/rootfs/x86_reactos", verbose=QL_VERBOSE.OFF)
     #     ql.run()
 
     # #This shellcode needs to be changed to something simpler not requiring rootfs
     # def test_windows_x64(self):
     #    print("\nWindows X8664 64bit Shellcode")
-    #    ql = Qiling(code=X8664_WIN, archtype="x8664", ostype="windows", rootfs="../examples/rootfs/x86_reactos", verbose=QL_VERBOSE.OFF)
+    #    ql = Qiling(code=X8664_WIN, archtype=QL_ARCH.X8664, ostype=QL_OS.WINDOWS, rootfs="../examples/rootfs/x86_reactos", verbose=QL_VERBOSE.OFF)
     #    ql.run()
 
     # #This shellcode needs to be changed to something simpler, listen is blocking
     # def test_freebsd_x64(self):
     #    print("FreeBSD X86 64bit Shellcode")
-    #    ql = Qiling(code=X8664_FBSD, archtype="x8664", ostype="freebsd", verbose=QL_VERBOSE.OFF)
+    #    ql = Qiling(code=X8664_FBSD, archtype=QL_ARCH.X8664, ostype=QL_OS.FREEBSD, verbose=QL_VERBOSE.OFF)
     #    ql.run()
 
     # def test_macos_x64(self):
     #     print("macos X86 64bit Shellcode")
-    #     ql = Qiling(code=X8664_macos, archtype="x8664", ostype="macos", verbose=QL_VERBOSE.OFF)
+    #     ql = Qiling(code=X8664_macos, archtype=QL_ARCH.X8664, ostype=QL_OS.MACOS, verbose=QL_VERBOSE.OFF)
     #     ql.run()
-
-    # def test_invalid_os(self):
-    #     print("Testing Unknown OS")
-    #     self.assertRaises(QlErrorOsType,  Qiling, code=test, archtype="arm64", ostype="qilingos", verbose=QL_VERBOSE.DEFAULT )
-
-    # def test_invalid_arch(self):
-    #     print("Testing Unknown Arch")
-    #     self.assertRaises(QlErrorArch,  Qiling, code=test, archtype="qilingarch", ostype="linux",  verbose=QL_VERBOSE.DEFAULT  )
 
     # def test_invalid_output(self):
     #     print("Testing Invalid output")
-    #     self.assertRaises(QlErrorOutput,  Qiling, code=test, archtype="arm64", ostype="linux", verbose=QL_VERBOSE.DEFAULT  )
+    #     self.assertRaises(QlErrorOutput, Qiling, code=test, archtype=QL_ARCH.ARM, ostype=QL_OS.LINUX, verbose=QL_VERBOSE.DEFAULT)
 
 
 if __name__ == "__main__":

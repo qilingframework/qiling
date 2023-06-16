@@ -10,7 +10,7 @@ from typing import Any, Optional
 
 sys.path.append("../../..")
 from qiling.core import Qiling
-from qiling.const import QL_VERBOSE
+from qiling.const import QL_ARCH, QL_OS, QL_VERBOSE
 
 from qiling.extensions.afl import ql_afl_fuzz_custom
 from qiling.extensions.mcu.stm32f4 import stm32f429
@@ -18,11 +18,8 @@ from qiling.extensions.mcu.stm32f4 import stm32f429
 from unicorn import UC_ERR_OK, UcError
 
 def main(input_file: str):
-    ql = Qiling(["../../rootfs/mcu/stm32f429/bof.elf"], 
-                archtype="cortex_m", 
-                env=stm32f429, 
-                ostype='mcu',
-                verbose=QL_VERBOSE.DISABLED)
+    ql = Qiling(["../../rootfs/mcu/stm32f429/bof.elf"],
+                archtype=QL_ARCH.CORTEX_M, ostype=QL_OS.MCU, env=stm32f429, verbose=QL_VERBOSE.DISABLED)
 
     ql.hw.create('rcc')
     ql.hw.create('usart2')

@@ -9,6 +9,7 @@ import sys
 import ast
 import pickle
 from pprint import pprint
+from typing import TYPE_CHECKING, Mapping, Type
 
 from unicorn import __version__ as uc_ver
 from qiling import __version__ as ql_ver
@@ -16,10 +17,14 @@ from qiling import __version__ as ql_ver
 from qiling import Qiling
 from qiling.arch import utils as arch_utils
 from qiling.debugger.qdb import QlQdb
-from qiling.utils import arch_convert
 from qiling.const import QL_VERBOSE, QL_ENDIAN, os_map, arch_map, verbose_map
 from qiling.extensions.coverage import utils as cov_utils
 from qiling.extensions import report
+
+
+if TYPE_CHECKING:
+    from enum import Enum
+
 
 # read code from file
 def read_file(fname: str):
@@ -38,9 +43,24 @@ class __arg_env(argparse.Action):
 
         setattr(namespace, self.dest, env or {})
 
-class __arg_verbose(argparse.Action):
-    def __call__(self, parser, namespace, values, option_string):
-        setattr(namespace, self.dest, verbose_map[values])
+
+def __make_enum_arg(enum_rmap: Mapping[str, 'Enum'], aliases: Mapping[str, str] = {}) -> Type[argparse.Action]:
+    class __enum_arg(argparse.Action):
+        def __call__(self, parser, namespace, values: str, option_string):
+            values = values.casefold()
+
+            if values in aliases:
+                values = aliases[values]
+
+            setattr(namespace, self.dest, enum_rmap[values])
+
+    return __enum_arg
+
+
+__arg_archtype = __make_enum_arg(arch_map, {'x86_64': 'x8664', 'riscv32': 'riscv'})
+__arg_ostype = __make_enum_arg(os_map, {'darwin': 'macos'})
+__arg_verbose = __make_enum_arg(verbose_map)
+
 
 def handle_code(options: argparse.Namespace):
     archendian = {
@@ -67,9 +87,8 @@ def handle_code(options: argparse.Namespace):
     elif options.format == 'asm':
         print ("Load ASM from FILE")
         assembly = read_file(options.filename)
-        archtype = arch_convert(options.arch)
 
-        assembler = arch_utils.assembler(archtype, archendian, options.thumb)
+        assembler = arch_utils.assembler(options.arch, archendian, options.thumb)
         code, _ = assembler.asm(assembly)
         code = bytes(code)
 
@@ -185,10 +204,10 @@ if __name__ == '__main__':
     code_parser = commands.add_parser('code', help='execute a shellcode')
     code_parser.add_argument('-f', '--filename', metavar="FILE", help="filename")
     code_parser.add_argument('-i', '--input', metavar="INPUT", dest="input", help='input hex value')
-    code_parser.add_argument('--arch', required=True, choices=arch_map)
+    code_parser.add_argument('--arch', required=True, choices=arch_map, action=__arg_archtype)
     code_parser.add_argument('--thumb', action='store_true', default=False, help='specify thumb mode for ARM')
     code_parser.add_argument('--endian', choices=('little', 'big'), default='little', help='specify endianess for bi-endian archs')
-    code_parser.add_argument('--os', required=True, choices=os_map)
+    code_parser.add_argument('--os', required=True, choices=os_map, action=__arg_ostype)
     code_parser.add_argument('--rootfs', default='.', help='emulated root filesystem, that is where all libraries reside')
     code_parser.add_argument('--format', choices=('asm', 'hex', 'bin'), default='bin', help='input file format')
 

@@ -11,7 +11,7 @@ from multiprocessing import Process
 sys.path.append("../..")
 
 from qiling.core import Qiling
-from qiling.const import QL_VERBOSE
+from qiling.const import QL_ARCH, QL_OS, QL_VERBOSE
 from qiling.extensions.mcu.stm32f4 import stm32f407
 
 
@@ -26,9 +26,9 @@ def dicts():
 
 # Cracking the passwd of lock
 def crack(passwd):
-    ql = Qiling(["../../examples/rootfs/mcu/stm32f407/backdoorlock.hex"],                    
-                        archtype="cortex_m", ostype="mcu", env=stm32f407, verbose=QL_VERBOSE.DISABLED)
-    
+    ql = Qiling(["../../examples/rootfs/mcu/stm32f407/backdoorlock.hex"],
+                archtype=QL_ARCH.CORTEX_M, ostype=QL_OS.MCU, env=stm32f407, verbose=QL_VERBOSE.DISABLED)
+
     ql.hw.create('spi2')
     ql.hw.create('gpioe')
     ql.hw.create('gpiof')

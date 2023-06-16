@@ -4,7 +4,7 @@ import sys, unittest
 
 sys.path.append("..")
 from qiling import Qiling
-from qiling.const import QL_VERBOSE
+from qiling.const import QL_ARCH, QL_VERBOSE
 
 try:
     from qiling.extensions.r2.r2 import R2
@@ -19,7 +19,7 @@ EVM_CODE = bytes.fromhex("6060604052341561000f57600080fd5b60405160208061031c8339
 @unittest.skipUnless(test_r2, 'libr is missing')
 class R2Test(unittest.TestCase):
     def test_shellcode_disasm(self):
-        ql = Qiling(code=EVM_CODE, archtype="evm", verbose=QL_VERBOSE.DISABLED)
+        ql = Qiling(code=EVM_CODE, archtype=QL_ARCH.EVM, verbose=QL_VERBOSE.DISABLED)
         r2 = R2(ql)
         pd = r2._cmd("pd 32")
         self.assertTrue('callvalue' in pd)

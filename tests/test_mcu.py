@@ -8,7 +8,7 @@ import sys, unittest
 sys.path.append("..")
 
 from qiling.core import Qiling
-from qiling.const import QL_VERBOSE
+from qiling.const import QL_ARCH, QL_OS, QL_VERBOSE
 from qiling.extensions.mcu.stm32f4 import stm32f407, stm32f411, stm32f429
 from qiling.extensions.mcu.stm32f1 import stm32f103
 from qiling.extensions.mcu.atmel   import sam3x8e
@@ -16,8 +16,8 @@ from qiling.extensions.mcu.gd32vf1 import gd32vf103
 
 class MCUTest(unittest.TestCase):
     def test_mcu_led_stm32f411(self):
-        ql = Qiling(["../examples/rootfs/mcu/stm32f411/rand_blink.hex"],                    
-                    archtype="cortex_m", ostype="mcu", env=stm32f411, verbose=QL_VERBOSE.DISASM)
+        ql = Qiling(["../examples/rootfs/mcu/stm32f411/rand_blink.hex"],
+                    archtype=QL_ARCH.CORTEX_M, ostype=QL_OS.MCU, env=stm32f411, verbose=QL_VERBOSE.DISASM)
 
         # Set verbose=QL_VERBOSE.DEFAULT to find warning
         ql.run(count=1000)
@@ -26,9 +26,9 @@ class MCUTest(unittest.TestCase):
 
     def test_mcu_snapshot_stm32f411(self):
         def create_qiling():
-            ql = Qiling(["../examples/rootfs/mcu/stm32f411/hello_usart.hex"],                    
-                        archtype="cortex_m", ostype="mcu", env=stm32f411)
-        
+            ql = Qiling(["../examples/rootfs/mcu/stm32f411/hello_usart.hex"],
+                        archtype=QL_ARCH.CORTEX_M, ostype=QL_OS.MCU, env=stm32f411)
+
             ql.hw.create('usart2')
             ql.hw.create('rcc')
 
@@ -53,8 +53,8 @@ class MCUTest(unittest.TestCase):
         del ql1, ql2
 
     def test_mcu_usart_input_stm32f411(self):
-        ql = Qiling(["../examples/rootfs/mcu/stm32f411/md5_server.hex"],                    
-            archtype="cortex_m", ostype="mcu", env=stm32f411, verbose=QL_VERBOSE.OFF)
+        ql = Qiling(["../examples/rootfs/mcu/stm32f411/md5_server.hex"],
+            archtype=QL_ARCH.CORTEX_M, ostype=QL_OS.MCU, env=stm32f411, verbose=QL_VERBOSE.OFF)
 
         ql.hw.create('usart2')
         ql.hw.create('rcc')
@@ -74,8 +74,8 @@ class MCUTest(unittest.TestCase):
         del ql
 
     def test_mcu_patch_stm32f411(self):
-        ql = Qiling(["../examples/rootfs/mcu/stm32f411/patch_test.hex"],                    
-                    archtype="cortex_m", ostype="mcu", env=stm32f411, verbose=QL_VERBOSE.DEFAULT)
+        ql = Qiling(["../examples/rootfs/mcu/stm32f411/patch_test.hex"],
+                    archtype=QL_ARCH.CORTEX_M, ostype=QL_OS.MCU, env=stm32f411, verbose=QL_VERBOSE.DEFAULT)
 
         ql.hw.create('usart2')
         ql.hw.create('rcc')
@@ -88,7 +88,7 @@ class MCUTest(unittest.TestCase):
 
     def test_mcu_freertos_stm32f411(self):
         ql = Qiling(["../examples/rootfs/mcu/stm32f411/os-demo.elf"],
-            archtype="cortex_m", ostype="mcu", env=stm32f411, verbose=QL_VERBOSE.DISABLED)
+                    archtype=QL_ARCH.CORTEX_M, ostype=QL_OS.MCU, env=stm32f411, verbose=QL_VERBOSE.DISABLED)
 
         ql.hw.create('usart2')
         ql.hw.create('rcc')
@@ -110,8 +110,8 @@ class MCUTest(unittest.TestCase):
         del ql
 
     def test_mcu_dma_stm32f411(self):
-        ql = Qiling(["../examples/rootfs/mcu/stm32f411/dma-clock.elf"],                    
-            archtype="cortex_m", ostype="mcu", env=stm32f411, verbose=QL_VERBOSE.DEFAULT)
+        ql = Qiling(["../examples/rootfs/mcu/stm32f411/dma-clock.elf"],
+                    archtype=QL_ARCH.CORTEX_M, ostype=QL_OS.MCU, env=stm32f411, verbose=QL_VERBOSE.DEFAULT)
 
         ql.hw.create('usart2')
         ql.hw.create('dma1')
@@ -129,7 +129,7 @@ class MCUTest(unittest.TestCase):
 
     def test_mcu_i2c_stm32f411(self):
         ql = Qiling(["../examples/rootfs/mcu/stm32f411/i2c-lcd.bin", 0x8000000],
-            archtype="cortex_m", ostype="mcu", env=stm32f411, verbose=QL_VERBOSE.DEFAULT)
+                    archtype=QL_ARCH.CORTEX_M, ostype=QL_OS.MCU, env=stm32f411, verbose=QL_VERBOSE.DEFAULT)
 
         ql.hw.create('i2c1')
         ql.hw.create('rcc')
@@ -161,7 +161,7 @@ class MCUTest(unittest.TestCase):
 
     def test_mcu_spi_stm32f411(self):
         ql = Qiling(["../examples/rootfs/mcu/stm32f411/spi-test.bin", 0x8000000],
-            archtype="cortex_m", ostype="mcu", env=stm32f411, verbose=QL_VERBOSE.DEFAULT)
+                    archtype=QL_ARCH.CORTEX_M, ostype=QL_OS.MCU, env=stm32f411, verbose=QL_VERBOSE.DEFAULT)
 
         ql.hw.create('spi1')
         ql.hw.create('rcc')
@@ -175,7 +175,7 @@ class MCUTest(unittest.TestCase):
 
     def test_mcu_led_rust_stm32f411(self):
         ql = Qiling(["../examples/rootfs/mcu/stm32f411/led-rust.hex"],
-                    archtype="cortex_m", ostype="mcu", env=stm32f411, verbose=QL_VERBOSE.DEFAULT)
+                    archtype=QL_ARCH.CORTEX_M, ostype=QL_OS.MCU, env=stm32f411, verbose=QL_VERBOSE.DEFAULT)
 
         count = 0
         def counter():
@@ -192,9 +192,9 @@ class MCUTest(unittest.TestCase):
 
     def test_mcu_hacklock_stm32f407(self):
         def crack(passwd):
-            ql = Qiling(["../examples/rootfs/mcu/stm32f407/backdoorlock.hex"],                    
-                                archtype="cortex_m", ostype="mcu", env=stm32f407, verbose=QL_VERBOSE.OFF)
-            
+            ql = Qiling(["../examples/rootfs/mcu/stm32f407/backdoorlock.hex"],
+                        archtype=QL_ARCH.CORTEX_M, ostype=QL_OS.MCU, env=stm32f407, verbose=QL_VERBOSE.OFF)
+
             ql.hw.create('spi2')
             ql.hw.create('gpioe')
             ql.hw.create('gpiof')
@@ -221,8 +221,8 @@ class MCUTest(unittest.TestCase):
         self.assertFalse(crack('123456'))
 
     def test_mcu_tim_speed_stm32f411(self):
-        ql = Qiling(['../examples/rootfs/mcu/stm32f411/basic-timer.elf'], 
-                archtype="cortex_m", ostype="mcu", env=stm32f411, verbose=QL_VERBOSE.DEFAULT)
+        ql = Qiling(['../examples/rootfs/mcu/stm32f411/basic-timer.elf'],
+                    archtype=QL_ARCH.CORTEX_M, ostype=QL_OS.MCU, env=stm32f411, verbose=QL_VERBOSE.DEFAULT)
 
         ql.hw.create('rcc')
         ql.hw.create('flash interface')
@@ -260,8 +260,8 @@ class MCUTest(unittest.TestCase):
         self.assertTrue(ql.hw.usart2.recv().startswith(b'hello\n'))
 
     def test_mcu_i2c_interrupt_stm32f411(self):
-        ql = Qiling(['../examples/rootfs/mcu/stm32f411/i2cit-lcd.elf'], 
-                archtype="cortex_m", ostype="mcu", env=stm32f411, verbose=QL_VERBOSE.DEFAULT)
+        ql = Qiling(['../examples/rootfs/mcu/stm32f411/i2cit-lcd.elf'],
+                    archtype=QL_ARCH.CORTEX_M, ostype=QL_OS.MCU, env=stm32f411, verbose=QL_VERBOSE.DEFAULT)
 
         ql.hw.create('i2c1')
         ql.hw.create('rcc').watch()
@@ -295,8 +295,8 @@ class MCUTest(unittest.TestCase):
 
 
     def test_mcu_blink_gd32vf103(self):
-        ql = Qiling(['../examples/rootfs/mcu/gd32vf103/blink.hex'], archtype="riscv", 
-                    env=gd32vf103, ostype="mcu", verbose=QL_VERBOSE.DEFAULT)
+        ql = Qiling(['../examples/rootfs/mcu/gd32vf103/blink.hex'],
+                    archtype=QL_ARCH.RISCV, ostype=QL_OS.MCU, env=gd32vf103, verbose=QL_VERBOSE.DEFAULT)
 
         ql.hw.create('rcu')
         ql.hw.create('gpioa')
@@ -322,7 +322,7 @@ class MCUTest(unittest.TestCase):
 
     def test_mcu_crc_stm32f407(self):
         ql = Qiling(["../examples/rootfs/mcu/stm32f407/ai-sine-test.elf"],
-            archtype="cortex_m", ostype="mcu", env=stm32f407, verbose=QL_VERBOSE.DEFAULT)
+                    archtype=QL_ARCH.CORTEX_M, ostype=QL_OS.MCU, env=stm32f407, verbose=QL_VERBOSE.DEFAULT)
 
         ql.hw.create('rcc')
         ql.hw.create('pwr')
@@ -350,7 +350,7 @@ class MCUTest(unittest.TestCase):
 
     def test_mcu_usart_stm32f103(self):
         ql = Qiling(["../examples/rootfs/mcu/stm32f103/sctf2020-password-lock-plus.hex"],
-            archtype="cortex_m", ostype="mcu", env=stm32f103, verbose=QL_VERBOSE.DEFAULT)
+                    archtype=QL_ARCH.CORTEX_M, ostype=QL_OS.MCU, env=stm32f103, verbose=QL_VERBOSE.DEFAULT)
 
         ql.hw.create('rcc')
         ql.hw.create('flash interface')
@@ -378,7 +378,7 @@ class MCUTest(unittest.TestCase):
 
     def test_mcu_serial_sam3x8e(self):
         ql = Qiling(["../examples/rootfs/mcu/sam3x8e/serial.ino.hex"],
-            archtype="cortex_m", ostype="mcu", env=sam3x8e, verbose=QL_VERBOSE.DEFAULT)
+                    archtype=QL_ARCH.CORTEX_M, ostype=QL_OS.MCU, env=sam3x8e, verbose=QL_VERBOSE.DEFAULT)
 
         ql.hw.create('wdt')
         ql.hw.create('efc0')
@@ -400,8 +400,8 @@ class MCUTest(unittest.TestCase):
         del ql
 
     def test_mcu_hackme_stm32f429(self):
-        ql = Qiling(["../examples/rootfs/mcu/stm32f429/bof.elf"], 
-            archtype="cortex_m", env=stm32f429, ostype='mcu', verbose=QL_VERBOSE.DISABLED)
+        ql = Qiling(["../examples/rootfs/mcu/stm32f429/bof.elf"],
+                    archtype=QL_ARCH.CORTEX_M, ostype=QL_OS.MCU, env=stm32f429, verbose=QL_VERBOSE.DISABLED)
 
         ql.hw.create('rcc')
         ql.hw.create('usart2')
@@ -424,8 +424,8 @@ class MCUTest(unittest.TestCase):
         self.assertEqual(ql.hw.usart3.recv(), b'Welcome to the world of Hacking!\naaaaaaaaaaaaaaaaaaaa\xa9\x05\n')
     
     def test_mcu_fastmode_stm32f429(self):
-        ql = Qiling(["../examples/rootfs/mcu/stm32f429/bof.elf"], 
-            archtype="cortex_m", env=stm32f429, ostype='mcu', verbose=QL_VERBOSE.DEFAULT)
+        ql = Qiling(["../examples/rootfs/mcu/stm32f429/bof.elf"],
+                    archtype=QL_ARCH.CORTEX_M, ostype=QL_OS.MCU, env=stm32f429, verbose=QL_VERBOSE.DEFAULT)
 
         ql.hw.create('rcc')
         ql.hw.create('usart2')

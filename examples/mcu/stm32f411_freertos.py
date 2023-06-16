@@ -7,13 +7,13 @@ import sys
 sys.path.append("../..")
 
 from qiling.core import Qiling
-from qiling.const import QL_VERBOSE
+from qiling.const import QL_ARCH, QL_OS, QL_VERBOSE
 from qiling.extensions.mcu.stm32f4 import stm32f411
 
 
 def stm32f411_freertos():
-    ql = Qiling(["../rootfs/mcu/stm32f411/os-demo.hex"],                    
-        archtype="cortex_m",  ostype="mcu", env=stm32f411, verbose=QL_VERBOSE.DEBUG)
+    ql = Qiling(["../rootfs/mcu/stm32f411/os-demo.hex"],
+                archtype=QL_ARCH.CORTEX_M, ostype=QL_OS.MCU, env=stm32f411, verbose=QL_VERBOSE.DEBUG)
 
     ql.hw.create('usart2').watch()
     ql.hw.create('gpioa').watch()

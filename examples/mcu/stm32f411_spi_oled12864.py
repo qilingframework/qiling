@@ -7,12 +7,13 @@ import sys
 sys.path.append("../..")
 
 from qiling.core import Qiling
-from qiling.const import QL_VERBOSE
+from qiling.const import QL_ARCH, QL_OS, QL_VERBOSE
 from qiling.extensions.mcu.stm32f4 import stm32f411
 from qiling.hw.external_device.oled.ssd1306 import PyGameSSD1306Spi
 
-ql = Qiling(['../rootfs/mcu/stm32f411/oled12864.hex'], 
-                archtype="cortex_m",  ostype="mcu", env=stm32f411, verbose=QL_VERBOSE.DEFAULT)
+
+ql = Qiling(['../rootfs/mcu/stm32f411/oled12864.hex'],
+            archtype=QL_ARCH.CORTEX_M, ostype=QL_OS.MCU, env=stm32f411, verbose=QL_VERBOSE.DEFAULT)
 
 ql.hw.create('rcc')
 ql.hw.create('gpioa')

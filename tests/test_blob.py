@@ -7,7 +7,7 @@ import sys, unittest
 sys.path.append("..")
 
 from qiling.core import Qiling
-from qiling.const import QL_VERBOSE
+from qiling.const import QL_ARCH, QL_OS, QL_VERBOSE
 from qiling.os.const import STRING
 
 class BlobTest(unittest.TestCase):
@@ -51,7 +51,7 @@ class BlobTest(unittest.TestCase):
         with open("../examples/rootfs/blob/u-boot.bin.img", "rb") as f:
             uboot_code = f.read()
 
-        ql = Qiling(code=uboot_code[0x40:], archtype="arm", ostype="blob", profile="profiles/uboot_bin.ql", verbose=QL_VERBOSE.DEBUG)
+        ql = Qiling(code=uboot_code[0x40:], archtype=QL_ARCH.ARM, ostype=QL_OS.BLOB, profile="profiles/uboot_bin.ql", verbose=QL_VERBOSE.DEBUG)
 
         image_base_addr = ql.loader.load_address
         ql.hook_address(my_getenv, image_base_addr + 0x13AC0)
