@@ -3,12 +3,15 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import sys, unittest
+import unittest
+
+import sys
 sys.path.append("..")
 
 from qiling.core import Qiling
 from qiling.const import QL_ARCH, QL_OS, QL_VERBOSE
 from qiling.os.const import STRING
+
 
 class BlobTest(unittest.TestCase):
     def test_uboot_arm(self):

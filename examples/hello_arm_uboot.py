@@ -10,6 +10,7 @@ from qiling.core import Qiling
 from qiling.const import QL_ARCH, QL_OS, QL_VERBOSE
 from qiling.os.const import STRING
 
+
 def get_kaimendaji_password():
     def my_getenv(ql: Qiling):
         env = {
@@ -56,7 +57,6 @@ def get_kaimendaji_password():
         ql.arch.regs.r2 = 2
         ql.arch.regs.r3 = argv_ptr
 
-
     with open("../examples/rootfs/blob/u-boot.bin.img", "rb") as f:
         uboot_code = f.read()
 
@@ -69,6 +69,7 @@ def get_kaimendaji_password():
     partial_run_init(ql)
 
     ql.run(image_base_addr + 0x486B4, image_base_addr + 0x48718)
+
 
 if __name__ == "__main__":
     get_kaimendaji_password()

@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from multiprocessing import Pool
 
 import sys
-from multiprocessing import Pool
-from multiprocessing import Process
-
 sys.path.append("../..")
 
 from qiling.core import Qiling
@@ -23,6 +21,7 @@ def dicts():
 
     for x in range(1, 20):
         yield str((a*x*x + b*x + c) % M)
+
 
 # Cracking the passwd of lock
 def crack(passwd):
@@ -54,6 +53,7 @@ def crack(passwd):
         print('Fail, the passwd is not', passwd)
 
     del ql
+
 
 pool = Pool()
 for passwd in dicts():

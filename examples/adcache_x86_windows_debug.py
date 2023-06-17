@@ -3,10 +3,11 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from zipfile import ZipFile
+
 import sys
 sys.path.append("..")
 
-from zipfile import ZipFile
 from qiling import Qiling
 from qiling.const import QL_ARCH, QL_OS, QL_VERBOSE
 

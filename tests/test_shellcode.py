@@ -3,10 +3,11 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import sys
 import unittest
 
+import sys
 sys.path.append("..")
+
 from qiling import Qiling
 from qiling.const import QL_ARCH, QL_OS, QL_INTERCEPT, QL_VERBOSE
 

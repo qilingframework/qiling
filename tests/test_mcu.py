@@ -1,18 +1,20 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+import unittest
 
-import sys, unittest
+import sys
 sys.path.append("..")
 
 from qiling.core import Qiling
 from qiling.const import QL_ARCH, QL_OS, QL_VERBOSE
 from qiling.extensions.mcu.stm32f4 import stm32f407, stm32f411, stm32f429
 from qiling.extensions.mcu.stm32f1 import stm32f103
-from qiling.extensions.mcu.atmel   import sam3x8e
+from qiling.extensions.mcu.atmel import sam3x8e
 from qiling.extensions.mcu.gd32vf1 import gd32vf103
+
 
 class MCUTest(unittest.TestCase):
     def test_mcu_led_stm32f411(self):
@@ -47,7 +49,7 @@ class MCUTest(unittest.TestCase):
         ql2.run(count=500)
         buf2 = ql2.hw.usart2.recv()
         print('[2] Received from usart: ', buf2)
-        
+
         self.assertEqual(buf1 + buf2, b'Hello USART\n')
 
         del ql1, ql2
@@ -58,16 +60,16 @@ class MCUTest(unittest.TestCase):
 
         ql.hw.create('usart2')
         ql.hw.create('rcc')
-        
+
         ql.run(count=1000)
-        
+
         ql.hw.usart2.send(b'Hello\n')
         ql.run(count=30000)
         ql.hw.usart2.send(b'USART\n')
         ql.run(count=30000)
         ql.hw.usart2.send(b'Input\n')
         ql.run(count=30000)
-        
+
         buf = ql.hw.usart2.recv()
         self.assertEqual(buf, b'8b1a9953c4611296a827abf8c47804d7\n2daeb613094400290a24fe5086c68f06\n324118a6721dd6b8a9b9f4e327df2bf5\n')
 
@@ -180,10 +182,10 @@ class MCUTest(unittest.TestCase):
         count = 0
         def counter():
             nonlocal count
-            count += 1            
+            count += 1
 
         ql.hw.create('gpioa').hook_set(5, counter)
-        ql.hw.create('rcc')        
+        ql.hw.create('rcc')
 
         ql.run(count=1000)
         self.assertTrue(count >= 5)
@@ -211,9 +213,9 @@ class MCUTest(unittest.TestCase):
             ql.hw.usart1.send(passwd.encode() + b'\r')
 
             ql.hw.systick.set_ratio(400)
-            
+
             ql.run(count=400000, end=0x8003225)
-            
+
             return ql.arch.effective_pc == 0x8003225
 
         self.assertTrue(crack('618618'))
@@ -266,7 +268,7 @@ class MCUTest(unittest.TestCase):
         ql.hw.create('i2c1')
         ql.hw.create('rcc').watch()
         ql.hw.create('gpioa')
-        ql.hw.create('gpiob') 
+        ql.hw.create('gpiob')
 
         class LCD:
             address = 0x3f << 1
@@ -293,7 +295,6 @@ class MCUTest(unittest.TestCase):
 
         del ql
 
-
     def test_mcu_blink_gd32vf103(self):
         ql = Qiling(['../examples/rootfs/mcu/gd32vf103/blink.hex'],
                     archtype=QL_ARCH.RISCV, ostype=QL_OS.MCU, env=gd32vf103, verbose=QL_VERBOSE.DEFAULT)
@@ -317,7 +318,7 @@ class MCUTest(unittest.TestCase):
         ql.hw.gpioc.hook_set(13, counter)
         ql.run(count=20000)
         self.assertTrue(count > 350)
-        
+
         del ql
 
     def test_mcu_crc_stm32f407(self):
@@ -370,10 +371,10 @@ class MCUTest(unittest.TestCase):
         ql.hw.gpioa.hook_set(4, gpio_set_cb, '4')
 
         ql.run(count=400000)
-        
+
         self.assertTrue((''.join(data)).find('1442413') != -1)
         self.assertTrue(ql.hw.usart1.recv()[:23] == b'SCTF{that1s___r1ghtflag')
-        
+
         del ql
 
     def test_mcu_serial_sam3x8e(self):
@@ -422,7 +423,7 @@ class MCUTest(unittest.TestCase):
 
         self.assertEqual(ql.hw.usart2.recv(), b'Nice Hack!\n')
         self.assertEqual(ql.hw.usart3.recv(), b'Welcome to the world of Hacking!\naaaaaaaaaaaaaaaaaaaa\xa9\x05\n')
-    
+
     def test_mcu_fastmode_stm32f429(self):
         ql = Qiling(["../examples/rootfs/mcu/stm32f429/bof.elf"],
                     archtype=QL_ARCH.CORTEX_M, ostype=QL_OS.MCU, env=stm32f429, verbose=QL_VERBOSE.DEFAULT)

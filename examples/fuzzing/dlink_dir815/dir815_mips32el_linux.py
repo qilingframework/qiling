@@ -1,19 +1,20 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
 # Everything about the bug and firmware https://www.exploit-db.com/exploits/33863
 
 import os,sys
-
 sys.path.append("../../..")
-from qiling import *
+
+from qiling import Qiling
 from qiling.const import QL_VERBOSE
 from qiling.extensions.afl import ql_afl_fuzz
 
+
 def main(input_file, enable_trace=False):
-    
+
     env_vars = {
         "REQUEST_METHOD": "POST",
         "REQUEST_URI": "/hedwig.cgi",
@@ -24,9 +25,8 @@ def main(input_file, enable_trace=False):
     }
 
     ql = Qiling(["./rootfs/htdocs/web/hedwig.cgi"], "./rootfs",
-                verbose=QL_VERBOSE.DEBUG, env=env_vars,
-                console = True if enable_trace else False)
-    
+                verbose=QL_VERBOSE.DEBUG, env=env_vars, console=enable_trace)
+
     def place_input_callback(ql: Qiling, input: bytes, _: int):
         env_var = ("HTTP_COOKIE=uid=1234&password=").encode()
         env_vars = env_var + input + b"\x00" + (ql.path).encode() + b"\x00"

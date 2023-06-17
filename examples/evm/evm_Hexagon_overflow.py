@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -7,9 +7,9 @@
 # https://www.anquanke.com/post/id/145520
 
 import sys
-
 sys.path.append("../..")
-from qiling import *
+
+from qiling import Qiling
 from qiling.const import QL_ARCH
 
 
@@ -37,9 +37,10 @@ def example_run_evm():
     # # SMART CONTRACT DEPENDENT: transform from user1 to user2
     call_data = '0xa9059cbb'+ ql.arch.evm.abi.convert(['address'], [user2]) + \
                                     ql.arch.evm.abi.convert(['uint256'], [0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe])
-    msg1 = ql.arch.evm.create_message(user1, c1, data=call_data)    
+    msg1 = ql.arch.evm.create_message(user1, c1, data=call_data)
     result = ql.run(code=msg1)
-    if int(result.output.hex()[2:], 16) ==  1:
+
+    if int(result.output.hex()[2:], 16) == 1:
         print('User1 transfered Token to User1')
 
     # # SMART CONTRACT DEPENDENT: User1 balance underflow, MAX - 1
@@ -48,6 +49,7 @@ def example_run_evm():
 
     result = check_balance(user2, c1)
     print('User2 final balance =', int(result.output.hex()[2:], 16))
+
 
 if __name__ == "__main__":
     example_run_evm()

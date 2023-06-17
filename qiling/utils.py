@@ -442,7 +442,7 @@ def profile_setup(ostype: QL_OS, user_config: Optional[Union[str, dict]]):
 
         elif user_config:
             config.read(user_config)
-        
+
     return config
 
 

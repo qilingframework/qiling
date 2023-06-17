@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 
-import os, platform, sys, unittest
+import os
+import platform
+import unittest
 
+import sys
 sys.path.append("..")
+
 from qiling import Qiling
 from qiling.const import QL_ARCH, QL_VERBOSE
 
@@ -12,11 +16,11 @@ if SECRET_KEY:
     sys.exit(0)
 
 if platform.system() == "Darwin" and platform.machine() == "arm64":
-    sys.exit(0)    
+    sys.exit(0)
 
 # python 3.10 has not been supported yet in the latest blake2b-py release
-if sys.version_info >= (3,10):
-    sys.exit(0) 
+if sys.version_info >= (3, 10):
+    sys.exit(0)
 
 
 class Checklist:
@@ -62,7 +66,7 @@ class EVMTest(unittest.TestCase):
             call_data = '0x70a08231'+ql.arch.evm.abi.convert(['address'], [sender])
             msg2 = ql.arch.evm.create_message(sender, destination, call_data)
             return ql.run(code=msg2)
-        
+
         result = check_balance(user1, c1)
         print('\n\nuser1 balance =', int(result.output.hex()[2:], 16))
         ql.hook_del(h2)
@@ -70,14 +74,14 @@ class EVMTest(unittest.TestCase):
         # SMART CONTRACT DEPENDENT - message3: transform 21 from user1 to user2
         call_data = '0xa9059cbb'+ ql.arch.evm.abi.convert(['address'], [user2]) + \
                                         ql.arch.evm.abi.convert(['uint256'], [21])
-        msg1 = ql.arch.evm.create_message(user1, c1, call_data)    
+        msg1 = ql.arch.evm.create_message(user1, c1, call_data)
         result = ql.run(code=msg1)
         print('\n\nis success =', int(result.output.hex()[2:], 16))
 
         # message4: check balance of user1, should be MAX - 1
         result = check_balance(user1, c1)
         print('\n\nuser1 balance =', hex(int(result.output.hex()[2:], 16)))
-        
+
         self.assertEqual(hex(int(result.output.hex()[2:], 16)), '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff')
         self.assertTrue(testcheck.visited_hookaddr)
         self.assertTrue(testcheck.visited_hookcode)
@@ -106,7 +110,7 @@ class EVMTest(unittest.TestCase):
         # # SMART CONTRACT DEPENDENT: transform from user1 to user2
         call_data = '0xa9059cbb'+ ql.arch.evm.abi.convert(['address'], [user2]) + \
                                         ql.arch.evm.abi.convert(['uint256'], [0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe])
-        msg1 = ql.arch.evm.create_message(user1, c1, data=call_data)    
+        msg1 = ql.arch.evm.create_message(user1, c1, data=call_data)
         result = ql.run(code=msg1)
         if int(result.output.hex()[2:], 16) ==  1:
             print('User1 transfered Token to User1')
@@ -148,7 +152,7 @@ class EVMTest(unittest.TestCase):
 
         msg1 = ql.arch.evm.create_message(user1, c1, data=call_data)
         result = ql.run(code=msg1)
-        
+
         result_data = ql.arch.evm.abi.decode_params(['string'], result.output)
         self.assertEqual(call_param[0], result_data[0])
 

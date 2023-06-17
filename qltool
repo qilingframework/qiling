@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -8,6 +8,7 @@ import os
 import sys
 import ast
 import pickle
+
 from pprint import pprint
 from typing import TYPE_CHECKING, Mapping, Type
 
@@ -33,8 +34,9 @@ def read_file(fname: str):
 
     return content
 
+
 class __arg_env(argparse.Action):
-    def __call__(self, parser, namespace, values, option_string):
+    def __call__(self, parser, namespace, values: str, option_string):
         if os.path.exists(values):
             with open(values, 'rb') as f:
                 env = pickle.load(f)
@@ -70,12 +72,12 @@ def handle_code(options: argparse.Namespace):
 
     if options.format == 'hex':
         if options.input is not None:
-            print ("Load HEX from ARGV")
+            print("Load HEX from ARGV")
             code = str(options.input).strip("\\\\x").split("x")
             code = "".join(code).strip()
-            code =  bytes.fromhex(code)
+            code = bytes.fromhex(code)
         elif options.filename is not None:
-            print ("Load HEX from FILE")
+            print("Load HEX from FILE")
             code = str(read_file(options.filename)).strip('b\'').strip('\\n')
             code = code.strip('x').split("\\\\x")
             code = "".join(code).strip()
@@ -85,7 +87,7 @@ def handle_code(options: argparse.Namespace):
             exit(1)
 
     elif options.format == 'asm':
-        print ("Load ASM from FILE")
+        print("Load ASM from FILE")
         assembly = read_file(options.filename)
 
         assembler = arch_utils.assembler(options.arch, archendian, options.thumb)
@@ -93,7 +95,7 @@ def handle_code(options: argparse.Namespace):
         code = bytes(code)
 
     elif options.format == 'bin':
-        print ("Load BIN from FILE")
+        print("Load BIN from FILE")
         if options.filename is not None:
             code = read_file(options.filename)
         else:
@@ -114,6 +116,7 @@ def handle_code(options: argparse.Namespace):
     )
 
     return ql
+
 
 def handle_run(options: argparse.Namespace):
     effective_argv = []
@@ -149,6 +152,7 @@ def handle_run(options: argparse.Namespace):
         exit()
 
     return ql
+
 
 def handle_examples(parser: argparse.ArgumentParser):
     prog = os.path.basename(__file__)
@@ -186,6 +190,7 @@ def handle_examples(parser: argparse.ArgumentParser):
 """
 
     parser.exit(0, __ql_examples)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -236,7 +241,7 @@ if __name__ == '__main__':
     comm_parser.add_argument('--log-plain', action='store_true', help="do not use colors in log output")
     comm_parser.add_argument('--root', action='store_true', help='enable sudo required mode')
     comm_parser.add_argument('--debug-stop', action='store_true', help='stop running on error; requires verbose to be set to either "debug" or "dump"')
-    comm_parser.add_argument('-m', '--multithread',action='store_true', help='run in multithread mode')
+    comm_parser.add_argument('-m', '--multithread', action='store_true', help='run in multithread mode')
     comm_parser.add_argument('--timeout', type=int, default=0, help='set emulation timeout')
     comm_parser.add_argument('-c', '--coverage-file', default=None, help='code coverage file name')
     comm_parser.add_argument('--coverage-format', default='drcov', choices=cov_utils.factory.formats, help='code coverage file format')

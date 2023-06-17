@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -17,10 +17,11 @@ def stm32f411_freertos():
 
     ql.hw.create('usart2').watch()
     ql.hw.create('gpioa').watch()
-    ql.hw.create('rcc')    
+    ql.hw.create('rcc')
 
     ql.hw.systick.set_ratio(100)
     ql.run(count=200000)
+
 
 if __name__ == "__main__":
     stm32f411_freertos()
