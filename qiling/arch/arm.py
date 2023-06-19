@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from functools import cached_property
+from functools import cached_property, lru_cache
 
 from unicorn import Uc, UC_ARCH_ARM, UC_MODE_ARM, UC_MODE_THUMB, UC_MODE_BIG_ENDIAN
 from capstone import Cs, CS_ARCH_ARM, CS_MODE_ARM, CS_MODE_THUMB, CS_MODE_BIG_ENDIAN
@@ -70,11 +70,15 @@ class QlArchARM(QlArch):
         # append 1 to pc if in thumb mode, or 0 otherwise
         return self.regs.pc | int(self.is_thumb)
 
+    @lru_cache(maxsize=4)
+    def __cached_disasm(self, mode: int) -> Cs:
+        return Cs(CS_ARCH_ARM, mode)
+
     @property
     def disassembler(self) -> Cs:
-        # note: we do not cache the disassembler instance; rather we refresh it
-        # each time to make sure current endianess and thumb mode are taken into
-        # account
+        # note: since endianess and thumb mode might change during execution, we cannot
+        # cache the disassembler instance directly; rather we pick the appropriate cached
+        # instance
 
         mode = CS_MODE_ARM
 
@@ -84,13 +88,17 @@ class QlArchARM(QlArch):
         if self.is_thumb:
             mode += CS_MODE_THUMB
 
-        return Cs(CS_ARCH_ARM, mode)
+        return self.__cached_disasm(mode)
+
+    @lru_cache(maxsize=4)
+    def __cached_asm(self, mode: int) -> Ks:
+        return Ks(KS_ARCH_ARM, mode)
 
     @property
     def assembler(self) -> Ks:
-        # note: we do not cache the assembler instance; rather we refresh it
-        # each time to make sure current endianess and thumb mode are taken into
-        # account
+        # note: since endianess and thumb mode might change during execution, we cannot
+        # cache the assembler instance directly; rather we pick the appropriate cached
+        # instance
 
         mode = KS_MODE_ARM
 
@@ -100,7 +108,7 @@ class QlArchARM(QlArch):
         if self.is_thumb:
             mode += KS_MODE_THUMB
 
-        return Ks(KS_ARCH_ARM, mode)
+        return self.__cached_asm(mode)
 
     def enable_vfp(self) -> None:
         # set full access to cp10 and cp11
