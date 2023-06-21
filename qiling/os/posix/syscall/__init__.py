@@ -6,6 +6,7 @@ from .fcntl import *
 from .futex import *
 from .ioctl import *
 from .mman import *
+from .msg import *
 from .net import *
 from .personality import *
 from .poll import *
