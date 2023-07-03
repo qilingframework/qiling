@@ -39,10 +39,15 @@ def ql_syscall_ipc(ql: Qiling, call: int, first: int, second: int, third: int, p
         if version == 0:
             if args[3] == 0:
                 return -1   # EINVAL
+
             msgp = ql.mem.read_ptr(args[3])
             msgtyp = ql.mem.read_ptr(args[3] + ql.arch.pointersize)
-            return ql_syscall_msgrcv(ql, args[0], msgp, args[1], msgtyp, args[2])
-        return ql_syscall_msgrcv(ql, args[0], args[3], args[1], args[4], args[2])
+
+        else:
+            msgp = args[3]
+            msgtyp = args[4]
+
+        return ql_syscall_msgrcv(ql, args[0], msgp, args[1], msgtyp, args[2])
 
     ipc_call = {
         SHMAT:  __call_shmat,
