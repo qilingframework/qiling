@@ -26,6 +26,7 @@ from qiling.os.windows.structs import *
 from .loader import QlLoader, Image
 
 if TYPE_CHECKING:
+    from logging import Logger
     from qiling import Qiling
 
 
@@ -191,7 +192,7 @@ class Process:
                 relocate = True
 
             if relocate:
-                with ShowProgress(0.1337):
+                with ShowProgress(self.ql.log, 0.1337):
                     dll.relocate_image(image_base)
 
             data = bytearray(dll.get_memory_mapped_image())
@@ -870,44 +871,123 @@ class QlLoaderPE(QlLoader, Process):
 
 
 class ShowProgress:
-    """Display a progress animation while performing a time
-    consuming task.
+    """Display a progress animation while performing a time consuming task.
 
     Example:
-        >>> with ShowProgress(0.1):
+        >>> with ShowProgress(logger, 0.15):
         ...     do_some_time_consuming_task()
     """
 
-    def __init__(self, interval: float) -> None:
-        import sys
-        from threading import Thread, Event
+    # animation frames: a sequence of chars or strings to display. any sequence of string elements
+    # may be used as long as they are of the same length.
+    #
+    # for example: ['>   ', '>>  ', ' >> ', '  >>', '   >', '    ']
+    _frames_ = r'/-\|'
 
-        # animation frames; any sequence of chars or strings may be used, as long
-        # as they are of the same length. e.g. ['>   ', '>>  ', ' >> ', '  >>', '   >', '    ']
-        frames = r'/-\|'
-        stream = sys.stderr
+    # animation marker: this is used to tell animation log records from the rest.
+    _marker_ = r'$__ql_anim__'
+
+    def __init__(self, logger: Logger, interval: float) -> None:
+        from typing import List, Callable
+        from threading import Thread, Event
 
         def show_animation():
             i = 0
 
             while not self.stopped.wait(interval):
-                # TODO: find a proper way to use the logger for that
-                print(f'[{frames[i % len(frames)]}]', end='\r', flush=True, file=stream)
+                frame = self._frames_[i % len(self._frames_)]
+                logger.info(f'{self._marker_}{frame}')
+
                 i += 1
 
-        def show_nothing():
-            pass
-
-        # avoid flooding log files with animation frames
-        action = show_animation if stream.isatty() else show_nothing
-
         self.stopped = Event()
-        self.thread = Thread(target=action)
+        self.thread = Thread(target=show_animation)
+
+        self.logger = logger
+        self.handlers_restorers: List[Callable[[], None]] = []
+
+    def __setup_handlers(self):
+        from logging import Filter, Formatter, LogRecord, StreamHandler
+
+        # while progress animation is useful on tty streams, it is not very useful on log files
+        # and most probably just flood the log files with animation frames.
+        #
+        # to avoid such flooding an animation filter is added to the non-tty stream handlers to
+        # filter out the animation records. in addition, tty stream handlers are assigned with
+        # an animation formatter to display the animation frames nicely.
+        #
+        # when the animation context exits, all the changes made to the handlers are reverted.
+
+        def has_anim_marker(rec: LogRecord) -> bool:
+            """Tell whether a log record is an animation record or not.
+            """
+
+            return rec.getMessage().startswith(ShowProgress._marker_)
+
+        def strip_anim_marker(rec: LogRecord) -> None:
+            """Remove animation marker from log record.
+            """
+
+            rec.message = rec.message[len(ShowProgress._marker_):]
+
+        class AnimFormatter(Formatter):
+            """A log record formatter that removes animation markers.
+            """
+
+            def formatMessage(self, record: LogRecord) -> str:
+                if has_anim_marker(record):
+                    strip_anim_marker(record)
+
+                return super().formatMessage(record)
+
+        class AnimFilter(Filter):
+            """A log record filter that thwarts animation records.
+            """
+
+            def filter(self, record: LogRecord) -> bool:
+                return not has_anim_marker(record)
+
+        # the animation frames will be displayed within brackets
+        anim_formatter = AnimFormatter('[%(message)s]')
+        anim_filter = AnimFilter()
+
+        for h in self.logger.handlers:
+            # if this is a tty stream handler, modify some of its attributes to
+            # let the animation display correctly
+            if isinstance(h, StreamHandler) and h.stream.isatty():
+                orig_terminator = h.terminator
+                orig_formatter = h.formatter
+
+                h.terminator = '\r'
+                h.setFormatter(anim_formatter)
+
+                def __restore_modified() -> None:
+                    h.terminator = orig_terminator
+                    h.setFormatter(orig_formatter)
+
+                restorer = __restore_modified
+
+            # otherwise, apply a filter that will ignore animation records
+            else:
+                h.addFilter(anim_filter)
+
+                def __restore_silenced() -> None:
+                    h.removeFilter(anim_filter)
+
+                restorer = __restore_silenced
+
+            self.handlers_restorers.append(restorer)
+
+    def __restore_handlers(self) -> None:
+        for restorer in self.handlers_restorers:
+            restorer()
 
     def __enter__(self):
+        self.__setup_handlers()
         self.thread.start()
 
         return self
 
-    def __exit__(self, *args) -> None:
+    def __exit__(self, extype, value, traceback):
         self.stopped.set()
+        self.__restore_handlers()
