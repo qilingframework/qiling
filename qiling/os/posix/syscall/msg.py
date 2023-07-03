@@ -24,7 +24,7 @@ def __find_msg(msq: QlMsqId, msgtyp: int, msgflg: int) -> Optional[QlMsgBuf]:
     elif msgtype < 0:
         predicate = lambda msg: msg.mtype <= -msgtyp
 
-     return next((msg for msg in msq.queue if predicate(msg)), None)
+    return next((msg for msg in msq.queue if predicate(msg)), None)
 
 
 def __perms(ql: Qiling, msq: QlMsqId, flag: int) -> int:
