@@ -123,14 +123,13 @@ class QlOsWindows(QlOs):
         handle.obj = stream
 
     def load(self):
-        self.setupGDT()
+        self.__setup_gdt()
         self.__setup_components()
 
         # hook win api
         self.ql.hook_code(self.hook_winapi)
 
-
-    def setupGDT(self):
+    def __setup_gdt(self):
         gdtm = GDTManager(self.ql)
 
         segm_class: Type[SegmentManager] = {

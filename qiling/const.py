@@ -88,7 +88,7 @@ def __casefold_enum(e: Type[T]) -> Mapping[str, T]:
     '''Create a casefolded mapping of an enum to allow case-insensitive lookup.
     '''
 
-    return dict((k.casefold(), v) for k, v in e._member_map_.items())
+    return dict((k.casefold(), v) for k, v in e.__members__.items())
 
 
 debugger_map = __casefold_enum(QL_DEBUGGER)

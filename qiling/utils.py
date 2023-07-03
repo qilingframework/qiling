@@ -293,7 +293,7 @@ def ql_guess_emu_env(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], Opt
 
 
 def select_loader(ostype: QL_OS, libcache: bool) -> QlClassInit['QlLoader']:
-    if ostype == QL_OS.WINDOWS:
+    if ostype is QL_OS.WINDOWS:
         kwargs = {'libcache': libcache}
 
     else:
