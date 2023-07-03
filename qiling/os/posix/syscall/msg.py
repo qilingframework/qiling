@@ -5,17 +5,26 @@ from qiling.os.posix.posix import QlMsqId, QlMsgBuf
 
 
 def __find_msg(msq: QlMsqId, msgtyp: int, msgflg: int) -> Optional[QlMsgBuf]:
-    if msgtyp == 0:  # SEARCH_ANY: get first
-        return msq.queue[0]
-    cnt = 0
-    for msg in msq.queue:
-        # SEARCH_NUMBER, SEARCH_LESSEQUAL, SEARCH_EQUAL, SEARCH_NOTEQUAL
-        if (msgflg & MSG_COPY and cnt == msgtyp) or \
-            (msgtyp < 0 and msg.mtype <= -msgtyp) or \
-            (msgtyp > 0 and msg.mtype == msgtyp) or \
-            (msgflg & MSG_EXCEPT and msg.mtype != msgtyp):
-            return msg
-        cnt += 1
+    # peek at a specific queue item
+    if msgflg & MSG_COPY:
+        if msgtyp >= len(msq.queue):
+            return -1  # ENOMSG
+
+        return msg.queue[msgtyp]
+
+    if msgtyp == 0:
+        predicate = lambda msg: True
+
+    elif msgtype > 0:
+        if msgflg & MSG_EXCEPT:
+            predicate = lambda msg: msg.mtype != msgtyp
+        else:
+            predicate = lambda msg: msg.mtype == msgtyp
+
+    elif msgtype < 0:
+        predicate = lambda msg: msg.mtype <= -msgtyp
+
+     return next((msg for msg in msq.queue if predicate(msg)), None)
 
 
 def __perms(ql: Qiling, msq: QlMsqId, flag: int) -> int:
@@ -25,13 +34,17 @@ def __perms(ql: Qiling, msq: QlMsqId, flag: int) -> int:
     # FIXME: should probably also use cuid and (c)gid, but we don't support it yet
     # TODO: other ipc mechanisms like shm can also reuse this
     """
+
     request_mode = (flag >> 6) | (flag >> 3) | flag
     granted_mode = msq.mode
+
     if ql.os.uid == msq.uid:
         granted_mode >>= 6
+
     # is there some bit set in requested_mode but not in granted_mode? 
     if request_mode & ~granted_mode & 0o007:
         return -1  # EACCES
+
     return 0
 
 def ql_syscall_msgget(ql: Qiling, key: int, msgflg: int):
@@ -74,8 +87,8 @@ def ql_syscall_msgget(ql: Qiling, key: int, msgflg: int):
             if msgflg & (IPC_CREAT | IPC_EXCL):
                 return -1  # EEXIST
 
-            if err := __perms(ql, msq, msgflg):
-                return err  # EACCES
+            if __perms(ql, msq, msgflg):
+                return -1  # EACCES
 
     return msqid
 
@@ -86,8 +99,8 @@ def ql_syscall_msgsnd(ql: Qiling, msqid: int, msgp: int, msgsz: int, msgflg: int
         return -1  # EINVAL
 
     # Check if the user has write permissions for the message queue
-    if err := __perms(ql, msq, 0o222):  # S_IWUGO
-        return err  # EACCES
+    if __perms(ql, msq, 0o222):  # S_IWUGO
+        return -1  # EACCES
 
     msg_type = ql.mem.read_ptr(msgp)
     msg_text = ql.mem.read(msgp + ql.arch.pointersize, msgsz)
@@ -95,6 +108,7 @@ def ql_syscall_msgsnd(ql: Qiling, msqid: int, msgp: int, msgsz: int, msgflg: int
     while True:
         if len(msq.queue) < msq.queue.maxlen:
             break
+
         if msgflg & IPC_NOWAIT:
             return -1  # EAGAIN
 
@@ -114,15 +128,18 @@ def ql_syscall_msgrcv(ql: Qiling, msqid: int, msgp: int, msgsz: int, msgtyp: int
             return -1  # EINVAL
 
     # Check if the user has read permissions for the message queue
-    if err := __perms(ql, msq, 0o444):  # S_IRUGO
-        return err  # EACCES
+    if __perms(ql, msq, 0o444):  # S_IRUGO
+        return -1  # EACCES
 
     while True:
         msg = __find_msg(msq, msgtyp, msgflg)
+
         if msg is not None:
             break
+
         if msgflg & IPC_NOWAIT:
             return -1  # ENOMSG
+
     if not (msgflg & MSG_COPY):
         msq.queue.remove(msg)
 
@@ -133,6 +150,7 @@ def ql_syscall_msgrcv(ql: Qiling, msqid: int, msgp: int, msgsz: int, msgtyp: int
             sz = msgsz
     else:
         sz = len(msg.mtext)
+
     ql.mem.write_ptr(msgp, msg.mtype)
     ql.mem.write(msgp + ql.arch.pointersize, msg.mtext[:sz])
 
