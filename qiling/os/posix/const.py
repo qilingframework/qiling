@@ -1025,6 +1025,15 @@ SHMMNI = 4096   # max num of segs system wide
 HUGETLB_FLAG_ENCODE_SHIFT = 26
 HUGETLB_FLAG_ENCODE_MASK  = 0x3f
 
+# see: https://elixir.bootlin.com/linux/v5.19.17/source/include/uapi/linux/msg.h
+MSG_NOERROR = 0o10000  # no error if message is too big
+MSG_EXCEPT = 0o20000  # recv any msg except of specified type
+MSG_COPY = 0o40000  # copy (not remove) all queue messages
+
+MSGMNI = 32000 # <= IPCMNI, max # of msg queue identifiers
+MSGMAX = 8192 # <= INT_MAX, max size of message (bytes)
+MSGMNB = 16384 # <= INT_MAX, default max size of a message queue
+
 # ipc syscall
 SEMOP       = 1
 SEMGET      = 2
