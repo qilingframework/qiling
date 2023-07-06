@@ -81,7 +81,10 @@ class QlQdb(cmd.Cmd, QlDebugger):
         elif init_hook and self.ql.loader.entry_point != init_hook:
             self.do_breakpoint(init_hook)
 
-        self.cur_addr = self.ql.loader.entry_point
+        if self.ql.entry_point:
+            self.cur_addr = self.ql.entry_point
+        else:
+            self.cur_addr = self.ql.loader.entry_point
 
         self.init_state = self.ql.save()
 
