@@ -29,6 +29,7 @@ from . import registry
 
 import qiling.os.windows.dlls as api
 
+
 class QlOsWindows(QlOs):
     type = QL_OS.WINDOWS
 
@@ -94,7 +95,6 @@ class QlOsWindows(QlOs):
         self.stdout = self._stdout
         self.stderr = self._stderr
 
-
     @QlOs.stdin.setter
     def stdin(self, stream: TextIO) -> None:
         self._stdin = stream
@@ -122,21 +122,19 @@ class QlOsWindows(QlOs):
 
         handle.obj = stream
 
-
     def load(self):
-        self.setupGDT()
+        self.__setup_gdt()
         self.__setup_components()
 
         # hook win api
         self.ql.hook_code(self.hook_winapi)
 
-
-    def setupGDT(self):
+    def __setup_gdt(self):
         gdtm = GDTManager(self.ql)
 
         segm_class: Type[SegmentManager] = {
-            32 : SegmentManager86,
-            64 : SegmentManager64
+            32: SegmentManager86,
+            64: SegmentManager64
         }[self.ql.arch.bits]
 
         # setup gdt and segments selectors
@@ -154,7 +152,6 @@ class QlOsWindows(QlOs):
             raise QlMemoryMappedError('cannot map GS segment, memory location is taken')
 
         self.ql.mem.map(GS_SEGMENT_ADDR, GS_SEGMENT_SIZE, info='[GS]')
-
 
     def __setup_components(self):
         reghive = self.path.transform_to_real_path(ntpath.join(self.windir, 'registry'))
@@ -201,12 +198,11 @@ class QlOsWindows(QlOs):
                 if ql.debug_stop:
                     raise QlErrorSyscallNotFound("Windows API implementation not found")
 
-
     def run(self):
         if self.ql.exit_point is not None:
             self.exit_point = self.ql.exit_point
 
-        if  self.ql.entry_point is not None:
+        if self.ql.entry_point is not None:
             self.ql.loader.entry_point = self.ql.entry_point
 
         entry_point = self.ql.loader.entry_point

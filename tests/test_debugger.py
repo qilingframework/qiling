@@ -1,13 +1,19 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import sys, threading, unittest, socket, time
+import socket
+import threading
+import time
+import unittest
 
+import sys
 sys.path.append("..")
+
 from qiling import Qiling
-from qiling.const import QL_VERBOSE
+from qiling.const import QL_ARCH, QL_OS, QL_VERBOSE
+
 
 class SimpleGdbClient:
     DELAY = 0.6
@@ -37,8 +43,8 @@ class SimpleGdbClient:
         self.__file.write(f'${msg}#{SimpleGdbClient.checksum(msg):02x}')
         self.__file.flush()
 
-class DebuggerTest(unittest.TestCase):
 
+class DebuggerTest(unittest.TestCase):
     def test_gdbdebug_file_server(self):
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_hello"], "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG)
         ql.debugger = True
@@ -165,7 +171,7 @@ class DebuggerTest(unittest.TestCase):
     def test_gdbdebug_shellcode_server(self):
         X8664_LIN = bytes.fromhex('31c048bbd19d9691d08c97ff48f7db53545f995257545eb03b0f05')
 
-        ql = Qiling(code=X8664_LIN, archtype='x8664', ostype='linux')
+        ql = Qiling(code=X8664_LIN, archtype=QL_ARCH.X8664, ostype=QL_OS.LINUX)
         ql.debugger = 'gdb:127.0.0.1:9998'
 
         def gdb_test_client():
@@ -191,6 +197,7 @@ class DebuggerTest(unittest.TestCase):
 
         ql.run()
         del ql
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,37 +1,41 @@
-from qiling import *
+from future import __annotations__
 
-class QILING_IDA():
-    def __init__(self):
-        pass
+from typing import TYPE_CHECKING, List
 
-    def _show_context(self, ql:Qiling):
-        registers = [ k for k in ql.arch.regs.register_mapping.keys() if type(k) is str ]
-        for idx in range(0, len(registers), 3):
-            regs = registers[idx:idx+3]
-            s = "\t".join(map(lambda v: f"{v:4}: {ql.arch.regs.__getattr__(v):016x}", regs))
-            ql.log.info(s)
+if TYPE_CHECKING:
+    from qiling import Qiling
+    from qiling.core_hooks_types import HookRet
 
-    def custom_prepare(self, ql:Qiling):
+
+class QILING_IDA:
+
+    def _show_context(self, ql: Qiling):
+        registers = tuple(ql.arch.regs.register_mapping.keys())
+        grouping = 4
+
+        for idx in range(0, len(registers), grouping):
+            ql.log.info('\t'.join(f'{r:5s}: {ql.arch.regs.read(r):016x}' for r in registers[idx:idx + grouping]))
+
+    def custom_prepare(self, ql: Qiling) -> None:
         ql.log.info('Context before starting emulation:')
         self._show_context(ql)
 
-    def custom_continue(self, ql:Qiling):
-        ql.log.info('custom_continue hook.')
+    def custom_continue(self, ql: Qiling) -> List[HookRet]:
+        ql.log.info('custom_continue hook')
         self._show_context(ql)
-        hook = []
-        return hook
 
-    def custom_step(self, ql:Qiling):
-        def step_hook(ql, addr, size):
-            ql.log.info(f"Executing: {hex(addr)}")
+        return []
+
+    def custom_step(self, ql: Qiling) -> List[HookRet]:
+        def step_hook(ql: Qiling, addr: int, size: int):
+            ql.log.info(f'Executing: {addr:#x}')
             self._show_context(ql)
 
         ql.log.info('custom_step hook')
-        hook = []
-        hook.append(ql.hook_code(step_hook))
-        return hook
-    
-    def custom_execute_selection(self, ql:Qiling):
-        ql.log.info('custom execute selection hook')
-        hook = []
-        return hook
+
+        return [ql.hook_code(step_hook)]
+
+    def custom_execute_selection(self, ql: Qiling) -> List[HookRet]:
+        ql.log.info('custom_execute_selection hook')
+
+        return []

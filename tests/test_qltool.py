@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import sys, subprocess, unittest
-
-sys.path.append("..")
-from qiling import *
-from qiling.exception import *
-
 import os
+import subprocess
+import sys
+import unittest
+
 
 class Qltool_Test(unittest.TestCase):
     def test_qltool_exec_args(self):
@@ -17,24 +15,23 @@ class Qltool_Test(unittest.TestCase):
         p = subprocess.Popen(create, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         for line in iter(p.stdout.readline, b''):
             self.stdout = line
-    
+
         self.assertEqual(b'arg        2 test3\n', self.stdout)
-        
 
     def test_qltool_shellcode(self):
         create = [sys.executable, '../qltool', 'code', '--os','linux','--arch', 'x86', '--format', 'asm', '-f', '../examples/shellcodes/lin32_execve.asm']
         try:
             subprocess.check_output(create,stderr=subprocess.STDOUT)
-        except subprocess.CalledProcessError as e:    
-            raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output)) 
+        except subprocess.CalledProcessError as e:
+            raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))
 
     def test_qltool_coverage(self):
         os.makedirs("./log_test", exist_ok=True)
         create = [sys.executable, '../qltool', 'run', '-f','../examples/rootfs/x8664_efi/bin/TcgPlatformSetupPolicy','--rootfs', '../examples/rootfs/x8664_efi','--coverage-format', 'drcov', '--coverage-file', 'log_test/TcgPlatformSetupPolicy']
         try:
             subprocess.check_output(create, stderr=subprocess.STDOUT)
-        except subprocess.CalledProcessError as e:    
-            raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output)) 
+        except subprocess.CalledProcessError as e:
+            raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))
 
     def test_qltool_json(self):
         create = [sys.executable, '../qltool', 'run', '-f','../examples/rootfs/x86_linux/bin/x86_hello','--rootfs', '../examples/rootfs/x86_linux','--verbose', 'off', '--json']

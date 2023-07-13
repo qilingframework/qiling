@@ -4,6 +4,13 @@
 :: Create the emulated Windows directory structure and registry ::
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
+:: Test for Admin privileges
+NET SESSIONS > NUL 2>&1
+IF %ERRORLEVEL% NEQ 0 (
+	ECHO Error: This script requires administrative privileges.
+	EXIT /B 1
+)
+
 :: Host system directories
 SET SYSDIR32="%WINDIR%\SysWOW64"
 SET SYSDIR64="%WINDIR%\System32"

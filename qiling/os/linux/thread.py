@@ -383,7 +383,7 @@ class QlLinuxX86Thread(QlLinuxThread):
             index = self.ql.os.gdtm.get_free_idx(12)
 
         if index in (12, 13, 14):
-            access = QL_X86_A_PRESENT | QL_X86_A_DATA | QL_X86_A_DATA_WRITABLE | QL_X86_A_PRIV_3 | QL_X86_A_DIR_CON_BIT
+            access = QL_X86_A_PRESENT | QL_X86_A_PRIV_3 | QL_X86_A_DESC_DATA | QL_X86_A_DATA | QL_X86_A_DATA_E | QL_X86_A_DATA_W
 
             self.ql.os.gdtm.register_gdt_segment(index, base, limit, access)
             self.ql.mem.write_ptr(tls_addr, index, 4)

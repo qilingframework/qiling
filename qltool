@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -8,7 +8,9 @@ import os
 import sys
 import ast
 import pickle
+
 from pprint import pprint
+from typing import TYPE_CHECKING, Mapping, Type
 
 from unicorn import __version__ as uc_ver
 from qiling import __version__ as ql_ver
@@ -16,10 +18,14 @@ from qiling import __version__ as ql_ver
 from qiling import Qiling
 from qiling.arch import utils as arch_utils
 from qiling.debugger.qdb import QlQdb
-from qiling.utils import arch_convert
 from qiling.const import QL_VERBOSE, QL_ENDIAN, os_map, arch_map, verbose_map
 from qiling.extensions.coverage import utils as cov_utils
 from qiling.extensions import report
+
+
+if TYPE_CHECKING:
+    from enum import Enum
+
 
 # read code from file
 def read_file(fname: str):
@@ -28,8 +34,9 @@ def read_file(fname: str):
 
     return content
 
+
 class __arg_env(argparse.Action):
-    def __call__(self, parser, namespace, values, option_string):
+    def __call__(self, parser, namespace, values: str, option_string):
         if os.path.exists(values):
             with open(values, 'rb') as f:
                 env = pickle.load(f)
@@ -38,9 +45,24 @@ class __arg_env(argparse.Action):
 
         setattr(namespace, self.dest, env or {})
 
-class __arg_verbose(argparse.Action):
-    def __call__(self, parser, namespace, values, option_string):
-        setattr(namespace, self.dest, verbose_map[values])
+
+def __make_enum_arg(enum_rmap: Mapping[str, 'Enum'], aliases: Mapping[str, str] = {}) -> Type[argparse.Action]:
+    class __enum_arg(argparse.Action):
+        def __call__(self, parser, namespace, values: str, option_string):
+            values = values.casefold()
+
+            if values in aliases:
+                values = aliases[values]
+
+            setattr(namespace, self.dest, enum_rmap[values])
+
+    return __enum_arg
+
+
+__arg_archtype = __make_enum_arg(arch_map, {'x86_64': 'x8664', 'riscv32': 'riscv'})
+__arg_ostype = __make_enum_arg(os_map, {'darwin': 'macos'})
+__arg_verbose = __make_enum_arg(verbose_map)
+
 
 def handle_code(options: argparse.Namespace):
     archendian = {
@@ -50,12 +72,12 @@ def handle_code(options: argparse.Namespace):
 
     if options.format == 'hex':
         if options.input is not None:
-            print ("Load HEX from ARGV")
+            print("Load HEX from ARGV")
             code = str(options.input).strip("\\\\x").split("x")
             code = "".join(code).strip()
-            code =  bytes.fromhex(code)
+            code = bytes.fromhex(code)
         elif options.filename is not None:
-            print ("Load HEX from FILE")
+            print("Load HEX from FILE")
             code = str(read_file(options.filename)).strip('b\'').strip('\\n')
             code = code.strip('x').split("\\\\x")
             code = "".join(code).strip()
@@ -65,16 +87,15 @@ def handle_code(options: argparse.Namespace):
             exit(1)
 
     elif options.format == 'asm':
-        print ("Load ASM from FILE")
+        print("Load ASM from FILE")
         assembly = read_file(options.filename)
-        archtype = arch_convert(options.arch)
 
-        assembler = arch_utils.assembler(archtype, archendian, options.thumb)
+        assembler = arch_utils.assembler(options.arch, archendian, options.thumb)
         code, _ = assembler.asm(assembly)
         code = bytes(code)
 
     elif options.format == 'bin':
-        print ("Load BIN from FILE")
+        print("Load BIN from FILE")
         if options.filename is not None:
             code = read_file(options.filename)
         else:
@@ -95,6 +116,7 @@ def handle_code(options: argparse.Namespace):
     )
 
     return ql
+
 
 def handle_run(options: argparse.Namespace):
     effective_argv = []
@@ -130,6 +152,7 @@ def handle_run(options: argparse.Namespace):
         exit()
 
     return ql
+
 
 def handle_examples(parser: argparse.ArgumentParser):
     prog = os.path.basename(__file__)
@@ -168,6 +191,7 @@ def handle_examples(parser: argparse.ArgumentParser):
 
     parser.exit(0, __ql_examples)
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--version', action='version', version=f'qltool for Qiling {ql_ver}, using Unicorn {uc_ver}')
@@ -185,10 +209,10 @@ if __name__ == '__main__':
     code_parser = commands.add_parser('code', help='execute a shellcode')
     code_parser.add_argument('-f', '--filename', metavar="FILE", help="filename")
     code_parser.add_argument('-i', '--input', metavar="INPUT", dest="input", help='input hex value')
-    code_parser.add_argument('--arch', required=True, choices=arch_map)
+    code_parser.add_argument('--arch', required=True, choices=arch_map, action=__arg_archtype)
     code_parser.add_argument('--thumb', action='store_true', default=False, help='specify thumb mode for ARM')
     code_parser.add_argument('--endian', choices=('little', 'big'), default='little', help='specify endianess for bi-endian archs')
-    code_parser.add_argument('--os', required=True, choices=os_map)
+    code_parser.add_argument('--os', required=True, choices=os_map, action=__arg_ostype)
     code_parser.add_argument('--rootfs', default='.', help='emulated root filesystem, that is where all libraries reside')
     code_parser.add_argument('--format', choices=('asm', 'hex', 'bin'), default='bin', help='input file format')
 
@@ -217,7 +241,7 @@ if __name__ == '__main__':
     comm_parser.add_argument('--log-plain', action='store_true', help="do not use colors in log output")
     comm_parser.add_argument('--root', action='store_true', help='enable sudo required mode')
     comm_parser.add_argument('--debug-stop', action='store_true', help='stop running on error; requires verbose to be set to either "debug" or "dump"')
-    comm_parser.add_argument('-m', '--multithread',action='store_true', help='run in multithread mode')
+    comm_parser.add_argument('-m', '--multithread', action='store_true', help='run in multithread mode')
     comm_parser.add_argument('--timeout', type=int, default=0, help='set emulation timeout')
     comm_parser.add_argument('-c', '--coverage-file', default=None, help='code coverage file name')
     comm_parser.add_argument('--coverage-format', default='drcov', choices=cov_utils.factory.formats, help='code coverage file format')

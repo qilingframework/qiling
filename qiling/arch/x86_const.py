@@ -5,34 +5,38 @@
 
 from unicorn.x86_const import *
 
-QL_X86_F_GRANULARITY = 0x8
-QL_X86_F_PROT_32 = 0x4
-QL_X86_F_LONG = 0x2
-QL_X86_F_AVAILABLE = 0x1
+# segment descriptor bits [47:40]
+QL_X86_A_DATA_A = (1 << 0)
+QL_X86_A_DATA_W = (1 << 1)
+QL_X86_A_DATA_E = (1 << 2)
+QL_X86_A_DATA   = (0 << 3)
 
-QL_X86_A_PRESENT = 0x80
+QL_X86_A_CODE_A = (1 << 0)
+QL_X86_A_CODE_R = (1 << 1)
+QL_X86_A_CODE_C = (1 << 2)
+QL_X86_A_CODE   = (1 << 3)
 
-QL_X86_A_PRIV_3 = 0x60
-QL_X86_A_PRIV_2 = 0x40
-QL_X86_A_PRIV_1 = 0x20
-QL_X86_A_PRIV_0 = 0x0
+QL_X86_A_DESC_SYSTEM = (0 << 4)  # S
+QL_X86_A_DESC_CODE   = (1 << 4)
+QL_X86_A_DESC_DATA   = (1 << 4)
 
-QL_X86_A_CODE = 0x10
-QL_X86_A_DATA = 0x10
-QL_X86_A_TSS = 0x0
-QL_X86_A_GATE = 0x0
-QL_X86_A_EXEC = 0x8
+QL_X86_A_PRIV_0 = (0b00 << 5)  # DPL
+QL_X86_A_PRIV_1 = (0b01 << 5)
+QL_X86_A_PRIV_2 = (0b10 << 5)
+QL_X86_A_PRIV_3 = (0b11 << 5)
 
-QL_X86_A_DATA_WRITABLE = 0x2
-QL_X86_A_CODE_READABLE = 0x2
-QL_X86_A_DIR_CON_BIT = 0x4
+QL_X86_A_PRESENT = (1 << 7)
 
-QL_X86_S_GDT = 0x0
-QL_X86_S_LDT = 0x4
-QL_X86_S_PRIV_3 = 0x3
-QL_X86_S_PRIV_2 = 0x2
-QL_X86_S_PRIV_1 = 0x1
-QL_X86_S_PRIV_0 = 0x0
+# segment descriptor bits [55:52]
+QL_X86_F_AVAILABLE   = (1 << 0)  # AVL
+QL_X86_F_LONG        = (1 << 1)  # L
+QL_X86_F_OPSIZE_32   = (1 << 2)  # D/B
+QL_X86_F_GRANULARITY = (1 << 3)  # G
+
+# segment selector bits
+QL_X86_SEGSEL_RPL_MASK = 0b11
+QL_X86_SEGSEL_TI_GDT = (0 << 2)
+QL_X86_SEGSEL_TI_LDT = (1 << 2)
 
 QL_X86_GDT_ADDR = 0x30000
 QL_X86_GDT_LIMIT = 0x1000
@@ -43,8 +47,6 @@ IA32_FS_BASE_MSR = 0xC0000100
 IA32_GS_BASE_MSR = 0xC0000101
 IA32_APIC_BASE_MSR = 0x1B
 
-# WINDOWS SETUP VALUE
-# Linux also needs these
 GS_SEGMENT_ADDR = 0x6000000
 GS_SEGMENT_SIZE = (20 << 20)    # 20 MB
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -16,42 +16,61 @@ from qiling.const import QL_VERBOSE
 # TODO: separate windows-specific implementation
 from qiling.os.windows.structs import make_unicode_string
 
-class QlOsUtils:
 
+class QlOsUtils:
     ELLIPSIS_PREF = r'__qlva_'
 
     def __init__(self, ql: Qiling):
         self.ql = ql
 
-    @staticmethod
-    def read_string(ql: Qiling, address: int, terminator: bytes) -> str:
-        result = bytearray()
+    def read_string(self, address: int, encoding: str, maxlen: int = 0) -> str:
+        """Read a null-terminated string from memory.
+
+        Args:
+            address : starting address
+            encoding: string encoding to use
+            maxlen  : limit number of characters to read before reaching null terminator,
+                      0 for unlimited length
+
+        Returns: decoded string
+        """
+
+        terminator = '\x00'.encode(encoding)
+
+        data = bytearray()
         charlen = len(terminator)
+        strlen = 0
 
-        char = ql.mem.read(address, charlen)
+        while True:
+            char = self.ql.mem.read(address, charlen)
 
-        while char != terminator:
+            if char == terminator:
+                break
+
+            data += char
+            strlen += 1
+
+            if strlen == maxlen:
+                break
+
             address += charlen
-            result += char
-            char = ql.mem.read(address, charlen)
 
-        return result.decode(errors="ignore")
-
-    def read_wstring(self, address: int) -> str:
-        s = QlOsUtils.read_string(self.ql, address, b'\x00\x00')
-
-        # We need to remove \x00 inside the string. Compares do not work otherwise
-        s = s.replace("\x00", "")
+        s = data.decode(encoding, errors='backslashreplace')
         self.ql.os.stats.log_string(s)
 
         return s
 
-    def read_cstring(self, address: int) -> str:
-        s = QlOsUtils.read_string(self.ql, address, b'\x00')
+    def read_wstring(self, address: int, maxlen: int = 0) -> str:
+        """Read a null-terminated wide string from memory.
+        """
 
-        self.ql.os.stats.log_string(s)
+        return self.read_string(address, 'utf-16le', maxlen)
 
-        return s
+    def read_cstring(self, address: int, maxlen: int = 0) -> str:
+        """Read a null-terminated ASCII string from memory.
+        """
+
+        return self.read_string(address, 'latin1', maxlen)
 
     def read_guid(self, address: int) -> UUID:
         raw_guid = self.ql.mem.read(address, 16)

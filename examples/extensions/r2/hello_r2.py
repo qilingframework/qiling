@@ -7,13 +7,14 @@ import sys
 sys.path.append('..')
 
 from qiling import Qiling
-from qiling.const import QL_VERBOSE
+from qiling.const import QL_ARCH, QL_OS, QL_VERBOSE
 from qiling.extensions.r2 import R2
 
 
 def func(ql: Qiling, *args, **kwargs):
     ql.os.stdout.write(b"=====hooked main=====!\n")
     return
+
 
 def my_sandbox(path, rootfs):
     ql = Qiling(path, rootfs, verbose=QL_VERBOSE.DISASM)
@@ -37,13 +38,21 @@ def my_sandbox(path, rootfs):
     # r2.enable_trace()
     ql.run()
 
+
 if __name__ == "__main__":
     my_sandbox(["rootfs/x86_windows/bin/x86_hello.exe"], "rootfs/x86_windows")
 
     # test shellcode mode
-    ARM64_LIN = bytes.fromhex('420002ca210080d2400080d2c81880d2010000d4e60300aa01020010020280d2681980d2010000d4410080d2420002cae00306aa080380d2010000d4210400f165ffff54e0000010420002ca210001caa81b80d2010000d4020004d27f0000012f62696e2f736800')
+    ARM64_LIN = bytes.fromhex('''
+        420002ca210080d2400080d2c81880d2010000d4e60300aa01020010020280d2
+        681980d2010000d4410080d2420002cae00306aa080380d2010000d4210400f1
+        65ffff54e0000010420002ca210001caa81b80d2010000d4020004d27f000001
+        2f62696e2f736800
+    ''')
+
     print("\nLinux ARM 64bit Shellcode")
-    ql = Qiling(code=ARM64_LIN, archtype="arm64", ostype="linux", verbose=QL_VERBOSE.DEBUG)
+
+    ql = Qiling(code=ARM64_LIN, archtype=QL_ARCH.ARM64, ostype=QL_OS.LINUX, verbose=QL_VERBOSE.DEBUG)
     r2 = R2(ql)
     # disassemble 32 instructions
     print(r2._cmd('pd 32'))
