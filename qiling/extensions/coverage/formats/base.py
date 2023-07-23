@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -12,14 +12,14 @@ class QlBaseCoverage(ABC):
     To add support for a new coverage format, just derive from this class and implement
     all the methods marked with the @abstractmethod decorator.
     """
-    
-    def __init__(self):
+
+    def __init__(self, ql):
         super().__init__()
 
     @property
     @staticmethod
     @abstractmethod
-    def FORMAT_NAME():
+    def FORMAT_NAME() -> str:
         raise NotImplementedError
 
     @abstractmethod
@@ -31,6 +31,5 @@ class QlBaseCoverage(ABC):
         pass
 
     @abstractmethod
-    def dump_coverage(self, coverage_file):
+    def dump_coverage(self, coverage_file: str):
         pass
-
