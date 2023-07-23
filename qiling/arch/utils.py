@@ -28,9 +28,22 @@ class QlArchUtils:
 
     @lru_cache(maxsize=64)
     def get_base_and_name(self, addr: int) -> Tuple[int, str]:
-        for begin, end, _, name, _ in self.ql.mem.map_info:
+        # executable images may be mapped in multiple consecutive regions, so locating
+        # an address within a region doesn't mean its base address is the base of the
+        # image. here we iterate through memory map regions as if they have been coalesced
+        # by label to find the image base address.
+
+        base_label = '?'
+        base_addr = -1
+
+        for begin, end, _, label, _ in self.ql.mem.map_info:
+            # reached a different image?
+            if label != base_label:
+                base_addr = begin
+                base_label = label
+
             if begin <= addr < end:
-                return begin, basename(name)
+                return base_addr, basename(label)
 
         return addr, '-'
 
