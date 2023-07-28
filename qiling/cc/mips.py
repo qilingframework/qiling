@@ -12,6 +12,9 @@ class mipso32(QlCommonBaseCC):
     _shadow = 4
     _retaddr_on_stack = False
 
+    def setReturnAddress(self, addr: int):
+        self.arch.regs.ra = addr
+
     @staticmethod
     def getNumSlots(argbits: int):
         return 1
