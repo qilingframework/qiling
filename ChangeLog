@@ -1,6 +1,43 @@
 This file details the changelog of Qiling Framework.
 
 ------------------------------------
+[Version 1.4.6]: August 4th, 2023
+
+## What's Changed
+* Fix ELF argv encoding by @elicn in https://github.com/qilingframework/qiling/pull/1303
+* Qdb improvements by @ucgJhe in https://github.com/qilingframework/qiling/pull/1311
+* added a history tracker to get coverage information about the execution of the binary by @anotherdish in https://github.com/qilingframework/qiling/pull/1313
+* remove tab and replace with 4 spaces by @xwings in https://github.com/qilingframework/qiling/pull/1320
+* Fix __CreateFile implmentation to include access mask and creation disposition  by @kbsec in https://github.com/qilingframework/qiling/pull/1309
+* Add interactive pipe to simulate pwntools `interactive` function by @anotherdish in https://github.com/qilingframework/qiling/pull/1307
+* fixed get_ins_exclude_lib not handling multiple shared objects properly by @anotherdish in https://github.com/qilingframework/qiling/pull/1317
+* Fix improper signaling of emulation termination in gdb single step by @elicn in https://github.com/qilingframework/qiling/pull/1322
+* Delete legacy object before reloading custom_script by @DiamondHunters in https://github.com/qilingframework/qiling/pull/1327
+* fix #1325 by @DiamondHunters in https://github.com/qilingframework/qiling/pull/1326
+* Fix struct packing logic associated with calls to `getdents64` by @Z1pburg3r in https://github.com/qilingframework/qiling/pull/1334
+* Improve afl_fuzz wrapper by @gnbon in https://github.com/qilingframework/qiling/pull/1330
+* Periodic maintenance PR by @elicn in https://github.com/qilingframework/qiling/pull/1336
+* Added qltui in setup.py by @river-li in https://github.com/qilingframework/qiling/pull/1354
+* feat(os): add posix message queue syscalls by @chinggg in https://github.com/qilingframework/qiling/pull/1363
+* Improved handling of export table for invalid export address and removed GandCrab workaround in GetProcAddress by @clairelevin in https://github.com/qilingframework/qiling/pull/1358
+* Fix  bug: qdb  load address error by @ltlly in https://github.com/qilingframework/qiling/pull/1364
+* Periodic maintenance PR by @elicn in https://github.com/qilingframework/qiling/pull/1355
+* update return register accordingly for all arch by @ucgJhe in https://github.com/qilingframework/qiling/pull/1367
+* Getting ready for 1.4.6 by @xwings in https://github.com/qilingframework/qiling/pull/1368
+
+## New Contributors
+* @anotherdish made their first contribution in https://github.com/qilingframework/qiling/pull/1313
+* @kbsec made their first contribution in https://github.com/qilingframework/qiling/pull/1309
+* @DiamondHunters made their first contribution in https://github.com/qilingframework/qiling/pull/1327
+* @Z1pburg3r made their first contribution in https://github.com/qilingframework/qiling/pull/1334
+* @gnbon made their first contribution in https://github.com/qilingframework/qiling/pull/1330
+* @river-li made their first contribution in https://github.com/qilingframework/qiling/pull/1354
+* @clairelevin made their first contribution in https://github.com/qilingframework/qiling/pull/1358
+* @ltlly made their first contribution in https://github.com/qilingframework/qiling/pull/1364
+
+**Full Changelog**: https://github.com/qilingframework/qiling/compare/1.4.5...1.4.6
+
+------------------------------------
 [Version 1.4.5]: December 31st, 2022
 
 New features:
