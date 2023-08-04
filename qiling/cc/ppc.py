@@ -21,3 +21,6 @@ class ppc(QlCommonBaseCC):
     @staticmethod
     def getNumSlots(argbits: int):
         return 1
+
+    def setReturnAddress(self, addr: int):
+        self.arch.regs.lr = addr
