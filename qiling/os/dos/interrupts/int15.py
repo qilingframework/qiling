@@ -10,51 +10,51 @@ from qiling import Qiling
 # @see: http://www.oldlinux.org/Linux.old/docs/interrupts/int-html/int-15.htm
 
 def __leaf_00(ql: Qiling):
-	pass
+    pass
 
 def __leaf_01(ql: Qiling):
-	pass
+    pass
 
 def __leaf_53(ql: Qiling):
-	al = ql.arch.regs.al
+    al = ql.arch.regs.al
 
-	if al == 0x01:
-		ql.os.clear_cf()
-	elif al == 0x0e:
-		ql.arch.regs.ax = 0x0102
-		ql.os.clear_cf()
-	elif al == 0x07:
-		if (ql.arch.regs.bx == 1) and (ql.arch.regs.cx == 3):
-			ql.log.info("Emulation Stop")
-			ql.emu_stop()
-	else:
-		raise NotImplementedError()
+    if al == 0x01:
+        ql.os.clear_cf()
+    elif al == 0x0e:
+        ql.arch.regs.ax = 0x0102
+        ql.os.clear_cf()
+    elif al == 0x07:
+        if (ql.arch.regs.bx == 1) and (ql.arch.regs.cx == 3):
+            ql.log.info("Emulation Stop")
+            ql.emu_stop()
+    else:
+        raise NotImplementedError()
 
 def __leaf_86(ql: Qiling):
-	dx = ql.arch.regs.dx
-	cx = ql.arch.regs.cx
-	full_secs = ((cx << 16) + dx) / 1000000
+    dx = ql.arch.regs.dx
+    cx = ql.arch.regs.cx
+    full_secs = ((cx << 16) + dx) / 1000000
 
-	ql.log.info(f"Goint to sleep for {full_secs} seconds")
-	time.sleep(full_secs)
+    ql.log.info(f"Goint to sleep for {full_secs} seconds")
+    time.sleep(full_secs)
 
-	# Note: Since we are in a single thread environment, we assume
-	# that no one will wait at the same time.
-	ql.os.clear_cf()
-	ql.arch.regs.ah = 0x80
+    # Note: Since we are in a single thread environment, we assume
+    # that no one will wait at the same time.
+    ql.os.clear_cf()
+    ql.arch.regs.ah = 0x80
 
 def handler(ql: Qiling):
-	ah = ql.arch.regs.ah
+    ah = ql.arch.regs.ah
 
-	leaffunc = {
-		0x00 : __leaf_00,
-		0x01 : __leaf_01,
-		0x53 : __leaf_53,
-		0x86 : __leaf_86
-	}.get(ah)
+    leaffunc = {
+        0x00 : __leaf_00,
+        0x01 : __leaf_01,
+        0x53 : __leaf_53,
+        0x86 : __leaf_86
+    }.get(ah)
 
-	if leaffunc is None:
-		ql.log.exception(f'leaf {ah:02x}h of INT 15h is not implemented')
-		raise NotImplementedError()
+    if leaffunc is None:
+        ql.log.exception(f'leaf {ah:02x}h of INT 15h is not implemented')
+        raise NotImplementedError()
 
-	leaffunc(ql)
+    leaffunc(ql)

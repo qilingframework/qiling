@@ -12,8 +12,8 @@ from qiling.os.windows.fncc import *
 #   [out] LPTIME_ZONE_INFORMATION lpTimeZoneInformation
 # );
 @winsdkapi(cc=STDCALL, params={
-	'lpTimeZoneInformation' : LPTIME_ZONE_INFORMATION
+    'lpTimeZoneInformation' : LPTIME_ZONE_INFORMATION
 })
 def hook_GetTimeZoneInformation(ql: Qiling, address: int, params):
     # TODO: implement this later. fail for now
-	return TIME_ZONE_ID_INVALID
+    return TIME_ZONE_ID_INVALID

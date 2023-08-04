@@ -197,12 +197,16 @@ class QlLoaderELF(QlLoader):
 
             # map the memory regions
             for lbound, ubound, perms in load_regions:
-                try:
-                    self.ql.mem.map(lbound, ubound - lbound, perms, os.path.basename(info))
-                except QlMemoryMappedError:
-                    self.ql.log.exception(f'Failed to map {lbound:#x}-{ubound:#x}')
-                else:
-                    self.ql.log.debug(f'Mapped {lbound:#x}-{ubound:#x}')
+                size = ubound - lbound
+
+                # there might be a region with zero size. in this case, do not mmap it
+                if size:
+                    try:
+                        self.ql.mem.map(lbound, size, perms, os.path.basename(info))
+                    except QlMemoryMappedError:
+                        self.ql.log.exception(f'Failed to map {lbound:#x}-{ubound:#x}')
+                    else:
+                        self.ql.log.debug(f'Mapped {lbound:#x}-{ubound:#x}')
 
             # load loadable segments contents to memory
             for seg in load_segments:
@@ -230,10 +234,15 @@ class QlLoaderELF(QlLoader):
 
         # load the interpreter, if there is one
         if interp_path:
-            interp_local_path = os.path.normpath(self.ql.rootfs + interp_path)
-            self.ql.log.debug(f'Interpreter path: {interp_local_path}')
+            interp_vpath = self.ql.os.path.virtual_abspath(interp_path)
+            interp_hpath = self.ql.os.path.virtual_to_host_path(interp_path)
 
-            with open(interp_local_path, 'rb') as infile:
+            self.ql.log.debug(f'Interpreter path: {interp_vpath}')
+
+            if not self.ql.os.path.is_safe_host_path(interp_hpath):
+                raise PermissionError(f'unsafe path: {interp_hpath}')
+
+            with open(interp_hpath, 'rb') as infile:
                 interp = ELFFile(infile)
                 min_vaddr = min(seg['p_vaddr'] for seg in interp.iter_segments(type='PT_LOAD'))
 
@@ -244,10 +253,10 @@ class QlLoaderELF(QlLoader):
                 self.ql.log.debug(f'Interpreter addr: {interp_address:#x}')
 
                 # load interpreter segments data to memory
-                interp_start, interp_end = load_elf_segments(interp, interp_address, interp_local_path)
+                interp_start, interp_end = load_elf_segments(interp, interp_address, interp_vpath)
 
                 # add interpreter to the loaded images list
-                self.images.append(Image(interp_start, interp_end, os.path.abspath(interp_local_path)))
+                self.images.append(Image(interp_start, interp_end, interp_hpath))
 
                 # determine entry point
                 entry_point = interp_address + interp['e_entry']
@@ -268,7 +277,7 @@ class QlLoaderELF(QlLoader):
             Top of stack remains aligned to pointer size
             """
 
-            data = s.encode('utf-8') + b'\x00'
+            data = s.encode('latin') + b'\x00'
             top = self.ql.mem.align(top - len(data), self.ql.arch.pointersize)
             self.ql.mem.write(top, data)
 
@@ -353,7 +362,6 @@ class QlLoaderELF(QlLoader):
         self.init_sp = self.ql.arch.regs.arch_sp
 
         self.ql.os.entry_point = self.entry_point = entry_point
-        self.ql.os.elf_mem_start = mem_start
         self.ql.os.elf_entry = self.elf_entry
         self.ql.os.function_hook = FunctionHook(self.ql, elf_phdr, elf_phnum, elf_phent, load_address, mem_end)
 

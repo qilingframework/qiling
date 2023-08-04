@@ -88,12 +88,12 @@ class GDTManager:
 
     @staticmethod
     def make_selector(idx: int, rpl: int) -> int:
-        assert rpl & ~0b11 == 0
+        assert rpl & ~QL_X86_SEGSEL_RPL_MASK == 0
 
-        return (idx << 3) | QL_X86_S_GDT | rpl
+        return (idx << 3) | QL_X86_SEGSEL_TI_GDT | rpl
 
     def register_gdt_segment(self, index: int, seg_base: int, seg_limit: int, access: int) -> int:
-        flags = QL_X86_F_PROT_32
+        flags = QL_X86_F_OPSIZE_32
 
         # is this a huge segment?
         if seg_limit > (1 << 16):
@@ -139,7 +139,7 @@ class SegmentManager:
 class SegmentManager86(SegmentManager):
     def setup_cs_ds_ss_es(self, base: int, size: int) -> None:
         # While debugging the linux kernel segment, the cs segment was found on the third segment of gdt.
-        access = QL_X86_A_PRESENT | QL_X86_A_CODE | QL_X86_A_CODE_READABLE | QL_X86_A_PRIV_3 | QL_X86_A_EXEC | QL_X86_A_DIR_CON_BIT
+        access = QL_X86_A_PRESENT | QL_X86_A_PRIV_3 | QL_X86_A_DESC_CODE | QL_X86_A_CODE | QL_X86_A_CODE_C | QL_X86_A_CODE_R
         selector = self.gdtm.register_gdt_segment(3, base, size - 1, access)
 
         self.arch.regs.cs = selector
@@ -147,7 +147,7 @@ class SegmentManager86(SegmentManager):
         # TODO : The section permission here should be QL_X86_A_PRIV_3, but I do n’t know why it can only be set to QL_X86_A_PRIV_0.
         # While debugging the Linux kernel segment, I found that the three segments DS, SS, and ES all point to the same location in the GDT table.
         # This position is the fifth segment table of GDT.
-        access = QL_X86_A_PRESENT | QL_X86_A_DATA | QL_X86_A_DATA_WRITABLE | QL_X86_A_PRIV_0 | QL_X86_A_DIR_CON_BIT
+        access = QL_X86_A_PRESENT | QL_X86_A_PRIV_0 | QL_X86_A_DESC_DATA | QL_X86_A_DATA | QL_X86_A_DATA_E | QL_X86_A_DATA_W
         selector = self.gdtm.register_gdt_segment(5, base, size - 1, access)
 
         self.arch.regs.ds = selector
@@ -155,13 +155,13 @@ class SegmentManager86(SegmentManager):
         self.arch.regs.es = selector
 
     def setup_fs(self, base: int, size: int) -> None:
-        access = QL_X86_A_PRESENT | QL_X86_A_DATA | QL_X86_A_DATA_WRITABLE | QL_X86_A_PRIV_3 | QL_X86_A_DIR_CON_BIT
+        access = QL_X86_A_PRESENT | QL_X86_A_PRIV_3 | QL_X86_A_DESC_DATA | QL_X86_A_DATA | QL_X86_A_DATA_E | QL_X86_A_DATA_W
         selector = self.gdtm.register_gdt_segment(14, base, size - 1, access)
 
         self.arch.regs.fs = selector
 
     def setup_gs(self, base: int, size: int) -> None:
-        access = QL_X86_A_PRESENT | QL_X86_A_DATA | QL_X86_A_DATA_WRITABLE | QL_X86_A_PRIV_3 | QL_X86_A_DIR_CON_BIT
+        access = QL_X86_A_PRESENT | QL_X86_A_PRIV_3 | QL_X86_A_DESC_DATA | QL_X86_A_DATA | QL_X86_A_DATA_E | QL_X86_A_DATA_W
         selector = self.gdtm.register_gdt_segment(15, base, size - 1, access)
 
         self.arch.regs.gs = selector
@@ -170,14 +170,14 @@ class SegmentManager86(SegmentManager):
 class SegmentManager64(SegmentManager):
     def setup_cs_ds_ss_es(self, base: int, size: int) -> None:
         # While debugging the linux kernel segment, the cs segment was found on the sixth segment of gdt.
-        access = QL_X86_A_PRESENT | QL_X86_A_CODE | QL_X86_A_CODE_READABLE | QL_X86_A_PRIV_3 | QL_X86_A_EXEC | QL_X86_A_DIR_CON_BIT
+        access = QL_X86_A_PRESENT | QL_X86_A_PRIV_3 | QL_X86_A_DESC_CODE | QL_X86_A_CODE | QL_X86_A_CODE_C | QL_X86_A_CODE_R
         selector = self.gdtm.register_gdt_segment(6, base, size - 1, access)
 
         self.arch.regs.cs = selector
 
         # TODO : The section permission here should be QL_X86_A_PRIV_3, but I do n’t know why it can only be set to QL_X86_A_PRIV_0.
         # When I debug the Linux kernel, I find that only the SS is set to the fifth segment table, and the rest are not set.
-        access = QL_X86_A_PRESENT | QL_X86_A_DATA | QL_X86_A_DATA_WRITABLE | QL_X86_A_PRIV_0 | QL_X86_A_DIR_CON_BIT
+        access = QL_X86_A_PRESENT | QL_X86_A_PRIV_0 | QL_X86_A_DESC_DATA | QL_X86_A_DATA | QL_X86_A_DATA_E | QL_X86_A_DATA_W
         selector = self.gdtm.register_gdt_segment(5, base, size - 1, access)
 
         # self.arch.regs.ds = selector

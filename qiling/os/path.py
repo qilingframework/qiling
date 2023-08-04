@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -9,6 +9,7 @@ from pathlib import Path, PurePosixPath, PureWindowsPath
 from qiling.const import QL_OS, QL_OS_POSIX
 
 AnyPurePath = Union[PurePosixPath, PureWindowsPath]
+
 
 class QlOsPath:
     """Virtual to host path manipulations helper.
@@ -59,6 +60,10 @@ class QlOsPath:
                 path = path.relative_to(pardir)
 
         return path
+
+    @property
+    def root(self) -> str:
+        return str(self._cwd_anchor)
 
     @property
     def cwd(self) -> str:
@@ -274,6 +279,18 @@ class QlOsPath:
 
         return str(virtpath)
 
+    def is_virtual_abspath(self, virtpath: str) -> bool:
+        """Determine whether a given virtual path is absolute.
+
+        Args:
+            virtpath : virtual path to query
+
+        Returns: `True` if `virtpath` is an absolute path, `False` if relative
+        """
+
+        vpath = self.PureVirtualPath(virtpath)
+
+        return vpath.is_absolute()
 
     def virtual_abspath(self, virtpath: str) -> str:
         """Convert a relative virtual path to an absolute virtual path based
@@ -346,4 +363,3 @@ class QlOsPath:
             return QlOsPath.__host_casefold_path(hostpath)
 
         return hostpath
-

@@ -3,32 +3,39 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from __future__ import annotations
+
 import copy
 import logging
 import os
 import re
 import weakref
 
-from typing import Optional, TextIO
+from typing import TYPE_CHECKING, Optional, TextIO
+from logging import Filter, Formatter, LogRecord, Logger, NullHandler, StreamHandler, FileHandler
 
 from qiling.const import QL_VERBOSE
+
+if TYPE_CHECKING:
+    from qiling import Qiling
+
 
 QL_INSTANCE_ID = 114514
 
 FMT_STR = '%(levelname)s\t%(message)s'
 
+
 class COLOR:
-    WHITE   = '\033[37m'
     CRIMSON = '\033[31m'
     RED     = '\033[91m'
     GREEN   = '\033[92m'
     YELLOW  = '\033[93m'
     BLUE    = '\033[94m'
     MAGENTA = '\033[95m'
-    CYAN    = '\033[96m'
-    ENDC    = '\033[0m'
+    DEFAULT = '\033[39m'
 
-class QlBaseFormatter(logging.Formatter):
+
+class QlBaseFormatter(Formatter):
     __level_tag = {
         'WARNING'  : '[!]',
         'INFO'     : '[=]',
@@ -37,9 +44,10 @@ class QlBaseFormatter(logging.Formatter):
         'ERROR'    : '[x]'
     }
 
-    def __init__(self, ql, *args, **kwargs):
+    def __init__(self, ql: Qiling, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.ql = weakref.proxy(ql)
+
+        self.ql: Qiling = weakref.proxy(ql)
 
     def get_level_tag(self, level: str) -> str:
         return self.__level_tag[level]
@@ -47,7 +55,7 @@ class QlBaseFormatter(logging.Formatter):
     def get_thread_tag(self, thread: str) -> str:
         return thread
 
-    def format(self, record: logging.LogRecord):
+    def format(self, record: LogRecord):
         # In case we have multiple formatters, we have to keep a copy of the record.
         record = copy.copy(record)
 
@@ -64,6 +72,7 @@ class QlBaseFormatter(logging.Formatter):
 
         return super().format(record)
 
+
 class QlColoredFormatter(QlBaseFormatter):
     __level_color = {
         'WARNING'  : COLOR.YELLOW,
@@ -76,21 +85,23 @@ class QlColoredFormatter(QlBaseFormatter):
     def get_level_tag(self, level: str) -> str:
         s = super().get_level_tag(level)
 
-        return f'{self.__level_color[level]}{s}{COLOR.ENDC}'
+        return f'{self.__level_color[level]}{s}{COLOR.DEFAULT}'
 
     def get_thread_tag(self, tid: str) -> str:
         s = super().get_thread_tag(tid)
 
-        return f'{COLOR.GREEN}{s}{COLOR.ENDC}'
+        return f'{COLOR.GREEN}{s}{COLOR.DEFAULT}'
 
-class RegexFilter(logging.Filter):
+
+class RegexFilter(Filter):
     def update_filter(self, regexp: str):
         self._filter = re.compile(regexp)
 
-    def filter(self, record: logging.LogRecord):
+    def filter(self, record: LogRecord):
         msg = record.getMessage()
 
         return self._filter.match(msg) is not None
+
 
 def resolve_logger_level(verbose: QL_VERBOSE) -> int:
     return {
@@ -101,6 +112,7 @@ def resolve_logger_level(verbose: QL_VERBOSE) -> int:
         QL_VERBOSE.DISASM   : logging.DEBUG,
         QL_VERBOSE.DUMP     : logging.DEBUG
     }[verbose]
+
 
 def __is_color_terminal(stream: TextIO) -> bool:
     """Determine whether standard output is attached to a color terminal.
@@ -142,7 +154,8 @@ def __is_color_terminal(stream: TextIO) -> bool:
 
     return handler(stream.fileno())
 
-def setup_logger(ql, log_file: Optional[str], console: bool, log_override: Optional[logging.Logger], log_plain: bool):
+
+def setup_logger(ql: Qiling, log_file: Optional[str], console: bool, log_override: Optional[Logger], log_plain: bool):
     global QL_INSTANCE_ID
 
     # If there is an override for our logger, then use it.
@@ -155,15 +168,19 @@ def setup_logger(ql, log_file: Optional[str], console: bool, log_override: Optio
 
         # Disable propagation to avoid duplicate output.
         log.propagate = False
+
         # Clear all handlers and filters.
-        log.handlers = []
-        log.filters = []
+        log.handlers.clear()
+        log.filters.clear()
 
         # Do we have console output?
         if console:
-            handler = logging.StreamHandler()
+            handler = StreamHandler()
 
-            if log_plain or not __is_color_terminal(handler.stream):
+            # adhere to the NO_COLOR convention (see: https://no-color.org/)
+            no_color = os.getenv('NO_COLOR', False)
+
+            if no_color or log_plain or not __is_color_terminal(handler.stream):
                 formatter = QlBaseFormatter(ql, FMT_STR)
             else:
                 formatter = QlColoredFormatter(ql, FMT_STR)
@@ -171,18 +188,25 @@ def setup_logger(ql, log_file: Optional[str], console: bool, log_override: Optio
             handler.setFormatter(formatter)
             log.addHandler(handler)
         else:
-            handler = logging.NullHandler()
+            handler = NullHandler()
             log.addHandler(handler)
 
         # Do we have to write log to a file?
         if log_file is not None:
-            handler = logging.FileHandler(log_file)
+            handler = FileHandler(log_file)
             formatter = QlBaseFormatter(ql, FMT_STR)
             handler.setFormatter(formatter)
             log.addHandler(handler)
 
     log.setLevel(logging.INFO)
 
+    # optimize logging speed by avoiding the collection of unnecesary logging properties
+    logging._srcfile = None
+    logging.logThreads = False
+    logging.logProcesses = False
+    logging.logMultiprocessing = False
+
     return log
+
 
 __all__ = ['RegexFilter', 'setup_logger', 'resolve_logger_level']

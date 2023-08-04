@@ -158,7 +158,6 @@ def hook__lwrite(ql: Qiling, address: int, params):
 })
 def hook_FatalExit(ql: Qiling, address: int, params):
     ql.emu_stop()
-    ql.os.PE_RUN = False
 
 # PVOID EncodePointer(
 #  _In_ PVOID Ptr

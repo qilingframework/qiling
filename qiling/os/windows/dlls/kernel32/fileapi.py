@@ -52,21 +52,13 @@ def hook_FindFirstFileA(ql: Qiling, address: int, params):
     if len(filename) >= MAX_PATH:
         return ERROR_INVALID_PARAMETER
 
-    host_path = ql.os.path.virtual_to_host_path(filename)
-
-    # Verify the directory is in ql.rootfs to ensure no path traversal has taken place
-    if not ql.os.path.is_safe_host_path(host_path):
-        ql.os.last_error = ERROR_FILE_NOT_FOUND
-
-        return INVALID_HANDLE_VALUE
-
     # Check if path exists
     filesize = 0
 
     try:
-        f = ql.os.fs_mapper.open(host_path, "r")
+        f = ql.os.fs_mapper.open(filename, "r")
 
-        filesize = os.path.getsize(host_path)
+        filesize = os.path.getsize(f.name)
     except FileNotFoundError:
         ql.os.last_error = ERROR_FILE_NOT_FOUND
 
@@ -222,19 +214,106 @@ def _CreateFile(ql: Qiling, address: int, params):
     dwDesiredAccess = params["dwDesiredAccess"]
     # dwShareMode = params["dwShareMode"]
     # lpSecurityAttributes = params["lpSecurityAttributes"]
-    # dwCreationDisposition = params["dwCreationDisposition"]
+    
+    # Handle Creation Disposition. I.e. how to respond
+    # when a file either exists or doesn't
+    # See https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilea
+    dwCreationDisposition = params["dwCreationDisposition"]
+
     # dwFlagsAndAttributes = params["dwFlagsAndAttributes"]
     # hTemplateFile = params["hTemplateFile"]
 
     # access mask DesiredAccess
-    if dwDesiredAccess & GENERIC_WRITE:
-        mode = "wb"
-    else:
+    perm_write = dwDesiredAccess & GENERIC_WRITE
+    perm_read  = dwDesiredAccess & GENERIC_READ
+    
+    # TODO: unused
+    perm_exec = dwDesiredAccess & GENERIC_EXECUTE
+
+    # only open file if it exists. error otherwise
+    open_existing = (
+        (dwCreationDisposition == OPEN_EXISTING) or
+        (dwCreationDisposition == TRUNCATE_EXISTING ) 
+        )
+     
+    # check if the file exists 
+    # TODO: race condition if file is deleted/reated  
+    file_exists = ql.os.fs_mapper.file_exists(s_lpFileName)
+
+    if (open_existing and (not file_exists)):
+        # the CreationDisposition wants a file to exist
+        # it does not 
+        ql.os.last_error = ERROR_FILE_NOT_FOUND
+        return INVALID_HANDLE_VALUE
+
+    if ((dwCreationDisposition == CREATE_NEW ) and file_exists):
+        # only create a file if it does not exist. 
+        # if it does, error
+        ql.os.last_error = ERROR_FILE_EXISTS
+
+    truncate  = (dwCreationDisposition == CREATE_ALWAYS) or  (dwCreationDisposition == TRUNCATE_EXISTING)
+
+    # TODO: this function does not handle general access masks. 
+    # see https://learn.microsoft.com/en-us/windows/win32/secauthz/access-mask
+    # it is only able to handle Generic R/W
+
+    # read only 
+    if (perm_read) and ( not (perm_write)):
         mode = "rb"
 
+    # Write only
+    elif ( perm_write and (not perm_read)):
+        # TODO: fopen modes do not allow for write only access
+        # Likely need to use os.open instead. 
+
+        if (truncate and (not open_existing)) or (truncate and open_existing and file_exists):
+            # create a new file or truncate an existing one
+            mode = "wb"
+        else:   
+            ql.log.warn("_CreateFile has been called with Write only access. This is not currently supported and the handle is still allows for read access!")
+            # read/write, do not create. do not truncatd
+            mode = "rb+"
+    
+    elif perm_read and perm_write:
+        # Note that this ignores exec access mask 
+        mode = "rb+"
+
+    elif perm_exec:
+        # TODO: handle exec access mask
+        # it is only executable or has a non standard access mask
+        ql.log.warn("_CreateFile has been called with executable only access or with a non standard access mask. This is not currently supported and the handle is set to Read/Write")
+        mode = "rb+"        
+    else:
+        # This is probably an invalid access mask
+        ql.log.warn(f"Invalid access mask provided: {dwDesiredAccess}")
+        # TODO: add error code 
+        return INVALID_HANDLE_VALUE
+
     try:
+        # we should have exited by now if the file doesn't exist
+        if (not file_exists) and (mode != "wb"):
+            status = ql.os.fs_mapper.create_empty_file(s_lpFileName)
+            if not status:
+                # could not create a new file
+                # bail out.
+                # TODO: set last_error
+                ql.log.warn(f"_CreateFile could not create new file {s_lpFileName}")
+                return INVALID_HANDLE_VALUE    
+
         f = ql.os.fs_mapper.open(s_lpFileName, mode)
+        if truncate and mode != "wb":
+            # redundant if mode is wb
+            f.truncate(0)
+
+        if dwCreationDisposition == CREATE_ALWAYS:
+                # we overwrote the file.
+                ql.os.last_error = ERROR_ALREADY_EXISTS
+                
+        if dwCreationDisposition == OPEN_ALWAYS:
+            ql.os.last_error = ERROR_ALREADY_EXISTS
+            
     except FileNotFoundError:
+        # Creation disposition determines what happens when the file doesn't exist
         ql.os.last_error = ERROR_FILE_NOT_FOUND
         return INVALID_HANDLE_VALUE
 

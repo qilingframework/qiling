@@ -116,7 +116,7 @@ def make_peb(archbits: int):
     return PEB
 
 
-# https://docs.microsoft.com/en-us/windows/win32/api/subauth/ns-subauth-unicode_string
+# https://learn.microsoft.com/en-us/windows/win32/api/ntdef/ns-ntdef-_unicode_string
 @lru_cache(maxsize=2)
 def make_unicode_string(archbits: int):
     """Generate a UNICODE_STRING structure class.
@@ -133,6 +133,10 @@ def make_unicode_string(archbits: int):
         )
 
     return UNICODE_STRING
+
+
+# https://learn.microsoft.com/en-us/windows/win32/api/ntdef/ns-ntdef-string
+make_ansi_string = make_unicode_string
 
 
 # https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/ns-wdm-_driver_object
@@ -983,7 +987,7 @@ def make_ldr_data_table_entry(archbits: int):
             ('LoadReason', ctypes.c_uint32),
             ('ImplicitPathOptions', native_type),
             ('ReferenceCount', native_type),
-        	# 1607+
+            # 1607+
             ('DependentLoadFlags', native_type),
             # 1703+
             ('SigningLevel', ctypes.c_uint8)

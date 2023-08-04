@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -193,7 +193,6 @@ def hook__initterm(ql: Qiling, address: int, params):
 })
 def hook_exit(ql: Qiling, address: int, params):
     ql.emu_stop()
-    ql.os.PE_RUN = False
 
 # int __cdecl _initterm_e(
 #    PVFV *,

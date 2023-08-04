@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -8,22 +8,53 @@
 # handling hooks                             #
 ##############################################
 
-import functools
+from __future__ import annotations
+
+from functools import wraps
 from typing import Any, Callable, MutableMapping, MutableSequence, Protocol
 from typing import TYPE_CHECKING
 
-from unicorn import Uc
-from unicorn.unicorn_const import *
+from unicorn.unicorn_const import (
+    UC_HOOK_INTR,
+    UC_HOOK_INSN,
+    UC_HOOK_CODE,
+    UC_HOOK_BLOCK,
+
+    UC_HOOK_MEM_READ_UNMAPPED,      # attempt to read from an unmapped memory location
+    UC_HOOK_MEM_WRITE_UNMAPPED,     # attempt to write to an unmapped memory location
+    UC_HOOK_MEM_FETCH_UNMAPPED,     # attempt to fetch from an unmapped memory location
+    UC_HOOK_MEM_UNMAPPED,           # any of the 3 above
+
+    UC_HOOK_MEM_READ_PROT,          # attempt to read from a non-readable memory location
+    UC_HOOK_MEM_WRITE_PROT,         # attempt to write to a write-protected memory location
+    UC_HOOK_MEM_FETCH_PROT,         # attempt to fetch from a non-executable memory location
+    UC_HOOK_MEM_PROT,               # any of the 3 above
+
+    UC_HOOK_MEM_READ_INVALID,       # UC_HOOK_MEM_READ_UNMAPPED | UC_HOOK_MEM_READ_PROT
+    UC_HOOK_MEM_WRITE_INVALID,      # UC_HOOK_MEM_WRITE_UNMAPPED | UC_HOOK_MEM_WRITE_INVALID
+    UC_HOOK_MEM_FETCH_INVALID,      # UC_HOOK_MEM_FETCH_UNMAPPED | UC_HOOK_MEM_FETCH_INVALID
+    UC_HOOK_MEM_INVALID,            # any of the 3 above
+
+    UC_HOOK_MEM_READ,               # valid memory read
+    UC_HOOK_MEM_WRITE,              # valid memory write
+    UC_HOOK_MEM_FETCH,              # valid instruction fetch
+    UC_HOOK_MEM_VALID,              # any of the 3 above
+
+    UC_HOOK_MEM_READ_AFTER,
+    UC_HOOK_INSN_INVALID
+)
 
 from .core_hooks_types import Hook, HookAddr, HookIntr, HookRet
 from .const import QL_HOOK_BLOCK
 from .exception import QlErrorCoreHook
 
 if TYPE_CHECKING:
+    from unicorn import Uc
     from qiling import Qiling
 
+
 class MemHookCallback(Protocol):
-    def __call__(self, __ql: 'Qiling', __access: int, __address: int, __size: int, __value: int, *__context: Any) -> Any:
+    def __call__(self, __ql: Qiling, __access: int, __address: int, __size: int, __value: int, *__context: Any) -> Any:
         """Memory access hook callback.
 
         Args:
@@ -40,8 +71,9 @@ class MemHookCallback(Protocol):
         """
         pass
 
+
 class TraceHookCalback(Protocol):
-    def __call__(self, __ql: 'Qiling', __address: int, __size: int, *__context: Any) -> Any:
+    def __call__(self, __ql: Qiling, __address: int, __size: int, *__context: Any) -> Any:
         """Execution hook callback.
 
         Args:
@@ -56,8 +88,9 @@ class TraceHookCalback(Protocol):
         """
         pass
 
+
 class AddressHookCallback(Protocol):
-    def __call__(self, __ql: 'Qiling', *__context: Any) -> Any:
+    def __call__(self, __ql: Qiling, *__context: Any) -> Any:
         """Address hook callback.
 
         Args:
@@ -70,8 +103,9 @@ class AddressHookCallback(Protocol):
         """
         pass
 
+
 class InterruptHookCallback(Protocol):
-    def __call__(self, __ql: 'Qiling', intno: int, *__context: Any) -> Any:
+    def __call__(self, __ql: Qiling, intno: int, *__context: Any) -> Any:
         """Interrupt hook callback.
 
         Args:
@@ -86,9 +120,8 @@ class InterruptHookCallback(Protocol):
         pass
 
 
-def hookcallback(ql: 'Qiling', callback: Callable):
-
-    functools.wraps(callback)
+def hookcallback(ql: Qiling, callback: Callable):
+    @wraps(callback)
     def wrapper(*args, **kwargs):
         try:
             return callback(*args, **kwargs)
@@ -113,10 +146,10 @@ class QlCoreHooks:
         self._addr_hook: MutableMapping[int, MutableSequence[HookAddr]] = {}
         self._addr_hook_fuc: MutableMapping[int, int] = {}
 
-
     ########################
     # Callback definitions #
     ########################
+
     def _hook_intr_cb(self, uc: Uc, intno: int, pack_data) -> None:
         """Interrupt hooks dispatcher.
         """
@@ -142,7 +175,6 @@ class QlCoreHooks:
         if not handled:
             raise QlErrorCoreHook("_hook_intr_cb : not handled")
 
-
     def _hook_insn_cb(self, uc: Uc, *args):
         """Instruction hooks dispatcher.
         """
@@ -166,7 +198,6 @@ class QlCoreHooks:
         # use the last return value received
         return retval
 
-
     def _hook_trace_cb(self, uc: Uc, addr: int, size: int, pack_data) -> None:
         """Code and block hooks dispatcher.
         """
@@ -182,7 +213,6 @@ class QlCoreHooks:
 
                     if type(ret) is int and ret & QL_HOOK_BLOCK:
                         break
-
 
     def _hook_mem_cb(self, uc: Uc, access: int, addr: int, size: int, value: int, pack_data):
         """Memory access hooks dispatcher.
@@ -207,7 +237,6 @@ class QlCoreHooks:
 
         return True
 
-
     def _hook_insn_invalid_cb(self, uc: Uc, pack_data) -> None:
         """Invalid instruction hooks dispatcher.
         """
@@ -228,7 +257,6 @@ class QlCoreHooks:
         if not handled:
             raise QlErrorCoreHook("_hook_insn_invalid_cb : not handled")
 
-
     def _hook_addr_cb(self, uc: Uc, addr: int, size: int, pack_data):
         """Address hooks dispatcher.
         """
@@ -247,17 +275,16 @@ class QlCoreHooks:
     ###############
     # Class Hooks #
     ###############
+
     def _ql_hook_internal(self, hook_type: int, callback: Callable, context: Any, *args) -> int:
         _callback = hookcallback(self, callback)
 
         return self._h_uc.hook_add(hook_type, _callback, (self, context), 1, 0, *args)
 
-
     def _ql_hook_addr_internal(self, callback: Callable, address: int) -> int:
         _callback = hookcallback(self, callback)
 
         return self._h_uc.hook_add(UC_HOOK_CODE, _callback, self, address, address)
-
 
     def _ql_hook(self, hook_type: int, h: Hook, *args) -> None:
 
@@ -330,7 +357,6 @@ class QlCoreHooks:
             if hook_type & t:
                 handler(t)
 
-
     def ql_hook(self, hook_type: int, callback: Callable, user_data: Any = None, begin: int = 1, end: int = 0, *args) -> HookRet:
         """Intercept certain emulation events within a specified range.
 
@@ -355,7 +381,6 @@ class QlCoreHooks:
 
         return HookRet(self, hook_type, hook)
 
-
     def hook_code(self, callback: TraceHookCalback, user_data: Any = None, begin: int = 1, end: int = 0) -> HookRet:
         """Intercept assembly instructions before they get executed.
 
@@ -374,11 +399,9 @@ class QlCoreHooks:
 
         return self.ql_hook(UC_HOOK_CODE, callback, user_data, begin, end)
 
-
     # TODO: remove; this is a special case of hook_intno(-1)
     def hook_intr(self, callback, user_data=None, begin=1, end=0):
         return self.ql_hook(UC_HOOK_INTR, callback, user_data, begin, end)
-
 
     def hook_block(self, callback: TraceHookCalback, user_data: Any = None, begin: int = 1, end: int = 0) -> HookRet:
         """Intercept landings in new basic blocks in a specified range.
@@ -398,7 +421,6 @@ class QlCoreHooks:
 
         return self.ql_hook(UC_HOOK_BLOCK, callback, user_data, begin, end)
 
-
     def hook_mem_unmapped(self, callback: MemHookCallback, user_data: Any = None, begin: int = 1, end: int = 0) -> HookRet:
         """Intercept illegal accesses to unmapped memory in a specified range.
 
@@ -416,7 +438,6 @@ class QlCoreHooks:
         """
 
         return self.ql_hook(UC_HOOK_MEM_UNMAPPED, callback, user_data, begin, end)
-
 
     def hook_mem_read_invalid(self, callback: MemHookCallback, user_data: Any = None, begin: int = 1, end: int = 0) -> HookRet:
         """Intercept illegal reading attempts from a specified range.
@@ -436,7 +457,6 @@ class QlCoreHooks:
 
         return self.ql_hook(UC_HOOK_MEM_READ_INVALID, callback, user_data, begin, end)
 
-
     def hook_mem_write_invalid(self, callback: MemHookCallback, user_data: Any = None, begin: int = 1, end: int = 0) -> HookRet:
         """Intercept illegal writing attempts to a specified range.
 
@@ -455,7 +475,6 @@ class QlCoreHooks:
 
         return self.ql_hook(UC_HOOK_MEM_WRITE_INVALID, callback, user_data, begin, end)
 
-
     def hook_mem_fetch_invalid(self, callback: MemHookCallback, user_data: Any = None, begin: int = 1, end: int = 0) -> HookRet:
         """Intercept illegal code fetching attempts from a specified range.
 
@@ -473,7 +492,6 @@ class QlCoreHooks:
         """
 
         return self.ql_hook(UC_HOOK_MEM_FETCH_INVALID, callback, user_data, begin, end)
-
 
     def hook_mem_valid(self, callback: MemHookCallback, user_data: Any = None, begin: int = 1, end: int = 0) -> HookRet:
         """Intercept benign memory accesses within a specified range.
@@ -494,7 +512,6 @@ class QlCoreHooks:
 
         return self.ql_hook(UC_HOOK_MEM_VALID, callback, user_data, begin, end)
 
-
     def hook_mem_invalid(self, callback: MemHookCallback, user_data: Any = None, begin: int = 1, end: int = 0) -> HookRet:
         """Intercept invalid memory accesses within a specified range.
         This is equivalent to hooking invalid memory reads, writes and fetches.
@@ -513,7 +530,6 @@ class QlCoreHooks:
         """
 
         return self.ql_hook(UC_HOOK_MEM_INVALID, callback, user_data, begin, end)
-
 
     def hook_address(self, callback: AddressHookCallback, address: int, user_data: Any = None) -> HookRet:
         """Intercept execution from a certain memory address.
@@ -540,7 +556,6 @@ class QlCoreHooks:
         # note: assuming 0 is not a valid hook type
         return HookRet(self, 0, hook)
 
-
     def hook_intno(self, callback: InterruptHookCallback, intno: int, user_data: Any = None) -> HookRet:
         """Intercept interrupts.
 
@@ -557,7 +572,6 @@ class QlCoreHooks:
         self._ql_hook(UC_HOOK_INTR, hook)
 
         return HookRet(self, UC_HOOK_INTR, hook)
-
 
     def hook_mem_read(self, callback: MemHookCallback, user_data: Any = None, begin: int = 1, end: int = 0) -> HookRet:
         """Intercept benign memory reads from a specified range.
@@ -577,7 +591,6 @@ class QlCoreHooks:
 
         return self.ql_hook(UC_HOOK_MEM_READ, callback, user_data, begin, end)
 
-
     def hook_mem_write(self, callback: MemHookCallback, user_data: Any = None, begin: int = 1, end: int = 0) -> HookRet:
         """Intercept benign memory writes to a specified range.
 
@@ -596,7 +609,6 @@ class QlCoreHooks:
 
         return self.ql_hook(UC_HOOK_MEM_WRITE, callback, user_data, begin, end)
 
-
     def hook_mem_fetch(self, callback: MemHookCallback, user_data: Any = None, begin: int = 1, end: int = 0) -> HookRet:
         """Intercept benign code fetches from a specified range.
 
@@ -614,7 +626,6 @@ class QlCoreHooks:
         """
 
         return self.ql_hook(UC_HOOK_MEM_FETCH, callback, user_data, begin, end)
-
 
     def hook_insn(self, callback, insn_type: int, user_data: Any = None, begin: int = 1, end: int = 0) -> HookRet:
         """Intercept execution of a certain instruction type within a specified range.
@@ -636,7 +647,6 @@ class QlCoreHooks:
         """
 
         return self.ql_hook(UC_HOOK_INSN, callback, user_data, begin, end, insn_type)
-
 
     def hook_del(self, hret: HookRet) -> None:
         """Unregister an existing hook and release its resources.
@@ -692,7 +702,6 @@ class QlCoreHooks:
             if hook_type & t:
                 handler(t)
 
-
     def clear_hooks(self):
         for ptr in self._hook_fuc.values():
             self._h_uc.hook_del(ptr)
@@ -704,7 +713,6 @@ class QlCoreHooks:
             self._h_uc.hook_del(ptr)
 
         self.clear_ql_hooks()
-
 
     def clear_ql_hooks(self):
         self._hook = {}

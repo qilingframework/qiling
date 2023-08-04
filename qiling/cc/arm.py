@@ -20,8 +20,7 @@ class QlArmBaseCC(QlCommonBaseCC):
         return 1
 
     def setReturnAddress(self, addr: int) -> None:
-        # TODO: do we need to update LR?
-        self.arch.stack_push(addr)
+        self.arch.regs.lr = addr
 
     def unwind(self, nslots: int) -> int:
         # TODO: cleanup?

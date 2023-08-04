@@ -4,6 +4,13 @@
 :: Create the emulated Windows directory structure and registry ::
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
+:: Test for Admin privileges
+NET SESSIONS > NUL 2>&1
+IF %ERRORLEVEL% NEQ 0 (
+	ECHO Error: This script requires administrative privileges.
+	EXIT /B 1
+)
+
 :: Host system directories
 SET SYSDIR32="%WINDIR%\SysWOW64"
 SET SYSDIR64="%WINDIR%\System32"
@@ -118,6 +125,8 @@ CALL :collect_dll64 shlwapi.dll
 CALL :collect_dll64 user32.dll
 CALL :collect_dll64 vcruntime140.dll
 CALL :collect_dll64 vcruntime140d.dll
+CALL :collect_dll64 vcruntime140_1.dll
+CALL :collect_dll64 vcruntime140_1d.dll
 CALL :collect_dll64 win32u.dll
 CALL :collect_dll64 winhttp.dll
 CALL :collect_dll64 wininet.dll

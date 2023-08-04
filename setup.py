@@ -5,8 +5,8 @@
 from setuptools import setup, find_packages
 
 # NOTE: use "-dev" for dev branch
-#VERSION = "1.4.6" + "-dev"
-VERSION = "1.4.5"
+#VERSION = "1.4.7" + "-dev"
+VERSION = "1.4.6"
 
 requirements = [
     "capstone>=4.0.1",
@@ -90,7 +90,7 @@ setup(
     keywords='qiling binary emulator framework malware analysis UEFI IoT',
 
     packages=find_packages(),
-    scripts=['qltool'],
+    scripts=['qltool', 'qltui.py'],
     package_data={
         'qiling': ['profiles/*.ql'],
         'qiling.debugger.gdb': ['xml/*/*'],

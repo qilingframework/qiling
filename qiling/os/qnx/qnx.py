@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
-
-import os
 
 from unicorn import UcError
 
@@ -19,6 +17,7 @@ from qiling.const import QL_ARCH, QL_OS
 from qiling.os.fcall import QlFunctionCall
 from qiling.os.const import *
 from qiling.os.posix.posix import QlOsPosix
+
 
 class QlOsQnx(QlOsPosix):
     type = QL_OS.QNX
@@ -45,9 +44,8 @@ class QlOsQnx(QlOsPosix):
         self.futexm = None
         self.fh = None
         self.function_after_load_list = []
-        self.elf_mem_start = 0x0
         self.load()
-        
+
         # use counters to get free Ids
         self.channel_id = 1
         # TODO: replace 0x400 with NR_OPEN from Qiling 1.25
@@ -75,37 +73,35 @@ class QlOsQnx(QlOsPosix):
                 'get_tls': 0xffff0fe0
             })
 
-
     def hook_syscall(self, ql, intno):
         return self.load_syscall()
-
 
     def register_function_after_load(self, function):
         if function not in self.function_after_load_list:
             self.function_after_load_list.append(function)
 
-
     def run_function_after_load(self):
         for f in self.function_after_load_list:
             f()
-
 
     def run(self):
         if self.ql.exit_point is not None:
             self.exit_point = self.ql.exit_point
 
-        if  self.ql.entry_point is not None:
+        if self.ql.entry_point is not None:
             self.ql.loader.elf_entry = self.ql.entry_point
 
-        self.cpupage_addr        = int(self.ql.os.profile.get("OS32", "cpupage_address"), 16)
-        self.cpupage_tls_addr    = int(self.ql.os.profile.get("OS32", "cpupage_tls_address"), 16)
-        self.tls_data_addr       = int(self.ql.os.profile.get("OS32", "tls_data_address"), 16)
-        self.syspage_addr        = int(self.ql.os.profile.get("OS32", "syspage_address"), 16)
-        syspage_path             = os.path.join(self.ql.rootfs, "syspage.bin")
+        profile = self.ql.os.profile['OS32']
+
+        self.cpupage_addr     = profile.getint('cpupage_address')
+        self.cpupage_tls_addr = profile.getint('cpupage_tls_address')
+        self.tls_data_addr    = profile.getint('tls_data_address')
+        self.syspage_addr     = profile.getint('syspage_address')
 
         self.ql.mem.map(self.syspage_addr, 0x4000, info="[syspage_mem]")
-        
-        with open(syspage_path, "rb") as sp:
+        syspage_hpath = self.ql.os.path.virtual_to_host_path("/syspage.bin")
+
+        with open(syspage_hpath, "rb") as sp:
             self.ql.mem.write(self.syspage_addr, sp.read())
 
         # Address of struct _thread_local_storage for our thread

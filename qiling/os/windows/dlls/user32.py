@@ -96,10 +96,10 @@ def hook_DialogBoxParamA(ql: Qiling, address: int, params):
     return 0
 
 # UINT GetDlgItemTextA(
-# 	HWND  hDlg,
-# 	int   nIDDlgItem,
-# 	LPSTR lpString,
-# 	int   cchMax
+#     HWND  hDlg,
+#     int   nIDDlgItem,
+#     LPSTR lpString,
+#     int   cchMax
 # );
 @winsdkapi(cc=STDCALL, params={
     'hDlg'       : HWND,

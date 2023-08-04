@@ -78,10 +78,13 @@ class QlQdb(cmd.Cmd, QlDebugger):
         if self.ql.os.type == QL_OS.BLOB:
             self.ql.loader.entry_point = self.ql.loader.load_address
 
-        elif init_hook and self.ql.loader.entry_point != init_hook:
+        elif init_hook and self.ql.loader.entry_point != int(init_hook, 0):
             self.do_breakpoint(init_hook)
 
-        self.cur_addr = self.ql.loader.entry_point
+        if self.ql.entry_point:
+            self.cur_addr = self.ql.entry_point
+        else:
+            self.cur_addr = self.ql.loader.entry_point
 
         self.init_state = self.ql.save()
 
@@ -116,7 +119,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
             address = self.cur_addr
 
         if getattr(self.ql.arch, 'is_thumb', False):
-            address |= 1
+            address |= 0b1
 
         # assume we're running PE if on Windows
         if self.ql.os.type == QL_OS.WINDOWS:
@@ -157,6 +160,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
                 qdb_print(QDB_MSG.ERROR, "The program is not being run.")
             else:
                 func(self, *args, **kwargs)
+
         return inner
 
     def parseline(self, line: str) -> Tuple[Optional[str], Optional[str], str]:
@@ -213,17 +217,19 @@ class QlQdb(cmd.Cmd, QlDebugger):
     @SnapshotManager.snapshot
     @save_reg_dump
     @check_ql_alive
-    def do_step_in(self, *args) -> Optional[bool]:
+    def do_step_in(self, step: str = '', *args) -> Optional[bool]:
         """
         execute one instruction at a time, will enter subroutine
         """
-
         prophecy = self.predictor.predict()
 
         if prophecy.where is True:
-            return True
+            qdb_print(QDB_MSG.INFO, 'program exited due to code end hitted')
+            self.do_context()
+            return False
 
-        step = 1
+        step = 1 if step == '' else int(step)
+
         # make sure follow branching
         if prophecy.going is True and self.ql.arch.type == QL_ARCH.MIPS:
             step += 1
@@ -573,7 +579,6 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         if input(f"{color.RED}[!] Are you sure about saying good bye ~ ? [Y/n]{color.END} ").strip() == "Y":
             self.do_quit()
-
 
     do_r = do_run
     do_s = do_step_in

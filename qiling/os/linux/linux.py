@@ -48,7 +48,6 @@ class QlOsLinux(QlOsPosix):
         self.futexm = None
         self.fh = None
         self.function_after_load_list = []
-        self.elf_mem_start = 0x0
         self.load()
 
     def load(self):
@@ -118,15 +117,22 @@ class QlOsLinux(QlOsPosix):
 
         # on fork or execve, do not inherit opened files tagged as 'close on exec'
         for i in range(len(self.fd)):
-            if getattr(self.fd[i], 'close_on_exec', 0):
+            if getattr(self.fd[i], 'close_on_exec', False):
                 self.fd[i] = None
 
     def setup_procfs(self):
-        self.fs_mapper.add_fs_mapping(r'/proc/self/auxv',    partial(QlProcFS.self_auxv, self))
-        self.fs_mapper.add_fs_mapping(r'/proc/self/cmdline', partial(QlProcFS.self_cmdline, self))
-        self.fs_mapper.add_fs_mapping(r'/proc/self/environ', partial(QlProcFS.self_environ, self))
-        self.fs_mapper.add_fs_mapping(r'/proc/self/exe',     partial(QlProcFS.self_exe, self))
-        self.fs_mapper.add_fs_mapping(r'/proc/self/maps',    partial(QlProcFS.self_map, self.ql.mem))
+        files = (
+            (r'/proc/self/auxv',    lambda: partial(QlProcFS.self_auxv, self)),
+            (r'/proc/self/cmdline', lambda: partial(QlProcFS.self_cmdline, self)),
+            (r'/proc/self/environ', lambda: partial(QlProcFS.self_environ, self)),
+            (r'/proc/self/exe',     lambda: partial(QlProcFS.self_exe, self)),
+            (r'/proc/self/maps',    lambda: partial(QlProcFS.self_map, self.ql.mem))
+        )
+
+        for filename, wrapper in files:
+            # add mapping only if the user has not already mapped it
+            if not self.fs_mapper.has_mapping(filename):
+                self.fs_mapper.add_mapping(filename, wrapper())
 
     def hook_syscall(self, ql, intno = None):
         return self.load_syscall()
@@ -161,12 +167,14 @@ class QlOsLinux(QlOsPosix):
                     if self.ql.entry_point is not None:
                         self.ql.loader.elf_entry = self.ql.entry_point
 
+                    # do we have an interp?
                     elif self.ql.loader.elf_entry != self.ql.loader.entry_point:
                         entry_address = self.ql.loader.elf_entry
 
                         if self.ql.arch.type == QL_ARCH.ARM:
                             entry_address &= ~1
 
+                        # start running interp, but stop when elf entry point is reached
                         self.ql.emu_start(self.ql.loader.entry_point, entry_address, self.ql.timeout)
                         self.ql.do_lib_patch()
                         self.run_function_after_load()

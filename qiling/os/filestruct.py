@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
 import os
-from typing import AnyStr
+from typing import AnyStr, Optional
 
 from qiling.exception import *
 from qiling.os.posix.stat import *
@@ -14,25 +14,28 @@ try:
 except ImportError:
     pass
 
+
 class ql_file:
     def __init__(self, path: AnyStr, fd: int):
         self.__path = path
         self.__fd = fd
+        self.__closed = False
+
         # information for syscall mmap
         self._is_map_shared = False
         self._mapped_offset = -1
-        self._close_on_exec = 0
+        self.close_on_exec = False
 
     @classmethod
-    def open(cls, open_path: AnyStr, open_flags: int, open_mode: int, dir_fd: int = None):
-        open_mode &= 0x7fffffff
+    def open(cls, path: AnyStr, flags: int, mode: int, dir_fd: Optional[int] = None):
+        mode &= 0x7fffffff
 
         try:
-            fd = os.open(open_path, open_flags, open_mode, dir_fd=dir_fd)
+            fd = os.open(path, flags, mode, dir_fd=dir_fd)
         except OSError as e:
             raise QlSyscallError(e.errno, e.args[1] + ' : ' + e.filename)
 
-        return cls(open_path, fd)
+        return cls(path, fd)
 
     def read(self, read_len: int) -> bytes:
         return os.read(self.__fd, read_len)
@@ -51,6 +54,8 @@ class ql_file:
 
     def close(self) -> None:
         os.close(self.__fd)
+
+        self.__closed = True
 
     def fstat(self):
         return Fstat(self.__fd)
@@ -88,9 +93,21 @@ class ql_file:
         return self.__path
 
     @property
-    def close_on_exec(self) -> int:
-        return self._close_on_exec
+    def closed(self) -> bool:
+        return self.__closed
 
-    @close_on_exec.setter
-    def close_on_exec(self, value: int) -> None:
-        self._close_on_exec = value
+
+class PersistentQlFile(ql_file):
+    """A persistent variation of the ql_file class, which silently drops
+    attempts to close its udnerlying file. This is useful when using host
+    environment resources, which should not be closed when their wrapping
+    ql_file gets closed.
+
+    For example, stdout and stderr might be closed by the emulated program
+    by calling POSIX dup2 or dup3 system calls, and then replaced by another
+    file or socket. this class prevents the emulated program from closing
+    shared resources on the hosting system.
+    """
+
+    def close(self):
+        pass

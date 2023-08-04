@@ -1,17 +1,15 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from multiprocessing import Pool
 
 import sys
-from multiprocessing import Pool
-from multiprocessing import Process
-
 sys.path.append("../..")
 
 from qiling.core import Qiling
-from qiling.const import QL_VERBOSE
+from qiling.const import QL_ARCH, QL_OS, QL_VERBOSE
 from qiling.extensions.mcu.stm32f4 import stm32f407
 
 
@@ -24,11 +22,12 @@ def dicts():
     for x in range(1, 20):
         yield str((a*x*x + b*x + c) % M)
 
+
 # Cracking the passwd of lock
 def crack(passwd):
-    ql = Qiling(["../../examples/rootfs/mcu/stm32f407/backdoorlock.hex"],                    
-                        archtype="cortex_m", ostype="mcu", env=stm32f407, verbose=QL_VERBOSE.DISABLED)
-    
+    ql = Qiling(["../../examples/rootfs/mcu/stm32f407/backdoorlock.hex"],
+                archtype=QL_ARCH.CORTEX_M, ostype=QL_OS.MCU, env=stm32f407, verbose=QL_VERBOSE.DISABLED)
+
     ql.hw.create('spi2')
     ql.hw.create('gpioe')
     ql.hw.create('gpiof')
@@ -54,6 +53,7 @@ def crack(passwd):
         print('Fail, the passwd is not', passwd)
 
     del ql
+
 
 pool = Pool()
 for passwd in dicts():

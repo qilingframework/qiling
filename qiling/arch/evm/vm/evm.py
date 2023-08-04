@@ -14,20 +14,20 @@ from .vm import BaseVM
 from .utils import bytecode_to_bytes, runtime_code_detector
 from ..abi import QlArchEVMABI
 
-# Code name	                    Release date	Release block   Opcode supported    
+# Code name                        Release date    Release block   Opcode supported    
 
-# Frontier                      2015-07-30	    0               Yes                 
-# Ice Age	                    2015-09-08	    200,000         -                   
-# Homestead	                    2016-03-15	    1,150,000       Yes                 
-# DAO Fork (unplanned)	        2016-07-20	    1,920,000       -                   
-# Tangerine Whistle (unplanned)	2016-10-18	    2,463,000       Yes                   
-# Spurious Dragon	            2016-11-23	    2,675,000       Yes                 
-# Byzantium	                    2017-10-16	    4,370,000       Yes                 
-# Constantinople	            2019-02-28	    7,280,000       Yes                 
-# Petersburg (unplanned)	    2019-02-28	    7,280,000       Yes                 
-# Istanbul	                    2019-12-08	    9,069,000       Yes                   
-# Muir Glacier	                2020-01-01	    9,200,000       Yes                 
-# Berlin         	            TBD	            TBD             Yes                 
+# Frontier                      2015-07-30        0               Yes                 
+# Ice Age                        2015-09-08        200,000         -                   
+# Homestead                        2016-03-15        1,150,000       Yes                 
+# DAO Fork (unplanned)            2016-07-20        1,920,000       -                   
+# Tangerine Whistle (unplanned)    2016-10-18        2,463,000       Yes                   
+# Spurious Dragon                2016-11-23        2,675,000       Yes                 
+# Byzantium                        2017-10-16        4,370,000       Yes                 
+# Constantinople                2019-02-28        7,280,000       Yes                 
+# Petersburg (unplanned)        2019-02-28        7,280,000       Yes                 
+# Istanbul                        2019-12-08        9,069,000       Yes                   
+# Muir Glacier                    2020-01-01        9,200,000       Yes                 
+# Berlin                         TBD                TBD             Yes                 
 
 
 father_VMs = {

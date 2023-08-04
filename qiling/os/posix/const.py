@@ -111,42 +111,42 @@ linux_socket_ip_options = {
 
 # https://github.com/torvalds/linux/blob/master/include/uapi/linux/tcp.h
 linux_socket_tcp_options = {
-    "TCP_NODELAY"				: 0x1,
-    "TCP_MAXSEG"				: 0x2,
-    "TCP_CORK"					: 0x3,
-    "TCP_KEEPIDLE"				: 0x4,
-    "TCP_KEEPINTVL"				: 0x5,
-    "TCP_KEEPCNT"				: 0x6,
-    "TCP_SYNCNT"				: 0x7,
-    "TCP_LINGER2"				: 0x8,
-    "TCP_DEFER_ACCEPT"			: 0x9,
-    "TCP_WINDOW_CLAMP"			: 0xa,
-    "TCP_INFO"					: 0xb,
-    "TCP_QUICKACK"				: 0xc,
-    "TCP_CONGESTION"			: 0xd,
-    "TCP_MD5SIG"				: 0xe,
-    "TCP_THIN_LINEAR_TIMEOUTS"	: 0x10,
-    "TCP_THIN_DUPACK"			: 0x11,
-    "TCP_USER_TIMEOUT"			: 0x12,
-    "TCP_REPAIR"				: 0x13,
-    "TCP_REPAIR_QUEUE"			: 0x14,
-    "TCP_QUEUE_SEQ"				: 0x15,
-    "TCP_REPAIR_OPTIONS"		: 0x16,
-    "TCP_FASTOPEN"				: 0x17,
-    "TCP_TIMESTAMP"				: 0x18,
-    "TCP_NOTSENT_LOWAT"			: 0x19,
-    "TCP_CC_INFO"				: 0x1a,
-    "TCP_SAVE_SYN"				: 0x1b,
-    "TCP_SAVED_SYN"				: 0x1c,
-    "TCP_REPAIR_WINDOW"			: 0x1d,
-    "TCP_FASTOPEN_CONNECT"		: 0x1e,
-    "TCP_ULP"					: 0x1f,
-    "TCP_MD5SIG_EXT"			: 0x20,
-    "TCP_FASTOPEN_KEY"			: 0x21,
-    "TCP_FASTOPEN_NO_COOKIE"	: 0x22,
-    "TCP_ZEROCOPY_RECEIVE"		: 0x23,
-    "TCP_INQ"					: 0x24,
-    "TCP_TX_DELAY"				: 0x25,
+    "TCP_NODELAY"                : 0x1,
+    "TCP_MAXSEG"                : 0x2,
+    "TCP_CORK"                    : 0x3,
+    "TCP_KEEPIDLE"                : 0x4,
+    "TCP_KEEPINTVL"                : 0x5,
+    "TCP_KEEPCNT"                : 0x6,
+    "TCP_SYNCNT"                : 0x7,
+    "TCP_LINGER2"                : 0x8,
+    "TCP_DEFER_ACCEPT"            : 0x9,
+    "TCP_WINDOW_CLAMP"            : 0xa,
+    "TCP_INFO"                    : 0xb,
+    "TCP_QUICKACK"                : 0xc,
+    "TCP_CONGESTION"            : 0xd,
+    "TCP_MD5SIG"                : 0xe,
+    "TCP_THIN_LINEAR_TIMEOUTS"    : 0x10,
+    "TCP_THIN_DUPACK"            : 0x11,
+    "TCP_USER_TIMEOUT"            : 0x12,
+    "TCP_REPAIR"                : 0x13,
+    "TCP_REPAIR_QUEUE"            : 0x14,
+    "TCP_QUEUE_SEQ"                : 0x15,
+    "TCP_REPAIR_OPTIONS"        : 0x16,
+    "TCP_FASTOPEN"                : 0x17,
+    "TCP_TIMESTAMP"                : 0x18,
+    "TCP_NOTSENT_LOWAT"            : 0x19,
+    "TCP_CC_INFO"                : 0x1a,
+    "TCP_SAVE_SYN"                : 0x1b,
+    "TCP_SAVED_SYN"                : 0x1c,
+    "TCP_REPAIR_WINDOW"            : 0x1d,
+    "TCP_FASTOPEN_CONNECT"        : 0x1e,
+    "TCP_ULP"                    : 0x1f,
+    "TCP_MD5SIG_EXT"            : 0x20,
+    "TCP_FASTOPEN_KEY"            : 0x21,
+    "TCP_FASTOPEN_NO_COOKIE"    : 0x22,
+    "TCP_ZEROCOPY_RECEIVE"        : 0x23,
+    "TCP_INQ"                    : 0x24,
+    "TCP_TX_DELAY"                : 0x25,
 }
 
 macos_socket_ip_options = {
@@ -723,14 +723,14 @@ class qnx_mmap_flags(Flag):
     MAP_UNINITIALIZED = MAP_NOINIT
 
 # fcntl flags
-F_DUPFD		= 0
-F_GETFD		= 1
-F_SETFD		= 2
-F_GETFL		= 3
-F_SETFL		= 4
-F_GETLK		= 5
-F_SETLK		= 6
-F_SETLKW	= 7
+F_DUPFD        = 0
+F_GETFD        = 1
+F_SETFD        = 2
+F_GETFL        = 3
+F_SETFL        = 4
+F_GETLK        = 5
+F_SETLK        = 6
+F_SETLKW    = 7
 
 FD_CLOEXEC = 1
 
@@ -1003,11 +1003,47 @@ errors = {
 }
 
 # shm syscall
-IPC_CREAT = 8**3
-IPC_EXCL = 2*(8**3)
-IPC_NOWAIT = 4*(8**3)
+IPC_PRIVATE = 0
 
-SHM_RDONLY = 8**4
-SHM_RND = 2*(8**4)
-SHM_REMAP= 4*(8**4)
-SHM_EXEC = 1*(8**5)
+# see: https://elixir.bootlin.com/linux/v5.19.17/source/include/uapi/linux/ipc.h
+IPC_CREAT  = 0o0001000  # create if key is nonexistent
+IPC_EXCL   = 0o0002000  # fail if key exists
+IPC_NOWAIT = 0o0004000  # return error on wait
+
+# see: https://elixir.bootlin.com/linux/v5.19.17/source/include/uapi/linux/shm.h
+SHM_W       = 0o000200
+SHM_R       = 0o000400
+SHM_HUGETLB = 0o004000  # segment will use huge TLB pages
+SHM_RDONLY	= 0o010000  # read-only access
+SHM_RND		= 0o020000	# round attach address to SHMLBA boundary
+SHM_REMAP	= 0o040000	# take-over region on attach
+SHM_EXEC	= 0o100000	# execution access
+
+SHMMNI = 4096   # max num of segs system wide
+
+# see: https://elixir.bootlin.com/linux/v5.19.17/source/include/uapi/asm-generic/hugetlb_encode.h
+HUGETLB_FLAG_ENCODE_SHIFT = 26
+HUGETLB_FLAG_ENCODE_MASK  = 0x3f
+
+# see: https://elixir.bootlin.com/linux/v5.19.17/source/include/uapi/linux/msg.h
+MSG_NOERROR = 0o10000  # no error if message is too big
+MSG_EXCEPT = 0o20000  # recv any msg except of specified type
+MSG_COPY = 0o40000  # copy (not remove) all queue messages
+
+MSGMNI = 32000 # <= IPCMNI, max # of msg queue identifiers
+MSGMAX = 8192 # <= INT_MAX, max size of message (bytes)
+MSGMNB = 16384 # <= INT_MAX, default max size of a message queue
+
+# ipc syscall
+SEMOP       = 1
+SEMGET      = 2
+SEMCTL      = 3
+SEMTIMEDOP  = 4
+MSGSND      = 11
+MSGRCV      = 12
+MSGGET      = 13
+MSGCTL      = 14
+SHMAT       = 21
+SHMDT       = 22
+SHMGET      = 23
+SHMCTL      = 24

@@ -1,19 +1,25 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-
-# 1. Download AC15 Firmware from https://down.tenda.com.cn/uploadfile/AC15/US_AC15V1.0BR_V15.03.05.19_multi_TD01.zip
-# 2. unzip
-# 3. binwalk -e US_AC15V1.0BR_V15.03.05.19_multi_TD01.bin
-# 4. locate squashfs-root
-# 5. rm -rf webroot && mv webroot_ro webroot
+# Setup:
+# - Unpack firmware rootfs (assumed hereby: 'rootfs/tendaac15')
+#   - AC15 firmware may be acquired from https://down.tenda.com.cn/uploadfile/AC15/US_AC15V1.0BR_V15.03.05.19_multi_TD01.zip
+# - Refresh webroot directory:
+#   - Enter the 'squashfs-root' directory
+#   - rm -rf webroot
+#   - mv webroot_ro webroot
+# - Set network device
+#   - Open "qiling/profiles/linux.ql"
+#   - Set 'ifrname_override' to your hosting system network device name (e.g. eth0, lo, etc.)
 #
-# notes: we are using rootfs in this example, so rootfs = squashfs-root
-# 
+# Run:
+#  $ PYTHONPATH=/path/to/qiling ROOTFS=/path/to/tenda_rootfs python3 tendaac1518_httpd.py
 
-import os, socket, threading
+import os
+import socket
+import threading
 
 import sys
 sys.path.append("..")
@@ -21,66 +27,62 @@ sys.path.append("..")
 from qiling import Qiling
 from qiling.const import QL_VERBOSE
 
-def patcher(ql: Qiling):
-    br0_addr = ql.mem.search("br0".encode() + b'\x00')
 
-    for addr in br0_addr:
-        ql.mem.write(addr, b'lo\x00')
+# user may set 'ROOTFS' environment variable to use as rootfs
+ROOTFS = os.environ.get('ROOTFS', r'./rootfs/tendaac15')
+
 
 def nvram_listener():
-    server_address = 'rootfs/var/cfm_socket'
-    data = ""
+    server_address = fr'{ROOTFS}/var/cfm_socket'
 
-    try:
+    if os.path.exists(server_address):
         os.unlink(server_address)
-    except OSError:
-        if os.path.exists(server_address):
-            raise
 
     # Create UDS socket
-    sock = socket.socket(socket.AF_UNIX,socket.SOCK_STREAM)
+    sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     sock.bind(server_address)
     sock.listen(1)
 
-    while True:
-        connection, _ = sock.accept()
+    data = bytearray()
 
-        try:
-            while True:
-                data += str(connection.recv(1024))
+    with open('cfm_socket.log', 'wb') as ofile:
+        while True:
+            connection, _ = sock.accept()
 
-                if "lan.webiplansslen" in data:
-                    connection.send('192.168.170.169'.encode())
-                else:
-                    break
+            try:
+                while True:
+                    data += connection.recv(1024)
 
-                data = ""
-        finally:
-            connection.close()
+                    if b'lan.webiplansslen' not in data:
+                        break
 
-def myvfork(ql: Qiling):
-    regreturn = 0
-    ql.log.info("vfork() = %d" % regreturn)
+                    connection.send(b'192.168.170.169')
 
-    return regreturn
+                    ofile.write(data)
+                    data.clear()
+            finally:
+                connection.close()
+
 
 def my_sandbox(path, rootfs):
     ql = Qiling(path, rootfs, verbose=QL_VERBOSE.DEBUG)
-    ql.add_fs_mapper("/dev/urandom","/dev/urandom")
-    ql.hook_address(patcher, ql.loader.elf_entry)
+    ql.add_fs_mapper(r'/dev/urandom', r'/dev/urandom')
 
-    # $ gdb-multiarch -q rootfs/bin/httpd 
+    # $ gdb-multiarch -q rootfs/tendaac15/bin/httpd
     # gdb> set remotetimeout 100
     # gdb> target remote localhost:9999
-    ql.debugger = False
 
-    if ql.debugger == True:
-        ql.os.set_syscall("vfork", myvfork)
+    if ql.debugger:
+        def __vfork(ql: Qiling):
+            return 0
+
+        ql.os.set_syscall('vfork', __vfork)
 
     ql.run()
 
-if __name__ == "__main__":
+
+if __name__ == '__main__':
     nvram_listener_therad = threading.Thread(target=nvram_listener, daemon=True)
     nvram_listener_therad.start()
 
-    my_sandbox(["rootfs/bin/httpd"], "rootfs")
+    my_sandbox([fr'{ROOTFS}/bin/httpd'], ROOTFS)

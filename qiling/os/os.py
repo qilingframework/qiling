@@ -4,20 +4,22 @@
 #
 
 import sys
-from typing import Any, Hashable, Iterable, Optional, Callable, Mapping, Sequence, TextIO, Tuple
+from io import UnsupportedOperation
+from typing import Any, Dict, Iterable, Optional, Callable, Mapping, Sequence, TextIO, Tuple, Union
 
 from unicorn import UcError
 
 from qiling import Qiling
-from qiling.const import QL_OS, QL_INTERCEPT, QL_OS_POSIX
+from qiling.const import QL_OS, QL_STATE, QL_INTERCEPT, QL_OS_POSIX
 from qiling.os.const import STRING, WSTRING, GUID
 from qiling.os.fcall import QlFunctionCall, TypedArg
 
-from .filestruct import ql_file
+from .filestruct import PersistentQlFile
 from .mapper import QlFsMapper
 from .stats import QlOsStats
 from .utils import QlOsUtils
 from .path import QlOsPath
+
 
 class QlOs:
     type: QL_OS
@@ -46,23 +48,31 @@ class QlOs:
             self.path = QlOsPath(ql.rootfs, cwd, self.type)
             self.fs_mapper = QlFsMapper(self.path)
 
-        self.user_defined_api = {
-            QL_INTERCEPT.CALL : {},
+        self.user_defined_api: Dict[QL_INTERCEPT, Dict[Union[int, str], Callable]] = {
+            QL_INTERCEPT.CALL:  {},
             QL_INTERCEPT.ENTER: {},
-            QL_INTERCEPT.EXIT : {}
+            QL_INTERCEPT.EXIT:  {}
         }
 
-        # IDAPython has some hack on standard io streams and thus they don't have corresponding fds.
         try:
-            import ida_idaapi
-        except ImportError:
-            self._stdin  = ql_file('stdin',  sys.stdin.fileno())
-            self._stdout = ql_file('stdout', sys.stdout.fileno())
-            self._stderr = ql_file('stderr', sys.stderr.fileno())
-        else:
+            # Qiling may be used on interactive shells (ex: IDLE) or embedded python
+            # interpreters (ex: IDA Python). such environments use their own version
+            # for the standard streams which usually do not support certain operations,
+            # such as fileno(). here we use this to determine how we are going to use
+            # the environment standard streams
+            sys.stdin.fileno()
+        except UnsupportedOperation:
+            # Qiling is used on an interactive shell or embedded python interpreter.
+            # if the internal stream buffer is accessible, we should use it
             self._stdin  = getattr(sys.stdin,  'buffer', sys.stdin)
             self._stdout = getattr(sys.stdout, 'buffer', sys.stdout)
             self._stderr = getattr(sys.stderr, 'buffer', sys.stderr)
+        else:
+            # Qiling is used in a script, or on an environment that supports ordinary
+            # stanard streams
+            self._stdin  = PersistentQlFile('stdin',  sys.stdin.fileno())
+            self._stdout = PersistentQlFile('stdout', sys.stdout.fileno())
+            self._stderr = PersistentQlFile('stderr', sys.stderr.fileno())
 
         # defult exit point
         self.exit_point = {
@@ -195,16 +205,18 @@ class QlOs:
         # append syscall to list
         self.stats.log_api_call(pc, func.__name__, args, retval, retaddr)
 
-        # [Windows and UEFI] if emulation has stopped, do not update the return address
-        if hasattr(self, 'PE_RUN') and not self.PE_RUN:
-            passthru = True
-
         if not passthru:
-            self.ql.arch.regs.arch_pc = retaddr
+            # WORKAROUND: we avoid modifying the pc register in case the emulation has stopped.
+            # this is used to work around a unicorn issue in which emulation continues despite
+            # of calling emu_stop if the pc register is modified.
+            #
+            # see: https://github.com/unicorn-engine/unicorn/issues/1579
+            if self.ql.emu_state is not QL_STATE.STOPPED:
+                self.ql.arch.regs.arch_pc = retaddr
 
         return retval
 
-    def set_api(self, target: Hashable, handler: Callable, intercept: QL_INTERCEPT = QL_INTERCEPT.CALL):
+    def set_api(self, target: Union[int, str], handler: Callable, intercept: QL_INTERCEPT = QL_INTERCEPT.CALL):
         """Either hook or replace an OS API with a custom one.
 
         Args:
@@ -224,7 +236,7 @@ class QlOs:
 
     def stop(self):
         if self.ql.multithread:
-            self.thread_management.stop() 
+            self.thread_management.stop()
         else:
             self.ql.emu_stop()
 

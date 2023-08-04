@@ -30,7 +30,7 @@ from unicorn.unicorn_const import (
 )
 
 from qiling import Qiling
-from qiling.const import QL_ARCH, QL_ENDIAN, QL_OS
+from qiling.const import QL_ARCH, QL_ENDIAN, QL_OS, QL_STATE
 from qiling.debugger import QlDebugger
 from qiling.debugger.gdb.xmlregs import QlGdbFeatures
 from qiling.debugger.gdb.utils import QlGdbUtils
@@ -78,36 +78,42 @@ class QlGdb(QlDebugger):
         self.ip = ip
         self.port = port
 
-        if ql.baremetal:
-            load_address = ql.loader.load_address
-            exit_point = load_address + os.path.getsize(ql.path)
-        elif ql.code:
-            load_address = ql.os.entry_point
-            exit_point = load_address + len(ql.code)
-        else:
-            load_address = ql.loader.load_address
-            exit_point = load_address + os.path.getsize(ql.path)
+        def __get_attach_addr() -> int:
+            if ql.baremetal:
+                entry_point = ql.loader.entry_point
 
-        if ql.baremetal:
-            entry_point = ql.loader.entry_point
-        elif ql.os.type in (QL_OS.LINUX, QL_OS.FREEBSD) and not ql.code:
-            entry_point = ql.os.elf_entry
-        else:
-            entry_point = ql.os.entry_point
+            elif ql.os.type in (QL_OS.LINUX, QL_OS.FREEBSD) and not ql.code:
+                entry_point = ql.os.elf_entry
 
-        # though linkers set the entry point LSB to indicate arm thumb mode, the
-        # effective entry point address is aligned. make sure we have it aligned
-        if hasattr(ql.arch, 'is_thumb'):
-            entry_point &= ~0b1
+            else:
+                entry_point = ql.os.entry_point
 
-        # Only part of the binary file will be debugged.
-        if ql.entry_point is not None:
-            entry_point = ql.entry_point
+            # though linkers set the entry point LSB to indicate arm thumb mode, the
+            # effective entry point address is aligned. make sure we have it aligned
+            if hasattr(ql.arch, 'is_thumb'):
+                entry_point &= ~0b1
 
-        if ql.exit_point is not None:
-            exit_point = ql.exit_point
+            return entry_point
 
-        self.gdb = QlGdbUtils(ql, entry_point, exit_point)
+        def __get_detach_addr() -> int:
+            if ql.baremetal:
+                base = ql.loader.load_address
+                size = os.path.getsize(ql.path)
+
+            elif ql.code:
+                base = ql.os.entry_point
+                size = len(ql.code)
+
+            else:
+                base = ql.loader.load_address
+                size = os.path.getsize(ql.path)
+
+            return base + size
+
+        attach_addr = __get_attach_addr() if ql.entry_point is None else ql.entry_point
+        detach_addr = __get_detach_addr() if ql.exit_point is None else ql.exit_point
+
+        self.gdb = QlGdbUtils(ql, attach_addr, detach_addr)
 
         self.features = QlGdbFeatures(self.ql.arch.type, self.ql.os.type)
         self.regsmap = self.features.regsmap
@@ -293,11 +299,11 @@ class QlGdb(QlDebugger):
             addr, size = (int(p, 16) for p in subcmd.split(','))
 
             try:
-                data = self.ql.mem.read(addr, size).hex()
-            except UcError:
-                return 'E14'
+                data = self.ql.mem.read(addr, size)
+            except UcError as ex:
+                return f'E{ex.errno:02d}'
             else:
-                return data
+                return data.hex()
 
         def handle_M(subcmd: str) -> Reply:
             """Write target memory.
@@ -313,8 +319,8 @@ class QlGdb(QlDebugger):
 
             try:
                 self.ql.mem.write(addr, data)
-            except UcError:
-                return 'E01'
+            except UcError as ex:
+                return f'E{ex.errno:02d}'
             else:
                 return REPLY_OK
 
@@ -673,6 +679,11 @@ class QlGdb(QlDebugger):
 
             self.gdb.resume_emu(steps=1)
 
+            # if emulation has been stopped, signal program termination
+            if self.ql.emu_state is QL_STATE.STOPPED:
+                return f'S{SIGTERM:02x}'
+
+            # otherwise, this is just single stepping
             return f'S{SIGTRAP:02x}'
 
         def handle_X(subcmd: str) -> Reply:
@@ -688,8 +699,8 @@ class QlGdb(QlDebugger):
             try:
                 if data:
                     self.ql.mem.write(addr, data.encode(ENCODING))
-            except UcError:
-                return 'E01'
+            except UcError as ex:
+                return f'E{ex.errno:02d}'
             else:
                 return REPLY_OK
 
@@ -832,7 +843,7 @@ class GdbSerialConn:
             buffer += incoming
 
             # discard incoming acks
-            if buffer[0:1] == REPLY_ACK:
+            if buffer.startswith(REPLY_ACK):
                 del buffer[0]
 
             packet = pattern.match(buffer)

@@ -501,6 +501,7 @@ class QlEmuRegView(simplecustviewer_t):
         line = ""
         cols = 3
         reglist = [reglist[i:i+cols] for i in range(0,len(reglist),cols)]
+        arch = ql.arch.type
         for regs in reglist:
             for reg in regs:
                 line += COLSTR(" %4s: " % str(reg), SCOLOR_REG)
@@ -898,7 +899,7 @@ class QlEmuQiling:
             elffile = ELFFile(f)
             elf_header = elffile.header
             if elf_header['e_type'] == 'ET_EXEC':
-                self.baseaddr = self.ql.os.elf_mem_start
+                self.baseaddr = self.ql.loader.images[0].base
             elif elf_header['e_type'] == 'ET_DYN':
                 if self.ql.arch.bits == 32:
                     self.baseaddr = int(self.ql.os.profile.get("OS32", "load_address"), 16)
@@ -2026,6 +2027,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 module = importlib.import_module(scriptname)
 
                 if is_reload:
+                    del self.userobj
                     importlib.reload(module)
                 cls = getattr(module, classname)
                 return cls()

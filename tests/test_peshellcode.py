@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import sys, unittest
+import unittest
 
+import sys
 sys.path.append("..")
+
 from qiling import Qiling
+from qiling.const import QL_ARCH, QL_OS, QL_VERBOSE
 
 X86_WIN = bytes.fromhex('''
     fce8820000006089e531c0648b50308b520c8b52148b72280fb74a2631ffac3c
@@ -32,20 +35,20 @@ X8664_WIN = bytes.fromhex('''
 
 POINTER_TEST = bytes.fromhex('1122334455667788')
 
+
 class PEShellcodeTest(unittest.TestCase):
     def test_windowssc_x86(self):
-        ql = Qiling(code=X86_WIN, archtype="x86", ostype="windows", rootfs="../examples/rootfs/x86_windows")
+        ql = Qiling(code=X86_WIN, rootfs=r'../examples/rootfs/x86_windows', archtype=QL_ARCH.X86, ostype=QL_OS.WINDOWS, verbose=QL_VERBOSE.OFF)
         ql.run()
         del ql
 
-
     def test_windowssc_x64(self):
-        ql = Qiling(code=X8664_WIN, archtype="x8664", ostype="windows", rootfs="../examples/rootfs/x8664_windows")
+        ql = Qiling(code=X8664_WIN, rootfs=r'../examples/rootfs/x8664_windows', archtype=QL_ARCH.X8664, ostype=QL_OS.WINDOWS, verbose=QL_VERBOSE.OFF)
         ql.run()
         del ql
 
     def test_read_ptr32(self):
-        ql = Qiling(code=POINTER_TEST, archtype="x86", ostype="windows", rootfs="../examples/rootfs/x86_windows")
+        ql = Qiling(code=POINTER_TEST, rootfs=r'../examples/rootfs/x86_windows', archtype=QL_ARCH.X86, ostype=QL_OS.WINDOWS, verbose=QL_VERBOSE.OFF)
 
         addr = ql.loader.entry_point
         self.assertEqual(0x11, ql.mem.read_ptr(addr, 1))
@@ -56,7 +59,7 @@ class PEShellcodeTest(unittest.TestCase):
         del ql
 
     def test_read_ptr64(self):
-        ql = Qiling(code=POINTER_TEST, archtype="x8664", ostype="windows", rootfs="../examples/rootfs/x8664_windows")
+        ql = Qiling(code=POINTER_TEST, rootfs=r'../examples/rootfs/x8664_windows', archtype=QL_ARCH.X8664, ostype=QL_OS.WINDOWS, verbose=QL_VERBOSE.OFF)
 
         addr = ql.loader.entry_point
         self.assertEqual(0x11, ql.mem.read_ptr(addr, 1))
