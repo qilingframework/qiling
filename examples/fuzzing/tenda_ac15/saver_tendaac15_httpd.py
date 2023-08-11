@@ -47,7 +47,11 @@ def nvram_listener():
         finally:  
                 connection.close() 
 
-
+# https://github.com/qilingframework/qiling/issues/1350
+# On debian 11, somehow it has this bug and this is the recomended fix by @Riv4ille
+def hook_check_network(ql:Qiling):
+    ql.arch.regs.r0 = 1
+    
 def save_context(ql, *args, **kw):
     ql.save(cpu_context=False, snapshot="snapshot.bin")
 
@@ -66,6 +70,8 @@ def check_pc(ql):
 
 def my_sandbox(path, rootfs):
     ql = Qiling(path, rootfs, verbose=QL_VERBOSE.DEBUG)
+    # uncomment if u need it
+    #ql.os.set_api('check_network',hook_check_network)
     ql.add_fs_mapper("/dev/urandom","/dev/urandom")
     ql.hook_address(save_context, 0x10930)
     ql.hook_address(patcher, ql.loader.elf_entry)
