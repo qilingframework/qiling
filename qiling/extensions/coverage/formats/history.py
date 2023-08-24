@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import List, Tuple, TYPE_CHECKING, Union, Optional, Any
+from typing import List, Sequence, Tuple, TYPE_CHECKING, Union, Optional, Any
 
 if TYPE_CHECKING:
     from qiling import Qiling
@@ -24,8 +24,8 @@ class History:
         self.track_block_coverage()
 
     def clear_history(self) -> None:
-        """Clears the current state of the history 
-        
+        """Clears the current state of the history
+
         """
         self.history.clear()
 
@@ -33,7 +33,7 @@ class History:
         """Clears the current history hook from the Qiling instance
 
         Returns:
-            None 
+            None
         """
 
         self.ql.hook_del(self.history_hook_handle)
@@ -56,13 +56,13 @@ class History:
         try:
             self.history.append(next(self.md.disasm(ins_bytes, address)))
         except StopIteration:
-            # if this ever happens, then the unicorn/qiling is going to crash because it tried to execute 
+            # if this ever happens, then the unicorn/qiling is going to crash because it tried to execute
             # an instruction that it cant, so we are just not going to do anything
             pass
 
     def track_block_coverage(self) -> None:
         """Configures the history plugin to track all of the basic blocks that are executed. Removes any existing hooks
-        
+
         Returns:
             None
         """
@@ -73,7 +73,7 @@ class History:
 
     def track_instruction_coverage(self) -> None:
         """Configures the history plugin to track all of the instructions that are executed. Removes any existing hooks
-        
+
         Returns:
             None
         """
@@ -82,9 +82,9 @@ class History:
 
         self.history_hook_handle = self.ql.hook_code(self.__hook_block)
 
-    def get_ins_only_lib(self, libs: List[str]) -> List[CsInsn]:
+    def get_ins_only_lib(self, libs: Union[str, Sequence[str]]) -> List[CsInsn]:
         """Returns a list of addresses that have been executed that are only in mmaps for objects that match the regex of items in the list
-        
+
         Args:
             libs (List[str]): A list of regex strings to match against the library names in the memory maps
 
@@ -93,18 +93,18 @@ class History:
 
         Examples:
             >>> history.get_ins_only_lib([".*libc.so.*", ".*libpthread.so.*"])
-        """    
+        """
 
         executable_maps = self.get_regex_matching_exec_maps(libs)
-        
+
         return [x for x in self.history if any(start <= x.address <= end for start, end, _, _, _ in executable_maps)]
 
-    def get_ins_exclude_lib(self, libs: List[str]) -> List[CsInsn]:
+    def get_ins_exclude_lib(self, libs: Union[str, Sequence[str]]) -> List[CsInsn]:
         '''Returns a list of history instructions that are not in the libraries that match the regex in the libs list
-        
+
         Args:
             libs (List[str]): A list of regex strings to match against the library names in the memory maps
-        
+
         Returns:
             List[capstone.CsInsn]: A list of CsInsn that have been executed and are not in the memory maps that match the regex
 
@@ -115,7 +115,7 @@ class History:
         executable_maps = self.get_regex_matching_exec_maps(libs)
         return [h for h in self.history if not any(start <= h.address <= end for start, end, _, _, _ in executable_maps)]
 
-    def get_mem_map_from_addr(self, ins: Union[int, CsInsn]) -> Optional[Tuple]:
+    def get_mem_map_from_addr(self, ins: Union[int, CsInsn]) -> Optional[Tuple[int, int, str, str, str]]:
         '''Returns the memory map that contains the instruction
 
         Args:
@@ -125,7 +125,7 @@ class History:
             Optional[Tuple]: A tuple that contains the memory map that contains the instruction
                 this tuple is in the format of (start_addr, end_addr, perms, name, path)
 
-        Examples: 
+        Examples:
             >>> history.get_mem_map_from_addr(0x7ffff7dd1b97)
         '''
 
@@ -134,12 +134,12 @@ class History:
 
         assert isinstance(ins, int)
 
-        return next((x for x in self.ql.mem.get_mapinfo() if x[0] <= ins and x[1] >= ins), None)
+        return next((x for x in self.ql.mem.get_mapinfo() if x[0] <= ins <= x[1]), None)
 
-    def get_regex_matching_exec_maps(self, libs: List[str]) -> List[Tuple]:
+    def get_regex_matching_exec_maps(self, libs: Union[str, Sequence[str]]) -> List[Tuple[int, int, str, str, str]]:
         '''Returns a list of tuples for current mmaps whose names match the regex of libs in the list
-        
-        This is a wrapper around ql.mem.get_mapinfo() and just filters the results by the regex of the library names 
+
+        This is a wrapper around ql.mem.get_mapinfo() and just filters the results by the regex of the library names
         and also only returns maps that are executable
 
         Args:
@@ -158,9 +158,9 @@ class History:
             libs = [libs]
 
         # filter the history list by the library name, using a list of regex
-        regex = [re.compile(lib) for lib in libs] 
+        regex = [re.compile(lib) for lib in libs]
 
-        # filter the list of tuples 
+        # filter the list of tuples
         # so that we return only the ones where the library name matches the regex
         regex_matching_libs = [x for x in self.ql.mem.get_mapinfo() if any(r.match(x[3]) for r in regex)]
 

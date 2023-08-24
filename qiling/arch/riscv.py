@@ -72,7 +72,7 @@ class QlArchRISCV(QlArch):
     def init_context(self):
         self.regs.pc = 0x08000000
 
-    def unicorn_exception_handler(self, ql, intno):
+    def unicorn_exception_handler(self, ql: Qiling, intno: int):
         if intno == 2:
             ql.log.warning(f'[{hex(self.regs.arch_pc)}] Illegal instruction')
 

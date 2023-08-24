@@ -134,7 +134,7 @@ class QlMemoryManager:
 
     def change_mapinfo(self, mem_s: int, mem_e: int, mem_p: Optional[int] = None, mem_info: Optional[str] = None):
         tmp_map_info: Optional[MapInfoEntry] = None
-        info_idx: int = None
+        info_idx: int = -1
 
         for idx, map_info in enumerate(self.map_info):
             if mem_s >= map_info[0] and mem_e <= map_info[1]:
@@ -377,7 +377,7 @@ class QlMemoryManager:
 
         self.write(addr, __pack(value))
 
-    def search(self, needle: Union[bytes, Pattern[bytes]], begin: Optional[int] = None, end: Optional[int] = None) -> Sequence[int]:
+    def search(self, needle: Union[bytes, Pattern[bytes]], begin: Optional[int] = None, end: Optional[int] = None) -> List[int]:
         """Search for a sequence of bytes in memory.
 
         Args:
@@ -398,7 +398,7 @@ class QlMemoryManager:
 
         assert begin < end, 'search arguments do not make sense'
 
-        # narrow the search down to relevant ranges; mmio ranges are excluded due to potential read size effects
+        # narrow the search down to relevant ranges; mmio ranges are excluded due to potential read side effects
         ranges = [(max(begin, lbound), min(ubound, end)) for lbound, ubound, _, _, is_mmio in self.map_info if not (end < lbound or ubound < begin or is_mmio)]
         results = []
 
@@ -587,8 +587,7 @@ class QlMemoryManager:
         aligned_size = self.align_up((addr & (self.pagesize - 1)) + size)
 
         self.ql.uc.mem_protect(aligned_address, aligned_size, perms)
-        self.change_mapinfo(aligned_address, aligned_address + aligned_size, mem_p = perms)
-
+        self.change_mapinfo(aligned_address, aligned_address + aligned_size, perms)
 
     def map(self, addr: int, size: int, perms: int = UC_PROT_ALL, info: Optional[str] = None):
         """Map a new memory range.
@@ -640,14 +639,18 @@ class QlMemoryManager:
 
         self.mmio_cbs[(addr, addr + size)] = (read_cb, write_cb)
 
-# A Simple Heap Implementation
+
 class Chunk:
     def __init__(self, address: int, size: int):
         self.inuse = True
         self.address = address
         self.size = size
 
+
 class QlMemoryHeap:
+    """A Simple Heap Implementation.
+    """
+
     def __init__(self, ql: Qiling, start_address: int, end_address: int):
         self.ql = ql
         self.chunks: List[Chunk] = []

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -15,18 +15,20 @@ from qiling.os.os import QlOs
 
 from .interrupts import handlers
 
+
 # @see: https://en.wikipedia.org/wiki/FLAGS_register
 class Flags(IntEnum):
-    CF = (1 << 0)    # carry
-    PF = (1 << 2)    # parity
-    AF = (1 << 4)    # alignment
-    ZF = (1 << 6)    # zero
-    SF = (1 << 7)    # sign
-    TF = (1 << 8)    # trap
-    IF = (1 << 9)    # interrupt
-    DF = (1 << 10)   # direction
-    OF = (1 << 11)   # overflow
-    IOPL = (3 << 12) # io privilege
+    CF = (1 << 0)       # carry
+    PF = (1 << 2)       # parity
+    AF = (1 << 4)       # alignment
+    ZF = (1 << 6)       # zero
+    SF = (1 << 7)       # sign
+    TF = (1 << 8)       # trap
+    IF = (1 << 9)       # interrupt
+    DF = (1 << 10)      # direction
+    OF = (1 << 11)      # overflow
+    IOPL = (3 << 12)    # io privilege
+
 
 class QlOsDos(QlOs):
     type = QL_OS.DOS
@@ -86,7 +88,7 @@ class QlOsDos(QlOs):
 
             func = self.user_defined_api[QL_INTERCEPT.CALL].get(intinfo) or handlers.get(intno)
             onenter = self.user_defined_api[QL_INTERCEPT.ENTER].get(intinfo)
-            onexit  = self.user_defined_api[QL_INTERCEPT.EXIT].get(intinfo)
+            onexit = self.user_defined_api[QL_INTERCEPT.EXIT].get(intinfo)
 
             if onenter is not None:
                 onenter(ql)

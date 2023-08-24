@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import sys, traceback
+import sys
+import traceback
 
 from .loader import QlLoader
 
 from qiling import Qiling
 from qiling.os.disk import QlDisk
+
 
 # @see: http://pinvoke.net/default.aspx/Structures.IMAGE_DOS_HEADER
 class ComParser:
@@ -30,6 +32,7 @@ class ComParser:
         self.init_ip = ql.unpack16(data[20:22])
         self.init_cs = ql.unpack16(data[22:24])
 
+
 class QlLoaderDOS(QlLoader):
     def __init__(self, ql: Qiling):
         super().__init__(ql)
@@ -41,6 +44,7 @@ class QlLoaderDOS(QlLoader):
         if self.ql.os.stdscr is not None:
             tbmsg = "".join(traceback.format_exception(tp, value, tb))
             self.ql.log.info(f"{tbmsg}")
+
         self.old_excepthook(tp, value, tb)
 
     def run(self):

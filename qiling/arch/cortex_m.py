@@ -101,18 +101,18 @@ class QlArchCORTEX_M(QlArchARM):
     def endian(self) -> QL_ENDIAN:
         return QL_ENDIAN.EL
 
-    def is_handler_mode(self):
+    def is_handler_mode(self) -> bool:
         return self.regs.ipsr > 1
 
-    def using_psp(self):
+    def using_psp(self) -> bool:
         return not self.is_handler_mode() and (self.regs.control & CONTROL.SPSEL) > 0
 
-    def init_context(self):
+    def init_context(self) -> None:
         self.regs.lr = 0xffffffff
         self.regs.msp = self.ql.mem.read_ptr(0x0)
         self.regs.pc = self.ql.mem.read_ptr(0x4)
 
-    def unicorn_exception_handler(self, ql, intno):
+    def unicorn_exception_handler(self, ql: Qiling, intno: int):
         forward_mapper = {
             EXCP.UDEF           : IRQ.HARD_FAULT,    # undefined instruction
             EXCP.SWI            : IRQ.SVCALL,        # software interrupt
@@ -143,8 +143,9 @@ class QlArchCORTEX_M(QlArchARM):
         except IndexError:
             raise QlErrorNotImplemented(f'Unhandled interrupt number ({intno})')
 
-    def interrupt_handler(self, ql, intno):
+    def interrupt_handler(self, ql: Qiling, intno: int):
         basepri = self.regs.basepri & 0xf0
+
         if basepri and basepri <= ql.hw.nvic.get_priority(intno):
             return
 

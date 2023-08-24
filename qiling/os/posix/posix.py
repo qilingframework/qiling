@@ -33,17 +33,22 @@ from qiling.utils import ql_get_module, ql_get_module_function
 
 SYSCALL_PREF: str = f'ql_syscall_'
 
+
 class intel32(intel.QlIntel32):
     _argregs = (UC_X86_REG_EBX, UC_X86_REG_ECX, UC_X86_REG_EDX, UC_X86_REG_ESI, UC_X86_REG_EDI, UC_X86_REG_EBP)
+
 
 class intel64(intel.QlIntel64):
     _argregs = (UC_X86_REG_RDI, UC_X86_REG_RSI, UC_X86_REG_RDX, UC_X86_REG_R10, UC_X86_REG_R8, UC_X86_REG_R9)
 
+
 class aarch32(arm.aarch32):
     _argregs = (UC_ARM_REG_R0, UC_ARM_REG_R1, UC_ARM_REG_R2, UC_ARM_REG_R3, UC_ARM_REG_R4, UC_ARM_REG_R5)
 
+
 class aarch64(arm.aarch64):
     pass
+
 
 class mipso32(mips.mipso32):
     # TODO: should it be part of the standard mipso32 cc?
@@ -57,11 +62,14 @@ class mipso32(mips.mipso32):
         self.arch.regs.v0 = value
         self.arch.regs.a3 = a3return
 
+
 class riscv32(riscv.riscv):
     pass
 
+
 class riscv64(riscv.riscv):
     pass
+
 
 class ppc(ppc.ppc):
     pass
@@ -216,7 +224,6 @@ class QlOsPosix(QlOs):
             super().set_api(target, handler, intercept)
         else:
             self.function_hook.add_function_hook(target, handler, intercept)
-
 
     @staticmethod
     def getNameFromErrorCode(ret: int) -> str:
