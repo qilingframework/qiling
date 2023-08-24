@@ -4,12 +4,15 @@
 #
 
 from functools import cached_property
+from typing import Optional
 
 from unicorn import Uc, UC_ARCH_RISCV, UC_MODE_RISCV32
 from capstone import Cs
 from keystone import Ks
 
+from qiling import Qiling
 from qiling.arch.arch import QlArch
+from qiling.arch.models import RISCV_CPU_MODEL
 from qiling.arch.register import QlRegisterManager
 from qiling.arch import riscv_const
 from qiling.arch.riscv_const import *
@@ -21,9 +24,17 @@ class QlArchRISCV(QlArch):
     type = QL_ARCH.RISCV
     bits = 32
 
+    def __init__(self, ql: Qiling, *, cputype: Optional[RISCV_CPU_MODEL] = None):
+        super().__init__(ql, cputype=cputype)
+
     @cached_property
     def uc(self) -> Uc:
-        return Uc(UC_ARCH_RISCV, UC_MODE_RISCV32)
+        obj = Uc(UC_ARCH_RISCV, UC_MODE_RISCV32)
+
+        if self.cpu is not None:
+            obj.ctl_set_cpu_model(self.cpu.value)
+
+        return obj
 
     @cached_property
     def regs(self) -> QlRegisterManager:

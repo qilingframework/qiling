@@ -20,6 +20,7 @@ if TYPE_CHECKING:
     from .hw.hw import QlHwManager
     from .loader.loader import QlLoader
 
+from .arch.models import QL_CPU
 from .const import QL_ARCH, QL_ENDIAN, QL_OS, QL_STATE, QL_STOP, QL_VERBOSE, QL_ARCH_INTERPRETER, QL_OS_BAREMETAL
 from .exception import QlErrorFileNotFound, QlErrorArch, QlErrorOsType
 from .host import QlHost
@@ -38,6 +39,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             code: Optional[bytes] = None,
             ostype: Optional[QL_OS] = None,
             archtype: Optional[QL_ARCH] = None,
+            cputype: Optional[QL_CPU] = None,
             verbose: QL_VERBOSE = QL_VERBOSE.DEFAULT,
             profile: Optional[Union[str, Mapping]] = None,
             console: bool = True,
@@ -147,7 +149,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         if endian is None:
             endian = QL_ENDIAN.EL
 
-        self._arch = select_arch(archtype, endian, thumb)(self)
+        self._arch = select_arch(archtype, cputype, endian, thumb)(self)
 
         # Once we finish setting up arch, we can init QlCoreStructs and QlCoreHooks
         if not self.interpreter:

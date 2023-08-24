@@ -3,7 +3,8 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from abc import abstractmethod
+from abc import ABC, abstractmethod
+from typing import ClassVar, Optional
 
 from unicorn import Uc
 from unicorn.unicorn import UcContext
@@ -12,16 +13,20 @@ from keystone import Ks
 
 from qiling import Qiling
 from qiling.const import QL_ARCH, QL_ENDIAN
+
+from .models import QL_CPU
 from .register import QlRegisterManager
 from .utils import QlArchUtils
 
 
-class QlArch:
-    type: QL_ARCH
-    bits: int
+class QlArch(ABC):
+    type: ClassVar[QL_ARCH]
+    bits: ClassVar[int]
 
-    def __init__(self, ql: Qiling):
+    def __init__(self, ql: Qiling, *, cputype: Optional[QL_CPU] = None):
         self.ql = ql
+
+        self.cpu = cputype
         self.utils = QlArchUtils(ql)
 
     @property

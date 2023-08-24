@@ -1,6 +1,5 @@
 # Lazymio (mio@lazym.io)
 
-from typing import Dict, List
 from unicorn import *
 from unicorn.x86_const import UC_X86_REG_EIP, UC_X86_REG_RIP
 from unicorn.arm64_const import UC_ARM64_REG_PC
@@ -15,6 +14,9 @@ import gevent
 import gevent.threadpool
 import gevent.lock
 import threading
+
+from typing import Dict, List, Optional
+
 
 # This class is named UnicornTask be design since it's not a
 # real thread. The expected usage is to inherit this class
@@ -137,12 +139,16 @@ class NestedCounter:
 # the same time.
 class MultiTaskUnicorn(Uc):
 
-    def __init__(self, arch, mode, interval: int = 100):
+    def __init__(self, arch: int, mode: int, cpu: Optional[int], interval: Optional[int] = 100):
         """ Create a MultiTaskUnicorn object.
             Interval: Sceduling interval in **ms**. The longger interval, the better
             performance but less interrupts.
         """
         super().__init__(arch, mode)
+
+        if cpu is not None:
+            self.ctl_set_cpu_model(cpu)
+
         self._interval = interval
         self._tasks = {} # type: Dict[int, UnicornTask]
         self._task_id_counter = 2000
