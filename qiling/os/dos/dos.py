@@ -32,9 +32,8 @@ class QlOsDos(QlOs):
     type = QL_OS.DOS
 
     def __init__(self, ql: Qiling):
-        super(QlOsDos, self).__init__(ql)
+        super().__init__(ql)
 
-        self.ql = ql
         self.hook_syscall()
 
         # used by int 21h
@@ -46,7 +45,11 @@ class QlOsDos(QlOs):
         self.revese_color_pairs = {}
 
         self.stdscr = None
-        self.dos_ver = int(self.ql.profile.get("KERNEL", "version"), 0)
+
+        kconf = self.ql.profile["KERNEL"]
+
+        self.dos_ver = kconf.getint("version")
+        self.ticks_per_second = kconf.getfloat("ticks_per_second")
 
     def __del__(self):
         # resume terminal
@@ -103,14 +106,11 @@ class QlOsDos(QlOs):
         if self.ql.exit_point is not None:
             self.exit_point = self.ql.exit_point
 
-        if  self.ql.entry_point is not None:
-            self.ql.loader.elf_entry = self.ql.entry_point
-        else:
+        if self.ql.entry_point is None:
             self.ql.entry_point = self.ql.loader.start_address
 
         if not self.ql.code:
             self.start_time = datetime.now()
-            self.ticks_per_second = self.ql.loader.ticks_per_second
 
             try:
                 self.ql.emu_start(self.ql.entry_point, self.exit_point, self.ql.timeout, self.ql.count)

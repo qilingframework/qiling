@@ -434,7 +434,7 @@ def profile_setup(ostype: QL_OS, user_config: Optional[Union[str, dict]]):
         int_converter = partial(int, base=0)
         config = ConfigParser(converters={'int': int_converter})
 
-        qiling_home = Path(inspect.getfile(inspect.currentframe())).parent
+        qiling_home = Path(inspect.getfile(profile_setup)).parent
         os_profile = qiling_home / 'profiles' / f'{ostype.name.lower()}.ql'
 
         # read default profile first

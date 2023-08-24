@@ -758,8 +758,7 @@ class QlMemoryHeap:
 
     # clear all memory regions alloc
     def clear(self):
-        for chunk in self.chunks:
-            chunk.inuse = False
+        self.chunks.clear()
 
         for addr, size in self.mem_alloc:
             self.ql.mem.unmap(addr, size)

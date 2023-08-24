@@ -41,10 +41,11 @@ class UnicornTask:
             the task is running.
         """
         raw_pc = self._raw_pc()
-        if (self._uc.reg_read(UC_ARM_REG_CPSR) & (1 << 5)):
-            return raw_pc | 1
-        else:
-            return raw_pc
+
+        if self._arch == UC_ARCH_ARM:
+            return raw_pc | ((self._uc.reg_read(UC_ARM_REG_CPSR) >> 5) & 0b1)
+
+        return raw_pc
 
     def _raw_pc(self):
         # This extension is designed to be independent of Qiling, so let's

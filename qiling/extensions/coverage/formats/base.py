@@ -5,6 +5,8 @@
 
 from abc import ABC, abstractmethod
 
+from qiling import Qiling
+
 
 class QlBaseCoverage(ABC):
     """
@@ -13,8 +15,10 @@ class QlBaseCoverage(ABC):
     all the methods marked with the @abstractmethod decorator.
     """
 
-    def __init__(self, ql):
+    def __init__(self, ql: Qiling):
         super().__init__()
+
+        self.ql = ql
 
     @property
     @staticmethod

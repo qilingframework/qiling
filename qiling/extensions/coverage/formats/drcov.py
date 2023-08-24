@@ -29,8 +29,8 @@ class QlDrCoverage(QlBaseCoverage):
     FORMAT_NAME = "drcov"
 
     def __init__(self, ql):
-        super().__init__()
-        self.ql            = ql
+        super().__init__(ql)
+
         self.drcov_version = 2
         self.drcov_flavor  = 'drcov'
         self.basic_blocks  = []
