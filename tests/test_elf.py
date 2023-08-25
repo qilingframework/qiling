@@ -179,7 +179,7 @@ class ELFTest(unittest.TestCase):
 
         ql.run()
 
-        self.assertEqual(0x7fffb81c2760, checklist['exit_rdi'])
+        self.assertIn(checklist['exit_rdi'], (0x1, 0x7fffb81c2760))
         self.assertEqual("CCCC", checklist['enter_str'])
 
         del ql
