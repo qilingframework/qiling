@@ -8,6 +8,7 @@ from unicorn import UcError
 from qiling import Qiling
 from qiling.arch import arm_utils
 from qiling.os.posix.posix import QlOsPosix
+from qiling.os.posix.syscall.abi import arm as arm_abi
 from qiling.os.qnx.const import NTO_SIDE_CHANNEL, SYSMGR_PID, SYSMGR_CHID, SYSMGR_COID
 from qiling.os.qnx.helpers import QnxConn
 from qiling.os.qnx.structs import _thread_local_storage
@@ -23,9 +24,10 @@ class QlOsQnx(QlOsPosix):
     type = QL_OS.QNX
 
     def __init__(self, ql: Qiling):
-        super(QlOsQnx, self).__init__(ql)
+        super().__init__(ql)
 
-        self.ql = ql
+        if ql.arch.type is QL_ARCH.ARM:
+            self.syscall_abi = arm_abi.QlAArch32QNX(ql.arch)
 
         cc: QlCC = {
             QL_ARCH.X86     : intel.cdecl,
