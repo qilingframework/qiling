@@ -26,7 +26,7 @@ class QlMemoryManager:
     https://github.com/zeropointdynamics/zelos/blob/master/src/zelos/memory.py
     """
 
-    def __init__(self, ql: Qiling):
+    def __init__(self, ql: Qiling, pagesize: int = 0x1000):
         self.ql = ql
         self.map_info: List[MapInfoEntry] = []
         self.mmio_cbs = {}
@@ -46,7 +46,7 @@ class QlMemoryManager:
         self.max_mem_addr = max_addr
 
         # memory page size
-        self.pagesize = 0x1000
+        self.pagesize = pagesize
 
         # make sure pagesize is a power of 2
         assert self.pagesize & (self.pagesize - 1) == 0, 'pagesize has to be a power of 2'
