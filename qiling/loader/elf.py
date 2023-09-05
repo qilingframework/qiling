@@ -282,13 +282,30 @@ class QlLoaderELF(QlLoader):
             self.ql.mem.write(top, data)
 
             return top
+        
+        def __push_bytes(top: int, s: bytes) -> int:
+            """
+            Write a bytes to stack memory and adjust the top of stack accordingly.
+            Top of stack remains aligned to pointer size
+            """
+
+            data = s + b"\x00"
+            top = self.ql.mem.align(top - len(data), self.ql.arch.pointersize)
+            self.ql.mem.write(top, data)
+
+            return top
 
         # write argc
         elf_table.extend(self.ql.pack(len(argv)))
 
         # write argv
         for s in argv:
-            new_stack = __push_str(new_stack, s)
+            if isinstance(s, str):
+                new_stack = __push_str(new_stack, s)
+            elif isinstance(s, bytes):
+                new_stack = __push_bytes(new_stack, s.decode('latin'))
+            else:
+                raise TypeError(f'argv must be a sequence of str or bytes, not {type(s)}')
             elf_table.extend(self.ql.pack(new_stack))
 
         # add a nullptr sentinel
@@ -296,7 +313,13 @@ class QlLoaderELF(QlLoader):
 
         # write env
         for k, v in env.items():
-            new_stack = __push_str(new_stack, f'{k}={v}')
+            if isinstance(k, str):
+                k = k.encode('latin')
+            if isinstance(v, str):
+                v = v.encode('latin')
+            
+            pair = k + b'=' + v
+            new_stack = __push_bytes(new_stack, pair)
             elf_table.extend(self.ql.pack(new_stack))
 
         # add a nullptr sentinel
