@@ -7,7 +7,7 @@ import io
 import os
 
 from enum import IntEnum
-from typing import Optional, Sequence, Mapping, Tuple
+from typing import AnyStr, Optional, Sequence, Mapping, Tuple
 
 from elftools.common.utils import preserve_stream_pos
 from elftools.elf.constants import P_FLAGS, SH_FLAGS
@@ -143,7 +143,7 @@ class QlLoaderELF(QlLoader):
 
         return prot
 
-    def load_with_ld(self, elffile: ELFFile, stack_addr: int, load_address: int, argv: Sequence[str] = [], env: Mapping[str, str] = {}):
+    def load_with_ld(self, elffile: ELFFile, stack_addr: int, load_address: int, argv: Sequence[str] = [], env: Mapping[AnyStr, AnyStr] = {}):
 
         def load_elf_segments(elffile: ELFFile, load_address: int, info: str):
             # get list of loadable segments; these segments will be loaded to memory
@@ -272,16 +272,22 @@ class QlLoaderELF(QlLoader):
         elf_table = bytearray()
         new_stack = stack_addr
 
-        def __push_str(top: int, s: str) -> int:
-            """Write a string to stack memory and adjust the top of stack accordingly.
+        def __push_bytes(top: int, b: bytes) -> int:
+            """Write bytes to stack memory and adjust the top of stack accordingly.
             Top of stack remains aligned to pointer size
             """
 
-            data = s.encode('latin') + b'\x00'
+            data = b + b'\x00'
             top = self.ql.mem.align(top - len(data), self.ql.arch.pointersize)
             self.ql.mem.write(top, data)
 
             return top
+
+        def __push_str(top: int, s: str) -> int:
+            """A convinient method for writing a string to stack memory.
+            """
+
+            return __push_bytes(top, s.encode('latin'))
 
         # write argc
         elf_table.extend(self.ql.pack(len(argv)))
@@ -296,7 +302,12 @@ class QlLoaderELF(QlLoader):
 
         # write env
         for k, v in env.items():
-            new_stack = __push_str(new_stack, f'{k}={v}')
+            _k = k if isinstance(k, bytes) else k.encode('latin')
+            _v = v if isinstance(v, bytes) else v.encode('latin')
+
+            pair = b'='.join((_k, _v))
+
+            new_stack = __push_bytes(new_stack, pair)
             elf_table.extend(self.ql.pack(new_stack))
 
         # add a nullptr sentinel
