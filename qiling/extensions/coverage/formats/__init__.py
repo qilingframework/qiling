@@ -1,1 +1,1 @@
-__all__ = ["base", "drcov", "drcov_exact"]
+__all__ = ["base", "drcov", "drcov_exact", "ezcov"]
