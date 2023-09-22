@@ -40,10 +40,7 @@ class QlMemoryManager:
         if ql.arch.bits not in bit_stuff:
             raise QlErrorStructConversion("Unsupported Qiling architecture for memory manager")
 
-        max_addr = bit_stuff[ql.arch.bits]
-
-        self.max_addr = max_addr
-        self.max_mem_addr = max_addr
+        self.max_mem_addr = bit_stuff[ql.arch.bits]
 
         # memory page size
         self.pagesize = pagesize
@@ -477,7 +474,6 @@ class QlMemoryManager:
 
         yield (p_lbound, p_ubound)
 
-
     def is_available(self, addr: int, size: int) -> bool:
         """Query whether the memory range starting at `addr` and is of length of `size` bytes
         is available for allocation.
@@ -527,7 +523,7 @@ class QlMemoryManager:
 
         # memory space bounds (exclusive)
         mem_lbound = 0
-        mem_ubound = self.max_addr + 1
+        mem_ubound = self.max_mem_addr + 1
 
         if minaddr is None:
             minaddr = mem_lbound
