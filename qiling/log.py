@@ -198,13 +198,13 @@ def setup_logger(ql: Qiling, log_file: Optional[str], console: bool, log_overrid
             handler.setFormatter(formatter)
             log.addHandler(handler)
 
-    log.setLevel(logging.INFO)
+        # optimize logging speed by avoiding the collection of unnecesary logging properties
+        logging._srcfile = None
+        logging.logThreads = False
+        logging.logProcesses = False
+        logging.logMultiprocessing = False
 
-    # optimize logging speed by avoiding the collection of unnecesary logging properties
-    logging._srcfile = None
-    logging.logThreads = False
-    logging.logProcesses = False
-    logging.logMultiprocessing = False
+    log.setLevel(logging.INFO)
 
     return log
 
