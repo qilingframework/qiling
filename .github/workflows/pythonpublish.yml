@@ -6,21 +6,18 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python
-      uses: actions/setup-python@v1
-      with:
-        python-version: '3.x'
-    - name: Install dependencies
-      run: |
-        pip install setuptools wheel
-    - name: Build distribution 📦
-      run: |
-        pip install .
-        python setup.py sdist bdist_wheel
-    - uses: actions/upload-artifact@v2
-      with:
-         path: ${{ github.workspace }}/dist/*
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "^3.8"
+      - name: Install dependencies
+        run: pipx install poetry
+      - name: Build distribution 📦
+        run: poetry build -n
+      - uses: actions/upload-artifact@v2
+        with:
+          path: ${{ github.workspace }}/dist/*
 
   publish:
     needs: [build]

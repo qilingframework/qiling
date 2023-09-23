@@ -11,81 +11,75 @@ jobs:
       matrix:
         #os: [windows-2019, macos-10.15, ubuntu-18.04, ubuntu-20.04]
         os: [windows-latest, ubuntu-20.04]
-        python-version: [3.8, 3.9]              
+        python-version: ["3.8", "3.9", "^3"]
         include:
           - os: ubuntu-22.04
             python-version: 3.9
             container: Docker
 
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python-version }}
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
 
+      - name: Win setup MSVC
+        if: contains(matrix.os, 'windows')
+        uses: microsoft/setup-msbuild@v1
 
-    - name: Win setup MSVC
-      if: contains(matrix.os, 'windows')
-      uses: microsoft/setup-msbuild@v1
-
-
-    - name: Win configure Pagefile
-      if: contains(matrix.os, 'windows')
-      uses: al-cheb/configure-pagefile-action@v1.2
-      with:
+      - name: Win configure Pagefile
+        if: contains(matrix.os, 'windows')
+        uses: al-cheb/configure-pagefile-action@v1.2
+        with:
           minimum-size: 16GB
           maximum-size: 16GB
           disk-root: "C:"
 
-
-    - name: win run tests
-      if: contains(matrix.os, 'windows')
-      shell: bash
-      run: |
+      - name: win run tests
+        if: contains(matrix.os, 'windows')
+        shell: bash
+        run: |
           powershell Start-Process -PassThru -Wait PowerShell -ArgumentList "'-Command Set-MpPreference -DisableArchiveScanning \$true'"
           powershell Start-Process -PassThru -Wait PowerShell -ArgumentList "'-Command Set-MpPreference -DisableBehaviorMonitoring \$true'"
           powershell Start-Process -PassThru -Wait PowerShell -ArgumentList "'-Command Set-MpPreference -DisableRealtimeMonitoring \$true'"
           powershell Start-Process -PassThru -Wait PowerShell -ArgumentList "'-Command  Add-MpPreference -ExclusionPath $GITHUB_WORKSPACE'"
-          pip3 install setuptools wheel
           pip3 install .
           cd examples
           rm -rf rootfs
           curl -LJk -o master.zip https://github.com/qilingframework/rootfs/archive/refs/heads/master.zip && unzip master.zip
           mv rootfs-master rootfs
-          cd $GITHUB_WORKSPACE
+          cd "$GITHUB_WORKSPACE"
           cmd.exe //C 'examples\scripts\dllscollector.bat'
-          cd $GITHUB_WORKSPACE/examples/rootfs/x86_windows/bin
+          cd "$GITHUB_WORKSPACE/examples/rootfs/x86_windows/bin"
           unzip -Pinfected wannacry.bin.zip
           unzip -Pinfected UselessDisk.bin.zip
           unzip -Pinfected GandCrab502.bin.zip
           unzip -Pinfected al-khaser.bin.zip
           unzip -Pinfected sality.dll.zip
-          cd $GITHUB_WORKSPACE/tests
+          cd "$GITHUB_WORKSPACE/tests"
           cmd.exe //C '.\test_pe.bat'
 
+      - name: linux run tests
+        if: contains(matrix.os, 'ubuntu')
+        shell: 'script -q -e -c "bash {0}"'
+        run: |
+          cd examples
+          rm -rf rootfs
+          wget https://github.com/qilingframework/rootfs/archive/refs/heads/master.zip
+          unzip master.zip && mv rootfs-master rootfs
+          cd ../qiling
+          cd ../examples/rootfs/x86_linux/kernel && unzip -P infected m0hamed_rootkit.ko.zip
+          cd ../../../../
+          pip3 install -e .[evm,RE]
 
-    - name: linux run tests
-      if: contains(matrix.os, 'ubuntu')
-      shell: 'script -q -e -c "bash {0}"'
-      run: |
-        cd examples
-        rm -rf rootfs
-        wget https://github.com/qilingframework/rootfs/archive/refs/heads/master.zip
-        unzip master.zip && mv rootfs-master rootfs
-        cd ../qiling
-        cd ../examples/rootfs/x86_linux/kernel && unzip -P infected m0hamed_rootkit.ko.zip
-        cd ../../../../
-        pip3 install -e .[evm,RE]
-
-        if [ ${{ matrix.os }} == 'ubuntu-18.04' ] and [ ${{ matrix.python-version }} == '3.9' ]; then
-          docker run -it --rm -v ${GITHUB_WORKSPACE}:/qiling qilingframework/qiling:dev bash -c "cd tests && ./test_onlinux.sh"
-        else
-          pip3 install setuptools wheel
-          cd tests && ./test_onlinux.sh
-        fi
-
+          if [ ${{ matrix.os }} == 'ubuntu-18.04' ] and [ ${{ matrix.python-version }} == '3.9' ]; then
+            docker run -it --rm -v ${GITHUB_WORKSPACE}:/qiling qilingframework/qiling:dev bash -c "cd tests && ./test_onlinux.sh"
+          else
+            pip3 install poetry
+            cd tests && ./test_onlinux.sh
+          fi
 
     # - name: mac run tests
     #   if: contains(matrix.os, 'macos')
@@ -97,4 +91,4 @@ jobs:
     #       cd $GITHUB_WORKSPACE/examples/rootfs/x8664_macos/kext
     #       unzip -Pinfected SuperRootkit.kext.zip
     #       cd $GITHUB_WORKSPACE/tests
-    #       ./test_macho.sh        
+    #       ./test_macho.sh
