@@ -10,7 +10,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: 'Checkout git repo'
+      - name: "Checkout git repo"
         uses: actions/checkout@v1
 
       - name: Publish to registry
