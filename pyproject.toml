@@ -1,0 +1,58 @@
+[tool.poetry]
+name = "qiling"
+version = "1.4.7"
+description = "Qiling is an advanced binary emulation framework that cross-platform-architecture"
+authors = ["KaiJern Lau (xwings) <info@qiling.io>"]
+license = "GPLv2"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+capstone = "^4"
+unicorn = "^2"
+pefile = ">=2022.5.30"
+python-registry = "^1.3.1"
+keystone-engine = "^0.9.2"
+pyelftools = ">=0.28"
+gevent = ">=20.9.0"
+multiprocess = ">=0.70.12.2"
+windows-curses = { version = "^2.1.0", markers = "platform_system == 'Windows'" }
+pyyaml = "^6.0.1"
+python-fx = "*"
+questionary = "*"
+termcolor = "*"
+
+[tool.poetry.group.evm]
+optional = true
+
+[tool.poetry.group.evm.dependencies]
+blake2b-py = ">=0.1.2"
+eth-keys = ">=0.2.1"
+eth-typing = ">=2.2.0"
+eth-utils = ">=1.9.4"
+eth_abi = ">=2.1.1"
+lru-dict = ">=1.1.6"
+py-ecc = ">=1.4.7"
+rlp = "*"
+trie = "*"
+numpy = "*"
+rich = "*"
+cmd2 = "*"
+eth-hash = { extras = ["pycryptodome"], version = "*" }
+
+[tool.poetry.group.fuzz]
+optional = true
+
+[tool.poetry.group.fuzz.dependencies]
+unicornafl = { version = "^2.0.0", markers = "platform_system != 'Windows'" }
+fuzzercorn = { version = "^0.0.1", markers = "platform_system == 'Windows'" }
+
+[tool.poetry.group.re]
+optional = true
+
+[tool.poetry.group.re.dependencies]
+r2libr = "^5.7.4"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
