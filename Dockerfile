@@ -1,31 +1,39 @@
-FROM python:3.8-slim AS builder
+FROM python:3-slim AS base
+
+WORKDIR /qiling
+
+# hadolint global ignore=DL3008,DL3013
+ENV DEBIAN_FRONTEND=noninteractive
+ENV AM_I_IN_A_DOCKER_CONTAINER=True
+
+RUN apt-get update && apt-get -y upgrade && rm -rf /var/lib/apt/lists/*
+
+
+FROM base AS builder
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+	cmake build-essential gcc git \
+	&& rm -rf /var/lib/apt/lists/*
+
+COPY pyproject.toml poetry.lock ./
+RUN pip3 install --no-cache-dir poetry \
+	&& poetry install --no-root --no-directory
+
+COPY qiling/ tests/ examples/ ./
+RUN poetry install --no-dev && poetry build --format=wheel
+
+FROM base
 
 LABEL maintainer="Kevin Foo <chfl4gs@qiling.io>"
-
-ENV DEBIAN_FRONTEND=noninteractive
-ENV AM_I_IN_A_DOCKER_CONTAINER Yes
-
-RUN apt-get update \
-  && apt-get -y upgrade \
-  && apt-get install -y --no-install-recommends cmake build-essential gcc git
-
-COPY . /qiling
-
-RUN cd /qiling \
-  && pip wheel . -w wheels
-
-FROM python:3.8-slim AS base
 
 COPY --from=builder /qiling /qiling
 
 WORKDIR /qiling
 
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends unzip apt-utils \
-  && rm -rf /var/lib/apt/lists/* \
-  && pip3 install --no-deps wheels/*.whl \
-  && rm -rf wheels
+	&& apt-get install -y --no-install-recommends unzip apt-utils \
+	&& rm -rf /var/lib/apt/lists/* \
+	&& pip3 install --no-deps --no-cache-dir dist/*.whl \
+	&& rm -rf ./dist/
 
-ENV HOME /qiling
-
-CMD bash
+CMD ["bash"]
