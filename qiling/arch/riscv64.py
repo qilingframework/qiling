@@ -4,11 +4,14 @@
 #
 
 from functools import cached_property
+from typing import Optional
 
 from unicorn import Uc, UC_ARCH_RISCV, UC_MODE_RISCV64
 from capstone import Cs
 from keystone import Ks
 
+from qiling import Qiling
+from qiling.arch.models import RISCV64_CPU_MODEL
 from qiling.arch.riscv_const import *
 from qiling.const import QL_ARCH
 from qiling.exception import QlErrorNotImplemented
@@ -20,9 +23,17 @@ class QlArchRISCV64(QlArchRISCV):
     type = QL_ARCH.RISCV64
     bits = 64
 
+    def __init__(self, ql: Qiling, *, cputype: Optional[RISCV64_CPU_MODEL] = None):
+        super().__init__(ql, cputype=cputype)
+
     @cached_property
     def uc(self) -> Uc:
-        return Uc(UC_ARCH_RISCV, UC_MODE_RISCV64)
+        obj = Uc(UC_ARCH_RISCV, UC_MODE_RISCV64)
+
+        if self.cpu is not None:
+            obj.ctl_set_cpu_model(self.cpu.value)
+
+        return obj
 
     @cached_property
     def disassembler(self) -> Cs:

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 
 
@@ -10,6 +10,7 @@ from qiling.arch.evm.hooks import monkeypatch_core_hooks
 from qiling.arch.evm.vm.evm import QlArchEVMEmulator
 from qiling.arch.evm.vm.message import Message
 from qiling.const import *
+
 
 class QlArchEVM(QlArch):
     type = QL_ARCH.EVM
@@ -39,7 +40,19 @@ class QlArchEVM(QlArch):
 
     @property
     def uc(self):
-        return None
+        raise AttributeError
+
+    @property
+    def regs(self):
+        raise AttributeError
+
+    @property
+    def disassembler(self):
+        raise AttributeError
+
+    @property
+    def assembler(self):
+        raise AttributeError
 
     @property
     def endian(self) -> QL_ENDIAN:
@@ -48,6 +61,7 @@ class QlArchEVM(QlArch):
 
 def __evm_run(self, code: Message):
     return self.arch.run(code)
+
 
 def monkeypatch_core_methods(ql):
     """Monkeypatch core methods for evm

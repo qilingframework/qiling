@@ -9,7 +9,7 @@ from qiling import Qiling
 from qiling.const import QL_ARCH
 from qiling.exception import QlMemoryMappedError
 from qiling.os.posix.const import *
-from qiling.os.posix.posix import QlShmId
+from qiling.os.posix.shm import QlShmId
 
 
 def ql_syscall_shmget(ql: Qiling, key: int, size: int, shmflg: int):

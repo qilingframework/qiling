@@ -26,7 +26,7 @@ class QlMemoryManager:
     https://github.com/zeropointdynamics/zelos/blob/master/src/zelos/memory.py
     """
 
-    def __init__(self, ql: Qiling):
+    def __init__(self, ql: Qiling, pagesize: int = 0x1000):
         self.ql = ql
         self.map_info: List[MapInfoEntry] = []
         self.mmio_cbs = {}
@@ -40,13 +40,10 @@ class QlMemoryManager:
         if ql.arch.bits not in bit_stuff:
             raise QlErrorStructConversion("Unsupported Qiling architecture for memory manager")
 
-        max_addr = bit_stuff[ql.arch.bits]
-
-        self.max_addr = max_addr
-        self.max_mem_addr = max_addr
+        self.max_mem_addr = bit_stuff[ql.arch.bits]
 
         # memory page size
-        self.pagesize = 0x1000
+        self.pagesize = pagesize
 
         # make sure pagesize is a power of 2
         assert self.pagesize & (self.pagesize - 1) == 0, 'pagesize has to be a power of 2'
@@ -134,7 +131,7 @@ class QlMemoryManager:
 
     def change_mapinfo(self, mem_s: int, mem_e: int, mem_p: Optional[int] = None, mem_info: Optional[str] = None):
         tmp_map_info: Optional[MapInfoEntry] = None
-        info_idx: int = None
+        info_idx: int = -1
 
         for idx, map_info in enumerate(self.map_info):
             if mem_s >= map_info[0] and mem_e <= map_info[1]:
@@ -377,7 +374,7 @@ class QlMemoryManager:
 
         self.write(addr, __pack(value))
 
-    def search(self, needle: Union[bytes, Pattern[bytes]], begin: Optional[int] = None, end: Optional[int] = None) -> Sequence[int]:
+    def search(self, needle: Union[bytes, Pattern[bytes]], begin: Optional[int] = None, end: Optional[int] = None) -> List[int]:
         """Search for a sequence of bytes in memory.
 
         Args:
@@ -398,7 +395,7 @@ class QlMemoryManager:
 
         assert begin < end, 'search arguments do not make sense'
 
-        # narrow the search down to relevant ranges; mmio ranges are excluded due to potential read size effects
+        # narrow the search down to relevant ranges; mmio ranges are excluded due to potential read side effects
         ranges = [(max(begin, lbound), min(ubound, end)) for lbound, ubound, _, _, is_mmio in self.map_info if not (end < lbound or ubound < begin or is_mmio)]
         results = []
 
@@ -477,7 +474,6 @@ class QlMemoryManager:
 
         yield (p_lbound, p_ubound)
 
-
     def is_available(self, addr: int, size: int) -> bool:
         """Query whether the memory range starting at `addr` and is of length of `size` bytes
         is available for allocation.
@@ -527,7 +523,7 @@ class QlMemoryManager:
 
         # memory space bounds (exclusive)
         mem_lbound = 0
-        mem_ubound = self.max_addr + 1
+        mem_ubound = self.max_mem_addr + 1
 
         if minaddr is None:
             minaddr = mem_lbound
@@ -587,8 +583,7 @@ class QlMemoryManager:
         aligned_size = self.align_up((addr & (self.pagesize - 1)) + size)
 
         self.ql.uc.mem_protect(aligned_address, aligned_size, perms)
-        self.change_mapinfo(aligned_address, aligned_address + aligned_size, mem_p = perms)
-
+        self.change_mapinfo(aligned_address, aligned_address + aligned_size, perms)
 
     def map(self, addr: int, size: int, perms: int = UC_PROT_ALL, info: Optional[str] = None):
         """Map a new memory range.
@@ -640,14 +635,18 @@ class QlMemoryManager:
 
         self.mmio_cbs[(addr, addr + size)] = (read_cb, write_cb)
 
-# A Simple Heap Implementation
+
 class Chunk:
     def __init__(self, address: int, size: int):
         self.inuse = True
         self.address = address
         self.size = size
 
+
 class QlMemoryHeap:
+    """A Simple Heap Implementation.
+    """
+
     def __init__(self, ql: Qiling, start_address: int, end_address: int):
         self.ql = ql
         self.chunks: List[Chunk] = []
@@ -758,8 +757,7 @@ class QlMemoryHeap:
 
     # clear all memory regions alloc
     def clear(self):
-        for chunk in self.chunks:
-            chunk.inuse = False
+        self.chunks.clear()
 
         for addr, size in self.mem_alloc:
             self.ql.mem.unmap(addr, size)

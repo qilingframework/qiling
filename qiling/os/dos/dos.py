@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -15,26 +15,27 @@ from qiling.os.os import QlOs
 
 from .interrupts import handlers
 
+
 # @see: https://en.wikipedia.org/wiki/FLAGS_register
 class Flags(IntEnum):
-    CF = (1 << 0)    # carry
-    PF = (1 << 2)    # parity
-    AF = (1 << 4)    # alignment
-    ZF = (1 << 6)    # zero
-    SF = (1 << 7)    # sign
-    TF = (1 << 8)    # trap
-    IF = (1 << 9)    # interrupt
-    DF = (1 << 10)   # direction
-    OF = (1 << 11)   # overflow
-    IOPL = (3 << 12) # io privilege
+    CF = (1 << 0)       # carry
+    PF = (1 << 2)       # parity
+    AF = (1 << 4)       # alignment
+    ZF = (1 << 6)       # zero
+    SF = (1 << 7)       # sign
+    TF = (1 << 8)       # trap
+    IF = (1 << 9)       # interrupt
+    DF = (1 << 10)      # direction
+    OF = (1 << 11)      # overflow
+    IOPL = (3 << 12)    # io privilege
+
 
 class QlOsDos(QlOs):
     type = QL_OS.DOS
 
     def __init__(self, ql: Qiling):
-        super(QlOsDos, self).__init__(ql)
+        super().__init__(ql)
 
-        self.ql = ql
         self.hook_syscall()
 
         # used by int 21h
@@ -46,7 +47,11 @@ class QlOsDos(QlOs):
         self.revese_color_pairs = {}
 
         self.stdscr = None
-        self.dos_ver = int(self.ql.profile.get("KERNEL", "version"), 0)
+
+        kconf = self.ql.profile["KERNEL"]
+
+        self.dos_ver = kconf.getint("version")
+        self.ticks_per_second = kconf.getfloat("ticks_per_second")
 
     def __del__(self):
         # resume terminal
@@ -83,7 +88,7 @@ class QlOsDos(QlOs):
 
             func = self.user_defined_api[QL_INTERCEPT.CALL].get(intinfo) or handlers.get(intno)
             onenter = self.user_defined_api[QL_INTERCEPT.ENTER].get(intinfo)
-            onexit  = self.user_defined_api[QL_INTERCEPT.EXIT].get(intinfo)
+            onexit = self.user_defined_api[QL_INTERCEPT.EXIT].get(intinfo)
 
             if onenter is not None:
                 onenter(ql)
@@ -103,14 +108,11 @@ class QlOsDos(QlOs):
         if self.ql.exit_point is not None:
             self.exit_point = self.ql.exit_point
 
-        if  self.ql.entry_point is not None:
-            self.ql.loader.elf_entry = self.ql.entry_point
-        else:
+        if self.ql.entry_point is None:
             self.ql.entry_point = self.ql.loader.start_address
 
         if not self.ql.code:
             self.start_time = datetime.now()
-            self.ticks_per_second = self.ql.loader.ticks_per_second
 
             try:
                 self.ql.emu_start(self.ql.entry_point, self.exit_point, self.ql.timeout, self.ql.count)

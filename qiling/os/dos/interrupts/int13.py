@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -10,39 +10,43 @@ from qiling import Qiling
 
 from .. import utils
 
+
 class DiskError(IntEnum):
-    NoError                            = 0
-    BadCommand                        = 1
-    AddressNotFound                    = 2
-    DiskWriteProtectError            = 3
-    SectorNotFound                    = 4
-    FixedDiskResetFailed            = 5
-    DiskChangedOrRemoved            = 6
-    BadFixedDiskParameterTable        = 7
-    DMAOverrun                        = 8
-    DMAAcessAcrossBoundary            = 9
-    BadFixedDiskSectorFlag            = 10
-    BadFixedDiskCylinder            = 11
-    UnsupportedTrack                = 12
-    InvalidNumberofSectors            = 13
-    FixedDiskControlledDataAdressDetected = 14
-    FixedDiskDMAArbitrationLevelOutofRange = 15
-    ECCErrorOnRead                    = 16
-    RecoverableFixedDiskDataError    = 17
-    ControllerError                    = 32
-    SeekFailure                        = 64
-    Timeout                            = 128
-    FixedDiskDriveNotReady            = 170
-    FixedDiskUndefinedError            = 187
-    FixedDiskWriteFault                = 204
-    FixedDiskStatusError            = 224
-    SenseOperationFailed            = 255
+    NoError                                 = 0
+    BadCommand                              = 1
+    AddressNotFound                         = 2
+    DiskWriteProtectError                   = 3
+    SectorNotFound                          = 4
+    FixedDiskResetFailed                    = 5
+    DiskChangedOrRemoved                    = 6
+    BadFixedDiskParameterTable              = 7
+    DMAOverrun                              = 8
+    DMAAcessAcrossBoundary                  = 9
+    BadFixedDiskSectorFlag                  = 10
+    BadFixedDiskCylinder                    = 11
+    UnsupportedTrack                        = 12
+    InvalidNumberofSectors                  = 13
+    FixedDiskControlledDataAdressDetected   = 14
+    FixedDiskDMAArbitrationLevelOutofRange  = 15
+    ECCErrorOnRead                          = 16
+    RecoverableFixedDiskDataError           = 17
+    ControllerError                         = 32
+    SeekFailure                             = 64
+    Timeout                                 = 128
+    FixedDiskDriveNotReady                  = 170
+    FixedDiskUndefinedError                 = 187
+    FixedDiskWriteFault                     = 204
+    FixedDiskStatusError                    = 224
+    SenseOperationFailed                    = 255
+
 
 def parse_dap(dapbs):
     return struct.unpack("<BBHHHQ", dapbs)
 
+
 def __leaf_00(ql: Qiling):
     ql.os.clear_cf()
+
 
 def __leaf_02(ql: Qiling):
     idx = ql.arch.regs.dl
@@ -142,17 +146,18 @@ def __leaf_43(ql: Qiling):
     ql.os.clear_cf()
     ql.arch.regs.ah = 0
 
+
 # @see: https://en.wikipedia.org/wiki/INT_13H
 def handler(ql: Qiling):
     ah = ql.arch.regs.ah
 
     leaffunc = {
-        0x00 : __leaf_00,
-        0x02 : __leaf_02,
-        0x08 : __leaf_08,
-        0x41 : __leaf_41,
-        0x42 : __leaf_42,
-        0x43 : __leaf_43
+        0x00: __leaf_00,
+        0x02: __leaf_02,
+        0x08: __leaf_08,
+        0x41: __leaf_41,
+        0x42: __leaf_42,
+        0x43: __leaf_43
     }.get(ah)
 
     if leaffunc is None:

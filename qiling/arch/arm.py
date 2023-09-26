@@ -4,6 +4,7 @@
 #
 
 from functools import cached_property, lru_cache
+from typing import Optional
 
 from unicorn import Uc, UC_ARCH_ARM, UC_MODE_ARM, UC_MODE_THUMB, UC_MODE_BIG_ENDIAN
 from capstone import Cs, CS_ARCH_ARM, CS_MODE_ARM, CS_MODE_THUMB, CS_MODE_BIG_ENDIAN
@@ -12,6 +13,7 @@ from keystone import Ks, KS_ARCH_ARM, KS_MODE_ARM, KS_MODE_THUMB, KS_MODE_BIG_EN
 from qiling import Qiling
 from qiling.arch.arch import QlArch
 from qiling.arch import arm_const
+from qiling.arch.models import ARM_CPU_MODEL
 from qiling.arch.register import QlRegisterManager
 from qiling.const import QL_ARCH, QL_ENDIAN
 
@@ -20,8 +22,8 @@ class QlArchARM(QlArch):
     type = QL_ARCH.ARM
     bits = 32
 
-    def __init__(self, ql: Qiling, endian: QL_ENDIAN, thumb: bool):
-        super().__init__(ql)
+    def __init__(self, ql: Qiling, *, cputype: Optional[ARM_CPU_MODEL], endian: QL_ENDIAN, thumb: bool):
+        super().__init__(ql, cputype=cputype)
 
         self._init_endian = endian
         self._init_thumb = thumb
@@ -32,13 +34,18 @@ class QlArchARM(QlArch):
     def uc(self) -> Uc:
         mode = UC_MODE_ARM
 
-        if self._init_endian == QL_ENDIAN.EB:
+        if self._init_endian is QL_ENDIAN.EB:
             mode += UC_MODE_BIG_ENDIAN
 
         if self._init_thumb:
             mode += UC_MODE_THUMB
 
-        return Uc(UC_ARCH_ARM, mode)
+        obj = Uc(UC_ARCH_ARM, mode)
+
+        if self.cpu is not None:
+            obj.ctl_set_cpu_model(self.cpu.value)
+
+        return obj
 
     @cached_property
     def regs(self) -> QlRegisterManager:
@@ -82,7 +89,7 @@ class QlArchARM(QlArch):
 
         mode = CS_MODE_ARM
 
-        if self.endian == QL_ENDIAN.EB:
+        if self.endian is QL_ENDIAN.EB:
             mode += CS_MODE_BIG_ENDIAN
 
         if self.is_thumb:
@@ -102,7 +109,7 @@ class QlArchARM(QlArch):
 
         mode = KS_MODE_ARM
 
-        if self.endian == QL_ENDIAN.EB:
+        if self.endian is QL_ENDIAN.EB:
             mode += KS_MODE_BIG_ENDIAN
 
         if self.is_thumb:

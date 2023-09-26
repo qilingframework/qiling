@@ -4,13 +4,16 @@
 #
 
 from functools import cached_property
+from typing import Optional
 
 from unicorn import Uc, UC_ARCH_PPC, UC_MODE_PPC32, UC_MODE_BIG_ENDIAN
 from capstone import Cs, CS_ARCH_PPC, CS_MODE_32, CS_MODE_BIG_ENDIAN
 from keystone import Ks, KS_ARCH_PPC, KS_MODE_PPC32, KS_MODE_BIG_ENDIAN
 
+from qiling import Qiling
 from qiling.arch.arch import QlArch
 from qiling.arch import ppc_const
+from qiling.arch.models import PPC_CPU_MODEL
 from qiling.arch.register import QlRegisterManager
 from qiling.const import QL_ARCH, QL_ENDIAN
 
@@ -19,9 +22,17 @@ class QlArchPPC(QlArch):
     type = QL_ARCH.PPC
     bits = 32
 
+    def __init__(self, ql: Qiling, *, cputype: Optional[PPC_CPU_MODEL] = None):
+        super().__init__(ql, cputype=cputype)
+
     @cached_property
     def uc(self) -> Uc:
-        return Uc(UC_ARCH_PPC, UC_MODE_PPC32 + UC_MODE_BIG_ENDIAN)
+        obj = Uc(UC_ARCH_PPC, UC_MODE_PPC32 + UC_MODE_BIG_ENDIAN)
+
+        if self.cpu is not None:
+            obj.ctl_set_cpu_model(self.cpu.value)
+
+        return obj
 
     @cached_property
     def regs(self) -> QlRegisterManager:

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -135,23 +135,23 @@ def handler(ql: Qiling):
     ah = ql.arch.regs.ah
 
     leaffunc = {
-        0x02 : __leaf_02,
-        0x06 : __leaf_02,
-        0x09 : __leaf_09,
-        0x0c : __leaf_0c,
-        0x25 : __leaf_25,
-        0x26 : __leaf_26,
-        0x30 : __leaf_30,
-        0x33 : __leaf_33,
-        0x35 : __leaf_35,
-        0x3c : __leaf_3c,
-        0x3d : __leaf_3d,
-        0x3e : __leaf_3e,
-        0x3f : __leaf_3f,
-        0x40 : __leaf_40,
-        0x41 : __leaf_41,
-        0x43 : __leaf_43,
-        0x4c : __leaf_4c
+        0x02: __leaf_02,
+        0x06: __leaf_02,
+        0x09: __leaf_09,
+        0x0c: __leaf_0c,
+        0x25: __leaf_25,
+        0x26: __leaf_26,
+        0x30: __leaf_30,
+        0x33: __leaf_33,
+        0x35: __leaf_35,
+        0x3c: __leaf_3c,
+        0x3d: __leaf_3d,
+        0x3e: __leaf_3e,
+        0x3f: __leaf_3f,
+        0x40: __leaf_40,
+        0x41: __leaf_41,
+        0x43: __leaf_43,
+        0x4c: __leaf_4c
     }.get(ah)
 
     if leaffunc is None:

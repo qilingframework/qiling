@@ -1,27 +1,24 @@
 from typing import Optional
 from qiling import Qiling
 from qiling.os.posix.const import *
-from qiling.os.posix.posix import QlMsqId, QlMsgBuf
+from qiling.os.posix.msq import QlMsqId, QlMsgBuf
 
 
 def __find_msg(msq: QlMsqId, msgtyp: int, msgflg: int) -> Optional[QlMsgBuf]:
     # peek at a specific queue item
     if msgflg & MSG_COPY:
-        if msgtyp >= len(msq.queue):
-            return -1  # ENOMSG
-
-        return msg.queue[msgtyp]
+        return msq.queue[msgtyp] if msgtyp < len(msq.queue) else None
 
     if msgtyp == 0:
         predicate = lambda msg: True
 
-    elif msgtype > 0:
+    elif msgtyp > 0:
         if msgflg & MSG_EXCEPT:
             predicate = lambda msg: msg.mtype != msgtyp
         else:
             predicate = lambda msg: msg.mtype == msgtyp
 
-    elif msgtype < 0:
+    elif msgtyp < 0:
         predicate = lambda msg: msg.mtype <= -msgtyp
 
     return next((msg for msg in msq.queue if predicate(msg)), None)
@@ -41,11 +38,12 @@ def __perms(ql: Qiling, msq: QlMsqId, flag: int) -> int:
     if ql.os.uid == msq.uid:
         granted_mode >>= 6
 
-    # is there some bit set in requested_mode but not in granted_mode? 
+    # is there some bit set in requested_mode but not in granted_mode?
     if request_mode & ~granted_mode & 0o007:
         return -1  # EACCES
 
     return 0
+
 
 def ql_syscall_msgget(ql: Qiling, key: int, msgflg: int):
     def __create_msq(key: int, flags: int) -> int:
@@ -92,6 +90,7 @@ def ql_syscall_msgget(ql: Qiling, key: int, msgflg: int):
 
     return msqid
 
+
 def ql_syscall_msgsnd(ql: Qiling, msqid: int, msgp: int, msgsz: int, msgflg: int):
     msq = ql.os.msq.get_by_id(msqid)
 
@@ -122,7 +121,7 @@ def ql_syscall_msgrcv(ql: Qiling, msqid: int, msgp: int, msgsz: int, msgtyp: int
 
     if msq is None:
         return -1  # EINVAL
-    
+
     if msgflg & MSG_COPY:
         if msgflg & MSG_EXCEPT or not (msgflg & IPC_NOWAIT):
             return -1  # EINVAL
@@ -136,6 +135,9 @@ def ql_syscall_msgrcv(ql: Qiling, msqid: int, msgp: int, msgsz: int, msgtyp: int
 
         if msg is not None:
             break
+
+        if msgflg & MSG_COPY:
+            return -1  # ENOMSG
 
         if msgflg & IPC_NOWAIT:
             return -1  # ENOMSG
@@ -155,6 +157,7 @@ def ql_syscall_msgrcv(ql: Qiling, msqid: int, msgp: int, msgsz: int, msgtyp: int
     ql.mem.write(msgp + ql.arch.pointersize, msg.mtext[:sz])
 
     return sz  # Success
+
 
 __all__ = [
     'ql_syscall_msgget',

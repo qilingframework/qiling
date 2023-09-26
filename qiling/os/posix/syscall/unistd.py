@@ -213,7 +213,7 @@ def virtual_abspath_at(ql: Qiling, vpath: str, dirfd: int) -> Optional[str]:
 
     # syscall params are read as unsigned int by default. until we fix that
     # broadly, this is a workaround to turn fd into a signed value
-    dirfd = __as_signed(dirfd, ql.arch.bits)
+    dirfd = __as_signed(dirfd & ((1 << 32) - 1), 32)
     # </WORKAROUND>
 
     if dirfd == AT_FDCWD:

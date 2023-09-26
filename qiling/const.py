@@ -91,10 +91,11 @@ def __casefold_enum(e: Type[T]) -> Mapping[str, T]:
     return dict((k.casefold(), v) for k, v in e.__members__.items())
 
 
-debugger_map = __casefold_enum(QL_DEBUGGER)
+endian_map   = __casefold_enum(QL_ENDIAN)
 arch_map     = __casefold_enum(QL_ARCH)
 os_map       = __casefold_enum(QL_OS)
 verbose_map  = __casefold_enum(QL_VERBOSE)
+debugger_map = __casefold_enum(QL_DEBUGGER)
 
 arch_os_map = {
     QL_ARCH.EVM      : QL_OS.EVM,
