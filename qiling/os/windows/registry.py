@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import json, os
+import json
+import os
+
 from Registry import Registry
 from typing import Any, MutableMapping, Optional, Tuple, Union
 
@@ -15,11 +17,11 @@ from qiling.exception import *
 # Registry Manager reads data from two places
 # 1. config.json
 #       if you want to modify the registry key/value, you can modify config.json
-#       If there is a registry entry in config.json that needs to be read, 
+#       If there is a registry entry in config.json that needs to be read,
 #       Registry Manager will read from config.json first.
 # 2. windows hive files
 
-# Registry Manager will only write registry changes to config.json 
+# Registry Manager will only write registry changes to config.json
 # and will not modify the hive file.
 
 class RegConf:
@@ -208,14 +210,14 @@ class RegistryManager:
         self.ql.os.stats.log_reg_access(key, name, type, value)
 
     def create(self, key: str) -> None:
-       self.regconf.create(key)
-       self.reghive.create(key)
+        self.regconf.create(key)
+        self.reghive.create(key)
 
     def delete(self, key: str, subkey: str) -> None:
-       self.regconf.delete(key, subkey)
-       self.reghive.delete(key, subkey)
+        self.regconf.delete(key, subkey)
+        self.reghive.delete(key, subkey)
 
-    def __reg_mem_read(self, data_type: int, data_addr: int, data_size: int, wide: bool) -> Optional[Union[str, bytes, int]]:
+    def __reg_mem_read(self, data_type: int, data_addr: int, data_size: int, wide: bool) -> Union[str, bytes, int]:
         if data_type in (Registry.RegSZ, Registry.RegExpandSZ):
             os_utils = self.ql.os.utils
             read_string = os_utils.read_wstring if wide else os_utils.read_cstring
@@ -232,11 +234,11 @@ class RegistryManager:
             data = bytes(self.ql.mem.read(data_addr, data_size))
 
         else:
-            data = None
+            raise QlErrorNotImplemented(f'registry type {REG_TYPES[data_type]} not implemented')
 
         return data
 
-    def __reg_mem_write(self, data_type: int, data_addr: int, data_val: Union[str, bytes, int], wide: bool) -> Optional[int]:
+    def __reg_mem_write(self, data_type: int, data_addr: int, data_val: Union[str, bytes, int], max_size: int, wide: bool) -> int:
         if data_type in (Registry.RegSZ, Registry.RegExpandSZ):
             assert type(data_val) is str
 
@@ -259,28 +261,22 @@ class RegistryManager:
             data = data_val
 
         else:
-            return None
+            raise QlErrorNotImplemented(f'registry type {REG_TYPES[data_type]} not implemented')
 
-        self.ql.mem.write(data_addr, data)
+        # in case the out buffer is set to null or it is too small, skip data writing
+        if data_addr and max_size >= len(data):
+            self.ql.mem.write(data_addr, data)
 
         return len(data)
 
     def write(self, key: str, subkey: str, reg_type: int, data_addr: int, data_size: int, wide: bool) -> None:
         data = self.__reg_mem_read(reg_type, data_addr, data_size, wide)
 
-        if data is None:
-            raise QlErrorNotImplemented(f'registry type {REG_TYPES[reg_type]} not implemented')
-
         self.regconf.write(key, subkey, reg_type, data)
         self.reghive.write(key, subkey, reg_type, data)
 
-    def write_reg_value_into_mem(self, data_type: int, data_addr: int, data_val: Union[str, bytes, int], wide: bool) -> int:
-        length = self.__reg_mem_write(data_type, data_addr, data_val, wide)
-
-        if length is None:
-            raise QlErrorNotImplemented(f'registry type {REG_TYPES[data_type]} not implemented')
-
-        return length
+    def write_reg_value_into_mem(self, data_type: int, data_addr: int, data_val: Union[str, bytes, int], max_size: int, wide: bool) -> int:
+        return self.__reg_mem_write(data_type, data_addr, data_val, max_size, wide)
 
     def save(self):
         self.regconf.save(self.regdiff)
