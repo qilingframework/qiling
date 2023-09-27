@@ -3,20 +3,18 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from collections import namedtuple
 from os.path import basename
 
 from .base import QlBaseCoverage
 
 
 # Adapted from https://github.com/nccgroup/Cartographer/blob/main/EZCOV.md#coverage-data
-class bb_entry(dict):
-    def __init__(self, offset, size, mod_id):
-        self.offset = '0x{:08x}'.format(offset)
-        self.size = size
-        self.mod_id = f"[ {mod_id if mod_id is not None else ''} ]"
-
+class bb_entry(namedtuple('bb_entry', 'offset size mod_id')):
     def csvline(self):
-        return f"{self.offset},{self.size},{self.mod_id}\n"
+        offset = '0x{:08x}'.format(self.offset)
+        mod_id = f"[ {self.mod_id if self.mod_id is not None else ''} ]"
+        return f"{offset},{self.size},{mod_id}\n"
 
 class QlEzCoverage(QlBaseCoverage):
     """
@@ -30,8 +28,7 @@ class QlEzCoverage(QlBaseCoverage):
     FORMAT_NAME = "ezcov"
 
     def __init__(self, ql):
-        super().__init__()
-        self.ql            = ql
+        super().__init__(ql)
         self.ezcov_version = 1
         self.ezcov_flavor  = 'ezcov'
         self.basic_blocks  = []
@@ -39,11 +36,10 @@ class QlEzCoverage(QlBaseCoverage):
 
     @staticmethod
     def block_callback(ql, address, size, self):
-        for mod in ql.loader.images:
-            if mod.base <= address <= mod.end:
-                ent = bb_entry(address - mod.base, size, basename(mod.path))
-                self.basic_blocks.append(ent)
-                break
+        mod = ql.loader.find_containing_image(address)
+        if mod is not None:
+            ent = bb_entry(address - mod.base, size, basename(mod.path))
+            self.basic_blocks.append(ent)
 
     def activate(self):
         self.bb_callback = self.ql.hook_block(self.block_callback, user_data=self)
