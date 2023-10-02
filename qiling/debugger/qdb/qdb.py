@@ -463,7 +463,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
             reg_n, stk_n = 2, 0
         else:
             if argc > 4:
-                stk_n = argc - 4
+                reg_n, stk_n = 4, argc - 4
             elif argc <= 4:
                 reg_n, stk_n = argc, 0
 
