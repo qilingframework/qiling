@@ -694,8 +694,8 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         if "fd" in saved_states:
             self.os.fd.restore(saved_states["fd"])
 
-        if "os_context" in saved_states:
-            self.os.restore(saved_states["os_context"])
+        if "os" in saved_states:
+            self.os.restore(saved_states["os"])
 
         if "loader" in saved_states:
             self.loader.restore(saved_states["loader"])
