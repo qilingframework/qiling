@@ -8,23 +8,24 @@
 <img width="150" height="150" src="https://raw.githubusercontent.com/qilingframework/qiling/master/docs/qiling2_logo_small.png">
 </p>
 
-[Qiling's usecase, blog and related work](https://github.com/qilingframework/qiling/issues/134)
+[Qiling's use case, blog and related work](https://github.com/qilingframework/qiling/issues/134)
 
 Qiling is an advanced binary emulation framework, with the following features:
 
-- Emulate multi-platforms: Windows, MacOS, Linux, Android, BSD, UEFI, DOS, MBR, Ethereum Virtual Machine
-- Emulate multi-architectures: 8086, X86, X86_64, ARM, ARM64, MIPS, RISCV, PowerPC
-- Support multiple file formats: PE, MachO, ELF, COM, MBR
-- Support Windows Driver (.sys), Linux Kernel Module (.ko) & MacOS Kernel (.kext) via [Demigod](https://groundx.io/demigod/)
-- Emulates & sandbox code in an isolated environment
-- Provides a fully configurable sandbox
-- Provides in-depth memory, register, OS level and filesystem level API
-- Fine-grain instrumentation: allows hooks at various levels (instruction/basic-block/memory-access/exception/syscall/IO/etc)
-- Provides virtual machine level API such as save and restore current execution state
-- Supports cross architecture and platform debugging capabilities
-- Built-in debugger with reverse debugging capability
-- Allows dynamic hotpatch on-the-fly running code, including the loaded library
-- True framework in Python, making it easy to build customized security analysis tools on top
+- Emulate multi-platforms: Windows, macOS, Linux, Android, BSD, UEFI, DOS, MBR, Ethereum Virtual Machine.
+- Emulate multi-architectures: 8086, X86, X86_64, ARM, ARM64, MIPS, RISC-V, PowerPC.
+- Support multiple file formats: PE, Mach-O, ELF, COM, MBR.
+- Support Windows Driver (.sys), Linux Kernel Module (.ko) & macOS Kernel (.kext) via [Demigod](https://groundx.io/demigod/).
+- Emulates & sandbox code in an isolated environment.
+- Provides a fully configurable sandbox.
+- Provides in-depth memory, register, OS level and filesystem level API.
+- Fine-grain instrumentation: allows hooks at various levels
+  (instruction/basic-block/memory-access/exception/syscall/IO/etc.)
+- Provides virtual machine level API such as saving and restoring the current execution state.
+- Supports cross architecture and platform debugging capabilities.
+- Built-in debugger with reverse debugging capability.
+- Allows dynamic hot patch on-the-fly running code, including the loaded library.
+- True framework in Python, making it easy to build customized security analysis tools on top.
 
 Qiling also made its way to various international conferences.
 
@@ -49,52 +50,78 @@ Qiling also made its way to various international conferences.
     
 2019:
 
-- [Defcon, USA](https://www.defcon.org/html/defcon-27/dc-27-demolabs.html#QiLing)
+- [DEFCON, USA](https://www.defcon.org/html/defcon-27/dc-27-demolabs.html#QiLing)
 - [Hitcon](https://hitcon.org/2019/CMT/agenda)
 - [Zeronights](https://zeronights.ru/report-en/qiling-io-advanced-binary-emulation-framework/)
 
 
-Qiling is backed by [Unicorn engine](http://www.unicorn-engine.org).
+Qiling is backed by [Unicorn Engine](http://www.unicorn-engine.org).
 
-Visit our website https://www.qiling.io for more information.
+Visit our [website](https://www.qiling.io) for more information.
 
 ---
 #### License
 
-This project is released and distributed under [free software license GPLv2](https://github.com/qilingframework/qiling/blob/master/COPYING) and later version.
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
 
 ---
 
-#### Qiling vs other Emulators
+#### Qiling vs. other Emulators
 
-There are many open source emulators, but two projects closest to Qiling are [Unicorn](http://www.unicorn-engine.org) & [Qemu usermode](https://qemu.org). This section explains the main differences of Qiling against them.
+There are many open-source emulators, but two projects closest to Qiling
+are [Unicorn](http://www.unicorn-engine.org) & [QEMU user mode](https://qemu.org).
+This section explains the main differences of Qiling against them.
 
-##### Qiling vs Unicorn engine
+##### Qiling vs. Unicorn engine
 
 Built on top of Unicorn, but Qiling & Unicorn are two different animals.
 
-- Unicorn is just a CPU emulator, so it focuses on emulating CPU instructions, that can understand emulator memory. Beyond that, Unicorn is not aware of higher level concepts, such as dynamic libraries, system calls, I/O handling or executable formats like PE, MachO or ELF. As a result, Unicorn can only emulate raw machine instructions, without Operating System (OS) context
-- Qiling is designed as a higher level framework, that leverages Unicorn to emulate CPU instructions, but can understand OS: it has executable format loaders (for PE, MachO & ELF at the moment), dynamic linkers (so we can load & relocate shared libraries), syscall & IO handlers. For this reason, Qiling can run executable binary without requiring its native OS
+- Unicorn is just a CPU emulator, so it focuses on emulating CPU instructions,
+  that can understand emulator memory.
+  Beyond that, Unicorn is not aware of higher level concepts, such as dynamic
+  libraries, system calls, I/O handling or executable formats like PE, Mach-O
+  or ELF. As a result, Unicorn can only emulate raw machine instructions,
+  without Operating System (OS) context.
+- Qiling is designed as a higher level framework, that leverages Unicorn to
+  emulate CPU instructions, but can understand OS: it has executable format
+  loaders (for PE, Mach-O & ELF currently), dynamic linkers (so we can
+  load & relocate shared libraries), syscall & IO handlers. For this reason,
+  Qiling can run executable binary without requiring its native OS.
 
-##### Qiling vs Qemu usermode
+##### Qiling vs. QEMU user mode
 
-Qemu usermode does similar thing to our emulator, that is to emulate whole executable binaries in cross-architecture way. However, Qiling offers some important differences against Qemu usermode.
+QEMU user mode does a similar thing to our emulator, that is, to emulate whole
+executable binaries in a cross-architecture way. 
+However, Qiling offers some important differences against QEMU user mode:
 
-- Qiling is a true analysis framework, that allows you to build your own dynamic analysis tools on top (in friendly Python language). Meanwhile, Qemu is just a tool, not a framework
-- Qiling can perform dynamic instrumentation, and can even hotpatch code at runtime. Qemu does not do either
-- Not only working cross-architecture, Qiling is also cross-platform, so for example you can run Linux ELF file on top of Windows. In contrast, Qemu usermode only run binary of the same OS, such as Linux ELF on Linux, due to the way it forwards syscall from emulated code to native OS
-- Qiling supports more platforms, including Windows, MacOS, Linux & BSD. Qemu usermode can only handle Linux & BSD
+- Qiling is a true analysis framework,
+  that allows you to build your own dynamic analysis tools on top (in Python).
+  Meanwhile, QEMU is just a tool, not a framework.
+- Qiling can perform dynamic instrumentation, and can even hot patch code at
+  runtime. QEMU does neither.
+- Not only working cross-architecture, Qiling is also cross-platform.
+  For example, you can run Linux ELF file on top of Windows.
+  In contrast, QEMU user mode only runs binary of the same OS, such as Linux
+  ELF on Linux, due to the way it forwards syscall from emulated code to
+  native OS.
+- Qiling supports more platforms, including Windows, macOS, Linux & BSD. QEMU
+  user mode can only handle Linux & BSD.
 
 ---
 
 #### Installation
+
 Please see [setup guide](https://docs.qiling.io/en/latest/install/) file for how to install Qiling Framework.
 
 ---
 
 #### Examples
 
-- The example below shows how to use Qiling framework in the most striaghtforward way to emulate a Windows executable.
+The example below shows how to use Qiling framework in the most
+straightforward way to emulate a Windows executable.
 
 ```python
 from qiling import Qiling
@@ -108,7 +135,8 @@ if __name__ == "__main__":
     ql.run()
 ```
 
-- The following example shows how a Windows crackme may be patched dynamically to make it always display the "Congratulation" dialog.
+- The following example shows how a Windows crackme may be patched dynamically
+  to make it always display the “Congratulation” dialog.
 
 ```python
 from qiling import Qiling
@@ -145,34 +173,34 @@ if __name__ == "__main__":
     ql.run()
 ```
 
-The below Youtube video shows how the above example works.
+The below YouTube video shows how the above example works.
 
-#### Emulating ARM router firmware on Ubuntu X64 machine
+#### Emulating ARM router firmware on Ubuntu x64 host
 
-- Qiling Framework hot-patch and emulates ARM router's /usr/bin/httpd on a X86_64Bit Ubuntu
+Qiling Framework hot-patches and emulates an ARM router's `/usr/bin/httpd` on
+an x86_64 Ubuntu host.
 
-[![qiling Tutorial: Emulating and Fuzz ARM router firmware](https://github.com/qilingframework/theme.qiling.io/blob/master/source/img/fuzzer.jpg?raw=true)](https://www.youtube.com/watch?v=e3_T3KLh2NU " Demo #3 Emulating and Fuzz ARM router firmware")
+[![Qiling Tutorial: Emulating and Fuzz ARM router firmware](https://github.com/qilingframework/theme.qiling.io/blob/master/source/img/fuzzer.jpg?raw=true)](https://www.youtube.com/watch?v=e3_T3KLh2NU)
 
-#### Qiling's IDAPro Plugin: Instrument and Decrypt Mirai's Secret
+#### Qiling's IDA Pro Plugin: Instrument and Decrypt Mirai's Secret
 
-- This video demonstrate how Qiling's IDAPro plugin able to make IDApro run with Qiling instrumentation engine
+This video demonstrates how Qiling's IDA Pro plugin can make IDA Pro run with
+Qiling instrumentation engine.
 
-[![](http://img.youtube.com/vi/ZWMWTq2WTXk/0.jpg)](http://www.youtube.com/watch?v=ZWMWTq2WTXk "Qiling's IDAPro Plugin: Instrument and Decrypt Mirai's Secret")
+[![Qiling's IDA Pro Plugin: Instrument and Decrypt Mirai's Secret](http://img.youtube.com/vi/ZWMWTq2WTXk/0.jpg)](http://www.youtube.com/watch?v=ZWMWTq2WTXk)
 
-#### GDBserver with IDAPro demo
+#### GDB server with IDA Pro demo
 
-- Solving a simple CTF challenge with Qiling Framework and IDAPro
+Solving a simple CTF challenge with Qiling Framework and IDA Pro
 
-[![Solving a simple CTF challenge with Qiling Framework and IDAPro](https://i.ytimg.com/vi/SPjVAt2FkKA/0.jpg)](https://www.youtube.com/watch?v=SPjVAt2FkKA "Video DEMO 2")
+[![Solving a simple CTF challenge with Qiling Framework and IDA Pro](https://i.ytimg.com/vi/SPjVAt2FkKA/0.jpg)](https://www.youtube.com/watch?v=SPjVAt2FkKA)
 
 
 #### Emulating MBR
 
-- Qiling Framework emulates MBR
+Qiling Framework emulates MBR
 
-[![qiling DEMO: Emulating MBR](https://github.com/qilingframework/theme.qiling.io/blob/master/source/img/mbr.png?raw=true)](https://github.com/qilingframework/theme.qiling.io/blob/master/source/img/mbr.png?raw=true "Demo #4 Emulating UEFI")
-
-
+[![Qiling DEMO: Emulating MBR](https://github.com/qilingframework/theme.qiling.io/blob/master/source/img/mbr.png?raw=true)](https://github.com/qilingframework/theme.qiling.io/blob/master/source/img/mbr.png?raw=true)
 
 ---
 
@@ -195,7 +223,7 @@ With binary file:
 $ ./qltool run -f examples/rootfs/x8664_linux/bin/x8664_hello --rootfs  examples/rootfs/x8664_linux/
 ```
 
-With binary and GDB debugger enable:
+With binary and GDB debugger enabled:
 
 ```
 $ ./qltool run -f examples/rootfs/x8664_linux/bin/x8664_hello --gdb 127.0.0.1:9999 --rootfs examples/rootfs/x8664_linux
@@ -207,7 +235,7 @@ With code coverage collection (UEFI only for now):
 $ ./qltool run -f examples/rootfs/x8664_efi/bin/TcgPlatformSetupPolicy --rootfs examples/rootfs/x8664_efi --coverage-format drcov --coverage-file TcgPlatformSetupPolicy.cov
 ```
 
-With json output (Windows mainly):
+With JSON output (Windows, mainly):
 
 ```
 $ ./qltool run -f examples/rootfs/x86_windows/bin/x86_hello.exe --rootfs  examples/rootfs/x86_windows/ --console False --json
@@ -219,10 +247,11 @@ $ ./qltool run -f examples/rootfs/x86_windows/bin/x86_hello.exe --rootfs  exampl
 
 Get the latest info from our website https://www.qiling.io
 
-Contact us at email info@qiling.io, or via Twitter [@qiling_io](https://twitter.com/qiling_io) or [Weibo](https://www.weibo.com/sgniwx)
+Contact us at email info@qiling.io,
+via Twitter [@qiling_io](https://twitter.com/qiling_io).
 
 ---
 
-#### Core developers, Key Contributors and etc
+#### Core developers, Key Contributors and etc.
 
-Please refer to [CREDITS.md](https://github.com/qilingframework/qiling/blob/dev/CREDITS.md)
+Please refer to [CREDITS.md](https://github.com/qilingframework/qiling/blob/dev/CREDITS.md).
