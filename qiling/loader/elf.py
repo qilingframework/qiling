@@ -58,9 +58,11 @@ class AUXV(IntEnum):
 # start area memory for API hooking
 # we will reserve 0x1000 bytes for this (which contains multiple slots of 4/8 bytes, each for one api)
 API_HOOK_MEM = 0x1000000
+API_HOOK_SIZE = 0x1000
 
 # memory for syscall table
 SYSCALL_MEM = API_HOOK_MEM + 0x1000
+SYSCALL_SIZE = 0x1000
 
 
 class QlLoaderELF(QlLoader):
@@ -579,7 +581,7 @@ class QlLoaderELF(QlLoader):
         mem_end = mem_start + self.ql.mem.align_up(len(elfdata_mapping), 0x1000)
 
         # map some memory to intercept external functions of Linux kernel
-        self.ql.mem.map(API_HOOK_MEM, 0x1000, info="[api_mem]")
+        self.ql.mem.map(API_HOOK_MEM, API_HOOK_SIZE, info="[api_mem]")
 
         self.ql.log.debug(f'loadbase  : {loadbase:#x}')
         self.ql.log.debug(f'mem_start : {mem_start:#x}')
@@ -608,8 +610,8 @@ class QlLoaderELF(QlLoader):
         # self.ql.os.syscall_addr = SYSCALL_MEM
 
         # setup syscall table
-        self.ql.mem.map(SYSCALL_MEM, 0x1000, info="[syscall_mem]")
-        self.ql.mem.write(SYSCALL_MEM, b'\x00' * 0x1000)
+        self.ql.mem.map(SYSCALL_MEM, SYSCALL_SIZE, info="[syscall_mem]")
+        self.ql.mem.write(SYSCALL_MEM, b'\x00' * SYSCALL_SIZE)
 
         rev_reloc_symbols = self.lkm_dynlinker(elffile, mem_start + loadbase)
 
