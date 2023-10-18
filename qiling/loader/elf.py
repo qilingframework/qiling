@@ -577,24 +577,24 @@ class QlLoaderELF(QlLoader):
     def load_driver(self, elffile: ELFFile, stack_addr: int, loadbase: int = 0) -> None:
         elfdata_mapping = self.get_elfdata_mapping(elffile)
 
-        # FIXME: determine true memory boundaries, taking relocation into account (if requested)
-        mem_start = 0
-        mem_end = mem_start + self.ql.mem.align_up(len(elfdata_mapping), 0x1000)
+        mem_start = self.ql.mem.align(loadbase)
+        mem_end = self.ql.mem.align_up(loadbase + len(elfdata_mapping))
 
         # map some memory to intercept external functions of Linux kernel
         self.ql.mem.map(API_HOOK_MEM, API_HOOK_SIZE, info="[api_mem]")
 
-        self.ql.log.debug(f'loadbase  : {loadbase:#x}')
         self.ql.log.debug(f'mem_start : {mem_start:#x}')
         self.ql.log.debug(f'mem_end   : {mem_end:#x}')
 
-        self.ql.mem.map(loadbase + mem_start, mem_end - mem_start, info=self.ql.path)
-        self.ql.mem.write(loadbase + mem_start, elfdata_mapping)
+        self.ql.mem.map(mem_start, mem_end - mem_start, info=os.path.basename(self.ql.path))
+        self.ql.mem.write(loadbase, elfdata_mapping)
 
-        init_module = self.lkm_get_init(elffile) + loadbase + mem_start
+        self.images.append(Image(mem_start, mem_end, os.path.abspath(self.path)))
+
+        init_module = loadbase + self.lkm_get_init(elffile)
         self.ql.log.debug(f'init_module : {init_module:#x}')
 
-        self.brk_address = mem_end + loadbase
+        self.brk_address = mem_end
 
         # Set MMAP addr
         mmap_address = self.profile.getint('mmap_address')
@@ -607,14 +607,11 @@ class QlLoaderELF(QlLoader):
         self.stack_address = self.ql.mem.align(stack_addr, self.ql.arch.pointersize)
         self.load_address = loadbase
 
-        # remember address of syscall table, so external tools can access to it
-        # self.ql.os.syscall_addr = SYSCALL_MEM
-
         # setup syscall table
         self.ql.mem.map(SYSCALL_MEM, SYSCALL_SIZE, info="[syscall_mem]")
         self.ql.mem.write(SYSCALL_MEM, b'\x00' * SYSCALL_SIZE)
 
-        rev_reloc_symbols = self.lkm_dynlinker(elffile, mem_start + loadbase)
+        rev_reloc_symbols = self.lkm_dynlinker(elffile, loadbase)
 
         # iterate over relocatable symbols, but pick only those who start with 'sys_'
         for sc, addr in rev_reloc_symbols.items():
