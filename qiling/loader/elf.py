@@ -376,7 +376,6 @@ class QlLoaderELF(QlLoader):
         self.init_sp = self.ql.arch.regs.arch_sp
 
         self.ql.os.entry_point = self.entry_point = entry_point
-        self.ql.os.elf_entry = self.elf_entry
         self.ql.os.function_hook = FunctionHook(self.ql, elf_phdr, elf_phnum, elf_phent, load_address, mem_end)
 
         # If there is a loader, we ignore exit
@@ -600,9 +599,9 @@ class QlLoaderELF(QlLoader):
         mmap_address = self.profile.getint('mmap_address')
         self.ql.log.debug(f'mmap_address is : {mmap_address:#x}')
 
-        # self.ql.os.elf_entry = self.elf_entry = loadbase + elfhead['e_entry']
-        self.ql.os.entry_point = self.entry_point = init_module
-        self.elf_entry = self.ql.os.elf_entry = self.ql.os.entry_point
+        # there is no interperter so emulation entry point is also elf entry
+        self.elf_entry = self.entry_point = init_module
+        self.ql.os.entry_point = self.entry_point
 
         self.stack_address = self.ql.mem.align(stack_addr, self.ql.arch.pointersize)
         self.load_address = loadbase

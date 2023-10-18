@@ -83,7 +83,7 @@ class QlGdb(QlDebugger):
                 entry_point = ql.loader.entry_point
 
             elif ql.os.type in (QL_OS.LINUX, QL_OS.FREEBSD) and not ql.code:
-                entry_point = ql.os.elf_entry
+                entry_point = ql.loader.elf_entry
 
             else:
                 entry_point = ql.os.entry_point
