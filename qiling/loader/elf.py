@@ -87,6 +87,7 @@ class QlLoaderELF(QlLoader):
         # setup program stack
         stack_address = self.profile.getint('stack_address')
         stack_size = self.profile.getint('stack_size')
+        top_of_stack = stack_address + stack_size
         self.ql.mem.map(stack_address, stack_size, info='[stack]')
 
         self.path = self.ql.path
@@ -99,20 +100,20 @@ class QlLoaderELF(QlLoader):
 
         # is it a driver?
         if elftype == 'ET_REL':
-            self.load_driver(elffile, stack_address + stack_size, loadbase=0x8000000)
+            self.load_driver(elffile, top_of_stack, loadbase=0x8000000)
             self.ql.hook_code(hook_kernel_api)
 
         # is it an executable?
         elif elftype == 'ET_EXEC':
             load_address = 0
 
-            self.load_with_ld(elffile, stack_address + stack_size, load_address, self.argv, self.env)
+            self.load_with_ld(elffile, top_of_stack, load_address, self.argv, self.env)
 
         # is it a shared object?
         elif elftype == 'ET_DYN':
             load_address = self.profile.getint('load_address')
 
-            self.load_with_ld(elffile, stack_address + stack_size, load_address, self.argv, self.env)
+            self.load_with_ld(elffile, top_of_stack, load_address, self.argv, self.env)
 
         else:
             raise QlErrorELFFormat(f'unexpected elf type value (e_type = {elftype})')
