@@ -33,8 +33,8 @@ def __do_open(ql: Qiling, absvpath: str, flags: int, mode: int) -> int:
 
     try:
         ql.os.fd[idx] = ql.os.fs_mapper.open_ql_file(absvpath, flags, mode)
-    except QlSyscallError:
-        return -1
+    except QlSyscallError as err:
+        return -err.errno
 
     return idx
 
