@@ -355,7 +355,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         reg_val = try_read_int(val.strip())
 
         if reg_name in self.ql.arch.regs.save().keys():
-            if reg_val:
+            if reg_val is not None:
                 setattr(self.ql.arch.regs, reg_name, reg_val)
                 self.do_context()
                 qdb_print(QDB_MSG.INFO, f"set register {reg_name} to 0x{(reg_val & 0xfffffff):08x}")
