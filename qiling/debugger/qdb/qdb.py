@@ -5,11 +5,11 @@
 
 import cmd
 
-from typing import Optional, Tuple, Union
+from typing import Optional, Tuple, Union, List
 from contextlib import contextmanager
 
 from qiling import Qiling
-from qiling.const import QL_OS, QL_ARCH, QL_ENDIAN
+from qiling.const import QL_OS, QL_ARCH, QL_ENDIAN, QL_STATE
 from qiling.debugger import QlDebugger
 
 from .utils import setup_context_render, setup_branch_predictor, setup_address_marker, SnapshotManager, run_qdb_script
@@ -25,7 +25,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
     The built-in debugger of Qiling Framework
     """
 
-    def __init__(self, ql: Qiling, init_hook: str = "", rr: bool = False, script: str = "") -> None:
+    def __init__(self, ql: Qiling, init_hook: List[str] = [], rr: bool = False, script: str = "") -> None:
         """
         @init_hook: the entry to be paused at
         @rr: record/replay debugging
@@ -45,9 +45,10 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         super().__init__()
 
-        self.dbg_hook(init_hook)
+        # filter out entry_point of loader if presented
+        self.dbg_hook(list(filter(lambda d: int(d, 0) != self.ql.loader.entry_point, init_hook)))
 
-    def dbg_hook(self, init_hook: str):
+    def dbg_hook(self, init_hook: List[str]):
         """
         initial hook to prepare everything we need
         """
@@ -67,7 +68,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
                     if bp.hitted:
                         return
 
-                    qdb_print(QDB_MSG.INFO, f"hit breakpoint at 0x{self.cur_addr:08x}")
+                    qdb_print(QDB_MSG.INFO, f"hit breakpoint at {self.cur_addr:#x}")
                     bp.hitted = True
 
                 ql.stop()
@@ -78,8 +79,9 @@ class QlQdb(cmd.Cmd, QlDebugger):
         if self.ql.os.type == QL_OS.BLOB:
             self.ql.loader.entry_point = self.ql.loader.load_address
 
-        elif init_hook and self.ql.loader.entry_point != int(init_hook, 0):
-            self.do_breakpoint(init_hook)
+        elif init_hook:
+            for each_hook in init_hook:
+                self.do_breakpoint(each_hook)
 
         if self.ql.entry_point:
             self.cur_addr = self.ql.entry_point
@@ -128,7 +130,13 @@ class QlQdb(cmd.Cmd, QlDebugger):
             self.ql.os.run()
 
         else:
-            self.ql.emu_start(begin=address, end=end, count=count)
+
+            # use os.run instead if QL_STATE is NOT_SET, for keeping integrity of hooks and patches in Qdb
+            if self.ql._state is QL_STATE.NOT_SET:
+                self.ql.os.run()
+
+            else:
+                self.ql.emu_start(begin=address, end=end, count=count)
 
     @contextmanager
     def _save(self, reg=True, mem=True, hw=False, fd=False, cpu_context=False, os=False, loader=False):
