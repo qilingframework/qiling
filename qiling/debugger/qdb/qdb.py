@@ -130,13 +130,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
             self.ql.os.run()
 
         else:
-
-            # use os.run instead if QL_STATE is NOT_SET, for keeping integrity of hooks and patches in Qdb
-            if self.ql._state is QL_STATE.NOT_SET:
-                self.ql.os.run()
-
-            else:
-                self.ql.emu_start(begin=address, end=end, count=count)
+            self.ql.emu_start(begin=address, end=end, count=count)
 
     @contextmanager
     def _save(self, reg=True, mem=True, hw=False, fd=False, cpu_context=False, os=False, loader=False):
