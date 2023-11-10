@@ -9,7 +9,7 @@ from typing import Optional, Tuple, Union, List
 from contextlib import contextmanager
 
 from qiling import Qiling
-from qiling.const import QL_OS, QL_ARCH, QL_ENDIAN, QL_STATE
+from qiling.const import QL_OS, QL_ARCH, QL_ENDIAN, QL_STATE, QL_VERBOSE
 from qiling.debugger import QlDebugger
 
 from .utils import setup_context_render, setup_branch_predictor, setup_address_marker, SnapshotManager, run_qdb_script
@@ -76,19 +76,45 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         self.ql.hook_code(bp_handler, self.bp_list)
 
-        if self.ql.os.type == QL_OS.BLOB:
-            self.ql.loader.entry_point = self.ql.loader.load_address
-
-        elif init_hook:
-            for each_hook in init_hook:
-                self.do_breakpoint(each_hook)
-
         if self.ql.entry_point:
             self.cur_addr = self.ql.entry_point
         else:
             self.cur_addr = self.ql.loader.entry_point
 
         self.init_state = self.ql.save()
+
+        # stop emulator once interp. have been done emulating
+        if addr_elf_entry := getattr(self.ql.loader, 'elf_entry'):
+            handler = self.ql.hook_address(lambda ql: ql.stop(), addr_elf_entry)
+        else:
+            handler = self.ql.hook_address(lambda ql: ql.stop(), self.ql.loader.entry_point)
+
+        # suppress logging temporary
+        _verbose = self.ql.verbose
+        self.ql.verbose = QL_VERBOSE.DISABLED
+
+        # init os for integrity of hooks and patches,
+        self.ql.os.run()
+
+        handler.remove()
+
+        # ignore the memory unmap error for now, due to the MIPS memory layout issue
+        try:
+            self.ql.mem.unmap_all()
+        except:
+            pass
+
+        self.ql.restore(self.init_state)
+
+        # resotre logging verbose
+        self.ql.verbose = _verbose
+
+        if self.ql.os.type is QL_OS.BLOB:
+            self.ql.loader.entry_point = self.ql.loader.load_address
+
+        elif init_hook:
+            for each_hook in init_hook:
+                self.do_breakpoint(each_hook)
 
         if self._script:
             run_qdb_script(self, self._script)
@@ -123,14 +149,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         if getattr(self.ql.arch, 'is_thumb', False):
             address |= 0b1
 
-        # assume we're running PE if on Windows
-        if self.ql.os.type == QL_OS.WINDOWS:
-            self.ql.count = count
-            self.ql.entry_point = address
-            self.ql.os.run()
-
-        else:
-            self.ql.emu_start(begin=address, end=end, count=count)
+        self.ql.emu_start(begin=address, end=end, count=count)
 
     @contextmanager
     def _save(self, reg=True, mem=True, hw=False, fd=False, cpu_context=False, os=False, loader=False):
@@ -374,7 +393,6 @@ class QlQdb(cmd.Cmd, QlDebugger):
         """
 
         if self.ql.arch != QL_ARCH.CORTEX_M:
-
             self.ql.restore(self.init_state)
             self.do_context()
 
@@ -534,6 +552,11 @@ class QlQdb(cmd.Cmd, QlDebugger):
         """
         show some runtime information
         """
+
+        qdb_print(QDB_MSG.INFO, f"Entry point: {self.ql.loader.entry_point:#x}")
+
+        if addr_elf_entry := getattr(self.ql.loader, 'elf_entry'):
+            qdb_print(QDB_MSG.INFO, f"ELF entry: {addr_elf_entry:#x}")
 
         for info_line in self.ql.mem.get_formatted_mapinfo():
             qdb_print(QDB_MSG.INFO, info_line)
