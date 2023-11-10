@@ -548,11 +548,12 @@ class QlQdb(cmd.Cmd, QlDebugger):
         args = reg_args + stk_args
         qdb_print(QDB_MSG.INFO, f'args: {args}')
 
-    def do_show(self, *args) -> None:
+    def do_show(self, keyword: Optional[str] = None, *args) -> None:
         """
         show some runtime information
         """
 
+<<<<<<< Updated upstream
         qdb_print(QDB_MSG.INFO, f"Entry point: {self.ql.loader.entry_point:#x}")
 
         if addr_elf_entry := getattr(self.ql.loader, 'elf_entry'):
@@ -560,6 +561,21 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         for info_line in self.ql.mem.get_formatted_mapinfo():
             qdb_print(QDB_MSG.INFO, info_line)
+=======
+        info_lines = iter(self.ql.mem.get_formatted_mapinfo())
+
+        # print filed name first
+        qdb_print(QDB_MSG.INFO, next(info_lines))
+
+        # keyword filtering
+        if keyword:
+            lines = filter(lambda line: keyword in line, info_lines)
+        else:
+            lines = info_lines
+
+        for line in lines:
+            qdb_print(QDB_MSG.INFO, line)
+>>>>>>> Stashed changes
 
         qdb_print(QDB_MSG.INFO, f"Breakpoints: {[hex(addr) for addr in self.bp_list.keys()]}")
         qdb_print(QDB_MSG.INFO, f"Marked symbol: {[{key:hex(val)} for key,val in self.marker.mark_list]}")
