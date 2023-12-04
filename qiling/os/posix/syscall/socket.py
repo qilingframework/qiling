@@ -19,6 +19,9 @@ AF_UNIX = 1
 AF_INET = 2
 AF_INET6 = 10
 
+SOCK_STREAM = 1
+SOCK_DGRAM = 2
+SOCK_SEQPACKET = 5
 
 def inet_aton(ipaddr: str) -> int:
     # ipdata = bytes(int(a, 0) for a in ipaddr.split('.', 4))
@@ -765,10 +768,9 @@ def ql_syscall_recvfrom(ql: Qiling, sockfd: int, buf: int, length: int, flags: i
     if sock is None:
         return -1
 
-    SOCK_STREAM = 1
-
     # For x8664, recvfrom() is called finally when calling recv() in TCP communications
-    if sock.socktype == SOCK_STREAM:
+    # calling recvfrom with a NULL addr argument is identical to calling recv, which is normally used only on a connected socket
+    if sock.socktype == SOCK_STREAM or (addr == 0 and addrlen == 0):
         return ql_syscall_recv(ql, sockfd, buf, length, flags)
 
     data_buf, address = sock.recvfrom(length, flags)
@@ -842,10 +844,9 @@ def ql_syscall_sendto(ql: Qiling, sockfd: int, buf: int, length: int, flags: int
     if sock is None:
         return -1
 
-    SOCK_STREAM = 1
-
-    # For x8664, sendto() is called finally when calling send() in TCP communications
-    if sock.socktype == SOCK_STREAM:
+    # if sendto is used on a connection-mode socket, the arguments addr and addrlen are ignored.
+    # also, calling sendto(sockfd, buf, length, flags, NULL, 0) is equivalent to send(sockfd, buf, length, flags)
+    if sock.socktype in (SOCK_STREAM, SOCK_SEQPACKET) or (addr == 0 and addrlen == 0):
         return ql_syscall_send(ql, sockfd, buf, length, flags)
 
     tmp_buf = ql.mem.read(buf, length)
