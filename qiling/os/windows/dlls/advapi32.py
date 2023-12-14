@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -81,12 +81,23 @@ def __RegQueryValue(ql: Qiling, address: int, params, wstring: bool):
         ql.log.debug("Key value not found")
         return ERROR_FILE_NOT_FOUND
 
+    # read how many bytes we are allowed to write into lpData, however this arg is optional
+    if lpcbData:
+        max_size = ql.mem.read_ptr(lpcbData, 4)
+    else:
+        max_size = 0
+
+        # lpcbData may be null only if lpData is also null. if lpData is allocated, but lpcbData is
+        # set to null, it means we have an out buffer without knowing its size
+        if lpData:
+            return ERROR_INVALID_PARAMETER
+
     # set lpData
-    length = ql.os.registry_manager.write_reg_value_into_mem(reg_type, lpData, value, wstring)
+    length = ql.os.registry_manager.write_reg_value_into_mem(reg_type, lpData, value, max_size, wstring)
 
     # set lpcbData
-    max_size = ql.mem.read_ptr(lpcbData, 4)
-    ql.mem.write_ptr(lpcbData, length, 4)
+    if lpcbData:
+        ql.mem.write_ptr(lpcbData, length, 4)
 
     if max_size < length:
         ret = ERROR_MORE_DATA
@@ -134,6 +145,9 @@ def __RegSetValue(ql: Qiling, address: int, params, wstring: bool):
     # this is done so the print_function would print the correct value
     params["hKey"] = s_hKey
 
+    if not lpData:
+        return ERROR_INVALID_PARAMETER
+
     # dwType is expected to be REG_SZ and lpData to point to a null-terminated string
     ql.os.registry_manager.write(s_hKey, lpSubKey, dwType, lpData, cbData, wstring)
 
@@ -147,7 +161,11 @@ def __RegSetValueEx(ql: Qiling, address: int, params, wstring: bool):
     cbData = params["cbData"]
 
     s_hKey = ql.os.handle_manager.get(hKey).obj
+    # this is done so the print_function would print the correct value
     params["hKey"] = s_hKey
+
+    if not lpData:
+        return ERROR_INVALID_PARAMETER
 
     ql.os.registry_manager.write(s_hKey, lpValueName, dwType, lpData, cbData, wstring)
 

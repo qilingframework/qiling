@@ -58,9 +58,11 @@ class AUXV(IntEnum):
 # start area memory for API hooking
 # we will reserve 0x1000 bytes for this (which contains multiple slots of 4/8 bytes, each for one api)
 API_HOOK_MEM = 0x1000000
+API_HOOK_SIZE = 0x1000
 
 # memory for syscall table
 SYSCALL_MEM = API_HOOK_MEM + 0x1000
+SYSCALL_SIZE = 0x1000
 
 
 class QlLoaderELF(QlLoader):
@@ -85,6 +87,7 @@ class QlLoaderELF(QlLoader):
         # setup program stack
         stack_address = self.profile.getint('stack_address')
         stack_size = self.profile.getint('stack_size')
+        top_of_stack = stack_address + stack_size
         self.ql.mem.map(stack_address, stack_size, info='[stack]')
 
         self.path = self.ql.path
@@ -97,20 +100,20 @@ class QlLoaderELF(QlLoader):
 
         # is it a driver?
         if elftype == 'ET_REL':
-            self.load_driver(elffile, stack_address + stack_size, loadbase=0x8000000)
+            self.load_driver(elffile, top_of_stack, loadbase=0x8000000)
             self.ql.hook_code(hook_kernel_api)
 
         # is it an executable?
         elif elftype == 'ET_EXEC':
             load_address = 0
 
-            self.load_with_ld(elffile, stack_address + stack_size, load_address, self.argv, self.env)
+            self.load_with_ld(elffile, top_of_stack, load_address, self.argv, self.env)
 
         # is it a shared object?
         elif elftype == 'ET_DYN':
             load_address = self.profile.getint('load_address')
 
-            self.load_with_ld(elffile, stack_address + stack_size, load_address, self.argv, self.env)
+            self.load_with_ld(elffile, top_of_stack, load_address, self.argv, self.env)
 
         else:
             raise QlErrorELFFormat(f'unexpected elf type value (e_type = {elftype})')
@@ -373,7 +376,6 @@ class QlLoaderELF(QlLoader):
         self.init_sp = self.ql.arch.regs.arch_sp
 
         self.ql.os.entry_point = self.entry_point = entry_point
-        self.ql.os.elf_entry = self.elf_entry
         self.ql.os.function_hook = FunctionHook(self.ql, elf_phdr, elf_phnum, elf_phent, load_address, mem_end)
 
         # If there is a loader, we ignore exit
@@ -574,44 +576,41 @@ class QlLoaderELF(QlLoader):
     def load_driver(self, elffile: ELFFile, stack_addr: int, loadbase: int = 0) -> None:
         elfdata_mapping = self.get_elfdata_mapping(elffile)
 
-        # FIXME: determine true memory boundaries, taking relocation into account (if requested)
-        mem_start = 0
-        mem_end = mem_start + self.ql.mem.align_up(len(elfdata_mapping), 0x1000)
+        mem_start = self.ql.mem.align(loadbase)
+        mem_end = self.ql.mem.align_up(loadbase + len(elfdata_mapping))
 
         # map some memory to intercept external functions of Linux kernel
-        self.ql.mem.map(API_HOOK_MEM, 0x1000, info="[api_mem]")
+        self.ql.mem.map(API_HOOK_MEM, API_HOOK_SIZE, info="[api_mem]")
 
-        self.ql.log.debug(f'loadbase  : {loadbase:#x}')
         self.ql.log.debug(f'mem_start : {mem_start:#x}')
         self.ql.log.debug(f'mem_end   : {mem_end:#x}')
 
-        self.ql.mem.map(loadbase + mem_start, mem_end - mem_start, info=self.ql.path)
-        self.ql.mem.write(loadbase + mem_start, elfdata_mapping)
+        self.ql.mem.map(mem_start, mem_end - mem_start, info=os.path.basename(self.ql.path))
+        self.ql.mem.write(loadbase, elfdata_mapping)
 
-        init_module = self.lkm_get_init(elffile) + loadbase + mem_start
+        self.images.append(Image(mem_start, mem_end, os.path.abspath(self.path)))
+
+        init_module = loadbase + self.lkm_get_init(elffile)
         self.ql.log.debug(f'init_module : {init_module:#x}')
 
-        self.brk_address = mem_end + loadbase
+        self.brk_address = mem_end
 
         # Set MMAP addr
         mmap_address = self.profile.getint('mmap_address')
         self.ql.log.debug(f'mmap_address is : {mmap_address:#x}')
 
-        # self.ql.os.elf_entry = self.elf_entry = loadbase + elfhead['e_entry']
-        self.ql.os.entry_point = self.entry_point = init_module
-        self.elf_entry = self.ql.os.elf_entry = self.ql.os.entry_point
+        # there is no interperter so emulation entry point is also elf entry
+        self.elf_entry = self.entry_point = init_module
+        self.ql.os.entry_point = self.entry_point
 
         self.stack_address = self.ql.mem.align(stack_addr, self.ql.arch.pointersize)
         self.load_address = loadbase
 
-        # remember address of syscall table, so external tools can access to it
-        # self.ql.os.syscall_addr = SYSCALL_MEM
-
         # setup syscall table
-        self.ql.mem.map(SYSCALL_MEM, 0x1000, info="[syscall_mem]")
-        self.ql.mem.write(SYSCALL_MEM, b'\x00' * 0x1000)
+        self.ql.mem.map(SYSCALL_MEM, SYSCALL_SIZE, info="[syscall_mem]")
+        self.ql.mem.write(SYSCALL_MEM, b'\x00' * SYSCALL_SIZE)
 
-        rev_reloc_symbols = self.lkm_dynlinker(elffile, mem_start + loadbase)
+        rev_reloc_symbols = self.lkm_dynlinker(elffile, loadbase)
 
         # iterate over relocatable symbols, but pick only those who start with 'sys_'
         for sc, addr in rev_reloc_symbols.items():
