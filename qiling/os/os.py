@@ -60,7 +60,7 @@ class QlOs:
             # for the standard streams which usually do not support certain operations,
             # such as fileno(). here we use this to determine how we are going to use
             # the environment standard streams
-            assert sts.stdin != None # IDAPython don't have corresponding fds
+            assert sys.stdin != None # IDAPython don't have corresponding fds
             sys.stdin.fileno()
         except (UnsupportedOperation, AssertionError):
             # Qiling is used on an interactive shell or embedded python interpreter.
