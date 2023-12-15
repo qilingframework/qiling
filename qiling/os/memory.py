@@ -4,7 +4,6 @@
 #
 
 import bisect
-import itertools
 import os
 import re
 from typing import Any, Callable, Iterator, List, Mapping, Optional, Pattern, Sequence, Tuple, Union
@@ -82,8 +81,7 @@ class QlMemoryManager:
         self.__write_string(addr, value, encoding)
 
     def add_mapinfo(self, mem_s: int, mem_e: int, mem_p: int, mem_info: str, is_mmio: bool = False):
-        """Add a new memory range to map. Caller must guarantee that
-        the map info to be added DOES NOT overlap with any existing map infos.
+        """Add a new memory range to map.
 
         Args:
             mem_s: memory range start
@@ -95,36 +93,6 @@ class QlMemoryManager:
 
         bisect.insort(self.map_info, (mem_s, mem_e, mem_p, mem_info, is_mmio))
 
-    def find_mapinfo(self, mem_s: int, mem_e: int) -> List[int]:
-        """find map infos that overlap with a memory range
-
-        Args:
-            mem_s: memory range start
-            mem_e: memory range end
-
-        Returns: indices of map infos that overlap with the memory range [mem_s, mem_e)
-        """
-        
-        retval = []
-
-        # index of first (lbound, ubound, ...) that is >= (mem_s,)
-        # i.e., lbound >= mem_s
-        idx = bisect.bisect_left(self.map_info, (mem_s,))
-
-        # check the previous one, its lbound is bound to be < mem_s
-        # so, check its ubound only
-        if idx > 0 and mem_s < self.map_info[idx - 1][1]:
-            retval.append(idx - 1)
-        
-        for i in range(idx, len(self.map_info)):
-            if self.map_info[i][0] < mem_e:
-                retval.append(i)
-            else:
-                # the lbounds of map infos left are all bound to be >= mem_e, so skip check
-                break
-        
-        return retval
-
     def del_mapinfo(self, mem_s: int, mem_e: int):
         """Subtract a memory range from map.
 
@@ -133,9 +101,7 @@ class QlMemoryManager:
             mem_e: memory range end
         """
 
-        overlap_ranges = self.find_mapinfo(mem_s, mem_e)
-        if len(overlap_ranges) == 0:
-            return
+        overlap_ranges = [idx for idx, (lbound, ubound, _, _, _) in enumerate(self.map_info) if (mem_s < ubound) and (mem_e > lbound)]
 
         def __split_overlaps():
             for idx in overlap_ranges:
@@ -148,7 +114,7 @@ class QlMemoryManager:
                     yield (mem_e, ubound, perms, label, is_mmio)
 
         # indices of first and last overlapping ranges. since map info is always
-        # sorted, we know that all overlapping rages are consecutive, so i1 >= i0
+        # sorted, we know that all overlapping rages are consecutive, so i1 > i0
         i0 = overlap_ranges[0]
         i1 = overlap_ranges[-1]
 
@@ -160,85 +126,30 @@ class QlMemoryManager:
         del self.map_info[i0:i1 + 1]
 
         # add new ones
-        for i, entry in enumerate(new_entries):
-            self.map_info.insert(i0 + i, entry)
+        for entry in new_entries:
+            bisect.insort(self.map_info, entry)
 
     def change_mapinfo(self, mem_s: int, mem_e: int, mem_p: Optional[int] = None, mem_info: Optional[str] = None):
-        """Change permissions/labels of a memory range from map.
-        
-        Args:
-            mem_s: memory range start
-            mem_e: memory range end
-            mem_p: permissions mask, or remain unchanged if None
-            mem_info: map entry label, or remain unchanged if None
-        """
-        if mem_p is None and mem_info is None:
-            return  # nothing to change, just return
+        tmp_map_info: Optional[MapInfoEntry] = None
+        info_idx: int = -1
 
-        overlap_ranges = self.find_mapinfo(mem_s, mem_e)
-        if len(overlap_ranges) == 0:
+        for idx, map_info in enumerate(self.map_info):
+            if mem_s >= map_info[0] and mem_e <= map_info[1]:
+                tmp_map_info = map_info
+                info_idx = idx
+                break
+
+        if tmp_map_info is None:
+            self.ql.log.error(f'Cannot change mapinfo at {mem_s:#08x}-{mem_e:#08x}')
             return
 
-        def __split_overlaps():
-            for idx in overlap_ranges:
-                lbound, ubound, perms, label, is_mmio = self.map_info[idx]
+        if mem_p is not None:
+            self.del_mapinfo(mem_s, mem_e)
+            self.add_mapinfo(mem_s, mem_e, mem_p, mem_info if mem_info else tmp_map_info[3])
+            return
 
-                if (mem_p is None or perms == mem_p) and (mem_info is None or label == mem_info):
-                    # when nothing changed, emit as it is
-                    yield (lbound, ubound, perms, label, is_mmio)
-                else:
-                    if lbound < mem_s:
-                        yield (lbound, mem_s, perms, label, is_mmio)
-
-                    new_perms = perms if mem_p is None else mem_p
-                    new_label = label if mem_info is None else mem_info
-                    yield (max(lbound, mem_s), min(ubound, mem_e), new_perms, new_label, is_mmio)
-
-                    if mem_e < ubound:
-                        yield (mem_e, ubound, perms, label, is_mmio)
-        
-        def __merge_adjacency(map_infos: Iterator[MapInfoEntry]):
-            prev: Optional[MapInfoEntry] = None
-            for current in map_infos:
-                if prev is None:
-                    prev = current
-                else:
-                    if prev[1] == current[0] and prev[2:] == current[2:]:
-                        # when prev ubound == current lbound and perms/label/is_mmio are the same, merge current to prev
-                        prev = (prev[0], current[1], prev[2], prev[3], prev[4])
-                    else:
-                        yield prev
-                        prev = current
-            if prev is not None:
-                yield prev
-
-        i0 = overlap_ranges[0]
-        i1 = overlap_ranges[-1]
-
-        # check if the map info just before overlap_ranges is adjacency to the memory range [mem_s, mem_e)
-        if 0 < i0 and self.map_info[i0 - 1][1] == mem_s:
-            i0 -= 1
-            left_to_merge = [self.map_info[i0]]
-        else:
-            left_to_merge = []
-
-        # check if the map info just after overlap_ranges is adjacency to the memory range [mem_s, mem_e)
-        if i1 < len(self.map_info) - 1 and mem_e == self.map_info[i1 + 1][0]:
-            i1 += 1
-            right_to_merge = [self.map_info[i1]]
-        else:
-            right_to_merge = []
-
-        # create new entries by splitting overlapping ranges and merging.
-        # this has to be done before removing visited entries
-        new_entries = list(__merge_adjacency(itertools.chain(left_to_merge, __split_overlaps(), right_to_merge)))
-
-        # remove visited entries
-        del self.map_info[i0:i1 + 1]
-
-        # add new ones
-        for i, entry in enumerate(new_entries):
-            self.map_info.insert(i0 + i, entry)
+        if mem_info is not None:
+            self.map_info[info_idx] = (tmp_map_info[0], tmp_map_info[1], tmp_map_info[2], mem_info, tmp_map_info[4])
 
     def get_mapinfo(self) -> Sequence[Tuple[int, int, str, str, str]]:
         """Get memory map info.
@@ -508,8 +419,8 @@ class QlMemoryManager:
             size: range size (in bytes)
         """
 
-        self.ql.uc.mem_unmap(addr, size)
         self.del_mapinfo(addr, addr + size)
+        self.ql.uc.mem_unmap(addr, size)
 
         if (addr, addr + size) in self.mmio_cbs:
             del self.mmio_cbs[(addr, addr+size)]
