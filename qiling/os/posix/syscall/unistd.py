@@ -888,6 +888,7 @@ def __getdents_common(ql: Qiling, fd: int, dirp: int, count: int, *, is_64: bool
             d_name = (result.name if isinstance(result, os.DirEntry) else result._str).encode() + b'\x00'
             d_type = _type_mapping(result)
             d_reclen = n + n + 2 + len(d_name) + 1
+            d_reclen = (d_reclen + n) & ~(n - 1) # alignment
 
             # TODO: Dirty fix for X8664 MACOS 11.6 APFS
             # For some reason MACOS return int value is 64bit
