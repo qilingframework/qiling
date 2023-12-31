@@ -3,8 +3,6 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import binascii
-
 from uuid import UUID
 from typing import Optional, Mapping
 
@@ -116,7 +114,7 @@ def install_configuration_table(context, key: str, table: Optional[int]):
     # if pointer to table data was not specified, load table data
     # from profile and have table pointing to it
     if table is None:
-        data = binascii.unhexlify(cfgtable['TableData'])
+        data = bytes.fromhex(cfgtable['TableData'])
         table = context.conf_table_data_next_ptr
 
         context.ql.mem.write(table, data)
