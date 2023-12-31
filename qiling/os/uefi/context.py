@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Mapping, MutableSequence, Optional, Tuple
+from typing import Any, Mapping, Dict, MutableSequence, Optional, Tuple
 
 from qiling import Qiling
 from qiling.os.memory import QlMemoryHeap
@@ -13,7 +13,7 @@ class UefiContext(ABC):
         self.ql = ql
         self.heap: QlMemoryHeap
         self.top_of_stack: int
-        self.protocols = {}
+        self.protocols: Dict[int, Dict[str, int]] = {}
         self.loaded_image_protocol_modules: MutableSequence[int] = []
         self.next_image_base: int
 
@@ -39,7 +39,7 @@ class UefiContext(ABC):
         self.ql.mem.map(base, size, info='[stack]')
         self.top_of_stack = (base + size - 1) & ~(CPU_STACK_ALIGNMENT - 1)
 
-    def install_protocol(self, proto_desc: Mapping, handle: int, address: int = None, from_hook: bool = False):
+    def install_protocol(self, proto_desc: Mapping, handle: int, address: Optional[int] = None, from_hook: bool = False):
         guid = proto_desc['guid']
 
         if handle not in self.protocols:

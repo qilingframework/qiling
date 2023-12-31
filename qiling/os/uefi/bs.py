@@ -3,9 +3,10 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from __future__ import annotations
+from typing import TYPE_CHECKING
 from binascii import crc32
 
-from qiling.const import QL_ENDIAN
 from qiling.os.const import *
 from qiling.os.uefi import guids_db
 from qiling.os.uefi.const import *
@@ -14,6 +15,10 @@ from qiling.os.uefi.utils import *
 from qiling.os.uefi.ProcessorBind import *
 from qiling.os.uefi.UefiSpec import *
 from qiling.os.uefi.protocols import common
+
+if TYPE_CHECKING:
+	from qiling import Qiling
+
 
 @dxeapi(params = {
     "NewTpl" : ULONGLONG        # EFI_TPL

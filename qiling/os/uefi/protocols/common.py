@@ -3,10 +3,16 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
 from qiling.os.uefi.const import EFI_SUCCESS, EFI_NOT_FOUND, EFI_UNSUPPORTED, EFI_BUFFER_TOO_SMALL, EFI_INVALID_PARAMETER
 from qiling.os.uefi.UefiSpec import EFI_LOCATE_SEARCH_TYPE
 
-def LocateHandles(context, params):
+if TYPE_CHECKING:
+    from qiling.os.uefi.context import UefiContext
+
+def LocateHandles(context: UefiContext, params):
     SearchType = params["SearchType"]
     Protocol = params["Protocol"]
 
@@ -23,7 +29,7 @@ def LocateHandles(context, params):
 
     return len(handles) * context.ql.arch.pointersize, handles
 
-def InstallProtocolInterface(context, params):
+def InstallProtocolInterface(context: UefiContext, params):
     handle = context.ql.mem.read_ptr(params["Handle"])
 
     if handle == 0:
@@ -39,7 +45,7 @@ def InstallProtocolInterface(context, params):
 
     return EFI_SUCCESS
 
-def ReinstallProtocolInterface(context, params):
+def ReinstallProtocolInterface(context: UefiContext, params):
     handle = params["Handle"]
 
     if handle not in context.protocols:
@@ -55,7 +61,7 @@ def ReinstallProtocolInterface(context, params):
 
     return EFI_SUCCESS
 
-def UninstallProtocolInterface(context, params):
+def UninstallProtocolInterface(context: UefiContext, params):
     handle = params["Handle"]
 
     if handle not in context.protocols:
@@ -71,7 +77,7 @@ def UninstallProtocolInterface(context, params):
 
     return EFI_SUCCESS
 
-def HandleProtocol(context, params):
+def HandleProtocol(context: UefiContext, params):
     handle = params["Handle"]
     protocol = params["Protocol"]
     interface = params['Interface']
@@ -86,7 +92,7 @@ def HandleProtocol(context, params):
 
     return EFI_UNSUPPORTED
 
-def LocateHandle(context, params):
+def LocateHandle(context: UefiContext, params):
     buffer_size, handles = LocateHandles(context, params)
 
     if len(handles) == 0:
@@ -107,7 +113,7 @@ def LocateHandle(context, params):
 
     return ret
 
-def LocateProtocol(context, params):
+def LocateProtocol(context: UefiContext, params):
     protocol = params['Protocol']
 
     for handle, guid_dic in context.protocols.items():
@@ -121,7 +127,7 @@ def LocateProtocol(context, params):
 
     return EFI_NOT_FOUND
 
-def InstallConfigurationTable(context, params):
+def InstallConfigurationTable(context: UefiContext, params):
     guid = params["Guid"]
     table = params["Table"]
 
