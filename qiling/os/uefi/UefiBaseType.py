@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -23,17 +23,17 @@ EFI_VIRTUAL_ADDRESS = UINT64
 
 class EFI_TIME(STRUCT):
     _fields_ = [
-        ('Year',        UINT16),
-        ('Month',        UINT8),
-        ('Day',            UINT8),
-        ('Hour',        UINT8),
-        ('Minute',        UINT8),
-        ('Second',        UINT8),
-        ('Pad1',        UINT8),
-        ('Nanosecond',    UINT32),
-        ('TimeZone',    UINT16),
-        ('Daylight',    UINT8),
-        ('Pad2',        UINT8)
+        ('Year',       UINT16),
+        ('Month',      UINT8),
+        ('Day',        UINT8),
+        ('Hour',       UINT8),
+        ('Minute',     UINT8),
+        ('Second',     UINT8),
+        ('Pad1',       UINT8),
+        ('Nanosecond', UINT32),
+        ('TimeZone',   UINT16),
+        ('Daylight',   UINT8),
+        ('Pad2',       UINT8)
     ]
 
 __all__ = [

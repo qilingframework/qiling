@@ -35,7 +35,7 @@ class EFI_SMM_ACCESS2_PROTOCOL(STRUCT):
     ]
 
 @dxeapi(params = {
-    "This" : POINTER
+    "This": POINTER
 })
 def hook_Open(ql: Qiling, address: int, params):
     ql.loader.smm_context.tseg_open = True
@@ -43,7 +43,7 @@ def hook_Open(ql: Qiling, address: int, params):
     return EFI_SUCCESS
 
 @dxeapi(params = {
-    "This" : POINTER
+    "This": POINTER
 })
 def hook_Close(ql: Qiling, address: int, params):
     ql.loader.smm_context.tseg_open = False
@@ -51,7 +51,7 @@ def hook_Close(ql: Qiling, address: int, params):
     return EFI_SUCCESS
 
 @dxeapi(params = {
-    "This" : POINTER
+    "This": POINTER
 })
 def hook_Lock(ql: Qiling, address: int, params):
     ql.loader.smm_context.tseg_locked = True
@@ -80,9 +80,9 @@ def _coalesce(seq):
     return res
 
 @dxeapi(params = {
-    "This"          : POINTER,    # PTR(EFI_SMM_ACCESS2_PROTOCOL)
-    "MmramMapSize"  : POINTER,    # IN OUT PTR(UINTN)
-    "MmramMap"      : POINTER    # OUT PTR(EFI_MMRAM_DESCRIPTOR)
+    "This":         POINTER,    # PTR(EFI_SMM_ACCESS2_PROTOCOL)
+    "MmramMapSize": POINTER,    # IN OUT PTR(UINTN)
+    "MmramMap":     POINTER     # OUT PTR(EFI_MMRAM_DESCRIPTOR)
 })
 def hook_GetCapabilities(ql: Qiling, address: int, params):
     heap = ql.loader.smm_context.heap
@@ -148,8 +148,8 @@ descriptor = {
     "struct" : EFI_SMM_ACCESS2_PROTOCOL,
     "fields" : (
         ("Open",            hook_Open),
-        ("Close",            hook_Close),
+        ("Close",           hook_Close),
         ("Lock",            hook_Lock),
-        ("GetCapabilities",    hook_GetCapabilities)
+        ("GetCapabilities", hook_GetCapabilities)
     )
 }

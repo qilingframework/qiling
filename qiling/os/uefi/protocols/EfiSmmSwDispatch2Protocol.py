@@ -16,9 +16,9 @@ class EFI_SMM_SW_CONTEXT(STRUCT):
     _pack_ = 8
 
     _fields_ = [
-        ('SwSmiCpuIndex',    UINTN),    # index of the cpu which generated the swsmi
-        ('CommandPort',        UINT8),    # port number used to trigger the swsmi
-        ('DataPort',        UINT8)    # irrelevant
+        ('SwSmiCpuIndex', UINTN),   # index of the cpu which generated the swsmi
+        ('CommandPort',   UINT8),   # port number used to trigger the swsmi
+        ('DataPort',      UINT8)    # irrelevant
     ]
 
 # @file: MdePkg\Include\Protocol\SmmSwDispatch2.h
@@ -35,15 +35,15 @@ class EFI_SMM_SW_DISPATCH2_PROTOCOL(STRUCT):
 
     _fields_ = [
         ('Register',        FUNCPTR(EFI_STATUS, PTR(EFI_SMM_SW_DISPATCH2_PROTOCOL), EFI_SMM_HANDLER_ENTRY_POINT2, PTR(EFI_SMM_SW_REGISTER_CONTEXT), PTR(EFI_HANDLE))),
-        ('UnRegister',        FUNCPTR(EFI_STATUS, PTR(EFI_SMM_SW_DISPATCH2_PROTOCOL), EFI_HANDLE)),
-        ('MaximumSwiValue',    UINTN)
+        ('UnRegister',      FUNCPTR(EFI_STATUS, PTR(EFI_SMM_SW_DISPATCH2_PROTOCOL), EFI_HANDLE)),
+        ('MaximumSwiValue', UINTN)
     ]
 
 @dxeapi(params = {
-    "This"                : POINTER,    # PTR(EFI_SMM_SW_DISPATCH2_PROTOCOL)
-    "DispatchFunction"    : POINTER,    # EFI_SMM_HANDLER_ENTRY_POINT2
-    "RegisterContext"    : POINTER,    # PTR(EFI_SMM_SW_REGISTER_CONTEXT)
-    "DispatchHandle"    : POINTER    # PTR(EFI_HANDLE)
+    "This":             POINTER,    # PTR(EFI_SMM_SW_DISPATCH2_PROTOCOL)
+    "DispatchFunction": POINTER,    # EFI_SMM_HANDLER_ENTRY_POINT2
+    "RegisterContext":  POINTER,    # PTR(EFI_SMM_SW_REGISTER_CONTEXT)
+    "DispatchHandle":   POINTER     # PTR(EFI_HANDLE)
 })
 def hook_Register(ql: Qiling, address: int, params):
     DispatchFunction: int = params['DispatchFunction']
@@ -83,8 +83,8 @@ def hook_Register(ql: Qiling, address: int, params):
     ql.mem.write_ptr(DispatchHandle, Handle)
 
     args = {
-        'DispatchHandle'  : Handle,
-        'RegisterContext' : SwRegisterContext
+        'DispatchHandle':  Handle,
+        'RegisterContext': SwRegisterContext
     }
 
     handlers[idx] = (DispatchFunction, args)
@@ -92,8 +92,8 @@ def hook_Register(ql: Qiling, address: int, params):
     return EFI_SUCCESS
 
 @dxeapi(params = {
-    "This"                : POINTER,
-    "DispatchHandle"    : POINTER
+    "This":           POINTER,
+    "DispatchHandle": POINTER
 })
 def hook_UnRegister(ql: Qiling, address: int, params):
     DispatchHandle: int = params['DispatchHandle']
@@ -116,7 +116,7 @@ descriptor = {
     "struct" : EFI_SMM_SW_DISPATCH2_PROTOCOL,
     "fields" : (
         ("Register",        hook_Register),
-        ("UnRegister",        hook_UnRegister),
-        ('MaximumSwiValue',    MAXIMUM_SWI_VALUE)
+        ("UnRegister",      hook_UnRegister),
+        ('MaximumSwiValue', MAXIMUM_SWI_VALUE)
     )
 }

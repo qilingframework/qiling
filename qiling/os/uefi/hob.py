@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -9,20 +9,20 @@ from qiling.os.uefi.utils import GetEfiConfigurationTable, CompareGuid, str_to_g
 from qiling.os.uefi.UefiBaseType import STRUCT, EFI_GUID, UINT32, UINT16
 
 EFI_HOB_TYPE_HANDOFF         = 0x0001
-EFI_HOB_TYPE_GUID_EXTENSION     = 0x0004
+EFI_HOB_TYPE_GUID_EXTENSION  = 0x0004
 EFI_HOB_TYPE_END_OF_HOB_LIST = 0xffff
 
 class EFI_HOB_GENERIC_HEADER(STRUCT):
     _fields_ = [
-        ('HobType',        UINT16),
-        ('HobLength',    UINT16),
-        ('Reserved',    UINT32)
+        ('HobType',   UINT16),
+        ('HobLength', UINT16),
+        ('Reserved',  UINT32)
     ]
 
 class EFI_HOB_GUID_TYPE(STRUCT):
     _fields_ = [
-        ('Header',    EFI_HOB_GENERIC_HEADER),
-        ('Name',    EFI_GUID)
+        ('Header', EFI_HOB_GENERIC_HEADER),
+        ('Name',   EFI_GUID)
     ]
 
 def GetHobList(ql: Qiling, context: UefiContext) -> int:

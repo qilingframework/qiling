@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -19,19 +19,19 @@ from qiling.os.uefi.UefiSpec import EFI_SYSTEM_TABLE, EFI_BOOT_SERVICES, EFI_RUN
 #        | NumberOfTableEntries        |
 #        | ConfigurationTable*  -> (4) |
 #        +-----------------------------+
-#    (1)    +-- EFI_RUNTIME_SERVICES -----+
+#    (1) +-- EFI_RUNTIME_SERVICES -----+
 #        |                             |
 #        | ...                         |
 #        +-----------------------------+
-#    (2)    +-- EFI_BOOT_SERVICES --------+
+#    (2) +-- EFI_BOOT_SERVICES --------+
 #        |                             |
 #        | ...                         |
 #        +-----------------------------+
-#    (3)    +-- EFI_DXE_SERVICES ---------+
+#    (3) +-- EFI_DXE_SERVICES ---------+
 #        |                             |
 #        | ...                         |
 #        +-----------------------------+
-#    (4)    +-- EFI_CONFIGURATION_TABLE --+        of HOB_LIST
+#    (4) +-- EFI_CONFIGURATION_TABLE --+        of HOB_LIST
 #        | VendorGuid                  |
 #        | VendorTable*         -> (5) |
 #        +-----------------------------+
@@ -44,7 +44,7 @@ from qiling.os.uefi.UefiSpec import EFI_SYSTEM_TABLE, EFI_BOOT_SERVICES, EFI_RUN
 
 # dynamically allocated (context.conf_table_data_ptr):
 #
-#    (5)    +-- VOID* --------------------+
+#    (5) +-- VOID* --------------------+
 #        | ...                         |
 #        +-----------------------------+
 
