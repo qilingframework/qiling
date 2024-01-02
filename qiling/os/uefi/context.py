@@ -90,12 +90,6 @@ class SmmContext(UefiContext):
         self.smram_base: int
         self.smram_size: int
 
-        # assume tseg is inaccessible to non-smm
-        self.tseg_open = False
-
-        # assume tseg is locked
-        self.tseg_locked = True
-
         # registered sw smi handlers
         self.swsmi_handlers: Mapping[int, Tuple[int, Mapping]] = {}
 

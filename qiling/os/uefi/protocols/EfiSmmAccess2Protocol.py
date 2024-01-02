@@ -38,7 +38,10 @@ class EFI_SMM_ACCESS2_PROTOCOL(STRUCT):
     "This": POINTER
 })
 def hook_Open(ql: Qiling, address: int, params):
-    ql.loader.smm_context.tseg_open = True
+    this = params["This"]
+
+    with EFI_SMM_ACCESS2_PROTOCOL.bindTo(ql, this) as struct:
+        struct.OpenState = True
 
     return EFI_SUCCESS
 
@@ -46,7 +49,10 @@ def hook_Open(ql: Qiling, address: int, params):
     "This": POINTER
 })
 def hook_Close(ql: Qiling, address: int, params):
-    ql.loader.smm_context.tseg_open = False
+    this = params["This"]
+
+    with EFI_SMM_ACCESS2_PROTOCOL.bindTo(ql, this) as struct:
+        struct.OpenState = False
 
     return EFI_SUCCESS
 
@@ -54,7 +60,10 @@ def hook_Close(ql: Qiling, address: int, params):
     "This": POINTER
 })
 def hook_Lock(ql: Qiling, address: int, params):
-    ql.loader.smm_context.tseg_locked = True
+    this = params["This"]
+
+    with EFI_SMM_ACCESS2_PROTOCOL.bindTo(ql, this) as struct:
+        struct.LockState = True
 
     return EFI_SUCCESS
 
@@ -126,11 +135,14 @@ def hook_GetCapabilities(ql: Qiling, address: int, params):
         ql.mem.write_ptr(MmramMapSize, size + extra)
         return EFI_BUFFER_TOO_SMALL
 
-    MmramMap = params["MmramMap"]
+    this = params["This"]
+    struct = EFI_SMM_ACCESS2_PROTOCOL.loadFrom(ql, this)
 
     state = EFI_CACHEABLE
-    state |= EFI_SMRAM_OPEN if ql.loader.smm_context.tseg_open else EFI_SMRAM_CLOSED
-    state |= EFI_SMRAM_LOCKED if ql.loader.smm_context.tseg_locked else 0
+    state |= EFI_SMRAM_OPEN if struct.OpenState else EFI_SMRAM_CLOSED
+    state |= EFI_SMRAM_LOCKED if struct.LockState else 0
+
+    MmramMap = params["MmramMap"]
 
     for i, ch in enumerate(chunks):
         desc = EFI_SMRAM_DESCRIPTOR()
@@ -143,6 +155,7 @@ def hook_GetCapabilities(ql: Qiling, address: int, params):
 
     return EFI_SUCCESS
 
+
 descriptor = {
     "guid" : "c2702b74-800c-4131-8746-8fb5b89ce4ac",
     "struct" : EFI_SMM_ACCESS2_PROTOCOL,
@@ -150,6 +163,8 @@ descriptor = {
         ("Open",            hook_Open),
         ("Close",           hook_Close),
         ("Lock",            hook_Lock),
-        ("GetCapabilities", hook_GetCapabilities)
+        ("GetCapabilities", hook_GetCapabilities),
+        ("LockState",       True),  # lock tseg
+        ("OpenState",       False)  # make tseg inaccessible to non-smm
     )
 }
