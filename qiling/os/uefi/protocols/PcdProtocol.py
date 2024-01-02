@@ -4,9 +4,10 @@
 #
 
 from qiling.os.const import *
-from ..fncc import *
+from ..fncc import dxeapi
 from ..ProcessorBind import *
-from ..UefiBaseType import *
+from ..UefiBaseType import EFI_GUID, EFI_STATUS
+
 
 PCD_PROTOCOL_CALLBACK = FUNCPTR(VOID, PTR(EFI_GUID), UINTN, PTR(VOID), UINTN)
 
@@ -42,6 +43,7 @@ PCD_PROTOCOL_CANCEL_CALLBACK = FUNCPTR(EFI_STATUS, PTR(EFI_GUID), UINTN, PCD_PRO
 PCD_PROTOCOL_GET_NEXT_TOKEN  = FUNCPTR(EFI_STATUS, PTR(EFI_GUID), PTR(UINTN))
 PCD_PROTOCOL_GET_NEXT_TOKENSPACE = FUNCPTR(EFI_STATUS, PTR(PTR(EFI_GUID)))
 
+
 class PCD_PROTOCOL(STRUCT):
     _fields_ = [
         ('SetSku',         PCD_PROTOCOL_SET_SKU),
@@ -76,6 +78,7 @@ class PCD_PROTOCOL(STRUCT):
         ('GetNextToken',   PCD_PROTOCOL_GET_NEXT_TOKEN),
         ('GetNextTokenSpace', PCD_PROTOCOL_GET_NEXT_TOKENSPACE)
     ]
+
 
 @dxeapi(params = {
     "SkuId": UINT
@@ -294,6 +297,7 @@ def hook_GetNextToken(ql, address, params):
 })
 def hook_GetNextTokenSpace(ql, address, params):
     pass
+
 
 descriptor = {
     "guid" : "11b34006-d85b-4d0a-a290-d5a571310ef7",

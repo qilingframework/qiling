@@ -11,6 +11,7 @@ from .const import *
 from .utils import *
 from .fncc import *
 from .ProcessorBind import *
+from .PiMultiPhase import EFI_VARIABLE
 from .UefiBaseType import EFI_TIME
 from .UefiSpec import *
 
@@ -89,28 +90,42 @@ def hook_ConvertPointer(ql: Qiling, address: int, params):
     "Data":         POINTER     # OUT PTR(VOID)
 })
 def hook_GetVariable(ql: Qiling, address: int, params):
-    name = params['VariableName']
+    var_name = params["VariableName"]
+    vendor_guid = params["VendorGuid"]
+    attr_ptr = params["Attributes"]
+    data_size_ptr = params["DataSize"]
+    data_ptr = params["Data"]
 
-    if name in ql.env:
-        var = ql.env[name]
-        read_len = ql.mem.read_ptr(params['DataSize'])
+    if (not var_name) or (not vendor_guid) or (not data_size_ptr):
+        return EFI_INVALID_PARAMETER
 
-        if params['Attributes'] != 0:
-            ql.mem.write_ptr(params['Attributes'], 0, 4)
+    if var_name not in ql.env:
+        return EFI_NOT_FOUND
 
-        ql.mem.write_ptr(params['DataSize'], len(var))
+    var_data = ql.env[var_name]
+    data_size = len(var_data)
+    buff_size = ql.mem.read_ptr(data_size_ptr)
 
-        if read_len < len(var):
-            return EFI_BUFFER_TOO_SMALL
+    if attr_ptr:
+        # FIXME: until we manage variables with their attributes, provide a default set
+        attributes = (
+            EFI_VARIABLE.NON_VOLATILE |
+            EFI_VARIABLE.BOOTSERVICE_ACCESS |
+            EFI_VARIABLE.RUNTIME_ACCESS
+        )
 
-        if params['Data'] != 0:
-            ql.mem.write(params['Data'], var)
+        ql.mem.write_ptr(attr_ptr, attributes, 4)
 
-        return EFI_SUCCESS
+    ql.mem.write_ptr(data_size_ptr, data_size)
 
-    ql.log.warning(f'variable with name {name} not found')
+    if buff_size < data_size:
+        return EFI_BUFFER_TOO_SMALL
 
-    return EFI_NOT_FOUND
+    if data_ptr:
+        ql.mem.write(data_ptr, var_data)
+
+    return EFI_SUCCESS
+
 
 @dxeapi(params={
     "VariableNameSize": POINTER,    # IN OUT PTR(UINTN)
@@ -120,26 +135,27 @@ def hook_GetVariable(ql: Qiling, address: int, params):
 def hook_GetNextVariableName(ql: Qiling, address: int, params):
     var_name_size = params["VariableNameSize"]
     var_name = params["VariableName"]
+    vendor_guid = params["VendorGuid"]
 
-    if (var_name_size == 0) or (var_name == 0):
+    if (not var_name_size) or (not var_name) or (not vendor_guid):
         return EFI_INVALID_PARAMETER
 
     name_size = ql.mem.read_ptr(var_name_size)
-    last_name = ql.os.utils.read_wstring(var_name)
+    last_name = ql.os.utils.read_wstring(var_name, name_size)
 
-    vars = ql.env['Names'] # This is a list of variable names in correct order.
+    nvvars = ql.env['Names'] # This is a list of variable names in correct order.
 
-    if last_name not in vars:
+    if last_name not in nvvars:
         return EFI_NOT_FOUND
 
-    idx = vars.index(last_name)
+    idx = nvvars.index(last_name)
 
     # make sure it is not the last one (i.e. we have a next one to pull)
-    if idx == len(vars) - 1:
+    if idx == len(nvvars) - 1:
         return EFI_NOT_FOUND
 
     # get next var name, and add null terminator
-    new_name = vars[idx + 1] + '\x00'
+    new_name = nvvars[idx + 1] + '\x00'
 
     # turn it into a wide string
     new_name = ''.join(f'{c}\x00' for c in new_name)
@@ -160,7 +176,45 @@ def hook_GetNextVariableName(ql: Qiling, address: int, params):
     "Data":         POINTER     # PTR(VOID)
 })
 def hook_SetVariable(ql: Qiling, address: int, params):
-    ql.env[params['VariableName']] = bytes(ql.mem.read(params['Data'], params['DataSize']))
+    var_name = params["VariableName"]
+    vendor_guid = params["VendorGuid"]
+    attributes = params["Attributes"]
+    data_size = params["DataSize"]
+    data_ptr = params["Data"]
+
+    if not var_name:
+        return EFI_INVALID_PARAMETER
+
+    # deprecated
+    if attributes & EFI_VARIABLE.AUTHENTICATED_WRITE_ACCESS:
+        return EFI_UNSUPPORTED
+
+    append = attributes & EFI_VARIABLE.APPEND_WRITE
+    auth = attributes & (
+        EFI_VARIABLE.TIME_BASED_AUTHENTICATED_WRITE_ACCESS |
+        EFI_VARIABLE.ENHANCED_AUTHENTICATED_ACCESS
+    )
+
+    # TODO: manage variables with namespaces (guids)
+    # TODO: manage variables according to their access attributes
+
+    # when data size is set to zero and this is not auth or append access, delete the var
+    if data_size == 0 and not (auth or append):
+        if var_name not in ql.env:
+            return EFI_NOT_FOUND
+
+        del ql.env[var_name]
+
+    data = bytes(ql.mem.read(data_ptr, data_size))
+
+    if append:
+        if var_name not in ql.env:
+            return EFI_NOT_FOUND
+
+        data = ql.env[var_name] + data
+
+    ql.env[var_name] = data
+
     return EFI_SUCCESS
 
 @dxeapi(params={

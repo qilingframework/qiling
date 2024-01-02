@@ -3,10 +3,11 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from ..ProcessorBind import *
-from ..UefiBaseType import *
+from ..ProcessorBind import VOID, UINT32, UINT64, PTR, STRUCT
+from ..UefiBaseType import EFI_HANDLE
 from ..UefiSpec import EFI_SYSTEM_TABLE, EFI_DEVICE_PATH_PROTOCOL, EFI_IMAGE_UNLOAD
 from ..UefiMultiPhase import EFI_MEMORY_TYPE
+
 
 class EFI_LOADED_IMAGE_PROTOCOL(STRUCT):
     _pack_ = 8
@@ -26,6 +27,7 @@ class EFI_LOADED_IMAGE_PROTOCOL(STRUCT):
         ('ImageDataType',   EFI_MEMORY_TYPE),
         ('Unload',          EFI_IMAGE_UNLOAD)
     ]
+
 
 def make_descriptor(fields):
     descriptor = {
@@ -48,6 +50,7 @@ def make_descriptor(fields):
     }
 
     return descriptor
+
 
 __all__ = [
     'EFI_LOADED_IMAGE_PROTOCOL',

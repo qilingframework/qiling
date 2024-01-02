@@ -1,31 +1,38 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from __future__ import annotations
+
 import ctypes
 from contextlib import contextmanager
-from typing import Mapping, MutableMapping, Sequence, Optional
+from functools import lru_cache
+from typing import TYPE_CHECKING, Mapping, Sequence, Union, Optional
 
-from qiling import Qiling
+if TYPE_CHECKING:
+    from qiling import Qiling
+
 
 bits = 64
 psize = bits // 8
 
-dummy_ptr_type = {
-    32 : ctypes.c_uint32,
-    64 : ctypes.c_uint64
-}[bits]
+@lru_cache(maxsize=None)
+def PTR(ptype: Union[type, None]) -> type:
+    """Generate a ctypes pointer type.
+    """
 
-_pointer_type_cache: MutableMapping[str, type] = {}
-
-def PTR(ptype: Optional[type]) -> type:
     pname = 'c_void' if ptype is None else ptype.__name__
 
-    if pname not in _pointer_type_cache:
-        _pointer_type_cache[pname] = type(f'LP_{psize}_{pname}', (dummy_ptr_type,), {})
+    return type(f'LP_{psize}_{pname}', (ctypes.c_void_p,), {})
 
-    return _pointer_type_cache[pname]
+
+def FUNCPTR(rettype: Union[type, None], *argtypes: type) -> type:
+    """Generate a ctypes function pointer type.
+    """
+
+    return PTR(ctypes.CFUNCTYPE(rettype, *argtypes))
+
 
 VOID = None
 INT8  = ctypes.c_int8
@@ -44,11 +51,11 @@ BOOLEAN = UINT8
 CHAR8 = UINT8
 CHAR16 = UINT16
 
-FUNCPTR = lambda *args: PTR(ctypes.CFUNCTYPE(*args))
 UNION = ctypes.Union
 
 CPU_STACK_ALIGNMENT = 16
 PAGE_SIZE = 0x1000
+
 
 class STRUCT(ctypes.LittleEndianStructure):
     """An abstract class for C structures.
@@ -109,9 +116,11 @@ class STRUCT(ctypes.LittleEndianStructure):
 
         return next((fname for fname, *_ in cls._fields_ if cls.offsetof(fname) == offset), None)
 
+
 class EnumMeta(type(ctypes.c_int)):
     def __getattr__(self, key):
         return self._members_.index(key)
+
 
 class ENUM(ctypes.c_int, metaclass=EnumMeta):
     """An abstract class for continuous C enums.
@@ -121,9 +130,11 @@ class ENUM(ctypes.c_int, metaclass=EnumMeta):
     # names will be enumerate by their corresponding index in the list
     _members_: Sequence[str] = []
 
+
 class EnumUCMeta(type(ctypes.c_int)):
     def __getattr__(self, key):
         return self._members_[key]
+
 
 class ENUM_UC(ctypes.c_int, metaclass=EnumUCMeta):
     """An abstract class for uncontinuous C enums.
@@ -132,6 +143,7 @@ class ENUM_UC(ctypes.c_int, metaclass=EnumUCMeta):
     # a dictionary of (names : str, value : int) tuples
     # names will be enumerate by their paired value
     _members_: Mapping[str, int] = {}
+
 
 __all__ = [
     'VOID',

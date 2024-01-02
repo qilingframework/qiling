@@ -3,7 +3,8 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from qiling.os.uefi.ProcessorBind import *
+from qiling.os.uefi.ProcessorBind import VOID, UINT8, UINT16, UINT32, UINT64, UINTN, STRUCT, PTR
+
 
 class EFI_GUID(STRUCT):
     _fields_ = [
@@ -13,6 +14,7 @@ class EFI_GUID(STRUCT):
         ('Data4', UINT8 * 8)
     ]
 
+
 EFI_STATUS = UINTN
 EFI_HANDLE = PTR(VOID)
 EFI_EVENT = PTR(VOID)
@@ -20,6 +22,7 @@ EFI_TPL = UINTN
 EFI_LBA = UINT64
 EFI_PHYSICAL_ADDRESS = UINT64
 EFI_VIRTUAL_ADDRESS = UINT64
+
 
 class EFI_TIME(STRUCT):
     _fields_ = [
@@ -35,6 +38,7 @@ class EFI_TIME(STRUCT):
         ('Daylight',   UINT8),
         ('Pad2',       UINT8)
     ]
+
 
 __all__ = [
     'EFI_GUID',
