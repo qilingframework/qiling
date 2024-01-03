@@ -56,22 +56,31 @@ linux_x86_socket_level = {
     'IPPROTO_RAW'   : 0x00ff,
 }
 
-
+# https://github.com/torvalds/linux/blob/master/tools/include/uapi/asm-generic/socket.h
 linux_x86_socket_options = {
     "SO_DEBUG"           : 0x0001,
     "SO_REUSEADDR"       : 0x0002,
-    "SO_KEEPALIVE"       : 0x0009,
+    "SO_TYPE"            : 0x0003,
+    "SO_ERROR"           : 0x0004,
     "SO_DONTROUTE"       : 0x0005,
     "SO_BROADCAST"       : 0x0006,
-    "SO_LINGER"          : 0x000d,
-    "SO_OOBINLINE"       : 0x000a,
     "SO_SNDBUF"          : 0x0007,
     "SO_RCVBUF"          : 0x0008,
+    "SO_SNDBUFFORCE"     : 0x0020,
+    "SO_RCVBUFFORCE"     : 0x0021,
+    "SO_KEEPALIVE"       : 0x0009,
+    "SO_OOBINLINE"       : 0x000a,
+    "SO_NO_CHECK"        : 0x000b,
+    "SO_PRIORITY"        : 0x000c,
+    "SO_LINGER"          : 0x000d,
+    "SO_BSDCOMPAT"       : 0x000e,
     "SO_REUSEPORT"       : 0x000f,
-    "SO_SNDLOWAT"        : 0x0013,
+    "SO_PASSCRED"        : 0x0010,
+    "SO_PEERCRED"        : 0x0011,
     "SO_RCVLOWAT"        : 0x0012,
-    "SO_SNDTIMEO"        : 0x0015,
-    "SO_RCVTIMEO"        : 0x0014,
+    "SO_SNDLOWAT"        : 0x0013,
+    "SO_RCVTIMEO_OLD"    : 0x0014,
+    "SO_SNDTIMEO_OLD"    : 0x0015,
 }
 
 # https://man7.org/linux/man-pages/man7/ip.7.html
