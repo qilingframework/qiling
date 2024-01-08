@@ -21,7 +21,7 @@ if TYPE_CHECKING:
     from .loader.loader import QlLoader
 
 from .arch.models import QL_CPU
-from .const import QL_ARCH, QL_ENDIAN, QL_OS, QL_STATE, QL_STOP, QL_VERBOSE, QL_ARCH_INTERPRETER, QL_OS_BAREMETAL
+from .const import QL_ARCH, QL_ENDIAN, QL_OS, QL_STATE, QL_STOP, QL_VERBOSE, QL_OS_BAREMETAL
 from .exception import QlErrorFileNotFound, QlErrorArch, QlErrorOsType
 from .host import QlHost
 from .log import *
@@ -152,9 +152,8 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         self._arch = select_arch(archtype, cputype, endian, thumb)(self)
 
         # Once we finish setting up arch, we can init QlCoreStructs and QlCoreHooks
-        if not self.interpreter:
-            QlCoreStructs.__init__(self, self.arch.endian, self.arch.bits)
-            QlCoreHooks.__init__(self, self.uc)
+        QlCoreStructs.__init__(self, self.arch.endian, self.arch.bits)
+        QlCoreHooks.__init__(self, self.uc)
 
         # emulation has not been started yet
         self._state = QL_STATE.NOT_SET
@@ -181,9 +180,8 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         ##############
         # Components #
         ##############
-        if not self.interpreter:
-            self._mem = select_component('os', 'memory')(self)
-            self._os = select_os(ostype)(self)
+        self._mem = select_component('os', 'memory')(self)
+        self._os = select_os(ostype)(self)
 
         if self.baremetal:
             self._hw = select_component('hw', 'hw')(self)
@@ -351,23 +349,11 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         return os.path.basename(self.path)
 
     @property
-    def interpreter(self) -> bool:
-        """Indicate whether an interpreter engine is being emulated.
-
-        Currently supporting: EVM
-        """
-        return self.arch.type in QL_ARCH_INTERPRETER
-
-    @property
     def baremetal(self) -> bool:
         """Indicate whether a baremetal system is being emulated.
 
         Currently supporting: MCU
         """
-
-        # os is not initialized for interpreter archs
-        if self.interpreter:
-            return False
 
         return self.os.type in QL_OS_BAREMETAL
 

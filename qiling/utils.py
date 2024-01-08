@@ -307,7 +307,6 @@ def select_loader(ostype: QL_OS, libcache: bool) -> QlClassInit['QlLoader']:
         QL_OS.WINDOWS : r'pe',
         QL_OS.UEFI    : r'pe_uefi',
         QL_OS.DOS     : r'dos',
-        QL_OS.EVM     : r'evm',
         QL_OS.MCU     : r'mcu',
         QL_OS.BLOB    : r'blob'
     }[ostype]
@@ -374,11 +373,7 @@ def select_debugger(options: Union[str, bool]) -> Optional[QlClassInit['QlDebugg
 
 
 def select_arch(archtype: QL_ARCH, cputype: Optional[QL_CPU], endian: QL_ENDIAN, thumb: bool) -> QlClassInit['QlArch']:
-    kwargs = {}
-
-    # skip cpu model for evm
-    if archtype is not QL_ARCH.EVM:
-        kwargs['cputype'] = cputype
+    kwargs = {'cputype': cputype}
 
     # set endianess and thumb mode for arm-based archs
     if archtype is QL_ARCH.ARM:
@@ -396,7 +391,6 @@ def select_arch(archtype: QL_ARCH, cputype: Optional[QL_CPU], endian: QL_ENDIAN,
         QL_ARCH.ARM      : r'arm',
         QL_ARCH.ARM64    : r'arm64',
         QL_ARCH.MIPS     : r'mips',
-        QL_ARCH.EVM      : r'evm.evm',
         QL_ARCH.CORTEX_M : r'cortex_m',
         QL_ARCH.RISCV    : r'riscv',
         QL_ARCH.RISCV64  : r'riscv64',

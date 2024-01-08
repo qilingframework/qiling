@@ -153,7 +153,6 @@ class R2:
             QL_ARCH.ARM: "arm",
             QL_ARCH.ARM64: "arm",
             QL_ARCH.A8086: "x86",
-            QL_ARCH.EVM: "evm.cs",
             QL_ARCH.CORTEX_M: "arm",
             QL_ARCH.MIPS: "mips",
             QL_ARCH.RISCV: "riscv",

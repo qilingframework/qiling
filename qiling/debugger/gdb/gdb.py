@@ -444,24 +444,23 @@ class QlGdb(QlDebugger):
                     ]
 
                 # os dependent features
-                if not self.ql.interpreter:
+                features += [
+                    'QEnvironmentHexEncoded+',
+                    'QEnvironmentReset+',
+                    'QEnvironmentUnset+'
+                ]
+
+                # filesystem dependent features
+                if hasattr(self.ql.os, 'path'):
                     features += [
-                        'QEnvironmentHexEncoded+',
-                        'QEnvironmentReset+',
-                        'QEnvironmentUnset+'
+                        'QSetWorkingDir+',
+                        'qXfer:auxv:read+',
+                        'qXfer:exec-file:read+'
                     ]
 
-                    # filesystem dependent features
-                    if hasattr(self.ql.os, 'path'):
-                        features += [
-                            'QSetWorkingDir+',
-                            'qXfer:auxv:read+',
-                            'qXfer:exec-file:read+'
-                        ]
-
-                    # process dependent features
-                    if hasattr(self.ql.os, 'pid'):
-                        features.append('qXfer:threads:read+')
+                # process dependent features
+                if hasattr(self.ql.os, 'pid'):
+                    features.append('qXfer:threads:read+')
 
                 return ';'.join(features)
 
@@ -582,7 +581,7 @@ class QlGdb(QlDebugger):
                     fd = -1
 
                     # files can be opened only where there is an os that supports filesystem
-                    if not self.ql.interpreter and hasattr(self.ql.os, 'path'):
+                    if hasattr(self.ql.os, 'path'):
                         path, flags, mode = params
 
                         path = bytes.fromhex(path).decode(encoding='utf-8')
