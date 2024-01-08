@@ -1,13 +1,14 @@
 import csv
-from typing import Mapping
 import inspect
+
+from typing import Mapping
 from pathlib import Path
 
 def __init_guids_db() -> Mapping[str, str]:
     """Initialize GUIDs dictionary from a local database.
     """
 
-    csv_path = Path(inspect.getfile(inspect.currentframe())).parent / 'guids.csv'
+    csv_path = Path(inspect.getfile(__init_guids_db)).parent / 'guids.csv'
 
     with csv_path.open('r') as guids_file:
         guids_reader = csv.reader(guids_file)
