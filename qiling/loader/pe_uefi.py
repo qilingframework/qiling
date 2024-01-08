@@ -4,8 +4,8 @@
 #
 
 import os
-from pefile import PE
 from typing import Any, Mapping, Optional, Sequence
+from pefile import PE
 
 from qiling import Qiling
 from qiling.const import QL_ARCH
@@ -326,7 +326,7 @@ class QlLoaderPE_UEFI(QlLoader):
             raise QlErrorArch("Unsupported architecture")
 
         # x86-64 arch only
-        if ql.arch.type != QL_ARCH.X8664:
+        if ql.arch.type is not QL_ARCH.X8664:
             raise QlErrorArch("Only 64-bit modules are supported at the moment")
 
         self.loaded_image_protocol_guid = ql.os.profile["LOADED_IMAGE_PROTOCOL"]["Guid"]

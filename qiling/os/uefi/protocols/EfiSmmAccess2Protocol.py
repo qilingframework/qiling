@@ -3,13 +3,20 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from qiling import Qiling
-from qiling.os.const import *
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
+from qiling.os.const import POINTER
 from qiling.os.uefi.const import *
-from ..fncc import *
+from ..fncc import dxeapi
 from ..ProcessorBind import *
-from ..UefiBaseType import *
+from ..UefiBaseType import EFI_PHYSICAL_ADDRESS, EFI_STATUS
 from ..PiMultiPhase import *
+
+
+if TYPE_CHECKING:
+    from qiling import Qiling
+
 
 # @see: MdePkg\Include\Pi\PiMultiPhase.h
 class EFI_MMRAM_DESCRIPTOR(STRUCT):

@@ -61,9 +61,9 @@ class UefiContext(ABC):
     def notify_protocol(self, handle: int, protocol: str, interface: int, from_hook: bool):
         for (event_id, event_dic) in self.ql.loader.events.items():
             if event_dic['Guid'] == protocol:
-                if event_dic['CallbackArgs'] == None:
+                if event_dic['CallbackArgs'] is None:
                     # To support smm notification, we use None for CallbackArgs on SmmRegisterProtocolNotify
-                    # and updare it here.
+                    # and update it here.
                     guid = utils.str_to_guid(protocol)
                     guid_ptr = self.heap.alloc(guid.sizeof())
                     guid.saveTo(self.ql, guid_ptr)

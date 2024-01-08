@@ -1,10 +1,11 @@
 import csv
 import inspect
 
-from typing import Mapping
+from typing import Dict
 from pathlib import Path
 
-def __init_guids_db() -> Mapping[str, str]:
+
+def __init_guids_db() -> Dict[str, str]:
     """Initialize GUIDs dictionary from a local database.
     """
 

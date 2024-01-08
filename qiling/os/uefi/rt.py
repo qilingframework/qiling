@@ -3,17 +3,24 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
 import time
 
-from qiling import Qiling
 from qiling.os.const import *
 from .const import *
-from .utils import *
-from .fncc import *
+from .utils import init_struct
+from .fncc import dxeapi
 from .ProcessorBind import *
 from .PiMultiPhase import EFI_VARIABLE
 from .UefiBaseType import EFI_TIME
-from .UefiSpec import *
+from .UefiSpec import EFI_UNSPECIFIED_TIMEZONE, EFI_RUNTIME_SERVICES
+
+
+if TYPE_CHECKING:
+    from qiling import Qiling
+
 
 @dxeapi(params={
     "Time":         POINTER,    # OUT PTR(EFI_TIME)

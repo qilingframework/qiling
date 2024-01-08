@@ -3,18 +3,24 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from qiling.const import *
-from qiling.os.const import *
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
+from qiling.os.const import GUID, POINTER, INT, ULONGLONG
 
 from qiling.os.uefi.const import EFI_SUCCESS, EFI_NOT_FOUND, EFI_OUT_OF_RESOURCES, EFI_INVALID_PARAMETER
-from qiling.os.uefi.utils import *
-from qiling.os.uefi.fncc import *
+from qiling.os.uefi.utils import init_struct, install_configuration_table
+from qiling.os.uefi.fncc import dxeapi
 from qiling.os.uefi.ProcessorBind import *
 from qiling.os.uefi.UefiBaseType import *
 from qiling.os.uefi.UefiMultiPhase import *
-from qiling.os.uefi.UefiSpec import *
+from qiling.os.uefi.UefiSpec import EFI_ALLOCATE_TYPE, EFI_CONFIGURATION_TABLE, EFI_INTERFACE_TYPE, EFI_LOCATE_SEARCH_TYPE, EFI_RUNTIME_SERVICES
 from qiling.os.uefi.protocols import common
 from qiling.os.uefi import rt
+
+if TYPE_CHECKING:
+    from qiling import Qiling
+
 
 # @see: MdePkg\Include\Pi\PiSmmCis.h
 
@@ -52,7 +58,7 @@ class EFI_SMM_SYSTEM_TABLE2(STRUCT):
         ('SmmFirmwareVendor',             PTR(CHAR16)),
         ('SmmFirmwareRevision',           UINT32),
         ('SmmInstallConfigurationTable',  FUNCPTR(EFI_STATUS, PTR(EFI_SMM_SYSTEM_TABLE2), PTR(EFI_GUID), PTR(VOID), UINTN)),
-        ('SmmIo',                          EFI_SMM_CPU_IO2_PROTOCOL),
+        ('SmmIo',                         EFI_SMM_CPU_IO2_PROTOCOL),
         ('SmmAllocatePool',               FUNCPTR(EFI_STATUS, EFI_MEMORY_TYPE, UINTN, PTR(PTR(VOID)))),
         ('SmmFreePool',                   FUNCPTR(EFI_STATUS, PTR(VOID))),
         ('SmmAllocatePages',              FUNCPTR(EFI_STATUS, EFI_ALLOCATE_TYPE, EFI_MEMORY_TYPE, UINTN, PTR(EFI_PHYSICAL_ADDRESS))),
