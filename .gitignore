@@ -2,19 +2,10 @@
 .DS_Store
 .vscode
 .idea
-*.pyc
 *.cache
 *.cache2
 .*.swp
 *.raw
-.venv
-
-# cache and misc
-qiling.egg-info/
-__pycache__/
-*.py[cod]
-build
-dist
 
 # test and logs
 tests/mac_test_elf.sh
@@ -38,3 +29,44 @@ core
 tests/output.txt
 tests/testtest_*
 
+### Python ###
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# Distribution / packaging
+build/
+develop-eggs/
+dist/
+eggs/
+sdist/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Environments
+.env
+.venv
+venv/
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# Poetry local configuration file - https://python-poetry.org/docs/configuration/#local-configuration
+poetry.toml
+
+# ruff
+.ruff_cache/
+
+# LSP config files
+pyrightconfig.json
