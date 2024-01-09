@@ -1,10 +1,30 @@
 [tool.poetry]
+urls = { homepage = "https://qiling.io" }
 name = "qiling"
 version = "1.4.7"
 description = "Qiling is an advanced binary emulation framework that cross-platform-architecture"
 authors = ["KaiJern Lau (xwings) <info@qiling.io>"]
 license = "GPLv2"
 readme = "README.md"
+classifiers = [
+	"Development Status :: 5 - Production/Stable",
+
+	"Intended Audience :: Developers",
+
+	"Topic :: Software Development :: Disassemblers",
+	"Topic :: System :: Emulators",
+	"Topic :: System :: Operating System",
+	"Topic :: Security",
+]
+keywords = [
+	"qiling",
+	"QEMU",
+	"binary",
+	"emulator",
+	"malware analysis",
+	"UEFI",
+	"IoT",
+]
 
 [tool.poetry.dependencies]
 python = "^3.8"

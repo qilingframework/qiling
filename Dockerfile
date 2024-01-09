@@ -19,8 +19,8 @@ COPY pyproject.toml poetry.lock ./
 RUN pip3 install --no-cache-dir poetry \
 	&& poetry install --no-root --no-directory
 
-COPY qiling/ tests/ examples/ ./
-RUN poetry install --no-dev && poetry build --format=wheel
+COPY . .
+RUN poetry install --only main && poetry build --format=wheel
 
 FROM base
 
