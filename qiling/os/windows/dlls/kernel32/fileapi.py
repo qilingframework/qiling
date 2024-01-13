@@ -608,13 +608,12 @@ def hook_GetFileSize(ql: Qiling, address: int, params):
 
 
 class FileMapping:
-    def read(self, offset: int, size: int) -> bytes: ...
-    def write(self, offset: int, data: bytes) -> None: ...
+    pass
 
 
-# TODO: needs to be implemened
 class FileMappingMem(FileMapping):
-    ...
+    # mapping backed my page file, for which we simply use memory. no need to do anything really
+    pass
 
 
 class FileMappingFile(FileMapping):
@@ -699,8 +698,7 @@ def _CreateFileMapping(ql: Qiling, address: int, params):
 
     req_size = (dwMaximumSizeHigh << 32) | dwMaximumSizeLow
 
-    if hFile == INVALID_HANDLE_VALUE:
-        # TODO: create file mapping backed by memory instead of a file
+    if hFile == ql.unpack(ql.packs(INVALID_HANDLE_VALUE)):
         fmobj = FileMappingMem()
 
     else:
@@ -795,7 +793,10 @@ def hook_MapViewOfFile(ql: Qiling, address: int, params):
 
     # the respective file mapping hFile was set to INVALID_HANDLE_VALUE (that is, mapping is backed by page file)
     if isinstance(fmobj, FileMappingMem):
-        raise QlErrorNotImplemented('files mapping backed by page file are not supported yet')
+        mapview = ql.os.heap.alloc(dwNumberOfBytesToMap)
+
+        if not mapview:
+            return 0
 
     else:
         offset = (dwFileOffsetHigh << 32) | dwFileOffsetLow
@@ -809,7 +810,9 @@ def hook_MapViewOfFile(ql: Qiling, address: int, params):
         if not mapview:
             return 0
 
-        # read content from file but retain original position
+        # read content from file but retain original position.
+        # not sure this is actually required since all accesses to this memory area are monitored
+        # and relect file content rather than what is currently in memory
         data = fmobj.read(offset, mapview_size)
         ql.mem.write(mapview, data)
 
@@ -833,7 +836,9 @@ def hook_UnmapViewOfFile(ql: Qiling, address: int, params):
     fv_handle = handles.get(lpBaseAddress)
 
     if fv_handle:
-        fv_handle.obj.unmap_view()
+        if isinstance(fv_handle.obj, FileMappingFile):
+            fv_handle.obj.unmap_view()
+
         ql.os.heap.free(lpBaseAddress)
         handles.delete(fv_handle.id)
 
