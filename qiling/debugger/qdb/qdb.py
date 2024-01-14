@@ -84,7 +84,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         self.init_state = self.ql.save()
 
         # stop emulator once interp. have been done emulating
-        if addr_elf_entry := getattr(self.ql.loader, 'elf_entry'):
+        if addr_elf_entry := getattr(self.ql.loader, 'elf_entry', None):
             handler = self.ql.hook_address(lambda ql: ql.stop(), addr_elf_entry)
         else:
             handler = self.ql.hook_address(lambda ql: ql.stop(), self.ql.loader.entry_point)
@@ -555,7 +555,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         qdb_print(QDB_MSG.INFO, f"Entry point: {self.ql.loader.entry_point:#x}")
 
-        if addr_elf_entry := getattr(self.ql.loader, 'elf_entry'):
+        if addr_elf_entry := getattr(self.ql.loader, 'elf_entry', None):
             qdb_print(QDB_MSG.INFO, f"ELF entry: {addr_elf_entry:#x}")
 
         info_lines = iter(self.ql.mem.get_formatted_mapinfo())
