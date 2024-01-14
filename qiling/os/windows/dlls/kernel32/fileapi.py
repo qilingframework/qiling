@@ -3,18 +3,20 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from contextlib import contextmanager
 import ntpath
 import os
 
 from shutil import copyfile
 from datetime import datetime
+from typing import IO, Optional
 
 from qiling import Qiling
 from qiling.exception import QlErrorNotImplemented
 from qiling.os.windows.api import *
 from qiling.os.windows.const import *
 from qiling.os.windows.fncc import *
-from qiling.os.windows.handle import Handle
+from qiling.os.windows.handle import Handle, HandleManager
 from qiling.os.windows.structs import FILETIME, make_win32_find_data
 
 # DWORD GetFileType(
@@ -604,14 +606,124 @@ def hook_GetFileSize(ql: Qiling, address: int, params):
         ql.os.last_error = ERROR_INVALID_HANDLE
         return -1 # INVALID_FILE_SIZE
 
+
+class FileMapping:
+    pass
+
+
+class FileMappingMem(FileMapping):
+    # mapping backed my page file, for which we simply use memory. no need to do anything really
+    pass
+
+
+class FileMappingFile(FileMapping):
+    def __init__(self, fobj: IO) -> None:
+        self._fobj = fobj
+
+        self._read_hook = None
+        self._write_hook = None
+
+    def map_view(self, ql: Qiling, fbase: int, lbound: int, ubound: int) -> None:
+        def __read_mapview(ql: Qiling, access: int, addr: int, size: int, _) -> None:
+            """Fetch the corresponding file part into memory.
+            """
+
+            data = self.read(fbase + (addr - lbound), size)
+
+            # FIXME: that triggers the write hook, and may be problematic for read-only ranges
+            ql.mem.write(addr, data)
+
+        def __write_mapview(ql: Qiling, access: int, addr: int, size: int, value: int) -> None:
+            """Write data back to the corresponding file part.
+            """
+
+            pack = {
+                1: ql.pack8,
+                2: ql.pack16,
+                4: ql.pack32,
+                8: ql.pack64
+            }[size]
+
+            self.write(fbase + (addr - lbound), pack(value))
+
+        self._read_hook = ql.hook_mem_read(__read_mapview, begin=lbound, end=ubound)
+        self._write_hook = ql.hook_mem_write(__write_mapview, begin=lbound, end=ubound)
+
+    def unmap_view(self) -> None:
+        if self._read_hook:
+            self._read_hook.remove()
+
+        if self._write_hook:
+            self._write_hook.remove()
+
+    @contextmanager
+    def __seek_temporary(self, offset: Optional[int] = None):
+        """A context manager construct for performing actions that would normaly affect the file
+        position, but without actually affecting it.
+        """
+
+        fpos = self._fobj.tell()
+
+        if offset is not None:
+            self._fobj.seek(offset)
+
+        try:
+            yield self._fobj
+        finally:
+            self._fobj.seek(fpos)
+
+    def get_file_size(self) -> int:
+        with self.__seek_temporary() as fobj:
+            return fobj.seek(0, os.SEEK_END)
+
+    def inc_file_size(self, addendum: int) -> None:
+        with self.__seek_temporary() as fobj:
+            fobj.seek(0, os.SEEK_END)
+            fobj.write(b'\x00' * addendum)
+
+    def read(self, offset: int, size: int) -> bytes:
+        with self.__seek_temporary(offset) as fobj:
+            return fobj.read(size)
+
+    def write(self, offset: int, data: bytes) -> None:
+        with self.__seek_temporary(offset) as fobj:
+            fobj.write(data)
+
+
 def _CreateFileMapping(ql: Qiling, address: int, params):
     hFile = params['hFile']
+    dwMaximumSizeHigh = params['dwMaximumSizeHigh']
+    dwMaximumSizeLow = params['dwMaximumSizeLow']
     lpName = params['lpName']
 
-    new_handle = Handle(obj=hFile, name=lpName)
-    ql.os.handle_manager.append(new_handle)
+    req_size = (dwMaximumSizeHigh << 32) | dwMaximumSizeLow
 
-    return new_handle.id
+    if hFile == ql.unpack(ql.packs(INVALID_HANDLE_VALUE)):
+        fmobj = FileMappingMem()
+
+    else:
+        # look for an existing mapping handle with the same name
+        if lpName:
+            existing_handle = ql.os.handle_manager.search(lpName)
+
+            # if found, return it
+            if existing_handle is not None:
+                return existing_handle
+
+        fhandle = ql.os.handle_manager.get(hFile)
+
+        # wrap the opened file with an accessor class
+        fmobj = FileMappingFile(fhandle.obj)
+        fsize = fmobj.get_file_size()
+
+        # if requeted mapping is size is larger than the file size, enlarge it
+        if req_size > fsize:
+            fmobj.inc_file_size(req_size - fsize)
+
+    fm_handle = Handle(obj=fmobj, name=lpName or None)
+    ql.os.handle_manager.append(fm_handle)
+
+    return fm_handle.id
 
 # HANDLE CreateFileMappingA(
 #   HANDLE                hFile,
@@ -667,29 +779,49 @@ def hook_CreateFileMappingW(ql: Qiling, address: int, params):
 })
 def hook_MapViewOfFile(ql: Qiling, address: int, params):
     hFileMappingObject = params['hFileMappingObject']
+    dwFileOffsetHigh = params['dwFileOffsetHigh']
     dwFileOffsetLow = params['dwFileOffsetLow']
     dwNumberOfBytesToMap = params['dwNumberOfBytesToMap']
 
-    map_file_handle = ql.os.handle_manager.search_by_obj(hFileMappingObject)
+    handles: HandleManager = ql.os.handle_manager
+    fm_handle = handles.get(hFileMappingObject)
 
-    if map_file_handle is None:
-        ret = ql.os.heap.alloc(dwNumberOfBytesToMap)
-        new_handle = Handle(obj=hFileMappingObject, name=ret)
-        ql.os.handle_manager.append(new_handle)
+    if fm_handle is None:
+        return 0
+
+    fmobj = fm_handle.obj
+
+    # the respective file mapping hFile was set to INVALID_HANDLE_VALUE (that is, mapping is backed by page file)
+    if isinstance(fmobj, FileMappingMem):
+        mapview = ql.os.heap.alloc(dwNumberOfBytesToMap)
+
+        if not mapview:
+            return 0
+
     else:
-        ret = map_file_handle.name
+        offset = (dwFileOffsetHigh << 32) | dwFileOffsetLow
+        mapview_size = dwNumberOfBytesToMap or (fmobj.get_file_size() - offset)
 
-    hFile = ql.os.handle_manager.get(hFileMappingObject).obj
+        if mapview_size < 1:
+            return 0
 
-    if ql.os.handle_manager.get(hFile):
-        f = ql.os.handle_manager.get(hFile).obj
+        mapview = ql.os.heap.alloc(mapview_size)
 
-        if type(f) is file:
-            f.seek(dwFileOffsetLow, 0)
-            data = f.read(dwNumberOfBytesToMap)
-            ql.mem.write(ret, data)
+        if not mapview:
+            return 0
 
-    return ret
+        # read content from file but retain original position.
+        # not sure this is actually required since all accesses to this memory area are monitored
+        # and relect file content rather than what is currently in memory
+        data = fmobj.read(offset, mapview_size)
+        ql.mem.write(mapview, data)
+
+        fmobj.map_view(ql, offset, mapview, mapview + mapview_size - 1)
+
+    # although file views are not strictly handles, it would be easier to manage them as such
+    handles.append(Handle(id=mapview, obj=fmobj))
+
+    return mapview
 
 # BOOL UnmapViewOfFile(
 #   LPCVOID lpBaseAddress
@@ -700,15 +832,19 @@ def hook_MapViewOfFile(ql: Qiling, address: int, params):
 def hook_UnmapViewOfFile(ql: Qiling, address: int, params):
     lpBaseAddress = params['lpBaseAddress']
 
-    map_file_hande = ql.os.handle_manager.search(lpBaseAddress)
+    handles: HandleManager = ql.os.handle_manager
+    fv_handle = handles.get(lpBaseAddress)
 
-    if not map_file_hande:
-        return 0
+    if fv_handle:
+        if isinstance(fv_handle.obj, FileMappingFile):
+            fv_handle.obj.unmap_view()
 
-    ql.os.heap.free(map_file_hande.name)
-    ql.os.handle_manager.delete(map_file_hande.id)
+        ql.os.heap.free(lpBaseAddress)
+        handles.delete(fv_handle.id)
 
-    return 1
+        return 1
+
+    return 0
 
 # BOOL CopyFileA(
 #   LPCSTR lpExistingFileName,

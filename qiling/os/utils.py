@@ -153,7 +153,10 @@ class QlOsUtils:
 
         va_list = __dup(va_args, orig_args)
 
-        read_string = self.read_wstring if wstring else self.read_cstring
+        read_str = {
+            False: self.read_cstring,
+            True:  self.read_wstring
+        }
 
         def __repl(m: re.Match) -> str:
             """Convert printf format string tokens into Python's.
@@ -187,9 +190,13 @@ class QlOsUtils:
                 typ = m['type']
                 arg = next(va_list)
 
-                if typ in 'sS':
+                if typ == 's':
                     typ = 's'
-                    arg = read_string(arg)
+                    arg = read_str[wstring](arg)
+
+                elif typ == 'S':
+                    typ = 's'
+                    arg = read_str[not wstring](arg)
 
                 elif typ == 'Z':
                     # note: ANSI_STRING and UNICODE_STRING have identical layout
@@ -197,7 +204,7 @@ class QlOsUtils:
 
                     with ucstr_struct.ref(self.ql.mem, arg) as ucstr_obj:
                         typ = 's'
-                        arg = read_string(ucstr_obj.Buffer)
+                        arg = read_str[wstring](ucstr_obj.Buffer)
 
                 elif typ == 'p':
                     pound = '#'

@@ -3,10 +3,18 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from qiling import Qiling
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, IO
+
 from qiling.os.windows.api import *
-from qiling.os.windows.const import *
-from qiling.os.windows.fncc import *
+from qiling.os.windows.const import ERROR_INVALID_HANDLE, HANDLE_FLAG_PROTECT_FROM_CLOSE
+from qiling.os.windows.fncc import STDCALL, winsdkapi
+
+
+if TYPE_CHECKING:
+    from qiling import Qiling
+
 
 # BOOL DuplicateHandle(
 #   HANDLE   hSourceProcessHandle,
@@ -52,6 +60,10 @@ def hook_CloseHandle(ql: Qiling, address: int, params):
     if handle.permissions is not None and handle.permissions & HANDLE_FLAG_PROTECT_FROM_CLOSE:
         # FIXME: add error
         return 0
+
+    # if this a file handle, close it
+    if isinstance(handle.obj, IO):
+        handle.obj.close()
 
     ql.os.handle_manager.delete(value)
 
