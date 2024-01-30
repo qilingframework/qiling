@@ -473,6 +473,24 @@ CRYPT_STRING_BINARY = 2
 CRYPT_STRING_BASE64REQUESTHEADER = 3
 # ...
 
+# File Access Rights Constants
+# https://learn.microsoft.com/en-us/windows/win32/fileio/file-access-rights-constants
+FILE_ADD_FILE = 0x0002
+FILE_ADD_SUBDIRECTORY = 0x0004
+FILE_APPEND_DATA = 0x0004
+FILE_CREATE_PIPE_INSTANCE = 0x0004
+FILE_DELETE_CHILD = 0x0040
+FILE_EXECUTE = 0x0020
+FILE_LIST_DIRECTORY = 0x0001
+FILE_READ_ATTRIBUTES = 0x0080
+FILE_READ_DATA = 0x0001
+FILE_READ_EA = 0x0008
+FILE_TRAVERSE = 0x0020
+FILE_WRITE_ATTRIBUTES = 0x0100
+FILE_WRITE_DATA = 0x0002
+FILE_WRITE_EA = 0x0010
+# ...
+
 # File Attribtues Constantsc
 # https://docs.microsoft.com/en-us/windows/win32/fileio/file-attribute-constants
 FILE_ATTRIBUTE_ARCHIVE = 0x0020
