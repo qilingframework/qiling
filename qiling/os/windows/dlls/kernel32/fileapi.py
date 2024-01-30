@@ -226,11 +226,11 @@ def _CreateFile(ql: Qiling, address: int, params):
     # hTemplateFile = params["hTemplateFile"]
 
     # access mask DesiredAccess
-    perm_write = dwDesiredAccess & GENERIC_WRITE
-    perm_read  = dwDesiredAccess & GENERIC_READ
+    perm_write = dwDesiredAccess & (GENERIC_WRITE | FILE_WRITE_DATA)
+    perm_read  = dwDesiredAccess & (GENERIC_READ | FILE_READ_DATA)
     
     # TODO: unused
-    perm_exec = dwDesiredAccess & GENERIC_EXECUTE
+    perm_exec = dwDesiredAccess & (GENERIC_EXECUTE | FILE_EXECUTE)
 
     # only open file if it exists. error otherwise
     open_existing = (
