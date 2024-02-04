@@ -121,11 +121,12 @@ def make_cmsghdr(archbits: int, endian: QL_ENDIAN):
 
 def make_iovec(archbits: int, endian: QL_ENDIAN):
     Struct = struct.get_aligned_struct(archbits, endian)
+    native_type = struct.get_native_type(archbits)
 
     class iovec(Struct):
         _fields_ = (
-            ('iov_base', ctypes.c_uint64),
-            ('iov_len',  ctypes.c_uint64)
+            ('iov_base', native_type),
+            ('iov_len',  native_type)
         )
 
     return iovec
