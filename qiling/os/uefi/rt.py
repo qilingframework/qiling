@@ -34,21 +34,20 @@ def hook_GetTime(ql: Qiling, address: int, params):
 
     localtime = time.localtime()
 
-    efitime = EFI_TIME()
-    efitime.Year = localtime.tm_year
-    efitime.Month = localtime.tm_mon
-    efitime.Day = localtime.tm_mday
-    efitime.Hour = localtime.tm_hour
-    efitime.Minute = localtime.tm_min
-    efitime.Second = localtime.tm_sec
-    efitime.Nanosecond = 0
+    EFI_TIME(
+        Year = localtime.tm_year,
+        Month = localtime.tm_mon,
+        Day = localtime.tm_mday,
+        Hour = localtime.tm_hour,
+        Minute = localtime.tm_min,
+        Second = localtime.tm_sec,
+        Nanosecond = 0,
 
-    # tz and dst settings are stored in the "RtcTimeSettings" nvram variable.
-    # we just use the default settings instead
-    efitime.TimeZone = EFI_UNSPECIFIED_TIMEZONE
-    efitime.Daylight = 0
-
-    efitime.saveTo(ql, Time)
+        # tz and dst settings are stored in the "RtcTimeSettings" nvram variable.
+        # we just use the default settings instead
+        TimeZone = EFI_UNSPECIFIED_TIMEZONE,
+        Daylight = 0
+    ).save_to(ql.mem, Time)
 
     return EFI_SUCCESS
 
@@ -296,7 +295,7 @@ def initialize(ql: Qiling, gRT: int):
     }
 
     instance = init_struct(ql, gRT, descriptor)
-    instance.saveTo(ql, gRT)
+    instance.save_to(ql.mem, gRT)
 
 __all__ = [
     'initialize'

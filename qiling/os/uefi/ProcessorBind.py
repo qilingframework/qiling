@@ -10,6 +10,8 @@ from contextlib import contextmanager
 from functools import lru_cache
 from typing import TYPE_CHECKING, Mapping, Sequence, Union, Optional
 
+from qiling.os.struct import BaseStructEL
+
 if TYPE_CHECKING:
     from qiling import Qiling
 
@@ -51,70 +53,11 @@ BOOLEAN = UINT8
 CHAR8 = UINT8
 CHAR16 = UINT16
 
+STRUCT = BaseStructEL
 UNION = ctypes.Union
 
 CPU_STACK_ALIGNMENT = 16
 PAGE_SIZE = 0x1000
-
-
-class STRUCT(ctypes.LittleEndianStructure):
-    """An abstract class for C structures.
-    """
-
-    # Structures are packed by default; when needed, padding should be added
-    # manually through placeholder fields
-    _pack_ = 1
-
-    def __init__(self):
-        pass
-
-    def saveTo(self, ql: Qiling, address: int) -> None:
-        """Store self contents to a specified memory address.
-        """
-
-        data = bytes(self)
-
-        ql.mem.write(address, data)
-
-    @classmethod
-    def loadFrom(cls, ql: Qiling, address: int) -> 'STRUCT':
-        """Construct an instance of the structure from saved contents.
-        """
-
-        data = bytes(ql.mem.read(address, cls.sizeof()))
-
-        return cls.from_buffer_copy(data)
-
-    @classmethod
-    @contextmanager
-    def bindTo(cls, ql: Qiling, address: int):
-        instance = cls.loadFrom(ql, address)
-
-        try:
-            yield instance
-        finally:
-            instance.saveTo(ql, address)
-
-    @classmethod
-    def sizeof(cls) -> int:
-        """Get the C structure size in bytes.
-        """
-
-        return ctypes.sizeof(cls)
-
-    @classmethod
-    def offsetof(cls, fname: str) -> int:
-        """Get the offset of a field in the C structure.
-        """
-
-        return getattr(cls, fname).offset
-
-    @classmethod
-    def memberat(cls, offset: int) -> Optional[str]:
-        """Get the member name at a given offset.
-        """
-
-        return next((fname for fname, *_ in cls._fields_ if cls.offsetof(fname) == offset), None)
 
 
 class EnumMeta(type(ctypes.c_int)):

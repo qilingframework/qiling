@@ -275,7 +275,7 @@ def initialize(ql: Qiling, gDS: int):
     }
 
     instance = init_struct(ql, gDS, descriptor)
-    instance.saveTo(ql, gDS)
+    instance.save_to(ql.mem, gDS)
 
 __all__ = [
     'EFI_DXE_SERVICES',

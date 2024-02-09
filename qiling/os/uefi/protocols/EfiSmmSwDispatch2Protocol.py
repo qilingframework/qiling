@@ -55,7 +55,7 @@ def hook_Register(ql: Qiling, address: int, params):
 
     handlers = ql.loader.smm_context.swsmi_handlers
 
-    SwRegisterContext = EFI_SMM_SW_REGISTER_CONTEXT.loadFrom(ql, RegisterContext)
+    SwRegisterContext = EFI_SMM_SW_REGISTER_CONTEXT.load_from(ql.mem, RegisterContext)
     idx = SwRegisterContext.SwSmiInputValue
 
     # a value of -1 indicates that the swsmi index for this handler is flexible and
@@ -67,10 +67,10 @@ def hook_Register(ql: Qiling, address: int, params):
             return EFI_OUT_OF_RESOURCES
 
         SwRegisterContext.SwSmiInputValue = idx
-        SwRegisterContext.saveTo(ql, RegisterContext)
+        SwRegisterContext.save_to(ql.mem, RegisterContext)
 
     else:
-        This = EFI_SMM_SW_DISPATCH2_PROTOCOL.loadFrom(ql, params['This'])
+        This = EFI_SMM_SW_DISPATCH2_PROTOCOL.load_from(ql.mem, params['This'])
 
         if idx in handlers:
             return EFI_INVALID_PARAMETER

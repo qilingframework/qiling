@@ -36,7 +36,7 @@ def GetHobList(ql: Qiling, context: UefiContext) -> int:
 
     return hoblist_vend
 
-def CreateHob(ql: Qiling, context: UefiContext, hob) -> int:
+def CreateHob(ql: Qiling, context: UefiContext, hob: STRUCT) -> int:
     """Add a HOB to the end of the HOB list.
     """
 
@@ -48,15 +48,15 @@ def CreateHob(ql: Qiling, context: UefiContext, hob) -> int:
 
     # overwrite end marker with the hob
     pHob = hoblist
-    hob.saveTo(ql, pHob)
+    hob.save_to(ql.mem, pHob)
     hoblist += hob.sizeof()
 
     # create a new end marker istead, following the hob
-    marker = EFI_HOB_GENERIC_HEADER()
-    marker.HobType = EFI_HOB_TYPE_END_OF_HOB_LIST
-    marker.HobLength = 0x0000
-    marker.Reserved = 0x00000000
-    marker.saveTo(ql, hoblist)
+    EFI_HOB_GENERIC_HEADER(
+        HobType = EFI_HOB_TYPE_END_OF_HOB_LIST,
+        HobLength = 0x0000,
+        Reserved = 0x00000000
+    ).save_to(ql.mem, hoblist)
 
     # return the address the hob was written to; it might be useful
     return pHob
@@ -68,7 +68,7 @@ def GetNextHob(ql: Qiling, hobtype: int, hoblist: int) -> int:
     hobaddr = hoblist
 
     while True:
-        header = EFI_HOB_GENERIC_HEADER.loadFrom(ql, hobaddr)
+        header = EFI_HOB_GENERIC_HEADER.load_from(ql.mem, hobaddr)
 
         # found the hob?
         if header.HobType == hobtype:
@@ -95,7 +95,7 @@ def GetNextGuidHob(ql: Qiling, guid: str, hoblist: int) -> int:
         if not hobaddr:
             return 0
 
-        hob = EFI_HOB_GUID_TYPE.loadFrom(ql, hobaddr)
+        hob = EFI_HOB_GUID_TYPE.load_from(ql.mem, hobaddr)
 
         if CompareGuid(hob.Name, hobguid):
             break

@@ -161,7 +161,7 @@ class QlLoaderPE_UEFI(QlLoader):
 
         for handle in context.loaded_image_protocol_modules:
             struct_addr = context.protocols[handle][self.loaded_image_protocol_guid]
-            loaded_image_protocol = EfiLoadedImageProtocol.EFI_LOADED_IMAGE_PROTOCOL.loadFrom(self.ql, struct_addr)
+            loaded_image_protocol = EfiLoadedImageProtocol.EFI_LOADED_IMAGE_PROTOCOL.load_from(self.ql.mem, struct_addr)
 
             unload_ptr = loaded_image_protocol.Unload.value
 

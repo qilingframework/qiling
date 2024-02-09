@@ -67,13 +67,12 @@ def initialize(ql: Qiling, context: UefiContext, gST: int):
     rt.initialize(ql, gRT)
     ds.initialize(ql, gDS)
 
-    instance = EFI_SYSTEM_TABLE()
-    instance.RuntimeServices = gRT
-    instance.BootServices = gBS
-    instance.NumberOfTableEntries = 0
-    instance.ConfigurationTable = cfg
-
-    instance.saveTo(ql, gST)
+    EFI_SYSTEM_TABLE(
+        RuntimeServices = gRT,
+        BootServices = gBS,
+        NumberOfTableEntries = 0,
+        ConfigurationTable = cfg
+    ).save_to(ql.mem, gST)
 
     install_configuration_table(context, "HOB_LIST", None)
     install_configuration_table(context, "DXE_SERVICE_TABLE", gDS)

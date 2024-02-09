@@ -219,17 +219,17 @@ class SmmEnv:
         CommBufferSize = heap.alloc(ql.arch.pointersize)
 
         # setup Context
-        args['RegisterContext'].saveTo(ql, Context)
+        args['RegisterContext'].save_to(ql.mem, Context)
 
         # setup CommBuffer
-        SmmSwContext = EFI_SMM_SW_CONTEXT()
-        SmmSwContext.SwSmiCpuIndex = cpu
-        SmmSwContext.CommandPort = idx
-        SmmSwContext.DataPort = 0
-        SmmSwContext.saveTo(ql, CommBuffer)
+        EFI_SMM_SW_CONTEXT(
+            SwSmiCpuIndex = cpu,
+            CommandPort = idx,
+            DataPort = 0
+        ).save_to(ql.mem, CommBuffer)
 
         # setup CommBufferSize
-        ql.mem.write_ptr(CommBufferSize, SmmSwContext.sizeof(), 8)
+        ql.mem.write_ptr(CommBufferSize, EFI_SMM_SW_CONTEXT.sizeof(), 8)
 
         # clean up handler resources
         def __cleanup(ql: Qiling):

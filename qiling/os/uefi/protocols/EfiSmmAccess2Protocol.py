@@ -47,7 +47,7 @@ class EFI_SMM_ACCESS2_PROTOCOL(STRUCT):
 def hook_Open(ql: Qiling, address: int, params):
     this = params["This"]
 
-    with EFI_SMM_ACCESS2_PROTOCOL.bindTo(ql, this) as struct:
+    with EFI_SMM_ACCESS2_PROTOCOL.ref(ql.mem, this) as struct:
         struct.OpenState = True
 
     return EFI_SUCCESS
@@ -58,7 +58,7 @@ def hook_Open(ql: Qiling, address: int, params):
 def hook_Close(ql: Qiling, address: int, params):
     this = params["This"]
 
-    with EFI_SMM_ACCESS2_PROTOCOL.bindTo(ql, this) as struct:
+    with EFI_SMM_ACCESS2_PROTOCOL.ref(ql.mem, this) as struct:
         struct.OpenState = False
 
     return EFI_SUCCESS
@@ -69,7 +69,7 @@ def hook_Close(ql: Qiling, address: int, params):
 def hook_Lock(ql: Qiling, address: int, params):
     this = params["This"]
 
-    with EFI_SMM_ACCESS2_PROTOCOL.bindTo(ql, this) as struct:
+    with EFI_SMM_ACCESS2_PROTOCOL.ref(ql.mem, this) as struct:
         struct.LockState = True
 
     return EFI_SUCCESS
@@ -143,7 +143,7 @@ def hook_GetCapabilities(ql: Qiling, address: int, params):
         return EFI_BUFFER_TOO_SMALL
 
     this = params["This"]
-    struct = EFI_SMM_ACCESS2_PROTOCOL.loadFrom(ql, this)
+    struct = EFI_SMM_ACCESS2_PROTOCOL.load_from(ql.mem, this)
 
     state = EFI_CACHEABLE
     state |= EFI_SMRAM_OPEN if struct.OpenState else EFI_SMRAM_CLOSED
@@ -152,13 +152,12 @@ def hook_GetCapabilities(ql: Qiling, address: int, params):
     MmramMap = params["MmramMap"]
 
     for i, ch in enumerate(chunks):
-        desc = EFI_SMRAM_DESCRIPTOR()
-        desc.PhysicalStart = ch[0]
-        desc.CpuStart = ch[0]
-        desc.PhysicalSize = ch[1] - ch[0]
-        desc.RegionState = state | (EFI_ALLOCATED if ch[2] else 0)
-
-        desc.saveTo(ql, MmramMap + (i * desc.sizeof()))
+        EFI_SMRAM_DESCRIPTOR(
+            PhysicalStart = ch[0],
+            CpuStart = ch[0],
+            PhysicalSize = ch[1] - ch[0],
+            RegionState = state | (EFI_ALLOCATED if ch[2] else 0)
+        ).save_to(ql.mem, MmramMap + (i * EFI_SMRAM_DESCRIPTOR.sizeof()))
 
     return EFI_SUCCESS
 

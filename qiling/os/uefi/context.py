@@ -53,7 +53,7 @@ class UefiContext(ABC):
             address = self.heap.alloc(struct_class.sizeof())
 
         instance = utils.init_struct(self.ql, address, proto_desc)
-        instance.saveTo(self.ql, address)
+        instance.save_to(self.ql.mem, address)
 
         self.protocols[handle][guid] = address
         return self.notify_protocol(handle, guid, address, from_hook)
@@ -66,7 +66,7 @@ class UefiContext(ABC):
                     # and update it here.
                     guid = utils.str_to_guid(protocol)
                     guid_ptr = self.heap.alloc(guid.sizeof())
-                    guid.saveTo(self.ql, guid_ptr)
+                    guid.save_to(self.ql.mem, guid_ptr)
 
                     event_dic['CallbackArgs'] = [guid_ptr, interface, handle]
 
@@ -135,10 +135,10 @@ class UefiConfTable:
             ptr = self.baseptr + self.nitems * EFI_CONFIGURATION_TABLE.sizeof()
             append = True
 
-        instance = EFI_CONFIGURATION_TABLE()
-        instance.VendorGuid = utils.str_to_guid(guid)
-        instance.VendorTable = table
-        instance.saveTo(self.ql, ptr)
+        EFI_CONFIGURATION_TABLE(
+            VendorGuid = utils.str_to_guid(guid),
+            VendorTable = table
+        ).save_to(self.ql.mem, ptr)
 
         if append:
             self.nitems += 1
@@ -149,7 +149,7 @@ class UefiConfTable:
         efi_guid = utils.str_to_guid(guid)
 
         for _ in range(nitems):
-            entry = EFI_CONFIGURATION_TABLE.loadFrom(self.ql, ptr)
+            entry = EFI_CONFIGURATION_TABLE.load_from(self.ql.mem, ptr)
 
             if utils.CompareGuid(entry.VendorGuid, efi_guid):
                 return ptr
@@ -162,7 +162,7 @@ class UefiConfTable:
         ptr = self.find(guid)
 
         if ptr is not None:
-            entry = EFI_CONFIGURATION_TABLE.loadFrom(self.ql, ptr)
+            entry = EFI_CONFIGURATION_TABLE.load_from(self.ql.mem, ptr)
 
             return entry.VendorTable.value
 

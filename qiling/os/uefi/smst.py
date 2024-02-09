@@ -278,7 +278,7 @@ def initialize(ql: Qiling, context, gSmst: int):
     }
 
     instance = init_struct(ql, gSmst, descriptor)
-    instance.saveTo(ql, gSmst)
+    instance.save_to(ql.mem, gSmst)
 
     install_configuration_table(context, "HOB_LIST", None)
     install_configuration_table(context, "SMM_RUNTIME_SERVICES_TABLE", gSmmRT)

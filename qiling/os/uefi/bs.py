@@ -594,7 +594,7 @@ def initialize(ql: Qiling, gBS: int):
     ql.os.monotonic_count = 0
 
     instance = init_struct(ql, gBS, descriptor)
-    instance.saveTo(ql, gBS)
+    instance.save_to(ql.mem, gBS)
 
 __all__ = [
     'initialize'
