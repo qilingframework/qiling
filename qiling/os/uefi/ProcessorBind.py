@@ -21,16 +21,16 @@ psize = bits // 8
 
 @lru_cache(maxsize=None)
 def PTR(ptype: Union[type, None]) -> type:
-    """Generate a ctypes pointer type.
+    """Generate a pseudo pointer type.
     """
 
     pname = 'c_void' if ptype is None else ptype.__name__
 
-    return type(f'LP_{psize}_{pname}', (ctypes.c_void_p,), {})
+    return type(f'LP_{psize}_{pname}', (UINTN,), {})
 
 
 def FUNCPTR(rettype: Union[type, None], *argtypes: type) -> type:
-    """Generate a ctypes function pointer type.
+    """Generate a pseudo function pointer type.
     """
 
     return PTR(ctypes.CFUNCTYPE(rettype, *argtypes))

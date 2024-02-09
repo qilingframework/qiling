@@ -43,4 +43,5 @@ EFI_WARN_WRITE_FAILURE    = EFI_MAX_BIT | 3
 EFI_WARN_BUFFER_TOO_SMALL = EFI_MAX_BIT | 4
 
 # @see: MdePkg\Include\Base.h
-EFI_ERROR = lambda status: (status & EFI_MAX_BIT) != 0
+def EFI_ERROR(status: int) -> bool:
+    return (status & EFI_MAX_BIT) != 0

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Mapping, Dict, MutableSequence, Optional, Tuple
+from typing import Any, Mapping, Dict, MutableSequence, Optional, Tuple, Type
 
 from qiling import Qiling
 from qiling.os.memory import QlMemoryHeap
@@ -7,6 +7,7 @@ from qiling.os.uefi.ProcessorBind import STRUCT, CPU_STACK_ALIGNMENT
 from qiling.os.uefi.UefiSpec import EFI_CONFIGURATION_TABLE, EFI_SYSTEM_TABLE
 from qiling.os.uefi.smst import EFI_SMM_SYSTEM_TABLE2
 from qiling.os.uefi import utils
+
 
 class UefiContext(ABC):
     def __init__(self, ql: Qiling):
@@ -75,11 +76,13 @@ class UefiContext(ABC):
 
         return utils.execute_protocol_notifications(self.ql, from_hook)
 
+
 class DxeContext(UefiContext):
     def __init__(self, ql: Qiling):
         super().__init__(ql)
 
         self.conftable = DxeConfTable(ql)
+
 
 class SmmContext(UefiContext):
     def __init__(self, ql: Qiling):
@@ -93,16 +96,13 @@ class SmmContext(UefiContext):
         # registered sw smi handlers
         self.swsmi_handlers: Mapping[int, Tuple[int, Mapping]] = {}
 
-class UefiConfTable:
-    _struct_systbl: STRUCT
-    _fname_arrptr: str
-    _fname_nitems: str
 
-    def __init__(self, ql: Qiling):
+class UefiConfTable:
+    def __init__(self, ql: Qiling, systbl_type: Type[STRUCT], fname_arrptr: str, fname_nitems: str):
         self.ql = ql
 
-        self.__arrptr_off = self._struct_systbl.offsetof(self._fname_arrptr)
-        self.__nitems_off = self._struct_systbl.offsetof(self._fname_nitems)
+        self.__arrptr_off = systbl_type.offsetof(fname_arrptr)
+        self.__nitems_off = systbl_type.offsetof(fname_nitems)
 
     @property
     @abstractmethod
@@ -129,19 +129,15 @@ class UefiConfTable:
 
     def install(self, guid: str, table: int):
         ptr = self.find(guid)
-        append = ptr is None
 
-        if append:
+        if ptr is None:
             ptr = self.baseptr + self.nitems * EFI_CONFIGURATION_TABLE.sizeof()
-            append = True
+            self.nitems += 1
 
         EFI_CONFIGURATION_TABLE(
             VendorGuid = utils.str_to_guid(guid),
             VendorTable = table
         ).save_to(self.ql.mem, ptr)
-
-        if append:
-            self.nitems += 1
 
     def find(self, guid: str) -> Optional[int]:
         ptr = self.baseptr
@@ -169,19 +165,19 @@ class UefiConfTable:
         # not found
         return None
 
+
 class DxeConfTable(UefiConfTable):
-    _struct_systbl = EFI_SYSTEM_TABLE
-    _fname_arrptr = 'ConfigurationTable'
-    _fname_nitems = 'NumberOfTableEntries'
+    def __init__(self, ql: Qiling):
+        super().__init__(ql, EFI_SYSTEM_TABLE, 'ConfigurationTable', 'NumberOfTableEntries')
 
     @property
     def system_table(self) -> int:
         return self.ql.loader.gST
 
+
 class SmmConfTable(UefiConfTable):
-    _struct_systbl = EFI_SMM_SYSTEM_TABLE2
-    _fname_arrptr = 'SmmConfigurationTable'
-    _fname_nitems = 'NumberOfTableEntries'
+    def __init__(self, ql: Qiling):
+        super().__init__(ql, EFI_SMM_SYSTEM_TABLE2, 'SmmConfigurationTable', 'NumberOfTableEntries')
 
     @property
     def system_table(self) -> int:

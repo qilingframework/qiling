@@ -3,12 +3,18 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from qiling import Qiling
+from typing import TYPE_CHECKING
+
 from qiling.os.const import *
 from ..const import *
 from ..fncc import *
 from ..ProcessorBind import *
 from ..UefiBaseType import *
+
+
+if TYPE_CHECKING:
+    from qiling import Qiling
+
 
 MAXIMUM_SWI_VALUE = 0xff
 
@@ -61,9 +67,9 @@ def hook_Register(ql: Qiling, address: int, params):
     # a value of -1 indicates that the swsmi index for this handler is flexible and
     # should be assigned by the protocol
     if idx == ((1 << ql.arch.bits) - 1):
-        idx = next((i for i in range(1, MAXIMUM_SWI_VALUE) if i not in handlers), None)
-
-        if idx is None:
+        try:
+            idx = next(i for i in range(1, MAXIMUM_SWI_VALUE) if i not in handlers)
+        except StopIteration:
             return EFI_OUT_OF_RESOURCES
 
         SwRegisterContext.SwSmiInputValue = idx
@@ -101,9 +107,9 @@ def hook_UnRegister(ql: Qiling, address: int, params):
     handlers = ql.loader.smm_context.swsmi_handlers
     heap = ql.loader.smm_context.heap
 
-    idx = next((idx for idx, (_, args) in handlers.items() if args['DispatchHandle'] == DispatchHandle), None)
-
-    if idx is None:
+    try:
+        idx = next(idx for idx, (_, args) in handlers.items() if args['DispatchHandle'] == DispatchHandle)
+    except StopIteration:
         return EFI_INVALID_PARAMETER
 
     heap.free(DispatchHandle)

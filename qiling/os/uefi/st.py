@@ -51,9 +51,9 @@ from qiling.os.uefi.UefiSpec import EFI_SYSTEM_TABLE, EFI_BOOT_SERVICES, EFI_RUN
 def initialize(ql: Qiling, context: UefiContext, gST: int):
     ql.loader.gST = gST
 
-    gBS = gST + EFI_SYSTEM_TABLE.sizeof()        # boot services
-    gRT = gBS + EFI_BOOT_SERVICES.sizeof()        # runtime services
-    gDS = gRT + EFI_RUNTIME_SERVICES.sizeof()    # dxe services
+    gBS = gST + EFI_SYSTEM_TABLE.sizeof()       # boot services
+    gRT = gBS + EFI_BOOT_SERVICES.sizeof()      # runtime services
+    gDS = gRT + EFI_RUNTIME_SERVICES.sizeof()   # dxe services
     cfg = gDS + ds.EFI_DXE_SERVICES.sizeof()    # configuration tables array
 
     ql.log.info(f'Global tables:')

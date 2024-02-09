@@ -431,13 +431,13 @@ def hook_InstallMultipleProtocolInterfaces(ql: Qiling, address: int, params):
     # process elipsiss arguments
     index = 1
     while ql.os.fcall.cc.getRawParam(index) != 0:
-        GUID_ptr = ql.os.fcall.cc.getRawParam(index)
+        guid_ptr = ql.os.fcall.cc.getRawParam(index)
         protocol_ptr = ql.os.fcall.cc.getRawParam(index + 1)
 
-        GUID = str(ql.os.utils.read_guid(GUID_ptr))
-        dic[GUID] = protocol_ptr
+        guid = str(ql.os.utils.read_guid(guid_ptr))
+        dic[guid] = protocol_ptr
 
-        ql.log.info(f'Installing protocol interface {guids_db.get(GUID.upper(), GUID)} to {protocol_ptr:#x}')
+        ql.log.info(f'Installing protocol interface {guids_db.get(guid.upper(), guid)} to {protocol_ptr:#x}')
         index += 2
 
     ql.loader.dxe_context.protocols[handle] = dic
@@ -464,14 +464,14 @@ def hook_UninstallMultipleProtocolInterfaces(ql: Qiling, address: int, params):
         GUID_ptr = ql.os.fcall.cc.getRawParam(index)
         protocol_ptr = ql.os.fcall.cc.getRawParam(index + 1)
 
-        GUID = str(ql.os.utils.read_guid(GUID_ptr))
+        guid = str(ql.os.utils.read_guid(GUID_ptr))
 
-        if GUID not in dic:
+        if guid not in dic:
             return EFI_INVALID_PARAMETER
 
-        del dic[GUID]
+        del dic[guid]
 
-        ql.log.info(f'Uninstalling protocol interface {guids_db.get(GUID.upper(), GUID)} from {protocol_ptr:#x}')
+        ql.log.info(f'Uninstalling protocol interface {guids_db.get(guid.upper(), guid)} from {protocol_ptr:#x}')
         index += 2
 
     return EFI_SUCCESS

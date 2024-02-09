@@ -4,11 +4,16 @@
 #
 
 from uuid import UUID
-from typing import Optional, Mapping
+from typing import TYPE_CHECKING, Any, Optional, Mapping
 
 from qiling import Qiling
 from qiling.os.uefi.const import EFI_SUCCESS
 from qiling.os.uefi.UefiBaseType import EFI_GUID
+
+
+if TYPE_CHECKING:
+    from qiling.os.uefi.ProcessorBind import STRUCT
+
 
 def signal_event(ql: Qiling, event_id: int) -> None:
     event = ql.loader.events[event_id]
@@ -61,7 +66,7 @@ def execute_protocol_notifications(ql: Qiling, from_hook: bool = False) -> bool:
 
     return True
 
-def init_struct(ql: Qiling, base: int, descriptor: Mapping):
+def init_struct(ql: Qiling, base: int, descriptor: Mapping[str, Any]) -> 'STRUCT':
     struct_class = descriptor['struct']
     struct_fields = descriptor.get('fields', [])
 
