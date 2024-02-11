@@ -5,7 +5,7 @@ entry_point = 0x1000000
 
 
 [OS64]
-stack_address = 0x7ffffffde000
+stack_address = 0x7ffffffd0000
 stack_size = 0x30000
 load_address = 0x555555554000
 interp_address = 0x7ffff7dd5000
