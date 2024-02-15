@@ -173,7 +173,7 @@ def ql_syscall_fsync(ql: Qiling, fd: int):
     f = get_opened_fd(ql.os, fd)
 
     if f is None:
-        regreturn = -1
+        regreturn = -EBADF
 
     else:
         try:
@@ -257,7 +257,7 @@ def ql_syscall_faccessat(ql: Qiling, dirfd: int, filename: int, mode: int):
         if not ql.os.path.is_safe_host_path(hpath):
             raise PermissionError(f'unsafe path: {hpath}')
 
-        regreturn = 0 if os.path.exists(hpath) else -1
+        regreturn = 0 if os.path.exists(hpath) else -ENOENT
 
     ql.log.debug(f'faccessat({dirfd:d}, "{vpath}", {mode:d}) = {regreturn}')
 
@@ -270,7 +270,7 @@ def ql_syscall_lseek(ql: Qiling, fd: int, offset: int, origin: int):
     f = get_opened_fd(ql.os, fd)
 
     if f is None:
-        regreturn = -1
+        regreturn = -EBADF
 
     else:
         try:
@@ -290,7 +290,7 @@ def ql_syscall__llseek(ql: Qiling, fd: int, offset_high: int, offset_low: int, r
     f = get_opened_fd(ql.os, fd)
 
     if f is None:
-        regreturn = -1
+        regreturn = -EBADF
 
     else:
         try:
@@ -331,7 +331,7 @@ def ql_syscall_access(ql: Qiling, path: int, mode: int):
     if not ql.os.path.is_safe_host_path(hpath):
         raise PermissionError(f'unsafe path: {hpath}')
 
-    regreturn = 0 if os.path.exists(hpath) else -1
+    regreturn = 0 if os.path.exists(hpath) else -ENOENT
 
     ql.log.debug(f'access("{vpath}", 0{mode:o}) = {regreturn}')
 
@@ -342,7 +342,7 @@ def ql_syscall_close(ql: Qiling, fd: int):
     f = get_opened_fd(ql.os, fd)
 
     if f is None:
-        regreturn = -1
+        regreturn = -EBADF
 
     else:
         f.close()
@@ -358,7 +358,7 @@ def ql_syscall_pread64(ql: Qiling, fd: int, buf: int, length: int, offt: int):
     f = get_opened_fd(ql.os, fd)
 
     if f is None:
-        regreturn = -1
+        return -EBADF
 
     else:
         # https://chromium.googlesource.com/linux-syscall-support/+/2c73abf02fd8af961e38024882b9ce0df6b4d19b
@@ -386,7 +386,7 @@ def ql_syscall_read(ql: Qiling, fd, buf: int, length: int):
     f = get_opened_fd(ql.os, fd)
 
     if f is None:
-        return -1
+        return -EBADF
 
     try:
         data = f.read(length)
@@ -404,7 +404,7 @@ def ql_syscall_write(ql: Qiling, fd: int, buf: int, count: int):
     f = get_opened_fd(ql.os, fd)
 
     if f is None:
-        return -1
+        return -EBADF
 
     try:
         data = ql.mem.read(buf, count)
@@ -449,7 +449,7 @@ def __do_readlink(ql: Qiling, absvpath: str, outbuf: int) -> int:
             target = ''
 
     if target is None:
-        return -1
+        return -ENOENT
 
     cstr = target.encode('utf-8')
 
@@ -507,7 +507,7 @@ def ql_syscall_chdir(ql: Qiling, path_name: int):
 
         regreturn = 0
     else:
-        regreturn = -1
+        regreturn = -ENOENT
 
     ql.log.debug(f'chdir("{absvpath}") = {regreturn}')
 
@@ -634,7 +634,7 @@ def ql_syscall_dup(ql: Qiling, oldfd: int):
     f = get_opened_fd(ql.os, oldfd)
 
     if f is None:
-        return -1
+        return -EBADF
 
     newfd = next((i for i in range(NR_OPEN) if ql.os.fd[i] is None), -1)
 
@@ -652,10 +652,10 @@ def ql_syscall_dup2(ql: Qiling, oldfd: int, newfd: int):
     f = get_opened_fd(ql.os, oldfd)
 
     if f is None:
-        return -1
+        return -EBADF
 
     if newfd not in range(NR_OPEN):
-        return -1
+        return -EBADF
 
     newslot = ql.os.fd[newfd]
 
@@ -675,10 +675,10 @@ def ql_syscall_dup3(ql: Qiling, oldfd: int, newfd: int, flags: int):
     f = get_opened_fd(ql.os, oldfd)
 
     if f is None:
-        return -1
+        return -EBADF
 
     if newfd not in range(NR_OPEN):
-        return -1
+        return -EBADF
 
     newslot = ql.os.fd[newfd]
 
@@ -714,7 +714,7 @@ def ql_syscall_pipe(ql: Qiling, pipefd: int):
     idx2 = next(unpopulated_fd, -1)
 
     if (idx1 == -1) or (idx2 == -1):
-        return -1
+        return -EMFILE
 
     ql.os.fd[idx1] = rd
     ql.os.fd[idx2] = wd
@@ -769,7 +769,7 @@ def ql_syscall_truncate(ql: Qiling, path: int, length: int):
 def ql_syscall_ftruncate(ql: Qiling, fd: int, length: int):
     f = get_opened_fd(ql.os, fd)
 
-    regreturn = -1 if f is None else __do_truncate(ql, f.name, length)
+    regreturn = -EBADF if f is None else __do_truncate(ql, f.name, length)
 
     ql.log.debug(f'ftruncate({fd}, {length:#x}) = {regreturn}')
 

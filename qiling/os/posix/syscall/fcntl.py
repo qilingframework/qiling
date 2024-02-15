@@ -107,7 +107,7 @@ def ql_syscall_fcntl(ql: Qiling, fd: int, cmd: int, arg: int):
     f = get_opened_fd(ql.os, fd)
 
     if f is None:
-        return -1
+        return -EBADF
 
     if cmd == F_DUPFD:
         if arg not in range(NR_OPEN):
@@ -137,7 +137,7 @@ def ql_syscall_fcntl(ql: Qiling, fd: int, cmd: int, arg: int):
         regreturn = 0
 
     else:
-        regreturn = -1
+        regreturn = -EINVAL
 
     return regreturn
 
