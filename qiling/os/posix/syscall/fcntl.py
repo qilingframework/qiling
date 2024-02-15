@@ -9,7 +9,7 @@ from qiling import Qiling
 from qiling.const import QL_OS, QL_ARCH
 from qiling.exception import QlSyscallError
 from qiling.os.posix.const import *
-from qiling.os.posix.const_mapping import ql_open_flag_mapping
+from qiling.os.posix.const_mapping import ql_open_flag_mapping, get_open_flags_class
 from qiling.os.posix.filestruct import ql_socket
 
 from .unistd import virtual_abspath_at, get_opened_fd
@@ -69,36 +69,14 @@ def ql_syscall_openat(ql: Qiling, fd: int, path: int, flags: int, mode: int):
 
 def ql_syscall_creat(ql: Qiling, filename: int, mode: int):
     vpath = ql.os.utils.read_cstring(filename)
-
-    # FIXME: this is broken
-    flags = posix_open_flags["O_WRONLY"] | posix_open_flags["O_CREAT"] | posix_open_flags["O_TRUNC"]
-    mode &= 0xffffffff
-
-    idx = next((i for i in range(NR_OPEN) if ql.os.fd[i] is None), -1)
-
-    if idx == -1:
-        regreturn = -ENOMEM
-    else:
-        if ql.arch.type == QL_ARCH.ARM:
-            mode = 0
-
-        try:
-            flags = ql_open_flag_mapping(ql, flags)
-            ql.os.fd[idx] = ql.os.fs_mapper.open_ql_file(vpath, flags, mode)
-        except QlSyscallError as e:
-            regreturn = -e.errno
-        else:
-            regreturn = idx
-
-    hpath = ql.os.path.virtual_to_host_path(vpath)
     absvpath = ql.os.path.virtual_abspath(vpath)
 
-    ql.log.debug(f'creat("{absvpath}", {mode:#o}) = {regreturn}')
+    flags_class = get_open_flags_class(ql.arch.type, ql.os.type)
+    flags = sum(getattr(flags_class, f) for f in ('O_WRONLY', 'O_CREAT', 'O_TRUNC'))
 
-    if regreturn >= 0 and regreturn != 2:
-        ql.log.debug(f'File found: {hpath:s}')
-    else:
-        ql.log.debug(f'File not found {hpath:s}')
+    regreturn = __do_open(ql, absvpath, flags, mode)
+
+    ql.log.debug(f'creat("{absvpath}", 0{mode:o}) = {regreturn}')
 
     return regreturn
 
