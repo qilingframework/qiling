@@ -3,12 +3,14 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from typing import Mapping, TypeVar
+from __future__ import annotations
+from typing import TYPE_CHECKING, Dict, Mapping, Type, TypeVar, Union
 
-from qiling import Qiling
 from qiling.const import QL_ARCH, QL_OS
+from qiling.os.posix.const import *
 
-from .const import *
+if TYPE_CHECKING:
+    from qiling import Qiling
 
 KT = TypeVar('KT')
 VT = TypeVar('VT')
@@ -36,64 +38,106 @@ def _flags_mapping(value: int, flags_map: Mapping[str, int]) -> str:
     return ' | '.join(names)
 
 
+def get_open_flags_class(archtype: QL_ARCH, ostype: QL_OS) -> Union[Type[Flag], None]:
+    """Retrieve the appropriate open flags class for given architecture and OS.
+
+    Args:
+        archtype: architecture type
+        otype: operating system type
+
+    Returns: appropriate flags class, or `None` if the specified arch and OS combination
+    is not supported
+    """
+
+    flags_by_os: Dict[QL_OS, Dict[QL_ARCH, Type[Flag]]] = {
+        QL_OS.LINUX: {
+            QL_ARCH.X86:     linux_x86_open_flags,
+            QL_ARCH.X8664:   linux_x86_open_flags,
+            QL_ARCH.ARM:     linux_arm_open_flags,
+            QL_ARCH.ARM64:   linux_arm_open_flags,
+            QL_ARCH.MIPS:    linux_mips_open_flags,
+            QL_ARCH.RISCV:   linux_riscv_open_flags,
+            QL_ARCH.RISCV64: linux_riscv_open_flags,
+            QL_ARCH.PPC:     linux_ppc_open_flags
+        },
+
+        QL_OS.FREEBSD: {
+            QL_ARCH.X86:   freebsd_x86_open_flags,
+            QL_ARCH.X8664: freebsd_x86_open_flags
+        },
+
+        QL_OS.MACOS: {
+            QL_ARCH.X86:   macos_x86_open_flags,
+            QL_ARCH.X8664: macos_x86_open_flags
+        },
+
+        QL_OS.WINDOWS: {
+            QL_ARCH.X86:   windows_x86_open_flags,
+            QL_ARCH.X8664: windows_x86_open_flags
+        },
+
+        QL_OS.QNX: {
+            QL_ARCH.ARM:   qnx_arm_open_flags,
+            QL_ARCH.ARM64: qnx_arm_open_flags
+        }
+    }
+
+    cls = None
+
+    if ostype in flags_by_os:
+        flags_by_arch = flags_by_os[ostype]
+
+        if archtype in flags_by_arch:
+            cls = flags_by_arch[archtype]
+
+    return cls
+
+
 def ql_open_flag_mapping(ql: Qiling, flags: int) -> int:
-    def flag_mapping(flags, mapping_name, mapping_from, mapping_to, host_os):
-        ret = 0
+    """Convert emulated OS 'open' flags to the hosting OS flags.
+    """
 
-        for n in mapping_name:
-            if mapping_from[n] is None or mapping_to[n] is None:
-                continue
+    archtype = ql.host.arch
+    ostype = ql.host.os
 
-            if (flags & mapping_from[n]) == mapping_from[n]:
-                ret = ret | mapping_to[n]
-
-        if host_os is QL_OS.WINDOWS:
-            ret = ret | mapping_to['O_BINARY']
-
-        return ret
-
-    f = {}
-    t = {}
-
-    host_os = ql.host.os
-    virt_os = ql.os.type
-
-    if host_os is None:
+    if archtype is None or ostype is None:
         return flags
 
-    if virt_os == QL_OS.LINUX:
-        if ql.arch.type in (QL_ARCH.X86, QL_ARCH.X8664):
-            f = linux_x86_open_flags
-        elif ql.arch.type in (QL_ARCH.ARM, QL_ARCH.ARM64):
-            f = linux_arm_open_flags
-        elif ql.arch.type == QL_ARCH.MIPS:
-            f = linux_mips_open_flags
-        elif ql.arch.type in (QL_ARCH.RISCV, QL_ARCH.RISCV64):
-            f = linux_riscv_open_flags
-        elif ql.arch.type == QL_ARCH.PPC:
-            f = linux_ppc_open_flags
+    host_flags = get_open_flags_class(archtype, ostype)
 
-    elif virt_os == QL_OS.MACOS:
-        if ql.arch.type in (QL_ARCH.X86, QL_ARCH.X8664):
-            f = macos_x86_open_flags
-    elif virt_os == QL_OS.FREEBSD:
-        f = freebsd_x86_open_flags
-    elif virt_os == QL_OS.WINDOWS:
-        f = windows_x86_open_flags
-    elif virt_os == QL_OS.QNX:
-        f = qnx_arm64_open_flags
+    if host_flags is None:
+        raise NotImplementedError(f'flags were not defined for hosting {archtype.name} {ostype.name}')
 
-    t = {
-        QL_OS.LINUX:   linux_x86_open_flags,
-        QL_OS.MACOS:   macos_x86_open_flags,
-        QL_OS.FREEBSD: freebsd_x86_open_flags,
-        QL_OS.WINDOWS: windows_x86_open_flags
-    }.get(host_os, {})
+    archtype = ql.arch.type
+    ostype = ql.os.type
 
-    if f == t:
+    emul_flags = get_open_flags_class(archtype, ostype)
+
+    if emul_flags is None:
+        raise NotImplementedError(f'flags were not defined for emulated {archtype.name} {ostype.name}')
+
+    # both hosting and emulated os are using the same flags set; no need to convert
+    if emul_flags is host_flags:
         return flags
 
-    return flag_mapping(flags, open_flags_name, f, t, host_os)
+    ret = 0
+
+    # convert emulated os flags to hosting os flags.
+    # flags names are consistent across all classes, even if they are not supported, to maintain compatibility
+    for k, v in emul_flags.__members__.items():
+        # test whether flag i set, excluding unsupported flags and 0 values
+        if v and flags & v.value:
+            hv = host_flags.__members__[k]
+
+            # if flag is also supported on the host, set it
+            if hv:
+                ret |= hv.value
+
+    # NOTE: not sure why this one is needed
+    if ql.host.os is QL_OS.WINDOWS:
+        ret |= getattr(host_flags, 'O_BINARY')
+
+    return ret
 
 
 def mmap_flag_mapping(flags):
