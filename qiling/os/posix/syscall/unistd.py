@@ -360,24 +360,26 @@ def ql_syscall_pread64(ql: Qiling, fd: int, buf: int, length: int, offt: int):
     if f is None:
         return -EBADF
 
+    if not ql.mem.is_mapped(buf, length):
+        return -EFAULT
+
+    # https://chromium.googlesource.com/linux-syscall-support/+/2c73abf02fd8af961e38024882b9ce0df6b4d19b
+    # https://chromiumcodereview.appspot.com/10910222
+    if ql.arch.type is QL_ARCH.MIPS:
+        offt = ql.mem.read_ptr(ql.arch.regs.arch_sp + 0x10, 8)
+
+    try:
+        pos = f.tell()
+        f.seek(offt)
+
+        data = f.read(length)
+        f.seek(pos)
+    except OSError:
+        regreturn = -1
     else:
-        # https://chromium.googlesource.com/linux-syscall-support/+/2c73abf02fd8af961e38024882b9ce0df6b4d19b
-        # https://chromiumcodereview.appspot.com/10910222
-        if ql.arch.type == QL_ARCH.MIPS:
-            offt = ql.mem.read_ptr(ql.arch.regs.arch_sp + 0x10, 8)
+        ql.mem.write(buf, data)
 
-        try:
-            pos = f.tell()
-            f.seek(offt)
-
-            data = f.read(length)
-            f.seek(pos)
-        except OSError:
-            regreturn = -1
-        else:
-            ql.mem.write(buf, data)
-
-            regreturn = len(data)
+        regreturn = len(data)
 
     return regreturn
 
@@ -388,14 +390,14 @@ def ql_syscall_read(ql: Qiling, fd, buf: int, length: int):
     if f is None:
         return -EBADF
 
-    try:
-        data = f.read(length)
-        ql.mem.write(buf, data)
-    except:
-        regreturn = -EBADF
-    else:
-        ql.log.debug(f'read() CONTENT: {data!r}')
-        regreturn = len(data)
+    if not ql.mem.is_mapped(buf, length):
+        return -EFAULT
+
+    data = f.read(length)
+    ql.mem.write(buf, data)
+
+    ql.log.debug(f'read() CONTENT: {data!r}')
+    regreturn = len(data)
 
     return regreturn
 
@@ -406,20 +408,20 @@ def ql_syscall_write(ql: Qiling, fd: int, buf: int, count: int):
     if f is None:
         return -EBADF
 
-    try:
-        data = ql.mem.read(buf, count)
-    except:
-        regreturn = -1
+    if not ql.mem.is_mapped(buf, count):
+        return -EFAULT
+
+    data = ql.mem.read(buf, count)
+
+    ql.log.debug(f'write() CONTENT: {bytes(data)}')
+
+    if hasattr(f, 'write'):
+        f.write(data)
+
+        regreturn = count
     else:
-        ql.log.debug(f'write() CONTENT: {bytes(data)}')
-
-        if hasattr(f, 'write'):
-            f.write(data)
-
-            regreturn = count
-        else:
-            ql.log.warning(f'write failed since fd {fd:d} does not have a write method')
-            regreturn = -1
+        ql.log.warning(f'write failed since fd {fd:d} does not have a write method')
+        regreturn = -EBADF
 
     return regreturn
 
@@ -671,6 +673,9 @@ def ql_syscall_dup2(ql: Qiling, oldfd: int, newfd: int):
 
 def ql_syscall_dup3(ql: Qiling, oldfd: int, newfd: int, flags: int):
     O_CLOEXEC = 0o2000000
+
+    if oldfd == newfd:
+        return -EINVAL
 
     f = get_opened_fd(ql.os, oldfd)
 
