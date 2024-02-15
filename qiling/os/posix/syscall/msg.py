@@ -40,7 +40,7 @@ def __perms(ql: Qiling, msq: QlMsqId, flag: int) -> int:
 
     # is there some bit set in requested_mode but not in granted_mode?
     if request_mode & ~granted_mode & 0o007:
-        return -1  # EACCES
+        return -EACCES
 
     return 0
 
@@ -53,7 +53,7 @@ def ql_syscall_msgget(ql: Qiling, key: int, msgflg: int):
         """
 
         if len(ql.os.msq) >= MSGMNI:
-            return -1  # ENOSPC
+            return -ENOSPC
 
         mode = flags & ((1 << 9) - 1)
 
@@ -77,16 +77,16 @@ def ql_syscall_msgget(ql: Qiling, key: int, msgflg: int):
                 msqid = __create_msq(key, msgflg)
 
             else:
-                return -1  # ENOENT
+                return -ENOENT
 
         # a message queue with the specified key exists
         else:
             # the user asked to create a new one?
             if msgflg & (IPC_CREAT | IPC_EXCL):
-                return -1  # EEXIST
+                return -EEXIST
 
             if __perms(ql, msq, msgflg):
-                return -1  # EACCES
+                return -EACCES
 
     return msqid
 
@@ -95,11 +95,11 @@ def ql_syscall_msgsnd(ql: Qiling, msqid: int, msgp: int, msgsz: int, msgflg: int
     msq = ql.os.msq.get_by_id(msqid)
 
     if msq is None:
-        return -1  # EINVAL
+        return -EINVAL
 
     # Check if the user has write permissions for the message queue
     if __perms(ql, msq, 0o222):  # S_IWUGO
-        return -1  # EACCES
+        return -EACCES
 
     msg_type = ql.mem.read_ptr(msgp)
     msg_text = ql.mem.read(msgp + ql.arch.pointersize, msgsz)
@@ -109,7 +109,7 @@ def ql_syscall_msgsnd(ql: Qiling, msqid: int, msgp: int, msgsz: int, msgflg: int
             break
 
         if msgflg & IPC_NOWAIT:
-            return -1  # EAGAIN
+            return -EAGAIN
 
     msq.queue.append(QlMsgBuf(msg_type, bytes(msg_text)))
 
@@ -120,15 +120,15 @@ def ql_syscall_msgrcv(ql: Qiling, msqid: int, msgp: int, msgsz: int, msgtyp: int
     msq = ql.os.msq.get_by_id(msqid)
 
     if msq is None:
-        return -1  # EINVAL
+        return -EINVAL
 
     if msgflg & MSG_COPY:
         if msgflg & MSG_EXCEPT or not (msgflg & IPC_NOWAIT):
-            return -1  # EINVAL
+            return -EINVAL
 
     # Check if the user has read permissions for the message queue
     if __perms(ql, msq, 0o444):  # S_IRUGO
-        return -1  # EACCES
+        return -EACCES
 
     while True:
         msg = __find_msg(msq, msgtyp, msgflg)
@@ -137,17 +137,17 @@ def ql_syscall_msgrcv(ql: Qiling, msqid: int, msgp: int, msgsz: int, msgtyp: int
             break
 
         if msgflg & MSG_COPY:
-            return -1  # ENOMSG
+            return -ENOMSG
 
         if msgflg & IPC_NOWAIT:
-            return -1  # ENOMSG
+            return -ENOMSG
 
     if not (msgflg & MSG_COPY):
         msq.queue.remove(msg)
 
     if msgsz < len(msg.mtext):
         if not (msgflg & MSG_NOERROR):
-            return -1  # E2BIG
+            return -E2BIG
         else:
             sz = msgsz
     else:
