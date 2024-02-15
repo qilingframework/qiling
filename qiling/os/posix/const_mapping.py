@@ -140,7 +140,7 @@ def ql_open_flag_mapping(ql: Qiling, flags: int) -> int:
     return ret
 
 
-def mmap_flag_mapping(flags):
+def mmap_flag_mapping(flags: int) -> str:
     mmap_flags = {
         'MAP_SHARED'    : 0x00000001,
         'MAP_PRIVATE'   : 0x00000002,

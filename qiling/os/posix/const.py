@@ -629,6 +629,10 @@ class qnx_arm_open_flags(QlPrettyFlag):
     O_LARGEFILE = 0x08000
 
 
+################################
+#          mmap flags          #
+################################
+
 # see: https://github.com/torvalds/linux/blob/master/include/uapi/asm-generic/mman-common.h
 class linux_mmap_flags(Flag):
     MAP_FILE            = 0x00000000
@@ -727,14 +731,14 @@ class qnx_mmap_flags(Flag):
     MAP_UNINITIALIZED = MAP_NOINIT
 
 # fcntl flags
-F_DUPFD        = 0
-F_GETFD        = 1
-F_SETFD        = 2
-F_GETFL        = 3
-F_SETFL        = 4
-F_GETLK        = 5
-F_SETLK        = 6
-F_SETLKW    = 7
+F_DUPFD  = 0
+F_GETFD  = 1
+F_SETFD  = 2
+F_GETFL  = 3
+F_SETFL  = 4
+F_GETLK  = 5
+F_SETLK  = 6
+F_SETLKW = 7
 
 FD_CLOEXEC = 1
 

@@ -9,7 +9,7 @@ import os
 import itertools
 import pathlib
 
-from typing import TYPE_CHECKING, Iterator, Optional
+from typing import TYPE_CHECKING, IO, Iterator, Optional, Union
 
 from qiling import Qiling
 from qiling.const import QL_ARCH, QL_OS
@@ -155,16 +155,17 @@ def ql_syscall_kill(ql: Qiling, pid: int, sig: int):
     return 0
 
 
-def get_opened_fd(os: QlOsPosix, fd: int):
+def get_opened_fd(os: QlOsPosix, fd: int) -> Optional[IO]:
+    """Retrieve a file instance by its file descriptor id.
+    """
+
     if fd not in range(NR_OPEN):
-        # TODO: set errno to EBADF
-        return None
+        return None  # EBADF
 
     f = os.fd[fd]
 
     if f is None:
-        # TODO: set errno to EBADF
-        return None
+        return None  # EBADF
 
     return f
 

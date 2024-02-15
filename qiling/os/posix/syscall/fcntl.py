@@ -7,7 +7,6 @@ import os
 
 from qiling import Qiling
 from qiling.const import QL_OS, QL_ARCH
-from qiling.exception import QlSyscallError
 from qiling.os.posix.const import *
 from qiling.os.posix.const_mapping import ql_open_flag_mapping, get_open_flags_class
 from qiling.os.posix.filestruct import ql_socket
