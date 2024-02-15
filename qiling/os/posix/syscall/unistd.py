@@ -201,7 +201,16 @@ def ql_syscall_fdatasync(ql: Qiling, fd: int):
     return regreturn
 
 
-def virtual_abspath_at(ql: Qiling, vpath: str, dirfd: int) -> Optional[str]:
+def virtual_abspath_at(ql: Qiling, vpath: str, dirfd: int) -> Union[int, str]:
+    """Resolve the virtual absolute path based on the specified dirfd.
+
+    Args:
+        vpath: relative virtual path to resolve
+        dirfd: base directory file descriptor
+
+    Returns: the resolved absolute path, or an error code if could not resolve it
+    """
+
     if ql.os.path.is_virtual_abspath(vpath):
         return vpath
 
@@ -223,14 +232,12 @@ def virtual_abspath_at(ql: Qiling, vpath: str, dirfd: int) -> Optional[str]:
         f = get_opened_fd(ql.os, dirfd)
 
         if f is None or not hasattr(f, 'name'):
-            # EBADF
-            return None
+            return -EBADF
 
         hpath = f.name
 
         if not os.path.isdir(hpath):
-            # ENOTDIR
-            return None
+            return -ENOTDIR
 
         basedir = ql.os.path.host_to_virtual_path(hpath)
 
@@ -241,8 +248,8 @@ def ql_syscall_faccessat(ql: Qiling, dirfd: int, filename: int, mode: int):
     vpath = ql.os.utils.read_cstring(filename)
     vpath_at = virtual_abspath_at(ql, vpath, dirfd)
 
-    if vpath_at is None:
-        regreturn = -1
+    if isinstance(vpath_at, int):
+        regreturn = vpath_at
 
     else:
         hpath = ql.os.path.virtual_to_host_path(vpath_at)
@@ -467,7 +474,7 @@ def ql_syscall_readlinkat(ql: Qiling, dirfd: int, pathname: int, buf: int, bufsi
     vpath = ql.os.utils.read_cstring(pathname)
     absvpath = virtual_abspath_at(ql, vpath, dirfd)
 
-    regreturn = -1 if absvpath is None else __do_readlink(ql, absvpath, buf)
+    regreturn = absvpath if isinstance(absvpath, int) else __do_readlink(ql, absvpath, buf)
 
     ql.log.debug(f'readlinkat({dirfd:d}, "{vpath}", {buf:#x}, {bufsize:#x}) = {regreturn}')
 
@@ -821,7 +828,7 @@ def ql_syscall_unlinkat(ql: Qiling, dirfd: int, pathname: int, flags: int):
     vpath = ql.os.utils.read_cstring(pathname)
     absvpath = virtual_abspath_at(ql, vpath, dirfd)
 
-    regreturn = -1 if absvpath is None else __do_unlink(ql, absvpath)
+    regreturn = absvpath if isinstance(absvpath, int) else __do_unlink(ql, absvpath)
 
     ql.log.debug(f'unlinkat({dirfd}, "{vpath}") = {regreturn}')
 

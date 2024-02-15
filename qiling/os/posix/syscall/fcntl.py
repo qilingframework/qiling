@@ -33,8 +33,14 @@ def __do_open(ql: Qiling, absvpath: str, flags: int, mode: int) -> int:
 
     try:
         ql.os.fd[idx] = ql.os.fs_mapper.open_ql_file(absvpath, flags, mode)
-    except QlSyscallError:
-        return -1
+    except FileNotFoundError:
+        return -ENOENT
+    except FileExistsError:
+        return -EEXIST
+    except IsADirectoryError:
+        return -EISDIR
+    except PermissionError:
+        return -EACCES
 
     return idx
 
@@ -54,7 +60,7 @@ def ql_syscall_openat(ql: Qiling, fd: int, path: int, flags: int, mode: int):
     vpath = ql.os.utils.read_cstring(path)
     absvpath = virtual_abspath_at(ql, vpath, fd)
 
-    regreturn = -1 if absvpath is None else __do_open(ql, absvpath, flags, mode)
+    regreturn = absvpath if isinstance(absvpath, int) else __do_open(ql, absvpath, flags, mode)
 
     ql.log.debug(f'openat({fd:d}, "{vpath}", {flags:#x}, 0{mode:o}) = {regreturn:d}')
 
