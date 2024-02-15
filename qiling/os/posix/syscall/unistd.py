@@ -385,7 +385,7 @@ def ql_syscall_pread64(ql: Qiling, fd: int, buf: int, length: int, offt: int):
     return regreturn
 
 
-def ql_syscall_read(ql: Qiling, fd, buf: int, length: int):
+def ql_syscall_read(ql: Qiling, fd: int, buf: int, length: int):
     f = get_opened_fd(ql.os, fd)
 
     if f is None:
@@ -394,13 +394,20 @@ def ql_syscall_read(ql: Qiling, fd, buf: int, length: int):
     if not ql.mem.is_mapped(buf, length):
         return -EFAULT
 
-    data = f.read(length)
+    if not hasattr(f, 'read'):
+        ql.log.debug(f'read failed since fd {fd:d} does not have a read method')
+        return -EBADF
+
+    try:
+        data = f.read(length)
+    except ConnectionError:
+        ql.log.debug('read failed due to a connection error')
+        return -EIO
+
     ql.mem.write(buf, data)
+    ql.log.debug(f'read() CONTENT: {bytes(data)}')
 
-    ql.log.debug(f'read() CONTENT: {data!r}')
-    regreturn = len(data)
-
-    return regreturn
+    return len(data)
 
 
 def ql_syscall_write(ql: Qiling, fd: int, buf: int, count: int):
@@ -412,19 +419,21 @@ def ql_syscall_write(ql: Qiling, fd: int, buf: int, count: int):
     if not ql.mem.is_mapped(buf, count):
         return -EFAULT
 
+    if not hasattr(f, 'write'):
+        ql.log.debug(f'write failed since fd {fd:d} does not have a write method')
+        return -EBADF
+
     data = ql.mem.read(buf, count)
+
+    try:
+        f.write(data)
+    except ConnectionError:
+        ql.log.debug('write failed due to a connection error')
+        return -EIO
 
     ql.log.debug(f'write() CONTENT: {bytes(data)}')
 
-    if hasattr(f, 'write'):
-        f.write(data)
-
-        regreturn = count
-    else:
-        ql.log.warning(f'write failed since fd {fd:d} does not have a write method')
-        regreturn = -EBADF
-
-    return regreturn
+    return count
 
 
 def __do_readlink(ql: Qiling, absvpath: str, outbuf: int) -> int:
