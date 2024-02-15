@@ -453,185 +453,180 @@ linux_mips_socket_ip_options = {
     "SO_SNDTIMEO_NEW"           : 0x0043,
 }
 
-open_flags_name = [
-    "O_RDONLY",
-    "O_WRONLY",
-    "O_RDWR",
-    "O_NONBLOCK",
-    "O_APPEND",
-    "O_ASYNC",
-    "O_SYNC",
-    "O_NOFOLLOW",
-    "O_CREAT",
-    "O_TRUNC",
-    "O_EXCL",
-    "O_NOCTTY",
-    "O_DIRECTORY",
-    "O_BINARY",
-    "O_LARGEFILE"
-]
 
-macos_x86_open_flags = {
-    "O_RDONLY": 0x0,
-    "O_WRONLY": 0x1,
-    "O_RDWR": 0x2,
-    "O_NONBLOCK": 0x4,
-    "O_APPEND": 0x8,
-    "O_ASYNC": 0x40,
-    "O_SYNC": 0x80,
-    "O_NOFOLLOW": 0x100,
-    "O_CREAT": 0x200,
-    "O_TRUNC": 0x400,
-    "O_EXCL": 0x800,
-    "O_NOCTTY": 0x20000,
-    "O_DIRECTORY": 0x100000,
-    "O_BINARY": None,
-    'O_LARGEFILE': None
-}
+class QlPrettyFlag(Flag):
+    """Subclass the Flag type to provide a more adequate string representation.
+    """
 
-linux_x86_open_flags = {
-    'O_RDONLY': 0x0,
-    'O_WRONLY': 0x1,
-    'O_RDWR': 0x2,
-    'O_NONBLOCK': 0x800,
-    'O_APPEND': 0x400,
-    'O_ASYNC': 0x2000,
-    'O_SYNC': 0x101000,
-    'O_NOFOLLOW': 0x20000,
-    'O_CREAT': 0x40,
-    'O_TRUNC': 0x200,
-    'O_EXCL': 0x80,
-    'O_NOCTTY': 0x100,
-    'O_DIRECTORY': 0x10000,
-    'O_BINARY': None,
-    'O_LARGEFILE': 0x0
-}
+    def __str__(self) -> str:
+        _, _, s = super().__str__().partition('.')
 
-linux_arm_open_flags = {
-    'O_RDONLY': 0x0,
-    'O_WRONLY': 0x1,
-    'O_RDWR': 0x2,
-    'O_NONBLOCK': 0x800,
-    'O_APPEND': 0x400,
-    'O_ASYNC': 0x2000,
-    'O_SYNC': 0x101000,
-    'O_NOFOLLOW': 0x8000,
-    'O_CREAT': 0x40,
-    'O_TRUNC': 0x200,
-    'O_EXCL': 0x80,
-    'O_NOCTTY': 0x100,
-    'O_DIRECTORY': 0x4000,
-    'O_BINARY': None,
-    'O_LARGEFILE': 0x20000
-}
+        return s.replace('|', ' | ')
 
-linux_mips_open_flags = {
-    'O_RDONLY': 0x0,
-    'O_WRONLY': 0x1,
-    'O_RDWR': 0x2,
-    'O_NONBLOCK': 0x80,
-    'O_APPEND': 0x8,
-    'O_ASYNC': 0x1000,
-    'O_SYNC': 0x4010,
-    'O_NOFOLLOW': 0x20000,
-    'O_CREAT': 0x100,
-    'O_TRUNC': 0x200,
-    'O_EXCL': 0x400,
-    'O_NOCTTY': 0x800,
-    'O_DIRECTORY': 0x10000,
-    'O_BINARY' : None,
-    'O_LARGEFILE': 0x2000
-}
+################################
+#          open flags          #
+################################
 
-linux_riscv_open_flags = {
-    'O_RDONLY': 0x0,
-    'O_WRONLY': 0x1,
-    'O_RDWR': 0x2,
-    'O_NONBLOCK': 0x800,
-    'O_APPEND': 0x400,
-    'O_ASYNC': 0x2000,
-    'O_SYNC': 0x101000,
-    'O_NOFOLLOW': 0x20000,
-    'O_CREAT': 0x40,
-    'O_TRUNC': 0x200,
-    'O_EXCL': 0x80,
-    'O_NOCTTY': 0x100,
-    'O_DIRECTORY': 0x10000,
-    'O_BINARY' : None,
-    'O_LARGEFILE': None,
-}
+class macos_x86_open_flags(QlPrettyFlag):
+    O_RDONLY    = 0x000000
+    O_WRONLY    = 0x000001
+    O_RDWR      = 0x000002
+    O_NONBLOCK  = 0x000004
+    O_APPEND    = 0x000008
+    O_ASYNC     = 0x000040
+    O_SYNC      = 0x000080
+    O_NOFOLLOW  = 0x000100
+    O_CREAT     = 0x000200
+    O_TRUNC     = 0x000400
+    O_EXCL      = 0x000800
+    O_NOCTTY    = 0x020000
+    O_DIRECTORY = 0x100000
+    O_BINARY    = None
+    O_LARGEFILE = None
 
-linux_ppc_open_flags = {
-    'O_RDONLY': 0x0,
-    'O_WRONLY': 0x1,
-    'O_RDWR': 0x2,
-    'O_NONBLOCK': 0x800,
-    'O_APPEND': 0x400,
-    'O_ASYNC': 0x2000,
-    'O_SYNC': 0x101000,
-    'O_NOFOLLOW': 0x8000,
-    'O_CREAT': 0x40,
-    'O_TRUNC': 0x200,
-    'O_EXCL': 0x80,
-    'O_NOCTTY': 0x100,
-    'O_DIRECTORY': 0x4000,
-    'O_BINARY' : None,
-    'O_LARGEFILE': 0x10000,
-}
 
-freebsd_x86_open_flags = {
-    'O_RDONLY': 0x0,
-    'O_WRONLY': 0x1,
-    'O_RDWR': 0x2,
-    'O_NONBLOCK': 0x4,
-    'O_APPEND': 0x8,
-    'O_ASYNC': 0x40,
-    'O_SYNC': 0x80,
-    'O_NOFOLLOW': 0x100,
-    'O_CREAT': 0x200,
-    'O_TRUNC': 0x400,
-    'O_EXCL': 0x800,
-    'O_NOCTTY': 0x8000,
-    'O_DIRECTORY': 0x20000,
-    'O_BINARY' : None,
-    'O_LARGEFILE': None
-}
+class linux_x86_open_flags(QlPrettyFlag):
+    O_RDONLY    = 0x000000
+    O_WRONLY    = 0x000001
+    O_RDWR      = 0x000002
+    O_NONBLOCK  = 0x000800
+    O_APPEND    = 0x000400
+    O_ASYNC     = 0x002000
+    O_SYNC      = 0x101000
+    O_NOFOLLOW  = 0x020000
+    O_CREAT     = 0x000040
+    O_TRUNC     = 0x000200
+    O_EXCL      = 0x000080
+    O_NOCTTY    = 0x000100
+    O_DIRECTORY = 0x010000
+    O_BINARY    = None
+    O_LARGEFILE = None
 
-windows_x86_open_flags = {
-    'O_RDONLY': 0x0,
-    'O_WRONLY': 0x1,
-    'O_RDWR': 0x2,
-    'O_NONBLOCK': None,
-    'O_APPEND': 0x8,
-    'O_ASYNC': None,
-    'O_SYNC': None,
-    'O_NOFOLLOW': None,
-    'O_CREAT': 0x100,
-    'O_TRUNC': 0x200,
-    'O_EXCL': 0x400,
-    'O_NOCTTY': None,
-    'O_DIRECTORY': None,
-    'O_BINARY': 0x8000,
-    'O_LARGEFILE': None
-}
 
-qnx_arm64_open_flags = {
-    'O_RDONLY'    : 0x00000,
-    'O_WRONLY'    : 0x00001,
-    'O_RDWR'      : 0x00002,
-    'O_APPEND'    : 0x00008,
-    'O_SYNC'      : 0x00020,
-    'O_NONBLOCK'  : 0x00080,
-    'O_CREAT'     : 0x00100,
-    'O_TRUNC'     : 0x00200,
-    'O_EXCL'      : 0x00400,
-    'O_NOCTTY'    : 0x00800,
-    'O_LARGEFILE' : 0x08000,
-    'O_ASYNC'     : 0x10000,
-    'O_NOFOLLOW'  : None,
-    'O_DIRECTORY' : None,
-    'O_BINARY'    : None
-}
+class linux_arm_open_flags(QlPrettyFlag):
+    O_RDONLY    = 0x000000
+    O_WRONLY    = 0x000001
+    O_RDWR      = 0x000002
+    O_NONBLOCK  = 0x000800
+    O_APPEND    = 0x000400
+    O_ASYNC     = 0x002000
+    O_SYNC      = 0x101000
+    O_NOFOLLOW  = 0x008000
+    O_CREAT     = 0x000040
+    O_TRUNC     = 0x000200
+    O_EXCL      = 0x000080
+    O_NOCTTY    = 0x000100
+    O_DIRECTORY = 0x004000
+    O_BINARY    = None
+    O_LARGEFILE = 0x020000
+
+
+class linux_mips_open_flags(QlPrettyFlag):
+    O_RDONLY    = 0x000000
+    O_WRONLY    = 0x000001
+    O_RDWR      = 0x000002
+    O_NONBLOCK  = 0x000080
+    O_APPEND    = 0x000008
+    O_ASYNC     = 0x001000
+    O_SYNC      = 0x004010
+    O_NOFOLLOW  = 0x020000
+    O_CREAT     = 0x000100
+    O_TRUNC     = 0x000200
+    O_EXCL      = 0x000400
+    O_NOCTTY    = 0x000800
+    O_DIRECTORY = 0x010000
+    O_BINARY    = None
+    O_LARGEFILE = 0x002000
+
+
+class linux_riscv_open_flags(QlPrettyFlag):
+    O_RDONLY    = 0x000000
+    O_WRONLY    = 0x000001
+    O_RDWR      = 0x000002
+    O_NONBLOCK  = 0x000800
+    O_APPEND    = 0x000400
+    O_ASYNC     = 0x002000
+    O_SYNC      = 0x101000
+    O_NOFOLLOW  = 0x020000
+    O_CREAT     = 0x000040
+    O_TRUNC     = 0x000200
+    O_EXCL      = 0x000080
+    O_NOCTTY    = 0x000100
+    O_DIRECTORY = 0x010000
+    O_BINARY    = None
+    O_LARGEFILE = None
+
+
+class linux_ppc_open_flags(QlPrettyFlag):
+    O_RDONLY    = 0x000000
+    O_WRONLY    = 0x000001
+    O_RDWR      = 0x000002
+    O_NONBLOCK  = 0x000800
+    O_APPEND    = 0x000400
+    O_ASYNC     = 0x002000
+    O_SYNC      = 0x101000
+    O_NOFOLLOW  = 0x008000
+    O_CREAT     = 0x000040
+    O_TRUNC     = 0x000200
+    O_EXCL      = 0x000080
+    O_NOCTTY    = 0x000100
+    O_DIRECTORY = 0x004000
+    O_BINARY    = None
+    O_LARGEFILE = 0x010000
+
+
+class freebsd_x86_open_flags(QlPrettyFlag):
+    O_RDONLY    = 0x000000
+    O_WRONLY    = 0x000001
+    O_RDWR      = 0x000002
+    O_NONBLOCK  = 0x000004
+    O_APPEND    = 0x000008
+    O_ASYNC     = 0x000040
+    O_SYNC      = 0x000080
+    O_NOFOLLOW  = 0x000100
+    O_CREAT     = 0x000200
+    O_TRUNC     = 0x000400
+    O_EXCL      = 0x000800
+    O_NOCTTY    = 0x008000
+    O_DIRECTORY = 0x20000
+    O_BINARY    = None
+    O_LARGEFILE = None
+
+
+class windows_x86_open_flags(QlPrettyFlag):
+    O_RDONLY    = 0x000000
+    O_WRONLY    = 0x000001
+    O_RDWR      = 0x000002
+    O_NONBLOCK  = None
+    O_APPEND    = 0x000008
+    O_ASYNC     = None
+    O_SYNC      = None
+    O_NOFOLLOW  = None
+    O_CREAT     = 0x000100
+    O_TRUNC     = 0x000200
+    O_EXCL      = 0x000400
+    O_NOCTTY    = None
+    O_DIRECTORY = None
+    O_BINARY    = 0x008000
+    O_LARGEFILE = None
+
+
+class qnx_arm_open_flags(QlPrettyFlag):
+    O_RDONLY    = 0x00000
+    O_WRONLY    = 0x00001
+    O_RDWR      = 0x00002
+    O_NONBLOCK  = 0x00080
+    O_APPEND    = 0x00008
+    O_ASYNC     = 0x10000
+    O_SYNC      = 0x00020
+    O_NOFOLLOW  = None
+    O_CREAT     = 0x00100
+    O_TRUNC     = 0x00200
+    O_EXCL      = 0x00400
+    O_NOCTTY    = 0x00800
+    O_DIRECTORY = None
+    O_BINARY    = None
+    O_LARGEFILE = 0x08000
 
 
 # see: https://github.com/torvalds/linux/blob/master/include/uapi/asm-generic/mman-common.h
