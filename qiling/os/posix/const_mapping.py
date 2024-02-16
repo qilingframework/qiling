@@ -113,18 +113,18 @@ def ql_open_flag_mapping(ql: Qiling, flags: int) -> int:
 
     # convert emulated os flags to hosting os flags.
     # flags names are consistent across all classes, even if they are not supported, to maintain compatibility
-    for k, v in emul_flags.__members__.items():
+    for ef in emul_flags:
         # test whether flag i set, excluding unsupported flags and 0 values
-        if v and flags & v.value:
-            hv = host_flags.__members__[k]
+        if ef and flags & ef.value:
+            hf = host_flags[ef.name or '']
 
             # if flag is also supported on the host, set it
-            if hv:
-                ret |= hv.value
+            if hf:
+                ret |= hf.value
 
     # NOTE: not sure why this one is needed
     if ql.host.os is QL_OS.WINDOWS:
-        ret |= getattr(host_flags, 'O_BINARY')
+        ret |= host_flags['O_BINARY'].value
 
     return ret
 
