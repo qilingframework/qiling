@@ -4,24 +4,13 @@
 #
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Dict, Mapping, Type, TypeVar, Union
+from typing import TYPE_CHECKING, Dict, Mapping, Type, Union
 
 from qiling.const import QL_ARCH, QL_OS
 from qiling.os.posix.const import *
 
 if TYPE_CHECKING:
     from qiling import Qiling
-
-KT = TypeVar('KT')
-VT = TypeVar('VT')
-
-
-def __invert_dict(d: Mapping[KT, VT]) -> Mapping[VT, KT]:
-    return {v: k for k, v in d.items()}
-
-
-def _constant_mapping(bits: int, consts_map: Mapping[str, int]) -> str:
-    return __invert_dict(consts_map)[bits]
 
 
 def _flags_mapping(value: int, flags_map: Mapping[str, int]) -> str:
@@ -177,8 +166,8 @@ def mmap_prot_mapping(prots: int) -> str:
     return _flags_mapping(prots, mmap_prots)
 
 
-def socket_type_mapping(t: int, archtype: QL_ARCH) -> str:
-    socket_type_map = {
+def socket_type_mapping(value: int, archtype: QL_ARCH) -> str:
+    socket_types: Type[Enum] = {
         QL_ARCH.X86:   linux_x86_socket_types,
         QL_ARCH.X8664: linux_x86_socket_types,
         QL_ARCH.ARM:   linux_arm_socket_types,
@@ -187,23 +176,23 @@ def socket_type_mapping(t: int, archtype: QL_ARCH) -> str:
     }[archtype]
 
     # https://code.woboq.org/linux/linux/net/socket.c.html#1363
-    return _constant_mapping(t & SOCK_TYPE_MASK, socket_type_map)
+    return socket_types(value & SOCK_TYPE_MASK).name
 
 
-def socket_domain_mapping(p: int, archtype: QL_ARCH, ostype: QL_OS) -> str:
-    socket_domain_map = {
+def socket_domain_mapping(value: int, archtype: QL_ARCH, ostype: QL_OS) -> str:
+    socket_domain: Type[Enum] = {
         QL_ARCH.X86:   linux_x86_socket_domain,
-        QL_ARCH.X8664: macos_x86_socket_domain if ostype == QL_OS.MACOS else linux_x86_socket_domain,
+        QL_ARCH.X8664: macos_x86_socket_domain if ostype is QL_OS.MACOS else linux_x86_socket_domain,
         QL_ARCH.ARM:   linux_arm_socket_domain,
         QL_ARCH.ARM64: linux_arm_socket_domain,
         QL_ARCH.MIPS:  linux_mips_socket_domain
     }[archtype]
 
-    return _constant_mapping(p, socket_domain_map)
+    return socket_domain(value).name
 
 
-def socket_tcp_option_mapping(t: int, archtype: QL_ARCH) -> str:
-    socket_option_map = {
+def socket_tcp_option_mapping(value: int, archtype: QL_ARCH) -> str:
+    socket_option: Type[Enum] = {
         QL_ARCH.X86:   linux_socket_tcp_options,
         QL_ARCH.X8664: linux_socket_tcp_options,
         QL_ARCH.ARM:   linux_socket_tcp_options,
@@ -211,11 +200,11 @@ def socket_tcp_option_mapping(t: int, archtype: QL_ARCH) -> str:
         QL_ARCH.MIPS:  linux_socket_tcp_options,
     }[archtype]
 
-    return _constant_mapping(t, socket_option_map)
+    return socket_option(value).name
 
 
-def socket_level_mapping(t: int, archtype: QL_ARCH) -> str:
-    socket_level_map = {
+def socket_level_mapping(value: int, archtype: QL_ARCH) -> str:
+    socket_level: Type[Enum] = {
         QL_ARCH.X86:   linux_x86_socket_level,
         QL_ARCH.X8664: linux_x86_socket_level,
         QL_ARCH.ARM:   linux_arm_socket_level,
@@ -223,23 +212,23 @@ def socket_level_mapping(t: int, archtype: QL_ARCH) -> str:
         QL_ARCH.MIPS:  linux_mips_socket_level
     }[archtype]
 
-    return _constant_mapping(t, socket_level_map)
+    return socket_level(value).name
 
 
-def socket_ip_option_mapping(t: int, archtype: QL_ARCH, ostype: QL_OS) -> str:
-    socket_option_map = {
+def socket_ip_option_mapping(value: int, archtype: QL_ARCH, ostype: QL_OS) -> str:
+    socket_ip_option: Type[Enum] = {
         QL_ARCH.X86:   linux_socket_ip_options,
-        QL_ARCH.X8664: macos_socket_ip_options if ostype == QL_OS.MACOS else linux_socket_ip_options,
+        QL_ARCH.X8664: macos_socket_ip_options if ostype is QL_OS.MACOS else linux_socket_ip_options,
         QL_ARCH.ARM:   linux_socket_ip_options,
-        QL_ARCH.ARM64: macos_socket_ip_options if ostype == QL_OS.MACOS else linux_socket_ip_options,
+        QL_ARCH.ARM64: macos_socket_ip_options if ostype is QL_OS.MACOS else linux_socket_ip_options,
         QL_ARCH.MIPS:  linux_mips_socket_ip_options
     }[archtype]
 
-    return _constant_mapping(t, socket_option_map)
+    return socket_ip_option(value).name
 
 
-def socket_option_mapping(t: int, archtype: QL_ARCH) -> str:
-    socket_option_map = {
+def socket_option_mapping(value: int, archtype: QL_ARCH) -> str:
+    socket_option: Type[Enum] = {
         QL_ARCH.X86:   linux_x86_socket_options,
         QL_ARCH.X8664: linux_x86_socket_options,
         QL_ARCH.ARM:   linux_arm_socket_options,
@@ -247,4 +236,4 @@ def socket_option_mapping(t: int, archtype: QL_ARCH) -> str:
         QL_ARCH.MIPS:  linux_mips_socket_options
     }[archtype]
 
-    return _constant_mapping(t, socket_option_map)
+    return socket_option(value).name

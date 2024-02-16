@@ -97,7 +97,7 @@ def __host_socket_type(vsock_type: int, arch_type: QL_ARCH) -> int:
 
     try:
         vsock_type_name = socket_type_mapping(vsock_type, arch_type)
-    except KeyError:
+    except ValueError:
         raise NotImplementedError(f'Could not convert emulated socket type {vsock_type} to a socket type name')
 
     try:
@@ -114,7 +114,7 @@ def __host_socket_level(vsock_level: int, arch_type: QL_ARCH) -> int:
 
     try:
         vsock_level_name = socket_level_mapping(vsock_level, arch_type)
-    except KeyError:
+    except ValueError:
         raise NotImplementedError(f'Could not convert emulated socket level {vsock_level} to a socket level name')
 
     try:
@@ -144,7 +144,7 @@ def __host_socket_option(vsock_level: int, vsock_opt: int, arch_type: QL_ARCH, o
             if vsock_opt_name.endswith(('_NEW', '_OLD')):
                 vsock_opt_name = vsock_opt_name[:-4]
 
-    except KeyError:
+    except ValueError:
         raise NotImplementedError(f'Could not convert emulated socket option {vsock_opt} to a socket option name')
 
     try:
