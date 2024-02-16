@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from qiling import Qiling
 
 
-def _flags_mapping(value: int, flags_map: Mapping[str, int]) -> str:
+def flags_mapping(value: int, flags_map: Mapping[str, int]) -> str:
     names = []
 
     for name, flag in flags_map.items():
@@ -200,3 +200,9 @@ def socket_option_mapping(value: int, archtype: QL_ARCH) -> str:
     }[archtype]
 
     return socket_option(value).name
+
+
+__all__ = [
+    'flags_mapping', 'get_open_flags_class', 'ql_open_flag_mapping', 'socket_type_mapping', 'socket_domain_mapping',
+    'socket_tcp_option_mapping', 'socket_level_mapping', 'socket_ip_option_mapping', 'socket_option_mapping'
+]

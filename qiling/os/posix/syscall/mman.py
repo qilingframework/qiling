@@ -12,7 +12,7 @@ from qiling import Qiling
 from qiling.const import QL_ARCH, QL_OS
 from qiling.exception import QlMemoryMappedError
 from qiling.os.filestruct import ql_file
-from qiling.os.posix.const_mapping import *
+from qiling.os.posix.const import *
 
 
 def ql_syscall_munmap(ql: Qiling, addr: int, length: int):
