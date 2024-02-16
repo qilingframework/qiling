@@ -3,21 +3,27 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from __future__ import annotations
+
 import ipaddress
 import socket
-from typing import Optional, Tuple
+from typing import TYPE_CHECKING, Tuple, Union
 
-from qiling import Qiling
 from qiling.const import QL_ARCH, QL_OS, QL_VERBOSE
 from qiling.os.posix.const_mapping import socket_type_mapping, socket_level_mapping, socket_domain_mapping, socket_ip_option_mapping, socket_tcp_option_mapping, socket_option_mapping
-from qiling.os.posix.const import NR_OPEN
+from qiling.os.posix.const import NR_OPEN, EMFILE, EBADF, EAFNOSUPPORT, EINVAL, ENOTSOCK
 from qiling.os.posix.filestruct import ql_socket
 from qiling.os.posix.structs import *
 
 
+if TYPE_CHECKING:
+    from qiling import Qiling
+    from qiling.os.posix.posix import QlOsPosix
+
+
 AF_UNIX = 1
 AF_INET = 2
-AF_INET6 = 10
+AF_INET6 = 10   # TODO: this is not true for macos
 
 SOCK_STREAM = 1
 SOCK_DGRAM = 2
@@ -155,6 +161,28 @@ def __host_socket_option(vsock_level: int, vsock_opt: int, arch_type: QL_ARCH, o
     return hsock_opt
 
 
+def get_opened_socket(os: QlOsPosix, fd: int) -> Union[ql_socket, int]:
+    """Retrieve opened socket by its fd index. In case of a error, the
+    appropriate error number is returned.
+    """
+
+    # fd out of range?
+    if fd not in range(NR_OPEN):
+        return -EBADF
+
+    sock = os.fd[fd]
+
+    # not an opened file?
+    if sock is None:
+        return -EBADF
+
+    # not a socket?
+    if not isinstance(sock, ql_socket):
+        return -ENOTSOCK
+
+    return sock
+
+
 def ql_syscall_socket(ql: Qiling, domain: int, socktype: int, protocol: int):
     idx = next((i for i in range(NR_OPEN) if ql.os.fd[i] is None), -1)
 
@@ -192,7 +220,7 @@ def ql_syscall_socketpair(ql: Qiling, domain: int, socktype: int, protocol: int,
     idx1 = next(unpopulated_fd, -1)
     idx2 = next(unpopulated_fd, -1)
 
-    regreturn = -1
+    regreturn = -EMFILE
 
     if (idx1 != -1) and (idx2 != -1):
         # ql_socket.socketpair should use host platform based socket type
@@ -227,13 +255,10 @@ def ql_syscall_socketpair(ql: Qiling, domain: int, socktype: int, protocol: int,
 
 
 def ql_syscall_connect(ql: Qiling, sockfd: int, addr: int, addrlen: int):
-    if sockfd not in range(NR_OPEN):
-        return -1
+    sock = get_opened_socket(ql.os, sockfd)
 
-    sock: Optional[ql_socket] = ql.os.fd[sockfd]
-
-    if sock is None:
-        return -1
+    if isinstance(sock, int):
+        return sock
 
     data = ql.mem.read(addr, addrlen)
 
@@ -242,9 +267,6 @@ def ql_syscall_connect(ql: Qiling, sockfd: int, addr: int, addrlen: int):
 
     sockaddr = make_sockaddr(abits, endian)
     sockaddr_obj = sockaddr.from_buffer(data)
-
-    dest = None
-    regreturn = -1
 
     if sock.family != sockaddr_obj.sa_family:
         return -1
@@ -276,25 +298,22 @@ def ql_syscall_connect(ql: Qiling, sockfd: int, addr: int, addrlen: int):
         ql.log.debug(f'Connecting to {host}:{port}')
         dest = (host, port)
 
-    if dest is not None:
-        try:
-            sock.connect(dest)
-        except (ConnectionError, FileNotFoundError):
-            regreturn = -1
-        else:
-            regreturn = 0
+    else:
+        return -EAFNOSUPPORT
 
-    return regreturn
+    try:
+        sock.connect(dest)
+    except (ConnectionError, FileNotFoundError):
+        return -1
+
+    return 0
 
 
 def ql_syscall_getsockopt(ql: Qiling, sockfd: int, level: int, optname: int, optval_addr: int, optlen_addr: int):
-    if sockfd not in range(NR_OPEN):
-        return -1
+    sock = get_opened_socket(ql.os, sockfd)
 
-    sock: Optional[ql_socket] = ql.os.fd[sockfd]
-
-    if sock is None:
-        return -1
+    if isinstance(sock, int):
+        return sock
 
     vsock_level = level
     hsock_level = __host_socket_level(vsock_level, ql.arch.type)
@@ -309,7 +328,7 @@ def ql_syscall_getsockopt(ql: Qiling, sockfd: int, level: int, optname: int, opt
     optlen = min(ql.unpack32s(ql.mem.read(optlen_addr, 4)), 1024)
 
     if optlen < 0:
-        return -1
+        return -EINVAL
 
     try:
         optval = sock.getsockopt(hsock_level, hsock_opt, optlen)
@@ -322,13 +341,10 @@ def ql_syscall_getsockopt(ql: Qiling, sockfd: int, level: int, optname: int, opt
 
 
 def ql_syscall_setsockopt(ql: Qiling, sockfd: int, level: int, optname: int, optval_addr: int, optlen: int):
-    if sockfd not in range(NR_OPEN):
-        return -1
+    sock = get_opened_socket(ql.os, sockfd)
 
-    sock: Optional[ql_socket] = ql.os.fd[sockfd]
-
-    if sock is None:
-        return -1
+    if isinstance(sock, int):
+        return sock
 
     if optval_addr == 0:
         sock.setsockopt(level, optname, None, optlen)
@@ -355,13 +371,10 @@ def ql_syscall_setsockopt(ql: Qiling, sockfd: int, level: int, optname: int, opt
 
 
 def ql_syscall_shutdown(ql: Qiling, sockfd: int, how: int):
-    if sockfd not in range(NR_OPEN):
-        return -1
+    sock = get_opened_socket(ql.os, sockfd)
 
-    sock: Optional[ql_socket] = ql.os.fd[sockfd]
-
-    if sock is None:
-        return -1
+    if isinstance(sock, int):
+        return sock
 
     try:
         sock.shutdown(how)
@@ -372,13 +385,10 @@ def ql_syscall_shutdown(ql: Qiling, sockfd: int, how: int):
 
 
 def ql_syscall_bind(ql: Qiling, sockfd: int, addr: int, addrlen: int):
-    if sockfd not in range(NR_OPEN):
-        return -1
+    sock = get_opened_socket(ql.os, sockfd)
 
-    sock: Optional[ql_socket] = ql.os.fd[sockfd]
-
-    if sock is None:
-        return -1
+    if isinstance(sock, int):
+        return sock
 
     data = ql.mem.read(addr, addrlen)
 
@@ -389,9 +399,6 @@ def ql_syscall_bind(ql: Qiling, sockfd: int, addr: int, addrlen: int):
     sockaddr_obj = sockaddr.from_buffer(data)
 
     sa_family = sockaddr_obj.sa_family
-
-    dest = None
-    regreturn = -1
 
     if sa_family == AF_UNIX:
         hpath, vpath = ql_unix_socket_path(ql, data[2:])
@@ -431,25 +438,22 @@ def ql_syscall_bind(ql: Qiling, sockfd: int, addr: int, addrlen: int):
         ql.log.debug(f'Binding socket to {host}:{port}')
         dest = (host, port)
 
-    if dest is not None:
-        try:
-            sock.bind(dest)
-        except (ConnectionError, FileNotFoundError):
-            regreturn = -1
-        else:
-            regreturn = 0
+    else:
+        return -EAFNOSUPPORT
 
-    return regreturn
+    try:
+        sock.bind(dest)
+    except (ConnectionError, FileNotFoundError):
+        return -1
+
+    return 0
 
 
 def ql_syscall_getsockname(ql: Qiling, sockfd: int, addr: int, addrlenptr: int):
-    if sockfd not in range(NR_OPEN):
-        return -1
+    sock = get_opened_socket(ql.os, sockfd)
 
-    sock: Optional[ql_socket] = ql.os.fd[sockfd]
-
-    if sock is None:
-        return -1
+    if isinstance(sock, int):
+        return sock
 
     addrlen = ql.mem.read_ptr(addrlenptr) if addrlenptr else 0
 
@@ -508,13 +512,10 @@ def ql_syscall_getsockname(ql: Qiling, sockfd: int, addr: int, addrlenptr: int):
 
 
 def ql_syscall_getpeername(ql: Qiling, sockfd: int, addr: int, addrlenptr: int):
-    if sockfd not in range(NR_OPEN):
-        return -1
+    sock = get_opened_socket(ql.os, sockfd)
 
-    sock: Optional[ql_socket] = ql.os.fd[sockfd]
-
-    if sock is None:
-        return -1
+    if isinstance(sock, int):
+        return sock
 
     addrlen = ql.mem.read_ptr(addrlenptr) if addrlenptr else 0
 
@@ -573,13 +574,10 @@ def ql_syscall_getpeername(ql: Qiling, sockfd: int, addr: int, addrlenptr: int):
 
 
 def ql_syscall_listen(ql: Qiling, sockfd: int, backlog: int):
-    if sockfd not in range(NR_OPEN):
-        return -1
+    sock = get_opened_socket(ql.os, sockfd)
 
-    sock: Optional[ql_socket] = ql.os.fd[sockfd]
-
-    if sock is None:
-        return -1
+    if isinstance(sock, int):
+        return sock
 
     try:
         sock.listen(backlog)
@@ -590,13 +588,10 @@ def ql_syscall_listen(ql: Qiling, sockfd: int, backlog: int):
 
 
 def ql_syscall_accept(ql: Qiling, sockfd: int, addr: int, addrlenptr: int):
-    if sockfd not in range(NR_OPEN):
-        return -1
+    sock = get_opened_socket(ql.os, sockfd)
 
-    sock: Optional[ql_socket] = ql.os.fd[sockfd]
-
-    if sock is None:
-        return -1
+    if isinstance(sock, int):
+        return sock
 
     try:
         conn, address = sock.accept()
@@ -609,7 +604,7 @@ def ql_syscall_accept(ql: Qiling, sockfd: int, addr: int, addrlenptr: int):
     idx = next((i for i in range(NR_OPEN) if ql.os.fd[i] is None), -1)
 
     if idx == -1:
-        return -1
+        return -EMFILE
 
     ql.os.fd[idx] = conn
 
@@ -668,13 +663,10 @@ def ql_syscall_accept(ql: Qiling, sockfd: int, addr: int, addrlenptr: int):
 
 
 def ql_syscall_recv(ql: Qiling, sockfd: int, buf: int, length: int, flags: int):
-    if sockfd not in range(NR_OPEN):
-        return -1
+    sock = get_opened_socket(ql.os, sockfd)
 
-    sock: Optional[ql_socket] = ql.os.fd[sockfd]
-
-    if sock is None:
-        return -1
+    if isinstance(sock, int):
+        return sock
 
     content = sock.recv(length, flags)
 
@@ -688,13 +680,10 @@ def ql_syscall_recv(ql: Qiling, sockfd: int, buf: int, length: int, flags: int):
 
 
 def ql_syscall_send(ql: Qiling, sockfd: int, buf: int, length: int, flags: int):
-    if sockfd not in range(NR_OPEN):
-        return -1
+    sock = get_opened_socket(ql.os, sockfd)
 
-    sock: Optional[ql_socket] = ql.os.fd[sockfd]
-
-    if sock is None:
-        return -1
+    if isinstance(sock, int):
+        return sock
 
     content = ql.mem.read(buf, length)
 
@@ -707,13 +696,10 @@ def ql_syscall_send(ql: Qiling, sockfd: int, buf: int, length: int, flags: int):
 
 
 def ql_syscall_recvmsg(ql: Qiling, sockfd: int, msg_addr: int, flags: int):
-    if sockfd not in range(NR_OPEN):
-        return -1
+    sock = get_opened_socket(ql.os, sockfd)
 
-    sock: Optional[ql_socket] = ql.os.fd[sockfd]
-
-    if sock is None:
-        return -1
+    if isinstance(sock, int):
+        return sock
 
     abits = ql.arch.bits
     endian = ql.arch.endian
@@ -760,13 +746,10 @@ def ql_syscall_recvmsg(ql: Qiling, sockfd: int, msg_addr: int, flags: int):
 
 
 def ql_syscall_recvfrom(ql: Qiling, sockfd: int, buf: int, length: int, flags: int, addr: int, addrlen: int):
-    if sockfd not in range(NR_OPEN):
-        return -1
+    sock = get_opened_socket(ql.os, sockfd)
 
-    sock: Optional[ql_socket] = ql.os.fd[sockfd]
-
-    if sock is None:
-        return -1
+    if isinstance(sock, int):
+        return sock
 
     # For x8664, recvfrom() is called finally when calling recv() in TCP communications
     # calling recvfrom with a NULL addr argument is identical to calling recv, which is normally used only on a connected socket
@@ -836,13 +819,10 @@ def ql_syscall_recvfrom(ql: Qiling, sockfd: int, buf: int, length: int, flags: i
 
 
 def ql_syscall_sendto(ql: Qiling, sockfd: int, buf: int, length: int, flags: int, addr: int, addrlen: int):
-    if sockfd not in range(NR_OPEN):
-        return -1
+    sock = get_opened_socket(ql.os, sockfd)
 
-    sock: Optional[ql_socket] = ql.os.fd[sockfd]
-
-    if sock is None:
-        return -1
+    if isinstance(sock, int):
+        return sock
 
     # if sendto is used on a connection-mode socket, the arguments addr and addrlen are ignored.
     # also, calling sendto(sockfd, buf, length, flags, NULL, 0) is equivalent to send(sockfd, buf, length, flags)
