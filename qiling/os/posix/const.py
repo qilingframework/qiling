@@ -722,6 +722,18 @@ class qnx_mmap_flags(Flag):
     # define this alias for compatibility with other os flags
     MAP_UNINITIALIZED = MAP_NOINIT
 
+
+class qnx_mmap_prot_flags(QlPrettyFlag):
+    PROT_NONE  = 0x00000000
+    PROT_READ  = 0x00000001
+    PROT_WRITE = 0x00000002
+    PROT_EXEC  = 0x00000004
+
+    # not supported by unicorn
+    PROT_GROWSDOWN = 0x01000000
+    PROT_GROWSUP   = 0x02000000
+
+
 # fcntl flags
 F_DUPFD  = 0
 F_GETFD  = 1

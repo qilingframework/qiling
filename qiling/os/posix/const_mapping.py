@@ -129,43 +129,6 @@ def ql_open_flag_mapping(ql: Qiling, flags: int) -> int:
     return ret
 
 
-def mmap_flag_mapping(flags: int) -> str:
-    mmap_flags = {
-        'MAP_SHARED'    : 0x00000001,
-        'MAP_PRIVATE'   : 0x00000002,
-        'MAP_FIXED'     : 0x00000010,
-        'MAP_ANONYMOUS' : 0x00000020,
-
-        # QNX (openqnx)
-        # lib/c/public/sys/mman.h
-        'MAP_NOINIT'    : 0x00004000,
-        'MAP_PHYS'      : 0x00010000,
-        'MAP_NOX64K'    : 0x00020000,
-        'MAP_BELOW16M'  : 0x00040000,
-        'MAP_ANON'      : 0x00080000,
-        'MAP_SYSRAM'    : 0x01000000
-    }
-
-    return _flags_mapping(flags, mmap_flags)
-
-
-def mmap_prot_mapping(prots: int) -> str:
-    if prots == 0:
-        return 'PROT_NONE'
-
-    mmap_prots = {
-        'PROT_READ' : 0b001,
-        'PROT_WRITE': 0b010,
-        'PROT_EXEC' : 0b100,
-
-        # not supported by unicorn
-        'PROT_GROWSDOWN' : 0x01000000,
-        'PROT_GROWSUP'   : 0x02000000
-    }
-
-    return _flags_mapping(prots, mmap_prots)
-
-
 def socket_type_mapping(value: int, archtype: QL_ARCH) -> str:
     socket_types: Type[Enum] = {
         QL_ARCH.X86:   linux_x86_socket_types,
