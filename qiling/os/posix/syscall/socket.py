@@ -303,8 +303,8 @@ def ql_syscall_connect(ql: Qiling, sockfd: int, addr: int, addrlen: int):
 
     try:
         sock.connect(dest)
-    except (ConnectionError, FileNotFoundError):
-        return -1
+    except (ConnectionError, FileNotFoundError) as ex:
+        return -ex.errno
 
     return 0
 
@@ -332,8 +332,8 @@ def ql_syscall_getsockopt(ql: Qiling, sockfd: int, level: int, optname: int, opt
 
     try:
         optval = sock.getsockopt(hsock_level, hsock_opt, optlen)
-    except (ConnectionError, OSError):
-        return -1
+    except (ConnectionError, OSError) as ex:
+        return -ex.errno
 
     ql.mem.write(optval_addr, optval)
 
@@ -364,8 +364,8 @@ def ql_syscall_setsockopt(ql: Qiling, sockfd: int, level: int, optname: int, opt
 
         try:
             sock.setsockopt(hsock_level, hsock_opt, optval)
-        except (ConnectionError, OSError):
-            return -1
+        except (ConnectionError, OSError) as ex:
+            return -ex.errno
 
     return 0
 
@@ -443,8 +443,8 @@ def ql_syscall_bind(ql: Qiling, sockfd: int, addr: int, addrlen: int):
 
     try:
         sock.bind(dest)
-    except (ConnectionError, FileNotFoundError):
-        return -1
+    except (ConnectionError, FileNotFoundError) as ex:
+        return -ex.errno
 
     return 0
 
@@ -581,8 +581,8 @@ def ql_syscall_listen(ql: Qiling, sockfd: int, backlog: int):
 
     try:
         sock.listen(backlog)
-    except ConnectionError:
-        return -1
+    except ConnectionError as ex:
+        return -ex.errno
 
     return 0
 
