@@ -266,7 +266,7 @@ def ql_syscall_faccessat(ql: Qiling, dirfd: int, filename: int, mode: int):
 
 
 def ql_syscall_lseek(ql: Qiling, fd: int, offset: int, origin: int):
-    offset = ql.unpacks(ql.pack(offset))
+    offset = ql.os.utils.as_signed(offset, 32)
 
     f = get_opened_fd(ql.os, fd)
 
@@ -285,8 +285,7 @@ def ql_syscall_lseek(ql: Qiling, fd: int, offset: int, origin: int):
 
 
 def ql_syscall__llseek(ql: Qiling, fd: int, offset_high: int, offset_low: int, result: int, whence: int):
-    # treat offset as a signed value
-    offset = ql.unpack64s(ql.pack64((offset_high << 32) | offset_low))
+    offset = ql.os.utils.as_signed((offset_high << 32) | offset_low, 64)
 
     f = get_opened_fd(ql.os, fd)
 

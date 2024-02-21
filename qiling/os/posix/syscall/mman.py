@@ -161,7 +161,7 @@ def syscall_mmap_impl(ql: Qiling, addr: int, length: int, prot: int, flags: int,
         label = '[mmap anonymous]'
 
     else:
-        fd = ql.unpacks(ql.pack(fd))
+        fd = ql.os.utils.as_signed(fd, 32)
 
         if fd not in range(NR_OPEN):
             return -EBADF

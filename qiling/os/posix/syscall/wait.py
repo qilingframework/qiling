@@ -9,19 +9,15 @@ from qiling import Qiling
 from qiling.os.posix.const import ECHILD
 
 def ql_syscall_wait4(ql: Qiling, pid: int, wstatus: int, options: int, rusage: int):
-    # convert to signed (pid_t is 32bit)
-    pid = ql.unpack32s(ql.pack32(pid))
-    # python expects options to be a signed 32bit int
-    options = ql.unpack32s(ql.pack32(options))
+    pid = ql.os.utils.as_signed(pid, 32)
+    options = ql.os.utils.as_signed(options, 32)
 
     try:
         spid, status, _ = os.wait4(pid, options)
-
-        if wstatus:
-            ql.mem.write_ptr(wstatus, status, 4)
-
-        retval = spid
     except ChildProcessError:
-        retval = -ECHILD
+        return -ECHILD
 
-    return retval
+    if wstatus:
+        ql.mem.write_ptr(wstatus, status, 4)
+
+    return spid
